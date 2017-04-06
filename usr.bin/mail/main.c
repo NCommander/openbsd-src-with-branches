@@ -1,3 +1,6 @@
+/*	$OpenBSD: main.c,v 1.32 2015/11/16 21:20:40 deraadt Exp $	*/
+/*	$NetBSD: main.c,v 1.7 1997/05/13 06:15:57 mikel Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,20 +30,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-static char sccsid[] = "from: @(#)main.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: main.c,v 1.4 1995/05/02 01:40:16 mycroft Exp $";
-#endif /* not lint */
-
 #include "rcv.h"
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include "extern.h"
+
+__dead	void	usage(void);
+	int	main(int, char **);
 
 /*
  * Mail -- a mail program
@@ -52,28 +44,29 @@ static char rcsid[] = "$Id: main.c,v 1.4 1995/05/02 01:40:16 mycroft Exp $";
  * Startup -- interface with user.
  */
 
-jmp_buf	hdrjmp;
-
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char **argv)
 {
-	register int i;
+	int i;
 	struct name *to, *cc, *bcc, *smopts;
+	char *fromaddr;
 	char *subject;
 	char *ef;
 	char nosrc = 0;
-	void hdrstop();
-	sig_t prevint;
-	void sigchild();
+	char *rc;
+	extern const char version[];
+
+	if (pledge("stdio rpath wpath cpath getpw tmppath fattr tty flock proc exec",
+	    NULL) == -1)
+		err(1, "pledge");
 
 	/*
 	 * Set up a reasonable environment.
 	 * Figure out whether we are being run interactively,
 	 * start the SIGCHLD catcher, and so forth.
 	 */
-	(void) signal(SIGCHLD, sigchild);
+	(void)signal(SIGCHLD, sigchild);
+	(void)signal(SIGPIPE, SIG_IGN);
 	if (isatty(0))
 		assign("interactive", "");
 	image = -1;
@@ -84,31 +77,24 @@ main(argc, argv)
 	 * of users to mail to.  Argp will be set to point to the
 	 * first of these users.
 	 */
-	ef = NOSTR;
-	to = NIL;
-	cc = NIL;
-	bcc = NIL;
-	smopts = NIL;
-	subject = NOSTR;
-	while ((i = getopt(argc, argv, "INT:b:c:dfins:u:v")) != EOF) {
+	ef = NULL;
+	to = NULL;
+	cc = NULL;
+	bcc = NULL;
+	smopts = NULL;
+	fromaddr = NULL;
+	subject = NULL;
+	while ((i = getopt(argc, argv, "EINb:c:dfinr:s:u:v")) != -1) {
 		switch (i) {
-		case 'T':
-			/*
-			 * Next argument is temp file to write which
-			 * articles have been read/deleted for netnews.
-			 */
-			Tflag = optarg;
-			if ((i = creat(Tflag, 0600)) < 0) {
-				perror(Tflag);
-				exit(1);
-			}
-			close(i);
-			break;
 		case 'u':
 			/*
 			 * Next argument is person to pretend to be.
 			 */
+			if (strlen(optarg) >= LOGIN_NAME_MAX)
+				errx(1, "username `%s' too long", optarg);
+			unsetenv("MAIL");
 			myname = optarg;
+			uflag = 1;
 			break;
 		case 'i':
 			/*
@@ -119,6 +105,12 @@ main(argc, argv)
 			break;
 		case 'd':
 			debug++;
+			break;
+		case 'r':
+			/*
+			 * Set From: address
+			 */
+			fromaddr = optarg;
 			break;
 		case 's':
 			/*
@@ -131,22 +123,16 @@ main(argc, argv)
 			/*
 			 * User is specifying file to "edit" with Mail,
 			 * as opposed to reading system mailbox.
-			 * If no argument is given after -f, we read his
-			 * mbox file.
-			 *
-			 * getopt() can't handle optional arguments, so here
-			 * is an ugly hack to get around it.
+			 * We read his mbox file unless another file
+			 * is specified after the arguments.
 			 */
-			if ((argv[optind]) && (argv[optind][0] != '-'))
-				ef = argv[optind++];
-			else
-				ef = "&";
+			ef = "&";
 			break;
 		case 'n':
 			/*
 			 * User doesn't want to source /usr/lib/Mail.rc
 			 */
-			nosrc++;
+			nosrc = 1;
 			break;
 		case 'N':
 			/*
@@ -178,31 +164,44 @@ main(argc, argv)
 			 */
 			bcc = cat(bcc, nalloc(optarg, GBCC));
 			break;
-		case '?':
-			fputs("\
-Usage: mail [-iInv] [-s subject] [-c cc-addr] [-b bcc-addr] to-addr ...\n\
-            [- sendmail-options ...]\n\
-       mail [-iInNv] -f [name]\n\
-       mail [-iInNv] [-u user]\n",
-				stderr);
-			exit(1);
+		case 'E':
+			/*
+			 * Don't send messages with an empty body.
+			 */
+			assign("skipempty", "");
+			break;
+		default:
+			usage();
+			/*NOTREACHED*/
 		}
 	}
-	for (i = optind; (argv[i]) && (*argv[i] != '-'); i++)
-		to = cat(to, nalloc(argv[i], GTO));
-	for (; argv[i]; i++)
-		smopts = cat(smopts, nalloc(argv[i], 0));
+	if (ef != NULL) {
+		/* Check for optional mailbox file name. */
+		if (optind < argc) {
+			ef = argv[optind++];
+			if (optind < argc)
+			    errx(1, "Cannot give -f and people to send to");
+		}
+	} else {
+		for (i = optind; argv[i]; i++)
+			to = cat(to, nalloc(argv[i], GTO));
+	}
 	/*
 	 * Check for inconsistent arguments.
 	 */
-	if (to == NIL && (subject != NOSTR || cc != NIL || bcc != NIL)) {
-		fputs("You must specify direct recipients with -s, -c, or -b.\n", stderr);
-		exit(1);
-	}
-	if (ef != NOSTR && to != NIL) {
-		fprintf(stderr, "Cannot give -f and people to send to.\n");
-		exit(1);
-	}
+	if (to == NULL && (subject != NULL || cc != NULL || bcc != NULL ||
+	    fromaddr != NULL))
+		errx(1, "You must specify direct recipients with -s, -c, -b, "
+		    "or -r");
+	/*
+	 * Block SIGINT except where we install an explicit handler for it.
+	 */
+	sigemptyset(&intset);
+	sigaddset(&intset, SIGINT);
+	(void)sigprocmask(SIG_BLOCK, &intset, NULL);
+	/*
+	 * Initialization.
+	 */
 	tinit();
 	setscreensize();
 	input = stdin;
@@ -214,9 +213,11 @@ Usage: mail [-iInv] [-s subject] [-c cc-addr] [-b bcc-addr] to-addr ...\n\
 	 * Expand returns a savestr, but load only uses the file name
 	 * for fopen, so it's safe to do this.
 	 */
-	load(expand("~/.mailrc"));
+	if ((rc = getenv("MAILRC")) == 0)
+		rc = "~/.mailrc";
+	load(expand(rc));
 	if (!rcvmode) {
-		mail(to, cc, bcc, smopts, subject);
+		mail(to, cc, bcc, smopts, fromaddr, subject);
 		/*
 		 * why wait?
 		 */
@@ -227,41 +228,22 @@ Usage: mail [-iInv] [-s subject] [-c cc-addr] [-b bcc-addr] to-addr ...\n\
 	 * Decide whether we are editing a mailbox or reading
 	 * the system mailbox, and open up the right stuff.
 	 */
-	if (ef == NOSTR)
+	if (ef == NULL)
 		ef = "%";
 	if (setfile(ef) < 0)
 		exit(1);		/* error already reported */
-	if (setjmp(hdrjmp) == 0) {
-		extern char *version;
 
-		if ((prevint = signal(SIGINT, SIG_IGN)) != SIG_IGN)
-			signal(SIGINT, hdrstop);
-		if (value("quiet") == NOSTR)
-			printf("Mail version %s.  Type ? for help.\n",
-				version);
-		announce();
-		fflush(stdout);
-		signal(SIGINT, prevint);
-	}
+	if (value("quiet") == NULL)
+		(void)printf("Mail version %s.  Type ? for help.\n",
+			version);
+	announce();
+	(void)fflush(stdout);
 	commands();
-	signal(SIGHUP, SIG_IGN);
-	signal(SIGINT, SIG_IGN);
-	signal(SIGQUIT, SIG_IGN);
+	(void)ignoresig(SIGHUP, NULL, NULL);
+	(void)ignoresig(SIGINT, NULL, NULL);
+	(void)ignoresig(SIGQUIT, NULL, NULL);
 	quit();
 	exit(0);
-}
-
-/*
- * Interrupt printing of the headers.
- */
-void
-hdrstop(signo)
-	int signo;
-{
-
-	fflush(stdout);
-	fprintf(stderr, "\nInterrupt\n");
-	longjmp(hdrjmp, 1);
 }
 
 /*
@@ -273,7 +255,7 @@ hdrstop(signo)
  * Width is either 80 or ws_col;
  */
 void
-setscreensize()
+setscreensize(void)
 {
 	struct termios tbuf;
 	struct winsize ws;
@@ -285,9 +267,9 @@ setscreensize()
 		ospeed = 9600;
 	else
 		ospeed = cfgetospeed(&tbuf);
-	if (ospeed < 1200)
+	if (ospeed < B1200)
 		screenheight = 9;
-	else if (ospeed == 1200)
+	else if (ospeed == B1200)
 		screenheight = 14;
 	else if (ws.ws_row != 0)
 		screenheight = ws.ws_row;
@@ -297,4 +279,15 @@ setscreensize()
 		realscreenheight = 24;
 	if ((screenwidth = ws.ws_col) == 0)
 		screenwidth = 80;
+}
+
+__dead void
+usage(void)
+{
+
+	fprintf(stderr, "usage: %s [-dEIinv] [-b list] [-c list] "
+	    "[-r from-addr] [-s subject] to-addr ...\n", __progname);
+	fprintf(stderr, "       %s [-dEIiNnv] -f [file]\n", __progname);
+	fprintf(stderr, "       %s [-dEIiNnv] [-u user]\n", __progname);
+	exit(1);
 }

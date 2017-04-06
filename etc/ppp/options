@@ -1,0 +1,4 @@
+#	$OpenBSD$
+lock
+auth
+usehostname

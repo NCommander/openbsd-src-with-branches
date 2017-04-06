@@ -21,13 +21,13 @@ top_srcdir =	@top_srcdir@
 
 @BIND9_VERSION@
 
-SUBDIRS =	make lib bin doc @LIBBIND@
+SUBDIRS =	make lib bin
 TARGETS =
 
 @BIND9_MAKE_RULES@
 
 distclean::
-	@if [ "X@LIBBIND@" = "X" ] ; then \
+	@if [ "X@LIBBIND@" != "X" ] ; then \
 		i=lib/bind; \
 		echo "making $@ in `pwd`/$$i"; \
 		(cd $$i; ${MAKE} ${MAKEDEFS} $@) || exit 1; \
@@ -36,7 +36,6 @@ distclean::
 distclean::
 	rm -f config.cache config.h config.log config.status TAGS
 	rm -f libtool isc-config.sh configure.lineno
-	rm -f util/conf.sh docutil/docbook2man-wrapper.sh
 
 # XXX we should clean libtool stuff too.  Only do this after we add rules
 # to make it.
@@ -53,11 +52,6 @@ install:: isc-config.sh installdirs
 tags:
 	rm -f TAGS
 	find lib bin -name "*.[ch]" -print | @ETAGS@ -
-
-check: test
-
-test:
-	(cd bin/tests && ${MAKE} ${MAKEDEFS} test)
 
 FAQ: FAQ.xml
 	${XSLTPROC} doc/xsl/isc-docbook-text.xsl FAQ.xml | \

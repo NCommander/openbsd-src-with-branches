@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: memset.S,v 1.1.1.1 2006/10/10 22:07:10 miod Exp $	*/
 /*	$NetBSD: memset.S,v 1.1 2005/12/20 19:28:50 christos Exp $	*/
 
 /*-
@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <machine/asm.h>
+#include "SYS.h"
 
 #define	REG_PTR				r0
 #define	REG_TMP1			r1
@@ -293,3 +293,8 @@ unaligned_len:
 	bra	aligned
 	sub	REG_DST,REG_LEN
 
+#ifdef BZERO
+END_WEAK(bzero)
+#else
+END_STRONG(memset)
+#endif

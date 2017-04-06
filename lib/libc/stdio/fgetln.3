@@ -1,4 +1,4 @@
-.\"	$NetBSD: fgetln.3,v 1.3 1995/02/02 01:15:37 jtc Exp $
+.\"	$OpenBSD: fgetln.3,v 1.16 2013/06/05 03:39:23 tedu Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,51 +27,43 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)fgetln.3	8.3 (Berkeley) 4/19/94
-.\"
-.Dd April 19, 1994
+.Dd $Mdocdate: June 5 2013 $
 .Dt FGETLN 3
 .Os
 .Sh NAME
 .Nm fgetln
 .Nd get a line from a stream
 .Sh SYNOPSIS
-.Fd #include <stdio.h>
+.In stdio.h
 .Ft char *
 .Fn fgetln "FILE *stream" "size_t *len"
 .Sh DESCRIPTION
 The
 .Fn fgetln
-function
-returns a pointer to the next line from the stream referenced by
+function returns a pointer to the next line from the stream referenced by
 .Fa stream .
 This line is
 .Em not
-a C string as it does not end with a terminating
-.Dv NUL
-character.
+a C string as it does not end with a terminating NUL character.
 The length of the line, including the final newline,
 is stored in the memory location to which
 .Fa len
-points.
-(Note, however, that if the line is the last
-in a file that does not end in a newline,
+points and is guaranteed to be greater than 0 upon successful completion.
+(Note, however, that if the last line in the stream does not end in a newline,
 the returned text will not contain a newline.)
 .Sh RETURN VALUES
 Upon successful completion a pointer is returned;
-this pointer becomes invalid after the next
-.Tn I/O
-operation on
+this pointer becomes invalid after the next I/O operation on
 .Fa stream
 (whether successful or not)
 or as soon as the stream is closed.
 Otherwise,
 .Dv NULL
 is returned.
+.Pp
 The
 .Fn fgetln
-function
-does not distinguish between end-of-file and error; the routines
+function does not distinguish between end-of-file and error; the routines
 .Xr feof 3
 and
 .Xr ferror 3
@@ -104,8 +92,7 @@ is not a stream open for reading.
 .Pp
 The
 .Fn fgetln
-function
-may also fail and set
+function may also fail and set
 .Va errno
 for any of the errors specified for the routines
 .Xr fflush 3 ,
@@ -118,8 +105,38 @@ or
 .Xr ferror 3 ,
 .Xr fgets 3 ,
 .Xr fopen 3 ,
+.Xr fparseln 3 ,
 .Xr putc 3
 .Sh HISTORY
 The
 .Fn fgetln
-function first appeared in 4.4BSD.
+function first appeared in
+.Bx 4.4 .
+.Sh CAVEATS
+Since the returned buffer is not a C string (it is not NUL terminated), a
+common practice is to replace the newline character with
+.Sq \e0 .
+However, if the last line in a file does not contain a newline,
+the returned text won't contain a newline either.
+The following code demonstrates how to deal with this problem by allocating a
+temporary buffer:
+.Bd -literal
+	char *buf, *lbuf;
+	size_t len;
+
+	lbuf = NULL;
+	while ((buf = fgetln(fp, &len))) {
+		if (buf[len - 1] == '\en')
+			buf[len - 1] = '\e0';
+		else {
+			/* EOF without EOL, copy and add the NUL */
+			if ((lbuf = malloc(len + 1)) == NULL)
+				err(1, NULL);
+			memcpy(lbuf, buf, len);
+			lbuf[len] = '\e0';
+			buf = lbuf;
+		}
+		printf("%s\en", buf);
+	}
+	free(lbuf);
+.Ed

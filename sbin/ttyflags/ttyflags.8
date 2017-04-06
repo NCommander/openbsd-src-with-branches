@@ -1,3 +1,4 @@
+.\"	$OpenBSD: ttyflags.8,v 1.10 2005/04/20 13:10:52 jmc Exp $
 .\"	$NetBSD: ttyflags.8,v 1.2 1995/03/18 15:01:22 cgd Exp $
 .\"
 .\" Copyright (c) 1994 Christopher G. Demetriou
@@ -28,18 +29,18 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd March 30, 1994
+.Dd $Mdocdate$
 .Dt TTYFLAGS 8
-.Os NetBSD 0.9a
+.Os
 .Sh NAME
 .Nm ttyflags
 .Nd set device-specific flags for terminals
 .Sh SYNOPSIS
 .Nm ttyflags
-.Op Fl v
+.Op Fl pv
 .Op Fl a | Ar tty ...
 .Sh DESCRIPTION
-.Nm Ttyflags
+.Nm
 sets the device-specific flags for terminals, based on the flags
 found on the terminal's line in
 .Pa /etc/ttys .
@@ -49,15 +50,19 @@ The options are as follows:
 .It Fl a
 Set the flags for all terminals in
 .Pa /etc/ttys .
+.It Fl p
+Print out flag information about each terminal, instead of setting
+anything.
 .It Fl v
-Be verbose about what the terminals' flags will be set to.
+Be verbose about what the terminal's flags will be set to.
 .El
 .Pp
 The
 .Ar tty
 arguments are optional, but must not be specified if the
 .Fl a
-flag is used.  If specified, the
+flag is used.
+If specified, the
 .Ar tty
 arguments should be the base names of
 the ttys, as found in
@@ -71,11 +76,11 @@ the ttys, as found in
 .Xr ttys 5
 .Sh HISTORY
 The
-.Nm ttyflags
+.Nm
 utility appeared in
 .Nx 0.9a .
 .Sh BUGS
 The conditions on which to report an error are ill-defined.
-.Nm Ttyflags
+.Nm
 tries to report all significant errors, perhaps going over-board
 at times.

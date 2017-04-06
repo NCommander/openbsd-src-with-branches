@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.10 2015/12/26 00:26:39 mestre Exp $	*/
 /*	$NetBSD: extern.h,v 1.4 1995/04/27 21:22:22 mycroft Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,9 +44,17 @@
  * For more info on this and all of my stuff, mail edjames@berkeley.edu.
  */
 
-extern char		GAMES[], *file;
+#include <curses.h>
 
-extern int		clck, safe_planes, start_time, test_mode;
+#include "def.h"
+#include "struct.h"
+
+extern char		GAMES[];
+extern const char	*file;
+
+extern int		clck, safe_planes, seeded, test_mode, makenoise;
+
+extern time_t		start_time;
 
 extern FILE		*filein, *fileout;
 
@@ -61,4 +66,78 @@ extern struct termios	tty_start, tty_new;
 
 extern DISPLACEMENT	displacement[MAXDIR];
 
-extern PLANE		*findplane(), *newplane();
+int		addplane(void);
+void		append(LIST *, PLANE *);
+void		check_adir(int, int, int);
+void		check_edge(int, int);
+void		check_edir(int, int, int);
+void		check_line(int, int, int, int);
+void		check_linepoint(int, int);
+void		check_point(int, int);
+int		checkdefs(void);
+int		compar(const void *, const void *);
+void		delete(LIST *, PLANE *);
+int		dir_deg(int);
+int		dir_no(char);
+void		done_screen(void);
+void		draw_all(void);
+void		draw_line(WINDOW *, int, int, int, int, const char *);
+void		erase_all(void);
+int		getAChar(void);
+int		getcommand(void);
+int		gettoken(void);
+void		ioaddstr(int, const char *);
+void		ioclrtobot(void);
+void		ioclrtoeol(int);
+void		ioerror(int, int, const char *);
+void		iomove(int);
+int		list_games(void);
+int		log_score(int);
+__dead void		log_score_quit(int);
+__dead void		loser(const PLANE *, const char *);
+char		name(const PLANE *);
+int		next_plane(void);
+void		noise(void);
+int		number(char);
+int		open_score_file(void);
+void		planewin(void);
+int		pop(void);
+void		push(int, int);
+void		quit(int);
+int		read_file(const char *);
+void		redraw(void);
+void		rezero(void);
+void		setseed(const char *);
+void		setup_screen(const C_SCREEN *);
+int		too_close(const PLANE *p1, const PLANE *p2, int);
+void		update(int);
+int		yyerror(const char *);
+int		yylex(void);
+int		yyparse(void);
+const char      *Left(char);
+const char	*Right(char);
+const char	*airport(char);
+const char	*beacon(char);
+const char	*benum(char);
+const char	*circle(char);
+const char	*climb(char);
+const char	*command(PLANE *);
+const char	*default_game(void);
+const char	*delayb(char);
+const char	*descend(char);
+const char	*ex_it(char);
+PLANE		*findplane(int);
+const char	*ignore(char);
+const char	*left(char);
+const char	*mark(char);
+PLANE		*newplane(void);
+const char	*okay_game(const char *);
+const char	*rel_dir(char);
+const char	*right(char);
+const char	*setalt(char);
+const char	*setplane(char);
+const char	*setrelalt(char);
+const char	*timestr(int);
+const char	*to_dir(char);
+const char	*turn(char);
+const char	*unmark(char);

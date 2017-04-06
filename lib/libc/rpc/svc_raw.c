@@ -1,47 +1,41 @@
-/*	$NetBSD: svc_raw.c,v 1.3 1995/02/25 03:01:59 cgd Exp $	*/
+/*	$OpenBSD: svc_raw.c,v 1.11 2015/08/20 21:49:29 deraadt Exp $ */
 
 /*
- * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
- * unrestricted use provided that this legend is included on all tape
- * media and as a part of the software program in whole or part.  Users
- * may copy or modify Sun RPC without charge, but are not authorized
- * to license or distribute it to anyone else except as part of a product or
- * program developed by the user.
- * 
- * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
- * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
- * Sun RPC is provided with no support and without any obligation on the
- * part of Sun Microsystems, Inc. to assist in its use, correction,
- * modification or enhancement.
- * 
- * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
- * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
- * OR ANY PART THEREOF.
- * 
- * In no event will Sun Microsystems, Inc. be liable for any lost revenue
- * or profits or other special, indirect and consequential damages, even if
- * Sun has been advised of the possibility of such damages.
- * 
- * Sun Microsystems, Inc.
- * 2550 Garcia Avenue
- * Mountain View, California  94043
+ * Copyright (c) 2010, Oracle America, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *     * Neither the name of the "Oracle America, Inc." nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *   COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)svc_raw.c 1.15 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)svc_raw.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: svc_raw.c,v 1.3 1995/02/25 03:01:59 cgd Exp $";
-#endif
 
 /*
  * svc_raw.c,   This a toy for simple testing and timing.
  * Interface to create an rpc client and server in the same UNIX process.
  * This lets us similate rpc and get rpc (round trip) overhead, without
- * any interference from the kernal.
- *
- * Copyright (C) 1984, Sun Microsystems, Inc.
+ * any interference from the kernel.
  */
 
 #include <stdlib.h>
@@ -58,12 +52,14 @@ static struct svcraw_private {
 	char	verf_body[MAX_AUTH_BYTES];
 } *svcraw_private;
 
-static bool_t		svcraw_recv();
-static enum xprt_stat 	svcraw_stat();
-static bool_t		svcraw_getargs();
-static bool_t		svcraw_reply();
-static bool_t		svcraw_freeargs();
-static void		svcraw_destroy();
+static bool_t		svcraw_recv(SVCXPRT *xprt, struct rpc_msg *msg);
+static enum xprt_stat 	svcraw_stat(SVCXPRT *xprt);
+static bool_t		svcraw_getargs(SVCXPRT *xprt, xdrproc_t xdr_args,
+			    caddr_t args_ptr);
+static bool_t		svcraw_reply(SVCXPRT *xprt, struct rpc_msg *msg);
+static bool_t		svcraw_freeargs(SVCXPRT *xprt, xdrproc_t xdr_args,
+			    caddr_t args_ptr);
+static void		svcraw_destroy(SVCXPRT *xprt);
 
 static struct xp_ops server_ops = {
 	svcraw_recv,
@@ -75,14 +71,14 @@ static struct xp_ops server_ops = {
 };
 
 SVCXPRT *
-svcraw_create()
+svcraw_create(void)
 {
-	register struct svcraw_private *srp = svcraw_private;
+	struct svcraw_private *srp = svcraw_private;
 
-	if (srp == 0) {
-		srp = (struct svcraw_private *)calloc(1, sizeof (*srp));
-		if (srp == 0)
-			return (0);
+	if (srp == NULL) {
+		srp = calloc(1, sizeof (*srp));
+		if (srp == NULL)
+			return (NULL);
 	}
 	srp->server.xp_sock = 0;
 	srp->server.xp_port = 0;
@@ -93,21 +89,19 @@ svcraw_create()
 }
 
 static enum xprt_stat
-svcraw_stat()
+svcraw_stat(SVCXPRT *xprt)
 {
 
 	return (XPRT_IDLE);
 }
 
 static bool_t
-svcraw_recv(xprt, msg)
-	SVCXPRT *xprt;
-	struct rpc_msg *msg;
+svcraw_recv(SVCXPRT *xprt, struct rpc_msg *msg)
 {
-	register struct svcraw_private *srp = svcraw_private;
-	register XDR *xdrs;
+	struct svcraw_private *srp = svcraw_private;
+	XDR *xdrs;
 
-	if (srp == 0)
+	if (srp == NULL)
 		return (0);
 	xdrs = &srp->xdr_stream;
 	xdrs->x_op = XDR_DECODE;
@@ -118,14 +112,12 @@ svcraw_recv(xprt, msg)
 }
 
 static bool_t
-svcraw_reply(xprt, msg)
-	SVCXPRT *xprt;
-	struct rpc_msg *msg;
+svcraw_reply(SVCXPRT *xprt, struct rpc_msg *msg)
 {
-	register struct svcraw_private *srp = svcraw_private;
-	register XDR *xdrs;
+	struct svcraw_private *srp = svcraw_private;
+	XDR *xdrs;
 
-	if (srp == 0)
+	if (srp == NULL)
 		return (FALSE);
 	xdrs = &srp->xdr_stream;
 	xdrs->x_op = XDR_ENCODE;
@@ -137,28 +129,22 @@ svcraw_reply(xprt, msg)
 }
 
 static bool_t
-svcraw_getargs(xprt, xdr_args, args_ptr)
-	SVCXPRT *xprt;
-	xdrproc_t xdr_args;
-	caddr_t args_ptr;
+svcraw_getargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 {
-	register struct svcraw_private *srp = svcraw_private;
+	struct svcraw_private *srp = svcraw_private;
 
-	if (srp == 0)
+	if (srp == NULL)
 		return (FALSE);
 	return ((*xdr_args)(&srp->xdr_stream, args_ptr));
 }
 
 static bool_t
-svcraw_freeargs(xprt, xdr_args, args_ptr)
-	SVCXPRT *xprt;
-	xdrproc_t xdr_args;
-	caddr_t args_ptr;
+svcraw_freeargs(SVCXPRT *xprt, xdrproc_t xdr_args, caddr_t args_ptr)
 { 
-	register struct svcraw_private *srp = svcraw_private;
-	register XDR *xdrs;
+	struct svcraw_private *srp = svcraw_private;
+	XDR *xdrs;
 
-	if (srp == 0)
+	if (srp == NULL)
 		return (FALSE);
 	xdrs = &srp->xdr_stream;
 	xdrs->x_op = XDR_FREE;
@@ -166,6 +152,6 @@ svcraw_freeargs(xprt, xdr_args, args_ptr)
 } 
 
 static void
-svcraw_destroy()
+svcraw_destroy(SVCXPRT *xprt)
 {
 }

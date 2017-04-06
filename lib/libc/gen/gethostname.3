@@ -1,4 +1,4 @@
-.\"	$NetBSD: gethostname.3,v 1.2 1995/02/27 04:12:42 cgd Exp $
+.\"	$OpenBSD: gethostname.3,v 1.26 2015/01/12 10:11:07 nicm Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,44 +27,45 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)gethostname.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: January 12 2015 $
 .Dt GETHOSTNAME 3
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm gethostname ,
 .Nm sethostname
 .Nd get/set name of current host
 .Sh SYNOPSIS
-.Fd #include <unistd.h>
+.In unistd.h
 .Ft int
-.Fn gethostname "char *name" "int namelen"
+.Fn gethostname "char *name" "size_t namelen"
 .Ft int
-.Fn sethostname "const char *name" "int namelen"
+.Fn sethostname "const char *name" "size_t namelen"
 .Sh DESCRIPTION
-.Fn Gethostname
-returns the standard host name for the current processor, as
-previously set by
+The
+.Fn gethostname
+function returns the standard host name for the current
+machine, as previously set by
 .Fn sethostname .
 The parameter
 .Fa namelen
-specifies the size of the 
+specifies the size of the
 .Fa name
-array.  The returned name is null-terminated unless insufficient
-space is provided.
+array.
+If insufficient space is provided, the returned name is truncated.
+The returned name is always NUL terminated.
+If no space is provided, an error is returned.
 .Pp
-.Fn Sethostname
+.Fn sethostname
 sets the name of the host machine to be
 .Fa name ,
 which has length
 .Fa namelen .
-This call is restricted to the super-user and
+This call is restricted to the superuser and
 is normally used only when the system is bootstrapped.
 .Sh RETURN VALUES
-If the call succeeds a value of 0 is returned.  If the call
-fails, a value of -1 is returned and an error code is
-placed in the global location
+If the call succeeds a value of 0 is returned.
+If the call fails, a value of \-1 is returned and an error code is
+placed in the global variable
 .Va errno .
 .Sh ERRORS
 The following errors may be returned by these calls:
@@ -76,24 +73,48 @@ The following errors may be returned by these calls:
 .It Bq Er EFAULT
 The
 .Fa name
-or
-.Fa namelen
-parameter gave an
-invalid address.
+parameter gave an invalid address.
+.It Bq Er ENOMEM
+The
+.Ar namelen
+parameter was zero.
 .It Bq Er EPERM
-The caller tried to set the hostname and was not the super-user.
+The caller tried to set the hostname and was not the superuser.
 .El
 .Sh SEE ALSO
-.Xr sysctl 2
-.Xr gethostid 3
+.Xr hostname 1 ,
+.Xr getdomainname 3 ,
+.Xr gethostid 3 ,
+.Xr sysctl 3 ,
+.Xr sysctl 8 ,
+.Xr yp 8
+.Sh STANDARDS
+The
+.Fn gethostname
+function call conforms to
+.St -xpg4.2 .
+.Sh HISTORY
+The
+.Fn gethostname
+function call appeared in
+.Bx 4.2 .
 .Sh BUGS
 Host names are limited to
 .Dv MAXHOSTNAMELEN
 (from
-.Ao Pa sys/param.h Ac )
+.In sys/param.h )
 characters, currently 256.
-.Sh HISTORY
-The
-.Nm
-function call appeared in
-.Bx 4.2 .
+This includes the terminating NUL character.
+Note that the corresponding POSIX definition
+.Dv HOST_NAME_MAX
+in
+.In limits.h
+does
+.Em not
+include the terminating NUL character.
+.Pp
+If the buffer passed to
+.Fn gethostname
+is smaller than
+.Dv MAXHOSTNAMELEN ,
+other operating systems may not guarantee termination with NUL.

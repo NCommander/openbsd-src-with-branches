@@ -880,6 +880,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define SUBTARGET_CPP_SPEC ""
 #endif
 
+#undef CPP_SPEC
 #define CPP_SPEC "%(subtarget_cpp_spec)"
 
 /* This macro defines names of additional specifications to put in the specs
@@ -1127,6 +1128,8 @@ extern const struct mips_rtx_cost_data *mips_cost;
 	|| TREE_CODE (TYPE) == UNION_TYPE				\
 	|| TREE_CODE (TYPE) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
 
+/* Make local arrays of chars word-aligned for the same reasons.  */
+#define LOCAL_ALIGNMENT(TYPE, ALIGN) DATA_ALIGNMENT (TYPE, ALIGN)
 
 #define PAD_VARARGS_DOWN \
   (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
@@ -1738,6 +1741,8 @@ extern const enum reg_class mips_regno_to_class[];
 
 #define STACK_GROWS_DOWNWARD
 
+#define FRAME_GROWS_DOWNWARD 1
+
 /* The offset of the first local variable from the beginning of the frame.
    See compute_frame_size for details about the frame layout.
 
@@ -1750,12 +1755,7 @@ extern const enum reg_class mips_regno_to_class[];
    will end up as 24 instead of 8.  This won't be needed if profiling code is
    inserted before virtual register instantiation.  */
 
-#define STARTING_FRAME_OFFSET						\
-  ((flag_profile_values && ! TARGET_64BIT				\
-    ? MAX (REG_PARM_STACK_SPACE(NULL), current_function_outgoing_args_size) \
-    : current_function_outgoing_args_size)				\
-   + (TARGET_ABICALLS && !TARGET_NEWABI					\
-      ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0))
+#define STARTING_FRAME_OFFSET 0
 
 #define RETURN_ADDR_RTX mips_return_addr
 
@@ -2531,6 +2531,7 @@ while (0)
    the assembler uses length information on externals to allocate in
    data/sdata bss/sbss, thereby saving exec time.  */
 
+#undef ASM_OUTPUT_EXTERNAL
 #define ASM_OUTPUT_EXTERNAL(STREAM,DECL,NAME) \
   mips_output_external(STREAM,DECL,NAME)
 

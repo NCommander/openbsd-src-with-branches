@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: bdisp.c,v 1.12 2016/01/04 17:33:24 mestre Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,13 +31,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)bdisp.c	8.2 (Berkeley) 5/3/95";
-#endif /* not lint */
+#include <curses.h>
+#include <err.h>
+#include <string.h>
 
 #include "gomoku.h"
-#include <stdio.h>
-#include <ocurses.h>
 
 #define	SCRNH		24		/* assume 24 lines for the moment */
 #define	SCRNW		80		/* assume 80 chars for the moment */
@@ -52,34 +46,46 @@ static	char	pcolor[] = "*O.?";
 /*
  * Initialize screen display.
  */
-cursinit()
+void
+cursinit(void)
 {
-
 	initscr();
+	if ((LINES < SCRNH) || (COLS < SCRNW)) {
+		endwin();
+		errx(1,"Screen too small (need %dx%d)",SCRNW,SCRNH);
+	}
+#ifdef KEY_MIN
+	keypad(stdscr, TRUE);
+#endif /* KEY_MIN */
+	nonl();
 	noecho();
 	cbreak();
-	leaveok(stdscr, TRUE);
+
+#ifdef NCURSES_MOUSE_VERSION
+	mousemask(BUTTON1_CLICKED, (mmask_t *)NULL);
+#endif /* NCURSES_MOUSE_VERSION*/
 }
 
 /*
  * Restore screen display.
  */
-cursfini()
+void
+cursfini(void)
 {
-
-	leaveok(stdscr, FALSE);
-	move(23, 0);
+	move(BSZ4, 0);
 	clrtoeol();
 	refresh();
+	echo();
 	endwin();
 }
 
 /*
  * Initialize board display.
  */
-bdisp_init()
+void
+bdisp_init(void)
 {
-	register int i, j;
+	int i, j;
 
 	/* top border */
 	for (i = 1; i < BSZ1; i++) {
@@ -108,22 +114,31 @@ bdisp_init()
 /*
  * Update who is playing whom.
  */
-bdwho(update)
-	int update;
+void
+bdwho(int update)
 {
-	int i;
+	int i, j;
 	extern char *plyr[];
 
 	move(21, 0);
-	clrtoeol();
-	i = 6 - strlen(plyr[BLACK]) / 2;
-	move(21, i > 0 ? i : 0);
-	printw("BLACK/%s", plyr[BLACK]);
-	i = 30 - strlen(plyr[WHITE]) / 2;
-	move(21, i);
-	printw("WHITE/%s", plyr[WHITE]);
-	move(21, 19);
-	addstr(" vs. ");
+	printw("                                              ");
+	i = strlen(plyr[BLACK]);
+	j = strlen(plyr[WHITE]);
+	if (i + j <= 20) {
+		move(21, 10 - (i + j)/2);
+		printw("BLACK/%s (*) vs. WHITE/%s (O)",
+		    plyr[BLACK], plyr[WHITE]);
+	} else {
+		move(21, 0);
+		if (i <= 10)
+			j = 20 - i;
+		else if (j <= 10)
+			i = 20 - j;
+		else
+			i = j = 10;
+		printw("BLACK/%.*s (*) vs. WHITE/%.*s (O)",
+		    i, plyr[BLACK], j, plyr[WHITE]);
+	}
 	if (update)
 		refresh();
 }
@@ -131,10 +146,11 @@ bdwho(update)
 /*
  * Update the board display after a move.
  */
-bdisp()
+void
+bdisp(void)
 {
-	register int i, j, c;
-	register struct spotstr *sp;
+	int i, j, c;
+	struct spotstr *sp;
 
 	for (j = BSZ1; --j > 0; ) {
 		for (i = 1; i < BSZ1; i++) {
@@ -159,11 +175,10 @@ bdisp()
 /*
  * Dump board display to a file.
  */
-bdump(fp)
-	FILE *fp;
+void bdump(FILE *fp)
 {
-	register int i, j, c;
-	register struct spotstr *sp;
+	int i, j, c;
+	struct spotstr *sp;
 
 	/* top border */
 	fprintf(fp, "   A B C D E F G H J K L M N O P Q R S T\n");
@@ -197,44 +212,43 @@ bdump(fp)
 /*
  * Display a transcript entry
  */
-dislog(str)
-	char *str;
+void
+dislog(char *str)
 {
 
 	if (++lastline >= SCRNH - 1) {
 		/* move 'em up */
 		lastline = 1;
 	}
-	if (strlen(str) >= SCRNW - 46)
-		str[SCRNW - 46 - 1] = '\0';
-	move(lastline, 46);
+	if (strlen(str) >= SCRNW - (2 * BSZ4))
+		str[SCRNW - (2 * BSZ4) - 1] = '\0';
+	move(lastline, (2 * BSZ4));
 	addstr(str);
 	clrtoeol();
-	move(lastline + 1, 46);
+	move(lastline + 1, (2 * BSZ4));
 	clrtoeol();
 }
 
 /*
  * Display a question.
  */
-ask(str)
-	char *str;
+void
+ask(char *str)
 {
 	int len = strlen(str);
 
-	move(23, 0);
+	move(BSZ4, 0);
 	addstr(str);
 	clrtoeol();
-	move(23, len);
+	move(BSZ4, len);
 	refresh();
 }
 
-getline(buf, size)
-	char *buf;
-	int size;
+int
+get_line(char *buf, int size)
 {
-	register char *cp, *end;
-	register int c;
+	char *cp, *end;
+	int c = EOF;
 	extern int interactive;
 
 	cp = buf;
@@ -273,4 +287,136 @@ getline(buf, size)
 	}
 	*cp = '\0';
 	return(c != EOF);
+}
+
+
+/* Decent (n)curses interface for the game, based on Eric S. Raymond's
+ * modifications to the battleship (bs) user interface.
+ */
+int getcoord(void)
+{
+	static int curx = BSZ / 2;
+	static int cury = BSZ / 2;
+	int ny, nx, c;
+
+	BGOTO(cury,curx);
+	refresh();
+	nx = curx; ny = cury;
+	for (;;) {
+		mvprintw(BSZ3, (BSZ -6)/2, "(%c %d)", 
+				'A'+ ((curx > 7) ? (curx+1) : curx), cury + 1);
+		BGOTO(cury, curx);
+
+		switch(c = getch()) {
+		case 'k': case '8':
+#ifdef KEY_MIN
+		case KEY_UP:
+#endif /* KEY_MIN */
+			ny = cury + 1;       nx = curx;
+			break;
+		case 'j': case '2':
+#ifdef KEY_MIN
+		case KEY_DOWN:
+#endif /* KEY_MIN */
+			ny = BSZ + cury - 1; nx = curx;
+			break;
+		case 'h': case '4':
+#ifdef KEY_MIN
+		case KEY_LEFT:
+#endif /* KEY_MIN */
+			ny = cury;          nx = BSZ + curx - 1;
+			break;
+		case 'l': case '6':
+#ifdef KEY_MIN
+		case KEY_RIGHT:
+#endif /* KEY_MIN */
+			ny = cury;          nx = curx + 1;
+			break;
+		case 'y': case '7':
+#ifdef KEY_MIN
+		case KEY_A1:
+#endif /* KEY_MIN */
+			ny = cury + 1;        nx = BSZ + curx - 1;
+			break;
+		case 'b': case '1':
+#ifdef KEY_MIN
+		case KEY_C1:
+#endif /* KEY_MIN */
+			ny = BSZ + cury - 1; nx = BSZ + curx - 1;
+			break;
+		case 'u': case '9':
+#ifdef KEY_MIN
+		case KEY_A3:
+#endif /* KEY_MIN */
+			ny = cury + 1;        nx = curx + 1;
+			break;
+		case 'n': case '3':
+#ifdef KEY_MIN
+		case KEY_C3:
+#endif /* KEY_MIN */
+			ny = BSZ + cury - 1; nx = curx + 1;
+			break;
+		case 'K':
+			ny = cury + 5;       nx = curx;
+			break;
+		case 'J':
+			ny = BSZ + cury - 5; nx = curx;
+			break;
+		case 'H':
+			ny = cury;          nx = BSZ + curx - 5;
+			break;
+		case 'L':
+			ny = cury;          nx = curx + 5;
+			break;
+		case 'Y':
+			ny = cury + 5;        nx = BSZ + curx - 5;
+			break;
+		case 'B':
+			ny = BSZ + cury - 5; nx = BSZ + curx - 5;
+			break;
+		case 'U':
+			ny = cury + 5;        nx = curx + 5;
+			break;
+		case 'N':
+			ny = BSZ + cury - 5; nx = curx + 5;
+			break;
+		case FF:
+			nx = curx; ny = cury;
+			(void)clearok(stdscr, TRUE);
+			(void)refresh();
+			break;
+#ifdef NCURSES_MOUSE_VERSION
+		case KEY_MOUSE:
+		{
+			MEVENT	myevent;
+
+			getmouse(&myevent);
+			if (myevent.y >= 1 && myevent.y <= BSZ1
+				&& myevent.x >= 3 && myevent.x <= (2 * BSZ + 1))
+			{
+				curx = (myevent.x - 3) / 2;
+				cury = BSZ - myevent.y;
+				return(PT(curx,cury));
+			}
+			else
+				beep();
+		}
+		break;
+#endif /* NCURSES_MOUSE_VERSION */
+		case 'Q':
+			return(RESIGN);
+			break;
+		case 'S':
+			return(SAVE);
+			break;
+		case ' ':
+		case '\015':  /* return */
+			(void) mvaddstr(BSZ3, (BSZ -6)/2, "      ");
+			return(PT(curx+1,cury+1));
+			break;
+	}
+
+	curx = nx % BSZ;
+	cury = ny % BSZ;
+    }
 }

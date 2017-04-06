@@ -1,0 +1,27 @@
+.Dd February 17, 2015
+.Dt IT-TEXT 1
+.Os OpenBSD
+.Sh NAME
+.Nm it-text
+.Nd what an input line trap counts as text
+.Sh DESCRIPTION
+.de trap
+traptext
+..
+initial text
+.it 1trap
+first line after 1trap
+second line after 1trap
+.Pp
+.it 1vtrap
+first line after 1vtrap
+second line after 1vtrap
+.Pp
+.it ( + 1c + 1i)trap
+first line after ( + 1c + 1i)trap
+second line after ( + 1c + 1i)trap
+third line after ( + 1c + 1i)trap
+.it 1 trap
+.Pp
+first line after .Pp
+second line after .Pp

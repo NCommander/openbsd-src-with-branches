@@ -297,10 +297,12 @@ static rrtype_descriptor_type rrtype_descriptors[(RRTYPE_DESCRIPTORS_LENGTH+1)] 
 	  { RDATA_WF_SHORT, RDATA_WF_BYTE, RDATA_WF_BYTE, RDATA_WF_BINARY },
 	  { RDATA_ZF_SHORT, RDATA_ZF_BYTE, RDATA_ZF_ALGORITHM,
 	    RDATA_ZF_BASE64 } },
-	/* 61 */
-	{ 61, NULL, T_UTYPE, 1, 1, { RDATA_WF_BINARY }, { RDATA_ZF_UNKNOWN } },
-	/* 62 */
-	{ 62, NULL, T_UTYPE, 1, 1, { RDATA_WF_BINARY }, { RDATA_ZF_UNKNOWN } },
+	/* 61 - OPENPGPKEY */
+	{ TYPE_OPENPGPKEY, "OPENPGPKEY", T_OPENPGPKEY, 1, 1,
+	  { RDATA_WF_BINARY }, { RDATA_ZF_BASE64 } },
+	/* 62 - CSYNC */
+	{ TYPE_CSYNC, "CSYNC", T_CSYNC, 3, 3, { RDATA_WF_LONG, RDATA_WF_SHORT,
+	 RDATA_WF_BINARY }, { RDATA_ZF_LONG, RDATA_ZF_SHORT, RDATA_ZF_NSEC } },
 	/* 63 */
 	{ 63, NULL, T_UTYPE, 1, 1, { RDATA_WF_BINARY }, { RDATA_ZF_UNKNOWN } },
 	/* 64 */
@@ -804,7 +806,7 @@ rrtype_from_string(const char *name)
 	rrtype_descriptor_type *entry;
 
 	/* Because this routine is called during zone parse for every record,
-	 * we optimise for frequently occuring records.
+	 * we optimise for frequently occurring records.
 	 * Also, we optimise for 'IN' and numbers are not rr types, because
 	 * during parse this routine is called for every rr class and TTL
 	 * to determine that it is not an RR type */

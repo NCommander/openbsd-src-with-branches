@@ -27,6 +27,8 @@ cmp_hash_tree(const void* x, const void* y)
 {
 	const domain_type* a = (const domain_type*)x;
 	const domain_type* b = (const domain_type*)y;
+	if(!a->nsec3) return (b->nsec3?-1:0);
+	if(!b->nsec3) return 1;
 	return memcmp(a->nsec3->nsec3_hash, b->nsec3->nsec3_hash,
 		NSEC3_HASH_LEN);
 }
@@ -37,6 +39,8 @@ cmp_wchash_tree(const void* x, const void* y)
 {
 	const domain_type* a = (const domain_type*)x;
 	const domain_type* b = (const domain_type*)y;
+	if(!a->nsec3) return (b->nsec3?-1:0);
+	if(!b->nsec3) return 1;
 	return memcmp(a->nsec3->nsec3_wc_hash, b->nsec3->nsec3_wc_hash,
 		NSEC3_HASH_LEN);
 }
@@ -47,6 +51,8 @@ cmp_dshash_tree(const void* x, const void* y)
 {
 	const domain_type* a = (const domain_type*)x;
 	const domain_type* b = (const domain_type*)y;
+	if(!a->nsec3) return (b->nsec3?-1:0);
+	if(!b->nsec3) return 1;
 	return memcmp(a->nsec3->nsec3_ds_parent_hash,
 		b->nsec3->nsec3_ds_parent_hash, NSEC3_HASH_LEN);
 }
@@ -59,9 +65,9 @@ cmp_nsec3_tree(const void* x, const void* y)
 	const domain_type* a = (const domain_type*)x;
 	const domain_type* b = (const domain_type*)y;
 	/* labelcount + 32long label */
-	assert(dname_name(a->dname)[0] == 32);
-	assert(dname_name(b->dname)[0] == 32);
-	return memcmp(dname_name(a->dname), dname_name(b->dname), 33);
+	assert(dname_name(domain_dname_const(a))[0] == 32);
+	assert(dname_name(domain_dname_const(b))[0] == 32);
+	return memcmp(dname_name(domain_dname_const(a)), dname_name(domain_dname_const(b)), 33);
 }
 
 void nsec3_zone_trees_create(struct region* region, zone_type* zone)
@@ -340,7 +346,7 @@ nsec3_chain_find_prev(struct zone* zone, struct domain* domain)
 {
 	if(domain->nsec3 && domain->nsec3->nsec3_node.key) {
 		/* see if there is a prev */
-		rbnode_t* r = rbtree_previous(&domain->nsec3->nsec3_node);
+		rbnode_type* r = rbtree_previous(&domain->nsec3->nsec3_node);
 		if(r != RBTREE_NULL) {
 			/* found a previous, which is not the root-node in
 			 * the prehash tree (and thus points to the tree) */
@@ -438,7 +444,7 @@ nsec3_tree_zone(namedb_type* db, domain_type* d)
 					rrset_rrtype(rrset) == TYPE_DNSKEY ||
 					rrset_rrtype(rrset) == TYPE_NSEC3PARAM)
 					return rrset->zone;
-			return namedb_find_zone(db, d->dname);
+			return namedb_find_zone(db, domain_dname(d));
 		}
 		d = d->parent;
 	}
@@ -458,14 +464,18 @@ int
 nsec3_find_cover(zone_type* zone, uint8_t* hash, size_t hashlen,
 	domain_type** result)
 {
-	rbnode_t* r = NULL;
+	rbnode_type* r = NULL;
 	int exact;
 	domain_type d;
 	uint8_t n[48];
 
 	/* nsec3tree is sorted by b32 encoded domain name of the NSEC3 */
 	b32_ntop(hash, hashlen, (char*)(n+5), sizeof(n)-5);
+#ifdef USE_RADIX_TREE
 	d.dname = (dname_type*)n;
+#else
+	d.node.key = n;
+#endif
 	n[0] = 34; /* name_size */
 	n[1] = 2; /* label_count */
 	n[2] = 0; /* label_offset[0] */
@@ -646,7 +656,7 @@ init_lookup_key_ds_tree(domain_type* d, uint8_t* hash)
 
 /* find first in the tree and true if the first to process it */
 static int
-process_first(rbtree_t* tree, uint8_t* hash, rbnode_t** p,
+process_first(rbtree_type* tree, uint8_t* hash, rbnode_type** p,
 	void (*init)(domain_type*, uint8_t*))
 {
 	domain_type d;
@@ -672,7 +682,7 @@ process_first(rbtree_t* tree, uint8_t* hash, rbnode_t** p,
 
 /* set end pointer if possible */
 static void
-process_end(rbtree_t* tree, uint8_t* hash, rbnode_t** p,
+process_end(rbtree_type* tree, uint8_t* hash, rbnode_type** p,
 	void (*init)(domain_type*, uint8_t*))
 {
 	domain_type d;
@@ -706,8 +716,8 @@ process_range(zone_type* zone, domain_type* start,
 {
 	/* start NULL means from first in tree */
 	/* end NULL means to last in tree */
-	rbnode_t *p = RBTREE_NULL, *pwc = RBTREE_NULL, *pds = RBTREE_NULL;
-	rbnode_t *p_end = RBTREE_NULL, *pwc_end = RBTREE_NULL, *pds_end = RBTREE_NULL;
+	rbnode_type *p = RBTREE_NULL, *pwc = RBTREE_NULL, *pds = RBTREE_NULL;
+	rbnode_type *p_end = RBTREE_NULL, *pwc_end = RBTREE_NULL, *pds_end = RBTREE_NULL;
 	/* because the nodes are on the prehashlist, the domain->nsec3 is
 	 * already allocated, and we need not allocate it here */
 	/* set start */
@@ -773,7 +783,7 @@ process_prehash_domain(domain_type* domain, zone_type* zone)
 	 * and set precompile pointers to point to this domain (or is_exact),
 	 * the first domain can be is_exact. If it is the last NSEC3, also
 	 * process the initial part (before the first) */
-	rbnode_t* nx;
+	rbnode_type* nx;
 
 	/* this domain is part of the prehash list and therefore the
 	 * domain->nsec3 is allocated and need not be allocated here */
@@ -845,8 +855,8 @@ nsec3_add_nonexist_proof(struct query* query, struct answer* answer,
 	{
 		/* exact match, hash collision */
 		/* the hashed name of the query corresponds to an existing name. */
-		log_msg(LOG_ERR, "nsec3 hash collision for name=%s",
-			dname_to_string(to_prove, NULL));
+		VERBOSITY(3, (LOG_ERR, "nsec3 hash collision for name=%s",
+			dname_to_string(to_prove, NULL)));
 		RCODE_SET(query->packet, RCODE_SERVFAIL);
 		return;
 	}
@@ -893,7 +903,9 @@ nsec3_add_ds_proof(struct query *query, struct answer *answer,
 		/* use NSEC3 record from above the zone cut. */
 		nsec3_add_rrset(query, answer, AUTHORITY_SECTION,
 			domain->nsec3->nsec3_ds_parent_cover);
-	} else if (!delegpt && domain->nsec3 && domain->nsec3->nsec3_is_exact) {
+	} else if (!delegpt && domain->nsec3 && domain->nsec3->nsec3_is_exact
+		&& nsec3_domain_part_of_zone(domain->nsec3->nsec3_cover,
+		query->zone)) {
 		nsec3_add_rrset(query, answer, AUTHORITY_SECTION,
 			domain->nsec3->nsec3_cover);
 	} else {
@@ -965,9 +977,20 @@ nsec3_answer_nodata(struct query* query, struct answer* answer,
 				original->nsec3->nsec3_cover);
 	}
 	else {	/* add nsec3 to prove rrset does not exist */
-		if(original->nsec3 && original->nsec3->nsec3_is_exact) {
+		if(original->nsec3) {
+			if(!original->nsec3->nsec3_is_exact) {
+				/* go up to an existing parent */
+				while(original->parent && original->parent->nsec3 && !original->parent->nsec3->nsec3_is_exact)
+					original = original->parent;
+			}
 			nsec3_add_rrset(query, answer, AUTHORITY_SECTION,
 				original->nsec3->nsec3_cover);
+			if(!original->nsec3->nsec3_is_exact) {
+				if(original->parent && original->parent->nsec3 && original->parent->nsec3->nsec3_is_exact)
+				    nsec3_add_rrset(query, answer, AUTHORITY_SECTION,
+					original->parent->nsec3->nsec3_cover);
+
+			}
 		}
 	}
 }
@@ -1041,7 +1064,8 @@ nsec3_answer_authoritative(struct domain** match, struct query *query,
 #if 0
 		query->qtype != TYPE_NSEC3 &&
 #endif
-		domain_has_only_NSEC3(*match, query->zone))
+		(domain_has_only_NSEC3(*match, query->zone) ||
+		!domain_find_any_rrset(*match, query->zone)))
 	{
 		/* this looks like a NSEC3 domain, but is actually an empty non-terminal. */
 		nsec3_answer_nodata(query, answer, *match);

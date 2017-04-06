@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# $OpenBSD: unbound,v 1.2 2014/12/29 11:17:43 ajacoutot Exp $
+
+daemon="/usr/sbin/unbound"
+daemon_flags="-c /var/unbound/etc/unbound.conf"
+
+. /etc/rc.d/rc.subr
+
+pexp="unbound${daemon_flags:+ ${daemon_flags}}"
+
+rc_pre() {
+	if grep '^[[:space:]]*auto-trust-anchor-file:' \
+            /var/unbound/etc/unbound.conf > /dev/null 2>&1; then
+		/usr/sbin/unbound-anchor -v || true
+	fi
+}
+
+rc_start() {
+	/usr/sbin/unbound-checkconf > /dev/null && \
+	    ${rcexec} "unbound ${daemon_flags}"
+}
+
+rc_cmd $1

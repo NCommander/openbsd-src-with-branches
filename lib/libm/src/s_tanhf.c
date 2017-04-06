@@ -13,25 +13,13 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_tanhf.c,v 1.4 1995/05/10 20:48:24 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const float one=1.0, two=2.0, tiny = 1.0e-30;
-#else
-static float one=1.0, two=2.0, tiny = 1.0e-30;
-#endif
 
-#ifdef __STDC__
-	float tanhf(float x)
-#else
-	float tanhf(x)
-	float x;
-#endif
+float
+tanhf(float x)
 {
 	float t,z;
 	int32_t jx,ix;
@@ -47,6 +35,8 @@ static float one=1.0, two=2.0, tiny = 1.0e-30;
 
     /* |x| < 22 */
 	if (ix < 0x41b00000) {		/* |x|<22 */
+	    if (ix == 0)
+		return x;		/* x == +-0 */
 	    if (ix<0x24000000) 		/* |x|<2**-55 */
 		return x*(one+x);    	/* tanh(small) = small */
 	    if (ix>=0x3f800000) {	/* |x|>=1  */

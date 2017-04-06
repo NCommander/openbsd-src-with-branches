@@ -82,87 +82,10 @@
 #include <openssl/engine.h>
 #endif
 #include <openssl/err.h>
-#include <openssl/rand.h>
 
 /* declaration of the test functions */
-int x9_62_tests(BIO *);
 int x9_62_test_internal(BIO *out, int nid, const char *r, const char *s);
 int test_builtin(BIO *);
-
-/* functions to change the RAND_METHOD */
-int change_rand(void);
-int restore_rand(void);
-int fbytes(unsigned char *buf, int num);
-
-RAND_METHOD	fake_rand;
-const RAND_METHOD *old_rand;
-
-int change_rand(void)
-	{
-	/* save old rand method */
-	if ((old_rand = RAND_get_rand_method()) == NULL)
-		return 0;
-
-	fake_rand.seed    = old_rand->seed;
-	fake_rand.cleanup = old_rand->cleanup;
-	fake_rand.add     = old_rand->add;
-	fake_rand.status  = old_rand->status;
-	/* use own random function */
-	fake_rand.bytes      = fbytes;
-	fake_rand.pseudorand = old_rand->bytes;
-	/* set new RAND_METHOD */
-	if (!RAND_set_rand_method(&fake_rand))
-		return 0;
-	return 1;
-	}
-
-int restore_rand(void)
-	{
-	if (!RAND_set_rand_method(old_rand))
-		return 0;
-	else
-		return 1;
-	}
-
-static int fbytes_counter = 0;
-static const char *numbers[8] = {
-	"651056770906015076056810763456358567190100156695615665659",
-	"6140507067065001063065065565667405560006161556565665656654",
-	"8763001015071075675010661307616710783570106710677817767166"
-	"71676178726717",
-	"7000000175690566466555057817571571075705015757757057795755"
-	"55657156756655",
-	"1275552191113212300012030439187146164646146646466749494799",
-	"1542725565216523985789236956265265265235675811949404040041",
-	"1456427555219115346513212300075341203043918714616464614664"
-	"64667494947990",
-	"1712787255652165239672857892369562652652652356758119494040"
-	"40041670216363"};
-
-int fbytes(unsigned char *buf, int num)
-	{
-	int	ret;
-	BIGNUM	*tmp = NULL;
-
-	if (fbytes_counter >= 8)
-		return 0;
-	tmp = BN_new();
-	if (!tmp)
-		return 0;
-	if (!BN_dec2bn(&tmp, numbers[fbytes_counter]))
-		{
-		BN_free(tmp);
-		return 0;
-		}
-	fbytes_counter ++;
-	if (num != BN_num_bytes(tmp) || !BN_bn2bin(tmp, buf))
-		ret = 0;
-	else 
-		ret = 1;
-	if (tmp)
-		BN_free(tmp);
-	return ret;
-	}
 
 /* some tests from the X9.62 draft */
 int x9_62_test_internal(BIO *out, int nid, const char *r_in, const char *s_in)
@@ -229,45 +152,6 @@ x962_int_err:
 	return ret;
 	}
 
-int x9_62_tests(BIO *out)
-	{
-	int ret = 0;
-
-	BIO_printf(out, "some tests from X9.62:\n");
-
-	/* set own rand method */
-	if (!change_rand())
-		goto x962_err;
-
-	if (!x9_62_test_internal(out, NID_X9_62_prime192v1,
-		"3342403536405981729393488334694600415596881826869351677613",
-		"5735822328888155254683894997897571951568553642892029982342"))
-		goto x962_err;
-	if (!x9_62_test_internal(out, NID_X9_62_prime239v1,
-		"3086361431751678114926225473006680188549593787585317781474"
-		"62058306432176",
-		"3238135532097973577080787768312505059318910517550078427819"
-		"78505179448783"))
-		goto x962_err;
-#ifndef OPENSSL_NO_EC2M
-	if (!x9_62_test_internal(out, NID_X9_62_c2tnb191v1,
-		"87194383164871543355722284926904419997237591535066528048",
-		"308992691965804947361541664549085895292153777025772063598"))
-		goto x962_err;
-	if (!x9_62_test_internal(out, NID_X9_62_c2tnb239v1,
-		"2159633321041961198501834003903461262881815148684178964245"
-		"5876922391552",
-		"1970303740007316867383349976549972270528498040721988191026"
-		"49413465737174"))
-		goto x962_err;
-#endif
-	ret = 1;
-x962_err:
-	if (!restore_rand())
-		ret = 0;
-	return ret;
-	}
-
 int test_builtin(BIO *out)
 	{
 	EC_builtin_curve *curves = NULL;
@@ -284,12 +168,8 @@ int test_builtin(BIO *out)
 	int		nid, ret =  0;
 	
 	/* fill digest values with some random data */
-	if (!RAND_pseudo_bytes(digest, 20) ||
-	    !RAND_pseudo_bytes(wrong_digest, 20))
-		{
-		BIO_printf(out, "ERROR: unable to get random data\n");
-		goto builtin_err;
-		}
+	arc4random_buf(digest, 20);
+	arc4random_buf(wrong_digest, 20);
 
 	/* create and verify a ecdsa signature with every availble curve
 	 * (with ) */
@@ -299,7 +179,7 @@ int test_builtin(BIO *out)
 	/* get a list of all internal curves */
 	crv_len = EC_get_builtin_curves(NULL, 0);
 
-	curves = OPENSSL_malloc(sizeof(EC_builtin_curve) * crv_len);
+	curves = reallocarray(NULL, sizeof(EC_builtin_curve), crv_len);
 
 	if (curves == NULL)
 		{
@@ -372,7 +252,7 @@ int test_builtin(BIO *out)
 		(void)BIO_flush(out);
 		/* create signature */
 		sig_len = ECDSA_size(eckey);
-		if ((signature = OPENSSL_malloc(sig_len)) == NULL)
+		if ((signature = malloc(sig_len)) == NULL)
 			goto builtin_err;
                 if (!ECDSA_sign(0, digest, 20, signature, &sig_len, eckey))
 			{
@@ -437,10 +317,8 @@ int test_builtin(BIO *out)
 			goto builtin_err;
 			}
 		buf_len = 2 * bn_len;
-		if ((raw_buf = OPENSSL_malloc(buf_len)) == NULL)
+		if ((raw_buf = calloc(1, buf_len)) == NULL)
 			goto builtin_err;
-		/* Pad the bignums with leading zeroes. */
-		memset(raw_buf, 0, buf_len);
 		BN_bn2bin(ecdsa_sig->r, raw_buf + bn_len - r_len);
 		BN_bn2bin(ecdsa_sig->s, raw_buf + buf_len - s_len);
 
@@ -480,7 +358,7 @@ int test_builtin(BIO *out)
 		/* cleanup */
 		/* clean bogus errors */
 		ERR_clear_error();
-		OPENSSL_free(signature);
+		free(signature);
 		signature = NULL;
 		EC_KEY_free(eckey);
 		eckey = NULL;
@@ -488,7 +366,7 @@ int test_builtin(BIO *out)
 		wrong_eckey = NULL;
 		ECDSA_SIG_free(ecdsa_sig);
 		ecdsa_sig = NULL;
-		OPENSSL_free(raw_buf);
+		free(raw_buf);
 		raw_buf = NULL;
 		}
 
@@ -500,12 +378,9 @@ builtin_err:
 		EC_KEY_free(wrong_eckey);
 	if (ecdsa_sig)
 		ECDSA_SIG_free(ecdsa_sig);
-	if (signature)
-		OPENSSL_free(signature);
-	if (raw_buf)
-		OPENSSL_free(raw_buf);
-	if (curves)
-		OPENSSL_free(curves);
+	free(signature);
+	free(raw_buf);
+	free(curves);
 
 	return ret;
 	}
@@ -516,25 +391,10 @@ int main(void)
 	BIO	*out;
 
 	out = BIO_new_fp(stdout, BIO_NOCLOSE);
-	
-	/* enable memory leak checking unless explicitly disabled */
-	if (!((getenv("OPENSSL_DEBUG_MEMORY") != NULL) && 
-		(0 == strcmp(getenv("OPENSSL_DEBUG_MEMORY"), "off"))))
-		{
-		CRYPTO_malloc_debug_init();
-		CRYPTO_set_mem_debug_options(V_CRYPTO_MDEBUG_ALL);
-		}
-	else
-		{
-		/* OPENSSL_DEBUG_MEMORY=off */
-		CRYPTO_set_mem_debug_functions(0, 0, 0, 0, 0);
-		}
-	CRYPTO_mem_ctrl(CRYPTO_MEM_CHECK_ON);
 
 	ERR_load_crypto_strings();
 
 	/* the tests */
-	if (!x9_62_tests(out))  goto err;
 	if (!test_builtin(out)) goto err;
 	
 	ret = 0;

@@ -1,3 +1,4 @@
+/*      $OpenBSD: extern.h,v 1.4 2003/06/03 02:56:06 millert Exp $      */
 /*      $NetBSD: extern.h,v 1.2 1995/09/08 03:22:57 tls Exp $      */
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,13 +32,12 @@
  *	@(#)extern.h	8.3 (Berkeley) 4/2/94
  */
 
-#define OK_EXIT		0
 #define DIFF_EXIT	1
 #define ERR_EXIT	2	/* error exit code */
 
-void	c_regular __P((int, char *, off_t, off_t, int, char *, off_t, off_t));
-void	c_special __P((int, char *, off_t, int, char *, off_t));
-void	diffmsg __P((char *, char *, off_t, off_t));
-void	eofmsg __P((char *));
+void	c_regular(int, char *, off_t, off_t, int, char *, off_t, off_t);
+void	c_special(int, char *, off_t, int, char *, off_t);
+void	diffmsg(char *, char *, off_t, off_t);
+void	eofmsg(char *);
 
 extern int lflag, sflag;

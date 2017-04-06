@@ -1,4 +1,5 @@
-/*	$NetBSD: crib.c,v 1.5 1995/03/21 15:08:42 cgd Exp $	*/
+/*	$OpenBSD: crib.c,v 1.22 2016/01/07 16:00:32 tb Exp $	*/
+/*	$NetBSD: crib.c,v 1.7 1997/07/10 06:47:29 mikel Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,44 +30,30 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)crib.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: crib.c,v 1.5 1995/03/21 15:08:42 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <curses.h>
+#include <err.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
-#include "deck.h"
 #include "cribbage.h"
 #include "cribcur.h"
-#include "pathnames.h"
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	BOOLEAN playing;
-	FILE *f;
+	bool playing;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "eqr")) != EOF)
+	if (pledge("stdio rpath tty proc exec", NULL) == -1)
+		err(1, "pledge");
+
+	while ((ch = getopt(argc, argv, "ehmqr")) != -1)
 		switch (ch) {
 		case 'e':
 			explain = TRUE;
+			break;
+		case 'm':
+			muggins = TRUE;
 			break;
 		case 'q':
 			quiet = TRUE;
@@ -78,21 +61,23 @@ main(argc, argv)
 		case 'r':
 			rflag = TRUE;
 			break;
-		case '?':
+		case 'h':
 		default:
-			(void) fprintf(stderr, "usage: cribbage [-eqr]\n");
-			exit(1);
+			(void) fprintf(stderr, "usage: %s [-emqr]\n",
+			    getprogname());
+			return 1;
 		}
 
 	initscr();
-	(void)signal(SIGINT, rint);
-	crmode();
+	(void)signal(SIGINT, rintsig);
+	cbreak();
 	noecho();
 
 	Playwin = subwin(stdscr, PLAY_Y, PLAY_X, 0, 0);
 	Tablewin = subwin(stdscr, TABLE_Y, TABLE_X, 0, PLAY_X);
 	Compwin = subwin(stdscr, COMP_Y, COMP_X, 0, TABLE_X + PLAY_X);
 	Msgwin = subwin(stdscr, MSG_Y, MSG_X, Y_MSG_START, SCORE_X + 1);
+
 	leaveok(Playwin, TRUE);
 	leaveok(Tablewin, TRUE);
 	leaveok(Compwin, TRUE);
@@ -106,13 +91,17 @@ main(argc, argv)
 			mvcur(0, COLS - 1, LINES - 1, 0);
 			fflush(stdout);
 			instructions();
-			crmode();
+			cbreak();
 			noecho();
 			clear();
 			refresh();
 			msg("For cribbage rules, use \"man cribbage\"");
 		}
 	}
+
+	if (pledge("stdio tty", NULL) == -1)
+		err(1, "pledge");
+
 	playing = TRUE;
 	do {
 		wclrtobot(Msgwin);
@@ -126,18 +115,8 @@ main(argc, argv)
 		playing = (getuchar() == 'Y');
 	} while (playing);
 
-	if (f = fopen(_PATH_LOG, "a")) {
-		(void)fprintf(f, "%s: won %5.5d, lost %5.5d\n",
-		    getlogin(), cgames, pgames);
-		(void) fclose(f);
-	}
 	bye();
-	if (!f) {
-		(void) fprintf(stderr, "\ncribbage: can't open %s.\n",
-		    _PATH_LOG);
-		exit(1);
-	}
-	exit(0);
+	return 0;
 }
 
 /*
@@ -145,7 +124,7 @@ main(argc, argv)
  *	Print out the initial board on the screen
  */
 void
-makeboard()
+makeboard(void)
 {
 	mvaddstr(SCORE_Y + 0, SCORE_X,
 	    "+---------------------------------------+");
@@ -173,10 +152,8 @@ makeboard()
  *	Print out the current game score
  */
 void
-gamescore()
+gamescore(void)
 {
-	extern int Lastscore[];
-
 	if (pgames || cgames) {
 		mvprintw(SCORE_Y + 1, SCORE_X + 28, "Games: %3d", pgames);
 		mvprintw(SCORE_Y + 7, SCORE_X + 28, "Games: %3d", cgames);
@@ -191,11 +168,11 @@ gamescore()
  *	player what card to turn.  We do a random one, anyway.
  */
 void
-game()
+game(void)
 {
-	register int i, j;
-	BOOLEAN flag;
-	BOOLEAN compcrib;
+	int i, j;
+	bool flag;
+	bool compcrib;
 
 	makedeck(deck);
 	shuffle(deck);
@@ -203,13 +180,24 @@ game()
 		flag = TRUE;
 		do {
 			if (!rflag) {			/* player cuts deck */
-				msg(quiet ? "Cut for crib? " :
-			    "Cut to see whose crib it is -- low card wins? ");
-				getline();
+				char *foo;
+
+				/* This is silly, but we should parse user input
+				 * even if we're not actually going to use it.
+				 */
+				do {
+					msg(quiet ? "Cut for crib? " :
+				    "Cut to see whose crib it is -- low card wins? ");
+					foo = get_line();
+					if (*foo != '\0' && ((i = atoi(foo)) < 4 || i > 48))
+						msg("Invalid cut");
+					else
+						*foo = '\0';
+				} while (*foo != '\0');
 			}
-			i = (rand() >> 4) % CARDS;	/* random cut */
+			i = arc4random_uniform(CARDS);	/* random cut */
 			do {	/* comp cuts deck */
-				j = (rand() >> 4) % CARDS;
+				j = arc4random_uniform(CARDS);
 			} while (j == i);
 			addmsg(quiet ? "You cut " : "You cut the ");
 			msgcard(deck[i], FALSE);
@@ -226,10 +214,13 @@ game()
 			} else
 				compcrib = (deck[i].rank > deck[j].rank);
 		} while (flag);
+		do_wait();
 		clear();
 		makeboard();
 		refresh();
 	} else {
+		makeboard();
+		refresh();
 		werase(Tablewin);
 		wrefresh(Tablewin);
 		werase(Compwin);
@@ -281,12 +272,14 @@ game()
  *	Do up one hand of the game
  */
 int
-playhand(mycrib)
-	BOOLEAN mycrib;
+playhand(bool mycrib)
 {
-	register int deckpos;
+	int deckpos;
 
 	werase(Compwin);
+	wrefresh(Compwin);
+	werase(Tablewin);
+	wrefresh(Tablewin);
 
 	knownum = 0;
 	deckpos = deal(mycrib);
@@ -310,10 +303,9 @@ playhand(mycrib)
  * deal cards to both players from deck
  */
 int
-deal(mycrib)
-	BOOLEAN mycrib;
+deal(bool mycrib)
 {
-	register int i, j;
+	int i, j;
 
 	for (i = j = 0; i < FULLHAND; i++) {
 		if (mycrib) {
@@ -333,10 +325,9 @@ deal(mycrib)
  * Note: we call cdiscard() after prining first message so player doesn't wait
  */
 void
-discard(mycrib)
-	BOOLEAN mycrib;
+discard(bool mycrib)
 {
-	register char *prompt;
+	char *prompt;
 	CARD crd;
 
 	prcrib(mycrib, TRUE);
@@ -363,42 +354,52 @@ discard(mycrib)
  *	player what card to turn.  We do a random one, anyway.
  */
 int
-cut(mycrib, pos)
-	BOOLEAN mycrib;
-	int  pos;
+cut(bool mycrib, int pos)
 {
-	register int i;
-	BOOLEAN win;
+	int i;
+	bool win;
 
 	win = FALSE;
 	if (mycrib) {
 		if (!rflag) {	/* random cut */
-			msg(quiet ? "Cut the deck? " :
-		    "How many cards down do you wish to cut the deck? ");
-			getline();
+			char *foo;
+
+			/* This is silly, but we should parse user input,
+			 * even if we're not actually going to use it.
+			 */
+			do {
+				msg(quiet ? "Cut the deck? " :
+				    "How many cards down do you wish to cut the deck? ");
+				foo = get_line();
+				if (*foo != '\0' && ((i = atoi(foo)) < 4 || i > 36))
+					msg("Invalid cut");
+				else
+					*foo = '\0';
+			} while (*foo != '\0');
 		}
-		i = (rand() >> 4) % (CARDS - pos);
+		i = arc4random_uniform(CARDS - pos);
 		turnover = deck[i + pos];
 		addmsg(quiet ? "You cut " : "You cut the ");
 		msgcard(turnover, FALSE);
 		endmsg();
+		prcrib(mycrib, FALSE);
 		if (turnover.rank == JACK) {
 			msg("I get two for his heels");
 			win = chkscr(&cscore, 2);
 		}
 	} else {
-		i = (rand() >> 4) % (CARDS - pos) + pos;
+		i = arc4random_uniform(CARDS - pos) + pos;
 		turnover = deck[i];
 		addmsg(quiet ? "I cut " : "I cut the ");
 		msgcard(turnover, FALSE);
 		endmsg();
+		prcrib(mycrib, FALSE);
 		if (turnover.rank == JACK) {
 			msg("You get two for his heels");
 			win = chkscr(&pscore, 2);
 		}
 	}
 	makeknown(&turnover, 1);
-	prcrib(mycrib, FALSE);
 	return (win);
 }
 
@@ -407,10 +408,9 @@ cut(mycrib, pos)
  *	Print out the turnover card with crib indicator
  */
 void
-prcrib(mycrib, blank)
-	BOOLEAN mycrib, blank;
+prcrib(bool mycrib, bool blank)
 {
-	register int y, cardx;
+	int y, cardx;
 
 	if (mycrib)
 		cardx = CRIB_X;
@@ -427,6 +427,7 @@ prcrib(mycrib, blank)
 
 	for (y = CRIB_Y; y <= CRIB_Y + 5; y++)
 		mvaddstr(y, cardx, "       ");
+	refresh();
 }
 
 /*
@@ -437,16 +438,16 @@ static CARD Table[14];
 static int Tcnt;
 
 int
-peg(mycrib)
-	BOOLEAN mycrib;
+peg(bool mycrib)
 {
 	static CARD ch[CINHAND], ph[CINHAND];
-	register int i, j, k;
-	register int l;
-	register int cnum, pnum, sum;
-	register BOOLEAN myturn, mego, ugo, last, played;
+	int i, j, k;
+	int l;
+	int cnum, pnum, sum;
+	bool myturn, mego, ugo, last, played;
 	CARD crd;
 
+	played = FALSE;
 	cnum = pnum = CINHAND;
 	for (i = 0; i < CINHAND; i++) {	/* make copies of hands */
 		ch[i] = chand[i];
@@ -461,7 +462,7 @@ peg(mycrib)
 		prhand(ph, pnum, Playwin, FALSE);
 		prhand(ch, cnum, Compwin, TRUE);
 		prtable(sum);
-		if (myturn) {	/* my tyrn to play */
+		if (myturn) {
 			if (!anymove(ch, cnum, sum)) {	/* if no card to play */
 				if (!mego && cnum) {	/* go for comp? */
 					msg("GO");
@@ -473,6 +474,7 @@ peg(mycrib)
 				else {			/* give him his point */
 					msg(quiet ? "You get one" :
 					    "You get one point");
+					do_wait();
 					if (chkscr(&pscore, 1))
 						return TRUE;
 					sum = 0;
@@ -502,6 +504,9 @@ peg(mycrib)
 					    "I get %d points playing ", k);
 					msgcard(crd, FALSE);
 					endmsg();
+					prhand(ph, pnum, Playwin, FALSE);
+					prhand(ch, cnum, Compwin, TRUE);
+					prtable(sum);
 					if (chkscr(&cscore, k))
 						return TRUE;
 				}
@@ -520,6 +525,9 @@ peg(mycrib)
 					msg(quiet ? "I get one" :
 					    "I get one point");
 					do_wait();
+					prhand(ph, pnum, Playwin, FALSE);
+					prhand(ch, cnum, Compwin, TRUE);
+					prtable(sum);
 					if (chkscr(&cscore, 1))
 						return TRUE;
 					sum = 0;
@@ -550,6 +558,11 @@ peg(mycrib)
 				if (i > 0) {
 					msg(quiet ? "You got %d" :
 					    "You got %d points", i);
+					if (pnum == 0)
+						do_wait();
+					prhand(ph, pnum, Playwin, FALSE);
+					prhand(ch, cnum, Compwin, TRUE);
+					prtable(sum);
 					if (chkscr(&pscore, i))
 						return TRUE;
 				}
@@ -570,7 +583,7 @@ peg(mycrib)
 	prhand(ph, pnum, Playwin, FALSE);
 	prhand(ch, cnum, Compwin, TRUE);
 	prtable(sum);
-	if (last)
+	if (last) {
 		if (played) {
 			msg(quiet ? "I get one for last" :
 			    "I get one point for last");
@@ -580,9 +593,11 @@ peg(mycrib)
 		} else {
 			msg(quiet ? "You get one for last" :
 			    "You get one point for last");
+			do_wait();
 			if (chkscr(&pscore, 1))
 				return TRUE;
 		}
+	}
 	return (FALSE);
 }
 
@@ -591,8 +606,7 @@ peg(mycrib)
  *	Print out the table with the current score
  */
 void
-prtable(score)
-	int score;
+prtable(int score)
 {
 	prhand(Table, Tcnt, Tablewin, FALSE);
 	mvwprintw(Tablewin, (Tcnt + 2) * 2, Tcnt + 1, "%2d", score);
@@ -604,8 +618,7 @@ prtable(score)
  *	Handle the scoring of the hands
  */
 int
-score(mycrib)
-	BOOLEAN mycrib;
+score(bool mycrib)
 {
 	sorthand(crib, CINHAND);
 	if (mycrib) {
@@ -616,6 +629,7 @@ score(mycrib)
 		do_wait();
 		if (comphand(crib, "crib"))
 			return (TRUE);
+		do_wait();
 	} else {
 		if (comphand(chand, "hand"))
 			return (TRUE);

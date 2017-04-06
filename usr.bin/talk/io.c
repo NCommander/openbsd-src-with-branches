@@ -1,3 +1,4 @@
+/*	$OpenBSD: io.c,v 1.19 2016/02/01 07:29:25 mestre Exp $	*/
 /*	$NetBSD: io.c,v 1.4 1994/12/09 02:14:20 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,79 +30,79 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)io.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: io.c,v 1.4 1994/12/09 02:14:20 jtc Exp $";
-#endif /* not lint */
-
 /*
- * This file contains the I/O handling and the exchange of 
+ * This file contains the I/O handling and the exchange of
  * edit characters. This connection itself is established in
  * ctl.c
  */
 
 #include <sys/ioctl.h>
-#include <sys/time.h>
-#include <stdio.h>
+
 #include <errno.h>
-#include <string.h>
+#include <poll.h>
+#include <unistd.h>
+
 #include "talk.h"
 
-#define A_LONG_TIME 10000000
-#define STDIN_MASK (1<<fileno(stdin))	/* the bit mask for standard
-					   input */
+#define A_LONG_TIME 1000000
+
+volatile sig_atomic_t gotwinch;
 
 /*
  * The routine to do the actual talking
  */
-talk()
+void
+talk(void)
 {
-	register int read_template, sockt_mask;
-	int read_set, nb;
+	struct pollfd fds[2];
 	char buf[BUFSIZ];
-	struct timeval wait;
+	int nb;
 
+#if defined(NCURSES_VERSION) || defined(beep)
+	message("Connection established");
+	beep();
+	beep();
+	beep();
+#else
 	message("Connection established\007\007\007");
+#endif
 	current_line = 0;
-	sockt_mask = (1<<sockt);
 
 	/*
-	 * Wait on both the other process (sockt_mask) and 
+	 * Wait on both the other process (sockt_mask) and
 	 * standard input ( STDIN_MASK )
 	 */
-	read_template = sockt_mask | STDIN_MASK;
+	fds[0].fd = fileno(stdin);
+	fds[0].events = POLLIN;
+	fds[1].fd = sockt;
+	fds[1].events = POLLIN;
+	
 	for (;;) {
-		read_set = read_template;
-		wait.tv_sec = A_LONG_TIME;
-		wait.tv_usec = 0;
-		nb = select(32, &read_set, 0, 0, &wait);
-		if (nb <= 0) {
-			if (errno == EINTR) {
-				read_set = read_template;
-				continue;
-			}
-			/* panic, we don't know what happened */
-			p_error("Unexpected error from select");
-			quit();
+		nb = poll(fds, 2, A_LONG_TIME * 1000);
+		if (gotwinch) {
+			resize_display();
+			gotwinch = 0;
 		}
-		if (read_set & sockt_mask) { 
+		if (nb <= 0) {
+			if (errno == EINTR)
+				continue;
+			/* panic, we don't know what happened */
+			quit("Unexpected error from poll", 1);
+		}
+		if (fds[1].revents & POLLIN) {
 			/* There is data on sockt */
 			nb = read(sockt, buf, sizeof buf);
-			if (nb <= 0) {
-				message("Connection closed. Exiting");
-				quit();
-			}
+			if (nb <= 0)
+				quit("Connection closed.  Exiting", 0);
 			display(&his_win, buf, nb);
 		}
-		if (read_set & STDIN_MASK) {
+		if (fds[0].revents & POLLIN) {
 			/*
 			 * We can't make the tty non_blocking, because
 			 * curses's output routines would screw up
 			 */
-			ioctl(0, FIONREAD, (struct sgttyb *) &nb);
-			nb = read(0, buf, nb);
+			ioctl(0, FIONREAD, &nb);
+			nb = read(STDIN_FILENO, buf, nb);
 			display(&my_win, buf, nb);
 			/* might lose data here because sockt is non-blocking */
 			write(sockt, buf, nb);
@@ -113,30 +110,11 @@ talk()
 	}
 }
 
-extern	int errno;
-extern	int sys_nerr;
-
-/*
- * p_error prints the system error message on the standard location
- * on the screen and then exits. (i.e. a curses version of perror)
- */
-p_error(string) 
-	char *string;
-{
-	wmove(my_win.x_win, current_line%my_win.x_nlines, 0);
-	wprintw(my_win.x_win, "[%s : %s (%d)]\n",
-	    string, strerror(errno), errno);
-	wrefresh(my_win.x_win);
-	move(LINES-1, 0);
-	refresh();
-	quit();
-}
-
 /*
  * Display string in the standard location
  */
-message(string)
-	char *string;
+void
+message(char *string)
 {
 	wmove(my_win.x_win, current_line % my_win.x_nlines, 0);
 	wprintw(my_win.x_win, "[%s]", string);

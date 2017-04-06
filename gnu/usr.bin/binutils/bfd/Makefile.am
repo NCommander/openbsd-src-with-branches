@@ -279,6 +279,7 @@ BFD32_BACKENDS = \
 	m68klynx.lo \
 	m68knetbsd.lo \
 	m88kmach3.lo \
+	m88kopenbsd.lo \
 	mach-o.lo \
 	mipsbsd.lo \
 	newsos3.lo \
@@ -443,6 +444,7 @@ BFD32_BACKENDS_CFILES = \
 	m68klynx.c \
 	m68knetbsd.c \
 	m88kmach3.c \
+	m88kopenbsd.c \
 	mach-o.c \
 	mipsbsd.c \
 	newsos3.c \
@@ -727,17 +729,12 @@ uninstall-bfdlibLTLIBRARIES: @INSTALL_LIBBFD_TRUE@uninstall_libbfd
 .PHONY: install_libbfd uninstall_libbfd
 install_libbfd: $(bfdlib_LTLIBRARIES) $(BFD_H)
 	$(mkinstalldirs) $(DESTDIR)$(bfdlibdir)
-	$(mkinstalldirs) $(DESTDIR)$(bfdincludedir)
 	@list='$(bfdlib_LTLIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(bfdlibdir)/$$p"; \
 	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(bfdlibdir)/$$p; \
 	  else :; fi; \
 	done
-	$(INSTALL_DATA) $(BFD_H) $(DESTDIR)$(bfdincludedir)/bfd.h
-	$(INSTALL_DATA) $(INCDIR)/ansidecl.h $(DESTDIR)$(bfdincludedir)/ansidecl.h
-	$(INSTALL_DATA) $(INCDIR)/symcat.h $(DESTDIR)$(bfdincludedir)/symcat.h
-	$(INSTALL_DATA) $(INCDIR)/bfdlink.h $(DESTDIR)$(bfdincludedir)/bfdlink.h
 
 uninstall_libbfd:
 	list='$(bfdlib_LTLIBRARIES)'; for p in $$list; do \
@@ -796,7 +793,7 @@ host-aout.lo: Makefile
 aout-params.h: gen-aout
 	./gen-aout host > aout-params.h
 gen-aout: $(srcdir)/gen-aout.c Makefile
-	$(CC) -o gen-aout $(CFLAGS) $(LFLAGS) $(srcdir)/gen-aout.c
+	$(CC) -o gen-aout $(CSEARCH) $(CFLAGS) $(LFLAGS) $(srcdir)/gen-aout.c
 
 $(BFD_H): stmp-bfd-h ; @true
 
@@ -1381,6 +1378,9 @@ m68knetbsd.lo: m68knetbsd.c netbsd.h $(INCDIR)/filenames.h \
   libaout.h $(INCDIR)/bfdlink.h aout-target.h $(INCDIR)/aout/aout64.h \
   $(INCDIR)/aout/stab_gnu.h $(INCDIR)/aout/stab.def $(INCDIR)/aout/ar.h
 m88kmach3.lo: m88kmach3.c $(INCDIR)/filenames.h libaout.h \
+  $(INCDIR)/bfdlink.h aout-target.h $(INCDIR)/aout/aout64.h \
+  $(INCDIR)/aout/stab_gnu.h $(INCDIR)/aout/stab.def $(INCDIR)/aout/ar.h
+m88kopenbsd.lo: m88kopenbsd.c netbsd.h $(INCDIR)/filenames.h libaout.h \
   $(INCDIR)/bfdlink.h aout-target.h $(INCDIR)/aout/aout64.h \
   $(INCDIR)/aout/stab_gnu.h $(INCDIR)/aout/stab.def $(INCDIR)/aout/ar.h
 mach-o.lo: mach-o.c mach-o.h $(INCDIR)/filenames.h \

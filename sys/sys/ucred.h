@@ -1,3 +1,4 @@
+/*	$OpenBSD: ucred.h,v 1.10 2015/01/15 23:58:39 deraadt Exp $	*/
 /*	$NetBSD: ucred.h,v 1.12 1995/06/01 22:44:50 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,27 +35,52 @@
 #ifndef _SYS_UCRED_H_
 #define	_SYS_UCRED_H_
 
+#include <sys/syslimits.h>
+
 /*
  * Credentials.
  */
 struct ucred {
-	u_short	cr_ref;			/* reference count */
+	u_int	cr_ref;			/* reference count */
+
+/* The following fields are all copied by crset() */
+#define	cr_startcopy	cr_uid
 	uid_t	cr_uid;			/* effective user id */
+	uid_t	cr_ruid;		/* Real user id. */
+	uid_t	cr_svuid;		/* Saved effective user id. */
 	gid_t	cr_gid;			/* effective group id */
+	gid_t	cr_rgid;		/* Real group id. */
+	gid_t	cr_svgid;		/* Saved effective group id. */
 	short	cr_ngroups;		/* number of groups */
-	gid_t	cr_groups[NGROUPS];	/* groups */
+	gid_t	cr_groups[NGROUPS_MAX];	/* groups */
 };
 #define NOCRED ((struct ucred *)-1)	/* no credential available */
 #define FSCRED ((struct ucred *)-2)	/* filesystem credential */
 
+/*
+ *  Userspace version, for use in syscalls arguments
+ */
+struct xucred {
+	uid_t	cr_uid;			/* user id */
+	gid_t	cr_gid;			/* group id */
+	short	cr_ngroups;		/* number of groups */
+	gid_t	cr_groups[NGROUPS_MAX];	/* groups */
+};
+
 #ifdef _KERNEL
 #define	crhold(cr)	(cr)->cr_ref++
 
-struct ucred	*crcopy __P((struct ucred *cr));
-struct ucred	*crdup __P((struct ucred *cr));
-void		crfree __P((struct ucred *cr));
-struct ucred	*crget __P((void));
-int		suser __P((struct ucred *cred, u_short *acflag));
+#define SUSER_NOACCT	0x1	/* don't mark accounting flags */
+
+int		crfromxucred(struct ucred *, const struct xucred *);
+void		crset(struct ucred *, const struct ucred *);
+struct ucred	*crcopy(struct ucred *cr);
+struct ucred	*crdup(struct ucred *cr);
+void		crfree(struct ucred *cr);
+struct ucred	*crget(void);
+int		suser(struct proc *p, u_int flags);
+int		suser_ucred(struct ucred *cred);
+
 #endif /* _KERNEL */
 
 #endif /* !_SYS_UCRED_H_ */

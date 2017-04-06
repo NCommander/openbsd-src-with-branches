@@ -1,4 +1,4 @@
-/* crypto/sha/sha.h */
+/* $OpenBSD: sha.h,v 1.20 2014/10/20 13:06:54 bcook Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,39 +56,31 @@
  * [including the GNU Public Licence.]
  */
 
+#include <stddef.h>
+
 #ifndef HEADER_SHA_H
 #define HEADER_SHA_H
+#if !defined(HAVE_ATTRIBUTE__BOUNDED__) && !defined(__OpenBSD__)
+#define __bounded__(x, y, z)
+#endif
 
-#include <openssl/e_os2.h>
-#include <stddef.h>
+#include <openssl/opensslconf.h>
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
-#if defined(OPENSSL_NO_SHA) || (defined(OPENSSL_NO_SHA0) && defined(OPENSSL_NO_SHA1))
+#if defined(OPENSSL_NO_SHA) || defined(OPENSSL_NO_SHA1)
 #error SHA is disabled.
-#endif
-
-#if defined(OPENSSL_FIPS)
-#define FIPS_SHA_SIZE_T size_t
 #endif
 
 /*
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- * ! SHA_LONG has to be at least 32 bits wide. If it's wider, then !
- * ! SHA_LONG_LOG2 has to be defined along.                        !
+ * ! SHA_LONG has to be at least 32 bits wide.                    !
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  */
 
-#if defined(__LP32__)
-#define SHA_LONG unsigned long
-#elif defined(OPENSSL_SYS_CRAY) || defined(__ILP64__)
-#define SHA_LONG unsigned long
-#define SHA_LONG_LOG2 3
-#else
 #define SHA_LONG unsigned int
-#endif
 
 #define SHA_LBLOCK	16
 #define SHA_CBLOCK	(SHA_LBLOCK*4)	/* SHA treats input data as a
@@ -105,24 +97,13 @@ typedef struct SHAstate_st
 	unsigned int num;
 	} SHA_CTX;
 
-#ifndef OPENSSL_NO_SHA0
-#ifdef OPENSSL_FIPS
-int private_SHA_Init(SHA_CTX *c);
-#endif
-int SHA_Init(SHA_CTX *c);
-int SHA_Update(SHA_CTX *c, const void *data, size_t len);
-int SHA_Final(unsigned char *md, SHA_CTX *c);
-unsigned char *SHA(const unsigned char *d, size_t n, unsigned char *md);
-void SHA_Transform(SHA_CTX *c, const unsigned char *data);
-#endif
 #ifndef OPENSSL_NO_SHA1
-#ifdef OPENSSL_FIPS
-int private_SHA1_Init(SHA_CTX *c);
-#endif
 int SHA1_Init(SHA_CTX *c);
-int SHA1_Update(SHA_CTX *c, const void *data, size_t len);
+int SHA1_Update(SHA_CTX *c, const void *data, size_t len)
+	__attribute__ ((__bounded__(__buffer__,2,3)));
 int SHA1_Final(unsigned char *md, SHA_CTX *c);
-unsigned char *SHA1(const unsigned char *d, size_t n, unsigned char *md);
+unsigned char *SHA1(const unsigned char *d, size_t n, unsigned char *md)
+	__attribute__ ((__bounded__(__buffer__,1,2)));
 void SHA1_Transform(SHA_CTX *c, const unsigned char *data);
 #endif
 
@@ -141,18 +122,18 @@ typedef struct SHA256state_st
 	} SHA256_CTX;
 
 #ifndef OPENSSL_NO_SHA256
-#ifdef OPENSSL_FIPS
-int private_SHA224_Init(SHA256_CTX *c);
-int private_SHA256_Init(SHA256_CTX *c);
-#endif
 int SHA224_Init(SHA256_CTX *c);
-int SHA224_Update(SHA256_CTX *c, const void *data, size_t len);
+int SHA224_Update(SHA256_CTX *c, const void *data, size_t len)
+	__attribute__ ((__bounded__(__buffer__,2,3)));
 int SHA224_Final(unsigned char *md, SHA256_CTX *c);
-unsigned char *SHA224(const unsigned char *d, size_t n,unsigned char *md);
+unsigned char *SHA224(const unsigned char *d, size_t n,unsigned char *md)
+	__attribute__ ((__bounded__(__buffer__,1,2)));
 int SHA256_Init(SHA256_CTX *c);
-int SHA256_Update(SHA256_CTX *c, const void *data, size_t len);
+int SHA256_Update(SHA256_CTX *c, const void *data, size_t len)
+	__attribute__ ((__bounded__(__buffer__,2,3)));
 int SHA256_Final(unsigned char *md, SHA256_CTX *c);
-unsigned char *SHA256(const unsigned char *d, size_t n,unsigned char *md);
+unsigned char *SHA256(const unsigned char *d, size_t n,unsigned char *md)
+	__attribute__ ((__bounded__(__buffer__,1,2)));
 void SHA256_Transform(SHA256_CTX *c, const unsigned char *data);
 #endif
 
@@ -168,10 +149,7 @@ void SHA256_Transform(SHA256_CTX *c, const unsigned char *data);
 #define SHA512_CBLOCK	(SHA_LBLOCK*8)	/* SHA-512 treats input data as a
 					 * contiguous array of 64 bit
 					 * wide big-endian values. */
-#if (defined(_WIN32) || defined(_WIN64)) && !defined(__MINGW32__)
-#define SHA_LONG64 unsigned __int64
-#define U64(C)     C##UI64
-#elif defined(__arch64__)
+#if defined(_LP64)
 #define SHA_LONG64 unsigned long
 #define U64(C)     C##UL
 #else
@@ -192,18 +170,18 @@ typedef struct SHA512state_st
 #endif
 
 #ifndef OPENSSL_NO_SHA512
-#ifdef OPENSSL_FIPS
-int private_SHA384_Init(SHA512_CTX *c);
-int private_SHA512_Init(SHA512_CTX *c);
-#endif
 int SHA384_Init(SHA512_CTX *c);
-int SHA384_Update(SHA512_CTX *c, const void *data, size_t len);
+int SHA384_Update(SHA512_CTX *c, const void *data, size_t len)
+	__attribute__ ((__bounded__(__buffer__,2,3)));
 int SHA384_Final(unsigned char *md, SHA512_CTX *c);
-unsigned char *SHA384(const unsigned char *d, size_t n,unsigned char *md);
+unsigned char *SHA384(const unsigned char *d, size_t n,unsigned char *md)
+	__attribute__ ((__bounded__(__buffer__,1,2)));
 int SHA512_Init(SHA512_CTX *c);
-int SHA512_Update(SHA512_CTX *c, const void *data, size_t len);
+int SHA512_Update(SHA512_CTX *c, const void *data, size_t len)
+	__attribute__ ((__bounded__(__buffer__,2,3)));
 int SHA512_Final(unsigned char *md, SHA512_CTX *c);
-unsigned char *SHA512(const unsigned char *d, size_t n,unsigned char *md);
+unsigned char *SHA512(const unsigned char *d, size_t n,unsigned char *md)
+	__attribute__ ((__bounded__(__buffer__,1,2)));
 void SHA512_Transform(SHA512_CTX *c, const unsigned char *data);
 #endif
 

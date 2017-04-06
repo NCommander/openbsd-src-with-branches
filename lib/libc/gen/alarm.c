@@ -1,5 +1,4 @@
-/*	$NetBSD: alarm.c,v 1.4 1995/02/25 15:39:04 cgd Exp $	*/
-
+/*	$OpenBSD: alarm.c,v 1.7 2005/08/08 08:05:33 espie Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,32 +28,20 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)alarm.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: alarm.c,v 1.4 1995/02/25 15:39:04 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-/*
- * Backwards compatible alarm.
- */
 #include <sys/time.h>
 #include <unistd.h>
 
 unsigned int
-alarm(secs)
-	unsigned int secs;
+alarm(unsigned int secs)
 {
 	struct itimerval it, oitv;
-	register struct itimerval *itp = &it;
+	struct itimerval *itp = &it;
 
 	timerclear(&itp->it_interval);
 	itp->it_value.tv_sec = secs;
 	itp->it_value.tv_usec = 0;
 	if (setitimer(ITIMER_REAL, itp, &oitv) < 0)
-		return (-1);
+		return ((unsigned int) -1);
 	if (oitv.it_value.tv_usec)
 		oitv.it_value.tv_sec++;
 	return (oitv.it_value.tv_sec);

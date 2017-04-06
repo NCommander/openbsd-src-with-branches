@@ -1,45 +1,22 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
-use Test;
 use strict;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  # to locate the testing files
-  my $location = $0; $location =~ s/upgrade.t//i;
-  if ($ENV{PERL_CORE})
-    {
-    # testing with the core distribution
-    @INC = qw(../t/lib);
-    }
-  unshift @INC, qw(../lib);     # to locate the modules
-  if (-d 't')
-    {
-    chdir 't';
-    require File::Spec;
-    unshift @INC, File::Spec->catdir(File::Spec->updir, $location);
-    }
-  else
-    {
-    unshift @INC, $location;
-    }
-  print "# INC = @INC\n";
-
-  plan tests => 2112
-   + 2;			# our own tests
-  }
+use Test::More tests => 2124            # tests in require'd file
+                         + 2;           # tests in this file
 
 use Math::BigInt upgrade => 'Math::BigFloat';
 use Math::BigFloat;
 
-use vars qw ($scale $class $try $x $y $f @args $ans $ans1 $ans1_str $setup
-             $ECL $CL);
-$class = "Math::BigInt";
-$CL = "Math::BigInt::Calc";
-$ECL = "Math::BigFloat";
+our ($CLASS, $EXPECTED_CLASS, $CALC);
+$CLASS          = "Math::BigInt";
+$EXPECTED_CLASS = "Math::BigFloat";
+$CALC           = "Math::BigInt::Calc";         # backend
 
-ok (Math::BigInt->upgrade(),'Math::BigFloat');
-ok (Math::BigInt->downgrade()||'','');
+is(Math::BigInt->upgrade(), "Math::BigFloat",
+   qq/Math::BigInt->upgrade()/);
+is(Math::BigInt->downgrade() || "", "",
+   qq/Math::BigInt->downgrade() || ""/);
 
-require 'upgrade.inc';	# all tests here for sharing
+require 't/upgrade.inc';	# all tests here for sharing

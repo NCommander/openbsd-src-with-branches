@@ -1,3 +1,5 @@
+/*	$OpenBSD: rstatd.c,v 1.28 2015/10/05 15:50:01 millert Exp $	*/
+
 /*-
  * Copyright (c) 1993, John Brezak
  * All rights reserved.
@@ -10,13 +12,8 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -31,68 +28,90 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$Id: rstatd.c,v 1.6 1995/01/13 06:14:31 mycroft Exp $";
-#endif /* not lint */
-
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <stdio.h>
-#include <rpc/rpc.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <limits.h>
 #include <signal.h>
+#include <pwd.h>
 #include <syslog.h>
+#include <errno.h>
+#include <rpc/rpc.h>
 #include <rpcsvc/rstat.h>
 
-extern void rstat_service();
+extern void rstat_service(struct svc_req *, SVCXPRT *);
 
-int from_inetd = 1;     /* started from inetd ? */
+void my_svc_run(void);
+
+int from_inetd = 1;	/* started from inetd ? */
 int closedown = 20;	/* how long to wait before going dormant */
 
-void
-cleanup()
+volatile sig_atomic_t gotsig;
+
+/* ARGSUSED */
+static void
+getsig(int signo)
 {
-        (void) pmap_unset(RSTATPROG, RSTATVERS_TIME);
-        (void) pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
-        (void) pmap_unset(RSTATPROG, RSTATVERS_ORIG);
-        exit(0);
+	gotsig = 1;
 }
 
-main(argc, argv)
-        int argc;
-        char *argv[];
+
+int
+main(int argc, char *argv[])
 {
+	int sock = 0, proto = 0;
+	socklen_t fromlen;
+	struct passwd *pw;
+	struct sockaddr_storage from;
 	SVCXPRT *transp;
-        int sock = 0;
-        int proto = 0;
-	struct sockaddr_in from;
-	int fromlen;
-        
-        if (argc == 2)
-                closedown = atoi(argv[1]);
-        if (closedown <= 0)
-                closedown = 20;
 
-        /*
-         * See if inetd started us
-         */
+	openlog("rpc.rstatd", LOG_NDELAY|LOG_CONS|LOG_PID, LOG_DAEMON);
+
+	if ((pw = getpwnam("_rstatd")) == NULL) {
+		syslog(LOG_ERR, "no such user _rstatd");
+		exit(1);
+	}
+	if (chroot("/var/empty") == -1) {
+		syslog(LOG_ERR, "cannot chdir to /var/empty.");
+		exit(1);
+	}
+	chdir("/");
+
+	setgroups(1, &pw->pw_gid);
+	setegid(pw->pw_gid);
+	setgid(pw->pw_gid);
+	seteuid(pw->pw_uid);
+	setuid(pw->pw_uid);
+
+	if (argc == 2)
+		closedown = strtonum(argv[1], 1, INT_MAX, NULL);
+	if (closedown == 0)
+		closedown = 20;
+
+	/*
+	 * See if inetd started us
+	 */
 	fromlen = sizeof(from);
-        if (getsockname(0, (struct sockaddr *)&from, &fromlen) < 0) {
-                from_inetd = 0;
-                sock = RPC_ANYSOCK;
-                proto = IPPROTO_UDP;
-        }
+	if (getsockname(0, (struct sockaddr *)&from, &fromlen) < 0) {
+		from_inetd = 0;
+		sock = RPC_ANYSOCK;
+		proto = IPPROTO_UDP;
+	}
 
-        if (!from_inetd) {
-                daemon(0, 0);
+	if (!from_inetd) {
+		daemon(0, 0);
 
-                (void)pmap_unset(RSTATPROG, RSTATVERS_TIME);
-                (void)pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
-                (void)pmap_unset(RSTATPROG, RSTATVERS_ORIG);
+		(void)pmap_unset(RSTATPROG, RSTATVERS_TIME);
+		(void)pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
+		(void)pmap_unset(RSTATPROG, RSTATVERS_ORIG);
 
-		(void) signal(SIGINT, cleanup);
-		(void) signal(SIGTERM, cleanup);
-		(void) signal(SIGHUP, cleanup);
-        }
-        
-        openlog("rpc.rstatd", LOG_CONS|LOG_PID, LOG_DAEMON);
+		(void) signal(SIGINT, getsig);
+		(void) signal(SIGTERM, getsig);
+		(void) signal(SIGHUP, getsig);
+	}
 
 	transp = svcudp_create(sock);
 	if (transp == NULL) {
@@ -112,7 +131,54 @@ main(argc, argv)
 		exit(1);
 	}
 
-        svc_run();
+	my_svc_run();
 	syslog(LOG_ERR, "svc_run returned");
 	exit(1);
+}
+
+void
+my_svc_run(void)
+{
+	extern volatile sig_atomic_t wantupdatestat;
+	extern void updatestat(void);
+	struct pollfd *pfd = NULL, *newp;
+	int nready, saved_max_pollfd = 0;
+
+	for (;;) {
+		if (wantupdatestat) {
+			wantupdatestat = 0;
+			updatestat();
+		}
+		if (gotsig) {
+			(void) pmap_unset(RSTATPROG, RSTATVERS_TIME);
+			(void) pmap_unset(RSTATPROG, RSTATVERS_SWTCH);
+			(void) pmap_unset(RSTATPROG, RSTATVERS_ORIG);
+			exit(0);
+		}
+		if (svc_max_pollfd > saved_max_pollfd) {
+			newp = reallocarray(pfd, svc_max_pollfd, sizeof(*pfd));
+			if (newp == NULL) {
+				free(pfd);
+				perror("svc_run: - realloc failed");
+				return;
+			}
+			pfd = newp;
+			saved_max_pollfd = svc_max_pollfd;
+		}
+		memcpy(pfd, svc_pollfd, svc_max_pollfd * sizeof(*pfd));
+
+		nready = poll(pfd, svc_max_pollfd, INFTIM);
+		switch (nready) {
+		case -1:
+			if (errno == EINTR)
+				continue;
+			perror("svc_run: - poll failed");
+			free(pfd);
+			return;
+		case 0:
+			continue;
+		default:
+			svc_getreq_poll(pfd, nready);
+		}
+	}
 }

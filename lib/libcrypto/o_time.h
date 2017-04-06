@@ -1,4 +1,4 @@
-/* crypto/o_time.h -*- mode:C; c-file-style: "eay" -*- */
+/* $OpenBSD: o_time.h,v 1.6 2014/06/12 15:49:27 deraadt Exp $ */
 /* Written by Richard Levitte (richard@levitte.org) for the OpenSSL
  * project 2001.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -61,7 +61,10 @@
 
 #include <time.h>
 
-struct tm *OPENSSL_gmtime(const time_t *timer, struct tm *result);
+__BEGIN_HIDDEN_DECLS
+
 int OPENSSL_gmtime_adj(struct tm *tm, int offset_day, long offset_sec);
+
+__END_HIDDEN_DECLS
 
 #endif

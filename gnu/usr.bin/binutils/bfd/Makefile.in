@@ -409,6 +409,7 @@ BFD32_BACKENDS = \
 	m68klynx.lo \
 	m68knetbsd.lo \
 	m88kmach3.lo \
+	m88kopenbsd.lo \
 	mach-o.lo \
 	mipsbsd.lo \
 	newsos3.lo \
@@ -574,6 +575,7 @@ BFD32_BACKENDS_CFILES = \
 	m68klynx.c \
 	m68knetbsd.c \
 	m88kmach3.c \
+	m88kopenbsd.c \
 	mach-o.c \
 	mipsbsd.c \
 	newsos3.c \
@@ -631,6 +633,7 @@ BFD64_BACKENDS = \
 	coff64-rs6000.lo \
 	demo64.lo \
 	efi-app-ia64.lo \
+	efi-app-x86_64.lo \
 	elf64-x86-64.lo \
 	elf64-alpha.lo \
 	elf64-hppa.lo \
@@ -657,6 +660,7 @@ BFD64_BACKENDS_CFILES = \
 	coff64-rs6000.c \
 	demo64.c \
 	efi-app-ia64.c \
+	efi-app-x86_64.c \
 	elf64-x86-64.c \
 	elf64-alpha.c \
 	elf64-hppa.c \
@@ -968,6 +972,7 @@ maintainer-clean-recursive:
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
 	  test "$$subdir" != "." || dot_seen=yes; \
+	  true; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -1268,7 +1273,7 @@ $(BFD32_LIBS) \
  $(ALL_MACHINES) \
  $(BFD32_BACKENDS) \
  $(BFD64_BACKENDS) \
- $(OPTIONAL_BACKENDS): $(BFD_H) $(BFD_H_DEPS) $(LOCAL_H_DEPS)
+ $(OPTIONAL_BACKENDS) @COREFILE@: $(BFD_H) $(BFD_H_DEPS) $(LOCAL_H_DEPS)
 
 install-bfdlibLTLIBRARIES: @INSTALL_LIBBFD_TRUE@install_libbfd
 	@$(NORMAL_INSTALL)
@@ -1279,17 +1284,12 @@ uninstall-bfdlibLTLIBRARIES: @INSTALL_LIBBFD_TRUE@uninstall_libbfd
 .PHONY: install_libbfd uninstall_libbfd
 install_libbfd: $(bfdlib_LTLIBRARIES) $(BFD_H)
 	$(mkinstalldirs) $(DESTDIR)$(bfdlibdir)
-	$(mkinstalldirs) $(DESTDIR)$(bfdincludedir)
 	@list='$(bfdlib_LTLIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(bfdlibdir)/$$p"; \
 	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(bfdlibdir)/$$p; \
 	  else :; fi; \
 	done
-	$(INSTALL_DATA) $(BFD_H) $(DESTDIR)$(bfdincludedir)/bfd.h
-	$(INSTALL_DATA) $(INCDIR)/ansidecl.h $(DESTDIR)$(bfdincludedir)/ansidecl.h
-	$(INSTALL_DATA) $(INCDIR)/symcat.h $(DESTDIR)$(bfdincludedir)/symcat.h
-	$(INSTALL_DATA) $(INCDIR)/bfdlink.h $(DESTDIR)$(bfdincludedir)/bfdlink.h
 
 uninstall_libbfd:
 	list='$(bfdlib_LTLIBRARIES)'; for p in $$list; do \
@@ -1348,7 +1348,7 @@ host-aout.lo: Makefile
 aout-params.h: gen-aout
 	./gen-aout host > aout-params.h
 gen-aout: $(srcdir)/gen-aout.c Makefile
-	$(CC) -o gen-aout $(CFLAGS) $(LFLAGS) $(srcdir)/gen-aout.c
+	$(CC) -o gen-aout $(CSEARCH) $(CFLAGS) $(LFLAGS) $(srcdir)/gen-aout.c
 
 $(BFD_H): stmp-bfd-h ; @true
 
@@ -1920,6 +1920,9 @@ m68knetbsd.lo: m68knetbsd.c netbsd.h $(INCDIR)/filenames.h \
 m88kmach3.lo: m88kmach3.c $(INCDIR)/filenames.h libaout.h \
   $(INCDIR)/bfdlink.h aout-target.h $(INCDIR)/aout/aout64.h \
   $(INCDIR)/aout/stab_gnu.h $(INCDIR)/aout/stab.def $(INCDIR)/aout/ar.h
+m88kopenbsd.lo: m88kopenbsd.c netbsd.h $(INCDIR)/filenames.h libaout.h \
+  $(INCDIR)/bfdlink.h aout-target.h $(INCDIR)/aout/aout64.h \
+  $(INCDIR)/aout/stab_gnu.h $(INCDIR)/aout/stab.def $(INCDIR)/aout/ar.h
 mach-o.lo: mach-o.c mach-o.h $(INCDIR)/filenames.h \
   $(INCDIR)/libiberty.h mach-o-target.c
 mipsbsd.lo: mipsbsd.c $(INCDIR)/filenames.h libaout.h \
@@ -2072,6 +2075,10 @@ efi-app-ia64.lo: efi-app-ia64.c $(INCDIR)/filenames.h \
   coff-ia64.c $(INCDIR)/coff/ia64.h $(INCDIR)/coff/external.h \
   $(INCDIR)/coff/internal.h $(INCDIR)/coff/pe.h libcoff.h \
   $(INCDIR)/bfdlink.h coffcode.h peicode.h libpei.h
+efi-app-x86_64.lo: efi-app-x86_64.c $(INCDIR)/filenames.h \
+  coff-ia64.c $(INCDIR)/coff/x86_64.h $(INCDIR)/coff/external.h \
+  $(INCDIR)/coff/internal.h $(INCDIR)/coff/pe.h libcoff.h \
+  $(INCDIR)/bfdlink.h coffcode.h peicode.h libpei.h
 elf64-x86-64.lo: elf64-x86-64.c $(INCDIR)/filenames.h \
   $(INCDIR)/bfdlink.h elf-bfd.h $(INCDIR)/elf/common.h \
   $(INCDIR)/elf/internal.h $(INCDIR)/elf/external.h $(INCDIR)/elf/x86-64.h \
@@ -2166,6 +2173,8 @@ peigen.lo: peigen.c $(INCDIR)/filenames.h $(INCDIR)/coff/internal.h \
 pepigen.lo: pepigen.c $(INCDIR)/filenames.h $(INCDIR)/coff/internal.h \
   $(INCDIR)/coff/ia64.h $(INCDIR)/coff/external.h $(INCDIR)/coff/pe.h \
   libcoff.h $(INCDIR)/bfdlink.h libpei.h
+netbsd-core.lo: netbsd-core.c $(INCDIR)/filenames.h libaout.h \
+  $(INCDIR)/bfdlink.h
 # IF YOU PUT ANYTHING HERE IT WILL GO AWAY
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

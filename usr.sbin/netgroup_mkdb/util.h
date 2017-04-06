@@ -31,10 +31,9 @@
 
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/cdefs.h>
 
 __BEGIN_DECLS
-void *emalloc	__P((size_t));
-void *erealloc	__P((void *, size_t));
-char *getline	__P((FILE *, size_t *));
+void *emalloc(size_t);
+void *erealloc(void *, size_t);
+char *get_line(FILE *, size_t *);
 __END_DECLS

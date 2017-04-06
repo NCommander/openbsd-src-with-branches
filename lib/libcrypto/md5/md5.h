@@ -1,4 +1,4 @@
-/* crypto/md5/md5.h */
+/* $OpenBSD: md5.h,v 1.19 2014/07/13 14:13:27 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,11 +56,15 @@
  * [including the GNU Public Licence.]
  */
 
+#include <stddef.h>
+
 #ifndef HEADER_MD5_H
 #define HEADER_MD5_H
+#if !defined(HAVE_ATTRIBUTE__BOUNDED__) && !defined(__OpenBSD__)
+#define __bounded__(x, y, z)
+#endif
 
-#include <openssl/e_os2.h>
-#include <stddef.h>
+#include <openssl/opensslconf.h>
 
 #ifdef  __cplusplus
 extern "C" {
@@ -72,26 +76,11 @@ extern "C" {
 
 /*
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- * ! MD5_LONG has to be at least 32 bits wide. If it's wider, then !
- * ! MD5_LONG_LOG2 has to be defined along.			   !
+ * ! MD5_LONG has to be at least 32 bits wide.                     !
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  */
 
-#if defined(__LP32__)
-#define MD5_LONG unsigned long
-#elif defined(OPENSSL_SYS_CRAY) || defined(__ILP64__)
-#define MD5_LONG unsigned long
-#define MD5_LONG_LOG2 3
-/*
- * _CRAY note. I could declare short, but I have no idea what impact
- * does it have on performance on none-T3E machines. I could declare
- * int, but at least on C90 sizeof(int) can be chosen at compile time.
- * So I've chosen long...
- *					<appro@fy.chalmers.se>
- */
-#else
 #define MD5_LONG unsigned int
-#endif
 
 #define MD5_CBLOCK	64
 #define MD5_LBLOCK	(MD5_CBLOCK/4)
@@ -105,13 +94,12 @@ typedef struct MD5state_st
 	unsigned int num;
 	} MD5_CTX;
 
-#ifdef OPENSSL_FIPS
-int private_MD5_Init(MD5_CTX *c);
-#endif
 int MD5_Init(MD5_CTX *c);
-int MD5_Update(MD5_CTX *c, const void *data, size_t len);
+int MD5_Update(MD5_CTX *c, const void *data, size_t len)
+	__attribute__ ((__bounded__(__buffer__,2,3)));
 int MD5_Final(unsigned char *md, MD5_CTX *c);
-unsigned char *MD5(const unsigned char *d, size_t n, unsigned char *md);
+unsigned char *MD5(const unsigned char *d, size_t n, unsigned char *md)
+	__attribute__ ((__bounded__(__buffer__,1,2)));
 void MD5_Transform(MD5_CTX *c, const unsigned char *b);
 #ifdef  __cplusplus
 }

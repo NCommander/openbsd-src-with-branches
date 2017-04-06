@@ -1,3 +1,4 @@
+/*	$OpenBSD: banner.c,v 1.11 2015/10/09 01:37:06 deraadt Exp $	*/
 /*	$NetBSD: banner.c,v 1.2 1995/04/09 06:00:15 cgd Exp $	*/
 
 /*
@@ -31,11 +32,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -51,21 +48,12 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1983, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)printjob.c	8.2 (Berkeley) 4/16/94";
-#else
-static char rcsid[] = "$NetBSD: banner.c,v 1.2 1995/04/09 06:00:15 cgd Exp $";
-#endif
-#endif /* not lint */
 
 #include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <err.h>
 
 #include "banner.h"
 
@@ -74,12 +62,9 @@ static long PW = LINELEN;
 /* the char gen code below is lifted from lpd */
 
 static char *
-scnline(key, p, c)
-	register int key;
-	register char *p;
-	int c;
+scnline(int key, char *p, int c)
 {
-	register scnwidth;
+	int scnwidth;
 
 	/*
 	 * <sjg> lpd makes chars out of the letter in question.
@@ -101,8 +86,7 @@ scnline(key, p, c)
 
 
 static int
-dropit(c)
-	int c;
+dropit(int c)
 {
 	switch(c) {
 
@@ -122,12 +106,10 @@ dropit(c)
 }
 
 static void
-scan_out(scfd, scsp, dlm)
-	int scfd, dlm;
-	char *scsp;
+scan_out(int scfd, char *scsp, int dlm)
 {
-	register char *strp;
-	register nchrs, j;
+	char *strp;
+	int nchrs, j;
 	char outbuf[LINELEN+1], *sp, c, cc;
 	int d, scnhgt;
 	extern char scnkey[][HEIGHT];	/* in lpdchar.c */
@@ -135,14 +117,20 @@ scan_out(scfd, scsp, dlm)
 	for (scnhgt = 0; scnhgt++ < HEIGHT+DROP; ) {
 		strp = &outbuf[0];
 		sp = scsp;
-		for (nchrs = 0; ; ) {
-			d = dropit(c = TRC(cc = *sp++));
+		for (nchrs = 0; *sp != dlm && *sp != '\0'; ) {
+			cc = *sp++;
+			if ((unsigned char)cc < ' ' ||
+			    (unsigned char)cc > 0x7f)
+				cc = INVALID;
+
+			c = TRC(cc);
+			d = dropit(c);
 			if ((!d && scnhgt > HEIGHT) || (scnhgt <= DROP && d))
 				for (j = WIDTH; --j;)
 					*strp++ = BACKGND;
 			else
-				strp = scnline(scnkey[c][scnhgt-1-d], strp, cc);
-			if (*sp == dlm || *sp == '\0' || nchrs++ >= PW/(WIDTH+1)-1)
+				strp = scnline(scnkey[(int)c][scnhgt-1-d], strp, cc);
+			if (nchrs++ >= PW/(WIDTH+1)-1)
 				break;
 			*strp++ = BACKGND;
 #ifdef LPD_CHSET				/* <sjg> */
@@ -161,15 +149,15 @@ scan_out(scfd, scsp, dlm)
  * for each word, print up to 10 chars in big letters.
  */
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	char word[10+1];			/* strings limited to 10 chars */
 	
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
 	while (*++argv) {
-		(void)strncpy(word, *argv, sizeof (word) - 1);
-		word[sizeof (word) - 1] = '\0';
+		(void)strlcpy(word, *argv, sizeof (word));
 		scan_out(1, word, '\0');
 	}
 	exit(0);

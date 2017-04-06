@@ -1,30 +1,45 @@
+/* $OpenBSD$ */
+
+/****************************************************************************
+ * Copyright (c) 1998-2003,2004 Free Software Foundation, Inc.              *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
+
+/****************************************************************************
+ *   Author:  Juergen Pfeifer, 1995,1997                                    *
+ ****************************************************************************/
 
 /***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
-
-/***************************************************************************
-* Module menu_win                                                          *
-* Menus window and subwindow association routines                          *
+* Module m_win                                                             *
+* Menus window association routines                                        *
 ***************************************************************************/
 
 #include "menu.priv.h"
+
+MODULE_ID("$Id: m_win.c,v 1.15 2004/12/25 21:39:20 tom Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
@@ -35,18 +50,21 @@
 |   Return Values :  E_OK               - success
 |                    E_POSTED           - menu is already posted
 +--------------------------------------------------------------------------*/
-int set_menu_win(MENU *menu, WINDOW *win)
+NCURSES_EXPORT(int)
+set_menu_win(MENU * menu, WINDOW *win)
 {
+  T((T_CALLED("set_menu_win(%p,%p)"), menu, win));
+
   if (menu)
     {
-      if ( menu->status & _POSTED )
+      if (menu->status & _POSTED)
 	RETURN(E_POSTED);
       menu->userwin = win;
       _nc_Calculate_Item_Length_and_Width(menu);
     }
   else
     _nc_Default_Menu.userwin = win;
-  
+
   RETURN(E_OK);
 }
 
@@ -58,74 +76,13 @@ int set_menu_win(MENU *menu, WINDOW *win)
 |
 |   Return Values :  NULL on error, otherwise pointer to window
 +--------------------------------------------------------------------------*/
-WINDOW *menu_win(const MENU *menu)
+NCURSES_EXPORT(WINDOW *)
+menu_win(const MENU * menu)
 {
-  return Normalize_Menu(menu)->userwin;
-}
+  const MENU *m = Normalize_Menu(menu);
 
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int set_menu_sub(MENU *menu, WINDOW *win)
-|   
-|   Description   :  Sets the subwindow of the menu.
-|
-|   Return Values :  E_OK           - success
-|                    E_POSTED       - menu is already posted
-+--------------------------------------------------------------------------*/
-int set_menu_sub(MENU *menu, WINDOW *win)
-{
-  if (menu)
-    {
-      if ( menu->status & _POSTED )
-	RETURN(E_POSTED);
-      menu->usersub = win;
-      _nc_Calculate_Item_Length_and_Width(menu);
-    }
-  else
-    _nc_Default_Menu.usersub = win;
-  
-  RETURN(E_OK);
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  WINDOW *menu_sub(const MENU *menu)
-|   
-|   Description   :  Returns a pointer to the subwindow of the menu
-|
-|   Return Values :  NULL on error, otherwise a pointer to the window
-+--------------------------------------------------------------------------*/
-WINDOW *menu_sub(const MENU * menu)
-{
-  return Normalize_Menu(menu)->usersub;
-}
-
-/*---------------------------------------------------------------------------
-|   Facility      :  libnmenu  
-|   Function      :  int scale_menu(const MENU *menu)
-|   
-|   Description   :  Returns the minimum window size necessary for the
-|                    subwindow of menu.  
-|
-|   Return Values :  E_OK                  - success
-|                    E_BAD_ARGUMENT        - invalid menu pointer
-|                    E_NOT_CONNECTED       - no items are connected to menu
-+--------------------------------------------------------------------------*/
-int scale_menu(const MENU *menu, int *rows, int *cols)
-{
-  if (!menu) 
-    RETURN( E_BAD_ARGUMENT );
-  
-  if (menu->items && *(menu->items))
-    {
-      if (rows)
-	*rows = menu->height;
-      if (cols)
-	*cols = menu->width;
-      RETURN(E_OK);
-    }
-  else
-    RETURN( E_NOT_CONNECTED );
+  T((T_CALLED("menu_win(%p)"), menu));
+  returnWin(m->userwin ? m->userwin : stdscr);
 }
 
 /* m_win.c ends here */

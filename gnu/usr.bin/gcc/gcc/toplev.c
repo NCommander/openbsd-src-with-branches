@@ -71,6 +71,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "langhooks.h"
 #include "cfglayout.h"
+#include "protector.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -619,7 +620,7 @@ int flag_syntax_only = 0;
 
 /* Nonzero means perform global cse.  */
 
-static int flag_gcse;
+int flag_gcse = 0;
 
 /* Nonzero means perform loop optimizer.  */
 
@@ -709,6 +710,17 @@ int flag_delayed_branch;
    "large" pic.  */
 
 int flag_pic;
+
+/* Nonzero if we are compiling position independent code for executable.
+   The value is 1 if we are doing "small" pic; value is 2 if we're doing
+   "large" pic.  */
+int flag_pie;
+
+/* Nonzero if we are compiling code for a shared library, zero for
+   executable.  */
+
+int flag_shlib;
+
 
 /* Set to the default thread-local storage (tls) model to use.  */
 
@@ -804,7 +816,11 @@ int flag_gnu_linker = 1;
 #endif
 
 /* Nonzero means put zero initialized data in the bss section.  */
+#if defined(OPENBSD_NATIVE) || defined(OPENBSD_CROSS)
+int flag_zero_initialized_in_bss = 0;
+#else
 int flag_zero_initialized_in_bss = 1;
+#endif
 
 /* Enable SSA.  */
 int flag_ssa = 0;
@@ -852,7 +868,11 @@ int flag_instrument_function_entry_exit = 0;
    On SVR4 targets, it also controls whether or not to emit a
    string identifying the compiler.  */
 
+#if defined(OPENBSD_NATIVE) || defined(OPENBSD_CROSS)
+int flag_no_ident = 1;
+#else
 int flag_no_ident = 0;
+#endif
 
 /* This will perform a peephole pass before sched2.  */
 int flag_peephole2 = 0;
@@ -903,6 +923,20 @@ int align_functions_log;
 /* Like align_functions_log above, but used by front-ends to force the
    minimum function alignment.  Zero means no alignment is forced.  */
 int force_align_functions_log;
+
+#if defined(STACK_PROTECTOR) && defined(STACK_GROWS_DOWNWARD)
+/* Nonzero means use propolice as a stack protection method */
+int flag_propolice_protection = 0;
+int flag_stack_protection = 0;
+int flag_strong_protection = 1;
+#else
+int flag_propolice_protection = 0;
+int flag_stack_protection = 0;
+int flag_strong_protection = 0;
+#endif
+
+int flag_trampolines = 0;
+int warn_trampolines = 0;
 
 /* Table of supported debugging formats.  */
 static const struct
@@ -1082,6 +1116,9 @@ static const lang_independent_options f_options[] =
   {"pic", &flag_pic, 1,
    N_("Generate position independent code, if possible") },
   {"PIC", &flag_pic, 2, ""},
+  {"pie", &flag_pie, 1,
+   N_("Generate position independent code for executables, if possible") },
+  {"PIE", &flag_pie, 2, ""},
   {"exceptions", &flag_exceptions, 1,
    N_("Enable exception handling") },
   {"unwind-tables", &flag_unwind_tables, 1,
@@ -1188,6 +1225,14 @@ static const lang_independent_options f_options[] =
    N_("Trap for signed overflow in addition / subtraction / multiplication") },
   { "new-ra", &flag_new_regalloc, 1,
    N_("Use graph coloring register allocation.") },
+  {"stack-protector", &flag_strong_protection, 1,
+   N_("Enables stack protection") },
+  {"stack-protector-all", &flag_stack_protection, 1,
+   N_("Enables stack protection of every function") },
+  {"stack-protector-strong", &flag_strong_protection, 1,
+   N_("Enables smart stack protection of certain functions") },
+  {"trampolines", &flag_trampolines, 1,
+   N_("Allows trampolines") },
 };
 
 /* Table of language-specific options.  */
@@ -1362,6 +1407,9 @@ documented_lang_options[] =
   { "-Wwrite-strings",
     N_("Mark strings as 'const char *'") },
   { "-Wno-write-strings", "" },
+  { "-Wbounded",
+    N_("Fake bounds checking option") },
+  { "-Wno-bounded", "" },
 
 #define DEFINE_LANG_NAME(NAME) { NULL, NAME },
 
@@ -1403,7 +1451,7 @@ int inhibit_warnings = 0;
 
 /* Don't suppress warnings from system headers.  -Wsystem-headers.  */
 
-int warn_system_headers = 0;
+int warn_system_headers = 1;
 
 /* Print various extra warnings.  -W.  */
 
@@ -1465,6 +1513,12 @@ int warn_cast_align;
 int warn_larger_than;
 HOST_WIDE_INT larger_than_size;
 
+/* Nonzero means warn about any function whose stack usage is larger
+   than N bytes.  The value N is in `stack_larger_than_size'.  */
+
+int warn_stack_larger_than;
+HOST_WIDE_INT stack_larger_than_size;
+
 /* Nonzero means warn if inline function is too large.  */
 
 int warn_inline;
@@ -1499,6 +1553,11 @@ int warn_deprecated_decl = 1;
    strict-aliasing safe.  */
 
 int warn_strict_aliasing;
+
+/* Nonzero means warn about any automatic declaration whose size is not
+   constant.  */
+
+int warn_variable_decl;
 
 /* Likewise for -W.  */
 
@@ -1547,7 +1606,13 @@ static const lang_independent_options W_options[] =
   {"missing-noreturn", &warn_missing_noreturn, 1,
    N_("Warn about functions which might be candidates for attribute noreturn") },
   {"strict-aliasing", &warn_strict_aliasing, 1,
-   N_ ("Warn about code which might break the strict aliasing rules") }
+   N_ ("Warn about code which might break the strict aliasing rules") },
+  {"stack-protector", &warn_stack_protector, 1,
+   N_("Warn when disabling stack protector for some reason")},
+  {"trampolines", &warn_trampolines, 1,
+   N_("Warn when trampolines are emitted")},
+  {"variable-decl", &warn_variable_decl, 1,
+   N_("Warn about variable-sized declarations")},
 };
 
 void
@@ -2449,6 +2514,8 @@ rest_of_compilation (decl)
 
       insns = get_insns ();
 
+      if (flag_propolice_protection) prepare_stack_protection (inlinable);
+  
       /* Dump the rtl code if we are dumping rtl.  */
 
       if (open_dump_file (DFI_rtl, decl))
@@ -4076,9 +4143,10 @@ decode_f_option (arg)
     flag_random_seed = option_value;
   else if (!strcmp (arg, "no-random-seed"))
     flag_random_seed = NULL;
-  else if (!strcmp (arg, "preprocessed"))
-    /* Recognize this switch but do nothing.  This prevents warnings
-       about an unrecognized switch if cpplib has not been linked in.  */
+  else if (!strcmp (arg, "preprocessed") || !strcmp (arg, "stack-shuffle"))
+    /* Recognize these switches but do nothing.  Allowing -fpreprocessed
+       prevents warnings about an unrecognized switch if cpplib has not been
+       linked in.  */
     ;
   else
     return 0;
@@ -4122,6 +4190,13 @@ decode_W_option (arg)
       larger_than_size = read_integral_parameter (option_value, arg - 2, -1);
 
       warn_larger_than = larger_than_size != -1;
+    }
+  else if ((option_value = skip_leading_substring (arg, "stack-larger-than-"))
+	   || (option_value = skip_leading_substring (arg, "frame-larger-than=")))
+    {
+      stack_larger_than_size = read_integral_parameter (option_value, arg - 2, -1);
+
+      warn_stack_larger_than = stack_larger_than_size != -1;
     }
   else if (!strcmp (arg, "unused"))
     {
@@ -4410,7 +4485,7 @@ independent_decode_option (argc, argv)
       break;
 
     case 'W':
-      if (arg[1] == 0)
+      if (arg[1] == 0 || !strcmp (arg, "Wextra"))
 	{
 	  extra_warnings = 1;
 	  /* We save the value of warn_uninitialized, since if they put
@@ -4910,14 +4985,16 @@ parse_options_and_default_flags (argc, argv)
       flag_schedule_insns_after_reload = 1;
 #endif
       flag_regmove = 1;
-      flag_strict_aliasing = 1;
+#if !defined(OPENBSD_NATIVE) && !defined(OPENBSD_CROSS)
       flag_delete_null_pointer_checks = 1;
+#endif
       flag_reorder_blocks = 1;
       flag_reorder_functions = 1;
     }
 
   if (optimize >= 3)
     {
+      flag_strict_aliasing = 1;
       flag_inline_functions = 1;
       flag_rename_registers = 1;
     }
@@ -5026,6 +5103,12 @@ parse_options_and_default_flags (argc, argv)
 	  i++;
 	}
     }
+
+  if (flag_pie)
+    flag_pic = flag_pie;
+
+  if (flag_pic && !flag_pie)
+    flag_shlib = 1;
 
   if (flag_no_inline == 2)
     flag_no_inline = 0;
@@ -5230,6 +5313,15 @@ process_options ()
     /* The presence of IEEE signaling NaNs, implies all math can trap.  */
     if (flag_signaling_nans)
       flag_trapping_math = 1;
+
+    /* This combination makes optimized frame addressings and causes
+       a internal compilation error at prepare_stack_protection.
+       so don't allow it.  */
+    if (flag_strong_protection && flag_stack_protection)
+      flag_strong_protection = FALSE;
+    if ((flag_stack_protection || flag_strong_protection)
+	&& !flag_propolice_protection)
+      flag_propolice_protection = TRUE;
 }
 
 /* Initialize the compiler back end.  */

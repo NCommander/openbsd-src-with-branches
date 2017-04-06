@@ -1,35 +1,11 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 # Test blog function (and bpow, since it uses blog), as well as bexp().
 
-use Test::More;
 use strict;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  # to locate the testing files
-  my $location = $0; $location =~ s/biglog.t//i;
-  if ($ENV{PERL_CORE})
-    {
-    # testing with the core distribution
-    @INC = qw(../lib);
-    }
-  unshift @INC, '../lib';
-  if (-d 't')
-    {
-    chdir 't';
-    require File::Spec;
-    unshift @INC, File::Spec->catdir(File::Spec->updir, $location);
-    }
-  else
-    {
-    unshift @INC, $location;
-    }
-  print "# INC = @INC\n";
-
-  plan tests => 17;
-  }
+use Test::More tests => 17;
 
 use Math::BigRat;
 
@@ -62,23 +38,23 @@ ok ($cl->new(-2,2)->blog(), 'NaN');
 #############################################################################
 # test bexp() with cached results
 
-is ($cl->new(1)->bexp(), 
+is ($cl->new(1)->bexp(),
   '90933395208605785401971970164779391644753259799242' . '/' .
   '33452526613163807108170062053440751665152000000000',
   'bexp(1)');
-is ($cl->new(2)->bexp(1,40), $cl->new(1)->bexp(1,45)->bpow(2,40), 'bexp(2)'); 
+is ($cl->new(2)->bexp(1,40), $cl->new(1)->bexp(1,45)->bpow(2,40), 'bexp(2)');
 
-is ($cl->new("12.5")->bexp(1,61), $cl->new(1)->bexp(1,65)->bpow(12.5,61), 'bexp(12.5)'); 
+is ($cl->new("12.5")->bexp(1,61), $cl->new(1)->bexp(1,65)->bpow(12.5,61), 'bexp(12.5)');
 
 #############################################################################
 # test bexp() with big values (non-cached)
 
-is ($cl->new(1)->bexp(1,100)->as_float(100), 
+is ($cl->new(1)->bexp(1,100)->as_float(100),
   '2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427',
  'bexp(100)');
 
-is ($cl->new("12.5")->bexp(1,91), $cl->new(1)->bexp(1,95)->bpow(12.5,91), 
-  'bexp(12.5) to 91 digits'); 
+is ($cl->new("12.5")->bexp(1,91), $cl->new(1)->bexp(1,95)->bpow(12.5,91),
+  'bexp(12.5) to 91 digits');
 
 #############################################################################
 # some integer results
@@ -96,4 +72,3 @@ is ($x->copy()->blog($base), 777, 'blog(777**777, 777)');
 
 # all done
 1;
-

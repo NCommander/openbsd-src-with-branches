@@ -1,3 +1,4 @@
+/*	$OpenBSD: brk.S,v 1.11 2015/09/05 06:22:47 guenther Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,63 +29,58 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)brk.s	5.2 (Berkeley) 12/17/90
- *	$Id: brk.S,v 1.9 1994/10/26 19:49:45 mycroft Exp $
  */
-
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$Id: brk.S,v 1.9 1994/10/26 19:49:45 mycroft Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
 
 #include "SYS.h"
 
 	.globl	_end
-	.globl	minbrk
-	.globl	curbrk
+	.globl	__curbrk
 
 	.data
-minbrk:	.long	_end
+__minbrk:
+	.long	_end
+	END(__minbrk)
+	.type	__minbrk,@object
 	.text
 
+	.weak	brk
+
 ENTRY(brk)
-#ifdef PIC
+#ifdef __PIC__
 	movl	4(%esp),%ecx
 	PIC_PROLOGUE
-	movl	PIC_GOT(minbrk),%edx
+	movl	PIC_GOT(__minbrk),%edx
 	PIC_EPILOGUE
 	cmpl	%ecx,(%edx)
-	jl	1f
+	jb	1f
 	movl	(%edx),%ecx
 	movl	%ecx,4(%esp)
 1:
 	movl	$(SYS_break),%eax
 	int	$0x80
-	jc	err
+	jc	2f
 	PIC_PROLOGUE
-	movl	PIC_GOT(curbrk),%edx	# set up GOT addressing
+	movl	PIC_GOT(__curbrk),%edx	# set up GOT addressing
 	PIC_EPILOGUE
 	xorl	%eax,%eax
 	movl	%ecx,(%edx)
-	ret
-err:
-	jmp	PIC_PLT(cerror)
 
 #else
 
 	movl	4(%esp),%ecx
-	cmpl	%ecx,minbrk
-	jl	1f
-	movl	minbrk,%ecx
+	cmpl	%ecx,__minbrk
+	jb	1f
+	movl	__minbrk,%ecx
 	movl	%ecx,4(%esp)
 1:
 	movl	$(SYS_break),%eax
 	int	$0x80
-	jc	err
+	jc	2f
 	xorl	%eax,%eax
-	movl	%ecx,curbrk
-	ret
-err:
-	jmp	cerror
+	movl	%ecx,__curbrk
 #endif
+	ret
+2:
+	SET_ERRNO()
+	ret
+END(brk)

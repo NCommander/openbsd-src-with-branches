@@ -1,11 +1,11 @@
 package Math::BigInt::CalcEmu;
 
-use 5.006002;
+use 5.006001;
 use strict;
-# use warnings;	# dont use warnings for older Perls
-use vars qw/$VERSION/;
+use warnings;
 
-$VERSION = '0.05';
+our $VERSION = '1.999715';
+$VERSION = eval $VERSION;
 
 package Math::BigInt;
 
@@ -282,7 +282,10 @@ sub __emu_bxor
 ##############################################################################
 
 1;
+
 __END__
+
+=pod
 
 =head1 NAME
 
@@ -300,19 +303,82 @@ optional routines the low-level math package does not provide on its own.
 Will be loaded on demand and called automatically by BigInt.
 
 Stuff here is really low-priority to optimize, since it is far better to
-implement the operation in the low-level math libary directly, possible even
+implement the operation in the low-level math library directly, possible even
 using a call to the native lib.
 
 =head1 METHODS
 
-=head2 __emu_bxor
+=over
 
-=head2 __emu_band
+=item __emu_bxor
 
-=head2 __emu_bior
+=item __emu_band
+
+=item __emu_bior
+
+=back
+
+=head1 BUGS
+
+Please report any bugs or feature requests to
+C<bug-math-bigint at rt.cpan.org>, or through the web interface at
+L<https://rt.cpan.org/Ticket/Create.html?Queue=Math-BigInt>
+(requires login).
+We will be notified, and then you'll automatically be notified of progress on
+your bug as I make changes.
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Math::BigInt::CalcEmu
+
+You can also look for information at:
+
+=over 4
+
+=item * RT: CPAN's request tracker
+
+L<https://rt.cpan.org/Public/Dist/Display.html?Name=Math-BigInt>
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Math-BigInt>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/dist/Math-BigInt>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Math-BigInt/>
+
+=item * CPAN Testers Matrix
+
+L<http://matrix.cpantesters.org/?dist=Math-BigInt>
+
+=item * The Bignum mailing list
+
+=over 4
+
+=item * Post to mailing list
+
+C<bignum at lists.scsys.co.uk>
+
+=item * View mailing list
+
+L<http://lists.scsys.co.uk/pipermail/bignum/>
+
+=item * Subscribe/Unsubscribe
+
+L<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/bignum>
+
+=back
+
+=back
 
 =head1 LICENSE
- 
+
 This program is free software; you may redistribute it and/or modify it under
 the same terms as Perl itself. 
 
@@ -323,7 +389,7 @@ Tels from 2001-2003.
 
 =head1 SEE ALSO
 
-L<Math::BigInt>, L<Math::BigFloat>, L<Math::BigInt::BitVect>,
+L<Math::BigInt>, L<Math::BigFloat>,
 L<Math::BigInt::GMP> and L<Math::BigInt::Pari>.
 
 =cut

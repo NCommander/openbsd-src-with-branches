@@ -1,7 +1,7 @@
-/*	$NetBSD: print-decnet.c,v 1.2 1995/03/06 19:11:07 mycroft Exp $	*/
+/*	$OpenBSD: print-decnet.c,v 1.16 2015/11/07 21:58:05 mmcc Exp $	*/
 
 /*
- * Copyright (c) 1992, 1993, 1994
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -21,120 +21,137 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#ifndef lint
-static char rcsid[] =
-    "@(#) Header: print-decnet.c,v 1.15 94/06/20 19:44:38 leres Exp (LBL)";
-#endif
-
-#include <sys/types.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 
+struct mbuf;
+struct rtentry;
 #include <net/if.h>
-#ifdef	DECNETLIB
+
+#ifdef	HAVE_LIBDNET
 #include <netdnet/dnetdb.h>
 #endif
 
 #include <ctype.h>
 #include <stdio.h>
-#ifdef __STDC__
 #include <stdlib.h>
-#endif
+#include <string.h>
 #include <unistd.h>
 
 #include "decnet.h"
+#include "extract.h"
 #include "interface.h"
 #include "addrtoname.h"
 
 /* Forwards */
-static void print_decnet_ctlmsg(const union routehdr *, int);
+static int print_decnet_ctlmsg(const union routehdr *, u_int, u_int);
 static void print_t_info(int);
-static void print_l1_routes(const char *, int);
-static void print_l2_routes(const char *, int);
+static int print_l1_routes(const char *, u_int);
+static int print_l2_routes(const char *, u_int);
 static void print_i_info(int);
-static void print_elist(const char *, int);
-static void print_nsp(const u_char *, int);
+static int print_elist(const char *, u_int);
+static int print_nsp(const u_char *, u_int);
 static void print_reason(int);
 #ifdef	PRINT_NSPDATA
 static void pdata(u_char *, int);
 #endif
 
-#ifdef	DECNETLIB
+#ifdef	HAVE_LIBDNET
 extern char *dnet_htoa(struct dn_naddr *);
 #endif
 
 void
-decnet_print(register const u_char *ap, register int length,
-	     register int caplen)
+decnet_print(const u_char *ap, u_int length, u_int caplen)
 {
 	static union routehdr rhcopy;
-	register union routehdr *rhp = &rhcopy;
-	register int mflags;
+	union routehdr *rhp = &rhcopy;
+	int mflags;
 	int dst, src, hops;
-	int rhlen;
+	u_int rhlen, nsplen, pktlen;
 	const u_char *nspp;
-	int nsplen;
-	int pktlen;
 
 	if (length < sizeof(struct shorthdr)) {
 		(void)printf("[|decnet]");
 		return;
 	}
 
-	pktlen = EXTRACT_16BITS(ap);
+	TCHECK2(*ap, sizeof(short));
+	pktlen = EXTRACT_LE_16BITS(ap);
+	if (pktlen < sizeof(struct shorthdr)) {
+		(void)printf("[|decnet]");
+		return;
+	}
+	if (pktlen > length) {
+		(void)printf("[|decnet]");
+		return;
+	}
+	length = pktlen;
 
 	rhlen = min(length, caplen);
 	rhlen = min(rhlen, sizeof(*rhp));
-	bcopy(&(ap[sizeof(short)]), rhp, rhlen);
+	memcpy((char *)rhp, (char *)&(ap[sizeof(short)]), rhlen);
 
-	mflags = EXTRACT_8BITS(rhp->rh_short.sh_flags);
+	TCHECK(rhp->rh_short.sh_flags);
+	mflags = EXTRACT_LE_8BITS(rhp->rh_short.sh_flags);
 
 	if (mflags & RMF_PAD) {
 	    /* pad bytes of some sort in front of message */
-	    int padlen = mflags & RMF_PADMASK;
+	    u_int padlen = mflags & RMF_PADMASK;
 	    if (vflag)
 		(void) printf("[pad:%d] ", padlen);
+	    if (length < padlen + 2) {
+		(void)printf("[|decnet]");
+		return;
+	    }
+	    TCHECK2(ap[sizeof(short)], padlen);
 	    ap += padlen;
 	    length -= padlen;
 	    caplen -= padlen;
 	    rhlen = min(length, caplen);
 	    rhlen = min(rhlen, sizeof(*rhp));
-	    bcopy(&(ap[sizeof(short)]), rhp, rhlen);
-	    mflags = EXTRACT_8BITS(rhp->rh_short.sh_flags);
+	    memcpy((char *)rhp, (char *)&(ap[sizeof(short)]), rhlen);
+	    mflags = EXTRACT_LE_8BITS(rhp->rh_short.sh_flags);
 	}
 
 	if (mflags & RMF_FVER) {
 		(void) printf("future-version-decnet");
-		default_print(ap, length);
+		default_print(ap, min(length, caplen));
 		return;
 	}
 
 	/* is it a control message? */
 	if (mflags & RMF_CTLMSG) {
-		print_decnet_ctlmsg(rhp, min(length, caplen));
+		if(!print_decnet_ctlmsg(rhp, length, caplen))
+			goto trunc;
 		return;
 	}
 
 	switch (mflags & RMF_MASK) {
 	case RMF_LONG:
-	    dst = EXTRACT_16BITS(rhp->rh_long.lg_dst.dne_remote.dne_nodeaddr);
-	    src = EXTRACT_16BITS(rhp->rh_long.lg_src.dne_remote.dne_nodeaddr);
-	    hops = EXTRACT_8BITS(rhp->rh_long.lg_visits);
+	    if (length < sizeof(struct longhdr)) {
+		(void)printf("[|decnet]");
+		return;
+	    }
+	    TCHECK(rhp->rh_long);
+	    dst =
+		EXTRACT_LE_16BITS(rhp->rh_long.lg_dst.dne_remote.dne_nodeaddr);
+	    src =
+		EXTRACT_LE_16BITS(rhp->rh_long.lg_src.dne_remote.dne_nodeaddr);
+	    hops = EXTRACT_LE_8BITS(rhp->rh_long.lg_visits);
 	    nspp = &(ap[sizeof(short) + sizeof(struct longhdr)]);
-	    nsplen = min((length - sizeof(struct longhdr)),
-			 (caplen - sizeof(struct longhdr)));
+	    nsplen = length - sizeof(struct longhdr);
 	    break;
 	case RMF_SHORT:
-	    dst = EXTRACT_16BITS(rhp->rh_short.sh_dst);
-	    src = EXTRACT_16BITS(rhp->rh_short.sh_src);
-	    hops = (EXTRACT_8BITS(rhp->rh_short.sh_visits) & VIS_MASK)+1;
+	    TCHECK(rhp->rh_short);
+	    dst = EXTRACT_LE_16BITS(rhp->rh_short.sh_dst);
+	    src = EXTRACT_LE_16BITS(rhp->rh_short.sh_src);
+	    hops = (EXTRACT_LE_8BITS(rhp->rh_short.sh_visits) & VIS_MASK)+1;
 	    nspp = &(ap[sizeof(short) + sizeof(struct shorthdr)]);
-	    nsplen = min((length - sizeof(struct shorthdr)),
-			 (caplen - sizeof(struct shorthdr)));
+	    nsplen = length - sizeof(struct shorthdr);
 	    break;
 	default:
 	    (void) printf("unknown message flags under mask");
-	    default_print((u_char *)ap, length);
+	    default_print((u_char *)ap, min(length, caplen));
 	    return;
 	}
 
@@ -150,106 +167,148 @@ decnet_print(register const u_char *ap, register int length,
 	    (void)printf("%d hops ", hops);
 	}
 
-	print_nsp(nspp, nsplen);
+	if (!print_nsp(nspp, nsplen))
+		goto trunc;
+	return;
+
+trunc:
+	(void)printf("[|decnet]");
+	return;
 }
 
-static void
-print_decnet_ctlmsg(register const union routehdr *rhp, int length)
+static int
+print_decnet_ctlmsg(const union routehdr *rhp, u_int length,
+    u_int caplen)
 {
-	int mflags = EXTRACT_8BITS(rhp->rh_short.sh_flags);
-	register union controlmsg *cmp = (union controlmsg *)rhp;
+	int mflags = EXTRACT_LE_8BITS(rhp->rh_short.sh_flags);
+	union controlmsg *cmp = (union controlmsg *)rhp;
 	int src, dst, info, blksize, eco, ueco, hello, other, vers;
 	etheraddr srcea, rtea;
 	int priority;
 	char *rhpx = (char *)rhp;
+	int ret;
 
 	switch (mflags & RMF_CTLMASK) {
 	case RMF_INIT:
 	    (void)printf("init ");
-	    src = EXTRACT_16BITS(cmp->cm_init.in_src);
-	    info = EXTRACT_8BITS(cmp->cm_init.in_info);
-	    blksize = EXTRACT_16BITS(cmp->cm_init.in_blksize);
-	    vers = EXTRACT_8BITS(cmp->cm_init.in_vers);
-	    eco = EXTRACT_8BITS(cmp->cm_init.in_eco);
-	    ueco = EXTRACT_8BITS(cmp->cm_init.in_ueco);
-	    hello = EXTRACT_16BITS(cmp->cm_init.in_hello);
+	    if (length < sizeof(struct initmsg))
+		goto trunc;
+	    TCHECK(cmp->cm_init);
+	    src = EXTRACT_LE_16BITS(cmp->cm_init.in_src);
+	    info = EXTRACT_LE_8BITS(cmp->cm_init.in_info);
+	    blksize = EXTRACT_LE_16BITS(cmp->cm_init.in_blksize);
+	    vers = EXTRACT_LE_8BITS(cmp->cm_init.in_vers);
+	    eco = EXTRACT_LE_8BITS(cmp->cm_init.in_eco);
+	    ueco = EXTRACT_LE_8BITS(cmp->cm_init.in_ueco);
+	    hello = EXTRACT_LE_16BITS(cmp->cm_init.in_hello);
 	    print_t_info(info);
 	    (void)printf(
 		"src %sblksize %d vers %d eco %d ueco %d hello %d",
 			dnaddr_string(src), blksize, vers, eco, ueco,
 			hello);
+
+	    ret = 1;
 	    break;
 	case RMF_VER:
 	    (void)printf("verification ");
-	    src = EXTRACT_16BITS(cmp->cm_ver.ve_src);
-	    other = EXTRACT_8BITS(cmp->cm_ver.ve_fcnval);
+	    if (length < sizeof(struct verifmsg))
+		goto trunc;
+	    TCHECK(cmp->cm_ver);
+	    src = EXTRACT_LE_16BITS(cmp->cm_ver.ve_src);
+	    other = EXTRACT_LE_8BITS(cmp->cm_ver.ve_fcnval);
 	    (void)printf("src %s fcnval %o", dnaddr_string(src), other);
+	    ret = 1;
 	    break;
 	case RMF_TEST:
 	    (void)printf("test ");
-	    src = EXTRACT_16BITS(cmp->cm_test.te_src);
-	    other = EXTRACT_8BITS(cmp->cm_test.te_data);
+	    if (length < sizeof(struct testmsg))
+		goto trunc;
+	    TCHECK(cmp->cm_test);
+	    src = EXTRACT_LE_16BITS(cmp->cm_test.te_src);
+	    other = EXTRACT_LE_8BITS(cmp->cm_test.te_data);
 	    (void)printf("src %s data %o", dnaddr_string(src), other);
+	    ret = 1;
 	    break;
 	case RMF_L1ROUT:
 	    (void)printf("lev-1-routing ");
-	    src = EXTRACT_16BITS(cmp->cm_l1rou.r1_src);
+	    if (length < sizeof(struct l1rout))
+		goto trunc;
+	    TCHECK(cmp->cm_l1rou);
+	    src = EXTRACT_LE_16BITS(cmp->cm_l1rou.r1_src);
 	    (void)printf("src %s ", dnaddr_string(src));
-	    print_l1_routes(&(rhpx[sizeof(struct l1rout)]),
+	    ret = print_l1_routes(&(rhpx[sizeof(struct l1rout)]),
 				length - sizeof(struct l1rout));
 	    break;
 	case RMF_L2ROUT:
 	    (void)printf("lev-2-routing ");
-	    src = EXTRACT_16BITS(cmp->cm_l2rout.r2_src);
+	    if (length < sizeof(struct l2rout))
+		goto trunc;
+	    TCHECK(cmp->cm_l2rout);
+	    src = EXTRACT_LE_16BITS(cmp->cm_l2rout.r2_src);
 	    (void)printf("src %s ", dnaddr_string(src));
-	    print_l2_routes(&(rhpx[sizeof(struct l2rout)]),
+	    ret = print_l2_routes(&(rhpx[sizeof(struct l2rout)]),
 				length - sizeof(struct l2rout));
 	    break;
 	case RMF_RHELLO:
 	    (void)printf("router-hello ");
-	    vers = EXTRACT_8BITS(cmp->cm_rhello.rh_vers);
-	    eco = EXTRACT_8BITS(cmp->cm_rhello.rh_eco);
-	    ueco = EXTRACT_8BITS(cmp->cm_rhello.rh_ueco);
-	    bcopy(&(cmp->cm_rhello.rh_src), &srcea, sizeof(srcea));
-	    src = EXTRACT_16BITS(srcea.dne_remote.dne_nodeaddr);
-	    info = EXTRACT_8BITS(cmp->cm_rhello.rh_info);
-	    blksize = EXTRACT_16BITS(cmp->cm_rhello.rh_blksize);
-	    priority = EXTRACT_8BITS(cmp->cm_rhello.rh_priority);
-	    hello = EXTRACT_16BITS(cmp->cm_rhello.rh_hello);
+	    if (length < sizeof(struct rhellomsg))
+		goto trunc;
+	    TCHECK(cmp->cm_rhello);
+	    vers = EXTRACT_LE_8BITS(cmp->cm_rhello.rh_vers);
+	    eco = EXTRACT_LE_8BITS(cmp->cm_rhello.rh_eco);
+	    ueco = EXTRACT_LE_8BITS(cmp->cm_rhello.rh_ueco);
+	    memcpy((char *)&srcea, (char *)&(cmp->cm_rhello.rh_src),
+		sizeof(srcea));
+	    src = EXTRACT_LE_16BITS(srcea.dne_remote.dne_nodeaddr);
+	    info = EXTRACT_LE_8BITS(cmp->cm_rhello.rh_info);
+	    blksize = EXTRACT_LE_16BITS(cmp->cm_rhello.rh_blksize);
+	    priority = EXTRACT_LE_8BITS(cmp->cm_rhello.rh_priority);
+	    hello = EXTRACT_LE_16BITS(cmp->cm_rhello.rh_hello);
 	    print_i_info(info);
 	    (void)printf(
 	    "vers %d eco %d ueco %d src %s blksize %d pri %d hello %d",
 			vers, eco, ueco, dnaddr_string(src),
 			blksize, priority, hello);
-	    print_elist(&(rhpx[sizeof(struct rhellomsg)]),
+	    ret = print_elist(&(rhpx[sizeof(struct rhellomsg)]),
 				length - sizeof(struct rhellomsg));
 	    break;
 	case RMF_EHELLO:
 	    (void)printf("endnode-hello ");
-	    vers = EXTRACT_8BITS(cmp->cm_ehello.eh_vers);
-	    eco = EXTRACT_8BITS(cmp->cm_ehello.eh_eco);
-	    ueco = EXTRACT_8BITS(cmp->cm_ehello.eh_ueco);
-	    bcopy(&(cmp->cm_ehello.eh_src), &srcea, sizeof(srcea));
-	    src = EXTRACT_16BITS(srcea.dne_remote.dne_nodeaddr);
-	    info = EXTRACT_8BITS(cmp->cm_ehello.eh_info);
-	    blksize = EXTRACT_16BITS(cmp->cm_ehello.eh_blksize);
+	    if (length < sizeof(struct ehellomsg))
+		goto trunc;
+	    TCHECK(cmp->cm_ehello);
+	    vers = EXTRACT_LE_8BITS(cmp->cm_ehello.eh_vers);
+	    eco = EXTRACT_LE_8BITS(cmp->cm_ehello.eh_eco);
+	    ueco = EXTRACT_LE_8BITS(cmp->cm_ehello.eh_ueco);
+	    memcpy((char *)&srcea, (char *)&(cmp->cm_ehello.eh_src),
+		sizeof(srcea));
+	    src = EXTRACT_LE_16BITS(srcea.dne_remote.dne_nodeaddr);
+	    info = EXTRACT_LE_8BITS(cmp->cm_ehello.eh_info);
+	    blksize = EXTRACT_LE_16BITS(cmp->cm_ehello.eh_blksize);
 	    /*seed*/
-	    bcopy(&(cmp->cm_ehello.eh_router), &rtea, sizeof(rtea));
-	    dst = EXTRACT_16BITS(rtea.dne_remote.dne_nodeaddr);
-	    hello = EXTRACT_16BITS(cmp->cm_ehello.eh_hello);
-	    other = EXTRACT_8BITS(cmp->cm_ehello.eh_data);
+	    memcpy((char *)&rtea, (char *)&(cmp->cm_ehello.eh_router),
+		sizeof(rtea));
+	    dst = EXTRACT_LE_16BITS(rtea.dne_remote.dne_nodeaddr);
+	    hello = EXTRACT_LE_16BITS(cmp->cm_ehello.eh_hello);
+	    other = EXTRACT_LE_8BITS(cmp->cm_ehello.eh_data);
 	    print_i_info(info);
 	    (void)printf(
 	"vers %d eco %d ueco %d src %s blksize %d rtr %s hello %d data %o",
 			vers, eco, ueco, dnaddr_string(src),
 			blksize, dnaddr_string(dst), hello, other);
+	    ret = 1;
 	    break;
 
 	default:
 	    (void)printf("unknown control message");
-	    default_print((u_char *)rhp, length);
+	    default_print((u_char *)rhp, min(length, caplen));
+	    ret = 1;
 	    break;
 	}
+	return (ret);
+
+trunc:
+	return (0);
 }
 
 static void
@@ -268,8 +327,8 @@ print_t_info(int info)
 	    (void)printf("blo ");
 }
 
-static void
-print_l1_routes(const char *rp, int len)
+static int
+print_l1_routes(const char *rp, u_int len)
 {
 	int count;
 	int id;
@@ -277,24 +336,29 @@ print_l1_routes(const char *rp, int len)
 
 	/* The last short is a checksum */
 	while (len > (3 * sizeof(short))) {
-	    count = EXTRACT_16BITS(rp);
+	    TCHECK2(*rp, 3 * sizeof(short));
+	    count = EXTRACT_LE_16BITS(rp);
 	    if (count > 1024)
-		return;	/* seems to be bogus from here on */
+		return (1);	/* seems to be bogus from here on */
 	    rp += sizeof(short);
 	    len -= sizeof(short);
-	    id = EXTRACT_16BITS(rp);
+	    id = EXTRACT_LE_16BITS(rp);
 	    rp += sizeof(short);
 	    len -= sizeof(short);
-	    info = EXTRACT_16BITS(rp);
+	    info = EXTRACT_LE_16BITS(rp);
 	    rp += sizeof(short);
 	    len -= sizeof(short);
 	    (void)printf("{ids %d-%d cost %d hops %d} ", id, id + count,
 			    RI_COST(info), RI_HOPS(info));
 	}
+	return (1);
+
+trunc:
+	return (0);
 }
 
-static void
-print_l2_routes(const char *rp, int len)
+static int
+print_l2_routes(const char *rp, u_int len)
 {
 	int count;
 	int area;
@@ -302,20 +366,25 @@ print_l2_routes(const char *rp, int len)
 
 	/* The last short is a checksum */
 	while (len > (3 * sizeof(short))) {
-	    count = EXTRACT_16BITS(rp);
+	    TCHECK2(*rp, 3 * sizeof(short));
+	    count = EXTRACT_LE_16BITS(rp);
 	    if (count > 1024)
-		return;	/* seems to be bogus from here on */
+		return (1);	/* seems to be bogus from here on */
 	    rp += sizeof(short);
 	    len -= sizeof(short);
-	    area = EXTRACT_16BITS(rp);
+	    area = EXTRACT_LE_16BITS(rp);
 	    rp += sizeof(short);
 	    len -= sizeof(short);
-	    info = EXTRACT_16BITS(rp);
+	    info = EXTRACT_LE_16BITS(rp);
 	    rp += sizeof(short);
 	    len -= sizeof(short);
 	    (void)printf("{areas %d-%d cost %d hops %d} ", area, area + count,
 			    RI_COST(info), RI_HOPS(info));
 	}
+	return (1);
+
+trunc:
+	return (0);
 }
 
 static void
@@ -336,21 +405,25 @@ print_i_info(int info)
 	    (void)printf("blo ");
 }
 
-static void
-print_elist(const char *elp, int len)
+static int
+print_elist(const char *elp, u_int len)
 {
 	/* Not enough examples available for me to debug this */
+	return (1);
 }
 
-static void
-print_nsp(const u_char *nspp, int nsplen)
+static int
+print_nsp(const u_char *nspp, u_int nsplen)
 {
 	const struct nsphdr *nsphp = (struct nsphdr *)nspp;
 	int dst, src, flags;
 
-	flags = EXTRACT_8BITS(nsphp->nh_flags);
-	dst = EXTRACT_16BITS(nsphp->nh_dst);
-	src = EXTRACT_16BITS(nsphp->nh_src);
+	if (nsplen < sizeof(struct nsphdr))
+		goto trunc;
+	TCHECK(*nsphp);
+	flags = EXTRACT_LE_8BITS(nsphp->nh_flags);
+	dst = EXTRACT_LE_16BITS(nsphp->nh_dst);
+	src = EXTRACT_LE_16BITS(nsphp->nh_src);
 
 	switch (flags & NSP_TYPEMASK) {
 	case MFT_DATA:
@@ -366,29 +439,41 @@ print_nsp(const u_char *nspp, int nsplen)
 #ifdef	PRINT_NSPDATA
 		    u_char *dp;
 #endif
-		    int data_off = sizeof(struct minseghdr);
+		    u_int data_off = sizeof(struct minseghdr);
 
-		    ack = EXTRACT_16BITS(shp->sh_seq[0]);
+		    if (nsplen < data_off)
+			goto trunc;
+		    TCHECK(shp->sh_seq[0]);
+		    ack = EXTRACT_LE_16BITS(shp->sh_seq[0]);
 		    if (ack & SGQ_ACK) {	/* acknum field */
 			if ((ack & SGQ_NAK) == SGQ_NAK)
 			    (void)printf("nak %d ", ack & SGQ_MASK);
 			else
 			    (void)printf("ack %d ", ack & SGQ_MASK);
-		        ack = EXTRACT_16BITS(shp->sh_seq[1]);
-			data_off += sizeof(short);
+		        data_off += sizeof(short);
+			if (nsplen < data_off)
+			    goto trunc;
+			TCHECK(shp->sh_seq[1]);
+			ack = EXTRACT_LE_16BITS(shp->sh_seq[1]);
 			if (ack & SGQ_OACK) {	/* ackoth field */
 			    if ((ack & SGQ_ONAK) == SGQ_ONAK)
 				(void)printf("onak %d ", ack & SGQ_MASK);
 			    else
 				(void)printf("oack %d ", ack & SGQ_MASK);
-			    ack = EXTRACT_16BITS(shp->sh_seq[2]);
 			    data_off += sizeof(short);
+			    if (nsplen < data_off)
+				goto trunc;
+			    TCHECK(shp->sh_seq[2]);
+			    ack = EXTRACT_LE_16BITS(shp->sh_seq[2]);
 			}
 		    }
 		    (void)printf("seg %d ", ack & SGQ_MASK);
 #ifdef	PRINT_NSPDATA
-		    dp = &(nspp[data_off]);
-		    pdata(dp, 10);
+		    if (nsplen > data_off) {
+			dp = &(nspp[data_off]);
+			TCHECK2(*dp, nsplen - data_off);
+			pdata(dp, nsplen - data_off);
+		    }
 #endif
 		}
 		break;
@@ -400,29 +485,41 @@ print_nsp(const u_char *nspp, int nsplen)
 #ifdef	PRINT_NSPDATA
 		    u_char *dp;
 #endif
-		    int data_off = sizeof(struct minseghdr);
+		    u_int data_off = sizeof(struct minseghdr);
 
-		    ack = EXTRACT_16BITS(shp->sh_seq[0]);
+		    if (nsplen < data_off)
+			goto trunc;
+		    TCHECK(shp->sh_seq[0]);
+		    ack = EXTRACT_LE_16BITS(shp->sh_seq[0]);
 		    if (ack & SGQ_ACK) {	/* acknum field */
 			if ((ack & SGQ_NAK) == SGQ_NAK)
 			    (void)printf("nak %d ", ack & SGQ_MASK);
 			else
 			    (void)printf("ack %d ", ack & SGQ_MASK);
-		        ack = EXTRACT_16BITS(shp->sh_seq[1]);
-			data_off += sizeof(short);
+		        data_off += sizeof(short);
+			if (nsplen < data_off)
+			    goto trunc;
+			TCHECK(shp->sh_seq[1]);
+			ack = EXTRACT_LE_16BITS(shp->sh_seq[1]);
 			if (ack & SGQ_OACK) {	/* ackdat field */
 			    if ((ack & SGQ_ONAK) == SGQ_ONAK)
 				(void)printf("nakdat %d ", ack & SGQ_MASK);
 			    else
 				(void)printf("ackdat %d ", ack & SGQ_MASK);
-			    ack = EXTRACT_16BITS(shp->sh_seq[2]);
 			    data_off += sizeof(short);
+			    if (nsplen < data_off)
+				goto trunc;
+			    TCHECK(shp->sh_seq[2]);
+			    ack = EXTRACT_LE_16BITS(shp->sh_seq[2]);
 			}
 		    }
 		    (void)printf("seg %d ", ack & SGQ_MASK);
 #ifdef	PRINT_NSPDATA
-		    dp = &(nspp[data_off]);
-		    pdata(dp, 10);
+		    if (nsplen > data_off) {
+			dp = &(nspp[data_off]);
+			TCHECK2(*dp, nsplen - data_off);
+			pdata(dp, nsplen - data_off);
+		    }
 #endif
 		}
 		break;
@@ -435,24 +532,30 @@ print_nsp(const u_char *nspp, int nsplen)
 		    int ack;
 		    int lsflags, fcval;
 
-		    ack = EXTRACT_16BITS(shp->sh_seq[0]);
+		    if (nsplen < sizeof(struct seghdr) + sizeof(struct lsmsg))
+			goto trunc;
+		    TCHECK(shp->sh_seq[0]);
+		    ack = EXTRACT_LE_16BITS(shp->sh_seq[0]);
 		    if (ack & SGQ_ACK) {	/* acknum field */
 			if ((ack & SGQ_NAK) == SGQ_NAK)
 			    (void)printf("nak %d ", ack & SGQ_MASK);
 			else
 			    (void)printf("ack %d ", ack & SGQ_MASK);
-		        ack = EXTRACT_16BITS(shp->sh_seq[1]);
+			TCHECK(shp->sh_seq[1]);
+		        ack = EXTRACT_LE_16BITS(shp->sh_seq[1]);
 			if (ack & SGQ_OACK) {	/* ackdat field */
 			    if ((ack & SGQ_ONAK) == SGQ_ONAK)
 				(void)printf("nakdat %d ", ack & SGQ_MASK);
 			    else
 				(void)printf("ackdat %d ", ack & SGQ_MASK);
-			    ack = EXTRACT_16BITS(shp->sh_seq[2]);
+			    TCHECK(shp->sh_seq[2]);
+			    ack = EXTRACT_LE_16BITS(shp->sh_seq[2]);
 			}
 		    }
 		    (void)printf("seg %d ", ack & SGQ_MASK);
-		    lsflags = EXTRACT_8BITS(lsmp->ls_lsflags);
-		    fcval = EXTRACT_8BITS(lsmp->ls_fcval);
+		    TCHECK(*lsmp);
+		    lsflags = EXTRACT_LE_8BITS(lsmp->ls_lsflags);
+		    fcval = EXTRACT_LE_8BITS(lsmp->ls_fcval);
 		    switch (lsflags & LSI_MASK) {
 		    case LSI_DATA:
 			(void)printf("dat seg count %d ", fcval);
@@ -492,13 +595,16 @@ print_nsp(const u_char *nspp, int nsplen)
 		    struct ackmsg *amp = (struct ackmsg *)nspp;
 		    int ack;
 
-		    ack = EXTRACT_16BITS(amp->ak_acknum[0]);
+		    if (nsplen < sizeof(struct ackmsg))
+			goto trunc;
+		    TCHECK(*amp);
+		    ack = EXTRACT_LE_16BITS(amp->ak_acknum[0]);
 		    if (ack & SGQ_ACK) {	/* acknum field */
 			if ((ack & SGQ_NAK) == SGQ_NAK)
 			    (void)printf("nak %d ", ack & SGQ_MASK);
 			else
 			    (void)printf("ack %d ", ack & SGQ_MASK);
-		        ack = EXTRACT_16BITS(amp->ak_acknum[1]);
+		        ack = EXTRACT_LE_16BITS(amp->ak_acknum[1]);
 			if (ack & SGQ_OACK) {	/* ackoth field */
 			    if ((ack & SGQ_ONAK) == SGQ_ONAK)
 				(void)printf("onak %d ", ack & SGQ_MASK);
@@ -514,13 +620,17 @@ print_nsp(const u_char *nspp, int nsplen)
 		    struct ackmsg *amp = (struct ackmsg *)nspp;
 		    int ack;
 
-		    ack = EXTRACT_16BITS(amp->ak_acknum[0]);
+		    if (nsplen < sizeof(struct ackmsg))
+			goto trunc;
+		    TCHECK(*amp);
+		    ack = EXTRACT_LE_16BITS(amp->ak_acknum[0]);
 		    if (ack & SGQ_ACK) {	/* acknum field */
 			if ((ack & SGQ_NAK) == SGQ_NAK)
 			    (void)printf("nak %d ", ack & SGQ_MASK);
 			else
 			    (void)printf("ack %d ", ack & SGQ_MASK);
-		        ack = EXTRACT_16BITS(amp->ak_acknum[1]);
+		        TCHECK(amp->ak_acknum[1]);
+			ack = EXTRACT_LE_16BITS(amp->ak_acknum[1]);
 			if (ack & SGQ_OACK) {	/* ackdat field */
 			    if ((ack & SGQ_ONAK) == SGQ_ONAK)
 				(void)printf("nakdat %d ", ack & SGQ_MASK);
@@ -554,9 +664,12 @@ print_nsp(const u_char *nspp, int nsplen)
 		    u_char *dp;
 #endif
 
-		    services = EXTRACT_8BITS(cimp->ci_services);
-		    info = EXTRACT_8BITS(cimp->ci_info);
-		    segsize = EXTRACT_16BITS(cimp->ci_segsize);
+		    if (nsplen < sizeof(struct cimsg))
+			goto trunc;
+		    TCHECK(*cimp);
+		    services = EXTRACT_LE_8BITS(cimp->ci_services);
+		    info = EXTRACT_LE_8BITS(cimp->ci_info);
+		    segsize = EXTRACT_LE_16BITS(cimp->ci_segsize);
 
 		    switch (services & COS_MASK) {
 		    case COS_NONE:
@@ -587,8 +700,11 @@ print_nsp(const u_char *nspp, int nsplen)
 		    }
 		    (void)printf("segsize %d ", segsize);
 #ifdef	PRINT_NSPDATA
-		    dp = &(nspp[sizeof(struct cimsg)]);
-		    pdata(dp, nsplen - sizeof(struct cimsg));
+		    if (nsplen > sizeof(struct cimsg)) {
+			dp = &(nspp[sizeof(struct cimsg)]);
+			TCHECK2(*dp, nsplen - sizeof(struct cimsg));
+			pdata(dp, nsplen - sizeof(struct cimsg));
+		    }
 #endif
 		}
 		break;
@@ -596,15 +712,19 @@ print_nsp(const u_char *nspp, int nsplen)
 		(void)printf("conn-confirm %d>%d ", src, dst);
 		{
 		    struct ccmsg *ccmp = (struct ccmsg *)nspp;
-		    int services, info, segsize, optlen;
+		    int services, info;
+		    u_int segsize, optlen;
 #ifdef	PRINT_NSPDATA
 		    u_char *dp;
 #endif
 
-		    services = EXTRACT_8BITS(ccmp->cc_services);
-		    info = EXTRACT_8BITS(ccmp->cc_info);
-		    segsize = EXTRACT_16BITS(ccmp->cc_segsize);
-		    optlen = EXTRACT_8BITS(ccmp->cc_optlen);
+		    if (nsplen < sizeof(struct ccmsg))
+			goto trunc;
+		    TCHECK(*ccmp);
+		    services = EXTRACT_LE_8BITS(ccmp->cc_services);
+		    info = EXTRACT_LE_8BITS(ccmp->cc_info);
+		    segsize = EXTRACT_LE_16BITS(ccmp->cc_segsize);
+		    optlen = EXTRACT_LE_8BITS(ccmp->cc_optlen);
 
 		    switch (services & COS_MASK) {
 		    case COS_NONE:
@@ -637,8 +757,10 @@ print_nsp(const u_char *nspp, int nsplen)
 		    if (optlen) {
 			(void)printf("optlen %d ", optlen);
 #ifdef	PRINT_NSPDATA
-			optlen = min(optlen, nsplen - sizeof(struct ccmsg));
+			if (optlen > nsplen - sizeof(struct ccmsg))
+			    goto trunc;
 			dp = &(nspp[sizeof(struct ccmsg)]);
+			TCHECK2(*dp, optlen);
 			pdata(dp, optlen);
 #endif
 		    }
@@ -648,20 +770,26 @@ print_nsp(const u_char *nspp, int nsplen)
 		(void)printf("disconn-initiate %d>%d ", src, dst);
 		{
 		    struct dimsg *dimp = (struct dimsg *)nspp;
-		    int reason, optlen;
+		    int reason;
+		    u_int optlen;
 #ifdef	PRINT_NSPDATA
 		    u_char *dp;
 #endif
 
-		    reason = EXTRACT_16BITS(dimp->di_reason);
-		    optlen = EXTRACT_8BITS(dimp->di_optlen);
+		    if (nsplen < sizeof(struct dimsg))
+			goto trunc;
+		    TCHECK(*dimp);
+		    reason = EXTRACT_LE_16BITS(dimp->di_reason);
+		    optlen = EXTRACT_LE_8BITS(dimp->di_optlen);
 
 		    print_reason(reason);
 		    if (optlen) {
 			(void)printf("optlen %d ", optlen);
 #ifdef	PRINT_NSPDATA
-			optlen = min(optlen, nsplen - sizeof(struct dimsg));
+			if (optlen > nsplen - sizeof(struct dimsg))
+			    goto trunc;
 			dp = &(nspp[sizeof(struct dimsg)]);
+			TCHECK2(*dp, optlen);
 			pdata(dp, optlen);
 #endif
 		    }
@@ -673,7 +801,8 @@ print_nsp(const u_char *nspp, int nsplen)
 		    struct dcmsg *dcmp = (struct dcmsg *)nspp;
 		    int reason;
 
-		    reason = EXTRACT_16BITS(dcmp->dc_reason);
+		    TCHECK(*dcmp);
+		    reason = EXTRACT_LE_16BITS(dcmp->dc_reason);
 
 		    print_reason(reason);
 		}
@@ -687,9 +816,13 @@ print_nsp(const u_char *nspp, int nsplen)
 	    (void)printf("reserved-type? %x %d > %d", flags, src, dst);
 	    break;
 	}
+	return (1);
+
+trunc:
+	return (0);
 }
 
-struct token reason2str[] = {
+static struct tok reason2str[] = {
 	{ UC_OBJREJECT,		"object rejected connect" },
 	{ UC_RESOURCES,		"insufficient resources" },
 	{ UC_NOSUCHNODE,	"unrecognized node name" },
@@ -716,7 +849,7 @@ struct token reason2str[] = {
 };
 
 static void
-print_reason(register int reason)
+print_reason(int reason)
 {
 	printf("%s ", tok2str(reason2str, "reason-%d", reason));
 }
@@ -725,22 +858,25 @@ char *
 dnnum_string(u_short dnaddr)
 {
 	char *str;
-	int area = (dnaddr & AREAMASK) >> AREASHIFT;
+	int area = (u_short)(dnaddr & AREAMASK) >> AREASHIFT;
 	int node = dnaddr & NODEMASK;
+	int len = sizeof("00.0000");
 
-	str = (char *)malloc(sizeof("00.0000"));
-	sprintf(str, "%d.%d", area, node);
+	str = malloc(len);
+	if (str == NULL)
+		error("dnnum_string: malloc");
+	snprintf(str, len, "%d.%d", area, node);
 	return(str);
 }
 
 char *
 dnname_string(u_short dnaddr)
 {
-#ifdef	DECNETLIB
+#ifdef	HAVE_LIBDNET
 	struct dn_naddr dna;
 
 	dna.a_len = sizeof(short);
-	bcopy((char *)&dnaddr, dna.a_addr, sizeof(short));
+	memcpy((char *)dna.a_addr, (char *)&dnaddr, sizeof(short));
 	return (savestr(dnet_htoa(&dna)));
 #else
 	return(dnnum_string(dnaddr));	/* punt */
@@ -749,13 +885,13 @@ dnname_string(u_short dnaddr)
 
 #ifdef	PRINT_NSPDATA
 static void
-pdata(u_char *dp, int maxlen)
+pdata(u_char *dp, u_int maxlen)
 {
-	char c;
-	int x = maxlen;
+	int c;
+	u_int x = maxlen;
 
 	while (x-- > 0) {
-	    c = *dp++;
+	    c = (unsigned char)*dp++;
 	    if (isprint(c))
 		putchar(c);
 	    else

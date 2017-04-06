@@ -1,3 +1,6 @@
+/*	$OpenBSD: lpdchar.c,v 1.7 2016/01/27 21:58:23 tb Exp $	*/
+/*	$NetBSD: lpdchar.c,v 1.5 1997/07/17 05:44:32 mikel Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,10 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char sccsid[] = "@(#)lpdchar.c	8.1 (Berkeley) 6/6/93";
-#endif /* not lint */
 
 /*
  *	Character set for line printer daemon
@@ -101,7 +96,7 @@ static char sccsid[] = "@(#)lpdchar.c	8.1 (Berkeley) 6/6/93";
 #define c111111_ 0176
 #define c1111111 0177
 
-char scnkey[][HEIGHT] =	/* this is relatively easy to modify */
+const char scnkey[][HEIGHT] =	/* this is relatively easy to modify */
 			/* just look: */
 {
 	{ c_______,
@@ -154,97 +149,97 @@ char scnkey[][HEIGHT] =	/* this is relatively easy to modify */
 	  c_11111_,
 	  c___1___ },			/* $ */
 
- 	{ c_1_____,
- 	  c1_1___1,
- 	  c_1___1_,
- 	  c____1__,
- 	  c___1___,
- 	  c__1____,
- 	  c_1___1_,
- 	  c1___1_1,
- 	  c_____1_ },			/* % */
- 
- 	{ c_11____,
- 	  c1__1___,
- 	  c1___1__,
- 	  c_1_1___,
- 	  c__1____,
- 	  c_1_1__1,
- 	  c1___11_,
- 	  c1___11_,
- 	  c_111__1 },			/* & */
- 
- 	{ c___11__,
- 	  c___11__,
- 	  c___1___,
- 	  c__1____,
- 	  c_______,
- 	  c_______,
- 	  c_______,
- 	  c_______,
- 	  c_______ },			/* ' */
- 
- 	{ c____1__,
- 	  c___1___,
- 	  c__1____,
- 	  c__1____,
- 	  c__1____,
- 	  c__1____,
- 	  c__1____,
- 	  c___1___,
- 	  c____1__ },			/* ( */
- 
- 	{ c__1____,
- 	  c___1___,
- 	  c____1__,
- 	  c____1__,
- 	  c____1__,
- 	  c____1__,
- 	  c____1__,
- 	  c___1___,
- 	  c__1____ },			/* ) */
- 
- 	{ c_______,
- 	  c___1___,
- 	  c1__1__1,
- 	  c_1_1_1_,
- 	  c__111__,
- 	  c_1_1_1_,
- 	  c1__1__1,
- 	  c___1___,
- 	  c_______ },			/* * */
- 
- 	{ c_______,
- 	  c___1___,
- 	  c___1___,
- 	  c___1___,
- 	  c1111111,
- 	  c___1___,
- 	  c___1___,
- 	  c___1___,
- 	  c_______ },			/* + */
- 
- 	{ c_______,
- 	  c_______,
- 	  c_______,
- 	  c_______,
- 	  c__11___,
- 	  c__11___,
- 	  c__1____,
- 	  c_1_____,
- 	  c_______ },			/* , */
- 
- 	{ c_______,
- 	  c_______,
- 	  c_______,
- 	  c_______,
- 	  c1111111,
- 	  c_______,
- 	  c_______,
- 	  c_______,
- 	  c_______ },			/* - */
- 
- 	{ c_______,
+	{ c_1_____,
+	  c1_1___1,
+	  c_1___1_,
+	  c____1__,
+	  c___1___,
+	  c__1____,
+	  c_1___1_,
+	  c1___1_1,
+	  c_____1_ },			/* % */
+
+	{ c_11____,
+	  c1__1___,
+	  c1___1__,
+	  c_1_1___,
+	  c__1____,
+	  c_1_1__1,
+	  c1___11_,
+	  c1___11_,
+	  c_111__1 },			/* & */
+
+	{ c___11__,
+	  c___11__,
+	  c___1___,
+	  c__1____,
+	  c_______,
+	  c_______,
+	  c_______,
+	  c_______,
+	  c_______ },			/* ' */
+
+	{ c____1__,
+	  c___1___,
+	  c__1____,
+	  c__1____,
+	  c__1____,
+	  c__1____,
+	  c__1____,
+	  c___1___,
+	  c____1__ },			/* ( */
+
+	{ c__1____,
+	  c___1___,
+	  c____1__,
+	  c____1__,
+	  c____1__,
+	  c____1__,
+	  c____1__,
+	  c___1___,
+	  c__1____ },			/* ) */
+
+	{ c_______,
+	  c___1___,
+	  c1__1__1,
+	  c_1_1_1_,
+	  c__111__,
+	  c_1_1_1_,
+	  c1__1__1,
+	  c___1___,
+	  c_______ },			/* * */
+
+	{ c_______,
+	  c___1___,
+	  c___1___,
+	  c___1___,
+	  c1111111,
+	  c___1___,
+	  c___1___,
+	  c___1___,
+	  c_______ },			/* + */
+
+	{ c_______,
+	  c_______,
+	  c_______,
+	  c_______,
+	  c__11___,
+	  c__11___,
+	  c__1____,
+	  c_1_____,
+	  c_______ },			/* , */
+
+	{ c_______,
+	  c_______,
+	  c_______,
+	  c_______,
+	  c1111111,
+	  c_______,
+	  c_______,
+	  c_______,
+	  c_______ },			/* - */
+
+	{ c_______,
 	  c_______,
 	  c_______,
 	  c_______,
@@ -373,7 +368,6 @@ char scnkey[][HEIGHT] =	/* this is relatively easy to modify */
 	  c_______,
 	  c__11___,
 	  c__11___ },			/* : */
-
 
 	{ c__11___,
 	  c__11___,
@@ -1022,7 +1016,7 @@ char scnkey[][HEIGHT] =	/* this is relatively easy to modify */
 	  c__1____,
 	  c__1____,
 	  c__1____,
-	  c___11__ },			/* } */
+	  c___11__ },			/* { */
 
 	{ c___1___,
 	  c___1___,

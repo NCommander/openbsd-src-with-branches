@@ -1,0 +1,7 @@
+.Dd August 5, 2014
+.Dt OS-MISSING 1
+.Sh NAME
+.Nm Os-missing
+.Nd operating system macro missing in prologue
+.Sh DESCRIPTION
+some text

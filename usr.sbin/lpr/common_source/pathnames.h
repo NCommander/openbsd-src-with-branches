@@ -1,3 +1,6 @@
+/*	$OpenBSD: pathnames.h,v 1.5 2014/04/20 22:35:10 ajacoutot Exp $	*/
+/*	$NetBSD: pathnames.h,v 1.5 1995/11/28 19:43:27 jtc Exp $	*/
+
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,9 +36,7 @@
 
 #define	_PATH_DEFDEVLP		"/dev/lp"
 #define	_PATH_DEFSPOOL		"/var/spool/output/lpd"
-#define	_PATH_HOSTSEQUIV	"/etc/hosts.equiv"
 #define	_PATH_HOSTSLPD		"/etc/hosts.lpd"
-#define	_PATH_MASTERLOCK	"/var/spool/output/lpd.lock"
 #define	_PATH_PR		"/usr/bin/pr"
 #define	_PATH_PRINTCAP		"/etc/printcap"
 #define	_PATH_SOCKETNAME	"/var/run/printer"

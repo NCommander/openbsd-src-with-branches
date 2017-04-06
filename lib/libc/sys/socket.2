@@ -1,3 +1,4 @@
+.\"	$OpenBSD: socket.2,v 1.40 2015/10/20 18:11:53 deraadt Exp $
 .\"	$NetBSD: socket.2,v 1.5 1995/02/27 12:37:53 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,19 +30,18 @@
 .\"
 .\"     @(#)socket.2	8.1 (Berkeley) 6/4/93
 .\"
-.Dd June 4, 1993
+.Dd $Mdocdate: October 20 2015 $
 .Dt SOCKET 2
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm socket
 .Nd create an endpoint for communication
 .Sh SYNOPSIS
-.Fd #include <sys/types.h>
-.Fd #include <sys/socket.h>
+.In sys/socket.h
 .Ft int
 .Fn socket "int domain" "int type" "int protocol"
 .Sh DESCRIPTION
-.Fn Socket
+.Fn socket
 creates an endpoint for communication and returns a descriptor.
 .Pp
 The
@@ -54,29 +50,29 @@ parameter specifies a communications domain within which
 communication will take place; this selects the protocol family
 which should be used.
 These families are defined in the include file
-.Ao Pa sys/socket.h Ac .
-The currently understood formats are
+.In sys/socket.h .
+The currently understood formats are:
 .Pp
-.Bd -literal -offset indent -compact
-AF_UNIX		(UNIX internal protocols),
-AF_INET		(ARPA Internet protocols),
-AF_ISO		(ISO protocols),
-AF_NS		(Xerox Network Systems protocols), and
-AF_IMPLINK	(IMP \*(lqhost at IMP\*(rq link layer).
-.Ed
+.Bl -tag -width "AF_INET6XXX" -offset indent -compact
+.It AF_UNIX
+UNIX internal protocols
+.It AF_INET
+ARPA Internet protocols
+.It AF_INET6
+IPv6 (Internet Protocol version 6) protocols
+.El
 .Pp
 The socket has the indicated
 .Fa type ,
-which specifies the semantics of communication.  Currently
-defined types are:
+which specifies the semantics of communication.
+Currently defined types are:
 .Pp
-.Bd -literal -offset indent -compact
-SOCK_STREAM
-SOCK_DGRAM
-SOCK_RAW
-SOCK_SEQPACKET
-SOCK_RDM
-.Ed
+.Bl -tag -width "SOCK_SEQPACKETXXX" -offset indent -compact
+.It SOCK_STREAM
+.It SOCK_DGRAM
+.It SOCK_RAW
+.It SOCK_SEQPACKET
+.El
 .Pp
 A
 .Dv SOCK_STREAM
@@ -94,46 +90,69 @@ socket may provide a sequenced, reliable,
 two-way connection-based data transmission path for datagrams
 of fixed maximum length; a consumer may be required to read
 an entire packet with each read system call.
-This facility is protocol specific, and presently implemented
-only for
-.Dv PF_NS .
+This facility is protocol specific, and presently implemented only for
+.Dv AF_UNIX .
 .Dv SOCK_RAW
-sockets provide access to internal network protocols and interfaces.
-The types
-.Dv SOCK_RAW ,
-which is available only to the super-user, and
-.Dv SOCK_RDM ,
-which is planned,
-but not yet implemented, are not described here.
+sockets provide access to internal network protocols and interfaces,
+and are available only to the superuser.
+.Pp
+Any combination of the following flags may additionally be used in the
+.Fa type
+argument:
+.Pp
+.Bl -tag -width "SOCK_NONBLOCKX" -offset indent -compact
+.It SOCK_CLOEXEC
+Set close-on-exec flag on the new descriptor.
+.It SOCK_NONBLOCK
+Set non-blocking I/O mode on the new socket.
+.It SOCK_DNS
+For domains
+.Dv AF_INET
+or
+.Dv AF_INET6 ,
+only allow
+.Xr connect 2 ,
+.Xr sendto 2 ,
+or
+.Xr sendmsg 2
+to the DNS port (typically 53).
+.El
 .Pp
 The
 .Fa protocol
 specifies a particular protocol to be used with the socket.
 Normally only a single protocol exists to support a particular
-socket type within a given protocol family.  However, it is possible
-that many protocols may exist, in which case a particular protocol
-must be specified in this manner.  The protocol number to use is
-particular to the \*(lqcommunication domain\*(rq in which communication
-is to take place; see
+socket type within a given protocol family.
+However, it is possible that many protocols may exist,
+in which case a particular protocol must be specified in this manner.
+The protocol number to use is particular to the
+.Dq communication domain
+in which communication is to take place; see
 .Xr protocols 5 .
+A value of 0 for
+.Fa protocol
+will let the system select an appropriate protocol for the requested
+socket type.
 .Pp
 Sockets of type
 .Dv SOCK_STREAM
-are full-duplex byte streams, similar
-to pipes.  A stream socket must be in a
+are full-duplex byte streams.
+A stream socket must be in a
 .Em connected
-state before any data may be sent or received
-on it.  A connection to another socket is created with a
+state before any data may be sent or received on it.
+A connection to another socket is created with a
 .Xr connect 2
-call.  Once connected, data may be transferred using
+call.
+Once connected, data may be transferred using
 .Xr read 2
 and
 .Xr write 2
-calls or some variant of the 
+calls or some variant of the
 .Xr send 2
 and
 .Xr recv 2
-calls.  When a session has been completed a
+calls.
+When a session has been completed a
 .Xr close 2
 may be performed.
 Out-of-band data may also be transmitted as described in
@@ -143,36 +162,30 @@ and received as described in
 .Pp
 The communications protocols used to implement a
 .Dv SOCK_STREAM
-insure that data
-is not lost or duplicated.  If a piece of data for which the
-peer protocol has buffer space cannot be successfully transmitted
-within a reasonable length of time, then
-the connection is considered broken and calls
-will indicate an error with
--1 returns and with
-.Dv ETIMEDOUT
-as the specific code
-in the global variable
+ensure that data is not lost or duplicated.
+If a piece of data for which the peer protocol has buffer space cannot
+be successfully transmitted within a reasonable length of time, then the
+connection is considered broken and calls will indicate an error with \-1
+returns and with
+.Er ETIMEDOUT
+as the specific code in the global variable
 .Va errno .
 The protocols optionally keep sockets
 .Dq warm
-by forcing transmissions
-roughly every minute in the absence of other activity.
-An error is then indicated if no response can be
-elicited on an otherwise
-idle connection for a extended period (e.g. 5 minutes).
+by forcing transmissions roughly every minute in the absence of other activity.
+An error is then indicated if no response can be elicited on an otherwise
+idle connection for an extended period (e.g., 5 minutes).
 A
 .Dv SIGPIPE
-signal is raised if a process sends
-on a broken stream; this causes naive processes,
-which do not handle the signal, to exit.
+signal is raised if a process sends on a broken stream; this causes
+naive processes, which do not handle the signal, to exit.
 .Pp
 .Dv SOCK_SEQPACKET
 sockets employ the same system calls
 as
 .Dv SOCK_STREAM
-sockets.  The only difference
-is that 
+sockets.
+The only difference is that
 .Xr read 2
 calls will return only the amount of data requested,
 and any remaining in the arriving packet will be discarded.
@@ -180,70 +193,79 @@ and any remaining in the arriving packet will be discarded.
 .Dv SOCK_DGRAM
 and
 .Dv SOCK_RAW
-sockets allow sending of datagrams to correspondents
-named in
+sockets allow sending of datagrams to correspondents named in
 .Xr send 2
-calls.  Datagrams are generally received with
+calls.
+Datagrams are generally received with
 .Xr recvfrom 2 ,
 which returns the next datagram with its return address.
 .Pp
-An 
+An
 .Xr fcntl 2
 call can be used to specify a process group to receive
 a
 .Dv SIGURG
 signal when the out-of-band data arrives.
-It may also enable non-blocking I/O
-and asynchronous notification of I/O events
-via
+It may also enable non-blocking I/O and asynchronous notification
+of I/O events via
 .Dv SIGIO .
 .Pp
 The operation of sockets is controlled by socket level
 .Em options .
 These options are defined in the file
-.Ao Pa sys/socket.h Ac .
-.Xr Setsockopt 2
+.In sys/socket.h .
+.Xr setsockopt 2
 and
 .Xr getsockopt 2
 are used to set and get options, respectively.
 .Sh RETURN VALUES
-A -1 is returned if an error occurs, otherwise the return
+A \-1 is returned if an error occurs, otherwise the return
 value is a descriptor referencing the socket.
 .Sh ERRORS
 The
 .Fn socket
 call fails if:
 .Bl -tag -width Er
+.It Bq Er EAFNOSUPPORT
+The specified address family is not supported on this machine.
 .It Bq Er EPROTONOSUPPORT
 The protocol type or the specified protocol is not supported
 within this domain.
+.It Bq Er EPROTOTYPE
+The combination of the specified protocol and type is not supported.
 .It Bq Er EMFILE
 The per-process descriptor table is full.
 .It Bq Er ENFILE
 The system file table is full.
-.It Bq Er EACCESS
+.It Bq Er ENOBUFS
+Insufficient resources were available in the system
+to perform the operation.
+.It Bq Er EACCES
 Permission to create a socket of the specified type and/or protocol
 is denied.
-.It Bq Er ENOBUFS
-Insufficient buffer space is available.
-The socket cannot be created until sufficient resources are freed.
 .El
 .Sh SEE ALSO
 .Xr accept 2 ,
 .Xr bind 2 ,
 .Xr connect 2 ,
-.Xr getprotoent 3 ,
 .Xr getsockname 2 ,
 .Xr getsockopt 2 ,
 .Xr ioctl 2 ,
 .Xr listen 2 ,
+.Xr poll 2 ,
 .Xr read 2 ,
 .Xr recv 2 ,
 .Xr select 2 ,
 .Xr send 2 ,
+.Xr setsockopt 2 ,
 .Xr shutdown 2 ,
 .Xr socketpair 2 ,
-.Xr write 2
+.Xr write 2 ,
+.Xr getprotoent 3 ,
+.Xr inet 4 ,
+.Xr inet6 4 ,
+.Xr netintro 4 ,
+.Xr unix 4
 .Rs
 .%T "An Introductory 4.3 BSD Interprocess Communication Tutorial"
 .%O "reprinted in UNIX Programmer's Supplementary Documents Volume 1"
@@ -252,8 +274,34 @@ The socket cannot be created until sufficient resources are freed.
 .%T "BSD Interprocess Communication Tutorial"
 .%O "reprinted in UNIX Programmer's Supplementary Documents Volume 1"
 .Re
+.Sh STANDARDS
+The
+.Fn socket
+function conforms to
+.St -p1003.1-2008 .
+The
+.Dv SOCK_CLOEXEC
+and
+.Dv SOCK_NONBLOCK
+flags are expected to conform to a future revision of that standard.
+.Pp
+The
+.Dv SOCK_DNS
+flag is an
+.Ox
+extension.
 .Sh HISTORY
 The
 .Fn socket
-function call appeared in
-.Bx 4.2 .
+system call first appeared in
+.Bx 4.1c .
+Support for the
+.Dv SOCK_CLOEXEC
+and
+.Dv SOCK_NONBLOCK
+flags appeared in
+.Ox 5.7 .
+Support for the
+.Dv SOCK_DNS
+flag appeared in
+.Ox 5.9 .

@@ -1,3 +1,4 @@
+/*	$OpenBSD: apply.c,v 1.26 2013/11/25 18:03:17 deraadt Exp $	*/
 /*	$NetBSD: apply.c,v 1.3 1995/03/25 03:38:23 glass Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,14 +33,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)apply.c	8.4 (Berkeley) 4/4/94";
-#else
-static char rcsid[] = "$NetBSD: apply.c,v 1.3 1995/03/25 03:38:23 glass Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/wait.h>
 
 #include <ctype.h>
@@ -55,21 +44,23 @@ static char rcsid[] = "$NetBSD: apply.c,v 1.3 1995/03/25 03:38:23 glass Exp $";
 #include <string.h>
 #include <unistd.h>
 
-void	usage __P((void));
-int	system __P((const char *));
+__dead	void	usage(void);
+static	int	mysystem(const char *);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int ch, clen, debug, i, l, magic, n, nargs, rval;
-	char *c, *cmd, *p, *q;
+	char *c, *c2, *cmd, *p, *q;
+	size_t len;
+
+	if (pledge("stdio proc exec", NULL) == -1)
+		err(1, "pledge");
 
 	debug = 0;
 	magic = '%';		/* Default magic char is `%'. */
 	nargs = -1;
-	while ((ch = getopt(argc, argv, "a:d0123456789")) != EOF)
+	while ((ch = getopt(argc, argv, "a:d0123456789")) != -1)
 		switch (ch) {
 		case 'a':
 			if (optarg[1] != '\0')
@@ -85,7 +76,7 @@ main(argc, argv)
 			if (nargs != -1)
 				errx(1,
 				    "only one -# argument may be specified.");
-			nargs = optopt - '0';
+			nargs = ch - '0';
 			break;
 		default:
 			usage();
@@ -102,7 +93,8 @@ main(argc, argv)
 	 * largest one.
 	 */
 	for (n = 0, p = argv[0]; *p != '\0'; ++p)
-		if (p[0] == magic && isdigit(p[1]) && p[1] != '0') {
+		if (p[0] == magic &&
+		    isdigit((unsigned char)p[1]) && p[1] != '0') {
 			++p;
 			if (p[0] - '0' > n)
 				n = p[0] - '0';
@@ -114,19 +106,29 @@ main(argc, argv)
 	 * the end to consume (nargs) arguments each time round the loop.
 	 * Allocate enough space to hold the maximum command.
 	 */
-	if ((cmd = malloc(sizeof("exec ") - 1 +
-	    strlen(argv[0]) + 9 * (sizeof(" %1") - 1) + 1)) == NULL)
-		err(1, NULL);
-		
 	if (n == 0) {
+		len = sizeof("exec ") - 1 +
+		    strlen(argv[0]) + 9 * (sizeof(" %1") - 1) + 1;
+		if ((cmd = malloc(len)) == NULL)
+			err(1, NULL);
+
 		/* If nargs not set, default to a single argument. */
 		if (nargs == -1)
 			nargs = 1;
 
-		p = cmd;
-		p += sprintf(cmd, "exec %s", argv[0]);
-		for (i = 1; i <= nargs; i++)
-			p += sprintf(p, " %c%d", magic, i);
+		l = snprintf(cmd, len, "exec %s", argv[0]);
+		if (l >= len || l == -1)
+			errx(1, "error building exec string");
+		len -= l;
+		p = cmd + l;
+		
+		for (i = 1; i <= nargs; i++) {
+			l = snprintf(p, len, " %c%d", magic, i);
+			if (l >= len || l == -1)
+				errx(1, "error numbering arguments");
+			len -= l;
+			p += l;
+		}
 
 		/*
 		 * If nargs set to the special value 0, eat a single
@@ -135,7 +137,8 @@ main(argc, argv)
 		if (nargs == 0)
 			nargs = 1;
 	} else {
-		(void)sprintf(cmd, "exec %s", argv[0]);
+		if (asprintf(&cmd, "exec %s", argv[0]) == -1)
+			err(1, NULL);		
 		nargs = n;
 	}
 
@@ -158,15 +161,21 @@ main(argc, argv)
 		 * there's enough space to build it.
 		 */
 		for (l = strlen(cmd), i = 0; i < nargs; i++)
-			l += strlen(argv[i]);
-		if (l > clen && (c = realloc(c, clen = l)) == NULL)
-			err(1, NULL);
+			l += strlen(argv[i+1]);
+		if (l > clen) {
+			if ((c2 = realloc(c, l)) == NULL)
+				err(1, NULL);
+			c = c2;
+			clen = l;
+		}
 
 		/* Expand command argv references. */
 		for (p = cmd, q = c; *p != '\0'; ++p)
-			if (p[0] == magic && isdigit(p[1]) && p[1] != '0')
-				q += sprintf(q, "%s", argv[(++p)[0] - '0']);
-			else
+			if (p[0] == magic &&
+			    isdigit((unsigned char)p[1]) && p[1] != '0') {
+				strlcpy(q, argv[(++p)[0] - '0'], c + clen - q);
+				q += strlen(q);
+			} else
 				*q++ = *p;
 
 		/* Terminate the command string. */
@@ -175,9 +184,8 @@ main(argc, argv)
 		/* Run the command. */
 		if (debug)
 			(void)printf("%s\n", c);
-		else
-			if (system(c))
-				rval = 1;
+		else if (mysystem(c))
+			rval = 1;
 	}
 
 	if (argc != 1)
@@ -187,18 +195,17 @@ main(argc, argv)
 }
 
 /*
- * system --
+ * mysystem --
  * 	Private version of system(3).  Use the user's SHELL environment
  *	variable as the shell to execute.
  */
-int
-system(command)
-	const char *command;
+static int
+mysystem(const char *command)
 {
-	static char *name, *shell;
-	union wait pstat;
+	static const char *name, *shell;
 	pid_t pid;
-	int omask;
+	int pstat;
+	sigset_t mask, omask;
 	sig_t intsave, quitsave;
 
 	if (shell == NULL) {
@@ -212,29 +219,30 @@ system(command)
 	if (!command)		/* just checking... */
 		return(1);
 
-	omask = sigblock(sigmask(SIGCHLD));
-	switch(pid = vfork()) {
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &mask, &omask);
+	switch(pid = fork()) {
 	case -1:			/* error */
 		err(1, "fork");
 	case 0:				/* child */
-		(void)sigsetmask(omask);
-		execl(shell, name, "-c", command, NULL);
+		sigprocmask(SIG_SETMASK, &omask, NULL);
+		execl(shell, name, "-c", command, (char *)NULL);
 		err(1, "%s", shell);
 	}
 	intsave = signal(SIGINT, SIG_IGN);
 	quitsave = signal(SIGQUIT, SIG_IGN);
-	pid = waitpid(pid, (int *)&pstat, 0);
-	(void)sigsetmask(omask);
+	pid = waitpid(pid, &pstat, 0);
+	sigprocmask(SIG_SETMASK, &omask, NULL);
 	(void)signal(SIGINT, intsave);
 	(void)signal(SIGQUIT, quitsave);
-	return(pid == -1 ? -1 : pstat.w_status);
+	return(pid == -1 ? -1 : pstat);
 }
 
-void
-usage()
+__dead void
+usage(void)
 {
-
 	(void)fprintf(stderr,
-	    "usage: apply [-a magic] [-0123456789] command arguments ...\n");
+	    "usage: apply [-#] [-d] [-a magic] command argument ...\n");
 	exit(1);
 }

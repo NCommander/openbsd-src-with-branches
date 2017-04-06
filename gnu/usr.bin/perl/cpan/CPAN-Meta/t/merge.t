@@ -1,136 +1,174 @@
 use strict;
 use warnings;
 
-use CPAN::Meta::Requirements;
+use Test::More;
+use CPAN::Meta;
+use CPAN::Meta::Merge;
 
-use Test::More 0.88;
+my %base = (
+	abstract => 'This is a test',
+	author => ['A.U. Thor'],
+	generated_by => 'Myself',
+	license => [ 'perl_5' ],
+	resources => {
+		license => [ 'http://dev.perl.org/licenses/' ],
+                bugtracker => { web => 'https://rt.cpan.org/Dist/Display.html?Foo-Bar' },
+	},
+	prereqs => {
+		runtime => {
+			requires => {
+				Foo => '0',
+			},
+		},
+	},
+	dynamic_config => 0,
+	provides => {
+		Baz => {
+			file => 'lib/Baz.pm',
+		},
+	},
+	'meta-spec' => {
+		url => "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+		version => 2,
+	},
+);
 
-sub dies_ok (&@) {
-  my ($code, $qr, $comment) = @_;
+my %first = (
+	author => [ 'I.M. Poster' ],
+	generated_by => 'Some other guy',
+	license => [ 'bsd' ],
+	resources => {
+		license => [ 'http://opensource.org/licenses/bsd-license.php' ],
+	},
+	prereqs => {
+		runtime => {
+			requires => {
+				Foo => '< 1',
+			},
+			recommends => {
+				Bar => '3.14',
+			},
+		},
+		test => {
+			requires => {
+				'Test::Bar' => 0,
+			},
+		},
+	},
+	dynamic_config => 1,
+	provides => {
+		Quz => {
+			file => 'lib/Quz.pm',
+		},
+	},
+);
+my %first_expected = (
+	abstract => 'This is a test',
+	author => [ 'A.U. Thor', 'I.M. Poster' ],
+	generated_by => 'Myself, Some other guy',
+	license => [ 'perl_5', 'bsd' ],
+	resources => {
+		license => [ 'http://dev.perl.org/licenses/', 'http://opensource.org/licenses/bsd-license.php' ],
+                bugtracker => { web => 'https://rt.cpan.org/Dist/Display.html?Foo-Bar' },
+	},
+	prereqs => {
+		runtime => {
+			requires => {
+				Foo => '>= 0, < 1',
+			},
+			recommends => {
+				Bar => '3.14',
+			},
+		},
+		test => {
+			requires => {
+				'Test::Bar' => 0,
+			},
+		},
+	},
+	provides => {
+		Baz => {
+			file => 'lib/Baz.pm',
+		},
+		Quz => {
+			file => 'lib/Quz.pm',
+		},
+	},
+	dynamic_config => 1,
+	'meta-spec' => {
+		url => "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+		version => 2,
+	},
+);
+my %provides_merge_expected = (
+	abstract => 'This is a test',
+	author => ['A.U. Thor'],
+	generated_by => 'Myself',
+	license => [ 'perl_5' ],
+	resources => {
+		license => [ 'http://dev.perl.org/licenses/' ],
+		bugtracker => { web => 'https://rt.cpan.org/Dist/Display.html?Foo-Bar' },
+	},
+	prereqs => {
+		runtime => {
+			requires => {
+				Foo => '0',
+			},
+		},
+	},
+	dynamic_config => 0,
+	provides => {
+		Baz => {
+			file => 'lib/Baz.pm',
+			version => '0.001',         # same as %base, but for this extra key
+		},
+	},
+	'meta-spec' => {
+		url => "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+		version => 2,
+	},
+);
 
-  my $lived = eval { $code->(); 1 };
+my $merger = CPAN::Meta::Merge->new(default_version => '2');
 
-  if ($lived) {
-    fail("$comment: did not die");
-  } else {
-    like($@, $qr, $comment);
-  }
-}
+my $first_result = $merger->merge(\%base, \%first);
 
-{
-  my $req_1 = CPAN::Meta::Requirements->new;
-  $req_1->add_minimum(Left   => 10);
-  $req_1->add_minimum(Shared => 2);
-  $req_1->add_exclusion(Shared => 7);
+is_deeply($first_result, \%first_expected, 'First result is as expected');
 
-  my $req_2 = CPAN::Meta::Requirements->new;
-  $req_2->add_minimum(Shared => 1);
-  $req_2->add_maximum(Shared => 9);
-  $req_2->add_minimum(Right  => 18);
+is_deeply($merger->merge(\%base, { abstract => 'This is a test' }), \%base, 'Can merge in identical abstract');
+is(
+    eval { $merger->merge(\%base, { abstract => 'And now for something else' }) },
+    undef,
+    'Trying to merge different author gives an exception',
+);
+like $@, qr/^Can't merge attribute abstract/, 'Exception looks right';
 
-  $req_1->add_requirements($req_2);
+is(
+    eval { $merger->merge(\%base, { resources => { bugtracker => { web => 'http://foo.com' } } } ) },
+    undef,
+    'Trying to merge a different bugtracker URL gives an exception',
+);
+like $@, qr/^Duplication of element resources\.bugtracker\.web /, 'Exception looks right';
 
-  is_deeply(
-    $req_1->as_string_hash,
-    {
-      Left   => 10,
-      Shared => '>= 2, <= 9, != 7',
-      Right  => 18,
-    },
-    "add requirements to an existing set of requirements",
-  );
-}
+is(
+    eval { $merger->merge(\%base, { provides => { Baz => { file => 'Baz.pm' } } }) },
+    undef,
+    'Trying to merge different provides.$module.file gives an exception',
+);
+like $@, qr/^Duplication of element provides\.Baz\.file /, 'Exception looks right';
 
-{
-  my $req_1 = CPAN::Meta::Requirements->new;
-  $req_1->add_minimum(Left   => 10);
-  $req_1->add_minimum(Shared => 2);
-  $req_1->add_exclusion(Shared => 7);
-  $req_1->exact_version(Exact => 8);
+my $provides_result = $merger->merge(\%base, { provides => { Baz => { file => 'lib/Baz.pm', version => '0.001' } } });
+is_deeply(
+	$provides_result,
+	\%provides_merge_expected,
+	'Trying to merge a new key for provides.$module is permitted; identical values are preserved',
+);
 
-  my $req_2 = CPAN::Meta::Requirements->new;
-  $req_2->add_minimum(Shared => 1);
-  $req_2->add_maximum(Shared => 9);
-  $req_2->add_minimum(Right  => 18);
-  $req_2->exact_version(Exact => 8);
 
-  my $clone = $req_1->clone->add_requirements($req_2);
+# issue 67
+@base{qw/name version release_status/} = qw/Foo-Bar 0.01 testing/;
+my $base_obj = CPAN::Meta->create(\%base);
+ok my $first_result_obj = $merger->merge($base_obj, \%first), 'merging CPAN::Meta objects succeeds';
 
-  is_deeply(
-    $req_1->as_string_hash,
-    {
-      Left   => 10,
-      Shared => '>= 2, != 7',
-      Exact  => '== 8',
-    },
-    "clone/add_requirements does not affect lhs",
-  );
-
-  is_deeply(
-    $req_2->as_string_hash,
-    {
-      Shared => '>= 1, <= 9',
-      Right  => 18,
-      Exact  => '== 8',
-    },
-    "clone/add_requirements does not affect rhs",
-  );
-
-  is_deeply(
-    $clone->as_string_hash,
-    {
-      Left   => 10,
-      Shared => '>= 2, <= 9, != 7',
-      Right  => 18,
-      Exact  => '== 8',
-    },
-    "clone and add_requirements",
-  );
-
-  $clone->clear_requirement('Shared');
-
-  is_deeply(
-    $clone->as_string_hash,
-    {
-      Left   => 10,
-      Right  => 18,
-      Exact  => '== 8',
-    },
-    "cleared the shared requirement",
-  );
-}
-
-{
-  my $req_1 = CPAN::Meta::Requirements->new;
-  $req_1->add_maximum(Foo => 1);
-
-  my $req_2 = $req_1->clone;
-
-  is_deeply(
-    $req_2->as_string_hash,
-    {
-      'Foo' => '<= 1',
-    },
-    'clone with only max',
-  );
-}
-
-{
-  my $left = CPAN::Meta::Requirements->new;
-  $left->add_minimum(Foo => 0);
-  $left->add_minimum(Bar => 1);
-
-  my $right = CPAN::Meta::Requirements->new;
-  $right->add_requirements($left);
-
-  is_deeply(
-    $right->as_string_hash,
-    {
-      Foo => 0,
-      Bar => 1,
-    },
-    "we do not lose 0-min reqs on merge",
-  );
-}
-
-done_testing;
+done_testing();
+# vim: ts=4 sts=4 sw=4 tw=78 noet :

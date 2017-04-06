@@ -1,20 +1,70 @@
+/*	$OpenBSD: hack.mon.c,v 1.10 2014/03/11 08:05:15 guenther Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.mon.c,v 1.3 1995/03/23 08:30:57 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <stdlib.h>
 
 #include "hack.h"
 #include "hack.mfndpos.h"
-
-#ifndef NULL
-#define	NULL	(char *) 0
-#endif
-
-extern struct monst *makemon();
-extern struct obj *mkobj_at();
 
 int warnlevel;		/* used by movemon and dochugw */
 long lastwarntime;
@@ -23,10 +73,17 @@ char *warnings[] = {
 	"white", "pink", "red", "ruby", "purple", "black"
 };
 
-movemon()
+static int  dochugw(struct monst *);
+static void mpickgold(struct monst *);
+static void mpickgems(struct monst *);
+static void dmonsfree(void);
+static int  ishuman(struct monst *);
+
+void
+movemon(void)
 {
-	register struct monst *mtmp;
-	register int fr;
+	struct monst *mtmp;
+	int fr;
 
 	warnlevel = 0;
 
@@ -46,7 +103,7 @@ movemon()
 		/* most monsters drown in pools */
 		{ boolean inpool, iseel;
 
-		  inpool = (levl[mtmp->mx][mtmp->my].typ == POOL);
+		  inpool = (levl[(int)mtmp->mx][(int)mtmp->my].typ == POOL);
 		  iseel = (mtmp->data->mlet == ';');
 		  if(inpool && !iseel) {
 			if(cansee(mtmp->mx,mtmp->my))
@@ -84,7 +141,7 @@ movemon()
 		warnlevel = SIZE(warnings)-1;
 	if(warnlevel >= 0)
 	if(warnlevel > lastwarnlev || moves > lastwarntime + 5){
-	    register char *rr;
+	    char *rr;
 	    switch(Warning & (LEFT_RING | RIGHT_RING)){
 	    case LEFT_RING:
 		rr = "Your left ring glows";
@@ -107,11 +164,9 @@ movemon()
 	dmonsfree();	/* remove all dead monsters */
 }
 
-justswld(mtmp,name)
-register struct monst *mtmp;
-char *name;
+void
+justswld(struct monst *mtmp, char *name)
 {
-
 	mtmp->mx = u.ux;
 	mtmp->my = u.uy;
 	u.ustuck = mtmp;
@@ -124,10 +179,8 @@ char *name;
 	swallowed();
 }
 
-youswld(mtmp,dam,die,name)
-register struct monst *mtmp;
-register dam,die;
-char *name;
+void
+youswld(struct monst *mtmp, int dam, int die, char *name)
 {
 	if(mtmp != u.ustuck) return;
 	kludge("%s digests you!",name);
@@ -137,14 +190,17 @@ char *name;
 		u.uhp = -1;
 	}
 	if(u.uhp < 1) done_in_by(mtmp);
-	/* flags.botlx = 1;		/* should we show status line ? */
+	/* flags.botlx = 1; */		/* should we show status line ? */
 }
 
-dochugw(mtmp) register struct monst *mtmp; {
-register x = mtmp->mx;
-register y = mtmp->my;
-register d = dochug(mtmp);
-register dd;
+static int
+dochugw(struct monst *mtmp)
+{
+	int x = mtmp->mx;
+	int y = mtmp->my;
+	int d = dochug(mtmp);
+	int dd;
+
 	if(!d)		/* monster still alive */
 	if(Warning)
 	if(!mtmp->mpeaceful)
@@ -157,11 +213,11 @@ register dd;
 }
 
 /* returns 1 if monster died moving, 0 otherwise */
-dochug(mtmp)
-register struct monst *mtmp;
+int
+dochug(struct monst *mtmp)
 {
-	register struct permonst *mdat;
-	register tmp, nearby, scared;
+	struct permonst *mdat;
+	int tmp, nearby, scared;
 
 	if(mtmp->cham && !rn2(6))
 		(void) newcham(mtmp, &mons[dlevel+14+rn2(CMNUM-14-dlevel)]);
@@ -170,7 +226,7 @@ register struct monst *mtmp;
 		panic("bad monster %c (%d)",mdat->mlet,mdat->mlevel);
 
 	/* regenerate monsters */
-	if((!(moves%20) || index(MREGEN, mdat->mlet)) &&
+	if((!(moves%20) || strchr(MREGEN, mdat->mlet)) &&
 	    mtmp->mhp < mtmp->mhpmax)
 		mtmp->mhp++;
 
@@ -182,8 +238,8 @@ register struct monst *mtmp;
 		/* Nymphs and Leprechauns do not easily wake up */
 		if(cansee(mtmp->mx,mtmp->my) &&
 			(!Stealth || (mdat->mlet == 'e' && rn2(10))) &&
-			(!index("NL",mdat->mlet) || !rn2(50)) &&
-			(Aggravate_monster || index("d1", mdat->mlet)
+			(!strchr("NL",mdat->mlet) || !rn2(50)) &&
+			(Aggravate_monster || strchr("d1", mdat->mlet)
 				|| (!rn2(7) && !mtmp->mimic)))
 			mtmp->msleep = 0;
 		else return(0);
@@ -196,7 +252,7 @@ register struct monst *mtmp;
 	if(mtmp->mconf && !rn2(50)) mtmp->mconf = 0;
 
 	/* some monsters teleport */
-	if(mtmp->mflee && index("tNL", mdat->mlet) && !rn2(40)){
+	if(mtmp->mflee && strchr("tNL", mdat->mlet) && !rn2(40)){
 		rloc(mtmp);
 		return(0);
 	}
@@ -219,7 +275,7 @@ register struct monst *mtmp;
 		mtmp->mflee ||
 		mtmp->mconf ||
 		(mtmp->minvis && !rn2(3)) ||
-		(index("BIuy", mdat->mlet) && !rn2(4)) ||
+		(strchr("BIuy", mdat->mlet) && !rn2(4)) ||
 		(mdat->mlet == 'L' && !u.ugold && (mtmp->mgold || rn2(2))) ||
 		(!mtmp->mcansee && !rn2(4)) ||
 		mtmp->mpeaceful
@@ -229,7 +285,7 @@ register struct monst *mtmp;
 			return(tmp == 2);
 	}
 
-	if(!index("Ea", mdat->mlet) && nearby &&
+	if(!strchr("Ea", mdat->mlet) && nearby &&
 	 !mtmp->mpeaceful && u.uhp > 0 && !scared) {
 		if(mhitu(mtmp))
 			return(1);	/* monster died (e.g. 'y' or 'F') */
@@ -239,13 +295,13 @@ register struct monst *mtmp;
 	return(tmp == 2);
 }
 
-m_move(mtmp,after)
-register struct monst *mtmp;
+int
+m_move(struct monst *mtmp, int after)
 {
-	register struct monst *mtmp2;
-	register nx,ny,omx,omy,appr,nearer,cnt,i,j;
+	struct monst *mtmp2;
+	int nx,ny,omx,omy,appr,nearer,cnt,i,j;
 	xchar gx,gy,nix,niy,chcnt;
-	schar chi;
+	int chi;
 	boolean likegold, likegems, likeobjs;
 	char msym = mtmp->data->mlet;
 	schar mmoved = 0;	/* not strictly nec.: chi >= 0 will do */
@@ -265,7 +321,7 @@ register struct monst *mtmp;
 #ifndef NOWORM
 	if(mtmp->wormno)
 		goto not_special;
-#endif NOWORM
+#endif /* NOWORM */
 
 	/* my dog gets a special treatment */
 	if(mtmp->mtame) {
@@ -289,7 +345,7 @@ register struct monst *mtmp;
 /* teleport if that lies in our nature ('t') or when badly wounded ('1') */
 	if((msym == 't' && !rn2(5))
 	|| (msym == '1' && (mtmp->mhp < 7 || (!xdnstair && !rn2(5))
-		|| levl[u.ux][u.uy].typ == STAIRS))) {
+		|| levl[(int)u.ux][(int)u.uy].typ == STAIRS))) {
 		if(mtmp->mhp < 7 || (msym == 't' && rn2(2)))
 			rloc(mtmp);
 		else
@@ -299,7 +355,7 @@ register struct monst *mtmp;
 	}
 
 	/* spit fire ('D') or use a wand ('1') when appropriate */
-	if(index("D1", msym))
+	if(strchr("D1", msym))
 		inrange(mtmp);
 
 	if(msym == 'U' && !mtmp->mcan && canseemon(mtmp) &&
@@ -316,7 +372,7 @@ not_special:
 	appr = 1;
 	if(mtmp->mflee) appr = -1;
 	if(mtmp->mconf || Invis ||  !mtmp->mcansee ||
-		(index("BIy", msym) && !rn2(3)))
+		(strchr("BIy", msym) && !rn2(3)))
 		appr = 0;
 	omx = mtmp->mx;
 	omy = mtmp->my;
@@ -330,8 +386,7 @@ not_special:
 	 */
 	if(msym == '@' ||
 	  ('a' <= msym && msym <= 'z')) {
-	extern coord *gettrack();
-	register coord *cp;
+	coord *cp;
 	schar mroom;
 		mroom = inroom(omx,omy);
 		if(mroom < 0 || mroom != inroom(u.ux,u.uy)){
@@ -344,14 +399,14 @@ not_special:
 	}
 
 	/* look for gold or jewels nearby */
-	likegold = (index("LOD", msym) != NULL);
-	likegems = (index("ODu", msym) != NULL);
+	likegold = (strchr("LOD", msym) != NULL);
+	likegems = (strchr("ODu", msym) != NULL);
 	likeobjs = mtmp->mhide;
 #define	SRCHRADIUS	25
 	{ xchar mind = SRCHRADIUS;		/* not too far away */
-	  register int dd;
+	  int dd;
 	  if(likegold){
-		register struct gold *gold;
+		struct gold *gold;
 		for(gold = fgold; gold; gold = gold->ngold)
 		  if((dd = DIST(omx,omy,gold->gx,gold->gy)) < mind){
 		    mind = dd;
@@ -360,7 +415,7 @@ not_special:
 		}
 	  }
 	  if(likegems || likeobjs){
-		register struct obj *otmp;
+		struct obj *otmp;
 		for(otmp = fobj; otmp; otmp = otmp->nobj)
 		if(likeobjs || otmp->olet == GEM_SYM)
 		if(msym != 'u' ||
@@ -384,7 +439,7 @@ not_special:
 	cnt = mfndpos(mtmp,poss,info,
 		msym == 'u' ? NOTONL :
 		(msym == '@' || msym == '1') ? (ALLOW_SSM | ALLOW_TRAPS) :
-		index(UNDEAD, msym) ? NOGARLIC : ALLOW_TRAPS);
+		strchr(UNDEAD, msym) ? NOGARLIC : ALLOW_TRAPS);
 		/* ALLOW_ROCK for some monsters ? */
 	chcnt = 0;
 	chi = -1;
@@ -402,7 +457,7 @@ not_special:
 		}
 #else
 		nearer = (DIST(nx,ny,gx,gy) < DIST(nix,niy,gx,gy));
-#endif STUPID
+#endif /* STUPID */
 		if((appr == 1 && nearer) || (appr == -1 && !nearer) ||
 			!mmoved ||
 			(!appr && !rn2(++chcnt))){
@@ -431,7 +486,7 @@ not_special:
 		mtmp->mtrack[0].y = omy;
 #ifndef NOWORM
 		if(mtmp->wormno) worm_move(mtmp);
-#endif NOWORM
+#endif /* NOWORM */
 	} else {
 		if(msym == 'u' && rn2(2)){
 			rloc(mtmp);
@@ -439,7 +494,7 @@ not_special:
 		}
 #ifndef NOWORM
 		if(mtmp->wormno) worm_nomove(mtmp);
-#endif NOWORM
+#endif /* NOWORM */
 	}
 postmov:
 	if(mmoved == 1) {
@@ -453,38 +508,42 @@ postmov:
 	return(mmoved);
 }
 
-mpickgold(mtmp) register struct monst *mtmp; {
-register struct gold *gold;
-	while(gold = g_at(mtmp->mx, mtmp->my)){
+static void
+mpickgold(struct monst *mtmp)
+{
+	struct gold *gold;
+
+	while ((gold = g_at(mtmp->mx, mtmp->my))) {
 		mtmp->mgold += gold->amount;
 		freegold(gold);
-		if(levl[mtmp->mx][mtmp->my].scrsym == '$')
+		if(levl[(int)mtmp->mx][(int)mtmp->my].scrsym == '$')
 			newsym(mtmp->mx, mtmp->my);
 	}
 }
 
-mpickgems(mtmp) register struct monst *mtmp; {
-register struct obj *otmp;
-	for(otmp = fobj; otmp; otmp = otmp->nobj)
-	if(otmp->olet == GEM_SYM)
-	if(otmp->ox == mtmp->mx && otmp->oy == mtmp->my)
-	if(mtmp->data->mlet != 'u' || objects[otmp->otyp].g_val != 0){
+static void
+mpickgems(struct monst *mtmp)
+{
+	struct obj *otmp;
+
+	for (otmp = fobj; otmp; otmp = otmp->nobj)
+	if (otmp->olet == GEM_SYM)
+	if (otmp->ox == mtmp->mx && otmp->oy == mtmp->my)
+	if (mtmp->data->mlet != 'u' || objects[otmp->otyp].g_val != 0){
 		freeobj(otmp);
 		mpickobj(mtmp, otmp);
-		if(levl[mtmp->mx][mtmp->my].scrsym == GEM_SYM)
+		if(levl[(int)mtmp->mx][(int)mtmp->my].scrsym == GEM_SYM)
 			newsym(mtmp->mx, mtmp->my);	/* %% */
 		return;	/* pick only one object */
 	}
 }
 
 /* return number of acceptable neighbour positions */
-mfndpos(mon,poss,info,flag)
-register struct monst *mon;
-coord poss[9];
-int info[9], flag;
+int
+mfndpos(struct monst *mon, coord poss[9],int info[9], int flag)
 {
-	register int x,y,nx,ny,cnt = 0,ntyp;
-	register struct monst *mtmp;
+	int x,y,nx,ny,cnt = 0,ntyp;
+	struct monst *mtmp;
 	int nowtyp;
 	boolean pool;
 
@@ -505,11 +564,12 @@ nexttry:	/* eels prefer the water, but if there is no water nearby,
 	if(!(nx != x && ny != y && (nowtyp == DOOR || ntyp == DOOR)))
 	if((ntyp == POOL) == pool) {
 		info[cnt] = 0;
-		if(nx == u.ux && ny == u.uy){
+		if (nx == u.ux && ny == u.uy) {
 			if(!(flag & ALLOW_U)) continue;
 			info[cnt] = ALLOW_U;
-		} else if(mtmp = m_at(nx,ny)){
-			if(!(flag & ALLOW_M)) continue;
+		} else if ((mtmp = m_at(nx,ny))) {
+			if (!(flag & ALLOW_M))
+				continue;
 			info[cnt] = ALLOW_M;
 			if(mtmp->mtame){
 				if(!(flag & ALLOW_TM)) continue;
@@ -534,8 +594,8 @@ nexttry:	/* eels prefer the water, but if there is no water nearby,
 			info[cnt] |= NOTONL;
 		}
 		/* we cannot avoid traps of an unknown kind */
-		{ register struct trap *ttmp = t_at(nx, ny);
-		  register int tt;
+		{ struct trap *ttmp = t_at(nx, ny);
+		  int tt;
 			if(ttmp) {
 				tt = 1 << ttmp->ttyp;
 				if(mon->mtrapseen & tt){
@@ -555,14 +615,16 @@ nexttry:	/* eels prefer the water, but if there is no water nearby,
 	return(cnt);
 }
 
-dist(x,y) int x,y; {
+int
+dist(int x, int y)
+{
 	return((x-u.ux)*(x-u.ux) + (y-u.uy)*(y-u.uy));
 }
 
-poisoned(string, pname)
-register char *string, *pname;
+void
+poisoned(char *string, char *pname)
 {
-	register int i;
+	int i;
 
 	if(Blind) pline("It was poisoned.");
 	else pline("The %s was poisoned!",string);
@@ -585,8 +647,8 @@ register char *string, *pname;
 	}
 }
 
-mondead(mtmp)
-register struct monst *mtmp;
+void
+mondead(struct monst *mtmp)
 {
 	relobj(mtmp,1);
 	unpmon(mtmp);
@@ -596,13 +658,13 @@ register struct monst *mtmp;
 	if(mtmp->isgd) gddead();
 #ifndef NOWORM
 	if(mtmp->wormno) wormdead(mtmp);
-#endif NOWORM
+#endif /* NOWORM */
 	monfree(mtmp);
 }
 
 /* called when monster is moved to larger structure */
-replmon(mtmp,mtmp2)
-register struct monst *mtmp, *mtmp2;
+void
+replmon(struct monst *mtmp, struct monst *mtmp2)
 {
 	relmon(mtmp);
 	monfree(mtmp);
@@ -613,10 +675,10 @@ register struct monst *mtmp, *mtmp2;
 	if(mtmp2->isgd) replgd(mtmp,mtmp2);
 }
 
-relmon(mon)
-register struct monst *mon;
+void
+relmon(struct monst *mon)
 {
-	register struct monst *mtmp;
+	struct monst *mtmp;
 
 	if(mon == fmon) fmon = fmon->nmon;
 	else {
@@ -629,21 +691,26 @@ register struct monst *mon;
    available shortly after their demise */
 struct monst *fdmon;	/* chain of dead monsters, need not to be saved */
 
-monfree(mtmp) register struct monst *mtmp; {
+void
+monfree(struct monst *mtmp)
+{
 	mtmp->nmon = fdmon;
 	fdmon = mtmp;
 }
 
-dmonsfree(){
-register struct monst *mtmp;
-	while(mtmp = fdmon){
+static void
+dmonsfree(void)
+{
+	struct monst *mtmp;
+
+	while ((mtmp = fdmon)) {
 		fdmon = mtmp->nmon;
-		free((char *) mtmp);
+		free(mtmp);
 	}
 }
 
-unstuck(mtmp)
-register struct monst *mtmp;
+void
+unstuck(struct monst *mtmp)
 {
 	if(u.ustuck == mtmp) {
 		if(u.uswallow){
@@ -657,15 +724,11 @@ register struct monst *mtmp;
 	}
 }
 
-killed(mtmp)
-register struct monst *mtmp;
+void
+killed(struct monst *mtmp)
 {
-#ifdef lint
-#define	NEW_SCORING
-#endif lint
-	register int tmp,tmp2,nk,x,y;
-	register struct permonst *mdat;
-	extern long newuexp();
+	int tmp, nk, x, y;
+	struct permonst *mdat;
 
 	if(mtmp->cham) mtmp->data = PM_CHAMELEON;
 	mdat = mtmp->data;
@@ -687,7 +750,7 @@ register struct monst *mtmp;
 	    extern char fut_geno[];
 	    u.nr_killed[tmp]++;
 	    if((nk = u.nr_killed[tmp]) > MAXMONNO &&
-		!index(fut_geno, mdat->mlet))
+		!strchr(fut_geno, mdat->mlet))
 		    charcat(fut_geno,  mdat->mlet);
 	}
 
@@ -700,9 +763,9 @@ register struct monst *mtmp;
 	/* give experience points */
 	tmp = 1 + mdat->mlevel * mdat->mlevel;
 	if(mdat->ac < 3) tmp += 2*(7 - mdat->ac);
-	if(index("AcsSDXaeRTVWU&In:P", mdat->mlet))
+	if(strchr("AcsSDXaeRTVWU&In:P", mdat->mlet))
 		tmp += 2*mdat->mlevel;
-	if(index("DeV&P",mdat->mlet)) tmp += (7*mdat->mlevel);
+	if(strchr("DeV&P",mdat->mlet)) tmp += (7*mdat->mlevel);
 	if(mdat->mlevel > 6) tmp += 50;
 	if(mdat->mlet == ';') tmp += 1000;
 
@@ -711,6 +774,7 @@ register struct monst *mtmp;
 		   when this is not the first of this kind */
 	{ int ul = u.ulevel;
 	  int ml = mdat->mlevel;
+	  int tmp2;
 
 	if(ul < 14)    /* points are given based on present and future level */
 	    for(tmp2 = 0; !tmp2 || ul + tmp2 <= ml; tmp2++)
@@ -724,7 +788,7 @@ register struct monst *mtmp;
 	}
 	/* note: ul is not necessarily the future value of u.ulevel */
 	/* ------- end of recent valuation change ------- */
-#endif NEW_SCORING
+#endif /* NEW_SCORING */
 
 	more_experienced(tmp,0);
 	flags.botl = 1;
@@ -752,21 +816,21 @@ register struct monst *mtmp;
 		mksobj_at(WORM_TOOTH, x, y);
 		stackobj(fobj);
 	} else
-#endif	NOWORM
-	if(!letter(tmp) || (!index("mw", tmp) && !rn2(3))) tmp = 0;
+#endif /* NOWORM */
+	if(!letter(tmp) || (!strchr("mw", tmp) && !rn2(3))) tmp = 0;
 
 	if(ACCESSIBLE(levl[x][y].typ))	/* might be mimic in wall or dead eel*/
 	    if(x != u.ux || y != u.uy)	/* might be here after swallowed */
-		if(index("NTVm&",mdat->mlet) || rn2(5)) {
-		register struct obj *obj2 = mkobj_at(tmp,x,y);
+		if(strchr("NTVm&",mdat->mlet) || rn2(5)) {
+		struct obj *obj2 = mkobj_at(tmp,x,y);
 		if(cansee(x,y))
 			atl(x,y,obj2->olet);
 		stackobj(obj2);
 	}
 }
 
-kludge(str,arg)
-register char *str,*arg;
+void
+kludge(char *str, char *arg)
 {
 	if(Blind) {
 		if(*str == '%') pline(str,"It");
@@ -774,9 +838,10 @@ register char *str,*arg;
 	} else pline(str,arg);
 }
 
-rescham()	/* force all chameleons to become normal */
+void
+rescham(void)	/* force all chameleons to become normal */
 {
-	register struct monst *mtmp;
+	struct monst *mtmp;
 
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon)
 		if(mtmp->cham) {
@@ -785,24 +850,24 @@ rescham()	/* force all chameleons to become normal */
 		}
 }
 
-newcham(mtmp,mdat)	/* make a chameleon look like a new monster */
-			/* returns 1 if the monster actually changed */
-register struct monst *mtmp;
-register struct permonst *mdat;
+/* make a chameleon look like a new monster */
+/* returns 1 if the monster actually changed */
+int
+newcham(struct monst *mtmp, struct permonst *mdat)
 {
-	register mhp, hpn, hpd;
+	int mhp, hpn, hpd;
 
 	if(mdat == mtmp->data) return(0);	/* still the same monster */
 #ifndef NOWORM
 	if(mtmp->wormno) wormdead(mtmp);	/* throw tail away */
-#endif NOWORM
+#endif /* NOWORM */
 	if (u.ustuck == mtmp) {
 		if (u.uswallow) {
 			u.uswallow = 0;
 			u.uswldtim = 0;
 			mnexto (mtmp);
-			docrt ();
-			prme ();
+			docrt();
+			prme();
 		}
 		u.ustuck = 0;
 	}
@@ -819,16 +884,16 @@ register struct permonst *mdat;
 #ifndef NOWORM
 	if(mdat->mlet == 'w' && getwn(mtmp)) initworm(mtmp);
 			/* perhaps we should clear mtmp->mtame here? */
-#endif NOWORM
+#endif /* NOWORM */
 	unpmon(mtmp);	/* necessary for 'I' and to force pmon */
 	pmon(mtmp);
 	return(1);
 }
 
-mnexto(mtmp)	/* Make monster mtmp next to you (if possible) */
-struct monst *mtmp;
+/* Make monster mtmp next to you (if possible) */
+void
+mnexto(struct monst *mtmp)
 {
-	extern coord enexto();
 	coord mm;
 	mm = enexto(u.ux, u.uy);
 	mtmp->mx = mm.x;
@@ -836,21 +901,25 @@ struct monst *mtmp;
 	pmon(mtmp);
 }
 
-ishuman(mtmp) register struct monst *mtmp; {
+static int
+ishuman(struct monst *mtmp)
+{
 	return(mtmp->data->mlet == '@');
 }
 
-setmangry(mtmp) register struct monst *mtmp; {
+void
+setmangry(struct monst *mtmp)
+{
 	if(!mtmp->mpeaceful) return;
 	if(mtmp->mtame) return;
 	mtmp->mpeaceful = 0;
 	if(ishuman(mtmp)) pline("%s gets angry!", Monnam(mtmp));
 }
 
-/* not one hundred procent correct: now a snake may hide under an
+/* not one hundred percent correct: now a snake may hide under an
    invisible object */
-canseemon(mtmp)
-register struct monst *mtmp;
+int
+canseemon(struct monst *mtmp)
 {
 	return((!mtmp->minvis || See_invisible)
 		&& (!mtmp->mhide || !o_at(mtmp->mx,mtmp->my))

@@ -1,3 +1,4 @@
+/*	$OpenBSD: erand48.c,v 1.4 2015/09/13 08:31:47 guenther Exp $ */
 /*
  * Copyright (c) 1993 Martin Birgmeier
  * All rights reserved.
@@ -11,6 +12,7 @@
  * to anyone/anything when using this software.
  */
 
+#include <math.h>
 #include "rand48.h"
 
 double
@@ -21,3 +23,4 @@ erand48(unsigned short xseed[3])
 	       ldexp((double) xseed[1], -32) +
 	       ldexp((double) xseed[2], -16);
 }
+DEF_WEAK(erand48);

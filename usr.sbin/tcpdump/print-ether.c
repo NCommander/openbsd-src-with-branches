@@ -1,7 +1,7 @@
-/*	$NetBSD: print-ether.c,v 1.3 1995/03/06 19:11:10 mycroft Exp $	*/
+/*	$OpenBSD: print-ether.c,v 1.30 2015/11/16 00:16:39 mmcc Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -20,56 +20,65 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-#ifndef lint
-static char rcsid[] =
-    "@(#) Header: print-ether.c,v 1.37 94/06/10 17:01:29 mccanne Exp (LBL)";
-#endif
 
-#include <sys/param.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 
+struct mbuf;
+struct rtentry;
 #include <net/if.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/udp.h>
 #include <netinet/udp_var.h>
 #include <netinet/tcp.h>
-#include <netinet/tcpip.h>
 
 #include <stdio.h>
 #include <pcap.h>
 
+#ifdef INET6
+#include <netinet/ip6.h>
+#endif
+
 #include "interface.h"
 #include "addrtoname.h"
 #include "ethertype.h"
+#include "extract.h"
 
 const u_char *packetp;
 const u_char *snapend;
 
-static inline void
-ether_print(register const u_char *bp, int length)
+void ether_macctl(const u_char *, u_int);
+
+void
+ether_print(const u_char *bp, u_int length)
 {
-	register const struct ether_header *ep;
+	const struct ether_header *ep;
 
 	ep = (const struct ether_header *)bp;
-	if (qflag)
+	if (qflag) {
+		TCHECK2(*ep, 12);
 		(void)printf("%s %s %d: ",
 			     etheraddr_string(ESRC(ep)),
 			     etheraddr_string(EDST(ep)),
 			     length);
-	else
+	} else {
+		TCHECK2(*ep, 14);
 		(void)printf("%s %s %s %d: ",
 			     etheraddr_string(ESRC(ep)),
 			     etheraddr_string(EDST(ep)),
 			     etherproto_string(ep->ether_type),
 			     length);
+	}
+	return;
+trunc:
+	printf("[|ether] ");
 }
+
+u_short extracted_ethertype;
 
 /*
  * This is the top level routine of the printer.  'p' is the points
@@ -80,13 +89,24 @@ ether_print(register const u_char *bp, int length)
 void
 ether_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 {
-	int caplen = h->caplen;
-	int length = h->len;
-	struct ether_header *ep;
-	u_short ether_type;
-	extern u_short extracted_ethertype;
-
 	ts_print(&h->ts);
+
+	/*
+	 * Some printers want to get back at the ethernet addresses,
+	 * and/or check that they're not walking off the end of the packet.
+	 * Rather than pass them all the way down, we set these globals.
+	 */
+	snapend = p + h->caplen;
+
+	ether_tryprint(p, h->len, 1);
+}
+
+void
+ether_tryprint(const u_char *p, u_int length, int first_header)
+{
+	struct ether_header *ep;
+	u_int caplen = snapend - p;
+	u_short ether_type;
 
 	if (caplen < sizeof(struct ether_header)) {
 		printf("[|ether]");
@@ -96,14 +116,7 @@ ether_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 	if (eflag)
 		ether_print(p, length);
 
-	/*
-	 * Some printers want to get back at the ethernet addresses,
-	 * and/or check that they're not walking off the end of the packet.
-	 * Rather than pass them all the way down, we set these globals.
-	 */
 	packetp = p;
-	snapend = p + caplen;
-
 	length -= sizeof(struct ether_header);
 	caplen -= sizeof(struct ether_header);
 	ep = (struct ether_header *)p;
@@ -115,7 +128,7 @@ ether_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 	 * Is it (gag) an 802.3 encapsulation?
 	 */
 	extracted_ethertype = 0;
-	if (ether_type < ETHERMTU) {
+	if (ether_type <= ETHERMTU) {
 		/* Try to print the LLC-layer header & higher layers */
 		if (llc_print(p, length, caplen, ESRC(ep), EDST(ep)) == 0) {
 			/* ether_type not known, print raw packet */
@@ -125,20 +138,34 @@ ether_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 				printf("(LLC %s) ",
 			       etherproto_string(htons(extracted_ethertype)));
 			}
-			if (!xflag && !qflag)
-				default_print(p, caplen);
+			if (!xflag && !qflag) {
+				if (eflag)
+					default_print(packetp,
+					    snapend - packetp);
+				else
+					default_print(p, caplen);
+			}
 		}
 	} else if (ether_encap_print(ether_type, p, length, caplen) == 0) {
 		/* ether_type not known, print raw packet */
 		if (!eflag)
 			ether_print((u_char *)ep, length + sizeof(*ep));
-		if (!xflag && !qflag)
+		if (!xflag && !qflag) {
+			if (eflag)
+				default_print(packetp, snapend - packetp);
+			else
+				default_print(p, caplen);
+		}
+	}
+	if (xflag && first_header) {
+		if (eflag)
+			default_print(packetp, snapend - packetp);
+		else
 			default_print(p, caplen);
 	}
-	if (xflag)
-		default_print(p, caplen);
  out:
-	putchar('\n');
+	if (first_header)
+		putchar('\n');
 }
 
 /*
@@ -151,11 +178,11 @@ ether_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
  * that might want to know what it is.
  */
 
-u_short	extracted_ethertype;
-
 int
-ether_encap_print(u_short ethertype, const u_char *p, int length, int caplen)
+ether_encap_print(u_short ethertype, const u_char *p,
+    u_int length, u_int caplen)
 {
+recurse:
 	extracted_ethertype = ethertype;
 
 	switch (ethertype) {
@@ -163,6 +190,12 @@ ether_encap_print(u_short ethertype, const u_char *p, int length, int caplen)
 	case ETHERTYPE_IP:
 		ip_print(p, length);
 		return (1);
+
+#ifdef INET6
+	case ETHERTYPE_IPV6:
+		ip6_print(p, length);
+		return (1);
+#endif /*INET6*/
 
 	case ETHERTYPE_ARP:
 	case ETHERTYPE_REVARP:
@@ -176,14 +209,70 @@ ether_encap_print(u_short ethertype, const u_char *p, int length, int caplen)
 	case ETHERTYPE_ATALK:
 		if (vflag)
 			fputs("et1 ", stdout);
-		atalk_print(p, length);
+		atalk_print_llap(p, length);
 		return (1);
 
 	case ETHERTYPE_AARP:
 		aarp_print(p, length);
 		return (1);
 
+	case ETHERTYPE_8021Q:
+		printf("802.1Q ");
+	case ETHERTYPE_QINQ:
+		if (ethertype == ETHERTYPE_QINQ)
+			printf("QinQ s");
+		printf("vid %d pri %d%s",
+		       ntohs(*(unsigned short*)p)&0xFFF,
+		       ntohs(*(unsigned short*)p)>>13,
+		       (ntohs(*(unsigned short*)p)&0x1000) ? " cfi " : " ");
+		ethertype = ntohs(*(unsigned short*)(p+2));
+		p += 4;
+		length -= 4;
+		caplen -= 4;
+		if (ethertype > ETHERMTU) 
+			goto recurse;
+
+		extracted_ethertype = 0;
+
+		if (llc_print(p, length, caplen, p-18, p-12) == 0) {
+			/* ether_type not known, print raw packet */
+			if (!eflag)
+				ether_print(p-18, length+4);
+			if (extracted_ethertype) {
+				printf("(LLC %s) ",
+				etherproto_string(htons(extracted_ethertype)));
+			}
+			if (!xflag && !qflag)
+				default_print(p-18, caplen+4);
+		}
+		return (1);
+
+#ifdef PPP
+	case ETHERTYPE_PPPOEDISC:
+	case ETHERTYPE_PPPOE:
+		pppoe_if_print(ethertype, p, length, caplen);
+		return (1);
+#endif
+
+	case ETHERTYPE_FLOWCONTROL:
+		ether_macctl(p, length);
+		return (1);
+
+	case ETHERTYPE_MPLS:
+	case ETHERTYPE_MPLS_MCAST:
+		mpls_print(p, length);
+		return (1);
+
+	case ETHERTYPE_LLDP:
+		lldp_print(p, length);
+		return (1);
+
+	case ETHERTYPE_SLOW:
+		slow_print(p, length);
+		return (1);
+
 	case ETHERTYPE_LAT:
+	case ETHERTYPE_SCA:
 	case ETHERTYPE_MOPRC:
 	case ETHERTYPE_MOPDL:
 		/* default_print for now */
@@ -192,3 +281,29 @@ ether_encap_print(u_short ethertype, const u_char *p, int length, int caplen)
 	}
 }
 
+void
+ether_macctl(const u_char *p, u_int length)
+{
+	printf("MACCTL");
+
+	if (length < 2)
+		goto trunc;
+	if (EXTRACT_16BITS(p) == 0x0001) {
+		u_int plen;
+
+		printf(" PAUSE");
+
+		length -= 2;
+		p += 2;
+		if (length < 2)
+			goto trunc;
+		plen = 512 * EXTRACT_16BITS(p);
+		printf(" quanta %u", plen);
+	} else {
+		printf(" unknown-opcode(0x%04x)", EXTRACT_16BITS(p));
+	}
+	return;
+
+trunc:
+	printf("[|MACCTL]");
+}

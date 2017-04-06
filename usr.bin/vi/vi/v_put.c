@@ -1,39 +1,15 @@
+/*	$OpenBSD: v_put.c,v 1.6 2014/11/12 04:28:41 bentley Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996
+ *	Keith Bostic.  All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * See the LICENSE file for redistribution information.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)v_put.c	8.11 (Berkeley) 8/17/94";
-#endif /* not lint */
+#include "config.h"
 
 #include <sys/types.h>
 #include <sys/queue.h>
@@ -41,28 +17,21 @@ static char sccsid[] = "@(#)v_put.c	8.11 (Berkeley) 8/17/94";
 
 #include <bitstring.h>
 #include <limits.h>
-#include <signal.h>
 #include <stdio.h>
-#include <termios.h>
 
-#include "compat.h"
-#include <db.h>
-#include <regex.h>
-
+#include "../common/common.h"
 #include "vi.h"
-#include "vcmd.h"
 
-static void	inc_buf __P((SCR *, VICMDARG *));
+static void	inc_buf(SCR *, VICMD *);
 
 /*
  * v_Put -- [buffer]P
  *	Insert the contents of the buffer before the cursor.
+ *
+ * PUBLIC: int v_Put(SCR *, VICMD *);
  */
 int
-v_Put(sp, ep, vp)
-	SCR *sp;
-	EXF *ep;
-	VICMDARG *vp;
+v_Put(SCR *sp, VICMD *vp)
 {
 	u_long cnt;
 
@@ -75,11 +44,13 @@ v_Put(sp, ep, vp)
 	 * commands.  It's useful, so we do.
 	 */
 	for (cnt = F_ISSET(vp, VC_C1SET) ? vp->count : 1; cnt--;) {
-		if (put(sp, ep, NULL,
+		if (put(sp, NULL,
 		    F_ISSET(vp, VC_BUFFER) ? &vp->buffer : NULL,
 		    &vp->m_start, &vp->m_final, 0))
 			return (1);
 		vp->m_start = vp->m_final;
+		if (INTERRUPTED(sp))
+			return (1);
 	}
 	return (0);
 }
@@ -87,12 +58,11 @@ v_Put(sp, ep, vp)
 /*
  * v_put -- [buffer]p
  *	Insert the contents of the buffer after the cursor.
+ *
+ * PUBLIC: int v_put(SCR *, VICMD *);
  */
 int
-v_put(sp, ep, vp)
-	SCR *sp;
-	EXF *ep;
-	VICMDARG *vp;
+v_put(SCR *sp, VICMD *vp)
 {
 	u_long cnt;
 
@@ -105,11 +75,13 @@ v_put(sp, ep, vp)
 	 * commands.  It's useful, so we do.
 	 */
 	for (cnt = F_ISSET(vp, VC_C1SET) ? vp->count : 1; cnt--;) {
-		if (put(sp, ep, NULL,
+		if (put(sp, NULL,
 		    F_ISSET(vp, VC_BUFFER) ? &vp->buffer : NULL,
 		    &vp->m_start, &vp->m_final, 1))
 			return (1);
 		vp->m_start = vp->m_final;
+		if (INTERRUPTED(sp))
+			return (1);
 	}
 	return (0);
 }
@@ -130,9 +102,7 @@ v_put(sp, ep, vp)
  * the buffer increment gets done regardless of the success of the put.
  */
 static void
-inc_buf(sp, vp)
-	SCR *sp;
-	VICMDARG *vp;
+inc_buf(SCR *sp, VICMD *vp)
 {
 	CHAR_T v;
 

@@ -1,3 +1,4 @@
+/*	$OpenBSD: grp.h,v 1.11 2012/12/05 23:19:57 deraadt Exp $	*/
 /*	$NetBSD: grp.h,v 1.7 1995/04/29 05:30:40 cgd Exp $	*/
 
 /*-
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,32 +40,38 @@
 #ifndef _GRP_H_
 #define	_GRP_H_
 
-#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
+#include <sys/types.h>
+
+#if __BSD_VISIBLE
 #define	_PATH_GROUP		"/etc/group"
+#define	_GR_BUF_LEN		(1024+200*sizeof(char*))
 #endif
 
 struct group {
 	char	*gr_name;		/* group name */
 	char	*gr_passwd;		/* group password */
-	int	gr_gid;			/* group id */
+	gid_t	gr_gid;			/* group id */
 	char	**gr_mem;		/* group members */
 };
 
-#include <sys/cdefs.h>
-
 __BEGIN_DECLS
-struct group	*getgrgid __P((gid_t));
-struct group	*getgrnam __P((const char *));
-#ifndef _POSIX_SOURCE
-struct group	*getgrent __P((void));
-void		 setgrent __P((void));
-void		 endgrent __P((void));
-void		 setgrfile __P((const char *));
-#ifndef _XOPEN_SOURCE
-char		*group_from_gid __P((gid_t, int));
-int		 setgroupent __P((int));
-#endif /* !_XOPEN_SOURCE */
-#endif /* !_POSIX_SOURCE */
+struct group	*getgrgid(gid_t);
+struct group	*getgrnam(const char *);
+#if __BSD_VISIBLE || __XPG_VISIBLE
+struct group	*getgrent(void);
+void		 setgrent(void);
+void		 endgrent(void);
+#endif
+#if __BSD_VISIBLE || __POSIX_VISIBLE >= 199506 || __XPG_VISIBLE
+int		 getgrgid_r(gid_t, struct group *, char *,
+		    size_t, struct group **);
+int		 getgrnam_r(const char *, struct group *, char *,
+		    size_t, struct group **);
+#endif
+#if __BSD_VISIBLE
+int		 setgroupent(int);
+char		*group_from_gid(gid_t, int);
+#endif
 __END_DECLS
 
 #endif /* !_GRP_H_ */

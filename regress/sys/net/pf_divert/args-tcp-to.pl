@@ -1,8 +1,11 @@
-# test divert-to
+# test divert-to with tcp
 
 use strict;
 use warnings;
 
 our %args = (
-	divert => "to",
+    protocol => "tcp",
+    client => { func => \&write_read_stream },
+    server => { func => \&write_read_stream },
+    divert => "to",
 );

@@ -1,14 +1,18 @@
+/*	$OpenBSD: s_scalbnf.S,v 1.4 2009/04/21 23:02:23 martynas Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
+#include "DEFS.h"
 
-RCSID("$NetBSD: s_scalbnf.S,v 1.3 1995/05/09 00:19:59 jtc Exp $")
+.global ldexpf
+	ldexpf = scalbnf
 
 ENTRY(scalbnf)
 	fildl	8(%esp)
 	flds	4(%esp)
 	fscale
+	fstp	%st(1)		/* bug fix for fp stack overflow */
 	ret
+END_STD(scalbnf)

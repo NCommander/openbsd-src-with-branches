@@ -1,3 +1,4 @@
+/*	$OpenBSD: init.c,v 1.7 2009/10/27 23:59:21 deraadt Exp $	*/
 /*	$NetBSD: init.c,v 1.6 1995/03/21 09:03:05 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,19 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: init.c,v 1.6 1995/03/21 09:03:05 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
@@ -56,7 +41,6 @@ struct biltins bfunc[] =
 {
     { "@", 		dolet, 		0, INF	},
     { "alias", 		doalias, 	0, INF	},
-    { "alloc", 		showall, 	0, 1	},
     { "bg", 		dobg, 		0, INF	},
     { "break", 		dobreak, 	0, 0	},
     { "breaksw", 	doswbrk, 	0, 0	},
@@ -92,7 +76,6 @@ struct biltins bfunc[] =
     { "notify", 	donotify, 	0, INF	},
     { "onintr", 	doonintr, 	0, 2	},
     { "popd", 		dopopd, 	0, INF	},
-    { "printf",		doprintf,	1, INF	},
     { "pushd", 		dopushd, 	0, INF	},
     { "rehash", 	dohash, 	0, 0	},
     { "repeat", 	dorepeat, 	2, INF	},

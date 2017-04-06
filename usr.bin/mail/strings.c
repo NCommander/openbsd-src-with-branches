@@ -1,3 +1,6 @@
+/*	$OpenBSD: strings.c,v 1.9 2009/10/27 23:59:40 deraadt Exp $	*/
+/*	$NetBSD: strings.c,v 1.5 1996/06/08 19:48:40 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,11 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char sccsid[] = "from: @(#)strings.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: strings.c,v 1.4 1995/04/24 07:39:42 cgd Exp $";
-#endif /* not lint */
 
 /*
  * Mail -- a mail program
@@ -54,36 +48,32 @@ static char rcsid[] = "$Id: strings.c,v 1.4 1995/04/24 07:39:42 cgd Exp $";
  * The string spaces are of exponentially increasing size, to satisfy
  * the occasional user with enormous string size requests.
  */
-
 char *
-salloc(size)
-	int size;
+salloc(int size)
 {
-	register char *t;
-	register int s;
-	register struct strings *sp;
+	char *t;
+	int s;
+	struct strings *sp;
 	int index;
 
 	s = size;
-	s += (sizeof (char *) - 1);
-	s &= ~(sizeof (char *) - 1);
+	s += (sizeof(char *) - 1);
+	s &= ~(sizeof(char *) - 1);
 	index = 0;
 	for (sp = &stringdope[0]; sp < &stringdope[NSPACE]; sp++) {
-		if (sp->s_topFree == NOSTR && (STRINGSIZE << index) >= s)
+		if (sp->s_topFree == NULL && (STRINGSIZE << index) >= s)
 			break;
 		if (sp->s_nleft >= s)
 			break;
 		index++;
 	}
 	if (sp >= &stringdope[NSPACE])
-		panic("String too large");
-	if (sp->s_topFree == NOSTR) {
+		errx(1, "String too large");
+	if (sp->s_topFree == NULL) {
 		index = sp - &stringdope[0];
 		sp->s_topFree = malloc(STRINGSIZE << index);
-		if (sp->s_topFree == NOSTR) {
-			fprintf(stderr, "No room for space %d\n", index);
-			panic("Internal error");
-		}
+		if (sp->s_topFree == NULL)
+			err(1, "malloc");
 		sp->s_nextFree = sp->s_topFree;
 		sp->s_nleft = STRINGSIZE << index;
 	}
@@ -99,16 +89,16 @@ salloc(size)
  * since last reset.
  */
 void
-sreset()
+sreset(void)
 {
-	register struct strings *sp;
-	register int index;
+	struct strings *sp;
+	int index;
 
 	if (noreset)
 		return;
 	index = 0;
 	for (sp = &stringdope[0]; sp < &stringdope[NSPACE]; sp++) {
-		if (sp->s_topFree == NOSTR)
+		if (sp->s_topFree == NULL)
 			continue;
 		sp->s_nextFree = sp->s_topFree;
 		sp->s_nleft = STRINGSIZE << index;
@@ -121,10 +111,10 @@ sreset()
  * Meant to be called in main, after initialization.
  */
 void
-spreserve()
+spreserve(void)
 {
-	register struct strings *sp;
+	struct strings *sp;
 
 	for (sp = &stringdope[0]; sp < &stringdope[NSPACE]; sp++)
-		sp->s_topFree = NOSTR;
+		sp->s_topFree = NULL;
 }

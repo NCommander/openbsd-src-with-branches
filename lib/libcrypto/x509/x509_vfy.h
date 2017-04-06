@@ -1,4 +1,4 @@
-/* crypto/x509/x509_vfy.h */
+/* $OpenBSD: x509_vfy.h,v 1.17 2016/11/05 20:14:59 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -66,26 +66,15 @@
 #define HEADER_X509_VFY_H
 
 #include <openssl/opensslconf.h>
+
 #ifndef OPENSSL_NO_LHASH
 #include <openssl/lhash.h>
 #endif
 #include <openssl/bio.h>
 #include <openssl/crypto.h>
-#include <openssl/symhacks.h>
 
 #ifdef  __cplusplus
 extern "C" {
-#endif
-
-#if 0
-/* Outer object */
-typedef struct x509_hash_dir_st
-	{
-	int num_dirs;
-	char **dirs;
-	int *dirs_type;
-	int num_dirs_alloced;
-	} X509_HASH_DIR_CTX;
 #endif
 
 typedef struct x509_file_st
@@ -158,6 +147,8 @@ typedef struct x509_lookup_method_st
 			    X509_OBJECT *ret);
 	} X509_LOOKUP_METHOD;
 
+typedef struct X509_VERIFY_PARAM_ID_st X509_VERIFY_PARAM_ID;
+
 /* This structure hold all parameters associated with a verify operation
  * by including an X509_VERIFY_PARAM structure in related structures the
  * parameters used can be customized
@@ -173,7 +164,8 @@ typedef struct X509_VERIFY_PARAM_st
 	int trust;		/* trust setting to check */
 	int depth;		/* Verify depth */
 	STACK_OF(ASN1_OBJECT) *policies;	/* Permissible policies */
-	} X509_VERIFY_PARAM;
+	X509_VERIFY_PARAM_ID *id;	/* opaque ID data */
+} X509_VERIFY_PARAM;
 
 DECLARE_STACK_OF(X509_VERIFY_PARAM)
 
@@ -286,6 +278,7 @@ void X509_STORE_CTX_set_depth(X509_STORE_CTX *ctx, int depth);
 
 #define X509_L_FILE_LOAD	1
 #define X509_L_ADD_DIR		2
+#define X509_L_MEM		3
 
 #define X509_LOOKUP_load_file(x,name,type) \
 		X509_LOOKUP_ctrl((x),X509_L_FILE_LOAD,(name),(long)(type),NULL)
@@ -293,9 +286,12 @@ void X509_STORE_CTX_set_depth(X509_STORE_CTX *ctx, int depth);
 #define X509_LOOKUP_add_dir(x,name,type) \
 		X509_LOOKUP_ctrl((x),X509_L_ADD_DIR,(name),(long)(type),NULL)
 
-#define		X509_V_OK					0
-/* illegal error (for uninitialized values, to avoid X509_V_OK): 1 */
+#define X509_LOOKUP_add_mem(x,iov,type) \
+		X509_LOOKUP_ctrl((x),X509_L_MEM,(const char *)(iov),\
+		(long)(type),NULL)
 
+#define		X509_V_OK					0
+#define		X509_V_ERR_UNSPECIFIED				1
 #define		X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT		2
 #define		X509_V_ERR_UNABLE_TO_GET_CRL			3
 #define		X509_V_ERR_UNABLE_TO_DECRYPT_CERT_SIGNATURE	4
@@ -357,6 +353,16 @@ void X509_STORE_CTX_set_depth(X509_STORE_CTX *ctx, int depth);
 /* The application is not happy */
 #define		X509_V_ERR_APPLICATION_VERIFICATION		50
 
+/* Host, email and IP check errors */
+#define		X509_V_ERR_HOSTNAME_MISMATCH			62
+#define		X509_V_ERR_EMAIL_MISMATCH			63
+#define		X509_V_ERR_IP_ADDRESS_MISMATCH			64
+
+/* Caller error */
+#define		X509_V_ERR_INVALID_CALL				65
+/* Issuer lookup error */
+#define		X509_V_ERR_STORE_LOOKUP				66
+
 /* Certificate verify flags */
 
 /* Send issuer+subject checks to verify_cb */
@@ -389,7 +395,18 @@ void X509_STORE_CTX_set_depth(X509_STORE_CTX *ctx, int depth);
 #define X509_V_FLAG_USE_DELTAS			0x2000
 /* Check selfsigned CA signature */
 #define X509_V_FLAG_CHECK_SS_SIGNATURE		0x4000
+/* Use trusted store first */
+#define X509_V_FLAG_TRUSTED_FIRST		0x8000
+/* Allow partial chains if at least one certificate is in trusted store */
+#define X509_V_FLAG_PARTIAL_CHAIN		0x80000
 
+/* If the initial chain is not trusted, do not attempt to build an alternative
+ * chain. Alternate chain checking was introduced in 1.0.2b. Setting this flag
+ * will force the behaviour to match that of previous versions. */
+#define X509_V_FLAG_NO_ALT_CHAINS		0x100000
+
+/* Do not check certificate or CRL validity against current time. */
+#define X509_V_FLAG_NO_CHECK_TIME		0x200000
 
 #define X509_VP_FLAG_DEFAULT			0x1
 #define X509_VP_FLAG_OVERWRITE			0x2
@@ -436,6 +453,7 @@ X509_LOOKUP *X509_STORE_add_lookup(X509_STORE *v, X509_LOOKUP_METHOD *m);
 
 X509_LOOKUP_METHOD *X509_LOOKUP_hash_dir(void);
 X509_LOOKUP_METHOD *X509_LOOKUP_file(void);
+X509_LOOKUP_METHOD *X509_LOOKUP_mem(void);
 
 int X509_STORE_add_cert(X509_STORE *ctx, X509 *x);
 int X509_STORE_add_crl(X509_STORE *ctx, X509_CRL *x);
@@ -446,11 +464,9 @@ int X509_STORE_get_by_subject(X509_STORE_CTX *vs,int type,X509_NAME *name,
 int X509_LOOKUP_ctrl(X509_LOOKUP *ctx, int cmd, const char *argc,
 	long argl, char **ret);
 
-#ifndef OPENSSL_NO_STDIO
 int X509_load_cert_file(X509_LOOKUP *ctx, const char *file, int type);
 int X509_load_crl_file(X509_LOOKUP *ctx, const char *file, int type);
 int X509_load_cert_crl_file(X509_LOOKUP *ctx, const char *file, int type);
-#endif
 
 
 X509_LOOKUP *X509_LOOKUP_new(X509_LOOKUP_METHOD *method);
@@ -466,11 +482,10 @@ int X509_LOOKUP_by_alias(X509_LOOKUP *ctx, int type, char *str,
 	int len, X509_OBJECT *ret);
 int X509_LOOKUP_shutdown(X509_LOOKUP *ctx);
 
-#ifndef OPENSSL_NO_STDIO
 int	X509_STORE_load_locations (X509_STORE *ctx,
 		const char *file, const char *dir);
+int	X509_STORE_load_mem(X509_STORE *ctx, void *buf, int len);
 int	X509_STORE_set_default_paths(X509_STORE *ctx);
-#endif
 
 int X509_STORE_CTX_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func,
 	CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);

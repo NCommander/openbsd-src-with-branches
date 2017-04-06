@@ -1078,9 +1078,7 @@ compile_file (void)
 
   dw2_output_indirect_constants ();
 
-  /* Flush any pending external directives.  cgraph did this for
-     assemble_external calls from the front end, but the RTL
-     expander can also generate them.  */
+  /* Flush any pending external directives.  */
   process_pending_assemble_externals ();
 
   /* Attach a special .ident directive to the end of the file to identify
@@ -1833,6 +1831,12 @@ process_options (void)
 
   /* Targets must be able to place spill slots at lower addresses.  If the
      target already uses a soft frame pointer, the transition is trivial.  */
+  if (flag_stack_protect == -1)
+#ifdef __arm__
+    flag_stack_protect = FRAME_GROWS_DOWNWARD ? 1 : 0;
+#else
+    flag_stack_protect = FRAME_GROWS_DOWNWARD ? 3 : 0;
+#endif
   if (!FRAME_GROWS_DOWNWARD && flag_stack_protect)
     {
       warning (0, "-fstack-protector not supported for this target");
@@ -2026,6 +2030,9 @@ toplev_main (unsigned int argc, const char **argv)
 
   /* Initialization of GCC's environment, and diagnostics.  */
   general_init (argv[0]);
+
+  if (pledge ("stdio rpath wpath cpath", NULL) == -1)
+	fatal_error ("can't pledge");
 
   /* Parse the options and do minimal processing; basically just
      enough to default flags appropriately.  */

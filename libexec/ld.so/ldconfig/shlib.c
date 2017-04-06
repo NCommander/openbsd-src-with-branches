@@ -1,4 +1,4 @@
-/*	$OpenBSD: shlib.c,v 1.8 2000/01/16 14:31:26 espie Exp $	*/
+/*	$OpenBSD: shlib.c,v 1.11 2015/01/18 04:48:24 deraadt Exp $	*/
 /*	$NetBSD: shlib.c,v 1.13 1998/04/04 01:00:29 fvdl Exp $	*/
 
 /*
@@ -15,7 +15,7 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *      This product includes software developed by Paul Kranenburg.
+ *	This product includes software developed by Paul Kranenburg.
  * 4. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission
  *
@@ -32,18 +32,11 @@
  *
  */
 
-#ifdef sun
-char	*strsep();
-int	isdigit();
-#endif
-
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
 #include <sys/time.h>
 #include <ranlib.h>
-#include <a.out.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <err.h>
@@ -72,39 +65,58 @@ char	*standard_search_dirs[] = {
 	STANDARD_SEARCH_DIRS
 };
 
-
 void
-add_search_dir(name)
-	char	*name;
+add_search_dir(char *name)
 {
+	size_t len;
+	int i;
+
+	len = strlen(name);
+
+	while (len > 1 && name[len - 1] == '/')
+		--len;
+
+	for (i = 0; i < n_search_dirs; i++)
+		if (strlen(search_dirs[i]) == len &&
+		    !strncmp(search_dirs[i], name, len))
+				return;
 	n_search_dirs++;
-	search_dirs = (char **)
-		xrealloc(search_dirs, n_search_dirs * sizeof search_dirs[0]);
-	search_dirs[n_search_dirs - 1] = strdup(name);
+	search_dirs = xrealloc(search_dirs,
+	    n_search_dirs * sizeof search_dirs[0]);
+	search_dirs[n_search_dirs - 1] = xmalloc(++len);
+	(void)strlcpy(search_dirs[n_search_dirs - 1], name, len);
 }
 
 void
-remove_search_dir(name)
-	char	*name;
+remove_search_dir(char *name)
 {
-	int	n;
+	size_t	len;
+	int	i;
 
-	for (n = 0; n < n_search_dirs; n++) {
-		if (strcmp(search_dirs[n], name))
+	len = strlen(name);
+
+	while (len > 1 && name[len - 1] == '/')
+		--len;
+
+	for (i = 0; i < n_search_dirs; i++) {
+		if (strlen(search_dirs[i]) != len ||
+		    strncmp(search_dirs[i], name, len))
 			continue;
-		free(search_dirs[n]);
-		if (n < (n_search_dirs - 1))
-			bcopy(&search_dirs[n+1], &search_dirs[n],
-			      (n_search_dirs - n - 1) * sizeof search_dirs[0]);
+		free(search_dirs[i]);
+		if (i < (n_search_dirs - 1))
+			bcopy(&search_dirs[i+1], &search_dirs[i],
+			    (n_search_dirs - i - 1) * sizeof search_dirs[0]);
 		n_search_dirs--;
+		search_dirs = xrealloc(search_dirs,
+		    n_search_dirs * sizeof search_dirs[0]);
+		break;
 	}
 }
 
 void
-add_search_path(path)
-char	*path;
+add_search_path(char *path)
 {
-	register char	*cp, *dup;
+	char	*cp, *dup;
 
 	if (path == NULL)
 		return;
@@ -117,23 +129,7 @@ char	*path;
 }
 
 void
-remove_search_path(path)
-char	*path;
-{
-	register char	*cp, *dup;
-
-	if (path == NULL)
-		return;
-
-	/* Remove search directories from `path' */
-	path = dup = strdup(path);
-	while ((cp = strsep(&path, ":")) != NULL)
-		remove_search_dir(cp);
-	free(dup);
-}
-
-void
-std_search_path()
+std_search_path(void)
 {
 	int	i, n;
 
@@ -150,9 +146,7 @@ std_search_path()
  */
 
 int
-getdewey(dewey, cp)
-int	dewey[];
-char	*cp;
+getdewey(int dewey[], char *cp)
 {
 	int	i, n;
 
@@ -170,7 +164,6 @@ char	*cp;
 
 		dewey[n++] = strtol(cp, &cp, 10);
 	}
-
 	return n;
 }
 
@@ -181,11 +174,9 @@ char	*cp;
  * Return  0 if equal.
  */
 int
-cmpndewey(d1, n1, d2, n2)
-int	d1[], d2[];
-int	n1, n2;
+cmpndewey(int d1[], int n1, int d2[], int n2)
 {
-	register int	i;
+	int	i;
 
 	for (i = 0; i < n1 && i < n2; i++) {
 		if (d1[i] < d2[i])
@@ -193,113 +184,12 @@ int	n1, n2;
 		if (d1[i] > d2[i])
 			return 1;
 	}
-
 	if (n1 == n2)
 		return 0;
-
 	if (i == n1)
 		return -1;
-
 	if (i == n2)
 		return 1;
-
 	errx(1, "cmpndewey: cant happen");
 	return 0;
-}
-
-/*
- * Search directories for a shared library matching the given
- * major and minor version numbers.
- *
- * MAJOR == -1 && MINOR == -1	--> find highest version
- * MAJOR != -1 && MINOR == -1   --> find highest minor version
- * MAJOR == -1 && MINOR != -1   --> invalid
- * MAJOR != -1 && MINOR != -1   --> find highest micro version
- */
-
-/* Not interested in devices right now... */
-#undef major
-#undef minor
-
-char *
-findshlib(name, majorp, minorp, do_dot_a)
-char	*name;
-int	*majorp, *minorp;
-int	do_dot_a;
-{
-	int		dewey[MAXDEWEY];
-	int		ndewey;
-	int		tmp[MAXDEWEY];
-	int		i;
-	int		len;
-	char		*lname;
-	int		major = *majorp, minor = *minorp;
-
-	len = strlen(name);
-	lname = (char *)alloca(len + sizeof("lib"));
-	sprintf(lname, "lib%s", name);
-	len += 3;
-
-	ndewey = 0;
-
-	for (i = 0; i < n_search_dirs; i++) {
-		DIR		*dd = opendir(search_dirs[i]);
-		struct dirent	*dp;
-		char 		*path = NULL;
-
-		if (dd == NULL)
-			continue;
-
-		while ((dp = readdir(dd)) != NULL) {
-			int	n;
-
-			if (do_dot_a && path == NULL &&
-					dp->d_namlen == len + 2 &&
-					strncmp(dp->d_name, lname, len) == 0 &&
-					(dp->d_name+len)[0] == '.' &&
-					(dp->d_name+len)[1] == 'a') {
-
-				path = concat(search_dirs[i], "/", dp->d_name);
-			}
-
-			if (dp->d_namlen < len + 4)
-				continue;
-			if (strncmp(dp->d_name, lname, len) != 0)
-				continue;
-			if (strncmp(dp->d_name+len, ".so.", 4) != 0)
-				continue;
-
-			if ((n = getdewey(tmp, dp->d_name+len+4)) == 0)
-				continue;
-
-			/* skip inappropriate versions. */
-			if (major != -1) {
-				if (tmp[0] != major)
-					continue;
-				if (n != 1 && minor != -1 && tmp[1] < minor)
-					continue;
-			} 
-
-			if (cmpndewey(tmp, n, dewey, ndewey) <= 0)
-				continue;
-
-			/* We have a better version */
-			if (path)
-				free(path);
-			path = concat(search_dirs[i], "/", dp->d_name);
-			bcopy(tmp, dewey, sizeof(dewey));
-			ndewey = n;
-			*majorp = dewey[0];
-			*minorp = dewey[1];
-		}
-		closedir(dd);
-
-		if (path != NULL)
-			/*
-			 * There's a lib in this dir; take it.
-			 */
-			return path;
-	}
-
-	return NULL;
 }

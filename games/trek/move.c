@@ -1,3 +1,4 @@
+/*	$OpenBSD: move.c,v 1.7 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: move.c,v 1.3 1995/04/22 10:59:12 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)move.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: move.c,v 1.3 1995/04/22 10:59:12 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <math.h>
+#include <stdio.h>
 
-# include	"trek.h"
+#include "trek.h"
 
 /*
 **  Move Under Warp or Impulse Power
@@ -73,27 +65,17 @@ static char rcsid[] = "$NetBSD: move.c,v 1.3 1995/04/22 10:59:12 cgd Exp $";
 **	By the way, they also try to follow you (heh heh).
 **
 **	Return value is the actual amount of time used.
-**
-**
-**	Uses trace flag 4.
 */
 
-double move(ramflag, course, time, speed)
-int	ramflag;
-int	course;
-double	time;
-double	speed;
+double
+move(int ramflag, int course, double time, double speed)
 {
-	double			angle;
-	double			x, y, dx, dy;
-	register int		ix, iy;
-	double			bigger;
-	int			n;
-	register int		i;
-	double			dist;
-	double			sectsize;
-	double			xn;
-	double			evtime;
+	double		angle;
+	double		x, y, dx, dy;
+	int		ix = 0, iy = 0;
+	double		bigger;
+	int		n, i;
+	double		dist, sectsize, xn, evtime;
 
 #	ifdef xTRACE
 	if (Trace)
@@ -122,7 +104,7 @@ double	speed;
 	evtime = Now.eventptr[E_LRTB]->date - Now.date;
 #	ifdef xTRACE
 	if (Trace)
-		printf("E.ep = %u, ->evcode = %d, ->date = %.2f, evtime = %.2f\n",
+		printf("E.ep = %p, ->evcode = %d, ->date = %.2f, evtime = %.2f\n",
 			Now.eventptr[E_LRTB], Now.eventptr[E_LRTB]->evcode,
 			Now.eventptr[E_LRTB]->date, evtime);
 #	endif
@@ -184,12 +166,12 @@ double	speed;
 			Ship.sectx = ix % NSECTS;
 			Ship.secty = iy % NSECTS;
 			if (ix < 0 || Ship.quadx >= NQUADS || iy < 0 || Ship.quady >= NQUADS)
+			{
 				if (!damaged(COMPUTER))
-				{
 					dumpme(0);
-				}
 				else
 					lose(L_NEGENB);
+			}
 			initquad(0);
 			n = 0;
 			break;

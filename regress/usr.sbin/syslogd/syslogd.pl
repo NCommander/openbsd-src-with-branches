@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#	$OpenBSD$
+#	$OpenBSD: syslogd.pl,v 1.8 2015/09/03 18:14:35 bluhm Exp $
 
 # Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -23,6 +23,8 @@ use Socket6;
 use Client;
 use Syslogd;
 use Server;
+use Syslogc;
+use RSyslogd;
 require 'funcs.pl';
 
 sub usage {
@@ -38,42 +40,102 @@ if (@ARGV and -f $ARGV[-1]) {
 }
 @ARGV == 0 or usage();
 
-foreach my $name (qw(client syslogd server)) {
+create_multifile(@{$args{multifile} || []});
+foreach my $name (qw(client syslogd server rsyslogd)) {
+	$args{$name} or next;
 	foreach my $action (qw(connect listen)) {
 		my $h = $args{$name}{$action} or next;
-		foreach my $k (qw(protocol domain addr port)) {
+		defined $h->{domain}
+		    or die "No domain specified in $name $action";
+		foreach my $k (qw(domain proto addr port)) {
+			next unless defined $h->{$k};
 			$args{$name}{"$action$k"} = $h->{$k};
 		}
 	}
 }
-my $s = Server->new(
+my($s, $c, $r, $rc, @m);
+$s = RSyslogd->new(
+    %{$args{rsyslogd}},
+    listenport          => scalar find_ports(%{$args{rsyslogd}{listen}}),
+    testfile            => $testfile,
+) if $args{rsyslogd}{listen} && !$args{rsyslogd}{connect};
+$s ||= Server->new(
     func                => \&read_log,
     listendomain        => AF_INET,
     listenaddr          => "127.0.0.1",
     %{$args{server}},
     testfile            => $testfile,
+    client              => \$c,
+    syslogd             => \$r,
 ) unless $args{server}{noserver};
-my $r = Syslogd->new(
+$args{syslogc} = [ $args{syslogc} ] if ref $args{syslogc} eq 'HASH';
+my $i = 0;
+@m = map { Syslogc->new(
+    %{$_},
+    testfile            => $testfile,
+    ktracefile          => "syslogc-$i.ktrace",
+    logfile             => "syslogc-".$i++.".log",
+) } @{$args{syslogc}};
+$r = Syslogd->new(
     connectaddr         => "127.0.0.1",
     connectport         => $s && $s->{listenport},
+    ctlsock		=> @m && $m[0]->{ctlsock},
     %{$args{syslogd}},
     testfile            => $testfile,
+    client              => \$c,
+    server              => \$s,
 );
-my $c = Client->new(
+$rc = RSyslogd->new(
+    %{$args{rsyslogd}},
+    listenport          => scalar find_ports(%{$args{rsyslogd}{listen}}),
+    testfile            => $testfile,
+) if $args{rsyslogd}{connect};
+$c = Client->new(
     func                => \&write_log,
+    connectport         => $rc && $rc->{listenport},
     %{$args{client}},
     testfile            => $testfile,
+    syslogd             => \$r,
+    server              => \$s,
 ) unless $args{client}{noclient};
+($rc, $c) = ($c, $rc) if $rc;  # chain client -> rsyslogd -> syslogd
 
-$s->run unless $args{server}{noserver};
-$r->run;
+$c->run->up if !$args{client}{noclient} && $c->{early};
+$r->run unless $r->{late};
+$s->run->up unless $args{server}{noserver};
+$r->run if $r->{late};
 $r->up;
-$c->run->up unless $args{client}{noclient};
-$s->up unless $args{server}{noserver};
+my $control = 0;
+foreach (@m) {
+	if ($_->{early} || $_->{stop}) {
+		$_->run->up;
+		$control++;
+	}
+}
+$r->loggrep("Accepting control connection") if $control;
+foreach (@m) {
+	if ($_->{stop}) {
+		$_->kill('STOP');
+	}
+}
+$c->run->up if !$args{client}{noclient} && !$c->{early};
+$rc->run->up if $args{rsyslogd}{connect};
 
-$c->down unless $args{client}{noclient};
+$c->down if !$args{client}{noclient} && !$c->{early};
 $s->down unless $args{server}{noserver};
+foreach (@m) {
+	if ($_->{stop}) {
+		$_->kill('CONT');
+		$_->down;
+	} elsif ($_->{early}) {
+		$_->down;
+	} else {
+		$_->run->up->down;
+	}
+}
 $r->kill_child;
 $r->down;
+$c->down if !$args{client}{noclient} && $c->{early};
 
-check_logs($c, $r, $s, %args);
+$args{check}->({client => $c, syslogd => $r, server => $s}) if $args{check};
+check_logs($c, $r, $s, \@m, %args);

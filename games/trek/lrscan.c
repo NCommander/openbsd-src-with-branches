@@ -1,3 +1,4 @@
+/*	$OpenBSD: lrscan.c,v 1.6 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: lrscan.c,v 1.3 1995/04/22 10:59:09 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lrscan.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: lrscan.c,v 1.3 1995/04/22 10:59:09 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdio.h>
 
-# include	"trek.h"
+#include "trek.h"
 
 /*
 **  LONG RANGE OF SCANNERS
@@ -55,15 +46,14 @@ static char rcsid[] = "$NetBSD: lrscan.c,v 1.3 1995/04/22 10:59:09 cgd Exp $";
 **	for future use by the "chart" option of the computer.
 */
 
-lrscan()
+void
+lrscan(int v)
 {
-	register int			i, j;
-	register struct quad		*q;
+	int			i, j;
+	struct quad		*q;
 
 	if (check_out(LRSCAN))
-	{
 		return;
-	}
 	printf("Long range scan for quadrant %d,%d\n\n", Ship.quadx, Ship.quady);
 
 	/* print the header on top */
@@ -109,5 +99,4 @@ lrscan()
 		}
 	}
 	printf("\n  -------------------\n");
-	return;
 }

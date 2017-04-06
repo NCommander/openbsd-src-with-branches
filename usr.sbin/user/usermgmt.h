@@ -1,3 +1,4 @@
+/* $OpenBSD: usermgmt.h,v 1.5 2011/12/31 14:05:51 ajacoutot Exp $ */
 /* $NetBSD: usermgmt.h,v 1.4 1999/12/24 09:08:51 agc Exp $ */
 
 /*
@@ -11,10 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Alistair G. Crooks.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -33,18 +31,15 @@
 #ifndef USERMGMT_H_
 #define USERMGMT_H_
 
-int useradd __P((int, char **));
-int usermod __P((int, char **));
-int userdel __P((int, char **));
-int groupadd __P((int, char **));
-int groupdel __P((int, char **));
-int groupmod __P((int, char **));
+int useradd(int, char **);
+int usermod(int, char **);
+int userdel(int, char **);
+int groupadd(int, char **);
+int groupdel(int, char **);
+int groupmod(int, char **);
+int userinfo(int, char **);
+int groupinfo(int, char **);
 
-#ifdef EXTENSIONS
-int userinfo __P((int, char **));
-int groupinfo __P((int, char **));
-#endif
-
-void usermgmt_usage __P((char *));
+__dead void usermgmt_usage(const char *);
 
 #endif

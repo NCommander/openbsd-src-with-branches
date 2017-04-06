@@ -1,0 +1,5 @@
+# $OpenBSD: list.local,v 1.4 2012/10/15 17:21:04 deraadt Exp $
+
+LINK	instbin					usr/bin/ftp
+
+#TZ		# this does not fit on the floppy

@@ -1,3 +1,4 @@
+/*	$OpenBSD: sysexits.h,v 1.4 2001/01/24 22:26:30 aaron Exp $	*/
 /*	$NetBSD: sysexits.h,v 1.4 1994/10/26 00:56:33 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -77,7 +74,7 @@
  *		fork", "cannot create pipe", or the like.  It includes
  *		things like getuid returning a user that does not
  *		exist in the passwd file.
- *	EX_OSFILE -- Some system file (e.g., /etc/passwd, /etc/utmp,
+ *	EX_OSFILE -- Some system file (e.g., /etc/passwd, /var/run/utmp,
  *		etc.) does not exist, cannot be opened, or has some
  *		sort of error (e.g., syntax error).
  *	EX_CANTCREAT -- A (user specified) output file cannot be
@@ -91,8 +88,10 @@
  *		was "not possible" during a protocol exchange.
  *	EX_NOPERM -- You did not have sufficient permission to
  *		perform the operation.  This is not intended for
- *		file system problems, which should use NOINPUT or
- *		CANTCREAT, but rather for higher level permissions.
+ *		file system problems, which should use EX_NOINPUT or
+ *		EX_CANTCREAT, but rather for higher level permissions.
+ *	EX_CONFIG -- Something was found in an unconfigured or
+ *		misconfigured state.
  */
 
 #define EX_OK		0	/* successful termination */
@@ -115,6 +114,6 @@
 #define EX_NOPERM	77	/* permission denied */
 #define EX_CONFIG	78	/* configuration error */
 
-#define EX__MAX	78	/* maximum listed value */
+#define EX__MAX		78	/* maximum listed value */
 
 #endif /* !_SYSEXITS_H_ */

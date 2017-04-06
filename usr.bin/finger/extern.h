@@ -1,3 +1,5 @@
+/*	$OpenBSD: extern.h,v 1.8 2014/10/17 20:19:15 millert Exp $	*/
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,17 +31,31 @@
  *	@(#)extern.h	8.2 (Berkeley) 4/28/95
  */
 
+extern time_t now;			/* Current time. */
 extern char tbuf[1024];			/* Temp buffer for anybody. */
 extern int entries;			/* Number of people. */
-extern DB *db;				/* Database. */
+extern int lflag;
+extern int oflag;
+extern int pplan;
 
-void	 enter_lastlog __P((PERSON *));
-PERSON	*enter_person __P((struct passwd *));
-void	 enter_where __P((struct utmp *, PERSON *));
-PERSON	*find_person __P((char *));
-void	 lflag_print __P((void));
-int	 match __P((struct passwd *, char *));
-void	 netfinger __P((char *));
-PERSON	*palloc __P((void));
-char	*prphone __P((char *));
-void	 sflag_print __P((void));
+int	 demi_print(char *, int);
+void	 enter_lastlog(PERSON *);
+PERSON	*enter_person(struct passwd *);
+void	 enter_where(struct utmp *, PERSON *);
+void	 expandusername(char *, char *, char *, int);
+PERSON	*find_person(char *);
+int	 hash(char *);
+void	 lflag_print(void);
+void	 loginlist(void);
+void	 lprint(PERSON *);
+int	 match(struct passwd *, char *);
+void	 netfinger(char *);
+PERSON	*palloc(void);
+char	*prphone(char *);
+int	 psort(const void *, const void *);
+void	 sflag_print(void);
+int	 show_text(char *, char *, char *);
+PERSON **sort(void);
+void	 stimeprint(WHERE *);
+void	 userlist(int, char **);
+void	 vputc(int);

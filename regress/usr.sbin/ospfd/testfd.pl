@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+#	$OpenBSD$
 
 # Copyright (c) 2014 Alexander Bluhm <bluhm@openbsd.org>
 #

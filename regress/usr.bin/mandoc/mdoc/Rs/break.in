@@ -1,0 +1,27 @@
+.Dd April 15, 2014
+.Dt RS-BREAK 1
+.Os OpenBSD
+.Sh NAME
+.Nm Rs-break
+.Nd line break before reference start
+.Sh DESCRIPTION
+reference on the same line:
+.Rs
+.%A author
+.%J journal
+.%N 42
+.Re
+.Sh SEE ALSO
+reference after a blank line:
+.Rs
+.%A author
+.%J journal
+.%N 42
+.Re
+.Sh SEE Em ALSO
+reference after a blank line:
+.Rs
+.%A author
+.%J journal
+.%N 42
+.Re

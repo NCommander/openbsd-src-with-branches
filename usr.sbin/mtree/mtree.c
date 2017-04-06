@@ -1,4 +1,5 @@
-/*	$NetBSD: mtree.c,v 1.5 1995/03/07 21:12:10 cgd Exp $	*/
+/*	$OpenBSD: mtree.c,v 1.23 2015/12/19 19:58:38 tb Exp $	*/
+/*	$NetBSD: mtree.c,v 1.7 1996/09/05 23:29:22 thorpej Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1990, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,52 +30,39 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1989, 1990, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)mtree.c	8.1 (Berkeley) 6/6/93";
-#else
-static char rcsid[] = "$NetBSD: mtree.c,v 1.5 1995/03/07 21:12:10 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/stat.h>
+#include <err.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <limits.h>
 #include <fts.h>
 #include "mtree.h"
 #include "extern.h"
 
-extern int crc_total;
+extern u_int32_t crc_total;
 
 int ftsoptions = FTS_PHYSICAL;
-int cflag, dflag, eflag, rflag, sflag, uflag;
-u_short keys;
-char fullpath[MAXPATHLEN];
+int cflag, dflag, eflag, iflag, lflag, nflag, qflag, rflag, sflag, tflag,
+    uflag, Uflag;
+u_int keys;
+char fullpath[PATH_MAX];
 
-static void usage __P((void));
+static void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	extern int optind;
 	extern char *optarg;
 	int ch;
 	char *dir, *p;
+	int status;
 
 	dir = NULL;
 	keys = KEYDEFAULT;
-	while ((ch = getopt(argc, argv, "cdef:K:k:p:rs:ux")) != EOF)
-		switch((char)ch) {
+	while ((ch = getopt(argc, argv, "cdef:iK:k:lnp:qrs:tUux")) != -1)
+		switch(ch) {
 		case 'c':
 			cflag = 1;
 			break;
@@ -90,7 +74,10 @@ main(argc, argv)
 			break;
 		case 'f':
 			if (!(freopen(optarg, "r", stdin)))
-				err("%s: %s", optarg, strerror(errno));
+				error("%s: %s", optarg, strerror(errno));
+			break;
+		case 'i':
+			iflag = 1;
 			break;
 		case 'K':
 			while ((p = strsep(&optarg, " \t,")) != NULL)
@@ -103,8 +90,17 @@ main(argc, argv)
 				if (*p != '\0')
 					keys |= parsekey(p, NULL);
 			break;
+		case 'l':
+			lflag = 1;
+			break;
+		case 'n':
+			nflag = 1;
+			break;
 		case 'p':
 			dir = optarg;
+			break;
+		case 'q':
+			qflag = 1;
 			break;
 		case 'r':
 			rflag = 1;
@@ -113,7 +109,15 @@ main(argc, argv)
 			sflag = 1;
 			crc_total = ~strtol(optarg, &p, 0);
 			if (*p)
-				err("illegal seed value -- %s", optarg);
+				error("illegal seed value -- %s", optarg);
+			break;
+		case 't':
+			tflag = 1;
+			break;
+		case 'U':
+			Uflag = 1;
+			uflag = 1;
+			break;
 		case 'u':
 			uflag = 1;
 			break;
@@ -130,23 +134,52 @@ main(argc, argv)
 	if (argc)
 		usage();
 
-	if (dir && chdir(dir))
-		err("%s: %s", dir, strerror(errno));
+	/*
+	 * If uflag is set we can't make any pledges because we must be able
+	 * to chown and place setugid bits.  Make sure that we're pledged
+	 * when -c was specified.
+	 */
+	if (!uflag || cflag) {
+		if (rflag && tflag) {
+			if (pledge("stdio rpath cpath getpw fattr", NULL) == -1)
+				err(1, "pledge");
+		} else if (rflag && !tflag) {
+			if (pledge("stdio rpath cpath getpw", NULL) == -1)
+				err(1, "pledge");
+		} else if (!rflag && tflag) {
+			if (pledge("stdio rpath getpw fattr", NULL) == -1)
+				err(1, "pledge");
+		} else {
+			if (pledge("stdio rpath getpw", NULL) == -1)
+				err(1, "pledge");
+		}
+	}
 
-	if ((cflag || sflag) && !getwd(fullpath))
-		err("%s", fullpath);
+	if (dir && chdir(dir))
+		error("%s: %s", dir, strerror(errno));
+
+	if ((cflag || sflag) && !getcwd(fullpath, sizeof fullpath))
+		error("getcwd: %s", strerror(errno));
+
+	if (lflag == 1 && uflag == 1)
+		error("-l and -u flags are mutually exclusive");
 
 	if (cflag) {
 		cwalk();
 		exit(0);
 	}
-	exit(verify());
+	status = verify();
+	if (Uflag && (status == MISMATCHEXIT))
+		status = 0;
+	exit(status);
 }
 
 static void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
-"usage: mtree [-cderux] [-f spec] [-K key] [-k key] [-p path] [-s seed]\n");
+	    "usage: mtree [-cdeilnqrtUux] [-f spec] [-K keywords] "
+	    "[-k keywords] [-p path]\n"
+	    "             [-s seed]\n");
 	exit(1);
 }

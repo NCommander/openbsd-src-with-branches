@@ -1,8 +1,5 @@
-#	from: @(#)Makefile	5.8.1.1 (Berkeley) 5/7/91
-#	$Id: Makefile,v 1.3 1993/07/31 15:26:59 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.17 2010/10/18 17:11:29 deraadt Exp $
 
-# Missing:  ms
-
-SUBDIR=	dict doc lkm man me misc mk skel tabset termcap tmac zoneinfo
+SUBDIR=	dict locale man misc mk snmp tabset termtypes zoneinfo
 
 .include <bsd.subdir.mk>

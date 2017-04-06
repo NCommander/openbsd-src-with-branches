@@ -12,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -32,30 +28,28 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)bcopy.3	5.3 (Berkeley) 4/19/91
-.\"	$Id: bcopy.3,v 1.2 1993/08/01 07:44:06 mycroft Exp $
+.\"	$OpenBSD: bcopy.3,v 1.11 2013/06/05 03:39:23 tedu Exp $
 .\"
-.Dd April 19, 1991
+.Dd $Mdocdate: June 5 2013 $
 .Dt BCOPY 3
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm bcopy
-.Nd copy byte string
+.Nd copy bytes
 .Sh SYNOPSIS
-.Fd #include <string.h>
+.In strings.h
 .Ft void
 .Fn bcopy "const void *src" "void *dst" "size_t len"
 .Sh DESCRIPTION
 The
 .Fn bcopy
-function
-copies
+function copies
 .Fa len
-bytes from string
+bytes from buffer
 .Fa src
-to string
+to buffer
 .Fa dst .
-The two strings may overlap.
+The two buffers may overlap.
 If
 .Fa len
 is zero, no bytes are copied.
@@ -64,9 +58,10 @@ is zero, no bytes are copied.
 .Xr memcpy 3 ,
 .Xr memmove 3 ,
 .Xr strcpy 3 ,
+.Xr strlcpy 3 ,
 .Xr strncpy 3
 .Sh HISTORY
-A
+The
 .Fn bcopy
-function appeared in 
+function first appeared in
 .Bx 4.2 .

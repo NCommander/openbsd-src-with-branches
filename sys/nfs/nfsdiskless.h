@@ -1,4 +1,5 @@
-/*	$NetBSD: nfsdiskless.h,v 1.7 1994/06/29 06:42:31 cgd Exp $	*/
+/*	$OpenBSD: nfsdiskless.h,v 1.9 2013/04/17 16:22:24 florian Exp $	*/
+/*	$NetBSD: nfsdiskless.h,v 1.9 1996/02/18 11:54:00 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,8 +32,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)nfsdiskless.h	8.1 (Berkeley) 6/10/93
+ *	@(#)nfsdiskless.h	8.2 (Berkeley) 3/30/95
  */
+
+#ifndef _NFS_DISKLESS_H_
+#define _NFS_DISKLESS_H_
 
 /*
  * Structure that must be initialized for a diskless nfs client.
@@ -50,11 +50,20 @@
  * client/server byte ordering differences.
  */
 struct nfs_dlmount {
+	struct nfs_args ndm_args;
 	struct sockaddr_in ndm_saddr;  		/* Address of file server */
 	char		ndm_host[MNAMELEN]; 	/* Host name for mount pt */
-	u_char		ndm_fh[NFS_FHSIZE]; 	/* The file's file handle */
+	u_char		ndm_fh[NFSX_V3FHMAX]; 	/* The file's file handle */
 };
 struct nfs_diskless {
+	struct sockaddr_in nd_boot;	/* Address of boot server */
 	struct nfs_dlmount nd_root; 	/* Mount info for root */
 	struct nfs_dlmount nd_swap; 	/* Mount info for swap */
+	struct vnode	   *sw_vp;
 };
+
+int nfs_boot_init(struct nfs_diskless *nd, struct proc *procp);
+int nfs_boot_getfh(struct sockaddr_in *bpsin, char *key,
+		struct nfs_dlmount *ndmntp, int retries);
+#endif	/* _NFS_DISKLESS_H_ */
+

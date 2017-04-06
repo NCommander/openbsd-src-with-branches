@@ -1,39 +1,15 @@
+/*	$OpenBSD: v_util.c,v 1.7 2014/11/12 04:28:41 bentley Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996
+ *	Keith Bostic.  All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * See the LICENSE file for redistribution information.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)v_util.c	8.12 (Berkeley) 8/17/94";
-#endif /* not lint */
+#include "config.h"
 
 #include <sys/types.h>
 #include <sys/queue.h>
@@ -42,39 +18,32 @@ static char sccsid[] = "@(#)v_util.c	8.12 (Berkeley) 8/17/94";
 #include <bitstring.h>
 #include <ctype.h>
 #include <limits.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <termios.h>
 #include <unistd.h>
 
-#include "compat.h"
-#include <db.h>
-#include <regex.h>
-
+#include "../common/common.h"
 #include "vi.h"
-#include "vcmd.h"
 
 /*
  * v_eof --
  *	Vi end-of-file error.
+ *
+ * PUBLIC: void v_eof(SCR *, MARK *);
  */
 void
-v_eof(sp, ep, mp)
-	SCR *sp;
-	EXF *ep;
-	MARK *mp;
+v_eof(SCR *sp, MARK *mp)
 {
 	recno_t lno;
 
 	if (mp == NULL)
-		msgq(sp, M_BERR, "Already at end-of-file");
+		v_emsg(sp, NULL, VIM_EOF);
 	else {
-		if (file_lline(sp, ep, &lno))
+		if (db_last(sp, &lno))
 			return;
 		if (mp->lno >= lno)
-			msgq(sp, M_BERR, "Already at end-of-file");
+			v_emsg(sp, NULL, VIM_EOF);
 		else
 			msgq(sp, M_BERR, "Movement past the end-of-file");
 	}
@@ -83,24 +52,21 @@ v_eof(sp, ep, mp)
 /*
  * v_eol --
  *	Vi end-of-line error.
+ *
+ * PUBLIC: void v_eol(SCR *, MARK *);
  */
 void
-v_eol(sp, ep, mp)
-	SCR *sp;
-	EXF *ep;
-	MARK *mp;
+v_eol(SCR *sp, MARK *mp)
 {
 	size_t len;
 
 	if (mp == NULL)
-		msgq(sp, M_BERR, "Already at end-of-line");
+		v_emsg(sp, NULL, VIM_EOL);
 	else {
-		if (file_gline(sp, ep, mp->lno, &len) == NULL) {
-			GETLINE_ERR(sp, mp->lno);
+		if (db_get(sp, mp->lno, DBG_FATAL, NULL, &len))
 			return;
-		}
 		if (mp->cno == len - 1)
-			msgq(sp, M_BERR, "Already at end-of-line");
+			v_emsg(sp, NULL, VIM_EOL);
 		else
 			msgq(sp, M_BERR, "Movement past the end-of-line");
 	}
@@ -109,10 +75,11 @@ v_eol(sp, ep, mp)
 /*
  * v_nomove --
  *	Vi no cursor movement error.
+ *
+ * PUBLIC: void v_nomove(SCR *);
  */
 void
-v_nomove(sp)
-	SCR *sp;
+v_nomove(SCR *sp)
 {
 	msgq(sp, M_BERR, "No cursor movement made");
 }
@@ -120,11 +87,11 @@ v_nomove(sp)
 /*
  * v_sof --
  *	Vi start-of-file error.
+ *
+ * PUBLIC: void v_sof(SCR *, MARK *);
  */
 void
-v_sof(sp, mp)
-	SCR *sp;
-	MARK *mp;
+v_sof(SCR *sp, MARK *mp)
 {
 	if (mp == NULL || mp->lno == 1)
 		msgq(sp, M_BERR, "Already at the beginning of the file");
@@ -135,10 +102,11 @@ v_sof(sp, mp)
 /*
  * v_sol --
  *	Vi start-of-line error.
+ *
+ * PUBLIC: void v_sol(SCR *);
  */
 void
-v_sol(sp)
-	SCR *sp;
+v_sol(SCR *sp)
 {
 	msgq(sp, M_BERR, "Already in the first column");
 }
@@ -146,14 +114,52 @@ v_sol(sp)
 /*
  * v_isempty --
  *	Return if the line contains nothing but white-space characters.
+ *
+ * PUBLIC: int v_isempty(char *, size_t);
  */
 int
-v_isempty(p, len)
-	char *p;
-	size_t len;
+v_isempty(char *p, size_t len)
 {
 	for (; len--; ++p)
 		if (!isblank(*p))
 			return (0);
 	return (1);
+}
+
+/*
+ * v_emsg --
+ *	Display a few common vi messages.
+ *
+ * PUBLIC: void v_emsg(SCR *, char *, vim_t);
+ */
+void
+v_emsg(SCR *sp, char *p, vim_t which)
+{
+	switch (which) {
+	case VIM_COMBUF:
+		msgq(sp, M_ERR,
+		    "Buffers should be specified before the command");
+		break;
+	case VIM_EMPTY:
+		msgq(sp, M_BERR, "The file is empty");
+		break;
+	case VIM_EOF:
+		msgq(sp, M_BERR, "Already at end-of-file");
+		break;
+	case VIM_EOL:
+		msgq(sp, M_BERR, "Already at end-of-line");
+		break;
+	case VIM_NOCOM:
+	case VIM_NOCOM_B:
+		msgq(sp,
+		    which == VIM_NOCOM_B ? M_BERR : M_ERR,
+		    "%s isn't a vi command", p);
+		break;
+	case VIM_WRESIZE:
+		msgq(sp, M_ERR, "Window resize interrupted text input mode");
+		break;
+	case VIM_USAGE:
+		msgq(sp, M_ERR, "Usage: %s", p);
+		break;
+	}
 }

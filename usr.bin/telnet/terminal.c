@@ -1,3 +1,6 @@
+/*	$OpenBSD: terminal.c,v 1.12 2014/07/20 12:08:55 guenther Exp $	*/
+/*	$NetBSD: terminal.c,v 1.5 1996/02/28 21:04:17 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,33 +30,22 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)terminal.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: terminal.c,v 1.3 1994/02/25 03:00:47 cgd Exp $";
-#endif /* not lint */
+#include "telnet_locl.h"
 
 #include <arpa/telnet.h>
-#include <sys/types.h>
-
-#include "ring.h"
-
-#include "externs.h"
-#include "types.h"
+#include <errno.h>
+#include <unistd.h>
 
 Ring		ttyoring, ttyiring;
 unsigned char	ttyobuf[2*BUFSIZ], ttyibuf[BUFSIZ];
 
 int termdata;			/* Debugging flag */
 
-#ifdef	USE_TERMIO
 # ifndef VDISCARD
 cc_t termFlushChar;
 # endif
 # ifndef VLNEXT
 cc_t termLiteralNextChar;
-# endif
-# ifndef VSUSP
-cc_t termSuspChar;
 # endif
 # ifndef VWERASE
 cc_t termWerasChar;
@@ -80,27 +68,22 @@ cc_t termForw2Char;
 # ifndef VSTATUS
 cc_t termAytChar;
 # endif
-#else
-cc_t termForw2Char;
-cc_t termAytChar;
-#endif
 
 /*
  * initialize the terminal data structures.
  */
 
-    void
-init_terminal()
+void
+init_terminal(void)
 {
-    if (ring_init(&ttyoring, ttyobuf, sizeof ttyobuf) != 1) {
-	exit(1);
-    }
-    if (ring_init(&ttyiring, ttyibuf, sizeof ttyibuf) != 1) {
-	exit(1);
-    }
-    autoflush = TerminalAutoFlush();
-}
+	struct termios tc;
 
+	ring_init(&ttyoring, ttyobuf, sizeof ttyobuf);
+	ring_init(&ttyiring, ttyibuf, sizeof ttyibuf);
+
+	tcgetattr(0, &tc);
+	autoflush = (tc.c_lflag & NOFLSH) == 0;
+}
 
 /*
  *		Send as much data as possible to the terminal.
@@ -112,20 +95,18 @@ init_terminal()
  *			 n: All data - n was written out.
  */
 
-
-    int
-ttyflush(drop)
-    int drop;
+int
+ttyflush(int drop)
 {
-    register int n, n0, n1;
+    int n, n0, n1;
 
     n0 = ring_full_count(&ttyoring);
     if ((n1 = n = ring_full_consecutive(&ttyoring)) > 0) {
 	if (drop) {
-	    TerminalFlushOutput();
+	    tcflush(fileno(stdout), TCOFLUSH);
 	    /* we leave 'n' alone! */
 	} else {
-	    n = TerminalWrite(ttyoring.consume, n);
+	    n = write(tout, ttyoring.consume, n);
 	}
     }
     if (n > 0) {
@@ -140,13 +121,17 @@ ttyflush(drop)
 	if (n1 == n && n0 > n) {
 		n1 = n0 - n;
 		if (!drop)
-			n1 = TerminalWrite(ttyoring.bottom, n1);
-		n += n1;
+			n1 = write(tout, ttyoring.bottom, n1);
+		if (n1 > 0)
+			n += n1;
 	}
 	ring_consumed(&ttyoring, n);
     }
-    if (n < 0)
+    if (n < 0) {
+	if (errno == EPIPE)
+		kill(0, SIGQUIT);
 	return -1;
+    }
     if (n == n0) {
 	if (n0)
 	    return -1;
@@ -161,18 +146,10 @@ ttyflush(drop)
  * of various global variables).
  */
 
-
-    int
-getconnmode()
+int
+getconnmode(void)
 {
-    extern int linemode;
     int mode = 0;
-#ifdef	KLUDGELINEMODE
-    extern int kludgelinemode;
-#endif
-
-    if (In3270)
-	return(MODE_FLOW);
 
     if (my_want_state_is_dont(TELOPT_ECHO))
 	mode |= MODE_ECHO;
@@ -180,9 +157,11 @@ getconnmode()
     if (localflow)
 	mode |= MODE_FLOW;
 
-    if (my_want_state_is_will(TELOPT_BINARY))
+    if ((eight & 1) || my_want_state_is_will(TELOPT_BINARY))
 	mode |= MODE_INBIN;
 
+    if (eight & 2)
+	mode |= MODE_OUT8;
     if (his_want_state_is_will(TELOPT_BINARY))
 	mode |= MODE_OUTBIN;
 
@@ -202,22 +181,18 @@ getconnmode()
     return(mode);
 }
 
-    void
-setconnmode(force)
-    int force;
+void
+setconnmode(int force)
 {
-    register int newmode;
+    int newmode;
 
     newmode = getconnmode()|(force?MODE_FORCE:0);
 
     TerminalNewMode(newmode);
-
-
 }
 
-
-    void
-setcommandmode()
+void
+setcommandmode(void)
 {
     TerminalNewMode(-1);
 }

@@ -1,5 +1,4 @@
-/*	$NetBSD: getprotoname.c,v 1.4 1995/02/25 06:20:36 cgd Exp $	*/
-
+/*	$OpenBSD: getprotoname.c,v 1.7 2005/08/06 20:30:03 espie Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,36 +28,42 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getprotoname.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getprotoname.c,v 1.4 1995/02/25 06:20:36 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <netdb.h>
+#include <stdio.h>
 #include <string.h>
 
-extern int _proto_stayopen;
-
-struct protoent *
-getprotobyname(name)
-	register const char *name;
+int
+getprotobyname_r(const char *name, struct protoent *pe,
+    struct protoent_data *pd)
 {
-	register struct protoent *p;
-	register char **cp;
+	char **cp;
+	int error;
 
-	setprotoent(_proto_stayopen);
-	while (p = getprotoent()) {
-		if (strcmp(p->p_name, name) == 0)
+	setprotoent_r(pd->stayopen, pd);
+	while ((error = getprotoent_r(pe, pd)) == 0) {
+		if (strcmp(pe->p_name, name) == 0)
 			break;
-		for (cp = p->p_aliases; *cp != 0; cp++)
+		for (cp = pe->p_aliases; *cp != 0; cp++)
 			if (strcmp(*cp, name) == 0)
 				goto found;
 	}
 found:
-	if (!_proto_stayopen)
-		endprotoent();
-	return (p);
+	if (!pd->stayopen && pd->fp != NULL) {
+		fclose(pd->fp);
+		pd->fp = NULL;
+	}
+	return (error);
 }
+DEF_WEAK(getprotobyname_r);
+
+struct protoent *
+getprotobyname(const char *name)
+{
+	extern struct protoent_data _protoent_data;
+	static struct protoent proto;
+
+	if (getprotobyname_r(name, &proto, &_protoent_data) != 0)
+		return (NULL);
+	return (&proto);
+}
+DEF_WEAK(getprotobyname);

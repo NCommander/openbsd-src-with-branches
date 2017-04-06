@@ -1,6 +1,8 @@
+/*	$OpenBSD: strcasecmp.c,v 1.6 2005/08/08 08:05:37 espie Exp $	*/
+
 /*
- * Copyright (c) 1987 Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1987, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,11 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static const char sccsid[] = "from: @(#)strcasecmp.c	5.10 (Berkeley) 1/26/91";*/
-static char *rcsid = "$Id: strcasecmp.c,v 1.4 1995/06/15 00:07:37 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 #include <string.h>
 
@@ -81,28 +74,26 @@ static const u_char charmap[] = {
 };
 
 int
-strcasecmp(s1, s2)
-	const char *s1, *s2;
+strcasecmp(const char *s1, const char *s2)
 {
-	register const u_char *cm = charmap,
-			*us1 = (const u_char *)s1,
-			*us2 = (const u_char *)s2;
+	const u_char *cm = charmap;
+	const u_char *us1 = (const u_char *)s1;
+	const u_char *us2 = (const u_char *)s2;
 
 	while (cm[*us1] == cm[*us2++])
 		if (*us1++ == '\0')
 			return (0);
 	return (cm[*us1] - cm[*--us2]);
 }
+DEF_WEAK(strcasecmp);
 
 int
-strncasecmp(s1, s2, n)
-	const char *s1, *s2;
-	register size_t n;
+strncasecmp(const char *s1, const char *s2, size_t n)
 {
 	if (n != 0) {
-		register const u_char *cm = charmap,
-				*us1 = (const u_char *)s1,
-				*us2 = (const u_char *)s2;
+		const u_char *cm = charmap;
+		const u_char *us1 = (const u_char *)s1;
+		const u_char *us2 = (const u_char *)s2;
 
 		do {
 			if (cm[*us1] != cm[*us2++])
@@ -113,3 +104,4 @@ strncasecmp(s1, s2, n)
 	}
 	return (0);
 }
+DEF_WEAK(strncasecmp);

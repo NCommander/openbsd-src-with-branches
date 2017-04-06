@@ -41,7 +41,7 @@ xmalloc (bytes)
     if (cp == NULL)
     {
 	char buf[80];
-	sprintf (buf, "out of memory; can not allocate %lu bytes",
+	snprintf (buf, sizeof buf, "out of memory; can not allocate %lu bytes",
 		 (unsigned long) bytes);
 	error (1, 0, buf);
     }
@@ -68,7 +68,7 @@ xrealloc (ptr, bytes)
     if (cp == NULL)
     {
 	char buf[80];
-	sprintf (buf, "out of memory; can not reallocate %lu bytes",
+	snprintf (buf, sizeof buf, "out of memory; can not reallocate %lu bytes",
 		 (unsigned long) bytes);
 	error (1, 0, buf);
     }
@@ -369,7 +369,7 @@ getcaller ()
     {
 	char uidname[20];
 
-	(void) sprintf (uidname, "uid%lu", (unsigned long) uid);
+	(void) snprintf (uidname, sizeof uidname, "uid%lu", (unsigned long) uid);
 	cache = xstrdup (uidname);
 	return cache;
     }
@@ -382,9 +382,8 @@ getcaller ()
 #ifndef __GNUC__
 /* ARGSUSED */
 time_t
-get_date (date, now)
+get_date (date)
     char *date;
-    struct timeb *now;
 {
     time_t foo = 0;
 
@@ -605,7 +604,7 @@ file_has_markers (finfo)
     fp = CVS_FOPEN (finfo->file, "r");
     if (fp == NULL)
 	error (1, errno, "cannot open %s", finfo->fullname);
-    while (getline (&line, &line_allocated, fp) > 0)
+    while (get_line (&line, &line_allocated, fp) > 0)
     {
 	if (strncmp (line, RCS_MERGE_PAT_1, sizeof RCS_MERGE_PAT_1 - 1) == 0 ||
 	    strncmp (line, RCS_MERGE_PAT_2, sizeof RCS_MERGE_PAT_2 - 1) == 0 ||

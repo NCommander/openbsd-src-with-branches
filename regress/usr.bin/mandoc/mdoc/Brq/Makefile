@@ -1,5 +1,5 @@
-# $OpenBSD: Makefile,v 1.1 2009/10/28 03:20:42 schwarze Exp $
+# $OpenBSD: Makefile,v 1.2 2017/03/05 19:59:25 schwarze Exp $
 
-REGRESS_TARGETS=empty
+REGRESS_TARGETS  = empty
 
 .include <bsd.regress.mk>

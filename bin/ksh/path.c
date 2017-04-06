@@ -1,54 +1,23 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: path.c,v 1.17 2015/10/19 14:42:16 mmcc Exp $	*/
+
+#include <sys/stat.h>
+
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "sh.h"
-#include "ksh_stat.h"
 
 /*
- *	Contains a routine to search a : seperated list of
- *	paths (a la CDPATH) and make appropiate file names.
+ *	Contains a routine to search a : separated list of
+ *	paths (a la CDPATH) and make appropriate file names.
  *	Also contains a routine to simplify .'s and ..'s out of
  *	a path name.
  *
  *	Larry Bouzane (larry@cs.mun.ca)
  */
 
-/*
- * $Log: path.c,v $
- * Revision 1.2  1994/05/19  18:32:40  michael
- * Merge complete, stdio replaced, various fixes. (pre autoconf)
- *
- * Revision 1.1  1994/04/06  13:14:03  michael
- * Initial revision
- *
- * Revision 4.2  1990/12/06  18:05:24  larry
- * Updated test code to reflect parameter change.
- * Fixed problem with /a/./.dir being simplified to /a and not /a/.dir due
- * to *(cur+2) == *f test instead of the correct cur+2 == f
- *
- * Revision 4.1  90/10/29  14:42:19  larry
- * base MUN version
- * 
- * Revision 3.1.0.4  89/02/16  20:28:36  larry
- * Forgot to set *pathlist to NULL when last changed make_path().
- * 
- * Revision 3.1.0.3  89/02/13  20:29:55  larry
- * Fixed up cd so that it knew when a node from CDPATH was used and would
- * print a message only when really necessary.
- * 
- * Revision 3.1.0.2  89/02/13  17:51:22  larry
- * Merged with Eric Gisin's version.
- * 
- * Revision 3.1.0.1  89/02/13  17:50:58  larry
- * *** empty log message ***
- * 
- * Revision 3.1  89/02/13  17:49:28  larry
- * *** empty log message ***
- * 
- */
-
-#ifdef S_ISLNK
-static char	*do_phys_path ARGS((XString *xsp, char *xp, const char *path));
-#endif /* S_ISLNK */
+static char	*do_phys_path(XString *, char *, const char *);
 
 /*
  *	Makes a filename into result using the following algorithm.
@@ -63,15 +32,13 @@ static char	*do_phys_path ARGS((XString *xsp, char *xp, const char *path));
  *	- cdpathp is set to the start of the next element in cdpathp (or NULL
  *	  if there are no more elements.
  *	The return value indicates whether a non-null element from cdpathp
- *	was appened to result.
+ *	was appended to result.
  */
 int
-make_path(cwd, file, cdpathp, xsp, phys_pathp)
-	const char *cwd;
-	const char *file;
-	char	**cdpathp;	/* & of : seperated list */
-	XString	*xsp;
-	int	*phys_pathp;
+make_path(const char *cwd, const char *file,
+    char **cdpathp,		/* & of : separated list */
+    XString *xsp,
+    int *phys_pathp)
 {
 	int	rval = 0;
 	int	use_cdpath = 1;
@@ -83,7 +50,7 @@ make_path(cwd, file, cdpathp, xsp, phys_pathp)
 	if (!file)
 		file = null;
 
-	if (!ISRELPATH(file)) {
+	if (file[0] == '/') {
 		*phys_pathp = 0;
 		use_cdpath = 0;
 	} else {
@@ -92,7 +59,7 @@ make_path(cwd, file, cdpathp, xsp, phys_pathp)
 
 			if (c == '.')
 				c = file[2];
-			if (ISDIRSEP(c) || c == '\0')
+			if (c == '/' || c == '\0')
 				use_cdpath = 0;
 		}
 
@@ -102,29 +69,28 @@ make_path(cwd, file, cdpathp, xsp, phys_pathp)
 		else if (use_cdpath) {
 			char *pend;
 
-			for (pend = plist; *pend && *pend != PATHSEP; pend++)
+			for (pend = plist; *pend && *pend != ':'; pend++)
 				;
 			plen = pend - plist;
-			*cdpathp = *pend ? ++pend : (char *) 0;
+			*cdpathp = *pend ? ++pend : NULL;
 		}
 
-		if ((use_cdpath == 0 || !plen || ISRELPATH(plist))
-		    && (cwd && *cwd))
-		{
+		if ((use_cdpath == 0 || !plen || plist[0] != '/') &&
+		    (cwd && *cwd)) {
 			len = strlen(cwd);
 			XcheckN(*xsp, xp, len);
 			memcpy(xp, cwd, len);
 			xp += len;
-			if (!ISDIRSEP(cwd[len - 1]))
-				Xput(*xsp, xp, DIRSEP);
+			if (cwd[len - 1] != '/')
+				Xput(*xsp, xp, '/');
 		}
 		*phys_pathp = Xlength(*xsp, xp);
 		if (use_cdpath && plen) {
 			XcheckN(*xsp, xp, plen);
 			memcpy(xp, plist, plen);
 			xp += plen;
-			if (!ISDIRSEP(plist[plen - 1]))
-				Xput(*xsp, xp, DIRSEP);
+			if (plist[plen - 1] != '/')
+				Xput(*xsp, xp, '/');
 			rval = 1;
 		}
 	}
@@ -134,7 +100,7 @@ make_path(cwd, file, cdpathp, xsp, phys_pathp)
 	memcpy(xp, file, len);
 
 	if (!use_cdpath)
-		*cdpathp = (char *) 0;
+		*cdpathp = NULL;
 
 	return rval;
 }
@@ -144,8 +110,7 @@ make_path(cwd, file, cdpathp, xsp, phys_pathp)
  * ie, simplify_path("/a/b/c/./../d/..") returns "/a/b"
  */
 void
-simplify_path(path)
-	char	*path;
+simplify_path(char *path)
 {
 	char	*cur;
 	char	*t;
@@ -156,12 +121,8 @@ simplify_path(path)
 	if (!*path)
 		return;
 
-	if ((isrooted = ISROOTEDPATH(path)))
+	if ((isrooted = (path[0] == '/')))
 		very_start++;
-#ifdef OS2
-	if (path[0] && path[1] == ':')	/* skip a: */
-		very_start += 2;
-#endif /* OS2 */
 
 	/* Before			After
 	 *  /foo/			/foo
@@ -171,16 +132,11 @@ simplify_path(path)
 	 *  ..				..
 	 *  ./foo			foo
 	 *  foo/../../../bar		../../bar
-	 * OS2:
-	 *  a:/foo/../..		a:/
-	 *  a:.				a:
-	 *  a:..			a:..
-	 *  a:foo/../../blah		a:../blah
 	 */
 
 	for (cur = t = start = very_start; ; ) {
 		/* treat multiple '/'s as one '/' */
-		while (ISDIRSEP(*t))
+		while (*t == '/')
 			t++;
 
 		if (*t == '\0') {
@@ -192,18 +148,18 @@ simplify_path(path)
 		}
 
 		if (t[0] == '.') {
-			if (!t[1] || ISDIRSEP(t[1])) {
+			if (!t[1] || t[1] == '/') {
 				t += 1;
 				continue;
-			} else if (t[1] == '.' && (!t[2] || ISDIRSEP(t[2]))) {
+			} else if (t[1] == '.' && (!t[2] || t[2] == '/')) {
 				if (!isrooted && cur == start) {
 					if (cur != very_start)
-						*cur++ = DIRSEP;
+						*cur++ = '/';
 					*cur++ = '.';
 					*cur++ = '.';
 					start = cur;
 				} else if (cur != start)
-					while (--cur > start && !ISDIRSEP(*cur))
+					while (--cur > start && *cur != '/')
 						;
 				t += 2;
 				continue;
@@ -211,23 +167,22 @@ simplify_path(path)
 		}
 
 		if (cur != very_start)
-			*cur++ = DIRSEP;
+			*cur++ = '/';
 
 		/* find/copy next component of pathname */
-		while (*t && !ISDIRSEP(*t))
+		while (*t && *t != '/')
 			*cur++ = *t++;
 	}
 }
 
 
 void
-set_current_wd(path)
-	char *path;
+set_current_wd(char *path)
 {
 	int len;
 	char *p = path;
 
-	if (!p && !(p = ksh_get_wd((char *) 0, 0)))
+	if (!p && !(p = ksh_get_wd(NULL, 0)))
 		p = null;
 
 	len = strlen(p) + 1;
@@ -239,10 +194,8 @@ set_current_wd(path)
 		afree(p, ATEMP);
 }
 
-#ifdef S_ISLNK
 char *
-get_phys_path(path)
-	const char *path;
+get_phys_path(const char *path)
 {
 	XString xs;
 	char *xp;
@@ -252,20 +205,17 @@ get_phys_path(path)
 	xp = do_phys_path(&xs, xp, path);
 
 	if (!xp)
-		return (char *) 0;
+		return NULL;
 
 	if (Xlength(xs, xp) == 0)
-		Xput(xs, xp, DIRSEP);
+		Xput(xs, xp, '/');
 	Xput(xs, xp, '\0');
 
 	return Xclose(xs, xp);
 }
 
 static char *
-do_phys_path(xsp, xp, path)
-	XString *xsp;
-	char *xp;
-	const char *path;
+do_phys_path(XString *xsp, char *xp, const char *path)
 {
 	const char *p, *q;
 	int len, llen;
@@ -274,24 +224,24 @@ do_phys_path(xsp, xp, path)
 
 	Xcheck(*xsp, xp);
 	for (p = path; p; p = q) {
-		while (ISDIRSEP(*p))
+		while (*p == '/')
 			p++;
 		if (!*p)
 			break;
-		len = (q = ksh_strchr_dirsep(p)) ? q - p : strlen(p);
+		len = (q = strchr(p, '/')) ? q - p : strlen(p);
 		if (len == 1 && p[0] == '.')
 			continue;
 		if (len == 2 && p[0] == '.' && p[1] == '.') {
 			while (xp > Xstring(*xsp, xp)) {
 				xp--;
-				if (ISDIRSEP(*xp))
+				if (*xp == '/')
 					break;
 			}
 			continue;
 		}
 
 		savepos = Xsavepos(*xsp, xp);
-		Xput(*xsp, xp, DIRSEP);
+		Xput(*xsp, xp, '/');
 		XcheckN(*xsp, xp, len + 1);
 		memcpy(xp, p, len);
 		xp += len;
@@ -301,40 +251,16 @@ do_phys_path(xsp, xp, path)
 		if (llen < 0) {
 			/* EINVAL means it wasn't a symlink... */
 			if (errno != EINVAL)
-				return (char *) 0;
+				return NULL;
 			continue;
 		}
 		lbuf[llen] = '\0';
 
 		/* If absolute path, start from scratch.. */
-		xp = ISABSPATH(lbuf) ? Xstring(*xsp, xp)
-				     : Xrestpos(*xsp, xp, savepos);
+		xp = lbuf[0] == '/' ? Xstring(*xsp, xp) :
+		    Xrestpos(*xsp, xp, savepos);
 		if (!(xp = do_phys_path(xsp, xp, lbuf)))
-			return (char *) 0;
+			return NULL;
 	}
 	return xp;
 }
-#endif /* S_ISLNK */
-
-#ifdef	TEST
-
-main(argc, argv)
-{
-	int	rv;
-	char	*cp, cdpath[256], pwd[256], file[256], result[256];
-
-	printf("enter CDPATH: "); gets(cdpath);
-	printf("enter PWD: "); gets(pwd);
-	while (1) {
-		if (printf("Enter file: "), gets(file) == 0)
-			return 0;
-		cp = cdpath;
-		do {
-			rv = make_path(pwd, file, &cp, result, sizeof(result));
-			printf("make_path returns (%d), \"%s\" ", rv, result);
-			simplify_path(result);
-			printf("(simpifies to \"%s\")\n", result);
-		} while (cp);
-	}
-}
-#endif	/* TEST */

@@ -1,26 +1,57 @@
-#	$NetBSD: files.scsi,v 1.1 1995/04/17 07:15:40 cgd Exp $
+#	$OpenBSD: files.scsi,v 1.24 2011/04/22 23:22:56 deraadt Exp $
+#	$NetBSD: files.scsi,v 1.4 1996/05/16 04:01:08 mycroft Exp $
 #
 # Config.new file and device description for machine-independent SCSI code.
-# Included by ports that need it.  Ports that usee it must provide
+# Included by ports that need it.  Ports that use it must provide
 # their own "major" declarations for the appropriate devices.
 
-define	scsi {}
 file	scsi/scsi_base.c		scsi
 file	scsi/scsi_ioctl.c		scsi
 file	scsi/scsiconf.c			scsi
 
-device	scsibus at scsi {target = -1, lun = -1}
+device	scsibus {[target = -1], [lun = -1]}
+attach	scsibus at scsi
 
-device	cd at scsibus: disk
+device	cd: disk
+attach	cd at scsibus
 file	scsi/cd.c			cd needs-flag
-device	ch at scsibus: disk
+
+device	ch: disk
+attach	ch at scsibus
 file	scsi/ch.c			ch needs-flag
-device	sd at scsibus: disk
+
+device	sd: disk
+attach	sd at scsibus
 file	scsi/sd.c			sd needs-flag
-device	st at scsibus: tape
+
+device	st: tape
+attach	st at scsibus
 file	scsi/st.c			st needs-flag
-device	su at scsibus: disk
-file	scsi/su.c			su needs-flag
-device	uk at scsibus: disk
+
+device	uk: disk
+attach	uk at scsibus
 file	scsi/uk.c			uk needs-flag
 
+device	safte: disk
+attach	safte at scsibus
+file	scsi/safte.c			safte needs-flag
+
+device	ses: disk
+attach	ses at scsibus
+file	scsi/ses.c			ses needs-flag
+
+device	sym
+attach	sym at scsibus
+file	scsi/mpath_sym.c		sym
+
+device	rdac
+attach	rdac at scsibus
+file	scsi/mpath_rdac.c		rdac
+
+device	emc
+attach	emc at scsibus
+file	scsi/mpath_emc.c		emc
+
+device	hds
+attach	hds at scsibus
+file	scsi/mpath_hds.c		hds

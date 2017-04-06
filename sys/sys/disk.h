@@ -1,6 +1,8 @@
-/*	$NetBSD: disk.h,v 1.8 1994/10/30 21:49:49 cgd Exp $	*/
+/*	$OpenBSD: disk.h,v 1.34 2014/07/01 05:22:38 dlg Exp $	*/
+/*	$NetBSD: disk.h,v 1.11 1996/04/28 20:22:50 thorpej Exp $	*/
 
 /*
+ * Copyright (c) 1995 Jason R. Thorpe.  All rights reserved.
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -21,11 +23,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -48,39 +46,72 @@
 
 /*
  * Disk device structures.
- *
- * Note that this is only a preliminary outline.  The final disk structures
- * may be somewhat different.
  */
-struct buf;
 
-struct dkdevice {
-	struct	device dk_dev;		/* base device */
-	struct	dkdevice *dk_next;	/* list of disks; not yet used */
-	int	dk_bps;			/* xfer rate: bytes per second */
-	int	dk_bopenmask;		/* block devices open */
-	int	dk_copenmask;		/* character devices open */
-	int	dk_openmask;		/* composite (bopen|copen) */
-	int	dk_state;		/* label state   ### */
-	int	dk_blkshift;		/* shift to convert DEV_BSIZE to blks */
-	int	dk_byteshift;		/* shift to convert bytes to blks */
-	struct	dkdriver *dk_driver;	/* pointer to driver */
-	daddr_t	dk_labelsector;		/* sector containing label */
-	struct	disklabel dk_label;	/* label */
-	struct	cpu_disklabel dk_cpulabel;
+#include <sys/device.h>
+#include <sys/time.h>
+#include <sys/queue.h>
+#include <sys/rwlock.h>
+#include <sys/mutex.h>
+
+struct buf;
+struct disklabel;
+
+#define DS_DISKNAMELEN	16
+
+struct diskstats {
+	char		ds_name[DS_DISKNAMELEN];
+	int		ds_busy;	/* busy counter */
+	u_int64_t	ds_rxfer;	/* total number of read transfers */
+	u_int64_t	ds_wxfer;	/* total number of write transfers */
+	u_int64_t	ds_seek;	/* total independent seek operations */
+	u_int64_t	ds_rbytes;	/* total bytes read */
+	u_int64_t	ds_wbytes;	/* total bytes written */
+	struct timeval	ds_attachtime;	/* time disk was attached */
+	struct timeval	ds_timestamp;	/* time of first busy or any unbusy */
+	struct timeval	ds_time;	/* total time spent busy */
 };
 
-struct dkdriver {
-	void	(*d_strategy) __P((struct buf *));
-#ifdef notyet
-	int	(*d_open) __P((dev_t dev, int ifmt, int, struct proc *));
-	int	(*d_close) __P((dev_t dev, int, int ifmt, struct proc *));
-	int	(*d_ioctl) __P((dev_t dev, u_long cmd, caddr_t data, int fflag,
-				struct proc *));
-	int	(*d_dump) __P((dev_t));
-	void	(*d_start) __P((struct buf *, daddr_t));
-	int	(*d_mklabel) __P((struct dkdevice *));
-#endif
+struct disk {
+	TAILQ_ENTRY(disk) dk_link;	/* link in global disklist */
+	struct rwlock	dk_lock;	/* disk lock */
+	struct mutex	dk_mtx;		/* busy/unbusy mtx */
+	char		*dk_name;	/* disk name */
+	struct device	*dk_device;	/* disk device structure. */
+	dev_t		dk_devno;	/* disk device number. */
+	int		dk_flags;	/* disk flags */
+#define DKF_CONSTRUCTED	0x0001
+#define DKF_OPENED	0x0002
+#define DKF_NOLABELREAD	0x0004
+#define DKF_LABELVALID	0x0008
+
+	/*
+	 * Metrics data; note that some metrics may have no meaning
+	 * on certain types of disks.
+	 */
+	int		dk_busy;	/* busy counter */
+	u_int64_t	dk_rxfer;	/* total number of read transfers */
+	u_int64_t	dk_wxfer;	/* total number of write transfers */
+	u_int64_t	dk_seek;	/* total independent seek operations */
+	u_int64_t	dk_rbytes;	/* total bytes read */
+	u_int64_t	dk_wbytes;	/* total bytes written */
+	struct timeval	dk_attachtime;	/* time disk was attached */
+	struct timeval	dk_timestamp;	/* time of first busy or any unbusy */
+	struct timeval	dk_time;	/* total time spent busy */
+
+	int		dk_bopenmask;	/* block devices open */
+	int		dk_copenmask;	/* character devices open */
+	int		dk_openmask;	/* composite (bopen|copen) */
+	int		dk_state;	/* label state   ### */
+	int		dk_blkshift;	/* shift to convert DEV_BSIZE to blks*/
+	int		dk_byteshift;	/* shift to convert bytes to blks */
+
+	/*
+	 * Disk label information.  Storage for the in-core disk label
+	 * must be dynamically allocated, otherwise the size of this
+	 * structure becomes machine-dependent.
+	 */
+	struct disklabel *dk_label;
 };
 
 /* states */
@@ -91,17 +122,39 @@ struct dkdriver {
 #define	DK_OPEN		4		/* label read, drive open */
 #define	DK_OPENRAW	5		/* open without label */
 
-#ifdef DISKSORT_STATS
+/* Disk map flags. */
+#define	DM_OPENPART	0x1		/* Open raw partition. */
+#define	DM_OPENBLCK	0x2		/* Open block device. */
+
 /*
- * Stats from disksort().
+ * disklist_head is defined here so that user-land has access to it.
  */
-struct disksort_stats {
-	long	ds_newhead;		/* # new queue heads created */
-	long	ds_newtail;		/* # new queue tails created */
-	long	ds_midfirst;		/* # insertions into sort list */
-	long	ds_endfirst;		/* # insertions at end of sort list */
-	long	ds_newsecond;		/* # inversions (2nd lists) created */
-	long	ds_midsecond;		/* # insertions into 2nd list */
-	long	ds_endsecond;		/* # insertions at end of 2nd list */
-};
+TAILQ_HEAD(disklist_head, disk);	/* the disklist is a TAILQ */
+
+#ifdef _KERNEL
+extern	struct disklist_head disklist;	/* list of disks attached to system */
+extern	int disk_count;			/* number of disks in global disklist */
+extern	int disk_change;		/* disk attached/detached */
+
+void	disk_init(void);
+int	disk_construct(struct disk *);
+void	disk_attach(struct device *, struct disk *);
+void	disk_detach(struct disk *);
+int	disk_openpart(struct disk *, int, int, int);
+void	disk_closepart(struct disk *, int, int);
+void	disk_gone(int (*)(dev_t, int, int, struct proc *), int);
+void	disk_busy(struct disk *);
+void	disk_unbusy(struct disk *, long, int);
+
+int	disk_lock(struct disk *);
+void	disk_lock_nointr(struct disk *);
+void    disk_unlock(struct disk *);
+struct device *disk_lookup(struct cfdriver *, int);
+
+char 	*disk_readlabel(struct disklabel *, dev_t, char *, size_t);
+
+int	disk_map(char *, char *, int, int);
+
+int	duid_iszero(u_char *);
+const char *duid_format(u_char *);
 #endif

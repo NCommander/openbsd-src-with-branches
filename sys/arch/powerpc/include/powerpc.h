@@ -1,3 +1,4 @@
+/*	$OpenBSD: powerpc.h,v 1.10 2013/08/17 08:33:11 mpi Exp $	*/
 /*	$NetBSD: powerpc.h,v 1.1 1996/09/30 16:34:30 ws Exp $	*/
 
 /*
@@ -30,26 +31,23 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef	_MACHINE_POWERPC_H_
-#define	_MACHINE_POWERPC_H_
+
+#ifndef	_POWERPC_POWERPC_H_
+#define	_POWERPC_POWERPC_H_
 
 struct mem_region {
-	vm_offset_t start;
-	vm_size_t size;
+	vaddr_t start;
+	vsize_t size;
 };
 
-void mem_regions __P((struct mem_region **, struct mem_region **));
+void ppc_mem_regions(struct mem_region **, struct mem_region **);
 
-/*
- * These two functions get used solely in boot() in machdep.c.
- *
- * Not sure whether boot itself should be implementation dependent instead.	XXX
- */
-void ppc_exit __P((void)) __attribute__((__noreturn__));
-void ppc_boot __P((char *bootspec)) __attribute__((__noreturn__));
+struct dumpmem {
+	vaddr_t         start;
+	vsize_t         end;
+};
 
-int dk_match __P((char *name));
+extern struct dumpmem dumpmem[VM_PHYSSEG_MAX];
+extern u_int ndumpmem;
 
-void ofrootfound __P((void));
-
-#endif	/* _MACHINE_POWERPC_H_ */
+#endif	/* _POWERPC_POWERPC_H_ */

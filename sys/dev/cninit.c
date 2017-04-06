@@ -1,3 +1,4 @@
+/*	$OpenBSD: cninit.c,v 1.13 2014/09/14 14:17:24 jsg Exp $	*/
 /*	$NetBSD: cninit.c,v 1.2 1995/04/11 22:08:10 pk Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,10 +40,7 @@
  */
 
 #include <sys/param.h>
-#include <sys/proc.h>
-#include <sys/user.h>
 #include <sys/systm.h>
-#include <sys/buf.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/file.h>
@@ -55,32 +49,32 @@
 
 #include <dev/cons.h>
 
-extern struct consdev constab[];
-
-extern struct	consdev *cn_tab;	/* physical console device info */
+struct consdev *cn_tab = NULL;
 
 void
-cninit()
+cninit(void)
 {
-	register struct consdev *cp;
+	struct consdev *cp;
 
 	/*
 	 * Collect information about all possible consoles
-	 * and find the one with highest priority
+	 * and find the one with highest priority.
 	 */
 	for (cp = constab; cp->cn_probe; cp++) {
 		(*cp->cn_probe)(cp);
-		if (cp->cn_pri > CN_DEAD &&
+		if (cp->cn_pri != CN_DEAD &&
 		    (cn_tab == NULL || cp->cn_pri > cn_tab->cn_pri))
 			cn_tab = cp;
 	}
+
 	/*
-	 * No console, we can handle it
+	 * No console, we can handle it.
 	 */
 	if ((cp = cn_tab) == NULL)
 		return;
+
 	/*
-	 * Turn on console
+	 * Turn on console.
 	 */
 	(*cp->cn_init)(cp);
 }

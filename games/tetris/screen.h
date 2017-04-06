@@ -1,3 +1,4 @@
+/*	$OpenBSD: screen.h,v 1.4 2002/02/16 21:27:11 millert Exp $	*/
 /*	$NetBSD: screen.h,v 1.2 1995/04/22 07:42:42 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,18 +38,18 @@
 /*
  * Capabilities from TERMCAP (used in the score code).
  */
-char *SEstr;			/* end standout mode */
-char *SOstr;			/* begin standout mode */
+extern char *SEstr;			/* end standout mode */
+extern char *SOstr;			/* begin standout mode */
 
 /*
  * putpad() is for padded strings with count=1.
  */
 #define	putpad(s)	tputs(s, 1, put)
 
-int	put __P((int));		/* just calls putchar; for tputs */
-void	scr_clear __P((void));
-void	scr_end __P((void));
-void	scr_init __P((void));
-void	scr_msg __P((char *, int));
-void	scr_set __P((void));
-void	scr_update __P((void));
+int	put(int);			/* just calls putchar; for tputs */
+void	scr_clear(void);
+void	scr_end(void);
+void	scr_init(void);
+void	scr_msg(char *, int);
+void	scr_set(void);
+void	scr_update(void);

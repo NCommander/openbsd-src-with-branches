@@ -1,39 +1,15 @@
+/*	$OpenBSD: v_delete.c,v 1.7 2009/10/27 23:59:47 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996
+ *	Keith Bostic.  All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * See the LICENSE file for redistribution information.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)v_delete.c	8.16 (Berkeley) 8/17/94";
-#endif /* not lint */
+#include "config.h"
 
 #include <sys/types.h>
 #include <sys/queue.h>
@@ -41,67 +17,20 @@ static char sccsid[] = "@(#)v_delete.c	8.16 (Berkeley) 8/17/94";
 
 #include <bitstring.h>
 #include <limits.h>
-#include <signal.h>
 #include <stdio.h>
-#include <termios.h>
 
-#include "compat.h"
-#include <db.h>
-#include <regex.h>
-
+#include "../common/common.h"
 #include "vi.h"
-#include "vcmd.h"
-
-/*
- * v_Delete -- [buffer][count]D
- *	Delete line command.
- */
-int
-v_Delete(sp, ep, vp)
-	SCR *sp;
-	EXF *ep;
-	VICMDARG *vp;
-{
-	recno_t lno;
-	size_t len;
-
-	if (file_gline(sp, ep, vp->m_start.lno, &len) == NULL) {
-		if (file_lline(sp, ep, &lno))
-			return (1);
-		if (lno == 0)
-			return (0);
-		GETLINE_ERR(sp, vp->m_start.lno);
-		return (1);
-	}
-
-	if (len == 0)
-		return (0);
-
-	vp->m_stop.lno = vp->m_start.lno;
-	vp->m_stop.cno = len - 1;
-
-	/* Yank the lines. */
-	if (cut(sp, ep,
-	    F_ISSET(vp, VC_BUFFER) ? &vp->buffer : NULL,
-	    &vp->m_start, &vp->m_stop, CUT_NUMOPT))
-		return (1);
-	if (delete(sp, ep, &vp->m_start, &vp->m_stop, 0))
-		return (1);
-
-	vp->m_final.lno = vp->m_start.lno;
-	vp->m_final.cno = vp->m_start.cno ? vp->m_start.cno - 1 : 0;
-	return (0);
-}
 
 /*
  * v_delete -- [buffer][count]d[count]motion
+ *	       [buffer][count]D
  *	Delete a range of text.
+ *
+ * PUBLIC: int v_delete(SCR *, VICMD *);
  */
 int
-v_delete(sp, ep, vp)
-	SCR *sp;
-	EXF *ep;
-	VICMDARG *vp;
+v_delete(SCR *sp, VICMD *vp)
 {
 	recno_t nlines;
 	size_t len;
@@ -110,21 +39,21 @@ v_delete(sp, ep, vp)
 	lmode = F_ISSET(vp, VM_LMODE) ? CUT_LINEMODE : 0;
 
 	/* Yank the lines. */
-	if (cut(sp, ep, F_ISSET(vp, VC_BUFFER) ? &vp->buffer : NULL,
+	if (cut(sp, F_ISSET(vp, VC_BUFFER) ? &vp->buffer : NULL,
 	    &vp->m_start, &vp->m_stop,
 	    lmode | (F_ISSET(vp, VM_CUTREQ) ? CUT_NUMREQ : CUT_NUMOPT)))
 		return (1);
 
 	/* Delete the lines. */
-	if (delete(sp, ep, &vp->m_start, &vp->m_stop, lmode))
+	if (del(sp, &vp->m_start, &vp->m_stop, lmode))
 		return (1);
 
 	/*
 	 * Check for deletion of the entire file.  Try to check a close
 	 * by line so we don't go to the end of the file unnecessarily.
 	 */
-	if (file_gline(sp, ep, vp->m_final.lno + 1, &len) == NULL) {
-		if (file_lline(sp, ep, &nlines))
+	if (!db_exist(sp, vp->m_final.lno + 1)) {
+		if (db_last(sp, &nlines))
 			return (1);
 		if (nlines == 0) {
 			vp->m_final.lno = 1;
@@ -138,19 +67,33 @@ v_delete(sp, ep, vp)
 	 * character.  We check it here instead of checking in every command
 	 * that can be a motion component.
 	 */
-	if (file_gline(sp, ep, vp->m_final.lno, &len) == NULL) {
-		if (file_gline(sp, ep, nlines, &len) == NULL) {
-			GETLINE_ERR(sp, nlines);
+	if (db_get(sp, vp->m_final.lno, 0, NULL, &len)) {
+		if (db_get(sp, nlines, DBG_FATAL, NULL, &len))
 			return (1);
-		}
 		vp->m_final.lno = nlines;
 	}
-	if (vp->m_final.cno >= len)
-		vp->m_final.cno = len ? len - 1 : 0;
 
 	/*
 	 * !!!
-	 * The "dd" command moved to the first non-blank; "d<motion>" didn't.
+	 * Cursor movements, other than those caused by a line mode command
+	 * moving to another line, historically reset the relative position.
+	 *
+	 * This currently matches the check made in v_yank(), I'm hoping that
+	 * they should be consistent...
+	 */  
+	if (!F_ISSET(vp, VM_LMODE)) {
+		F_CLR(vp, VM_RCM_MASK);
+		F_SET(vp, VM_RCM_SET);
+
+		/* Make sure the set cursor position exists. */
+		if (vp->m_final.cno >= len)
+			vp->m_final.cno = len ? len - 1 : 0;
+	}
+
+	/*
+	 * !!!
+	 * The "dd" command moved to the first non-blank; "d<motion>"
+	 * didn't.
 	 */
 	if (F_ISSET(vp, VM_LDOUBLE)) {
 		F_CLR(vp, VM_RCM_MASK);

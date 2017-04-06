@@ -45,9 +45,6 @@
 #include "util/locks.h"
 #include "util/alloc.h"
 #include "services/modstack.h"
-#ifdef UB_ON_WINDOWS
-#  include "util/winsock_event.h"
-#endif
 struct config_file;
 struct worker;
 struct listen_port;
@@ -56,6 +53,7 @@ struct module_env;
 struct rrset_cache;
 struct acl_list;
 struct local_zones;
+struct views;
 struct ub_randstate;
 struct daemon_remote;
 
@@ -114,6 +112,8 @@ struct daemon {
 	struct timeval time_last_stat;
 	/** time when daemon started */
 	struct timeval time_boot;
+	/** views structure containing view tree */
+	struct views* views;
 #ifdef USE_DNSTAP
 	/** the dnstap environment master value, copied and changed by threads*/
 	struct dt_env* dtenv;

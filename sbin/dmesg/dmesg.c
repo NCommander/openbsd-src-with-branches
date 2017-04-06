@@ -1,3 +1,4 @@
+/*	$OpenBSD: dmesg.c,v 1.26 2015/10/04 18:49:30 deraadt Exp $	*/
 /*	$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,22 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1991, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dmesg.c	8.1 (Berkeley) 6/5/93";
-#else
-static char rcsid[] = "$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/cdefs.h>
+#include <sys/types.h>
 #include <sys/msgbuf.h>
+#include <sys/sysctl.h>
 
 #include <err.h>
 #include <fcntl.h>
@@ -57,36 +41,40 @@ static char rcsid[] = "$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $";
 #include <nlist.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <vis.h>
 
+#ifndef NOKVM
 struct nlist nl[] = {
 #define	X_MSGBUF	0
 	{ "_msgbufp" },
 	{ NULL },
 };
+#endif
 
-void usage __P((void));
+void usage(void);
 
 #define	KREAD(addr, var) \
 	kvm_read(kd, addr, &var, sizeof(var)) != sizeof(var)
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register int ch, newl, skip;
-	register char *p, *ep;
-	struct msgbuf *bufp, cur;
-	char *memf, *nlistf;
-	kvm_t *kd;
+	int ch, newl, skip, i;
+	char *p;
+	struct msgbuf cur;
+	char *memf, *nlistf, *bufdata = NULL;
+	int startupmsgs = 0;
 	char buf[5];
 
 	memf = nlistf = NULL;
-	while ((ch = getopt(argc, argv, "M:N:")) != EOF)
+	while ((ch = getopt(argc, argv, "sM:N:")) != -1)
 		switch(ch) {
+		case 's':
+			startupmsgs = 1;
+			break;
 		case 'M':
 			memf = optarg;
 			break;
@@ -100,37 +88,77 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-	/*
-	 * Discard setgid privileges if not the running kernel so that bad
-	 * guys can't print interesting stuff from kernel memory.
-	 */
-	if (memf != NULL || nlistf != NULL)
-		setgid(getgid());
+	if (memf == NULL && nlistf == NULL) {
+		int mib[2], msgbufsize;
+		size_t len;
 
-	/* Read in kernel message buffer, do sanity checks. */
-	if ((kd = kvm_open(nlistf, memf, NULL, O_RDONLY, "dmesg")) == NULL)
-		exit (1);
-	if (kvm_nlist(kd, nl) == -1)
-		errx(1, "kvm_nlist: %s", kvm_geterr(kd));
-	if (nl[X_MSGBUF].n_type == 0)
-		errx(1, "%s: msgbufp not found", nlistf ? nlistf : "namelist");
-	if (KREAD(nl[X_MSGBUF].n_value, bufp) || KREAD((long)bufp, cur))
-		errx(1, "kvm_read: %s", kvm_geterr(kd));
-	kvm_close(kd);
-	if (cur.msg_magic != MSG_MAGIC)
-		errx(1, "magic number incorrect");
-	if (cur.msg_bufx >= MSG_BSIZE)
+		mib[0] = CTL_KERN;
+		mib[1] = startupmsgs ? KERN_CONSBUFSIZE : KERN_MSGBUFSIZE;
+		len = sizeof(msgbufsize);
+		if (sysctl(mib, 2, &msgbufsize, &len, NULL, 0))
+			err(1, "sysctl: KERN_MSGBUFSIZE");
+
+		msgbufsize += sizeof(struct msgbuf) - 1;
+		bufdata = calloc(1, msgbufsize);
+		if (bufdata == NULL)
+			errx(1, "couldn't allocate space for buffer data");
+
+		mib[1] = startupmsgs ? KERN_CONSBUF : KERN_MSGBUF;
+		len = msgbufsize;
+		if (sysctl(mib, 2, bufdata, &len, NULL, 0))
+			err(1, "sysctl: KERN_MSGBUF");
+
+		if (pledge("stdio", NULL) == -1)
+			err(1, "pledge");
+
+		memcpy(&cur, bufdata, sizeof(cur));
+		bufdata = ((struct msgbuf *)bufdata)->msg_bufc;
+	} else {
+#ifndef NOKVM
+		struct msgbuf *bufp;
+		kvm_t *kd;
+
+		/* Read in kernel message buffer, do sanity checks. */
+		if ((kd = kvm_open(nlistf, memf, NULL, O_RDONLY,
+		    "dmesg")) == NULL)
+			return (1);
+
+		if (pledge("stdio", NULL) == -1)
+			err(1, "pledge");
+
+		if (kvm_nlist(kd, nl) == -1)
+			errx(1, "kvm_nlist: %s", kvm_geterr(kd));
+		if (nl[X_MSGBUF].n_type == 0)
+			errx(1, "%s: msgbufp not found",
+			    nlistf ? nlistf : "namelist");
+		if (KREAD(nl[X_MSGBUF].n_value, bufp))
+			errx(1, "kvm_read: %s: (0x%lx)", kvm_geterr(kd),
+			    nl[X_MSGBUF].n_value);
+		if (KREAD((long)bufp, cur))
+			errx(1, "kvm_read: %s (%0lx)", kvm_geterr(kd),
+			    (unsigned long)bufp);
+		if (cur.msg_magic != MSG_MAGIC)
+			errx(1, "magic number incorrect");
+		bufdata = malloc(cur.msg_bufs);
+		if (bufdata == NULL)
+			errx(1, "couldn't allocate space for buffer data");
+		if (kvm_read(kd, (long)&bufp->msg_bufc, bufdata,
+		    cur.msg_bufs) != cur.msg_bufs)
+			errx(1, "kvm_read: %s", kvm_geterr(kd));
+		kvm_close(kd);
+#endif
+	}
+
+	if (cur.msg_bufx >= cur.msg_bufs)
 		cur.msg_bufx = 0;
-
 	/*
 	 * The message buffer is circular; start at the read pointer, and
 	 * go to the write pointer - 1.
 	 */
-	p = cur.msg_bufc + cur.msg_bufx;
-	ep = cur.msg_bufc + cur.msg_bufx - 1;
-	for (newl = skip = 0; p != ep; ++p) {
-		if (p == cur.msg_bufc + MSG_BSIZE)
-			p = cur.msg_bufc;
+	for (newl = skip = i = 0, p = bufdata + cur.msg_bufx;
+	    i < cur.msg_bufs; i++, p++) {
+		if (p == bufdata + cur.msg_bufs)
+			p = bufdata;
 		ch = *p;
 		/* Skip "\n<.*>" syslog sequences. */
 		if (skip) {
@@ -145,20 +173,22 @@ main(argc, argv)
 		if (ch == '\0')
 			continue;
 		newl = ch == '\n';
-		(void)vis(buf, ch, 0, 0);
+		vis(buf, ch, 0, 0);
 		if (buf[1] == 0)
-			(void)putchar(buf[0]);
+			putchar(buf[0]);
 		else
-			(void)printf("%s", buf);
+			printf("%s", buf);
 	}
 	if (!newl)
-		(void)putchar('\n');
-	exit(0);
+		putchar('\n');
+	return (0);
 }
 
 void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr, "usage: dmesg [-M core] [-N system]\n");
+	extern char *__progname;
+
+	fprintf(stderr, "usage: %s [-s] [-M core] [-N system]\n", __progname);
 	exit(1);
 }

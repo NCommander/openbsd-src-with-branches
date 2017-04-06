@@ -1,4 +1,5 @@
-/*	$NetBSD: rmpproto.c,v 1.5 1995/10/06 05:12:21 thorpej Exp $	*/
+/*	$OpenBSD: rmpproto.c,v 1.11 2015/01/16 06:40:19 deraadt Exp $	*/
+/*	$NetBSD: rmpproto.c,v 1.5.2.1 1995/11/14 08:45:44 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988, 1992 The University of Utah and the Center
@@ -20,11 +21,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,12 +43,6 @@
  * Author: Jeff Forys, University of Utah CSS
  */
 
-#ifndef lint
-/*static char sccsid[] = "@(#)rmpproto.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$NetBSD: rmpproto.c,v 1.5 1995/10/06 05:12:21 thorpej Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/time.h>
 
 #include <errno.h>
@@ -85,80 +76,75 @@ static char rcsid[] = "$NetBSD: rmpproto.c,v 1.5 1995/10/06 05:12:21 thorpej Exp
 **		  sent to the host that sent the packet.
 */
 void
-ProcessPacket(rconn, client)
-	RMPCONN *rconn;
-	CLIENT *client;
+ProcessPacket(RMPCONN *rconn, CLIENT *client)
 {
-	struct rmp_packet *rmp;
+	struct rmp_packet *rmp = &rconn->rmp;
 	RMPCONN *rconnout;
 
-	rmp = &rconn->rmp;		/* cache pointer to RMP packet */
+	switch (rmp->r_type) {		/* do what we came here to do */
+	case RMP_BOOT_REQ:		/* boot request */
+		if ((rconnout = NewConn(rconn)) == NULL)
+			return;
 
-	switch(rmp->r_type) {		/* do what we came here to do */
-		case RMP_BOOT_REQ:		/* boot request */
-			if ((rconnout = NewConn(rconn)) == NULL)
-				return;
-
-			/*
-			 *  If the Session ID is 0xffff, this is a "probe"
-			 *  packet and we do not want to add the connection
-			 *  to the linked list of active connections.  There
-			 *  are two types of probe packets, if the Sequence
-			 *  Number is 0 they want to know our host name, o/w
-			 *  they want the name of the file associated with
-			 *  the number spec'd by the Sequence Number.
-			 *
-			 *  If this is an actual boot request, open the file
-			 *  and send a reply.  If SendBootRepl() does not
-			 *  return 0, add the connection to the linked list
-			 *  of active connections, otherwise delete it since
-			 *  an error was encountered.
-			 */
-			if (ntohs(rmp->r_brq.rmp_session) == RMP_PROBESID) {
-				if (WORDZE(rmp->r_brq.rmp_seqno))
-					(void) SendServerID(rconnout);
-				else
-					(void) SendFileNo(rmp, rconnout,
-					                  client? client->files:
-					                          BootFiles);
+		/*
+		 *  If the Session ID is 0xffff, this is a "probe"
+		 *  packet and we do not want to add the connection
+		 *  to the linked list of active connections.  There
+		 *  are two types of probe packets, if the Sequence
+		 *  Number is 0 they want to know our host name, o/w
+		 *  they want the name of the file associated with
+		 *  the number spec'd by the Sequence Number.
+		 *
+		 *  If this is an actual boot request, open the file
+		 *  and send a reply.  If SendBootRepl() does not
+		 *  return 0, add the connection to the linked list
+		 *  of active connections, otherwise delete it since
+		 *  an error was encountered.
+		 */
+		if (ntohs(rmp->r_brq.rmp_session) == RMP_PROBESID) {
+			if (WORDZE(rmp->r_brq.rmp_seqno))
+				(void) SendServerID(rconnout);
+			else
+				(void) SendFileNo(rmp, rconnout,
+				    client ? client->files : BootFiles);
+			FreeConn(rconnout);
+		} else {
+			if (SendBootRepl(rmp, rconnout,
+			    client? client->files: BootFiles))
+				AddConn(rconnout);
+			else
 				FreeConn(rconnout);
-			} else {
-				if (SendBootRepl(rmp, rconnout,
-				    client? client->files: BootFiles))
-					AddConn(rconnout);
-				else
-					FreeConn(rconnout);
-			}
-			break;
+		}
+		break;
 
-		case RMP_BOOT_REPL:		/* boot reply (not valid) */
-			syslog(LOG_WARNING, "%s: sent a boot reply",
-			       EnetStr(rconn));
-			break;
+	case RMP_BOOT_REPL:		/* boot reply (not valid) */
+		syslog(LOG_WARNING, "%s: sent a boot reply",
+		    EnetStr(rconn));
+		break;
 
-		case RMP_READ_REQ:		/* read request */
-			/*
-			 *  Send a portion of the boot file.
-			 */
-			(void) SendReadRepl(rconn);
-			break;
+	case RMP_READ_REQ:		/* read request */
+		/*
+		 *  Send a portion of the boot file.
+		 */
+		(void) SendReadRepl(rconn);
+		break;
 
-		case RMP_READ_REPL:		/* read reply (not valid) */
-			syslog(LOG_WARNING, "%s: sent a read reply",
-			       EnetStr(rconn));
-			break;
+	case RMP_READ_REPL:		/* read reply (not valid) */
+		syslog(LOG_WARNING, "%s: sent a read reply",
+		    EnetStr(rconn));
+		break;
 
-		case RMP_BOOT_DONE:		/* boot complete */
-			/*
-			 *  Remove the entry from the linked list of active
-			 *  connections.
-			 */
-			(void) BootDone(rconn);
-			break;
+	case RMP_BOOT_DONE:		/* boot complete */
+		/*
+		 *  Remove the entry from the linked list of active
+		 *  connections.
+		 */
+		(void) BootDone(rconn);
+		break;
 
-		default:			/* unknown RMP packet type */
-			syslog(LOG_WARNING, "%s: unknown packet type (%u)",
-			       EnetStr(rconn), rmp->r_type);
+	default:			/* unknown RMP packet type */
+		syslog(LOG_WARNING, "%s: unknown packet type (%u)",
+		    EnetStr(rconn), rmp->r_type);
 	}
 }
 
@@ -175,12 +161,11 @@ ProcessPacket(rconn, client)
 **		none.
 */
 int
-SendServerID(rconn)
-	RMPCONN *rconn;
+SendServerID(RMPCONN *rconn)
 {
-	register struct rmp_packet *rpl;
-	register char *src, *dst;
-	register u_int8_t *size;
+	struct rmp_packet *rpl;
+	char *src, *dst;
+	u_int8_t *size;
 
 	rpl = &rconn->rmp;			/* cache ptr to RMP packet */
 
@@ -227,15 +212,12 @@ SendServerID(rconn)
 **		none.
 */
 int
-SendFileNo(req, rconn, filelist)
-	struct rmp_packet *req;
-	RMPCONN *rconn;
-	char *filelist[];
+SendFileNo(struct rmp_packet *req, RMPCONN *rconn, char *filelist[])
 {
-	register struct rmp_packet *rpl;
-	register char *src, *dst;
-	register u_int8_t *size;
-	register int i;
+	struct rmp_packet *rpl;
+	char *src, *dst;
+	u_int8_t *size;
+	int i;
 
 	GETWORD(req->r_brpl.rmp_seqno, i);	/* SeqNo is really FileNo */
 	rpl = &rconn->rmp;			/* cache ptr to RMP packet */
@@ -290,17 +272,14 @@ SendFileNo(req, rconn, filelist)
 **		none.
 */
 int
-SendBootRepl(req, rconn, filelist)
-	struct rmp_packet *req;
-	RMPCONN *rconn;
-	char *filelist[];
+SendBootRepl(struct rmp_packet *req, RMPCONN *rconn, char *filelist[])
 {
 	int retval;
 	char *filename, filepath[RMPBOOTDATA+1];
 	RMPCONN *oldconn;
-	register struct rmp_packet *rpl;
-	register char *src, *dst1, *dst2;
-	register u_int8_t i;
+	struct rmp_packet *rpl;
+	char *src, *dst1, *dst2;
+	u_int8_t i;
 
 	/*
 	 *  If another connection already exists, delete it since we
@@ -308,7 +287,7 @@ SendBootRepl(req, rconn, filelist)
 	 */
 	if ((oldconn = FindConn(rconn)) != NULL) {
 		syslog(LOG_WARNING, "%s: dropping existing connection",
-		       EnetStr(oldconn));
+		    EnetStr(oldconn));
 		RemoveConn(oldconn);
 	}
 
@@ -326,9 +305,15 @@ SendBootRepl(req, rconn, filelist)
 	/*
 	 *  Copy file name to `filepath' string, and into reply packet.
 	 */
-	src = &req->r_brq.rmp_flnm;
 	dst1 = filepath;
 	dst2 = &rpl->r_brpl.rmp_flnm;
+	if (req->r_brq.rmp_flnmsize)
+		src = &req->r_brq.rmp_flnm;
+	else {
+		/* no file supplied, substitute the first one */
+		src = filelist[0];
+		req->r_brq.rmp_flnmsize = strlen(src);
+	}
 	for (i = 0; i < req->r_brq.rmp_flnmsize; i++)
 		*dst1++ = *dst2++ = *src++;
 	*dst1 = '\0';
@@ -341,7 +326,10 @@ SendBootRepl(req, rconn, filelist)
 	 *  stripped file name and spoof the client into thinking that it
 	 *  really got what it wanted.
 	 */
-	filename = (filename = rindex(filepath,'/'))? ++filename: filepath;
+	if ((filename = strrchr(filepath,'/')) != NULL)
+		filename++;
+	else
+		filename = filepath;
 
 	/*
 	 *  Check that this is a valid boot file name.
@@ -379,7 +367,7 @@ match:
 
 sendpkt:
 	syslog(LOG_INFO, "%s: request to boot %s (%s)",
-	       EnetStr(rconn), filename, retval? "granted": "denied");
+	    EnetStr(rconn), filename, retval? "granted": "denied");
 
 	rconn->rmplen = RMPBOOTSIZE(rpl->r_brpl.rmp_flnmsize);
 
@@ -399,13 +387,12 @@ sendpkt:
 **		none.
 */
 int
-SendReadRepl(rconn)
-	RMPCONN *rconn;
+SendReadRepl(RMPCONN *rconn)
 {
 	int retval = 0;
 	RMPCONN *oldconn;
-	register struct rmp_packet *rpl, *req;
-	register int size = 0;
+	struct rmp_packet *rpl, *req;
+	int size = 0;
 	int madeconn = 0;
 
 	/*
@@ -416,7 +403,7 @@ SendReadRepl(rconn)
 		if ((oldconn = NewConn(rconn)) == NULL)
 			return(0);
 		syslog(LOG_ERR, "SendReadRepl: no active connection (%s)",
-		       EnetStr(rconn));
+		    EnetStr(rconn));
 		madeconn++;
 	}
 
@@ -434,9 +421,9 @@ SendReadRepl(rconn)
 	 */
 	if (ntohs(req->r_rrq.rmp_session) !=
 	    ((rpl->r_type == RMP_BOOT_REPL)? ntohs(rpl->r_brpl.rmp_session):
-	                                     ntohs(rpl->r_rrpl.rmp_session))) {
+	    ntohs(rpl->r_rrpl.rmp_session))) {
 		syslog(LOG_ERR, "SendReadRepl: bad session id (%s)",
-		       EnetStr(rconn));
+		    EnetStr(rconn));
 		rpl->r_rrpl.rmp_retcode = RMP_E_BADSID;
 		retval = 1;
 		goto sendpkt;
@@ -457,9 +444,9 @@ SendReadRepl(rconn)
 	 *  Position read head on file according to info in request packet.
 	 */
 	GETWORD(req->r_rrq.rmp_offset, size);
-	if (lseek(oldconn->bootfd, (off_t)size, L_SET) < 0) {
+	if (lseek(oldconn->bootfd, (off_t)size, SEEK_SET) < 0) {
 		syslog(LOG_ERR, "SendReadRepl: lseek: %m (%s)",
-		       EnetStr(rconn));
+		    EnetStr(rconn));
 		rpl->r_rrpl.rmp_retcode = RMP_E_ABORT;
 		retval = 1;
 		goto sendpkt;
@@ -469,10 +456,10 @@ SendReadRepl(rconn)
 	 *  Read data directly into reply packet.
 	 */
 	if ((size = read(oldconn->bootfd, &rpl->r_rrpl.rmp_data,
-	                 (int) ntohs(req->r_rrq.rmp_size))) <= 0) {
+	    (int) ntohs(req->r_rrq.rmp_size))) <= 0) {
 		if (size < 0) {
 			syslog(LOG_ERR, "SendReadRepl: read: %m (%s)",
-			       EnetStr(rconn));
+			    EnetStr(rconn));
 			rpl->r_rrpl.rmp_retcode = RMP_E_ABORT;
 		} else {
 			rpl->r_rrpl.rmp_retcode = RMP_E_EOF;
@@ -517,8 +504,7 @@ sendpkt:
 **		none.
 */
 int
-BootDone(rconn)
-	RMPCONN *rconn;
+BootDone(RMPCONN *rconn)
 {
 	RMPCONN *oldconn;
 	struct rmp_packet *rpl;
@@ -528,7 +514,7 @@ BootDone(rconn)
 	 */
 	if ((oldconn = FindConn(rconn)) == NULL) {
 		syslog(LOG_ERR, "BootDone: no existing connection (%s)",
-		       EnetStr(rconn));
+		    EnetStr(rconn));
 		return(0);
 	}
 
@@ -539,9 +525,9 @@ BootDone(rconn)
 	 */
 	if (ntohs(rconn->rmp.r_rrq.rmp_session) !=
 	    ((rpl->r_type == RMP_BOOT_REPL)? ntohs(rpl->r_brpl.rmp_session):
-	                                    ntohs(rpl->r_rrpl.rmp_session))) {
+	    ntohs(rpl->r_rrpl.rmp_session))) {
 		syslog(LOG_ERR, "BootDone: bad session id (%s)",
-		       EnetStr(rconn));
+		    EnetStr(rconn));
 		return(0);
 	}
 
@@ -565,17 +551,15 @@ BootDone(rconn)
 **		none.
 */
 int
-SendPacket(rconn)
-	register RMPCONN *rconn;
+SendPacket(RMPCONN *rconn)
 {
 	/*
 	 *  Set Ethernet Destination address to Source (BPF and the enet
 	 *  driver will take care of getting our source address set).
 	 */
 	bcopy((char *)&rconn->rmp.hp_hdr.saddr[0],
-	      (char *)&rconn->rmp.hp_hdr.daddr[0], RMP_ADDRLEN);
-	rconn->rmp.hp_hdr.len = htons(ntohs(rconn->rmplen)
-					- sizeof(struct hp_hdr));
+	    (char *)&rconn->rmp.hp_hdr.daddr[0], RMP_ADDRLEN);
+	rconn->rmp.hp_hdr.len = htons(rconn->rmplen - sizeof(struct hp_hdr));
 
 	/*
 	 *  Reverse 802.2/HP Extended Source & Destination Access Pts.
@@ -586,7 +570,7 @@ SendPacket(rconn)
 	/*
 	 *  Last time this connection was active.
 	 */
-	(void) gettimeofday(&rconn->tstamp, (struct timezone *)0);
+	(void) gettimeofday(&rconn->tstamp, NULL);
 
 	if (DbgFp != NULL)			/* display packet */
 		DispPkt(rconn,DIR_SENT);

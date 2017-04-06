@@ -1,10 +1,9 @@
-#	$NetBSD: Makefile,v 1.6 1994/12/23 07:34:55 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.4 1997/04/27 20:56:50 millert Exp $
 
 MAN=	mkdep.1
 
 beforeinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
 	    ${.CURDIR}/mkdep.gcc.sh ${DESTDIR}/usr/bin/mkdep
 
 .include <bsd.prog.mk>

@@ -1,8 +1,9 @@
-/*	$NetBSD: lstSucc.c,v 1.4 1995/06/14 15:21:42 christos Exp $	*/
+/*	$OpenBSD: lstSucc.c,v 1.16 2007/09/16 09:46:14 espie Exp $	*/
+/*	$NetBSD: lstSucc.c,v 1.5 1996/11/06 17:59:52 christos Exp $	*/
 
 /*
- * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1989, 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
  * Adam de Boor.
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,44 +33,30 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lstSucc.c	5.3 (Berkeley) 6/1/90";
-#else
-static char rcsid[] = "$NetBSD: lstSucc.c,v 1.4 1995/06/14 15:21:42 christos Exp $";
-#endif
-#endif /* not lint */
-
 /*-
  * LstSucc.c --
  *	return the successor to a given node
  */
 
 #include	"lstInt.h"
+#include	<stddef.h>
 
 /*-
  *-----------------------------------------------------------------------
  * Lst_Succ --
- *	Return the sucessor to the given node on its list.
+ *	Return the successor to the given node on its list.
  *
  * Results:
- *	The successor of the node, if it exists (note that on a circular
- *	list, if the node is the only one in the list, it is its own
- *	successor).
- *
- * Side Effects:
- *	None.
+ *	The successor of the node, if it exists.
  *
  *-----------------------------------------------------------------------
  */
 LstNode
-Lst_Succ (ln)
-    LstNode	ln;
+Lst_Succ(LstNode ln)
 {
-    if (ln == NILLNODE) {
-	return (NILLNODE);
-    } else {
-	return ((LstNode) ((ListNode) ln)->nextPtr);
-    }
+	if (ln == NULL)
+		return NULL;
+	else
+		return ln->nextPtr;
 }
 

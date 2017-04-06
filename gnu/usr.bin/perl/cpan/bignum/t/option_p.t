@@ -1,29 +1,20 @@
-#!/usr/bin/perl -w
+#!perl
 
-use Test::More;
 use strict;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  chdir 't' if -d 't';
-  unshift @INC, '../lib';
-  plan tests => 4;
-  }
+use Test::More tests => 4;
 
-my @C = qw/Math::BigInt Math::BigFloat/;
+my @CLASSES = qw/Math::BigInt Math::BigFloat/;
 
 use bignum p => '12';
 
-foreach my $c (@C)
-  {
-  is ($c->precision(),12, "$c precision = 12");
-  }
+foreach my $class (@CLASSES) {
+    is($class->precision(), 12, "$class precision = 12");
+}
 
-bignum->import( p => '42' );
+bignum->import(p => '42');
 
-foreach my $c (@C)
-  {
-  is ($c->precision(),42, "$c precision = 42");
-  }
-
+foreach my $class (@CLASSES) {
+    is($class->precision(), 42, "$class precision = 42");
+}

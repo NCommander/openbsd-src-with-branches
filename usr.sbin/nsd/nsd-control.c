@@ -106,7 +106,7 @@ static void ssl_err(const char* s)
 
 /** setup SSL context */
 static SSL_CTX*
-setup_ctx(nsd_options_t* cfg)
+setup_ctx(struct nsd_options* cfg)
 {
 	char* s_cert, *c_key, *c_cert;
 	SSL_CTX* ctx;
@@ -125,9 +125,11 @@ setup_ctx(nsd_options_t* cfg)
         ctx = SSL_CTX_new(SSLv23_client_method());
 	if(!ctx)
 		ssl_err("could not allocate SSL_CTX pointer");
-        if(!(SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2) & SSL_OP_NO_SSLv2))
+        if((SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2) & SSL_OP_NO_SSLv2)
+		!= SSL_OP_NO_SSLv2)
 		ssl_err("could not set SSL_OP_NO_SSLv2");
-        if(!(SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv3) & SSL_OP_NO_SSLv3))
+        if((SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv3) & SSL_OP_NO_SSLv3)
+		!= SSL_OP_NO_SSLv3)
 		ssl_err("could not set SSL_OP_NO_SSLv3");
 	if(!SSL_CTX_use_certificate_file(ctx,c_cert,SSL_FILETYPE_PEM) ||
 		!SSL_CTX_use_PrivateKey_file(ctx,c_key,SSL_FILETYPE_PEM)
@@ -142,7 +144,7 @@ setup_ctx(nsd_options_t* cfg)
 
 /** contact the server with TCP connect */
 static int
-contact_server(const char* svr, nsd_options_t* cfg, int statuscmd)
+contact_server(const char* svr, struct nsd_options* cfg, int statuscmd)
 {
 #ifdef INET6
 	struct sockaddr_storage addr;
@@ -154,9 +156,13 @@ contact_server(const char* svr, nsd_options_t* cfg, int statuscmd)
 	int port = cfg->control_port;
 	/* use svr or a config entry */
 	if(!svr) {
-		if(cfg->control_interface)
+		if(cfg->control_interface) {
 			svr = cfg->control_interface->address;
-		else	svr = "127.0.0.1";
+		} else if(cfg->do_ip4) {
+			svr = "127.0.0.1";
+		} else {
+			svr = "::1";
+		}
 		/* config 0 addr (everything), means ask localhost */
 		if(strcmp(svr, "0.0.0.0") == 0)
 			svr = "127.0.0.1";
@@ -315,7 +321,7 @@ go_cmd(SSL* ssl, int argc, char* argv[])
 static int
 go(const char* cfgfile, char* svr, int argc, char* argv[])
 {
-	nsd_options_t* opt;
+	struct nsd_options* opt;
 	int fd, ret;
 	SSL_CTX* ctx;
 	SSL* ssl;
@@ -365,10 +371,22 @@ int main(int argc, char* argv[])
 #endif
 	log_init("nsd-control");
 
+#ifdef HAVE_ERR_LOAD_CRYPTO_STRINGS
 	ERR_load_crypto_strings();
+#endif
 	ERR_load_SSL_strings();
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || !defined(HAVE_OPENSSL_INIT_CRYPTO)
 	OpenSSL_add_all_algorithms();
+#else
+	OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_CIPHERS
+		| OPENSSL_INIT_ADD_ALL_DIGESTS
+		| OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL);
+#endif
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || !defined(HAVE_OPENSSL_INIT_SSL)
 	(void)SSL_library_init();
+#else
+	OPENSSL_init_ssl(0, NULL);
+#endif
 
 	if(!RAND_status()) {
                 /* try to seed it */

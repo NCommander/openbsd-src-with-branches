@@ -1,6 +1,10 @@
-#	$NetBSD: Makefile,v 1.3 1994/12/07 01:06:23 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/9/93
+#	$OpenBSD: Makefile,v 1.5 2001/07/19 10:20:01 espie Exp $
 
-PROG=	tsort
+PROG =	tsort
+SRCS = tsort.c
+
+CDIAGFLAGS = -Wall -Wno-char-subscripts -Wstrict-prototypes -pedantic -W
+DPADD += ${LIBUTIL}
+LDADD += -lutil
 
 .include <bsd.prog.mk>

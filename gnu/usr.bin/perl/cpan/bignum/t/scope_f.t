@@ -1,18 +1,12 @@
-#!/usr/bin/perl -w
+#!perl
 
 ###############################################################################
 # Test "no bignum;" and overloading of hex()/oct() for newer Perls
 
-use Test::More;
 use strict;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  chdir 't' if -d 't';
-  unshift @INC, '../lib';
-  plan tests => 10;
-  }
+use Test::More tests => 10;
 
 # no :hex and :oct means these do not get overloaded for older Perls:
 use bignum;

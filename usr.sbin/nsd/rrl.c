@@ -429,7 +429,7 @@ int rrl_process_query(query_type* query)
 {
 	uint64_t source;
 	uint32_t hash;
-	/* we can use circular arithmatic here, so int32 works after 2038 */
+	/* we can use circular arithmetic here, so int32 works after 2038 */
 	int32_t now = (int32_t)time(NULL);
 	uint32_t lm = rrl_ratelimit;
 	uint16_t flags;
@@ -449,7 +449,9 @@ int rrl_process_query(query_type* query)
 query_state_type rrl_slip(query_type* query)
 {
 	/* discard number the packets, randomly */
-#ifdef HAVE_ARC4RANDOM
+#ifdef HAVE_ARC4RANDOM_UNIFORM
+	if((rrl_slip_ratio > 0) && ((rrl_slip_ratio == 1) || ((arc4random_uniform(rrl_slip_ratio)) == 0))) {
+#elif HAVE_ARC4RANDOM
 	if((rrl_slip_ratio > 0) && ((rrl_slip_ratio == 1) || ((arc4random() % rrl_slip_ratio) == 0))) {
 #else
 	if((rrl_slip_ratio > 0) && ((rrl_slip_ratio == 1) || ((random() % rrl_slip_ratio) == 0))) {

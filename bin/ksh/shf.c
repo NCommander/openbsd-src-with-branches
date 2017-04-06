@@ -1,13 +1,20 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: shf.c,v 1.30 2015/12/14 13:59:42 tb Exp $	*/
 
 /*
  *  Shell file I/O routines
  */
 
-#include "sh.h"
-#include "ksh_stat.h"
-#include "ksh_limval.h"
+#include <sys/stat.h>
 
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "sh.h"
 
 /* flags to shf_emptybuf() */
 #define EB_READSW	0x01	/* about to switch to reading */
@@ -19,64 +26,77 @@
  * file descriptors.
  */
 
-static int	shf_fillbuf	ARGS((struct shf *shf));
-static int	shf_emptybuf	ARGS((struct shf *shf, int flags));
+static int	shf_fillbuf(struct shf *);
+static int	shf_emptybuf(struct shf *, int);
 
 /* Open a file.  First three args are for open(), last arg is flags for
  * this package.  Returns NULL if file could not be opened, or if a dup
  * fails.
  */
 struct shf *
-shf_open(name, oflags, mode, sflags)
-	const char *name;
-	int oflags;
-	int mode;
-	int sflags;
+shf_open(const char *name, int oflags, int mode, int sflags)
 {
+	struct shf *shf;
+	int bsize = sflags & SHF_UNBUF ? (sflags & SHF_RD ? 1 : 0) : SHF_BSIZE;
 	int fd;
 
+	/* Done before open so if alloca fails, fd won't be lost. */
+	shf = alloc(sizeof(struct shf) + bsize, ATEMP);
+	shf->areap = ATEMP;
+	shf->buf = (unsigned char *) &shf[1];
+	shf->bsize = bsize;
+	shf->flags = SHF_ALLOCS;
+	/* Rest filled in by reopen. */
+
 	fd = open(name, oflags, mode);
-	if (fd < 0)
+	if (fd < 0) {
+		afree(shf, shf->areap);
 		return NULL;
+	}
 	if ((sflags & SHF_MAPHI) && fd < FDBASE) {
 		int nfd;
 
-		nfd = ksh_dupbase(fd, FDBASE);
+		nfd = fcntl(fd, F_DUPFD, FDBASE);
 		close(fd);
-		if (nfd < 0)
+		if (nfd < 0) {
+			afree(shf, shf->areap);
 			return NULL;
+		}
 		fd = nfd;
 	}
 	sflags &= ~SHF_ACCMODE;
-	sflags |= (oflags & O_ACCMODE) == O_RDONLY ? SHF_RD
-		  : ((oflags & O_ACCMODE) == O_WRONLY ? SHF_WR
-		     : SHF_RDWR);
+	sflags |= (oflags & O_ACCMODE) == O_RDONLY ? SHF_RD :
+	    ((oflags & O_ACCMODE) == O_WRONLY ? SHF_WR : SHF_RDWR);
 
-	return shf_fdopen(fd, sflags, (struct shf *) 0);
+	return shf_reopen(fd, sflags, shf);
 }
 
 /* Set up the shf structure for a file descriptor.  Doesn't fail. */
 struct shf *
-shf_fdopen(fd, sflags, shf)
-	int fd;
-	int sflags;
-	struct shf *shf;
+shf_fdopen(int fd, int sflags, struct shf *shf)
 {
 	int bsize = sflags & SHF_UNBUF ? (sflags & SHF_RD ? 1 : 0) : SHF_BSIZE;
 
 	/* use fcntl() to figure out correct read/write flags */
 	if (sflags & SHF_GETFL) {
-		int flags = fcntl(fd, F_GETFL, 0);
+		int flags = fcntl(fd, F_GETFL);
 
 		if (flags < 0)
 			/* will get an error on first read/write */
 			sflags |= SHF_RDWR;
-		else
+		else {
 			switch (flags & O_ACCMODE) {
-			case O_RDONLY: sflags |= SHF_RD; break;
-			case O_WRONLY: sflags |= SHF_WR; break;
-			case O_RDWR: sflags |= SHF_RDWR; break;
+			case O_RDONLY:
+				sflags |= SHF_RD;
+				break;
+			case O_WRONLY:
+				sflags |= SHF_WR;
+				break;
+			case O_RDWR:
+				sflags |= SHF_RDWR;
+				break;
 			}
+		}
 	}
 
 	if (!(sflags & (SHF_RD | SHF_WR)))
@@ -84,12 +104,12 @@ shf_fdopen(fd, sflags, shf)
 
 	if (shf) {
 		if (bsize) {
-			shf->buf = (unsigned char *) alloc(bsize, ATEMP);
+			shf->buf = alloc(bsize, ATEMP);
 			sflags |= SHF_ALLOCB;
 		} else
-			shf->buf = (unsigned char *) 0;
+			shf->buf = NULL;
 	} else {
-		shf = (struct shf *) alloc(sizeof(struct shf) + bsize, ATEMP);
+		shf = alloc(sizeof(struct shf) + bsize, ATEMP);
 		shf->buf = (unsigned char *) &shf[1];
 		sflags |= SHF_ALLOCS;
 	}
@@ -104,32 +124,36 @@ shf_fdopen(fd, sflags, shf)
 	shf->errno_ = 0;
 	shf->bsize = bsize;
 	if (sflags & SHF_CLEXEC)
-		fd_clexec(fd);
+		fcntl(fd, F_SETFD, FD_CLOEXEC);
 	return shf;
 }
 
 /* Set up an existing shf (and buffer) to use the given fd */
 struct shf *
-shf_reopen(fd, sflags, shf)
-	int fd;
-	int sflags;
-	struct shf *shf;
+shf_reopen(int fd, int sflags, struct shf *shf)
 {
 	int bsize = sflags & SHF_UNBUF ? (sflags & SHF_RD ? 1 : 0) : SHF_BSIZE;
 
 	/* use fcntl() to figure out correct read/write flags */
 	if (sflags & SHF_GETFL) {
-		int flags = fcntl(fd, F_GETFL, 0);
+		int flags = fcntl(fd, F_GETFL);
 
 		if (flags < 0)
 			/* will get an error on first read/write */
 			sflags |= SHF_RDWR;
-		else
+		else {
 			switch (flags & O_ACCMODE) {
-			case O_RDONLY: sflags |= SHF_RD; break;
-			case O_WRONLY: sflags |= SHF_WR; break;
-			case O_RDWR: sflags |= SHF_RDWR; break;
+			case O_RDONLY:
+				sflags |= SHF_RD;
+				break;
+			case O_WRONLY:
+				sflags |= SHF_WR;
+				break;
+			case O_RDWR:
+				sflags |= SHF_RDWR;
+				break;
 			}
+		}
 	}
 
 	if (!(sflags & (SHF_RD | SHF_WR)))
@@ -147,7 +171,7 @@ shf_reopen(fd, sflags, shf)
 	shf->flags = (shf->flags & (SHF_ALLOCS | SHF_ALLOCB)) | sflags;
 	shf->errno_ = 0;
 	if (sflags & SHF_CLEXEC)
-		fd_clexec(fd);
+		fcntl(fd, F_SETFD, FD_CLOEXEC);
 	return shf;
 }
 
@@ -160,19 +184,15 @@ shf_reopen(fd, sflags, shf)
  * When writing, a byte is reserved for a trailing null - see shf_sclose().
  */
 struct shf *
-shf_sopen(buf, bsize, sflags, shf)
-	char *buf;
-	int bsize;
-	int sflags;
-	struct shf *shf;
+shf_sopen(char *buf, int bsize, int sflags, struct shf *shf)
 {
 	/* can't have a read+write string */
-	if (!(sflags & (SHF_RD | SHF_WR))
-	    || (sflags & (SHF_RD | SHF_WR)) == (SHF_RD | SHF_WR))
+	if (!(sflags & (SHF_RD | SHF_WR)) ||
+	    (sflags & (SHF_RD | SHF_WR)) == (SHF_RD | SHF_WR))
 		internal_errorf(1, "shf_sopen: flags 0x%x", sflags);
 
 	if (!shf) {
-		shf = (struct shf *) alloc(sizeof(struct shf), ATEMP);
+		shf = alloc(sizeof(struct shf), ATEMP);
 		sflags |= SHF_ALLOCS;
 	}
 	shf->areap = ATEMP;
@@ -197,8 +217,7 @@ shf_sopen(buf, bsize, sflags, shf)
 
 /* Flush and close file descriptor, free the shf structure */
 int
-shf_close(shf)
-	struct shf *shf;
+shf_close(struct shf *shf)
 {
 	int ret = 0;
 
@@ -217,8 +236,7 @@ shf_close(shf)
 
 /* Flush and close file descriptor, don't free file structure */
 int
-shf_fdclose(shf)
-	struct shf *shf;
+shf_fdclose(struct shf *shf)
 {
 	int ret = 0;
 
@@ -240,8 +258,7 @@ shf_fdclose(shf)
  * (does not free string if it was allocated).
  */
 char *
-shf_sclose(shf)
-	struct shf *shf;
+shf_sclose(struct shf *shf)
 {
 	unsigned char *s = shf->buf;
 
@@ -255,29 +272,11 @@ shf_sclose(shf)
 	return (char *) s;
 }
 
-/* Flush and free file structure, don't close file descriptor */
-int
-shf_finish(shf)
-	struct shf *shf;
-{
-	int ret = 0;
-
-	if (shf->fd >= 0)
-		ret = shf_flush(shf);
-	if (shf->flags & SHF_ALLOCS)
-		afree(shf, shf->areap);
-	else if (shf->flags & SHF_ALLOCB)
-		afree(shf->buf, shf->areap);
-
-	return ret;
-}
-
 /* Un-read what has been read but not examined, or write what has been
  * buffered.  Returns 0 for success, EOF for (write) error.
  */
 int
-shf_flush(shf)
-	struct shf *shf;
+shf_flush(struct shf *shf)
 {
 	if (shf->flags & SHF_STRING)
 		return (shf->flags & SHF_WR) ? EOF : 0;
@@ -293,7 +292,7 @@ shf_flush(shf)
 	if (shf->flags & SHF_READING) {
 		shf->flags &= ~(SHF_EOF | SHF_READING);
 		if (shf->rnleft > 0) {
-			lseek(shf->fd, (off_t) -shf->rnleft, 1);
+			lseek(shf->fd, (off_t) -shf->rnleft, SEEK_CUR);
 			shf->rnleft = 0;
 			shf->rp = shf->buf;
 		}
@@ -308,9 +307,7 @@ shf_flush(shf)
  * buffer.  Returns 0 for success, EOF for (write) error.
  */
 static int
-shf_emptybuf(shf, flags)
-	struct shf *shf;
-	int flags;
+shf_emptybuf(struct shf *shf, int flags)
 {
 	int ret = 0;
 
@@ -334,16 +331,14 @@ shf_emptybuf(shf, flags)
 		/* Note that we assume SHF_ALLOCS is not set if SHF_ALLOCB
 		 * is set... (changing the shf pointer could cause problems)
 		 */
-		if (!(flags & EB_GROW) || !(shf->flags & SHF_DYNAMIC)
-		    || !(shf->flags & SHF_ALLOCB))
+		if (!(flags & EB_GROW) || !(shf->flags & SHF_DYNAMIC) ||
+		    !(shf->flags & SHF_ALLOCB))
 			return EOF;
 		/* allocate more space for buffer */
-		nbuf = (unsigned char *) aresize(shf->buf, shf->wbsize * 2,
-						shf->areap);
+		nbuf = areallocarray(shf->buf, 2, shf->wbsize, shf->areap);
 		shf->rp = nbuf + (shf->rp - shf->buf);
 		shf->wp = nbuf + (shf->wp - shf->buf);
 		shf->rbsize += shf->wbsize;
-		shf->wbsize += shf->wbsize;
 		shf->wnleft += shf->wbsize;
 		shf->wbsize *= 2;
 		shf->buf = nbuf;
@@ -356,8 +351,8 @@ shf_emptybuf(shf, flags)
 			while (ntowrite > 0) {
 				n = write(shf->fd, buf, ntowrite);
 				if (n < 0) {
-					if (errno == EINTR
-					    && !(shf->flags & SHF_INTERRUPT))
+					if (errno == EINTR &&
+					    !(shf->flags & SHF_INTERRUPT))
 						continue;
 					shf->flags |= SHF_ERROR;
 					shf->errno_ = errno;
@@ -366,7 +361,7 @@ shf_emptybuf(shf, flags)
 						/* allow a second flush
 						 * to work */
 						memmove(shf->buf, buf,
-							ntowrite);
+						    ntowrite);
 						shf->wp = shf->buf + ntowrite;
 					}
 					return EOF;
@@ -391,8 +386,7 @@ shf_emptybuf(shf, flags)
 
 /* Fill up a read buffer.  Returns EOF for a read error, 0 otherwise. */
 static int
-shf_fillbuf(shf)
-	struct shf *shf;
+shf_fillbuf(struct shf *shf)
 {
 	if (shf->flags & SHF_STRING)
 		return 0;
@@ -414,9 +408,9 @@ shf_fillbuf(shf)
 	shf->rp = shf->buf;
 	while (1) {
 		shf->rnleft = blocking_read(shf->fd, (char *) shf->buf,
-					    shf->rbsize);
-		if (shf->rnleft < 0 && errno == EINTR
-		    && !(shf->flags & SHF_INTERRUPT))
+		    shf->rbsize);
+		if (shf->rnleft < 0 && errno == EINTR &&
+		    !(shf->flags & SHF_INTERRUPT))
 			continue;
 		break;
 	}
@@ -433,63 +427,12 @@ shf_fillbuf(shf)
 	return 0;
 }
 
-/* Seek to a new position in the file.  If writing, flushes the buffer
- * first.  If reading, optimizes small relative seeks that stay inside the
- * buffer.  Returns 0 for success, EOF otherwise.
- */
-int
-shf_seek(shf, where, from)
-	struct shf *shf;
-	off_t where;
-	int from;
-{
-	if (shf->fd < 0) {
-		errno = EINVAL;
-		return EOF;
-	}
-
-	if (shf->flags & SHF_ERROR) {
-		errno = shf->errno_;
-		return EOF;
-	}
-
-	if ((shf->flags & SHF_WRITING) && shf_emptybuf(shf, EB_READSW) == EOF)
-		return EOF;
-
-	if (shf->flags & SHF_READING) {
-		if (from == SEEK_CUR &&
-				(where < 0 ?
-					-where >= shf->rbsize - shf->rnleft :
-					where < shf->rnleft)) {
-			shf->rnleft -= where;
-			shf->rp += where;
-			return 0;
-		}
-		shf->rnleft = 0;
-		shf->rp = shf->buf;
-	}
-
-	shf->flags &= ~(SHF_EOF | SHF_READING | SHF_WRITING);
-
-	if (lseek(shf->fd, where, from) < 0) {
-		shf->errno_ = errno;
-		shf->flags |= SHF_ERROR;
-		return EOF;
-	}
-
-	return 0;
-}
-
-
 /* Read a buffer from shf.  Returns the number of bytes read into buf,
  * if no bytes were read, returns 0 if end of file was seen, EOF if
  * a read error occurred.
  */
 int
-shf_read(buf, bsize, shf)
-	char *buf;
-	int bsize;
-	struct shf *shf;
+shf_read(char *buf, int bsize, struct shf *shf)
 {
 	int orig_bsize = bsize;
 	int ncopy;
@@ -501,8 +444,8 @@ shf_read(buf, bsize, shf)
 		internal_errorf(1, "shf_read: bsize %d", bsize);
 
 	while (bsize > 0) {
-		if (shf->rnleft == 0
-		    && (shf_fillbuf(shf) == EOF || shf->rnleft == 0))
+		if (shf->rnleft == 0 &&
+		    (shf_fillbuf(shf) == EOF || shf->rnleft == 0))
 			break;
 		ncopy = shf->rnleft;
 		if (ncopy > bsize)
@@ -514,8 +457,8 @@ shf_read(buf, bsize, shf)
 		shf->rnleft -= ncopy;
 	}
 	/* Note: fread(3S) returns 0 for errors - this doesn't */
-	return orig_bsize == bsize ? (shf_error(shf) ? EOF : 0)
-				   : orig_bsize - bsize;
+	return orig_bsize == bsize ? (shf_error(shf) ? EOF : 0) :
+	    orig_bsize - bsize;
 }
 
 /* Read up to a newline or EOF.  The newline is put in buf; buf is always
@@ -523,10 +466,7 @@ shf_read(buf, bsize, shf)
  * end of file, returns a pointer to the null byte in buf otherwise.
  */
 char *
-shf_getse(buf, bsize, shf)
-	char *buf;
-	int bsize;
-	struct shf *shf;
+shf_getse(char *buf, int bsize, struct shf *shf)
 {
 	unsigned char *end;
 	int ncopy;
@@ -536,7 +476,7 @@ shf_getse(buf, bsize, shf)
 		internal_errorf(1, "shf_getse: flags %x", shf->flags);
 
 	if (bsize <= 0)
-		return (char *) 0;
+		return NULL;
 
 	--bsize;	/* save room for null */
 	do {
@@ -549,7 +489,7 @@ shf_getse(buf, bsize, shf)
 			}
 		}
 		end = (unsigned char *) memchr((char *) shf->rp, '\n',
-					     shf->rnleft);
+		    shf->rnleft);
 		ncopy = end ? end - shf->rp + 1 : shf->rnleft;
 		if (ncopy > bsize)
 			ncopy = bsize;
@@ -565,8 +505,7 @@ shf_getse(buf, bsize, shf)
 
 /* Returns the char read.  Returns EOF for error and end of file. */
 int
-shf_getchar(shf)
-	struct shf *shf;
+shf_getchar(struct shf *shf)
 {
 	if (!(shf->flags & SHF_RD))
 		internal_errorf(1, "shf_getchar: flags %x", shf->flags);
@@ -581,15 +520,13 @@ shf_getchar(shf)
  * successful, EOF if there is no room.
  */
 int
-shf_ungetc(c, shf)
-	int c;
-	struct shf *shf;
+shf_ungetc(int c, struct shf *shf)
 {
 	if (!(shf->flags & SHF_RD))
 		internal_errorf(1, "shf_ungetc: flags %x", shf->flags);
 
-	if ((shf->flags & SHF_ERROR) || c == EOF
-	    || (shf->rp == shf->buf && shf->rnleft))
+	if ((shf->flags & SHF_ERROR) || c == EOF ||
+	    (shf->rp == shf->buf && shf->rnleft))
 		return EOF;
 
 	if ((shf->flags & SHF_WRITING) && shf_emptybuf(shf, EB_READSW) == EOF)
@@ -618,9 +555,7 @@ shf_ungetc(c, shf)
  * the char could not be written.
  */
 int
-shf_putchar(c, shf)
-	int c;
-	struct shf *shf;
+shf_putchar(int c, struct shf *shf)
 {
 	if (!(shf->flags & SHF_WR))
 		internal_errorf(1, "shf_putchar: flags %x", shf->flags);
@@ -640,8 +575,8 @@ shf_putchar(c, shf)
 		}
 		while ((n = write(shf->fd, &cc, 1)) != 1)
 			if (n < 0) {
-				if (errno == EINTR
-				    && !(shf->flags & SHF_INTERRUPT))
+				if (errno == EINTR &&
+				    !(shf->flags & SHF_INTERRUPT))
 					continue;
 				shf->flags |= SHF_ERROR;
 				shf->errno_ = errno;
@@ -662,9 +597,7 @@ shf_putchar(c, shf)
  * the string could not be written.
  */
 int
-shf_puts(s, shf)
-	const char *s;
-	struct shf *shf;
+shf_puts(const char *s, struct shf *shf)
 {
 	if (!s)
 		return EOF;
@@ -674,10 +607,7 @@ shf_puts(s, shf)
 
 /* Write a buffer.  Returns nbytes if successful, EOF if there is an error. */
 int
-shf_write(buf, nbytes, shf)
-	const char *buf;
-	int nbytes;
-	struct shf *shf;
+shf_write(const char *buf, int nbytes, struct shf *shf)
 {
 	int orig_nbytes = nbytes;
 	int n;
@@ -689,7 +619,9 @@ shf_write(buf, nbytes, shf)
 	if (nbytes < 0)
 		internal_errorf(1, "shf_write: nbytes %d", nbytes);
 
-	if ((ncopy = shf->wnleft)) {
+	/* Don't buffer if buffer is empty and we're writting a large amount. */
+	if ((ncopy = shf->wnleft) &&
+	    (shf->wp != shf->buf || nbytes < shf->wnleft)) {
 		if (ncopy > nbytes)
 			ncopy = nbytes;
 		memcpy(shf->wp, buf, ncopy);
@@ -710,8 +642,8 @@ shf_write(buf, nbytes, shf)
 			while (ncopy > 0) {
 				n = write(shf->fd, buf, ncopy);
 				if (n < 0) {
-					if (errno == EINTR
-					    && !(shf->flags & SHF_INTERRUPT))
+					if (errno == EINTR &&
+					    !(shf->flags & SHF_INTERRUPT))
 						continue;
 					shf->flags |= SHF_ERROR;
 					shf->errno_ = errno;
@@ -735,19 +667,12 @@ shf_write(buf, nbytes, shf)
 }
 
 int
-#ifdef HAVE_PROTOTYPES
 shf_fprintf(struct shf *shf, const char *fmt, ...)
-#else
-shf_fprintf(shf, fmt, va_alist)
-	struct shf *shf;
-	const char *fmt;
-	va_dcl
-#endif
 {
 	va_list args;
 	int n;
 
-	SH_VA_START(args, fmt);
+	va_start(args, fmt);
 	n = shf_vfprintf(shf, fmt, args);
 	va_end(args);
 
@@ -755,15 +680,7 @@ shf_fprintf(shf, fmt, va_alist)
 }
 
 int
-#ifdef HAVE_PROTOTYPES
 shf_snprintf(char *buf, int bsize, const char *fmt, ...)
-#else
-shf_snprintf(buf, bsize, fmt, va_alist)
-	char *buf;
-	int bsize;
-	const char *fmt;
-	va_dcl
-#endif
 {
 	struct shf shf;
 	va_list args;
@@ -774,7 +691,7 @@ shf_snprintf(buf, bsize, fmt, va_alist)
 			(long) buf, bsize);
 
 	shf_sopen(buf, bsize, SHF_WR, &shf);
-	SH_VA_START(args, fmt);
+	va_start(args, fmt);
 	n = shf_vfprintf(&shf, fmt, args);
 	va_end(args);
 	shf_sclose(&shf); /* null terminates */
@@ -782,55 +699,17 @@ shf_snprintf(buf, bsize, fmt, va_alist)
 }
 
 char *
-#ifdef HAVE_PROTOTYPES
 shf_smprintf(const char *fmt, ...)
-#else
-shf_smprintf(fmt, va_alist)
-	char *fmt;
-	va_dcl
-#endif
 {
 	struct shf shf;
 	va_list args;
 
-	shf_sopen((char *) 0, 0, SHF_WR|SHF_DYNAMIC, &shf);
-	SH_VA_START(args, fmt);
+	shf_sopen(NULL, 0, SHF_WR|SHF_DYNAMIC, &shf);
+	va_start(args, fmt);
 	shf_vfprintf(&shf, fmt, args);
 	va_end(args);
 	return shf_sclose(&shf); /* null terminates */
 }
-
-#undef FP  			/* if you want floating point stuff */
-
-#define BUF_SIZE	128
-#define FPBUF_SIZE	(DMAXEXP+16)/* this must be >
-				 *	MAX(DMAXEXP, log10(pow(2, DSIGNIF)))
-				 *    + ceil(log10(DMAXEXP)) + 8 (I think).
-				 * Since this is hard to express as a
-				 * constant, just use a large buffer.
-				 */
-
-/*
- *	What kinda of machine we on?  Hopefully the C compiler will optimize
- *  this out...
- *
- *	For shorts, we want sign extend for %d but not for %[oxu] - on 16 bit
- *  machines it don't matter.  Assmumes C compiler has converted shorts to
- *  ints before pushing them.
- */
-#define POP_INT(f, s, a) (((f) & FL_LONG) ?				\
-				va_arg((a), unsigned long)		\
-			    :						\
-				(sizeof(int) < sizeof(long) ?		\
-					((s) ?				\
-						(long) va_arg((a), int)	\
-					    :				\
-						va_arg((a), unsigned))	\
-				    :					\
-					va_arg((a), unsigned)))
-
-#define ABIGNUM		32000	/* big numer that will fit in a short */
-#define LOG2_10		3.321928094887362347870319429	/* log base 2 of 10 */
 
 #define	FL_HASH		0x001	/* `#' seen */
 #define FL_PLUS		0x002	/* `+' seen */
@@ -838,52 +717,25 @@ shf_smprintf(fmt, va_alist)
 #define FL_BLANK	0x008	/* ` ' seen */
 #define FL_SHORT	0x010	/* `h' seen */
 #define FL_LONG		0x020	/* `l' seen */
-#define FL_ZERO		0x040	/* `0' seen */
-#define FL_DOT		0x080	/* '.' seen */
-#define FL_UPPER	0x100	/* format character was uppercase */
-#define FL_NUMBER	0x200	/* a number was formated %[douxefg] */
-
-
-#ifdef FP
-#include <math.h>
-
-static double
-my_ceil(d)
-	double	d;
-{
-	double		i;
-
-	return d - modf(d, &i) + (d < 0 ? -1 : 1);
-}
-#endif /* FP */
+#define FL_LLONG	0x040	/* `ll' seen */
+#define FL_ZERO		0x080	/* `0' seen */
+#define FL_DOT		0x100	/* '.' seen */
+#define FL_UPPER	0x200	/* format character was uppercase */
+#define FL_NUMBER	0x400	/* a number was formated %[douxefg] */
 
 int
-shf_vfprintf(shf, fmt, args)
-	struct shf *shf;
-	const char *fmt;
-	va_list args;
+shf_vfprintf(struct shf *shf, const char *fmt, va_list args)
 {
 	char		c, *s;
-	int		UNINITIALIZED(tmp);
+	int		tmp = 0;
 	int		field, precision;
 	int		len;
 	int		flags;
-	unsigned long	lnum;
+	unsigned long long	llnum;
 					/* %#o produces the longest output */
-	char		numbuf[(BITS(long) + 2) / 3 + 1];
+	char		numbuf[(BITS(long long) + 2) / 3 + 1];
 	/* this stuff for dealing with the buffer */
 	int		nwritten = 0;
-#ifdef FP
-	/* should be in <math.h>
-	 *  extern double frexp();
-	 */
-	extern char *ecvt();
-
-	double		fpnum;
-	int		expo, decpt;
-	char		style;
-	char		fpbuf[FPBUF_SIZE];
-#endif /* FP */
 
 	if (!fmt)
 		return 0;
@@ -898,7 +750,7 @@ shf_vfprintf(shf, fmt, args)
 		 *	This will accept flags/fields in any order - not
 		 *  just the order specified in printf(3), but this is
 		 *  the way _doprnt() seems to work (on bsd and sysV).
-		 *  The only resriction is that the format character must
+		 *  The only restriction is that the format character must
 		 *  come last :-).
 		 */
 		flags = field = precision = 0;
@@ -941,7 +793,11 @@ shf_vfprintf(shf, fmt, args)
 				continue;
 
 			case 'l':
-				flags |= FL_LONG;
+				if (*fmt == 'l') {
+					fmt++;
+					flags |= FL_LLONG;
+				} else
+					flags |= FL_LONG;
 				continue;
 
 			case 'h':
@@ -977,9 +833,8 @@ shf_vfprintf(shf, fmt, args)
 
 		switch (c) {
 		case 'p': /* pointer */
-			flags &= ~(FL_LONG | FL_SHORT);
-			if (sizeof(char *) > sizeof(int))
-				flags |= FL_LONG; /* hope it fits.. */
+			flags &= ~(FL_LLONG | FL_SHORT);
+			flags |= FL_LONG;
 			/* aaahhh... */
 		case 'd':
 		case 'i':
@@ -988,21 +843,33 @@ shf_vfprintf(shf, fmt, args)
 		case 'x':
 			flags |= FL_NUMBER;
 			s = &numbuf[sizeof(numbuf)];
-			lnum = POP_INT(flags, c == 'd', args);
+			if (flags & FL_LLONG)
+				llnum = va_arg(args, unsigned long long);
+			else if (flags & FL_LONG) {
+				if (c == 'd' || c == 'i')
+					llnum = va_arg(args, long);
+				else
+					llnum = va_arg(args, unsigned long);
+			} else {
+				if (c == 'd' || c == 'i')
+					llnum = va_arg(args, int);
+				else
+					llnum = va_arg(args, unsigned int);
+			}
 			switch (c) {
 			case 'd':
 			case 'i':
-				if (0 > (long) lnum)
-					lnum = - (long) lnum, tmp = 1;
+				if (0 > (long long) llnum)
+					llnum = - (long long) llnum, tmp = 1;
 				else
 					tmp = 0;
 				/* aaahhhh..... */
 
 			case 'u':
 				do {
-					*--s = lnum % 10 + '0';
-					lnum /= 10;
-				} while (lnum);
+					*--s = llnum % 10 + '0';
+					llnum /= 10;
+				} while (llnum);
 
 				if (c != 'u') {
 					if (tmp)
@@ -1016,9 +883,9 @@ shf_vfprintf(shf, fmt, args)
 
 			case 'o':
 				do {
-					*--s = (lnum & 0x7) + '0';
-					lnum >>= 3;
-				} while (lnum);
+					*--s = (llnum & 0x7) + '0';
+					llnum >>= 3;
+				} while (llnum);
 
 				if ((flags & FL_HASH) && *s != '0')
 					*--s = '0';
@@ -1028,12 +895,12 @@ shf_vfprintf(shf, fmt, args)
 			case 'x':
 			    {
 				const char *digits = (flags & FL_UPPER) ?
-						  "0123456789ABCDEF"
-						: "0123456789abcdef";
+				    "0123456789ABCDEF" :
+				    "0123456789abcdef";
 				do {
-					*--s = digits[lnum & 0xf];
-					lnum >>= 4;
-				} while (lnum);
+					*--s = digits[llnum & 0xf];
+					llnum >>= 4;
+				} while (llnum);
 
 				if (flags & FL_HASH) {
 					*--s = (flags & FL_UPPER) ? 'X' : 'x';
@@ -1050,144 +917,6 @@ shf_vfprintf(shf, fmt, args)
 					precision = len; /* no loss */
 			}
 			break;
-
-#ifdef FP
-		case 'e':
-		case 'g':
-		case 'f':
-		    {
-			char *p;
-
-			/*
-			 *	This could proabably be done better,
-			 *  but it seems to work.  Note that gcvt()
-			 *  is not used, as you cannot tell it to
-			 *  not strip the zeros.
-			 */
-			flags |= FL_NUMBER;
-			if (!(flags & FL_DOT))
-				precision = 6;	/* default */
-			/*
-			 *	Assumes doubles are pushed on
-			 *  the stack.  If this is not so, then
-			 *  FL_LONG/FL_SHORT should be checked.
-			 */
-			fpnum = va_arg(args, double);
-			s = fpbuf;
-			style = c;
-			/*
-			 *  This is the same as
-			 *	expo = ceil(log10(fpnum))
-			 *  but doesn't need -lm.  This is an
-			 *  aproximation as expo is rounded up.
-			 */
-			(void) frexp(fpnum, &expo);
-			expo = my_ceil(expo / LOG2_10);
-
-			if (expo < 0)
-				expo = 0;
-
-			p = ecvt(fpnum, precision + 1 + expo,
-				 &decpt, &tmp);
-			if (c == 'g') {
-				if (decpt < -4 || decpt > precision)
-					style = 'e';
-				else
-					style = 'f';
-				if (decpt > 0 && (precision -= decpt) < 0)
-					precision = 0;
-			}
-			if (tmp)
-				*--s = '-';
-			else if (flags & FL_PLUS)
-				*--s = '+';
-			else if (flags & FL_BLANK)
-				*--s = ' ';
-
-			if (style == 'e')
-				*s++ = *p++;
-			else {
-				if (decpt > 0) {
-					/* Overflow check - should
-					 * never have this problem.
-					 */
-					if (decpt >
-						&fpbuf[sizeof(fpbuf)]
-							- s - 8)
-						decpt =
-						 &fpbuf[sizeof(fpbuf)]
-							- s - 8;
-					(void) memcpy(s, p, decpt);
-					s += decpt;
-					p += decpt;
-				} else
-					*s++ = '0';
-			}
-
-			/* print the fraction? */
-			if (precision > 0) {
-				*s++ = '.';
-				/* Overflow check - should
-				 * never have this problem.
-				 */
-				if (precision > &fpbuf[sizeof(fpbuf)]
-							- s - 7)
-					precision =
-						&fpbuf[sizeof(fpbuf)]
-						- s - 7;
-				for (tmp = decpt;  tmp++ < 0 &&
-					    precision > 0 ; precision--)
-					*s++ = '0';
-				tmp = strlen(p);
-				if (precision > tmp)
-					precision = tmp;
-				/* Overflow check - should
-				 * never have this problem.
-				 */
-				if (precision > &fpbuf[sizeof(fpbuf)]
-							- s - 7)
-					precision =
-						&fpbuf[sizeof(fpbuf)]
-						- s - 7;
-				(void) memcpy(s, p, precision);
-				s += precision;
-				/*
-				 *	`g' format strips trailing
-				 *  zeros after the decimal.
-				 */
-				if (c == 'g' && !(flags & FL_HASH)) {
-					while (*--s == '0')
-						;
-					if (*s != '.')
-						s++;
-				}
-			} else if (flags & FL_HASH)
-				*s++ = '.';
-
-			if (style == 'e') {
-				*s++ = (flags & FL_UPPER) ? 'E' : 'e';
-				if (--decpt >= 0)
-					*s++ = '+';
-				else {
-					*s++ = '-';
-					decpt = -decpt;
-				}
-				p = &numbuf[sizeof(numbuf)];
-				for (tmp = 0; tmp < 2 || decpt ; tmp++) {
-					*--p = '0' + decpt % 10;
-					decpt /= 10;
-				}
-				tmp = &numbuf[sizeof(numbuf)] - p;
-				(void) memcpy(s, p, tmp);
-				s += tmp;
-			}
-
-			len = s - fpbuf;
-			s = fpbuf;
-			precision = len;
-			break;
-		    }
-#endif /* FP */
 
 		case 's':
 			if (!(s = va_arg(args, char *)))
@@ -1223,8 +952,7 @@ shf_vfprintf(shf, fmt, args)
 				field = -field;
 				/* skip past sign or 0x when padding with 0 */
 				if ((flags & FL_ZERO) && (flags & FL_NUMBER)) {
-					if (*s == '+' || *s == '-' || *s ==' ')
-					{
+					if (*s == '+' || *s == '-' || *s ==' ') {
 						shf_putc(*s, shf);
 						s++;
 						precision--;
@@ -1234,8 +962,7 @@ shf_vfprintf(shf, fmt, args)
 						s++;
 						nwritten++;
 						if (--precision > 0 &&
-							(*s | 0x20) == 'x')
-						{
+						    (*s | 0x20) == 'x') {
 							shf_putc(*s, shf);
 							s++;
 							precision--;

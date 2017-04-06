@@ -1,6 +1,22 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: locore_subr.S,v 1.11 2016/05/10 18:39:47 deraadt Exp $	*/
 /*	$NetBSD: locore_subr.S,v 1.28 2006/01/23 22:52:09 uwe Exp $	*/
 
+/*
+ * Copyright (c) 2007 Miodrag Vallat.
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice, this permission notice, and the disclaimer below
+ * appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
 /*-
  * Copyright (c) 2002 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -13,13 +29,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -49,42 +58,142 @@
  * LINTSTUB: include <sh/locore.h>
  */
 
+/*
+ * Save integer registers in the pcb.
+ * reg points to pcb->pcb_sf.
+ */
+#define	SAVEPCB(reg) \
+	add	#SF_SIZE, reg ; \
+	sts.l	mach,	@-##reg ; \
+	sts.l	macl,	@-##reg ; \
+	stc.l	r7_bank,@-##reg ; \
+	stc.l	sr,	@-##reg ; \
+	stc.l	r6_bank,@-##reg ; \
+	sts.l	pr,	@-##reg ; \
+	mov.l	r8,	@-##reg ; \
+	mov.l	r9,	@-##reg ; \
+	mov.l	r10,	@-##reg ; \
+	mov.l	r11,	@-##reg ; \
+	mov.l	r12,	@-##reg ; \
+	mov.l	r13,	@-##reg ; \
+	mov.l	r14,	@-##reg ; \
+	mov.l	r15,	@-##reg
+
+/*
+ * Save floating point registers to a fpreg structure.
+ * reg points to the structure, tmp and tmp2 are two scratch integer registers.
+ */
+#define	SAVEFP(reg, tmp, tmp2) \
+	add	#124,	reg ; \
+	sts	fpscr,	tmp2 ; \
+	add	#(FP_SIZE - 124), reg ; \
+	mov	#0,	tmp; \
+	mov.l	tmp2,	@-##reg ; \
+	lds	tmp,	fpscr; \
+	sts.l	fpul,	@-##reg ; \
+	frchg; \
+	fmov.s	fr15,	@-##reg ; \
+	fmov.s	fr14,	@-##reg ; \
+	fmov.s	fr13,	@-##reg ; \
+	fmov.s	fr12,	@-##reg ; \
+	fmov.s	fr11,	@-##reg ; \
+	fmov.s	fr10,	@-##reg ; \
+	fmov.s	fr9,	@-##reg ; \
+	fmov.s	fr8,	@-##reg ; \
+	fmov.s	fr7,	@-##reg ; \
+	fmov.s	fr6,	@-##reg ; \
+	fmov.s	fr5,	@-##reg ; \
+	fmov.s	fr4,	@-##reg ; \
+	fmov.s	fr3,	@-##reg ; \
+	fmov.s	fr2,	@-##reg ; \
+	fmov.s	fr1,	@-##reg ; \
+	fmov.s	fr0,	@-##reg ; \
+	frchg; \
+	fmov.s	fr15,	@-##reg ; \
+	fmov.s	fr14,	@-##reg ; \
+	fmov.s	fr13,	@-##reg ; \
+	fmov.s	fr12,	@-##reg ; \
+	fmov.s	fr11,	@-##reg ; \
+	fmov.s	fr10,	@-##reg ; \
+	fmov.s	fr9,	@-##reg ; \
+	fmov.s	fr8,	@-##reg ; \
+	fmov.s	fr7,	@-##reg ; \
+	fmov.s	fr6,	@-##reg ; \
+	fmov.s	fr5,	@-##reg ; \
+	fmov.s	fr4,	@-##reg ; \
+	fmov.s	fr3,	@-##reg ; \
+	fmov.s	fr2,	@-##reg ; \
+	fmov.s	fr1,	@-##reg ; \
+	fmov.s	fr0,	@-##reg ; \
+	lds	tmp2,	fpscr
+
+/*
+ * Load floating point registers from a fpreg structure.
+ * reg points to the structure, tmp is a scratch integer register.
+ */
+#define	LOADFP(reg, tmp) \
+	mov	#0,	tmp; \
+	lds	tmp,	fpscr; \
+	fmov.s	@##reg##+, fr0 ; \
+	fmov.s	@##reg##+, fr1 ; \
+	fmov.s	@##reg##+, fr2 ; \
+	fmov.s	@##reg##+, fr3 ; \
+	fmov.s	@##reg##+, fr4 ; \
+	fmov.s	@##reg##+, fr5 ; \
+	fmov.s	@##reg##+, fr6 ; \
+	fmov.s	@##reg##+, fr7 ; \
+	fmov.s	@##reg##+, fr8 ; \
+	fmov.s	@##reg##+, fr9 ; \
+	fmov.s	@##reg##+, fr10 ; \
+	fmov.s	@##reg##+, fr11 ; \
+	fmov.s	@##reg##+, fr12 ; \
+	fmov.s	@##reg##+, fr13 ; \
+	fmov.s	@##reg##+, fr14 ; \
+	fmov.s	@##reg##+, fr15 ; \
+	frchg; \
+	fmov.s	@##reg##+, fr0 ; \
+	fmov.s	@##reg##+, fr1 ; \
+	fmov.s	@##reg##+, fr2 ; \
+	fmov.s	@##reg##+, fr3 ; \
+	fmov.s	@##reg##+, fr4 ; \
+	fmov.s	@##reg##+, fr5 ; \
+	fmov.s	@##reg##+, fr6 ; \
+	fmov.s	@##reg##+, fr7 ; \
+	fmov.s	@##reg##+, fr8 ; \
+	fmov.s	@##reg##+, fr9 ; \
+	fmov.s	@##reg##+, fr10 ; \
+	fmov.s	@##reg##+, fr11 ; \
+	fmov.s	@##reg##+, fr12 ; \
+	fmov.s	@##reg##+, fr13 ; \
+	fmov.s	@##reg##+, fr14 ; \
+	fmov.s	@##reg##+, fr15 ; \
+	lds.l	@##reg##+, fpul ; \
+	lds.l	@##reg##+, fpscr
+
 	.text
 	.align 5	/* align cache line size (32B) */
 /*
- * LINTSTUB: Func: int cpu_switch(struct proc *p, struct proc *XXX_IGNORED)
- *	Find a runnable proc and switch to it.  Wait if necessary.
+ * LINTSTUB: Func: void cpu_switchto(struct proc *old, struct proc *new)
+ *	Switch proc contexts.
  */
-ENTRY(cpu_switch)
-	/* Save current proc's context to switchframe */
+ENTRY(cpu_switchto)
+	mov	r4,	r0
+	cmp/eq	#0,	r0
+	bt	1f
+
+	/* Save old proc's context to switchframe */
 	mov.l	.L_SF,	r0
 	mov.l	@(r0, r4), r1
-	add	#SF_SIZE, r1
-	stc.l	r7_bank,@-r1
-	stc.l	sr,	@-r1
-	stc.l	r6_bank,@-r1
-	sts.l	pr,	@-r1
-	mov.l	r8,	@-r1
-	mov.l	r9,	@-r1
-	mov.l	r10,	@-r1
-	mov.l	r11,	@-r1
-	mov.l	r12,	@-r1
-	mov.l	r13,	@-r1
-	mov.l	r14,	@-r1
-	mov.l	r15,	@-r1
+	SAVEPCB(r1)
+	add	#PCB_FP, r1
+	SAVEFP(r1, r8, r9)
 
-.L_find_and_switch:
-	/* Search next proc. cpu_switch_search may or may not sleep. */
-	mov.l	.L_cpu_switch_search, r0
+1:
+	mov.l	.L_cpu_switch_prepare, r0
 	jsr	@r0
-	 mov	r4,	r8	/* save old proc */
+	 mov	r5,	r8	/* save new proc */
+	mov	r8,	r4
 
-	/* Skip context switch if same proc. */
-	cmp/eq	r8,	r0
-	bt/s	1f
-	 mov	r0,	r4	/* new proc */
-
-.L_doswitch:
 	/* Setup kernel stack */
 	mov.l	.L_SF,	r0
 	mov.l	@(r0, r4), r1		/* switch frame */
@@ -106,16 +215,8 @@ ENTRY(cpu_switch)
 	__EXCEPTION_UNBLOCK(r0, r1)
 	/* Now OK to use kernel stack. */
 
-	/* Return 1 indicating "we switched". */
-	bra	2f
-	 mov	#1, r2
-
-1:	/* Return 0 indicating "didn't switch". */
-	mov	#0, r2
-
 	/* Restore new proc's context from switchframe */
-	/* NOTE: r2 has return value! */
-2:	mov.l	.L_SF,	r0
+	mov.l	.L_SF,	r0
 	mov.l	@(r0, r4), r1
 	add	#4,	r1		/* r15 already restored */
 	mov.l	@r1+,	r14
@@ -128,114 +229,19 @@ ENTRY(cpu_switch)
 	lds.l	@r1+,	pr
 	add	#4,	r1		/* r6_bank already restored */
 	ldc.l	@r1+,	sr
+	add	#4,	r1		/* r7_bank already restored */
+	lds.l	@r1+,	macl
+	lds.l	@r1+,	mach
 
-	/* r2 has the return value; stuff it into r0 now. */
+	mov.l	@(r0, r4), r1
+	add	#PCB_FP, r1
+	LOADFP(r1, r0)
 	rts
-	 mov	r2, r0
+	 nop
 	.align	2
 .L_SF:			.long	(P_MD_PCB)
-.L_cpu_switch_search:	.long	_C_LABEL(cpu_switch_search)
-FUNC_SYMBOL(switch_resume)
-
-
-
-/*
- * LINTSTUB: Func: void cpu_switchto(struct proc *current, struct proc *next)
- *	Switch to the specified next LWP.
- */
-ENTRY(cpu_switchto)
-	/* Save current proc's context to switchframe. */
-	mov.l	.L_SFp,	r0
-	mov.l	@(r0, r4), r1
-	add	#SF_SIZE, r1
-	stc.l	r7_bank,@-r1
-	stc.l	sr,	@-r1
-	stc.l	r6_bank,@-r1
-	sts.l	pr,	@-r1
-	mov.l	r8,	@-r1
-	mov.l	r9,	@-r1
-	mov.l	r10,	@-r1
-	mov.l	r11,	@-r1
-	mov.l	r12,	@-r1
-	mov.l	r13,	@-r1
-	mov.l	r14,	@-r1
-	mov.l	r15,	@-r1
-
-	/*
-	 * curproc = NULL;
-	 * XXX Is this necessary?  We know we won't go idle.
-	 */
-	mov.l	.L_curproc, r0
-	mov	#0, r1
-	mov.l	r1, @r0
-
-	/* old and new procs are already in r4, r5 */
-	mov.l	.L_cpu_switch_prepare, r0
-	jsr	@r0
-	 nop
-
-	/*
-	 * Put the incoming LWP in r4 and jump into the middle
-	 * of cpu_switch(), and let it do the work to restore the
-	 * incoming LWP's context.
-	 */
-	bra	.L_doswitch
-	 mov	r0, r4
-
-	.align	2
-.L_SFp:			.long	(P_MD_PCB)
-.L_curproc:		.long	_C_LABEL(curproc)
 .L_cpu_switch_prepare:	.long	_C_LABEL(cpu_switch_prepare)
-
-
-/*
- * LINTSTUB: Func: void cpu_exit(struct proc *p)
- *	Just fall-through to the switch_exit below.
- */
-ENTRY(cpu_exit)
-	mov.l	.L_switch_exit_proc_exit2, r5	/* exit_func to call */
-	/* FALLTHROUGH */
-
-/*
- * LINTSTUB: Func: void switch_exit(struct proc *p, void (*exit_func)(struct proc *))
- *	Called only from cpu_exit(p).  Before we call exit_func to
- *	free proc's resources (including kernel stack) we need to
- *	switch to the proc0's kernel stack.  Then we jump into the
- *	middle of cpu_switch to find and switch to a new proc.
- */
-ALTENTRY(switch_exit)
-	mov.l	.L_switch_exit_proc0_pcb, r1
-	mov.l	.L_switch_exit_curpcb, r0
-	mov.l	@r1, r1
-	mov.l	r1, @r0			/* curpcb = proc0.p_md.md_pcb */
-
-	mov.l	@(SF_R7_BANK, r1), r0	/* stack top */
-	mov.l	@(SF_R6_BANK, r1), r2	/* current frame */
-	mov.l	@(SF_R15, r1), r3	/* current stack */
-
-	/* switch to proc0's kernel stack */
-	__EXCEPTION_BLOCK(r1, r6)
-	ldc	r0, r7_bank
-	ldc	r2, r6_bank
-	mov	r3, r15
-	__EXCEPTION_UNBLOCK(r0, r1)
-
-	/* safe to call (*exit_func)(p); now */
-	jsr	@r5
-	 nop			/* proc is already in r4 */
-
-	/* proceed to cpu_switch */
-	bra	.L_find_and_switch
-	 mov	#0, r4		/* no "previous" proc */
-
-	.align 2
-.L_switch_exit_proc_exit2:
-	.long	_C_LABEL(proc_exit2)
-.L_switch_exit_proc0_pcb:
-	.long	_C_LABEL(proc0) + P_MD_PCB
-.L_switch_exit_curpcb:
-	.long	_C_LABEL(curpcb)
-
+FUNC_SYMBOL(switch_resume)
 
 #ifdef SH3
 /*
@@ -487,6 +493,8 @@ NENTRY(sigcode)
 	mov	r15, r4			/* get pointer to sigcontext */
 	mov.l	.L_SYS_sigreturn, r0
 	trapa	#0x80			/* and call sigreturn() */
+	.globl  _C_LABEL(sigcoderet)
+_C_LABEL(sigcoderet):
 	mov.l	.L_SYS_exit, r0
 	trapa	#0x80			/* exit if sigreturn fails */
 	/* NOTREACHED */
@@ -500,27 +508,51 @@ NENTRY(sigcode)
 _C_LABEL(esigcode):
 	SET_ENTRY_SIZE(sigcode)
 
+	.globl	sigfill
+sigfill:
+	sleep		/* priviledged -> illegal? */
+esigfill:
+
+	.data
+	.globl	sigfillsiz
+sigfillsiz:
+	.word	esigfill - sigfill
+
+	.text
+
 /*
  * LINTSTUB: Func: void savectx(struct pcb *pcb)
  *	save struct switchframe.
  */
 ENTRY(savectx)
-	add	#SF_SIZE, r4
-	stc.l	r7_bank,@-r4
-	stc.l	sr,	@-r4
-	stc.l	r6_bank,@-r4
-	sts.l	pr,	@-r4
-	mov.l	r8,	@-r4
-	mov.l	r9,	@-r4
-	mov.l	r10,	@-r4
-	mov.l	r11,	@-r4
-	mov.l	r12,	@-r4
-	mov.l	r13,	@-r4
-	mov.l	r14,	@-r4
+	SAVEPCB(r4)
+	add	#PCB_FP, r4
+	SAVEFP(r4, r0, r1)
 	rts
-	 mov.l	r15,	@-r4
+	 nop
 	SET_ENTRY_SIZE(savectx)
 
+/*
+ * void fpu_save(struct fpreg *fp)
+ *
+ * Saves fpu context.
+ */
+ENTRY(fpu_save)
+	SAVEFP(r4, r0, r1)
+	rts
+	 nop
+	SET_ENTRY_SIZE(fpu_save)
+
+/*
+ * void fpu_restore(struct fpreg *fp)
+ * 
+ * Restores fpu context.
+ */
+ENTRY(fpu_restore)
+	LOADFP(r4, r0)
+	rts
+	 nop
+	SET_ENTRY_SIZE(fpu_restore)
 
 /*
  * LINTSTUB: Func: int copyout(const void *ksrc, void *udst, size_t len)
@@ -542,7 +574,7 @@ ENTRY(copyout)
 	cmp/hi	r1,	r2		/* bomb if uaddr isn't in user space */
 	bt	2f
 
-	mov.l	.L_copyout_curpcb, r1	/* set fault hander */
+	mov.l	.L_copyout_curpcb, r1	/* set fault handler */
 	mov.l	@r1,	r2
 	mov.l	.L_copyout_onfault, r1
 	mov.l	r1,	@(PCB_ONFAULT,r2)
@@ -598,7 +630,7 @@ ENTRY(copyin)
 	cmp/hi	r1,	r2		/* bomb if uaddr isn't in user space */
 	bt	2f
 
-	mov.l	.L_copyin_curpcb, r1	/* set fault hander */
+	mov.l	.L_copyin_curpcb, r1	/* set fault handler */
 	mov.l	@r1,	r2
 	mov.l	.L_copyin_onfault, r1
 	mov.l	r1,	@(PCB_ONFAULT,r2)
@@ -608,7 +640,7 @@ ENTRY(copyin)
 
 	mov	#0,	r0
 1:
-	mov.l	.L_copyin_curpcb, r1	/* clear fault hander */
+	mov.l	.L_copyin_curpcb, r1	/* clear fault handler */
 	mov.l	@r1,	r2
 	mov	#0,	r1
 	mov.l	r1,	@(PCB_ONFAULT,r2)
@@ -651,6 +683,8 @@ ENTRY(copyoutstr)
 	mov.l	.L_copyoutstr_onfault, r1
 	mov.l	r1,	@(PCB_ONFAULT,r2)
 	mov.l	.L_copyoutstr_VM_MAXUSER_ADDRESS, r1
+	cmp/hi	r1,	r5		/* bomb if udst isn't in user space */
+	bt	4f
 	mov	r1,	r0
 	sub	r5,	r0
 	cmp/hi	r6,	r0		/* don't beyond user space */
@@ -725,8 +759,10 @@ ENTRY(copyinstr)
 	mov.l	r1,	@(PCB_ONFAULT,r2)
 
 	mov.l	.L_copyinstr_VM_MAXUSER_ADDRESS, r1
+	cmp/hi	r1,	r4		/* bomb if src isn't in user space */
+	bt	4f
 	mov	r1,	r0
-	sub	r5,	r0
+	sub	r4,	r0
 	cmp/hi	r6,	r0		/* don't beyond user space */
 	bf	2f
 	bra	2f
@@ -748,7 +784,7 @@ ENTRY(copyinstr)
 	cmp/eq	#-1,	r0
 	bf	1b
 	mov.l	.L_copyinstr_VM_MAXUSER_ADDRESS, r1
-	cmp/hs	r1,	r5
+	cmp/hs	r1,	r4
 	bt	3f
 	mov	#ENAMETOOLONG, r3
 

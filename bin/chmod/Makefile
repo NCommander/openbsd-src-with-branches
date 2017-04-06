@@ -1,6 +1,20 @@
-#	$NetBSD: Makefile,v 1.6 1995/03/21 09:02:06 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 5/31/93
+#	$OpenBSD: Makefile,v 1.7 2001/09/06 18:52:55 mickey Exp $
 
 PROG=	chmod
+CFLAGS+=-DSUPPORT_DOT
+MAN=	chmod.1 chgrp.1 chown.8 chflags.1
+LINKS=	${BINDIR}/chmod ${BINDIR}/chgrp \
+	${BINDIR}/chmod /sbin/chown
+
+# XXX compatibility
+afterinstall:
+	(cd ${DESTDIR}/usr/sbin && \
+	    ln -sf ../../sbin/chown . && \
+	    ln -sf ../../bin/chgrp . && \
+	    chown -h ${BINOWN}:${BINGRP} chown chgrp)
+	(cd ${DESTDIR}/usr/bin && \
+	    ln -sf ../../bin/chmod chflags && \
+	    chown -h ${BINOWN}:${BINGRP} chflags)
+
 
 .include <bsd.prog.mk>

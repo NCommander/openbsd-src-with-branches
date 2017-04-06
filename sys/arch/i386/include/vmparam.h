@@ -1,3 +1,4 @@
+/*	$OpenBSD: vmparam.h,v 1.54 2015/04/26 09:22:33 sthen Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.15 1994/10/27 04:16:34 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,56 +35,48 @@
  *	@(#)vmparam.h	5.9 (Berkeley) 5/12/91
  */
 
-
+#ifndef _MACHINE_VMPARAM_H_
+#define _MACHINE_VMPARAM_H_
 /*
  * Machine dependent constants for 386.
  */
 
-/*
- * Virtual address space arrangement. On 386, both user and kernel
- * share the address space, not unlike the vax.
- * USRTEXT is the start of the user text/data space, while USRSTACK
- * is the top (end) of the user stack. Immediately above the user stack
- * resides the user structure, which is UPAGES long and contains the
- * kernel stack.
- *
- * Immediately after the user structure is the page table map, and then
- * kernal address space.
- */
-#define	USRTEXT		CLBYTES
 #define	USRSTACK	VM_MAXUSER_ADDRESS
 
 /*
  * Virtual memory related constants, all in bytes
  */
-#define	MAXTSIZ		(8*1024*1024)		/* max text size */
+#define	MAXTSIZ		(128*1024*1024)		/* max text size */
 #ifndef DFLDSIZ
-#define	DFLDSIZ		(16*1024*1024)		/* initial data size limit */
+#define	DFLDSIZ		(64*1024*1024)		/* initial data size limit */
 #endif
 #ifndef MAXDSIZ
-#define	MAXDSIZ		(256*1024*1024)		/* max data size */
+#define	MAXDSIZ		(3UL*1024*1024*1024)	/* max data size */
+#endif
+#ifndef BRKSIZ
+#define	BRKSIZ		(1024*1024*1024)	/* heap gap size */
 #endif
 #ifndef	DFLSSIZ
-#define	DFLSSIZ		(512*1024)		/* initial stack size limit */
+#define	DFLSSIZ		(4*1024*1024)		/* initial stack size limit */
 #endif
 #ifndef	MAXSSIZ
-#define	MAXSSIZ		(8*1024*1024)		/* max stack size */
+#define	MAXSSIZ		(32*1024*1024)		/* max stack size */
 #endif
 
-/*
- * Default sizes of swap allocation chunks (see dmap.h).
- * The actual values may be changed in vminit() based on MAXDSIZ.
- * With MAXDSIZ of 16Mb and NDMAP of 38, dmmax will be 1024.
- */
-#define	DMMIN	32			/* smallest swap allocation */
-#define	DMMAX	4096			/* largest potential swap allocation */
-#define	DMTEXT	1024			/* swap allocation for text */
+#define STACKGAP_RANDOM	256*1024
+
+/* I386 has a line where all code is executable: 0 - I386_MAX_EXE_ADDR */
+#define I386_MAX_EXE_ADDR 0x20000000		/* exec line */
+
+/* map PIE into 320MB - 448MB address range */
+#define VM_PIE_MIN_ADDR 0x14000000
+#define VM_PIE_MAX_ADDR 0x1C000000
 
 /*
  * Size of shared memory map
  */
 #ifndef SHMMAXPGS
-#define SHMMAXPGS	1024
+#define SHMMAXPGS	8192
 #endif
 
 /*
@@ -96,50 +85,24 @@
 #define	USRIOSIZE 	300
 
 /*
- * The time for a process to be blocked before being very swappable.
- * This is a number of seconds which the system takes as being a non-trivial
- * amount of real time.  You probably shouldn't change this;
- * it is used in subtle ways (fractions and multiples of it are, that is, like
- * half of a ``long time'', almost a long time, etc.)
- * It is related to human patience and other factors which don't really
- * change over time.
+ * Specific addresses being unmapped and used as fillers for free memory.
  */
-#define	MAXSLP 		20
-
-/*
- * A swapped in process is given a small amount of core without being bothered
- * by the page replacement algorithm.  Basically this says that if you are
- * swapped in you deserve some resources.  We protect the last SAFERSS
- * pages against paging and will just swap you out rather than paging you.
- * Note that each process has at least UPAGES+CLSIZE pages which are not
- * paged anyways (this is currently 8+2=10 pages or 5k bytes), so this
- * number just means a swapped in process is given around 25k bytes.
- * Just for fun: current memory prices are 4600$ a megabyte on VAX (4/22/81),
- * so we loan each swapped in process memory worth 100$, or just admit
- * that we don't consider it worthwhile and swap it out to disk which costs
- * $30/mb or about $0.75.
- * { wfj 6/16/89: Retail AT memory expansion $800/megabyte, loan of $17
- *   on disk costing $7/mb or $0.18 (in memory still 100:1 in cost!) }
- */
-#define	SAFERSS		8		/* nominal ``small'' resident set size
-					   protected against replacement */
-
-/*
- * Mach derived constants
- */
+#define	DEADBEEF0	0xefffeecc	/* malloc's filler */
+#define	DEADBEEF1	0xefffaabb	/* pool's filler */
 
 /* user/kernel map constants */
-#define VM_MIN_ADDRESS		((vm_offset_t)0)
-/* PTDPTDI<<PDSHIFT - UPAGES*NBPG */
-#define VM_MAXUSER_ADDRESS	((vm_offset_t)0xf7bfe000)
-/* PTDPTDI<<PDSHIFT + PTDPTDI<<PGSHIFT */
-#define VM_MAX_ADDRESS		((vm_offset_t)0xf7fdf000)
-/* KPTDI<<PDSHIFT */
-#define VM_MIN_KERNEL_ADDRESS	((vm_offset_t)0xf8000000)
-/* APTDPTDI<<PDSHIFT */
-#define VM_MAX_KERNEL_ADDRESS	((vm_offset_t)0xffc00000)
+#define VM_MIN_ADDRESS		((vaddr_t)PAGE_SIZE)
+#define VM_MAXUSER_ADDRESS	((vaddr_t)((PDSLOT_PTE<<PDSHIFT) - (2 * PAGE_SIZE)))
+#define VM_MAX_ADDRESS		((vaddr_t)((PDSLOT_PTE<<PDSHIFT) + \
+				    (PDSLOT_PTE<<PAGE_SHIFT)))
+#define VM_MIN_KERNEL_ADDRESS	((vaddr_t)KERNBASE)
+#define VM_MAX_KERNEL_ADDRESS	((vaddr_t)(PDSLOT_APTE<<PDSHIFT))
 
 /* virtual sizes (bytes) for various kernel submaps */
-#define VM_MBUF_SIZE		(NMBCLUSTERS*MCLBYTES)
-#define VM_KMEM_SIZE		(NKMEMCLUSTERS*CLBYTES)
-#define VM_PHYS_SIZE		(USRIOSIZE*CLBYTES)
+#define VM_PHYS_SIZE		(USRIOSIZE*PAGE_SIZE)
+
+#define	VM_PHYSSEG_MAX	16	/* actually we could have this many segments */
+#define	VM_PHYSSEG_STRAT	VM_PSTRAT_BSEARCH
+#define	VM_PHYSSEG_NOADD	/* can't add RAM after vm_mem_init */
+
+#endif /* _MACHINE_VMPARAM_H_ */

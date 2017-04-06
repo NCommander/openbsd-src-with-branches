@@ -539,6 +539,7 @@ BFD64_BACKENDS = \
 	demo64.lo \
 	efi-app-ia64.lo \
 	elf64-x86-64.lo \
+	elf64-aarch64.lo \
 	elf64-alpha.lo \
 	elf64-hppa.lo \
 	elf32-ia64.lo \
@@ -565,6 +566,7 @@ BFD64_BACKENDS_CFILES = \
 	demo64.c \
 	efi-app-ia64.c \
 	elf64-x86-64.c \
+	elf64-aarch64.c \
 	elf64-alpha.c \
 	elf64-hppa.c \
 	elf64-gen.c \
@@ -804,17 +806,12 @@ uninstall-bfdlibLTLIBRARIES: @INSTALL_LIBBFD_TRUE@uninstall_libbfd
 .PHONY: install_libbfd uninstall_libbfd
 install_libbfd: $(bfdlib_LTLIBRARIES) $(BFD_H)
 	$(mkinstalldirs) $(DESTDIR)$(bfdlibdir)
-	$(mkinstalldirs) $(DESTDIR)$(bfdincludedir)
 	@list='$(bfdlib_LTLIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(bfdlibdir)/$$p"; \
 	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(bfdlibdir)/$$p; \
 	  else :; fi; \
 	done
-	$(INSTALL_DATA) $(BFD_H) $(DESTDIR)$(bfdincludedir)/bfd.h
-	$(INSTALL_DATA) $(INCDIR)/ansidecl.h $(DESTDIR)$(bfdincludedir)/ansidecl.h
-	$(INSTALL_DATA) $(INCDIR)/symcat.h $(DESTDIR)$(bfdincludedir)/symcat.h
-	$(INSTALL_DATA) $(INCDIR)/bfdlink.h $(DESTDIR)$(bfdincludedir)/bfdlink.h
 
 uninstall_libbfd:
 	list='$(bfdlib_LTLIBRARIES)'; for p in $$list; do \
@@ -871,7 +868,7 @@ host-aout.lo: Makefile
 aout-params.h: gen-aout
 	./gen-aout host > aout-params.h
 gen-aout: $(srcdir)/gen-aout.c Makefile
-	$(CC) -o gen-aout $(CFLAGS) $(LFLAGS) $(srcdir)/gen-aout.c
+	$(CC) -o gen-aout $(CSEARCH) $(CFLAGS) $(LFLAGS) $(srcdir)/gen-aout.c
 
 $(BFD_H): stmp-bfd-h ; @true
 
@@ -1744,6 +1741,9 @@ elf64-x86-64.lo: elf64-x86-64.c $(INCDIR)/filenames.h \
   $(INCDIR)/bfdlink.h $(INCDIR)/hashtab.h elf-bfd.h $(INCDIR)/elf/common.h \
   $(INCDIR)/elf/internal.h $(INCDIR)/elf/external.h $(INCDIR)/elf/x86-64.h \
   $(INCDIR)/elf/reloc-macros.h elf64-target.h
+elf64-aarch64.lo: elf64-aarch64.c $(INCDIR)/filenames.h $(INCDIR)/hashtab.h \
+  elf-bfd.h $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h \
+  $(INCDIR)/elf/external.h $(INCDIR)/bfdlink.h elf64-target.h
 elf64-alpha.lo: elf64-alpha.c $(INCDIR)/filenames.h \
   $(INCDIR)/hashtab.h elf-bfd.h $(INCDIR)/elf/common.h \
   $(INCDIR)/elf/internal.h $(INCDIR)/elf/external.h $(INCDIR)/bfdlink.h \

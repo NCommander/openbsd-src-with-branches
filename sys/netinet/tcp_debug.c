@@ -1,4 +1,5 @@
-/*	$NetBSD: tcp_debug.c,v 1.9 1995/04/13 06:36:32 cgd Exp $	*/
+/*	$OpenBSD: tcp_debug.c,v 1.22 2014/11/20 14:51:42 krw Exp $	*/
+/*	$NetBSD: tcp_debug.c,v 1.10 1996/02/13 23:43:36 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,7 +29,43 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)tcp_debug.c	8.1 (Berkeley) 6/10/93
+ *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
+ *
+ * NRL grants permission for redistribution and use in source and binary
+ * forms, with or without modification, of the software and documentation
+ * created at NRL provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgements:
+ * 	This product includes software developed by the University of
+ * 	California, Berkeley and its contributors.
+ * 	This product includes software developed at the Information
+ * 	Technology Division, US Naval Research Laboratory.
+ * 4. Neither the name of the NRL nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THE SOFTWARE PROVIDED BY NRL IS PROVIDED BY NRL AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL NRL OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The views and conclusions contained in the software and documentation
+ * are those of the authors and should not be interpreted as representing
+ * official policies, either expressed or implied, of the US Naval
+ * Research Laboratory (NRL).
  */
 
 #ifdef TCPDEBUG
@@ -47,12 +80,9 @@
 #include <sys/systm.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
-#include <sys/socketvar.h>
 #include <sys/protosw.h>
-#include <sys/errno.h>
 
 #include <net/route.h>
-#include <net/if.h>
 
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
@@ -60,29 +90,40 @@
 #include <netinet/in_pcb.h>
 #include <netinet/ip_var.h>
 #include <netinet/tcp.h>
-#include <netinet/tcp_fsm.h>
-#include <netinet/tcp_seq.h>
 #include <netinet/tcp_timer.h>
 #include <netinet/tcp_var.h>
 #include <netinet/tcpip.h>
 #include <netinet/tcp_debug.h>
+#include <netinet/tcp_fsm.h>
+
+#ifdef INET6
+#include <netinet/ip6.h>
+#endif /* INET6 */
 
 #ifdef TCPDEBUG
 int	tcpconsdebug = 0;
 #endif
+
+struct	tcp_debug tcp_debug[TCP_NDEBUG];
+int	tcp_debx;
+
 /*
  * Tcp debug routines
  */
 void
-tcp_trace(act, ostate, tp, ti, req)
-	short act, ostate;
-	struct tcpcb *tp;
-	struct tcpiphdr *ti;
-	int req;
+tcp_trace(short act, short ostate, struct tcpcb *tp, caddr_t headers,
+   int req, int len)
 {
+#ifdef TCPDEBUG
 	tcp_seq seq, ack;
-	int len, flags;
+	int flags;
+#endif
 	struct tcp_debug *td = &tcp_debug[tcp_debx++];
+	struct tcpiphdr *ti = (struct tcpiphdr *)headers;
+	struct tcphdr *th;
+#ifdef INET6
+	struct tcpipv6hdr *ti6 = (struct tcpipv6hdr *)ti;
+#endif
 
 	if (tcp_debx == TCP_NDEBUG)
 		tcp_debx = 0;
@@ -94,10 +135,29 @@ tcp_trace(act, ostate, tp, ti, req)
 		td->td_cb = *tp;
 	else
 		bzero((caddr_t)&td->td_cb, sizeof (*tp));
-	if (ti)
-		td->td_ti = *ti;
-	else
-		bzero((caddr_t)&td->td_ti, sizeof (*ti));
+	switch (tp->pf) {
+#ifdef INET6
+	case PF_INET6:
+		if (ti6) {
+			th = &ti6->ti6_t;
+			td->td_ti6 = *ti6;
+			td->td_ti6.ti6_plen = len;
+		} else
+			bzero(&td->td_ti6, sizeof(struct tcpipv6hdr));
+		break;
+#endif /* INET6 */
+	case PF_INET:
+		if (ti) {
+			th = &ti->ti_t;
+			td->td_ti = *ti;
+			td->td_ti.ti_len = len;
+		} else
+			bzero(&td->td_ti, sizeof(struct tcpiphdr));
+		break;
+	default:
+		return;
+	}
+
 	td->td_req = req;
 #ifdef TCPDEBUG
 	if (tcpconsdebug == 0)
@@ -114,28 +174,22 @@ tcp_trace(act, ostate, tp, ti, req)
 	case TA_DROP:
 		if (ti == 0)
 			break;
-		seq = ti->ti_seq;
-		ack = ti->ti_ack;
-		len = ti->ti_len;
+		seq = th->th_seq;
+		ack = th->th_ack;
 		if (act == TA_OUTPUT) {
 			seq = ntohl(seq);
 			ack = ntohl(ack);
-			len = ntohs((u_int16_t)len);
 		}
-		if (act == TA_OUTPUT)
-			len -= sizeof (struct tcphdr);
 		if (len)
 			printf("[%x..%x)", seq, seq+len);
 		else
 			printf("%x", seq);
-		printf("@%x, urp=%x", ack, ti->ti_urp);
-		flags = ti->ti_flags;
+		printf("@%x, urp=%x", ack, th->th_urp);
+		flags = th->th_flags;
 		if (flags) {
-#ifndef lint
 			char *cp = "<";
-#define pf(f) { if (ti->ti_flags&TH_/**/f) { printf("%s%s", cp, "f"); cp = ","; } }
+#define pf(f) { if (th->th_flags&TH_##f) { printf("%s%s", cp, "f"); cp = ","; } }
 			pf(SYN); pf(ACK); pf(FIN); pf(RST); pf(PUSH); pf(URG);
-#endif
 			printf(">");
 		}
 		break;

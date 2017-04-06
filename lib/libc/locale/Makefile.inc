@@ -1,10 +1,20 @@
-#	from: @(#)Makefile.inc	5.1 (Berkeley) 2/18/91
-#	$Id: Makefile.inc,v 1.11 1994/12/22 10:14:25 cgd Exp $
+#	$OpenBSD: Makefile.inc,v 1.21 2016/03/20 15:42:35 jca Exp $
 
 # locale sources
-.PATH: ${.CURDIR}/arch/${MACHINE_ARCH}/locale ${.CURDIR}/locale
+.PATH: ${LIBCSRCDIR}/locale
 
-SRCS+=	_def_messages.c _def_monetary.c _def_numeric.c _def_time.c \
-	localeconv.c nl_langinfo.c setlocale.c
+SRCS+=	btowc.c _def_messages.c _def_monetary.c _def_numeric.c _def_time.c \
+	localeconv.c nl_langinfo.c setlocale.c iswctype.c __mb_cur_max.c \
+	mblen.c mbrlen.c mbstowcs.c mbtowc.c multibyte_citrus.c wcscoll.c \
+	wcstombs.c wctob.c wctomb.c wcstof.c wcstod.c wcstold.c wcstol.c \
+	wcstoul.c wcstoll.c wcstoull.c wcstoimax.c wcstoumax.c \
+	setrunelocale.c runeglue.c rune.c runetable.c ___runetype_mb.c \
+	_wctrans.c wcsxfrm.c
 
-MAN+=	nl_langinfo.3
+MAN+=	nl_langinfo.3 setlocale.3 iswalnum.3 towlower.3 \
+	btowc.3 mblen.3 mbrlen.3 mbrtowc.3 mbsinit.3 mbsrtowcs.3 \
+	mbstowcs.3 mbtowc.3 wcrtomb.3 wcsrtombs.3 wcstod.3 wcstol.3 \
+	wcstombs.3 wctob.3 wctomb.3 \
+	wctype.3 iswctype.3 wctrans.3 towctrans.3 wcwidth.3
+
+CFLAGS+=-I${.CURDIR} -I${LIBCSRCDIR}/citrus

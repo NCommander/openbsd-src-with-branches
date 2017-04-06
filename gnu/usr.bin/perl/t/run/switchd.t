@@ -3,13 +3,12 @@
 BEGIN {
     chdir 't' if -d 't';
     @INC = qw(../lib lib);
+    require "./test.pl";
 }
-
-BEGIN { require "./test.pl"; }
 
 # This test depends on t/lib/Devel/switchd*.pm.
 
-plan(tests => 19);
+plan(tests => 21);
 
 my $r;
 
@@ -285,3 +284,46 @@ is(
   "42\n",
   '-d does not conflict with sort optimisations'
 );
+
+SKIP: {
+  skip_if_miniperl("under miniperl", 1);
+is(
+  runperl(
+   switches => [ '-Ilib', '-d:switchd_empty' ],
+   progs => [ split "\n",
+    'use bignum;
+     $DB::single=2;
+     print qq/debugged\n/;
+    '
+   ],
+   stderr => 1
+  ),
+  "debugged\n",
+  "\$DB::single set to overload"
+);
+}
+
+# [perl #123748]
+#
+# On some platforms, it's possible that calls to getenv() will
+# return a pointer to statically allocated data that may be
+# overwritten by subsequent calls to getenv/putenv/setenv/unsetenv.
+#
+# In perl.c, s = PerlEnv_GetEnv("PERL5OPT") is called, and
+# then moreswitches(s), which, if -d:switchd_empty is given,
+# will call my_setenv("PERL5DB", "use Devel::switchd_empty"),
+# and then return to continue parsing s.
+#
+# This may need -Accflags="-DPERL_USE_SAFE_PUTENV" to fail on
+# affected systems.
+{
+local $ENV{PERL5OPT} = '-d:switchd_empty';
+
+like(
+  runperl(
+   switches => [ '-Ilib' ], prog => 'print q(hi)',
+  ),
+  qr/hi/,
+ 'putenv does not interfere with PERL5OPT parsing',
+);
+}

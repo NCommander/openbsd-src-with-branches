@@ -1,3 +1,4 @@
+/*	$OpenBSD: grammar.y,v 1.9 2016/01/08 13:40:05 tb Exp $	*/
 /*	$NetBSD: grammar.y,v 1.3 1995/03/21 15:03:59 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -61,15 +58,9 @@
 }
 
 %{
-#include "include.h"
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)grammar.y	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: grammar.y,v 1.3 1995/03/21 15:03:59 cgd Exp $";
-#endif
-#endif /* not lint */
+#include "def.h"
+#include "extern.h"
+#include "y.tab.h"
 
 int	errors = 0;
 int	line = 1;
@@ -136,7 +127,7 @@ hdef:
 wdef:
 	WidthOp '=' ConstOp ';'
 		{
-		if (sp->height != 0)
+		if (sp->width != 0)
 			return (yyerror("Redefinition of 'width'."));
 		else if ($3 < 3)
 			return (yyerror("'width' is too small."));
@@ -174,13 +165,9 @@ Bpoint:
 	'(' ConstOp ConstOp ')'
 		{
 		if (sp->num_beacons % REALLOC == 0) {
-			if (sp->beacon == NULL)
-				sp->beacon = (BEACON *) malloc((sp->num_beacons
-					+ REALLOC) * sizeof (BEACON));
-			else
-				sp->beacon = (BEACON *) realloc(sp->beacon,
-					(sp->num_beacons + REALLOC) * 
-					sizeof (BEACON));
+			sp->beacon = reallocarray(sp->beacon,
+				(sp->num_beacons + REALLOC) , 
+				sizeof (BEACON));
 			if (sp->beacon == NULL)
 				return (yyerror("No memory available."));
 		}
@@ -204,13 +191,9 @@ Epoint:
 		int	dir;
 
 		if (sp->num_exits % REALLOC == 0) {
-			if (sp->exit == NULL)
-				sp->exit = (EXIT *) malloc((sp->num_exits + 
-					REALLOC) * sizeof (EXIT));
-			else
-				sp->exit = (EXIT *) realloc(sp->exit,
-					(sp->num_exits + REALLOC) * 
-					sizeof (EXIT));
+			sp->exit = reallocarray(sp->exit,
+				(sp->num_exits + REALLOC) , 
+				sizeof (EXIT));
 			if (sp->exit == NULL)
 				return (yyerror("No memory available."));
 		}
@@ -237,13 +220,9 @@ Apoint:
 		int	dir;
 
 		if (sp->num_airports % REALLOC == 0) {
-			if (sp->airport == NULL)
-				sp->airport=(AIRPORT *)malloc((sp->num_airports
-					+ REALLOC) * sizeof(AIRPORT));
-			else
-				sp->airport = (AIRPORT *) realloc(sp->airport,
-					(sp->num_airports + REALLOC) * 
-					sizeof(AIRPORT));
+			sp->airport = reallocarray(sp->airport,
+				(sp->num_airports + REALLOC) , 
+				sizeof(AIRPORT));
 			if (sp->airport == NULL)
 				return (yyerror("No memory available."));
 		}
@@ -268,13 +247,9 @@ Lline:
 	'[' '(' ConstOp ConstOp ')' '(' ConstOp ConstOp ')' ']'
 		{
 		if (sp->num_lines % REALLOC == 0) {
-			if (sp->line == NULL)
-				sp->line = (LINE *) malloc((sp->num_lines + 
-					REALLOC) * sizeof (LINE));
-			else
-				sp->line = (LINE *) realloc(sp->line,
-					(sp->num_lines + REALLOC) *
-					sizeof (LINE));
+			sp->line = reallocarray(sp->line,
+				(sp->num_lines + REALLOC) ,
+				sizeof (LINE));
 			if (sp->line == NULL)
 				return (yyerror("No memory available."));
 		}
@@ -288,14 +263,16 @@ Lline:
 	;
 %%
 
-check_edge(x, y)
+void
+check_edge(int x, int y)
 {
 	if (!(x == 0) && !(x == sp->width - 1) && 
 	    !(y == 0) && !(y == sp->height - 1))
 		yyerror("edge value not on edge.");
 }
 
-check_point(x, y)
+void
+check_point(int x, int y)
 {
 	if (x < 1 || x >= sp->width - 1)
 		yyerror("X value out of range.");
@@ -303,7 +280,8 @@ check_point(x, y)
 		yyerror("Y value out of range.");
 }
 
-check_linepoint(x, y)
+void
+check_linepoint(int x, int y)
 {
 	if (x < 0 || x >= sp->width)
 		yyerror("X value out of range.");
@@ -311,7 +289,8 @@ check_linepoint(x, y)
 		yyerror("Y value out of range.");
 }
 
-check_line(x1, y1, x2, y2)
+void
+check_line(int x1, int y1, int x2, int y2)
 {
 	int	d1, d2;
 
@@ -325,7 +304,8 @@ check_line(x1, y1, x2, y2)
 		yyerror("Bad line endpoints.");
 }
 
-yyerror(s)
+int
+yyerror(const char *s)
 {
 	fprintf(stderr, "\"%s\": line %d: %s\n", file, line, s);
 	errors++;
@@ -333,7 +313,8 @@ yyerror(s)
 	return (errors);
 }
 
-check_edir(x, y, dir)
+void
+check_edir(int x, int y, int dir)
 {
 	int	bad = 0;
 
@@ -364,11 +345,13 @@ check_edir(x, y, dir)
 		yyerror("Bad direction for entrance at exit.");
 }
 
-check_adir(x, y, dir)
+void
+check_adir(int x, int y, int dir)
 {
 }
 
-checkdefs()
+int
+checkdefs(void)
 {
 	int	err = 0;
 

@@ -140,6 +140,7 @@ enum option_values
   OPTION_ACCEPT_UNKNOWN_INPUT_ARCH,
   OPTION_NO_ACCEPT_UNKNOWN_INPUT_ARCH,
   OPTION_PIE,
+  OPTION_NOPIE,
   OPTION_UNRESOLVED_SYMBOLS,
   OPTION_WARN_UNRESOLVED_SYMBOLS,
   OPTION_ERROR_UNRESOLVED_SYMBOLS
@@ -278,6 +279,9 @@ static const struct ld_option ld_options[] =
       'y', N_("SYMBOL"), N_("Trace mentions of SYMBOL"), TWO_DASHES },
   { {NULL, required_argument, NULL, '\0'},
       'Y', N_("PATH"), N_("Default search path for Solaris compatibility"), ONE_DASH },
+  { {"Zmagic", no_argument, NULL, 'Z'},
+      'Z', NULL, N_("Do not page align got/plt, old style executable"),
+      EXACTLY_TWO_DASHES },
   { {"start-group", no_argument, NULL, '('},
       '(', NULL, N_("Start a group"), TWO_DASHES },
   { {"end-group", no_argument, NULL, ')'},
@@ -380,6 +384,8 @@ static const struct ld_option ld_options[] =
       '\0', NULL, N_("Create a position independent executable"), ONE_DASH },
   { {"pic-executable", no_argument, NULL, OPTION_PIE},
       '\0', NULL, NULL, TWO_DASHES },
+  { {"nopie", no_argument, NULL, OPTION_NOPIE},
+      '\0', NULL, N_("Do not create a position independent executable"), ONE_DASH },
   { {"sort-common", no_argument, NULL, OPTION_SORT_COMMON},
       '\0', NULL, N_("Sort common symbols by size"), TWO_DASHES },
   { {"sort_common", no_argument, NULL, OPTION_SORT_COMMON},
@@ -982,6 +988,7 @@ parse_args (unsigned argc, char **argv)
 	  if (config.has_shared)
 	    {
 	      link_info.shared = TRUE;
+	      link_info.pie = FALSE;
 	      /* When creating a shared library, the default
 		 behaviour is to ignore any unresolved references.  */
 	      if (link_info.unresolved_syms_in_objects == RM_NOT_YET_SET)
@@ -1000,6 +1007,15 @@ parse_args (unsigned argc, char **argv)
 	    }
 	  else
 	    einfo (_("%P%F: -pie not supported\n"));
+	  break;
+	case OPTION_NOPIE:
+	  if (config.has_shared)
+	    {
+	      link_info.shared = FALSE;
+	      link_info.pie = FALSE;
+	    }
+	  else
+	    einfo (_("%P%F: -nopie not supported\n"));
 	  break;
 	case 'h':		/* Used on Solaris.  */
 	case OPTION_SONAME:
@@ -1171,6 +1187,9 @@ parse_args (unsigned argc, char **argv)
 	  break;
 	case 'y':
 	  add_ysym (optarg);
+	  break;
+	case 'Z':
+	  config.data_bss_contig = TRUE;
 	  break;
 	case OPTION_SPARE_DYNAMIC_TAGS:
 	  link_info.spare_dynamic_tags = strtoul (optarg, NULL, 0);
