@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc_io.c,v 1.26 2016/05/12 15:26:42 kettenis Exp $	*/
+/*	$OpenBSD: sdmmc_io.c,v 1.27 2016/09/11 10:22:16 mglocker Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -682,7 +682,7 @@ sdmmc_intr_disestablish(void *cookie)
 	}
 	splx(s);
 
-	free(ih, M_DEVBUF, 0);
+	free(ih, M_DEVBUF, sizeof *ih);
 }
 
 /*
