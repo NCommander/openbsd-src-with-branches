@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc_scsi.c,v 1.37 2017/01/20 00:52:32 deraadt Exp $	*/
+/*	$OpenBSD: sdmmc_scsi.c,v 1.38 2017/01/21 05:42:04 guenther Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -152,7 +152,7 @@ sdmmc_scsi_attach(struct sdmmc_softc *sc)
 	sdmmc_free_ccbs(scbus);
  free_sctgt:
 	free(scbus->sc_tgt, M_DEVBUF, 0);
-	free(scbus, M_DEVBUF, 0);
+	free(scbus, M_DEVBUF, sizeof *scbus);
 }
 
 void
@@ -182,7 +182,7 @@ sdmmc_scsi_detach(struct sdmmc_softc *sc)
 		free(scbus->sc_tgt, M_DEVBUF, 0);
 
 	sdmmc_free_ccbs(scbus);
-	free(scbus, M_DEVBUF, 0);
+	free(scbus, M_DEVBUF, sizeof *scbus);
 	sc->sc_scsibus = NULL;
 }
 
