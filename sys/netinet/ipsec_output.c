@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.64 2016/10/11 22:08:01 mikeb Exp $ */
+/*	$OpenBSD: ipsec_output.c,v 1.65 2017/01/20 04:22:58 mpi Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -466,7 +466,7 @@ ipsp_process_done(struct mbuf *m, struct tdb *tdb)
 	}
 
 	tdbi = (struct tdb_ident *)(mtag + 1);
-	bcopy(&tdb->tdb_dst, &tdbi->dst, sizeof(union sockaddr_union));
+	tdbi->dst = tdb->tdb_dst;
 	tdbi->proto = tdb->tdb_sproto;
 	tdbi->spi = tdb->tdb_spi;
 	tdbi->rdomain = tdb->tdb_rdomain;
