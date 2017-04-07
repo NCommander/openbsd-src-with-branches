@@ -1,4 +1,4 @@
-/*	$OpenBSD: octeon_model.h,v 1.4 2016/07/16 10:41:53 visa Exp $	*/
+/*	$OpenBSD: octeon_model.h,v 1.5 2016/12/17 14:14:09 visa Exp $	*/
 
 /*
  * Copyright (c) 2007
@@ -54,6 +54,7 @@
 #define OCTEON_MODEL_FAMILY_CN50XX	0x000d0600
 #define OCTEON_MODEL_FAMILY_CN61XX	0x000d9300
 #define OCTEON_MODEL_FAMILY_CN71XX	0x000d9600
+#define OCTEON_MODEL_FAMILY_CN73XX	0x000d9700
 
 /*
  *  get chip id
