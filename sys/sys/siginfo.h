@@ -1,4 +1,4 @@
-/*	$OpenBSD: siginfo.h,v 1.10 2013/08/13 05:52:26 guenther Exp $	*/
+/*	$OpenBSD: siginfo.h,v 1.11 2015/04/14 16:40:46 millert Exp $	*/
 
 /*
  * Copyright (c) 1997 Theo de Raadt
@@ -150,7 +150,7 @@ typedef struct {
 			} _pdata;
 		} _proc;
 		struct {	/* SIGSEGV, SIGBUS, SIGILL and SIGFPE */
-			caddr_t	_addr;		/* faulting address */
+			void	*_addr;		/* faulting address */
 			int	_trapno;	/* illegal trap number */
 		} _fault;
 #if 0
