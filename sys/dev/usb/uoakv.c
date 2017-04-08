@@ -1,4 +1,4 @@
-/*	$OpenBSD: uoakv.c,v 1.11 2016/01/08 15:54:14 jcs Exp $   */
+/*	$OpenBSD: uoakv.c,v 1.12 2016/01/09 04:14:42 jcs Exp $   */
 
 /*
  * Copyright (c) 2012 Yojiro UO <yuo@nui.org>
@@ -215,7 +215,7 @@ uoakv_detach(struct device *self, int flags)
 		uhidev_close(&sc->sc_hdev);
 
 	if (scc->sc_ibuf != NULL) {
-		free(scc->sc_ibuf, M_USBDEV, 0);
+		free(scc->sc_ibuf, M_USBDEV, scc->sc_ilen);
 		scc->sc_ibuf = NULL;
 	}
 

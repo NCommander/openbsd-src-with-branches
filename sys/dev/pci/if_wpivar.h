@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpivar.h,v 1.25 2013/11/28 20:07:32 kettenis Exp $	*/
+/*	$OpenBSD: if_wpivar.h,v 1.26 2016/09/05 08:18:40 tedu Exp $	*/
 
 /*-
  * Copyright (c) 2006-2008
@@ -123,6 +123,7 @@ struct wpi_fw_part {
 
 struct wpi_fw_info {
 	u_char			*data;
+	size_t			datalen;
 	struct wpi_fw_part	init;
 	struct wpi_fw_part	main;
 	struct wpi_fw_part	boot;

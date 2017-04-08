@@ -1,4 +1,4 @@
-/*	$OpenBSD: uoakrh.c,v 1.13 2016/01/09 04:14:42 jcs Exp $   */
+/*	$OpenBSD: uoakrh.c,v 1.14 2016/03/11 18:41:33 mmcc Exp $   */
 
 /*
  * Copyright (c) 2012 Yojiro UO <yuo@nui.org>
@@ -225,7 +225,7 @@ uoakrh_detach(struct device *self, int flags)
 		uhidev_close(&sc->sc_hdev);
 
 	if (scc->sc_ibuf != NULL) {
-		free(scc->sc_ibuf, M_USBDEV, 0);
+		free(scc->sc_ibuf, M_USBDEV, scc->sc_ilen);
 		scc->sc_ibuf = NULL;
 	}
 

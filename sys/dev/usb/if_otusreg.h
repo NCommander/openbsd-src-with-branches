@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_otusreg.h,v 1.8 2013/04/15 09:23:01 mglocker Exp $	*/
+/*	$OpenBSD: if_otusreg.h,v 1.9 2013/11/26 20:33:18 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -937,6 +937,7 @@ struct otus_softc {
 	struct usbd_pipe		*cmd_tx_pipe;
 	struct usbd_pipe		*cmd_rx_pipe;
 	uint8_t 			*ibuf;
+	size_t				ibuflen;
 
 	int				sc_if_flags;
 	int				sc_tx_timer;
