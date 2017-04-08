@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.end.c,v 1.15 2016/01/09 18:33:15 mestre Exp $	*/
+/*	$OpenBSD: hack.end.c,v 1.16 2016/01/09 21:54:11 mestre Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -536,7 +536,7 @@ outentry(int rank, struct toptenentry *t1, int so)
 	  char hpbuf[10];
 	  int hppos;
 	  bp = eos(linebuf);
-	  snprintf(hpbuf, sizeof hpbuf, (t1->hp > 0) ? itoa(t1->hp) : "-");
+	  snprintf(hpbuf, sizeof hpbuf, "%s", (t1->hp > 0) ? itoa(t1->hp) : "-");
 	  hppos = COLNO - 7 - strlen(hpbuf);
 	  if(bp <= linebuf + hppos) {
 	    while(bp < linebuf + hppos) *bp++ = ' ';
