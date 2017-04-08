@@ -1,4 +1,4 @@
-/*	$OpenBSD: conflex.c,v 1.35 2017/02/12 13:15:50 krw Exp $	*/
+/*	$OpenBSD: conflex.c,v 1.36 2017/04/03 18:23:36 krw Exp $	*/
 
 /* Lexical scanner for dhclient config file. */
 
@@ -279,7 +279,8 @@ read_string(FILE *cfile)
 static int
 read_num_or_name(int c, FILE *cfile)
 {
-	int i, rv, xdigits;
+	unsigned int i, xdigits;
+	int rv;
 
 	xdigits = isxdigit(c) ? 1 : 0;
 

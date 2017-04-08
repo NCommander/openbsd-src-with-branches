@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.47 2017/04/03 18:23:36 krw Exp $	*/
+/*	$OpenBSD: parse.c,v 1.48 2017/04/03 19:59:39 krw Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -129,7 +129,7 @@ parse_semi(FILE *cfile)
 }
 
 char *
-parse_string(FILE *cfile, int *len)
+parse_string(FILE *cfile, unsigned int *len)
 {
 	static char unvisbuf[1500];
 	char *val, *s;
@@ -424,7 +424,7 @@ void
 parse_warn(char *msg)
 {
 	static char spaces[81];
-	int i;
+	unsigned int i;
 
 	log_warnx("%s line %d: %s", tlname, lexline, msg);
 	log_warnx("%s", token_line);
