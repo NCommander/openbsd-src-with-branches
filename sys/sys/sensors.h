@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensors.h,v 1.33 2013/11/04 02:41:49 jsg Exp $	*/
+/*	$OpenBSD: sensors.h,v 1.34 2014/12/18 20:30:58 tedu Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexander Yurchenko <grange@openbsd.org>
@@ -167,6 +167,8 @@ struct sensor_task;
 struct sensor_task	*sensor_task_register(void *, void (*)(void *),
 			     unsigned int);
 void			 sensor_task_unregister(struct sensor_task *);
+void			 sensor_quiesce(void);
+void			 sensor_restart(void);
 
 #endif	/* _KERNEL */
 
