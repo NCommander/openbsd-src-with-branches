@@ -1,4 +1,4 @@
-/*	$OpenBSD: hunt.c,v 1.20 2016/01/10 14:10:39 mestre Exp $	*/
+/*	$OpenBSD: hunt.c,v 1.21 2016/03/07 12:07:56 mestre Exp $	*/
 /*	$NetBSD: hunt.c,v 1.8 1998/09/13 15:27:28 hubertf Exp $	*/
 /*
  * Copyright (c) 1983-2003, Regents of the University of California.
@@ -506,9 +506,9 @@ leave(int eval, char *mesg)
 	errno = saved_errno;
 
 	if (errno == 0 && mesg != NULL)
-		errx(eval, mesg);
+		errx(eval, "%s", mesg);
 	else if (mesg != NULL)
-		err(eval, mesg);
+		err(eval, "%s", mesg);
 	exit(eval);
 }
 
