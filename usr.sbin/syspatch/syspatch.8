@@ -1,4 +1,4 @@
-.\"	$OpenBSD: syspatch.8,v 1.14 2017/02/07 08:58:47 ajacoutot Exp $
+.\"	$OpenBSD: syspatch.8,v 1.15 2017/02/07 17:58:43 jmc Exp $
 .\"
 .\" Copyright (c) 2016 Antoine Jacoutot <ajacoutot@openbsd.org>
 .\"
@@ -32,7 +32,7 @@ binary patches.
 When run without any options,
 .Nm syspatch
 will apply
-.Pa all
+.Em all
 missing patches by saving the original release kernel if needed, creating a
 rollback tarball containing the files it is about to replace, then extracting
 and installing all files contained in the syspatch tarball.
