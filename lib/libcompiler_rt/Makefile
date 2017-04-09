@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2017/01/11 14:18:17 patrick Exp $
+# $OpenBSD: Makefile,v 1.5 2017/01/20 07:55:20 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -170,14 +170,19 @@ SRCS+=	${file}.c
 SRCS+=	comparetf2.c \
 	extenddftf2.c \
 	extendsftf2.c \
-	trunctfdf2.c \
-	trunctfsf2.c \
 	fixtfdi.c \
 	fixtfsi.c \
+	fixtfti.c \
+	fixunstfdi.c \
+	fixunstfsi.c \
+	fixunstfti.c \
 	floatditf.c \
 	floatsitf.c \
 	floatunsitf.c \
-	multc3.c
+	floatunditf.c \
+	multc3.c \
+	trunctfdf2.c \
+	trunctfsf2.c
 .endif
 
 .if ${RTARCH} == "arm"
