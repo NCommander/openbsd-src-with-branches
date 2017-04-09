@@ -1,4 +1,4 @@
-/*	$OpenBSD: conflex.c,v 1.36 2017/04/03 18:23:36 krw Exp $	*/
+/*	$OpenBSD: conflex.c,v 1.37 2017/04/08 20:16:04 krw Exp $	*/
 
 /* Lexical scanner for dhclient config file. */
 
@@ -128,7 +128,7 @@ get_char(FILE *cfile)
 			lpos = 1;
 			cur_line[0] = 0;
 		} else if (c != EOF) {
-			if (lpos < sizeof(line1)) {
+			if ((unsigned int)lpos < sizeof(line1)) {
 				cur_line[lpos - 1] = c;
 				cur_line[lpos] = 0;
 			}
