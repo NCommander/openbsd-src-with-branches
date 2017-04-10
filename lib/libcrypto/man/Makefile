@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.118 2017/03/25 22:21:21 schwarze Exp $
+# $OpenBSD: Makefile,v 1.119 2017/03/26 00:06:10 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -197,6 +197,7 @@ MAN=	\
 	UI_create_method.3 \
 	UI_get_string_type.3 \
 	UI_new.3 \
+	X25519.3 \
 	X509V3_get_d2i.3 \
 	X509_ALGOR_dup.3 \
 	X509_ATTRIBUTE_new.3 \
