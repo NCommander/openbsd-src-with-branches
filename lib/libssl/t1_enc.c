@@ -1,4 +1,4 @@
-/* $OpenBSD: t1_enc.c,v 1.106 2017/03/25 13:36:56 jsing Exp $ */
+/* $OpenBSD: t1_enc.c,v 1.107 2017/03/25 13:42:29 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -152,12 +152,8 @@ int tls1_PRF(SSL *s, const unsigned char *secret, size_t secret_len,
 void
 tls1_cleanup_key_block(SSL *s)
 {
-	if (S3I(s)->tmp.key_block != NULL) {
-		explicit_bzero(S3I(s)->tmp.key_block,
-		    S3I(s)->tmp.key_block_length);
-		free(S3I(s)->tmp.key_block);
-		S3I(s)->tmp.key_block = NULL;
-	}
+	freezero(S3I(s)->tmp.key_block, S3I(s)->tmp.key_block_length);
+	S3I(s)->tmp.key_block = NULL;
 	S3I(s)->tmp.key_block_length = 0;
 }
 
