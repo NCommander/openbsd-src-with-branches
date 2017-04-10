@@ -1844,11 +1844,8 @@ ssl3_free(SSL *s)
 
 	free(S3I(s)->alpn_selected);
 
-	explicit_bzero(S3I(s), sizeof(*S3I(s)));
-	free(S3I(s));
-
-	explicit_bzero(s->s3, sizeof(*s->s3));
-	free(s->s3);
+	freezero(S3I(s), sizeof(*S3I(s)));
+	freezero(s->s3, sizeof(*s->s3));
 
 	s->s3 = NULL;
 }
