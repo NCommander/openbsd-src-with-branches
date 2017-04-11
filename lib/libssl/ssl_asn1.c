@@ -205,9 +205,12 @@ i2d_SSL_SESSION(SSL_SESSION *s, unsigned char **pp)
 	rv = (int)data_len;
 
  err:
+	if (data != NULL)
+		explicit_bzero(data, data_len);
+
 	CBB_cleanup(&session);
-	freezero(data, data_len);
 	free(peer_cert_bytes);
+	free(data);
 
 	return rv;
 }
