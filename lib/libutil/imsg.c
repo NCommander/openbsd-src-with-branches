@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.c,v 1.13 2015/12/09 11:54:12 tb Exp $	*/
+/*	$OpenBSD: imsg.c,v 1.14 2017/03/24 09:34:12 nicm Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -263,7 +263,7 @@ imsg_close(struct imsgbuf *ibuf, struct ibuf *msg)
 void
 imsg_free(struct imsg *imsg)
 {
-	free(imsg->data);
+	freezero(imsg->data, imsg->hdr.len - IMSG_HEADER_SIZE);
 }
 
 int

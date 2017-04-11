@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg-buffer.c,v 1.8 2015/12/29 18:05:01 benno Exp $	*/
+/*	$OpenBSD: imsg-buffer.c,v 1.9 2017/03/17 14:51:26 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -182,7 +182,7 @@ ibuf_free(struct ibuf *buf)
 {
 	if (buf == NULL)
 		return;
-	free(buf->buf);
+	freezero(buf->buf, buf->size);
 	free(buf);
 }
 
