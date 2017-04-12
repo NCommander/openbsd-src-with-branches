@@ -1,4 +1,4 @@
-/*	$OpenBSD: el.c,v 1.35 2016/05/20 15:30:17 schwarze Exp $	*/
+/*	$OpenBSD: el.c,v 1.36 2016/05/22 23:09:56 schwarze Exp $	*/
 /*	$NetBSD: el.c,v 1.61 2011/01/27 23:11:40 christos Exp $	*/
 
 /*-
@@ -57,12 +57,10 @@
 EditLine *
 el_init(const char *prog, FILE *fin, FILE *fout, FILE *ferr)
 {
-	EditLine *el = (EditLine *) malloc(sizeof(EditLine));
+	EditLine *el = (EditLine *) calloc(1, sizeof(EditLine));
 
 	if (el == NULL)
 		return NULL;
-
-	memset(el, 0, sizeof(EditLine));
 
 	el->el_infile = fin;
 	el->el_outfile = fout;
