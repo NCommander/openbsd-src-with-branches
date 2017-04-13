@@ -1,4 +1,4 @@
-/*	$OpenBSD: getdelim.c,v 1.4 2015/08/31 02:53:57 guenther Exp $	*/
+/*	$OpenBSD: getdelim.c,v 1.5 2016/09/21 04:38:56 guenther Exp $	*/
 /* $NetBSD: getdelim.c,v 1.13 2011/07/22 23:12:30 joerg Exp $ */
 
 /*
@@ -103,7 +103,7 @@ getdelim(char **__restrict buf, size_t *__restrict buflen,
 				newlen++;
 			}
 
-			newb = realloc(*buf, newlen);
+			newb = recallocarray(*buf, *buflen, newlen, 1);
 			if (newb == NULL)
 				goto error;
 			*buf = newb;
