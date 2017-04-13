@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_prot.c,v 1.66 2016/09/02 18:11:28 tedu Exp $	*/
+/*	$OpenBSD: kern_prot.c,v 1.67 2016/11/07 00:26:32 guenther Exp $	*/
 /*	$NetBSD: kern_prot.c,v 1.33 1996/02/09 18:59:42 christos Exp $	*/
 
 /*
@@ -51,10 +51,7 @@
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
-
-#ifdef	__HAVE_MD_TCB
-# include <machine/tcb.h>
-#endif
+#include <machine/tcb.h>
 
 inline void
 crset(struct ucred *newcr, const struct ucred *cr)
