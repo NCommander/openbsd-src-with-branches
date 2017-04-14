@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_var.h,v 1.122 2017/02/09 15:19:32 jca Exp $	*/
+/*	$OpenBSD: tcp_var.h,v 1.123 2017/03/13 20:18:21 claudio Exp $	*/
 /*	$NetBSD: tcp_var.h,v 1.17 1996/02/13 23:44:24 christos Exp $	*/
 
 /*
@@ -733,7 +733,7 @@ struct tcpcb *
 int	 tcp_dooptions(struct tcpcb *, u_char *, int, struct tcphdr *,
 		struct mbuf *, int, struct tcp_opt_info *, u_int);
 void	 tcp_init(void);
-int	 tcp_input(struct mbuf **, int *, int);
+int	 tcp_input(struct mbuf **, int *, int, int);
 int	 tcp_mss(struct tcpcb *, int);
 void	 tcp_mss_update(struct tcpcb *);
 u_int	 tcp_hdrsz(struct tcpcb *);

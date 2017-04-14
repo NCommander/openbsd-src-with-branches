@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.248 2017/04/09 17:57:58 dhill Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.249 2017/04/11 14:43:49 dhill Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -649,7 +649,7 @@ pfsync_state_import(struct pfsync_state *sp, int flags)
 }
 
 int
-pfsync_input(struct mbuf **mp, int *offp, int proto)
+pfsync_input(struct mbuf **mp, int *offp, int proto, int af)
 {
 	struct mbuf *n, *m = *mp;
 	struct pfsync_softc *sc = pfsyncif;

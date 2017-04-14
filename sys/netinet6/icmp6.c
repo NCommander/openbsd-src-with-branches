@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.203 2017/03/03 13:19:40 bluhm Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.204 2017/04/05 13:35:18 deraadt Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -378,7 +378,7 @@ icmp6_error(struct mbuf *m, int type, int code, int param)
  * Process a received ICMP6 message.
  */
 int
-icmp6_input(struct mbuf **mp, int *offp, int proto)
+icmp6_input(struct mbuf **mp, int *offp, int proto, int af)
 {
 #if NCARP > 0
 	struct ifnet *ifp;

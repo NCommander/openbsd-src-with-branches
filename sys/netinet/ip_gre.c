@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_gre.c,v 1.61 2017/01/25 17:34:31 bluhm Exp $ */
+/*      $OpenBSD: ip_gre.c,v 1.62 2017/01/29 19:58:47 bluhm Exp $ */
 /*	$NetBSD: ip_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -216,7 +216,7 @@ gre_input2(struct mbuf *m, int hlen, int proto)
  * IPPROTO_GRE and a local destination address).
  */
 int
-gre_input(struct mbuf **mp, int *offp, int proto)
+gre_input(struct mbuf **mp, int *offp, int proto, int af)
 {
 	struct mbuf *m = *mp;
 	int hlen = *offp;
@@ -247,7 +247,7 @@ gre_input(struct mbuf **mp, int *offp, int proto)
 	 * but we're not set to accept them.
 	 */
 	if (!ret)
-		return rip_input(mp, offp, proto);
+		return rip_input(mp, offp, proto, af);
 	return IPPROTO_DONE;
 }
 
@@ -259,7 +259,7 @@ gre_input(struct mbuf **mp, int *offp, int proto)
  */
 
 int
-gre_mobile_input(struct mbuf **mp, int *offp, int proto)
+gre_mobile_input(struct mbuf **mp, int *offp, int proto, int af)
 {
 	struct mbuf *m = *mp;
 	struct ip *ip;

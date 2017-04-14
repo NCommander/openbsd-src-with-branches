@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.107 2017/03/03 15:48:02 bluhm Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.108 2017/03/13 20:18:21 claudio Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -116,7 +116,7 @@ rip6_init(void)
 }
 
 int
-rip6_input(struct mbuf **mp, int *offp, int proto)
+rip6_input(struct mbuf **mp, int *offp, int proto, int af)
 {
 	struct mbuf *m = *mp;
 	struct ip6_hdr *ip6 = mtod(m, struct ip6_hdr *);
