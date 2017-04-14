@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.161 2017/01/21 05:36:33 dlg Exp $	*/
+/*	$OpenBSD: if_spppsubr.c,v 1.162 2017/01/24 10:08:30 krw Exp $	*/
 /*
  * Synchronous PPP link level subroutines.
  *
@@ -3100,7 +3100,7 @@ sppp_ipv6cp_scr(struct sppp *sp)
 	if (sp->ipv6cp.opts & (1 << IPV6CP_OPT_COMPRESSION)) {
 		opt[i++] = IPV6CP_OPT_COMPRESSION;
 		opt[i++] = 4;
-p		opt[i++] = 0;   /* TBD */
+		opt[i++] = 0;   /* TBD */
 		opt[i++] = 0;   /* TBD */
 		/* variable length data may follow */
 	}

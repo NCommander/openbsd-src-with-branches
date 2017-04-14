@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.208 2017/01/24 00:58:55 mpi Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.209 2017/04/13 03:52:25 guenther Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -646,7 +646,7 @@ killpg1(struct proc *cp, int signum, int pgid, int all)
 	struct pgrp *pgrp;
 	int nfound = 0;
 
-	if (all)
+	if (all) {
 		/* 
 		 * broadcast
 		 */
@@ -659,7 +659,7 @@ killpg1(struct proc *cp, int signum, int pgid, int all)
 			if (signum)
 				prsignal(pr, signum);
 		}
-	else {
+	} else {
 		if (pgid == 0)
 			/*
 			 * zero pgid means send to my process group.
