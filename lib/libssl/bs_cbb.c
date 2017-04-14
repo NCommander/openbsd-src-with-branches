@@ -1,4 +1,4 @@
-/*	$OpenBSD: bs_cbb.c,v 1.13 2015/09/01 13:35:39 jsing Exp $	*/
+/*	$OpenBSD: bs_cbb.c,v 1.14 2017/03/10 15:16:20 jsing Exp $	*/
 /*
  * Copyright (c) 2014, Google Inc.
  *
@@ -80,8 +80,7 @@ CBB_cleanup(CBB *cbb)
 {
 	if (cbb->base) {
 		if (cbb->base->can_resize)
-			free(cbb->base->buf);
-
+			freezero(cbb->base->buf, cbb->base->cap);
 		free(cbb->base);
 	}
 	cbb->base = NULL;
