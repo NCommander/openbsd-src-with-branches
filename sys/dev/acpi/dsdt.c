@@ -1,4 +1,4 @@
-/* $OpenBSD: dsdt.c,v 1.231 2017/02/16 18:02:22 jcs Exp $ */
+/* $OpenBSD: dsdt.c,v 1.232 2017/04/08 01:20:10 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
  *
@@ -406,7 +406,8 @@ acpi_walkmem(int sig, const char *lbl)
 {
 	struct acpi_memblock *sptr;
 
-	printf("--- walkmem:%s %x --- %x bytes alloced\n", lbl, sig, acpi_nalloc);
+	printf("--- walkmem:%s %x --- %lx bytes alloced\n", lbl, sig,
+	    acpi_nalloc);
 	LIST_FOREACH(sptr, &acpi_memhead, link) {
 		if (sptr->sig < sig)
 			break;
