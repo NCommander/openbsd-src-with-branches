@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: _setjmp.S,v 1.1 2017/01/11 18:09:24 patrick Exp $	*/
 /*-
  * Copyright (c) 2014 Andrew Turner
  * Copyright (c) 2014 The FreeBSD Foundation
@@ -91,7 +91,8 @@ ENTRY(_longjmp)
 #endif
 
 	/* Load the return value */
-	mov	x0, x1
+	cmp	w1, #0
+	csinc	w0, w1, wzr, ne
 	ret
 
 botch:
