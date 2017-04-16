@@ -1,4 +1,4 @@
-/*	$OpenBSD: optionstest.c,v 1.7 2014/12/28 16:34:23 jsing Exp $	*/
+/*	$OpenBSD: optionstest.c,v 1.8 2015/01/22 05:48:00 doug Exp $	*/
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -371,7 +371,7 @@ main(int argc, char **argv)
 	size_t i;
 
 	for (i = 0; i < N_OPTIONS_TESTS; i++) {
-		printf("Test %d%s\n", (i + 1), options_tests[i].want == 0 ?
+		printf("Test %zu%s\n", (i + 1), options_tests[i].want == 0 ?
 		    "" : " is expected to complain");
 		failed += do_options_test(i + 1, &options_tests[i]);
 	}
