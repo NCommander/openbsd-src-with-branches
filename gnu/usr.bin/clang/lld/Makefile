@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2017/01/24 08:44:47 patrick Exp $
+# $OpenBSD: Makefile,v 1.7 2017/03/27 15:32:38 kettenis Exp $
 
 .include <bsd.own.mk>
 
@@ -6,9 +6,6 @@ PROG=	ld.lld
 BINDIR=	/usr/bin
 SRCS=	lld.cpp
 NOMAN=
-
-LDADD+=	-ltermlib
-DPADD+=	${LIBTERMLIB}
 
 .if ${COMPILER_VERSION:L} == "clang"
 LINKS=	${BINDIR}/ld.lld ${BINDIR}/ld

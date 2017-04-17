@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2017/01/24 08:44:47 patrick Exp $
+# $OpenBSD: Makefile,v 1.7 2017/03/27 15:32:38 kettenis Exp $
 
 .include <bsd.own.mk>
 
@@ -8,9 +8,6 @@ LIBEXECDIR=/usr/libexec
 SRCS=	driver.cpp \
 	cc1_main.cpp \
 	cc1as_main.cpp
-
-LDADD+=	-ltermlib
-DPADD+=	${LIBTERMLIB}
 
 LINKS=	${BINDIR}/clang ${BINDIR}/clang++ \
 	${BINDIR}/clang ${BINDIR}/clang-cpp
