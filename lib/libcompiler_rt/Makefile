@@ -1,8 +1,13 @@
-# $OpenBSD: Makefile,v 1.5 2017/01/20 07:55:20 patrick Exp $
+# $OpenBSD: Makefile,v 1.6 2017/04/09 21:47:05 kettenis Exp $
 
 .include <bsd.own.mk>
 
-.if ${COMPILER_VERSION:L} == "clang"
+.if ${COMPILER_VERSION:L} != "clang"
+CC=		clang
+CXX=		clang++
+.endif
+
+.if ${BUILD_CLANG:L} == "yes"
 
 LIB=	compiler_rt
 NOPIC=

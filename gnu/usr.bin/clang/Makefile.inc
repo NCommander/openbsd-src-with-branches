@@ -1,6 +1,11 @@
-# $OpenBSD: Makefile.inc,v 1.3 2016/12/20 07:32:18 patrick Exp $
+# $OpenBSD: Makefile.inc,v 1.4 2017/02/16 02:08:42 jsg Exp $
 
 LLVM_SRCS?=	${.CURDIR}/../../../llvm
+
+.if ${COMPILER_VERSION:L} != "clang"
+CC=		clang
+CXX=		clang++
+.endif
 
 BOOTSTRAP_CLANG?=no
 .if ${BOOTSTRAP_CLANG} == "yes"
