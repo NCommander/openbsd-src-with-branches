@@ -1,4 +1,4 @@
-#	$OpenBSD: Client.pm,v 1.8 2016/09/23 14:35:15 bluhm Exp $
+#	$OpenBSD: Client.pm,v 1.9 2017/01/02 16:58:28 bluhm Exp $
 
 # Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -114,7 +114,7 @@ sub child {
 		    or die ref($self), " setlogsock failed: $!";
 	}
 	# we take LOG_UUCP as it is not used nowadays
-	openlog("syslogd-regress", "ndelay,perror,pid", LOG_UUCP);
+	openlog("syslogd-regress", "perror,pid", LOG_UUCP);
 }
 
 1;
