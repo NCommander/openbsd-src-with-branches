@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.107 2017/02/07 12:27:42 reyk Exp $	*/
+/*	$OpenBSD: server.c,v 1.108 2017/03/25 17:25:34 claudio Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -302,10 +302,8 @@ server_tls_init(struct server *srv)
 
 	/* We're now done with the public/private key... */
 	tls_config_clear_keys(srv->srv_tls_config);
-	explicit_bzero(srv->srv_conf.tls_cert, srv->srv_conf.tls_cert_len);
-	explicit_bzero(srv->srv_conf.tls_key, srv->srv_conf.tls_key_len);
-	free(srv->srv_conf.tls_cert);
-	free(srv->srv_conf.tls_key);
+	freezero(srv->srv_conf.tls_cert, srv->srv_conf.tls_cert_len);
+	freezero(srv->srv_conf.tls_key, srv->srv_conf.tls_key_len);
 	srv->srv_conf.tls_cert = NULL;
 	srv->srv_conf.tls_key = NULL;
 	srv->srv_conf.tls_cert_len = 0;
@@ -418,16 +416,8 @@ serverconfig_free(struct server_config *srv_conf)
 	free(srv_conf->tls_key_file);
 	free(srv_conf->tls_ocsp_staple_file);
 	free(srv_conf->tls_ocsp_staple);
-
-	if (srv_conf->tls_cert != NULL) {
-		explicit_bzero(srv_conf->tls_cert, srv_conf->tls_cert_len);
-		free(srv_conf->tls_cert);
-	}
-
-	if (srv_conf->tls_key != NULL) {
-		explicit_bzero(srv_conf->tls_key, srv_conf->tls_key_len);
-		free(srv_conf->tls_key);
-	}
+	freezero(srv_conf->tls_cert, srv_conf->tls_cert_len);
+	freezero(srv_conf->tls_key, srv_conf->tls_key_len);
 }
 
 void
