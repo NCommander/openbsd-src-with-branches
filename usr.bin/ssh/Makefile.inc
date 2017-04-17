@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.49 2015/05/29 06:47:43 djm Exp $
+#	$OpenBSD: Makefile.inc,v 1.50 2015/07/01 23:10:47 djm Exp $
 
 .include <bsd.own.mk>
 
@@ -26,7 +26,7 @@ CDIAGFLAGS+=	-Wswitch
 CDIAGFLAGS+=	-Wtrigraphs
 CDIAGFLAGS+=	-Wuninitialized
 CDIAGFLAGS+=	-Wunused
-.if ${COMPILER_VERSION} == "gcc4"
+.if ${COMPILER_VERSION:L} != "gcc3"
 CDIAGFLAGS+=	-Wold-style-definition
 .endif
 CDIAGFLAGS+=	-Wno-unused-parameter # Not clean for this yet

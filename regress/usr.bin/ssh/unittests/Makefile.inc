@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.8 2016/09/30 11:55:20 bluhm Exp $
+#	$OpenBSD: Makefile.inc,v 1.9 2016/11/01 13:43:27 tb Exp $
 
 REGRESS_FAIL_EARLY?=	yes
 
@@ -50,7 +50,7 @@ CDIAGFLAGS+=	-Wswitch
 CDIAGFLAGS+=	-Wtrigraphs
 CDIAGFLAGS+=	-Wuninitialized
 CDIAGFLAGS+=	-Wunused
-.if ${COMPILER_VERSION} == "gcc4"
+.if ${COMPILER_VERSION:L} != "gcc3"
 CDIAGFLAGS+=	-Wpointer-sign
 CDIAGFLAGS+=	-Wold-style-definition
 .endif
