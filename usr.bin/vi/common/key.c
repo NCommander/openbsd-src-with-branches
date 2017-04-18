@@ -1,4 +1,4 @@
-/*	$OpenBSD: key.c,v 1.16 2016/01/20 08:43:27 bentley Exp $	*/
+/*	$OpenBSD: key.c,v 1.18 2016/05/27 09:18:11 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -770,8 +770,7 @@ v_event_err(SCR *sp, EVENT *evp)
 	}
 
 	/* Free any allocated memory. */
-	if (evp->e_asp != NULL)
-		free(evp->e_asp);
+	free(evp->e_asp);
 }
 
 /*

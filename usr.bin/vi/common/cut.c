@@ -1,4 +1,4 @@
-/*	$OpenBSD: cut.c,v 1.14 2015/12/07 20:39:19 mmcc Exp $	*/
+/*	$OpenBSD: cut.c,v 1.16 2016/05/27 09:18:11 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -343,7 +343,6 @@ text_lfree(TEXTH *headp)
 void
 text_free(TEXT *tp)
 {
-	if (tp->lb != NULL)
-		free(tp->lb);
+	free(tp->lb);
 	free(tp);
 }

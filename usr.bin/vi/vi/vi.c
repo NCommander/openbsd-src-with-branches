@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.18 2016/01/20 08:43:27 bentley Exp $	*/
+/*	$OpenBSD: vi.c,v 1.20 2016/05/27 09:18:12 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -1001,10 +1001,8 @@ v_dtoh(SCR *sp)
 	hidden = 0;
 	gp = sp->gp;
 	while ((tsp = TAILQ_FIRST(&gp->dq))) {
-		if (_HMAP(tsp) != NULL) {
-			free(_HMAP(tsp));
-			_HMAP(tsp) = NULL;
-		}
+		free(_HMAP(tsp));
+		_HMAP(tsp) = NULL;
 		TAILQ_REMOVE(&gp->dq, tsp, q);
 		TAILQ_INSERT_TAIL(&gp->hq, tsp, q);
 		++hidden;

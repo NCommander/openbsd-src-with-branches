@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.10 2016/05/27 09:18:11 martijn Exp $	*/
+/*	$OpenBSD: log.c,v 1.11 2017/01/20 00:55:52 krw Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -124,10 +124,8 @@ log_end(SCR *sp, EXF *ep)
 		(void)(ep->log->close)(ep->log);
 		ep->log = NULL;
 	}
-	if (ep->l_lp != NULL) {
-		free(ep->l_lp);
-		ep->l_lp = NULL;
-	}
+	free(ep->l_lp);
+	ep->l_lp = NULL;
 	ep->l_len = 0;
 	ep->l_cursor.lno = 1;		/* XXX Any valid recno. */
 	ep->l_cursor.cno = 0;

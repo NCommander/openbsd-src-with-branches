@@ -1,4 +1,4 @@
-/*	$OpenBSD: v_paragraph.c,v 1.7 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: v_paragraph.c,v 1.8 2015/12/07 20:39:19 mmcc Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -326,8 +326,7 @@ v_buildps(SCR *sp, char *p_p, char *s_p)
 	MALLOC_RET(sp, p, p_len + s_len + 1);
 
 	vip = VIP(sp);
-	if (vip->ps != NULL)
-		free(vip->ps);
+	free(vip->ps);
 
 	if (p_p != NULL)
 		memmove(p, p_p, p_len + 1);

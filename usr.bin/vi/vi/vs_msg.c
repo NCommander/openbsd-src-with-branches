@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs_msg.c,v 1.18 2016/05/27 09:18:12 martijn Exp $	*/
+/*	$OpenBSD: vs_msg.c,v 1.19 2016/12/18 06:11:23 krw Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -899,7 +899,6 @@ vs_msgsave(SCR *sp, mtype_t mt, char *p, size_t len)
 	return;
 
 alloc_err:
-	if (mp_n != NULL)
-		free(mp_n);
+	free(mp_n);
 	(void)fprintf(stderr, "%.*s\n", (int)len, p);
 }

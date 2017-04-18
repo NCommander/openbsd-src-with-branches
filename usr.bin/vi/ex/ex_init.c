@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_init.c,v 1.16 2015/12/07 20:39:19 mmcc Exp $	*/
+/*	$OpenBSD: ex_init.c,v 1.17 2016/01/06 22:28:52 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -90,11 +90,8 @@ ex_screen_end(SCR *sp)
 	if (argv_free(sp))
 		rval = 1;
 
-	if (exp->ibp != NULL)
-		free(exp->ibp);
-
-	if (exp->lastbcomm != NULL)
-		free(exp->lastbcomm);
+	free(exp->ibp);
+	free(exp->lastbcomm);
 
 	if (ex_tag_free(sp))
 		rval = 1;

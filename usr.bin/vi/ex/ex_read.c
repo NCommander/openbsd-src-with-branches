@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_read.c,v 1.11 2016/01/06 22:28:52 millert Exp $	*/
+/*	$OpenBSD: ex_read.c,v 1.13 2016/05/27 09:18:12 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -111,8 +111,7 @@ ex_read(SCR *sp, EXCMD *cmdp)
 
 		/* Set the last bang command. */
 		exp = EXP(sp);
-		if (exp->lastbcomm != NULL)
-			free(exp->lastbcomm);
+		free(exp->lastbcomm);
 		if ((exp->lastbcomm =
 		    strdup(cmdp->argv[argc]->bp)) == NULL) {
 			msgq(sp, M_SYSERR, NULL);
