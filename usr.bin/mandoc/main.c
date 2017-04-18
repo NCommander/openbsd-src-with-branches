@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.189 2017/03/20 14:30:43 schwarze Exp $ */
+/*	$OpenBSD: main.c,v 1.190 2017/03/27 18:51:20 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2012, 2014-2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -50,7 +50,6 @@ enum	outmode {
 	OUTMODE_FLN,
 	OUTMODE_LST,
 	OUTMODE_ALL,
-	OUTMODE_INT,
 	OUTMODE_ONE
 };
 
@@ -200,9 +199,6 @@ main(int argc, char *argv[])
 				return (int)MANDOCLEVEL_BADARG;
 			}
 			defos = mandoc_strdup(optarg + 3);
-			break;
-		case 'i':
-			outmode = OUTMODE_INT;
 			break;
 		case 'K':
 			if ( ! koptions(&options, optarg))
