@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.235 2017/03/16 10:13:11 mpi Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.236 2017/04/05 13:35:18 deraadt Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -980,8 +980,8 @@ change:
 			    info->rti_info[RTAX_NETMASK]);
 			/* FALLTHROUGH */
 		case RTM_LOCK:
-			rt->rt_rmx.rmx_locks &= ~(rtm->rtm_inits);
-			rt->rt_rmx.rmx_locks |=
+			rt->rt_locks &= ~(rtm->rtm_inits);
+			rt->rt_locks |=
 			    (rtm->rtm_inits & rtm->rtm_rmx.rmx_locks);
 			break;
 		}

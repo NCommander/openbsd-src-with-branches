@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.159 2017/01/26 13:03:47 bluhm Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.160 2017/02/09 15:19:32 jca Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -884,7 +884,7 @@ tcp_mtudisc(struct inpcb *inp, int errno)
 					return;
 			}
 			if (orig_maxseg != tp->t_maxseg ||
-			    (rt->rt_rmx.rmx_locks & RTV_MTU))
+			    (rt->rt_locks & RTV_MTU))
 				change = 1;
 		}
 		tcp_mss(tp, -1);
