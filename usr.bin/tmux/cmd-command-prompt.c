@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-command-prompt.c,v 1.40 2017/01/06 13:26:09 nicm Exp $ */
+/* $OpenBSD: cmd-command-prompt.c,v 1.41 2017/01/15 22:00:56 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -192,7 +192,7 @@ cmd_command_prompt_callback(void *data, const char *s, int done)
 
 	if (!done)
 		free(new_template);
-	if (c->prompt_callbackfn != (void *)&cmd_command_prompt_callback)
+	if (c->prompt_callbackfn != cmd_command_prompt_callback)
 		return (1);
 	return (0);
 }
