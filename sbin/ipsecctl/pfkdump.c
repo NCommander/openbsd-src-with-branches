@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkdump.c,v 1.44 2017/03/02 17:44:32 bluhm Exp $	*/
+/*	$OpenBSD: pfkdump.c,v 1.45 2017/04/10 14:32:47 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003 Markus Friedl.  All rights reserved.
@@ -818,7 +818,7 @@ pfkey_print_sa(struct sadb_msg *msg, int opts)
 		extensions[SADB_EXT_KEY_ENCRYPT] = NULL;
 	}
 	if (extensions[SADB_X_EXT_SA2]) {
-		r.type |= RULE_GROUP;
+		r.type |= RULE_BUNDLE;
 		sa2 = (struct sadb_sa *)extensions[SADB_X_EXT_SA2];
 		r.spi2 = ntohl(sa2->sadb_sa_spi);
 		parse_addr(extensions[SADB_X_EXT_DST2], &dst2);
