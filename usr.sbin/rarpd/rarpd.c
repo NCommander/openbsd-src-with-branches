@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.70 2017/01/20 03:31:40 krw Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.71 2017/01/20 06:22:38 krw Exp $ */
 /*	$NetBSD: rarpd.c,v 1.25 1998/04/23 02:48:33 mrg Exp $	*/
 
 /*
@@ -244,8 +244,8 @@ rarp_open(char *device)
 	struct ifreq ifr;
 	u_int   dlt;
 
-	if ((fd = open("/dev/bpf0", O_RDWR)) == -1)
-		error("/dev/bpf0: %s", strerror(errno));
+	if ((fd = open("/dev/bpf", O_RDWR)) == -1)
+		error("/dev/bpf: %s", strerror(errno));
 
 	/* Set immediate mode so packets are processed as they arrive. */
 	immediate = 1;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.24 2016/04/16 22:23:01 natano Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.25 2016/05/28 07:00:18 natano Exp $	*/
 /*	$NetBSD: bpf.c,v 1.5.2.1 1995/11/14 08:45:42 thorpej Exp $	*/
 
 /*
@@ -84,7 +84,7 @@ BpfOpen(void)
 	struct ifreq ifr;
 	int n;
 
-	if ((BpfFd = open("/dev/bpf0", O_RDWR)) == -1) {
+	if ((BpfFd = open("/dev/bpf", O_RDWR)) == -1) {
 		syslog(LOG_ERR, "bpf: can't open device: %m");
 		DoExit();
 	}
