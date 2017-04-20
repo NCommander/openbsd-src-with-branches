@@ -1,4 +1,4 @@
-.\"	$OpenBSD: openpty.3,v 1.17 2015/08/28 19:54:06 kettenis Exp $
+.\"	$OpenBSD: openpty.3,v 1.18 2017/04/20 17:48:30 nicm Exp $
 .\" Copyright (c) 1995
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -30,13 +30,16 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: August 28 2015 $
+.Dd $Mdocdate: April 20 2017 $
 .Dt OPENPTY 3
 .Os
 .Sh NAME
+.Nm getptmfd ,
 .Nm openpty ,
+.Nm fdopenpty ,
 .Nm login_tty ,
-.Nm forkpty
+.Nm forkpty ,
+.Nm fdforkpty
 .Nd tty utility functions
 .Sh SYNOPSIS
 .In termios.h
