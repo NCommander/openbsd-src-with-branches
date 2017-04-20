@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_subr.c,v 1.257 2017/01/15 23:18:05 bluhm Exp $	*/
+/*	$OpenBSD: vfs_subr.c,v 1.258 2017/04/04 18:17:02 deraadt Exp $	*/
 /*	$NetBSD: vfs_subr.c,v 1.53 1996/04/22 01:39:13 christos Exp $	*/
 
 /*
@@ -172,7 +172,7 @@ vfs_busy(struct mount *mp, int flags)
 
 	/* new mountpoints need their lock initialised */
 	if (mp->mnt_lock.rwl_name == NULL)
-		rw_init(&mp->mnt_lock, "vfslock");
+		rw_init_flags(&mp->mnt_lock, "vfslock", RWL_IS_VNODE);
 
 	if (flags & VB_WRITE)
 		rwflags |= RW_WRITE;

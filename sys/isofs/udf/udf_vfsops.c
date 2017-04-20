@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vfsops.c,v 1.57 2016/09/24 18:38:23 tedu Exp $	*/
+/*	$OpenBSD: udf_vfsops.c,v 1.58 2017/02/08 01:32:38 jsg Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -638,7 +638,7 @@ udf_vget(struct mount *mp, ino_t ino, struct vnode **vpp)
 	vp->v_data = up;
 	vref(ump->um_devvp);
 
-	rrw_init(&up->u_lock, "unode");
+	rrw_init_flags(&up->u_lock, "unode", RWL_DUPOK);
 
 	/*
 	 * udf_hashins() will lock the vnode for us.

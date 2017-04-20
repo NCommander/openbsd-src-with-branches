@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_pool.c,v 1.205 2017/01/24 09:54:41 mpi Exp $	*/
+/*	$OpenBSD: subr_pool.c,v 1.207 2017/02/20 00:43:25 dlg Exp $	*/
 /*	$NetBSD: subr_pool.c,v 1.61 2001/09/26 07:14:56 chs Exp $	*/
 
 /*-
@@ -380,8 +380,8 @@ pool_init(struct pool *pp, size_t size, u_int align, int ipl, int flags,
 	pp->pr_nidle = 0;
 
 	pp->pr_ipl = ipl;
-	mtx_init(&pp->pr_mtx, pp->pr_ipl);
-	mtx_init(&pp->pr_requests_mtx, pp->pr_ipl);
+	mtx_init_flags(&pp->pr_mtx, pp->pr_ipl, wchan, 0);
+	mtx_init_flags(&pp->pr_requests_mtx, pp->pr_ipl, wchan, 0);
 	TAILQ_INIT(&pp->pr_requests);
 
 	if (phpool.pr_size == 0) {
