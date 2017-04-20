@@ -1,4 +1,4 @@
-/*	$OpenBSD: ktrace.h,v 1.32 2016/09/01 08:31:15 tom Exp $	*/
+/*	$OpenBSD: ktrace.h,v 1.33 2016/10/08 02:16:43 guenther Exp $	*/
 /*	$NetBSD: ktrace.h,v 1.12 1996/02/04 02:12:29 christos Exp $	*/
 
 /*
@@ -158,9 +158,9 @@ struct ktr_user {
  */
 #define	KTR_PLEDGE	12
 struct ktr_pledge {
-	int	error;
-	int	syscall;
-	int64_t	code;
+	int		error;
+	int		syscall;
+	uint64_t	code;
 };
 
 /*

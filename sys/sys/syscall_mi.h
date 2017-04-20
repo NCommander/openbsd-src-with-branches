@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall_mi.h,v 1.16 2016/04/25 20:00:33 tedu Exp $	*/
+/*	$OpenBSD: syscall_mi.h,v 1.17 2017/02/14 10:31:15 mpi Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -45,8 +45,9 @@ static inline int
 mi_syscall(struct proc *p, register_t code, const struct sysent *callp,
     register_t *argp, register_t retval[2])
 {
+	uint64_t tval;
 	int lock = !(callp->sy_flags & SY_NOLOCK);
-	int error, pledged, tval;
+	int error, pledged;
 
 	/* refresh the thread's cache of the process's creds */
 	refreshcreds(p);
