@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.747 2017/04/21 16:04:18 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.748 2017/04/21 17:22:20 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -41,7 +41,6 @@ extern char   **environ;
 struct args;
 struct client;
 struct cmdq_item;
-struct cmdq_subitem;
 struct cmdq_list;
 struct environ;
 struct input_ctx;
