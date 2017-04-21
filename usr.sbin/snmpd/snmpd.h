@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.h,v 1.73 2016/11/18 16:16:39 jca Exp $	*/
+/*	$OpenBSD: snmpd.h,v 1.74 2017/01/09 14:49:22 reyk Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -401,6 +401,7 @@ struct pfr_buffer {
 #define MSG_REPORT(m)		(((m)->sm_flags & SNMP_MSGFLAG_REPORT) != 0)
 
 struct snmp_message {
+	int			 sm_sock;
 	struct sockaddr_storage	 sm_ss;
 	socklen_t		 sm_slen;
 	char			 sm_host[HOST_NAME_MAX+1];
@@ -660,7 +661,7 @@ struct kif_arp	*karp_getaddr(struct sockaddr *, u_short, int);
 /* snmpe.c */
 void		 snmpe(struct privsep *, struct privsep_proc *);
 void		 snmpe_shutdown(void);
-void		 snmpe_dispatchmsg(struct snmp_message *, int);
+void		 snmpe_dispatchmsg(struct snmp_message *);
 
 /* trap.c */
 void		 trap_init(void);

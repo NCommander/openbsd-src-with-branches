@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.40 2016/11/18 16:16:39 jca Exp $	*/
+/*	$OpenBSD: control.c,v 1.41 2017/01/09 14:49:22 reyk Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -592,7 +592,7 @@ control_dispatch_agentx(int fd, short event, void *arg)
 				}
 			}
  dispatch:
-			snmpe_dispatchmsg(msg, fd);
+			snmpe_dispatchmsg(msg);
 			break;
 		}
 
