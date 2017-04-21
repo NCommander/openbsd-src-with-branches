@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.166 2017/02/09 15:04:53 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.167 2017/04/20 09:20:22 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -175,8 +175,6 @@ server_start(struct event_base *base, int lockfd, char *lockfile)
 	}
 
 	start_cfg();
-
-	status_prompt_load_history();
 
 	server_add_accept(0);
 
