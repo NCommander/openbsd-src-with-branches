@@ -1,4 +1,4 @@
-/* $OpenBSD: notify.c,v 1.19 2016/10/16 22:18:04 nicm Exp $ */
+/* $OpenBSD: notify.c,v 1.20 2017/01/11 14:56:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 George Nachman <tmux@georgester.com>
@@ -184,12 +184,12 @@ notify_session(const char *name, struct session *s)
 }
 
 void
-notify_winlink(const char *name, struct session *s, struct winlink *wl)
+notify_winlink(const char *name, struct winlink *wl)
 {
 	struct cmd_find_state	fs;
 
-	cmd_find_from_winlink(&fs, s, wl);
-	notify_add(name, &fs, NULL, s, wl->window, NULL);
+	cmd_find_from_winlink(&fs, wl);
+	notify_add(name, &fs, NULL, wl->session, wl->window, NULL);
 }
 
 void
