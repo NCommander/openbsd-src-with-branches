@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.74 2017/03/07 11:49:42 natano Exp $ */
+/*	$OpenBSD: machdep.c,v 1.75 2017/04/02 15:48:19 visa Exp $ */
 
 /*
  * Copyright (c) 2009, 2010, 2014 Miodrag Vallat.
@@ -601,6 +601,7 @@ mips_init(uint64_t argc, uint64_t argv, uint64_t envp, uint64_t cv,
 #endif
 #ifdef CPU_LOONGSON3
 		case 0x05:
+		case 0x08:
 			loongson_ver = 0x3a;
 			break;
 #endif
