@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211.h,v 1.57 2016/01/25 12:51:14 stsp Exp $	*/
+/*	$OpenBSD: ieee80211.h,v 1.58 2016/05/12 18:18:48 dcoppa Exp $	*/
 /*	$NetBSD: ieee80211.h,v 1.6 2004/04/30 23:51:53 dyoung Exp $	*/
 
 /*-
@@ -612,8 +612,8 @@ enum {
 /* Bits 96-100: Tx MCS set */
 #define IEEE80211_TX_MCS_SET_DEFINED		0x01
 #define IEEE80211_TX_RX_MCS_NOT_EQUAL		0x02
-#define IEEE80211_TX_SPATIAL_STREAMS		0x18
-#define IEEE80211_TX_UNEQUAL_MODULATION		0x20
+#define IEEE80211_TX_SPATIAL_STREAMS		0x0c
+#define IEEE80211_TX_UNEQUAL_MODULATION		0x10
 /* Bits 101-127: Reserved */
 
 /*
