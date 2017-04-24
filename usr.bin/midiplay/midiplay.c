@@ -88,8 +88,6 @@ void playdata(u_char *, u_int, char *);
 void sigalrm(int);
 int main(int argc, char **argv);
 
-extern char *__progname;
-
 #define P(c) 1,0x90,c,0x7f,4,0x80,c,0
 #define PL(c) 1,0x90,c,0x7f,8,0x80,c,0
 #define C 0x3c
@@ -126,7 +124,9 @@ u_char sample[] = {
 void
 usage(void)
 {
-	printf("usage: "
+	extern char *__progname;
+
+	(void)fprintf(stderr, "usage: "
 	       "%s [-gmqvx] [-f device] [-t tempo] [file ...]\n",
 	       __progname);
 	exit(1);
