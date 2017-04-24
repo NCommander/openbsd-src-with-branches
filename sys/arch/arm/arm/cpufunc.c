@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.c,v 1.49 2017/01/02 00:51:18 jsg Exp $	*/
+/*	$OpenBSD: cpufunc.c,v 1.50 2017/01/06 00:06:02 jsg Exp $	*/
 /*	$NetBSD: cpufunc.c,v 1.65 2003/11/05 12:53:15 scw Exp $	*/
 
 /*
@@ -377,6 +377,7 @@ armv7_setup()
 #endif
 		/* FALLTHROUGH */
 	case CPU_ID_CORTEX_A7:
+	case CPU_ID_CORTEX_A12:
 	case CPU_ID_CORTEX_A15:
 	case CPU_ID_CORTEX_A17:
 		/* Set SMP to allow LDREX/STREX */
