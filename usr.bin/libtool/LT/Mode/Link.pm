@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Link.pm,v 1.33 2016/11/03 10:23:01 ajacoutot Exp $
+# $OpenBSD: Link.pm,v 1.34 2016/12/25 13:46:18 zhuk Exp $
 #
 # Copyright (c) 2007-2010 Steven Mestdagh <steven@openbsd.org>
 # Copyright (c) 2012 Marc Espie <espie@openbsd.org>
@@ -150,13 +150,15 @@ sub run
 	    'R:@',
 	    'shrext:',
 	    'static',
+	    'static-libtool-libs',
 	    'thread-safe', # XXX and --thread-safe ?
 	    'version-info:',
 	    'version-number:');
 
 	# XXX options ignored: bindir, dlopen, dlpreopen, no-fast-install,
-	# 	no-install, no-undefined, precious-files-regex,
-	# 	shrext, thread-safe, prefer-pic, prefer-non-pic
+	#	no-install, no-undefined, precious-files-regex,
+	#	shrext, thread-safe, prefer-pic, prefer-non-pic,
+	#	static-libtool-libs
 
 	my @RPopts = $gp->rpath;	 # -rpath options
 	my @Ropts = $gp->R;		 # -R options on the command line
