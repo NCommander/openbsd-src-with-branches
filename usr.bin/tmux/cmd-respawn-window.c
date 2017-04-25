@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-respawn-window.c,v 1.33 2017/03/09 17:02:38 nicm Exp $ */
+/* $OpenBSD: cmd-respawn-window.c,v 1.34 2017/04/22 10:22:39 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -81,7 +81,7 @@ cmd_respawn_window_exec(struct cmd *self, struct cmdq_item *item)
 	if (envent != NULL)
 		path = envent->value;
 
-	env = environ_for_session(s);
+	env = environ_for_session(s, 0);
 	if (window_pane_spawn(wp, args->argc, args->argv, path, NULL, NULL, env,
 	    s->tio, &cause) != 0) {
 		cmdq_error(item, "respawn window failed: %s", cause);
