@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2016/09/01 10:00:38 tedu Exp $
+#	$OpenBSD: Makefile,v 1.17 2017/01/23 12:39:37 kettenis Exp $
 
 .if ${MACHINE} == "arm64" || ${MACHINE} == "armv7" || \
     ${MACHINE} == "macppc" || ${MACHINE} == "octeon" || \
@@ -14,6 +14,6 @@ NOPROG=yes
 .endif
 
 MAN=	eeprom.8
-MANSUBDIR=armv7 macppc octeon sparc64
+MANSUBDIR=arm64 armv7 macppc octeon sparc64
 
 .include <bsd.prog.mk>
