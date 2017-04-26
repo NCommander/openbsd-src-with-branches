@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5008.c,v 1.42 2017/02/01 12:45:56 stsp Exp $	*/
+/*	$OpenBSD: ar5008.c,v 1.43 2017/03/08 12:02:41 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -1015,7 +1015,7 @@ ar5008_tx_process(struct athn_softc *sc, int qid)
 		an->mn.ampdu_size = bf->bf_m->m_pkthdr.len + IEEE80211_CRC_LEN;
 		an->mn.agglen = 1; /* XXX We do not yet support Tx agg. */
 		if (failcnt > 0)
-			an->mn.retries++;
+			an->mn.retries += failcnt;
 		if (txfail)
 			an->mn.txfail++;
 		if (ic->ic_state == IEEE80211_S_RUN) {
