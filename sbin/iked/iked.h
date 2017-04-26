@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.113 2017/03/27 17:17:49 mikeb Exp $	*/
+/*	$OpenBSD: iked.h,v 1.114 2017/04/13 07:04:09 patrick Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -778,6 +778,7 @@ int	 ikev2_childsa_enable(struct iked *, struct iked_sa *);
 int	 ikev2_childsa_delete(struct iked *, struct iked_sa *,
 	    uint8_t, uint64_t, uint64_t *, int);
 void	 ikev2_ikesa_recv_delete(struct iked *, struct iked_sa *);
+void	 ikev2_ike_sa_timeout(struct iked *env, void *);
 
 struct ibuf *
 	 ikev2_prfplus(struct iked_hash *, struct ibuf *, struct ibuf *,
