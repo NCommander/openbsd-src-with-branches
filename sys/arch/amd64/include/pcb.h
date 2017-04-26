@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcb.h,v 1.14 2015/05/18 19:59:27 guenther Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.15 2016/04/03 17:48:33 guenther Exp $	*/
 /*	$NetBSD: pcb.h,v 1.1 2003/04/26 18:39:45 fvdl Exp $	*/
 
 /*-
@@ -74,7 +74,7 @@
 
 /*
  * Please note that the pcb_savefpu field in struct below must be
- * on a 16-byte boundary.
+ * on a 64-byte boundary.
  */
 struct pcb {
 	struct	savefpu pcb_savefpu;	/* floating point state */
