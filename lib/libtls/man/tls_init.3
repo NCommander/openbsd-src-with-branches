@@ -1,4 +1,4 @@
-.\" $OpenBSD: tls_init.3,v 1.4 2017/02/20 13:09:15 schwarze Exp $
+.\" $OpenBSD: tls_init.3,v 1.5 2017/02/20 16:01:15 jmc Exp $
 .\"
 .\" Copyright (c) 2014 Ted Unangst <tedu@openbsd.org>
 .\" Copyright (c) 2016 Joel Sing <jsing@openbsd.org>
@@ -100,6 +100,11 @@ and then freed by calling
 When no more contexts are to be created,
 the configuration object should be freed by calling
 .Fn tls_config_free .
+If
+.Fa config
+is
+.Dv NULL ,
+no action occurs.
 .Sh RETURN VALUES
 .Fn tls_init
 returns 0 on success or -1 on error.
