@@ -1,4 +1,4 @@
-#	$OpenBSD: files.arm,v 1.43 2017/01/02 00:51:18 jsg Exp $
+#	$OpenBSD: files.arm,v 1.44 2017/01/21 10:58:15 reyk Exp $
 #	$NetBSD: files.arm,v 1.76 2003/11/05 12:53:15 scw Exp $
 
 # generic networking files
@@ -34,9 +34,7 @@ file	dev/ofw/fdt.c
 include "arch/arm/cortex/files.cortex"
 
 device	cpu {}
-attach	cpu at fdt with cpu_mainbus
-file	arch/arm/mainbus/cpu_mainbus.c		cpu_mainbus
-
+attach	cpu at mainbus
 
 # bus_space(9)
 define	bus_space_generic
