@@ -1,4 +1,4 @@
-/*	$OpenBSD: catopen.c,v 1.19 2015/11/05 23:38:07 bluhm Exp $ */
+/*	$OpenBSD: catopen.c,v 1.20 2016/09/21 04:38:56 guenther Exp $ */
 /*-
  * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -266,7 +266,7 @@ verify_msgcat(nl_catd catd)
 
 		/* retrieve largest string offset */
 		for (j = index; j < nmsgs; j++) {
-			if (ntohl(msg[j].__offset) < 0)
+			if (ntohl(msg[j].__offset) > INT_MAX)
 				return (1);
 			off = MAXIMUM(off, ntohl(msg[j].__offset));
 		}
