@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.87 2016/05/17 23:43:47 bluhm Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.88 2017/04/20 14:13:00 visa Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -204,10 +204,6 @@ panic(const char *fmt, ...)
 
 #ifdef KGDB
 	kgdb_panic();
-#endif
-#ifdef KADB
-	if (boothowto & RB_KDB)
-		kdbpanic();
 #endif
 #ifdef DDB
 	if (db_panic)
