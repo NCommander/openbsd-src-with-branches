@@ -1,4 +1,4 @@
-/* $OpenBSD: keynote.y,v 1.16 2013/11/29 19:00:51 deraadt Exp $ */
+/* $OpenBSD: keynote.y,v 1.17 2015/11/19 02:35:24 mmcc Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -744,7 +744,7 @@ my_lookup(char *s)
 	    return NULL;
     }
 
-    if ((ks != NULL) && (ks->ks_env_table != NULL))
+    if (ks != NULL)
     {
 	/* Action environment */
 	ret = keynote_env_lookup(s, ks->ks_env_table, HASHTABLESIZE);
