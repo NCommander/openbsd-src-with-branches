@@ -165,7 +165,8 @@ CRYPTO_realloc_clean(void *ptr, int old_len, int num, const char *file,
 	ret = malloc(num);
 	if (ret && ptr && old_len > 0) {
 		memcpy(ret, ptr, old_len);
-		freezero(ptr, old_len);
+		explicit_bzero(ptr, old_len);
+		free(ptr);
 	}
 	return ret;
 }
