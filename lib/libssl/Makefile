@@ -19,7 +19,6 @@ CFLAGS+= -DLIBRESSL_INTERNAL
 CFLAGS+= -I${.CURDIR}
 
 LDADD+= -L${BSDOBJDIR}/lib/libcrypto -lcrypto
-LDADD+= -L${BSDOBJDIR}/lib/libpthread -lpthread
 
 VERSION_SCRIPT=	Symbols.map
 SYMBOL_LIST=	${.CURDIR}/Symbols.list
