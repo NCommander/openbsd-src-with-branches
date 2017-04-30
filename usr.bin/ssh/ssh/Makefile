@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.65 2015/11/08 22:08:38 jmc Exp $
+#	$OpenBSD: Makefile,v 1.66 2016/01/14 16:17:40 markus Exp $
 
 .PATH:		${.CURDIR}/..
 .include "${.CURDIR}/../Makefile.inc"
@@ -15,10 +15,6 @@ SRCS=	ssh.c readconf.c clientloop.c sshtty.c \
 	sshconnect.c sshconnect2.c mux.c
 
 .include <bsd.own.mk>
-
-.if (${SSH1:L} == "yes")
-SRCS+=	sshconnect1.c
-.endif
 
 KERBEROS5=no
 
