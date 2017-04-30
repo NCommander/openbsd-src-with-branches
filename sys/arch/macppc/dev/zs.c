@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.25 2015/11/23 10:30:02 mpi Exp $	*/
+/*	$OpenBSD: zs.c,v 1.26 2016/03/14 23:08:05 krw Exp $	*/
 /*	$NetBSD: zs.c,v 1.17 2001/06/19 13:42:15 wiz Exp $	*/
 
 /*
@@ -1096,7 +1096,7 @@ zs_abort(struct zs_chanstate *channel)
 		extern int db_active;
 
 		if (!db_active)
-			Debugger();
+			db_enter();
 	}
 #endif
 }

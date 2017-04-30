@@ -1,4 +1,4 @@
-/*	$OpenBSD: mb89352.c,v 1.20 2014/10/05 11:46:18 aoyama Exp $	*/
+/*	$OpenBSD: mb89352.c,v 1.21 2017/03/16 18:15:20 miod Exp $	*/
 /*	$NetBSD: mb89352.c,v 1.5 2000/03/23 07:01:31 thorpej Exp $	*/
 /*	NecBSD: mb89352.c,v 1.4 1998/03/14 07:31:20 kmatsuda Exp	*/
 
@@ -140,7 +140,7 @@
 #include <luna88k/dev/mb89352var.h>
 
 #ifndef DDB
-#define	Debugger() panic("should call debugger here (mb89352.c)")
+#define	db_enter() panic("should call debugger here (mb89352.c)")
 #endif /* ! DDB */
 
 #ifdef SPC_DEBUG

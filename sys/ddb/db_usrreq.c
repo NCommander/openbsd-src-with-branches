@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_usrreq.c,v 1.17 2015/03/14 03:38:46 jsg Exp $	*/
+/*	$OpenBSD: db_usrreq.c,v 1.18 2016/09/04 09:22:29 mpi Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff.  All rights reserved.
@@ -96,7 +96,7 @@ ddb_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 			if (securelevel < 1 ||
 			    (pr->ps_flags & PS_CONTROLT && cn_tab &&
 			    cn_tab->cn_dev == pr->ps_session->s_ttyp->t_dev)) {
-				Debugger();
+				db_enter();
 				newp = NULL;
 			} else
 				return (ENODEV);

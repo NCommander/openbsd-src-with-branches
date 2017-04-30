@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgs.c,v 1.2 2011/02/19 22:15:11 kettenis Exp $	*/
+/*	$OpenBSD: pgs.c,v 1.3 2013/07/01 16:53:24 jasper Exp $	*/
 /*
  * Copyright (c) 2010 Jasper Lievisse Adriaanse <jasper@openbsd.org>
  *
@@ -89,7 +89,7 @@ pgs_intr(void *v)
 {
 #ifdef DDB
 	if (db_console)
-		Debugger();
+		db_enter();
 #else
 	printf("programmer-switch pressed, debugger not available.\n");
 #endif

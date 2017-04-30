@@ -1,4 +1,4 @@
-/* $OpenBSD: db_interface.c,v 1.21 2014/07/13 12:11:01 jasper Exp $ */
+/* $OpenBSD: db_interface.c,v 1.22 2016/04/27 11:03:24 mpi Exp $ */
 /* $NetBSD: db_interface.c,v 1.8 1999/10/12 17:08:57 jdolecek Exp $ */
 
 /* 
@@ -220,7 +220,7 @@ db_write_bytes(addr, size, data)
 }
 
 void
-Debugger()
+db_enter()
 {
 
 	__asm volatile("call_pal 0x81");		/* bugchk */

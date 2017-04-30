@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.126 2016/06/08 17:24:44 tedu Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.127 2016/10/18 00:43:57 guenther Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.51 2001/07/24 19:32:11 eeh Exp $ */
 
 /*
@@ -582,7 +582,7 @@ bootpath_build(void)
 		/* specialties */
 		if (*cp == 'd') {
 #if defined(DDB)
-			Debugger();
+			db_enter();
 #else
 			printf("kernel has no debugger\n");
 #endif

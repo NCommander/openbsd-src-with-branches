@@ -1,4 +1,4 @@
-/* $OpenBSD: bcm2836_intr.c,v 1.1 2017/01/23 08:05:47 kettenis Exp $ */
+/* $OpenBSD: bcm2836_intr.c,v 1.2 2017/02/24 17:16:41 patrick Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2015 Patrick Wildt <patrick@blueri.se>
@@ -442,7 +442,7 @@ bcm_intc_call_handler(int irq, void *frame)
 		static int cnt = 0;
 		if ((cnt++ % 100) == 0) {
 			printf("irq  %d fired * _100\n", irq);
-			Debugger();
+			db_enter();
 		}
 	}
 #endif

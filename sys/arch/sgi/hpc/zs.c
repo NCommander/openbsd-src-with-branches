@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.13 2014/12/07 13:12:05 miod Exp $	*/
+/*	$OpenBSD: zs.c,v 1.14 2017/04/30 13:04:49 mpi Exp $	*/
 /*	$NetBSD: zs.c,v 1.37 2011/02/20 07:59:50 matt Exp $	*/
 
 /*-
@@ -559,7 +559,7 @@ void
 zs_abort(struct zs_chanstate *cs)
 {
 #if defined(DDB)
-	Debugger();
+	db_enter();
 #endif
 }
 

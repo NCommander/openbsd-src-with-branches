@@ -1,4 +1,4 @@
-/*	$OpenBSD: mplock.c,v 1.3 2015/02/11 07:05:39 dlg Exp $	*/
+/*	$OpenBSD: mplock.c,v 1.4 2016/03/19 11:34:22 mpi Exp $	*/
 
 /*
  * Copyright (c) 2004 Niklas Hallqvist.  All rights reserved.
@@ -57,7 +57,7 @@ __mp_lock_spin(struct __mp_lock *mpl)
 
 	if (nticks == 0) {
  		db_printf("__mp_lock(0x%x): lock spun out", mpl);
-		Debugger();
+		db_enter();
 	}
 #endif
 }
@@ -109,7 +109,7 @@ __mp_unlock(struct __mp_lock *mpl)
 #ifdef MP_LOCKDEBUG
 	if (mpl->mpl_cpu != ci) {
 		db_printf("__mp_unlock(%p): not held lock\n", mpl);
-		Debugger();
+		db_enter();
 	}
 #endif
 
@@ -132,7 +132,7 @@ __mp_release_all(struct __mp_lock *mpl)
 #ifdef MP_LOCKDEBUG
 	if (mpl->mpl_cpu != ci) {
 		db_printf("__mp_release_all(%p): not held lock\n", mpl);
-		Debugger();
+		db_enter();
 	}
 #endif
 
@@ -156,7 +156,7 @@ __mp_release_all_but_one(struct __mp_lock *mpl)
 #ifdef MP_LOCKDEBUG
 	if (mpl->mpl_cpu != ci) {
 		db_printf("__mp_release_all_but_one(%p): not held lock\n", mpl);
-		Debugger();
+		db_enter();
 	}
 #endif
 

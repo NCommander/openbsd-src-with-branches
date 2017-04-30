@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: subr_witness.c,v 1.1 2017/04/20 12:59:36 visa Exp $	*/
 
 /*-
  * Copyright (c) 2008 Isilon Systems, Inc.
@@ -30,8 +30,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from BSDI $Id: mutex_witness.c,v 1.1.2.20 2000/04/27 03:10:27 cp Exp $
- *	and BSDI $Id: synch_machdep.c,v 2.3.2.39 2000/04/27 03:10:25 cp Exp $
+ *	from BSDI $Id: subr_witness.c,v 1.1 2017/04/20 12:59:36 visa Exp $
+ *	and BSDI $Id: subr_witness.c,v 1.1 2017/04/20 12:59:36 visa Exp $
  */
 
 /*
@@ -2521,5 +2521,5 @@ witness_debugger(int cond, const char *msg)
 	if (!cond)
 		return;
 
-	Debugger();
+	db_enter();
 }

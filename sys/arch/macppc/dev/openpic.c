@@ -1,4 +1,4 @@
-/*	$OpenBSD: openpic.c,v 1.82 2015/06/25 08:56:33 mpi Exp $	*/
+/*	$OpenBSD: openpic.c,v 1.83 2015/09/08 08:29:35 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2008 Dale Rahn <drahn@openbsd.org>
@@ -748,7 +748,7 @@ void
 openpic_ipi_ddb(void)
 {
 #ifdef DDB
-	Debugger();
+	db_enter();
 #endif
 }
 #endif /* MULTIPROCESSOR */

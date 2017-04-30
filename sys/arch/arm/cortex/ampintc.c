@@ -1,4 +1,4 @@
-/* $OpenBSD: ampintc.c,v 1.18 2017/03/07 16:11:18 kettenis Exp $ */
+/* $OpenBSD: ampintc.c,v 1.19 2017/03/21 21:51:03 kettenis Exp $ */
 /*
  * Copyright (c) 2007,2009,2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -491,7 +491,7 @@ ampintc_irq_handler(void *frame)
 		if ((cnt++ % 100) == 0) {
 			printf("irq  %d fired * _100\n", iack_val);
 #ifdef DDB
-			Debugger();
+			db_enter();
 #endif
 		}
 

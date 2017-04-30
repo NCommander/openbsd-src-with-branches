@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.80 2016/10/21 06:20:58 mlarkin Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.81 2017/03/28 17:28:35 kettenis Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -575,7 +575,7 @@ cpu_boot_secondary(struct cpu_info *ci)
 	if (!(ci->ci_flags & CPUF_RUNNING)) {
 		printf("%s failed to become ready\n", ci->ci_dev.dv_xname);
 #ifdef DDB
-		Debugger();
+		db_enter();
 #endif
 	}
 

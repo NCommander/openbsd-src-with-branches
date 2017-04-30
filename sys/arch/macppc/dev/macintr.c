@@ -1,4 +1,4 @@
-/*	$OpenBSD: macintr.c,v 1.52 2015/06/24 11:58:06 mpi Exp $	*/
+/*	$OpenBSD: macintr.c,v 1.53 2015/09/08 08:29:35 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2008 Dale Rahn <drahn@openbsd.org>
@@ -249,7 +249,7 @@ macintr_prog_button (void *arg)
 {
 #ifdef DDB
 	if (db_console)
-		Debugger();
+		db_enter();
 #else
 	printf("programmer button pressed, debugger not available\n");
 #endif

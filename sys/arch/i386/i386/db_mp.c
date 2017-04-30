@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_mp.c,v 1.8 2016/03/07 05:32:46 naddy Exp $	*/
+/*	$OpenBSD: db_mp.c,v 1.9 2017/04/20 14:13:00 visa Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Andreas Gunnarsson <andreas@openbsd.org>
@@ -137,5 +137,5 @@ db_stopcpu(int cpu)
 void
 i386_ipi_db(struct cpu_info *ci)
 {
-	Debugger();
+	db_enter();
 }

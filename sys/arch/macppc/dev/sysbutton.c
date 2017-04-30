@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sysbutton.c,v 1.4 2008/06/13 00:31:09 krw Exp $	*/
 /*
  * Copyright (c) 2007 Gordon Willem Klok <gwk@openbsd.org>
  *
@@ -85,7 +85,7 @@ sysbutton_intr(void *v)
 	 */
 #ifdef DDB
 	if (db_console)
-		Debugger();
+		db_enter();
 #endif
 
 	return 1;

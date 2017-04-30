@@ -1,4 +1,4 @@
-/*	$OpenBSD: consinit.c,v 1.14 2011/04/13 00:56:25 deraadt Exp $	*/
+/*	$OpenBSD: consinit.c,v 1.15 2016/03/07 13:21:51 naddy Exp $	*/
 /*	$NetBSD: consinit.c,v 1.9 2000/10/20 05:32:35 mrg Exp $	*/
 
 /*-
@@ -111,7 +111,7 @@ prom_cngetc(dev_t dev)
 #ifdef DDB
 	if (ch == '+') {
 		if (nplus++ > 3)
-			Debugger();
+			db_enter();
 	} else
 		nplus = 0;
 #endif

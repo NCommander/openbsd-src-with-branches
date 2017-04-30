@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbbc.c,v 1.10 2010/07/02 17:27:01 nicm Exp $	*/
+/*	$OpenBSD: sbbc.c,v 1.11 2012/10/20 12:00:33 miod Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -424,7 +424,7 @@ sbbc_intr_cons(struct sbbc_softc *sc, uint32_t reason)
 #ifdef DDB
 	if ((reason & SBBC_SRAM_CONS_BRK) && sc == sbbc_cons_input) {
 		if (db_console)
-			Debugger();
+			db_enter();
 	}
 #endif
 

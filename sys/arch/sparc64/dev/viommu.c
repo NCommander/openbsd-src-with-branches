@@ -1,4 +1,4 @@
-/*	$OpenBSD: viommu.c,v 1.16 2015/01/09 14:23:25 kettenis Exp $	*/
+/*	$OpenBSD: viommu.c,v 1.17 2016/05/04 18:26:12 kettenis Exp $	*/
 /*	$NetBSD: iommu.c,v 1.47 2002/02/08 20:03:45 eeh Exp $	*/
 
 /*
@@ -384,7 +384,7 @@ viommu_dvmamap_load(bus_dma_tag_t t, bus_dma_tag_t t0, bus_dmamap_t map,
 		    (int)sgsize, flags);
 #ifdef DDB
 		if (iommudebug & IDB_BREAK)
-			Debugger();
+			db_enter();
 #endif
 	}		
 #endif	
@@ -579,7 +579,7 @@ viommu_dvmamap_load_raw(bus_dma_tag_t t, bus_dma_tag_t t0, bus_dmamap_t map,
 		    "failed!\n", (int)sgsize, flags);
 #ifdef DDB
 		if (iommudebug & IDB_BREAK)
-			Debugger();
+			db_enter();
 #else
 		panic("");
 #endif

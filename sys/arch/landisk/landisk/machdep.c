@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.43 2016/03/05 17:16:33 tobiasu Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.44 2016/10/09 11:25:39 tom Exp $	*/
 /*	$NetBSD: machdep.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*-
@@ -177,7 +177,7 @@ landisk_startup(int howto, char *_esym)
 	db_machine_init();
 	ddb_init();
 	if (boothowto & RB_KDB) {
-		Debugger();
+		db_enter();
 	}
 #endif
 

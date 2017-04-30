@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock_machdep.c,v 1.12 2017/03/07 14:41:57 visa Exp $	*/
+/*	$OpenBSD: lock_machdep.c,v 1.13 2017/04/04 12:30:04 visa Exp $	*/
 
 /*
  * Copyright (c) 2007 Artur Grabowski <art@openbsd.org>
@@ -100,7 +100,7 @@ __mp_lock_spin(struct __mp_lock *mpl, u_int me)
 
 		if (--nticks <= 0) {
 			db_printf("__mp_lock(%p): lock spun out", mpl);
-			Debugger();
+			db_enter();
 			nticks = __mp_lock_spinout;
 		}
 	}

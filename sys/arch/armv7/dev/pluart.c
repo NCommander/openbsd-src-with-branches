@@ -1,4 +1,4 @@
-/*	$OpenBSD: pluart.c,v 1.2 2017/04/11 15:16:14 kettenis Exp $	*/
+/*	$OpenBSD: pluart.c,v 1.3 2017/04/30 13:04:49 mpi Exp $	*/
 
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
@@ -314,7 +314,7 @@ pluart_intr(void *arg)
 #ifdef DDB
 			if (ISSET(sc->sc_hwflags, COM_HW_CONSOLE)) {
 				if (db_console)
-					Debugger();
+					db_enter();
 				continue;
 			}
 #endif

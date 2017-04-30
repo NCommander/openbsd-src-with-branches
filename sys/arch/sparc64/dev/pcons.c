@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcons.c,v 1.20 2013/10/20 20:07:27 miod Exp $	*/
+/*	$OpenBSD: pcons.c,v 1.21 2016/03/07 13:21:51 naddy Exp $	*/
 /*	$NetBSD: pcons.c,v 1.7 2001/05/02 10:32:20 scw Exp $	*/
 
 /*-
@@ -93,7 +93,7 @@ typedef struct cnm_state {
 } cnm_state_t;
 #ifdef DDB
 #include <ddb/db_var.h>
-#define cn_trap()	do { if (db_console) Debugger(); } while (0)
+#define cn_trap()	do { if (db_console) db_enter(); } while (0)
 #else
 #define cn_trap()
 #endif

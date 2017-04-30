@@ -1,4 +1,4 @@
-/*	$OpenBSD: bonito.c,v 1.30 2015/09/19 21:07:04 semarie Exp $	*/
+/*	$OpenBSD: bonito.c,v 1.31 2016/03/06 19:42:27 mpi Exp $	*/
 /*	$NetBSD: bonito_mainbus.c,v 1.11 2008/04/28 20:23:10 martin Exp $	*/
 /*	$NetBSD: bonito_pci.c,v 1.5 2008/04/28 20:23:28 martin Exp $	*/
 
@@ -714,7 +714,7 @@ bonito_intr_dispatch(uint64_t isr, int startbit, struct trapframe *frame)
 				    REGVAL(BONITO_INTISR), REGVAL(BONITO_INTEN),
 				    frame->ipl, bonito_imask[frame->ipl]);
 #ifdef DDB
-				Debugger();
+				db_enter();
 #endif
 #endif
 			}

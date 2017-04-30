@@ -1,4 +1,4 @@
-/* $OpenBSD: if_cpsw.c,v 1.41 2016/10/02 23:38:32 jsg Exp $ */
+/* $OpenBSD: if_cpsw.c,v 1.42 2017/01/22 10:17:37 dlg Exp $ */
 /*	$NetBSD: if_cpsw.c,v 1.3 2013/04/17 14:36:34 bouyer Exp $	*/
 
 /*
@@ -1175,7 +1175,7 @@ cpsw_txintr(void *arg)
 		cpsw_get_txdesc(sc, sc->sc_txhead, &bd);
 
 		if (bd.buflen == 0) {
-			/* Debugger(); */
+			/* db_enter(); */
 		}
 
 		if ((bd.flags & CPDMA_BD_SOP) == 0)
@@ -1268,7 +1268,7 @@ cpsw_miscintr(void *arg)
 		stat = bus_space_read_4(sc->sc_bst, sc->sc_bsh, CPSW_CPDMA_RX_CP(0));
 		printf("CPSW_CPDMA_RX0_CP %x\n", stat);
 
-		/* Debugger(); */
+		/* db_enter(); */
 
 		bus_space_write_4(sc->sc_bst, sc->sc_bsh, CPSW_CPDMA_DMA_INTMASK_CLEAR, dmastat);
 		dmastat = bus_space_read_4(sc->sc_bst, sc->sc_bsh, CPSW_CPDMA_DMA_INTSTAT_MASKED);

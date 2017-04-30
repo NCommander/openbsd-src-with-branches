@@ -1,4 +1,4 @@
-/*	$OpenBSD: undefined.c,v 1.8 2016/06/10 06:32:36 jsg Exp $	*/
+/*	$OpenBSD: undefined.c,v 1.9 2017/04/30 13:04:49 mpi Exp $	*/
 /*	$NetBSD: undefined.c,v 1.22 2003/11/29 22:21:29 bjh21 Exp $	*/
 
 /*
@@ -242,7 +242,7 @@ undefinedinstruction(trapframe_t *frame)
 		if ((fault_code & FAULT_USER) == 0) {
 			printf("Undefined instruction in kernel\n");
 #ifdef DDB
-			Debugger();
+			db_enter();
 #endif
 		}
 

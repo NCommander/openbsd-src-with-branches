@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.13 2017/04/11 06:52:13 kettenis Exp $ */
+/* $OpenBSD: machdep.c,v 1.14 2017/04/29 10:05:49 jsg Exp $ */
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -962,7 +962,7 @@ initarm(struct arm64_bootparams *abp)
 	ddb_init();
 
 	if (boothowto & RB_KDB)
-		Debugger();
+		db_enter();
 #endif
 
 	softintr_init();
