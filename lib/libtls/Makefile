@@ -1,11 +1,14 @@
-#	$OpenBSD: Makefile,v 1.29 2016/11/05 08:12:22 jsing Exp $
+#	$OpenBSD: Makefile,v 1.30 2017/01/25 23:53:18 schwarze Exp $
 
 .include <bsd.own.mk>
 .ifndef NOMAN
 SUBDIR=	man
 .endif
 
-CFLAGS+= -Wall -Werror -Wimplicit
+CFLAGS+= -Wall -Wimplicit -Wundef
+.if ${COMPILER_VERSION:L} == "gcc4"
+CFLAGS+= -Werror
+.endif
 CFLAGS+= -DLIBRESSL_INTERNAL
 
 CLEANFILES= ${VERSION_SCRIPT}
