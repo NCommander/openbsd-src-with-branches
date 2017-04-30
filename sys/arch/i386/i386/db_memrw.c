@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_memrw.c,v 1.15 2015/04/12 18:37:53 mlarkin Exp $	*/
+/*	$OpenBSD: db_memrw.c,v 1.16 2015/12/18 08:15:09 gerhard Exp $	*/
 /*	$NetBSD: db_memrw.c,v 1.6 1999/04/12 20:38:19 pk Exp $	*/
 
 /*
@@ -31,7 +31,7 @@
 
 /*
  * Routines to read and write memory on behalf of the debugger, used
- * by DDB and KGDB.
+ * by DDB.
  */
 
 #include <sys/param.h>

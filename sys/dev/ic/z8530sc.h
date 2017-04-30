@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530sc.h,v 1.5 2010/03/03 20:13:34 miod Exp $	*/
+/*	$OpenBSD: z8530sc.h,v 1.11 2013/04/21 14:44:16 sebastia Exp $	*/
 /*	$NetBSD: z8530sc.h,v 1.15 2001/05/11 01:40:48 thorpej Exp $	*/
 
 /*
@@ -156,5 +156,3 @@ int 	zs_set_speed(struct zs_chanstate *, int);
 int 	zs_set_modes(struct zs_chanstate *, int);
 
 extern int zs_major;
-
-int zs_check_kgdb(struct zs_chanstate *, int);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_commulti.c,v 1.3 2008/04/27 01:36:49 dlg Exp $	*/
+/*	$OpenBSD: com_commulti.c,v 1.4 2008/04/27 09:25:26 kettenis Exp $	*/
 /*
  * Copyright (c) 1997 - 1999, Jason Downs.  All rights reserved.
  *
@@ -95,10 +95,6 @@ com_commulti_probe(struct device *parent, void *match, void *aux)
 	iobase = ca->ca_iobase;
 	ioh = ca->ca_ioh;
 
-#ifdef KGDB
-	if (iobase == com_kgdb_addr)
-		return (1);
-#endif
 	/* if it's in use as console, it's there. */
 	if (iobase == comconsaddr && !comconsattached)
 		return (1);
