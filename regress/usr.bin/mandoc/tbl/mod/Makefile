@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.1.1.1 2015/01/29 23:24:24 schwarze Exp $
+# $OpenBSD: Makefile,v 1.2 2015/02/10 11:02:19 schwarze Exp $
 
-REGRESS_TARGETS	 = badfont expand font misalign
+REGRESS_TARGETS	 = badfont expand expand-toowide font misalign
 LINT_TARGETS	 = badfont font
 
 # groff-1.22.3 defects:
