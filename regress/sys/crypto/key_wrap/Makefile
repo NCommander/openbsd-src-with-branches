@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.3 2010/08/07 19:46:58 matthew Exp $
+#	$OpenBSD: Makefile,v 1.4 2014/01/18 05:54:52 martynas Exp $
 
 DIR=${.CURDIR}/../../../../sys
 
 PROG=	key_wrap_test
-SRCS+=	rijndael.c key_wrap.c key_wrap_test.c timingsafe_bcmp.c
+SRCS+=	aes.c key_wrap.c key_wrap_test.c timingsafe_bcmp.c
 CDIAGFLAGS=	-Wall
 CDIAGFLAGS+=	-Werror
 CDIAGFLAGS+=	-Wpointer-arith
