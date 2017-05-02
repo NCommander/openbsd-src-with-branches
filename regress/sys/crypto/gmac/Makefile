@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.1 2010/09/22 12:04:13 mikeb Exp $
+#	$OpenBSD: Makefile,v 1.2 2014/01/18 05:54:52 martynas Exp $
 
 DIR=${.CURDIR}/../../../../sys
 
 PROG=	gmac_test
-SRCS+=	rijndael.c gmac.c gmac_test.c
+SRCS+=	aes.c gmac.c gmac_test.c
 CDIAGFLAGS=	-Wall
 CDIAGFLAGS+=	-Werror
 CDIAGFLAGS+=	-Wpointer-arith
