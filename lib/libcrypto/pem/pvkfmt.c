@@ -1,4 +1,4 @@
-/* $OpenBSD: pvkfmt.c,v 1.17 2017/01/21 09:38:59 beck Exp $ */
+/* $OpenBSD: pvkfmt.c,v 1.18 2017/01/29 17:49:23 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2005.
  */
@@ -828,10 +828,7 @@ b2i_PVK_bio(BIO *in, pem_password_cb *cb, void *u)
 	ret = do_PVK_body(&p, saltlen, keylen, cb, u);
 
 err:
-	if (buf) {
-		explicit_bzero(buf, buflen);
-		free(buf);
-	}
+	freezero(buf, buflen);
 	return ret;
 }
 

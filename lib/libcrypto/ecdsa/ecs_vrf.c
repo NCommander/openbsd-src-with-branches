@@ -1,4 +1,4 @@
-/* $OpenBSD: ecs_vrf.c,v 1.4 2015/01/28 04:14:31 beck Exp $ */
+/* $OpenBSD: ecs_vrf.c,v 1.5 2015/02/08 13:35:07 jsing Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project
  */
@@ -107,10 +107,7 @@ ECDSA_verify(int type, const unsigned char *dgst, int dgst_len,
 	ret = ECDSA_do_verify(dgst, dgst_len, s, eckey);
 
 err:
-	if (derlen > 0) {
-		explicit_bzero(der, derlen);
-		free(der);
-	}
+	freezero(der, derlen);
 	ECDSA_SIG_free(s);
 	return (ret);
 }

@@ -1,4 +1,4 @@
-/* $OpenBSD: a_verify.c,v 1.22 2015/09/10 15:56:24 jsing Exp $ */
+/* $OpenBSD: a_verify.c,v 1.23 2017/01/29 17:49:22 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -148,8 +148,7 @@ ASN1_item_verify(const ASN1_ITEM *it, X509_ALGOR *a,
 		goto err;
 	}
 
-	explicit_bzero(buf_in, (unsigned int)inl);
-	free(buf_in);
+	freezero(buf_in, (unsigned int)inl);
 
 	if (EVP_DigestVerifyFinal(&ctx, signature->data,
 	    (size_t)signature->length) <= 0) {

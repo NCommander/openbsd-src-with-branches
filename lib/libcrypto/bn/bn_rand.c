@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_rand.c,v 1.18 2015/09/10 15:56:25 jsing Exp $ */
+/* $OpenBSD: bn_rand.c,v 1.19 2017/01/29 17:49:22 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -186,10 +186,7 @@ bnrand(int pseudorand, BIGNUM *rnd, int bits, int top, int bottom)
 	ret = 1;
 
 err:
-	if (buf != NULL) {
-		explicit_bzero(buf, bytes);
-		free(buf);
-	}
+	freezero(buf, bytes);
 	bn_check_top(rnd);
 	return (ret);
 }

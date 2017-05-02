@@ -1,4 +1,4 @@
-/* $OpenBSD: e_chacha20poly1305.c,v 1.14 2016/04/28 16:06:53 jsing Exp $ */
+/* $OpenBSD: e_chacha20poly1305.c,v 1.15 2017/01/29 17:49:23 beck Exp $ */
 
 /*
  * Copyright (c) 2015 Reyk Floter <reyk@openbsd.org>
@@ -83,8 +83,7 @@ aead_chacha20_poly1305_cleanup(EVP_AEAD_CTX *ctx)
 {
 	struct aead_chacha20_poly1305_ctx *c20_ctx = ctx->aead_state;
 
-	explicit_bzero(c20_ctx->key, sizeof(c20_ctx->key));
-	free(c20_ctx);
+	freezero(c20_ctx, sizeof(c20_ctx));
 }
 
 static void
