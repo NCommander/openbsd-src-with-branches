@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.206 2017/04/28 13:50:55 mpi Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.207 2017/04/29 08:02:56 mpi Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1143,7 +1143,9 @@ pledge_ioctl(struct proc *p, long com, struct file *fp)
 		switch (com) {
 		case BIOCGSTATS:	/* bpf: tcpdump privsep on ^C */
 			if (fp->f_type == DTYPE_VNODE &&
-			    fp->f_ops->fo_ioctl == vn_ioctl)
+			    fp->f_ops->fo_ioctl == vn_ioctl &&
+			    vp->v_type == VCHR &&
+			    cdevsw[major(vp->v_rdev)].d_open == bpfopen)
 				return (0);
 			break;
 		}
