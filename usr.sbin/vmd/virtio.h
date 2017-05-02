@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.h,v 1.14 2017/03/27 00:28:04 deraadt Exp $	*/
+/*	$OpenBSD: virtio.h,v 1.15 2017/04/19 15:38:32 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -147,6 +147,7 @@ enum vmmci_cmd {
 	VMMCI_NONE = 0,
 	VMMCI_SHUTDOWN,
 	VMMCI_REBOOT,
+	VMMCI_SYNCRTC,
 };
 
 struct vmmci_dev {
