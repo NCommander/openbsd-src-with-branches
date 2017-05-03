@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwmreg.h,v 1.25 2017/04/04 00:40:52 claudio Exp $	*/
+/*	$OpenBSD: if_iwmreg.h,v 1.26 2017/04/24 09:31:31 stsp Exp $	*/
 
 /******************************************************************************
  *
@@ -3873,8 +3873,8 @@ enum {
 	IWM_RATE_MCS_4_INDEX = IWM_RATE_36M_INDEX,
 	IWM_RATE_MCS_10_INDEX,
 	IWM_RATE_48M_INDEX,
-	IWM_RATE_MCS_11_INDEX,
 	IWM_RATE_MCS_5_INDEX = IWM_RATE_48M_INDEX,
+	IWM_RATE_MCS_11_INDEX,
 	IWM_RATE_54M_INDEX,
 	IWM_RATE_MCS_6_INDEX = IWM_RATE_54M_INDEX,
 	IWM_LAST_NON_HT_RATE = IWM_RATE_54M_INDEX,
