@@ -1,4 +1,4 @@
-/*	$OpenBSD: encrypt.c,v 1.44 2016/09/02 18:06:43 tedu Exp $	*/
+/*	$OpenBSD: encrypt.c,v 1.45 2016/09/04 15:36:13 tb Exp $	*/
 
 /*
  * Copyright (c) 1996, Jason Downs.  All rights reserved.
@@ -134,6 +134,7 @@ main(int argc, char **argv)
 				err(1, "readpassphrase");
 			print_passwd(string, operation, extra);
 			(void)fputc('\n', stdout);
+			explicit_bzero(string, sizeof(string));
 		} else {
 			size_t len;
 			/* Encrypt stdin to stdout. */

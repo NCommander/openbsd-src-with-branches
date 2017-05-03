@@ -1,4 +1,4 @@
-/*	$OpenBSD: x99token.c,v 1.11 2015/10/15 17:23:09 bluhm Exp $	*/
+/*	$OpenBSD: x99token.c,v 1.12 2015/10/15 19:30:03 bluhm Exp $	*/
 
 /*
  * X9.9 calculator
@@ -169,8 +169,8 @@ main(int argc, char **argv)
 
 	predict(ks, buf, cnt);
 
-	memset(&ks, 0, sizeof(ks));
-	memset(buf, 0, sizeof(buf));
+	explicit_bzero(&ks, sizeof(ks));
+	explicit_bzero(buf, sizeof(buf));
 
 	exit(0);
 }
