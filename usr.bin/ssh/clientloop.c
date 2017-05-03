@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.294 2017/04/30 23:21:54 djm Exp $ */
+/* $OpenBSD: clientloop.c,v 1.295 2017/04/30 23:28:41 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -933,7 +933,7 @@ print_escape_help(Buffer *b, int escape_char, int mux_client, int using_stderr)
 }
 
 /* 
- * Process the characters one by one, call with c==NULL for proto1 case.
+ * Process the characters one by one.
  */
 static int
 process_escapes(Channel *c, Buffer *bin, Buffer *bout, Buffer *berr,
