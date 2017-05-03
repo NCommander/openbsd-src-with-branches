@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.149 2017/01/22 10:17:38 dlg Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.150 2017/01/24 03:57:35 dlg Exp $	*/
 
 /******************************************************************************
 
@@ -1550,8 +1550,7 @@ ixgbe_allocate_pci_resources(struct ix_softc *sc)
 	int			 val;
 
 	val = pci_conf_read(pa->pa_pc, pa->pa_tag, PCIR_BAR(0));
-	if (PCI_MAPREG_TYPE(val) != PCI_MAPREG_TYPE_MEM ||
-	    PCI_MAPREG_MEM_TYPE(val) != PCI_MAPREG_MEM_TYPE_64BIT) {
+	if (PCI_MAPREG_TYPE(val) != PCI_MAPREG_TYPE_MEM) {
 		printf(": mmba is not mem space\n");
 		return (ENXIO);
 	}
