@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex_local.h,v 1.23 2015/11/14 14:53:13 miod Exp $	*/
+/*	$OpenBSD: pipex_local.h,v 1.24 2017/01/24 10:08:30 krw Exp $	*/
 
 /*
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -203,6 +203,7 @@ struct pipex_session {
 		char _proto_unknown[0];
 	} proto;
 	union {
+		struct sockaddr		sa;
 		struct sockaddr_in	sin4;
 		struct sockaddr_in6	sin6;
 		struct sockaddr_dl	sdl;

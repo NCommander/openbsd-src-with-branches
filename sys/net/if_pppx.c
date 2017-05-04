@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pppx.c,v 1.56 2016/09/15 02:00:18 dlg Exp $ */
+/*	$OpenBSD: if_pppx.c,v 1.57 2017/01/24 10:08:30 krw Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -855,7 +855,7 @@ pppx_add_session(struct pppx_dev *pxd, struct pipex_session_req *req)
 	case PIPEX_PROTO_PPTP:
 	case PIPEX_PROTO_L2TP:
 		chain = PIPEX_PEER_ADDR_HASHTABLE(
-		    pipex_sockaddr_hash_key((struct sockaddr *)&session->peer));
+		    pipex_sockaddr_hash_key(&session->peer.sa));
 		LIST_INSERT_HEAD(chain, session, peer_addr_chain);
 		break;
 	}

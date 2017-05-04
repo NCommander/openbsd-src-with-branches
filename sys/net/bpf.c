@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.160 2017/01/24 22:40:55 mpi Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.161 2017/04/20 14:13:00 visa Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -610,7 +610,7 @@ bpfwrite(dev_t dev, struct uio *uio, int ioflag)
 
 	dlt = d->bd_bif->bif_dlt;
 
-	error = bpf_movein(uio, dlt, &m, (struct sockaddr *)&dst, fcode);
+	error = bpf_movein(uio, dlt, &m, sstosa(&dst), fcode);
 	if (error)
 		goto out;
 
@@ -627,7 +627,7 @@ bpfwrite(dev_t dev, struct uio *uio, int ioflag)
 		dst.ss_family = pseudo_AF_HDRCMPLT;
 
 	NET_LOCK(s);
-	error = ifp->if_output(ifp, m, (struct sockaddr *)&dst, NULL);
+	error = ifp->if_output(ifp, m, sstosa(&dst), NULL);
 	NET_UNLOCK(s);
 
 out:
