@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdcf.c,v 1.1 2015/07/20 19:44:32 pirofti Exp $	*/
+/*	$OpenBSD: amdcf.c,v 1.2 2016/01/20 17:23:58 stefan Exp $	*/
 
 /*
  * Copyright (c) 2007, Juniper Networks, Inc.
@@ -672,7 +672,7 @@ amdcfdone(void *arg)
 		bp->b_flags |= B_ERROR;
 
 	disk_unbusy(&sc->sc_dk, (bp->b_bcount - bp->b_resid),
-	    (bp->b_flags & B_READ));
+	    bp->b_blkno, (bp->b_flags & B_READ));
 	biodone(bp);
 }
 
