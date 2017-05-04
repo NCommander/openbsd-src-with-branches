@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.341 2017/04/19 15:21:54 bluhm Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.342 2017/05/03 19:58:12 millert Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -702,7 +702,7 @@ findpcb:
 					 * in use for the reply,
 					 * do not free it.
 					 */
-					m = NULL;
+					m = *mp = NULL;
 					goto drop;
 				} else {
 					/*

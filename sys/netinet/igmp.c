@@ -1,4 +1,4 @@
-/*	$OpenBSD: igmp.c,v 1.65 2017/04/05 13:35:18 deraadt Exp $	*/
+/*	$OpenBSD: igmp.c,v 1.66 2017/04/14 20:46:31 bluhm Exp $	*/
 /*	$NetBSD: igmp.c,v 1.15 1996/02/13 23:41:25 christos Exp $	*/
 
 /*
@@ -253,7 +253,7 @@ igmp_input_if(struct ifnet *ifp, struct mbuf **mp, int *offp, int proto, int af)
 	}
 	minlen = iphlen + IGMP_MINLEN;
 	if ((m->m_flags & M_EXT || m->m_len < minlen) &&
-	    (m = m_pullup(m, minlen)) == NULL) {
+	    (m = *mp = m_pullup(m, minlen)) == NULL) {
 		igmpstat_inc(igps_rcv_tooshort);
 		return IPPROTO_DONE;
 	}
