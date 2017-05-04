@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.h,v 1.52 2017/04/21 07:03:26 reyk Exp $	*/
+/*	$OpenBSD: vmd.h,v 1.53 2017/05/04 08:26:06 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -258,7 +258,7 @@ ssize_t	 decode_udp_ip_header(unsigned char *, size_t, size_t,
 	    struct packet_ctx *);
 
 /* vmd.c */
-void	 vmd_reload(unsigned int, const char *);
+int	 vmd_reload(unsigned int, const char *);
 struct vmd_vm *vm_getbyid(uint32_t);
 struct vmd_vm *vm_getbyvmid(uint32_t);
 uint32_t vm_id2vmid(uint32_t, struct vmd_vm *);
