@@ -1,4 +1,4 @@
-/*	$OpenBSD: mld6.c,v 1.50 2017/02/09 15:23:35 jca Exp $	*/
+/*	$OpenBSD: mld6.c,v 1.51 2017/04/06 02:11:08 dhill Exp $	*/
 /*	$KAME: mld6.c,v 1.26 2001/02/16 14:50:35 itojun Exp $	*/
 
 /*
@@ -111,6 +111,7 @@ mld6_init(void)
 	hbh_buf[5] = IP6OPT_RTALERT_LEN - 2;
 	memcpy(&hbh_buf[6], (caddr_t)&rtalert_code, sizeof(u_int16_t));
 
+	ip6_initpktopts(&ip6_opts);
 	ip6_opts.ip6po_hbh = hbh;
 }
 
