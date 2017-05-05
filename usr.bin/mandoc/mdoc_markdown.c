@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdoc_markdown.c,v 1.17 2017/04/24 23:06:09 schwarze Exp $ */
+/*	$OpenBSD: mdoc_markdown.c,v 1.18 2017/05/04 17:48:24 schwarze Exp $ */
 /*
  * Copyright (c) 2017 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -323,7 +323,10 @@ md_node(struct roff_node *n)
 	} else if (n->tok < ROFF_MAX) {
 		switch (n->tok) {
 		case ROFF_br:
-			md_pre_br(n);
+			process_children = md_pre_br(n);
+			break;
+		case ROFF_ft:
+			process_children = 0;
 			break;
 		default:
 			abort();

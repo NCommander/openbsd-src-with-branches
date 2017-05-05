@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdoc_validate.c,v 1.238 2017/04/29 12:43:55 schwarze Exp $ */
+/*	$OpenBSD: mdoc_validate.c,v 1.239 2017/05/04 17:48:24 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -330,7 +330,8 @@ mdoc_node_validate(struct roff_man *mdoc)
 				post_par(mdoc);
 				break;
 			default:
-				abort();
+				roff_validate(mdoc);
+				break;
 			}
 			break;
 		}
