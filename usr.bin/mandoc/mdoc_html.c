@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdoc_html.c,v 1.157 2017/05/04 22:07:44 schwarze Exp $ */
+/*	$OpenBSD: mdoc_html.c,v 1.158 2017/05/05 02:06:17 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2011, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2014, 2015, 2016, 2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -238,7 +238,6 @@ static	const struct htmlmdoc __mdocs[MDOC_MAX - MDOC_Dd] = {
 	{mdoc_sp_pre, NULL}, /* sp */
 	{mdoc__x_pre, mdoc__x_post}, /* %U */
 	{NULL, NULL}, /* Ta */
-	{mdoc_skip_pre, NULL}, /* ll */
 };
 static	const struct htmlmdoc *const mdocs = __mdocs - MDOC_Dd;
 
