@@ -1,4 +1,4 @@
-/* $OpenBSD: pathnames.h,v 1.25 2016/03/31 05:24:06 dtucker Exp $ */
+/* $OpenBSD: pathnames.h,v 1.26 2017/05/03 21:08:09 naddy Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -63,7 +63,6 @@
  * Name of the default file containing client-side authentication key. This
  * file should only be readable by the user him/herself.
  */
-#define _PATH_SSH_CLIENT_IDENTITY	_PATH_SSH_USER_DIR "/identity"
 #define _PATH_SSH_CLIENT_ID_DSA		_PATH_SSH_USER_DIR "/id_dsa"
 #define _PATH_SSH_CLIENT_ID_ECDSA	_PATH_SSH_USER_DIR "/id_ecdsa"
 #define _PATH_SSH_CLIENT_ID_RSA		_PATH_SSH_USER_DIR "/id_rsa"
