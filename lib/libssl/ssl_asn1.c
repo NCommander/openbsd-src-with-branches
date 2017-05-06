@@ -1,5 +1,4 @@
-/* $OpenBSD: ssl_asn1.c,v 1.52 2017/04/14 15:20:16 jsing Exp $ */
-
+/* $OpenBSD: ssl_asn1.c,v 1.54 2017/04/30 04:21:53 jsing Exp $ */
 /*
  * Copyright (c) 2016 Joel Sing <jsing@openbsd.org>
  *
