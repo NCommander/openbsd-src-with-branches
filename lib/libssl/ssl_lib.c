@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.157 2017/02/15 14:56:42 jsing Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.158 2017/02/28 14:08:49 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -2969,6 +2969,33 @@ SSL_cache_hit(SSL *s)
 	return (s->internal->hit);
 }
 
+int
+SSL_CTX_set_min_proto_version(SSL_CTX *ctx, uint16_t version)
+{
+	return ssl_version_set_min(ctx->method, version,
+	    ctx->internal->max_version, &ctx->internal->min_version);
+}
+
+int
+SSL_CTX_set_max_proto_version(SSL_CTX *ctx, uint16_t version)
+{
+	return ssl_version_set_max(ctx->method, version,
+	    ctx->internal->min_version, &ctx->internal->max_version);
+}
+
+int
+SSL_set_min_proto_version(SSL *ssl, uint16_t version)
+{
+	return ssl_version_set_min(ssl->method, version,
+	    ssl->internal->max_version, &ssl->internal->min_version);
+}
+
+int
+SSL_set_max_proto_version(SSL *ssl, uint16_t version)
+{
+	return ssl_version_set_max(ssl->method, version,
+	    ssl->internal->min_version, &ssl->internal->max_version);
+}
 
 static int
 ssl_cipher_id_cmp_BSEARCH_CMP_FN(const void *a_, const void *b_)
