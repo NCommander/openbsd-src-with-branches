@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1time.c,v 1.8 2015/12/28 14:18:38 bcook Exp $ */
+/* $OpenBSD: freenull.c,v 1.1 2017/05/02 04:03:06 beck Exp $ */
 /*
  * Copyright (c) 2017 Bob Beck <beck@openbsd.org>
  *
@@ -27,7 +27,6 @@
 int
 main(int argc, char **argv)
 {
-	int failed = 0;
 	ASN1_OBJECT_free(NULL);
 	ASN1_INTEGER_free(NULL);
 	ASN1_OCTET_STRING_free(NULL);
@@ -38,6 +37,8 @@ main(int argc, char **argv)
 	GENERAL_NAME_free(NULL);
 	sk_GENERAL_NAME_pop_free(NULL, GENERAL_NAME_free);
 	sk_X509_NAME_ENTRY_pop_free(NULL, X509_NAME_ENTRY_free);
+
 	printf("PASS\n");
-	return (failed);
+
+	return (0);
 }
