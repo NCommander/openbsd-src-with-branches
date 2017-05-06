@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_server.c,v 1.35 2017/01/31 15:57:43 jsing Exp $ */
+/* $OpenBSD: tls_server.c,v 1.36 2017/04/10 17:11:13 jsing Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -48,6 +48,8 @@ tls_server_conn(struct tls *ctx)
 		return (NULL);
 
 	conn_ctx->flags |= TLS_SERVER_CONN;
+
+	ctx->config->refcount++;
 	conn_ctx->config = ctx->config;
 
 	return (conn_ctx);

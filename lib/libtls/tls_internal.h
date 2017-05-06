@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_internal.h,v 1.57 2017/04/10 17:11:13 jsing Exp $ */
+/* $OpenBSD: tls_internal.h,v 1.58 2017/05/04 11:31:45 claudio Exp $ */
 /*
  * Copyright (c) 2014 Jeremie Courreges-Anglas <jca@openbsd.org>
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
@@ -74,6 +74,8 @@ struct tls_ticket_key {
 
 struct tls_config {
 	struct tls_error error;
+
+	int refcount;
 
 	char *alpn;
 	size_t alpn_len;
