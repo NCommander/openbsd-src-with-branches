@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2017/01/12 15:50:16 jsing Exp $
 
 PROG=	tlstest
 LDADD=	-lcrypto -lssl -ltls
@@ -12,8 +12,8 @@ REGRESS_TARGETS= \
 
 regress-tlstest: ${PROG}
 	./tlstest \
+	    ${.CURDIR}/../../libssl/certs/ca.pem \
 	    ${.CURDIR}/../../libssl/certs/server.pem \
-	    ${.CURDIR}/../../libssl/certs/server.pem \
-	    ${.CURDIR}/../../libssl/certs/ca.pem
+	    ${.CURDIR}/../../libssl/certs/server.pem
 
 .include <bsd.regress.mk>
