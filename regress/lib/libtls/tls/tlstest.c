@@ -396,6 +396,12 @@ do_tls_ordering_tests(void)
 		goto done;
 	}
 
+	if (tls_handshake(client) != -1) {
+		printf("FAIL: TLS handshake succeeded twice\n");
+		failure = 1;
+		goto done;
+	}
+
 	if (do_client_server_close("ordering", client, server_cctx) != 0) {
 		failure = 1;
 		goto done;
