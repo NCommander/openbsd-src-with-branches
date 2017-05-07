@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssherr.c,v 1.4 2015/02/16 22:13:32 djm Exp $	*/
+/*	$OpenBSD: ssherr.c,v 1.5 2015/09/13 14:39:16 tim Exp $	*/
 /*
  * Copyright (c) 2011 Damien Miller
  *
@@ -135,6 +135,8 @@ ssh_err(int n)
 		return "Connection corrupted";
 	case SSH_ERR_PROTOCOL_ERROR:
 		return "Protocol error";
+	case SSH_ERR_KEY_LENGTH:
+		return "Invalid key length";
 	default:
 		return "unknown error";
 	}
