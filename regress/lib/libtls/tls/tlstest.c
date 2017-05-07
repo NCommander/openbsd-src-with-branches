@@ -383,6 +383,13 @@ do_tls_ordering_tests(void)
 	tls_config_free(client_cfg);
 	tls_config_free(server_cfg);
 
+	if (tls_handshake(client) != -1) {
+		printf("FAIL: TLS handshake succeeded on unconnnected "
+		    "client context\n");
+		failure = 1;
+		goto done;
+	}
+
 	if (tls_accept_cbs(server, &server_cctx, server_read, server_write,
 	    NULL) == -1)
 		errx(1, "failed to accept: %s", tls_error(server));
