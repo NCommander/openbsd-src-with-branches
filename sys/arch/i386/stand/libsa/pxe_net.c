@@ -1,4 +1,4 @@
-/*	$OpenBSD: pxe_net.c,v 1.4 2011/03/13 00:13:53 deraadt Exp $	*/
+/*	$OpenBSD: pxe_net.c,v 1.5 2014/08/21 14:24:08 mpi Exp $	*/
 /*	$NetBSD: dev_net.c,v 1.4 2003/03/12 13:15:08 drochner Exp $	*/
 
 /*-
@@ -168,8 +168,10 @@ net_getparams(int sock)
 	bootp(sock);
 	if (myip.s_addr != 0)
 		return 0;
+#ifdef	NETIF_DEBUG
 	if (debug)
 		printf("net_getparams: BOOTP failed\n");
+#endif
 
 	return EIO;
 }
