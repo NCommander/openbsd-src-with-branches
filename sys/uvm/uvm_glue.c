@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_glue.c,v 1.71 2017/02/14 10:31:15 mpi Exp $	*/
+/*	$OpenBSD: uvm_glue.c,v 1.72 2017/04/30 13:04:49 mpi Exp $	*/
 /*	$NetBSD: uvm_glue.c,v 1.44 2001/02/06 19:54:44 eeh Exp $	*/
 
 /* 
@@ -262,12 +262,6 @@ uvm_uarea_alloc(void)
 	    USPACE_ALIGN, UVM_KMF_ZERO,
 	    no_constraint.ucr_low, no_constraint.ucr_high,
 	    0, 0, USPACE/PAGE_SIZE);
-
-#ifdef PMAP_UAREA
-	/* Tell the pmap this is a u-area mapping */
-	if (uaddr != 0)
-		PMAP_UAREA(uaddr);
-#endif
 
 	return (uaddr);
 }
