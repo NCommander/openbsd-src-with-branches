@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.26 2017/04/20 12:41:43 visa Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.27 2017/05/08 00:13:38 dlg Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.1 2003/04/26 18:39:27 fvdl Exp $	*/
 
 /*
@@ -260,7 +260,7 @@ db_stack_trace_print(db_expr_t addr, boolean_t have_addr, db_expr_t count,
 
 		if (lastframe == 0 && offset == 0 && !have_addr) {
 			/* We have a breakpoint before the frame is set up */
-			for (i = min(6, narg); i > 0; i--) {
+			for (i = 0; i < min(6, narg); i++) {
 				(*pr)("%lx", *db_reg_args[i]);
 				if (--narg != 0)
 					(*pr)(",");
