@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.182 2017/04/06 02:11:08 dhill Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.183 2017/04/14 20:46:31 bluhm Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -368,7 +368,7 @@ ip6_input(struct mbuf *m)
 			ours = 1;
 
 #ifdef MROUTING
-		if (ip6_mforwarding && ip6_mrouter) {
+		if (ip6_mforwarding && ip6_mrouter[ifp->if_rdomain]) {
 			if (ip6_hbhchcheck(m, &off, &nxt, &ours))
 				goto out;
 
