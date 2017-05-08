@@ -370,6 +370,7 @@ bus_space_barrier(t, h, o, s, f)
 #define	BUS_DMA_WRITE		0x0400	/* mapping is memory -> device only */
 #define	BUS_DMA_ZERO		0x0800	/* zero memory in dmamem_alloc */
 #define	BUS_DMA_OVERRUN		0x1000  /* tolerate DMA overruns */
+#define	BUS_DMA_64BIT		0x2000	/* device handles 64bit dva */
 
 #define	BUS_DMA_NOCACHE		BUS_DMA_BUS1
 #define	BUS_DMA_DVMA		BUS_DMA_BUS2	/* Don't bother with alignment */
