@@ -1,7 +1,7 @@
-.\"	$OpenBSD: roff.7,v 1.58 2017/05/05 15:54:28 schwarze Exp $
+.\"	$OpenBSD: roff.7,v 1.59 2017/05/08 03:55:09 schwarze Exp $
 .\"
 .\" Copyright (c) 2010, 2011, 2012 Kristaps Dzonsons <kristaps@bsd.lv>
-.\" Copyright (c) 2010, 2011, 2013-2015 Ingo Schwarze <schwarze@openbsd.org>
+.\" Copyright (c) 2010,2011,2013-2015,2017 Ingo Schwarze <schwarze@openbsd.org>
 .\"
 .\" Permission to use, copy, modify, and distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: May 5 2017 $
+.Dd $Mdocdate: May 8 2017 $
 .Dt ROFF 7
 .Os
 .Sh NAME
@@ -1583,9 +1583,15 @@ Currently unsupported.
 End a table context.
 See
 .Sx \&TS .
-.It Ic \&tii Oo Cm + Ns | Ns Cm - Oc Ns Ar width
-Temporary indent.
-Currently unsupported.
+.It Ic \&ti Oo Cm + Ns | Ns Cm - Oc Ns Ar width
+Break the output line and indent the next output line by
+.Ar width .
+If a sign is specified, the temporary indentation is calculated
+relative to the current indentation; otherwise, it is absolute.
+The argument follows the syntax of
+.Sx Scaling Widths
+and the default scaling unit is
+.Cm m .
 .It Ic \&tkf Ar font minps width1 maxps width2
 Enable track kerning for a font.
 Currently ignored.
