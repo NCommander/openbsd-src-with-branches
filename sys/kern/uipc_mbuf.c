@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.244 2017/02/07 06:51:58 dlg Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.245 2017/02/07 07:00:21 dlg Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -160,6 +160,8 @@ mbinit(void)
 {
 	int i;
 	unsigned int lowbits;
+
+	CTASSERT(MSIZE == sizeof(struct mbuf));
 
 	m_pool_allocator.pa_pagesz = pool_allocator_multi.pa_pagesz;
 
