@@ -1,4 +1,4 @@
-#	$OpenBSD: ssh-com.sh,v 1.8 2013/05/17 00:37:40 dtucker Exp $
+#	$OpenBSD: ssh-com.sh,v 1.9 2015/05/08 07:29:00 djm Exp $
 #	Placed in the Public Domain.
 
 tid="connect to ssh.com server"
@@ -87,7 +87,7 @@ for v in ${VERSIONS}; do
                 fail "ssh connect to sshd2 ${v} failed"
         fi
 
-	ciphers="3des-cbc blowfish-cbc arcfour"
+	ciphers="3des-cbc"
 	macs="hmac-md5"
 	case $v in
 	2.4.*)
