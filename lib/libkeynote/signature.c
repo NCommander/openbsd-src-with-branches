@@ -1,4 +1,4 @@
-/* $OpenBSD: signature.c,v 1.24 2015/12/23 21:07:37 mmcc Exp $ */
+/* $OpenBSD: signature.c,v 1.25 2015/12/23 21:15:58 mmcc Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -988,11 +988,11 @@ keynote_sign_assertion(struct assertion *as, char *sigalg, void *key,
 		return NULL;
 	    }
 
-	    if ((slen = kn_encode_base64(sbuf, slen, finalbuf, 
-					 2 * slen)) == -1)
-	    {
-		free(sbuf);
-		return NULL;
+	    slen = kn_encode_base64(sbuf, slen, finalbuf, 2 * slen);
+	    free(sbuf);
+	    if (slen == -1) {
+	      free(finalbuf);
+	      return NULL;
 	    }
 	    break;
 
