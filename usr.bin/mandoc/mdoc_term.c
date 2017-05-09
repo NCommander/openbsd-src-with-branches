@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdoc_term.c,v 1.254 2017/05/05 15:16:25 schwarze Exp $ */
+/*	$OpenBSD: mdoc_term.c,v 1.255 2017/05/07 17:30:58 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010, 2012-2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -340,7 +340,8 @@ print_mdoc_node(DECL_ARGS)
 
 	switch (n->type) {
 	case ROFFT_TEXT:
-		if (' ' == *n->string && NODE_LINE & n->flags)
+		if (*n->string == ' ' && n->flags & NODE_LINE &&
+		    (p->flags & TERMP_NONEWLINE) == 0)
 			term_newln(p);
 		if (NODE_DELIMC & n->flags)
 			p->flags |= TERMP_NOSPACE;
