@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_domain.c,v 1.48 2016/12/20 21:15:36 mpi Exp $	*/
+/*	$OpenBSD: uipc_domain.c,v 1.49 2017/02/27 19:16:56 claudio Exp $	*/
 /*	$NetBSD: uipc_domain.c,v 1.14 1996/02/09 19:00:44 christos Exp $	*/
 
 /*
@@ -221,15 +221,15 @@ pfctlinput(int cmd, struct sockaddr *sa)
 {
 	struct domain *dp;
 	struct protosw *pr;
-	int i, s;
+	int i;
 
-	s = splsoftnet();
+	NET_ASSERT_LOCKED();
+
 	for (i = 0; (dp = domains[i]) != NULL; i++) {
 		for (pr = dp->dom_protosw; pr < dp->dom_protoswNPROTOSW; pr++)
 			if (pr->pr_ctlinput)
 				(*pr->pr_ctlinput)(cmd, sa, 0, NULL);
 	}
-	splx(s);
 }
 
 void
