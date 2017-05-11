@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.c,v 1.44 2017/05/02 09:51:19 mlarkin Exp $	*/
+/*	$OpenBSD: virtio.c,v 1.45 2017/05/08 09:08:40 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -2063,7 +2063,7 @@ virtio_dump(int fd)
 	if ((ret = vionet_dump(fd)) == -1)
 		return ret;
 
-	if ((ret = vmmci_dump(fd)) == -1);
+	if ((ret = vmmci_dump(fd)) == -1)
 		return ret;
 
 	return (0);
