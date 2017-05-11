@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.183 2017/04/14 20:46:31 bluhm Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.184 2017/05/08 08:46:39 rzalamena Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -296,9 +296,9 @@ ip6_input(struct mbuf *m)
 	}
 
 #if NPF > 0
-        /*
-         * Packet filter
-         */
+	/*
+	 * Packet filter
+	 */
 	odst = ip6->ip6_dst;
 	if (pf_test(AF_INET6, PF_IN, ifp, &m) != PF_PASS)
 		goto bad;
@@ -1400,10 +1400,10 @@ ip6_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 #endif
 	case IPV6CTL_MTUDISCTIMEOUT:
 		error = sysctl_int(oldp, oldlenp, newp, newlen,
-		   &ip6_mtudisc_timeout);
+		    &ip6_mtudisc_timeout);
 		if (icmp6_mtudisc_timeout_q != NULL)
 			rt_timer_queue_change(icmp6_mtudisc_timeout_q,
-					      ip6_mtudisc_timeout);
+			    ip6_mtudisc_timeout);
 		return (error);
 	case IPV6CTL_IFQUEUE:
 		return (sysctl_niq(name + 1, namelen - 1,
