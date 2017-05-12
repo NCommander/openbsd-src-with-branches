@@ -1,4 +1,4 @@
-/* $OpenBSD: server-fn.c,v 1.106 2017/03/09 17:06:35 nicm Exp $ */
+/* $OpenBSD: server-fn.c,v 1.107 2017/04/17 06:40:32 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -299,7 +299,7 @@ server_destroy_pane(struct window_pane *wp, int notify)
 		screen_write_start(&ctx, wp, &wp->base);
 		screen_write_scrollregion(&ctx, 0, screen_size_y(ctx.s) - 1);
 		screen_write_cursormove(&ctx, 0, screen_size_y(ctx.s) - 1);
-		screen_write_linefeed(&ctx, 1);
+		screen_write_linefeed(&ctx, 1, 8);
 		memcpy(&gc, &grid_default_cell, sizeof gc);
 		gc.attr |= GRID_ATTR_BRIGHT;
 		screen_write_puts(&ctx, &gc, "Pane is dead");
