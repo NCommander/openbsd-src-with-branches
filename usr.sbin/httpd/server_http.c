@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_http.c,v 1.115 2017/03/10 21:06:43 reyk Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.116 2017/03/16 10:18:11 florian Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2017 Reyk Floeter <reyk@openbsd.org>
@@ -887,6 +887,8 @@ server_abort_http(struct client *clt, unsigned int code, const char *msg)
 		msg = buf;
 		break;
 	case 401:
+		if (msg == NULL)
+			break;
 		if (stravis(&escapedmsg, msg, VIS_DQ) == -1) {
 			code = 500;
 			extraheader = NULL;
@@ -898,6 +900,8 @@ server_abort_http(struct client *clt, unsigned int code, const char *msg)
 		}
 		break;
 	case 416:
+		if (msg == NULL)
+			break;
 		if (asprintf(&extraheader,
 		    "Content-Range: %s\r\n", msg) == -1) {
 			code = 500;
