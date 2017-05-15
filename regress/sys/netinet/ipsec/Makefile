@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 2017/05/11 12:18:37 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.13 2017/05/12 00:09:17 bluhm Exp $
 
 # This test needs a manual setup of four machines, the make
 # target create-setup can be used distribute the configuration.
@@ -235,6 +235,7 @@ stamp-pflog: stamp-pfctl
 
 stamp-stop:
 	@echo '\n======== $@ ========'
+	sleep 5  # XXX
 	-ssh ${IPS_SSH} ${SUDO} pkill -f "'${DUMPCMD}'"
 	@date >$@
 
