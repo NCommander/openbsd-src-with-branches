@@ -1,4 +1,4 @@
-/*	$OpenBSD: rasops.c,v 1.43 2016/09/26 20:41:08 fcambus Exp $	*/
+/*	$OpenBSD: rasops.c,v 1.44 2016/12/15 19:18:41 fcambus Exp $	*/
 /*	$NetBSD: rasops.c,v 1.35 2001/02/02 06:01:01 marcus Exp $	*/
 
 /*-
@@ -1398,7 +1398,7 @@ rasops_alloc_screen(void *v, void **cookiep,
 	scr->rs_crow = -1;
 	scr->rs_ccol = -1;
 
-	if (ri->ri_bs) {
+	if (ri->ri_bs && scr->rs_visible) {
 		memcpy(scr->rs_bs, ri->ri_bs, ri->ri_rows * ri->ri_cols *
 		    sizeof(struct wsdisplay_charcell));
 	} else {
