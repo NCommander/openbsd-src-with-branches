@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_if.c,v 1.88 2016/12/12 13:30:05 mpi Exp $ */
+/*	$OpenBSD: pf_if.c,v 1.89 2017/01/24 10:08:30 krw Exp $ */
 
 /*
  * Copyright 2005 Henning Brauer <henning@openbsd.org>
@@ -594,7 +594,7 @@ pfi_kifaddr_update(void *v)
 {
 	struct pfi_kif		*kif = (struct pfi_kif *)v;
 
-	splsoftassert(IPL_SOFTNET);
+	NET_ASSERT_LOCKED();
 
 	pfi_update++;
 	pfi_kif_update(kif);

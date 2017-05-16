@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.148 2017/05/12 20:34:29 bluhm Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.149 2017/05/13 17:41:57 bluhm Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -734,7 +734,7 @@ tcp_ident(void *oldp, size_t *oldlenp, void *newp, size_t newlen, int dodrop)
 	struct in6_addr f6, l6;
 #endif
 
-	splsoftassert(IPL_SOFTNET);
+	NET_ASSERT_LOCKED();
 
 	if (dodrop) {
 		if (oldp != NULL || *oldlenp != 0)
