@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.c,v 1.229 2017/02/14 10:31:15 mpi Exp $	*/
+/*	$OpenBSD: uvm_map.c,v 1.230 2017/04/20 14:13:00 visa Exp $	*/
 /*	$NetBSD: uvm_map.c,v 1.86 2000/11/27 08:40:03 chs Exp $	*/
 
 /*
@@ -2798,7 +2798,7 @@ uvm_map_init(void)
 	pool_init(&uvm_map_entry_pool, sizeof(struct vm_map_entry), 0,
 	    IPL_VM, PR_WAITOK, "vmmpepl", NULL);
 	pool_init(&uvm_map_entry_kmem_pool, sizeof(struct vm_map_entry), 0,
-	    IPL_NONE, 0, "vmmpekpl", NULL);
+	    IPL_VM, 0, "vmmpekpl", NULL);
 	pool_sethiwat(&uvm_map_entry_pool, 8192);
 
 	uvm_addr_init();
