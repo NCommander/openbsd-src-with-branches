@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.11 2017/01/19 15:09:04 visa Exp $ */
+/*	$OpenBSD: intr.h,v 1.12 2017/02/19 08:59:41 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -63,7 +63,7 @@
 #define IPL_MPFLOOR	IPL_TTY
 
 /* Interrupt priority 'flags'. */
-#define	IPL_MPSAFE	0	/* no "mpsafe" interrupts */
+#define	IPL_MPSAFE	0x100
 
 /* Interrupt sharing types. */
 #define	IST_NONE	0	/* none */
