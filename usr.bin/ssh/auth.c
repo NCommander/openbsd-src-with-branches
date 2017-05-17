@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.c,v 1.118 2016/11/08 22:04:34 djm Exp $ */
+/* $OpenBSD: auth.c,v 1.119 2016/12/15 21:29:05 dtucker Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -539,6 +539,7 @@ getpwnamallow(const char *user)
 
 	ci->user = user;
 	parse_server_match_config(&options, ci);
+	log_change_level(options.log_level);
 
 	pw = getpwnam(user);
 	if (pw == NULL) {

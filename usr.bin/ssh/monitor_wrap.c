@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor_wrap.c,v 1.88 2016/03/07 19:02:43 djm Exp $ */
+/* $OpenBSD: monitor_wrap.c,v 1.89 2016/08/13 17:47:41 markus Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -280,6 +280,7 @@ out:
 #undef M_CP_STRARRAYOPT
 
 	copy_set_server_options(&options, newopts, 1);
+	log_change_level(options.log_level);
 	free(newopts);
 
 	buffer_free(&m);
