@@ -1,4 +1,4 @@
-/*	$OpenBSD: mutex.c,v 1.7 2011/04/21 04:34:12 miod Exp $	*/
+/*	$OpenBSD: mutex.c,v 1.8 2017/04/20 13:57:30 visa Exp $	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -40,7 +40,7 @@
  * raising semantics of the mutexes.
  */
 void
-__mtx_init(struct mutex *mtx, int wantipl)
+_mtx_init(struct mutex *mtx, int wantipl)
 {
 	mtx->mtx_oldipl = 0;
 	mtx->mtx_wantipl = wantipl << 4;
