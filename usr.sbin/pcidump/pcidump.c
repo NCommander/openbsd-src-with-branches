@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcidump.c,v 1.42 2017/03/16 22:05:46 deraadt Exp $	*/
+/*	$OpenBSD: pcidump.c,v 1.43 2017/03/25 07:33:46 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 David Gwynne <loki@animata.net>
@@ -131,7 +131,9 @@ const char *pci_enhanced_capnames[] = {
 	"Secondary PCIe Capability",
 	"Protocol Multiplexing",
 	"Process Address Space ID",
+	"Unknown",
 	"Downstream Port Containment",
+	"L1 PM",
 	"Precision Time Measurement",
 };
 
