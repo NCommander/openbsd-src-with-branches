@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.118 2016/07/19 21:28:43 bluhm Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.119 2017/02/09 15:19:32 jca Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -90,7 +90,6 @@
 #include <netinet/tcp_seq.h>
 #include <netinet/tcp_timer.h>
 #include <netinet/tcp_var.h>
-#include <netinet/tcpip.h>
 #include <netinet/tcp_debug.h>
 
 #ifdef notyet
