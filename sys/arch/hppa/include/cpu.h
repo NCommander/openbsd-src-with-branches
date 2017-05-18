@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.88 2015/07/02 01:33:59 dlg Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.89 2016/05/10 14:52:03 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -228,6 +228,8 @@ void	hppa_init(paddr_t start);
 void	trap(int type, struct trapframe *frame);
 int	spcopy(pa_space_t ssp, const void *src,
 		    pa_space_t dsp, void *dst, size_t size);
+int	spcopy32(pa_space_t ssp, const uint32_t *src,
+		    pa_space_t dsp, uint32_t *dst);
 int	spstrcpy(pa_space_t ssp, const void *src,
 		      pa_space_t dsp, void *dst, size_t size, size_t *rsize);
 int	copy_on_fault(void);

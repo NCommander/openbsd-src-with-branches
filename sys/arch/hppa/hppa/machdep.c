@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.246 2016/09/15 02:00:17 dlg Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.247 2016/10/09 11:25:39 tom Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -1105,14 +1105,12 @@ copyinstr(const void *src, void *dst, size_t size, size_t *lenp)
 	    HPPA_SID_KERNEL, dst, size, lenp);
 }
 
-
 int
 copyoutstr(const void *src, void *dst, size_t size, size_t *lenp)
 {
 	return spstrcpy(HPPA_SID_KERNEL, src,
 	    curproc->p_addr->u_pcb.pcb_space, dst, size, lenp);
 }
-
 
 int
 copyin(const void *src, void *dst, size_t size)
@@ -1126,6 +1124,13 @@ copyout(const void *src, void *dst, size_t size)
 {
 	return spcopy(HPPA_SID_KERNEL, src,
 	    curproc->p_addr->u_pcb.pcb_space, dst, size);
+}
+
+int
+copyin32(const uint32_t *src, uint32_t *dst)
+{
+	return spcopy32(curproc->p_addr->u_pcb.pcb_space, src,
+	    HPPA_SID_KERNEL, dst);
 }
 
 /*
