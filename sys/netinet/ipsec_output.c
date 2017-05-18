@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.66 2017/04/06 14:25:18 dhill Exp $ */
+/*	$OpenBSD: ipsec_output.c,v 1.67 2017/05/16 12:24:02 mpi Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -42,7 +42,7 @@
 #endif
 
 #include <netinet/udp.h>
-#include <netinet/ip_ipsp.h>
+#include <netinet/ip_ipip.h>
 #include <netinet/ip_ah.h>
 #include <netinet/ip_esp.h>
 #include <netinet/ip_ipcomp.h>
