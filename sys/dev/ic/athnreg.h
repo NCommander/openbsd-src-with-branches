@@ -1,4 +1,4 @@
-/*	$OpenBSD: athnreg.h,v 1.18 2012/06/10 21:23:36 kettenis Exp $	*/
+/*	$OpenBSD: athnreg.h,v 1.19 2016/12/18 14:34:20 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -253,7 +253,7 @@
 
 
 /* Bits for AR_CR. */
-#define AR_CR_RXE	0x00000004
+#define AR_CR_RXE	(AR_SREV_9380_20_OR_LATER(sc) ? 0x000c : 0x0004)
 #define AR_CR_RXD	0x00000020
 #define AR_CR_SWI	0x00000040
 
