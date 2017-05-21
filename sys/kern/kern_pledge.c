@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.207 2017/04/29 08:02:56 mpi Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.208 2017/05/02 16:46:00 natano Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -77,7 +77,8 @@
 #endif
 
 #if defined(__amd64__) || defined(__i386__) || \
-    defined(__macppc__) || defined(__sparc64__)
+    defined(__loongson__) || defined(__macppc__) || \
+    defined(__sparc64__)
 #include "drm.h"
 #endif
 

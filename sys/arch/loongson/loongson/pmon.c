@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmon.c,v 1.5 2014/03/29 23:59:49 miod Exp $	*/
+/*	$OpenBSD: pmon.c,v 1.6 2016/09/28 14:46:34 visa Exp $	*/
 
 /*
  * Copyright (c) 2009, 2012 Miodrag Vallat.
@@ -182,6 +182,16 @@ const struct pmon_env_reset *pmon_get_env_reset()
 		return NULL;
 
 	return &env->reset;
+}
+
+const struct pmon_env_smbios *pmon_get_env_smbios()
+{
+	struct pmon_env *env = (struct pmon_env *)pmon_envp;
+
+	if (pmon_envtype != PMON_ENVTYPE_EFI)
+		return NULL;
+
+	return &env->efi.bios;
 }
 
 const struct pmon_env_mem *pmon_get_env_mem()
