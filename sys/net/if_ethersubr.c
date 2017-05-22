@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.241 2016/10/11 11:40:12 mikeb Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.242 2017/01/24 10:08:30 krw Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -232,7 +232,7 @@ ether_output(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst,
 		break;
 #endif
 #ifdef MPLS
-       case AF_MPLS:
+	case AF_MPLS:
 		if (rt)
 			dst = rt_key(rt);
 		else
