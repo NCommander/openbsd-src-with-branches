@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.84 2015/12/28 13:26:44 benno Exp $
+#	$OpenBSD: Makefile,v 1.85 2016/01/09 09:48:03 jung Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -40,6 +40,7 @@ SRCS+=	scheduler.c
 SRCS+=	scheduler_backend.c
 SRCS+=	smtp.c
 SRCS+=	smtp_session.c
+SRCS+=	smtpf_session.c
 SRCS+=	smtpd.c
 SRCS+=	ssl.c
 SRCS+=	ssl_smtpd.c
