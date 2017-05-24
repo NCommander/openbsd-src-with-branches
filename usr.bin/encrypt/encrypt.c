@@ -1,4 +1,4 @@
-/*	$OpenBSD: encrypt.c,v 1.45 2016/09/04 15:36:13 tb Exp $	*/
+/*	$OpenBSD: encrypt.c,v 1.46 2017/05/03 09:51:39 mestre Exp $	*/
 
 /*
  * Copyright (c) 1996, Jason Downs.  All rights reserved.
@@ -169,8 +169,7 @@ main(int argc, char **argv)
 		(void)fputc('\n', stdout);
 
 		/* Wipe our copy, before we free it. */
-		explicit_bzero(string, strlen(string));
-		free(string);
+		freezero(string, strlen(string));
 	}
 	return 0;
 }
