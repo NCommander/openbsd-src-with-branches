@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-pflog.c,v 1.29 2016/04/04 16:26:00 sthen Exp $	*/
+/*	$OpenBSD: print-pflog.c,v 1.30 2017/01/24 22:40:09 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996
@@ -30,7 +30,7 @@
 #include <sys/mbuf.h>
 
 #ifndef NO_PID
-#define NO_PID	(32766+1)
+#define NO_PID	(99999+1)
 #endif
 
 struct rtentry;
