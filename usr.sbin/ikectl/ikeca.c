@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikeca.c,v 1.42 2017/03/29 08:19:13 sthen Exp $	*/
+/*	$OpenBSD: ikeca.c,v 1.43 2017/05/21 02:37:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2010 Jonathan Gray <jsg@openbsd.org>
@@ -900,6 +900,7 @@ ca_revoke(struct ca *ca, char *keyname)
 
 	ca_setenv("$ENV::CADB", ca->index);
 	ca_setenv("$ENV::CASERIAL", ca->serial);
+	ca_setenv("$ENV::REQ_EXT", "req");
 	ca_setcnf(ca, "ca-revoke");
 
 	if (keyname) {
