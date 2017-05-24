@@ -67,6 +67,8 @@ apply_patch()
 		sp_err "Failed to apply patch ${_patch##${_OSrev}-}" 0
 		rollback_patch; return ${_ret}
 	fi
+	# don't fill up /tmp when installing multiple patches at once; non-fatal
+	rm -rf ${_edir} ${_TMP}/syspatch${_patch}.tgz
 	trap exit INT
 }
 
@@ -226,7 +228,7 @@ rollback_patch()
 		if [[ ${_file} == @(bsd|bsd.mp) ]]; then
 			install_kernel ${_edir}/${_file} || _ret=$?
 			# remove the backup kernel if all kernel syspatches have
-			# been reverted; non-fatal (`-f')
+			# been reverted; non-fatal
 			cmp -s /bsd /bsd.syspatch${_OSrev} &&
 				rm -f /bsd.syspatch${_OSrev}
 		else
@@ -236,6 +238,7 @@ rollback_patch()
 
 	((_ret == 0)) && rm -r ${_PDIR}/${_patch} ||
 		sp_err "Failed to revert patch ${_patch##${_OSrev}-}" ${_ret}
+	rm -rf ${_edir} # don't fill up /tmp when using `-R'; non-fatal
 	trap exit INT
 }
 
