@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.14 2017/04/27 06:16:39 mlarkin Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.15 2017/04/30 13:04:49 mpi Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.3 2003/05/08 10:27:43 fvdl Exp $	*/
 
 /*-
@@ -40,12 +40,6 @@
 #include <sys/types.h>
 
 #include <machine/specialreg.h>
-
-static __inline void
-x86_pause(void)
-{
-	/* nothing */
-}
 
 #ifdef _KERNEL
 
