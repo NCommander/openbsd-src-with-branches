@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.64 2016/04/29 16:49:53 mpi Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.65 2016/05/03 08:30:15 kettenis Exp $	*/
 /*	$NetBSD: cpu.c,v 1.13 2001/05/26 21:27:15 chs Exp $ */
 
 /*
@@ -717,7 +717,7 @@ cpu_boot_secondary_processors(void)
 		}
 
 		for (i = 0; i < 2000; i++) {
-			sparc_membar(Sync);
+			membar_sync();
 			if (ci->ci_flags & CPUF_RUNNING)
 				break;
 			delay(10000);
@@ -734,7 +734,7 @@ cpu_hatch(void)
 	cpu_init(ci);
 
 	ci->ci_flags |= CPUF_RUNNING;
-	sparc_membar(Sync);
+	membar_sync();
 
 	s = splhigh();
 	nanouptime(&ci->ci_schedstate.spc_runtime);

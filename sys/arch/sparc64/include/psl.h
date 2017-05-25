@@ -1,4 +1,4 @@
-/*	$OpenBSD: psl.h,v 1.30 2016/06/07 06:37:33 dlg Exp $	*/
+/*	$OpenBSD: psl.h,v 1.31 2016/06/13 01:08:13 dlg Exp $	*/
 /*	$NetBSD: psl.h,v 1.20 2001/04/13 23:30:05 thorpej Exp $ */
 
 /*
@@ -313,7 +313,7 @@ stxa_sync(u_int64_t va, u_int64_t asi, u_int64_t val)
 {
 	u_int64_t s = intr_disable();
 	stxa_nc(va, asi, val);
-	membar(Sync);
+	__asm volatile("membar #Sync" : : : "memory");
 	intr_restore(s);
 }
 

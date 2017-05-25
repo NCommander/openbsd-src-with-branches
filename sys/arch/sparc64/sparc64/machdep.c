@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.182 2017/01/13 09:18:11 fcambus Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.183 2017/01/21 05:42:03 guenther Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -1327,7 +1327,7 @@ _bus_dmamap_sync(t, t0, map, offset, len, ops)
 	int ops;
 {
 	if (ops & (BUS_DMASYNC_PREWRITE | BUS_DMASYNC_POSTREAD))
-		membar(MemIssue);
+		__membar("#MemIssue");
 }
 
 /*
