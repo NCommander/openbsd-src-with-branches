@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sh.1,v 1.140 2017/03/16 19:59:15 jmc Exp $
+.\"	$OpenBSD: sh.1,v 1.141 2017/03/16 20:06:37 jmc Exp $
 .\"
 .\" Copyright (c) 2015 Jason McIntyre <jmc@openbsd.org>
 .\"
@@ -1997,6 +1997,8 @@ The following environment variables affect the execution of
 Colon separated list of directories used by the
 .Ic cd
 command.
+If unset or empty,
+the current working directory is used.
 .It Ev ENV
 Pathname to a file containing commands to be executed
 when an interactive shell is started.
