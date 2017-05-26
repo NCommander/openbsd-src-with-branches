@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: syspatch.sh,v 1.109 2017/05/24 11:21:13 ajacoutot Exp $
+# $OpenBSD: syspatch.sh,v 1.110 2017/05/26 14:43:25 ajacoutot Exp $
 #
 # Copyright (c) 2016, 2017 Antoine Jacoutot <ajacoutot@openbsd.org>
 #
@@ -312,7 +312,7 @@ while getopts clRr arg; do
 	case ${arg} in
 		c) ls_missing ;;
 		l) ls_installed ;;
-		R) while rollback_patch; do :; done ;;
+		R) while [[ -n $(ls_installed) ]]; do rollback_patch; done ;;
 		r) rollback_patch ;;
 		*) usage ;;
 	esac
