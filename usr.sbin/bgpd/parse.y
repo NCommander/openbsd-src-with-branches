@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.299 2017/05/26 14:07:03 phessler Exp $ */
+/*	$OpenBSD: parse.y,v 1.300 2017/05/26 14:08:51 phessler Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -3658,6 +3658,11 @@ neighbor_consistent(struct peer *p)
 
 	if (!conf->as) {
 		yyerror("AS needs to be given before neighbor definitions");
+		return (-1);
+	}
+
+	if (p->conf.remote_as == 0) {
+		yyerror("peer AS may not be zero");
 		return (-1);
 	}
 
