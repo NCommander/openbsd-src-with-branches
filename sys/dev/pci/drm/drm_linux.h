@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_linux.h,v 1.48 2016/10/08 05:52:06 guenther Exp $	*/
+/*	$OpenBSD: drm_linux.h,v 1.49 2017/04/16 17:16:21 bluhm Exp $	*/
 /*
  * Copyright (c) 2013, 2014, 2015 Mark Kettenis
  *
@@ -17,6 +17,15 @@
 
 #include <sys/atomic.h>
 #include <sys/task.h>
+
+/* The Linux code doesn't meet our usual standards! */
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wenum-conversion"
+#pragma clang diagnostic ignored "-Winitializer-overrides"
+#pragma clang diagnostic ignored "-Wtautological-pointer-compare"
+#pragma clang diagnostic ignored "-Wunneeded-internal-declaration"
+#pragma clang diagnostic ignored "-Wunused-const-variable"
+#endif
 
 typedef int irqreturn_t;
 #define IRQ_NONE	0
