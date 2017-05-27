@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.c,v 1.81 2015/12/30 12:06:56 benno Exp $ */
+/*	$OpenBSD: mrt.c,v 1.82 2017/01/24 04:22:42 benno Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -275,7 +275,7 @@ mrt_dump_entry_mp(struct mrt *mrt, struct prefix *p, u_int16_t snum,
 		goto fail;
 	}
 
-	DUMP_SHORT(h2buf, rde_local_as());
+	DUMP_SHORT(h2buf, peer->conf.local_short_as);
 	DUMP_SHORT(h2buf, peer->short_as);
 	DUMP_SHORT(h2buf, /* ifindex */ 0);
 
