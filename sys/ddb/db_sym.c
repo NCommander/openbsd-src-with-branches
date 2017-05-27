@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_sym.c,v 1.50 2016/03/06 19:05:30 mpi Exp $	*/
+/*	$OpenBSD: db_sym.c,v 1.51 2016/03/07 11:26:43 mpi Exp $	*/
 /*	$NetBSD: db_sym.c,v 1.24 2000/08/11 22:50:47 tv Exp $	*/
 
 /*
@@ -155,7 +155,7 @@ db_printsym(db_expr_t off, db_strategy_t strategy,
 				(*pr)("+%s", db_format(buf, sizeof(buf),
 				    d, DB_FORMAT_R, 1, 0));
 			}
-			if (strategy != DB_STGY_PROC) {
+			if (strategy == DB_STGY_PROC) {
 				if (db_elf_line_at_pc(cursym, &filename,
 				    &linenum, off))
 					(*pr)(" [%s:%d]", filename, linenum);
