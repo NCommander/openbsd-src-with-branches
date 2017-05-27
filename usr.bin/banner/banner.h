@@ -1,4 +1,4 @@
-/*	$OpenBSD: banner.h,v 1.2 1996/06/26 05:31:34 deraadt Exp $	*/
+/*	$OpenBSD: banner.h,v 1.3 2003/03/13 23:11:16 tedu Exp $	*/
 /*	$NetBSD: banner.h,v 1.2 1995/04/09 06:00:23 cgd Exp $	*/
 
 /*
@@ -24,12 +24,7 @@
 #define BACKGND		' '
 #define INVALID		'_'
 
-#ifdef LPD_CHSET
-#define HEIGHT	9		/* height of characters */
-#define DROP	3		/* offset to drop characters with descenders */
-#else
 #define HEIGHT	8		/* height of characters */
 #define DROP	0		/* offset to drop characters with descenders */
-#endif
 #define WIDTH	8		/* width of characters */
 
