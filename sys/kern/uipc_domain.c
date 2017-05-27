@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_domain.c,v 1.49 2017/02/27 19:16:56 claudio Exp $	*/
+/*	$OpenBSD: uipc_domain.c,v 1.50 2017/05/09 09:37:25 mpi Exp $	*/
 /*	$NetBSD: uipc_domain.c,v 1.14 1996/02/09 19:00:44 christos Exp $	*/
 
 /*
@@ -56,7 +56,7 @@ struct domain *domains[] = {
 #ifdef MPLS
 	&mplsdomain,
 #endif
-#if defined (KEY) || defined (IPSEC) || defined (TCP_SIGNATURE)
+#if defined (IPSEC) || defined (TCP_SIGNATURE)
 	&pfkeydomain,
 #endif
 #ifdef INET6
