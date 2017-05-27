@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_http.c,v 1.63 2016/09/26 16:25:16 reyk Exp $	*/
+/*	$OpenBSD: relay_http.c,v 1.64 2017/03/10 21:04:35 reyk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -715,11 +715,6 @@ relay_reset_http(struct ctl_relay_event *cre)
 	struct http_descriptor	*desc = cre->desc;
 
 	relay_httpdesc_free(desc);
-	if (cre->buf != NULL) {
-		free(cre->buf);
-		cre->buf = NULL;
-		cre->buflen = 0;
-	}
 	desc->http_method = 0;
 	desc->http_chunked = 0;
 	cre->headerlen = 0;
