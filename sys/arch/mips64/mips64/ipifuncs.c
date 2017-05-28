@@ -1,4 +1,4 @@
-/* $OpenBSD: ipifuncs.c,v 1.13 2017/02/19 08:35:13 visa Exp $ */
+/* $OpenBSD: ipifuncs.c,v 1.14 2017/04/30 16:45:45 mpi Exp $ */
 /* $NetBSD: ipifuncs.c,v 1.40 2008/04/28 20:23:10 martin Exp $ */
 
 /*-
@@ -221,7 +221,7 @@ smp_rendezvous_cpus(unsigned long map,
 	mips_sync();
 
 	/* signal other processors, which will enter the IPI with interrupts off */
-	mips64_multicast_ipi(map & ~cpumask, MIPS64_IPI_RENDEZVOUS);
+	mips64_multicast_ipi(map, MIPS64_IPI_RENDEZVOUS);
 
 	/* Check if the current CPU is in the map */
 	if (map & cpumask)
