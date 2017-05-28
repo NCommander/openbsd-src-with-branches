@@ -1,4 +1,4 @@
-/* $OpenBSD: ipifuncs.c,v 1.14 2017/04/30 16:45:45 mpi Exp $ */
+/* $OpenBSD: ipifuncs.c,v 1.15 2017/05/28 15:16:08 visa Exp $ */
 /* $NetBSD: ipifuncs.c,v 1.40 2008/04/28 20:23:10 martin Exp $ */
 
 /*-
@@ -203,7 +203,7 @@ smp_rendezvous_cpus(unsigned long map,
 {
 	unsigned int cpumask = 1 << cpu_number();
 
-	if (ncpus == 1) {
+	if (cpumask == map) {
 		if (action_func != NULL)
 			action_func(arg);
 		return;
