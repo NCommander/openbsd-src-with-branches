@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.43 2016/10/17 17:59:57 schwarze Exp $	*/
+/*	$OpenBSD: vi.c,v 1.44 2016/10/17 18:39:43 schwarze Exp $	*/
 
 /*
  *	vi command editing
@@ -1154,8 +1154,10 @@ vi_cmd(int argcnt, const char *cmd)
 			expand_word(1);
 			break;
 		}
-		if (insert == 0 && es->cursor != 0 && es->cursor >= es->linelen)
-			es->cursor--;
+		if (insert == 0 && es->cursor >= es->linelen)
+			while (es->cursor > 0)
+				if (!isu8cont(es->cbuf[--es->cursor]))
+					break;
 	}
 	return 0;
 }
