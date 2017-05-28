@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_elf.c,v 1.22 2016/04/20 08:02:59 mpi Exp $	*/
+/*	$OpenBSD: db_elf.h,v 1.1 2016/09/16 19:13:17 jasper Exp $	*/
 /*	$NetBSD: db_elf.c,v 1.13 2000/07/07 21:55:18 jhawk Exp $	*/
 
 /*-
@@ -44,4 +44,5 @@ typedef struct {
 #define	STAB_TO_EHDR(stab)	((Elf_Ehdr *)((stab)->private))
 #define	STAB_TO_SHDR(stab, e)	((Elf_Shdr *)((stab)->private + (e)->e_shoff))
 
-char	*db_elf_find_strtab(db_symtab_t *);
+char		*db_elf_find_strtab(db_symtab_t *);
+const char	*db_elf_find_section(db_symtab_t *, size_t *, const char *);
