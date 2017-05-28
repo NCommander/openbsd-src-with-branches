@@ -52,6 +52,7 @@ new_config(void)
 	conf->min_holdtime = MIN_HOLDTIME;
 	conf->bgpid = get_bgpid();
 	conf->fib_priority = RTP_BGP;
+	conf->default_tableid = getrtable();
 
 	if ((conf->csock = strdup(SOCKET_NAME)) == NULL)
 		fatal(NULL);

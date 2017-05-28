@@ -603,8 +603,8 @@ dispatch_imsg(struct imsgbuf *ibuf, int idx, struct bgpd_config *conf)
 			else if (imsg.hdr.len != IMSG_HEADER_SIZE +
 			    sizeof(struct bgpd_addr))
 				log_warnx("wrong imsg len");
-			else if (kr_nexthop_add(imsg.hdr.peerid, imsg.data) ==
-			    -1)
+			else if (kr_nexthop_add(imsg.hdr.peerid, imsg.data,
+			    conf) == -1)
 				rv = -1;
 			break;
 		case IMSG_NEXTHOP_REMOVE:
@@ -614,7 +614,8 @@ dispatch_imsg(struct imsgbuf *ibuf, int idx, struct bgpd_config *conf)
 			    sizeof(struct bgpd_addr))
 				log_warnx("wrong imsg len");
 			else
-				kr_nexthop_delete(imsg.hdr.peerid, imsg.data);
+				kr_nexthop_delete(imsg.hdr.peerid, imsg.data,
+				    conf);
 			break;
 		case IMSG_PFTABLE_ADD:
 			if (idx != PFD_PIPE_ROUTE)
