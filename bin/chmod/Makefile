@@ -1,7 +1,6 @@
-#	$OpenBSD: Makefile,v 1.7 2001/09/06 18:52:55 mickey Exp $
+#	$OpenBSD: Makefile,v 1.8 2016/09/11 07:06:29 natano Exp $
 
 PROG=	chmod
-CFLAGS+=-DSUPPORT_DOT
 MAN=	chmod.1 chgrp.1 chown.8 chflags.1
 LINKS=	${BINDIR}/chmod ${BINDIR}/chgrp \
 	${BINDIR}/chmod /sbin/chown
