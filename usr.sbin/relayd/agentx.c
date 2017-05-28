@@ -1,4 +1,4 @@
-/*      $OpenBSD: agentx.c,v 1.12 2015/07/19 01:08:07 blambert Exp $    */
+/*      $OpenBSD: agentx.c,v 1.13 2015/12/07 04:03:27 mmcc Exp $    */
 /*
  * Copyright (c) 2013,2014 Bret Stephen Lambert <blambert@openbsd.org>
  *
@@ -328,7 +328,7 @@ snmp_agentx_recv(struct agentx_handle *h)
 	if (h->r == NULL) {
 		if ((h->r = snmp_agentx_pdu_alloc()) == NULL)
 			return (NULL);
-		h->r->datalen = 0;	/* XXX -- force this for receive buffers */
+		h->r->datalen = 0;	/* XXX force this for receive buffers */
 	}
 	pdu = h->r;
 
