@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.32 2016/03/13 11:37:42 natano Exp $
+#	$OpenBSD: Makefile,v 1.33 2016/04/25 19:18:41 tedu Exp $
 
 LDSTATIC=${STATIC}
 PROG=	kdump
@@ -43,7 +43,6 @@ ioctl.c: ${.CURDIR}/Makefile ${.CURDIR}/mkioctls
 	    ${SYS_DIR}/sys/mtio.h \
 	    ${SYS_DIR}/sys/pciio.h \
 	    ${SYS_DIR}/sys/radioio.h \
-	    ${SYS_DIR}/sys/scanio.h \
 	    ${SYS_DIR}/sys/scsiio.h \
 	    ${SYS_DIR}/sys/sockio.h \
 	    ${SYS_DIR}/sys/videoio.h \

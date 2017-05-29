@@ -1,5 +1,5 @@
 #!/bin/sh -
-#	$OpenBSD: mkioctls,v 1.36 2016/03/13 11:37:42 natano Exp $
+#	$OpenBSD: mkioctls,v 1.37 2016/04/25 19:18:41 tedu Exp $
 
 #
 # Copyright (c) 1994
@@ -73,7 +73,6 @@ BEGIN {
 	print "#include <sys/mtio.h>"
 	print "#include <sys/pciio.h>"
 	print "#include <sys/radioio.h>"
-	print "#include <sys/scanio.h>"
 	print "#include <sys/scsiio.h>"
 	print "#include <sys/tty.h>"
 	print "#include <sys/syslog.h>"
