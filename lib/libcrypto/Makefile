@@ -1,6 +1,7 @@
-# $OpenBSD: Makefile,v 1.16 2017/04/30 04:44:58 jsing Exp $
+# $OpenBSD: Makefile,v 1.17 2017/05/06 20:42:57 beck Exp $
 
 LIB=	crypto
+LIBREBUILD=y
 
 .include <bsd.own.mk>
 .ifndef NOMAN
