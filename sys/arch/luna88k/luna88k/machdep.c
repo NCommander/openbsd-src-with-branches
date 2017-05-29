@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.123 2017/03/19 10:57:29 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.124 2017/04/30 16:45:45 mpi Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -84,7 +84,6 @@
 #include <machine/cmmu.h>
 #include <machine/cpu.h>
 #include <machine/kcore.h>
-#include <machine/lock.h>
 #include <machine/reg.h>
 #include <machine/trap.h>
 #include <machine/m88100.h>

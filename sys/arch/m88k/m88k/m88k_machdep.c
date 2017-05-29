@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88k_machdep.c,v 1.66 2016/10/09 20:16:50 guenther Exp $	*/
+/*	$OpenBSD: m88k_machdep.c,v 1.67 2017/03/19 10:57:29 miod Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -60,7 +60,6 @@
 #include <machine/asm.h>
 #include <machine/asm_macro.h>
 #include <machine/atomic.h>
-#include <machine/lock.h>
 #include <machine/cmmu.h>
 #include <machine/cpu.h>
 #include <machine/reg.h>
