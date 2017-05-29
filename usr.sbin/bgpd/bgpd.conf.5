@@ -1,4 +1,4 @@
-.\" $OpenBSD: bgpd.conf.5,v 1.156 2017/05/28 15:16:52 henning Exp $
+.\" $OpenBSD: bgpd.conf.5,v 1.157 2017/05/28 16:52:27 jmc Exp $
 .\"
 .\" Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
 .\" Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -417,8 +417,11 @@ If
 .Ic restricted
 is specified a restricted control socket will be created.
 By default
-.Pa /var/run/bgpd.sock
-is used and no restricted socket is created.
+.Pa /var/run/bgpd.sock.<rdomain>
+is used where
+.Ar <rdomain>
+is the routing domain in which bgpd has been started.
+By default, no restricted socket is created.
 .Pp
 .It Xo
 .Ic transparent-as
