@@ -1,5 +1,5 @@
 #	$OpenBSD$
 
-SUBDIR=	dh
+SUBDIR=	test_helper dh parser
 
 .include <bsd.subdir.mk>
