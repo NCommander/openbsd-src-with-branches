@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.224 2016/03/12 15:16:04 krw Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.225 2016/09/15 02:00:18 dlg Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -1388,7 +1388,6 @@ scsi_xs_error(struct scsi_xfer *xs)
 		    ("scsi_interpret_sense returned %#x\n", error));
 		break;
 
-	case XS_NO_CCB:
 	case XS_BUSY:
 		error = scsi_delay(xs, 1);
 		break;
