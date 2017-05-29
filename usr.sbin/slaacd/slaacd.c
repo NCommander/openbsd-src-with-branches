@@ -1,4 +1,4 @@
-/*	$OpenBSD: slaacd.c,v 1.17 2017/05/28 20:40:13 florian Exp $	*/
+/*	$OpenBSD: slaacd.c,v 1.18 2017/05/28 21:05:54 naddy Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -221,7 +221,6 @@ main(int argc, char *argv[])
 
 	slaacd_process = PROC_MAIN;
 	
-	setproctitle(log_procnames[slaacd_process]);
 	log_procinit(log_procnames[slaacd_process]);
 
 	if ((routesock = socket(PF_ROUTE, SOCK_RAW | SOCK_CLOEXEC |
