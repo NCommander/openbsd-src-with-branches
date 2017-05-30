@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.26 2017/05/29 08:15:38 florian Exp $	*/
+/*	$OpenBSD: engine.c,v 1.27 2017/05/29 08:59:42 florian Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -482,7 +482,7 @@ engine_dispatch_frontend(int fd, short event, void *bula)
 					need_refresh = 1;
 				}
 
-				if (!iface->state == IF_DOWN &&
+				if (iface->state != IF_DOWN &&
 				    imsg_ifinfo.running && need_refresh)
 					start_probe(iface);
 
