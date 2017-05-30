@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.499 2017/05/28 12:51:33 yasuoka Exp $	*/
+/*	$OpenBSD: if.c,v 1.500 2017/05/29 06:08:21 mpi Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -1014,11 +1014,11 @@ if_detach(struct ifnet *ifp)
 
 	ifq_clr_oactive(&ifp->if_snd);
 
-	NET_LOCK(s);
-	s2 = splnet();
 	/* Other CPUs must not have a reference before we start destroying. */
 	if_idxmap_remove(ifp);
 
+	NET_LOCK(s);
+	s2 = splnet();
 	ifp->if_qstart = if_detached_qstart;
 	ifp->if_ioctl = if_detached_ioctl;
 	ifp->if_watchdog = NULL;
