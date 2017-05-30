@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2015/07/26 17:31:18 zhuk Exp $
+# $OpenBSD: Makefile,v 1.3 2015/07/28 12:25:27 zhuk Exp $
 
 REGRESS_TARGETS = \
 	t-okay \
@@ -41,7 +41,8 @@ ${t}:
 .for t in ${REGRESS_TARGETS:M*-permit*}
 ${t}:
 	@echo '$@'
-	@rv=true; \
+	@id | grep '(wobj)' >/dev/null || { echo SKIPPED; exit 0; } ; \
+	rv=true; \
 	while read ident cmdline; do \
 		read expected; \
 		set +e; \
