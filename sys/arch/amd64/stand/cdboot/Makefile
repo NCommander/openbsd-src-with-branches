@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.31 2016/09/11 17:51:21 jsing Exp $
+#	$OpenBSD: Makefile,v 1.32 2016/09/18 16:34:59 jsing Exp $
 
 MAN=	cdboot.8
 
@@ -68,5 +68,6 @@ CFLAGS+=${SACFLAGS} -D__INTERNAL_LIBSA_CREAD
 CFLAGS+=-DOSREV=\"${OSREV}\" -DMACHINE=\"${MACHINE}\"
 CFLAGS+=-DKERNEL=\"/${OSREV}/${MACHINE}/bsd.rd\"
 CFLAGS+=-fno-pie
+AFLAGS+=${NO_INTEGR_AS}
 AFLAGS+=-m32
 AFLAGS+=-fno-pie
