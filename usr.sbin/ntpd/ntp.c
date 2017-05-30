@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntp.c,v 1.144 2016/09/26 16:55:02 rzalamena Exp $ */
+/*	$OpenBSD: ntp.c,v 1.145 2017/01/20 01:21:18 phessler Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -521,6 +521,8 @@ ntp_dispatch_imsg_dns(void)
 				if (peer->addr_head.pool) {
 					npeer = new_peer();
 					npeer->weight = peer->weight;
+					npeer->query_addr4 = peer->query_addr4;
+					npeer->query_addr6 = peer->query_addr6;
 					h->next = NULL;
 					npeer->addr = h;
 					npeer->addr_head.a = h;
