@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmvar.h,v 1.39 2017/05/28 23:50:19 mlarkin Exp $	*/
+/*	$OpenBSD: vmmvar.h,v 1.40 2017/05/30 17:49:47 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -720,6 +720,8 @@ struct vcpu {
 	uint64_t vc_h_xcr0;
 
 	struct vcpu_gueststate vc_gueststate;
+
+	uint8_t vc_event;
 
 	/* VMX only */
 	uint64_t vc_vmx_basic;
