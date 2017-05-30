@@ -1,4 +1,4 @@
-/*	$OpenBSD: id.c,v 1.26 2015/10/09 01:37:07 deraadt Exp $	*/
+/*	$OpenBSD: id.c,v 1.27 2017/05/30 15:07:01 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -361,6 +361,7 @@ usage(void)
 		(void)fprintf(stderr, "       id -G [-n] [user]\n");
 		(void)fprintf(stderr, "       id -g [-nr] [user]\n");
 		(void)fprintf(stderr, "       id -p [user]\n");
+		(void)fprintf(stderr, "       id -R\n");
 		(void)fprintf(stderr, "       id -u [-nr] [user]\n");
 	}
 	exit(1);
