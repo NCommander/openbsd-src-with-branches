@@ -1,4 +1,4 @@
-/*	$OpenBSD: socket1.c,v 1.4 2015/11/04 21:29:20 tedu Exp $	*/
+/*	$OpenBSD: socket1.c,v 1.5 2015/11/19 18:37:49 deraadt Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -78,10 +78,10 @@ sock_connect(void *arg)
 	CHECKe(connect(fd, (struct sockaddr *) &a_sout, sizeof(a_sout)));
 	CHECKe(close(fd));
 
-	CHECKr(pthread_mutex_unlock(&mutex));
-
 	CHECKe(fd = socket(AF_INET, SOCK_STREAM, 0));
 	ASSERT(++counter == 3);
+
+	CHECKr(pthread_mutex_unlock(&mutex));
 	CHECKe(connect(fd, (struct sockaddr *) &a_sout, sizeof(a_sout)));
 
 	/* Ensure sock_read runs again */
