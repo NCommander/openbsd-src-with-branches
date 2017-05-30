@@ -1,4 +1,4 @@
-/*	$OpenBSD: odsyntax.c,v 1.26 2015/09/16 08:47:26 schwarze Exp $	*/
+/*	$OpenBSD: odsyntax.c,v 1.27 2016/03/15 04:19:13 mmcc Exp $	*/
 /*	$NetBSD: odsyntax.c,v 1.15 2001/12/07 15:14:29 bjh21 Exp $	*/
 
 /*-
@@ -403,12 +403,12 @@ odoffset(int argc, char ***argvp)
 }
 
 static void
-odadd(const char *fmt)
+odadd(const char *format)
 {
 	static int needpad;
 
 	if (needpad)
 		add("\""PADDING"\"");
-	add(fmt);
+	add(format);
 	needpad = 1;
 }
