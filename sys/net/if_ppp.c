@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ppp.c,v 1.106 2017/05/16 12:24:01 mpi Exp $	*/
+/*	$OpenBSD: if_ppp.c,v 1.107 2017/05/27 18:39:17 mpi Exp $	*/
 /*	$NetBSD: if_ppp.c,v 1.39 1997/05/17 21:11:59 christos Exp $	*/
 
 /*
@@ -1396,10 +1396,8 @@ ppp_inproc(struct ppp_softc *sc, struct mbuf *m)
 		m->m_data += PPP_HDRLEN;
 		m->m_len -= PPP_HDRLEN;
 
-		if (niq_enqueue(&ipintrq, m) != 0)
-			rv = 0; /* failure */
-		else
-			rv = 1; /* ipintrq success */
+		ipv4_input(ifp, m);
+		rv = 1;
 		break;
 
 	default:
