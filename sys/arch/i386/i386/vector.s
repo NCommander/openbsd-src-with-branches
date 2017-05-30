@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.s,v 1.19 2015/04/25 21:31:24 guenther Exp $	*/
+/*	$OpenBSD: vector.s,v 1.20 2015/06/28 01:11:27 guenther Exp $	*/
 /*	$NetBSD: vector.s,v 1.32 1996/01/07 21:29:47 mycroft Exp $	*/
 
 /*
@@ -199,6 +199,7 @@ INTRSTUB(legacy,14, i8259_asm_ack2, voidop, i8259_asm_mask, i8259_asm_unmask,
 INTRSTUB(legacy,15, i8259_asm_ack2, voidop, i8259_asm_mask, i8259_asm_unmask,
     voidop)
 
+	.section .rodata
 /*
  * These tables are used by the ISA configuration code.
  */
