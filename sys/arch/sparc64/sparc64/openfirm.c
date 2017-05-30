@@ -1,4 +1,4 @@
-/*	$OpenBSD: openfirm.c,v 1.18 2016/03/19 11:34:22 mpi Exp $	*/
+/*	$OpenBSD: openfirm.c,v 1.19 2016/05/19 09:15:28 kettenis Exp $	*/
 /*	$NetBSD: openfirm.c,v 1.13 2001/06/21 00:08:02 eeh Exp $	*/
 
 /*
@@ -802,7 +802,7 @@ void OF_val2sym(cells)
 		cell_t offset;
 		cell_t symbol;
 	} *args = (struct args*)cells;
-	db_sym_t symbol;
+	Elf_Sym *symbol;
 	db_expr_t value;
 	db_expr_t offset;
 
