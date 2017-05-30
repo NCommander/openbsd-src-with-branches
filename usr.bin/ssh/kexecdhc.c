@@ -1,4 +1,4 @@
-/* $OpenBSD: kexecdhc.c,v 1.9 2015/01/19 20:16:15 markus Exp $ */
+/* $OpenBSD: kexecdhc.c,v 1.10 2015/01/26 06:10:03 djm Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 2010 Damien Miller.  All rights reserved.
@@ -45,7 +45,7 @@
 #include "ssherr.h"
 #include "sshbuf.h"
 
-static int input_kex_ecdh_reply(int, u_int32_t, void *);
+static int input_kex_ecdh_reply(int, u_int32_t, struct ssh *);
 
 int
 kexecdh_client(struct ssh *ssh)
@@ -91,9 +91,8 @@ kexecdh_client(struct ssh *ssh)
 }
 
 static int
-input_kex_ecdh_reply(int type, u_int32_t seq, void *ctxt)
+input_kex_ecdh_reply(int type, u_int32_t seq, struct ssh *ssh)
 {
-	struct ssh *ssh = ctxt;
 	struct kex *kex = ssh->kex;
 	const EC_GROUP *group;
 	EC_POINT *server_public = NULL;
