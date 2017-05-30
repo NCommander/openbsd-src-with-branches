@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vfsops.c,v 1.97 2016/09/15 02:00:18 dlg Exp $	*/
+/*	$OpenBSD: ext2fs_vfsops.c,v 1.98 2017/04/20 14:13:00 visa Exp $	*/
 /*	$NetBSD: ext2fs_vfsops.c,v 1.1 1997/06/11 09:34:07 bouyer Exp $	*/
 
 /*
@@ -1000,6 +1000,7 @@ ext2fs_sbupdate(struct ufsmount *mp, int waitfor)
 		error = bwrite(bp);
 	else
 		bawrite(bp);
+	fs->e2fs_fmod = 0;
 	return (error);
 }
 
