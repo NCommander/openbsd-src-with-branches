@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.c,v 1.363 2017/05/30 14:23:52 markus Exp $ */
+/* $OpenBSD: channels.c,v 1.364 2017/05/31 00:43:04 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -469,8 +469,6 @@ channel_free(Channel *c)
 	debug3("channel %d: status: %s", c->self, s);
 	free(s);
 
-	if (c->sock != -1)
-		shutdown(c->sock, SHUT_RDWR);
 	channel_close_fds(c);
 	buffer_free(&c->input);
 	buffer_free(&c->output);
