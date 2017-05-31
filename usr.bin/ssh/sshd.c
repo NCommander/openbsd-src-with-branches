@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.487 2017/04/30 23:18:44 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.488 2017/05/30 08:52:20 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2006,7 +2006,7 @@ do_ssh2_kex(void)
 	kex->host_key_index=&get_hostkey_index;
 	kex->sign = sshd_hostkey_sign;
 
-	dispatch_run(DISPATCH_BLOCK, &kex->done, active_state);
+	ssh_dispatch_run_fatal(active_state, DISPATCH_BLOCK, &kex->done);
 
 	session_id2 = kex->session_id;
 	session_id2_len = kex->session_id_len;
