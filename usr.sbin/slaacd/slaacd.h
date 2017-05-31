@@ -1,4 +1,4 @@
-/*	$OpenBSD: slaacd.h,v 1.15 2017/05/28 09:35:56 florian Exp $	*/
+/*	$OpenBSD: slaacd.h,v 1.16 2017/05/30 15:39:49 florian Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -27,11 +27,6 @@
 #define SLAACD_MAXTEXT		256
 #define SLAACD_MAXGROUPNAME	16
 
-#if 0
-#define DEBUG_IMSG(fmt, arg...) log_debug(fmt, ##arg)
-#else
-#define DEBUG_IMSG(fmt, arg...)
-#endif
 /* MAXDNAME from arpa/namesr.h */
 #define SLAACD_MAX_DNSSL	1025
 
