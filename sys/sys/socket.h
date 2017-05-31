@@ -96,6 +96,7 @@ typedef	__sa_family_t	sa_family_t;	/* sockaddr address family type */
 #define	SO_REUSEPORT	0x0200		/* allow local address & port reuse */
 #define SO_TIMESTAMP	0x0800		/* timestamp received dgram traffic */
 #define SO_BINDANY	0x1000		/* allow bind to any address */
+#define SO_ZEROIZE	0x2000		/* zero out all mbufs sent over socket */
 
 /*
  * Additional options, not kept in so_options.
