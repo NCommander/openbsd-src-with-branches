@@ -1,4 +1,4 @@
-/* $OpenBSD: rebound.c,v 1.82 2017/04/13 15:32:15 tedu Exp $ */
+/* $OpenBSD: rebound.c,v 1.83 2017/04/27 16:09:32 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -591,9 +591,9 @@ workerinit(void)
 		logerr("getpwnam failed");
 
 	if (chroot(pwd->pw_dir) == -1)
-		logerr("chroot failed (%d)", errno);
+		logerr("chroot: %s", strerror(errno));
 	if (chdir("/") == -1)
-		logerr("chdir failed (%d)", errno);
+		logerr("chdir: %s", strerror(errno));
 
 	setproctitle("worker");
 	if (setgroups(1, &pwd->pw_gid) ||
