@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.167 2017/05/27 08:33:25 claudio Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.168 2017/05/28 10:39:15 benno Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -1185,8 +1185,10 @@ pkey_add(struct relayd *env, EVP_PKEY *pkey, char *hash)
 
 	ca_pkey->pkey = pkey;
 	if (strlcpy(ca_pkey->pkey_hash, hash, sizeof(ca_pkey->pkey_hash)) >=
-	    sizeof(ca_pkey->pkey_hash))
+	    sizeof(ca_pkey->pkey_hash)) {
+		free(ca_pkey);
 		return (NULL);
+	}
 
 	TAILQ_INSERT_TAIL(env->sc_pkeys, ca_pkey, pkey_entry);
 
