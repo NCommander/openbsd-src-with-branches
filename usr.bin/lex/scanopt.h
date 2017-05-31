@@ -1,4 +1,4 @@
-/* $OpenBSD: scanopt.h,v 1.1 2015/11/19 19:43:40 tedu Exp $ */
+/* $OpenBSD: scanopt.h,v 1.2 2015/11/19 22:16:43 tedu Exp $ */
 
 /* flex - tool to generate fast lexical analyzers */
 
@@ -90,9 +90,8 @@ extern  "C" {
 	scanopt_t *scanopt_init PROTO ((const optspec_t * options,
 					int argc, char **argv, int flags));
 
-/* Frees memory used by scanner.
- * Always returns 0. */
-	int scanopt_destroy PROTO ((scanopt_t * scanner));
+/* Frees memory used by scanner. */
+	void scanopt_destroy PROTO ((scanopt_t * scanner));
 
 #ifndef NO_SCANOPT_USAGE
 /* Prints a usage message based on contents of optlist.
