@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_switch.c,v 1.18 2017/01/17 12:30:35 rzalamena Exp $	*/
+/*	$OpenBSD: if_switch.c,v 1.19 2017/05/12 13:40:29 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2016 Kazuya GODA <goda@openbsd.org>
@@ -388,9 +388,8 @@ switch_ioctl(struct ifnet *ifp, unsigned long cmd, caddr_t data)
 	struct bstp_port	*bp;
 	struct ifnet		*ifs;
 	struct switch_port	*swpo;
-	int			 s, error = 0;
+	int			 error = 0;
 
-	s = splnet();
 	switch (cmd) {
 	case SIOCBRDGADD:
 		if ((error = suser(curproc, 0)) != 0)
@@ -481,7 +480,6 @@ switch_ioctl(struct ifnet *ifp, unsigned long cmd, caddr_t data)
 		break;
 	}
 
-	splx(s);
 	return (error);
 }
 
