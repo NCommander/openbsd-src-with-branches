@@ -1,4 +1,4 @@
-/*	$OpenBSD: update.c,v 1.174 2016/10/15 22:20:17 millert Exp $	*/
+/*	$OpenBSD: update.c,v 1.175 2017/05/29 17:18:56 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -142,7 +142,7 @@ cvs_update(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
-	if (current_cvsroot->cr_method == CVS_METHOD_LOCAL) {
+	if (cvsroot_is_local()) {
 		cr.enterdir = cvs_update_enterdir;
 		cr.leavedir = prune_dirs ? cvs_update_leavedir : NULL;
 		cr.fileproc = cvs_update_local;
@@ -180,7 +180,7 @@ cvs_update(int argc, char **argv)
 	else
 		cvs_file_run(1, &arg, &cr);
 
-	if (current_cvsroot->cr_method != CVS_METHOD_LOCAL) {
+	if (cvsroot_is_remote()) {
 		cvs_client_send_files(argv, argc);
 		cvs_client_senddir(".");
 		cvs_client_send_request("update");

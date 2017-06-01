@@ -1,4 +1,4 @@
-/*	$OpenBSD: checkout.c,v 1.169 2015/01/16 06:40:06 deraadt Exp $	*/
+/*	$OpenBSD: checkout.c,v 1.170 2015/11/05 09:48:21 nicm Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -243,7 +243,7 @@ checkout_check_repository(int argc, char **argv)
 
 	build_dirs = print_stdout ? 0 : 1;
 
-	if (current_cvsroot->cr_method != CVS_METHOD_LOCAL) {
+	if (cvsroot_is_remote()) {
 		cvs_client_connect_to_server();
 
 		if (cvs_specified_tag != NULL)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.h,v 1.182 2015/04/04 14:19:10 stsp Exp $	*/
+/*	$OpenBSD: cvs.h,v 1.183 2017/05/28 17:11:34 joris Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -372,6 +372,8 @@ void		cvs_write_tagfile(const char *, char *, char *);
 
 /* root.c */
 struct cvsroot	*cvsroot_get(const char *);
+int		cvsroot_is_local(void);
+int		cvsroot_is_remote(void);
 
 /* logmsg.c */
 char	*cvs_logmsg_read(const char *);
