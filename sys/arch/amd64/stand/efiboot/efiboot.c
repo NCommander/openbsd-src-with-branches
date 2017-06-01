@@ -1,4 +1,4 @@
-/*	$OpenBSD: efiboot.c,v 1.18 2017/05/16 02:53:28 yasuoka Exp $	*/
+/*	$OpenBSD: efiboot.c,v 1.19 2017/05/31 08:40:32 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -526,8 +526,10 @@ efi_com_probe(struct consdev *cn)
 		status = EFI_CALL(BS->LocateHandle, ByProtocol, &serio_guid,
 		    0, &sz, handles);
 	}
-	if (handles == NULL || EFI_ERROR(status))
-		panic("could not get handles of serial i/o");
+	if (handles == NULL || EFI_ERROR(status)) {
+		free(handles, sz);
+		return;
+	}
 
 	for (i = 0; i < sz / sizeof(EFI_HANDLE); i++) {
 		/*
