@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.26 2013/01/18 21:09:04 espie Exp $
+#	$OpenBSD: Makefile,v 1.27 2016/07/30 03:25:48 guenther Exp $
 
 MAN=	biosboot.8
 
@@ -22,6 +22,7 @@ ${PROG}: $(OBJS)
 CPPFLAGS+=-DLOADADDR=$(LOADADDR) -DLINKADDR=$(LINKADDR) -DBOOTMAGIC=$(BOOTMAGIC)
 CPPFLAGS+=${DEBUGFLAGS}
 CFLAGS+=-fno-pie
+AFLAGS+=${NO_INTEGR_AS}
 #AFLAGS+=-Wa,-a
 AFLAGS+=-fno-pie
 .else
