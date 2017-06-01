@@ -1,4 +1,4 @@
-/*	$OpenBSD: mandoc.c,v 1.65 2015/10/15 23:35:38 schwarze Exp $ */
+/*	$OpenBSD: mandoc.c,v 1.66 2015/11/12 22:43:30 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2011, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2011-2015 Ingo Schwarze <schwarze@openbsd.org>
@@ -173,7 +173,7 @@ mandoc_escape(const char **end, const char **start, int *sz)
 				++*end;
 			return ESCAPE_ERROR;
 		}
-		gly = ESCAPE_IGNORE;
+		gly = (*start)[-1] == 'h' ? ESCAPE_HORIZ : ESCAPE_IGNORE;
 		term = **start;
 		*start = ++*end;
 		break;

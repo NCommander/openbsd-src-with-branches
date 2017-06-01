@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdoc_term.c,v 1.256 2017/05/09 14:09:37 schwarze Exp $ */
+/*	$OpenBSD: mdoc_term.c,v 1.257 2017/05/30 16:31:25 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010, 2012-2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -405,7 +405,8 @@ print_mdoc_node(DECL_ARGS)
 	if (NODE_EOS & n->flags)
 		p->flags |= TERMP_SENTENCE;
 
-	p->offset = offset;
+	if (n->type != ROFFT_TEXT)
+		p->offset = offset;
 	p->rmargin = rmargin;
 }
 
