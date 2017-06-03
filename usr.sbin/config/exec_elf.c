@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.13 2011/10/02 22:20:49 edd Exp $ */
+/*	$OpenBSD: exec_elf.c,v 1.14 2015/09/25 03:17:02 guenther Exp $ */
 
 /*
  * Copyright (c) 1999 Mats O Jansson.  All rights reserved.
@@ -140,7 +140,7 @@ savekernel(char *outfile)
 {
 	int fd;
 
-	if ((fd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0755)) < 0)
+	if ((fd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0700)) < 0)
 		err(1, "%s", outfile);
 
 	if (write(fd, elf_total, (size_t)elf_size) != elf_size)
