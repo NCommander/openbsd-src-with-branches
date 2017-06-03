@@ -1,4 +1,4 @@
-/* $OpenBSD: input.c,v 1.121 2017/05/12 13:00:56 nicm Exp $ */
+/* $OpenBSD: input.c,v 1.122 2017/05/28 23:23:40 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -2103,8 +2103,12 @@ input_osc_52(struct window_pane *wp, const char *p)
 	char			*end;
 	size_t			 len;
 	u_char			*out;
-	int			 outlen;
+	int			 outlen, state;
 	struct screen_write_ctx	 ctx;
+
+	state = options_get_number(global_options, "set-clipboard");
+	if (state != 2)
+		return;
 
 	if ((end = strchr(p, ';')) == NULL)
 		return;
@@ -2122,11 +2126,10 @@ input_osc_52(struct window_pane *wp, const char *p)
 		return;
 	}
 
-	if (options_get_number(global_options, "set-clipboard")) {
-		screen_write_start(&ctx, wp, NULL);
-		screen_write_setselection(&ctx, out, outlen);
-		screen_write_stop(&ctx);
-	}
+	screen_write_start(&ctx, wp, NULL);
+	screen_write_setselection(&ctx, out, outlen);
+	screen_write_stop(&ctx);
+
 	paste_add(out, outlen);
 }
 
