@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.c,v 1.15 2017/05/30 19:27:16 florian Exp $	*/
+/*	$OpenBSD: frontend.c,v 1.16 2017/05/31 07:14:58 florian Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>

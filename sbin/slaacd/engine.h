@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.h,v 1.6 2017/05/28 09:35:56 florian Exp $	*/
+/*	$OpenBSD: engine.h,v 1.7 2017/05/28 19:57:38 florian Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>

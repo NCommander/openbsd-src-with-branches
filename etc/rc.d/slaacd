@@ -1,8 +1,8 @@
 #!/bin/sh
 #
-# $OpenBSD$
+# $OpenBSD: slaacd,v 1.1 2017/05/29 10:24:06 florian Exp $
 
-daemon="/usr/sbin/slaacd"
+daemon="/sbin/slaacd"
 
 . /etc/rc.d/rc.subr
 

@@ -1,7 +1,7 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: control.h,v 1.1 2017/03/18 17:33:13 florian Exp $	*/
 
 /*
- * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
+ * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,11 +16,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-TAILQ_HEAD(ctl_conns, ctl_conn)	ctl_conns;
+struct {
+	struct event	ev;
+	struct event	evt;
+	int		fd;
+} control_state;
 
-void		 frontend(int, int, char *);
-void		 frontend_dispatch_main(int, short, void *);
-void		 frontend_dispatch_engine(int, short, void *);
-int		 frontend_imsg_compose_main(int, pid_t, void *, uint16_t);
-int		 frontend_imsg_compose_engine(int, uint32_t, pid_t, void *,
-		     uint16_t);
+struct ctl_conn {
+	TAILQ_ENTRY(ctl_conn)	entry;
+	struct imsgev		iev;
+};
+
+int	control_init(char *);
+int	control_listen(void);
+void	control_accept(int, short, void *);
+void	control_dispatch_imsg(int, short, void *);
+int	control_imsg_relay(struct imsg *);
+void	control_cleanup(char *);
