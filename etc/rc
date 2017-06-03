@@ -1,4 +1,4 @@
-#	$OpenBSD: rc,v 1.497 2017/05/29 10:24:06 florian Exp $
+#	$OpenBSD: rc,v 1.498 2017/05/30 12:04:26 tb Exp $
 
 # System startup script run by init on autoboot or after single-user.
 # Output and error are redirected to console by init, and the console is the
@@ -342,6 +342,7 @@ mount -a -t nonfs,vnd
 # Re-mount the root filesystem read/writeable. (root on nfs requires this,
 # others aren't hurt.)
 mount -uw /
+chmod og-rwx /bsd
 
 rm -f /fastboot
 
