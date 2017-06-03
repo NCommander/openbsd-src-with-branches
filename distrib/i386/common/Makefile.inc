@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.40 2016/11/24 16:32:33 natano Exp $
+#	$OpenBSD: Makefile.inc,v 1.41 2016/12/30 22:32:25 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -97,6 +97,7 @@ rdsetroot:	${TOP}/../common/elfrdsetroot.c
 install:
 .ifndef NOBSDRD
 	cp bsd.rd ${RELEASEDIR}/bsd.rd
+	chmod a+r ${RELEASEDIR}/bsd.rd
 .endif
 .ifndef NOFS
 	cp ${FS} ${RELEASEDIR}/${FS}

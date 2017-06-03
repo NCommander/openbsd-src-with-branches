@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.30 2016/12/08 10:44:01 natano Exp $
+#	$OpenBSD: Makefile,v 1.31 2016/12/30 22:32:25 deraadt Exp $
 
 CBIN=		instbin
 ARCHDIR=	${.CURDIR}/..
@@ -99,6 +99,7 @@ clean cleandir:
 .ifdef RELEASEDIR
 beforeinstall:
 	cp bsd.rd ${LIF} ${CDROM} ${RELEASEDIR}
+	chmod a+r ${RELEASEDIR}/bsd.rd
 .endif
 
 .include <bsd.obj.mk>
