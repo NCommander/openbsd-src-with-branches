@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.syspatch.mk,v 1.10 2017/06/05 09:46:25 robert Exp $
+#	$OpenBSD: bsd.syspatch.mk,v 1.11 2017/06/05 09:47:54 robert Exp $
 #
 # Copyright (c) 2016-2017 Robert Nagy <robert@openbsd.org>
 #
@@ -119,7 +119,7 @@ ${ERRATA}/${ERRATA}.patch:
 
 ${_PATCH_COOKIE}: ${ERRATA}/${ERRATA}.patch
 	@echo '>> Applying ${ERRATA}.patch'; \
-	su ${BUILDUSER} -c '/usr/bin/patch ${PATCH_ARGS} < ${ERRATA}/${ERRATA}.patch' || \
+	/usr/bin/patch ${PATCH_ARGS} < ${ERRATA}/${ERRATA}.patch || \
 		{ echo "***>   ${ERRATA}.patch did not apply cleanly"; \
 		exit 1; };
 	@su ${BUILDUSER} -c 'touch $@'
