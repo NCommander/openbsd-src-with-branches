@@ -7,12 +7,13 @@
  *	OpenBSD: makemap.awk,v 1.14 2013/11/20 17:27:32 miod Exp 
  * generated from:
  */
-/*	OpenBSD: wskbdmap_mfii.c,v 1.44 2016/08/31 11:05:48 jca Exp  */
+/*	OpenBSD: wskbdmap_mfii.c,v 1.45 2016/08/31 15:25:27 jca Exp  */
 /*	$NetBSD: wskbdmap_mfii.c,v 1.15 2000/05/19 16:40:04 drochner Exp $	*/
 
 /*
  * PLEASE DO NOT FORGET TO REGEN
  *	sys/dev/usb/ukbdmap.c
+ *	sys/arch/sgi/hpc/wskbdmap_sgi.c
  * AFTER ANY CHANGES TO THIS FILE!
  */
 
