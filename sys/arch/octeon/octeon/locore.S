@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.13 2017/06/05 15:23:11 visa Exp $ */
+/*	$OpenBSD: locore.S,v 1.14 2017/06/06 14:35:53 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -144,23 +144,6 @@ locore_start:
 	PTR_L	sp, 0(sp)
 	jr	ra
 	nop
-
-LEAF(get_cvmctl, 0)
-	.set push
-	.set mips64r2
-	dmfc0	v0, $9, 7
-	jr	ra
-	nop
-END(get_cvmctl)
-
-LEAF(get_cvmmemctl, 0)
-	.set push
-	.set mips64r2
-	dmfc0	v0, $11, 7
-	jr	ra
-	nop
-END(get_cvmmemctl)
-
 
 #if defined(MULTIPROCESSOR)
 LEAF(hw_cpu_spinup_trampoline, 0)
