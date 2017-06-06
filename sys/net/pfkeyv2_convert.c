@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkeyv2_convert.c,v 1.59 2017/02/28 16:46:27 bluhm Exp $	*/
+/*	$OpenBSD: pfkeyv2_convert.c,v 1.60 2017/05/05 11:04:18 bluhm Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@keromytis.org)
  *
@@ -887,6 +887,7 @@ export_tap(void **p, struct tdb *tdb)
 	stag->sadb_x_tap_len = sizeof(struct sadb_x_tap) / sizeof(uint64_t);
 	*p += sizeof(struct sadb_x_tap);
 }
+#endif
 
 void
 export_satype(void **p, struct tdb *tdb)
@@ -897,4 +898,3 @@ export_satype(void **p, struct tdb *tdb)
 	    sizeof(uint64_t);
 	sab->sadb_protocol_proto = tdb->tdb_satype;
 }
-#endif
