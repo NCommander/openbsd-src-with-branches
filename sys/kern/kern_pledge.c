@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.210 2017/05/30 15:04:45 deraadt Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.211 2017/06/03 04:34:41 tb Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -32,6 +32,7 @@
 #include <sys/mman.h>
 #include <sys/sysctl.h>
 #include <sys/ktrace.h>
+#include <sys/acct.h>
 
 #include <sys/ioctl.h>
 #include <sys/termios.h>
@@ -581,6 +582,7 @@ pledge_fail(struct proc *p, int error, uint64_t code)
 		}
 	printf("%s(%d): syscall %d \"%s\"\n", p->p_p->ps_comm, p->p_p->ps_pid,
 	    p->p_pledge_syscall, codes);
+	p->p_p->ps_acflag |= APLEDGE;
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_PLEDGE))
 		ktrpledge(p, error, code, p->p_pledge_syscall);
