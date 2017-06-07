@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_rtr.c,v 1.158 2017/05/16 12:24:04 mpi Exp $	*/
+/*	$OpenBSD: nd6_rtr.c,v 1.159 2017/05/30 08:58:34 florian Exp $	*/
 /*	$KAME: nd6_rtr.c,v 1.97 2001/02/07 11:09:13 itojun Exp $	*/
 
 /*
@@ -613,7 +613,9 @@ defrouter_addreq(struct nd_defrouter *new)
 	error = rtrequest(RTM_ADD, &info, RTP_DEFAULT, &rt,
 	    new->ifp->if_rdomain);
 	if (error == 0) {
+		KERNEL_LOCK();
 		rtm_send(rt, RTM_ADD, new->ifp->if_rdomain);
+		KERNEL_UNLOCK();
 		rtfree(rt);
 		new->installed = 1;
 	}
@@ -717,7 +719,9 @@ defrouter_delreq(struct nd_defrouter *dr)
 	error = rtrequest(RTM_DELETE, &info, RTP_DEFAULT, &rt,
 	    dr->ifp->if_rdomain);
 	if (error == 0) {
+		KERNEL_LOCK();
 		rtm_send(rt, RTM_DELETE, dr->ifp->if_rdomain);
+		KERNEL_UNLOCK();
 		rtfree(rt);
 	}
 
