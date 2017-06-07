@@ -1,4 +1,4 @@
-/* $OpenBSD: ns8250.h,v 1.3 2016/10/03 06:00:17 mlarkin Exp $ */
+/* $OpenBSD: ns8250.h,v 1.4 2017/05/08 09:08:40 reyk Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -47,9 +47,15 @@ struct ns8250_dev {
 	pthread_mutex_t mutex;
 	struct ns8250_regs regs;
 	struct event event;
+	struct event rate;
+	struct timeval rate_tv;
 	int fd;
 	int irq;
 	int rcv_pending;
+	uint32_t vmid;
+	uint64_t byte_out;
+	uint32_t baudrate;
+	uint32_t pause_ct;
 };
 
 void ns8250_init(int, uint32_t);
