@@ -1,4 +1,4 @@
-#	$OpenBSD: proto-version.sh,v 1.5 2015/03/03 22:35:19 markus Exp $
+#	$OpenBSD: proto-version.sh,v 1.6 2017/04/30 23:34:55 djm Exp $
 #	Placed in the Public Domain.
 
 tid="sshd version with different protocol combinations"
@@ -6,7 +6,7 @@ tid="sshd version with different protocol combinations"
 # we just start sshd in inetd mode and check the banner
 check_version ()
 {
-	expect=$2
+	expect=$1
 	banner=`printf '' | ${SSHD} -i -f ${OBJ}/sshd_proxy`
 	case ${banner} in
 	SSH-1.99-*)
