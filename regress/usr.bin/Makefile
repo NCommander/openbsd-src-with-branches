@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.39 2016/10/07 15:31:42 schwarze Exp $
+#	$OpenBSD: Makefile,v 1.40 2016/10/07 17:30:10 schwarze Exp $
 
 SUBDIR+= basename bc calendar colrm column cut dc diff diff3 dirname doas
 SUBDIR+= file fmt fold grep gzip
-SUBDIR+= jot m4 mandoc openssl rev sdiff sed signify sort tsort ul
+SUBDIR+= jot lastcomm m4 mandoc openssl rev sdiff sed signify sort tsort ul
 SUBDIR+= wc xargs
 
 .if defined(REGRESS_FULL) || make(clean) || make(cleandir) || make(obj)
