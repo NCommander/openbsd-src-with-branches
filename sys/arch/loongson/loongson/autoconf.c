@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.5 2010/02/16 21:31:36 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.6 2013/06/02 21:46:04 pirofti Exp $	*/
 /*
  * Copyright (c) 2009 Miodrag Vallat.
  *
@@ -35,12 +35,25 @@ enum devclass bootdev_class = DV_DULL;
 extern char pmon_bootp[];
 
 void
+unmap_startup(void)
+{
+	extern uint32_t kernel_text[], endboot[];
+	uint32_t *word = kernel_text;
+
+	/* Cannot unmap kseg0; smash with trap. */
+	while (word < endboot)
+		*word++ = 0x00000034u;	/* TEQ zero, zero */
+}
+
+void
 cpu_configure(void)
 {
 	(void)splhigh();
 
 	softintr_init();
 	(void)config_rootfound("mainbus", NULL);
+
+	unmap_startup();
 
 	splinit();
 	cold = 0;
