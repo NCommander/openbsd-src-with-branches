@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.171 2017/04/18 13:59:09 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.172 2017/06/10 17:56:29 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -114,8 +114,6 @@ struct client_config {
 	time_t			 select_interval;
 	time_t			 reboot_timeout;
 	time_t			 backoff_cutoff;
-	enum { IGNORE, ACCEPT, PREFER }
-				 bootp_policy;
 	TAILQ_HEAD(, reject_elem) reject_list;
 	char			*resolv_tail;
 	char			*filename;
