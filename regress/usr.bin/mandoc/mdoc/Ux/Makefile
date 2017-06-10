@@ -1,5 +1,6 @@
-# $OpenBSD: Makefile,v 1.3 2017/03/05 19:59:26 schwarze Exp $
+# $OpenBSD: Makefile,v 1.4 2017/03/08 22:53:36 schwarze Exp $
 
-REGRESS_TARGETS = spacing eos
+REGRESS_TARGETS	 = eos punct spacing
+LINT_TARGETS	 = punct
 
 .include <bsd.regress.mk>

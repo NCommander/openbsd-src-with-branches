@@ -1,6 +1,7 @@
-# $OpenBSD: Makefile,v 1.6 2017/03/05 19:59:26 schwarze Exp $
+# $OpenBSD: Makefile,v 1.7 2017/03/08 22:53:35 schwarze Exp $
 
 REGRESS_TARGETS = simple font
+LINT_TARGETS =	  simple
 
 # it's unclear what font changes in link destinations should do
 
