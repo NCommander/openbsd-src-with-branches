@@ -1,4 +1,4 @@
-/*	$OpenBSD: ktrace.c,v 1.32 2015/04/18 18:28:37 deraadt Exp $	*/
+/*	$OpenBSD: ktrace.c,v 1.33 2016/07/18 09:36:50 guenther Exp $	*/
 /*	$NetBSD: ktrace.c,v 1.4 1995/08/31 23:01:44 jtc Exp $	*/
 
 /*-
@@ -250,10 +250,7 @@ usage(void)
 static void
 no_ktrace(int signo)
 {
-	char buf[8192];
-
-	snprintf(buf, sizeof(buf),
+	dprintf(STDERR_FILENO,
 "error:\tktrace() system call not supported in the running kernel\n\tre-compile kernel with 'option KTRACE'\n");
-	write(STDERR_FILENO, buf, strlen(buf));
 	_exit(1);
 }
