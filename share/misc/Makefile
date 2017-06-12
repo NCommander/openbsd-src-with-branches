@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2017/05/28 19:42:26 benno Exp $
+#	$OpenBSD: Makefile,v 1.17 2017/05/30 14:52:37 millert Exp $
 #	from: @(#)Makefile	5.13 (Berkeley) 5/7/91
 
 FILES=	airport birthtoken countrycodes \
@@ -11,7 +11,7 @@ FILES=	airport birthtoken countrycodes \
 SUBDIR=	pcvtfonts
 .endif
 
-all clean cleandir depend lint obj tags: _SUBDIRUSE
+all clean cleandir depend obj tags: _SUBDIRUSE
 
 realinstall:
 	cd ${.CURDIR}; install -c -o ${BINOWN} -g ${BINGRP} -m 444 ${FILES} \

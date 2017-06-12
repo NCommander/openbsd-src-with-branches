@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2000/04/11 20:13:11 millert Exp $
+#	$OpenBSD: Makefile,v 1.6 2001/07/20 19:44:03 mickey Exp $
 #	from: @(#)Makefile	6.13 (Berkeley) 3/20/91
 
 FILES=	tmac.andoc
@@ -7,7 +7,7 @@ NOOBJ=	noobj
 
 SUBDIR=	mdoc
 
-all clean cleandir depend lint tags:
+all clean cleandir depend tags:
 
 realinstall:
 	install -c -o ${BINOWN} -g ${BINGRP} -m 444 ${FILES} \
