@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.12 2015/01/28 17:30:37 schwarze Exp $
+# $OpenBSD: Makefile,v 1.1.1.1 2015/01/29 23:24:24 schwarze Exp $
 
-REGRESS_TARGETS	 = blankline block_unclosed empty
+REGRESS_TARGETS	 = blankline block_unclosed block_wrap empty
 LINT_TARGETS	 = block_unclosed empty
 
 # groff-1.22.3 defect:
