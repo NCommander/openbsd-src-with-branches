@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypbind.c,v 1.68 2016/07/08 19:32:26 millert Exp $ */
+/*	$OpenBSD: ypbind.c,v 1.69 2017/02/17 16:46:17 ajacoutot Exp $ */
 
 /*
  * Copyright (c) 1992, 1993, 1996, 1997, 1998 Theo de Raadt <deraadt@openbsd.org>
@@ -369,9 +369,7 @@ main(int argc, char *argv[])
 			if (!strcmp(dent->d_name, ".") ||
 			    !strcmp(dent->d_name, ".."))
 				continue;
-			snprintf(path, sizeof(path), "%s/%s", BINDINGDIR,
-			    dent->d_name);
-			(void) unlink(path);
+			(void)unlinkat(dirfd(dirp), dent->d_name, 0);
 		}
 		closedir(dirp);
 	} else {
