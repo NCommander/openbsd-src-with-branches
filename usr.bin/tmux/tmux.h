@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.784 2017/06/09 15:29:15 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.785 2017/06/09 16:01:39 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -126,6 +126,10 @@ enum {
 	/* Focus events. */
 	KEYC_FOCUS_IN = KEYC_BASE,
 	KEYC_FOCUS_OUT,
+
+	/* Paste brackets. */
+	KEYC_PASTE_START,
+	KEYC_PASTE_END,
 
 	/* Mouse keys. */
 	KEYC_MOUSE, /* unclassified mouse event */
