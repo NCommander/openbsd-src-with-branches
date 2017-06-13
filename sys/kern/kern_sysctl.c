@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.325 2017/04/27 21:39:27 bluhm Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.326 2017/05/06 18:18:11 bluhm Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -977,7 +977,8 @@ sysctl__string(void *oldp, size_t *oldlenp, void *newp, size_t newlen,
 int
 sysctl_rdstring(void *oldp, size_t *oldlenp, void *newp, const char *str)
 {
-	int len, error = 0;
+	size_t len;
+	int error = 0;
 
 	len = strlen(str) + 1;
 	if (oldp && *oldlenp < len)
@@ -996,7 +997,7 @@ sysctl_rdstring(void *oldp, size_t *oldlenp, void *newp, const char *str)
  */
 int
 sysctl_struct(void *oldp, size_t *oldlenp, void *newp, size_t newlen, void *sp,
-    int len)
+    size_t len)
 {
 	int error = 0;
 
@@ -1019,7 +1020,7 @@ sysctl_struct(void *oldp, size_t *oldlenp, void *newp, size_t newlen, void *sp,
  */
 int
 sysctl_rdstruct(void *oldp, size_t *oldlenp, void *newp, const void *sp,
-    int len)
+    size_t len)
 {
 	int error = 0;
 
