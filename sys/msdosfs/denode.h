@@ -142,6 +142,7 @@ struct denode {
 	struct vnode *de_devvp;	/* vnode of blk dev we live on */
 	uint32_t de_flag;		/* flag bits */
 	dev_t de_dev;		/* device where direntry lives */
+	daddr_t de_lastr;
 	uint32_t de_dirclust;	/* cluster of the directory file containing this entry */
 	uint32_t de_diroffset;	/* offset of this entry in the directory cluster */
 	uint32_t de_fndoffset;	/* offset of found dir entry */
