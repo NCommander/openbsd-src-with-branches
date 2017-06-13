@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.179 2016/10/09 11:25:40 tom Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.180 2017/04/30 16:45:45 mpi Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -331,16 +331,17 @@ install_extint(void (*handler)(void))
 	void extint(void);
 	void extsize(void);
 	extern u_long extint_call;
-	u_long offset = (u_long)handler - (u_long)&extint_call;
+	long offset = (u_long)handler - (u_long)&extint_call;
 	int omsr, msr;
 
-#ifdef	DIAGNOSTIC
-	if (offset > 0x1ffffff)
+#ifdef DIAGNOSTIC
+	if (offset > 0x1ffffff || offset < -0x1ffffff)
 		panic("install_extint: too far away");
 #endif
 	omsr = ppc_mfmsr();
 	msr = omsr & ~PSL_EE;
 	ppc_mtmsr(msr);
+	offset &= 0x3ffffff;
 	extint_call = (extint_call & 0xfc000003) | offset;
 	bcopy(&extint, (void *)EXC_EXI, (size_t)&extsize);
 	syncicache((void *)&extint_call, sizeof extint_call);
