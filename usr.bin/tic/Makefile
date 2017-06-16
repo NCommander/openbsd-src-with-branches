@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2012/09/02 03:56:18 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.8 2012/09/10 04:03:36 deraadt Exp $
 
 PROG=	tic
 SRCS=	dump_entry.c tic.c
@@ -16,6 +16,8 @@ COPTS+=	-O0
 .endif
 
 beforedepend: termsort.c
+
+dump_entry.o: termsort.c
 
 termsort.c: MKtermsort.sh
 	sh ${.CURDIR}/MKtermsort.sh awk ${CURSES}/Caps > ${.TARGET}

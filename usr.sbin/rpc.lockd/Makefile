@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 1997/08/19 08:05:16 niklas Exp $
+#	$OpenBSD: Makefile,v 1.5 2008/06/13 21:32:26 sturm Exp $
 
 PROG =	rpc.lockd
 SRCS =	nlm_prot_svc.c lockd.c lockd_lock.c procs.c
@@ -19,6 +19,8 @@ nlm_prot_svc.c: ${RPCSRC} nlm_prot.h
 
 nlm_prot.h: ${RPCSRC}
 	${RPCGEN} -h -o ${.TARGET} ${RPCSRC}
+
+BUILDFIRST = nlm_prot.h
 
 test: test.c
 	cc -o test test.c -lrpcsvc

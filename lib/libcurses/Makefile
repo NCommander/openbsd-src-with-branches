@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.69 2016/07/04 18:01:44 guenther Exp $
+#	$OpenBSD: Makefile,v 1.70 2016/09/16 17:24:20 nicm Exp $
 
 # Uncomment this to enable tracing in libcurses
 #CURSESTRACE=-DTRACE
@@ -101,6 +101,8 @@ CLEANFILES+= ${GENERATED} term.5 terminfo.5 curses.3 \
 all: ${GENERATED}
 
 beforedepend: ${GENERATED}
+
+BUILDFIRST = ${GENERATED}
 
 includes:
 	@cmp -s ${DESTDIR}/usr/include/ncurses.h ${.CURDIR}/curses.h || \

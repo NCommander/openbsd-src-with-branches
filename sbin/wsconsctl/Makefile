@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.40 2016/03/31 01:28:01 jsg Exp $
+#	$OpenBSD: Makefile,v 1.41 2016/05/12 19:17:03 deraadt Exp $
 
 .if ${MACHINE} != "octeon"
 
@@ -10,6 +10,7 @@ CPPFLAGS+=	-I${.CURDIR} -I.
 CLEANFILES+=	keysym.h y.tab.h
 
 beforedepend: keysym.h
+keysym.o: keysym.h
 
 keysym.h: mkkeysym.sh ${DESTDIR}/usr/include/dev/wscons/wsksymdef.h
 	sh ${.CURDIR}/mkkeysym.sh \
