@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.39 2017/01/05 12:42:18 krw Exp $	*/
+/*	$OpenBSD: parse.y,v 1.40 2017/01/05 13:53:09 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Ryan McBride <mcbride@openbsd.org>
@@ -41,6 +41,7 @@
 #include <event.h>
 
 #include "ifstated.h"
+#include "log.h"
 
 TAILQ_HEAD(files, file)		 files = TAILQ_HEAD_INITIALIZER(files);
 static struct file {
