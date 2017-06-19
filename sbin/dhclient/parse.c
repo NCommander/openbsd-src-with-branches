@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.50 2017/04/09 20:44:13 krw Exp $	*/
+/*	$OpenBSD: parse.c,v 1.51 2017/06/10 17:56:29 krw Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -253,7 +253,7 @@ parse_ethernet(FILE *cfile, struct ether_addr *hardware)
 
 	if (len == 6) {
 		if (parse_semi(cfile))
-		    memcpy(hardware, &buf, sizeof(*hardware));
+			memcpy(hardware, &buf, sizeof(*hardware));
 	} else if (token != ':') {
 		parse_warn("expecting ':'.");
 		skip_to_semi(cfile);
