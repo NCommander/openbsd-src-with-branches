@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.302 2016/11/30 17:43:32 eric Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.303 2017/05/17 14:00:06 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1474,12 +1474,12 @@ smtp_data_io(struct io *io, int evt, void *arg)
 		break;
 
 	case IO_LOWAT:
-		if (s->tx->dataeom && io_queued(s->tx->oev) == 0) {
-			smtp_data_io_done(s);
-		} else if (io_paused(s->io, IO_IN)) {
+		if (io_paused(s->io, IO_IN)) {
 			log_debug("debug: smtp: %p: filter congestion over: resuming session", s);
 			io_resume(s->io, IO_IN);
 		}
+		if (s->tx->dataeom && io_queued(s->tx->oev) == 0)
+			smtp_data_io_done(s);
 		break;
 
 	default:
