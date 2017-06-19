@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.c,v 1.117 2017/05/16 13:05:07 rzalamena Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.118 2017/05/16 13:09:21 rzalamena Exp $	*/
 /*	$NetBSD: ip_mroute.c,v 1.85 2004/04/26 01:31:57 matt Exp $	*/
 
 /*
@@ -1084,8 +1084,7 @@ ip_mforward(struct mbuf *m, struct ifnet *ifp)
 		if ((srctun++ % 1000) == 0)
 			log(LOG_ERR, "ip_mforward: received source-routed "
 			    "packet from %x\n", ntohl(ip->ip_src.s_addr));
-
-		return (1);
+		return (EOPNOTSUPP);
 	}
 
 	/*
