@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_socket.c,v 1.115 2017/05/08 09:11:20 mpi Exp $	*/
+/*	$OpenBSD: nfs_socket.c,v 1.116 2017/05/17 08:59:05 mpi Exp $	*/
 /*	$NetBSD: nfs_socket.c,v 1.27 1996/04/15 20:20:00 thorpej Exp $	*/
 
 /*
@@ -673,8 +673,7 @@ tryagain:
 		}
 errout:
 		if (error && error != EINTR && error != ERESTART) {
-			m_freem(*mp);
-			*mp = NULL;
+			m_freemp(mp);
 			if (error != EPIPE)
 				log(LOG_INFO,
 				    "receive error %d from nfs server %s\n",
@@ -707,10 +706,8 @@ errout:
 		} while (error == EWOULDBLOCK);
 		len -= auio.uio_resid;
 	}
-	if (error) {
-		m_freem(*mp);
-		*mp = NULL;
-	}
+	if (error)
+		m_freemp(mp);
 	/*
 	 * Search for any mbufs that are not a multiple of 4 bytes long
 	 * or with m_data not longword aligned.
@@ -1418,7 +1415,7 @@ nfs_realign(struct mbuf **pm, int hsiz)
 			off += m->m_len;
 			m = m->m_next;
 		}
-		m_freem(*pm);
+		m_freemp(pm);
 		*pm = n;
 	}
 }

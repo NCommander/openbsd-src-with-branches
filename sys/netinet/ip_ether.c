@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ether.c,v 1.84 2017/03/07 23:35:06 jca Exp $  */
+/*	$OpenBSD: ip_ether.c,v 1.85 2017/04/14 20:46:31 bluhm Exp $  */
 /*
  * The author of this code is Angelos D. Keromytis (kermit@adk.gr)
  *
@@ -97,7 +97,7 @@ etherip_input(struct mbuf **mp, int *offp, int proto, int af)
 		if (!etherip_allow && ((*mp)->m_flags & (M_AUTH|M_CONF)) == 0) {
 			DPRINTF(("etherip_input(): dropped due to policy\n"));
 			etheripstat.etherips_pdrops++;
-			m_freem(*mp);
+			m_freemp(mp);
 			return IPPROTO_DONE;
 		}
 		etherip_decap(*mp, *offp);
@@ -111,7 +111,7 @@ etherip_input(struct mbuf **mp, int *offp, int proto, int af)
 	default:
 		DPRINTF(("etherip_input(): dropped, unhandled protocol\n"));
 		etheripstat.etherips_pdrops++;
-		m_freem(*mp);
+		m_freemp(mp);
 		return IPPROTO_DONE;
 	}
 }
