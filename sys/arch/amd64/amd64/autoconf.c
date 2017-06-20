@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.47 2016/06/08 17:24:44 tedu Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.48 2017/05/31 19:18:18 deraadt Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $	*/
 
 /*-
@@ -109,13 +109,13 @@ extern int	amd64_has_aesni;
 void
 unmap_startup(void)
 {
-	extern void *kernel_text, *endboot;
-	vaddr_t p = (vaddr_t)&kernel_text;
+	extern int kernel_text[], endboot[];
+	vaddr_t p = (vaddr_t)kernel_text;
 
 	do {
 		pmap_kremove(p, PAGE_SIZE);
 		p += PAGE_SIZE;
-	} while (p < (vaddr_t)&endboot);
+	} while (p < (vaddr_t)endboot);
 }
 
 /*
