@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.213 2017/06/12 21:55:16 deraadt Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.214 2017/06/19 18:35:05 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1286,6 +1286,7 @@ pledge_ioctl(struct proc *p, long com, struct file *fp)
 		case TIOCGPGRP:
 		case TIOCGETA:
 		case TIOCGWINSZ:	/* ENOTTY return for non-tty */
+		case TIOCSTAT:		/* csh */
 			if (fp->f_type == DTYPE_VNODE && (vp->v_flag & VISTTY))
 				return (0);
 			return (ENOTTY);
