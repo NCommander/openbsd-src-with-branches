@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.28 2015/01/16 06:40:16 deraadt Exp $	*/
+/*	$OpenBSD: config.h,v 1.29 2016/10/16 09:35:40 tb Exp $	*/
 /*	$NetBSD: config.h,v 1.30 1997/02/02 21:12:30 thorpej Exp $	*/
 
 /*
@@ -266,6 +266,7 @@ struct objects {
 struct hashtab;
 
 const char *conffile;		/* source file, e.g., "GENERIC.sparc" */
+const char *last_component;
 const char *machine;		/* machine type, e.g., "sparc" or "sun3" */
 const char *machinearch;	/* machine arch, e.g., "sparc" or "m68k" */
 const char *srcdir;		/* path to source directory (rel. to build) */
