@@ -1,4 +1,4 @@
-/*   $OpenBSD: eh_common.S,v 1.60 2013/08/18 22:10:58 miod Exp $	*/
+/*   $OpenBSD: eh_common.S,v 1.61 2013/09/05 20:40:32 miod Exp $	*/
 /*
  * Mach Operating System
  * Copyright (c) 1993-1991 Carnegie Mellon University
@@ -1264,11 +1264,11 @@ ASLOCAL(clear_dest_ssbr_bit)
 	 * Now see if it's a double load
 	 * There are three forms of double load [IMM16, scaled, unscaled],
 	 * which can be checked by matching against two templates:
-	 *          -- 77776666555544443333222211110000 --
+	 *                    -- 77776666555544443333222211110000 --
 	 *   if (((instruction & 11111100000000000000000000000000) ==
-	 *             00010000000000000000000000000000) ;;
+	 *                       00010000000000000000000000000000) ||
 	 *       ((instruction & 11111100000000001111110011100000) ==
-	 *             11110100000000000001000000000000))
+	 *                       11110100000000000001000000000000))
 	 *   {
 	 *      It's a load double, so
 	 *      clear two SSBR bits.
