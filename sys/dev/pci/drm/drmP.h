@@ -1,4 +1,4 @@
-/* $OpenBSD: drmP.h,v 1.209 2016/10/08 05:52:06 guenther Exp $ */
+/* $OpenBSD: drmP.h,v 1.210 2017/05/25 03:19:39 dlg Exp $ */
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
  */
@@ -480,7 +480,7 @@ struct drm_driver_info {
 	int	(*get_scanout_position)(struct drm_device *, int,
 		    unsigned int, int *, int *, ktime_t *, ktime_t *);
 	int	(*get_vblank_timestamp)(struct drm_device *, int, int *,
-		    struct timeval *, unsigned);;
+		    struct timeval *, unsigned);
 
 	/**
 	 * Driver-specific constructor for drm_gem_objects, to set up
