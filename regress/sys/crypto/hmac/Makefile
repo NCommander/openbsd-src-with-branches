@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2008/09/02 12:55:44 djm Exp $
+#	$OpenBSD: Makefile,v 1.3 2014/01/18 05:54:52 martynas Exp $
 
 DIR=${.CURDIR}/../../../../sys
 
@@ -13,8 +13,6 @@ CDIAGFLAGS+=	-Wmissing-prototypes
 CDIAGFLAGS+=	-Wunused
 CDIAGFLAGS+=	-Wsign-compare
 #CDIAGFLAGS+=	-Wshadow
-
-REGRESS_TARGETS=	run-regress-${PROG}
 
 CFLAGS+=	-I${DIR}
 
