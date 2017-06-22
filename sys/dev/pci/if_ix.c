@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.150 2017/01/24 03:57:35 dlg Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.151 2017/04/24 13:20:46 jsg Exp $	*/
 
 /******************************************************************************
 
@@ -3417,7 +3417,7 @@ ixgbe_update_stats_counters(struct ix_softc *sc)
 void
 ixgbe_print_hw_stats(struct ix_softc * sc)
 {
-	struct ifnet   *ifp = &sc->arpcom.ac_if;;
+	struct ifnet   *ifp = &sc->arpcom.ac_if;
 
 	printf("%s: missed pkts %llu, rx len errs %llu, crc errs %llu, "
 	    "dropped pkts %lu, watchdog timeouts %ld, "
