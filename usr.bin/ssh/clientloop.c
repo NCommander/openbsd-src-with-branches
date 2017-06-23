@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.298 2017/05/31 07:00:13 markus Exp $ */
+/* $OpenBSD: clientloop.c,v 1.299 2017/05/31 09:15:42 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1246,7 +1246,7 @@ client_loop(int have_pty, int escape_char_arg, int ssh2_chan_id)
 
 	} else {
 		debug("pledge: network");
-		if (pledge("stdio unix inet dns tty", NULL) == -1)
+		if (pledge("stdio unix inet dns proc tty", NULL) == -1)
 			fatal("%s pledge(): %s", __func__, strerror(errno));
 	}
 
