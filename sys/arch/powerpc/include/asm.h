@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.11 2013/10/17 15:58:23 deraadt Exp $	*/
+/*	$OpenBSD: asm.h,v 1.12 2015/08/30 10:19:49 guenther Exp $	*/
 /*	$NetBSD: asm.h,v 1.1 1996/09/30 16:34:20 ws Exp $	*/
 
 /*
@@ -72,7 +72,7 @@
 #define _ENTRY(x) \
 	.text; .align 2; .globl x; .type x,@function; x:
 
-#ifdef PROF
+#if defined(PROF) || defined(GPROF)
 # define _PROF_PROLOGUE(y)	\
 	.section ".data"; \
 	.align 2; \

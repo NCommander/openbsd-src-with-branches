@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.4 2013/03/28 17:41:04 martynas Exp $	*/
+/*	$OpenBSD: asm.h,v 1.5 2016/05/27 16:32:38 deraadt Exp $	*/
 /*	$NetBSD: asm.h,v 1.25 2006/01/20 22:02:40 christos Exp $	*/
 
 /*-
@@ -61,7 +61,7 @@
 	.type x,@function						;\
 	x:
 
-#ifdef GPROF
+#if defined(PROF) || defined(GPROF)
 #define	_PROF_PROLOGUE				  \
 	mov.l	1f,r1				; \
 	mova	2f,r0				; \

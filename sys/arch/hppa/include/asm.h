@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.17 2012/09/02 20:30:13 kettenis Exp $	*/
+/*	$OpenBSD: asm.h,v 1.18 2013/03/28 17:41:04 martynas Exp $	*/
 
 /* 
  * Copyright (c) 1990,1991,1994 The University of Utah and
@@ -225,7 +225,7 @@ tf4	.reg	%fr8
 #define	__CONCAT(a,b)	a/**/b
 #endif
 
-#ifdef PROF
+#if defined(PROF) || defined(GPROF)
 #define	_PROF_PROLOGUE !\
 1:						!\
 	stw	rp, HPPA_FRAME_CRP(sr0,sp)	!\
