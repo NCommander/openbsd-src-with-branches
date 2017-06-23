@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.9 2016/01/01 15:56:04 tedu Exp $	*/
+/*	$OpenBSD: extern.h,v 1.10 2016/03/08 10:48:39 mestre Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1997/10/11 01:55:27 lukem Exp $	*/
 
 /*
@@ -123,7 +123,6 @@ void prht(void);
 #define length(str)			(strlen((str)) + 1)
 
 /* wizard.c */
-void datime(time_t *, time_t *);
 void poof(void);
 int Start(void);
 int wizard(void);
