@@ -1635,8 +1635,8 @@ pool_cache_init(struct pool *pp)
 	struct cpumem_iter i;
 
 	if (pool_caches.pr_size == 0) {
-		pool_init(&pool_caches, sizeof(struct pool_cache), 64,
-		    IPL_NONE, PR_WAITOK, "plcache", NULL);
+		pool_init(&pool_caches, sizeof(struct pool_cache),
+		    CACHELINESIZE, IPL_NONE, PR_WAITOK, "plcache", NULL);
 	}
 
 	/* must be able to use the pool items as cache list items */
