@@ -135,7 +135,6 @@ struct interface_info {
 	int			 rdomain;
 	int			 flags;
 #define	IFI_VALID_LLADDR	0x01
-#define IFI_HUP			0x04
 #define IFI_IS_RESPONSIBLE	0x08
 #define IFI_IN_CHARGE		0x10
 	struct dhcp_packet	 recv_packet;
