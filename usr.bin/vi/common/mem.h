@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.h,v 1.8 2016/02/03 01:47:25 mmcc Exp $	*/
+/*	$OpenBSD: mem.h,v 1.9 2016/05/07 14:03:01 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -79,7 +79,7 @@
  */
 #define	ADD_SPACE_GOTO(sp, bp, blen, nlen) {				\
 	GS *L__gp = (sp) == NULL ? NULL : (sp)->gp;			\
-	if (L__gp == NULL || (bp) == L__gp->tmp_bp) {			\
+	if (L__gp != NULL && (bp) == L__gp->tmp_bp) {			\
 		F_CLR(L__gp, G_TMP_INUSE);				\
 		BINC_GOTO((sp), L__gp->tmp_bp, L__gp->tmp_blen, (nlen));\
 		(bp) = L__gp->tmp_bp;					\
@@ -90,7 +90,7 @@
 }
 #define	ADD_SPACE_RET(sp, bp, blen, nlen) {				\
 	GS *L__gp = (sp) == NULL ? NULL : (sp)->gp;			\
-	if (L__gp == NULL || (bp) == L__gp->tmp_bp) {			\
+	if (L__gp != NULL && (bp) == L__gp->tmp_bp) {			\
 		F_CLR(L__gp, G_TMP_INUSE);				\
 		BINC_RET((sp), L__gp->tmp_bp, L__gp->tmp_blen, (nlen));	\
 		(bp) = L__gp->tmp_bp;					\
