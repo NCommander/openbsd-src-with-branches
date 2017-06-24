@@ -1,4 +1,4 @@
-/*	$OpenBSD: roff_html.c,v 1.9 2017/06/14 13:00:13 schwarze Exp $ */
+/*	$OpenBSD: roff_html.c,v 1.10 2017/06/14 22:50:37 schwarze Exp $ */
 /*
  * Copyright (c) 2010 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2014, 2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "mandoc.h"
 #include "roff.h"
 #include "out.h"
 #include "html.h"
