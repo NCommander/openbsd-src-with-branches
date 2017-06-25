@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.152 2017/06/24 15:59:28 schwarze Exp $ */
+/*	$OpenBSD: read.c,v 1.153 2017/06/24 18:58:09 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -94,6 +94,7 @@ static	const char * const	mandocerrs[MANDOCERR_MAX] = {
 
 	"legacy man(7) date format",
 	"duplicate RCS id",
+	"typo in section name",
 	"useless macro",
 	"consider using OS macro",
 	"errnos out of order",
