@@ -1,11 +1,13 @@
-#	$OpenBSD: Makefile,v 1.12 2016/09/05 06:21:02 landry Exp $
+#	$OpenBSD: Makefile,v 1.13 2016/09/05 09:55:18 deraadt Exp $
 
+SUBDIR += acme-client
 SUBDIR += arp
 SUBDIR += httpd
-#SUBDIR += ldapd
+SUBDIR += ldapd
 SUBDIR += mtree
 SUBDIR += ospfd
 SUBDIR += relayd
+SUBDIR += switchd
 SUBDIR += syslogd
 
 .if defined(REGRESS_FULL) || make(clean) || make(cleandir) || make(obj)
