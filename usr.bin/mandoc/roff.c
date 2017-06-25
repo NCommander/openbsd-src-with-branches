@@ -1,4 +1,4 @@
-/*	$OpenBSD: roff.c,v 1.187 2017/06/18 17:35:40 schwarze Exp $ */
+/*	$OpenBSD: roff.c,v 1.188 2017/06/24 14:38:28 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2015, 2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -328,7 +328,7 @@ const char *__roff_name[MAN_MAX + 1] = {
 	"RE",		"RS",		"DT",		"UC",
 	"PD",		"AT",		"in",
 	"OP",		"EX",		"EE",		"UR",
-	"UE",		NULL
+	"UE",		"MT",		"ME",		NULL
 };
 const	char *const *roff_name = __roff_name;
 
