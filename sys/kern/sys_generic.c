@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_generic.c,v 1.113 2016/11/07 00:26:33 guenther Exp $	*/
+/*	$OpenBSD: sys_generic.c,v 1.114 2017/01/24 00:58:55 mpi Exp $	*/
 /*	$NetBSD: sys_generic.c,v 1.24 1996/03/29 00:25:32 cgd Exp $	*/
 
 /*
@@ -799,7 +799,7 @@ selwakeup(struct selinfo *sip)
 	struct proc *p;
 	int s;
 
-	KNOTE(&sip->si_note, 0);
+	KNOTE(&sip->si_note, NOTE_SUBMIT);
 	if (sip->si_seltid == 0)
 		return;
 	if (sip->si_flags & SI_COLL) {

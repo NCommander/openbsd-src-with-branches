@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.119 2017/02/09 15:19:32 jca Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.120 2017/05/18 11:38:07 mpi Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -392,7 +392,7 @@ again:
 	if (off + len < so->so_snd.sb_cc)
 		flags &= ~TH_FIN;
 
-	win = sbspace(&so->so_rcv);
+	win = sbspace(so, &so->so_rcv);
 
 	/*
 	 * Sender silly window avoidance.  If connection is idle
