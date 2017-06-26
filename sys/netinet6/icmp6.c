@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.202 2017/03/02 09:06:59 mpi Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.203 2017/03/03 13:19:40 bluhm Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -1218,14 +1218,10 @@ icmp6_reflect(struct mbuf *m, size_t off)
 	sa6_src.sin6_family = AF_INET6;
 	sa6_src.sin6_len = sizeof(sa6_src);
 	sa6_src.sin6_addr = ip6->ip6_dst;
-	in6_recoverscope(&sa6_src, &ip6->ip6_dst);
-	in6_embedscope(&ip6->ip6_dst, &sa6_src, NULL);
 	bzero(&sa6_dst, sizeof(sa6_dst));
 	sa6_dst.sin6_family = AF_INET6;
 	sa6_dst.sin6_len = sizeof(sa6_dst);
 	sa6_dst.sin6_addr = t;
-	in6_recoverscope(&sa6_dst, &t);
-	in6_embedscope(&t, &sa6_dst, NULL);
 
 	/*
 	 * This is the case if the dst is our link-local address
