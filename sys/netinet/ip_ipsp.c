@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.223 2017/05/16 12:24:01 mpi Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.224 2017/05/18 10:56:45 bluhm Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -714,7 +714,7 @@ puttdb(struct tdb *tdbp)
 }
 
 void
-tdb_delete(struct tdb *tdbp)
+tdb_unlink(struct tdb *tdbp)
 {
 	struct tdb *tdbpp;
 	u_int32_t hashval;
@@ -775,8 +775,16 @@ tdb_delete(struct tdb *tdbp)
 	}
 
 	tdbp->tdb_snext = NULL;
-	tdb_free(tdbp);
 	tdb_count--;
+}
+
+void
+tdb_delete(struct tdb *tdbp)
+{
+	NET_ASSERT_LOCKED();
+
+	tdb_unlink(tdbp);
+	tdb_free(tdbp);
 }
 
 /*
