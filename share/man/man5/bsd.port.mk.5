@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.462 2017/06/10 10:13:10 espie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.463 2017/06/28 10:33:08 espie Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -24,7 +24,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: June 10 2017 $
+.Dd $Mdocdate: June 28 2017 $
 .Dt BSD.PORT.MK 5
 .Os
 .Sh NAME
@@ -2387,6 +2387,9 @@ Defaults to
 .Pa ${PORTSDIR}:${PORTSDIR}/mystuff .
 .It Ev PKGDIR
 Location for packaging information (packing list, port description, messages).
+.Cm update-plist
+may create it.
+Must be a valid directory.
 Default: pkg.
 .It Ev PKGFILE
 Full path to the created package for the given subpackage.
