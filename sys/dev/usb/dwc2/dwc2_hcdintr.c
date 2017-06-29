@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwc2_hcdintr.c,v 1.7 2017/02/12 17:41:17 visa Exp $	*/
+/*	$OpenBSD: dwc2_hcdintr.c,v 1.8 2017/06/20 15:49:00 visa Exp $	*/
 /*	$NetBSD: dwc2_hcdintr.c,v 1.11 2014/11/24 10:14:14 skrll Exp $	*/
 
 /*
@@ -40,10 +40,6 @@
 /*
  * This file contains the interrupt handlers for Host mode
  */
-#if 0
-#include <sys/cdefs.h>
-__KERNEL_RCSID(0, "$NetBSD: dwc2_hcdintr.c,v 1.11 2014/11/24 10:14:14 skrll Exp $");
-#endif
 
 #include <sys/param.h>
 #include <sys/systm.h>

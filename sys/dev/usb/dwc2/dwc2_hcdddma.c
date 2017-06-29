@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwc2_hcdddma.c,v 1.11 2015/12/18 17:23:14 mmcc Exp $	*/
+/*	$OpenBSD: dwc2_hcdddma.c,v 1.12 2017/04/09 18:09:41 dhill Exp $	*/
 /*	$NetBSD: dwc2_hcdddma.c,v 1.6 2014/04/03 06:34:58 skrll Exp $	*/
 
 /*
@@ -40,10 +40,6 @@
 /*
  * This file contains the Descriptor DMA implementation for Host mode
  */
-#if 0
-#include <sys/cdefs.h>
-__KERNEL_RCSID(0, "$NetBSD: dwc2_hcdddma.c,v 1.6 2014/04/03 06:34:58 skrll Exp $");
-#endif
 
 #include <sys/param.h>
 #include <sys/systm.h>

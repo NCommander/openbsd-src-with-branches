@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.22 2015/09/21 21:22:44 miod Exp $ */
+/*	$OpenBSD: asm.h,v 1.23 2017/01/21 14:45:29 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -320,10 +320,6 @@ x: ;				\
 	.rdata; \
 9:	.asciiz	msg; \
 	.text
-
-#define ASMSTR(str) \
-	.asciiz str; \
-	.align	3
 
 #define	LOAD_XKPHYS(reg, cca) \
 	li	reg, cca | 0x10; \
