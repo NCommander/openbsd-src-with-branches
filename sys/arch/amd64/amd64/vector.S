@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.47 2016/09/04 09:22:28 mpi Exp $	*/
+/*	$OpenBSD: vector.S,v 1.48 2017/05/30 12:41:55 mlarkin Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -286,7 +286,7 @@ calltrap:
 	jne	3f
 	INTRFASTEXIT
 3:	sti
-	movabsq	$4f,%rdi
+	movabsq	$spl_lowered,%rdi
 	movl	CPUVAR(ILEVEL),%esi
 	movl	%ebx,%edx
 	xorq	%rax,%rax
@@ -296,7 +296,11 @@ calltrap:
 #endif /* DDB */
 	movl	%ebx,CPUVAR(ILEVEL)
 	jmp	2b
-4:	.asciz	"WARNING: SPL NOT LOWERED ON TRAP EXIT %x %x\n"
+
+	.section .rodata
+spl_lowered:
+	.asciz	"WARNING: SPL NOT LOWERED ON TRAP EXIT %x %x\n"
+	.text
 #endif /* DIAGNOSTIC */
 
 
