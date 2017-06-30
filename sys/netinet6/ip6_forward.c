@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_forward.c,v 1.93 2016/10/03 12:33:21 mpi Exp $	*/
+/*	$OpenBSD: ip6_forward.c,v 1.94 2017/02/05 16:04:14 jca Exp $	*/
 /*	$KAME: ip6_forward.c,v 1.75 2001/06/29 12:42:13 jinmei Exp $	*/
 
 /*
@@ -298,6 +298,8 @@ reroute:
 		/* tag as generated to skip over pf_test on rerun */
 		m->m_pkthdr.pf.flags |= PF_TAG_GENERATED;
 		srcrt = 1;
+		rtfree(rt);
+		rt = NULL;
 		if_put(ifp);
 		ifp = NULL;
 		goto reroute;
