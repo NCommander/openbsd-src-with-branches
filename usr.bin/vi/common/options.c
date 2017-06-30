@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.22 2016/08/01 18:27:35 bentley Exp $	*/
+/*	$OpenBSD: options.c,v 1.23 2017/04/18 01:45:35 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -335,12 +335,12 @@ opts_init(SCR *sp, int *oargs)
 	OI(O_KEYTIME, "keytime=6");
 	OI(O_MATCHTIME, "matchtime=7");
 	OI(O_REPORT, "report=5");
-	OI(O_PARAGRAPHS, "paragraphs=IPLPPPQPP LIpplpipbp");
+	OI(O_PARAGRAPHS, "paragraphs=IPLPPPQPP LIpplpipbpBlBdPpLpIt");
 	(void)snprintf(b1, sizeof(b1), "path=%s", "");
 	OI(O_PATH, b1);
 	(void)snprintf(b1, sizeof(b1), "recdir=%s", _PATH_PRESERVE);
 	OI(O_RECDIR, b1);
-	OI(O_SECTIONS, "sections=NHSHH HUnhsh");
+	OI(O_SECTIONS, "sections=NHSHH HUnhshShSs");
 	(void)snprintf(b1, sizeof(b1),
 	    "shell=%s", (s = getenv("SHELL")) == NULL ? _PATH_BSHELL : s);
 	OI(O_SHELL, b1);
