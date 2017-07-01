@@ -1,4 +1,3 @@
-/*	$OpenBSD: intel_sdvo_regs.h,v 1.1 2013/03/18 12:36:52 jsg Exp $	*/
 /*
  * Copyright © 2006-2007 Intel Corporation
  *
