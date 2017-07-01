@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.304 2017/05/30 14:16:41 markus Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.305 2017/06/28 01:09:22 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -32,7 +32,6 @@
 
 #include "xmalloc.h"
 #include "sshkey.h"
-#include "rsa.h"
 #include "authfile.h"
 #include "uuencode.h"
 #include "sshbuf.h"
@@ -518,7 +517,7 @@ do_convert_private_ssh2_from_blob(u_char *blob, u_int blen)
 		buffer_get_bignum_bits(b, key->rsa->iqmp);
 		buffer_get_bignum_bits(b, key->rsa->q);
 		buffer_get_bignum_bits(b, key->rsa->p);
-		if ((r = rsa_generate_additional_parameters(key->rsa)) != 0)
+		if ((r = ssh_rsa_generate_additional_parameters(key)) != 0)
 			fatal("generate RSA parameters failed: %s", ssh_err(r));
 		break;
 	}

@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.220 2017/04/30 23:18:44 djm Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.221 2017/04/30 23:29:10 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -60,7 +60,6 @@
 
 #include "xmalloc.h"
 #include "ssh.h"
-#include "rsa.h"
 #include "sshbuf.h"
 #include "sshkey.h"
 #include "authfd.h"

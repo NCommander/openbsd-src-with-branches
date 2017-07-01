@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.489 2017/05/31 07:00:13 markus Exp $ */
+/* $OpenBSD: sshd.c,v 1.490 2017/05/31 08:09:45 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -70,7 +70,6 @@
 #include "xmalloc.h"
 #include "ssh.h"
 #include "ssh2.h"
-#include "rsa.h"
 #include "sshpty.h"
 #include "packet.h"
 #include "log.h"
