@@ -1,5 +1,5 @@
 %{
-/*      $OpenBSD: scan.l,v 1.27 2011/08/03 08:48:19 otto Exp $	*/
+/*      $OpenBSD: scan.l,v 1.28 2013/09/19 16:12:01 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -324,7 +324,7 @@ bc_yyinput(char *buf, int maxlen)
 
 	if (el != NULL)
 		el_get(el, EL_EDITMODE, &use_el);
-		
+
 	if (yyin == stdin && interactive && use_el) {
 		const char *bp;
 		sigset_t oset, nset;

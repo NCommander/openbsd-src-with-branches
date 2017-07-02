@@ -1,4 +1,4 @@
-/*      $OpenBSD: tty.c,v 1.2 2013/11/12 13:54:51 deraadt Exp $	*/
+/*      $OpenBSD: tty.c,v 1.3 2015/09/05 09:49:24 jsg Exp $	*/
 
 /*
  * Copyright (c) 2013, Otto Moerbeek <otto@drijf.net>
@@ -53,10 +53,10 @@ tstpcont(int sig)
 	if (sig == SIGTSTP) {
 		signal(SIGCONT, tstpcont);
 		gettty(&ttyedit);
-		settty(&ttysaved);		
+		settty(&ttysaved);	
 	} else {
 		signal(SIGTSTP, tstpcont);
-		settty(&ttyedit);		
+		settty(&ttyedit);
 	}
 	signal(sig, SIG_DFL);
 	kill(0, sig);
