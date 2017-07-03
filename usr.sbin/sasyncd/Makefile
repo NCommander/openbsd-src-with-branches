@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.8 2012/04/14 12:11:08 haesbaert Exp $
+#	$Id: Makefile,v 1.9 2012/08/17 17:11:21 haesbaert Exp $
 
 PROG=	sasyncd
 SRCS=	sasyncd.c carp.c conf.y log.c monitor.c net.c net_ctl.c pfkey.c timer.c
@@ -10,7 +10,7 @@ CFLAGS=		-O0 $(PIPE) $(DEBUG)
 
 CFLAGS+=	-I${.CURDIR} -I${.CURDIR}/../../sbin/iked
 
-CLEANFILES=	y.tab.h
+YFLAGS=
 
 # ElectricFence
 #LDADD+=	-L/usr/local/lib -lefence

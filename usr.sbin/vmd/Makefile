@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 2017/04/19 15:38:32 reyk Exp $
+#	$OpenBSD: Makefile,v 1.15 2017/05/08 09:08:40 reyk Exp $
 
 .if ${MACHINE} == "amd64" || ${MACHINE} == "i386"
 
@@ -17,7 +17,7 @@ CFLAGS+=	-Wsign-compare
 LDADD+=		-lutil -lpthread -levent
 DPADD+=		${LIBUTIL} ${LIBEVENT}
 
-CLEANFILES+=	y.tab.h
+YFLAGS=
 
 .else
 

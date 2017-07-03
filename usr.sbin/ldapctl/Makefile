@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2017/01/20 09:54:44 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.8 2017/01/20 11:55:08 benno Exp $
 
 .PATH:		${.CURDIR}/../ldapd
 
@@ -14,5 +14,6 @@ CFLAGS+=	-Wall -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+=	-Wsign-compare
+YFLAGS=
 
 .include <bsd.prog.mk>
