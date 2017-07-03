@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_extern.h,v 1.12 2016/01/30 21:31:08 martijn Exp $	*/
+/*	$OpenBSD: com_extern.h,v 1.14 2016/05/27 09:18:12 martijn Exp $	*/
 
 int cut(SCR *, CHAR_T *, MARK *, MARK *, int);
 int cut_line(SCR *, recno_t, size_t, size_t, CB *);
@@ -69,7 +69,6 @@ void opts_free(SCR *);
 int f_altwerase(SCR *, OPTION *, char *, u_long *);
 int f_columns(SCR *, OPTION *, char *, u_long *);
 int f_lines(SCR *, OPTION *, char *, u_long *);
-int f_lisp(SCR *, OPTION *, char *, u_long *);
 int f_paragraph(SCR *, OPTION *, char *, u_long *);
 int f_print(SCR *, OPTION *, char *, u_long *);
 int f_readonly(SCR *, OPTION *, char *, u_long *);
