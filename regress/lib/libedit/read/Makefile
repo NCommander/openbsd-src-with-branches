@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2016/09/18 21:06:46 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.6 2017/07/03 18:19:55 bluhm Exp $
 #
 # Author: Ingo Schwarze <schwarze@openbsd.org>, 2016.  Public Domain.
 
@@ -6,12 +6,10 @@ REGRESS_TARGETS = getcmd read_char
 
 CLEANFILES +=	test_read_char test_getcmd out_getcmd.txt
 
-test_read_char test_getcmd: generated
-
-read_char: test_read_char
+read_char: generated test_read_char
 	sh ${.CURDIR}/test_read_char.sh
 
-getcmd: test_getcmd
+getcmd: generated test_getcmd
 	echo -n s | ./test_getcmd > out_getcmd.txt
 	diff -u ${.CURDIR}/exp_getcmd.txt out_getcmd.txt
 
