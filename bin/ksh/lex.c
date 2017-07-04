@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.68 2016/03/04 09:37:23 czarkoff Exp $	*/
+/*	$OpenBSD: lex.c,v 1.69 2016/04/27 12:46:23 naddy Exp $	*/
 
 /*
  * lexical analysis and source input
@@ -385,7 +385,7 @@ yylex(int cf)
 					/* If this is a trim operation,
 					 * treat (,|,) specially in STBRACE.
 					 */
-					if (c == '#' || c == '%') {
+					if (c == '#' || c == '%' || c == '/') {
 						ungetsc(c);
 						PUSH_STATE(STBRACE);
 					} else {
