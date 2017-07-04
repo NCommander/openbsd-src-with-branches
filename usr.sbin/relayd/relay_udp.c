@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_udp.c,v 1.45 2017/01/09 14:49:21 reyk Exp $	*/
+/*	$OpenBSD: relay_udp.c,v 1.46 2017/05/28 10:39:15 benno Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2013 Reyk Floeter <reyk@openbsd.org>
@@ -58,20 +58,20 @@ void		 relay_dns_result(struct rsession *, u_int8_t *, size_t);
 int		 relay_dns_cmp(struct rsession *, struct rsession *);
 
 void
-relay_udp_privinit(struct relayd *x_env, struct relay *rlay)
+relay_udp_privinit(struct relay *rlay)
 {
-	if (env == NULL)
-		env = x_env;
-
 	if (rlay->rl_conf.flags & F_TLS)
 		fatalx("tls over udp is not supported");
 	rlay->rl_conf.flags |= F_UDP;
 }
 
 void
-relay_udp_init(struct relay *rlay)
+relay_udp_init(struct relayd *x_env, struct relay *rlay)
 {
 	struct protocol		*proto = rlay->rl_proto;
+
+	if (env == NULL)
+		env = x_env;
 
 	switch (proto->type) {
 	case RELAY_PROTO_DNS:
