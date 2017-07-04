@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2016/05/01 11:28:06 nicm Exp $
+# $OpenBSD: Makefile,v 1.8 2017/06/28 17:28:39 nicm Exp $
 
 FILE=file
 
@@ -22,7 +22,7 @@ all: ${REGRESS_TARGET}
 
 stdin:
 	@echo ${*}
-	@${FILE} - <t0.in | \
+	@${FILE} - <${.CURDIR}/t0.in | \
 		diff - ${.CURDIR}/${*}.out || \
 		(echo "XXX ${*} failed" && false)
 
