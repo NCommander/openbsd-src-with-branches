@@ -753,8 +753,8 @@ identd_accept(int fd, short events, void *arg)
 	event_set(&c->ev, s, EV_READ | EV_PERSIST, identd_request, c);
 	event_add(&c->ev, NULL);
 
-	event_set(&c->tmo, s, 0, identd_timeout, c);
-	event_add(&c->tmo, &timeout);
+	evtimer_set(&c->tmo, identd_timeout, c);
+	evtimer_add(&c->tmo, &timeout);
 }
 
 void
