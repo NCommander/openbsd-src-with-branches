@@ -1,4 +1,5 @@
-.TH TI-BASIC-MAN 1 "May 8, 2014" OpenBSD
+.\" $OpenBSD$
+.TH TI-BASIC-MAN 1 "May 8, 2014"
 .SH NAME
 ti-basic-man \- temporary indentation in man(7)
 .SH DESCRIPTION

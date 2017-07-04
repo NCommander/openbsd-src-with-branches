@@ -1,3 +1,4 @@
+.\" $OpenBSD$
 .TH GETTEXT 3 "May 2001" "GNU gettext 0.18"
 .SH NAME
 gettext, dgettext, dcgettext \- translate message

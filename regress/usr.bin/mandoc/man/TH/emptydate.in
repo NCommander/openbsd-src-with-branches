@@ -1,3 +1,4 @@
+.\" $OpenBSD$
 .TH TH-EMPTYDATE 1 "" source
 .SH NAME
 TH-emptydate \- an empty date string

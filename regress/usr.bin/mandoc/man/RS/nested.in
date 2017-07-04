@@ -1,4 +1,5 @@
-.TH RS-NESTED 1 "April 4, 2015" OpenBSD
+.\" $OpenBSD$
+.TH RS-NESTED 1 "April 4, 2015"
 .SH NAME
 RS-nested \- various blocks nested inside reset blocks
 .SH DESCRIPTION

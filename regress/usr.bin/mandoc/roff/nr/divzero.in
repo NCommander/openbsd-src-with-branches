@@ -1,4 +1,5 @@
-.TH NR-DIVZERO 1 "December 18, 2014" OpenBSD
+.\" $OpenBSD$
+.TH NR-DIVZERO 1 "December 18, 2014"
 .SH NAME
 nr-divzero \- division by zero in numerical expression
 .SH DESCRIPTION

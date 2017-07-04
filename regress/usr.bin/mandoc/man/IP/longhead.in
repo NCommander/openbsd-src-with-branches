@@ -1,4 +1,5 @@
-.TH IP-LONGHEAD 1 "April 8, 2014" OpenBSD
+.\" $OpenBSD$
+.TH IP-LONGHEAD 1 "April 8, 2014"
 .SH NAME
 IP-longhead \- indented paragraph with a long head
 .SH DESCRIPTION

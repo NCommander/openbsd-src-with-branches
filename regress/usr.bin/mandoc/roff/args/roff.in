@@ -1,4 +1,5 @@
-.TH ARGS-ROFF 1 "February 21, 2015" OpenBSD
+.\" $OpenBSD$
+.TH ARGS-ROFF 1 "February 21, 2015"
 .SH NAME
 args-roff - arguments to roff macros
 .SH DESCRIPTION

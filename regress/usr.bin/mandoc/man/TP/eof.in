@@ -1,4 +1,5 @@
-.TH TP-EOF 1 "July 7, 2014" OpenBSD
+.\" $OpenBSD$
+.TH TP-EOF 1 "July 7, 2014"
 .SH NAME
 TP-eof \- indented paragraph macro at the end of the file
 .SH DESCRIPTION

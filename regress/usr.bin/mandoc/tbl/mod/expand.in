@@ -1,4 +1,5 @@
-.TH TBL-MOD-EXPAND 1 "January 27, 2015" OpenBSD
+.\" $OpenBSD$
+.TH TBL-MOD-EXPAND 1 "January 27, 2015"
 .SH NAME
 tbl-mod-expand \- expand modifier in table layout
 .SH DESCRIPTION

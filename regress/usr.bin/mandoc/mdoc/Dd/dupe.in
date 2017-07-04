@@ -1,6 +1,7 @@
+.\" $OpenBSD$
 .Dd August 1, 2014
 .Dt DD-DUPE 1
-.Os OpenBSD
+.Os
 .Dd August 3, 2014
 .Sh NAME
 .Nm Dd-dupe

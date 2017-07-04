@@ -1,4 +1,5 @@
-.TH STRING-ZEROLENGTH 1 "December 19, 2010" OpenBSD
+.\" $OpenBSD$
+.TH STRING-ZEROLENGTH 1 "December 19, 2010"
 .SH NAME
 string-zerolength - handling of zero-length user-defined strings
 .SH DESCRIPTION

@@ -1,4 +1,5 @@
-.TH SPACE-LEADING-MAN 1 "January 15, 2011" OpenBSD
+.\" $OpenBSD$
+.TH SPACE-LEADING-MAN 1 "January 15, 2011"
 .SH NAME
 space-leading-man \- leading spaces on text lines in man documents
 .SH DESCRIPTION

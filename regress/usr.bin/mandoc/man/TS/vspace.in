@@ -1,4 +1,5 @@
-.TH TBL-VSPACE 1 "May 27, 2012" OpenBSD
+.\" $OpenBSD$
+.TH TBL-VSPACE 1 "May 27, 2012"
 .SH NAME
 tbl-vspace \- vertical spacing around tables
 .SH DESCRIPTION

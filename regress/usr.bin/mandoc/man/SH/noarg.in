@@ -1,4 +1,5 @@
-.TH SH-NOARG 1 "March 20, 2015" OpenBSD
+.\" $OpenBSD$
+.TH SH-NOARG 1 "March 20, 2015"
 .SH NAME
 SH-noarg \- empty header lines
 .SH

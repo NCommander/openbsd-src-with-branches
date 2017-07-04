@@ -1,4 +1,5 @@
-.TH TP-DOUBLE 1 2013-06-23 OpenBSD
+.\" $OpenBSD$
+.TH TP-DOUBLE 1 2013-06-23
 .SH NAME
 TP-double \- effect of double tagged paragraph
 .SH DESCRIPTION

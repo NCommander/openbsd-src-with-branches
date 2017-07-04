@@ -1,4 +1,5 @@
-.TH HP-LITERAL 1 "January 4, 2011" OpenBSD
+.\" $OpenBSD$
+.TH HP-LITERAL 1 "January 4, 2011"
 .SH NAME
 HP-literal \- hanged paragraphs in literal context
 .SH DESCRIPTION

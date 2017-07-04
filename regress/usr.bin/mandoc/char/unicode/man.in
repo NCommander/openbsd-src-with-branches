@@ -1,4 +1,5 @@
-.TH CHAR-UNICODE-MAN 1 "October 13, 2014" OpenBSD
+.\" $OpenBSD$
+.TH CHAR-UNICODE-MAN 1 "October 13, 2014"
 .SH NAME
 char-unicode-mdoc \- unicode characters in man code
 .SH DESCRIPTION

@@ -1,4 +1,5 @@
-.TH STRING-INFINITE 1 "December 3, 2010" OpenBSD
+.\" $OpenBSD$
+.TH STRING-INFINITE 1 "December 3, 2010"
 .SH NAME
 string-infinite - endless recursion in string expansion
 .SH DESCRIPTION

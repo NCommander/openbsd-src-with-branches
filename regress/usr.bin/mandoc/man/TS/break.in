@@ -1,4 +1,5 @@
-.TH TBL-BREAK 1 "January 30, 2015" OpenBSD
+.\" $OpenBSD$
+.TH TBL-BREAK 1 "January 30, 2015"
 .SH NAME
 tbl-break \- tables breaking blocks
 .SH DESCRIPTION

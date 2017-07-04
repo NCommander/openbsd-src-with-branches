@@ -1,4 +1,5 @@
-.TH B-ARGS 1 "July 30, 2014" OpenBSD
+.\" $OpenBSD$
+.TH B-ARGS 1 "July 30, 2014"
 .SH NAME
 B-args \- arguments to font macros
 .SH DESCRIPTION

@@ -1,4 +1,5 @@
-.TH TBL-OPT-BOX 1 "June 12, 2017" OpenBSD
+.\" $OpenBSD$
+.TH TBL-OPT-BOX 1 "June 12, 2017"
 .SH NAME
 tbl-opt-box \- box table options
 .SH DESCRIPTION

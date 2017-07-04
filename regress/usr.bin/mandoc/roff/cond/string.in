@@ -1,4 +1,5 @@
-.TH STRING 1 "June 14, 2017" OpenBSD
+.\" $OpenBSD$
+.TH STRING 1 "June 14, 2017"
 .SH NAME
 string \- conditional testing whether a string is defined
 .SH DESCRIPTION

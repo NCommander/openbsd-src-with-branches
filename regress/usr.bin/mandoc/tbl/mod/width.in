@@ -1,4 +1,5 @@
-.TH TBL-MOD-WIDTH 1 "June 8, 2017" OpenBSD
+.\" $OpenBSD$
+.TH TBL-MOD-WIDTH 1 "June 8, 2017"
 .SH NAME
 tbl-mod-width \- width modifier in table layout
 .SH DESCRIPTION

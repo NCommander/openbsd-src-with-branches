@@ -1,6 +1,7 @@
+.\" $OpenBSD$
 .Dd 2014-08-07
 .Dt DD-MANARG 1
-.Os OpenBSD
+.Os
 .Sh NAME
 .Nm Dd-manarg
 .Nd date in traditional man format

@@ -1,4 +1,5 @@
-.TH BLANK-LINE 1 "July 14, 2012" OpenBSD
+.\" $OpenBSD$
+.TH BLANK-LINE 1 "July 14, 2012"
 .SH NAME
 blank-line \- handling of blank lines
 .SH DESCRIPTION

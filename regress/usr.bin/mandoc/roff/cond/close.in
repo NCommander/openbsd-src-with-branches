@@ -1,4 +1,5 @@
-.TH COND-CLOSE 1 2013-06-27 OpenBSD
+.\" $OpenBSD$
+.TH COND-CLOSE 1 2013-06-27
 .SH NAME
 cond-close \- closing conditional macros
 .SH DESCRIPTION

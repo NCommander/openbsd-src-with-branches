@@ -1,4 +1,5 @@
-.TH RS-BREAKING 1 "7 July 2012" OpenBSD
+.\" $OpenBSD$
+.TH RS-BREAKING 1 "7 July 2012"
 .SH NAME
 RS-breaking \- some block gets broken by an RS block
 .SH DESCRIPTION

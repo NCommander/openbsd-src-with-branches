@@ -1,4 +1,5 @@
-.TH IF 1 "June 27, 2015" OpenBSD
+.\" $OpenBSD$
+.TH IF 1 "June 27, 2015"
 .SH NAME
 if \- the roff conditional instruction
 .SH DESCRIPTION

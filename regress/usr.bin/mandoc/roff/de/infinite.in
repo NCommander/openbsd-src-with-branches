@@ -1,6 +1,7 @@
-.Dd March 7, 2017
+.\" $OpenBSD$
+.Dd $Mdocdate: July 4 2017 $
 .Dt DE-INFINITE 1
-.Os OpenBSD
+.Os
 .Sh NAME
 .Nm de-infinite
 .Nd inifinte recursion in a user-defined macro

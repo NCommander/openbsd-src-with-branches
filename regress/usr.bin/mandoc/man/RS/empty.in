@@ -1,4 +1,5 @@
-.TH RS-EMPTY 1 "July 17, 2012" OpenBSD
+.\" $OpenBSD$
+.TH RS-EMPTY 1 "July 17, 2012"
 .SH NAME
 RS-empty \- empty margin reset blocks
 .SH DESCRIPTION

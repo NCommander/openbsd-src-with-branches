@@ -1,4 +1,5 @@
-.TH IT-DOUBLE 1 2013-07-13 OpenBSD
+.\" $OpenBSD$
+.TH IT-DOUBLE 1 2013-07-13
 .SH NAME
 it-double \- double input line trap
 .SH DESCRIPTION

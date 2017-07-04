@@ -1,4 +1,5 @@
-.TH CHAR-ACCENT-UTF8ONLY 1 "March 8, 2014" OpenBSD
+.\" $OpenBSD$
+.TH CHAR-ACCENT-UTF8ONLY 1 "March 8, 2014"
 .SH NAME
 \fBchar-accent-utf8only\fR - accents available in UTF-8 only
 .SH DESCRIPTION

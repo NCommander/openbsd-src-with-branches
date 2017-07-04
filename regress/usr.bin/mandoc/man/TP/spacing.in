@@ -1,4 +1,5 @@
-.TH TP-SPACING 1 "September 21, 2015" OpenBSD
+.\" $OpenBSD$
+.TH TP-SPACING 1 "September 21, 2015"
 .SH NAME
 TP-spacing \- spacing in tagged paragraphs
 .SH DESCRIPTION

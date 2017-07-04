@@ -1,4 +1,5 @@
-.TH RS-NESTED 1 "April 6, 2015" OpenBSD
+.\" $OpenBSD$
+.TH RS-NESTED 1 "April 6, 2015"
 .SH NAME
 RS-nowidth \- indentation blocks not specifying a width
 .SH DESCRIPTION

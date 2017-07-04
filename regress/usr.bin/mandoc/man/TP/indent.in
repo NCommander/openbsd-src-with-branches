@@ -1,4 +1,5 @@
-.TH TP-INDENT 1 "June 17, 2017" OpenBSD
+.\" $OpenBSD$
+.TH TP-INDENT 1 "June 17, 2017"
 .SH NAME
 TP-indent \- indent request inside TP head
 .SH DESCRIPTION

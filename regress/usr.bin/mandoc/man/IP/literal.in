@@ -1,4 +1,5 @@
-.TH IP-LITERAL 1 "January 4, 2011" OpenBSD
+.\" $OpenBSD$
+.TH IP-LITERAL 1 "January 4, 2011"
 .SH NAME
 IP-literal \- indented paragraphs in literal context
 .SH DESCRIPTION

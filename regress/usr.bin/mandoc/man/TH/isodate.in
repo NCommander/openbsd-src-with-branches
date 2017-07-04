@@ -1,3 +1,4 @@
+.\" $OpenBSD$
 .TH TH-ISODATE 1 "2011-07-02" source
 .SH NAME
 TH-isodate \- ISO date format

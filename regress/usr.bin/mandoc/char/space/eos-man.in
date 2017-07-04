@@ -1,4 +1,5 @@
-.TH SPACE-EOS-MAN 1 "December 22, 2013" OpenBSD
+.\" $OpenBSD$
+.TH SPACE-EOS-MAN 1 "December 22, 2013"
 .SH NAME
 SPACE-EOS-MAN \- end-of-sentence spacing in man(7) documents
 .SH DESCRIPTION

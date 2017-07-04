@@ -1,4 +1,5 @@
-.TH CHAR-UNICODE-ASCII 1 "October 27, 2014" OpenBSD
+.\" $OpenBSD$
+.TH CHAR-UNICODE-ASCII 1 "October 27, 2014"
 .SH NAME
 char-unicode-ascii \- Unicode characters in the ASCII range
 .SH DESCRIPTION

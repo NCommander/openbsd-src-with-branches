@@ -1,4 +1,5 @@
-.TH UR-NOUE 1 "July 7, 2014" OpenBSD
+.\" $OpenBSD$
+.TH UR-NOUE 1 "July 7, 2014"
 .SH NAME
 UR-noUE \- unclosed URI macro
 .SH DESCRIPTION

@@ -1,4 +1,5 @@
-.TH CHAR-ACCENT-NOCOMBINE 1 "March 8, 2014" OpenBSD
+.\" $OpenBSD$
+.TH CHAR-ACCENT-NOCOMBINE 1 "March 8, 2014"
 .SH NAME
 \fBchar-accent-nocombine\fR - non-combining accents
 .SH DESCRIPTION

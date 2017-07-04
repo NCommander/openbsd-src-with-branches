@@ -1,4 +1,5 @@
-.TH CHAR-UNICODE-LATIN1DIFF 1 "October 27, 2014" OpenBSD
+.\" $OpenBSD$
+.TH CHAR-UNICODE-LATIN1DIFF 1 "October 27, 2014"
 .SH NAME
 char-unicode-latin1diff \- Unicode characters in the ISO-8859-1 range
 .SH DESCRIPTION

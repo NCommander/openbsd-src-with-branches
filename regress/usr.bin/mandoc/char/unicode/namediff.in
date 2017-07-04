@@ -1,4 +1,5 @@
-.TH CHAR-UNICODE-NAMEDIFF 1 "October 27, 2014" OpenBSD
+.\" $OpenBSD$
+.TH CHAR-UNICODE-NAMEDIFF 1 "October 27, 2014"
 .SH NAME
 char-unicode-namediff \- Unicode characters having named escapes
 .SH DESCRIPTION

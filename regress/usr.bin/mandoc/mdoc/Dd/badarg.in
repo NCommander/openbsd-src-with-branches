@@ -1,6 +1,7 @@
+.\" $OpenBSD$
 .Dd "bad date"
 .Dt DD-BADARG 1
-.Os OpenBSD
+.Os
 .Sh NAME
 .Nm Dd-badarg
 .Nd date cannot be parsed

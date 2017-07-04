@@ -1,4 +1,5 @@
-.TH NR-RR 1 "April 5, 2014" OpenBSD
+.\" $OpenBSD$
+.TH NR-RR 1 "April 5, 2014"
 .SH NAME
 nr-rr \- defining and undefining number registers
 .SH DESCRIPTION

@@ -1,5 +1,6 @@
+.\" $OpenBSD$
 .Dt DD-LATE 1
-.Os OpenBSD
+.Os
 .Sh NAME
 .Nm Dd-late
 .Nd late date macro
