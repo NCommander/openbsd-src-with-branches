@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.c,v 1.40 2017/02/10 15:44:31 schwarze Exp $ */
+/*	$OpenBSD: tree.c,v 1.41 2017/04/24 23:06:09 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009, 2011, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2013, 2014, 2015, 2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -314,7 +314,6 @@ print_box(const struct eqn_box *ep, int indent)
 	case EQN_ROOT:
 		t = "eqn-root";
 		break;
-	case EQN_LISTONE:
 	case EQN_LIST:
 		t = "eqn-list";
 		break;
