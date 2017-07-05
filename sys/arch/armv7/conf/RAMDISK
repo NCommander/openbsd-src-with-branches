@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.77 2017/03/24 20:31:58 patrick Exp $
+#	$OpenBSD: RAMDISK,v 1.78 2017/05/21 17:44:52 kettenis Exp $
 
 machine		armv7 arm
 
@@ -21,6 +21,7 @@ option		FFS2
 option		MSDOSFS
 option		INET6
 option		EXT2FS
+option		NFSCLIENT
 
 option		USBVERBOSE
 
