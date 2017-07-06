@@ -1,4 +1,4 @@
-/*	$OpenBSD: display.c,v 1.46 2015/03/24 22:28:10 bcallah Exp $	*/
+/*	$OpenBSD: display.c,v 1.47 2015/04/03 22:10:29 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -366,10 +366,16 @@ vtpute(int c)
 	} else if (ISCTRL(c) != FALSE) {
 		vtpute('^');
 		vtpute(CCHR(c));
-	} else {
+	} else if (isprint(c)) {
 		if (vtcol >= 0)
 			vp->v_text[vtcol] = c;
 		++vtcol;
+	} else {
+		char bf[5], *cp;
+
+		snprintf(bf, sizeof(bf), "\\%o", c);
+		for (cp = bf; *cp != '\0'; cp++)
+			vtpute(*cp);
 	}
 }
 
