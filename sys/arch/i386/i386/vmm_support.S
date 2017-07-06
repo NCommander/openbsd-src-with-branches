@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: vmm_support.S,v 1.2 2017/01/07 22:39:16 mlarkin Exp $ */
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -28,8 +28,6 @@
 #define VMX_FAIL_LAUNCH_VALID_VMCS 3
 
 	.text
-	.code32
-	.align 16
 	.global _C_LABEL(vmxon)
 	.global _C_LABEL(vmxoff)
 	.global _C_LABEL(vmclear)
