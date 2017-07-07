@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2016/09/02 21:30:34 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.9 2016/10/19 14:31:19 tb Exp $
 
 # The following ports must be installed:
 #
@@ -63,8 +63,6 @@ regress:
 	ssh -t ${REMOTE_SSH} ${SUDO} true
 .endif
 .endif
-
-depend: addr.py
 
 # Create python include file containing the addresses.
 addr.py: Makefile

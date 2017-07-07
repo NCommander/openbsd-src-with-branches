@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.21 2016/09/02 21:30:34 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.22 2016/10/19 14:31:19 tb Exp $
 
 # The following ports must be installed:
 #
@@ -89,8 +89,6 @@ regress:
 	rm -f stamp-pfctl
 .endif
 .endif
-
-depend: addr.py
 
 # Create python include file containing the addresses.
 addr.py: Makefile

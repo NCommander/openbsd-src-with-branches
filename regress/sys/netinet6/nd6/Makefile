@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2016/10/19 14:31:19 tb Exp $
+#	$OpenBSD: Makefile,v 1.6 2017/03/01 00:05:21 bluhm Exp $
 
 # The following ports must be installed:
 #
@@ -68,8 +68,6 @@ regress:
 	@echo Fill out these variables for additional tests.
 	@echo SKIPPED
 .endif
-
-depend: addr.py
 
 # Create python include file containing the addresses.
 addr.py: Makefile

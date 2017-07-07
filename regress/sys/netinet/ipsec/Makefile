@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.15 2017/05/27 10:58:53 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.16 2017/05/28 21:23:47 bluhm Exp $
 
 # This test needs a manual setup of four machines, the make
 # target create-setup can be used distribute the configuration.
@@ -166,8 +166,6 @@ regress:
 	ssh -t ${IPS_SSH} ${SUDO} true
 	rm -f stamp-*
 .endif
-
-depend: addr.py
 
 # Create python include file containing the addresses.
 addr.py: Makefile
