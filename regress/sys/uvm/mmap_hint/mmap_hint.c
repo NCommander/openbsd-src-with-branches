@@ -1,4 +1,4 @@
-/*	$OpenBSD: mmap_hint.c,v 1.1 2011/10/07 20:16:55 ariane Exp $	*/
+/*	$OpenBSD: mmap_hint.c,v 1.2 2013/03/21 21:59:55 deraadt Exp $	*/
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
  *
@@ -18,6 +18,8 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+#include <sys/tree.h>
+#include <machine/pmap.h>
 #include <machine/vmparam.h>
 #include <err.h>
 #include <sysexits.h>
