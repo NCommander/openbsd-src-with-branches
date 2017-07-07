@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.223 2015/05/19 17:16:20 mikeb Exp $
+# $OpenBSD: Makefile,v 1.224 2016/09/30 14:27:52 otto Exp $
 
 # TARGETS
 # pf: feed pfNN.in through pfctl and check whether the output matches pfNN.ok
@@ -36,7 +36,7 @@ SHELL=/bin/sh
 
 .MAIN: all
 
-.ifmake !obj && !clean && !cleandir && !depend && !regress
+.ifmake !obj && !clean && !cleandir && !regress
 .if (${.TARGET} != all && ! make(all)) || (${.TARGET} == all)
 .BEGIN:
 	-${SUDO} ifconfig lo1000000 create

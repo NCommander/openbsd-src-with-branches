@@ -1,10 +1,10 @@
-# $OpenBSD: Makefile,v 1.14 2016/09/01 09:57:45 mpi Exp $
+# $OpenBSD: Makefile,v 1.15 2017/05/30 11:57:59 bluhm Exp $
 
 RDOMAIN?=	5
 
 .MAIN: all
 
-.ifmake !obj && !clean && !cleandir && !depend && !regress
+.ifmake !obj && !clean && !cleandir && !regress
 .if (${.TARGET} != all && ! make(all)) || (${.TARGET} == all)
 
 .SILENT: .BEGIN .END

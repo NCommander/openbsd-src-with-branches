@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2016/03/23 08:58:32 mpi Exp $
+# $OpenBSD: Makefile,v 1.2 2016/03/24 15:15:41 mpi Exp $
 
 RDOMAIN?=	5
 VETHER_MAC=	fe:e1:ba:d2:a3:18
@@ -8,7 +8,7 @@ OTHER_MAC=	cc:77:55:22:aa:66
 
 .MAIN: all
 
-.ifmake !obj && !clean && !cleandir && !depend && !regress
+.ifmake !obj && !clean && !cleandir && !regress
 .if (${.TARGET} != all && ! make(all)) || (${.TARGET} == all)
 
 .SILENT: .BEGIN .END .INTERRUPT

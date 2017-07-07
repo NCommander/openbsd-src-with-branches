@@ -1,9 +1,8 @@
-#	$OpenBSD: Makefile,v 1.20 2010/06/28 16:03:15 phessler Exp $
+#	$OpenBSD: Makefile,v 1.21 2014/11/24 01:12:14 schwarze Exp $
 
 #
-# To run full regression tests you just need two steps:
-# 1. make depend
-# 2. make regress
+# To run full regression tests you just need one step:
+# make regress
 #
 # A normal "make" is not necessary and will simply do the same thing
 # as "regress" (possibly with more bugs). This allows us to include
