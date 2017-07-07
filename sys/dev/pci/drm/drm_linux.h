@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_linux.h,v 1.52 2017/07/02 20:58:55 kettenis Exp $	*/
+/*	$OpenBSD: drm_linux.h,v 1.53 2017/07/05 20:30:13 kettenis Exp $	*/
 /*
  * Copyright (c) 2013, 2014, 2015 Mark Kettenis
  *
@@ -45,7 +45,7 @@
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wenum-conversion"
 #pragma clang diagnostic ignored "-Winitializer-overrides"
-#pragma clang diagnostic ignored "-Wtautological-pointer-compare"
+#pragma clang diagnostic ignored "-Wtautological-compare"
 #pragma clang diagnostic ignored "-Wunneeded-internal-declaration"
 #pragma clang diagnostic ignored "-Wunused-const-variable"
 #endif
