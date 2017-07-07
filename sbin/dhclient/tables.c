@@ -1,4 +1,4 @@
-/*	$OpenBSD: tables.c,v 1.19 2015/10/26 16:32:33 krw Exp $	*/
+/*	$OpenBSD: tables.c,v 1.20 2016/02/06 19:30:52 krw Exp $	*/
 
 /* Tables of information. */
 
@@ -71,7 +71,7 @@
  * C - CIDR description
  */
 
-const struct option dhcp_options[256] = {
+const struct option dhcp_options[DHO_COUNT] = {
 	/*   0 */ { "pad", "" },
 	/*   1 */ { "subnet-mask", "I" },
 	/*   2 */ { "time-offset", "l" },
