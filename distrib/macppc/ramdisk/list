@@ -1,4 +1,4 @@
-#	$OpenBSD: list,v 1.65 2016/09/17 15:03:39 florian Exp $
+#	$OpenBSD: list,v 1.66 2016/12/30 22:34:20 deraadt Exp $
 
 SRCDIRS distrib/special
 
@@ -49,6 +49,7 @@ LINK	instbin					sbin/pdisk
 LINK	instbin					sbin/ping sbin/ping6
 LINK	instbin					sbin/reboot sbin/halt
 LINK	instbin					sbin/route
+LINK	instbin					sbin/slaacd
 LINK	instbin					sbin/sysctl
 LINK	instbin					sbin/umount
 LINK	instbin					usr/bin/doas
