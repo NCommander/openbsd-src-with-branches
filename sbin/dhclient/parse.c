@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.53 2017/06/22 15:08:53 krw Exp $	*/
+/*	$OpenBSD: parse.c,v 1.54 2017/06/29 21:37:43 krw Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -232,7 +232,7 @@ parse_ip_addr(FILE *cfile, struct in_addr *addr)
 void
 parse_lease_time(FILE *cfile, time_t *timep)
 {
-	u_int32_t value;
+	uint32_t value;
 
 	if (!parse_decimal(cfile, (char *)&value, 'L')) {
 		parse_warn("expecting unsigned 32-bit decimal value.");
