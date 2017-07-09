@@ -1,11 +1,10 @@
-#	$OpenBSD: Makefile,v 1.7 2016/09/04 18:05:34 beck Exp $
+#	$OpenBSD: Makefile,v 1.8 2017/05/07 04:18:47 jsg Exp $
 
 .include <bsd.own.mk>
 
 PROG=	openssl
 LDADD=	-lssl -lcrypto
 DPADD=	${LIBSSL} ${LIBCRYPTO}
-MAN1=	openssl.1
 
 CFLAGS+= -Wall
 CFLAGS+= -Wformat

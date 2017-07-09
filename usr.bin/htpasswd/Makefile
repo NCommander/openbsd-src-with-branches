@@ -1,7 +1,6 @@
-#	$OpenBSD: Makefile,v 1.2 2017/04/16 10:16:35 jsg Exp $
+#	$OpenBSD: Makefile,v 1.3 2017/04/16 10:19:54 jsg Exp $
+
 PROG=		htpasswd
-SRCS=		htpasswd.c
-MAN=		htpasswd.1
 
 CFLAGS+=	-W -Wall
 CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations

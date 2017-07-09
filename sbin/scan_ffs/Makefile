@@ -1,7 +1,6 @@
-#	$OpenBSD: Makefile,v 1.1 1998/02/04 20:37:13 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 1998/02/05 17:15:51 weingart Exp $
 
 PROG=	scan_ffs
-SRCS=	scan_ffs.c
 DPADD=	${LIBUTIL}
 LDADD=	-lutil
 
