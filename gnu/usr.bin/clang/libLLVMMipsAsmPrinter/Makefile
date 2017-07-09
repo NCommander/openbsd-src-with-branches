@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2016/09/17 16:43:51 kettenis Exp $
+# $OpenBSD: Makefile,v 1.1 2017/01/25 19:24:33 patrick Exp $
 
 LIB=	LLVMMipsAsmPrinter
 NOPIC=
@@ -11,10 +11,7 @@ SRCS=	MipsInstPrinter.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lib/Target/Mips/InstPrinter
 
-depend:
-	# Nothing here so far ...
-
 install:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 .include <bsd.lib.mk>

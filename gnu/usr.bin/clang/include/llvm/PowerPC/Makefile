@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2016/09/19 11:39:05 pascal Exp $
 
 .include <bsd.own.mk>
 
@@ -14,10 +14,7 @@ HDRS=	PPCGenAsmMatcher.inc PPCGenAsmWriter.inc \
 all: ${HDRS}
 
 install:
-	# Nothing here so far ...
-
-depend:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 clean cleandir:
 	rm -f ${HDRS}

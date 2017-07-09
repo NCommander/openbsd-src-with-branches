@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:50 pascal Exp $
 
 LIB=	LLVMX86Info
 NOPIC=
@@ -11,10 +11,7 @@ SRCS=	X86TargetInfo.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lib/Target/X86/TargetInfo
 
-depend:
-	# Nothing here so far ...
-
 install:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 .include <bsd.lib.mk>

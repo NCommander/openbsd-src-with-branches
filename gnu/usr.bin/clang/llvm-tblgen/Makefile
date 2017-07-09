@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2017/01/24 08:44:47 patrick Exp $
+# $OpenBSD: Makefile,v 1.5 2017/04/17 19:58:53 pascal Exp $
 
 PROG=	llvm-tblgen
 NOMAN=
@@ -45,10 +45,7 @@ SRCS=	AsmMatcherEmitter.cpp \
 
 LLVM_LIBDEPS=	LLVMTableGen LLVMSupport
 
-depend:
-	# Nothing here so far ...
-
 install:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 .include <bsd.prog.mk>

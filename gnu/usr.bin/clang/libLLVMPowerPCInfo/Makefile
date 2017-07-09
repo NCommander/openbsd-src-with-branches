@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2016/09/19 11:39:05 pascal Exp $
 
 LIB=	LLVMPowerPCInfo
 NOPIC=
@@ -12,10 +12,7 @@ SRCS=	PowerPCTargetInfo.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lib/Target/PowerPC/TargetInfo
 
-depend:
-	# Nothing here so far ...
-
 install:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 .include <bsd.lib.mk>

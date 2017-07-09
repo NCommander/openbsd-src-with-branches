@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:49 pascal Exp $
+# $OpenBSD: Makefile,v 1.2 2017/01/14 20:12:41 patrick Exp $
 
 LIB=	LLVMCore
 NOPIC=
@@ -68,10 +68,7 @@ AttributesCompatFunc.inc: AttributesCompatFunc.td
 		-I${LLVM_SRCS}/include \
 		-o ${.TARGET} ${.ALLSRC}
 
-depend:
-	# Nothing here so far ...
-
 install:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 .include <bsd.lib.mk>

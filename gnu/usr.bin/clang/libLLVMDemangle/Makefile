@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2017/01/22 03:13:07 patrick Exp $
+# $OpenBSD: Makefile,v 1.1 2017/01/24 08:44:47 patrick Exp $
 
 LIB=	LLVMDemangle
 NOPIC=
@@ -11,10 +11,7 @@ SRCS=	ItaniumDemangle.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lib/Demangle
 
-depend:
-	# Nothing here so far ...
-
 install:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 .include <bsd.lib.mk>

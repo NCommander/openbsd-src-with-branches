@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/01/22 03:56:33 jsg Exp $
+# $OpenBSD: Makefile,v 1.3 2017/04/17 19:58:53 pascal Exp $
 
 PROG=	clang-tblgen
 NOMAN=
@@ -18,10 +18,7 @@ SRCS=	ClangASTNodesEmitter.cpp \
 
 LLVM_LIBDEPS=	LLVMTableGen LLVMSupport
 
-depend:
-	# Nothing here so far ...
-
 install:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 .include <bsd.prog.mk>

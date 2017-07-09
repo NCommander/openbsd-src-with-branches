@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/01/14 20:12:41 patrick Exp $
+# $OpenBSD: Makefile,v 1.1 2017/01/22 03:13:07 patrick Exp $
 
 LIB=	LLVMPasses
 NOPIC=
@@ -11,10 +11,7 @@ SRCS=	PassBuilder.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lib/Passes
 
-depend:
-	# Nothing here so far ...
-
 install:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 .include <bsd.lib.mk>

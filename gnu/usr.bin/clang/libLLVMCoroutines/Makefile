@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/01/14 20:12:42 patrick Exp $
+# $OpenBSD: Makefile,v 1.1 2017/01/24 08:44:47 patrick Exp $
 
 LIB=	LLVMCoroutines
 NOPIC=
@@ -17,10 +17,7 @@ SRCS=	Coroutines.cpp \
 
 .PATH:	${.CURDIR}/../../../llvm/lib/Transforms/Coroutines
 
-depend:
-	# Nothing here so far ...
-
 install:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 .include <bsd.lib.mk>

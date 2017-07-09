@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:48 pascal Exp $
+# $OpenBSD: Makefile,v 1.2 2016/09/08 18:05:30 pascal Exp $
 
 .include <bsd.own.mk>
 
@@ -12,10 +12,7 @@ HDRS=	X86GenAsmMatcher.inc X86GenAsmWriter.inc X86GenAsmWriter1.inc \
 all: ${HDRS}
 
 install:
-	# Nothing here so far ...
-
-depend:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 clean cleandir:
 	rm -f ${HDRS}

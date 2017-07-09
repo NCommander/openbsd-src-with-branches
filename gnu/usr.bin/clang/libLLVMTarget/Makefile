@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:50 pascal Exp $
+# $OpenBSD: Makefile,v 1.2 2017/01/24 08:44:47 patrick Exp $
 
 LIB=	LLVMTarget
 NOPIC=
@@ -15,10 +15,7 @@ SRCS=	Target.cpp \
 
 .PATH:	${.CURDIR}/../../../llvm/lib/Target
 
-depend:
-	# Nothing here so far ...
-
 install:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 .include <bsd.lib.mk>

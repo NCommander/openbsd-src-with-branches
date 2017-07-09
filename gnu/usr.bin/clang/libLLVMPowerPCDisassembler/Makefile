@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2016/09/19 11:39:05 pascal Exp $
 
 LIB=	LLVMPowerPCDisassembler
 NOPIC=
@@ -12,10 +12,7 @@ SRCS=	PPCDisassembler.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lib/Target/PowerPC/Disassembler
 
-depend:
-	# Nothing here so far ...
-
 install:
-	# Nothing here so far ...
+	@# Nothing here so far ...
 
 .include <bsd.lib.mk>
