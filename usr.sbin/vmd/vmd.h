@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.h,v 1.55 2017/05/30 17:56:47 tedu Exp $	*/
+/*	$OpenBSD: vmd.h,v 1.56 2017/06/12 13:41:24 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -65,6 +65,10 @@ enum imsg_type {
 	IMSG_VMDOP_START_VM_IF,
 	IMSG_VMDOP_START_VM_END,
 	IMSG_VMDOP_START_VM_RESPONSE,
+	IMSG_VMDOP_PAUSE_VM,
+	IMSG_VMDOP_PAUSE_VM_RESPONSE,
+	IMSG_VMDOP_UNPAUSE_VM,
+	IMSG_VMDOP_UNPAUSE_VM_RESPONSE,
 	IMSG_VMDOP_TERMINATE_VM_REQUEST,
 	IMSG_VMDOP_TERMINATE_VM_RESPONSE,
 	IMSG_VMDOP_TERMINATE_VM_EVENT,
@@ -189,6 +193,7 @@ struct vmd_vm {
 	struct imsgev		 vm_iev;
 	int			 vm_shutdown;
 	uid_t			 vm_uid;
+	int			 vm_paused;
 
 	TAILQ_ENTRY(vmd_vm)	 vm_entry;
 };
