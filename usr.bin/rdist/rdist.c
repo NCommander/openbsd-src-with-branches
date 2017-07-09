@@ -1,4 +1,4 @@
-/*	$OpenBSD: rdist.c,v 1.29 2015/01/20 09:00:16 guenther Exp $	*/
+/*	$OpenBSD: rdist.c,v 1.30 2015/02/08 23:40:34 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -38,7 +38,7 @@
 #include <unistd.h>
 
 #include "client.h"
-#include "y.tab.h"
+#include "gram.h"
 
 
 /*

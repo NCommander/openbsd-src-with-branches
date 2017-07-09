@@ -1,4 +1,4 @@
-/*	$OpenBSD: docmd.c,v 1.31 2014/07/12 03:48:04 guenther Exp $	*/
+/*	$OpenBSD: docmd.c,v 1.32 2015/01/20 09:00:16 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -39,7 +39,7 @@
 #include <unistd.h>
 
 #include "client.h"
-#include "y.tab.h"
+#include "gram.h"
 
 /*
  * Functions for rdist that do command (cmd) related activities.
