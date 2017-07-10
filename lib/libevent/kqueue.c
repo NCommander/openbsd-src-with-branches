@@ -1,4 +1,4 @@
-/*	$OpenBSD: kqueue.c,v 1.38 2015/12/25 17:10:05 tedu Exp $	*/
+/*	$OpenBSD: kqueue.c,v 1.39 2016/09/03 11:31:17 nayden Exp $	*/
 
 /*
  * Copyright 2000-2002 Niels Provos <provos@citi.umich.edu>
@@ -190,7 +190,7 @@ kq_dispatch(struct event_base *base, void *arg, struct timeval *tv)
 		ts_p = &ts;
 	}
 
-	res = kevent(kqop->kq, changes, kqop->nchanges,
+	res = kevent(kqop->kq, kqop->nchanges ? changes : NULL, kqop->nchanges,
 	    events, kqop->nevents, ts_p);
 	kqop->nchanges = 0;
 	if (res == -1) {
