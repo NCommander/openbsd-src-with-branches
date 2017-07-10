@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 2008/04/18 12:32:11 djm Exp $
+#	$OpenBSD: Makefile,v 1.12 2013/07/02 13:32:38 markus Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -8,7 +8,6 @@ BINOWN=	root
 BINMODE?=555
 
 BINDIR=	/usr/bin
-MAN=	sftp.1
 
 SRCS=	sftp.c sftp-client.c sftp-common.c sftp-glob.c
 
