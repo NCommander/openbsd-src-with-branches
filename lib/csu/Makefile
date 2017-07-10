@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.25 2016/11/08 19:04:48 natano Exp $
+#	$OpenBSD: Makefile,v 1.26 2017/01/21 00:46:32 guenther Exp $
 
 OBJS=		crt0.o gcrt0.o
 OBJS+=		crtbegin.o crtend.o
@@ -87,8 +87,5 @@ crtendS.o: crtendS.c
 realinstall:
 	${INSTALL} ${INSTALL_COPY} -S -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
 	    ${DESTDIR}/usr/lib
-
-afterdepend: .depend
-	@sed -i 's/^\([^\.]*\).o[ ]*:/\1.o g\1.o r\1.o:/' .depend
 
 .include <bsd.prog.mk>
