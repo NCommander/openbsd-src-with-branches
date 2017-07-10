@@ -1,8 +1,7 @@
-# $OpenBSD: Makefile,v 1.4 2017/01/18 11:56:10 bluhm Exp $
+# $OpenBSD: Makefile,v 1.5 2017/02/10 12:30:50 bluhm Exp $
 
 PROGS=		mmap-sysctl-copyin mmap-sysctl-copyout
-OBJS=		${PROGS:S/$/.o/}
-CLEANFILES=	${PROGS} diskimage stamp-*
+CLEANFILES=	diskimage stamp-*
 
 .PHONY: disk nfs mount unconfig clean
 
