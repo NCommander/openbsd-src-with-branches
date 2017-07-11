@@ -1,4 +1,4 @@
-/* $OpenBSD: zsig.c,v 1.13 2016/09/27 02:16:40 tedu Exp $ */
+/* $OpenBSD: zsig.c,v 1.14 2016/10/04 14:40:41 espie Exp $ */
 /*
  * Copyright (c) 2016 Marc Espie <espie@openbsd.org>
  *
@@ -55,7 +55,7 @@ static uint8_t fake[10] = { 0x1f, 0x8b, 8, FCOMMENT_FLAG, 0, 0, 0, 0, 0, 3 };
 static uint8_t *
 readgz_header(struct gzheader *h, int fd)
 {
-	size_t sz = 1024;
+	size_t sz = 1023;
 	uint8_t *p;
 	size_t pos = 0;
 	size_t len = 0;
