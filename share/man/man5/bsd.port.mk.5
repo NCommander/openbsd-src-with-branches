@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.463 2017/06/28 10:33:08 espie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.464 2017/06/28 10:34:10 espie Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -842,7 +842,7 @@ See
 .El
 .Sh VARIABLES
 Note that some variables are marked as
-.Sq User-settings ,
+.Sq User settings ,
 which means that individual ports should not modify them,
 and that some variables are marked as
 .Sq read-only ,
@@ -952,7 +952,7 @@ Defaults to
 See
 .Ev SYSCONFDIR .
 .It Ev BATCH
-User-settings.
+User settings.
 Set to
 .Sq Yes
 to avoid ports that require user-interaction.
@@ -2499,7 +2499,7 @@ Mostly used by
 which already installs everything before running
 .Cm prepare .
 .It Ev PROGRESS_METER
-User-settings.
+User settings.
 Defaults to
 .Sq Yes .
 Forces commands like
