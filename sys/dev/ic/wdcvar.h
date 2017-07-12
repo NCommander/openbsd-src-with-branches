@@ -1,4 +1,4 @@
-/*      $OpenBSD: wdcvar.h,v 1.54 2014/01/22 06:05:21 dlg Exp $     */
+/*      $OpenBSD: wdcvar.h,v 1.55 2015/08/17 15:36:29 krw Exp $     */
 /*	$NetBSD: wdcvar.h,v 1.17 1999/04/11 20:50:29 bouyer Exp $	*/
 
 /*-
@@ -170,6 +170,8 @@ struct wdc_softc { /* Per controller state */
 	struct channel_softc **channels;  /* channels-specific datas (array) */
 	u_int16_t quirks;		/* per-device oddities */
 #define WDC_QUIRK_NOSHORTDMA	0x0001	/* can't do short DMA transfers */
+#define WDC_QUIRK_NOATA		0x0002	/* skip attaching ATA disks */
+#define WDC_QUIRK_NOATAPI	0x0004	/* skip attaching ATAPI devices */
 
 #if 0
 	/*
