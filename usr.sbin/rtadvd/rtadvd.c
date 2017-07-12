@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtadvd.c,v 1.85 2017/04/05 14:50:05 jca Exp $	*/
+/*	$OpenBSD: rtadvd.c,v 1.86 2017/06/09 13:31:03 florian Exp $	*/
 /*	$KAME: rtadvd.c,v 1.66 2002/05/29 14:18:36 itojun Exp $	*/
 
 /*
@@ -1152,10 +1152,8 @@ sock_open(void)
 	SLIST_FOREACH(ra, &ralist, entry) {
 		mreq.ipv6mr_interface = ra->ifindex;
 		if (setsockopt(sock, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq,
-		    sizeof(mreq)) < 0) {
-			log_warn("IPV6_JOIN_GROUP(link) on %s", ra->ifname);
-			exit(1);
-		}
+		    sizeof(mreq)) < 0)
+			fatal("IPV6_JOIN_GROUP(link) on %s", ra->ifname);
 	}
 
 	/* initialize msghdr for receiving packets */
