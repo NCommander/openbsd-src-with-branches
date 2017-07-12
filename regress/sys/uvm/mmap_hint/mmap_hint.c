@@ -1,4 +1,4 @@
-/*	$OpenBSD: mmap_hint.c,v 1.2 2013/03/21 21:59:55 deraadt Exp $	*/
+/*	$OpenBSD: mmap_hint.c,v 1.3 2017/07/07 10:49:12 bluhm Exp $	*/
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
  *
@@ -72,9 +72,9 @@ main()
 	p = mmap_hint(NULL);
 
 	/* Check hinted allocation at top of map. */
-	fprintf(stderr, "2: Checking hint VM_MAXUSER_ADDRESS 0x%lx mmap\n",
-	    (unsigned long)VM_MAXUSER_ADDRESS);
-	p = mmap_hint((void*)VM_MAXUSER_ADDRESS);
+	fprintf(stderr, "2: Checking hint VM_MAXUSER_ADDRESS-page 0x%lx mmap\n",
+	    (unsigned long)VM_MAXUSER_ADDRESS - PAGE_SIZE);
+	p = mmap_hint((void*)VM_MAXUSER_ADDRESS - PAGE_SIZE);
 
 	/* Check hinted allocation at bottom of map. */
 	fprintf(stderr, "3: Checking hint VM_MIN_ADDRESS 0x%lx mmap\n",
