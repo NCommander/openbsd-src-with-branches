@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.106 2017/07/10 00:47:47 krw Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.107 2017/07/10 14:11:47 krw Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -98,7 +98,7 @@ check_route_label(struct sockaddr_rtlabel *label)
 {
 	pid_t pid;
 
-	if (!label)
+	if (label == NULL)
 		return ROUTE_LABEL_NONE;
 
 	if (strncmp("DHCLIENT ", label->sr_label, 9) != 0)
