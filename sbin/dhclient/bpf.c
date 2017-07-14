@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.59 2017/07/10 00:47:47 krw Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.60 2017/07/10 17:13:24 krw Exp $	*/
 
 /* BPF socket interface code, originally contributed by Archie Cobbs. */
 
@@ -428,6 +428,6 @@ receive_packet(struct interface_info *ifi, struct sockaddr_in *from,
 		ifi->rbuf_offset = BPF_WORDALIGN(ifi->rbuf_offset +
 		    hdr.bh_caplen);
 		return  hdr.bh_caplen ;
-	} while (!length);
+	} while (length == 0);
 	return  0 ;
 }
