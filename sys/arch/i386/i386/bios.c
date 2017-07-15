@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.114 2016/02/20 19:59:01 mlarkin Exp $	*/
+/*	$OpenBSD: bios.c,v 1.115 2016/03/07 05:32:46 naddy Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -171,7 +171,7 @@ biosattach(struct device *parent, struct device *self, void *aux)
 	volatile u_int8_t *va;
 	char scratch[64], *str;
 	int flags, smbiosrev = 0, ncpu = 0, isa_hole_exec = 0;
-#if NACPI > 0
+#if NACPI > 0 || NAPM > 0
 	int usingacpi = 0;
 #endif
 
