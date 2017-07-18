@@ -1,4 +1,4 @@
-/*	$OpenBSD: selinfo.h,v 1.3 2007/07/25 23:11:53 art Exp $	*/
+/*	$OpenBSD: selinfo.h,v 1.4 2016/11/07 00:26:32 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -41,8 +41,8 @@
  * notified when I/O becomes possible.
  */
 struct selinfo {
-	pid_t	si_seltid;	/* thread to be notified */
 	struct	klist si_note;	/* kernel note list */
+	pid_t	si_seltid;	/* thread to be notified */
 	short	si_flags;	/* see below */
 };
 #define	SI_COLL	0x0001		/* collision occurred */
