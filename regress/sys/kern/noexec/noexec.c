@@ -1,4 +1,4 @@
-/*	$OpenBSD: noexec.c,v 1.15 2014/04/18 14:38:21 guenther Exp $	*/
+/*	$OpenBSD: noexec.c,v 1.16 2016/09/24 07:26:14 otto Exp $	*/
 
 /*
  * Copyright (c) 2002,2003 Michael Shalayeff
@@ -120,6 +120,10 @@ getaddr(void *a)
 {
 	void *ret;
 
+	/*
+	 * Compile with -fno-inline to get reasonable result when comparing
+	 * local variable address with caller's stack.
+	 */
 	if ((void *)&ret < a)
 		ret = (void *)((u_long)&ret - 4 * page_size);
 	else
