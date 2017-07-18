@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sendsyslog.2,v 1.7 2016/03/22 07:13:16 jmc Exp $
+.\"	$OpenBSD: sendsyslog.2,v 1.8 2016/03/22 13:09:08 bluhm Exp $
 .\"
 .\" Copyright (c) 2014 Theo de Raadt
 .\"
@@ -33,6 +33,11 @@ function is used to transmit a
 formatted message direct to
 .Xr syslogd 8
 without requiring the allocation of a socket.
+The
+.Fa msg
+is not NUL terminated and its
+.Fa len
+is limited to 8192 bytes.
 If
 .Dv LOG_CONS
 is specified in the
