@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vte.c,v 1.18 2016/04/13 10:34:32 mpi Exp $	*/
+/*	$OpenBSD: if_vte.c,v 1.19 2017/01/22 10:17:38 dlg Exp $	*/
 /*-
  * Copyright (c) 2010, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -1353,6 +1353,7 @@ vte_init_tx_ring(struct vte_softc *sc)
 		MCLGET(sc->vte_cdata.vte_txmbufs[i], M_DONTWAIT);
 		if (!(sc->vte_cdata.vte_txmbufs[i]->m_flags & M_EXT)) {
 			m_freem(sc->vte_cdata.vte_txmbufs[i]);
+			sc->vte_cdata.vte_txmbufs[i] = NULL;
 			return (ENOBUFS);
 		}
 		sc->vte_cdata.vte_txmbufs[i]->m_pkthdr.len = MCLBYTES;
