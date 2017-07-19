@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.163 2017/01/21 05:42:04 guenther Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.164 2017/07/19 13:38:05 deraadt Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -219,7 +219,8 @@ vndgetdisklabel(dev_t dev, struct vnd_softc *sc, struct disklabel *lp,
 	lp->d_nsectors = sc->sc_nsectors;
 	lp->d_ntracks = sc->sc_ntracks;
 	lp->d_secpercyl = lp->d_ntracks * lp->d_nsectors;
-	lp->d_ncylinders = sc->sc_size / lp->d_secpercyl;
+	if (lp->d_secpercyl)
+		lp->d_ncylinders = sc->sc_size / lp->d_secpercyl;
 
 	strncpy(lp->d_typename, "vnd device", sizeof(lp->d_typename));
 	lp->d_type = DTYPE_VND;
