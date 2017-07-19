@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iec.c,v 1.24 2017/02/11 10:34:23 visa Exp $	*/
+/*	$OpenBSD: if_iec.c,v 1.25 2017/02/11 14:40:06 visa Exp $	*/
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -1155,6 +1155,7 @@ iec_get(struct iec_softc *sc, uint8_t *data, size_t datalen)
 				printf("%s: unable to allocate RX cluster\n",
 				    sc->sc_dev.dv_xname);
 				m_freem(head);
+				m_freem(m);
 				return NULL;
 			}
 			len = MCLBYTES;
