@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.15 2015/10/23 09:13:00 tedu Exp $
+# $OpenBSD: Makefile,v 1.16 2017/07/03 22:21:47 espie Exp $
 
 PROG=		iked
 SRCS=		ca.c chap_ms.c config.c control.c crypto.c dh.c \
@@ -29,8 +29,6 @@ ikev2_map.c: genmap.sh ikev2.h
 eap_map.c: genmap.sh eap.h
 	/bin/sh ${.CURDIR}/genmap.sh ${.CURDIR}/eap.h eap > $@
 	@touch $@
-
-${PROG} beforedepend: ${GENERATED}
 
 .include <bsd.prog.mk>
 
