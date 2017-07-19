@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_ioctl.c,v 1.51 2017/03/21 07:59:54 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_ioctl.c,v 1.52 2017/03/23 04:10:10 tb Exp $	*/
 /*	$NetBSD: ieee80211_ioctl.c,v 1.15 2004/05/06 02:58:16 dyoung Exp $	*/
 
 /*-
@@ -63,6 +63,10 @@ ieee80211_node2req(struct ieee80211com *ic, const struct ieee80211_node *ni,
     struct ieee80211_nodereq *nr)
 {
 	uint8_t rssi;
+
+	memset(nr, 0, sizeof(*nr));
+
+	strlcpy(nr->nr_ifname, ic->ic_if.if_xname, sizeof(nr->nr_ifname));
 
 	/* Node address and name information */
 	IEEE80211_ADDR_COPY(nr->nr_macaddr, ni->ni_macaddr);
