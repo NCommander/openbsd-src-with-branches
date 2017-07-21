@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.man.mk,v 1.40 2014/03/08 17:08:11 schwarze Exp $
+#	$OpenBSD: bsd.man.mk,v 1.41 2015/01/16 01:58:17 schwarze Exp $
 #	$NetBSD: bsd.man.mk,v 1.23 1996/02/10 07:49:33 jtc Exp $
 #	@(#)bsd.man.mk	5.2 (Berkeley) 5/11/90
 
@@ -37,6 +37,8 @@ ${_MAN_INST}: ${page}
 
 maninstall: ${_MAN_INST}
 
+# XXX not really a phony target, but force installation each time
+# maninstall is run.
 .PHONY: ${_MAN_INST}
 .  endfor
 .endfor
