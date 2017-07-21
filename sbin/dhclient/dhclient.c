@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.472 2017/07/20 17:44:13 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.473 2017/07/21 18:43:05 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -943,7 +943,7 @@ bind_lease(struct interface_info *ifi)
 		if (mtu < 68)
 			log_warnx("mtu size %u < 68: ignored", mtu);
 		else
-			set_interface_mtu(mtu);
+			set_mtu(mtu);
 	}
 
 	opt = &options[DHO_SUBNET_MASK];
