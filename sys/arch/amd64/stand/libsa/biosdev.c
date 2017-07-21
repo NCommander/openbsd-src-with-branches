@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosdev.c,v 1.29 2016/09/11 17:51:21 jsing Exp $	*/
+/*	$OpenBSD: biosdev.c,v 1.30 2016/09/18 15:13:10 jsing Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -535,6 +535,7 @@ biosopen(struct open_file *f, ...)
 		if (bv->sbv_diskinfo == NULL) {
 			dip = alloc(sizeof(struct diskinfo));
 			bzero(dip, sizeof(*dip));
+			dip->strategy = biosstrategy;
 			bv->sbv_diskinfo = dip;
 			dip->sr_vol = bv;
 			dip->bios_info.flags |= BDI_BADLABEL;
@@ -548,6 +549,7 @@ biosopen(struct open_file *f, ...)
 			if (sr_getdisklabel(bv, &dip->disklabel))
 				return ERDLAB;
 			dip->bios_info.flags &= ~BDI_BADLABEL;
+			check_hibernate(dip);
 		}
 
 		bv->sbv_part = part + 'a';
