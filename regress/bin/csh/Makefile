@@ -1,7 +1,8 @@
+# $OpenBSD$
+
 REGRESS_TARGETS=	filec
 
 PROG=		edit
-SRCS=		edit.c
 CFLAGS+=	-Wall
 LDADD+=		-lutil
 CLEANFILES+=	edit.c

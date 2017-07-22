@@ -1,3 +1,5 @@
+# $OpenBSD$
+#
 # Copyright (c) 2016 Ingo Schwarze <schwarze@openbsd.org>
 # Copyright (c) 2017 Anton Lindqvist <anton@openbsd.org>
 #

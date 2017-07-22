@@ -1,5 +1,7 @@
 #!/bin/sh
 #
+# $OpenBSD$
+#
 # Copyright (c) 2017 Anton Lindqvist <anton@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
