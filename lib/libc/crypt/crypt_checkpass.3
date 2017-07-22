@@ -1,4 +1,4 @@
-.\" $OpenBSD: crypt_checkpass.3,v 1.9 2015/07/23 22:20:02 tedu Exp $
+.\" $OpenBSD: crypt_checkpass.3,v 1.10 2017/07/22 03:23:48 tedu Exp $
 .\"
 .\" Copyright (c) 2014 Ted Unangst <tedu@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: July 23 2015 $
+.Dd $Mdocdate: July 22 2017 $
 .Dt CRYPT_CHECKPASS 3
 .Os
 .Sh NAME
@@ -70,7 +70,7 @@ Possible values are:
 .It Dq bcrypt,<rounds>
 The bcrypt algorithm, where the value of rounds can be between 4 and 31 and
 specifies the base 2 logarithm of the number of rounds.
-If rounds is omitted or the special value 
+If rounds is omitted or the special value
 .Sq a ,
 an appropriate number of rounds is automatically selected based on system
 performance.
