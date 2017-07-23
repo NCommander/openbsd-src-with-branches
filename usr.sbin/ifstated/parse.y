@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.43 2017/07/02 15:28:26 benno Exp $	*/
+/*	$OpenBSD: parse.y,v 1.44 2017/07/04 21:13:03 benno Exp $	*/
 
 /*
  * Copyright (c) 2004 Ryan McBride <mcbride@openbsd.org>
@@ -80,7 +80,7 @@ static struct ifsd_config	*conf;
 char				*start_state;
 
 struct ifsd_action		*curaction;
-struct ifsd_state		*curstate = NULL;
+struct ifsd_state		*curstate;
 
 void			 link_states(struct ifsd_action *);
 void			 set_expression_depth(struct ifsd_expression *, int);
@@ -419,7 +419,7 @@ lookup(char *s)
 u_char	*parsebuf;
 int	 parseindex;
 u_char	 pushback_buffer[MAXPUSHBACK];
-int	 pushback_index = 0;
+int	 pushback_index;
 
 int
 lgetc(int quotec)
