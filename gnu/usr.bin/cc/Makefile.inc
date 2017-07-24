@@ -1,7 +1,12 @@
 # $FreeBSD: src/gnu/usr.bin/cc/Makefile.inc,v 1.66.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD: Makefile.inc,v 1.5 2012/08/28 18:59:28 pascal Exp $
+# $OpenBSD: Makefile.inc,v 1.6 2012/09/16 20:46:35 kettenis Exp $
 
 .include "../Makefile.inc"
+
+.if ${COMPILER_VERSION:L} == "clang"
+CC=	gcc
+CXX=	g++
+.endif
 
 # Sometimes this is .include'd several times...
 .if !defined(__CC_MAKEFILE_INC__)
