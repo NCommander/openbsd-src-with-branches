@@ -594,7 +594,7 @@ void
 histsave(int lno, const char *cmd, int dowrite)
 {
 	struct stat	sb;
-	char		**hp, *c, *cp, *encoded;
+	char		*c, *cp, *encoded;
 
 	if (dowrite && histfh) {
 		history_lock(LOCK_EX);
@@ -614,15 +614,14 @@ histsave(int lno, const char *cmd, int dowrite)
 	if ((cp = strrchr(c, '\n')) != NULL)
 		*cp = '\0';
 
-	hp = histptr;
-	if (++hp >= history + histsize) { /* remove oldest command */
+	if (histptr < history + histsize)
+		histptr++;
+	else { /* remove oldest command */
 		afree(*history, APERM);
 		memmove(history, history + 1,
 		    (histsize - 1) * sizeof(*history));
-		hp = histptr;
 	}
-	*hp = c;
-	histptr = hp;
+	*histptr = c;
 
 	if (dowrite && histfh) {
 		/* append to file */
