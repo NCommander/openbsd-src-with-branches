@@ -15,6 +15,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+int tlsext_ri_clienthello_needs(SSL *s);
+int tlsext_ri_clienthello_build(SSL *s, CBB *cbb);
+int tlsext_ri_clienthello_parse(SSL *s, CBS *cbs, int *alert);
+int tlsext_ri_serverhello_needs(SSL *s);
+int tlsext_ri_serverhello_build(SSL *s, CBB *cbb);
+int tlsext_ri_serverhello_parse(SSL *s, CBS *cbs, int *alert);
+
 int tlsext_sni_clienthello_needs(SSL *s);
 int tlsext_sni_clienthello_build(SSL *s, CBB *cbb);
 int tlsext_sni_clienthello_parse(SSL *s, CBS *cbs, int *alert);
