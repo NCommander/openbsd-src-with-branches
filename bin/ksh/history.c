@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.58 2016/08/24 16:09:40 millert Exp $	*/
+/*	$OpenBSD: history.c,v 1.59 2017/05/29 13:09:17 tb Exp $	*/
 
 /*
  * command history
@@ -617,8 +617,9 @@ histsave(int lno, const char *cmd, int dowrite)
 	hp = histptr;
 	if (++hp >= history + histsize) { /* remove oldest command */
 		afree(*history, APERM);
-		for (hp = history; hp < history + histsize - 1; hp++)
-			hp[0] = hp[1];
+		memmove(history, history + 1,
+		    (histsize - 1) * sizeof(*history));
+		hp = histptr;
 	}
 	*hp = c;
 	histptr = hp;
