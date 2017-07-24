@@ -1,4 +1,4 @@
-/*	$OpenBSD: test.c,v 1.16 2016/01/13 13:13:04 gsoares Exp $	*/
+/*	$OpenBSD: test.c,v 1.17 2017/01/21 11:03:42 krw Exp $	*/
 /*	$NetBSD: test.c,v 1.15 1995/03/21 07:04:06 cgd Exp $	*/
 
 /*
@@ -33,8 +33,8 @@
 	unary-operator ::= "-r"|"-w"|"-x"|"-f"|"-d"|"-c"|"-b"|"-p"|
 		"-u"|"-g"|"-k"|"-s"|"-t"|"-z"|"-n"|"-o"|"-O"|"-G"|"-L"|"-S";
 
-	binary-operator ::= "="|"!="|"-eq"|"-ne"|"-ge"|"-gt"|"-le"|"-lt"|
-			"-nt"|"-ot"|"-ef";
+	binary-operator ::= "="|"!="|"<"|">"|"-eq"|"-ne"|"-ge"|"-gt"|
+			"-le"|"-lt"|"-nt"|"-ot"|"-ef";
 	operand ::= <any legal UNIX file name>
 */
 
