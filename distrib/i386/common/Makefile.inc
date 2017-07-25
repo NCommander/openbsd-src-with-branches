@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.41 2016/12/30 22:32:25 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.42 2017/06/03 22:25:19 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -57,7 +57,7 @@ unconfig:
 DISKTYPE?=	rdroot
 MAKEFSARGS_RD=	-o disklabel=${DISKTYPE},minfree=0,density=4096
 
-COPTS= -Os -mtune=i486
+COPTS= -Oz -mtune=i486
 
 bsd.gz: bsd.rd
 	cp bsd.rd bsd.strip
