@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ppp.c,v 1.28 2015/01/16 06:40:21 deraadt Exp $	*/
+/*	$OpenBSD: print-ppp.c,v 1.29 2015/11/16 00:16:39 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -787,10 +787,7 @@ ppp_ether_if_print(user, h, p)
 }
 
 int
-pppoe_if_print(ethertype, p, length, caplen)
-	u_short ethertype;
-	const u_char *p;
-	u_int length, caplen;
+pppoe_if_print(u_short ethertype, const u_char *p, u_int length, u_int caplen)
 {
 	u_int16_t pppoe_sid, pppoe_len;
 
