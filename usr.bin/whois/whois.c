@@ -1,4 +1,4 @@
-/*      $OpenBSD: whois.c,v 1.54 2017/03/15 16:45:25 millert Exp $   */
+/*      $OpenBSD: whois.c,v 1.55 2017/03/17 14:59:01 millert Exp $   */
 
 /*
  * Copyright (c) 1980, 1993
@@ -62,7 +62,7 @@
 #define	QNICHOST_TAIL	".whois-servers.net"
 
 #define	WHOIS_PORT	"whois"
-#define	WHOIS_SERVER_ID	"Whois Server:"
+#define	WHOIS_SERVER_ID	"Registrar WHOIS Server:"
 
 #define WHOIS_RECURSE		0x01
 #define WHOIS_QUICK		0x02
