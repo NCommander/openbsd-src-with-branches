@@ -1,4 +1,4 @@
-/*	$OpenBSD: csh.c,v 1.38 2016/03/18 15:16:07 millert Exp $	*/
+/*	$OpenBSD: csh.c,v 1.39 2016/03/19 15:42:38 krw Exp $	*/
 /*	$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $	*/
 
 /*-
@@ -1008,7 +1008,7 @@ process(bool catch)
 	     * read fresh stuff. Otherwise, we are rereading input and don't
 	     * need or want to prompt.
 	     */
-	    if (aret == F_SEEK && fseekp == feobp)
+	    if (!filec && aret == F_SEEK && fseekp == feobp)
 		printprompt();
 	    (void) fflush(cshout);
 	}
