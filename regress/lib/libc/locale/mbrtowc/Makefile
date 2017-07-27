@@ -1,9 +1,5 @@
-# $OpenBSD: Makefile,v 1.2 2016/09/01 17:42:08 schwarze Exp $
+# $OpenBSD: Makefile,v 1.1 2016/09/03 18:14:18 schwarze Exp $
 
-PROG = test_mbrtowc
-NOMAN =
+PROG =	test_mbrtowc
 
-regress: ${PROG}
-	./${PROG}
-
-.include <bsd.prog.mk>
+.include <bsd.regress.mk>

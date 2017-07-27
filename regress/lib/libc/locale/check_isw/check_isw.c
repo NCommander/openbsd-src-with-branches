@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: check_isw.c,v 1.1 2005/08/11 21:57:02 espie Exp $ */
 /*
  * Copyright (c) 2005 Marc Espie <espie@openbsd.org>
  *
@@ -69,7 +69,7 @@ test1()
 		if (i % 8 == 7)
 			printf("\n");
 	}
-	printf("%\n");
+	printf("\n");
 }
 
 void

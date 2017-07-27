@@ -1,10 +1,7 @@
-#	$OpenBSD: Makefile,v 1.4 2002/10/21 20:40:50 mickey Exp $
+#	$OpenBSD: Makefile,v 1.1 2003/05/15 04:23:49 deraadt Exp $
 
-NOMAN=
-PROG=sprintf_test
-CPPFLAGS+=-I${.CURDIR}/../../../../lib/libc
-
-run-regress-atexit_test: ${PROG}
-	./${PROG}
+PROG =		sprintf_test
+CFLAGS =	-Wno-format
+CPPFLAGS =	-I${.CURDIR}/../../../../lib/libc
 
 .include <bsd.regress.mk>
