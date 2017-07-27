@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.8 2017/04/17 19:58:53 pascal Exp $
+# $OpenBSD: Makefile,v 1.9 2017/07/09 15:28:36 espie Exp $
 
 .include <bsd.own.mk>
 
@@ -7,7 +7,8 @@ BINDIR=	/usr/bin
 SRCS=	lld.cpp
 NOMAN=
 
-.if ${COMPILER_VERSION:L} == "clang"
+TARGET_ARCH?=	${MACHINE_ARCH}
+.if ${TARGET_ARCH} == "aarch64"
 LINKS=	${BINDIR}/ld.lld ${BINDIR}/ld
 .endif
 
