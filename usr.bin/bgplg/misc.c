@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.5 2013/06/01 18:47:55 reyk Exp $	*/
+/*	$OpenBSD: misc.c,v 1.6 2013/11/25 18:02:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Reyk Floeter <reyk@openbsd.org>
@@ -51,7 +51,7 @@ lg_checkperm(struct cmd *cmd)
 	struct stat stbuf;
 
 	/* No external command to execute, this is always valid */
-	if (cmd->earg == NULL || cmd->earg[0] == NULL)
+	if (cmd->earg[0] == NULL)
 		return (1);
 
 	/*
