@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)ifs_ops.c	8.1 (Berkeley) 6/6/93
- *	$Id: ifs_ops.c,v 1.4 2007/11/26 09:28:34 martynas Exp $
+ *	$Id: ifs_ops.c,v 1.5 2014/10/26 02:43:50 guenther Exp $
  */
 
 #include "am.h"
@@ -63,7 +63,7 @@ ifs_init(mntfs *mf)
 {
 	mntfs *mf_link = (mntfs *) mf->mf_private;
 	if (mf_link == 0) {
-		plog(XLOG_FATAL, not_a_filesystem);
+		plog(XLOG_FATAL, "%s", not_a_filesystem);
 		return EINVAL;
 	}
 #ifdef notdef
@@ -89,7 +89,7 @@ ifs_inherit(mntfs *mf)
 	 */
 	mntfs *mf_link = (mntfs *) mf->mf_private;
 	if (mf_link == 0) {
-		plog(XLOG_FATAL, not_a_filesystem);
+		plog(XLOG_FATAL, "%s", not_a_filesystem);
 		return 0;	/*XXX*/
 	}
 
