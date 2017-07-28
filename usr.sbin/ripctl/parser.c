@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.5 2010/09/04 21:31:04 tedu Exp $ */
+/*	$OpenBSD: parser.c,v 1.6 2010/09/05 12:16:23 kettenis Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -54,8 +54,6 @@ static const struct token t_main[];
 static const struct token t_fib[];
 static const struct token t_show[];
 static const struct token t_show_iface[];
-static const struct token t_show_db[];
-static const struct token t_show_area[];
 static const struct token t_show_nbr[];
 static const struct token t_show_rib[];
 static const struct token t_show_fib[];
