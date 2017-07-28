@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.4 2009/11/13 20:09:54 jsg Exp $ */
+/*	$OpenBSD: parser.c,v 1.5 2010/09/04 21:31:04 tedu Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -54,7 +54,6 @@ static const struct token t_show_iface[];
 static const struct token t_show_nbr[];
 static const struct token t_show_mfc[];
 static const struct token t_show_rib[];
-static const struct token t_show_fib[];
 static const struct token t_log[];
 
 static const struct token t_main[] = {
