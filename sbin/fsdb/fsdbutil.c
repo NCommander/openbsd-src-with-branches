@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsdbutil.c,v 1.16 2015/01/16 06:39:58 deraadt Exp $	*/
+/*	$OpenBSD: fsdbutil.c,v 1.17 2015/01/20 18:22:21 deraadt Exp $	*/
 /*	$NetBSD: fsdbutil.c,v 1.5 1996/09/28 19:30:37 christos Exp $	*/
 
 /*-
@@ -148,7 +148,7 @@ printstat(const char *cp, ino_t inum, union dinode *dp)
 	else
 		printf("GID=%u ", DIP(dp, di_gid));
 
-	printf("LINKCNT=%hd FLAGS=%#x BLKCNT=%x GEN=%x\n", DIP(dp, di_nlink),
+	printf("LINKCNT=%d FLAGS=%#x BLKCNT=%x GEN=%x\n", DIP(dp, di_nlink),
 	    DIP(dp, di_flags), (unsigned)DIP(dp, di_blocks), DIP(dp, di_gen));
 }
 
