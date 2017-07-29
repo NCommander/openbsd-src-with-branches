@@ -54,8 +54,6 @@ pthread_mutex_init(pthread_mutex_t *mutexp, const pthread_mutexattr_t *attr)
 		mutex->prioceiling = (*attr)->ma_protocol ==
 		    PTHREAD_PRIO_PROTECT ? (*attr)->ma_prioceiling : -1;
 	}
-
-	membar_producer();
 	*mutexp = mutex;
 
 	return (0);

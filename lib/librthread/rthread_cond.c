@@ -42,8 +42,6 @@ pthread_cond_init(pthread_cond_t *condp, const pthread_condattr_t *attr)
 		cond->clock = CLOCK_REALTIME;
 	else
 		cond->clock = (*attr)->ca_clock;
-
-	membar_producer();
 	*condp = cond;
 
 	return (0);

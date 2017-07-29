@@ -27,8 +27,6 @@
 
 #include <pthread.h>
 
-#include <sys/atomic.h>
-
 #include "rthread.h"
 
 static _atomic_lock_t rwlock_init_lock = _SPINLOCK_UNLOCKED;
@@ -45,7 +43,6 @@ pthread_rwlock_init(pthread_rwlock_t *lockp,
 	lock->lock = _SPINLOCK_UNLOCKED;
 	TAILQ_INIT(&lock->writers);
 
-	membar_producer();
 	*lockp = lock;
 
 	return (0);
