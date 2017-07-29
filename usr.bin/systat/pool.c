@@ -1,4 +1,4 @@
-/*	$OpenBSD: pool.c,v 1.12 2017/06/15 03:47:07 dlg Exp $	*/
+/*	$OpenBSD: pool.c,v 1.13 2017/06/23 01:02:18 dlg Exp $	*/
 /*
  * Copyright (c) 2008 Can Erkin Acar <canacar@openbsd.org>
  *
@@ -496,6 +496,7 @@ unalloc:
 		pc = &pool_caches[--i];
 		free(pc->cache_cpus);
 	}
+	return (-1);
 }
 
 void
