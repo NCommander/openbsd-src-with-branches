@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.228 2017/03/06 08:56:39 mpi Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.229 2017/07/28 09:01:09 mpi Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -730,13 +730,11 @@ arplookup(struct in_addr *inp, int create, int proxy, u_int tableid)
 	}
 
 	if (proxy && !ISSET(rt->rt_flags, RTF_ANNOUNCE)) {
-#ifdef ART
 		while ((rt = rtable_iterate(rt)) != NULL) {
 			if (ISSET(rt->rt_flags, RTF_ANNOUNCE)) {
 				break;
 			}
 		}
-#endif /* ART */
 	}
 
 	return (rt);
