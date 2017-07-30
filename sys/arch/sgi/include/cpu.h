@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.14 2012/06/24 16:26:04 miod Exp $ */
+/*	$OpenBSD: cpu.h,v 1.15 2014/03/09 10:12:17 miod Exp $ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -46,6 +46,7 @@
 
 #ifdef _KERNEL
 #if defined(MULTIPROCESSOR) && !defined(_LOCORE)
+#define MAXCPUS 4
 struct cpu_info;
 struct cpu_info *hw_getcurcpu(void);
 void hw_setcurcpu(struct cpu_info *);
