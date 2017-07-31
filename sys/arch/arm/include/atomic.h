@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.16 2017/01/06 00:06:02 jsg Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.17 2017/05/12 08:53:46 mpi Exp $	*/
 
 /* Public Domain */
 
@@ -45,7 +45,7 @@ static inline void *
 _atomic_cas_ptr(volatile void *p, void *e, void *n)
 {
 	void *ret;
-	uint32_t modified;
+	unsigned long modified;
 
 	__asm volatile (
 	    "1:	ldrex %0, [%4]		\n\t"
@@ -99,7 +99,7 @@ static inline void *
 _atomic_swap_ptr(volatile void *p, void *v)
 {
 	void *ret;
-	uint32_t modified;
+	unsigned long modified;
 
 	__asm volatile (
 	    "1:	ldrex %0, [%3]		\n\t"
