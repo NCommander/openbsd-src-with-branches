@@ -1,4 +1,4 @@
-/*	$OpenBSD: elfrdsetroot.c,v 1.21 2009/04/17 07:23:26 deraadt Exp $	*/
+/*	$OpenBSD: elfrdsetroot.c,v 1.22 2011/07/08 21:39:32 drahn Exp $	*/
 /*	$NetBSD: rdsetroot.c,v 1.2 1995/10/13 16:38:39 gwr Exp $	*/
 
 /*
@@ -72,7 +72,6 @@ int
 main(int argc, char *argv[])
 {
 	int ch, fd, n, xflag = 0, fsd;
-	int found = 0, phsize;
 	char *fs = NULL;
 	char *file;
 	u_int32_t *ip;
