@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.151 2017/03/27 11:45:49 bluhm Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.151.4.1 2017/08/01 22:10:56 bluhm Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -1110,8 +1110,10 @@ sockargs(struct mbuf **mp, const void *buf, size_t buflen, int type)
 	 * We can't allow socket names > UCHAR_MAX in length, since that
 	 * will overflow sa_len. Also, control data more than MCLBYTES in
 	 * length is just too much.
+	 * Memory for sa_len and sa_family must exist.
 	 */
-	if (buflen > (type == MT_SONAME ? UCHAR_MAX : MCLBYTES))
+	if ((buflen > (type == MT_SONAME ? UCHAR_MAX : MCLBYTES)) ||
+	    (type == MT_SONAME && buflen < offsetof(struct sockaddr, sa_data)))
 		return (EINVAL);
 
 	/* Allocate an mbuf to hold the arguments. */
