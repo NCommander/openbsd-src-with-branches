@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.144 2017/02/09 15:19:32 jca Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.145 2017/03/13 20:18:21 claudio Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -236,9 +236,9 @@ tcp_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 			}
 
 			error = in6_pcbconnect(inp, nam);
-		} else if (sin->sin_family == AF_INET)
+		} else
 #endif /* INET6 */
-		{
+		if (sin->sin_family == AF_INET) {
 			if ((sin->sin_addr.s_addr == INADDR_ANY) ||
 			    (sin->sin_addr.s_addr == INADDR_BROADCAST) ||
 			    IN_MULTICAST(sin->sin_addr.s_addr) ||
@@ -248,6 +248,8 @@ tcp_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 			}
 
 			error = in_pcbconnect(inp, nam);
+		} else {
+			error = EAFNOSUPPORT;
 		}
 
 		if (error)
