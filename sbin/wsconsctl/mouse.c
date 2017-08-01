@@ -1,4 +1,4 @@
-/*	$OpenBSD: mouse.c,v 1.13 2012/08/08 16:44:07 shadchin Exp $	*/
+/*	$OpenBSD: mouse.c,v 1.14 2017/07/21 20:38:20 bru Exp $	*/
 /*	$NetBSD: mouse.c,v 1.3 1999/11/15 13:47:30 ad Exp $ */
 
 /*-
@@ -82,7 +82,7 @@ mouse_init(int devfd, int devidx) {
 		}
 		if (errstr != NULL)
 			warnx("mousecfg error: %s (%d)", errstr, err);
-	} else if (dev_index > -1) {
+	} else {
 		for (f = mouse_field_tab; f->name != NULL; f++) {
 			if (f->format == FMT_CFG)
 				f->flags &= ~FLG_DEAD;
