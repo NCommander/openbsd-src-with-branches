@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.131 2016/01/08 05:50:08 guenther Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.132 2016/05/18 01:13:13 millert Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -872,16 +872,16 @@ recvit(struct proc *p, int s, struct msghdr *mp, caddr_t namelenp,
 					i = len;
 				}
 				error = copyout(mtod(m, caddr_t), cp, i);
+#ifdef KTRACE
+				if (KTRPOINT(p, KTR_STRUCT) && error == 0 && i)
+					ktrcmsghdr(p, mtod(m, char *), i);
+#endif
 				if (m->m_next)
 					i = ALIGN(i);
 				cp += i;
 				len -= i;
 				if (error != 0 || len <= 0)
 					break;
-#ifdef KTRACE
-				if (KTRPOINT(p, KTR_STRUCT) && i)
-					ktrcmsghdr(p, mtod(m, char *), i);
-#endif
 			} while ((m = m->m_next) != NULL);
 			len = cp - (caddr_t)mp->msg_control;
 		}
