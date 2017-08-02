@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi.c,v 1.39 2015/05/16 09:56:10 ratchov Exp $	*/
+/*	$OpenBSD: midi.c,v 1.40 2015/05/22 12:52:00 jsg Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexandre Ratchov
@@ -98,8 +98,6 @@ midi_iintr(void *addr, int data)
 			wakeup(&sc->rchan);
 		}
 		selwakeup(&sc->rsel);
-		if (sc->async)
-			psignal(sc->async, SIGIO);
 	}
 }
 
@@ -208,8 +206,6 @@ midi_out_stop(struct midi_softc *sc)
 		wakeup(&sc->wchan);
 	}
 	selwakeup(&sc->wsel);
-	if (sc->async)
-		psignal(sc->async, SIGIO);
 }
 
 void
@@ -431,20 +427,9 @@ midiioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 	case FIONBIO:
 		/* All handled in the upper FS layer */
 		break;
-	case FIOASYNC:
-		if (*(int *)addr) {
-			if (sc->async) {
-				error = EBUSY;
-				goto done;
-			}
-			sc->async = p;
-		} else
-			sc->async = 0;
-		break;
 	default:
 		error = ENOTTY;
 	}
-done:
 	device_unref(&sc->dev);
 	return error;
 }
@@ -467,7 +452,6 @@ midiopen(dev_t dev, int flags, int mode, struct proc *p)
 	MIDIBUF_INIT(&sc->outbuf);
 	sc->isbusy = 0;
 	sc->rchan = sc->wchan = 0;
-	sc->async = 0;
 	sc->flags = flags;
 	error = sc->hw_if->open(sc->hw_hdl, flags, midi_iintr, midi_ointr, sc);
 	if (error)
