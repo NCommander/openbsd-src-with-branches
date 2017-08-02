@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhid.c,v 1.65 2016/03/03 18:13:24 stefan Exp $ */
+/*	$OpenBSD: uhid.c,v 1.66 2016/05/24 05:35:01 mpi Exp $ */
 /*	$NetBSD: uhid.c,v 1.57 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -75,7 +75,6 @@ struct uhid_softc {
 
 	struct clist sc_q;
 	struct selinfo sc_rsel;
-	struct process *sc_async;	/* process that wants SIGIO */
 	u_char sc_state;		/* driver state */
 #define	UHID_ASLP	0x01		/* waiting for device data */
 
@@ -198,10 +197,6 @@ uhid_intr(struct uhidev *addr, void *data, u_int len)
 		wakeup(&sc->sc_q);
 	}
 	selwakeup(&sc->sc_rsel);
-	if (sc->sc_async != NULL) {
-		DPRINTFN(3, ("uhid_intr: sending SIGIO %p\n", sc->sc_async));
-		prsignal(sc->sc_async, SIGIO);
-	}
 }
 
 int
@@ -228,7 +223,6 @@ uhidopen(dev_t dev, int flag, int mode, struct proc *p)
 	clalloc(&sc->sc_q, UHID_BSIZE, 0);
 
 	sc->sc_obuf = malloc(sc->sc_hdev.sc_osize, M_USBDEV, M_WAITOK);
-	sc->sc_async = NULL;
 
 	return (0);
 }
@@ -367,24 +361,6 @@ uhid_do_ioctl(struct uhid_softc *sc, u_long cmd, caddr_t addr,
 	switch (cmd) {
 	case FIONBIO:
 		/* All handled in the upper FS layer. */
-		break;
-
-	case FIOASYNC:
-		if (*(int *)addr) {
-			if (sc->sc_async != NULL)
-				return (EBUSY);
-			sc->sc_async = p->p_p;
-			DPRINTF(("uhid_do_ioctl: FIOASYNC %p\n", p));
-		} else
-			sc->sc_async = NULL;
-		break;
-
-	/* XXX this is not the most general solution. */
-	case TIOCSPGRP:
-		if (sc->sc_async == NULL)
-			return (EINVAL);
-		if (*(int *)addr != sc->sc_async->ps_pgid)
-			return (EPERM);
 		break;
 
 	case USB_GET_DEVICEINFO:
