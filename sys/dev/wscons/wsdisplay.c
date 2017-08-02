@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.123 2015/05/08 19:17:20 miod Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.124 2015/09/08 11:13:20 deraadt Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.82 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -1304,6 +1304,10 @@ wsdisplay_cfg_ioctl(struct wsdisplay_softc *sc, u_long cmd, caddr_t data,
 	case WSDISPLAYIO_LDFONT:
 #define d ((struct wsdisplay_font *)data)
 		if (!sc->sc_accessops->load_font)
+			return (EINVAL);
+		if (d->fontheight > 64 || d->stride > 8) /* 64x64 pixels */
+			return (EINVAL);
+		if (d->numchars > 65536) /* unicode plane */
 			return (EINVAL);
 		fontsz = d->fontheight * d->stride * d->numchars;
 		if (fontsz > WSDISPLAY_MAXFONTSZ)
