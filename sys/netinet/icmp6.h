@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.h,v 1.44 2017/04/14 20:46:31 bluhm Exp $	*/
+/*	$OpenBSD: icmp6.h,v 1.45 2017/07/12 16:53:58 florian Exp $	*/
 /*	$KAME: icmp6.h,v 1.84 2003/04/23 10:26:51 itojun Exp $	*/
 
 /*
@@ -127,7 +127,6 @@ struct icmp6_hdr {
 
 #define ICMP6_DST_UNREACH_NOROUTE	0	/* no route to destination */
 #define ICMP6_DST_UNREACH_ADMIN	 	1	/* administratively prohibited */
-#define ICMP6_DST_UNREACH_NOTNEIGHBOR	2	/* not a neighbor(obsolete) */
 #define ICMP6_DST_UNREACH_BEYONDSCOPE	2	/* beyond scope of source address */
 #define ICMP6_DST_UNREACH_ADDR		3	/* address unreachable */
 #define ICMP6_DST_UNREACH_NOPORT	4	/* port unreachable */
