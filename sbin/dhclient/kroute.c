@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.124 2017/07/30 15:26:46 krw Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.125 2017/08/02 13:07:48 krw Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -156,7 +156,7 @@ priv_flush_routes(char *name, int routefd, int rdomain)
 	mib[2] = 0;
 	mib[3] = AF_INET;
 	mib[4] = NET_RT_FLAGS;
-	mib[5] = RTF_GATEWAY;
+	mib[5] = RTF_STATIC;
 	mib[6] = rdomain;
 
 	while (1) {
