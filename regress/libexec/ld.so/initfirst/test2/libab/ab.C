@@ -1,10 +1,10 @@
 /*
  * Public Domain 2011 Kurt Miller
  *
- * $OpenBSD$
+ * $OpenBSD: ab.C,v 1.1 2011/11/29 04:36:15 kurt Exp $
  */
 
-#include <iostream>
+#include <cstdio>
 
 class AB
 {
@@ -15,12 +15,12 @@ class AB
 
 AB::AB()
 {
-   std::cout << "B";
+   std::printf("B");
 }
 
 AB::~AB()
 {
-   std::cout << "b";
+   std::printf("b");
 }
 
 AB b;
