@@ -1,4 +1,4 @@
-/*	$OpenBSD: pucdata.c,v 1.104 2016/04/24 06:47:56 jsg Exp $	*/
+/*	$OpenBSD: pucdata.c,v 1.105 2017/05/06 01:54:31 jmatthew Exp $	*/
 /*	$NetBSD: pucdata.c,v 1.6 1999/07/03 05:55:23 cgd Exp $	*/
 
 /*
@@ -2198,6 +2198,13 @@ const struct puc_device_description puc_devs[] = {
 	    {
 		{ PUC_COM_POW2(0), 0x10, 0x0000 },
 		{ PUC_COM_POW2(0), 0x14, 0x0000 },
+	    }
+	},
+	{   /* "ASIX AX99100", */
+	    {	PCI_VENDOR_ASIX, PCI_PRODUCT_ASIX_AX99100,	0, 0	},
+	    {	0xffff, 0xffff,					0, 0	},
+	    {
+		{ PUC_COM_POW2(0), 0x10, 0x0000 },
 	    }
 	},
 	{   /* "NetMos NM9820 UART" */
