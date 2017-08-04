@@ -1,4 +1,4 @@
-.\"	$OpenBSD: dwge.4,v 1.1 2016/08/13 20:51:48 kettenis Exp $
+.\"	$OpenBSD: dwge.4,v 1.2 2016/08/13 23:35:00 jmc Exp $
 .\"
 .\" Copyright (c) 2016 Mark Kettenis <kettenis@openbsd.org>
 .\"
@@ -19,7 +19,7 @@
 .Os
 .Sh NAME
 .Nm dwge
-.Nd Designware GMAC 10/100/Gigabit Ethernet device
+.Nd Synopsys DesignWare GMAC 10/100/Gigabit Ethernet device
 .Sh SYNOPSIS
 .Cd "dwge* at fdt?"
 .Cd "rgephy*" at mii?
@@ -28,8 +28,8 @@ The
 .Nm
 driver provides support for various Ethernet controllers based on the
 Synopsis Designware GMAC core.
-These controllers are typically found on SoCs, such as the various ARM
-SoCs from Allwinner, starting with the Allwinner A20.
+These controllers are typically found on SoCs, such as the Allwinner
+A20/A31 and Rockchip RK3288/RK3399 ARM SoCs.
 .Pp
 The
 .Nm
