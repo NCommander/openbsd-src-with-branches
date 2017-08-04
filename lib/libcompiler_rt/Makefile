@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2017/04/17 15:53:21 kettenis Exp $
+# $OpenBSD: Makefile,v 1.8 2017/05/09 21:09:27 kettenis Exp $
 
 .include <bsd.own.mk>
 
@@ -40,6 +40,7 @@ GEN_SRCS=	absvdi2 \
 		ashlti3 \
 		ashrdi3 \
 		ashrti3 \
+		atomic \
 		clear_cache \
 		clzdi2 \
 		clzsi2 \
