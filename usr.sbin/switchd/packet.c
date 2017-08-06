@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.3 2016/07/21 08:39:23 reyk Exp $	*/
+/*	$OpenBSD: packet.c,v 1.4 2016/09/26 08:55:43 rzalamena Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <err.h>
 #include <pwd.h>
 #include <event.h>
 
