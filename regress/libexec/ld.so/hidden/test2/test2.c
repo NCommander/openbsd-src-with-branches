@@ -1,4 +1,4 @@
-/*      $OpenBSD: test2.c,v 1.1.1.1 2007/07/31 20:31:42 kurt Exp $       */
+/*      $OpenBSD: test2.c,v 1.2 2007/08/01 12:53:28 kurt Exp $       */
 
 /*
  * Copyright (c) 2007 Kurt Miller <kurt@openbsd.org>
@@ -27,7 +27,7 @@ void *libaa_hidden_val = NULL;
 void *libab_hidden_val = NULL;
 
 extern	void test_aa(void);
-extern	void test_bb(void);
+extern	void test_ab(void);
 
 int
 main()
