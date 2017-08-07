@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.63 2014/07/22 04:53:59 deraadt Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.64 2014/07/28 15:00:27 jsg Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -206,7 +206,7 @@ vgafb_ioctl(v, cmd, data, flags, p)
 
 	switch (cmd) {
 	case WSDISPLAYIO_GTYPE:
-		*(u_int *)data = WSDISPLAY_TYPE_UNKNOWN;
+		*(u_int *)data = WSDISPLAY_TYPE_PCIVGA;
 		break;
 	case WSDISPLAYIO_SMODE:
 		sc->sc_mode = *(u_int *)data;
