@@ -1,4 +1,4 @@
-/* $OpenBSD: options.c,v 1.34 2017/04/22 06:13:30 nicm Exp $ */
+/* $OpenBSD: options.c,v 1.35 2017/05/31 17:56:48 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -477,7 +477,6 @@ options_match_get(struct options *oo, const char *s, int *idx, int only,
 	free(name);
 	return (o);
 }
-
 
 const char *
 options_get_string(struct options *oo, const char *name)
