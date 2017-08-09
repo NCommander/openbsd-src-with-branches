@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_config.c,v 1.40 2017/05/06 20:59:28 jsing Exp $ */
+/* $OpenBSD: tls_config.c,v 1.41 2017/07/06 17:12:22 jsing Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -141,7 +141,7 @@ tls_keypair_free(struct tls_keypair *keypair)
 	free(keypair->cert_mem);
 	free(keypair->key_mem);
 	free(keypair->ocsp_staple);
-	free(keypair->cert_hash);
+	free(keypair->pubkey_hash);
 
 	free(keypair);
 }
