@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_rwlock.c,v 1.27 2015/03/14 07:33:42 jsg Exp $	*/
+/*	$OpenBSD: kern_rwlock.c,v 1.28 2017/04/20 13:33:00 visa Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003 Artur Grabowski <art@openbsd.org>
@@ -235,6 +235,10 @@ retry:
 	while (__predict_false(((o = rwl->rwl_owner) & op->check) != 0)) {
 		unsigned long set = o | op->wait_set;
 		int do_sleep;
+
+		/* Avoid deadlocks after panic */
+		if (panicstr)
+			return (0);
 
 		rw_enter_diag(rwl, flags);
 
