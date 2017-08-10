@@ -1,4 +1,4 @@
-/*	$OpenBSD: xen.c,v 1.88 2017/07/19 16:48:22 mikeb Exp $	*/
+/*	$OpenBSD: xen.c,v 1.89 2017/07/21 20:00:47 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2015, 2016, 2017 Mike Belopuhov
@@ -305,6 +305,7 @@ xen_hypercall(struct xen_softc *sc, int op, int argc, ...)
 	va_start(ap, argc);
 	for (i = 0; i < argc; i++)
 		argv[i] = (ulong)va_arg(ap, ulong);
+	va_end(ap);
 	return (xen_hypercallv(sc, op, argc, argv));
 }
 
