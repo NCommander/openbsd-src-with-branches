@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.43 2015/12/08 19:04:50 mmcc Exp $	*/
+/*	$OpenBSD: io.c,v 1.44 2016/08/31 09:38:47 jsg Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -89,13 +89,9 @@ cal(void)
 		if (strncmp(buf, "LANG=", 5) == 0) {
 			(void) setlocale(LC_ALL, buf + 5);
 			setnnames();
-			/* XXX remove KOI8 lines after 5.9 is out */
 			if (!strcmp(buf + 5, "ru_RU.UTF-8") ||
 			    !strcmp(buf + 5, "uk_UA.UTF-8") ||
-			    !strcmp(buf + 5, "by_BY.UTF-8") ||
-			    !strcmp(buf + 5, "ru_RU.KOI8-R") ||
-			    !strcmp(buf + 5, "uk_UA.KOI8-U") ||
-			    !strcmp(buf + 5, "by_BY.KOI8-B")) {
+			    !strcmp(buf + 5, "by_BY.UTF-8")) {
 				bodun_maybe++;
 				bodun = 0;
 				free(prefix);
