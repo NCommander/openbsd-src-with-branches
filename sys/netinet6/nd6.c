@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.216 2017/08/09 14:35:02 florian Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.217 2017/08/09 14:36:00 florian Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -978,7 +978,8 @@ nd6_rtrequest(struct ifnet *ifp, int req, struct rtentry *rt)
 		break;
 
 	case RTM_INVALIDATE:
-		nd6_invalidate(rt);
+		if (!ISSET(rt->rt_flags, RTF_LOCAL))
+			nd6_invalidate(rt);
 		break;
 	}
 }
