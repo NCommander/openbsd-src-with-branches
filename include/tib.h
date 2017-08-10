@@ -1,4 +1,4 @@
-/*	$OpenBSD: tib.h,v 1.3 2016/05/07 19:05:21 guenther Exp $	*/
+/*	$OpenBSD: tib.h,v 1.4 2017/04/20 16:07:52 visa Exp $	*/
 /*
  * Copyright (c) 2011,2014 Philip Guenther <guenther@openbsd.org>
  *
@@ -98,7 +98,7 @@
 #endif
 
 /*
- * tib_cantcancel values is non-zero is the thread should skip all
+ * tib_cantcancel values is non-zero if the thread should skip all
  * cancellation processing
  */
 #define CANCEL_DISABLED	1
