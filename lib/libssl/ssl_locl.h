@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.185 2017/08/11 05:06:34 doug Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.186 2017/08/11 17:54:41 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1382,6 +1382,8 @@ void SSL_error_internal(const SSL *s, int r, char *f, int l);
 
 void tls1_get_formatlist(SSL *s, int client_formats, const uint8_t **pformats,
     size_t *pformatslen);
+void tls1_get_curvelist(SSL *s, int client_curves, const uint16_t **pcurves,
+    size_t *pcurveslen);
 
 __END_HIDDEN_DECLS
 
