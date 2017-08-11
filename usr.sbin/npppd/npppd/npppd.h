@@ -1,4 +1,4 @@
-/*	$OpenBSD: npppd.h,v 1.16 2015/01/19 01:48:59 deraadt Exp $ */
+/*	$OpenBSD: npppd.h,v 1.17 2015/12/05 16:10:31 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -161,6 +161,7 @@ struct authconf {
 	bool                               strip_nt_domain;
 	bool                               strip_atmark_realm;
 	char                               users_file_path[PATH_MAX];
+	int                                user_max_session;
 	union {
 		struct {
 			struct radconf     auth;
