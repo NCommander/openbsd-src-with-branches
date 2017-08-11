@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5xxx.c,v 1.58 2014/07/13 23:10:23 deraadt Exp $	*/
+/*	$OpenBSD: ar5xxx.c,v 1.59 2016/01/12 09:28:09 stsp Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005, 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -278,7 +278,7 @@ ath_hal_attach(u_int16_t device, void *arg, bus_space_tag_t st,
 	} else if (hal->ah_radio == AR5K_AR5112) {
 		hal->ah_gain.g_step_idx = ar5112_gain_opt.go_default;
 		hal->ah_gain.g_step =
-		    &ar5111_gain_opt.go_step[hal->ah_gain.g_step_idx];
+		    &ar5112_gain_opt.go_step[hal->ah_gain.g_step_idx];
 		hal->ah_gain.g_low = 20;
 		hal->ah_gain.g_high = 85;
 		hal->ah_gain.g_active = 1;
