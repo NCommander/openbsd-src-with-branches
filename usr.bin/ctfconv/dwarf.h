@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2016 Martin Pieuchot <mpi@openbsd.org>
  * Copyright (c) 2007 John Birrell (jb@freebsd.org).

@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2016-2017 Martin Pieuchot
  * Copyright (c) 2016 Jasper Lievisse Adriaanse <jasper@openbsd.org>

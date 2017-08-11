@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2016 Martin Pieuchot
  * Copyright (c) 2014 Matthew Dempsky <matthew@dempsky.org>
