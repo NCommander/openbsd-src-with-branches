@@ -1,6 +1,7 @@
-/* $OpenBSD: ssl_tlsext.c,v 1.3 2017/07/24 17:39:43 jsing Exp $ */
+/* $OpenBSD: ssl_tlsext.c,v 1.4 2017/08/11 05:06:34 doug Exp $ */
 /*
  * Copyright (c) 2016, 2017 Joel Sing <jsing@openbsd.org>
+ * Copyright (c) 2017 Doug Hogan <doug@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
