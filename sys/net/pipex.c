@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.102 2017/06/06 13:07:22 mpi Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.103 2017/07/13 14:54:25 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -2311,10 +2311,13 @@ pipex_mppe_reduce_key(struct pipex_mppe *mppe)
 {
 	switch (mppe->keylenbits) {
 	case 40:
+		mppe->session_key[0] = 0xd1;
 		mppe->session_key[1] = 0x26;
 		mppe->session_key[2] = 0x9e;
+		break;
 	case 56:
 		mppe->session_key[0] = 0xd1;
+		break;
 	}
 }
 
