@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_command.c,v 1.72 2017/04/20 12:59:36 visa Exp $	*/
+/*	$OpenBSD: db_command.c,v 1.73 2017/08/10 19:39:38 mpi Exp $	*/
 /*	$NetBSD: db_command.c,v 1.20 1996/03/30 22:30:05 christos Exp $	*/
 
 /*
@@ -617,12 +617,8 @@ struct db_command db_command_table[] = {
   /* this must be the first entry, if it exists */
 	{ "machine",    NULL,                   0,     		NULL},
 #endif
-#ifdef DDBCTF
 	{ "print",	db_ctf_pprint_cmd,	CS_OWN,		NULL },
 	{ "p",		db_ctf_pprint_cmd,	CS_OWN,		NULL },
-#else
-	{ "print",	db_print_cmd,		0,		NULL },
-#endif
 	{ "examine",	db_examine_cmd,		CS_SET_DOT, 	NULL },
 	{ "x",		db_examine_cmd,		CS_SET_DOT, 	NULL },
 	{ "search",	db_search_cmd,		CS_OWN|CS_SET_DOT, NULL },
