@@ -1,4 +1,4 @@
-/* $OpenBSD: md_init.h,v 1.11 2017/01/21 01:43:16 guenther Exp $ */
+/* $OpenBSD: md_init.h,v 1.12 2017/02/26 22:26:42 kettenis Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn. All rights reserved.
@@ -155,17 +155,6 @@
 	"	nop						\n" \
 	"1:	bv	%r0(%rp)				\n" \
 	"	sub	%r0, %ret0, %ret0			\n" \
-	"	.exit						\n" \
-	"	.procend					\n" \
-	"	.export _dl_printf, entry			\n" \
-	"	.type	_dl_printf,@function			\n" \
-	"	.label _dl_printf				\n" \
-	"	.proc						\n" \
-	"	.callinfo frame=0, calls			\n" \
-	"	.entry						\n" \
-	"_dl_printf:						\n" \
-	"	bv	%r0(%rp)				\n" \
-	"	nop						\n" \
 	"	.exit						\n" \
 	"	.procend")
 

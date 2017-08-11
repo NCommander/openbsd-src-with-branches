@@ -1,4 +1,4 @@
-/* $OpenBSD: md_init.h,v 1.7 2015/09/19 20:27:51 kettenis Exp $ */
+/* $OpenBSD: md_init.h,v 1.8 2016/03/20 02:32:39 guenther Exp $ */
 
 /*-
  * Copyright (c) 2001 Ross Harvey
@@ -128,12 +128,5 @@ __asm(									\
 "_dl_exit:								\n" \
 "	li	%r0, " STR(SYS_exit) "					\n" \
 "	sc								\n" \
-"	blr								\n" \
-"									\n" \
-"	.text								\n" \
-"	.align 2							\n" \
-"	.globl	_dl_printf						\n" \
-"	.type	_dl_printf, @function					\n" \
-"_dl_printf:								\n" \
 "	blr								\n" \
 )

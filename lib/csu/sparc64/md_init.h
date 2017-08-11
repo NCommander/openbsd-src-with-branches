@@ -1,4 +1,4 @@
-/* $OpenBSD: md_init.h,v 1.5 2016/03/13 18:35:02 guenther Exp $ */
+/* $OpenBSD: md_init.h,v 1.6 2016/03/20 02:32:39 guenther Exp $ */
 
 /*-
  * Copyright (c) 2001 Ross Harvey
@@ -100,11 +100,6 @@
 	"	add	%sp, 2175, %o0	/* stack */\n" \
 	"	ba,pt	%icc, ___start		\n" \
 	"	 clr	%o1			\n" \
-	"					\n" \
-	"	.global	_dl_printf		\n" \
-	"_dl_printf:				\n" \
-	"	retl				\n" \
-	"	 nop				\n" \
 	"					\n" \
 	"	.global	_dl_exit		\n" \
 	"_dl_exit:				\n" \
