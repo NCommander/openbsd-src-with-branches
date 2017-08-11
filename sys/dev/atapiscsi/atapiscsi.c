@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.102 2014/01/19 00:03:13 dlg Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.103 2014/09/14 14:17:24 jsg Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -1236,6 +1236,8 @@ wdc_atapi_pio_intr(struct channel_softc *chp, struct wdc_xfer *xfer,
 			wdc_atapi_intr_data(chp, xfer, timeout, ret);
 			return;
 		}
+
+		return;
 
 	case as_completed:
 		if ((chp->ch_status & WDCS_DRQ) ||
