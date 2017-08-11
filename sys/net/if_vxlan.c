@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vxlan.c,v 1.60 2017/05/04 15:00:24 bluhm Exp $	*/
+/*	$OpenBSD: if_vxlan.c,v 1.61 2017/08/10 18:38:33 reyk Exp $	*/
 
 /*
  * Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
@@ -178,11 +178,10 @@ int
 vxlan_clone_destroy(struct ifnet *ifp)
 {
 	struct vxlan_softc	*sc = ifp->if_softc;
-	int			 s;
 
-	NET_LOCK(s);
+	NET_LOCK();
 	vxlan_multicast_cleanup(ifp);
-	NET_UNLOCK(s);
+	NET_UNLOCK();
 
 	vxlan_enable--;
 	LIST_REMOVE(sc, sc_entry);

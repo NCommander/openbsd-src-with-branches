@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.131 2017/05/29 12:12:35 tedu Exp $	*/
+/*	$OpenBSD: systm.h,v 1.132 2017/07/27 12:08:19 mpi Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -296,15 +296,13 @@ int	uiomove(void *, size_t, struct uio *);
 
 extern struct rwlock netlock;
 
-#define	NET_LOCK(s)							\
+#define	NET_LOCK()							\
 do {									\
 	rw_enter_write(&netlock);					\
-	s = IPL_SOFTNET;						\
 } while (0)
 
-#define	NET_UNLOCK(s)							\
+#define	NET_UNLOCK()							\
 do {									\
-	(void)s;							\
 	rw_exit_write(&netlock);					\
 } while (0)
 
