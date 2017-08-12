@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.luna88k,v 1.74 2017/07/21 13:27:21 aoyama Exp $
+#	$OpenBSD: Makefile.luna88k,v 1.75 2017/07/23 09:17:17 aoyama Exp $
 
 # For instructions on building kernels consult the config(8) and options(4)
 # manual pages.
@@ -11,7 +11,7 @@
 .include <bsd.own.mk>
 
 SIZE?=	size
-STRIP?=	strip
+STRIP?=	ctfstrip
 
 # source tree is located via $S relative to the compilation directory
 .ifndef S
