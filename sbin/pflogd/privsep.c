@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.25 2017/06/12 23:37:44 mestre Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.26 2017/07/04 23:13:09 mestre Exp $	*/
 
 /*
  * Copyright (c) 2003 Can Erkin Acar
@@ -118,9 +118,9 @@ priv_init(void)
 	setproctitle("[priv]");
 	close(socks[1]);
 
-#if notyet
+#if 0
 	/* This needs to do bpf ioctl */
-	if (pledge("stdio rpath wpath cpath sendfd proc bpf", NULL) == -1)
+BROKEN	if (pledge("stdio rpath wpath cpath sendfd proc bpf", NULL) == -1)
 		err(1, "pledge");
 #endif
 

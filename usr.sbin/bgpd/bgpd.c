@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.189 2017/05/28 15:16:33 henning Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.190 2017/06/27 15:58:07 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -241,7 +241,7 @@ main(int argc, char *argv[])
 	 * disabled because we do ioctls on /dev/pf and SIOCSIFGATTR
 	 * this needs some redesign of bgpd to be fixed.
 	 */
-	if (pledge("stdio rpath wpath cpath fattr unix route recvfd sendfd",
+BROKEN	if (pledge("stdio rpath wpath cpath fattr unix route recvfd sendfd",
 	    NULL) == -1)
 		fatal("pledge");
 #endif
