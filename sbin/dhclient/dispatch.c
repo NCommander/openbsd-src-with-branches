@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.136 2017/08/09 19:35:59 krw Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.137 2017/08/09 19:57:54 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -60,6 +60,7 @@
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
