@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwnreg.h,v 1.52 2016/02/05 16:09:19 stsp Exp $	*/
+/*	$OpenBSD: if_iwnreg.h,v 1.53 2016/04/28 08:28:18 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2007, 2008
@@ -1974,7 +1974,7 @@ static const char * const iwn_fw_errmsg[] = {
 	"NMI_INTERRUPT_DATA_ACTION_PT",
 	"NMI_TRM_HW_ER",
 	"NMI_INTERRUPT_TRM",
-	"NMI_INTERRUPT_BREAKPOINT"
+	"NMI_INTERRUPT_BREAKPOINT",
 	"DEBUG_0",
 	"DEBUG_1",
 	"DEBUG_2",
