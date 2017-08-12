@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.17 2015/10/11 07:16:01 guenther Exp $ */
+/*	$OpenBSD: parse.y,v 1.18 2017/08/11 16:41:47 goda Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -838,6 +838,9 @@ ipcpopt		: POOL_ADDRESS STRING ipcppooltype {
 		}
 		| ALLOW_USER_SELECTED_ADDRESS yesno {
 			curr_ipcpconf->allow_user_select = $2;
+		}
+		| MAX_SESSION NUMBER {
+			curr_ipcpconf->max_session = $2;
 		}
 		;
 

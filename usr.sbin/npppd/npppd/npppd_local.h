@@ -1,4 +1,4 @@
-/*	$OpenBSD: npppd_local.h,v 1.15 2015/07/23 09:04:06 yasuoka Exp $ */
+/*	$OpenBSD: npppd_local.h,v 1.16 2016/03/08 01:38:04 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -164,6 +164,8 @@ struct _npppd {
 	int16_t		reloading_count;
 
 	int		nsession;
+
+	struct ipcpstat_head ipcpstats;
 
 	struct control_sock  ctl_sock;
 
