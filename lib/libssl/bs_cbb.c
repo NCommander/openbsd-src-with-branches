@@ -1,4 +1,4 @@
-/*	$OpenBSD: bs_cbb.c,v 1.15 2017/04/14 15:20:55 jsing Exp $	*/
+/*	$OpenBSD: bs_cbb.c,v 1.16 2017/05/07 05:03:41 jsing Exp $	*/
 /*
  * Copyright (c) 2014, Google Inc.
  *
@@ -87,6 +87,7 @@ CBB_cleanup(CBB *cbb)
 		free(cbb->base);
 	}
 	cbb->base = NULL;
+	cbb->child = NULL;
 }
 
 static int
