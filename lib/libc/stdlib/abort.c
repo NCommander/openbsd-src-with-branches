@@ -1,4 +1,4 @@
-/*	$OpenBSD: abort.c,v 1.19 2015/10/23 04:39:24 guenther Exp $ */
+/*	$OpenBSD: abort.c,v 1.20 2015/10/25 04:13:59 guenther Exp $ */
 /*
  * Copyright (c) 1985 Regents of the University of California.
  * All rights reserved.
@@ -30,9 +30,8 @@
 
 #include <signal.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include "thread_private.h"
-#include "atexit.h"
 
 
 void
