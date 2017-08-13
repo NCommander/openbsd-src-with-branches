@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.36 2017/07/16 18:14:37 jsing Exp $
+# $OpenBSD: Makefile,v 1.37 2017/07/24 17:10:31 jsing Exp $
 
 .include <bsd.own.mk>
 .ifndef NOMAN
@@ -12,7 +12,7 @@ CLEANFILES=${PC_FILES} ${VERSION_SCRIPT}
 LIB=	ssl
 
 CFLAGS+= -Wall -Wundef
-.if ${COMPILER_VERSION:L} == "gcc4"
+.if ${COMPILER_VERSION:L} == "clang"
 CFLAGS+= -Werror
 .endif
 CFLAGS+= -DLIBRESSL_INTERNAL
