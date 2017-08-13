@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.86 2016/09/30 10:53:11 jca Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.87 2016/09/30 10:55:22 jca Exp $	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -480,7 +480,7 @@ vn_ioctl(struct file *fp, u_long com, caddr_t data, struct proc *p)
 		/* FALLTHROUGH */
 	default:
 		return (ENOTTY);
-		
+
 	case VFIFO:
 	case VCHR:
 	case VBLK:
@@ -537,7 +537,7 @@ vn_closefile(struct file *fp, struct proc *p)
 {
 	struct vnode *vp = fp->f_data;
 	struct flock lf;
-	
+
 	if ((fp->f_iflags & FIF_HASLOCK)) {
 		lf.l_whence = SEEK_SET;
 		lf.l_start = 0;
