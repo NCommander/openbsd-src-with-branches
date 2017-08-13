@@ -1,4 +1,4 @@
-/*	$OpenBSD: ktrace.h,v 1.33 2016/10/08 02:16:43 guenther Exp $	*/
+/*	$OpenBSD: ktrace.h,v 1.34 2017/04/20 15:21:51 deraadt Exp $	*/
 /*	$NetBSD: ktrace.h,v 1.12 1996/02/04 02:12:29 christos Exp $	*/
 
 /*
@@ -189,6 +189,7 @@ struct ktr_pledge {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
+int	fktrace(int, int, int, pid_t);
 int	ktrace(const char *, int, int, pid_t);
 int	utrace(const char *, const void *, size_t);
 __END_DECLS
