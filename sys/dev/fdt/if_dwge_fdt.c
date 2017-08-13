@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dwge_fdt.c,v 1.3 2017/05/21 11:52:04 kettenis Exp $	*/
+/*	$OpenBSD: if_dwge_fdt.c,v 1.4 2017/07/23 17:09:19 kettenis Exp $	*/
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -30,9 +30,6 @@
 
 #include <net/if.h>
 #include <net/if_media.h>
-#if NBPFILTER > 0
-#include <net/bpf.h>
-#endif
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
