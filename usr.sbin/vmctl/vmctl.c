@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmctl.c,v 1.33 2017/08/10 19:17:43 jasper Exp $	*/
+/*	$OpenBSD: vmctl.c,v 1.34 2017/08/14 17:52:05 jasper Exp $	*/
 
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
@@ -195,8 +195,13 @@ vm_start_complete(struct imsg *imsg, int *ret, int autoconnect)
 		res = vmr->vmr_result;
 		if (res) {
 			errno = res;
-			warn("start vm command failed");
-			*ret = EIO;
+			if (res == ENOENT) {
+				warnx("could not find specified disk image(s)");
+				*ret = ENOENT;
+			} else {
+				warn("start vm command failed");
+				*ret = EIO;
+			}
 		} else if (autoconnect) {
 			/* does not return */
 			ctl_openconsole(vmr->vmr_ttyname);
