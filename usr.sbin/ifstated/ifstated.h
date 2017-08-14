@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifstated.h,v 1.16 2017/07/04 21:04:14 benno Exp $	*/
+/*	$OpenBSD: ifstated.h,v 1.17 2017/07/23 13:48:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Ryan McBride
@@ -63,7 +63,6 @@ struct ifsd_action {
 	TAILQ_ENTRY(ifsd_action)	 entries;
 	struct ifsd_action		*parent;
 	union {
-		char			*logmessage;
 		char			*command;
 		struct ifsd_state	*nextstate;
 		char			*statename;
@@ -73,7 +72,6 @@ struct ifsd_action {
 		} c;
 	} act;
 	u_int32_t			 type;
-#define IFSD_ACTION_LOG			0
 #define IFSD_ACTION_COMMAND		1
 #define IFSD_ACTION_CHANGESTATE		2
 #define IFSD_ACTION_CONDITION		3
