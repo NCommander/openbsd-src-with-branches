@@ -9,7 +9,7 @@ BEGIN {
      skip_all_without_config('useithreads');
      skip_all_if_miniperl("no dynamic loading on miniperl, no threads");
 
-     plan(27);
+     plan(28);
 }
 
 use strict;
@@ -139,7 +139,7 @@ watchdog(180, "process");
 {
     local $SIG{__WARN__} = sub {};   # Ignore any thread creation failure warnings
     my @t;
-    for (1..100) {
+    for (1..10) {
         my $thr = threads->create( sub { require IO });
         last if !defined($thr);      # Probably ran out of memory
         push(@t, $thr);
@@ -398,5 +398,11 @@ fresh_perl_is(
    {},
   'no crash when deleting $::{INC} in thread'
 );
+
+fresh_perl_is(<<'CODE', 'ok', 'no crash modifying extended array element');
+use threads;
+my @a = 1;
+threads->create(sub { $#a = 1; $a[1] = 2; print qq/ok\n/ })->join;
+CODE
 
 # EOF

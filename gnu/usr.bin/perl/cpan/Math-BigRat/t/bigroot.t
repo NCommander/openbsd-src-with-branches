@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 # Test broot function (and bsqrt() function, since it is used by broot()).
 
@@ -8,34 +8,10 @@
 # But it is better to test the numerical functionality, instead of not testing
 # it at all.
 
-use Test::More;
 use strict;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  # to locate the testing files
-  my $location = $0; $location =~ s/bigroot.t//i;
-  if ($ENV{PERL_CORE})
-    {
-    # testing with the core distribution
-    @INC = qw(../lib);
-    }
-  unshift @INC, '../lib';
-  if (-d 't')
-    {
-    chdir 't';
-    require File::Spec;
-    unshift @INC, File::Spec->catdir(File::Spec->updir, $location);
-    }
-  else
-    {
-    unshift @INC, $location;
-    }
-  print "# INC = @INC\n";
-
-  plan tests => 8 * 2;
-  }
+use Test::More tests => 8 * 2;
 
 use Math::BigFloat;
 use Math::BigInt;
@@ -43,7 +19,7 @@ use Math::BigInt;
 my $cl = "Math::BigFloat";
 my $c = "Math::BigInt";
 
-# 2 ** 240 = 
+# 2 ** 240 =
 # 1766847064778384329583297500742918515827483896875618958121606201292619776
 
 test_broot ('2','240', 8, undef,   '1073741824');
@@ -65,4 +41,3 @@ sub test_broot
   $result =~ s/\..*//;
   is ($c->new($x)->bpow($n)->broot($y,$scale),$result, "Try: $c $x->bpow($n)->broot($y,$s) == $result");
   }
-

@@ -1,98 +1,84 @@
-#!/usr/bin/perl -w
+#!perl
 
 ###############################################################################
 
-use Test;
 use strict;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  chdir 't' if -d 't';
-  unshift @INC, '../lib';
-  plan tests => 40;
-  }
+use Test::More tests => 40;
 
 use bigrat qw/oct hex/;
 
 ###############################################################################
 # general tests
 
-my $x = 5; ok (ref($x) =~ /^Math::BigInt/);		# :constant
+my $x = 5;
+like(ref($x), qr/^Math::BigInt/, '$x = 5 makes $x a Math::BigInt'); # :constant
 
-# todo:  ok (2 + 2.5,4.5);				# should still work
-# todo: $x = 2 + 3.5; ok (ref($x),'Math::BigFloat');
+# todo:  is(2 + 2.5, 4.5);				# should still work
+# todo: $x = 2 + 3.5; is(ref($x), 'Math::BigFloat');
 
-$x = 2 ** 255; ok (ref($x) =~ /^Math::BigInt/);
+$x = 2 ** 255;
+like(ref($x), qr/^Math::BigInt/, '$x = 2 ** 255 makes $x a Math::BigInt');
 
 # see if Math::BigRat constant works
-ok (1/3, '1/3');
-ok (1/4+1/3,'7/12');
-ok (5/7+3/7,'8/7');
+is(1/3,         '1/3',    qq|1/3 = '1/3'|);
+is(1/4+1/3,     '7/12',   qq|1/4+1/3 = '7/12'|);
+is(5/7+3/7,     '8/7',    qq|5/7+3/7 = '8/7'|);
 
-ok (3/7+1,'10/7');
-ok (3/7+1.1,'107/70');
-ok (3/7+3/7,'6/7');
+is(3/7+1,       '10/7',   qq|3/7+1 = '10/7'|);
+is(3/7+1.1,     '107/70', qq|3/7+1.1 = '107/70'|);
+is(3/7+3/7,     '6/7',    qq|3/7+3/7 = '6/7'|);
 
-ok (3/7-1,'-4/7');
-ok (3/7-1.1,'-47/70');
-ok (3/7-2/7,'1/7');
+is(3/7-1,       '-4/7',   qq|3/7-1 = '-4/7'|);
+is(3/7-1.1,     '-47/70', qq|3/7-1.1 = '-47/70'|);
+is(3/7-2/7,     '1/7',    qq|3/7-2/7 = '1/7'|);
 
 # fails ?
-# ok (1+3/7,'10/7');
+# is(1+3/7, '10/7', qq|1+3/7 = '10/7'|);
 
-ok (1.1+3/7,'107/70');
-ok (3/7*5/7,'15/49');
-ok (3/7 / (5/7),'3/5');
-ok (3/7 / 1,'3/7');
-ok (3/7 / 1.5,'2/7');
+is(1.1+3/7,     '107/70', qq|1.1+3/7 = '107/70'|);
+is(3/7*5/7,     '15/49',  qq|3/7*5/7 = '15/49'|);
+is(3/7 / (5/7), '3/5',    qq|3/7 / (5/7) = '3/5'|);
+is(3/7 / 1,     '3/7',    qq|3/7 / 1 = '3/7'|);
+is(3/7 / 1.5,   '2/7',    qq|3/7 / 1.5 = '2/7'|);
 
 ###############################################################################
-# accurarcy and precision
+# accuracy and precision
 
-ok_undef (bigrat->accuracy());
-ok (bigrat->accuracy(12),12);
-ok (bigrat->accuracy(),12);
+is(bigrat->accuracy(),        undef, 'get accuracy');
+is(bigrat->accuracy(12),      12,    'set accuracy to 12');
+is(bigrat->accuracy(),        12,    'get accuracy again');
 
-ok_undef (bigrat->precision());
-ok (bigrat->precision(12),12);
-ok (bigrat->precision(),12);
+is(bigrat->precision(),       undef, 'get precision');
+is(bigrat->precision(12),     12,    'set precision to 12');
+is(bigrat->precision(),       12,    'get precision again');
 
-ok (bigrat->round_mode(),'even');
-ok (bigrat->round_mode('odd'),'odd');
-ok (bigrat->round_mode(),'odd');
+is(bigrat->round_mode(),      'even', 'get round mode');
+is(bigrat->round_mode('odd'), 'odd',  'set round mode');
+is(bigrat->round_mode(),      'odd',  'get round mode again');
 
 ###############################################################################
 # hex() and oct()
 
-my $c = 'Math::BigInt';
+my $class = 'Math::BigInt';
 
-ok (ref(hex(1)), $c);
-ok (ref(hex(0x1)), $c);
-ok (ref(hex("af")), $c);
-ok (hex("af"), Math::BigInt->new(0xaf));
-ok (ref(hex("0x1")), $c);
+is(ref(hex(1)),      $class, qq|ref(hex(1)) = $class|);
+is(ref(hex(0x1)),    $class, qq|ref(hex(0x1)) = $class|);
+is(ref(hex("af")),   $class, qq|ref(hex("af")) = $class|);
+is(ref(hex("0x1")),  $class, qq|ref(hex("0x1")) = $class|);
 
-ok (ref(oct("0x1")), $c);
-ok (ref(oct("01")), $c);
-ok (ref(oct("0b01")), $c);
-ok (ref(oct("1")), $c);
-ok (ref(oct(" 1")), $c);
-ok (ref(oct(" 0x1")), $c);
+is(hex("af"), Math::BigInt->new(0xaf),
+   qq|hex("af") = Math::BigInt->new(0xaf)|);
 
-ok (ref(oct(0x1)), $c);
-ok (ref(oct(01)), $c);
-ok (ref(oct(0b01)), $c);
-ok (ref(oct(1)), $c);
+is(ref(oct("0x1")),  $class, qq|ref(oct("0x1")) = $class|);
+is(ref(oct("01")),   $class, qq|ref(oct("01")) = $class|);
+is(ref(oct("0b01")), $class, qq|ref(oct("0b01")) = $class|);
+is(ref(oct("1")),    $class, qq|ref(oct("1")) = $class|);
+is(ref(oct(" 1")),   $class, qq|ref(oct(" 1")) = $class|);
+is(ref(oct(" 0x1")), $class, qq|ref(oct(" 0x1")) = $class|);
 
-###############################################################################
-###############################################################################
-# Perl 5.005 does not like ok ($x,undef)
-
-sub ok_undef
-  {
-  my $x = shift;
-
-  ok (1,1) and return if !defined $x;
-  ok ($x,'undef');
-  }
+is(ref(oct(0x1)),    $class, qq|ref(oct(0x1)) = $class|);
+is(ref(oct(01)),     $class, qq|ref(oct(01)) = $class|);
+is(ref(oct(0b01)),   $class, qq|ref(oct(0b01)) = $class|);
+is(ref(oct(1)),      $class, qq|ref(oct(1)) = $class|);

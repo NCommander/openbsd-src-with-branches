@@ -1,61 +1,32 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
-use Test;
 use strict;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  # to locate the testing files
-  my $location = $0; $location =~ s/upgradef.t//i;
-  if ($ENV{PERL_CORE})
-    {
-    # testing with the core distribution
-    @INC = qw(../t/lib);
-    }
-  unshift @INC, qw(../lib);     # to locate the modules
-  if (-d 't')
-    {
-    chdir 't';
-    require File::Spec;
-    unshift @INC, File::Spec->catdir(File::Spec->updir, $location);
-    }
-  else
-    {
-    unshift @INC, $location;
-    }
-  print "# INC = @INC\n";
-
-  plan tests => 0
-   + 6;			# our own tests
-  }
+use Test::More tests => 6;
 
 ###############################################################################
 package Math::BigFloat::Test;
 
 use Math::BigFloat;
 require Exporter;
-use vars qw/@ISA/;
-@ISA = qw/Exporter Math::BigFloat/;
+our @ISA = qw/Exporter Math::BigFloat/;
 
 use overload;
 
-sub isa
-  {
-  my ($self,$class) = @_;
-  return if $class =~ /^Math::Big(Int|Float)/;	# we aren't one of these
-  UNIVERSAL::isa($self,$class);
-  }
+sub isa {
+    my ($self, $class) = @_;
+    return if $class =~ /^Math::Big(Int|Float)/;    # we aren't one of these
+    UNIVERSAL::isa($self, $class);
+}
 
-sub bmul
-  {
-  return __PACKAGE__->new(123);
-  }
+sub bmul {
+    return __PACKAGE__->new(123);
+}
 
-sub badd
-  {
-  return __PACKAGE__->new(321);
-  }
+sub badd {
+    return __PACKAGE__->new(321);
+}
 
 ###############################################################################
 package main;
@@ -63,22 +34,37 @@ package main;
 # use Math::BigInt upgrade => 'Math::BigFloat';
 use Math::BigFloat upgrade => 'Math::BigFloat::Test';
 
-use vars qw ($scale $class $try $x $y $z $f @args $ans $ans1 $ans1_str $setup
-             $ECL $CL);
-$class = "Math::BigFloat";
-$CL = "Math::BigInt::Calc";
-$ECL = "Math::BigFloat::Test";
+my ($x, $y, $z);
 
-ok (Math::BigFloat->upgrade(),$ECL);
-ok (Math::BigFloat->downgrade()||'','');
+our ($CLASS, $EXPECTED_CLASS, $CALC);
+$CLASS          = "Math::BigFloat";
+$EXPECTED_CLASS = "Math::BigFloat::Test";
+$CALC           = "Math::BigInt::Calc";         # backend
 
-$x = $class->new(123); $y = $ECL->new(123); $z = $x->bmul($y);
-ok (ref($z),$ECL); ok ($z,123);
+is(Math::BigFloat->upgrade(), $EXPECTED_CLASS,
+   qq|Math::BigFloat->upgrade()|);
+is(Math::BigFloat->downgrade() || '', '',
+   qq/Math::BigFloat->downgrade() || ''/);
 
-$x = $class->new(123); $y = $ECL->new(123); $z = $x->badd($y);
-ok (ref($z),$ECL); ok ($z,321);
+$x = $CLASS->new(123);
+$y = $EXPECTED_CLASS->new(123);
+$z = $x->bmul($y);
+is(ref($z), $EXPECTED_CLASS,
+   qq|\$x = $CLASS->new(123); \$y = $EXPECTED_CLASS->new(123);|
+   . q| $z = $x->bmul($y); ref($z)|);
+is($z, 123,
+   qq|\$x = $CLASS->new(123); \$y = $EXPECTED_CLASS->new(123);|
+   . q| $z = $x->bmul($y); $z|);
 
-
+$x = $CLASS->new(123);
+$y = $EXPECTED_CLASS->new(123);
+$z = $x->badd($y);
+is(ref($z), $EXPECTED_CLASS,
+   qq|$x = $CLASS->new(123); $y = $EXPECTED_CLASS->new(123);|
+   . q| $z = $x->badd($y); ref($z)|);
+is($z, 321,
+   qq|$x = $CLASS->new(123); $y = $EXPECTED_CLASS->new(123);|
+   . q| $z = $x->badd($y); $z|);
 
 # not yet:
-# require 'upgrade.inc';	# all tests here for sharing
+#require 't/upgrade.inc';	# all tests here for sharing

@@ -1,187 +1,182 @@
 #include this file into another test for subclass testing...
 
-ok ($class->config()->{lib},$CL);
+use strict;
+use warnings;
+
+our ($CLASS, $try, $x, $y, $z, $f, @args, $want, $got, $setup, $CALC);
+
+is($CLASS->config()->{lib}, $CALC);
 
 $setup = '';
 
-while (<DATA>)
-  {
-  chomp;
-  $_ =~ s/#.*$//;	# remove comments
-  $_ =~ s/\s+$//;	# trailing spaces
-  next if /^$/;		# skip empty lines & comments
-  if (s/^&//)
-    {
-    $f = $_;
-    }
-  elsif (/^\$/)
-    {
-    $setup = $_; $setup =~ s/\$/\$${class}::/g;	# round_mode, div_scale
-    #print "\$setup== $setup\n";
-    }
-  else
-    {
-    if (m|^(.*?):(/.+)$|)
-      {
-      $ans = $2;
-      @args = split(/:/,$1,99);
-      }
-    else
-      {
-      @args = split(/:/,$_,99); $ans = pop(@args);
-      }
-    $try = "\$x = new $class \"$args[0]\";";
-    if ($f eq "bnorm")
-      {
-        $try .= "\$x;";
-      } elsif ($f eq "finf") {
-        my $a = $args[1] || '';
-        $try .= "\$x->binf('$a');";
-      } elsif ($f eq "is_inf") {
-        $try .= "\$x->is_inf('$args[1]');"; 
-      } elsif ($f eq "fone") {
-        $try .= "\$x->bone('$args[1]');";
-      } elsif ($f eq "fstr") {
-        $try .= "\$x->accuracy($args[1]); \$x->precision($args[2]);";
-        $try .= '$x->bstr();';
-      } elsif ($f eq "parts") {
-        # ->bstr() to see if an object is returned
-        $try .= '($a,$b) = $x->parts(); $a = $a->bstr(); $b = $b->bstr();';
-        $try .= '"$a $b";';
-      } elsif ($f eq "numerator") {
-        # ->bstr() to see if an object is returned
-        $try .= '$x->numerator()->bstr();';
-      } elsif ($f eq "denominator") {
-        # ->bstr() to see if an object is returned
-        $try .= '$x->denominator()->bstr();';
-      } elsif ($f =~ /^(length|numify)$/) {
-        $try .= "\$x->$f();";
-      # some unary ops (can't test the fxxx form, since no AUTOLOAD in BigRat)
-      } elsif ($f =~ /^f(nan|sstr|neg|floor|ceil|abs)$/) {
-        $try .= "\$x->b$1();";
-      # some is_xxx test function	
-      } elsif ($f =~ /^is_(zero|one|pos|neg|negative|positive|odd|even|nan|int)\z/) {
-        $try .= "\$x->$f();";
-      } elsif ($f =~ /^(as_number|as_int)\z/){
-        $try .= "\$x->$1();";
-      } elsif ($f eq "finc") {
-        $try .= '++$x;';
-      } elsif ($f eq "fdec") {
-        $try .= '--$x;';
-      } elsif ($f eq "digit") {
-        $try .= "\$x->digit($args[1]);";
-      } elsif ($f eq "fround") {
-        $try .= "$setup; \$x->bround($args[1]);";
-      } elsif ($f eq "ffround") {
-        $try .= "$setup; \$x->bfround($args[1]);";
-      } elsif ($f eq "fsqrt") {
-        $try .= "$setup; \$x->bsqrt();";
-      } elsif ($f eq "flog") {
-        $try .= "$setup; \$x->blog();";
-      } elsif ($f eq "ffac") {
-        $try .= "$setup; \$x->bfac();";
-      }
-    else
-      {
-      $try .= "\$y = new $class \"$args[1]\";";
-      if ($f eq "bcmp") {
-        $try .= '$x <=> $y;';
-      } elsif ($f eq "bacmp") {
-        $try .= '$x->bacmp($y);';
-      } elsif ($f eq "bpow") {
-        $try .= '$x ** $y;';
-      } elsif ($f eq "fpow") {
-        $try .= '$x->bpow($y);';
-      } elsif ($f eq "badd") {
-        $try .= '$x + $y;';
-      } elsif ($f eq "bsub") {
-        $try .= '$x - $y;';
-      } elsif ($f eq "bmul") {
-        $try .= '$x * $y;';
-      } elsif ($f eq "bdiv") {
-        $try .= "$setup; \$x / \$y;";
-      } elsif ($f eq "fdiv-list") {
-        $try .= "$setup; join(',',\$x->bdiv(\$y));";
-      } elsif ($f eq "brsft") {
-        $try .= '$x >> $y;';
-      } elsif ($f eq "blsft") {
-        $try .= '$x << $y;';
-      } elsif ($f eq "bmod") {
-        $try .= '$x % $y;';
-      } elsif( $f eq "bmodinv") {
-       $try .= "\$x->bmodinv(\$y);";
-      } elsif( $f eq "blog") {
-       $try .= "\$x->blog(\$y);";
-      } else {
-        $try .= "\$z = $class->new(\"$args[2]\");";
+while (<DATA>) {
+    s/#.*$//;                   # remove comments
+    s/\s+$//;                   # remove trailing whitespace
+    next unless length;         # skip empty lines
 
-        # Functions with three arguments
-        if( $f eq "bmodpow") {
-          $try .= "\$x->bmodpow(\$y,\$z);";
-        } else { warn "Unknown op '$f'"; }
-      }
+    if (s/^&//) {
+        $f = $_;
+        next;
+    }
+
+    if (/^\$/) {
+        $setup = $_;
+        $setup =~ s/\$/\$${CLASS}::/g;  # round_mode, div_scale
+        #print "\$setup== $setup\n";
+        next;
+    }
+
+    if (m|^(.*?):(/.+)$|) {
+        $want = $2;
+        @args = split(/:/, $1, 99);
+    } else {
+        @args = split(/:/, $_, 99);
+        $want = pop(@args);
+    }
+
+    $try = qq|\$x = $CLASS->new("$args[0]");|;
+    if ($f eq "bnorm") {
+        $try .= " \$x;";
+    } elsif ($f eq "finf") {
+        my $a = $args[1] || '';
+        $try .= qq| \$x->binf("$a");|;
+    } elsif ($f eq "is_inf") {
+        $try .= qq| \$x->is_inf("$args[1]");|;
+    } elsif ($f eq "fone") {
+        $try .= qq| \$x->bone("$args[1]");|;
+    } elsif ($f eq "fstr") {
+        $try .= " \$x->accuracy($args[1]); \$x->precision($args[2]);";
+        $try .= ' $x->bstr();';
+    } elsif ($f eq "parts") {
+        # ->bstr() to see if an object is returned
+        $try .= ' ($a,$b) = $x->parts(); $a = $a->bstr(); $b = $b->bstr();';
+        $try .= ' "$a $b";';
+    } elsif ($f eq "numerator") {
+        # ->bstr() to see if an object is returned
+        $try .= ' $x->numerator()->bstr();';
+    } elsif ($f eq "denominator") {
+        # ->bstr() to see if an object is returned
+        $try .= ' $x->denominator()->bstr();';
+    } elsif ($f =~ /^(length|numify)$/) {
+        $try .= " \$x->$f();";
+        # some unary ops (can't test the fxxx form, since no AUTOLOAD in BigRat)
+    } elsif ($f =~ /^f(nan|sstr|neg|floor|ceil|abs)$/) {
+        $try .= " \$x->b$1();";
+        # overloaded functions
+    } elsif ($f =~ /^(log|exp|sin|cos|atan2|int|neg|abs|sqrt)$/) {
+        $try .= " \$x = $f(\$x);";
+        # some is_xxx test function
+    } elsif ($f =~ /^is_(zero|one|pos|neg|negative|positive|odd|even|nan|int)\z/) {
+        $try .= " \$x->$f();";
+    } elsif ($f =~ /^(as_number|as_int)\z/) {
+        $try .= " \$x->$1();";
+    } elsif ($f eq "finc") {
+        $try .= ' ++$x;';
+    } elsif ($f eq "fdec") {
+        $try .= ' --$x;';
+    } elsif ($f eq "digit") {
+        $try .= " \$x->digit($args[1]);";
+    } elsif ($f eq "fround") {
+        $try .= " $setup; \$x->bround($args[1]);";
+    } elsif ($f eq "ffround") {
+        $try .= " $setup; \$x->bfround($args[1]);";
+    } elsif ($f eq "fsqrt") {
+        $try .= " $setup; \$x->bsqrt();";
+    } elsif ($f eq "flog") {
+        $try .= " $setup; \$x->blog();";
+    } elsif ($f eq "ffac") {
+        $try .= " $setup; \$x->bfac();";
+    } else {
+        $try .= qq| \$y = $CLASS->new("$args[1]");|;
+        if ($f eq "bcmp") {
+            $try .= ' $x <=> $y;';
+        } elsif ($f eq "bacmp") {
+            $try .= ' $x->bacmp($y);';
+        } elsif ($f eq "bpow") {
+            $try .= ' $x ** $y;';
+        } elsif ($f eq "fpow") {
+            $try .= ' $x->bpow($y);';
+        } elsif ($f eq "badd") {
+            $try .= ' $x + $y;';
+        } elsif ($f eq "bsub") {
+            $try .= ' $x - $y;';
+        } elsif ($f eq "bmul") {
+            $try .= ' $x * $y;';
+        } elsif ($f eq "bdiv") {
+            $try .= " $setup; \$x / \$y;";
+        } elsif ($f eq "bdiv-list") {
+            $try .= qq| $setup; join(",", \$x->bdiv(\$y));|;
+        } elsif ($f eq "brsft") {
+            $try .= ' $x >> $y;';
+        } elsif ($f eq "blsft") {
+            $try .= ' $x << $y;';
+        } elsif ($f eq "bmod") {
+            $try .= ' $x % $y;';
+        } elsif ($f eq "bmodinv") {
+            $try .= " \$x->bmodinv(\$y);";
+        } elsif ($f eq "blog") {
+            $try .= " \$x->blog(\$y);";
+        } else {
+            $try .= qq| \$z = $CLASS->new("$args[2]");|;
+
+            # Functions with three arguments
+            if ($f eq "bmodpow") {
+                $try .= " \$x->bmodpow(\$y, \$z);";
+            } else {
+                warn "Unknown op '$f'";
+            }
+        }
     }
     # print "# Trying: '$try'\n";
-    $ans1 = eval $try;
-    if ($ans =~ m|^/(.*)$|)
-      {
-      my $pat = $1;
-      if ($ans1 =~ /$pat/)
-        {
-        ok (1,1);
+    $got = eval $try;
+    if ($want =~ m|^/(.*)$|) {
+        my $pat = $1;
+        like($got, qr/$pat/, $try);
+    } else {
+        if ($want eq "") {
+            is($got, undef, $try);
+        } else {
+            is($got, $want, $try);
+            #if (ref($got) eq "$CLASS") {
+            #    # float numbers are normalized (for now), so mantissa shouldn't have
+            #    # trailing zeros
+            #    #print $got->_trailing_zeros(), "\n";
+            #    print "# Has trailing zeros after '$try'\n"
+            #      if !is($got->{_m}->_trailing_zeros(), 0);
+            #}
         }
-      else
-        {
-        print "# '$try' expected: /$pat/ got: '$ans1'\n" if !ok(1,0);
-        }
-      }
-    else
-      {
-      if ($ans eq "")
-        {
-        ok_undef ($ans1);
-        }
-      else
-        {
-        print "# Tried: '$try'\n" if !ok ($ans1, $ans);
-#        if (ref($ans1) eq "$class")
-#	  {
-#	  # float numbers are normalized (for now), so mantissa shouldn't have
-#	  # trailing zeros
-#	  #print $ans1->_trailing_zeros(),"\n";
-#          print "# Has trailing zeros after '$try'\n"
-#	   if !ok ($ans1->{_m}->_trailing_zeros(), 0);
-#	  }
-        }
-      } # end pattern or string
-    }
-  } # end while
+    }                           # end pattern or string
+}                               # end while
 
-# check whether $class->new( Math::BigInt->new()) destroys it 
+# check whether $CLASS->new(Math::BigInt->new()) destroys it
 # ($y == 12 in this case)
-$x = Math::BigInt->new(1200); $y = $class->new($x);
-ok ($y,1200); ok ($x,1200);
+$x = Math::BigInt->new(1200);
+$y = $CLASS->new($x);
+is($y, 1200, qq|\$x = Math::BigInt->new(1200); \$y = $CLASS->new(\$x); $y|);
+is($x, 1200, qq|\$x = Math::BigInt->new(1200); \$y = $CLASS->new(\$x); $x|);
 
 ###############################################################################
-# zero,inf,one,nan
+# zero, inf, one, nan
 
-$x = $class->new(2); $x->bzero(); ok_undef ($x->{_a}); ok_undef ($x->{_p});
-$x = $class->new(2); $x->binf();  ok_undef ($x->{_a}); ok_undef ($x->{_p});
-$x = $class->new(2); $x->bone();  ok_undef ($x->{_a}); ok_undef ($x->{_p});
-$x = $class->new(2); $x->bnan();  ok_undef ($x->{_a}); ok_undef ($x->{_p});
-        
-1; # all done
+$x = $CLASS->new(2);
+$x->bzero();
+is($x->{_a}, undef, qq|\$x = $CLASS->new(2); \$x->bzero(); \$x->{_a}|);
+is($x->{_p}, undef, qq|\$x = $CLASS->new(2); \$x->bzero(); \$x->{_p}|);
 
-###############################################################################
-# Perl 5.005 does not like ok ($x,undef)
+$x = $CLASS->new(2);
+$x->binf();
+is($x->{_a}, undef, qq|\$x = $CLASS->new(2); \$x->binf(); \$x->{_a}|);
+is($x->{_p}, undef, qq|\$x = $CLASS->new(2); \$x->binf(); \$x->{_p}|);
 
-sub ok_undef
-  {
-  my $x = shift;
+$x = $CLASS->new(2);
+$x->bone();
+is($x->{_a}, undef, qq|\$x = $CLASS->new(2); \$x->bone(); \$x->{_a}|);
+is($x->{_p}, undef, qq|\$x = $CLASS->new(2); \$x->bone(); \$x->{_p}|);
 
-  ok (1,1) and return if !defined $x;
-  ok ($x,'undef');
-  }
+$x = $CLASS->new(2);
+$x->bnan();
+is($x->{_a}, undef, qq|\$x = $CLASS->new(2); \$x->bnan(); \$x->{_a}|);
+is($x->{_p}, undef, qq|\$x = $CLASS->new(2); \$x->bnan(); \$x->{_p}|);
 
 __DATA__
 &digit
@@ -205,13 +200,13 @@ abc:5:NaN
 # bmodinv Expected Results from normal use
 1:5:1
 3:5:2
+3:-5:-3
 -2:5:2
 8:5033:4404
 1234567891:13:6
 -1234567891:13:7
 324958749843759385732954874325984357439658735983745:2348249874968739:1741662881064902
 ## bmodinv Error cases / useless use of function
-3:-5:NaN
 inf:5:NaN
 5:inf:NaN
 -inf:5:NaN
@@ -248,9 +243,9 @@ abc:5:5:NaN
 0:0:1:0
 8:7:5032:3840
 8:-1:5033:4404
+8:8:-5:-4
 98436739867439843769485798542749827593285729587325:43698764986460981048259837659386739857456983759328457:6943857329857295827698367:3104744730915914415259518
 # bmodpow Error cases
-8:8:-5:NaN
 8:-1:16:NaN
 inf:5:13:NaN
 5:inf:13:NaN
@@ -270,8 +265,8 @@ NaN:1:NaN
 -7/4:-4/32:0
 7/4:-4/32:0
 7/4:4/28:1/28
--7/4:4/28:-1/28
-7/4:-4/28:1/28
+-7/4:4/28:3/28
+7/4:-4/28:-3/28
 -7/4:-4/28:-1/28
 &fsqrt
 1:1
@@ -286,7 +281,7 @@ NaN:NaN
 -3:NaN
 &flog
 NaN:NaN
-0:NaN
+0:-inf
 -2:NaN
 &blog
 NaN:NaN:NaN
@@ -294,7 +289,7 @@ NaN:NaN:NaN
 NaN:0:NaN
 NaN:1:NaN
 1:NaN:NaN
-0:2:NaN
+0:2:-inf
 0:-2:NaN
 3:-2:NaN
 &finf
@@ -359,7 +354,7 @@ inf/-5:-inf
 inf:inf
 +inf:inf
 -inf:-inf
-+infinity:NaN
++InFiNiTy:inf
 +-inf:NaN
 abc:NaN
    1 a:NaN
@@ -585,8 +580,19 @@ NaNmul:-inf:NaN
 6:120:720
 10:10000:100000
 1/4:1/3:1/12
+&bdiv-list
+0:0:NaN,0
+0:1:0,0
+1:0:inf,1
+-1:0:-inf,-1
+9:4:2,1
+-9:4:-3,3
+9:-4:-3,-3
+-9:-4:2,-1
+11/7:2/3:2,5/21
+-11/7:2/3:-3,3/7
 &bdiv
-$div_scale = 40; $round_mode = 'even'
+$div_scale = 40; $round_mode = "even"
 abc:abc:NaN
 abc:+1:abc:NaN
 +1:abc:NaN
@@ -651,9 +657,8 @@ NaN::0
 +inf:+:1
 -inf:-:1
 -inf:+:0
-# it must be exactly /^[+-]inf$/
-+infinity::0
--infinity::0
++infinity::1
+-infinity::1
 &is_odd
 abc:0
 0:0
@@ -923,3 +928,18 @@ NaN:NaN
 1/3:-2/3
 2/7:-5/7
 NaN:NaN
+&log
+-1:NaN
+0:-inf
+1:0
+34803:3267955896544848894312057422508991/312500000000000000000000000000000
+-inf:inf
+inf:inf
+NaN:NaN
+&exp
+&sin
+&cos
+&atan2
+&int
+&abs
+&sqrt

@@ -1,39 +1,16 @@
-#!/usr/bin/perl -w
+#!perl
 
-use Test;
 use strict;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  # to locate the testing files
-  my $location = $0; $location =~ s/bare_mbf.t//i;
-  print "# $0\n";
-  if ($ENV{PERL_CORE})
-    {
-    # testing with the core distribution
-    @INC = qw(../t/lib);
-    }
-  unshift @INC, '../lib';
-  if (-d 't')
-    {
-    chdir 't';
-    require File::Spec;
-    unshift @INC, File::Spec->catdir(File::Spec->updir, $location);
-    }
-  else
-    {
-    unshift @INC, $location;
-    }
-  print "# INC = @INC\n";
+use Test::More tests => 2409;
 
-  plan tests => 2308;
-  }
+use lib 't';
 
 use Math::BigFloat lib => 'BareCalc';
 
-use vars qw ($class $try $x $y $f @args $ans $ans1 $ans1_str $setup $CL);
-$class = "Math::BigFloat";
-$CL = "Math::BigInt::BareCalc";
-   
-require 'bigfltpm.inc';	# all tests here for sharing
+our ($CLASS, $CALC);
+$CLASS = "Math::BigFloat";
+$CALC  = "Math::BigInt::BareCalc";      # backend
+
+require 't/bigfltpm.inc';	        # all tests here for sharing

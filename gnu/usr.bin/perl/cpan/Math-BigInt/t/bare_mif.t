@@ -1,48 +1,24 @@
-#!/usr/bin/perl -w
+#!perl
 
-# test rounding, accuracy, precicion and fallback, round_mode and mixing
-# of classes under BareCalc
+# test rounding, accuracy, precision and fallback, round_mode and mixing
+# of classes under Math::BigInt::BareCalc
 
 use strict;
-use Test;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  # to locate the testing files
-  my $location = $0; $location =~ s/bare_mif.t//i;
-  if ($ENV{PERL_CORE})
-    {
-    @INC = qw(../t/lib); 		# testing with the core distribution
-    }
-  unshift @INC, '../lib';	# for testing manually
-  if (-d 't')
-    {
-    chdir 't';
-    require File::Spec;
-    unshift @INC, File::Spec->catdir(File::Spec->updir, $location);
-    }
-  else
-    {
-    unshift @INC, $location;
-    }
-  print "# INC = @INC\n";
+use Test::More tests => 684             # tests in require'd file
+                        + 1;            # tests in this file
 
-  plan tests => 684
-    + 1;		# our own tests
-  }
+use lib 't';
 
-print "# ",Math::BigInt->config()->{lib},"\n";
-
-use Math::BigInt lib => 'BareCalc';
+use Math::BigInt   lib => 'BareCalc';
 use Math::BigFloat lib => 'BareCalc';
 
-use vars qw/$mbi $mbf/;
-
+our ($mbi, $mbf);
 $mbi = 'Math::BigInt';
 $mbf = 'Math::BigFloat';
 
-ok (Math::BigInt->config()->{lib},'Math::BigInt::BareCalc');
+is(Math::BigInt->config()->{lib}, 'Math::BigInt::BareCalc',
+   'Math::BigInt->config()->{lib}');
 
-require 'mbimbf.inc';
-
+require 't/mbimbf.inc';

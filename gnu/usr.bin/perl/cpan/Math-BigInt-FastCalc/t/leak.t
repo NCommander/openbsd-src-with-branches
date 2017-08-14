@@ -5,22 +5,14 @@
 # XXX TODO: This test file doesn't actually seem to work! If you remove
 # the sv_2mortal() in the XS file, it still happily passes all tests...
 
-use Test::More;
 use strict;
-
-BEGIN
-  {
-  $| = 1;
-  chdir 't' if -d 't' && !$ENV{PERL_CORE};
-  unshift @INC, ('../lib', '../blib/arch');	# for running manually
-  plan tests => 22;
-  }
+use Test::More tests => 22;
 
 use Math::BigInt::FastCalc;
 
 #############################################################################
 package Math::BigInt::FastCalc::LeakCheck;
-use base qw(Math::BigInt::FastCalc);
+use parent qw(Math::BigInt::FastCalc);
 
 my $destroyed = 0;
 sub DESTROY { $destroyed++; }

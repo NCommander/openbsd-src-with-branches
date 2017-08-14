@@ -1,53 +1,32 @@
-#!/usr/bin/perl -w
+#!perl
 
-use Test::More;
 use strict;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  # to locate the testing files
-  my $location = $0; $location =~ s/sub_mbf.t//i;
-  if ($ENV{PERL_CORE})
-    {
-    # testing with the core distribution
-    @INC = qw(../t/lib);
-    }
-  unshift @INC, '../lib';
-  if (-d 't')
-    {
-    chdir 't';
-    require File::Spec;
-    unshift @INC, File::Spec->catdir(File::Spec->updir, $location);
-    }
-  else
-    {
-    unshift @INC, $location;
-    }
-  print "# INC = @INC\n";
+use Test::More tests => 4;
 
-  plan tests => 4;
-  }
+use lib 't';
 
-# first load BigInt with Calc
+# first load Math::BigInt with Math::BigInt::Calc
 use Math::BigInt lib => 'Calc';
 
-# BigFloat will remember that we loaded Calc
+# Math::BigFloat will remember that we loaded Math::BigInt::Calc
 require Math::BigFloat;
-is (Math::BigFloat::config()->{lib}, 'Math::BigInt::Calc', 'BigFloat got Calc');
+is(Math::BigFloat::config()->{lib}, 'Math::BigInt::Calc',
+   'Math::BigFloat got Math::BigInt::Calc');
 
-# now load BigInt again with a different lib
-Math::BigInt->import( lib => 'BareCalc' );
+# now load Math::BigInt again with a different lib
+Math::BigInt->import(lib => 'BareCalc');
 
-# and finally test that BigFloat knows about BareCalc
+# and finally test that Math::BigFloat knows about Math::BigInt::BareCalc
 
-is (Math::BigFloat::config()->{lib}, 'Math::BigInt::BareCalc', 'BigFloat was notified');
+is(Math::BigFloat::config()->{lib}, 'Math::BigInt::BareCalc',
+   'Math::BigFloat was notified');
 
 # See that Math::BigFloat supports "only"
 eval "Math::BigFloat->import('only' => 'Calc')";
-is (Math::BigFloat::config()->{lib}, 'Math::BigInt::Calc', '"only" worked');
+is(Math::BigFloat::config()->{lib}, 'Math::BigInt::Calc', '"only" worked');
 
 # See that Math::BigFloat supports "try"
 eval "Math::BigFloat->import('try' => 'BareCalc')";
-is (Math::BigFloat::config()->{lib}, 'Math::BigInt::BareCalc', '"try" worked');
-
+is(Math::BigFloat::config()->{lib}, 'Math::BigInt::BareCalc', '"try" worked');

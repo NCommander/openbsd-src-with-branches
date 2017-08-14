@@ -1,39 +1,22 @@
-#!/usr/bin/perl -w
+#!perl
 
-###############################################################################
-
-use Test;
 use strict;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  my $location = $0; $location =~ s/bninfnan.t//i;
-  if ($ENV{PERL_CORE})
-    {
-    #@INC = qw(../lib ../lib/bignum/t); # testing with the core distribution
-    }
-  else
-    {
-    unshift @INC, '../lib';     # for testing manually
-    }
-  if (-d 't')
-    {
-    chdir 't';
-    require File::Spec;
-    unshift @INC, File::Spec->catdir(File::Spec->updir, $location);
-    }
-  else
-    {
-    unshift @INC, $location;
-    }
-  print "# INC = @INC\n";
-  plan tests => 26;
-  }
+use Test::More tests => 66;
 
 use bignum;
 
-my ($x);
+#require "t/infnan.inc";
 
-require "infnan.inc";
+# The 'bigint'/'bignum'/'bigrat' pragma is lexical, so we can't 'require' or
+# 'do' the included file. Slurp the whole thing and 'eval' it.
 
+my $file = "t/infnan.inc";
+
+open FILE, $file or die "$file: can't open file for reading: $!";
+my $data = do { local $/; <FILE> };
+close FILE or die "$file: can't close file after reading: $!";
+
+eval $data;
+die $@ if $@;

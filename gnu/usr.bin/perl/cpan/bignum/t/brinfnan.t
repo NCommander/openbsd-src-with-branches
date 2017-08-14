@@ -1,22 +1,22 @@
-#!/usr/bin/perl -w
+#!perl
 
-###############################################################################
-
-use Test;
 use strict;
+use warnings;
 
-BEGIN
-  {
-  $| = 1;
-  chdir 't' if -d 't';
-  unshift @INC, '../lib';
-  unshift @INC, '../lib/bignum/t' if $ENV{PERL_CORE};
-  plan tests => 26;
-  }
+use Test::More tests => 66;
 
 use bigrat;
 
-my ($x);
+#require "t/infnan.inc";
 
-require "infnan.inc";
+# The 'bigint'/'bignum'/'bigrat' pragma is lexical, so we can't 'require' or
+# 'do' the included file. Slurp the whole thing and 'eval' it.
 
+my $file = "t/infnan.inc";
+
+open FILE, $file or die "$file: can't open file for reading: $!";
+my $data = do { local $/; <FILE> };
+close FILE or die "$file: can't close file after reading: $!";
+
+eval $data;
+die $@ if $@;
