@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmctl.c,v 1.35 2017/08/14 19:38:04 jasper Exp $	*/
+/*	$OpenBSD: vmctl.c,v 1.36 2017/08/14 19:46:44 jasper Exp $	*/
 
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
@@ -412,7 +412,10 @@ terminate_vm_complete(struct imsg *imsg, int *ret)
 		res = vmr->vmr_result;
 		if (res) {
 			errno = res;
-			warn("terminate vm command failed");
+			if (res == ENOENT)
+				warnx("vm not found");
+			else
+				warn("terminate vm command failed");
 			*ret = EIO;
 		} else {
 			warnx("terminated vm %d successfully", vmr->vmr_id);
