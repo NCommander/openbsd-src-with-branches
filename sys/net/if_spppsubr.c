@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.170 2017/08/11 21:24:19 mpi Exp $	*/
+/*	$OpenBSD: if_spppsubr.c,v 1.171 2017/08/14 08:33:55 reyk Exp $	*/
 /*
  * Synchronous PPP link level subroutines.
  *
@@ -4355,7 +4355,6 @@ sppp_update_ip6_addr(void *arg)
 	struct sppp *sp = arg;
 	struct ifnet *ifp = &sp->pp_if;
 	struct in6_aliasreq *ifra = &sp->ipv6cp.req_ifid;
-	struct in6_addr mask = in6mask128;
 	struct in6_ifaddr *ia6;
 	int error;
 
@@ -4386,7 +4385,8 @@ sppp_update_ip6_addr(void *arg)
 	 */
 
 	/* Destination address can only be set for /128. */
-	if (!in6_are_prefix_equal(&ia6->ia_prefixmask.sin6_addr, &mask, 128)) {
+	if (memcmp(&ia6->ia_prefixmask.sin6_addr, &in6mask128,
+	    sizeof(in6mask128)) != 0) {
 		ifra->ifra_dstaddr.sin6_len = 0;
 		ifra->ifra_dstaddr.sin6_family = AF_UNSPEC;
 	}
