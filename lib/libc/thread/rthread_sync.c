@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_sync.c,v 1.46 2017/07/29 16:42:10 deraadt Exp $ */
+/*	$OpenBSD: rthread_sync.c,v 1.1 2017/08/15 06:13:24 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * Copyright (c) 2012 Philip Guenther <guenther@openbsd.org>
@@ -21,12 +21,11 @@
  */
 
 #include <assert.h>
+#include <errno.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
-
-#include <pthread.h>
 
 #include "rthread.h"
 #include "cancel.h"		/* in libc/include */

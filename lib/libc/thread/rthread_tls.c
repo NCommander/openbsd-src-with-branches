@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_tls.c,v 1.18 2016/09/04 10:13:35 akfaew Exp $ */
+/*	$OpenBSD: rthread_tls.c,v 1.1 2017/08/15 06:13:24 guenther Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -19,10 +19,9 @@
  * thread specific storage
  */
 
-#include <stdlib.h>
 #include <errno.h>
-
 #include <pthread.h>
+#include <stdlib.h>
 
 #include "rthread.h"
 
