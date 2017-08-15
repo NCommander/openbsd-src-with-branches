@@ -1,4 +1,4 @@
-#	$OpenBSD: Server.pm,v 1.2 2013/06/04 04:17:42 bluhm Exp $
+#	$OpenBSD: Server.pm,v 1.3 2013/06/05 04:34:27 bluhm Exp $
 
 # Copyright (c) 2010-2013 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -30,6 +30,7 @@ sub new {
 	my %args = @_;
 	$args{logfile} ||= "server.log";
 	$args{up} ||= "Accepted";
+	$args{down} ||= "Shutdown $class";
 	my $self = Proc::new($class, %args);
 	$self->{domain}
 	    or croak "$class domain not given";
