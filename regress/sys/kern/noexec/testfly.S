@@ -1,4 +1,4 @@
-/*	$OpenBSD: testfly.S,v 1.2 2016/08/19 17:39:37 kettenis Exp $	*/
+/*	$OpenBSD: testfly.S,v 1.4 2017/08/16 19:11:30 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002,2003 Michael Shalayeff
@@ -35,6 +35,7 @@
 #if defined(__amd64__) || defined(__i386__)
 ENTRY(testfly)
 	ret
+END(testfly)
 #endif
 
 #ifdef __alpha__
@@ -54,12 +55,14 @@ EXIT(testfly)
 #ifdef __arm__
 ENTRY(testfly)
 	mov	pc, lr
+END(testfly)
 #endif
 
 #if defined(__sparc64__)
 ENTRY(testfly)
 	retl
 	 nop
+END(testfly)
 #endif
 	
 	.space 8192
