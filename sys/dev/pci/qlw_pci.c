@@ -1,4 +1,4 @@
-/*	$OpenBSD: qlw_pci.c,v 1.8 2014/03/09 20:23:43 kettenis Exp $ */
+/*	$OpenBSD: qlw_pci.c,v 1.9 2014/03/15 13:08:52 kettenis Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -87,7 +87,7 @@ qlw_pci_match(struct device *parent, void *match, void *aux)
 	struct pci_attach_args *pa = aux;
 
 	/* Silly AMI MegaRAID exposes its ISP12160 to us. */
-	if (PCI_PRODUCT(pa->pa_id == PCI_PRODUCT_QLOGIC_ISP12160)) {
+	if (PCI_PRODUCT(pa->pa_id) == PCI_PRODUCT_QLOGIC_ISP12160) {
 		pcireg_t subid;
 
 		subid = pci_conf_read(pa->pa_pc, pa->pa_tag, PCI_SUBVEND_0);
