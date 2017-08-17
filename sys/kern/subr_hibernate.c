@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_hibernate.c,v 1.121 2017/03/27 20:26:39 deraadt Exp $	*/
+/*	$OpenBSD: subr_hibernate.c,v 1.122 2017/06/22 15:56:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -930,18 +930,17 @@ hibernate_compare_signature(union hibernate_info *mine,
 	u_int i;
 
 	if (mine->nranges != disk->nranges) {
-		DPRINTF("hibernate memory range count mismatch\n");
+		printf("unhibernate failed: memory layout changed\n");
 		return (1);
 	}
 
 	if (strcmp(mine->kernel_version, disk->kernel_version) != 0) {
-		DPRINTF("hibernate kernel version mismatch\n");
+		printf("unhibernate failed: original kernel changed\n");
 		return (1);
 	}
 
 	if (hibsum() != disk->kernel_sum) {
-		DPRINTF("hibernate sum version mismatch %x %x\n",
-		    hibsum(), disk->kernel_sum);
+		printf("unhibernate failed: original kernel changed\n");
 		return (1);
 	}
 
@@ -954,6 +953,7 @@ hibernate_compare_signature(union hibernate_info *mine,
 				(void *)mine->ranges[i].end,
 				(void *)disk->ranges[i].base,
 				(void *)disk->ranges[i].end);
+			printf("unhibernate failed: memory size changed\n");
 			return (1);
 		}
 	}
