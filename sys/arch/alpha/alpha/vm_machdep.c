@@ -1,4 +1,4 @@
-/* $OpenBSD: vm_machdep.c,v 1.45 2016/10/04 05:55:09 guenther Exp $ */
+/* $OpenBSD: vm_machdep.c,v 1.46 2017/02/12 04:55:08 guenther Exp $ */
 /* $NetBSD: vm_machdep.c,v 1.55 2000/03/29 03:49:48 simonb Exp $ */
 
 /*
@@ -75,7 +75,7 @@ cpu_exit(p)
  * For normal processes this is child_return(), which causes the
  * child to go directly to user level with an apparent return value
  * of 0 from fork(), while the parent process returns normally.
- * For kernel threads this will be a function that never return.
+ * For kernel threads this will be a function that never returns.
  *
  * An alternate user-level stack or TCB can be requested by passing
  * a non-NULL value; these are poked into the PCB so they're in
