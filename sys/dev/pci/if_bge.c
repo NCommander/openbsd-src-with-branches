@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bge.c,v 1.384 2017/01/24 03:57:34 dlg Exp $	*/
+/*	$OpenBSD: if_bge.c,v 1.385 2017/02/13 00:56:32 dlg Exp $	*/
 
 /*
  * Copyright (c) 2001 Wind River Systems
@@ -3259,7 +3259,7 @@ bge_reset(struct bge_softc *sc)
 	reset = BGE_MISCCFG_RESET_CORE_CLOCKS | BGE_32BITTIME_66MHZ;
 
 	if (sc->bge_flags & BGE_PCIE) {
-		if (BGE_ASICREV(sc->bge_chipid != BGE_ASICREV_BCM5785) &&
+		if (BGE_ASICREV(sc->bge_chipid) != BGE_ASICREV_BCM5785 &&
 		    !BGE_IS_5717_PLUS(sc)) {
 			if (CSR_READ_4(sc, 0x7e2c) == 0x60) {
 				/* PCI Express 1.0 system */
