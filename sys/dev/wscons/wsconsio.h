@@ -514,8 +514,6 @@ struct wsdisplay_font {
 #define	WSDISPLAY_FONTORDER_R2L		2
 	void *cookie;
 	void *data;
-	void *zdata;
-	u_int zdata_len;
 };
 #define WSDISPLAYIO_LDFONT	_IOW ('W', 77, struct wsdisplay_font)
 #define	WSDISPLAYIO_LSFONT	_IOWR('W', 78, struct wsdisplay_font)
