@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.62 2016/07/04 21:15:06 guenther Exp $
+#	$OpenBSD: Makefile,v 1.63 2017/01/05 21:14:22 naddy Exp $
 
 SUBDIR=ldconfig ldd
 MAN=	ld.so.1
@@ -51,7 +51,7 @@ $(test_prog):
 	$(CC) -x c - -Wl,-dynamic-linker,${.OBJDIR}/$(candidate) -o $@
 
 $(PROG): $(test_prog) ${VERSION_SCRIPT}
-	$(LD) -x -e _dl_start $(ELF_LDFLAGS) -o $(candidate) $(OBJS) $(LDADD)
+	$(LD) ${DEBUG} -x -e _dl_start $(ELF_LDFLAGS) -o $(candidate) $(OBJS) $(LDADD)
 .ifndef CROSSDIR
 	ulimit -c 0; [ "`${.OBJDIR}/$(test_prog) ok`" = "${.OBJDIR}/$(test_prog): ok!" ]
 .endif
