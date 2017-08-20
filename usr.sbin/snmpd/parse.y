@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.43 2017/01/05 13:53:10 krw Exp $	*/
+/*	$OpenBSD: parse.y,v 1.44 2017/07/28 13:15:32 florian Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -525,7 +525,7 @@ socktype	: RESTRICTED		{ $$ = SOCK_TYPE_RESTRICTED; }
 		;
 
 cmd		: STRING		{
-			struct		 trapcmd *cmd;
+			struct trapcmd	*cmd;
 			size_t		 span, limit;
 			char		*pos, **args, **args2;
 			int		 nargs = 32;		/* XXX */
@@ -540,8 +540,8 @@ cmd		: STRING		{
 			pos = $1;
 			limit = strlen($1);
 
-			while ((span = strcspn(pos, " \t")) != 0 &&
-			    pos < $1 + limit) {
+			while (pos < $1 + limit &&
+			    (span = strcspn(pos, " \t")) != 0) {
 				pos[span] = '\0';
 				args[cmd->cmd_argc] = strdup(pos);
 				if (args[cmd->cmd_argc] == NULL) {
