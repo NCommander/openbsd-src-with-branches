@@ -1,4 +1,4 @@
-/*	$OpenBSD: copy.S,v 1.7 2015/04/25 21:31:24 guenther Exp $	*/
+/*	$OpenBSD: copy.S,v 1.8 2017/05/12 19:25:19 kettenis Exp $	*/
 /*	$NetBSD: copy.S,v 1.1 2003/04/26 18:39:26 fvdl Exp $	*/
 
 /*
@@ -325,10 +325,11 @@ ENTRY(copystr)
 
 7:	ret
 
-.globl _C_LABEL(_stac)
+	.section .rodata
+	.globl _C_LABEL(_stac)
 _C_LABEL(_stac):
 	stac
 
-.globl _C_LABEL(_clac)
+	.globl _C_LABEL(_clac)
 _C_LABEL(_clac):
 	clac
