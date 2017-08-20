@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.164 2017/08/14 18:50:58 mlarkin Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.165 2017/08/15 15:54:41 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -994,9 +994,9 @@ vm_create_check_mem_ranges(struct vm_create_params *vcp)
 
 		/*
 		 * ... and disallow ranges that end inside the MMIO space:
-		 * [VMM_PCI_MMIO_BAR_BASE .. VMM_PCI_MMIO_BAR_END]
+		 * (VMM_PCI_MMIO_BAR_BASE .. VMM_PCI_MMIO_BAR_END]
 		 */
-		if (vmr->vmr_gpa + vmr->vmr_size >= VMM_PCI_MMIO_BAR_BASE &&
+		if (vmr->vmr_gpa + vmr->vmr_size > VMM_PCI_MMIO_BAR_BASE &&
 		    vmr->vmr_gpa + vmr->vmr_size <= VMM_PCI_MMIO_BAR_END)
 			return (0);
 
