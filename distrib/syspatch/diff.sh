@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: diff.sh,v 1.2 2017/04/22 13:42:05 robert Exp $
+# $OpenBSD: diff.sh,v 1.3 2017/06/05 09:42:45 robert Exp $
 #
 # Copyright (c) 2017 Robert Nagy <robert@openbsd.org>
 #
@@ -20,8 +20,8 @@ umask 0022
 
 trap exit HUP INT TERM
 
-diff -arq $1 $2 2>&1 | grep differ | \
-while IFS= read -r _d 
+diff -Parq $1 $2 2>&1 | grep ' differ$' | \
+while IFS= read -r _d
 do
 	_o=$(echo $_d | cut -d ' ' -f2)
 	_n=$(echo $_d | cut -d ' ' -f4)
