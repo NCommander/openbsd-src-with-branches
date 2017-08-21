@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahcivar.h,v 1.8 2014/04/14 04:42:22 dlg Exp $ */
+/*	$OpenBSD: ahcivar.h,v 1.9 2014/12/03 04:33:06 jsg Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -97,6 +97,7 @@ struct ahci_port {
 	u_int32_t		ap_err_saved_sactive;
 	u_int32_t		ap_err_saved_active;
 	u_int32_t		ap_err_saved_active_cnt;
+	u_int32_t		ap_saved_cmd;
 
 	u_int8_t		*ap_err_scratch;
 
