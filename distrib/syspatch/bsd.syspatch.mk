@@ -197,9 +197,6 @@ ${ERRATA}/.plist: ${_BUILD_COOKIE}
 		done > ${.TARGET}' || \
 		{ echo "***>   unable to create list of files";	\
 		exit 1; };
-	@su ${BUILDUSER} -c 'echo ${SYSPATCH_DIR}/${ERRATA}.patch.sig >> ${.OBJDIR}/${ERRATA}/.plist' || \
-		{ echo "***>   unable to add syspatch to list of files"; \
-		exit 1; };
 	@su ${BUILDUSER} -c 'sed -i "s,^${FAKEROOT}/syspatch/${OSrev}-[^/]*/,,g" ${.TARGET}' 
 
 .include <bsd.obj.mk>
