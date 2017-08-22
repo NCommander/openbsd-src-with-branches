@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2017/01/23 02:24:00 patrick Exp $
+#	$OpenBSD: Makefile,v 1.2 2017/02/18 02:01:53 jsg Exp $
 
 REV=	${OSrev}
 
@@ -18,6 +18,7 @@ DISKTYPE=	rdroot
 MAKEFSARGS_RD=	-o disklabel=${DISKTYPE},minfree=0,density=4096
 
 DIRS=\
+	pine64 \
 	rpi
 
 .ifndef DESTDIR
