@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.15 2017/08/23 10:46:40 florian Exp $	*/
+/*	$OpenBSD: engine.c,v 1.16 2017/08/23 10:48:01 florian Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -1763,6 +1763,7 @@ configure_address(struct address_proposal *addr_proposal)
 {
 	struct imsg_configure_address	 address;
 
+	timeout_from_lifetime(addr_proposal);
 	addr_proposal->state = PROPOSAL_CONFIGURED;
 
 	log_debug("%s: %d", __func__, addr_proposal->if_index);
