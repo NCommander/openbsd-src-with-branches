@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5xxx.h,v 1.57 2016/12/18 14:34:20 kettenis Exp $	*/
+/*	$OpenBSD: ar5xxx.h,v 1.58 2016/12/23 21:58:50 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005, 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -1214,6 +1214,7 @@ struct ar5k_srev_name {
 	{ "5413",	AR5K_VERSION_DEV,	AR5K_DEVID_AR5413 },	\
 	{ "5424",	AR5K_VERSION_DEV,	AR5K_DEVID_AR5424 },	\
 	{ "xxxx",	AR5K_VERSION_DEV,	AR5K_SREV_UNKNOWN }	\
+	/* XXX: ar5k_printver() needs AR5K_SREV_UNKNOWN in the last member. */
 }
 
 #define AR5K_SREV_UNKNOWN	0xffff
