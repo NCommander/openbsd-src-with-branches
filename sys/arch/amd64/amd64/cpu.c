@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.105 2017/05/30 15:11:32 deraadt Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.106 2017/06/22 06:21:12 jmatthew Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -850,7 +850,7 @@ cpu_init_msrs(struct cpu_info *ci)
 	    ((uint64_t)GSEL(GUCODE32_SEL, SEL_UPL) << 48));
 	wrmsr(MSR_LSTAR, (uint64_t)Xsyscall);
 	wrmsr(MSR_CSTAR, (uint64_t)Xsyscall32);
-	wrmsr(MSR_SFMASK, PSL_NT|PSL_T|PSL_I|PSL_C|PSL_D);
+	wrmsr(MSR_SFMASK, PSL_NT|PSL_T|PSL_I|PSL_C|PSL_D|PSL_AC);
 
 	wrmsr(MSR_FSBASE, 0);
 	wrmsr(MSR_GSBASE, (u_int64_t)ci);
