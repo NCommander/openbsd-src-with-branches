@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.46 2016/08/14 08:23:52 visa Exp $ */
+/*	$OpenBSD: db_machdep.c,v 1.47 2016/09/19 17:59:19 jasper Exp $ */
 
 /*
  * Copyright (c) 1998-2003 Opsycon AB (www.opsycon.se)
@@ -358,9 +358,11 @@ db_addr_t
 next_instr_address(db_addr_t pc, boolean_t bd)
 {
 	db_addr_t next;
+	uint32_t instr;
 
-	next = MipsEmulateBranch(&ddb_regs, (vaddr_t)pc, 0, 0);
-	return(next);
+	instr = kdbpeek(pc);
+	next = MipsEmulateBranch(&ddb_regs, (vaddr_t)pc, 0, instr);
+	return (next);
 }
 
 /*
