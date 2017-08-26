@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.63 2017/08/01 14:30:05 deraadt Exp $	*/
+/*	$OpenBSD: history.c,v 1.64 2017/08/11 19:37:58 tb Exp $	*/
 
 /*
  * command history
@@ -509,18 +509,17 @@ void
 sethistsize(int n)
 {
 	if (n > 0 && n != histsize) {
-		int cursize = histptr - history;
+		int offset = histptr - history;
 
 		/* save most recent history */
-		if (n < cursize) {
-			memmove(history, histptr - n, n * sizeof(char *));
-			cursize = n;
+		if (offset > n - 1) {
+			offset = n - 1;
+			memmove(history, histptr - offset, n * sizeof(char *));
 		}
 
 		history = areallocarray(history, n, sizeof(char *), APERM);
-
 		histsize = n;
-		histptr = history + cursize;
+		histptr = history + offset;
 	}
 }
 
