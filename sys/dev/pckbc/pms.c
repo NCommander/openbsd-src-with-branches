@@ -1,4 +1,4 @@
-/* $OpenBSD: pms.c,v 1.78 2017/07/21 20:10:10 bru Exp $ */
+/* $OpenBSD: pms.c,v 1.79 2017/08/25 19:44:21 bru Exp $ */
 /* $NetBSD: psm.c,v 1.11 2000/06/05 22:20:57 sommerfeld Exp $ */
 
 /*-
@@ -906,7 +906,7 @@ synaptics_get_hwinfo(struct pms_softc *sc)
 {
 	struct synaptics_softc *syn = sc->synaptics;
 	struct wsmousehw *hw;
-	int resolution, max_coords, min_coords;
+	int resolution = 0, max_coords = 0, min_coords = 0;
 
 	hw = wsmouse_get_hw(sc->sc_wsmousedev);
 
