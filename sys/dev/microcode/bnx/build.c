@@ -1,4 +1,4 @@
-/*	$OpenBSD: build.c,v 1.7 2014/07/12 19:01:49 tedu Exp $	*/
+/*	$OpenBSD: build.c,v 1.8 2016/12/18 18:28:38 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Theo de Raadt <deraadt@openbsd.org>
@@ -127,7 +127,7 @@ write_firmware(char *filename, void *header, size_t hlen,
 	printf("creating %s", filename);
 	fd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 0644);
 	if (fd == -1)
-		err(1, filename);
+		err(1, "%s", filename);
 
 	rlen = write(fd, header, hlen);
 	if (rlen == -1)
