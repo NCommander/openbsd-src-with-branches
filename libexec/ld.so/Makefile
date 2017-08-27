@@ -75,3 +75,12 @@ $(PROG): $(test_prog) ${VERSION_SCRIPT} $(OBJS)
 
 boot.o: boot.c
 	${COMPILE.c} -fno-stack-protector ${.IMPSRC}
+
+all: ld.so.a
+
+ld.so.a: ${OBJS} ${.CURDIR}/Symbols.map ${test_prog}
+	ar cqD $@ $?
+
+afterinstall: ld.so.a
+	install -o ${BINOWN} -g ${BINGRP} -m ${NONBINMODE} \
+	    ld.so.a ${DESTDIR}/usr/libdata/ld.so.a
