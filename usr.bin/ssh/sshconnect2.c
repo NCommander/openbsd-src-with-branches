@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.264 2017/06/14 00:31:38 dtucker Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.265 2017/08/11 04:47:12 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -887,7 +887,7 @@ int
 userauth_passwd(Authctxt *authctxt)
 {
 	static int attempt = 0;
-	char prompt[150];
+	char prompt[256];
 	char *password;
 	const char *host = options.host_key_alias ?  options.host_key_alias :
 	    authctxt->host;
@@ -927,7 +927,7 @@ input_userauth_passwd_changereq(int type, u_int32_t seqnr, struct ssh *ssh)
 {
 	Authctxt *authctxt = ssh->authctxt;
 	char *info, *lang, *password = NULL, *retype = NULL;
-	char prompt[150];
+	char prompt[256];
 	const char *host;
 
 	debug2("input_userauth_passwd_changereq");
