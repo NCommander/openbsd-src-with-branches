@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: arm64_machdep.h,v 1.1 2016/12/17 23:38:33 patrick Exp $	*/
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *
@@ -18,9 +18,6 @@
 #ifndef __ARM64_MACHDEP_H__
 #define __ARM64_MACHDEP_H__
 
-extern int stdout_node;
-
-void *fdt_find_cons(const char *);
 extern void (*cpuresetfn)(void);
 extern void (*powerdownfn)(void);
 
