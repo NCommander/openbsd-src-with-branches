@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_conninfo.c,v 1.14 2017/04/05 03:13:53 beck Exp $ */
+/* $OpenBSD: tls_conninfo.c,v 1.15 2017/04/05 03:19:22 beck Exp $ */
 /*
  * Copyright (c) 2015 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2015 Bob Beck <beck@openbsd.org>
@@ -22,6 +22,8 @@
 
 #include <tls.h>
 #include "tls_internal.h"
+
+int ASN1_time_tm_clamp_notafter(struct tm *tm);
 
 int
 tls_hex_string(const unsigned char *in, size_t inlen, char **out,
@@ -120,6 +122,8 @@ tls_get_peer_cert_times(struct tls *ctx, time_t *notbefore,
 	if (ASN1_time_parse(before->data, before->length, &before_tm, 0) == -1)
 		goto err;
 	if (ASN1_time_parse(after->data, after->length, &after_tm, 0) == -1)
+		goto err;
+	if (!ASN1_time_tm_clamp_notafter(&after_tm))
 		goto err;
 	if ((*notbefore = timegm(&before_tm)) == -1)
 		goto err;
