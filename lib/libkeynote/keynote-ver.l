@@ -1,5 +1,5 @@
 %{
-/* $OpenBSD: keynote-ver.l,v 1.18 2015/12/20 00:28:18 mmcc Exp $ */
+/* $OpenBSD: keynote-ver.l,v 1.19 2015/12/23 23:55:30 mmcc Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -40,7 +40,7 @@ litstring       \"(((\\\n)|(\\.)|(\\\\)|([^\\\n\"]))*)\"
 comment         "#"[^\n]*
 %s FIRSTPART MIDDLEPART SECONDPART KEYSTATE
 %pointer
-%option noyywrap yylineno never-interactive
+%option noinput noyywrap yylineno never-interactive
 %%
 
 <MIDDLEPART>"="               {

@@ -1,5 +1,5 @@
 %{
-/* $OpenBSD: keynote.l,v 1.22 2015/11/19 02:35:24 mmcc Exp $ */
+/* $OpenBSD: keynote.l,v 1.23 2015/11/19 19:48:27 tedu Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -56,7 +56,7 @@ variable	{vstring}
 comment		"#"[^\n]*
 %s ACTIONSTRING LOCALINIT KEYPREDICATE SIGNERINIT KEYNOTEVERSION
 %pointer
-%option noyywrap never-interactive yylineno
+%option noinput noyywrap never-interactive yylineno
 %%
 %{
     /*
