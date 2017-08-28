@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.224 2017/07/30 09:33:08 bluhm Exp $	*/
+/*	$OpenBSD: relay.c,v 1.225 2017/08/09 21:29:17 claudio Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -791,12 +791,12 @@ relay_write(struct bufferevent *bev, void *arg)
 
 	getmonotime(&con->se_tv_last);
 
-	if (con->se_done)
+	if (con->se_done && EVBUFFER_LENGTH(EVBUFFER_OUTPUT(bev)) == 0)
 		goto done;
-	if (relay_splice(cre->dst) == -1)
-		goto fail;
 	if (cre->dst->bev)
 		bufferevent_enable(cre->dst->bev, EV_READ);
+	if (relay_splice(cre->dst) == -1)
+		goto fail;
 
 	return;
  done:
