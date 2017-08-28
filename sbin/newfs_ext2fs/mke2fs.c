@@ -1,4 +1,4 @@
-/* $OpenBSD: mke2fs.c,v 1.15 2016/01/26 19:09:57 mmcc Exp $ */
+/* $OpenBSD: mke2fs.c,v 1.16 2016/03/14 20:30:34 natano Exp $ */
 /*	$NetBSD: mke2fs.c,v 1.13 2009/10/19 18:41:08 bouyer Exp $	*/
 
 /*-
@@ -607,7 +607,7 @@ mke2fs(const char *fsys, int f)
 			continue;
 		}
 		/* Print superblock numbers */
-		len = printf(" %*" PRIu64 "," + !col, fld_width,
+		len = printf("%s%*" PRIu64 ",", (col ? " " : ""), fld_width,
 		    (uint64_t)cgbase(&sblock, cylno));
 		col += len;
 		if (col + len < max_cols)
