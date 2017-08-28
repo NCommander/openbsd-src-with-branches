@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.214 2017/01/05 13:53:09 krw Exp $	*/
+/*	$OpenBSD: parse.y,v 1.215 2017/05/27 08:33:25 claudio Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -338,7 +338,7 @@ port		: PORT STRING {
 			free($2);
 		}
 		| PORT NUMBER {
-			if ($2 <= 0 || $2 >= (int)USHRT_MAX) {
+			if ($2 <= 0 || $2 > (int)USHRT_MAX) {
 				yyerror("invalid port: %d", $2);
 				YYERROR;
 			}

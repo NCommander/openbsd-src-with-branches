@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.90 2017/03/25 17:25:34 claudio Exp $	*/
+/*	$OpenBSD: parse.y,v 1.91 2017/08/11 18:48:56 jsing Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -1118,7 +1118,7 @@ medianamesl	: numberstring				{
 		;
 
 port		: PORT NUMBER {
-			if ($2 <= 0 || $2 >= (int)USHRT_MAX) {
+			if ($2 <= 0 || $2 > (int)USHRT_MAX) {
 				yyerror("invalid port: %lld", $2);
 				YYERROR;
 			}
