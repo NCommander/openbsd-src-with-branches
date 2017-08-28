@@ -439,10 +439,8 @@ histreset(void)
 {
 	char **hp;
 
-	for (hp = history; hp <= histptr; hp++) {
+	for (hp = history; hp <= histptr; hp++)
 		afree(*hp, APERM);
-		*hp = NULL;
-	}
 
 	histptr = history - 1;
 	hist_source->line = 0;
@@ -530,10 +528,8 @@ sethistsize(int n)
 			char **hp;
 
 			offset = n - 1;
-			for (hp = history; hp < histptr - offset; hp++) {
+			for (hp = history; hp < histptr - offset; hp++)
 				afree(*hp, APERM);
-				*hp = NULL;
-			}
 			memmove(history, histptr - offset, n * sizeof(char *));
 		}
 
