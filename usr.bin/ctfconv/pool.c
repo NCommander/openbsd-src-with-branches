@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: pool.c,v 1.2 2017/08/11 14:58:56 jasper Exp $ */
 
 /*
  * Copyright (c) 2017 Martin Pieuchot
@@ -18,7 +18,7 @@
 
 #ifndef NOPOOL
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/types.h>
 #include <sys/queue.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmctl.c,v 1.37 2017/08/14 21:41:49 jasper Exp $	*/
+/*	$OpenBSD: vmctl.c,v 1.38 2017/08/18 07:01:29 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* PAGE_SIZE */
 #include <sys/queue.h>
 #include <sys/uio.h>
 #include <sys/stat.h>
