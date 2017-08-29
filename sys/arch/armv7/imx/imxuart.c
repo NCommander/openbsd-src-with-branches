@@ -1,4 +1,4 @@
-/* $OpenBSD: imxuart.c,v 1.13 2016/12/28 22:45:24 kettenis Exp $ */
+/* $OpenBSD: imxuart.c,v 1.14 2017/04/30 13:04:49 mpi Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@motorola.com>
  *
@@ -39,7 +39,6 @@
 #endif
 
 #include <arm/armv7/armv7var.h>
-#include <armv7/armv7/armv7_machdep.h>
 #include <armv7/imx/imxuartreg.h>
 #include <armv7/imx/imxuartvar.h>
 
