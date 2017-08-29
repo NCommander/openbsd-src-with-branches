@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl_printf.c,v 1.19 2017/01/24 07:48:36 guenther Exp $	*/
+/*	$OpenBSD: dl_printf.c,v 1.20 2017/01/24 23:37:10 millert Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -109,7 +109,7 @@ _dl_printf(const char *fmt, ...)
 }
 
 void
-_dl_fdprintf(int fd, const char *fmt, ...)
+_dl_dprintf(int fd, const char *fmt, ...)
 {
 	va_list ap;
 
