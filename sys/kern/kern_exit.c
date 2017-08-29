@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.159 2017/02/08 20:58:30 guenther Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.160 2017/04/20 12:59:36 visa Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -643,8 +643,6 @@ process_zap(struct process *pr)
 	 * Decrement the count of procs running with this uid.
 	 */
 	(void)chgproccnt(pr->ps_ucred->cr_ruid, -1);
-
-	pledge_dropwpaths(pr);
 
 	/*
 	 * Release reference to text vnode
