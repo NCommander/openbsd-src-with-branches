@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsnum.c,v 1.18 2015/11/02 16:45:21 nicm Exp $	*/
+/*	$OpenBSD: rcsnum.c,v 1.19 2016/08/26 09:02:54 guenther Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -84,7 +84,7 @@ rcsnum_addmagic(RCSNUM *rn)
 RCSNUM *
 rcsnum_parse(const char *str)
 {
-	char *ep;
+	const char *ep;
 	RCSNUM *num;
 
 	num = rcsnum_alloc();
@@ -238,7 +238,7 @@ rcsnum_cmp(const RCSNUM *n1, const RCSNUM *n2, u_int depth)
  * Returns 0 on success, or -1 on failure.
  */
 int
-rcsnum_aton(const char *str, char **ep, RCSNUM *nump)
+rcsnum_aton(const char *str, const char **ep, RCSNUM *nump)
 {
 	u_int32_t val;
 	const char *sp;
@@ -275,7 +275,7 @@ rcsnum_aton(const char *str, char **ep, RCSNUM *nump)
 	}
 
 	if (ep != NULL)
-		*(const char **)ep = sp;
+		*ep = sp;
 
 	/*
 	 * Handle "magic" RCS branch numbers.
