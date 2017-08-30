@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.114 2017/02/03 09:32:26 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.115 2017/03/04 12:44:27 stsp Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -1532,6 +1532,7 @@ ieee80211_node_join_rsn(struct ieee80211com *ic, struct ieee80211_node *ni)
 	ni->ni_key_count = 0;
 	ni->ni_port_valid = 0;
 	ni->ni_flags &= ~IEEE80211_NODE_TXRXPROT;
+	ni->ni_flags &= ~IEEE80211_NODE_RSN_NEW_PTK;
 	ni->ni_replaycnt = -1;	/* XXX */
 	ni->ni_rsn_retries = 0;
 	ni->ni_rsncipher = ni->ni_rsnciphers;
