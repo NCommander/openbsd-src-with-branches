@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.23 2016/04/16 18:32:29 krw Exp $	*/
+/*	$OpenBSD: lex.c,v 1.24 2017/01/23 04:53:15 deraadt Exp $	*/
 /*	$NetBSD: lex.c,v 1.9 1995/09/27 00:38:46 jtc Exp $	*/
 
 /*-
@@ -1426,7 +1426,6 @@ again:
 	off = (int) feobp % BUFSIZ;
 	roomleft = BUFSIZ - off;
 
-	roomleft = BUFSIZ - off;
 	for (;;) {
 	    if (filec && intty) {
 		c = numleft ? numleft : tenex(ttyline, BUFSIZ);
