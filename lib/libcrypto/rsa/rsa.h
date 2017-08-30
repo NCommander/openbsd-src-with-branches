@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa.h,v 1.29 2016/09/04 17:25:27 jsing Exp $ */
+/* $OpenBSD: rsa.h,v 1.30 2017/08/28 17:41:59 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -242,6 +242,7 @@ struct rsa_st {
 #define EVP_PKEY_CTRL_GET_RSA_MGF1_MD		(EVP_PKEY_ALG_CTRL + 8)
 
 #define RSA_PKCS1_PADDING	1
+#define RSA_SSLV23_PADDING	2
 #define RSA_NO_PADDING		3
 #define RSA_PKCS1_OAEP_PADDING	4
 #define RSA_X931_PADDING	5
