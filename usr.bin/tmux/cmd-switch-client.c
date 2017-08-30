@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-switch-client.c,v 1.51 2017/04/22 10:22:39 nicm Exp $ */
+/* $OpenBSD: cmd-switch-client.c,v 1.52 2017/05/04 07:16:43 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -116,7 +116,7 @@ cmd_switch_client_exec(struct cmd *self, struct cmdq_item *item)
 			if (wp != NULL)
 				window_set_active_pane(wp->window, wp);
 			session_set_current(s, wl);
-			cmd_find_from_session(&item->shared->current, s);
+			cmd_find_from_session(&item->shared->current, s, 0);
 		}
 	}
 
