@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.h,v 1.60 2016/04/28 08:18:10 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_node.h,v 1.60.2.1 2017/03/01 20:57:51 benno Exp $	*/
 /*	$NetBSD: ieee80211_node.h,v 1.9 2004/04/30 22:57:32 dyoung Exp $	*/
 
 /*-
@@ -291,6 +291,7 @@ struct ieee80211_node {
 #define IEEE80211_NODE_HT		0x0400	/* HT negotiated */
 #define IEEE80211_NODE_SA_QUERY		0x0800	/* SA Query in progress */
 #define IEEE80211_NODE_SA_QUERY_FAILED	0x1000	/* last SA Query failed */
+#define IEEE80211_NODE_RSN_NEW_PTK	0x2000	/* expecting a new PTK */
 };
 
 RB_HEAD(ieee80211_tree, ieee80211_node);
