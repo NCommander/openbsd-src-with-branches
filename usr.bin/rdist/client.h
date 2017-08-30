@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.h,v 1.1 2015/01/20 09:00:16 guenther Exp $	*/
+/*	$OpenBSD: client.h,v 1.2 2015/12/22 08:48:39 mmcc Exp $	*/
 
 #ifndef __CLIENT_H__
 #define __CLIENT_H__
@@ -43,7 +43,7 @@
 #include "defs.h"
 
 	/* lexical definitions */
-#define	QUOTECHAR	160	/* quote next character */
+#define	QUOTECHAR	160U	/* quote next character */
 
 	/* table sizes */
 #define HASHSIZE	1021
