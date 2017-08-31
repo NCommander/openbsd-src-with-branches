@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.138 2017/08/12 17:36:21 krw Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.139 2017/08/13 17:57:32 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -47,6 +47,7 @@
 #include <net/if.h>
 #include <net/if_arp.h>
 #include <net/if_media.h>
+#include <net/route.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
