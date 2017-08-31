@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2016 Ian Sutton <ians@openbsd.org>
  *
