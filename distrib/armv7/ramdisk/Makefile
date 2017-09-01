@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.15 2016/10/14 18:44:19 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.16 2016/11/30 15:46:45 natano Exp $
 
 REV=	${OSrev}
 
@@ -19,7 +19,6 @@ MAKEFSARGS_RD=	-o disklabel=${DISKTYPE},minfree=0,density=4096
 
 DIRS=\
 	am335x \
-	beagle \
 	cubie \
 	cubox \
 	nitrogen \
