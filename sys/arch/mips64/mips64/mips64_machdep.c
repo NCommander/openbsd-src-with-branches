@@ -1,4 +1,4 @@
-/*	$OpenBSD: mips64_machdep.c,v 1.22 2017/05/29 11:46:49 visa Exp $ */
+/*	$OpenBSD: mips64_machdep.c,v 1.23 2017/06/08 12:02:52 visa Exp $ */
 
 /*
  * Copyright (c) 2009, 2010, 2012 Miodrag Vallat.
@@ -141,11 +141,8 @@ register_t protosr = SR_FR_32 | SR_XX | SR_UX | SR_KSU_USER | SR_EXL |
  * Set registers on exec for native exec format. For o64/64.
  */
 void
-setregs(p, pack, stack, retval)
-	struct proc *p;
-	struct exec_package *pack;
-	u_long stack;
-	register_t *retval;
+setregs(struct proc *p, struct exec_package *pack, u_long stack,
+    register_t *retval)
 {
 	struct cpu_info *ci = curcpu();
 
