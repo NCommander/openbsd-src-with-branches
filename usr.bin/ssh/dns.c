@@ -1,4 +1,4 @@
-/* $OpenBSD: dns.c,v 1.34 2015/01/28 22:36:00 djm Exp $ */
+/* $OpenBSD: dns.c,v 1.35 2015/08/20 22:32:42 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003 Wesley Griffin. All rights reserved.
@@ -291,16 +291,18 @@ verify_host_key_dns(const char *hostname, struct sockaddr *address,
 		free(dnskey_digest);
 	}
 
-	free(hostkey_digest); /* from sshkey_fingerprint_raw() */
-	freerrset(fingerprints);
-
-	if (*flags & DNS_VERIFY_FOUND)
+	if (*flags & DNS_VERIFY_FOUND) {
 		if (*flags & DNS_VERIFY_MATCH)
 			debug("matching host key fingerprint found in DNS");
+		else if (counter == fingerprints->rri_nrdatas)
+			*flags |= DNS_VERIFY_MISSING;
 		else
 			debug("mismatching host key fingerprint found in DNS");
-	else
+	} else
 		debug("no host key fingerprint found in DNS");
+
+	free(hostkey_digest); /* from sshkey_fingerprint_raw() */
+	freerrset(fingerprints);
 
 	return 0;
 }
