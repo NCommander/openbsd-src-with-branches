@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.119 2017/07/12 06:26:33 natano Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.120 2017/07/30 16:05:24 visa Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -417,6 +417,12 @@ void	cp0_calibrate(struct cpu_info *);
 
 extern register_t protosr;
 extern int cpu_has_userlocal;
+
+#ifdef FPUEMUL
+#define	CPU_HAS_FPU(ci)	((ci)->ci_hw.c1prid != 0)
+#else
+#define	CPU_HAS_FPU(ci)	1
+#endif
 
 struct exec_package;
 struct user;
