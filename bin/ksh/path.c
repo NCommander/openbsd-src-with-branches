@@ -1,4 +1,4 @@
-/*	$OpenBSD: path.c,v 1.17 2015/10/19 14:42:16 mmcc Exp $	*/
+/*	$OpenBSD: path.c,v 1.18 2015/12/14 13:59:42 tb Exp $	*/
 
 #include <sys/stat.h>
 
@@ -220,7 +220,7 @@ do_phys_path(XString *xsp, char *xp, const char *path)
 	const char *p, *q;
 	int len, llen;
 	int savepos;
-	char lbuf[PATH];
+	char lbuf[PATH_MAX];
 
 	Xcheck(*xsp, xp);
 	for (p = path; p; p = q) {
