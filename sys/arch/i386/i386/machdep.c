@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.604 2017/07/12 06:26:32 natano Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.605 2017/08/17 19:44:27 tedu Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -1826,9 +1826,11 @@ identifycpu(struct cpu_info *ci)
 			ci->ci_cflushsz = ((regs[1] >> 8) & 0xff) * 8;
 		}
 
-		cpuid(0x80000000, regs);
-		if (regs[0] >= 0x80000006)
-			cpuid(0x80000006, ci->ci_extcacheinfo);
+		if (cpuid_level >= 0x1) {
+			cpuid(0x80000000, regs);
+			if (regs[0] >= 0x80000006)
+				cpuid(0x80000006, ci->ci_extcacheinfo);
+		}
 	}
 
 	/* Remove leading, trailing and duplicated spaces from cpu_brandstr */
