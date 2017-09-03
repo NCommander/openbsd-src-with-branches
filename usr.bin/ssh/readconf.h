@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.h,v 1.121 2017/04/30 23:18:22 djm Exp $ */
+/* $OpenBSD: readconf.h,v 1.122 2017/05/30 18:58:37 bluhm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -189,6 +189,11 @@ typedef struct {
 #define SSH_UPDATE_HOSTKEYS_NO	0
 #define SSH_UPDATE_HOSTKEYS_YES	1
 #define SSH_UPDATE_HOSTKEYS_ASK	2
+
+#define SSH_STRICT_HOSTKEY_OFF	0
+#define SSH_STRICT_HOSTKEY_NEW	1
+#define SSH_STRICT_HOSTKEY_YES	2
+#define SSH_STRICT_HOSTKEY_ASK	3
 
 void     initialize_options(Options *);
 void     fill_default_options(Options *);
