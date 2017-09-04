@@ -2571,7 +2571,7 @@ xhci_device_generic_start(struct usbd_xfer *xfer)
 	/* We'll do the first TRB once we're finished with the chain. */
 	trb0 = xhci_xfer_get_trb(sc, xfer, &toggle0, (ntrb == 1));
 
-	remain = xfer->length;
+	remain = xfer->length - len0;
 	paddr += len0;
 	len = min(remain, XHCI_TRB_MAXSIZE);
 
