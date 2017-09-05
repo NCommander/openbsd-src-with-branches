@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.248 2017/08/11 21:24:19 mpi Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.249 2017/09/01 15:05:31 mpi Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -176,6 +176,8 @@ route_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 	struct routecb	*rop;
 	int		 af;
 	int		 error = 0;
+
+	soassertlocked(so);
 
 	rop = sotoroutecb(so);
 	if (rop == NULL) {
