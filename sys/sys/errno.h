@@ -1,4 +1,4 @@
-/*	$OpenBSD: errno.h,v 1.23 2014/09/19 16:50:20 millert Exp $	*/
+/*	$OpenBSD: errno.h,v 1.24 2015/10/24 10:42:02 bluhm Exp $	*/
 /*	$NetBSD: errno.h,v 1.10 1996/01/20 01:33:53 jtc Exp $	*/
 
 /*
@@ -167,8 +167,12 @@
 #define EIDRM		89	/* Identifier removed */
 #define ENOMSG		90	/* No message of desired type */
 #define ENOTSUP		91	/* Not supported */
+#define EBADMSG		92	/* Bad message */
+#define ENOTRECOVERABLE	93	/* State not recoverable */
+#define EOWNERDEAD	94	/* Previous owner died */
+#define EPROTO		95	/* Protocol error */
 #if __BSD_VISIBLE
-#define ELAST		91	/* Must be equal largest errno */
+#define ELAST		95	/* Must be equal largest errno */
 #endif /* __BSD_VISIBLE */
 
 #ifdef _KERNEL
