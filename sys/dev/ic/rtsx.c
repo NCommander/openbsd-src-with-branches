@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsx.c,v 1.16 2016/05/06 08:11:58 kettenis Exp $	*/
+/*	$OpenBSD: rtsx.c,v 1.17 2016/05/06 08:17:13 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -462,6 +462,10 @@ int
 rtsx_bus_power_on(struct rtsx_softc *sc)
 {
 	u_int8_t enable3;
+
+	if (sc->flags & RTSX_F_525A)
+		rtsx_write(sc, RTSX_LDO_VCC_CFG1, RTSX_LDO_VCC_TUNE_MASK,
+		    RTSX_LDO_VCC_3V3);
 
 	/* Select SD card. */
 	RTSX_WRITE(sc, RTSX_CARD_SELECT, RTSX_SD_MOD_SEL);
