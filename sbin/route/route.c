@@ -72,7 +72,7 @@ union sockunion so_dst, so_gate, so_mask, so_ifa, so_ifp, so_label, so_src;
 
 typedef union sockunion *sup;
 pid_t	pid;
-int	rtm_addrs, s, defroute;
+int	rtm_addrs, s;
 int	forcehost, forcenet, Fflag, nflag, af, qflag, tflag, Tflag;
 int	iflag, verbose, aflen = sizeof(struct sockaddr_in);
 int	locking, lockrest, debugonly;
@@ -876,10 +876,6 @@ getaddr(int which, char *s, struct hostent **hpp)
 		break;
 	case RTA_GATEWAY:
 		su = &so_gate;
-		if (defroute) {
-			so_dst.sa.sa_len = aflen;
-			so_dst.sa.sa_family = af;
-		}
 		break;
 	case RTA_NETMASK:
 		su = &so_mask;
@@ -906,8 +902,6 @@ getaddr(int which, char *s, struct hostent **hpp)
 			break;
 		case RTA_NETMASK:
 			su->sa.sa_len = 0;
-			af = 0;
-			defroute = 1;
 		}
 		return (0);
 	}
