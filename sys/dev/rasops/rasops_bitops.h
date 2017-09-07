@@ -1,4 +1,4 @@
-/*	$OpenBSD: rasops_bitops.h,v 1.5 2009/09/05 14:09:35 miod Exp $ */
+/*	$OpenBSD: rasops_bitops.h,v 1.6 2010/08/28 12:48:14 miod Exp $ */
 /* 	$NetBSD: rasops_bitops.h,v 1.6 2000/04/12 14:22:30 pk Exp $	*/
 
 /*-
@@ -237,10 +237,8 @@ NAME(copycols)(void *cookie, int row, int src, int dst, int num)
 		rnum = 32 - lnum;
 		db = dst & 31;
 
-		if ((src -= db) < 0) {
-			sp--;
+		if ((src -= db) < 0)
 			src += 32;
-		}
 
 		while (height--) {
 			sp = srp;
