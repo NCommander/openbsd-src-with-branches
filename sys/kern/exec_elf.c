@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.139 2017/03/05 00:45:30 guenther Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.140 2017/03/20 00:05:21 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -318,7 +318,7 @@ elf_load_file(struct proc *p, char *path, struct exec_package *epp,
 	struct nameidata nd;
 	Elf_Ehdr eh;
 	Elf_Phdr *ph = NULL;
-	u_long phsize;
+	u_long phsize = 0;
 	Elf_Addr addr;
 	struct vnode *vp;
 	Elf_Phdr *base_ph = NULL;
