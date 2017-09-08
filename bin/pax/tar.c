@@ -1,4 +1,4 @@
-/*	$OpenBSD: tar.c,v 1.62 2016/08/25 01:44:55 guenther Exp $	*/
+/*	$OpenBSD: tar.c,v 1.63 2016/08/26 04:11:16 guenther Exp $	*/
 /*	$NetBSD: tar.c,v 1.5 1995/03/21 09:07:49 cgd Exp $	*/
 
 /*-
@@ -1209,7 +1209,7 @@ static int
 rd_xheader(ARCHD *arcn, int global, off_t size)
 {
 	char buf[MAXXHDRSZ];
-	unsigned long len;
+	long len;
 	char *delim, *keyword;
 	char *nextp, *p, *end;
 	int pad, ret = 0;
@@ -1247,8 +1247,8 @@ rd_xheader(ARCHD *arcn, int global, off_t size)
 			break;
 		}
 		errno = 0;
-		len = strtoul(p, &delim, 10);
-		if (*delim != ' ' || (errno == ERANGE && len == ULONG_MAX) ||
+		len = strtol(p, &delim, 10);
+		if (*delim != ' ' || (errno == ERANGE && len == LONG_MAX) ||
 		    len < MINXHDRSZ) {
 			paxwarn(1, "Invalid extended header record length");
 			ret = -1;
