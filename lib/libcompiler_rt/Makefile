@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.8 2017/05/09 21:09:27 kettenis Exp $
+# $OpenBSD: Makefile,v 1.9 2017/08/04 12:00:59 kettenis Exp $
 
 .include <bsd.own.mk>
 
@@ -89,17 +89,11 @@ GEN_SRCS=	absvdi2 \
 		fixunsxfti \
 		fixxfdi \
 		fixxfti \
-		floatdidf \
-		floatdisf \
-		floatdixf \
 		floatsidf \
 		floatsisf \
 		floattidf \
 		floattisf \
 		floattixf \
-		floatundidf \
-		floatundisf \
-		floatundixf \
 		floatunsidf \
 		floatunsisf \
 		floatuntidf \
@@ -164,6 +158,22 @@ GEN_SRCS=	absvdi2 \
 		umoddi3 \
 		umodsi3 \
 		umodti3
+
+.if ${RTARCH} == "i386"
+SRCS+=	floatdidf.c \
+	floatdisf.c \
+	floatdixf.c \
+	floatundidf.c \
+	floatundisf.c \
+	floatundixf.c
+.else
+GEN_SRCS+=	floatdidf \
+		floatdisf \
+		floatdixf \
+		floatundidf \
+		floatundisf \
+		floatundixf
+.endif
 
 .for file in ${GEN_SRCS}
 .	if exists(${.CURDIR}/${RTARCH}/${file}.S)
