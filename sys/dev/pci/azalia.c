@@ -1,4 +1,4 @@
-/*	$OpenBSD: azalia.c,v 1.235 2017/04/11 14:43:49 dhill Exp $	*/
+/*	$OpenBSD: azalia.c,v 1.236 2017/08/10 15:25:52 tb Exp $	*/
 /*	$NetBSD: azalia.c,v 1.20 2006/05/07 08:31:44 kent Exp $	*/
 
 /*-
@@ -46,7 +46,6 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/systm.h>
-#include <sys/types.h>
 #include <sys/timeout.h>
 #include <dev/audio_if.h>
 #include <dev/pci/pcidevs.h>

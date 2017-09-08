@@ -1,4 +1,4 @@
-/* $OpenBSD: pci_alphabook1.c,v 1.3 2015/07/26 05:09:44 miod Exp $ */
+/* $OpenBSD: pci_alphabook1.c,v 1.4 2015/08/15 19:18:27 miod Exp $ */
 /* $NetBSD: pci_alphabook1.c,v 1.16 2012/02/06 02:14:15 matt Exp $ */
 
 /*-
@@ -58,7 +58,6 @@
  * rights to redistribute these changes.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/systm.h>

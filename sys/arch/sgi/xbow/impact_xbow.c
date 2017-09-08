@@ -1,4 +1,4 @@
-/*	$OpenBSD: impact.c,v 1.7 2012/04/16 22:17:16 miod Exp $	*/
+/*	$OpenBSD: impact_xbow.c,v 1.1 2012/04/18 17:28:24 miod Exp $	*/
 
 /*
  * Copyright (c) 2010, 2012 Miodrag Vallat.
@@ -25,7 +25,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/device.h>
-#include <sys/types.h>
 
 #include <machine/autoconf.h>
 

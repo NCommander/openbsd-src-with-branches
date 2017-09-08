@@ -1,4 +1,4 @@
-/* $OpenBSD: xlights.c,v 1.6 2013/11/18 20:21:51 deraadt Exp $ */
+/* $OpenBSD: xlights.c,v 1.7 2015/06/24 11:58:06 mpi Exp $ */
 /*
  * Copyright (c) 2007 Gordon Willem Klok <gwk@openbsd,org>
  *
@@ -14,7 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_ebus.c,v 1.20 2009/01/12 22:17:36 kettenis Exp $	*/
+/*	$OpenBSD: com_ebus.c,v 1.21 2011/09/28 11:02:37 dlg Exp $	*/
 /*	$NetBSD: com_ebus.c,v 1.6 2001/07/24 19:27:10 eeh Exp $	*/
 
 /*
@@ -33,7 +33,6 @@
  * NS Super I/O PC87332VLJ "com" to ebus attachment
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

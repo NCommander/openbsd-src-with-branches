@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_2100_a50.c,v 1.22 2009/08/22 02:54:50 mk Exp $	*/
+/*	$OpenBSD: pci_2100_a50.c,v 1.23 2015/07/26 05:09:44 miod Exp $	*/
 /*	$NetBSD: pci_2100_a50.c,v 1.12 1996/11/13 21:13:29 cgd Exp $	*/
 
 /*
@@ -28,7 +28,6 @@
  * rights to redistribute these changes.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/systm.h>

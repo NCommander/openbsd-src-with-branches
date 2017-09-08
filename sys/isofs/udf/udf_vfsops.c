@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_vfsops.c,v 1.58 2017/02/08 01:32:38 jsg Exp $	*/
+/*	$OpenBSD: udf_vfsops.c,v 1.59 2017/04/20 14:13:00 visa Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -46,7 +46,6 @@
  * media is closed.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/uio.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcic2_isa.c,v 1.6 2004/01/09 21:32:24 brad Exp $	*/
+/*	$OpenBSD: tcic2_isa.c,v 1.7 2005/01/27 17:03:23 millert Exp $	*/
 /*	$NetBSD: tcic2_isa.c,v 1.2 1999/04/08 16:14:29 bad Exp $	*/
 
 #undef	TCICISADEBUG
@@ -35,7 +35,6 @@
  */
 
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

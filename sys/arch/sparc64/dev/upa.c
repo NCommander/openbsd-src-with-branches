@@ -1,4 +1,4 @@
-/*	$OpenBSD: upa.c,v 1.8 2008/01/17 22:53:18 kettenis Exp $	*/
+/*	$OpenBSD: upa.c,v 1.9 2010/11/11 17:58:23 miod Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -31,7 +31,6 @@
  *
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

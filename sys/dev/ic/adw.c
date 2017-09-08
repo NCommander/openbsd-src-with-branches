@@ -1,4 +1,4 @@
-/*	$OpenBSD: adw.c,v 1.53 2017/04/09 18:07:19 dhill Exp $ */
+/*	$OpenBSD: adw.c,v 1.54 2017/04/11 14:43:49 dhill Exp $ */
 /* $NetBSD: adw.c,v 1.23 2000/05/27 18:24:50 dante Exp $	 */
 
 /*
@@ -31,7 +31,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

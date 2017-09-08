@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtw.c,v 1.97 2017/01/22 10:17:38 dlg Exp $	*/
+/*	$OpenBSD: rtw.c,v 1.98 2017/04/08 02:57:25 deraadt Exp $	*/
 /*	$NetBSD: rtw.c,v 1.29 2004/12/27 19:49:16 dyoung Exp $ */
 
 /*-
@@ -45,7 +45,6 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/endian.h>
 
 #include <machine/bus.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: diskmap.c,v 1.14 2016/03/19 12:04:15 natano Exp $	*/
+/*	$OpenBSD: diskmap.c,v 1.15 2016/04/29 14:40:36 beck Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Joel Sing <jsing@openbsd.org>
@@ -21,7 +21,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/types.h>
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/errno.h>

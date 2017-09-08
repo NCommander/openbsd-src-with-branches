@@ -1,4 +1,4 @@
-/* $OpenBSD: omap3.c,v 1.3 2016/07/10 02:55:15 jsg Exp $ */
+/* $OpenBSD: omap3.c,v 1.4 2017/03/01 05:10:05 jsg Exp $ */
 
 /*
  * Copyright (c) 2011 Uwe Stuehler <uwe@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 
 #include <machine/bus.h>

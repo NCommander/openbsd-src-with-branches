@@ -1,4 +1,4 @@
-/*	$OpenBSD: berkwdt.c,v 1.7 2012/10/17 22:32:01 deraadt Exp $ */
+/*	$OpenBSD: berkwdt.c,v 1.8 2014/12/10 12:27:57 mikeb Exp $ */
 
 /*
  * Copyright (c) 2009 Wim Van Sebroeck <wim@iguana.be>
@@ -21,7 +21,6 @@
  * http://www.pcwatchdog.com/
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/device.h>
 #include <sys/kernel.h>

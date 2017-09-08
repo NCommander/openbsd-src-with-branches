@@ -1,4 +1,4 @@
-/*	$OpenBSD: esp_sbus.c,v 1.23 2010/06/28 18:31:02 krw Exp $	*/
+/*	$OpenBSD: esp_sbus.c,v 1.24 2014/01/18 22:33:59 dlg Exp $	*/
 /*	$NetBSD: esp_sbus.c,v 1.14 2001/04/25 17:53:37 bouyer Exp $	*/
 
 /*-
@@ -31,7 +31,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

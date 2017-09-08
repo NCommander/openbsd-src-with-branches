@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ale.c,v 1.44 2016/04/13 10:34:32 mpi Exp $	*/
+/*	$OpenBSD: if_ale.c,v 1.45 2017/01/22 10:17:38 dlg Exp $	*/
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -36,7 +36,6 @@
 #include <sys/param.h>
 #include <sys/endian.h>
 #include <sys/systm.h>
-#include <sys/types.h>
 #include <sys/sockio.h>
 #include <sys/mbuf.h>
 #include <sys/queue.h>

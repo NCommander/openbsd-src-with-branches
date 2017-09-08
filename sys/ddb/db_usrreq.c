@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_usrreq.c,v 1.18 2016/09/04 09:22:29 mpi Exp $	*/
+/*	$OpenBSD: db_usrreq.c,v 1.19 2017/04/30 16:45:45 mpi Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff.  All rights reserved.
@@ -25,7 +25,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/types.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/tty.h>

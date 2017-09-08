@@ -1,4 +1,4 @@
-/*      $OpenBSD: wdc_isa.c,v 1.14 2011/05/09 22:33:54 matthew Exp $     */
+/*      $OpenBSD: wdc_isa.c,v 1.15 2011/06/20 01:09:25 matthew Exp $     */
 /*	$NetBSD: wdc_isa.c,v 1.15 1999/05/19 14:41:25 bouyer Exp $ */
 
 /*-
@@ -30,7 +30,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwc2_hcdqueue.c,v 1.7 2015/06/28 11:48:18 jmatthew Exp $	*/
+/*	$OpenBSD: dwc2_hcdqueue.c,v 1.8 2017/06/29 17:36:16 deraadt Exp $	*/
 /*	$NetBSD: dwc2_hcdqueue.c,v 1.11 2014/09/03 10:00:08 skrll Exp $	*/
 
 /*
@@ -44,7 +44,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/types.h>
 #include <sys/malloc.h>
 #include <sys/pool.h>
 

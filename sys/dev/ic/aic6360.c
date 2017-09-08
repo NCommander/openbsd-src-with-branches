@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic6360.c,v 1.27 2014/09/14 14:17:24 jsg Exp $	*/
+/*	$OpenBSD: aic6360.c,v 1.28 2017/04/30 16:45:46 mpi Exp $	*/
 /*	$NetBSD: aic6360.c,v 1.52 1996/12/10 21:27:51 thorpej Exp $	*/
 
 #ifdef DDB
@@ -122,7 +122,6 @@
 #error "I said not yet! Start paying attention... grumble"
 #endif
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

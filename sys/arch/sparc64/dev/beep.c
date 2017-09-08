@@ -1,4 +1,4 @@
-/*	$OpenBSD: beep.c,v 1.6 2016/01/08 15:54:13 jcs Exp $	*/
+/*	$OpenBSD: beep.c,v 1.7 2016/03/19 11:34:22 mpi Exp $	*/
 
 /*
  * Copyright (c) 2006 Jason L. Wright (jason@thought.net)
@@ -30,7 +30,6 @@
  * Driver for beeper device on BBC machines (Blade 1k, 2k, etc)
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

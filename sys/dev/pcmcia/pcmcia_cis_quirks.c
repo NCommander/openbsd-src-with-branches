@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcmcia_cis_quirks.c,v 1.12 2015/03/14 03:38:49 jsg Exp $	*/
+/*	$OpenBSD: pcmcia_cis_quirks.c,v 1.13 2017/08/24 04:06:05 jsg Exp $	*/
 /*	$NetBSD: pcmcia_cis_quirks.c,v 1.3 1998/12/29 09:00:28 marc Exp $	*/
 
 /*
@@ -30,7 +30,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>

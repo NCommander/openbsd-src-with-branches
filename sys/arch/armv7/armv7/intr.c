@@ -1,4 +1,4 @@
-/* $OpenBSD: intr.c,v 1.10 2016/10/23 19:05:09 kettenis Exp $ */
+/* $OpenBSD: intr.c,v 1.11 2017/03/09 15:36:52 kettenis Exp $ */
 /*
  * Copyright (c) 2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -15,9 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-#include <sys/systm.h>
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/timetc.h>
 #include <sys/malloc.h>
 

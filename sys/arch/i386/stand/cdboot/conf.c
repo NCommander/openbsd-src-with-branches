@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.29 2016/09/13 18:27:49 jasper Exp $	*/
+/*	$OpenBSD: conf.c,v 1.30 2016/09/18 16:36:09 jsing Exp $	*/
 
 /*
  * Copyright (c) 2004 Tom Cosgrove
@@ -28,7 +28,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/types.h>
 #include <netinet/in.h>
 #include <libsa.h>
 #include <lib/libsa/ufs.h>

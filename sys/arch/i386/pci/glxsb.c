@@ -1,4 +1,4 @@
-/*	$OpenBSD: glxsb.c,v 1.31 2017/02/07 17:25:45 patrick Exp $	*/
+/*	$OpenBSD: glxsb.c,v 1.32 2017/05/02 11:47:49 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2006 Tom Cosgrove <tom@openbsd.org>
@@ -28,7 +28,6 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
-#include <sys/types.h>
 #include <sys/timeout.h>
 
 #include <machine/bus.h>

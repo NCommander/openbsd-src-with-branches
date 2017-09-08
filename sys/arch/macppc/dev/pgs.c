@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgs.c,v 1.3 2013/07/01 16:53:24 jasper Exp $	*/
+/*	$OpenBSD: pgs.c,v 1.4 2017/04/30 16:45:45 mpi Exp $	*/
 /*
  * Copyright (c) 2010 Jasper Lievisse Adriaanse <jasper@openbsd.org>
  *
@@ -20,7 +20,6 @@
  * which can be found on many "Old World" and some early "New World" MacPPC.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>

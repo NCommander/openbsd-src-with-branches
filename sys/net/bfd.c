@@ -1,4 +1,4 @@
-/*	$OpenBSD: bfd.c,v 1.63 2017/08/10 16:38:37 bluhm Exp $	*/
+/*	$OpenBSD: bfd.c,v 1.64 2017/09/01 15:05:31 mpi Exp $	*/
 
 /*
  * Copyright (c) 2016 Peter Hessler <phessler@openbsd.org>
@@ -20,12 +20,11 @@
  * Support for Bi-directional Forwarding Detection (RFC 5880 / 5881)
  */
 
-#include <sys/errno.h>
 #include <sys/param.h>
+#include <sys/errno.h>
 
 #include <sys/task.h>
 #include <sys/pool.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/stdint.h>

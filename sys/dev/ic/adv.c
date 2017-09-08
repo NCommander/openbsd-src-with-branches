@@ -1,4 +1,4 @@
-/*	$OpenBSD: adv.c,v 1.35 2011/07/04 07:47:43 jsg Exp $	*/
+/*	$OpenBSD: adv.c,v 1.36 2014/09/14 14:17:24 jsg Exp $	*/
 /*	$NetBSD: adv.c,v 1.6 1998/10/28 20:39:45 dante Exp $	*/
 
 /*
@@ -31,7 +31,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

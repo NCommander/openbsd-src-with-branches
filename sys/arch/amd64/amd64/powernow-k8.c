@@ -1,4 +1,4 @@
-/*	$OpenBSD: powernow-k8.c,v 1.24 2014/09/14 14:17:23 jsg Exp $ */
+/*	$OpenBSD: powernow-k8.c,v 1.25 2015/03/14 03:38:46 jsg Exp $ */
 /*
  * Copyright (c) 2004 Martin Végiard.
  * Copyright (c) 2004-2005 Bruno Ducrot
@@ -26,7 +26,6 @@
  */
 /* AMD POWERNOW K8 driver */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>

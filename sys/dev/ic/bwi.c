@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwi.c,v 1.124 2017/01/22 10:17:37 dlg Exp $	*/
+/*	$OpenBSD: bwi.c,v 1.125 2017/07/03 09:21:09 kevlo Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -39,7 +39,6 @@
 #include "bpfilter.h"
 
 #include <sys/param.h>
-#include <sys/types.h>
 
 #include <sys/device.h>
 #include <sys/kernel.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdc_isapnp.c,v 1.9 2011/05/09 22:33:54 matthew Exp $	*/
+/*	$OpenBSD: wdc_isapnp.c,v 1.10 2011/06/29 12:17:40 tedu Exp $	*/
 /*	$NetBSD: wdc_isapnp.c,v 1.13 1999/03/22 10:00:12 mycroft Exp $	*/
 
 /*-
@@ -30,7 +30,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

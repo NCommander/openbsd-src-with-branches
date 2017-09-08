@@ -1,4 +1,4 @@
-/*	$OpenBSD: pchb.c,v 1.13 2012/12/22 19:07:50 mpi Exp $	*/
+/*	$OpenBSD: pchb.c,v 1.14 2014/03/26 14:41:41 mpi Exp $	*/
 /*	$NetBSD: pchb.c,v 1.4 2000/01/25 07:19:11 tsubai Exp $	*/
 
 /*-
@@ -30,7 +30,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

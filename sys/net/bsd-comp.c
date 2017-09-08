@@ -1,4 +1,4 @@
-/*	$OpenBSD: bsd-comp.c,v 1.13 2015/11/24 13:37:16 mpi Exp $	*/
+/*	$OpenBSD: bsd-comp.c,v 1.14 2017/06/19 17:58:49 bluhm Exp $	*/
 /*	$NetBSD: bsd-comp.c,v 1.6 1996/10/13 02:10:58 christos Exp $	*/
 
 /* Because this code is derived from the 4.3BSD compress source:
@@ -41,7 +41,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/types.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>

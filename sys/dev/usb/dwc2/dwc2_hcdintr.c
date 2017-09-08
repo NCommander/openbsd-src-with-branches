@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwc2_hcdintr.c,v 1.8 2017/06/20 15:49:00 visa Exp $	*/
+/*	$OpenBSD: dwc2_hcdintr.c,v 1.9 2017/06/29 17:36:16 deraadt Exp $	*/
 /*	$NetBSD: dwc2_hcdintr.c,v 1.11 2014/11/24 10:14:14 skrll Exp $	*/
 
 /*
@@ -43,7 +43,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/types.h>
 #include <sys/pool.h>
 
 #include <machine/bus.h>

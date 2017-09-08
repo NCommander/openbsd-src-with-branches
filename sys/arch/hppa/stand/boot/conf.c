@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.27 2013/12/28 02:53:03 deraadt Exp $	*/
+/*	$OpenBSD: conf.c,v 1.28 2016/09/13 18:27:49 jasper Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -27,7 +27,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/types.h>
 #include <libsa.h>
 #include <lib/libsa/ufs.h>
 #include <lib/libsa/cd9660.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pckbc_ebus.c,v 1.12 2010/11/23 04:07:55 shadchin Exp $	*/
+/*	$OpenBSD: pckbc_ebus.c,v 1.13 2015/05/24 10:57:47 miod Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -36,7 +36,6 @@
  *
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

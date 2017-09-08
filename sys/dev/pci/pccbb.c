@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccbb.c,v 1.95 2015/07/20 15:44:43 kettenis Exp $	*/
+/*	$OpenBSD: pccbb.c,v 1.96 2015/09/11 09:15:44 deraadt Exp $	*/
 /*	$NetBSD: pccbb.c,v 1.96 2004/03/28 09:49:31 nakayama Exp $	*/
 
 /*
@@ -38,7 +38,6 @@
 #define LEVEL2
 */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

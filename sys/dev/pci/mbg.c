@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbg.c,v 1.28 2009/04/26 02:20:58 cnst Exp $ */
+/*	$OpenBSD: mbg.c,v 1.29 2010/04/08 00:23:53 tedu Exp $ */
 
 /*
  * Copyright (c) 2006, 2007 Marc Balmer <mbalmer@openbsd.org>
@@ -16,7 +16,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/device.h>
 #include <sys/kernel.h>

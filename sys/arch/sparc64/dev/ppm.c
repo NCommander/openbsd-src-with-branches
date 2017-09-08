@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpt_ebus.c,v 1.8 2003/12/16 15:04:56 jason Exp $	*/
+/*	$OpenBSD: ppm.c,v 1.1 2006/06/02 04:46:01 jason Exp $	*/
 
 /*
  * Copyright (c) 2006 Jason L. Wright (jason@thought.net)
@@ -26,7 +26,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

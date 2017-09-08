@@ -1,4 +1,4 @@
-/*	$OpenBSD: central.c,v 1.8 2014/07/12 18:44:43 tedu Exp $	*/
+/*	$OpenBSD: central.c,v 1.9 2015/12/29 04:46:28 mmcc Exp $	*/
 
 /*
  * Copyright (c) 2004 Jason L. Wright (jason@thought.net)
@@ -26,7 +26,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

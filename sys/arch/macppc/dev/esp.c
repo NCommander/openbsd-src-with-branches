@@ -1,4 +1,4 @@
-/* $OpenBSD: esp.c,v 1.10 2013/12/06 21:03:05 deraadt Exp $ */
+/* $OpenBSD: esp.c,v 1.11 2014/01/21 03:42:21 dlg Exp $ */
 
 /*-
  * Copyright (c) 1997, 1998 The NetBSD Foundation, Inc.
@@ -69,7 +69,6 @@
  * Charles Hannum (mycroft@duality.gnu.ai.mit.edu).  Thanks a million!
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

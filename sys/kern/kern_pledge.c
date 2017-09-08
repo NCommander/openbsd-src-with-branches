@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.218 2017/08/21 14:40:07 florian Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.219 2017/08/29 02:51:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -18,7 +18,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/types.h>
 
 #include <sys/mount.h>
 #include <sys/proc.h>

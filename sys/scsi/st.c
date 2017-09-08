@@ -1,4 +1,4 @@
-/*	$OpenBSD: st.c,v 1.132 2016/09/04 10:51:24 naddy Exp $	*/
+/*	$OpenBSD: st.c,v 1.133 2017/05/29 07:47:13 krw Exp $	*/
 /*	$NetBSD: st.c,v 1.71 1997/02/21 23:03:49 thorpej Exp $	*/
 
 /*
@@ -54,7 +54,6 @@
  * to be depending on whether we expect to retension or not.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/timeout.h>

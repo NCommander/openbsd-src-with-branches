@@ -1,4 +1,4 @@
-/*	$OpenBSD: promcons.c,v 1.15 2010/06/28 14:13:25 deraadt Exp $	*/
+/*	$OpenBSD: promcons.c,v 1.16 2010/07/02 17:27:01 nicm Exp $	*/
 /*	$NetBSD: promcons.c,v 1.5 1996/11/13 22:20:55 cgd Exp $	*/
 
 /*
@@ -39,7 +39,6 @@
 #include <sys/uio.h>
 #include <sys/kernel.h>
 #include <sys/syslog.h>
-#include <sys/types.h>
 #include <sys/device.h>
 #include <sys/timeout.h>
 

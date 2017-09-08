@@ -1,4 +1,4 @@
-/*	$OpenBSD: beeper.c,v 1.10 2005/12/20 16:50:33 martin Exp $	*/
+/*	$OpenBSD: beeper.c,v 1.11 2016/03/19 11:34:22 mpi Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -35,7 +35,6 @@
  * Driver for beeper device on SUNW,Ultra-1-Engine.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

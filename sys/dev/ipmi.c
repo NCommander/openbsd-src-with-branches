@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipmi.c,v 1.97 2016/06/07 01:31:54 tedu Exp $ */
+/*	$OpenBSD: ipmi.c,v 1.98 2017/06/29 03:48:44 tedu Exp $ */
 
 /*
  * Copyright (c) 2015 Masao Uebayashi
@@ -27,7 +27,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

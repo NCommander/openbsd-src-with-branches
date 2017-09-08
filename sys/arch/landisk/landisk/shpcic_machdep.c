@@ -1,4 +1,4 @@
-/*	$OpenBSD: shpcic_machdep.c,v 1.4 2009/12/25 20:52:57 miod Exp $	*/
+/*	$OpenBSD: shpcic_machdep.c,v 1.5 2010/04/04 12:49:30 miod Exp $	*/
 /*	$NetBSD: shpcic_machdep.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
  * Machine-specific functions for PCI autoconfiguration.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/systm.h>

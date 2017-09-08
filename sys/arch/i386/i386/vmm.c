@@ -1,4 +1,4 @@
-/* $OpenBSD: vmm.c,v 1.30 2017/05/11 08:00:41 mlarkin Exp $ */
+/* $OpenBSD: vmm.c,v 1.31 2017/08/21 00:38:24 pd Exp $ */
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -17,7 +17,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/types.h>
 #include <sys/signalvar.h>
 #include <sys/malloc.h>
 #include <sys/device.h>

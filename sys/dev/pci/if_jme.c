@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_jme.c,v 1.48 2016/11/29 10:22:30 jsg Exp $	*/
+/*	$OpenBSD: if_jme.c,v 1.49 2017/01/22 10:17:38 dlg Exp $	*/
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -35,7 +35,6 @@
 #include <sys/param.h>
 #include <sys/endian.h>
 #include <sys/systm.h>
-#include <sys/types.h>
 #include <sys/sockio.h>
 #include <sys/mbuf.h>
 #include <sys/queue.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcic2.c,v 1.10 2014/07/08 17:19:25 deraadt Exp $	*/
+/*	$OpenBSD: tcic2.c,v 1.11 2014/07/12 18:48:17 tedu Exp $	*/
 /*	$NetBSD: tcic2.c,v 1.3 2000/01/13 09:38:17 joda Exp $	*/
 
 #undef	TCICDEBUG
@@ -33,7 +33,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>

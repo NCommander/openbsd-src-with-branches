@@ -1,4 +1,4 @@
-/*	$OpenBSD: uk.c,v 1.17 2011/06/01 17:47:31 matthew Exp $	*/
+/*	$OpenBSD: uk.c,v 1.18 2016/03/12 15:16:04 krw Exp $	*/
 /*	$NetBSD: uk.c,v 1.15 1996/03/17 00:59:57 thorpej Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
  * Originally by Julian Elischer (julian@tfs.com)
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/errno.h>

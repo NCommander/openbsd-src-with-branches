@@ -1,4 +1,4 @@
-/*	$OpenBSD: macgpio.c,v 1.7 2013/06/03 20:10:50 mpi Exp $	*/
+/*	$OpenBSD: macgpio.c,v 1.8 2015/06/24 11:58:06 mpi Exp $	*/
 /*	$NetBSD: gpio.c,v 1.2 2001/02/27 05:16:33 matt Exp $	*/
 
 /*-
@@ -32,7 +32,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>

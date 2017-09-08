@@ -1,4 +1,4 @@
-/*	$OpenBSD: build.c,v 1.4 2014/07/13 07:06:23 mpi Exp $	*/
+/*	$OpenBSD: build.c,v 1.5 2016/12/18 18:28:39 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Theo de Raadt <deraadt@openbsd.org>
@@ -15,10 +15,9 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/uio.h>
 #include <fcntl.h>
-#include <sys/param.h>
 #include <err.h>
 #include <stdio.h>
 #include <unistd.h>

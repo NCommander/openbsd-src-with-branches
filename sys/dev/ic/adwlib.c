@@ -1,4 +1,4 @@
-/*	$OpenBSD: adwlib.c,v 1.23 2011/04/07 15:30:16 miod Exp $ */
+/*	$OpenBSD: adwlib.c,v 1.24 2012/01/11 16:22:32 dhill Exp $ */
 /* $NetBSD: adwlib.c,v 1.20 2000/07/04 04:17:03 itojun Exp $        */
 
 /*
@@ -45,7 +45,6 @@
  * modification.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>

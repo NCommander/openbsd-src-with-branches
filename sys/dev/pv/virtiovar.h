@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtiovar.h,v 1.5 2017/05/30 12:47:47 krw Exp $	*/
+/*	$OpenBSD: virtiovar.h,v 1.6 2017/06/03 08:50:38 sf Exp $	*/
 /*	$NetBSD: virtiovar.h,v 1.1 2011/10/30 12:12:21 hannken Exp $	*/
 
 /*
@@ -67,9 +67,8 @@
 #ifndef _DEV_PCI_VIRTIOVAR_H_
 #define	_DEV_PCI_VIRTIOVAR_H_
 
-#include <sys/types.h>
-#include <sys/queue.h>
 #include <sys/param.h>
+#include <sys/queue.h>
 #include <sys/device.h>
 #include <sys/mutex.h>
 #include <machine/bus.h>

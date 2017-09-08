@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.105 2016/10/19 08:31:33 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.106 2017/02/15 21:18:52 miod Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -45,7 +45,6 @@
  *
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/proc.h>
 #include <sys/signalvar.h>

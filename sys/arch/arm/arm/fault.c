@@ -1,4 +1,4 @@
-/*	$OpenBSD: fault.c,v 1.28 2017/04/30 13:04:49 mpi Exp $	*/
+/*	$OpenBSD: fault.c,v 1.29 2017/07/21 09:19:05 kettenis Exp $	*/
 /*	$NetBSD: fault.c,v 1.46 2004/01/21 15:39:21 skrll Exp $	*/
 
 /*
@@ -77,8 +77,6 @@
  *
  * Created      : 28/11/94
  */
-
-#include <sys/types.h>
 
 #include <sys/param.h>
 #include <sys/systm.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: edma.c,v 1.5 2015/01/22 14:33:01 krw Exp $	*/
+/*	$OpenBSD: edma.c,v 1.6 2017/03/01 04:34:09 jsg Exp $	*/
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -16,7 +16,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/types.h>
 #include <sys/systm.h>
 
 #include <machine/fdt.h>

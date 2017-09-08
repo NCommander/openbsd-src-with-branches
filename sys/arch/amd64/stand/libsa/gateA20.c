@@ -1,4 +1,4 @@
-/*	$OpenBSD: gateA20.c,v 1.1 2004/02/03 12:09:47 mickey Exp $	*/
+/*	$OpenBSD: gateA20.c,v 1.2 2004/03/21 21:37:41 tom Exp $	*/
 
 /*
  * Ported to boot 386BSD by Julian Elischer (julian@tfs.com) Sept 1992
@@ -29,7 +29,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/types.h>
 #include <machine/pio.h>
 #include <dev/ic/i8042reg.h>
 #include <dev/isa/isareg.h>

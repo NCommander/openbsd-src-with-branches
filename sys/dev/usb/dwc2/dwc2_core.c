@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwc2_core.c,v 1.7 2017/01/29 16:44:11 stsp Exp $	*/
+/*	$OpenBSD: dwc2_core.c,v 1.8 2017/06/29 17:36:16 deraadt Exp $	*/
 /*	$NetBSD: dwc2_core.c,v 1.6 2014/04/03 06:34:58 skrll Exp $	*/
 
 /*
@@ -45,7 +45,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/types.h>
 #include <sys/signal.h>
 #include <sys/proc.h>
 #include <sys/timeout.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: pci_eb164.c,v 1.26 2014/04/14 07:36:12 mpi Exp $ */
+/* $OpenBSD: pci_eb164.c,v 1.27 2015/07/26 05:09:44 miod Exp $ */
 /* $NetBSD: pci_eb164.c,v 1.27 2000/06/06 00:50:15 thorpej Exp $ */
 
 /*-
@@ -58,7 +58,6 @@
  * rights to redistribute these changes.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/systm.h>

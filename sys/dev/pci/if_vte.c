@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vte.c,v 1.19 2017/01/22 10:17:38 dlg Exp $	*/
+/*	$OpenBSD: if_vte.c,v 1.20 2017/07/19 07:02:52 claudio Exp $	*/
 /*-
  * Copyright (c) 2010, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -33,7 +33,6 @@
 #include <sys/param.h>
 #include <sys/endian.h>
 #include <sys/systm.h>
-#include <sys/types.h>
 #include <sys/sockio.h>
 #include <sys/mbuf.h>
 #include <sys/queue.h>

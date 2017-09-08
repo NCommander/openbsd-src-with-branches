@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioscsi.c,v 1.10 2017/05/30 12:47:47 krw Exp $	*/
+/*	$OpenBSD: vioscsi.c,v 1.11 2017/05/30 19:28:09 sf Exp $	*/
 /*
  * Copyright (c) 2013 Google Inc.
  *
@@ -16,7 +16,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/types.h>
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/mutex.h>

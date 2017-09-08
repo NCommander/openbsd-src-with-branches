@@ -1,4 +1,4 @@
-/* $OpenBSD: mfi.c,v 1.166 2017/01/23 01:10:31 dlg Exp $ */
+/* $OpenBSD: mfi.c,v 1.167 2017/02/02 03:47:41 dlg Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -17,7 +17,6 @@
 
 #include "bio.h"
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/buf.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: k1x-pstate.c,v 1.7 2014/09/14 14:17:23 jsg Exp $ */
+/*	$OpenBSD: k1x-pstate.c,v 1.8 2015/03/14 03:38:46 jsg Exp $ */
 /*
  * Copyright (c) 2011 Bryan Steele <brynet@gmail.com>
  *
@@ -24,7 +24,6 @@
  */
 /* AMD K10/K11 pstate driver */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>

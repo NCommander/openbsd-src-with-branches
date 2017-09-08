@@ -1,4 +1,4 @@
-/*	$OpenBSD: sab.c,v 1.31 2013/05/30 16:15:01 deraadt Exp $	*/
+/*	$OpenBSD: sab.c,v 1.32 2017/04/30 16:45:45 mpi Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -35,7 +35,6 @@
  * SAB82532 Dual UART driver
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
