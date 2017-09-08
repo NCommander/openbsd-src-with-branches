@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.45 2017/06/14 20:48:54 akfaew Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.46 2017/09/08 19:10:57 brynet Exp $	*/
 
 /*
  * Copyright (c) 2003 Can Erkin Acar
@@ -33,7 +33,6 @@
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <limits.h>
 #include <netdb.h>
 #include <paths.h>
 #include <pwd.h>
