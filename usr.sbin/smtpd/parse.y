@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.197 2017/07/11 06:08:40 natano Exp $	*/
+/*	$OpenBSD: parse.y,v 1.198 2017/08/28 06:00:05 florian Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1900,8 +1900,6 @@ parse_config(struct smtpd *x_conf, const char *filename, int opts)
 
 	table = NULL;
 	rule = NULL;
-
-	dict_init(&conf->sc_filters);
 
 	dict_init(conf->sc_ca_dict);
 	dict_init(conf->sc_pki_dict);
