@@ -1,4 +1,4 @@
-/*	$OpenBSD: pflogd.h,v 1.5 2015/10/10 22:36:06 deraadt Exp $ */
+/*	$OpenBSD: pflogd.h,v 1.6 2017/09/05 15:41:25 brynet Exp $ */
 
 /*
  * Copyright (c) 2003 Can Erkin Acar
@@ -34,8 +34,7 @@
 void  logmsg(int priority, const char *message, ...);
 
 /* Privilege separation */
-void	priv_init(int, char **);
-__dead void priv_exec(int, int, char **);
+void	priv_init(int, int, char **);
 int	priv_init_pcap(int);
 int	priv_set_snaplen(int snaplen);
 int	priv_open_log(void);
