@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: amdisplay.c,v 1.5 2017/08/31 21:39:25 ians Exp $ */
 /*
  * Copyright (c) 2016 Ian Sutton <ians@openbsd.org>
  *
@@ -180,7 +180,7 @@ amdisplay_attach(struct device *parent, struct device *self, void *args)
 	struct fdt_attach_args	*faa = args;
 	struct wsemuldisplaydev_attach_args wsaa;
 	struct edid_info edid;
-	uint64_t pel_clk;
+	uint64_t pel_clk = 0;
 	uint32_t reg;
 	uint8_t *edid_buf;
 	int stride, i = 0;
