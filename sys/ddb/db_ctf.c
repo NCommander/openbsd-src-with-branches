@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_ctf.c,v 1.19 2017/09/06 09:49:35 dlg Exp $	*/
+/*	$OpenBSD: db_ctf.c,v 1.20 2017/09/08 05:36:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2016-2017 Martin Pieuchot
@@ -291,6 +291,13 @@ db_ctf_type_by_name(const char *name, unsigned int kind)
 		}
 
 		if (CTF_INFO_KIND(ctt->ctt_info) != kind)
+			continue;
+
+		/*
+		 * Skip forward declaration that shouldn't be inserted
+		 * by ctfconv(1).
+		 */
+		if (kind == CTF_K_STRUCT && ctt->ctt_size == 0)
 			continue;
 
 		tname = db_ctf_off2name(ctt->ctt_name);
