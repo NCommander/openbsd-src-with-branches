@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpio.c,v 1.30 2016/08/26 04:11:16 guenther Exp $	*/
+/*	$OpenBSD: cpio.c,v 1.31 2017/09/06 17:24:22 otto Exp $	*/
 /*	$NetBSD: cpio.c,v 1.5 1995/03/21 09:07:13 cgd Exp $	*/
 
 /*-
@@ -293,7 +293,7 @@ cpio_rd(ARCHD *arcn, char *buf)
 	    OCT);
 	arcn->sb.st_rdev = (dev_t)asc_ul(hd->c_rdev, sizeof(hd->c_rdev), OCT);
 	val = asc_ull(hd->c_mtime, sizeof(hd->c_mtime), OCT);
-	if ((time_t)val < 0 || (time_t)val != val)
+	if (val > MAX_TIME_T)
 		arcn->sb.st_mtime = INT_MAX;			/* XXX 2038 */
 	else
 		arcn->sb.st_mtime = val;

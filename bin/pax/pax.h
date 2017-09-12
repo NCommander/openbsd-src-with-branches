@@ -1,4 +1,4 @@
-/*	$OpenBSD: pax.h,v 1.27 2015/03/19 05:14:24 guenther Exp $	*/
+/*	$OpenBSD: pax.h,v 1.28 2015/11/17 19:01:34 mmcc Exp $	*/
 /*	$NetBSD: pax.h,v 1.3 1995/03/21 09:07:41 cgd Exp $	*/
 
 /*-
@@ -258,3 +258,5 @@ typedef struct oplist {
 #define OCT		8
 #define _PAX_		1
 #define _TFILE_BASE	"paxXXXXXXXXXX"
+#define MAX_TIME_T	(sizeof(time_t) == sizeof(long long) ? \
+			    LLONG_MAX : INT_MAX)
