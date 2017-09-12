@@ -1,4 +1,4 @@
-/*	$OpenBSD: sshbuf.h,v 1.7 2016/05/02 08:49:03 djm Exp $	*/
+/*	$OpenBSD: sshbuf.h,v 1.8 2016/11/25 23:22:04 djm Exp $	*/
 /*
  * Copyright (c) 2011 Damien Miller
  *
@@ -207,6 +207,7 @@ int	sshbuf_get_string_direct(struct sshbuf *buf, const u_char **valp,
 /* Another variant: "peeks" into the buffer without modifying it */
 int	sshbuf_peek_string_direct(const struct sshbuf *buf, const u_char **valp,
 	    size_t *lenp);
+/* XXX peek_u8 / peek_u32 */
 
 /*
  * Functions to extract or store SSH wire encoded bignums and elliptic
