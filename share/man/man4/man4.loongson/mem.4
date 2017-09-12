@@ -1,4 +1,4 @@
-.\"	$OpenBSD: mem.4,v 1.1 2010/02/09 19:08:39 miod Exp $
+.\"	$OpenBSD: mem.4,v 1.2 2010/02/10 08:35:31 jmc Exp $
 .\" Copyright (c) 1992, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -32,7 +32,7 @@
 .\"
 .\"     from: @(#)mem.4	8.1 (Berkeley) 6/5/93
 .\"
-.Dd $Mdocdate: February 9 2010 $
+.Dd $Mdocdate: February 10 2010 $
 .Dt MEM 4 loongson
 .Os
 .Sh NAME
@@ -87,8 +87,13 @@ address range.
 The kernel virtual memory begins at address
 .Ad 0xc000000000000000 .
 .Pp
-Writeability of these devices is controlled by the system
-.Xr securelevel 7 .
+Even with sufficient file system permissions,
+these devices can only be opened when the
+.Xr securelevel 7
+is insecure or when the
+.Va kern.allowkmem
+.Xr sysctl 3
+variable is set.
 .Sh FILES
 .Bl -tag -width Pa -compact
 .It Pa /dev/mem

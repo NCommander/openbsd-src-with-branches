@@ -1,4 +1,4 @@
-.\"     $OpenBSD: securelevel.7,v 1.28 2016/09/28 17:54:01 jmc Exp $
+.\"     $OpenBSD: securelevel.7,v 1.29 2016/09/28 17:58:17 jmc Exp $
 .\"
 .\" Copyright (c) 2000 Hugh Graham
 .\"
@@ -66,7 +66,7 @@ securelevel may no longer be lowered except by init
 .Pa /dev/mem
 and
 .Pa /dev/kmem
-may not be written to
+cannot be opened
 .It
 raw disk devices of mounted file systems are read-only
 .It
