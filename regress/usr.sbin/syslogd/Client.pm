@@ -1,4 +1,4 @@
-#	$OpenBSD: Client.pm,v 1.9 2017/01/02 16:58:28 bluhm Exp $
+#	$OpenBSD: Client.pm,v 1.10 2017/04/17 14:27:46 bluhm Exp $
 
 # Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -34,7 +34,9 @@ sub new {
 	$args{logfile} ||= "client.log";
 	$args{up} ||= "Openlog";
 	my $self = Proc::new($class, %args);
-	$self->{connectproto} ||= "udp";
+	if (defined($self->{connectdomain})) {
+		$self->{connectproto} ||= "udp";
+	}
 	return $self;
 }
 
