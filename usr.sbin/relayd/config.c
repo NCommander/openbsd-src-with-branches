@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.31 2016/11/24 21:01:18 reyk Exp $	*/
+/*	$OpenBSD: config.c,v 1.32 2017/05/27 08:33:25 claudio Exp $	*/
 
 /*
  * Copyright (c) 2011 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -603,7 +603,7 @@ config_setproto(struct relayd *env, struct protocol *proto)
 
 		if (proto->style != NULL) {
 			iov[c].iov_base = proto->style;
-			iov[c++].iov_len = strlen(proto->style);
+			iov[c++].iov_len = strlen(proto->style) + 1;
 		}
 
 		proc_composev(ps, id, IMSG_CFG_PROTO, iov, c);
@@ -680,8 +680,9 @@ config_getproto(struct relayd *env, struct imsg *imsg)
 	s = sizeof(*proto);
 
 	styl = IMSG_DATA_SIZE(imsg) - s;
+	proto->style = NULL;
 	if (styl > 0) {
-		if ((proto->style = get_string(p + s, styl)) == NULL) {
+		if ((proto->style = get_string(p + s, styl - 1)) == NULL) {
 			free(proto);
 			return (-1);
 		}
