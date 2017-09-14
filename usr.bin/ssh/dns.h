@@ -49,7 +49,6 @@ enum sshfp_hashes {
 #define DNS_VERIFY_FOUND	0x00000001
 #define DNS_VERIFY_MATCH	0x00000002
 #define DNS_VERIFY_SECURE	0x00000004
-#define DNS_VERIFY_MISSING	0x00000008
 
 int	verify_host_key_dns(const char *, struct sockaddr *,
     struct sshkey *, int *);
