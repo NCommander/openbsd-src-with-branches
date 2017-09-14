@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.66 2017/08/13 17:57:32 krw Exp $ */
+/*	$OpenBSD: privsep.c,v 1.67 2017/08/31 17:01:48 krw Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -58,7 +58,7 @@ dispatch_imsg(char *name, int rdomain, int ioctlfd, int routefd,
 
 	for (;;) {
 		if ((n = imsg_get(ibuf, &imsg)) == -1)
-			fatal("dispatch_imsg: imsg_get failure");
+			fatal("imsg_get");
 
 		if (n == 0)
 			break;
