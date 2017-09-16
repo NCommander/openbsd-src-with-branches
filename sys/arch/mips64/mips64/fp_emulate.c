@@ -1,4 +1,4 @@
-/*	$OpenBSD: fp_emulate.c,v 1.17 2017/08/30 15:54:33 visa Exp $	*/
+/*	$OpenBSD: fp_emulate.c,v 1.18 2017/09/02 15:56:29 visa Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -178,6 +178,7 @@ MipsFPTrap(struct trapframe *tf)
 		 */
 		tf->sr |= SR_FR_32;
 #endif
+		fsr = tf->fsr;
 	}
 
 	/*
