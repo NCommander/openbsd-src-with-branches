@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm.c,v 1.24 2017/08/20 21:15:32 pd Exp $	*/
+/*	$OpenBSD: vm.c,v 1.25 2017/09/11 23:32:34 dlg Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -354,6 +354,7 @@ start_vm(struct vmd_vm *vm, int fd)
 	if (vm->vm_received) {
 		restore_emulated_hw(vcp, vm->vm_receive_fd, nicfds,
 		    vm->vm_disks);
+		mc146818_start();
 		restore_mem(vm->vm_receive_fd, vcp);
 	}
 
