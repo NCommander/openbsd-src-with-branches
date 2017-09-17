@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.225 2017/08/29 13:21:30 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.226 2017/09/09 15:07:59 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -208,6 +208,7 @@ void		 sendhup(void);
 /* dhclient.c */
 extern char			*path_dhclient_conf;
 extern char			*path_dhclient_db;
+extern char			*log_procname;
 extern struct client_config	*config;
 extern struct imsgbuf		*unpriv_ibuf;
 extern volatile sig_atomic_t	 quit;
