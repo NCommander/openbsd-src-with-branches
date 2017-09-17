@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.61 2017/07/24 16:17:35 krw Exp $	*/
+/*	$OpenBSD: parse.c,v 1.62 2017/09/14 00:10:17 krw Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -405,8 +405,8 @@ parse_warn(char *msg)
 	static char	 spaces[81];
 	unsigned int	 i;
 
-	log_warnx("%s line %d: %s", tlname, lexline, msg);
-	log_warnx("%s", token_line);
+	log_warnx("%s: %s line %d: %s", log_procname, tlname, lexline, msg);
+	log_warnx("%s: %s", log_procname, token_line);
 	if ((unsigned int)lexchar < sizeof(spaces)) {
 		memset(spaces, 0, sizeof(spaces));
 		for (i = 0; (int)i < lexchar - 1; i++) {
@@ -416,5 +416,5 @@ parse_warn(char *msg)
 				spaces[i] = ' ';
 		}
 	}
-	log_warnx("%s^", spaces);
+	log_warnx("%s: %s^", log_procname, spaces);
 }
