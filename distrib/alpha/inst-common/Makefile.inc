@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: Makefile.inc,v 1.14 2017/08/12 19:41:16 jasper Exp $
+#	$OpenBSD: Makefile.inc,v 1.15 2017/09/17 16:33:08 deraadt Exp $
 #
 
 # TOP is assumed to be defined by Makefile including this one.
@@ -10,7 +10,6 @@ UTILS=		${TOP}/../miniroot
 LISTS?=		${.CURDIR}/../common/list
 CRUNCHCONF?=	${CBIN}.conf
 MTREE=		${UTILS}/mtree.conf
-STRIP=		strip
 STRIPOPTS?=	-R .eh_frame -R .SUNW_ctf -R .shstrtab
 
 ${CRUNCHCONF}: ${LISTS}
@@ -21,7 +20,7 @@ ${CBIN}.mk ${CBIN}.cache ${CBIN}.c: ${CRUNCHCONF}
 
 ${CBIN}: ${CBIN}.mk ${CBIN}.cache ${CBIN}.c
 	${MAKE} -f ${CBIN}.mk SRCLIBDIR=${.CURDIR}/../../../lib all
-	${STRIP} ${STRIPOPTS} ${CBIN}
+	strip ${STRIPOPTS} ${CBIN}
 
 clean cleandir:
 	/bin/rm -f *.core ${IMAGE} ${CBIN} ${CBIN}.mk ${CBIN}.cache \
