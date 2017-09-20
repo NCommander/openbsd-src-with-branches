@@ -1,4 +1,4 @@
-/*	$OpenBSD: clparse.c,v 1.126 2017/09/14 00:10:17 krw Exp $	*/
+/*	$OpenBSD: clparse.c,v 1.127 2017/09/17 21:20:23 krw Exp $	*/
 
 /* Parser for dhclient config and lease files. */
 
@@ -189,8 +189,8 @@ read_client_leases(char *name, struct client_lease_tq *tq)
 		if (token == EOF)
 			break;
 		if (token != TOK_LEASE) {
-			log_warnx("%s: corrupt lease file - possible data loss!",
-			    log_procname);
+			log_warnx("%s: corrupt lease file - possible data "
+			    "loss!", log_procname);
 			break;
 		}
 		add_lease(tq, parse_client_lease_statement(cfile, name));
