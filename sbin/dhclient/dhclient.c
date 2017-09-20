@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.506 2017/09/20 15:14:52 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.507 2017/09/20 16:09:42 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -2152,7 +2152,7 @@ fork_privchld(struct interface_info *ifi, int fd, int fd2)
 		if (nfds == -1) {
 			if (errno == EINTR)
 				continue;
-			log_warn("%s: priv_ibuf poll", log_procname);
+			log_warn("%s: poll(priv_ibuf)", log_procname);
 			quit = INTERNALSIG;
 			continue;
 		}
