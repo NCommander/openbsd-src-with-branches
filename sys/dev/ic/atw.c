@@ -1,4 +1,4 @@
-/*	$OpenBSD: atw.c,v 1.94 2016/04/13 10:49:26 mpi Exp $	*/
+/*	$OpenBSD: atw.c,v 1.95 2017/01/22 10:17:37 dlg Exp $	*/
 /*	$NetBSD: atw.c,v 1.69 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -3468,7 +3468,7 @@ atw_compute_duration(struct ieee80211_frame *wh, int len, uint32_t flags,
 	int ack, rc;
 	int firstlen, hdrlen, lastlen, lastlen0, npkt, overlen, paylen;
 
-	if ((wh->i_fc[1] & IEEE80211_FC1_DIR_MASK) == IEEE80211_FC1_DIR_DSTODS)
+	if (ieee80211_has_addr4(wh))
 		hdrlen = sizeof(struct ieee80211_frame_addr4);
 	else
 		hdrlen = sizeof(struct ieee80211_frame);
