@@ -10836,12 +10836,14 @@ S_grok_bslash_N(pTHX_ RExC_state_t *pRExC_state, regnode** node_p,
 	}
 	sv_catpv(substitute_parse, ")");
 
-	RExC_parse = SvPV(substitute_parse, len);
+        len = SvCUR(substitute_parse);
 
 	/* Don't allow empty number */
 	if (len < 8) {
 	    vFAIL("Invalid hexadecimal number in \\N{U+...}");
 	}
+
+	RExC_parse = SvPV_nolen(substitute_parse);
 	RExC_end = RExC_parse + len;
 
 	/* The values are Unicode, and therefore not subject to recoding */
@@ -11168,7 +11170,7 @@ S_regatom(pTHX_ RExC_state_t *pRExC_state, I32 *flagp, U32 depth)
     dVAR;
     regnode *ret = NULL;
     I32 flags = 0;
-    char *parse_start = RExC_parse;
+    char *parse_start;
     U8 op;
     int invert = 0;
 
@@ -11181,6 +11183,7 @@ S_regatom(pTHX_ RExC_state_t *pRExC_state, I32 *flagp, U32 depth)
     PERL_ARGS_ASSERT_REGATOM;
 
 tryagain:
+    parse_start = RExC_parse;
     switch ((U8)*RExC_parse) {
     case '^':
 	RExC_seen_zerolen++;
@@ -11269,7 +11272,7 @@ tryagain:
 	break;
     case '{':
 	if (!regcurly(RExC_parse, FALSE)) {
-	    RExC_parse++;
+	    RExC_parse = parse_start;
 	    goto defchar;
 	}
 	/* FALL THROUGH */
@@ -11486,7 +11489,7 @@ tryagain:
                                 FALSE /* not strict */ )) {
                 if (*flagp & RESTART_UTF8)
                     return NULL;
-                RExC_parse--;
+                RExC_parse = parse_start;
                 goto defchar;
             }
             break;
@@ -11588,6 +11591,7 @@ tryagain:
                             && *RExC_parse != '8' && *RExC_parse != '9'))
                     {
                         /* Probably a character specified in octal, e.g. \35 */
+                        RExC_parse = parse_start;
                         goto defchar;
                     }
                 }
@@ -11638,7 +11642,7 @@ tryagain:
 	default:
 	    /* Do not generate "unrecognized" warnings here, we fall
 	       back into the quick-grab loop below */
-	    parse_start--;
+	    RExC_parse = parse_start;
 	    goto defchar;
 	}
 	break;
@@ -11651,10 +11655,6 @@ tryagain:
 	/* FALL THROUGH */
 
     default:
-
-            parse_start = RExC_parse - 1;
-
-	    RExC_parse++;
 
 	defchar: {
 	    STRLEN len = 0;
@@ -11719,7 +11719,12 @@ tryagain:
              * could back off to end with only a code point that isn't such a
              * non-final, but it is possible for there not to be any in the
              * entire node. */
-	    for (p = RExC_parse - 1;
+
+            assert(   ! UTF     /* Is at the beginning of a character */
+                   || UTF8_IS_INVARIANT(UCHARAT(RExC_parse))
+                   || UTF8_IS_START(UCHARAT(RExC_parse)));
+
+	    for (p = RExC_parse;
 	         len < upper_parse && p < RExC_end;
 	         len++)
 	    {
@@ -11792,6 +11797,7 @@ tryagain:
                             goto loopdone;
                         }
                         p = RExC_parse;
+                        RExC_parse = parse_start;
                         if (ender > 0xff) {
                             REQUIRE_UTF8;
                         }
