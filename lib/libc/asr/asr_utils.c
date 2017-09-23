@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr_utils.c,v 1.16 2017/02/19 12:02:30 jca Exp $	*/
+/*	$OpenBSD: asr_utils.c,v 1.17 2017/02/27 11:38:08 jca Exp $	*/
 /*
  * Copyright (c) 2009-2012	Eric Faurot	<eric@faurot.net>
  *
@@ -378,14 +378,6 @@ pack_u16(struct asr_pack *p, uint16_t v)
 	v = htons(v);
 
 	return (pack_data(p, &v, 2));
-}
-
-static int
-pack_u32(struct asr_pack *p, uint32_t v)
-{
-	v = htonl(v);
-
-	return (pack_data(p, &v, 4));
 }
 
 static int
