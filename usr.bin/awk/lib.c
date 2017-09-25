@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib.c,v 1.21 2015/03/27 10:09:30 tobiasu Exp $	*/
+/*	$OpenBSD: lib.c,v 1.22 2016/04/12 19:43:38 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -592,7 +592,7 @@ void bcheck2(int n, int c1, int c2)
 		fprintf(stderr, "\t%d extra %c's\n", -n, c2);
 }
 
-void FATAL(const char *fmt, ...)
+__dead void FATAL(const char *fmt, ...)
 {
 	extern char *cmdname;
 	va_list varg;
