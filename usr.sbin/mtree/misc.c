@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.18 2004/08/01 18:32:20 deraadt Exp $	*/
+/*	$OpenBSD: misc.c,v 1.19 2012/07/08 21:19:42 naddy Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/07 21:26:23 cgd Exp $	*/
 
 /*-
@@ -95,7 +95,7 @@ keycompare(const void *a, const void *b)
 	return (strcmp(((KEY *)a)->name, ((KEY *)b)->name));
 }
 
-void
+__dead void
 error(const char *fmt, ...)
 {
 	va_list ap;
