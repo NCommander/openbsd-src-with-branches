@@ -563,7 +563,7 @@ struct sys_sigsuspend_args {
 };
 
 struct sys_sendsyslog_args {
-	syscallarg(const void *) buf;
+	syscallarg(const char *) buf;
 	syscallarg(size_t) nbyte;
 	syscallarg(int) flags;
 };

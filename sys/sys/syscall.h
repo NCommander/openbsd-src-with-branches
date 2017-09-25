@@ -339,7 +339,7 @@
 /* syscall: "sigsuspend" ret: "int" args: "int" */
 #define	SYS_sigsuspend	111
 
-/* syscall: "sendsyslog" ret: "int" args: "const void *" "size_t" "int" */
+/* syscall: "sendsyslog" ret: "int" args: "const char *" "size_t" "int" */
 #define	SYS_sendsyslog	112
 
 /* syscall: "fktrace" ret: "int" args: "int" "int" "int" "pid_t" */
