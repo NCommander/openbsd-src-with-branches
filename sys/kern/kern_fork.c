@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.186 2016/04/25 20:00:33 tedu Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.187 2016/04/25 20:18:31 tedu Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -129,6 +129,10 @@ sys___tfork(struct proc *p, void *v, register_t *retval)
 	if (KTRPOINT(p, KTR_STRUCT))
 		ktrstruct(p, "tfork", &param, sizeof(param));
 #endif
+#ifdef TCB_INVALID
+	if (TCB_INVALID(param.tf_tcb))
+		return EINVAL;
+#endif /* TCB_INVALID */
 
 	flags = FORK_TFORK | FORK_THREAD | FORK_SIGHAND | FORK_SHAREVM
 	    | FORK_SHAREFILES;
