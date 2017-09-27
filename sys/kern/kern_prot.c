@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_prot.c,v 1.66 2016/09/02 18:11:28 tedu Exp $	*/
+/*	$OpenBSD: kern_prot.c,v 1.67 2016/11/07 00:26:32 guenther Exp $	*/
 /*	$NetBSD: kern_prot.c,v 1.33 1996/02/09 18:59:42 christos Exp $	*/
 
 /*
@@ -1095,6 +1095,10 @@ sys___set_tcb(struct proc *p, void *v, register_t *retval)
 		syscallarg(void *) tcb;
 	} */ *uap = v;
 
+#ifdef TCB_INVALID
+	if (TCB_INVALID(SCARG(uap, tcb)))
+		return EINVAL;
+#endif /* TCB_INVALID */
 	TCB_SET(p, SCARG(uap, tcb));
 	return (0);
 }
