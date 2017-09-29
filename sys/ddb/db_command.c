@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_command.c,v 1.76 2017/09/06 04:47:26 dlg Exp $	*/
+/*	$OpenBSD: db_command.c,v 1.77 2017/09/12 08:23:42 mpi Exp $	*/
 /*	$NetBSD: db_command.c,v 1.20 1996/03/30 22:30:05 christos Exp $	*/
 
 /*
@@ -612,6 +612,7 @@ struct db_command db_command_table[] = {
   /* this must be the first entry, if it exists */
 	{ "machine",    NULL,                   0,     		NULL},
 #endif
+	{ "kill",	db_kill_cmd,		0,		NULL },
 	{ "print",	db_print_cmd,		0,		NULL },
 	{ "p",		db_print_cmd,		0,		NULL },
 	{ "pprint",	db_ctf_pprint_cmd,	CS_OWN,		NULL },
