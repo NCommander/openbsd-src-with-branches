@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu.c,v 1.34 2017/04/27 06:16:39 mlarkin Exp $	*/
+/*	$OpenBSD: fpu.c,v 1.35 2017/05/29 14:19:49 mpi Exp $	*/
 /*	$NetBSD: fpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*-
@@ -54,6 +54,8 @@
 #include <machine/fpu.h>
 
 #include <dev/isa/isavar.h>
+
+void	xrstor_user(struct savefpu *_addr, uint64_t _mask);
 
 /*
  * We do lazy initialization and switching using the TS bit in cr0 and the
@@ -253,7 +255,7 @@ fpudna(struct cpu_info *ci)
 		p->p_md.md_flags |= MDP_USEDFPU;
 	} else {
 		if (xsave_mask) {
-			xrstor(sfp, xsave_mask);
+			xrstor_user(sfp, xsave_mask);
 		} else {
 			static double	zero = 0.0;
 
