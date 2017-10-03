@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.49 2016/02/27 13:08:06 mpi Exp $	*/
+/*	$OpenBSD: trap.c,v 1.49.2.1 2017/08/26 00:15:05 bluhm Exp $	*/
 /*	$NetBSD: trap.c,v 1.2 2003/05/04 23:51:56 fvdl Exp $	*/
 
 /*-
@@ -148,7 +148,7 @@ trap(struct trapframe *frame)
 	struct proc *p = curproc;
 	int type = (int)frame->tf_trapno;
 	struct pcb *pcb;
-	extern char doreti_iret[], resume_iret[];
+	extern char doreti_iret[], resume_iret[], xrstor_fault[];
 	caddr_t onfault;
 	int error;
 	uint64_t cr2;
@@ -222,6 +222,15 @@ trap(struct trapframe *frame)
 		/*NOTREACHED*/
 
 	case T_PROTFLT:
+		/*
+		 * Check for xrstor faulting because of invalid xstate
+		 * We do this by looking at the address of the
+		 * instruction that faulted.
+		 */
+		if (frame->tf_rip == (u_int64_t)xrstor_fault && p != NULL) {
+			fpusave_proc(p, 0);
+			goto user_trap;
+		}
 	case T_SEGNPFLT:
 	case T_ALIGNFLT:
 	case T_TSSFLT:
@@ -252,6 +261,7 @@ copyfault:
 	case T_SEGNPFLT|T_USER:
 	case T_STKFLT|T_USER:
 	case T_NMI|T_USER:
+user_trap:
 #ifdef TRAP_SIGDEBUG
 		printf("pid %d (%s): BUS at rip %lx addr %lx\n",
 		    p->p_pid, p->p_comm, frame->tf_rip, rcr2());

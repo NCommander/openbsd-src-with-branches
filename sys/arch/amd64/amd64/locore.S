@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.81 2016/06/22 01:12:38 mikeb Exp $	*/
+/*	$OpenBSD: locore.S,v 1.82 2016/07/16 06:04:29 mlarkin Exp $	*/
 /*	$NetBSD: locore.S,v 1.13 2004/03/25 18:33:17 drochner Exp $	*/
 
 /*
@@ -1159,6 +1159,15 @@ NENTRY(intr_fast_exit)
 _C_LABEL(doreti_iret):
 	iretq
 
+
+ENTRY(xrstor_user)
+	movq	%rsi, %rdx
+	movl	%esi, %eax
+	shrq	$32, %rdx
+	.globl	xrstor_fault
+xrstor_fault:
+	xrstor	(%rdi)
+	ret
 
 ENTRY(pagezero)
 	movq    $-PAGE_SIZE,%rdx
