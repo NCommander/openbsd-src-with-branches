@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.47 2016/09/04 09:22:28 mpi Exp $	*/
+/*	$OpenBSD: vector.S,v 1.47.4.1 2017/08/26 00:14:20 bluhm Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -127,6 +127,7 @@ IDTVEC(trap07)
 	cld
 	SMAP_CLAC
 	movq	CPUVAR(SELF),%rdi
+	movq	%rsp, %rsi
 	call	_C_LABEL(fpudna)
 	INTRFASTEXIT
 IDTVEC(trap08)

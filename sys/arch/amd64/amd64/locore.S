@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.84 2017/02/06 09:15:51 mpi Exp $	*/
+/*	$OpenBSD: locore.S,v 1.84.4.1 2017/10/03 22:11:56 bluhm Exp $	*/
 /*	$NetBSD: locore.S,v 1.13 2004/03/25 18:33:17 drochner Exp $	*/
 
 /*
@@ -1210,6 +1210,10 @@ ENTRY(xrstor_user)
 	.globl	xrstor_fault
 xrstor_fault:
 	xrstor	(%rdi)
+	xorl	%eax, %eax
+	ret
+ENTRY(xrstor_resume)
+	movl	$1, %eax
 	ret
 
 ENTRY(pagezero)
