@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu.c,v 1.33 2016/04/21 22:08:27 mlarkin Exp $	*/
+/*	$OpenBSD: fpu.c,v 1.33.2.1 2017/10/03 22:08:05 bluhm Exp $	*/
 /*	$NetBSD: fpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*-
@@ -56,7 +56,8 @@
 
 #include <dev/isa/isavar.h>
 
-void	xrstor_user(struct savefpu *_addr, uint64_t _mask);
+int	xrstor_user(struct savefpu *_addr, uint64_t _mask);
+void	trap(struct trapframe *);
 
 /*
  * We do lazy initialization and switching using the TS bit in cr0 and the
@@ -112,7 +113,7 @@ xrstor(struct savefpu *addr, uint64_t mask)
 	__asm volatile("xrstor %0" : : "m" (*addr), "a" (lo), "d" (hi));
 }
 
-void fpudna(struct cpu_info *);
+void fpudna(struct cpu_info *, struct trapframe *);
 static int x86fpflags_to_siginfo(u_int32_t);
 
 /*
@@ -226,7 +227,7 @@ x86fpflags_to_siginfo(u_int32_t flags)
  * saved state.
  */
 void
-fpudna(struct cpu_info *ci)
+fpudna(struct cpu_info *ci, struct trapframe *frame)
 {
 	struct savefpu *sfp;
 	struct proc *p;
@@ -287,7 +288,12 @@ fpudna(struct cpu_info *ci)
 		p->p_md.md_flags |= MDP_USEDFPU;
 	} else {
 		if (xsave_mask) {
-			xrstor_user(sfp, xsave_mask);
+			if (xrstor_user(sfp, xsave_mask)) {
+				fpusave_proc(p, 0);	/* faulted */
+				frame->tf_trapno = T_PROTFLT;
+				trap(frame);
+				return;
+			}
 		} else {
 			static double	zero = 0.0;
 

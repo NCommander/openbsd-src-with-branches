@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.49.2.1 2017/08/26 00:15:05 bluhm Exp $	*/
+/*	$OpenBSD: trap.c,v 1.49.2.2 2017/10/03 22:08:05 bluhm Exp $	*/
 /*	$NetBSD: trap.c,v 1.2 2003/05/04 23:51:56 fvdl Exp $	*/
 
 /*-
@@ -148,7 +148,8 @@ trap(struct trapframe *frame)
 	struct proc *p = curproc;
 	int type = (int)frame->tf_trapno;
 	struct pcb *pcb;
-	extern char doreti_iret[], resume_iret[], xrstor_fault[];
+	extern char doreti_iret[], resume_iret[];
+	extern char xrstor_fault[], xrstor_resume[];
 	caddr_t onfault;
 	int error;
 	uint64_t cr2;
@@ -228,8 +229,8 @@ trap(struct trapframe *frame)
 		 * instruction that faulted.
 		 */
 		if (frame->tf_rip == (u_int64_t)xrstor_fault && p != NULL) {
-			fpusave_proc(p, 0);
-			goto user_trap;
+			frame->tf_rip = (u_int64_t)xrstor_resume;
+			return;
 		}
 	case T_SEGNPFLT:
 	case T_ALIGNFLT:
@@ -261,7 +262,6 @@ copyfault:
 	case T_SEGNPFLT|T_USER:
 	case T_STKFLT|T_USER:
 	case T_NMI|T_USER:
-user_trap:
 #ifdef TRAP_SIGDEBUG
 		printf("pid %d (%s): BUS at rip %lx addr %lx\n",
 		    p->p_pid, p->p_comm, frame->tf_rip, rcr2());
