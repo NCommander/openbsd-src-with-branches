@@ -1,4 +1,4 @@
-/*	$OpenBSD: inetd.c,v 1.153 2016/03/16 20:16:39 mestre Exp $	*/
+/*	$OpenBSD: inetd.c,v 1.154 2016/08/25 05:23:19 tedu Exp $	*/
 
 /*
  * Copyright (c) 1983,1991 The Regents of the University of California.
@@ -1763,8 +1763,13 @@ spawn(int ctrl, short events, void *xsep)
 		return;
 	}
 
-	if (pledge("stdio rpath getpw inet proc exec id", NULL) == -1)
-		err(1, "pledge");
+	if (sep->se_family == AF_UNIX) {
+		if (pledge("stdio rpath cpath getpw inet proc exec id", NULL) == -1)
+			err(1, "pledge");
+	} else {
+		if (pledge("stdio rpath getpw inet proc exec id", NULL) == -1)
+			err(1, "pledge");
+	}
 
 	if (pid && sep->se_wait) {
 		sep->se_wait = pid;
