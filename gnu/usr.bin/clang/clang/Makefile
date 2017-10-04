@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.8 2017/04/17 19:58:53 pascal Exp $
+# $OpenBSD: Makefile,v 1.9 2017/07/09 15:28:34 espie Exp $
 
 .include <bsd.own.mk>
 
@@ -79,6 +79,7 @@ LLVM_LIBDEPS=	clangFrontendTool \
 		${BACKEND_ASMPRINTER} \
 		LLVMMC \
 		${BACKEND_UTILS} \
+		LLVMBinaryFormat \
 		LLVMCore \
 		LLVMSupport
 

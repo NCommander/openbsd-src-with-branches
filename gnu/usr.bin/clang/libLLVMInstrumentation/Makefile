@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/01/14 20:12:41 patrick Exp $
+# $OpenBSD: Makefile,v 1.3 2017/07/09 15:28:35 espie Exp $
 
 LIB=	LLVMInstrumentation
 NOPIC=
@@ -17,6 +17,7 @@ SRCS=	AddressSanitizer.cpp \
 	Instrumentation.cpp \
 	InstrProfiling.cpp \
 	PGOInstrumentation.cpp \
+	PGOMemOPSizeOpt.cpp \
 	SanitizerCoverage.cpp \
 	ThreadSanitizer.cpp
 

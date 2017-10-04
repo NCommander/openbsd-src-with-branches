@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2017/01/24 08:44:47 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2017/07/09 15:28:34 espie Exp $
 
 LIB=	LLVMAArch64CodeGen
 NOPIC=
@@ -9,14 +9,15 @@ CPPFLAGS+=	-I${.OBJDIR}/../include/llvm/AArch64 \
 
 .include <bsd.own.mk>
 SRCS=	AArch64A57FPLoadBalancing.cpp \
-	AArch64AddressTypePromotion.cpp \
 	AArch64AdvSIMDScalarPass.cpp \
 	AArch64AsmPrinter.cpp \
 	AArch64CleanupLocalDynamicTLSPass.cpp \
 	AArch64CollectLOH.cpp \
+	AArch64CondBrTuning.cpp \
 	AArch64ConditionalCompares.cpp \
 	AArch64DeadRegisterDefinitionsPass.cpp \
 	AArch64ExpandPseudoInsts.cpp \
+	AArch64FalkorHWPFFix.cpp \
 	AArch64FastISel.cpp \
 	AArch64A53Fix835769.cpp \
 	AArch64FrameLowering.cpp \
@@ -25,6 +26,7 @@ SRCS=	AArch64A57FPLoadBalancing.cpp \
 	AArch64ISelLowering.cpp \
 	AArch64InstrInfo.cpp \
 	AArch64LoadStoreOptimizer.cpp \
+	AArch64MacroFusion.cpp \
 	AArch64MCInstLower.cpp \
 	AArch64PromoteConstant.cpp \
 	AArch64PBQPRegAlloc.cpp \

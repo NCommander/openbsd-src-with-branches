@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2017/04/17 19:58:53 pascal Exp $
+# $OpenBSD: Makefile,v 1.6 2017/07/09 15:28:36 espie Exp $
 
 PROG=	llvm-tblgen
 NOMAN=
@@ -30,6 +30,7 @@ SRCS=	AsmMatcherEmitter.cpp \
 	IntrinsicEmitter.cpp \
 	OptParserEmitter.cpp \
 	PseudoLoweringEmitter.cpp \
+	RegisterBankEmitter.cpp \
 	RegisterInfoEmitter.cpp \
 	SearchableTableEmitter.cpp \
 	SubtargetEmitter.cpp \
@@ -37,6 +38,7 @@ SRCS=	AsmMatcherEmitter.cpp \
 	TableGen.cpp \
 	Types.cpp \
 	X86DisassemblerTables.cpp \
+	X86EVEX2VEXTablesEmitter.cpp \
 	X86ModRMFilters.cpp \
 	X86RecognizableInstr.cpp \
 	CTagsEmitter.cpp

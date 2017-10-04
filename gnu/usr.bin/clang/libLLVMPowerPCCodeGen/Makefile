@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/01/14 20:12:41 patrick Exp $
+# $OpenBSD: Makefile,v 1.3 2017/07/09 15:28:35 espie Exp $
 
 LIB=	LLVMPowerPCCodeGen
 NOPIC=
@@ -13,6 +13,7 @@ SRCS=	PPCBoolRetToInt.cpp \
 	PPCBranchSelector.cpp \
 	PPCCCState.cpp \
 	PPCCTRLoops.cpp \
+	PPCExpandISEL.cpp \
 	PPCHazardRecognizers.cpp \
 	PPCInstrInfo.cpp \
 	PPCISelDAGToDAG.cpp \

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2017/01/24 08:44:47 patrick Exp $
+# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:35 espie Exp $
 
 LIB=	LLVMDebugInfoMSF
 NOPIC=
@@ -10,9 +10,7 @@ CPPFLAGS+=	-I${LLVM_SRCS}/include/llvm/DebugInfo/MSF
 SRCS=	MappedBlockStream.cpp \
 	MSFBuilder.cpp \
 	MSFCommon.cpp \
-	MSFError.cpp \
-	StreamReader.cpp \
-	StreamWriter.cpp
+	MSFError.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lib/DebugInfo/MSF
 

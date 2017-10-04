@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2017/01/24 08:44:47 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2017/07/09 15:28:36 espie Exp $
 
 LIB=	LLVMipo
 NOPIC=
@@ -37,6 +37,7 @@ SRCS=	ArgumentPromotion.cpp \
 	SampleProfile.cpp \
 	StripDeadPrototypes.cpp \
 	StripSymbols.cpp \
+	ThinLTOBitcodeWriter.cpp \
 	WholeProgramDevirt.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lib/Transforms/IPO
