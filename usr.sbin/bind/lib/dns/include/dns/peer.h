@@ -1,21 +1,21 @@
 /*
- * Copyright (C) 2000, 2001  Internet Software Consortium.
+ * Copyright (C) 2004-2006  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 2000, 2001, 2003  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: peer.h,v 1.16.2.1 2001/11/13 18:57:12 gson Exp $ */
+/* $ISC: peer.h,v 1.20.18.8 2006/02/28 03:10:48 marka Exp $ */
 
 #ifndef DNS_PEER_H
 #define DNS_PEER_H 1
@@ -24,7 +24,8 @@
  ***** Module Info
  *****/
 
-/*
+/*! \file
+ * \brief
  * Data structures for peers (e.g. a 'server' config file statement)
  */
 
@@ -64,6 +65,7 @@ struct dns_peer {
 	isc_mem_t	       *mem;
 
 	isc_netaddr_t		address;
+	unsigned int		prefixlen;
 	isc_boolean_t		bogus;
 	dns_transfer_format_t	transfer_format;
 	isc_uint32_t		transfers;
@@ -72,6 +74,11 @@ struct dns_peer {
 	isc_boolean_t		request_ixfr;
 	isc_boolean_t		support_edns;
 	dns_name_t	       *key;
+	isc_sockaddr_t	       *transfer_source;
+	isc_sockaddr_t	       *notify_source;  
+	isc_sockaddr_t	       *query_source;  
+	isc_uint16_t		udpsize;		/* recieve size */
+	isc_uint16_t		maxudp;			/* transmit size */
 
 	isc_uint32_t		bitflags;
 
@@ -115,9 +122,13 @@ isc_result_t
 dns_peer_new(isc_mem_t *mem, isc_netaddr_t *ipaddr, dns_peer_t **peer);
 
 isc_result_t
+dns_peer_newprefix(isc_mem_t *mem, isc_netaddr_t *ipaddr,
+		   unsigned int prefixlen, dns_peer_t **peer);
+
+void
 dns_peer_attach(dns_peer_t *source, dns_peer_t **target);
 
-isc_result_t
+void
 dns_peer_detach(dns_peer_t **list);
 
 isc_result_t
@@ -164,6 +175,37 @@ dns_peer_getkey(dns_peer_t *peer, dns_name_t **retval);
 
 isc_result_t
 dns_peer_setkey(dns_peer_t *peer, dns_name_t **keyval);
+
+isc_result_t
+dns_peer_settransfersource(dns_peer_t *peer,
+			   const isc_sockaddr_t *transfer_source);
+
+isc_result_t
+dns_peer_gettransfersource(dns_peer_t *peer, isc_sockaddr_t *transfer_source);
+
+isc_result_t
+dns_peer_setudpsize(dns_peer_t *peer, isc_uint16_t udpsize);
+
+isc_result_t
+dns_peer_getudpsize(dns_peer_t *peer, isc_uint16_t *udpsize);
+
+isc_result_t
+dns_peer_setmaxudp(dns_peer_t *peer, isc_uint16_t maxudp);
+
+isc_result_t
+dns_peer_getmaxudp(dns_peer_t *peer, isc_uint16_t *maxudp);
+
+isc_result_t
+dns_peer_setnotifysource(dns_peer_t *peer, const isc_sockaddr_t *notify_source);
+
+isc_result_t
+dns_peer_getnotifysource(dns_peer_t *peer, isc_sockaddr_t *notify_source);
+
+isc_result_t
+dns_peer_setquerysource(dns_peer_t *peer, const isc_sockaddr_t *query_source);
+
+isc_result_t
+dns_peer_getquerysource(dns_peer_t *peer, isc_sockaddr_t *query_source);
 
 ISC_LANG_ENDDECLS
 
