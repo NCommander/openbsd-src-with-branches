@@ -1,4 +1,4 @@
-/*	$OpenBSD: l2tpd.c,v 1.18 2015/12/17 08:09:20 tb Exp $ */
+/*	$OpenBSD: l2tpd.c,v 1.19 2016/03/21 00:49:36 guenther Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -26,7 +26,7 @@
  * SUCH DAMAGE.
  */
 /**@file L2TP(Layer Two Tunneling Protocol "L2TP") / RFC2661 */
-/* $Id: l2tpd.c,v 1.18 2015/12/17 08:09:20 tb Exp $ */
+/* $Id: l2tpd.c,v 1.19 2016/03/21 00:49:36 guenther Exp $ */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -615,7 +615,7 @@ l2tpd_io_event(int fd, short evtype, void *ctx)
 			    sizeof(buf), 0,
 			    (struct sockaddr *)&peer, &peerlen,
 			    (struct sockaddr *)&sock, &socklen,
-			    &sa_cookie, &sa_cookie_len)) <= 0) {
+			    &sa_cookie, &sa_cookie_len)) == -1) {
 #else
 			if ((sz = recvfromto(_this->sock, buf,
 			    sizeof(buf), 0,
