@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.218 2017/03/12 23:28:13 guenther Exp $
+#	$OpenBSD: Makefile,v 1.219 2017/04/17 15:53:21 kettenis Exp $
 #	$NetBSD: Makefile,v 1.59 1996/05/15 21:36:43 jtc Exp $
 
 #	@(#)Makefile	5.45.1.1 (Berkeley) 5/6/91
@@ -100,10 +100,9 @@ includes:
 		cd ${.CURDIR}/$$i && ${RUN_MAKE}; \
 	done
 	chown -RP ${BINOWN}:${BINGRP} ${DESTDIR}/usr/include
-	find ${DESTDIR}/usr/include -type f -print0 | \
-		xargs -0r chmod a=r
-	find ${DESTDIR}/usr/include \( -type d -o -type l \) -print0 | \
-		xargs -0r chmod -h u=rwx,go=rx
+	find ${DESTDIR}/usr/include \
+		-type f -exec chmod a=r {} + -o \
+		\( -type d -o -type l \) -exec chmod -h u=rwx,go=rx {} +
 
 copies:
 	@echo copies: ${LDIRS}
