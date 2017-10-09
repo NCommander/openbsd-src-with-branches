@@ -1,13 +1,10 @@
+/*	$OpenBSD: ffs.S,v 1.4 2015/08/31 02:53:56 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: ffs.S,v 1.7 1995/04/28 22:58:00 jtc Exp $")
-#endif
+#include "SYS.h"
 
 ENTRY(ffs)
 	bsfl	4(%esp),%eax
@@ -15,6 +12,7 @@ ENTRY(ffs)
 	incl	%eax			/* bits numbered from 1, not 0 */
 	ret
 
-	.align 2
+	.align 2,0xcc
 L1:	xorl	%eax,%eax		/* clear result */
 	ret
+END_WEAK(ffs)

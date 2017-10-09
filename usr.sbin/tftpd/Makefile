@@ -1,9 +1,11 @@
-#	$OpenBSD: Makefile,v 1.2 2001/01/28 19:34:35 niklas Exp $
+#	$OpenBSD: Makefile,v 1.5 2012/09/12 09:19:54 haesbaert Exp $
 
 PROG=	tftpd
 SRCS=	tftpd.c
 LDADD=	-levent
 DPADD=	${LIBEVENT}
+CFLAGS+= -Wall
+CDIAGFLAGS=
 
 MAN=	tftpd.8
 

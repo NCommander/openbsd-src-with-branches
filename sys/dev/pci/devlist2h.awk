@@ -1,7 +1,8 @@
 #! /usr/bin/awk -f
-#	$NetBSD: devlist2h.awk,v 1.1 1995/06/18 01:07:06 cgd Exp $
+#	$OpenBSD: devlist2h.awk,v 1.7 2007/02/21 13:08:22 dlg Exp $
+#	$NetBSD: devlist2h.awk,v 1.2 1996/01/22 21:08:09 cgd Exp $
 #
-# Copyright (c) 1995 Christopher G. Demetriou
+# Copyright (c) 1995, 1996 Christopher G. Demetriou
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,7 +31,7 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 BEGIN {
-	nproducts = nvendors = 0
+	nproducts = nvendor_dup = nvendors = 0
 	dfile="pcidevs_data.h"
 	hfile="pcidevs.h"
 }
@@ -44,7 +45,7 @@ NR == 1 {
 	printf(" *\n") > dfile
 	printf(" * generated from:\n") > dfile
 	printf(" *\t%s\n", VERSION) > dfile
-	printf(" */\n") > dfile
+	printf(" */\n\n") > dfile
 
 	printf("/*\n") > hfile
 	printf(" * THIS FILE AUTOMATICALLY GENERATED.  DO NOT EDIT.\n") \
@@ -54,10 +55,15 @@ NR == 1 {
 	printf(" *\t%s\n", VERSION) > hfile
 	printf(" */\n") > hfile
 
-	continue
+	next
 }
 $1 == "vendor" {
 	nvendors++
+
+	if ($2 in vendorindex) {
+		printf("duplicate vendor name %s\n", $2);
+		nvendor_dup++;
+	}
 
 	vendorindex[$2] = nvendors;		# record index for this name, for later.
 	vendors[nvendors, 1] = $2;		# name
@@ -99,7 +105,7 @@ $1 == "vendor" {
 		printf(" */") > hfile
 	printf("\n") > hfile
 
-	continue
+	next
 }
 $1 == "product" {
 	nproducts++
@@ -111,12 +117,6 @@ $1 == "product" {
 	    products[nproducts, 2], products[nproducts, 3]) > hfile
 
 	i=4; f = 5;
-
-	# remember if the device is unsupported
-	if ($f == "UNSUPP") {
-		products[nproducts, 1, unsupported] = 1;
-		f++
-	}
 
 	# comments
 	ocomment = oparen = 0
@@ -150,7 +150,7 @@ $1 == "product" {
 		printf(" */") > hfile
 	printf("\n") > hfile
 
-	continue
+	next
 }
 {
 	if ($0 == "")
@@ -164,31 +164,29 @@ END {
 
 	printf("\n") > dfile
 
-	printf("struct pci_knowndev pci_knowndevs[] = {\n") > dfile
+	if (nvendor_dup > 0)
+		exit(1);
+
+	printf("/* Descriptions of known vendors and devices. */\n") > dfile
+	printf("struct pci_known_vendor {\n") > dfile
+	printf("\tpci_vendor_id_t vendor;\n") > dfile
+	printf("\tconst char *vendorname;\n") > dfile
+	printf("};\n\n") > dfile
+
+	printf("struct pci_known_product {\n") > dfile
+	printf("\tpci_vendor_id_t vendor;\n") > dfile
+	printf("\tpci_product_id_t product;\n") > dfile
+	printf("\tconst char *productname;\n") > dfile
+	printf("};\n\n") > dfile
+
+
+	printf("static const struct pci_known_product pci_known_products[] = {\n") \
+	    > dfile
 	for (i = 1; i <= nproducts; i++) {
 		printf("\t{\n") > dfile
 		printf("\t    PCI_VENDOR_%s, PCI_PRODUCT_%s_%s,\n",
 		    products[i, 1], products[i, 1], products[i, 2]) \
 		    > dfile
-		printf("\t    ") > dfile
-		if (products[i, 1, unsupp])
-			printf("PCI_KNOWNDEV_UNSUPP") > dfile
-		else
-			printf("0") > dfile
-		printf(",\n") > dfile
-
-		vendi = vendorindex[products[i, 1]];
-		printf("\t    \"") > dfile
-		j = 3;
-		needspace = 0;
-		while (vendors[vendi, j] != "") {
-			if (needspace)
-				printf(" ") > dfile
-			printf("%s", vendors[vendi, j]) > dfile
-			needspace = 1
-			j++
-		}
-		printf("\",\n") > dfile
 
 		printf("\t    \"") > dfile
 		j = 4;
@@ -203,11 +201,14 @@ END {
 		printf("\",\n") > dfile
 		printf("\t},\n") > dfile
 	}
+	printf("\t{ 0, 0, NULL, }\n") > dfile
+	printf("};\n\n") > dfile
+
+	printf("static const struct pci_known_vendor pci_known_vendors[] = {\n") \
+	    > dfile
 	for (i = 1; i <= nvendors; i++) {
 		printf("\t{\n") > dfile
-		printf("\t    PCI_VENDOR_%s, 0,\n", vendors[i, 1]) \
-		    > dfile
-		printf("\t    PCI_KNOWNDEV_UNSUPP | PCI_KNOWNDEV_NOPROD,\n") \
+		printf("\t    PCI_VENDOR_%s,\n", vendors[i, 1]) \
 		    > dfile
 		printf("\t    \"") > dfile
 		j = 3;
@@ -220,9 +221,8 @@ END {
 			j++
 		}
 		printf("\",\n") > dfile
-		printf("\t    NULL,\n") > dfile
 		printf("\t},\n") > dfile
 	}
-	printf("\t{ 0, 0, 0, NULL, NULL, }\n") > dfile
+	printf("\t{ 0, NULL, }\n") > dfile
 	printf("};\n") > dfile
 }

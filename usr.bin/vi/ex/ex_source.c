@@ -1,66 +1,101 @@
+/*	$OpenBSD: ex_source.c,v 1.9 2014/11/12 04:28:41 bentley Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996
+ *	Keith Bostic.  All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * See the LICENSE file for redistribution information.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)ex_source.c	8.7 (Berkeley) 8/17/94";
-#endif /* not lint */
+#include "config.h"
 
 #include <sys/types.h>
 #include <sys/queue.h>
-#include <sys/time.h>
+#include <sys/stat.h>
 
 #include <bitstring.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
-#include <signal.h>
 #include <stdio.h>
-#include <termios.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-#include "compat.h"
-#include <db.h>
-#include <regex.h>
+#include "../common/common.h"
 
-#include "vi.h"
-#include "excmd.h"
+/*
+ * ex_sourcefd -- :source already opened file
+ *	Execute ex commands from the given file descriptor
+ *
+ * PUBLIC: int ex_sourcefd(SCR *, EXCMD *, int);
+ */
+int
+ex_sourcefd(SCR *sp, EXCMD *cmdp, int fd)
+{
+	struct stat sb;
+	int len;
+	char *bp, *name;
+
+	name = cmdp->argv[0]->bp;
+	if (fstat(fd, &sb))
+		goto err;
+
+	/*
+	 * XXX
+	 * I'd like to test to see if the file is too large to malloc.  Since
+	 * we don't know what size or type off_t's or size_t's are, what the
+	 * largest unsigned integral type is, or what random insanity the local
+	 * C compiler will perpetrate, doing the comparison in a portable way
+	 * is flatly impossible.  So, put an fairly unreasonable limit on it,
+	 * I don't want to be dropping core here.
+	 */
+#define	MEGABYTE	1048576
+	if (sb.st_size > MEGABYTE) {
+		errno = ENOMEM;
+		goto err;
+	}
+
+	MALLOC(sp, bp, (size_t)sb.st_size + 1);
+	if (bp == NULL) {
+		(void)close(fd);
+		return (1);
+	}
+	bp[sb.st_size] = '\0';
+
+	/* Read the file into memory. */
+	len = read(fd, bp, (int)sb.st_size);
+	(void)close(fd);
+	if (len == -1 || len != sb.st_size) {
+		if (len != sb.st_size)
+			errno = EIO;
+		free(bp);
+err:		msgq_str(sp, M_SYSERR, name, "%s");
+		return (1);
+	}
+
+	/* Put it on the ex queue. */
+	return (ex_run_str(sp, name, bp, (size_t)sb.st_size, 1, 1));
+}
 
 /*
  * ex_source -- :source file
  *	Execute ex commands from a file.
+ *
+ * PUBLIC: int ex_source(SCR *, EXCMD *);
  */
 int
-ex_source(sp, ep, cmdp)
-	SCR *sp;
-	EXF *ep;
-	EXCMDARG *cmdp;
+ex_source(SCR *sp, EXCMD *cmdp)
 {
-	return (ex_cfile(sp, ep, cmdp->argv[0]->bp, 0));
+	char *name;
+	int fd;
+
+	name = cmdp->argv[0]->bp;
+	if ((fd = open(name, O_RDONLY, 0)) >= 0)
+		return (ex_sourcefd(sp, cmdp, fd));
+
+	msgq_str(sp, M_SYSERR, name, "%s");
+	return (1);
 }

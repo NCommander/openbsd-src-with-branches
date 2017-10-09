@@ -1,5 +1,3 @@
-/*	$NetBSD: quad.h,v 1.3.2.1 1995/10/12 15:09:18 jtc Exp $	*/
-
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -16,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +30,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)quad.h	8.1 (Berkeley) 6/4/93
+ *	$OpenBSD: quad.h,v 1.7 2009/11/07 23:09:35 jsg Exp $
  */
 
 /*
@@ -46,13 +40,13 @@
  *
  *  - The type long long (aka quad_t) exists.
  *
- *  - A quad variable is exactly twice as long as `long'.
+ *  - A quad variable is exactly twice as long as `int'.
  *
  *  - The machine's arithmetic is two's complement.
  *
  * This library can provide 128-bit arithmetic on a machine with 128-bit
- * quads and 64-bit longs, for instance, or 96-bit arithmetic on machines
- * with 48-bit longs.
+ * quads and 64-bit ints, for instance, or 96-bit arithmetic on machines
+ * with 48-bit ints.
  */
 
 #include <sys/types.h>
@@ -65,12 +59,12 @@
 union uu {
 	quad_t	q;		/* as a (signed) quad */
 	u_quad_t uq;		/* as an unsigned quad */
-	long	sl[2];		/* as two signed longs */
-	u_long	ul[2];		/* as two unsigned longs */
+	int	sl[2];		/* as two signed ints */
+	u_int	ul[2];		/* as two unsigned ints */
 };
 
 /*
- * Define high and low longwords.
+ * Define high and low parts of a quad_t.
  */
 #define	H		_QUAD_HIGHWORD
 #define	L		_QUAD_LOWWORD
@@ -81,32 +75,47 @@ union uu {
  * and assembly.
  */
 #define	QUAD_BITS	(sizeof(quad_t) * CHAR_BIT)
-#define	LONG_BITS	(sizeof(long) * CHAR_BIT)
-#define	HALF_BITS	(sizeof(long) * CHAR_BIT / 2)
+#define	INT_BITS	(sizeof(int) * CHAR_BIT)
+#define	HALF_BITS	(sizeof(int) * CHAR_BIT / 2)
 
 /*
  * Extract high and low shortwords from longword, and move low shortword of
  * longword to upper half of long, i.e., produce the upper longword of
- * ((quad_t)(x) << (number_of_bits_in_long/2)).  (`x' must actually be u_long.)
+ * ((quad_t)(x) << (number_of_bits_in_int/2)).  (`x' must actually be u_int.)
  *
  * These are used in the multiply code, to split a longword into upper
  * and lower halves, and to reassemble a product as a quad_t, shifted left
- * (sizeof(long)*CHAR_BIT/2).
+ * (sizeof(int)*CHAR_BIT/2).
  */
-#define	HHALF(x)	((u_long)(x) >> HALF_BITS)
-#define	LHALF(x)	((u_long)(x) & (((long)1 << HALF_BITS) - 1))
-#define	LHUP(x)		((u_long)(x) << HALF_BITS)
+#define	HHALF(x)	((u_int)(x) >> HALF_BITS)
+#define	LHALF(x)	((u_int)(x) & (((int)1 << HALF_BITS) - 1))
+#define	LHUP(x)		((u_int)(x) << HALF_BITS)
 
-extern u_quad_t __qdivrem __P((u_quad_t u, u_quad_t v, u_quad_t *rem));
-
-/*
- * XXX
- * Compensate for gcc 1 vs gcc 2.  Gcc 1 defines ?sh?di3's second argument
- * as u_quad_t, while gcc 2 correctly uses int.  Unfortunately, we still use
- * both compilers.
- */
-#if __GNUC__ >= 2
 typedef unsigned int	qshift_t;
-#else
-typedef u_quad_t	qshift_t;
-#endif
+
+quad_t __adddi3(quad_t, quad_t);
+quad_t __anddi3(quad_t, quad_t);
+quad_t __ashldi3(quad_t, qshift_t);
+quad_t __ashrdi3(quad_t, qshift_t);
+int __cmpdi2(quad_t, quad_t);
+quad_t __divdi3(quad_t, quad_t);
+quad_t __fixdfdi(double);
+quad_t __fixsfdi(float);
+u_quad_t __fixunsdfdi(double);
+u_quad_t __fixunssfdi(float);
+double __floatdidf(quad_t);
+float __floatdisf(quad_t);
+double __floatunsdidf(u_quad_t);
+quad_t __iordi3(quad_t, quad_t);
+quad_t __lshldi3(quad_t, qshift_t);
+quad_t __lshrdi3(quad_t, qshift_t);
+quad_t __moddi3(quad_t, quad_t);
+quad_t __muldi3(quad_t, quad_t);
+quad_t __negdi2(quad_t);
+quad_t __one_cmpldi2(quad_t);
+u_quad_t __qdivrem(u_quad_t, u_quad_t, u_quad_t *);
+quad_t __subdi3(quad_t, quad_t);
+int __ucmpdi2(u_quad_t, u_quad_t);
+u_quad_t __udivdi3(u_quad_t, u_quad_t );
+u_quad_t __umoddi3(u_quad_t, u_quad_t );
+quad_t __xordi3(quad_t, quad_t);

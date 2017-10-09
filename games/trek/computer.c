@@ -1,3 +1,4 @@
+/*	$OpenBSD: computer.c,v 1.11 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: computer.c,v 1.4 1995/04/24 12:25:51 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,17 +30,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)computer.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: computer.c,v 1.4 1995/04/24 12:25:51 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-# include	"trek.h"
-# include	"getpar.h"
-# include	<stdio.h>
+#include "getpar.h"
+#include "trek.h"
+
 /*
 **  On-Board Computer
 **
@@ -92,31 +85,34 @@ static char rcsid[] = "$NetBSD: computer.c,v 1.4 1995/04/24 12:25:51 cgd Exp $";
 
 struct cvntab	Cputab[] =
 {
-	"ch",			"art",			(int (*)())1,		0,
-	"t",			"rajectory",		(int (*)())2,		0,
-	"c",			"ourse",		(int (*)())3,		0,
-	"m",			"ove",			(int (*)())3,		1,
-	"s",			"core",			(int (*)())4,		0,
-	"p",			"heff",			(int (*)())5,		0,
-	"w",			"arpcost",		(int (*)())6,		0,
-	"i",			"mpcost",		(int (*)())7,		0,
-	"d",			"istresslist",		(int (*)())8,		0,
-	0
+	{ "ch",		"art",			(cmdfun)1,		0 },
+	{ "t",		"rajectory",		(cmdfun)2,		0 },
+	{ "c",		"ourse",		(cmdfun)3,		0 },
+	{ "m",		"ove",			(cmdfun)3,		1 },
+	{ "s",		"core",			(cmdfun)4,		0 },
+	{ "p",		"heff",			(cmdfun)5,		0 },
+	{ "w",		"arpcost",		(cmdfun)6,		0 },
+	{ "i",		"mpcost",		(cmdfun)7,		0 },
+	{ "d",		"istresslist",		(cmdfun)8,		0 },
+	{ NULL,		NULL,			NULL,			0 }
 };
 
-computer()
+static int kalc(int, int, int, int, double *);
+static void prkalc(int, double);
+
+void
+computer(int v)
 {
 	int			ix, iy;
-	register int		i, j;
-	int			numout;
+	int			i, j;
 	int			tqx, tqy;
-	struct cvntab		*r;
+	const struct cvntab	*r;
 	int			cost;
 	int			course;
 	double			dist, time;
 	double			warpfact;
 	struct quad		*q;
-	register struct event	*e;
+	struct event		*e;
 
 	if (check_out(COMPUTER))
 		return;
@@ -146,10 +142,12 @@ computer()
 					q = &Quad[i][j];
 					/* 1000 or 1001 is special case */
 					if (q->scanned >= 1000)
+					{
 						if (q->scanned > 1000)
 							printf(".1. ");
 						else
 							printf("/// ");
+					}
 					else
 						if (q->scanned < 0)
 							printf("... ");
@@ -240,7 +238,7 @@ computer()
 				warpfact = Ship.warp;
 			cost = (dist + 0.05) * warpfact * warpfact * warpfact;
 			time = Param.warptime * dist / (warpfact * warpfact);
-			printf("Warp %.2f distance %.2f cost %.2f stardates %d (%d w/ shlds up) units\n",
+			printf("Warp %.2f distance %.2f stardates %.2f cost %d (%d w/ shlds up) units\n",
 				warpfact, dist, time, cost, cost + cost);
 			break;
 
@@ -290,7 +288,7 @@ computer()
 		/* skip to next semicolon or newline.  Semicolon
 		 * means get new computer request; newline means
 		 * exit computer mode. */
-		while ((i = cgetc(0)) != ';')
+		while ((i = getchar()) != ';')
 		{
 			if (i == '\0')
 				exit(1);
@@ -311,17 +309,13 @@ computer()
 **	sqx,sqy/ssx,ssy to tqx,tqy/tsx,tsy.
 */
 
-kalc(tqx, tqy, tsx, tsy, dist)
-int	tqx;
-int	tqy;
-int	tsx;
-int	tsy;
-double	*dist;
+static int
+kalc(int tqx, int tqy, int tsx, int tsy, double *dist)
 {
-	double			dx, dy;
-	double			quadsize;
-	double			angle;
-	register int		course;
+	double		dx, dy;
+	double		quadsize;
+	double		angle;
+	int		course;
 
 	/* normalize to quadrant distances */
 	quadsize = NSECTS;
@@ -340,10 +334,8 @@ double	*dist;
 	return (course);
 }
 
-
-prkalc(course, dist)
-int	course;
-double	dist;
+static void
+prkalc(int course, double dist)
 {
 	printf(": course %d  dist %.3f\n", course, dist);
 }

@@ -1337,6 +1337,9 @@ struct elf_obj_tdata
   /* Should the PT_GNU_RELRO segment be emitted?  */
   bfd_boolean relro;
 
+  /* TRUE if output program should be marked to request W^X permission */
+  bfd_boolean wxneeded;
+
   /* Symbol version definitions in external objects.  */
   Elf_Internal_Verdef *verdef;
 
@@ -1368,6 +1371,12 @@ struct elf_obj_tdata
 
   /* Used to determine if the e_flags field has been initialized */
   bfd_boolean flags_init;
+
+  /* Used to determine if we are creating an executable.  */
+  bfd_boolean executable;
+
+  /* Symbol buffer.  */
+  Elf_Internal_Sym *symbuf;
 };
 
 #define elf_tdata(bfd)		((bfd) -> tdata.elf_obj_data)
@@ -1500,11 +1509,11 @@ extern bfd_boolean _bfd_elf_match_sections_by_type
 extern bfd_boolean bfd_elf_is_group_section
   (bfd *, const struct bfd_section *);
 extern void _bfd_elf_section_already_linked
-  (bfd *, struct bfd_section *);
+  (bfd *, struct bfd_section *, struct bfd_link_info *);
 extern void bfd_elf_set_group_contents
   (bfd *, asection *, void *);
 extern asection *_bfd_elf_check_kept_section
-  (asection *);
+  (asection *, struct bfd_link_info *);
 extern void _bfd_elf_link_just_syms
   (asection *, struct bfd_link_info *);
 extern bfd_boolean _bfd_elf_copy_private_header_data
@@ -1700,7 +1709,7 @@ extern bfd_boolean _bfd_elf_symbol_refs_local_p
   (struct elf_link_hash_entry *, struct bfd_link_info *, bfd_boolean);
 
 extern bfd_boolean bfd_elf_match_symbols_in_sections
-  (asection *sec1, asection *sec2);
+  (asection *, asection *, struct bfd_link_info *);
 
 extern bfd_boolean _bfd_elf_setup_sections
   (bfd *);

@@ -1,13 +1,10 @@
+/*	$OpenBSD: memchr.S,v 1.4 2015/08/31 02:53:56 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: memchr.S,v 1.8 1995/04/28 22:58:03 jtc Exp $")
-#endif
+#include "SYS.h"
 
 ENTRY(memchr)
 	pushl	%edi
@@ -23,7 +20,8 @@ ENTRY(memchr)
 	leal	-1(%edi),%eax		/* adjust result of scan */
 	popl	%edi
 	ret
-	.align 2,0x90
+	.align 2,0xcc
 L1:	xorl	%eax,%eax
 	popl	%edi
 	ret
+END_STRONG(memchr)

@@ -1,0 +1,9 @@
+#	$OpenBSD: Makefile,v 1.2 2014/07/08 15:53:52 jsing Exp $
+
+PROG=	mont
+LDADD=	-lcrypto
+DPADD=	${LIBCRYPTO}
+WARNINGS=	Yes
+CFLAGS+=	-Werror
+
+.include <bsd.regress.mk>

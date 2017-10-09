@@ -1,4 +1,4 @@
-.\"	$NetBSD: fputs.3,v 1.4 1995/02/02 01:15:40 jtc Exp $
+.\"	$OpenBSD: fputs.3,v 1.11 2015/01/13 14:02:30 schwarze Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,9 +31,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)fputs.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: January 13 2015 $
 .Dt FPUTS 3
 .Os
 .Sh NAME
@@ -45,7 +39,7 @@
 .Nm puts
 .Nd output a line to a stream
 .Sh SYNOPSIS
-.Fd #include <stdio.h>
+.In stdio.h
 .Ft int
 .Fn fputs "const char *str" "FILE *stream"
 .Ft int
@@ -57,9 +51,6 @@ writes the string pointed to by
 .Fa str
 to the stream pointed to by
 .Fa stream .
-.\" The terminating
-.\" .Dv NUL
-.\" character is not written.
 .Pp
 The function
 .Fn puts
@@ -69,16 +60,13 @@ and a terminating newline character,
 to the stream
 .Em stdout .
 .Sh RETURN VALUES
-The
-.Fn fputs
-function
-returns 0 on success and
+Upon successful completion a non-negative integer is returned.
+Otherwise,
 .Dv EOF
-on error;
-.Fn puts
-returns a nonnegative integer on success and
-.Dv EOF
-on error.
+is returned, the global variable
+.Va errno
+is set to indicate the error,
+and the error indicator is set for the stream.
 .Sh ERRORS
 .Bl -tag -width Er
 .It Bq Er EBADF
@@ -97,8 +85,8 @@ may also fail and set
 for any of the errors specified for the routines
 .Xr write 2 .
 .Sh SEE ALSO
-.Xr putc 3 ,
 .Xr ferror 3 ,
+.Xr putc 3 ,
 .Xr stdio 3
 .Sh STANDARDS
 The functions
@@ -107,3 +95,12 @@ and
 .Fn puts
 conform to
 .St -ansiC .
+.Sh HISTORY
+The function
+.Fn puts
+first appeared in
+.At v6
+and
+.Fn fputs
+in
+.At v7 .

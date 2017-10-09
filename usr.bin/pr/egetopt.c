@@ -1,3 +1,5 @@
+/*	$OpenBSD: egetopt.c,v 1.8 2009/10/27 23:59:41 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1991 Keith Muller.
  * Copyright (c) 1993
@@ -14,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-/* from: static char sccsid[] = "@(#)egetopt.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: egetopt.c,v 1.1 1994/01/06 15:57:18 cgd Exp $";
-#endif /* not lint */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -68,15 +61,12 @@ char	*eoptarg;		/* argument associated with option */
 #define	EMSG	""
 
 int
-egetopt(nargc, nargv, ostr)
-	int nargc;
-	char * const *nargv;
-	const char *ostr;
+egetopt(int nargc, char * const *nargv, const char *ostr)
 {
 	static char *place = EMSG;	/* option letter processing */
-	register char *oli;		/* option letter list index */
-	static int delim;		/* which option delimeter */
-	register char *p;
+	char *oli;			/* option letter list index */
+	static int delim;		/* which option delimiter */
+	char *p;
 	static char savec = '\0';
 
 	if (savec != '\0') {
@@ -91,7 +81,7 @@ egetopt(nargc, nargv, ostr)
 		if ((eoptind >= nargc) ||
 		    ((*(place = nargv[eoptind]) != '-') && (*place != '+'))) {
 			place = EMSG;
-			return (EOF);
+			return (-1);
 		}
 
 		delim = (int)*place;
@@ -101,7 +91,7 @@ egetopt(nargc, nargv, ostr)
 			 */
 			++eoptind;
 			place = EMSG;
-			return (EOF);
+			return (-1);
 		}
 	}
 
@@ -115,15 +105,15 @@ egetopt(nargc, nargv, ostr)
 		 * assume it means EOF when by itself.
 		 */
 		if ((eoptopt == (int)'-') && !*place)
-			return (EOF);
-		if (strchr(ostr, '#') && (isdigit(eoptopt) ||
+			return (-1);
+		if (strchr(ostr, '#') && (isdigit((unsigned char)eoptopt) ||
 		    (((eoptopt == (int)'-') || (eoptopt == (int)'+')) &&
-		      isdigit(*place)))) {
+		      isdigit((unsigned char)*place)))) {
 			/*
 			 * # option: +/- with a number is ok
 			 */
 			for (p = place; *p != '\0'; ++p) {
-				if (!isdigit(*p))
+				if (!isdigit((unsigned char)*p))
 					break;
 			}
 			eoptarg = place-1;

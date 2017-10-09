@@ -1,3 +1,5 @@
+.\"	$OpenBSD: ypmatch.1,v 1.12 2013/08/14 06:32:31 jmc Exp $
+.\"	$NetBSD: ypmatch.1,v 1.5 1996/05/13 02:43:41 thorpej Exp $
 .\"
 .\" Copyright (c) 1993 Winning Strategies, Inc.
 .\" All rights reserved.
@@ -27,36 +29,35 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: ypmatch.1,v 1.3 1994/10/28 16:49:37 deraadt Exp $
+.\"	$Id: ypmatch.1,v 1.12 2013/08/14 06:32:31 jmc Exp $
 .\"
-.Dd December 3, 1993
+.Dd $Mdocdate: August 14 2013 $
 .Dt YPMATCH 1
 .Os
 .Sh NAME
 .Nm ypmatch
-.Nd "print the values of one or more keys in a YP database"
+.Nd print the values of one or more keys in a YP database
 .Sh SYNOPSIS
 .Nm ypmatch
 .Op Fl kt
 .Op Fl d Ar domainname
-.Ar key ...
-.Ar mapname
-.Nm ypmatch 
+.Ar key ... mapname
+.Nm ypmatch
 .Fl x
 .Sh DESCRIPTION
-.Nm Ypmatch
-prints out the values of one or more keys from the 
+.Nm
+prints out the values of one or more keys from the
 .Tn YP
 database specified by
-.Ar mapname,
+.Ar mapname ,
 which may be a map name or a map nickname.
 .Pp
 The options are as follows:
-.Bl -tag -width indent
+.Bl -tag -width Ds
 .It Fl d Ar domainname
 Specify a domain other than the default domain.
 .It Fl k
-Display map keys.
+Print the map key followed by a colon, before printing key value.
 This option is useful with maps in which the values are null or the key
 is not part of the value.
 .It Fl t
@@ -67,11 +68,11 @@ Display the map nickname table.
 .El
 .Sh SEE ALSO
 .Xr domainname 1 ,
-.Xr ypbind 8 ,
 .Xr ypcat 1 ,
-.Xr yppoll 8 ,
-.Xr ypset 8 ,
 .Xr ypwhich 1 ,
-.Xr yp 8
-.Sh AUTHOR
-Theo De Raadt
+.Xr yp 8 ,
+.Xr ypbind 8 ,
+.Xr yppoll 8 ,
+.Xr ypset 8
+.Sh AUTHORS
+.An Theo de Raadt

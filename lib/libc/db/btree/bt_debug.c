@@ -1,4 +1,4 @@
-/*	$NetBSD: bt_debug.c,v 1.5 1995/02/27 13:20:12 cgd Exp $	*/
+/*	$OpenBSD: bt_debug.c,v 1.9 2005/08/08 08:05:33 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,16 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)bt_debug.c	8.3 (Berkeley) 5/31/94";
-#else
-static char rcsid[] = "$NetBSD: bt_debug.c,v 1.5 1995/02/27 13:20:12 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,8 +47,7 @@ static char rcsid[] = "$NetBSD: bt_debug.c,v 1.5 1995/02/27 13:20:12 cgd Exp $";
  *	dbp:	pointer to the DB
  */
 void
-__bt_dump(dbp)
-	DB *dbp;
+__bt_dump(DB *dbp)
 {
 	BTREE *t;
 	PAGE *h;
@@ -70,34 +55,31 @@ __bt_dump(dbp)
 	char *sep;
 
 	t = dbp->internal;
-	(void)fprintf(stderr, "%s: pgsz %d",
-	    ISSET(t, B_INMEM) ? "memory" : "disk", t->bt_psize);
-	if (ISSET(t, R_RECNO))
-		(void)fprintf(stderr, " keys %lu", t->bt_nrecs);
+	(void)fprintf(stderr, "%s: pgsz %u",
+	    F_ISSET(t, B_INMEM) ? "memory" : "disk", t->bt_psize);
+	if (F_ISSET(t, R_RECNO))
+		(void)fprintf(stderr, " keys %u", t->bt_nrecs);
 #undef X
 #define	X(flag, name) \
-	if (ISSET(t, flag)) { \
+	if (F_ISSET(t, flag)) { \
 		(void)fprintf(stderr, "%s%s", sep, name); \
 		sep = ", "; \
 	}
-	if (t->bt_flags) {
+	if (t->flags != 0) {
 		sep = " flags (";
-		X(B_DELCRSR,	"DELCRSR");
 		X(R_FIXLEN,	"FIXLEN");
 		X(B_INMEM,	"INMEM");
 		X(B_NODUPS,	"NODUPS");
 		X(B_RDONLY,	"RDONLY");
 		X(R_RECNO,	"RECNO");
-		X(B_SEQINIT,	"SEQINIT");
 		X(B_METADIRTY,"METADIRTY");
 		(void)fprintf(stderr, ")\n");
 	}
 #undef X
 
-	for (i = P_ROOT; (h = mpool_get(t->bt_mp, i, 0)) != NULL; ++i) {
+	for (i = P_ROOT;
+	    (h = mpool_get(t->bt_mp, i, MPOOL_IGNOREPIN)) != NULL; ++i)
 		__bt_dpage(h);
-		(void)mpool_put(t->bt_mp, h, 0);
-	}
 }
 
 /*
@@ -107,26 +89,25 @@ __bt_dump(dbp)
  *	h:	pointer to the PAGE
  */
 void
-__bt_dmpage(h)
-	PAGE *h;
+__bt_dmpage(PAGE *h)
 {
 	BTMETA *m;
 	char *sep;
 
 	m = (BTMETA *)h;
-	(void)fprintf(stderr, "magic %lx\n", m->m_magic);
-	(void)fprintf(stderr, "version %lu\n", m->m_version);
-	(void)fprintf(stderr, "psize %lu\n", m->m_psize);
-	(void)fprintf(stderr, "free %lu\n", m->m_free);
-	(void)fprintf(stderr, "nrecs %lu\n", m->m_nrecs);
-	(void)fprintf(stderr, "flags %lu", m->m_flags);
+	(void)fprintf(stderr, "magic %x\n", m->magic);
+	(void)fprintf(stderr, "version %u\n", m->version);
+	(void)fprintf(stderr, "psize %u\n", m->psize);
+	(void)fprintf(stderr, "free %u\n", m->free);
+	(void)fprintf(stderr, "nrecs %u\n", m->nrecs);
+	(void)fprintf(stderr, "flags %u", m->flags);
 #undef X
 #define	X(flag, name) \
-	if (m->m_flags & flag) { \
+	if (m->flags & flag) { \
 		(void)fprintf(stderr, "%s%s", sep, name); \
 		sep = ", "; \
 	}
-	if (m->m_flags) {
+	if (m->flags) {
 		sep = " (";
 		X(B_NODUPS,	"NODUPS");
 		X(R_RECNO,	"RECNO");
@@ -141,18 +122,14 @@ __bt_dmpage(h)
  *	n:	page number to dump.
  */
 void
-__bt_dnpage(dbp, pgno)
-	DB *dbp;
-	pgno_t pgno;
+__bt_dnpage(DB *dbp, pgno_t pgno)
 {
 	BTREE *t;
 	PAGE *h;
 
 	t = dbp->internal;
-	if ((h = mpool_get(t->bt_mp, pgno, 0)) != NULL) {
+	if ((h = mpool_get(t->bt_mp, pgno, MPOOL_IGNOREPIN)) != NULL)
 		__bt_dpage(h);
-		(void)mpool_put(t->bt_mp, h, 0);
-	}
 }
 
 /*
@@ -162,8 +139,7 @@ __bt_dnpage(dbp, pgno)
  *	h:	pointer to the PAGE
  */
 void
-__bt_dpage(h)
-	PAGE *h;
+__bt_dpage(PAGE *h)
 {
 	BINTERNAL *bi;
 	BLEAF *bl;
@@ -172,7 +148,7 @@ __bt_dpage(h)
 	indx_t cur, top;
 	char *sep;
 
-	(void)fprintf(stderr, "    page %d: (", h->pgno);
+	(void)fprintf(stderr, "    page %u: (", h->pgno);
 #undef X
 #define	X(flag, name) \
 	if (h->flags & flag) { \
@@ -189,7 +165,7 @@ __bt_dpage(h)
 	(void)fprintf(stderr, ")\n");
 #undef X
 
-	(void)fprintf(stderr, "\tprev %2d next %2d", h->prevpg, h->nextpg);
+	(void)fprintf(stderr, "\tprev %2u next %2u", h->prevpg, h->nextpg);
 	if (h->flags & P_OVERFLOW)
 		return;
 
@@ -198,7 +174,7 @@ __bt_dpage(h)
 	    h->lower, h->upper, top);
 	for (cur = 0; cur < top; cur++) {
 		(void)fprintf(stderr, "\t[%03d] %4d ", cur, h->linp[cur]);
-		switch(h->flags & P_TYPE) {
+		switch (h->flags & P_TYPE) {
 		case P_BINTERNAL:
 			bi = GETBINTERNAL(h, cur);
 			(void)fprintf(stderr,
@@ -218,14 +194,14 @@ __bt_dpage(h)
 			bl = GETBLEAF(h, cur);
 			if (bl->flags & P_BIGKEY)
 				(void)fprintf(stderr,
-				    "big key page %lu size %u/",
+				    "big key page %u size %u/",
 				    *(pgno_t *)bl->bytes,
 				    *(u_int32_t *)(bl->bytes + sizeof(pgno_t)));
 			else if (bl->ksize)
 				(void)fprintf(stderr, "%s/", bl->bytes);
 			if (bl->flags & P_BIGDATA)
 				(void)fprintf(stderr,
-				    "big data page %lu size %u",
+				    "big data page %u size %u",
 				    *(pgno_t *)(bl->bytes + bl->ksize),
 				    *(u_int32_t *)(bl->bytes + bl->ksize +
 				    sizeof(pgno_t)));
@@ -237,7 +213,7 @@ __bt_dpage(h)
 			rl = GETRLEAF(h, cur);
 			if (rl->flags & P_BIGDATA)
 				(void)fprintf(stderr,
-				    "big data page %lu size %u",
+				    "big data page %u size %u",
 				    *(pgno_t *)rl->bytes,
 				    *(u_int32_t *)(rl->bytes + sizeof(pgno_t)));
 			else if (rl->dsize)
@@ -258,8 +234,7 @@ __bt_dpage(h)
  *	dbp:	pointer to the DB
  */
 void
-__bt_stat(dbp)
-	DB *dbp;
+__bt_stat(DB *dbp)
 {
 	extern u_long bt_cache_hit, bt_cache_miss, bt_pfxsaved, bt_rootsplit;
 	extern u_long bt_sortsplit, bt_split;
@@ -272,8 +247,9 @@ __bt_stat(dbp)
 	t = dbp->internal;
 	pcont = pinternal = pleaf = 0;
 	nkeys = ifree = lfree = 0;
-	for (i = P_ROOT; (h = mpool_get(t->bt_mp, i, 0)) != NULL; ++i) {
-		switch(h->flags & P_TYPE) {
+	for (i = P_ROOT;
+	    (h = mpool_get(t->bt_mp, i, MPOOL_IGNOREPIN)) != NULL; ++i)
+		switch (h->flags & P_TYPE) {
 		case P_BINTERNAL:
 		case P_RINTERNAL:
 			++pinternal;
@@ -289,45 +265,41 @@ __bt_stat(dbp)
 			++pcont;
 			break;
 		}
-		(void)mpool_put(t->bt_mp, h, 0);
-	}
 
 	/* Count the levels of the tree. */
 	for (i = P_ROOT, levels = 0 ;; ++levels) {
-		h = mpool_get(t->bt_mp, i, 0);
+		h = mpool_get(t->bt_mp, i, MPOOL_IGNOREPIN);
 		if (h->flags & (P_BLEAF|P_RLEAF)) {
 			if (levels == 0)
 				levels = 1;
-			(void)mpool_put(t->bt_mp, h, 0);
 			break;
 		}
-		i = ISSET(t, R_RECNO) ?
+		i = F_ISSET(t, R_RECNO) ?
 		    GETRINTERNAL(h, 0)->pgno :
 		    GETBINTERNAL(h, 0)->pgno;
-		(void)mpool_put(t->bt_mp, h, 0);
 	}
 
-	(void)fprintf(stderr, "%d level%s with %ld keys",
+	(void)fprintf(stderr, "%d level%s with %lu keys",
 	    levels, levels == 1 ? "" : "s", nkeys);
-	if (ISSET(t, R_RECNO))
-		(void)fprintf(stderr, " (%ld header count)", t->bt_nrecs);
+	if (F_ISSET(t, R_RECNO))
+		(void)fprintf(stderr, " (%u header count)", t->bt_nrecs);
 	(void)fprintf(stderr,
-	    "\n%lu pages (leaf %ld, internal %ld, overflow %ld)\n",
+	    "\n%u pages (leaf %u, internal %u, overflow %u)\n",
 	    pinternal + pleaf + pcont, pleaf, pinternal, pcont);
-	(void)fprintf(stderr, "%ld cache hits, %ld cache misses\n",
+	(void)fprintf(stderr, "%lu cache hits, %lu cache misses\n",
 	    bt_cache_hit, bt_cache_miss);
-	(void)fprintf(stderr, "%ld splits (%ld root splits, %ld sort splits)\n",
+	(void)fprintf(stderr, "%lu splits (%lu root splits, %lu sort splits)\n",
 	    bt_split, bt_rootsplit, bt_sortsplit);
 	pleaf *= t->bt_psize - BTDATAOFF;
 	if (pleaf)
 		(void)fprintf(stderr,
-		    "%.0f%% leaf fill (%ld bytes used, %ld bytes free)\n",
+		    "%.0f%% leaf fill (%lu bytes used, %lu bytes free)\n",
 		    ((double)(pleaf - lfree) / pleaf) * 100,
 		    pleaf - lfree, lfree);
 	pinternal *= t->bt_psize - BTDATAOFF;
 	if (pinternal)
 		(void)fprintf(stderr,
-		    "%.0f%% internal fill (%ld bytes used, %ld bytes free\n",
+		    "%.0f%% internal fill (%lu bytes used, %lu bytes free\n",
 		    ((double)(pinternal - ifree) / pinternal) * 100,
 		    pinternal - ifree, ifree);
 	if (bt_pfxsaved)

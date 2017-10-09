@@ -1,0 +1,136 @@
+.\"	$OpenBSD: acme-client.1,v 1.21 2017/03/20 15:45:14 ajacoutot Exp $
+.\"
+.\" Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd $Mdocdate: March 20 2017 $
+.Dt ACME-CLIENT 1
+.Os
+.Sh NAME
+.Nm acme-client
+.Nd ACME client
+.Sh SYNOPSIS
+.Nm acme-client
+.Op Fl ADFnrv
+.Op Fl f Ar configfile
+.Ar domain
+.Sh DESCRIPTION
+The
+.Nm
+utility is an
+Automatic Certificate Management Environment (ACME) client.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl A
+Create a new RSA account key if one does not already exist.
+.It Fl D
+Create a new RSA domain key if one does not already exist.
+.It Fl F
+Force updating the certificate signature even if it's too soon.
+.It Fl f Ar configfile
+Specify an alternative configuration file.
+.It Fl n
+No operation: check and print configuration.
+.It Fl r
+Revoke the X509 certificate found in the certificates.
+.It Fl v
+Verbose operation.
+Specify twice to also trace communication and data transfers.
+.It Ar domain
+The domain name.
+.El
+.Pp
+.Nm
+looks in its configuration for a
+.Ar domain
+section corresponding to the domain given as command line argument.
+It then uses that configuration to retrieve a TLS certificate.
+If the certificate already exists and is less than 30 days from expiry,
+.Nm
+will attempt to refresh the signature.
+Before a certificate can be requested, an account key needs to be
+created using the
+.Fl A
+argument.
+The first time a certificate is requested, the RSA key needs to be created with
+.Fl D .
+.Pp
+Challenges are used to verify that the submitter has access to the
+registered domains.
+.Nm
+only implements the
+.Dq http-01
+challenge type, where a file is created within a directory accessible
+by a locally-run web server.
+The default challenge directory
+.Pa /var/www/acme
+can be served by
+.Xr httpd 8
+with this location block,
+which will properly map response challenges:
+.Bd -literal -offset indent
+location "/.well-known/acme-challenge/*" {
+	root "/acme"
+	root strip 2
+}
+.Ed
+.Sh FILES
+.Bl -tag -width "/etc/acme-client.conf" -compact
+.It Pa /etc/acme-client.conf
+Default configuration.
+.It Pa /var/www/acme
+Default challengedir.
+.El
+.Sh EXIT STATUS
+.Nm
+returns 1 on failure, 2 if the certificates didn't change (up to date),
+or 0 if certificates were changed (revoked or updated).
+.Sh EXAMPLES
+To initialize a new account and Domain key:
+.Pp
+.Dl # acme-client -vAD example.com
+.Pp
+To create and submit a new key for a single domain, assuming that the
+web server has already been configured to map the challenge directory
+as above:
+.Pp
+.Dl # acme-client -vD example.com
+.Pp
+A daily
+.Xr cron 8
+job can renew the certificates:
+.Pp
+.Dl acme-client example.com && rcctl reload httpd
+.Sh SEE ALSO
+.Xr openssl 1 ,
+.Xr acme-client.conf 5 ,
+.Xr httpd.conf 5
+.Sh STANDARDS
+.Rs
+.%U https://tools.ietf.org/html/draft-ietf-acme-acme-03
+.%T Automatic Certificate Management Environment (ACME)
+.Re
+.Sh AUTHORS
+The
+.Nm
+utility was written by
+.An Kristaps Dzonsons Aq Mt kristaps@bsd.lv .
+.Sh BUGS
+The challenge and certificate processes currently retain their (root)
+privileges.
+.Pp
+For the time being,
+.Nm
+only supports RSA as an account key format.

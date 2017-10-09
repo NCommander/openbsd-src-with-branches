@@ -1,10 +1,17 @@
-#	$NetBSD: disktab,v 1.1 1995/02/23 05:59:32 cgd Exp $
+#	$OpenBSD: disktab,v 1.22 2015/08/14 23:45:55 krw Exp $
 
-# A DEC RZ25, configured so that all of the free partition IDs are at
-# the end, etc.  A good setup to make a disk image from...
-rz25|RZ25|DEC RZ25 SCSI:\
-	:ty=winchester:dt=SCSI:ns#62:nt#9:nc#1476:\
-	:pa#139500:oa#0:ba#8192:fa#1024:ta=4.2BSD:\
-	:pb#139500:ob#139500:tb=swap:\
-	:pc#823608:oc#0:\
-	:pd#544608:od#279000:bd#8192:fd#1024:td=4.2BSD:
+fakeramdisk:\
+	:dt=rdroot:se#512:nt#1:ns#32:nc#180:\
+	:pa#5760:oa#0:ba#8192:fa#4096:ta=4.2BSD:\
+	:pc#5760:oc#0:
+
+floppy|floppy3|3in|3.5in High Density Floppy:\
+	:dt=floppy:se#512:nt#2:ns#18:nc#80:\
+	:pa#2880:oa#0:ba#4096:fa#512:ta=4.2BSD: \
+	:pb#2880:ob#0:\
+	:pc#2880:oc#0:
+
+rdroot:\
+	:dt=rdroot:se#512:nt#2:rm#300:ns#8:nc#359:\
+	:pa#5744:oa#0:ta=4.2BSD:ba#8192:fa#1024: \
+	:pc#5744:oc#0:

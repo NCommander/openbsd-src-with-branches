@@ -962,6 +962,10 @@ arm::FloatABI arm::getARMFloatABI(const ToolChain &TC, const ArgList &Args) {
       }
       break;
 
+    case llvm::Triple::OpenBSD:
+      ABI = FloatABI::Soft;
+      break;
+
     default:
       switch (Triple.getEnvironment()) {
       case llvm::Triple::GNUEABIHF:
@@ -2635,7 +2639,9 @@ getAArch64MicroArchFeaturesFromMcpu(const Driver &D, StringRef Mcpu,
   return getAArch64MicroArchFeaturesFromMtune(D, CPU, Args, Features);
 }
 
-static void getAArch64TargetFeatures(const Driver &D, const ArgList &Args,
+static void getAArch64TargetFeatures(const Driver &D,
+                                     const llvm::Triple &Triple,
+                                     const ArgList &Args,
                                      std::vector<StringRef> &Features) {
   Arg *A;
   bool success = true;
@@ -2677,9 +2683,11 @@ static void getAArch64TargetFeatures(const Driver &D, const ArgList &Args,
   }
 
   if (Arg *A = Args.getLastArg(options::OPT_mno_unaligned_access,
-                               options::OPT_munaligned_access))
+                               options::OPT_munaligned_access)) {
     if (A->getOption().matches(options::OPT_mno_unaligned_access))
       Features.push_back("+strict-align");
+  } else if (Triple.isOSOpenBSD())
+    Features.push_back("+strict-align");
 
   if (Args.hasArg(options::OPT_ffixed_x18))
     Features.push_back("+reserve-x18");
@@ -2754,7 +2762,7 @@ static void getTargetFeatures(const ToolChain &TC, const llvm::Triple &Triple,
     break;
   case llvm::Triple::aarch64:
   case llvm::Triple::aarch64_be:
-    getAArch64TargetFeatures(D, Args, Features);
+    getAArch64TargetFeatures(D, Triple, Args, Features);
     break;
   case llvm::Triple::x86:
   case llvm::Triple::x86_64:
@@ -4466,9 +4474,12 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
       OFastEnabled ? options::OPT_Ofast : options::OPT_fstrict_aliasing;
   // We turn strict aliasing off by default if we're in CL mode, since MSVC
   // doesn't do any TBAA.
-  bool TBAAOnByDefault = !getToolChain().getDriver().IsCLMode();
+  bool StrictAliasingDefault = !getToolChain().getDriver().IsCLMode();
+  // We also turn off strict aliasing on OpenBSD.
+  if (getToolChain().getTriple().isOSOpenBSD())
+    StrictAliasingDefault = false;
   if (!Args.hasFlag(options::OPT_fstrict_aliasing, StrictAliasingAliasOption,
-                    options::OPT_fno_strict_aliasing, TBAAOnByDefault))
+                    options::OPT_fno_strict_aliasing, StrictAliasingDefault))
     CmdArgs.push_back("-relaxed-aliasing");
   if (!Args.hasFlag(options::OPT_fstruct_path_tbaa,
                     options::OPT_fno_struct_path_tbaa))
@@ -5359,7 +5370,8 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   Args.AddLastArg(CmdArgs, options::OPT_fno_operator_names);
   // Emulated TLS is enabled by default on Android, and can be enabled manually
   // with -femulated-tls.
-  bool EmulatedTLSDefault = Triple.isAndroid() || Triple.isWindowsCygwinEnvironment();
+  bool EmulatedTLSDefault = Triple.isAndroid() || Triple.isOSOpenBSD() ||
+                            Triple.isWindowsCygwinEnvironment();
   if (Args.hasFlag(options::OPT_femulated_tls, options::OPT_fno_emulated_tls,
                    EmulatedTLSDefault))
     CmdArgs.push_back("-femulated-tls");
@@ -5454,7 +5466,8 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                                       options::OPT_fno_strict_overflow)) {
     if (A->getOption().matches(options::OPT_fno_strict_overflow))
       CmdArgs.push_back("-fwrapv");
-  }
+  } else if (getToolChain().getTriple().isOSOpenBSD())
+      CmdArgs.push_back("-fwrapv");
 
   if (Arg *A = Args.getLastArg(options::OPT_freroll_loops,
                                options::OPT_fno_reroll_loops))
@@ -6355,6 +6368,18 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   }
 #endif
 
+  // Disable some builtins on OpenBSD because they are just not
+  // right...
+  if (getToolChain().getTriple().isOSOpenBSD()) { 
+    CmdArgs.push_back("-fno-builtin-malloc");
+    CmdArgs.push_back("-fno-builtin-calloc");
+    CmdArgs.push_back("-fno-builtin-realloc");
+    CmdArgs.push_back("-fno-builtin-valloc");
+    CmdArgs.push_back("-fno-builtin-free");
+    CmdArgs.push_back("-fno-builtin-strdup");
+    CmdArgs.push_back("-fno-builtin-strndup");
+  }
+ 
   // Enable rewrite includes if the user's asked for it or if we're generating
   // diagnostics.
   // TODO: Once -module-dependency-dir works with -frewrite-includes it'd be
@@ -8907,12 +8932,13 @@ void openbsd::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     CmdArgs.push_back("__start");
   }
 
+  CmdArgs.push_back("--eh-frame-hdr");
+
   if (Args.hasArg(options::OPT_static)) {
     CmdArgs.push_back("-Bstatic");
   } else {
     if (Args.hasArg(options::OPT_rdynamic))
       CmdArgs.push_back("-export-dynamic");
-    CmdArgs.push_back("--eh-frame-hdr");
     CmdArgs.push_back("-Bdynamic");
     if (Args.hasArg(options::OPT_shared)) {
       CmdArgs.push_back("-shared");
@@ -8921,6 +8947,9 @@ void openbsd::Linker::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back("/usr/libexec/ld.so");
     }
   }
+
+  if (Args.hasArg(options::OPT_pie))
+    CmdArgs.push_back("-pie");
 
   if (Args.hasArg(options::OPT_nopie))
     CmdArgs.push_back("-nopie");
@@ -8952,14 +8981,10 @@ void openbsd::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     }
   }
 
-  std::string Triple = getToolChain().getTripleString();
-  if (Triple.substr(0, 6) == "x86_64")
-    Triple.replace(0, 6, "amd64");
-  CmdArgs.push_back(
-      Args.MakeArgString("-L/usr/lib/gcc-lib/" + Triple + "/4.2.1"));
-
-  Args.AddAllArgs(CmdArgs, {options::OPT_L, options::OPT_T_Group,
-                            options::OPT_e, options::OPT_s, options::OPT_t,
+  Args.AddAllArgs(CmdArgs, options::OPT_L);
+  getToolChain().AddFilePathLibArgs(Args, CmdArgs);
+  Args.AddAllArgs(CmdArgs, {options::OPT_T_Group, options::OPT_e,
+                            options::OPT_s, options::OPT_t,
                             options::OPT_Z_Flag, options::OPT_r});
 
   AddLinkerInputs(getToolChain(), Inputs, Args, CmdArgs, JA);
@@ -8975,7 +9000,7 @@ void openbsd::Linker::ConstructJob(Compilation &C, const JobAction &JA,
 
     // FIXME: For some reason GCC passes -lgcc before adding
     // the default system libraries. Just mimic this for now.
-    CmdArgs.push_back("-lgcc");
+    CmdArgs.push_back("-lcompiler_rt");
 
     if (Args.hasArg(options::OPT_pthread)) {
       if (!Args.hasArg(options::OPT_shared) && Args.hasArg(options::OPT_pg))
@@ -8991,7 +9016,7 @@ void openbsd::Linker::ConstructJob(Compilation &C, const JobAction &JA,
         CmdArgs.push_back("-lc");
     }
 
-    CmdArgs.push_back("-lgcc");
+    CmdArgs.push_back("-lcompiler_rt");
   }
 
   if (!Args.hasArg(options::OPT_nostdlib, options::OPT_nostartfiles)) {

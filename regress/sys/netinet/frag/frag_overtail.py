@@ -21,7 +21,7 @@ fid=pid & 0xffff
 frag.append(IP(src=LOCAL_ADDR, dst=REMOTE_ADDR, proto=1, id=fid,
     frag=2)/str(packet)[36:44])
 frag.append(IP(src=LOCAL_ADDR, dst=REMOTE_ADDR, proto=1, id=fid,
-    flags='MF', frag=1)/dummy)
+    frag=1, flags='MF')/dummy)
 frag.append(IP(src=LOCAL_ADDR, dst=REMOTE_ADDR, proto=1, id=fid,
     flags='MF')/str(packet)[20:36])
 eth=[]

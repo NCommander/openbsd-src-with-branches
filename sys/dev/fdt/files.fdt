@@ -1,0 +1,133 @@
+#	$OpenBSD: files.fdt,v 1.26 2017/08/28 11:16:04 kettenis Exp $
+#
+# Config file and device description for machine-independent FDT code.
+# Included by ports that need it.
+
+device	simplefb: wsemuldisplaydev, rasops15, rasops16, rasops24, rasops32
+attach	simplefb at fdt
+file	dev/fdt/simplefb.c		simplefb
+
+device	sxiccmu
+attach	sxiccmu at fdt
+file	dev/fdt/sxiccmu.c		sxiccmu
+
+device	sxipio {}: gpiobus
+attach	sxipio at fdt
+file	dev/fdt/sxipio.c		sxipio
+
+device	sxirtc
+attach	sxirtc at fdt
+file	dev/fdt/sxirtc.c		sxirtc
+
+device	sximmc: sdmmcbus
+attach	sximmc at fdt
+file	dev/fdt/sximmc.c		sximmc
+
+device	sxitwi: i2cbus
+attach	sxitwi at fdt
+file	dev/fdt/sxitwi.c		sxitwi
+
+device	axppmic
+attach	axppmic at i2c
+file	dev/fdt/axp20x.c		axppmic
+
+device	bcmaux
+attach	bcmaux at fdt
+file	dev/fdt/bcm2835_aux.c		bcmaux
+
+device	bcmdog
+attach	bcmdog at fdt
+file	dev/fdt/bcm2835_dog.c		bcmdog
+
+device	exrtc
+attach	exrtc at fdt
+file	dev/fdt/exrtc.c			exrtc
+
+# ARM PrimeCell PL031 Real-time clock
+device	plrtc
+attach	plrtc at fdt
+file	dev/fdt/plrtc.c			plrtc
+
+# ARM Power State Coordination Interface
+device	psci
+attach	psci at fdt
+file	dev/fdt/psci.c			psci
+
+attach	virtio at fdt with virtio_mmio
+file	dev/fdt/virtio_mmio.c		virtio_mmio
+
+# Advanced Host Controller Interface for Serial ATA
+attach	ahci at fdt with ahci_fdt
+file	dev/fdt/ahci_fdt.c		ahci_fdt
+
+attach	dwge at fdt with dwge_fdt
+file	dev/fdt/if_dwge_fdt.c		dwge_fdt
+
+attach	ehci at fdt with ehci_fdt
+file	dev/fdt/ehci_fdt.c		ehci_fdt
+
+attach	sdhc at fdt with sdhc_fdt
+file	dev/fdt/sdhc_fdt.c		sdhc_fdt
+
+attach	xhci at fdt with xhci_fdt
+file	dev/fdt/xhci_fdt.c		xhci_fdt
+
+device	syscon
+attach	syscon at fdt
+file	dev/fdt/syscon.c		syscon
+
+device	rkclock
+attach	rkclock at fdt
+file	dev/fdt/rkclock.c		rkclock
+
+device	rkdwusb: fdt
+attach	rkdwusb at fdt
+file	dev/fdt/rkdwusb.c		rkdwusb
+
+device	rkgrf
+attach	rkgrf at fdt
+file	dev/fdt/rkgrf.c			rkgrf
+
+device	rkgpio
+attach	rkgpio at fdt
+file	dev/fdt/rkgpio.c		rkgpio
+
+device	rkiic: i2cbus
+attach	rkiic at fdt			
+file	dev/fdt/rkiic.c			rkiic
+
+device	rkpmic
+attach	rkpmic at i2c
+file	dev/fdt/rkpmic.c		rkpmic
+
+device	rkpinctrl: fdt
+attach	rkpinctrl at fdt
+file	dev/fdt/rkpinctrl.c		rkpinctrl
+
+device	rktemp
+attach	rktemp at fdt
+file	dev/fdt/rktemp.c		rktemp
+
+device	dwmmc: sdmmcbus
+attach	dwmmc at fdt
+file	dev/fdt/dwmmc.c			dwmmc
+
+device	dwdog
+attach	dwdog at fdt
+file	dev/fdt/dwdog.c			dwdog
+
+device	mvpinctrl
+attach	mvpinctrl at fdt
+file	dev/fdt/mvpinctrl.c		mvpinctrl
+
+device	mvmdio
+attach	mvmdio at fdt
+file	dev/fdt/mvmdio.c		mvmdio
+
+device	mvneta: ether, ifnet, mii, ifmedia
+attach	mvneta at fdt
+file	dev/fdt/if_mvneta.c		mvneta
+
+device	dwxe: ether, ifnet, mii, ifmedia
+attach	dwxe at fdt
+file	dev/fdt/if_dwxe.c		dwxe

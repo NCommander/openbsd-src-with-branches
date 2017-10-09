@@ -44,7 +44,9 @@ tsig_openssl_init_algorithm(region_type* region,
 		log_msg(LOG_ERR, "cannot parse %s algorithm", wireformat);
 		return 0;
 	}
-	algorithm->maximum_digest_size = EVP_MAX_MD_SIZE;
+	algorithm->maximum_digest_size = EVP_MD_size(hmac_algorithm);
+	if(algorithm->maximum_digest_size < 20)
+		algorithm->maximum_digest_size = EVP_MAX_MD_SIZE;
 	algorithm->data = hmac_algorithm;
 	algorithm->hmac_create_context = create_context;
 	algorithm->hmac_init_context = init_context;
@@ -59,7 +61,11 @@ int
 tsig_openssl_init(region_type *region)
 {
 	int count = 0;
+#if OPENSSL_VERSION_NUMBER < 0x10100000 || !defined(HAVE_OPENSSL_INIT_CRYPTO)
 	OpenSSL_add_all_digests();
+#else
+	OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_DIGESTS, NULL);
+#endif
 
 	count += tsig_openssl_init_algorithm(region,
 	    "md5", "hmac-md5","hmac-md5.sig-alg.reg.int.");
@@ -81,16 +87,28 @@ static void
 cleanup_context(void *data)
 {
 	HMAC_CTX *context = (HMAC_CTX *) data;
+#ifdef HAVE_HMAC_CTX_NEW
+	HMAC_CTX_free(context);
+#else
 	HMAC_CTX_cleanup(context);
+	free(context);
+#endif
 }
 
 static void *
 create_context(region_type *region)
 {
-	HMAC_CTX *context
-		= (HMAC_CTX *) region_alloc(region, sizeof(HMAC_CTX));
+#ifdef HAVE_HMAC_CTX_NEW
+	HMAC_CTX *context = HMAC_CTX_new();
+#else
+	HMAC_CTX *context = (HMAC_CTX *) malloc(sizeof(HMAC_CTX));
+#endif
 	region_add_cleanup(region, cleanup_context, context);
+#ifdef HAVE_HMAC_CTX_RESET
+	HMAC_CTX_reset(context);
+#else
 	HMAC_CTX_init(context);
+#endif
 	return context;
 }
 
@@ -123,7 +141,9 @@ final(void *context, uint8_t *digest, size_t *size)
 void
 tsig_openssl_finalize()
 {
+#ifdef HAVE_EVP_CLEANUP
 	EVP_cleanup();
+#endif
 }
 
 #endif /* defined(HAVE_SSL) */

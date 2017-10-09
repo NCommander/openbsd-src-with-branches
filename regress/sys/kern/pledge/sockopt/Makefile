@@ -1,4 +1,10 @@
-# $OpenBSD $
+# $OpenBSD$
+
+# This table lists pledge(2), socket(2), getsockopt(2), and setsockopt(2)
+# calls with their expected outcome.  The constants are compiled into
+# the sockopt.c program using the C preprocessor.  For each line the
+# program is built and run.  The test checks the ktrace output and
+# core file.
 
 #	promises	domain		type		protocol	call	level		optname			optval	errno		abort
 TESTS =	inet		AF_INET		SOCK_STREAM	IPPROTO_TCP	get	SOL_SOCKET	SO_ERROR		0	0		0	\
@@ -36,8 +42,9 @@ REGRESS_TARGETS +=	run-regress-${promises}-${domain}-${type}-${protocol}-${call}
 run-regress-${promises}-${domain}-${type}-${protocol}-${call}-${level}-${optname}-${optval}-${errno}-${abort}:
 	@echo "\n$@"
 	rm -f sockopt sockopt.core
-	COPTS='-DPROMISES=\"${promises}\" -DDOMAIN=${domain} -DTYPE=${type} \
-	    -DPROTOCOL=${protocol} -DCALL=\"${call}\" \
+	cd ${.CURDIR} && \
+	    COPTS='-DPROMISES=\"${promises}\" -DDOMAIN=${domain} \
+	    -DTYPE=${type} -DPROTOCOL=${protocol} -DCALL=\"${call}\" \
 	    -DLEVEL=${level} -DOPTNAME=${optname} -DOPTVAL=${optval} \
 	    -DERRNO=${errno}' ${.MAKE} sockopt
 .if "${abort}" == 0

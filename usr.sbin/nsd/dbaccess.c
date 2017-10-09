@@ -84,7 +84,7 @@ apex_rrset_checks(namedb_type* db, rrset_type* rrset, domain_type* domain)
 		}
 		memcpy(zone->soa_nx_rrset->rrs, rrset->rrs, sizeof(rr_type));
 
-		/* check the ttl and MINIMUM value and set accordinly */
+		/* check the ttl and MINIMUM value and set accordingly */
 		memcpy(&soa_minimum, rdata_atom_data(rrset->rrs->rdatas[6]),
 				rdata_atom_size(rrset->rrs->rdatas[6]));
 		if (rrset->rrs->ttl > ntohl(soa_minimum)) {
@@ -247,7 +247,7 @@ read_zone_data(udb_base* udb, namedb_type* db, region_type* dname_region,
 /** create a zone */
 zone_type*
 namedb_zone_create(namedb_type* db, const dname_type* dname,
-	zone_options_t* zo)
+	struct zone_options* zo)
 {
 	zone_type* zone = (zone_type *) region_alloc(db->region,
 		sizeof(zone_type));
@@ -271,7 +271,8 @@ namedb_zone_create(namedb_type* db, const dname_type* dname,
 	zone->opts = zo;
 	zone->filename = NULL;
 	zone->logstr = NULL;
-	zone->mtime = 0;
+	zone->mtime.tv_sec = 0;
+	zone->mtime.tv_nsec = 0;
 	zone->zonestatid = 0;
 	zone->is_secure = 0;
 	zone->is_changed = 0;
@@ -320,12 +321,12 @@ namedb_zone_delete(namedb_type* db, zone_type* zone)
 #ifdef HAVE_MMAP
 /** read a zone */
 static void
-read_zone(udb_base* udb, namedb_type* db, nsd_options_t* opt,
+read_zone(udb_base* udb, namedb_type* db, struct nsd_options* opt,
 	region_type* dname_region, udb_ptr* z)
 {
 	/* construct dname */
 	const dname_type* dname = dname_make(dname_region, ZONE(z)->name, 0);
-	zone_options_t* zo = dname?zone_options_find(opt, dname):NULL;
+	struct zone_options* zo = dname?zone_options_find(opt, dname):NULL;
 	zone_type* zone;
 	if(!dname) return;
 	if(!zo) {
@@ -352,7 +353,7 @@ read_zone(udb_base* udb, namedb_type* db, nsd_options_t* opt,
 #ifdef HAVE_MMAP
 /** read zones from nsd.db */
 static void
-read_zones(udb_base* udb, namedb_type* db, nsd_options_t* opt,
+read_zones(udb_base* udb, namedb_type* db, struct nsd_options* opt,
 	region_type* dname_region)
 {
 	udb_ptr ztree, n, z;
@@ -377,7 +378,7 @@ read_zones(udb_base* udb, namedb_type* db, nsd_options_t* opt,
 /** try to read the udb file or fail */
 static int
 try_read_udb(namedb_type* db, int fd, const char* filename,
-	nsd_options_t* opt)
+	struct nsd_options* opt)
 {
 	/*
 	 * Temporary region used while loading domain names from the
@@ -413,7 +414,7 @@ try_read_udb(namedb_type* db, int fd, const char* filename,
 #endif /* HAVE_MMAP */
 
 struct namedb *
-namedb_open (const char* filename, nsd_options_t* opt)
+namedb_open (const char* filename, struct nsd_options* opt)
 {
 	namedb_type* db;
 
@@ -491,17 +492,25 @@ namedb_open (const char* filename, nsd_options_t* opt)
 }
 
 /** the the file mtime stat (or nonexist or error) */
-static int
-file_get_mtime(const char* file, time_t* mtime, int* nonexist)
+int
+file_get_mtime(const char* file, struct timespec* mtime, int* nonexist)
 {
 	struct stat s;
 	if(stat(file, &s) != 0) {
-		*mtime = 0;
+		mtime->tv_sec = 0;
+		mtime->tv_nsec = 0;
 		*nonexist = (errno == ENOENT);
 		return 0;
 	}
 	*nonexist = 0;
-	*mtime = s.st_mtime;
+	mtime->tv_sec = s.st_mtime;
+#ifdef HAVE_STRUCT_STAT_ST_MTIMENSEC
+	mtime->tv_nsec = s.st_mtimensec;
+#elif defined(HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC)
+	mtime->tv_nsec = s.st_mtim.tv_nsec;
+#else
+	mtime->tv_nsec = 0;
+#endif
 	return 1;
 }
 
@@ -509,12 +518,14 @@ void
 namedb_read_zonefile(struct nsd* nsd, struct zone* zone, udb_base* taskudb,
 	udb_ptr* last_task)
 {
-	time_t mtime = 0;
+	struct timespec mtime;
 	int nonexist = 0;
 	unsigned int errors;
 	const char* fname;
 	if(!nsd->db || !zone || !zone->opts || !zone->opts->pattern->zonefile)
 		return;
+	mtime.tv_sec = 0;
+	mtime.tv_nsec = 0;
 	fname = config_make_zonefile(zone->opts, nsd);
 	if(!file_get_mtime(fname, &mtime, &nonexist)) {
 		if(nonexist) {
@@ -527,20 +538,21 @@ namedb_read_zonefile(struct nsd* nsd, struct zone* zone, udb_base* taskudb,
 		return;
 	} else {
 		const char* zone_fname = zone->filename;
-		time_t zone_mtime = zone->mtime;
+		struct timespec zone_mtime = zone->mtime;
 		if(nsd->db->udb) {
 			zone_fname = udb_zone_get_file_str(nsd->db->udb,
 				dname_name(domain_dname(zone->apex)),
 				domain_dname(zone->apex)->name_size);
-			zone_mtime = (time_t)udb_zone_get_mtime(nsd->db->udb,
+			udb_zone_get_mtime(nsd->db->udb,
 				dname_name(domain_dname(zone->apex)),
-				domain_dname(zone->apex)->name_size);
+				domain_dname(zone->apex)->name_size,
+				&zone_mtime);
 		}
 		/* if no zone_fname, then it was acquired in zone transfer,
 		 * see if the file is newer than the zone transfer
 		 * (regardless if this is a different file), because the
 		 * zone transfer is a different content source too */
-		if(!zone_fname && zone_mtime >= mtime) {
+		if(!zone_fname && timespec_compare(&zone_mtime, &mtime) >= 0) {
 			VERBOSITY(3, (LOG_INFO, "zonefile %s is older than "
 				"zone transfer in memory", fname));
 			return;
@@ -548,7 +560,8 @@ namedb_read_zonefile(struct nsd* nsd, struct zone* zone, udb_base* taskudb,
 		/* if zone_fname, then the file was acquired from reading it,
 		 * and see if filename changed or mtime newer to read it */
 		} else if(zone_fname && fname &&
-		   strcmp(zone_fname, fname) == 0 && zone_mtime >= mtime) {
+		   strcmp(zone_fname, fname) == 0 &&
+		   timespec_compare(&zone_mtime, &mtime) == 0) {
 			VERBOSITY(3, (LOG_INFO, "zonefile %s is not modified",
 				fname));
 			return;
@@ -614,7 +627,8 @@ namedb_read_zonefile(struct nsd* nsd, struct zone* zone, udb_base* taskudb,
 		zone->is_changed = 0;
 		/* store zone into udb */
 		if(nsd->db->udb) {
-			if(!write_zone_to_udb(nsd->db->udb, zone, mtime, fname)) {
+			if(!write_zone_to_udb(nsd->db->udb, zone, &mtime,
+				fname)) {
 				log_msg(LOG_ERR, "failed to store zone in db");
 			} else {
 				VERBOSITY(2, (LOG_INFO, "zone %s written to db",
@@ -639,7 +653,7 @@ namedb_read_zonefile(struct nsd* nsd, struct zone* zone, udb_base* taskudb,
 }
 
 void namedb_check_zonefile(struct nsd* nsd, udb_base* taskudb,
-	udb_ptr* last_task, zone_options_t* zopt)
+	udb_ptr* last_task, struct zone_options* zopt)
 {
 	zone_type* zone;
 	const dname_type* dname = (const dname_type*)zopt->node.key;
@@ -651,12 +665,12 @@ void namedb_check_zonefile(struct nsd* nsd, udb_base* taskudb,
 	namedb_read_zonefile(nsd, zone, taskudb, last_task);
 }
 
-void namedb_check_zonefiles(struct nsd* nsd, nsd_options_t* opt,
+void namedb_check_zonefiles(struct nsd* nsd, struct nsd_options* opt,
 	udb_base* taskudb, udb_ptr* last_task)
 {
-	zone_options_t* zo;
+	struct zone_options* zo;
 	/* check all zones in opt, create if not exist in main db */
-	RBTREE_FOR(zo, zone_options_t*, opt->zone_options) {
+	RBTREE_FOR(zo, struct zone_options*, opt->zone_options) {
 		namedb_check_zonefile(nsd, taskudb, last_task, zo);
 		if(nsd->signal_hint_shutdown) break;
 	}

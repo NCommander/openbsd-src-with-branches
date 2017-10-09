@@ -1,3 +1,4 @@
+.\"	$OpenBSD: getgid.2,v 1.18 2013/07/17 05:42:11 schwarze Exp $
 .\"	$NetBSD: getgid.2,v 1.5 1995/02/27 12:32:53 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,16 +30,15 @@
 .\"
 .\"     @(#)getgid.2	8.1 (Berkeley) 6/4/93
 .\"
-.Dd June 4, 1993
+.Dd $Mdocdate: July 17 2013 $
 .Dt GETGID 2
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm getgid ,
 .Nm getegid
 .Nd get group process identification
 .Sh SYNOPSIS
-.Fd #include <sys/types.h>
-.Fd #include <unistd.h>
+.In unistd.h
 .Ft gid_t
 .Fn getgid void
 .Ft gid_t
@@ -50,9 +46,9 @@
 .Sh DESCRIPTION
 The
 .Fn getgid
-function returns the real group ID of the calling process,
+function returns the real group ID of the calling process and the
 .Fn getegid
-returns the effective group ID of the calling process.
+function returns the effective group ID of the calling process.
 .Pp
 The real group ID is specified at login time.
 .Pp
@@ -62,7 +58,7 @@ during the execution of
 .Dq Em set-group-ID
 mode processes,
 .Fn getgid
-is used to determine the real-user-id of the calling process.
+is used to determine the real group ID of the calling process.
 .Sh ERRORS
 The
 .Fn getgid
@@ -71,12 +67,24 @@ and
 functions are always successful, and no return value is reserved to
 indicate an error.
 .Sh SEE ALSO
+.Xr getgroups 2 ,
+.Xr getresgid 2 ,
 .Xr getuid 2 ,
-.Xr setregid 2 ,
-.Xr setgid 3
+.Xr setgid 2 ,
+.Xr setregid 2
 .Sh STANDARDS
-.Fn Getgid
+The
+.Fn getgid
 and
 .Fn getegid
-conform to 
-.St -p1003.1-88 .
+functions conform to
+.St -p1003.1-2008 .
+.Sh HISTORY
+The
+.Fn getgid
+system call first appeared in
+.At v4 ,
+and
+.Fn getegid
+in
+.At v7 .

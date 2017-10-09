@@ -1,3 +1,4 @@
+/*	$OpenBSD: comp.c,v 1.9 2016/01/08 18:05:58 mestre Exp $	*/
 /*	$NetBSD: comp.c,v 1.4 1995/03/24 05:01:11 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)comp.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: comp.c,v 1.4 1995/03/24 05:01:11 cgd Exp $";
-#endif
-#endif /* not lint */
-
-# include	"mille.h"
+#include "mille.h"
 
 /*
  * @(#)comp.c	1.1 (Berkeley) 4/1/82
@@ -49,17 +38,18 @@ static char rcsid[] = "$NetBSD: comp.c,v 1.4 1995/03/24 05:01:11 cgd Exp $";
 
 # define	V_VALUABLE	40
 
-calcmove()
+void
+calcmove(void)
 {
-	register CARD		card;
-	register int		*value;
-	register PLAY		*pp, *op;
-	register bool		foundend, cango, canstop, foundlow;
-	register unsgn int	i, count200, badcount, nummin, nummax, diff;
-	register int		curmin, curmax;
-	register CARD		safe, oppos;
-	int			valbuf[HAND_SZ], count[NUM_CARDS];
-	bool			playit[HAND_SZ];
+	CARD		card;
+	int		*value;
+	PLAY		*pp, *op;
+	bool		foundend, cango, canstop, foundlow;
+	unsigned int	i, count200, badcount, nummin, nummax, diff;
+	int		curmin, curmax;
+	CARD		safe, oppos;
+	int		valbuf[HAND_SZ], count[NUM_CARDS];
+	bool		playit[HAND_SZ];
 
 	wmove(Score, ERR_Y, ERR_X);	/* get rid of error messages	*/
 	wclrtoeol(Score);
@@ -78,7 +68,7 @@ calcmove()
 		switch (card) {
 		  case C_STOP:	case C_CRASH:
 		  case C_FLAT:	case C_EMPTY:
-			if (playit[i] = canplay(pp, op, card))
+			if ((playit[i] = canplay(pp, op, card)))
 				canstop = TRUE;
 			goto norm;
 		  case C_LIMIT:
@@ -129,7 +119,7 @@ norm:
 	if (foundend)
 		foundend = !check_ext(TRUE);
 	for (i = 0; safe && i < HAND_SZ; i++) {
-		if (issafety(pp->hand[i])) {
+		if (is_safety(pp->hand[i])) {
 			if (onecard(op) || (foundend && cango && !canstop)) {
 #ifdef DEBUG
 				if (Debug)
@@ -165,7 +155,7 @@ playsafe:
 			playit[i] = cango;
 		}
 	}
-	if (!pp->can_go && !isrepair(pp->battle))
+	if (!pp->can_go && !is_repair(pp->battle))
 		Numneed[opposite(pp->battle)]++;
 redoit:
 	foundlow = (cango || count[C_END_LIMIT] != 0
@@ -181,7 +171,7 @@ redoit:
 	value = valbuf;
 	for (i = 0; i < HAND_SZ; i++) {
 		card = pp->hand[i];
-		if (issafety(card) || playit[i] == (cango != 0)) {
+		if (is_safety(card) || playit[i] == (cango != 0)) {
 #ifdef DEBUG
 			if (Debug)
 				fprintf(outf, "CALCMOVE: switch(\"%s\")\n",
@@ -344,8 +334,7 @@ normbad:
 						*value /= ++badcount;
 					if (op->mileage == 0)
 						*value += 5;
-					if ((card == C_LIMIT &&
-					     op->speed == C_LIMIT) ||
+					if ((op->speed == C_LIMIT) ||
 					    !op->can_go)
 						*value -= 5;
 					if (cango && pp->safety[S_RIGHT_WAY] !=
@@ -381,7 +370,7 @@ normbad:
 #endif
 		value++;
 	}
-	if (!pp->can_go && !isrepair(pp->battle))
+	if (!pp->can_go && !is_repair(pp->battle))
 		Numneed[opposite(pp->battle)]++;
 	if (cango) {
 play_it:
@@ -390,7 +379,7 @@ play_it:
 		Card_no = nummax;
 	}
 	else {
-		if (issafety(pp->hand[nummin])) { /* NEVER discard a safety */
+		if (is_safety(pp->hand[nummin])) { /* NEVER discard a safety */
 			nummax = nummin;
 			goto play_it;
 		}
@@ -404,17 +393,17 @@ play_it:
 /*
  * Return true if the given player could conceivably win with his next card.
  */
-onecard(pp)
-register PLAY	*pp;
+int
+onecard(const PLAY *pp)
 {
-	register CARD	bat, spd, card;
+	CARD	bat, spd, card;
 
 	bat = pp->battle;
 	spd = pp->speed;
 	card = -1;
-	if (pp->can_go || ((isrepair(bat) || bat == C_STOP || spd == C_LIMIT) &&
+	if (pp->can_go || ((is_repair(bat) || bat == C_STOP || spd == C_LIMIT) &&
 			   Numseen[S_RIGHT_WAY] != 0) ||
-	    bat >= 0 && Numseen[safety(bat)] != 0)
+	    (bat >= 0 && Numseen[safety(bat)] != 0))
 		switch (End - pp->mileage) {
 		  case 200:
 			if (pp->nummiles[C_200] == 2)
@@ -436,9 +425,8 @@ register PLAY	*pp;
 	return FALSE;
 }
 
-canplay(pp, op, card)
-register PLAY	*pp, *op;
-register CARD	card;
+int
+canplay(const PLAY *pp, const PLAY *op, CARD card)
 {
 	switch (card) {
 	  case C_200:
@@ -474,7 +462,7 @@ register CARD	card;
 		break;
 	  case C_GO:
 		if (!pp->can_go &&
-		    (isrepair(pp->battle) || pp->battle == C_STOP))
+		    (is_repair(pp->battle) || pp->battle == C_STOP))
 			return TRUE;
 		break;
 	  case C_END_LIMIT:

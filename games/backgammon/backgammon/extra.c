@@ -1,4 +1,4 @@
-/*	$NetBSD: extra.c,v 1.3 1995/03/21 15:05:01 cgd Exp $	*/
+/*	$OpenBSD: extra.c,v 1.7 2015/05/20 20:26:00 millert Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,80 +29,61 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)extra.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: extra.c,v 1.3 1995/03/21 15:05:01 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include "back.h"
-
-#ifdef DEBUG
-#include <stdio.h>
-FILE	*trace;
-#endif
+#include "backlocal.h"
 
 /*
  * dble()
  *	Have the current player double and ask opponent to accept.
  */
 
-dble ()  {
-	register int	resp;			/* response to y/n */
+void
+dble(void)
+{
+	int     resp;		/* response to y/n */
 
-	for (;;)  {
-		writel (" doubles.");		/* indicate double */
+	for (;;) {
+		addstr(" doubles.");	/* indicate double */
 
-		if (cturn == -pnum)  {		/* see if computer accepts */
-			if (dblgood())  {	    /* guess not */
-				writel ("  Declined.\n");
+		if (cturn == -pnum) {	/* see if computer accepts */
+			if (dblgood()) {	/* guess not */
+				addstr("  Declined.\n");
 				nexturn();
-				cturn *= -2;	    /* indicate loss */
+				cturn *= -2;	/* indicate loss */
 				return;
-			} else  {		    /* computer accepts */
-				writel ("  Accepted.\n");
-				gvalue *= 2;	    /* double game value */
+			} else {/* computer accepts */
+				addstr("  Accepted.\n");
+				gvalue *= 2;	/* double game value */
 				dlast = cturn;
-				if (tflag)
-					gwrite();
+				gwrite();
 				return;
 			}
 		}
+		/* ask if player accepts */
+		printw("  Does %s accept?", cturn == 1 ? color[2] : color[3]);
 
-						/* ask if player accepts */
-		writel ("  Does ");
-		writel (cturn == 1? color[2]: color[3]);
-		writel (" accept?");
-
-						/* get response from yorn,
-						 * a "2" means he said "p"
-						 * for print board. */
-		if ((resp = yorn ('R')) == 2)  {
-			writel ("  Reprint.\n");
-			buflush();
+		/* get response from yorn; a "2" means he said "p" to print board. */
+		if ((resp = yorn ('r')) == 2) {
+			addstr("  Reprint.\n");
+			moveplayers();
 			wrboard();
-			writel (*Colorptr);
+			addstr(*Colorptr);
 			continue;
 		}
-
-						/* check response */
-		if (resp)  {
-						    /* accepted */
+		/* check response */
+		if (resp) {
+			/* accepted */
 			gvalue *= 2;
 			dlast = cturn;
-			if (tflag)
-				gwrite();
+			gwrite();
 			return;
 		}
-
-		nexturn ();			/* declined */
+		nexturn();	/* declined */
 		cturn *= -2;
 		return;
 	}
 }
-
+
 /*
  * dblgood ()
  *	Returns 1 if the computer would double in this position.  This
@@ -118,43 +95,43 @@ dble ()  {
  * behind.
  */
 
-dblgood ()  {
-	register int	n;			/* accumulated judgment */
-	register int	OFFC = *offptr;		/* no. of computer's men off */
-	register int	OFFO = *offopp;		/* no. of player's men off */
+int
+dblgood(void)
+{
+	int     n;		/* accumulated judgment */
+	int     OFFC = *offptr;	/* no. of computer's men off */
+	int     OFFO = *offopp;	/* no. of player's men off */
 
 #ifdef DEBUG
-	register int	i;
-	if (trace == NULL)
-		trace = fopen ("bgtrace","w");
+	int     i;
+	if (ftrace == NULL)
+		ftrace = fopen("bgtrace", "w");
+		printf ("fopen\n");
 #endif
 
-						/* get real pip value */
-	n = eval()*cturn;
+	/* get real pip value */
+	n = eval() * cturn;
 #ifdef DEBUG
-	fputs ("\nDoubles:\nBoard: ",trace);
+	fputs("\nDoubles:\nBoard: ", ftrace);
 	for (i = 0; i < 26; i++)
-		fprintf (trace," %d",board[i]);
-	fprintf (trace,"\n\tpip = %d, ",n);
+		fprintf(ftrace, " %d", board[i]);
+	fprintf(ftrace, "\n\tpip = %d, ", n);
 #endif
 
-						/* below adjusts pip value
-						 * according to position
-						 * judgments */
+	/* below adjusts pip value according to position judgments */
 
-						/* check men moving off
-						 * board */
-	if (OFFC > -15 || OFFO > -15)  {
-		if (OFFC < 0 && OFFO < 0)  {
+	/* check men moving off board */
+	if (OFFC > -15 || OFFO > -15) {
+		if (OFFC < 0 && OFFO < 0) {
 			OFFC += 15;
 			OFFO += 15;
-			n +=((OFFC-OFFO)*7)/2;
-		} else if (OFFC < 0)  {
+			n +=((OFFC - OFFO) * 7) / 2;
+		} else if (OFFC < 0) {
 			OFFC += 15;
-			n -= OFFO*7/2;
-		} else if (OFFO < 0)  {
+			n -= OFFO * 7 / 2;
+		} else if (OFFO < 0) {
 			OFFO += 15;
-			n += OFFC*7/2;
+			n += OFFC * 7 / 2;
 		}
 		if (OFFC < 8 && OFFO > 8)
 			n -= 7;
@@ -168,92 +145,91 @@ dblgood ()  {
 			n += 7;
 		if (OFFO < 12 && OFFC > 12)
 			n += 7;
-		n += ((OFFC-OFFO)*7)/2;
+		n += ((OFFC - OFFO) * 7) / 2;
 	}
 
 #ifdef DEBUG
-	fprintf (trace,"off = %d, ",n);
+	fprintf(ftrace, "off = %d, ", n);
 #endif
 
-						/* see if men are trapped */
+	/* see if men are trapped */
 	n -= freemen(bar);
 	n += freemen(home);
-	n += trapped(home,-cturn);
-	n -= trapped(bar,cturn);
+	n += trapped(home, -cturn);
+	n -= trapped(bar, cturn);
 
 #ifdef DEBUG
-	fprintf (trace,"free = %d\n",n);
-	fprintf (trace,"\tOFFC = %d, OFFO = %d\n",OFFC,OFFO);
-	fflush (trace);
+	fprintf(ftrace, "free = %d\n", n);
+	fprintf(ftrace, "\tOFFC = %d, OFFO = %d\n", OFFC, OFFO);
+	fflush(ftrace);
 #endif
 
-						/* double if 2-3 moves ahead */
-	if (n > 10+rnum(7))
+	/* double if 2-3 moves ahead */
+	if (n > (int)(10 + rnum(7)))
 		return(1);
-	return (0);
+	return(0);
 }
-
-freemen (b)
-int	b;
 
+int
+freemen(int b)
 {
-	register int	i, inc, lim;
+	int     i, inc, lim;
 
-	odds(0,0,0);
+	odds(0, 0, 0);
 	if (board[b] == 0)
 		return (0);
-	inc = (b == 0? 1: -1);
-	lim = (b == 0? 7: 18);
-	for (i = b+inc; i != lim; i += inc)
-		if (board[i]*inc < -1)
-			odds(abs(b-i),0,abs(board[b]));
+	inc = (b == 0 ? 1 : -1);
+	lim = (b == 0 ? 7 : 18);
+	for (i = b + inc; i != lim; i += inc)
+		if (board[i] * inc < -1)
+			odds(abs(b - i), 0, abs(board[b]));
 	if (abs(board[b]) == 1)
-		return ((36-count())/5);
-	return (count()/5);
+		return ((36 - count()) / 5);
+	return (count() / 5);
 }
-
-trapped (n,inc)
-int	n, inc;
 
+int
+trapped(int n, int inc)
 {
-	register int	i, j, k;
-	int		c, l, ct;
+	int     i, j, k;
+	int     c, l, ct;
 
 	ct = 0;
-	l = n+7*inc;
-	for (i = n+inc; i != l; i += inc)  {
-		odds (0,0,0);
-		c = abs(i-l);
-		if (board[i]*inc > 0)  {
+	l = n + 7 * inc;
+	for (i = n + inc; i != l; i += inc) {
+		odds(0, 0, 0);
+		c = abs(i - l);
+		if (board[i] * inc > 0) {
 			for (j = c; j < 13; j++)
-				if (board[i+inc*j]*inc < -1)  {
+				if (board[i + inc * j] * inc < -1) {
 					if (j < 7)
-						odds (j,0,1);
+						odds(j, 0, 1);
 					for (k = 1; k < 7 && k < j; k++)
-						if (j-k < 7)
-							odds (k,j-k,1);
+						if (j - k < 7)
+							odds(k, j - k, 1);
 				}
-			ct += abs(board[i])*(36-count());
+			ct += abs(board[i]) * (36 - count());
 		}
 	}
-	return (ct/5);
+	return(ct / 5);
 }
-
-eval ()  {
 
-	register int	i, j;
+int
+eval(void)
+{
+	int     i, j;
 
 	for (j = i = 0; i < 26; i++)
-		j += (board[i] >= 0 ? i*board[i] : (25-i)*board[i]);
+		j += (board[i] >= 0 ? i * board[i] : (25 - i) * board[i]);
 
 	if (off[1] >= 0)
-		j += 25*off[1];
+		j += 25 * off[1];
 	else
-		j += 25*(off[1]+15);
+		j += 25 * (off[1] + 15);
 
 	if (off[0] >= 0)
-		j -= 25*off[0];
+		j -= 25 * off[0];
 	else
-		j -= 25*(off[0]+15);
-	return (j);
+		j -= 25 * (off[0] + 15);
+	return(j);
 }

@@ -1,4 +1,4 @@
-.\"	$NetBSD: exec.3,v 1.5 1995/02/27 03:42:53 cgd Exp $
+.\"	$OpenBSD: exec.3,v 1.27 2014/08/18 04:48:22 guenther Exp $
 .\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,21 +27,19 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)exec.3	8.3 (Berkeley) 1/24/94
-.\"
-.Dd January 24, 1994
-.Dt EXEC 3
+.Dd $Mdocdate: August 18 2014 $
+.Dt EXECL 3
 .Os
 .Sh NAME
 .Nm execl ,
 .Nm execlp ,
 .Nm execle ,
-.Nm exect ,
 .Nm execv ,
-.Nm execvp
+.Nm execvp ,
+.Nm execvpe
 .Nd execute a file
 .Sh SYNOPSIS
-.Fd #include <unistd.h>
+.In unistd.h
 .Vt extern char **environ;
 .Ft int
 .Fn execl "const char *path" "const char *arg" ...
@@ -54,21 +48,20 @@
 .Ft int
 .Fn execle "const char *path" "const char *arg" ... "char *const envp[]"
 .Ft int
-.Fn exect "const char *path" "char *const argv[]"  "char *const envp[]"
-.Ft int
 .Fn execv "const char *path" "char *const argv[]"
 .Ft int
 .Fn execvp "const char *file" "char *const argv[]"
+.Ft int
+.Fn execvpe "const char *file" "char *const argv[]" "char *const envp[]"
 .Sh DESCRIPTION
 The
 .Nm exec
-family of functions replaces the current process image with a
+family of functions replace the current process image with a
 new process image.
-The functions described in this manual page are front-ends for the function
-.Xr execve 2 .
-(See the manual page for
-.Xr execve
-for detailed information about the replacement of the current process.)
+The functions described in this manual page are front-ends for the
+.Xr execve 2
+system call; see that manual page for detailed information
+about the replacement of the current process.
 .Pp
 The initial argument for these functions is the pathname of a file which
 is to be executed.
@@ -81,50 +74,47 @@ and subsequent ellipses in the
 and
 .Fn execle
 functions can be thought of as
-.Em arg0 ,
-.Em arg1 ,
+.Fa arg0 ,
+.Fa arg1 ,
 \&...,
-.Em argn .
-Together they describe a list of one or more pointers to null-terminated
+.Fa argn .
+Together they describe a list of one or more pointers to
+NUL-terminated
 strings that represent the argument list available to the executed program.
 The first argument, by convention, should point to the file name associated
 with the file being executed.
 The list of arguments
 .Em must
-be terminated by a
-.Dv NULL
-pointer.
+be terminated by a null pointer.
 .Pp
 The
-.Fn exect ,
 .Fn execv ,
-and
 .Fn execvp
-functions provide an array of pointers to null-terminated strings that
+and
+.Fn execvpe
+functions provide an array of pointers to
+NUL-terminated strings that
 represent the argument list available to the new program.
 The first argument, by convention, should point to the file name associated
-with the file begin executed.
+with the file being executed.
 The array of pointers
-.Sy must
-be terminated by a
-.Dv NULL
-pointer.
+.Em must
+be terminated by a null pointer itself.
 .Pp
 The
 .Fn execle
 and
-.Fn exect
+.Fn execvpe
 functions also specify the environment of the executed process by following
-the
-.Dv NULL
+the null
 pointer that terminates the list of arguments in the parameter list
-or the pointer to the argv array with an additional parameter.
-This additional parameter is an array of pointers to null-terminated strings
-and
+or the pointer to the
+.Va argv
+array with an additional parameter.
+This additional parameter is an array of pointers to NUL-terminated
+strings and
 .Em must
-be terminated by a
-.Dv NULL
-pointer.
+be terminated by a null pointer itself.
 The other functions take the environment for the new process image from the
 external variable
 .Va environ
@@ -133,24 +123,28 @@ in the current process.
 Some of these functions have special semantics.
 .Pp
 The functions
-.Fn execlp
-and
+.Fn execlp ,
 .Fn execvp
+and
+.Fn execvpe
 will duplicate the actions of the shell in searching for an executable file
 if the specified file name does not contain a slash
-.Dq Li /
+.Pq Sq \&/
 character.
 The search path is the path specified in the environment by
-.Dq Ev PATH
+.Ev PATH
 variable.
-If this variable isn't specified, the default path
-.Dq Ev /bin:/usr/bin:
-is
-used.
+If this variable isn't specified,
+.Dv _PATH_DEFPATH
+from
+.In paths.h
+is used instead, its value being:
+.Pa /usr/bin:/bin:/usr/sbin:/sbin:/usr/X11R6/bin:/usr/local/bin
+.Pp
 In addition, certain errors are treated specially.
 .Pp
 If permission is denied for a file (the attempted
-.Xr execve
+.Xr execve 2
 returned
 .Er EACCES ) ,
 these functions will continue searching the rest of
@@ -161,42 +155,31 @@ set to
 .Er EACCES .
 .Pp
 If the header of a file isn't recognized (the attempted
-.Xr execve
+.Xr execve 2
 returned
 .Er ENOEXEC ) ,
 these functions will execute the shell with the path of
 the file as its first argument.
 (If this attempt fails, no further searching is done.)
-.Pp
-If the file is currently busy (the attempted
-.Xr execve
-returned
-.Er ETXTBUSY ) ,
-these functions will sleep for several seconds,
-periodically re-attempting to execute the file.
-.Pp
-The function
-.Fn exect
-executes a file with the program tracing facilities enabled (see
-.Xr ptrace 2 ) .
 .Sh RETURN VALUES
 If any of the
-.Xr exec
-functions returns, an error will have occurred.
+.Nm exec
+functions return, an error has occurred.
 The return value is \-1, and the global variable
 .Va errno
 will be set to indicate the error.
 .Sh FILES
 .Bl -tag -width /bin/sh -compact
 .It Pa /bin/sh
-The shell.
+default shell program
 .El
 .Sh ERRORS
-.Fn Execl ,
+.Fn execl ,
 .Fn execle ,
-.Fn execlp
+.Fn execlp ,
+.Fn execvp ,
 and
-.Fn execvp
+.Fn execvpe
 may fail and set
 .Va errno
 for any of the errors specified for the library functions
@@ -204,8 +187,6 @@ for any of the errors specified for the library functions
 and
 .Xr malloc 3 .
 .Pp
-.Fn Exect
-and
 .Fn execv
 may fail and set
 .Va errno
@@ -215,19 +196,17 @@ for any of the errors specified for the library function
 .Xr sh 1 ,
 .Xr execve 2 ,
 .Xr fork 2 ,
-.Xr trace 2 ,
-.Xr environ 7 ,
+.Xr ktrace 2 ,
 .Xr ptrace 2 ,
-.Xr environ 7 ,
-.Sh COMPATIBILITY
+.Xr environ 7
+.Sh STANDARDS
 Historically, the default path for the
 .Fn execlp
 and
 .Fn execvp
 functions was
-.Dq Pa :/bin:/usr/bin .
-This was changed to place the current directory last to enhance system
-security.
+.Pa \&.:/bin:/usr/bin .
+This was changed to improve security and behaviour.
 .Pp
 The behavior of
 .Fn execlp
@@ -249,8 +228,8 @@ and
 .Er E2BIG ,
 upon which they returned.
 They now return if any error other than the ones described above occurs.
-.Sh STANDARDS
-.Fn Execl ,
+.Pp
+.Fn execl ,
 .Fn execv ,
 .Fn execle ,
 .Fn execlp
@@ -258,3 +237,24 @@ and
 .Fn execvp
 conform to
 .St -p1003.1-88 .
+.Fn execvpe
+is a GNU extension.
+.Sh HISTORY
+The functions
+.Fn execl
+and
+.Fn execv
+first appeared in
+.At v2 .
+A predecessor to
+.Fn execvp ,
+.Fn pexec ,
+first appeared in the Programmer's Workbench (PWB/UNIX).
+The functions
+.Fn execle ,
+.Fn execlp ,
+.Fn execve ,
+and
+.Fn execvp
+first appeared in
+.At v7 .

@@ -1,4 +1,5 @@
 %{
+/*	$OpenBSD: lex.l,v 1.4 2009/10/27 23:59:23 deraadt Exp $	*/
 /*	$NetBSD: lex.l,v 1.3 1995/03/21 15:04:15 cgd Exp $	*/
 
 /*-
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,15 +43,8 @@
  * For more info on this and all of my stuff, mail edjames@berkeley.edu.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lex.l	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: lex.l,v 1.3 1995/03/21 15:04:15 cgd Exp $";
-#endif
-#endif /* not lint */
+#include "grammar.h"
 
-#include "y.tab.h"
 extern int	line;
 
 %}

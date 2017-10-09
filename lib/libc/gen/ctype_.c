@@ -1,5 +1,4 @@
-/*	$NetBSD: ctype_.c,v 1.12 1995/02/25 15:39:28 cgd Exp $	*/
-
+/*	$OpenBSD: ctype_.c,v 1.11 2015/09/13 11:38:08 guenther Exp $ */
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -17,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,23 +33,16 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-/*static char *sccsid = "from: @(#)ctype_.c	5.6 (Berkeley) 6/1/90";*/
-#else
-static char rcsid[] = "$NetBSD: ctype_.c,v 1.12 1995/02/25 15:39:28 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <ctype.h>
+#include "ctype_private.h"
 
-const char _C_ctype_[1 + 256] = {
+const char _C_ctype_[1 + CTYPE_NUM_CHARS] = {
 	0,
 	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C,
 	_C,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C,	_C,
 	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C,
 	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C,
-	_S|_B,	_P,	_P,	_P,	_P,	_P,	_P,	_P,
+   _S|(char)_B,	_P,	_P,	_P,	_P,	_P,	_P,	_P,
 	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P,
 	_N,	_N,	_N,	_N,	_N,	_N,	_N,	_N,
 	_N,	_N,	_P,	_P,	_P,	_P,	_P,	_P,
@@ -65,7 +53,27 @@ const char _C_ctype_[1 + 256] = {
 	_P,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L,
 	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L,
 	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L,
-	_L,	_L,	_L,	_P,	_P,	_P,	_P,	_C
+	_L,	_L,	_L,	_P,	_P,	_P,	_P,	_C,
+
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* 80 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* 88 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* 90 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* 98 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* A0 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* A8 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* B0 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* B8 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* C0 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* C8 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* D0 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* D8 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* E0 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* E8 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0, /* F0 */
+	 0,	 0,	 0,	 0,	 0,	 0,	 0,	 0  /* F8 */
 };
 
 const char *_ctype_ = _C_ctype_;
+#if 0
+DEF_STRONG(_ctype_);
+#endif

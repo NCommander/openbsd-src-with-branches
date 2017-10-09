@@ -1,0 +1,36 @@
+dnl	$OpenBSD: contents,v 1.17 2015/12/30 23:49:00 rpe Exp $
+TopPart
+
+OpenBSDminiroot
+			It can be copied to the swap partition of an existing
+			UniOS or OpenBSD installation, or to the beginning of
+			a disk, to allow installing or upgrading to OpenBSD
+			OSREV.
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDbsdmp
+
+OpenBSDrd
+
+	boot		The OpenBSD/MACHINE boot block.
+
+DistributionDescription(eight)
+
+OpenBSDbase(94540817,218591232)
+
+OpenBSDcomp(56828300,175366144)
+
+OpenBSDgame(2691658,6434816)
+
+OpenBSDman(7328378,31369216)
+
+OpenBSDxbase(12672514,36667392)
+
+OpenBSDxfont(40302345,59377664)
+
+OpenBSDxserv(3159249,7804928)
+
+OpenBSDxshare(4530950,30214144)

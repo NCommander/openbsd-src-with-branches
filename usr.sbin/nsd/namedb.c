@@ -33,7 +33,12 @@ allocate_domain_info(domain_table_type* table,
 
 	result = (domain_type *) region_alloc(table->region,
 					      sizeof(domain_type));
-	result->dname = dname_partial_copy(
+#ifdef USE_RADIX_TREE
+	result->dname 
+#else
+	result->node.key
+#endif
+		= dname_partial_copy(
 		table->region, dname, domain_dname(parent)->label_count + 1);
 	result->parent = parent;
 	result->wildcard_child_closest_match = result;
@@ -159,7 +164,7 @@ int domain_is_prehash(domain_table_type* table, domain_type* domain)
 
 /** remove domain node from NSEC3 tree in hash space */
 void
-zone_del_domain_in_hash_tree(rbtree_t* tree, rbnode_t* node)
+zone_del_domain_in_hash_tree(rbtree_type* tree, rbnode_type* node)
 {
 	if(!node->key)
 		return;
@@ -252,9 +257,13 @@ do_deldomain(namedb_type* db, domain_type* domain)
 			domain_previous_existing_child(domain);
 
 	/* actual removal */
+#ifdef USE_RADIX_TREE
 	radix_delete(db->domains->nametree, domain->rnode);
-	region_recycle(db->domains->region, (dname_type*)domain->dname,
-		dname_total_size(domain->dname));
+#else
+	rbtree_delete(db->domains->names_to_domains, domain->node.key);
+#endif
+	region_recycle(db->domains->region, domain_dname(domain),
+		dname_total_size(domain_dname(domain)));
 	region_recycle(db->domains->region, domain, sizeof(domain_type));
 }
 
@@ -271,9 +280,9 @@ domain_table_deldomain(namedb_type* db, domain_type* domain)
 
 /** clear hash tree */
 void
-hash_tree_clear(rbtree_t* tree)
+hash_tree_clear(rbtree_type* tree)
 {
-	rbnode_t* n;
+	rbnode_type* n;
 	if(!tree) return;
 
 	/* note that elements are no longer in the tree */
@@ -284,19 +293,20 @@ hash_tree_clear(rbtree_t* tree)
 	tree->root = RBTREE_NULL;
 }
 
-void hash_tree_delete(region_type* region, rbtree_t* tree)
+void hash_tree_delete(region_type* region, rbtree_type* tree)
 {
-	region_recycle(region, tree, sizeof(rbtree_t));
+	region_recycle(region, tree, sizeof(rbtree_type));
 }
 
 /** add domain nsec3 node to hashedspace tree */
-void zone_add_domain_in_hash_tree(region_type* region, rbtree_t** tree,
+void zone_add_domain_in_hash_tree(region_type* region, rbtree_type** tree,
 	int (*cmpf)(const void*, const void*),
-	domain_type* domain, rbnode_t* node)
+	domain_type* domain, rbnode_type* node)
 {
 	if(!*tree)
 		*tree = rbtree_create(region, cmpf);
-	memset(node, 0, sizeof(rbnode_t));
+	if(node->key) return;
+	memset(node, 0, sizeof(rbnode_type));
 	node->key = domain;
 	rbtree_insert(*tree, node);
 }
@@ -313,7 +323,12 @@ domain_table_create(region_type* region)
 	origin = dname_make(region, (uint8_t *) "", 0);
 
 	root = (domain_type *) region_alloc(region, sizeof(domain_type));
-	root->dname = origin;
+#ifdef USE_RADIX_TREE
+	root->dname
+#else
+	root->node.key
+#endif
+		= origin;
 	root->parent = NULL;
 	root->wildcard_child_closest_match = root;
 	root->rrsets = NULL;
@@ -330,9 +345,15 @@ domain_table_create(region_type* region)
 	result = (domain_table_type *) region_alloc(region,
 						    sizeof(domain_table_type));
 	result->region = region;
+#ifdef USE_RADIX_TREE
 	result->nametree = radix_tree_create(region);
 	root->rnode = radname_insert(result->nametree, dname_name(root->dname),
 		root->dname->name_size, root);
+#else
+	result->names_to_domains = rbtree_create(
+		region, (int (*)(const void *, const void *)) dname_compare);
+	rbtree_insert(result->names_to_domains, (rbnode_type *) root);
+#endif
 
 	result->root = root;
 	result->numlist_last = root;
@@ -357,9 +378,13 @@ domain_table_search(domain_table_type *table,
 	assert(closest_match);
 	assert(closest_encloser);
 
+#ifdef USE_RADIX_TREE
 	exact = radname_find_less_equal(table->nametree, dname_name(dname),
 		dname->name_size, (struct radnode**)closest_match);
 	*closest_match = (domain_type*)((*(struct radnode**)closest_match)->elem);
+#else
+	exact = rbtree_find_less_equal(table->names_to_domains, dname, (rbnode_type **) closest_match);
+#endif
 	assert(*closest_match);
 
 	*closest_encloser = *closest_match;
@@ -416,9 +441,13 @@ domain_table_insert(domain_table_type* table,
 			result = allocate_domain_info(table,
 						      dname,
 						      closest_encloser);
+#ifdef USE_RADIX_TREE
 			result->rnode = radname_insert(table->nametree,
 				dname_name(result->dname),
 				result->dname->name_size, result);
+#else
+			rbtree_insert(table->names_to_domains, (rbnode_type *) result);
+#endif
 
 			/*
 			 * If the newly added domain name is larger
@@ -533,7 +562,7 @@ domain_find_zone(namedb_type* db, domain_type* domain)
 }
 
 zone_type *
-domain_find_parent_zone(zone_type* zone)
+domain_find_parent_zone(namedb_type* db, zone_type* zone)
 {
 	rrset_type* rrset;
 
@@ -544,6 +573,10 @@ domain_find_parent_zone(zone_type* zone)
 			return rrset->zone;
 		}
 	}
+	/* the NS record in the parent zone above this zone is not present,
+	 * workaround to find that parent zone anyway */
+	if(zone->apex->parent)
+		return domain_find_zone(db, zone->apex->parent);
 	return NULL;
 }
 
@@ -558,6 +591,18 @@ domain_find_ns_rrsets(domain_type* domain, zone_type* zone, rrset_type **ns)
 	}
 
 	*ns = NULL;
+	return NULL;
+}
+
+domain_type *
+find_dname_above(domain_type* domain, zone_type* zone)
+{
+	domain_type* d = domain->parent;
+	while(d && d != zone->apex) {
+		if(domain_find_rrset(d, zone, TYPE_DNAME))
+			return d;
+		d = d->parent;
+	}
 	return NULL;
 }
 

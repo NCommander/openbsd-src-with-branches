@@ -1,4 +1,5 @@
-/*	$NetBSD: subr_xxx.c,v 1.9 1994/06/29 06:33:03 cgd Exp $	*/
+/*	$OpenBSD: subr_xxx.c,v 1.14 2015/03/14 03:38:50 jsg Exp $	*/
+/*	$NetBSD: subr_xxx.c,v 1.10 1996/02/04 02:16:51 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,14 +38,14 @@
  */
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/conf.h>
 
-#include <machine/cpu.h>
 
 /*
  * Unsupported device function (e.g. writing to read-only device).
  */
 int
-enodev()
+enodev(void)
 {
 
 	return (ENODEV);
@@ -58,7 +55,7 @@ enodev()
  * Unconfigured device function; driver not configured.
  */
 int
-enxio()
+enxio(void)
 {
 
 	return (ENXIO);
@@ -68,7 +65,7 @@ enxio()
  * Unsupported ioctl function.
  */
 int
-enoioctl()
+enoioctl(void)
 {
 
 	return (ENOTTY);
@@ -80,7 +77,7 @@ enoioctl()
  * that is not supported by the current system binary.
  */
 int
-enosys()
+enosys(void)
 {
 
 	return (ENOSYS);
@@ -91,7 +88,7 @@ enosys()
  * on a specific object or file type.
  */
 int
-eopnotsupp()
+eopnotsupp(void *v)
 {
 
 	return (EOPNOTSUPP);
@@ -101,8 +98,67 @@ eopnotsupp()
  * Generic null operation, always returns success.
  */
 int
-nullop()
+nullop(void *v)
 {
 
 	return (0);
+}
+
+struct bdevsw *
+bdevsw_lookup(dev_t dev)
+{
+	return (&bdevsw[major(dev)]);
+}
+
+struct cdevsw *
+cdevsw_lookup(dev_t dev)
+{
+	return (&cdevsw[major(dev)]);
+}
+
+/*
+ * Convert a character device number to a block device number.
+ */
+dev_t
+chrtoblk(dev_t dev)
+{
+	int blkmaj;
+
+	if (major(dev) >= nchrdev || major(dev) >= nchrtoblktbl)
+		return (NODEV);
+	blkmaj = chrtoblktbl[major(dev)];
+	if (blkmaj == NODEV)
+		return (NODEV);
+	return (makedev(blkmaj, minor(dev)));
+}
+
+/*
+ * Convert a block device number to a character device number.
+ */
+dev_t
+blktochr(dev_t dev)
+{
+	int blkmaj = major(dev);
+	int i;
+
+	if (blkmaj >= nblkdev)
+		return (NODEV);
+	for (i = 0; i < nchrtoblktbl; i++)
+		if (blkmaj == chrtoblktbl[i])
+			return (makedev(i, minor(dev)));
+	return (NODEV);
+}
+
+/*
+ * Check that we're in a context where it's okay to sleep.
+ */
+void
+assertwaitok(void)
+{
+	splassert(IPL_NONE);
+#ifdef DIAGNOSTIC
+	if (curcpu()->ci_mutex_level != 0)
+		panic("assertwaitok: non-zero mutex count: %d",
+		    curcpu()->ci_mutex_level);
+#endif
 }

@@ -1,4 +1,5 @@
-.TH TBL-DATA-EMPTY 1 "January 28, 2015" OpenBSD
+.\" $OpenBSD$
+.TH TBL-DATA-EMPTY 1 "January 28, 2015"
 .SH NAME
 tbl-data-empty \- empty table
 .SH DESCRIPTION

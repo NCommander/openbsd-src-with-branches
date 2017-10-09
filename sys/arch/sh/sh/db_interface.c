@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: db_interface.c,v 1.9 2017/01/21 05:42:03 guenther Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.37 2006/09/06 00:11:49 uwe Exp $	*/
 
 /*-
@@ -30,6 +30,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/user.h>
 
 #include <uvm/uvm_extern.h>
@@ -55,7 +56,6 @@ db_regs_t ddb_regs;		/* register state */
 #include <ddb/db_command.h>
 #include <ddb/db_extern.h>
 #include <ddb/db_output.h>
-#include <ddb/db_run.h>
 #include <ddb/db_var.h>
 
 void kdb_printtrap(u_int, int);
@@ -73,7 +73,7 @@ void db_frame_cmd(db_expr_t, int, db_expr_t, char *);
 void __db_print_symbol(db_expr_t);
 char *__db_procname_by_asid(int);
 
-const struct db_command db_machine_command_table[] = {
+struct db_command db_machine_command_table[] = {
 	{ "tlb",	db_tlbdump_cmd,		0,	NULL },
 	{ "cache",	db_cachedump_cmd,	0,	NULL },
 	{ "frame",	db_frame_cmd,		0,	NULL },
@@ -84,6 +84,13 @@ const struct db_command db_machine_command_table[] = {
 };
 
 int db_active;
+
+void
+db_machine_init(void)
+{
+
+	db_machine_commands_install(db_machine_command_table);
+}
 
 void
 kdb_printtrap(u_int type, int code)
@@ -101,7 +108,7 @@ kdb_printtrap(u_int type, int code)
 }
 
 int
-kdb_trap(int type, int code, db_regs_t *regs)
+db_ktrap(int type, int code, db_regs_t *regs)
 {
 	extern label_t *db_recover;
 	int s;
@@ -139,14 +146,11 @@ kdb_trap(int type, int code, db_regs_t *regs)
 	return 1;
 }
 
-#if 0
 void
-Debugger()
+db_enter(void)
 {
-
 	__asm volatile("trapa %0" :: "i"(_SH_TRA_BREAK));
 }
-#endif
 
 #define	M_BSR	0xf000
 #define	I_BSR	0xb000
@@ -363,11 +367,11 @@ char *
 __db_procname_by_asid(int asid)
 {
 	static char notfound[] = "---";
-	struct proc *p;
+	struct process *pr;
 
-	LIST_FOREACH(p, &allproc, p_list) {
-		if (p->p_vmspace->vm_map.pmap->pm_asid == asid)
-			return (p->p_comm);
+	LIST_FOREACH(pr, &allprocess, ps_list) {
+		if (pr->ps_vmspace->vm_map.pmap->pm_asid == asid)
+			return (pr->ps_comm);
 	}
 
 	return (notfound);
@@ -551,6 +555,7 @@ db_frame_cmd(db_expr_t addr, int have_addr, db_expr_t count, char *modif)
 		TF(ubc);
 		TF(spc);
 		TF(ssr);
+		TF(gbr);
 		TF(macl);
 		TF(mach);
 		TF(pr);
@@ -633,7 +638,7 @@ db_stackcheck_cmd(db_expr_t addr, int have_addr, db_expr_t count,
 		    pcb->pcb_sf.sf_r7_bank, i, i * 100 / MAX_STACK,
 		    (vaddr_t)pcb + PAGE_SIZE, j, j * 100 / MAX_FRAME,
 		    j / sizeof(struct trapframe),
-		    p->p_comm);
+		    p->p_p->ps_comm);
 	}
 #undef	MAX_STACK
 #undef	MAX_FRAME

@@ -393,6 +393,28 @@ write_socket(int s, const void *buf, size_t size)
 	return 1;
 }
 
+void get_time(struct timespec* t)
+{
+	struct timeval tv;
+#ifdef HAVE_CLOCK_GETTIME
+	/* first try nanosecond precision */
+	if(clock_gettime(CLOCK_REALTIME, t)>=0) {
+		return; /* success */
+	}
+	log_msg(LOG_ERR, "clock_gettime: %s", strerror(errno));
+#endif
+	/* try millisecond precision */
+	if(gettimeofday(&tv, NULL)>=0) {
+		t->tv_sec = tv.tv_sec;
+		t->tv_nsec = tv.tv_usec*1000;
+		return; /* success */
+	}
+	log_msg(LOG_ERR, "gettimeofday: %s", strerror(errno));
+	/* whole seconds precision */
+	t->tv_sec = time(0);
+	t->tv_nsec = 0;
+}
+
 int
 timespec_compare(const struct timespec *left,
 		 const struct timespec *right)
@@ -465,6 +487,10 @@ strtoserial(const char* nptr, const char** endptr)
 		case '7':
 		case '8':
 		case '9':
+			if((i*10)/10 != i)
+				/* number too large, return i
+				 * with *endptr != 0 as a failure*/
+				return i;
 			i *= 10;
 			i += (**endptr - '0');
 			break;

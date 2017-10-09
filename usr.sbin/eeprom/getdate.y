@@ -1,108 +1,27 @@
 %{
-/*	$NetBSD: getdate.y,v 1.1 1995/07/13 18:14:01 thorpej Exp $	*/
+/*	$OpenBSD: getdate.y,v 1.9 2013/12/03 01:48:37 millert Exp $	*/
 
 /*
-**
 **  Originally written by Steven M. Bellovin <smb@research.att.com> while
 **  at the University of North Carolina at Chapel Hill.  Later tweaked by
 **  a couple of people on Usenet.  Completely overhauled by Rich $alz
 **  <rsalz@bbn.com> and Jim Berets <jberets@bbn.com> in August, 1990;
-**  send any email to Rich.
 **
-**  This grammar has eight shift/reduce conflicts.
+**  This grammar has 10 shift/reduce conflicts.
 **
 **  This code is in the public domain and has no copyright.
 */
-/* SUPPRESS 287 on yaccpar_sccsid *//* Unusd static variable */
+/* SUPPRESS 287 on yaccpar_sccsid *//* Unused static variable */
 /* SUPPRESS 288 on yyerrlab *//* Label unused */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#else
-#ifdef HAVE_ALLOCA_H
-#include <alloca.h>
-#else
-#ifdef _AIX /* for Bison */
- #pragma alloca
-#else
-char *alloca ();
-#endif
-#endif
-#endif
-
-#include <stdio.h>
-#include <ctype.h>
-
-/* The code at the top of get_date which figures out the offset of the
-   current time zone checks various CPP symbols to see if special
-   tricks are need, but defaults to using the gettimeofday system call.
-   Include <sys/time.h> if that will be used.  */
-
-#if !defined (USG) && !defined (sgi) && !defined (__NetBSD__)
-#include <sys/time.h>
-#endif
-
-#if	defined(vms)
-
-#include <types.h>
-#include <time.h>
-
-#else
-
 #include <sys/types.h>
-
-#if	defined(USG) || !defined(HAVE_FTIME)
-/*
-**  If you need to do a tzset() call to set the
-**  timezone, and don't have ftime().
-*/
-struct timeb {
-    time_t		time;		/* Seconds since the epoch	*/
-    unsigned short	millitm;	/* Field not used		*/
-    short		timezone;
-    short		dstflag;	/* Field not used		*/
-};
-
-#else
-
-#include <sys/timeb.h>
-
-#endif	/* defined(USG) && !defined(HAVE_FTIME) */
-
-#if	defined(BSD4_2) || defined(BSD4_1C) || (defined (hp9000) && !defined (hpux))
-#include <sys/time.h>
-#else
-#if defined(_AIX)
-#include <sys/time.h>
-#endif
-#include <time.h>
-#endif	/* defined(BSD4_2) */
-
-#endif	/* defined(vms) */
-
-#if defined (STDC_HEADERS) || defined (USG)
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#endif
+#include <time.h>
 
-#if sgi
-#undef timezone
-#endif
-
-extern struct tm	*localtime();
-
-#define yyparse getdate_yyparse
-#define yylex getdate_yylex
-#define yyerror getdate_yyerror
-
-#if	!defined(lint) && !defined(SABER)
-static char RCS[] =
-	"$Header: /a/cvsroot/src/usr.sbin/eeprom/getdate.y,v 1.1 1995/07/13 18:14:01 thorpej Exp $";
-#endif	/* !defined(lint) && !defined(SABER) */
-
+int yyparse(void);
 
 #define EPOCH		1970
 #define HOUR(x)		((time_t)(x) * 60)
@@ -267,15 +186,27 @@ date	: tUNUMBER '/' tUNUMBER {
 	    yyDay = $3;
 	}
 	| tUNUMBER '/' tUNUMBER '/' tUNUMBER {
-	    yyMonth = $1;
-	    yyDay = $3;
-	    yyYear = $5;
+	    if ($1 >= 100) {
+		yyYear = $1;
+		yyMonth = $3;
+		yyDay = $5;
+	    } else {
+		yyMonth = $1;
+		yyDay = $3;
+		yyYear = $5;
+	    }
 	}
 	| tUNUMBER tSNUMBER tSNUMBER {
 	    /* ISO 8601 format.  yyyy-mm-dd.  */
 	    yyYear = $1;
 	    yyMonth = -$2;
 	    yyDay = -$3;
+	}
+	| tUNUMBER tMONTH tSNUMBER {
+	    /* e.g. 17-JUN-1992.  */
+	    yyDay = $1;
+	    yyMonth = $2;
+	    yyYear = -$3;
 	}
 	| tMONTH tUNUMBER {
 	    yyMonth = $1;
@@ -338,25 +269,24 @@ number	: tUNUMBER {
 		yyYear = $1;
 	    else {
 		if($1>10000) {
-		    time_t date_part;
-
-		    date_part= $1/10000;
 		    yyHaveDate++;
-		    yyDay= (date_part)%100;
-		    yyMonth= (date_part/100)%100;
-		    yyYear = date_part/10000;
-		} 
-	        yyHaveTime++;
-		if ($1 < 100) {
-		    yyHour = $1;
-		    yyMinutes = 0;
+		    yyDay= ($1)%100;
+		    yyMonth= ($1/100)%100;
+		    yyYear = $1/10000;
 		}
 		else {
-		    yyHour = $1 / 100;
-		    yyMinutes = $1 % 100;
-		}
-		yySeconds = 0;
-		yyMeridian = MER24;
+		    yyHaveTime++;
+		    if ($1 < 100) {
+			yyHour = $1;
+			yyMinutes = 0;
+		    }
+		    else {
+		    	yyHour = $1 / 100;
+		    	yyMinutes = $1 % 100;
+		    }
+		    yySeconds = 0;
+		    yyMeridian = MER24;
+	        }
 	    }
 	}
 	;
@@ -560,19 +490,14 @@ static TABLE const MilitaryTable[] = {
 
 /* ARGSUSED */
 static int
-yyerror(s)
-    char	*s;
+yyerror(char *s)
 {
   return 0;
 }
 
 
 static time_t
-ToSeconds(Hours, Minutes, Seconds, Meridian)
-    time_t	Hours;
-    time_t	Minutes;
-    time_t	Seconds;
-    MERIDIAN	Meridian;
+ToSeconds(time_t Hours, time_t Minutes, time_t	Seconds, MERIDIAN Meridian)
 {
     if (Minutes < 0 || Minutes > 59 || Seconds < 0 || Seconds > 59)
 	return -1;
@@ -584,26 +509,29 @@ ToSeconds(Hours, Minutes, Seconds, Meridian)
     case MERam:
 	if (Hours < 1 || Hours > 12)
 	    return -1;
+	if (Hours == 12)
+	    Hours = 0;
 	return (Hours * 60L + Minutes) * 60L + Seconds;
     case MERpm:
 	if (Hours < 1 || Hours > 12)
 	    return -1;
+	if (Hours == 12)
+	    Hours = 0;
 	return ((Hours + 12) * 60L + Minutes) * 60L + Seconds;
+    default:
+	abort ();
     }
     /* NOTREACHED */
 }
 
 
+/* Year is either
+   * A negative number, which means to use its absolute value (why?)
+   * A number from 0 to 99, which means a year from 1900 to 1999, or
+   * The actual year (>=100).  */
 static time_t
-Convert(Month, Day, Year, Hours, Minutes, Seconds, Meridian, DSTmode)
-    time_t	Month;
-    time_t	Day;
-    time_t	Year;
-    time_t	Hours;
-    time_t	Minutes;
-    time_t	Seconds;
-    MERIDIAN	Meridian;
-    DSTMODE	DSTmode;
+Convert(time_t Month, time_t Day, time_t Year, time_t Hours, time_t Minutes,
+    time_t Seconds, MERIDIAN Meridian, DSTMODE DSTmode)
 {
     static int DaysInMonth[12] = {
 	31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
@@ -614,11 +542,18 @@ Convert(Month, Day, Year, Hours, Minutes, Seconds, Meridian, DSTmode)
 
     if (Year < 0)
 	Year = -Year;
-    if (Year < 100)
+    if (Year < 69)
+	Year += 2000;
+    else if (Year < 100) {
 	Year += 1900;
+	if (Year < EPOCH)
+		Year += 100;
+    }
     DaysInMonth[1] = Year % 4 == 0 && (Year % 100 != 0 || Year % 400 == 0)
 		    ? 29 : 28;
-    if (Year < EPOCH || Year > 1999
+    /* XXX Sloppily check for 2038 if time_t is 32 bits */
+    if (Year < EPOCH
+     || (sizeof(time_t) == sizeof(int) && Year > 2038)
      || Month < 1 || Month > 12
      /* Lint fluff:  "conversion from long may lose accuracy" */
      || Day < 1 || Day > DaysInMonth[(int)--Month])
@@ -641,9 +576,7 @@ Convert(Month, Day, Year, Hours, Minutes, Seconds, Meridian, DSTmode)
 
 
 static time_t
-DSTcorrect(Start, Future)
-    time_t	Start;
-    time_t	Future;
+DSTcorrect(time_t Start, time_t Future)
 {
     time_t	StartDay;
     time_t	FutureDay;
@@ -655,10 +588,7 @@ DSTcorrect(Start, Future)
 
 
 static time_t
-RelativeDate(Start, DayOrdinal, DayNumber)
-    time_t	Start;
-    time_t	DayOrdinal;
-    time_t	DayNumber;
+RelativeDate(time_t Start, time_t DayOrdinal, time_t DayNumber)
 {
     struct tm	*tm;
     time_t	now;
@@ -672,9 +602,7 @@ RelativeDate(Start, DayOrdinal, DayNumber)
 
 
 static time_t
-RelativeMonth(Start, RelMonth)
-    time_t	Start;
-    time_t	RelMonth;
+RelativeMonth(time_t Start, time_t RelMonth)
 {
     struct tm	*tm;
     time_t	Month;
@@ -683,7 +611,7 @@ RelativeMonth(Start, RelMonth)
     if (RelMonth == 0)
 	return 0;
     tm = localtime(&Start);
-    Month = 12 * tm->tm_year + tm->tm_mon + RelMonth;
+    Month = 12 * (tm->tm_year + 1900) + tm->tm_mon + RelMonth;
     Year = Month / 12;
     Month = Month % 12 + 1;
     return DSTcorrect(Start,
@@ -694,12 +622,11 @@ RelativeMonth(Start, RelMonth)
 
 
 static int
-LookupWord(buff)
-    char		*buff;
+LookupWord(char *buff)
 {
-    register char	*p;
-    register char	*q;
-    register const TABLE	*tp;
+    char	*p;
+    char	*q;
+    const TABLE	*tp;
     int			i;
     int			abbrev;
 
@@ -801,10 +728,10 @@ LookupWord(buff)
 
 
 static int
-yylex()
+yylex(void)
 {
-    register char	c;
-    register char	*p;
+    char	c;
+    char	*p;
     char		buff[20];
     int			Count;
     int			sign;
@@ -852,55 +779,73 @@ yylex()
     }
 }
 
+#define TM_YEAR_ORIGIN 1900
+
+/* Yield A - B, measured in seconds.  */
+static long
+difftm (struct tm *a, struct tm *b)
+{
+  int ay = a->tm_year + (TM_YEAR_ORIGIN - 1);
+  int by = b->tm_year + (TM_YEAR_ORIGIN - 1);
+  int days = (
+	      /* difference in day of year */
+	      a->tm_yday - b->tm_yday
+	      /* + intervening leap days */
+	      +  ((ay >> 2) - (by >> 2))
+	      -  (ay/100 - by/100)
+	      +  ((ay/100 >> 2) - (by/100 >> 2))
+	      /* + difference in years * 365 */
+	      +  (long)(ay-by) * 365
+	      );
+  return (60*(60*(24*days + (a->tm_hour - b->tm_hour))
+	      + (a->tm_min - b->tm_min))
+	  + (a->tm_sec - b->tm_sec));
+}
 
 time_t
-get_date(p, now)
-    char		*p;
-    struct timeb	*now;
+get_date(char *p)
 {
-    struct tm		*tm;
-    struct timeb	ftz;
+    struct tm		*tm, *gmt, gmtbuf;
     time_t		Start;
     time_t		tod;
+    time_t		now;
+    time_t		timezone;
 
     yyInput = p;
-    if (now == NULL) {
-        now = &ftz;
-#if	!defined(HAVE_FTIME)
-	(void)time(&ftz.time);
-	/* Set the timezone global. */
-	tzset();
-	{
-#if sgi
-	    ftz.timezone = (int) _timezone / 60;
-#else /* not sgi */
-#ifdef __NetBSD__
-	    ftz.timezone = 0;
-#else /* neither sgi nor NetBSD */
-#if defined (USG)
-	    extern time_t timezone;
+    (void)time (&now);
 
-	    ftz.timezone = (int) timezone / 60;
-#else /* neither sgi nor NetBSD nor USG */
-	    struct timeval tv;
-	    struct timezone tz;
-
-	    gettimeofday (&tv, &tz);
-	    ftz.timezone = (int) tz.tz_minuteswest;
-#endif /* neither sgi nor NetBSD nor USG */
-#endif /* neither sgi nor NetBSD */
-#endif /* not sgi */
-	}
-#else /* HAVE_FTIME */
-	(void)ftime(&ftz);
-#endif /* HAVE_FTIME */
+    gmt = gmtime (&now);
+    if (gmt != NULL)
+    {
+	/* Make a copy, in case localtime modifies *tm (I think
+	   that comment now applies to *gmt, but I am too
+	   lazy to dig into how gmtime and locatime allocate the
+	   structures they return pointers to).  */
+	gmtbuf = *gmt;
+	gmt = &gmtbuf;
     }
 
-    tm = localtime(&now->time);
-    yyYear = tm->tm_year;
+    if (! (tm = localtime (&now)))
+	return -1;
+
+    if (gmt != NULL)
+	timezone = difftm (gmt, tm) / 60;
+    else
+	/* We are on a system like VMS, where the system clock is
+	   in local time and the system has no concept of timezones.
+	   Hopefully we can fake this out (for the case in which the
+	   user specifies no timezone) by just saying the timezone
+	   is zero.  */
+	timezone = 0;
+
+    if(tm->tm_isdst)
+	timezone += 60;
+
+    tm = localtime(&now);
+    yyYear = tm->tm_year + 1900;
     yyMonth = tm->tm_mon + 1;
     yyDay = tm->tm_mday;
-    yyTimezone = now->timezone;
+    yyTimezone = timezone;
     yyDSTmode = DSTmaybe;
     yyHour = 0;
     yyMinutes = 0;
@@ -925,7 +870,7 @@ get_date(p, now)
 	    return -1;
     }
     else {
-	Start = now->time;
+	Start = now;
 	if (!yyHaveRel)
 	    Start -= ((tm->tm_hour * 60L + tm->tm_min) * 60L) + tm->tm_sec;
     }
@@ -947,9 +892,8 @@ get_date(p, now)
 #if	defined(TEST)
 
 /* ARGSUSED */
-main(ac, av)
-    int		ac;
-    char	*av[];
+int
+main(int ac, char *av[])
 {
     char	buff[128];
     time_t	d;
@@ -957,7 +901,7 @@ main(ac, av)
     (void)printf("Enter date, or blank line to exit.\n\t> ");
     (void)fflush(stdout);
     while (gets(buff) && buff[0]) {
-	d = get_date(buff, (struct timeb *)NULL);
+	d = get_date(buff);
 	if (d == -1)
 	    (void)printf("Bad format - couldn't convert.\n");
 	else

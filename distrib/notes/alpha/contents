@@ -1,0 +1,78 @@
+dnl	$OpenBSD: contents,v 1.61 2015/12/30 23:48:59 rpe Exp $
+TopPart
+
+OpenBSDminiroot
+			It can be copied to the swap partition of an existing
+			disk to allow installing or upgrading to OpenBSD OSREV.
+
+OpenBSDfloppy
+			This floppy image will boot on the following MACHINE
+			models:
+			- AlphaStation 200, 250, 255, 400
+			- AlphaServer 300 and 400
+			- AlphaStation 500, 600
+			- AlphaStation 600A, 1200
+			- AlphaServer 800, 1000, 1000A, 1200, 4000 and 4100
+			- AXPpci33 based machines, including ``Noname'',
+			  UDB, Multia
+			- EB164 based machines, including PC164, 164SX,
+			  and 164LX
+			- Personal Workstation (Miata)
+
+	floppyB{:--:}OSrev.fs	Another MACHINE boot and installation floppy; see
+			below.
+			This floppy image will boot on the following MACHINE
+			models:
+   			- Alpha Processor, Inc. UP1000, UP1100, UP2000 and
+			  UP2000+
+			- XP900, XP1000, CS20, DS10, DS20, DS20L, ES40 and
+			  264DP
+
+	floppyC{:--:}OSrev.fs	Another MACHINE boot and installation floppy; see
+			below.
+			This floppy image will boot on the following MACHINE
+			models:
+   			- Tadpole AlphaBook
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDbsdmp
+
+OpenBSDrd
+
+OpenBSDinstalliso
+
+OpenBSDcd
+
+	bootxx, boot	The OpenBSD/MACHINE first and second-level boot
+			loader; useful to update your boot loader if you want
+			to reinstall from an old OpenBSD setup but the existing
+			boot loader is too old to load bsd.rd correctly.
+
+	netboot		The OpenBSD/MACHINE network boot loader, for bootp
+			or dhcpd protocols.
+
+	netboot.mop	The OpenBSD/MACHINE network boot loader, for MOP
+			protocol.
+
+OpenBSDfloppydesc(three,Each,s)
+
+DistributionDescription(eight)
+
+OpenBSDbase(101660534,244170752)
+
+OpenBSDcomp(50474381,195401728)
+
+OpenBSDgame(2857105,7217152)
+
+OpenBSDman(7329177,31418368)
+
+OpenBSDxbase(19176559,71561216)
+
+OpenBSDxfont(40296612,59377664)
+
+OpenBSDxserv(7341681,25305088)
+
+OpenBSDxshare(4524983,30216192)

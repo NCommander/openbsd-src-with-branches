@@ -1,3 +1,4 @@
+/*	$OpenBSD: subr.c,v 1.12 2016/03/06 20:25:27 guenther Exp $	*/
 /*	$NetBSD: subr.c,v 1.6 1995/08/31 23:01:45 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)subr.c	8.2 (Berkeley) 4/28/95";
-#endif
-static char *rcsid = "$NetBSD: subr.c,v 1.6 1995/08/31 23:01:45 jtc Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXCOMLEN */
 #include <sys/file.h>
 #include <sys/user.h>
 #include <sys/proc.h>
@@ -50,9 +40,15 @@ static char *rcsid = "$NetBSD: subr.c,v 1.6 1995/08/31 23:01:45 jtc Exp $";
 #include <stdio.h>
 
 #include "ktrace.h"
+#include "extern.h"
 
-getpoints(s)
-	char *s;
+/*
+ * If you change the trace point letters, then update to match:
+ * ktrace/ktrace.1, ktrace/ltrace.1, kdump/kdump.1, and
+ * usage() in kdump/kdump.c
+ */
+int
+getpoints(const char *s, int defpoints)
 {
 	int facs = 0;
 
@@ -61,23 +57,32 @@ getpoints(s)
 		case 'c':
 			facs |= KTRFAC_SYSCALL | KTRFAC_SYSRET;
 			break;
-		case 'e':
-			facs |= KTRFAC_EMUL;
+		case 'i':
+			facs |= KTRFAC_GENIO;
 			break;
 		case 'n':
 			facs |= KTRFAC_NAMEI;
 			break;
-		case 'i':
-			facs |= KTRFAC_GENIO;
+		case 'p':
+			facs |= KTRFAC_PLEDGE;
 			break;
 		case 's':
 			facs |= KTRFAC_PSIG;
 			break;
-		case 'w':
-			facs |= KTRFAC_CSW;
+		case 't':
+			facs |= KTRFAC_STRUCT;
+			break;
+		case 'u':
+			facs |= KTRFAC_USER;
+			break;
+		case 'x':
+			facs |= KTRFAC_EXECARGS;
+			break;
+		case 'X':
+			facs |= KTRFAC_EXECENV;
 			break;
 		case '+':
-			facs |= DEF_POINTS;
+			facs |= defpoints;
 			break;
 		default:
 			return (-1);

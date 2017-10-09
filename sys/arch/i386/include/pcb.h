@@ -1,4 +1,5 @@
-/*	$NetBSD: pcb.h,v 1.20 1995/10/11 04:20:16 mycroft Exp $	*/
+/*	$OpenBSD: pcb.h,v 1.19 2016/03/15 03:17:51 guenther Exp $	*/
+/*	$NetBSD: pcb.h,v 1.21 1996/01/08 13:51:42 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,8 +40,8 @@
  * Intel 386 process control block
  */
 
-#ifndef _I386_PCB_H_
-#define _I386_PCB_H_
+#ifndef _MACHINE_PCB_H_
+#define _MACHINE_PCB_H_
 
 #include <sys/signal.h>
 
@@ -58,34 +55,23 @@ struct pcb {
 #define	pcb_cr3	pcb_tss.tss_cr3
 #define	pcb_esp	pcb_tss.tss_esp
 #define	pcb_ebp	pcb_tss.tss_ebp
-#define	pcb_fs	pcb_tss.tss_fs
-#define	pcb_gs	pcb_tss.tss_gs
-#define	pcb_ldt_sel	pcb_tss.tss_ldt
-	int	pcb_tss_sel;
-        union	descriptor *pcb_ldt;	/* per process (user) LDT */
-        int	pcb_ldt_len;		/*      number of LDT entries */
+#define	pcb_cs	pcb_tss.tss_cs
 	int	pcb_cr0;		/* saved image of CR0 */
-	struct	save87 pcb_savefpu;	/* floating point state for 287/387 */
-	struct	emcsts pcb_saveemc;	/* Cyrix EMC state */
-/*
- * Software pcb (extension)
- */
-	int	pcb_flags;
-#define	PCB_USER_LDT	0x01		/* has user-set LDT */
 	caddr_t	pcb_onfault;		/* copyin/out fault recovery */
-	u_long	pcb_iomap[1024/32];	/* I/O bitmap */
+	union	savefpu pcb_savefpu;	/* floating point state for FPU */
+	struct	segment_descriptor pcb_threadsegs[2];
+					/* per-thread descriptors */
+	int	vm86_eflags;		/* virtual eflags for vm86 mode */
+	int	vm86_flagmask;		/* flag mask for vm86 mode */
+	void	*vm86_userp;		/* XXX performance hack */
+	struct  pmap *pcb_pmap;         /* back pointer to our pmap */
+	struct	cpu_info *pcb_fpcpu;	/* cpu holding our fpu state */
+	int	pcb_flags;
+#define PCB_SAVECTX	0x00000001
 };
 
-/*    
- * The pcb is augmented with machine-dependent additional data for 
- * core dumps. For the i386, there is nothing to add.
- */     
-struct md_coredump {
-	long	md_pad[8];
-};    
+/* the indexes of the %fs/%gs segments in pcb_threadsegs */
+#define	TSEG_FS		0
+#define	TSEG_GS		1
 
-#ifdef _KERNEL
-struct pcb *curpcb;		/* our current running pcb */
-#endif
-
-#endif /* _I386_PCB_H_ */
+#endif /* _MACHINE_PCB_H_ */

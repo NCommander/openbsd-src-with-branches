@@ -1,12 +1,21 @@
-#	$NetBSD: Makefile,v 1.3 1994/12/07 05:08:04 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/9/93
+#	$OpenBSD: Makefile,v 1.10 2016/03/30 06:38:46 jmc Exp $
 
 PROG=	tset
-SRCS=	map.c misc.c set.c term.c tset.c wrterm.c
-
-DPADD=	${LIBTERMCAP}
-LDADD=	-ltermcap
+SRCS=	tset.c dump_entry.c
+DPADD=	${LIBCURSES}
+LDADD=	-lcurses
+CURSES= ${.CURDIR}/../../lib/libcurses
+TIC= ${.CURDIR}/../tic
+CFLAGS+= -I${CURSES} -I${TIC} -I${.CURDIR} -I. -DHAVE_GETTTYNAM -DHAVE_TTYENT_H
+CLEANFILES+= termsort.c
+.PATH:  ${TIC}
 LINKS=	${BINDIR}/tset ${BINDIR}/reset
-MLINKS=	tset.1 reset.1
+
+beforedepend: termsort.c
+
+dump_entry.o: termsort.c
+
+termsort.c: ${TIC}/MKtermsort.sh
+	sh ${TIC}/MKtermsort.sh awk ${CURSES}/Caps > ${.TARGET}
 
 .include <bsd.prog.mk>

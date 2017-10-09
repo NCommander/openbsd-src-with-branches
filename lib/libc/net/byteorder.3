@@ -1,4 +1,4 @@
-.\"	$NetBSD: byteorder.3,v 1.3 1995/02/25 06:20:27 cgd Exp $
+.\"	$OpenBSD: byteorder.3,v 1.21 2014/07/13 20:40:34 jmc Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,48 +27,140 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)byteorder.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
-.Dt BYTEORDER 3
-.Os BSD 4.2
+.Dd $Mdocdate: July 13 2014 $
+.Dt HTOBE64 3
+.Os
 .Sh NAME
-.Nm htonl ,
-.Nm htons ,
-.Nm ntohl ,
-.Nm ntohs
-.Nd convert values between host and network byte order
+.Nm htobe64 ,
+.Nm htobe32 ,
+.Nm htobe16 ,
+.Nm be64toh ,
+.Nm be32toh ,
+.Nm be16toh ,
+.Nm betoh64 ,
+.Nm betoh32 ,
+.Nm betoh16 ,
+.Nm htole64 ,
+.Nm htole32 ,
+.Nm htole16 ,
+.Nm le64toh ,
+.Nm le32toh ,
+.Nm le16toh ,
+.Nm letoh64 ,
+.Nm letoh32 ,
+.Nm letoh16 ,
+.Nm swap64 ,
+.Nm swap32 ,
+.Nm swap16
+.Nd convert values between different byte orderings
 .Sh SYNOPSIS
-.Fd #include <sys/param.h>
-.Ft u_long
-.Fn htonl "u_long hostlong"
-.Ft u_short
-.Fn htons "u_short hostshort"
-.Ft u_long
-.Fn ntohl "u_long netlong"
-.Ft u_short
-.Fn ntohs "u_short netshort"
+.In endian.h
+.Ft uint64_t
+.Fn htobe64 "uint64_t host64"
+.Ft uint32_t
+.Fn htobe32 "uint32_t host32"
+.Ft uint16_t
+.Fn htobe16 "uint16_t host16"
+.Ft uint64_t
+.Fn be64toh "uint64_t big64"
+.Ft uint32_t
+.Fn be32toh "uint32_t big32"
+.Ft uint16_t
+.Fn be16toh "uint16_t big16"
+.Ft uint64_t
+.Fn betoh64 "uint64_t big64"
+.Ft uint32_t
+.Fn betoh32 "uint32_t big32"
+.Ft uint16_t
+.Fn betoh16 "uint16_t big16"
+.Ft uint64_t
+.Fn htole64 "uint64_t host64"
+.Ft uint32_t
+.Fn htole32 "uint32_t host32"
+.Ft uint16_t
+.Fn htole16 "uint16_t host16"
+.Ft uint64_t
+.Fn letoh64 "uint64_t little64"
+.Ft uint64_t
+.Fn le64toh "uint64_t little64"
+.Ft uint32_t
+.Fn le32toh "uint32_t little32"
+.Ft uint16_t
+.Fn le16toh "uint16_t little16"
+.Ft uint32_t
+.Fn letoh32 "uint32_t little32"
+.Ft uint16_t
+.Fn letoh16 "uint16_t little16"
+.Ft uint64_t
+.Fn swap64 "uint64_t val64"
+.Ft uint32_t
+.Fn swap32 "uint32_t val32"
+.Ft uint16_t
+.Fn swap16 "uint16_t val16"
 .Sh DESCRIPTION
-These routines convert 16 and 32 bit quantities between network
-byte order and host byte order.
-On machines which have a byte order which is the same as the network
-order, routines are defined as null macros.
+These routines convert 16, 32 and 64-bit quantities between different
+byte orderings.
+The
+.Dq swap
+functions reverse the byte ordering of
+the given quantity; the others convert either from/to the native
+byte order used by the host to/from either little- or big-endian (a.k.a
+network) order.
 .Pp
-These routines are most often used in conjunction with Internet
-addresses and ports as returned by
-.Xr gethostbyname 3
-and
-.Xr getservent 3 .
+Apart from the swap functions,
+the names containing
+.Dq be
+convert between host and big-endian (most significant byte first) order
+of the given quantity, while the names containing
+.Dq le
+convert between host and little-endian (least significant byte first) order
+of the given quantity.
+.Pp
+All these functions use the numbers
+16, 32, or 64 for specifying the bitwidth of the quantities they operate on.
+Currently all supported architectures are either big- or little-endian
+so either the
+.Dq be
+or
+.Dq le
+variants are implemented as null macros.
 .Sh SEE ALSO
-.Xr gethostbyname 3 ,
-.Xr getservent 3
+.Xr htonl 3
+.Sh STANDARDS
+The
+.Fn htobe64 ,
+.Fn htobe32 ,
+.Fn htobe16 ,
+.Fn be64toh ,
+.Fn be32toh ,
+.Fn be16toh ,
+.Fn htole64 ,
+.Fn htole32 ,
+.Fn htole16 ,
+.Fn le64toh ,
+.Fn le32toh ,
+and
+.Fn le16toh
+functions are expected to conform to a future version of
+.St -p1003.1 .
+The other functions are extensions that should not be used
+when portability is required.
 .Sh HISTORY
 The
-.Nm byteorder
-functions appeared in 
+.Nm swap{size}
+and
+.Nm {src-order}to{dst-order}{size}
+functions appeared in
 .Bx 4.2 .
+The
+.Nm {src-order}{size}to{dst-order}
+functions appeared in
+.Ox 5.6 .
+A subset of them was submitted for standardization after
+.St -p1003.1-2008 .
 .Sh BUGS
-On the
-.Tn VAX
-bytes are handled backwards from most everyone else in
-the world.  This is not expected to be fixed in the near future.
+The perceived antagonism between
+.Sq host
+and
+.Sq network
+byte order does not allow PDP-11 users to sleep soundly at night.

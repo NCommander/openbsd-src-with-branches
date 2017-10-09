@@ -1,0 +1,81 @@
+.\" $OpenBSD: rebound.8,v 1.7 2017/07/13 17:12:51 tedu Exp $
+.\"
+.\"Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
+.\"
+.\"Permission to use, copy, modify, and distribute this software for any
+.\"purpose with or without fee is hereby granted, provided that the above
+.\"copyright notice and this permission notice appear in all copies.
+.\"
+.\"THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\"WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\"MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\"ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\"WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\"ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\"OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.Dd $Mdocdate: July 13 2017 $
+.Dt REBOUND 8
+.Os
+.Sh NAME
+.Nm rebound
+.Nd DNS proxy
+.Sh SYNOPSIS
+.Nm rebound
+.Op Fl d
+.Op Fl c Ar config
+.Op Fl l Ar address
+.Sh DESCRIPTION
+The
+.Nm
+daemon proxies DNS requests.
+It listens by default on localhost and forwards queries to another server.
+.Pp
+When
+.Nm
+starts, it sets the
+.Dv kern.dnsjackport
+.Xr sysctl 3
+which enables it to intercept all DNS traffic.
+.Pp
+If sent a
+.Dv SIGUSR1
+signal,
+.Nm
+logs statistics about the running daemon to
+.Pa /var/log/daemon .
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl c Ar config
+Specify an alternative configuration file, instead of the default
+.Pa /etc/resolv.conf .
+.Nm
+will reload the configuration file when sent a SIGHUP signal.
+.It Fl d
+Debug mode.
+.Nm
+does not
+.Xr fork 2
+into the background.
+.It Fl l Ar address
+Listen for connections by binding to
+.Ar address ,
+an IP specified in dotted quad notation, instead of the default of localhost.
+.El
+.Sh FILES
+.Bl -tag -width "/etc/resolv.confXX" -compact
+.It Pa /etc/resolv.conf
+Default
+.Nm
+configuration file.
+.El
+.Sh SEE ALSO
+.Xr resolv.conf 5 ,
+.Xr unbound 8
+.Sh HISTORY
+The
+.Nm
+daemon first appeared in
+.Ox 5.9 .
+.Sh AUTHORS
+.An Ted Unangst Aq Mt tedu@openbsd.org

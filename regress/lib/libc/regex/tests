@@ -1,3 +1,4 @@
+#	$OpenBSD: tests,v 1.7 2016/05/26 13:38:22 schwarze Exp $
 #	$NetBSD: tests,v 1.5 1995/04/20 22:40:00 cgd Exp $
 
 # regular expression test set
@@ -62,6 +63,7 @@ a\(\)b		b	ab	ab
 
 # anchoring and REG_NEWLINE
 ^abc$		&	abc	abc
+^b		&	abc
 a^b		-	a^b
 a^b		b	a^b	a^b
 a$b		-	a$b
@@ -76,7 +78,10 @@ $^		-	""	@
 $$		-	""	@
 b$		&	abNc
 b$		&n	abNc	b
-^b$		&	aNbNc
+^b		&	aNbNc
+b$		&	aNbNc
+^a		&n	aNb	a
+^b		&n	abc
 ^b$		&n	aNbNc	b
 ^$		&n	aNNb	@Nb
 ^$		n	abc
@@ -85,12 +90,15 @@ $^		n	aNNb	@Nb
 \($\)\(^\)	bn	aNNb	@Nb
 ^^		n^	aNNb	@Nb
 $$		n	aNNb	@NN
-^a		^	a
-a$		$	a
-^a		^n	aNb
-^b		^n	aNb	b
-a$		$n	bNa
-b$		$n	bNa	b
+^a		&^	a
+a$		&$	a
+^b		&^	abc
+^b		&^	aNb
+^a		&^n	aNb
+^b		&^n	abc
+^b		&^n	aNb	b
+a$		&$n	bNa
+b$		&$n	bNa	b
 a*(^b$)c*	-	b	b
 a*\(^b$\)c*	b	b	b
 
@@ -168,6 +176,33 @@ a\(\(b\)*\2\)*d		b	abbbd	abbbd
 \(a\)\1bc*d	b	aabcccd	aabcccd
 \(a\)\1bc*[ce]d	b	aabcccd	aabcccd
 ^\(a\)\1b\(c\)*cd$	b	aabcccd	aabcccd
+\(b*\)\(a*\1\)*	b	ab	a
+\([^_]*\)\(_*\1\)*	b	foo_foo_bar_bar_bar_baz	foo_foo	foo,_foo
+\([^_]*\)\(_*\1\)*	b	bar_bar_bar_baz	bar_bar_bar	bar,_bar
+\([^_]*\)\(_*\1\)*	b	foo_bar_baz	foo	foo
+\(.*\)\1	b	""	""
+\(.*\)\1	b	a	""
+\(.*\)\1	b	aa	aa
+\(.*\)\1	b	aaa	aa
+\(.*\)\1	b	aaaa	aaaa
+\([^_]*\)\1	b	""	""
+\([^_]*\)\1	b	a	""
+\([^_]*\)\1	b	aa	aa
+\([^_]*\)\1	b	aaa	aa
+\([^_]*\)\1	b	aaaa	aaaa
+foo\(.*\)bar\1	b	foolbarl	foolbarl	l
+foo\(.*\)bar\1	b	foobar	foobar	""
+\(\(.\)b\)*\1	b	aba
+\(\(.\)b\)*\1	b	abba
+\(\(.\)b\)*\1	b	abbba
+\(\(.\)b\)*\1	b	abbbba	bbbb	bb,b
+\(\(.\)b\)*\1	b	abbbbba	abbbbb	bb,b
+\(\(.\)b\)*\1	b	abbbbbba	abbbbb	bb,b
+\(\(.\)b\)*\1	b	abbbbbbbbbbbbbba	abbbbbbbbbbbbb	bb,b
+\(\(.\)b\)*\1	b	abbbbbbbbbbbbbbba	abbbbbbbbbbbbbbb	bb,b
+# these used to segfault, buffer underflow in engine.c, backref()
+\(^a\)*\(b.\)\2	b^	sbxbxe	bxbx	-,bx
+\([[:<:]]a\)*\(b.\)\2	b^	sbxbxe	bxbx	-,bx
 
 # ordinary repetitions
 ab*c		&	abc	abc
@@ -427,7 +462,18 @@ a(b+|((c)*))+d	-	abd	abd	@d,@d,-
 a(b+|((c)*))+d	-	abcd	abcd	@d,@d,-
 
 # check out the STARTEND option
-[abc]		&#	a(b)c	b
+^[abc]		&#	a(b)c	b
+^[abc]		&#	a(xb)c
+^[abc]		&#	aN(b)c	b
+^[abc]		&n#	a(b)c	b
+^[abc]		&n#	a(xb)c
+^[abc]		&n#	aN(b)c	b
+^[abc]		&^#	a(b)c
+^[abc]		&^#	a(xb)c
+^[abc]		&^#	aN(b)c
+^[abc]		&n^#	a(b)c
+^[abc]		&n^#	a(xb)c
+^[abc]		&n^#	aN(b)c	b
 [abc]		&#	a(d)c
 [abc]		&#	a(bc)d	b
 [abc]		&#	a(dc)d	c
@@ -454,17 +500,87 @@ a.*		&#	(aZb)c	aZb
 
 # word boundaries (ick)
 [[:<:]]a	&	a	a
+\<a		&	a	a
 [[:<:]]a	&	ba
+\<a		&	ba
 [[:<:]]a	&	-a	a
+\<a		&	-a	a
+[[:<:]]a	&	Na	a
+\<a		&	Na	a
+[[:<:]]a	&n	a	a
+\<a		&n	a	a
+[[:<:]]a	&n	ba
+\<a		&n	ba
+[[:<:]]a	&n	-a	a
+\<a		&n	-a	a
+[[:<:]]a	&n	Na	a
+\<a		&n	Na	a
+[[:<:]]a	&^	a
+\<a		&^	a
+[[:<:]]a	&^	ba
+\<a		&^	ba
+[[:<:]]a	&^	-a	a
+\<a		&^	-a	a
+[[:<:]]a	&^	Na	a
+\<a		&^	Na	a
+[[:<:]]a	&n^	a
+\<a		&n^	a
+[[:<:]]a	&n^	ba
+\<a		&n^	ba
+[[:<:]]a	&n^	-a	a
+\<a		&n^	-a	a
+[[:<:]]a	&n^	Na	a
+\<a		&n^	Na	a
+[[:<:]]b	&#	a(b)c	b
+\<b		&#	a(b)c	b
+[[:<:]]b	&#	a(xb)c
+\<b		&#	a(xb)c
+[[:<:]]b	&#	-(b)c	b
+\<b		&#	-(b)c	b
+[[:<:]]b	&#	aN(b)c	b
+\<b		&#	aN(b)c	b
+[[:<:]]b	&n#	a(b)c	b
+\<b		&n#	a(b)c	b
+[[:<:]]b	&n#	a(xb)c
+\<b		&n#	a(xb)c
+[[:<:]]b	&n#	-(b)c	b
+\<b		&n#	-(b)c	b
+[[:<:]]b	&n#	aN(b)c	b
+\<b		&n#	aN(b)c	b
+[[:<:]]b	&^#	a(b)c
+\<b		&^#	a(b)c
+[[:<:]]b	&^#	a(xb)c
+\<b		&^#	a(xb)c
+[[:<:]]b	&^#	-(b)c	b
+\<b		&^#	-(b)c	b
+[[:<:]]b	&^#	aN(b)c	b
+\<b		&^#	aN(b)c	b
+[[:<:]]b	&n^#	a(b)c
+\<b		&n^#	a(b)c
+[[:<:]]b	&n^#	a(xb)c
+\<b		&n^#	a(xb)c
+[[:<:]]b	&n^#	-(b)c	b
+\<b		&n^#	-(b)c	b
+[[:<:]]b	&n^#	aN(b)c	b
+\<b		&n^#	aN(b)c	b
 a[[:>:]]	&	a	a
+a\>		&	a	a
 a[[:>:]]	&	ab
+a\>		&	ab
 a[[:>:]]	&	a-	a
+a\>		&	a-	a
 [[:<:]]a.c[[:>:]]	&	axcd-dayc-dazce-abc	abc
+\<a.c\>			&	axcd-dayc-dazce-abc	abc
 [[:<:]]a.c[[:>:]]	&	axcd-dayc-dazce-abc-q	abc
+\<a.c\>			&	axcd-dayc-dazce-abc-q	abc
 [[:<:]]a.c[[:>:]]	&	axc-dayc-dazce-abc	axc
+\<a.c\>			&	axc-dayc-dazce-abc	axc
 [[:<:]]b.c[[:>:]]	&	a_bxc-byc_d-bzc-q	bzc
+\<b.c\>			&	a_bxc-byc_d-bzc-q	bzc
 [[:<:]].x..[[:>:]]	&	y_xa_-_xb_y-_xc_-axdc	_xc_
+\<.x..\>		&	y_xa_-_xb_y-_xc_-axdc	_xc_
 [[:<:]]a_b[[:>:]]	&	x_a_b
+\<a_b\>			&	x_a_b
 
 # past problems, and suspected problems
 (A[1])|(A[2])|(A[3])|(A[4])|(A[5])|(A[6])|(A[7])|(A[8])|(A[9])|(A[A])	-	A1	A1
@@ -475,3 +591,4 @@ CC[13]1|a{21}[23][EO][123][Es][12]a{15}aa[34][EW]aaaaaaa[X]a	-	CC11	CC11
 Char \([a-z0-9_]*\)\[.*	b	Char xyz[k	Char xyz[k	xyz
 a?b	-	ab	ab
 -\{0,1\}[0-9]*$	b	-5	-5
+

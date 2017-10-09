@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Server.pm,v 1.3 2013/06/05 04:34:27 bluhm Exp $
 
 # Copyright (c) 2010-2013 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -30,17 +30,20 @@ sub new {
 	my %args = @_;
 	$args{logfile} ||= "server.log";
 	$args{up} ||= "Accepted";
+	$args{down} ||= "Shutdown $class";
 	my $self = Proc::new($class, %args);
-	$self->{protocol} ||= "tcp";
-	$self->{listendomain}
-	    or croak "$class listen domain not given";
-	my $ls = IO::Socket::INET6->new(
+	$self->{domain}
+	    or croak "$class domain not given";
+	$self->{protocol}
+	    or croak "$class protocol not given";
+	my $ls = do { local $> = 0; IO::Socket::INET6->new(
+	    Type	=> $self->{socktype},
 	    Proto	=> $self->{protocol},
 	    ReuseAddr	=> 1,
-	    Domain	=> $self->{listendomain},
+	    Domain	=> $self->{domain},
 	    $self->{listenaddr} ? (LocalAddr => $self->{listenaddr}) : (),
 	    $self->{listenport} ? (LocalPort => $self->{listenport}) : (),
-	) or die ref($self), " socket failed: $!";
+	) } or die ref($self), " socket failed: $!";
 	if ($self->{oobinline}) {
 		setsockopt($ls, SOL_SOCKET, SO_OOBINLINE, pack('i', 1))
 		    or die ref($self), " set oobinline listen failed: $!";

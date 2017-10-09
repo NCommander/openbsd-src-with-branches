@@ -1,4 +1,5 @@
-/*	$NetBSD: if_levar.h,v 1.3 1995/10/07 09:19:16 mycroft Exp $	*/
+/*	$OpenBSD: if_levar.h,v 1.9 2007/06/17 21:20:47 jasper Exp $	*/
+/*	$NetBSD: if_levar.h,v 1.5 1996/05/07 01:50:07 thorpej Exp $	*/
 
 /*
  * LANCE Ethernet driver header file
@@ -20,7 +21,6 @@
 
 #define	NE2100		2
 #define	PCnet_ISA	4
-#define	PCnet_PCI	5
 #define	NE2100_RDP	0x10
 #define	NE2100_RAP	0x12
 
@@ -45,39 +45,16 @@
  * This structure contains the output queue for the interface, its address, ...
  */
 struct le_softc {
-	struct	device sc_dev;		/* base structure */
-	struct	arpcom sc_arpcom;	/* Ethernet common part */
-
-	void	(*sc_copytodesc)();	/* Copy to descriptor */
-	void	(*sc_copyfromdesc)();	/* Copy from descriptor */
-
-	void	(*sc_copytobuf)();	/* Copy to buffer */
-	void	(*sc_copyfrombuf)();	/* Copy from buffer */
-	void	(*sc_zerobuf)();	/* and Zero bytes in buffer */
-
-	u_int16_t sc_conf3;		/* CSR3 value */
-
-	void	*sc_mem;		/* base address of RAM -- CPU's view */
-	u_long	sc_addr;		/* base address of RAM -- LANCE's view */
-	u_long	sc_memsize;		/* size of RAM */
-
-	int	sc_nrbuf;		/* number of receive buffers */
-	int	sc_ntbuf;		/* number of transmit buffers */
-	int	sc_last_rd;
-	int	sc_first_td, sc_last_td, sc_no_td;
-
-	int	sc_initaddr;
-	int	sc_rmdaddr;
-	int	sc_tmdaddr;
-	int	sc_rbufaddr;
-	int	sc_tbufaddr;
-
-#ifdef LEDEBUG
-	int	sc_debug;
-#endif
+	struct	am7990_softc sc_am7990;	/* glue to MI code */
 
 	void	*sc_ih;
-	void	*sc_sh;
 	int	sc_card;
-	int	sc_rap, sc_rdp;		/* LANCE registers */
+	int	sc_rap, sc_rdp;		/* offsets to LANCE registers */
+
+	bus_space_tag_t sc_iot;
+	bus_space_handle_t sc_ioh;
 };
+
+void		le_isa_wrcsr(struct lance_softc *, uint16_t, uint16_t);
+uint16_t	le_isa_rdcsr(struct lance_softc *, uint16_t);  
+int		le_isa_intredge(void *);

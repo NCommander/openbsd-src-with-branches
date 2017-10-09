@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Remote.pm,v 1.8 2017/08/15 04:11:20 bluhm Exp $
 
-# Copyright (c) 2010-2013 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -28,6 +28,7 @@ sub new {
 	my %args = @_;
 	$args{logfile} ||= "remote.log";
 	$args{up} ||= "Started";
+	$args{down} ||= "Shutdown";
 	$args{func} = sub { Carp::confess "$class func may not be called" };
 	$args{remotessh}
 	    or croak "$class remote ssh host not given";
@@ -45,8 +46,8 @@ sub new {
 
 sub up {
 	my $self = Proc::up(shift, @_);
-	my $timeout = shift || 10;
-	if ($self->{connectport}) {
+	my $timeout = shift || 20;
+	if ($self->{connect}) {
 		$self->loggrep(qr/^Connected$/, $timeout)
 		    or croak ref($self), " no Connected in $self->{logfile} ".
 			"after $timeout seconds";
@@ -64,22 +65,31 @@ sub up {
 
 sub child {
 	my $self = shift;
+	my @remoteopts;
+
+	if ($self->{opts}) {
+		my %opts = %{$self->{opts}};
+		foreach my $k (sort keys %opts) {
+			push @remoteopts, "-$k";
+			my $v = $opts{$k};
+			push @remoteopts, $v if $k =~ /[A-Z]/ or $v ne 1;
+		}
+	}
 
 	print STDERR $self->{up}, "\n";
-	my @opts = split(' ', $ENV{SSH_OPTIONS}) if $ENV{SSH_OPTIONS};
-	# if sudo is set, run the remote perl as root, otherwise pass SUDO
-	my @sudo = !$ENV{SUDO} ? () :
-	    $self->{sudo} ? $ENV{SUDO} : "SUDO=$ENV{SUDO}";
+	my @sshopts = $ENV{SSH_OPTIONS} ? split(' ', $ENV{SSH_OPTIONS}) : ();
+	my @sudo = $ENV{SUDO} ? ($ENV{SUDO}, "SUDO=$ENV{SUDO}") : ();
 	my $dir = dirname($0);
-	$dir = getcwd() if ! $dir || $dir eq '.';
-	my @cmd = ('ssh', '-n', @opts, $self->{remotessh}, @sudo, 'perl',
-	    '-I', $dir, "$dir/".basename($0), $self->{af},
+	$dir = getcwd() if ! $dir || $dir eq ".";
+	my @cmd = ("ssh", "-n", @sshopts, $self->{remotessh}, @sudo, "perl",
+	    "-I", $dir, "$dir/".basename($0), @remoteopts, $self->{af},
 	    $self->{bindaddr}, $self->{connectaddr}, $self->{connectport},
-	    ($self->{testfile} ? "$dir/".basename($self->{testfile}) :
-	    ()));
+	    ($self->{bindport} ? $self->{bindport} : ()),
+	    ($self->{testfile} ? "$dir/".basename($self->{testfile}) : ()));
 	print STDERR "execute: @cmd\n";
+	$< = $>;
 	exec @cmd;
-	die "Exec @cmd failed: $!";
+	die ref($self), " exec '@cmd' failed: $!";
 }
 
 1;

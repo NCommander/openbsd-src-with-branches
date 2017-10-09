@@ -372,14 +372,14 @@ debug_find_rr_num(rrset_type* rrset, uint16_t type, uint16_t klass,
 		if (rrset->rrs[i].type != type) {
 			log_msg(LOG_WARNING, "diff: RR <%s, %s> does not match "
 				"RR num %d type %s",
-				dname_to_string(rrset->rrs[i].owner->dname,0),
+				dname_to_string(domain_dname(rrset->rrs[i].owner),0),
 				rrtype_to_string(type),	i,
 				rrtype_to_string(rrset->rrs[i].type));
 		}
 		if (rrset->rrs[i].klass != klass) {
 			log_msg(LOG_WARNING, "diff: RR <%s, %s> class %d "
 				"does not match RR num %d class %d",
-				dname_to_string(rrset->rrs[i].owner->dname,0),
+				dname_to_string(domain_dname(rrset->rrs[i].owner),0),
 				rrtype_to_string(type),
 				klass, i,
 				rrset->rrs[i].klass);
@@ -387,7 +387,7 @@ debug_find_rr_num(rrset_type* rrset, uint16_t type, uint16_t klass,
 		if (rrset->rrs[i].rdata_count != rdata_num) {
 			log_msg(LOG_WARNING, "diff: RR <%s, %s> rdlen %u "
 				"does not match RR num %d rdlen %d",
-				dname_to_string(rrset->rrs[i].owner->dname,0),
+				dname_to_string(domain_dname(rrset->rrs[i].owner),0),
 				rrtype_to_string(type),
 				(unsigned) rdata_num, i,
 				(unsigned) rrset->rrs[i].rdata_count);
@@ -396,7 +396,7 @@ debug_find_rr_num(rrset_type* rrset, uint16_t type, uint16_t klass,
 			&rd, &reason)) {
 			log_msg(LOG_WARNING, "diff: RR <%s, %s> rdata element "
 				"%d differs from RR num %d rdata (%s)",
-				dname_to_string(rrset->rrs[i].owner->dname,0),
+				dname_to_string(domain_dname(rrset->rrs[i].owner),0),
 				rrtype_to_string(type),
 				rd, i, reason);
 		}
@@ -752,7 +752,9 @@ add_RR(namedb_type* db, const dname_type* dname,
 	rr_type *rrs_old;
 	ssize_t rdata_num;
 	int rrnum;
+#ifdef NSEC3
 	int rrset_added = 0;
+#endif
 	domain = domain_table_find(db->domains, dname);
 	if(!domain) {
 		/* create the domain */
@@ -770,7 +772,9 @@ add_RR(namedb_type* db, const dname_type* dname,
 		rrset->rrs = 0;
 		rrset->rr_count = 0;
 		domain_add_rrset(domain, rrset);
+#ifdef NSEC3
 		rrset_added = 1;
+#endif
 	}
 
 	/* dnames in rdata are normalized, conform RFC 4035,
@@ -858,10 +862,10 @@ add_RR(namedb_type* db, const dname_type* dname,
 
 static zone_type*
 find_or_create_zone(namedb_type* db, const dname_type* zone_name,
-	nsd_options_t* opt, const char* zstr, const char* patname)
+	struct nsd_options* opt, const char* zstr, const char* patname)
 {
 	zone_type* zone;
-	zone_options_t* zopt;
+	struct zone_options* zopt;
 	zone = namedb_find_zone(db, zone_name);
 	if(zone) {
 		return zone;
@@ -958,7 +962,7 @@ delete_zone_rrs(namedb_type* db, zone_type* zone)
 /* return value 0: syntaxerror,badIXFR, 1:OK, 2:done_and_skip_it */
 static int
 apply_ixfr(namedb_type* db, FILE *in, const char* zone, uint32_t serialno,
-	nsd_options_t* opt, uint32_t seq_nr, uint32_t seq_total,
+	struct nsd_options* opt, uint32_t seq_nr, uint32_t seq_total,
 	int* is_axfr, int* delete_mode, int* rr_count,
 	udb_ptr* udbz, struct zone** zone_res, const char* patname, int* bytes,
 	int* softfail)
@@ -1256,7 +1260,7 @@ check_for_bad_serial(namedb_type* db, const char* zone_str, uint32_t old_serial)
 
 static int
 apply_ixfr_for_zone(nsd_type* nsd, zone_type* zonedb, FILE* in,
-	nsd_options_t* opt, udb_base* taskudb, udb_ptr* last_task,
+	struct nsd_options* opt, udb_base* taskudb, udb_ptr* last_task,
 	uint32_t xfrfilenr)
 {
 	char zone_buf[3072];
@@ -1299,9 +1303,9 @@ apply_ixfr_for_zone(nsd_type* nsd, zone_type* zonedb, FILE* in,
 	}
 
 	/* has been read in completely */
-	if(strcmp(zone_buf, dname_to_string(zonedb->apex->dname,0)) != 0) {
+	if(strcmp(zone_buf, domain_to_string(zonedb->apex)) != 0) {
 		log_msg(LOG_ERR, "file %s does not match task %s",
-			zone_buf, dname_to_string(zonedb->apex->dname,0));
+			zone_buf, domain_to_string(zonedb->apex));
 		return 0;
 	}
 	if(!committed) {
@@ -1321,7 +1325,7 @@ apply_ixfr_for_zone(nsd_type* nsd, zone_type* zonedb, FILE* in,
 	if(committed)
 	{
 		int is_axfr=0, delete_mode=0, rr_count=0, softfail=0;
-		const dname_type* apex = zonedb->apex->dname;
+		const dname_type* apex = domain_dname_const(zonedb->apex);
 		udb_ptr z;
 
 		DEBUG(DEBUG_XFRD,1, (LOG_INFO, "processing xfr: %s", zone_buf));
@@ -1378,11 +1382,13 @@ apply_ixfr_for_zone(nsd_type* nsd, zone_type* zonedb, FILE* in,
 		if(nsd->db->udb) {
 			ZONE(&z)->is_changed = 1;
 			ZONE(&z)->mtime = time_end_0;
+			ZONE(&z)->mtime_nsec = time_end_1*1000;
 			udb_zone_set_log_str(nsd->db->udb, &z, log_buf);
 			udb_zone_set_file_str(nsd->db->udb, &z, NULL);
 			udb_ptr_unlink(&z, nsd->db->udb);
 		} else {
-			zonedb->mtime = time_end_0;
+			zonedb->mtime.tv_sec = time_end_0;
+			zonedb->mtime.tv_nsec = time_end_1*1000;
 			if(zonedb->logstr)
 				region_recycle(nsd->db->region, zonedb->logstr,
 					strlen(zonedb->logstr)+1);
@@ -1615,7 +1621,7 @@ void* task_new_stat_info(udb_base* udb, udb_ptr* last, struct nsdst* stat,
 	udb_ptr e;
 	DEBUG(DEBUG_IPC,1, (LOG_INFO, "add task stat_info"));
 	if(!task_create_new_elem(udb, last, &e, sizeof(struct task_list_d)+
-		sizeof(*stat) + sizeof(stc_t)*child_count, NULL)) {
+		sizeof(*stat) + sizeof(stc_type)*child_count, NULL)) {
 		log_msg(LOG_ERR, "tasklist: out of space, cannot add stati");
 		return NULL;
 	}
@@ -1663,7 +1669,7 @@ task_new_del_zone(udb_base* udb, udb_ptr* last, const dname_type* dname)
 	udb_ptr_unlink(&e, udb);
 }
 
-void task_new_add_key(udb_base* udb, udb_ptr* last, key_options_t* key)
+void task_new_add_key(udb_base* udb, udb_ptr* last, struct key_options* key)
 {
 	char* p;
 	udb_ptr e;
@@ -1701,7 +1707,8 @@ void task_new_del_key(udb_base* udb, udb_ptr* last, const char* name)
 	udb_ptr_unlink(&e, udb);
 }
 
-void task_new_add_pattern(udb_base* udb, udb_ptr* last, pattern_options_t* p)
+void task_new_add_pattern(udb_base* udb, udb_ptr* last,
+	struct pattern_options* p)
 {
 	region_type* temp;
 	buffer_type* buffer;
@@ -1741,7 +1748,7 @@ void task_new_del_pattern(udb_base* udb, udb_ptr* last, const char* name)
 	udb_ptr_unlink(&e, udb);
 }
 
-void task_new_opt_change(udb_base* udb, udb_ptr* last, nsd_options_t* opt)
+void task_new_opt_change(udb_base* udb, udb_ptr* last, struct nsd_options* opt)
 {
 	udb_ptr e;
 	DEBUG(DEBUG_IPC,1, (LOG_INFO, "add task opt_change"));
@@ -1835,7 +1842,7 @@ task_process_checkzones(struct nsd* nsd, udb_base* udb, udb_ptr* last_task,
 	/* on SIGHUP check if zone-text-files changed and if so,
 	 * reread.  When from xfrd-reload, no need to fstat the files */
 	if(task->yesno) {
-		zone_options_t* zo = zone_options_find(nsd->options,
+		struct zone_options* zo = zone_options_find(nsd->options,
 			task->zname);
 		if(zo)
 			namedb_check_zonefile(nsd, udb, last_task, zo);
@@ -1849,7 +1856,7 @@ static void
 task_process_writezones(struct nsd* nsd, struct task_list_d* task)
 {
 	if(task->yesno) {
-		zone_options_t* zo = zone_options_find(nsd->options,
+		struct zone_options* zo = zone_options_find(nsd->options,
 			task->zname);
 		if(zo)
 			namedb_write_zonefile(nsd, zo);
@@ -1891,7 +1898,7 @@ static void
 task_process_del_zone(struct nsd* nsd, struct task_list_d* task)
 {
 	zone_type* zone;
-	zone_options_t* zopt;
+	struct zone_options* zopt;
 	DEBUG(DEBUG_IPC,1, (LOG_INFO, "delzone task %s", dname_to_string(
 		task->zname, NULL)));
 	zone = namedb_find_zone(nsd->db, task->zname);
@@ -1925,7 +1932,7 @@ task_process_del_zone(struct nsd* nsd, struct task_list_d* task)
 static void
 task_process_add_key(struct nsd* nsd, struct task_list_d* task)
 {
-	key_options_t key;
+	struct key_options key;
 	key.name = (char*)task->zname;
 	DEBUG(DEBUG_IPC,1, (LOG_INFO, "addkey task %s", key.name));
 	key.algorithm = key.name + strlen(key.name)+1;
@@ -1948,7 +1955,7 @@ task_process_add_pattern(struct nsd* nsd, struct task_list_d* task)
 {
 	region_type* temp = region_create(xalloc, free);
 	buffer_type buffer;
-	pattern_options_t *pat;
+	struct pattern_options *pat;
 	buffer_create_from(&buffer, task->zname, task->yesno);
 	pat = pattern_options_unmarshal(temp, &buffer);
 	DEBUG(DEBUG_IPC,1, (LOG_INFO, "addpattern task %s", pat->pname));

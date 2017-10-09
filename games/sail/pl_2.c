@@ -1,3 +1,4 @@
+/*	$OpenBSD: pl_2.c,v 1.5 2015/12/31 16:44:22 mestre Exp $	*/
 /*	$NetBSD: pl_2.c,v 1.3 1995/04/22 10:37:08 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,19 +30,16 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pl_2.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: pl_2.c,v 1.3 1995/04/22 10:37:08 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <signal.h>
 
+#include "extern.h"
+#include "machdep.h"
 #include "player.h"
 
-play()
+void
+play(void)
 {
-	register struct ship *sp;
+	struct ship *sp;
 
 	for (;;) {
 		switch (sgetch("~\b", (struct ship *)0, 0)) {
@@ -62,7 +56,7 @@ play()
 			unfoulplayer();
 			break;
 		case 'v':
-			Signal("%s", (struct ship *)0, version);
+			Msg("%s", version);
 			break;
 		case 'b':
 			acceptboard();
@@ -80,7 +74,7 @@ play()
 			repair();
 			break;
 		case 'B':
-			Signal("'Hands to stations!'", (struct ship *)0);
+			Msg("'Hands to stations!'");
 			unboard(ms, ms, 1);	/* cancel DBP's */
 			unboard(ms, ms, 0);	/* cancel offense */
 			break;
@@ -96,10 +90,10 @@ play()
 			mf->loadR = L_EMPTY;
 			mf->readyL = R_EMPTY;
 			mf->readyR = R_EMPTY;
-			Signal("Broadsides unloaded", (struct ship *)0);
+			Msg("Broadsides unloaded");
 			break;
 		case 'q':
-			Signal("Type 'Q' to quit", (struct ship *)0);
+			Msg("Type 'Q' to quit");
 			break;
 		case 'Q':
 			leave(LEAVE_QUIT);
@@ -111,7 +105,7 @@ play()
 			break;
 		case 'i':
 			if ((sp = closestenemy(ms, 0, 1)) == 0)
-				Signal("No more ships left.");
+				Msg("No more ships left.");
 			else
 				eyeball(sp);
 			break;

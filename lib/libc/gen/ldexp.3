@@ -1,4 +1,4 @@
-.\"	$NetBSD: ldexp.3,v 1.4 1995/02/27 04:35:15 cgd Exp $
+.\"	$OpenBSD: ldexp.3,v 1.7 2011/07/07 13:30:28 jmc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,27 +31,42 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)ldexp.3	8.2 (Berkeley) 4/19/94
-.\"
-.Dd April 19, 1994
+.Dd $Mdocdate: July 7 2011 $
 .Dt LDEXP 3
 .Os
 .Sh NAME
-.Nm ldexp
+.Nm ldexp ,
+.Nm ldexpf ,
+.Nm ldexpl
 .Nd multiply floating-point number by integral power of 2
 .Sh SYNOPSIS
-.Fd #include <math.h>
+.In math.h
 .Ft double
 .Fn ldexp "double x" "int exp"
+.Ft float
+.Fn ldexpf "float x" "int exp"
+.Ft long double
+.Fn ldexpl "long double x" "int exp"
 .Sh DESCRIPTION
 The
 .Fn ldexp
 function multiplies a floating-point number by an integral
 power of 2.
+The
+.Fn ldexpf
+function is a single precision version of
+.Fn ldexp .
+The
+.Fn ldexpl
+function is an extended precision version of
+.Fn ldexp .
 .Sh RETURN VALUES
 The
-.Fn ldexp
-function returns the value of
+.Fn ldexp ,
+.Fn ldexpf
+and
+.Fn ldexpl
+functions return the value of
 .Fa x
 times 2 raised to the power
 .Fa exp .
@@ -70,8 +81,7 @@ and the value
 is returned.
 .Sh SEE ALSO
 .Xr frexp 3 ,
-.Xr modf 3 ,
-.Xr math 3
+.Xr modf 3
 .Sh STANDARDS
 The
 .Fn ldexp

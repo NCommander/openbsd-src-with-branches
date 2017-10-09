@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# $OpenBSD: smtpd,v 1.5 2015/12/26 09:55:15 ajacoutot Exp $
+
+daemon="/usr/sbin/smtpd"
+
+. /etc/rc.d/rc.subr
+
+rc_reload=NO
+
+rc_cmd $1

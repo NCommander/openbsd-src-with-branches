@@ -13,29 +13,17 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_scalbnf.c,v 1.4 1995/05/10 20:48:10 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const float
-#else
-static float
-#endif
 two25   =  3.355443200e+07,	/* 0x4c000000 */
 twom25  =  2.9802322388e-08,	/* 0x33000000 */
 huge   = 1.0e+30,
 tiny   = 1.0e-30;
 
-#ifdef __STDC__
-	float scalbnf (float x, int n)
-#else
-	float scalbn (x,n)
-	float x; int n;
-#endif
+float
+scalbnf(float x, int n)
 {
 	int32_t k,ix;
 	GET_FLOAT_WORD(ix,x);
@@ -59,4 +47,11 @@ tiny   = 1.0e-30;
         k += 25;				/* subnormal result */
 	SET_FLOAT_WORD(x,(ix&0x807fffff)|(k<<23));
         return x*twom25;
+}
+DEF_STD(scalbnf);
+
+float
+ldexpf(float x, int n)
+{
+	return scalbnf(x, n);
 }

@@ -1,35 +1,78 @@
+/*	$OpenBSD: config.h,v 1.12 2015/01/19 15:30:52 krw Exp $ */
+/* *	$NetBSD: config.h,v 1.3 1995/03/23 08:29:15 cgd Exp $*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
  *
- *	$NetBSD: config.h,v 1.3 1995/03/23 08:29:15 cgd Exp $
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "pathnames.h"
 
-#ifndef CONFIG	/* make sure the compiler doesnt see the typedefs twice */
+#ifndef CONFIG	/* make sure the compiler doesn't see the typedefs twice */
 
 #define	CONFIG
 #define	UNIX		/* delete if no fork(), exec() available */
 #define	CHDIR		/* delete if no chdir() available */
 
-/*
- * Some include files are in a different place under SYSV
- * 	BSD		   SYSV
- * <sys/wait.h>		<wait.h>
- * <sys/time.h>		<time.h>
- * <sgtty.h>		<termio.h>
- * Some routines are called differently
- * index		strchr
- * rindex		strrchr
- * Also, the code for suspend and various ioctls is only given for BSD4.2
- * (I do not have access to a SYSV system.)
- */
-#define BSD		/* delete this line on System V */
-
 /* #define STUPID */	/* avoid some complicated expressions if
 			   your C compiler chokes on them */
 /* #define PYRAMID_BUG */	/* avoid a bug on the Pyramid */
-/* #define NOWAITINCLUDE */	/* neither <wait.h> nor <sys/wait.h> exists */
 
 #define WIZARD  "bruno"	/* the person allowed to use the -D option */
 #define RECORD	"record"/* the file containing the list of topscorers */
@@ -50,6 +93,7 @@
  * (This might be preferable for security reasons.)
  * #define DEF_PAGER	".../mydir/mypager"
  */
+#define	DEF_PAGER	_PATH_PAGER
 
 /*
  * If you define MAIL, then the player will be notified of new mail
@@ -63,12 +107,10 @@
 #define	MAILCKFREQ	100	
 
 
-#define SHELL		/* do not delete the '!' command */
+/* #define SHELL */		/* do not delete the '!' command */
 
-#ifdef BSD
 #define	SUSPEND		/* let ^Z suspend the game */
-#endif BSD
-#endif UNIX
+#endif /* UNIX */
 
 #ifdef CHDIR
 /*
@@ -77,9 +119,9 @@
  */
 #ifdef QUEST
 #define HACKDIR _PATH_QUEST
-#else QUEST
+#else /* QUEST */
 #define HACKDIR	_PATH_HACK
-#endif QUEST
+#endif /* QUEST */
 
 /*
  * Some system administrators are stupid enough to make Hack suid root
@@ -95,7 +137,7 @@
  * simultaneously, define HACKDIR, SECURE and MAX_NR_OF_PLAYERS.
  * #define MAX_NR_OF_PLAYERS	100
  */
-#endif CHDIR
+#endif /* CHDIR */
 
 /* size of terminal screen is (at least) (ROWNO+2) by COLNO */
 #define	COLNO	80
@@ -107,7 +149,7 @@
  * will do when you have signed characters; otherwise use
  *	typedef	short int schar;
  */
-typedef	char	schar;
+typedef	signed char	schar;
 
 /*
  * small unsigned integers (8 bits suffice - but 7 bits do not)
@@ -130,7 +172,7 @@ typedef	xchar	boolean;		/* 0 or 1 */
 
 /*
  * Declaration of bitfields in various structs; if your C compiler
- * doesnt handle bitfields well, e.g., if it is unable to initialize
+ * doesn't handle bitfields well, e.g., if it is unable to initialize
  * structs containing bitfields, then you might use
  *	#define Bitfield(x,n)	uchar x
  * since the bitfields used never have more than 7 bits. (Most have 1 bit.)
@@ -139,4 +181,4 @@ typedef	xchar	boolean;		/* 0 or 1 */
 
 #define	SIZE(x)	(int)(sizeof(x) / sizeof(x[0]))
 
-#endif CONFIG
+#endif /* CONFIG */

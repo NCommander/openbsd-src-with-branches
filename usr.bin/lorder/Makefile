@@ -1,17 +1,11 @@
-#	$NetBSD: Makefile,v 1.8 1995/04/24 07:39:04 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.8 1999/05/21 01:24:04 espie Exp $
 
 MAN=	lorder.1
 
-.if (${MACHINE_ARCH} != "alpha")
 SCRIPT=	lorder.sh
-.else
-# alpha uses special version which works with GNU nm.
-SCRIPT=	lorder.sh.gnm
-.endif
 
 realinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
+	${INSTALL} ${INSTALL_COPY} -S -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
 	    ${.CURDIR}/${SCRIPT} ${DESTDIR}${BINDIR}/lorder
 
 .include <bsd.prog.mk>

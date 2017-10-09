@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: intr.h,v 1.9 2015/02/11 07:05:39 dlg Exp $	*/
 /*	$NetBSD: intr.h,v 1.22 2006/01/24 23:51:42 uwe Exp $	*/
 
 /*-
@@ -13,13 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -41,7 +34,7 @@
 
 #include <sys/device.h>
 #include <sys/evcount.h>
-#include <sys/lock.h>
+#include <sys/mutex.h>
 #include <sys/queue.h>
 #include <sh/psl.h>
 
@@ -74,8 +67,12 @@ struct intc_intrhand {
 	int	ih_level;	/* SR.I[0:3] value */
 	int	ih_evtcode;	/* INTEVT or INTEVT2(SH7709/SH7709A) */
 	int	ih_idx;		/* evtcode -> intrhand mapping */
+	int	ih_irq;
 	struct evcount ih_count;
+	const char *ih_name;
 };
+
+void intr_barrier(void *);
 
 /* from 0x200 by 0x20 -> from 0 by 1 */
 #define	EVTCODE_TO_MAP_INDEX(x)		(((x) >> 5) - 0x10)
@@ -106,39 +103,17 @@ struct sh_soft_intrhand {
 };
 
 struct sh_soft_intr {
-	TAILQ_HEAD(, sh_soft_intrhand) softintr_q;
-	struct evcnt softintr_evcnt;
-	struct simplelock softintr_slock;
-	unsigned long softintr_ipl;
+	TAILQ_HEAD(, sh_soft_intrhand)
+			softintr_q;
+	unsigned long	softintr_ipl;
+	struct mutex	softintr_lock;
 };
 
-#define	softintr_schedule(arg)						\
-do {									\
-	struct sh_soft_intrhand *__sih = (arg);				\
-	struct sh_soft_intr *__si = __sih->sih_intrhead;		\
-	int __s;							\
-									\
-	__s = _cpu_intr_suspend();					\
-	simple_lock(&__si->softintr_slock);				\
-	if (__sih->sih_pending == 0) {					\
-		TAILQ_INSERT_TAIL(&__si->softintr_q, __sih, sih_q);	\
-		__sih->sih_pending = 1;					\
-		setsoft(__si->softintr_ipl);				\
-	}								\
-	simple_unlock(&__si->softintr_slock);				\
-	_cpu_intr_resume(__s);						\
-} while (/*CONSTCOND*/0)
-
-void softintr_init(void);
-void *softintr_establish(int, void (*)(void *), void *);
-void softintr_disestablish(void *);
-void softintr_dispatch(int);
-void setsoft(int);
-
-/* XXX For legacy software interrupts. */
-extern struct sh_soft_intrhand *softnet_intrhand;
-
-#define	setsoftnet()	softintr_schedule(softnet_intrhand)
+void	 softintr_disestablish(void *);
+void	 softintr_dispatch(int);
+void	*softintr_establish(int, void (*)(void *), void *);
+void	 softintr_init(void);
+void	 softintr_schedule(void *);
 
 #endif	/* _KERNEL */
 

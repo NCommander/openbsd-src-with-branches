@@ -1,0 +1,2 @@
+dnl	$OpenBSD: upgrade,v 1.4 2014/02/27 18:55:39 miod Exp $
+OpenBSDUpgrade({:-bsd.rd, or the miniroot-:})

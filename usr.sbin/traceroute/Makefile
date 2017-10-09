@@ -1,8 +1,17 @@
-#	$NetBSD: Makefile,v 1.5 1995/03/26 21:45:18 glass Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.9 2016/03/30 06:38:47 jmc Exp $
 
 PROG=	traceroute
+
+SRCS=	traceroute.c worker.c
+
+CFLAGS+= -Wall -I${.CURDIR}
+CFLAGS+= -Wstrict-prototypes -Wmissing-prototypes
+CFLAGS+= -Wmissing-declarations
+CFLAGS+= -Wshadow -Wpointer-arith -Wcast-qual
+
 MAN=	traceroute.8
+
+LINKS=	${BINDIR}/traceroute ${BINDIR}/traceroute6
 BINOWN=	root
 BINMODE=4555
 

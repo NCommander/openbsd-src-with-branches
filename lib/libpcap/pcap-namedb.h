@@ -1,7 +1,7 @@
-/*	$NetBSD: pcap-namedb.h,v 1.2 1995/03/06 11:38:48 mycroft Exp $	*/
+/*	$OpenBSD: pcap-namedb.h,v 1.7 2005/11/18 11:05:39 djm Exp $	*/
 
 /*
- * Copyright (c) 1994
+ * Copyright (c) 1994, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,8 +31,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * @(#) Header: pcap-namedb.h,v 1.2 94/06/14 20:03:34 leres Exp (LBL)
  */
 
 #ifndef lib_pcap_ethers_h
@@ -40,7 +38,7 @@
 
 /*
  * As returned by the pcap_next_etherent()
- * XXX this stuff doesn't belong in this inteface, but this
+ * XXX this stuff doesn't belong in this interface, but this
  * library already must do name to address translation, so
  * on systems that don't have support for /etc/ethers, we
  * export these hooks since they'll
@@ -56,12 +54,17 @@ struct	pcap_etherent *pcap_next_etherent(FILE *);
 u_char *pcap_ether_hostton(const char*);
 u_char *pcap_ether_aton(const char *);
 
-u_long	**pcap_nametoaddr(const char *);
-u_long	pcap_nametonetaddr(const char *);
+bpf_u_int32 **pcap_nametoaddr(const char *);
+#ifdef INET6
+struct addrinfo *pcap_nametoaddrinfo(const char *);
+#endif
+bpf_u_int32 pcap_nametonetaddr(const char *);
 
 int	pcap_nametoport(const char *, int *, int *);
 int	pcap_nametoproto(const char *);
 int	pcap_nametoeproto(const char *);
+int	pcap_nametollc(const char *);
+
 /*
  * If a protocol is unknown, PROTO_UNDEF is returned.
  * Also, pcap_nametoport() returns the protocol along with the port number.
@@ -71,8 +74,8 @@ int	pcap_nametoeproto(const char *);
 #define PROTO_UNDEF		-1
 
 /* XXX move these to pcap-int.h? */
-u_long	__pcap_atodn(const char *);
-u_long	__pcap_atoin(const char *);
+int __pcap_atodn(const char *, bpf_u_int32 *);
+int __pcap_atoin(const char *, bpf_u_int32 *);
 u_short	__pcap_nametodnaddr(const char *);
 
 #endif

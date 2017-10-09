@@ -7,6 +7,7 @@
 
 use strict;
 use warnings;
+use Socket;
 
 our %args = (
     client => {
@@ -16,7 +17,7 @@ our %args = (
 	options => ["-un"],
     },
     file => {
-	loggrep => qr/ 127.0.0.1 /. get_log(),
+	loggrep => qr/ 127.0.0.1 /. get_testgrep(),
     },
 );
 

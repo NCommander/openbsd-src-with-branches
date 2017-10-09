@@ -78,8 +78,8 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(errno.h unistd.h string.h memory.h utime.h fcntl.h ndbm.h \
-		 limits.h sys/file.h \
-                 sys/param.h sys/select.h sys/time.h sys/timeb.h \
+		 limits.h stdint.h sys/file.h \
+                 sys/param.h sys/select.h sys/time.h \
                  io.h direct.h sys/bsdtypes.h sys/resource.h syslog.h)
 AC_HEADER_STAT
 AC_HEADER_TIME
@@ -105,7 +105,6 @@ AC_CHECK_FUNCS(\
 	getpassphrase \
 	gettimeofday \
 	initgroups \
-	mknod \
 	mkstemp \
 	mktemp \
 	putenv \
@@ -166,6 +165,33 @@ dnl use or not, but the code has been changed to work right reguardless,
 dnl so we can go back to a simple check.
 AC_SEARCH_LIBS(getspnam, sec gen, AC_DEFINE(HAVE_GETSPNAM))
 
+dnl
+dnl Check for a system libz.
+dnl
+AC_CHECK_LIB(z, zlibVersion, ZLIB=-lz ZLIB_DEPEND=/usr/lib/libz.a, ZLIBSUBDIRS=zlib ZLIB=$srcdir/zlib/libz.a ZLIB_DEPEND=$srcdir/zlib/libz.a ZLIB_INCLUDES=-I$srcdir/zlib)
+AC_SUBST(ZLIB)
+AC_SUBST(ZLIBSUBDIRS)
+AC_SUBST(ZLIB_INCLUDES)
+AC_SUBST(ZLIB_DEPEND)
+
+dnl We always use CVS's regular expression matcher.
+dnl This is because:
+dnl (1) If memory serves, the syntax of the regular expressions
+dnl handled by re_exec is not consistent from system to system, which
+dnl is a Bad Thing because CVS passes this syntax out to the user.
+dnl We might have better luck with the POSIX interface, if we really
+dnl want to look for a system-supplied matcher.
+dnl (2) It is necessary to make _sure_ that we get a regex.h and regex.c
+dnl that match each other.  In particular, rx and the CVS/emacs
+dnl regex.c have a different "struct re_pattern_buffer" and so using
+dnl the system regex.h and our regex.c, or vice versa, will tend to
+dnl cause a core dump.
+dnl (3) Just as a random data point, CVS uses re_exec (a BSD interface);
+dnl libdiff uses re_compile_pattern (a GNU interface, I think).  Diff
+dnl should probably be fixed to have the caller (CVS) supply the regexp
+dnl matching.
+dnl
+dnl AC_CHECK_FUNC(re_exec, :, LIBOBJS="$LIBOBJS regex.o")
 AC_FUNC_UTIME_NULL
 AC_SYS_LONG_FILE_NAMES
 
@@ -241,6 +267,51 @@ if test -n "$krb_h"; then
   else
        AC_CHECK_LIB(krb,printf,[krb_lib=yes krb_libdir=])
   fi
+fi
+
+dnl
+dnl Use --with-gssapi=DIR to enable GSSAPI support.
+dnl
+GSSAPI=/usr/cygnus/kerbnet
+define(WITH_GSSAPI,[
+AC_ARG_WITH([gssapi],
+  [  --with-gssapi=value     GSSAPI directory],
+  [GSSAPI=$withval],
+)dnl
+echo "default place for GSSAPI is $GSSAPI"
+AC_SUBST(GSSAPI)])dnl
+WITH_GSSAPI
+
+hold_cppflags=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS -I$GSSAPI/include/kerberosV "
+AC_CHECK_HEADERS(krb5.h gssapi.h gssapi/gssapi.h gssapi/gssapi_generic.h)
+CPPFLAGS=$hold_cppflags
+
+if test "$ac_cv_header_krb5_h" = "yes" && 
+   (test "$ac_cv_header_gssapi_h" = "yes" ||
+    test "$ac_cv_header_gssapi_gssapi_h" = "yes"); then
+  AC_DEFINE(HAVE_GSSAPI)
+  includeopt="${includeopt} -I$GSSAPI/include/kerberosV"
+  # FIXME: This is ugly, but these things don't seem to be standardized.
+  if test "$ac_cv_header_gssapi_h" = "yes"; then
+    LIBS="$LIBS -L$GSSAPI/lib -lgssapi -lkrb5 -lcrypto"
+  else
+    LIBS="$LIBS -L$GSSAPI/lib -lgssapi_krb5 -lkrb5 -lcrypto -lcom_err"
+  fi
+  save_CPPFLAGS=$CPPFLAGS
+  CPPFLAGS="-I$GSSAPI/include/kerberosV $CPPFLAGS"
+  if test "$ac_cv_header_gssapi_h" = "yes"; then
+    AC_EGREP_HEADER(GSS_C_NT_HOSTBASED_SERVICE, gssapi.h, AC_DEFINE(HAVE_GSS_C_NT_HOSTBASED_SERVICE))
+  else
+    AC_EGREP_HEADER(GSS_C_NT_HOSTBASED_SERVICE, gssapi/gssapi.h, AC_DEFINE(HAVE_GSS_C_NT_HOSTBASED_SERVICE))
+  fi
+  CPPFLAGS=$save_CPPFLAGS
+  # This is necessary on Irix 5.3, in order to link against libkrb5 --
+  # there, an_to_ln.o refers to things defined only in -lgen.
+  AC_CHECK_LIB(gen, compile)
+fi
+
+if test -n "$krb_h"; then
   if test -n "$krb_lib"; then
     AC_DEFINE(HAVE_KERBEROS)
     test -n "${krb_libdir}" && LIBS="${LIBS} -L${krb_libdir}"
@@ -258,8 +329,6 @@ if test -n "$krb_h"; then
   fi
 fi
 AC_CHECK_FUNCS(krb_get_err_text)
-
-ACX_WITH_GSSAPI
 
 dnl
 dnl Use --with-encryption to turn on encryption support
@@ -299,14 +368,6 @@ fi],
   AC_DEFINE(SERVER_SUPPORT)
   enable_server=yes
 fi])
-
-dnl The auth server needs to be able to check passwords against passwd
-dnl file entries, so we only #define AUTH_SERVER_SUPPORT if we can
-dnl find the crypt function. 
-
-if test "$enable_server" = yes; then
-AC_SEARCH_LIBS(crypt, crypt, AC_DEFINE(HAVE_CRYPT) AC_DEFINE(AUTH_SERVER_SUPPORT))
-fi # enable_server
 
 dnl For the moment we will assume that all systems which have
 dnl the unixyness to run configure are unixy enough to do the

@@ -1,3 +1,4 @@
+.\"	$OpenBSD: vis.1,v 1.14 2010/08/21 19:00:50 djm Exp $
 .\"	$NetBSD: vis.1,v 1.5 1994/11/17 07:56:00 jtc Exp $
 .\"
 .\" Copyright (c) 1989, 1991, 1993, 1994
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,44 +30,53 @@
 .\"
 .\"     @(#)vis.1	8.4 (Berkeley) 4/19/94
 .\"
-.Dd April 19, 1994
+.Dd $Mdocdate: August 21 2010 $
 .Dt VIS 1
-.Os BSD 4.4
+.Os
 .Sh NAME
 .Nm vis
 .Nd display non-printable characters in a visual format
 .Sh SYNOPSIS
 .Nm vis
-.Op Fl cbflnostw
+.Op Fl abcflnostw
 .Op Fl F Ar foldwidth
-.Op Ar file ...
+.Op Ar
 .Sh DESCRIPTION
-.Nm Vis
+.Nm
 is a filter for converting non-printable characters
-into a visual representation.  It differs from
-.Ql cat -v
+into a visual representation.
+It differs from
+.Ic cat -v
 in that
-the form is unique and invertible.  By default, all non-graphic
-characters except space, tab, and newline are encoded.
+the form can be unique and invertible.
+By default, all non-printing
+characters except space, tab, and newline are encoded,
+as are any meta-characters
+.Pq eighth bit set .
 A detailed description of the
 various visual formats is given in
 .Xr vis 3 .
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
+.It Fl a
+Encode all characters, whether originally visible or not.
 .It Fl b
 Turns off prepending of backslash before up-arrow control sequences
-and meta characters, and disables the doubling of backslashes.  This
-produces output which is neither invertible or precise, but does
-represent a minimum of change to the input.  It is similar to
-.Dq Li cat -v .
+and meta-characters, and disables the doubling of backslashes.
+This produces output which is neither invertible nor precise, but does
+represent a minimum of change to the input.
+It is similar to
+.Ic cat -v .
 .It Fl c
 Request a format which displays a small subset of the
 non-printable characters using C-style backslash sequences.
-.It Fl F
+.It Fl F Ar foldwidth
 Causes
-.Nm vis
-to fold output lines to foldwidth columns (default 80), like
+.Nm
+to fold output lines to
+.Ar foldwidth
+columns, like
 .Xr fold 1 ,
 except
 that a hidden newline sequence is used, (which is removed
@@ -82,8 +88,9 @@ This makes
 the output usable with various editors and other utilities which
 typically don't work with partial lines.
 .It Fl f
-Same as
-.Fl F .
+Like
+.Fl F ,
+except output is always folded to 80 columns.
 .It Fl l
 Mark newlines with the visible sequence
 .Ql \e$ ,
@@ -94,23 +101,28 @@ still doubled and hidden newline sequences inserted if
 .Fl f
 or
 .Fl F
-is selected.  When combined with the
+is selected.
+When combined with the
 .Fl f
 flag,
-.Nm vis
+.Nm
 becomes like
 an invertible version of the
 .Xr fold 1
-utility.  That is, the output
+utility.
+That is, the output
 can be unfolded by running the output through
+.Xr unvis 1 .
 .It Fl o
 Request a format which displays non-printable characters as
 an octal number, \eddd.
 .It Fl s
 Only characters considered unsafe to send to a terminal are encoded.
 This flag allows backspace, bell, and carriage return in addition
-to the default space, tab and newline.
-.Xr unvis 1 .
+to the default space, tab, and newline.
+Meta-characters that are considered graphic characters by
+.Xr isgraph 3
+are not encoded.
 .It Fl t
 Tabs are also encoded.
 .It Fl w
@@ -122,5 +134,5 @@ White space (space-tab-newline) is also encoded.
 .Sh HISTORY
 The
 .Nm
-command appears in
+command appeared in
 .Bx 4.4 .

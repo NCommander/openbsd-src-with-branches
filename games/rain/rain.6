@@ -1,4 +1,4 @@
-.\"	$NetBSD: rain.6,v 1.4 1995/04/22 08:23:33 cgd Exp $
+.\"	$OpenBSD: rain.6,v 1.17 2014/09/08 01:27:54 schwarze Exp $
 .\"
 .\" Copyright (c) 1989, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,28 +29,32 @@
 .\"
 .\"	@(#)rain.6	8.1 (Berkeley) 5/31/93
 .\"
-.Dd May 31, 1993
+.Dd $Mdocdate: September 8 2014 $
 .Dt RAIN 6
 .Os
 .Sh NAME
-.Nm rain 
+.Nm rain
 .Nd animated raindrops display
 .Sh SYNOPSIS
-.Nm /usr/games/rain
+.Nm rain
+.Op Fl d Ar delay
 .Sh DESCRIPTION
-.Nm Rain 's
-display is modeled after the 
-.Tn VAX/VMS 
-program of the same name.
-The terminal has to be set for 9600 baud to obtain the proper effect.
+.Nm
+is modeled after the VAX/VMS program of the same name.
 .Pp
-As with all programs that use
-.Tn termcap ,
-the 
+To obtain the proper effect, the
+.Fl d
+option may be used to specify a delay in milliseconds between each update.
+Reasonable values are around 20\(en200.
+The default is based on the terminal speed, computed via the following formula:
+.Pp
+.Dl delay = speed / 9600 \- 1
+.Pp
+As with any
+.Xr curses 3
+program, the
 .Ev TERM
 environment variable must be set (and exported) to the type of the
 terminal being used.
-.Sh FILES
-.Pa /etc/termcap
-.Sh AUTHOR
-Eric P. Scott
+.Sh AUTHORS
+.An Eric P. Scott

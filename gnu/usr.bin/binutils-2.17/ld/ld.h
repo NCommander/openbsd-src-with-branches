@@ -200,11 +200,6 @@ typedef struct {
      behaviour of the linker.  The new default behaviour is to reject such
      input files.  */
   bfd_boolean accept_unknown_input_arch;
-
-  /* If TRUE reduce memory overheads, at the expense of speed.
-     This will cause map file generation to use an O(N^2) algorithm.  */
-  bfd_boolean reduce_memory_overheads;
-
 } args_type;
 
 extern args_type command_line;
@@ -251,6 +246,10 @@ typedef struct {
   bfd_boolean sort_common;
 
   bfd_boolean text_read_only;
+
+  /* Classic ELF executable which has data and bss next to each
+     other with no padding for GOT/PLT. */
+  bfd_boolean data_bss_contig;
 
   char *map_filename;
   FILE *map_file;

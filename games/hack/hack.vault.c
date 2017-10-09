@@ -1,24 +1,95 @@
+/*	$OpenBSD: hack.vault.c,v 1.7 2009/10/27 23:59:25 deraadt Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.vault.c,v 1.3 1995/03/23 08:31:59 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-#include	"hack.h"
+#include <stdlib.h>
+
+#include "hack.h"
+
 #ifdef QUEST
-setgd(/* mtmp */) /* struct monst *mtmp; */ {}
-gd_move() { return(2); }
-gddead(mtmp) struct monst *mtmp; {}
-replgd(mtmp,mtmp2) struct monst *mtmp, *mtmp2; {}
-invault(){}
+void
+setgd(void)
+{}
+
+int
+gd_move(void)
+{
+	return(2);
+}
+
+void
+gddead(void)
+{}
+
+void
+replgd(struct monst *mtmp, struct monst *mtmp2)
+{}
+
+void
+invault(void)
+{}
 
 #else
-
-
-#include "def.mkroom.h"
-extern struct monst *makemon();
+extern struct monst *makemon(struct permonst *, int, int);
 #define	FCSIZ	(ROWNO+COLNO)
 struct fakecorridor {
 	xchar fx,fy,ftyp;
@@ -38,11 +109,15 @@ static struct monst *guard;
 static int gdlevel;
 #define	EGD	((struct egd *)(&(guard->mextra[0])))
 
-static
-restfakecorr()
+static void restfakecorr(void);
+static int  goldincorridor(void);
+
+
+static void
+restfakecorr(void)
 {
-	register fcx,fcy,fcbeg;
-	register struct rm *crm;
+	int fcx,fcy,fcbeg;
+	struct rm *crm;
 
 	while((fcbeg = EGD->fcbeg) < EGD->fcend) {
 		fcx = EGD->fakecorr[fcbeg].fx;
@@ -61,10 +136,10 @@ restfakecorr()
 	guard = 0;
 }
 
-static
-goldincorridor()
+static int
+goldincorridor(void)
 {
-	register int fci;
+	int fci;
 
 	for(fci = EGD->fcbeg; fci < EGD->fcend; fci++)
 		if(g_at(EGD->fakecorr[fci].fx, EGD->fakecorr[fci].fy))
@@ -72,8 +147,11 @@ goldincorridor()
 	return(0);
 }
 
-setgd(){
-register struct monst *mtmp;
+void
+setgd(void)
+{
+	struct monst *mtmp;
+
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon) if(mtmp->isgd){
 		guard = mtmp;
 		gdlevel = dlevel;
@@ -82,15 +160,18 @@ register struct monst *mtmp;
 	guard = 0;
 }
 
-invault(){
-register tmp = inroom(u.ux, u.uy);
+void
+invault(void)
+{
+	int tmp = inroom(u.ux, u.uy);
+
     if(tmp < 0 || rooms[tmp].rtype != VAULT) {
 	u.uinvault = 0;
 	return;
     }
     if(++u.uinvault % 50 == 0 && (!guard || gdlevel != dlevel)) {
 	char buf[BUFSZ];
-	register x,y,dd,gx,gy;
+	int x,y,dd,gx,gy;
 
 	/* first find the goal for the guard */
 	for(dd = 1; (dd < ROWNO || dd < COLNO); dd++) {
@@ -113,7 +194,7 @@ fnd:
 	/* next find a good place for a door in the wall */
 	x = u.ux; y = u.uy;
 	while(levl[x][y].typ == ROOM) {
-		register int dx,dy;
+		int dx,dy;
 
 		dx = (gx > x) ? 1 : (gx < x) ? -1 : 0;
 		dy = (gy > y) ? 1 : (gy < y) ? -1 : 0;
@@ -166,10 +247,13 @@ fnd:
     }
 }
 
-gd_move(){
-register int x,y,dx,dy,gx,gy,nx,ny,typ;
-register struct fakecorridor *fcp;
-register struct rm *crm;
+int
+gd_move(void)
+{
+	int x,y,dx,dy,gx,gy,nx,ny,typ;
+	struct fakecorridor *fcp;
+	struct rm *crm;
+
 	if(!guard || gdlevel != dlevel){
 		impossible("Where is the guard?");
 		return(2);	/* died */
@@ -187,7 +271,7 @@ register struct rm *crm;
 	    if(nx == x || ny == y) if(nx != x || ny != y)
 	    if(isok(nx,ny))
 	    if(!IS_WALL(typ = (crm = &levl[nx][ny])->typ) && typ != POOL) {
-		register int i;
+		int i;
 		for(i = EGD->fcbeg; i < EGD->fcend; i++)
 			if(EGD->fakecorr[i].fx == nx &&
 			   EGD->fakecorr[i].fy == ny)
@@ -250,15 +334,17 @@ newpos:
 	return(1);
 }
 
-gddead(){
+void
+gddead(void)
+{
 	guard = 0;
 }
 
-replgd(mtmp,mtmp2)
-register struct monst *mtmp, *mtmp2;
+void
+replgd(struct monst *mtmp, struct monst *mtmp2)
 {
 	if(mtmp == guard)
 		guard = mtmp2;
 }
 
-#endif QUEST
+#endif /* QUEST */

@@ -1,5 +1,4 @@
-/*	$NetBSD: signame.c,v 1.6 1995/03/04 01:56:05 cgd Exp $	*/
-
+/*	$OpenBSD: signame.c,v 1.6 2015/09/06 20:26:20 guenther Exp $ */
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,14 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "from: @(#)siglist.c	5.6 (Berkeley) 2/23/91";*/
-#else
-static char rcsid[] = "$NetBSD: signame.c,v 1.6 1995/03/04 01:56:05 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <signal.h>
 #include <unistd.h>
@@ -76,5 +63,9 @@ const char *const sys_signame[NSIG] = {
 	"WINCH",	/* SIGWINCH */
 	"INFO",		/* SIGINFO */
 	"USR1",		/* SIGUSR1 */
-	"USR2"		/* SIGUSR2 */
+	"USR2",		/* SIGUSR2 */
+	"THR",		/* SIGTHR */
 };
+#if 0
+DEF_WEAK(sys_signame);
+#endif

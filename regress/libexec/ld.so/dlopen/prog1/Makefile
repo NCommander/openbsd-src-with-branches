@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2003/02/01 19:56:17 drahn Exp $
+# $OpenBSD: Makefile,v 1.3 2005/09/17 02:58:54 drahn Exp $
 
 .include <bsd.obj.mk>
 
@@ -22,11 +22,11 @@ AB_OBJDIR!=    if [ -d $(AB_DIR)/${__objdir} ]; then \
 
 
 
-CFLAGS=-I${.CURDIR}/../libab
+CFLAGS+=-g
 LDADD=
 #LDADD+=-lab
 #LDADD+=-laa
-LDFLAGS=-L$(AA_OBJDIR) -L$(AB_OBJDIR)
+#LDFLAGS=-L$(AA_OBJDIR) -L$(AB_OBJDIR)
 LDFLAGS+= -Wl,-rpath,$(AA_OBJDIR)  -Wl,-rpath,$(AB_OBJDIR) 
 NOMAN=
 CC=c++

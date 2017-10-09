@@ -1,3 +1,4 @@
+/*	$OpenBSD: alloc.c,v 1.16 2015/02/08 06:01:25 tedu Exp $	*/
 /*	$NetBSD: alloc.c,v 1.6 1995/03/21 09:02:23 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,98 +30,47 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)alloc.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: alloc.c,v 1.6 1995/03/21 09:02:23 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
 
-char   *memtop = NULL;		/* PWP: top of current memory */
-char   *membot = NULL;		/* PWP: bottom of allocatable memory */
-
-ptr_t
-Malloc(n)
-    size_t  n;
+void *
+Malloc(size_t n)
 {
-    ptr_t   ptr;
+    void *ptr;
 
-    if (membot == NULL)
-	memtop = membot = sbrk(0);
-    if ((ptr = malloc(n)) == (ptr_t) 0) {
+    if ((ptr = malloc(n)) == NULL) {
 	child++;
 	stderror(ERR_NOMEM);
     }
     return (ptr);
 }
 
-ptr_t
-Realloc(p, n)
-    ptr_t   p;
-    size_t  n;
+void *
+Reallocarray(void * p, size_t c, size_t n)
 {
-    ptr_t   ptr;
+    void *ptr;
 
-    if (membot == NULL)
-	memtop = membot = sbrk(0);
-    if ((ptr = realloc(p, n)) == (ptr_t) 0) {
+    if ((ptr = reallocarray(p, c, n)) == NULL) {
 	child++;
 	stderror(ERR_NOMEM);
     }
     return (ptr);
 }
 
-ptr_t
-Calloc(s, n)
-    size_t  s, n;
+void *
+Calloc(size_t s, size_t n)
 {
-    ptr_t   ptr;
+    void *ptr;
 
-    if (membot == NULL)
-	memtop = membot = sbrk(0);
-    if ((ptr = calloc(s, n)) == (ptr_t) 0) {
+    if ((ptr = calloc(s, n)) == NULL) {
 	child++;
 	stderror(ERR_NOMEM);
     }
 
     return (ptr);
-}
-
-void
-Free(p)
-    ptr_t   p;
-{
-    if (p)
-	free(p);
-}
-
-/*
- * mstats - print out statistics about malloc
- *
- * Prints two lines of numbers, one showing the length of the free list
- * for each size category, the second showing the number of mallocs -
- * frees for each size category.
- */
-void
-/*ARGSUSED*/
-showall(v, t)
-    Char **v;
-    struct command *t;
-{
-    memtop = (char *) sbrk(0);
-    (void) fprintf(cshout, "Allocated memory from 0x%lx to 0x%lx (%ld).\n",
-	    (unsigned long) membot, (unsigned long) memtop, memtop - membot);
 }

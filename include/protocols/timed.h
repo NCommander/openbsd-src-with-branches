@@ -1,4 +1,5 @@
-/*	$NetBSD: timed.h,v 1.3 1994/10/26 00:56:53 cgd Exp $	*/
+/*	$OpenBSD: timed.h,v 1.3 2003/06/02 19:34:12 millert Exp $	*/
+/*	$NetBSD: timed.h,v 1.5 1996/04/09 20:40:32 cgd Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,14 +43,17 @@
 #define ANYADDR 	NULL
 
 struct tsp {
-	u_char	tsp_type;
-	u_char	tsp_vers;
-	u_short	tsp_seq;
+	u_int8_t tsp_type;
+	u_int8_t tsp_vers;
+	u_int16_t tsp_seq;
 	union {
-		struct timeval tspu_time;
+		struct {
+			int32_t tv_sec;
+			int32_t tv_usec;
+		} tspu_time;
 		char tspu_hopcnt;
 	} tsp_u;
-	char tsp_name[MAXHOSTNAMELEN];
+	char tsp_name[256];
 };
 
 #define	tsp_time	tsp_u.tspu_time

@@ -1,0 +1,325 @@
+#	$OpenBSD: GENERIC,v 1.94 2017/08/28 19:32:53 jasper Exp $
+#
+# For further information on compiling OpenBSD kernels, see the config(8)
+# man page.
+#
+# For further information on hardware support for this architecture, see
+# the intro(4) man page.  For further information about kernel options
+# for this architecture, see the options(4) man page.  For an explanation
+# of each device driver in this file see the section 4 man page for the
+# device.
+
+machine		armv7 arm
+include		"../../../conf/GENERIC"
+
+makeoptions	KERNEL_BASE_VIRT="0xc0300000"
+
+maxusers	32			# estimated number of users
+option		CPU_ARMv7		# Support the ARMv7
+
+#option WSDISPLAY_COMPAT_USL		# VT handling
+option WSDISPLAY_COMPAT_RAWKBD		# can get raw scancodes
+option WSDISPLAY_DEFAULTSCREENS=1
+
+option		CONF_HAVE_GPIO
+option		USBVERBOSE
+
+config		bsd	swap generic
+
+# The main bus device
+mainbus0	at root
+simplebus*	at fdt?
+cpu0		at mainbus?
+
+# Cortex-A9
+cortex0		at mainbus?
+ampintc*	at fdt?
+amptimer*	at cortex?
+agtimer*	at fdt?
+armliicc*	at cortex?
+
+# iMX
+imxccm*		at fdt? early 1		# clock control module
+imxiomuxc*	at fdt? early 1		# iomux controller
+imxocotp*	at fdt?			# on-chip otp controller
+imxgpc*		at fdt?			# power controller
+imxdog*		at fdt?			# watchdog timer
+imxtemp*	at fdt?			# temperature monitor
+imxgpio*	at fdt?			# user-visible GPIO pins?
+fec*		at fdt?			# Ethernet
+imxuart*	at fdt?			# onboard uarts
+imxiic*		at fdt?			# i2c
+iic*		at imxiic?
+imxesdhc*	at fdt?			# SDHC controller
+sdmmc*		at imxesdhc?		# SD/MMC bus
+imxahci*	at fdt?			# AHCI/SATA
+imxehci*	at fdt?			# EHCI
+usb*		at imxehci?
+
+# OMAP3xxx/OMAP4xxx SoC
+omap0		at mainbus?
+omapid*		at omap?
+
+# OMAP on-chip devices
+intc*		at fdt?			# OMAP3 interrupt controller
+omwugen*	at fdt?			# Wake-up generator
+#edma*		at fdt?			# OMAP3 dma controller
+prcm*		at omap?		# power/clock controller
+ompinmux*	at fdt?			# pin muxing
+omdog*		at fdt?			# watchdog timer
+omgpio*		at fdt?			# user-visible GPIO pins?
+gpio*		at omgpio?
+tiiic*		at fdt?
+iic*		at tiiic?
+gptimer*	at omap?		# general purpose timers
+dmtimer*	at omap?		# am335x dual mode timers
+omusbtll*	at omap?
+cpsw*		at fdt?
+com*		at fdt?			# onboard uarts
+ommmc*		at fdt?			# SD/MMC card controller
+sdmmc*		at ommmc?		# SD/MMC bus
+
+omehci*		at fdt?			# EHCI
+usb*		at omehci?
+nxphdmi*	at iic?			# TDA19988 HDMI PHY
+amdisplay*	at fdt?			# AM335x LCD controller
+wsdisplay*	at amdisplay?
+
+# Sunxi A1x/A20 SoC
+sxiintc*	at fdt?			# A1x interrupt controller
+sxipio*		at fdt? early 1		# GPIO pins for leds & PHYs
+gpio*		at sxipio?
+sxiccmu*	at fdt? early 1		# Clock Control Module/Unit
+sxitimer*	at fdt? early 1
+sxidog*		at fdt?			# watchdog timer
+sxirtc*		at fdt?			# Real Time Clock
+sxie*		at fdt?
+dwge*		at fdt?
+dwxe*		at fdt?
+sxiahci*	at fdt?			# AHCI/SATA
+sximmc*		at fdt?			# SD/MMC card controller
+sdmmc*		at sximmc?		# SD/MMC bus
+ehci*		at fdt?			# EHCI (shim)
+usb*		at ehci?	#flags 0x1
+#ohci*		at sunxi?
+#usb*		at ohci?
+sxitwi*		at fdt?			# Two-Wire Serial Interface
+iic*		at sxitwi?		# I2C bus
+
+# ARM Versatile Express
+sysreg*		at fdt?
+pluart*		at fdt?
+plrtc*		at fdt?
+virtio*		at fdt?
+
+sdhc*		at fdt?
+sdmmc*		at sdhc?
+
+psci*		at fdt?
+syscon*		at fdt?
+
+simplefb*	at fdt?
+wsdisplay*	at simplefb?
+
+# Exynos
+#exdisplay*	at exynos?
+#wsdisplay*	at exdisplay? console ?
+exclock*	at fdt? early 1
+expower*	at fdt? early 1
+exsysreg*	at fdt? early 1
+exmct*		at fdt? early 1
+exdog*		at fdt?
+exgpio*		at fdt? early 1
+exiic*		at fdt?
+iic*		at exiic?
+exehci*		at fdt?
+usb*		at exehci?
+exdwusb*	at fdt?
+xhci*		at fdt?
+usb*		at xhci?
+dwmmc*		at fdt?
+sdmmc*		at dwmmc?
+exrtc*		at fdt?
+exuart*		at fdt?
+
+# Raspberry Pi 2/3
+bcmintc*	at fdt?
+bcmdog*		at fdt?
+dwctwo*		at fdt?
+usb*		at dwctwo?
+
+# Marvell SoC
+mvacc*		at fdt? early 1
+mvagc*		at fdt?
+mvsysctrl*	at fdt?
+mvmbus*		at fdt?
+mvxhci*		at fdt?
+usb*		at mvxhci?
+mvahci*		at fdt?
+mvpinctrl*	at fdt?
+mvmdio*		at fdt?
+mvneta*		at fdt?
+mvmpic*		at fdt?
+mvpxa*		at fdt?
+sdmmc*		at mvpxa?
+
+# Rockchip SoCs
+rkclock*	at fdt? early 1
+rkgrf*		at fdt? early 1
+rkpinctrl*	at fdt? early 1
+rkgpio*		at fdt?
+dwdog*		at fdt?
+
+axppmic*	at iic?			# axp209 pmic
+crosec*		at iic?
+wskbd*		at crosec? mux 1
+pcfrtc*		at iic?
+pcxrtc*		at iic?
+tpspmic*	at iic?
+
+# virtio devices
+vioblk*		at virtio?
+vio*		at virtio?
+viomb*		at virtio?
+viornd*		at virtio?
+vioscsi*	at virtio?
+
+# USB bus support
+usb*		at ehci?	flags 0x1
+
+# USB devices
+uhub*	at usb?			# USB Hubs
+uhub*	at uhub?		# USB Hubs
+urng*	at uhub?		# USB Random Number Generator
+uonerng* at uhub?		# Moonbase Otago OneRNG
+umodem*	at uhub?		# USB Modems/Serial
+ucom*	at umodem?
+uvisor*	at uhub?		# Handspring Visor
+ucom*	at uvisor?
+uvscom*	at uhub?		# SUNTAC Slipper U VS-10U serial
+ucom*	at uvscom?
+ubsa*	at uhub?		# Belkin serial adapter
+ucom*	at ubsa?
+uftdi*	at uhub?		# FTDI FT8U100AX serial adapter
+ucom*	at uftdi?
+uplcom* at uhub?		# I/O DATA USB-RSAQ2 serial adapter
+ucom*	at uplcom?
+umct*	at uhub?		# MCT USB-RS232 serial adapter
+ucom*	at umct?
+uslcom*	at uhub?		# Silicon Laboratories CP210x serial
+ucom*	at uslcom?
+uark*	at uhub?		# Arkmicro ARK3116 serial
+ucom*	at uark?
+moscom*	at uhub?		# MosChip MCS7703 serial
+ucom*	at moscom?		
+umcs*	at uhub?		# MosChip MCS78x0 serial
+ucom*	at umcs?
+uipaq*	at uhub?		# iPAQ serial adapter
+ucom*	at uipaq?
+umsm*	at uhub?		# Qualcomm MSM EVDO
+ucom*	at umsm?
+uchcom*	at uhub?		# WinChipHead CH341/340 serial
+ucom*	at uchcom?
+uticom*	at uhub?		# TI serial
+ucom*	at uticom?
+uaudio* at uhub?		# USB Audio
+audio*	at uaudio?
+umidi*	at uhub?		# USB MIDI
+midi*	at umidi?
+ulpt*	at uhub?		# USB Printers
+umass*	at uhub?		# USB Mass Storage devices
+uhidev*	at uhub?		# Human Interface Devices
+ums*	at uhidev?		# USB mouse
+wsmouse* at ums? mux 0
+uts*	at uhub?		# USB touchscreen
+wsmouse* at uts? mux 0
+uwacom*	at uhidev?		# USB Wacom tablet
+wsmouse* at uwacom? mux 0
+ukbd*	at uhidev?		# USB keyboard
+wskbd*	at ukbd? mux 1
+ucycom*	at uhidev?		# Cypress serial
+ucom*	at ucycom?
+uslhcom* at uhidev?		# Silicon Labs CP2110 USB HID UART
+ucom*	at uslhcom?
+uhid*	at uhidev?		# USB generic HID support
+upd*	at uhidev?		# USB Power Devices sensors
+aue*	at uhub?		# ADMtek AN986 Pegasus Ethernet
+atu*	at uhub?		# Atmel AT76c50x based 802.11b
+axe*	at uhub?		# ASIX Electronics AX88172 USB Ethernet
+axen*	at uhub?		# ASIX Electronics AX88179 USB Ethernet
+cue*	at uhub?		# CATC USB-EL1201A based Ethernet
+kue*	at uhub?		# Kawasaki KL5KUSB101B based Ethernet
+smsc*	at uhub?		# SMSC LAN95xx Ethernet
+cdce*	at uhub?		# CDC Ethernet
+urndis*	at uhub?		# Remote NDIS Ethernet
+upl*	at uhub?		# Prolific PL2301/PL2302 host-to-host `network'
+ugl*	at uhub?		# Genesys Logic GL620USB-A host-to-host `network'
+udav*	at uhub?		# Davicom DM9601 based Ethernet
+mos*	at uhub?		# MOSCHIP MCS7730/7830 10/100 Ethernet
+url*	at uhub?		# Realtek RTL8150L based adapters
+ure*	at uhub?		# Realtek RTL8152 based adapters
+wi*	at uhub?		# WaveLAN IEEE 802.11DS
+udsbr*	at uhub?		# D-Link DSB-R100 radio
+radio*	at udsbr?		# USB radio
+uberry*	at uhub?		# Research In Motion BlackBerry
+ugen*	at uhub?		# USB Generic driver
+uath*	at uhub?		# Atheros AR5005UG/AR5005UX
+ural*	at uhub?		# Ralink RT2500USB
+rum*	at uhub?		# Ralink RT2501USB/RT2601USB
+run*	at uhub?		# Ralink RT2700U/RT2800U/RT3000U
+otus*	at uhub?		# Atheros AR9001U
+athn*	at uhub?		# Atheros AR9002U
+zyd*	at uhub?		# Zydas ZD1211
+upgt*	at uhub?		# Conexant/Intersil PrismGT SoftMAC USB
+urtw*	at uhub?		# Realtek 8187
+rsu*	at uhub?		# Realtek RTL8188SU/RTL8191SU/RTL8192SU
+urtwn*	at uhub?		# Realtek RTL8188CU/RTL8192CU
+udcf*	at uhub?		# Gude Expert mouseCLOCK
+uthum*	at uhidev?		# TEMPerHUM sensor
+ugold*	at uhidev?		# gold TEMPer sensor
+utrh*	at uhidev?		# USBRH sensor
+utwitch* at uhidev?		# YUREX BBU sensor
+uow*	at uhub?		# Maxim/Dallas DS2490 1-Wire adapter
+uoakrh*	at uhidev?		# Toradex OAK temp and rel humidity
+uoaklux* at uhidev?		# Toradex OAK LUX
+uoakv*	at uhidev?		# Toradex OAK 10V sensor
+onewire* at uow?
+uvideo*	at uhub?		# USB Video
+video*	at uvideo?
+utvfu*	at uhub?		# Fushicai Audio-Video Grabber
+video*	at utvfu?
+audio*	at utvfu?
+udl*	at uhub?		# DisplayLink USB displays
+wsdisplay* at udl?
+
+atphy*		at mii?			# Attansic F1 PHYs
+rgephy*		at mii?			# Realtek 8169S/8110S PHY
+rlphy*		at mii?			# Realtek 8139 internal PHYs
+ukphy*		at mii?			# "unknown" PHYs
+
+scsibus*	at scsi?
+sd*		at scsibus?
+cd*		at scsibus?
+st*		at scsibus?
+ch*		at scsibus?
+uk*		at scsibus?
+
+# GPIO "pin bus" drivers
+gpioiic*	at gpio?		# I2C bus bit-banging
+iic*		at gpioiic?
+gpioow*		at gpio?		# 1-Wire bus bit-banging
+onewire*	at gpioow?
+
+# 1-Wire devices
+option	ONEWIREVERBOSE
+owid*		at onewire?		# ID
+owsbm*		at onewire?		# Smart Battery Monitor
+owtemp*		at onewire?		# Temperature
+owctr*		at onewire?		# Counter device
+
+# Pseudo-Devices
+pseudo-device	openprom
+pseudo-device	hotplug         1       # devices hot plugging
+
+# mouse & keyboard multiplexor pseudo-devices
+pseudo-device   wsmux           2

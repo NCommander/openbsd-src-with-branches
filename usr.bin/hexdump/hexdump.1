@@ -1,5 +1,8 @@
-.\" Copyright (c) 1989, 1990 The Regents of the University of California.
-.\" All rights reserved.
+.\"	$OpenBSD: hexdump.1,v 1.25 2014/11/15 14:41:02 bentley Exp $
+.\"	$NetBSD: hexdump.1,v 1.14 2001/12/07 14:46:24 bjh21 Exp $
+.\"
+.\" Copyright (c) 1989, 1990, 1993
+.\"	The Regents of the University of California.  All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -9,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -29,10 +28,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	from: @(#)hexdump.1	5.12 (Berkeley) 7/27/91
-.\"	$Id: hexdump.1,v 1.3 1994/01/11 02:27:37 jtc Exp $
+.\"	from: @(#)hexdump.1	8.2 (Berkeley) 4/18/94
 .\"
-.Dd July 27, 1991
+.Dd $Mdocdate: November 15 2014 $
 .Dt HEXDUMP 1
 .Os
 .Sh NAME
@@ -40,53 +38,75 @@
 .Nd ascii, decimal, hexadecimal, octal dump
 .Sh SYNOPSIS
 .Nm hexdump
-.Op Fl bcdovx
+.Bk -words
+.Op Fl bCcdovx
 .Op Fl e Ar format_string
 .Op Fl f Ar format_file
 .Op Fl n Ar length
-.Bk -words
-.Op Fl s Ar skip
+.Op Fl s Ar offset
+.Op Ar
 .Ek
-.Ar file  ...
 .Sh DESCRIPTION
-The hexdump utility is a filter which displays the specified files, or
-the standard input, if no files are specified, in a user specified
+The
+.Nm
+utility is a filter which displays the specified files, or
+the standard input, if no files are specified, in a user-specified
 format.
 .Pp
 The options are as follows:
-.Bl -tag -width Fl
+.Bl -tag -width Ds
 .It Fl b
 .Em One-byte octal display .
 Display the input offset in hexadecimal, followed by sixteen
 space-separated, three column, zero-filled, bytes of input data,
 in octal, per line.
+.It Fl C
+.Em Canonical hex+ASCII display .
+Display the input offset in hexadecimal, followed by sixteen
+space-separated, two column, hexadecimal bytes, followed by the
+same sixteen bytes in %_p format enclosed in
+.Sq |
+characters.
 .It Fl c
 .Em One-byte character display .
 Display the input offset in hexadecimal, followed by sixteen
 space-separated, three column, space-filled, characters of input
 data per line.
 .It Fl d
-.Em Two-byte decimal display.
+.Em Two-byte decimal display .
 Display the input offset in hexadecimal, followed by eight
 space-separated, five column, zero-filled, two-byte units
 of input data, in unsigned decimal, per line.
-.It Fl e Ar format_string 
+.It Fl e Ar format_string
 Specify a format string to be used for displaying data.
-.It Fl f Ar format_file 
+.It Fl f Ar format_file
 Specify a file that contains one or more newline separated format strings.
 Empty lines and lines whose first non-blank character is a hash mark
-.Pf ( Cm \&# )
+.Pq Ql #
 are ignored.
-.It Fl n Ar length 
+.It Fl n Ar length
 Interpret only
 .Ar length
 bytes of input.
+By default,
+.Ar length
+is interpreted as a decimal number.
+With a leading
+.Cm 0x
+or
+.Cm 0X ,
+.Ar length
+is interpreted as a hexadecimal number,
+otherwise, with a leading
+.Cm 0 ,
+.Ar length
+is interpreted as an octal number.
 .It Fl o
-.Em Two-byte octal display.
+.Em Two-byte octal display .
 Display the input offset in hexadecimal, followed by eight
 space-separated, six column, zero-filled, two byte quantities of
 input data, in octal, per line.
-.It Fl s Ar offset 
+.It Fl s Ar offset
 Skip
 .Ar offset
 bytes from the beginning of the input.
@@ -125,16 +145,17 @@ Without the
 option, any number of groups of output lines, which would be
 identical to the immediately preceding group of output lines (except
 for the input offsets), are replaced with a line comprised of a
-single asterisk.
+single asterisk
+.Pq Ql * .
 .It Fl x
-.Em Two-byte hexadecimal display.
+.Em Two-byte hexadecimal display .
 Display the input offset in hexadecimal, followed by eight, space
 separated, four column, zero-filled, two-byte quantities of input
 data, in hexadecimal, per line.
 .El
 .Pp
 For each input file,
-.Nm hexdump
+.Nm
 sequentially copies the input to standard output, transforming the
 data according to the format strings specified by the
 .Fl e
@@ -156,12 +177,16 @@ If specified it defines the number of bytes to be interpreted by
 each iteration of the format.
 .Pp
 If an iteration count and/or a byte count is specified, a single slash
+.Pq Sq /
 must be placed after the iteration count and/or before the byte count
 to disambiguate them.
 Any whitespace before or after the slash is ignored.
 .Pp
 The format is required and must be surrounded by double quote
-(" ") marks.
+.Pq \&"\& \&"
+marks
+(the quote mark is a special character in many shell programs,
+and may have to be escaped from the shell).
 It is interpreted as a fprintf-style format string (see
 .Xr fprintf 3 ) ,
 with the
@@ -172,33 +197,48 @@ An asterisk (*) may not be used as a field width or precision.
 .It
 A byte count or field precision
 .Em is
-required for each ``s'' conversion
-character (unlike the
+required for each
+.Sq s
+conversion character (unlike the
 .Xr fprintf 3
 default which prints the entire string if the precision is unspecified).
 .It
-The conversion characters ``h'', ``n'', and ``p'' are not
-supported.
+The conversion characters
+.Sq h ,
+.Sq l ,
+.Sq n ,
+.Sq p ,
+and
+.Sq q
+are not supported.
 .It
 The single character escape sequences
 described in the C standard are supported:
-.Bd -ragged -offset indent -compact
-.Bl -column <alert_character>
-.It NUL	\e0
-.It <alert character>	\ea
-.It <backspace>	\eb
-.It <form-feed>	\ef
-.It <newline>	\en
-.It <carriage return>	\er
-.It <tab>	\et
-.It <vertical tab>	\ev
+.Pp
+.Bl -tag -width "Xalert characterXXX" -offset indent -compact
+.It NUL
+\e0
+.It Aq alert character
+\ea
+.It Aq backspace
+\eb
+.It Aq form-feed
+\ef
+.It Aq newline
+\en
+.It Aq carriage return
+\er
+.It Aq tab
+\et
+.It Aq vertical tab
+\ev
 .El
-.Ed
 .El
 .Pp
-Hexdump also supports the the following additional conversion strings:
+.Nm
+also supports the following additional conversion strings:
 .Bl -tag -width Fl
-.It Cm \&_a Ns Op Cm dox 
+.It Cm \&_a Ns Op Cm dox
 Display the input offset, cumulative across input files, of the
 next byte to be displayed.
 The appended characters
@@ -208,7 +248,7 @@ and
 .Cm x
 specify the display base
 as decimal, octal or hexadecimal respectively.
-.It Cm \&_A Ns Op Cm dox 
+.It Cm \&_A Ns Op Cm dox
 Identical to the
 .Cm \&_a
 conversion string except that it is only performed
@@ -221,21 +261,20 @@ octal, except for those representable by standard escape notation
 which are displayed as two character strings.
 .It Cm _p
 Output characters in the default character set.
-Nonprinting characters are displayed as a single
-.Dq Cm \&. .
+Nonprinting characters are displayed as a single dot
+.Ql \&. .
 .It Cm _u
 Output US ASCII characters, with the exception that control characters are
 displayed using the following, lower-case, names.
-Characters greater than 0xff, hexadecimal, are displayed as hexadecimal
-strings.
-.Bl -column \&000_nu \&001_so \&002_st \&003_et \&004_eo
-.It \&000\ nul\t001\ soh\t002\ stx\t003\ etx\t004\ eot\t005\ enq
-.It \&006\ ack\t007\ bel\t008\ bs\t009\ ht\t00A\ lf\t00B\ vt
-.It \&00C\ ff\t00D\ cr\t00E\ so\t00F\ si\t010\ dle\t011\ dc1
-.It \&012\ dc2\t013\ dc3\t014\ dc4\t015\ nak\t016\ syn\t017\ etb
-.It \&018\ can\t019\ em\t01A\ sub\t01B\ esc\t01C\ fs\t01D\ gs
-.It \&01E\ rs\t01F\ us\t0FF\ del
-.El
+Other non-printable characters are displayed as hexadecimal strings.
+.Bd -literal -offset 3n
+000 nul  001 soh  002 stx  003 etx  004 eot  005 enq
+006 ack  007 bel  008 bs   009 ht   00A lf   00B vt
+00C ff   00D cr   00E so   00F si   010 dle  011 dc1
+012 dc2  013 dc3  014 dc4  015 nak  016 syn  017 etb
+018 can  019 em   01A sub  01B esc  01C fs   01D gs
+01E rs   01F us   07F del
+.Ed
 .El
 .Pp
 The default and supported byte counts for the conversion characters
@@ -245,12 +284,12 @@ are as follows:
 One byte counts only.
 .It Xo
 .Li \&%d , \&%i , \&%o ,
-.Li \&%u , \&%X , \&%x 
+.Li \&%u , \&%X , \&%x
 .Xc
-Four byte default, one and two byte counts supported.
+Four byte default, one, two, four and eight byte counts supported.
 .It Xo
 .Li \&%E , \&%e , \&%f ,
-.Li \&%G , \&%g 
+.Li \&%G , \&%g
 .Xc
 Eight byte default, four byte counts supported.
 .El
@@ -260,11 +299,13 @@ data required by each format unit, which is the iteration count times the
 byte count, or the iteration count times the number of bytes required by
 the format if the byte count is not specified.
 .Pp
-The input is manipulated in ``blocks'', where a block is defined as the
+The input is manipulated in
+.Dq blocks ,
+where a block is defined as the
 largest amount of data specified by any format string.
 Format strings interpreting less than an input block's worth of data,
 whose last format unit both interprets some number of bytes and does
-not have a specified iteration count, have the the iteration count
+not have a specified iteration count, have the iteration count
 incremented until the entire input block has been processed or there
 is not enough data remaining in the block to satisfy the format string.
 .Pp
@@ -284,7 +325,7 @@ If, as a result of the specification of the
 .Fl n
 option or end-of-file being reached, input data only partially
 satisfies a format string, the input block is zero-padded sufficiently
-to display all available data (i.e. any format units overlapping the
+to display all available data (i.e., any format units overlapping the
 end of data will display some number of the zero bytes).
 .Pp
 Further output by such format strings is replaced by an equivalent
@@ -295,9 +336,9 @@ output by an
 conversion character with the same field width
 and precision as the original conversion character or conversion
 string but with any
-.Dq Li \&+ ,
-.Dq \&\ \& ,
-.Dq Li \&#
+.Ql + ,
+.Ql \&\ \& ,
+.Ql #
 conversion flag characters
 removed, and referencing a NULL string.
 .Pp
@@ -305,27 +346,36 @@ If no format strings are specified, the default display is equivalent
 to specifying the
 .Fl x
 option.
-.Pp
-.Nm hexdump
-exits 0 on success and >0 if an error occurred.
+.Sh EXIT STATUS
+.Ex -std hexdump
 .Sh EXAMPLES
-Display the input in perusal format:
+Display characters using a fieldwidth of 4,
+and using special names for control characters:
+.Pp
+.Dl $ hexdump -e '"%4_u"' file
+.Pp
+An example file for use with the
+.Fl f
+option, to display the input in perusal format:
 .Bd -literal -offset indent
 "%06.6_ao "  12/1 "%3_u "
 "\et\et" "%_p "
 "\en"
 .Ed
 .Pp
-Implement the \-x option:
+An example file for use with the
+.Fl f
+option, which implements the equivalent of the
+.Fl x
+option:
 .Bd -literal -offset indent
 "%07.7_Ax\en"
-"%07.7_ax  " 8/2 "%04x " "\en"
+"%07.7_ax " 8/2 "   %04x " "\en"
 .Ed
 .Sh SEE ALSO
-.Xr adb 1
-.Sh STANDARDS
+.Xr od 1
+.Sh HISTORY
 The
-.Nm hexdump
-utility is expected to be
-.St -p1003.2
-compatible.
+.Nm
+utility first appeared in
+.Bx 4.3 Reno .

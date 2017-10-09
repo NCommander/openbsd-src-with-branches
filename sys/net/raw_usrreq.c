@@ -1,4 +1,5 @@
-/*	$NetBSD: raw_usrreq.c,v 1.10 1995/06/12 00:46:55 mycroft Exp $	*/
+/*	$OpenBSD: raw_usrreq.c,v 1.31 2017/03/13 20:18:21 claudio Exp $	*/
+/*	$NetBSD: raw_usrreq.c,v 1.11 1996/02/13 22:00:43 christos Exp $	*/
 
 /*
  * Copyright (c) 1980, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,179 +39,47 @@
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/errno.h>
+#include <sys/systm.h>
 
-#include <net/if.h>
-#include <net/route.h>
 #include <net/netisr.h>
 #include <net/raw_cb.h>
 
-/*
- * Initialize raw connection block q.
- */
-void
-raw_init()
-{
+#include <sys/stdarg.h>
 
-	LIST_INIT(&rawcb);
-}
-
-
-/*
- * Raw protocol input routine.  Find the socket
- * associated with the packet(s) and move them over.  If
- * nothing exists for this packet, drop it.
- */
-/*
- * Raw protocol interface.
- */
-void
-raw_input(m0, proto, src, dst)
-	struct mbuf *m0;
-	register struct sockproto *proto;
-	struct sockaddr *src, *dst;
-{
-	register struct rawcb *rp;
-	register struct mbuf *m = m0;
-	register int sockets = 0;
-	struct socket *last;
-
-	last = 0;
-	for (rp = rawcb.lh_first; rp != 0; rp = rp->rcb_list.le_next) {
-		if (rp->rcb_proto.sp_family != proto->sp_family)
-			continue;
-		if (rp->rcb_proto.sp_protocol  &&
-		    rp->rcb_proto.sp_protocol != proto->sp_protocol)
-			continue;
-		/*
-		 * We assume the lower level routines have
-		 * placed the address in a canonical format
-		 * suitable for a structure comparison.
-		 *
-		 * Note that if the lengths are not the same
-		 * the comparison will fail at the first byte.
-		 */
-#define	equal(a1, a2) \
-  (bcmp((caddr_t)(a1), (caddr_t)(a2), a1->sa_len) == 0)
-		if (rp->rcb_laddr && !equal(rp->rcb_laddr, dst))
-			continue;
-		if (rp->rcb_faddr && !equal(rp->rcb_faddr, src))
-			continue;
-		if (last) {
-			struct mbuf *n;
-			if (n = m_copy(m, 0, (int)M_COPYALL)) {
-				if (sbappendaddr(&last->so_rcv, src,
-				    n, (struct mbuf *)0) == 0)
-					/* should notify about lost packet */
-					m_freem(n);
-				else {
-					sorwakeup(last);
-					sockets++;
-				}
-			}
-		}
-		last = rp->rcb_socket;
-	}
-	if (last) {
-		if (sbappendaddr(&last->so_rcv, src,
-		    m, (struct mbuf *)0) == 0)
-			m_freem(m);
-		else {
-			sorwakeup(last);
-			sockets++;
-		}
-	} else
-		m_freem(m);
-}
-
-/*ARGSUSED*/
-void
-raw_ctlinput(cmd, arg)
-	int cmd;
-	struct sockaddr *arg;
-{
-
-	if (cmd < 0 || cmd > PRC_NCMDS)
-		return;
-	/* INCOMPLETE */
-}
-
-/*ARGSUSED*/
 int
-raw_usrreq(so, req, m, nam, control)
-	struct socket *so;
-	int req;
-	struct mbuf *m, *nam, *control;
+raw_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
+    struct mbuf *control, struct proc *p)
 {
-	register struct rawcb *rp = sotorawcb(so);
-	register int error = 0;
+	struct rawcb *rp = sotorawcb(so);
+	int error = 0;
 	int len;
+
+	soassertlocked(so);
 
 	if (req == PRU_CONTROL)
 		return (EOPNOTSUPP);
 	if (control && control->m_len) {
-		error = EOPNOTSUPP;
-		goto release;
+		m_freem(m);
+		return (EOPNOTSUPP);
 	}
-	if (rp == 0) {
-		error = EINVAL;
-		goto release;
+	if (rp == NULL) {
+		m_freem(m);
+		return (EINVAL);
 	}
 	switch (req) {
-
-	/*
-	 * Allocate a raw control block and fill in the
-	 * necessary info to allow packets to be routed to
-	 * the appropriate raw interface routine.
-	 */
-	case PRU_ATTACH:
-		if ((so->so_state & SS_PRIV) == 0) {
-			error = EACCES;
-			break;
-		}
-		error = raw_attach(so, (int)(long)nam);
-		break;
-
 	/*
 	 * Destroy state just before socket deallocation.
 	 * Flush data or not depending on the options.
 	 */
 	case PRU_DETACH:
-		if (rp == 0) {
-			error = ENOTCONN;
-			break;
-		}
 		raw_detach(rp);
 		break;
 
-#ifdef notdef
-	/*
-	 * If a socket isn't bound to a single address,
-	 * the raw input routine will hand it anything
-	 * within that protocol family (assuming there's
-	 * nothing else around it should go to). 
-	 */
 	case PRU_CONNECT:
-		if (rp->rcb_faddr) {
-			error = EISCONN;
-			break;
-		}
-		nam = m_copym(nam, 0, M_COPYALL, M_WAIT);
-		rp->rcb_faddr = mtod(nam, struct sockaddr *);
-		soisconnected(so);
-		break;
-
 	case PRU_BIND:
-		if (rp->rcb_laddr) {
-			error = EINVAL;			/* XXX */
-			break;
-		}
-		error = raw_bind(so, nam);
-		break;
-#endif
-
 	case PRU_CONNECT2:
 		error = EOPNOTSUPP;
-		goto release;
+		break;
 
 	case PRU_DISCONNECT:
 		if (rp->rcb_faddr == 0) {
@@ -247,7 +112,7 @@ raw_usrreq(so, req, m, nam, control)
 			error = ENOTCONN;
 			break;
 		}
-		error = (*so->so_proto->pr_output)(m, so);
+		error = (*so->so_proto->pr_output)(m, so, NULL, NULL);
 		m = NULL;
 		if (nam)
 			rp->rcb_faddr = 0;
@@ -270,7 +135,7 @@ raw_usrreq(so, req, m, nam, control)
 	 */
 	case PRU_RCVOOB:
 	case PRU_RCVD:
-		return(EOPNOTSUPP);
+		return (EOPNOTSUPP);
 
 	case PRU_LISTEN:
 	case PRU_ACCEPT:
@@ -301,8 +166,6 @@ raw_usrreq(so, req, m, nam, control)
 	default:
 		panic("raw_usrreq");
 	}
-release:
-	if (m != NULL)
-		m_freem(m);
+	m_freem(m);
 	return (error);
 }

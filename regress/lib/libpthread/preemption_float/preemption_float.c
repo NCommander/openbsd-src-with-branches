@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_preemption_float.c,v 1.3 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: preemption_float.c,v 1.4 2003/07/31 21:48:05 deraadt Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -47,7 +47,8 @@ int limit = 2;
 int float_passed = 0;
 int float_failed = 1;
 
-void *log_loop (void *x) {
+static void *
+log_loop (void *x) {
   int i;
   double d, d1, d2;
   /* sleep (1); */
@@ -61,7 +62,8 @@ void *log_loop (void *x) {
 		d2 = d;
 		d = sin(d);
 		/* if (d2 != d1) { */
-		if (memcmp (&d2, &d1, 8)) {
+		if (memcmp (&d2, &d1, sizeof(double))) {
+			printf("log loop: %f != %f\n", d1, d2);
 			pthread_exit(&float_failed);
 		}
 	}
@@ -69,7 +71,8 @@ void *log_loop (void *x) {
   pthread_exit(&float_passed);
 }
 
-void *trig_loop (void *x) {
+static void *
+trig_loop (void *x) {
   int i;
   double d, d1, d2;
   /* sleep (1);  */
@@ -85,7 +88,8 @@ void *trig_loop (void *x) {
 		d2 = d;
 		d = sin(d);
 		/* if (d2 != d1) { */
-		if (memcmp (&d2, &d1, 8)) {
+		if (memcmp (&d2, &d1, sizeof(double))) {
+			printf("trig loop: %f != %f\n", d1, d2);
   			pthread_exit(&float_failed);
 		}
 	}
@@ -93,14 +97,14 @@ void *trig_loop (void *x) {
   pthread_exit(&float_passed);
 }
 
-int
-floatloop(pthread_attr_t *attrp)
+static int
+floatloop(void)
 {
 	pthread_t thread[2];
 	int *x, *y;
 
-	CHECKr(pthread_create (&thread[0], attrp, trig_loop, 0));
-	CHECKr(pthread_create (&thread[1], attrp, log_loop, 0));
+	CHECKr(pthread_create (&thread[0], NULL, trig_loop, NULL));
+	CHECKr(pthread_create (&thread[1], NULL, log_loop, NULL));
 	CHECKr(pthread_join(thread[0], (void **) &x));	
 	CHECKr(pthread_join(thread[1], (void **) &y));	
 
@@ -109,40 +113,28 @@ floatloop(pthread_attr_t *attrp)
 	       ((*x == float_failed)?1:0);
 }
 
-#define N 10
 int
-main()
+main(int argc, char *argv[])
 {
-	pthread_attr_t attr;
-	int i;
+	pthread_t thread;
+	int *result;
 
-	/* Try with float point state not preserved */
-
-	CHECKr(pthread_attr_init(&attr));
-	CHECKr(pthread_attr_setfloatstate(&attr, PTHREAD_NOFLOAT));
-
-	for(limit = 2; limit < 100000; limit *=4)
-		if (floatloop(&attr) != 0)
-			break;
-
-	if (limit >= 100000) {
-		printf("results are INDETERMINATE\n");
-		SUCCEED; /* XXX */
+	/* single active thread, trig test */
+	for(limit = 2; limit < 100000; limit *=4) {
+		CHECKr(pthread_create (&thread, NULL, trig_loop, NULL));
+		CHECKr(pthread_join(thread, (void **) &result));
+		ASSERT(*result == 0);
 	}
 
-	limit *= 4;  /* just to make sure */
-
-	printf("using limit = %d\n", limit);
-
-	for (i = 0; i < 32; i++) {
-		/* Try the failure mode one more time. */
-		if (floatloop(&attr) == 0) {
-			printf("%d ", i);
-			fflush(stdout);
-		}
-		/* Now see if saving float state will get rid of failure. */
-		ASSERT(floatloop(NULL) == 0);
+	/* single active thread, log test */
+	for(limit = 2; limit < 100000; limit *=4) {
+		CHECKr(pthread_create (&thread, NULL, log_loop, NULL));
+		CHECKr(pthread_join(thread, (void **) &result));
+		ASSERT(*result == 0);
 	}
 
+	/* run both threads concurrently using a higher limit */
+	limit *= 4;
+	ASSERT(floatloop() == 0);
 	SUCCEED;
 }

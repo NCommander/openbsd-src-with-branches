@@ -1,4 +1,4 @@
-/*	$NetBSD: pathnames.h,v 1.3 1995/03/27 08:46:15 glass Exp $	*/
+/*	$OpenBSD: pathnames.h,v 1.4 2003/06/03 02:56:06 millert Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,6 +33,7 @@
 
 #include <paths.h>
 
-#define	_PATH_CPP	"/usr/bin/cpp"
+#define	_PATH_CPP	"/usr/libexec/tradcpp"
+
 			/* XXX -- fix when cpp parses arguments rationally */
 #define	_PATH_INCLUDE	"-I/usr/share/calendar"

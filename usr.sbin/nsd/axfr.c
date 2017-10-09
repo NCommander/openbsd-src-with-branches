@@ -91,13 +91,14 @@ query_axfr(struct nsd *nsd, struct query *query)
 		query->edns.status = EDNS_NOT_PRESENT;
 		buffer_set_limit(query->packet, QHEADERSZ);
 		QDCOUNT_SET(query->packet, 0);
-		query_prepare_response(query, nsd);
+		query_prepare_response(query);
 	}
 
 	/* Add zone RRs until answer is full.  */
-	assert(query->axfr_current_domain);
-
-	do {
+	while (query->axfr_current_domain != NULL &&
+			domain_is_subdomain(query->axfr_current_domain,
+					    query->axfr_zone->apex))
+	{
 		if (!query->axfr_current_rrset) {
 			query->axfr_current_rrset = domain_find_any_rrset(
 				query->axfr_current_domain,
@@ -128,9 +129,6 @@ query_axfr(struct nsd *nsd, struct query *query)
 		query->axfr_current_domain
 			= domain_next(query->axfr_current_domain);
 	}
-	while (query->axfr_current_domain != NULL &&
-			domain_is_subdomain(query->axfr_current_domain,
-					    query->axfr_zone->apex));
 
 	/* Add terminating SOA RR.  */
 	assert(query->axfr_zone->soa_rrset->rr_count == 1);
@@ -166,12 +164,12 @@ return_answer:
 query_state_type
 answer_axfr_ixfr(struct nsd *nsd, struct query *q)
 {
-	acl_options_t *acl = NULL;
+	struct acl_options *acl = NULL;
 	/* Is it AXFR? */
 	switch (q->qtype) {
 	case TYPE_AXFR:
 		if (q->tcp) {
-			zone_options_t* zone_opt;
+			struct zone_options* zone_opt;
 			zone_opt = zone_options_find(nsd->options, q->qname);
 			if(!zone_opt ||
 			   acl_check_incoming(zone_opt->pattern->provide_xfr, q, &acl)==-1)

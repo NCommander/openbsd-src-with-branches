@@ -430,6 +430,8 @@ find_add_tp(struct val_anchors* anchors, uint8_t* rr, size_t rr_len,
 	}
 	tp = autr_tp_create(anchors, rr, dname_len, sldns_wirerr_get_class(rr,
 		rr_len, dname_len));
+	if(!tp)	
+		return NULL;
 	lock_basic_lock(&tp->lock);
 	return tp;
 }
@@ -1062,7 +1064,7 @@ int autr_read_file(struct val_anchors* anchors, const char* nm)
 
 /** string for a trustanchor state */
 static const char*
-trustanchor_state2str(autr_state_t s)
+trustanchor_state2str(autr_state_type s)
 {
         switch (s) {
                 case AUTR_STATE_START:       return "  START  ";
@@ -1195,6 +1197,14 @@ void autr_write_file(struct module_env* env, struct trust_anchor* tp)
 		fatal_exit("could not completely write: %s", fname);
 		return;
 	}
+	if(fflush(out) != 0)
+		log_err("could not fflush(%s): %s", fname, strerror(errno));
+#ifdef HAVE_FSYNC
+	if(fsync(fileno(out)) != 0)
+		log_err("could not fsync(%s): %s", fname, strerror(errno));
+#else
+	FlushFileBuffers((HANDLE)_get_osfhandle(_fileno(out)));
+#endif
 	if(fclose(out) != 0) {
 		fatal_exit("could not complete write: %s: %s",
 			fname, strerror(errno));
@@ -1225,7 +1235,7 @@ verify_dnskey(struct module_env* env, struct val_env* ve,
 {
 	char* reason = NULL;
 	uint8_t sigalg[ALGO_NEEDS_MAX+1];
-	int downprot = 1;
+	int downprot = env->cfg->harden_algo_downgrade;
 	enum sec_status sec = val_verify_DNSKEY_with_TA(env, ve, rrset,
 		tp->ds_rrset, tp->dnskey_rrset, downprot?sigalg:NULL, &reason);
 	/* sigalg is ignored, it returns algorithms signalled to exist, but
@@ -1447,9 +1457,11 @@ set_tp_times(struct trust_anchor* tp, time_t rrsig_exp_interval,
 	if(rrsig_exp_interval/2 < x)
 		x = rrsig_exp_interval/2;
 	/* MAX(1hr, x) */
-	if(x < 3600)
-		tp->autr->query_interval = 3600;
-	else	tp->autr->query_interval = x;
+	if(!autr_permit_small_holddown) {
+		if(x < 3600)
+			tp->autr->query_interval = 3600;
+		else	tp->autr->query_interval = x;
+	}	else    tp->autr->query_interval = x;
 
 	/* x= MIN(1day, ttl/10, expire/10) */
 	x = 24 * 3600;
@@ -1458,9 +1470,11 @@ set_tp_times(struct trust_anchor* tp, time_t rrsig_exp_interval,
 	if(rrsig_exp_interval/10 < x)
 		x = rrsig_exp_interval/10;
 	/* MAX(1hr, x) */
-	if(x < 3600)
-		tp->autr->retry_time = 3600;
-	else	tp->autr->retry_time = x;
+	if(!autr_permit_small_holddown) {
+		if(x < 3600)
+			tp->autr->retry_time = 3600;
+		else	tp->autr->retry_time = x;
+	}	else    tp->autr->retry_time = x;
 
 	if(qi != tp->autr->query_interval || rt != tp->autr->retry_time) {
 		*changed = 1;
@@ -1557,6 +1571,11 @@ key_matches_a_ds(struct module_env* env, struct val_env* ve,
 			verbose(VERB_ALGO, "DS match attempt failed");
 			continue;
 		}
+		/* match of hash is sufficient for bootstrap of trust point */
+		(void)reason;
+		(void)ve;
+		return 1;
+		/* no need to check RRSIG, DS hash already matched with source
 		if(dnskey_verify_rrset(env, ve, dnskey_rrset, 
 			dnskey_rrset, key_idx, &reason) == sec_status_secure) {
 			return 1;
@@ -1564,6 +1583,7 @@ key_matches_a_ds(struct module_env* env, struct val_env* ve,
 			verbose(VERB_ALGO, "DS match failed because the key "
 				"does not verify the keyset: %s", reason);
 		}
+		*/
 	}
 	return 0;
 }
@@ -1665,7 +1685,7 @@ reset_holddown(struct module_env* env, struct autr_ta* ta, int* changed)
 /** Set the state for this trust anchor */
 static void
 set_trustanchor_state(struct module_env* env, struct autr_ta* ta, int* changed,
-	autr_state_t s)
+	autr_state_type s)
 {
 	verbose_key(ta, VERB_ALGO, "update: %s to %s",
 		trustanchor_state2str(ta->s), trustanchor_state2str(s));
@@ -1959,8 +1979,12 @@ calc_next_probe(struct module_env* env, time_t wait)
 {
 	/* make it random, 90-100% */
 	time_t rnd, rest;
-	if(wait < 3600)
-		wait = 3600;
+	if(!autr_permit_small_holddown) {
+		if(wait < 3600)
+			wait = 3600;
+	} else {
+		if(wait == 0) wait = 1;
+	}
 	rnd = wait/10;
 	rest = wait-rnd;
 	rnd = (time_t)ub_random_max(env->rnd, (long int)rnd);
@@ -1971,7 +1995,7 @@ calc_next_probe(struct module_env* env, time_t wait)
 static time_t
 wait_probe_time(struct val_anchors* anchors)
 {
-	rbnode_t* t = rbtree_first(&anchors->autr->probe);
+	rbnode_type* t = rbtree_first(&anchors->autr->probe);
 	if(t != RBTREE_NULL) 
 		return ((struct trust_anchor*)t->key)->autr->next_probe_time;
 	return 0;
@@ -2154,7 +2178,7 @@ int autr_process_prime(struct module_env* env, struct val_env* ve,
 	if(!verify_dnskey(env, ve, tp, dnskey_rrset)) {
 		verbose(VERB_ALGO, "autotrust: dnskey did not verify.");
 		/* only increase failure count if this is not the first prime,
-		 * this means there was a previous succesful probe */
+		 * this means there was a previous successful probe */
 		if(tp->autr->last_success) {
 			tp->autr->query_failed += 1;
 			autr_write_file(env, tp);
@@ -2310,6 +2334,7 @@ probe_anchor(struct module_env* env, struct trust_anchor* tp)
 	qinfo.qname_len = tp->namelen;
 	qinfo.qtype = LDNS_RR_TYPE_DNSKEY;
 	qinfo.qclass = tp->dclass;
+	qinfo.local_alias = NULL;
 	log_query_info(VERB_ALGO, "autotrust probe", &qinfo);
 	verbose(VERB_ALGO, "retry probe set in %d seconds", 
 		(int)tp->autr->next_probe_time - (int)*env->now);
@@ -2317,6 +2342,7 @@ probe_anchor(struct module_env* env, struct trust_anchor* tp)
 	edns.ext_rcode = 0;
 	edns.edns_version = 0;
 	edns.bits = EDNS_DO;
+	edns.opt_list = NULL;
 	if(sldns_buffer_capacity(buf) < 65535)
 		edns.udp_size = (uint16_t)sldns_buffer_capacity(buf);
 	else	edns.udp_size = 65535;
@@ -2343,12 +2369,14 @@ static struct trust_anchor*
 todo_probe(struct module_env* env, time_t* next)
 {
 	struct trust_anchor* tp;
-	rbnode_t* el;
+	rbnode_type* el;
 	/* get first one */
 	lock_basic_lock(&env->anchors->lock);
 	if( (el=rbtree_first(&env->anchors->autr->probe)) == RBTREE_NULL) {
 		/* in case of revoked anchors */
 		lock_basic_unlock(&env->anchors->lock);
+		/* signal that there are no anchors to probe */
+		*next = 0;
 		return NULL;
 	}
 	tp = (struct trust_anchor*)el->key;
@@ -2378,6 +2406,7 @@ autr_probe_timer(struct module_env* env)
 	struct trust_anchor* tp;
 	time_t next_probe = 3600;
 	int num = 0;
+	if(autr_permit_small_holddown) next_probe = 1;
 	verbose(VERB_ALGO, "autotrust probe timer callback");
 	/* while there are still anchors to probe */
 	while( (tp = todo_probe(env, &next_probe)) ) {
@@ -2386,7 +2415,7 @@ autr_probe_timer(struct module_env* env)
 		num++;
 	}
 	regional_free_all(env->scratch);
-	if(num == 0)
+	if(next_probe == 0)
 		return 0; /* no trust points to probe */
 	verbose(VERB_ALGO, "autotrust probe timer %d callbacks done", num);
 	return next_probe;

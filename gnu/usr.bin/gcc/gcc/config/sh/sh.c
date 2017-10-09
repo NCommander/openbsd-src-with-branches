@@ -345,6 +345,9 @@ print_operand (stream, x, code)
      rtx x;
      int code;
 {
+  int regno;
+  enum machine_mode mode;
+
   switch (code)
     {
     case '.':
@@ -381,11 +384,66 @@ print_operand (stream, x, code)
       x = mark_constant_pool_use (x);
       output_addr_const (stream, x);
       break;
+    /* N.B.: %R / %S / %T adjust memory addresses by four.
+       For SHMEDIA, that means they can be used to access the first and
+       second 32 bit part of a 64 bit (or larger) value that
+       might be held in floating point registers or memory.
+       While they can be used to access 64 bit parts of a larger value
+       held in general purpose registers, that won't work with memory -
+       neither for fp registers, since the frxx names are used.  */
     case 'R':
-      fputs (reg_names[REGNO (x) + LSW], (stream));
+      if (REG_P (x) || GET_CODE (x) == SUBREG)
+	{
+	  regno = true_regnum (x);
+	  regno += FP_REGISTER_P (regno) ? 1 : LSW;
+	  fputs (reg_names[regno], (stream));
+	}
+      else if (GET_CODE (x) == MEM)
+	{
+	  x = adjust_address (x, SImode, 4 * LSW);
+	  print_operand_address (stream, XEXP (x, 0));
+	}
+      else
+	{
+	  rtx sub = NULL_RTX;
+
+	  mode = GET_MODE (x);
+	  if (mode == VOIDmode)
+	    mode = DImode;
+	  if (GET_MODE_SIZE (mode) >= 8)
+	    sub = simplify_subreg (SImode, x, mode, 4 * LSW);
+	  if (sub)
+	    print_operand (stream, sub, 0);
+	  else
+	    output_operand_lossage ("invalid operand to %%R");
+	}
       break;
     case 'S':
-      fputs (reg_names[REGNO (x) + MSW], (stream));
+      if (REG_P (x) || GET_CODE (x) == SUBREG)
+	{
+	  regno = true_regnum (x);
+	  regno += FP_REGISTER_P (regno) ? 0 : MSW;
+	  fputs (reg_names[regno], (stream));
+	}
+      else if (GET_CODE (x) == MEM)
+	{
+	  x = adjust_address (x, SImode, 4 * MSW);
+	  print_operand_address (stream, XEXP (x, 0));
+	}
+      else
+	{
+	  rtx sub = NULL_RTX;
+
+	  mode = GET_MODE (x);
+	  if (mode == VOIDmode)
+	    mode = DImode;
+	  if (GET_MODE_SIZE (mode) >= 8)
+	    sub = simplify_subreg (SImode, x, mode, 4 * MSW);
+	  if (sub)
+	    print_operand (stream, sub, 0);
+	  else
+	    output_operand_lossage ("invalid operand to %%S");
+	}
       break;
     case 'T':
       /* Next word of a double.  */
@@ -2023,7 +2081,7 @@ shl_sext_kind (left_rtx, size_rtx, costp)
 	}
     }
   if (costp)
-    *costp = cost;
+    *costp = best_cost;
   return kind;
 }
 
@@ -2607,7 +2665,7 @@ find_barrier (num_mova, mova, from)
   int hi_align = 2;
   int si_align = 2;
   int leading_mova = num_mova;
-  rtx barrier_before_mova, found_barrier = 0, good_barrier = 0;
+  rtx barrier_before_mova = 0, found_barrier = 0, good_barrier = 0;
   int si_limit;
   int hi_limit;
 
@@ -2629,6 +2687,10 @@ find_barrier (num_mova, mova, from)
 
   si_limit = 1018;
   hi_limit = 510;
+#if defined(OPENBSD_NATIVE) || defined(OPENBSD_CROSS)
+  si_limit -= flag_pic ? 16 : 8;
+  hi_limit -= flag_pic ? 16 : 8;
+#endif
 
   while (from && count_si < si_limit && count_hi < hi_limit)
     {
@@ -3306,7 +3368,7 @@ barrier_align (barrier_or_label)
      rtx barrier_or_label;
 {
   rtx next = next_real_insn (barrier_or_label), pat, prev;
-  int slot, credit, jump_to_next;
+  int slot, credit, jump_to_next = 0;
  
   if (! next)
     return 0;
@@ -3450,7 +3512,7 @@ void
 machine_dependent_reorg (first)
      rtx first;
 {
-  rtx insn, mova;
+  rtx insn, mova = NULL_RTX;
   int num_mova;
   rtx r0_rtx = gen_rtx_REG (Pmode, 0);
   rtx r0_inc_rtx = gen_rtx_POST_INC (Pmode, r0_rtx);
@@ -3745,7 +3807,7 @@ machine_dependent_reorg (first)
 	  /* Scan ahead looking for a barrier to stick the constant table
 	     behind.  */
 	  rtx barrier = find_barrier (num_mova, mova, insn);
-	  rtx last_float_move, last_float = 0, *last_float_addr;
+	  rtx last_float_move = NULL_RTX, last_float = 0, *last_float_addr = NULL;
 
 	  if (num_mova && ! mova_p (mova))
 	    {
@@ -4579,6 +4641,7 @@ sh_expand_prologue ()
   int d, i;
   int d_rounding = 0;
   int save_flags = target_flags;
+  int size;
 
   current_function_interrupt = sh_cfun_interrupt_handler_p ();
 
@@ -4872,7 +4935,12 @@ sh_expand_prologue ()
 
   target_flags = save_flags;
 
-  output_stack_adjust (-rounded_frame_size (d) + d_rounding,
+  size = rounded_frame_size (d);
+
+  if (warn_stack_larger_than && size > stack_larger_than_size)
+    warning ("stack usage is %d bytes", size);
+
+  output_stack_adjust (-size + d_rounding,
 		       stack_pointer_rtx, TARGET_SH5 ? 0 : 1, frame_insn);
 
   if (frame_pointer_needed)
@@ -7883,6 +7951,13 @@ sh_register_move_cost (mode, srcclass, dstclass)
       && REGCLASS_HAS_FP_REG (dstclass))
     return 4;
 
+  if (REGCLASS_HAS_FP_REG (dstclass) && srcclass == T_REGS)
+    return ((TARGET_HARD_SH4 && !optimize_size) ? 10 : 7);
+
+  if ((REGCLASS_HAS_FP_REG (dstclass) && srcclass == MAC_REGS)
+      || (dstclass== MAC_REGS && REGCLASS_HAS_FP_REG (srcclass)))
+    return 9;
+
   if ((REGCLASS_HAS_FP_REG (dstclass)
        && REGCLASS_HAS_GENERAL_REG (srcclass))
       || (REGCLASS_HAS_GENERAL_REG (dstclass)
@@ -7929,6 +8004,22 @@ sh_register_operand (op, mode)
   if (op == CONST0_RTX (mode) && TARGET_SHMEDIA)
     return 1;
   return register_operand (op, mode);
+}
+
+int
+cmpsi_operand (rtx op, enum machine_mode mode)
+{
+  if (GET_CODE (op) == REG && REGNO (op) == T_REG
+      && GET_MODE (op) == SImode)
+    return 1;
+  return arith_operand (op, mode);
+}
+
+rtx
+sh_get_pr_initial_val (void)
+{
+  return
+    get_hard_reg_initial_val (Pmode, TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG);
 }
 
 /* INSN is an sfunc; return the rtx that describes the address used.  */
@@ -7978,4 +8069,152 @@ check_use_sfunc_addr (rtx insn, rtx reg)
   abort ();
 }
 
+int
+sh_expand_t_scc (enum rtx_code code, rtx target)
+{
+  rtx result = target;
+  HOST_WIDE_INT val;
+
+  if (GET_CODE (sh_compare_op0) != REG || REGNO (sh_compare_op0) != T_REG
+      || GET_CODE (sh_compare_op1) != CONST_INT)
+    return 0;
+  if (GET_CODE (result) != REG)
+    result = gen_reg_rtx (SImode);
+  val = INTVAL (sh_compare_op1);
+  if ((code == EQ && val == 1) || (code == NE && val == 0))
+    emit_insn (gen_movt (result));   
+  else if ((code == EQ && val == 0) || (code == NE && val == 1))
+    {
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, result));
+      emit_insn (gen_subc (result, result, result));
+      emit_insn (gen_addsi3 (result, result, GEN_INT (1)));
+    }
+  else if (code == EQ || code == NE)
+    emit_insn (gen_move_insn (result, GEN_INT (code == NE)));
+  else
+    return 0; 
+  if (result != target)
+    emit_move_insn (target, result);
+  return 1;
+}      
+
 #include "gt-sh.h"
+
+void
+sh_override_options (void)
+{
+  int regno;
+
+#if defined(OPENBSD_NATIVE) || defined(OPENBSD_CROSS)
+  /* disable stack protection for now */
+  flag_propolice_protection = 0;
+
+  /* -fregmove is known to produce bad code on SuperH */
+  flag_regmove = 0;
+#endif
+
+  sh_cpu = CPU_SH1;
+  assembler_dialect = 0;
+  if (TARGET_SH2)
+    sh_cpu = CPU_SH2;
+  if (TARGET_SH3)
+    sh_cpu = CPU_SH3;
+  if (TARGET_SH3E)
+    sh_cpu = CPU_SH3E;
+  if (TARGET_SH4)
+    {
+      assembler_dialect = 1;
+      sh_cpu = CPU_SH4;
+    }
+  if (TARGET_SH5)
+    {
+      sh_cpu = CPU_SH5;
+      target_flags |= DALIGN_BIT;
+      if (TARGET_FPU_ANY
+	  && ! (TARGET_SHCOMPACT && TARGET_LITTLE_ENDIAN))
+	target_flags |= FMOVD_BIT;
+      if (TARGET_SHMEDIA)
+	{
+	  /* There are no delay slots on SHmedia.  */
+	  flag_delayed_branch = 0;
+	  /* Relaxation isn't yet supported for SHmedia */
+	  target_flags &= ~RELAX_BIT;
+	}
+      if (profile_flag || profile_arc_flag)
+	{
+	  warning ("Profiling is not supported on this target.");
+	  profile_flag = profile_arc_flag = 0;
+	}
+    }
+  else
+    {
+       /* Only the sh64-elf assembler fully supports .quad properly.  */
+       targetm.asm_out.aligned_op.di = NULL;
+       targetm.asm_out.unaligned_op.di = NULL;
+    }
+  if (TARGET_FMOVD)
+    reg_class_from_letter['e'] = NO_REGS;
+
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (! VALID_REGISTER_P (regno))
+      sh_register_names[regno][0] = '0';				\
+
+  for (regno = 0; regno < ADDREGNAMES_SIZE; regno++)
+    if (! VALID_REGISTER_P (ADDREGNAMES_REGNO (regno)))
+      sh_additional_register_names[regno][0] = '0';			\
+
+  if (flag_omit_frame_pointer < 0)
+   {
+     /* The debugging information is sufficient,
+        but gdb doesn't implement this yet */
+     if (0)
+      flag_omit_frame_pointer
+        = (PREFERRED_DEBUGGING_TYPE == DWARF_DEBUG
+	   || PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG);
+     else
+      flag_omit_frame_pointer = 0;
+   }
+
+  if (flag_pic && ! TARGET_PREFERGOT)
+    flag_no_function_cse = 1;
+
+  /* Never run scheduling before reload, since that can
+     break global alloc, and generates slower code anyway due
+     to the pressure on R0.  */
+  flag_schedule_insns = 0;
+
+  if (align_loops == 0)
+    align_loops =  1 << (TARGET_SH5 ? 3 : 2);
+#if defined(OPENBSD_NATIVE) || defined(OPENBSD_CROSS)
+  /* Do not align jump targets to cache line boundaries at -O2 */
+  if (align_jumps == 0)
+    align_jumps =  2;
+#else
+  if (align_jumps == 0)
+    align_jumps = 1 << CACHE_LOG;
+#endif
+  else if (align_jumps < (TARGET_SHMEDIA ? 4 : 2))
+    align_jumps = TARGET_SHMEDIA ? 4 : 2;
+
+  /* Allocation boundary (in *bytes*) for the code of a function.
+     SH1: 32 bit alignment is faster, because instructions are always
+     fetched as a pair from a longword boundary.
+     SH2 .. SH5 : align to cache line start.  */
+  if (align_functions == 0)
+    align_functions
+      = TARGET_SMALLCODE ? FUNCTION_BOUNDARY/8 : (1 << CACHE_LOG);
+  /* The linker relaxation code breaks when a function contains
+     alignments that are larger than that at the start of a
+     compilation unit.  */
+  if (TARGET_RELAX)
+    {
+      int min_align
+	= align_loops > align_jumps ? align_loops : align_jumps;
+
+      /* Also take possible .long constants / mova tables int account.	*/
+      if (min_align < 4)
+	min_align = 4;
+      if (align_functions < min_align)
+	align_functions = min_align;
+    }
+}

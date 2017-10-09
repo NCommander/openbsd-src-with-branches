@@ -1,4 +1,4 @@
-/* crypto/ecdsa/ecs_locl.h */
+/* $OpenBSD: ecs_locl.h,v 1.4 2015/02/08 13:35:07 jsing Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -61,34 +61,7 @@
 
 #include <openssl/ecdsa.h>
 
-#ifdef  __cplusplus
-extern "C" {
-#endif
-
-struct ecdsa_method 
-	{
-	const char *name;
-	ECDSA_SIG *(*ecdsa_do_sign)(const unsigned char *dgst, int dgst_len, 
-			const BIGNUM *inv, const BIGNUM *rp, EC_KEY *eckey);
-	int (*ecdsa_sign_setup)(EC_KEY *eckey, BN_CTX *ctx, BIGNUM **kinv, 
-			BIGNUM **r);
-	int (*ecdsa_do_verify)(const unsigned char *dgst, int dgst_len, 
-			const ECDSA_SIG *sig, EC_KEY *eckey);
-#if 0
-	int (*init)(EC_KEY *eckey);
-	int (*finish)(EC_KEY *eckey);
-#endif
-	int flags;
-	char *app_data;
-	};
-
-/* If this flag is set the ECDSA method is FIPS compliant and can be used
- * in FIPS mode. This is set in the validated module method. If an
- * application sets this flag in its own methods it is its responsibility
- * to ensure the result is compliant.
- */
-
-#define ECDSA_FLAG_FIPS_METHOD	0x1
+__BEGIN_HIDDEN_DECLS
 
 typedef struct ecdsa_data_st {
 	/* EC_KEY_METH_DATA part */
@@ -108,8 +81,6 @@ typedef struct ecdsa_data_st {
  */
 ECDSA_DATA *ecdsa_check(EC_KEY *eckey);
 
-#ifdef  __cplusplus
-}
-#endif
+__END_HIDDEN_DECLS
 
 #endif /* HEADER_ECS_LOCL_H */

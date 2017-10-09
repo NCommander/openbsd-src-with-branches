@@ -1,0 +1,24 @@
+#	$OpenBSD: files.sunxi,v 1.18 2017/01/21 08:26:49 patrick Exp $
+
+device	sxiintc
+attach	sxiintc at fdt
+file	arch/armv7/sunxi/sxiintc.c		sxiintc
+
+device	sxitimer
+attach	sxitimer at fdt
+file	arch/armv7/sunxi/sxitimer.c		sxitimer
+
+device	sxidog
+attach	sxidog at fdt
+file	arch/armv7/sunxi/sxidog.c		sxidog
+
+device	sxiahci: scsi, atascsi
+attach	sxiahci at fdt
+file	arch/armv7/sunxi/sxiahci.c		sxiahci
+
+#attach ohci at sunxi with sxiohci
+#file	arch/armv7/sunxi/sxiohci.c		sxiohci
+
+device	sxie: ether, ifnet, mii, ifmedia
+attach	sxie at fdt
+file	arch/armv7/sunxi/sxie.c			sxie
