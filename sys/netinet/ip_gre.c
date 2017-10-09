@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_gre.c,v 1.65 2017/05/30 07:50:37 mpi Exp $ */
+/*      $OpenBSD: ip_gre.c,v 1.66 2017/08/15 17:47:15 bluhm Exp $ */
 /*	$NetBSD: ip_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -373,15 +373,23 @@ int
 gre_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
     size_t newlen)
 {
+	int error;
+
         /* All sysctl names at this level are terminal. */
         if (namelen != 1)
                 return (ENOTDIR);
 
         switch (name[0]) {
         case GRECTL_ALLOW:
-                return (sysctl_int(oldp, oldlenp, newp, newlen, &gre_allow));
+		NET_LOCK();
+		error = sysctl_int(oldp, oldlenp, newp, newlen, &gre_allow);
+		NET_UNLOCK();
+		return (error);
         case GRECTL_WCCP:
-                return (sysctl_int(oldp, oldlenp, newp, newlen, &gre_wccp));
+		NET_LOCK();
+		error = sysctl_int(oldp, oldlenp, newp, newlen, &gre_wccp);
+		NET_UNLOCK();
+		return (error);
         default:
                 return (ENOPROTOOPT);
         }
@@ -392,14 +400,19 @@ int
 ipmobile_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
     void *newp, size_t newlen)
 {
+	int error;
+
         /* All sysctl names at this level are terminal. */
         if (namelen != 1)
                 return (ENOTDIR);
 
         switch (name[0]) {
         case MOBILEIPCTL_ALLOW:
-                return (sysctl_int(oldp, oldlenp, newp, newlen,
-				   &ip_mobile_allow));
+		NET_LOCK();
+		error = sysctl_int(oldp, oldlenp, newp, newlen,
+		    &ip_mobile_allow);
+		NET_UNLOCK();
+		return (error);
         default:
                 return (ENOPROTOOPT);
         }
