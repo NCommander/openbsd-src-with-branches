@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lock.c,v 1.48 2017/04/20 13:20:17 visa Exp $	*/
+/*	$OpenBSD: kern_lock.c,v 1.49 2017/04/20 15:06:47 visa Exp $	*/
 
 /* 
  * Copyright (c) 1995
@@ -85,6 +85,8 @@ _kernel_unlock(void)
 int
 _kernel_lock_held(void)
 {
+	if (panicstr)
+		return 1;
 	return (__mp_lock_held(&kernel_lock));
 }
 
