@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageRepository.pm,v 1.145 2017/06/20 18:05:44 espie Exp $
+# $OpenBSD: PackageRepository.pm,v 1.146 2017/08/04 11:53:03 sthen Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -52,6 +52,10 @@ sub baseurl
 sub new
 {
 	my ($class, $baseurl, $state) = @_;
+	if (!defined $state) {
+		require Carp;
+		Carp::croak "fatal: old api call to $class: needs state";
+	}
 	my $o = $class->parse(\$baseurl, $state);
 	if ($baseurl ne '') {
 		return undef;
