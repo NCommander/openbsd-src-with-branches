@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.228 2017/09/20 15:14:52 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.229 2017/10/09 21:33:11 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -186,7 +186,7 @@ int		 parse_lease_time(FILE *, time_t *);
 int		 parse_decimal(FILE *, unsigned char *, char);
 int		 parse_hex(FILE *, unsigned char *);
 int		 parse_boolean(FILE *, unsigned char *);
-time_t		 parse_date(FILE *);
+int		 parse_date(FILE *, time_t *);
 void		 parse_warn(char *);
 
 /* bpf.c */
