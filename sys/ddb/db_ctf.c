@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_ctf.c,v 1.20 2017/09/08 05:36:52 deraadt Exp $	*/
+/*	$OpenBSD: db_ctf.c,v 1.21 2017/09/12 08:20:04 mpi Exp $	*/
 
 /*
  * Copyright (c) 2016-2017 Martin Pieuchot
@@ -58,6 +58,7 @@ static char		*db_ctf_decompress(const char *, size_t, off_t);
 const struct ctf_type	*db_ctf_type_by_name(const char *, unsigned int);
 const struct ctf_type	*db_ctf_type_by_symbol(Elf_Sym *);
 const struct ctf_type	*db_ctf_type_by_index(uint16_t);
+void			 db_ctf_pprint(const struct ctf_type *, vaddr_t);
 void			 db_ctf_pprint_struct(const struct ctf_type *, vaddr_t);
 void			 db_ctf_pprint_ptr(const struct ctf_type *, vaddr_t);
 
