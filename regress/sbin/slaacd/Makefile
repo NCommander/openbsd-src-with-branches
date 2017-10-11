@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2017/08/25 20:10:17 florian Exp $
+#	$OpenBSD: Makefile,v 1.3 2017/10/11 17:17:03 florian Exp $
 
 # The following ports must be installed:
 #
@@ -67,6 +67,13 @@ TARGETS	+=	send-solicitation
 run-regress-send-solicitation: cleanup setup
 	@echo '\n======== $@ ========'
 	route -T${RTABLE} exec ${PYTHON}sniff_sol.py ${CTR_SOCK}
+
+
+TARGETS	+=	parse-ra
+run-regress-parse-ra: cleanup setup
+	@echo '\n======== $@ ========'
+	route -T${RTABLE} exec ${PYTHON}process_ra.py ${PAIR1} ${PAIR2} \
+	    ${CTR_SOCK}
 
 TARGETS	+=	cleanup
 run-regress-cleanup: cleanup
