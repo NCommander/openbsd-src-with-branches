@@ -270,7 +270,7 @@ _OSrev=${_KERNV[0]%.*}${_KERNV[0]#*.}
 
 _MIRROR=$(while read _line; do _line=${_line%%#*}; [[ -n ${_line} ]] &&
 	print -r -- "${_line}"; done </etc/installurl | tail -1) 2>/dev/null
-[[ ${_MIRROR} == @(file|http|https)://*/*[!/] ]] ||
+[[ ${_MIRROR} == @(file|http|https)://* ]] ||
 	sp_err "${0##*/}: invalid URL configured in /etc/installurl"
 _MIRROR="${_MIRROR}/syspatch/${_KERNV[0]}/$(machine)"
 
