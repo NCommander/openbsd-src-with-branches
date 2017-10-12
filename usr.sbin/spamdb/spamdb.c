@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamdb.c,v 1.31 2016/11/29 17:21:52 mestre Exp $	*/
+/*	$OpenBSD: spamdb.c,v 1.32 2017/10/11 18:25:07 millert Exp $	*/
 
 /*
  * Copyright (c) 2004 Bob Beck.  All rights reserved.
@@ -278,7 +278,7 @@ extern char *__progname;
 static int
 usage(void)
 {
-	fprintf(stderr, "usage: %s [[-Tt] -a keys] [[-Tt] -d keys]\n", __progname);
+	fprintf(stderr, "usage: %s [[-Tt] -a keys] [[-GTt] -d keys]\n", __progname);
 	exit(1);
 	/* NOTREACHED */
 }
