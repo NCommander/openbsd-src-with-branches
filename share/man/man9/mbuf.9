@@ -1,4 +1,4 @@
-.\"     $OpenBSD: mbuf.9,v 1.108 2017/06/19 17:58:49 bluhm Exp $
+.\"     $OpenBSD: mbuf.9,v 1.109 2017/06/19 18:36:13 jmc Exp $
 .\"
 .\" Copyright (c) 2001 Jean-Jacques Bernard-Gundol <jjbg@openbsd.org>
 .\" All rights reserved.
@@ -298,7 +298,7 @@ protocol-specific.
 .Fa m_pkthdr.ether_vtag
 variable is valid.
 .It Dv M_LOOP
-for mbuf statistics.
+packet has been sent from local machine.
 .It Dv M_ACAST
 received as IPv6 anycast.
 .It Dv M_BCAST
