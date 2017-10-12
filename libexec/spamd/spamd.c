@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.150 2017/01/23 09:21:04 beck Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.151 2017/04/06 15:30:12 beck Exp $	*/
 
 /*
  * Copyright (c) 2015 Henning Brauer <henning@openbsd.org>
@@ -618,7 +618,6 @@ doreply(struct con *cp)
 nomatch:
 	/* No match. give generic reply */
 	free(cp->obuf);
-	cp->obuf = NULL;
 	if (cp->blacklists != NULL)
 		cp->osize = asprintf(&cp->obuf,
 		    "%s-Sorry %s\n"
@@ -629,6 +628,8 @@ nomatch:
 	else
 		cp->osize = asprintf(&cp->obuf,
 		    "451 Temporary failure, please try again later.\r\n");
+	if (cp->osize == -1)
+		cp->obuf = NULL;
 	cp->osize++; /* size includes the NUL (also changes -1 to 0) */
 	return;
 bad:
