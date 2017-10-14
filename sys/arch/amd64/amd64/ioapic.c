@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioapic.c,v 1.26 2017/08/08 15:53:55 visa Exp $	*/
+/*	$OpenBSD: ioapic.c,v 1.27 2017/08/29 15:19:57 deraadt Exp $	*/
 /* 	$NetBSD: ioapic.c,v 1.6 2003/05/15 13:30:31 fvdl Exp $	*/
 
 /*-
@@ -71,15 +71,10 @@
 #include <sys/malloc.h>
 
 #include <machine/bus.h>
-#include <machine/isa_machdep.h> /* XXX intrhand */
  
 #include <uvm/uvm_extern.h>
 #include <machine/i82093reg.h>
 #include <machine/i82093var.h>
-
-#include <machine/i82489var.h>
-
-#include <machine/pmap.h>
 
 #include <machine/mpbiosvar.h>
 

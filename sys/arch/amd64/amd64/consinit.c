@@ -1,4 +1,4 @@
-/*	$OpenBSD: consinit.c,v 1.5 2015/03/14 03:38:46 jsg Exp $	*/
+/*	$OpenBSD: consinit.c,v 1.6 2016/03/06 22:41:24 naddy Exp $	*/
 /*	$NetBSD: consinit.c,v 1.2 2003/03/02 18:27:14 fvdl Exp $	*/
 
 /*
@@ -26,11 +26,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-#include <sys/param.h>
-#include <sys/systm.h>
-#include <sys/device.h>
-#include <machine/bus.h>
 
 void
 consinit(void)
