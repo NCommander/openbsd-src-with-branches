@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmd.c,v 1.79 2015/11/16 17:35:05 tedu Exp $	*/
+/*	$OpenBSD: apmd.c,v 1.80 2017/08/28 16:16:58 tedu Exp $	*/
 
 /*
  *  Copyright (c) 1995, 1996 John T. Kohl
@@ -52,9 +52,6 @@
 
 #include "pathnames.h"
 #include "apm-proto.h"
-
-#define TRUE 1
-#define FALSE 0
 
 #define AUTO_SUSPEND 1
 #define AUTO_HIBERNATE 2
