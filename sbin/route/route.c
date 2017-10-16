@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.201 2017/08/10 13:44:48 benno Exp $	*/
+/*	$OpenBSD: route.c,v 1.203 2017/09/06 20:21:22 benno Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -673,11 +673,6 @@ newroute(int argc, char **argv)
 			    hp->h_length);
 		} else
 			break;
-	}
-	if (*cmd == 'g') {
-		if (ret != 0 && qflag == 0)
-			warn("writing to routing socket");
-		exit(0);
 	}
 	oerrno = errno;
 	if (!qflag) {
