@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.182 2017/05/22 22:23:11 bluhm Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.183 2017/06/26 09:08:00 patrick Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -440,7 +440,6 @@ extern struct auth_hash auth_hash_hmac_ripemd_160_96;
 extern struct comp_algo comp_algo_deflate;
 
 extern TAILQ_HEAD(ipsec_policy_head, ipsec_policy) ipsec_policy_head;
-extern TAILQ_HEAD(ipsec_acquire_head, ipsec_acquire) ipsec_acquire_head;
 
 /* Misc. */
 #ifdef ENCDEBUG
