@@ -1,4 +1,4 @@
-/*	$OpenBSD: xargs.c,v 1.31 2015/12/09 19:29:49 mmcc Exp $	*/
+/*	$OpenBSD: xargs.c,v 1.32 2017/01/19 17:08:41 millert Exp $	*/
 /*	$FreeBSD: xargs.c,v 1.51 2003/05/03 19:09:11 obrien Exp $	*/
 
 /*-
@@ -405,7 +405,7 @@ addch:		if (p < ebp) {
 		prerun(argc, av);
 		xp = bxp;
 		cnt = ebp - argp;
-		memcpy(bbp, argp, (size_t)cnt);
+		memmove(bbp, argp, (size_t)cnt);
 		p = (argp = bbp) + cnt;
 		*p++ = ch;
 		break;
