@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rpc.statd.8,v 1.1 2008/06/15 04:43:28 sturm Exp $
+.\"	$OpenBSD: rpc.statd.8,v 1.2 2008/06/15 20:42:42 jmc Exp $
 .\"
 .\" Copyright (c) 1995 A.R.Gordon, andrew.gordon@net-tel.co.uk
 .\" All rights reserved.
@@ -32,7 +32,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: June 15 2008 $
 .Dt RPC.STATD 8
 .Os
 .Sh NAME
@@ -99,8 +99,11 @@ ISBN 1 872630 66 9.
 .Sh HISTORY
 A version of
 .Nm
-appeared in
-.Tn SunOS 4 .
+appeared in SunOS 4.
+The current implementation was ported from
+.Nx
+to
+.Ox 4.4 .
 .Sh BUGS
 There is no means for the daemon to tell when a monitored host has
 disappeared permanently (e.g. catastrophic hardware failure), as opposed
