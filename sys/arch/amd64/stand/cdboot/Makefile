@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.32 2016/09/18 16:34:59 jsing Exp $
+#	$OpenBSD: Makefile,v 1.33 2017/05/30 22:32:10 naddy Exp $
 
 MAN=	cdboot.8
 
@@ -41,7 +41,7 @@ SRCS+=	divdi3.c moddi3.c qdivrem.c
 .PATH:	${S}/lib/libz
 SRCS+=	adler32.c crc32.c inflate.c inftrees.c
 
-.depend srt0.o gidt.o: assym.h
+srt0.o gidt.o: assym.h
 
 ${PROG}: $(OBJS)
 	$(LD) $(LDFLAGS) -o ${PROG} $(OBJS)

@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.syspatch.mk,v 1.17 2017/08/21 08:46:33 ajacoutot Exp $
+#	$OpenBSD: bsd.syspatch.mk,v 1.18 2017/08/23 13:13:37 ajacoutot Exp $
 #
 # Copyright (c) 2016-2017 Robert Nagy <robert@openbsd.org>
 #
@@ -69,7 +69,7 @@ all: ${_BUILD_COOKIE}
 
 .if !target(clean)
 clean:
-	rm -rf .depend ${ERRATA} ${SYSPATCH}
+	rm -rf ${ERRATA} ${SYSPATCH}
 .endif
 
 depend:

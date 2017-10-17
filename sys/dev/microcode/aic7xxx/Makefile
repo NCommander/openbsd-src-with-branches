@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.11 2007/07/08 00:17:21 krw Exp $
+# $OpenBSD: Makefile,v 1.12 2017/07/19 12:50:32 espie Exp $
 # $FreeBSD: src/sys/dev/aic7xxx/Makefile,v 1.6 1999/08/28 00:41:22 peter Exp $
 
 PROG=	aicasm
@@ -15,10 +15,8 @@ LDADD+=	-ll
 CC=${HOSTCC}
 
 # Correct path for kernel builds
-# Don't rely on the kernel's .depend file
 .ifdef MAKESRCPATH
 .PATH: ${MAKESRCPATH}
-DEPENDFILE=
 .endif
 
 CFLAGS+= -I. -I${.CURDIR}

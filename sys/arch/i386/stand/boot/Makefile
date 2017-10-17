@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.65 2017/06/01 11:18:53 naddy Exp $
+#	$OpenBSD: Makefile,v 1.66 2017/06/19 22:50:50 deraadt Exp $
 
 COPTS?=
 MAN?=	boot.8
@@ -60,7 +60,7 @@ boot.bin: boot
 
 CLEANFILES+= ${PROG}.new
 
-.depend srt0.o gidt.o: assym.h
+srt0.o gidt.o: assym.h
 
 ${PROG}: $(OBJS)
 	$(LD) $(LDFLAGS) -o ${PROG}.new $(OBJS)
