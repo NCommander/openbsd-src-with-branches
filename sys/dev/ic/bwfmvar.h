@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: bwfmvar.h,v 1.1 2017/10/11 17:19:50 patrick Exp $ */
 /*
  * Copyright (c) 2010-2016 Broadcom Corporation
  * Copyright (c) 2016,2017 Patrick Wildt <patrick@blueri.se>
@@ -119,6 +119,7 @@ struct bwfm_softc {
 #define		BWFM_IO_TYPE_D11AC		2
 
 	int			 sc_tx_timer;
+	struct timeout		 sc_scan_timeout;
 };
 
 void bwfm_attach(struct bwfm_softc *);
