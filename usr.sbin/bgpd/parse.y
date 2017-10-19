@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.314 2017/08/12 16:47:50 phessler Exp $ */
+/*	$OpenBSD: parse.y,v 1.315 2017/08/21 14:41:22 phessler Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -3181,7 +3181,7 @@ parseextcommunity(struct filter_extcommunity *c, char *t, char *s)
 	switch (type) {
 	case -1:
 		if ((p = strchr(s, ':')) == NULL) {
-			yyerror("Bad ext-community %s is %s", s, errstr);
+			yyerror("Bad ext-community %s", s);
 			return (-1);
 		}
 		*p++ = '\0';
@@ -3239,7 +3239,7 @@ parseextcommunity(struct filter_extcommunity *c, char *t, char *s)
 		else if (strcmp(s, "not-found") == 0)
 			c->data.ext_opaq = EXT_COMMUNITY_OVS_NOTFOUND;
 		else {
-			yyerror("Bad ext-community %s is %s", s, errstr);
+			yyerror("Bad ext-community %s", s);
 			return (-1);
 		}
 		break;
