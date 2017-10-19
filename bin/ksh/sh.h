@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.63 2017/08/30 17:08:45 jca Exp $	*/
+/*	$OpenBSD: sh.h,v 1.64 2017/09/03 11:52:01 jca Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -139,7 +139,6 @@ enum sh_flag {
 	FCSHHISTORY,	/* csh-style history enabled */
 #ifdef EMACS
 	FEMACS,		/* emacs command editing */
-	FEMACSUSEMETA,	/* XXX delete after 6.2 */
 #endif
 	FERREXIT,	/* -e: quit on error */
 #ifdef EMACS
