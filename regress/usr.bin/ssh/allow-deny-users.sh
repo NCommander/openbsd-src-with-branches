@@ -1,5 +1,6 @@
 # Public Domain
 # Zev Weiss, 2016
+# $OpenBSD$
 
 tid="AllowUsers/DenyUsers"
 
