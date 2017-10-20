@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /* Written by Markus Friedl. Placed in the public domain.  */
 
 #include "ssherr.h"

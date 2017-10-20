@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 #ifndef _OPACKET_H
 /* Written by Markus Friedl. Placed in the public domain.  */
 
