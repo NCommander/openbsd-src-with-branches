@@ -1,4 +1,4 @@
-/*	$OpenBSD: clparse.c,v 1.143 2017/10/16 12:39:33 krw Exp $	*/
+/*	$OpenBSD: clparse.c,v 1.144 2017/10/21 13:27:15 krw Exp $	*/
 
 /* Parser for dhclient config and lease files. */
 
@@ -203,7 +203,7 @@ read_client_leases(char *name, struct client_lease_tq *tq)
 		if (parse_client_lease_statement(cfile, name, &lp) == 1)
 			add_lease(tq, lp);
 	} while (1);
-	
+
 	fclose(cfile);
 }
 
