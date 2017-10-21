@@ -33,7 +33,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" $OpenBSD: ssh_config.5,v 1.258 2017/10/18 02:49:44 djm Exp $
+.\" $OpenBSD: ssh_config.5,v 1.259 2017/10/18 05:36:59 jmc Exp $
 .Dd $Mdocdate: October 18 2017 $
 .Dt SSH_CONFIG 5
 .Os
@@ -1198,13 +1198,14 @@ For example, the following directive would connect via an HTTP proxy at
 ProxyCommand /usr/bin/nc -X connect -x 192.0.2.0:8080 %h %p
 .Ed
 .It Cm ProxyJump
-Specifies one or more jump proxies as
+Specifies one or more jump proxies as either
 .Xo
 .Sm off
 .Op Ar user No @
 .Ar host
 .Op : Ns Ar port
 .Sm on
+or an ssh URI
 .Xc .
 Multiple proxies may be separated by comma characters and will be visited
 sequentially.
