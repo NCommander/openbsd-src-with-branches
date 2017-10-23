@@ -1,4 +1,4 @@
-/*	$OpenBSD: helper.c,v 1.15 2015/11/01 03:45:29 guenther Exp $ */
+/*	$OpenBSD: helper.c,v 1.16 2016/09/21 04:38:57 guenther Exp $ */
 
 /*
  * Copyright (c) 2000 Poul-Henning Kamp <phk@FreeBSD.org>
@@ -71,13 +71,17 @@ HASHFileChunk(const char *filename, char *buf, off_t off, off_t len)
 		return (NULL);
 	if (len == 0) {
 		if (fstat(fd, &sb) == -1) {
+			save_errno = errno;
 			close(fd);
+			errno = save_errno;
 			return (NULL);
 		}
 		len = sb.st_size;
 	}
 	if (off > 0 && lseek(fd, off, SEEK_SET) < 0) {
+		save_errno = errno;
 		close(fd);
+		errno = save_errno;
 		return (NULL);
 	}
 
