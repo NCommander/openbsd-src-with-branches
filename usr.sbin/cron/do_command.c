@@ -1,4 +1,4 @@
-/*	$OpenBSD: do_command.c,v 1.55 2015/11/15 23:24:24 millert Exp $	*/
+/*	$OpenBSD: do_command.c,v 1.56 2015/11/17 22:31:44 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -85,6 +85,9 @@ child_process(entry *e, user *u)
 
 	/* mark ourselves as different to PS command watchers */
 	setproctitle("running job");
+
+	/* close sockets from parent (i.e. cronSock) */
+	closefrom(3);
 
 	/* discover some useful and important environment settings
 	 */
