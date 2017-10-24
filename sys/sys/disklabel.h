@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.73 2015/10/25 16:35:40 krw Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.74 2015/11/03 13:59:07 krw Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.41 1996/05/10 23:07:37 mark Exp $	*/
 
 /*
@@ -345,18 +345,6 @@ static char *fstypesnames[] = {
 #define	d_blind		d_drivedata[0]
 
 #ifndef _LOCORE
-/*
- * Structure used to perform a format or other raw operation, returning
- * data and/or register values.  Register identification and format
- * are device- and driver-dependent.
- */
-struct format_op {
-	char	*df_buf;
-	int	 df_count;		/* value-result */
-	daddr_t	 df_startblk;
-	int	 df_reg[8];		/* result */
-};
-
 /*
  * Structure used internally to retrieve information about a partition
  * on a disk.

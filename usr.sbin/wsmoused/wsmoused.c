@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmoused.c,v 1.35 2014/12/23 10:24:22 shadchin Exp $ */
+/* $OpenBSD: wsmoused.c,v 1.36 2015/10/26 09:58:18 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Baptiste Marchand, Julien Montagne and Jerome Verdon
@@ -157,10 +157,8 @@ void
 wsmouse_init(void)
 {
 	unsigned int res = WSMOUSE_RES_MIN;
-	unsigned int rate = WSMOUSE_RATE_DEFAULT;
 
 	ioctl(mouse.mfd, WSMOUSEIO_SRES, &res);
-	ioctl(mouse.mfd, WSMOUSEIO_SRATE, &rate);
 }
 
 /*
