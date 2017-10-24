@@ -1,4 +1,4 @@
-/*	$OpenBSD: reloc.h,v 1.2 2006/05/26 20:22:04 miod Exp $	*/
+/*	$OpenBSD: reloc.h,v 1.1 2016/12/17 23:38:33 patrick Exp $	*/
 /*
  * AArch64 static relocation types.
  */
@@ -6,7 +6,7 @@
 /* Miscellaneous. */
 #define R_ARM_NONE			0
 #define R_AARCH64_TPOFF64	1 /// COMPLETELY WRONG - stub
-#define R_AARCH64_NONE			256
+#define R_AARCH64_NONE			0
 
 /* Data. */
 #define R_AARCH64_ABS64			257
