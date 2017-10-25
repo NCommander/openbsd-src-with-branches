@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.65 2017/10/23 05:08:00 djm Exp $ */
+/* $OpenBSD: misc.h,v 1.66 2017/10/25 00:15:35 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -49,6 +49,7 @@ int	 set_nonblock(int);
 int	 unset_nonblock(int);
 void	 set_nodelay(int);
 int	 set_reuseaddr(int);
+char	*get_rdomain(int);
 int	 set_rdomain(int, const char *);
 int	 a2port(const char *);
 int	 a2tun(const char *, int *);
