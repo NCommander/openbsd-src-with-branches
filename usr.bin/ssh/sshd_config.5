@@ -33,7 +33,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" $OpenBSD: sshd_config.5,v 1.258 2017/10/25 00:19:47 djm Exp $
+.\" $OpenBSD: sshd_config.5,v 1.259 2017/10/25 06:18:06 jmc Exp $
 .Dd $Mdocdate: October 25 2017 $
 .Dt SSHD_CONFIG 5
 .Os
@@ -912,25 +912,25 @@ The following forms may be used:
 .Sm off
 .Ar hostname | address
 .Sm on
-.Op rdomain Ar domain
+.Op Cm rdomain Ar domain
 .It
 .Cm ListenAddress
 .Sm off
 .Ar hostname : port
 .Sm on
-.Op rdomain Ar domain
+.Op Cm rdomain Ar domain
 .It
 .Cm ListenAddress
 .Sm off
 .Ar IPv4_address : port
 .Sm on
-.Op rdomain Ar domain
+.Op Cm rdomain Ar domain
 .It
 .Cm ListenAddress
 .Sm off
 .Oo Ar hostname | address Oc : Ar port
 .Sm on
-.Op rdomain Ar domain
+.Op Cm rdomain Ar domain
 .El
 .Pp
 The optional
