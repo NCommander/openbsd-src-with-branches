@@ -1,4 +1,4 @@
-/*	$OpenBSD: term_ps.c,v 1.50 2017/10/25 18:51:04 schwarze Exp $ */
+/*	$OpenBSD: term_ps.c,v 1.51 2017/10/25 20:48:17 schwarze Exp $ */
 /*
  * Copyright (c) 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2014, 2015, 2016, 2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -592,8 +592,8 @@ pspdf_alloc(const struct manoutput *outopts)
 
 	/* Remember millimetres -> AFM units. */
 
-	pagex = PNT2AFM(p, ((double)pagex * 2.834));
-	pagey = PNT2AFM(p, ((double)pagey * 2.834));
+	pagex = PNT2AFM(p, ((double)pagex * 72.0 / 25.4));
+	pagey = PNT2AFM(p, ((double)pagey * 72.0 / 25.4));
 
 	/* Margins are 1/9 the page x and y. */
 
