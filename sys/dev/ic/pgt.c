@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgt.c,v 1.88 2016/11/29 10:22:30 jsg Exp $  */
+/*	$OpenBSD: pgt.c,v 1.89 2017/01/22 10:17:38 dlg Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -2361,15 +2361,6 @@ pgt_ioctl(struct ifnet *ifp, u_long cmd, caddr_t req)
 				error = ENETRESET;
 			}
 		}
-		break;
-	case SIOCADDMULTI:
-	case SIOCDELMULTI:
-		error = (cmd == SIOCADDMULTI) ?
-		    ether_addmulti(ifr, &ic->ic_ac) :
-		    ether_delmulti(ifr, &ic->ic_ac);
-
-		if (error == ENETRESET)
-			error = 0;
 		break;
 	case SIOCSIFMTU:
 		if (ifr->ifr_mtu > PGT_FRAG_SIZE) {
