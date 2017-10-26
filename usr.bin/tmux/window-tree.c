@@ -1,4 +1,4 @@
-/* $OpenBSD: window-tree.c,v 1.20 2017/10/22 13:16:54 nicm Exp $ */
+/* $OpenBSD: window-tree.c,v 1.21 2017/10/25 11:26:11 nicm Exp $ */
 
 /*
  * Copyright (c) 2017 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -931,7 +931,7 @@ window_tree_command_callback(struct client *c, void *modedata, const char *s,
 {
 	struct window_tree_modedata	*data = modedata;
 
-	if (data->dead)
+	if (s == NULL || data->dead)
 		return (0);
 
 	data->entered = s;
