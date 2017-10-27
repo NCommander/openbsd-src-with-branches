@@ -1,4 +1,4 @@
-/*	$OpenBSD: elf.c,v 1.5 2017/09/29 16:05:53 jsg Exp $ */
+/*	$OpenBSD: elf.c,v 1.6 2017/09/30 10:15:59 jsg Exp $ */
 
 /*
  * Copyright (c) 2016 Martin Pieuchot <mpi@openbsd.org>
@@ -17,11 +17,11 @@
  */
 
 #include <sys/types.h>
-#include <sys/exec_elf.h>
 
 #include <machine/reloc.h>
 
 #include <assert.h>
+#include <elf.h>
 #include <err.h>
 #include <string.h>
 
