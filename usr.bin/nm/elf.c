@@ -1,4 +1,4 @@
-/*	$OpenBSD: elf.c,v 1.33 2015/08/13 19:13:28 miod Exp $	*/
+/*	$OpenBSD: elf.c,v 1.34 2015/12/09 19:28:34 mmcc Exp $	*/
 
 /*
  * Copyright (c) 2003 Michael Shalayeff
@@ -29,7 +29,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <a.out.h>
-#include <elf_abi.h>
+#include <elf.h>
 #include <errno.h>
 #include <err.h>
 #include <stdint.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: i386_nlist.c,v 1.4 2015/10/16 16:54:38 tobias Exp $	*/
+/*	$OpenBSD: i386_nlist.c,v 1.5 2015/10/19 19:22:32 krw Exp $	*/
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -34,7 +34,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-#include <elf_abi.h>
+#include <elf.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <nlist.h>
