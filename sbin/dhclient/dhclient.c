@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.515 2017/10/23 13:01:20 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.516 2017/10/27 15:10:16 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -694,7 +694,7 @@ usage(void)
 	extern char	*__progname;
 
 	fprintf(stderr,
-	    "usage: %s [-dnq ] [-c file] [-i options] [-L file] "
+	    "usage: %s [-dnq] [-c file] [-i options] [-L file] "
 	    "[-l file] interface\n", __progname);
 	exit(1);
 }
