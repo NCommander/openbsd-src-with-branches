@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkuboot.c,v 1.6 2015/10/12 06:24:28 deraadt Exp $	*/
+/*	$OpenBSD: mkuboot.c,v 1.7 2016/12/20 11:27:11 jsg Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -18,6 +18,8 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include <elf.h>
 #include <err.h>
 #include <fcntl.h>
 #include <stdint.h>
@@ -27,7 +29,6 @@
 #include <time.h>
 #include <unistd.h>
 #include <zlib.h>
-#include <sys/exec_elf.h>
 
 #define IH_OS_OPENBSD		1 /* OpenBSD */
 #define IH_OS_LINUX		5 /* Linux */

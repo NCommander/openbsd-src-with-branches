@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.14 2015/09/25 03:17:02 guenther Exp $ */
+/*	$OpenBSD: exec_elf.c,v 1.15 2017/06/03 23:31:37 deraadt Exp $ */
 
 /*
  * Copyright (c) 1999 Mats O Jansson.  All rights reserved.
@@ -26,8 +26,8 @@
 
 #include <sys/types.h>
 #include <sys/exec.h>
-#include <sys/exec_elf.h>
 
+#include <elf.h>
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>

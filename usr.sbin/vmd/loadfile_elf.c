@@ -1,5 +1,5 @@
 /* $NetBSD: loadfile.c,v 1.10 2000/12/03 02:53:04 tsutsui Exp $ */
-/* $OpenBSD: loadfile_elf.c,v 1.25 2017/03/25 16:28:25 reyk Exp $ */
+/* $OpenBSD: loadfile_elf.c,v 1.26 2017/03/27 00:28:04 deraadt Exp $ */
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -85,8 +85,8 @@
 #include <sys/ioctl.h>
 #include <sys/reboot.h>
 #include <sys/exec.h>
-#include <sys/exec_elf.h>
 
+#include <elf.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>

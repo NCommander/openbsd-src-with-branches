@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopa.out.c,v 1.15 2016/12/20 22:19:08 krw Exp $ */
+/*	$OpenBSD: mopa.out.c,v 1.16 2017/01/21 08:33:51 krw Exp $ */
 
 /*
  * mopa.out - Convert a Unix format kernel into something that
@@ -68,7 +68,7 @@
 
 #ifndef NOELF
 #if defined(__NetBSD__) || defined(__OpenBSD__)
-#include <sys/exec_elf.h>
+#include <elf.h>
 #else
 #define NOELF
 #endif

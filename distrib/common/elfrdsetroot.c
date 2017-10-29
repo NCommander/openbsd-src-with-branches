@@ -1,4 +1,4 @@
-/*	$OpenBSD: elfrdsetroot.c,v 1.22 2011/07/08 21:39:32 drahn Exp $	*/
+/*	$OpenBSD: elfrdsetroot.c,v 1.23 2017/07/31 01:18:09 mortimer Exp $	*/
 /*	$NetBSD: rdsetroot.c,v 1.2 1995/10/13 16:38:39 gwr Exp $	*/
 
 /*
@@ -39,12 +39,12 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
+#include <elf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <nlist.h>
 
-#include <sys/exec_elf.h>
 #include "elfrdsetroot.h"
 
 struct elfhdr head;

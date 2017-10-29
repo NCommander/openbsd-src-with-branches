@@ -1,4 +1,4 @@
-/* $OpenBSD: crunchide.c,v 1.10 2015/08/20 22:39:29 deraadt Exp $	 */
+/* $OpenBSD: crunchide.c,v 1.11 2015/10/18 17:32:22 tobias Exp $	 */
 
 /*
  * Copyright (c) 1994 University of Maryland
@@ -53,10 +53,10 @@
  */
 
 #include <sys/types.h>
-#include <sys/exec_elf.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 
+#include <elf.h>
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
