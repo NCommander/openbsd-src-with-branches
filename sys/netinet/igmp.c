@@ -1,4 +1,4 @@
-/*	$OpenBSD: igmp.c,v 1.69 2017/06/19 17:58:49 bluhm Exp $	*/
+/*	$OpenBSD: igmp.c,v 1.70 2017/10/09 08:35:38 mpi Exp $	*/
 /*	$NetBSD: igmp.c,v 1.15 1996/02/13 23:41:25 christos Exp $	*/
 
 /*
@@ -550,18 +550,21 @@ igmp_fasttimo(void)
 {
 	struct ifnet *ifp;
 
-	NET_ASSERT_LOCKED();
+	NET_LOCK();
 
 	/*
 	 * Quick check to see if any work needs to be done, in order
 	 * to minimize the overhead of fasttimo processing.
 	 */
 	if (!igmp_timers_are_running)
-		return;
+		goto out;
 
 	igmp_timers_are_running = 0;
 	TAILQ_FOREACH(ifp, &ifnet, if_list)
 		igmp_checktimer(ifp);
+
+out:
+	NET_UNLOCK();
 }
 
 
@@ -600,7 +603,7 @@ igmp_slowtimo(void)
 {
 	struct router_info *rti;
 
-	NET_ASSERT_LOCKED();
+	NET_LOCK();
 
 	for (rti = rti_head; rti != 0; rti = rti->rti_next) {
 		if (rti->rti_type == IGMP_v1_ROUTER &&
@@ -608,6 +611,8 @@ igmp_slowtimo(void)
 			rti->rti_type = IGMP_v2_ROUTER;
 		}
 	}
+
+	NET_UNLOCK();
 }
 
 void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.323 2017/10/09 08:35:38 mpi Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.324 2017/10/26 15:13:40 mpi Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -1028,6 +1028,7 @@ ip_slowtimo(void)
 {
 	struct ipq *fp, *nfp;
 
+	NET_LOCK();
 	mtx_enter(&ipq_mutex);
 	LIST_FOREACH_SAFE(fp, &ipq, ipq_q, nfp) {
 		if (--fp->ipq_ttl == 0) {
@@ -1036,6 +1037,7 @@ ip_slowtimo(void)
 		}
 	}
 	mtx_leave(&ipq_mutex);
+	NET_UNLOCK();
 }
 
 /*

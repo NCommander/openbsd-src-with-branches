@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_timer.c,v 1.58 2017/10/22 14:11:34 mikeb Exp $	*/
+/*	$OpenBSD: tcp_timer.c,v 1.59 2017/10/25 12:38:21 job Exp $	*/
 /*	$NetBSD: tcp_timer.c,v 1.14 1996/02/13 23:44:09 christos Exp $	*/
 
 /*
@@ -128,11 +128,13 @@ tcp_delack(void *arg)
 void
 tcp_slowtimo(void)
 {
-	NET_ASSERT_LOCKED();
+	NET_LOCK();
 
 	tcp_maxidle = TCPTV_KEEPCNT * tcp_keepintvl;
 	tcp_iss += TCP_ISSINCR2/PR_SLOWHZ;		/* increment iss */
 	tcp_now++;					/* for timestamps */
+
+	NET_UNLOCK();
 }
 
 /*
