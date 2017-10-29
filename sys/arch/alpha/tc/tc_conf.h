@@ -1,4 +1,4 @@
-/* $OpenBSD: tc_conf.h,v 1.10 2008/08/09 16:42:29 miod Exp $ */
+/* $OpenBSD: tc_conf.h,v 1.11 2010/09/22 12:36:32 miod Exp $ */
 /* $NetBSD: tc_conf.h,v 1.10 2000/06/04 19:14:29 cgd Exp $ */
 
 /*
@@ -49,6 +49,10 @@ extern int	tc_3000_500_graphics_nbuiltins;
 extern struct tc_builtin tc_3000_500_graphics_builtins[];
 extern int	tc_3000_500_nographics_nbuiltins;
 extern struct tc_builtin tc_3000_500_nographics_builtins[];
+
+extern void	tc_3000_500_ioslot(u_int32_t, u_int32_t, int);
+
+extern int	tc_3000_500_activate(struct device *, int);
 #endif /* DEC_3000_500 */
 
 #ifdef DEC_3000_300
@@ -69,4 +73,3 @@ extern struct tc_builtin tc_3000_300_builtins[];
 #endif /* DEC_3000_300 */
 
 extern int	tc_fb_cnattach(tc_addr_t);
-
