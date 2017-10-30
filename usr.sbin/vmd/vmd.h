@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.h,v 1.63 2017/09/11 23:25:05 dlg Exp $	*/
+/*	$OpenBSD: vmd.h,v 1.64 2017/09/11 23:32:34 dlg Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -94,7 +94,7 @@ enum imsg_type {
 	IMSG_VMDOP_RELOAD,
 	IMSG_VMDOP_PRIV_IFDESCR,
 	IMSG_VMDOP_PRIV_IFADD,
-	IMSG_VMDOP_PRIV_IFCREATE,
+	IMSG_VMDOP_PRIV_IFEXISTS,
 	IMSG_VMDOP_PRIV_IFUP,
 	IMSG_VMDOP_PRIV_IFDOWN,
 	IMSG_VMDOP_PRIV_IFGROUP,
