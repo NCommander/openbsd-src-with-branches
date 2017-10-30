@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.60 2016/10/22 20:55:04 rzalamena Exp $
+#	$OpenBSD: Makefile,v 1.61 2016/11/18 17:37:03 reyk Exp $
 #
 #  Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994
 # 	The Regents of the University of California.  All rights reserved.
@@ -28,7 +28,7 @@ CFLAGS+=-Wall -I${.CURDIR}/../../sbin/pfctl -I${.CURDIR}/../hostapd
 # for pcap-int.h
 CFLAGS+=-I${.CURDIR}/../../lib/libpcap
 
-CFLAGS+=-DCSLIP -DPPP -DHAVE_FDDI -DETHER_SERVICE -DHAVE_NET_SLIP_H -DHAVE_ETHER_NTOHOST -DINET6
+CFLAGS+=-DCSLIP -DPPP -DHAVE_FDDI -DETHER_SERVICE -DHAVE_ETHER_NTOHOST -DINET6
 
 LDADD+=	-lpcap -ll -lcrypto
 DPADD+=	${LIBL} ${LIBPCAP} ${LIBCRYPTO}
