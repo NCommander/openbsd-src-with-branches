@@ -1,10 +1,11 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1.1.1 2017/10/11 12:01:20 bluhm Exp $
 
 VMD ?= /usr/sbin/vmd
 
 VMD_PASS=boot-keyword memory-round memory-just-enough
 VMD_FAIL=kernel-keyword too-few-ram vm-name-too-long too-many-ifs \
-	 boot-name-too-long disk-path-too-long too-many-disks
+	 boot-name-too-long disk-path-too-long too-many-disks \
+	 switch-no-interface
 
 REGRESS_TARGETS=
 
