@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.322 2017/08/11 21:24:19 mpi Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.323 2017/10/30 22:35:50 sashan Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2463,7 +2463,7 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 			    pf_default_rule_new.timeout[i];
 			if (pf_default_rule.timeout[i] == PFTM_INTERVAL &&
 			    pf_default_rule.timeout[i] < old)
-				task_add(softnettq, &pf_purge_task);
+				task_add(net_tq(0), &pf_purge_task);
 		}
 		pfi_xcommit();
 		pf_trans_set_commit();
