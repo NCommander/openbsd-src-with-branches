@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_eltorito.h,v 1.2 2016/10/16 20:26:56 natano Exp $	*/
+/*	$OpenBSD: cd9660_eltorito.h,v 1.3 2016/12/17 16:22:04 krw Exp $	*/
 /*	$NetBSD: cd9660_eltorito.h,v 1.5 2009/07/04 14:31:38 ahoka Exp $	*/
 
 /*
@@ -41,6 +41,7 @@
 #define	ET_SYS_X86	0
 #define	ET_SYS_PPC	1
 #define	ET_SYS_MAC	2
+#define	ET_SYS_EFI	0xef
 
 #define ET_BOOT_ENTRY_SIZE 0x20
 
