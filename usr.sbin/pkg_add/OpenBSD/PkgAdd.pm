@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgAdd.pm,v 1.95 2017/03/16 15:57:47 espie Exp $
+# $OpenBSD: PkgAdd.pm,v 1.96 2017/03/25 18:58:59 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -151,6 +151,16 @@ sub handle_options
 		$state->usage("Missing pkgname");
 	}
 }
+
+OpenBSD::Auto::cache(cache_directory,
+	sub {
+		my $self = shift;
+		if (defined $ENV{PKG_CACHE}) {
+			return $ENV{PKG_CACHE};
+		} else {
+			return undef;
+		}
+	});
 
 sub set_name_from_handle
 {

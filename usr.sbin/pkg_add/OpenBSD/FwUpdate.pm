@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: FwUpdate.pm,v 1.22 2017/05/29 12:28:54 espie Exp $
+# $OpenBSD: FwUpdate.pm,v 1.23 2017/10/14 09:00:17 patrick Exp $
 #
 # Copyright (c) 2014 Marc Espie <espie@openbsd.org>
 #
@@ -42,6 +42,11 @@ sub add_default
 
 package OpenBSD::FwUpdate::State;
 our @ISA = qw(OpenBSD::PkgAdd::State);
+
+sub cache_directory
+{
+	return undef;
+}
 
 sub locator
 {
