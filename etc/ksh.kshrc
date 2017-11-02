@@ -1,5 +1,5 @@
 :
-#	$OpenBSD: ksh.kshrc,v 1.27 2016/09/14 18:34:51 rpe Exp $
+#	$OpenBSD: ksh.kshrc,v 1.28 2017/07/15 07:11:42 tb Exp $
 #
 # NAME:
 #	ksh.kshrc - global initialization for ksh
@@ -74,9 +74,7 @@ case "$-" in
 	xterm*)
 		ILS='\033]1;'; ILE='\007'
 		WLS='\033]2;'; WLE='\007'
-		if ps -p $PPID -o command | grep -q telnet; then
-			export TERM=xterms
-		fi
+		pgrep -qxs $PPID telnet && export TERM=xterms
 		;;
 	*)	;;
 	esac
