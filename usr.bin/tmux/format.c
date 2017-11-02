@@ -1,4 +1,4 @@
-/* $OpenBSD: format.c,v 1.147 2017/10/12 11:32:27 nicm Exp $ */
+/* $OpenBSD: format.c,v 1.148 2017/11/02 18:27:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -795,8 +795,11 @@ format_find(struct format_tree *ft, const char *key, int modifiers)
 			found = s;
 			goto found;
 		}
-		if (fe->value == NULL && fe->cb != NULL)
+		if (fe->value == NULL && fe->cb != NULL) {
 			fe->cb(ft, fe);
+			if (fe->value == NULL)
+				fe->value = xstrdup("");
+		}
 		found = fe->value;
 		goto found;
 	}
