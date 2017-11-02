@@ -1,4 +1,4 @@
-/* $OpenBSD: status.c,v 1.169 2017/10/16 19:30:53 nicm Exp $ */
+/* $OpenBSD: status.c,v 1.170 2017/10/20 13:10:54 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -508,8 +508,7 @@ draw:
 	/* Copy the window list. */
 	c->wlmouse = -wloffset + wlstart;
 	screen_write_cursormove(&ctx, wloffset, 0);
-	screen_write_copy(&ctx, &window_list, wlstart, 0, wlwidth, 1, NULL,
-	    NULL);
+	screen_write_fast_copy(&ctx, &window_list, wlstart, 0, wlwidth, 1);
 	screen_free(&window_list);
 
 	screen_write_stop(&ctx);
