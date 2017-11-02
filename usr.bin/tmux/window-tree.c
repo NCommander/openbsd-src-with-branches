@@ -1,4 +1,4 @@
-/* $OpenBSD: window-tree.c,v 1.23 2017/11/02 18:27:35 nicm Exp $ */
+/* $OpenBSD: window-tree.c,v 1.24 2017/11/02 18:43:51 nicm Exp $ */
 
 /*
  * Copyright (c) 2017 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -44,10 +44,8 @@ static void		 window_tree_key(struct window_pane *,
 		"," \
 			"#{session_windows} windows" \
 			"#{?session_grouped, " \
-				"(group #{session_group}" \
-				"#{?session_group_others," \
-					" with #{session_group_others}," \
-				"})," \
+				"(group #{session_group}: " \
+				"#{session_group_list})," \
 			"}" \
 			"#{?session_attached, (attached),}" \
 		"}" \
