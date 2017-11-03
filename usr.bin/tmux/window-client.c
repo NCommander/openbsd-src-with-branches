@@ -1,4 +1,4 @@
-/* $OpenBSD: window-client.c,v 1.10 2017/11/02 21:29:17 nicm Exp $ */
+/* $OpenBSD: window-client.c,v 1.11 2017/11/02 22:00:42 nicm Exp $ */
 
 /*
  * Copyright (c) 2017 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -318,7 +318,7 @@ window_client_key(struct window_pane *wp, struct client *c,
 	struct window_client_itemdata	*item;
 	int				 finished;
 
-	finished = mode_tree_key(mtd, c, &key, m);
+	finished = mode_tree_key(mtd, c, &key, m, NULL, NULL);
 	switch (key) {
 	case 'd':
 	case 'x':
