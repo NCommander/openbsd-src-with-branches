@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.34 2017/08/14 16:32:37 mpi Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.35 2017/10/17 19:23:09 jasper Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.1 2003/04/26 18:39:27 fvdl Exp $	*/
 
 /*
@@ -236,7 +236,10 @@ db_stack_trace_print(db_expr_t addr, boolean_t have_addr, db_expr_t count,
 				narg = 6;
 		}
 
-		(*pr)("%s(", name);
+		if (name == NULL)
+			(*pr)("%lx(", callpc);
+		else
+			(*pr)("%s(", name);
 
 		if (lastframe == 0 && offset == 0 && !have_addr) {
 			/* We have a breakpoint before the frame is set up */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.6 2014/07/13 12:11:01 jasper Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.7 2017/05/30 15:39:05 mpi Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.19 2006/01/21 22:10:59 uwe Exp $	*/
 
 /*-
@@ -122,7 +122,11 @@ db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
 			sym = db_search_symbol(callpc, DB_STGY_ANY, &offset);
 			db_symbol_values(sym, &name, NULL);
 
-			(*print)("%s() at ", name ? name : "");
+			if (name == NULL)
+				(*print)("%lx()", callpc);
+			else
+				(*print)("%s() at ", name);
+
 			db_printsym(callpc, DB_STGY_PROC, print);
 			(*print)("\n");
 
