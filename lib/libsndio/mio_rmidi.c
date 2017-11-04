@@ -81,8 +81,12 @@ mio_rmidi_getfd(const char *str, unsigned int mode, int nbio)
 		return -1;
 	}
 	p = _sndio_parsenum(p, &devnum, 255);
-	if (p == NULL || *p != '\0') {
+	if (p == NULL) {
 		DPRINTF("mio_rmidi_getfd: %s: number expected after '/'\n", str);
+		return -1;
+	}
+	if (*p != '\0') {
+		DPRINTF("mio_rmidi_getfd: junk at end of string: %s\n", p);
 		return -1;
 	}
 	snprintf(path, sizeof(path), DEVPATH_PREFIX "%u", devnum);
