@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse.c,v 1.32 2017/11/02 13:55:37 mpi Exp $ */
+/* $OpenBSD: fuse.c,v 1.33 2017/11/04 13:04:08 mpi Exp $ */
 /*
  * Copyright (c) 2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -236,7 +236,7 @@ fuse_get_session(struct fuse *f)
 int
 fuse_loop_mt(unused struct fuse *fuse)
 {
-	return (0);
+	return (-1);
 }
 
 struct fuse *
