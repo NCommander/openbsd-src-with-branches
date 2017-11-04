@@ -51,6 +51,8 @@ PROTO_STD_DEPRECATED(pthread_barrierattr_getpshared);
 PROTO_STD_DEPRECATED(pthread_barrierattr_init);
 PROTO_STD_DEPRECATED(pthread_barrierattr_setpshared);
 PROTO_STD_DEPRECATED(pthread_cancel);
+PROTO_STD_DEPRECATED(pthread_cleanup_pop);
+PROTO_STD_DEPRECATED(pthread_cleanup_push);
 PROTO_STD_DEPRECATED(pthread_condattr_getclock);
 PROTO_STD_DEPRECATED(pthread_condattr_setclock);
 PROTO_STD_DEPRECATED(pthread_create);

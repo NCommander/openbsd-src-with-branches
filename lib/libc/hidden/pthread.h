@@ -20,8 +20,6 @@
 
 #include_next <pthread.h>
 
-PROTO_NORMAL(_thread_cleanup_pop);
-PROTO_NORMAL(_thread_cleanup_push);
 PROTO_STD_DEPRECATED(pthread_atfork);
 PROTO_STD_DEPRECATED(pthread_cond_broadcast);
 PROTO_STD_DEPRECATED(pthread_cond_destroy);

@@ -344,6 +344,12 @@ struct rthread_storage {
 	void *data;
 };
 
+struct rthread_cleanup_fn {
+	void (*fn)(void *);
+	void *arg;
+	struct rthread_cleanup_fn *next;
+};
+
 struct tib;
 struct stack;
 struct pthread {
@@ -361,7 +367,7 @@ struct pthread {
 	pthread_cond_t blocking_cond;
 	struct pthread_attr attr;
 	struct rthread_storage *local_storage;
-	struct __thread_cleanup *cleanup_fns;
+	struct rthread_cleanup_fn *cleanup_fns;
 
 	/* cancel received in a delayed cancel block? */
 	int delayed_cancel;

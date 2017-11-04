@@ -6,7 +6,6 @@ SRCS+=	callbacks.c atfork.c
 
 # threads infrastructure
 SRCS+=	rthread.c \
-	rthread_cleanup.c \
 	rthread_condattr.c \
 	rthread_debug.c \
 	rthread_file.c \
