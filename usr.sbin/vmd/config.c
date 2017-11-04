@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.35 2017/09/08 06:24:31 mlarkin Exp $	*/
+/*	$OpenBSD: config.c,v 1.36 2017/09/14 10:07:17 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -41,7 +41,6 @@
 
 /* Supported bridge types */
 const char *vmd_descsw[] = { "switch", "bridge", NULL };
-
 
 int
 config_init(struct vmd *env)
