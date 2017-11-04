@@ -1,4 +1,4 @@
-/*	$OpenBSD: cn30xxfpa.c,v 1.6 2015/11/19 14:08:09 visa Exp $	*/
+/*	$OpenBSD: cn30xxfpa.c,v 1.7 2017/09/08 05:36:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -201,7 +201,7 @@ cn30xxfpa_buf_dma_alloc(struct cn30xxfpa_buf *fb)
 	if (status != 0)
 		panic("%s failed", "bus_dmamap_create");
 
-	status = bus_dmamem_alloc(fb->fb_dmat, fb->fb_len, 128, 0,
+	status = bus_dmamem_alloc(fb->fb_dmat, fb->fb_len, CACHELINESIZE, 0,
 	    fb->fb_dma_segs, fb->fb_dma_nsegs, &nsegs, 0);
 	if (status != 0 || fb->fb_dma_nsegs != nsegs)
 		panic("%s failed", "bus_dmamem_alloc");
