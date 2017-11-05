@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.c,v 1.33 2017/05/30 12:42:31 friehm Exp $ */
+/*	$OpenBSD: ospf6d.c,v 1.34 2017/08/12 16:27:50 benno Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -561,6 +561,7 @@ ospf_redistribute(struct kroute *kr, u_int32_t *metric)
 int
 ospf_reload(void)
 {
+#ifdef notyet
 	struct area		*area;
 	struct ospfd_conf	*xconf;
 
@@ -586,6 +587,9 @@ ospf_reload(void)
 	/* update redistribute lists */
 	kr_reload();
 	return (0);
+#else
+	return (-1);
+#endif
 }
 
 int

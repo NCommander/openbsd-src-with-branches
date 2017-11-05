@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6ctl.c,v 1.45 2017/06/19 19:55:57 friehm Exp $ */
+/*	$OpenBSD: ospf6ctl.c,v 1.46 2017/08/12 22:09:54 benno Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -232,10 +232,14 @@ main(int argc, char *argv[])
 		done = 1;
 		break;
 	case RELOAD:
+#ifdef notyet
 		imsg_compose(ibuf, IMSG_CTL_RELOAD, 0, 0, -1, NULL, 0);
 		printf("reload request sent.\n");
 		done = 1;
 		break;
+#else
+		errx(1, "reload not supported");
+#endif
 	}
 
 	while (ibuf->w.queued)
