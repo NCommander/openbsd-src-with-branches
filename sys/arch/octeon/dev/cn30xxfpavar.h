@@ -1,4 +1,4 @@
-/*	$OpenBSD: cn30xxfpavar.h,v 1.5 2017/11/04 10:59:43 visa Exp $	*/
+/*	$OpenBSD: cn30xxfpavar.h,v 1.6 2017/11/04 11:18:17 visa Exp $	*/
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
  * All rights reserved.
@@ -49,10 +49,6 @@ uint64_t	cn30xxfpa_int_summary(void);
 int		cn30xxfpa_buf_init(int, size_t, size_t, struct cn30xxfpa_buf **);
 void		*cn30xxfpa_buf_get(struct cn30xxfpa_buf *);
 uint64_t	cn30xxfpa_query(int);
-
-#ifdef OCTEON_ETH_DEBUG
-void	cn30xxfpa_dump(void);
-#endif
 
 /*
  * operations
