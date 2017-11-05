@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_proto.c,v 1.79 2017/05/18 10:56:45 bluhm Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.80 2017/11/02 14:01:18 florian Exp $	*/
 /*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
@@ -179,7 +179,6 @@ struct protosw inetsw[] = {
   .pr_domain	= &inetdomain,
   .pr_init	= ip_init,
   .pr_slowtimo	= ip_slowtimo,
-  .pr_drain	= ip_drain,
   .pr_sysctl	= ip_sysctl
 },
 {
