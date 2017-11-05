@@ -1,5 +1,4 @@
-:
-#	$OpenBSD: ksh.kshrc,v 1.28 2017/07/15 07:11:42 tb Exp $
+#	$OpenBSD: ksh.kshrc,v 1.29 2017/11/02 10:19:06 tb Exp $
 #
 # NAME:
 #	ksh.kshrc - global initialization for ksh
