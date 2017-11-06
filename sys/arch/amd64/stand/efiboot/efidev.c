@@ -1,4 +1,4 @@
-/*	$OpenBSD: efidev.c,v 1.26 2017/05/16 02:56:23 yasuoka Exp $	*/
+/*	$OpenBSD: efidev.c,v 1.27 2017/07/21 01:21:42 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -656,7 +656,7 @@ efiopen(struct open_file *f, ...)
 	case 2:  /* fd */
 		break;
 	case 6:  /* cd */
-		biosdev = bios_bootdev & 0xff;
+		biosdev |= 0xe0;
 		break;
 	default:
 		return ENXIO;
@@ -787,8 +787,9 @@ efi_dump_diskinfo(void)
 			sizu = "GB";
 		}
 
-		printf("hd%d\t%u\t%u\t%u%s\t0x%x\t0x%x\t%s\n",
-		    (bdi->bios_number & 0x7f),
+		printf("%cd%d\t%u\t%u\t%u%s\t0x%x\t0x%x\t%s\n",
+		    (B_TYPE(bdi->bsd_dev) == 6)? 'c' : 'h',
+		    (bdi->bios_number & 0x1f),
 		    ed->blkio->Media->BlockSize,
 		    ed->blkio->Media->IoAlign, (unsigned)siz, sizu,
 		    bdi->flags, bdi->checksum,
