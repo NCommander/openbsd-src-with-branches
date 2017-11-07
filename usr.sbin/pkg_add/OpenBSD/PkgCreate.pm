@@ -122,7 +122,7 @@ sub handle_options
 	} 
 
 	$state->{base} = $base;
-	$state->{silent} = defined $state->opt('n') && defined $state->opt('q')
+	$state->{silent} = defined $state->opt('n') && defined $state->opt('n')
 	    || defined $state->opt('S');
 }
 
