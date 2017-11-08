@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.241 2017/10/09 08:35:38 mpi Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.242 2017/11/02 14:01:18 florian Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -300,7 +300,7 @@ udp_input(struct mbuf **mp, int *offp, int proto, int af)
 			m_adj(m, sizeof(struct udphdr));
 			skip -= sizeof(struct udphdr);
 
-			espstat.esps_udpencin++;
+			espstat_inc(esps_udpencin);
 			protoff = af == AF_INET ? offsetof(struct ip, ip_p) :
 			    offsetof(struct ip6_hdr, ip6_nxt);
 			ipsec_common_input(m, skip, protoff,
