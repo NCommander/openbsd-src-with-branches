@@ -1,4 +1,4 @@
-/* $OpenBSD: ipsec.h,v 1.25 2005/04/08 16:52:41 deraadt Exp $	 */
+/* $OpenBSD: ipsec.h,v 1.26 2006/06/02 18:08:56 hshoexer Exp $	 */
 /* $EOM: ipsec.h,v 1.42 2000/12/03 07:58:20 angelos Exp $	 */
 
 /*
@@ -73,6 +73,7 @@ struct ipsec_exch {
 
 	/* Diffie-Hellman values.  */
 	size_t		 g_x_len;
+	size_t		 g_xy_len;
 	u_int8_t	*g_xi;
 	u_int8_t	*g_xr;
 	u_int8_t	*g_xy;
