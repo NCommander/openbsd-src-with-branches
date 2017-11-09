@@ -1,4 +1,4 @@
-.\"	$OpenBSD: dhclient.leases.5,v 1.11 2017/10/23 13:01:20 krw Exp $
+.\"	$OpenBSD: dhclient.leases.5,v 1.12 2017/11/09 12:34:25 krw Exp $
 .\"
 .\" Copyright (c) 1997 The Internet Software Consortium.
 .\" All rights reserved.
@@ -36,7 +36,7 @@
 .\" see ``http://www.isc.org/isc''.  To learn more about Vixie
 .\" Enterprises, see ``http://www.vix.com''.
 .\"
-.Dd $Mdocdate: October 23 2017 $
+.Dd $Mdocdate: November 9 2017 $
 .Dt DHCLIENT.LEASES 5
 .Os
 .Sh NAME
@@ -84,6 +84,7 @@ when the lease was obtained.
 This value is used to convert the values of the DHCP options
 .Ic dhcp-lease-time ,
 .Ic dhcp-renewal-time ,
+and
 .Ic dhcp-rebinding-time
 to times.
 A value of 0 will cause
@@ -102,7 +103,7 @@ will no longer use the lease to configure the interface.
 .Ic rebind
 is when
 .Xr dhclient 8
-will begin tring to renew the lease with broadcasts to any server.
+will begin trying to renew the lease with broadcasts to any server.
 .Ic renew
 is when
 .Xr dhclient 8
