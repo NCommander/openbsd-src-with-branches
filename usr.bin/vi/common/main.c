@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.39 2017/04/18 01:45:35 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.40 2017/07/03 07:01:14 bentley Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -188,6 +188,7 @@ editor(GS *gp, int argc, char *argv[])
 			}
 			(void)fprintf(gp->tracefp,
 			    "\n===\ntrace: open %s\n", optarg);
+			fflush(gp->tracefp);
 			break;
 #endif
 		case 't':		/* Tag. */
