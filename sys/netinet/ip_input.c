@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.329 2017/11/05 13:19:59 florian Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.330 2017/11/08 16:29:20 visa Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -1818,11 +1818,11 @@ ip_send_dispatch(void *xmq)
 	if (ml_empty(&ml))
 		return;
 
-	NET_LOCK();
+	NET_RLOCK();
 	while ((m = ml_dequeue(&ml)) != NULL) {
 		ip_output(m, NULL, NULL, 0, NULL, NULL, 0);
 	}
-	NET_UNLOCK();
+	NET_RUNLOCK();
 }
 
 void
