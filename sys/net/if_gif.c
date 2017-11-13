@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gif.c,v 1.100 2017/10/16 13:40:58 mpi Exp $	*/
+/*	$OpenBSD: if_gif.c,v 1.101 2017/10/25 09:24:09 mpi Exp $	*/
 /*	$KAME: if_gif.c,v 1.43 2001/02/20 08:51:07 itojun Exp $	*/
 
 /*
@@ -466,7 +466,6 @@ gif_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		break;
 
 	case SIOCSIFFLAGS:
-		/* if_ioctl() takes care of it */
 		break;
 
 	case SIOCSIFMTU:
