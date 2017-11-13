@@ -862,6 +862,9 @@ print_rule(struct pf_rule *r, const char *anchor_call, int opts)
 		printf(" tos 0x%2.2x", r->tos);
 	if (r->prio)
 		printf(" prio %u", r->prio == PF_PRIO_ZERO ? 0 : r->prio);
+	if (r->pktrate.limit)
+		printf(" max-pkt-rate %u/%u", r->pktrate.limit,
+		    r->pktrate.seconds);
 
 	if (r->scrub_flags & PFSTATE_SETMASK || r->qname[0]) {
 		char *comma = "";
