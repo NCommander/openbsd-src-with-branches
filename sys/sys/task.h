@@ -1,4 +1,4 @@
-/*	$OpenBSD: task.h,v 1.10 2015/12/08 11:55:47 dlg Exp $ */
+/*	$OpenBSD: task.h,v 1.11 2016/06/07 07:53:33 mpi Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -43,6 +43,7 @@ extern struct taskq *const systqmp;
 
 struct taskq	*taskq_create(const char *, unsigned int, int, unsigned int);
 void		 taskq_destroy(struct taskq *);
+void		 taskq_barrier(struct taskq *);
 
 void		 task_set(struct task *, void (*)(void *), void *);
 int		 task_add(struct taskq *, struct task *);
