@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_http.c,v 1.66 2017/05/28 10:39:15 benno Exp $	*/
+/*	$OpenBSD: relay_http.c,v 1.67 2017/09/23 11:56:57 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -187,9 +187,10 @@ relay_read_http(struct bufferevent *bev, void *arg)
 
 		/* Limit the total header length minus \r\n */
 		cre->headerlen += linelen;
-		if (cre->headerlen > RELAY_MAXHEADERLENGTH) {
+		if (cre->headerlen > proto->httpheaderlen) {
 			free(line);
-			relay_abort_http(con, 413, "request too large", 0);
+			relay_abort_http(con, 413,
+			    "request headers too large", 0);
 			return;
 		}
 
