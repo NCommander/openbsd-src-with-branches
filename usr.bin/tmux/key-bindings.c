@@ -1,4 +1,4 @@
-/* $OpenBSD: key-bindings.c,v 1.82 2017/09/08 08:45:27 nicm Exp $ */
+/* $OpenBSD: key-bindings.c,v 1.83 2017/10/05 13:43:34 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -186,6 +186,7 @@ key_bindings_init(void)
 		"bind = choose-buffer",
 		"bind ? list-keys",
 		"bind D choose-client",
+		"bind E select-layout -E",
 		"bind L switch-client -l",
 		"bind M select-pane -M",
 		"bind [ copy-mode",
