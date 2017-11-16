@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.34 2017/08/30 06:42:21 anton Exp $	*/
+/*	$OpenBSD: file.c,v 1.35 2017/08/30 06:57:48 anton Exp $	*/
 /*	$NetBSD: file.c,v 1.11 1996/11/08 19:34:37 christos Exp $	*/
 
 /*-
@@ -673,8 +673,7 @@ again:				/* search for matches */
 	return (numitems);
     }
     else {			/* LIST */
-	qsort(items, numitems, sizeof(*items),
-		(int (*)(const void *, const void *)) sortscmp);
+	qsort(items, numitems, sizeof(*items), sortscmp);
 	print_by_column(looking_for_lognames ? NULL : tilded_dir,
 			items, numitems);
 	if (items != NULL)
