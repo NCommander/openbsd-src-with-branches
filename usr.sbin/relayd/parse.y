@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.216 2017/08/28 06:00:05 florian Exp $	*/
+/*	$OpenBSD: parse.y,v 1.217 2017/11/15 19:03:26 benno Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -1055,6 +1055,11 @@ httpflags_l	: httpflags comma httpflags_l
 		;
 
 httpflags	: HEADERLEN NUMBER	{
+			if (proto->type != RELAY_PROTO_HTTP) {
+				yyerror("can set http options only for "
+				    "http protocol");
+				YYERROR;
+			}
 			if ($2 < 0 || $2 > RELAY_MAXHEADERLENGTH) {
 				yyerror("invalid headerlen: %d", $2);
 				YYERROR;
