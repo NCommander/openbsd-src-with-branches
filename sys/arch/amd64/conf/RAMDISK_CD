@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK_CD,v 1.167 2017/05/26 19:15:06 stsp Exp $
+#	$OpenBSD: RAMDISK_CD,v 1.168 2017/06/14 22:35:43 mikeb Exp $
 
 machine		amd64
 maxusers	4
@@ -72,6 +72,7 @@ pci*		at pchb?
 #pcib*		at pci?			# PCI-ISA bridge
 
 dwiic*		at acpi?
+dwiic*		at pci?
 iic*		at dwiic?
 
 ihidev*		at iic?
