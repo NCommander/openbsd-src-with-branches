@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_etherip.c,v 1.25 2017/11/17 14:50:17 jca Exp $	*/
+/*	$OpenBSD: if_etherip.c,v 1.26 2017/11/17 14:52:50 jca Exp $	*/
 /*
  * Copyright (c) 2015 Kazuya GODA <goda@openbsd.org>
  *
@@ -650,7 +650,7 @@ etherip_sysctl_etheripstat(void *oldp, size_t *oldlenp, void *newp)
 }
 
 int
-ip_etherip_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
+etherip_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
     void *newp, size_t newlen)
 {
 	int error;
