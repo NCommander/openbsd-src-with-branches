@@ -1,4 +1,4 @@
-/*	$OpenBSD: chap.c,v 1.17 2014/05/17 20:31:07 chl Exp $	*/
+/*	$OpenBSD: chap.c,v 1.18 2015/01/15 23:19:48 tedu Exp $	*/
 
 /*
  * chap.c - Challenge Handshake Authentication Protocol.
@@ -470,7 +470,7 @@ ChapReceiveChallenge(cstate, inp, id, len)
 	return;
     }
 
-    BZERO(secret, sizeof(secret));
+    EXPLICIT_BZERO(secret, sizeof(secret));
     ChapSendResponse(cstate);
 }
 
@@ -576,7 +576,7 @@ ChapReceiveResponse(cstate, inp, id, len)
 	}
     }
 
-    BZERO(secret, sizeof(secret));
+    EXPLICIT_BZERO(secret, sizeof(secret));
     ChapSendStatus(cstate, code);
 
     if (code == CHAP_SUCCESS) {
