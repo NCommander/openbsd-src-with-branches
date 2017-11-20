@@ -357,6 +357,7 @@ fdpass_new(int sock, struct fileops *ops)
 	f->file = file_new(ops, f, ops->name, 1);
 	if (f->file == NULL) {
 		close(sock);
+		xfree(f);
 		return NULL;
 	}
 	f->fd = sock;
