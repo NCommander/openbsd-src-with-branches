@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.297 2017/05/16 12:24:01 mpi Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.298 2017/08/17 10:14:08 mikeb Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -299,41 +299,9 @@ bridge_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		}
 
 		if (ifs->if_type == IFT_ETHER) {
-			if ((ifs->if_flags & IFF_UP) == 0) {
-				struct ifreq ifreq;
-
-				/*
-				 * Bring interface up long enough to set
-				 * promiscuous flag, then shut it down again.
-				 */
-				strlcpy(ifreq.ifr_name, req->ifbr_ifsname,
-				    IFNAMSIZ);
-				ifs->if_flags |= IFF_UP;
-				ifreq.ifr_flags = ifs->if_flags;
-				error = (*ifs->if_ioctl)(ifs, SIOCSIFFLAGS,
-				    (caddr_t)&ifreq);
-				if (error != 0)
-					break;
-
-				error = ifpromisc(ifs, 1);
-				if (error != 0)
-					break;
-
-				strlcpy(ifreq.ifr_name, req->ifbr_ifsname,
-				    IFNAMSIZ);
-				ifs->if_flags &= ~IFF_UP;
-				ifreq.ifr_flags = ifs->if_flags;
-				error = (*ifs->if_ioctl)(ifs, SIOCSIFFLAGS,
-				    (caddr_t)&ifreq);
-				if (error != 0) {
-					ifpromisc(ifs, 0);
-					break;
-				}
-			} else {
-				error = ifpromisc(ifs, 1);
-				if (error != 0)
-					break;
-			}
+			error = ifpromisc(ifs, 1);
+			if (error != 0)
+				break;
 		}
 #if NMPW > 0
 		else if (ifs->if_type == IFT_MPLSTUNNEL) {
