@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_etherip.c,v 1.26 2017/11/17 14:52:50 jca Exp $	*/
+/*	$OpenBSD: if_etherip.c,v 1.27 2017/11/17 18:22:52 jca Exp $	*/
 /*
  * Copyright (c) 2015 Kazuya GODA <goda@openbsd.org>
  *
@@ -424,6 +424,7 @@ ip_etherip_input(struct mbuf **mp, int *offp, int proto, int af)
 		return IPPROTO_DONE;
 	}
 
+	NET_ASSERT_LOCKED();
 	LIST_FOREACH(sc, &etherip_softc_list, sc_entry) {
 		if (sc->sc_src.ss_family != AF_INET ||
 		    sc->sc_dst.ss_family != AF_INET)
@@ -577,6 +578,7 @@ ip6_etherip_input(struct mbuf **mp, int *offp, int proto, int af)
 	in6_recoverscope(&ipsrc, &ip6->ip6_src);
 	in6_recoverscope(&ipdst, &ip6->ip6_dst);
 
+	NET_ASSERT_LOCKED();
 	LIST_FOREACH(sc, &etherip_softc_list, sc_entry) {
 		if (sc->sc_src.ss_family != AF_INET6 ||
 		    sc->sc_dst.ss_family != AF_INET6)

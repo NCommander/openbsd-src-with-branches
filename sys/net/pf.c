@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1042 2017/08/14 15:58:16 henning Exp $ */
+/*	$OpenBSD: pf.c,v 1.1045 2017/11/13 11:30:11 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -3189,12 +3189,14 @@ pf_socket_lookup(struct pf_pdesc *pd)
 		sport = pd->hdr.tcp.th_sport;
 		dport = pd->hdr.tcp.th_dport;
 		PF_ASSERT_LOCKED();
+		NET_ASSERT_LOCKED();
 		tb = &tcbtable;
 		break;
 	case IPPROTO_UDP:
 		sport = pd->hdr.udp.uh_sport;
 		dport = pd->hdr.udp.uh_dport;
 		PF_ASSERT_LOCKED();
+		NET_ASSERT_LOCKED();
 		tb = &udbtable;
 		break;
 	default:

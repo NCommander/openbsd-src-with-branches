@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.158 2017/10/25 12:38:21 job Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.159 2017/11/02 14:01:18 florian Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -576,6 +576,7 @@ tcp_attach(struct socket *so, int proto)
 			return (error);
 	}
 
+	NET_ASSERT_LOCKED();
 	error = in_pcballoc(so, &tcbtable);
 	if (error)
 		return (error);
