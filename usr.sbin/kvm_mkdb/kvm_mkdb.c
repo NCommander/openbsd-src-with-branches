@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_mkdb.c,v 1.27 2015/11/23 21:06:14 deraadt Exp $	*/
+/*	$OpenBSD: kvm_mkdb.c,v 1.28 2016/04/25 16:03:57 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -79,7 +79,7 @@ main(int argc, char *argv[])
 	} else {
 		kvm_gid = gr->gr_gid;
 		if (setresgid(kvm_gid, kvm_gid, kvm_gid) == -1)
-			err(1, "setegid");
+			err(1, "setresgid");
 	}
 
 	/* Increase our data size to the max if we can. */
