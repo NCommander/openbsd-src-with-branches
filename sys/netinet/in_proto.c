@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_proto.c,v 1.86 2017/11/17 18:20:49 jca Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.87 2017/11/17 18:22:52 jca Exp $	*/
 /*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
@@ -174,7 +174,7 @@
 
 u_char ip_protox[IPPROTO_MAX];
 
-struct protosw inetsw[] = {
+const struct protosw inetsw[] = {
 {
   .pr_domain	= &inetdomain,
   .pr_init	= ip_init,
