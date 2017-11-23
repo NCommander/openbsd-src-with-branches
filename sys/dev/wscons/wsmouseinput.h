@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmouseinput.h,v 1.7 2017/05/08 20:55:29 bru Exp $ */
+/* $OpenBSD: wsmouseinput.h,v 1.8 2017/06/06 21:53:07 bru Exp $ */
 
 /*
  * Copyright (c) 2015, 2016 Ulf Brosziewski
@@ -91,6 +91,7 @@ struct mt_state {
 	u_int ptr;
 	u_int ptr_cycle;
 	u_int prev_ptr;
+	u_int ptr_mask;
 
 	/* a buffer for the MT tracking function */
 	int *matrix;
