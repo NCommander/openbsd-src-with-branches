@@ -1,4 +1,4 @@
-#	$OpenBSD: funcs.pl,v 1.32 2017/04/07 15:49:46 bluhm Exp $
+#	$OpenBSD: funcs.pl,v 1.33 2017/09/13 00:35:53 bluhm Exp $
 
 # Copyright (c) 2010-2015 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -122,18 +122,18 @@ sub write_shutdown {
 
 sub write_lines {
 	my $self = shift;
-	my ($lines, $lenght) = @_;
+	my ($lines, $length) = @_;
 
 	foreach (1..$lines) {
-		write_chars($self, $lenght, " $_");
+		write_chars($self, $length, " $_");
 	}
 }
 
 sub write_lengths {
 	my $self = shift;
-	my ($lenghts, $tail) = ref $_[0] ? @_ : [@_];
+	my ($lengths, $tail) = ref $_[0] ? @_ : [@_];
 
-	write_chars($self, $lenghts, $tail);
+	write_chars($self, $lengths, $tail);
 }
 
 sub generate_chars {

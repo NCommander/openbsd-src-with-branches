@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.h,v 1.7 2017/01/21 12:59:06 benno Exp $ */
+/*	$OpenBSD: parse.h,v 1.8 2017/11/27 01:58:52 florian Exp $ */
 /*
  * Copyright (c) 2016 Sebastian Benoit <benno@openbsd.org>
  *
@@ -19,7 +19,7 @@
 
 #include <sys/queue.h>
 
-#define AUTH_MAXLEN	120	/* max lenght of an authority_c name */
+#define AUTH_MAXLEN	120	/* max length of an authority_c name */
 #define DOMAIN_MAXLEN	255	/* max len of a domain name (rfc2181) */
 
 /*
