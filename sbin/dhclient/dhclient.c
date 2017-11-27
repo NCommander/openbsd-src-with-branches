@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.527 2017/11/24 01:39:29 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.528 2017/11/26 16:17:13 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -2684,5 +2684,5 @@ lease_rebind(struct client_lease *lease)
 	if (rebind < renewal)
 		rebind = renewal;
 
-	return lease->epoch + renewal;
+	return lease->epoch + rebind;
 }
