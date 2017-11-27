@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.118 2017/01/09 09:53:23 reyk Exp $	*/
+/*	$OpenBSD: control.c,v 1.119 2017/11/23 07:23:36 eric Exp $	*/
 
 /*
  * Copyright (c) 2012 Gilles Chehade <gilles@poolp.org>
@@ -731,8 +731,8 @@ control_dispatch_ext(struct mproc *p, struct imsg *imsg)
 		if (len >= LINE_MAX)
 			goto invalid;
 
+		imsg->hdr.peerid = c->id;
 		m_forward(p_lka, imsg);
-		m_compose(p, IMSG_CTL_OK, 0, 0, -1, NULL, 0);
 		return;
 
 	case IMSG_CTL_DISCOVER_EVPID:
