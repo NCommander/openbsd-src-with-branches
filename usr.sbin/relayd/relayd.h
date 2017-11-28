@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.244 2017/11/27 21:06:26 claudio Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.245 2017/11/27 23:21:16 claudio Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -206,6 +206,7 @@ struct ctl_relay_event {
 
 	struct tls		*tls;
 	struct tls_config	*tls_cfg;
+	struct tls		*tls_ctx;
 
 	uint8_t			*tlscert;
 	size_t			 tlscert_len;
