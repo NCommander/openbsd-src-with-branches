@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.h,v 1.12 2012/10/01 00:21:19 guenther Exp $	*/
+/*	$OpenBSD: dlfcn.h,v 1.13 2013/03/24 01:37:21 deraadt Exp $	*/
 /*	$NetBSD: dlfcn.h,v 1.2 1995/06/05 19:38:00 pk Exp $	*/
 
 /*
@@ -72,6 +72,7 @@ typedef	struct dl_info {
 #define DL_GETLOADADDR	x
 #define DL_SETTHREADLCK	2
 #define DL_SETBINDLCK	3
+#define DL_REFERENCE	4
 
 #define	DL_LAZY		RTLD_LAZY	/* Compat */
 
