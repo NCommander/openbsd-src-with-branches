@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcode.c,v 1.52 2017/11/27 21:32:33 tom Exp $	*/
+/*	$OpenBSD: bcode.c,v 1.53 2017/11/28 08:03:01 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -1589,11 +1589,8 @@ skipN(void)
 static void
 skip_until_mark(void)
 {
-	int ch;
-
 	for (;;) {
-		ch = readch();
-		switch (ch) {
+		switch (readch()) {
 		case 'M':
 			return;
 		case EOF:
@@ -1618,7 +1615,7 @@ skip_until_mark(void)
 			free(read_string(&bmachine.readstack[bmachine.readsp]));
 			break;
 		case '!':
-			switch (ch = readch()) {
+			switch (readch()) {
 				case '<':
 				case '>':
 				case '=':
