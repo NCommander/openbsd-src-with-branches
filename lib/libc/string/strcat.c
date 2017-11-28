@@ -1,4 +1,4 @@
-/*	$OpenBSD: strcat.c,v 1.8 2005/08/08 08:05:37 espie Exp $	*/
+/*	$OpenBSD: strcat.c,v 1.9 2014/06/10 04:17:37 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988 Regents of the University of California.
@@ -33,7 +33,7 @@
 
 #if defined(APIWARN)
 __warn_references(strcat,
-    "warning: strcat() is almost always misused, please use strlcat()");
+    "strcat() is almost always misused, please use strlcat()");
 #endif
 
 char *
