@@ -1,4 +1,4 @@
-.\" $OpenBSD: VOP_LOOKUP.9,v 1.37 2017/04/26 02:43:34 beck Exp $
+.\" $OpenBSD: VOP_LOOKUP.9,v 1.38 2017/04/26 05:55:27 jmc Exp $
 .\"
 .\" Copyright (c) 2003 Ted Unangst
 .\" Copyright (c) 2000, 2001 The NetBSD Foundation, Inc.
@@ -855,7 +855,8 @@ on return.
 If not
 .Dv NULL ,
 .Fa tvp
-will be locked on return as well.
+will be unlocked on return (see 
+.Xr vput 9 ) .
 Upon success, zero is returned; otherwise, an appropriate error code is
 returned.
 .Pp
