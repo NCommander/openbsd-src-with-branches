@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sched.c,v 1.44 2017/01/21 05:42:03 guenther Exp $	*/
+/*	$OpenBSD: kern_sched.c,v 1.45 2017/02/12 04:55:08 guenther Exp $	*/
 /*
  * Copyright (c) 2007, 2008 Artur Grabowski <art@openbsd.org>
  *
@@ -228,7 +228,7 @@ void
 sched_init_runqueues(void)
 {
 #ifdef MULTIPROCESSOR
-	sbartq = taskq_create("sbar", 1, IPL_NONE,
+	sbartq = taskq_create("sbar", 1, IPL_VM,
 	    TASKQ_MPSAFE | TASKQ_CANTSLEEP);
 	if (sbartq == NULL)
 		panic("unable to create sbar taskq");
