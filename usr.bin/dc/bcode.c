@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcode.c,v 1.53 2017/11/28 08:03:01 otto Exp $	*/
+/*	$OpenBSD: bcode.c,v 1.54 2017/11/28 09:44:14 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -1428,7 +1428,7 @@ not_compare(void)
 		break;
 	default:
 		unreadch();
-		warnx("! command is deprecated\n");
+		warnx("! command is deprecated");
 		break;
 	}
 }
