@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.18 2014/11/24 17:01:29 otto Exp $
+# $OpenBSD: Makefile,v 1.19 2017/07/06 21:33:45 bluhm Exp $
 
 DC?=		dc
 DCFLAGS=	-x
@@ -11,7 +11,7 @@ REGRESS_TARGETS=     t1  t2  t3  t4  t5  t6  t7  t8  t9 \
 # .in: input file
 # .out: desired result
 
-# t1: basic operations, prints "dc: Runtime warning: non-zero scale in exponent"
+# t1: basic operations
 # t2: factoring program
 # t3: string handling
 # t4: more string ops
