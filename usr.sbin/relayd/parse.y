@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.219 2017/11/27 21:06:26 claudio Exp $	*/
+/*	$OpenBSD: parse.y,v 1.220 2017/11/27 23:21:16 claudio Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -417,6 +417,9 @@ main		: INTERVAL NUMBER	{
 				(void)strlcpy(conf->sc_conf.snmp_path,
 				    AGENTX_SOCKET,
 				    sizeof(conf->sc_conf.snmp_path));
+		}
+		| SOCKET STRING {
+			conf->sc_ps->ps_csock.cs_name = $2;
 		}
 		;
 
