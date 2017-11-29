@@ -1,10 +1,10 @@
-/*	$OpenBSD: memcmp.S,v 1.4 2005/08/07 11:30:38 espie Exp $ */
+/*	$OpenBSD: memcmp.S,v 1.5 2015/08/31 02:53:56 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include "SYS.h"
+#include "DEFS.h"
 
 ENTRY(memcmp)
 	pushl	%edi

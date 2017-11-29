@@ -1,10 +1,10 @@
-/*	$OpenBSD: memchr.S,v 1.4 2015/08/31 02:53:56 guenther Exp $ */
+/*	$OpenBSD: memchr.S,v 1.5 2017/08/19 18:25:50 deraadt Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include "SYS.h"
+#include "DEFS.h"
 
 ENTRY(memchr)
 	pushl	%edi

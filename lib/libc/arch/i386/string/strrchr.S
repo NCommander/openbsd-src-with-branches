@@ -1,10 +1,10 @@
-/*	$OpenBSD: strrchr.S,v 1.6 2015/05/15 22:29:37 millert Exp $ */
+/*	$OpenBSD: strrchr.S,v 1.7 2015/08/31 02:53:56 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include "SYS.h"
+#include "DEFS.h"
 
 WEAK_ALIAS(rindex, strrchr)
 
