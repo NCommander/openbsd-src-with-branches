@@ -1,4 +1,4 @@
-/*	$OpenBSD: t19.c,v 1.2 2012/03/13 10:34:04 otto Exp $	*/
+/*	$OpenBSD: t19.c,v 1.3 2014/11/26 15:23:13 otto Exp $	*/
 
 /*
  * Copyright (c) 2012 Otto Moerbeek <otto@drijf.net>
@@ -34,7 +34,8 @@ struct func funcs[] = { {"s", sinl},
 
 #define nitems(_a)      (sizeof((_a)) / sizeof((_a)[0]))
 
-main()
+int
+main(void)
 {
 	int ret, si, ni, fi;
 	int status = 0;
