@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_pld.c,v 1.62 2017/04/13 07:04:09 patrick Exp $	*/
+/*	$OpenBSD: ikev2_pld.c,v 1.63 2017/11/27 18:39:35 patrick Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -703,6 +703,7 @@ ikev2_pld_ke(struct iked *env, struct ikev2_payload *pld,
 			log_debug("%s: failed to get exchange", __func__);
 			return (-1);
 		}
+		msg->msg_parent->msg_dhgroup = betoh16(kex.kex_dhgroup);
 	}
 
 	return (0);
