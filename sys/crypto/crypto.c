@@ -1,4 +1,4 @@
-/*	$OpenBSD: crypto.c,v 1.78 2016/09/19 18:09:40 tedu Exp $	*/
+/*	$OpenBSD: crypto.c,v 1.79 2017/02/07 17:25:46 patrick Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -507,7 +507,7 @@ void
 crypto_init(void)
 {
 	crypto_taskq = taskq_create("crypto", 1, IPL_VM, 0);
-	crypto_taskq_mpsafe = taskq_create("crynlk", 1, IPL_VM|IPL_MPSAFE, 0);
+	crypto_taskq_mpsafe = taskq_create("crynlk", 1, IPL_VM, TASKQ_MPSAFE);
 
 	pool_init(&cryptop_pool, sizeof(struct cryptop), 0, IPL_VM, 0,
 	    "cryptop", NULL);
