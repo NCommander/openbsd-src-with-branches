@@ -1,4 +1,4 @@
-/*	$OpenBSD: elfrdsetroot.c,v 1.23 2017/07/31 01:18:09 mortimer Exp $	*/
+/*	$OpenBSD: elfrdsetroot.c,v 1.24 2017/10/29 08:45:53 mpi Exp $	*/
 /*	$NetBSD: rdsetroot.c,v 1.2 1995/10/13 16:38:39 gwr Exp $	*/
 
 /*
@@ -118,6 +118,11 @@ main(int argc, char *argv[])
 	}
 	if (fsd < 0) {
 		perror(fs);
+		exit(1);
+	}
+
+	if (pledge("stdio", NULL) == -1) {
+		perror("pledge");
 		exit(1);
 	}
 

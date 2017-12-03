@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/mman.h>
@@ -52,8 +54,10 @@ ELFNAME(locate_image)(int fd, struct elfhdr *ghead,  char *file,
 	}
 
 	phsize = head.e_phnum * sizeof(Elf_Phdr);
-	ph = malloc(phsize);
-
+	if ((ph = malloc(phsize)) == NULL) {
+		perror("malloc");
+		exit(1);
+	}
 
 	lseek(fd, head.e_phoff, SEEK_SET);
 

@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 struct elf_fn {
 	void (*locate_image)(int, struct elfhdr *,  char *, long *, long *,
 	    off_t *, size_t *);
