@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.100 2017/05/03 12:27:00 dlg Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.101 2017/05/27 09:03:22 kettenis Exp $	*/
 /*	$NetBSD: pmap.c,v 1.107 2001/08/31 16:47:41 eeh Exp $	*/
 #undef	NO_VCACHE /* Don't forget the locked TLB in dostart */
 /*
@@ -1202,7 +1202,7 @@ remap_data:
 		cpus->ci_curproc = &proc0;
 		cpus->ci_cpcb = (struct pcb *)u0[0]; /* Need better source */
 		cpus->ci_upaid = cpu_myid();
-		cpus->ci_number = 0;
+		cpus->ci_cpuid = 0;
 		cpus->ci_flags = CPUF_RUNNING;
 		cpus->ci_fpproc = NULL;
 		cpus->ci_spinup = main; /* Call main when we're running. */
