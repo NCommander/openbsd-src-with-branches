@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.28 2016/10/21 06:20:58 mlarkin Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.29 2016/10/21 16:57:53 deraadt Exp $	*/
 /* $NetBSD: ipifuncs.c,v 1.1.2.3 2000/06/26 02:04:06 sommerfeld Exp $ */
 
 /*-
@@ -113,7 +113,7 @@ void
 i386_ipi_halt(struct cpu_info *ci)
 {
 	SCHED_ASSERT_UNLOCKED();
-	KASSERT(!__mp_lock_held(&kernel_lock));
+	KASSERT(!_kernel_lock_held());
 
 	npxsave_cpu(ci, 1);
 	disable_intr();
