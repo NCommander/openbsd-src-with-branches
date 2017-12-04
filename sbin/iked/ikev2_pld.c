@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_pld.c,v 1.64 2017/11/30 12:18:44 patrick Exp $	*/
+/*	$OpenBSD: ikev2_pld.c,v 1.65 2017/12/04 16:52:16 patrick Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -301,16 +301,6 @@ ikev2_validate_sa(struct iked_message *msg, size_t offset, size_t left,
 	if (left < sap_length) {
 		log_debug("%s: malformed payload: too long for actual payload "
 		    "size (%zu < %zu)", __func__, left, sap_length);
-		return (-1);
-	}
-	/*
-	 * NB: There might be more proposals, we parse only the first one.
-	 * This condition must never be true.
-	 */
-	if (left < sap_length) {
-		log_debug("%s: payload malformed: SA payload length mismatches "
-		    "proposal substructure length (%lu < %zu)", __func__,
-		    left, sap_length);
 		return (-1);
 	}
 	/*
