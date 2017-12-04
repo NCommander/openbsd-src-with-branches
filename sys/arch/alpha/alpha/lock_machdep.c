@@ -1,4 +1,4 @@
-/*	$OpenBSD: lock_machdep.c,v 1.5 2017/04/30 16:45:45 mpi Exp $	*/
+/*	$OpenBSD: lock_machdep.c,v 1.6 2017/05/29 14:19:49 mpi Exp $	*/
 
 /*
  * Copyright (c) 2007 Artur Grabowski <art@openbsd.org>
@@ -186,7 +186,7 @@ __mp_acquire_count(struct __mp_lock *mpl, int count)
 }
 
 int
-__mp_lock_held(struct __mp_lock *mpl)
+__mp_lock_held(struct __mp_lock *mpl, struct cpu_info *ci)
 {
-	return (mpl->mpl_cpu == curcpu());
+	return (mpl->mpl_cpu == ci);
 }

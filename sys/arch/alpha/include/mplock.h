@@ -1,4 +1,4 @@
-/*	$OpenBSD: mplock.h,v 1.1 2009/11/21 23:28:14 syuu Exp $	*/
+/*	$OpenBSD: mplock.h,v 1.1 2014/01/26 17:40:11 miod Exp $	*/
 
 /*
  * Copyright (c) 2004 Niklas Hallqvist.  All rights reserved.
@@ -45,7 +45,7 @@ void __mp_unlock(struct __mp_lock *);
 int __mp_release_all(struct __mp_lock *);
 int __mp_release_all_but_one(struct __mp_lock *);
 void __mp_acquire_count(struct __mp_lock *, int);
-int __mp_lock_held(struct __mp_lock *);
+int __mp_lock_held(struct __mp_lock *, struct cpu_info *);
 
 #endif
 
