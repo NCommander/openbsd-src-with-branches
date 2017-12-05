@@ -1,4 +1,4 @@
-/* $OpenBSD: transport.c,v 1.36 2013/03/21 04:30:14 deraadt Exp $	 */
+/* $OpenBSD: transport.c,v 1.37 2016/03/10 07:32:16 yasuoka Exp $	 */
 /* $EOM: transport.c,v 1.43 2000/10/10 12:36:39 provos Exp $	 */
 
 /*
@@ -255,7 +255,7 @@ transport_send_messages(fd_set * fds)
 	struct message *msg;
 	struct exchange *exchange;
 	struct sockaddr *dst;
-	struct timeval  expiration;
+	struct timespec expiration;
 	int             expiry, ok_to_drop_message;
 	char peer[NI_MAXHOST], peersv[NI_MAXSERV];
 
@@ -332,7 +332,8 @@ transport_send_messages(fd_set * fds)
 					exchange = 0;
 #endif
 				} else {
-					gettimeofday(&expiration, 0);
+					clock_gettime(CLOCK_MONOTONIC,
+					    &expiration);
 
 					/*
 					 * XXX Calculate from round trip

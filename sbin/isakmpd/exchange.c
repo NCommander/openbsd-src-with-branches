@@ -1,4 +1,4 @@
-/* $OpenBSD: exchange.c,v 1.138 2016/03/10 07:32:16 yasuoka Exp $	 */
+/* $OpenBSD: exchange.c,v 1.139 2017/09/18 07:42:52 mpi Exp $	 */
 /* $EOM: exchange.c,v 1.143 2000/12/04 00:02:25 angelos Exp $	 */
 
 /*
@@ -587,7 +587,7 @@ static struct exchange *
 exchange_create(int phase, int initiator, int doi, int type)
 {
 	struct exchange *exchange;
-	struct timeval	 expiration;
+	struct timespec	 expiration;
 	int	delta;
 
 	/*
@@ -623,7 +623,7 @@ exchange_create(int phase, int initiator, int doi, int type)
 			return 0;
 		}
 	}
-	gettimeofday(&expiration, 0);
+	clock_gettime(CLOCK_MONOTONIC, &expiration);
 	delta = conf_get_num("General", "Exchange-max-time",
 	    EXCHANGE_MAX_TIME);
 	expiration.tv_sec += delta;

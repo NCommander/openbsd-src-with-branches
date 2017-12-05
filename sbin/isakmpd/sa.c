@@ -1,4 +1,4 @@
-/* $OpenBSD: sa.c,v 1.122 2015/08/20 22:02:21 deraadt Exp $	 */
+/* $OpenBSD: sa.c,v 1.123 2015/12/09 21:41:50 naddy Exp $	 */
 /* $EOM: sa.c,v 1.112 2000/12/12 00:22:52 niklas Exp $	 */
 
 /*
@@ -1348,7 +1348,7 @@ sa_replace(struct sa *sa, struct sa *new_sa)
 int
 sa_setup_expirations(struct sa *sa)
 {
-	struct timeval  expiration;
+	struct timespec expiration;
 	u_int64_t       seconds = sa->seconds;
 
 	/*
@@ -1362,7 +1362,7 @@ sa_setup_expirations(struct sa *sa)
 	 * XXX Better scheme to come?
 	 */
 	if (!sa->soft_death) {
-		gettimeofday(&expiration, 0);
+		clock_gettime(CLOCK_MONOTONIC, &expiration);
 		/*
 		 * XXX This should probably be configuration controlled
 		 * somehow.
@@ -1382,7 +1382,7 @@ sa_setup_expirations(struct sa *sa)
 		sa_reference(sa);
 	}
 	if (!sa->death) {
-		gettimeofday(&expiration, 0);
+		clock_gettime(CLOCK_MONOTONIC, &expiration);
 		LOG_DBG((LOG_TIMER, 95,
 		    "sa_setup_expirations: SA %p hard timeout in %llu seconds",
 		    sa, sa->seconds));
