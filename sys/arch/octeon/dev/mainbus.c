@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.9 2017/07/03 08:17:20 visa Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.10 2017/07/31 14:53:56 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -65,7 +65,9 @@ mainbus_attach(struct device *parent, struct device *self, void *aux)
 	int cpuid;
 #endif
 
-	printf("\n");
+	printf(": board %u rev %u.%u\n", octeon_boot_info->board_type,
+	    octeon_boot_info->board_rev_major,
+	    octeon_boot_info->board_rev_minor);
 
 	bzero(&caa, sizeof caa);
 	caa.caa_maa.maa_name = "cpu";
