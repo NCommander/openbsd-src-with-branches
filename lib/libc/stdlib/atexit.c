@@ -1,4 +1,4 @@
-/*	$OpenBSD: atexit.c,v 1.24 2015/11/10 04:14:03 guenther Exp $ */
+/*	$OpenBSD: atexit.c,v 1.25 2017/12/05 13:45:31 kettenis Exp $ */
 /*
  * Copyright (c) 2002 Daniel Hartmeier
  * All rights reserved.
@@ -155,7 +155,6 @@ __cxa_thread_atexit_impl(void (*func)(void *), void *arg, void *dso)
 
 	return 0;
 }
-DEF_STRONG(__cxa_thread_atexit_impl);
 
 void
 _thread_finalize(void)
