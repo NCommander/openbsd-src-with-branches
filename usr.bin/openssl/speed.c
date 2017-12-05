@@ -1,4 +1,4 @@
-/* $OpenBSD: speed.c,v 1.19 2016/08/22 04:33:07 deraadt Exp $ */
+/* $OpenBSD: speed.c,v 1.20 2017/10/07 06:16:54 guenther Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -202,7 +202,10 @@ sig_done(int sig)
 static double
 Time_F(int s)
 {
-	return app_tminterval(s, usertime);
+	if (usertime)
+		return app_timer_user(s);
+	else
+		return app_timer_real(s);
 }
 
 
