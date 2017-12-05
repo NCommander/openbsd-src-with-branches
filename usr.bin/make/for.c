@@ -1,4 +1,4 @@
-/*	$OpenBSD: for.c,v 1.45 2013/11/22 15:47:35 espie Exp $	*/
+/*	$OpenBSD: for.c,v 1.46 2015/01/23 13:18:40 espie Exp $	*/
 /*	$NetBSD: for.c,v 1.4 1996/11/06 17:59:05 christos Exp $ */
 
 /*
@@ -155,9 +155,12 @@ For_Eval(const char *line)
 			Parse_Error(PARSE_FATAL, "Syntax error in for");
 			return 0;
 		}
-		endVar = ptr++;
-		while (ISSPACE(*ptr))
+		endVar = ptr;
+		if (*ptr) {
 			ptr++;
+			while (ISSPACE(*ptr))
+				ptr++;
+		}
 		/* End of variable list ? */
 		if (endVar - wrd == 2 && wrd[0] == 'i' && wrd[1] == 'n')
 			break;
