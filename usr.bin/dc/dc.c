@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.18 2016/07/17 17:30:47 otto Exp $	*/
+/*	$OpenBSD: dc.c,v 1.19 2017/11/29 14:34:17 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -47,8 +47,7 @@ dc_main(int argc, char *argv[])
 	char		*buf, *p;
 	struct stat	st;
 
-	if ((buf = strdup("")) == NULL)
-		err(1, NULL);
+	buf = bstrdup("");
 	/* accept and ignore a single dash to be 4.4BSD dc(1) compatible */
 	optind = 1;
 	optreset = 1;
