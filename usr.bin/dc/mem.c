@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.6 2014/12/01 13:13:00 deraadt Exp $	*/
+/*	$OpenBSD: mem.c,v 1.7 2015/02/16 20:53:34 jca Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -90,14 +90,14 @@ bstrdup(const char *p)
 }
 
 void
-bn_check(int x)						\
+bn_check(int x)
 {
 	if (x == 0)
 		err(1, "big number failure %lx", ERR_get_error());
 }
 
 void
-bn_checkp(const void *p)						\
+bn_checkp(const void *p)
 {
 	if (p == NULL)
 		err(1, "allocation failure %lx", ERR_get_error());
