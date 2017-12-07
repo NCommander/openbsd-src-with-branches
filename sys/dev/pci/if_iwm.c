@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwm.c,v 1.216 2017/10/22 09:55:02 stsp Exp $	*/
+/*	$OpenBSD: if_iwm.c,v 1.217 2017/10/26 15:00:28 mpi Exp $	*/
 
 /*
  * Copyright (c) 2014, 2016 genua gmbh <info@genua.de>
@@ -6056,8 +6056,12 @@ iwm_newstate_task(void *psc)
 	}
 
 out:
-	if (err == 0 && (sc->sc_flags & IWM_FLAG_SHUTDOWN) == 0)
-		sc->sc_newstate(ic, nstate, arg);
+	if ((sc->sc_flags & IWM_FLAG_SHUTDOWN) == 0) {
+		if (err)
+			task_add(systq, &sc->init_task);
+		else
+			sc->sc_newstate(ic, nstate, arg);
+	}
 	refcnt_rele_wake(&sc->task_refs);
 	splx(s);
 }
