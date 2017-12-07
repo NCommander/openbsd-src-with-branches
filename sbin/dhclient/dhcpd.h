@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.238 2017/12/03 20:53:28 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.239 2017/12/06 13:57:27 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -111,7 +111,6 @@ struct client_config {
 	char			*resolv_tail;
 	char			*filename;
 	char			*server_name;
-	struct client_lease_tq	 static_leases;
 };
 
 
