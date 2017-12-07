@@ -1,4 +1,4 @@
-/* $OpenBSD: cddb.c,v 1.20 2015/01/16 06:40:06 deraadt Exp $ */
+/* $OpenBSD: cddb.c,v 1.21 2017/12/06 17:15:43 espie Exp $ */
 /*
  * Copyright (c) 2002 Marc Espie.
  *
@@ -94,7 +94,7 @@ send_query(FILE *f, int n, struct cd_toc_entry *e)
 	for (i = 0; i < n; i++)
 		fprintf(f, " %lu", entry2frames(e+i));
 	fprintf(f, " %lu\r\n", (entry2frames(e+n)-entry2frames(e)) /75);
-	fflush(cout);
+	fflush(f);
 }
 
 #define MAXSIZE 256
