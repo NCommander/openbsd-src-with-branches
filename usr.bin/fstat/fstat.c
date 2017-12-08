@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstat.c,v 1.89 2016/10/02 23:16:08 guenther Exp $	*/
+/*	$OpenBSD: fstat.c,v 1.90 2017/01/21 12:21:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -318,10 +318,10 @@ fstat_header(void)
 {
 	if (nflg)
 		printf("%s",
-"USER     CMD          PID   FD  DEV      INUM       MODE   R/W    SZ|DV");
+"USER     CMD          PID   FD  DEV      INUM        MODE   R/W    SZ|DV");
 	else
 		printf("%s",
-"USER     CMD          PID   FD MOUNT        INUM MODE         R/W    SZ|DV");
+"USER     CMD          PID   FD MOUNT        INUM  MODE         R/W    SZ|DV");
 	if (oflg)
 		printf("%s", ":OFFSET  ");
 	if (checkfile && fsflg == 0)
