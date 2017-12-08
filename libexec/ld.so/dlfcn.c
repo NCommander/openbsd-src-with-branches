@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.98 2017/08/29 15:25:51 deraadt Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.99 2017/11/28 17:19:47 kettenis Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -509,7 +509,7 @@ _dl_show_objects(void)
 	for (; object != NULL; object = object->next) {
 		switch (object->obj_type) {
 		case OBJTYPE_LDR:
-			objtypename = "rtld";
+			objtypename = "ld.so";
 			break;
 		case OBJTYPE_EXE:
 			objtypename = "exe ";
