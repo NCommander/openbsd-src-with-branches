@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.62 2017/12/08 21:52:49 claudio Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.63 2017/12/08 21:56:22 claudio Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -313,7 +313,7 @@ mpls_ip_adjttl(struct mbuf *m, u_int8_t ttl)
 		}
 		/* make sure we have a valid header */
 		if (in_cksum(m, hlen) != 0) {
-			m_free(m);
+			m_freem(m);
 			return NULL;
 		}
 
