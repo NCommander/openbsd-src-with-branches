@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.223 2017/10/12 15:04:33 bluhm Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.224 2017/11/17 23:08:10 abieber Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -880,7 +880,7 @@ pledge_sysctl(struct proc *p, int miblen, int *mib, void *new)
 	    mib[0] == CTL_VM && mib[1] == VM_LOADAVG)
 		return (0);
 
-	snprintf(buf, sizeof(buf), "%s(%d): sysctl %d:",
+	snprintf(buf, sizeof(buf), "%s(%d): pledge sysctl %d:",
 	    p->p_p->ps_comm, p->p_p->ps_pid, miblen);
 	for (i = 0; i < miblen; i++) {
 		char *p = buf + strlen(buf);
