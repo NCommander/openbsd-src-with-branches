@@ -1,4 +1,4 @@
-/* $OpenBSD: command.c,v 1.14 2015/10/05 17:53:56 nicm Exp $ */
+/* $OpenBSD: command.c,v 1.15 2015/10/05 23:15:31 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicm@openbsd.org>
@@ -28,6 +28,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "cu.h"
@@ -222,6 +223,11 @@ start_record(void)
 void
 do_command(char c)
 {
+	if (restricted && strchr("CRX$>", c) != NULL) {
+		cu_warnx("~%c command is not allowed in restricted mode", c);
+		return;
+	}
+
 	switch (c) {
 	case '.':
 	case '\004': /* ^D */
