@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.71 2016/10/09 11:25:40 tom Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.72 2017/04/30 16:45:45 mpi Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -658,7 +658,7 @@ boot(int howto)
 	boothowto = howto;
 	if ((howto & RB_NOSYNC) == 0 && !syncing) {
 		syncing = 1;
-		vfs_shutdown();
+		vfs_shutdown(curproc);
 
 		if ((howto & RB_TIMEBAD) == 0) {
 			resettodr();

@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.100 2017/09/17 06:10:53 visa Exp $ */
+/*	$OpenBSD: machdep.c,v 1.101 2017/11/01 14:43:01 visa Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -760,7 +760,7 @@ boot(int howto)
 	boothowto = howto;
 	if ((howto & RB_NOSYNC) == 0 && waittime < 0) {
 		waittime = 0;
-		vfs_shutdown();
+		vfs_shutdown(curproc);
 
 		if ((howto & RB_TIMEBAD) == 0) {
 			resettodr();
