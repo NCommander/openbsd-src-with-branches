@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic7xxx_openbsd.c,v 1.54 2015/07/17 21:42:49 krw Exp $	*/
+/*	$OpenBSD: aic7xxx_openbsd.c,v 1.55 2016/08/17 01:17:54 krw Exp $	*/
 /*	$NetBSD: aic7xxx_osm.c,v 1.14 2003/11/02 11:07:44 wiz Exp $	*/
 
 /*
@@ -635,26 +635,6 @@ ahc_platform_set_tags(struct ahc_softc *ahc,
 		tstate->tagenable &= ~devinfo->target_mask;
 		break;
 	}
-}
-
-int
-ahc_platform_alloc(struct ahc_softc *ahc, void *platform_arg)
-{
-	if (sizeof(struct ahc_platform_data) > 0) {
-		ahc->platform_data = malloc(sizeof(struct ahc_platform_data),
-		    M_DEVBUF, M_NOWAIT | M_ZERO);
-		if (ahc->platform_data == NULL)
-			return (ENOMEM);
-	}
-
-	return (0);
-}
-
-void
-ahc_platform_free(struct ahc_softc *ahc)
-{
-	if (sizeof(struct ahc_platform_data) > 0)
-		free(ahc->platform_data, M_DEVBUF, 0);
 }
 
 int
