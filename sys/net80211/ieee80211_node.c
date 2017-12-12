@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.122 2017/12/08 21:16:01 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.123 2017/12/12 00:24:21 jcs Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -771,14 +771,15 @@ ieee80211_end_scan(struct ifnet *ifp)
 		if (ieee80211_match_bss(ic, ni) != 0)
 			continue;
 
-		if ((ic->ic_caps & IEEE80211_C_SCANALLBAND) &&
-		    IEEE80211_IS_CHAN_2GHZ(ni->ni_chan) &&
-		    (selbs2 == NULL || ni->ni_rssi > selbs2->ni_rssi))
-			selbs2 = ni;
-		else if ((ic->ic_caps & IEEE80211_C_SCANALLBAND) &&
-		    IEEE80211_IS_CHAN_5GHZ(ni->ni_chan) &&
-		    (selbs5 == NULL || ni->ni_rssi > selbs5->ni_rssi))
-			selbs5 = ni;
+		if (ic->ic_caps & IEEE80211_C_SCANALLBAND) {
+			if (IEEE80211_IS_CHAN_2GHZ(ni->ni_chan) &&
+			    (selbs2 == NULL || ni->ni_rssi > selbs2->ni_rssi))
+				selbs2 = ni;
+			else if (IEEE80211_IS_CHAN_5GHZ(ni->ni_chan) &&
+			    (selbs5 == NULL || ni->ni_rssi > selbs5->ni_rssi))
+				selbs5 = ni;
+		} else if (selbs == NULL || ni->ni_rssi > selbs->ni_rssi)
+			selbs = ni;
 	}
 
 	if (ic->ic_max_rssi)
