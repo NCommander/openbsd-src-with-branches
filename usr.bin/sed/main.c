@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.34 2017/01/20 10:26:16 krw Exp $	*/
+/*	$OpenBSD: main.c,v 1.35 2017/08/01 18:05:53 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -237,9 +237,9 @@ again:
 			state = ST_FILE;
 			goto again;
 		case CU_STRING:
-			if ((snprintf(string_ident,
-			    sizeof(string_ident), "\"%s\"", script->s)) >=
-			    sizeof(string_ident))
+			len = snprintf(string_ident, sizeof(string_ident),
+			    "\"%s\"", script->s);
+			if (len >= sizeof(string_ident))
 				strlcpy(string_ident +
 				    sizeof(string_ident) - 6, " ...\"", 5);
 			fname = string_ident;
