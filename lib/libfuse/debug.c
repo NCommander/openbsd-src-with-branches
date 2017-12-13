@@ -1,4 +1,4 @@
-/*	$OpenBSD: src/lib/libsndio/debug.c,v 1.2 2011/11/15 08:05:22 ratchov Exp $	*/
+/*	$OpenBSD: debug.c,v 1.1 2013/06/03 16:00:50 tedu Exp $	*/
 /*
  * Copyright (c) 2011 Alexandre Ratchov <alex@caoua.org>
  *
@@ -20,7 +20,6 @@
 
 #include "debug.h"
 
-#ifdef DEBUG
 /*
  * debug level, -1 means uninitialized
  */
@@ -31,10 +30,10 @@ ifuse_debug_init(void)
 {
 	char *dbg;
 
+	/* Default to level 1 unless FUSE_DEBUG environment variable is set. */
 	if (ifuse_debug < 0) {
 		dbg = issetugid() ? NULL : getenv("FUSE_DEBUG");
 		if (!dbg || sscanf(dbg, "%u", &ifuse_debug) != 1)
-			ifuse_debug = 0;
+			ifuse_debug = 1;
 	}
 }
-#endif
