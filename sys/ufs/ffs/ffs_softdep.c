@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.135 2016/11/07 00:26:33 guenther Exp $	*/
+/*	$OpenBSD: ffs_softdep.c,v 1.136 2017/10/10 11:59:35 bluhm Exp $	*/
 
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
@@ -4850,6 +4850,7 @@ loop:
 			 * rather than panic, just flush it.
 			 */
 			nbp = WK_MKDIR(wk)->md_buf;
+			KASSERT(bp != nbp);
 			gotit = getdirtybuf(nbp, waitfor);
 			if (gotit == 0)
 				break;
@@ -4874,6 +4875,8 @@ loop:
 			 * rather than panic, just flush it.
 			 */
 			nbp = WK_BMSAFEMAP(wk)->sm_buf;
+			if (bp == nbp)
+				break;
 			gotit = getdirtybuf(nbp, waitfor);
 			if (gotit == 0)
 				break;
