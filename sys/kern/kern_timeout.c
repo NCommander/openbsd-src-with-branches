@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_timeout.c,v 1.50 2016/10/03 11:54:29 dlg Exp $	*/
+/*	$OpenBSD: kern_timeout.c,v 1.51 2017/11/24 02:36:53 dlg Exp $	*/
 /*
  * Copyright (c) 2001 Thomas Nordin <nordin@openbsd.org>
  * Copyright (c) 2000-2001 Artur Grabowski <art@openbsd.org>
@@ -334,11 +334,10 @@ timeout_barrier(struct timeout *to)
 		splx(splsoftclock());
 		KERNEL_UNLOCK();
 	} else {
-		int wait = 1;
+		struct cond c = COND_INITIALIZER();
 		struct timeout barrier;
-		struct sleep_state sls;
 
-		timeout_set_proc(&barrier, timeout_proc_barrier, &wait);
+		timeout_set_proc(&barrier, timeout_proc_barrier, &c);
 
 		mtx_enter(&timeout_mutex);
 		barrier.to_flags |= TIMEOUT_ONQUEUE;
@@ -347,10 +346,7 @@ timeout_barrier(struct timeout *to)
 
 		wakeup_one(&timeout_proc);
 
-		while (wait) {
-			sleep_setup(&sls, &wait, PSWP, "tmobar");
-			sleep_finish(&sls, wait);
-		}
+		cond_wait(&c, "tmobar");
 	}
 }
 
