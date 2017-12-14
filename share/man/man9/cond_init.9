@@ -1,4 +1,4 @@
-.\"	$OpenBSD$ */
+.\"	$OpenBSD: cond_init.9,v 1.1 2017/12/14 00:41:58 dlg Exp $ */
 .\"
 .\" Copyright (c) 2017 David Gwynne <dlg@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 11 2015 $
+.Dd $Mdocdate: December 14 2017 $
 .Dt COND_INIT 9
 .Os
 .Sh NAME
@@ -104,5 +104,5 @@ taskq_barrier_task(void *p)
 	 */
 
 	cond_signal(c);
-} 
+}
 .Ed
