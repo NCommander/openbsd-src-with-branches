@@ -1,4 +1,4 @@
-/*	$OpenBSD: csh.c,v 1.41 2017/08/30 06:42:21 anton Exp $	*/
+/*	$OpenBSD: csh.c,v 1.42 2017/12/12 00:18:58 tb Exp $	*/
 /*	$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $	*/
 
 /*-
@@ -1013,10 +1013,8 @@ process(bool catch)
 		printprompt();
 	    (void) fflush(cshout);
 	}
-	if (seterr) {
-	    free(seterr);
-	    seterr = NULL;
-	}
+	free(seterr);
+	seterr = NULL;
 
 	/*
 	 * Echo not only on VERBOSE, but also with history expansion. If there

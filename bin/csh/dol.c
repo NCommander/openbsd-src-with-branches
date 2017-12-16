@@ -1,4 +1,4 @@
-/*	$OpenBSD: dol.c,v 1.19 2015/02/08 05:51:37 tedu Exp $	*/
+/*	$OpenBSD: dol.c,v 1.20 2015/12/26 13:48:38 mestre Exp $	*/
 /*	$NetBSD: dol.c,v 1.8 1995/09/27 00:38:38 jtc Exp $	*/
 
 /*-
@@ -408,8 +408,7 @@ Dgetdol(void)
 	if (dimen || bitset)
 	    stderror(ERR_SYNTAX);
 	if (backpid != 0) {
-	    if (dolbang)
-		free(dolbang);
+	    free(dolbang);
 	    setDolp(dolbang = putn(backpid));
 	}
 	goto eatbrac;

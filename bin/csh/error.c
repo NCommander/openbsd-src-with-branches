@@ -1,4 +1,4 @@
-/*	$OpenBSD: error.c,v 1.11 2015/02/08 05:51:37 tedu Exp $	*/
+/*	$OpenBSD: error.c,v 1.12 2015/12/26 13:48:38 mestre Exp $	*/
 /*	$NetBSD: err.c,v 1.6 1995/03/21 09:02:47 cgd Exp $	*/
 
 /*-
@@ -346,10 +346,8 @@ stderror(int id, ...)
 	}
     }
 
-    if (seterr) {
-	free(seterr);
-	seterr = NULL;
-    }
+    free(seterr);
+    seterr = NULL;
 
     if ((v = pargv) != NULL)
 	pargv = 0, blkfree(v);
