@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.48 2017/01/22 23:43:54 rpe Exp $
+#	$OpenBSD: install.md,v 1.49 2017/07/28 18:15:44 rpe Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -32,6 +32,7 @@
 # machine dependent section of installation/upgrade script.
 #
 
+MDREBOOT=halt
 MDTERM=sun
 MDXAPERTURE=1
 MDXDM=y
