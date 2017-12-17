@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.42 2017/11/13 21:24:27 kettenis Exp $
+# $OpenBSD: GENERIC,v 1.43 2017/12/16 14:15:56 kettenis Exp $
 #
 # GENERIC machine description file
 #
@@ -74,6 +74,10 @@ vioblk*		at virtio?
 viomb*		at virtio?
 viornd*		at virtio?
 vioscsi*	at virtio?
+
+option	WSDISPLAY_COMPAT_USL		# VT handling
+option	WSDISPLAY_COMPAT_RAWKBD		# provide raw scancodes; needed for X11
+option	WSDISPLAY_DEFAULTSCREENS=6	# initial number of text consoles
 
 simplefb*	at fdt?
 wsdisplay*	at simplefb?
