@@ -1,4 +1,4 @@
-/*	$OpenBSD: emacs.c,v 1.74 2017/11/22 12:17:34 anton Exp $	*/
+/*	$OpenBSD: emacs.c,v 1.75 2017/11/26 20:34:15 jca Exp $	*/
 
 /*
  *  Emacs-like command line editing and history
@@ -1536,6 +1536,8 @@ x_init_emacs(void)
 	kb_add(x_mv_end,		NULL, CTRL('['), 'O', 'F', 0); /* end */
 	kb_add(x_mv_begin,		NULL, CTRL('['), '[', '1', '~', 0); /* home */
 	kb_add(x_mv_end,		NULL, CTRL('['), '[', '4', '~', 0); /* end */
+	kb_add(x_mv_begin,		NULL, CTRL('['), '[', '7', '~', 0); /* home */
+	kb_add(x_mv_end,		NULL, CTRL('['), '[', '8', '~', 0); /* end */
 
 	/* can't be bound */
 	kb_add(x_set_arg,		NULL, CTRL('['), '0', 0);
