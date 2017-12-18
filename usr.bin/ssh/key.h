@@ -1,4 +1,4 @@
-/* $OpenBSD: key.h,v 1.50 2016/09/12 23:31:27 djm Exp $ */
+/* $OpenBSD: key.h,v 1.51 2017/05/30 14:16:41 markus Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -58,7 +58,6 @@ int	 key_to_blob(const Key *, u_char **, u_int *);
 
 int	 key_sign(const Key *, u_char **, u_int *, const u_char *, u_int,
     const char *);
-int	 key_verify(const Key *, const u_char *, u_int, const u_char *, u_int);
 
 /* authfile.c */
 Key	*key_load_cert(const char *);
