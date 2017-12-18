@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_time.c,v 1.98 2016/09/03 14:46:56 naddy Exp $	*/
+/*	$OpenBSD: kern_time.c,v 1.99 2017/01/24 00:58:55 mpi Exp $	*/
 /*	$NetBSD: kern_time.c,v 1.20 1996/02/18 11:57:06 fvdl Exp $	*/
 
 /*
@@ -124,6 +124,7 @@ clock_gettime(struct proc *p, clockid_t clock_id, struct timespec *tp)
 		bintime2timespec(&bt, tp);
 		break;
 	case CLOCK_MONOTONIC:
+	case CLOCK_BOOTTIME:
 		nanouptime(tp);
 		break;
 	case CLOCK_PROCESS_CPUTIME_ID:
@@ -223,6 +224,7 @@ sys_clock_getres(struct proc *p, void *v, register_t *retval)
 	switch (clock_id) {
 	case CLOCK_REALTIME:
 	case CLOCK_MONOTONIC:
+	case CLOCK_BOOTTIME:
 	case CLOCK_UPTIME:
 	case CLOCK_PROCESS_CPUTIME_ID:
 	case CLOCK_THREAD_CPUTIME_ID:
