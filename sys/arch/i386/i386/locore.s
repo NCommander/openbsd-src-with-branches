@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.179 2017/08/20 04:15:43 deraadt Exp $	*/
+/*	$OpenBSD: locore.s,v 1.180 2017/08/25 19:28:48 guenther Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -1318,8 +1318,6 @@ ENTRY(cpu_paenable)
 #if NLAPIC > 0
 #include <i386/i386/apicvec.s>
 #endif
-
-#include <i386/i386/mutex.S>
 
 	.section .rodata
 	.globl _C_LABEL(_stac)
