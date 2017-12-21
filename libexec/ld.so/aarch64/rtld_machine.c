@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.3 2017/01/24 07:48:37 guenther Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.4 2017/10/24 20:35:54 guenther Exp $ */
 
 /*
  * Copyright (c) 2004 Dale Rahn
@@ -293,8 +293,6 @@ _dl_md_reloc_got(elf_object_t *object, int lazy)
 
 	if (object->traced)
 		lazy = 1;
-
-	lazy = 0; // until support is written.
 
 	if (!lazy) {
 		fails = _dl_md_reloc(object, DT_JMPREL, DT_PLTRELSZ);
