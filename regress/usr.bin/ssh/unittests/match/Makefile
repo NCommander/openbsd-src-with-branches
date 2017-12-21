@@ -1,7 +1,13 @@
-#	$OpenBSD: Makefile,v 1.2 2016/10/31 23:45:09 tb Exp $
+#	$OpenBSD: Makefile,v 1.3 2016/11/01 13:43:27 tb Exp $
 
 PROG=test_match
 SRCS=tests.c
+
+# From usr.bin/ssh
+SRCS+=sshbuf-getput-basic.c sshbuf-getput-crypto.c sshbuf-misc.c sshbuf.c
+SRCS+=match.c misc.c log.c uidswap.c fatal.c ssherr.c addrmatch.c xmalloc.c
+SRCS+=cleanup.c atomicio.c
+
 REGRESS_TARGETS=run-regress-${PROG}
 
 run-regress-${PROG}: ${PROG}
