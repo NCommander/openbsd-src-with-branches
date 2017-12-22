@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-set-option.c,v 1.117 2017/06/23 15:36:52 nicm Exp $ */
+/* $OpenBSD: cmd-set-option.c,v 1.118 2017/09/07 13:18:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -192,7 +192,9 @@ cmd_set_option_exec(struct cmd *self, struct cmdq_item *item)
 		if (o == NULL)
 			goto out;
 		if (idx == -1) {
-			if (oo == global_options ||
+			if (*name == '@')
+				options_remove(o);
+			else if (oo == global_options ||
 			    oo == global_s_options ||
 			    oo == global_w_options)
 				options_default(oo, options_table_entry(o));
