@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxipio.c,v 1.4 2017/08/30 16:21:29 kettenis Exp $	*/
+/*	$OpenBSD: sxipio.c,v 1.5 2017/11/13 09:24:59 kettenis Exp $	*/
 /*
  * Copyright (c) 2010 Miodrag Vallat.
  * Copyright (c) 2013 Artturi Alm
@@ -292,6 +292,8 @@ sxipio_pinctrl(uint32_t phandle, void *cookie)
 
 		/* Lookup the function of the pin. */
 		for (j = 0; j < nitems(sc->sc_pins[i].funcs); j++) {
+			if (sc->sc_pins[i].funcs[j].name == NULL)
+				continue;
 			if (strcmp(func, sc->sc_pins[i].funcs[j].name) == 0)
 				break;
 		}
