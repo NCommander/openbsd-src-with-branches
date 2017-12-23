@@ -1,4 +1,4 @@
-/*	$OpenBSD: rasops.c,v 1.47 2017/08/17 20:21:53 kettenis Exp $	*/
+/*	$OpenBSD: rasops.c,v 1.48 2017/08/22 12:24:45 fcambus Exp $	*/
 /*	$NetBSD: rasops.c,v 1.35 2001/02/02 06:01:01 marcus Exp $	*/
 
 /*-
@@ -1265,11 +1265,8 @@ rasops_putchar_rotated(void *cookie, int row, int col, u_int uc, long attr)
 int
 rasops_erasecols_rotated(void *cookie, int row, int col, int num, long attr)
 {
-	struct rasops_info *ri;
 	int i;
 	int rc;
-
-	ri = (struct rasops_info *)cookie;
 
 	for (i = col; i < col + num; i++) {
 		rc = rasops_putchar_rotated(cookie, row, i, ' ', attr);
