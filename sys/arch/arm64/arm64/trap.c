@@ -1,4 +1,4 @@
-/* $OpenBSD: trap.c,v 1.11 2017/09/16 02:03:40 guenther Exp $ */
+/* $OpenBSD: trap.c,v 1.12 2017/12/18 20:03:48 kettenis Exp $ */
 /*-
  * Copyright (c) 2014 Andrew Turner
  * All rights reserved.
@@ -310,6 +310,11 @@ do_el0_sync(struct trapframe *frame)
 	case EXCP_PC_ALIGN:
 		vfp_save();
 		sv.sival_ptr = (void *)frame->tf_elr;
+		trapsignal(p, SIGBUS, 0, BUS_ADRALN, sv);
+		break;
+	case EXCP_SP_ALIGN:
+		vfp_save();
+		sv.sival_ptr = (void *)frame->tf_sp;
 		trapsignal(p, SIGBUS, 0, BUS_ADRALN, sv);
 		break;
 	case EXCP_DATA_ABORT_L:
