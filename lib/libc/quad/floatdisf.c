@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: floatdisf.c,v 1.6 2005/08/08 08:05:35 espie Exp $ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -66,3 +66,7 @@ __floatdisf(quad_t x)
 
 	return (neg ? -f : f);
 }
+
+#ifdef __ARM_EABI__
+__strong_alias(__aeabi_l2f, __floatdisf);
+#endif

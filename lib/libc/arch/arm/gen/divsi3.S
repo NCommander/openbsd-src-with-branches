@@ -1,4 +1,4 @@
-/*	$OpenBSD: divsi3.S,v 1.2 2004/02/01 05:40:52 drahn Exp $	*/
+/*	$OpenBSD: divsi3.S,v 1.3 2016/08/06 19:16:09 guenther Exp $	*/
 /*	$NetBSD: divsi3.S,v 1.5 2003/04/05 23:08:51 bjh21 Exp $	*/
 
 /*
@@ -385,3 +385,8 @@ ENTRY(__divsi3)
 	addhs	r3, r3, r2
 	mov	r0, r3
 	mov	pc, lr
+
+STRONG_ALIAS(__aeabi_idiv, __divsi3)
+STRONG_ALIAS(__aeabi_idivmod, __divsi3)
+STRONG_ALIAS(__aeabi_uidiv, __udivsi3)
+STRONG_ALIAS(__aeabi_uidivmod, __udivsi3)

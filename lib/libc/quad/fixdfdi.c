@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: fixdfdi.c,v 1.5 2005/08/08 08:05:35 espie Exp $ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -52,3 +52,7 @@ __fixdfdi(double x)
 		else
 			return ((quad_t)(u_quad_t)x);
 }
+
+#ifdef __ARM_EABI__
+__strong_alias(__aeabi_d2lz, __fixdfdi);
+#endif
