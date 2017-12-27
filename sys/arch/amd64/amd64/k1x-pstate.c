@@ -1,4 +1,4 @@
-/*	$OpenBSD: k1x-pstate.c,v 1.8 2015/03/14 03:38:46 jsg Exp $ */
+/*	$OpenBSD: k1x-pstate.c,v 1.9 2017/09/08 05:36:51 deraadt Exp $ */
 /*
  * Copyright (c) 2011 Bryan Steele <brynet@gmail.com>
  *
@@ -197,5 +197,5 @@ k1x_init(struct cpu_info *ci)
 		setperf_prio = 1;
 		return;
 	}
-	free(cstate, M_DEVBUF, 0);
+	free(cstate, M_DEVBUF, sizeof(*cstate));
 }
