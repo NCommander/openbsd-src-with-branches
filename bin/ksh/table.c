@@ -1,4 +1,4 @@
-/*	$OpenBSD: table.c,v 1.22 2015/10/19 14:43:46 mmcc Exp $	*/
+/*	$OpenBSD: table.c,v 1.23 2015/11/01 15:38:53 mmcc Exp $	*/
 
 /*
  * dynamic hashed associative table for commands and variables
@@ -18,7 +18,7 @@ struct table aliases;	/* aliases */
 struct table keywords;	/* keywords */
 struct table homedirs;	/* homedir() cache */
 
-char *path;		/* copy of either PATH or def_path */
+char *search_path;	/* copy of either PATH or def_path */
 const char *def_path;	/* path to use if PATH not set */
 char *tmpdir;		/* TMPDIR value */
 const char *prompt;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: emacs.c,v 1.75 2017/11/26 20:34:15 jca Exp $	*/
+/*	$OpenBSD: emacs.c,v 1.76 2017/12/18 19:04:53 anton Exp $	*/
 
 /*
  *  Emacs-like command line editing and history
@@ -1995,8 +1995,6 @@ x_prev_histword(int c)
 			rcp++;
 		x_ins(rcp);
 	} else {
-		int c;
-
 		rcp = cp;
 		/*
 		 * ignore white-space at start of line

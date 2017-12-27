@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.72 2017/12/07 01:54:33 tb Exp $	*/
+/*	$OpenBSD: lex.c,v 1.73 2017/12/12 00:18:58 tb Exp $	*/
 
 /*
  * lexical analysis and source input
@@ -1446,8 +1446,6 @@ dopprompt(const char *sp, int ntruncate, const char **spp, int doprint)
 		else if (*++cp == '!')
 			c = *cp++;
 		else {
-			char *p;
-
 			shf_snprintf(p = nbuf, sizeof(nbuf), "%d",
 			    source->line + 1);
 			len = strlen(nbuf);
