@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.7 2017/08/20 04:22:57 jsg Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.8 2017/12/24 19:42:51 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
@@ -196,3 +196,5 @@ cpu_clockspeed(int *freq)
 	*freq = clock_get_frequency(cpu_node, NULL) / 1000000;
 	return 0;
 }
+
+int	(*cpu_on_fn)(register_t, register_t);
