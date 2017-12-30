@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.c,v 1.194 2017/04/08 02:57:25 deraadt Exp $ */
+/*	$OpenBSD: uvideo.c,v 1.195 2017/08/21 14:38:32 jsg Exp $ */
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -24,7 +24,7 @@
 #include <sys/device.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
-#include <sys/file.h>
+#include <sys/fcntl.h>
 #include <sys/selinfo.h>
 #include <sys/lock.h>
 #include <sys/stat.h>

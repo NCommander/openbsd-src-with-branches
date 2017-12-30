@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdcf.c,v 1.3 2017/05/04 22:47:27 deraadt Exp $	*/
+/*	$OpenBSD: amdcf.c,v 1.4 2017/10/24 09:36:13 jsg Exp $	*/
 
 /*
  * Copyright (c) 2007, Juniper Networks, Inc.
@@ -75,7 +75,7 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/conf.h>
-#include <sys/file.h>
+#include <sys/fcntl.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/mutex.h>

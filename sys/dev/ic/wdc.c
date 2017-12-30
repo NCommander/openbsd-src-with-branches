@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdc.c,v 1.132 2017/07/12 13:40:59 mikeb Exp $	*/
+/*	$OpenBSD: wdc.c,v 1.133 2017/09/26 22:12:04 mikeb Exp $	*/
 /*	$NetBSD: wdc.c,v 1.68 1999/06/23 19:00:17 bouyer Exp $	*/
 /*
  * Copyright (c) 1998, 2001 Manuel Bouyer.  All rights reserved.
@@ -2032,7 +2032,7 @@ wdcbit_bucket(struct channel_softc *chp, int size)
 
 
 #include <sys/ataio.h>
-#include <sys/file.h>
+#include <sys/fcntl.h>
 
 int wdc_ioc_ata_cmd(struct ata_drive_datas *, atareq_t *);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.104 2017/05/04 22:47:27 deraadt Exp $	*/
+/*	$OpenBSD: fd.c,v 1.105 2017/09/03 20:03:58 sf Exp $	*/
 /*	$NetBSD: fd.c,v 1.90 1996/05/12 23:12:03 mycroft Exp $	*/
 
 /*-
@@ -45,7 +45,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/file.h>
+#include <sys/fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/device.h>
 #include <sys/disklabel.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: spec_vnops.c,v 1.88 2016/04/01 11:51:55 mikeb Exp $	*/
+/*	$OpenBSD: spec_vnops.c,v 1.89 2016/04/05 19:26:15 natano Exp $	*/
 /*	$NetBSD: spec_vnops.c,v 1.29 1996/04/22 01:42:38 christos Exp $	*/
 
 /*
@@ -45,7 +45,7 @@
 #include <sys/stat.h>
 #include <sys/errno.h>
 #include <sys/ioctl.h>
-#include <sys/file.h>
+#include <sys/fcntl.h>
 #include <sys/disklabel.h>
 #include <sys/lockf.h>
 #include <sys/poll.h>

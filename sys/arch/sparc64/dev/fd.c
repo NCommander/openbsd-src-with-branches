@@ -1,4 +1,4 @@
-/*	$OpenBSD: fd.c,v 1.47 2017/04/30 16:45:45 mpi Exp $	*/
+/*	$OpenBSD: fd.c,v 1.48 2017/05/04 22:47:27 deraadt Exp $	*/
 /*	$NetBSD: fd.c,v 1.112 2003/08/07 16:29:35 agc Exp $	*/
 
 /*-
@@ -106,7 +106,7 @@
 #include <sys/systm.h>
 #include <sys/timeout.h>
 #include <sys/kernel.h>
-#include <sys/file.h>
+#include <sys/fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/conf.h>
 #include <sys/device.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: gpr.c,v 1.16 2011/07/03 15:47:17 matthew Exp $	*/
+/*	$OpenBSD: gpr.c,v 1.17 2016/03/14 23:08:06 krw Exp $	*/
 
 /*
  * Copyright (c) 2002, Federico G. Schwindt
@@ -39,7 +39,7 @@
 #include <sys/device.h>
 #include <sys/systm.h>
 #include <sys/conf.h>
-#include <sys/file.h>
+#include <sys/fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/proc.h>
 

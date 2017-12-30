@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.212 2017/06/08 17:14:02 bluhm Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.213 2017/11/27 01:20:12 guenther Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -49,7 +49,7 @@
 #include <sys/proc.h>
 #include <sys/systm.h>
 #include <sys/acct.h>
-#include <sys/file.h>
+#include <sys/fcntl.h>
 #include <sys/filedesc.h>
 #include <sys/kernel.h>
 #include <sys/wait.h>
