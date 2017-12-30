@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.3 2017/09/08 05:36:51 deraadt Exp $	*/
+/*	$OpenBSD: mem.c,v 1.4 2017/12/14 03:30:43 guenther Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -81,7 +81,6 @@
 #include <sys/device.h>
 #include <sys/errno.h>
 #include <sys/ioctl.h>
-#include <sys/file.h>
 
 #include <uvm/uvm_extern.h>
 

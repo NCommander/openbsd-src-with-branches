@@ -1,4 +1,4 @@
-/*	$OpenBSD: z8530kbd.c,v 1.26 2013/05/10 16:00:08 mikeb Exp $	*/
+/*	$OpenBSD: z8530kbd.c,v 1.27 2015/10/28 05:11:55 jsg Exp $	*/
 /*	$NetBSD: z8530tty.c,v 1.77 2001/05/30 15:24:24 lukem Exp $	*/
 
 /*-
@@ -100,7 +100,6 @@
 #include <sys/proc.h>
 #include <sys/device.h>
 #include <sys/conf.h>
-#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>
 #include <sys/tty.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cons.c,v 1.25 2015/03/14 03:38:46 jsg Exp $	*/
+/*	$OpenBSD: cons.c,v 1.26 2016/05/17 23:43:47 bluhm Exp $	*/
 /*	$NetBSD: cons.c,v 1.30 1996/04/08 19:57:30 jonathan Exp $	*/
 
 /*
@@ -43,7 +43,6 @@
 #include <sys/systm.h>
 #include <sys/ioctl.h>
 #include <sys/tty.h>
-#include <sys/file.h>
 #include <sys/conf.h>
 #include <sys/vnode.h>
 #include <sys/poll.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vnops.c,v 1.87 2016/05/23 09:31:28 natano Exp $	*/
+/*	$OpenBSD: ffs_vnops.c,v 1.88 2016/09/10 16:53:30 natano Exp $	*/
 /*	$NetBSD: ffs_vnops.c,v 1.7 1996/05/11 18:27:24 mycroft Exp $	*/
 
 /*
@@ -36,7 +36,6 @@
 #include <sys/systm.h>
 #include <sys/resourcevar.h>
 #include <sys/kernel.h>
-#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/buf.h>
 #include <sys/mount.h>

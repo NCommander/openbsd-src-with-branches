@@ -1,4 +1,4 @@
-/*      $OpenBSD: ata_wdc.c,v 1.49 2015/04/04 13:03:44 mpi Exp $	*/
+/*      $OpenBSD: ata_wdc.c,v 1.50 2015/08/17 15:36:29 krw Exp $	*/
 /*	$NetBSD: ata_wdc.c,v 1.21 1999/08/09 09:43:11 bouyer Exp $	*/
 
 /*
@@ -58,7 +58,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/buf.h>
 #include <sys/malloc.h>

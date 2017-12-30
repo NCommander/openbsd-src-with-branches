@@ -1,4 +1,4 @@
-/*	$OpenBSD: umodem.c,v 1.61 2017/03/29 00:18:51 jsg Exp $ */
+/*	$OpenBSD: umodem.c,v 1.62 2017/03/29 01:27:40 jsg Exp $ */
 /*	$NetBSD: umodem.c,v 1.45 2002/09/23 05:51:23 simonb Exp $	*/
 
 /*
@@ -49,7 +49,6 @@
 #include <sys/kernel.h>
 #include <sys/conf.h>
 #include <sys/tty.h>
-#include <sys/file.h>
 #include <sys/selinfo.h>
 #include <sys/device.h>
 #include <sys/poll.h>

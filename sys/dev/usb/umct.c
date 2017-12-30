@@ -1,4 +1,4 @@
-/*	$OpenBSD: umct.c,v 1.45 2016/09/02 09:14:59 mpi Exp $	*/
+/*	$OpenBSD: umct.c,v 1.46 2017/04/08 02:57:25 deraadt Exp $	*/
 /*	$NetBSD: umct.c,v 1.10 2003/02/23 04:20:07 simonb Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -42,7 +42,6 @@
 #include <sys/ioctl.h>
 #include <sys/conf.h>
 #include <sys/tty.h>
-#include <sys/file.h>
 #include <sys/selinfo.h>
 #include <sys/device.h>
 #include <sys/poll.h>

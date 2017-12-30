@@ -1,4 +1,4 @@
-/*	$OpenBSD: comkbd_ebus.c,v 1.20 2009/01/11 16:12:15 miod Exp $	*/
+/*	$OpenBSD: comkbd_ebus.c,v 1.21 2011/03/18 21:01:17 miod Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -36,7 +36,6 @@
 #include <sys/proc.h>
 #include <sys/device.h>
 #include <sys/conf.h>
-#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>
 #include <sys/tty.h>

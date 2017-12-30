@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.248 2017/05/18 15:41:59 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.249 2017/12/11 05:27:40 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -35,7 +35,6 @@
 #include <sys/reboot.h>
 #include <sys/device.h>
 #include <sys/conf.h>
-#include <sys/file.h>
 #include <sys/timeout.h>
 #include <sys/malloc.h>
 #include <sys/pool.h>

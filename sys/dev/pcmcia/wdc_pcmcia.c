@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdc_pcmcia.c,v 1.30 2014/07/10 14:21:20 deraadt Exp $	*/
+/*	$OpenBSD: wdc_pcmcia.c,v 1.31 2014/09/14 14:17:25 jsg Exp $	*/
 /*	$NetBSD: wdc_pcmcia.c,v 1.19 1999/02/19 21:49:43 abs Exp $ */
 
 /*-
@@ -34,7 +34,6 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/conf.h>
-#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/buf.h>

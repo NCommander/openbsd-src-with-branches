@@ -1,4 +1,4 @@
-/*	$OpenBSD: consinit.c,v 1.15 2016/03/07 13:21:51 naddy Exp $	*/
+/*	$OpenBSD: consinit.c,v 1.16 2017/04/30 16:45:45 mpi Exp $	*/
 /*	$NetBSD: consinit.c,v 1.9 2000/10/20 05:32:35 mrg Exp $	*/
 
 /*-
@@ -36,7 +36,6 @@
 #include <sys/systm.h>
 #include <sys/conf.h>
 #include <sys/device.h>
-#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>

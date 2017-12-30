@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm86.c,v 1.22 2014/03/29 18:09:29 guenther Exp $	*/
+/*	$OpenBSD: vm86.c,v 1.23 2016/10/08 05:49:08 guenther Exp $	*/
 /*	$NetBSD: vm86.c,v 1.15 1996/05/03 19:42:33 christos Exp $	*/
 
 /*-
@@ -40,7 +40,6 @@
 #include <sys/buf.h>
 #include <sys/reboot.h>
 #include <sys/conf.h>
-#include <sys/file.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
 #include <sys/msgbuf.h>

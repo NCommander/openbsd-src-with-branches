@@ -1,4 +1,4 @@
-/*	$OpenBSD: scif.c,v 1.16 2016/03/05 17:16:33 tobiasu Exp $	*/
+/*	$OpenBSD: scif.c,v 1.17 2017/04/30 16:45:45 mpi Exp $	*/
 /*	$NetBSD: scif.c,v 1.47 2006/07/23 22:06:06 ad Exp $ */
 
 /*-
@@ -98,7 +98,6 @@
 #include <sys/tty.h>
 #include <sys/proc.h>
 #include <sys/conf.h>
-#include <sys/file.h>
 #include <sys/syslog.h>
 #include <sys/kernel.h>
 #include <sys/device.h>

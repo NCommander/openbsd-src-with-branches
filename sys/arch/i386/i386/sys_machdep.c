@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_machdep.c,v 1.36 2016/03/03 12:41:30 naddy Exp $	*/
+/*	$OpenBSD: sys_machdep.c,v 1.37 2016/03/24 04:56:08 guenther Exp $	*/
 /*	$NetBSD: sys_machdep.c,v 1.28 1996/05/03 19:42:29 christos Exp $	*/
 
 /*-
@@ -39,7 +39,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/ioctl.h>
-#include <sys/file.h>
 #include <sys/time.h>
 #include <sys/proc.h>
 #include <sys/signalvar.h>
