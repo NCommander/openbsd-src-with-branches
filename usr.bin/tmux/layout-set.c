@@ -1,4 +1,4 @@
-/* $OpenBSD: layout-set.c,v 1.18 2017/05/15 14:57:29 nicm Exp $ */
+/* $OpenBSD: layout-set.c,v 1.19 2017/11/15 19:59:27 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -138,6 +138,8 @@ layout_set_even(struct window *w, enum layout_type type)
 	TAILQ_FOREACH(wp, &w->panes, entry) {
 		lcnew = layout_create_cell(lc);
 		layout_make_leaf(lcnew, wp);
+		lcnew->sx = w->sx;
+		lcnew->sy = w->sy;
 		TAILQ_INSERT_TAIL(&lc->cells, lcnew, entry);
 	}
 
