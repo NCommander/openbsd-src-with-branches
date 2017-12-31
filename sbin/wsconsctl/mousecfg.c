@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: mousecfg.c,v 1.1 2017/07/21 20:38:20 bru Exp $ */
 
 /*
  * Copyright (c) 2017 Ulf Brosziewski
@@ -303,7 +303,6 @@ mousecfg_pr_field(struct wsmouse_parameters *field)
 void
 mousecfg_rd_field(struct wsmouse_parameters *field, char *val)
 {
-	enum wsmousecfg first = field->params[0].key;
 	int i, n;
 	const char *s;
 	float f;

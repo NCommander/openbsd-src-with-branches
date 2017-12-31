@@ -1,4 +1,4 @@
-/*	$OpenBSD: map_scan.l,v 1.6 2015/11/19 19:48:27 tedu Exp $	*/
+/*	$OpenBSD: map_scan.l,v 1.7 2017/07/09 14:04:50 espie Exp $	*/
 /*	$NetBSD: map_scan.l 1.1 1998/12/28 14:01:17 hannken Exp $ */
 
 /*-
@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-%option noyywrap
+%option noinput noyywrap
 
 %{
 
