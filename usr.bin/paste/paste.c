@@ -1,4 +1,4 @@
-/*	$OpenBSD: paste.c,v 1.21 2015/10/09 01:37:08 deraadt Exp $	*/
+/*	$OpenBSD: paste.c,v 1.22 2015/12/09 19:39:10 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -76,6 +76,9 @@ main(int argc, char *argv[])
 	}
 	argc -= optind;
 	argv += optind;
+
+	if (argc == 0)
+		usage();
 
 	if (!delim) {
 		delimcnt = 1;
