@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.h,v 1.37 2016/04/26 09:13:05 deraadt Exp $	*/
+/*	$OpenBSD: file.h,v 1.38 2016/08/23 23:28:02 tedu Exp $	*/
 /*	$NetBSD: file.h,v 1.11 1995/03/26 20:24:13 jtc Exp $	*/
 
 /*
@@ -32,9 +32,10 @@
  *	@(#)file.h	8.2 (Berkeley) 8/20/94
  */
 
+#ifndef _KERNEL
 #include <sys/fcntl.h>
 
-#ifdef _KERNEL
+#else /* _KERNEL */
 #include <sys/queue.h>
 
 struct proc;
