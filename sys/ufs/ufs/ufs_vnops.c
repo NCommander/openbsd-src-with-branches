@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vnops.c,v 1.133 2016/10/07 07:51:16 natano Exp $	*/
+/*	$OpenBSD: ufs_vnops.c,v 1.134 2017/04/19 17:26:13 dhill Exp $	*/
 /*	$NetBSD: ufs_vnops.c,v 1.18 1996/05/11 18:28:04 mycroft Exp $	*/
 
 /*
@@ -42,6 +42,7 @@
 #include <sys/namei.h>
 #include <sys/resourcevar.h>
 #include <sys/kernel.h>
+#include <sys/fcntl.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/buf.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.75 2016/10/08 02:16:43 guenther Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.76 2017/02/11 19:51:06 guenther Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -29,6 +29,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/fcntl.h>
 #include <sys/file.h>
 #include <sys/filedesc.h>
 #include <sys/pool.h>

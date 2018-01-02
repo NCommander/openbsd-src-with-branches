@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_pty.c,v 1.79 2017/02/11 19:51:06 guenther Exp $	*/
+/*	$OpenBSD: tty_pty.c,v 1.80 2017/07/04 17:29:51 tedu Exp $	*/
 /*	$NetBSD: tty_pty.c,v 1.33.4.1 1996/06/02 09:08:11 mrg Exp $	*/
 
 /*
@@ -44,6 +44,7 @@
 #include <sys/ioctl.h>
 #include <sys/proc.h>
 #include <sys/tty.h>
+#include <sys/fcntl.h>
 #include <sys/file.h>
 #include <sys/filedesc.h>
 #include <sys/uio.h>

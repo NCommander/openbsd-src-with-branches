@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.87 2016/09/30 10:55:22 jca Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.88 2017/08/13 22:08:44 beck Exp $	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -41,6 +41,7 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
+#include <sys/fcntl.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/proc.h>

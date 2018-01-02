@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_file2.c,v 1.51 2016/11/07 00:26:33 guenther Exp $	*/
+/*	$OpenBSD: kvm_file2.c,v 1.52 2017/01/21 05:42:04 guenther Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -105,6 +105,7 @@
 #include <netinet6/ip6_var.h>
 #endif
 
+#include <fcntl.h>
 #include <nlist.h>
 #include <kvm.h>
 #include <db.h>

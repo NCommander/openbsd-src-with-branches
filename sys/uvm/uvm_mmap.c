@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.142 2017/01/21 05:42:03 guenther Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.143 2017/11/30 00:36:10 guenther Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -52,6 +52,7 @@
  */
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/fcntl.h>
 #include <sys/file.h>
 #include <sys/filedesc.h>
 #include <sys/resourcevar.h>
