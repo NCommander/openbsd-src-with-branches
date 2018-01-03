@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ofw_misc.h,v 1.1 2017/03/09 20:01:10 kettenis Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis
  *
@@ -21,6 +21,7 @@
 void	regmap_register(int, bus_space_tag_t, bus_space_handle_t, bus_size_t);
 
 struct regmap;
+struct regmap *regmap_bynode(int);
 struct regmap *regmap_byphandle(uint32_t);
 
 uint32_t regmap_read_4(struct regmap *, bus_size_t);
