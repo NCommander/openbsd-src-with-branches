@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahci_pci.c,v 1.12 2016/01/14 04:06:53 dlg Exp $ */
+/*	$OpenBSD: ahci_pci.c,v 1.13 2017/05/27 14:16:45 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -108,6 +108,8 @@ static const struct ahci_device ahci_devices[] = {
 	    NULL,		ahci_ati_sb700_attach },
 	{ PCI_VENDOR_ATI,	PCI_PRODUCT_ATI_SBX00_SATA_6,
 	    NULL,		ahci_ati_sb700_attach },
+
+	{ PCI_VENDOR_ASMEDIA,	PCI_PRODUCT_ASMEDIA_ASM1061_SATA },
 
 	{ PCI_VENDOR_INTEL,	PCI_PRODUCT_INTEL_6SERIES_AHCI_1,
 	    NULL,		ahci_intel_attach },
