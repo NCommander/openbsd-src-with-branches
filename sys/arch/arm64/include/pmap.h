@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.h,v 1.6 2017/08/27 19:33:02 drahn Exp $ */
+/* $OpenBSD: pmap.h,v 1.7 2017/12/31 08:42:04 kettenis Exp $ */
 /*
  * Copyright (c) 2008,2009,2014 Dale Rahn <drahn@dalerahn.com>
  *
@@ -71,6 +71,7 @@ struct pmap {
 	} pm_vp;
 	uint64_t pm_pt0pa;
 	int have_4_level_pt;
+	int pm_privileged;
 	int pm_asid;
 	int pm_refs;				/* ref count */
 	struct pmap_statistics  pm_stats;	/* pmap statistics */
