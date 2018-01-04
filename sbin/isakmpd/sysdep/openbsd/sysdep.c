@@ -1,4 +1,4 @@
-/* $OpenBSD: sysdep.c,v 1.35 2005/12/21 01:40:23 millert Exp $	 */
+/* $OpenBSD: sysdep.c,v 1.36 2014/01/22 03:09:31 deraadt Exp $	 */
 /* $EOM: sysdep.c,v 1.9 2000/12/04 04:46:35 angelos Exp $	 */
 
 /*
@@ -94,9 +94,9 @@ sysdep_cleartext(int fd, int af)
 	}
 
 	/*
-         * Need to bypass system security policy, so I can send and
-         * receive key management datagrams in the clear.
-         */
+	 * Need to bypass system security policy, so I can send and
+	 * receive key management datagrams in the clear.
+ 	*/
 	level = IPSEC_LEVEL_BYPASS;
 	if (monitor_setsockopt(fd, optsw[sw].ip_proto, optsw[sw].auth_level,
 	    (char *) &level, sizeof level) == -1) {

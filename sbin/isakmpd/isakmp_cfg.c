@@ -1,4 +1,4 @@
-/* $OpenBSD: isakmp_cfg.c,v 1.38 2007/04/16 13:01:39 moritz Exp $	 */
+/* $OpenBSD: isakmp_cfg.c,v 1.39 2014/01/23 01:04:28 deraadt Exp $	 */
 
 /*
  * Copyright (c) 2001 Niklas Hallqvist.  All rights reserved.
@@ -262,7 +262,7 @@ cfg_initiator_send_ATTR(struct message *msg)
 	/*
 	 * Use the bitstring built previously to collect the right
 	 * parameters for attrp.
-         */
+ 	*/
 	for (bit = 0; bit < CFG_ATTR_BIT_MAX; bit++)
 		if (bit_test(attrbits, bit)) {
 			attr = attrp + off;
