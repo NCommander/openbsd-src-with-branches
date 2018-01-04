@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vfsops.c,v 1.29 2017/04/20 14:13:00 visa Exp $ */
+/* $OpenBSD: fuse_vfsops.c,v 1.30 2017/12/11 05:27:40 deraadt Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -77,19 +77,25 @@ fusefs_mount(struct mount *mp, const char *path, void *data,
 	struct fusefs_args *args = data;
 	struct vnode *vp;
 	struct file *fp;
+	int error = 0;
 
 	if (mp->mnt_flag & MNT_UPDATE)
 		return (EOPNOTSUPP);
 
 	if ((fp = fd_getfile(p->p_fd, args->fd)) == NULL)
 		return (EBADF);
+	FREF(fp);
 
-	if (fp->f_type != DTYPE_VNODE)
-		return (EINVAL);
+	if (fp->f_type != DTYPE_VNODE) {
+		error = EINVAL;
+		goto bad;
+	}
 
 	vp = fp->f_data;
-	if (vp->v_type != VCHR)
-		return (EBADF);
+	if (vp->v_type != VCHR) {
+		error = EBADF;
+		goto bad;
+	}
 
 	fmp = malloc(sizeof(*fmp), M_FUSEFS, M_WAITOK | M_ZERO);
 	fmp->mp = mp;
@@ -117,7 +123,9 @@ fusefs_mount(struct mount *mp, const char *path, void *data,
 	/* cannot tsleep on mount */
 	fuse_device_queue_fbuf(fmp->dev, fbuf);
 
-	return (0);
+bad:
+	FRELE(fp, p);
+	return (error);
 }
 
 int
