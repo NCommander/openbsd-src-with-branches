@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: if_bwfm_pci.h,v 1.1 2017/12/24 19:50:56 patrick Exp $	*/
 /*
  * Copyright (c) 2010-2016 Broadcom Corporation
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
@@ -168,8 +168,10 @@ struct msgbuf_ioctl_req_hdr {
 
 struct msgbuf_tx_msghdr {
 	struct msgbuf_common_hdr	msg;
-	uint8_t				txhdr[ETHER_ADDR_LEN];
+	uint8_t				txhdr[ETHER_HDR_LEN];
 	uint8_t				flags;
+#define BWFM_MSGBUF_PKT_FLAGS_FRAME_802_3	(1 << 0)
+#define BWFM_MSGBUF_PKT_FLAGS_PRIO_SHIFT	5
 	uint8_t				seg_cnt;
 	struct msgbuf_buf_addr		metadata_buf_addr;
 	struct msgbuf_buf_addr		data_buf_addr;
