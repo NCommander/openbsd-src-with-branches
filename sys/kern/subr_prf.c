@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.91 2017/04/30 16:45:46 mpi Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.92 2017/12/30 20:47:00 guenther Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -99,6 +99,7 @@ struct mutex kprintf_mutex =
 extern	int log_open;	/* subr_log: is /dev/klog open? */
 const	char *panicstr; /* arg to first call to panic (used as a flag
 			   to indicate that panic has already been called). */
+const	char *faultstr; /* page fault string */
 #ifdef DDB
 /*
  * Enter ddb on panic.

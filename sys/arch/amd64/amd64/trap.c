@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.61 2017/10/04 02:10:33 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.62 2017/10/14 04:44:43 jsg Exp $	*/
 /*	$NetBSD: trap.c,v 1.2 2003/05/04 23:51:56 fvdl Exp $	*/
 
 /*-
@@ -380,12 +380,16 @@ faultcommon:
 		}
 
 		if (type == T_PAGEFLT) {
+			static char faultbuf[512];
 			if (pcb->pcb_onfault != 0) {
 				KERNEL_UNLOCK();
 				goto copyfault;
 			}
-			printf("uvm_fault(%p, 0x%lx, 0, %d) -> %x\n",
+			snprintf(faultbuf, sizeof faultbuf,
+			    "uvm_fault(%p, 0x%lx, 0, %d) -> %x",
 			    map, fa, ftype, error);
+			printf("%s\n", faultbuf);
+			faultstr = faultbuf;
 			goto we_re_toast;
 		}
 
