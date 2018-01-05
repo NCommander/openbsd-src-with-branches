@@ -1,4 +1,4 @@
-/*	$OpenBSD: showmount.c,v 1.20 2016/03/16 15:41:11 krw Exp $	*/
+/*	$OpenBSD: showmount.c,v 1.21 2017/01/21 11:32:04 guenther Exp $	*/
 /*	$NetBSD: showmount.c,v 1.7 1996/05/01 18:14:10 cgd Exp $	*/
 
 /*
@@ -36,7 +36,6 @@
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/socket.h>
-#include <sys/socketvar.h>
 
 #include <netdb.h>
 #include <rpc/rpc.h>
