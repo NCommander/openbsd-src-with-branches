@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.15 2015/09/14 16:10:55 nicm Exp $	*/
+/*	$OpenBSD: config.h,v 1.16 2017/08/01 14:30:05 deraadt Exp $	*/
 
 /* config.h.  NOT generated automatically. */
 
@@ -10,9 +10,6 @@
 
 #ifndef CONFIG_H
 #define CONFIG_H
-
-/* Include job control? */
-#define JOBS 1
 
 /* Include brace-expansion? */
 #define BRACE_EXPAND 1
