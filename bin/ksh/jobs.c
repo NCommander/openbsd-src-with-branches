@@ -1,4 +1,4 @@
-/*	$OpenBSD: jobs.c,v 1.54 2015/12/30 09:07:00 tedu Exp $	*/
+/*	$OpenBSD: jobs.c,v 1.55 2016/03/17 23:33:23 mmcc Exp $	*/
 
 /*
  * Process and job control
@@ -67,7 +67,7 @@ struct proc {
 #define JF_CHANGED	0x040	/* process has changed state */
 #define JF_KNOWN	0x080	/* $! referenced */
 #define JF_ZOMBIE	0x100	/* known, unwaited process */
-#define JF_REMOVE	0x200	/* flagged for removal (j_jobs()/j_noityf()) */
+#define JF_REMOVE	0x200	/* flagged for removal (j_jobs()/j_notify()) */
 #define JF_USETTYMODE	0x400	/* tty mode saved if process exits normally */
 #define JF_SAVEDTTYPGRP	0x800	/* j->saved_ttypgrp is valid */
 
@@ -1337,7 +1337,7 @@ j_print(Job *j, int how, struct shf *shf)
 	int	output = 0;
 
 	if (how == JP_PGRP) {
-		/* POSIX doesn't say what to do it there is no process
+		/* POSIX doesn't say what to do if there is no process
 		 * group leader (ie, !FMONITOR).  We arbitrarily return
 		 * last pid (which is what $! returns).
 		 */
