@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.44 2016/03/30 06:38:46 jmc Exp $
+#	$OpenBSD: Makefile,v 1.45 2017/07/03 22:21:47 espie Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -46,7 +46,9 @@ SRCS+=	table_static.c
 SRCS+=	table_db.c
 SRCS+=	table_getpwnam.c
 SRCS+=	table_proc.c
+SRCS+=	unpack_dns.c
+SRCS+=	spfwalk.c
 
-LDADD+=	-lutil -lz -lcrypto
-DPADD+=	${LIBUTIL} ${LIBZ} ${LIBCRYPTO}
+LDADD+=	-levent -lutil -lz -lcrypto
+DPADD+=	${LIBEVENT} ${LIBUTIL} ${LIBZ} ${LIBCRYPTO}
 .include <bsd.prog.mk>
