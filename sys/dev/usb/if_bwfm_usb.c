@@ -1,4 +1,4 @@
-/* $OpenBSD: if_bwfm_usb.c,v 1.5 2017/10/21 20:19:37 patrick Exp $ */
+/* $OpenBSD: if_bwfm_usb.c,v 1.6 2018/01/03 21:01:16 patrick Exp $ */
 /*
  * Copyright (c) 2010-2016 Broadcom Corporation
  * Copyright (c) 2016,2017 Patrick Wildt <patrick@blueri.se>
@@ -412,7 +412,7 @@ bwfm_usb_newbuf(void)
 
 	MGETHDR(m, M_DONTWAIT, MT_DATA);
 	if (m == NULL)
-	return (NULL);
+		return (NULL);
 
 	MCLGET(m, M_DONTWAIT);
 	if (!(m->m_flags & M_EXT)) {
