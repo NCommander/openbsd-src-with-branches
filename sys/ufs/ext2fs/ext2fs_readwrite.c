@@ -313,7 +313,7 @@ ext2fs_write(void *v)
 			error = ext2fs_setsize(ip, uio->uio_offset + xfersize);
 			if (error)
 				break;
-			uvm_vnp_setsize(vp, ip->i_e2fs_size);
+			uvm_vnp_setsize(vp, ext2fs_size(ip));
 			extended = 1;
 		}
 		uvm_vnp_uncache(vp);
