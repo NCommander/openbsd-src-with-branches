@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pty.4,v 1.22 2016/06/30 15:54:53 tedu Exp $
+.\"	$OpenBSD: pty.4,v 1.23 2016/06/30 15:59:30 tedu Exp $
 .\"	$NetBSD: pty.4,v 1.4 1998/03/21 03:14:30 fair Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -204,6 +204,18 @@ The
 .Dv UIOCCMD Ns (0)
 is a no-op that may be used to probe for
 the existence of this facility.
+.Pp
+While this mode is in use, any of the
+.Dv TIOCSBRK
+and
+.Dv TIOCCBRK
+ioctl requests issued on the slave part of the pseudo terminal will be
+translated to a
+.Dv TIOCUCNTL_SBRK
+or
+.Dv TIOCUCNTL_CBRK
+user command on the master side.
+.Pp
 As with
 .Dv TIOCPKT
 mode, command operations may be detected with a
