@@ -1,4 +1,4 @@
-/* $OpenBSD: ns8250.c,v 1.12 2017/09/15 02:35:39 mlarkin Exp $ */
+/* $OpenBSD: ns8250.c,v 1.13 2018/01/08 11:58:27 mpi Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -136,7 +136,7 @@ com_rcv_event(int fd, short kind, void *arg)
 /*
  * com_rcv_handle_break
  *
- * Set/clear break detected contidion based on received TIOCUCNTL_{S,C}BRK.
+ * Set/clear break detected condition based on received TIOCUCNTL_{S,C}BRK.
  */
 static int
 com_rcv_handle_break(struct ns8250_dev *com, uint8_t cmd)
