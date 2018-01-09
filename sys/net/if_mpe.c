@@ -1,4 +1,4 @@
-/* $OpenBSD: if_mpe.c,v 1.62 2017/08/14 16:14:02 reyk Exp $ */
+/* $OpenBSD: if_mpe.c,v 1.63 2017/11/29 19:36:03 claudio Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -81,10 +81,7 @@ mpe_clone_create(struct if_clone *ifc, int unit)
 	struct ifnet		*ifp;
 	struct mpe_softc	*mpeif;
 
-	if ((mpeif = malloc(sizeof(*mpeif),
-	    M_DEVBUF, M_NOWAIT|M_ZERO)) == NULL)
-		return (ENOMEM);
-
+	mpeif = malloc(sizeof(*mpeif), M_DEVBUF, M_WAITOK|M_ZERO);
 	mpeif->sc_unit = unit;
 	ifp = &mpeif->sc_if;
 	snprintf(ifp->if_xname, sizeof ifp->if_xname, "mpe%d", unit);

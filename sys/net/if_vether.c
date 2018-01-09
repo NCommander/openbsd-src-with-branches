@@ -1,4 +1,4 @@
-/* $OpenBSD: if_vether.c,v 1.28 2016/11/29 10:09:57 reyk Exp $ */
+/* $OpenBSD: if_vether.c,v 1.29 2017/01/22 10:17:39 dlg Exp $ */
 
 /*
  * Copyright (c) 2009 Theo de Raadt
@@ -75,10 +75,7 @@ vether_clone_create(struct if_clone *ifc, int unit)
 	struct ifnet		*ifp;
 	struct vether_softc	*sc;
 
-	if ((sc = malloc(sizeof(*sc),
-	    M_DEVBUF, M_NOWAIT|M_ZERO)) == NULL)
-		return (ENOMEM);
-
+	sc = malloc(sizeof(*sc), M_DEVBUF, M_WAITOK|M_ZERO);
 	ifp = &sc->sc_ac.ac_if;
 	snprintf(ifp->if_xname, sizeof ifp->if_xname, "vether%d", unit);
 	ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
