@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwn.c,v 1.196 2017/12/14 20:12:32 stsp Exp $	*/
+/*	$OpenBSD: if_iwn.c,v 1.197 2017/12/20 18:20:59 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -1982,7 +1982,7 @@ iwn_rx_done(struct iwn_softc *sc, struct iwn_rx_desc *desc,
 	caddr_t head;
 	uint32_t flags;
 	int error, len, rssi;
-	uint8_t chan;
+	uint16_t chan;
 
 	if (desc->type == IWN_MPDU_RX_DONE) {
 		/* Check for prior RX_PHY notification. */
