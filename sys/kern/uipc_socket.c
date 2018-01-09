@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.212 2017/12/19 09:29:37 mpi Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.213 2018/01/02 12:54:07 mpi Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -1248,7 +1248,7 @@ somove(struct socket *so, int wait)
 	u_long		 len, off, oobmark;
 	long		 space;
 	int		 error = 0, maxreached = 0;
-	short		 state;
+	unsigned int	 state;
 
 	soassertlocked(so);
 

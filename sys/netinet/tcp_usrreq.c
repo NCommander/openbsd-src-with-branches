@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.161 2017/11/30 15:24:50 nayden Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.162 2017/12/01 10:33:33 bluhm Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -583,7 +583,7 @@ tcp_attach(struct socket *so, int proto)
 	inp = sotoinpcb(so);
 	tp = tcp_newtcpcb(inp);
 	if (tp == NULL) {
-		int nofd = so->so_state & SS_NOFDREF;	/* XXX */
+		unsigned int nofd = so->so_state & SS_NOFDREF;	/* XXX */
 
 		so->so_state &= ~SS_NOFDREF;	/* don't free the socket yet */
 		in_pcbdetach(inp);
