@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.c,v 1.77 2018/01/03 05:39:56 ccardenas Exp $	*/
+/*	$OpenBSD: vmd.c,v 1.78 2018/01/08 11:58:27 mpi Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -1140,8 +1140,9 @@ vm_register(struct privsep *ps, struct vmop_create_params *vmc,
 	} else if (vcp->vcp_nnics > VMM_MAX_NICS_PER_VM) {
 		log_warnx("invalid number of interfaces");
 		goto fail;
-	} else if (strlen(vcp->vcp_kernel) == 0 && vcp->vcp_ndisks == 0) {
-		log_warnx("no kernel or disk specified");
+	} else if (strlen(vcp->vcp_kernel) == 0 &&
+	    vcp->vcp_ndisks == 0 && strlen(vcp->vcp_cdrom) == 0) {
+		log_warnx("no kernel or disk/cdrom specified");
 		goto fail;
 	} else if (strlen(vcp->vcp_name) == 0) {
 		log_warnx("invalid VM name");
