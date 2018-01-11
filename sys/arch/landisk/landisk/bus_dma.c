@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.12 2014/11/16 12:30:57 deraadt Exp $	*/
+/*	$OpenBSD: bus_dma.c,v 1.13 2015/01/25 11:36:41 dlg Exp $	*/
 /*	$NetBSD: bus_dma.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*
@@ -132,10 +132,13 @@ _bus_dmamap_create(bus_dma_tag_t t, bus_size_t size, int nsegments,
 void
 _bus_dmamap_destroy(bus_dma_tag_t t, bus_dmamap_t map)
 {
+	size_t mapsize;
 
 	DPRINTF(("bus_dmamap_destroy: t = %p, map = %p\n", t, map));
 
-	free(map, M_DEVBUF, 0);
+	mapsize = sizeof(struct _bus_dmamap) +
+	    (sizeof(bus_dma_segment_t) * (map->_dm_segcnt - 1));
+	free(map, M_DEVBUF, mapsize);
 }
 
 int
