@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/ksh
 #
-# $OpenBSD: slaacd,v 1.1 2017/05/29 10:24:06 florian Exp $
+# $OpenBSD: slaacd,v 1.2 2017/06/03 10:00:29 florian Exp $
 
 daemon="/sbin/slaacd"
 

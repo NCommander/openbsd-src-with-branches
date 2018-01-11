@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/ksh
 #
-# $OpenBSD: eigrpd,v 1.2 2015/10/21 11:28:02 gsoares Exp $
+# $OpenBSD: eigrpd,v 1.3 2016/02/02 17:51:11 sthen Exp $
 
 daemon="/usr/sbin/eigrpd"
 

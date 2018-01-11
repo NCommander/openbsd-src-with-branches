@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/ksh
 #
-# $OpenBSD: identd,v 1.6 2013/08/08 15:41:28 ajacoutot Exp $
+# $OpenBSD: identd,v 1.7 2013/12/11 16:25:48 jca Exp $
 
 daemon="/usr/sbin/identd"
 daemon_flags="-e"

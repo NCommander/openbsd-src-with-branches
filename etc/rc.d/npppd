@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/ksh
 #
-# $OpenBSD: npppd,v 1.1 2012/09/20 12:51:43 yasuoka Exp $
+# $OpenBSD: npppd,v 1.2 2016/02/02 17:51:11 sthen Exp $
 
 daemon="/usr/sbin/npppd"
 

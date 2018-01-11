@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/ksh
 #
-# $OpenBSD: nfsd,v 1.5 2012/08/14 07:43:57 ajacoutot Exp $
+# $OpenBSD: nfsd,v 1.6 2014/08/22 08:10:38 jsg Exp $
 
 daemon="/sbin/nfsd"
 daemon_flags="-tun 4"

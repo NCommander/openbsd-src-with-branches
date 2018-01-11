@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/ksh
 #
-# $OpenBSD$
+# $OpenBSD: apmd,v 1.1 2011/07/06 18:55:36 robert Exp $
 
 daemon="/usr/sbin/apmd"
 

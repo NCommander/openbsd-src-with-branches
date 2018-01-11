@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/ksh
 #
-# $OpenBSD: xdm,v 1.1 2011/07/07 18:42:17 robert Exp $
+# $OpenBSD: xenodm,v 1.1 2017/02/26 16:51:18 matthieu Exp $
 
 daemon="/usr/X11R6/bin/xenodm"
 

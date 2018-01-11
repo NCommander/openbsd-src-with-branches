@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/ksh
 #
-# $OpenBSD$
+# $OpenBSD: iscsid,v 1.1 2014/07/13 12:07:11 claudio Exp $
 
 daemon="/usr/sbin/iscsid"
 control="/usr/sbin/iscsictl"
