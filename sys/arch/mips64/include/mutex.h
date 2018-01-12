@@ -1,4 +1,4 @@
-/*	$OpenBSD: mutex.h,v 1.2 2017/04/20 13:57:30 visa Exp $	*/
+/*	$OpenBSD: mutex.h,v 1.3 2018/01/04 11:03:48 mpi Exp $	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -82,4 +82,4 @@ void __mtx_init(struct mutex *, int);
 #define MUTEX_LOCK_OBJECT(mtx)	(&(mtx)->mtx_lock_obj)
 #define MUTEX_OLDIPL(mtx)	(mtx)->mtx_oldipl
 
-#endif
+#endif	/* _MACHINE_MUTEX_H_ */

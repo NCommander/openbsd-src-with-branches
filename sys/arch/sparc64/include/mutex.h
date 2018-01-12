@@ -1,4 +1,4 @@
-/*	$OpenBSD: mutex.h,v 1.4 2014/03/29 18:09:30 guenther Exp $	*/
+/*	$OpenBSD: mutex.h,v 1.5 2017/04/20 13:57:30 visa Exp $	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -55,10 +55,10 @@ struct mutex {
 
 #ifdef WITNESS
 #define MUTEX_INITIALIZER_FLAGS(ipl, name, flags) \
-	{ NULL, __MUTEX_IPL((ipl)), 0, MTX_LO_INITIALIZER(name, flags) }
+	{ NULL, __MUTEX_IPL((ipl)), IPL_NONE, MTX_LO_INITIALIZER(name, flags) }
 #else
 #define MUTEX_INITIALIZER_FLAGS(ipl, name, flags) \
-	{ NULL, __MUTEX_IPL((ipl)), 0 }
+	{ NULL, __MUTEX_IPL((ipl)), IPL_NONE }
 #endif
 
 void __mtx_init(struct mutex *, int);
@@ -82,4 +82,4 @@ void __mtx_init(struct mutex *, int);
 #define MUTEX_LOCK_OBJECT(mtx)	(&(mtx)->mtx_lock_obj)
 #define MUTEX_OLDIPL(mtx)	(mtx)->mtx_oldipl
 
-#endif
+#endif	/* _MACHINE_MUTEX_H_ */
