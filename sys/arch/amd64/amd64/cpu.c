@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.108 2017/10/14 04:44:43 jsg Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.109 2018/01/11 22:31:09 patrick Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -412,7 +412,9 @@ cpu_attach(struct device *parent, struct device *self, void *aux)
 #endif /* MTRR */
 		cpu_init(ci);
 		cpu_init_mwait(sc);
+#ifndef SMALL_KERNEL
 		config_mountroot(NULL, cpu_ucode_attachhook);
+#endif
 		break;
 
 	case CPU_ROLE_BP:
@@ -436,7 +438,9 @@ cpu_attach(struct device *parent, struct device *self, void *aux)
 		ioapic_bsp_id = caa->cpu_apicid;
 #endif
 		cpu_init_mwait(sc);
+#ifndef SMALL_KERNEL
 		config_mountroot(NULL, cpu_ucode_attachhook);
+#endif
 		break;
 
 	case CPU_ROLE_AP:
