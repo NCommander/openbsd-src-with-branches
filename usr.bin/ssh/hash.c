@@ -1,4 +1,8 @@
-/* $OpenBSD: hash.c,v 1.3 2013/12/09 11:03:45 markus Exp $ */
+/* $OpenBSD: hash.c,v 1.4 2017/12/14 21:07:39 naddy Exp $ */
+/*
+ * Public domain. Author: Christian Weisgerber <naddy@openbsd.org>
+ * API compatible reimplementation of function from nacl
+ */
 
 #include "crypto_api.h"
 
