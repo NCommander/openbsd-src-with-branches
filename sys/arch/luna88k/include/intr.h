@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.8 2013/12/25 10:41:55 aoyama Exp $	*/
+/*	$OpenBSD: intr.h,v 1.9 2014/12/28 13:03:18 aoyama Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -47,6 +47,7 @@
 #define IPL_NMI		7
 #define IPL_ABORT	7
 
+#define IPL_MPFLOOR	IPL_TTY
 #define IPL_MPSAFE	0	/* no "mpsafe" interrupts */
 
 #include <m88k/intr.h>

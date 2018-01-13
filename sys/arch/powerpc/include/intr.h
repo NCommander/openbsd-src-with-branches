@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.52 2015/09/13 14:06:40 kettenis Exp $ */
+/*	$OpenBSD: intr.h,v 1.53 2017/07/25 03:46:59 visa Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom, Opsycon AB and RTMX Inc, USA.
@@ -50,6 +50,7 @@
 #define	IPL_HIGH	12
 #define	IPL_NUM		13
 
+#define	IPL_MPFLOOR	IPL_TTY
 #define	IPL_MPSAFE	0x100
 
 #define	IST_NONE	0

@@ -1,4 +1,4 @@
-/*	$OpenBSD: intrdefs.h,v 1.15 2015/12/08 19:45:55 mikeb Exp $	*/
+/*	$OpenBSD: intrdefs.h,v 1.16 2016/06/22 01:12:38 mikeb Exp $	*/
 /*	$NetBSD: intrdefs.h,v 1.2 2003/05/04 22:01:56 fvdl Exp $	*/
 
 #ifndef _AMD64_INTRDEFS_H
@@ -34,6 +34,7 @@
 #define	IPL_IPI		0xe	/* inter-processor interrupts */
 #define	NIPL		16
 
+#define	IPL_MPFLOOR	IPL_TTY
 #define	IPL_MPSAFE	0x100
 
 /* Interrupt sharing types. */
