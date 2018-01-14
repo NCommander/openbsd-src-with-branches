@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.67 2018/01/05 15:44:31 jca Exp $	*/
+/*	$OpenBSD: sh.h,v 1.68 2018/01/06 16:28:58 millert Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -132,9 +132,7 @@ extern const struct option sh_options[];
  */
 enum sh_flag {
 	FEXPORT = 0,	/* -a: export all */
-#ifdef BRACE_EXPAND
 	FBRACEEXPAND,	/* enable {} globbing */
-#endif
 	FBGNICE,	/* bgnice */
 	FCOMMAND,	/* -c: (invocation) execute specified command */
 	FCSHHISTORY,	/* csh-style history enabled */
