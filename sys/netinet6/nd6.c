@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.221 2017/10/31 22:05:13 sashan Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.222 2017/11/27 15:41:30 mpi Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -722,6 +722,7 @@ nd6_free(struct rtentry *rt)
 		}
 	}
 
+	KASSERT(!ISSET(rt->rt_flags, RTF_LOCAL));
 	nd6_invalidate(rt);
 
 	/*
