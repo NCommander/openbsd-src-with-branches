@@ -1,4 +1,4 @@
-/* $OpenBSD: i915_drv.h,v 1.77 2017/07/19 22:05:58 kettenis Exp $ */
+/* $OpenBSD: i915_drv.h,v 1.78 2017/09/30 07:36:56 robert Exp $ */
 /* i915_drv.h -- Private header for the I915 driver -*- linux-c -*-
  */
 /*
@@ -1102,9 +1102,7 @@ struct intel_gmbus {
 	u32 force_bit;
 	u32 reg0;
 	u32 gpio_reg;
-#ifdef __linux__
 	struct i2c_algo_bit_data bit_algo;
-#endif
 	struct drm_i915_private *dev_priv;
 };
 
