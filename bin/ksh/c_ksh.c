@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_ksh.c,v 1.55 2018/01/05 15:44:31 jca Exp $	*/
+/*	$OpenBSD: c_ksh.c,v 1.56 2018/01/06 16:28:58 millert Exp $	*/
 
 /*
  * built-in Korn commands: c_*
@@ -1384,9 +1384,7 @@ const struct builtin kshbuiltins [] = {
 	{"+command", c_command},
 	{"echo", c_print},
 	{"*=export", c_typeset},
-#ifdef HISTORY
 	{"+fc", c_fc},
-#endif /* HISTORY */
 	{"+getopts", c_getopts},
 	{"+jobs", c_jobs},
 	{"+kill", c_kill},
