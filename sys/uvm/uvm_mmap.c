@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.143 2017/11/30 00:36:10 guenther Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.144 2018/01/02 06:38:45 guenther Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -375,6 +375,7 @@ sys_mmap(struct proc *p, void *v, register_t *retval)
 	size = (vsize_t) SCARG(uap, len);
 	prot = SCARG(uap, prot);
 	flags = SCARG(uap, flags);
+	flags &= ~0x4000;	/* XXX MAP_STACK coming in 2018 */
 	fd = SCARG(uap, fd);
 	pos = SCARG(uap, pos);
 
