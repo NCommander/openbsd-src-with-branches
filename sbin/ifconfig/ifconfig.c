@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.351 2017/11/17 18:04:51 benno Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.352 2018/01/09 10:02:02 mpi Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -397,6 +397,8 @@ const struct	cmd {
 	{ "rtlabel",	NEXTARG,	0,		setifrtlabel },
 	{ "-rtlabel",	-1,		0,		setifrtlabel },
 	{ "rdomain",	NEXTARG,	0,		setrdomain },
+	{ "staticarp",	IFF_STATICARP,	0,		setifflags },
+	{ "-staticarp",	-IFF_STATICARP,	0,		setifflags },
 	{ "mpls",	IFXF_MPLS,	0,		setifxflags },
 	{ "-mpls",	-IFXF_MPLS,	0,		setifxflags },
 	{ "mplslabel",	NEXTARG,	0,		setmpelabel },
