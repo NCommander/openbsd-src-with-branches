@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.69 2018/01/14 16:04:21 anton Exp $	*/
+/*	$OpenBSD: sh.h,v 1.70 2018/01/15 14:58:05 jca Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -464,8 +464,10 @@ void	warningf(bool, const char *, ...)
 	    __attribute__((__format__ (printf, 2, 3)));
 void	bi_errorf(const char *, ...)
 	    __attribute__((__format__ (printf, 1, 2)));
-void	internal_errorf(int, const char *, ...)
-	    __attribute__((__format__ (printf, 2, 3)));
+void	internal_errorf(const char *, ...)
+	    __attribute__((__noreturn__, __format__ (printf, 1, 2)));
+void	internal_warningf(const char *, ...)
+	    __attribute__((__format__ (printf, 1, 2)));
 void	error_prefix(int);
 void	shellf(const char *, ...)
 	    __attribute__((__format__ (printf, 1, 2)));

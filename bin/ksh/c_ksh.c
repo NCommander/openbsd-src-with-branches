@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_ksh.c,v 1.56 2018/01/06 16:28:58 millert Exp $	*/
+/*	$OpenBSD: c_ksh.c,v 1.57 2018/01/15 14:58:05 jca Exp $	*/
 
 /*
  * built-in Korn commands: c_*
@@ -1273,7 +1273,7 @@ c_getopts(char **wp)
 	}
 
 	if (genv->loc->next == NULL) {
-		internal_errorf(0, "c_getopts: no argv");
+		internal_warningf("c_getopts: no argv");
 		return 1;
 	}
 	/* Which arguments are we parsing... */

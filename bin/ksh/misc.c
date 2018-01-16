@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.66 2018/01/14 16:04:21 anton Exp $	*/
+/*	$OpenBSD: misc.c,v 1.67 2018/01/15 14:58:05 jca Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -407,7 +407,7 @@ parse_args(char **argv,
 					break;
 				}
 			if (ele == NELEM(sh_options)) {
-				internal_errorf(1, "parse_args: `%c'", optc);
+				internal_errorf("parse_args: `%c'", optc);
 				return -1; /* not reached */
 			}
 		}

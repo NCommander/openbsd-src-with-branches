@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.c,v 1.29 2018/01/04 19:06:16 millert Exp $	*/
+/*	$OpenBSD: tree.c,v 1.30 2018/01/06 16:28:58 millert Exp $	*/
 
 /*
  * command tree climbing
@@ -549,7 +549,7 @@ wdscan(const char *wp, int c)
 				nest--;
 			break;
 		default:
-			internal_errorf(0,
+			internal_warningf(
 			    "wdscan: unknown char 0x%x (carrying on)",
 			    wp[-1]);
 		}
