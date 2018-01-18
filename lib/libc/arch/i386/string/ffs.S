@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs.S,v 1.5 2017/08/19 18:25:50 deraadt Exp $ */
+/*	$OpenBSD: ffs.S,v 1.6 2017/11/29 05:13:57 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -15,4 +15,5 @@ ENTRY(ffs)
 	.align 2,0xcc
 L1:	xorl	%eax,%eax		/* clear result */
 	ret
-END_WEAK(ffs)
+END(ffs)
+.protected ffs
