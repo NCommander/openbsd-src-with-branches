@@ -1,4 +1,4 @@
-/*	$OpenBSD: pvbus.c,v 1.16 2017/01/10 17:16:39 reyk Exp $	*/
+/*	$OpenBSD: pvbus.c,v 1.17 2017/06/22 06:21:12 jmatthew Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -480,8 +480,8 @@ pvbusioctl(dev_t dev, u_long cmd, caddr_t data, int flags, struct proc *p)
 		break;
 	}
 
-	free(key, M_TEMP, keylen);
-	free(value, M_TEMP, valuelen);
+	free(key, M_TEMP, keylen + 1);
+	free(value, M_TEMP, valuelen + 1);
 
 	return (error);
 }
