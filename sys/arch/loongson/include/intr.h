@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.13 2017/05/17 11:52:25 visa Exp $ */
+/*	$OpenBSD: intr.h,v 1.14 2017/06/11 10:01:23 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -90,7 +90,7 @@
 
 #ifndef _LOCORE
 
-#include <machine/mutex.h>
+#include <sys/mutex.h>
 #include <sys/queue.h>
 
 struct soft_intrhand {
