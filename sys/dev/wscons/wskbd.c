@@ -1,4 +1,4 @@
-/* $OpenBSD: wskbd.c,v 1.87 2017/05/12 09:16:55 mpi Exp $ */
+/* $OpenBSD: wskbd.c,v 1.88 2018/01/17 16:54:19 fcambus Exp $ */
 /* $NetBSD: wskbd.c,v 1.80 2005/05/04 01:52:16 augustss Exp $ */
 
 /*
@@ -629,7 +629,8 @@ wskbd_detach(struct device  *self, int flags)
 		splx(s);
 	}
 
-	free(sc->sc_map, M_DEVBUF, 0);
+	free(sc->sc_map, M_DEVBUF,
+	    sc->sc_maplen * sizeof(struct wscons_keymap));
 
 	/* locate the major number */
 	for (maj = 0; maj < nchrdev; maj++)
