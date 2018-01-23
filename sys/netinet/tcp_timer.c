@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_timer.c,v 1.59 2017/10/25 12:38:21 job Exp $	*/
+/*	$OpenBSD: tcp_timer.c,v 1.60 2017/10/29 14:56:36 florian Exp $	*/
 /*	$NetBSD: tcp_timer.c,v 1.14 1996/02/13 23:44:09 christos Exp $	*/
 
 /*
@@ -218,7 +218,7 @@ tcp_timer_rexmt(void *arg)
 	if (++tp->t_rxtshift > TCP_MAXRXTSHIFT) {
 		tp->t_rxtshift = TCP_MAXRXTSHIFT;
 		tcpstat_inc(tcps_timeoutdrop);
-		(void)tcp_drop(tp, tp->t_softerror ?
+		tp = tcp_drop(tp, tp->t_softerror ?
 		    tp->t_softerror : ETIMEDOUT);
 		goto out;
 	}
