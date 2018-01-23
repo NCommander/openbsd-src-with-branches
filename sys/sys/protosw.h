@@ -1,4 +1,4 @@
-/*	$OpenBSD: protosw.h,v 1.28 2017/11/23 13:45:46 mpi Exp $	*/
+/*	$OpenBSD: protosw.h,v 1.29 2018/01/22 20:27:28 bluhm Exp $	*/
 /*	$NetBSD: protosw.h,v 1.10 1996/04/09 20:55:32 cgd Exp $	*/
 
 /*-
@@ -147,7 +147,7 @@ struct protosw {
 #define	PRU_NREQ		22
 
 #ifdef PRUREQUESTS
-char *prurequests[] = {
+const char *prurequests[] = {
 	"",		"DETACH",	"BIND",		"LISTEN",
 	"CONNECT",	"ACCEPT",	"DISCONNECT",	"SHUTDOWN",
 	"RCVD",		"SEND",		"ABORT",	"CONTROL",
