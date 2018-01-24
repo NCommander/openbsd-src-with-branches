@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.h,v 1.61 2016/11/17 15:41:14 sthen Exp $	*/
+/*	$OpenBSD: bpf.h,v 1.62 2017/02/22 09:56:03 reyk Exp $	*/
 /*	$NetBSD: bpf.h,v 1.15 1996/12/13 07:57:33 mikel Exp $	*/
 
 /*
@@ -313,6 +313,8 @@ int	 bpf_mtap_af(caddr_t, u_int32_t, const struct mbuf *, u_int);
 int	 bpf_mtap_ether(caddr_t, const struct mbuf *, u_int);
 void	 bpfattach(caddr_t *, struct ifnet *, u_int, u_int);
 void	 bpfdetach(struct ifnet *);
+void	*bpfsattach(caddr_t *, const char *, u_int, u_int);
+void	 bpfsdetach(void *);
 void	 bpfilterattach(int);
 
 u_int	 bpf_mfilter(const struct bpf_insn *, const struct mbuf *, u_int);
