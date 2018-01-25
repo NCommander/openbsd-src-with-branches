@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifq.c,v 1.19 2017/12/15 01:40:39 dlg Exp $ */
+/*	$OpenBSD: ifq.c,v 1.21 2018/01/04 11:02:57 tb Exp $ */
 
 /*
  * Copyright (c) 2015 David Gwynne <dlg@openbsd.org>
@@ -446,15 +446,8 @@ void
 ifiq_destroy(struct ifiqueue *ifiq)
 {
 	if (!task_del(ifiq->ifiq_softnet, &ifiq->ifiq_task)) {
-		int netlocked = (rw_status(&netlock) == RW_WRITE);
-
-		if (netlocked) /* XXXSMP breaks atomicity */
-			NET_UNLOCK();
-
+		NET_ASSERT_UNLOCKED();
 		taskq_barrier(ifiq->ifiq_softnet);
-
-		if (netlocked)
-			NET_LOCK();
 	}
 
 	/* don't need to lock because this is the last use of the ifiq */
