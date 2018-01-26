@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftpd.c,v 1.39 2017/05/26 17:38:46 florian Exp $	*/
+/*	$OpenBSD: tftpd.c,v 1.40 2017/11/07 14:15:38 jca Exp $	*/
 
 /*
  * Copyright (c) 2012 David Gwynne <dlg@uq.edu.au>
@@ -973,6 +973,8 @@ validate_access(struct tftp_client *client, const char *requested)
 
 		buf = client->buf + sizeof(client->buf) - 512;
 		arc4random_buf(buf, 512);
+		if (options != NULL && options[OPT_TSIZE].o_request)
+			options[OPT_TSIZE].o_reply = 512;
 		client->file = fmemopen(buf, 512, "r");
 		if (client->file == NULL)
 			return (errno + 100);
