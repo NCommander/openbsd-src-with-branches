@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnet.c,v 1.58 2017/01/22 10:17:37 dlg Exp $	*/
+/*	$OpenBSD: vnet.c,v 1.59 2018/01/17 15:52:34 stsp Exp $	*/
 /*
  * Copyright (c) 2009, 2015 Mark Kettenis
  *
@@ -380,6 +380,14 @@ vnet_rx_intr(void *arg)
 			lc->lc_tx_seqid = 0;
 			lc->lc_state = 0;
 			lc->lc_reset(lc);
+			if (rx_head == rx_tail)
+				break;
+			/* Discard and ack pending I/O. */
+			DPRINTF(("setting rx qhead to %lld\n", rx_tail));
+			err = hv_ldc_rx_set_qhead(lc->lc_id, rx_tail);
+			if (err == H_EOK)
+				break;
+			printf("%s: hv_ldc_rx_set_qhead %d\n", __func__, err);
 			break;
 		case LDC_CHANNEL_UP:
 			DPRINTF(("%s: Rx link up\n", __func__));
@@ -391,6 +399,14 @@ vnet_rx_intr(void *arg)
 			lc->lc_state = 0;
 			lc->lc_reset(lc);
 			timeout_add_msec(&sc->sc_handshake_to, 500);
+			if (rx_head == rx_tail)
+				break;
+			/* Discard and ack pending I/O. */
+			DPRINTF(("setting rx qhead to %lld\n", rx_tail));
+			err = hv_ldc_rx_set_qhead(lc->lc_id, rx_tail);
+			if (err == H_EOK)
+				break;
+			printf("%s: hv_ldc_rx_set_qhead %d\n", __func__, err);
 			break;
 		}
 		lc->lc_rx_state = rx_state;
