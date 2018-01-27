@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.119 2017/11/23 07:23:36 eric Exp $	*/
+/*	$OpenBSD: control.c,v 1.120 2017/11/27 08:35:59 sunil Exp $	*/
 
 /*
  * Copyright (c) 2012 Gilles Chehade <gilles@poolp.org>
@@ -336,6 +336,8 @@ control_accept(int listenfd, short event, void *arg)
 	c->mproc.proc = PROC_CLIENT;
 	c->mproc.handler = control_dispatch_ext;
 	c->mproc.data = c;
+	if ((c->mproc.name = strdup(proc_title(c->mproc.proc))) == NULL)
+		fatal("strdup");
 	mproc_init(&c->mproc, connfd);
 	mproc_enable(&c->mproc);
 	tree_xset(&ctl_conns, c->id, c);

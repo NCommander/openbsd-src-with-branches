@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.290 2017/09/08 16:51:22 eric Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.291 2017/11/21 12:20:34 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1663,9 +1663,10 @@ proc_title(enum smtp_proc_type proc)
 		return "pony express";
 	case PROC_CA:
 		return "klondike";
-	default:
-		return "unknown";
+	case PROC_CLIENT:
+		return "client";
 	}
+	return "unknown";
 }
 
 const char *
