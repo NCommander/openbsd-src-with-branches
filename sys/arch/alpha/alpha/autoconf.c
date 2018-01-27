@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.36 2016/06/08 17:24:44 tedu Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.37 2017/06/05 17:49:05 deraadt Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.16 1996/11/13 21:13:04 cgd Exp $	*/
 
 /*
@@ -221,12 +221,11 @@ device_register(dev, aux)
 }
 
 struct nam2blk nam2blk[] = {
-	{ "st",		2 },
+	{ "wd",		0 },
 	{ "cd",		3 },
 	{ "fd",		4 },
 	{ "rd",		6 },
 	{ "sd",		8 },
-	{ "wd",		0 },
 	{ "vnd",	9 },
 	{ NULL,		-1 }
 };
