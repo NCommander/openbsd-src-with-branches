@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2017/01/24 16:03:28 otto Exp $
+#	$OpenBSD: Makefile,v 1.1 2018/01/28 13:38:00 otto Exp $
 
 # This test is supposed to print a malloc error and create a core dump
 
@@ -10,4 +10,4 @@ DPADD+=			${LIBPTHREAD}
 .include <bsd.regress.mk>
 
 t1:	malloc_threaderr
-	${.OBJDIR}/malloc_threaderror 2>&1 | fgrep 'in free(): bogus pointer (double free?)'
+	${.OBJDIR}/malloc_threaderr 2>&1 | fgrep 'in free(): bogus pointer (double free?)'
