@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip30_machdep.c,v 1.67 2016/10/26 13:42:54 visa Exp $	*/
+/*	$OpenBSD: ip30_machdep.c,v 1.68 2016/10/27 13:19:27 visa Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009 Miodrag Vallat.
@@ -590,7 +590,7 @@ int
 hw_ipi_intr_establish(int (*func)(void *), u_long cpuid)
 {
 	return xheart_intr_establish(func, (void *)cpuid, HEART_ISR_IPI(cpuid), 
-	    IPL_IPI, NULL, &curcpu()->ci_ipiih);
+	    IPL_IPI | IPL_MPSAFE, NULL, NULL);
 };
 
 void
