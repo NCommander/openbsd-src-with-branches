@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.c,v 1.130 2017/05/30 16:07:22 deraadt Exp $ */
+/*	$OpenBSD: ip_ah.c,v 1.131 2017/08/11 21:24:19 mpi Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -202,7 +202,7 @@ ah_massage_headers(struct mbuf **m0, int proto, int skip, int alg, int out)
 #ifdef INET6
 	struct ip6_ext *ip6e;
 	struct ip6_hdr ip6;
-	int ad, alloc, nxt;
+	int ad, alloc, nxt, noff;
 #endif /* INET6 */
 
 	switch (proto) {
@@ -226,7 +226,7 @@ ah_massage_headers(struct mbuf **m0, int proto, int skip, int alg, int out)
 		ip->ip_sum = 0;
 		ip->ip_off = 0;
 
-		ptr = mtod(m, unsigned char *) + sizeof(struct ip);
+		ptr = mtod(m, unsigned char *);
 
 		/* IPv4 option processing */
 		for (off = sizeof(struct ip); off < skip;) {
@@ -293,10 +293,12 @@ ah_massage_headers(struct mbuf **m0, int proto, int skip, int alg, int out)
 				 * what the destination's IP header
 				 * will look like.
 				 */
-				if (out)
-					bcopy(ptr + off + ptr[off + 1] -
+				if (out &&
+				    ptr[off + 1] >= 2 + sizeof(struct in_addr))
+					memcpy(&ip->ip_dst,
+					    ptr + off + ptr[off + 1] -
 					    sizeof(struct in_addr),
-					    &(ip->ip_dst), sizeof(struct in_addr));
+					    sizeof(struct in_addr));
 
 				/* FALLTHROUGH */
 			default:
@@ -312,7 +314,7 @@ ah_massage_headers(struct mbuf **m0, int proto, int skip, int alg, int out)
 
 				/* Zeroize all other options. */
 				count = ptr[off + 1];
-				memcpy(ptr, ipseczeroes, count);
+				memset(ptr + off, 0, count);
 				off += count;
 				break;
 			}
@@ -389,56 +391,45 @@ ah_massage_headers(struct mbuf **m0, int proto, int skip, int alg, int out)
 		nxt = ip6.ip6_nxt & 0xff; /* Next header type. */
 
 		for (off = 0; off < skip - sizeof(struct ip6_hdr);) {
+			if (off + sizeof(struct ip6_ext) >
+			    skip - sizeof(struct ip6_hdr))
+				goto error6;
+			ip6e = (struct ip6_ext *)(ptr + off);
+
 			switch (nxt) {
 			case IPPROTO_HOPOPTS:
 			case IPPROTO_DSTOPTS:
-				ip6e = (struct ip6_ext *) (ptr + off);
+				noff = off + ((ip6e->ip6e_len + 1) << 3);
+
+				/* Sanity check. */
+				if (noff > skip - sizeof(struct ip6_hdr))
+					goto error6;
 
 				/*
-				 * Process the mutable/immutable
-				 * options -- borrows heavily from the
-				 * KAME code.
+				 * Zero out mutable options.
 				 */
 				for (count = off + sizeof(struct ip6_ext);
-				     count < off + ((ip6e->ip6e_len + 1) << 3);) {
+				     count < noff;) {
 					if (ptr[count] == IP6OPT_PAD1) {
 						count++;
 						continue; /* Skip padding. */
 					}
 
-					/* Sanity check. */
-					if (count > off +
-					    ((ip6e->ip6e_len + 1) << 3)) {
-						ahstat.ahs_hdrops++;
-						m_freem(m);
-
-						/* Free, if we allocated. */
-						if (alloc)
-							free(ptr, M_XDATA, 0);
-						return EINVAL;
-					}
-
-					ad = ptr[count + 1];
+					if (count + 2 > noff)
+						goto error6;
+					ad = ptr[count + 1] + 2;
+					if (count + ad > noff)
+						goto error6;
 
 					/* If mutable option, zeroize. */
 					if (ptr[count] & IP6OPT_MUTABLE)
-						memcpy(ptr + count, ipseczeroes,
-						    ptr[count + 1]);
+						memset(ptr + count, 0, ad);
 
 					count += ad;
-
-					/* Sanity check. */
-					if (count >
-					    skip - sizeof(struct ip6_hdr)) {
-						ahstat.ahs_hdrops++;
-						m_freem(m);
-
-						/* Free, if we allocated. */
-						if (alloc)
-							free(ptr, M_XDATA, 0);
-						return EINVAL;
-					}
 				}
+
+				if (count != noff)
+					goto error6;
 
 				/* Advance. */
 				off += ((ip6e->ip6e_len + 1) << 3);
@@ -453,7 +444,6 @@ ah_massage_headers(struct mbuf **m0, int proto, int skip, int alg, int out)
 			    {
 				struct ip6_rthdr *rh;
 
-				ip6e = (struct ip6_ext *) (ptr + off);
 				rh = (struct ip6_rthdr *)(ptr + off);
 				/*
 				 * must adjust content to make it look like
@@ -498,6 +488,7 @@ ah_massage_headers(struct mbuf **m0, int proto, int skip, int alg, int out)
 			default:
 				DPRINTF(("ah_massage_headers(): unexpected "
 				    "IPv6 header type %d\n", off));
+error6:
 				if (alloc)
 					free(ptr, M_XDATA, 0);
 				ahstat.ahs_hdrops++;
