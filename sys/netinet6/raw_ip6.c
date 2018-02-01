@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.118 2017/09/01 15:05:31 mpi Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.119 2017/09/05 07:59:11 mpi Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -229,10 +229,10 @@ rip6_input(struct mbuf **mp, int *offp, int proto, int af)
 		if (proto == IPPROTO_NONE || proto == IPPROTO_ICMPV6) {
 			m_freem(m);
 		} else {
-			u_int8_t *prvnxtp = ip6_get_prevhdr(m, *offp); /* XXX */
+			int prvnxt = ip6_get_prevhdr(m, *offp);
+
 			icmp6_error(m, ICMP6_PARAM_PROB,
-			    ICMP6_PARAMPROB_NEXTHEADER,
-			    prvnxtp - mtod(m, u_int8_t *));
+			    ICMP6_PARAMPROB_NEXTHEADER, prvnxt);
 		}
 		counters = counters_enter(&ref, ip6counters);
 		counters[ip6s_delivered]--;
