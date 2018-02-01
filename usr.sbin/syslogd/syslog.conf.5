@@ -26,10 +26,10 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)syslog.conf.5	8.1 (Berkeley) 6/9/93
-.\"     $OpenBSD: syslog.conf.5,v 1.33 2015/09/10 15:16:44 schwarze Exp $
+.\"     $OpenBSD: syslog.conf.5,v 1.34 2016/07/06 19:29:13 millert Exp $
 .\"	$NetBSD: syslog.conf.5,v 1.4 1996/01/02 17:41:46 perry Exp $
 .\"
-.Dd $Mdocdate: September 10 2015 $
+.Dd $Mdocdate: July 6 2016 $
 .Dt SYSLOG.CONF 5
 .Os
 .Sh NAME
@@ -305,6 +305,11 @@ mail.*							/var/log/maillog
 
 # Root and Eric get alert and higher messages.
 *.alert							root,eric
+
+# Log everything coming from host bastion to a separate file.
+++bastion
+*.*							/var/log/bastion
++*
 
 # Save mail and news errors of level err and higher in a
 # special file.
