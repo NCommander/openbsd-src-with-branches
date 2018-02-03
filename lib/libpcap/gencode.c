@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencode.c,v 1.45 2016/11/16 13:47:27 reyk Exp $	*/
+/*	$OpenBSD: gencode.c,v 1.46 2016/11/20 12:45:26 reyk Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
@@ -787,6 +787,8 @@ init_linktype(type)
 		off_nl = 12;
 		return;
 
+	case DLT_USBPCAP:
+		/* FALLTHROUGH */
 	case DLT_RAW:
 		off_linktype = -1;
 		off_nl = 0;
