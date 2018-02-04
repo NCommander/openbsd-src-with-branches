@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.315 2017/08/21 14:41:22 phessler Exp $ */
+/*	$OpenBSD: parse.y,v 1.316 2017/10/19 06:52:55 jsg Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -2824,8 +2824,8 @@ parse_config(char *filename, struct bgpd_config *xconf, struct peer **xpeers)
 
 	netconf = &conf->networks;
 
-	add_rib("Adj-RIB-In", conf->default_tableid,
-	    F_RIB_NOFIB | F_RIB_NOEVALUATE);
+	add_rib("Adj-RIB-In", 0, F_RIB_NOFIB | F_RIB_NOEVALUATE);
+	add_rib("Adj-RIB-Out", 0, F_RIB_NOFIB | F_RIB_NOEVALUATE);
 	add_rib("Loc-RIB", conf->default_tableid, F_RIB_LOCAL);
 
 	if ((file = pushfile(filename, 1)) == NULL) {
