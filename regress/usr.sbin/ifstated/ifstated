@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $OpenBSD: ifstated,v 1.6 2017/08/28 22:05:44 rob Exp $
+# $OpenBSD: ifstated,v 1.7 2017/08/30 16:14:52 rob Exp $
 #/*
 # * Copyright (c) Rob Pierce <rob@openbsd.org>
 # *
@@ -19,9 +19,11 @@
 
 # Basic ifstated regression script to test interface changes.
 
+# Ensure OBJDIR is defined
+: ${OBJDIR?} || exit 1
 export OBJDIR
 
-# Golbal variables
+# Global variables
 VHIDA=252
 VHIDB=253
 PREFIX=172.16.0
