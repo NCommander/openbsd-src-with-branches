@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_copysignf.S,v 1.5 2016/09/12 19:47:01 guenther Exp $ */
+/*	$OpenBSD: s_copysignf.S,v 1.6 2016/12/22 16:11:26 naddy Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -8,6 +8,7 @@
 
 #include "abi.h"
 
+	.section .rodata
 .Lneg:
 	.long 0x7fffffff
 .Lpos:
