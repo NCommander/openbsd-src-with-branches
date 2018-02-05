@@ -1,7 +1,8 @@
-/*	$OpenBSD: if_athn_usb.c,v 1.48 2017/10/26 15:00:28 mpi Exp $	*/
+/*	$OpenBSD: if_athn_usb.c,v 1.49 2018/02/05 08:48:57 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2011 Damien Bergamini <damien.bergamini@free.fr>
+ * Copyright (c) 2018 Stefan Sperling <stsp@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
