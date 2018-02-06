@@ -580,6 +580,7 @@ file	net/pf_table.c			pf
 file	net/pf_osfp.c			pf
 file	net/pf_if.c			pf
 file	net/pf_lb.c			pf
+file	net/pf_syncookies.c		pf
 file	net/hfsc.c			pf
 file	net/fq_codel.c			pf
 

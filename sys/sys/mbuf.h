@@ -108,6 +108,7 @@ struct pkthdr_pf {
 
 /* pkthdr_pf.flags */
 #define	PF_TAG_GENERATED		0x01
+#define	PF_TAG_SYNCOOKIE_RECREATED	0x02
 #define	PF_TAG_TRANSLATE_LOCALHOST	0x04
 #define	PF_TAG_DIVERTED			0x08
 #define	PF_TAG_DIVERTED_PACKET		0x10
