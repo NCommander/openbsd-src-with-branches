@@ -1,4 +1,4 @@
-.\" $OpenBSD$
+.\" $OpenBSD: punct.in,v 1.4 2017/07/04 14:53:26 schwarze Exp $
 .Dd $Mdocdate: July 4 2017 $
 .Dt OO-PUNCT 1
 .Os
@@ -21,8 +21,4 @@ in the middle:
 at the end:
 .Oo Oo a (
 .Oc |
-.Oc
-.Pp
-missing blank:
-.Oo a.
 .Oc
