@@ -1,4 +1,4 @@
-/*	$OpenBSD: efipxe.c,v 1.1 2018/01/21 21:35:34 patrick Exp $	*/
+/*	$OpenBSD: efipxe.c,v 1.2 2018/01/30 20:19:06 naddy Exp $	*/
 /*
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
  *
@@ -30,6 +30,7 @@
 extern EFI_BOOT_SERVICES	*BS;
 extern EFI_DEVICE_PATH		*efi_bootdp;
 
+extern char			*bootmac;
 static UINT8			 boothw[16];
 static EFI_IP_ADDRESS		 bootip, servip;
 static EFI_GUID			 devp_guid = DEVICE_PATH_PROTOCOL;
@@ -95,6 +96,7 @@ efi_pxeprobe(void)
 			memcpy(&bootip, dhcp->BootpYiAddr, sizeof(bootip));
 			memcpy(&servip, dhcp->BootpSiAddr, sizeof(servip));
 			memcpy(boothw, dhcp->BootpHwAddr, sizeof(boothw));
+			bootmac = boothw;
 			PXE = pxe;
 			break;
 		}
