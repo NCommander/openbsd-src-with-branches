@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigcode.S,v 1.4 2016/05/23 20:11:49 deraadt Exp $	*/
+/*	$OpenBSD: sigcode.S,v 1.5 2016/09/21 11:33:05 kettenis Exp $	*/
 /*	$NetBSD: sigcode.S,v 1.6 2003/10/05 19:44:58 matt Exp $	*/
 
 /*
@@ -74,6 +74,7 @@ sigfill:
 esigfill:
 
 	.data
+	.align	2
 	.globl	sigfillsiz
 sigfillsiz:
 	.word	esigfill - sigfill
