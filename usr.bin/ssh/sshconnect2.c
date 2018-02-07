@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.266 2017/08/27 00:38:41 dtucker Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.267 2018/01/23 05:27:21 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -616,8 +616,7 @@ input_userauth_pk_ok(int type, u_int32_t seq, struct ssh *ssh)
 		}
 	}
 done:
-	if (key != NULL)
-		key_free(key);
+	key_free(key);
 	free(pkalg);
 	free(pkblob);
 
