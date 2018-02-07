@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: if_mobileip.c,v 1.1 2018/02/07 01:09:57 dlg Exp $ */
 
 /*
  * Copyright (c) 2016 David Gwynne <dlg@openbsd.org>
@@ -146,6 +146,11 @@ mobileip_clone_destroy(struct ifnet *ifp)
 	struct mobileip_softc *sc = ifp->if_softc;
 
 	if_detach(ifp);
+
+	NET_LOCK();
+	if (ISSET(ifp->if_flags, IFF_RUNNING))
+		mobileip_down(sc);
+	NET_UNLOCK();
 
 	free(sc, M_DEVBUF, sizeof(*sc));
 
