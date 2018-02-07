@@ -1,4 +1,4 @@
-.\" $OpenBSD: rebound.8,v 1.9 2018/01/12 04:36:45 deraadt Exp $
+.\" $OpenBSD: rebound.8,v 1.10 2018/02/07 01:02:46 tedu Exp $
 .\"
 .\"Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
 .\"
@@ -13,7 +13,7 @@
 .\"WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 .\"ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\"OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-.Dd $Mdocdate: January 12 2018 $
+.Dd $Mdocdate: February 7 2018 $
 .Dt REBOUND 8
 .Os
 .Sh NAME
@@ -34,7 +34,7 @@ If sent a
 .Dv SIGUSR1
 signal,
 .Nm
-logs statistics about the running daemon to
+logs statistics to
 .Pa /var/log/daemon .
 .Pp
 The options are as follows:
@@ -43,7 +43,10 @@ The options are as follows:
 Specify an alternative configuration file, instead of the default
 .Pa /etc/resolv.conf .
 .Nm
-will reload the configuration file when sent a SIGHUP signal.
+will reload the configuration file when sent a SIGHUP signal or when the file
+changes.
+Only the nameserver option is used to indicate the next server to contact.
+Localhost entries will be skipped.
 .It Fl d
 Debug mode.
 .Nm
