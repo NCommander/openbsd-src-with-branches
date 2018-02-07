@@ -1,4 +1,4 @@
-/*	$OpenBSD: com5.c,v 1.12 2009/10/27 23:59:23 deraadt Exp $	*/
+/*	$OpenBSD: com5.c,v 1.13 2015/12/31 17:51:19 mestre Exp $	*/
 /*	$NetBSD: com5.c,v 1.3 1995/03/21 15:07:07 cgd Exp $	*/
 
 /*
@@ -274,7 +274,7 @@ give(void)
 	    wordvalue[wordnumber] != MEDALION &&
 	    wordvalue[wordnumber] != TALISMAN &&
 	    wordnumber <= wordcount)
-		;
+		continue;
 	if (wordnumber <= wordcount) {
 		obj = wordvalue[wordnumber];
 		if (obj == EVERYTHING)
@@ -282,8 +282,9 @@ give(void)
 		last1 = wordnumber;
 	}
 	wordnumber = firstnumber;
-	while ((wordtype[++wordnumber] != NOUNS || wordvalue[wordnumber] == obj) && wordnumber <= wordcount)
-		;
+	while ((wordtype[++wordnumber] != NOUNS ||
+	    wordvalue[wordnumber] == obj) && wordnumber <= wordcount)
+		continue;
 	if (wordtype[wordnumber] == NOUNS) {
 		person = wordvalue[wordnumber];
 		last2 = wordnumber;
