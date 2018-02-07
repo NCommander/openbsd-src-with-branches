@@ -1,4 +1,4 @@
-/* $OpenBSD: enc.c,v 1.11 2016/04/07 20:02:19 jmc Exp $ */
+/* $OpenBSD: enc.c,v 1.12 2017/01/20 08:57:12 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -722,8 +722,7 @@ end:
 	free(strbuf);
 	free(buff);
 	BIO_free(in);
-	if (out != NULL)
-		BIO_free_all(out);
+	BIO_free_all(out);
 	BIO_free(benc);
 	BIO_free(b64);
 #ifdef ZLIB

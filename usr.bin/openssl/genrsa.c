@@ -1,4 +1,4 @@
-/* $OpenBSD: genrsa.c,v 1.8 2015/10/17 15:00:11 doug Exp $ */
+/* $OpenBSD: genrsa.c,v 1.9 2017/01/20 08:57:12 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -234,13 +234,11 @@ bad:
 
 	ret = 0;
 err:
-	if (bn)
-		BN_free(bn);
-	if (rsa)
-		RSA_free(rsa);
-	if (out)
-		BIO_free_all(out);
+	BN_free(bn);
+	RSA_free(rsa);
+	BIO_free_all(out);
 	free(passout);
+
 	if (ret != 0)
 		ERR_print_errors(bio_err);
 
