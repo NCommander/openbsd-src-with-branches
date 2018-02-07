@@ -1,4 +1,4 @@
-/* $OpenBSD: dh.c,v 1.61 2016/09/12 01:22:38 deraadt Exp $ */
+/* $OpenBSD: dh.c,v 1.62 2016/12/15 21:20:41 dtucker Exp $ */
 /*
  * Copyright (c) 2000 Niels Provos.  All rights reserved.
  *
@@ -131,10 +131,8 @@ parse_prime(int linenum, char *line, struct dhgroup *dhg)
 	return 1;
 
  fail:
-	if (dhg->g != NULL)
-		BN_clear_free(dhg->g);
-	if (dhg->p != NULL)
-		BN_clear_free(dhg->p);
+	BN_clear_free(dhg->g);
+	BN_clear_free(dhg->p);
 	dhg->g = dhg->p = NULL;
 	return 0;
 }
