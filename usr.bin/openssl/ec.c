@@ -1,4 +1,4 @@
-/* $OpenBSD: ec.c,v 1.9 2017/01/20 08:57:12 deraadt Exp $ */
+/* $OpenBSD: ec.c,v 1.10 2018/02/07 04:57:06 jsing Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project.
  */
@@ -392,7 +392,7 @@ ec_main(int argc, char **argv)
 		ERR_print_errors(bio_err);
 	} else
 		ret = 0;
-end:
+ end:
 	BIO_free(in);
 	BIO_free_all(out);
 	EC_KEY_free(eckey);

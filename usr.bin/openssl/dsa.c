@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa.c,v 1.9 2017/01/20 08:57:11 deraadt Exp $ */
+/* $OpenBSD: dsa.c,v 1.10 2018/02/07 04:57:06 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -360,7 +360,7 @@ dsa_main(int argc, char **argv)
 		ERR_print_errors(bio_err);
 	} else
 		ret = 0;
-end:
+ end:
 	BIO_free(in);
 	BIO_free_all(out);
 	DSA_free(dsa);

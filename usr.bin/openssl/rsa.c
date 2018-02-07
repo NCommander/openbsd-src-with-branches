@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa.c,v 1.8 2015/10/17 15:00:11 doug Exp $ */
+/* $OpenBSD: rsa.c,v 1.9 2017/01/20 08:57:12 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -439,7 +439,7 @@ rsa_main(int argc, char **argv)
 	} else
 		ret = 0;
 
-end:
+ end:
 	BIO_free_all(out);
 	RSA_free(rsa);
 	free(passin);

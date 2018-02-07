@@ -1,4 +1,4 @@
-/* $OpenBSD: pkcs8.c,v 1.9 2015/10/17 15:00:11 doug Exp $ */
+/* $OpenBSD: pkcs8.c,v 1.10 2017/01/20 08:57:12 deraadt Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999-2004.
  */
@@ -406,7 +406,7 @@ pkcs8_main(int argc, char **argv)
 	}
 	ret = 0;
 
-end:
+ end:
 	X509_SIG_free(p8);
 	PKCS8_PRIV_KEY_INFO_free(p8inf);
 	EVP_PKEY_free(pkey);
