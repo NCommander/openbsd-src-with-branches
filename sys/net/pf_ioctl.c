@@ -2649,14 +2649,18 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 	case DIOCSETSYNFLWATS: {
 		struct pfioc_synflwats *io = (struct pfioc_synflwats *)addr;
 
+		PF_LOCK();
 		error = pf_syncookies_setwats(io->hiwat, io->lowat);
+		PF_UNLOCK();
 		break;
 	}
 
 	case DIOCSETSYNCOOKIES: {
 		u_int8_t	*mode = (u_int8_t *)addr;
 
+		PF_LOCK();
 		error = pf_syncookies_setmode(*mode);
+		PF_UNLOCK();
 		break;
 	}
 
