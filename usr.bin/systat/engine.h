@@ -1,4 +1,4 @@
-/* $Id: engine.h,v 1.7 2011/04/05 07:35:32 mpf Exp $	 */
+/* $Id: engine.h,v 1.8 2013/09/07 11:43:49 reyk Exp $	 */
 /*
  * Copyright (c) 2001, 2007 Can Erkin Acar <canacar@openbsd.org>
  *
@@ -130,6 +130,7 @@ int set_view(const char *opt);
 void next_view(void);
 void prev_view(void);
 
+int foreach_order(void (*callback)(order_type *));
 void set_order(const char *opt);
 void next_order(void);
 
