@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripd.h,v 1.23 2016/08/02 16:05:32 jca Exp $ */
+/*	$OpenBSD: ripd.h,v 1.24 2016/09/02 14:07:52 benno Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -44,7 +44,7 @@
 #define	NBR_TIMEOUT		180
 
 #define RT_BUF_SIZE		16384
-#define MAX_RTSOCK_BUF		128 * 1024
+#define MAX_RTSOCK_BUF		(2 * 1024 * 1024)
 
 #define	RIPD_FLAG_NO_FIB_UPDATE	0x0001
 
