@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.195 2017/11/26 17:06:46 mikeb Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.196 2018/02/08 09:27:44 mortimer Exp $	*/
 
 /*
  * Copyright (c) 2011 Theo de Raadt.
@@ -661,7 +661,7 @@ arc4random_ctx_new()
 
 	chacha_ctx *ctx = malloc(sizeof(chacha_ctx), M_TEMP, M_WAITOK);
 	arc4random_buf(keybuf, KEYSZ + IVSZ);
-	chacha_keysetup(ctx, keybuf, 256);
+	chacha_keysetup(ctx, keybuf, KEYSZ * 8);
 	chacha_ivsetup(ctx, keybuf + KEYSZ, NULL);
 	explicit_bzero(keybuf, sizeof(keybuf));
 	return (struct arc4random_ctx *)ctx;
