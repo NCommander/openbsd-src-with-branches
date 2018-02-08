@@ -1,4 +1,4 @@
-/*	$OpenBSD: conn.c,v 1.13 2016/05/01 00:32:37 jmatthew Exp $ */
+/*	$OpenBSD: conn.c,v 1.14 2017/01/20 11:55:08 benno Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -296,7 +296,6 @@ conn_accept(int fd, short event, void *data)
 		log_warn("malloc");
 		goto giveup;
 	}
-	conn->ber.fd = -1;
 	ber_set_application(&conn->ber, ldap_application);
 	conn->fd = afd;
 	conn->listener = l;

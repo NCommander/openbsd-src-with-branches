@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.7 2015/12/24 17:47:57 mmcc Exp $ */
+/*	$OpenBSD: util.c,v 1.8 2017/01/20 11:55:08 benno Exp $ */
 
 /*
  * Copyright (c) 2009 Martin Hedenfalk <martin@bzero.se>
@@ -113,7 +113,6 @@ ber2db(struct ber_element *root, struct btval *val, int compression_level)
 	memset(val, 0, sizeof(*val));
 
 	memset(&ber, 0, sizeof(ber));
-	ber.fd = -1;
 	ber_write_elements(&ber, root);
 
 	if ((len = ber_get_writebuf(&ber, &buf)) == -1)
@@ -168,7 +167,6 @@ db2ber(struct btval *val, int compression_level)
 	assert(val != NULL);
 
 	memset(&ber, 0, sizeof(ber));
-	ber.fd = -1;
 
 	if (compression_level > 0) {
 		if (val->size < sizeof(uint32_t))
