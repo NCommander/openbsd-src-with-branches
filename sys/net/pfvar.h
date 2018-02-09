@@ -49,10 +49,6 @@ struct ip;
 struct ip6_hdr;
 struct mbuf_list;
 
-/* sub protocol types */
-#define IPPROTO_GRE_V0		0
-#define IPPROTO_GRE_PPTP	1
-
 #define	PF_TCPS_PROXY_SRC	((TCP_NSTATES)+0)
 #define	PF_TCPS_PROXY_DST	((TCP_NSTATES)+1)
 
@@ -589,8 +585,7 @@ struct pf_rule {
 	u_int8_t		 set_prio[2];
 	sa_family_t		 naf;
 	u_int8_t		 rcvifnot;
-	u_int8_t		 subproto;
-	u_int8_t		 pad[1];
+	u_int8_t		 pad[2];
 
 	struct {
 		struct pf_addr		addr;

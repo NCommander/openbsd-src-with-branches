@@ -2109,14 +2109,6 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 		if ((error = suser(p, 0)) != 0)
 			break;
 		/* FALLTHROUGH */
-	case SIOCGETKALIVE:
-	case SIOCGLIFPHYADDR:
-	case SIOCGLIFPHYRTABLE:
-	case SIOCGLIFPHYTTL:
-	case SIOCGIFMEDIA:
-	case SIOCGVNETID:
-	case SIOCGIFPAIR:
-	case SIOCGIFPARENT:
 	default:
 		NET_LOCK();
 		error = ((*so->so_proto->pr_usrreq)(so, PRU_CONTROL,
