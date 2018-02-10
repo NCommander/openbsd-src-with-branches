@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.243 2017/12/14 00:41:58 dlg Exp $	*/
+/*	$OpenBSD: proc.h,v 1.244 2017/12/19 10:04:59 stefan Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -500,6 +500,7 @@ int	enterpgrp(struct process *, pid_t, struct pgrp *, struct session *);
 void	fixjobc(struct process *, struct pgrp *, int);
 int	inferior(struct process *, struct process *);
 void	leavepgrp(struct process *);
+void	killjobc(struct process *);
 void	preempt(void);
 void	pgdelete(struct pgrp *);
 void	procinit(void);
