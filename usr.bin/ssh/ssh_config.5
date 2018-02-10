@@ -33,8 +33,8 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" $OpenBSD: ssh_config.5,v 1.263 2018/02/06 06:01:54 dtucker Exp $
-.Dd $Mdocdate: February 6 2018 $
+.\" $OpenBSD: ssh_config.5,v 1.264 2018/02/10 06:40:28 djm Exp $
+.Dd $Mdocdate: February 10 2018 $
 .Dt SSH_CONFIG 5
 .Os
 .Sh NAME
@@ -1507,6 +1507,9 @@ This is important in scripts, and many users want it too.
 .Pp
 To disable TCP keepalive messages, the value should be set to
 .Cm no .
+See also
+.Cm ServerAliveInterval
+for protocol-level keepalives.
 .It Cm Tunnel
 Request
 .Xr tun 4
