@@ -1,4 +1,4 @@
-/*	$OpenBSD: hibernate_machdep.c,v 1.48 2016/05/18 03:45:11 mlarkin Exp $	*/
+/*	$OpenBSD: hibernate_machdep.c,v 1.49 2016/05/20 02:30:41 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2011 Mike Larkin <mlarkin@openbsd.org>
@@ -98,20 +98,29 @@ get_hibernate_io_function(dev_t dev)
 		extern int sr_hibernate_io(dev_t dev, daddr_t blkno,
 		    vaddr_t addr, size_t size, int op, void *page);
 		struct device *dv = disk_lookup(&sd_cd, DISKUNIT(dev));
-
+		struct {
+			const char *driver;
+			hibio_fn io_func;
+		} sd_io_funcs[] = {
 #if NAHCI > 0
-		if (dv && dv->dv_parent && dv->dv_parent->dv_parent &&
-		    strcmp(dv->dv_parent->dv_parent->dv_cfdata->cf_driver->cd_name,
-		    "ahci") == 0)
-			return ahci_hibernate_io;
+			{ "ahci", ahci_hibernate_io },
 #endif
 #if NSOFTRAID > 0
-		if (dv && dv->dv_parent && dv->dv_parent->dv_parent &&
-		    strcmp(dv->dv_parent->dv_parent->dv_cfdata->cf_driver->cd_name,
-		    "softraid") == 0)
-			return sr_hibernate_io;
-	}
+			{ "softraid", sr_hibernate_io },
 #endif
+		};
+
+		if (dv && dv->dv_parent && dv->dv_parent->dv_parent) {
+			const char *driver = dv->dv_parent->dv_parent->dv_cfdata->
+			    cf_driver->cd_name;
+			int i;
+
+			for (i = 0; i < nitems(sd_io_funcs); i++) {
+				if (strcmp(driver, sd_io_funcs[i].driver) == 0)
+					return sd_io_funcs[i].io_func;
+			}
+		}
+	}
 #endif /* NSD > 0 */
 	return NULL;
 }
