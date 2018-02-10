@@ -1,4 +1,4 @@
-.\" $OpenBSD: bgpd.conf.5,v 1.163 2017/08/12 17:39:51 job Exp $
+.\" $OpenBSD: bgpd.conf.5,v 1.164 2018/02/10 01:24:28 benno Exp $
 .\"
 .\" Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
 .\" Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -16,7 +16,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: August 12 2017 $
+.Dd $Mdocdate: February 10 2018 $
 .Dt BGPD.CONF 5
 .Os
 .Sh NAME
@@ -326,9 +326,8 @@ daemons like
 .Xr ospfd 8 .
 .Pp
 .It Xo
-.Ic prefix-set Ar name Ic { Ar address Ns Li / Ns Ar len
-.Op Ar ...\&
-.Ic }
+.Ic prefix-set Ar name
+.Ic { Ar address Ns Li / Ns Ar len ... Ic }
 .Xc
 A
 .Ic prefix-set
