@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.84 2018/02/05 01:36:45 claudio Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.85 2018/02/10 01:24:28 benno Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -490,10 +490,7 @@ rde_filter_match(struct filter_rule *f, struct rde_aspath *asp,
 			}
 		}
 		return (0);
-	}
-
-	/* XXX must be last because we unconditionally return here */
-	if (f->match.prefix.addr.aid != 0)
+	} else if (f->match.prefix.addr.aid != 0)
 		return (rde_test_prefix(&f->match.prefix, prefix, plen));
 
 	/* matched somewhen or is anymatch rule  */
