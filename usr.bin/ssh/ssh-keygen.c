@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.309 2017/12/18 02:25:15 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.310 2018/02/07 05:15:49 jsing Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2823,7 +2823,8 @@ passphrase_again:
 	if ((r = sshkey_write(public, f)) != 0)
 		error("write key failed: %s", ssh_err(r));
 	fprintf(f, " %s\n", comment);
-	fclose(f);
+	if (ferror(f) || fclose(f) != 0)
+		fatal("write public failed: %s", strerror(errno));
 
 	if (!quiet) {
 		fp = sshkey_fingerprint(public, fingerprint_hash,
