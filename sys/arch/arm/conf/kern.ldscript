@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldscript.head,v 1.2 2005/01/02 19:57:57 drahn Exp $	*/
+/*	$OpenBSD: kern.ldscript,v 1.1 2018/02/10 06:52:47 patrick Exp $	*/
 /*	$NetBSD: ldscript.evbarm,v 1.2 2003/03/05 23:54:22 thorpej Exp $	*/
 
 OUTPUT_ARCH(arm)
@@ -24,6 +24,7 @@ SECTIONS
     *(.glue_7t) *(.glue_7)
     *(.rodata) *(.rodata.*)
   } =0
+  . = ALIGN(4);
   PROVIDE (__etext = .);
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
