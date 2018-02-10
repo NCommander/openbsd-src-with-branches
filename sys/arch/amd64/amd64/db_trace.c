@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.36 2017/11/03 11:29:46 jasper Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.37 2017/12/08 08:54:03 mpi Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.1 2003/04/26 18:39:27 fvdl Exp $	*/
 
 /*
@@ -300,15 +300,14 @@ db_stack_trace_print(db_expr_t addr, boolean_t have_addr, db_expr_t count,
 			continue;
 		}
 
-		if (is_trap == INTERRUPT) {
+		if (is_trap == INTERRUPT && lastframe != NULL) {
 			/*
 			 * Interrupt routines don't update %rbp, so it still
 			 * points to the frame that was interrupted.  Pull
 			 * back to just above lastframe so we can find the
 			 * trapframe as with syscalls and traps.
 			 */
-			frame = (struct callframe *)db_get_value(
-			    (db_addr_t)&lastframe->f_retaddr, sizeof(long), 0);
+			frame = (struct callframe *)&lastframe->f_retaddr;
 			arg0 = &frame->f_arg0;
 		}
 
@@ -397,9 +396,8 @@ db_save_stack_trace(struct db_stack_trace *st)
 				if (lastframe == NULL)
 					break;
 
-				frame = (struct callframe *)db_get_value(
-				    (db_addr_t)&lastframe->f_retaddr,
-				    sizeof(long), 0);
+				frame =
+				    (struct callframe *)&lastframe->f_retaddr;
 			}
 			lastframe = frame;
 
