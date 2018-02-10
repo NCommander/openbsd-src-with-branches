@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_extern.h,v 1.35 2014/07/14 08:54:13 pelikan Exp $	*/
+/*	$OpenBSD: ext2fs_extern.h,v 1.36 2016/08/10 07:53:02 natano Exp $	*/
 /*	$NetBSD: ext2fs_extern.h,v 1.1 1997/06/11 09:33:55 bouyer Exp $	*/
 
 /*-
@@ -105,7 +105,7 @@ int	ext2fs_mountfs(struct vnode *, struct mount *, struct proc *);
 int	ext2fs_unmount(struct mount *, int, struct proc *);
 int	ext2fs_flushfiles(struct mount *, int, struct proc *);
 int	ext2fs_statfs(struct mount *, struct statfs *, struct proc *);
-int	ext2fs_sync(struct mount *, int, struct ucred *, struct proc *);
+int	ext2fs_sync(struct mount *, int, int, struct ucred *, struct proc *);
 int	ext2fs_vget(struct mount *, ino_t, struct vnode **);
 int	ext2fs_fhtovp(struct mount *, struct fid *, struct vnode **);
 int	ext2fs_vptofh(struct vnode *, struct fid *);
