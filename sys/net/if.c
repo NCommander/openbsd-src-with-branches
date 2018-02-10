@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.542 2018/02/10 05:32:21 claudio Exp $	*/
+/*	$OpenBSD: if.c,v 1.543 2018/02/10 05:52:08 florian Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -1552,7 +1552,6 @@ if_up(struct ifnet *ifp)
 	/* Userland expects the kernel to set ::1 on default lo(4). */
 	if (ifp->if_index == rtable_loindex(ifp->if_rdomain)) {
 		in6_ifattach(ifp);
-		in_up_loopback(ifp);
 	}
 #endif
 
