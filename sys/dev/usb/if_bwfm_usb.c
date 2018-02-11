@@ -1,4 +1,4 @@
-/* $OpenBSD: if_bwfm_usb.c,v 1.9 2018/02/07 22:01:04 patrick Exp $ */
+/* $OpenBSD: if_bwfm_usb.c,v 1.10 2018/02/08 05:00:38 patrick Exp $ */
 /*
  * Copyright (c) 2010-2016 Broadcom Corporation
  * Copyright (c) 2016,2017 Patrick Wildt <patrick@blueri.se>
@@ -422,7 +422,6 @@ bwfm_usb_newbuf(void)
 	}
 
 	m->m_len = m->m_pkthdr.len = MCLBYTES;
-	m_adj(m, ETHER_ALIGN);
 
 	return (m);
 }
