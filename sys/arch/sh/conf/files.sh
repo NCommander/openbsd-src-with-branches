@@ -1,4 +1,4 @@
-#	$OpenBSD: files.sh,v 1.4 2008/04/25 14:51:35 jmc Exp $
+#	$OpenBSD: files.sh,v 1.5 2015/07/17 22:52:29 tedu Exp $
 #	$NetBSD: files.sh3,v 1.32 2005/12/11 12:18:58 christos Exp $
 
 file	arch/sh/sh/cache.c
@@ -17,7 +17,6 @@ file	arch/sh/sh/mem.c
 file	arch/sh/sh/mmu.c
 file	arch/sh/sh/mmu_sh3.c		sh3
 file	arch/sh/sh/mmu_sh4.c		sh4
-file	arch/sh/sh/mutex.c
 file	arch/sh/sh/pmap.c
 file	arch/sh/sh/process_machdep.c
 file	arch/sh/sh/sh_machdep.c
