@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.h,v 1.166 2017/07/30 18:18:08 florian Exp $	*/
+/*	$OpenBSD: route.h,v 1.167 2017/08/02 08:38:28 mpi Exp $	*/
 /*	$NetBSD: route.h,v 1.9 1996/02/13 22:00:49 christos Exp $	*/
 
 /*
@@ -297,6 +297,9 @@ struct rt_msghdr {
 				   sent to the client. */
 #define ROUTE_TABLEFILTER 2	/* change routing table the socket is listening
 				   on, RTABLE_ANY listens on all tables. */
+#define ROUTE_PRIOFILTER 3	/* only pass updates with a priority higher or
+				   equal (actual value lower) to the specified
+				   priority. */
 
 #define ROUTE_FILTER(m)	(1 << (m))
 #define RTABLE_ANY	0xffffffff
