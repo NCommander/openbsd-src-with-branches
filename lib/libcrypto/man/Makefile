@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.126 2018/02/14 18:50:47 schwarze Exp $
+# $OpenBSD: Makefile,v 1.127 2018/02/15 10:01:33 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -114,6 +114,7 @@ MAN=	\
 	EVP_EncryptInit.3 \
 	EVP_OpenInit.3 \
 	EVP_PKEY_asn1_new.3 \
+	EVP_PKEY_asn1_get_count.3 \
 	EVP_PKEY_CTX_ctrl.3 \
 	EVP_PKEY_CTX_new.3 \
 	EVP_PKEY_cmp.3 \
