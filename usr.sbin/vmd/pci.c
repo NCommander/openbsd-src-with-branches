@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci.c,v 1.21 2017/08/20 05:15:39 mlarkin Exp $	*/
+/*	$OpenBSD: pci.c,v 1.22 2017/09/17 23:07:56 pd Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -404,7 +404,7 @@ pci_handle_data_reg(struct vm_run_params *vrp)
 				break;
 			case 1:
 				set_return_data(vei,
-				    pci.pci_devices[d].pd_cfg_space[o / 4] >> (ofs * 3));
+				    pci.pci_devices[d].pd_cfg_space[o / 4] >> (ofs * 8));
 				break;
 			}
 		}
