@@ -1,4 +1,4 @@
-/* $OpenBSD: compat.c,v 1.104 2017/07/25 09:22:25 dtucker Exp $ */
+/* $OpenBSD: compat.c,v 1.105 2018/01/23 05:27:21 djm Exp $ */
 /*
  * Copyright (c) 1999, 2000, 2001, 2002 Markus Friedl.  All rights reserved.
  *
@@ -124,6 +124,8 @@ compat_datafellows(const char *version)
 		  "WinSCP_release_5.7.3,"
 		  "WinSCP_release_5.7.4",
 					SSH_OLD_DHGEX },
+		{ "ConfD-*",
+					SSH_BUG_UTF8TTYMODE },
 		{ NULL,			0 }
 	};
 
