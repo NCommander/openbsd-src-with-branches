@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.228 2017/07/19 06:30:54 florian Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.229 2018/02/10 05:53:58 florian Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -2723,8 +2723,6 @@ usage(void)
 {
 
 	(void)fprintf(stderr,
-	    "usage: sysctl [-Aan]\n"
-	    "       sysctl [-n] name ...\n"
-	    "       sysctl [-nq] name=value ...\n");
+	    "usage: sysctl [-Aanq] [name[=value]]\n");
 	exit(1);
 }
