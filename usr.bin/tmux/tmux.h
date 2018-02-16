@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.817 2018/02/04 10:10:39 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.818 2018/02/05 08:21:54 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -551,6 +551,7 @@ enum utf8_state {
 /* Grid line flags. */
 #define GRID_LINE_WRAPPED 0x1
 #define GRID_LINE_EXTENDED 0x2
+#define GRID_LINE_DEAD 0x4
 
 /* Grid cell data. */
 struct grid_cell {
