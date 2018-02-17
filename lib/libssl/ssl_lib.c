@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.173 2018/02/14 16:16:10 jsing Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.174 2018/02/14 17:08:44 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -2875,6 +2875,15 @@ SSL_CTX_set_cert_store(SSL_CTX *ctx, X509_STORE *store)
 {
 	X509_STORE_free(ctx->cert_store);
 	ctx->cert_store = store;
+}
+
+X509 *
+SSL_CTX_get0_certificate(const SSL_CTX *ctx)
+{
+	if (ctx->internal->cert == NULL)
+		return NULL;
+
+	return ctx->internal->cert->key->x509;
 }
 
 int
