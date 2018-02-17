@@ -1,4 +1,4 @@
-.\" $OpenBSD: X509_VERIFY_PARAM_set_flags.3,v 1.6 2018/02/11 03:33:21 schwarze Exp $
+.\" $OpenBSD: X509_VERIFY_PARAM_set_flags.3,v 1.7 2018/02/11 20:59:30 schwarze Exp $
 .\" full merge up to: OpenSSL d33def66 Feb 9 14:17:13 2016 -0500
 .\" selective merge up to: OpenSSL 48e5119a Jan 19 10:49:22 2018 +0100
 .\"
@@ -269,9 +269,6 @@ if
 .Fa name
 is
 .Dv NULL .
-This function is quite dangerous because it invalidates pointers
-previously returned from
-.Fn X509_VERIFY_PARAM_get0_name .
 .Pp
 .Fn X509_VERIFY_PARAM_set_flags
 sets the flags in
