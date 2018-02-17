@@ -1,8 +1,8 @@
-.\"	$OpenBSD: DH_new.3,v 1.4 2016/12/10 22:30:54 schwarze Exp $
-.\"	OpenSSL b97fdb57 Nov 11 09:33:09 2016 +0100
+.\" $OpenBSD$
+.\" selective merge up to: OpenSSL e90fc053 Jul 15 09:39:45 2017 -0400
 .\"
-.\" This file was written by Ulf Moeller <ulf@openssl.org>.
-.\" Copyright (c) 2000 The OpenSSL Project.  All rights reserved.
+.\" This file was written by Matt Caswell <matt@openssl.org>.
+.\" Copyright (c) 2016 The OpenSSL Project.  All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -48,62 +48,77 @@
 .\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 .\" OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: December 10 2016 $
-.Dt DH_NEW 3
+.Dd $Mdocdate: August 11 2017 $
+.Dt DSA_GET0_PQG 3
 .Os
 .Sh NAME
-.Nm DH_new ,
-.Nm DH_free
-.Nd allocate and free DH objects
+.Nm DSA_get0_pqg ,
+.Nm DSA_get0_key
+.Nd get data from a DSA object
 .Sh SYNOPSIS
-.In openssl/dh.h
-.Ft DH*
-.Fn DH_new void
+.In openssl/dsa.h
 .Ft void
-.Fo DH_free
-.Fa "DH *dh"
+.Fo DSA_get0_pqg
+.Fa "const DSA *d"
+.Fa "const BIGNUM **p"
+.Fa "const BIGNUM **q"
+.Fa "const BIGNUM **g"
+.Fc
+.Ft void
+.Fo DSA_get0_key
+.Fa "const DSA *d"
+.Fa "const BIGNUM **pub_key"
+.Fa "const BIGNUM **priv_key"
 .Fc
 .Sh DESCRIPTION
-The DH functions implement the Diffie-Hellman key agreement protocol.
-.Pp
-.Fn DH_new
-allocates and initializes a
-.Vt DH
-structure.
-.Pp
-.Fn DH_free
-frees the
-.Vt DH
-structure and its components.
-The values are erased before the memory is returned to the system.
-If
-.Fa dh
-is a
-.Dv NULL
-pointer, no action occurs.
-.Sh RETURN VALUES
-If the allocation fails,
-.Fn DH_new
-returns
-.Dv NULL
-and sets an error code that can be obtained by
-.Xr ERR_get_error 3 .
-Otherwise it returns a pointer to the newly allocated structure.
-.Sh SEE ALSO
-.Xr BN_new 3 ,
-.Xr d2i_DHparams 3 ,
-.Xr DH_generate_key 3 ,
-.Xr DH_generate_parameters 3 ,
-.Xr DH_get0_pqg 3 ,
-.Xr DH_get_ex_new_index 3 ,
-.Xr DH_set_method 3 ,
-.Xr DH_size 3 ,
-.Xr DHparams_print 3 ,
-.Xr DSA_dup_DH 3 ,
-.Xr ERR_get_error 3 ,
-.Xr EVP_PKEY_set1_DH 3
-.Sh HISTORY
-.Fn DH_new
+A
+.Vt DSA
+object contains the parameters
+.Fa p ,
+.Fa q ,
 and
-.Fn DH_free
-are available in all versions of SSLeay and OpenSSL.
+.Fa g .
+It also contains a public key
+.Fa pub_key
+and an optional private key
+.Fa priv_key .
+.Pp
+The
+.Fa p ,
+.Fa q ,
+and
+.Fa g
+parameters can be obtained by calling
+.Fn DSA_get0_pqg .
+If the parameters have not yet been set, then
+.Pf * Fa p ,
+.Pf * Fa q ,
+and
+.Pf * Fa g
+are set to
+.Dv NULL .
+Otherwise, they are set to pointers to the internal representations
+of the values that should not be freed by the application.
+.Pp
+The
+.Fn DSA_get0_key
+function stores pointers to the internal representations
+of the public key in
+.Pf * Fa pub_key
+and to the private key in
+.Pf * Fa priv_key .
+Either may be
+.Dv NULL
+if it has not yet been set.
+If the private key has been set, then the public key must be.
+.Sh SEE ALSO
+.Xr DSA_do_sign 3 ,
+.Xr DSA_dup_DH 3 ,
+.Xr DSA_generate_key 3 ,
+.Xr DSA_generate_parameters 3 ,
+.Xr DSA_new 3 ,
+.Xr DSA_print 3 ,
+.Xr DSA_sign 3 ,
+.Xr DSA_size 3
+.Sh HISTORY
+These functions first appeared in OpenSSL 1.1.0.

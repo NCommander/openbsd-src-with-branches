@@ -1,8 +1,8 @@
-.\"	$OpenBSD: DH_new.3,v 1.4 2016/12/10 22:30:54 schwarze Exp $
-.\"	OpenSSL b97fdb57 Nov 11 09:33:09 2016 +0100
+.\" $OpenBSD$
+.\" selective merge up to: OpenSSL 665d899f Aug 2 02:19:43 2017 +0800
 .\"
-.\" This file was written by Ulf Moeller <ulf@openssl.org>.
-.\" Copyright (c) 2000 The OpenSSL Project.  All rights reserved.
+.\" This file was written by Richard Levitte <levitte@openssl.org>
+.\" Copyright (c) 2016 The OpenSSL Project.  All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -48,62 +48,101 @@
 .\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 .\" OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: December 10 2016 $
-.Dt DH_NEW 3
+.Dd $Mdocdate: February 11 2018 $
+.Dt RSA_GET0_KEY 3
 .Os
 .Sh NAME
-.Nm DH_new ,
-.Nm DH_free
-.Nd allocate and free DH objects
+.Nm RSA_get0_key ,
+.Nm RSA_set0_key
+.Nd get and set data in an RSA object
 .Sh SYNOPSIS
-.In openssl/dh.h
-.Ft DH*
-.Fn DH_new void
+.In openssl/rsa.h
 .Ft void
-.Fo DH_free
-.Fa "DH *dh"
+.Fo RSA_get0_key
+.Fa "const RSA *r"
+.Fa "const BIGNUM **n"
+.Fa "const BIGNUM **e"
+.Fa "const BIGNUM **d"
+.Fc
+.Ft int
+.Fo RSA_set0_key
+.Fa "RSA *r"
+.Fa "BIGNUM *n"
+.Fa "BIGNUM *e"
+.Fa "BIGNUM *d"
 .Fc
 .Sh DESCRIPTION
-The DH functions implement the Diffie-Hellman key agreement protocol.
-.Pp
-.Fn DH_new
-allocates and initializes a
-.Vt DH
-structure.
-.Pp
-.Fn DH_free
-frees the
-.Vt DH
-structure and its components.
-The values are erased before the memory is returned to the system.
-If
-.Fa dh
-is a
-.Dv NULL
-pointer, no action occurs.
-.Sh RETURN VALUES
-If the allocation fails,
-.Fn DH_new
-returns
-.Dv NULL
-and sets an error code that can be obtained by
-.Xr ERR_get_error 3 .
-Otherwise it returns a pointer to the newly allocated structure.
-.Sh SEE ALSO
-.Xr BN_new 3 ,
-.Xr d2i_DHparams 3 ,
-.Xr DH_generate_key 3 ,
-.Xr DH_generate_parameters 3 ,
-.Xr DH_get0_pqg 3 ,
-.Xr DH_get_ex_new_index 3 ,
-.Xr DH_set_method 3 ,
-.Xr DH_size 3 ,
-.Xr DHparams_print 3 ,
-.Xr DSA_dup_DH 3 ,
-.Xr ERR_get_error 3 ,
-.Xr EVP_PKEY_set1_DH 3
-.Sh HISTORY
-.Fn DH_new
+An
+.Vt RSA
+object contains the components for the public and private key.
+.Fa n
+is the modulus common to both public and private key,
+.Fa e
+is the public exponent and
+.Fa d
+is the private exponent.
+These parameters can be obtained by calling
+.Fn RSA_get0_key .
+If they have not been set yet, then
+.Pf * Fa n ,
+.Pf * Fa e ,
 and
-.Fn DH_free
-are available in all versions of SSLeay and OpenSSL.
+.Pf * Fa d
+will be set to
+.Dv NULL .
+Otherwise, they are set to pointers to the internal representations
+of the values that should not be freed by the caller.
+If any of the arguments is
+.Dv NULL ,
+the respective parameter is not retrieved.
+.Pp
+The
+.Fa n ,
+.Fa e ,
+and
+.Fa d
+parameter values can be set by calling
+.Fn RSA_set0_key .
+The values
+.Fa n
+and
+.Fa e
+must be
+.Pf non- Dv NULL
+the first time this function is called on a given
+.Vt RSA
+object.
+The value
+.Fa d
+may be
+.Dv NULL .
+On subsequent calls, any of these values may be
+.Dv NULL ,
+which means that the corresponding field is left untouched.
+Calling this function transfers the memory management of the values to
+the RSA object.
+Therefore, the values that have been passed in
+should not be freed by the caller.
+.Pp
+Values retrieved with
+.Fn RSA_get0_key
+are owned by the
+.Vt RSA
+object used in the call and may therefore
+.Em not
+be passed to
+.Fn RSA_set0_key .
+If needed, duplicate the received value using
+.Xr BN_dup 3
+and pass the duplicate.
+.Sh RETURN VALUES
+.Fn RSA_set0_key
+returns 1 on success or 0 on failure.
+.Sh SEE ALSO
+.Xr RSA_check_key 3 ,
+.Xr RSA_generate_key 3 ,
+.Xr RSA_new 3 ,
+.Xr RSA_print 3 ,
+.Xr RSA_size 3
+.Sh HISTORY
+These functions first appeared in OpenSSL 1.1.0.
