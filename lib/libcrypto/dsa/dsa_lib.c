@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa_lib.c,v 1.22 2015/02/11 03:19:37 doug Exp $ */
+/* $OpenBSD: dsa_lib.c,v 1.23 2017/01/29 17:49:22 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -303,3 +303,23 @@ err:
 	return NULL;
 }
 #endif
+
+void
+DSA_get0_pqg(const DSA *d, const BIGNUM **p, const BIGNUM **q, const BIGNUM **g)
+{
+	if (p != NULL)
+		*p = d->p;
+	if (q != NULL)
+		*q = d->q;
+	if (g != NULL)
+		*g = d->g;
+}
+
+void
+DSA_get0_key(const DSA *d, const BIGNUM **pub_key, const BIGNUM **priv_key)
+{
+	if (pub_key != NULL)
+		*pub_key = d->pub_key;
+	if (priv_key != NULL)
+		*priv_key = d->priv_key;
+}
