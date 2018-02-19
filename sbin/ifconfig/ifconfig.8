@@ -1603,6 +1603,7 @@ for a complete list of the available protocols.
 .Op Oo Fl Oc Ns Cm keepalive Ar period count
 .Op Oo Fl Oc Ns Cm tunnel Ar src_address dest_address
 .Op Cm tunneldomain Ar tableid
+.Op Oo Fl Oc Ns Cm tunneldf
 .Op Cm tunnelttl Ar ttl
 .Op Oo Fl Oc Ns Cm vnetid Ar network-id
 .Ek
@@ -1654,6 +1655,10 @@ interface itself.
 .Ar tableid
 can be set to any valid routing table ID;
 the corresponding routing domain is derived from this table.
+.It Cm tunneldf
+Do not allow fragmentation of encapsulated packets.
+.It Cm -tunneldf
+Allow fragmentation of the encapsulated packets. 
 .It Cm tunnelttl Ar ttl
 Set the IP or multicast TTL of the tunnel packets.
 If supported by the tunnel protocol,
