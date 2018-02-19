@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_endrun.c,v 1.6 2014/11/03 03:08:00 deraadt Exp $ */
+/*	$OpenBSD: tty_endrun.c,v 1.7 2015/12/21 21:49:02 sf Exp $ */
 
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -124,7 +124,7 @@ endrunopen(dev_t dev, struct tty *tp, struct proc *p)
 	DPRINTF(("endrunopen\n"));
 	if (tp->t_line == ENDRUNDISC)
 		return ENODEV;
-	if ((error = suser(p, 0)) != 0)
+	if ((error = suser(p)) != 0)
 		return error;
 	np = malloc(sizeof(struct endrun), M_DEVBUF, M_WAITOK|M_ZERO);
 	snprintf(np->timedev.xname, sizeof(np->timedev.xname), "endrun%d",

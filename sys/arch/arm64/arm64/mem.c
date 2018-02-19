@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.3 2017/12/14 03:30:43 guenther Exp $	*/
+/*	$OpenBSD: mem.c,v 1.4 2018/02/17 22:33:00 kettenis Exp $	*/
 /*	$NetBSD: mem.c,v 1.11 2003/10/16 12:02:58 jdolecek Exp $	*/
 
 /*
@@ -114,7 +114,7 @@ mmopen(dev_t dev, int flag, int mode, struct proc *p)
 		break;
 #ifdef APERTURE
 	case 4:
-		if (suser(p, 0) != 0 || !allowaperture)
+		if (suser(p) != 0 || !allowaperture)
 			return (EPERM);
 
 		/* authorize only one simultaneous open() unless
@@ -238,7 +238,7 @@ mmmmap(dev_t dev, off_t off, int prot)
 	/* minor device 0 is physical memory */
 
 	if ((paddr_t)off >= ptoa((paddr_t)physmem) &&
-	    suser(p, 0) != 0)
+	    suser(p) != 0)
 		return -1;
 	return off;
 }

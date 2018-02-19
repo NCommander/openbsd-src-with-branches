@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mpw.c,v 1.22 2017/05/15 14:03:53 mpi Exp $ */
+/*	$OpenBSD: if_mpw.c,v 1.23 2018/01/09 15:24:24 bluhm Exp $ */
 
 /*
  * Copyright (c) 2015 Rafael Zalamena <rzalamena@openbsd.org>
@@ -169,7 +169,7 @@ mpw_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		break;
 
 	case SIOCSETMPWCFG:
-		error = suser(curproc, 0);
+		error = suser(curproc);
 		if (error != 0)
 			break;
 

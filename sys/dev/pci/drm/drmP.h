@@ -1,4 +1,4 @@
-/* $OpenBSD: drmP.h,v 1.215 2017/07/22 14:33:45 kettenis Exp $ */
+/* $OpenBSD: drmP.h,v 1.216 2018/01/13 13:03:42 robert Exp $ */
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
  */
@@ -117,7 +117,7 @@ struct fb_image;
 #define DRM_MAXUNITS		8
 
 /* DRM_SUSER returns true if the user is superuser */
-#define DRM_SUSER(p)		(suser(p, 0) == 0)
+#define DRM_SUSER(p)		(suser(p) == 0)
 #define DRM_MTRR_WC		MDF_WRITECOMBINE
 
 #define DRM_WAKEUP(x)		wakeup(x)

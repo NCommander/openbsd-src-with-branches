@@ -1,4 +1,4 @@
-/* $OpenBSD: imxuart.c,v 1.16 2017/10/27 11:23:28 kevlo Exp $ */
+/* $OpenBSD: imxuart.c,v 1.17 2017/12/30 13:34:56 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@motorola.com>
  *
@@ -742,7 +742,7 @@ imxuartioctl( dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 		break;
 
 	case TIOCSFLAGS:
-		error = suser(p, 0);
+		error = suser(p);
 		if (error != 0)
 			return(EPERM);
 

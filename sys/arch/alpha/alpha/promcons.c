@@ -1,4 +1,4 @@
-/*	$OpenBSD: promcons.c,v 1.17 2017/09/08 05:36:51 deraadt Exp $	*/
+/*	$OpenBSD: promcons.c,v 1.18 2017/12/30 20:46:59 guenther Exp $	*/
 /*	$NetBSD: promcons.c,v 1.5 1996/11/13 22:20:55 cgd Exp $	*/
 
 /*
@@ -90,7 +90,7 @@ promopen(dev, flag, mode, p)
 		ttsetwater(tp);
 
 		setuptimeout = 1;
-	} else if (tp->t_state&TS_XCLUDE && suser(p, 0) != 0) {
+	} else if (tp->t_state&TS_XCLUDE && suser(p) != 0) {
 		splx(s);
 		return EBUSY;
 	}

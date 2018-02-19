@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.165 2017/07/19 14:54:29 deraadt Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.166 2017/12/30 23:08:29 guenther Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -404,7 +404,7 @@ vndioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 	DNPRINTF(VDB_FOLLOW, "vndioctl(%x, %lx, %p, %x, %p): unit %d\n",
 	    dev, cmd, addr, flag, p, unit);
 
-	error = suser(p, 0);
+	error = suser(p);
 	if (error)
 		return (error);
 	if (unit >= numvnd)

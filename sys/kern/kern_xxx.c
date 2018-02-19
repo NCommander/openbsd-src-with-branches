@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_xxx.c,v 1.32 2016/12/18 20:10:39 patrick Exp $	*/
+/*	$OpenBSD: kern_xxx.c,v 1.33 2017/01/21 05:42:03 guenther Exp $	*/
 /*	$NetBSD: kern_xxx.c,v 1.32 1996/04/22 01:38:41 christos Exp $	*/
 
 /*
@@ -48,7 +48,7 @@ sys_reboot(struct proc *p, void *v, register_t *retval)
 	} */ *uap = v;
 	int error;
 
-	if ((error = suser(p, 0)) != 0)
+	if ((error = suser(p)) != 0)
 		return (error);
 
 #ifdef MULTIPROCESSOR

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.25 2017/09/08 05:36:52 deraadt Exp $	*/
+/*	$OpenBSD: mem.c,v 1.26 2017/12/14 03:30:43 guenther Exp $	*/
 /*	$NetBSD: mem.c,v 1.1 1996/09/30 16:34:50 ws Exp $ */
 
 /*
@@ -204,7 +204,7 @@ mmopen(dev_t dev, int flag, int mode, struct proc *p)
 		break;
 #ifdef APERTURE
 	case 4:
-	        if (suser(p, 0) != 0 || !allowaperture)
+	        if (suser(p) != 0 || !allowaperture)
 			return (EPERM);
 
 		/* authorize only one simultaneous open() unless

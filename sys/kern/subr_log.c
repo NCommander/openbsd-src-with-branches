@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_log.c,v 1.53 2017/09/25 23:00:33 espie Exp $	*/
+/*	$OpenBSD: subr_log.c,v 1.54 2017/10/17 08:29:43 mpi Exp $	*/
 /*	$NetBSD: subr_log.c,v 1.11 1996/03/30 22:24:44 christos Exp $	*/
 
 /*
@@ -355,7 +355,7 @@ logioctl(dev_t dev, u_long com, caddr_t data, int flag, struct proc *p)
 		break;
 
 	case LIOCSFD:
-		if ((error = suser(p, 0)) != 0)
+		if ((error = suser(p)) != 0)
 			return (error);
 		fp = syslogf;
 		if ((error = getsock(p, *(int *)data, &syslogf)) != 0)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pluart.c,v 1.5 2017/04/30 16:45:45 mpi Exp $	*/
+/*	$OpenBSD: pluart.c,v 1.6 2017/08/29 13:33:03 jsg Exp $	*/
 
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
@@ -792,7 +792,7 @@ pluartioctl( dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 	case TIOCGFLAGS:
 		break;
 	case TIOCSFLAGS:
-		error = suser(p, 0);
+		error = suser(p);
 		if (error != 0)
 			return(EPERM);
 		break;

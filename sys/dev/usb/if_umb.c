@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_umb.c,v 1.16 2017/10/20 09:35:09 mpi Exp $ */
+/*	$OpenBSD: if_umb.c,v 1.17 2017/10/23 15:23:13 gerhard Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -698,7 +698,7 @@ umb_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		    sizeof (sc->sc_info));
 		break;
 	case SIOCSUMBPARAM:
-		if ((error = suser(p, 0)) != 0)
+		if ((error = suser(p)) != 0)
 			break;
 		if ((error = copyin(ifr->ifr_data, &mp, sizeof (mp))) != 0)
 			break;

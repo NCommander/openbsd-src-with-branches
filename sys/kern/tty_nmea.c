@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_nmea.c,v 1.44 2014/11/03 03:08:00 deraadt Exp $ */
+/*	$OpenBSD: tty_nmea.c,v 1.45 2015/12/21 21:49:02 sf Exp $ */
 
 /*
  * Copyright (c) 2006, 2007, 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -95,7 +95,7 @@ nmeaopen(dev_t dev, struct tty *tp, struct proc *p)
 
 	if (tp->t_line == NMEADISC)
 		return (ENODEV);
-	if ((error = suser(p, 0)) != 0)
+	if ((error = suser(p)) != 0)
 		return (error);
 	np = malloc(sizeof(struct nmea), M_DEVBUF, M_WAITOK | M_ZERO);
 	snprintf(np->timedev.xname, sizeof(np->timedev.xname), "nmea%d",
