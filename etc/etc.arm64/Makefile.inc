@@ -1,4 +1,6 @@
-#	$OpenBSD: Makefile.inc,v 1.2 2017/02/11 06:36:03 jsg Exp $
+#	$OpenBSD: Makefile.inc,v 1.3 2017/04/04 00:03:12 deraadt Exp $
+
+KERNELS += GENERIC.MP bsd.mp
 
 bootblocks:
 	cp -p ${DESTDIR}/usr/mdec/BOOTAA64.EFI ${RELEASEDIR}
