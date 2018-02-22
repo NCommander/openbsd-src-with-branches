@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_lu.c,v 1.22 2016/11/13 08:47:54 miod Exp $ */
+/* $OpenBSD: x509_lu.c,v 1.23 2017/01/29 17:49:23 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -266,6 +266,13 @@ X509_STORE_free(X509_STORE *vfy)
 	CRYPTO_free_ex_data(CRYPTO_EX_INDEX_X509_STORE, vfy, &vfy->ex_data);
 	X509_VERIFY_PARAM_free(vfy->param);
 	free(vfy);
+}
+
+int
+X509_STORE_up_ref(X509_STORE *x)
+{
+	int refs = CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509_STORE);
+	return (refs > 1) ? 1 : 0;
 }
 
 X509_LOOKUP *
