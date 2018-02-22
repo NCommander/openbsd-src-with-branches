@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.93 2017/08/17 08:37:38 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.94 2017/10/25 14:14:52 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -95,6 +95,12 @@ const struct options_table_entry options_table[] = {
 	  .minimum = 0,
 	  .maximum = INT_MAX,
 	  .default_num = 500
+	},
+
+	{ .name = "exit-empty",
+	  .type = OPTIONS_TABLE_FLAG,
+	  .scope = OPTIONS_TABLE_SERVER,
+	  .default_num = 1
 	},
 
 	{ .name = "exit-unattached",
