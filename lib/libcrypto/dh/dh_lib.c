@@ -1,4 +1,4 @@
-/* $OpenBSD: dh_lib.c,v 1.28 2018/02/20 18:01:42 tb Exp $ */
+/* $OpenBSD: dh_lib.c,v 1.29 2018/02/20 21:11:15 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -245,6 +245,12 @@ int
 DH_bits(const DH *dh)
 {
 	return BN_num_bits(dh->p);
+}
+
+ENGINE *
+DH_get0_engine(DH *dh)
+{
+	return dh->engine;
 }
 
 void
