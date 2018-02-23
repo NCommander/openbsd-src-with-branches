@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.h,v 1.123 2017/09/03 23:33:13 djm Exp $ */
+/* $OpenBSD: readconf.h,v 1.124 2017/10/21 23:06:24 millert Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -81,6 +81,7 @@ typedef struct {
 	char   *user_hostfiles[SSH_MAX_HOSTS_FILES];
 	char   *preferred_authentications;
 	char   *bind_address;	/* local socket address for connection to sshd */
+	char   *bind_interface;	/* local interface for bind address */
 	char   *pkcs11_provider; /* PKCS#11 provider */
 	int	verify_host_key_dns;	/* Verify host key using DNS */
 
