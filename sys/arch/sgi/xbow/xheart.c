@@ -1,4 +1,4 @@
-/*	$OpenBSD: xheart.c,v 1.30 2016/03/06 19:42:27 mpi Exp $	*/
+/*	$OpenBSD: xheart.c,v 1.31 2017/02/11 03:44:22 visa Exp $	*/
 
 /*
  * Copyright (c) 2008 Miodrag Vallat.
@@ -400,10 +400,7 @@ xheart_splx(int newipl)
 	struct cpu_info *ci = curcpu();
 
 	/* Update masks to new ipl. Order highly important! */
-	__asm__ (".set noreorder\n");
 	ci->ci_ipl = newipl;
-	mips_sync();
-	__asm__ (".set reorder\n");
 	xheart_setintrmask(newipl);
 
 	/* If we still have softints pending trigger processing. */

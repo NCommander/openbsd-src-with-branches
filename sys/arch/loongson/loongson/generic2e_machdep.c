@@ -1,4 +1,4 @@
-/*	$OpenBSD: generic2e_machdep.c,v 1.8 2016/08/30 12:15:28 jsg Exp $	*/
+/*	$OpenBSD: generic2e_machdep.c,v 1.9 2017/04/30 16:45:45 mpi Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -290,10 +290,8 @@ generic2e_isa_intr(uint32_t hwpend, struct trapframe *frame)
 				ih->ih_count.ec_count++;
 			}
 
-			__asm__ (".set noreorder\n");
 			curcpu()->ci_ipl = frame->ipl;
-			mips_sync();
-			__asm__ (".set reorder\n");
+
 			if (ret == 1)
 				break;
 		}
