@@ -1,4 +1,4 @@
-.\"	$OpenBSD: vmctl.8,v 1.36 2018/01/03 05:39:56 ccardenas Exp $
+.\"	$OpenBSD: vmctl.8,v 1.37 2018/01/03 08:17:18 jmc Exp $
 .\"
 .\" Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
 .\"
@@ -143,6 +143,10 @@ with '.', '-' or '_'.
 .It Cm status Op Ar id
 Lists VMs running on the host, optionally listing just the selected VM
 .Ar id .
+.It Cm show Op Ar id
+An alias for the
+.Cm status
+command.
 .It Cm stop Ar id
 Stops (terminates) a VM defined by the specified VM
 .Ar id .
