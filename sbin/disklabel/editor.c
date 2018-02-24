@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.310 2017/12/18 09:09:53 ajacoutot Exp $	*/
+/*	$OpenBSD: editor.c,v 1.311 2018/02/23 21:39:58 krw Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -901,7 +901,8 @@ editor_add(struct disklabel *lp, char *p)
 		if (get_fstype(lp, partno) == 0 &&
 		    get_mp(lp, partno) == 0 &&
 		    get_fsize(lp, partno) == 0  &&
-		    get_bsize(lp, partno) == 0)
+		    get_bsize(lp, partno) == 0 &&
+		    get_cpg(lp, partno) == 0)
 			return;
 	}
 	/* Bailed out at some point, so effectively delete the partition. */
