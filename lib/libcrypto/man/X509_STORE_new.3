@@ -1,7 +1,26 @@
-.\"	$OpenBSD: X509_STORE_set1_param.3,v 1.3 2017/01/06 22:46:06 schwarze Exp $
-.\"	OpenSSL 99d63d46
+.\" $OpenBSD$
+.\" full merge up to: OpenSSL 05ea606a May 20 20:52:46 2016 -0400
+.\" selective merge up to: OpenSSL 99d63d46 Oct 26 13:56:48 2016 -0400
 .\"
-.\" This file was written by Christian Heimes <cheimes@redhat.com>.
+.\" This file is a derived work.
+.\" The changes are covered by the following Copyright and license:
+.\"
+.\" Copyright (c) 2018 Ingo Schwarze <schwarze@openbsd.org>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.\" The original file was written by
+.\" Alessandro Ghedini <alessandro@ghedini.me>.
 .\" Copyright (c) 2016 The OpenSSL Project.  All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -48,28 +67,67 @@
 .\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 .\" OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: January 6 2017 $
-.Dt X509_STORE_SET1_PARAM 3
+.Dd $Mdocdate: December 10 2016 $
+.Dt X509_STORE_NEW 3
 .Os
 .Sh NAME
-.Nm X509_STORE_set1_param
-.Nd set X509_STORE verification parameters
+.Nm X509_STORE_new ,
+.Nm X509_STORE_up_ref ,
+.Nm X509_STORE_free
+.Nd allocate and free X.509 certificate stores
 .Sh SYNOPSIS
 .In openssl/x509_vfy.h
+.Ft X509_STORE *
+.Fn X509_STORE_new void
 .Ft int
-.Fo X509_STORE_set1_param
-.Fa "X509_STORE *ctx"
-.Fa "X509_VERIFY_PARAM *pm"
+.Fo X509_STORE_up_ref
+.Fa "X509_STORE *store"
+.Fc
+.Ft void
+.Fo X509_STORE_free
+.Fa "X509_STORE *store"
 .Fc
 .Sh DESCRIPTION
-.Fn X509_STORE_set1_param
-sets the verification parameters to
-.Fa pm
-for
-.Fa ctx .
+.Fn X509_STORE_new
+allocates and initializes an empty X.509 certificate store
+and sets its reference count to 1.
+.Pp
+.Fn X509_STORE_up_ref
+increments the reference count of
+.Fa store
+by 1.
+.Pp
+.Fn X509_STORE_free
+decrements the reference count of
+.Fa store
+by 1.
+If the reference count reaches 0,
+all resources used by the store, including all certificates
+contained in it, are released and
+.Fa store
+itself is freed.
+If
+.Fa store
+is a
+.Dv NULL
+pointer, no action occurs.
 .Sh RETURN VALUES
-.Fn X509_STORE_set1_param
+.Fn X509_STORE_new
+returns a newly created
+.Vt X509_STORE
+object or
+.Dv NULL
+if an error occurs.
+.Pp
+.Fn X509_STORE_up_ref
 returns 1 for success and 0 for failure.
 .Sh SEE ALSO
+.Xr PKCS7_verify 3 ,
+.Xr SSL_CTX_set_cert_store 3 ,
+.Xr X509_STORE_CTX_new 3 ,
 .Xr X509_STORE_load_locations 3 ,
-.Xr X509_STORE_new 3
+.Xr X509_STORE_set1_param 3 ,
+.Xr X509_STORE_set_verify_cb 3
+.Sh HISTORY
+.Fn X509_STORE_up_ref
+first appeared in OpenSSL 1.1.0.
