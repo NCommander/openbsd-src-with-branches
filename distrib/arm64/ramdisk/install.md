@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.6 2017/07/28 18:15:44 rpe Exp $
+#	$OpenBSD: install.md,v 1.7 2017/08/22 23:20:00 jsg Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -32,6 +32,7 @@
 # machine dependent section of installation/upgrade script.
 #
 
+NCPU=$(sysctl -n hw.ncpufound)
 NEWFSARGS_msdos="-F 16 -L boot"
 MOUNT_ARGS_msdos="-o-l"
 
