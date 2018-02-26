@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
 xmss_fast.h version 20160722
 Andreas Hülsing

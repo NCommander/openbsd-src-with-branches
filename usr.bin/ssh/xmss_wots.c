@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
 wots.c version 20160722
 Andreas Hülsing

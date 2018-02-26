@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
 hash_address.c version 20160722
 Andreas Hülsing

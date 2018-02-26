@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
 hash.h version 20160722
 Andreas Hülsing

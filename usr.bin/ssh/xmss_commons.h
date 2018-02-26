@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
 xmss_commons.h 20160722
 Andreas Hülsing
