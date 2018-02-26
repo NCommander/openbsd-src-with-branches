@@ -67,7 +67,6 @@
 ./sbin/mount_ntfs
 ./sbin/wsconsctl
 ./usr/bin/pctr
-./usr/include/amd64/cpu_full.h
 ./usr/lib/gcc-lib/amd64-unknown-openbsd6.1
 ./usr/lib/gcc-lib/amd64-unknown-openbsd6.1/4.2.1
 ./usr/lib/gcc-lib/amd64-unknown-openbsd6.1/4.2.1/collect2
