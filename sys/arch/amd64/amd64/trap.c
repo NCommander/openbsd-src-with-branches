@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.60 2017/10/03 22:06:19 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.61 2017/10/04 02:10:33 guenther Exp $	*/
 /*	$NetBSD: trap.c,v 1.2 2003/05/04 23:51:56 fvdl Exp $	*/
 
 /*-
@@ -214,6 +214,18 @@ trap(struct trapframe *frame)
 			frame->tf_rip = (u_int64_t)xrstor_resume;
 			return;
 		}
+
+		/*
+		 * Check for failure during return to user mode.
+		 * We do this by looking at the address of the
+		 * instruction that faulted.
+		 */
+		if (frame->tf_rip == (u_int64_t)doreti_iret) {
+			frame->tf_rip = (u_int64_t)resume_iret;
+			return;
+		}
+		/* FALLTHROUGH */
+
 	case T_SEGNPFLT:
 	case T_ALIGNFLT:
 	case T_TSSFLT:
@@ -223,16 +235,6 @@ trap(struct trapframe *frame)
 		if (pcb->pcb_onfault != 0) {
 copyfault:
 			frame->tf_rip = (u_int64_t)pcb->pcb_onfault;
-			return;
-		}
-
-		/*
-		 * Check for failure during return to user mode.
-		 * We do this by looking at the address of the
-		 * instruction that faulted.
-		 */
-		if (frame->tf_rip == (u_int64_t)doreti_iret) {
-			frame->tf_rip = (u_int64_t)resume_iret;
 			return;
 		}
 		goto we_re_toast;
@@ -457,8 +459,12 @@ out:
 static void
 frame_dump(struct trapframe *tf)
 {
-	printf("rip %p  rsp %p  rfl %p\n",
-	    (void *)tf->tf_rip, (void *)tf->tf_rsp, (void *)tf->tf_rflags);
+	printf("rip %p  cs 0x%x  rfl %p  rsp %p  ss 0x%x\n",
+	    (void *)tf->tf_rip, (unsigned)tf->tf_cs & 0xffff,
+	    (void *)tf->tf_rflags,
+	    (void *)tf->tf_rsp, (unsigned)tf->tf_ss & 0xffff);
+	printf("err 0x%llx  trapno 0x%llx\n",
+	    tf->tf_err, tf->tf_trapno);
 	printf("rdi %p  rsi %p  rdx %p\n",
 	    (void *)tf->tf_rdi, (void *)tf->tf_rsi, (void *)tf->tf_rdx);
 	printf("rcx %p  r8  %p  r9  %p\n",
