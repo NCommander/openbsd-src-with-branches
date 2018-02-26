@@ -1,4 +1,4 @@
-/*	$OpenBSD: frame.h,v 1.5 2011/03/23 16:54:34 pirofti Exp $	*/
+/*	$OpenBSD: frame.h,v 1.6 2016/02/26 09:29:20 mpi Exp $	*/
 /*	$NetBSD: frame.h,v 1.1 2003/04/26 18:39:40 fvdl Exp $	*/
 
 /*-
@@ -145,6 +145,20 @@ struct intrframe {
 	/* These are pushed unconditionally on the x86-64 */
 	int64_t	if_rsp;
 	int64_t	if_ss;
+};
+
+
+/*
+ * The trampoline frame used on the kernel stack page which is present
+ * but kernel-only, in the page tables used when in userspace.  This is
+ * the minimum for iretq operation.
+ */
+struct iretq_frame {
+	int64_t	iretq_rip;
+	int64_t	iretq_cs;
+	int64_t	iretq_rflags;
+	int64_t	iretq_rsp;
+	int64_t	iretq_ss;
 };
 
 /*

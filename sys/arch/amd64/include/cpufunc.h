@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.13 2016/09/04 09:22:28 mpi Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.13.4.1 2017/05/03 02:29:16 jsg Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.3 2003/05/08 10:27:43 fvdl Exp $	*/
 
 /*-
@@ -356,6 +356,9 @@ breakpoint(void)
 #define write_psl(x)	write_rflags(x)
 
 void amd64_errata(struct cpu_info *);
+
+struct cpu_info_full;
+void cpu_enter_pages(struct cpu_info_full *);
 
 #endif /* _KERNEL */
 

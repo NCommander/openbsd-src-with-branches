@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.84.4.1 2017/10/03 22:11:56 bluhm Exp $	*/
+/*	$OpenBSD: locore.S,v 1.84.4.2 2017/10/04 19:38:03 bluhm Exp $	*/
 /*	$NetBSD: locore.S,v 1.13 2004/03/25 18:33:17 drochner Exp $	*/
 
 /*
@@ -113,6 +113,7 @@
 #include <sys/syscall.h>
 
 #include <machine/param.h>
+#include <machine/psl.h>
 #include <machine/segments.h>
 #include <machine/specialreg.h>
 #include <machine/trap.h>
@@ -181,6 +182,8 @@ _C_LABEL(lapic_isr):
 	.globl	_C_LABEL(biosbasemem),_C_LABEL(biosextmem)
 	.globl	_C_LABEL(bootapiver)
 	.globl	_C_LABEL(pg_nx)
+	.globl	_C_LABEL(pg_g_kern)
+	.globl	_C_LABEL(cpu_meltdown)
 _C_LABEL(cpu_id):	.long	0	# saved from `cpuid' instruction
 _C_LABEL(cpu_feature):	.long	0	# feature flags from 'cpuid'
 					#   instruction
@@ -213,6 +216,10 @@ _C_LABEL(biosextmem):	.long	0	# extended memory reported by BIOS
 _C_LABEL(biosextmem):	.long	REALEXTMEM
 #endif
 _C_LABEL(pg_nx):	.quad	0	# NX PTE bit (if CPU supports)
+_C_LABEL(pg_g_kern):	.quad	0	# 0x100 if global pages should be used
+					# in kernel mappings, 0 otherwise (for
+					# insecure CPUs)
+_C_LABEL(cpu_meltdown):	.long	0	# 1 if this CPU has Meltdown
 
 #define	_RELOC(x)	((x) - KERNBASE)
 #define	RELOC(x)	_RELOC(_C_LABEL(x))
@@ -318,6 +325,48 @@ bi_size_ok:
 	movl	%ecx,8(%ebp)
 	movl	$0,  12(%ebp)
 
+	/*
+	 * Determine if CPU has meltdown. Certain Intel CPUs do not properly
+	 * respect page permissions when speculatively loading data into
+	 * the cache ("Meltdown" CVE). These CPUs must utilize a secondary
+	 * sanitized page table lacking kernel mappings when executing user
+	 * processes, and may not use PG_G global PTEs for kernel VAs.
+	 */
+	movl	$0x1, RELOC(cpu_meltdown)	/* assume insecure at first */
+	movl	$0x0, RELOC(pg_g_kern)
+	
+	cmpl	$0x756e6547, %ebx	# "Genu"
+	jne	.Lcpu_secure
+	cmpl	$0x6c65746e, %ecx	# "ntel"
+	jne	.Lcpu_secure
+	cmpl	$0x49656e69, %edx	# "ineI"
+	jne	.Lcpu_secure
+
+	/*
+	 * Intel CPU, now check if IA32_ARCH_CAPABILITIES is supported and
+	 * if it says this CPU is safe.
+	 */
+	movl	$0x0,	%eax
+	cpuid
+	cmpl	$0x7,	%eax
+	jl	.Lcpu_check_finished
+
+	movl	$0x7,	%eax
+	cpuid
+	testl	$SEFF0EDX_ARCH_CAP, %edx
+	jz	.Lcpu_check_finished
+	
+	/* IA32_ARCH_CAPABILITIES MSR avaialble, use it to check CPU security */
+	movl	$MSR_ARCH_CAPABILITIES, %ecx
+	rdmsr
+	testl	$ARCH_CAPABILITIES_RDCL_NO, %eax
+	jz	.Lcpu_check_finished
+
+.Lcpu_secure:
+	movl	$0x0, RELOC(cpu_meltdown)
+	movl	$PG_G, RELOC(pg_g_kern)
+
+.Lcpu_check_finished:
 	movl	$1,%eax
 	cpuid
 	movl	%eax,RELOC(cpu_id)
@@ -584,7 +633,8 @@ map_tables:
 	leal	(PROC0_DMP2_OFF)(%esi), %ebx
 	xorl	%eax, %eax
 	movl	$(NDML2_ENTRIES * NPDPG), %ecx
-1:	orl	$(PG_V|PG_KW|PG_PS|PG_G), %eax
+1:	orl	$(PG_V|PG_KW|PG_PS), %eax
+	orl	RELOC(pg_g_kern), %eax
 	cmpl	$__kernel_base_phys, %eax
 	jl	store_pte
 	cmpl	$__kernel_end_phys, %eax
@@ -751,7 +801,7 @@ longmode_hi:
 /*****************************************************************************/
 
 /*
- * Signal trampoline; copied to top of user stack.
+ * Signal trampoline; copied to a page mapped into userspace.
  * gdb's backtrace logic matches against the instructions in this.
  */
 	.section .rodata
@@ -888,11 +938,15 @@ switch_exited:
 	btrl	$CPUF_USERSEGS_BIT, CPUVAR(FLAGS)
 	jnc	restore_saved
 
-	/* set %ds, %es, and %fs to expected value to prevent info leak */
+	/* set %ds, %es, %fs, and %gs to expected value to prevent info leak */
 	movw	$(GSEL(GUDATA_SEL, SEL_UPL)),%ax
 	movw	%ax,%ds
 	movw	%ax,%es
 	movw	%ax,%fs
+	cli			/* block interrupts when on user GS.base */
+	swapgs			/* switch from kernel to user GS.base */
+	movw	%ax,%gs		/* set %gs to UDATA and GS.base to 0 */
+	swapgs			/* back to kernel GS.base */
 
 restore_saved:
 	/*
@@ -912,20 +966,34 @@ restore_saved:
 	movq	PCB_RSP(%r13),%rsp
 	movq	PCB_RBP(%r13),%rbp
 
-	movq	CPUVAR(TSS),%rcx
-	movq	PCB_KSTACK(%r13),%rdx
-	movq	%rdx,TSS_RSP0(%rcx)
-
 	movq	PCB_CR3(%r13),%rax
-	movq	%rax,%cr3
+	movq	%rax,%cr3			/* %rax used below too */
 
 	/* Don't bother with the rest if switching to a system process. */
 	testl	$P_SYSTEM,P_FLAG(%r12)
 	jnz	switch_restored
 
+	/* record the bits needed for future U-->K transition */
+	movq	PCB_KSTACK(%r13),%rdx
+	subq	$FRAMESIZE,%rdx
+	movq	%rdx,CPUVAR(KERN_RSP)
+	movq	PCB_PMAP(%r13),%rcx
+
+	/*
+	 * Meltdown: iff we're doing separate U+K and U-K page tables,
+	 * then record them in cpu_info for easy access in syscall and
+	 * interrupt trampolines.  XXX code patch this
+	 */
+
+	movq	PM_PDIRPA_INTEL(%rcx),%rdx
+	testq	%rdx,%rdx
+	jz	0f			/* yay, no intel suckiness */
+	movq	%rax,CPUVAR(KERN_CR3)
+	movq	%rdx,CPUVAR(USER_CR3)
+0:
+
 	/* set the new pmap's bit for the cpu */
 	movl	CPUVAR(CPUID),%edi
-	movq	PCB_PMAP(%r13),%rcx
 	lock
 	btsq	%rdi,PM_CPUS(%rcx)
 #ifdef DIAGNOSTIC
@@ -1011,8 +1079,7 @@ IDTVEC(syscall32)
 	sysret		/* go away please */
 
 /*
- * syscall insn entry. This currently isn't much faster, but
- * it can be made faster in the future.
+ * syscall insn entry.
  */
 IDTVEC(syscall)
 	/*
@@ -1022,13 +1089,20 @@ IDTVEC(syscall)
 	 * the user-space value.
 	 * First order of business is to swap to the kernel gs.base so that
 	 * we can access our struct cpu_info and use the scratch space there
-	 * to switch to our kernel stack.  Once that's in place we can
+	 * to switch to the kernel page tables (thank you, Intel), then
+	 * switch to our kernel stack.  Once that's in place we can
 	 * unblock interrupts and save the rest of the syscall frame.
 	 */
 	swapgs
 	movq	%r15,CPUVAR(SCRATCH)
-	movq	CPUVAR(CURPCB),%r15
-	movq	PCB_KSTACK(%r15),%r15
+	movq	CPUVAR(KERN_CR3),%r15
+	testq	%r15,%r15
+	jz	Xsyscall_untramp
+	movq	%r15,%cr3
+	jmp	Xsyscall_untramp
+
+NENTRY(Xsyscall_untramp)
+	movq	CPUVAR(KERN_RSP),%r15
 	xchgq	%r15,%rsp
 	sti
 
@@ -1039,12 +1113,11 @@ IDTVEC(syscall)
 	 * ss:rsp, etc, so that all GP registers can be
 	 * saved. Then, fill in the rest.
 	 */
-	pushq	$(GSEL(GUDATA_SEL, SEL_UPL))
-	pushq	%r15
-	subq	$(TF_RSP-TF_TRAPNO),%rsp
+	movq	$(GSEL(GUDATA_SEL, SEL_UPL)),TF_SS(%rsp)
+	movq	%r15,TF_RSP(%rsp)
 	movq	CPUVAR(SCRATCH),%r15
-	subq	$32,%rsp
-	INTR_SAVE_GPRS
+	INTR_SAVE_MOST_GPRS_NO_ADJ
+	movq	%rcx,TF_RCX(%rsp)
 	movq	%r11, TF_RFLAGS(%rsp)	/* old rflags from syscall insn */
 	movq	$(GSEL(GUCODE_SEL, SEL_UPL)), TF_CS(%rsp)
 	movq	%rcx,TF_RIP(%rsp)
@@ -1089,15 +1162,44 @@ IDTVEC(syscall)
 	movq	TF_RBP(%rsp),%rbp
 	movq	TF_RBX(%rsp),%rbx
 
-	INTR_RESTORE_SELECTORS
+	/* Restore FS.base if it's not already in the CPU */
+	btsl	$CPUF_USERSEGS_BIT,CPUVAR(FLAGS)
+	jc	99f
+	movq	CPUVAR(CURPCB),%rdx
+	movq	PCB_FSBASE(%rdx),%rax
+	movq	%rax,%rdx
+	shrq	$32,%rdx
+	movl	$MSR_FSBASE,%ecx
+	wrmsr
+99:
 
+	/*
+	 * We need to finish reading from the trapframe, then switch
+	 * to the user page tables, swapgs, and return.  We need
+	 * to get the final value for the register that was used
+	 * for the mov to %cr3 from somewhere accessible on the
+	 * user page tables, so save it in CPUVAR(SCRATCH) across
+	 * the switch.
+	 */
 	movq	TF_RDX(%rsp),%rdx
 	movq	TF_RAX(%rsp),%rax
+	movq	%rax,CPUVAR(SCRATCH)
+	movq	CPUVAR(USER_CR3),%rax
 
 	movq	TF_RIP(%rsp),%rcx
 	movq	TF_RFLAGS(%rsp),%r11
 	movq	TF_RSP(%rsp),%rsp
+	testq	%rax,%rax
+	jz	1f
+	jmp	syscall_trampback
+
+KUENTRY(syscall_trampback)
+	movq	%rax,%cr3
+1:	movq	CPUVAR(SCRATCH),%rax
+	swapgs
 	sysretq
+
+	.text
 
 #ifdef DIAGNOSTIC
 .Lsyscall_spl_not_lowered:
@@ -1132,6 +1234,12 @@ NENTRY(proc_trampoline)
  * Return via iretq, for real interrupts and signal returns
  */
 NENTRY(intr_fast_exit)
+#ifdef DIAGNOSTIC
+	pushfq
+	popq	%rdx
+	testq	$PSL_I,%rdx
+	jnz	.Lintr_exit_not_blocked
+#endif /* DIAGNOSTIC */
 	movq	TF_RDI(%rsp),%rdi
 	movq	TF_RSI(%rsp),%rsi
 	movq	TF_R8(%rsp),%r8
@@ -1145,11 +1253,68 @@ NENTRY(intr_fast_exit)
 	movq	TF_RBX(%rsp),%rbx
 
 	testq	$SEL_RPL,TF_CS(%rsp)
-	je	5f
+	je	intr_exit_recurse		/* returning back to kernel? */
 
-	INTR_RESTORE_SELECTORS
+	/* returning to userspace.  XXX fix up iret frame here */
 
-5:	movq	TF_RDX(%rsp),%rdx
+	/* restore FS.base if it's not already in the CPU */
+	btsl	$CPUF_USERSEGS_BIT,CPUVAR(FLAGS)
+	jc	99f
+	movq	CPUVAR(CURPCB),%rdx		/* for below */
+	movq	PCB_FSBASE(%rdx),%rax
+	movq	%rax,%rdx
+	shrq	$32,%rdx
+	movl	$MSR_FSBASE,%ecx
+	wrmsr
+99:
+	/*
+	 * Returning to userspace.  We need to go things in this order:
+	 *  - update the iret frame from the trapframe
+	 *  - finish reading from the trapframe
+	 *  - switch to the trampoline stack
+	 *  - jump to the .kutext segment
+	 *  - switch to the user page tables
+	 *  - swapgs
+	 *  - iretq
+	 * To get the final value for the register that was used
+	 * for the mov to %cr3, we need access to somewhere accessible
+	 * on the user page tables, so we save it in CPUVAR(SCRATCH)
+	 * across the switch.
+	 */
+	/* update iret frame */
+	movq	CPUVAR(INTR_RSP),%rdx
+	movq	$(GSEL(GUCODE_SEL,SEL_UPL)),IRETQ_CS(%rdx)
+	movq	TF_RIP(%rsp),%rax
+	movq	%rax,IRETQ_RIP(%rdx)
+	movq	TF_RFLAGS(%rsp),%rax
+	movq	%rax,IRETQ_RFLAGS(%rdx)
+	movq	TF_RSP(%rsp),%rax
+	movq	%rax,IRETQ_RSP(%rdx)
+	movq	$(GSEL(GUDATA_SEL,SEL_UPL)),IRETQ_SS(%rdx)
+	/* finish with the trap frame */
+	movq	TF_RAX(%rsp),%rax
+	movq	%rax,CPUVAR(SCRATCH)
+	movq	TF_RCX(%rsp),%rcx
+	movq	TF_R11(%rsp),%r11
+	/* switch to the trampoline stack */
+	xchgq	%rdx,%rsp
+	movq	TF_RDX(%rdx),%rdx
+	movq	CPUVAR(USER_CR3),%rax
+	testq	%rax,%rax
+	jz	1f
+	jmp	iretq_tramp
+
+KUENTRY(iretq_tramp)
+	movq	%rax,%cr3
+1:	movq	CPUVAR(SCRATCH),%rax
+	swapgs
+
+	.globl	_C_LABEL(doreti_iret)
+_C_LABEL(doreti_iret):
+	iretq
+
+NENTRY(intr_exit_recurse)
+	movq	TF_RDX(%rsp),%rdx
 	movq	TF_RCX(%rsp),%rcx
 	movq	TF_R11(%rsp),%r11
 	movq	TF_RAX(%rsp),%rax
@@ -1167,9 +1332,6 @@ NENTRY(intr_fast_exit)
 #endif /* !defined(GPROF) && defined(DDBPROF) */
 
 	addq	$TF_RIP,%rsp
-
-	.globl	_C_LABEL(doreti_iret)
-_C_LABEL(doreti_iret):
 	iretq
 
 
@@ -1202,6 +1364,33 @@ _C_LABEL(doreti_iret):
 	addq	$TF_RIP,%rsp
 	iretq
 #endif /* !defined(GPROF) && defined(DDBPROF) */
+	.text
+
+#ifdef DIAGNOSTIC
+.Lintr_exit_not_blocked:
+	xchgw	%bx, %bx
+	movl	warn_once(%rip),%edi
+	testl	%edi,%edi
+	jnz	1f
+	incl	%edi
+	movl	%edi,warn_once(%rip)
+	leaq	.Lnot_blocked(%rip),%rdi
+	call	_C_LABEL(printf)
+#ifdef DDB
+	int	$3
+#endif /* DDB */
+1:	cli
+	jmp	intr_fast_exit
+
+	.data
+.global warn_once
+warn_once:
+	.long	0
+	.section .rodata
+.Lnot_blocked:
+	.asciz	"WARNING: INTERRUPTS NOT BLOCKED ON INTERRUPT RETURN: 0x%x 0x%x\n"
+	.text
+#endif
 
 ENTRY(xrstor_user)
 	movq	%rsi, %rdx
