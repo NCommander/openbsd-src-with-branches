@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: State.pm,v 1.48 2017/12/23 12:35:47 espie Exp $
+# $OpenBSD: State.pm,v 1.49 2018/02/26 13:04:30 espie Exp $
 #
 # Copyright (c) 2007-2014 Marc Espie <espie@openbsd.org>
 #
@@ -179,7 +179,7 @@ sub safe
 	my ($self, $string) = @_;
 	my @l = split(/\n/, $string);
 	s/[[:^print:]]/?/g for @l;
-	return join("\n", $string);
+	return join("\n", @l);
 }
 
 sub f
