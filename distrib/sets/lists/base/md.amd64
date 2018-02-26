@@ -68,7 +68,6 @@
 ./sbin/wsconsctl
 ./usr/bin/objcopy
 ./usr/bin/pctr
-./usr/include/amd64/cpu_full.h
 ./usr/lib/crtbegin.o
 ./usr/lib/crtbeginS.o
 ./usr/lib/crtend.o
