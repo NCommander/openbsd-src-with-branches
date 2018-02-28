@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.252 2018/02/07 01:03:10 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.253 2018/02/10 23:25:15 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -151,12 +151,6 @@ struct interface_info {
 	struct proposal		*configured;
 	struct client_lease_tq	 lease_db;
 };
-
-#ifdef DEBUG
-#define DPRINTF(...)	log_debug(__VA_ARGS__)
-#else
-#define DPRINTF(...)	do {} while(0)
-#endif
 
 #define	_PATH_DHCLIENT_CONF	"/etc/dhclient.conf"
 #define	_PATH_LEASE_DB		"/var/db/dhclient.leases"
