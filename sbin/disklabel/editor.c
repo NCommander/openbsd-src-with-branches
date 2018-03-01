@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.313 2018/02/25 17:24:44 krw Exp $	*/
+/*	$OpenBSD: editor.c,v 1.314 2018/02/27 14:58:05 krw Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -727,10 +727,13 @@ editor_resize(struct disklabel *lp, char *p)
 	}
 	secs = getuint64(lp, "[+|-]new size (with unit)",
 	    "new size or amount to grow (+) or shrink (-) partition including unit",
-	    sz, editor_countfree(lp), 0, DO_CONVERSIONS);
+	    sz, sz + editor_countfree(lp), 0, DO_CONVERSIONS);
 
-	if (secs <= 0) {
+	if (secs == ULLONG_MAX - 1) {
 		fputs("Command aborted\n", stderr);
+		return;
+	} else if (secs == ULLONG_MAX) {
+		fputs("Invalid entry\n", stderr);
 		return;
 	}
 
