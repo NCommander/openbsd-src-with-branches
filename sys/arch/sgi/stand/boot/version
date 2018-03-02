@@ -1,4 +1,4 @@
-/*	$OpenBSD: version,v 1.8 2016/09/13 18:27:49 jasper Exp $	*/
+/*	$OpenBSD: version,v 1.9 2016/10/05 11:55:45 visa Exp $	*/
 /* Public domain. Come on, this can hardly be considered as code. */
 
 #if 0
@@ -38,6 +38,9 @@ No version strings up to 2012
 	Use the OpenBSD disklabel instead of assuming OpenBSD partition `a`
 	starts at the beginning of the volume header partition #0.
 
+1.9
+	Fix non-512 byte per sector media, broken in 1.8.
+
 #endif
 
-static const char version[] = "1.8";
+static const char version[] = "1.9";
