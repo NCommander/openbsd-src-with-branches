@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.23 2016/09/03 14:25:27 bluhm Exp $	*/
+/*	$OpenBSD: param.h,v 1.24 2017/09/06 04:44:39 dlg Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -75,7 +75,7 @@
 #define	NMBCLUSTERS	(256 * 1024)		/* max cluster allocation */
 
 #ifndef	MSGBUFSIZE
-#define	MSGBUFSIZE	(16 * PAGE_SIZE)	/* default message buffer size */
+#define	MSGBUFSIZE	(24 * PAGE_SIZE)	/* default message buffer size */
 #endif
 
 /*
