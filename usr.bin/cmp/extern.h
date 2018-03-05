@@ -1,4 +1,4 @@
-/*      $OpenBSD: extern.h,v 1.4 2003/06/03 02:56:06 millert Exp $      */
+/*      $OpenBSD: extern.h,v 1.5 2007/02/23 16:00:04 millert Exp $      */
 /*      $NetBSD: extern.h,v 1.2 1995/09/08 03:22:57 tls Exp $      */
 
 /*-
@@ -39,5 +39,9 @@ void	c_regular(int, char *, off_t, off_t, int, char *, off_t, off_t);
 void	c_special(int, char *, off_t, int, char *, off_t);
 void	diffmsg(char *, char *, off_t, off_t);
 void	eofmsg(char *);
+void	fatal(const char *, ...)
+	    __attribute__((__noreturn__, __format__ (printf, 1, 2)));
+void	fatalx(const char *, ...)
+	    __attribute__((__noreturn__, __format__ (printf, 1, 2)));
 
 extern int lflag, sflag;
