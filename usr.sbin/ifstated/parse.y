@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.46 2017/08/20 17:49:29 rob Exp $	*/
+/*	$OpenBSD: parse.y,v 1.47 2017/08/21 17:38:55 rob Exp $	*/
 
 /*
  * Copyright (c) 2004 Ryan McBride <mcbride@openbsd.org>
@@ -416,7 +416,7 @@ lookup(char *s)
 u_char	*parsebuf;
 int	 parseindex;
 u_char	 pushback_buffer[MAXPUSHBACK];
-int	 pushback_index;
+int	 pushback_index = 0;
 
 int
 lgetc(int quotec)
