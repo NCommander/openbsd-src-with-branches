@@ -46,7 +46,7 @@ The
 .Fn tls_init
 function initializes global data structures.
 It should be called once before any other functions.
-It may be called more than once, and may be called concurrently.
+It may be called more than once, but not concurrently.
 .Pp
 Before a connection is created, a configuration must be created.
 The
