@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.28 2018/01/31 23:23:16 kettenis Exp $ */
+/* $OpenBSD: machdep.c,v 1.29 2018/02/06 20:35:21 naddy Exp $ */
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -1121,6 +1121,7 @@ collect_kernel_args(char *args)
 	/* Make a local copy of the bootargs */
 	strncpy(bootargs, args, MAX_BOOT_STRING - sizeof(int));
 }
+
 void
 process_kernel_args(void)
 {
@@ -1132,11 +1133,6 @@ process_kernel_args(void)
 	}
 
 	boothowto = 0;
-
-	/* Make a local copy of the bootargs */
-	strncpy(bootargs, cp, MAX_BOOT_STRING - sizeof(int));
-
-	cp = bootargs;
 	boot_file = bootargs;
 
 	/* Skip the kernel image filename */
