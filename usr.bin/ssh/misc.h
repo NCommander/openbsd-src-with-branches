@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.69 2017/12/05 23:59:47 dtucker Exp $ */
+/* $OpenBSD: misc.h,v 1.70 2018/01/08 15:21:49 markus Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -75,6 +75,8 @@ void	 lowercase(char *s);
 int	 unix_listener(const char *, int, int);
 int	 valid_domain(char *, int, const char **);
 const char *atoi_err(const char *, int *);
+int	 parse_absolute_time(const char *, uint64_t *);
+void	 format_absolute_time(uint64_t, char *, size_t);
 
 struct passwd *pwcopy(struct passwd *);
 const char *ssh_gai_strerror(int);
