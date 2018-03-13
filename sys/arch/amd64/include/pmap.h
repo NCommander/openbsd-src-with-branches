@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.64 2018/02/21 19:24:15 guenther Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.65 2018/02/26 03:12:41 guenther Exp $	*/
 /*	$NetBSD: pmap.h,v 1.1 2003/04/26 18:39:46 fvdl Exp $	*/
 
 /*
@@ -334,9 +334,11 @@ extern u_long PTDpaddr;
 
 extern struct pmap kernel_pmap_store;	/* kernel pmap */
 
-extern paddr_t ptp_masks[];
-extern int ptp_shifts[];
-extern long nkptp[], nbpd[], nkptpmax[];
+extern long nkptp[];
+
+extern const paddr_t ptp_masks[];
+extern const int ptp_shifts[];
+extern const long nbpd[], nkptpmax[];
 
 /*
  * macros
