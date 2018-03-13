@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.253 2018/01/16 19:44:34 benno Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.254 2018/03/12 23:38:42 dlg Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -888,7 +888,11 @@ m_pullup(struct mbuf *n, int len)
 	if (len <= n->m_len)
 		return (n);
 
-	adj = (unsigned long)n->m_data & ALIGNBYTES;
+	m = n;
+	while (m->m_len == 0)
+		m = m->m_next;
+	adj = (unsigned long)m->m_data & ALIGNBYTES;
+
 	head = (caddr_t)ALIGN(mtod(n, caddr_t) - M_LEADINGSPACE(n)) + adj;
 	tail = mtod(n, caddr_t) + n->m_len + M_TRAILINGSPACE(n);
 
