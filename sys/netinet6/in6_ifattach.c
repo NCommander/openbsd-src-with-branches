@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_ifattach.c,v 1.104 2017/09/01 16:48:27 florian Exp $	*/
+/*	$OpenBSD: in6_ifattach.c,v 1.105 2018/02/10 05:52:08 florian Exp $	*/
 /*	$KAME: in6_ifattach.c,v 1.124 2001/07/18 08:32:51 jinmei Exp $	*/
 
 /*
@@ -244,7 +244,7 @@ in6_get_soii_ifid(struct ifnet *ifp, struct in6_addr *in6)
 	SHA512Update(&ctx, ip6_soiikey, sizeof(ip6_soiikey));
 	SHA512Final(digest, &ctx);
 
-	bcopy(digest, &in6->s6_addr[8], 8);
+	bcopy(digest + (sizeof(digest) - 8), &in6->s6_addr[8], 8);
 
 	return 0;
 }
