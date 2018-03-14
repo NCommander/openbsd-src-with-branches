@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.40 2018/01/05 13:34:52 jca Exp $	*/
+/*	$OpenBSD: config.c,v 1.41 2018/01/26 05:34:41 ccardenas Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -263,7 +263,8 @@ config_setvm(struct privsep *ps, struct vmd_vm *vm, uint32_t peerid, uid_t uid)
 	for (i = 0 ; i < vcp->vcp_ndisks; i++) {
                 /* Stat disk[i] to ensure it is a regular file */
 		if ((diskfds[i] =
-		    open(vcp->vcp_disks[i], O_RDWR)) == -1) {
+		    open(vcp->vcp_disks[i], O_RDWR | O_EXLOCK | O_NONBLOCK)) ==
+		        -1) {
 			log_warn("%s: can't open disk %s", __func__,
 			    vcp->vcp_disks[i]);
 			errno = VMD_DISK_MISSING;
