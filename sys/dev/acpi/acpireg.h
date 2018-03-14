@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpireg.h,v 1.38 2017/02/25 20:09:20 jcs Exp $	*/
+/*	$OpenBSD: acpireg.h,v 1.39 2017/03/12 21:30:44 jcs Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
@@ -760,5 +760,6 @@ struct acpi_ivrs {
 #define ACPI_DEV_IOSA	"ACPI000B"	/* IO SAPIC Device */
 #define ACPI_DEV_THZ	"THERMALZONE"	/* Thermal Zone */
 #define ACPI_DEV_FFB	"FIXEDBUTTON"	/* Fixed Feature Button */
+#define ACPI_DEV_IPMI	"IPI0001"	/* IPMI */
 
 #endif	/* !_DEV_ACPI_ACPIREG_H_ */
