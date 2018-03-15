@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.c,v 1.129 2017/02/09 00:43:58 bluhm Exp $ */
+/*	$OpenBSD: ip_ah.c,v 1.129.4.1 2018/02/01 22:07:24 bluhm Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -583,7 +583,16 @@ ah_input(struct mbuf *m, struct tdb *tdb, int skip, int protoff)
 		    "in SA %s/%08x\n", hl * sizeof(u_int32_t),
 		    ipsp_address(&tdb->tdb_dst, buf, sizeof(buf)),
 		    ntohl(tdb->tdb_spi)));
-
+		ahstat.ahs_badauthl++;
+		m_freem(m);
+		return EACCES;
+	}
+	if (skip + ahx->authsize + rplen > m->m_pkthdr.len) {
+		DPRINTF(("%s: bad mbuf length %d (expecting %d) "
+		    "for packet in SA %s/%08x\n", __func__,
+		    m->m_pkthdr.len, skip + ahx->authsize + rplen,
+		    ipsp_address(&tdb->tdb_dst, buf, sizeof(buf)),
+		    ntohl(tdb->tdb_spi)));
 		ahstat.ahs_badauthl++;
 		m_freem(m);
 		return EACCES;
