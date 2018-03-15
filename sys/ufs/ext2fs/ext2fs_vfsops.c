@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vfsops.c,v 1.101 2017/12/30 23:08:29 guenther Exp $	*/
+/*	$OpenBSD: ext2fs_vfsops.c,v 1.102 2018/02/10 05:24:23 deraadt Exp $	*/
 /*	$NetBSD: ext2fs_vfsops.c,v 1.1 1997/06/11 09:34:07 bouyer Exp $	*/
 
 /*
@@ -798,8 +798,10 @@ ext2fs_sync(struct mount *mp, int waitfor, int stall,
 #endif
 		} else {
 			fs->e2fs.e2fs_state = 0;
+#if 0
 			printf("%s force dirty (dangling %d inflight %d)\n",
 			    mp->mnt_stat.f_mntonname, esa.nlink0, esa.inflight);
+#endif
 		}
 	}		
 	if (fs->e2fs_fmod != 0) {
