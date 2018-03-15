@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.15 2015/12/02 05:06:26 mmcc Exp $	*/
+/*	$OpenBSD: tty.c,v 1.16 2015/12/14 13:59:42 tb Exp $	*/
 
 #include <errno.h>
 #include <fcntl.h>
@@ -50,8 +50,8 @@ tty_init(int init_ttystate)
 		}
 	}
 	if ((tty_fd = fcntl(tfd, F_DUPFD_CLOEXEC, FDBASE)) < 0) {
-		warningf(false, "j_ttyinit: dup of tty fd failed: %s",
-		    strerror(errno));
+		warningf(false, "%s: dup of tty fd failed: %s",
+		    __func__, strerror(errno));
 	} else if (init_ttystate)
 		tcgetattr(tty_fd, &tty_state);
 	if (do_close)

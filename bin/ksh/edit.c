@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.62 2018/01/15 14:58:05 jca Exp $	*/
+/*	$OpenBSD: edit.c,v 1.63 2018/01/16 22:52:32 jca Exp $	*/
 
 /*
  * Command line editing - common code
@@ -372,7 +372,7 @@ x_file_glob(int flags, const char *str, int slen, char ***wordsp)
 	source = s;
 	if (yylex(ONEWORD|UNESCAPE) != LWORD) {
 		source = sold;
-		internal_warningf("fileglob: substitute error");
+		internal_warningf("%s: substitute error", __func__);
 		return 0;
 	}
 	source = sold;
