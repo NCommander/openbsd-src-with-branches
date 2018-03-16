@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.233 2018/02/11 00:24:13 dlg Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.234 2018/02/19 08:59:53 mpi Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -1040,7 +1040,7 @@ ip6_ctloutput(int op, struct socket *so, int level, int optname,
 	void *optdata;
 	struct inpcb *inp = sotoinpcb(so);
 	int error, optval;
-	struct proc *p = curproc; /* For IPSec and rdomain */
+	struct proc *p = curproc; /* For IPsec and rdomain */
 	u_int rtid = 0;
 
 	error = optval = 0;
