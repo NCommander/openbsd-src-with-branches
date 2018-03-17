@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.179 2018/02/22 17:30:25 jsing Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.180 2018/03/15 12:27:01 jca Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1991,10 +1991,22 @@ SSL_CTX_up_ref(SSL_CTX *ctx)
 	return ((refs > 1) ? 1 : 0);
 }
 
+pem_password_cb *
+SSL_CTX_get_default_passwd_cb(SSL_CTX *ctx)
+{
+	return (ctx->default_passwd_callback);
+}
+
 void
 SSL_CTX_set_default_passwd_cb(SSL_CTX *ctx, pem_password_cb *cb)
 {
 	ctx->default_passwd_callback = cb;
+}
+
+void *
+SSL_CTX_get_default_passwd_cb_userdata(SSL_CTX *ctx)
+{
+	return ctx->default_passwd_callback_userdata;
 }
 
 void
