@@ -1,4 +1,4 @@
-/* $OpenBSD: ocsp_cl.c,v 1.13 2016/12/30 15:31:58 jsing Exp $ */
+/* $OpenBSD: ocsp_cl.c,v 1.14 2017/01/29 17:49:23 beck Exp $ */
 /* Written by Tom Titchener <Tom_Titchener@groove.net> for the OpenSSL
  * project. */
 
@@ -389,4 +389,10 @@ OCSP_check_validity(ASN1_GENERALIZEDTIME *thisupd,
 	}
 
 	return 1;
+}
+
+const OCSP_CERTID *
+OCSP_SINGLERESP_get0_id(const OCSP_SINGLERESP *single)
+{
+	return single->certId;
 }
