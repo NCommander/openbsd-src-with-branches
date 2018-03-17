@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_sess.c,v 1.74 2018/02/22 17:25:18 jsing Exp $ */
+/* $OpenBSD: ssl_sess.c,v 1.75 2018/03/17 14:26:13 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -822,7 +822,7 @@ SSL_SESSION_set_time(SSL_SESSION *s, long t)
 }
 
 int
-SSL_SESSION_get_protocol_version(SSL_SESSION *s)
+SSL_SESSION_get_protocol_version(const SSL_SESSION *s)
 {
 	return s->ssl_version;
 }
