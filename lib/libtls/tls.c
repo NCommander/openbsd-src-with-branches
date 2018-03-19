@@ -1,4 +1,4 @@
-/* $OpenBSD: tls.c,v 1.76 2018/03/07 17:17:47 beck Exp $ */
+/* $OpenBSD: tls.c,v 1.78 2018/03/08 16:12:00 beck Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -47,13 +47,12 @@ tls_do_init(void)
 	if (BIO_sock_init() != 1)
 		return;
 
-	if ((tls_config_default = tls_config_new()) == NULL)
+	if ((tls_config_default = tls_config_new_internal()) == NULL)
 		return;
 
 	tls_config_default->refcount++;
 
 	tls_init_rv = 0;
-	return;
 }
 
 int

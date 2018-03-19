@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_client.c,v 1.43 2017/08/10 18:18:30 jsing Exp $ */
+/* $OpenBSD: tls_client.c,v 1.44 2018/02/10 04:41:24 jsing Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -37,6 +37,9 @@ struct tls *
 tls_client(void)
 {
 	struct tls *ctx;
+
+	if (tls_init() == -1)
+		return (NULL);
 
 	if ((ctx = tls_new()) == NULL)
 		return (NULL);
