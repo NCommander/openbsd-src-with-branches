@@ -1,4 +1,4 @@
-/*	$OpenBSD: pthread_once.c,v 1.1 2018/03/08 16:07:36 beck Exp $ */
+/*	$OpenBSD: pthread_once.c,v 1.2 2018/03/15 13:27:40 beck Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>s
  * Copyright (c) 2018 Bob Beck <beck@openbsd.org>
@@ -40,3 +40,4 @@ pthread_self(void)
 	/* needs to differ from 0 inited value. */
 	return (pthread_t) 1;
 }
+DEF_STRONG(pthread_self);
