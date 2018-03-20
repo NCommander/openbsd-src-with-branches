@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmcchip.h,v 1.9 2016/05/05 20:40:48 kettenis Exp $	*/
+/*	$OpenBSD: sdmmcchip.h,v 1.10 2017/12/24 12:55:52 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -46,6 +46,8 @@ struct sdmmc_chip_functions {
 	void	(*card_intr_ack)(sdmmc_chipset_handle_t);
 	/* UHS functions */
 	int		(*signal_voltage)(sdmmc_chipset_handle_t, int);
+	/* hibernate */
+	int	(*hibernate_init)(sdmmc_chipset_handle_t, void *);
 };
 
 /* host controller reset */
