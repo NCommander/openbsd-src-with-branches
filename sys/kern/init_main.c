@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.273 2018/01/11 18:58:17 patrick Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.274 2018/02/28 18:47:33 patrick Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -124,6 +124,7 @@ extern	struct user *proc0paddr;
 struct	vnode *rootvp, *swapdev_vp;
 int	boothowto;
 struct	timespec boottime;
+int	db_active = 0;
 int	ncpus =  1;
 int	ncpusfound = 1;			/* number of cpus we find */
 volatile int start_init_exec;		/* semaphore for start_init() */

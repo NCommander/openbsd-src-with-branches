@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prf.c,v 1.92 2017/12/30 20:47:00 guenther Exp $	*/
+/*	$OpenBSD: subr_prf.c,v 1.93 2018/01/05 11:10:25 pirofti Exp $	*/
 /*	$NetBSD: subr_prf.c,v 1.45 1997/10/24 18:14:25 chuck Exp $	*/
 
 /*-
@@ -216,6 +216,8 @@ panic(const char *fmt, ...)
 void
 splassert_fail(int wantipl, int haveipl, const char *func)
 {
+	if (panicstr || db_active)
+		return;
 
 	printf("splassert: %s: want %d have %d\n", func, wantipl, haveipl);
 	switch (splassert_ctl) {

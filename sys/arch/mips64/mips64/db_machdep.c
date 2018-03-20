@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.47 2016/09/19 17:59:19 jasper Exp $ */
+/*	$OpenBSD: db_machdep.c,v 1.48 2017/08/26 15:21:48 visa Exp $ */
 
 /*
  * Copyright (c) 1998-2003 Opsycon AB (www.opsycon.se)
@@ -76,7 +76,6 @@ boolean_t        db_switch_cpu;
 long             db_switch_to_cpu;
 #endif
 
-int   db_active = 0;
 db_regs_t ddb_regs;
 
 #ifdef MULTIPROCESSOR
