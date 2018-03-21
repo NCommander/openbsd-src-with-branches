@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio.c,v 1.166 2017/11/23 06:07:55 ratchov Exp $	*/
+/*	$OpenBSD: audio.c,v 1.167 2018/01/10 09:03:26 ratchov Exp $	*/
 /*
  * Copyright (c) 2015 Alexandre Ratchov <alex@caoua.org>
  *
@@ -462,7 +462,7 @@ audio_rintr(void *addr)
 
 	sc->rec.pos += sc->rec.blksz;
 	audio_buf_wcommit(&sc->rec, sc->rec.blksz);
-	if (sc->rec.used == sc->rec.len) {
+	if (sc->rec.used > sc->rec.len - sc->rec.blksz) {
 		DPRINTFN(1, "%s: rec overrun\n", DEVNAME(sc));
 		sc->rec.xrun += sc->rec.blksz;
 		audio_buf_rdiscard(&sc->rec, sc->rec.blksz);
