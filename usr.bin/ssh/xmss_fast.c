@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: xmss_fast.c,v 1.2 2018/02/26 03:56:44 dtucker Exp $ */
 /*
 xmss_fast.c version 20160722
 Andreas Hülsing
@@ -6,11 +6,11 @@ Joost Rijneveld
 Public domain.
 */
 
-#include "xmss_fast.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 
+#include "xmss_fast.h"
 #include "crypto_api.h"
 #include "xmss_wots.h"
 #include "xmss_hash.h"
