@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_vpm.c,v 1.15 2016/12/21 15:15:45 jsing Exp $ */
+/* $OpenBSD: x509_vpm.c,v 1.16 2017/12/09 07:09:25 deraadt Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2004.
  */
@@ -130,6 +130,8 @@ int_x509_param_set_hosts(X509_VERIFY_PARAM_ID *id, int mode,
 {
 	char *copy;
 
+	if (name != NULL && namelen == 0)
+		namelen = strlen(name);
 	/*
 	 * Refuse names with embedded NUL bytes.
 	 * XXX: Do we need to push an error onto the error stack?
