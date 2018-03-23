@@ -1,4 +1,4 @@
-.\" $OpenBSD: X509_STORE_CTX_new.3,v 1.13 2018/03/22 16:06:33 schwarze Exp $
+.\" $OpenBSD: X509_STORE_CTX_new.3,v 1.14 2018/03/22 17:11:04 schwarze Exp $
 .\" full merge up to: OpenSSL 186bb907 Apr 13 11:05:13 2015 -0700
 .\" selective merge up to: OpenSSL 7643a172 Apr 21 13:35:51 2017 +0200
 .\"
@@ -340,8 +340,13 @@ first appeared in OpenSSL 0.9.5 and have been available since
 first appeared in OpenSSL 0.9.6 and has been available since
 .Ox 2.9 .
 .Pp
-.Fn X509_STORE_CTX_set0_crls
-was first added to OpenSSL 1.0.0.
+.Fn X509_STORE_CTX_set0_crls ,
+.Fn X509_STORE_CTX_get0_param ,
+.Fn X509_STORE_CTX_set0_param ,
+and
+.Fn X509_STORE_CTX_set_default
+first appeared in OpenSSL 0.9.8 and have been available since
+.Ox 4.5 .
 .Sh BUGS
 The certificates and CRLs in a context are used internally and should
 .Sy not

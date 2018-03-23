@@ -1,4 +1,4 @@
-.\" $OpenBSD: OPENSSL_sk_new.3,v 1.5 2018/03/22 17:11:04 schwarze Exp $
+.\" $OpenBSD: OPENSSL_sk_new.3,v 1.6 2018/03/22 22:07:12 schwarze Exp $
 .\"
 .\" Copyright (c) 2018 Ingo Schwarze <schwarze@openbsd.org>
 .\"
@@ -560,6 +560,10 @@ first appeared in OpenSSL 0.9.6 and has been available since
 .Fn sk_is_sorted
 first appeared in OpenSSL 0.9.7e and has been available since
 .Ox 3.8 .
+.Pp
+.Fn sk_find_ex
+first appeared in OpenSSL 0.9.8 and has been available since
+.Ox 4.5 .
 .Sh BUGS
 .Fn sk_set
 does not set the state of the
