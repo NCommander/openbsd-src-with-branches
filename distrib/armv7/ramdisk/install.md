@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.47 2017/08/22 23:27:52 jsg Exp $
+#	$OpenBSD: install.md,v 1.48 2017/09/01 04:40:40 jsg Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -101,7 +101,7 @@ md_prep_fdisk() {
 		else
 			echo "MBR has invalid signature; not showing it."
 		fi
-		ask "Use (W)hole disk$ or (E)dit the MBR?" "$_d"
+		ask "Use (W)hole disk or (E)dit the MBR?" "$_d"
 		case $resp in
 		[wW]*)
 			echo -n "Creating a ${bootfstype} partition and an OpenBSD partition for rest of $_disk..."
