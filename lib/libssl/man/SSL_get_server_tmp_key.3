@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: SSL_get_server_tmp_key.3,v 1.1 2017/04/10 15:54:46 schwarze Exp $
 .\"	OpenSSL SSL_get_server_tmp_key.pod 508fafd8 Apr 3 15:41:21 2017 +0100
 .\"
 .\" This file was written by Matt Caswell <matt@openssl.org>
@@ -82,3 +82,7 @@ returns 1 on success or 0 on failure.
 .Sh SEE ALSO
 .Xr EVP_PKEY_free 3 ,
 .Xr SSL_ctrl 3
+.Sh HISTORY
+.Fn SSL_get_server_tmp_key
+first appeared in OpenSSL 1.0.2 and have been available since
+.Ox 6.1 .
