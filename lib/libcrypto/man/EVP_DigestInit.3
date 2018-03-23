@@ -1,4 +1,4 @@
-.\" $OpenBSD: EVP_DigestInit.3,v 1.12 2018/03/22 16:06:33 schwarze Exp $
+.\" $OpenBSD: EVP_DigestInit.3,v 1.13 2018/03/22 21:08:22 schwarze Exp $
 .\" full merge up to: OpenSSL 7f572e95 Dec 2 13:57:04 2015 +0000
 .\" selective merge up to: OpenSSL a95d7574 Jul 2 12:16:38 2017 -0400
 .\"
@@ -668,10 +668,25 @@ and
 first appeared in OpenSSL 0.9.7 and have been available since
 .Ox 3.2 .
 .Pp
-.Fn EVP_MD_CTX_new
+.Fn EVP_sha224 ,
+.Fn EVP_sha256 ,
+.Fn EVP_sha384 ,
 and
-.Fn EVP_MD_CTX_free
-first appeared in OpenSSL 1.1.0.
+.Fn EVP_sha512
+first appeared in OpenSSL 0.8.7h and have been available since
+.Ox 4.0 .
+.Pp
+.Fn EVP_MD_CTX_ctrl
+first appeared in OpenSSL 1.1.0 and has been available since
+.Ox 5.7 .
+.Pp
+.Fn EVP_MD_CTX_new ,
+.Fn EVP_MD_CTX_reset ,
+.Fn EVP_MD_CTX_free ,
+and
+.Fn EVP_md5_sha1
+first appeared in OpenSSL 1.1.0 and have been available since
+.Ox 6.3 .
 .Pp
 The link between digests and signing algorithms was fixed in OpenSSL 1.0
 and later, so now
