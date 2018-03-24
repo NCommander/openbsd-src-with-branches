@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.268 2018/02/07 22:52:45 dtucker Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.269 2018/03/03 03:01:50 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -1006,6 +1006,8 @@ check_sigtype(const struct sshkey *key, const u_char *sig, size_t len)
 	char *sigtype = NULL;
 	const char *alg = key_sign_encode(key);
 
+	if (sshkey_is_cert(key))
+		return 0;
 	if ((r = sshkey_sigtype(sig, len, &sigtype)) != 0)
 		return r;
 	if (strcmp(sigtype, alg) != 0) {
