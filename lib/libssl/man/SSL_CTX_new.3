@@ -1,4 +1,4 @@
-.\" $OpenBSD: SSL_CTX_new.3,v 1.7 2018/03/23 00:10:28 schwarze Exp $
+.\" $OpenBSD: SSL_CTX_new.3,v 1.8 2018/03/23 05:50:30 schwarze Exp $
 .\" full merge up to: OpenSSL 21cd6e00 Oct 21 14:40:15 2015 +0100
 .\" selective merge up to: OpenSSL eb43101f Dec 9 18:07:09 2016 +0100
 .\"
@@ -269,3 +269,14 @@ and
 .Fn TLSv1_2_client_method
 first appeared in OpenSSL 1.0.1 and have been available since
 .Ox 5.3 .
+.Pp
+.Fn TLS_method ,
+.Fn TLS_server_method ,
+and
+.Fn TLS_client_method
+first appeared in OpenSSL 1.1.0 and have been available since
+.Ox 5.8 .
+.Pp
+.Fn SSL_CTX_up_ref
+first appeared in OpenSSL 1.1.0 and has been available since
+.Ox 6.3 .
