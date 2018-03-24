@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.215 2018/02/19 08:59:52 mpi Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.216 2018/02/26 13:33:25 mpi Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -1833,7 +1833,7 @@ userret(struct proc *p)
 		KERNEL_UNLOCK();
 	}
 
-	if (CURSIG(p) != 0) {
+	if (SIGPENDING(p)) {
 		KERNEL_LOCK();
 		while ((signum = CURSIG(p)) != 0)
 			postsig(p, signum);
