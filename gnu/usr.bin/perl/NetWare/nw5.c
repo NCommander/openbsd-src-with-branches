@@ -1,6 +1,6 @@
 
 /*
- * Copyright © 2001 Novell, Inc. All Rights Reserved.
+ * Copyright Â© 2001 Novell, Inc. All Rights Reserved.
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Artistic License, as specified in the README file.
@@ -318,7 +318,7 @@ nw_crypt(const char *txt, const char *salt)
     return des_fcrypt(txt, salt, w32_crypt_buffer);
 #else
     Perl_croak(aTHX_ "The crypt() function is not implemented on NetWare\n");
-    return Nullch;
+    return NULL;
 #endif
 }
 
@@ -567,7 +567,7 @@ nw_rmdir(const char *dir)
 }
 
 DIR *
-nw_opendir(char *filename)
+nw_opendir(const char *filename)
 {
 	char	*buff = NULL;
 	int		len = 0;
@@ -843,7 +843,7 @@ sys_intern_clear(pTHX)
 void
 sys_intern_dup(pTHX_ struct interp_intern *src, struct interp_intern *dst)
 {
-
+    PERL_ARGS_ASSERT_SYS_INTERN_DUP;
 }
 #endif	/* HAVE_INTERP_INTERN */
 
@@ -869,12 +869,6 @@ perl_clone_host(PerlInterpreter* proto_perl, UV flags)
 #endif
 
 // Some more functions:
-
-char *
-nw_get_sitelib(const char *pl)
-{
-    return (NULL);
-}
 
 int
 execv(char *cmdname, char **argv)
@@ -922,8 +916,8 @@ do_aspawn(void *vreally, void **vmark, void **vsp)
 	return -1;
 
 	nw_perlshell_items = 0;	// No Shell
-//    New(1306, argv, (sp - mark) + nw_perlshell_items + 3, char*);	// In the old code of 5.6.1
-    New(1306, argv, (sp - mark) + nw_perlshell_items + 2, char*);
+//    Newx(argv, (sp - mark) + nw_perlshell_items + 3, char*);	// In the old code of 5.6.1
+    Newx(argv, (sp - mark) + nw_perlshell_items + 2, char*);
 
     if (SvNIOKp(*(mark+1)) && !SvPOKp(*(mark+1))) {
 	++mark;
@@ -987,8 +981,8 @@ do_spawn2(char *cmd, int exectype)
     /* Save an extra exec if possible. See if there are shell
      * metacharacters in it */
     if (!has_shell_metachars(cmd)) {
-	New(1301,argv, strlen(cmd) / 2 + 2, char*);
-	New(1302,cmd2, strlen(cmd) + 1, char);
+	Newx(argv, strlen(cmd) / 2 + 2, char*);
+	Newx(cmd2, strlen(cmd) + 1, char);
 	strcpy(cmd2, cmd);
 	a = argv;
 	for (s = cmd2; *s;) {
@@ -1001,7 +995,7 @@ do_spawn2(char *cmd, int exectype)
 	    if (*s)
 		*s++ = '\0';
 	}
-	*a = Nullch;
+	*a = NULL;
 	if (argv[0]) {
 	    switch (exectype) {
 			case EXECF_SPAWN:
@@ -1027,11 +1021,11 @@ do_spawn2(char *cmd, int exectype)
 	char **argv = NULL;
 	int i = -1;
 
-	New(1306, argv, nw_perlshell_items + 2, char*);
+	Newx(argv, nw_perlshell_items + 2, char*);
 	while (++i < nw_perlshell_items)
 	    argv[i] = nw_perlshell_vec[i];
 	argv[i++] = cmd;
-	argv[i] = Nullch;
+	argv[i] = NULL;
 	switch (exectype) {
 		case EXECF_SPAWN:
 			status = nw_spawnvp(P_WAIT, argv[0], (char **)argv);

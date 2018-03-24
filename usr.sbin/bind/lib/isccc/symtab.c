@@ -1,31 +1,33 @@
 /*
+ * Portions Copyright (C) 2004, 2005, 2007  Internet Systems Consortium, Inc. ("ISC")
  * Portions Copyright (C) 2001  Internet Software Consortium.
  * Portions Copyright (C) 2001  Nominum, Inc.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM AND
- * NOMINUM DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING
- * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT
- * SHALL INTERNET SOFTWARE CONSORTIUM OR NOMINUM BE LIABLE FOR ANY
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC AND NOMINUM DISCLAIMS ALL
+ * WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY
  * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: symtab.c,v 1.3 2001/06/04 19:33:39 tale Exp $ */
+/* $ISC: symtab.c,v 1.5.18.4 2007/09/13 23:46:26 tbox Exp $ */
+
+/*! \file */
 
 #include <config.h>
 
 #include <ctype.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include <isc/assertions.h>
 #include <isc/magic.h>
+#include <isc/string.h>
 
 #include <isccc/result.h>
 #include <isccc/symtab.h>
@@ -65,10 +67,10 @@ isccc_symtab_create(unsigned int size,
 	REQUIRE(symtabp != NULL && *symtabp == NULL);
 	REQUIRE(size > 0);	/* Should be prime. */
 
-	symtab = malloc(sizeof *symtab);
+	symtab = malloc(sizeof(*symtab));
 	if (symtab == NULL)
 		return (ISC_R_NOMEMORY);
-	symtab->table = malloc(size * sizeof (eltlist_t));
+	symtab->table = malloc(size * sizeof(eltlist_t));
 	if (symtab->table == NULL) {
 		free(symtab);
 		return (ISC_R_NOMEMORY);
@@ -220,7 +222,7 @@ isccc_symtab_define(isccc_symtab_t *symtab, char *key, unsigned int type,
 						  elt->value,
 						  symtab->undefine_arg);
 	} else {
-		elt = malloc(sizeof *elt);
+		elt = malloc(sizeof(*elt));
 		if (elt == NULL)
 			return (ISC_R_NOMEMORY);
 		ISC_LINK_INIT(elt, link);

@@ -1,21 +1,23 @@
 /*
+ * Copyright (C) 2004, 2005  Internet Systems Consortium, Inc. ("ISC")
  * Copyright (C) 2000, 2001  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: keytable.c,v 1.26 2001/06/04 19:33:03 tale Exp $ */
+/* $ISC: keytable.c,v 1.28.18.4 2005/12/05 00:00:03 marka Exp $ */
+
+/*! \file */
 
 #include <config.h>
 
@@ -77,7 +79,7 @@ dns_keytable_create(isc_mem_t *mctx, dns_keytable_t **keytablep) {
 
 	REQUIRE(keytablep != NULL && *keytablep == NULL);
 
-	keytable = isc_mem_get(mctx, sizeof *keytable);
+	keytable = isc_mem_get(mctx, sizeof(*keytable));
 	if (keytable == NULL)
 		return (ISC_R_NOMEMORY);
 
@@ -87,22 +89,12 @@ dns_keytable_create(isc_mem_t *mctx, dns_keytable_t **keytablep) {
 		goto cleanup_keytable;
 
 	result = isc_mutex_init(&keytable->lock);
-	if (result != ISC_R_SUCCESS) {
-		UNEXPECTED_ERROR(__FILE__, __LINE__,
-				 "isc_mutex_init() failed: %s",
-				 isc_result_totext(result));
-		result = ISC_R_UNEXPECTED;
+	if (result != ISC_R_SUCCESS)
 		goto cleanup_rbt;
-	}
 
 	result = isc_rwlock_init(&keytable->rwlock, 0, 0);
-	if (result != ISC_R_SUCCESS) {
-		UNEXPECTED_ERROR(__FILE__, __LINE__,
-				 "isc_rwlock_init() failed: %s",
-				 isc_result_totext(result));
-		result = ISC_R_UNEXPECTED;
+	if (result != ISC_R_SUCCESS)
 		goto cleanup_lock;
-	}
 
 	keytable->mctx = mctx;
 	keytable->active_nodes = 0;
@@ -119,7 +111,7 @@ dns_keytable_create(isc_mem_t *mctx, dns_keytable_t **keytablep) {
 	dns_rbt_destroy(&keytable->table);
 
    cleanup_keytable:
-	isc_mem_put(mctx, keytable, sizeof *keytable);
+	isc_mem_put(mctx, keytable, sizeof(*keytable));
 
 	return (result);
 }
@@ -175,7 +167,7 @@ dns_keytable_detach(dns_keytable_t **keytablep) {
 		isc_rwlock_destroy(&keytable->rwlock);
 		DESTROYLOCK(&keytable->lock);
 		keytable->magic = 0;
-		isc_mem_put(keytable->mctx, keytable, sizeof *keytable);
+		isc_mem_put(keytable->mctx, keytable, sizeof(*keytable));
 	}
 
 	*keytablep = NULL;
@@ -197,7 +189,7 @@ dns_keytable_add(dns_keytable_t *keytable, dst_key_t **keyp) {
 
 	keyname = dst_key_name(*keyp);
 
-	knode = isc_mem_get(keytable->mctx, sizeof *knode);
+	knode = isc_mem_get(keytable->mctx, sizeof(*knode));
 	if (knode == NULL)
 		return (ISC_R_NOMEMORY);
 
@@ -219,7 +211,7 @@ dns_keytable_add(dns_keytable_t *keytable, dst_key_t **keyp) {
 	RWUNLOCK(&keytable->rwlock, isc_rwlocktype_write);
 
 	if (knode != NULL)
-		isc_mem_put(keytable->mctx, knode, sizeof *knode);
+		isc_mem_put(keytable->mctx, knode, sizeof(*knode));
 
 	return (result);
 }
@@ -244,6 +236,13 @@ dns_keytable_findkeynode(dns_keytable_t *keytable, dns_name_t *name,
 
 	RWLOCK(&keytable->rwlock, isc_rwlocktype_read);
 
+	/*
+	 * Note we don't want the DNS_R_PARTIALMATCH from dns_rbt_findname()
+	 * as that indicates that 'name' was not found.
+	 *
+	 * DNS_R_PARTIALMATCH indicates that the name was found but we
+	 * didn't get a match on algorithm and key id arguments.
+	 */
 	knode = NULL;
 	data = NULL;
 	result = dns_rbt_findname(keytable->table, name, 0, NULL, &data);
@@ -261,7 +260,7 @@ dns_keytable_findkeynode(dns_keytable_t *keytable, dns_name_t *name,
 			UNLOCK(&keytable->lock);
 			*keynodep = knode;
 		} else
-			result = ISC_R_NOTFOUND;
+			result = DNS_R_PARTIALMATCH;
 	} else if (result == DNS_R_PARTIALMATCH)
 		result = ISC_R_NOTFOUND;
 

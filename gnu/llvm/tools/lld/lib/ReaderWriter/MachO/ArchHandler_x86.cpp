@@ -70,6 +70,10 @@ public:
     return delta32;
   }
 
+  Reference::KindValue lazyImmediateLocationKind() override {
+    return lazyImmediateLocation;
+  }
+
   Reference::KindValue unwindRefToEhFrameKind() override {
     return invalid;
   }
@@ -118,14 +122,7 @@ public:
                                 normalized::Relocations &relocs) override;
 
   bool isDataInCodeTransition(Reference::KindValue refKind) override {
-    switch (refKind) {
-    case modeCode:
-    case modeData:
-      return true;
-    default:
-      return false;
-      break;
-    }
+    return refKind == modeCode || refKind == modeData;
   }
 
   Reference::KindValue dataInCodeTransitionStart(
@@ -345,7 +342,7 @@ ArchHandler_x86::getReferenceInfo(const Relocation &reloc,
   default:
     return llvm::make_error<GenericError>("unsupported i386 relocation type");
   }
-  return llvm::Error();
+  return llvm::Error::success();
 }
 
 llvm::Error
@@ -403,7 +400,7 @@ ArchHandler_x86::getPairReferenceInfo(const normalized::Relocation &reloc1,
         *addend = fromAddress + value - toAddress;
       }
     }
-    return llvm::Error();
+    return llvm::Error::success();
     break;
   default:
     return llvm::make_error<GenericError>("unsupported i386 relocation type");
