@@ -1,4 +1,4 @@
-.\"	$OpenBSD: OBJ_nid2obj.3,v 1.9 2018/03/21 16:09:51 schwarze Exp $
+.\"	$OpenBSD: OBJ_nid2obj.3,v 1.10 2018/03/21 21:18:08 schwarze Exp $
 .\"	OpenSSL c264592d May 14 11:28:00 2006 +0000
 .\"
 .\" This file is a derived work.
@@ -378,10 +378,11 @@ obj = OBJ_txt2obj("1.2.3.4", 1);
 .Fn OBJ_sn2nid ,
 .Fn OBJ_txt2nid ,
 .Fn OBJ_cmp ,
-.Fn OBJ_dup ,
 and
+.Fn OBJ_dup
+first appeared in SSLeay 0.5.1.
 .Fn OBJ_cleanup
-appeared in SSLeay 0.8.1b or earlier.
+first appeared in SSLeay 0.8.0.
 .Fn OBJ_create
 and
 .Fn i2t_ASN1_OBJECT
