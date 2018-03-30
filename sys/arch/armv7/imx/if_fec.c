@@ -1,4 +1,4 @@
-/* $OpenBSD: if_fec.c,v 1.20 2017/01/22 10:17:37 dlg Exp $ */
+/* $OpenBSD: if_fec.c,v 1.21 2018/03/11 17:58:52 kettenis Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -46,7 +46,6 @@
 
 #include <armv7/armv7/armv7var.h>
 #include <armv7/imx/imxccmvar.h>
-#include <armv7/imx/imxgpiovar.h>
 
 #include <dev/ofw/openfirm.h>
 #include <dev/ofw/ofw_gpio.h>
