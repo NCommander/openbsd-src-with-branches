@@ -1,4 +1,4 @@
-/* $OpenBSD: imxahci.c,v 1.6 2016/07/27 11:45:02 patrick Exp $ */
+/* $OpenBSD: imxahci.c,v 1.7 2016/08/04 15:52:52 kettenis Exp $ */
 /*
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -29,7 +29,6 @@
 #include <dev/ic/ahcireg.h>
 #include <dev/ic/ahcivar.h>
 
-#include <armv7/armv7/armv7var.h>
 #include <armv7/imx/imxccmvar.h>
 #include <armv7/imx/imxiomuxcvar.h>
 
