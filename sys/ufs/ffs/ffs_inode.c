@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_inode.c,v 1.75 2015/11/28 21:52:02 beck Exp $	*/
+/*	$OpenBSD: ffs_inode.c,v 1.76 2016/02/27 18:50:38 natano Exp $	*/
 /*	$NetBSD: ffs_inode.c,v 1.10 1996/05/11 18:27:19 mycroft Exp $	*/
 
 /*
@@ -560,7 +560,7 @@ ffs_indirtrunc(struct inode *ip, daddr_t lbn, daddr_t dbn,
 		}
 	}
 	if (copy != NULL) {
-		free(copy, M_TEMP, 0);
+		free(copy, M_TEMP, fs->fs_bsize);
 	} else {
 		bp->b_flags |= B_INVAL;
 		brelse(bp);
