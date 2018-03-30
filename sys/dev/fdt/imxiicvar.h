@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: imxiicvar.h,v 1.1 2013/09/06 20:45:54 patrick Exp $ */
 /*
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
  *
