@@ -1,3 +1,4 @@
+/* $OpenBSD: imxgpio.c,v 1.1 2018/03/30 19:38:00 patrick Exp $ */
 /*
  * Copyright (c) 2016 Mark Kettenis <kettenis@openbsd.org>
  *
