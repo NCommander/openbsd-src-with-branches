@@ -1,6 +1,6 @@
-.\"	$OpenBSD: plrtc.4,v 1.2 2016/08/06 00:40:54 jsg Exp $
+.\"	$OpenBSD: psci.4,v 1.1 2016/10/09 23:50:20 jsg Exp $
 .\"
-.\" Copyright (c) 2015 Jonathan Gray <jsg@openbsd.org>
+.\" Copyright (c) 2016 Jonathan Gray <jsg@openbsd.org>
 .\"
 .\" Permission to use, copy, modify, and distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -14,24 +14,21 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: August 6 2016 $
-.Dt PLRTC 4 armv7
+.Dd $Mdocdate: October 9 2016 $
+.Dt PSCI 4
 .Os
 .Sh NAME
-.Nm plrtc
-.Nd ARM PrimeCell PL031 Real-time clock
+.Nm psci
+.Nd Power State Coordination Interface
 .Sh SYNOPSIS
-.Cd "plrtc* at fdt?"
+.Cd "psci* at fdt?"
 .Sh DESCRIPTION
 The
 .Nm
-driver supports the ARM PrimeCell PL031 real-time clock.
+driver handles system reset and power down for systems that conform
+to the ARM Power State Coordination Interface specification.
+.Sh SEE ALSO
 .Rs
-.%T ARM PrimeCell Real Time Clock (PL031) Technical Reference Manual
-.%V ARM DDI 0224
+.%T Power State Coordination Interface (PSCI) specification
+.%N ARM DEN 0022C
 .Re
-.Sh HISTORY
-The
-.Nm
-driver first appeared in
-.Ox 5.8 .

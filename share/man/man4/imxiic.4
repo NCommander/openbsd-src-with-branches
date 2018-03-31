@@ -1,6 +1,6 @@
-.\"	$OpenBSD$
+.\"     $OpenBSD: imxiic.4,v 1.2 2016/06/10 02:56:15 jsg Exp $
 .\"
-.\" Copyright (c) 2016 Jonathan Gray <jsg@openbsd.org>
+.\" Copyright (c) 2014 Sylvestre Gallon <syl@openbsd.org>
 .\"
 .\" Permission to use, copy, modify, and distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -14,21 +14,30 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate$
-.Dt PSCI 4 armv7
+.Dd $Mdocdate: June 10 2016 $
+.Dt IMXIIC 4
 .Os
 .Sh NAME
-.Nm psci
-.Nd Power State Coordination Interface
+.Nm imxiic
+.Nd i.MX6 onboard I2C controller
 .Sh SYNOPSIS
-.Cd "psci* at fdt?"
+.Cd "imxiic at fdt?"
+.Cd "iic* at imxiic?"
 .Sh DESCRIPTION
 The
 .Nm
-driver handles system reset and power down for systems that conform
-to the ARM Power State Coordination Interface specification.
+driver provides support for the I2C controller found on the Freescale
+i.MX6 processor family.
 .Sh SEE ALSO
-.Rs
-.%T Power State Coordination Interface (PSCI) specification
-.%N ARM DEN 0022C
-.Re
+.Xr iic 4 ,
+.Xr intro 4
+.Sh HISTORY
+The
+.Nm
+driver first appeared in
+.Ox 5.5 .
+.Sh AUTHORS
+The
+.Nm
+driver was written by
+.An Patrick Wildt Aq Mt patrick@blueri.se .
