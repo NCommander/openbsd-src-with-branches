@@ -1,4 +1,4 @@
-/*	$OpenBSD: armv7_machdep.c,v 1.49 2017/05/02 21:39:45 kettenis Exp $ */
+/*	$OpenBSD: machdep.c,v 1.29 2018/02/06 20:35:21 naddy Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -149,6 +149,7 @@
 BootConfig bootconfig;		/* Boot config storage */
 char *boot_args = NULL;
 char *boot_file = "";
+uint8_t *bootmac = NULL;
 u_int cpu_reset_address = 0;
 
 vaddr_t physical_start;
@@ -437,16 +438,23 @@ initarm(void *arg0, void *arg1, void *arg2, paddr_t loadaddr)
 
 	node = fdt_find_node("/chosen");
 	if (node != NULL) {
-		char *args, *duid;
+		char *prop;
 		int len;
+		static uint8_t lladdr[6];
 
-		len = fdt_node_property(node, "bootargs", &args);
+		len = fdt_node_property(node, "bootargs", &prop);
 		if (len > 0)
-			process_kernel_args(args);
+			process_kernel_args(prop);
 
-		len = fdt_node_property(node, "openbsd,bootduid", &duid);
+		len = fdt_node_property(node, "openbsd,bootduid", &prop);
 		if (len == sizeof(bootduid))
-			memcpy(bootduid, duid, sizeof(bootduid));
+			memcpy(bootduid, prop, sizeof(bootduid));
+
+		len = fdt_node_property(node, "openbsd,bootmac", &prop);
+		if (len == sizeof(lladdr)) {
+			memcpy(lladdr, prop, sizeof(lladdr));
+			bootmac = lladdr;
+		}
 	}
 
 	node = fdt_find_node("/memory");
