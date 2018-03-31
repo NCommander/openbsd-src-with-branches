@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2017/07/17 13:46:53 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.3 2018/01/21 21:35:34 patrick Exp $
 
 NOMAN=		#
 
@@ -30,6 +30,7 @@ SRCS+=	close.c closeall.c cons.c cread.c dev.c disklabel.c dkcksum.c fstat.c \
 	lseek.c open.c read.c readdir.c stat.c
 SRCS+=	loadfile.c
 SRCS+=	ufs.c
+SRCS+=	arp.c ether.c globals.c in_cksum.c net.c netif.c netudp.c tftp.c
 
 .PATH:	${S}/lib/libkern/arch/arm64 ${S}/lib/libkern
 SRCS+=	divdi3.c moddi3.c qdivrem.c strlcpy.c strlen.c
