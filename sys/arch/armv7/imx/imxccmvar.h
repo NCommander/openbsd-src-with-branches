@@ -1,4 +1,4 @@
-/* $OpenBSD: imxccmvar.h,v 1.3 2016/12/28 22:45:24 kettenis Exp $ */
+/* $OpenBSD: imxccmvar.h,v 1.4 2018/04/01 18:50:54 patrick Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -25,6 +25,5 @@ void imxccm_enable_pll_usb1(void);
 void imxccm_enable_pll_usb2(void);
 void imxccm_enable_enet(void);
 void imxccm_enable_sata(void);
-void imxccm_enable_pcie(void);
 
 #endif /* IMXCCMVAR_H */
