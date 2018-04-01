@@ -1,4 +1,4 @@
-/*	$OpenBSD: apply.c,v 1.27 2015/10/10 17:48:34 deraadt Exp $	*/
+/*	$OpenBSD: apply.c,v 1.28 2018/03/27 10:00:16 tobias Exp $	*/
 /*	$NetBSD: apply.c,v 1.3 1995/03/25 03:38:23 glass Exp $	*/
 
 /*-
@@ -59,7 +59,12 @@ stradd(char *p)
 	size_t n;
 
 	n = strlen(p);
-	if (str == NULL || sz - strlen(str) <= n) {
+	if (str == NULL) {
+		sz = (n / 1024 + 1) * 1024;
+		if ((str = malloc(sz)) == NULL)
+			err(1, "malloc");
+		*str = '\0';
+	} else if (sz - strlen(str) <= n) {
 		sz += (n / 1024 + 1) * 1024;
 		if ((str = realloc(str, sz)) == NULL)
 			err(1, "realloc");
