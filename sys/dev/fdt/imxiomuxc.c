@@ -1,4 +1,4 @@
-/* $OpenBSD: imxiomuxc.c,v 1.11 2018/04/02 17:43:08 patrick Exp $ */
+/* $OpenBSD: imxiomuxc.c,v 1.1 2018/04/02 17:45:38 patrick Exp $ */
 /*
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -68,7 +68,8 @@ imxiomuxc_match(struct device *parent, void *match, void *aux)
 	    OF_is_compatible(faa->fa_node, "fsl,imx6dl-iomuxc") ||
 	    OF_is_compatible(faa->fa_node, "fsl,imx6sl-iomuxc") ||
 	    OF_is_compatible(faa->fa_node, "fsl,imx6sx-iomuxc") ||
-	    OF_is_compatible(faa->fa_node, "fsl,imx6ul-iomuxc"));
+	    OF_is_compatible(faa->fa_node, "fsl,imx6ul-iomuxc") ||
+	    OF_is_compatible(faa->fa_node, "fsl,imx8mq-iomuxc"));
 }
 
 void
