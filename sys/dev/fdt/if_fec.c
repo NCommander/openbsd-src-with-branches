@@ -1,4 +1,4 @@
-/* $OpenBSD: if_fec.c,v 1.24 2018/04/01 18:50:54 patrick Exp $ */
+/* $OpenBSD: if_fec.c,v 1.25 2018/04/02 16:39:20 patrick Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
