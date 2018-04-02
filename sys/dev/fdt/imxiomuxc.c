@@ -1,4 +1,4 @@
-/* $OpenBSD: imxiomuxc.c,v 1.10 2018/04/02 12:47:22 patrick Exp $ */
+/* $OpenBSD: imxiomuxc.c,v 1.11 2018/04/02 17:43:08 patrick Exp $ */
 /*
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2016 Mark Kettenis <kettenis@openbsd.org>
