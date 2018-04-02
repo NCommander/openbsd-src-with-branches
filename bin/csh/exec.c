@@ -1,4 +1,5 @@
-/*	$NetBSD: exec.c,v 1.8 1995/05/23 19:47:16 christos Exp $	*/
+/*	$OpenBSD: exec.c,v 1.18 2015/10/28 22:18:53 naddy Exp $	*/
+/*	$NetBSD: exec.c,v 1.9 1996/09/30 20:03:54 christos Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,16 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)exec.c	8.3 (Berkeley) 5/23/95";
-#else
-static char rcsid[] = "$NetBSD: exec.c,v 1.8 1995/05/23 19:47:16 christos Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
-#include <sys/param.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -50,11 +38,8 @@ static char rcsid[] = "$NetBSD: exec.c,v 1.8 1995/05/23 19:47:16 christos Exp $"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif 
+#include <limits.h>
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
@@ -103,24 +88,22 @@ static int hits, misses;
 /* Dummy search path for just absolute search when no path */
 static Char *justabs[] = {STRNULL, 0};
 
-static void	pexerr __P((void));
-static void	texec __P((Char *, Char **));
-static int	hashname __P((Char *));
-static void 	tellmewhat __P((struct wordent *));
-static int	executable __P((Char *, Char *, bool));
-static int	iscommand __P((Char *));
+static void	pexerr(void);
+static void	texec(Char *, Char **);
+static int	hashname(Char *);
+static int	tellmewhat(struct wordent *, Char *, int len);
+static int	executable(Char *, Char *, bool);
+static int	iscommand(Char *);
 
 
 void
 /*ARGSUSED*/
-doexec(v, t)
-    Char **v;
-    struct command *t;
+doexec(Char **v, struct command *t)
 {
-    register Char *dp, **pv, **av, *sav;
-    register struct varent *pathv;
-    register bool slash;
-    register int hashval = 0, hashval1, i;
+    Char *dp, **pv, **av, *sav;
+    struct varent *pathv;
+    bool slash;
+    int hashval = 0, hashval1, i;
     Char   *blk[2];
     sigset_t sigset;
 
@@ -176,8 +159,8 @@ doexec(v, t)
 
     blkfree(t->t_dcom);
     t->t_dcom = blkspl(pv, av);
-    xfree((ptr_t) pv);
-    xfree((ptr_t) av);
+    free(pv);
+    free(av);
     av = t->t_dcom;
     trim(av);
 
@@ -233,7 +216,7 @@ doexec(v, t)
 	    Vdp = dp;
 	    texec(dp, av);
 	    Vdp = 0;
-	    xfree((ptr_t) dp);
+	    free(dp);
 	}
 	misses++;
 cont:
@@ -242,18 +225,18 @@ cont:
     } while (*pv);
     hits--;
     Vsav = 0;
-    xfree((ptr_t) sav);
+    free(sav);
     pexerr();
 }
 
 static void
-pexerr()
+pexerr(void)
 {
     /* Couldn't find the damn thing */
     if (expath) {
 	setname(vis_str(expath));
 	Vexpath = 0;
-	xfree((ptr_t) expath);
+	free(expath);
 	expath = 0;
     }
     else
@@ -269,14 +252,12 @@ pexerr()
  * Also do shell scripts here.
  */
 static void
-texec(sf, st)
-    Char   *sf;
-    register Char **st;
+texec(Char *sf, Char **st)
 {
-    register char **t;
-    register char *f;
-    register struct varent *v;
-    register Char **vp;
+    char **t;
+    char *f;
+    struct varent *v;
+    Char **vp;
     Char   *lastsh[2];
     int     fd;
     unsigned char c;
@@ -307,10 +288,8 @@ texec(sf, st)
 		    stderror(ERR_ARCH, f, strerror(errno));
 		}
 	    }
-#ifdef _PATH_BSHELL
 	    else
 		c = '#';
-#endif
 	    (void) close(fd);
 	}
 	/*
@@ -323,10 +302,8 @@ texec(sf, st)
 	    vp = lastsh;
 	    vp[0] = adrof(STRshell) ? value(STRshell) : STR_SHELLPATH;
 	    vp[1] = NULL;
-#ifdef _PATH_BSHELL
 	    if (fd != -1 && c != '#')
 		vp[0] = STR_BSHELL;
-#endif
 	}
 	else
 	    vp = v->vec;
@@ -339,7 +316,7 @@ texec(sf, st)
 	/* The order for the conversions is significant */
 	t = short2blk(st);
 	f = short2str(sf);
-	xfree((ptr_t) st);
+	free(st);
 	Vt = t;
 	(void) execve(f, t, environ);
 	Vt = 0;
@@ -356,7 +333,7 @@ texec(sf, st)
 	if (exerr == 0) {
 	    exerr = strerror(errno);
 	    if (expath)
-		xfree((ptr_t) expath);
+		free(expath);
 	    expath = Strsave(sf);
 	    Vexpath = expath;
 	}
@@ -365,9 +342,7 @@ texec(sf, st)
 
 /*ARGSUSED*/
 void
-execash(t, kp)
-    Char  **t;
-    register struct command *kp;
+execash(Char **t, struct command *kp)
 {
     int     saveIN, saveOUT, saveDIAG, saveSTD;
     int     oSHIN;
@@ -435,8 +410,7 @@ execash(t, kp)
 }
 
 void
-xechoit(t)
-    Char  **t;
+xechoit(Char **t)
 {
     if (adrof(STRecho)) {
 	(void) fflush(csherr);
@@ -447,13 +421,11 @@ xechoit(t)
 
 void
 /*ARGSUSED*/
-dohash(v, t)
-    Char **v;
-    struct command *t;
+dohash(Char **v, struct command *t)
 {
     DIR    *dirp;
-    register struct dirent *dp;
-    register int cnt;
+    struct dirent *dp;
+    int cnt;
     int     i = 0;
     struct varent *pathv = adrof(STRpath);
     Char  **pv;
@@ -487,18 +459,14 @@ dohash(v, t)
 
 void
 /*ARGSUSED*/
-dounhash(v, t)
-    Char **v;
-    struct command *t;
+dounhash(Char **v, struct command *t)
 {
     havhash = 0;
 }
 
 void
 /*ARGSUSED*/
-hashstat(v, t)
-    Char **v;
-    struct command *t;
+hashstat(Char **v, struct command *t)
 {
     if (hits + misses)
 	(void) fprintf(cshout, "%d hits, %d misses, %d%%\n",
@@ -509,10 +477,9 @@ hashstat(v, t)
  * Hash a command name.
  */
 static int
-hashname(cp)
-    register Char *cp;
+hashname(Char *cp)
 {
-    register long h = 0;
+    long h = 0;
 
     while (*cp)
 	h = hash(h, *cp++);
@@ -520,14 +487,13 @@ hashname(cp)
 }
 
 static int
-iscommand(name)
-    Char   *name;
+iscommand(Char *name)
 {
-    register Char **pv;
-    register Char *sav;
-    register struct varent *v;
-    register bool slash = any(short2str(name), '/');
-    register int hashval = 0, hashval1, i;
+    Char **pv;
+    Char *sav;
+    struct varent *v;
+    bool slash = any(short2str(name), '/');
+    int hashval = 0, hashval1, i;
 
     v = adrof(STRpath);
     if (v == 0 || v->vec[0] == 0 || slash)
@@ -546,13 +512,13 @@ iscommand(name)
 	}
 	if (pv[0][0] == 0 || eq(pv[0], STRdot)) {	/* don't make ./xxx */
 	    if (executable(NULL, name, 0)) {
-		xfree((ptr_t) sav);
+		free(sav);
 		return i + 1;
 	    }
 	}
 	else {
 	    if (executable(*pv, sav, 0)) {
-		xfree((ptr_t) sav);
+		free(sav);
 		return i + 1;
 	    }
 	}
@@ -560,7 +526,7 @@ cont:
 	pv++;
 	i++;
     } while (*pv);
-    xfree((ptr_t) sav);
+    free(sav);
     return 0;
 }
 
@@ -581,22 +547,20 @@ cont:
  * This is a bit kludgy, but in the name of optimization...
  */
 static int
-executable(dir, name, dir_ok)
-    Char   *dir, *name;
-    bool    dir_ok;
+executable(Char *dir, Char *name, bool dir_ok)
 {
     struct stat stbuf;
-    Char    path[MAXPATHLEN + 1], *dp, *sp;
+    Char    path[PATH_MAX], *dp, *sp;
     char   *strname;
 
     if (dir && *dir) {
 	for (dp = path, sp = dir; *sp; *dp++ = *sp++)
-	    if (dp == &path[MAXPATHLEN + 1]) {
+	    if (dp == &path[PATH_MAX]) {
 		*--dp = '\0';
 		break;
 	    }
 	for (sp = name; *sp; *dp++ = *sp++)
-	    if (dp == &path[MAXPATHLEN + 1]) {
+	    if (dp == &path[PATH_MAX]) {
 		*--dp = '\0';
 		break;
 	    }
@@ -623,9 +587,7 @@ executable(dir, name, dir_ok)
  */
 /*ARGSUSED*/
 void
-dowhich(v, c)
-    register Char **v;
-    struct command *c;
+dowhich(Char **v, struct command *c)
 {
     struct wordent lex[3];
     struct varent *vp;
@@ -646,28 +608,28 @@ dowhich(v, c)
 	    (void) fprintf(cshout, "%s: \t aliased to ", vis_str(*v));
 	    blkpr(cshout, vp->vec);
 	    (void) fputc('\n', cshout);
+	    set(STRstatus, Strsave(STR0));
 	}
 	else {
 	    lex[1].word = *v;
-	    tellmewhat(lex);
+	    set(STRstatus, Strsave(tellmewhat(lex, NULL, 0) ? STR0 : STR1));
 	}
     }
 }
 
-static void
-tellmewhat(lex)
-    struct wordent *lex;
+static int
+tellmewhat(struct wordent *lexp, Char *str, int len)
 {
-    register int i;
-    register struct biltins *bptr;
-    register struct wordent *sp = lex->next;
-    bool    aliased = 0;
+    int i;
+    struct biltins *bptr;
+    struct wordent *sp = lexp->next;
+    bool    aliased = 0, found;
     Char   *s0, *s1, *s2, *cmd;
     Char    qc;
 
     if (adrof1(sp->word, &aliases)) {
-	alias(lex);
-	sp = lex->next;
+	alias(lexp);
+	sp = lexp->next;
 	aliased = 1;
     }
 
@@ -700,20 +662,24 @@ tellmewhat(lex)
 
     for (bptr = bfunc; bptr < &bfunc[nbfunc]; bptr++) {
 	if (eq(sp->word, str2short(bptr->bname))) {
-	    if (aliased)
-		prlex(cshout, lex);
-	    (void) fprintf(cshout, "%s: shell built-in command.\n", 
+	    if (str == NULL) {
+	        if (aliased)
+		        prlex(cshout, lexp);
+	        (void) fprintf(cshout, "%s: shell built-in command.\n",
 			   vis_str(sp->word));
+	    }
+	    else
+		(void) Strlcpy(str, sp->word, len/sizeof(Char));
 	    sp->word = s0;	/* we save and then restore this */
-	    return;
+	    return 1;
 	}
     }
 
     sp->word = cmd = globone(sp->word, G_IGNORE);
 
-    if ((i = iscommand(strip(sp->word))) != 0) {
-	register Char **pv;
-	register struct varent *v;
+    if ((i = iscommand(sp->word)) != 0) {
+	Char **pv;
+	struct varent *v;
 	bool    slash = any(short2str(sp->word), '/');
 
 	v = adrof(STRpath);
@@ -727,26 +693,36 @@ tellmewhat(lex)
 	if (pv[0][0] == 0 || eq(pv[0], STRdot)) {
 	    if (!slash) {
 		sp->word = Strspl(STRdotsl, sp->word);
-		prlex(cshout, lex);
-		xfree((ptr_t) sp->word);
+		prlex(cshout, lexp);
+		free(sp->word);
 	    }
 	    else
-		prlex(cshout, lex);
-	    sp->word = s0;	/* we save and then restore this */
-	    xfree((ptr_t) cmd);
-	    return;
+		prlex(cshout, lexp);
 	}
-	s1 = Strspl(*pv, STRslash);
-	sp->word = Strspl(s1, sp->word);
-	xfree((ptr_t) s1);
-	prlex(cshout, lex);
-	xfree((ptr_t) sp->word);
+	else {
+	    s1 = Strspl(*pv, STRslash);
+	    sp->word = Strspl(s1, sp->word);
+	    free(s1);
+	    if (str == NULL)
+		prlex(cshout, lexp);
+	    else
+		(void) Strlcpy(str, sp->word, len/sizeof(Char));
+	    free(sp->word);
+        }
+	found = 1;
     }
     else {
-	if (aliased)
-	    prlex(cshout, lex);
-	(void) fprintf(csherr, "%s: Command not found.\n", vis_str(sp->word));
+	if (str == NULL) {
+	    if (aliased)
+		prlex(cshout, lexp);
+	    (void) fprintf(csherr,
+			   "%s: Command not found.\n", vis_str(sp->word));
+	}
+	else
+	    (void) Strlcpy(str, sp->word, len/sizeof(Char));
+	found = 0;
     }
     sp->word = s0;		/* we save and then restore this */
-    xfree((ptr_t) cmd);
+    free(cmd);
+    return found;
 }

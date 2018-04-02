@@ -157,10 +157,8 @@ sub ::file_end
 	}
     }
     if (grep {/\b${nmdecor}OPENSSL_ia32cap_P\b/i} @out) {
-	my $tmp=".comm\t${nmdecor}OPENSSL_ia32cap_P,8";
-	if ($::macosx)	{ push (@out,"$tmp,2\n"); }
-	elsif ($::elf)	{ push (@out,"$tmp,4\n"); }
-	else		{ push (@out,"$tmp\n"); }
+	push (@out, ".extern\t${nmdecor}OPENSSL_ia32cap_P\n");
+	push (@out, ".hidden\t${nmdecor}OPENSSL_ia32cap_P\n");
     }
     push(@out,$initseg) if ($initseg);
 }
@@ -182,6 +180,15 @@ sub ::align
 sub ::picmeup
 { my($dst,$sym,$base,$reflabel)=@_;
 
+    if ($::openbsd)
+    {  &::emitraw("#if defined(PIC) || defined(__PIC__)");
+       &::emitraw("PIC_PROLOGUE");
+       &::mov($dst, &::DWP("PIC_GOT($sym)"));
+       &::emitraw("PIC_EPILOGUE");
+       &::emitraw("#else /* PIC */");
+       &::lea($dst,&::DWP($sym));
+       &::emitraw("#endif /* PIC */");
+    }
     if (($::pic && ($::elf || $::aout)) || $::macosx)
     {	if (!defined($base))
 	{   &::call(&::label("PIC_me_up"));
@@ -208,7 +215,14 @@ sub ::picmeup
 sub ::initseg
 { my $f=$nmdecor.shift;
 
-    if ($::android)
+    if ($::openbsd)
+    {	$initseg.=<<___;
+.section	.init
+PIC_PROLOGUE
+	call	PIC_PLT($f)
+PIC_EPILOGUE
+___
+    } elsif ($::android)
     {	$initseg.=<<___;
 .section	.init_array
 .align	4

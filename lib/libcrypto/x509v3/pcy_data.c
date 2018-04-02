@@ -1,4 +1,4 @@
-/* pcy_data.c */
+/* $OpenBSD: pcy_data.c,v 1.8 2014/07/11 08:44:49 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2004.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -56,7 +56,6 @@
  *
  */
 
-#include "cryptlib.h"
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
@@ -64,16 +63,17 @@
 
 /* Policy Node routines */
 
-void policy_data_free(X509_POLICY_DATA *data)
-	{
+void
+policy_data_free(X509_POLICY_DATA *data)
+{
 	ASN1_OBJECT_free(data->valid_policy);
 	/* Don't free qualifiers if shared */
 	if (!(data->flags & POLICY_DATA_FLAG_SHARED_QUALIFIERS))
 		sk_POLICYQUALINFO_pop_free(data->qualifier_set,
-					POLICYQUALINFO_free);
+		    POLICYQUALINFO_free);
 	sk_ASN1_OBJECT_pop_free(data->expected_policy_set, ASN1_OBJECT_free);
-	OPENSSL_free(data);
-	}
+	free(data);
+}
 
 /* Create a data based on an existing policy. If 'id' is NULL use the
  * oid in the policy, otherwise use 'id'. This behaviour covers the two
@@ -82,54 +82,48 @@ void policy_data_free(X509_POLICY_DATA *data)
  * another source.
  */
 
-X509_POLICY_DATA *policy_data_new(POLICYINFO *policy,
-					const ASN1_OBJECT *cid, int crit)
-	{
-	X509_POLICY_DATA *ret;
-	ASN1_OBJECT *id;
-	if (!policy && !cid)
+X509_POLICY_DATA *
+policy_data_new(POLICYINFO *policy, const ASN1_OBJECT *cid, int crit)
+{
+	X509_POLICY_DATA *ret = NULL;
+	ASN1_OBJECT *id = NULL;
+
+	if (policy == NULL && cid == NULL)
 		return NULL;
-	if (cid)
-		{
+	if (cid != NULL) {
 		id = OBJ_dup(cid);
-		if (!id)
+		if (id == NULL)
 			return NULL;
-		}
-	else
-		id = NULL;
-	ret = OPENSSL_malloc(sizeof(X509_POLICY_DATA));
-	if (!ret)
-		return NULL;
+	}
+	ret = malloc(sizeof(X509_POLICY_DATA));
+	if (ret == NULL)
+		goto err;
 	ret->expected_policy_set = sk_ASN1_OBJECT_new_null();
-	if (!ret->expected_policy_set)
-		{
-		OPENSSL_free(ret);
-		if (id)
-			ASN1_OBJECT_free(id);
-		return NULL;
-		}
+	if (ret->expected_policy_set == NULL)
+		goto err;
 
 	if (crit)
 		ret->flags = POLICY_DATA_FLAG_CRITICAL;
 	else
 		ret->flags = 0;
 
-	if (id)
+	if (id != NULL)
 		ret->valid_policy = id;
-	else
-		{
+	else {
 		ret->valid_policy = policy->policyid;
 		policy->policyid = NULL;
-		}
+	}
 
-	if (policy)
-		{
+	if (policy != NULL) {
 		ret->qualifier_set = policy->qualifiers;
 		policy->qualifiers = NULL;
-		}
-	else
+	} else
 		ret->qualifier_set = NULL;
 
 	return ret;
-	}
 
+err:
+	free(ret);
+	ASN1_OBJECT_free(id);
+	return NULL;
+}

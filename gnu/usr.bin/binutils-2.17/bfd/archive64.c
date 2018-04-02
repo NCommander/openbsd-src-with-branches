@@ -172,7 +172,7 @@ bfd_elf64_archive_write_armap (bfd *arch,
   memcpy (hdr.ar_name, "/SYM64/", strlen ("/SYM64/"));
   _bfd_ar_spacepad (hdr.ar_size, sizeof (hdr.ar_size), "%-10ld",
                     mapsize);
-  _bfd_ar_spacepad (hdr.ar_date, sizeof (hdr.ar_date), "%ld",
+  _bfd_ar_spacepadll (hdr.ar_date, sizeof (hdr.ar_date), "%lld",
                     time (NULL));
   /* This, at least, is what Intel coff sets the values to.: */
   _bfd_ar_spacepad (hdr.ar_uid, sizeof (hdr.ar_uid), "%ld", 0);
@@ -203,7 +203,7 @@ bfd_elf64_archive_write_armap (bfd *arch,
       /* For each symbol which is used defined in this object, write out
 	 the object file's address in the archive */
 
-      while (map[count].u.abfd == current)
+      while (count < symbol_count && map[count].u.abfd == current)
 	{
 	  bfd_putb64 ((bfd_vma) archive_member_file_ptr, buf);
 	  if (bfd_bwrite (buf, 8, arch) != 8)

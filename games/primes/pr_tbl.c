@@ -1,3 +1,4 @@
+/*	$OpenBSD: pr_tbl.c,v 1.5 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: pr_tbl.c,v 1.3 1995/03/23 08:35:52 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,14 +33,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pr_tbl.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: pr_tbl.c,v 1.3 1995/03/23 08:35:52 cgd Exp $";
-#endif
-#endif /* not lint */
-
 /*
  * prime - prime table
  *
@@ -55,9 +44,11 @@ static char rcsid[] = "$NetBSD: pr_tbl.c,v 1.3 1995/03/23 08:35:52 cgd Exp $";
  * and 65537^2 > 2^32-1.
  */
 
+#include <sys/types.h>
+
 #include "primes.h"
 
-ubig prime[] = {
+const ubig prime[] = {
 2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103,
 107,109,113,127,131,137,139,149,151,157,163,167,173,179,181,191,193,197,199,
 211,223,227,229,233,239,241,251,257,263,269,271,277,281,283,293,307,311,313,
@@ -549,4 +540,4 @@ ubig prime[] = {
 };
 
 /* pr_limit - largest prime in the prime table */
-unsigned long *pr_limit = &prime[(sizeof(prime)/sizeof(prime[0]))-1];
+const ubig *pr_limit = &prime[(sizeof(prime)/sizeof(prime[0]))-1];

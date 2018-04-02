@@ -345,9 +345,10 @@ void LinkerDriver::main(ArrayRef<const char *> ArgsArr, bool CanExitEarly) {
   if (Args.hasArg(OPT_v) || Args.hasArg(OPT_version))
     message(getLLDVersion() + " (compatible with GNU linkers)");
 
-  // ld.bfd always exits after printing out the version string.
-  // ld.gold proceeds if a given option is -v. Because gold's behavior
-  // is more permissive than ld.bfd, we chose what gold does here.
+  // The behavior of -v or --version is a bit strange, but this is
+  // needed for compatibility with GNU linkers.
+  if (Args.hasArg(OPT_v) && !Args.hasArg(OPT_INPUT))
+    return;
   if (Args.hasArg(OPT_version))
     return;
 
@@ -654,7 +655,12 @@ void LinkerDriver::readConfigs(opt::InputArgList &Args) {
   Config->OptRemarksWithHotness = Args.hasArg(OPT_opt_remarks_with_hotness);
   Config->Optimize = getInteger(Args, OPT_O, 1);
   Config->OutputFile = Args.getLastArgValue(OPT_o);
+#ifdef __OpenBSD__
+  Config->Pie = getArg(Args, OPT_pie, OPT_nopie,
+      !Args.hasArg(OPT_shared) && !Args.hasArg(OPT_relocatable));
+#else
   Config->Pie = getArg(Args, OPT_pie, OPT_nopie, false);
+#endif
   Config->PrintGcSections = Args.hasArg(OPT_print_gc_sections);
   Config->Rpath = getRpath(Args);
   Config->Relocatable = Args.hasArg(OPT_relocatable);

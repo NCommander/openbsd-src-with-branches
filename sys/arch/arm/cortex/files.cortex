@@ -1,0 +1,22 @@
+#	$OpenBSD: files.cortex,v 1.5 2016/08/04 15:52:52 kettenis Exp $
+
+# ARM core
+device	cortex {}
+attach	cortex at fdt
+file	arch/arm/cortex/cortex.c		cortex
+
+device	ampintc
+attach	ampintc at fdt
+file	arch/arm/cortex/ampintc.c		ampintc
+
+device	amptimer
+attach	amptimer at cortex
+file	arch/arm/cortex/amptimer.c		amptimer
+
+device	agtimer
+attach	agtimer at fdt
+file	arch/arm/cortex/agtimer.c		agtimer
+
+device	armliicc
+attach	armliicc at cortex
+file	arch/arm/cortex/arml2cc.c		armliicc

@@ -1,3 +1,4 @@
+/*	$OpenBSD: roll.c,v 1.6 2013/08/29 20:22:16 naddy Exp $	*/
 /*	$NetBSD: roll.c,v 1.5 1995/03/23 08:35:13 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,50 +30,18 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)roll.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: roll.c,v 1.5 1995/03/23 08:35:13 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <stdlib.h>
 
 /*
  *	This routine rolls ndie nside-sided dice.
  */
+int
+roll(int ndie, int nsides)
+{
+	int	tot;
 
-# define	reg	register
-
-# if defined(pdp11)
-# define	MAXRAND	32767L
-
-roll(ndie, nsides)
-int	ndie, nsides; {
-
-	reg long	tot;
-	reg unsigned	n, r;
-
-	tot = 0;
-	n = ndie;
-	while (n--)
-		tot += rand();
-	return (int) ((tot * (long) nsides) / ((long) MAXRAND + 1)) + ndie;
-}
-
-# else
-
-roll(ndie, nsides)
-reg int	ndie, nsides; {
-
-	reg int		tot, r;
-	reg double	num_sides;
-
-	num_sides = nsides;
 	tot = 0;
 	while (ndie--)
-		tot += (r = rand()) * (num_sides / RAND_MAX) + 1;
+		tot += arc4random_uniform(nsides) + 1;
 	return tot;
 }
-# endif

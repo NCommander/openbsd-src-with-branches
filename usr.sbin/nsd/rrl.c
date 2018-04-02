@@ -100,6 +100,27 @@ void rrl_mmap_init(int numch, size_t numbuck, size_t lm, size_t wlm, size_t sm,
 #endif
 }
 
+void rrl_mmap_deinit(void)
+{
+#ifdef HAVE_MMAP
+	size_t i;
+	for(i=0; i<rrl_maps_num; i++) {
+		munmap(rrl_maps[i], sizeof(struct rrl_bucket)*rrl_array_size);
+		rrl_maps[i] = NULL;
+	}
+	free(rrl_maps);
+	rrl_maps = NULL;
+#endif
+}
+
+void rrl_mmap_deinit_keep_mmap(void)
+{
+#ifdef HAVE_MMAP
+	free(rrl_maps);
+	rrl_maps = NULL;
+#endif
+}
+
 void rrl_set_limit(size_t lm, size_t wlm, size_t sm)
 {
 	rrl_ratelimit = lm*2;
@@ -115,6 +136,13 @@ void rrl_init(size_t ch)
 #ifdef HAVE_MMAP
 	else rrl_array = (struct rrl_bucket*)rrl_maps[ch];
 #endif
+}
+
+void rrl_deinit(size_t ch)
+{
+	if(!rrl_maps || ch >= rrl_maps_num)
+		free(rrl_array);
+	rrl_array = NULL;
 }
 
 /** return the source netblock of the query, this is the genuine source
@@ -156,7 +184,7 @@ static const char* rrlsource2str(uint64_t s, uint16_t c2)
 		if(!inet_ntop(AF_INET6, &a6, buf, sizeof(buf)))
 			strlcpy(buf, "[ip6 ntop failed]", sizeof(buf));
 		else {
-			static char prefix[4];
+			static char prefix[5];
 			snprintf(prefix, sizeof(prefix), "/%d", rrl_ipv6_prefixlen);
 			strlcat(buf, &prefix[0], sizeof(buf));
 		}
@@ -170,7 +198,7 @@ static const char* rrlsource2str(uint64_t s, uint16_t c2)
 	if(!inet_ntop(AF_INET, &a4, buf, sizeof(buf)))
 		strlcpy(buf, "[ip4 ntop failed]", sizeof(buf));
 	else {
-		static char prefix[4];
+		static char prefix[5];
 		snprintf(prefix, sizeof(prefix), "/%d", rrl_ipv4_prefixlen);
 		strlcat(buf, &prefix[0], sizeof(buf));
 	}
@@ -429,7 +457,7 @@ int rrl_process_query(query_type* query)
 {
 	uint64_t source;
 	uint32_t hash;
-	/* we can use circular arithmatic here, so int32 works after 2038 */
+	/* we can use circular arithmetic here, so int32 works after 2038 */
 	int32_t now = (int32_t)time(NULL);
 	uint32_t lm = rrl_ratelimit;
 	uint16_t flags;
@@ -449,7 +477,9 @@ int rrl_process_query(query_type* query)
 query_state_type rrl_slip(query_type* query)
 {
 	/* discard number the packets, randomly */
-#ifdef HAVE_ARC4RANDOM
+#ifdef HAVE_ARC4RANDOM_UNIFORM
+	if((rrl_slip_ratio > 0) && ((rrl_slip_ratio == 1) || ((arc4random_uniform(rrl_slip_ratio)) == 0))) {
+#elif HAVE_ARC4RANDOM
 	if((rrl_slip_ratio > 0) && ((rrl_slip_ratio == 1) || ((arc4random() % rrl_slip_ratio) == 0))) {
 #else
 	if((rrl_slip_ratio > 0) && ((rrl_slip_ratio == 1) || ((random() % rrl_slip_ratio) == 0))) {

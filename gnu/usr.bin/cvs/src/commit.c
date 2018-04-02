@@ -472,7 +472,12 @@ commit (argc, argv)
 	   operate on, and only work with those files in the future.
 	   This saves time--we don't want to search the file system
 	   of the working directory twice.  */
-	find_args.argv = (char **) xmalloc (find_args.argc * sizeof (char **));
+	if (size_overflow_p (xtimes (find_args.argc, sizeof (char **))))
+	{
+	    find_args.argc = 0;
+	    return 0;
+	}
+	find_args.argv = xmalloc (xtimes (find_args.argc, sizeof (char **)));
 	find_args.argc = 0;
 	walklist (find_args.ulist, copy_ulist, &find_args);
 
@@ -1477,7 +1482,7 @@ commit_filesdoneproc (callerdat, err, repository, update_dir, entries)
 
 	    line = NULL;
 	    line_chars_allocated = 0;
-	    line_length = getline (&line, &line_chars_allocated, fp);
+	    line_length = get_line (&line, &line_chars_allocated, fp);
 	    if (line_length > 0)
 	    {
 		/* Remove any trailing newline.  */

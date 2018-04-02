@@ -1,3 +1,4 @@
+/*	$OpenBSD: strspn.c,v 1.5 2005/08/08 08:05:37 espie Exp $ */
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,23 +28,16 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)strspn.c	5.8 (Berkeley) 1/26/91";*/
-static char *rcsid = "$Id: strspn.c,v 1.4 1995/06/15 00:08:37 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <string.h>
 
 /*
  * Span the string s2 (skip characters that are in s2).
  */
 size_t
-strspn(s1, s2)
-	const char *s1;
-	register const char *s2;
+strspn(const char *s1, const char *s2)
 {
-	register const char *p = s1, *spanp;
-	register char c, sc;
+	const char *p = s1, *spanp;
+	char c, sc;
 
 	/*
 	 * Skip any characters in s2, excluding the terminating \0.
@@ -59,3 +49,4 @@ cont:
 			goto cont;
 	return (p - 1 - s1);
 }
+DEF_STRONG(strspn);

@@ -1,3 +1,4 @@
+/*	$OpenBSD: float.h,v 1.7 2004/01/02 14:39:01 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,19 +12,16 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/*
- * @(#)float.h: $Revision: 2.14.88.2 $ $Date: 93/12/08 13:27:42 $
- * $Locker:  $
- * 
- */
-#include "../spmath/fpbits.h"
-#include "../spmath/hppa.h"
+/* @(#)float.h: Revision: 2.14.88.2 Date: 93/12/08 13:27:42 */
+
+#include "fpbits.h"
+#include "hppa.h"
 
 /*
  * Declare the basic structures for the 3 different
  * floating-point precisions.
- *        
- * Single number  
+ *
+ * Single number
  * +-------+-------+-------+-------+-------+-------+-------+-------+
  * |s|       exp     |               mantissa                      |
  * +-------+-------+-------+-------+-------+-------+-------+-------+
@@ -75,7 +73,7 @@
 #define	Is_sbit30(object) Bitfield_mask( 30,  1,object)
 #define	Is_sbit31(object) Bitfield_mask( 31,  1,object)
 
-/* 
+/*
  * Double number.
  * +-------+-------+-------+-------+-------+-------+-------+-------+
  * |s|       exponent      |          mantissa part 1              |
@@ -152,7 +150,7 @@
 #define Is_dbit30p2(object) Bitfield_mask( 30,  1,object)
 #define Is_dbit31p2(object) Bitfield_mask( 31,  1,object)
 
-/* 
+/*
  * Quad number.
  * +-------+-------+-------+-------+-------+-------+-------+-------+
  * |s|          exponent           |      mantissa part 1          |
@@ -214,7 +212,7 @@ typedef struct
 	Bitfield_extract( 1, 31,u_qlow31p3,qlow31p3)
 	Bitfield_extract( 0,  1,u_qhighp3,qhighp3)
 	Bitfield_extract( 0, 31,u_qhigh31p3,qhigh31p3)
-   */ 
+   */
 	} quad_u3;
     union
 	{
@@ -240,15 +238,15 @@ typedef struct
 /*
  * Declare the basic structures for the 3 different
  * fixed-point precisions.
- *        
- * Single number  
+ *
+ * Single number
  * +-------+-------+-------+-------+-------+-------+-------+-------+
  * |s|                    integer                                  |
  * +-------+-------+-------+-------+-------+-------+-------+-------+
  */
 typedef int sgl_integer;
 
-/* 
+/*
  * Double number.
  * +-------+-------+-------+-------+-------+-------+-------+-------+
  * |s|                     high integer                            |
@@ -259,16 +257,16 @@ typedef int sgl_integer;
  * +-------+-------+-------+-------+-------+-------+-------+-------+
  */
 struct dint {
-        int  wd0;
-        unsigned int wd1;
+	int  wd0;
+	unsigned int wd1;
 };
 
 struct dblwd {
-        unsigned int wd0;
-        unsigned int wd1;
+	unsigned int wd0;
+	unsigned int wd1;
 };
 
-/* 
+/*
  * Quad number.
  * +-------+-------+-------+-------+-------+-------+-------+-------+
  * |s|                  integer part1                              |
@@ -288,10 +286,10 @@ struct dblwd {
  */
 
 struct quadwd {
-        int  wd0;
-        unsigned int wd1;
-        unsigned int wd2;
-        unsigned int wd3;
+	int  wd0;
+	unsigned int wd1;
+	unsigned int wd2;
+	unsigned int wd3;
 };
 
 typedef struct quadwd quad_integer;
@@ -302,12 +300,11 @@ typedef int sgl_floating_point;
 typedef struct dblwd dbl_floating_point;
 typedef struct dint dbl_integer;
 
-/* 
+/*
  * Define the different precisions' parameters.
  */
 #define SGL_BITLENGTH 32
 #define SGL_EMAX 127
-#define SGL_EMIN (-126)
 #define SGL_BIAS 127
 #define SGL_WRAP 192
 #define SGL_INFINITY_EXPONENT (SGL_EMAX+SGL_BIAS+1)
@@ -317,7 +314,6 @@ typedef struct dint dbl_integer;
 
 #define DBL_BITLENGTH 64
 #define DBL_EMAX 1023
-#define DBL_EMIN (-1022)
 #define DBL_BIAS 1023
 #define DBL_WRAP 1536
 #define DBL_INFINITY_EXPONENT (DBL_EMAX+DBL_BIAS+1)
@@ -327,7 +323,6 @@ typedef struct dint dbl_integer;
 
 #define QUAD_BITLENGTH 128
 #define QUAD_EMAX 16383
-#define QUAD_EMIN (-16382)
 #define QUAD_BIAS 16383
 #define QUAD_WRAP 24576
 #define QUAD_INFINITY_EXPONENT (QUAD_EMAX+QUAD_BIAS+1)
@@ -338,22 +333,6 @@ typedef struct dint dbl_integer;
 #define TRUE (!FALSE)
 #define NOT !
 #define XOR ^
-
-/* other constants */
-#undef NULL
-#define NULL 0
-#define NIL 0
-#define SGL 0
-#define DBL 1
-#define BADFMT 2
-#define QUAD 3
-
-
-/* Types */
-typedef int boolean;
-typedef int FORMAT;
-typedef int VOID;
-
 
 /* Declare status register equivalent to FPUs architecture.
  *
@@ -394,7 +373,7 @@ typedef int VOID;
 #define INEXACTEXCEPTION	0x02
 #define UNIMPLEMENTEDEXCEPTION	0x01
 
-/* Declare exception registers equivalent to FPUs architecture 
+/* Declare exception registers equivalent to FPUs architecture
  *
  *  0 1 2 3 4 5 6 7 8 910 1 2 3 4 5 6 7 8 920 1 2 3 4 5 6 7 8 930 1
  * +-------+-------+-------+-------+-------+-------+-------+-------+
@@ -411,7 +390,7 @@ typedef int VOID;
 #define Set_exceptiontype(object,value) Bitfield_deposit(value, 0, 6,object)
 #define Set_parmfield(object,value) Bitfield_deposit(value, 23, 3,object)
 #define Set_exceptiontype_and_instr_field(exception,instruction,object) \
-    object = exception << 26 | instruction
+    object = ((exception) << 26) | (instruction)
 
 /* Declare the condition field
  *
@@ -493,31 +472,3 @@ typedef int VOID;
 #define Ext_negate(extent) \
     (int )Extall(extent) = 0 - (int )Extall(extent)
 #define Ext_setone_low(extent) Bitfield_deposit(1,31,1,extent)
-
-typedef int operation;
-
-/* error messages */
-
-#define		NONE		0
-#define		UNDEFFPINST	1
-
-/* Function definitions: opcode, opclass */
-#define FTEST	(1<<2) | 0
-#define FCPY	(2<<2) | 0
-#define FABS	(3<<2) | 0
-#define FSQRT   (4<<2) | 0
-#define FRND    (5<<2) | 0
-
-#define FCNVFF	(0<<2) | 1
-#define FCNVXF	(1<<2) | 1
-#define FCNVFX	(2<<2) | 1
-#define FCNVFXT	(3<<2) | 1
-
-#define FCMP    (0<<2) | 2
-
-#define FADD	(0<<2) | 3
-#define FSUB	(1<<2) | 3
-#define FMPY	(2<<2) | 3
-#define FDIV	(3<<2) | 3
-#define FREM	(4<<2) | 3
-

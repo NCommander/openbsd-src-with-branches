@@ -226,6 +226,10 @@ alpha_handle_option (size_t code, const char *arg, int value)
       target_flags |= MASK_IEEE_CONFORMANT;
       break;
 
+    case OPT_mno_ieee:
+      target_flags &= ~(MASK_IEEE_WITH_INEXACT|MASK_IEEE_CONFORMANT);
+      break;
+
     case OPT_mtls_size_:
       if (value != 16 && value != 32 && value != 64)
 	error ("bad value %qs for -mtls-size switch", arg);
@@ -287,12 +291,19 @@ override_options (void)
       flag_pic = 0;
     }
 
+#if defined(OPENBSD_NATIVE) || defined(OPENBSD_CROSS)
+  if (TARGET_FLOAT_VAX)
+    alpha_fprm = ALPHA_FPRM_NORM;
+  else
+    alpha_fprm = ALPHA_FPRM_DYN;
+#else
   /* On Unicos/Mk, the native compiler consistently generates /d suffices for
      floating-point instructions.  Make that the default for this target.  */
   if (TARGET_ABI_UNICOSMK)
     alpha_fprm = ALPHA_FPRM_DYN;
   else
     alpha_fprm = ALPHA_FPRM_NORM;
+#endif
 
   alpha_tp = ALPHA_TP_PROG;
   alpha_fptm = ALPHA_FPTM_N;
@@ -482,11 +493,17 @@ override_options (void)
   if (!g_switch_set)
     g_switch_value = 8;
 
+#ifdef OPENBSD_NATIVE
+  /* Make -fpic behave as -fPIC unless -msmall-data is specified. */
+  if (flag_pic == 2 && TARGET_SMALL_DATA)
+    warning (0, "-fPIC used with -msmall-data");
+#else
   /* Infer TARGET_SMALL_DATA from -fpic/-fPIC.  */
   if (flag_pic == 1)
     target_flags |= MASK_SMALL_DATA;
   else if (flag_pic == 2)
     target_flags &= ~MASK_SMALL_DATA;
+#endif
 
   /* Align labels and loops for optimal branching.  */
   /* ??? Kludge these by not doing anything if we don't optimize and also if
@@ -4161,11 +4178,11 @@ alpha_expand_block_clear (rtx operands[])
       if (a > align)
 	{
           if (a >= 64)
-	    align = a, alignofs = 8 - c % 8;
+	    align = a, alignofs = 8 - (c & 7);
           else if (a >= 32)
-	    align = a, alignofs = 4 - c % 4;
+	    align = a, alignofs = 4 - (c & 3);
           else if (a >= 16)
-	    align = a, alignofs = 2 - c % 2;
+	    align = a, alignofs = 2 - (c & 1);
 	}
     }
 
@@ -4534,6 +4551,8 @@ emit_insxl (enum machine_mode mode, rtx op1, rtx op2)
       else
 	fn = gen_inswl_le;
     }
+  /* The insbl and inswl patterns require a register operand.  */
+  op1 = force_reg (mode, op1);
   emit_insn (fn (ret, op1, op2));
 
   return ret;
@@ -7338,6 +7357,9 @@ alpha_initial_elimination_offset (unsigned int from,
   switch (from)
     {
     case FRAME_POINTER_REGNUM:
+      ret += (ALPHA_ROUND (get_frame_size ()
+			   + current_function_pretend_args_size)
+	      - current_function_pretend_args_size);
       break;
 
     case ARG_POINTER_REGNUM:
@@ -7564,6 +7586,9 @@ alpha_expand_prologue (void)
 		  + ALPHA_ROUND (frame_size
 				 + current_function_pretend_args_size));
 
+  if (warn_stack_larger_than && frame_size > stack_larger_than_size)
+    warning (0, "stack usage is %d bytes", frame_size);
+
   if (TARGET_ABI_OPEN_VMS)
     reg_offset = 8;
   else
@@ -7598,94 +7623,134 @@ alpha_expand_prologue (void)
 
      Note that we are only allowed to adjust sp once in the prologue.  */
 
-  if (frame_size <= 32768)
+  if (flag_stack_check || STACK_CHECK_BUILTIN)
     {
-      if (frame_size > 4096)
+      if (frame_size <= 32768)
 	{
-	  int probed;
+	  if (frame_size > 4096)
+	    {
+	      int probed;
 
-	  for (probed = 4096; probed < frame_size; probed += 8192)
-	    emit_insn (gen_probe_stack (GEN_INT (TARGET_ABI_UNICOSMK
-						 ? -probed + 64
-						 : -probed)));
+	      for (probed = 4096; probed < frame_size; probed += 8192)
+		emit_insn (gen_probe_stack (GEN_INT (TARGET_ABI_UNICOSMK
+						     ? -probed + 64
+						     : -probed)));
 
-	  /* We only have to do this probe if we aren't saving registers.  */
-	  if (sa_size == 0 && frame_size > probed - 4096)
-	    emit_insn (gen_probe_stack (GEN_INT (-frame_size)));
-	}
+	      /* We only have to do this probe if we aren't saving
+		 registers.  */
+	      if (sa_size == 0 && frame_size > probed - 4096)
+		emit_insn (gen_probe_stack (GEN_INT (-frame_size)));
+	    }
 
-      if (frame_size != 0)
-	FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-				    GEN_INT (TARGET_ABI_UNICOSMK
-					     ? -frame_size + 64
-					     : -frame_size))));
-    }
-  else
-    {
-      /* Here we generate code to set R22 to SP + 4096 and set R23 to the
-	 number of 8192 byte blocks to probe.  We then probe each block
-	 in the loop and then set SP to the proper location.  If the
-	 amount remaining is > 4096, we have to do one more probe if we
-	 are not saving any registers.  */
-
-      HOST_WIDE_INT blocks = (frame_size + 4096) / 8192;
-      HOST_WIDE_INT leftover = frame_size + 4096 - blocks * 8192;
-      rtx ptr = gen_rtx_REG (DImode, 22);
-      rtx count = gen_rtx_REG (DImode, 23);
-      rtx seq;
-
-      emit_move_insn (count, GEN_INT (blocks));
-      emit_insn (gen_adddi3 (ptr, stack_pointer_rtx,
-			     GEN_INT (TARGET_ABI_UNICOSMK ? 4096 - 64 : 4096)));
-
-      /* Because of the difficulty in emitting a new basic block this
-	 late in the compilation, generate the loop as a single insn.  */
-      emit_insn (gen_prologue_stack_probe_loop (count, ptr));
-
-      if (leftover > 4096 && sa_size == 0)
-	{
-	  rtx last = gen_rtx_MEM (DImode, plus_constant (ptr, -leftover));
-	  MEM_VOLATILE_P (last) = 1;
-	  emit_move_insn (last, const0_rtx);
-	}
-
-      if (TARGET_ABI_WINDOWS_NT)
-	{
-	  /* For NT stack unwind (done by 'reverse execution'), it's
-	     not OK to take the result of a loop, even though the value
-	     is already in ptr, so we reload it via a single operation
-	     and subtract it to sp.
-
-	     Yes, that's correct -- we have to reload the whole constant
-	     into a temporary via ldah+lda then subtract from sp.  */
-
-	  HOST_WIDE_INT lo, hi;
-	  lo = ((frame_size & 0xffff) ^ 0x8000) - 0x8000;
-	  hi = frame_size - lo;
-
-	  emit_move_insn (ptr, GEN_INT (hi));
-	  emit_insn (gen_adddi3 (ptr, ptr, GEN_INT (lo)));
-	  seq = emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
-				       ptr));
+	  if (frame_size != 0)
+	    FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+					GEN_INT (TARGET_ABI_UNICOSMK
+						 ? -frame_size + 64
+						 : -frame_size))));
 	}
       else
 	{
-	  seq = emit_insn (gen_adddi3 (stack_pointer_rtx, ptr,
-				       GEN_INT (-leftover)));
-	}
+	  /* Here we generate code to set R22 to SP + 4096 and set R23 to the
+	     number of 8192 byte blocks to probe.  We then probe each block
+	     in the loop and then set SP to the proper location.  If the
+	     amount remaining is > 4096, we have to do one more probe if we
+	     are not saving any registers.  */
 
-      /* This alternative is special, because the DWARF code cannot
-         possibly intuit through the loop above.  So we invent this
-         note it looks at instead.  */
-      RTX_FRAME_RELATED_P (seq) = 1;
-      REG_NOTES (seq)
-        = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-			     gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-			       gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					     GEN_INT (TARGET_ABI_UNICOSMK
-						      ? -frame_size + 64
-						      : -frame_size))),
-			     REG_NOTES (seq));
+	  HOST_WIDE_INT blocks = (frame_size + 4096) / 8192;
+	  HOST_WIDE_INT leftover = frame_size + 4096 - blocks * 8192;
+	  rtx ptr = gen_rtx_REG (DImode, 22);
+	  rtx count = gen_rtx_REG (DImode, 23);
+	  rtx seq;
+
+	  emit_move_insn (count, GEN_INT (blocks));
+	  emit_insn (gen_adddi3 (ptr, stack_pointer_rtx,
+				 GEN_INT (TARGET_ABI_UNICOSMK
+					  ? 4096 - 64 : 4096)));
+
+	  /* Because of the difficulty in emitting a new basic block this
+	     late in the compilation, generate the loop as a single insn.  */
+	  emit_insn (gen_prologue_stack_probe_loop (count, ptr));
+
+	  if (leftover > 4096 && sa_size == 0)
+	    {
+	      rtx last = gen_rtx_MEM (DImode, plus_constant (ptr, -leftover));
+	      MEM_VOLATILE_P (last) = 1;
+	      emit_move_insn (last, const0_rtx);
+	    }
+
+	  if (TARGET_ABI_WINDOWS_NT)
+	    {
+	      /* For NT stack unwind (done by 'reverse execution'), it's
+		 not OK to take the result of a loop, even though the value
+		 is already in ptr, so we reload it via a single operation
+		 and subtract it to sp.
+
+		 Yes, that's correct -- we have to reload the whole constant
+		 into a temporary via ldah+lda then subtract from sp.  */
+
+	      HOST_WIDE_INT lo, hi;
+	      lo = ((frame_size & 0xffff) ^ 0x8000) - 0x8000;
+	      hi = frame_size - lo;
+
+	      emit_move_insn (ptr, GEN_INT (hi));
+	      emit_insn (gen_adddi3 (ptr, ptr, GEN_INT (lo)));
+	      seq = emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
+					   ptr));
+	    }
+	  else
+	    {
+	      seq = emit_insn (gen_adddi3 (stack_pointer_rtx, ptr,
+					   GEN_INT (-leftover)));
+	    }
+
+	  /* This alternative is special, because the DWARF code cannot
+	     possibly intuit through the loop above.  So we invent this
+	     note it looks at instead.  */
+	  RTX_FRAME_RELATED_P (seq) = 1;
+	  REG_NOTES (seq)
+	    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+				 gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				   gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+						 GEN_INT (TARGET_ABI_UNICOSMK
+							  ? -frame_size + 64
+							  : -frame_size))),
+				 REG_NOTES (seq));
+	}
+    }
+  else
+    {
+      if (frame_size <= 32768)
+	{
+	  if (frame_size != 0)
+	    FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+					GEN_INT (TARGET_ABI_UNICOSMK
+						 ? -frame_size + 64
+						 : -frame_size))));
+	}
+      else
+	{
+	  rtx count = gen_rtx_REG (DImode, 23);
+	  rtx seq;
+ 
+	  emit_move_insn (count, GEN_INT (TARGET_ABI_UNICOSMK
+					  ? -frame_size + 64
+					  : -frame_size));
+	  seq = emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+				       count));
+ 
+	  /* This alternative is special, because the DWARF code cannot
+	     possibly intuit through the loop above.  So we invent this
+	     note it looks at instead.  */
+	  RTX_FRAME_RELATED_P (seq) = 1;
+	  REG_NOTES (seq)
+	    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+				 gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				   gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+						 GEN_INT (TARGET_ABI_UNICOSMK
+							  ? -frame_size + 64
+							  : -frame_size))),
+				 REG_NOTES (seq));
+	}
     }
 
   if (!TARGET_ABI_UNICOSMK)
@@ -8658,11 +8723,15 @@ summarize_insn (rtx x, struct shadow_summary *sum, int set)
    result of an instruction that might generate an UNPREDICTABLE
    result.
 
-   (c) Within the trap shadow, no register may be used more than once
+   (c) Within the trap shadow, the destination register of the potentially
+   trapping instruction may not be used as an input, for its value would be
+   UNPREDICTABLE.
+
+   (d) Within the trap shadow, no register may be used more than once
    as a destination register.  (This is to make life easier for the
    trap-handler.)
 
-   (d) The trap shadow may not include any branch instructions.  */
+   (e) The trap shadow may not include any branch instructions.  */
 
 static void
 alpha_handle_trap_shadows (void)
@@ -8734,7 +8803,7 @@ alpha_handle_trap_shadows (void)
 		      if ((sum.defd.i & shadow.defd.i)
 			  || (sum.defd.fp & shadow.defd.fp))
 			{
-			  /* (c) would be violated */
+			  /* (d) would be violated */
 			  goto close_shadow;
 			}
 
@@ -8757,11 +8826,19 @@ alpha_handle_trap_shadows (void)
 
 			  goto close_shadow;
 			}
+
+		      if ((sum.used.i & shadow.defd.i)
+			  || (sum.used.fp & shadow.defd.fp))
+			{
+			  /* (c) would be violated */
+			  goto close_shadow;
+			}
 		      break;
 
 		    case JUMP_INSN:
 		    case CALL_INSN:
 		    case CODE_LABEL:
+		      /* (e) would be violated */
 		      goto close_shadow;
 
 		    default:

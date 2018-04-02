@@ -423,6 +423,7 @@ extern int rs6000_pic_labelno;
   asm_fprintf (FILE, "%L%s", PREFIX)
 
 /* Globalizing directive for a label.  */
+#undef GLOBAL_ASM_OP
 #define GLOBAL_ASM_OP "\t.globl "
 
 /* This says how to output assembler code to declare an
@@ -787,7 +788,7 @@ extern int fixuplabelno;
   mcall-linux  : crtsavres.o%s        %(endfile_linux)       ; \
   mcall-gnu    : crtsavres.o%s        %(endfile_gnu)         ; \
   mcall-netbsd : crtsavres.o%s        %(endfile_netbsd)      ; \
-  mcall-openbsd: crtsavres.o%s        %(endfile_openbsd)     ; \
+  mcall-openbsd: %(endfile_openbsd)     		     ; \
                : %(crtsavres_default) %(endfile_default)     }"
 
 #define CRTSAVRES_DEFAULT_SPEC "crtsavres.o%s"
@@ -967,13 +968,14 @@ ncrtn.o%s"
 
 /* OpenBSD support.  */
 #ifndef	LIB_OPENBSD_SPEC
-#define LIB_OPENBSD_SPEC "%{!shared:%{pthread:-lpthread%{p:_p}%{!p:%{pg:_p}}}} %{!shared:-lc%{p:_p}%{!p:%{pg:_p}}}"
+#define LIB_OPENBSD_SPEC OBSD_LIB_SPEC
 #endif
 
 #ifndef	STARTFILE_OPENBSD_SPEC
 #define	STARTFILE_OPENBSD_SPEC "\
-%{!shared: %{pg:gcrt0.o%s} %{!pg:%{p:gcrt0.o%s} %{!p:crt0.o%s}}} \
-%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+%{!shared: %{pg:gcrt0%O%s} %{!pg:%{p:gcrt0%O%s} \
+%{!p:%{!static:crt0%O%s} %{static:%{nopie:crt0%O%s} %{!nopie:rcrt0%O%s}}}} \
+crtbegin%O%s} %{shared:crtbeginS%O%s}"
 #endif
 
 #ifndef	ENDFILE_OPENBSD_SPEC
@@ -990,7 +992,7 @@ ncrtn.o%s"
 #endif
 
 #ifndef CPP_OS_OPENBSD_SPEC
-#define CPP_OS_OPENBSD_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_POSIX_THREADS}"
+#define CPP_OS_OPENBSD_SPEC OBSD_CPP_SPEC
 #endif
 
 /* WindISS support.  */
@@ -1126,7 +1128,7 @@ ncrtn.o%s"
    be stacked, so that invocations of #pragma pack(pop)' will return
    to the previous value.  */
 
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
+#define HANDLE_PRAGMA_PACK_PUSH_POP
 
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is

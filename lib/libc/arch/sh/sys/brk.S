@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: brk.S,v 1.5 2016/05/18 20:21:13 guenther Exp $	*/
 /*	$NetBSD: brk.S,v 1.10 2006/01/06 03:58:31 uwe Exp $	*/
 
 /*-
@@ -37,20 +37,19 @@
 
 #include "SYS.h"
 
-#ifdef WEAK_ALIAS
-WEAK_ALIAS(brk,_brk)
-#endif
+	.weak	brk
 
 	.data
-	.globl	_C_LABEL(__minbrk)
 	.align	2
-_C_LABEL(__minbrk):
-	.long	_C_LABEL(end)
+__minbrk:
+	.long	_C_LABEL(_end)
+	.size	__minbrk, . - __minbrk
+	.type	__minbrk,@object
 
 	.text
 
-SYSENTRY(_brk)
-#ifdef PIC
+ENTRY(brk)
+#ifdef __PIC__
 	mova	L_GOT, r0
 	mov.l	L_GOT, r2
 	add	r0, r2
@@ -67,8 +66,8 @@ SYSENTRY(_brk)
 1:
 	mov.l	LSYS_break, r0
 	trapa	#0x80
-	bf	err
-#ifdef PIC
+	bf	2f
+#ifdef __PIC__
 	mov.l	Lcurbrk, r0
 	mov.l	@(r0, r2), r1
 	xor	r0, r0
@@ -77,18 +76,18 @@ SYSENTRY(_brk)
 	mov.l	Lcurbrk, r1
 #endif
 	rts
-	mov.l	r4, @r1
-err:
-	JUMP_CERROR
+	 mov.l	r4, @r1
+2:
+	SET_ERRNO_AND_RETURN
 
 	.align	2
 LSYS_break:	.long	SYS_break
-#ifdef PIC
+#ifdef __PIC__
 L_GOT:		.long	_GLOBAL_OFFSET_TABLE_
-Lminbrk:	.long	_C_LABEL(__minbrk)@GOT
-Lcurbrk:	.long	_C_LABEL(__curbrk)@GOT
+Lminbrk:	.long	__minbrk@GOT
+Lcurbrk:	.long	__curbrk@GOT
 #else
-Lminbrk:	.long	_C_LABEL(__minbrk)
-Lcurbrk:	.long	_C_LABEL(__curbrk)
+Lminbrk:	.long	__minbrk
+Lcurbrk:	.long	__curbrk
 #endif
-	SET_ENTRY_SIZE(_brk)
+	SET_ENTRY_SIZE(brk)

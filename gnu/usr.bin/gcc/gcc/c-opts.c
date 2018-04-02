@@ -127,6 +127,7 @@ static void sanitize_cpp_opts PARAMS ((void));
   OPT("Wabi",                   CL_CXX,   OPT_Wabi)                          \
   OPT("Wall",			CL_ALL,   OPT_Wall)			     \
   OPT("Wbad-function-cast",	CL_C,     OPT_Wbad_function_cast)	     \
+  OPT("Wbounded",		CL_ALL,	  OPT_Wbounded)			     \
   OPT("Wcast-qual",		CL_ALL,   OPT_Wcast_qual)		     \
   OPT("Wchar-subscripts",	CL_ALL,   OPT_Wchar_subscripts)		     \
   OPT("Wcomment",		CL_ALL,   OPT_Wcomment)			     \
@@ -519,6 +520,15 @@ c_common_init_options (lang)
     warn_sign_compare = -1;
 }
 
+static char *bad_option;
+
+void
+do_final_options ()
+{
+	if (bad_option)
+	  error ("unrecognized command line option %s", bad_option);
+}
+
 /* Handle one command-line option in (argc, argv).
    Can be called multiple times, to handle multiple sets of options.
    Returns number of strings consumed.  */
@@ -575,7 +585,14 @@ c_common_decode_option (argc, argv)
   lang_flag = lang_flags[(c_language << 1) + flag_objc];
   opt_index = find_opt (opt + 1, lang_flag);
   if (opt_index == N_OPTS)
-    goto done;
+    {
+      if (result == 0 && !on && opt[1] == 'W')
+	{
+	  bad_option = argv[0];
+	  result = 1;
+	}
+      goto done;
+    }
 
   result = 1;
   option = &cl_options[opt_index];
@@ -694,6 +711,7 @@ c_common_decode_option (argc, argv)
       set_Wunused (on);
       set_Wformat (on);
       set_Wimplicit (on);
+      warn_bounded = on;
       warn_char_subscripts = on;
       warn_missing_braces = on;
       warn_parentheses = on;
@@ -787,6 +805,10 @@ c_common_decode_option (argc, argv)
 
     case OPT_Wfloat_equal:
       warn_float_equal = on;
+      break;
+
+    case OPT_Wbounded:
+      warn_bounded = on;
       break;
 
     case OPT_Wformat:

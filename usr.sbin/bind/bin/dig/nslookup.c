@@ -20,6 +20,9 @@
 #include <config.h>
 
 #include <stdlib.h>
+#include <unistd.h>
+
+#include <arpa/nameser.h>
 
 #include <isc/app.h>
 #include <isc/buffer.h>
@@ -441,13 +444,16 @@ show_settings(isc_boolean_t full, isc_boolean_t serv_only) {
 	dig_server_t *srv;
 	isc_sockaddr_t sockaddr;
 	dig_searchlist_t *listent;
+	in_port_t servport;
+
+	servport = (port != 0) ? port : NAMESERVER_PORT;
 
 	srv = ISC_LIST_HEAD(server_list);
 
 	while (srv != NULL) {
 		char sockstr[ISC_SOCKADDR_FORMATSIZE];
 
-		get_address(srv->servername, port, &sockaddr);
+		get_address(srv->servername, servport, &sockaddr);
 		isc_sockaddr_format(&sockaddr, sockstr, sizeof(sockstr));
 		printf("Default server: %s\nAddress: %s\n",
 			srv->userarg, sockstr);
@@ -466,7 +472,7 @@ show_settings(isc_boolean_t full, isc_boolean_t serv_only) {
 	       usesearch ? "search" : "nosearch",
 	       recurse ? "recurse" : "norecurse");
 	printf("  timeout = %d\t\tretry = %d\tport = %d\n",
-	       timeout, tries, port);
+	       timeout, tries, servport);
 	printf("  querytype = %-8s\tclass = %s\n", deftype, defclass);
 	printf("  srchlist = ");
 	for (listent = ISC_LIST_HEAD(search_list);
@@ -515,8 +521,7 @@ testclass(char *typetext) {
 
 static void
 safecpy(char *dest, char *src, int size) {
-	strncpy(dest, src, size);
-	dest[size-1] = 0;
+	strlcpy(dest, src, size);
 }
 
 static isc_result_t
@@ -540,7 +545,8 @@ set_port(const char *value) {
 	isc_uint32_t n;
 	isc_result_t result = parse_uint(&n, value, 65535, "port");
 	if (result == ISC_R_SUCCESS)
-		port = (isc_uint16_t) n;
+		port = 0; /* (isc_uint16_t) n;*/
+	printf("The port command has been disabled.\n");
 }
 
 static void
@@ -717,8 +723,8 @@ get_next_command(void) {
 	buf = isc_mem_allocate(mctx, COMMSIZE);
 	if (buf == NULL)
 		fatal("memory allocation failure");
-	fputs("> ", stderr);
-	fflush(stderr);
+	fputs("> ", stdout);
+	fflush(stdout);
 	isc_app_block();
 	ptr = fgets(buf, COMMSIZE, stdin);
 	isc_app_unblock();
@@ -861,8 +867,18 @@ main(int argc, char **argv) {
 	result = isc_app_start();
 	check_result(result, "isc_app_start");
 
+	if (pledge("stdio rpath dns", NULL) == -1) {
+		perror("pledge");
+		exit(1);
+	}
+
 	setup_libs();
 	progname = argv[0];
+
+	if (pledge("stdio dns", NULL) == -1) {
+		perror("pledge");
+		exit(1);
+	}
 
 	parse_args(argc, argv);
 

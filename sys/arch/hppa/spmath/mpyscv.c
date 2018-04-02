@@ -1,3 +1,4 @@
+/*	$OpenBSD: mpyscv.c,v 1.6 2002/05/07 22:19:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,21 +12,15 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/mpyscv.c,v $
- * $Revision: 1.6.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:06:45 $
- */
+/* @(#)mpyscv.c: Revision: 1.6.88.1 Date: 93/12/07 15:06:45 */
 
+#include "md.h"
 
-#include "../spmath/md.h"
-
-VOID mpyscv(opnd1,opnd2,result)
-
-int opnd1, opnd2;
-struct mdsfu_register *result;
+void
+mpyscv(opnd1,opnd2,result)
+	int opnd1, opnd2;
+	struct mdsfu_register *result;
 {
-	impys(&opnd1,&opnd2,result);
+	s_xmpy(&opnd1,&opnd2,result);
 	overflow = FALSE;
-	return;
 }

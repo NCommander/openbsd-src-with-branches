@@ -1,4 +1,6 @@
-# test maximum data length with delay before empty client write with non-blocking relay
+# test maximum data length with empty client write,
+# client sleeps before writing,
+# relay is non-blocking
 
 use strict;
 use warnings;
@@ -10,6 +12,7 @@ our %args = (
     },
     relay => {
 	max => 113,
+	nomax => 1,
 	nonblocking => 1,
     },
     len => 0,

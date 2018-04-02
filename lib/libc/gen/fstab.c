@@ -1,5 +1,4 @@
-/*	$NetBSD: fstab.c,v 1.7 1995/02/27 04:34:44 cgd Exp $	*/
-
+/*	$OpenBSD: fstab.c,v 1.21 2015/09/13 21:02:26 guenther Exp $ */
 /*
  * Copyright (c) 1980, 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,17 +28,12 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fstab.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: fstab.c,v 1.7 1995/02/27 04:34:44 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/uio.h>
+#include <sys/stat.h>
+
 #include <errno.h>
+#include <limits.h>
 #include <fstab.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,16 +43,17 @@ static char rcsid[] = "$NetBSD: fstab.c,v 1.7 1995/02/27 04:34:44 cgd Exp $";
 static FILE *_fs_fp;
 static struct fstab _fs_fstab;
 
-static error __P((int));
-static fstabscan __P((void));
+static int fstabscan(void);
 
-static
-fstabscan()
+static int
+fstabscan(void)
 {
-	register char *cp;
+	char *cp;
 #define	MAXLINELENGTH	1024
 	static char line[MAXLINELENGTH];
 	char subline[MAXLINELENGTH];
+	const char *errstr;
+	char *last;
 	int typexx;
 
 	for (;;) {
@@ -70,11 +61,11 @@ fstabscan()
 			return(0);
 /* OLD_STYLE_FSTAB */
 		if (!strpbrk(cp, " \t")) {
-			_fs_fstab.fs_spec = strtok(cp, ":\n");
+			_fs_fstab.fs_spec = strtok_r(cp, ":\n", &last);
 			if (!_fs_fstab.fs_spec || *_fs_fstab.fs_spec == '#')
 				continue;
-			_fs_fstab.fs_file = strtok((char *)NULL, ":\n");
-			_fs_fstab.fs_type = strtok((char *)NULL, ":\n");
+			_fs_fstab.fs_file = strtok_r(NULL, ":\n", &last);
+			_fs_fstab.fs_type = strtok_r(NULL, ":\n", &last);
 			if (_fs_fstab.fs_type) {
 				if (!strcmp(_fs_fstab.fs_type, FSTAB_XX))
 					continue;
@@ -82,10 +73,18 @@ fstabscan()
 				_fs_fstab.fs_vfstype =
 				    strcmp(_fs_fstab.fs_type, FSTAB_SW) ?
 				    "ufs" : "swap";
-				if (cp = strtok((char *)NULL, ":\n")) {
-					_fs_fstab.fs_freq = atoi(cp);
-					if (cp = strtok((char *)NULL, ":\n")) {
-						_fs_fstab.fs_passno = atoi(cp);
+				if ((cp = strtok_r(NULL, ":\n", &last))) {
+					_fs_fstab.fs_freq = strtonum(cp, 0,
+					    INT_MAX, &errstr);
+					if (errstr)
+						goto bad;
+					if ((cp = strtok_r(NULL,
+					    ":\n", &last))) {
+						_fs_fstab.fs_passno =
+						    strtonum(cp, 0, INT_MAX,
+						    &errstr);
+						if (errstr)
+							goto bad;
 						return(1);
 					}
 				}
@@ -93,24 +92,30 @@ fstabscan()
 			goto bad;
 		}
 /* OLD_STYLE_FSTAB */
-		_fs_fstab.fs_spec = strtok(cp, " \t\n");
+		_fs_fstab.fs_spec = strtok_r(cp, " \t\n", &last);
 		if (!_fs_fstab.fs_spec || *_fs_fstab.fs_spec == '#')
 			continue;
-		_fs_fstab.fs_file = strtok((char *)NULL, " \t\n");
-		_fs_fstab.fs_vfstype = strtok((char *)NULL, " \t\n");
-		_fs_fstab.fs_mntops = strtok((char *)NULL, " \t\n");
+		_fs_fstab.fs_file = strtok_r(NULL, " \t\n", &last);
+		_fs_fstab.fs_vfstype = strtok_r(NULL, " \t\n", &last);
+		_fs_fstab.fs_mntops = strtok_r(NULL, " \t\n", &last);
 		if (_fs_fstab.fs_mntops == NULL)
 			goto bad;
 		_fs_fstab.fs_freq = 0;
 		_fs_fstab.fs_passno = 0;
-		if ((cp = strtok((char *)NULL, " \t\n")) != NULL) {
-			_fs_fstab.fs_freq = atoi(cp);
-			if ((cp = strtok((char *)NULL, " \t\n")) != NULL)
-				_fs_fstab.fs_passno = atoi(cp);
+		if ((cp = strtok_r(NULL, " \t\n", &last)) != NULL) {
+			_fs_fstab.fs_freq = strtonum(cp, 0, INT_MAX, &errstr);
+			if (errstr)
+				goto bad;
+			if ((cp = strtok_r(NULL, " \t\n", &last)) != NULL) {
+				_fs_fstab.fs_passno = strtonum(cp, 0, INT_MAX,
+				    &errstr);
+				if (errstr)
+					goto bad;
+			}
 		}
-		strcpy(subline, _fs_fstab.fs_mntops);
-		for (typexx = 0, cp = strtok(subline, ","); cp;
-		     cp = strtok((char *)NULL, ",")) {
+		strlcpy(subline, _fs_fstab.fs_mntops, sizeof subline);
+		for (typexx = 0, cp = strtok_r(subline, ",", &last); cp;
+		     cp = strtok_r(NULL, ",", &last)) {
 			if (strlen(cp) != 2)
 				continue;
 			if (!strcmp(cp, FSTAB_RW)) {
@@ -140,78 +145,69 @@ fstabscan()
 		if (cp != NULL)
 			return(1);
 
-bad:		/* no way to distinguish between EOF and syntax error */
-		error(EFTYPE);
+bad:		/* We silently ignore all bogus lines */
+		;
 	}
-	/* NOTREACHED */
 }
 
 struct fstab *
-getfsent()
+getfsent(void)
 {
-	if (!_fs_fp && !setfsent() || !fstabscan())
-		return((struct fstab *)NULL);
+	if ((!_fs_fp && !setfsent()) || !fstabscan())
+		return(NULL);
 	return(&_fs_fstab);
 }
 
 struct fstab *
-getfsspec(name)
-	register const char *name;
+getfsspec(const char *name)
 {
 	if (setfsent())
 		while (fstabscan())
 			if (!strcmp(_fs_fstab.fs_spec, name))
 				return(&_fs_fstab);
-	return((struct fstab *)NULL);
+	return(NULL);
 }
 
 struct fstab *
-getfsfile(name)
-	register const char *name;
+getfsfile(const char *name)
 {
 	if (setfsent())
 		while (fstabscan())
 			if (!strcmp(_fs_fstab.fs_file, name))
 				return(&_fs_fstab);
-	return((struct fstab *)NULL);
+	return(NULL);
 }
 
-setfsent()
+int
+setfsent(void)
 {
+	struct stat sbuf;
+
 	if (_fs_fp) {
 		rewind(_fs_fp);
 		return(1);
 	}
-	if (_fs_fp = fopen(_PATH_FSTAB, "r"))
+
+	if (stat(_PATH_FSTAB, &sbuf) != 0)
+		goto fail;
+	if ((sbuf.st_size == 0) || ((sbuf.st_mode & S_IFMT) != S_IFREG)) {
+		errno = EFTYPE;
+		goto fail;
+	}
+
+	if ((_fs_fp = fopen(_PATH_FSTAB, "re")))
 		return(1);
-	error(errno);
+
+fail:
 	return(0);
 }
+DEF_WEAK(setfsent);
 
 void
-endfsent()
+endfsent(void)
 {
 	if (_fs_fp) {
 		(void)fclose(_fs_fp);
 		_fs_fp = NULL;
 	}
-}
-
-static
-error(err)
-	int err;
-{
-	struct iovec iov[5];
-
-	iov[0].iov_base = "fstab: ";
-	iov[0].iov_len = 7;
-	iov[1].iov_base = _PATH_FSTAB;
-	iov[1].iov_len = sizeof(_PATH_FSTAB) - 1;
-	iov[2].iov_base =  ": ";
-	iov[2].iov_len = 2;
-	iov[3].iov_base = strerror(err);
-	iov[3].iov_len = strlen(iov[3].iov_base);
-	iov[4].iov_base = "\n";
-	iov[4].iov_len = 1;
-	(void)writev(STDERR_FILENO, iov, 5);
 }

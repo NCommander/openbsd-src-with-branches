@@ -1,4 +1,5 @@
-/*	$NetBSD: psl.h,v 1.22 1995/10/11 04:20:23 mycroft Exp $	*/
+/*	$OpenBSD: psl.h,v 1.19 2011/06/08 22:57:59 kettenis Exp $	*/
+/*	$NetBSD: psl.h,v 1.30 1996/05/13 01:28:05 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,8 +35,8 @@
  *	@(#)psl.h	5.2 (Berkeley) 1/18/91
  */
 
-#ifndef _I386_PSL_H_
-#define _I386_PSL_H_
+#ifndef _MACHINE_PSL_H_
+#define _MACHINE_PSL_H_
 
 /*
  * 386 processor status longword.
@@ -61,115 +58,45 @@
 #define	PSL_VIF		0x00080000	/* virtual interrupt enable flag */
 #define	PSL_VIP		0x00100000	/* virtual interrupt pending flag */
 #define	PSL_ID		0x00200000	/* identification flag */
+#define	PSL_XCRYPT	0x40000000	/* VIA xcrypt: operation loaded */
 
 #define	PSL_MBO		0x00000002	/* must be one bits */
 #define	PSL_MBZ		0xffc08028	/* must be zero bits */
 
 #define	PSL_USERSET	(PSL_MBO | PSL_I)
 #ifdef VM86
-#define	PSL_USERSTATIC	(PSL_MBO | PSL_MBZ | PSL_I | PSL_IOPL | PSL_VIF | PSL_VIP)
+#define	PSL_USERSTATIC	(PSL_MBO | PSL_MBZ | PSL_I | PSL_IOPL | PSL_NT | PSL_VIF | PSL_VIP)
 #else
-#define	PSL_USERSTATIC	(PSL_MBO | PSL_MBZ | PSL_I | PSL_IOPL | PSL_VM | PSL_VIF | PSL_VIP)
+#define	PSL_USERSTATIC	(PSL_MBO | PSL_MBZ | PSL_I | PSL_IOPL | PSL_NT | PSL_VM | PSL_VIF | PSL_VIP)
 #endif
 
 #ifdef _KERNEL
+#include <machine/intr.h>
 
-/* Interrupt priority `levels'; not mutually exclusive. */
-#define	IPL_NONE	-1
-#define	IPL_BIO		0	/* block I/O */
-#define	IPL_NET		1	/* network */
-#define	IPL_TTY		2	/* terminal */
-#define	IPL_CLOCK	3	/* clock */
-#define	IPL_IMP		4	/* memory allocation */
+#ifndef _LOCORE
 
-/* Interrupt sharing types. */
-#define	IST_NONE	0	/* none */
-#define	IST_PULSE	1	/* pulsed */
-#define	IST_EDGE	2	/* edge-triggered */
-#define	IST_LEVEL	3	/* level-triggered */
-
-/* Soft interrupt masks. */
-#define	SIR_CLOCK	31
-#define	SIR_CLOCKMASK	((1 << SIR_CLOCK))
-#define	SIR_NET		30
-#define	SIR_NETMASK	((1 << SIR_NET) | SIR_CLOCKMASK)
-#define	SIR_TTY		29
-#define	SIR_TTYMASK	((1 << SIR_TTY) | SIR_CLOCKMASK)
-#define	SIR_ALLMASK	(SIR_CLOCKMASK | SIR_NETMASK | SIR_TTYMASK)
-
-#ifndef LOCORE
-
-int cpl, ipending, astpending, imask[5];
+#include <sys/evcount.h>
 
 /*
- * Add a mask to cpl, and return the old value of cpl.
+ * Interrupt handler chains.  isa_intr_establish() inserts a handler into
+ * the list.  The handler is called with its (single) argument.
  */
-static __inline int
-splraise(ncpl)
-	register int ncpl;
-{
-	register int ocpl = cpl;
-	cpl |= ncpl;
-	return (ocpl);
-}
 
-extern void spllower __P((void));
+struct intrhand {
+	int		(*ih_fun)(void *);
+	void		*ih_arg;
+	int		ih_level;
+	int		ih_flags;
+	struct intrhand	*ih_next;
+	int		ih_pin;
+	int		ih_irq;
+	struct evcount	ih_count;
+	int		ih_vec;
+};
 
-/*
- * Restore a value to cpl (unmasking interrupts).  If any unmasked
- * interrupts are pending, call spllower() to process them.
- *
- * NOTE: We go to the trouble of returning the old value of cpl for
- * the benefit of some splsoftclock() callers.  This extra work is
- * usually optimized away by the compiler.
- */
-static __inline int
-splx(ncpl)
-	register int ncpl;
-{
-	register int ocpl = cpl;
-	cpl = ncpl;
-	if (ipending & ~ncpl)
-		spllower();
-	return (ocpl);
-}
+extern int intr_shared_edge;	/* This system has shared edge interrupts */
 
-/*
- * Hardware interrupt masks
- */
-#define	splbio()	splraise(imask[IPL_BIO])
-#define	splnet()	splraise(imask[IPL_NET])
-#define	spltty()	splraise(imask[IPL_TTY])
-#define	splclock()	splraise(imask[IPL_CLOCK])
-#define	splimp()	splraise(imask[IPL_IMP])
-#define	splstatclock()	splclock()
-
-/*
- * Software interrupt masks
- *
- * NOTE: splsoftclock() is used by hardclock() to lower the priority from
- * clock to softclock before it calls softclock().
- */
-#define	splsoftclock()	splx(SIR_CLOCKMASK)
-#define	splsoftnet()	splraise(SIR_NETMASK)
-#define	splsofttty()	splraise(SIR_TTYMASK)
-
-/*
- * Miscellaneous
- */
-#define	splhigh()	splraise(-1)
-#define	spl0()		splx(0)
-
-/*
- * Software interrupt registration
- */
-#define	softintr(n)	(ipending |= (1 << (n)))
-#define	setsoftast()	(astpending = 1)
-#define	setsoftclock()	softintr(SIR_CLOCK)
-#define	setsoftnet()	softintr(SIR_NET)
-#define	setsofttty()	softintr(SIR_TTY)
-
-#endif /* !LOCORE */
+#endif /* _LOCORE */
 #endif /* _KERNEL */
-
-#endif /* !_I386_PSL_H_ */
+ 
+#endif /* !_MACHINE_PSL_H_ */

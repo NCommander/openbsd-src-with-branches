@@ -1,3 +1,6 @@
+/*	$OpenBSD: rdate.c,v 1.34 2015/10/31 18:24:01 deraadt Exp $	*/
+/*	$NetBSD: rdate.c,v 1.4 1996/03/16 12:37:45 pk Exp $	*/
+
 /*
  * Copyright (c) 1994 Christos Zoulas
  * All rights reserved.
@@ -26,116 +29,200 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *	$Id: rdate.c,v 1.1 1994/06/02 22:55:07 deraadt Exp $
  */
 
 /*
  * rdate.c: Set the date from the specified host
- * 
- * 	Uses the rfc868 time protocol at socket 37.
+ *
  *	Time is returned as the number of seconds since
  *	midnight January 1st 1900.
  */
-#ifndef lint
-static char rcsid[] = "$Id: rdate.c,v 1.1 1994/06/02 22:55:07 deraadt Exp $";
-#endif				/* lint */
 
-#include <sys/types.h>
-#include <sys/param.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-#include <sys/time.h>
 #include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
+#include <sys/time.h>
+#include <sys/wait.h>
 
-/* seconds from midnight Jan 1900 - 1970 */
-#if __STDC__
-#define DIFFERENCE 2208988800UL
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <err.h>
+#include <string.h>
+#include <unistd.h>
+#include <time.h>
+
+/* there are systems without libutil; for portability */
+#ifndef NO_UTIL
+#include <util.h>
 #else
-#define DIFFERENCE 2208988800
+#define logwtmp(a,b,c)
 #endif
 
-int
-main(argc, argv)
-	int             argc;
-	char           *argv[];
-{
-	int             pr = 0, silent = 0, s;
-	time_t          tim;
-	char           *hname;
-	struct hostent *hp;
-	struct protoent *pp, ppp;
-	struct servent *sp, ssp;
-	struct sockaddr_in sa;
-	extern char    *__progname;
-	extern int      optind;
-	int             c;
+void rfc868time_client(const char *, int, struct timeval *, struct timeval *, int);
+void ntp_client(const char *, int, struct timeval *, struct timeval *, int);
 
-	while ((c = getopt(argc, argv, "ps")) != -1)
+extern char    *__progname;
+__dead void	usage(void);
+
+struct {
+	char message[2048];
+	struct timeval new;
+	struct timeval adjust;
+} pdata;
+
+__dead void
+usage(void)
+{
+	(void) fprintf(stderr, "usage: %s [-46acnopsv] host\n", __progname);
+	exit(1);
+}
+
+int
+main(int argc, char **argv)
+{
+	int             pr = 0, silent = 0, ntp = 1, verbose = 0;
+	int		slidetime = 0, corrleaps = 0;
+	char           *hname;
+	extern int      optind;
+	int             c, p[2], pid;
+	int		family = PF_UNSPEC;
+
+	while ((c = getopt(argc, argv, "46psanocv")) != -1) {
 		switch (c) {
+		case '4':
+			family = PF_INET;
+			break;
+
+		case '6':
+			family = PF_INET6;
+			break;
+
 		case 'p':
-			pr++;
+			pr = 1;
 			break;
 
 		case 's':
-			silent++;
+			silent = 1;
+			break;
+
+		case 'a':
+			slidetime = 1;
+			break;
+
+		case 'n':
+			ntp = 1;
+			break;
+
+		case 'o':
+			ntp = 0;
+			break;
+
+		case 'c':
+			corrleaps = 1;
+			break;
+
+		case 'v':
+			verbose = 1;
 			break;
 
 		default:
-			goto usage;
+			usage();
 		}
-
-	if (argc - 1 != optind) {
-usage:
-		(void) fprintf(stderr, "Usage: %s [-ps] host\n", __progname);
-		return (1);
 	}
+	if (argc - 1 != optind)
+		usage();
 	hname = argv[optind];
 
-	if ((hp = gethostbyname(hname)) == NULL) {
-		fprintf(stderr, "%s: ", __progname);
-		herror(hname);
+	/*
+	 * Privilege separation increases safety, with a slight reduction
+	 * in precision because the time values have to return over a pipe.
+	 */
+	if (pipe(p) == -1)
+		err(1, "pipe");
+	switch ((pid = fork())) {
+	case -1:
+		err(1, "fork");
+		break;
+	case 0:
+		if (pledge("stdio inet dns", NULL) == -1)
+			err(1, "pledge");
+
+		close(p[0]);	/* read side of pipe */
+		dup2(p[1], STDIN_FILENO);
+		if (p[1] != STDIN_FILENO)
+			close(p[1]);
+		dup2(STDIN_FILENO, STDOUT_FILENO);
+		dup2(STDOUT_FILENO, STDERR_FILENO);
+		setvbuf(stdout, NULL, _IOFBF, 0);
+		setvbuf(stderr, NULL, _IOFBF, 0);
+
+		if (ntp)
+			ntp_client(hname, family, &pdata.new,
+			    &pdata.adjust, corrleaps);
+		else
+			rfc868time_client(hname, family, &pdata.new,
+			    &pdata.adjust, corrleaps);
+
+		if (write(STDOUT_FILENO, &pdata, sizeof pdata) != sizeof pdata)
+			exit(1);
+		exit(0);
+	}
+
+	if (pledge("stdio rpath wpath settime", NULL) == -1)
+		err(1, "pledge");
+
+	close(p[1]);	/* write side of pipe */
+	if (read(p[0], &pdata, sizeof pdata) < 1)
+		err(1, "child did not collect time");
+	if (waitpid(pid, NULL, 0) == -1)
+		err(1, "waitpid");
+
+	/*
+	 * A viable timestamp from the child contains no message.
+	 */
+	if (pdata.message[0]) {
+		pdata.message[sizeof(pdata.message)- 1] = '\0';
+		write(STDERR_FILENO, pdata.message, strlen(pdata.message));
 		exit(1);
 	}
 
-	if ((sp = getservbyname("time", "tcp")) == NULL) {
-		sp = &ssp;
-		sp->s_port = 37;
-		sp->s_proto = "tcp";
-	}
-	if ((pp = getprotobyname(sp->s_proto)) == NULL) {
-		pp = &ppp;
-		pp->p_proto = 6;
-	}
-	if ((s = socket(AF_INET, SOCK_STREAM, pp->p_proto)) == -1)
-		err(1, "Could not create socket");
-
-	bzero(&sa, sizeof sa);
-	sa.sin_family = AF_INET;
-	sa.sin_port = sp->s_port;
-
-	memcpy(&(sa.sin_addr.s_addr), hp->h_addr, hp->h_length);
-
-	if (connect(s, (struct sockaddr *) & sa, sizeof(sa)) == -1)
-		err(1, "Could not connect socket");
-
-	if (read(s, &tim, sizeof(time_t)) != sizeof(time_t))
-		err(1, "Could not read data");
-
-	(void) close(s);
-	tim = ntohl(tim) - DIFFERENCE;
-
 	if (!pr) {
-		struct timeval  tv;
-		tv.tv_sec = tim;
-		tv.tv_usec = 0;
-		if (settimeofday(&tv, NULL) == -1)
-			err(1, "Could not set time of day");
+		if (!slidetime) {
+			logwtmp("|", "date", "");
+			if (settimeofday(&pdata.new, NULL) == -1)
+				err(1, "Could not set time of day");
+			logwtmp("{", "date", "");
+		} else {
+			if (adjtime(&pdata.adjust, NULL) == -1)
+				err(1, "Could not adjust time of day");
+		}
 	}
-	if (!silent)
-		(void) fputs(ctime(&tim), stdout);
+
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
+
+	if (!silent) {
+		struct tm      *ltm;
+		char		buf[80];
+		time_t		tim = pdata.new.tv_sec;
+		double		adjsec;
+
+		ltm = localtime(&tim);
+		(void) strftime(buf, sizeof buf, "%a %b %e %H:%M:%S %Z %Y\n", ltm);
+		(void) fputs(buf, stdout);
+
+		adjsec  = pdata.adjust.tv_sec + pdata.adjust.tv_usec / 1.0e6;
+
+		if (slidetime || verbose) {
+			if (ntp)
+				(void) fprintf(stdout,
+				   "%s: adjust local clock by %.6f seconds\n",
+				   __progname, adjsec);
+			else
+				(void) fprintf(stdout,
+				   "%s: adjust local clock by %lld seconds\n",
+				   __progname, (long long)pdata.adjust.tv_sec);
+		}
+	}
+
 	return 0;
 }

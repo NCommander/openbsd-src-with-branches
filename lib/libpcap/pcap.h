@@ -1,7 +1,7 @@
-/*	$NetBSD: pcap.h,v 1.2 1995/03/06 11:39:07 mycroft Exp $	*/
+/*	$OpenBSD: pcap.h,v 1.17 2016/04/02 08:49:49 dlg Exp $	*/
 
 /*
- * Copyright (c) 1993, 1994
+ * Copyright (c) 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,8 +31,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * @(#) Header: pcap.h,v 1.15 94/06/14 20:03:34 leres Exp (LBL)
  */
 
 #ifndef lib_pcap_h
@@ -55,17 +53,19 @@
  * predates the bpf typedefs for 64-bit support.
  */
 #if BPF_RELEASE - 0 < 199406
-typedef	long bpf_int32;
-typedef	u_long bpf_u_int32;
+typedef	int bpf_int32;
+typedef	u_int bpf_u_int32;
 #endif
 
 typedef struct pcap pcap_t;
+typedef struct pcap_if pcap_if_t;
+typedef struct pcap_addr pcap_addr_t;
 typedef struct pcap_dumper pcap_dumper_t;
 
 /*
  * The first record in the file contains saved values for some
  * of the flags used in the printout phases of tcpdump.
- * Many fields here are longs so compilers won't insert unwanted
+ * Many fields here are 32 bit ints so compilers won't insert unwanted
  * padding; these files need to be interchangeable across architectures.
  */
 struct pcap_file_header {
@@ -78,13 +78,19 @@ struct pcap_file_header {
 	bpf_u_int32 linktype;	/* data link type (DLT_*) */
 };
 
+typedef enum {
+       PCAP_D_INOUT = 0,
+       PCAP_D_IN,
+       PCAP_D_OUT
+} pcap_direction_t;
+
 /*
  * Each packet in the dump file is prepended with this generic header.
  * This gets around the problem of different headers for different
  * packet interfaces.
  */
 struct pcap_pkthdr {
-	struct timeval ts;	/* time stamp */
+	struct bpf_timeval ts;	/* time stamp */
 	bpf_u_int32 caplen;	/* length of portion present */
 	bpf_u_int32 len;	/* length this packet (off wire) */
 };
@@ -98,27 +104,109 @@ struct pcap_stat {
 	u_int ps_ifdrop;	/* drops by interface XXX not yet supported */
 };
 
+/*
+ * Item in a list of interfaces.
+ */
+struct pcap_if {
+	struct pcap_if *next;
+	char *name;		/* name to hand to "pcap_open_live()" */
+	char *description;	/* textual description of interface, or NULL */
+	struct pcap_addr *addresses;
+	bpf_u_int32 flags;	/* PCAP_IF_ interface flags */
+};
+
+#define PCAP_IF_LOOPBACK	0x00000001	/* interface is loopback */
+
+/*
+ * Representation of an interface address.
+ */
+struct pcap_addr {
+	struct pcap_addr *next;
+	struct sockaddr *addr;		/* address */
+	struct sockaddr *netmask;	/* netmask for that address */
+	struct sockaddr *broadaddr;	/* broadcast address for that address */
+	struct sockaddr *dstaddr;	/* P2P destination address for that address */
+};
+
+/*
+ * Error codes for the pcap API.
+ * These will all be negative, so you can check for the success or
+ * failure of a call that returns these codes by checking for a
+ * negative value.
+ */
+#define PCAP_ERROR			-1	/* generic error code */
+#define PCAP_ERROR_BREAK		-2	/* loop terminated by pcap_breakloop */
+#define PCAP_ERROR_NOT_ACTIVATED	-3	/* the capture needs to be activated */
+#define PCAP_ERROR_ACTIVATED		-4	/* the operation can't be performed on already activated captures */
+#define PCAP_ERROR_NO_SUCH_DEVICE	-5	/* no such device exists */
+#define PCAP_ERROR_RFMON_NOTSUP		-6	/* this device doesn't support rfmon (monitor) mode */
+#define PCAP_ERROR_NOT_RFMON		-7	/* operation supported only in monitor mode */
+#define PCAP_ERROR_PERM_DENIED		-8	/* no permission to open the device */
+#define PCAP_ERROR_IFACE_NOT_UP		-9	/* interface isn't up */
+#define PCAP_ERROR_CANTSET_TSTAMP_TYPE	-10	/* this device doesn't support setting the time stamp type */
+#define PCAP_ERROR_PROMISC_PERM_DENIED	-11	/* you don't have permission to capture in promiscuous mode */
+
+/*
+ * Warning codes for the pcap API.
+ * These will all be positive and non-zero, so they won't look like
+ * errors.
+ */
+#define PCAP_WARNING			1	/* generic warning code */
+#define PCAP_WARNING_PROMISC_NOTSUP	2	/* this device doesn't support promiscuous mode */
+#define PCAP_WARNING_TSTAMP_TYPE_NOTSUP	3	/* the requested time stamp type is not supported */
+
 typedef void (*pcap_handler)(u_char *, const struct pcap_pkthdr *,
 			     const u_char *);
 
+__BEGIN_DECLS
 char	*pcap_lookupdev(char *);
-int	pcap_lookupnet(char *, u_long *, u_long *, char *);
-pcap_t	*pcap_open_live(char *, int, int, int, char *);
-pcap_t	*pcap_open_offline(char *, char *);
+int	pcap_lookupnet(const char *, bpf_u_int32 *, bpf_u_int32 *, char *);
+
+pcap_t	*pcap_create(const char *, char *);
+int	pcap_set_snaplen(pcap_t *, int);
+int	pcap_set_promisc(pcap_t *, int);
+int	pcap_can_set_rfmon(pcap_t *);
+int	pcap_set_rfmon(pcap_t *, int);
+int	pcap_set_timeout(pcap_t *, int);
+int	pcap_set_buffer_size(pcap_t *, int);
+int	pcap_activate(pcap_t *);
+
+pcap_t	*pcap_open_live(const char *, int, int, int, char *);
+pcap_t	*pcap_open_dead(int, int);
+pcap_t	*pcap_open_offline(const char *, char *);
+pcap_t	*pcap_fopen_offline(FILE *, char *);
 void	pcap_close(pcap_t *);
 int	pcap_loop(pcap_t *, int, pcap_handler, u_char *);
 int	pcap_dispatch(pcap_t *, int, pcap_handler, u_char *);
 const u_char*
 	pcap_next(pcap_t *, struct pcap_pkthdr *);
+int 	pcap_next_ex(pcap_t *, struct pcap_pkthdr **, const u_char **);
+void	pcap_breakloop(pcap_t *);
 int	pcap_stats(pcap_t *, struct pcap_stat *);
 int	pcap_setfilter(pcap_t *, struct bpf_program *);
+int 	pcap_setdirection(pcap_t *, pcap_direction_t);
+int	pcap_getnonblock(pcap_t *, char *);
+int	pcap_setnonblock(pcap_t *, int, char *);
 void	pcap_perror(pcap_t *, char *);
+int	pcap_inject(pcap_t *, const void *, size_t);
+int	pcap_sendpacket(pcap_t *, const u_char *, int);
+const char *pcap_statustostr(int);
 char	*pcap_strerror(int);
 char	*pcap_geterr(pcap_t *);
-int	pcap_compile(pcap_t *, struct bpf_program *, char *, int, u_long);
-/* XXX */
-int	pcap_freecode(pcap_t *, struct bpf_program *);
+int	pcap_compile(pcap_t *, struct bpf_program *, char *, int,
+	    bpf_u_int32);
+int	pcap_compile_nopcap(int, int, struct bpf_program *,
+	    char *, int, bpf_u_int32);
+void	pcap_freecode(struct bpf_program *);
+int	pcap_offline_filter(const struct bpf_program *,
+	    const struct pcap_pkthdr *, const u_char *);
 int	pcap_datalink(pcap_t *);
+int	pcap_list_datalinks(pcap_t *, int **);
+int	pcap_set_datalink(pcap_t *, int);
+void	pcap_free_datalinks(int *);
+int	pcap_datalink_name_to_val(const char *);
+const char *pcap_datalink_val_to_name(int);
+const char *pcap_datalink_val_to_description(int);
 int	pcap_snapshot(pcap_t *);
 int	pcap_is_swapped(pcap_t *);
 int	pcap_major_version(pcap_t *);
@@ -128,12 +216,22 @@ int	pcap_minor_version(pcap_t *);
 FILE	*pcap_file(pcap_t *);
 int	pcap_fileno(pcap_t *);
 
-pcap_dumper_t *pcap_dump_open(pcap_t *, char *);
+pcap_dumper_t *pcap_dump_open(pcap_t *, const char *);
+pcap_dumper_t *pcap_dump_fopen(pcap_t *, FILE *fp);
+FILE	*pcap_dump_file(pcap_dumper_t *);
+long	pcap_dump_ftell(pcap_dumper_t *);
+int	pcap_dump_flush(pcap_dumper_t *);
 void	pcap_dump_close(pcap_dumper_t *);
 void	pcap_dump(u_char *, const struct pcap_pkthdr *, const u_char *);
 
-/* XXX this guy lives in the bpf tree */
-u_int	bpf_filter(struct bpf_insn *, u_char *, u_int, u_int);
+int	pcap_findalldevs(pcap_if_t **, char *);
+void	pcap_freealldevs(pcap_if_t *);
+
+const char *pcap_lib_version(void);
+
 char	*bpf_image(struct bpf_insn *, int);
 
+int	pcap_get_selectable_fd(pcap_t *);
+
+__END_DECLS
 #endif

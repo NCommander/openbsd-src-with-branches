@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.c,v 1.7 2015/12/31 16:50:29 mestre Exp $	*/
 /*	$NetBSD: extern.c,v 1.4 1995/04/27 21:22:19 mycroft Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,21 +42,19 @@
  * For more info on this and all of my stuff, mail edjames@berkeley.edu.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)extern.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: extern.c,v 1.4 1995/04/27 21:22:19 mycroft Exp $";
-#endif
-#endif /* not lint */
+#include <stdio.h>
+#include <termios.h>
 
-#include "include.h"
+#include "def.h"
+#include "extern.h"
 
 char		GAMES[] =	"Game_List";
 
-int		clck, safe_planes, start_time, test_mode;
+int		clck, safe_planes, seeded, test_mode, makenoise;
 
-char		*file;
+time_t		start_time;
+
+const char	*file;
 
 FILE		*filein, *fileout;
 

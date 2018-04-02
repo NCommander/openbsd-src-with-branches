@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)srvr_afs.c	8.1 (Berkeley) 6/6/93
- *	$Id: srvr_afs.c,v 1.3 1994/06/13 20:48:03 mycroft Exp $
+ *	$Id: srvr_afs.c,v 1.7 2014/10/26 03:28:41 guenther Exp $
  */
 
 /*
@@ -53,9 +49,8 @@ static fserver *localhost;
 /*
  * Find an nfs server for the local host
  */
-fserver *find_afs_srvr P((mntfs *));
-fserver *find_afs_srvr(mf)
-mntfs *mf;
+fserver *
+find_afs_srvr(mntfs *mf)
 {
 	fserver *fs = localhost;
 
@@ -89,21 +84,21 @@ mntfs *mf;
 /*
  * Wakeup anything waiting for this server
  */
-void wakeup_srvr P((fserver *fs));
-void wakeup_srvr(fs)
-fserver *fs;
+void
+wakeup_srvr(fserver *fs)
 {
 	fs->fs_flags &= ~FSF_WANT;
-	wakeup((voidp) fs);
+	wakeup(fs);
 }
 
 /*
  * Called when final ttl of server has expired
  */
-static void timeout_srvr P((fserver *fs));
-static void timeout_srvr(fs)
-fserver *fs;
+static void
+timeout_srvr(void *arg)
 {
+	fserver *fs = arg;
+
 	/*
 	 * If the reference count is still zero then
 	 * we are free to remove this node
@@ -128,27 +123,25 @@ fserver *fs;
 		/*
 		 * Free the net address
 		 */
-		if (fs->fs_ip)
-			free((voidp) fs->fs_ip);
+		free(fs->fs_ip);
 
 		/*
 		 * Free the host name.
 		 */
-		free((voidp) fs->fs_host);
+		free(fs->fs_host);
 
 		/*
 		 * Discard the fserver object.
 		 */
-		free((voidp) fs);
+		free(fs);
 	}
 }
 
 /*
  * Free a file server
  */
-void free_srvr P((fserver *fs));
-void free_srvr(fs)
-fserver *fs;
+void
+free_srvr(fserver *fs)
 {
 	if (--fs->fs_refc == 0) {
 		/*
@@ -171,7 +164,7 @@ fserver *fs;
 		/*
 		 * Keep structure lying around for a while
 		 */
-		fs->fs_cid = timeout(ttl, timeout_srvr, (voidp) fs);
+		fs->fs_cid = timeout(ttl, timeout_srvr, fs);
 		/*
 		 * Mark the fileserver down and invalid again
 		 */
@@ -183,9 +176,8 @@ fserver *fs;
 /*
  * Make a duplicate fserver reference
  */
-fserver *dup_srvr P((fserver *fs));
-fserver *dup_srvr(fs)
-fserver *fs;
+fserver *
+dup_srvr(fserver *fs)
 {
 	fs->fs_refc++;
 	return fs;
@@ -194,10 +186,7 @@ fserver *fs;
 /*
  * Log state change
  */
-void srvrlog P((fserver *fs, char *state));
-void srvrlog(fs, state)
-fserver *fs;
-char *state;
+void srvrlog(fserver *fs, char *state)
 {
 	plog(XLOG_INFO, "file server %s type %s %s", fs->fs_host, fs->fs_type, state);
 }

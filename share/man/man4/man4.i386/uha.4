@@ -1,3 +1,4 @@
+.\"	$OpenBSD: uha.4,v 1.13 2010/07/03 09:20:06 krw Exp $
 .\"
 .\" Copyright (c) 1994 James A. Jegers
 .\" All rights reserved.
@@ -9,7 +10,7 @@
 .\"    notice, this list of conditions and the following disclaimer.
 .\" 2. The name of the author may not be used to endorse or promote products
 .\"    derived from this software without specific prior written permission
-.\" 
+.\"
 .\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
 .\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 .\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -22,29 +23,33 @@
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
 .\"
-.Dd November 29, 1994
+.Dd $Mdocdate: July 3 2010 $
 .Dt UHA 4 i386
-.Os NetBSD 
+.Os
 .Sh NAME
 .Nm uha
-.Nd Ultrastor SCSI adapter driver
+.Nd Ultrastor SCSI interface
 .Sh SYNOPSIS
-.Cd "uha0 at isa? port 0x330 irq ? drq ?"
-.Cd "uha* at eisa? slot ? irq ?"
-.Cd "scsibus* at uha?"
+.Cd "uha0 at isa? port 0x330"
+.Cd "uha1 at isa? port 0x334"
+.Cd "uha* at eisa?"
 .Sh DESCRIPTION
 The
-.Nm uha
+.Nm
 driver provides support for the following SCSI adapters:
 .Pp
-.Bl -tag -width -offset indent -compact
+.Bl -tag -width Ds -offset indent -compact
 .It Ultrastor 14f
 .It Ultrastor 24f
-.It Ultrastor 34f 
+.It Ultrastor 34f
 .El
 .Sh SEE ALSO
+.Xr cd 4 ,
+.Xr ch 4 ,
+.Xr eisa 4 ,
 .Xr intro 4 ,
+.Xr isa 4 ,
+.Xr scsi 4 ,
 .Xr sd 4 ,
 .Xr st 4 ,
-.Xr cd 4 ,
-.Xr ch 4  
+.Xr uk 4

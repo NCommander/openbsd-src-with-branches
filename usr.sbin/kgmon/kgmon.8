@@ -1,3 +1,4 @@
+.\" $OpenBSD: kgmon.8,v 1.13 2013/03/12 09:37:16 mpi Exp $
 .\" Copyright (c) 1983, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +10,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,63 +27,74 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)kgmon.8	8.1 (Berkeley) 6/6/93
-.\"	$Id: kgmon.8,v 1.6 1994/06/11 08:04:24 mycroft Exp $
 .\"
-.Dd June 6, 1993
+.Dd $Mdocdate: March 12 2013 $
 .Dt KGMON 8
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm kgmon
 .Nd generate a dump of the operating system's profile buffers
 .Sh SYNOPSIS
 .Nm kgmon
 .Op Fl bhpr
-.Op Fl M core
-.Op Fl N system
+.Op Fl c Ar cpuid
+.Op Fl M Ar core
+.Op Fl N Ar system
 .Sh DESCRIPTION
-.Nm Kgmon
+.Nm kgmon
 is a tool used when profiling the operating system.
 When no arguments are supplied,
 .Nm kgmon
-indicates the state of operating system profiling as running,
-off, or not configured.
+indicates the state of per-CPU operating system profilings as
+.Dq running ,
+.Dq off ,
+or
+.Dq not configured
 (see
-.Xr config 8 )
+.Xr config 8 ) .
 If the
 .Fl p
 flag is specified,
 .Nm kgmon
-extracts profile data from the operating system and produces a
-.Pa gmon.out
-file suitable for later analysis by
+extracts profile data from the operating system and produces a file for each
+CPU suitable for later analysis by
 .Xr gprof 1 .
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
 .It Fl b
 Resume the collection of profile data.
+.It Fl c Ar cpuid
+Operate on the CPU specified by
+.Pa cpuid ,
+instead of all of them.
 .It Fl h
 Stop the collection of profile data.
+.It Fl M Ar core
+Extract values associated with the name list from the specified
+.Ar core
+instead of the default
+.Pa /dev/kmem .
+.It Fl N Ar system
+Extract the name list from the specified
+.Ar system
+instead of the default
+.Pa /bsd .
 .It Fl p
 Dump the contents of the profile buffers into a
-.Pa gmon.out
-file.
+.Pa gmon-<id>.out
+file, where
+.Dq id
+is the ID of the CPU.
 .It Fl r
-Reset all the profile buffers. 
+Reset all the profile buffers.
 If the
 .Fl p
-flag is also specified, the
-.Pa gmon.out
-file is generated before the buffers are reset.
-.It Fl M
-Extract values associated with the name list from the specified core
-instead of the default ``/dev/kmem''.
-.It Fl N
-Extract the name list from the specified system instead of the
-default ``/netbsd''.
+flag is also specified, the profile files are generated before the buffers are
+reset.
 .El
 .Pp
-If neither 
+If neither
 .Fl b
 nor
 .Fl h
@@ -97,25 +105,30 @@ flag is specified and profile data is being collected,
 profiling will be momentarily suspended,
 the operating system profile buffers will be dumped,
 and profiling will be immediately resumed.
+.Pp
+.Nm
+requires the ability to open
+.Pa /dev/kmem
+which may be restricted based upon the value of the
+.Ar kern.allowkmem
+.Xr sysctl 8 .
 .Sh FILES
 .Bl -tag -width /dev/kmemx -compact
-.It Pa /netbsd
-the default system
+.It Pa /bsd
+default system
 .It Pa /dev/kmem
-the default memory
+default memory
 .El
-.Sh SEE ALSO
-.Xr gprof 1 ,
-.Xr config 8
 .Sh DIAGNOSTICS
 Users with only read permission on
 .Pa /dev/kmem
 cannot change the state
-of profiling collection. 
-They can get a 
-.Pa gmon.out
-file with the warning that the data may be
-inconsistent if profiling is in progress.
+of profiling collection.
+They can get profile files with the warning that the data may be inconsistent
+if profiling is in progress.
+.Sh SEE ALSO
+.Xr gprof 1 ,
+.Xr config 8
 .Sh HISTORY
 The
 .Nm

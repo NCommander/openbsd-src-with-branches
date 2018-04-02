@@ -13,19 +13,11 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_ilogbf.c,v 1.4 1995/05/10 20:47:31 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
-	int ilogbf(float x)
-#else
-	int ilogbf(x)
-	float x;
-#endif
+int
+ilogbf(float x)
 {
 	int32_t hx,ix;
 
@@ -41,3 +33,4 @@ static char rcsid[] = "$NetBSD: s_ilogbf.c,v 1.4 1995/05/10 20:47:31 jtc Exp $";
 	else if (hx<0x7f800000) return (hx>>23)-127;
 	else return 0x7fffffff;
 }
+DEF_STD(ilogbf);

@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 1992, Brian Berliner and Jeff Polk
  * Copyright (c) 1989-1992, Brian Berliner
- * 
+ *
  * You may distribute under the terms of the GNU General Public License as
  * specified in the README file that comes with the CVS source distribution.
- * 
+ *
  * Print Log Information
- * 
+ *
  * Prints the RCS "log" (rlog) information for the specified files.  With no
  * argument, prints the log information for all the files in the directory
  * (recursive by default).
@@ -151,7 +151,7 @@ static const char *const log_usage[] =
     "\t-t\tOnly print header and descriptive text.\n",
     "\t-N\tDo not list tags.\n",
     "\t-b\tOnly list revisions on the default branch.\n",
-    "\t-r[revisions]\tSpecify revision(s)s to list.\n",
+    "\t-r[revisions]\tSpecify revision(s) to list.\n",
     "\t   rev1:rev2   Between rev1 and rev2, including rev1 and rev2.\n",
     "\t   rev1::rev2  Between rev1 and rev2, excluding rev1 and rev2.\n",
     "\t   rev:        rev and following revisions on the same branch.\n",
@@ -329,7 +329,7 @@ cvslog (argc, argv)
 		free (p->end);
 	    free (p);
 	}
-	    
+
 	if (log_data.header)
 	    send_arg ("-h");
 	if (local)
@@ -794,7 +794,7 @@ log_fileproc (callerdat, finfo)
 	if (p != NULL)
 	{
 	    Entnode *e;
-	    
+
 	    e = (Entnode *) p->data;
 	    if (e->version[0] == '0' && e->version[1] == '\0')
 	    {
@@ -804,10 +804,10 @@ log_fileproc (callerdat, finfo)
 		return(0);
 	    }
 	}
-	
+
 	if (!really_quiet)
 	    error (0, 0, "nothing known about %s", finfo->file);
-	
+
 	return (1);
     }
 
@@ -1553,6 +1553,15 @@ log_version (log_data, revlist, rcs, ver, trunk)
 	cvs_output (padd->data, 0);
 	cvs_output (" -", 2);
 	cvs_output (pdel->data, 0);
+	cvs_output (";", 1);
+    }
+
+    p = findnode (ver->other_delta,"commitid");
+    if (p != NULL && p->data)
+    {
+	cvs_output ("  commitid: ", 12);
+	cvs_output (p->data, 0);
+	cvs_output (";", 1);
     }
 
     if (ver->branches != NULL)

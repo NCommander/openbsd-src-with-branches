@@ -1,9 +1,6 @@
-#	$NetBSD: Makefile,v 1.3 1995/03/23 08:35:38 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 5/31/93
+#	$OpenBSD: Makefile,v 1.4 2014/07/16 20:00:14 okan Exp $
 
 PROG=	ppt
-NOMAN=	noman
-HIDEGAME=hidegame
+MAN=	ppt.6
 
 .include <bsd.prog.mk>
-

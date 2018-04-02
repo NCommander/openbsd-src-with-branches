@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,14 +32,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)opts.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: opts.c,v 1.3 1994/06/13 20:47:52 mycroft Exp $";
-#endif /* not lint */
-
 #include "am.h"
-
-extern char *getenv P((const char *));
 
 /*
  * static copy of the options with
@@ -170,9 +159,8 @@ static opt_apply to_free[] = {
 /*
  * Skip to next option in the string
  */
-static char *opt P((char**));
-static char *opt(p)
-char **p;
+static char *
+opt(char **p)
 {
 	char *cp = *p;
 	char *dp = cp;
@@ -215,10 +203,8 @@ top:
 	return s;
 }
 
-static int eval_opts P((char*, char*));
-static int eval_opts(opts, mapkey)
-char *opts;
-char *mapkey;
+static int
+eval_opts(char *opts, char *mapkey)
 {
 	/*
 	 * Fill in the global structure fs_static by
@@ -282,7 +268,7 @@ char *mapkey;
 			 */
 			if (FSTREQ(op->name, f)) {
 				switch (vs_opt) {
-#if AMD_COMPAT <= 5000108
+#if 1	/* XXX ancient compat */
 				case OldSyn:
 					plog(XLOG_WARNING, "key %s: Old syntax selector found: %s=%s", mapkey, f, opt);
 					if (!op->sel_p) {
@@ -290,7 +276,7 @@ char *mapkey;
 						break;
 					}
 					/* fall through ... */
-#endif /* 5000108 */
+#endif
 				case SelEQ:
 				case SelNE:
 					if (op->sel_p && (STREQ(*op->sel_p, opt) == (vs_opt == SelNE))) {
@@ -326,11 +312,8 @@ char *mapkey;
 /*
  * Free an option
  */
-static void free_op P((opt_apply*, int));
-/*ARGSUSED*/
-static void free_op(p, b)
-opt_apply *p;
-int b;
+static void
+free_op(opt_apply *p, int b)
 {
 	if (*p->opt) {
 		free(*p->opt);
@@ -341,9 +324,8 @@ int b;
 /*
  * Normalize slashes in the string.
  */
-void normalize_slash P((char *p));
-void normalize_slash(p)
-char *p;
+void
+normalize_slash(char *p)
 {
 	char *f = strchr(p, '/');
 	char *f0 = f;
@@ -384,10 +366,8 @@ char *p;
  * If sel is true then old expand selectors, otherwise
  * don't expand selectors.
  */
-static void expand_op P((opt_apply*, int));
-static void expand_op(p, sel_p)
-opt_apply *p;
-int sel_p;
+static void
+expand_op(opt_apply *p, int sel_p)
 {
 /*
  * The BUFSPACE macros checks that there is enough space
@@ -408,7 +388,7 @@ static char expand_error[] = "No space to expand \"%s\"";
 #endif /* DEBUG */
 	struct opt *op;
 
-	while (dp = strchr(cp, '$')) {
+	while ((dp = strchr(cp, '$'))) {
 		char ch;
 		/*
 		 * First copy up to the $
@@ -520,7 +500,7 @@ static char expand_error[] = "No space to expand \"%s\"";
 						/*
 						 * Copy the string across unexpanded
 						 */
-						sprintf(xbuf, "${%s%s%s}",
+						snprintf(xbuf, sizeof(xbuf), "${%s%s%s}",
 							todo == E_File ? "/" :
 								todo == E_Domain ? "." : "",
 							nbuf,
@@ -586,8 +566,8 @@ static char expand_error[] = "No space to expand \"%s\"";
 					/*dlog("Expanding \"%s\" to \"%s\"", nbuf, val);*/
 #endif /* DEBUG */
 						if (BUFSPACE(ep, vlen)) {
-							strcpy(ep, vptr);
-							ep += vlen;
+							strlcpy(ep, vptr, expbuf + sizeof expbuf - ep);
+							ep += strlen(ep);
 						} else {
 							plog(XLOG_ERROR, expand_error, *p->opt);
 							goto out;
@@ -600,7 +580,7 @@ static char expand_error[] = "No space to expand \"%s\"";
 				}
 			}
 			/*
-			 * Check that the search was succesful
+			 * Check that the search was successful
 			 */
 			if (!op->name) {
 				/*
@@ -613,8 +593,8 @@ static char expand_error[] = "No space to expand \"%s\"";
 					int vlen = strlen(env);
 
 					if (BUFSPACE(ep, vlen)) {
-						strcpy(ep, env);
-						ep += vlen;
+						strlcpy(ep, env, expbuf + sizeof expbuf - ep);
+						ep += strlen(ep);
 					} else {
 						plog(XLOG_ERROR, expand_error, *p->opt);
 						goto out;
@@ -646,8 +626,7 @@ out:
 		 * Finish off the expansion
 		 */
 		if (BUFSPACE(ep, strlen(cp))) {
-			strcpy(ep, cp);
-			/*ep += strlen(ep);*/
+			strlcpy(ep, cp, expbuf + sizeof expbuf - ep);
 		} else {
 			plog(XLOG_ERROR, expand_error, *p->opt);
 		}
@@ -671,10 +650,8 @@ out:
 /*
  * Wrapper for expand_op
  */
-static void expand_opts P((opt_apply*, int));
-static void expand_opts(p, sel_p)
-opt_apply *p;
-int sel_p;
+static void
+expand_opts(opt_apply *p, int sel_p)
 {
 	if (*p->opt) {
 		expand_op(p, sel_p);
@@ -693,10 +670,8 @@ int sel_p;
 /*
  * Apply a function to a list of options
  */
-static void apply_opts(op, ppp, b)
-void (*op)();
-opt_apply ppp[];
-int b;
+static void
+apply_opts(void (*op)(), opt_apply ppp[], int b)
 {
 	opt_apply *pp;
 	for (pp = ppp; pp->opt; pp++)
@@ -706,8 +681,8 @@ int b;
 /*
  * Free the option table
  */
-void free_opts(fo)
-am_opts *fo;
+void
+free_opts(am_opts *fo)
 {
 	/*
 	 * Copy in the structure we are playing with
@@ -723,8 +698,8 @@ am_opts *fo;
 /*
  * Expand lookup key
  */
-char *expand_key(key)
-char *key;
+char *
+expand_key(char *key)
 {
 	opt_apply oa;
 
@@ -738,9 +713,8 @@ char *key;
  * Remove trailing /'s from a string
  * unless the string is a single / (Steven Glassman)
  */
-void deslashify P((char *s));
-void deslashify(s)
-char *s;
+void
+deslashify(char *s)
 {
 	if (s && *s) {
 		char *sl = s + strlen(s);
@@ -749,9 +723,9 @@ char *s;
 	}
 }
 
-int eval_fs_opts(fo, opts, g_opts, path, key, map)
-am_opts *fo;
-char *opts, *g_opts, *path, *key, *map;
+int
+eval_fs_opts(am_opts *fo, char *opts, char *g_opts, char *path,
+    char *key, char *map)
 {
 	int ok = TRUE;
 
@@ -760,9 +734,9 @@ char *opts, *g_opts, *path, *key, *map;
 	/*
 	 * Clear out the option table
 	 */
-	bzero((voidp) &fs_static, sizeof(fs_static));
-	bzero((voidp) vars, sizeof(vars));
-	bzero((voidp) fo, sizeof(*fo));
+	bzero(&fs_static, sizeof(fs_static));
+	bzero(vars, sizeof(vars));
+	bzero(fo, sizeof(*fo));
 
 	/*
 	 * Set key, map & path before expansion

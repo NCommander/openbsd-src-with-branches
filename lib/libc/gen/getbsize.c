@@ -1,5 +1,4 @@
-/*	$NetBSD: getbsize.c,v 1.7 1995/06/16 07:12:41 jtc Exp $	*/
-
+/*	$OpenBSD: getbsize.c,v 1.10 2005/08/08 08:05:34 espie Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,31 +28,21 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getbsize.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getbsize.c,v 1.7 1995/06/16 07:12:41 jtc Exp $";
-#endif
-#endif /* not lint */
-
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 char *
-getbsize(headerlenp, blocksizep)
-	int *headerlenp;
-	long *blocksizep;
+getbsize(int *headerlenp, long *blocksizep)
 {
 	static char header[20];
 	long n, max, mul, blocksize;
 	char *ep, *p, *form;
 
-#define	KB	(1024L)
-#define	MB	(1024L * 1024L)
-#define	GB	(1024L * 1024L * 1024L)
+#define	KB	(1024)
+#define	MB	(1024 * 1024)
+#define	GB	(1024 * 1024 * 1024)
 #define	MAXB	GB		/* No tera, peta, nor exa. */
 	form = "";
 	if ((p = getenv("BLOCKSIZE")) != NULL && *p != '\0') {
@@ -88,24 +73,29 @@ getbsize(headerlenp, blocksizep)
 			mul = 1;
 			break;
 		default:
-fmterr:			_warnx("%s: unknown blocksize", p);
+fmterr:			warnx("%s: unknown blocksize", p);
 			n = 512;
+			max = MAXB;
 			mul = 1;
 			break;
 		}
 		if (n > max) {
-			_warnx("maximum blocksize is %dG", MAXB / GB);
+			warnx("maximum blocksize is %dG", MAXB / GB);
 			n = max;
 		}
 		if ((blocksize = n * mul) < 512) {
-underflow:		_warnx("%s: minimum blocksize is 512");
+underflow:		warnx("%s: minimum blocksize is 512", p);
 			form = "";
 			blocksize = n = 512;
 		}
 	} else
 		blocksize = n = 512;
 
-	*headerlenp = snprintf(header, sizeof(header), "%d%s-blocks", n, form);
+	*headerlenp = snprintf(header, sizeof(header), "%ld%s-blocks", n, form);
+	if (*headerlenp < 0)
+		*headerlenp = 0;
+	else if (*headerlenp >= sizeof(header))
+		*headerlenp = sizeof(header) - 1;
 	*blocksizep = blocksize;
 	return (header);
 }

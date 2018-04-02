@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: main.c,v 1.31 2016/01/07 16:00:32 tb Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,20 +31,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-static char sccsid[] = "@(#)main.c	8.4 (Berkeley) 5/4/95";
-#endif /* not lint */
-
-#include <ocurses.h>
+#include <curses.h>
 #include <err.h>
+#include <limits.h>
 #include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -59,10 +45,11 @@ static char sccsid[] = "@(#)main.c	8.4 (Berkeley) 5/4/95";
 #define PROGRAM	1		/* get input from program */
 #define INPUTF	2		/* get input from a file */
 
+extern char *__progname;	/* name of program */
+
 int	interactive = 1;	/* true if interactive */
 int	debug;			/* true if debugging */
 int	test;			/* both moves come from 1: input, 2: computer */
-char	*prog;			/* name of program */
 FILE	*debugfp;		/* file for debug output */
 FILE	*inputfp;		/* file for debug input */
 
@@ -78,30 +65,30 @@ int	movelog[BSZ * BSZ];		/* log of all the moves */
 int	movenum;			/* current move number */
 char	*plyr[2];			/* who's who */
 
-extern void quit();
-#ifdef DEBUG
-extern void whatsup();
-#endif
+static char you[LOGIN_NAME_MAX];	/* username */
 
-main(argc, argv)
-	int argc;
-	char **argv;
+int
+main(int argc, char **argv)
 {
 	char buf[128];
-	int color, curmove, i, ch;
+	char fname[PATH_MAX];
+	int color = BLACK, curmove = 0, i, ch;
 	int input[2];
 	static char *fmt[2] = {
 		"%3d %-6s",
 		"%3d        %-6s"
 	};
+	char *tmpname;
 
-	prog = strrchr(argv[0], '/');
-	if (prog)
-		prog++;
+	if (pledge("stdio rpath wpath cpath tty", NULL) == -1)
+		err(1, "pledge");
+
+	if ((tmpname = getlogin()) != NULL)
+		strlcpy(you, tmpname, sizeof(you));
 	else
-		prog = argv[0];
+		strlcpy(you, "you", sizeof(you));
 
-	while ((ch = getopt(argc, argv, "bcdD:u")) != EOF) {
+	while ((ch = getopt(argc, argv, "bcdD:hu")) != -1) {
 		switch (ch) {
 		case 'b':	/* background */
 			interactive = 0;
@@ -113,12 +100,18 @@ main(argc, argv)
 			if ((debugfp = fopen(optarg, "w")) == NULL)
 				err(1, "%s", optarg);
 			break;
-		case 'u':	/* testing: user verses user */
+		case 'u':	/* testing: user versus user */
 			test = 1;
 			break;
-		case 'c':	/* testing: computer verses computer */
+		case 'c':	/* testing: computer versus computer */
 			test = 2;
 			break;
+		case 'h':
+		default:
+			fprintf(stderr,
+			    "usage: %s [-bcdu] [-D debugfile] [inputfile]\n",
+			    __progname);
+			return 1;
 		}
 	}
 	argc -= optind;
@@ -128,12 +121,6 @@ main(argc, argv)
 			err(1, "%s", *argv);
 	}
 
-	if (!debug)
-#ifdef SVR4
-		srand(time(0));
-#else
-		srandom(time(0));
-#endif
 	if (interactive)
 		cursinit();		/* initialize curses */
 again:
@@ -149,32 +136,29 @@ again:
 #endif
 
 		if (inputfp == NULL && test == 0) {
-			for (;;) {
-				ask("black or white? ");
-				getline(buf, sizeof(buf));
-				if (buf[0] == 'b' || buf[0] == 'B') {
-					color = BLACK;
-					break;
-				}
-				if (buf[0] == 'w' || buf[0] == 'W') {
-					color = WHITE;
-					break;
-				}
-				move(22, 0);
+			ask("black or white? ");
+			while (((ch = getchar()) != 'b') && (ch != 'B') &&
+				(ch != 'w') && (ch != 'W')) {
+				move(BSZ3, 0);
 				printw("Black moves first. Please enter `black' or `white'\n");
+				refresh();
 			}
-			move(22, 0);
+			if (ch == 'b' || ch == 'B')
+				color = BLACK;
+			else
+				color = WHITE;
+			move(BSZ3, 0);
 			clrtoeol();
 		}
 	} else {
-		setbuf(stdout, 0);
-		getline(buf, sizeof(buf));
+		setvbuf(stdout, NULL, _IONBF, 0);
+		get_line(buf, sizeof(buf));
 		if (strcmp(buf, "black") == 0)
 			color = BLACK;
 		else if (strcmp(buf, "white") == 0)
 			color = WHITE;
 		else {
-			sprintf(fmtbuf,
+			snprintf(fmtbuf, sizeof fmtbuf,
 			    "Huh?  Expected `black' or `white', got `%s'\n",
 			    buf);
 			panic(fmtbuf);
@@ -186,25 +170,25 @@ again:
 		input[WHITE] = INPUTF;
 	} else {
 		switch (test) {
-		case 0: /* user verses program */
+		case 0: /* user versus program */
 			input[color] = USER;
 			input[!color] = PROGRAM;
 			break;
 
-		case 1: /* user verses user */
+		case 1: /* user versus user */
 			input[BLACK] = USER;
 			input[WHITE] = USER;
 			break;
 
-		case 2: /* program verses program */
+		case 2: /* program versus program */
 			input[BLACK] = PROGRAM;
 			input[WHITE] = PROGRAM;
 			break;
 		}
 	}
 	if (interactive) {
-		plyr[BLACK] = input[BLACK] == USER ? "you" : prog;
-		plyr[WHITE] = input[WHITE] == USER ? "you" : prog;
+		plyr[BLACK] = input[BLACK] == USER ? you : __progname;
+		plyr[WHITE] = input[WHITE] == USER ? you : __progname;
 		bdwho(1);
 	}
 
@@ -216,45 +200,38 @@ again:
 			if (curmove != ILLEGAL)
 				break;
 			switch (test) {
-			case 0: /* user verses program */
+			case 0: /* user versus program */
 				input[color] = USER;
 				input[!color] = PROGRAM;
 				break;
 
-			case 1: /* user verses user */
+			case 1: /* user versus user */
 				input[BLACK] = USER;
 				input[WHITE] = USER;
 				break;
 
-			case 2: /* program verses program */
+			case 2: /* program versus program */
 				input[BLACK] = PROGRAM;
 				input[WHITE] = PROGRAM;
 				break;
 			}
-			plyr[BLACK] = input[BLACK] == USER ? "you" : prog;
-			plyr[WHITE] = input[WHITE] == USER ? "you" : prog;
+			plyr[BLACK] = input[BLACK] == USER ? you : __progname;
+			plyr[WHITE] = input[WHITE] == USER ? you : __progname;
 			bdwho(1);
 			goto top;
 
 		case USER: /* input comes from standard input */
 		getinput:
-			if (interactive)
-				ask("move? ");
-			if (!getline(buf, sizeof(buf))) {
-				curmove = RESIGN;
-				break;
-			}
-			if (buf[0] == '\0')
-				goto getinput;
-			curmove = ctos(buf);
 			if (interactive) {
+				ask("Enter move (hjklyubn/S/Q)");
+				curmove = getcoord();
 				if (curmove == SAVE) {
 					FILE *fp;
 
 					ask("save file name? ");
-					(void)getline(buf, sizeof(buf));
-					if ((fp = fopen(buf, "w")) == NULL) {
-						log("cannot create save file");
+					(void)get_line(fname, sizeof(fname));
+					if ((fp = fopen(fname, "w")) == NULL) {
+						logit("cannot create save file");
 						goto getinput;
 					}
 					for (i = 0; i < movenum - 1; i++)
@@ -265,19 +242,31 @@ again:
 				}
 				if (curmove != RESIGN &&
 				    board[curmove].s_occ != EMPTY) {
-					log("Illegal move");
+				/*	logit("Illegal move"); */
+					beep();
 					goto getinput;
 				}
+			} else {
+				if (!get_line(buf, sizeof(buf))) {
+					curmove = RESIGN;
+					break;
+				}
+				if (buf[0] == '\0')
+					goto getinput;
+				curmove = ctos(buf);
 			}
 			break;
 
 		case PROGRAM: /* input comes from the program */
+			if (interactive)
+				ask("Thinking...");
 			curmove = pickmove(color);
 			break;
 		}
 		if (interactive) {
-			sprintf(fmtbuf, fmt[color], movenum, stoc(curmove));
-			log(fmtbuf);
+			snprintf(fmtbuf, sizeof fmtbuf,
+				fmt[color], movenum, stoc(curmove));
+			logit(fmtbuf);
 		}
 		if ((i = makemove(color, curmove)) != MOVEOK)
 			break;
@@ -285,13 +274,16 @@ again:
 			bdisp();
 	}
 	if (interactive) {
-		move(22, 0);
+		move(BSZ3, 0);
 		switch (i) {
 		case WIN:
 			if (input[color] == PROGRAM)
 				addstr("Ha ha, I won");
 			else
-				addstr("Rats! you won");
+				if (input[0] == USER && input[1] == USER)
+					addstr("Well, you won (and lost).");
+				else
+					addstr("Rats! You won");
 			break;
 		case TIE:
 			addstr("Wow! its a tie");
@@ -305,16 +297,16 @@ again:
 		if (i != RESIGN) {
 		replay:
 			ask("replay? ");
-			if (getline(buf, sizeof(buf)) &&
-			    buf[0] == 'y' || buf[0] == 'Y')
+			if (get_line(buf, sizeof(buf)) &&
+			    (buf[0] == 'y' || buf[0] == 'Y'))
 				goto again;
 			if (strcmp(buf, "save") == 0) {
 				FILE *fp;
 
 				ask("save file name? ");
-				(void)getline(buf, sizeof(buf));
+				(void)get_line(buf, sizeof(buf));
 				if ((fp = fopen(buf, "w")) == NULL) {
-					log("cannot create save file");
+					logit("cannot create save file");
 					goto replay;
 				}
 				for (i = 0; i < movenum - 1; i++)
@@ -325,11 +317,11 @@ again:
 			}
 		}
 	}
-	quit();
+	quit(0);
 }
 
-readinput(fp)
-	FILE *fp;
+int
+readinput(FILE *fp)
 {
 	char *cp;
 	int c;
@@ -346,8 +338,7 @@ readinput(fp)
  * Handle strange situations.
  */
 void
-whatsup(signum)
-	int signum;
+whatsup(int signum)
 {
 	int i, pnum, n, s1, s2, d1, d2;
 	struct spotstr *sp;
@@ -357,19 +348,20 @@ whatsup(signum)
 	struct combostr *cbp;
 
 	if (!interactive)
-		quit();
+		quit(0);
 top:
 	ask("cmd? ");
-	if (!getline(fmtbuf, sizeof(fmtbuf)))
-		quit();
+	if (!get_line(fmtbuf, sizeof(fmtbuf)))
+		quit(0);
 	switch (*fmtbuf) {
 	case '\0':
 		goto top;
 	case 'q':		/* conservative quit */
-		quit();
+		quit(0);
 	case 'd':		/* set debug level */
 		debug = fmtbuf[1] - '0';
-		sprintf(fmtbuf, "Debug set to %d", debug);
+		snprintf(fmtbuf, sizeof fmtbuf,
+			"Debug set to %d", debug);
 		dlog(fmtbuf);
 		sleep(1);
 	case 'c':
@@ -383,7 +375,8 @@ top:
 		goto top;
 	case 's':		/* suggest a move */
 		i = fmtbuf[1] == 'b' ? BLACK : WHITE;
-		sprintf(fmtbuf, "suggest %c %s", i == BLACK ? 'B' : 'W',
+		snprintf(fmtbuf, sizeof fmtbuf,
+			"suggest %c %s", i == BLACK ? 'B' : 'W',
 			stoc(pickmove(i)));
 		dlog(fmtbuf);
 		goto top;
@@ -431,24 +424,29 @@ top:
 				break;
 		n += sp->s_frame[d2] - frames;
 		str = fmtbuf;
-		sprintf(str, "overlap %s%c,", stoc(s1), pdir[d1]);
+		snprintf(str, fmtbuf + sizeof fmtbuf - str,
+		    "overlap %s%c,", stoc(s1), pdir[d1]);
 		str += strlen(str);
-		sprintf(str, "%s%c = %x", stoc(s2), pdir[d2], overlap[n]);
+		snprintf(str, fmtbuf + sizeof fmtbuf - str,
+		    "%s%c = %x", stoc(s2), pdir[d2], overlap[n]);
 		dlog(fmtbuf);
 		goto top;
 	case 'p':
 		sp = &board[i = ctos(fmtbuf + 1)];
-		sprintf(fmtbuf, "V %s %x/%d %d %x/%d %d %d %x", stoc(i),
+		snprintf(fmtbuf, sizeof fmtbuf,
+			"V %s %x/%d %d %x/%d %d %d %x", stoc(i),
 			sp->s_combo[BLACK].s, sp->s_level[BLACK],
 			sp->s_nforce[BLACK],
 			sp->s_combo[WHITE].s, sp->s_level[WHITE],
 			sp->s_nforce[WHITE], sp->s_wval, sp->s_flg);
 		dlog(fmtbuf);
-		sprintf(fmtbuf, "FB %s %x %x %x %x", stoc(i),
+		snprintf(fmtbuf, sizeof fmtbuf,
+			"FB %s %x %x %x %x", stoc(i),
 			sp->s_fval[BLACK][0].s, sp->s_fval[BLACK][1].s,
 			sp->s_fval[BLACK][2].s, sp->s_fval[BLACK][3].s);
 		dlog(fmtbuf);
-		sprintf(fmtbuf, "FW %s %x %x %x %x", stoc(i),
+		snprintf(fmtbuf, sizeof fmtbuf,
+			"FW %s %x %x %x %x", stoc(i),
 			sp->s_fval[WHITE][0].s, sp->s_fval[WHITE][1].s,
 			sp->s_fval[WHITE][2].s, sp->s_fval[WHITE][3].s);
 		dlog(fmtbuf);
@@ -468,7 +466,7 @@ top:
 				if (cbp->c_nframes != n)
 					break;
 			}
-			printcombo(cbp, fmtbuf);
+			printcombo(cbp, fmtbuf, sizeof fmtbuf);
 			dlog(fmtbuf);
 		}
 		goto top;
@@ -487,8 +485,8 @@ syntax:
 /*
  * Display debug info.
  */
-dlog(str)
-	char *str;
+void
+dlog(char *str)
 {
 
 	if (debugfp)
@@ -499,8 +497,8 @@ dlog(str)
 		fprintf(stderr, "%s\n", str);
 }
 
-log(str)
-	char *str;
+void
+logit(char *str)
 {
 
 	if (debugfp)
@@ -511,8 +509,21 @@ log(str)
 		printf("%s\n", str);
 }
 
+/*
+ * Deal with a fatal error.
+ */
 void
-quit()
+qlog(char *str)
+{
+	dlog(str);
+	if (interactive)
+		beep();
+	sleep(5);
+	quit(0);
+}
+
+void
+quit(int sig)
 {
 	if (interactive) {
 		bdisp();		/* show final board */
@@ -524,10 +535,10 @@ quit()
 /*
  * Die gracefully.
  */
-panic(str)
-	char *str;
+void
+panic(char *str)
 {
-	fprintf(stderr, "%s: %s\n", prog, str);
+	fprintf(stderr, "%s: %s\n", __progname, str);
 	fputs("resign\n", stdout);
-	quit();
+	quit(0);
 }

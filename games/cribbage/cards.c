@@ -1,3 +1,4 @@
+/*	$OpenBSD: cards.c,v 1.6 2013/10/25 18:31:29 millert Exp $	*/
 /*	$NetBSD: cards.c,v 1.3 1995/03/21 15:08:41 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,31 +30,18 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)cards.c	8.1 (Berkeley) 5/31/93";
-#endif /* not lint */
-
-#include <curses.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
-#include "deck.h"
 #include "cribbage.h"
-
 
 /*
  * Initialize a deck of cards to contain one of each type.
  */
 void
-makedeck(d)
-	CARD    d[];
+makedeck(CARD d[])
 {
-	register int i, j, k;
+	int i, j, k;
 
-	i = time(NULL);
-	i = ((i & 0xff) << 8) | ((i >> 8) & 0xff) | 1;
-	srand(i);
 	k = 0;
 	for (i = 0; i < RANKS; i++)
 		for (j = 0; j < SUITS; j++) {
@@ -71,14 +55,13 @@ makedeck(d)
  * see Knuth, vol. 2, page 125.
  */
 void
-shuffle(d)
-	CARD d[];
+shuffle(CARD d[])
 {
-	register int j, k;
+	int j, k;
 	CARD c;
 
 	for (j = CARDS; j > 0; --j) {
-		k = (rand() >> 4) % j;		/* random 0 <= k < j */
+		k = arc4random_uniform(j);	/* random 0 <= k < j */
 		c = d[j - 1];			/* exchange (j - 1) and k */
 		d[j - 1] = d[k];
 		d[k] = c;
@@ -89,8 +72,7 @@ shuffle(d)
  * return true if the two cards are equal...
  */
 int
-eq(a, b)
-	CARD a, b;
+eq(CARD a, CARD b)
 {
 	return ((a.rank == b.rank) && (a.suit == b.suit));
 }
@@ -99,11 +81,9 @@ eq(a, b)
  * isone returns TRUE if a is in the set of cards b
  */
 int
-isone(a, b, n)
-	CARD a, b[];
-	int n;
+isone(CARD a, CARD b[], int n)
 {
-	register int i;
+	int i;
 
 	for (i = 0; i < n; i++)
 		if (eq(a, b[i]))
@@ -115,11 +95,9 @@ isone(a, b, n)
  * remove the card a from the deck d of n cards
  */
 void
-cremove(a, d, n)
-	CARD a, d[];
-	int n;
+cremove(CARD a, CARD d[], int n)
 {
-	register int i, j;
+	int i, j;
 
 	for (i = j = 0; i < n; i++)
 		if (!eq(a, d[i]))
@@ -133,11 +111,9 @@ cremove(a, d, n)
  *	Sort a hand of n cards
  */
 void
-sorthand(h, n)
-	register CARD h[];
-	int n;
+sorthand(CARD h[], int n)
 {
-	register CARD *cp, *endp;
+	CARD *cp, *endp;
 	CARD c;
 
 	for (endp = &h[n]; h < endp - 1; h++)

@@ -49,7 +49,7 @@
 /* The server handler... */
 struct nsd nsd;
 static char hostname[MAXHOSTNAMELEN];
-extern config_parser_state_t* cfg_parser;
+extern config_parser_state_type* cfg_parser;
 
 static void error(const char *format, ...) ATTR_FORMAT(printf, 1, 2);
 
@@ -177,6 +177,9 @@ add_interface(char*** nodes, struct nsd* nsd, char* ip)
 		nsd->udp = xalloc_zero(sizeof(*nsd->udp));
 		nsd->tcp = xalloc_zero(sizeof(*nsd->udp));
 	} else {
+		region_remove_cleanup(nsd->region, free, *nodes);
+		region_remove_cleanup(nsd->region, free, nsd->udp);
+		region_remove_cleanup(nsd->region, free, nsd->tcp);
 		*nodes = xrealloc(*nodes, (nsd->ifs+1)*sizeof(*nodes));
 		nsd->udp = xrealloc(nsd->udp, (nsd->ifs+1)*sizeof(*nsd->udp));
 		nsd->tcp = xrealloc(nsd->tcp, (nsd->ifs+1)*sizeof(*nsd->udp));
@@ -184,6 +187,9 @@ add_interface(char*** nodes, struct nsd* nsd, char* ip)
 		memset(&nsd->udp[nsd->ifs], 0, sizeof(*nsd->udp));
 		memset(&nsd->tcp[nsd->ifs], 0, sizeof(*nsd->tcp));
 	}
+	region_add_cleanup(nsd->region, free, *nodes);
+	region_add_cleanup(nsd->region, free, nsd->udp);
+	region_add_cleanup(nsd->region, free, nsd->tcp);
 
 	/* add it */
 	(*nodes)[nsd->ifs] = ip;
@@ -579,6 +585,7 @@ main(int argc, char *argv[])
 		case 'v':
 			version();
 			/* version exits */
+			break;
 #ifndef NDEBUG
 		case 'F':
 			sscanf(optarg, "%x", &nsd_debug_facilities);
@@ -594,7 +601,7 @@ main(int argc, char *argv[])
 		}
 	}
 	argc -= optind;
-	argv += optind;
+	/* argv += optind; */
 
 	/* Commandline parse error */
 	if (argc != 0) {
@@ -630,7 +637,7 @@ main(int argc, char *argv[])
 #endif /* INET6 */
 	if(nsd.options->ip_addresses)
 	{
-		ip_address_option_t* ip = nsd.options->ip_addresses;
+		ip_address_option_type* ip = nsd.options->ip_addresses;
 		while(ip) {
 			add_interface(&nodes, &nsd, ip->address);
 			ip = ip->next;
@@ -662,6 +669,9 @@ main(int argc, char *argv[])
 		if(nsd.options->identity)
 			nsd.identity = nsd.options->identity;
 	}
+	if(nsd.options->version) {
+		nsd.version = nsd.options->version;
+	}
 	if (nsd.options->logfile && !nsd.log_filename) {
 		nsd.log_filename = nsd.options->logfile;
 	}
@@ -678,6 +688,8 @@ main(int argc, char *argv[])
 	}
 	nsd.tcp_timeout = nsd.options->tcp_timeout;
 	nsd.tcp_query_count = nsd.options->tcp_query_count;
+	nsd.tcp_mss = nsd.options->tcp_mss;
+	nsd.outgoing_tcp_mss = nsd.options->outgoing_tcp_mss;
 	nsd.ipv4_edns_size = nsd.options->ipv4_edns_size;
 	nsd.ipv6_edns_size = nsd.options->ipv6_edns_size;
 
@@ -757,6 +769,9 @@ main(int argc, char *argv[])
 		nsd.children[i].need_to_send_QUIT = 0;
 		nsd.children[i].need_to_exit = 0;
 		nsd.children[i].has_exited = 0;
+#ifdef  BIND8_STATS
+		nsd.children[i].query_count = 0;
+#endif
 	}
 
 	nsd.this_child = NULL;
@@ -793,6 +808,7 @@ main(int argc, char *argv[])
 	}
 
 	/* Set up the address info structures with real interface/port data */
+	assert(nodes);
 	for (i = 0; i < nsd.ifs; ++i) {
 		int r;
 		const char* node = NULL;
@@ -906,6 +922,7 @@ main(int argc, char *argv[])
 			VERBOSITY(2, (LOG_WARNING, "chown %s failed: %s",
 				nsd.log_filename, strerror(errno)));
 	}
+	log_msg(LOG_NOTICE, "%s starting (%s)", argv0, PACKAGE_STRING);
 
 	/* Do we have a running nsd? */
 	if ((oldpid = readpid(nsd.pidfile)) == -1) {
@@ -974,6 +991,7 @@ main(int argc, char *argv[])
 			break;
 		case -1:
 			error("fork() failed: %s", strerror(errno));
+			break;
 		default:
 			/* Parent is done */
 			server_close_all_sockets(nsd.udp, nsd.ifs);
@@ -1111,6 +1129,10 @@ main(int argc, char *argv[])
 			nsd.username));
 	}
 #endif /* HAVE_GETPWNAM */
+
+	if (pledge("stdio rpath wpath cpath dns inet proc", NULL) == -1)
+		error("pledge");
+
 	xfrd_make_tempdir(&nsd);
 #ifdef USE_ZONE_STATS
 	options_zonestatnames_create(nsd.options);
@@ -1122,6 +1144,8 @@ main(int argc, char *argv[])
 		/* xfrd forks this before reading database, so it does not get
 		 * the memory size of the database */
 		server_start_xfrd(&nsd, 0, 0);
+		/* close zonelistfile in non-xfrd processes */
+		zone_list_close(nsd.options);
 	}
 	if (server_prepare(&nsd) != 0) {
 		unlinkpid(nsd.pidfile);

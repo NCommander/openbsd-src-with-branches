@@ -1,4 +1,4 @@
-/*	$NetBSD: worm.c,v 1.7 1995/04/29 01:12:41 mycroft Exp $	*/
+/*	$OpenBSD: worm.c,v 1.37 2016/01/04 17:33:24 mestre Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,20 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)worm.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: worm.c,v 1.7 1995/04/29 01:12:41 mycroft Exp $";
-#endif
-#endif /* not lint */
-
 /*
  * Worm.  Written by Michael Toy
  * UCSC
@@ -54,11 +36,12 @@ static char rcsid[] = "$NetBSD: worm.c,v 1.7 1995/04/29 01:12:41 mycroft Exp $";
 
 #include <ctype.h>
 #include <curses.h>
+#include <err.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <termios.h>
+#include <unistd.h>
 
-#define newlink() (struct body *) malloc(sizeof (struct body));
 #define HEAD '@'
 #define BODY 'o'
 #define LENGTH 7
@@ -74,36 +57,68 @@ struct body {
 	struct body *next;
 } *head, *tail, goody;
 int growing = 0;
+int growthscale = 1;
 int running = 0;
 int slow = 0;
 int score = 0;
 int start_len = LENGTH;
-char lastch;
+int visible_len;
+int lastch;
 char outbuf[BUFSIZ];
 
-void leave(), wake(), suspend();
+volatile sig_atomic_t wantleave = 0;
+volatile sig_atomic_t wantsuspend = 0;
 
-main(argc, argv)
-	int argc;
-	char **argv;
+__dead void	crash(void);
+void	display(struct body *, char);
+void	leave(int);
+void	life(void);
+void	newpos(struct body *);
+struct body 	*newlink(void);
+int	process(int);
+void	prize(void);
+int	rnd(int);
+void	setup(void);
+void	suspend(int);
+
+int
+main(int argc, char **argv)
 {
-	char ch;
+	int retval;
+	struct pollfd pfd[1];
+	const char *errstr;
+	struct timespec t, tn, tdiff;
 
-	if (argc == 2)
-		start_len = atoi(argv[1]);
-	if ((start_len <= 0) || (start_len > 500))
-		start_len = LENGTH;
-	setbuf(stdout, outbuf);
-	srand(getpid());
-	signal(SIGALRM, wake);
+	if (pledge("stdio rpath tty", NULL) == -1)
+		err(1, "pledge");
+
+	timespecclear(&t);
+
+	setvbuf(stdout, outbuf, _IOFBF, sizeof outbuf);
 	signal(SIGINT, leave);
 	signal(SIGQUIT, leave);
 	signal(SIGTSTP, suspend);	/* process control signal */
 	initscr();
-	crmode();
+	cbreak();
 	noecho();
+	keypad(stdscr, TRUE);
 	slow = (baudrate() <= 1200);
 	clear();
+	if (COLS < 18 || LINES < 5) {
+		endwin();
+		errx(1, "screen too small");
+	}
+	growthscale = COLS * LINES / 2000;
+	if (growthscale == 0)
+		growthscale = 1;
+	if (argc >= 2) {
+		start_len = strtonum(argv[1], 1, ((LINES-3) * (COLS-2)) / 3,
+		    &errstr);
+		if (errstr) {
+			endwin();
+			errx(1, "length argument is %s.", errstr);
+		}
+	}
 	stw = newwin(1, COLS-1, 0, 0);
 	tv = newwin(LINES-1, COLS-1, 1, 0);
 	box(tv, '*', '*');
@@ -116,83 +131,127 @@ main(argc, argv)
 	wrefresh(tv);
 	life();			/* Create the worm */
 	prize();		/* Put up a goal */
-	while(1)
-	{
-		if (running)
-		{
+	wmove(tv, head->y, head->x);    /* Leave cursor on worm */
+	wrefresh(tv);
+	while (1) {
+		if (wantleave) {
+			endwin();
+			return 0;
+		}
+		if (wantsuspend) {
+			move(LINES-1, 0);
+			refresh();
+			endwin();
+			fflush(stdout);
+			kill(getpid(), SIGSTOP);
+			signal(SIGTSTP, suspend);
+			cbreak();
+			noecho();
+			setup();
+			wantsuspend = 0;
+		}
+
+		if (running) {
 			running--;
 			process(lastch);
-		}
-		else
-		{
-		    fflush(stdout);
-		    if (read(0, &ch, 1) >= 0)
-			process(ch);
+		} else {
+			/* Check for timeout. */
+			clock_gettime(CLOCK_MONOTONIC, &tn);
+			if (timespeccmp(&t, &tn, <=)) {
+				t = tn;
+				t.tv_sec += 1;
+
+				process(lastch);
+				continue;
+			}
+
+			/* Prepare next read */
+			pfd[0].fd = STDIN_FILENO;
+			pfd[0].events = POLLIN;
+			timespecsub(&t, &tn, &tdiff);
+			retval = ppoll(pfd, 1, &tdiff, NULL);
+
+			/* Nothing to do if timed out or signal. */
+			if (retval <= 0)
+				continue;
+
+			/* Only update timer if valid key was pressed. */
+			if (process(getch()) == 0)
+				continue;
+
+			/* Update using clock_gettime(), tn is too old now. */
+			clock_gettime(CLOCK_MONOTONIC, &t);
+			t.tv_sec += 1;
 		}
 	}
 }
 
-life()
+void
+life(void)
 {
-	register struct body *bp, *np;
-	register int i;
+	struct body *bp, *np;
+	int i,j = 1;
 
 	head = newlink();
-	head->x = start_len+2;
-	head->y = 12;
+	head->x = start_len % (COLS-5) + 2;
+	head->y = LINES / 2;
 	head->next = NULL;
 	display(head, HEAD);
 	for (i = 0, bp = head; i < start_len; i++, bp = np) {
 		np = newlink();
 		np->next = bp;
 		bp->prev = np;
-		np->x = bp->x - 1;
-		np->y = bp->y;
+		if (((bp->x <= 2) && (j == 1)) || ((bp->x >= COLS-4) && (j == -1))) {
+			j *= -1;
+			np->x = bp->x;
+			np->y = bp->y + 1;
+		} else {
+			np->x = bp->x - j;
+			np->y = bp->y;
+		}
 		display(np, BODY);
 	}
 	tail = np;
 	tail->prev = NULL;
+	visible_len = start_len + 1;
 }
 
-display(pos, chr)
-struct body *pos;
-char chr;
+void
+display(struct body *pos, char chr)
 {
 	wmove(tv, pos->y, pos->x);
 	waddch(tv, chr);
 }
 
 void
-leave()
+leave(int dummy)
 {
-	endwin();
-	exit(0);
+	wantleave = 1;
+}
+
+int
+rnd(int range)
+{
+	return arc4random_uniform(range);
 }
 
 void
-wake()
+newpos(struct body *bp)
 {
-	signal(SIGALRM, wake);
-	fflush(stdout);
-	process(lastch);
-}
-
-rnd(range)
-{
-	return abs((rand()>>5)+(rand()>>5)) % range;
-}
-
-newpos(bp)
-struct body * bp;
-{
+	if (visible_len == (LINES-3) * (COLS-3) - 1) {
+		endwin();
+		printf("\nYou won!\nYour final score was %d\n\n", score);
+		exit(0);
+	}
 	do {
-		bp->y = rnd(LINES-3)+ 2;
+		bp->y = rnd(LINES-3)+ 1;
 		bp->x = rnd(COLS-3) + 1;
 		wmove(tv, bp->y, bp->x);
 	} while(winch(tv) != ' ');
 }
 
-prize()
+void
+prize(void)
 {
 	int value;
 
@@ -202,55 +261,100 @@ prize()
 	wrefresh(tv);
 }
 
-process(ch)
-char ch;
+int
+process(int ch)
 {
-	register int x,y;
+	int x,y;
 	struct body *nh;
 
-	alarm(0);
 	x = head->x;
 	y = head->y;
-	switch(ch)
-	{
-		case 'h': x--; break;
-		case 'j': y++; break;
-		case 'k': y--; break;
-		case 'l': x++; break;
-		case 'H': x--; running = RUNLEN; ch = tolower(ch); break;
-		case 'J': y++; running = RUNLEN/2; ch = tolower(ch); break;
-		case 'K': y--; running = RUNLEN/2; ch = tolower(ch); break;
-		case 'L': x++; running = RUNLEN; ch = tolower(ch); break;
-		case '\f': setup(); return;
-		case CNTRL('Z'): suspend(); return;
-		case CNTRL('C'): crash(); return;
-		case CNTRL('D'): crash(); return;
-		default: if (! running) alarm(1);
-			   return;
+	switch(ch) {
+#ifdef KEY_LEFT
+	case KEY_LEFT:
+#endif
+	case 'h':
+		x--;
+		break;
+#ifdef KEY_DOWN
+	case KEY_DOWN:
+#endif
+	case 'j':
+		y++;
+		break;
+#ifdef KEY_UP
+	case KEY_UP:
+#endif
+	case 'k':
+		y--;
+		break;
+#ifdef KEY_RIGHT
+	case KEY_RIGHT:
+#endif
+	case 'l':
+		x++;
+		break;
+	case 'H':
+		x--;
+		running = RUNLEN;
+		ch = tolower(ch);
+		break;
+	case 'J':
+		y++;
+		running = RUNLEN/2;
+		ch = tolower(ch);
+		break;
+	case 'K':
+		y--;
+		running = RUNLEN/2;
+		ch = tolower(ch);
+		break;
+	case 'L':
+		x++;
+		running = RUNLEN;
+		ch = tolower(ch);
+		break;
+	case '\f':
+		setup();
+		return (0);
+	case CNTRL('Z'):
+		suspend(0);
+		return (0);
+	case CNTRL('C'):
+		crash();
+		return (0);
+	case CNTRL('D'):
+		crash();
+		return (0);
+	case ERR:
+		leave(0);
+		return (0);
+	default:
+		return (0);
 	}
 	lastch = ch;
-	if (growing == 0)
-	{
+	if (growing == 0) {
 		display(tail, ' ');
 		tail->next->prev = NULL;
 		nh = tail->next;
 		free(tail);
 		tail = nh;
-	}
-	else growing--;
+		visible_len--;
+	} else
+		growing--;
 	display(head, BODY);
 	wmove(tv, y, x);
-	if (isdigit(ch = winch(tv)))
-	{
-		growing += ch-'0';
+	if (isdigit(ch = winch(tv))) {
+		int amt = ch - '0';
+		growing += amt * growthscale;
 		prize();
-		score += growing;
+		score += amt;
 		running = 0;
-		wmove(stw, 0, 68);
+		wmove(stw, 0, COLS - 12);
 		wprintw(stw, "Score: %3d", score);
 		wrefresh(stw);
-	}
-	else if(ch != ' ') crash();
+	} else if(ch != ' ')
+		crash();
 	nh = newlink();
 	nh->next = NULL;
 	nh->prev = head;
@@ -259,40 +363,45 @@ char ch;
 	nh->x = x;
 	display(nh, HEAD);
 	head = nh;
-	if (!(slow && running))
+	visible_len++;
+	if (!(slow && running)) {
+		wmove(tv, head->y, head->x);
 		wrefresh(tv);
-	if (!running)
-		alarm(1);
+	}
+	return (1);
 }
 
-crash()
+struct body *
+newlink(void)
 {
-	sleep(2);
-	clear();
-	move(23, 0);
-	refresh();
-	printf("Well, you ran into something and the game is over.\n");
-	printf("Your final score was %d\n", score);
-	leave();
+	struct body *tmp;
+
+	if ((tmp = malloc(sizeof (struct body))) == NULL) {
+		endwin();
+		errx(1, "out of memory");
+	}
+	return (tmp);
 }
 
 void
-suspend()
+crash(void)
 {
-	char *sh;
-
-	move(LINES-1, 0);
-	refresh();
+	sleep(2);
+	clear();
 	endwin();
-	fflush(stdout);
-	kill(getpid(), SIGTSTP);
-	signal(SIGTSTP, suspend);
-	crmode();
-	noecho();
-	setup();
+	printf("Well, you ran into something and the game is over.\n");
+	printf("Your final score was %d\n", score);
+	exit(0);  /* leave() calls endwin(), which would hose the printf()'s */
 }
 
-setup()
+void
+suspend(int dummy)
+{
+	wantsuspend = 1;
+}
+
+void
+setup(void)
 {
 	clear();
 	refresh();
@@ -300,5 +409,4 @@ setup()
 	wrefresh(stw);
 	touchwin(tv);
 	wrefresh(tv);
-	alarm(1);
 }

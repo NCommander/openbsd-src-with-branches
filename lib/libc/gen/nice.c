@@ -1,5 +1,3 @@
-/*	$NetBSD: nice.c,v 1.5 1995/02/27 04:35:24 cgd Exp $	*/
-
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,32 +27,28 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)nice.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: nice.c,v 1.5 1995/02/27 04:35:24 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <errno.h>
+#include <limits.h>
 #include <unistd.h>
 
 /*
- * Backwards compatible nice.
+ * Backwards compatible nice().
  */
 int
-nice(incr)
-	int incr;
+nice(int incr)
 {
 	int prio;
-	extern int errno;
 
 	errno = 0;
 	prio = getpriority(PRIO_PROCESS, 0);
 	if (prio == -1 && errno)
 		return (-1);
-	return (setpriority(PRIO_PROCESS, 0, prio + incr));
+	prio += incr;
+	if (setpriority(PRIO_PROCESS, 0, prio) != 0)
+		return (-1);
+	/* Valid range for prio is -NZERO to NZERO (inclusive).  */
+	return (prio < -NZERO ? -NZERO : prio > NZERO ? NZERO : prio);
 }

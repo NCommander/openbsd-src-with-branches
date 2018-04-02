@@ -1,3 +1,4 @@
+/* $OpenBSD: sigsetjmp.S,v 1.9 2015/09/13 07:36:58 guenther Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,18 +29,11 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)setjmp.s	5.1 (Berkeley) 4/23/90"
- *	$Id: sigsetjmp.S,v 1.7 1994/12/24 01:05:44 jtc Exp $
  */
 
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$Id: sigsetjmp.S,v 1.7 1994/12/24 01:05:44 jtc Exp $"
-#endif
-
-#include "DEFS.h"
 #include "SYS.h"
+
+	.global	__jmpxor
 
 ENTRY(sigsetjmp)
 	movl	4(%esp),%ecx
@@ -51,46 +41,67 @@ ENTRY(sigsetjmp)
 	movl	%eax,28(%ecx)
 	testl	%eax,%eax
 	jz	1f
-	pushl	$0
-#ifdef PIC
-	call	PIC_PLT(_sigblock)
-#else
-	call	_sigblock
-#endif
-	addl	$4,%esp
-	movl	4(%esp),%ecx
+
+	pushl	$0			/* mask = empty */
+	pushl	$1			/* how = SIG_BLOCK */
+	subl	$4,%esp
+	movl	$(SYS_sigprocmask),%eax
+	int	$0x80			/* leave oset in %eax */
+	addl	$12,%esp
 	movl	%eax,24(%ecx)
-1:	movl	0(%esp),%edx
-	movl	%edx, 0(%ecx)
+
+1:	call	2f
+2:	popl	%edx
+	addl	$__jmpxor-2b,%edx	# load cookie address
+
 	movl	%ebx, 4(%ecx)
-	movl	%esp, 8(%ecx)
-	movl	%ebp,12(%ecx)
+	movl	%esp,   %eax
+	xorl	8(%edx),%eax		# use esp cookie
+	movl	%eax, 8(%ecx)
+	movl	%ebp,   %eax
+	xorl	0(%edx),%eax		# use ebp cookie
+	movl	%eax,12(%ecx)
 	movl	%esi,16(%ecx)
 	movl	%edi,20(%ecx)
+	movl	4(%edx),%edx		# load eip cookie over cookie address
+	xorl	0(%esp),%edx
+	movl	%edx, 0(%ecx)
 	xorl	%eax,%eax
 	ret
+END(sigsetjmp)
 
 ENTRY(siglongjmp)
 	movl	4(%esp),%edx
 	cmpl	$0,28(%edx)
 	jz	1f
-	pushl	24(%edx)
-#ifdef PIC
-	call	PIC_PLT(_sigsetmask)
-#else
-	call	_sigsetmask
-#endif
-	addl	$4,%esp
-1:	movl	4(%esp),%edx
-	movl	8(%esp),%eax
-	movl	0(%edx),%ecx
-	movl	4(%edx),%ebx
-	movl	8(%edx),%esp
+
+	pushl	24(%edx)		/* mask from sc_mask */
+	pushl	$3			/* how = SIG_SETMASK */
+	subl	$4,%esp
+	movl	$(SYS_sigprocmask),%eax
+	int	$0x80
+	addl	$12,%esp
+
+1:	call	2f
+2:	popl	%ecx
+	addl	$__jmpxor-2b,%ecx	# load cookie address
+
+	movl	 4(%esp),%edx		# reload in case sigprocmask failed
+	movl	 8(%esp),%eax
+	movl	 4(%edx),%ebx
+	movl	 8(%edx),%esi		# load xor'ed esp into safe register
+	xorl	 8(%ecx),%esi		# use esp cookie
+	movl	   %esi, %esp		# un-xor'ed esp is safe to use
 	movl	12(%edx),%ebp
+	xorl	 0(%ecx),%ebp		# use ebp cookie
 	movl	16(%edx),%esi
 	movl	20(%edx),%edi
+
+	movl	 4(%ecx),%ecx		# load eip cookie over cookie address
+	xorl	 0(%edx),%ecx
 	testl	%eax,%eax
 	jnz	2f
 	incl	%eax
 2:	movl	%ecx,0(%esp)
 	ret
+END(siglongjmp)

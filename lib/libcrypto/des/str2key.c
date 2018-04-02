@@ -1,4 +1,4 @@
-/* crypto/des/str2key.c */
+/* $OpenBSD: str2key.c,v 1.9 2014/10/28 07:35:58 jsg Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -63,7 +63,7 @@ void DES_string_to_key(const char *str, DES_cblock *key)
 	{
 	DES_key_schedule ks;
 	int i,length;
-	register unsigned char j;
+	unsigned char j;
 
 	memset(key,0,8);
 	length=strlen(str);
@@ -95,7 +95,7 @@ void DES_string_to_key(const char *str, DES_cblock *key)
 	DES_set_key_unchecked(key,&ks);
 #endif
 	DES_cbc_cksum((const unsigned char*)str,key,length,&ks,key);
-	OPENSSL_cleanse(&ks,sizeof(ks));
+	explicit_bzero(&ks,sizeof(ks));
 	DES_set_odd_parity(key);
 	}
 
@@ -103,7 +103,7 @@ void DES_string_to_2keys(const char *str, DES_cblock *key1, DES_cblock *key2)
 	{
 	DES_key_schedule ks;
 	int i,length;
-	register unsigned char j;
+	unsigned char j;
 
 	memset(key1,0,8);
 	memset(key2,0,8);
@@ -168,7 +168,7 @@ void DES_string_to_2keys(const char *str, DES_cblock *key1, DES_cblock *key2)
 	DES_set_key_unchecked(key2,&ks);
 #endif
 	DES_cbc_cksum((const unsigned char*)str,key2,length,&ks,key2);
-	OPENSSL_cleanse(&ks,sizeof(ks));
+	explicit_bzero(&ks,sizeof(ks));
 	DES_set_odd_parity(key1);
 	DES_set_odd_parity(key2);
 	}

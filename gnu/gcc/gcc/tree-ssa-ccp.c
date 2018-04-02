@@ -2063,13 +2063,15 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
 	  tem = fold_binary (TREE_CODE (op0), TREE_TYPE (op0),
 			     TREE_OPERAND (op0, 0),
 			     TREE_OPERAND (op0, 1));
-	  set = tem && is_gimple_condexpr (tem);
+	  set = tem && set_rhs (expr_p, tem);
 	  fold_undefer_overflow_warnings (set, fold_stmt_r_data->stmt, 0);
 	  if (set)
-	    TREE_OPERAND (expr, 0) = tem;
-	  t = expr;
-          break;
+	    {
+	      t = *expr_p;
+	      break;
+	    }
         }
+      return NULL_TREE;
 
     default:
       return NULL_TREE;
@@ -2234,7 +2236,9 @@ ccp_fold_builtin (tree stmt, tree fn)
       arg_mask = 1;
       type = 0;
       break;
+#ifndef NO_UNSAFE_BUILTINS
     case BUILT_IN_STRCPY:
+#endif
     case BUILT_IN_STRNCPY:
       arg_mask = 2;
       type = 0;

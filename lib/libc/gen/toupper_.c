@@ -1,22 +1,16 @@
-/*	$NetBSD: toupper_.c,v 1.7 1995/05/11 23:04:09 jtc Exp $	*/
-
+/*	$OpenBSD: toupper_.c,v 1.11 2015/09/13 11:38:08 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#if defined(LIBC_RCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: toupper_.c,v 1.7 1995/05/11 23:04:09 jtc Exp $";
-#endif /* LIBC_RCS and not lint */
-
-#include <stdio.h>
+#define _ANSI_LIBRARY
 #include <ctype.h>
+#include <stdio.h>
 
-#if EOF != -1
-#error "EOF != -1"
-#endif
+#include "ctype_private.h"
 
-const short _C_toupper_[1 + 256] = {
+const short _C_toupper_[1 + CTYPE_NUM_CHARS] = {
 	EOF,
 	0x00,	0x01,	0x02,	0x03,	0x04,	0x05,	0x06,	0x07,
 	0x08,	0x09,	0x0a,	0x0b,	0x0c,	0x0d,	0x0e,	0x0f,
@@ -53,11 +47,16 @@ const short _C_toupper_[1 + 256] = {
 };
 
 const short *_toupper_tab_ = _C_toupper_;
+#if 0
+DEF_STRONG(_toupper_tab_);
+#endif
 
 #undef toupper
 int
-toupper(c)
-	int c;
+toupper(int c)
 {
+	if ((unsigned int)c > 255)
+		return(c);
 	return((_toupper_tab_ + 1)[c]);
 }
+DEF_STRONG(toupper);

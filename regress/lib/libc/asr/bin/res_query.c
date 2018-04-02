@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.15 2011/05/01 12:57:11 eric Exp $	*/
+/*	$OpenBSD: res_query.c,v 1.1.1.1 2012/07/13 17:49:54 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -17,6 +17,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 
 #include <netinet/in.h>
 #include <arpa/nameser.h>

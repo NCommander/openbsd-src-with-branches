@@ -1,13 +1,10 @@
+/*	$OpenBSD: bcmp.S,v 1.4 2015/08/31 02:53:56 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
-
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: bcmp.S,v 1.7 1995/04/28 22:57:54 jtc Exp $")
-#endif
+#include "DEFS.h"
 
 ENTRY(bcmp)
 	pushl	%edi
@@ -33,3 +30,4 @@ L1:	incl	%eax
 L2:	popl	%esi
 	popl	%edi
 	ret
+END_WEAK(bcmp)

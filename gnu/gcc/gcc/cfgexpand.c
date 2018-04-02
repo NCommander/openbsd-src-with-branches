@@ -160,7 +160,10 @@ get_decl_align_unit (tree decl)
   align = DECL_ALIGN (decl);
   align = LOCAL_ALIGNMENT (TREE_TYPE (decl), align);
   if (align > PREFERRED_STACK_BOUNDARY)
-    align = PREFERRED_STACK_BOUNDARY;
+    {
+      warning (0, "ignoring alignment for stack allocated %q+D", decl);
+      align = PREFERRED_STACK_BOUNDARY;
+    }
   if (cfun->stack_alignment_needed < align)
     cfun->stack_alignment_needed = align;
 
@@ -429,7 +432,21 @@ partition_stack_vars (void)
   if (n == 1)
     return;
 
-  qsort (stack_vars_sorted, n, sizeof (size_t), stack_var_size_cmp);
+  if (flag_stack_shuffle)
+    {
+      /* Fisher-Yates shuffle */
+      for (si = n - 1; si > 0; si--)
+	{
+	  size_t tmp;
+	  sj = arc4random_uniform(si + 1);
+
+	  tmp = stack_vars_sorted[si];
+	  stack_vars_sorted[si] = stack_vars_sorted[sj];
+	  stack_vars_sorted[sj] = tmp;
+	}
+    }
+  else
+    qsort (stack_vars_sorted, n, sizeof (size_t), stack_var_size_cmp);
 
   /* Special case: detect when all variables conflict, and thus we can't
      do anything during the partitioning loop.  It isn't uncommon (with
@@ -810,6 +827,12 @@ clear_tree_used (tree block)
     clear_tree_used (t);
 }
 
+enum {
+  SPCT_FLAG_DEFAULT = 1,
+  SPCT_FLAG_ALL = 2,
+  SPCT_FLAG_STRONG = 3
+};
+
 /* Examine TYPE and determine a bit mask of the following features.  */
 
 #define SPCT_HAS_LARGE_CHAR_ARRAY	1
@@ -879,7 +902,8 @@ stack_protect_decl_phase (tree decl)
   if (bits & SPCT_HAS_SMALL_CHAR_ARRAY)
     has_short_buffer = true;
 
-  if (flag_stack_protect == 2)
+  if (flag_stack_protect == SPCT_FLAG_ALL
+      || flag_stack_protect == SPCT_FLAG_STRONG)
     {
       if ((bits & (SPCT_HAS_SMALL_CHAR_ARRAY | SPCT_HAS_LARGE_CHAR_ARRAY))
 	  && !(bits & SPCT_HAS_AGGREGATE))
@@ -938,13 +962,37 @@ add_stack_protection_conflicts (void)
 /* Create a decl for the guard at the top of the stack frame.  */
 
 static void
-create_stack_guard (void)
+create_stack_guard (bool protect)
 {
   tree guard = build_decl (VAR_DECL, NULL, ptr_type_node);
   TREE_THIS_VOLATILE (guard) = 1;
   TREE_USED (guard) = 1;
   expand_one_stack_var (guard);
-  cfun->stack_protect_guard = guard;
+  if (protect)
+    cfun->stack_protect_guard = guard;
+}
+
+/* Helper routine to check if a record or union contains an array field. */
+
+static int
+record_or_union_type_has_array_p (tree tree_type)
+{
+  tree fields = TYPE_FIELDS (tree_type);
+  tree f;
+
+  for (f = fields; f; f = TREE_CHAIN (f))
+    if (TREE_CODE (f) == FIELD_DECL)
+      {
+	tree field_type = TREE_TYPE (f);
+	if ((TREE_CODE (field_type) == RECORD_TYPE
+	     || TREE_CODE (field_type) == UNION_TYPE
+	     || TREE_CODE (field_type) == QUAL_UNION_TYPE)
+	    && record_or_union_type_has_array_p (field_type))
+	  return 1;
+	if (TREE_CODE (field_type) == ARRAY_TYPE)
+	  return 1;
+      }
+  return 0;
 }
 
 /* Expand all variables used in the function.  */
@@ -953,6 +1001,7 @@ static void
 expand_used_vars (void)
 {
   tree t, outer_block = DECL_INITIAL (current_function_decl);
+  bool gen_stack_protect_signal = false;
 
   /* Compute the phase of the stack frame for this function.  */
   {
@@ -971,6 +1020,29 @@ expand_used_vars (void)
   /* Initialize local stack smashing state.  */
   has_protected_decls = false;
   has_short_buffer = false;
+
+  if (flag_stack_protect == SPCT_FLAG_STRONG)
+    for (t = cfun->unexpanded_var_list; t; t = TREE_CHAIN (t))
+      {
+	tree var = TREE_VALUE (t);
+	if (!is_global_var (var))
+	  {
+	    tree var_type = TREE_TYPE (var);
+	    /* Examine local referenced variables that have their addresses
+	     * taken, contain an array, or are arrays. */
+	    if (TREE_CODE (var) == VAR_DECL
+		&& (TREE_CODE (var_type) == ARRAY_TYPE
+		    || TREE_ADDRESSABLE (var)
+		    || ((TREE_CODE (var_type) == RECORD_TYPE
+			 || TREE_CODE (var_type) == UNION_TYPE
+			 || TREE_CODE (var_type) == QUAL_UNION_TYPE)
+			&& record_or_union_type_has_array_p (var_type))))
+	      {
+		gen_stack_protect_signal = true;
+		break;
+	      }
+	  }
+      }
 
   /* At this point all variables on the unexpanded_var_list with TREE_USED
      set are not associated with any block scope.  Lay them out.  */
@@ -1032,29 +1104,44 @@ expand_used_vars (void)
 	dump_stack_var_partition ();
     }
 
-  /* There are several conditions under which we should create a
-     stack guard: protect-all, alloca used, protected decls present.  */
-  if (flag_stack_protect == 2
-      || (flag_stack_protect
-	  && (current_function_calls_alloca || has_protected_decls)))
-    create_stack_guard ();
+  switch (flag_stack_protect)
+    {
+    case SPCT_FLAG_ALL:
+      create_stack_guard (true);
+      break;
+
+    case SPCT_FLAG_STRONG:
+      create_stack_guard (gen_stack_protect_signal
+	  || current_function_calls_alloca || has_protected_decls);
+      break;
+
+    case SPCT_FLAG_DEFAULT:
+      create_stack_guard(current_function_calls_alloca || has_protected_decls);
+      break;
+
+    default:
+      ;
+    }
 
   /* Assign rtl to each variable based on these partitions.  */
   if (stack_vars_num > 0)
     {
-      /* Reorder decls to be protected by iterating over the variables
-	 array multiple times, and allocating out of each phase in turn.  */
-      /* ??? We could probably integrate this into the qsort we did
-	 earlier, such that we naturally see these variables first,
-	 and thus naturally allocate things in the right order.  */
-      if (has_protected_decls)
+      if (!flag_stack_shuffle)
 	{
-	  /* Phase 1 contains only character arrays.  */
-	  expand_stack_vars (stack_protect_decl_phase_1);
+	  /* Reorder decls to be protected by iterating over the variables
+	     array multiple times, and allocating out of each phase in turn.  */
+	  /* ??? We could probably integrate this into the qsort we did
+	     earlier, such that we naturally see these variables first,
+	     and thus naturally allocate things in the right order.  */
+	  if (has_protected_decls)
+	    {
+	      /* Phase 1 contains only character arrays.  */
+	      expand_stack_vars (stack_protect_decl_phase_1);
 
-	  /* Phase 2 contains other kinds of arrays.  */
-	  if (flag_stack_protect == 2)
-	    expand_stack_vars (stack_protect_decl_phase_2);
+	      /* Phase 2 contains other kinds of arrays.  */
+	      if (flag_stack_protect == 2)
+		expand_stack_vars (stack_protect_decl_phase_2);
+	    }
 	}
 
       expand_stack_vars (NULL);

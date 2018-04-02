@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: interrupt.c,v 1.15 2015/09/01 05:47:14 deraadt Exp $	*/
 /*	$NetBSD: interrupt.c,v 1.18 2006/01/25 00:02:57 uwe Exp $	*/
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -42,12 +35,11 @@
 
 #include <uvm/uvm_extern.h>	/* uvmexp.intrs */
 
-#include <net/netisr.h>
-
 #include <sh/clock.h>
 #include <sh/trap.h>
 #include <sh/intcreg.h>
 #include <sh/tmureg.h>
+#include <machine/atomic.h>
 #include <machine/intr.h>
 
 void intc_intr_priority(int, int);
@@ -63,8 +55,7 @@ void intpri_intr_disable(int);
 void netintr(void);
 void tmu1_oneshot(void);
 int tmu1_intr(void *);
-void tmu2_oneshot(void);
-int tmu2_intr(void *);
+void setsoft(int);
 
 /*
  * EVTCODE to intc_intrhand mapper.
@@ -78,7 +69,6 @@ struct intc_intrhand __intc_intrhand[_INTR_N + 1] = {
 };
 
 struct sh_soft_intr sh_soft_intrs[_IPL_NSOFT];
-struct sh_soft_intrhand *softnet_intrhand;
 
 /*
  * SH INTC support.
@@ -135,6 +125,10 @@ intc_intr_establish(int evtcode, int trigger, int level,
 	ih->ih_arg	= ih_arg;
 	ih->ih_level	= level << 4;	/* convert to SR.IMASK format. */
 	ih->ih_evtcode	= evtcode;
+	ih->ih_irq	= evtcode >> 5;
+	ih->ih_name	= name;
+	if (name)
+		evcount_attach(&ih->ih_count, name, &ih->ih_irq);
 
 	/* Map interrupt handler */
 	EVTCODE_TO_IH_INDEX(evtcode) = ih->ih_idx;
@@ -159,6 +153,8 @@ intc_intr_disestablish(void *arg)
 	/* Unmap interrupt handler */
 	EVTCODE_TO_IH_INDEX(evtcode) = 0;
 
+	if (ih->ih_name)
+		evcount_detach(&ih->ih_count);
 	intc_free_ih(ih);
 }
 
@@ -392,6 +388,7 @@ intc_alloc_ih(void)
 void
 intc_free_ih(struct intc_intrhand *ih)
 {
+	ih->ih_idx = 0;
 	memset(ih, 0, sizeof(*ih));
 }
 
@@ -574,33 +571,18 @@ intpri_intr_disable(int evtcode)
 void
 softintr_init(void)
 {
-#if 0
-	static const char *softintr_names[] = IPL_SOFTNAMES;
-#endif
 	struct sh_soft_intr *asi;
 	int i;
 
 	for (i = 0; i < _IPL_NSOFT; i++) {
 		asi = &sh_soft_intrs[i];
 		TAILQ_INIT(&asi->softintr_q);
-
+		mtx_init(&asi->softintr_lock, IPL_HIGH);
 		asi->softintr_ipl = IPL_SOFT + i;
-		simple_lock_init(&asi->softintr_slock);
-#if 0
-		evcnt_attach_dynamic(&asi->softintr_evcnt, EVCNT_TYPE_INTR,
-		    NULL, "soft", softintr_names[i]);
-#endif
 	}
 
-	/* XXX Establish legacy soft interrupt handlers. */
-	softnet_intrhand = softintr_establish(IPL_SOFTNET,
-	    (void (*)(void *))netintr, NULL);
-	KDASSERT(softnet_intrhand != NULL);
-
-	intc_intr_establish(SH_INTEVT_TMU1_TUNI1, IST_LEVEL, IPL_SOFT,
+	intc_intr_establish(SH_INTEVT_TMU1_TUNI1, IST_LEVEL, IPL_SOFTNET,
 	    tmu1_intr, NULL, "tmu1");
-	intc_intr_establish(SH_INTEVT_TMU2_TUNI2, IST_LEVEL, IPL_SOFTNET,
-	    tmu2_intr, NULL, "tmu2");
 }
 
 void
@@ -608,36 +590,30 @@ softintr_dispatch(int ipl)
 {
 	struct sh_soft_intr *asi;
 	struct sh_soft_intrhand *sih;
-	int s;
-
-	s = _cpu_intr_suspend();
 
 	asi = &sh_soft_intrs[ipl - IPL_SOFT];
 
-	if (TAILQ_FIRST(&asi->softintr_q) != NULL)
-		asi->softintr_evcnt.ev_count++;
-
-	while ((sih = TAILQ_FIRST(&asi->softintr_q)) != NULL) {
+	for (;;) {
+		mtx_enter(&asi->softintr_lock);
+		sih = TAILQ_FIRST(&asi->softintr_q);
+		if (sih == NULL) {
+			mtx_leave(&asi->softintr_lock);
+			break;
+		}
 		TAILQ_REMOVE(&asi->softintr_q, sih, sih_q);
 		sih->sih_pending = 0;
 
 		uvmexp.softs++;
+		mtx_leave(&asi->softintr_lock);
 
-		_cpu_intr_resume(s);
 		(*sih->sih_fn)(sih->sih_arg);
-		s = _cpu_intr_suspend();
 	}
-
-	_cpu_intr_resume(s);
 }
 
 void
 setsoft(int ipl)
 {
-	if (ipl < IPL_SOFTNET)
-		tmu1_oneshot();
-	else
-		tmu2_oneshot();
+	tmu1_oneshot();
 }
 
 /* Register a software interrupt handler. */
@@ -646,7 +622,6 @@ softintr_establish(int ipl, void (*func)(void *), void *arg)
 {
 	struct sh_soft_intr *asi;
 	struct sh_soft_intrhand *sih;
-	int s;
 
 	if (__predict_false(ipl >= (IPL_SOFT + _IPL_NSOFT) ||
 			    ipl < IPL_SOFT))
@@ -654,7 +629,6 @@ softintr_establish(int ipl, void (*func)(void *), void *arg)
 
 	sih = malloc(sizeof(*sih), M_DEVBUF, M_NOWAIT);
 
-	s = _cpu_intr_suspend();
 	asi = &sh_soft_intrs[ipl - IPL_SOFT];
 	if (__predict_true(sih != NULL)) {
 		sih->sih_intrhead = asi;
@@ -662,9 +636,13 @@ softintr_establish(int ipl, void (*func)(void *), void *arg)
 		sih->sih_arg = arg;
 		sih->sih_pending = 0;
 	}
-	_cpu_intr_resume(s);
 
 	return (sih);
+}
+
+void
+intr_barrier(void *cookie)
+{
 }
 
 /* Unregister a software interrupt handler. */
@@ -673,39 +651,30 @@ softintr_disestablish(void *arg)
 {
 	struct sh_soft_intrhand *sih = arg;
 	struct sh_soft_intr *asi = sih->sih_intrhead;
-	int s;
 
-	s = _cpu_intr_suspend();
+	mtx_enter(&asi->softintr_lock);
 	if (sih->sih_pending) {
 		TAILQ_REMOVE(&asi->softintr_q, sih, sih_q);
 		sih->sih_pending = 0;
 	}
-	_cpu_intr_resume(s);
+	mtx_leave(&asi->softintr_lock);
 
-	free(sih, M_DEVBUF);
+	free(sih, M_DEVBUF, sizeof *sih);
 }
 
-/*
- * Software (low priority) network interrupt. i.e. softnet().
- */
-void
-netintr(void)
+/* Schedule a software interrupt. */
+void softintr_schedule(void *arg)
 {
-#define	DONETISR(bit, fn)						\
-	do {								\
-		if (n & (1 << bit))					\
-			fn();						\
-	} while (/*CONSTCOND*/0)
+	struct sh_soft_intrhand *sih = arg;
+	struct sh_soft_intr *si = sih->sih_intrhead;
 
-	int s, n;
-
-	s = splnet();
-	n = netisr;
-	netisr = 0;
-	splx(s);
-#include <net/netisr_dispatch.h>
-
-#undef DONETISR
+	mtx_enter(&si->softintr_lock);
+	if (sih->sih_pending == 0) {
+		TAILQ_INSERT_TAIL(&si->softintr_q, sih, sih_q);
+		sih->sih_pending = 1;
+		setsoft(si->softintr_ipl);
+	}
+	mtx_leave(&si->softintr_lock);
 }
 
 /*
@@ -725,28 +694,10 @@ tmu1_intr(void *arg)
 	_reg_bclr_1(SH_(TSTR), TSTR_STR1);
 	_reg_bclr_2(SH_(TCR1), TCR_UNF);
 
-	softintr_dispatch(IPL_SOFTCLOCK);
-	softintr_dispatch(IPL_SOFT);
-
-	return (0);
-}
-
-void
-tmu2_oneshot(void)
-{
-	_reg_bclr_1(SH_(TSTR), TSTR_STR2);
-	_reg_write_4(SH_(TCNT2), 0);
-	_reg_bset_1(SH_(TSTR), TSTR_STR2);
-}
-
-int
-tmu2_intr(void *arg)
-{
-	_reg_bclr_1(SH_(TSTR), TSTR_STR2);
-	_reg_bclr_2(SH_(TCR2), TCR_UNF);
-
 	softintr_dispatch(IPL_SOFTSERIAL);
 	softintr_dispatch(IPL_SOFTNET);
+	softintr_dispatch(IPL_SOFTCLOCK);
+	softintr_dispatch(IPL_SOFT);
 
 	return (0);
 }

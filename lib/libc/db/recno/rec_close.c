@@ -1,7 +1,7 @@
-/*	$NetBSD: rec_close.c,v 1.6 1995/02/27 13:24:37 cgd Exp $	*/
+/*	$OpenBSD: rec_close.c,v 1.12 2015/07/16 04:27:33 tedu Exp $	*/
 
 /*-
- * Copyright (c) 1990, 1993
+ * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)rec_close.c	8.3 (Berkeley) 2/21/94";
-#else
-static char rcsid[] = "$NetBSD: rec_close.c,v 1.6 1995/02/27 13:24:37 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -63,8 +51,7 @@ static char rcsid[] = "$NetBSD: rec_close.c,v 1.6 1995/02/27 13:24:37 cgd Exp $"
  *	RET_ERROR, RET_SUCCESS
  */
 int
-__rec_close(dbp)
-	DB *dbp;
+__rec_close(DB *dbp)
 {
 	BTREE *t;
 	int status;
@@ -82,16 +69,16 @@ __rec_close(dbp)
 
 	/* Committed to closing. */
 	status = RET_SUCCESS;
-	if (ISSET(t, R_MEMMAPPED) && munmap(t->bt_smap, t->bt_msize))
-		status = RET_ERROR;
 
-	if (!ISSET(t, R_INMEM))
-		if (ISSET(t, R_CLOSEFP)) {
+	if (!F_ISSET(t, R_INMEM)) {
+		if (F_ISSET(t, R_CLOSEFP)) {
 			if (fclose(t->bt_rfp))
 				status = RET_ERROR;
-		} else
+		} else {
 			if (close(t->bt_rfd))
 				status = RET_ERROR;
+		}
+	}
 
 	if (__bt_close(dbp) == RET_ERROR)
 		status = RET_ERROR;
@@ -109,9 +96,7 @@ __rec_close(dbp)
  *	RET_SUCCESS, RET_ERROR.
  */
 int
-__rec_sync(dbp, flags)
-	const DB *dbp;
-	u_int flags;
+__rec_sync(const DB *dbp, u_int flags)
 {
 	struct iovec iov[2];
 	BTREE *t;
@@ -131,39 +116,58 @@ __rec_sync(dbp, flags)
 	if (flags == R_RECNOSYNC)
 		return (__bt_sync(dbp, 0));
 
-	if (ISSET(t, R_RDONLY | R_INMEM) || !ISSET(t, R_MODIFIED))
+	if (F_ISSET(t, R_RDONLY | R_INMEM) || !F_ISSET(t, R_MODIFIED))
 		return (RET_SUCCESS);
 
 	/* Read any remaining records into the tree. */
-	if (!ISSET(t, R_EOF) && t->bt_irec(t, MAX_REC_NUMBER) == RET_ERROR)
+	if (!F_ISSET(t, R_EOF) && t->bt_irec(t, MAX_REC_NUMBER) == RET_ERROR)
 		return (RET_ERROR);
 
 	/* Rewind the file descriptor. */
-	if (lseek(t->bt_rfd, (off_t)0, SEEK_SET) != 0)
+	if (lseek(t->bt_rfd, 0, SEEK_SET) != 0)
 		return (RET_ERROR);
 
-	iov[1].iov_base = "\n";
-	iov[1].iov_len = 1;
-	scursor = t->bt_rcursor;
+	/* Save the cursor. */
+	scursor = t->bt_cursor.rcursor;
 
 	key.size = sizeof(recno_t);
 	key.data = &trec;
 
-	status = (dbp->seq)(dbp, &key, &data, R_FIRST);
-        while (status == RET_SUCCESS) {
-		iov[0].iov_base = data.data;
-		iov[0].iov_len = data.size;
-		if (writev(t->bt_rfd, iov, 2) != data.size + 1)
-			return (RET_ERROR);
-                status = (dbp->seq)(dbp, &key, &data, R_NEXT);
-        }
-	t->bt_rcursor = scursor;
+	if (F_ISSET(t, R_FIXLEN)) {
+		/*
+		 * We assume that fixed length records are all fixed length.
+		 * Any that aren't are either EINVAL'd or corrected by the
+		 * record put code.
+		 */
+		status = (dbp->seq)(dbp, &key, &data, R_FIRST);
+		while (status == RET_SUCCESS) {
+			if (write(t->bt_rfd, data.data, data.size) != data.size)
+				return (RET_ERROR);
+			status = (dbp->seq)(dbp, &key, &data, R_NEXT);
+		}
+	} else {
+		iov[1].iov_base = &t->bt_bval;
+		iov[1].iov_len = 1;
+
+		status = (dbp->seq)(dbp, &key, &data, R_FIRST);
+		while (status == RET_SUCCESS) {
+			iov[0].iov_base = data.data;
+			iov[0].iov_len = data.size;
+			if (writev(t->bt_rfd, iov, 2) != data.size + 1)
+				return (RET_ERROR);
+			status = (dbp->seq)(dbp, &key, &data, R_NEXT);
+		}
+	}
+
+	/* Restore the cursor. */
+	t->bt_cursor.rcursor = scursor;
+
 	if (status == RET_ERROR)
 		return (RET_ERROR);
-	if ((off = lseek(t->bt_rfd, (off_t)0, SEEK_CUR)) == -1)
+	if ((off = lseek(t->bt_rfd, 0, SEEK_CUR)) == -1)
 		return (RET_ERROR);
 	if (ftruncate(t->bt_rfd, off))
 		return (RET_ERROR);
-	CLR(t, R_MODIFIED);
+	F_CLR(t, R_MODIFIED);
 	return (RET_SUCCESS);
 }

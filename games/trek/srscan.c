@@ -1,3 +1,4 @@
+/*	$OpenBSD: srscan.c,v 1.8 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: srscan.c,v 1.3 1995/04/22 10:59:31 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,16 +30,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)srscan.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: srscan.c,v 1.3 1995/04/22 10:59:31 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdio.h>
 
-# include	"trek.h"
-# include	"getpar.h"
+#include "getpar.h"
+#include "trek.h"
 
 /*
 **  SHORT RANGE SENSOR SCAN
@@ -59,7 +50,7 @@ static char rcsid[] = "$NetBSD: srscan.c,v 1.3 1995/04/22 10:59:31 cgd Exp $";
 **	The current quadrant is filled in on the computer chart.
 */
 
-char	*Color[4] =
+const char	*const Color[4] =
 {
 	"GREEN",
 	"DOCKED",
@@ -67,22 +58,18 @@ char	*Color[4] =
 	"RED"
 };
 
-srscan(f)
-int	f;
+void
+srscan(int f)
 {
-	register int		i, j;
-	register int		statinfo;
-	char			*s;
-	int			percent;
-	struct quad		*q;
-	extern struct cvntab	Skitab[];
-	extern struct cvntab	Lentab[];
-	struct cvntab		*p;
+	int		i, j;
+	int		statinfo;
+	const char	*s;
+	int		percent;
+	struct quad	*q = NULL;
+	const struct cvntab	*p;
 
 	if (f >= 0 && check_out(SRSCAN))
-	{
 		return;
-	}
 	if (f)
 		statinfo = 1;
 	else
@@ -92,11 +79,7 @@ int	f;
 		statinfo = Etc.statreport;
 	}
 	if (f > 0)
-	{
 		Etc.statreport = 1;
-		if (!Etc.fast)
-			return;
-	}
 	if (f >= 0)
 	{
 		printf("\nShort range sensor scan\n");

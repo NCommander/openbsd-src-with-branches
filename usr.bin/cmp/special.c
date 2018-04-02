@@ -1,3 +1,4 @@
+/*      $OpenBSD: special.c,v 1.7 2011/01/19 13:01:25 okan Exp $      */
 /*      $NetBSD: special.c,v 1.2 1995/09/08 03:23:00 tls Exp $      */
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)special.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: special.c,v 1.2 1995/09/08 03:23:00 tls Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
 
 #include <err.h>
@@ -51,10 +40,7 @@ static char rcsid[] = "$NetBSD: special.c,v 1.2 1995/09/08 03:23:00 tls Exp $";
 #include "extern.h"
 
 void
-c_special(fd1, file1, skip1, fd2, file2, skip2)
-	int fd1, fd2;
-	char *file1, *file2;
-	off_t skip1, skip2;
+c_special(int fd1, char *file1, off_t skip1, int fd2, char *file2, off_t skip2)
 {
 	int ch1, ch2;
 	off_t byte, line;
@@ -62,10 +48,11 @@ c_special(fd1, file1, skip1, fd2, file2, skip2)
 	int dfound;
 
 	if ((fp1 = fdopen(fd1, "r")) == NULL)
-		err(ERR_EXIT, "%s", file1);
+		fatal("%s", file1);
 	if ((fp2 = fdopen(fd2, "r")) == NULL)
-		err(ERR_EXIT, "%s", file2);
+		fatal("%s", file2);
 
+	dfound = 0;
 	while (skip1--)
 		if (getc(fp1) == EOF)
 			goto eof;
@@ -73,27 +60,28 @@ c_special(fd1, file1, skip1, fd2, file2, skip2)
 		if (getc(fp2) == EOF)
 			goto eof;
 
-	dfound = 0;
 	for (byte = line = 1;; ++byte) {
 		ch1 = getc(fp1);
 		ch2 = getc(fp2);
 		if (ch1 == EOF || ch2 == EOF)
 			break;
-		if (ch1 != ch2)
+		if (ch1 != ch2) {
 			if (lflag) {
 				dfound = 1;
-				(void)printf("%6qd %3o %3o\n", byte, ch1, ch2);
+				(void)printf("%6lld %3o %3o\n", (long long)byte,
+				    ch1, ch2);
 			} else
 				diffmsg(file1, file2, byte, line);
 				/* NOTREACHED */
+		}
 		if (ch1 == '\n')
 			++line;
 	}
 
 eof:	if (ferror(fp1))
-		err(ERR_EXIT, "%s", file1);
+		fatal("%s", file1);
 	if (ferror(fp2))
-		err(ERR_EXIT, "%s", file2);
+		fatal("%s", file2);
 	if (feof(fp1)) {
 		if (!feof(fp2))
 			eofmsg(file1);

@@ -1,0 +1,13 @@
+.\" $OpenBSD$
+.TH SPACE-ZEROWIDTH 1 "October 27, 2014"
+.SH NAME
+space-zerowidth \- zero width and narrow space characters
+.SH DESCRIPTION
+.nf
+BEGINTEST
+zero width space \e& between A and B: A\&B
+hyphenation allowed \e% between A and B: A\%B
+half-narrow (1/12) space \e^ between A and B: A\^B
+narrow space (1/6) \e| between A and B: A\|B
+ENDTEST
+.fi

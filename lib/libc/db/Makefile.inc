@@ -1,11 +1,29 @@
-#	$NetBSD: Makefile.inc,v 1.5 1995/02/27 13:19:23 cgd Exp $
-#	@(#)Makefile.inc	8.2 (Berkeley) 2/21/94
+#	$OpenBSD: Makefile.inc,v 1.7 2016/03/30 06:38:41 jmc Exp $
 #
-CFLAGS+=-D__DBINTERFACE_PRIVATE
+.PATH: ${LIBCSRCDIR}/db/btree
 
-.include "${.CURDIR}/db/btree/Makefile.inc"
-.include "${.CURDIR}/db/db/Makefile.inc"
-.include "${.CURDIR}/db/hash/Makefile.inc"
-.include "${.CURDIR}/db/man/Makefile.inc"
-.include "${.CURDIR}/db/mpool/Makefile.inc"
-.include "${.CURDIR}/db/recno/Makefile.inc"
+SRCS+=	bt_close.c bt_conv.c bt_debug.c bt_delete.c bt_get.c bt_open.c \
+	bt_overflow.c bt_page.c bt_put.c bt_search.c bt_seq.c bt_split.c \
+	bt_utils.c
+
+.PATH: ${LIBCSRCDIR}/db/db
+
+SRCS+=	db.c
+
+.PATH: ${LIBCSRCDIR}/db/hash
+
+SRCS+=	hash.c hash_bigkey.c hash_buf.c hash_func.c hash_log2.c \
+	hash_page.c ndbm.c
+
+.PATH: ${LIBCSRCDIR}/db/man
+
+MAN+=	btree.3 dbopen.3 hash.3 ndbm.3 recno.3
+
+.PATH: ${LIBCSRCDIR}/db/mpool
+
+SRCS+=	mpool.c
+
+.PATH: ${LIBCSRCDIR}/db/recno
+
+SRCS+=	rec_close.c rec_delete.c rec_get.c rec_open.c rec_put.c rec_search.c \
+	rec_seq.c rec_utils.c

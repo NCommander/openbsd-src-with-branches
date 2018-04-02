@@ -1,8 +1,30 @@
-#	$NetBSD: Makefile,v 1.2 1995/04/20 22:42:51 cgd Exp $
+#	$OpenBSD: Makefile,v 1.69 2017/04/30 09:03:58 mpi Exp $
 
-SUBDIR+= execve
+SUBDIR+= __syscall access accept dup2 dup2_self exec_self execve exit extent
+SUBDIR+= fchdir
+SUBDIR+= fcntl_dup
+SUBDIR+= flock
+SUBDIR+= futex
+SUBDIR+= getpeereid getrusage gettimeofday itimer 
+SUBDIR+= kqueue mbuf minherit
+SUBDIR+= main-thread-exited
+SUBDIR+= mmap mmap2 mmap3 mmap-fail
+SUBDIR+= mount
+SUBDIR+= nanosleep noexec
+SUBDIR+= pledge
+SUBDIR+= pread preadv ptmget pty pwrite pwritev rcvtimeo
+SUBDIR+= rlimit-file signal signal-stress sigprof sigsuspend
+SUBDIR+= sosplice
+SUBDIR+= syscall sysvmsg sysvsem
+SUBDIR+= sysvshm unalign unfdpass wait
+SUBDIR+= sig-stop
+SUBDIR+= unixsock bind
 
-regress: _SUBDIRUSE
+# The setuid subtest creates set user/group id binaries in the obj directory.
+# Do not run this test by default, it may trigger alerts from daily security.
+.ifmake clean || cleandir || obj
+SUBDIR+= setuid
+.endif
 
 install:
 

@@ -1,6 +1,22 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sh_machdep.c,v 1.45 2016/05/18 20:21:13 guenther Exp $	*/
 /*	$NetBSD: sh3_machdep.c,v 1.59 2006/03/04 01:13:36 uwe Exp $	*/
 
+/*
+ * Copyright (c) 2007 Miodrag Vallat.
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice, this permission notice, and the disclaimer below
+ * appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
 /*-
  * Copyright (c) 1996, 1997, 1998, 2002 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -17,13 +33,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -37,7 +46,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
 /*-
  * Copyright (c) 1982, 1987, 1990 The Regents of the University of California.
  * All rights reserved.
@@ -84,15 +92,24 @@
 #include <sys/signalvar.h>
 #include <sys/syscallargs.h>
 #include <sys/user.h>
+#include <sys/sched.h>
+#include <sys/msg.h>
+#include <sys/conf.h>
+#include <sys/kcore.h>
+#include <sys/reboot.h>
 
 #include <uvm/uvm_extern.h>
 
+#include <dev/cons.h>
+
 #include <sh/cache.h>
 #include <sh/clock.h>
+#include <sh/fpu.h>
 #include <sh/locore.h>
 #include <sh/mmu.h>
 #include <sh/trap.h>
 #include <sh/intr.h>
+#include <sh/kcore.h>
 
 /* Our exported CPU info; we can have only one. */
 int cpu_arch;
@@ -107,7 +124,7 @@ struct user *proc0paddr;	/* init_main.c use this. */
 struct pcb *curpcb;
 struct md_upte *curupte;	/* SH3 wired u-area hack */
 
-#define	VBR	(uint8_t *)SH3_PHYS_TO_P1SEG(IOM_RAM_BEGIN)
+#define	VBR	(u_int8_t *)SH3_PHYS_TO_P1SEG(IOM_RAM_BEGIN)
 vaddr_t ram_start = SH3_PHYS_TO_P1SEG(IOM_RAM_BEGIN);
 /* exception handler holder (sh/sh/vectors.S) */
 extern char sh_vector_generic[], sh_vector_generic_end[];
@@ -122,9 +139,10 @@ extern char sh4_vector_tlbmiss[], sh4_vector_tlbmiss_end[];
 /*
  * These variables are needed by /sbin/savecore
  */
-uint32_t dumpmag = 0x8fca0101;	/* magic number */
-int dumpsize;			/* pages */
+u_long dumpmag = 0x8fca0101;	/* magic number */
+u_int dumpsize;			/* pages */
 long dumplo;	 		/* blocks */
+cpu_kcore_hdr_t cpu_kcore_hdr;
 
 void
 sh_cpu_init(int arch, int product)
@@ -182,7 +200,7 @@ sh_cpu_init(int arch, int product)
  *	Setup proc0 u-area.
  */
 void
-sh_proc0_init()
+sh_proc0_init(void)
 {
 	struct switchframe *sf;
 	vaddr_t u;
@@ -221,13 +239,13 @@ sh_proc0_init()
 }
 
 void
-sh_startup()
+sh_startup(void)
 {
 	vaddr_t minaddr, maxaddr;
 
 	printf("%s", version);
 	if (*cpu_model != '\0')
-		printf("%s", cpu_model);
+		printf("%s\n", cpu_model);
 #ifdef DEBUG
 	printf("general exception handler:\t%d byte\n",
 	    sh_vector_generic_end - sh_vector_generic);
@@ -245,13 +263,14 @@ sh_startup()
 	    sh_vector_interrupt_end - sh_vector_interrupt);
 #endif /* DEBUG */
 
-	printf("real mem = %u (%uK)\n", ctob(physmem), ctob(physmem) / 1024);
+	printf("real mem = %lu (%luMB)\n", ptoa(physmem),
+	    ptoa(physmem) / 1024 / 1024);
 
-	minaddr = 0;
 	/*
 	 * Allocate a submap for exec arguments.  This map effectively
 	 * limits the number of processes exec'ing at any time.
 	 */
+	minaddr = vm_map_min(kernel_map);
 	exec_map = uvm_km_suballoc(kernel_map, &minaddr, &maxaddr,
 	    16 * NCARGS, VM_MAP_PAGEABLE, FALSE, NULL);
 
@@ -261,8 +280,155 @@ sh_startup()
 	phys_map = uvm_km_suballoc(kernel_map, &minaddr, &maxaddr,
 	    VM_PHYS_SIZE, 0, FALSE, NULL);
 
-	printf("avail mem = %u (%uK)\n", ptoa(uvmexp.free),
-	    ptoa(uvmexp.free) / 1024);
+	/*
+	 * Set up buffers, so they can be used to read disk labels.
+	 */
+	bufinit();
+
+	printf("avail mem = %lu (%luMB)\n", ptoa(uvmexp.free),
+	    ptoa(uvmexp.free) / 1024 / 1024);
+
+	if (boothowto & RB_CONFIG) {
+#ifdef BOOT_CONFIG
+		user_config();
+#else
+		printf("kernel does not support -c; continuing..\n");
+#endif 
+	}
+}
+
+void
+dumpconf(void)
+{
+	cpu_kcore_hdr_t *h = &cpu_kcore_hdr;
+	u_int dumpextra, totaldumpsize;		/* in disk blocks */
+	u_int seg, nblks;
+
+	if (dumpdev == NODEV ||
+	    (nblks = (bdevsw[major(dumpdev)].d_psize)(dumpdev)) == 0)
+		return;
+	if (nblks <= ctod(1))
+		return;
+
+	dumpsize = 0;
+	for (seg = 0; seg < h->kcore_nsegs; seg++)
+		dumpsize += atop(h->kcore_segs[seg].size);
+	dumpextra = cpu_dumpsize();
+
+	/* Always skip the first block, in case there is a label there. */
+	if (dumplo < btodb(1))
+		dumplo = btodb(1);
+
+	/* Put dump at the end of the partition, and make it fit. */
+	totaldumpsize = ctod(dumpsize) + dumpextra;
+	if (totaldumpsize > nblks - dumplo) {
+		totaldumpsize = dbtob(nblks - dumplo);
+		dumpsize = dtoc(totaldumpsize - dumpextra);
+	}
+	if (dumplo < nblks - totaldumpsize)
+		dumplo = nblks - totaldumpsize;
+}
+
+void
+dumpsys(void)
+{
+	cpu_kcore_hdr_t *h = &cpu_kcore_hdr;
+	daddr_t blkno;
+	int (*dump)(dev_t, daddr_t, caddr_t, size_t);
+	u_int page = 0;
+	paddr_t dumppa;
+	u_int seg;
+	int rc;
+	extern int msgbufmapped;
+
+	/* Don't record dump messages in msgbuf. */
+	msgbufmapped = 0;
+
+	/* Make sure dump settings are valid. */
+	if (dumpdev == NODEV)
+		return;
+	if (dumpsize == 0) {
+		dumpconf();
+		if (dumpsize == 0)
+			return;
+	}
+	if (dumplo <= 0) {
+		printf("\ndump to dev 0x%x not possible, not enough space\n",
+		    dumpdev);
+		return;
+	}
+
+	dump = bdevsw[major(dumpdev)].d_dump;
+	blkno = dumplo;
+
+	printf("\ndumping to dev 0x%x offset %ld\n", dumpdev, dumplo);
+
+	printf("dump ");
+
+	/* Write dump header */
+	rc = cpu_dump(dump, &blkno);
+	if (rc != 0)
+		goto bad;
+
+	for (seg = 0; seg < h->kcore_nsegs; seg++) {
+		u_int pagesleft;
+
+		pagesleft = atop(h->kcore_segs[seg].size);
+		dumppa = (paddr_t)h->kcore_segs[seg].start;
+
+		while (pagesleft != 0) {
+			u_int npages;
+
+#define	NPGMB	atop(1024 * 1024)
+			if (page != 0 && (page % NPGMB) == 0)
+				printf("%u ", page / NPGMB);
+
+			/* do not dump more than 1MB at once */
+			npages = min(pagesleft, NPGMB);
+#undef NPGMB
+			npages = min(npages, dumpsize);
+
+			rc = (*dump)(dumpdev, blkno,
+			    (caddr_t)SH3_PHYS_TO_P2SEG(dumppa), ptoa(npages));
+			if (rc != 0)
+				goto bad;
+
+			pagesleft -= npages;
+			dumppa += ptoa(npages);
+			page += npages;
+			dumpsize -= npages;
+			if (dumpsize == 0)
+				goto bad;	/* if truncated dump */
+			blkno += ctod(npages);
+		}
+	}
+bad:
+	switch (rc) {
+	case 0:
+		printf("succeeded\n");
+		break;
+	case ENXIO:
+		printf("device bad\n");
+		break;
+	case EFAULT:
+		printf("device not ready\n");
+		break;
+	case EINVAL:
+		printf("area improper\n");
+		break;
+	case EIO:
+		printf("I/O error\n");
+		break;
+	case EINTR:
+		printf("aborted\n");
+		break;
+	default:
+		printf("error %d\n", rc);
+		break;
+	}
+
+	/* make sure console can output our last message */
+	delay(1 * 1000 * 1000);
 }
 
 /*
@@ -288,55 +454,39 @@ sendsig(sig_t catcher, int sig, int mask, u_long code, int type,
 	struct proc *p = curproc;
 	struct sigframe *fp, frame;
 	struct trapframe *tf = p->p_md.md_regs;
-	struct sigacts *ps = p->p_sigacts;
+	struct sigacts *psp = p->p_p->ps_sigacts;
 	siginfo_t *sip;
-	int onstack;
 
-	onstack = ps->ps_sigstk.ss_flags & SS_ONSTACK;
-	if ((ps->ps_flags & SAS_ALTSTACK) && onstack == 0 &&
-	    (ps->ps_sigonstack & sigmask(sig))) {
-		fp = (struct sigframe *)((vaddr_t)ps->ps_sigstk.ss_sp +
-		    ps->ps_sigstk.ss_size);
-		ps->ps_sigstk.ss_flags |= SS_ONSTACK;
-	} else
+	if ((p->p_sigstk.ss_flags & SS_DISABLE) == 0 &&
+	    !sigonstack(p->p_md.md_regs->tf_r15) &&
+	    (psp->ps_sigonstack & sigmask(sig)))
+		fp = (struct sigframe *)((vaddr_t)p->p_sigstk.ss_sp +
+		    p->p_sigstk.ss_size);
+	else
 		fp = (void *)p->p_md.md_regs->tf_r15;
 	--fp;
 
 
 	bzero(&frame, sizeof(frame));
 
-	if (ps->ps_siginfo & sigmask(sig)) {
+	if (psp->ps_siginfo & sigmask(sig)) {
 		initsiginfo(&frame.sf_si, sig, code, type, val);
 		sip = &fp->sf_si;
 	} else
 		sip = NULL;
 
 	/* Save register context. */
-	frame.sf_uc.sc_spc = tf->tf_spc;
-	frame.sf_uc.sc_ssr = tf->tf_ssr;
-	frame.sf_uc.sc_pr = tf->tf_pr;
-	frame.sf_uc.sc_r14 = tf->tf_r14;
-	frame.sf_uc.sc_r13 = tf->tf_r13;
-	frame.sf_uc.sc_r12 = tf->tf_r12;
-	frame.sf_uc.sc_r11 = tf->tf_r11;
-	frame.sf_uc.sc_r10 = tf->tf_r10;
-	frame.sf_uc.sc_r9 = tf->tf_r9;
-	frame.sf_uc.sc_r8 = tf->tf_r8;
-	frame.sf_uc.sc_r7 = tf->tf_r7;
-	frame.sf_uc.sc_r6 = tf->tf_r6;
-	frame.sf_uc.sc_r5 = tf->tf_r5;
-	frame.sf_uc.sc_r4 = tf->tf_r4;
-	frame.sf_uc.sc_r3 = tf->tf_r3;
-	frame.sf_uc.sc_r2 = tf->tf_r2;
-	frame.sf_uc.sc_r1 = tf->tf_r1;
-	frame.sf_uc.sc_r0 = tf->tf_r0;
-	frame.sf_uc.sc_r15 = tf->tf_r15;
-	frame.sf_uc.sc_onstack = onstack;
+	memcpy(frame.sf_uc.sc_reg, &tf->tf_spc, sizeof(frame.sf_uc.sc_reg));
+#ifdef SH4
+	if (CPU_IS_SH4)
+		fpu_save((struct fpreg *)&frame.sf_uc.sc_fpreg);
+#endif
+
 	frame.sf_uc.sc_expevt = tf->tf_expevt;
 	/* frame.sf_uc.sc_err = 0; */
-	frame.sf_uc.sc_mask = p->p_sigmask;
-	/* XXX tf_macl, tf_mach not saved */
+	frame.sf_uc.sc_mask = mask;
 
+	frame.sf_uc.sc_cookie = (long)&fp->sf_uc ^ p->p_p->ps_sigcookie;
 	if (copyout(&frame, fp, sizeof(frame)) != 0) {
 		/*
 		 * Process has trashed its stack; give it an illegal
@@ -351,7 +501,7 @@ sendsig(sig_t catcher, int sig, int mask, u_long code, int type,
 	tf->tf_r6 = (int)&fp->sf_uc;	/* "ucp" argument for handler */
  	tf->tf_spc = (int)catcher;
 	tf->tf_r15 = (int)fp;
-	tf->tf_pr = (int)p->p_sigcode;
+	tf->tf_pr = (int)p->p_p->ps_sigcode;
 }
 
 /*
@@ -370,54 +520,44 @@ sys_sigreturn(struct proc *p, void *v, register_t *retval)
 	struct sys_sigreturn_args /* {
 		syscallarg(struct sigcontext *) sigcntxp;
 	} */ *uap = v;
-	struct sigcontext *scp, context;
+	struct sigcontext ksc, *scp = SCARG(uap, sigcntxp);
 	struct trapframe *tf;
 	int error;
 
-	/*
-	 * The trampoline code hands us the context.
-	 * It is unsafe to keep track of it ourselves, in the event that a
-	 * program jumps out of a signal handler.
-	 */
-	scp = SCARG(uap, sigcntxp);
-	if ((error = copyin((caddr_t)scp, &context, sizeof(*scp))) != 0)
+	if (PROC_PC(p) != p->p_p->ps_sigcoderet) {
+		sigexit(p, SIGILL);
+		return (EPERM);
+	}
+
+	if ((error = copyin(scp, &ksc, sizeof(*scp))) != 0)
 		return (error);
+
+	if (ksc.sc_cookie != ((long)scp ^ p->p_p->ps_sigcookie)) {
+		sigexit(p, SIGILL);
+		return (EFAULT);
+	}
+
+	/* Prevent reuse of the sigcontext cookie */
+	ksc.sc_cookie = 0;
+	(void)copyout(&ksc.sc_cookie, (caddr_t)scp +
+	    offsetof(struct sigcontext, sc_cookie), sizeof(ksc.sc_cookie));
 
 	/* Restore signal context. */
 	tf = p->p_md.md_regs;
 
 	/* Check for security violations. */
-	if (((context.sc_ssr ^ tf->tf_ssr) & PSL_USERSTATIC) != 0)
+	if (((ksc.sc_reg[1] /* ssr */ ^ tf->tf_ssr) & PSL_USERSTATIC) != 0)
 		return (EINVAL);
 
-	tf->tf_ssr = context.sc_ssr;
+	memcpy(&tf->tf_spc, ksc.sc_reg, sizeof(ksc.sc_reg));
 
-	tf->tf_r0 = context.sc_r0;
-	tf->tf_r1 = context.sc_r1;
-	tf->tf_r2 = context.sc_r2;
-	tf->tf_r3 = context.sc_r3;
-	tf->tf_r4 = context.sc_r4;
-	tf->tf_r5 = context.sc_r5;
-	tf->tf_r6 = context.sc_r6;
-	tf->tf_r7 = context.sc_r7;
-	tf->tf_r8 = context.sc_r8;
-	tf->tf_r9 = context.sc_r9;
-	tf->tf_r10 = context.sc_r10;
-	tf->tf_r11 = context.sc_r11;
-	tf->tf_r12 = context.sc_r12;
-	tf->tf_r13 = context.sc_r13;
-	tf->tf_r14 = context.sc_r14;
-	tf->tf_spc = context.sc_spc;
-	tf->tf_r15 = context.sc_r15;
-	tf->tf_pr = context.sc_pr;
+#ifdef SH4
+	if (CPU_IS_SH4)
+		fpu_restore((struct fpreg *)&ksc.sc_fpreg);
+#endif
 
-	/* Restore signal stack. */
-	if (context.sc_onstack)
-		p->p_sigacts->ps_sigstk.ss_flags |= SS_ONSTACK;
-	else
-		p->p_sigacts->ps_sigstk.ss_flags &= ~SS_ONSTACK;
 	/* Restore signal mask. */
-	p->p_sigmask = context.sc_mask & ~sigcantmask;
+	p->p_sigmask = ksc.sc_mask & ~sigcantmask;
 
 	return (EJUSTRETURN);
 }
@@ -430,10 +570,15 @@ setregs(struct proc *p, struct exec_package *pack, u_long stack,
     register_t rval[2])
 {
 	struct trapframe *tf;
+	struct pcb *pcb = p->p_md.md_pcb;
 
 	p->p_md.md_flags &= ~MDP_USEDFPU;
 
 	tf = p->p_md.md_regs;
+
+	tf->tf_gbr = 0;
+	tf->tf_macl = 0;
+	tf->tf_mach = 0;
 
 	tf->tf_r0 = 0;
 	tf->tf_r1 = 0;
@@ -444,7 +589,7 @@ setregs(struct proc *p, struct exec_package *pack, u_long stack,
 	tf->tf_r6 = stack + 4 * tf->tf_r4 + 8;	/* envp */
 	tf->tf_r7 = 0;
 	tf->tf_r8 = 0;
-	tf->tf_r9 = (int)PS_STRINGS;
+	tf->tf_r9 = (int)p->p_p->ps_strings;
 	tf->tf_r10 = 0;
 	tf->tf_r11 = 0;
 	tf->tf_r12 = 0;
@@ -453,13 +598,26 @@ setregs(struct proc *p, struct exec_package *pack, u_long stack,
 	tf->tf_spc = pack->ep_entry;
 	tf->tf_ssr = PSL_USERSET;
 	tf->tf_r15 = stack;
+
+#ifdef SH4
+	if (CPU_IS_SH4) {
+		/*
+		 * Clear floating point registers.
+		 */
+		bzero(&pcb->pcb_fp, sizeof(pcb->pcb_fp));
+		pcb->pcb_fp.fpr_fpscr = FPSCR_PR;
+		fpu_restore(&pcb->pcb_fp);
+	}
+#endif
+
+	rval[1] = 0;
 }
 
 /*
  * Jump to reset vector.
  */
 void
-cpu_reset()
+cpu_reset(void)
 {
 	_cpu_exception_suspend();
 	_reg_write_4(SH_(EXPEVT), EXPEVT_RESET_MANUAL);

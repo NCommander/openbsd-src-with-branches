@@ -1,0 +1,83 @@
+.\"	$OpenBSD: radiusctl.8,v 1.2 2015/08/03 07:45:05 jmc Exp $
+.\"
+.\" Copyright (c) YASUOKA Masahiko <yasuoka@yasuoka.net>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.\"
+.Dd $Mdocdate: August 3 2015 $
+.Dt RADIUSCTL 8
+.Os
+.Sh NAME
+.Nm radiusctl
+.Nd control the RADIUS protocol daemon
+.Sh SYNOPSIS
+.Nm
+.Ar command
+.Op Ar argument ...
+.Sh DESCRIPTION
+The
+.Nm
+utility controls the
+.Xr radiusd 8
+daemon.
+.Pp
+The following commands are available:
+.Bl -tag -width Ds
+.It Xo
+.Cm test
+.Ar hostname
+.Ar radius_secret
+.Ar user_name
+.Op options
+.Xc
+Sends a RADIUS authentication request packet and shows the result.
+The request is for the user specified by
+.Ar user_name
+and sent to the RADIUS server specified by
+.Ar hostname .
+.Ar radius_secret
+is the shared secret with the server.
+The options are as follows:
+.Bl -tag -width Ds
+.It Cm method Ar method
+Use
+.Ar method
+for authentication.
+It can be either
+.Cm pap ,
+.Cm chap ,
+or
+.Cm mschapv2 .
+If this option is omitted,
+.Cm pap
+is used.
+.It Cm nas-port Ar nas-port
+Specify an integer value for the NAS-Port attribute in the packet.
+If this option is omitted, 0 is used.
+.It Cm password Ar password
+Use
+.Ar password
+for
+.Ar user_name .
+.It Cm port Ar port
+Use
+.Ar port
+when sending a packet to
+.Ar hostname .
+If the port is omitted,
+the default port number 1812 is used.
+.El
+.El
+.Sh SEE ALSO
+.Xr radiusd 8

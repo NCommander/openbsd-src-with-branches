@@ -1,150 +1,201 @@
+/*	$OpenBSD: ex_shell.c,v 1.14 2015/01/16 06:40:14 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996
+ *	Keith Bostic.  All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * See the LICENSE file for redistribution information.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)ex_shell.c	8.26 (Berkeley) 8/17/94";
-#endif /* not lint */
+#include "config.h"
 
-#include <sys/param.h>
 #include <sys/queue.h>
-#include <sys/time.h>
+#include <sys/wait.h>
 
 #include <bitstring.h>
+#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <termios.h>
 #include <unistd.h>
 
-#include "compat.h"
-#include <db.h>
-#include <regex.h>
+#include "../common/common.h"
 
-#include "vi.h"
-#include "excmd.h"
-#include "../svi/svi_screen.h"
+#define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
 
 /*
  * ex_shell -- :sh[ell]
  *	Invoke the program named in the SHELL environment variable
  *	with the argument -i.
+ *
+ * PUBLIC: int ex_shell(SCR *, EXCMD *);
  */
 int
-ex_shell(sp, ep, cmdp)
-	SCR *sp;
-	EXF *ep;
-	EXCMDARG *cmdp;
+ex_shell(SCR *sp, EXCMD *cmdp)
 {
-	char buf[MAXPATHLEN];
+	int rval;
+	char buf[PATH_MAX];
 
+	/* We'll need a shell. */
+	if (opts_empty(sp, O_SHELL, 0))
+		return (1);
+
+	/*
+	 * XXX
+	 * Assumes all shells use -i.
+	 */
 	(void)snprintf(buf, sizeof(buf), "%s -i", O_STR(sp, O_SHELL));
-	return (ex_exec_proc(sp, buf, "\n", NULL));
+
+	/* Restore the window name. */
+	(void)sp->gp->scr_rename(sp, NULL, 0);
+
+	/* If we're still in a vi screen, move out explicitly. */
+	rval = ex_exec_proc(sp, cmdp, buf, NULL, !F_ISSET(sp, SC_SCR_EXWROTE));
+
+	/* Set the window name. */
+	(void)sp->gp->scr_rename(sp, sp->frp->name, 1);
+
+	/*
+	 * !!!
+	 * Historically, vi didn't require a continue message after the
+	 * return of the shell.  Match it.
+	 */
+	F_SET(sp, SC_EX_WAIT_NO);
+
+	return (rval);
 }
 
 /*
  * ex_exec_proc --
  *	Run a separate process.
+ *
+ * PUBLIC: int ex_exec_proc(SCR *, EXCMD *, char *, const char *, int);
  */
 int
-ex_exec_proc(sp, cmd, p1, p2)
-	SCR *sp;
-	char *cmd, *p1, *p2;
+ex_exec_proc(SCR *sp, EXCMD *cmdp, char *cmd, const char *msg,
+    int need_newline)
 {
+	GS *gp;
 	const char *name;
 	pid_t pid;
-	int rval, teardown;
 
-	/* Clear the rest of the screen. */
-	if (sp->s_clear(sp))
+	gp = sp->gp;
+
+	/* We'll need a shell. */
+	if (opts_empty(sp, O_SHELL, 0))
 		return (1);
 
-	/* Save ex/vi terminal settings, and restore the original ones. */
-	teardown = !ex_sleave(sp);
+	/* Enter ex mode. */
+	if (F_ISSET(sp, SC_VI)) {
+		if (gp->scr_screen(sp, SC_EX)) {
+			ex_emsg(sp, cmdp->cmd->name, EXM_NOCANON);
+			return (1);
+		}
+		(void)gp->scr_attr(sp, SA_ALTERNATE, 0);
+		F_SET(sp, SC_SCR_EX | SC_SCR_EXWROTE);
+	}
 
-	/*
-	 * Flush waiting messages (autowrite, for example) so the output
-	 * matches historic practice.
-	 */
-	(void)sex_refresh(sp, sp->ep);
+	/* Put out additional newline, message. */
+	if (need_newline)
+		(void)ex_puts(sp, "\n");
+	if (msg != NULL) {
+		(void)ex_puts(sp, msg);
+		(void)ex_puts(sp, "\n");
+	}
+	(void)ex_fflush(sp);
 
-	/* Put out various messages. */
-	if (p1 != NULL)
-		(void)write(STDOUT_FILENO, p1, strlen(p1));
-	if (p2 != NULL)
-		(void)write(STDOUT_FILENO, p2, strlen(p2));
-
-	SIGBLOCK(sp->gp);
 	switch (pid = vfork()) {
 	case -1:			/* Error. */
-		SIGUNBLOCK(sp->gp);
-
 		msgq(sp, M_SYSERR, "vfork");
-		rval = 1;
-		break;
+		return (1);
 	case 0:				/* Utility. */
-		/* The utility has default signal behavior. */
-		sig_end();
-
 		if ((name = strrchr(O_STR(sp, O_SHELL), '/')) == NULL)
 			name = O_STR(sp, O_SHELL);
 		else
 			++name;
-		execl(O_STR(sp, O_SHELL), name, "-c", cmd, NULL);
-		msgq(sp, M_ERR, "Error: execl: %s: %s",
-		    O_STR(sp, O_SHELL), strerror(errno));
+		execl(O_STR(sp, O_SHELL), name, "-c", cmd, (char *)NULL);
+		msgq_str(sp, M_SYSERR, O_STR(sp, O_SHELL), "execl: %s");
 		_exit(127);
 		/* NOTREACHED */
 	default:			/* Parent. */
-		SIGUNBLOCK(sp->gp);
+		return (proc_wait(sp, pid, cmd, 0, 0));
+	}
+	/* NOTREACHED */
+}
 
-		rval = proc_wait(sp, (long)pid, cmd, 0);
-		break;
+/*
+ * proc_wait --
+ *	Wait for one of the processes.
+ *
+ * !!!
+ * The pid_t type varies in size from a short to a long depending on the
+ * system.  It has to be cast into something or the standard promotion
+ * rules get you.  I'm using a long based on the belief that nobody is
+ * going to make it unsigned and it's unlikely to be a quad.
+ *
+ * PUBLIC: int proc_wait(SCR *, pid_t, const char *, int, int);
+ */
+int
+proc_wait(SCR *sp, pid_t pid, const char *cmd, int silent, int okpipe)
+{
+	size_t len;
+	int nf, pstat;
+	char *p;
+
+	/* Wait for the utility, ignoring interruptions. */
+	for (;;) {
+		errno = 0;
+		if (waitpid(pid, &pstat, 0) != -1)
+			break;
+		if (errno != EINTR) {
+			msgq(sp, M_SYSERR, "waitpid");
+			return (1);
+		}
 	}
 
-	/* Restore ex/vi terminal settings. */
-	if (teardown)
-		ex_rleave(sp);
-
 	/*
-	 * XXX
-	 * Stat of the tty structures (see ex_sleave, ex_rleave) only give
-	 * us 1-second resolution on the tty changes.  A fast '!' command,
-	 * e.g. ":!pwd" can beat us to the refresh.  When there's better
-	 * resolution from the stat(2) timers, this can go away.
+	 * Display the utility's exit status.  Ignore SIGPIPE from the
+	 * parent-writer, as that only means that the utility chose to
+	 * exit before reading all of its input.
 	 */
-	F_SET(sp, S_REFRESH);
+	if (WIFSIGNALED(pstat) && (!okpipe || WTERMSIG(pstat) != SIGPIPE)) {
+		for (; isblank(*cmd); ++cmd);
+		p = msg_print(sp, cmd, &nf);
+		len = strlen(p);
+		msgq(sp, M_ERR, "%.*s%s: received signal: %s%s",
+		    MINIMUM(len, 20), p, len > 20 ? " ..." : "",
+		    strsignal(WTERMSIG(pstat)),
+		    WCOREDUMP(pstat) ? "; core dumped" : "");
+		if (nf)
+			FREE_SPACE(sp, p, 0);
+		return (1);
+	}
 
-	return (rval);
+	if (WIFEXITED(pstat) && WEXITSTATUS(pstat)) {
+		/*
+		 * Remain silent for "normal" errors when doing shell file
+		 * name expansions, they almost certainly indicate nothing
+		 * more than a failure to match.
+		 *
+		 * Remain silent for vi read filter errors.  It's historic
+		 * practice.
+		 */
+		if (!silent) {
+			for (; isblank(*cmd); ++cmd);
+			p = msg_print(sp, cmd, &nf);
+			len = strlen(p);
+			msgq(sp, M_ERR, "%.*s%s: exited with status %d",
+			    MINIMUM(len, 20), p, len > 20 ? " ..." : "",
+			    WEXITSTATUS(pstat));
+			if (nf)
+				FREE_SPACE(sp, p, 0);
+		}
+		return (1);
+	}
+	return (0);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: syslimits.h,v 1.12 2013/03/24 19:55:45 guenther Exp $	*/
 /*	$NetBSD: syslimits.h,v 1.12 1995/10/05 05:26:19 thorpej Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +32,9 @@
  *	@(#)syslimits.h	8.1 (Berkeley) 6/2/93
  */
 
-#if !defined(_ANSI_SOURCE)
+#include <sys/cdefs.h>
+
+#if __POSIX_VISIBLE || __XPG_VISIBLE || __BSD_VISIBLE
 #define	ARG_MAX		 (256 * 1024)	/* max bytes for an exec function */
 #define	CHILD_MAX		   80	/* max simultaneous processes */
 #define	LINK_MAX		32767	/* max file link count */
@@ -46,6 +45,8 @@
 #define	OPEN_MAX		   64	/* max open files per process */
 #define	PATH_MAX		 1024	/* max bytes in pathname */
 #define	PIPE_BUF		  512	/* max bytes for atomic pipe writes */
+#define	SYMLINK_MAX	     PATH_MAX	/* max bytes in a symbolic link */
+#define	SYMLOOP_MAX		   32	/* max symlinks per path (for loops) */
 
 #define	BC_BASE_MAX	      INT_MAX	/* max ibase/obase values in bc(1) */
 #define	BC_DIM_MAX		65535	/* max array elements in bc(1) */
@@ -54,5 +55,23 @@
 #define	COLL_WEIGHTS_MAX	    2	/* max weights for order keyword */
 #define	EXPR_NEST_MAX		   32	/* max expressions nested in expr(1) */
 #define	LINE_MAX		 2048	/* max bytes in an input line */
+#ifndef RE_DUP_MAX
 #define	RE_DUP_MAX		  255	/* max RE's in interval notation */
+#define	SEM_VALUE_MAX	     UINT_MAX	/* max value of a sem_* semaphore */
+#endif
+
+#if __XPG_VISIBLE
+#define	IOV_MAX			 1024	/* max # of iov's (readv,sendmsg,etc) */
+#define	NZERO			   20	/* default "nice" */
+#endif /* __XPG_VISIBLE */
+
+#endif /* __POSIX_VISIBLE || __XPG_VISIBLE || __BSD_VISIBLE */
+
+#if __XPG_VISIBLE >= 500 || __POSIX_VISIBLE >= 199506 || __BSD_VISIBLE
+#define TTY_NAME_MAX		260	/* max tty device name length w/ NUL */
+#define LOGIN_NAME_MAX          32	/* max login name length w/ NUL */
+#endif /* __XPG_VISIBLE >= 500 || __POSIX_VISIBLE >= 199506 || __BSD_VISIBLE */
+
+#if __POSIX_VISIBLE >= 200112
+#define HOST_NAME_MAX		255	/* max hostname length w/o NUL */
 #endif

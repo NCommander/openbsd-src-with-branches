@@ -1,4 +1,5 @@
-/*	$NetBSD: sigsetjmp.S,v 1.1 1995/02/10 17:50:27 cgd Exp $	*/
+/*	$OpenBSD: sigsetjmp.S,v 1.4 2005/08/07 16:40:13 espie Exp $	*/
+/*	$NetBSD: sigsetjmp.S,v 1.2 1996/10/17 03:08:07 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -27,7 +28,7 @@
  * rights to redistribute these changes.
  */
 
-#include "DEFS.h"
+#include "SYS.h"
 
 /*
  * C library -- sigsetjmp, siglongjmp
@@ -44,19 +45,19 @@
 	.set	noreorder
 
 LEAF(sigsetjmp, 2)
-	SETGP(pv)
+	LDGP(pv)
 	stq	a1, (81 * 8)(a0)		/* save the mask */
 	bne	a1, Lsavesig			/* if !zero, save signals */
-	JMP(_setjmp)				/* else don't. */
+	jmp	zero, _HIDDEN(_setjmp)		/* else don't. */
 Lsavesig:
-	JMP(setjmp)
-END(sigsetjmp)
+	jmp	zero, _HIDDEN(setjmp)
+END_WEAK(sigsetjmp)
 
 LEAF(siglongjmp, 2)
-	SETGP(pv)
+	LDGP(pv)
 	ldq	t0, (81 * 8)(a0)		/* get the mask */
 	bne	t0, Lrestoresig			/* if !zero, restore signals */
-	JMP(_longjmp)
+	jmp	zero, _HIDDEN(_longjmp)
 Lrestoresig:
-	JMP(longjmp)
-END(siglongjmp)
+	jmp	zero, _HIDDEN(longjmp)
+END_WEAK(siglongjmp)

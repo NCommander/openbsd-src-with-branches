@@ -1,4 +1,5 @@
-/*	$NetBSD: ufs_ihash.c,v 1.2 1994/06/29 06:47:26 cgd Exp $	*/
+/*	$OpenBSD: ufs_ihash.c,v 1.22 2015/03/14 03:38:53 jsg Exp $	*/
+/*	$NetBSD: ufs_ihash.c,v 1.3 1996/02/09 22:36:04 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,27 +36,43 @@
 #include <sys/systm.h>
 #include <sys/vnode.h>
 #include <sys/malloc.h>
-#include <sys/proc.h>
 
 #include <ufs/ufs/quota.h>
 #include <ufs/ufs/inode.h>
 #include <ufs/ufs/ufs_extern.h>
 
+#include <crypto/siphash.h>
+
 /*
  * Structures associated with inode cacheing.
  */
-struct inode **ihashtbl;
+LIST_HEAD(ihashhead, inode) *ihashtbl;
 u_long	ihash;		/* size of hash table - 1 */
-#define	INOHASH(device, inum)	(((device) + (inum)) & ihash)
+SIPHASH_KEY ihashkey;
+
+struct ihashhead *ufs_ihash(dev_t, ufsino_t);
+#define INOHASH(device, inum) ufs_ihash((device), (inum))
+
+struct ihashhead *
+ufs_ihash(dev_t dev, ufsino_t inum)
+{
+	SIPHASH_CTX ctx;
+
+	SipHash24_Init(&ctx, &ihashkey);
+	SipHash24_Update(&ctx, &dev, sizeof(dev));
+	SipHash24_Update(&ctx, &inum, sizeof(inum));
+
+	return (&ihashtbl[SipHash24_End(&ctx) & ihash]);
+}
 
 /*
  * Initialize inode hash table.
  */
 void
-ufs_ihashinit()
+ufs_ihashinit(void)
 {
-
-	ihashtbl = hashinit(desiredvnodes, M_UFSMNT, &ihash);
+	ihashtbl = hashinit(initialvnodes, M_UFSMNT, M_WAITOK, &ihash);
+	arc4random_buf(&ihashkey, sizeof(ihashkey));
 }
 
 /*
@@ -67,19 +80,23 @@ ufs_ihashinit()
  * to it. If it is in core, return it, even if it is locked.
  */
 struct vnode *
-ufs_ihashlookup(device, inum)
-	dev_t device;
-	ino_t inum;
+ufs_ihashlookup(dev_t dev, ufsino_t inum)
 {
-	register struct inode *ip;
+        struct inode *ip;
+	struct ihashhead *ipp;
 
-	for (ip = ihashtbl[INOHASH(device, inum)];; ip = ip->i_next) {
-		if (ip == NULL)
-			return (NULL);
-		if (inum == ip->i_number && device == ip->i_dev)
-			return (ITOV(ip));
+	/* XXXLOCKING lock hash list */
+	ipp = INOHASH(dev, inum);
+	LIST_FOREACH(ip, ipp, i_hash) {
+		if (inum == ip->i_number && dev == ip->i_dev)
+			break;
 	}
-	/* NOTREACHED */
+	/* XXXLOCKING unlock hash list? */
+
+	if (ip)
+		return (ITOV(ip));
+
+	return (NULLVP);
 }
 
 /*
@@ -87,70 +104,77 @@ ufs_ihashlookup(device, inum)
  * to it. If it is in core, but locked, wait for it.
  */
 struct vnode *
-ufs_ihashget(device, inum)
-	dev_t device;
-	ino_t inum;
+ufs_ihashget(dev_t dev, ufsino_t inum)
 {
-	register struct inode *ip;
+	struct proc *p = curproc;
+	struct ihashhead *ipp;
+	struct inode *ip;
 	struct vnode *vp;
-
-	for (;;)
-		for (ip = ihashtbl[INOHASH(device, inum)];; ip = ip->i_next) {
-			if (ip == NULL)
-				return (NULL);
-			if (inum == ip->i_number && device == ip->i_dev) {
-				if (ip->i_flag & IN_LOCKED) {
-					ip->i_flag |= IN_WANTED;
-					sleep(ip, PINOD);
-					break;
-				}
-				vp = ITOV(ip);
-				if (!vget(vp, 1))
-					return (vp);
-				break;
-			}
-		}
-	/* NOTREACHED */
+loop:
+	/* XXXLOCKING lock hash list */
+	ipp = INOHASH(dev, inum);
+	LIST_FOREACH(ip, ipp, i_hash) {
+		if (inum == ip->i_number && dev == ip->i_dev) {
+			vp = ITOV(ip);
+			/* XXXLOCKING unlock hash list? */
+			if (vget(vp, LK_EXCLUSIVE, p))
+				goto loop;
+			return (vp);
+ 		}
+	}
+	/* XXXLOCKING unlock hash list? */
+	return (NULL);
 }
 
 /*
  * Insert the inode into the hash table, and return it locked.
  */
-void
-ufs_ihashins(ip)
-	struct inode *ip;
+int
+ufs_ihashins(struct inode *ip)
 {
-	struct inode **ipp, *iq;
+	struct   inode *curip;
+	struct   ihashhead *ipp;
+	dev_t    dev = ip->i_dev;
+	ufsino_t inum = ip->i_number;
 
-	ipp = &ihashtbl[INOHASH(ip->i_dev, ip->i_number)];
-	if (iq = *ipp)
-		iq->i_prev = &ip->i_next;
-	ip->i_next = iq;
-	ip->i_prev = ipp;
-	*ipp = ip;
-	if (ip->i_flag & IN_LOCKED)
-		panic("ufs_ihashins: already locked");
-	if (curproc)
-		ip->i_lockholder = curproc->p_pid;
-	else
-		ip->i_lockholder = -1;
-	ip->i_flag |= IN_LOCKED;
+	/* lock the inode, then put it on the appropriate hash list */
+	rrw_enter(&ip->i_lock, RW_WRITE);
+
+	/* XXXLOCKING lock hash list */
+
+	ipp = INOHASH(dev, inum);
+	LIST_FOREACH(curip, ipp, i_hash) {
+		if (inum == curip->i_number && dev == curip->i_dev) {
+			/* XXXLOCKING unlock hash list? */
+			rrw_exit(&ip->i_lock);
+			return (EEXIST);
+		}
+	}
+
+	SET(ip->i_flag, IN_HASHED);
+	LIST_INSERT_HEAD(ipp, ip, i_hash);
+	/* XXXLOCKING unlock hash list? */
+
+	return (0);
 }
 
 /*
  * Remove the inode from the hash table.
  */
 void
-ufs_ihashrem(ip)
-	register struct inode *ip;
+ufs_ihashrem(struct inode *ip)
 {
-	register struct inode *iq;
+	/* XXXLOCKING lock hash list */
 
-	if (iq = ip->i_next)
-		iq->i_prev = ip->i_prev;
-	*ip->i_prev = iq;
+	if (ip->i_hash.le_prev == NULL)
+		return;
+	if (ISSET(ip->i_flag, IN_HASHED)) {
+		LIST_REMOVE(ip, i_hash);
+		CLR(ip->i_flag, IN_HASHED);
+	}
 #ifdef DIAGNOSTIC
-	ip->i_next = NULL;
-	ip->i_prev = NULL;
+	ip->i_hash.le_next = NULL;
+	ip->i_hash.le_prev = NULL;
 #endif
+	/* XXXLOCKING unlock hash list? */
 }

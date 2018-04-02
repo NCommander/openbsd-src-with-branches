@@ -1,26 +1,29 @@
+.\"	$OpenBSD: motd.5,v 1.9 2009/05/06 18:39:02 jmc Exp $
 .\"	$NetBSD: motd.5,v 1.2 1994/12/28 18:58:53 glass Exp $
 .\"
 .\" This file is in the public domain.
 .\"
-.Dd December 28, 1994
+.Dd $Mdocdate: May 6 2009 $
 .Dt MOTD 5
 .Os
 .Sh NAME
 .Nm motd
-.Nd file containing message(s) of the day
+.Nd message of the day
 .Sh DESCRIPTION
-The file
+The
 .Pa /etc/motd
-is normally displayed by
+file is normally displayed by
 .Xr login 1
 after a user has logged in but before the shell is run.
 It is generally used for important system-wide announcements.
-During system startup, a line containing the kernel version string is
-prepended to this file.
+During system startup, a line containing the kernel version string
+replaces all lines up to (but not including) the first blank line of
+this file.
+Customised messages can be added to this file after
+that first blank line.
 .Pp
-Individual users may suppress the display of this file by
-creating a file named
-.Dq Pa .hushlogin
+Individual users may suppress the display of this file by creating a file named
+.Pa .hushlogin
 in their home directories.
 .Sh FILES
 .Bl -tag -width /etc/motd -compact
@@ -28,7 +31,7 @@ in their home directories.
 .El
 .Sh EXAMPLES
 .Bd -literal
-NetBSD 1.0 (SUN_LAMP) #9: Sun Nov 20 22:47:57 PST 1994
+OpenBSD 3.0 (GENERIC) #5: Sat Jan 26 20:13:07 MST 2002
 
 Make sure you have a .forward file...
 

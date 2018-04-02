@@ -1,3 +1,4 @@
+/*	$OpenBSD: klmove.c,v 1.6 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: klmove.c,v 1.3 1995/04/22 10:59:07 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)klmove.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: klmove.c,v 1.3 1995/04/22 10:59:07 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdio.h>
 
-# include	"trek.h"
+#include "trek.h"
 
 /*
 **  Move Klingons Around
@@ -66,25 +57,25 @@ static char rcsid[] = "$NetBSD: klmove.c,v 1.3 1995/04/22 10:59:07 cgd Exp $";
 **	course around stars.
 */
 
-klmove(fl)
-int	fl;
+void
+klmove(int fl)
 {
-	int			n;
-	register struct kling	*k;
-	double			dx, dy;
-	int			nextx, nexty;
-	register int		lookx, looky;
-	int			motion;
-	int			fudgex, fudgey;
-	int			qx, qy;
-	double			bigger;
-	int			i;
+	int		n;
+	struct kling	*k;
+	double		dx, dy;
+	int		nextx, nexty;
+	int		lookx, looky;
+	int		motion;
+	int		fudgex, fudgey;
+	int		qx, qy;
+	double		bigger;
+	int		i;
 
 #	ifdef xTRACE
 	if (Trace)
 		printf("klmove: fl = %d, Etc.nkling = %d\n", fl, Etc.nkling);
 #	endif
-	for (n = 0; n < Etc.nkling; k && n++)
+	for (n = 0; n < Etc.nkling; n++)
 	{
 		k = &Etc.klingon[n];
 		i = 100;
@@ -151,7 +142,7 @@ int	fl;
 				Sect[k->x][k->y] = EMPTY;
 				Quad[qx][qy].klings += 1;
 				Etc.nkling -= 1;
-				bmove(&Etc.klingon[Etc.nkling], k, sizeof *k);
+				*k = Etc.klingon[Etc.nkling];
 				Quad[Ship.quadx][Ship.quady].klings -= 1;
 				k = 0;
 				break;

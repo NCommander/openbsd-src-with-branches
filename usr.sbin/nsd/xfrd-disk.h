@@ -14,7 +14,7 @@ struct xfrd_state;
 struct nsd;
 
 /* magic string to identify xfrd state file */
-#define XFRD_FILE_MAGIC "NSDXFRD1"
+#define XFRD_FILE_MAGIC "NSDXFRD2"
 
 /* read from state file as many zones as possible (until error/eof).*/
 void xfrd_read_state(struct xfrd_state* xfrd);
@@ -29,5 +29,7 @@ void xfrd_del_tempdir(struct nsd* nsd);
 FILE* xfrd_open_xfrfile(struct nsd* nsd, uint64_t number, char* mode);
 /* unlink temp file */
 void xfrd_unlink_xfrfile(struct nsd* nsd, uint64_t number);
+/* get temp file size */
+uint64_t xfrd_get_xfrfile_size(struct nsd* nsd, uint64_t number );
 
 #endif /* XFRD_DISK_H */

@@ -69,7 +69,6 @@
 #include <sys/stat.h>
 
 #include <openssl/crypto.h>
-#include <openssl/rand.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/bn.h>
@@ -130,10 +129,6 @@ int main(int argc, char **argv)
 	if (bio_err == NULL)
 		bio_err=BIO_new_fp(stderr,BIO_NOCLOSE);
 
-	CRYPTO_malloc_debug_init();
-	CRYPTO_dbg_set_options(V_CRYPTO_MDEBUG_ALL);
-	CRYPTO_mem_ctrl(CRYPTO_MEM_CHECK_ON);
-
 	ERR_load_crypto_strings();
 
 	BIO_printf(bio_err,"test generation of DSA parameters\n");
@@ -187,13 +182,6 @@ int main(int argc, char **argv)
 		goto end;
 		}
 
-	dsa->flags |= DSA_FLAG_NO_EXP_CONSTTIME;
-	DSA_generate_key(dsa);
-	DSA_sign(0, str1, 20, sig, &siglen, dsa);
-	if (DSA_verify(0, str1, 20, sig, siglen, dsa) == 1)
-		ret=1;
-
-	dsa->flags &= ~DSA_FLAG_NO_EXP_CONSTTIME;
 	DSA_generate_key(dsa);
 	DSA_sign(0, str1, 20, sig, &siglen, dsa);
 	if (DSA_verify(0, str1, 20, sig, siglen, dsa) == 1)

@@ -1,4 +1,4 @@
-/* crypto/md5/md5_locl.h */
+/* $OpenBSD: md5_locl.h,v 1.13 2014/10/20 13:06:54 bcook Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -58,12 +58,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <openssl/e_os2.h>
-#include <openssl/md5.h>
 
-#ifndef MD5_LONG_LOG2
-#define MD5_LONG_LOG2 2 /* default to 32 bits */
-#endif
+#include <openssl/opensslconf.h>
+
+#include <openssl/md5.h>
 
 #ifdef MD5_ASM
 # if defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(__INTEL__) || \
@@ -74,7 +72,11 @@
 # endif
 #endif
 
+__BEGIN_HIDDEN_DECLS
+
 void md5_block_data_order (MD5_CTX *c, const void *p,size_t num);
+
+__END_HIDDEN_DECLS
 
 #define DATA_ORDER_IS_LITTLE_ENDIAN
 
@@ -86,10 +88,10 @@ void md5_block_data_order (MD5_CTX *c, const void *p,size_t num);
 #define HASH_FINAL		MD5_Final
 #define	HASH_MAKE_STRING(c,s)	do {	\
 	unsigned long ll;		\
-	ll=(c)->A; (void)HOST_l2c(ll,(s));	\
-	ll=(c)->B; (void)HOST_l2c(ll,(s));	\
-	ll=(c)->C; (void)HOST_l2c(ll,(s));	\
-	ll=(c)->D; (void)HOST_l2c(ll,(s));	\
+	ll=(c)->A; HOST_l2c(ll,(s));	\
+	ll=(c)->B; HOST_l2c(ll,(s));	\
+	ll=(c)->C; HOST_l2c(ll,(s));	\
+	ll=(c)->D; HOST_l2c(ll,(s));	\
 	} while (0)
 #define	HASH_BLOCK_DATA_ORDER	md5_block_data_order
 

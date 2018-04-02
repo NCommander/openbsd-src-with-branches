@@ -21,6 +21,7 @@
 
 #include <config.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <time.h>
 #include <ctype.h>
 
@@ -148,7 +149,6 @@ help(void) {
 "                 -i                  (IP6.INT reverse IPv6 lookups)\n"
 "                 -f filename         (batch mode)\n"
 "                 -b address[#port]   (bind to source address/port)\n"
-"                 -p port             (specify port number)\n"
 "                 -q name             (specify query name)\n"
 "                 -t type             (specify query type)\n"
 "                 -c class            (specify query class)\n"
@@ -609,7 +609,6 @@ cleanup:
 static void
 printgreeting(int argc, char **argv, dig_lookup_t *lookup) {
 	int i;
-	int remaining;
 	static isc_boolean_t first = ISC_TRUE;
 	char append[MXNAME];
 
@@ -621,21 +620,15 @@ printgreeting(int argc, char **argv, dig_lookup_t *lookup) {
 		i = 1;
 		while (i < argc) {
 			snprintf(append, sizeof(append), " %s", argv[i++]);
-			remaining = sizeof(lookup->cmdline) -
-				    strlen(lookup->cmdline) - 1;
-			strncat(lookup->cmdline, append, remaining);
+			strlcat(lookup->cmdline, append, sizeof(lookup->cmdline));
 		}
-		remaining = sizeof(lookup->cmdline) -
-			    strlen(lookup->cmdline) - 1;
-		strncat(lookup->cmdline, "\n", remaining);
+		strlcat(lookup->cmdline, "\n", sizeof(lookup->cmdline));
 		if (first && addresscount != 0) {
 			snprintf(append, sizeof(append),
 				 "; (%d server%s found)\n",
 				 addresscount,
 				 addresscount > 1 ? "s" : "");
-			remaining = sizeof(lookup->cmdline) -
-				    strlen(lookup->cmdline) - 1;
-			strncat(lookup->cmdline, append, remaining);
+			strlcat(lookup->cmdline, append, sizeof(lookup->cmdline));
 		}
 		if (first) {
 			snprintf(append, sizeof(append), 
@@ -643,9 +636,7 @@ printgreeting(int argc, char **argv, dig_lookup_t *lookup) {
 			       short_form ? "short_form" : "",
 			       printcmd ? "printcmd" : "");
 			first = ISC_FALSE;
-			remaining = sizeof(lookup->cmdline) -
-				    strlen(lookup->cmdline) - 1;
-			strncat(lookup->cmdline, append, remaining);
+			strlcat(lookup->cmdline, append, sizeof(lookup->cmdline));
 		}
 	}
 }
@@ -681,8 +672,7 @@ plus_option(char *option, isc_boolean_t is_batchfile,
 	size_t n;
 #endif
 
-	strncpy(option_store, option, sizeof(option_store));
-	option_store[sizeof(option_store)-1]=0;
+	strlcpy(option_store, option, sizeof(option_store));
 	ptr = option_store;
 	cmd = next_token(&ptr,"=");
 	if (cmd == NULL) {
@@ -813,8 +803,7 @@ plus_option(char *option, isc_boolean_t is_batchfile,
 				goto need_value;
 			if (!state)
 				goto invalid_option;
-			strncpy(domainopt, value, sizeof(domainopt));
-			domainopt[sizeof(domainopt)-1] = '\0';
+			strlcpy(domainopt, value, sizeof(domainopt));
 			break;
 		default:
 			goto invalid_option;
@@ -1199,11 +1188,13 @@ dash_option(char *option, char *next, dig_lookup_t **lookup,
 		batchname = value;
 		return (value_from_next);
 	case 'k':
-		strncpy(keyfile, value, sizeof(keyfile));
-		keyfile[sizeof(keyfile)-1]=0;
+		strlcpy(keyfile, value, sizeof(keyfile));
 		return (value_from_next);
 	case 'p':
-		port = (in_port_t) parse_uint(value, "port number", MAXPORT);
+		if (parse_uint(value, "port number", MAXPORT) != 53) {
+			fprintf(stderr, ";; Error, only port 53 supported\n");
+			exit(1);
+		}
 		return (value_from_next);
 	case 'q':
 		if (!config_only) {
@@ -1342,9 +1333,9 @@ dash_option(char *option, char *next, dig_lookup_t **lookup,
 			hmacname = DNS_TSIG_HMACMD5_NAME;
 			digestbits = 0;
 		}
-		strncpy(keynametext, ptr, sizeof(keynametext));
+		strlcpy(keynametext, ptr, sizeof(keynametext));
 		keynametext[sizeof(keynametext)-1]=0;
-		strncpy(keysecret, ptr2, sizeof(keysecret));
+		strlcpy(keysecret, ptr2, sizeof(keysecret));
 		keysecret[sizeof(keysecret)-1]=0;
 		return (value_from_next);
 	case 'x':
@@ -1353,7 +1344,7 @@ dash_option(char *option, char *next, dig_lookup_t **lookup,
 		*need_clone = ISC_TRUE;
 		if (get_reverse(textname, sizeof(textname), value,
 				ip6_int, ISC_FALSE) == ISC_R_SUCCESS) {
-			strncpy((*lookup)->textname, textname,
+			strlcpy((*lookup)->textname, textname,
 				sizeof((*lookup)->textname));
 			debug("looking up %s", (*lookup)->textname);
 			(*lookup)->trace_root = ISC_TF((*lookup)->trace  ||
@@ -1433,7 +1424,7 @@ getaddresses(dig_lookup_t *lookup, const char *host) {
 	for (i = 0; i < count; i++) {
 		isc_netaddr_fromsockaddr(&netaddr, &sockaddrs[i]);
 		isc_netaddr_format(&netaddr, tmp, sizeof(tmp));
-		srv = make_server(tmp, host);
+		srv = make_server(tmp, 0, host);
 		ISC_LIST_APPEND(lookup->my_server_list, srv, link);
 	}
 	addresscount = count;
@@ -1485,15 +1476,15 @@ parse_args(isc_boolean_t is_batchfile, isc_boolean_t config_only,
 		INSIST(batchfp == NULL);
 		homedir = getenv("HOME");
 		if (homedir != NULL) {
-			unsigned int n;
+			int n;
 			n = snprintf(rcfile, sizeof(rcfile), "%s/.digrc",
 			             homedir);
-			if (n < sizeof(rcfile))
+			if ((size_t)n < sizeof(rcfile) && n != -1)
 				batchfp = fopen(rcfile, "r");
 		}
 		if (batchfp != NULL) {
 			while (fgets(batchline, sizeof(batchline),
-				     batchfp) != 0) {
+				     batchfp) != NULL) {
 				debug("config line %s", batchline);
 				bargc = 1;
 				input = batchline;
@@ -1624,9 +1615,8 @@ parse_args(isc_boolean_t is_batchfile, isc_boolean_t config_only,
 					lookup = clone_lookup(default_lookup,
 								      ISC_TRUE);
 				need_clone = ISC_TRUE;
-				strncpy(lookup->textname, rv[0], 
+				strlcpy(lookup->textname, rv[0], 
 					sizeof(lookup->textname));
-				lookup->textname[sizeof(lookup->textname)-1]=0;
 				lookup->trace_root = ISC_TF(lookup->trace  ||
 						     lookup->ns_search_only);
 				lookup->new_search = ISC_TRUE;
@@ -1659,7 +1649,7 @@ parse_args(isc_boolean_t is_batchfile, isc_boolean_t config_only,
 		}
 		/* XXX Remove code dup from shutdown code */
 	next_line:
-		if (fgets(batchline, sizeof(batchline), batchfp) != 0) {
+		if (fgets(batchline, sizeof(batchline), batchfp) != NULL) {
 			bargc = 1;
 			debug("batch line %s", batchline);
 			if (batchline[0] == '\r' || batchline[0] == '\n'
@@ -1692,7 +1682,7 @@ parse_args(isc_boolean_t is_batchfile, isc_boolean_t config_only,
 		lookup->trace_root = ISC_TF(lookup->trace ||
 					    lookup->ns_search_only);
 		lookup->new_search = ISC_TRUE;
-		strcpy(lookup->textname, ".");
+		strlcpy(lookup->textname, ".", sizeof(lookup->textname));
 		lookup->rdtype = dns_rdatatype_ns;
 		lookup->rdtypeset = ISC_TRUE;
 		if (firstarg) {
@@ -1732,7 +1722,7 @@ dighost_shutdown(void) {
 		return;
 	}
 
-	if (fgets(batchline, sizeof(batchline), batchfp) != 0) {
+	if (fgets(batchline, sizeof(batchline), batchfp) != NULL) {
 		debug("batch line %s", batchline);
 		bargc = 1;
 		input = batchline;
@@ -1766,6 +1756,11 @@ main(int argc, char **argv) {
 	ISC_LIST_INIT(server_list);
 	ISC_LIST_INIT(search_list);
 
+	if (pledge("stdio rpath dns", NULL) == -1) {
+		perror("pledge");
+		exit(1);
+	}
+
 	debug("main()");
 	preparse_args(argc, argv);
 	progname = argv[0];
@@ -1773,6 +1768,12 @@ main(int argc, char **argv) {
 	check_result(result, "isc_app_start");
 	setup_libs();
 	parse_args(ISC_FALSE, ISC_FALSE, argc, argv);
+
+	if (pledge("stdio dns", NULL) == -1) {
+		perror("pledge");
+		exit(1);
+	}
+
 	setup_system();
 	if (domainopt[0] != '\0') {
 		set_search_domain(domainopt);

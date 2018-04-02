@@ -1,4 +1,5 @@
-/*	$NetBSD: stdarg.h,v 1.2 1995/02/16 03:08:08 cgd Exp $	*/
+/*	$OpenBSD: stdarg.h,v 1.13 2011/03/23 16:54:34 pirofti Exp $	*/
+/*	$NetBSD: stdarg.h,v 1.4 1996/10/09 21:13:05 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,33 +32,29 @@
  *	@(#)stdarg.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef _STDARG_H_
-#define	_STDARG_H_
+#ifndef _MACHINE_STDARG_H_
+#define	_MACHINE_STDARG_H_
 
-#include <machine/ansi.h>
+#include <sys/cdefs.h>
+#include <machine/_types.h>
 
-typedef _BSD_VA_LIST_	va_list;
-
-/*
- * Note that these macros are significantly different than the 'standard'
- * ones.  On the alpha, all arguments are passed as 64 bit quantities.
- */
-
-#define	va_start(a, last) \
-	(__builtin_next_arg(last), (a) = *(va_list *)__builtin_saveregs())
+typedef __va_list	va_list;
 
 #define	__va_size(type) \
 	(((sizeof(type) + sizeof(long) - 1) / sizeof(long)) * sizeof(long))
 
+#define	va_start(ap, last) \
+	(__builtin_next_arg(last), (ap) = *(va_list *)__builtin_saveregs(), (ap).pad = 0)
+
 #define	__REAL_TYPE_CLASS	8
-#define	__va_arg_offset(a, type)					\
+#define	__va_arg_offset(ap, type)					\
 	((__builtin_classify_type(*(type *)0) == __REAL_TYPE_CLASS &&	\
-	    (a).offset <= (6 * 8) ? -(6 * 8) : 0) - __va_size(type))
+	    (ap).offset <= (6 * 8) ? -(6 * 8) : 0) - __va_size(type))
 
-#define	va_arg(a, type)							\
-	(*((a).offset += __va_size(type),				\
-	    (type *)((a).base + (a).offset + __va_arg_offset(a, type))))
+#define	va_arg(ap, type)						\
+	(*(type *)((ap).offset += __va_size(type),			\
+		   (ap).base + (ap).offset + __va_arg_offset(ap, type)))
 
-#define	va_end(a)	((void) 0)
+#define	va_end(ap)	
 
-#endif /* !_STDARG_H_ */
+#endif /* !_MACHINE_STDARG_H_ */

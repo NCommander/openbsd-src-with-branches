@@ -88,7 +88,7 @@ xfrd_read_check_str(FILE* in, const char* str)
 
 static int
 xfrd_read_state_soa(FILE* in, const char* id_acquired,
-	const char* id, xfrd_soa_t* soa, time_t* soatime)
+	const char* id, xfrd_soa_type* soa, time_t* soatime)
 {
 	char *p;
 
@@ -147,6 +147,7 @@ xfrd_read_state(struct xfrd_state* xfrd)
 	uint32_t filetime = 0;
 	uint32_t numzones, i;
 	region_type *tempregion;
+	time_t soa_refresh;
 
 	tempregion = region_create(xalloc, free);
 	if(!tempregion)
@@ -164,8 +165,15 @@ xfrd_read_state(struct xfrd_state* xfrd)
 		region_destroy(tempregion);
 		return;
 	}
-	if(!xfrd_read_check_str(in, XFRD_FILE_MAGIC) ||
-	   !xfrd_read_check_str(in, "filetime:") ||
+	if(!xfrd_read_check_str(in, XFRD_FILE_MAGIC)) {
+		/* older file version; reset everything */
+		DEBUG(DEBUG_XFRD,1, (LOG_INFO, "xfrd: file %s is old version. refreshing all zones.",
+			statefile));
+		fclose(in);
+		region_destroy(tempregion);
+		return;
+	}
+	if(!xfrd_read_check_str(in, "filetime:") ||
 	   !xfrd_read_i32(in, &filetime) ||
 	   (time_t)filetime > xfrd_time()+15 ||
 	   !xfrd_read_check_str(in, "numzones:") ||
@@ -180,13 +188,13 @@ xfrd_read_state(struct xfrd_state* xfrd)
 
 	for(i=0; i<numzones; i++) {
 		char *p;
-		xfrd_zone_t* zone;
+		xfrd_zone_type* zone;
 		const dname_type* dname;
-		uint32_t state, masnum, nextmas, round_num, timeout;
-		xfrd_soa_t soa_nsd_read, soa_disk_read, soa_notified_read;
+		uint32_t state, masnum, nextmas, round_num, timeout, backoff;
+		xfrd_soa_type soa_nsd_read, soa_disk_read, soa_notified_read;
 		time_t soa_nsd_acquired_read,
 			soa_disk_acquired_read, soa_notified_acquired_read;
-		xfrd_soa_t incoming_soa;
+		xfrd_soa_type incoming_soa;
 		time_t incoming_acquired;
 
 		if(nsd.signal_hint_shutdown) {
@@ -213,6 +221,8 @@ xfrd_read_state(struct xfrd_state* xfrd)
 		   !xfrd_read_i32(in, &round_num) ||
 		   !xfrd_read_check_str(in, "next_timeout:") ||
 		   !xfrd_read_i32(in, &timeout) ||
+		   !xfrd_read_check_str(in, "backoff:") ||
+		   !xfrd_read_i32(in, &backoff) ||
 		   !xfrd_read_state_soa(in, "soa_nsd_acquired:", "soa_nsd:",
 			&soa_nsd_read, &soa_nsd_acquired_read) ||
 		   !xfrd_read_state_soa(in, "soa_disk_acquired:", "soa_disk:",
@@ -227,7 +237,7 @@ xfrd_read_state(struct xfrd_state* xfrd)
 			return;
 		}
 
-		zone = (xfrd_zone_t*)rbtree_search(xfrd->zones, dname);
+		zone = (xfrd_zone_type*)rbtree_search(xfrd->zones, dname);
 		if(!zone) {
 			DEBUG(DEBUG_XFRD,1, (LOG_INFO, "xfrd: state file has info for not configured zone %s", p));
 			continue;
@@ -248,6 +258,7 @@ xfrd_read_state(struct xfrd_state* xfrd)
 		zone->round_num = round_num;
 		zone->timeout.tv_sec = timeout;
 		zone->timeout.tv_usec = 0;
+		zone->fresh_xfr_timeout = backoff*XFRD_TRANSFER_TIMEOUT_START;
 
 		/* read the zone OK, now set the master properly */
 		zone->master = acl_find_num(zone->zone_options->pattern->
@@ -265,10 +276,15 @@ xfrd_read_state(struct xfrd_state* xfrd)
 		 * or there is a notification,
 		 * or there is a soa && current time is past refresh point
 		 */
+		soa_refresh = ntohl(soa_disk_read.refresh);
+		if (soa_refresh > (time_t)zone->zone_options->pattern->max_refresh_time)
+			soa_refresh = zone->zone_options->pattern->max_refresh_time;
+		else if (soa_refresh < (time_t)zone->zone_options->pattern->min_refresh_time)
+			soa_refresh = zone->zone_options->pattern->min_refresh_time;
 		if(timeout == 0 || soa_notified_acquired_read != 0 ||
 			(soa_disk_acquired_read != 0 &&
 			(uint32_t)xfrd_time() - soa_disk_acquired_read
-				> ntohl(soa_disk_read.refresh)))
+				> (uint32_t)soa_refresh))
 		{
 			zone->state = xfrd_zone_refreshing;
 			xfrd_set_refresh_now(zone);
@@ -290,10 +306,14 @@ xfrd_read_state(struct xfrd_state* xfrd)
 			zone->state = state;
 			xfrd_set_timer(zone, timeout);
 		}	
-		if(zone->soa_nsd_acquired == 0 && soa_nsd_acquired_read == 0 &&
-			soa_disk_acquired_read == 0) {
-			/* continue expon backoff where we were + check now */
-			zone->fresh_xfr_timeout = timeout;
+		if((zone->soa_nsd_acquired == 0 && soa_nsd_acquired_read == 0 &&
+			soa_disk_acquired_read == 0) ||
+			(zone->state != xfrd_zone_ok && timeout != 0)) {
+			/* but don't check now, because that would mean a
+			 * storm of attempts on some master servers */
+			xfrd_deactivate_zone(zone);
+			zone->state = state;
+			xfrd_set_timer(zone, timeout);
 		}
 
 		/* handle as an incoming SOA. */
@@ -312,7 +332,8 @@ xfrd_read_state(struct xfrd_state* xfrd)
 		{
 			xfrd_send_expire_notification(zone);
 		}
-		xfrd_handle_incoming_soa(zone, &incoming_soa, incoming_acquired);
+		if(incoming_acquired != 0)
+			xfrd_handle_incoming_soa(zone, &incoming_soa, incoming_acquired);
 	}
 
 	if(!xfrd_read_check_str(in, XFRD_FILE_MAGIC)) {
@@ -386,7 +407,7 @@ static void xfrd_write_dname(FILE* out, uint8_t* dname)
 
 static void
 xfrd_write_state_soa(FILE* out, const char* id,
-	xfrd_soa_t* soa, time_t soatime, const dname_type* ATTR_UNUSED(apex))
+	xfrd_soa_type* soa, time_t soatime, const dname_type* ATTR_UNUSED(apex))
 {
 	fprintf(out, "\t%s_acquired: %d", id, (int)soatime);
 	if(!soatime) {
@@ -419,7 +440,7 @@ xfrd_write_state_soa(FILE* out, const char* id,
 void
 xfrd_write_state(struct xfrd_state* xfrd)
 {
-	rbnode_t* p;
+	rbnode_type* p;
 	const char* statefile = xfrd->nsd->options->xfrdfile;
 	FILE *out;
 	time_t now = xfrd_time();
@@ -456,7 +477,7 @@ xfrd_write_state(struct xfrd_state* xfrd)
 	fprintf(out, "\n");
 	for(p = rbtree_first(xfrd->zones); p && p!=RBTREE_NULL; p=rbtree_next(p))
 	{
-		xfrd_zone_t* zone = (xfrd_zone_t*)p;
+		xfrd_zone_type* zone = (xfrd_zone_type*)p;
 		fprintf(out, "zone: \tname: %s\n", zone->apex_str);
 		fprintf(out, "\tstate: %d", (int)zone->state);
 		fprintf(out, " # %s", zone->state==xfrd_zone_ok?"OK":(
@@ -471,6 +492,7 @@ xfrd_write_state(struct xfrd_state* xfrd)
 			neato_timeout(out, "\t# =", zone->timeout.tv_sec);
 		}
 		fprintf(out, "\n");
+		fprintf(out, "\tbackoff: %d\n", zone->fresh_xfr_timeout/XFRD_TRANSFER_TIMEOUT_START);
 		xfrd_write_state_soa(out, "soa_nsd", &zone->soa_nsd,
 			zone->soa_nsd_acquired, zone->apex);
 		xfrd_write_state_soa(out, "soa_disk", &zone->soa_disk,
@@ -563,4 +585,18 @@ xfrd_unlink_xfrfile(struct nsd* nsd, uint64_t number)
 		log_msg(LOG_WARNING, "could not unlink %s: %s", fname,
 			strerror(errno));
 	}
+}
+
+uint64_t
+xfrd_get_xfrfile_size(struct nsd* nsd, uint64_t number )
+{
+	char fname[1024];
+	struct stat tempxfr_stat;
+	tempxfrname(fname, sizeof(fname), nsd, number);
+	if( stat( fname, &tempxfr_stat ) < 0 ) {
+	    log_msg(LOG_WARNING, "could not get file size %s: %s", fname,
+		    strerror(errno));
+	    return 0;
+	}
+	return (uint64_t)tempxfr_stat.st_size;
 }

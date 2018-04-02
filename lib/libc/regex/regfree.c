@@ -1,5 +1,4 @@
-/*	$NetBSD: regfree.c,v 1.4 1995/02/27 13:29:56 cgd Exp $	*/
-
+/*	$OpenBSD: regfree.c,v 1.10 2015/12/28 22:08:18 mmcc Exp $ */
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.
  * Copyright (c) 1992, 1993, 1994
@@ -16,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,31 +34,22 @@
  *	@(#)regfree.c	8.3 (Berkeley) 3/20/94
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)regfree.c	8.3 (Berkeley) 3/20/94";
-#else
-static char rcsid[] = "$NetBSD: regfree.c,v 1.4 1995/02/27 13:29:56 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <regex.h>
+#include <limits.h>
 
 #include "utils.h"
 #include "regex2.h"
 
 /*
  - regfree - free everything
- = extern void regfree(regex_t *);
  */
 void
-regfree(preg)
-regex_t *preg;
+regfree(regex_t *preg)
 {
-	register struct re_guts *g;
+	struct re_guts *g;
 
 	if (preg->re_magic != MAGIC1)	/* oops */
 		return;			/* nice to complain, but hard */
@@ -74,13 +60,10 @@ regex_t *preg;
 	preg->re_magic = 0;		/* mark it invalid */
 	g->magic = 0;			/* mark it invalid */
 
-	if (g->strip != NULL)
-		free((char *)g->strip);
-	if (g->sets != NULL)
-		free((char *)g->sets);
-	if (g->setbits != NULL)
-		free((char *)g->setbits);
-	if (g->must != NULL)
-		free(g->must);
-	free((char *)g);
+	free(g->strip);
+	free(g->sets);
+	free(g->setbits);
+	free(g->must);
+	free(g);
 }
+DEF_WEAK(regfree);

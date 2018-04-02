@@ -66,8 +66,7 @@ struct artdata {
   carsym *symdefs;		/* the symdef entries */
   symindex symdef_count;	/* how many there are */
   char *extended_names;		/* clever intel extension */
-  /* when more compilers are standard C, this can be a time_t */
-  long  armap_timestamp;	/* Timestamp value written into armap.
+  time_t  armap_timestamp;	/* Timestamp value written into armap.
 				   This is used for BSD archives to check
 				   that the timestamp is recent enough
 				   for the BSD linker to not complain,
@@ -734,6 +733,8 @@ static const char *const bfd_reloc_code_real_names[] = { "@@uninitialized@@",
   "BFD_RELOC_32_PCREL_S2",
   "BFD_RELOC_16_PCREL_S2",
   "BFD_RELOC_23_PCREL_S2",
+  "BFD_RELOC_18_PCREL_S2",
+  "BFD_RELOC_28_PCREL_S2",
   "BFD_RELOC_HI22",
   "BFD_RELOC_LO10",
   "BFD_RELOC_GPREL16",

@@ -3873,7 +3873,17 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  rtx inner_op0 = XEXP (XEXP (x, 0), 1);
 	  rtx inner_op1 = XEXP (x, 1);
 	  rtx inner;
-
+	  
+#ifndef FRAME_GROWS_DOWNWARD
+	  if (flag_propolice_protection
+	      && code == PLUS
+	      && other == frame_pointer_rtx
+	      && GET_CODE (inner_op0) == CONST_INT
+	      && GET_CODE (inner_op1) == CONST_INT
+	      && INTVAL (inner_op0) > 0
+	      && INTVAL (inner_op0) + INTVAL (inner_op1) <= 0)
+	    return x;
+#endif
 	  /* Make sure we pass the constant operand if any as the second
 	     one if this is a commutative operation.  */
 	  if (CONSTANT_P (inner_op0) && GET_RTX_CLASS (code) == 'c')
@@ -4286,6 +4296,11 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	 they are now checked elsewhere.  */
       if (GET_CODE (XEXP (x, 0)) == PLUS
 	  && CONSTANT_ADDRESS_P (XEXP (XEXP (x, 0), 1)))
+#ifndef FRAME_GROWS_DOWNWARD
+	if (! (flag_propolice_protection
+	       && XEXP (XEXP (x, 0), 0) == frame_pointer_rtx
+	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT))
+#endif
 	return gen_binary (PLUS, mode,
 			   gen_binary (PLUS, mode, XEXP (XEXP (x, 0), 0),
 				       XEXP (x, 1)),
@@ -4414,7 +4429,10 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 
       /* Canonicalize (minus A (plus B C)) to (minus (minus A B) C) for
 	 integers.  */
-      if (GET_CODE (XEXP (x, 1)) == PLUS && INTEGRAL_MODE_P (mode))
+      if (GET_CODE (XEXP (x, 1)) == PLUS && INTEGRAL_MODE_P (mode)
+	  && (! (flag_propolice_protection
+		 && XEXP (XEXP (x, 1), 0) == frame_pointer_rtx
+		 && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT)))
 	return gen_binary (MINUS, mode,
 			   gen_binary (MINUS, mode, XEXP (x, 0),
 				       XEXP (XEXP (x, 1), 0)),
@@ -9719,17 +9737,18 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 	  /* If we can't do that, try to simplify the shift in each arm of the
 	     logical expression, make a new logical expression, and apply
 	     the inverse distributive law.  */
-	  {
-	    rtx lhs = simplify_shift_const (NULL_RTX, code, shift_mode,
-					    XEXP (varop, 0), count);
-	    rtx rhs = simplify_shift_const (NULL_RTX, code, shift_mode,
-					    XEXP (varop, 1), count);
+	  if (GET_CODE (XEXP (varop, 1)) == CONST_INT)
+	    {
+	      rtx lhs = simplify_shift_const (NULL_RTX, code, shift_mode,
+					      XEXP (varop, 0), count);
+	      rtx rhs = simplify_shift_const (NULL_RTX, code, shift_mode,
+					      XEXP (varop, 1), count);
 
-	    varop = gen_binary (GET_CODE (varop), shift_mode, lhs, rhs);
-	    varop = apply_distributive_law (varop);
+	      varop = gen_binary (GET_CODE (varop), shift_mode, lhs, rhs);
+	      varop = apply_distributive_law (varop);
 
-	    count = 0;
-	  }
+	      count = 0;
+	    }
 	  break;
 
 	case EQ:

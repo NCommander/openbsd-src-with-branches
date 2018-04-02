@@ -1,15 +1,16 @@
-#	$NetBSD: Makefile,v 1.2 1995/03/25 18:13:27 glass Exp $
+#	$OpenBSD: Makefile,v 1.11 2015/11/12 21:12:05 millert Exp $
 
 PROG=	at
-SRCS=	at.c panic.c parsetime.c
+SRCS=	at.c client.c parsetime.c
+CRONDIR=${.CURDIR}/../../usr.sbin/cron
+CFLAGS+=-I${CRONDIR}
+MAN=	at.1 atrm.1 atq.1
 LINKS=	${BINDIR}/at ${BINDIR}/atq \
 	${BINDIR}/at ${BINDIR}/atrm \
 	${BINDIR}/at ${BINDIR}/batch
-MLINKS=	at.1 batch.1 \
-	at.1 atq.1 \
-	at.1 atrm.1
+BINGRP=	crontab
+BINMODE= 2555
 
-BINOWN=	root
-BINMODE= 4555
+.PATH: ${CRONDIR}
 
 .include <bsd.prog.mk>

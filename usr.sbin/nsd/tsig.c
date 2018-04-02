@@ -23,11 +23,11 @@ static region_type *tsig_region;
 
 struct tsig_key_table
 {
-	rbnode_t node; /* by dname */
+	rbnode_type node; /* by dname */
 	tsig_key_type *key;
 };
 typedef struct tsig_key_table tsig_key_table_type;
-static rbtree_t *tsig_key_table;
+static rbtree_type *tsig_key_table;
 
 struct tsig_algorithm_table
 {
@@ -190,6 +190,9 @@ tsig_get_algorithm_by_name(const char *name)
 	{
 		if (tsig_strlowercmp(name, algorithm_entry->algorithm->short_name) == 0)
 		{
+			return algorithm_entry->algorithm;
+		}
+		if(strncmp("hmac-", algorithm_entry->algorithm->short_name, 5) == 0 && tsig_strlowercmp(name, algorithm_entry->algorithm->short_name+5) == 0) {
 			return algorithm_entry->algorithm;
 		}
 	}

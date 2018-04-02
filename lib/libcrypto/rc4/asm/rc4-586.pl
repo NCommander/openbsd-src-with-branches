@@ -189,7 +189,8 @@ if ($alt=0) {
 	&jz	(&label("go4loop4"));
 
 	&picmeup($out,"OPENSSL_ia32cap_P");
-	&bt	(&DWP(0,$out),26);	# check SSE2 bit [could have been MMX]
+	# check SSE2 bit [could have been MMX]
+	&bt	(&DWP(0,$out),"\$IA32CAP_BIT0_SSE2");
 	&jnc	(&label("go4loop4"));
 
 	&mov	($out,&wparam(3))	if (!$alt);
@@ -300,7 +301,7 @@ $ido="ecx";
 $idx="edx";
 
 # void RC4_set_key(RC4_KEY *key,int len,const unsigned char *data);
-&function_begin("private_RC4_set_key");
+&function_begin("RC4_set_key");
 	&mov	($out,&wparam(0));		# load key
 	&mov	($idi,&wparam(1));		# load len
 	&mov	($inp,&wparam(2));		# load data
@@ -312,7 +313,7 @@ $idx="edx";
 	&xor	("eax","eax");
 	&mov	(&DWP(-4,$out),$idi);		# borrow key->y
 
-	&bt	(&DWP(0,$idx),20);		# check for bit#20
+	&bt	(&DWP(0,$idx),"\$IA32CAP_BIT0_INTELP4");
 	&jc	(&label("c1stloop"));
 
 &set_label("w1stloop",16);
@@ -378,7 +379,7 @@ $idx="edx";
 	&xor	("eax","eax");
 	&mov	(&DWP(-8,$out),"eax");		# key->x=0;
 	&mov	(&DWP(-4,$out),"eax");		# key->y=0;
-&function_end("private_RC4_set_key");
+&function_end("RC4_set_key");
 
 # const char *RC4_options(void);
 &function_begin_B("RC4_options");
@@ -388,9 +389,9 @@ $idx="edx";
 	&lea	("eax",&DWP(&label("opts")."-".&label("pic_point"),"eax"));
 	&picmeup("edx","OPENSSL_ia32cap_P");
 	&mov	("edx",&DWP(0,"edx"));
-	&bt	("edx",20);
+	&bt	("edx","\$IA32CAP_BIT0_INTELP4");
 	&jc	(&label("1xchar"));
-	&bt	("edx",26);
+	&bt	("edx","\$IA32CAP_BIT0_SSE2");
 	&jnc	(&label("ret"));
 	&add	("eax",25);
 	&ret	();

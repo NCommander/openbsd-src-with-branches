@@ -138,6 +138,8 @@ typedef enum nsd_rc nsd_rc_type;
 #define TYPE_TLSA	52	/* RFC 6698 */
 #define TYPE_CDS	59	/* RFC 7344 */
 #define TYPE_CDNSKEY	60	/* RFC 7344 */
+#define TYPE_OPENPGPKEY 61	/* RFC 7929 */
+#define TYPE_CSYNC	62	/* RFC 7477 */
 
 #define TYPE_SPF        99      /* RFC 4408 */
 
@@ -156,6 +158,7 @@ typedef enum nsd_rc nsd_rc_type;
 #define TYPE_ANY	255	/* any type (wildcard) */
 #define TYPE_URI	256	/* RFC 7553 */
 #define TYPE_CAA	257	/* RFC 6844 */
+#define TYPE_AVC	258
 
 #define TYPE_DLV	32769	/* RFC 4431 */
 #define PSEUDO_TYPE_DLV	RRTYPE_DESCRIPTORS_LENGTH
@@ -258,9 +261,9 @@ typedef struct rrtype_descriptor rrtype_descriptor_type;
  * Indexed by type.  The special type "0" can be used to get a
  * descriptor for unknown types (with one binary rdata).
  *
- * CAA + 1
+ * AVC + 1
  */
-#define RRTYPE_DESCRIPTORS_LENGTH  (TYPE_CAA + 1)
+#define RRTYPE_DESCRIPTORS_LENGTH  (TYPE_AVC + 1)
 rrtype_descriptor_type *rrtype_descriptor_by_name(const char *name);
 rrtype_descriptor_type *rrtype_descriptor_by_type(uint16_t type);
 

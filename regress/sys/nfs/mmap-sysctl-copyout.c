@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include <sys/param.h>
 #include <sys/mman.h>
 #include <sys/queue.h>
@@ -18,8 +20,8 @@
 #include <unistd.h>
 
 #define FILE	"sysctl-net.inet.tcp.stats"
-#define CLIENT	"/mnt/nfs-client"
-#define SERVER	"/mnt/nfs-server"
+#define CLIENT	"/mnt/regress-nfs-client"
+#define SERVER	"/mnt/regress-nfs-server"
 
 int
 main(void)

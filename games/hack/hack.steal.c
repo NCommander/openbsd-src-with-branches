@@ -1,22 +1,86 @@
+/*	$OpenBSD: hack.steal.c,v 1.6 2014/03/11 08:05:15 guenther Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.steal.c,v 1.3 1995/03/23 08:31:34 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <stdlib.h>
 
 #include "hack.h"
 
-long		/* actually returns something that fits in an int */
-somegold(){
+extern void (*afternmv)(void);
+
+/* actually returns something that fits in an int */
+long
+somegold(void)
+{
 	return( (u.ugold < 100) ? u.ugold :
 		(u.ugold > 10000) ? rnd(10000) : rnd((int) u.ugold) );
 }
 
-stealgold(mtmp)  register struct monst *mtmp; {
-register struct gold *gold = g_at(u.ux, u.uy);
-register long tmp;
+void
+stealgold(struct monst *mtmp)
+{
+	struct gold *gold = g_at(u.ux, u.uy);
+	long tmp;
+
 	if(gold && ( !u.ugold || gold->amount > u.ugold || !rn2(5))) {
 		mtmp->mgold += gold->amount;
 		freegold(gold);
@@ -38,11 +102,14 @@ register long tmp;
 }
 
 /* steal armor after he finishes taking it off */
-unsigned stealoid;		/* object to be stolen */
-unsigned stealmid;		/* monster doing the stealing */
-stealarm(){
-	register struct monst *mtmp;
-	register struct obj *otmp;
+static unsigned stealoid;		/* object to be stolen */
+static unsigned stealmid;		/* monster doing the stealing */
+
+void
+stealarm(void)
+{
+	struct monst *mtmp;
+	struct obj *otmp;
 
 	for(otmp = invent; otmp; otmp = otmp->nobj)
 	  if(otmp->o_id == stealoid) {
@@ -65,12 +132,12 @@ stealarm(){
 /* returns 1 when something was stolen */
 /* (or at least, when N should flee now) */
 /* avoid stealing the object stealoid */
-steal(mtmp)
-struct monst *mtmp;
+int
+steal(struct monst *mtmp)
 {
-	register struct obj *otmp;
-	register tmp;
-	register named = 0;
+	struct obj *otmp;
+	int tmp;
+	int named = 0;
 
 	if(!invent){
 	    if(Blind)
@@ -116,13 +183,6 @@ struct monst *mtmp;
 			(void) armoroff(otmp);
 			otmp->cursed = curssv;
 			if(multi < 0){
-				extern char *nomovemsg;
-				extern int (*afternmv)();
-				/*
-				multi = 0;
-				nomovemsg = 0;
-				afternmv = 0;
-				*/
 				stealoid = otmp->o_id;
 				stealmid = mtmp->m_id;
 				afternmv = stealarm;
@@ -142,7 +202,7 @@ struct monst *mtmp;
 	if(Punished && otmp == uball){
 		Punished = 0;
 		freeobj(uchain);
-		free((char *) uchain);
+		free(uchain);
 		uchain = (struct obj *) 0;
 		uball->spe = 0;
 		uball = (struct obj *) 0;	/* superfluous */
@@ -153,18 +213,17 @@ struct monst *mtmp;
 	return((multi < 0) ? 0 : 1);
 }
 
-mpickobj(mtmp,otmp)
-register struct monst *mtmp;
-register struct obj *otmp;
+void
+mpickobj(struct monst *mtmp, struct obj *otmp)
 {
 	otmp->nobj = mtmp->minvent;
 	mtmp->minvent = otmp;
 }
 
-stealamulet(mtmp)
-register struct monst *mtmp;
+int
+stealamulet(struct monst *mtmp)
 {
-	register struct obj *otmp;
+	struct obj *otmp;
 
 	for(otmp = invent; otmp; otmp = otmp->nobj) {
 	    if(otmp->olet == AMULET_SYM) {
@@ -180,11 +239,10 @@ register struct monst *mtmp;
 }
 
 /* release the objects the killed animal has stolen */
-relobj(mtmp,show)
-register struct monst *mtmp;
-register show;
+void
+relobj(struct monst *mtmp, int show)
 {
-	register struct obj *otmp, *otmp2;
+	struct obj *otmp, *otmp2;
 
 	for(otmp = mtmp->minvent; otmp; otmp = otmp2){
 		otmp->ox = mtmp->mx;
@@ -198,7 +256,7 @@ register show;
 	}
 	mtmp->minvent = (struct obj *) 0;
 	if(mtmp->mgold || mtmp->data->mlet == 'L') {
-		register long tmp;
+		long tmp;
 
 		tmp = (mtmp->mgold > 10000) ? 10000 : mtmp->mgold;
 		mkgold((long)(tmp + d(dlevel,30)), mtmp->mx, mtmp->my);

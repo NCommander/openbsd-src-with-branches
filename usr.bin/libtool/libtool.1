@@ -1,0 +1,50 @@
+.\"	$OpenBSD: libtool.1,v 1.2 2017/01/01 18:51:40 zhuk Exp $
+.\"
+.\" Copyright (c) 2012 Marc Espie <espie@openbsd.org>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd $Mdocdate: January 1 2017 $
+.Dt LIBTOOL 1
+.Os
+.Sh NAME
+.Nm libtool
+.Nd compile and link complex libraries
+.Sh DESCRIPTION
+.Nm
+is supposed to be a drop-in replacement for the eponymous GNU project.
+The following differences in behaviour with GNU Libtool are intentional:
+.Bl -bullet
+.It
+Relative
+.Fl L
+paths are put before absolute ones.
+This fixes many (but not all, unfortunately) issues when software
+links to libraries already installed instead of those just built because,
+for example,
+.Qq -L/usr/local/lib
+comes before
+.Qq -L../libfoo .
+.It
+Extra (duplicate)
+.Fl L
+and
+.Fl l
+items are stripped from the link command line.
+.It
+When both
+.Qq -lstdc++
+and
+.Qq -lestdc++
+are encountered in the link command line, only the latter is kept.
+.El

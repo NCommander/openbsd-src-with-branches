@@ -1,3 +1,4 @@
+/*	$OpenBSD: logger.c,v 1.16 2015/10/09 01:37:08 deraadt Exp $	*/
 /*	$NetBSD: logger.c,v 1.4 1994/12/22 06:27:00 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,32 +30,21 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1983, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)logger.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: logger.c,v 1.4 1994/12/22 06:27:00 jtc Exp $";
-#endif /* not lint */
-
 #include <errno.h>
 #include <unistd.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <err.h>
 
 #define	SYSLOG_NAMES
 #include <syslog.h>
 
-int	decode __P((char *, CODE *));
-int	pencode __P((char *));
-void	usage __P((void));
+int	decode(char *, CODE *);
+int	pencode(char *);
+void	usage(void);
 
 /*
  * logger -- read and log utility
@@ -67,9 +53,7 @@ void	usage __P((void));
  *	log.
  */
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int ch, logflags, pri;
 	char *tag, buf[1024];
@@ -77,8 +61,8 @@ main(argc, argv)
 	tag = NULL;
 	pri = LOG_NOTICE;
 	logflags = 0;
-	while ((ch = getopt(argc, argv, "f:ip:st:")) != EOF)
-		switch((char)ch) {
+	while ((ch = getopt(argc, argv, "f:ip:st:")) != -1)
+		switch(ch) {
 		case 'f':		/* file to log */
 			if (freopen(optarg, "r", stdin) == NULL) {
 				(void)fprintf(stderr, "logger: %s: %s.\n",
@@ -109,10 +93,13 @@ main(argc, argv)
 	openlog(tag ? tag : getlogin(), logflags, 0);
 	(void) fclose(stdout);
 
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
 	/* log input line if appropriate */
 	if (argc > 0) {
-		register char *p, *endp;
-		int len;
+		char *p, *endp;
+		size_t len;
 
 		for (p = buf, endp = buf + sizeof(buf) - 2; *argv;) {
 			len = strlen(*argv);
@@ -141,8 +128,7 @@ main(argc, argv)
  *  Decode a symbolic name to a numeric value
  */
 int
-pencode(s)
-	register char *s;
+pencode(char *s)
 {
 	char *save;
 	int fac, lev;
@@ -172,14 +158,16 @@ pencode(s)
 }
 
 int
-decode(name, codetab)
-	char *name;
-	CODE *codetab;
+decode(char *name, CODE *codetab)
 {
-	register CODE *c;
+	CODE *c;
 
-	if (isdigit(*name))
-		return (atoi(name));
+	if (isdigit((unsigned char)*name)) {
+		const char *errstr;
+		int n = strtonum(name, 0, INT_MAX, &errstr);
+		if (!errstr)
+			return (n);
+	}
 
 	for (c = codetab; c->c_name; c++)
 		if (!strcasecmp(name, c->c_name))
@@ -189,9 +177,9 @@ decode(name, codetab)
 }
 
 void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
-	    "logger: [-is] [-f file] [-p pri] [-t tag] [ message ... ]\n");
+	    "usage: logger [-is] [-f file] [-p pri] [-t tag] [message ...]\n");
 	exit(1);
 }

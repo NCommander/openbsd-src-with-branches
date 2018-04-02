@@ -1,3 +1,4 @@
+.\"	$OpenBSD: echo.1,v 1.23 2016/08/16 18:51:25 schwarze Exp $
 .\"	$NetBSD: echo.1,v 1.7 1995/03/21 09:04:26 cgd Exp $
 .\"
 .\" Copyright (c) 1990, 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,7 +33,7 @@
 .\"
 .\"	@(#)echo.1	8.1 (Berkeley) 7/22/93
 .\"
-.Dd July 22, 1993
+.Dd $Mdocdate: August 16 2016 $
 .Dt ECHO 1
 .Os
 .Sh NAME
@@ -45,28 +42,66 @@
 .Sh SYNOPSIS
 .Nm echo
 .Op Fl n
-.Op "string ..."
+.Op Ar string ...
 .Sh DESCRIPTION
 The
-.Nm echo
-utility writes any specified operands, separated by single blank (`` '')
-characters and followed by a newline (``\en'') character, to the standard
+.Nm
+utility writes any specified operands, separated by single blank
+.Pq Sq \ \&
+characters and followed by a newline
+.Pq Sq \en
+character, to the standard
 output.
 .Pp
-The following option is available:
-.Bl -tag -width flag
+When no operands are given, only the newline is written.
+The
+.Fl \-
+operand,
+which generally denotes an end to option processing,
+is treated as part of
+.Ar string .
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
 .It Fl n
 Do not print the trailing newline character.
 .El
-.Pp
-The
-.Nm echo
-utility exits 0 on success, and >0 if an error occurs.
+.Sh EXIT STATUS
+.Ex -std echo
 .Sh SEE ALSO
+.Xr csh 1 ,
+.Xr ksh 1 ,
 .Xr printf 1
 .Sh STANDARDS
 The
-.Nm echo
-utility is expected to be
-.St -p1003.2
-compatible.
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
+.Pp
+The flag
+.Op Fl n
+conflicts with the behaviour mandated by the
+X/Open System Interfaces option of the
+.St -p1003.1-2008
+specification,
+which says it should be treated as part of
+.Ar string .
+Additionally,
+.Nm
+does not support any of the backslash character sequences mandated by XSI.
+.Pp
+.Nm
+also exists as a built-in to
+.Xr csh 1
+and
+.Xr ksh 1 ,
+though with a different syntax.
+.Pp
+Where portability is paramount, use
+.Xr printf 1 .
+.Sh HISTORY
+An
+.Nm
+utility appeared in
+.At v2 .

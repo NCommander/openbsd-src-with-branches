@@ -1,7 +1,10 @@
-#	$NetBSD: Makefile,v 1.7 1995/03/18 14:56:21 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/5/93
+#	$OpenBSD: Makefile,v 1.13 2012/09/07 00:33:24 deraadt Exp $
 
 PROG=	ifconfig
+SRCS=	ifconfig.c brconfig.c
 MAN=	ifconfig.8
+
+LDADD=	-lutil
+DPADD=	${LIBUTIL}
 
 .include <bsd.prog.mk>

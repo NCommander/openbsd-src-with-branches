@@ -1,3 +1,4 @@
+/*	$OpenBSD: sigsuspend.S,v 1.9 2015/09/05 06:22:47 guenther Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,30 +29,16 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)sigsuspend.s	5.2 (Berkeley) 12/17/90
- *	$Id: sigsuspend.S,v 1.6 1994/10/26 19:49:51 mycroft Exp $
  */
-
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$Id: sigsuspend.S,v 1.6 1994/10/26 19:49:51 mycroft Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
 
 #include "SYS.h"
 
-ENTRY(sigsuspend)
+SYSENTRY_HIDDEN(sigsuspend)
 	movl	4(%esp),%eax		# fetch mask arg
 	movl	(%eax),%eax		# indirect to mask arg
 	movl	%eax,4(%esp)
 	movl	$(SYS_sigsuspend),%eax
 	int	$0x80
-	jc	err
-	xorl	%eax,%eax		# shouldn t happen
+	SET_ERRNO()
 	ret
-err:
-#ifdef PIC
-	jmp	PIC_PLT(cerror)
-#else
-	jmp	cerror
-#endif
+SYSCALL_END_HIDDEN(sigsuspend)

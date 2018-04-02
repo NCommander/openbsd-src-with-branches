@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap_table.c,v 1.15 2003/09/16 20:52:22 miod Exp $	*/
+/*	$OpenBSD: pmap_table.c,v 1.13 2014/11/21 12:28:13 aoyama Exp $	*/
 
 /* 
  * Mach Operating System
@@ -28,62 +28,81 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/types.h>
-#include <machine/board.h>
-#include <machine/cmmu.h>
+
 #include <uvm/uvm_extern.h>
+
+#include <machine/board.h>
 #include <machine/pmap_table.h>
 
-#define	R	VM_PROT_READ
-#define	RW	(VM_PROT_READ | VM_PROT_WRITE)
+#define	R	PROT_READ
+#define	RW	(PROT_READ | PROT_WRITE)
 #define	CW	CACHE_WT
 #define	CI	CACHE_INH
 #define	CG	CACHE_GLOBAL
 
-/*  phys_start, virt_start, size, prot, cacheability */
-const pmap_table_entry
+/*  start, size, prot, cacheability */
+const struct pmap_table
 luna88k_board_table[] = {
 #if 0
-	{ 0           , VEQR_ADDR   , 48*1024*1024 /* XXX memory size */, RW,  CG},
+	{ PROM_ADDR,		PROM_SPACE,		R,	CI },
 #endif
-	{ 0           , 0           , round_page(0x20000)  /* XXX kernel start */, RW,  CG},
-	{ OBIO_START  , OBIO_START  , round_page(OBIO_SIZE),  RW,     CI },
+	{ FUSE_ROM_ADDR,	FUSE_ROM_SPACE,		R,	CI },
+	{ NVRAM_ADDR,		NVRAM_SPACE,		RW,	CI },
+	{ NVRAM_ADDR_88K2,	PAGE_SIZE,		RW,	CI },
+	{ OBIO_PIO0_BASE,	PAGE_SIZE,		RW,	CI },
+	{ OBIO_PIO1_BASE,	PAGE_SIZE,		RW,	CI },
+	{ OBIO_SIO,		PAGE_SIZE,		RW,	CI },
+	{ OBIO_TAS,		PAGE_SIZE,		RW,	CI },
+	{ OBIO_CLOCK0,		PAGE_SIZE,		RW,	CI },
+	{ INT_ST_MASK0,		PAGE_SIZE,		RW,	CI },
+	{ SOFT_INT0,		PAGE_SIZE,		RW,	CI },
+	{ SOFT_INT_FLAG0,	PAGE_SIZE,		RW,	CI },
+	{ RESET_CPU0,		PAGE_SIZE,		RW,	CI },
+	{ TRI_PORT_RAM,		TRI_PORT_RAM_SPACE,	RW,	CI },
 #if 0
-	{ TRI_PORT_RAM, TRI_PORT_RAM, TRI_PORT_RAM_SPACE, RW, CI },
-	{ 0           , VEQR_ADDR   , 48*1024*1024 /* XXX memory size */, RW,  CG},
-	{ 0           , 0           , 0x20000 /* XXX kernel start */, RW,  CG},
-	{ PROM_ADDR   , PROM_ADDR   , PROM_SPACE  ,  R,   C },
-	{ FUSE_ROM_ADDR, FUSE_ROM_ADDR, FUSE_ROM_SPACE,  RW,    CI },
-	{ NVRAM_ADDR   , NVRAM_ADDR   , NVRAM_SPACE  ,   RW,     CI },
-	{ OBIO_PIO0_BASE,     OBIO_PIO0_BASE, PAGE,  RW,     CI },
-	{ OBIO_PIO1_BASE,     OBIO_PIO1_BASE, PAGE,  RW,     CI },
-	{ OBIO_SIO      ,     OBIO_SIO,       PAGE,  RW,     CI },
-	{ OBIO_TAS      ,     OBIO_TAS,       PAGE,  RW,     CI },
-	{ OBIO_CLOCK0   ,     OBIO_CLOCK0,    PAGE,  RW,     CI },
-	{ INT_ST_MASK0  ,     INT_ST_MASK0,   PAGE,  RW,     CI },
-	{ SOFT_INT0     ,     SOFT_INT0,      PAGE,  W,     CI },
-	{ SOFT_INT_FLAG0,     SOFT_INT_FLAG0, PAGE,  RW,     CI },
-	{ RESET_CPU0    ,     RESET_CPU0,     PAGE,  RW,     CI },
+	{ EXT_A_ADDR,		EXT_A_SPACE,		RW,	CI },
+	{ EXT_B_ADDR,		EXT_B_SPACE,		RW,	CI },
+#endif
+	{ PC_BASE,		PC_SPACE,		RW,	CI },
 #if 0
-	{ EXT_A_ADDR    ,     EXT_A_ADDR,     EXT_A_SPACE,  RW,     CI },
-	{ EXT_B_ADDR    ,     EXT_B_ADDR,     EXT_B_SPACE,  RW,     CI },
-	{ PC_BASE       ,     PC_BASE,        PC_SPACE,    RW,     CI },
+	{ MROM_ADDR,		MROM_SPACE,		R,	CI },
 #endif
-	{ MROM_ADDR     ,     MROM_ADDR,      MROM_SPACE, R,      CI },
-	{ BMAP_START    ,     BMAP_START,     BMAP_SPACE, RW,     CI },
-	{ BMAP_PALLET0  ,     BMAP_PALLET0,   PAGE,       RW,     CI },
-	{ BMAP_PALLET1  ,     BMAP_PALLET1,   PAGE,       RW,     CI },
-	{ BMAP_PALLET2  ,     BMAP_PALLET2,   PAGE,       RW,     CI },
-	{ BOARD_CHECK_REG,    BOARD_CHECK_REG,PAGE,       RW,     CI },
-	{ BMAP_CRTC,          BMAP_CRTC,      PAGE,      RW,     CI },
-	{ SCSI_ADDR,          SCSI_ADDR,      PAGE,      RW,     C},
-	{ LANCE_ADDR,         LANCE_ADDR,     PAGE,      RW,     CI },
+	{ BMAP_RFCNT,		PAGE_SIZE,		RW,	CI },
+	{ BMAP_BMSEL,		PAGE_SIZE,		RW,	CI },
+	{ BMAP_BMP,		BMAP_BMAP0 - BMAP_BMP,	RW,	CI, TRUE },
+	{ BMAP_BMAP0,		BMAP_BMAP1 - BMAP_BMAP0, RW,	CI, TRUE },
+	{ BMAP_BMAP1,		BMAP_BMAP2 - BMAP_BMAP1, RW,	CI, TRUE },
+	{ BMAP_BMAP2,		BMAP_BMAP3 - BMAP_BMAP2, RW,	CI, TRUE },
+	{ BMAP_BMAP3,		BMAP_BMAP4 - BMAP_BMAP3, RW,	CI, TRUE },
+	{ BMAP_BMAP4,		BMAP_BMAP5 - BMAP_BMAP4, RW,	CI, TRUE },
+	{ BMAP_BMAP5,		BMAP_BMAP6 - BMAP_BMAP5, RW,	CI, TRUE },
+	{ BMAP_BMAP6,		BMAP_BMAP7 - BMAP_BMAP6, RW,	CI, TRUE },
+	{ BMAP_BMAP7,		BMAP_FN - BMAP_BMAP7,	RW,	CI, TRUE },
+	{ BMAP_FN,		PAGE_SIZE,		RW,	CI },
+#if 0
+	{ BMAP_FN0,		PAGE_SIZE,		RW,	CI },
+	{ BMAP_FN1,		PAGE_SIZE,		RW,	CI },
+	{ BMAP_FN2,		PAGE_SIZE,		RW,	CI },
+	{ BMAP_FN3,		PAGE_SIZE,		RW,	CI },
+	{ BMAP_FN4,		PAGE_SIZE,		RW,	CI },
+	{ BMAP_FN5,		PAGE_SIZE,		RW,	CI },
+	{ BMAP_FN6,		PAGE_SIZE,		RW,	CI },
+	{ BMAP_FN7,		PAGE_SIZE,		RW,	CI },
+	{ BMAP_PALLET0,		PAGE_SIZE,		RW,	CI },
+	{ BMAP_PALLET1,		PAGE_SIZE,		RW,	CI },
 #endif
-	{ 0,           0,          0xffffffff,             0,      0  },
+	{ BMAP_PALLET2,		PAGE_SIZE,		RW,	CI },
+#if 0
+	{ BOARD_CHECK_REG,	PAGE_SIZE,		RW,	CI },
+	{ BMAP_CRTC,		PAGE_SIZE,		RW,	CI },
+#endif
+	{ SCSI_ADDR,		PAGE_SIZE,		RW,	CI },
+	{ LANCE_ADDR,		PAGE_SIZE,		RW,	CI },
+	{ 0,			0xffffffff,		0,	0 },
 };
 
-pmap_table_t 
-pmap_table_build(void)
+const struct pmap_table *
+pmap_table_build()
 {
 	return luna88k_board_table;
 }

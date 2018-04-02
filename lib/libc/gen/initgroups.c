@@ -1,5 +1,4 @@
-/*	$NetBSD: initgroups.c,v 1.11 1995/06/03 02:27:19 mycroft Exp $	*/
-
+/*	$OpenBSD: initgroups.c,v 1.9 2015/01/16 16:48:51 deraadt Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,33 +28,21 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)initgroups.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: initgroups.c,v 1.11 1995/06/03 02:27:19 mycroft Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
-
+#include <err.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <limits.h>
 
 int
-initgroups(uname, agroup)
-	const char *uname;
-	int agroup;
+initgroups(const char *uname, gid_t agroup)
 {
-	int groups[NGROUPS], ngroups;
+	gid_t groups[NGROUPS_MAX];
+	int ngroups;
 
-	ngroups = NGROUPS;
-	if (getgrouplist(uname, agroup, groups, &ngroups) < 0)
-		_warnx("%s is in too many groups, using first %d",
-		    uname, ngroups);
-	if (setgroups(ngroups, groups) < 0) {
-		_warn("setgroups");
+	ngroups = NGROUPS_MAX;
+	(void) getgrouplist(uname, agroup, groups, &ngroups);
+	if (setgroups(ngroups, groups) < 0)
 		return (-1);
-	}
 	return (0);
 }
+DEF_WEAK(initgroups);

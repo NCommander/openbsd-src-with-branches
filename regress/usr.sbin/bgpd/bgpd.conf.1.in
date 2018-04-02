@@ -1,0 +1,4 @@
+# $OpenBSD$
+# Only test the bare minimum configuration
+
+AS 1

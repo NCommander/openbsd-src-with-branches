@@ -1,3 +1,4 @@
+/*	$OpenBSD: pdb.c,v 1.8 2009/10/27 23:59:54 deraadt Exp $	*/
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
  * All rights reserved.
@@ -28,10 +29,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LINT
-static char rcsid[] = "$Id: pdb.c,v 1.3 1995/03/22 15:56:31 mycroft Exp $";
-#endif
-
 #include <sys/types.h>
 #include <sys/acct.h>
 #include <err.h>
@@ -42,14 +39,14 @@ static char rcsid[] = "$Id: pdb.c,v 1.3 1995/03/22 15:56:31 mycroft Exp $";
 #include "extern.h"
 #include "pathnames.h"
 
-static int check_junk __P((struct cmdinfo *));
-static void add_ci __P((const struct cmdinfo *, struct cmdinfo *));
-static void print_ci __P((const struct cmdinfo *, const struct cmdinfo *));
+static int check_junk(struct cmdinfo *);
+static void add_ci(const struct cmdinfo *, struct cmdinfo *);
+static void print_ci(const struct cmdinfo *, const struct cmdinfo *);
 
 static DB	*pacct_db;
 
 int
-pacct_init()
+pacct_init(void)
 {
 	DB *saved_pacct_db;
 	int error;
@@ -106,15 +103,14 @@ out:	if (error != 0)
 }
 
 void
-pacct_destroy()
+pacct_destroy(void)
 {
 	if (DB_CLOSE(pacct_db) < 0)
 		warn("destroying process accounting stats");
 }
 
 int
-pacct_add(ci)
-	const struct cmdinfo *ci;
+pacct_add(const struct cmdinfo *ci)
 {
 	DBT key, data;
 	struct cmdinfo newci;
@@ -137,10 +133,10 @@ pacct_add(ci)
 		memset(&newci, 0, sizeof(newci));
 		memcpy(newci.ci_comm, key.data, key.size);
 	}
-	
+
 	add_ci(ci, &newci);
 
-	data.data = &newci; 
+	data.data = &newci;
 	data.size = sizeof(newci);
 	rv = DB_PUT(pacct_db, &key, &data, 0);
 	if (rv < 0) {
@@ -156,7 +152,7 @@ pacct_add(ci)
 }
 
 int
-pacct_update()
+pacct_update(void)
 {
 	DB *saved_pacct_db;
 	DBT key, data;
@@ -204,20 +200,20 @@ pacct_update()
 }
 
 void
-pacct_print()
+pacct_print(void)
 {
 	BTREEINFO bti;
 	DBT key, data, ndata;
 	DB *output_pacct_db;
-	struct cmdinfo *cip, ci, ci_total, ci_other, ci_junk;
+	struct cmdinfo ci, ci_total, ci_other, ci_junk;
 	int rv;
 
 	memset(&ci_total, 0, sizeof(ci_total));
-	strcpy(ci_total.ci_comm, "");
+	strlcpy(ci_total.ci_comm, "", sizeof ci_total.ci_comm);
 	memset(&ci_other, 0, sizeof(ci_other));
-	strcpy(ci_other.ci_comm, "***other");
+	strlcpy(ci_other.ci_comm, "***other", sizeof ci_other.ci_comm);
 	memset(&ci_junk, 0, sizeof(ci_junk));
-	strcpy(ci_junk.ci_comm, "**junk**");
+	strlcpy(ci_junk.ci_comm, "**junk**", sizeof ci_junk.ci_comm);
 
 	/*
 	 * Retrieve them into new DB, sorted by appropriate key.
@@ -237,8 +233,7 @@ pacct_print()
 	if (rv < 0)
 		warn("retrieving process accounting stats");
 	while (rv == 0) {
-		cip = (struct cmdinfo *) data.data;
-		memcpy(&ci, cip, sizeof(ci));
+		memcpy(&ci, data.data, sizeof(ci));
 
 		/* add to total */
 		add_ci(&ci, &ci_total);
@@ -288,8 +283,7 @@ next:		rv = DB_SEQ(pacct_db, &key, &data, R_NEXT);
 	if (rv < 0)
 		warn("retrieving process accounting report");
 	while (rv == 0) {
-		cip = (struct cmdinfo *) data.data;
-		memcpy(&ci, cip, sizeof(ci));
+		memcpy(&ci, data.data, sizeof(ci));
 
 		print_ci(&ci, &ci_total);
 
@@ -302,22 +296,19 @@ next:		rv = DB_SEQ(pacct_db, &key, &data, R_NEXT);
 }
 
 static int
-check_junk(cip)
-	struct cmdinfo *cip;
+check_junk(struct cmdinfo *cip)
 {
 	char *cp;
 	size_t len;
 
-	fprintf(stderr, "%s (%qu) -- ", cip->ci_comm, cip->ci_calls);
+	fprintf(stderr, "%s (%llu) -- ", cip->ci_comm, cip->ci_calls);
 	cp = fgetln(stdin, &len);
 
 	return (cp && (cp[0] == 'y' || cp[0] == 'Y')) ? 1 : 0;
 }
 
 static void
-add_ci(fromcip, tocip)
-	const struct cmdinfo *fromcip;
-	struct cmdinfo *tocip;
+add_ci(const struct cmdinfo *fromcip, struct cmdinfo *tocip)
 {
 	tocip->ci_calls += fromcip->ci_calls;
 	tocip->ci_etime += fromcip->ci_etime;
@@ -328,8 +319,7 @@ add_ci(fromcip, tocip)
 }
 
 static void
-print_ci(cip, totalcip)
-	const struct cmdinfo *cip, *totalcip;
+print_ci(const struct cmdinfo *cip, const struct cmdinfo *totalcip)
 {
 	double t, c;
 	int uflow;
@@ -342,7 +332,7 @@ print_ci(cip, totalcip)
 	} else
 		uflow = 0;
 
-	printf("%8qu ", cip->ci_calls);
+	printf("%8llu ", cip->ci_calls);
 	if (cflag) {
 		if (cip != totalcip)
 			printf(" %4.2f%%  ",
@@ -399,19 +389,20 @@ print_ci(cip, totalcip)
 		}
 	}
 
-	if (tflag)
+	if (tflag) {
 		if (!uflow)
 			printf("%8.2fre/cp ", cip->ci_etime / (double) (cip->ci_utime + cip->ci_stime));
 		else
-			printf("%8 ", "*ignore*");
+			printf("%8s ", "*ignore*");
+	}
 
 	if (Dflag)
-		printf("%10qutio ", cip->ci_io);
+		printf("%10llutio ", cip->ci_io);
 	else
 		printf("%8.0favio ", cip->ci_io / c);
 
 	if (Kflag)
-		printf("%10quk*sec ", cip->ci_mem);
+		printf("%10lluk*sec ", cip->ci_mem);
 	else
 		printf("%8.0fk ", cip->ci_mem / t);
 

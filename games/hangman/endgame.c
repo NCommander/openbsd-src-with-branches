@@ -1,3 +1,4 @@
+/*	$OpenBSD: endgame.c,v 1.8 2015/12/31 15:20:36 mestre Exp $	*/
 /*	$NetBSD: endgame.c,v 1.3 1995/03/23 08:32:40 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,23 +30,19 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)endgame.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: endgame.c,v 1.3 1995/03/23 08:32:40 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <curses.h>
+#include <termios.h>
 
-# include	"hangman.h"
+#include "hangman.h"
 
 /*
  * endgame:
  *	Do what's necessary at the end of the game
  */
-endgame()
+void
+endgame(void)
 {
-	register char	ch;
+	char	ch;
 
 	prman();
 	if (Errors >= MAXERRS)
@@ -66,8 +59,8 @@ endgame()
 		mvaddstr(MESGY + 1, MESGX, "Another word? ");
 		leaveok(stdscr, FALSE);
 		refresh();
-		if ((ch = readch()) == 'n')
-			die();
+		if ((ch = readch()) == 'n' || ch == CTRL('D'))
+			die(0);
 		else if (ch == 'y')
 			break;
 		mvaddstr(MESGY + 2, MESGX, "Please type 'y' or 'n'");
@@ -79,13 +72,3 @@ endgame()
 	deleteln();
 	deleteln();
 }
-
-
-
-
-
-
-
-
-
-

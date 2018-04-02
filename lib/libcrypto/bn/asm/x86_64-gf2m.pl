@@ -143,12 +143,12 @@ $code.=<<___;
 	mov	(%rsp,$i1,8),$t1
 	mov	$t1,$t0
 	shl	\$`8*$n-4`,$t1
-	movq	$R,$i0
+	movd	$R,$i0
 	shr	\$`64-(8*$n-4)`,$t0
 	xor	$t1,$lo
 	psrldq	\$8,$R
 	xor	$t0,$hi
-	movq	$R,$i1
+	movd	$R,$i1
 	xor	$i0,$lo
 	xor	$i1,$hi
 
@@ -163,23 +163,24 @@ ___
 
 $code.=<<___;
 .extern	OPENSSL_ia32cap_P
+.hidden	OPENSSL_ia32cap_P
 .globl	bn_GF2m_mul_2x2
 .type	bn_GF2m_mul_2x2,\@abi-omnipotent
 .align	16
 bn_GF2m_mul_2x2:
-	mov	OPENSSL_ia32cap_P(%rip),%rax
-	bt	\$33,%rax
+	mov	OPENSSL_ia32cap_P+4(%rip),%eax
+	bt	\$IA32CAP_BIT1_PCLMUL,%eax
 	jnc	.Lvanilla_mul_2x2
 
-	movq		$a1,%xmm0
-	movq		$b1,%xmm1
-	movq		$a0,%xmm2
+	movd		$a1,%xmm0
+	movd		$b1,%xmm1
+	movd		$a0,%xmm2
 ___
 $code.=<<___ if ($win64);
 	movq		40(%rsp),%xmm3
 ___
 $code.=<<___ if (!$win64);
-	movq		$b0,%xmm3
+	movd		$b0,%xmm3
 ___
 $code.=<<___;
 	movdqa		%xmm0,%xmm4

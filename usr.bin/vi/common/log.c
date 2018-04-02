@@ -1,60 +1,30 @@
+/*	$OpenBSD: log.c,v 1.11 2017/01/20 00:55:52 krw Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996
+ *	Keith Bostic.  All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * See the LICENSE file for redistribution information.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)log.c	8.18 (Berkeley) 8/17/94";
-#endif /* not lint */
+#include "config.h"
 
 #include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 
 #include <bitstring.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <libgen.h>
 #include <limits.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <termios.h>
 
-#include "compat.h"
-#include <db.h>
-#include <regex.h>
-
-#include "vi.h"
+#include "common.h"
 
 /*
  * The log consists of records, each containing a type byte and a variable
@@ -62,7 +32,7 @@ static char sccsid[] = "@(#)log.c	8.18 (Berkeley) 8/17/94";
  *
  *	LOG_CURSOR_INIT		MARK
  *	LOG_CURSOR_END		MARK
- *	LOG_LINE_APPEND 	recno_t		char *
+ *	LOG_LINE_APPEND		recno_t		char *
  *	LOG_LINE_DELETE		recno_t		char *
  *	LOG_LINE_INSERT		recno_t		char *
  *	LOG_LINE_RESET_F	recno_t		char *
@@ -91,31 +61,31 @@ static char sccsid[] = "@(#)log.c	8.18 (Berkeley) 8/17/94";
  * behaved that way.
  */
 
-static int	log_cursor1 __P((SCR *, EXF *, int));
+static int	log_cursor1(SCR *, int);
+static void	log_err(SCR *, char *, int);
 #if defined(DEBUG) && 0
-static void	log_trace __P((SCR *, char *, recno_t, u_char *));
+static void	log_trace(SCR *, char *, recno_t, u_char *);
 #endif
 
 /* Try and restart the log on failure, i.e. if we run out of memory. */
 #define	LOG_ERR {							\
-	msgq(sp, M_ERR, "Error: %s/%d: put log error: %s",		\
-	    tail(__FILE__), __LINE__, strerror(errno));			\
-	(void)ep->log->close(ep->log);					\
-	if (!log_init(sp, ep))						\
-		msgq(sp, M_ERR, "Log restarted");			\
+	log_err(sp, __FILE__, __LINE__);				\
 	return (1);							\
 }
 
 /*
  * log_init --
  *	Initialize the logging subsystem.
+ *
+ * PUBLIC: int log_init(SCR *, EXF *);
  */
 int
-log_init(sp, ep)
-	SCR *sp;
-	EXF *ep;
+log_init(SCR *sp, EXF *ep)
 {
 	/*
+	 * !!!
+	 * ep MAY NOT BE THE SAME AS sp->ep, DON'T USE THE LATTER.
+	 *
 	 * Initialize the buffer.  The logging subsystem has its own
 	 * buffers because the global ones are almost by definition
 	 * going to be in use when the log runs.
@@ -129,7 +99,7 @@ log_init(sp, ep)
 	ep->log = dbopen(NULL, O_CREAT | O_NONBLOCK | O_RDWR,
 	    S_IRUSR | S_IWUSR, DB_RECNO, NULL);
 	if (ep->log == NULL) {
-		msgq(sp, M_ERR, "log db: %s", strerror(errno));
+		msgq(sp, M_SYSERR, "Log file");
 		F_SET(ep, F_NOLOG);
 		return (1);
 	}
@@ -140,20 +110,22 @@ log_init(sp, ep)
 /*
  * log_end --
  *	Close the logging subsystem.
+ *
+ * PUBLIC: int log_end(SCR *, EXF *);
  */
 int
-log_end(sp, ep)
-	SCR *sp;
-	EXF *ep;
+log_end(SCR *sp, EXF *ep)
 {
+	/*
+	 * !!!
+	 * ep MAY NOT BE THE SAME AS sp->ep, DON'T USE THE LATTER.
+	 */
 	if (ep->log != NULL) {
 		(void)(ep->log->close)(ep->log);
 		ep->log = NULL;
 	}
-	if (ep->l_lp != NULL) {
-		free(ep->l_lp);
-		ep->l_lp = NULL;
-	}
+	free(ep->l_lp);
+	ep->l_lp = NULL;
 	ep->l_len = 0;
 	ep->l_cursor.lno = 1;		/* XXX Any valid recno. */
 	ep->l_cursor.cno = 0;
@@ -164,12 +136,18 @@ log_end(sp, ep)
 /*
  * log_cursor --
  *	Log the current cursor position, starting an event.
+ *
+ * PUBLIC: int log_cursor(SCR *);
  */
 int
-log_cursor(sp, ep)
-	SCR *sp;
-	EXF *ep;
+log_cursor(SCR *sp)
 {
+	EXF *ep;
+
+	ep = sp->ep;
+	if (F_ISSET(ep, F_NOLOG))
+		return (0);
+
 	/*
 	 * If any changes were made since the last cursor init,
 	 * put out the ending cursor record.
@@ -177,7 +155,7 @@ log_cursor(sp, ep)
 	if (ep->l_cursor.lno == OOBLNO) {
 		ep->l_cursor.lno = sp->lno;
 		ep->l_cursor.cno = sp->cno;
-		return (log_cursor1(sp, ep, LOG_CURSOR_END));
+		return (log_cursor1(sp, LOG_CURSOR_END));
 	}
 	ep->l_cursor.lno = sp->lno;
 	ep->l_cursor.cno = sp->cno;
@@ -189,13 +167,12 @@ log_cursor(sp, ep)
  *	Actually push a cursor record out.
  */
 static int
-log_cursor1(sp, ep, type)
-	SCR *sp;
-	EXF *ep;
-	int type;
+log_cursor1(SCR *sp, int type)
 {
 	DBT data, key;
+	EXF *ep;
 
+	ep = sp->ep;
 	BINC_RET(sp, ep->l_lp, ep->l_len, sizeof(u_char) + sizeof(MARK));
 	ep->l_lp[0] = type;
 	memmove(ep->l_lp + sizeof(u_char), &ep->l_cursor, sizeof(MARK));
@@ -221,18 +198,18 @@ log_cursor1(sp, ep, type)
 /*
  * log_line --
  *	Log a line change.
+ *
+ * PUBLIC: int log_line(SCR *, recno_t, u_int);
  */
 int
-log_line(sp, ep, lno, action)
-	SCR *sp;
-	EXF *ep;
-	recno_t lno;
-	u_int action;
+log_line(SCR *sp, recno_t lno, u_int action)
 {
 	DBT data, key;
+	EXF *ep;
 	size_t len;
 	char *lp;
 
+	ep = sp->ep;
 	if (F_ISSET(ep, F_NOLOG))
 		return (0);
 
@@ -246,7 +223,7 @@ log_line(sp, ep, lno, action)
 
 	/* Put out one initial cursor record per set of changes. */
 	if (ep->l_cursor.lno != OOBLNO) {
-		if (log_cursor1(sp, ep, LOG_CURSOR_INIT))
+		if (log_cursor1(sp, LOG_CURSOR_INIT))
 			return (1);
 		ep->l_cursor.lno = OOBLNO;
 	}
@@ -258,19 +235,17 @@ log_line(sp, ep, lno, action)
 	 * so fake an empty length line.
 	 */
 	if (action == LOG_LINE_RESET_B) {
-		if ((lp = file_rline(sp, ep, lno, &len)) == NULL) {
+		if (db_get(sp, lno, DBG_NOCACHE, &lp, &len)) {
 			if (lno != 1) {
-				GETLINE_ERR(sp, lno);
+				db_err(sp, lno);
 				return (1);
 			}
 			len = 0;
 			lp = "";
 		}
 	} else
-		if ((lp = file_gline(sp, ep, lno, &len)) == NULL) {
-			GETLINE_ERR(sp, lno);
+		if (db_get(sp, lno, DBG_FATAL, &lp, &len))
 			return (1);
-		}
 	BINC_RET(sp,
 	    ep->l_lp, ep->l_len, len + sizeof(u_char) + sizeof(recno_t));
 	ep->l_lp[0] = action;
@@ -320,21 +295,22 @@ log_line(sp, ep, lno, action)
  *	aren't any operations that just put out a log record -- this
  *	would mean that undo operations would only reset marks, and not
  *	cause any other change.
+ *
+ * PUBLIC: int log_mark(SCR *, LMARK *);
  */
 int
-log_mark(sp, ep, lmp)
-	SCR *sp;
-	EXF *ep;
-	LMARK *lmp;
+log_mark(SCR *sp, LMARK *lmp)
 {
 	DBT data, key;
+	EXF *ep;
 
+	ep = sp->ep;
 	if (F_ISSET(ep, F_NOLOG))
 		return (0);
 
 	/* Put out one initial cursor record per set of changes. */
 	if (ep->l_cursor.lno != OOBLNO) {
-		if (log_cursor1(sp, ep, LOG_CURSOR_INIT))
+		if (log_cursor1(sp, LOG_CURSOR_INIT))
 			return (1);
 		ep->l_cursor.lno = OOBLNO;
 	}
@@ -363,20 +339,21 @@ log_mark(sp, ep, lmp)
 /*
  * Log_backward --
  *	Roll the log backward one operation.
+ *
+ * PUBLIC: int log_backward(SCR *, MARK *);
  */
 int
-log_backward(sp, ep, rp)
-	SCR *sp;
-	EXF *ep;
-	MARK *rp;
+log_backward(SCR *sp, MARK *rp)
 {
 	DBT key, data;
+	EXF *ep;
 	LMARK lm;
 	MARK m;
 	recno_t lno;
 	int didop;
 	u_char *p;
 
+	ep = sp->ep;
 	if (F_ISSET(ep, F_NOLOG)) {
 		msgq(sp, M_ERR,
 		    "Logging not being performed, undo not possible");
@@ -413,14 +390,14 @@ log_backward(sp, ep, rp)
 		case LOG_LINE_INSERT:
 			didop = 1;
 			memmove(&lno, p + sizeof(u_char), sizeof(recno_t));
-			if (file_dline(sp, ep, lno))
+			if (db_delete(sp, lno))
 				goto err;
 			++sp->rptlines[L_DELETED];
 			break;
 		case LOG_LINE_DELETE:
 			didop = 1;
 			memmove(&lno, p + sizeof(u_char), sizeof(recno_t));
-			if (file_iline(sp, ep, lno, p + sizeof(u_char) +
+			if (db_insert(sp, lno, p + sizeof(u_char) +
 			    sizeof(recno_t), data.size - sizeof(u_char) -
 			    sizeof(recno_t)))
 				goto err;
@@ -431,7 +408,7 @@ log_backward(sp, ep, rp)
 		case LOG_LINE_RESET_B:
 			didop = 1;
 			memmove(&lno, p + sizeof(u_char), sizeof(recno_t));
-			if (file_sline(sp, ep, lno, p + sizeof(u_char) +
+			if (db_set(sp, lno, p + sizeof(u_char) +
 			    sizeof(recno_t), data.size - sizeof(u_char) -
 			    sizeof(recno_t)))
 				goto err;
@@ -445,7 +422,7 @@ log_backward(sp, ep, rp)
 			memmove(&lm, p + sizeof(u_char), sizeof(LMARK));
 			m.lno = lm.lno;
 			m.cno = lm.cno;
-			if (mark_set(sp, ep, lm.name, &m, 0))
+			if (mark_set(sp, lm.name, &m, 0))
 				goto err;
 			break;
 		default:
@@ -466,18 +443,20 @@ err:	F_CLR(ep, F_NOLOG);
  * unless a change was made.  If you do a change, move off the line,
  * then move back on and do a 'U', the line will be restored to the way
  * it was before the original change.
+ *
+ * PUBLIC: int log_setline(SCR *);
  */
 int
-log_setline(sp, ep)
-	SCR *sp;
-	EXF *ep;
+log_setline(SCR *sp)
 {
 	DBT key, data;
+	EXF *ep;
 	LMARK lm;
 	MARK m;
 	recno_t lno;
 	u_char *p;
 
+	ep = sp->ep;
 	if (F_ISSET(ep, F_NOLOG)) {
 		msgq(sp, M_ERR,
 		    "Logging not being performed, undo not possible");
@@ -523,7 +502,7 @@ log_setline(sp, ep)
 		case LOG_LINE_RESET_B:
 			memmove(&lno, p + sizeof(u_char), sizeof(recno_t));
 			if (lno == sp->lno &&
-			    file_sline(sp, ep, lno, p + sizeof(u_char) +
+			    db_set(sp, lno, p + sizeof(u_char) +
 			    sizeof(recno_t), data.size - sizeof(u_char) -
 			    sizeof(recno_t)))
 				goto err;
@@ -535,7 +514,7 @@ log_setline(sp, ep)
 			memmove(&lm, p + sizeof(u_char), sizeof(LMARK));
 			m.lno = lm.lno;
 			m.cno = lm.cno;
-			if (mark_set(sp, ep, lm.name, &m, 0))
+			if (mark_set(sp, lm.name, &m, 0))
 				goto err;
 			break;
 		default:
@@ -550,23 +529,24 @@ err:	F_CLR(ep, F_NOLOG);
 /*
  * Log_forward --
  *	Roll the log forward one operation.
+ *
+ * PUBLIC: int log_forward(SCR *, MARK *);
  */
 int
-log_forward(sp, ep, rp)
-	SCR *sp;
-	EXF *ep;
-	MARK *rp;
+log_forward(SCR *sp, MARK *rp)
 {
 	DBT key, data;
+	EXF *ep;
 	LMARK lm;
 	MARK m;
 	recno_t lno;
 	int didop;
 	u_char *p;
 
+	ep = sp->ep;
 	if (F_ISSET(ep, F_NOLOG)) {
 		msgq(sp, M_ERR,
-		    "Logging not being performed, roll-forward not possible");
+	    "Logging not being performed, roll-forward not possible");
 		return (1);
 	}
 
@@ -601,7 +581,7 @@ log_forward(sp, ep, rp)
 		case LOG_LINE_INSERT:
 			didop = 1;
 			memmove(&lno, p + sizeof(u_char), sizeof(recno_t));
-			if (file_iline(sp, ep, lno, p + sizeof(u_char) +
+			if (db_insert(sp, lno, p + sizeof(u_char) +
 			    sizeof(recno_t), data.size - sizeof(u_char) -
 			    sizeof(recno_t)))
 				goto err;
@@ -610,7 +590,7 @@ log_forward(sp, ep, rp)
 		case LOG_LINE_DELETE:
 			didop = 1;
 			memmove(&lno, p + sizeof(u_char), sizeof(recno_t));
-			if (file_dline(sp, ep, lno))
+			if (db_delete(sp, lno))
 				goto err;
 			++sp->rptlines[L_DELETED];
 			break;
@@ -619,7 +599,7 @@ log_forward(sp, ep, rp)
 		case LOG_LINE_RESET_F:
 			didop = 1;
 			memmove(&lno, p + sizeof(u_char), sizeof(recno_t));
-			if (file_sline(sp, ep, lno, p + sizeof(u_char) +
+			if (db_set(sp, lno, p + sizeof(u_char) +
 			    sizeof(recno_t), data.size - sizeof(u_char) -
 			    sizeof(recno_t)))
 				goto err;
@@ -633,7 +613,7 @@ log_forward(sp, ep, rp)
 			memmove(&lm, p + sizeof(u_char), sizeof(LMARK));
 			m.lno = lm.lno;
 			m.cno = lm.cno;
-			if (mark_set(sp, ep, lm.name, &m, 0))
+			if (mark_set(sp, lm.name, &m, 0))
 				goto err;
 			break;
 		default:
@@ -645,13 +625,25 @@ err:	F_CLR(ep, F_NOLOG);
 	return (1);
 }
 
+/*
+ * log_err --
+ *	Try and restart the log on failure, i.e. if we run out of memory.
+ */
+static void
+log_err(SCR *sp, char *file, int line)
+{
+	EXF *ep;
+
+	msgq(sp, M_SYSERR, "%s/%d: log put error", basename(file), line);
+	ep = sp->ep;
+	(void)ep->log->close(ep->log);
+	if (!log_init(sp, ep))
+		msgq(sp, M_ERR, "Log restarted");
+}
+
 #if defined(DEBUG) && 0
 static void
-log_trace(sp, msg, rno, p)
-	SCR *sp;
-	char *msg;
-	recno_t rno;
-	u_char *p;
+log_trace(SCR *sp, char *msg, recno_t rno, u_char *p)
 {
 	LMARK lm;
 	MARK m;

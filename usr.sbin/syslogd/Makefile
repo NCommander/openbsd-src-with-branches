@@ -1,9 +1,10 @@
-#	from: @(#)Makefile	5.7 (Berkeley) 9/30/90
-#	$Id: Makefile,v 1.5 1994/12/22 11:43:28 cgd Exp $
+#	$OpenBSD: Makefile,v 1.7 2015/01/18 19:37:59 bluhm Exp $
 
 PROG=	syslogd
-SRCS=	syslogd.c ttymsg.c
-.PATH:	${.CURDIR}/../../usr.bin/wall
+SRCS=	evbuffer_tls.c log.c privsep.c privsep_fdpass.c	ringbuf.c syslogd.c \
+	ttymsg.c
 MAN=	syslogd.8 syslog.conf.5
+LDADD=	-levent -ltls -lssl -lcrypto
+DPADD=	${LIBEVENT} ${LIBTLS} ${LIBSSL} ${LIBCRYPTO}
 
 .include <bsd.prog.mk>

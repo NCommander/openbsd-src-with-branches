@@ -1,0 +1,4 @@
+# .USE should be safeguarded against accidental usage
+# $OpenBSD$
+
+a: .USE

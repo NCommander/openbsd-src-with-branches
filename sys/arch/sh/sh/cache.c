@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cache.c,v 1.4 2008/06/26 05:42:13 ray Exp $	*/
 /*	$NetBSD: cache.c,v 1.11 2006/01/02 23:37:34 uwe Exp $	*/
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -73,9 +66,10 @@ int sh_cache_line_size;
 int sh_cache_ram_mode;
 int sh_cache_index_mode_icache;
 int sh_cache_index_mode_dcache;
+int sh_cache_prefer_mask;
 
 void
-sh_cache_init()
+sh_cache_init(void)
 {
 #ifdef CACHE_DEBUG
 	return;
@@ -91,7 +85,7 @@ sh_cache_init()
 }
 
 void
-sh_cache_information()
+sh_cache_information(void)
 {
 #ifdef CACHE_DEBUG
 	printf("*** USE CPU INDEPENDENT CACHE OPS. ***\n");
@@ -102,51 +96,52 @@ sh_cache_information()
 	printf("cpu0: %dKB/%dB",
 	       sh_cache_size_icache >> 10, sh_cache_line_size);
 	if (sh_cache_ways > 1)
-		printf(" %d-way set-associative", sh_cache_ways);
+		printf(" %d-way associative", sh_cache_ways);
 	else
-		printf(" direct-mapped");
+		printf(" direct");
 	if (sh_cache_unified)
-		printf(" I/D-unified");
+		printf(" I/D-");
 	else
-		printf(" Instruction");
-	printf(" cache.");
+		printf(" I-");
+	printf("cache");
 	if (!sh_cache_enable_icache)
 		printf(" DISABLED");
 	if (sh_cache_unified && sh_cache_ram_mode)
 		printf(" RAM-mode");
 	if (sh_cache_index_mode_icache)
 		printf(" INDEX-mode");
-	printf("\n");
 
 	/* D-cache */
 	if (!sh_cache_unified) {
-		printf("cpu0: %dKB/%dB", sh_cache_size_dcache >> 10,
+		printf(", %dKB/%dB", sh_cache_size_dcache >> 10,
 		    sh_cache_line_size);
 		if (sh_cache_ways > 1)
-			printf(" %d-way set-associative", sh_cache_ways);
+			printf(" %d-way associative", sh_cache_ways);
 		else
-			printf(" direct-mapped");
-		printf(" Data cache.");
+			printf(" direct");
+		printf(" D-cache");
 		if (!sh_cache_enable_dcache)
 			printf(" DISABLED");
 		if (sh_cache_ram_mode)
 			printf(" RAM-mode");
 		if (sh_cache_index_mode_dcache)
 			printf(" INDEX-mode");
-		printf("\n");
 	}
+	printf("\n");
 
+#ifdef CACHE_DEBUG
 	/* Write-through/back */
 	printf("cpu0: P0, U0, P3 write-%s; P1 write-%s\n",
 	    sh_cache_write_through_p0_u0_p3 ? "through" : "back",
 	    sh_cache_write_through_p1 ? "through" : "back");
+#endif
 }
 
 /*
  * CPU-independent cache flush.
  */
 void
-__cache_flush()
+__cache_flush(void)
 {
 	volatile int *p = (int *)SH3_PHYS_TO_P1SEG(IOM_RAM_BEGIN);
 	int i;

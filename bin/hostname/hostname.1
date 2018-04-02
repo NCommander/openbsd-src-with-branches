@@ -1,3 +1,4 @@
+.\"	$OpenBSD: hostname.1,v 1.20 2009/09/10 16:20:12 jmc Exp $
 .\"	$NetBSD: hostname.1,v 1.11 1995/09/07 06:28:39 jtc Exp $
 .\"
 .\" Copyright (c) 1983, 1988, 1990, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,9 +30,9 @@
 .\"
 .\"	@(#)hostname.1	8.2 (Berkeley) 4/28/95
 .\"
-.Dd April 28, 1995
+.Dd $Mdocdate: September 10 2009 $
 .Dt HOSTNAME 1
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm hostname
 .Nd set or print name of current host system
@@ -44,26 +41,35 @@
 .Op Fl s
 .Op Ar name-of-host
 .Sh DESCRIPTION
-.Nm Hostname
-prints the name of the current host.  The super-user can
-set the host name by supplying an argument; this is usually done in the
-network initialization script
-.Pa /etc/netstart ,
-normally run at boot
-time.
+The
+.Nm
+utility is used to set or print the name of the current host.
+If no argument is given,
+the name of the current host is printed.
 .Pp
-Options:
-.Bl -tag -width flag
+The host name can be set by the superuser either by specifying
+.Ar name-of-host ,
+or by supplying a
+.Xr myname 5
+file,
+which is used at system boot time by
+.Xr netstart 8
+to initialize the hostname.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
 .It Fl s
 Trims off any domain information from the printed
 name.
 .El
 .Sh SEE ALSO
 .Xr domainname 1 ,
-.Xr gethostname 2 ,
-.Xr sethostname 2
+.Xr gethostname 3 ,
+.Xr myname 5 ,
+.Xr hostname 7 ,
+.Xr netstart 8
 .Sh HISTORY
 The
-.Nm hostname
+.Nm
 utility appeared in
 .Bx 4.2 .

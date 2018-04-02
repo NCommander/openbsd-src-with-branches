@@ -1,58 +1,41 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile.inc,v 1.21 2016/11/06 16:04:20 tb Exp $
 
-CFLAGS=${DEBUG} -O2 -Wall -Werror
+CFLAGS=${DEBUG} -Oz -Wall -Werror
 CPPFLAGS+=-I${S} -I. -I${.CURDIR}
-SACFLAGS=-nostdinc -fno-builtin
-SACFLAGS+=-mdisable-fpregs -mfast-indirect-calls -mpa-risc-1-0
-SACFLAGS+=-D_STANDALONE -I${SADIR}/libsa
-DEBUGFLAGS=-DDEBUG
-# DEBUGFLAGS+=-DEXEC_DEBUG
-# DEBUGFLAGS+=-DALLOC_TRACE
-# DEBUGFLAGS+=-DBOOTP_DEBUG -DNETIF_DEBUG -DETHER_DEBUG
-# DEBUGFLAGS+=-DNFS_DEBUG -DRPC_DEBUG -DRARP_DEBUG
-LINKADDR=0x500000
-LOADADDR=0x500000
-HEAP_LIMIT=0x600000
-#ROM_SIZE=32768
+SACFLAGS=-nostdinc -fno-builtin -D_STANDALONE -I${STANDIR}/libsa
+SACFLAGS+=-mdisable-fpregs -mfast-indirect-calls -mpa-risc-1-1
+SACFLAGS+=-fno-stack-protector
+#DEBUGFLAGS=-DDEBUG
+#DEBUGFLAGS+=-DPDCDEBUG
+#DEBUGFLAGS+=-DLIFDEBUG
+#DEBUGFLAGS+=-DEXEC_DEBUG
+#DEBUGFLAGS+=-DALLOC_TRACE
+LINKADDR=0xf80000
+LOADADDR=0xf80000
+HEAP_LIMIT=0xff8000
 CLEANFILES+=	machine
 
-.if !make(libdep) && !make(sadep) && !make(salibdir) && !make(kernlibdir) && !make(obj) && !(defined(PROG) && ${PROG} == "mkboot")
+.if !make(clean) && !make(cleandir) && !make(includes) && !make(libdep) && \
+    !make(sadep) && !make(salibdir) && !make(obj) && \
+    (${MACHINE} == "hppa" && !(defined(PROG) && ${PROG} == "mkboot"))
 .BEGIN:
 	@([ -h machine ] || ln -s $(S)/arch/hppa/include machine)
 .endif
 
-.if $(CC) != $(HOSTCC)
-.S.o .s.o:
-	@echo "${CPP} ${CPPFLAGS} ${CFLAGS:M-[ID]*} ${AINC} ${.IMPSRC} | \
-	${AS} -o ${.TARGET}"
-	@${CPP} ${CPPFLAGS} ${CFLAGS:M-[ID]*} ${AINC} ${.IMPSRC} | \
-	${AS} -o ${.TARGET}.o
-	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
-	@rm -f ${.TARGET}.o
-
-.c.o:
-	${CC} -S ${CFLAGS} ${CPPFLAGS} ${CFLAGS:M-[ID]*} ${.IMPSRC}
-	${AS} $*.s -o ${.TARGET}.o
-	@rm $*.s
-	@${LD} -x -r ${.TARGET}.o -o ${.TARGET}
-	@rm -f ${.TARGET}.o
-.endif
-
-.if exists(${SADIR}/libsa/libsa.a)
-LIBSA=${SADIR}/libsa/libsa.a
+.if exists(${STANDIR}/libsa/libsa.a)
+LIBSA=${STANDIR}/libsa/libsa.a
 .else
-LIBSA=${SADIR}/libsa/${__objdir}/libsa.a
+LIBSA=${STANDIR}/libsa/${__objdir}/libsa.a
 .endif
-.if exists(${SADIR}/libkern/libkern.a)
-LIBKERN=${SADIR}/libkern/libkern.a
+.if exists(${STANDIR}/libz/libz.a)
+LIBZ=${STANDIR}/libz/libz.a
 .else
-LIBKERN=${SADIR}/libkern/${__objdir}/libkern.a
+LIBZ=${STANDIR}/libz/${__objdir}/libz.a
 .endif
-.if exists(${SADIR}/libz/libz.a)
-LIBZ=${SADIR}/libz/libz.a
+.if exists(${STANDIR}/mkboot/mkboot)
+MKBOOT=${STANDIR}/mkboot/mkboot
 .else
-LIBZ=${SADIR}/libz/${__objdir}/libz.a
+MKBOOT=${STANDIR}/mkboot/${__objdir}/mkboot
 .endif
 
-# NO_NET=no_net
 BINDIR=	/usr/mdec

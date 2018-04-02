@@ -1,4 +1,4 @@
-/* crypto/camellia/camellia_locl.h -*- mode:C; c-file-style: "eay" -*- */
+/* $OpenBSD: cmll_locl.h,v 1.5 2014/11/13 20:01:58 miod Exp $ */
 /* ====================================================================
  * Copyright 2006 NTT (Nippon Telegraph and Telephone Corporation) . 
  * ALL RIGHTS RESERVED.
@@ -68,19 +68,22 @@
 #ifndef HEADER_CAMELLIA_LOCL_H
 #define HEADER_CAMELLIA_LOCL_H
 
+__BEGIN_HIDDEN_DECLS
+
 typedef unsigned int  u32;
 typedef unsigned char u8;
 
 int Camellia_Ekeygen(int keyBitLength, const u8 *rawKey,
-		     KEY_TABLE_TYPE keyTable);
-void Camellia_EncryptBlock_Rounds(int grandRounds, const u8 plaintext[], 
-		const KEY_TABLE_TYPE keyTable, u8 ciphertext[]);
-void Camellia_DecryptBlock_Rounds(int grandRounds, const u8 ciphertext[], 
-		const KEY_TABLE_TYPE keyTable, u8 plaintext[]);
-void Camellia_EncryptBlock(int keyBitLength, const u8 plaintext[], 
-		const KEY_TABLE_TYPE keyTable, u8 ciphertext[]);
-void Camellia_DecryptBlock(int keyBitLength, const u8 ciphertext[], 
-		const KEY_TABLE_TYPE keyTable, u8 plaintext[]);
-int private_Camellia_set_key(const unsigned char *userKey, const int bits,
-			     CAMELLIA_KEY *key);
+	    KEY_TABLE_TYPE keyTable);
+void Camellia_EncryptBlock_Rounds(int grandRounds, const u8 plaintext[],
+	    const KEY_TABLE_TYPE keyTable, u8 ciphertext[]);
+void Camellia_DecryptBlock_Rounds(int grandRounds, const u8 ciphertext[],
+	    const KEY_TABLE_TYPE keyTable, u8 plaintext[]);
+void Camellia_EncryptBlock(int keyBitLength, const u8 plaintext[],
+	    const KEY_TABLE_TYPE keyTable, u8 ciphertext[]);
+void Camellia_DecryptBlock(int keyBitLength, const u8 ciphertext[],
+	    const KEY_TABLE_TYPE keyTable, u8 plaintext[]);
+
+__END_HIDDEN_DECLS
+
 #endif /* #ifndef HEADER_CAMELLIA_LOCL_H */

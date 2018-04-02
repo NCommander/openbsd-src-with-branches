@@ -132,6 +132,13 @@ static bfd_boolean ar_truncate = FALSE;
    program.  */
 static bfd_boolean full_pathname = FALSE;
 
+/* Whether archive contents should be deterministic with uid, gid,
+   and mtime set to zero and permissions set to 644.  This breaks
+   later use of the 'u' option as well as make's lib(member) feature.
+   Note that the symbol index may have a non-zero timestamp to meet
+   archive format requirements.  */
+static bfd_boolean deterministic = FALSE;
+
 int interactive = 0;
 
 static void
@@ -236,6 +243,8 @@ usage (int help)
       fprintf (s, _("  [P]          - use full path names when matching\n"));
       fprintf (s, _("  [o]          - preserve original dates\n"));
       fprintf (s, _("  [u]          - only replace files that are newer than current archive contents\n"));
+      fprintf (s, _("  [D]          - set deterministic attributes in archive\n"));
+      fprintf (s, _("  [U]          - set accurate attributes in archive\n"));
       fprintf (s, _(" generic modifiers:\n"));
       fprintf (s, _("  [c]          - do not warn if the library had to be created\n"));
       fprintf (s, _("  [s]          - create an archive index (cf. ranlib)\n"));
@@ -361,6 +370,9 @@ main (int argc, char **argv)
 
   program_name = argv[0];
   xmalloc_set_program_name (program_name);
+
+  if (pledge ("stdio rpath wpath cpath fattr", NULL) == -1)
+    fatal (_("pledge: %s"), strerror (errno));
 
   expandargv (&argc, &argv);
 
@@ -554,6 +566,12 @@ main (int argc, char **argv)
 	      break;
 	    case 'P':
 	      full_pathname = TRUE;
+	      break;
+	    case 'D':
+	      deterministic = TRUE;
+	      break;
+	    case 'U':
+	      deterministic = FALSE;
 	      break;
 	    default:
 	      /* xgettext:c-format */
@@ -900,7 +918,7 @@ extract_file (bfd *abfd)
   output_file = NULL;
   output_filename = NULL;
 
-  chmod (bfd_get_filename (abfd), buf.st_mode);
+  chmod (bfd_get_filename (abfd), buf.st_mode & 0777);
 
   if (preserve_dates)
     {
@@ -922,7 +940,7 @@ write_archive (bfd *iarch)
 
   old_name = xmalloc (strlen (bfd_get_filename (iarch)) + 1);
   strcpy (old_name, bfd_get_filename (iarch));
-  new_name = make_tempname (old_name);
+  new_name = make_tempname (old_name, 0);
 
   output_filename = new_name;
 
@@ -945,6 +963,9 @@ write_archive (bfd *iarch)
          archives.  */
       obfd->flags |= BFD_TRADITIONAL_FORMAT;
     }
+
+  if (deterministic)
+    obfd->flags |= BFD_DETERMINISTIC;
 
   if (!bfd_set_archive_head (obfd, contents_head))
     bfd_fatal (old_name);

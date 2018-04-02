@@ -1,6 +1,8 @@
-#	$NetBSD: Makefile.inc,v 1.1 1995/03/20 14:45:47 mycroft Exp $
+#	$OpenBSD: Makefile.inc,v 1.5 2014/12/04 12:10:26 deraadt Exp $
 
-SRCS+=	bcmp.c bcopy.c bzero.c  ffs.c index.c memchr.c memcmp.c memset.c \
-	rindex.c strcat.c strcmp.c strcpy.c strcspn.c strlen.c \
+SRCS+=	memcpy.c memmove.S \
+	strchr.c strrchr.c \
+	bcmp.c bzero.c ffs.c memchr.c memcmp.c memset.c strcat.c \
+	strcmp.c strcpy.c strcspn.c strlen.c strlcat.c strlcpy.c \
 	strncat.c strncmp.c strncpy.c strpbrk.c strsep.c \
 	strspn.c strstr.c swab.c

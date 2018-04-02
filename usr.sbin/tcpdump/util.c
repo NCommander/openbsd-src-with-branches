@@ -1,7 +1,7 @@
-/*	$NetBSD: util.c,v 1.3 1995/03/06 19:11:53 mycroft Exp $	*/
+/*	$OpenBSD: util.c,v 1.26 2015/09/27 05:25:01 guenther Exp $	*/
 
 /*
- * Copyright (c) 1990, 1991, 1993, 1994
+ * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -21,48 +21,42 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#ifndef lint
-static char rcsid[] =
-    "@(#) Header: util.c,v 1.28 94/06/12 14:30:31 leres Exp (LBL)";
-#endif
-
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/file.h>
+#include <sys/limits.h>
 #include <sys/stat.h>
 
 #include <ctype.h>
-#ifdef SOLARIS
+#include <err.h>
+#include <errno.h>
+#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
-#ifdef __STDC__
-#include <stdlib.h>
-#endif
+#include <pcap.h>
 #include <stdio.h>
-#if __STDC__
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
+#include <stdlib.h>
 #include <string.h>
+#ifdef TIME_WITH_SYS_TIME
+#include <time.h>
+#endif
 #include <unistd.h>
 
 #include "interface.h"
-
+#include "privsep.h"
 /*
  * Print out a filename (or other ascii string).
  * If ep is NULL, assume no truncation check is needed.
  * Return true if truncated.
  */
 int
-fn_print(register const u_char *s, register const u_char *ep)
+fn_print(const u_char *s, const u_char *ep)
 {
-	register int ret;
-	register u_char c;
+	int ret;
+	u_char c;
 
 	ret = 1;			/* assume truncated */
-	putchar('"');
 	while (ep == NULL || s < ep) {
 		c = *s++;
 		if (c == '\0') {
@@ -80,7 +74,6 @@ fn_print(register const u_char *s, register const u_char *ep)
 		}
 		putchar(c);
 	}
-	putchar('"');
 	return(ret);
 }
 
@@ -90,14 +83,12 @@ fn_print(register const u_char *s, register const u_char *ep)
  * Return true if truncated.
  */
 int
-fn_printn(register const u_char *s, register u_int n,
-	  register const u_char *ep)
+fn_printn(const u_char *s, u_int n, const u_char *ep)
 {
-	register int ret;
-	register u_char c;
+	int ret;
+	u_char c;
 
 	ret = 1;			/* assume truncated */
-	putchar('"');
 	while (ep == NULL || s < ep) {
 		if (n-- <= 0) {
 			ret = 0;
@@ -115,7 +106,6 @@ fn_printn(register const u_char *s, register u_int n,
 		}
 		putchar(c);
 	}
-	putchar('"');
 	return(ret);
 }
 
@@ -123,19 +113,72 @@ fn_printn(register const u_char *s, register u_int n,
  * Print the timestamp
  */
 void
-ts_print(register const struct timeval *tvp)
+ts_print(const struct bpf_timeval *tvp)
 {
-	register int s;
-	extern int32 thiszone;
+	int s;
+#define TSBUFLEN 32
+	static char buf[TSBUFLEN];
+	static struct bpf_timeval last;
+	struct timeval diff;
+	time_t t;
 
-	if (tflag > 0) {
+	if (Iflag && device)
+		(void)printf("%s ", device);
+	switch(tflag){
+	case 0:
+		break;
+	case -1:
+		/* Unix timeval style */
+		(void)printf("%u.%06u ",
+		    (u_int32_t)tvp->tv_sec, (u_int32_t)tvp->tv_usec);
+		break;
+	case -2:
+		t=tvp->tv_sec;
+		strftime(buf, TSBUFLEN, "%b %d %T", priv_localtime(&t));
+		printf("%s.%06u ", buf, (u_int32_t)tvp->tv_usec);
+		break;
+	case -3:
+	case -4:
+		/* time since first/last frame */
+		timersub(tvp, &last, &diff);
+		(void)printf("%u.%06u ",
+		    (u_int32_t)diff.tv_sec, (u_int32_t)diff.tv_usec);
+		if (tflag == -3 || (last.tv_sec == 0 && last.tv_usec == 0))
+			last = *tvp;
+		break;
+	default:
 		/* Default */
 		s = (tvp->tv_sec + thiszone) % 86400;
-		(void)printf("%02d:%02d:%02d.%06d ",
-		    s / 3600, (s % 3600) / 60, s % 60, tvp->tv_usec);
-	} else if (tflag < 0) {
-		/* Unix timeval style */
-		(void)printf("%d.%06d ", tvp->tv_sec, tvp->tv_usec);
+		(void)printf("%02d:%02d:%02d.%06u ",
+		    s / 3600, (s % 3600) / 60, s % 60, (u_int32_t)tvp->tv_usec);
+		break;
+	}
+}
+
+/*
+ * Print a relative number of seconds (e.g. hold time, prune timer)
+ * in the form 5m1s.  This does no truncation, so 32230861 seconds
+ * is represented as 1y1w1d1h1m1s.
+ */
+void
+relts_print(int secs)
+{
+	static char *lengths[] = {"y", "w", "d", "h", "m", "s"};
+	static int seconds[] = {31536000, 604800, 86400, 3600, 60, 1};
+	char **l = lengths;
+	int *s = seconds;
+
+	if (secs <= 0) {
+		(void)printf("0s");
+		return;
+	}
+	while (secs > 0) {
+		if (secs >= *s) {
+			(void)printf("%d%s", secs / *s, *l);
+			secs -= (secs / *s) * *s;
+		}
+		s++;
+		l++;
 	}
 }
 
@@ -143,8 +186,7 @@ ts_print(register const struct timeval *tvp)
  * Convert a token value to a string; use "fmt" if not found.
  */
 const char *
-tok2str(register const struct token *lp, register const char *fmt,
-	register int v)
+tok2str(const struct tok *lp, const char *fmt, int v)
 {
 	static char buf[128];
 
@@ -155,183 +197,152 @@ tok2str(register const struct token *lp, register const char *fmt,
 	}
 	if (fmt == NULL)
 		fmt = "#%d";
-	(void)sprintf(buf, fmt, v);
+	(void)snprintf(buf, sizeof(buf), fmt, v);
 	return (buf);
 }
 
-/* A replacement for strdup() that cuts down on malloc() overhead */
-char *
-savestr(register const char *str)
-{
-	register u_int size;
-	register char *p;
-	static char *strptr = NULL;
-	static u_int strsize = 0;
 
-	size = strlen(str) + 1;
-	if (size > strsize) {
-		strsize = 1024;
-		if (strsize < size)
-			strsize = size;
-		strptr = malloc(strsize);
-		if (strptr == NULL)
-			error("savestr: malloc");
-	}
-	(void)strcpy(strptr, str);
-	p = strptr;
-	strptr += size;
-	strsize -= size;
-	return (p);
-}
-
-#ifdef NOVFPRINTF
-/*
- * Stock 4.3 doesn't have vfprintf.
- * This routine is due to Chris Torek.
- */
-vfprintf(f, fmt, args)
-	FILE *f;
-	char *fmt;
-	va_list args;
-{
-	int ret;
-
-	if ((f->_flag & _IOWRT) == 0) {
-		if (f->_flag & _IORW)
-			f->_flag |= _IOWRT;
-		else
-			return EOF;
-	}
-	ret = _doprnt(fmt, args, f);
-	return ferror(f) ? EOF : ret;
-}
-#endif
-
-/* VARARGS */
 __dead void
-#if __STDC__ || defined(SOLARIS)
-error(char *fmt, ...)
-#else
-error(fmt, va_alist)
-	char *fmt;
-	va_dcl
-#endif
+error(const char *fmt, ...)
 {
 	va_list ap;
 
 	(void)fprintf(stderr, "%s: ", program_name);
-#if __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	(void)vfprintf(stderr, fmt, ap);
 	va_end(ap);
-	if (*fmt) {
-		fmt += strlen(fmt);
-		if (fmt[-1] != '\n')
-			(void)fputc('\n', stderr);
-	}
+	(void)fputc('\n', stderr);
 	exit(1);
 	/* NOTREACHED */
 }
 
-/* VARARGS */
 void
-#if __STDC__ || defined(SOLARIS)
-warning(char *fmt, ...)
-#else
-warning(fmt, va_alist)
-	char *fmt;
-	va_dcl
-#endif
+warning(const char *fmt, ...)
 {
 	va_list ap;
 
-	(void)fprintf(stderr, "%s: warning: ", program_name);
-#if __STDC__
+	(void)fprintf(stderr, "%s: WARNING: ", program_name);
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	(void)vfprintf(stderr, fmt, ap);
 	va_end(ap);
-	if (*fmt) {
-		fmt += strlen(fmt);
-		if (fmt[-1] != '\n')
-			(void)fputc('\n', stderr);
-	}
+	(void)fputc('\n', stderr);
 }
+
 
 /*
  * Copy arg vector into a new buffer, concatenating arguments with spaces.
  */
 char *
-copy_argv(register char **argv)
+copy_argv(char * const *argv)
 {
-	register char **p;
-	register int len = 0;
+	size_t len = 0, n;
 	char *buf;
-	char *src, *dst;
 
-	p = argv;
-	if (*p == 0)
-		return 0;
+	if (argv == NULL)
+		return (NULL);
 
-	while (*p)
-		len += strlen(*p++) + 1;
+	for (n = 0; argv[n]; n++)
+		len += strlen(argv[n])+1;
+	if (len == 0)
+		return (NULL);
 
 	buf = malloc(len);
+	if (buf == NULL)
+		return (NULL);
 
-	p = argv;
-	dst = buf;
-	while ((src = *p++) != NULL) {
-		while ((*dst++ = *src++) != '\0')
-			;
-		dst[-1] = ' ';
+	strlcpy(buf, argv[0], len);
+	for (n = 1; argv[n]; n++) {
+		strlcat(buf, " ", len);
+		strlcat(buf, argv[n], len);
 	}
-	dst[-1] = '\0';
-
-	return buf;
+	return (buf);
 }
 
 char *
 read_infile(char *fname)
 {
-	struct stat buf;
-	int fd;
-	char *p;
+	struct stat	 buf;
+	int		 fd;
+	ssize_t		 cc;
+	size_t		 bs;
+	char		*cp;
 
 	fd = open(fname, O_RDONLY);
 	if (fd < 0)
-		error("can't open '%s'", fname);
+		error("can't open %s: %s", fname, pcap_strerror(errno));
 
 	if (fstat(fd, &buf) < 0)
-		error("can't state '%s'", fname);
+		error("can't stat %s: %s", fname, pcap_strerror(errno));
 
-	p = malloc((u_int)buf.st_size);
-	if (read(fd, p, (int)buf.st_size) != buf.st_size)
-		error("problem reading '%s'", fname);
+	if (buf.st_size >= SSIZE_MAX)
+		error("file too long");
 
-	return p;
+	bs = buf.st_size;
+	cp = malloc(bs + 1);
+	if (cp == NULL)
+		err(1, NULL);
+	cc = read(fd, cp, bs);
+	if (cc == -1)
+		error("read %s: %s", fname, pcap_strerror(errno));
+	if (cc != bs)
+		error("short read %s (%ld != %lu)", fname, (long)cc,
+		    (unsigned long)bs);
+	cp[bs] = '\0';
+	close(fd);
+
+	return (cp);
 }
 
-int
-gmt2local()
+void
+safeputs(const char *s)
 {
-#ifndef SOLARIS
-	struct timeval now;
-	struct timezone tz;
-	long t;
+	while (*s) {
+		safeputchar(*s);
+		s++;
+	}
+}
 
-	if (gettimeofday(&now, &tz) < 0)
-		error("gettimeofday");
-	t = tz.tz_minuteswest * -60;
-	if (localtime((time_t *)&now.tv_sec)->tm_isdst)
-		t += 3600;
-	return (t);
-#else
-	tzset();
-	return (-altzone);
-#endif
+void
+safeputchar(int c)
+{
+	unsigned char ch;
+
+	ch = (unsigned char)(c & 0xff);
+	if (c < 0x80 && isprint(c))
+		printf("%c", c & 0xff);
+	else
+		printf("\\%03o", c & 0xff);
+}
+
+/*
+ * Print a value a la the %b format of the kernel's printf
+ * (from sbin/ifconfig/ifconfig.c)
+ */
+void
+printb(char *s, unsigned short v, char *bits)
+{
+	int i, any = 0;
+	char c;
+
+	if (bits && *bits == 8)
+		printf("%s=%o", s, v);
+	else
+		printf("%s=%x", s, v);
+
+	if (bits) {
+		bits++;
+		putchar('<');
+		while ((i = *bits++)) {
+			if (v & (1 << (i-1))) {
+				if (any)
+					putchar(',');
+				any = 1;
+				for (; (c = *bits) > 32; bits++)
+					putchar(c);
+			} else
+				for (; *bits > 32; bits++)
+					;
+		}
+		putchar('>');
+	}
 }

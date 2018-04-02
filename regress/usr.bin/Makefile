@@ -1,6 +1,12 @@
-#	$OpenBSD$
-#	$NetBSD: Makefile,v 1.1 1997/12/30 23:27:11 cgd Exp $
+#	$OpenBSD: Makefile,v 1.41 2017/06/08 17:33:21 bluhm Exp $
 
-SUBDIR+= m4
+SUBDIR+= basename bc calendar colrm column cut dc diff diff3 dirname doas
+SUBDIR+= file fmt fold grep gzip
+SUBDIR+= jot lastcomm m4 mail mandoc openssl rev sdiff sed signify sort tsort
+SUBDIR+= ul wc xargs
+
+.if defined(REGRESS_FULL) || make(clean) || make(cleandir) || make(obj)
+SUBDIR+= cap_mkdb libtool make patch pkg-config rcs ssh
+.endif
 
 .include <bsd.subdir.mk>

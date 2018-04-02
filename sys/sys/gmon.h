@@ -1,4 +1,5 @@
-/*	$NetBSD: gmon.h,v 1.4 1994/06/29 06:44:17 cgd Exp $	*/
+/*	$OpenBSD: gmon.h,v 1.7 2013/03/12 09:37:16 mpi Exp $	*/
+/*	$NetBSD: gmon.h,v 1.5 1996/04/09 20:55:30 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1992, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -77,7 +74,7 @@ struct gmonhdr {
  *	calls	$0,(r0)
  *	calls	$0,(r0)
  *
- * which is separated by only three bytes, thus HASHFRACTION is 
+ * which is separated by only three bytes, thus HASHFRACTION is
  * calculated as:
  *
  *	HASHFRACTION = 3 / (2 * 2 - 1) = 1
@@ -85,9 +82,9 @@ struct gmonhdr {
  * Note that the division above rounds down, thus if MIN_SUBR_FRACTION
  * is less than three, this algorithm will not work!
  *
- * In practice, however, call instructions are rarely at a minimal 
+ * In practice, however, call instructions are rarely at a minimal
  * distance.  Hence, we will define HASHFRACTION to be 2 across all
- * architectures.  This saves a reasonable amount of space for 
+ * architectures.  This saves a reasonable amount of space for
  * profiling data structures without (in practice) sacrificing
  * any granularity.
  */
@@ -108,7 +105,7 @@ struct tostruct {
 };
 
 /*
- * a raw arc, with pointers to the calling site and 
+ * a raw arc, with pointers to the calling site and
  * the called site and a count.
  */
 struct rawarc {
@@ -140,7 +137,6 @@ struct gmonparam {
 	u_long		textsize;
 	u_long		hashfraction;
 };
-extern struct gmonparam _gmonparam;
 
 /*
  * Possible states of profiling.
@@ -158,4 +154,22 @@ extern struct gmonparam _gmonparam;
 #define	GPROF_FROMS	2	/* struct: from location hash bucket */
 #define	GPROF_TOS	3	/* struct: destination/count structure */
 #define	GPROF_GMONPARAM	4	/* struct: profiling parameters (see above) */
+
+#ifdef _KERNEL
+extern int gmoninit;		/* Is the kernel ready for beeing profiled? */
+
+#else /* !_KERNEL */
+
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+extern struct gmonparam _gmonparam;
+void	_mcleanup(void);
+void	_monstartup(u_long, u_long);
+void	moncontrol(int);
+void	monstartup(u_long, u_long);
+__END_DECLS
+
+#endif /* !_KERNEL */
+
 #endif /* !_SYS_GMON_H_ */

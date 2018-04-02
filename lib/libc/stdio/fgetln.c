@@ -1,5 +1,4 @@
-/*	$NetBSD: fgetln.c,v 1.2 1995/02/02 02:09:10 jtc Exp $	*/
-
+/*	$OpenBSD: fgetln.c,v 1.16 2016/09/21 04:38:56 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,11 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/* from: static char sccsid[] = "@(#)fgetline.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: fgetln.c,v 1.2 1995/02/02 02:09:10 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,24 +38,15 @@ static char *rcsid = "$Id: fgetln.c,v 1.2 1995/02/02 02:09:10 jtc Exp $";
 
 /*
  * Expand the line buffer.  Return -1 on error.
-#ifdef notdef
- * The `new size' does not account for a terminating '\0',
- * so we add 1 here.
-#endif
  */
-int
-__slbexpand(fp, newsize)
-	FILE *fp;
-	size_t newsize;
+static int
+__slbexpand(FILE *fp, size_t newsize)
 {
 	void *p;
 
-#ifdef notdef
-	++newsize;
-#endif
 	if (fp->_lb._size >= newsize)
 		return (0);
-	if ((p = realloc(fp->_lb._base, newsize)) == NULL)
+	if ((p = recallocarray(fp->_lb._base, fp->_lb._size, newsize, 1)) == NULL)
 		return (-1);
 	fp->_lb._base = p;
 	fp->_lb._size = newsize;
@@ -80,24 +61,22 @@ __slbexpand(fp, newsize)
  * it if they wish.  Thus, we set __SMOD in case the caller does.
  */
 char *
-fgetln(fp, lenp)
-	register FILE *fp;
-	size_t *lenp;
+fgetln(FILE *fp, size_t *lenp)
 {
-	register unsigned char *p;
-	register size_t len;
+	unsigned char *p;
+	char *ret;
+	size_t len;
 	size_t off;
 
+	FLOCKFILE(fp);
+	_SET_ORIENTATION(fp, -1);
+
 	/* make sure there is input */
-	if (fp->_r <= 0 && __srefill(fp)) {
-		*lenp = 0;
-		return (NULL);
-	}
+	if (fp->_r <= 0 && __srefill(fp))
+		goto error;
 
 	/* look for a newline in the input */
-	if ((p = memchr((void *)fp->_p, '\n', fp->_r)) != NULL) {
-		register char *ret;
-
+	if ((p = memchr(fp->_p, '\n', fp->_r)) != NULL) {
 		/*
 		 * Found one.  Flag buffer as modified to keep fseek from
 		 * `optimising' a backward seek, in case the user stomps on
@@ -109,6 +88,7 @@ fgetln(fp, lenp)
 		fp->_flags |= __SMOD;
 		fp->_r -= len;
 		fp->_p = p;
+		FUNLOCKFILE(fp);
 		return (ret);
 	}
 
@@ -117,13 +97,13 @@ fgetln(fp, lenp)
 	 * As a bonus, though, we can leave off the __SMOD.
 	 *
 	 * OPTIMISTIC is length that we (optimistically) expect will
-	 * accomodate the `rest' of the string, on each trip through the
+	 * accommodate the `rest' of the string, on each trip through the
 	 * loop below.
 	 */
 #define OPTIMISTIC 80
 
 	for (len = fp->_r, off = 0;; len += fp->_r) {
-		register size_t diff;
+		size_t diff;
 
 		/*
 		 * Make sure there is room for more bytes.  Copy data from
@@ -132,12 +112,14 @@ fgetln(fp, lenp)
 		 */
 		if (__slbexpand(fp, len + OPTIMISTIC))
 			goto error;
-		(void)memcpy((void *)(fp->_lb._base + off), (void *)fp->_p,
-		    len - off);
+		(void)memcpy(fp->_lb._base + off, fp->_p, len - off);
 		off = len;
-		if (__srefill(fp))
-			break;	/* EOF or error: return partial line */
-		if ((p = memchr((void *)fp->_p, '\n', fp->_r)) == NULL)
+		if (__srefill(fp)) {
+			if (fp->_flags & __SEOF)
+				break;
+			goto error;
+		}
+		if ((p = memchr(fp->_p, '\n', fp->_r)) == NULL)
 			continue;
 
 		/* got it: finish up the line (like code above) */
@@ -146,19 +128,19 @@ fgetln(fp, lenp)
 		len += diff;
 		if (__slbexpand(fp, len))
 			goto error;
-		(void)memcpy((void *)(fp->_lb._base + off), (void *)fp->_p,
-		    diff);
+		(void)memcpy(fp->_lb._base + off, fp->_p, diff);
 		fp->_r -= diff;
 		fp->_p = p;
 		break;
 	}
 	*lenp = len;
-#ifdef notdef
-	fp->_lb._base[len] = 0;
-#endif
-	return ((char *)fp->_lb._base);
+	ret = (char *)fp->_lb._base;
+	FUNLOCKFILE(fp);
+	return (ret);
 
 error:
-	*lenp = 0;		/* ??? */
-	return (NULL);		/* ??? */
+	FUNLOCKFILE(fp);
+	*lenp = 0;
+	return (NULL);
 }
+DEF_WEAK(fgetln);

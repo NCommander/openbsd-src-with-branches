@@ -1,3 +1,4 @@
+/*	$OpenBSD: input.c,v 1.12 2009/10/27 23:59:23 deraadt Exp $	*/
 /*	$NetBSD: input.c,v 1.4 1995/04/27 21:22:24 mycroft Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,35 +42,29 @@
  * For more info on this and all of my stuff, mail edjames@berkeley.edu.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)input.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: input.c,v 1.4 1995/04/27 21:22:24 mycroft Exp $";
-#endif
-#endif not lint
+#include <ctype.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <termios.h>
 
-#include "include.h"
-#include "pathnames.h"
+#include "def.h"
+#include "extern.h"
 
 #define MAXRULES	6
 #define MAXDEPTH	15
 
 #define RETTOKEN	'\n'
-#ifdef SYSV
-#define CRTOKEN		'\r'
-#endif
 #define REDRAWTOKEN	'\014'	/* CTRL(L) */
-#define	SHELLTOKEN	'!'
 #define HELPTOKEN	'?'
 #define ALPHATOKEN	256
 #define NUMTOKEN	257
 
 typedef struct {
-	int	token;
-	int	to_state;
-	char	*str;
-	char	*(*func)();
+	int		token;
+	int		to_state;
+	const char	*str;
+	const char	*(*func)(char);
 } RULE;
 
 typedef struct {
@@ -99,16 +90,8 @@ typedef struct {
 
 #define NUMSTATES	NUMELS(st)
 
-char	*setplane(), *circle(), *left(), *right(), *Left(), *Right(), 
-	*beacon(), *ex_it(), *climb(), *descend(), *setalt(), *setrelalt(), 
-	*benum(), *to_dir(), *rel_dir(), *delayb(), *mark(), *unmark(),
-	*airport(), *turn(), *ignore();
-
 RULE	state0[] = {	{ ALPHATOKEN,	1,	"%c:",		setplane},
 			{ RETTOKEN,	-1,	"",		NULL	},
-#ifdef SYSV
-			{ CRTOKEN,	-1,	"",		NULL	},
-#endif
 			{ HELPTOKEN,	12,	" [a-z]<ret>",	NULL	}},
 	state1[] = {	{ 't',		2,	" turn",	turn	},	
 			{ 'a',		3,	" altitude:",	NULL	},	
@@ -140,9 +123,6 @@ RULE	state0[] = {	{ ALPHATOKEN,	1,	"%c:",		setplane},
 	state4[] = {	{ '@',		9,	" at",		NULL	},	
 			{ 'a',		9,	" at",		NULL	},	
 			{ RETTOKEN,	-1,	"",		NULL	},
-#ifdef SYSV
-			{ CRTOKEN,	-1,	"",		NULL	},
-#endif
 			{ HELPTOKEN,	12,	" @a<ret>",	NULL	}},
 	state5[] = {	{ NUMTOKEN,	7,	"%c",		delayb	},
 			{ HELPTOKEN,	12,	" [0-9]",	NULL	}},
@@ -157,14 +137,8 @@ RULE	state0[] = {	{ ALPHATOKEN,	1,	"%c:",		setplane},
 			{ 'a',		4,	" 270",		rel_dir	},
 			{ 'q',		4,	" 315",		rel_dir	},
 			{ RETTOKEN,	-1,	"",		NULL	},	
-#ifdef SYSV
-			{ CRTOKEN,	-1,	"",		NULL	},	
-#endif
 			{ HELPTOKEN,	12,	" @a<dir><ret>",NULL	}},
 	state7[] = {	{ RETTOKEN,	-1,	"",		NULL	},
-#ifdef SYSV
-	            	{ CRTOKEN,	-1,	"",		NULL	},
-#endif
 			{ HELPTOKEN,	12,	" <ret>",	NULL	}},
 	state8[] = {	{ NUMTOKEN,	4,	"%c",		benum	},
 			{ HELPTOKEN,	12,	" [0-9]",	NULL	}},
@@ -196,7 +170,8 @@ int	level;
 int	tval;
 int	dest_type, dest_no, dir;
 
-pop()
+int
+pop(void)
 {
 	if (level == 0)
 		return (-1);
@@ -204,13 +179,14 @@ pop()
 
 	ioclrtoeol(T_POS);
 
-	strcpy(T_STR, "");
+	strlcpy(T_STR, "", sizeof T_STR);
 	T_RULE = -1;
 	T_CH = -1;
 	return (0);
 }
 
-rezero()
+void
+rezero(void)
 {
 	iomove(0);
 
@@ -219,14 +195,15 @@ rezero()
 	T_RULE = -1;
 	T_CH = -1;
 	T_POS = 0;
-	strcpy(T_STR, "");
+	strlcpy(T_STR, "", sizeof T_STR);
 }
 
-push(ruleno, ch)
+void
+push(int ruleno, int ch)
 {
 	int	newstate, newpos;
 
-	(void)sprintf(T_STR, st[T_STATE].rule[ruleno].str, tval);
+	(void)snprintf(T_STR, sizeof T_STR, st[T_STATE].rule[ruleno].str, tval);
 	T_RULE = ruleno;
 	T_CH = ch;
 	newstate = st[T_STATE].rule[ruleno].to_state;
@@ -240,13 +217,14 @@ push(ruleno, ch)
 	T_STATE = newstate;
 	T_POS = newpos;
 	T_RULE = -1;
-	strcpy(T_STR, "");
+	strlcpy(T_STR, "", sizeof T_STR);
 }
 
-getcommand()
+int
+getcommand(void)
 {
 	int	c, i, done;
-	char	*s, *(*func)();
+	const char	*s, *(*func)(char);
 	PLANE	*pp;
 
 	rezero();
@@ -301,64 +279,19 @@ getcommand()
 	return (0);
 }
 
-noise()
+void
+noise(void)
 {
-	putchar('\07');
+	if (makenoise)
+		putchar('\07');
 	fflush(stdout);
 }
 
-gettoken()
+int
+gettoken(void)
 {
-	while ((tval = getAChar()) == REDRAWTOKEN || tval == SHELLTOKEN)
+	while ((tval = getAChar()) == REDRAWTOKEN)
 	{
-		if (tval == SHELLTOKEN)
-		{
-#ifdef BSD
-			struct itimerval	itv;
-			itv.it_value.tv_sec = 0;
-			itv.it_value.tv_usec = 0;
-			setitimer(ITIMER_REAL, &itv, NULL);
-#endif
-#ifdef SYSV
-			int aval;
-			aval = alarm(0);
-#endif
-			if (fork() == 0)	/* child */
-			{
-				char *shell, *base, *getenv(), *strrchr();
-
-				setuid(getuid()); /* turn off setuid bit */
-				done_screen();
-
-						 /* run user's favorite shell */
-				if ((shell = getenv("SHELL")) != NULL)
-				{
-					base = strrchr(shell, '/');
-					if (base == NULL)
-						base = shell;
-					else
-						base++;
-					execl(shell, base, 0);
-				}
-				else
-					execl(_PATH_BSHELL, "sh", 0);
-
-				exit(0);	/* oops */
-			}
-
-			wait(0);
-			tcsetattr(fileno(stdin), TCSADRAIN, &tty_new);
-#ifdef BSD
-			itv.it_value.tv_sec = 0;
-			itv.it_value.tv_usec = 1;
-			itv.it_interval.tv_sec = sp->update_secs;
-			itv.it_interval.tv_usec = 0;
-			setitimer(ITIMER_REAL, &itv, NULL);
-#endif
-#ifdef SYSV
-			alarm(aval);
-#endif
-		}
 		redraw();
 	}
 
@@ -370,29 +303,29 @@ gettoken()
 		return (tval);
 }
 
-char	*
-setplane(c)
+const char	*
+setplane(char c)
 {
 	PLANE	*pp;
 
 	pp = findplane(number(c));
 	if (pp == NULL)
 		return ("Unknown Plane");
-	bcopy(pp, &p, sizeof (p));
+	memcpy(&p, pp, sizeof (p));
 	p.delayd = 0;
 	return (NULL);
 }
 
-char	*
-turn(c)
+const char	*
+turn(char c)
 {
 	if (p.altitude == 0)
 		return ("Planes at airports may not change direction");
 	return (NULL);
 }
 
-char	*
-circle(c)
+const char	*
+circle(char c)
 {
 	if (p.altitude == 0)
 		return ("Planes cannot circle on the ground");
@@ -400,8 +333,8 @@ circle(c)
 	return (NULL);
 }
 
-char	*
-left(c)
+const char	*
+left(char c)
 {
 	dir = D_LEFT;
 	p.new_dir = p.dir - 1;
@@ -410,18 +343,18 @@ left(c)
 	return (NULL);
 }
 
-char	*
-right(c)
+const char	*
+right(char c)
 {
 	dir = D_RIGHT;
 	p.new_dir = p.dir + 1;
-	if (p.new_dir > MAXDIR)
+	if (p.new_dir >= MAXDIR)
 		p.new_dir -= MAXDIR;
 	return (NULL);
 }
 
-char	*
-Left(c)
+const char	*
+Left(char c)
 {
 	p.new_dir = p.dir - 2;
 	if (p.new_dir < 0)
@@ -429,17 +362,17 @@ Left(c)
 	return (NULL);
 }
 
-char	*
-Right(c)
+const char	*
+Right(char c)
 {
 	p.new_dir = p.dir + 2;
-	if (p.new_dir > MAXDIR)
+	if (p.new_dir >= MAXDIR)
 		p.new_dir -= MAXDIR;
 	return (NULL);
 }
 
-char	*
-delayb(c)
+const char	*
+delayb(char c)
 {
 	int	xdiff, ydiff;
 
@@ -447,28 +380,32 @@ delayb(c)
 
 	if (c >= sp->num_beacons)
 		return ("Unknown beacon");
-	xdiff = sp->beacon[c].x - p.xpos;
+	xdiff = sp->beacon[(int)c].x - p.xpos;
 	xdiff = SGN(xdiff);
-	ydiff = sp->beacon[c].y - p.ypos;
+	ydiff = sp->beacon[(int)c].y - p.ypos;
 	ydiff = SGN(ydiff);
 	if (xdiff != displacement[p.dir].dx || ydiff != displacement[p.dir].dy)
 		return ("Beacon is not in flight path");
+	if (xdiff != 0 && ydiff !=0)
+		if (abs(sp->beacon[(int)c].x - p.xpos) !=
+		    abs(sp->beacon[(int)c].y - p.ypos))
+			return ("Beacon is not in flight path");
 	p.delayd = 1;
 	p.delayd_no = c;
 
 	if (dest_type != T_NODEST) {
 		switch (dest_type) {
 		case T_BEACON:
-			xdiff = sp->beacon[dest_no].x - sp->beacon[c].x;
-			ydiff = sp->beacon[dest_no].y - sp->beacon[c].y;
+			xdiff = sp->beacon[dest_no].x - sp->beacon[(int)c].x;
+			ydiff = sp->beacon[dest_no].y - sp->beacon[(int)c].y;
 			break;
 		case T_EXIT:
-			xdiff = sp->exit[dest_no].x - sp->beacon[c].x;
-			ydiff = sp->exit[dest_no].y - sp->beacon[c].y;
+			xdiff = sp->exit[dest_no].x - sp->beacon[(int)c].x;
+			ydiff = sp->exit[dest_no].y - sp->beacon[(int)c].y;
 			break;
 		case T_AIRPORT:
-			xdiff = sp->airport[dest_no].x - sp->beacon[c].x;
-			ydiff = sp->airport[dest_no].y - sp->beacon[c].y;
+			xdiff = sp->airport[dest_no].x - sp->beacon[(int)c].x;
+			ydiff = sp->airport[dest_no].y - sp->beacon[(int)c].y;
 			break;
 		default:
 			return ("Bad case in delayb!  Get help!");
@@ -483,76 +420,84 @@ delayb(c)
 	return (NULL);
 }
 
-char	*
-beacon(c)
+const char	*
+beacon(char c)
 {
 	dest_type = T_BEACON;
 	return (NULL);
 }
 
-char	*
-ex_it(c)
+const char	*
+ex_it(char c)
 {
 	dest_type = T_EXIT;
 	return (NULL);
 }
 
-char	*
-airport(c)
+const char	*
+airport(char c)
 {
 	dest_type = T_AIRPORT;
 	return (NULL);
 }
 
-char	*
-climb(c)
+const char	*
+climb(char c)
 {
 	dir = D_UP;
 	return (NULL);
 }
 
-char	*
-descend(c)
+const char	*
+descend(char c)
 {
 	dir = D_DOWN;
 	return (NULL);
 }
 
-char	*
-setalt(c)
+const char	*
+setalt(char c)
 {
 	if ((p.altitude == c - '0') && (p.new_altitude == p.altitude))
 		return ("Already at that altitude");
+	if (p.new_altitude == c - '0')
+		return ("Already going to that altitude");
 	p.new_altitude = c - '0';
 	return (NULL);
 }
 
-char	*
-setrelalt(c)
+const char	*
+setrelalt(char c)
 {
+	int new_altitude;
+
 	if (c == 0)
 		return ("altitude not changed");
 
 	switch (dir) {
 	case D_UP:
-		p.new_altitude = p.altitude + c - '0';
+		new_altitude = p.altitude + c - '0';
 		break;
 	case D_DOWN:
-		p.new_altitude = p.altitude - (c - '0');
+		new_altitude = p.altitude - (c - '0');
 		break;
 	default:
 		return ("Unknown case in setrelalt!  Get help!");
 		break;
 	}
-	if (p.new_altitude < 0)
+	if (new_altitude < 0)
 		return ("Altitude would be too low");
-	else if (p.new_altitude > 9)
+	else if (new_altitude > 9)
 		return ("Altitude would be too high");
+	else if (new_altitude == p.new_altitude)
+		return ("Already going to that altitude");
+
+	p.new_altitude = new_altitude;
 	return (NULL);
 }
 
-char	*
-benum(c)
+const char	*
+benum(char c)
 {
 	dest_no = c -= '0';
 
@@ -560,20 +505,20 @@ benum(c)
 	case T_BEACON:
 		if (c >= sp->num_beacons)
 			return ("Unknown beacon");
-		p.new_dir = DIR_FROM_DXDY(sp->beacon[c].x - p.xpos,
-			sp->beacon[c].y - p.ypos);
+		p.new_dir = DIR_FROM_DXDY(sp->beacon[(int)c].x - p.xpos,
+			sp->beacon[(int)c].y - p.ypos);
 		break;
 	case T_EXIT:
 		if (c >= sp->num_exits)
 			return ("Unknown exit");
-		p.new_dir = DIR_FROM_DXDY(sp->exit[c].x - p.xpos,
-			sp->exit[c].y - p.ypos);
+		p.new_dir = DIR_FROM_DXDY(sp->exit[(int)c].x - p.xpos,
+			sp->exit[(int)c].y - p.ypos);
 		break;
 	case T_AIRPORT:
 		if (c >= sp->num_airports)
 			return ("Unknown airport");
-		p.new_dir = DIR_FROM_DXDY(sp->airport[c].x - p.xpos,
-			sp->airport[c].y - p.ypos);
+		p.new_dir = DIR_FROM_DXDY(sp->airport[(int)c].x - p.xpos,
+			sp->airport[(int)c].y - p.ypos);
 		break;
 	default:
 		return ("Unknown case in benum!  Get help!");
@@ -582,15 +527,15 @@ benum(c)
 	return (NULL);
 }
 
-char	*
-to_dir(c)
+const char	*
+to_dir(char c)
 {
 	p.new_dir = dir_no(c);
 	return (NULL);
 }
 
-char	*
-rel_dir(c)
+const char	*
+rel_dir(char c)
 {
 	int	angle;
 
@@ -613,8 +558,8 @@ rel_dir(c)
 	return (NULL);
 }
 
-char	*
-mark(c)
+const char	*
+mark(char c)
 {
 	if (p.altitude == 0)
 		return ("Cannot mark planes on the ground");
@@ -624,8 +569,8 @@ mark(c)
 	return (NULL);
 }
 
-char	*
-unmark(c)
+const char	*
+unmark(char c)
 {
 	if (p.altitude == 0)
 		return ("Cannot unmark planes on the ground");
@@ -635,8 +580,8 @@ unmark(c)
 	return (NULL);
 }
 
-char	*
-ignore(c)
+const char	*
+ignore(char c)
 {
 	if (p.altitude == 0)
 		return ("Cannot ignore planes on the ground");
@@ -646,8 +591,8 @@ ignore(c)
 	return (NULL);
 }
 
-dir_no(ch)
-	char	ch;
+int
+dir_no(char ch)
 {
 	int	dir;
 
@@ -661,6 +606,7 @@ dir_no(ch)
 	case 'a':	dir = 6;	break;
 	case 'q':	dir = 7;	break;
 	default:
+		dir = -1;
 		fprintf(stderr, "bad character in dir_no\n");
 		break;
 	}

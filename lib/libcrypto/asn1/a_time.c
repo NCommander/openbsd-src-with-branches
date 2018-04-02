@@ -1,4 +1,4 @@
-/* crypto/asn1/a_time.c */
+/* $OpenBSD: a_time.c,v 1.26 2015/10/02 15:04:45 beck Exp $ */
 /* ====================================================================
  * Copyright (c) 1999 The OpenSSL Project.  All rights reserved.
  *
@@ -7,7 +7,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -53,7 +53,6 @@
  *
  */
 
-
 /* This is an implementation of the ASN1 Time structure which is:
  *    Time ::= CHOICE {
  *      utcTime        UTCTime,
@@ -62,137 +61,47 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
-#include "cryptlib.h"
-#include "o_time.h"
+
 #include <openssl/asn1t.h>
+#include <openssl/err.h>
 
-IMPLEMENT_ASN1_MSTRING(ASN1_TIME, B_ASN1_TIME)
+#include "o_time.h"
+#include "asn1_locl.h"
 
-IMPLEMENT_ASN1_FUNCTIONS(ASN1_TIME)
-
-#if 0
-int i2d_ASN1_TIME(ASN1_TIME *a, unsigned char **pp)
-	{
-#ifdef CHARSET_EBCDIC
-	/* KLUDGE! We convert to ascii before writing DER */
-	char tmp[24];
-	ASN1_STRING tmpstr;
-
-	if(a->type == V_ASN1_UTCTIME || a->type == V_ASN1_GENERALIZEDTIME) {
-	    int len;
-
-	    tmpstr = *(ASN1_STRING *)a;
-	    len = tmpstr.length;
-	    ebcdic2ascii(tmp, tmpstr.data, (len >= sizeof tmp) ? sizeof tmp : len);
-	    tmpstr.data = tmp;
-	    a = (ASN1_GENERALIZEDTIME *) &tmpstr;
-	}
-#endif
-	if(a->type == V_ASN1_UTCTIME || a->type == V_ASN1_GENERALIZEDTIME)
-				return(i2d_ASN1_bytes((ASN1_STRING *)a,pp,
-				     a->type ,V_ASN1_UNIVERSAL));
-	ASN1err(ASN1_F_I2D_ASN1_TIME,ASN1_R_EXPECTING_A_TIME);
-	return -1;
-	}
-#endif
+const ASN1_ITEM ASN1_TIME_it = {
+	.itype = ASN1_ITYPE_MSTRING,
+	.utype = B_ASN1_TIME,
+	.templates = NULL,
+	.tcount = 0,
+	.funcs = NULL,
+	.size = sizeof(ASN1_STRING),
+	.sname = "ASN1_TIME",
+};
 
 
-ASN1_TIME *ASN1_TIME_set(ASN1_TIME *s, time_t t)
-	{
-	return ASN1_TIME_adj(s, t, 0, 0);
-	}
+ASN1_TIME *
+d2i_ASN1_TIME(ASN1_TIME **a, const unsigned char **in, long len)
+{
+	return (ASN1_TIME *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &ASN1_TIME_it);
+}
 
-ASN1_TIME *ASN1_TIME_adj(ASN1_TIME *s, time_t t,
-				int offset_day, long offset_sec)
-	{
-	struct tm *ts;
-	struct tm data;
+int
+i2d_ASN1_TIME(ASN1_TIME *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &ASN1_TIME_it);
+}
 
-	ts=OPENSSL_gmtime(&t,&data);
-	if (ts == NULL)
-		{
-		ASN1err(ASN1_F_ASN1_TIME_ADJ, ASN1_R_ERROR_GETTING_TIME);
-		return NULL;
-		}
-	if (offset_day || offset_sec)
-		{ 
-		if (!OPENSSL_gmtime_adj(ts, offset_day, offset_sec))
-			return NULL;
-		}
-	if((ts->tm_year >= 50) && (ts->tm_year < 150))
-			return ASN1_UTCTIME_adj(s, t, offset_day, offset_sec);
-	return ASN1_GENERALIZEDTIME_adj(s, t, offset_day, offset_sec);
-	}
+ASN1_TIME *
+ASN1_TIME_new(void)
+{
+	return (ASN1_TIME *)ASN1_item_new(&ASN1_TIME_it);
+}
 
-int ASN1_TIME_check(ASN1_TIME *t)
-	{
-	if (t->type == V_ASN1_GENERALIZEDTIME)
-		return ASN1_GENERALIZEDTIME_check(t);
-	else if (t->type == V_ASN1_UTCTIME)
-		return ASN1_UTCTIME_check(t);
-	return 0;
-	}
-
-/* Convert an ASN1_TIME structure to GeneralizedTime */
-ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(ASN1_TIME *t, ASN1_GENERALIZEDTIME **out)
-	{
-	ASN1_GENERALIZEDTIME *ret;
-	char *str;
-	int newlen;
-
-	if (!ASN1_TIME_check(t)) return NULL;
-
-	if (!out || !*out)
-		{
-		if (!(ret = ASN1_GENERALIZEDTIME_new ()))
-			return NULL;
-		if (out) *out = ret;
-		}
-	else ret = *out;
-
-	/* If already GeneralizedTime just copy across */
-	if (t->type == V_ASN1_GENERALIZEDTIME)
-		{
-		if(!ASN1_STRING_set(ret, t->data, t->length))
-			return NULL;
-		return ret;
-		}
-
-	/* grow the string */
-	if (!ASN1_STRING_set(ret, NULL, t->length + 2))
-		return NULL;
-	/* ASN1_STRING_set() allocated 'len + 1' bytes. */
-	newlen = t->length + 2 + 1;
-	str = (char *)ret->data;
-	/* Work out the century and prepend */
-	if (t->data[0] >= '5') BUF_strlcpy(str, "19", newlen);
-	else BUF_strlcpy(str, "20", newlen);
-
-	BUF_strlcat(str, (char *)t->data, newlen);
-
-	return ret;
-	}
-
-int ASN1_TIME_set_string(ASN1_TIME *s, const char *str)
-	{
-	ASN1_TIME t;
-
-	t.length = strlen(str);
-	t.data = (unsigned char *)str;
-	t.flags = 0;
-	
-	t.type = V_ASN1_UTCTIME;
-
-	if (!ASN1_TIME_check(&t))
-		{
-		t.type = V_ASN1_GENERALIZEDTIME;
-		if (!ASN1_TIME_check(&t))
-			return 0;
-		}
-	
-	if (s && !ASN1_STRING_copy((ASN1_STRING *)s, (ASN1_STRING *)&t))
-			return 0;
-
-	return 1;
-	}
+void
+ASN1_TIME_free(ASN1_TIME *a)
+{
+	ASN1_item_free((ASN1_VALUE *)a, &ASN1_TIME_it);
+}

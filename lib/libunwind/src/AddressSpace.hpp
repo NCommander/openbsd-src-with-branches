@@ -35,8 +35,9 @@ namespace libunwind {
 #include "Registers.hpp"
 
 #if _LIBUNWIND_ARM_EHABI
-#if defined(__FreeBSD__) || defined(__NetBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 
+#include <link.h>
 typedef void *_Unwind_Ptr;
 
 #elif defined(__linux__)
@@ -62,7 +63,7 @@ extern EHTEntry __exidx_end;
 #endif // _LIBUNWIND_ARM_EHABI
 
 #if defined(__CloudABI__) || defined(__FreeBSD__) || defined(__linux__) ||	\
-    defined(__NetBSD__)
+    defined(__NetBSD__) || defined(__OpenBSD__)
 #if _LIBUNWIND_SUPPORT_DWARF_UNWIND && _LIBUNWIND_SUPPORT_DWARF_INDEX
 #include <link.h>
 // Macro for machine-independent access to the ELF program headers. This
@@ -220,6 +221,10 @@ LocalAddressSpace::getEncodedP(pint_t &addr, pint_t end, uint8_t encoding,
   pint_t startAddr = addr;
   const uint8_t *p = (uint8_t *)addr;
   pint_t result;
+
+  if (encoding == DW_EH_PE_omit) {
+    return (pint_t)NULL;
+  }
 
   // first get value
   switch (encoding & 0x0F) {

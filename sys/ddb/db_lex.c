@@ -1,29 +1,30 @@
-/*	$NetBSD: db_lex.c,v 1.7 1994/10/09 08:56:25 mycroft Exp $	*/
+/*	$OpenBSD: db_lex.c,v 1.13 2016/01/25 14:30:30 mpi Exp $	*/
+/*	$NetBSD: db_lex.c,v 1.8 1996/02/05 01:57:05 christos Exp $	*/
 
-/* 
+/*
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
- * 
+ *
  * Permission to use, copy, modify and distribute this software and its
  * documentation is hereby granted, provided that both the copyright
  * notice and this permission notice appear in all copies of the
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
- * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ *
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
- * 
+ *
  * Carnegie Mellon requests users of this software to return to
- * 
+ *
  *  Software Distribution Coordinator  or  Software.Distribution@CS.CMU.EDU
  *  School of Computer Science
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
- * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ *
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  *	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
@@ -33,14 +34,28 @@
  * Lexical analyzer.
  */
 #include <sys/param.h>
+#include <sys/systm.h>
+
+#include <machine/db_machdep.h>
 
 #include <ddb/db_lex.h>
+#include <ddb/db_output.h>
+#include <ddb/db_command.h>
+#include <ddb/db_extern.h>
+#include <ddb/db_var.h>
 
 char	db_line[120];
 char *	db_lp, *db_endlp;
 
+db_expr_t db_tok_number;
+char	db_tok_string[TOK_STRING_SIZE];
+
+void db_flush_line(void);
+int db_read_char(void);
+void db_unread_char(int);
+
 int
-db_read_line()
+db_read_line(void)
 {
 	int	i;
 
@@ -53,7 +68,7 @@ db_read_line()
 }
 
 void
-db_flush_line()
+db_flush_line(void)
 {
 	db_lp = db_line;
 	db_endlp = db_line;
@@ -62,7 +77,7 @@ db_flush_line()
 int	db_look_char = 0;
 
 int
-db_read_char()
+db_read_char(void)
 {
 	int	c;
 
@@ -72,14 +87,13 @@ db_read_char()
 	}
 	else if (db_lp >= db_endlp)
 	    c = -1;
-	else 
+	else
 	    c = *db_lp++;
 	return (c);
 }
 
 void
-db_unread_char(c)
-	int c;
+db_unread_char(int c)
 {
 	db_look_char = c;
 }
@@ -87,14 +101,13 @@ db_unread_char(c)
 int	db_look_token = 0;
 
 void
-db_unread_token(t)
-	int	t;
+db_unread_token(int t)
 {
 	db_look_token = t;
 }
 
 int
-db_read_token()
+db_read_token(void)
 {
 	int	t;
 
@@ -107,10 +120,8 @@ db_read_token()
 	return (t);
 }
 
-int	db_radix = 16;
-
 void
-db_flush_lex()
+db_flush_lex(void)
 {
 	db_flush_line();
 	db_look_char = 0;
@@ -118,7 +129,7 @@ db_flush_lex()
 }
 
 int
-db_lex()
+db_lex(void)
 {
 	int	c;
 
@@ -131,7 +142,7 @@ db_lex()
 
 	if (c >= '0' && c <= '9') {
 	    /* number */
-	    int	r, digit;
+	    int	r, digit = 0;
 
 	    if (c > '0')
 		r = db_radix;

@@ -1,4 +1,4 @@
-/* $OpenBSD: atomicio.c,v 1.23 2006/08/03 03:34:41 deraadt Exp $ */
+/* $OpenBSD: atomicio.c,v 1.3 2007/09/07 14:50:44 tobias Exp $ */
 /*
  * Copyright (c) 2006 Damien Miller. All rights reserved.
  * Copyright (c) 2005 Anil Madhavapeddy. All rights reserved.
@@ -26,11 +26,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
-#include <sys/uio.h>
-
 #include <errno.h>
-#include <string.h>
+#include <poll.h>
+#include <unistd.h>
 
 #include "atomicio.h"
 
@@ -43,13 +41,20 @@ atomicio(ssize_t (*f) (int, void *, size_t), int fd, void *_s, size_t n)
 	char *s = _s;
 	size_t pos = 0;
 	ssize_t res;
+	struct pollfd pfd;
 
+	pfd.fd = fd;
+	pfd.events = f == read ? POLLIN : POLLOUT;
 	while (n > pos) {
 		res = (f) (fd, s + pos, n - pos);
 		switch (res) {
 		case -1:
-			if (errno == EINTR || errno == EAGAIN)
+			if (errno == EINTR)
 				continue;
+			if (errno == EAGAIN) {
+				(void)poll(&pfd, 1, -1);
+				continue;
+			}
 			return 0;
 		case 0:
 			errno = EPIPE;

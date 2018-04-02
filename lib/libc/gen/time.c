@@ -1,5 +1,4 @@
-/*	$NetBSD: time.c,v 1.4 1995/02/27 05:53:56 cgd Exp $	*/
-
+/*	$OpenBSD: time.c,v 1.6 2015/09/12 14:35:40 guenther Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,26 +28,18 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)time.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: time.c,v 1.4 1995/02/27 05:53:56 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/types.h>
 #include <sys/time.h>
+#include <time.h>
 
 time_t
-time(t)
-	time_t *t;
+time(time_t *t)
 {
 	struct timeval tt;
 
-	if (gettimeofday(&tt, (struct timezone *)0) < 0)
-		return(-1);
+	if (gettimeofday(&tt, NULL) < 0)
+		return (-1);
 	if (t)
-		*t = tt.tv_sec;
-	return(tt.tv_sec);
+		*t = (time_t)tt.tv_sec;
+	return (tt.tv_sec);
 }
+DEF_STRONG(time);

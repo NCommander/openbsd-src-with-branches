@@ -1,4 +1,5 @@
-/*	$Id: ike_main_mode.h,v 1.1 1998/07/25 11:22:07 niklas Exp $	*/
+/* $OpenBSD: ike_main_mode.h,v 1.5 2004/04/15 18:39:25 deraadt Exp $	 */
+/* $EOM: ike_main_mode.h,v 1.1 1998/07/25 11:22:07 niklas Exp $	 */
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -38,7 +34,7 @@
 
 struct message;
 
-extern int (*ike_main_mode_initiator[]) (struct message *msg);
-extern int (*ike_main_mode_responder[]) (struct message *msg);
+extern int      (*ike_main_mode_initiator[]) (struct message *msg);
+extern int      (*ike_main_mode_responder[]) (struct message *msg);
 
-#endif /* _IKE_MAIN_MODE_H_ */
+#endif				/* _IKE_MAIN_MODE_H_ */

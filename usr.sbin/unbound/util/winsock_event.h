@@ -132,7 +132,7 @@
 struct event_base
 {
 	/** sorted by timeout (absolute), ptr */
-	rbtree_t* times;
+	rbtree_type* times;
 	/** array (first part in use) of handles to work on */
 	struct event** items;
 	/** number of items in use in array */
@@ -169,7 +169,7 @@ struct event_base
  */
 struct event {
         /** node in timeout rbtree */
-        rbnode_t node;
+        rbnode_type node;
         /** is event already added */
         int added;
 
@@ -201,7 +201,7 @@ struct event {
 	int stick_events;
 
 	/** true if this event is a signaling WSAEvent by the user. 
-	 * User created and user closed WSAEvent. Only signaled/unsigneled,
+	 * User created and user closed WSAEvent. Only signaled/unsignaled,
 	 * no read/write/distinctions needed. */
 	int is_signal;
 	/** used during callbacks to see which events were just checked */

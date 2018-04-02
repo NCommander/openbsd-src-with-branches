@@ -56,7 +56,7 @@ static bool getColorDiagnostics(opt::InputArgList &Args) {
   auto *Arg = Args.getLastArg(OPT_color_diagnostics, OPT_color_diagnostics_eq,
                               OPT_no_color_diagnostics);
   if (!Arg)
-    return ErrorOS->has_colors();
+    return false;
   if (Arg->getOption().getID() == OPT_color_diagnostics)
     return true;
   if (Arg->getOption().getID() == OPT_no_color_diagnostics)
@@ -198,9 +198,35 @@ Optional<std::string> elf::searchLibrary(StringRef Name) {
     return findFromSearchPaths(Name.substr(1));
 
   for (StringRef Dir : Config->SearchPaths) {
-    if (!Config->Static)
+    if (!Config->Static) {
       if (Optional<std::string> S = findFile(Dir, "lib" + Name + ".so"))
         return S;
+
+      llvm::SmallString<128> Scratch;
+      const StringRef LibName = ("lib" + Name + ".so.").toStringRef(Scratch);
+      int MaxMaj = -1, MaxMin = -1;
+      std::error_code EC;
+      for (fs::directory_iterator LI(Dir, EC), LE;
+	   !EC && LI != LE; LI = LI.increment(EC)) {
+        StringRef FilePath = LI->path();
+	StringRef FileName = path::filename(FilePath);
+	if (!(FileName.startswith(LibName)))
+	  continue;
+	std::pair<StringRef, StringRef> MajMin =
+	  FileName.substr(LibName.size()).split('.');
+	int Maj, Min;
+	if (MajMin.first.getAsInteger(10, Maj) || Maj < 0)
+	  continue;
+	if (MajMin.second.getAsInteger(10, Min) || Min < 0)
+	  continue;
+	if (Maj > MaxMaj)
+	  MaxMaj = Maj, MaxMin = Min;
+	if (MaxMaj == Maj && Min > MaxMin)
+	  MaxMin = Min;
+      }
+      if (MaxMaj >= 0)
+	return findFile(Dir, LibName + Twine(MaxMaj) + "." + Twine(MaxMin));
+    }
     if (Optional<std::string> S = findFile(Dir, "lib" + Name + ".a"))
       return S;
   }

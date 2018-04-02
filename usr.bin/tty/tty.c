@@ -1,3 +1,4 @@
+/*	$OpenBSD: tty.c,v 1.9 2015/10/09 01:37:09 deraadt Exp $	*/
 /*	$NetBSD: tty.c,v 1.4 1994/12/07 00:46:57 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,36 +30,25 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1988, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)tty.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: tty.c,v 1.4 1994/12/07 00:46:57 jtc Exp $";
-#endif /* not lint */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <err.h>
 
-static void usage	__P((void));
+static void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	int ch, sflag;
 	char *t;
 
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
+
 	sflag = 0;
 	while ((ch = getopt(argc, argv, "s")) != -1) {
-		switch((char)ch) {
+		switch(ch) {
 		case 's':
 			sflag = 1;
 			break;
@@ -79,9 +65,8 @@ main(argc, argv)
 	exit(t ? 0 : 1);
 }
 
-
 static void
-usage ()
+usage(void)
 {
 	fprintf(stderr, "usage: tty [-s]\n");
 	exit(2);

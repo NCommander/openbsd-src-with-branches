@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: makemove.c,v 1.7 2009/10/27 23:59:24 deraadt Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,10 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)makemove.c	8.2 (Berkeley) 5/3/95";
-#endif /* not lint */
-
 #include "gomoku.h"
 
 		/* direction deltas */
@@ -53,18 +45,18 @@ int	weight[5] = { 0, 1, 7, 22, 100 };
  *	MOVEOK	everything is OK.
  *	RESIGN	Player resigned.
  *	ILLEGAL	Illegal move.
- *	WIN	The the winning move was just played.
+ *	WIN	The winning move was just played.
  *	TIE	The game is a tie.
  */
-makemove(us, mv)
-	int us, mv;
+int
+makemove(int us, int mv)
 {
-	register struct spotstr *sp, *fsp;
-	register union comboval *cp;
+	struct spotstr *sp, *fsp;
+	union comboval *cp;
 	struct spotstr *osp;
 	struct combostr *cbp, *cbp1;
 	union comboval *cp1;
-	register int i, f, r, d, n;
+	int i, f, r, d, n;
 	int space, val, bmask;
 
 	/* check for end of game */
@@ -213,14 +205,14 @@ makemove(us, mv)
 /*
  * fix up the overlap array due to updating spot osp.
  */
-update_overlap(osp)
-	struct spotstr *osp;
+void
+update_overlap(struct spotstr *osp)
 {
-	register struct spotstr *sp, *sp1, *sp2;
-	register int i, f, r, r1, d, d1, n;
+	struct spotstr *sp, *sp1, *sp2;
+	int i, f, r, r1, d, d1, n;
 	int a, b, bmask, bmask1;
-	struct spotstr *esp;
-	char *str;
+	struct spotstr *esp = NULL;
+	u_char *str;
 
 	for (r = 4; --r >= 0; ) {			/* for each direction */
 	    d = dd[r];

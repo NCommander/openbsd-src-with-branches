@@ -1,3 +1,4 @@
+/*	$OpenBSD: util.c,v 1.12 2009/10/27 23:59:36 deraadt Exp $	*/
 /*	$NetBSD: util.c,v 1.4 1995/03/26 04:55:35 glass Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)util.c	8.4 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: util.c,v 1.4 1995/03/26 04:55:35 glass Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
 
 #include <ctype.h>
@@ -49,103 +38,61 @@ static char rcsid[] = "$NetBSD: util.c,v 1.4 1995/03/26 04:55:35 glass Exp $";
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <tzfile.h>
 #include <unistd.h>
 
 #include "chpass.h"
-#include "pathnames.h"
-
-static int dmsize[] =
-	{ -1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-static char *months[] =
-	{ "January", "February", "March", "April", "May", "June",
-	  "July", "August", "September", "October", "November",
-	  "December", NULL };
 
 char *
-ttoa(tval)
-	time_t tval;
+ttoa(char *buf, size_t len, time_t tval)
 {
-	struct tm *tp;
-	static char tbuf[50];
-
 	if (tval) {
-		tp = localtime(&tval);
-		(void)sprintf(tbuf, "%s %d, %d", months[tp->tm_mon],
-		    tp->tm_mday, tp->tm_year + TM_YEAR_BASE);
-	}
-	else
-		*tbuf = '\0';
-	return (tbuf);
-} 
+		struct tm *tp = localtime(&tval);
+
+		(void) strftime(buf, len, "%B %d, %Y", tp);
+		buf[len - 1] = '\0';
+	} else if (len > 0)
+		*buf = '\0';
+	return (buf);
+}
 
 int
-atot(p, store)
-	char *p;
-	time_t *store;
+atot(char *p, time_t *store)
 {
-	static struct tm *lt;
-	char *t, **mp;
-	time_t tval;
-	int day, month, year;
+	struct tm tm;
+	char *t;
 
 	if (!*p) {
 		*store = 0;
 		return (0);
 	}
-	if (!lt) {
-		unsetenv("TZ");
-		(void)time(&tval);
-		lt = localtime(&tval);
-	}
-	if (!(t = strtok(p, " \t")))
-		goto bad;
-	for (mp = months;; ++mp) {
-		if (!*mp)
-			goto bad;
-		if (!strncasecmp(*mp, t, 3)) {
-			month = mp - months + 1;
-			break;
-		}
-	}
-	if (!(t = strtok((char *)NULL, " \t,")) || !isdigit(*t))
-		goto bad;
-	day = atoi(t);
-	if (!(t = strtok((char *)NULL, " \t,")) || !isdigit(*t))
-		goto bad;
-	year = atoi(t);
-	if (day < 1 || day > 31 || month < 1 || month > 12 || !year)
-		goto bad;
-	if (year < 100)
-		year += TM_YEAR_BASE;
-	if (year <= EPOCH_YEAR)
-bad:		return (1);
-	tval = isleap(year) && month > 2;
-	for (--year; year >= EPOCH_YEAR; --year)
-		tval += isleap(year) ?
-		    DAYSPERLYEAR : DAYSPERNYEAR;
-	while (--month)
-		tval += dmsize[month];
-	tval += day;
-	tval = tval * HOURSPERDAY * MINSPERHOUR * SECSPERMIN;
-	tval -= lt->tm_gmtoff;
-	*store = tval;
+	(void) memset(&tm, 0, sizeof(tm));
+	for (t = p; (t = strchr(t, ',')) != NULL; t++)
+		*t = ' ';
+	t = strptime(p, "%B %d %Y", &tm);
+	if (t == NULL || (*t != '\0' && *t != '\n'))
+		return 1;
+	tm.tm_isdst = -1;
+	*store = mktime(&tm);
+	if (*store == (time_t) -1)
+		return 1;
 	return (0);
 }
 
-char *
-ok_shell(name)
-	char *name;
+int
+ok_shell(char *name, char **out)
 {
 	char *p, *sh;
 
 	setusershell();
-	while (sh = getusershell()) {
+	while ((sh = getusershell()) != NULL) {
 		if (!strcmp(name, sh))
-			return (name);
+			break;
 		/* allow just shell name, but use "real" path */
 		if ((p = strrchr(sh, '/')) && strcmp(name, p + 1) == 0)
-			return (sh);
+			break;
 	}
-	return (NULL);
+	if (sh && out)
+		*out = strdup(sh);
+	endusershell();
+	return (sh != NULL);
 }

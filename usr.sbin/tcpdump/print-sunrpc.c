@@ -1,7 +1,7 @@
-/*	$NetBSD: print-sunrpc.c,v 1.3 1995/03/06 19:11:32 mycroft Exp $	*/
+/*	$OpenBSD: print-sunrpc.c,v 1.19 2015/01/16 06:40:21 deraadt Exp $	*/
 
 /*
- * Copyright (c) 1992, 1993, 1994
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -21,61 +21,34 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#ifndef lint
-static char rcsid[] =
-    "@(#) Header: print-sunrpc.c,v 1.12 94/06/14 20:18:48 leres Exp (LBL)";
-#endif
-
-#include <sys/param.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 
+struct mbuf;
+struct rtentry;
 #include <net/if.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 
-#ifdef SOLARIS
-#include <tiuser.h>
-#endif
 #include <rpc/rpc.h>
+#ifdef HAVE_RPC_RPCENT_H
+#include <rpc/rpcent.h>
+#endif
 #include <rpc/pmap_prot.h>
 
 #include <ctype.h>
-#include <errno.h>
+#include <netdb.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "interface.h"
 #include "addrtoname.h"
-#include "extract.h"			/* must come after interface.h */
+#include "privsep.h"
 
-#if BYTE_ORDER == LITTLE_ENDIAN
-static void bswap(u_int32 *, u_int);
-#endif
-
-#if BYTE_ORDER == LITTLE_ENDIAN
-/*
- * Byte swap an array of n 32-bit words.
- * Assume input is word-aligned.
- * Check that buffer is bounded by "snapend".
- */
-static void
-bswap(register u_int32 *bp, register u_int n)
-{
-	register int nwords = ((char *)snapend - (char *)bp) / sizeof(*bp);
-
-	if (nwords > n)
-		nwords = n;
-	for (; --nwords >= 0; ++bp)
-		*bp = ntohl(*bp);
-}
-#endif
-
-static struct token proc2str[] = {
+static struct tok proc2str[] = {
 	{ PMAPPROC_NULL,	"null" },
 	{ PMAPPROC_SET,		"set" },
 	{ PMAPPROC_UNSET,	"unset" },
@@ -85,30 +58,56 @@ static struct token proc2str[] = {
 	{ 0,			NULL }
 };
 
+/* Forwards */
+static char *progstr(u_int32_t);
+
 void
-sunrpcrequest_print(register const u_char *bp, register int length,
-		    register const u_char *bp2)
+sunrpcrequest_print(const u_char *bp, u_int length, const u_char *bp2)
 {
-	register const struct rpc_msg *rp;
-	register const struct ip *ip;
+	const struct rpc_msg *rp;
+	const struct ip *ip;
+	u_int32_t x;
 
 	rp = (struct rpc_msg *)bp;
 	ip = (struct ip *)bp2;
 
-	if (!nflag)
-		(void)printf("%s.%x > %s.sunrpc: %d",
-			     ipaddr_string(&ip->ip_src),
-			     ntohl(rp->rm_xid),
-			     ipaddr_string(&ip->ip_dst),
-			     length);
-	else
-		(void)printf("%s.%x > %s.%x: %d",
-			     ipaddr_string(&ip->ip_src),
-			     ntohl(rp->rm_xid),
-			     ipaddr_string(&ip->ip_dst),
-			     PMAPPORT,
-			     length);
-	printf(" %s", tok2str(proc2str, " proc #%d",
-			      ntohl(rp->rm_call.cb_proc)));
+	printf("xid 0x%x %d", (u_int32_t)ntohl(rp->rm_xid), length);
+	printf(" %s", tok2str(proc2str, " proc #%u",
+	    (u_int32_t)ntohl(rp->rm_call.cb_proc)));
+	x = ntohl(rp->rm_call.cb_rpcvers);
+	if (x != 2)
+		printf(" [rpcver %u]", x);
+
+	switch (ntohl(rp->rm_call.cb_proc)) {
+
+	case PMAPPROC_SET:
+	case PMAPPROC_UNSET:
+	case PMAPPROC_GETPORT:
+	case PMAPPROC_CALLIT:
+		x = ntohl(rp->rm_call.cb_prog);
+		if (!nflag)
+			printf(" %s", progstr(x));
+		else
+			printf(" %u", x);
+		printf(".%u", (u_int32_t)ntohl(rp->rm_call.cb_vers));
+		break;
+	}
 }
 
+static char *
+progstr(prog)
+	u_int32_t prog;
+{
+	char progname[32];
+	static char buf[32];
+	static int lastprog = 0;
+
+	if (lastprog != 0 && prog == lastprog)
+		return (buf);
+	lastprog = prog;
+        if (priv_getrpcbynumber(prog, progname, sizeof(progname)) == 0)
+		snprintf(buf, sizeof(buf), "#%u", prog);
+	else
+		strlcpy(buf, progname, sizeof(buf));
+	return (buf);
+}

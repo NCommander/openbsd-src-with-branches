@@ -1,3 +1,4 @@
+/*	$OpenBSD: systat.h,v 1.20 2014/07/10 14:39:18 deraadt Exp $	*/
 /*	$NetBSD: systat.h,v 1.2 1995/01/20 08:52:14 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,28 +32,81 @@
  *	@(#)systat.h	8.1 (Berkeley) 6/6/93
  */
 
-#include <curses.h>
+#ifndef _SYSTAT_H_
+#define _SYSTAT_H_
 
-struct  cmdtab {
-        char    *c_name;		/* command name */
-        void    (*c_refresh)();		/* display refresh */
-        void    (*c_fetch)();		/* sets up data structures */
-        void    (*c_label)();		/* label display */
-	int	(*c_init)();		/* initialize namelist, etc. */
-	WINDOW	*(*c_open)();		/* open display */
-	void	(*c_close)();		/* close display */
-	int	(*c_cmd)();		/* display command interpreter */
-	char	c_flags;		/* see below */
-};
+#include <netinet/in.h>
+#include <fcntl.h>
+#include <kvm.h>
+#include "engine.h"
+
 
 #define	CF_INIT		0x1		/* been initialized */
 #define	CF_LOADAV	0x2		/* display w/ load average */
 
-#define	TCP	0x1
-#define	UDP	0x2
-
+#define FIELD_ADDR(struct, x) (&struct[x])
 #define KREAD(addr, buf, len)  kvm_ckread((addr), (buf), (len))
 #define NVAL(indx)  namelist[(indx)].n_value
 #define NPTR(indx)  (void *)NVAL((indx))
 #define NREAD(indx, buf, len) kvm_ckread(NPTR((indx)), (buf), (len))
-#define LONG	(sizeof (long))
+int kvm_ckread(void *, void *, size_t);
+
+extern char	**dr_name;
+extern char	hostname[];
+extern double	avenrun[3];
+extern kvm_t	*kd;
+extern long	ntext;
+extern int	*dk_select;
+extern int	dk_ndrive;
+extern int	hz, stathz;
+extern double	naptime;
+extern size_t	nhosts;
+extern size_t	nports;
+extern int	protos;
+extern int	verbose;
+extern int	nflag;
+extern char	uloadbuf[];
+extern char	timebuf[];
+
+struct inpcb;
+
+void die(void);
+int print_header(void);
+int keyboard_callback(int);
+int initnetstat(void);
+int initifstat(void);
+int initiostat(void);
+int initsensors(void);
+int initmembufs(void);
+int initpigs(void);
+int initswap(void);
+int initvmstat(void);
+int initpftop(void);
+int initpf(void);
+int initpool(void);
+int initmalloc(void);
+int initnfs(void);
+int initcpu(void);
+
+void fetchkre(void);
+void fetchifstat(void);
+
+void error(const char *fmt, ...);
+void nlisterr(struct nlist []);
+
+const char *inetname(struct in_addr);
+const char *inet6name(struct in6_addr *);
+
+#endif
+
+struct ifcount {
+	u_int64_t	ifc_ib;			/* input bytes */
+	u_int64_t	ifc_ip;			/* input packets */
+	u_int64_t	ifc_ie;			/* input errors */
+	u_int64_t	ifc_ob;			/* output bytes */
+	u_int64_t	ifc_op;			/* output packets */
+	u_int64_t	ifc_oe;			/* output errors */
+	u_int64_t	ifc_co;			/* collisions */
+	int		ifc_flags;		/* up / down */
+	int		ifc_state;		/* link state */
+} sum;

@@ -1,4 +1,5 @@
-.TH TBL-LAYOUT-COMPLEX 1 "January 26, 2015" OpenBSD
+.\" $OpenBSD$
+.TH TBL-LAYOUT-COMPLEX 1 "January 26, 2015"
 .SH NAME
 tbl-layout-complex \- complex table layout
 .SH DESCRIPTION

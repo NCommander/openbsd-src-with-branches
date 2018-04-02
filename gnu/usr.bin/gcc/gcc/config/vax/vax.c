@@ -84,6 +84,10 @@ override_options ()
   real_format_for_mode[SFmode - QFmode] = &vax_f_format;
   real_format_for_mode[DFmode - QFmode]
     = (TARGET_G_FLOAT ? &vax_g_format : &vax_d_format);
+
+#if defined(OPENBSD_NATIVE) || defined(OPENBSD_CROSS)
+  flag_gcse = 0;
+#endif
 }
 
 /* Generate the assembly code for function entry.  FILE is a stdio
@@ -138,6 +142,10 @@ vax_output_function_prologue (file, size)
     }
 
   size -= STARTING_FRAME_OFFSET;
+
+  if (warn_stack_larger_than && size > stack_larger_than_size)
+    warning ("stack usage is %d bytes", size);
+
   if (size >= 64)
     asm_fprintf (file, "\tmovab %d(%Rsp),%Rsp\n", -size);
   else if (size)

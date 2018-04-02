@@ -1,4 +1,4 @@
-/* crypto/dh/dh.h */
+/* $OpenBSD: dh.h,v 1.24 2018/02/20 18:01:42 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -59,7 +59,7 @@
 #ifndef HEADER_DH_H
 #define HEADER_DH_H
 
-#include <openssl/e_os2.h>
+#include <openssl/opensslconf.h>
 
 #ifdef OPENSSL_NO_DH
 #error DH is disabled.
@@ -78,13 +78,6 @@
 #endif
 
 #define DH_FLAG_CACHE_MONT_P     0x01
-#define DH_FLAG_NO_EXP_CONSTTIME 0x02 /* new with 0.9.7h; the built-in DH
-                                       * implementation now uses constant time
-                                       * modular exponentiation for secret exponents
-                                       * by default. This flag causes the
-                                       * faster variable sliding window method to
-                                       * be used for all exponents.
-                                       */
 
 /* If this flag is set the DH method is FIPS compliant and can be used
  * in FIPS mode. This is set in the validated module method. If an
@@ -172,12 +165,10 @@ struct dh_st
    this for backward compatibility: */
 #define DH_CHECK_P_NOT_STRONG_PRIME	DH_CHECK_P_NOT_SAFE_PRIME
 
-#define d2i_DHparams_fp(fp,x) (DH *)ASN1_d2i_fp((char *(*)())DH_new, \
-		(char *(*)())d2i_DHparams,(fp),(unsigned char **)(x))
-#define i2d_DHparams_fp(fp,x) ASN1_i2d_fp(i2d_DHparams,(fp), \
-		(unsigned char *)(x))
-#define d2i_DHparams_bio(bp,x) ASN1_d2i_bio_of(DH,DH_new,d2i_DHparams,bp,x)
-#define i2d_DHparams_bio(bp,x) ASN1_i2d_bio_of_const(DH,i2d_DHparams,bp,x)
+DH *d2i_DHparams_bio(BIO *bp, DH **a);
+int i2d_DHparams_bio(BIO *bp, DH *a);
+DH *d2i_DHparams_fp(FILE *fp, DH **a);
+int i2d_DHparams_fp(FILE *fp, DH *a);
 
 DH *DHparams_dup(DH *);
 
@@ -192,10 +183,22 @@ DH *	DH_new(void);
 void	DH_free(DH *dh);
 int	DH_up_ref(DH *dh);
 int	DH_size(const DH *dh);
+int	DH_bits(const DH *dh);
 int DH_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func,
 	     CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);
 int DH_set_ex_data(DH *d, int idx, void *arg);
 void *DH_get_ex_data(DH *d, int idx);
+
+ENGINE *DH_get0_engine(DH *d);
+void DH_get0_pqg(const DH *dh, const BIGNUM **p, const BIGNUM **q,
+    const BIGNUM **g);
+int DH_set0_pqg(DH *dh, BIGNUM *p, BIGNUM *q, BIGNUM *g);
+void DH_get0_key(const DH *dh, const BIGNUM **pub_key, const BIGNUM **priv_key);
+int DH_set0_key(DH *dh, BIGNUM *pub_key, BIGNUM *priv_key);
+void DH_clear_flags(DH *dh, int flags);
+int DH_test_flags(const DH *dh, int flags);
+void DH_set_flags(DH *dh, int flags);
+int DH_set_length(DH *dh, long length);
 
 /* Deprecated version */
 #ifndef OPENSSL_NO_DEPRECATED
@@ -212,9 +215,7 @@ int	DH_generate_key(DH *dh);
 int	DH_compute_key(unsigned char *key,const BIGNUM *pub_key,DH *dh);
 DH *	d2i_DHparams(DH **a,const unsigned char **pp, long length);
 int	i2d_DHparams(const DH *a,unsigned char **pp);
-#ifndef OPENSSL_NO_FP_API
 int	DHparams_print_fp(FILE *fp, const DH *x);
-#endif
 #ifndef OPENSSL_NO_BIO
 int	DHparams_print(BIO *bp, const DH *x);
 #else

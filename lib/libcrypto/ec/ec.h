@@ -1,4 +1,4 @@
-/* crypto/ec/ec.h */
+/* $OpenBSD: ec.h,v 1.11 2015/10/13 15:25:18 jsing Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -83,7 +83,6 @@
 #endif
 
 #include <openssl/asn1.h>
-#include <openssl/symhacks.h>
 #ifndef OPENSSL_NO_DEPRECATED
 #include <openssl/bn.h>
 #endif
@@ -396,6 +395,8 @@ typedef struct {
  * are filled with the data of the first nitems internal groups */
 size_t EC_get_builtin_curves(EC_builtin_curve *r, size_t nitems);
 
+const char *EC_curve_nid2nist(int nid);
+int EC_curve_nist2nid(const char *name);
 
 /********************************************************************/
 /*                    EC_POINT functions                            */
@@ -696,9 +697,7 @@ int i2d_ECPKParameters(const EC_GROUP *, unsigned char **out);
 #ifndef OPENSSL_NO_BIO
 int     ECPKParameters_print(BIO *bp, const EC_GROUP *x, int off);
 #endif
-#ifndef OPENSSL_NO_FP_API
 int     ECPKParameters_print_fp(FILE *fp, const EC_GROUP *x, int off);
-#endif
 
 
 /********************************************************************/
@@ -931,7 +930,6 @@ int	ECParameters_print(BIO *bp, const EC_KEY *key);
 int	EC_KEY_print(BIO *bp, const EC_KEY *key, int off);
 
 #endif
-#ifndef OPENSSL_NO_FP_API
 /** Prints out the ec parameters on human readable form.
  *  \param  fp   file descriptor to which the information is printed
  *  \param  key  EC_KEY object
@@ -947,9 +945,7 @@ int	ECParameters_print_fp(FILE *fp, const EC_KEY *key);
  */
 int	EC_KEY_print_fp(FILE *fp, const EC_KEY *key, int off);
 
-#endif
-
-#define ECParameters_dup(x) ASN1_dup_of(EC_KEY,i2d_ECParameters,d2i_ECParameters,x)
+EC_KEY *ECParameters_dup(EC_KEY *key);
 
 #ifndef __cplusplus
 #if defined(__SUNPRO_C)
@@ -996,6 +992,12 @@ void ERR_load_EC_strings(void);
 #define EC_F_ECP_NIST_MOD_224				 204
 #define EC_F_ECP_NIST_MOD_256				 205
 #define EC_F_ECP_NIST_MOD_521				 206
+#define EC_F_ECP_NISTZ256_GET_AFFINE			 240
+#define EC_F_ECP_NISTZ256_MULT_PRECOMPUTE		 243
+#define EC_F_ECP_NISTZ256_POINTS_MUL			 241
+#define EC_F_ECP_NISTZ256_PRE_COMP_NEW			 244
+#define EC_F_ECP_NISTZ256_SET_WORDS			 245
+#define EC_F_ECP_NISTZ256_WINDOWED_MUL			 242
 #define EC_F_EC_ASN1_GROUP2CURVE			 153
 #define EC_F_EC_ASN1_GROUP2FIELDID			 154
 #define EC_F_EC_ASN1_GROUP2PARAMETERS			 155

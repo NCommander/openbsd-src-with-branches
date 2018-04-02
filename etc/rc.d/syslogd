@@ -1,0 +1,15 @@
+#!/bin/ksh
+#
+# $OpenBSD: syslogd,v 1.4 2014/07/18 18:20:42 deraadt Exp $
+
+daemon="/usr/sbin/syslogd"
+
+. /etc/rc.d/rc.subr
+
+pexp="syslogd: \[priv\]"
+
+rc_pre() {
+	rm -f /dev/log
+}
+
+rc_cmd $1

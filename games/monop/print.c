@@ -1,3 +1,4 @@
+/*	$OpenBSD: print.c,v 1.7 2016/01/08 18:19:47 mestre Exp $	*/
 /*	$NetBSD: print.c,v 1.3 1995/03/23 08:35:05 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,25 +30,21 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)print.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: print.c,v 1.3 1995/03/23 08:35:05 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdio.h>
 
-# include	"monop.ext"
+#include "monop.ext"
 
-static char	buf[80],		/* output buffer		*/
-		*header	= "Name      Own      Price Mg # Rent";
+static const char	*header	= "Name      Own      Price Mg # Rent";
+
+static void	printmorg(SQUARE *);
 
 /*
  *	This routine prints out the current board
  */
-printboard() {
-
-	reg int	i;
+void
+printboard(void)
+{
+	int	i;
 
 	printf("%s\t%s\n", header, header);
 	for (i = 0; i < N_SQRS/2; i++) {
@@ -63,10 +56,10 @@ printboard() {
 /*
  *	This routine lists where each player is.
  */
-where() {
-
-	reg int	i;
-	char	*bsp;
+void
+where(void)
+{
+	int	i;
 
 	printf("%s Player\n", header);
 	for (i = 0; i < num_play; i++) {
@@ -80,30 +73,27 @@ where() {
 /*
  *	This routine prints out an individual square
  */
-printsq(sqn, eoln)
-int		sqn;
-reg bool	eoln; {
-
-	reg int		rnt;
-	reg PROP	*pp;
-	reg SQUARE	*sqp;
-	int		i;
+void
+printsq(int sqn, bool eoln)
+{
+	int	rnt;
+	PROP	*pp;
+	SQUARE	*sqp;
 
 	sqp = &board[sqn];
 	printf("%-10.10s", sqp->name);
 	switch (sqp->type) {
-	  case SAFE:
-	  case CC:
-	  case CHANCE:
-	  case INC_TAX:
-	  case GOTO_J:
-	  case LUX_TAX:
-	  case IN_JAIL:
-spec:
+	case SAFE:
+	case CC:
+	case CHANCE:
+	case INC_TAX:
+	case GOTO_J:
+	case LUX_TAX:
+	case IN_JAIL:
 		if (!eoln)
 			printf("                        ");
 		break;
-	  case PRPTY:
+	case PRPTY:
 		pp = sqp->desc;
 		if (sqp->owner < 0) {
 			printf(" - %-8.8s %3d", pp->mon_desc->name, sqp->cost);
@@ -115,19 +105,18 @@ spec:
 			sqp->cost);
 		printmorg(sqp);
 		if (pp->monop) {
-			if (pp->houses < 5)
+			if (pp->houses < 5) {
 				if (pp->houses > 0)
 					printf("%d %4d", pp->houses,
-						pp->rent[pp->houses]);
+						pp->rent[(int)pp->houses]);
 				else
 					printf("0 %4d", pp->rent[0] * 2);
-			else
+			} else
 				printf("H %4d", pp->rent[5]);
-		}
-		else
+		} else
 			printf("  %4d", pp->rent[0]);
 		break;
-	  case UTIL:
+	case UTIL:
 		if (sqp->owner < 0) {
 			printf(" -          150");
 			if (!eoln)
@@ -136,11 +125,11 @@ spec:
 		}
 		printf(" %d          150", sqp->owner+1);
 		printmorg(sqp);
-		printf("%d", play[sqp->owner].num_util);
+		printf("%d", play[(int)sqp->owner].num_util);
 		if (!eoln)
 			printf("    ");
 		break;
-	  case RR:
+	case RR:
 		if (sqp->owner < 0) {
 			printf(" - Railroad 200");
 			if (!eoln)
@@ -150,8 +139,12 @@ spec:
 		printf(" %d Railroad 200", sqp->owner+1);
 		printmorg(sqp);
 		rnt = 25;
-		rnt <<= play[sqp->owner].num_rr - 1;
-		printf("%d %4d", play[sqp->owner].num_rr, 25 << (play[sqp->owner].num_rr - 1));
+		rnt <<= play[(int)sqp->owner].num_rr - 1;
+		printf("%d %4d", play[(int)sqp->owner].num_rr,
+		    25 << (play[(int)sqp->owner].num_rr - 1));
+		break;
+	default:
+		printf("Warning: printsq() switch %d\n", sqp->type);
 		break;
 	}
 	if (eoln)
@@ -160,9 +153,9 @@ spec:
 /*
  *	This routine prints out the mortgage flag.
  */
-printmorg(sqp)
-reg SQUARE	*sqp; {
-
+static void
+printmorg(SQUARE *sqp)
+{
 	if (sqp->desc->morg)
 		printf(" * ");
 	else
@@ -171,12 +164,11 @@ reg SQUARE	*sqp; {
 /*
  *	This routine lists the holdings of the player given
  */
-printhold(pl)
-reg int	pl; {
-
-	reg OWN		*op;
-	reg PLAY	*pp;
-	char		*bsp;
+void
+printhold(int pl)
+{
+	OWN	*op;
+	PLAY	*pp;
 
 	pp = &play[pl];
 	printf("%s's (%d) holdings (Total worth: $%d):\n", name_list[pl], pl+1,

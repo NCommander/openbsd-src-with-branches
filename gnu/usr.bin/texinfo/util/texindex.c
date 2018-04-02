@@ -1,5 +1,5 @@
 /* texindex -- sort TeX index dribble output into an actual index.
-   $Id: texindex.c,v 1.11 2004/04/11 17:56:47 karl Exp $
+   $Id: texindex.c,v 1.5 2006/07/17 16:12:36 espie Exp $
 
    Copyright (C) 1987, 1991, 1992, 1996, 1997, 1998, 1999, 2000, 2001,
    2002, 2003, 2004 Free Software Foundation, Inc.
@@ -161,6 +161,9 @@ main (int argc, char **argv)
   /* Set locale via LC_ALL.  */
   setlocale (LC_ALL, "");
 #endif
+
+  if (pledge ("stdio rpath wpath cpath tmppath", NULL) == -1)
+    pfatal_with_name ("pledge");
 
   /* Set the text message domain.  */
   bindtextdomain (PACKAGE, LOCALEDIR);
@@ -391,6 +394,8 @@ maketempname (int count)
 {
   static char *tempbase = NULL;
   char tempsuffix[10];
+  char *name;
+  int fd;
 
   if (!tempbase)
     {
@@ -403,7 +408,16 @@ maketempname (int count)
     }
 
   sprintf (tempsuffix, ".%d", count);
-  return concat (tempbase, tempsuffix);
+  name =  concat (tempbase, tempsuffix);
+
+  fd = open (name, O_CREAT|O_EXCL|O_WRONLY, 0666);
+  if (fd == -1)
+    return NULL;
+  else
+    {
+      close(fd);
+      return name;
+    }
 }
 
 
@@ -883,10 +897,13 @@ sort_offline (char *infile, off_t total, char *outfile)
   for (i = 0; i < ntemps; i++)
     {
       char *outname = maketempname (++tempcount);
-      FILE *ostream = fopen (outname, "w");
+      FILE *ostream;
       long tempsize = 0;
 
-      if (!ostream)
+      if (!outname)
+        pfatal_with_name("temporary file");
+      ostream = fopen (outname, "w");
+      if (!outname || !ostream)
         pfatal_with_name (outname);
       tempfiles[i] = outname;
 
@@ -1401,6 +1418,8 @@ merge_files (char **infiles, int nfiles, char *outfile)
       if (i + 1 == ntemps)
         nf = nfiles - i * MAX_DIRECT_MERGE;
       tempfiles[i] = maketempname (++tempcount);
+      if (!tempfiles[i])
+        pfatal_with_name("temp file");
       value |= merge_direct (&infiles[i * MAX_DIRECT_MERGE], nf, tempfiles[i]);
     }
 
