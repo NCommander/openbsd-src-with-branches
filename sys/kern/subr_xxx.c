@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_xxx.c,v 1.14 2015/03/14 03:38:50 jsg Exp $	*/
+/*	$OpenBSD: subr_xxx.c,v 1.15 2015/12/05 10:11:53 tedu Exp $	*/
 /*	$NetBSD: subr_xxx.c,v 1.10 1996/02/04 02:16:51 christos Exp $	*/
 
 /*
@@ -155,6 +155,9 @@ blktochr(dev_t dev)
 void
 assertwaitok(void)
 {
+	if (panicstr || db_active)
+		return;
+
 	splassert(IPL_NONE);
 #ifdef DIAGNOSTIC
 	if (curcpu()->ci_mutex_level != 0)
