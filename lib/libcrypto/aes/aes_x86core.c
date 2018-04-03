@@ -1,4 +1,4 @@
-/* $OpenBSD: aes_x86core.c,v 1.7 2014/10/28 07:35:58 jsg Exp $ */
+/* $OpenBSD: aes_x86core.c,v 1.8 2015/02/10 09:46:30 miod Exp $ */
 /**
  * rijndael-alg-fst.c
  *
@@ -465,7 +465,8 @@ static const u32 rcon[] = {
  * Expand the cipher key into the encryption key schedule.
  */
 int
-AES_set_encrypt_key(const unsigned char *userKey, const int bits, AES_KEY *key) {
+AES_set_encrypt_key(const unsigned char *userKey, const int bits, AES_KEY *key)
+{
 	u32 *rk;
 	int i = 0;
 	u32 temp;
