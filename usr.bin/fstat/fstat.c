@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstat.c,v 1.90 2017/01/21 12:21:57 deraadt Exp $	*/
+/*	$OpenBSD: fstat.c,v 1.91 2017/12/08 17:51:26 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -452,6 +452,8 @@ vtrans(struct kinfo_file *kf)
 		strlcat(rwep, "w", sizeof rwep);
 	if (kf->fd_ofileflags & UF_EXCLOSE)
 		strlcat(rwep, "e", sizeof rwep);
+	if (kf->fd_ofileflags & UF_PLEDGED)
+		strlcat(rwep, "p", sizeof rwep);
 	printf(" %4s", rwep);
 	switch (kf->v_type) {
 	case VBLK:
