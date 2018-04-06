@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.14 2017/12/24 23:29:52 patrick Exp $
+# $OpenBSD: Makefile,v 1.15 2018/04/06 14:44:04 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -46,6 +46,7 @@ HEADERS+=	adxintrin.h \
 		bmiintrin.h \
 		cpuid.h \
 		clflushoptintrin.h \
+		clwbintrin.h \
 		clzerointrin.h \
 		emmintrin.h \
 		f16cintrin.h \
