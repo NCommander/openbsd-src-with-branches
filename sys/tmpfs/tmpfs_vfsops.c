@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_vfsops.c,v 1.14 2017/12/11 05:27:40 deraadt Exp $	*/
+/*	$OpenBSD: tmpfs_vfsops.c,v 1.15 2018/03/07 14:44:22 deraadt Exp $	*/
 /*	$NetBSD: tmpfs_vfsops.c,v 1.52 2011/09/27 01:10:43 christos Exp $	*/
 
 /*
@@ -121,9 +121,6 @@ tmpfs_mount(struct mount *mp, const char *path, void *data,
 	if (tmpfs_mem_info(1) < TMPFS_PAGES_RESERVED)
 		return EINVAL;
 
-	error = copyin(data, args, sizeof(struct tmpfs_args));
-	if (error)
-		return error;
 	if (args->ta_root_uid == VNOVAL || args->ta_root_gid == VNOVAL ||
 	    args->ta_root_mode == VNOVAL)
 		return EINVAL;
