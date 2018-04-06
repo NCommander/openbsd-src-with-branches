@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_http.c,v 1.117 2017/05/15 10:40:47 jsg Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.118 2017/12/14 21:19:47 benno Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2017 Reyk Floeter <reyk@openbsd.org>
@@ -701,6 +701,7 @@ server_read_httprange(struct bufferevent *bev, void *arg)
 		r->range_index++;
 		break;
 	case TOREAD_HTTP_NONE:
+		goto done;
 	case 0:
 		break;
 	}
