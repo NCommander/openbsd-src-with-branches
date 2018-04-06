@@ -1,4 +1,4 @@
-/* $OpenBSD: input.c,v 1.131 2018/02/19 21:20:10 nicm Exp $ */
+/* $OpenBSD: input.c,v 1.132 2018/03/05 12:32:28 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -30,7 +30,7 @@
 /*
  * Based on the description by Paul Williams at:
  *
- * http://vt100.net/emu/dec_ansi_parser
+ * https://vt100.net/emu/dec_ansi_parser
  *
  * With the following changes:
  *
