@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.9 2017/07/09 15:28:34 espie Exp $
+# $OpenBSD: Makefile,v 1.10 2017/10/04 20:57:09 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -41,6 +41,7 @@ LLVM_LIBDEPS=	clangFrontendTool \
 		clangAST \
 		clangLex \
 		clangBasic \
+		clangBasicTargets \
 		LLVMLTO \
 		LLVMPasses \
 		LLVMOption \

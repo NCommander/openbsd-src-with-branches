@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2017/01/25 07:29:30 patrick Exp $
+# $OpenBSD: Makefile,v 1.6 2017/10/04 20:57:09 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -63,6 +63,7 @@ SUBDIR+=clang-tblgen
 SUBDIR+=include/clang
 
 SUBDIR+=libclangBasic
+SUBDIR+=libclangBasicTargets
 SUBDIR+=libclangLex
 SUBDIR+=libclangParse
 SUBDIR+=libclangAST
@@ -79,7 +80,7 @@ SUBDIR+=libclangFrontendTool
 
 SUBDIR+=clang
 
-SUBDIR+=liblldConfig
+SUBDIR+=liblldCommon
 SUBDIR+=liblldCore
 SUBDIR+=liblldELF
 

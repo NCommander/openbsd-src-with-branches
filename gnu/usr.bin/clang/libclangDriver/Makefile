@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2017/07/09 15:28:36 espie Exp $
+# $OpenBSD: Makefile,v 1.4 2017/10/04 20:57:10 patrick Exp $
 
 LIB=	clangDriver
 NOPIC=
@@ -15,7 +15,6 @@ SRCS=	AArch64.cpp \
 	Action.cpp \
 	Ananas.cpp \
 	BareMetal.cpp \
-	Bitrig.cpp \
 	Clang.cpp \
 	CloudABI.cpp \
 	CommonArgs.cpp \

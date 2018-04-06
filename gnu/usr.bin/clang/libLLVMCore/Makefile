@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/01/14 20:12:41 patrick Exp $
+# $OpenBSD: Makefile,v 1.3 2017/07/09 15:28:35 espie Exp $
 
 LIB=	LLVMCore
 NOPIC=
@@ -21,11 +21,11 @@ SRCS=	AsmWriter.cpp \
 	DebugInfo.cpp \
 	DebugInfoMetadata.cpp \
 	DebugLoc.cpp \
+	DiagnosticHandler.cpp \
 	DiagnosticInfo.cpp \
 	DiagnosticPrinter.cpp \
 	Dominators.cpp \
 	Function.cpp \
-	GCOV.cpp \
 	GVMaterializer.cpp \
 	Globals.cpp \
 	IRBuilder.cpp \
