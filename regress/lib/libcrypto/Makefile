@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.28 2017/05/06 20:42:57 beck Exp $
+#	$OpenBSD: Makefile,v 1.29 2018/03/19 14:34:33 beck Exp $
 
 SUBDIR= \
 	aead \
@@ -42,7 +42,8 @@ SUBDIR= \
 	sha2 \
 	sha256 \
 	sha512 \
-	utf8
+	utf8 \
+	x509
 
 install:
 
