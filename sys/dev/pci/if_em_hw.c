@@ -31,7 +31,7 @@
 
 *******************************************************************************/
 
-/* $OpenBSD: if_em_hw.c,v 1.96 2018/03/10 04:41:36 jsg Exp $ */
+/* $OpenBSD: if_em_hw.c,v 1.97 2018/03/16 06:30:50 jsg Exp $ */
 /*
  * if_em_hw.c Shared functions for accessing and configuring the MAC
  */
@@ -945,7 +945,7 @@ em_reset_hw(struct em_hw *hw)
 		}
 		em_get_software_flag(hw);
 		E1000_WRITE_REG(hw, CTRL, (ctrl | E1000_CTRL_RST));
-		msec_delay(5);
+		msec_delay(20);
 
 		/* Ungate automatic PHY configuration on non-managed 82579 */
 		if (hw->mac_type == em_pch2lan && !hw->phy_reset_disable &&
