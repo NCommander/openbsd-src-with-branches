@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rkdwusb.c,v 1.1 2017/08/11 22:06:20 kettenis Exp $	*/
 /*
  * Copyright (c) 2017 Mark kettenis <kettenis@openbsd.org>
  *
@@ -58,6 +58,7 @@ rkdwusb_attach(struct device *parent, struct device *self, void *aux)
 	struct fdt_attach_args *faa = aux;
 
 	clock_enable_all(faa->fa_node);
+	reset_deassert_all(faa->fa_node);
 
 	simplebus_attach(parent, &sc->sc_sbus.sc_dev, faa);
 }
