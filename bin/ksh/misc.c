@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.68 2018/01/16 22:52:32 jca Exp $	*/
+/*	$OpenBSD: misc.c,v 1.69 2018/03/15 16:51:29 anton Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -56,10 +56,10 @@ initctypes(void)
 	setctypes(" \n\t\"#$&'()*;<>?[\\`|", C_QUOTE);
 }
 
-/* convert unsigned long to base N string */
+/* convert uint64_t to base N string */
 
 char *
-ulton(long unsigned int n, int base)
+u64ton(uint64_t n, int base)
 {
 	char *p;
 	static char buf [20];

@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.63 2018/01/16 22:52:32 jca Exp $	*/
+/*	$OpenBSD: edit.c,v 1.64 2018/03/15 16:51:29 anton Exp $	*/
 
 /*
  * Command line editing - common code
@@ -80,10 +80,10 @@ check_sigwinch(void)
 				    ws.ws_col;
 
 				if ((vp = typeset("COLUMNS", 0, 0, 0, 0)))
-					setint(vp, (long) ws.ws_col);
+					setint(vp, (int64_t) ws.ws_col);
 			}
 			if (ws.ws_row && (vp = typeset("LINES", 0, 0, 0, 0)))
-				setint(vp, (long) ws.ws_row);
+				setint(vp, (int64_t) ws.ws_row);
 		}
 	}
 }

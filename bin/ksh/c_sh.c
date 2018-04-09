@@ -1,4 +1,4 @@
-/*	$OpenBSD: c_sh.c,v 1.61 2017/12/07 01:54:33 tb Exp $	*/
+/*	$OpenBSD: c_sh.c,v 1.62 2017/12/27 13:02:57 millert Exp $	*/
 
 /*
  * built-in Bourne commands
@@ -33,7 +33,7 @@ c_shift(char **wp)
 {
 	struct block *l = genv->loc;
 	int n;
-	long val;
+	int64_t val;
 	char *arg;
 
 	if (ksh_getopt(wp, &builtin_opt, null) == '?')

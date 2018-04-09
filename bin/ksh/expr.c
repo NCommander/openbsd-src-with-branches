@@ -1,4 +1,4 @@
-/*	$OpenBSD: expr.c,v 1.31 2015/10/19 14:42:16 mmcc Exp $	*/
+/*	$OpenBSD: expr.c,v 1.32 2015/12/30 09:07:00 tedu Exp $	*/
 
 /*
  * Korn expression evaluation
@@ -148,7 +148,7 @@ static struct tbl *intvar(Expr_state *, struct tbl *);
  * parse and evaluate expression
  */
 int
-evaluate(const char *expr, long int *rval, int error_ok, bool arith)
+evaluate(const char *expr, int64_t *rval, int error_ok, bool arith)
 {
 	struct tbl v;
 	int ret;
@@ -280,7 +280,7 @@ evalexpr(Expr_state *es, enum prec prec)
 {
 	struct tbl *vl, *vr = NULL, *vasn;
 	enum token op;
-	long res = 0;
+	int64_t res = 0;
 
 	if (prec == P_PRIMARY) {
 		op = es->tok;
