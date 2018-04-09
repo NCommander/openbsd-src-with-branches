@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.103 2017/12/30 20:46:59 guenther Exp $ */
+/*	$OpenBSD: machdep.c,v 1.104 2018/01/18 14:02:54 visa Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -654,6 +654,11 @@ octeon_tlb_init(void)
 		octeon_set_cvmmemctl(cvmmemctl);
 		break;
 	}
+
+	/*
+	 * Make sure Coprocessor 2 is disabled.
+	 */
+	setsr(getsr() & ~SR_COP_2_BIT);
 
 	/*
 	 * If the UserLocal register is available, let userspace
