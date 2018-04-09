@@ -1,4 +1,4 @@
-/*	$OpenBSD: xform.h,v 1.28 2015/12/10 21:00:51 naddy Exp $	*/
+/*	$OpenBSD: xform.h,v 1.29 2017/05/02 11:44:32 mikeb Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -29,6 +29,14 @@
 #include <crypto/rmd160.h>
 #include <crypto/sha2.h>
 #include <crypto/gmac.h>
+
+#define AESCTR_NONCESIZE	4
+#define AESCTR_IVSIZE		8
+#define AESCTR_BLOCKSIZE	16
+
+#define AES_XTS_BLOCKSIZE	16
+#define AES_XTS_IVSIZE		8
+#define AES_XTS_ALPHA		0x87	/* GF(2^128) generator polynomial */
 
 /* Declarations */
 struct auth_hash {
