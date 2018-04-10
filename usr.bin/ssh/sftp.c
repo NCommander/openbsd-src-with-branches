@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.181 2017/10/21 23:06:24 millert Exp $ */
+/* $OpenBSD: sftp.c,v 1.182 2017/11/03 03:46:52 djm Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -1815,7 +1815,7 @@ complete_cmd_parse(EditLine *el, char *cmd, int lastarg, char quote,
 		return 0;
 	}
 
-	/* Complete ambigious command */
+	/* Complete ambiguous command */
 	tmp = complete_ambiguous(cmd, list, count);
 	if (count > 1)
 		complete_display(list, 0);
