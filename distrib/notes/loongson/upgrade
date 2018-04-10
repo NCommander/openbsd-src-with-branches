@@ -1,2 +1,0 @@
-dnl	$OpenBSD$
-OpenBSDUpgrade({:-your usual boot device-:})

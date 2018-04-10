@@ -1,9 +1,0 @@
-/*	$OpenBSD: Version.inc,v 1.5 2017/12/24 23:29:52 patrick Exp $ */
-
-#define	CLANG_VERSION			6.0.0
-#define	CLANG_VERSION_STRING		"6.0.0"
-#define	CLANG_VERSION_MAJOR		6
-#define	CLANG_VERSION_MINOR		0
-#define	CLANG_VERSION_PATCHLEVEL	0
-
-#define	CLANG_VENDOR		"OpenBSD "

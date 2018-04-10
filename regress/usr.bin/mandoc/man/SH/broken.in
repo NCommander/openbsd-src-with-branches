@@ -1,7 +1,0 @@
-.\" $OpenBSD$
-.TH SH-BROKEN 1 "July 30, 2014"
-.SH NAME
-SH-broken \- section header line scope broken by end of file
-.SH DESCRIPTION
-some text
-.SH

@@ -1,9 +1,0 @@
-.\" $OpenBSD$
-.Dd
-.Dt DD-NOARG 1
-.Os
-.Sh NAME
-.Nm Dd-noarg
-.Nd date macro without an argument
-.Sh DESCRIPTION
-some text

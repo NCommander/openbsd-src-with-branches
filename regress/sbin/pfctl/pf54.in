@@ -1,3 +1,0 @@
-#scrub random-id
-
-match scrub(random-id)

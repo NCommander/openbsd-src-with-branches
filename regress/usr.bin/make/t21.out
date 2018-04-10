@@ -1,5 +1,0 @@
-S= sourceforge/%SUBDIR%/
-T= sourceforge/%SUBDIR%/
-X= http://heanet.dl.sourceforge.net/
-Y= sourceforge/%SUBDIR%/
-Z= sourceforge/%SUBDIR%/

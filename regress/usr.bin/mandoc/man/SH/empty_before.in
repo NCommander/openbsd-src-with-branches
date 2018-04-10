@@ -1,7 +1,0 @@
-.\" $OpenBSD$
-.TH SH-EMPTY_BEFORE 1 "August 18, 2014"
-.PP
-.SH NAME
-SH-empty_before \- empty paragraph before first section header
-.SH DESCRIPTION
-some text
