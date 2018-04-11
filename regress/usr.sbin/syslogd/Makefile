@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.21 2017/09/17 23:56:03 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.22 2017/10/23 17:37:55 bluhm Exp $
 
 # The following ports must be installed for the regression tests:
 # p5-IO-Socket-INET6	object interface for AF_INET and AF_INET6 domain sockets
@@ -40,7 +40,7 @@ REGRESS_TARGETS =	${TARGETS:S/^/run-regress-/}
 LDFLAGS +=		-lutil
 CLEANFILES +=		*.log *.log.? *.conf ktrace.out stamp-*
 CLEANFILES +=		*.out *.sock *.ktrace *.fstat ttylog *.ph */*.ph
-CLEANFILES +=		*.pem *.req *.key *.crt *.srl empty toobig
+CLEANFILES +=		*.pem *.req *.key *.crt *.srl empty toobig diskimage
 
 .MAIN: all
 
