@@ -1,4 +1,4 @@
-/*	$OpenBSD: man_html.c,v 1.97 2017/06/24 14:38:27 schwarze Exp $ */
+/*	$OpenBSD: man_html.c,v 1.98 2017/06/25 07:23:53 bentley Exp $ */
 /*
  * Copyright (c) 2008-2012, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2013, 2014, 2015, 2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -259,6 +259,8 @@ print_man_node(MAN_ARGS)
 		if (*n->string != '\0')
 			break;
 		print_paragraph(h);
+		return;
+	case ROFFT_COMMENT:
 		return;
 	default:
 		break;
