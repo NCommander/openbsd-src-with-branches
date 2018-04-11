@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.134 2017/08/11 18:48:56 jsing Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.135 2018/02/07 03:28:05 florian Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -53,6 +53,7 @@
 #define HTTPD_LOGROOT		"/logs"
 #define HTTPD_ACCESS_LOG	"access.log"
 #define HTTPD_ERROR_LOG		"error.log"
+#define HTTPD_MAX_ALIAS_IP	16
 #define HTTPD_REALM_MAX		255
 #define HTTPD_LOCATION_MAX	255
 #define HTTPD_DEFAULT_TYPE	{ "bin", "application", "octet-stream", NULL }
