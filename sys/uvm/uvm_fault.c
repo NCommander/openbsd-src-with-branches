@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_fault.c,v 1.91 2016/09/16 01:09:53 dlg Exp $	*/
+/*	$OpenBSD: uvm_fault.c,v 1.92 2017/07/20 18:22:25 bluhm Exp $	*/
 /*	$NetBSD: uvm_fault.c,v 1.51 2000/08/06 00:22:53 thorpej Exp $	*/
 
 /*
@@ -234,7 +234,8 @@ uvmfault_amapcopy(struct uvm_faultinfo *ufi)
 
 		/* copy if needed. */
 		if (UVM_ET_ISNEEDSCOPY(ufi->entry))
-			amap_copy(ufi->map, ufi->entry, M_NOWAIT, TRUE, 
+			amap_copy(ufi->map, ufi->entry, M_NOWAIT,
+				UVM_ET_ISSTACK(ufi->entry) ? FALSE : TRUE,
 				ufi->orig_rvaddr, ufi->orig_rvaddr + 1);
 
 		/* didn't work?  must be out of RAM.  sleep. */

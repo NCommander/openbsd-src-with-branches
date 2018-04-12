@@ -1,4 +1,4 @@
-/*	$OpenBSD: sig_machdep.c,v 1.26 2016/06/21 12:31:19 aoyama Exp $	*/
+/*	$OpenBSD: sig_machdep.c,v 1.27 2016/10/08 23:31:57 guenther Exp $	*/
 /*
  * Copyright (c) 2014 Miodrag Vallat.
  *
@@ -128,7 +128,8 @@ sendsig(sig_t catcher, int sig, int mask, unsigned long code, int type,
 	if ((p->p_sigstk.ss_flags & SS_DISABLE) == 0 &&
 	    !sigonstack(tf->tf_r[31]) && (psp->ps_sigonstack & sigmask(sig))) {
 		addr = local_stack_frame(tf,
-		    (vaddr_t)p->p_sigstk.ss_sp + p->p_sigstk.ss_size, fsize);
+		    trunc_page((vaddr_t)p->p_sigstk.ss_sp + p->p_sigstk.ss_size),
+		    fsize);
 	} else
 		addr = local_stack_frame(tf, tf->tf_r[31], fsize);
 

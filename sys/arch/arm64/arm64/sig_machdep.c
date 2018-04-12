@@ -1,4 +1,4 @@
-/*	$OpenBSD: sig_machdep.c,v 1.3 2017/03/12 17:57:12 kettenis Exp $ */
+/*	$OpenBSD: sig_machdep.c,v 1.4 2017/08/08 21:52:41 drahn Exp $ */
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -78,6 +78,8 @@
 #include <machine/frame.h>
 #include <machine/pcb.h>
 
+#include <uvm/uvm_extern.h>
+
 static __inline struct trapframe *
 process_frame(struct proc *p)
 {
@@ -109,8 +111,8 @@ sendsig(sig_t catcher, int sig, int returnmask, u_long code, int type,
 	/* Allocate space for the signal handler context. */
 	if ((p->p_sigstk.ss_flags & SS_DISABLE) == 0 &&
 	    !sigonstack(tf->tf_sp) && (psp->ps_sigonstack & sigmask(sig)))
-		fp = (struct sigframe *)((caddr_t)p->p_sigstk.ss_sp +
-		    p->p_sigstk.ss_size);
+		fp = (struct sigframe *)
+		    trunc_page((vaddr_t)p->p_sigstk.ss_sp + p->p_sigstk.ss_size);
 	else
 		fp = (struct sigframe *)tf->tf_sp;
 
