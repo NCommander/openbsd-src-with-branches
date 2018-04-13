@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.79 2018/01/03 05:39:56 ccardenas Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.80 2018/02/05 05:01:08 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -664,6 +664,7 @@ vmm_start_vm(struct imsg *imsg, uint32_t *id)
 	} else {
 		/* Child */
 		close(fds[0]);
+		close(PROC_PARENT_SOCK_FILENO);
 
 		ret = start_vm(vm, fds[1]);
 
