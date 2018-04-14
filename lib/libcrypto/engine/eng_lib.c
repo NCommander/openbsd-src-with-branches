@@ -1,4 +1,4 @@
-/* $OpenBSD: eng_lib.c,v 1.12 2017/01/29 17:49:23 beck Exp $ */
+/* $OpenBSD: eng_lib.c,v 1.13 2018/03/17 16:20:01 beck Exp $ */
 /* Written by Geoff Thorpe (geoff@geoffthorpe.net) for the OpenSSL
  * project 2000.
  */
@@ -115,10 +115,8 @@ engine_free_util(ENGINE *e, int locked)
 {
 	int i;
 
-	if (e == NULL) {
-		ENGINEerror(ERR_R_PASSED_NULL_PARAMETER);
-		return 0;
-	}
+	if (e == NULL)
+		return 1;
 	if (locked)
 		i = CRYPTO_add(&e->struct_ref, -1, CRYPTO_LOCK_ENGINE);
 	else
