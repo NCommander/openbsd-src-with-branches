@@ -1,4 +1,4 @@
-/* $OpenBSD: pem_lib.c,v 1.44 2017/01/29 17:49:23 beck Exp $ */
+/* $OpenBSD: pem_lib.c,v 1.45 2017/05/02 03:59:44 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -227,8 +227,7 @@ check_pem(const char *nm, const char *name)
 				else
 					r = 0;
 #ifndef OPENSSL_NO_ENGINE
-				if (e)
-					ENGINE_finish(e);
+				ENGINE_finish(e);
 #endif
 				return r;
 			}

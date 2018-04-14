@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.182 2018/03/17 16:20:01 beck Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.183 2018/04/07 17:02:34 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1976,8 +1976,7 @@ SSL_CTX_free(SSL_CTX *ctx)
 #endif
 
 #ifndef OPENSSL_NO_ENGINE
-	if (ctx->internal->client_cert_engine)
-		ENGINE_finish(ctx->internal->client_cert_engine);
+	ENGINE_finish(ctx->internal->client_cert_engine);
 #endif
 
 	free(ctx->internal->tlsext_ecpointformatlist);
