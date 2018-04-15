@@ -1,4 +1,4 @@
-.\" $OpenBSD$
+.\" $OpenBSD: ENGINE_ctrl.3,v 1.1 2018/04/15 01:43:45 schwarze Exp $
 .\" content checked up to:
 .\" OpenSSL ENGINE_add 1f13ad31 Dec 25 17:50:39 2017 +0800
 .\"
@@ -16,7 +16,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: April 14 2018 $
+.Dd $Mdocdate: April 15 2018 $
 .Dt ENGINE_CTRL 3
 .Os
 .Sh NAME
@@ -95,6 +95,11 @@ passing the arguments
 .Fa i
 and
 .Fa p .
+.Pp
+User-defined commands can be used before
+.Xr ENGINE_init 3
+to provide data required for initialization
+or at any time to modify the behaviour of an engine.
 .Pp
 Most built-in commands operate on user-defined commands installed with
 .Fn ENGINE_set_cmd_defns ,
