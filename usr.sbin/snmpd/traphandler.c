@@ -1,4 +1,4 @@
-/*	$OpenBSD: traphandler.c,v 1.10 2018/01/05 08:13:32 mpi Exp $	*/
+/*	$OpenBSD: traphandler.c,v 1.11 2018/02/08 18:02:06 jca Exp $	*/
 
 /*
  * Copyright (c) 2014 Bret Stephen Lambert <blambert@openbsd.org>
@@ -78,6 +78,8 @@ traphandler(struct privsep *ps, struct privsep_proc *p)
 
 	if (env->sc_traphandler) {
 		TAILQ_FOREACH(h, &env->sc_addresses, entry) {
+			if (h->ipproto != IPPROTO_UDP)
+				continue;
 			if ((so = calloc(1, sizeof(*so))) == NULL)
 				fatal("%s", __func__);
 			if ((so->s_fd = traphandler_bind(h)) == -1)
@@ -115,7 +117,8 @@ traphandler_bind(struct address *addr)
 	int			 s;
 	char			 buf[512];
 
-	if ((s = snmpd_socket_af(&addr->ss, htons(SNMPD_TRAPPORT))) == -1)
+	if ((s = snmpd_socket_af(&addr->ss, htons(SNMPD_TRAPPORT),
+	    IPPROTO_UDP)) == -1)
 		return (-1);
 
 	if (fcntl(s, F_SETFL, O_NONBLOCK) == -1)
