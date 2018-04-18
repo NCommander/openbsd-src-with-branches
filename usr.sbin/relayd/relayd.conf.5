@@ -1,4 +1,4 @@
-.\"	$OpenBSD: relayd.conf.5,v 1.181 2017/11/29 15:24:50 benno Exp $
+.\"	$OpenBSD: relayd.conf.5,v 1.182 2017/11/29 21:17:51 jmc Exp $
 .\"
 .\" Copyright (c) 2006 - 2016 Reyk Floeter <reyk@openbsd.org>
 .\" Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -849,7 +849,7 @@ Valid options are:
 .Bl -tag -width Ds
 .It Ic backlog Ar number
 Set the maximum length the queue of pending connections may grow to.
-The backlog option is 10 by default and is limited by the
+The backlog option is 10 by default, is limited to 512 and capped by the
 .Ic kern.somaxconn
 .Xr sysctl 8
 variable.
