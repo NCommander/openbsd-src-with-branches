@@ -1,4 +1,4 @@
-.\" $OpenBSD: ENGINE_register_all_RSA.3,v 1.1 2018/04/15 01:43:45 schwarze Exp $
+.\" $OpenBSD: ENGINE_register_all_RSA.3,v 1.2 2018/04/15 17:02:03 schwarze Exp $
 .\" content checked up to:
 .\" OpenSSL ENGINE_add 1f13ad31 Dec 25 17:50:39 2017 +0800
 .\"
@@ -94,3 +94,30 @@ and does not require any engines, not even built-in ones.
 .Pp
 .Fn ENGINE_load_dynamic
 has no effect and is only provided for compatibility.
+.Sh SEE ALSO
+.Xr ENGINE_add 3 ,
+.Xr ENGINE_new 3 ,
+.Xr ENGINE_register_RSA 3 ,
+.Xr ENGINE_set_flags 3 ,
+.Xr OPENSSL_config 3 ,
+.Xr OPENSSL_init_crypto 3
+.Sh HISTORY
+.Fn ENGINE_register_all_RSA ,
+.Fn ENGINE_register_all_DSA ,
+.Fn ENGINE_register_all_DH ,
+.Fn ENGINE_register_all_RAND ,
+.Fn ENGINE_register_all_ciphers ,
+.Fn ENGINE_register_all_digests ,
+.Fn ENGINE_register_all_complete ,
+.Fn ENGINE_load_builtin_engines ,
+and
+.Fn ENGINE_load_dynamic
+first appeared in OpenSSL 0.9.7 and have been available since
+.Ox 3.2 .
+.Pp
+.Fn ENGINE_register_all_ECDH ,
+.Fn ENGINE_register_all_ECDSA ,
+and
+.Fn ENGINE_register_all_STORE
+first appeared in OpenSSL 0.9.8 and have been available since
+.Ox 4.5 .

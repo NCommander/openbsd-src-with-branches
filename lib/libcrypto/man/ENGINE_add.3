@@ -1,4 +1,4 @@
-.\" $OpenBSD: ENGINE_add.3,v 1.1 2018/04/15 01:43:45 schwarze Exp $
+.\" $OpenBSD: ENGINE_add.3,v 1.2 2018/04/15 17:02:03 schwarze Exp $
 .\" content checked up to: OpenSSL 1f13ad31 Dec 25 17:50:39 2017 +0800
 .\"
 .\" Copyright (c) 2018 Ingo Schwarze <schwarze@openbsd.org>
@@ -213,3 +213,31 @@ returns an
 object or
 .Dv NULL
 if no matching object is found.
+.Sh SEE ALSO
+.Xr ENGINE_get_default_RSA 3 ,
+.Xr ENGINE_init 3 ,
+.Xr ENGINE_new 3 ,
+.Xr ENGINE_register_all_RSA 3 ,
+.Xr ENGINE_register_RSA 3 ,
+.Xr ENGINE_set_default 3 ,
+.Xr ENGINE_set_flags 3 ,
+.Xr ENGINE_unregister_RSA 3
+.Sh HISTORY
+.Fn ENGINE_add ,
+.Fn ENGINE_set_id ,
+.Fn ENGINE_get_id ,
+.Fn ENGINE_set_name ,
+.Fn ENGINE_get_name ,
+.Fn ENGINE_remove ,
+.Fn ENGINE_get_first ,
+.Fn ENGINE_get_last ,
+.Fn ENGINE_get_next ,
+.Fn ENGINE_get_prev ,
+and
+.Fn ENGINE_by_id
+first appeared in OpenSSL 0.9.7 and have been available since
+.Ox 2.9 .
+.Pp
+.Fn ENGINE_cleanup
+first appeared in OpenSSL 0.9.7 and has been available since
+.Ox 3.2 .
