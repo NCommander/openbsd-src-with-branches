@@ -1,4 +1,4 @@
-/*	$OpenBSD: start.S,v 1.1 2010/02/14 22:39:33 miod Exp $	*/
+/*	$OpenBSD: start.S,v 1.2 2016/10/09 03:07:25 visa Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -41,6 +41,8 @@ __start:
 	move	sp, t0
 	jal	pmon_init		# pmon_init(argc, argv, envp, callvec,
 	mfc0	a4, COP_0_PRID		#     prid)
+	jal	pmon_probe_abi
+	nop
 	jal	main
 	nop
 	/* FALLTHROUGH */
