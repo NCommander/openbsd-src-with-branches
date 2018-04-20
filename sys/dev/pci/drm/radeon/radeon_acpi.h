@@ -1,3 +1,4 @@
+/*	$OpenBSD: radeon_acpi.h,v 1.1 2013/08/12 04:11:53 jsg Exp $	*/
 /*
  * Copyright 2012 Advanced Micro Devices, Inc.
  *

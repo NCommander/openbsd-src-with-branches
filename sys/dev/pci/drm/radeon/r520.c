@@ -1,3 +1,4 @@
+/*	$OpenBSD: r520.c,v 1.4 2015/04/06 03:49:47 jsg Exp $	*/
 /*
  * Copyright 2008 Advanced Micro Devices, Inc.
  * Copyright 2008 Red Hat Inc.
@@ -311,9 +312,6 @@ int r520_init(struct radeon_device *rdev)
 	if (r)
 		return r;
 	rv515_set_safe_registers(rdev);
-
-	/* Initialize power management */
-	radeon_pm_init(rdev);
 
 	rdev->accel_working = true;
 	r = r520_startup(rdev);

@@ -17,7 +17,6 @@
 
 #include <dev/pci/drm/drmP.h>
 
-#if defined(__i386__) || defined(__amd64__)
 static void
 drm_clflush_page(struct vm_page *page)
 {
@@ -54,10 +53,3 @@ drm_clflush_virt_range(void *addr, unsigned long length)
 {
 	pmap_flush_cache((vaddr_t)addr, length);
 }
-#else
-void
-drm_clflush_pages(struct vm_page *pages[], unsigned long num_pages)
-{
-	STUB();
-}
-#endif

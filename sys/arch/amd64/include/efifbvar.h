@@ -28,7 +28,6 @@ struct pci_attach_args;
 int efifb_cnattach(void);
 int efifb_is_console(struct pci_attach_args *);
 void efifb_cndetach(void);
-void efifb_cnreattach(void);
 
 int efifb_cb_found(void);
 int efifb_cb_cnattach(void);

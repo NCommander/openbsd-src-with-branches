@@ -1,3 +1,4 @@
+/*	$OpenBSD: radeon_clocks.c,v 1.3 2015/04/18 14:47:35 jsg Exp $	*/
 /*
  * Copyright 2008 Advanced Micro Devices, Inc.
  * Copyright 2008 Red Hat Inc.
