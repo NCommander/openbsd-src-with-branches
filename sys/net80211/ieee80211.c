@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211.c,v 1.64 2017/12/08 21:16:01 stsp Exp $	*/
+/*	$OpenBSD: ieee80211.c,v 1.65 2017/12/12 15:52:49 stsp Exp $	*/
 /*	$NetBSD: ieee80211.c,v 1.19 2004/06/06 05:45:29 dyoung Exp $	*/
 
 /*-
@@ -193,6 +193,7 @@ ieee80211_ifdetach(struct ifnet *ifp)
 {
 	struct ieee80211com *ic = (void *)ifp;
 
+	timeout_del(&ic->ic_bgscan_timeout);
 	ieee80211_proto_detach(ifp);
 	ieee80211_crypto_detach(ifp);
 	ieee80211_node_detach(ifp);
