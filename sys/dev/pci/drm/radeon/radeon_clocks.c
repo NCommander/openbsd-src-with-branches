@@ -1,4 +1,3 @@
-/*	$OpenBSD: radeon_clocks.c,v 1.2 2014/07/03 18:58:21 kettenis Exp $	*/
 /*
  * Copyright 2008 Advanced Micro Devices, Inc.
  * Copyright 2008 Red Hat Inc.

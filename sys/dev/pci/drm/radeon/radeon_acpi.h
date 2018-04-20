@@ -1,4 +1,3 @@
-/*	$OpenBSD$	*/
 /*
  * Copyright 2012 Advanced Micro Devices, Inc.
  *
