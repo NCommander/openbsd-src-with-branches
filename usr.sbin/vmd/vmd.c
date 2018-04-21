@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.c,v 1.81 2018/03/14 07:29:34 mlarkin Exp $	*/
+/*	$OpenBSD: vmd.c,v 1.82 2018/03/29 18:29:24 martijn Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -228,7 +228,7 @@ vmd_dispatch_control(int fd, struct privsep_proc *p, struct imsg *imsg)
 		}
 		if (atomicio(read, imsg->fd, &vmh, sizeof(vmh)) !=
 		    sizeof(vmh)) {
-			log_warnx("%s: error reading vmh from recevied vm",
+			log_warnx("%s: error reading vmh from received vm",
 			    __func__);
 			res = EIO;
 			close(imsg->fd);
@@ -243,7 +243,7 @@ vmd_dispatch_control(int fd, struct privsep_proc *p, struct imsg *imsg)
 		}
 		if (atomicio(read, imsg->fd, &vmc, sizeof(vmc)) !=
 		    sizeof(vmc)) {
-			log_warnx("%s: error reading vmc from recevied vm",
+			log_warnx("%s: error reading vmc from received vm",
 			    __func__);
 			res = EIO;
 			close(imsg->fd);
