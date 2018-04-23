@@ -1,4 +1,4 @@
-/*	$OpenBSD: enqueue.c,v 1.112 2016/02/03 08:03:21 gilles Exp $	*/
+/*	$OpenBSD: enqueue.c,v 1.113 2016/07/03 14:30:33 gilles Exp $	*/
 
 /*
  * Copyright (c) 2005 Henning Brauer <henning@bulabula.org>
@@ -716,8 +716,7 @@ parse_addr(char *s, size_t len, int is_from)
 		if (!pstate.quote && pstate.comment && s[pos] == ')')
 			pstate.comment--;
 
-		if (!pstate.esc && !pstate.comment && !pstate.quote &&
-		    s[pos] == '\\')
+		if (!pstate.esc && !pstate.comment && s[pos] == '\\')
 			pstate.esc = 1;
 		else
 			pstate.esc = 0;
