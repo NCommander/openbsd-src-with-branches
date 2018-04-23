@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.94 2017/10/25 14:14:52 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.95 2018/02/22 10:54:51 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -514,8 +514,8 @@ const struct options_table_entry options_table[] = {
 	{ .name = "update-environment",
 	  .type = OPTIONS_TABLE_ARRAY,
 	  .scope = OPTIONS_TABLE_SESSION,
-	  .default_str = "DISPLAY SSH_ASKPASS SSH_AUTH_SOCK SSH_AGENT_PID "
-			 "SSH_CONNECTION WINDOWID XAUTHORITY"
+	  .default_str = "DISPLAY KRB5CCNAME SSH_ASKPASS SSH_AUTH_SOCK "
+	  		 "SSH_AGENT_PID SSH_CONNECTION WINDOWID XAUTHORITY"
 	},
 
 	{ .name = "visual-activity",
