@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.6 2017/04/17 12:54:48 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.7 2017/08/10 16:54:28 bluhm Exp $
 
-SUBDIR =	X11 c++abi exceptions sse2
+SUBDIR =	X11 c++abi exceptions os-test sse2
 
 install:
 
