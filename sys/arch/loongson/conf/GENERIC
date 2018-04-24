@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.55 2017/05/21 13:00:53 visa Exp $
+#	$OpenBSD: GENERIC,v 1.56 2017/08/28 19:32:53 jasper Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -212,6 +212,7 @@ udl*		at uhub?
 wsdisplay*	at udl?
 
 # NICs
+em*		at pci?		# Intel Pro/1000 ethernet
 ral*		at pci?
 re*		at pci?
 rl*		at pci?
