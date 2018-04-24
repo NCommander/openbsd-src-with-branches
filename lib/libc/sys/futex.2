@@ -1,4 +1,4 @@
-.\" $OpenBSD: futex.2,v 1.2 2017/04/28 14:30:54 jmc Exp $
+.\" $OpenBSD: futex.2,v 1.3 2017/04/28 17:54:24 mpi Exp $
 .\"
 .\" Copyright (c) 2017 Martin Pieuchot
 .\"
@@ -122,8 +122,13 @@ The
 expired before the thread was woken up
 .It Bq Er EINTR
 A signal arrived.
+.It Bq Er ECANCELED
+A signal arrived and
+.Fa SA_RESTART
+was set.
 .El
 .Sh SEE ALSO
+.Xr sigaction 2 ,
 .Xr pthread_cond_wait 3 ,
 .Xr pthread_mutex_lock 3 ,
 .Xr tsleep 9
