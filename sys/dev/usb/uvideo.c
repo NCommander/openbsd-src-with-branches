@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.c,v 1.195 2017/08/21 14:38:32 jsg Exp $ */
+/*	$OpenBSD: uvideo.c,v 1.196 2017/12/30 23:08:29 guenther Exp $ */
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -2781,11 +2781,14 @@ int
 uvideo_querycap(void *v, struct v4l2_capability *caps)
 {
 	struct uvideo_softc *sc = v;
+	char vendor[USB_MAX_STRING_LEN];
+	char product[USB_MAX_STRING_LEN];
 
 	bzero(caps, sizeof(*caps));
 	strlcpy(caps->driver, DEVNAME(sc), sizeof(caps->driver));
-	strlcpy(caps->card, "Generic USB video class device",
-	    sizeof(caps->card));
+	usbd_devinfo_vp(sc->sc_udev, vendor, sizeof (vendor), product,
+	    sizeof (product), 0);
+	strlcpy(caps->card, product, sizeof(caps->card));
 	strlcpy(caps->bus_info, "usb", sizeof(caps->bus_info));
 
 	caps->version = 1;
