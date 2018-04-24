@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_usrreq.c,v 1.33 2017/11/02 14:01:18 florian Exp $	*/
+/*	$OpenBSD: raw_usrreq.c,v 1.34 2017/11/03 12:49:42 florian Exp $	*/
 /*	$NetBSD: raw_usrreq.c,v 1.11 1996/02/13 22:00:43 christos Exp $	*/
 
 /*
@@ -54,10 +54,11 @@ raw_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 	int error = 0;
 	int len;
 
-	soassertlocked(so);
-
 	if (req == PRU_CONTROL)
 		return (EOPNOTSUPP);
+
+	soassertlocked(so);
+
 	if (control && control->m_len) {
 		m_freem(m);
 		return (EOPNOTSUPP);
