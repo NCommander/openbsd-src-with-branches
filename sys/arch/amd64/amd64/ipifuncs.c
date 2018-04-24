@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.28 2015/11/23 22:57:12 deraadt Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.29 2017/12/04 09:38:20 mpi Exp $	*/
 /*	$NetBSD: ipifuncs.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $ */
 
 /*-
@@ -47,7 +47,6 @@
 #include <machine/atomic.h>
 #include <machine/cpuvar.h>
 #include <machine/i82093var.h>
-#include <machine/i82489reg.h>
 #include <machine/i82489var.h>
 #include <machine/fpu.h>
 #include <machine/mplock.h>
