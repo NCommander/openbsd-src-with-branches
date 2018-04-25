@@ -1,4 +1,4 @@
-/* $OpenBSD: f_int.c,v 1.17 2014/07/11 08:44:47 jsing Exp $ */
+/* $OpenBSD: f_int.c,v 1.18 2017/01/29 17:49:22 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -63,7 +63,7 @@
 #include <openssl/err.h>
 
 int
-i2a_ASN1_INTEGER(BIO *bp, ASN1_INTEGER *a)
+i2a_ASN1_INTEGER(BIO *bp, const ASN1_INTEGER *a)
 {
 	int i, n = 0;
 	static const char h[] = "0123456789ABCDEF";

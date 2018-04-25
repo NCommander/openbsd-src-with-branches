@@ -1,4 +1,4 @@
-/* $OpenBSD: v3_sxnet.c,v 1.18 2016/12/30 15:54:49 jsing Exp $ */
+/* $OpenBSD: v3_sxnet.c,v 1.19 2017/01/29 17:49:23 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -335,7 +335,7 @@ err:
 }
 
 ASN1_OCTET_STRING *
-SXNET_get_id_asc(SXNET *sx, char *zone)
+SXNET_get_id_asc(SXNET *sx, const char *zone)
 {
 	ASN1_INTEGER *izone = NULL;
 	ASN1_OCTET_STRING *oct;
