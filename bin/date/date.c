@@ -1,4 +1,4 @@
-/*	$OpenBSD: date.c,v 1.51 2017/12/23 20:58:14 cheloha Exp $	*/
+/*	$OpenBSD: date.c,v 1.52 2018/02/13 17:28:11 cheloha Exp $	*/
 /*	$NetBSD: date.c,v 1.11 1995/09/07 06:21:05 jtc Exp $	*/
 
 /*
@@ -127,7 +127,7 @@ main(int argc, char *argv[])
 		argc--;
 	}
 
-	if (pledge("stdio rpath wpath", NULL) == -1)
+	if (pledge("stdio rpath", NULL) == -1)
 		err(1, "pledge");
 
 	if (*argv && **argv == '+') {
@@ -158,6 +158,9 @@ setthetime(char *p)
 	char *dot, *t;
 	time_t now;
 	int yearset = 0;
+
+	if (pledge("stdio settime rpath wpath", NULL) == -1)
+		err(1, "pledge");
 
 	for (t = p, dot = NULL; *t; ++t) {
 		if (isdigit((unsigned char)*t))
