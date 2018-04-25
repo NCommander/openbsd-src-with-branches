@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.c,v 1.82 2018/03/29 18:29:24 martijn Exp $	*/
+/*	$OpenBSD: vmd.c,v 1.83 2018/04/21 07:03:06 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -662,8 +662,7 @@ main(int argc, char **argv)
 	const char		*errp, *title = NULL;
 	int			 argc0 = argc;
 
-	/* log to stderr until daemonized */
-	log_init(1, LOG_DAEMON);
+	log_init(0, LOG_DAEMON);
 
 	if ((env = calloc(1, sizeof(*env))) == NULL)
 		fatal("calloc: env");
