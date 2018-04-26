@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwn.c,v 1.200 2018/02/01 11:21:34 stsp Exp $	*/
+/*	$OpenBSD: if_iwn.c,v 1.201 2018/02/25 12:40:06 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -6632,11 +6632,6 @@ iwn_stop(struct ifnet *ifp, int disable)
 	ifp->if_timer = sc->sc_tx_timer = 0;
 	ifp->if_flags &= ~IFF_RUNNING;
 	ifq_clr_oactive(&ifp->if_snd);
-
-	/* In case we were scanning, release the scan "lock". */
-	if (ic->ic_scan_lock & IEEE80211_SCAN_REQUEST)
-		wakeup(&ic->ic_scan_lock);
-	ic->ic_scan_lock = IEEE80211_SCAN_UNLOCKED;
 
 	ieee80211_new_state(ic, IEEE80211_S_INIT, -1);
 
