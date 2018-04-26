@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_socket.c,v 1.35 2017/12/10 11:31:54 mpi Exp $	*/
+/*	$OpenBSD: sys_socket.c,v 1.36 2018/04/10 09:17:45 mpi Exp $	*/
 /*	$NetBSD: sys_socket.c,v 1.13 1995/08/12 23:59:09 mycroft Exp $	*/
 
 /*
@@ -135,10 +135,8 @@ soo_ioctl(struct file *fp, u_long cmd, caddr_t data, struct proc *p)
 		}
 		if (IOCGROUP(cmd) == 'r')
 			return (EOPNOTSUPP);
-		s = solock(so);
 		error = ((*so->so_proto->pr_usrreq)(so, PRU_CONTROL,
 		    (struct mbuf *)cmd, (struct mbuf *)data, NULL, p));
-		sounlock(s);
 		break;
 	}
 
