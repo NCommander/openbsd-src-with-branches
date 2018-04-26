@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.536 2017/09/08 16:51:22 eric Exp $	*/
+/*	$OpenBSD: smtpc.c,v 1.1 2018/04/26 13:57:13 eric Exp $	*/
 
 /*
  * Copyright (c) 2018 Eric Faurot <eric@openbsd.org>
@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 #include <unistd.h>
 
 #include "smtp.h"
