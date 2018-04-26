@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-802_11.c,v 1.8 2015/07/15 03:05:00 stsp Exp $	*/
+/*	$OpenBSD: print-802_11.c,v 1.9 2016/01/12 09:28:10 stsp Exp $	*/
 
 /*
  * Copyright (c) 2005 Reyk Floeter <reyk@openbsd.org>
@@ -20,8 +20,6 @@
 
 #include <sys/time.h>
 #include <sys/socket.h>
-#include <sys/file.h>
-#include <sys/ioctl.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>

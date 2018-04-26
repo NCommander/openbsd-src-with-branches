@@ -1,7 +1,6 @@
-/* $OpenBSD$ */
+/* $OpenBSD: elfrd_size.c,v 1.8 2017/12/03 19:32:19 tb Exp $ */
 
 #include <sys/types.h>
-#include <sys/file.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 

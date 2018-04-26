@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.86 2017/08/09 17:35:38 jmc Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.87 2017/10/25 12:09:07 mpi Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -74,7 +74,6 @@
  */
 
 
-#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>
@@ -98,7 +97,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
-#include <paths.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

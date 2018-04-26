@@ -1,4 +1,4 @@
-/*	$OpenBSD: printjob.c,v 1.58 2016/11/22 16:03:57 millert Exp $	*/
+/*	$OpenBSD: printjob.c,v 1.59 2017/09/20 05:08:11 guenther Exp $	*/
 /*	$NetBSD: printjob.c,v 1.31 2002/01/21 14:42:30 wiz Exp $	*/
 
 /*
@@ -38,10 +38,9 @@
  *	it does not need to be removed because file locks are dynamic.
  */
 
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/file.h>
 
 #include <pwd.h>
 #include <unistd.h>

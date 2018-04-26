@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpr.c,v 1.47 2015/01/16 06:40:18 deraadt Exp $ */
+/*	$OpenBSD: lpr.c,v 1.48 2015/02/09 23:00:14 deraadt Exp $ */
 /*	$NetBSD: lpr.c,v 1.19 2000/10/11 20:23:52 is Exp $	*/
 
 /*
@@ -44,7 +44,6 @@
  */
 
 #include <sys/stat.h>
-#include <sys/file.h>
 
 #include <dirent.h>
 #include <errno.h>

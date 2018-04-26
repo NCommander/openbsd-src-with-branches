@@ -1,4 +1,4 @@
-/*	$OpenBSD: finger.c,v 1.25 2015/10/26 16:57:13 deraadt Exp $	*/
+/*	$OpenBSD: finger.c,v 1.26 2015/11/03 05:13:35 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -56,7 +56,6 @@
  * well as home directory, shell, mail info, and .plan/.project files.
  */
 
-#include <sys/file.h>
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>

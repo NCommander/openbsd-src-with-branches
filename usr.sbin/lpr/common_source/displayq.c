@@ -1,4 +1,4 @@
-/*	$OpenBSD: displayq.c,v 1.38 2016/01/12 23:35:13 tb Exp $	*/
+/*	$OpenBSD: displayq.c,v 1.39 2016/03/17 05:27:10 bentley Exp $	*/
 /*	$NetBSD: displayq.c,v 1.21 2001/08/30 00:51:50 itojun Exp $	*/
 
 /*
@@ -30,7 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 

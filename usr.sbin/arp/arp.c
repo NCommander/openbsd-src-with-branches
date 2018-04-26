@@ -1,4 +1,4 @@
-/*	$OpenBSD: arp.c,v 1.79 2017/04/19 05:36:12 natano Exp $ */
+/*	$OpenBSD: arp.c,v 1.80 2017/12/23 20:53:07 cheloha Exp $ */
 /*	$NetBSD: arp.c,v 1.12 1995/04/24 13:25:18 cgd Exp $ */
 
 /*
@@ -37,7 +37,6 @@
  * arp - display, set, delete arp table entries and wake up hosts.
  */
 
-#include <sys/file.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>
 #include <sys/ioctl.h>
@@ -53,11 +52,11 @@
 #include <netdb.h>
 #include <errno.h>
 #include <err.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <paths.h>
 #include <unistd.h>
 #include <limits.h>
 #include <ifaddrs.h>

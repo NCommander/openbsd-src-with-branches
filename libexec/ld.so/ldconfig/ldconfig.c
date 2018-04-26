@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldconfig.c,v 1.35 2015/11/15 02:49:59 deraadt Exp $	*/
+/*	$OpenBSD: ldconfig.c,v 1.36 2016/07/04 20:56:50 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1993,1995 Paul Kranenburg
@@ -32,11 +32,8 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/file.h>
-#include <sys/time.h>
 #include <sys/mman.h>
-#include <sys/resource.h>
-#include <ctype.h>
+
 #include <dirent.h>
 #include <err.h>
 #include <errno.h>
