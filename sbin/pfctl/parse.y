@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.669 2018/02/06 23:47:47 henning Exp $	*/
+/*	$OpenBSD: parse.y,v 1.670 2018/02/08 09:15:46 henning Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -788,6 +788,8 @@ varset		: STRING '=' varstring	{
 				if (isspace((unsigned char)*s)) {
 					yyerror("macro name cannot contain "
 					    "whitespace");
+					free($1);
+					free($3);
 					YYERROR;
 				}
 			}
