@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.19 2016/03/22 17:58:28 mmcc Exp $	*/
+/*	$OpenBSD: io.c,v 1.20 2017/04/26 21:25:43 naddy Exp $	*/
 /*	$NetBSD: io.c,v 1.2 1995/03/21 09:04:43 cgd Exp $	*/
 
 /* io.c: This file contains the i/o routines for the ed line editor */
@@ -295,8 +295,8 @@ get_tty_line(void)
 
 
 
-#define ESCAPES "\a\b\f\n\r\t\v\\"
-#define ESCCHARS "abfnrtv\\"
+#define ESCAPES "\a\b\f\n\r\t\v\\$"
+#define ESCCHARS "abfnrtv\\$"
 
 extern int rows;
 extern int cols;
@@ -330,7 +330,7 @@ put_tty_line(char *s, int l, int n, int gflag)
 #endif
 		}
 		if (gflag & GLS) {
-			if (31 < *s && *s < 127 && *s != '\\')
+			if (31 < *s && *s < 127 && *s != '\\' && *s != '$')
 				putchar(*s);
 			else {
 				putchar('\\');
@@ -348,10 +348,8 @@ put_tty_line(char *s, int l, int n, int gflag)
 		} else
 			putchar(*s);
 	}
-#ifndef BACKWARDS
 	if (gflag & GLS)
 		putchar('$');
-#endif
 	putchar('\n');
 	return 0;
 }
