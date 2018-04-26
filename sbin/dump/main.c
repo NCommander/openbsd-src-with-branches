@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.58 2016/06/07 01:29:38 tedu Exp $	*/
+/*	$OpenBSD: main.c,v 1.59 2016/08/31 21:00:31 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.14 1997/06/05 11:13:24 lukem Exp $	*/
 
 /*-
@@ -440,7 +440,7 @@ main(int argc, char *argv[])
 	    sblock->fs_inodefmt >= FS_44INODEFMT)
 		spcl.c_flags |= DR_NEWINODEFMT;
 #endif
-	maxino = sblock->fs_ipg * sblock->fs_ncg;
+	maxino = (ino_t)sblock->fs_ipg * sblock->fs_ncg;
 	mapsize = roundup(howmany(maxino, NBBY), TP_BSIZE);
 	usedinomap = calloc((unsigned) mapsize, sizeof(char));
 	dumpdirmap = calloc((unsigned) mapsize, sizeof(char));
