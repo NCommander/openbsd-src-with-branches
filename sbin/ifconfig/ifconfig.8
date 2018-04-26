@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ifconfig.8,v 1.305 2018/03/16 19:45:13 benno Exp $
+.\"	$OpenBSD: ifconfig.8,v 1.306 2018/04/26 06:58:50 akoshibe Exp $
 .\"	$NetBSD: ifconfig.8,v 1.11 1996/01/04 21:27:29 pk Exp $
 .\"     $FreeBSD: ifconfig.8,v 1.16 1998/02/01 07:03:29 steve Exp $
 .\"
@@ -31,7 +31,7 @@
 .\"
 .\"     @(#)ifconfig.8	8.4 (Berkeley) 6/1/94
 .\"
-.Dd $Mdocdate: March 16 2018 $
+.Dd $Mdocdate: April 26 2018 $
 .Dt IFCONFIG 8
 .Os
 .Sh NAME
@@ -408,9 +408,7 @@ networks into subnetworks.
 The mask includes the network part of the local address
 and the subnet part, which is taken from the host field of the address.
 The mask can be specified as a single hexadecimal number
-with a leading 0x, with a dot-notation Internet address,
-or with a pseudo-network name listed in the network table
-.Xr networks 5 .
+with a leading 0x, or with a dot-notation Internet address.
 The mask contains 1's for the bit positions in the 32-bit address
 which are to be used for the network and subnet parts,
 and 0's for the host part.
@@ -1847,7 +1845,6 @@ tried to alter an interface's configuration.
 .Xr route 4 ,
 .Xr hostname.if 5 ,
 .Xr hosts 5 ,
-.Xr networks 5 ,
 .Xr rc 8 ,
 .Xr slaacd 8 ,
 .Xr tcpdump 8
