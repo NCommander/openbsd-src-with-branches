@@ -1,4 +1,4 @@
-/*	$OpenBSD: pledge.h,v 1.33 2017/12/12 01:12:34 deraadt Exp $	*/
+/*	$OpenBSD: pledge.h,v 1.34 2018/01/09 15:14:23 mpi Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -89,7 +89,7 @@ static struct {
 	{ PLEDGE_PROC,		"proc" },
 	{ PLEDGE_SETTIME,	"settime" },
 	{ PLEDGE_FATTR,		"fattr" },
-	{ PLEDGE_PROTEXEC,	"protexec" },
+	{ PLEDGE_PROTEXEC,	"prot_exec" },
 	{ PLEDGE_TTY,		"tty" },
 	{ PLEDGE_SENDFD,	"sendfd" },
 	{ PLEDGE_RECVFD,	"recvfd" },
