@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioscsi.c,v 1.3 2018/01/16 06:10:45 ccardenas Exp $  */
+/*	$OpenBSD: vioscsi.c,v 1.4 2018/01/19 14:23:52 ccardenas Exp $  */
 
 /*
  * Copyright (c) 2017 Carlos Cardenas <ccardenas@openbsd.org>
@@ -203,7 +203,7 @@ vioscsi_start_read(struct vioscsi_dev *dev, off_t block, ssize_t n_blocks)
 
 nomem:
 	free(info);
-	log_warn("malloc errror vioscsi read");
+	log_warn("malloc error vioscsi read");
 	return (NULL);
 }
 
