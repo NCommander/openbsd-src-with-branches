@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.48 2016/12/26 23:43:52 krw Exp $	*/
+/*	$OpenBSD: tape.c,v 1.49 2017/01/21 08:31:44 krw Exp $	*/
 /*	$NetBSD: tape.c,v 1.26 1997/04/15 07:12:25 lukem Exp $	*/
 
 /*
@@ -564,6 +564,8 @@ extractfile(char *name)
 			if (linkit(lnkbuf, name, SYMLINK) == FAIL)
 				return (FAIL);
 			(void)lchown(name, uid, gid);
+			(void)fchmodat(AT_FDCWD, name, mode,
+			    AT_SYMLINK_NOFOLLOW);
 			return (GOOD);
 		}
 
