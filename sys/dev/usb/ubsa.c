@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsa.c,v 1.64 2015/03/14 03:38:49 jsg Exp $ 	*/
+/*	$OpenBSD: ubsa.c,v 1.65 2017/04/08 02:57:25 deraadt Exp $ 	*/
 /*	$NetBSD: ubsa.c,v 1.5 2002/11/25 00:51:33 fvdl Exp $	*/
 /*-
  * Copyright (c) 2002, Alexander Kabaev <kan.FreeBSD.org>.
@@ -63,7 +63,6 @@
 #include <sys/fcntl.h>
 #include <sys/conf.h>
 #include <sys/tty.h>
-#include <sys/file.h>
 #include <sys/selinfo.h>
 #include <sys/poll.h>
 

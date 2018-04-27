@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvscom.c,v 1.35 2017/04/08 02:57:25 deraadt Exp $ */
+/*	$OpenBSD: uvscom.c,v 1.36 2018/03/15 00:42:41 kevlo Exp $ */
 /*	$NetBSD: uvscom.c,v 1.9 2003/02/12 15:36:20 ichiro Exp $	*/
 /*-
  * Copyright (c) 2001-2002, Shunsuke Akiyama <akiyama@jp.FreeBSD.org>.
@@ -42,7 +42,6 @@
 #include <sys/fcntl.h>
 #include <sys/conf.h>
 #include <sys/tty.h>
-#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/device.h>
 #include <sys/poll.h>
