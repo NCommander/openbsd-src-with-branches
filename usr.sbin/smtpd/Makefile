@@ -1,9 +1,10 @@
-#	$OpenBSD: Makefile,v 1.15 2015/12/07 12:29:19 sunil Exp $
+#	$OpenBSD: Makefile,v 1.16 2017/02/14 16:02:13 gilles Exp $
 
 .include <bsd.own.mk>
 
 SUBDIR =	smtpd
 SUBDIR+=	smtpctl
+SUBDIR+=	smtp
 #SUBDIR+=	mail
 
 .include <bsd.subdir.mk>
