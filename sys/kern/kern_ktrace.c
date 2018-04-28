@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ktrace.c,v 1.94 2017/12/30 23:08:29 guenther Exp $	*/
+/*	$OpenBSD: kern_ktrace.c,v 1.95 2018/02/19 08:59:52 mpi Exp $	*/
 /*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
@@ -511,7 +511,7 @@ sys_ktrace(struct proc *p, void *v, register_t *retval)
 			return error;
 		vp = nd.ni_vp;
 
-		VOP_UNLOCK(vp, p);
+		VOP_UNLOCK(vp);
 	}
 
 	error = doktrace(vp, SCARG(uap, ops), SCARG(uap, facs),

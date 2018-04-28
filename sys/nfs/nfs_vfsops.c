@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vfsops.c,v 1.116 2018/02/10 05:24:23 deraadt Exp $	*/
+/*	$OpenBSD: nfs_vfsops.c,v 1.117 2018/04/09 09:39:53 mpi Exp $	*/
 /*	$NetBSD: nfs_vfsops.c,v 1.46.4.1 1996/05/25 22:40:35 fvdl Exp $	*/
 
 /*
@@ -698,7 +698,7 @@ mountnfs(struct nfs_args *argp, struct mount *mp, struct mbuf *nam,
 	if (vp->v_type == VNON)
 		vp->v_type = VDIR;
 	vp->v_flag = VROOT;
-	VOP_UNLOCK(vp, curproc);
+	VOP_UNLOCK(vp);
 	*vpp = vp;
 
 	return (0);

@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.56 2017/02/14 10:31:15 mpi Exp $  */
+/*       $OpenBSD: vfs_sync.c,v 1.57 2018/02/10 05:24:23 deraadt Exp $  */
 
 /*
  *  Portions of this code are:
@@ -360,7 +360,7 @@ sync_inactive(void *v)
 	int s;
 
 	if (vp->v_usecount == 0) {
-		VOP_UNLOCK(vp, ap->a_p);
+		VOP_UNLOCK(vp);
 		return (0);
 	}
 

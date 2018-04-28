@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_script.c,v 1.41 2018/01/01 08:55:43 florian Exp $	*/
+/*	$OpenBSD: exec_script.c,v 1.42 2018/01/02 06:38:45 guenther Exp $	*/
 /*	$NetBSD: exec_script.c,v 1.13 1996/02/04 02:15:06 christos Exp $	*/
 
 /*
@@ -160,7 +160,7 @@ check_shell:
 	 */
 	vn_lock(scriptvp, LK_EXCLUSIVE|LK_RETRY, p);
 	error = VOP_ACCESS(scriptvp, VREAD, p->p_ucred, p);
-	VOP_UNLOCK(scriptvp, p);
+	VOP_UNLOCK(scriptvp);
 	if (error == EACCES || script_sbits) {
 		struct file *fp;
 
