@@ -1,4 +1,4 @@
-/*	$OpenBSD: bfd.c,v 1.67 2018/04/28 07:45:47 phessler Exp $	*/
+/*	$OpenBSD: bfd.c,v 1.68 2018/04/28 07:46:56 phessler Exp $	*/
 
 /*
  * Copyright (c) 2016 Peter Hessler <phessler@openbsd.org>
@@ -1006,7 +1006,7 @@ bfd_send(struct bfd_config *bfd, struct mbuf *m)
 {
 	struct rtentry *rt = bfd->bc_rt;
 
-	if (!rtisvalid(rt) || !ISSET(rt->rt_flags, RTF_BFD)) {
+	if (!rtisvalid(rt)) {
 		m_freem(m);
 		return (EHOSTDOWN);
 	}
