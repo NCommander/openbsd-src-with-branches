@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr_debug.c,v 1.23 2017/02/17 22:24:45 eric Exp $	*/
+/*	$OpenBSD: asr_debug.c,v 1.24 2017/02/27 11:31:01 jca Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -338,8 +338,6 @@ _asr_querystr(int type)
 	CASE(ASR_GETRRSETBYNAME);
 	CASE(ASR_GETHOSTBYNAME);
 	CASE(ASR_GETHOSTBYADDR);
-	CASE(ASR_GETNETBYNAME);
-	CASE(ASR_GETNETBYADDR);
 	CASE(ASR_GETADDRINFO);
 	CASE(ASR_GETNAMEINFO);
 	default:
