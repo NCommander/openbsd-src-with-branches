@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.228 2018/01/09 15:14:23 mpi Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.229 2018/03/27 08:42:49 mpi Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -416,7 +416,7 @@ parsepledges(struct proc *p, const char *kname, const char *promises, u_int64_t 
 		ktrstruct(p, kname, rbuf, rbuflen-1);
 #endif
 
-	for (rp = rbuf; rp && *rp && error == 0; rp = pn) {
+	for (rp = rbuf; rp && *rp; rp = pn) {
 		pn = strchr(rp, ' ');	/* find terminator */
 		if (pn) {
 			while (*pn == ' ')
