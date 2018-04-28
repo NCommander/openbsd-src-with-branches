@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgt.c,v 1.89 2017/01/22 10:17:38 dlg Exp $  */
+/*	$OpenBSD: pgt.c,v 1.90 2017/10/26 15:00:28 mpi Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -2250,13 +2250,6 @@ pgt_ioctl(struct ifnet *ifp, u_long cmd, caddr_t req)
 		/*
 		 * This chip scans always as soon as it gets initialized.
 		 */
-
-		/*
-		 * Give us a bit time to scan in case we were not
-		 * initialized before and let the userland process wait.
-		 */
-		tsleep(&sc->sc_flags, 0, "pgtsca", hz * SCAN_TIMEOUT);
-
 		break;
 	case SIOCG80211ALLNODES: {
 		struct ieee80211_nodereq *nr = NULL;
