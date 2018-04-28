@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751.c,v 1.176 2017/01/19 10:20:29 jsg Exp $	*/
+/*	$OpenBSD: hifn7751.c,v 1.177 2017/02/07 17:25:46 patrick Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -420,8 +420,8 @@ hifn_rng(void *vsc)
 			if (sc->sc_rngfirst)
 				sc->sc_rngfirst = 0;
 			else {
-				add_true_randomness(num1);
-				add_true_randomness(num2);
+				enqueue_randomness(num1);
+				enqueue_randomness(num2);
 			}
 		}
 	} else {
@@ -430,7 +430,7 @@ hifn_rng(void *vsc)
 		if (sc->sc_rngfirst)
 			sc->sc_rngfirst = 0;
 		else
-			add_true_randomness(num1);
+			enqueue_randomness(num1);
 	}
 
 	timeout_add(&sc->sc_rngto, sc->sc_rnghz);

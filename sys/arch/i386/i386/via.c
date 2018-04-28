@@ -1,4 +1,4 @@
-/*	$OpenBSD: via.c,v 1.41 2018/02/20 15:02:13 mikeb Exp $	*/
+/*	$OpenBSD: via.c,v 1.42 2018/02/21 21:09:57 mikeb Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -536,7 +536,7 @@ viac3_rnd(void *v)
 #endif
 
 	for (i = 0, p = buffer; i < VIAC3_RNG_BUFSIZ; i++, p++)
-		add_true_randomness(*p);
+		enqueue_randomness(*p);
 
 	timeout_add_msec(tmo, 10);
 }

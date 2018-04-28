@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmt.c,v 1.13 2017/06/04 05:04:24 jmatthew Exp $ */
+/*	$OpenBSD: vmt.c,v 1.14 2018/03/08 05:33:56 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2007 David Crawshaw <david@zentus.com>
@@ -479,10 +479,10 @@ vmt_resume(void)
 	vm_cmd(&frame);
 
 	rdrand(NULL);
-	add_true_randomness(frame.eax.word);
-	add_true_randomness(frame.esi.word);
-	add_true_randomness(frame.edx.word);
-	add_true_randomness(frame.ebx.word);
+	enqueue_randomness(frame.eax.word);
+	enqueue_randomness(frame.esi.word);
+	enqueue_randomness(frame.edx.word);
+	enqueue_randomness(frame.ebx.word);
 	resume_randomness(NULL, 0);
 }
 

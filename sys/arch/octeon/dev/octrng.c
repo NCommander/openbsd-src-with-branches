@@ -1,4 +1,4 @@
-/*	$OpenBSD: octrng.c,v 1.5 2014/05/07 14:44:54 pirofti Exp $	*/
+/*	$OpenBSD: octrng.c,v 1.6 2015/07/19 21:11:47 jasper Exp $	*/
 /*
  * Copyright (c) 2013 Paul Irofti <pirofti@openbsd.org>
  *
@@ -118,6 +118,6 @@ octrng_rnd(void *arg)
 
 	DPRINTF(("%#llX ", value));	/* WARNING: very verbose */
 
-	add_true_randomness(value);
+	enqueue_randomness(value);
 	timeout_add_msec(&sc->sc_to, 10);
 }

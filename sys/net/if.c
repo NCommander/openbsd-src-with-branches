@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.549 2018/03/20 08:58:19 mpi Exp $	*/
+/*	$OpenBSD: if.c,v 1.550 2018/04/24 15:40:55 pirofti Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -881,7 +881,7 @@ if_input_process(struct ifnet *ifp, struct mbuf_list *ml)
 		return;
 
 	if (!ISSET(ifp->if_xflags, IFXF_CLONED))
-		add_net_randomness(ml_len(ml));
+		enqueue_randomness(ml_len(ml));
 
 	/*
 	 * We grab the NET_LOCK() before processing any packet to
