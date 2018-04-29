@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.460 2017/06/22 16:02:42 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.461 2017/11/05 10:29:24 rpe Exp $
 
 .include <bsd.own.mk>
 
@@ -41,7 +41,7 @@ BINOWN= root
 BINGRP= wheel
 MUTABLE=acme-client.conf changelist daily etc.${MACHINE}/disktab \
 	etc.${MACHINE}/login.conf ftpusers gettytab group ksh.kshrc locate.rc \
-	mailer.conf moduli monthly netstart networks newsyslog.conf ntpd.conf \
+	mailer.conf moduli monthly netstart newsyslog.conf ntpd.conf \
 	pf.os protocols rc rc.conf rpc services shells syslog.conf weekly
 
 # -rw-r--r--
