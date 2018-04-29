@@ -31,7 +31,7 @@
 
 *******************************************************************************/
 
-/* $OpenBSD: if_em_hw.h,v 1.73 2018/03/16 06:30:50 jsg Exp $ */
+/* $OpenBSD: if_em_hw.h,v 1.74 2018/04/07 11:56:40 sf Exp $ */
 /* $FreeBSD: if_em_hw.h,v 1.15 2005/05/26 23:32:02 tackerman Exp $ */
 
 /* if_em_hw.h
@@ -2756,6 +2756,8 @@ struct em_host_command_info {
 #define AUTO_READ_DONE_TIMEOUT      10
 /* Number of milliseconds we wait for PHY configuration done after MAC reset */
 #define PHY_CFG_TIMEOUT             100
+/* SW Semaphore flag timeout in ms */
+#define SW_FLAG_TIMEOUT		1000
 
 #define E1000_TX_BUFFER_SIZE ((uint32_t)1514)
 
