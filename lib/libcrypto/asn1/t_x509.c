@@ -1,4 +1,4 @@
-/* $OpenBSD: t_x509.c,v 1.28 2017/04/03 15:52:59 beck Exp $ */
+/* $OpenBSD: t_x509.c,v 1.29 2018/04/25 19:58:53 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -321,7 +321,7 @@ X509_signature_dump(BIO *bp, const ASN1_STRING *sig, int indent)
 }
 
 int
-X509_signature_print(BIO *bp, X509_ALGOR *sigalg, ASN1_STRING *sig)
+X509_signature_print(BIO *bp, const X509_ALGOR *sigalg, const ASN1_STRING *sig)
 {
 	int sig_nid;
 	if (BIO_puts(bp, "    Signature Algorithm: ") <= 0)
