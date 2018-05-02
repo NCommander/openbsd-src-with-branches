@@ -1,4 +1,4 @@
-# $OpenBSD: RAMDISK,v 1.56 2018/04/02 21:41:33 kettenis Exp $
+# $OpenBSD: RAMDISK,v 1.57 2018/04/07 18:31:22 kettenis Exp $
 #
 # GENERIC machine description file
 #
@@ -104,6 +104,7 @@ imxiic*		at fdt?
 iic*		at imxiic?
 imxesdhc*	at fdt?
 sdmmc*		at imxesdhc?
+imxpd*		at fdt?
 
 # Raspberry Pi 3
 bcmaux*		at fdt?
