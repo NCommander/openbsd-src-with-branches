@@ -1,4 +1,4 @@
-# $OpenBSD: files.arm64,v 1.18 2018/01/25 15:06:29 mpi Exp $
+# $OpenBSD: files.arm64,v 1.19 2018/02/15 00:03:06 jsg Exp $
 
 maxpartitions	16
 maxusers	2 8 64
@@ -68,6 +68,7 @@ file	dev/ofw/ofw_clock.c
 file	dev/ofw/ofw_gpio.c
 file	dev/ofw/ofw_misc.c
 file	dev/ofw/ofw_pinctrl.c
+file	dev/ofw/ofw_power.c
 file	dev/ofw/ofw_regulator.c
 
 # Machine-independent SCSI drivers
