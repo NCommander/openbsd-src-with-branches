@@ -2062,10 +2062,10 @@ const struct puc_device_description puc_devs[] = {
 	    {   PCI_VENDOR_EXAR, PCI_PRODUCT_EXAR_XR17V354,	0, 0 },
 	    {   0xffff, 0xffff,					0, 0 },
 	    {
-		{ PUC_PORT_COM_125MHZ, 0x10, 0x0000 },
-		{ PUC_PORT_COM_125MHZ, 0x10, 0x0400 },
-		{ PUC_PORT_COM_125MHZ, 0x10, 0x0800 },
-		{ PUC_PORT_COM_125MHZ, 0x10, 0x0C00 },
+		{ PUC_PORT_COM_MUL8, 0x10, 0x0000 },
+		{ PUC_PORT_COM_MUL8, 0x10, 0x0400 },
+		{ PUC_PORT_COM_MUL8, 0x10, 0x0800 },
+		{ PUC_PORT_COM_MUL8, 0x10, 0x0C00 },
 	    },
 	},
 
