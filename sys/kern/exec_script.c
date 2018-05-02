@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_script.c,v 1.42 2018/01/02 06:38:45 guenther Exp $	*/
+/*	$OpenBSD: exec_script.c,v 1.43 2018/04/28 03:13:04 visa Exp $	*/
 /*	$NetBSD: exec_script.c,v 1.13 1996/02/04 02:15:06 christos Exp $	*/
 
 /*
@@ -158,7 +158,7 @@ check_shell:
 	 * close all open fd's when they start.  That kills this
 	 * method of implementing "safe" set-id and x-only scripts.
 	 */
-	vn_lock(scriptvp, LK_EXCLUSIVE|LK_RETRY, p);
+	vn_lock(scriptvp, LK_EXCLUSIVE|LK_RETRY);
 	error = VOP_ACCESS(scriptvp, VREAD, p->p_ucred, p);
 	VOP_UNLOCK(scriptvp);
 	if (error == EACCES || script_sbits) {
