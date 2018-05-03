@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_mips64.c,v 1.14 2014/07/11 07:38:05 deraadt Exp $ */
+/*	$OpenBSD: kvm_mips64.c,v 1.15 2015/02/09 22:23:47 miod Exp $ */
 /*	$NetBSD: kvm_mips.c,v 1.3 1996/03/18 22:33:44 thorpej Exp $	*/
 
 /*-
@@ -71,8 +71,8 @@ struct vmstate {
 void
 _kvm_freevtop(kvm_t *kd)
 {
-	if (kd->vmst != 0)
-		free(kd->vmst);
+	free(kd->vmst);
+	kd->vmst = NULL;
 }
 
 int
