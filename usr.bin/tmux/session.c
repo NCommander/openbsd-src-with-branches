@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.77 2017/07/09 22:33:09 nicm Exp $ */
+/* $OpenBSD: session.c,v 1.78 2017/11/02 18:27:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -291,9 +291,10 @@ session_update_activity(struct session *s, struct timeval *from)
 	else
 		memcpy(&s->activity_time, from, sizeof s->activity_time);
 
-	log_debug("session %s activity %lld.%06d (last %lld.%06d)", s->name,
-	    (long long)s->activity_time.tv_sec, (int)s->activity_time.tv_usec,
-	    (long long)last->tv_sec, (int)last->tv_usec);
+	log_debug("session $%u %s activity %lld.%06d (last %lld.%06d)", s->id,
+	    s->name, (long long)s->activity_time.tv_sec,
+	    (int)s->activity_time.tv_usec, (long long)last->tv_sec,
+	    (int)last->tv_usec);
 
 	if (evtimer_initialized(&s->lock_timer))
 		evtimer_del(&s->lock_timer);
