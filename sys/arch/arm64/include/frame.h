@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: frame.h,v 1.1 2016/12/17 23:38:33 patrick Exp $ */
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
  *
@@ -65,6 +65,11 @@ struct switchframe {
 	register_t sf_x28;
 	register_t sf_x29;
 	register_t sf_lr;
+};
+
+struct callframe {
+	struct callframe	*f_frame;
+	register_t		 f_lr;
 };
 
 #endif /* !_LOCORE */
