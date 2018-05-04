@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.42 2017/11/03 11:29:46 jasper Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.43 2018/03/20 15:45:32 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -324,6 +324,7 @@ db_save_stack_trace(struct db_stack_trace *st)
 	pc = 0;
 	rp = fp[-5];
 
+	st->st_count = 0;
 	for (i = 0; i < DB_STACK_TRACE_MAX; i++) {
 		st->st_pc[st->st_count++] = rp;
 

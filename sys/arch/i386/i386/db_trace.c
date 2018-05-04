@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.31 2017/11/03 11:29:46 jasper Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.32 2017/12/08 08:54:03 mpi Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.18 1996/05/03 19:42:01 christos Exp $	*/
 
 /*
@@ -354,6 +354,7 @@ db_save_stack_trace(struct db_stack_trace *st)
 	callpc = db_get_value((int)&frame->f_retaddr, 4, FALSE);
 
 	lastframe = NULL;
+	st->st_count = 0;
 	for (i = 0; i < DB_STACK_TRACE_MAX && frame != NULL; i++) {
 		char		*name;
 		db_expr_t	offset;

@@ -267,6 +267,7 @@ db_save_stack_trace(struct db_stack_trace *st)
 	frame = frame->f_frame;
 
 	lastframe = NULL;
+	st->st_count = 0;
 	for (i = 0; i < DB_STACK_TRACE_MAX && frame != NULL; i++) {
 		st->st_pc[st->st_count++] = callpc;
 
