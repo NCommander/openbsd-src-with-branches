@@ -1,4 +1,4 @@
-/* $OpenBSD: com_fdt.c,v 1.3 2017/08/29 13:33:03 jsg Exp $ */
+/* $OpenBSD: com_fdt.c,v 1.4 2018/04/02 12:59:39 kettenis Exp $ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *
@@ -80,7 +80,6 @@ com_fdt_init_cons(void)
 	if (bus_space_map(comconsiot, reg.addr, reg.size, 0, &comconsioh))
 		return;
 
-	comconsrate = B115200;
 	cn_tab = &com_fdt_cons;
 }
 
@@ -136,6 +135,7 @@ com_fdt_attach(struct device *parent, struct device *self, void *aux)
 		SET(sc->sc_hwflags, COM_HW_CONSOLE);
 		SET(sc->sc_swflags, COM_SW_SOFTCAR);
 		comconsfreq = sc->sc_frequency;
+		comconsrate = stdout_speed ? stdout_speed : B115200;
 	}
 
 	if (bus_space_map(sc->sc_iot, faa->fa_reg[0].addr,
