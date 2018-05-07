@@ -1,4 +1,4 @@
-/* $OpenBSD: wsconsio.h,v 1.86 2017/10/24 09:36:13 jsg Exp $ */
+/* $OpenBSD: wsconsio.h,v 1.87 2017/11/15 13:25:19 anton Exp $ */
 /* $NetBSD: wsconsio.h,v 1.74 2005/04/28 07:15:44 martin Exp $ */
 
 /*
@@ -328,8 +328,14 @@ enum wsmousecfg {
 					   the button-up-event (ms) */
 	WSMOUSECFG_TAP_LOCKTIME,	/* time between a tap-and-drag action
 					   and the button-up-event (ms) */
+
+	/*
+	 * Enable/Disable debug output.
+	 */
+	WSMOUSECFG_LOG_INPUT = 256,
+	WSMOUSECFG_LOG_EVENTS,
 };
-#define WSMOUSECFG_MAX	36	/* max size of param array per ioctl */
+#define WSMOUSECFG_MAX	38	/* max size of param array per ioctl */
 
 struct wsmouse_param {
 	enum wsmousecfg key;
