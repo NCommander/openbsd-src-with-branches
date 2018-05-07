@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.91 2018/02/18 19:11:27 kettenis Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.92 2018/04/08 18:57:39 guenther Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -281,8 +281,10 @@ solock(struct socket *so)
 	    (so->so_proto->pr_domain->dom_family != PF_ROUTE) &&
 	    (so->so_proto->pr_domain->dom_family != PF_KEY))
 		NET_LOCK();
-	else
+	else {
+		KERNEL_LOCK();
 		s = -42;
+	}
 
 	return (s);
 }
@@ -292,6 +294,9 @@ sounlock(int s)
 {
 	if (s != -42)
 		NET_UNLOCK();
+	else {
+		KERNEL_UNLOCK();
+	}
 }
 
 void
