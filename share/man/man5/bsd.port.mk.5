@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.477 2018/04/25 14:36:38 danj Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.478 2018/04/25 19:49:49 jmc Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -2988,6 +2988,17 @@ Used to store cookies for package updates and defaults to
 .Pa ${PORTSDIR}/update/${MACHINE_ARCH} .
 If set to empty, will revert to a file under
 .Pa ${WRKDIR} .
+.It Ev UPDATE_PLIST_ARGS
+Tweaks to
+.Xr update-plist 1
+behavior for some specific ports, such as variable handling.
+.It Ev UPDATE_PLIST_OPTS
+User settings.
+User options added to
+.Xr update-plist 1 ,
+mostly
+.Fl v
+for now.
 .It Ev USE_CCACHE
 User settings.
 Set to
