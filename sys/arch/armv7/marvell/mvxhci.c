@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: mvxhci.c,v 1.1 2017/03/24 20:27:27 patrick Exp $ */
 /*
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
  *
@@ -148,8 +148,6 @@ mvxhci_attach(struct device *parent, struct device *self, void *aux)
 		printf(": can't establish interrupt\n");
 		goto unmap;
 	}
-
-	printf("\n");
 
 	strlcpy(sc->sc.sc_vendor, "Marvell", sizeof(sc->sc.sc_vendor));
 	if ((error = xhci_init(&sc->sc)) != 0) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: xhci_fdt.c,v 1.9 2018/05/02 15:17:45 patrick Exp $	*/
+/*	$OpenBSD: xhci_fdt.c,v 1.10 2018/05/03 10:57:37 patrick Exp $	*/
 /*
  * Copyright (c) 2017 Mark kettenis <kettenis@openbsd.org>
  *
@@ -94,8 +94,6 @@ xhci_fdt_attach(struct device *parent, struct device *self, void *aux)
 		printf(": can't establish interrupt\n");
 		goto unmap;
 	}
-
-	printf("\n");
 
 	/* Set up power domain */
 	power_domain_enable(sc->sc_node);
