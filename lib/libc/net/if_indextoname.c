@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_indextoname.c,v 1.10 2015/09/14 10:47:01 guenther Exp $	*/
+/*	$OpenBSD: if_indextoname.c,v 1.11 2015/10/23 13:09:19 claudio Exp $	*/
 /*	$KAME: if_indextoname.c,v 1.6 2000/11/07 22:33:25 jinmei Exp $	*/
 
 /*-
@@ -35,7 +35,7 @@
 #include <errno.h>
 
 /*
- * From RFC 2533:
+ * From RFC 2553:
  *
  * The second function maps an interface index into its corresponding
  * name.
