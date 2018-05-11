@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2018/01/21 21:35:34 patrick Exp $
+#	$OpenBSD: Makefile,v 1.9 2018/03/31 18:19:12 patrick Exp $
 
 NOMAN=		#
 
@@ -48,6 +48,7 @@ CPPFLAGS+=	-DNEEDS_HEAP_H
 COPTS+=		-ffreestanding -fno-stack-protector
 COPTS+=		-fshort-wchar -fPIC -fno-builtin
 COPTS+=		-Wall -Werror
+COPTS+=		-mfloat-abi=soft
 
 PROG.elf=	${PROG:S/.EFI/.elf/}
 CLEANFILES+=	${PROG.elf} ${PROG.elf}.tmp
