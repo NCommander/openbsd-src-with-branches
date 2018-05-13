@@ -1,4 +1,4 @@
-/* $OpenBSD: p_lib.c,v 1.21 2018/04/14 07:09:21 tb Exp $ */
+/* $OpenBSD: p_lib.c,v 1.22 2018/05/13 06:37:14 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -277,7 +277,7 @@ EVP_PKEY_assign(EVP_PKEY *pkey, int type, void *key)
 }
 
 void *
-EVP_PKEY_get0(EVP_PKEY *pkey)
+EVP_PKEY_get0(const EVP_PKEY *pkey)
 {
 	return pkey->pkey.ptr;
 }
