@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ldapd.conf.5,v 1.21 2016/10/17 13:49:03 jca Exp $
+.\"	$OpenBSD: ldapd.conf.5,v 1.22 2016/10/17 14:03:17 jca Exp $
 .\"
 .\" Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
 .\" Copyright (c) 2008 Janne Johansson <jj@openbsd.org>
@@ -246,6 +246,13 @@ The filter rule applies to any distinguished name in the namespace.
 This is the default if no scope is specified.
 .It to root
 The filter rule applies to the root DSE.
+.El
+.Pp
+The scope scope can be restricted to an optional attribute:
+.Bl -tag -width Ds
+.It attribute Ar name
+The filter rule applies to the specified attribute.
+Attributes can only be specified for write access rules.
 .El
 .Pp
 Finally, the filter rule can match a bind DN:
