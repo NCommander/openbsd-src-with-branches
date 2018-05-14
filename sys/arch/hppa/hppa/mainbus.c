@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.86 2014/11/16 12:30:57 deraadt Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.87 2015/09/13 11:40:01 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -1238,7 +1238,7 @@ mbattach(parent, self, aux)
 }
 
 /*
- * retrive CPU #N HPA value
+ * Retrieve CPU #N HPA value
  */
 hppa_hpa_t
 cpu_gethpa(n)

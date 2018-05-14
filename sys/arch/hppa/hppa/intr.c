@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.48 2015/09/08 07:14:04 deraadt Exp $	*/
+/*	$OpenBSD: intr.c,v 1.49 2015/09/13 14:58:20 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2002-2004 Michael Shalayeff
@@ -134,6 +134,10 @@ cpu_intr_init(void)
 	ssm(PSL_I, mask);
 }
 
+/*
+ * Find an available, non-shared interrupt bit.
+ * Returns -1 if all interrupt bits are in use.
+ */
 int
 cpu_intr_findirq(void)
 {
