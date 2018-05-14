@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.292 2018/01/27 08:32:03 anton Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.293 2018/04/26 20:57:59 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1740,7 +1740,6 @@ imsg_to_str(int type)
 	CASE(IMSG_CTL_VERBOSE);
 	CASE(IMSG_CTL_DISCOVER_EVPID);
 	CASE(IMSG_CTL_DISCOVER_MSGID);
-	CASE(IMSG_CTL_UNCORRUPT_MSGID);
 
 	CASE(IMSG_CTL_SMTP_SESSION);
 
