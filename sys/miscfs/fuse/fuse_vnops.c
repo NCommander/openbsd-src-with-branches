@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vnops.c,v 1.38 2018/04/28 03:13:05 visa Exp $ */
+/* $OpenBSD: fuse_vnops.c,v 1.39 2018/05/02 02:24:56 visa Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -717,7 +717,7 @@ fusefs_readdir(void *v)
 			 * dirent was larger than residual space left in
 			 * buffer.
 			 */
-			if (error == ENOBUFS && fbuf->fb_len == 0)
+			if (error == ENOBUFS)
 				error = 0;
 
 			fb_delete(fbuf);
