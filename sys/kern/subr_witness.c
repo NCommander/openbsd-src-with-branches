@@ -1039,6 +1039,41 @@ witness_checkorder(struct lock_object *lock, int flags, const char *file,
 				    lock->lo_name, w->w_type->lt_name,
 				    fixup_filename(file), line);
 			}
+			if (witness_watch > 1) {
+				struct witness_lock_order_data *wlod1, *wlod2;
+
+				mtx_enter(&w_mtx);
+				wlod1 = witness_lock_order_get(w, w1);
+				wlod2 = witness_lock_order_get(w1, w);
+				mtx_leave(&w_mtx);
+
+				/*
+				 * It is safe to access saved stack traces,
+				 * w_type, and w_class without the lock.
+				 * Once written, they never change.
+				 */
+
+				if (wlod1 != NULL) {
+					printf("lock order \"%s\"(%s) -> "
+					    "\"%s\"(%s) first seen at:\n",
+					    w->w_type->lt_name,
+					    w->w_class->lc_name,
+					    w1->w_type->lt_name,
+					    w1->w_class->lc_name);
+					db_print_stack_trace(
+					    &wlod1->wlod_stack, printf);
+				}
+				if (wlod2 != NULL) {
+					printf("lock order \"%s\"(%s) -> "
+					    "\"%s\"(%s) first seen at:\n",
+					    w1->w_type->lt_name,
+					    w1->w_class->lc_name,
+					    w->w_type->lt_name,
+					    w->w_class->lc_name);
+					db_print_stack_trace(
+					    &wlod2->wlod_stack, printf);
+				}
+			}
 			witness_debugger(0);
 			goto out_splx;
 		}
