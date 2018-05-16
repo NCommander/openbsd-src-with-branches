@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.h,v 1.9 2018/01/12 14:52:55 kettenis Exp $ */
+/* $OpenBSD: pmap.h,v 1.10 2018/02/20 23:45:24 kettenis Exp $ */
 /*
  * Copyright (c) 2008,2009,2014 Dale Rahn <drahn@dalerahn.com>
  *
@@ -94,6 +94,8 @@ void pmap_page_ro(pmap_t pm, vaddr_t va, vm_prot_t prot);
 paddr_t pmap_steal_avail(size_t size, int align, void **kva);
 void pmap_avail_fixup();
 void pmap_physload_avail();
+
+#define PMAP_GROWKERNEL
 
 struct pv_entry;
 
