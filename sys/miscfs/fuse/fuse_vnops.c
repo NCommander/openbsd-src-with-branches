@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vnops.c,v 1.39 2018/05/02 02:24:56 visa Exp $ */
+/* $OpenBSD: fuse_vnops.c,v 1.40 2018/05/16 13:09:17 helg Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -861,7 +861,7 @@ fusefs_reclaim(void *v)
 	 */
 	ufs_ihashrem(&ip->ufs_ino);
 
-	free(ip, M_FUSEFS, 0);
+	free(ip, M_FUSEFS, sizeof(*ip));
 	vp->v_data = NULL;
 	return (0);
 }
