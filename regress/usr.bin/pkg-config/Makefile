@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.57 2017/08/26 09:07:52 jsg Exp $
+#	$OpenBSD: Makefile,v 1.58 2018/05/17 19:02:05 jasper Exp $
 
 REGRESS_TARGETS=cmp-vers1-1 \
 		cmp-vers1-2 \
@@ -68,7 +68,6 @@ REGRESS_TARGETS=cmp-vers1-1 \
 		whitespace-property-1 \
 		whitespace-property-2 \
 		whitespace-property-3 \
-		whitespace-property-4 \
 		quoting \
 		broken-require-1 \
 		broken-require-2 \
