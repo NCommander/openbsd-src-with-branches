@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.71 2018/01/16 22:52:32 jca Exp $	*/
+/*	$OpenBSD: sh.h,v 1.72 2018/04/09 17:53:36 tobias Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -382,6 +382,7 @@ int	c_pwd(char **);
 int	c_print(char **);
 int	c_whence(char **);
 int	c_command(char **);
+int	c_type(char **);
 int	c_typeset(char **);
 int	c_alias(char **);
 int	c_unalias(char **);
