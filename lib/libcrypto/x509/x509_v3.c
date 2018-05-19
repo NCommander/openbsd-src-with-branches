@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_v3.c,v 1.15 2018/05/13 10:25:06 tb Exp $ */
+/* $OpenBSD: x509_v3.c,v 1.16 2018/05/18 16:55:58 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -209,8 +209,8 @@ X509_EXTENSION_create_by_NID(X509_EXTENSION **ex, int nid, int crit,
 }
 
 X509_EXTENSION *
-X509_EXTENSION_create_by_OBJ(X509_EXTENSION **ex, ASN1_OBJECT *obj, int crit,
-    ASN1_OCTET_STRING *data)
+X509_EXTENSION_create_by_OBJ(X509_EXTENSION **ex, const ASN1_OBJECT *obj,
+    int crit, ASN1_OCTET_STRING *data)
 {
 	X509_EXTENSION *ret;
 
