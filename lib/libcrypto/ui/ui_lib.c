@@ -1,4 +1,4 @@
-/* $OpenBSD: ui_lib.c,v 1.31 2016/04/28 16:42:28 tedu Exp $ */
+/* $OpenBSD: ui_lib.c,v 1.32 2017/01/29 17:49:23 beck Exp $ */
 /* Written by Richard Levitte (richard@levitte.org) for the OpenSSL
  * project 2001.
  */
@@ -582,7 +582,7 @@ UI_set_method(UI *ui, const UI_METHOD *meth)
 
 
 UI_METHOD *
-UI_create_method(char *name)
+UI_create_method(const char *name)
 {
 	UI_METHOD *ui_method = calloc(1, sizeof(UI_METHOD));
 
