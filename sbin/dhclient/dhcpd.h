@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.253 2018/02/10 23:25:15 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.254 2018/02/28 22:16:56 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -214,6 +214,7 @@ extern int			 cmd_opts;
 #define		OPT_NOACTION	1
 #define		OPT_VERBOSE	2
 #define		OPT_FOREGROUND	4
+#define		OPT_RELEASE	8
 
 void		 dhcpoffer(struct interface_info *, struct option_data *,
     const char *);
