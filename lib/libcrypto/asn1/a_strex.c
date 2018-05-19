@@ -1,4 +1,4 @@
-/* $OpenBSD: a_strex.c,v 1.26 2018/04/25 11:48:21 tb Exp $ */
+/* $OpenBSD: a_strex.c,v 1.27 2018/05/18 18:23:24 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -624,7 +624,7 @@ ASN1_STRING_print_ex_fp(FILE *fp, const ASN1_STRING *str, unsigned long flags)
  */
 
 int
-ASN1_STRING_to_UTF8(unsigned char **out, ASN1_STRING *in)
+ASN1_STRING_to_UTF8(unsigned char **out, const ASN1_STRING *in)
 {
 	ASN1_STRING stmp, *str = &stmp;
 	int mbflag, type, ret;
