@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.241 2018/04/12 17:13:43 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.242 2018/04/26 12:47:02 guenther Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -211,12 +211,6 @@ struct uvm_constraint_range *uvm_md_constraints[] = {
     &dma_constraint,
     NULL,
 };
-
-#ifdef DEBUG
-int sigdebug = 0;
-pid_t sigpid = 0;
-#define SDB_FOLLOW      0x01
-#endif
 
 paddr_t avail_start;
 paddr_t avail_end;
