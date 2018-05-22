@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_time.c,v 1.100 2017/12/18 05:51:53 cheloha Exp $	*/
+/*	$OpenBSD: kern_time.c,v 1.101 2018/02/19 08:59:52 mpi Exp $	*/
 /*	$NetBSD: kern_time.c,v 1.20 1996/02/18 11:57:06 fvdl Exp $	*/
 
 /*
@@ -268,7 +268,6 @@ sys_nanosleep(struct proc *p, void *v, register_t *retval)
 	struct timespec rqt, rmt;
 	struct timespec sts, ets;
 	struct timespec *rmtp;
-	struct timeval tv;
 	int error, error1;
 
 	rmtp = SCARG(uap, rmtp);
@@ -283,15 +282,14 @@ sys_nanosleep(struct proc *p, void *v, register_t *retval)
 	}
 #endif
 
-	TIMESPEC_TO_TIMEVAL(&tv, &rqt);
-	if (itimerfix(&tv))
+	if (rqt.tv_sec > 100000000 || timespecfix(&rqt))
 		return (EINVAL);
 
 	if (rmtp)
 		getnanouptime(&sts);
 
 	error = tsleep(&nanowait, PWAIT | PCATCH, "nanosleep",
-	    MAX(1, tvtohz(&tv)));
+	    MAX(1, tstohz(&rqt)));
 	if (error == ERESTART)
 		error = EINTR;
 	if (error == EWOULDBLOCK)
