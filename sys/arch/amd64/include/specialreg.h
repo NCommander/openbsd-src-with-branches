@@ -1,4 +1,4 @@
-/*	$OpenBSD: specialreg.h,v 1.70 2018/04/18 06:50:35 pd Exp $	*/
+/*	$OpenBSD: specialreg.h,v 1.71 2018/05/22 15:55:30 guenther Exp $	*/
 /*	$NetBSD: specialreg.h,v 1.1 2003/04/26 18:39:48 fvdl Exp $	*/
 /*	$NetBSD: x86/specialreg.h,v 1.2 2003/04/25 21:54:30 fvdl Exp $	*/
 
@@ -1398,6 +1398,7 @@
 
 
 /*
- * Default cr0 flags.
+ * Default cr0 and cr4 flags.
  */
 #define CR0_DEFAULT	(CR0_PE|CR0_PG|CR0_NE|CR0_TS|CR0_MP|CR0_WP)
+#define CR4_DEFAULT	(CR4_PAE|CR4_PGE|CR4_PSE|CR4_OSFXSR|CR4_OSXMMEXCPT)
