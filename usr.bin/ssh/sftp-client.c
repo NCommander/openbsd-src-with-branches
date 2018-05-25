@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-client.c,v 1.127 2017/08/11 04:41:08 djm Exp $ */
+/* $OpenBSD: sftp-client.c,v 1.128 2017/11/28 21:10:22 dtucker Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -655,7 +655,7 @@ do_lsreaddir(struct sftp_conn *conn, const char *path, int print_flag,
 		**dir = NULL;
 	}
 
-	return status;
+	return status == SSH2_FX_OK ? 0 : -1;
 }
 
 int
@@ -1005,7 +1005,7 @@ do_fsync(struct sftp_conn *conn, u_char *handle, u_int handle_len)
 	if (status != SSH2_FX_OK)
 		error("Couldn't sync file: %s", fx2txt(status));
 
-	return status;
+	return status == SSH2_FX_OK ? 0 : -1;
 }
 
 #ifdef notyet
@@ -1433,7 +1433,7 @@ do_download(struct sftp_conn *conn, const char *remote_path,
 	sshbuf_free(msg);
 	free(handle);
 
-	return(status);
+	return status == SSH2_FX_OK ? 0 : -1;
 }
 
 static int
