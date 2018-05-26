@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.56 2018/04/26 14:09:05 guenther Exp $	*/
+/*	$OpenBSD: vector.S,v 1.57 2018/05/14 03:14:47 guenther Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -373,9 +373,7 @@ spl_lowered:
  * callee-saved registers %ebx, %ebp, and %r1[2-5] twice.
  *
  * If the interrupt frame is made more flexible,  INTR can push %eax first and
- * decide the ipending case with less overhead, e.g., by avoiding loading the
- * segment registers.
- *
+ * decide the ipending case with less overhead
  */
 
 /* XXX See comment in locore.s */
