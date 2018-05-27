@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vfsops.c,v 1.119 2018/05/02 02:24:56 visa Exp $	*/
+/*	$OpenBSD: nfs_vfsops.c,v 1.120 2018/05/04 11:16:04 bluhm Exp $	*/
 /*	$NetBSD: nfs_vfsops.c,v 1.46.4.1 1996/05/25 22:40:35 fvdl Exp $	*/
 
 /*
@@ -814,7 +814,7 @@ loop:
 			goto loop;
 		if (VOP_ISLOCKED(vp) || LIST_FIRST(&vp->v_dirtyblkhd) == NULL)
 			continue;
-		if (vget(vp, LK_EXCLUSIVE, p))
+		if (vget(vp, LK_EXCLUSIVE))
 			goto loop;
 		error = VOP_FSYNC(vp, cred, waitfor, p);
 		if (error)

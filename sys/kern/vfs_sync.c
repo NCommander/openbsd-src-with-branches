@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.57 2018/02/10 05:24:23 deraadt Exp $  */
+/*       $OpenBSD: vfs_sync.c,v 1.58 2018/04/28 03:13:05 visa Exp $  */
 
 /*
  *  Portions of this code are:
@@ -156,7 +156,7 @@ sched_sync(struct proc *p)
 			syncer_delayno = 0;
 
 		while ((vp = LIST_FIRST(slp)) != NULL) {
-			if (vget(vp, LK_EXCLUSIVE | LK_NOWAIT, p)) {
+			if (vget(vp, LK_EXCLUSIVE | LK_NOWAIT)) {
 				/*
 				 * If we fail to get the lock, we move this
 				 * vnode one second ahead in time.

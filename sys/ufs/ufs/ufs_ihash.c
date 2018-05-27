@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_ihash.c,v 1.22 2015/03/14 03:38:53 jsg Exp $	*/
+/*	$OpenBSD: ufs_ihash.c,v 1.23 2016/06/19 11:54:34 natano Exp $	*/
 /*	$NetBSD: ufs_ihash.c,v 1.3 1996/02/09 22:36:04 christos Exp $	*/
 
 /*
@@ -106,7 +106,6 @@ ufs_ihashlookup(dev_t dev, ufsino_t inum)
 struct vnode *
 ufs_ihashget(dev_t dev, ufsino_t inum)
 {
-	struct proc *p = curproc;
 	struct ihashhead *ipp;
 	struct inode *ip;
 	struct vnode *vp;
@@ -117,7 +116,7 @@ loop:
 		if (inum == ip->i_number && dev == ip->i_dev) {
 			vp = ITOV(ip);
 			/* XXXLOCKING unlock hash list? */
-			if (vget(vp, LK_EXCLUSIVE, p))
+			if (vget(vp, LK_EXCLUSIVE))
 				goto loop;
 			return (vp);
  		}
