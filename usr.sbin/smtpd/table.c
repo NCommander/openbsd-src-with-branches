@@ -1,4 +1,4 @@
-/*	$OpenBSD: table.c,v 1.26 2018/05/28 17:11:58 eric Exp $	*/
+/*	$OpenBSD: table.c,v 1.27 2018/05/29 20:43:07 eric Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -98,6 +98,7 @@ table_service_name(enum table_service s)
 	case K_MAILADDR:	return "MAILADDR";
 	case K_ADDRNAME:	return "ADDRNAME";
 	case K_MAILADDRMAP:	return "MAILADDRMAP";
+	case K_RELAYHOST:	return "RELAYHOST";
 	default:		return "???";
 	}
 }
