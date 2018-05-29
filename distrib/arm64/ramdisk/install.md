@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.8 2018/02/25 01:53:29 jsg Exp $
+#	$OpenBSD: install.md,v 1.9 2018/03/23 05:02:27 deraadt Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -150,4 +150,12 @@ md_congrats() {
 }
 
 md_consoleinfo() {
+	CTTY=console
+	DEFCONS=y
+	case $CSPEED in
+	9600|19200|38400|57600|115200|1500000)
+		;;
+	*)
+		CSPEED=115200;;
+	esac
 }
