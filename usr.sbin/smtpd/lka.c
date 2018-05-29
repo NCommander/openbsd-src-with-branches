@@ -1,4 +1,4 @@
-/*	$OpenBSD: lka.c,v 1.202 2018/01/03 11:12:21 sunil Exp $	*/
+/*	$OpenBSD: lka.c,v 1.203 2018/05/24 11:38:24 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -324,10 +324,8 @@ lka_imsg(struct mproc *p, struct imsg *imsg)
 			else if (ret == 0)
 				m_add_int(p, LKA_PERMFAIL);
 			else {
-				snprintf(buf, sizeof(buf), "%s",
-				    relayhost_to_text(&lk.relayhost));
 				m_add_int(p, LKA_OK);
-				m_add_string(p, buf);
+				m_add_string(p, lk.relayhost);
 			}
 		}
 		m_close(p);

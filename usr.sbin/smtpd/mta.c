@@ -1,4 +1,4 @@
-/*	$OpenBSD: mta.c,v 1.209 2018/05/28 17:10:15 eric Exp $	*/
+/*	$OpenBSD: mta.c,v 1.210 2018/05/28 19:13:37 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -669,6 +669,8 @@ mta_handle_envelope(struct envelope *evp, const char *smarthost)
 
 	if (smarthost) {
 		if (text_to_relayhost(&evp->agent.mta.relay, smarthost) == 0) {
+			log_warnx("warn: Failed to parse smarthost %s",
+			    smarthost);
 			m_create(p_queue, IMSG_MTA_DELIVERY_TEMPFAIL, 0, 0, -1);
 			m_add_evpid(p_queue, evp->id);
 			m_add_string(p_queue, "Cannot parse smarthost");
@@ -1069,6 +1071,8 @@ mta_on_smarthost(struct envelope *evp, const char *smarthost)
 		return;
 	}
 
+	log_debug("debug: mta: ... got smarthost for %016"PRIx64": %s",
+	    evp->id, smarthost);
 	mta_handle_envelope(evp, smarthost);
 	free(evp);
 }
