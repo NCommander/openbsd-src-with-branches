@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.192 2018/02/19 04:43:48 dlg Exp $	*/
+/*	$OpenBSD: if.h,v 1.193 2018/04/25 16:05:58 jca Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -126,6 +126,7 @@ struct	if_data {
 };
 
 #define IFQ_NQUEUES	8
+#define IFQ_MINPRIO	0
 #define IFQ_MAXPRIO	IFQ_NQUEUES - 1
 #define IFQ_DEFPRIO	3
 
