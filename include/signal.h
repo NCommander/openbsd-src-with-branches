@@ -1,4 +1,4 @@
-/*	$OpenBSD: signal.h,v 1.24 2016/02/04 22:04:34 millert Exp $	*/
+/*	$OpenBSD: signal.h,v 1.25 2016/05/09 23:55:52 guenther Exp $	*/
 /*	$NetBSD: signal.h,v 1.8 1996/02/29 00:04:57 jtc Exp $	*/
 
 /*-
@@ -117,11 +117,12 @@ __only_inline int sigfillset(sigset_t *__set)
 #if __BSD_VISIBLE || __XPG_VISIBLE >= 420
 int	killpg(pid_t, int);
 int	siginterrupt(int, int);
-int	sigpause(int);
 int	sigaltstack(const struct sigaltstack *__restrict,
 	    struct sigaltstack *__restrict);
 #if __BSD_VISIBLE
 int	sigblock(int);
+/* This is the traditional BSD sigpause() and not the XPG/POSIX sigpause(). */
+int	sigpause(int);
 int	sigsetmask(int);
 int	sigvec(int, struct sigvec *, struct sigvec *);
 int	thrkill(pid_t _tid, int _signum, void *_tcb);
