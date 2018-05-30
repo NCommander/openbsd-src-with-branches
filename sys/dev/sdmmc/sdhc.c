@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdhc.c,v 1.58 2018/03/20 04:18:40 jmatthew Exp $	*/
+/*	$OpenBSD: sdhc.c,v 1.59 2018/05/25 00:04:12 patrick Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -918,7 +918,8 @@ sdhc_start_command(struct sdhc_host *hp, struct sdmmc_command *cmd)
 
 		HWRITE4(hp, SDHC_ADMA_SYSTEM_ADDR,
 		    hp->adma_map->dm_segs[0].ds_addr);
-	}
+	} else
+		HCLR1(hp, SDHC_HOST_CTL, SDHC_DMA_SELECT);
 
 	DPRINTF(1,("%s: cmd=%#x mode=%#x blksize=%d blkcount=%d\n",
 	    DEVNAME(hp->sc), command, mode, blksize, blkcount));
