@@ -1,4 +1,4 @@
-.\"	$OpenBSD: smtpd.conf.5,v 1.180 2018/05/29 22:16:15 gilles Exp $
+.\"	$OpenBSD: smtpd.conf.5,v 1.181 2018/05/30 09:31:57 gilles Exp $
 .\"
 .\" Copyright (c) 2008 Janne Johansson <jj@openbsd.org>
 .\" Copyright (c) 2009 Jacek Masiulaniec <jacekm@dobremiasto.net>
@@ -17,7 +17,7 @@
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
 .\"
-.Dd $Mdocdate: May 29 2018 $
+.Dd $Mdocdate: May 30 2018 $
 .Dt SMTPD.CONF 5
 .Os
 .Sh NAME
@@ -96,7 +96,7 @@ file.
 .It Cm forward\-only
 Only accept the message if the recipient results in a remote address.
 .It Cm lmtp Ar destination Op Ar rcpt-to
-Deliver the message to an lmtp server at
+Deliver the message to an LMTP server at
 .Ar destination .
 The location may be expressed as host:port or as a UNIX socket.
 .Pp
