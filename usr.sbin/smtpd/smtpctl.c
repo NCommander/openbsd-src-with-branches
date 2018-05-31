@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpctl.c,v 1.160 2018/05/14 15:23:05 gilles Exp $	*/
+/*	$OpenBSD: smtpctl.c,v 1.161 2018/05/24 11:38:24 gilles Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -126,7 +126,7 @@ srv_connect(void)
 		return (0);
 	}
 
-	ibuf = xcalloc(1, sizeof(struct imsgbuf), "smtpctl:srv_connect");
+	ibuf = xcalloc(1, sizeof(struct imsgbuf));
 	imsg_init(ibuf, ctl_sock);
 
 	return (1);

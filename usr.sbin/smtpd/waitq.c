@@ -1,4 +1,4 @@
-/*	$OpenBSD: waitq.c,v 1.4 2013/05/24 17:03:14 eric Exp $	*/
+/*	$OpenBSD: waitq.c,v 1.5 2015/01/20 17:37:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
@@ -69,13 +69,13 @@ waitq_wait(void *tag, void (*cb)(void *, void *, void *), void *arg)
 	key.tag = tag;
 	wq = SPLAY_FIND(waitqtree, &waitqs, &key);
 	if (wq == NULL) {
-		wq = xmalloc(sizeof *wq, "waitq_wait");
+		wq = xmalloc(sizeof *wq);
 		wq->tag = tag;
 		TAILQ_INIT(&wq->waiters);
 		SPLAY_INSERT(waitqtree, &waitqs, wq);
 	}
 
-	w = xmalloc(sizeof *w, "waitq_wait");
+	w = xmalloc(sizeof *w);
 	w->cb = cb;
 	w->arg = arg;
 	TAILQ_INSERT_TAIL(&wq->waiters, w, entry);
