@@ -1,4 +1,4 @@
-/* $OpenBSD: com_fdt.c,v 1.13 2018/05/14 19:25:54 kettenis Exp $ */
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *
