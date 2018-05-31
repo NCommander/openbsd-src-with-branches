@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.138 2018/02/08 09:27:44 mortimer Exp $	*/
+/*	$OpenBSD: systm.h,v 1.139 2018/03/20 15:45:32 mpi Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -251,6 +251,7 @@ void	sleep_setup_signal(struct sleep_state *, int);
 void	sleep_finish(struct sleep_state *, int);
 int	sleep_finish_timeout(struct sleep_state *);
 int	sleep_finish_signal(struct sleep_state *);
+int	sleep_finish_all(struct sleep_state *, int);
 void	sleep_queue_init(void);
 
 struct cond;
