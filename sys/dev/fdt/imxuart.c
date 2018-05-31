@@ -1,4 +1,4 @@
-/* $OpenBSD: imxuart.c,v 1.19 2018/03/20 23:05:54 patrick Exp $ */
+/* $OpenBSD: imxuart.c,v 1.1 2018/03/29 20:33:53 patrick Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@motorola.com>
  *
@@ -106,9 +106,6 @@ void imxuart_softint(void *arg);
 struct imxuart_softc *imxuart_sc(dev_t dev);
 
 int imxuart_intr(void *);
-
-extern int comcnspeed;
-extern int comcnmode;
 
 /* XXX - we imitate 'com' serial ports and take over their entry points */
 /* XXX: These belong elsewhere */
