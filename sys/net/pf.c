@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1064 2018/04/06 10:39:15 bluhm Exp $ */
+/*	$OpenBSD: pf.c,v 1.1065 2018/05/10 08:52:01 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -6928,7 +6928,7 @@ pf_test(sa_family_t af, int fwdir, struct ifnet *ifp, struct mbuf **m0)
 			    pf_synflood_check(&pd)) {
 				pf_syncookie_send(&pd);
 				action = PF_DROP;
-				goto done;
+				goto unlock;
 			}
 			if ((pd.hdr.tcp.th_flags & TH_ACK) && pd.p_len == 0)
 				pqid = 1;
