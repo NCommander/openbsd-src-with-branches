@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.36 2017/02/08 21:04:44 guenther Exp $	*/
+/*	$OpenBSD: exec.h,v 1.37 2018/04/12 17:13:44 deraadt Exp $	*/
 /*	$NetBSD: exec.h,v 1.59 1996/02/09 18:25:09 christos Exp $	*/
 
 /*-
@@ -223,7 +223,7 @@ extern int	exec_maxhdrsz;
 extern int	stackgap_random;
 
 /* Limit on total PT_OPENBSD_RANDOMIZE bytes. */
-#define ELF_RANDOMIZE_LIMIT 64*1024
+#define ELF_RANDOMIZE_LIMIT 1024*1024
 
 #endif /* _KERNEL */
 
