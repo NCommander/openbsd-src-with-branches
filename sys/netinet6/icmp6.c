@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.222 2018/03/27 15:03:52 dhill Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.223 2018/05/21 15:52:22 bluhm Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -104,7 +104,6 @@
 
 struct cpumem *icmp6counters;
 
-extern struct inpcbtable rawin6pcbtable;
 extern int icmp6errppslim;
 static int icmp6errpps_count = 0;
 static struct timeval icmp6errppslim_last;

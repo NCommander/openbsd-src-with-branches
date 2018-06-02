@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.h,v 1.106 2017/12/01 10:33:33 bluhm Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.107 2018/03/30 17:33:54 dhill Exp $	*/
 /*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
@@ -246,6 +246,7 @@ struct baddynamicports {
 
 #ifdef _KERNEL
 
+extern struct inpcbtable rawcbtable, rawin6pcbtable;
 extern struct baddynamicports baddynamicports;
 extern struct baddynamicports rootonlyports;
 
