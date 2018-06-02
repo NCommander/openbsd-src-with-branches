@@ -53,6 +53,7 @@ int csi_bn_to_integer(struct csi_err *_err, BIGNUM *_bn,
     struct csi_integer *_integer);
 
 struct csi_dh_params *csi_dh_params_dup(struct csi_dh_params *_cdhp);
+int csi_dh_public_is_valid(struct csi_dh *_cdh, BIGNUM *_pubkey);
 
 __END_HIDDEN_DECLS
 
