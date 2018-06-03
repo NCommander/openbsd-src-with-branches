@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcap.c,v 1.22 2018/02/06 02:55:48 dlg Exp $	*/
+/*	$OpenBSD: pcap.c,v 1.23 2018/04/05 03:47:27 lteo Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995, 1996, 1997, 1998
@@ -415,7 +415,7 @@ pcap_fileno(pcap_t *p)
 }
 
 void
-pcap_perror(pcap_t *p, char *prefix)
+pcap_perror(pcap_t *p, const char *prefix)
 {
 	fprintf(stderr, "%s: %s\n", prefix, p->errbuf);
 }
@@ -531,7 +531,7 @@ pcap_statustostr(int errnum)
 /*
  * Not all systems have strerror().
  */
-char *
+const char *
 pcap_strerror(int errnum)
 {
 #ifdef HAVE_STRERROR
