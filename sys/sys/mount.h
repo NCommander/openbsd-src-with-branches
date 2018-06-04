@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.h,v 1.135 2018/02/10 05:24:23 deraadt Exp $	*/
+/*	$OpenBSD: mount.h,v 1.136 2018/05/08 08:58:49 mpi Exp $	*/
 /*	$NetBSD: mount.h,v 1.48 1996/02/18 11:55:47 fvdl Exp $	*/
 
 /*
@@ -564,6 +564,7 @@ int	vfs_busy(struct mount *, int);
 #define VB_WRITE	0x02
 #define VB_NOWAIT	0x04	/* immediately fail on busy lock */
 #define VB_WAIT		0x08	/* sleep fail on busy lock */
+#define VB_DUPOK	0x10	/* permit duplicate mount busying */
 
 int     vfs_isbusy(struct mount *);
 int     vfs_mount_foreach_vnode(struct mount *, int (*func)(struct vnode *,
