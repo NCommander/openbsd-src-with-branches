@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.87 2018/05/25 08:23:15 gerhard Exp $	*/
+/*	$OpenBSD: mib.c,v 1.88 2018/05/30 18:17:20 sthen Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Knight <joel@openbsd.org>
@@ -516,8 +516,10 @@ mib_hrsystemprocs(struct oid *oid, struct ber_oid *o, struct ber_element **elm)
 			return (-1);
 
 		if (kvm_getprocs(kd, KERN_PROC_ALL, 0,
-		    sizeof(struct kinfo_proc), &val) == NULL)
+		    sizeof(struct kinfo_proc), &val) == NULL) {
+			kvm_close(kd);
 			return (-1);
+		}
 
 		*elm = ber_add_integer(*elm, val);
 		ber_set_header(*elm, BER_CLASS_APPLICATION, SNMP_T_GAUGE32);
