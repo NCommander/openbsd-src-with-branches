@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.548 2018/06/03 14:04:06 gilles Exp $	*/
+/*	$OpenBSD: smtpd.h,v 1.549 2018/06/04 15:57:46 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -357,10 +357,6 @@ struct table_backend {
 };
 
 
-struct delivery_mta {
-	struct relayhost	relay;
-};
-
 enum bounce_type {
 	B_ERROR,
 	B_WARNING,
@@ -462,7 +458,6 @@ struct envelope {
 
 	enum delivery_type		type;
 	union {
-		struct delivery_mta	mta;
 		struct delivery_bounce	bounce;
 	}				agent;
 
