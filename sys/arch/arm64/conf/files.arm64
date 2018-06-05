@@ -1,4 +1,4 @@
-# $OpenBSD: files.arm64,v 1.21 2018/05/04 16:12:12 visa Exp $
+# $OpenBSD: files.arm64,v 1.22 2018/05/31 20:03:18 kettenis Exp $
 
 maxpartitions	16
 maxusers	2 8 64
@@ -110,11 +110,6 @@ include "dev/sdmmc/files.sdmmc"
 
 # Machine-independent FDT drivers
 include "dev/fdt/files.fdt"
-
-# ARM PrimeCell PL011 UART
-device	pluart
-attach	pluart at fdt
-file	arch/arm64/dev/pluart.c			pluart
 
 device	ampintc: fdt
 attach	ampintc at fdt

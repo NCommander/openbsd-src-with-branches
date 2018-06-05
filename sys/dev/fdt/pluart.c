@@ -1,4 +1,4 @@
-/*	$OpenBSD: pluart.c,v 1.8 2018/05/31 09:12:59 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
