@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.220 2018/04/08 18:57:39 guenther Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.221 2018/05/08 15:03:27 bluhm Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -282,8 +282,7 @@ drop:
 			error = error2;
 	}
 discard:
-	if (so->so_state & SS_NOFDREF)
-		panic("soclose NOFDREF: so %p, so_type %d", so, so->so_type);
+	KASSERT((so->so_state & SS_NOFDREF) == 0);
 	so->so_state |= SS_NOFDREF;
 	sofree(so);
 	sounlock(s);
@@ -306,8 +305,7 @@ soaccept(struct socket *so, struct mbuf *nam)
 
 	soassertlocked(so);
 
-	if ((so->so_state & SS_NOFDREF) == 0)
-		panic("soaccept !NOFDREF: so %p, so_type %d", so, so->so_type);
+	KASSERT((so->so_state & SS_NOFDREF) != 0);
 	so->so_state &= ~SS_NOFDREF;
 	if ((so->so_state & SS_ISDISCONNECTED) == 0 ||
 	    (so->so_proto->pr_flags & PR_ABRTACPTDIS) == 0)
