@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.479 2018/06/01 03:33:53 djm Exp $ */
+/* $OpenBSD: ssh.c,v 1.480 2018/06/06 18:22:41 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2068,7 +2068,7 @@ load_public_identity_files(struct passwd *pw)
 		filename = percent_expand(cp,
 		    "d", pw->pw_dir,
 		    "h", host,
-		    "i", host,
+		    "i", uidstr,
 		    "l", thishost,
 		    "r", options.user,
 		    "u", pw->pw_name,
