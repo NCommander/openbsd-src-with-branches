@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.c,v 1.289 2018/06/06 18:29:18 markus Exp $ */
+/* $OpenBSD: readconf.c,v 1.290 2018/06/09 03:01:12 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1389,7 +1389,7 @@ parse_keytypes:
 					    filename, linenum);
 				options->send_env = xrecallocarray(
 				    options->send_env, options->num_send_env,
-				    options->num_send_env,
+				    options->num_send_env + 1,
 				    sizeof(*options->send_env));
 				options->send_env[options->num_send_env++] =
 				    xstrdup(arg);
