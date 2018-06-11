@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.123 2017/10/25 12:38:21 job Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.124 2018/05/08 15:10:33 bluhm Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -983,7 +983,7 @@ send:
 	 * Trace.
 	 */
 	if (so->so_options & SO_DEBUG)
-		tcp_trace(TA_OUTPUT, tp->t_state, tp, mtod(m, caddr_t), 0,
+		tcp_trace(TA_OUTPUT, tp->t_state, tp, tp, mtod(m, caddr_t), 0,
 			len);
 
 	/*

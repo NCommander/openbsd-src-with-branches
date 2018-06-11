@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_var.h,v 1.131 2018/02/07 00:31:10 bluhm Exp $	*/
+/*	$OpenBSD: tcp_var.h,v 1.132 2018/05/08 15:10:33 bluhm Exp $	*/
 /*	$NetBSD: tcp_var.h,v 1.17 1996/02/13 23:44:24 christos Exp $	*/
 
 /*
@@ -721,7 +721,8 @@ void	 tcp_update_rcvspace(struct tcpcb *);
 void	 tcp_slowtimo(void);
 struct mbuf *
 	 tcp_template(struct tcpcb *);
-void	 tcp_trace(short, short, struct tcpcb *, caddr_t, int, int);
+void	 tcp_trace(short, short, struct tcpcb *, struct tcpcb *, caddr_t,
+		int, int);
 struct tcpcb *
 	 tcp_usrclosed(struct tcpcb *);
 int	 tcp_sysctl(int *, u_int, void *, size_t *, void *, size_t);
