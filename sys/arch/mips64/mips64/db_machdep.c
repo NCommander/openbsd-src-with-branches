@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.48 2017/08/26 15:21:48 visa Exp $ */
+/*	$OpenBSD: db_machdep.c,v 1.49 2018/03/20 15:45:32 mpi Exp $ */
 
 /*
  * Copyright (c) 1998-2003 Opsycon AB (www.opsycon.se)
@@ -185,7 +185,7 @@ db_enter_ddb(void)
 	mtx_enter(&ddb_mp_mutex);
 
 #ifdef DEBUG
-	printf("db_enter_ddb %d: state %x pause %x\n", ci->ci_cpuid,
+	printf("db_enter_ddb %lu: state %x pause %x\n", ci->ci_cpuid,
 	    ddb_state, ci->ci_ddb);
 #endif
 	/* If we are first in, grab ddb and stop all other CPUs */
