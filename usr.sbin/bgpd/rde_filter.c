@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.85 2018/02/10 01:24:28 benno Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.86 2018/02/10 04:23:48 benno Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -948,7 +948,7 @@ rde_filter(struct filter_head *rules, struct rde_aspath **new,
     u_int8_t prefixlen, struct rde_peer *from)
 {
 	struct filter_rule	*f;
-	enum filter_actions	 action = ACTION_ALLOW; /* default allow */
+	enum filter_actions	 action = ACTION_DENY; /* default deny */
 
 	if (new != NULL)
 		*new = NULL;
