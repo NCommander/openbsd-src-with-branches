@@ -1,7 +1,6 @@
-#	$OpenBSD: Makefile,v 1.10 2014/04/14 22:12:01 tedu Exp $
+#	$OpenBSD: Makefile,v 1.11 2014/05/24 01:35:55 daniel Exp $
 
 PROG=	ed
-CFLAGS+=-DBACKWARDS
 SRCS=	 buf.c glbl.c io.c main.c re.c sub.c undo.c
 
 .include <bsd.prog.mk>
