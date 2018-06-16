@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.112 2018/02/21 19:24:15 guenther Exp $	*/
+/*	$OpenBSD$	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -70,6 +70,7 @@
 #include "pvbus.h"
 
 #include <sys/param.h>
+#include <sys/proc.h>
 #include <sys/timeout.h>
 #include <sys/systm.h>
 #include <sys/device.h>
@@ -77,6 +78,7 @@
 #include <sys/memrange.h>
 #include <dev/rndvar.h>
 #include <sys/atomic.h>
+#include <sys/user.h>
 
 #include <uvm/uvm_extern.h>
 
@@ -408,7 +410,6 @@ cpu_attach(struct device *parent, struct device *self, void *aux)
 	pcb->pcb_kstack = kstack + USPACE - 16;
 	pcb->pcb_rbp = pcb->pcb_rsp = kstack + USPACE - 16;
 	pcb->pcb_pmap = pmap_kernel();
-	pcb->pcb_cr0 = rcr0();
 	pcb->pcb_cr3 = pcb->pcb_pmap->pm_pdirpa;
 #endif
 
@@ -496,6 +497,28 @@ cpu_attach(struct device *parent, struct device *self, void *aux)
 #endif /* NVMM > 0 */
 }
 
+static void
+replacexsave(void)
+{
+	extern long _xrstor, _xsave, _xsaveopt;
+	u_int32_t eax, ebx, ecx, edx;
+	static int replacedone = 0;
+	int s;
+
+	if (replacedone)
+		return;
+	replacedone = 1;
+
+	/* find out whether xsaveopt is supported */
+	CPUID_LEAF(0xd, 1, eax, ebx, ecx, edx);
+	s = splhigh();
+	codepatch_replace(CPTAG_XRSTOR, &_xrstor, 4);
+	codepatch_replace(CPTAG_XSAVE,
+	    (eax & XSAVE_XSAVEOPT) ? &_xsaveopt : &_xsave, 4);
+	splx(s);
+}
+
+
 /*
  * Initialize the processor appropriately.
  */
@@ -503,6 +526,7 @@ cpu_attach(struct device *parent, struct device *self, void *aux)
 void
 cpu_init(struct cpu_info *ci)
 {
+	struct savefpu *sfp;
 	u_int cr4;
 
 	/* configure the CPU if needed */
@@ -514,7 +538,6 @@ cpu_init(struct cpu_info *ci)
 	 */
 	patinit(ci);
 
-	lcr0(rcr0() | CR0_WP);
 	cr4 = rcr4() | CR4_DEFAULT;
 	if (ci->ci_feature_sefflags_ebx & SEFF0EBX_SMEP)
 		cr4 |= CR4_SMEP;
@@ -522,7 +545,7 @@ cpu_init(struct cpu_info *ci)
 		cr4 |= CR4_SMAP;
 	if (ci->ci_feature_sefflags_ecx & SEFF0ECX_UMIP)
 		cr4 |= CR4_UMIP;
-	if (cpu_ecxfeature & CPUIDECX_XSAVE)
+	if ((cpu_ecxfeature & CPUIDECX_XSAVE) && cpuid_level >= 0xd)
 		cr4 |= CR4_OSXSAVE;
 	lcr4(cr4);
 
@@ -535,8 +558,24 @@ cpu_init(struct cpu_info *ci)
 			xsave_mask |= XCR0_AVX;
 		xsetbv(0, xsave_mask);
 		CPUID_LEAF(0xd, 0, eax, ebx, ecx, edx);
-		fpu_save_len = ebx;
+		if (CPU_IS_PRIMARY(ci)) {
+			fpu_save_len = ebx;
+			KASSERT(fpu_save_len <= sizeof(struct savefpu));
+		} else {
+			KASSERT(ebx == fpu_save_len);
+		}
+
+		replacexsave();
 	}
+
+	/* Give proc0 a clean FPU save area */
+	sfp = &proc0.p_addr->u_pcb.pcb_savefpu;
+	memset(sfp, 0, fpu_save_len);
+	if (xsave_mask) {
+		/* must not use xsaveopt here */
+		xsave(sfp, xsave_mask);
+	} else
+		fxsave(sfp);
 
 #if NVMM > 0
 	/* Re-enable VMM if needed */
@@ -601,24 +640,6 @@ cpu_boot_secondary_processors(void)
 			continue;
 		ci->ci_randseed = (arc4random() & 0x7fffffff) + 1;
 		cpu_boot_secondary(ci);
-	}
-}
-
-void
-cpu_init_idle_pcbs(void)
-{
-	struct cpu_info *ci;
-	u_long i;
-
-	for (i=0; i < MAXCPUS; i++) {
-		ci = cpu_info[i];
-		if (ci == NULL)
-			continue;
-		if (ci->ci_idle_pcb == NULL)
-			continue;
-		if ((ci->ci_flags & CPUF_PRESENT) == 0)
-			continue;
-		x86_64_init_pcb_tss_ldt(ci);
 	}
 }
 
@@ -742,7 +763,6 @@ cpu_hatch(void *v)
 		panic("%s: already running!?", ci->ci_dev->dv_xname);
 #endif
 
-	lcr0(ci->ci_idle_pcb->pcb_cr0);
 	cpu_init_idt();
 	lapic_set_lvt();
 	gdt_init_cpu(ci);
@@ -784,15 +804,14 @@ cpu_debug_dump(void)
 	struct cpu_info *ci;
 	CPU_INFO_ITERATOR cii;
 
-	db_printf("addr		dev	id	flags	ipis	curproc		fpcurproc\n");
+	db_printf("addr		dev	id	flags	ipis	curproc\n");
 	CPU_INFO_FOREACH(cii, ci) {
-		db_printf("%p	%s	%u	%x	%x	%10p	%10p\n",
+		db_printf("%p	%s	%u	%x	%x	%10p\n",
 		    ci,
 		    ci->ci_dev == NULL ? "BOOT" : ci->ci_dev->dv_xname,
 		    ci->ci_cpuid,
 		    ci->ci_flags, ci->ci_ipis,
-		    ci->ci_curproc,
-		    ci->ci_fpcurproc);
+		    ci->ci_curproc);
 	}
 }
 #endif

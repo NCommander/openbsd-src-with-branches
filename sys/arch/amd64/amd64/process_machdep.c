@@ -1,4 +1,4 @@
-/*	$OpenBSD: process_machdep.c,v 1.14 2015/06/28 18:54:54 guenther Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: process_machdep.c,v 1.1 2003/04/26 18:39:31 fvdl Exp $	*/
 
 /*-
@@ -122,19 +122,6 @@ process_read_fpregs(struct proc *p, struct fpreg *regs)
 {
 	struct fxsave64 *frame = process_fpframe(p);
 
-	if (p->p_md.md_flags & MDP_USEDFPU) {
-		fpusave_proc(p, 1);
-	} else {
-		/* Fake a FNINIT. */
-		memset(frame, 0, sizeof(*regs));
-		frame->fx_fcw = __INITIAL_NPXCW__;
-		frame->fx_fsw = 0x0000;
-		frame->fx_ftw = 0x00;
-		frame->fx_mxcsr = __INITIAL_MXCSR__;
-		frame->fx_mxcsr_mask = fpu_mxcsr_mask;
-		p->p_md.md_flags |= MDP_USEDFPU;
-	}
-
 	memcpy(&regs->fxstate, frame, sizeof(*regs));
 	return (0);
 }
@@ -184,14 +171,11 @@ process_write_fpregs(struct proc *p, struct fpreg *regs)
 {
 	struct fxsave64 *frame = process_fpframe(p);
 
-	if (p->p_md.md_flags & MDP_USEDFPU) {
-		fpusave_proc(p, 0);
-	} else {
-		p->p_md.md_flags |= MDP_USEDFPU;
-	}
-
 	memcpy(frame, &regs->fxstate, sizeof(*regs));
 	frame->fx_mxcsr &= fpu_mxcsr_mask;
+
+	/* force target to return via iretq so bogus xstate can be handled */
+	p->p_md.md_flags |= MDP_IRET;
 	return (0);
 }
 

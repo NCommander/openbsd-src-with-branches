@@ -1,4 +1,4 @@
-/*	$OpenBSD: mptramp.S,v 1.14 2016/12/19 20:03:15 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: mptramp.S,v 1.1 2003/04/26 18:39:30 fvdl Exp $	*/
 
 /*-
@@ -120,7 +120,7 @@ _C_LABEL(cpu_spinup_trampoline):
 	movw    %ax, %ss
 	addr32 lgdtl (.Lmptramp_gdt32_desc)   # load flat descriptor table
 	movl    %cr0, %eax       # get cr0
-	orl     $0x1, %eax      # enable protected mode
+	orl	$CR0_PE, %eax	# enable protected mode
 	movl    %eax, %cr0      # doit
 	ljmpl	$0x8, $.Lmp_startup
 
@@ -179,7 +179,7 @@ _TRMP_LABEL(.Lmp_startup)
 	movl	$.Lmptramp_jmp64,%eax
 
 	movl    %cr0,%ecx               # get control word
-	orl     $(CR0_PE|CR0_PG|CR0_NE|CR0_TS|CR0_MP|CR0_WP),%ecx
+	orl	$CR0_DEFAULT,%ecx
 	movl	%ecx, %cr0
 
 	ljmp	*(%eax)
@@ -230,7 +230,7 @@ _C_LABEL(cpu_spinup_trampoline_end):	#end of code copied to MP_TRAMPOLINE
 	/* Switch address space. */
 	movq	PCB_CR3(%rsi),%rax
 	movq	%rax,%cr3
-	movl    PCB_CR0(%rsi),%eax
+	movl	$CR0_DEFAULT,%eax
 	movq    %rax,%cr0
 	call	_C_LABEL(cpu_hatch)
 	/* NOTREACHED */

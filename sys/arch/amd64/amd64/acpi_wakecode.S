@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi_wakecode.S,v 1.40 2017/06/28 07:16:58 mlarkin Exp $ */
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2001 Takanori Watanabe <takawata@jp.freebsd.org>
  * Copyright (c) 2001 Mitsuru IWASAKI <iwasaki@jp.freebsd.org>
@@ -217,7 +217,7 @@ _C_LABEL(acpi_protected_mode_resume):
 
 	/* Reenable paging by setting the appropriate bits in CR0 */
 	movl    %cr0,%eax
-	orl     $(CR0_PE|CR0_PG|CR0_NE|CR0_TS|CR0_MP|CR0_WP),%eax
+	orl	$CR0_DEFAULT,%eax
 	movl    %eax,%cr0
 
 	/* Flush the prefetch queue again */

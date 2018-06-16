@@ -1,4 +1,4 @@
-/*	$OpenBSD: identcpu.c,v 1.94 2018/02/10 09:46:58 jsg Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: identcpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*
@@ -218,6 +218,11 @@ const struct {
 	{ CPUIDEDX_ITSC,	"ITSC" },
 }, cpu_amdspec_ebxfeatures[] = {
 	{ CPUIDEBX_IBPB,	"IBPB" },
+}, cpu_xsave_extfeatures[] = {
+	{ XSAVE_XSAVEOPT,	"XSAVEOPT" },
+	{ XSAVE_XSAVEC,		"XSAVEC" },
+	{ XSAVE_XGETBV1,	"XGETBV1" },
+	{ XSAVE_XSAVES,		"XSAVES" },
 };
 
 int
@@ -612,6 +617,14 @@ identifycpu(struct cpu_info *ci)
 					printf(",%s",
 					    cpu_amdspec_ebxfeatures[i].str);
 		}
+	}
+
+	/* xsave subfeatures */
+	if (cpuid_level >= 0xd) {
+		CPUID_LEAF(0xd, 1, val, dummy, dummy, dummy);
+		for (i = 0; i < nitems(cpu_xsave_extfeatures); i++)
+			if (val & cpu_xsave_extfeatures[i].bit)
+				printf(",%s", cpu_xsave_extfeatures[i].str);
 	}
 
 	if (cpu_meltdown)

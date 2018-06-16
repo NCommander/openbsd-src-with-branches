@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.29 2017/07/19 14:34:10 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 /*	$NetBSD: db_interface.c,v 1.1 2003/04/26 18:39:27 fvdl Exp $	*/
 
 /*
@@ -66,8 +66,8 @@
 #endif
 
 extern label_t *db_recover;
-extern char *trap_type[];
-extern int trap_types;
+extern const char * const trap_type[];
+extern const int trap_types;
 
 #ifdef MULTIPROCESSOR
 struct mutex ddb_mp_mutex =
