@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttycom.h,v 1.15 2017/06/29 04:23:12 deraadt Exp $	*/
+/*	$OpenBSD: ttycom.h,v 1.16 2018/01/08 11:52:14 mpi Exp $	*/
 /*	$NetBSD: ttycom.h,v 1.4 1996/05/19 17:17:53 jonathan Exp $	*/
 
 /*-
@@ -95,7 +95,6 @@ struct tstamps {
 #define	TIOCSPGRP	_IOW('t', 118, int)	/* set pgrp of tty */
 						/* 117-116 compat */
 #define	TIOCOUTQ	_IOR('t', 115, int)	/* output queue size */
-#define	TIOCSTI		_IOW('t', 114, char)	/* simulate terminal input */
 #define	TIOCNOTTY	 _IO('t', 113)		/* void tty association */
 #define	TIOCPKT		_IOW('t', 112, int)	/* pty: set/clear packet mode */
 #define		TIOCPKT_DATA		0x00	/* data packet */
