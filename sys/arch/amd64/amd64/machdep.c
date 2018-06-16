@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.244 2018/05/26 18:02:01 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.245 2018/06/05 06:39:10 guenther Exp $	*/
 /*	$NetBSD: machdep.c,v 1.3 2003/05/07 22:58:18 fvdl Exp $	*/
 
 /*-
@@ -192,7 +192,7 @@ paddr_t tramp_pdirpa;
 
 int kbd_reset;
 int lid_action = 1;
-int forceukbd = 1;
+int forceukbd;
 
 /*
  * safepri is a safe priority for sleep to set for a spin-wait
