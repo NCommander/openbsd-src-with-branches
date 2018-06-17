@@ -1,4 +1,4 @@
-.\"	$OpenBSD: sbus.4,v 1.50 2016/09/01 10:53:35 jmc Exp $
+.\"	$OpenBSD: sbus.4,v 1.51 2016/09/01 12:24:56 jmc Exp $
 .\"	$NetBSD: sbus.4,v 1.5 2002/01/21 17:54:10 wiz Exp $
 .\"
 .\" Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -44,9 +44,8 @@ These
 attachments are specific to the sparc64 port.
 .Pp
 .Nm
-is an I/O interconnect bus mostly found in
-.Tn SPARC
-workstations and small to medium server class systems.
+is an I/O interconnect bus mostly found in SPARC workstations
+and small to medium server class systems.
 It supports both on-board peripherals and extension boards.
 The
 .Nm
@@ -58,8 +57,6 @@ provides support for the following devices.
 Note that not all architectures support all devices.
 .Ss Audio interfaces
 .Bl -tag -width 13n -offset ind -compact
-.It Xr audioamd 4
-SPARC telephone quality audio device
 .It Xr audiocs 4
 SPARC CS4231 audio device
 .El
@@ -112,8 +109,7 @@ Accelerated 24-bit color frame buffer
 SMS MGX and MGXPlus accelerated 24-bit color frame buffers
 .It Xr rfx 4
 Vitec/Connectware/AP&D
-.Tn RasterFlex
-framebuffer series
+RasterFlex framebuffer series
 .It Xr tvtwo 4
 Accelerated 24-bit color frame buffer
 .It Xr vigra 4
