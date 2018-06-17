@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.10 2018/05/22 19:15:22 cheloha Exp $	*/
+/*	$OpenBSD: main.c,v 1.11 2018/06/17 08:30:20 anton Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> 2002 Public Domain
  */
@@ -55,7 +55,8 @@ main(int argc, char **argv)
 			ret |= do_pty();
 			break;
 		default:
-			fprintf(stderr, "Usage: %s -[fPprTt]\n", __progname);
+			fprintf(stderr, "usage: %s -[fFiIlpPrRstT]\n",
+			    __progname);
 			exit(1);
 		}
 	}
