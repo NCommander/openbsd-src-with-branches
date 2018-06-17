@@ -1,4 +1,4 @@
-/*	$OpenBSD: eventvar.h,v 1.3 2012/03/25 20:33:52 deraadt Exp $	*/
+/*	$OpenBSD: eventvar.h,v 1.4 2017/10/11 08:01:10 mpi Exp $	*/
 
 /*-
  * Copyright (c) 1999,2000 Jonathan Lemon <jlemon@FreeBSD.org>
@@ -40,6 +40,14 @@ struct kqueue {
 	int		kq_refs;		/* number of references */
 	struct		selinfo kq_sel;
 	struct		filedesc *kq_fdp;
+
+	LIST_ENTRY(kqueue) kq_next;
+
+	int		kq_knlistsize;		/* size of knlist */
+	struct		klist *kq_knlist;	/* list of attached knotes */
+	u_long		kq_knhashmask;		/* size of knhash */
+	struct		klist *kq_knhash;	/* hash table for attached knotes */
+
 	int		kq_state;
 #define KQ_SEL		0x01
 #define KQ_SLEEP	0x02
