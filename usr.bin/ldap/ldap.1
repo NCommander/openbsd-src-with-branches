@@ -1,4 +1,4 @@
-.\" $OpenBSD: ldap.1,v 1.3 2018/06/13 17:02:01 jmc Exp $
+.\" $OpenBSD: ldap.1,v 1.4 2018/06/13 18:26:03 jmc Exp $
 .\"
 .\" Copyright (c) 2018 Reyk Floeter <reyk@openbsd.org>
 .\"
@@ -42,7 +42,7 @@ in the LDAP Data Interchange Format (LDIF).
 .Pp
 The command is as follows:
 .Bl -tag -width Ds
-.It Cm search Ar options Ar filter Op Ar attribute ...
+.It Cm search Ar options Oo Ar filter Oc Op Ar attribute ...
 Perform a directory search request.
 The optional
 .Ar filter
