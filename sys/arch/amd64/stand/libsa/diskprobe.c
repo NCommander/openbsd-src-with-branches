@@ -1,4 +1,4 @@
-/*	$OpenBSD: diskprobe.c,v 1.21 2017/11/06 08:57:34 yasuoka Exp $	*/
+/*	$OpenBSD: diskprobe.c,v 1.22 2017/12/18 12:53:33 fcambus Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -344,10 +344,6 @@ cdprobe(void)
 	dip->disklabel.d_ncylinders = 1;
 	dip->disklabel.d_secpercyl = dip->disklabel.d_ntracks *
 	    dip->disklabel.d_nsectors;
-	if (dip->disklabel.d_secpercyl == 0) {
-		dip->disklabel.d_secpercyl = 100;
-		/* as long as it's not 0, since readdisklabel divides by it */
-	}
 
 	strncpy(dip->disklabel.d_typename, "ATAPI CD-ROM",
 	    sizeof(dip->disklabel.d_typename));

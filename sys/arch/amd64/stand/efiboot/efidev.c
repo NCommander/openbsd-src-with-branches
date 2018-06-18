@@ -1,4 +1,4 @@
-/*	$OpenBSD: efidev.c,v 1.27 2017/07/21 01:21:42 yasuoka Exp $	*/
+/*	$OpenBSD: efidev.c,v 1.28 2017/11/06 08:57:34 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -497,10 +497,6 @@ efi_getdisklabel_cd9660(efi_diskinfo_t ed, struct disklabel *label)
 	label->d_nsectors = 100;
 	label->d_ncylinders = 1;
 	label->d_secpercyl = label->d_ntracks * label->d_nsectors;
-	if (label->d_secpercyl == 0) {
-		label->d_secpercyl = 100;
-		/* as long as it's not 0, since readdisklabel divides by it */
-	}
 
 	strncpy(label->d_typename, "ATAPI CD-ROM", sizeof(label->d_typename));
 	label->d_type = DTYPE_ATAPI;
