@@ -1,4 +1,4 @@
-/*	$OpenBSD: var.c,v 1.68 2018/04/13 18:18:36 cheloha Exp $	*/
+/*	$OpenBSD: var.c,v 1.69 2018/06/18 17:03:58 millert Exp $	*/
 
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -1068,7 +1068,7 @@ setspec(struct tbl *vp)
 			int ret;
 
 			vp->flag &= ~SPECIAL;
-			if (setupterm(str_val(vp), STDOUT_FILENO, &ret) == ERR)
+			if (setupterm(str_val(vp), shl_out->fd, &ret) == ERR)
 				del_curterm(cur_term);
 			vp->flag |= SPECIAL;
 		}
