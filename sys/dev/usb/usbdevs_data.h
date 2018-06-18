@@ -4606,6 +4606,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "LaserJet 1020",
 	},
 	{
+	    USB_VENDOR_HP, USB_PRODUCT_HP_LD220,
+	    "LD220",
+	},
+	{
 	    USB_VENDOR_HP, USB_PRODUCT_HP_P1100,
 	    "Photosmart P1100",
 	},

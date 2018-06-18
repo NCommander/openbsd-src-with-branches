@@ -2197,6 +2197,7 @@
 #define	USB_PRODUCT_HP_T750G2	0x1fe1		/* T750 G2 UPS */
 #define	USB_PRODUCT_HP_640C	0x2004		/* DeskJet 640c */
 #define	USB_PRODUCT_HP_1020	0x2b17		/* LaserJet 1020 */
+#define	USB_PRODUCT_HP_LD220	0x3524		/* LD220 */
 #define	USB_PRODUCT_HP_P1100	0x3102		/* Photosmart P1100 */
 #define	USB_PRODUCT_HP_1018	0x4117		/* LaserJet 1018 */
 #define	USB_PRODUCT_HP_HN210E	0x811c		/* HN210E Ethernet */
