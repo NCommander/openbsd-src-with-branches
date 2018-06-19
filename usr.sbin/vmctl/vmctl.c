@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmctl.c,v 1.47 2018/03/14 07:07:44 mlarkin Exp $	*/
+/*	$OpenBSD: vmctl.c,v 1.48 2018/03/14 07:29:34 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
@@ -140,17 +140,18 @@ vm_start(uint32_t start_id, const char *name, int memsize, int nnics,
 		}
 	}
 	if (name != NULL) {
-		/* Allow VMs names with alphanumeric characters, dot, hyphen
+		/*
+		 * Allow VMs names with alphanumeric characters, dot, hyphen
 		 * and underscore. But disallow dot, hyphen and underscore at
 		 * the start.
 		 */
 		if (*name == '-' || *name == '.' || *name == '_')
-			errx(1, "Invalid VM name");
+			errx(1, "invalid VM name");
 
 		for (s = name; *s != '\0'; ++s) {
 			if (!(isalnum(*s) || *s == '.' || *s == '-' ||
-			      *s == '_'))
-				errx(1, "Invalid VM name");
+			    *s == '_'))
+				errx(1, "invalid VM name");
 		}
 
 		strlcpy(vcp->vcp_name, name, VMM_MAX_NAME_LEN);
