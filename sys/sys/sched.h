@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched.h,v 1.44 2017/12/14 23:21:04 dlg Exp $	*/
+/*	$OpenBSD: sched.h,v 1.45 2018/05/14 12:31:21 mpi Exp $	*/
 /* $NetBSD: sched.h,v 1.2 1999/02/28 18:14:58 ross Exp $ */
 
 /*-
@@ -152,6 +152,7 @@ void sched_barrier(struct cpu_info *ci);
 
 int sysctl_hwsetperf(void *, size_t *, void *, size_t);
 int sysctl_hwperfpolicy(void *, size_t *, void *, size_t);
+int sysctl_hwsmt(void *, size_t *, void *, size_t);
 
 #ifdef MULTIPROCESSOR
 void sched_start_secondary_cpus(void);
