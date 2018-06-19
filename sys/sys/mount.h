@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.h,v 1.136 2018/05/08 08:58:49 mpi Exp $	*/
+/*	$OpenBSD: mount.h,v 1.137 2018/06/04 04:57:09 guenther Exp $	*/
 /*	$NetBSD: mount.h,v 1.48 1996/02/18 11:55:47 fvdl Exp $	*/
 
 /*
@@ -246,6 +246,15 @@ struct fusefs_args {
 	char *name;
 	int fd;
 	int max_read;
+
+	/*
+	 * FUSE does not allow the file system to be accessed by other users
+	 * unless this option is specified. This is to prevent unintentional
+	 * denial of service to other users if the file system is not
+	 * responding. e.g. user executes df(1) or cron job that scans mounted
+	 * file systems.
+	 */
+	int allow_other;
 };
 
 /*
