@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: task.c,v 1.1 2017/09/15 02:39:33 dlg Exp $ */
 
 /*
  * Copyright (c) 2017 David Gwynne <dlg@openbsd.org>
@@ -153,4 +153,4 @@ task_del(struct taskq *tq, struct task *t)
 	pthread_mutex_unlock(&tq->mtx);
 
 	return (rv);
-} 
+}
