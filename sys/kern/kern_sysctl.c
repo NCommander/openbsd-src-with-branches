@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.341 2018/06/02 16:38:21 bluhm Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.342 2018/06/19 19:29:52 kettenis Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -1077,7 +1077,9 @@ fill_file(struct kinfo_file *kf, struct file *fp, struct filedesc *fdp,
 		kf->f_flag = fp->f_flag;
 		kf->f_iflags = fp->f_iflags;
 		kf->f_type = fp->f_type;
+		mtx_enter(&fhdlk);
 		kf->f_count = fp->f_count;
+		mtx_leave(&fhdlk);
 		if (show_pointers)
 			kf->f_ucred = PTRTOINT64(fp->f_cred);
 		kf->f_uid = fp->f_cred->cr_uid;
