@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.231 2018/06/03 18:20:28 deraadt Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.232 2018/06/16 15:37:00 florian Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -524,6 +524,7 @@ pledge_fail(struct proc *p, int error, uint64_t code)
 	if (p->p_p->ps_pledge & PLEDGE_ERROR)
 		return (ENOSYS);
 
+	KERNEL_LOCK();
 	log(LOG_ERR, "%s[%d]: pledge \"%s\", syscall %d\n",
 	    p->p_p->ps_comm, p->p_p->ps_pid, codes, p->p_pledge_syscall);
 	p->p_p->ps_acflag |= APLEDGE;
@@ -536,6 +537,7 @@ pledge_fail(struct proc *p, int error, uint64_t code)
 	psignal(p, SIGABRT);
 
 	p->p_p->ps_pledge = 0;		/* Disable all PLEDGE_ flags */
+	KERNEL_UNLOCK();
 	return (error);
 }
 
