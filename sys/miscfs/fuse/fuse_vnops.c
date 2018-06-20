@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vnops.c,v 1.46 2018/06/18 12:04:20 helg Exp $ */
+/* $OpenBSD: fuse_vnops.c,v 1.47 2018/06/19 13:01:34 helg Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -544,12 +544,12 @@ fusefs_setattr(void *v)
 		}
 
 		/*
-		 * chmod returns EFTYPE if the effective user ID is not the		  
-		 * super-user, the mode includes the sticky bit (S_ISVTX), and	       
-		 * path does not refer to a directory 
+		 * chmod returns EFTYPE if the effective user ID is not the
+		 * super-user, the mode includes the sticky bit (S_ISVTX), and
+		 * path does not refer to a directory
 		 */
-		if (cred->cr_uid != 0 && vp->v_type != VDIR && 
-		    (vap->va_mode & S_ISTXT)) { 
+		if (cred->cr_uid != 0 && vp->v_type != VDIR &&
+		    (vap->va_mode & S_ISTXT)) {
 			error = EFTYPE;
 			goto out;
 		}
