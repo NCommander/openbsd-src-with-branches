@@ -1,4 +1,4 @@
-/*	$OpenBSD: hibernate.h,v 1.40 2016/09/27 02:53:49 dlg Exp $	*/
+/*	$OpenBSD: hibernate.h,v 1.41 2017/06/22 15:56:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -30,6 +30,10 @@
 
 /* Magic number used to indicate hibernate signature block */
 #define HIBERNATE_MAGIC 0x0B5D0B5D
+
+/* Page skip operations used during unpack */
+#define HIB_MOVE 2
+#define HIB_SKIP 1
 
 struct hiballoc_entry;
 
@@ -99,6 +103,7 @@ union hibernate_info {
 #ifndef NO_PROPOLICE
 		long				guard;
 #endif /* ! NO_PROPOLICE */
+		u_int32_t			retguard_ofs;
 	};
 
 	/* XXX - remove restriction to have this union fit in a single block */
