@@ -1,5 +1,5 @@
-/*	$Id: aldap.c,v 1.39 2018/02/08 18:02:06 jca Exp $ */
-/*	$OpenBSD: aldap.c,v 1.39 2018/02/08 18:02:06 jca Exp $ */
+/*	$Id: aldap.c,v 1.1.1.1 2018/06/13 15:45:57 reyk Exp $ */
+/*	$OpenBSD: aldap.c,v 1.1.1.1 2018/06/13 15:45:57 reyk Exp $ */
 
 /*
  * Copyright (c) 2008 Alexander Schrijver <aschrijver@openbsd.org>
@@ -1283,7 +1283,7 @@ ldap_debug_elements(struct ber_element *root)
 			fprintf(stderr, "<INVALID>\n");
 			break;
 		}
-		fprintf(stderr, "string \"%.*s\"\n",  len, buf);
+		fprintf(stderr, "string \"%.*s\"\n",  (int)len, buf);
 		break;
 	case BER_TYPE_NULL:	/* no payload */
 	case BER_TYPE_EOC:
