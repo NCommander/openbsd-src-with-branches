@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgCreate.pm,v 1.142 2018/06/15 09:37:29 espie Exp $
+# $OpenBSD: PkgCreate.pm,v 1.143 2018/06/18 17:59:36 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -20,7 +20,7 @@ use strict;
 use warnings;
 
 use OpenBSD::AddCreateDelete;
-use OpenBSD::Dependencies;
+use OpenBSD::Dependencies::SolverBase;
 use OpenBSD::SharedLibs;
 use OpenBSD::Signer;
 
