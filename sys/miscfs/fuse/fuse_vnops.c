@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vnops.c,v 1.47 2018/06/19 13:01:34 helg Exp $ */
+/* $OpenBSD: fuse_vnops.c,v 1.48 2018/06/20 10:57:39 helg Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -1397,15 +1397,6 @@ fusefs_rmdir(void *v)
 	if (fmp->undef_op & UNDEF_RMDIR) {
 		error = ENOSYS;
 		goto out;
-	}
-
-	/*
-	 * No rmdir "." please.
-	 */
-	if (dp == ip) {
-		vrele(dvp);
-		vput(vp);
-		return (EINVAL);
 	}
 
 	VN_KNOTE(dvp, NOTE_WRITE | NOTE_LINK);

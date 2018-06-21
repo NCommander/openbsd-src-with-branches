@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vnops.c,v 1.120 2018/05/07 14:43:01 mpi Exp $	*/
+/*	$OpenBSD: msdosfs_vnops.c,v 1.121 2018/06/07 13:37:28 visa Exp $	*/
 /*	$NetBSD: msdosfs_vnops.c,v 1.63 1997/10/17 11:24:19 ws Exp $	*/
 
 /*-
@@ -1382,14 +1382,6 @@ msdosfs_rmdir(void *v)
 
 	ip = VTODE(vp);
 	dp = VTODE(dvp);
-	/*
-	 * No rmdir "." please.
-	 */
-	if (dp == ip) {
-		vrele(dvp);
-		vput(vp);
-		return (EINVAL);
-	}
 	/*
 	 * Verify the directory is empty (and valid).
 	 * (Rmdir ".." won't be valid since
