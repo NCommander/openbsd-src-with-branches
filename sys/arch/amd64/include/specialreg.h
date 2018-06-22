@@ -1,4 +1,4 @@
-/*	$OpenBSD: specialreg.h,v 1.61 2017/08/12 19:53:37 mlarkin Exp $	*/
+/*	$OpenBSD: specialreg.h,v 1.61.4.1 2018/02/26 12:29:48 bluhm Exp $	*/
 /*	$NetBSD: specialreg.h,v 1.1 2003/04/26 18:39:48 fvdl Exp $	*/
 /*	$NetBSD: x86/specialreg.h,v 1.2 2003/04/25 21:54:30 fvdl Exp $	*/
 
@@ -1386,3 +1386,15 @@
 #define PAT_WB          0x6UL
 #define PAT_UCMINUS     0x7UL
 
+/*
+ * XSAVE subfeatures (cpuid 0xd, leaf 1)
+ */
+#define XSAVE_XSAVEOPT		0x1UL
+#define XSAVE_XSAVEC		0x2UL
+#define XSAVE_XGETBV1		0x4UL
+#define XSAVE_XSAVES		0x8UL
+
+/*
+ * Default cr0 flags.
+ */
+#define CR0_DEFAULT	(CR0_PE|CR0_PG|CR0_NE|CR0_WP)

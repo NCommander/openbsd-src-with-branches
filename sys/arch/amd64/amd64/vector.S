@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.51.2.1 2018/02/26 12:29:48 bluhm Exp $	*/
+/*	$OpenBSD: vector.S,v 1.51.2.2 2018/02/28 17:01:34 bluhm Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -179,17 +179,7 @@ IDTVEC(trap05)
 IDTVEC(trap06)
 	ZTRAP(T_PRIVINFLT)
 IDTVEC(trap07)
-	pushq	$0			# dummy error code
-	pushq	$T_DNA
-	INTRENTRY(trap07)
-	sti
-	cld
-	SMAP_CLAC
-	movq	CPUVAR(SELF),%rdi
-	movq	%rsp, %rsi
-	call	_C_LABEL(fpudna)
-	cli
-	INTRFASTEXIT
+	ZTRAP(T_DNA)		# impossible: we don't do lazy FPU
 IDTVEC(trap08)
 	pushq	$T_DOUBLEFLT
 	jmp	calltrap_specstk
@@ -202,59 +192,47 @@ IDTVEC(trap0b)
 IDTVEC(trap0c)
 	TRAP(T_STKFLT)
 
-	/*
-	 * If iretq faults, we'll get a trap at doreti_iret with CPL==0 but
-	 * the user's GS.base, which INTRENTRY wouldn't handle correctly
-	 * (it would skip the swapgs), so locally expand both it and
-	 * INTR_SAVE_GPRS, but add an extra test comparing %rip to doreti_iret
-	 * so that we can do the necessary swapgs in that case.
-	 */
+/*
+ * The #GP (general protection fault) handler has a couple weird cases
+ * to handle:
+ *  - trapping in iretq to userspace and
+ *  - trapping in xrstor in the kernel.
+ * We detect both of these by examining the %rip in the iretq_frame.
+ * Handling them is done by updating %rip in the iretq_frame to point
+ * to a stub handler of some sort and then iretq'ing to it.  For the
+ * iretq fault we resume in a stub which acts like we got a fresh #GP.
+ * For the xrstor fault we resume to a stub which returns an error to
+ * the routine that requested the xrstor.
+ */
 IDTVEC(trap0d)
+	pushq	%rdx
 	pushq	%rcx
-	leaq	_C_LABEL(doreti_iret)(%rip),%rcx
-	cmpq	%rcx,16(%rsp)		/* over %rcx and err to %rip */
+	movq	24(%rsp),%rdx		/* over %r[cd]x and err to %rip */
+	leaq	doreti_iret(%rip),%rcx
+	cmpq	%rcx,%rdx
+	je	.Lhandle_doreti
+	leaq	xrstor_fault(%rip),%rcx
+	cmpq	%rcx,%rdx
+	je	.Lhandle_xrstor
 	popq	%rcx
-	je	1f
-	testq	$SEL_RPL,16(%rsp)	/* over err and %rip to %cs */
-	je	INTRENTRY_LABEL(trap0d)
-1:	swapgs
-	movq	%rax,CPUVAR(SCRATCH)
-	movq	CPUVAR(KERN_CR3),%rax
-	testq	%rax,%rax
-	jz	98f
-	movq	%rax,%cr3
-	jmp	98f
-	.text
-	.globl	INTRENTRY_LABEL(trap0d)
-INTRENTRY_LABEL(trap0d):	/* from kernel */
-	pushq	$T_PROTFLT
-	subq	$152,%rsp
-	movq	%rcx,TF_RCX(%rsp)
-	jmp	99f
-98:	/* from userspace */
-	movq	CPUVAR(KERN_RSP),%rax
-	xchgq	%rax,%rsp
-	movq	%rcx,TF_RCX(%rsp)
-	/* set trapno in the trap frame */
-	movq	$T_PROTFLT,TF_TRAPNO(%rsp)
-	/* copy err and iretq frame to the trap frame */
-	movq	0(%rax),%rcx
-	movq	%rcx,TF_ERR(%rsp)
-	add	$8,%rax
-	movq	IRETQ_RIP(%rax),%rcx
-	movq	%rcx,TF_RIP(%rsp)
-	movq	IRETQ_CS(%rax),%rcx
-	movq	%rcx,TF_CS(%rsp)
-	movq	IRETQ_RFLAGS(%rax),%rcx
-	movq	%rcx,TF_RFLAGS(%rsp)
-	movq	IRETQ_RSP(%rax),%rcx
-	movq	%rcx,TF_RSP(%rsp)
-	movq	IRETQ_SS(%rax),%rcx
-	movq	%rcx,TF_SS(%rsp)
-	movq	CPUVAR(SCRATCH),%rax
-99:	INTR_SAVE_MOST_GPRS_NO_ADJ
-	sti
-	jmp	calltrap
+	popq	%rdx
+	TRAP(T_PROTFLT)
+
+.Lhandle_xrstor:
+	/* xrstor faulted; just resume in xrstor_resume */
+	leaq	xrstor_resume(%rip),%rcx
+	jmp	1f
+
+.Lhandle_doreti:
+	/* iretq faulted; resume in a stub that acts like we got a #GP */
+	leaq	.Lhandle_doreti_resume(%rip),%rcx
+1:	movq	%rcx,24(%rsp)		/* over %r[cd]x and err to %rip */
+	popq	%rcx
+	popq	%rdx
+	addq	$8,%rsp			/* pop the err code */
+	jmp	doreti_iret
+.Lhandle_doreti_resume:
+	ZTRAP(T_PROTFLT)
 
 IDTVEC(trap0e)
 	TRAP(T_PAGEFLT)
@@ -305,55 +283,12 @@ Xexceptions:
 	.quad	_C_LABEL(Xtrap1e), _C_LABEL(Xtrap1f)
 
 /*
- * If an error is detected during trap, syscall, or interrupt exit, trap() will
- * change %rip to point to this label.  At that point, we'll be running with
- * the kernel GS.base, but the trap frame will be from CPL==3, so we can't
- * go through INTRENTRY as it would do the swapgs that we don't want/need.
- * So, locally expand INTRENTRY but without the swapgs: manually
- * clean up the stack and resume as if we were handling a general
- * protection fault.  This will cause the process to get a SIGBUS.
- */
-NENTRY(resume_iret)
-	movq	%rax,CPUVAR(SCRATCH)
-	movq	CPUVAR(KERN_CR3),%rax
-	testq	%rax,%rax
-	jz	INTRENTRY_LABEL(iret)
-	movq	%rax,%cr3
-	jmp	INTRENTRY_LABEL(iret)
-	.text
-	.globl	INTRENTRY_LABEL(iret)
-INTRENTRY_LABEL(iret):	/* from kernel */
-	movq	CPUVAR(KERN_RSP),%rax
-	xchgq	%rax,%rsp
-	movq	%rcx,TF_RCX(%rsp)
-	/* set trapno+err in the trap frame */
-	movq	$T_PROTFLT,TF_TRAPNO(%rsp)
-	movq	$0,TF_ERR(%rsp)
-	/* copy iretq frame to the trap frame */
-	movq	IRETQ_RIP(%rax),%rcx
-	movq	%rcx,TF_RIP(%rsp)
-	movq	IRETQ_CS(%rax),%rcx
-	movq	%rcx,TF_CS(%rsp)
-	movq	IRETQ_RFLAGS(%rax),%rcx
-	movq	%rcx,TF_RFLAGS(%rsp)
-	movq	IRETQ_RSP(%rax),%rcx
-	movq	%rcx,TF_RSP(%rsp)
-	movq	IRETQ_SS(%rax),%rcx
-	movq	%rcx,TF_SS(%rsp)
-	movq	CPUVAR(SCRATCH),%rax
-	INTR_SAVE_MOST_GPRS_NO_ADJ
-	sti
-	jmp	calltrap
-
-
-/*
  * All traps go through here. Call the generic trap handler, and
  * check for ASTs afterwards.
  */
 KUENTRY(alltraps)
 	INTRENTRY(alltraps)
 	sti
-calltrap:
 	cld
 	SMAP_CLAC
 #ifdef DIAGNOSTIC
@@ -376,19 +311,14 @@ calltrap:
 	jz	2f
 .Lreal_trap:
 #endif /* !defined(GPROF) && defined(DDBPROF) */
+	.globl	recall_trap
+recall_trap:
 	movq	%rsp, %rdi
 	call	_C_LABEL(trap)
 2:	/* Check for ASTs on exit to user mode. */
 	cli
-	CHECK_ASTPENDING(%r11)
-	je	1f
 	testb	$SEL_RPL,TF_CS(%rsp)
-	jz	1f
-5:	CLEAR_ASTPENDING(%r11)
-	sti
-	movq	%rsp, %rdi
-	call	_C_LABEL(ast)
-	jmp	2b
+	jnz	intr_user_exit
 #ifndef DIAGNOSTIC
 1:	INTRFASTEXIT
 #else /* DIAGNOSTIC */
@@ -396,7 +326,7 @@ calltrap:
 	jne	3f
 	INTRFASTEXIT
 3:	sti
-	movabsq	$spl_lowered,%rdi
+	leaq	spl_lowered(%rip),%rdi
 	movl	CPUVAR(ILEVEL),%esi
 	movl	%ebx,%edx
 	xorq	%rax,%rax
@@ -601,7 +531,6 @@ KIDTVEC(resume_xen_upcall)
 2:
 	movq	$(1 << LIR_XEN),%rax
 	orq	%rax,CPUVAR(IPENDING)
-3:
 	INTRFASTEXIT
 #endif /* NXEN > 0 */
 
@@ -636,7 +565,6 @@ KIDTVEC(resume_hyperv_upcall)
 2:
 	movq	$(1 << LIR_HYPERV),%rax
 	orq	%rax,CPUVAR(IPENDING)
-3:
 	INTRFASTEXIT
 #endif /* NHYPERV > 0 */
 #endif /* NLAPIC > 0 */
@@ -682,7 +610,7 @@ IDTVEC(intr_##name##num)						;\
 	SMAP_CLAC							;\
 	incl	CPUVAR(IDEPTH)						;\
 	movq	IS_HANDLERS(%r14),%rbx					;\
-6:									\
+6:	/* loop, walking chain of handlers */				\
 	movl	IH_LEVEL(%rbx),%r12d					;\
 	cmpl	%r13d,%r12d						;\
 	jle	7f							;\
@@ -693,6 +621,8 @@ IDTVEC(intr_##name##num)						;\
 	orl	%eax,%eax		/* should it be counted? */	;\
 	jz	4f			/* no, skip it */		;\
 	incq	IH_COUNT(%rbx)		/* count the intrs */		;\
+	cmpl	$2,%eax			/* can't know if it was ours */ ;\
+	je	4f			/* keep trying */		;\
 	cmpl	$0,_C_LABEL(intr_shared_edge)				;\
 	jne	4f			/* if no shared edges ... */	;\
 	orl	%eax,%eax		/* 1 means stop trying */	;\
@@ -700,13 +630,13 @@ IDTVEC(intr_##name##num)						;\
 4:	movq	IH_NEXT(%rbx),%rbx	/* next handler in chain */	;\
 	testq	%rbx,%rbx						;\
 	jnz	6b							;\
-5:									\
+5:	/* successfully handled */					\
 	cli								;\
 	unmask(num)			/* unmask it in hardware */	;\
 	late_ack(num)							;\
 	sti								;\
 	jmp	_C_LABEL(Xdoreti)	/* lower spl and do ASTs */	;\
-7:									\
+7:	/* current IPL > handler's ih_level */				\
 	cli								;\
 	movq	$(1 << num),%rax					;\
 	orq     %rax,CPUVAR(IPENDING)					;\
@@ -714,16 +644,18 @@ IDTVEC(intr_##name##num)						;\
 	late_ack(num)							;\
 	sti								;\
 	jmp	_C_LABEL(Xdoreti)	/* lower spl and do ASTs */	;\
-10:									\
+10:	/* currently masked */						\
 	cli								;\
 	movq	$(1 << num),%rax					;\
 	orq	%rax,CPUVAR(IPENDING)					;\
 	level_mask(num)							;\
 	late_ack(num)							;\
 	INTRFASTEXIT							;\
-9:									\
+9:	/* spurious interrupt */					\
 	unmask(num)							;\
 	late_ack(num)							;\
+	testb	$SEL_RPL,TF_CS(%rsp)					;\
+	jnz	intr_user_exit						;\
 	INTRFASTEXIT
 
 #define ICUADDR IO_ICU1
