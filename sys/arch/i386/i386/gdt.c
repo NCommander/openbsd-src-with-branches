@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt.c,v 1.41 2018/04/11 15:44:08 bluhm Exp $	*/
+/*	$OpenBSD: gdt.c,v 1.42 2018/05/28 20:52:44 bluhm Exp $	*/
 /*	$NetBSD: gdt.c,v 1.28 2002/12/14 09:38:50 junyoung Exp $	*/
 
 /*-
@@ -115,6 +115,8 @@ gdt_init_cpu(struct cpu_info *ci)
 
 	setsegment(&ci->ci_gdt[GTSS_SEL].sd, ci->ci_tss,
 	    sizeof(*ci->ci_tss)-1, SDT_SYS386TSS, SEL_KPL, 0, 0);
+	setsegment(&ci->ci_gdt[GNMITSS_SEL].sd, ci->ci_nmi_tss,
+	    sizeof(*ci->ci_nmi_tss)-1, SDT_SYS386TSS, SEL_KPL, 0, 0);
 
 	setregion(&region, ci->ci_gdt, GDT_SIZE - 1);
 	lgdt(&region);

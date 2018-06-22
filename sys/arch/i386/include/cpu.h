@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.161 2018/03/31 13:45:03 bluhm Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.162 2018/04/11 15:44:08 bluhm Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -184,6 +184,7 @@ struct cpu_info {
 
 	union descriptor *ci_gdt;
 	struct i386tss	*ci_tss;
+	struct i386tss	*ci_nmi_tss;
 
 	volatile int ci_ddb_paused;	/* paused due to other proc in ddb */
 #define CI_DDB_RUNNING		0
@@ -399,6 +400,7 @@ extern int cpu_apmi_edx;
 /* cpu.c */
 extern u_int cpu_mwait_size;
 extern u_int cpu_mwait_states;
+extern void cpu_update_nmi_cr3(vaddr_t);
 
 /* machdep.c */
 extern int cpu_apmhalt;
