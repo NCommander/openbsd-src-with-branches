@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.5 2016/03/24 07:03:30 mpi Exp $ */
+/*	$OpenBSD: util.c,v 1.6 2017/07/27 13:34:30 mpi Exp $ */
 
 /*
  * Copyright (c) 2015 Martin Pieuchot
@@ -110,7 +110,7 @@ route_insert(unsigned int rid, sa_family_t af, char *string)
 	rt_maskedcopy(dst, ndst, mask);
 
 	if ((error = rtable_insert(rid, ndst, mask, NULL, 0, rt)) != 0) {
-		inet_net_satop(af, rt_key(rt), plen, ip, sizeof(ip));
+		inet_net_satop(af, ndst, plen, ip, sizeof(ip));
 		errx(1, "can't add route: %s, %s\n", ip, strerror(error));
 	}
 	nrt = rtable_lookup(rid, dst, mask, NULL, RTP_ANY);
