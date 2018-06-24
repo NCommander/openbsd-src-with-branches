@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.258 2018/06/23 13:13:38 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.259 2018/06/23 22:46:36 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -1464,7 +1464,7 @@ sub run_tag
 sub need_params
 {
 	my $self = shift;
-	return $self->{expanded} =~ m/\%[lu]/;
+	return $self->{params} =~ m/\%[lu]/;
 }
 
 package OpenBSD::PackingElement::Exec;
