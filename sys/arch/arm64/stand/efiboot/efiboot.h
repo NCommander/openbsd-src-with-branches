@@ -1,4 +1,4 @@
-/*	$OpenBSD: efiboot.h,v 1.1 2016/12/17 23:38:33 patrick Exp $	*/
+/*	$OpenBSD: efiboot.h,v 1.2 2018/01/21 21:35:34 patrick Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -16,6 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+void	*efi_acpi(void);
 void	efi_cleanup(void);
 void	efi_diskprobe(void);
 void	efi_pxeprobe(void);
