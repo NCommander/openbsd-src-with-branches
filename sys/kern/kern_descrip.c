@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.168 2018/06/24 05:58:05 visa Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.169 2018/06/25 09:36:28 mpi Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -714,6 +714,7 @@ fdrelease(struct proc *p, int fd)
 {
 	struct filedesc *fdp = p->p_fd;
 	struct file *fp;
+	int error;
 
 	fdpassertlocked(fdp);
 
@@ -722,7 +723,10 @@ fdrelease(struct proc *p, int fd)
 		return (EBADF);
 	fdremove(fdp, fd);
 	knote_fdclose(p, fd);
-	return (closef(fp, p));
+	fdpunlock(fdp);
+	error = closef(fp, p);
+	fdplock(fdp);
+	return error;
 }
 
 /*
