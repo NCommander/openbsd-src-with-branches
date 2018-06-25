@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.syspatch.mk,v 1.19 2017/10/17 19:31:56 naddy Exp $
+#	$OpenBSD: bsd.syspatch.mk,v 1.20 2018/03/19 17:27:03 robert Exp $
 #
 # Copyright (c) 2016-2017 Robert Nagy <robert@openbsd.org>
 #
@@ -201,6 +201,6 @@ ${ERRATA}/.plist: ${_BUILD_COOKIE}
 		done > ${.TARGET}' || \
 		{ echo "***>   unable to create list of files";	\
 		exit 1; };
-	@su ${BUILDUSER} -c 'sed -i "s,^${FAKEROOT}/syspatch/${OSrev}-[^/]*/,,g" ${.TARGET}' 
+	@su ${BUILDUSER} -c 'sed -i "s,^${FAKEROOT}/syspatch/${OSrev}-[^/]*/,,g" ${.TARGET}'
 
 .include <bsd.obj.mk>

@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.1 2017/06/03 10:00:29 florian Exp $
+#	$OpenBSD: Makefile,v 1.1 2017/07/06 15:05:28 florian Exp $
 
 PROG=	slaacd
-COPTS+=	-DSMALL 
+COPTS+=	-DSMALL
 .PATH:  ${.CURDIR}/../../../sbin/slaacd
 SRCS=	engine.c frontend.c slaacd.c
 
