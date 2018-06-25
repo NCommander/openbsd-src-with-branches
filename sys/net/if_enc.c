@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.69 2017/08/11 21:24:19 mpi Exp $	*/
+/*	$OpenBSD: if_enc.c,v 1.70 2017/10/16 08:22:25 mpi Exp $	*/
 
 /*
  * Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
@@ -271,7 +271,7 @@ enc_setif(struct ifnet *ifp, u_int id)
 	if (id > RT_TABLEID_MAX)
 		return (EINVAL);
 
-	if (id == 0 || id > enc_max_id) {
+	if (enc_ifps == NULL || id > enc_max_id) {
 		if ((new = mallocarray(id + 1, sizeof(struct ifnet *),
 		    M_DEVBUF, M_NOWAIT|M_ZERO)) == NULL)
 			return (ENOBUFS);
