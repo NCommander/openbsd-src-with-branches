@@ -1,4 +1,4 @@
-# $OpenBSD: regress.sh,v 1.6 2017/12/15 12:19:01 tb Exp $
+# $OpenBSD: regress.sh,v 1.7 2017/12/15 15:24:15 tb Exp $
 # $FreeBSD: head/usr.bin/jot/tests/regress.sh 208728 2010-06-02 07:47:29Z brian $
 
 JOT=${JOT-jot}
@@ -137,5 +137,6 @@ REGRESSION_TEST([[man10]], [[${JOT} -s "" -b. 80]])
 
 # J: Misc tests
 REGRESSION_TEST([[nb1]], [[{ ${JOT} -n -b1 1 && echo; }]])
+REGRESSION_TEST([[noargs]], [[${JOT}]])
 
 REGRESSION_END()
