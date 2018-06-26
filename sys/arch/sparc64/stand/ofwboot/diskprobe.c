@@ -1,4 +1,4 @@
-/*	$OpenBSD: diskprobe.c,v 1.3 2014/12/09 18:05:16 stsp Exp $ */
+/*	$OpenBSD: diskprobe.c,v 1.4 2016/01/20 16:05:15 stsp Exp $ */
 
 /*
  * Copyright (c) 2008 Mark Kettenis <kettenis@openbsd.org>
@@ -39,6 +39,8 @@ new_diskinfo(int node)
 	int ihandle = -1;
 	int len;
 	const char *unit;
+	char buf[32];
+	int parent;
 	int i;
 
 	dip = alloc(sizeof(*dip));
@@ -65,7 +67,12 @@ new_diskinfo(int node)
 		}
 	}
 	if (unit == NULL) {
-		len = strlcat(dip->path, "@0", sizeof(dip->path));
+		parent = OF_parent(node);
+		if (parent && OF_getprop(parent, "device_type", buf,
+		    sizeof(buf)) > 0 && strcmp(buf, "scsi-sas") == 0)
+			len = strlcat(dip->path, "@p0", sizeof(dip->path));
+		else
+			len = strlcat(dip->path, "@0", sizeof(dip->path));
 		if (len >= sizeof(dip->path)) {
 			printf("disk device path too long: %s", dip->path);
 			goto bad;
