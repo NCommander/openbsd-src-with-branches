@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.c,v 1.41 2018/06/26 07:31:29 ratchov Exp $	*/
+/*	$OpenBSD: dev.c,v 1.42 2018/06/26 07:36:27 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -1683,6 +1683,18 @@ found:
 	s->rate = d->rate;
 	dev_midi_slotdesc(d, s);
 	dev_midi_vol(d, s);
+#ifdef DEBUG
+	if (log_level >= 3) {
+		slot_log(s);
+		log_puts(": using ");
+		dev_log(d);
+		log_puts(".");
+		log_puts(opt->name);
+		log_puts(", mode = ");
+		log_putx(mode);
+		log_puts("\n");
+	}
+#endif
 	return s;
 }
 
