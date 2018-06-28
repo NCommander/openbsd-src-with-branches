@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: imxanatopvar.h,v 1.1 2018/05/16 13:42:35 patrick Exp $ */
 /*
  * Copyright (c) 2018 Patrick Wildt <patrick@blueri.se>
  *
@@ -44,8 +44,3 @@ enum imxanatop_clocks {
 uint32_t imxanatop_decode_pll(enum imxanatop_clocks, uint32_t);
 uint32_t imxanatop_get_pll2_pfd(unsigned int);
 uint32_t imxanatop_get_pll3_pfd(unsigned int);
-void imxanatop_enable_pll_usb1(void);
-void imxanatop_enable_pll_usb2(void);
-void imxanatop_enable_pll_enet(void);
-void imxanatop_enable_enet(void);
-void imxanatop_enable_sata(void);
