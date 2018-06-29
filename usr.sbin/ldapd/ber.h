@@ -1,7 +1,7 @@
-/*	$OpenBSD: ber.h,v 1.2 2017/02/11 20:40:03 guenther Exp $ */
+/*	$OpenBSD: ber.h,v 1.3 2018/02/08 18:02:06 jca Exp $ */
 
 /*
- * Copyright (c) 2007 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2007, 2012 Reyk Floeter <reyk@openbsd.org>
  * Copyright (c) 2006, 2007 Claudio Jeker <claudio@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
