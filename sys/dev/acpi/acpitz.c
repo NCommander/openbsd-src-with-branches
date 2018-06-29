@@ -1,4 +1,4 @@
-/* $OpenBSD: acpitz.c,v 1.52 2017/04/02 00:28:56 deraadt Exp $ */
+/* $OpenBSD: acpitz.c,v 1.53 2018/04/05 02:37:06 mlarkin Exp $ */
 /*
  * Copyright (c) 2006 Can Erkin Acar <canacar@openbsd.org>
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
@@ -442,7 +442,7 @@ acpitz_refresh(void *arg)
 int
 acpitz_getreading(struct acpitz_softc *sc, char *name)
 {
-	u_int64_t		val;
+	uint64_t		val;
 
 	if (!aml_evalinteger(sc->sc_acpi, sc->sc_devnode, name, 0, NULL, &val))
 		return (val);

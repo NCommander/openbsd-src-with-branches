@@ -1,4 +1,4 @@
-/* $OpenBSD: acpisbs.c,v 1.5 2017/03/12 21:48:56 jung Exp $ */
+/* $OpenBSD: acpisbs.c,v 1.6 2017/03/13 02:33:34 jcs Exp $ */
 /*
  * Smart Battery subsystem device driver
  * ACPI 5.0 spec section 10
@@ -121,8 +121,8 @@ struct acpisbs_battery_check {
 #endif
 };
 
-extern void acpiec_read(struct acpiec_softc *, u_int8_t, int, u_int8_t *);
-extern void acpiec_write(struct acpiec_softc *, u_int8_t, int, u_int8_t *);
+extern void acpiec_read(struct acpiec_softc *, uint8_t, int, uint8_t *);
+extern void acpiec_write(struct acpiec_softc *, uint8_t, int, uint8_t *);
 
 int	acpisbs_match(struct device *, void *, void *);
 void	acpisbs_attach(struct device *, struct device *, void *);
