@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $OpenBSD: snmpd.sh,v 1.4 2017/08/25 00:16:56 rob Exp $
+# $OpenBSD: snmpd.sh,v 1.5 2017/08/28 22:05:44 rob Exp $
 #/*
 # * Copyright (c) Rob Pierce <rob@openbsd.org>
 # *
@@ -204,7 +204,7 @@ system="$(eval $snmpget_command | awk '{ print $2 }')"
 if [ "$system" != "$os" ]
 then
 	echo "Retrieval test with seclevel auth and SHA failed."
-	fail=1
+	FAILED=1
 fi
 
 kill $(pgrep snmpd) >/dev/null 2>&1
