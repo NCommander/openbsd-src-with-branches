@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.2 2004/01/29 16:17:11 drahn Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.1 2004/02/01 05:09:48 drahn Exp $	*/
 /*	$NetBSD: db_disasm.c,v 1.4 2003/07/15 00:24:38 lukem Exp $	*/
 
 /*
@@ -73,5 +73,3 @@ db_disasm(vaddr_t loc, boolean_t altfmt)
 
 	return disasm(&db_disasm_interface, loc, altfmt);
 }
-
-/* End of db_disasm.c */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.h,v 1.2 2004/01/29 16:17:16 drahn Exp $	*/
+/*	$OpenBSD: trap.h,v 1.1 2004/02/01 05:09:49 drahn Exp $	*/
 /*	$NetBSD: trap.h,v 1.4 2003/04/28 01:54:50 briggs Exp $	*/
 
 /*
@@ -67,5 +67,3 @@
 #define USER_BREAKPOINT		GDB_BREAKPOINT
 
 #define T_FAULT			1
-
-/* End of trap.h */

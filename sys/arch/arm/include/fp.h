@@ -1,4 +1,4 @@
-/*	$OpenBSD: fp.h,v 1.1 2004/02/01 05:09:49 drahn Exp $	*/
+/*	$OpenBSD: fp.h,v 1.2 2018/01/26 16:22:20 kettenis Exp $	*/
 /*	$NetBSD: fp.h,v 1.1 2001/01/10 19:02:06 bjh21 Exp $	*/
 
 /*
@@ -70,5 +70,3 @@ typedef struct {
 } fp_state_t;
 
 #endif
-
-/* End of fp.h */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.29 2017/01/06 00:06:02 jsg Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.30 2018/01/15 14:11:16 kettenis Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.29 2003/09/06 09:08:35 rearnsha Exp $	*/
 
 /*
@@ -343,5 +343,3 @@ extern int	arm_dcache_align_mask;
 
 #endif	/* _KERNEL */
 #endif	/* _ARM_CPUFUNC_H_ */
-
-/* End of cpufunc.h */
