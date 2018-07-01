@@ -1,4 +1,4 @@
-/* $OpenBSD: acpibtn.c,v 1.43 2017/02/28 10:39:07 natano Exp $ */
+/* $OpenBSD: acpibtn.c,v 1.44 2017/03/02 10:38:10 natano Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -74,7 +74,12 @@ struct cfdriver acpibtn_cd = {
 	NULL, "acpibtn", DV_DULL
 };
 
-const char *acpibtn_hids[] = { ACPI_DEV_LD, ACPI_DEV_PBD, ACPI_DEV_SBD, 0 };
+const char *acpibtn_hids[] = {
+	ACPI_DEV_LD,
+	ACPI_DEV_PBD,
+	ACPI_DEV_SBD,
+	NULL
+};
 
 /*
  * acpibtn_numopenlids
