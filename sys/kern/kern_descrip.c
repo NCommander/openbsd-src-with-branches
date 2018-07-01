@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.171 2018/06/26 14:43:01 visa Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.172 2018/06/27 16:37:25 visa Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -433,7 +433,9 @@ restart:
 		return (error);
 
 	case F_GETFD:
+		fdplock(fdp);
 		*retval = fdp->fd_ofileflags[fd] & UF_EXCLOSE ? 1 : 0;
+		fdpunlock(fdp);
 		break;
 
 	case F_SETFD:
