@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.72 2018/05/23 08:53:31 patrick Exp $
+# $OpenBSD: GENERIC,v 1.73 2018/06/02 12:31:25 kettenis Exp $
 #
 # GENERIC machine description file
 #
@@ -37,6 +37,11 @@ config		bsd	swap generic
 mainbus0	at root
 cpu0		at mainbus?
 efi0		at mainbus?
+acpi0		at mainbus?
+acpibtn*	at acpi?
+acpiec*		at acpi?
+ahci*		at acpi?
+com*		at acpi?
 simplebus*	at fdt?
 
 scsibus*	at scsi?
