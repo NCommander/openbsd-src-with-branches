@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.203 2018/06/29 04:50:47 mlarkin Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.204 2018/06/30 19:24:07 guenther Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -5337,8 +5337,8 @@ vmx_handle_cr(struct vcpu *vcpu)
 			case 14: r = vcpu->vc_gueststate.vg_r14; break;
 			case 15: r = vcpu->vc_gueststate.vg_r15; break;
 			}
-			DPRINTF("%s: mov to cr%d @ %llx, data=%llx\n", __func__, crnum,
-			    vcpu->vc_gueststate.vg_rip, r);
+			DPRINTF("%s: mov to cr%d @ %llx, data=0x%llx\n",
+			    __func__, crnum, vcpu->vc_gueststate.vg_rip, r);
 		}
 
 		if (crnum == 0)
