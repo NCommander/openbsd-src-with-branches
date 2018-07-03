@@ -1,4 +1,4 @@
-/*	$OpenBSD: spl.S,v 1.13 2018/06/05 05:04:31 guenther Exp $	*/
+/*	$OpenBSD: spl.S,v 1.14 2018/06/07 04:09:35 guenther Exp $	*/
 /*	$NetBSD: spl.S,v 1.3 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -144,7 +144,7 @@ KIDTVEC(spllower)
  *   r13 - address to resume loop at
  */
 KIDTVEC(doreti)
-	popq	%rbx			# get previous priority
+	movq	IF_PPL(%rsp),%rbx	# get previous priority
 	decl	CPUVAR(IDEPTH)
 	leaq	1f(%rip),%r13
 1:	movl	%ebx,%eax
