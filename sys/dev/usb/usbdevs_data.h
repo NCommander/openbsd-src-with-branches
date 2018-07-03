@@ -5714,12 +5714,20 @@ const struct usb_known_product usb_known_products[] = {
 	    "QuickCam Pro",
 	},
 	{
+	    USB_VENDOR_LOGITECH, USB_PRODUCT_LOGITECH_WEBCAMC210,
+	    "Webcam C210",
+	},
+	{
 	    USB_VENDOR_LOGITECH, USB_PRODUCT_LOGITECH_WEBCAMC310,
 	    "Webcam C310",
 	},
 	{
 	    USB_VENDOR_LOGITECH, USB_PRODUCT_LOGITECH_HDPROC910,
 	    "HD Pro Webcam C910",
+	},
+	{
+	    USB_VENDOR_LOGITECH, USB_PRODUCT_LOGITECH_WEBCAMC270,
+	    "Webcam C270",
 	},
 	{
 	    USB_VENDOR_LOGITECH, USB_PRODUCT_LOGITECH_QUICKCAMEXP,
