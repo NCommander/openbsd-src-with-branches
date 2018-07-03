@@ -1,4 +1,4 @@
-/*	$OpenBSD: strcmp.S,v 1.6 2015/08/31 02:53:56 guenther Exp $	*/
+/*	$OpenBSD: strcmp.S,v 1.7 2015/11/14 21:53:03 guenther Exp $	*/
 /*	$NetBSD: strcmp.S,v 1.2 2014/03/22 19:16:34 jakllsch Exp $	*/
 
 /*
@@ -9,6 +9,7 @@
 #include "DEFS.h"
 
 ENTRY(strcmp)
+	RETGUARD_SETUP(strcmp, r11)
 	/*
 	 * Align s1 to word boundary.
 	 * Consider unrolling loop?
@@ -68,5 +69,6 @@ ENTRY(strcmp)
 	movzbq	%al,%rax
 	movzbq	%dl,%rdx
 	subq	%rdx,%rax
+	RETGUARD_CHECK(strcmp, r11)
 	ret
 END_STRONG(strcmp)
