@@ -1,4 +1,4 @@
-/*	$OpenBSD: strlen.S,v 1.4 2014/12/09 15:13:57 reyk Exp $	*/
+/*	$OpenBSD: strlen.S,v 1.5 2016/03/20 16:50:30 krw Exp $	*/
 /*	$NetBSD: strlen.S,v 1.6 2014/03/22 19:16:34 jakllsch Exp $	*/
 
 /*-
@@ -112,6 +112,7 @@
  */
 
 ENTRY(strlen)
+	RETGUARD_SETUP(strlen, r10)
 	movabsq	$0x0101010101010101,%r8
 
 	test	$7,%dil
@@ -139,6 +140,7 @@ ENTRY(strlen)
 	bsf	%rdx,%rdx		/* 7, 15, 23 ... 63 */
 	shr	$3,%rdx			/* 0, 1, 2 ... 7 */
 	lea	-8(%rax,%rdx),%rax
+	RETGUARD_CHECK(strlen, r10)
 	ret
 
 /* Misaligned, read aligned word and make low bytes non-zero */
