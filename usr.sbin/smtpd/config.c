@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.40 2018/06/16 19:41:26 gilles Exp $	*/
+/*	$OpenBSD: config.c,v 1.41 2018/06/18 18:19:14 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -283,6 +283,8 @@ purge_config(uint8_t what)
 	}
 }
 
+#ifndef CONFIG_MINIMUM
+
 void
 config_process(enum smtp_proc_type proc)
 {
@@ -325,3 +327,10 @@ config_peer(enum smtp_proc_type proc)
 
 	mproc_enable(p);
 }
+
+#else
+
+void config_process(enum smtp_proc_type proc) {}
+void config_peer(enum smtp_proc_type proc) {}
+
+#endif
