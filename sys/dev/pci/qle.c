@@ -1,4 +1,4 @@
-/*	$OpenBSD: qle.c,v 1.38 2015/09/11 10:19:05 jmatthew Exp $ */
+/*	$OpenBSD: qle.c,v 1.39 2017/01/24 02:28:17 visa Exp $ */
 
 /*
  * Copyright (c) 2013, 2014 Jonathan Matthew <jmatthew@openbsd.org>
@@ -2221,6 +2221,10 @@ qle_do_update(void *xsc)
 			if (qle_update_fabric(sc))
 				qle_update_start(sc,
 				    QLE_UPDATE_TASK_SCANNING_FABRIC);
+			else
+				qle_update_start(sc,
+				    QLE_UPDATE_TASK_ATTACH_TARGET |
+				    QLE_UPDATE_TASK_DETACH_TARGET);
 
 			qle_update_done(sc, QLE_UPDATE_TASK_SCAN_FABRIC);
 			continue;
