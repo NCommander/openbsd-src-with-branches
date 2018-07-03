@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_sqrt.S,v 1.4 2009/04/08 22:30:41 martynas Exp $ */
+/*	$OpenBSD: e_sqrt.S,v 1.5 2016/09/12 19:47:01 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -8,6 +8,8 @@
 #include "abi.h"
 
 ENTRY(sqrt)
+	RETGUARD_SETUP(sqrt, r11)
 	sqrtsd	%xmm0,%xmm0
+	RETGUARD_CHECK(sqrt, r11)
 	ret
 END_STD(sqrt)

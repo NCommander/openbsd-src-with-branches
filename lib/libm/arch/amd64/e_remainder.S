@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_remainder.S,v 1.3 2008/09/07 20:36:08 martynas Exp $ */
+/*	$OpenBSD: e_remainder.S,v 1.4 2016/09/12 19:47:01 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -9,6 +9,7 @@
 #include "abi.h"
 
 ENTRY(remainder)
+	RETGUARD_SETUP(remainder, r11)
 	XMM_TWO_ARG_DOUBLE_PROLOGUE
 	fldl	ARG_DOUBLE_TWO
 	fldl	ARG_DOUBLE_ONE
@@ -18,5 +19,6 @@ ENTRY(remainder)
 	jc	1b
 	fstp	%st(1)
 	XMM_DOUBLE_EPILOGUE
+	RETGUARD_CHECK(remainder, r11)
 	ret
 END_STD(remainder)
