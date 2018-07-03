@@ -1,4 +1,4 @@
-/* $OpenBSD: compat.h,v 1.50 2018/01/23 05:27:21 djm Exp $ */
+/* $OpenBSD: compat.h,v 1.51 2018/02/16 04:43:11 dtucker Exp $ */
 
 /*
  * Copyright (c) 1999, 2000, 2001 Markus Friedl.  All rights reserved.
@@ -33,7 +33,7 @@
 #define	SSH_PROTO_2		0x04
 
 #define SSH_BUG_UTF8TTYMODE	0x00000001
-/* #define unused		0x00000002 */
+#define SSH_BUG_SIGTYPE		0x00000002
 /* #define unused		0x00000004 */
 /* #define unused		0x00000008 */
 #define SSH_OLD_SESSIONID	0x00000010
