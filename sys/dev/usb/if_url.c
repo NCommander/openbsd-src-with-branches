@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_url.c,v 1.81 2016/11/06 12:58:01 mpi Exp $ */
+/*	$OpenBSD: if_url.c,v 1.82 2017/01/22 10:17:39 dlg Exp $ */
 /*	$NetBSD: if_url.c,v 1.6 2002/09/29 10:19:21 martin Exp $	*/
 /*
  * Copyright (c) 2001, 2002
@@ -1160,8 +1160,7 @@ url_ifmedia_change(struct ifnet *ifp)
 	sc->sc_link = 0;
 	if (mii->mii_instance) {
 		struct mii_softc *miisc;
-		for (miisc = LIST_FIRST(&mii->mii_phys); miisc != NULL;
-		     miisc = LIST_NEXT(miisc, mii_list))
+		LIST_FOREACH(miisc, &mii->mii_phys, mii_list)
 			mii_phy_reset(miisc);
 	}
 
