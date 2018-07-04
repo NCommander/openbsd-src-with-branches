@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmctl.c,v 1.48 2018/03/14 07:29:34 mlarkin Exp $	*/
+/*	$OpenBSD: vmctl.c,v 1.49 2018/06/19 17:13:50 reyk Exp $	*/
 
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
@@ -465,6 +465,7 @@ terminate_vm_complete(struct imsg *imsg, int *ret)
 				*ret = EIO;
 				break;
 			default:
+				errno = res;
 				warn("terminate vm command failed");
 				*ret = EIO;
 			}
