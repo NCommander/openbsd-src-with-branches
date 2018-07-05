@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.12 2017/12/14 13:50:13 jca Exp $
+#	$OpenBSD: Makefile,v 1.13 2017/12/15 16:40:33 jca Exp $
 
 LIB=	fuse
-MAN=	fuse_main.3
+MAN=	fuse_main.3 fuse_set_signal_handlers.3
 
 CFLAGS+=	-Wall -Wshadow -Wmissing-prototypes
 CFLAGS+=	-Wstrict-prototypes -Wsign-compare
