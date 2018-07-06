@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_barrier.c,v 1.2 2012/04/23 08:30:33 pirofti Exp $	*/
+/*	$OpenBSD: rthread_barrier.c,v 1.3 2016/04/15 17:54:17 tedu Exp $	*/
 /*
  * Copyright (c) 2012 Paul Irofti <pirofti@openbsd.org>
  *
@@ -29,6 +29,9 @@ pthread_barrier_init(pthread_barrier_t *barrier, pthread_barrierattr_t *attr,
 	pthread_barrier_t b = NULL;
 
 	if (barrier == NULL)
+		return (EINVAL);
+
+	if (count == 0)
 		return (EINVAL);
 
 	if (attr != NULL) {
