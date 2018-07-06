@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.123 2018/06/05 06:39:11 guenther Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.124 2018/06/19 19:29:52 kettenis Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 2003/04/26 18:39:39 fvdl Exp $	*/
 
 /*-
@@ -319,7 +319,7 @@ void cpu_unidle(struct cpu_info *);
 /*
  * Give a profiling tick to the current process when the user profiling
  * buffer pages are invalid.  On the i386, request an ast to send us
- * through trap(), marking the proc as needing a profiling tick.
+ * through usertrap(), marking the proc as needing a profiling tick.
  */
 #define	need_proftick(p)	aston(p)
 
