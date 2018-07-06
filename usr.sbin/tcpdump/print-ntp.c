@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ntp.c,v 1.16 2015/01/16 06:40:21 deraadt Exp $	*/
+/*	$OpenBSD: print-ntp.c,v 1.17 2015/11/16 00:16:39 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -67,7 +67,7 @@ ntp_print(const u_char *cp, u_int length)
 	TCHECK(bp->status);
 
 	version = (int)(bp->status & VERSIONMASK) >> 3;
-	printf(" v%d", version);
+	printf("v%d", version);
 
 	leapind = bp->status & LEAPMASK;
 	switch (leapind) {
