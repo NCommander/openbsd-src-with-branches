@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.672 2018/05/09 11:07:20 otto Exp $	*/
+/*	$OpenBSD: parse.y,v 1.673 2018/05/18 13:39:49 benno Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -5549,9 +5549,11 @@ pushfile(const char *name, int secret)
 
 	if ((nfile = calloc(1, sizeof(struct file))) == NULL ||
 	    (nfile->name = strdup(name)) == NULL) {
-		if (nfile)
+		if (nfile) {
+			warn("strdup");
 			free(nfile);
-		warn("malloc");
+		} else
+			warn("calloc");
 		return (NULL);
 	}
 	if (TAILQ_FIRST(&files) == NULL && strcmp(nfile->name, "-") == 0) {

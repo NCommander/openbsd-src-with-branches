@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.24 2018/04/26 14:12:19 krw Exp $	*/
+/*	$OpenBSD: parse.y,v 1.25 2018/06/11 09:36:49 denis Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -781,11 +781,11 @@ pushfile(const char *name, int secret)
 	struct file	*nfile;
 
 	if ((nfile = calloc(1, sizeof(struct file))) == NULL) {
-		log_warn("malloc");
+		log_warn("calloc");
 		return (NULL);
 	}
 	if ((nfile->name = strdup(name)) == NULL) {
-		log_warn("malloc");
+		log_warn("strdup");
 		free(nfile);
 		return (NULL);
 	}
@@ -845,7 +845,7 @@ parse_config(struct env *x_conf, const char *filename, int opts)
 	conf->sc_conf_tv.tv_usec = 0;
 	conf->sc_cafile = strdup(YPLDAP_CERT_FILE);
 	if (conf->sc_cafile == NULL) {
-		log_warn("malloc");
+		log_warn("strdup");
 		return (-1);
 	}
 
