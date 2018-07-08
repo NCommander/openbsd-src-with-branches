@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_enc.c,v 1.70 2017/10/16 08:22:25 mpi Exp $	*/
+/*	$OpenBSD: if_enc.c,v 1.71 2018/06/25 15:20:39 denis Exp $	*/
 
 /*
  * Copyright (c) 2010 Reyk Floeter <reyk@vantronix.net>
@@ -120,7 +120,7 @@ enc_clone_create(struct if_clone *ifc, int unit)
 		return (error);
 	}
 
-	if (unit == 0 || unit > enc_max_unit) {
+	if (enc_allifps == NULL || unit > enc_max_unit) {
 		if ((new = mallocarray(unit + 1, sizeof(struct ifnet *),
 		    M_DEVBUF, M_NOWAIT|M_ZERO)) == NULL) {
 			NET_UNLOCK();
