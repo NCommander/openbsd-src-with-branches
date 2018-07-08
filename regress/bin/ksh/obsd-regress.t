@@ -1,4 +1,4 @@
-#	$OpenBSD: obsd-regress.t,v 1.4 2016/12/11 18:11:59 millert Exp $
+#	$OpenBSD: obsd-regress.t,v 1.5 2016/12/11 20:04:24 millert Exp $
 
 #
 # ksh regression tests from OpenBSD
@@ -46,6 +46,19 @@ stdin:
 	for n in "${a%%=*}"; do echo ${n}; done
 expected-stdout:
 	
+---
+
+name: eval-5
+description:
+	Tests for expansion including multiple read-only variables
+stdin:
+	set -- script .sh
+	echo ${1%$2}
+	set -- foobar barbaz baz
+	echo ${1%${2%$3}}
+expected-stdout:
+	script
+	foo
 ---
 
 name: and-list-error-1
