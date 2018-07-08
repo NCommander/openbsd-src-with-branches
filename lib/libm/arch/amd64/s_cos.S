@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_cos.S,v 1.3 2016/09/12 19:47:01 guenther Exp $ */
+/*	$OpenBSD: s_cos.S,v 1.4 2018/07/03 22:43:34 mortimer Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -17,6 +17,7 @@ ENTRY(cos)
 	andw	$0x400,%ax
 	jnz	1f
 	XMM_DOUBLE_EPILOGUE
+	RETGUARD_CHECK(cos, r11)
 	ret	
 1:	fldpi
 	fadd	%st(0)
