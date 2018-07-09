@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm.c,v 1.33 2018/04/27 12:15:10 mlarkin Exp $	*/
+/*	$OpenBSD: vm.c,v 1.34 2018/06/19 17:12:34 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -1793,7 +1793,8 @@ vcpu_deassert_pic_irq(uint32_t vm_id, uint32_t vcpu_id, int irq)
 
 	if (!i8259_is_pending()) {
 		if (vcpu_pic_intr(vm_id, vcpu_id, 0))
-			fatalx("%s: can't deassert INTR", __func__);
+			fatalx("%s: can't deassert INTR for vm_id %d, "
+			    "vcpu_id %d", __func__, vm_id, vcpu_id);
 	}
 }
 
