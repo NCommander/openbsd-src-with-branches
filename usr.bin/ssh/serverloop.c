@@ -1,4 +1,4 @@
-/* $OpenBSD: serverloop.c,v 1.205 2018/03/03 03:15:51 djm Exp $ */
+/* $OpenBSD: serverloop.c,v 1.206 2018/06/08 01:55:40 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -54,7 +54,7 @@
 
 #include "xmalloc.h"
 #include "packet.h"
-#include "buffer.h"
+#include "sshbuf.h"
 #include "log.h"
 #include "misc.h"
 #include "servconf.h"
