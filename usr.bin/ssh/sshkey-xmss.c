@@ -1,4 +1,4 @@
-/* $OpenBSD: sshkey-xmss.c,v 1.1 2018/02/23 15:58:38 markus Exp $ */
+/* $OpenBSD: sshkey-xmss.c,v 1.2 2018/04/10 00:10:49 djm Exp $ */
 /*
  * Copyright (c) 2017 Markus Friedl.  All rights reserved.
  *
@@ -619,7 +619,7 @@ sshkey_xmss_update_state(const struct sshkey *k, sshkey_printfn *pr)
 		close(fd);
 		goto done;
 	}
-	if (atomicio(vwrite, fd, (void *)sshbuf_ptr(enc), sshbuf_len(enc)) !=
+	if (atomicio(vwrite, fd, sshbuf_mutable_ptr(enc), sshbuf_len(enc)) !=
 	    sshbuf_len(enc)) {
 		ret = SSH_ERR_SYSTEM_ERROR;
 		PRINT("%s: write new state file data: %s", __func__, nstatefile);
