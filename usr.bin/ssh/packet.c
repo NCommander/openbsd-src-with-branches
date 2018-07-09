@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.c,v 1.274 2018/07/06 09:06:14 sf Exp $ */
+/* $OpenBSD: packet.c,v 1.275 2018/07/09 13:37:10 sf Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -56,9 +56,6 @@
 #include <time.h>
 
 #include <zlib.h>
-
-#include "buffer.h"	/* typedefs XXX */
-#include "key.h"	/* typedefs XXX */
 
 #include "xmalloc.h"
 #include "crc32.h"
