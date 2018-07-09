@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-bsdauth.c,v 1.13 2014/06/24 01:13:21 djm Exp $ */
+/* $OpenBSD: auth-bsdauth.c,v 1.14 2015/10/20 23:24:25 mmcc Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -28,11 +28,11 @@
 #include <stdio.h>
 
 #include "xmalloc.h"
-#include "key.h"
+#include "sshkey.h"
+#include "sshbuf.h"
 #include "hostfile.h"
 #include "auth.h"
 #include "log.h"
-#include "buffer.h"
 #ifdef GSSAPI
 #include "ssh-gss.h"
 #endif

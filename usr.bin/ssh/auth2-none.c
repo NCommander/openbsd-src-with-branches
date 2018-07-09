@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-none.c,v 1.20 2017/05/30 14:29:59 markus Exp $ */
+/* $OpenBSD: auth2-none.c,v 1.21 2018/03/03 03:15:51 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -33,7 +33,6 @@
 #include "auth.h"
 #include "packet.h"
 #include "log.h"
-#include "buffer.h"
 #include "misc.h"
 #include "servconf.h"
 #include "compat.h"
