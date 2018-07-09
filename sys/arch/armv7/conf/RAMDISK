@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.98 2018/06/16 14:32:56 kettenis Exp $
+#	$OpenBSD: RAMDISK,v 1.99 2018/07/09 09:55:06 patrick Exp $
 
 machine		armv7 arm
 
@@ -161,6 +161,8 @@ mvpinctrl*	at fdt?
 mvmdio*		at fdt?
 mvneta*		at fdt?
 mvmpic*		at fdt?
+mvpcie*		at fdt?
+pci*		at mvpcie?
 mvpxa*		at fdt?
 sdmmc*		at mvpxa?
 
