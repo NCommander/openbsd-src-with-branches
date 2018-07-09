@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.h,v 1.84 2017/12/10 05:55:29 dtucker Exp $ */
+/* $OpenBSD: packet.h,v 1.85 2018/07/06 09:03:02 sf Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -133,8 +133,8 @@ int      ssh_packet_not_very_much_data_to_write(struct ssh *);
 int	 ssh_packet_connection_is_on_socket(struct ssh *);
 int	 ssh_packet_remaining(struct ssh *);
 
-void	 tty_make_modes(int, struct termios *);
-void	 tty_parse_modes(int, int *);
+void	 ssh_tty_make_modes(struct ssh *, int, struct termios *);
+void	 ssh_tty_parse_modes(struct ssh *, int);
 
 void	 ssh_packet_set_alive_timeouts(struct ssh *, int);
 int	 ssh_packet_inc_alive_timeouts(struct ssh *);
