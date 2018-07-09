@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.27 2017/12/14 21:07:39 naddy Exp $
+#	$OpenBSD: Makefile,v 1.28 2018/01/08 15:37:26 markus Exp $
 
 .PATH:		${.CURDIR}/..
 
 SRCS=	ssh-agent.c ssh-pkcs11-client.c
-SRCS+=	atomicio.c bufaux.c buffer.c compat.c fatal.c key.c readpass.c
+SRCS+=	atomicio.c compat.c fatal.c key.c readpass.c
 SRCS+=	${SRCS_BASE} ${SRCS_KEY} ${SRCS_KEYP} ${SRCS_KRL} ${SRCS_UTL}
 PROG=	ssh-agent
 BINOWN=	root
