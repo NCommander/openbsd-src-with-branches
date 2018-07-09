@@ -1,4 +1,4 @@
-/*	$OpenBSD: compile.c,v 1.46 2017/12/13 16:06:34 millert Exp $	*/
+/*	$OpenBSD: compile.c,v 1.47 2017/12/13 16:07:54 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -367,10 +367,10 @@ compile_delimited(char *p, char *d)
 			if ((d = compile_ccl(&p, d)) == NULL)
 				error(COMPILE, "unbalanced brackets ([])");
 			continue;
-		} else if (*p == '\\' && p[1] == '[') {
-			*d++ = *p++;
 		} else if (*p == '\\' && p[1] == c) {
 			p++;
+		} else if (*p == '\\' && p[1] == '[') {
+			*d++ = *p++;
 		} else if (*p == '\\' && p[1] == 'n') {
 			*d++ = '\n';
 			p += 2;
