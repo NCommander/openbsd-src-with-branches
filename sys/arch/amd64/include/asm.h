@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.12 2018/07/01 12:13:50 mortimer Exp $	*/
+/*	$OpenBSD: asm.h,v 1.13 2018/07/01 16:02:12 guenther Exp $	*/
 /*	$NetBSD: asm.h,v 1.2 2003/05/02 18:05:47 yamt Exp $	*/
 
 /*-
@@ -66,6 +66,8 @@
 #define _ALIGN_TRAPS	.align	16, 0xcc
 
 #define _ENTRY(x) \
+	.text; _ALIGN_TRAPS; .globl x; .type x,@function; x:
+#define _NENTRY(x) \
 	.text; _ALIGN_TEXT; .globl x; .type x,@function; x:
 
 #ifdef _KERNEL
@@ -137,8 +139,8 @@
 #endif
 
 #define	ENTRY(y)	_ENTRY(_C_LABEL(y)); _PROF_PROLOGUE
-#define	NENTRY(y)	_ENTRY(_C_LABEL(y))
-#define	ASENTRY(y)	_ENTRY(_ASM_LABEL(y)); _PROF_PROLOGUE
+#define	NENTRY(y)	_NENTRY(_C_LABEL(y))
+#define	ASENTRY(y)	_NENTRY(_ASM_LABEL(y)); _PROF_PROLOGUE
 #define	END(y)		.size y, . - y
 
 #define	STRONG_ALIAS(alias,sym)						\
