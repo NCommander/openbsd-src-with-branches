@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_lib.c,v 1.24 2017/05/02 03:59:44 deraadt Exp $ */
+/* $OpenBSD: ec_lib.c,v 1.25 2018/07/10 21:55:49 tb Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -526,7 +526,7 @@ EC_GROUP_cmp(const EC_GROUP * a, const EC_GROUP * b, BN_CTX * ctx)
 
 	return r;
 
-err:
+ err:
 	BN_CTX_end(ctx);
 	if (ctx_new)
 		BN_CTX_free(ctx);
