@@ -1,3 +1,4 @@
+/*	$OpenBSD: access.c,v 1.1 2014/04/27 22:18:25 guenther Exp $	*/
 /*
  * Copyright (c) 2018 Martin Pieuchot
  *
