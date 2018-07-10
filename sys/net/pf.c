@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1067 2018/06/04 12:22:45 bluhm Exp $ */
+/*	$OpenBSD: pf.c,v 1.1069 2018/07/10 09:28:27 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -402,7 +402,7 @@ pf_set_protostate(struct pf_state *s, int which, u_int8_t newstate)
 
 	if (s->src.state == newstate)
 		return;
-	if (s->key[PF_SK_STACK] != NULL &&
+	if (s->creatorid == pf_status.hostid && s->key[PF_SK_STACK] != NULL &&
 	    s->key[PF_SK_STACK]->proto == IPPROTO_TCP &&
 	    !(TCPS_HAVEESTABLISHED(s->src.state) ||
 	    s->src.state == TCPS_CLOSED) &&
