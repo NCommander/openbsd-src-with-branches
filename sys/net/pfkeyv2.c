@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.186 2018/06/25 09:48:17 mpi Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.187 2018/07/09 16:51:29 claudio Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -129,7 +129,7 @@ extern struct pool ipsec_policy_pool;
 extern struct radix_node_head **spd_tables;
 
 #define PFKEY_MSG_MAXSZ 4096
-struct sockaddr pfkey_addr = { 2, PF_KEY, };
+const struct sockaddr pfkey_addr = { 2, PF_KEY, };
 struct domain pfkeydomain;
 
 /*
