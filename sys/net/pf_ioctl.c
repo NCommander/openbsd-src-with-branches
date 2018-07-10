@@ -169,6 +169,9 @@ pfattach(int num)
 	    IPL_SOFTNET, 0, "pfqueue", NULL);
 	pool_init(&pf_tag_pl, sizeof(struct pf_tagname), 0,
 	    IPL_SOFTNET, 0, "pftag", NULL);
+	pool_init(&pf_pktdelay_pl, sizeof(struct pf_pktdelay), 0,
+	    IPL_SOFTNET, 0, "pfpktdelay", NULL);
+
 	hfsc_initialize();
 	pfr_initialize();
 	pfi_initialize();

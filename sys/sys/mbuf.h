@@ -100,10 +100,11 @@ struct pkthdr_pf {
 	struct inpcb	*inp;		/* connected pcb for outgoing packet */
 	u_int32_t	 qid;		/* queue id */
 	u_int16_t	 tag;		/* tag id */
+	u_int16_t	 delay;		/* delay packet by X ms */
 	u_int8_t	 flags;
 	u_int8_t	 routed;
 	u_int8_t	 prio;
-	u_int8_t	 pad[3];
+	u_int8_t	 pad[1];
 };
 
 /* pkthdr_pf.flags */
