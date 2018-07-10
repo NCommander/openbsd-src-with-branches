@@ -685,6 +685,11 @@ if_enqueue(struct ifnet *ifp, struct mbuf *m)
 	struct ifqueue *ifq;
 	int error;
 
+#if NPF > 0
+	if (m->m_pkthdr.pf.delay > 0)
+		return (pf_delay_pkt(m, ifp->if_index));
+#endif	
+
 #if NBRIDGE > 0
 	if (ifp->if_bridgeport && (m->m_flags & M_PROTO1) == 0) {
 		KERNEL_LOCK();
