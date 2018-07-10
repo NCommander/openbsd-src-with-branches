@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 
 	BIO_free_all(NULL);
 	NCONF_free_data(NULL);
