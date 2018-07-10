@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.141 2017/09/07 11:32:14 bluhm Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.142 2017/12/30 23:08:29 guenther Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -132,7 +132,6 @@ extern char *syscallnames[];
 struct emul emul_elf = {
 	"native",
 	NULL,
-	sendsig,
 	SYS_syscall,
 	SYS_MAXSYSCALL,
 	sysent,

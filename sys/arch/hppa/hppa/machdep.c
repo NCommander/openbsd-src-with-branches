@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.251 2018/04/12 17:13:43 deraadt Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.252 2018/05/22 02:13:42 guenther Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -1198,15 +1198,13 @@ setregs(struct proc *p, struct exec_package *pack, u_long stack,
  * Send an interrupt to process.
  */
 void
-sendsig(sig_t catcher, int sig, int mask, u_long code, int type,
-    union sigval val)
+sendsig(sig_t catcher, int sig, sigset_t mask, const siginfo_t *ksip)
 {
 	struct proc *p = curproc;
 	struct trapframe *tf = p->p_md.md_regs;
 	struct pcb *pcb = &p->p_addr->u_pcb;
 	struct sigacts *psp = p->p_p->ps_sigacts;
 	struct sigcontext ksc;
-	siginfo_t ksi;
 	register_t scp, sip;
 	int sss;
 
@@ -1288,8 +1286,7 @@ sendsig(sig_t catcher, int sig, int mask, u_long code, int type,
 		sigexit(p, SIGILL);
 
 	if (sip) {
-		initsiginfo(&ksi, sig, code, type, val);
-		if (copyout(&ksi, (void *)sip, sizeof(ksi)))
+		if (copyout(ksip, (void *)sip, sizeof *ksip))
 			sigexit(p, SIGILL);
 	}
 }

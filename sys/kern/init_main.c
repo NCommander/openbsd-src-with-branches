@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.276 2018/04/12 17:13:44 deraadt Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.277 2018/04/28 03:13:04 visa Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -159,7 +159,6 @@ extern char *syscallnames[];
 struct emul emul_native = {
 	"native",
 	NULL,
-	sendsig,
 	SYS_syscall,
 	SYS_MAXSYSCALL,
 	sysent,
