@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.319 2018/06/25 14:28:33 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.320 2018/06/29 11:45:50 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -340,7 +340,7 @@ struct peer_config {
 #define PEERFLAG_LOG_UPDATES	0x02
 
 enum network_type {
-	NETWORK_DEFAULT,
+	NETWORK_DEFAULT,	/* from network statements */
 	NETWORK_STATIC,
 	NETWORK_CONNECTED,
 	NETWORK_RTLABEL,

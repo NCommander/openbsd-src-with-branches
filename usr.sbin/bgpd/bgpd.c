@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.191 2017/08/12 16:31:09 florian Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.192 2018/02/10 01:24:28 benno Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -500,7 +500,7 @@ reconfigure(char *conffile, struct bgpd_config *conf, struct peer **peer_l)
 	}
 
 	/* networks go via kroute to the RDE */
-	if (kr_net_reload(0, &conf->networks))
+	if (kr_net_reload(conf->default_tableid, &conf->networks))
 		return (-1);
 
 	/* prefixsets for filters in the RDE */
