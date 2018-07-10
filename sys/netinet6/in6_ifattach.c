@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_ifattach.c,v 1.106 2018/03/13 13:58:03 florian Exp $	*/
+/*	$OpenBSD: in6_ifattach.c,v 1.107 2018/03/27 15:03:52 dhill Exp $	*/
 /*	$KAME: in6_ifattach.c,v 1.124 2001/07/18 08:32:51 jinmei Exp $	*/
 
 /*
@@ -277,19 +277,8 @@ in6_get_ifid(struct ifnet *ifp0, struct in6_addr *in6)
 	TAILQ_FOREACH(ifp, &ifnet, if_list) {
 		if (ifp == ifp0)
 			continue;
-		if (in6_get_hw_ifid(ifp, in6) != 0)
-			continue;
-
-		/*
-		 * to borrow ifid from other interface, ifid needs to be
-		 * globally unique
-		 */
-		if (IFID_UNIVERSAL(in6)) {
-			nd6log((LOG_DEBUG,
-			    "%s: borrow interface identifier from %s\n",
-			    ifp0->if_xname, ifp->if_xname));
+		if (in6_get_hw_ifid(ifp, in6) == 0)
 			goto success;
-		}
 	}
 
 	/* last resort: get from random number source */
