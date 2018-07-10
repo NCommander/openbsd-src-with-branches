@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.53 2017/11/05 14:33:27 jca Exp $ */
+/*	$OpenBSD: kroute.c,v 1.54 2018/02/08 21:37:36 benno Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -1507,8 +1507,6 @@ add:
 			if ((kr = kroute_find(&prefix, prefixlen, prio)) ==
 			    NULL)
 				continue;
-			if (!(kr->r.flags & F_KERNEL))
-				continue;
 			/* get the correct route */
 			okr = kr;
 			if (mpath && (kr = kroute_matchgw(kr, &nexthop,
@@ -1517,6 +1515,8 @@ add:
 				    " not found");
 				return (-1);
 			}
+			if (!(kr->r.flags & F_KERNEL))
+				continue;
 			if (kroute_remove(kr) == -1)
 				return (-1);
 			break;
