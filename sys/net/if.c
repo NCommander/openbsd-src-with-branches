@@ -2474,7 +2474,7 @@ if_addgroup(struct ifnet *ifp, const char *groupname)
 	TAILQ_INSERT_TAIL(&ifp->if_groups, ifgl, ifgl_next);
 
 #if NPF > 0
-	pfi_group_change(groupname);
+	pfi_group_addmember(groupname, ifp);
 #endif
 
 	return (0);
