@@ -1272,7 +1272,6 @@ rt_ifa_purge_walker(struct rtentry *rt, void *vifa, unsigned int rtableid)
 	}
 
 	return (EAGAIN);
-
 }
 
 /*
