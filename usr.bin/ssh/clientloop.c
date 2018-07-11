@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.315 2018/07/09 21:03:30 markus Exp $ */
+/* $OpenBSD: clientloop.c,v 1.316 2018/07/09 21:20:26 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -87,7 +87,7 @@
 #include "compat.h"
 #include "channels.h"
 #include "dispatch.h"
-#include "key.h"
+#include "sshkey.h"
 #include "cipher.h"
 #include "kex.h"
 #include "myproposal.h"

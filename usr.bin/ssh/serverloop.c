@@ -1,4 +1,4 @@
-/* $OpenBSD: serverloop.c,v 1.206 2018/06/08 01:55:40 djm Exp $ */
+/* $OpenBSD: serverloop.c,v 1.207 2018/07/09 21:29:36 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -63,7 +63,7 @@
 #include "channels.h"
 #include "compat.h"
 #include "ssh2.h"
-#include "key.h"
+#include "sshkey.h"
 #include "cipher.h"
 #include "kex.h"
 #include "hostfile.h"
