@@ -78,6 +78,10 @@ main(int argc, char *argv[])
 	getargs(argc, argv);
 	if (numfiles == 0)
 		usage();
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
 	/* Concatenate lines from each file, then print. */
 	for (;;) {
 		linep = line;
