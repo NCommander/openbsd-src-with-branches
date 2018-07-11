@@ -1,4 +1,4 @@
-/* $OpenBSD: parse.y,v 1.25 2016/12/29 19:12:42 tedu Exp $ */
+/* $OpenBSD: parse.y,v 1.26 2017/01/02 01:40:20 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -331,7 +331,7 @@ eow:
 		}
 	}
 	if ((str = strdup(buf)) == NULL)
-		err(1, "strdup");
+		err(1, "%s", __func__);
 	yylval.str = str;
 	return TSTRING;
 
