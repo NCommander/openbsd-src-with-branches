@@ -298,6 +298,19 @@ pfi_group_change(const char *group)
 	pfi_kif_update(kif);
 }
 
+void
+pfi_group_addmember(const char *group, struct ifnet *ifp)
+{
+	struct pfi_kif		*gkif, *ikif;
+
+	if ((gkif = pfi_kif_get(group)) == NULL ||
+	    (ikif = pfi_kif_get(ifp->if_xname)) == NULL)
+		panic("pfi_kif_get failed");
+	ikif->pfik_flags |= gkif->pfik_flags;
+
+	pfi_group_change(group);	
+}
+
 int
 pfi_match_addr(struct pfi_dynaddr *dyn, struct pf_addr *a, sa_family_t af)
 {

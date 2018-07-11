@@ -1853,6 +1853,7 @@ void		 pfi_detach_ifnet(struct ifnet *);
 void		 pfi_attach_ifgroup(struct ifg_group *);
 void		 pfi_detach_ifgroup(struct ifg_group *);
 void		 pfi_group_change(const char *);
+void		 pfi_group_addmember(const char *, struct ifnet *);
 int		 pfi_match_addr(struct pfi_dynaddr *, struct pf_addr *,
 		    sa_family_t);
 int		 pfi_dynaddr_setup(struct pf_addr_wrap *, sa_family_t);
