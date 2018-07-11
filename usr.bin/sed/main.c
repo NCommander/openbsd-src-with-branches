@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.35 2017/08/01 18:05:53 martijn Exp $	*/
+/*	$OpenBSD: main.c,v 1.36 2017/12/13 16:06:34 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
@@ -160,6 +160,10 @@ main(int argc, char *argv[])
 		termwidth = win.ws_col;
 	if (termwidth == 0)
 		termwidth = 80;
+	if (termwidth <= 8)
+		termwidth = 1;
+	else
+		termwidth -= 8;
 
 	if (inplace != NULL) {
 		if (pledge("stdio rpath wpath cpath fattr chown", NULL) == -1)
