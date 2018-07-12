@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.323 2018/07/11 14:08:46 benno Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.324 2018/07/11 16:34:36 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -567,6 +567,7 @@ struct kroute_nexthop {
 struct kif {
 	char			 ifname[IFNAMSIZ];
 	u_int64_t		 baudrate;
+	u_int			 rdomain;
 	int			 flags;
 	u_short			 ifindex;
 	u_int8_t		 if_type;
