@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pf.conf.5,v 1.573 2018/02/08 17:51:43 jmc Exp $
+.\"	$OpenBSD: pf.conf.5,v 1.576 2018/07/10 19:27:11 henning Exp $
 .\"
 .\" Copyright (c) 2002, Daniel Hartmeier
 .\" Copyright (c) 2003 - 2013 Henning Brauer <henning@openbsd.org>
@@ -1376,7 +1376,7 @@ seemingly accepting connections that will be dropped later on.
 .Pp
 .Bl -tag -width adaptive -compact
 .It Cm never
-pf will never send syncookie SYNACKs.
+pf will never send syncookie SYNACKs (the default).
 .It Cm always
 pf will always send syncookie SYNACKs.
 .It Cm adaptive
