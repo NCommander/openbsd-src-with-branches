@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmvar.h,v 1.55 2018/07/11 13:19:42 mlarkin Exp $	*/
+/*	$OpenBSD: vmmvar.h,v 1.56 2018/07/12 10:15:44 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -443,7 +443,6 @@ struct vm_exit {
 
 	struct vcpu_reg_state		vrs;
 };
-
 
 struct vm_create_params {
 	/* Input parameters to VMM_IOC_CREATE */
