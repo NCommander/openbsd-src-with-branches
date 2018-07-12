@@ -1,4 +1,4 @@
-/* $OpenBSD: mc146818.c,v 1.16 2018/02/28 06:53:25 pd Exp $ */
+/* $OpenBSD: mc146818.c,v 1.17 2018/07/09 16:11:37 mlarkin Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -259,7 +259,7 @@ rtc_update_regb(uint32_t data)
 uint8_t
 vcpu_exit_mc146818(struct vm_run_params *vrp)
 {
-	union vm_exit *vei = vrp->vrp_exit;
+	struct vm_exit *vei = vrp->vrp_exit;
 	uint16_t port = vei->vei.vei_port;
 	uint8_t dir = vei->vei.vei_dir;
 	uint32_t data = 0;
