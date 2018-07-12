@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.77 2018/07/10 21:21:56 friehm Exp $ */
+/*	$OpenBSD: rde.c,v 1.78 2018/07/12 12:19:05 remi Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -735,7 +735,7 @@ rde_dispatch_parent(int fd, short event, void *bula)
 			    LINK_STATE_IS_UP(iface->linkstate);
 
 			if_update(iface, ifp->mtu, ifp->flags, ifp->if_type,
-			    ifp->linkstate, ifp->baudrate);
+			    ifp->linkstate, ifp->baudrate, ifp->rdomain);
 
 			/* Resend LSAs if interface state changes. */
 			link_ok = (iface->flags & IFF_UP) &&
