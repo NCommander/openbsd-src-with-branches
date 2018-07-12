@@ -316,6 +316,14 @@ ntp_main(struct ntpd_conf *nconf, struct passwd *pw, int argc, char **argv)
 		    (peer_cnt == 0 && sensors_cnt == 0)))
 			priv_settime(0);	/* no good peers, don't wait */
 
+		if (conf->status.synced && gettime() - conf->status.reftime >
+		    INTERVAL_QUERY_PATHETIC * QSCALE_OFF_MAX / QSCALE_OFF_MIN *
+		    1.2) {
+			/* no update seen for ~1h */
+			log_info("clock is now unsynced");
+			conf->status.synced = 0;
+		}
+
 		if (ibuf_main->w.queued > 0)
 			pfd[PFD_PIPE_MAIN].events |= POLLOUT;
 		if (ibuf_dns->w.queued > 0)
