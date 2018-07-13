@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: kern_unveil.c,v 1.1 2018/07/13 09:25:23 beck Exp $	*/
 
 /*
  * Copyright (c) 2017-2018 Bob Beck <beck@openbsd.org>
@@ -33,7 +33,6 @@
 #include <sys/syscallargs.h>
 #include <sys/systm.h>
 
-#define PLEDGENAMES
 #include <sys/pledge.h>
 
 /* #define DEBUG_UNVEIL */
