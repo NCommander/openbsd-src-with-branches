@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 2011/09/21 10:37:51 claudio Exp $
+#	$OpenBSD: Makefile,v 1.13 2017/01/23 23:37:21 claudio Exp $
 
 .PATH:		${.CURDIR}/../bgpd
 
@@ -13,7 +13,7 @@ CFLAGS+= -Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+= -Wsign-compare
 CFLAGS+= -I${.CURDIR} -I${.CURDIR}/../bgpd
 MAN=	bgpctl.8
-LDADD= -lutil
-DPADD+= ${LIBUTIL}
+LDADD= -lutil -lm
+DPADD+= ${LIBUTIL} ${LIBM}
 
 .include <bsd.prog.mk>
