@@ -568,6 +568,11 @@ struct sys_sendsyslog_args {
 	syscallarg(int) flags;
 };
 
+struct sys_unveil_args {
+	syscallarg(const char *) path;
+	syscallarg(const char *) flags;
+};
+
 struct sys_getsockopt_args {
 	syscallarg(int) s;
 	syscallarg(int) level;
@@ -1219,6 +1224,7 @@ int	sys_ppoll(struct proc *, void *, register_t *);
 int	sys_pselect(struct proc *, void *, register_t *);
 int	sys_sigsuspend(struct proc *, void *, register_t *);
 int	sys_sendsyslog(struct proc *, void *, register_t *);
+int	sys_unveil(struct proc *, void *, register_t *);
 int	sys_getsockopt(struct proc *, void *, register_t *);
 int	sys_thrkill(struct proc *, void *, register_t *);
 int	sys_readv(struct proc *, void *, register_t *);

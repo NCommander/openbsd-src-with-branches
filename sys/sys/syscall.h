@@ -342,7 +342,9 @@
 /* syscall: "sendsyslog" ret: "int" args: "const char *" "size_t" "int" */
 #define	SYS_sendsyslog	112
 
-				/* 114 is obsolete osendmsg */
+/* syscall: "unveil" ret: "int" args: "const char *" "const char *" */
+#define	SYS_unveil	114
+
 				/* 115 is obsolete vtrace */
 				/* 116 is obsolete t32_gettimeofday */
 				/* 117 is obsolete t32_getrusage */
