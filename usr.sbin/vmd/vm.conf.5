@@ -1,4 +1,4 @@
-.\" $OpenBSD: vm.conf.5,v 1.32 2018/07/12 12:04:49 reyk Exp $
+.\" $OpenBSD: vm.conf.5,v 1.33 2018/07/13 08:42:49 reyk Exp $
 .\"
 .\" Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
 .\" Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -15,7 +15,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: July 12 2018 $
+.Dd $Mdocdate: July 13 2018 $
 .Dt VM.CONF 5
 .Os
 .Sh NAME
@@ -274,10 +274,10 @@ The user needs read and write access to image and instances are not
 allowed to reuse disks from the parent VM.
 .It Cm instance
 Allow to create additional instances from the instances.
+.It Cm interface
+Allow to change network interface settings.
 .It Cm memory
 Allow to configure the memory size.
-.It Cm network
-Allow to change network interface settings.
 .It Cm owner Ar user Ns Op : Ns Ar group
 Allow the specified user or group to create the instances.
 The owner will be allowed to create instances VMs, start or stop the
