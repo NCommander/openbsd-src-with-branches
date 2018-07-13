@@ -1,4 +1,4 @@
-/* $OpenBSD: s_time.c,v 1.22 2018/02/07 04:57:06 jsing Exp $ */
+/* $OpenBSD: s_time.c,v 1.23 2018/02/07 05:47:55 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -228,8 +228,8 @@ s_time_usage(void)
 /***********************************************************************
  * TIME - time functions
  */
-#define START	0
-#define STOP	1
+#define START	TM_RESET
+#define STOP	TM_GET
 
 static double
 tm_Time_F(int op)

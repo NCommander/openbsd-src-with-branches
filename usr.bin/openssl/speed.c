@@ -1,4 +1,4 @@
-/* $OpenBSD: speed.c,v 1.21 2017/12/05 15:02:06 jca Exp $ */
+/* $OpenBSD: speed.c,v 1.22 2018/02/07 05:47:55 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -195,8 +195,8 @@ sig_done(int sig)
 	run = 0;
 }
 
-#define START	0
-#define STOP	1
+#define START	TM_RESET
+#define STOP	TM_GET
 
 
 static double
