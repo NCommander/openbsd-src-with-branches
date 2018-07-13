@@ -1,4 +1,4 @@
-/*	$OpenBSD: strlen.S,v 1.5 2016/03/20 16:50:30 krw Exp $	*/
+/*	$OpenBSD: strlen.S,v 1.6 2018/07/03 23:22:48 mortimer Exp $	*/
 /*	$NetBSD: strlen.S,v 1.6 2014/03/22 19:16:34 jakllsch Exp $	*/
 
 /*-
@@ -144,7 +144,7 @@ ENTRY(strlen)
 	ret
 
 /* Misaligned, read aligned word and make low bytes non-zero */
-	_ALIGN_TEXT
+	_ALIGN_TRAPS
 10:
 	mov	%al,%cl
 	mov	$1,%rsi
