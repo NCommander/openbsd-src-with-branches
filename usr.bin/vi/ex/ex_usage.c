@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_usage.c,v 1.8 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: ex_usage.c,v 1.9 2018/02/12 01:10:46 schwarze Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -58,7 +58,6 @@ ex_usage(SCR *sp, EXCMD *cmdp)
 	ARGS *ap;
 	EXCMDLIST const *cp;
 	int newscreen;
-	char *p;
 
 	switch (cmdp->argc) {
 	case 1:
