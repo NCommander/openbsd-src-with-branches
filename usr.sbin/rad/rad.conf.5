@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rad.conf.5,v 1.1 2018/07/10 16:39:54 florian Exp $
+.\"	$OpenBSD: rad.conf.5,v 1.2 2018/07/13 05:25:29 jmc Exp $
 .\"
 .\" Copyright (c) 2018 Florian Obser <florian@openbsd.org>
 .\" Copyright (c) 2005 Esben Norby <norby@openbsd.org>
@@ -18,7 +18,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: July 10 2018 $
+.Dd $Mdocdate: July 13 2018 $
 .Dt RAD.CONF 5
 .Os
 .Sh NAME
@@ -132,6 +132,9 @@ The default is 2592000.
 configuration file
 .El
 .Sh EXAMPLES
+With the following example configuration
+.Nm
+will pick a prefix from the ix1 interface and send router advertisements on it:
 .Bd -literal -offset indent
 interface ix1
 .Ed
