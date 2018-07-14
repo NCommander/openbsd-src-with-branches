@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.c,v 1.126 2017/06/01 08:17:27 joris Exp $	*/
+/*	$OpenBSD: client.c,v 1.127 2017/08/21 16:45:13 millert Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  *
@@ -458,7 +458,7 @@ cvs_client_sendfile(struct cvs_file *cf)
 	cvs_client_senddir(cf->file_wd);
 	cvs_remote_classify_file(cf);
 
-	if (cf->file_type != CVS_FILE)
+	if (cf->file_type == CVS_DIR)
 		return;
 
 	if (cf->file_ent != NULL && cvs_cmdop != CVS_OP_IMPORT) {
