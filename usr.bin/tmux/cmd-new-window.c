@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-new-window.c,v 1.74 2018/05/03 16:56:59 nicm Exp $ */
+/* $OpenBSD: cmd-new-window.c,v 1.75 2018/05/24 09:42:49 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -103,7 +103,6 @@ cmd_new_window_exec(struct cmd *self, struct cmdq_item *item)
 	else
 		name = NULL;
 
-	wl = NULL;
 	if (idx != -1)
 		wl = winlink_find_by_index(&s->windows, idx);
 	if (wl != NULL && args_has(args, 'k')) {
