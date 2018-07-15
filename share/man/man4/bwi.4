@@ -1,4 +1,4 @@
-.\" $OpenBSD: bwi.4,v 1.39 2014/02/15 01:41:16 tedu Exp $
+.\" $OpenBSD: bwi.4,v 1.40 2014/02/15 20:28:19 tedu Exp $
 .\"
 .\" Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
 .\"
@@ -119,8 +119,7 @@ using WPA key
 .Dq mywpakey ,
 obtaining an IP address using DHCP:
 .Bd -literal -offset indent
-nwid mynwid
-wpakey mywpakey
+nwid mynwid wpakey mywpakey
 dhcp
 .Ed
 .Sh SEE ALSO
