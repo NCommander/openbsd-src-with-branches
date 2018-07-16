@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.169 2018/07/11 16:34:36 claudio Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.170 2018/07/11 19:05:41 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -416,10 +416,10 @@ path_hash_stats(struct rde_hashstats *hs)
 }
 
 int
-path_update(struct rib *rib, struct rde_peer *peer, struct rde_aspath *nasp,
+path_update(struct rib *rib, struct rde_peer *peer, struct filterstate *state,
     struct bgpd_addr *prefix, int prefixlen, int flag)
 {
-	struct rde_aspath	*asp;
+	struct rde_aspath	*asp, *nasp = &state->aspath;
 	struct prefix		*p;
 	int			 pflag = 0;
 
