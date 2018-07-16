@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtadvd.c,v 1.90 2017/08/13 07:52:17 florian Exp $	*/
+/*	$OpenBSD: rtadvd.c,v 1.91 2017/08/22 01:44:09 jca Exp $	*/
 /*	$KAME: rtadvd.c,v 1.66 2002/05/29 14:18:36 itojun Exp $	*/
 
 /*
@@ -1159,7 +1159,7 @@ rtsock_open(void)
 {
 	unsigned int rtfilter;
 
-	if ((rtsock = socket(PF_ROUTE, SOCK_RAW, 0)) < 0)
+	if ((rtsock = socket(PF_ROUTE, SOCK_RAW, AF_INET6)) < 0)
 		fatal("socket");
 
 	rtfilter =
