@@ -1,4 +1,4 @@
-.\" $OpenBSD: unveil.2,v 1.1 2018/07/13 09:25:22 beck Exp $
+.\" $OpenBSD: unveil.2,v 1.2 2018/07/13 17:18:34 mestre Exp $
 .\"
 .\" Copyright (c) 2018 Bob Beck <beck@openbsd.org>
 .\"
@@ -76,7 +76,7 @@ promise
 should be available for execute operations corresponding to
 .Xr pledge 2
 promise
-.Ar wpath .
+.Ar exec .
 .It Dv c
 .Ar path
 should be allowed to be created and removed, corresponding to
