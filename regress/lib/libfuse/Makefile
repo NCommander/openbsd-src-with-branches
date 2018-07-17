@@ -1,4 +1,4 @@
-#       $OpenBSD: Makefile,v 1.1 2013/08/09 16:20:10 syl Exp $
+#       $OpenBSD: Makefile,v 1.2 2017/11/16 13:23:13 helg Exp $
 
 REGRESS_TARGETS=  run-fuse-opt-add-opt
 REGRESS_TARGETS+= run-fuse-opt-add-opt-escaped
@@ -7,6 +7,8 @@ REGRESS_TARGETS+= run-fuse-opt-insert-arg
 REGRESS_TARGETS+= run-fuse-opt-match
 REGRESS_TARGETS+= run-fuse-opt-parse
 REGRESS_TARGETS+= run-fuse-parse-cmdline
+REGRESS_TARGETS+= run-fuse-null-check
+REGRESS_TARGETS+= run-fuse-mount
 
 LDFLAGS+= -lfuse
 CLEANFILES= fuse-opt-add-opt
@@ -16,6 +18,8 @@ CLEANFILES+=fuse-opt-insert-arg
 CLEANFILES+=fuse-opt-match
 CLEANFILES+=fuse-opt-parse
 CLEANFILES+=fuse-parse-cmdline
+CLEANFILES+=fuse-null-check
+CLEANFILES+=fuse-mount
 
 .PHONY: ${REGRESS_TARGETS}
 
@@ -33,5 +37,9 @@ run-fuse-opt-parse: fuse-opt-parse
 	./fuse-opt-parse
 run-fuse-parse-cmdline: fuse-parse-cmdline
 	./fuse-parse-cmdline
+run-fuse-null-check: fuse-null-check
+	./fuse-null-check
+run-fuse-mount: fuse-mount
+	./fuse-mount
 
 .include <bsd.regress.mk>
