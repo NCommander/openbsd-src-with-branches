@@ -1,3 +1,4 @@
+# 	$OpenBSD$
 # For regression tests
 default_ca = CA_regress
 

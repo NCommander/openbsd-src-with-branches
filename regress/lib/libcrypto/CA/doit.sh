@@ -1,4 +1,5 @@
 #!/bin/sh
+#	$OpenBSD$
 
 rm -rf root intermediate certs
 echo 1000 > rootserial

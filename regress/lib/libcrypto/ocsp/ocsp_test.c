@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include <stdio.h>
 #include <netdb.h>
 #include <stdlib.h>

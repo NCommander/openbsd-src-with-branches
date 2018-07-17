@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #
 # MACsec GCM-AES Test Vectors (bn-randall-test-vectors-0511-v1.pdf)
 #

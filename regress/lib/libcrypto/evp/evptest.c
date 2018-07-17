@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /* Written by Ben Laurie, 2001 */
 /*
  * Copyright (c) 2001 The OpenSSL Project.  All rights reserved.

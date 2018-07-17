@@ -1,3 +1,4 @@
+#	$OpenBSD$
 #cipher:key:iv:plaintext:ciphertext:0/1(decrypt/encrypt)
 #digest:::input:output
 
