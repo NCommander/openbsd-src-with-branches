@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.c,v 1.128 2018/06/06 18:29:18 markus Exp $ */
+/* $OpenBSD: misc.c,v 1.129 2018/06/09 03:01:12 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2005,2006 Damien Miller.  All rights reserved.
@@ -58,7 +58,6 @@
 #include "ssh.h"
 #include "sshbuf.h"
 #include "ssherr.h"
-#include "uidswap.h"
 
 /* remove newline at end of string */
 char *
