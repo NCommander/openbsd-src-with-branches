@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urtwn.c,v 1.76 2017/11/07 21:20:05 stsp Exp $	*/
+/*	$OpenBSD: if_urtwn.c,v 1.77 2017/12/14 09:26:11 benno Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -306,6 +306,7 @@ static const struct urtwn_type {
 	URTWN_DEV_8192CU(TRENDNET,	RTL8192CU),
 	URTWN_DEV_8192CU(ZYXEL,		RTL8192CU),
 	/* URTWN_RTL8188E */
+	URTWN_DEV_8188EU(ABOCOM,	RTL8188EU),
 	URTWN_DEV_8188EU(DLINK,		DWA123D1),
 	URTWN_DEV_8188EU(DLINK,		DWA125D1),
 	URTWN_DEV_8188EU(ELECOM,	WDC150SU2M),
