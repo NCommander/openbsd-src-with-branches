@@ -1,3 +1,4 @@
+/* $OpenBSD: $ */
 /*
  * Copyright (c) 2017 Helg Bredow <helg@openbsd.org>
  *

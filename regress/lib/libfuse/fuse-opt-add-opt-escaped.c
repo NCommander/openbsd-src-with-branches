@@ -1,3 +1,4 @@
+/* $OpenBSD: $ */
 /*
  * Copyright (c) Sylvestre Gallon <ccna.syl@gmail.com>
  *
