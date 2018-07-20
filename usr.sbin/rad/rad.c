@@ -1,4 +1,4 @@
-/*	$OpenBSD: rad.c,v 1.8 2018/07/15 09:28:21 florian Exp $	*/
+/*	$OpenBSD: rad.c,v 1.9 2018/07/18 14:43:34 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -716,6 +716,7 @@ config_new_empty(void)
 	xconf->ra_options.router_lifetime = 1800;
 	xconf->ra_options.reachable_time = 0;
 	xconf->ra_options.retrans_timer = 0;
+	xconf->ra_options.mtu = 0;
 
 	return (xconf);
 }
