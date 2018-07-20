@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.184 2018/07/10 09:13:30 djm Exp $ */
+/* $OpenBSD: monitor.c,v 1.185 2018/07/11 18:53:29 markus Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -47,6 +47,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "atomicio.h"
 #include "xmalloc.h"
@@ -58,7 +59,6 @@
 #include "cipher.h"
 #include "kex.h"
 #include "dh.h"
-#include <zlib.h>
 #include "packet.h"
 #include "auth-options.h"
 #include "sshpty.h"
