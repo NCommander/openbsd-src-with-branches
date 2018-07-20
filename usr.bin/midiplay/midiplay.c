@@ -1,4 +1,4 @@
-/*	$OpenBSD: midiplay.c,v 1.17 2015/02/08 23:40:34 deraadt Exp $	*/
+/*	$OpenBSD: midiplay.c,v 1.19 2017/04/24 06:45:56 ratchov Exp $	*/
 /*	$NetBSD: midiplay.c,v 1.8 1998/11/25 22:17:07 augustss Exp $	*/
 
 /*
@@ -446,7 +446,7 @@ main(int argc, char **argv)
 	}
 	argc -= optind;
 	argv += optind;
-    
+
 	hdl = mio_open(file, MIO_OUT, 0);
 	if (hdl == NULL)
 		errx(1, "failed to open MIDI output");
