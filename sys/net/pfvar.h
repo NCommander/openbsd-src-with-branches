@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.477 2018/04/05 03:32:39 lteo Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.481 2018/07/11 09:05:51 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1697,9 +1697,9 @@ extern int			 pf_tbladdr_setup(struct pf_ruleset *,
 extern void			 pf_tbladdr_remove(struct pf_addr_wrap *);
 extern void			 pf_tbladdr_copyout(struct pf_addr_wrap *);
 extern void			 pf_calc_skip_steps(struct pf_rulequeue *);
-extern void			 pf_purge_expired_src_nodes();
+extern void			 pf_purge_expired_src_nodes(void);
 extern void			 pf_purge_expired_states(u_int32_t);
-extern void			 pf_purge_expired_rules();
+extern void			 pf_purge_expired_rules(void);
 extern void			 pf_remove_state(struct pf_state *);
 extern void			 pf_remove_divert_state(struct pf_state_key *);
 extern void			 pf_free_state(struct pf_state *);
