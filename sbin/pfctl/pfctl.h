@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.h,v 1.54 2017/07/15 16:01:14 awolk Exp $ */
+/*	$OpenBSD: pfctl.h,v 1.55 2017/08/11 22:30:38 benno Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -92,6 +92,7 @@ struct segment {
 };
 
 void	 print_addr(struct pf_addr_wrap *, sa_family_t, int);
+void	 print_addr_str(sa_family_t, struct pf_addr *);
 void	 print_host(struct pf_addr *, u_int16_t p, sa_family_t, u_int16_t, const char *, int);
 void	 print_seq(struct pfsync_state_peer *);
 void	 print_state(struct pfsync_state *, int);
