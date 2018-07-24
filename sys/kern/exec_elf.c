@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.140 2017/03/20 00:05:21 kettenis Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.141 2017/09/07 11:32:14 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -366,8 +366,11 @@ elf_load_file(struct proc *p, char *path, struct exec_package *epp,
 
 	for (i = 0; i < eh.e_phnum; i++) {
 		if (ph[i].p_type == PT_LOAD) {
-			if (ph[i].p_filesz > ph[i].p_memsz)
+			if (ph[i].p_filesz > ph[i].p_memsz ||
+			    ph[i].p_memsz == 0) {
+				error = EINVAL;
 				goto bad1;
+			}
 			loadmap[idx].vaddr = trunc_page(ph[i].p_vaddr);
 			loadmap[idx].memsz = round_page (ph[i].p_vaddr +
 			    ph[i].p_memsz - loadmap[idx].vaddr);
@@ -562,7 +565,8 @@ exec_elf_makecmds(struct proc *p, struct exec_package *epp)
 			if (interp[pp->p_filesz - 1] != '\0')
 				goto bad;
 		} else if (pp->p_type == PT_LOAD) {
-			if (pp->p_filesz > pp->p_memsz) {
+			if (pp->p_filesz > pp->p_memsz ||
+			    pp->p_memsz == 0) {
 				error = EINVAL;
 				goto bad;
 			}
