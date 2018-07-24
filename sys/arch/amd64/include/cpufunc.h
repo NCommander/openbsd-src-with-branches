@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.27 2018/07/23 17:54:04 guenther Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.28 2018/07/24 02:42:25 guenther Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.3 2003/05/08 10:27:43 fvdl Exp $	*/
 
 /*-
@@ -305,7 +305,7 @@ mwait(u_long extensions, u_int hints)
 		"	.align	16,0xcc		;"
 		"7:	loop	3b		;"
 		"	add	$(16*8),%%rsp"
-	    : "=c" (extensions) : "a" (hints));
+	    : "+c" (extensions) : "a" (hints));
 }
 
 static __inline void
