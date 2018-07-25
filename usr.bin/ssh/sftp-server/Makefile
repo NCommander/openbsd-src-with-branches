@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2017/12/10 19:37:57 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.11 2018/01/08 15:37:23 markus Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -7,9 +7,6 @@ SRCS+=	fatal.c
 SRCS+=	${SRCS_BASE} ${SRCS_UTL}
 
 PROG=	sftp-server
-BINOWN=	root
-
-BINMODE?=555
 
 BINDIR=	/usr/libexec
 MAN=	sftp-server.8

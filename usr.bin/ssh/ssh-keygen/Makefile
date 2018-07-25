@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.25 2017/12/14 21:07:39 naddy Exp $
+#	$OpenBSD: Makefile,v 1.26 2018/01/08 15:37:27 markus Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -9,9 +9,6 @@ SRCS+=	${SRCS_BASE} ${SRCS_KEY} ${SRCS_KEYP} ${SRCS_KRL} ${SRCS_UTL} \
 	${SRCS_PKCS11}
 
 PROG=	ssh-keygen
-BINOWN=	root
-
-BINMODE?=555
 
 BINDIR=	/usr/bin
 
