@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp.c,v 1.157 2017/11/21 12:20:34 eric Exp $	*/
+/*	$OpenBSD: smtp.c,v 1.158 2018/06/18 18:14:39 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -62,7 +62,6 @@ void
 smtp_imsg(struct mproc *p, struct imsg *imsg)
 {
 	switch (imsg->hdr.type) {
-	case IMSG_SMTP_DNS_PTR:
 	case IMSG_SMTP_CHECK_SENDER:
 	case IMSG_SMTP_EXPAND_RCPT:
 	case IMSG_SMTP_LOOKUP_HELO:
