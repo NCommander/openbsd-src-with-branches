@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.30 2018/04/07 13:54:46 schwarze Exp $
+#	$OpenBSD: Makefile,v 1.31 2018/05/15 15:11:15 tb Exp $
 
 SUBDIR= \
 	aead \
@@ -44,6 +44,7 @@ SUBDIR= \
 	sha256 \
 	sha512 \
 	utf8 \
+	wycheproof \
 	x509
 
 install:
