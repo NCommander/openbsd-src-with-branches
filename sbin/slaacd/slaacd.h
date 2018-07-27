@@ -1,4 +1,4 @@
-/*	$OpenBSD: slaacd.h,v 1.18 2018/07/23 06:14:14 florian Exp $	*/
+/*	$OpenBSD: slaacd.h,v 1.19 2018/07/23 17:25:52 florian Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -111,6 +111,7 @@ struct ctl_engine_info_ra {
 	uint16_t		 router_lifetime;	/* in seconds */
 	uint32_t		 reachable_time;	/* in milliseconds */
 	uint32_t		 retrans_time;		/* in milliseconds */
+	uint32_t		 mtu;
 };
 
 struct ctl_engine_info_ra_prefix {
