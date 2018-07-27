@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.30 2018/04/24 20:29:15 guenther Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.31 2018/06/05 06:39:10 guenther Exp $	*/
 /*	$NetBSD: ipifuncs.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $ */
 
 /*-
@@ -111,7 +111,7 @@ x86_64_ipi_halt(struct cpu_info *ci)
 	SCHED_ASSERT_UNLOCKED();
 	KASSERT(!_kernel_lock_held());
 
-	disable_intr();
+	intr_disable();
 	lapic_disable();
 	wbinvd();
 	ci->ci_flags &= ~CPUF_RUNNING;

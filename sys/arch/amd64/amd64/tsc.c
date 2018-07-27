@@ -1,4 +1,4 @@
-/*	$OpenBSD: tsc.c,v 1.8 2018/03/07 01:39:08 jsg Exp $	*/
+/*	$OpenBSD: tsc.c,v 1.9 2018/04/08 18:26:29 mikeb Exp $	*/
 /*
  * Copyright (c) 2016,2017 Reyk Floeter <reyk@openbsd.org>
  * Copyright (c) 2017 Adam Steen <adam@adamsteen.com.au>
@@ -120,7 +120,7 @@ uint64_t
 measure_tsc_freq(struct timecounter *tc)
 {
 	uint64_t count1, count2, frequency, min_freq, tsc1, tsc2;
-	u_long ef;
+	u_long s;
 	int delay_usec, i, err1, err2, usec, success = 0;
 
 	/* warmup the timers */
@@ -133,14 +133,13 @@ measure_tsc_freq(struct timecounter *tc)
 
 	delay_usec = 100000;
 	for (i = 0; i < 3; i++) {
-		ef = read_rflags();
-		disable_intr();
+		s = intr_disable();
 
 		err1 = get_tsc_and_timecount(tc, &tsc1, &count1);
 		delay(delay_usec);
 		err2 = get_tsc_and_timecount(tc, &tsc2, &count2);
 
-		write_rflags(ef);
+		intr_restore(s);
 
 		if (err1 || err2)
 			continue;
