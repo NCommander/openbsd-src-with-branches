@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.294 2018/07/13 09:36:00 beck Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.295 2018/07/22 06:31:17 anton Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -945,7 +945,7 @@ sys_unveil(struct proc *p, void *v, register_t *retval)
 	/* release vref and lock from namei, but not vref from ppath_add */
 	if (nd.ni_vp)
 		vput(nd.ni_vp);
-	if (nd.ni_dvp)
+	if (nd.ni_dvp && nd.ni_dvp != nd.ni_vp)
 		vput(nd.ni_dvp);
 	return (error);
 }
