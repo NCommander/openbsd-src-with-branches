@@ -1,4 +1,4 @@
-/*	$Id: revokeproc.c,v 1.12 2017/01/24 13:32:55 jsing Exp $ */
+/*	$Id: revokeproc.c,v 1.13 2017/07/08 13:37:23 tb Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -335,10 +335,8 @@ out:
 	close(fd);
 	if (f != NULL)
 		fclose(f);
-	if (x != NULL)
-		X509_free(x);
-	if (bio != NULL)
-		BIO_free(bio);
+	X509_free(x);
+	BIO_free(bio);
 	free(san);
 	free(path);
 	free(der);
