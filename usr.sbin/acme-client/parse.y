@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.24 2018/07/09 12:05:11 krw Exp $ */
+/*	$OpenBSD: parse.y,v 1.25 2018/07/11 07:39:22 krw Exp $ */
 
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -998,14 +998,14 @@ print_config(struct acme_conf *xconf)
 		printf("domain %s {\n", d->domain);
 		TAILQ_FOREACH(ac, &d->altname_list, entry) {
 			if (!f)
-				printf("\talternative names { ");
+				printf("\talternative names {");
 			if (ac->domain != NULL) {
 				printf("%s%s", f ? ", " : " ", ac->domain);
 				f = 1;
 			}
 		}
 		if (f)
-			printf("}\n");
+			printf(" }\n");
 		if (d->key != NULL)
 			printf("\tdomain key \"%s\"\n", d->key);
 		if (d->cert != NULL)
