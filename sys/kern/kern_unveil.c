@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_unveil.c,v 1.5 2018/07/29 22:53:39 beck Exp $	*/
+/*	$OpenBSD: kern_unveil.c,v 1.6 2018/07/29 23:11:02 beck Exp $	*/
 
 /*
  * Copyright (c) 2017-2018 Bob Beck <beck@openbsd.org>
@@ -372,7 +372,7 @@ unveil_add_vnode(struct process *pr, struct vnode *vp)
 	return (uv);
 }
 
-int
+void
 unveil_add_traversed_vnodes(struct proc *p, struct nameidata *ndp)
 {
 	/*
