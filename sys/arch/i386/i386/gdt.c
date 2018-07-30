@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt.c,v 1.38 2018/03/13 13:51:05 bluhm Exp $	*/
+/*	$OpenBSD: gdt.c,v 1.39 2018/03/22 19:30:18 bluhm Exp $	*/
 /*	$NetBSD: gdt.c,v 1.28 2002/12/14 09:38:50 junyoung Exp $	*/
 
 /*-
@@ -210,7 +210,7 @@ tss_alloc(struct pcb *pcb)
 	int slot;
 
 	slot = gdt_get_slot();
-	setgdt(slot, &pcb->pcb_tss, sizeof(struct pcb) - 1,
+	setgdt(slot, &pcb->pcb_tss, sizeof(struct i386tss) - 1,
 	    SDT_SYS386TSS, SEL_KPL, 0, 0);
 	return GSEL(slot, SEL_KPL);
 }
