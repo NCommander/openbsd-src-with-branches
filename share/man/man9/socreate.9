@@ -1,4 +1,4 @@
-.\"	$OpenBSD: socreate.9,v 1.8 2017/09/01 15:10:41 mpi Exp $
+.\"	$OpenBSD: socreate.9,v 1.9 2017/09/01 15:52:03 jmc Exp $
 .\"
 .\" Copyright (c) 2006 Robert N. M. Watson
 .\" All rights reserved.
@@ -47,7 +47,7 @@
 .Ft int
 .Fn sobind "struct socket *so" "struct mbuf *nam" "struct proc *p"
 .Ft void
-.Fn soclose "struct socket *so"
+.Fn soclose "struct socket *so" "int flags"
 .Ft int
 .Fn soconnect "struct socket *so" "struct mbuf *nam"
 .Ft int
@@ -307,11 +307,6 @@ The caller may need to manually clear
 if
 .Fn soconnect
 returns an error.
-.Pp
-The
-.Dv MSG_DONTWAIT
-flag is not implemented for
-.Fn sosend .
 .Pp
 This manual page does not describe how to register socket upcalls or monitor
 a socket for readability/writability without using blocking I/O.
