@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.92 2018/05/28 20:52:44 bluhm Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.93 2018/06/22 13:21:14 bluhm Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -705,7 +705,7 @@ cpu_hatch(void *v)
 
 	s = splhigh();		/* XXX prevent softints from running here.. */
 	lapic_tpr = 0;
-	enable_intr();
+	intr_enable();
 	if (mp_verbose)
 		printf("%s: CPU at apid %ld running\n",
 		    ci->ci_dev->dv_xname, ci->ci_cpuid);
