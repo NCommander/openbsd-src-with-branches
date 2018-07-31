@@ -1,4 +1,4 @@
-/*	$OpenBSD: simplefb.c,v 1.2 2017/08/27 12:42:22 kettenis Exp $	*/
+/*	$OpenBSD: simplefb.c,v 1.3 2017/12/18 10:13:45 kettenis Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -154,7 +154,7 @@ simplefb_attach(struct device *parent, struct device *self, void *aux)
 		ri->ri_flg &= ~RI_CLEAR;
 	}
 
-	printf(": %dx%d\n", ri->ri_width, ri->ri_height);
+	printf(": %dx%d, %dbpp\n", ri->ri_width, ri->ri_height, ri->ri_depth);
 
 	ri->ri_flg |= RI_VCONS;
 	rasops_init(ri, SIMPLEFB_HEIGHT, SIMPLEFB_WIDTH);
