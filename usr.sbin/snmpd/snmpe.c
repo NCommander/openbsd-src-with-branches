@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpe.c,v 1.52 2018/04/15 11:57:29 mpf Exp $	*/
+/*	$OpenBSD: snmpe.c,v 1.53 2018/07/24 01:31:20 rob Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -222,7 +222,7 @@ snmpe_parse(struct snmp_message *msg)
 	struct ber_element	*a;
 	long long		 ver, req;
 	long long		 errval, erridx;
-	unsigned long		 type;
+	unsigned int		 type;
 	u_int			 class;
 	char			*comn;
 	char			*flagstr, *ctxname;

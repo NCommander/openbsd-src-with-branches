@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: smi.c,v 1.21 2018/07/23 19:51:39 rob Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -537,7 +537,7 @@ smi_print_element(struct ber_element *root)
 	return (NULL);
 }
 
-unsigned long
+unsigned int
 smi_application(struct ber_element *elm)
 {
 	if (elm->be_class != BER_CLASS_APPLICATION)
