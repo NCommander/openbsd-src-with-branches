@@ -1,4 +1,4 @@
-/*	$OpenBSD: filter.c,v 1.4 2017/01/20 11:55:08 benno Exp $ */
+/*	$OpenBSD: filter.c,v 1.5 2018/05/15 11:19:21 reyk Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martinh@openbsd.org>
@@ -64,7 +64,7 @@ static int
 ldap_filt_subs_value(struct ber_element *v, struct ber_element *sub)
 {
 	int		 class;
-	unsigned long	 type;
+	unsigned int	 type;
 	const char	*cmpval;
 	char		*vs, *p, *end;
 
@@ -101,7 +101,7 @@ ldap_filt_subs_value(struct ber_element *v, struct ber_element *sub)
 				return 1; /* no match */
 			break;
 		default:
-			log_warnx("invalid subfilter type %lu", type);
+			log_warnx("invalid subfilter type %u", type);
 			return -1;
 		}
 	}
