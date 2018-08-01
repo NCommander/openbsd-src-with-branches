@@ -1,4 +1,4 @@
-/*	$OpenBSD: find.c,v 1.21 2017/01/03 21:31:16 tedu Exp $	*/
+/*	$OpenBSD: find.c,v 1.22 2017/01/04 09:21:26 tb Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -86,9 +86,10 @@ find_formplan(char **argv)
 	}
     
 	/*
-	 * if the user didn't specify one of -print, -ok or -exec, then -print
-	 * is assumed so we bracket the current expression with parens, if
-	 * necessary, and add a -print node on the end.
+	 * if the user didn't specify one of -delete, -exec, -execdir,
+	 * -ls, -ok, -print or -print0, then -print is assumed so we
+	 * bracket the current expression with parens, if necessary,
+	 * and add a -print node on the end.
 	 */
 	if (!isoutput) {
 		if (plan == NULL) {
