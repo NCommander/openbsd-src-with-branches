@@ -1,4 +1,4 @@
-.\"	$OpenBSD: find.1,v 1.92 2017/01/03 21:31:16 tedu Exp $
+.\"	$OpenBSD: find.1,v 1.93 2017/01/03 22:19:31 jmc Exp $
 .\" Copyright (c) 1990, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -60,7 +60,9 @@ In the absence of an expression,
 is assumed.
 If an expression is given,
 but none of the primaries
+.Ic -delete ,
 .Ic -exec ,
+.Ic -execdir ,
 .Ic -ls ,
 .Ic -ok ,
 .Ic -print ,
