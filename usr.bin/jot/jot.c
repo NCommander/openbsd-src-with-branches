@@ -1,4 +1,4 @@
-/*	$OpenBSD: jot.c,v 1.46 2018/06/24 18:39:57 schwarze Exp $	*/
+/*	$OpenBSD: jot.c,v 1.47 2018/08/01 13:13:53 cheloha Exp $	*/
 /*	$NetBSD: jot.c,v 1.3 1994/12/02 20:29:43 pk Exp $	*/
 
 /*-
@@ -128,7 +128,7 @@ main(int argc, char *argv[])
 	case 4:
 		if (!is_default(argv[3])) {
 			if (!sscanf(argv[3], "%lf", &step))
-				errx(1, "Bad s value:  %s", argv[3]);
+				errx(1, "Bad s value: %s", argv[3]);
 			mask |= STEP;
 			if (randomize)
 				warnx("random seeding not supported");
