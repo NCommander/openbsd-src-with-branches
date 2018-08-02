@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.68 2018/02/10 01:24:28 benno Exp $ */
+/*	$OpenBSD: config.c,v 1.69 2018/07/11 21:10:07 benno Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -119,6 +119,8 @@ free_prefixsets(struct prefixset_head *psh)
 	struct prefixset	*ps;
 	struct prefixset_item	*psi;
 
+	if (psh == NULL)
+		return;
 
 	while (!SIMPLEQ_EMPTY(psh)) {
 		ps = SIMPLEQ_FIRST(psh);
