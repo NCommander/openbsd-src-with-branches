@@ -1,4 +1,4 @@
-.\"	$OpenBSD: acme-client.1,v 1.24 2018/06/13 15:08:24 reyk Exp $
+.\"	$OpenBSD: acme-client.1,v 1.25 2018/08/02 14:37:32 benno Exp $
 .\"
 .\" Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: June 13 2018 $
+.Dd $Mdocdate: August 2 2018 $
 .Dt ACME-CLIENT 1
 .Os
 .Sh NAME
@@ -56,7 +56,7 @@ The domain name.
 looks in its configuration for a
 .Ar domain
 section corresponding to the domain given as command line argument.
-It then uses that configuration to retrieve a TLS certificate.
+It then uses that configuration to retrieve an X.509 certificate.
 If the certificate already exists and is less than 30 days from expiry,
 .Nm
 will attempt to refresh the signature.
