@@ -1,4 +1,4 @@
-/*	$OpenBSD: pstat.c,v 1.116 2018/06/05 09:29:05 mpi Exp $	*/
+/*	$OpenBSD: pstat.c,v 1.117 2018/06/18 09:15:05 mpi Exp $	*/
 /*	$NetBSD: pstat.c,v 1.27 1996/10/23 22:50:06 cgd Exp $	*/
 
 /*-
@@ -229,6 +229,8 @@ main(int argc, char *argv[])
 			ttymodeprep();
 	}
 
+	if (unveil(_PATH_DEVDB, "r") == -1)
+		err(1, "unveil");
 	if (pledge("stdio rpath vminfo", NULL) == -1)
 		err(1, "pledge");
 
