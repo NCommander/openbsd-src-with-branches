@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.8 2018/06/28 21:19:45 kettenis Exp $ */
+/* $OpenBSD: cpu.h,v 1.9 2018/06/30 10:20:21 kettenis Exp $ */
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
  *
@@ -106,6 +106,10 @@ struct cpu_info {
 	int			ci_want_resched;
 
 	void			(*ci_flush_bp)(void);
+
+	struct opp_table	*ci_opp_table;
+	volatile int		ci_opp_idx;
+	uint32_t		ci_cpu_supply;
 
 #ifdef MULTIPROCESSOR
 	struct srp_hazard	ci_srp_hazards[SRP_HAZARD_NUM];
