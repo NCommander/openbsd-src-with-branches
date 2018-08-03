@@ -95,6 +95,8 @@ main(int argc, char **argv)
 	char *extra = NULL;	/* Store login class or number of rounds */
 	const char *errstr;
 
+	if (unveil(_PATH_LOGIN_CONF, "r") == -1)
+		err(1, "unveil");
 	if (pledge("stdio rpath tty", NULL) == -1)
 		err(1, "pledge");
 
