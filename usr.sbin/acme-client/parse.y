@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.26 2018/07/29 12:46:31 deraadt Exp $ */
+/*	$OpenBSD: parse.y,v 1.27 2018/08/03 17:49:57 benno Exp $ */
 
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -326,13 +326,13 @@ domainoptsl	: ALTERNATIVE NAMES '{' altname_l '}'
 		| SIGN WITH STRING {
 			char *s;
 			if (domain->auth != NULL) {
-				yyerror("duplicate use");
+				yyerror("duplicate sign with");
 				YYERROR;
 			}
 			if ((s = strdup($3)) == NULL)
 				err(EXIT_FAILURE, "strdup");
 			if (authority_find(conf, s) == NULL) {
-				yyerror("use: unknown authority");
+				yyerror("sign with: unknown authority");
 				free(s);
 				YYERROR;
 			}
