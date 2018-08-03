@@ -1,4 +1,4 @@
-/* $OpenBSD: trap.c,v 1.18 2018/04/09 22:21:05 kettenis Exp $ */
+/* $OpenBSD: trap.c,v 1.19 2018/04/12 17:13:43 deraadt Exp $ */
 /*-
  * Copyright (c) 2014 Andrew Turner
  * All rights reserved.
@@ -297,6 +297,13 @@ do_el0_sync(struct trapframe *frame)
 		sv.sival_ptr = (void *)frame->tf_elr;
 		KERNEL_LOCK();
 		trapsignal(p, SIGTRAP, 0, TRAP_BRKPT, sv);
+		KERNEL_UNLOCK();
+		break;
+	case EXCP_SOFTSTP_EL0:
+		vfp_save();
+		sv.sival_ptr = (void *)frame->tf_elr;
+		KERNEL_LOCK();
+		trapsignal(p, SIGTRAP, 0, TRAP_TRACE, sv);
 		KERNEL_UNLOCK();
 		break;
 	default:
