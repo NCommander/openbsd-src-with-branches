@@ -1,4 +1,4 @@
-/*	$OpenBSD: encrypt.c,v 1.46 2017/05/03 09:51:39 mestre Exp $	*/
+/*	$OpenBSD: encrypt.c,v 1.47 2017/05/24 09:19:55 mestre Exp $	*/
 
 /*
  * Copyright (c) 1996, Jason Downs.  All rights reserved.
@@ -95,7 +95,7 @@ main(int argc, char **argv)
 	char *extra = NULL;	/* Store login class or number of rounds */
 	const char *errstr;
 
-	if (pledge("stdio rpath wpath tty", NULL) == -1)
+	if (pledge("stdio rpath tty", NULL) == -1)
 		err(1, "pledge");
 
 	while ((opt = getopt(argc, argv, "pb:c:")) != -1) {
