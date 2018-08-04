@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.492 2018/07/30 14:13:08 espie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.493 2018/07/30 16:02:02 schwarze Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -869,6 +869,13 @@ Defaults to autoconf (though autoreconf might be more appropriate).
 Where to invoke autoconf if ${CONFIGURE_STYLE} includes autoconf.
 Defaults to ${WRKSRC}.
 .\" AUTOCONF_DIR should probably be a list, and be renamed to AUTOCONF_DIRS ?
+.It Ev AUTOCONF_ENV
+Environment values that should be passed to all runs of autoconf, automake
+and related tools.
+Specifically, version numbers and PATH.
+Automatically set as soon as
+.Ev CONFIGURE_STYLE
+is gnu or higher.
 .It Ev AUTOCONF_VERSION
 Starting with
 .Ox 3.3 ,
