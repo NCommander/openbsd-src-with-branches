@@ -1,4 +1,4 @@
-/* $OpenBSD: dh.c,v 1.64 2018/06/06 18:29:18 markus Exp $ */
+/* $OpenBSD: dh.c,v 1.65 2018/06/26 11:23:59 millert Exp $ */
 /*
  * Copyright (c) 2000 Niels Provos.  All rights reserved.
  *
@@ -275,6 +275,7 @@ dh_gen_key(DH *dh, int need)
 	if (DH_generate_key(dh) == 0 ||
 	    !dh_pub_is_valid(dh, dh->pub_key)) {
 		BN_clear_free(dh->priv_key);
+		dh->priv_key = NULL;
 		return SSH_ERR_LIBCRYPTO_ERROR;
 	}
 	return 0;
