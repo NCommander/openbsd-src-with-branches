@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.11 2016/09/14 13:20:16 rzalamena Exp $ */
+/*	$OpenBSD: control.c,v 1.12 2017/01/09 14:04:31 krw Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -97,13 +97,6 @@ void
 control_shutdown(int fd)
 {
 	close(fd);
-}
-
-void
-control_cleanup(const char *path)
-{
-	if (path)
-		unlink(path);
 }
 
 int
