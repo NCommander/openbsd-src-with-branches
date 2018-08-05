@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.42 2017/04/21 13:50:23 jca Exp $	*/
+/*	$OpenBSD: control.c,v 1.43 2018/06/17 18:19:59 rob Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -126,15 +126,6 @@ control_listen(struct control_sock *cs)
 	evtimer_set(&cs->cs_evt, control_accept, cs);
 
 	return (0);
-}
-
-void
-control_cleanup(struct control_sock *cs)
-{
-	if (cs->cs_name == NULL)
-		return;
-	event_del(&cs->cs_ev);
-	event_del(&cs->cs_evt);
 }
 
 /* ARGSUSED */
