@@ -1,4 +1,4 @@
-/*	$OpenBSD: firmload.c,v 1.13 2015/08/26 22:33:24 deraadt Exp $	*/
+/*	$OpenBSD: firmload.c,v 1.14 2015/12/29 04:46:28 mmcc Exp $	*/
 
 /*
  * Copyright (c) 2004 Theo de Raadt <deraadt@openbsd.org>
@@ -51,6 +51,7 @@ loadfirmware(const char *name, u_char **bufp, size_t *buflen)
 	}
 
 	NDINIT(&nid, LOOKUP, NOFOLLOW|LOCKLEAF, UIO_SYSSPACE, path, p);
+	nid.ni_cnd.cn_flags |= BYPASSUNVEIL;
 	error = namei(&nid);
 #ifdef RAMDISK_HOOKS
 	/* try again with mounted disk */
@@ -62,6 +63,7 @@ loadfirmware(const char *name, u_char **bufp, size_t *buflen)
 		}
 
 		NDINIT(&nid, LOOKUP, NOFOLLOW|LOCKLEAF, UIO_SYSSPACE, path, p);
+		nid.ni_cnd.cn_flags |= BYPASSUNVEIL;
 		error = namei(&nid);
 	}
 #endif
