@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.144 2018/07/20 21:48:27 kettenis Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.145 2018/07/20 21:57:26 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -332,6 +332,7 @@ elf_load_file(struct proc *p, char *path, struct exec_package *epp,
 
 	NDINIT(&nd, LOOKUP, FOLLOW | LOCKLEAF, UIO_SYSSPACE, path, p);
 	nd.ni_pledge = PLEDGE_RPATH;
+	nd.ni_unveil = UNVEIL_READ;
 	if ((error = namei(&nd)) != 0) {
 		return (error);
 	}
