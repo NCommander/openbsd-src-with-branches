@@ -1,4 +1,4 @@
-/*	$OpenBSD: imxesdhc.c,v 1.7 2018/06/04 10:33:51 patrick Exp $	*/
+/*	$OpenBSD: imxesdhc.c,v 1.8 2018/06/10 14:14:55 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -315,7 +315,7 @@ imxesdhc_attach(struct device *parent, struct device *self, void *aux)
 
 	clock_set_assigned(faa->fa_node);
 
-	sc->sc_ih = arm_intr_establish_fdt(faa->fa_node, IPL_SDMMC,
+	sc->sc_ih = fdt_intr_establish(faa->fa_node, IPL_SDMMC,
 	   imxesdhc_intr, sc, sc->sc_dev.dv_xname);
 
 	OF_getpropintarray(sc->sc_node, "cd-gpios", sc->sc_gpio,

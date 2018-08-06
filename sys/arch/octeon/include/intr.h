@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.15 2017/11/02 17:29:16 visa Exp $ */
+/*	$OpenBSD: intr.h,v 1.16 2018/01/22 09:40:45 mpi Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -215,10 +215,6 @@ void	*octeon_intr_establish_fdt(int, int, int (*)(void *),
 void	*octeon_intr_establish_fdt_idx(int, int, int, int (*)(void *),
 	    void *, const char *);
 void	 octeon_intr_disestablish_fdt(void *);
-
-/* XXX Needed by 'MI' code in sys/dev/fdt. */
-#define arm_intr_establish_fdt		octeon_intr_establish_fdt
-#define arm_intr_disestablish_fdt	octeon_intr_disestablish_fdt
 
 #endif /* _LOCORE */
 
