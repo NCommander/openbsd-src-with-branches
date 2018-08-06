@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpuswitch7.S,v 1.12 2016/08/26 11:59:04 kettenis Exp $	*/
+/*	$OpenBSD: cpuswitch7.S,v 1.13 2016/09/24 21:02:31 patrick Exp $	*/
 /*	$NetBSD: cpuswitch.S,v 1.41 2003/11/15 08:44:18 scw Exp $	*/
 
 /*
@@ -79,10 +79,11 @@
  */
 
 #include "assym.h"
-#include <machine/cpu.h>
+
 #include <machine/frame.h>
 #include <machine/intr.h>
 #include <machine/asm.h>
+#include <arm/armreg.h>
 #include <arm/sysreg.h>
 
 /* LINTSTUB: include <sys/param.h> */
@@ -315,12 +316,12 @@ ENTRY(savectx)
 	ldmfd	sp!, {r4-r7, pc}
 
 ENTRY(proc_trampoline)
-	mov	r0, #(IPL_NONE)
-	bl	_C_LABEL(_spllower)
-
 #ifdef MULTIPROCESSOR
 	bl	_C_LABEL(proc_trampoline_mp)
 #endif
+	mov	r0, #(IPL_NONE)
+	bl	_C_LABEL(_spllower)
+
 	mov	r0, r5
 	mov	r1, sp
 	mov	lr, pc
