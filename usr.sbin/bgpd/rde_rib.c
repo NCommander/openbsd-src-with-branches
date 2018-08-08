@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.173 2018/08/03 16:31:22 claudio Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.174 2018/08/06 08:13:31 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -86,7 +86,7 @@ rib_new(char *name, u_int rtableid, u_int16_t flags)
 	u_int16_t	id;
 
 	for (id = 0; id < rib_size; id++) {
-		if (*ribs[id].name == '\0')
+		if (!rib_valid(id))
 			break;
 	}
 
