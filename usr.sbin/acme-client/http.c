@@ -1,4 +1,4 @@
-/*	$Id: http.c,v 1.20 2017/03/26 18:41:02 deraadt Exp $ */
+/*	$Id: http.c,v 1.21 2018/02/06 04:19:56 florian Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -34,8 +34,6 @@
 
 #include "http.h"
 #include "extern.h"
-
-#define DEFAULT_CA_FILE "/etc/ssl/cert.pem"
 
 /*
  * A buffer for transferring HTTP/S data.
