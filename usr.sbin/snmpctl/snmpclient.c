@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpclient.c,v 1.14 2017/08/10 16:03:10 rob Exp $	*/
+/*	$OpenBSD: snmpclient.c,v 1.15 2018/02/08 18:02:06 jca Exp $	*/
 
 /*
  * Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
@@ -71,9 +71,9 @@ struct snmpc {
 #define	SNMPC_DATEANDTIME_SHORT_LEN	8
 
 void	 snmpc_run(struct snmpc *, enum actions, const char *);
-void	 snmpc_request(struct snmpc *, u_long);
+void	 snmpc_request(struct snmpc *, unsigned int);
 int	 snmpc_response(struct snmpc *);
-int	 snmpc_sendreq(struct snmpc *, u_long);
+int	 snmpc_sendreq(struct snmpc *, unsigned int);
 int	 snmpc_recvresp(int, int, u_int32_t, struct ber_element **);
 
 struct display_hint *
@@ -208,7 +208,7 @@ snmpc_run(struct snmpc *sc, enum actions action, const char *oid)
 }
 
 void
-snmpc_request(struct snmpc *sc, u_long type)
+snmpc_request(struct snmpc *sc, unsigned int type)
 {
 	struct pollfd		 pfd[1];
 	int			 nfds, ret;
@@ -395,7 +395,7 @@ snmpc_display_hint_lookup(struct ber_oid *oid)
 }
 
 int
-snmpc_sendreq(struct snmpc *sc, u_long type)
+snmpc_sendreq(struct snmpc *sc, unsigned int type)
 {
 	struct ber_element	*root, *b;
 	struct ber		 ber;
