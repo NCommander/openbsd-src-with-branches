@@ -1,4 +1,4 @@
-/*	$OpenBSD: mixerctl.c,v 1.29 2009/11/12 07:27:31 ratchov Exp $	*/
+/*	$OpenBSD: mixerctl.c,v 1.30 2015/02/08 23:40:34 deraadt Exp $	*/
 /*	$NetBSD: mixerctl.c,v 1.11 1998/04/27 16:55:23 augustss Exp $	*/
 
 /*
@@ -283,10 +283,20 @@ main(int argc, char **argv)
 
 	if (argc == 0 && tflag == 0)
 		aflag = 1;
-		
-	if ((fd = open(file, O_RDWR)) == -1)
+
+	if (unveil(file, "rw") == -1)
+		err(1, "unveil");
+
+	if ((fd = open(file, O_RDWR)) == -1) {
+		if (unveil(file, "r") == -1)
+			err(1, "unveil");
+
 		if ((fd = open(file, O_RDONLY)) == -1)
 			err(1, "%s", file);
+	}
+
+	if (unveil(NULL, NULL) == -1)
+		err(1, "unveil");
 
 	for (ndev = 0; ; ndev++) {
 		dinfo.index = ndev;
