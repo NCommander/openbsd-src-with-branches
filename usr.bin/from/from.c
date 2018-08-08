@@ -1,4 +1,4 @@
-/*	$OpenBSD: from.c,v 1.24 2015/11/05 18:42:41 mmcc Exp $	*/
+/*	$OpenBSD: from.c,v 1.25 2017/05/31 19:41:30 millert Exp $	*/
 /*	$NetBSD: from.c,v 1.6 1995/09/01 01:39:10 jtc Exp $	*/
 
 /*
@@ -74,10 +74,16 @@ main(int argc, char *argv[])
 	}
 	argv += optind;
 
-	if (pledge("stdio rpath getpw", NULL) == -1)
+	if (pledge("stdio unveil rpath getpw", NULL) == -1)
 		err(1, "pledge");
 
 	file = mail_spool(file, *argv);
+
+	if (unveil(file, "r") == -1)
+		err(1, "unveil");
+	if (pledge("stdio rpath getpw", NULL) == -1)
+		err(1, "pledge");
+
 	if ((fp = fopen(file, "r")) == NULL) {
 		if (!fflag && errno == ENOENT)
 			exit(EXIT_SUCCESS);
