@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc.c,v 1.49 2018/02/11 20:58:40 patrick Exp $	*/
+/*	$OpenBSD: sdmmc.c,v 1.50 2018/03/20 04:18:40 jmatthew Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -119,6 +119,7 @@ sdmmc_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_flags = saa->flags;
 	sc->sc_caps = saa->caps;
 	sc->sc_max_xfer = saa->max_xfer;
+	memcpy(&sc->sc_cookies, &saa->cookies, sizeof(sc->sc_cookies));
 
 	if (ISSET(sc->sc_caps, SMC_CAPS_DMA) && sc->sc_dmap == NULL) {
 		error = bus_dmamap_create(sc->sc_dmat, MAXPHYS, SDMMC_MAXNSEGS,
