@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.2 2017/08/09 03:06:55 jsg Exp $	*/
+/*	$OpenBSD: param.h,v 1.3 2018/01/05 17:42:35 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -77,6 +77,9 @@
 
 #define	STACKALIGNBYTES		(16 - 1)
 #define	STACKALIGN(p)		((u_long)(p) &~ STACKALIGNBYTES)
+
+#define __HAVE_ACPI
+#define __HAVE_FDT
 
 #endif /* _KERNEL */
 

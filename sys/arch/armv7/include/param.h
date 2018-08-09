@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.h,v 1.1 2013/09/04 14:38:28 patrick Exp $	*/
+/*	$OpenBSD: param.h,v 1.2 2016/08/20 19:42:55 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1994,1995 Mark Brinicombe.
@@ -42,6 +42,10 @@
 
 #ifndef	MSGBUFSIZE
 #define	MSGBUFSIZE	(8 * PAGE_SIZE)
+#endif
+
+#ifdef _KERNEL
+#define __HAVE_FDT
 #endif
 
 #endif /* _MACHINE_PARAM_H_ */
