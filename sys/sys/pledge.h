@@ -1,4 +1,4 @@
-/*	$OpenBSD: pledge.h,v 1.36 2018/06/16 15:37:00 florian Exp $	*/
+/*	$OpenBSD: pledge.h,v 1.37 2018/07/13 09:25:23 beck Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -68,7 +68,6 @@
  * to track program behaviours which have been observed.
  */
 #define PLEDGE_USERSET	0x0fffffffffffffffULL
-#define PLEDGE_STAT	0x2000000000000000ULL	/* XXX this is a stat */
 #define PLEDGE_STATLIE	0x4000000000000000ULL
 #define PLEDGE_YPACTIVE	0x8000000000000000ULL	/* YP use detected and allowed */
 
