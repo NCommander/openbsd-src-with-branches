@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2017/10/04 20:57:09 patrick Exp $
+# $OpenBSD: Makefile,v 1.6 2018/04/06 14:44:04 patrick Exp $
 
 LIB=	LLVMAArch64CodeGen
 NOPIC=
@@ -36,6 +36,7 @@ SRCS=	AArch64A57FPLoadBalancing.cpp \
 	AArch64RedundantCopyElimination.cpp \
 	AArch64RegisterBankInfo.cpp \
 	AArch64RegisterInfo.cpp \
+	AArch64ReturnProtectorLowering.cpp \
 	AArch64SIMDInstrOpt.cpp \
 	AArch64SelectionDAGInfo.cpp \
 	AArch64StorePairSuppress.cpp \
