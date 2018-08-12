@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigsuspend.S,v 1.3 2004/02/16 16:49:58 drahn Exp $	*/
+/*	$OpenBSD: sigsuspend.S,v 1.1 2017/01/11 18:09:24 patrick Exp $	*/
 /*	$NetBSD: sigsuspend.S,v 1.6 2003/08/07 16:42:05 agc Exp $	*/
 
 /*-
@@ -35,9 +35,11 @@
 #include "SYS.h"
 
 SYSENTRY_HIDDEN(sigsuspend)
+	RETGUARD_SETUP(sigsuspend, x15)
 	ldr	w0, [x0]
 	SYSTRAP(sigsuspend)
 	bcs	CERROR
 	mov	x0, #0
+	RETGUARD_CHECK(sigsuspend, x15)
 	ret
 SYSCALL_END_HIDDEN(sigsuspend)
