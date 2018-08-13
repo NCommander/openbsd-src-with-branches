@@ -65,15 +65,9 @@
 
 u_int    compat_datafellows(const char *);
 int	 proto_spec(const char *);
-
-/*
- * compat_*_proposal will update their respective proposals based on the
- * active compat flags. The replacement is performed in-place - i.e. they
- * will free their argument and return a new heap-allocated string.
- */
-char	*compat_cipher_proposal(char *, u_int compat);
-char	*compat_pkalg_proposal(char *, u_int compat);
-char	*compat_kex_proposal(char *, u_int compat);
+char	*compat_cipher_proposal(char *);
+char	*compat_pkalg_proposal(char *);
+char	*compat_kex_proposal(char *);
 
 extern int datafellows;
 #endif

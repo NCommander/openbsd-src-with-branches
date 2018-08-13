@@ -2082,11 +2082,11 @@ do_ssh2_kex(void)
 	int r;
 
 	myproposal[PROPOSAL_KEX_ALGS] = compat_kex_proposal(
-	    options.kex_algorithms, datafellows);
+	    options.kex_algorithms);
 	myproposal[PROPOSAL_ENC_ALGS_CTOS] = compat_cipher_proposal(
-	    options.ciphers, datafellows);
+	    options.ciphers);
 	myproposal[PROPOSAL_ENC_ALGS_STOC] = compat_cipher_proposal(
-	    options.ciphers, datafellows);
+	    options.ciphers);
 	myproposal[PROPOSAL_MAC_ALGS_CTOS] =
 	    myproposal[PROPOSAL_MAC_ALGS_STOC] = options.macs;
 
@@ -2100,7 +2100,7 @@ do_ssh2_kex(void)
 		    options.rekey_interval);
 
 	myproposal[PROPOSAL_SERVER_HOST_KEY_ALGS] = compat_pkalg_proposal(
-	    list_hostkey_types(), datafellows);
+	    list_hostkey_types());
 
 	/* start key exchange */
 	if ((r = kex_setup(active_state, myproposal)) != 0)
