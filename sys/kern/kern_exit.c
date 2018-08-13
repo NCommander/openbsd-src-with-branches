@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.164 2018/02/10 10:32:51 mpi Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.165 2018/07/13 09:25:23 beck Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -376,7 +376,7 @@ proc_free(struct proc *p)
  * a zombie, and the parent is allowed to read the undead's status.
  */
 void
-reaper(void)
+reaper(void *arg)
 {
 	struct proc *p;
 

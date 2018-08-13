@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.184 2017/08/22 00:18:56 sf Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.185 2017/08/27 01:59:30 beck Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*
@@ -1158,12 +1158,10 @@ buf_get(struct vnode *vp, daddr_t blkno, size_t size)
  * Buffer cleaning daemon.
  */
 void
-buf_daemon(struct proc *p)
+buf_daemon(void *arg)
 {
 	struct buf *bp = NULL;
 	int s, pushed = 0;
-
-	cleanerproc = curproc;
 
 	s = splbio();
 	for (;;) {
