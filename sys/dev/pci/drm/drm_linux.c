@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_linux.c,v 1.26 2018/07/03 20:40:25 kettenis Exp $	*/
+/*	$OpenBSD: drm_linux.c,v 1.27 2018/08/12 19:05:37 kettenis Exp $	*/
 /*
  * Copyright (c) 2013 Jonathan Gray <jsg@openbsd.org>
  * Copyright (c) 2015, 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -855,7 +855,9 @@ dmabuf_close(struct file *fp, struct proc *p)
 	struct dma_buf *dmabuf = fp->f_data;
 
 	fp->f_data = NULL;
+	KERNEL_LOCK();
 	dmabuf->ops->release(dmabuf);
+	KERNEL_UNLOCK();
 	free(dmabuf, M_DRM, sizeof(struct dma_buf));
 	return (0);
 }
