@@ -1,4 +1,4 @@
-/* $OpenBSD: tty.c,v 1.302 2018/05/07 13:39:09 nicm Exp $ */
+/* $OpenBSD: tty.c,v 1.303 2018/07/04 09:44:07 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -696,6 +696,21 @@ tty_repeat_space(struct tty *tty, u_int n)
 	}
 	if (n != 0)
 		tty_putn(tty, s, n, n);
+}
+
+/* How many lines are taken up by the status line on this client? */
+u_int
+tty_status_lines(struct client *c)
+{
+	u_int	lines;
+
+	if (c->flags & CLIENT_STATUSOFF)
+		lines = 0;
+	else
+		lines = status_line_size(c->session);
+	if (c->message_string != NULL || c->prompt_string != NULL)
+		lines = (lines == 0) ? 1 : lines;
+	return (lines);
 }
 
 /*
