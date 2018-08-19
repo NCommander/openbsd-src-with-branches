@@ -1,4 +1,4 @@
-/*	$OpenBSD: slaacd.c,v 1.29 2018/08/04 09:36:49 florian Exp $	*/
+/*	$OpenBSD: slaacd.c,v 1.30 2018/08/05 09:37:52 mestre Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -181,7 +181,7 @@ main(int argc, char *argv[])
 	log_setverbose(verbose);
 
 	if (!debug)
-		daemon(1, 0);
+		daemon(0, 0);
 
 	log_info("startup");
 
