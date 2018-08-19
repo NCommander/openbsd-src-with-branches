@@ -2712,9 +2712,8 @@ finish_up() {
 	fi
 
 	# Create /etc/installurl if it does not yet exist.
-	if [[ ! -f /mnt/etc/installurl ]]; then
-		echo "${INSTALL_URL:-https://cdn.openbsd.org/pub/OpenBSD}" \
-			>/mnt/etc/installurl
+	if [[ -n $INSTALL_URL && ! -f /mnt/etc/installurl ]]; then
+		echo "$INSTALL_URL" >/mnt/etc/installurl
 	fi
 
 	echo -n "Making all device nodes..."
