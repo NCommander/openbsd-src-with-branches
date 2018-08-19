@@ -1,4 +1,4 @@
-/*	$OpenBSD: chars.c,v 1.42 2017/08/23 10:50:11 schwarze Exp $ */
+/*	$OpenBSD: chars.c,v 1.43 2017/08/23 13:01:22 schwarze Exp $ */
 /*
  * Copyright (c) 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2011, 2014, 2015, 2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -48,6 +48,7 @@ static struct ln lines[] = {
 	{ "|",			"",		0	},
 	{ "^",			"",		0	},
 	{ "&",			"",		0	},
+	{ ")",			"",		0	},
 	{ "%",			"",		0	},
 	{ ":",			ascii_break,	0	},
 	/* XXX The following three do not really belong here. */
