@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.840 2018/08/19 16:45:03 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.841 2018/08/19 20:13:07 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1278,8 +1278,11 @@ struct cmd_entry {
 /* Status line. */
 struct status_line {
 	struct event	 timer;
+
 	struct screen	 status;
 	struct screen	*old_status;
+
+	int		 window_list_offset;
 };
 
 /* Client connection. */
