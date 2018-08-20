@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.10 2018/04/09 18:35:13 kettenis Exp $ */
+/*	$OpenBSD: intr.h,v 1.11 2018/08/08 11:06:33 patrick Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -118,7 +118,6 @@ extern struct arm_intr_func arm_intr_func;
 #define	splstatclock()	splraise(IPL_STATCLOCK)
 #define	splhigh()	splraise(IPL_HIGH)
 
-#define	spllock()	splhigh()
 #define	spl0()		spllower(IPL_NONE)
 
 void	 intr_barrier(void *);
