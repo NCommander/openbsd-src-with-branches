@@ -1,4 +1,4 @@
-/* $OpenBSD: key-bindings.c,v 1.85 2018/02/28 08:55:44 nicm Exp $ */
+/* $OpenBSD: key-bindings.c,v 1.86 2018/08/02 11:44:07 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -228,7 +228,7 @@ key_bindings_init(void)
 		"bind ] paste-buffer",
 		"bind c new-window",
 		"bind d detach-client",
-		"bind f command-prompt \"find-window -- '%%'\"",
+		"bind f command-prompt \"find-window -Z -- '%%'\"",
 		"bind i display-message",
 		"bind l last-window",
 		"bind m select-pane -m",
