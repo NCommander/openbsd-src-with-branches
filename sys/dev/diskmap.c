@@ -1,4 +1,4 @@
-/*	$OpenBSD: diskmap.c,v 1.22 2018/07/04 12:42:30 mpi Exp $	*/
+/*	$OpenBSD: diskmap.c,v 1.23 2018/08/05 14:23:57 beck Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010 Joel Sing <jsing@openbsd.org>
@@ -127,7 +127,6 @@ diskmapioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 	fp->f_data = (caddr_t)vp;
 	fdinsert(fdp, fd, flags, fp);
 	fdpunlock(fdp);
-	FRELE(fp, p);
 
 	closef(fp0, p);
 	free(devname, M_DEVBUF, PATH_MAX);
