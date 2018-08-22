@@ -1,4 +1,4 @@
-/*	$OpenBSD: specialreg.h,v 1.61.4.1 2018/02/26 12:29:48 bluhm Exp $	*/
+/*	$OpenBSD: specialreg.h,v 1.61.4.2 2018/06/22 13:05:33 bluhm Exp $	*/
 /*	$NetBSD: specialreg.h,v 1.1 2003/04/26 18:39:48 fvdl Exp $	*/
 /*	$NetBSD: x86/specialreg.h,v 1.2 2003/04/25 21:54:30 fvdl Exp $	*/
 
@@ -217,6 +217,7 @@
 /* SEFF EDX bits */
 #define SEFF0EDX_IBRS		0x04000000 /* IBRS / IBPB Speculation Control */
 #define SEFF0EDX_STIBP		0x08000000 /* STIBP Speculation Control */
+#define SEFF0EDX_L1DF		0x10000000 /* L1D_FLUSH */
 #define SEFF0EDX_ARCH_CAP	0x20000000 /* Has IA32_ARCH_CAPABILITIES MSR */
 
 /*
@@ -330,6 +331,7 @@
 #define MSR_SPEC_CTRL		0x048	/* Speculation Control IBRS / STIBP */
 #define SPEC_CTRL_IBRS		(1ULL << 0)
 #define SPEC_CTRL_STIBP		(1ULL << 1)
+#define SPEC_CTRL_SSBD		(1ULL << 2)
 #define MSR_PRED_CMD		0x049	/* Speculation Control IBPB */
 #define PRED_CMD_IBPB		(1ULL << 0)
 #define MSR_BIOS_UPDT_TRIG	0x079
@@ -346,6 +348,12 @@
 #define MTRRcap_SMRR		0x800	/* bit 11 - SMM range reg supported */
 #define MSR_ARCH_CAPABILITIES	0x10a
 #define ARCH_CAPABILITIES_RDCL_NO	(1 << 0)	/* Meltdown safe */
+#define ARCH_CAPABILITIES_IBRS_ALL	(1 << 1)	/* enhanced IBRS */
+#define ARCH_CAPABILITIES_RSBA		(1 << 2)	/* RSB Alternate */
+#define ARCH_CAPABILITIES_SKIP_L1DFL_VMENTRY	(1 << 3)
+#define ARCH_CAPABILITIES_SSB_NO	(1 << 4)	/* Spec St Byp safe */
+#define MSR_FLUSH_CMD		0x10b
+#define FLUSH_CMD_L1D_FLUSH	(1ULL << 0)
 #define	MSR_BBL_CR_ADDR		0x116	/* PII+ only */
 #define	MSR_BBL_CR_DECC		0x118	/* PII+ only */
 #define	MSR_BBL_CR_CTL		0x119	/* PII+ only */
@@ -1208,6 +1216,9 @@
 
 #define IA32_VMX_MSR_LIST_SIZE_MASK	(7ULL << 25)
 #define IA32_VMX_CR3_TGT_SIZE_MASK	(0x1FFULL << 16)
+
+#define VMX_SKIP_L1D_FLUSH		2
+#define VMX_L1D_FLUSH_SIZE		(64 * 1024)
 
 /*
  * SVM

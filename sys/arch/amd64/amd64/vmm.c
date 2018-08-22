@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.170 2017/09/08 05:36:51 deraadt Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.170.2.1 2018/06/22 13:05:33 bluhm Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -42,6 +42,8 @@
 #include <dev/isa/isareg.h>
 
 /* #define VMM_DEBUG */
+
+void *l1tf_flush_region;
 
 #ifdef VMM_DEBUG
 #define DPRINTF(x...)	do { printf(x); } while(0)
@@ -363,21 +365,37 @@ vmm_attach(struct device *parent, struct device *self, void *aux)
 	rw_init(&sc->vm_lock, "vmlistlock");
 
 	if (sc->nr_ept_cpus) {
-		printf(": VMX/EPT\n");
+		printf(": VMX/EPT");
 		sc->mode = VMM_MODE_EPT;
 	} else if (sc->nr_vmx_cpus) {
-		printf(": VMX\n");
+		printf(": VMX");
 		sc->mode = VMM_MODE_VMX;
 	} else if (sc->nr_rvi_cpus) {
-		printf(": SVM/RVI\n");
+		printf(": SVM/RVI");
 		sc->mode = VMM_MODE_RVI;
 	} else if (sc->nr_svm_cpus) {
-		printf(": SVM\n");
+		printf(": SVM");
 		sc->mode = VMM_MODE_SVM;
 	} else {
-		printf(": unknown\n");
+		printf(": unknown");
 		sc->mode = VMM_MODE_UNKNOWN;
 	}
+
+	if (sc->mode == VMM_MODE_EPT || sc->mode == VMM_MODE_VMX) {
+		if (!(curcpu()->ci_vmm_cap.vcc_vmx.vmx_has_l1_flush_msr)) {
+			l1tf_flush_region = km_alloc(VMX_L1D_FLUSH_SIZE,
+			    &kv_any, &vmm_kp_contig, &kd_waitok);
+			if (!l1tf_flush_region) {
+				printf(" (failing, no memory)");
+				sc->mode = VMM_MODE_UNKNOWN;
+			} else {
+				printf(" (using slow L1TF mitigation)");
+				memset(l1tf_flush_region, 0xcc,
+				    VMX_L1D_FLUSH_SIZE);
+			}
+		}
+	}
+	printf("\n");
 
 	if (sc->mode == VMM_MODE_SVM || sc->mode == VMM_MODE_RVI) {
 		sc->max_vpid = curcpu()->ci_vmm_cap.vcc_svm.svm_max_asid;
@@ -3874,7 +3892,8 @@ vcpu_run_vmx(struct vcpu *vcpu, struct vm_run_params *vrp)
 
 		KERNEL_UNLOCK();
 		ret = vmx_enter_guest(&vcpu->vc_control_pa,
-		    &vcpu->vc_gueststate, resume);
+		    &vcpu->vc_gueststate, resume,
+		    curcpu()->ci_vmm_cap.vcc_vmx.vmx_has_l1_flush_msr);
 
 		/*
 		 * On exit, interrupts are disabled, and we are running with
