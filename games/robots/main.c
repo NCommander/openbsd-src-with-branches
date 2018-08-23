@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.25 2016/03/07 12:07:57 mestre Exp $	*/
+/*	$OpenBSD: main.c,v 1.26 2017/05/28 21:01:13 tedu Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1995/04/22 10:08:54 cgd Exp $	*/
 
 /*
@@ -140,6 +140,10 @@ main(int ac, char *av[])
 	}
 
 	initscr();
+
+	if (pledge("stdio tty", NULL) == -1)
+		err(1, "pledge");
+
 	signal(SIGINT, quit);
 	cbreak();
 	noecho();
