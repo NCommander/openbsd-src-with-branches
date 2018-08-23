@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.68 2018/07/04 20:46:22 kettenis Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.69 2018/08/19 08:23:47 kettenis Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -445,6 +445,7 @@ acpi_resume_cpu(struct acpi_softc *sc)
 	npxinit(&cpu_info_primary);
 
 	cpu_init(&cpu_info_primary);
+	cpu_ucode_apply(&cpu_info_primary);
 	
 	/* Re-initialise memory range handling on BSP */
 	if (mem_range_softc.mr_op != NULL)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.29 2018/06/30 10:16:35 kettenis Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.30 2018/07/30 14:19:12 kettenis Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.8 1994/10/27 04:15:59 cgd Exp $	*/
 
 /*
@@ -280,6 +280,8 @@ breakpoint(void)
 }
 
 void amd64_errata(struct cpu_info *);
+void cpu_ucode_setup(void);
+void cpu_ucode_apply(struct cpu_info *);
 
 struct cpu_info_full;
 void cpu_enter_pages(struct cpu_info_full *);
