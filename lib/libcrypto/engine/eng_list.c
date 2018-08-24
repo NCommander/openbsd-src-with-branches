@@ -1,4 +1,4 @@
-/* $OpenBSD: eng_list.c,v 1.21 2015/07/19 00:56:48 bcook Exp $ */
+/* $OpenBSD: eng_list.c,v 1.22 2017/01/29 17:49:23 beck Exp $ */
 /* Written by Geoff Thorpe (geoff@geoffthorpe.net) for the OpenSSL
  * project 2000.
  */
@@ -373,10 +373,12 @@ ENGINE_by_id(const char *id)
 int
 ENGINE_up_ref(ENGINE *e)
 {
+	int refs;
+
 	if (e == NULL) {
 		ENGINEerror(ERR_R_PASSED_NULL_PARAMETER);
 		return 0;
 	}
-	CRYPTO_add(&e->struct_ref, 1, CRYPTO_LOCK_ENGINE);
-	return 1;
+	refs = CRYPTO_add(&e->struct_ref, 1, CRYPTO_LOCK_ENGINE);
+	return refs > 1 ? 1 : 0;
 }
