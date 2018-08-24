@@ -1,4 +1,4 @@
-/* $OpenBSD: dh_ameth.c,v 1.15 2018/05/01 19:01:27 tb Exp $ */
+/* $OpenBSD: dh_ameth.c,v 1.16 2018/08/24 20:17:33 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -180,7 +180,7 @@ err:
  */
 	
 static int
-dh_priv_decode(EVP_PKEY *pkey, PKCS8_PRIV_KEY_INFO *p8)
+dh_priv_decode(EVP_PKEY *pkey, const PKCS8_PRIV_KEY_INFO *p8)
 {
 	const unsigned char *p, *pm;
 	int pklen, pmlen;
