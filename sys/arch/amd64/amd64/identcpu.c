@@ -1,4 +1,4 @@
-/*	$OpenBSD: identcpu.c,v 1.106 2018/08/15 02:07:35 jsg Exp $	*/
+/*	$OpenBSD: identcpu.c,v 1.107 2018/08/21 19:04:38 deraadt Exp $	*/
 /*	$NetBSD: identcpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*
@@ -562,6 +562,9 @@ identifycpu(struct cpu_info *ci)
 		cpuspeed = (freq + 4999) / 1000000;
 		cpu_cpuspeed = cpu_amd64speed;
 	}
+
+	printf(", %02x-%02x-%02x", ci->ci_family, ci->ci_model,
+	    ci->ci_signature & 0x0f);
 
 	printf("\n%s: ", ci->ci_dev->dv_xname);
 
