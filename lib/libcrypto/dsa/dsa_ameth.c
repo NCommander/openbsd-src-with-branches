@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa_ameth.c,v 1.23 2017/01/29 17:49:22 beck Exp $ */
+/* $OpenBSD: dsa_ameth.c,v 1.24 2018/05/01 19:01:27 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -186,7 +186,7 @@ dsa_priv_decode(EVP_PKEY *pkey, PKCS8_PRIV_KEY_INFO *p8)
 	int ptype;
 	const void *pval;
 	const ASN1_STRING *pstr;
-	X509_ALGOR *palg;
+	const X509_ALGOR *palg;
 	ASN1_INTEGER *privkey = NULL;
 	BN_CTX *ctx = NULL;
 	DSA *dsa = NULL;
