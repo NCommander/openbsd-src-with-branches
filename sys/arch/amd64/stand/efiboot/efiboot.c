@@ -1,4 +1,4 @@
-/*	$OpenBSD: efiboot.c,v 1.29 2018/03/02 03:11:23 jsg Exp $	*/
+/*	$OpenBSD: efiboot.c,v 1.30 2018/07/06 07:55:50 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -494,7 +494,7 @@ efi_cons_getc(dev_t dev)
 	}
 
 	status = EFI_CALL(conin->ReadKeyStroke, conin, &key);
-	while (status == EFI_NOT_READY) {
+	while (status == EFI_NOT_READY || key.UnicodeChar == 0) {
 		if (dev & 0x80)
 			return (0);
 		EFI_CALL(BS->WaitForEvent, 1, &conin->WaitForKey, &dummy);
