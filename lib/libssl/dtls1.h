@@ -1,4 +1,4 @@
-/* $OpenBSD: dtls1.h,v 1.20 2017/01/22 03:50:45 jsing Exp $ */
+/* $OpenBSD: dtls1.h,v 1.21 2017/01/22 07:16:39 beck Exp $ */
 /*
  * DTLS implementation written by Nagendra Modadugu
  * (nagendra@cs.stanford.edu) for the OpenSSL project 2005.
@@ -87,11 +87,7 @@ extern "C" {
 
 #define DTLS1_CCS_HEADER_LENGTH                  1
 
-#ifdef DTLS1_AD_MISSING_HANDSHAKE_MESSAGE
-#define DTLS1_AL_HEADER_LENGTH                   7
-#else
 #define DTLS1_AL_HEADER_LENGTH                   2
-#endif
 
 #ifndef OPENSSL_NO_SSL_INTERN
 
