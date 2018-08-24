@@ -1,6 +1,7 @@
-/* $OpenBSD: wycheproof.go,v 1.17 2018/08/24 17:34:46 tb Exp $ */
+/* $OpenBSD: wycheproof.go,v 1.18 2018/08/24 17:35:52 tb Exp $ */
 /*
  * Copyright (c) 2018 Joel Sing <jsing@openbsd.org>
+ * Copyright (c) 2018 Theo Buehler <tb@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
