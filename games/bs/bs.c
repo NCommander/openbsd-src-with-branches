@@ -1,4 +1,4 @@
-/*	$OpenBSD: bs.c,v 1.39 2016/03/07 12:07:55 mestre Exp $	*/
+/*	$OpenBSD: bs.c,v 1.40 2018/08/05 13:32:25 schwarze Exp $	*/
 /*
  * Copyright (c) 1986, Bruce Holloway
  * All rights reserved.
@@ -1341,6 +1341,10 @@ main(int argc, char *argv[])
     do_options(argc, argv);
 
     intro();
+
+    if (pledge("stdio tty", NULL) == -1)
+        err(1, "pledge");
+
     do {
 	initgame();
 	while(awinna() == -1)
