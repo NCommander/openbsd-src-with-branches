@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgt.c,v 1.80 2017/03/26 15:31:15 deraadt Exp $ */
+/*	$OpenBSD: if_upgt.c,v 1.81 2017/10/26 15:00:28 mpi Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -1233,7 +1233,7 @@ upgt_media_change(struct ifnet *ifp)
 
 	DPRINTF(1, "%s: %s\n", sc->sc_dev.dv_xname, __func__);
 
-	if ((error = ieee80211_media_change(ifp) != ENETRESET))
+	if ((error = ieee80211_media_change(ifp)) != ENETRESET)
 		return (error);
 
 	if (ifp->if_flags & (IFF_UP | IFF_RUNNING)) {
