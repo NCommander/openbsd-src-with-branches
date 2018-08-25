@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.216 2018/07/11 07:39:22 krw Exp $	*/
+/*	$OpenBSD: parse.y,v 1.217 2018/07/15 08:49:12 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -42,7 +42,6 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <netdb.h>
-#include <paths.h>
 #include <pwd.h>
 #include <resolv.h>
 #include <stdio.h>
