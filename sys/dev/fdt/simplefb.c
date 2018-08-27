@@ -1,4 +1,4 @@
-/*	$OpenBSD: simplefb.c,v 1.3 2017/12/18 10:13:45 kettenis Exp $	*/
+/*	$OpenBSD: simplefb.c,v 1.4 2018/07/31 17:25:55 fcambus Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -109,6 +109,10 @@ int
 simplefb_match(struct device *parent, void *match, void *aux)
 {
 	struct fdt_attach_args *faa = aux;
+
+	/* Don't attach if another driver already claimed our framebuffer. */
+	if (faa->fa_nreg > 0 && rasops_check_framebuffer(faa->fa_reg[0].addr))
+		return 0;
 
 	return OF_is_compatible(faa->fa_node, "simple-framebuffer");
 }
