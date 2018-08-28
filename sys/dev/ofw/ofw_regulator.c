@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_regulator.c,v 1.5 2018/08/02 09:45:17 kettenis Exp $	*/
+/*	$OpenBSD: ofw_regulator.c,v 1.6 2018/08/13 15:14:27 patrick Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -218,6 +218,7 @@ regulator_gpio_get_voltage(int node)
 	OF_getpropintarray(node, "gpios", gpios, glen);
 	OF_getpropintarray(node, "states", states, slen);
 
+	i = 0;
 	idx = 0;
 	gpio = gpios;
 	while (gpio && gpio < gpios + (glen / sizeof(uint32_t))) {
