@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.h,v 1.5 2012/04/10 07:56:54 deraadt Exp $ */
+/*	$OpenBSD: control.h,v 1.6 2015/02/10 05:24:48 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -34,6 +34,7 @@ struct ctl_conn {
 	struct imsgev		iev;
 };
 
+int	control_check(char *);
 int	control_init(char *);
 int	control_listen(void);
 void	control_accept(int, short, void *);
