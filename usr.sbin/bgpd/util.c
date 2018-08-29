@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.29 2018/08/09 21:12:33 claudio Exp $ */
+/*	$OpenBSD: util.c,v 1.30 2018/08/10 11:13:01 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -464,7 +464,7 @@ aspath_verify(void *data, u_int16_t len, int as4byte)
 			ptr += as_size;
 			memcpy(&as, ptr, as_size);
 			if (as == 0)
-				return (AS_ERR_SOFT);
+				error = AS_ERR_SOFT;
 		}
 	}
 	return (error);	/* aspath is valid but probably not loop free */
