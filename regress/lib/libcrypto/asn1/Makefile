@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2015/09/29 04:54:23 beck Exp $
+#	$OpenBSD: Makefile,v 1.3 2017/11/28 16:47:55 jsing Exp $
 
 TESTS = \
 	asn1evp \
@@ -13,7 +13,7 @@ WARNINGS=	Yes
 LDFLAGS+=	-lcrypto
 CFLAGS+=	-DLIBRESSL_INTERNAL -Wall -Wundef -Werror
 
-CLEANFILES+= ${TESTS}
+CLEANFILES+= ${TESTS} ${TESTS:S/$/.d/}
 
 all_tests: ${TESTS}
 	@for test in $>; do \
