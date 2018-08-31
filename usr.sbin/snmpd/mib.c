@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.89 2018/06/04 18:05:18 gerhard Exp $	*/
+/*	$OpenBSD: mib.c,v 1.90 2018/08/30 12:25:40 jsg Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Knight <joel@openbsd.org>
@@ -2937,7 +2937,7 @@ mib_carpgroupget(u_int idx)
 
 	if ((ifgr.ifgr_groups = calloc(1, len)) == NULL) {
 		log_warn("alloc");
-		return (NULL);
+		goto err;
 	}
 	if (ioctl(s, SIOCGIFGLIST, (caddr_t)&ifgr) == -1) {
 		log_warn("SIOCGIFGLIST");
