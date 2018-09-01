@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_client.c,v 1.5 2018/06/09 10:01:17 eric Exp $	*/
+/*	$OpenBSD: smtp_client.c,v 1.6 2018/08/30 11:58:01 eric Exp $	*/
 
 /*
  * Copyright (c) 2018 Eric Faurot <eric@openbsd.org>
@@ -420,7 +420,7 @@ smtp_client_state(struct smtp_client *proto, int newstate)
 		break;
 
 	default:
-		fatalx("smtp_client_state: unknown state");
+		fatalx("%s: bad state %d", __func__, proto->state);
 	}
 #undef smtp_client_state
 }
