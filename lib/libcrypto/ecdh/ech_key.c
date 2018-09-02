@@ -1,4 +1,4 @@
-/* $OpenBSD: ech_key.c,v 1.6 2015/09/18 13:04:41 bcook Exp $ */
+/* $OpenBSD: ech_key.c,v 1.7 2017/01/29 17:49:23 beck Exp $ */
 /* ====================================================================
  * Copyright 2002 Sun Microsystems, Inc. ALL RIGHTS RESERVED.
  *
@@ -125,6 +125,10 @@ ecdh_compute_key(void *out, size_t outlen, const EC_POINT *pub_key,
 	}
 
 	group = EC_KEY_get0_group(ecdh);
+
+	if (!EC_POINT_is_on_curve(group, pub_key, ctx))
+		goto err;
+
 	if ((tmp = EC_POINT_new(group)) == NULL) {
 		ECDHerror(ERR_R_MALLOC_FAILURE);
 		goto err;
