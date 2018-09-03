@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.334 2018/07/25 16:00:48 eric Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.335 2018/08/31 07:28:27 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -46,7 +46,7 @@
 #include "ssl.h"
 #include "rfc5322.h"
 
-#define	SMTP_LINE_MAX			16384
+#define	SMTP_LINE_MAX			65535
 #define	DATA_HIWAT			65535
 #define	APPEND_DOMAIN_BUFFER_SIZE	SMTP_LINE_MAX
 
