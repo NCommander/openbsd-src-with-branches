@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.c,v 1.84 2016/09/15 02:00:16 dlg Exp $ */
+/* $OpenBSD: pmap.c,v 1.85 2018/04/20 07:27:54 mlarkin Exp $ */
 /* $NetBSD: pmap.c,v 1.154 2000/12/07 22:18:55 thorpej Exp $ */
 
 /*-
@@ -3540,7 +3540,7 @@ pmap_tlb_shootdown(pmap_t pmap, vaddr_t va, pt_entry_t pte, u_long *cpumaskp)
 		 * the IPI, that's okay, because it does the right
 		 * thing with it later.
 		 */
-		 if (pmap != pmap_kernel() &&
+		if (pmap != pmap_kernel() &&
 		    PMAP_ISACTIVE(pmap, ci->ci_cpuid) == 0) {
 			PMAP_INVALIDATE_ASN(pmap, ci->ci_cpuid);
 			continue;
