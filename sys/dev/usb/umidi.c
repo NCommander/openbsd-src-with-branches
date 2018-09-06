@@ -1,4 +1,4 @@
-/*	$OpenBSD: umidi.c,v 1.45 2017/04/08 02:57:25 deraadt Exp $	*/
+/*	$OpenBSD: umidi.c,v 1.46 2017/12/30 23:08:29 guenther Exp $	*/
 /*	$NetBSD: umidi.c,v 1.16 2002/07/11 21:14:32 augustss Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -205,8 +205,10 @@ umidi_attach(struct device *parent, struct device *self, void *aux)
 	}
 	err = attach_all_mididevs(sc);
 	if (err!=USBD_NORMAL_COMPLETION) {
+		unbind_all_jacks(sc);
 		free_all_jacks(sc);
 		free_all_endpoints(sc);
+		goto error;
 	}
 
 #ifdef UMIDI_DEBUG
