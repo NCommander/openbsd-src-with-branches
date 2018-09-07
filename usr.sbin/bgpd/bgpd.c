@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.195 2018/09/07 05:43:33 claudio Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.196 2018/09/07 10:49:22 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -886,7 +886,7 @@ set_pollfd(struct pollfd *pfd, struct imsgbuf *i)
 }
 
 int
-handle_pollfd(struct pollfd *pfd, struct imsgbuf *i)  
+handle_pollfd(struct pollfd *pfd, struct imsgbuf *i)
 {
 	ssize_t n;
 
