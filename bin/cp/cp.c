@@ -1,4 +1,4 @@
-/*	$OpenBSD: cp.c,v 1.47 2018/09/07 07:11:16 martijn Exp $	*/
+/*	$OpenBSD: cp.c,v 1.48 2018/09/07 07:17:14 martijn Exp $	*/
 /*	$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $	*/
 
 /*
@@ -434,7 +434,7 @@ copy(char *argv[], enum op type, int fts_options)
 				    !fts_dne(curr))) == 1)
 					rval = 1;
 			} else
-				if ((cval = copy_file(curr, fts_dne(curr))) == 1)
+				if ((cval = copy_file(curr, !fts_dne(curr))) == 1)
 					rval = 1;
 			if (!cval && vflag)
 				(void)fprintf(stdout, "%s -> %s\n",
@@ -447,7 +447,7 @@ copy(char *argv[], enum op type, int fts_options)
 				    !fts_dne(curr))) == 1)
 					rval = 1;
 			} else
-				if ((cval = copy_file(curr, fts_dne(curr))) == 1)
+				if ((cval = copy_file(curr, !fts_dne(curr))) == 1)
 					rval = 1;
 			if (!cval && vflag)
 				(void)fprintf(stdout, "%s -> %s\n",
@@ -458,7 +458,7 @@ copy(char *argv[], enum op type, int fts_options)
 			warnc(EOPNOTSUPP, "%s", curr->fts_path);
 			break;
 		default:
-			if ((cval = copy_file(curr, fts_dne(curr))) == 1)
+			if ((cval = copy_file(curr, !fts_dne(curr))) == 1)
 				rval = 1;
 			if (!cval && vflag)
 				(void)fprintf(stdout, "%s -> %s\n",
