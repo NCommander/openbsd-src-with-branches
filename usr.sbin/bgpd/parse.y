@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.335 2018/09/07 07:35:30 miko Exp $ */
+/*	$OpenBSD: parse.y,v 1.336 2018/09/07 09:38:04 benno Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -3693,19 +3693,6 @@ find_prefixset(char *name, struct prefixset_head *p)
 	SIMPLEQ_FOREACH(ps, p, entry) {
 		if (!strcmp(ps->name, name))
 			return (ps);
-	}
-	return (NULL);
-}
-
-/* returns the prefixset_item from psitems that matches i */
-struct prefixset_item *
-find_prefixsetitem(struct prefixset_item *i, struct prefixset_items_h *psitems)
-{
-	struct prefixset_item *psi;
-
-	SIMPLEQ_FOREACH(psi, psitems, entry) {
-		if (memcmp(&i->p, &psi->p, sizeof(psi->p)) == 0)
-			return(psi);
 	}
 	return (NULL);
 }
