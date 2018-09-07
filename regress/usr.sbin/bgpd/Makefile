@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.3 2018/09/06 15:55:30 benno Exp $
+# $OpenBSD: Makefile,v 1.4 2018/09/07 08:38:35 claudio Exp $
 
 SUBDIR += config
-#SUBDIR += unittests
+SUBDIR += unittests
 
 .include <bsd.subdir.mk>
