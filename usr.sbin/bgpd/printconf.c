@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.112 2018/09/07 05:43:33 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.113 2018/09/08 09:33:54 claudio Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -685,6 +685,8 @@ print_rule(struct peer *peer_l, struct filter_rule *r)
 
 	if (r->match.prefixset.flags & PREFIXSET_FLAG_FILTER)
 		printf("prefix-set \"%s\" ", r->match.prefixset.name);
+	if (r->match.prefixset.flags & PREFIXSET_FLAG_LONGER)
+		printf("or-longer ");
 
 	if (r->match.nexthop.flags) {
 		if (r->match.nexthop.flags == FILTER_NEXTHOP_NEIGHBOR)
