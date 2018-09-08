@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.30 2015/12/26 13:48:38 mestre Exp $	*/
+/*	$OpenBSD: proc.c,v 1.31 2017/07/22 09:37:21 anton Exp $	*/
 /*	$NetBSD: proc.c,v 1.9 1995/04/29 23:21:33 mycroft Exp $	*/
 
 /*-
@@ -1073,8 +1073,8 @@ pkill(Char **v, int signum)
 cont:
 	v++;
     }
-    if (gargv)
-	blkfree(gargv), gargv = 0;
+    blkfree(gargv);
+    gargv = NULL;
     sigprocmask(SIG_UNBLOCK, &sigset, NULL);
     if (err1)
 	stderror(ERR_SILENT);

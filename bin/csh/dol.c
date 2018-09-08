@@ -1,4 +1,4 @@
-/*	$OpenBSD: dol.c,v 1.20 2015/12/26 13:48:38 mestre Exp $	*/
+/*	$OpenBSD: dol.c,v 1.21 2017/12/16 10:27:21 anton Exp $	*/
 /*	$NetBSD: dol.c,v 1.8 1995/09/27 00:38:38 jtc Exp $	*/
 
 /*-
@@ -952,7 +952,7 @@ heredoc(Char *term)
 		ocnt = BUFSIZ;
 	    }
 	}
-	if (pargv)
-	    blkfree(pargv), pargv = 0;
+	blkfree(pargv);
+	pargv = NULL;
     }
 }
