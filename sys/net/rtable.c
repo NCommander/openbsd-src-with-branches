@@ -278,6 +278,27 @@ rtable_exists(unsigned int rtableid)
 	return (0);
 }
 
+int
+rtable_empty(unsigned int rtableid)
+{
+	struct domain	*dp;
+	int		 i;
+	struct art_root	*tbl;
+
+	for (i = 0; (dp = domains[i]) != NULL; i++) {
+		if (dp->dom_rtoffset == 0)
+			continue;
+
+		tbl = rtable_get(rtableid, dp->dom_family);
+		if (tbl == NULL)
+			continue;
+		if (tbl->ar_root.ref != NULL)
+			return (0);
+	}
+
+	return (1);
+}
+
 unsigned int
 rtable_l2(unsigned int rtableid)
 {
