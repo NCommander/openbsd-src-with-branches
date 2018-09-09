@@ -1,4 +1,4 @@
-.\" $OpenBSD: bgpd.conf.5,v 1.176 2018/09/08 15:54:41 jmc Exp $
+.\" $OpenBSD: bgpd.conf.5,v 1.177 2018/09/09 11:00:51 benno Exp $
 .\"
 .\" Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
 .\" Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -16,7 +16,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 8 2018 $
+.Dd $Mdocdate: September 9 2018 $
 .Dt BGPD.CONF 5
 .Os
 .Sh NAME
@@ -290,6 +290,7 @@ Log received and sent updates.
 .Ic network
 .Pq Ic inet Ns | Ns Ic inet6
 .Ic priority Ar number Op Ic set ...\&
+.Xc
 .It Xo
 .Ic network prefix-set
 .Ar name
