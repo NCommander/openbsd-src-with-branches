@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_update.c,v 1.96 2018/08/03 16:31:22 claudio Exp $ */
+/*	$OpenBSD: rde_update.c,v 1.97 2018/08/08 13:49:20 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -482,7 +482,6 @@ up_generate_default(struct filter_head *rules, struct rde_peer *peer,
 	p.re = re;
 	p.aspath = asp;
 	p.peer = peer;
-	p.flags = 0;
 
 	/* filter as usual */
 	rde_filterstate_prep(&state, asp, NULL, 0);
