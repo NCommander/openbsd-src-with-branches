@@ -1,4 +1,4 @@
-.\" $OpenBSD: bgpd.conf.5,v 1.175 2018/09/08 15:25:27 benno Exp $
+.\" $OpenBSD: bgpd.conf.5,v 1.176 2018/09/08 15:54:41 jmc Exp $
 .\"
 .\" Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
 .\" Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -290,6 +290,10 @@ Log received and sent updates.
 .Ic network
 .Pq Ic inet Ns | Ns Ic inet6
 .Ic priority Ar number Op Ic set ...\&
+.It Xo
+.Ic network prefix-set
+.Ar name
+.Op Ic set ...\&
 .Xc
 Announce the specified network as belonging to our AS.
 If set to
@@ -308,6 +312,9 @@ If set to
 routes with the specified
 .Ar priority
 will be announced.
+If a prefix-set
+.Ar name
+is specified, all networks in the prefix-set will be announced.
 .Bd -literal -offset indent
 network 192.168.7.0/24
 .Ed

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.196 2018/09/07 10:49:22 claudio Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.197 2018/09/07 10:59:16 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -452,6 +452,7 @@ reconfigure(char *conffile, struct bgpd_config *conf, struct peer **peer_l)
 		reconfpending = 0;
 		return (1);
 	}
+	expand_networks(conf);
 
 	cflags = conf->flags;
 	prepare_listeners(conf);
