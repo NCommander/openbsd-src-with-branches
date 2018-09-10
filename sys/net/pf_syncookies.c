@@ -222,8 +222,12 @@ pf_syncookie_validate(struct pf_pdesc *pd)
 	seq = ntohl(pd->hdr.tcp.th_seq) - 1;
 	ack = ntohl(pd->hdr.tcp.th_ack) - 1;
 	cookie.cookie = (ack & 0xff) ^ (ack >> 24);
-	hash = pf_syncookie_mac(pd, cookie, seq);
 
+	/* we don't know oddeven before setting the cookie (union) */
+	if (pf_status.syncookies_inflight[cookie.flags.oddeven] == 0)
+		return (0);
+
+	hash = pf_syncookie_mac(pd, cookie, seq);
 	if ((ack & ~0xff) != (hash & ~0xff))
 		return (0);
 
