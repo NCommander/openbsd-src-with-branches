@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.14 2018/07/15 14:36:54 reyk Exp $	*/
+/*	$OpenBSD: proc.h,v 1.15 2018/08/05 08:20:54 mestre Exp $	*/
 
 /*
  * Copyright (c) 2010-2015 Reyk Floeter <reyk@openbsd.org>
@@ -156,7 +156,7 @@ struct privsep_fd {
 #define PROC_MAX_INSTANCES	32
 
 /* proc.c */
-void	 proc_init(struct privsep *, struct privsep_proc *, unsigned int,
+void	 proc_init(struct privsep *, struct privsep_proc *, unsigned int, int,
 	    int, char **, enum privsep_procid);
 void	 proc_kill(struct privsep *);
 void	 proc_connect(struct privsep *ps);
