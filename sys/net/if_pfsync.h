@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.h,v 1.52 2017/02/20 06:30:39 jca Exp $	*/
+/*	$OpenBSD: if_pfsync.h,v 1.53 2017/04/14 20:46:31 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -328,7 +328,7 @@ void			pfsync_state_export(struct pfsync_state *,
 			    struct pf_state *);
 
 void			pfsync_insert_state(struct pf_state *);
-void			pfsync_update_state(struct pf_state *);
+void			pfsync_update_state(struct pf_state *, int *);
 void			pfsync_delete_state(struct pf_state *);
 void			pfsync_clear_states(u_int32_t, const char *);
 
