@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmctl.h,v 1.21 2018/07/12 12:04:49 reyk Exp $	*/
+/*	$OpenBSD: vmctl.h,v 1.22 2018/09/09 04:09:32 ccardenas Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -85,7 +85,8 @@ __dead void
 	 ctl_openconsole(const char *);
 
 /* vmctl.c */
-int	 create_imagefile(const char *, long);
+int	 create_raw_imagefile(const char *, long);
+int	 create_qc2_imagefile(const char *, long);
 int	 vm_start(uint32_t, const char *, int, int, char **, int,
 	    char **, int *, char *, char *, char *);
 int	 vm_start_complete(struct imsg *, int *, int);
