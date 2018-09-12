@@ -1,4 +1,4 @@
-/*	$OpenBSD: testfly.S,v 1.4 2017/08/16 19:11:30 deraadt Exp $	*/
+/*	$OpenBSD: testfly.S,v 1.4 2017/08/16 19:13:51 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002,2003 Michael Shalayeff
@@ -32,7 +32,7 @@
 
 	.space 8192
 
-#if defined(__amd64__) || defined(__i386__)
+#if defined(__aarch64__) || defined(__amd64__) || defined(__i386__)
 ENTRY(testfly)
 	ret
 END(testfly)
