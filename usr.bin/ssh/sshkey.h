@@ -1,4 +1,4 @@
-/* $OpenBSD: sshkey.h,v 1.25 2018/07/03 11:39:54 djm Exp $ */
+/* $OpenBSD: sshkey.h,v 1.26 2018/07/03 13:20:25 djm Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -96,6 +96,7 @@ struct sshkey_cert {
 	struct sshbuf	*critical;
 	struct sshbuf	*extensions;
 	struct sshkey	*signature_key;
+	char		*signature_type;
 };
 
 /* XXX opaquify? */
