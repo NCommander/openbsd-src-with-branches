@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmpci.c,v 1.42 2016/09/19 06:46:44 ratchov Exp $	*/
+/*	$OpenBSD: cmpci.c,v 1.43 2018/04/11 04:48:31 ratchov Exp $	*/
 /*	$NetBSD: cmpci.c,v 1.25 2004/10/26 06:32:20 xtraeme Exp $	*/
 
 /*
@@ -511,18 +511,15 @@ int
 cmpci_activate(struct device *self, int act)
 {
 	struct cmpci_softc *sc = (struct cmpci_softc *)self;
-	int rv = 0;
 
 	switch (act) {
 	case DVACT_RESUME:
 		cmpci_resume(sc);
-		rv = config_activate_children(self, act);
 		break;
 	default:
-		rv = config_activate_children(self, act);
 		break;
 	}
-	return (rv);
+	return (config_activate_children(self, act));
 }
 
 int

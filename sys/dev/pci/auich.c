@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.105 2016/09/14 06:12:19 ratchov Exp $	*/
+/*	$OpenBSD: auich.c,v 1.106 2016/09/19 06:46:44 ratchov Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -533,18 +533,15 @@ int
 auich_activate(struct device *self, int act)
 {
 	struct auich_softc *sc = (struct auich_softc *)self;
-	int rv = 0;
 
 	switch (act) {
 	case DVACT_RESUME:
 		auich_resume(sc);
-		rv = config_activate_children(self, act);
 		break;
 	default:
-		rv = config_activate_children(self, act);
 		break;
 	}
-	return (rv);
+	return (config_activate_children(self, act));
 }
 
 int
