@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstat.c,v 1.92 2018/04/06 14:05:06 bluhm Exp $	*/
+/*	$OpenBSD: fstat.c,v 1.93 2018/04/10 11:09:14 sthen Exp $	*/
 
 /*
  * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -331,7 +331,7 @@ fstat_header(void)
 	putchar('\n');
 }
 
-char	*Uname, *Comm;
+const char *Uname, *Comm;
 uid_t	*procuid;
 pid_t	Pid;
 

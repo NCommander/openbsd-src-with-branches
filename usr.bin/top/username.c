@@ -1,4 +1,4 @@
-/* $OpenBSD: username.c,v 1.16 2009/07/22 15:27:52 deraadt Exp $	 */
+/* $OpenBSD: username.c,v 1.17 2015/10/26 13:56:18 tedu Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -41,7 +41,7 @@
 #include "top.h"
 #include "utils.h"
 
-char *
+const char *
 username(uid_t uid)
 {
 	return user_from_uid(uid, 0);
