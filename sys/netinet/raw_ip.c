@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip.c,v 1.110 2018/07/04 02:08:13 anton Exp $	*/
+/*	$OpenBSD: raw_ip.c,v 1.111 2018/07/05 21:16:52 bluhm Exp $	*/
 /*	$NetBSD: raw_ip.c,v 1.25 1996/02/18 18:58:33 christos Exp $	*/
 
 /*
@@ -287,7 +287,7 @@ rip_output(struct mbuf *m, struct socket *so, struct sockaddr *dstaddr,
 #if NPF > 0
 	if (inp->inp_socket->so_state & SS_ISCONNECTED &&
 	    ip->ip_p != IPPROTO_ICMP)
-		m->m_pkthdr.pf.inp = inp;
+		pf_mbuf_link_inpcb(m, inp);
 #endif
 
 	error = ip_output(m, inp->inp_options, &inp->inp_route, flags,

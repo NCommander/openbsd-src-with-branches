@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.484 2018/09/10 11:37:26 bluhm Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.485 2018/09/11 07:53:38 sashan Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1961,6 +1961,8 @@ int			 pf_postprocess_addr(struct pf_state *);
 void			 pf_mbuf_link_state_key(struct mbuf *,
 			    struct pf_state_key *);
 void			 pf_mbuf_unlink_state_key(struct mbuf *);
+void			 pf_mbuf_link_inpcb(struct mbuf *, struct inpcb *);
+void			 pf_mbuf_unlink_inpcb(struct mbuf *);
 
 u_int8_t*		 pf_find_tcpopt(u_int8_t *, u_int8_t *, size_t,
 			    u_int8_t, u_int8_t);
