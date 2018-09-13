@@ -1,4 +1,4 @@
-/*	$OpenBSD: getgrent.c,v 1.45 2015/11/24 22:03:33 millert Exp $ */
+/*	$OpenBSD: getgrent.c,v 1.46 2015/12/01 15:08:25 deraadt Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -144,6 +144,7 @@ getgrnam_r(const char *name, struct group *grp, char *buffer,
 	errno = errnosave;
 	return ret;
 }
+DEF_WEAK(getgrnam_r);
 
 static struct group *
 getgrgid_gs(gid_t gid, struct group *p_gr, struct group_storage *gs)

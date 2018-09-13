@@ -1,4 +1,4 @@
-/*	$OpenBSD: pwd.h,v 1.24 2015/11/18 16:44:46 tedu Exp $	*/
+/*	$OpenBSD: pwd.h,v 1.25 2017/03/09 10:13:03 fcambus Exp $	*/
 /*	$NetBSD: pwd.h,v 1.9 1996/05/15 21:36:45 jtc Exp $	*/
 
 /*-
@@ -106,7 +106,8 @@ void		 endpwent(void);
 #endif
 #if __BSD_VISIBLE
 int		 setpassent(int);
-char		*user_from_uid(uid_t, int);
+int		 uid_from_user(const char *, uid_t *);
+const char	*user_from_uid(uid_t, int);
 char		*bcrypt_gensalt(u_int8_t);
 char		*bcrypt(const char *, const char *);
 int		bcrypt_newhash(const char *, int, char *, size_t);
