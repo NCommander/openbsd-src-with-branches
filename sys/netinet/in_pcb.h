@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.h,v 1.110 2018/09/11 14:34:49 bluhm Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.111 2018/09/13 19:53:58 bluhm Exp $	*/
 /*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
@@ -65,6 +65,7 @@
 #define _NETINET_IN_PCB_H_
 
 #include <sys/queue.h>
+#include <sys/refcnt.h>
 #include <netinet/ip6.h>
 #include <netinet6/ip6_var.h>
 #include <netinet/icmp6.h>
