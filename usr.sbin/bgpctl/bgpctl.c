@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.214 2018/09/07 05:44:58 claudio Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.215 2018/09/09 12:53:41 benno Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -2656,8 +2656,8 @@ msg_type(u_int8_t type)
 	return (msgtypenames[type]);
 }
 
-int
+void *
 as_set_match(const struct as_set *a, u_int32_t asnum)
 {
-	return (0);
+	return (NULL);
 }
