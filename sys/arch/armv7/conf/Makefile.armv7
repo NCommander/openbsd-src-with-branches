@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.armv7,v 1.40 2018/02/10 06:52:47 patrick Exp $
+#	$OpenBSD: Makefile.armv7,v 1.41 2018/09/12 04:34:59 jsg Exp $
 
 # For instructions on building kernels consult the config(8) and options(4)
 # manual pages.
@@ -143,7 +143,7 @@ vers.o: ${SYSTEM_DEP:Ngap.o}
 
 clean:
 	rm -f *bsd *bsd.gdb *.[dio] [a-z]*.s assym.* \
-	    gap.link ld.script lorder makegap.sh param.c
+	    gap.link gapdummy.c ld.script lorder makegap.sh param.c
 
 cleandir: clean
 	rm -f Makefile *.h ioconf.c options machine ${_mach} vers.c
