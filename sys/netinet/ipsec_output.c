@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.73 2018/07/12 15:51:50 mpi Exp $ */
+/*	$OpenBSD: ipsec_output.c,v 1.74 2018/08/28 15:15:02 mpi Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -388,7 +388,7 @@ ipsec_output_cb(struct cryptop *crp)
 {
 	struct tdb_crypto *tc = (struct tdb_crypto *) crp->crp_opaque;
 	struct mbuf *m = (struct mbuf *) crp->crp_buf;
-	struct tdb *tdb;
+	struct tdb *tdb = NULL;
 	int error, ilen, olen;
 
 	if (m == NULL) {
