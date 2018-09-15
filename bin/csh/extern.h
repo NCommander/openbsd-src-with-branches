@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.25 2015/12/26 13:48:38 mestre Exp $	*/
+/*	$OpenBSD: extern.h,v 1.26 2017/07/22 09:37:21 anton Exp $	*/
 /*	$NetBSD: extern.h,v 1.8 1996/10/31 23:50:54 christos Exp $	*/
 
 /*-
@@ -201,7 +201,7 @@ int	  prefix(Char *, Char *);
 Char	**saveblk(Char **);
 Char	 *strip(Char *);
 Char	 *quote(Char *);
-char	 *strsave(char *);
+char	 *xstrdup(const char *);
 char	 *strspl(char *, char *);
 void	  udvar(Char *);
 
