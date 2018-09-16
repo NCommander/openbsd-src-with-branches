@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.8 2018/08/03 13:14:46 florian Exp $	*/
+/*	$OpenBSD: parse.y,v 1.9 2018/09/07 07:35:31 miko Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -268,6 +268,8 @@ ra_ifaceoptsl	: NO AUTO PREFIX {
 				free($2);
 				YYERROR;
 			}
+			if (prefixlen == 128 && strchr($2, '/') == NULL)
+				prefixlen = 64;
 			mask_prefix(&addr, prefixlen);
 			ra_prefix_conf = conf_get_ra_prefix(&addr, prefixlen);
 		} ra_prefix_block {
