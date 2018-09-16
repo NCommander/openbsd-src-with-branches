@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldomctl.h,v 1.5 2012/12/01 10:39:38 kettenis Exp $	*/
+/*	$OpenBSD: ldomctl.h,v 1.6 2018/09/16 12:17:05 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -135,6 +135,12 @@ struct vnet {
 	uint64_t		mtu;
 };
 
+struct var {
+	SIMPLEQ_ENTRY(var)	entry;
+	const char		*name;
+	const char		*str;
+};
+
 struct domain {
 	SIMPLEQ_ENTRY(domain)	entry;
 	const char *name;
@@ -142,6 +148,7 @@ struct domain {
 	uint64_t memory;
 	SIMPLEQ_HEAD(, vdisk) vdisk_list;
 	SIMPLEQ_HEAD(, vnet) vnet_list;
+	SIMPLEQ_HEAD(, var) var_list;
 } *domain;
 
 struct ldom_config {
