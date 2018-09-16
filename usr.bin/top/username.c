@@ -1,4 +1,4 @@
-/* $OpenBSD: username.c,v 1.17 2015/10/26 13:56:18 tedu Exp $	 */
+/* $OpenBSD: username.c,v 1.18 2018/09/13 15:23:32 millert Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -48,12 +48,9 @@ username(uid_t uid)
 }
 
 uid_t
-userid(char *username)
+userid(const char *username)
 {
-	struct passwd *pwd;
+	uid_t uid;
 
-	if ((pwd = getpwnam(username)) == NULL)
-		return ((uid_t)-1);
-
-	return (pwd->pw_uid);
+	return uid_from_user(username, &uid);
 }
