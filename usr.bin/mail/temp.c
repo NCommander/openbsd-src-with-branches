@@ -1,4 +1,4 @@
-/*	$OpenBSD: temp.c,v 1.16 2015/10/16 17:56:07 mmcc Exp $	*/
+/*	$OpenBSD: temp.c,v 1.17 2016/07/28 21:37:45 tedu Exp $	*/
 /*	$NetBSD: temp.c,v 1.5 1996/06/08 19:48:42 christos Exp $	*/
 
 /*
@@ -31,6 +31,7 @@
  */
 
 #include "rcv.h"
+#include <pwd.h>
 #include "extern.h"
 
 /*
@@ -62,15 +63,17 @@ tinit(void)
 	 * do a spreserve() after us.
 	 */
 	if (myname != NULL) {
-		if (getuserid(myname) == UID_MAX)
+		uid_t uid;
+
+		if (uid_from_user(myname, &uid) == -1)
 			errx(1, "\"%s\" is not a user of this system", myname);
 	} else {
-		if ((cp = username()) == NULL) {
+		if ((myname = username()) == NULL) {
 			myname = "nobody";
 			if (rcvmode)
 				exit(1);
 		} else
-			myname = savestr(cp);
+			myname = savestr(myname);
 	}
 	if ((cp = getenv("HOME")) == NULL || *cp == '\0' ||
 	    strlen(cp) >= PATHSIZE)
