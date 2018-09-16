@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.h,v 1.15 2013/09/21 14:15:19 espie Exp $	*/
+/*	$OpenBSD: top.h,v 1.16 2018/09/13 15:23:32 millert Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -79,4 +79,4 @@ extern void quit(int);
 
 /* username.c */
 extern const char *username(uid_t);
-extern uid_t userid(char *);
+extern uid_t userid(const char *);
