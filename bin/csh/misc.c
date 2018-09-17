@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.20 2017/06/20 16:44:06 anton Exp $	*/
+/*	$OpenBSD: misc.c,v 1.21 2018/09/15 12:15:32 miko Exp $	*/
 /*	$NetBSD: misc.c,v 1.6 1995/03/21 09:03:09 cgd Exp $	*/
 
 /*-
@@ -41,17 +41,6 @@
 
 static int	fdcmp(int);
 static int	renum(int, int);
-
-int
-any(char *s, int c)
-{
-    if (!s)
-	return (0);		/* Check for nil pointer */
-    while (*s)
-	if (*s++ == c)
-	    return (1);
-    return (0);
-}
 
 char   *
 xstrdup(const char *s)
