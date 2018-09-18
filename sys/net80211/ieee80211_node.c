@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.150 2018/09/11 19:25:54 phessler Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.151 2018/09/17 02:34:16 jsg Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -1376,6 +1376,7 @@ ieee80211_end_scan(struct ifnet *ifp)
 		    IEEE80211_FC0_SUBTYPE_DEAUTH,
 		    IEEE80211_REASON_AUTH_LEAVE) != 0) {
 			ic->ic_flags &= ~IEEE80211_F_BGSCAN;
+			free(arg, M_DEVBUF, sizeof(*arg));
 			return;
 		}
 
