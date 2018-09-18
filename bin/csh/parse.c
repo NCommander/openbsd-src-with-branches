@@ -89,7 +89,7 @@ static void
 asyntax(struct wordent *p1, struct wordent *p2)
 {
     while (p1 != p2)
-	if (strchr(";&\n", p1->word[0]))
+	if (any(";&\n", p1->word[0]))
 	    p1 = p1->next;
 	else {
 	    asyn0(p1, p2);
@@ -214,7 +214,7 @@ syntax(struct wordent *p1, struct wordent *p2, int flags)
 {
 
     while (p1 != p2)
-	if (strchr(";&\n", p1->word[0]))
+	if (any(";&\n", p1->word[0]))
 	    p1 = p1->next;
 	else
 	    return (syn0(p1, p2, flags));
@@ -516,7 +516,7 @@ again:
 	    }
 	    if (p->next == p2)
 		continue;
-	    if (strchr(RELPAR, p->next->word[0]))
+	    if (any(RELPAR, p->next->word[0]))
 		continue;
 	    n--;
 	    continue;
@@ -576,7 +576,7 @@ again:
 		continue;
 	    }
 	    p = p->next;
-	    if (strchr(RELPAR, p->word[0])) {
+	    if (any(RELPAR, p->word[0])) {
 		seterror(ERR_MISRED);
 		continue;
 	    }
@@ -596,7 +596,7 @@ again:
 		continue;
 	    }
 	    p = p->next;
-	    if (strchr(RELPAR, p->word[0])) {
+	    if (any(RELPAR, p->word[0])) {
 		seterror(ERR_MISRED);
 		continue;
 	    }

@@ -36,7 +36,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdarg.h>
-#include <string.h>
 
 #include "csh.h"
 #include "extern.h"
@@ -239,7 +238,7 @@ exp3a(Char ***vp, bool ignore)
 
     p1 = exp4(vp, ignore);
     op = **vp;
-    if (op && strchr("<>", op[0]) && op[0] == op[1]) {
+    if (op && any("<>", op[0]) && op[0] == op[1]) {
 	(*vp)++;
 	p2 = exp3a(vp, ignore);
 	if (op[0] == '<')
@@ -393,7 +392,7 @@ exp6(Char ***vp, bool ignore)
     if (isa(**vp, ANYOP))
 	return (Strsave(STRNULL));
     cp = *(*vp)++;
-    if (*cp == '-' && strchr("erwxfdzopls", cp[1])) {
+    if (*cp == '-' && any("erwxfdzopls", cp[1])) {
 	struct stat stb;
 
 	if (cp[2] != '\0')

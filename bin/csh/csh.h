@@ -69,6 +69,10 @@ typedef void *ioctl_t;		/* Third arg of ioctl */
 #include "char.h"
 #include "error.h"
 
+#define xmalloc(i)	Malloc(i)
+#define xreallocarray(p, i, j)	Reallocarray(p, i, j)
+#define xcalloc(n, s)	Calloc(n, s)
+
 #include <stdio.h>
 FILE *cshin, *cshout, *csherr;
 

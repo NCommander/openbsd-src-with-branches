@@ -77,7 +77,7 @@ short2blk(Char **src)
     sdst = dst = xreallocarray(NULL, n + 1, sizeof(char *));
 
     for (; *src != NULL; src++)
-	*dst++ = xstrdup(short2str(*src));
+	*dst++ = strsave(short2str(*src));
     *dst = NULL;
     return (sdst);
 }

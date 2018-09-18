@@ -289,7 +289,7 @@ seterror(int id, ...)
 	vsnprintf(berr, sizeof(berr), errorlist[id], va);
 	va_end(va);
 
-	seterr = xstrdup(berr);
+	seterr = strsave(berr);
     }
 }
 

@@ -137,7 +137,7 @@ doexec(Char **v, struct command *t)
 	blkfree(pv);
 	pexerr();
     }
-    slash = (bool) strchr(short2str(expath), '/');
+    slash = any(short2str(expath), '/');
 
     /*
      * Glob the argument list, if necessary. Otherwise trim off the quote bits.
@@ -492,7 +492,7 @@ iscommand(Char *name)
     Char **pv;
     Char *sav;
     struct varent *v;
-    bool slash = (bool) strchr(short2str(name), '/');
+    bool slash = any(short2str(name), '/');
     int hashval = 0, hashval1, i;
 
     v = adrof(STRpath);
@@ -680,7 +680,7 @@ tellmewhat(struct wordent *lexp, Char *str, int len)
     if ((i = iscommand(sp->word)) != 0) {
 	Char **pv;
 	struct varent *v;
-	bool    slash = (bool) strchr(short2str(sp->word), '/');
+	bool    slash = any(short2str(sp->word), '/');
 
 	v = adrof(STRpath);
 	if (v == 0 || v->vec[0] == 0 || slash)

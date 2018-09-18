@@ -33,7 +33,6 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <string.h>
 
 #include "csh.h"
 #include "extern.h"
@@ -244,13 +243,13 @@ dolet(Char **v, struct command *t)
 	}
 	else {
 	    c = *p++;
-	    if (strchr("+-", c)) {
+	    if (any("+-", c)) {
 		if (c != op || *p)
 		    stderror(ERR_NAME | ERR_UNKNOWNOP);
 		p = Strsave(STR1);
 	    }
 	    else {
-		if (strchr("<>", op)) {
+		if (any("<>", op)) {
 		    if (c != op)
 			stderror(ERR_NAME | ERR_UNKNOWNOP);
 		    c = *p++;

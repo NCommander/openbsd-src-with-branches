@@ -39,7 +39,7 @@
 #include "extern.h"
 
 void *
-xmalloc(size_t n)
+Malloc(size_t n)
 {
     void *ptr;
 
@@ -51,7 +51,7 @@ xmalloc(size_t n)
 }
 
 void *
-xreallocarray(void * p, size_t c, size_t n)
+Reallocarray(void * p, size_t c, size_t n)
 {
     void *ptr;
 
@@ -63,7 +63,7 @@ xreallocarray(void * p, size_t c, size_t n)
 }
 
 void *
-xcalloc(size_t s, size_t n)
+Calloc(size_t s, size_t n)
 {
     void *ptr;
 
