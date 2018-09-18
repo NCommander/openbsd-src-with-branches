@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_update.c,v 1.97 2018/08/08 13:49:20 claudio Exp $ */
+/*	$OpenBSD: rde_update.c,v 1.98 2018/09/09 12:33:51 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -1167,7 +1167,7 @@ up_dump_mp_reach(u_char *buf, u_int16_t *len, struct rde_peer *peer,
 		return (-2);
 
 	if (upa->mpattr_len == 0 || upa->mpattr == NULL)
-		fatalx("mulitprotocol update without MP attrs");
+		fatalx("multiprotocol update without MP attrs");
 
 	datalen += upa->mpattr_len;
 	wpos -= upa->mpattr_len;
