@@ -1,4 +1,4 @@
-/*	$OpenBSD: stat.c,v 1.21 2015/10/10 20:35:01 deraadt Exp $ */
+/*	$OpenBSD: stat.c,v 1.22 2018/09/16 02:42:19 millert Exp $ */
 /*	$NetBSD: stat.c,v 1.19 2004/06/20 22:20:16 jmc Exp $ */
 
 /*
@@ -598,7 +598,7 @@ format1(const struct stat *st,
 	case SHOW_st_gid:
 		small = (sizeof(st->st_gid) == 4);
 		data = st->st_gid;
-		sdata = group_from_gid(st->st_uid, 1);
+		sdata = group_from_gid(st->st_gid, 1);
 		if (sdata == NULL) {
 			snprintf(sid, sizeof(sid), "(%ld)", (long)st->st_gid);
 			sdata = sid;
