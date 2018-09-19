@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.25 2017/08/30 07:54:54 anton Exp $	*/
+/*	$OpenBSD: lex.c,v 1.27 2018/09/18 06:56:09 deraadt Exp $	*/
 /*	$NetBSD: lex.c,v 1.9 1995/09/27 00:38:46 jtc Exp $	*/
 
 /*-
@@ -1274,7 +1274,7 @@ top:
     aret = F_SEEK;
     if (alvecp) {
 	aret = A_SEEK;
-	if ((c = *alvecp++) != '\0')
+	if ((c = *alvecp++) != NULL)
 	    return (c);
 	if (alvec && *alvec) {
 		alvecp = *alvec++;
@@ -1310,7 +1310,7 @@ top:
 	    doneinp = 1;
 	    reset();
 	}
-	if ((evalp = *evalvec) != '\0') {
+	if ((evalp = *evalvec) != NULL) {
 	    evalvec++;
 	    goto top;
 	}
