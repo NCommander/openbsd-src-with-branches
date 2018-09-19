@@ -1,4 +1,4 @@
-/*	$OpenBSD: sio.c,v 1.19 2015/01/16 16:48:52 deraadt Exp $	*/
+/*	$OpenBSD: sio.c,v 1.21 2016/01/09 08:27:24 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -16,7 +16,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #include <errno.h>
 #include <fcntl.h>
