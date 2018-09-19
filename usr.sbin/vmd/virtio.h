@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.h,v 1.27 2018/08/25 04:16:09 ccardenas Exp $	*/
+/*	$OpenBSD: virtio.h,v 1.28 2018/09/09 04:09:32 ccardenas Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -258,6 +258,7 @@ struct ioinfo {
 
 /* virtio.c */
 void virtio_init(struct vmd_vm *, int, int *, int *);
+void virtio_shutdown(struct vmd_vm *);
 int virtio_dump(int);
 int virtio_restore(int, struct vmd_vm *, int, int *, int *);
 uint32_t vring_size(uint32_t);

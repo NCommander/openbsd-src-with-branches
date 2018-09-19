@@ -1,4 +1,4 @@
-/*	$OpenBSD: $	*/
+/*	$OpenBSD: vioraw.c,v 1.1 2018/08/25 04:16:09 ccardenas Exp $	*/
 /*
  * Copyright (c) 2018 Ori Bernstein <ori@eigenstate.org>
  *
@@ -62,6 +62,8 @@ virtio_init_raw(struct virtio_backing *file, off_t *szp, int fd)
 		return -1;
 
 	fdp = malloc(sizeof(int));
+	if (!fdp)
+		return -1;
 	*fdp = fd;
 	file->p = fdp;
 	file->pread = raw_pread;

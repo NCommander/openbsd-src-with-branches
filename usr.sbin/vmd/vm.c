@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm.c,v 1.37 2018/07/12 10:15:44 mlarkin Exp $	*/
+/*	$OpenBSD: vm.c,v 1.38 2018/07/17 13:47:06 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -370,6 +370,9 @@ start_vm(struct vmd_vm *vm, int fd)
 
 	/* Execute the vcpu run loop(s) for this VM */
 	ret = run_vm(vm->vm_cdrom, vm->vm_disks, nicfds, &vm->vm_params, &vrs);
+
+	/* Ensure that any in-flight data is written back */
+	virtio_shutdown(vm);
 
 	return (ret);
 }
