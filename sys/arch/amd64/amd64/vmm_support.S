@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm_support.S,v 1.9 2017/05/30 17:49:47 mlarkin Exp $	*/
+/*	$OpenBSD: vmm_support.S,v 1.9.2.1 2018/08/22 22:57:52 bluhm Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -640,6 +640,8 @@ restore_host_svm:
 	movw	%ax, %es
 
 	xorq	%rax, %rax
+	lldtw	%ax		/* Host LDT is always 0 */
+
 	popw	%ax		/* ax = saved TR */
 
 	popq	%rdx
