@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.32 2018/01/01 15:01:09 claudio Exp $	*/
+/*	$OpenBSD: ca.c,v 1.33 2018/01/24 13:51:36 claudio Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -369,8 +369,9 @@ rsae_send_imsg(int flen, const u_char *from, u_char *to, RSA *rsa,
 		case -1:
 			fatal("%s: poll", __func__);
 		case 0:
-			log_warnx("%s: poll timeout", __func__);
-			return -1;
+			log_warnx("%s: priv%s poll timeout", __func__,
+			    cmd == IMSG_CA_PRIVENC ? "enc" : "dec");
+			return (-1);
 		default:
 			break;
 		}
