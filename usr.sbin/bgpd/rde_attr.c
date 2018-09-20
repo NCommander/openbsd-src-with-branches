@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_attr.c,v 1.108 2018/08/09 12:21:03 claudio Exp $ */
+/*	$OpenBSD: rde_attr.c,v 1.109 2018/08/10 11:15:53 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -145,7 +145,7 @@ attr_hash_stats(struct rde_hashstats *hs)
 	int64_t			n;
 
 	memset(hs, 0, sizeof(*hs));
-	strlcpy(hs->name, "attr hash", sizeof(hs->name)); 
+	strlcpy(hs->name, "attr hash", sizeof(hs->name));
 	hs->min = LLONG_MAX;
 	hs->num = attrtable.hashmask + 1;
 
@@ -494,7 +494,7 @@ aspath_hash_stats(struct rde_hashstats *hs)
 	int64_t			n;
 
 	memset(hs, 0, sizeof(*hs));
-	strlcpy(hs->name, "aspath hash", sizeof(hs->name)); 
+	strlcpy(hs->name, "aspath hash", sizeof(hs->name));
 	hs->min = LLONG_MAX;
 	hs->num = astable.hashmask + 1;
 
@@ -938,7 +938,6 @@ aspath_lenmatch(struct aspath *a, enum aslen_spec type, u_int aslen)
 		seg_len = seg[1];
 		seg_size = 2 + sizeof(u_int32_t) * seg_len;
 
-			
 		for (i = 0; i < seg_len; i++) {
 			as = aspath_extract(seg, i);
 			if (as == lastas) {
