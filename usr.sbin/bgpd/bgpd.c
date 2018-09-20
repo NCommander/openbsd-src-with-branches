@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.197 2018/09/07 10:59:16 claudio Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.198 2018/09/09 11:00:51 benno Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -437,7 +437,7 @@ reconfigure(char *conffile, struct bgpd_config *conf, struct peer **peer_l)
 	struct rde_rib		*rr;
 	struct rdomain		*rd;
 	struct prefixset	*ps;
-	struct prefixset_item	*psi;
+	struct prefixset_item	*psi, *npsi;
 
 	if (reconfpending) {
 		log_info("previous reload still running");
@@ -510,8 +510,8 @@ reconfigure(char *conffile, struct bgpd_config *conf, struct peer **peer_l)
 		if (imsg_compose(ibuf_rde, IMSG_RECONF_PREFIXSET, 0, 0, -1,
 		    ps->name, sizeof(ps->name)) == -1)
 			return (-1);
-		while ((psi = SIMPLEQ_FIRST(&ps->psitems)) != NULL) {
-			SIMPLEQ_REMOVE_HEAD(&ps->psitems, entry);
+		RB_FOREACH_SAFE(psi, prefixset_tree, &ps->psitems, npsi) {
+			RB_REMOVE(prefixset_tree, &ps->psitems, psi);
 			if (imsg_compose(ibuf_rde, IMSG_RECONF_PREFIXSETITEM, 0,
 			    0, -1, psi, sizeof(*psi)) == -1)
 				return (-1);
