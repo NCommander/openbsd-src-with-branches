@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.536 2017/09/08 16:51:22 eric Exp $	*/
+/*	$OpenBSD: smtp.h,v 1.1 2018/04/26 13:57:13 eric Exp $	*/
 
 /*
  * Copyright (c) 2018 Eric Faurot <eric@openbsd.org>
@@ -51,7 +51,8 @@ struct smtp_params {
 	/* SMTP options */
 	int			 lmtp;		/* use LMTP protocol */
 	const char		*helo;		/* string to use with HELO */
-	const char		*auth;		/* credentials for AUTH */
+	const char		*auth_user;	/* for AUTH */
+	const char		*auth_pass;	/* for AUTH */
 };
 
 struct smtp_rcpt {
