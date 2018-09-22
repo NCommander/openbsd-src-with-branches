@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.575 2018/06/20 12:10:46 sthen Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.576 2018/08/13 14:10:26 patrick Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -2771,7 +2771,7 @@ tick_msg(const char *preamble, int success, time_t start, time_t stop)
 		return;
 
 	if (preamble_sent == 0) {
-		fprintf(stderr, "%s: no %s ...", log_procname, preamble);
+		fprintf(stderr, "%s: no %s...", log_procname, preamble);
 		fflush(stderr);
 		preamble_sent = 1;
 	}
