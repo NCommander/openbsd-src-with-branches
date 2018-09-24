@@ -1,4 +1,4 @@
-/*	$OpenBSD: savecore.c,v 1.56 2016/07/04 04:05:29 guenther Exp $	*/
+/*	$OpenBSD: savecore.c,v 1.57 2016/09/01 14:12:07 tedu Exp $	*/
 /*	$NetBSD: savecore.c,v 1.26 1996/03/18 21:16:05 leo Exp $	*/
 
 /*-
@@ -171,6 +171,10 @@ main(int argc, char *argv[])
 	(void)time(&now);
 	kmem_setup();
 
+	if (unveil(dirn, "rwc") == -1) {
+		syslog(LOG_ERR, "unveil: %m");
+		exit(1);
+	}
 	if (pledge("stdio rpath wpath cpath", NULL) == -1) {
 		syslog(LOG_ERR, "pledge: %m");
 		exit(1);
