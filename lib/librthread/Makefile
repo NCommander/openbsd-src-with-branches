@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.49 2017/10/15 23:40:33 guenther Exp $
+#	$OpenBSD: Makefile,v 1.50 2018/06/08 13:53:01 pirofti Exp $
 
 LIB=pthread
 LIBCSRCDIR=	${.CURDIR}/../libc
@@ -36,8 +36,8 @@ SRCS=	rthread.c \
 	sched_prio.c
 
 # Architectures that implement atomics
-.if ${MACHINE_ARCH} == "aarch64" || \
-    ${MACHINE_ARCH} == "amd64" || ${MACHINE_ARCH} == "i386" || \
+.if ${MACHINE_ARCH} == "aarch64" || ${MACHINE_ARCH} == "amd64" || \
+    ${MACHINE_ARCH} == "arm" || ${MACHINE_ARCH} == "i386" || \
     ${MACHINE_ARCH} == "mips64" || ${MACHINE_ARCH} == "mips64el" || \
     ${MACHINE_ARCH} == "sparc64"
 SRCS+=	rthread_sem.c
