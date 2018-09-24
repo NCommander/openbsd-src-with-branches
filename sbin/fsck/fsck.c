@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsck.c,v 1.37 2015/05/29 15:57:36 deraadt Exp $	*/
+/*	$OpenBSD: fsck.c,v 1.38 2015/11/23 19:19:29 deraadt Exp $	*/
 /*	$NetBSD: fsck.c,v 1.7 1996/10/03 20:06:30 christos Exp $	*/
 
 /*
@@ -39,6 +39,7 @@
 #include <sys/mount.h>
 #include <sys/queue.h>
 #include <sys/resource.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 
 #include <err.h>
@@ -106,6 +107,14 @@ main(int argc, char *argv[])
 	} else
 		warn("Can't get resource limit for data size");
 
+	checkroot();
+
+	if (unveil("/dev", "rw") == -1)
+		err(1, "unveil");
+	if (unveil(_PATH_FSTAB, "r") == -1)
+		err(1, "unveil");
+	if (unveil("/sbin", "x") == -1)
+		err(1, "unveil");
 	if (pledge("stdio rpath wpath disklabel proc exec", NULL) == -1)
 		err(1, "pledge");
 
