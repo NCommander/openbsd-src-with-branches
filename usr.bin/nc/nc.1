@@ -1,4 +1,4 @@
-.\"     $OpenBSD: nc.1,v 1.89 2018/08/17 14:03:10 schwarze Exp $
+.\"     $OpenBSD: nc.1,v 1.90 2018/08/17 14:33:29 jmc Exp $
 .\"
 .\" Copyright (c) 1996 David Sacerdote
 .\" All rights reserved.
@@ -241,7 +241,7 @@ Cannot be used together with
 or
 .Fl x .
 .It Fl T Ar keyword
-Change the IPv4 TOS value or the TLS options.
+Change the IPv4 TOS/IPv6 traffic class value or the TLS options.
 .Pp
 For TLS options,
 .Ar keyword
@@ -269,7 +269,7 @@ for further details).
 Specifying TLS options requires
 .Fl c .
 .Pp
-For the IPv4 TOS value,
+For the IPv4 TOS/IPv6 traffic class value,
 .Ar keyword
 may be one of
 .Cm critical ,
