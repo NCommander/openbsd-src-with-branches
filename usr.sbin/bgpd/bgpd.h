@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.343 2018/09/20 11:45:59 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.344 2018/09/21 04:55:27 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -651,7 +651,7 @@ struct ctl_show_rib {
 };
 
 enum as_spec {
-	AS_NONE,
+	AS_UNDEF,
 	AS_ALL,
 	AS_SOURCE,
 	AS_TRANSIT,
