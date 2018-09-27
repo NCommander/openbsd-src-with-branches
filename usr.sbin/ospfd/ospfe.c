@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.c,v 1.101 2018/06/25 22:16:53 remi Exp $ */
+/*	$OpenBSD: ospfe.c,v 1.102 2018/08/29 08:43:17 remi Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -466,7 +466,7 @@ ospfe_dispatch_main(int fd, short event, void *bula)
 			TAILQ_INIT(&ctl_conns);
 			control_listen();
 			if (pledge("stdio inet mcast", NULL) == -1)
-                		fatal("pledge");
+				fatal("pledge");
 			break;
 		default:
 			log_debug("ospfe_dispatch_main: error handling imsg %d",
