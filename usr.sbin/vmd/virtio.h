@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.h,v 1.28 2018/09/09 04:09:32 ccardenas Exp $	*/
+/*	$OpenBSD: virtio.h,v 1.29 2018/09/19 04:29:21 ccardenas Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -65,7 +65,7 @@ struct virtio_backing {
 	void  *p;
 	ssize_t  (*pread)(void *p, char *buf, size_t len, off_t off);
 	ssize_t  (*pwrite)(void *p, char *buf, size_t len, off_t off);
-	void (*close)(void *p);
+	void (*close)(void *p, int);
 };
 
 /*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioraw.c,v 1.1 2018/08/25 04:16:09 ccardenas Exp $	*/
+/*	$OpenBSD: vioraw.c,v 1.2 2018/09/19 04:29:21 ccardenas Exp $	*/
 /*
  * Copyright (c) 2018 Ori Bernstein <ori@eigenstate.org>
  *
@@ -40,9 +40,10 @@ raw_pwrite(void *file, char *buf, size_t len, off_t off)
 }
 
 static void
-raw_close(void *file)
+raw_close(void *file, int stayopen)
 {
-	close(*(int *)file);
+	if (!stayopen)
+		close(*(int *)file);
 	free(file);
 }
 

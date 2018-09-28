@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.c,v 1.68 2018/09/13 04:23:36 pd Exp $	*/
+/*	$OpenBSD: virtio.c,v 1.69 2018/09/19 04:29:21 ccardenas Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -2015,9 +2015,9 @@ virtio_shutdown(struct vmd_vm *vm)
 	int i;
 
 	/* ensure that our disks are synced */
-	vioscsi->file.close(vioscsi->file.p);
+	vioscsi->file.close(vioscsi->file.p, 0);
 	for (i = 0; i < nr_vioblk; i++)
-		vioblk[i].file.close(vioblk[i].file.p);
+		vioblk[i].file.close(vioblk[i].file.p, 0);
 }
 
 int
