@@ -1,4 +1,4 @@
-.\"	$OpenBSD: afterboot.8,v 1.162 2018/06/18 06:02:18 jmc Exp $
+.\"	$OpenBSD: afterboot.8,v 1.163 2018/06/18 09:17:09 benno Exp $
 .\"
 .\" Copyright (c) 1997 Marshall M. Midden
 .\" All rights reserved.
@@ -402,6 +402,14 @@ Consult
 and
 .Xr printcap 5
 if needed.
+.Ss Audio recording
+The
+.Xr audio 4
+driver by default records only silence.
+Normal audio recording can be enabled by adding the following directive to
+.Xr sysctl.conf 5 :
+.Pp
+.Dl kern.audio.record=1
 .Ss Mail aliases
 Edit
 .Pa /etc/mail/aliases
