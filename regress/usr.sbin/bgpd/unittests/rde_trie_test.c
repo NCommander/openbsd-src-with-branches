@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_trie_test.c,v 1.6 2018/09/20 11:47:50 claudio Exp $ */
+/*	$OpenBSD: rde_trie_test.c,v 1.7 2018/09/24 18:14:39 denis Exp $ */
 
 /*
  * Copyright (c) 2018 Claudio Jeker <claudio@openbsd.org>
@@ -287,7 +287,7 @@ test_roa_file(FILE *in, struct trie_head *th)
 		    print_prefix(&prefix), plen, as);
 		r = trie_roa_check(th, &prefix, plen, as);
 		switch (r) {
-		case ROA_UNKNOWN:
+		case ROA_NOTFOUND:
 			printf("not found\n");
 			break;
 		case ROA_VALID:
