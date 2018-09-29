@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.344 2018/09/21 04:55:27 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.345 2018/09/26 15:48:01 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -435,6 +435,7 @@ enum imsg_type {
 	IMSG_RECONF_AS_SET_DONE,
 	IMSG_RECONF_ROA_SET,
 	IMSG_RECONF_ROA_AS_SET_ITEMS,
+	IMSG_RECONF_DRAIN,
 	IMSG_RECONF_DONE,
 	IMSG_UPDATE,
 	IMSG_UPDATE_ERR,
