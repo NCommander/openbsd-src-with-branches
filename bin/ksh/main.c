@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.91 2018/04/09 17:53:36 tobias Exp $	*/
+/*	$OpenBSD: main.c,v 1.92 2018/05/18 13:25:20 benno Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -81,7 +81,7 @@ static const char initsubs[] = "${PS2=> } ${PS3=#? } ${PS4=+ }";
 
 static const char *initcoms [] = {
 	"typeset", "-r", "KSH_VERSION", NULL,
-	"typeset", "-x", "SHELL", "PATH", "HOME", NULL,
+	"typeset", "-x", "SHELL", "PATH", "HOME", "PWD", "OLDPWD", NULL,
 	"typeset", "-ir", "PPID", NULL,
 	"typeset", "-i", "OPTIND=1", NULL,
 	"eval", "typeset -i RANDOM MAILCHECK=\"${MAILCHECK-600}\" SECONDS=\"${SECONDS-0}\" TMOUT=\"${TMOUT-0}\"", NULL,
