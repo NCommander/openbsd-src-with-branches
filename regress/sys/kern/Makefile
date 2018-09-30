@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.75 2018/07/30 17:27:37 anton Exp $
+#	$OpenBSD: Makefile,v 1.76 2018/08/10 15:58:16 jsing Exp $
 
-SUBDIR+= __syscall access accept dup2 dup2_accept dup2_self descrip
+SUBDIR+= __syscall access accept cmsgsize
+SUBDIR+= dup2 dup2_accept dup2_self descrip
 SUBDIR+= exec_self execve exit extent
 SUBDIR+= fchdir
 SUBDIR+= fchown
