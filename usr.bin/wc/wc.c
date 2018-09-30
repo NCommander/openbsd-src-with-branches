@@ -1,4 +1,4 @@
-/*	$OpenBSD: wc.c,v 1.23 2018/09/29 16:17:35 cheloha Exp $	*/
+/*	$OpenBSD: wc.c,v 1.24 2018/09/30 12:35:40 schwarze Exp $	*/
 
 /*
  * Copyright (c) 1980, 1987, 1991, 1993
@@ -217,7 +217,7 @@ cnt(char *file)
 						mbtowc(NULL, NULL,
 						    MB_CUR_MAX);
 						len = 1;
-						wc = L' ';
+						wc = L'?';
 					} else if (len == 0)
 						len = 1;
 					if (iswspace(wc)) {
