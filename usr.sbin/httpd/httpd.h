@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.139 2018/08/19 18:03:35 jasper Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.140 2018/09/09 21:06:51 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -100,10 +100,11 @@
 
 enum httpchunk {
 	TOREAD_UNLIMITED		= -1,
-	TOREAD_HTTP_HEADER		= -2,
-	TOREAD_HTTP_CHUNK_LENGTH	= -3,
-	TOREAD_HTTP_CHUNK_TRAILER	= -4,
-	TOREAD_HTTP_NONE		= -5,
+	TOREAD_HTTP_INIT		= -2,
+	TOREAD_HTTP_HEADER		= -3,
+	TOREAD_HTTP_CHUNK_LENGTH	= -4,
+	TOREAD_HTTP_CHUNK_TRAILER	= -5,
+	TOREAD_HTTP_NONE		= -6,
 	TOREAD_HTTP_RANGE		= TOREAD_HTTP_CHUNK_LENGTH
 };
 
