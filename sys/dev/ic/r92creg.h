@@ -1,4 +1,4 @@
-/*	$OpenBSD: r92creg.h,v 1.18 2018/09/21 01:45:53 jmatthew Exp $	*/
+/*	$OpenBSD: r92creg.h,v 1.19 2018/09/28 02:38:38 kevlo Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -1371,6 +1371,8 @@ struct r92c_tx_desc_usb {
 
 #define R88E_TXDW2_AGGBK	0x00010000
 #define R92C_TXDW2_CCX_RPT	0x00080000
+
+#define R92C_TXDW3_HWSEQEN	0x8000
 
 #define R92C_TXDW4_RTSRATE_M	0x0000001f
 #define R92C_TXDW4_RTSRATE_S	0
