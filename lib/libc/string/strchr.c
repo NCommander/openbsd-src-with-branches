@@ -1,4 +1,4 @@
-/*	$OpenBSD: strchr.c,v 1.2 2015/05/15 22:29:37 millert Exp $ */
+/*	$OpenBSD: strchr.c,v 1.3 2015/08/31 02:53:57 guenther Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +36,7 @@ char *
 strchr(const char *p, int ch)
 {
 	for (;; ++p) {
-		if (*p == ch)
+		if (*p == (char) ch)
 			return((char *)p);
 		if (!*p)
 			return((char *)NULL);
