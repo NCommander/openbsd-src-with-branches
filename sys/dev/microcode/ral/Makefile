@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.10 2016/07/10 15:16:15 visa Exp $
+# $OpenBSD: Makefile,v 1.11 2016/08/10 14:27:17 deraadt Exp $
 
 NOPROG=
 NOMAN=
@@ -12,7 +12,7 @@ CC=${HOSTCC}
      ${MACHINE_ARCH} == "powerpc" || \
      ${MACHINE} == "sgi" || ${MACHINE} == "sparc64")
 
-FIRM=	ral-rt2561 ral-rt2561s ral-rt2661 ral-rt2860
+FIRM=	ral-rt2561 ral-rt2561s ral-rt2661 ral-rt2860 ral-rt3290
 
 PROG=	build
 
