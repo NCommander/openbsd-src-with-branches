@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_umb.c,v 1.19 2018/04/30 19:07:44 tb Exp $ */
+/*	$OpenBSD: if_umb.c,v 1.20 2018/09/10 17:00:45 gerhard Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -686,7 +686,7 @@ umb_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	struct umb_parameter mp;
 
 	if (usbd_is_dying(sc->sc_udev))
-		return EIO;
+		return ENXIO;
 
 	s = splnet();
 	switch (cmd) {

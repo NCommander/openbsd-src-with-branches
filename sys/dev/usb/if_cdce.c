@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdce.c,v 1.73 2017/01/22 10:17:39 dlg Exp $ */
+/*	$OpenBSD: if_cdce.c,v 1.74 2017/04/21 09:42:53 mpi Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003 Bill Paul <wpaul@windriver.com>
@@ -501,7 +501,7 @@ cdce_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 	int			 s, error = 0;
 
 	if (usbd_is_dying(sc->cdce_udev))
-		return (EIO);
+		return ENXIO;
 
 	s = splnet();
 
