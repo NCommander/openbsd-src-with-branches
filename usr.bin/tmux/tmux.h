@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.845 2018/08/29 09:50:32 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.846 2018/09/25 14:27:20 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -936,7 +936,7 @@ RB_HEAD(sessions, session);
 
 /* Mouse wheel states. */
 #define MOUSE_WHEEL_UP 0
-#define MOUSE_WHEEL_DOWN 64
+#define MOUSE_WHEEL_DOWN 1
 
 /* Mouse helpers. */
 #define MOUSE_BUTTONS(b) ((b) & MOUSE_MASK_BUTTONS)
