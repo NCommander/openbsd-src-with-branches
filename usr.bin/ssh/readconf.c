@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.c,v 1.297 2018/08/12 20:19:13 djm Exp $ */
+/* $OpenBSD: readconf.c,v 1.298 2018/09/20 03:30:44 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1685,7 +1685,18 @@ parse_keytypes:
 
 	case oIdentityAgent:
 		charptr = &options->identity_agent;
-		goto parse_string;
+		arg = strdelim(&s);
+		if (!arg || *arg == '\0')
+			fatal("%.200s line %d: Missing argument.",
+			    filename, linenum);
+		/* Extra validation if the string represents an env var. */
+		if (arg[0] == '$' && !valid_env_name(arg + 1)) {
+			fatal("%.200s line %d: Invalid environment name %s.",
+			    filename, linenum, arg);
+		}
+		if (*activep && *charptr == NULL)
+			*charptr = xstrdup(arg);
+		break;
 
 	case oDeprecated:
 		debug("%s line %d: Deprecated option \"%s\"",
