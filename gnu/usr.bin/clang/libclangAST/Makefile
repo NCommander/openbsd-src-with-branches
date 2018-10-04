@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2017/10/04 20:57:10 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2018/04/06 14:44:04 patrick Exp $
 
 LIB=	clangAST
 NOPIC=
@@ -39,6 +39,7 @@ SRCS=	APValue.cpp \
 	ExprCXX.cpp \
 	ExprObjC.cpp \
 	ExternalASTSource.cpp \
+	ExternalASTMerger.cpp \
 	InheritViz.cpp \
 	ItaniumCXXABI.cpp \
 	ItaniumMangle.cpp \
