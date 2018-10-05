@@ -1,4 +1,4 @@
-/*	$OpenBSD: cdefs.h,v 1.40 2017/01/06 14:22:30 kettenis Exp $	*/
+/*	$OpenBSD: cdefs.h,v 1.41 2017/04/14 07:22:02 kettenis Exp $	*/
 /*	$NetBSD: cdefs.h,v 1.16 1996/04/03 20:46:39 christos Exp $	*/
 
 /*
@@ -221,12 +221,6 @@
 
 #if !__GNUC_PREREQ__(2, 8)
 #define	__extension__
-#endif
-
-#if __GNUC_PREREQ__(2, 8) || defined(__PCC__)
-#define __statement(x)	__extension__(x)
-#else
-#define __statement(x)	(x)
 #endif
 
 #if __GNUC_PREREQ__(3, 0)
