@@ -251,7 +251,7 @@ parseargs(int ac, char **av)
 		}
 	}
 
-	i = getncpuonline();
+	i = getncpu();
 	if (i == -1)
 		err(1, NULL);
 
@@ -467,7 +467,7 @@ restart:
 		    ps.threads);
 
 		/* display the cpu state percentage breakdown */
-		i_cpustates(system_info.cpustates, system_info.cpuonline);
+		i_cpustates(system_info.cpustates);
 
 		/* display memory stats */
 		i_memory(system_info.memory);

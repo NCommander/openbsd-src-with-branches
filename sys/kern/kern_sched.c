@@ -832,12 +832,6 @@ sysctl_hwncpuonline(void)
 	return cpuset_cardinality(&sched_all_cpus);
 }
 
-int
-cpu_is_online(struct cpu_info *ci)
-{
-	return cpuset_isset(&sched_all_cpus, ci);
-}
-
 #ifdef __HAVE_CPU_TOPOLOGY
 
 #include <sys/sysctl.h>

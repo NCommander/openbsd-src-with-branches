@@ -56,7 +56,6 @@ struct system_info {
 					 * "active" */
 	int            *procstates;
 	int64_t        *cpustates;
-	int            *cpuonline;
 	int            *memory;
 };
 
@@ -96,5 +95,4 @@ extern uid_t    proc_owner(pid_t);
 extern struct kinfo_proc	*getprocs(int, int, int *);
 
 int		getncpu(void);
-int		getncpuonline(void);
 int		getfscale(void);

@@ -40,7 +40,7 @@ void u_loadave(int, double *);
 void i_timeofday(time_t *);
 void i_procstates(int, int *, int);
 void u_procstates(int, int *);
-void i_cpustates(int64_t *, int *);
+void i_cpustates(int64_t *);
 void u_cpustates(int64_t *);
 void i_memory(int *);
 void u_memory(int *);
