@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.43 2018/09/27 17:15:36 reyk Exp $	*/
+/*	$OpenBSD: main.c,v 1.44 2018/10/01 09:31:15 reyk Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -125,6 +125,7 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 	optreset = 1;
+	optind = 1;
 
 	if (argc < 1)
 		usage();
