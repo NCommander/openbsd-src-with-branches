@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_tree.c,v 1.9 2017/06/08 03:30:52 dlg Exp $ */
+/*	$OpenBSD: tree.c,v 1.1 2017/06/19 03:06:26 dlg Exp $ */
 
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
@@ -346,7 +346,7 @@ rbe_remove(const struct rb_type *t, struct rb_tree *rbt, struct rb_entry *rbe)
 			else
 				RBE_RIGHT(tmp) = rbe;
 
-			rbe_if_augment(t, parent);
+			rbe_if_augment(t, tmp);
 		} else
 			RBH_ROOT(rbt) = rbe;
 
