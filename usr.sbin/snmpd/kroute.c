@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.34 2016/10/28 08:01:53 rzalamena Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.35 2017/07/24 11:00:01 friehm Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -211,7 +211,7 @@ ktable_init(void)
 {
 	u_int		 i;
 
-	for (i = 0; i < RT_TABLEID_MAX; i++)
+	for (i = 0; i <= RT_TABLEID_MAX; i++)
 		if (ktable_exists(i, NULL))
 			ktable_update(i);
 }
