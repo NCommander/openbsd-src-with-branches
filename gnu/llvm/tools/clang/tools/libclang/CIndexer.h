@@ -17,10 +17,9 @@
 
 #include "clang-c/Index.h"
 #include "clang/Frontend/PCHContainerOperations.h"
-#include "clang/Lex/ModuleLoader.h"
-#include "llvm/ADT/StringRef.h"
-#include "llvm/Support/Path.h"
-#include <vector>
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/Support/Mutex.h"
+#include <utility>
 
 namespace llvm {
   class CrashRecoveryContext;
@@ -42,11 +41,16 @@ class CIndexer {
   std::string ResourcesPath;
   std::shared_ptr<PCHContainerOperations> PCHContainerOps;
 
+  std::string ToolchainPath;
+
+  std::string InvocationEmissionPath;
+
 public:
   CIndexer(std::shared_ptr<PCHContainerOperations> PCHContainerOps =
                std::make_shared<PCHContainerOperations>())
       : OnlyLocalDecls(false), DisplayDiagnostics(false),
-        Options(CXGlobalOpt_None), PCHContainerOps(PCHContainerOps) {}
+        Options(CXGlobalOpt_None), PCHContainerOps(std::move(PCHContainerOps)) {
+  }
 
   /// \brief Whether we only want to see "local" declarations (that did not
   /// come from a previous precompiled header). If false, we want to see all
@@ -72,6 +76,31 @@ public:
 
   /// \brief Get the path of the clang resource files.
   const std::string &getClangResourcesPath();
+
+  StringRef getClangToolchainPath();
+
+  void setInvocationEmissionPath(StringRef Str) {
+    InvocationEmissionPath = Str;
+  }
+
+  StringRef getInvocationEmissionPath() const { return InvocationEmissionPath; }
+};
+
+/// Logs information about a particular libclang operation like parsing to
+/// a new file in the invocation emission path.
+class LibclangInvocationReporter {
+public:
+  enum class OperationKind { ParseOperation, CompletionOperation };
+
+  LibclangInvocationReporter(CIndexer &Idx, OperationKind Op,
+                             unsigned ParseOptions,
+                             llvm::ArrayRef<const char *> Args,
+                             llvm::ArrayRef<std::string> InvocationArgs,
+                             llvm::ArrayRef<CXUnsavedFile> UnsavedFiles);
+  ~LibclangInvocationReporter();
+
+private:
+  std::string File;
 };
 
   /// \brief Return the current size to request for "safety".

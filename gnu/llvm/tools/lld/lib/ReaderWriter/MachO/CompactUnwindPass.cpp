@@ -17,9 +17,9 @@
 #include "File.h"
 #include "MachONormalizedFileBinaryUtils.h"
 #include "MachOPasses.h"
+#include "lld/Common/LLVM.h"
 #include "lld/Core/DefinedAtom.h"
 #include "lld/Core/File.h"
-#include "lld/Core/LLVM.h"
 #include "lld/Core/Reference.h"
 #include "lld/Core/Simple.h"
 #include "llvm/ADT/DenseMap.h"
@@ -298,7 +298,7 @@ private:
 
     // Skip rest of pass if no unwind info.
     if (unwindLocs.empty() && dwarfFrames.empty())
-      return llvm::Error();
+      return llvm::Error::success();
 
     // FIXME: if there are more than 4 personality functions then we need to
     // defer to DWARF info for the ones we don't put in the list. They should
@@ -353,7 +353,7 @@ private:
       return atom->contentType() == DefinedAtom::typeCompactUnwindInfo;
     });
 
-    return llvm::Error();
+    return llvm::Error::success();
   }
 
   void collectCompactUnwindEntries(

@@ -50,9 +50,9 @@ instead of ``clang++`` if you're compiling/linking C code.
 You can enable only a subset of :ref:`checks <ubsan-checks>` offered by UBSan,
 and define the desired behavior for each kind of check:
 
-* print a verbose error report and continue execution (default);
-* print a verbose error report and exit the program;
-* execute a trap instruction (doesn't require UBSan run-time support).
+* ``-fsanitize=...``: print a verbose error report and continue execution (default);
+* ``-fno-sanitize-recover=...``: print a verbose error report and exit the program;
+* ``-fsanitize-trap=...``: execute a trap instruction (doesn't require UBSan run-time support).
 
 For example if you compile/link your program as:
 
@@ -66,8 +66,8 @@ pointer.
 
 .. _ubsan-checks:
 
-Availablle checks
-=================
+Available checks
+================
 
 Available checks are:
 
@@ -75,6 +75,7 @@ Available checks are:
      of a misaligned reference.
   -  ``-fsanitize=bool``: Load of a ``bool`` value which is neither
      ``true`` nor ``false``.
+  -  ``-fsanitize=builtin``: Passing invalid values to compiler builtins.
   -  ``-fsanitize=bounds``: Out of bounds array indexing, in cases
      where the array bound can be statically determined.
   -  ``-fsanitize=enum``: Load of a value of an enumerated type which
@@ -86,17 +87,29 @@ Available checks are:
   -  ``-fsanitize=float-divide-by-zero``: Floating point division by
      zero.
   -  ``-fsanitize=function``: Indirect call of a function through a
-     function pointer of the wrong type (Linux, C++ and x86/x86_64 only).
+     function pointer of the wrong type (Darwin/Linux, C++ and x86/x86_64
+     only).
   -  ``-fsanitize=integer-divide-by-zero``: Integer division by zero.
   -  ``-fsanitize=nonnull-attribute``: Passing null pointer as a function
      parameter which is declared to never be null.
   -  ``-fsanitize=null``: Use of a null pointer or creation of a null
      reference.
-  -  ``-fsanitize=object-size``: An attempt to use bytes which the
-     optimizer can determine are not part of the object being
-     accessed. The sizes of objects are determined using
-     ``__builtin_object_size``, and consequently may be able to detect
-     more problems at higher optimization levels.
+  -  ``-fsanitize=nullability-arg``: Passing null as a function parameter
+     which is annotated with ``_Nonnull``.
+  -  ``-fsanitize=nullability-assign``: Assigning null to an lvalue which
+     is annotated with ``_Nonnull``.
+  -  ``-fsanitize=nullability-return``: Returning null from a function with
+     a return type annotated with ``_Nonnull``.
+  -  ``-fsanitize=object-size``: An attempt to potentially use bytes which
+     the optimizer can determine are not part of the object being accessed.
+     This will also detect some types of undefined behavior that may not
+     directly access memory, but are provably incorrect given the size of
+     the objects involved, such as invalid downcasts and calling methods on
+     invalid pointers. These checks are made in terms of
+     ``__builtin_object_size``, and consequently may be able to detect more
+     problems at higher optimization levels.
+  -  ``-fsanitize=pointer-overflow``: Performing pointer arithmetic which
+     overflows.
   -  ``-fsanitize=return``: In C++, reaching the end of a
      value-returning function without returning a value.
   -  ``-fsanitize=returns-nonnull-attribute``: Returning null pointer
@@ -111,25 +124,50 @@ Available checks are:
   -  ``-fsanitize=signed-integer-overflow``: Signed integer overflow,
      including all the checks added by ``-ftrapv``, and checking for
      overflow in signed division (``INT_MIN / -1``).
-  -  ``-fsanitize=unreachable``: If control flow reaches
-     ``__builtin_unreachable``.
+  -  ``-fsanitize=unreachable``: If control flow reaches an unreachable
+     program point.
   -  ``-fsanitize=unsigned-integer-overflow``: Unsigned integer
-     overflows.
+     overflows. Note that unlike signed integer overflow, unsigned integer
+     is not undefined behavior. However, while it has well-defined semantics,
+     it is often unintentional, so UBSan offers to catch it.
   -  ``-fsanitize=vla-bound``: A variable-length array whose bound
      does not evaluate to a positive value.
-  -  ``-fsanitize=vptr``: Use of an object whose vptr indicates that
-     it is of the wrong dynamic type, or that its lifetime has not
-     begun or has ended. Incompatible with ``-fno-rtti``. Link must
-     be performed by ``clang++``, not ``clang``, to make sure C++-specific
-     parts of the runtime library and C++ standard libraries are present.
+  -  ``-fsanitize=vptr``: Use of an object whose vptr indicates that it is of
+     the wrong dynamic type, or that its lifetime has not begun or has ended.
+     Incompatible with ``-fno-rtti``. Link must be performed by ``clang++``, not
+     ``clang``, to make sure C++-specific parts of the runtime library and C++
+     standard libraries are present.
 
 You can also use the following check groups:
   -  ``-fsanitize=undefined``: All of the checks listed above other than
-     ``unsigned-integer-overflow``.
+     ``unsigned-integer-overflow`` and the ``nullability-*`` checks.
   -  ``-fsanitize=undefined-trap``: Deprecated alias of
      ``-fsanitize=undefined``.
   -  ``-fsanitize=integer``: Checks for undefined or suspicious integer
      behavior (e.g. unsigned integer overflow).
+  -  ``-fsanitize=nullability``: Enables ``nullability-arg``,
+     ``nullability-assign``, and ``nullability-return``. While violating
+     nullability does not have undefined behavior, it is often unintentional,
+     so UBSan offers to catch it.
+
+Volatile
+--------
+
+The ``null``, ``alignment``, ``object-size``, and ``vptr`` checks do not apply
+to pointers to types with the ``volatile`` qualifier.
+
+Minimal Runtime
+===============
+
+There is a minimal UBSan runtime available suitable for use in production
+environments. This runtime has a small attack surface. It only provides very
+basic issue logging and deduplication, and does not support ``-fsanitize=vptr``
+checking.
+
+To use the minimal runtime, add ``-fsanitize-minimal-runtime`` to the clang
+command line options. For example, if you're used to compiling with
+``-fsanitize=undefined``, you could enable the minimal runtime with
+``-fsanitize=undefined -fsanitize-minimal-runtime``.
 
 Stack traces and report symbolization
 =====================================
@@ -224,6 +262,26 @@ Current Status
 UndefinedBehaviorSanitizer is available on selected platforms starting from LLVM
 3.3. The test suite is integrated into the CMake build and can be run with
 ``check-ubsan`` command.
+
+Additional Configuration
+========================
+
+UndefinedBehaviorSanitizer adds static check data for each check unless it is
+in trap mode. This check data includes the full file name. The option
+``-fsanitize-undefined-strip-path-components=N`` can be used to trim this
+information. If ``N`` is positive, file information emitted by
+UndefinedBehaviorSanitizer will drop the first ``N`` components from the file
+path. If ``N`` is negative, the last ``N`` components will be kept.
+
+Example
+-------
+
+For a file called ``/code/library/file.cpp``, here is what would be emitted:
+* Default (No flag, or ``-fsanitize-undefined-strip-path-components=0``): ``/code/library/file.cpp``
+* ``-fsanitize-undefined-strip-path-components=1``: ``code/library/file.cpp``
+* ``-fsanitize-undefined-strip-path-components=2``: ``library/file.cpp``
+* ``-fsanitize-undefined-strip-path-components=-1``: ``file.cpp``
+* ``-fsanitize-undefined-strip-path-components=-2``: ``library/file.cpp``
 
 More Information
 ================

@@ -49,7 +49,7 @@ when the code is incorrect or dubious.  In Clang, each diagnostic produced has
 (at the minimum) a unique ID, an English translation associated with it, a
 :ref:`SourceLocation <SourceLocation>` to "put the caret", and a severity
 (e.g., ``WARNING`` or ``ERROR``).  They can also optionally include a number of
-arguments to the dianostic (which fill in "%0"'s in the string) as well as a
+arguments to the diagnostic (which fill in "%0"'s in the string) as well as a
 number of source ranges that related to the diagnostic.
 
 In this section, we'll be giving examples produced by the Clang command line
@@ -57,7 +57,7 @@ driver, but diagnostics can be :ref:`rendered in many different ways
 <DiagnosticClient>` depending on how the ``DiagnosticClient`` interface is
 implemented.  A representative example of a diagnostic is:
 
-.. code-block:: c++
+.. code-block:: text
 
   t.c:38:15: error: invalid operands to binary expression ('int *' and '_Complex float')
   P = (P-42) + Gamma*4;
@@ -374,7 +374,7 @@ use of a deprecated construct into something more palatable.  Here is one such
 example from the C++ front end, where we warn about the right-shift operator
 changing meaning from C++98 to C++11:
 
-.. code-block:: c++
+.. code-block:: text
 
   test.cpp:3:7: warning: use of right-shift operator ('>>') in template argument
                          will require parentheses in C++11
@@ -493,11 +493,11 @@ source code of the program.  Important design points include:
 
 In practice, the ``SourceLocation`` works together with the ``SourceManager``
 class to encode two pieces of information about a location: its spelling
-location and its instantiation location.  For most tokens, these will be the
+location and its expansion location.  For most tokens, these will be the
 same.  However, for a macro expansion (or tokens that came from a ``_Pragma``
 directive) these will describe the location of the characters corresponding to
 the token and the location where the token was used (i.e., the macro
-instantiation point or the location of the ``_Pragma`` itself).
+expansion point or the location of the ``_Pragma`` itself).
 
 The Clang front-end inherently depends on the location of a token being tracked
 correctly.  If it is ever incorrect, the front-end may get confused and die.
@@ -514,7 +514,7 @@ Clang represents most source ranges by [first, last], where "first" and "last"
 each point to the beginning of their respective tokens.  For example consider
 the ``SourceRange`` of the following statement:
 
-.. code-block:: c++
+.. code-block:: text
 
   x = foo + bar;
   ^first    ^last
@@ -795,7 +795,7 @@ preprocessor and notifies a client of the parsing progress.
 Historically, the parser used to talk to an abstract ``Action`` interface that
 had virtual methods for parse events, for example ``ActOnBinOp()``.  When Clang
 grew C++ support, the parser stopped supporting general ``Action`` clients --
-it now always talks to the :ref:`Sema libray <Sema>`.  However, the Parser
+it now always talks to the :ref:`Sema library <Sema>`.  However, the Parser
 still accesses AST objects only through opaque types like ``ExprResult`` and
 ``StmtResult``.  Only :ref:`Sema <Sema>` looks at the AST node contents of these
 wrappers.
@@ -837,7 +837,7 @@ typedefs.  For example, consider this code:
 The code above is illegal, and thus we expect there to be diagnostics emitted
 on the annotated lines.  In this example, we expect to get:
 
-.. code-block:: c++
+.. code-block:: text
 
   test.c:6:1: error: indirection requires pointer operand ('foo' invalid)
     *X; // error
@@ -1324,9 +1324,9 @@ range of iterators over declarations of "``f``".
 function ``DeclContext::getPrimaryContext`` retrieves the "primary" context for
 a given ``DeclContext`` instance, which is the ``DeclContext`` responsible for
 maintaining the lookup table used for the semantics-centric view.  Given a
-DeclContext, one can obtain the set of declaration contexts that are semanticaly
-connected to this declaration context, in source order, including this context
-(which will be the only result, for non-namespace contexts) via
+DeclContext, one can obtain the set of declaration contexts that are
+semantically connected to this declaration context, in source order, including
+this context (which will be the only result, for non-namespace contexts) via
 ``DeclContext::collectAllContexts``. Note that these functions are used
 internally within the lookup and insertion methods of the ``DeclContext``, so
 the vast majority of clients can ignore them.
@@ -1422,7 +1422,7 @@ pretty-printed version of the CFG to standard error.  This is especially useful
 when one is using a debugger such as gdb.  For example, here is the output of
 ``FooCFG->dump()``:
 
-.. code-block:: c++
+.. code-block:: text
 
  [ B5 (ENTRY) ]
     Predecessors (0):
@@ -1514,7 +1514,7 @@ use an i-c-e where one is required, but accepting the code unless running with
 Things get a little bit more tricky when it comes to compatibility with
 real-world source code.  Specifically, GCC has historically accepted a huge
 superset of expressions as i-c-e's, and a lot of real world code depends on
-this unfortuate accident of history (including, e.g., the glibc system
+this unfortunate accident of history (including, e.g., the glibc system
 headers).  GCC accepts anything its "fold" optimizer is capable of reducing to
 an integer constant, which means that the definition of what it accepts changes
 as its optimizer does.  One example is that GCC accepts things like "``case
@@ -1540,7 +1540,7 @@ Implementation Approach
 After trying several different approaches, we've finally converged on a design
 (Note, at the time of this writing, not all of this has been implemented,
 consider this a design goal!).  Our basic approach is to define a single
-recursive method evaluation method (``Expr::Evaluate``), which is implemented
+recursive evaluation method (``Expr::Evaluate``), which is implemented
 in ``AST/ExprConstant.cpp``.  Given an expression with "scalar" type (integer,
 fp, complex, or pointer) this method returns the following information:
 
@@ -2037,7 +2037,7 @@ are similar.
    * ``CodeGenFunction`` contains functions ``ConvertType`` and
      ``ConvertTypeForMem`` that convert Clang's types (``clang::Type*`` or
      ``clang::QualType``) to LLVM types.  Use the former for values, and the
-     later for memory locations: test with the C++ "``bool``" type to check
+     latter for memory locations: test with the C++ "``bool``" type to check
      this.  If you find that you are having to use LLVM bitcasts to make the
      subexpressions of your expression have the type that your expression
      expects, STOP!  Go fix semantic analysis and the AST so that you don't

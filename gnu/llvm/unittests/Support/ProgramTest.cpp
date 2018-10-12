@@ -7,11 +7,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/Support/ConvertUTF.h"
+#include "llvm/Support/Program.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/ConvertUTF.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Path.h"
-#include "llvm/Support/Program.h"
 #include "gtest/gtest.h"
 #include <stdlib.h>
 #if defined(__APPLE__)
@@ -87,6 +87,7 @@ protected:
       EXPECT_TRUE(convStatus);
       return EnvStorage.back().c_str();
 #else
+      (void)this;
       return Var;
 #endif
     };
@@ -144,11 +145,10 @@ TEST_F(ProgramEnvTest, CreateProcessLongPath) {
   LongPath.push_back('\\');
   // MAX_PATH = 260
   LongPath.append(260 - TestDirectory.size(), 'a');
-  StringRef LongPathRef(LongPath);
 
   std::string Error;
   bool ExecutionFailed;
-  const StringRef *Redirects[] = { nullptr, &LongPathRef, nullptr };
+  Optional<StringRef> Redirects[] = {None, LongPath.str(), None};
   int RC = ExecuteAndWait(MyExe, ArgV, getEnviron(), Redirects,
     /*secondsToWait=*/ 10, /*memoryLimit=*/ 0, &Error,
     &ExecutionFailed);
@@ -191,7 +191,7 @@ TEST_F(ProgramEnvTest, CreateProcessTrailingSlash) {
 #else
   StringRef nul("/dev/null");
 #endif
-  const StringRef *redirects[] = { &nul, &nul, nullptr };
+  Optional<StringRef> redirects[] = { nul, nul, None };
   int rc = ExecuteAndWait(my_exe, argv, getEnviron(), redirects,
                           /*secondsToWait=*/ 10, /*memoryLimit=*/ 0, &error,
                           &ExecutionFailed);
@@ -220,10 +220,10 @@ TEST_F(ProgramEnvTest, TestExecuteNoWait) {
 
   std::string Error;
   bool ExecutionFailed;
-  ProcessInfo PI1 = ExecuteNoWait(Executable, argv, getEnviron(), nullptr, 0,
-                                  &Error, &ExecutionFailed);
+  ProcessInfo PI1 = ExecuteNoWait(Executable, argv, getEnviron(), {}, 0, &Error,
+                                  &ExecutionFailed);
   ASSERT_FALSE(ExecutionFailed) << Error;
-  ASSERT_NE(PI1.Pid, 0) << "Invalid process id";
+  ASSERT_NE(PI1.Pid, ProcessInfo::InvalidPid) << "Invalid process id";
 
   unsigned LoopCount = 0;
 
@@ -231,7 +231,7 @@ TEST_F(ProgramEnvTest, TestExecuteNoWait) {
   // LoopCount should only be incremented once.
   while (true) {
     ++LoopCount;
-    ProcessInfo WaitResult = Wait(PI1, 0, true, &Error);
+    ProcessInfo WaitResult = llvm::sys::Wait(PI1, 0, true, &Error);
     ASSERT_TRUE(Error.empty());
     if (WaitResult.Pid == PI1.Pid)
       break;
@@ -239,16 +239,16 @@ TEST_F(ProgramEnvTest, TestExecuteNoWait) {
 
   EXPECT_EQ(LoopCount, 1u) << "LoopCount should be 1";
 
-  ProcessInfo PI2 = ExecuteNoWait(Executable, argv, getEnviron(), nullptr, 0,
-                                  &Error, &ExecutionFailed);
+  ProcessInfo PI2 = ExecuteNoWait(Executable, argv, getEnviron(), {}, 0, &Error,
+                                  &ExecutionFailed);
   ASSERT_FALSE(ExecutionFailed) << Error;
-  ASSERT_NE(PI2.Pid, 0) << "Invalid process id";
+  ASSERT_NE(PI2.Pid, ProcessInfo::InvalidPid) << "Invalid process id";
 
   // Test that Wait() with SecondsToWait=0 performs a non-blocking wait. In this
   // cse, LoopCount should be greater than 1 (more than one increment occurs).
   while (true) {
     ++LoopCount;
-    ProcessInfo WaitResult = Wait(PI2, 0, false, &Error);
+    ProcessInfo WaitResult = llvm::sys::Wait(PI2, 0, false, &Error);
     ASSERT_TRUE(Error.empty());
     if (WaitResult.Pid == PI2.Pid)
       break;
@@ -279,7 +279,7 @@ TEST_F(ProgramEnvTest, TestExecuteAndWaitTimeout) {
   std::string Error;
   bool ExecutionFailed;
   int RetCode =
-      ExecuteAndWait(Executable, argv, getEnviron(), nullptr, /*secondsToWait=*/1, 0,
+      ExecuteAndWait(Executable, argv, getEnviron(), {}, /*secondsToWait=*/1, 0,
                      &Error, &ExecutionFailed);
   ASSERT_EQ(-2, RetCode);
 }
@@ -291,8 +291,8 @@ TEST(ProgramTest, TestExecuteNegative) {
   {
     std::string Error;
     bool ExecutionFailed;
-    int RetCode = ExecuteAndWait(Executable, argv, nullptr, nullptr, 0, 0,
-                                 &Error, &ExecutionFailed);
+    int RetCode = ExecuteAndWait(Executable, argv, nullptr, {}, 0, 0, &Error,
+                                 &ExecutionFailed);
     ASSERT_TRUE(RetCode < 0) << "On error ExecuteAndWait should return 0 or "
                                 "positive value indicating the result code";
     ASSERT_TRUE(ExecutionFailed);
@@ -302,9 +302,9 @@ TEST(ProgramTest, TestExecuteNegative) {
   {
     std::string Error;
     bool ExecutionFailed;
-    ProcessInfo PI = ExecuteNoWait(Executable, argv, nullptr, nullptr, 0,
-                                   &Error, &ExecutionFailed);
-    ASSERT_EQ(PI.Pid, 0)
+    ProcessInfo PI = ExecuteNoWait(Executable, argv, nullptr, {}, 0, &Error,
+                                   &ExecutionFailed);
+    ASSERT_EQ(PI.Pid, ProcessInfo::InvalidPid)
         << "On error ExecuteNoWait should return an invalid ProcessInfo";
     ASSERT_TRUE(ExecutionFailed);
     ASSERT_FALSE(Error.empty());

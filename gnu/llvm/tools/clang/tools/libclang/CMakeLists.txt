@@ -11,17 +11,14 @@ set(SOURCES
   CIndexer.cpp
   CXComment.cpp
   CXCursor.cpp
+  CXIndexDataConsumer.cpp
   CXCompilationDatabase.cpp
   CXLoadedDiagnostic.cpp
   CXSourceLocation.cpp
   CXStoredDiagnostic.cpp
   CXString.cpp
   CXType.cpp
-  IndexBody.cpp
-  IndexDecl.cpp
-  IndexTypeSourceInfo.cpp
   Indexing.cpp
-  IndexingContext.cpp
 
   ADDITIONAL_HEADERS
   CIndexDiagnostic.h
@@ -33,7 +30,6 @@ set(SOURCES
   CXTranslationUnit.h
   CXType.h
   Index_Internal.h
-  IndexingContext.h
   ../../include/clang-c/Index.h
   )
 
@@ -49,6 +45,15 @@ set(LIBS
 
 if (CLANG_ENABLE_ARCMT)
   list(APPEND LIBS clangARCMigrate)
+endif ()
+
+if (TARGET clangTidyPlugin)
+  add_definitions(-DCLANG_TOOL_EXTRA_BUILD)
+  list(APPEND LIBS clangTidyPlugin)
+  list(APPEND LIBS clangIncludeFixerPlugin)
+  if(LLVM_ENABLE_MODULES)
+    list(APPEND LLVM_COMPILE_FLAGS "-fmodules-ignore-macro=CLANG_TOOL_EXTRA_BUILD")
+  endif()
 endif ()
 
 find_library(DL_LIBRARY_PATH dl)
@@ -113,5 +118,36 @@ if(ENABLE_SHARED)
       PROPERTIES
       VERSION ${LIBCLANG_LIBRARY_VERSION}
       DEFINE_SYMBOL _CINDEX_LIB_)
+    # FIXME: _CINDEX_LIB_ affects dllexport/dllimport on Win32.
+    if(LLVM_ENABLE_MODULES AND NOT WIN32)
+      target_compile_options(libclang PRIVATE
+        "-fmodules-ignore-macro=_CINDEX_LIB_"
+        )
+    endif()
   endif()
+endif()
+
+if(INTERNAL_INSTALL_PREFIX)
+  set(LIBCLANG_HEADERS_INSTALL_DESTINATION "${INTERNAL_INSTALL_PREFIX}/include")
+else()
+  set(LIBCLANG_HEADERS_INSTALL_DESTINATION include)
+endif()
+
+install(DIRECTORY ../../include/clang-c
+  COMPONENT libclang-headers
+  DESTINATION "${LIBCLANG_HEADERS_INSTALL_DESTINATION}"
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+  )
+
+# LLVM_DISTRIBUTION_COMPONENTS requires that each component have both a
+# component and an install-component target, so add a dummy libclang-headers
+# target to allow using it in LLVM_DISTRIBUTION_COMPONENTS.
+add_custom_target(libclang-headers)
+set_target_properties(libclang-headers PROPERTIES FOLDER "Misc")
+
+if (NOT CMAKE_CONFIGURATION_TYPES) # don't add this for IDE's.
+  add_llvm_install_targets(install-libclang-headers
+                           COMPONENT libclang-headers)
 endif()

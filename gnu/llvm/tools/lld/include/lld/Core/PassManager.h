@@ -10,7 +10,7 @@
 #ifndef LLD_CORE_PASS_MANAGER_H
 #define LLD_CORE_PASS_MANAGER_H
 
-#include "lld/Core/LLVM.h"
+#include "lld/Common/LLVM.h"
 #include "lld/Core/Pass.h"
 #include "llvm/Support/Error.h"
 #include <memory>
@@ -36,7 +36,7 @@ public:
     for (std::unique_ptr<Pass> &pass : _passes)
       if (llvm::Error EC = pass->perform(file))
         return EC;
-    return llvm::Error();
+    return llvm::Error::success();
   }
 
 private:

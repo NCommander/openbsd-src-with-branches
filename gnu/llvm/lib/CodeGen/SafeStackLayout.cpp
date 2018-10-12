@@ -1,4 +1,4 @@
-//===-- SafeStackLayout.cpp - SafeStack frame layout -----------*- C++ -*--===//
+//===- SafeStackLayout.cpp - SafeStack frame layout -----------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -8,9 +8,15 @@
 //===----------------------------------------------------------------------===//
 
 #include "SafeStackLayout.h"
-
-#include "llvm/IR/Instructions.h"
+#include "SafeStackColoring.h"
+#include "llvm/IR/Value.h"
+#include "llvm/Support/CommandLine.h"
+#include "llvm/Support/Compiler.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/Support/MathExtras.h"
+#include "llvm/Support/raw_ostream.h"
+#include <algorithm>
+#include <cassert>
 
 using namespace llvm;
 using namespace llvm::safestack;
@@ -132,6 +138,14 @@ void StackLayout::computeLayout() {
   // If this is replaced with something smarter, it must preserve the property
   // that the first object is always at the offset 0 in the stack frame (for
   // StackProtectorSlot), or handle stack protector in some other way.
+
+  // Sort objects by size (largest first) to reduce fragmentation.
+  if (StackObjects.size() > 2)
+    std::stable_sort(StackObjects.begin() + 1, StackObjects.end(),
+                     [](const StackObject &a, const StackObject &b) {
+                       return a.Size > b.Size;
+                     });
+
   for (auto &Obj : StackObjects)
     layoutObject(Obj);
 

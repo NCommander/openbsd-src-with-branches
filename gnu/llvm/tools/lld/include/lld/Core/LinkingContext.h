@@ -1,4 +1,4 @@
-//===- lld/Core/LinkingContext.h - Linker Target Info Interface -----------===//
+//===- lld/Core/LinkingContext.h - Linker Target Info Interface -*- C++ -*-===//
 //
 //                             The LLVM Linker
 //
@@ -10,17 +10,21 @@
 #ifndef LLD_CORE_LINKING_CONTEXT_H
 #define LLD_CORE_LINKING_CONTEXT_H
 
-#include "lld/Core/Error.h"
-#include "lld/Core/LLVM.h"
 #include "lld/Core/Node.h"
-#include "lld/Core/Reference.h"
 #include "lld/Core/Reader.h"
-#include "llvm/Support/ErrorOr.h"
+#include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/Support/Allocator.h"
+#include "llvm/Support/Error.h"
 #include "llvm/Support/raw_ostream.h"
+#include <cassert>
+#include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace lld {
+
 class PassManager;
 class File;
 class Writer;
@@ -58,7 +62,7 @@ public:
   /// of DefinedAtoms that should be marked live (along with all Atoms they
   /// reference). Only Atoms with scope scopeLinkageUnit or scopeGlobal can
   /// be kept live using this method.
-  const std::vector<StringRef> &deadStripRoots() const {
+  ArrayRef<StringRef> deadStripRoots() const {
     return _deadStripRoots;
   }
 
@@ -102,7 +106,7 @@ public:
   /// options which are used to configure LLVM's command line settings.
   /// For instance the -debug-only XXX option can be used to dynamically
   /// trace different parts of LLVM and lld.
-  const std::vector<const char *> &llvmOptions() const { return _llvmOptions; }
+  ArrayRef<const char *> llvmOptions() const { return _llvmOptions; }
 
   /// \name Methods used by Drivers to configure TargetInfo
   /// @{
@@ -117,12 +121,15 @@ public:
 
   void setDeadStripping(bool enable) { _deadStrip = enable; }
   void setGlobalsAreDeadStripRoots(bool v) { _globalsAreDeadStripRoots = v; }
+
   void setPrintRemainingUndefines(bool print) {
     _printRemainingUndefines = print;
   }
+
   void setAllowRemainingUndefines(bool allow) {
     _allowRemainingUndefines = allow;
   }
+
   void setAllowShlibUndefines(bool allow) { _allowShlibUndefines = allow; }
   void setLogInputFiles(bool log) { _logInputFiles = log; }
 
@@ -149,7 +156,7 @@ public:
   /// during link. Flavors can override this function in their LinkingContext
   /// to add more internal files. These internal files are positioned before
   /// the actual input files.
-  virtual void createInternalFiles(std::vector<std::unique_ptr<File> > &) const;
+  virtual void createInternalFiles(std::vector<std::unique_ptr<File>> &) const;
 
   /// Return the list of undefined symbols that are specified in the
   /// linker command line, using the -u option.
@@ -248,4 +255,4 @@ private:
 
 } // end namespace lld
 
-#endif
+#endif // LLD_CORE_LINKING_CONTEXT_H

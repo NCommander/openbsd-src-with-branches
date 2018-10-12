@@ -1,4 +1,4 @@
-//===---- LoopVectorize.h ---------------------------------------*- C++ -*-===//
+//===- LoopVectorize.h ------------------------------------------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -49,26 +49,29 @@
 #ifndef LLVM_TRANSFORMS_VECTORIZE_LOOPVECTORIZE_H
 #define LLVM_TRANSFORMS_VECTORIZE_LOOPVECTORIZE_H
 
-#include "llvm/ADT/MapVector.h"
 #include "llvm/Analysis/AliasAnalysis.h"
-#include "llvm/Analysis/AssumptionCache.h"
-#include "llvm/Analysis/BasicAliasAnalysis.h"
-#include "llvm/Analysis/BlockFrequencyInfo.h"
-#include "llvm/Analysis/DemandedBits.h"
-#include "llvm/Analysis/LoopAccessAnalysis.h"
-#include "llvm/Analysis/LoopInfo.h"
-#include "llvm/Analysis/LoopPassManager.h"
-#include "llvm/Analysis/ScalarEvolution.h"
-#include "llvm/Analysis/TargetTransformInfo.h"
-#include "llvm/IR/Function.h"
 #include "llvm/IR/PassManager.h"
 #include <functional>
 
 namespace llvm {
 
+class AssumptionCache;
+class BlockFrequencyInfo;
+class DemandedBits;
+class DominatorTree;
+class Function;
+class Loop;
+class LoopAccessInfo;
+class LoopInfo;
+class OptimizationRemarkEmitter;
+class ScalarEvolution;
+class TargetLibraryInfo;
+class TargetTransformInfo;
+
 /// The LoopVectorize Pass.
 struct LoopVectorizePass : public PassInfoMixin<LoopVectorizePass> {
   bool DisableUnrolling = false;
+
   /// If true, consider all loops for vectorization.
   /// If false, only loops that explicitly request vectorization are
   /// considered.
@@ -84,8 +87,7 @@ struct LoopVectorizePass : public PassInfoMixin<LoopVectorizePass> {
   AliasAnalysis *AA;
   AssumptionCache *AC;
   std::function<const LoopAccessInfo &(Loop &)> *GetLAA;
-
-  BlockFrequency ColdEntryFreq;
+  OptimizationRemarkEmitter *ORE;
 
   PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM);
 
@@ -94,10 +96,12 @@ struct LoopVectorizePass : public PassInfoMixin<LoopVectorizePass> {
                TargetTransformInfo &TTI_, DominatorTree &DT_,
                BlockFrequencyInfo &BFI_, TargetLibraryInfo *TLI_,
                DemandedBits &DB_, AliasAnalysis &AA_, AssumptionCache &AC_,
-               std::function<const LoopAccessInfo &(Loop &)> &GetLAA_);
+               std::function<const LoopAccessInfo &(Loop &)> &GetLAA_,
+               OptimizationRemarkEmitter &ORE);
 
   bool processLoop(Loop *L);
 };
-}
+
+} // end namespace llvm
 
 #endif // LLVM_TRANSFORMS_VECTORIZE_LOOPVECTORIZE_H

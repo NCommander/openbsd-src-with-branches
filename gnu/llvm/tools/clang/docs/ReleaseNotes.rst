@@ -1,6 +1,6 @@
-=======================
-Clang 3.8 Release Notes
-=======================
+=========================
+Clang 6.0.0 Release Notes
+=========================
 
 .. contents::
    :local:
@@ -12,401 +12,368 @@ Introduction
 ============
 
 This document contains the release notes for the Clang C/C++/Objective-C
-frontend, part of the LLVM Compiler Infrastructure, release 3.8. Here we
+frontend, part of the LLVM Compiler Infrastructure, release 6.0.0. Here we
 describe the status of Clang in some detail, including major
 improvements from the previous release and new feature work. For the
 general LLVM release notes, see `the LLVM
-documentation <../../../docs/ReleaseNotes.html>`_. All LLVM
+documentation <http://llvm.org/docs/ReleaseNotes.html>`_. All LLVM
 releases may be downloaded from the `LLVM releases web
 site <http://llvm.org/releases/>`_.
 
-For more information about Clang or LLVM, including information about
-the latest release, please check out the main please see the `Clang Web
-Site <http://clang.llvm.org>`_ or the `LLVM Web
-Site <http://llvm.org>`_.
+For more information about Clang or LLVM, including information about the
+latest release, please see the `Clang Web Site <http://clang.llvm.org>`_ or the
+`LLVM Web Site <http://llvm.org>`_.
 
-What's New in Clang 3.8?
-========================
+What's New in Clang 6.0.0?
+==========================
 
 Some of the major new features and improvements to Clang are listed
 here. Generic improvements to Clang as a whole or to its underlying
 infrastructure are described first, followed by language-specific
 sections with improvements to Clang's support for those languages.
 
+Non-comprehensive list of changes in this release
+-------------------------------------------------
+
+- Support for `retpolines <https://support.google.com/faqs/answer/7625886>`_
+  was added to help mitigate "branch target injection" (variant #2) of the
+  "Spectre" speculative side channels described by `Project Zero
+  <https://googleprojectzero.blogspot.com/2018/01/reading-privileged-memory-with-side.html>`_
+  and the `Spectre paper <https://spectreattack.com/spectre.pdf>`_.
+
+- Bitrig OS was merged back into OpenBSD, so Bitrig support has been
+  removed from Clang/LLVM.
+
+- The default value of ``_MSC_VER`` was raised from 1800 to 1911, making it
+  compatible with the Visual Studio 2015 and 2017 C++ standard library headers.
+  Users should generally expect this to be regularly raised to match the most
+  recently released version of the Visual C++ compiler.
+
+- clang now defaults to ``.init_array`` if no gcc installation can be found.
+  If a gcc installation is found, it still prefers ``.ctors`` if the found
+  gcc is older than 4.7.0.
+
+- The new builtin preprocessor macros ``__is_target_arch``,
+  ``__is_target_vendor``, ``__is_target_os``, and ``__is_target_environment``
+  can be used to to examine the individual components of the target triple.
+
+
 Improvements to Clang's diagnostics
 -----------------------------------
 
-Clang's diagnostics are constantly being improved to catch more issues,
-explain them more clearly, and provide more accurate source information
-about them. The improvements since the 3.7 release include:
+- ``-Wpragma-pack`` is a new warning that warns in the following cases:
 
-- ``-Wmicrosoft`` has been split into many targeted flags, so that projects can
-  choose to enable only a subset of these warnings. ``-Wno-microsoft`` still
-  disables all these warnings, and ``-Wmicrosoft`` still enables them all.
+  - When a translation unit is missing terminating ``#pragma pack (pop)``
+    directives.
+
+  - When leaving an included file that changes the current alignment value,
+    i.e. when the alignment before ``#include`` is different to the alignment
+    after ``#include``.
+
+  - ``-Wpragma-pack-suspicious-include`` (disabled by default) warns on an
+    ``#include`` when the included file contains structures or unions affected by
+    a non-default alignment that has been specified using a ``#pragma pack``
+    directive prior to the ``#include``.
+
+- ``-Wobjc-messaging-id`` is a new, non-default warning that warns about
+  message sends to unqualified ``id`` in Objective-C. This warning is useful
+  for projects that would like to avoid any potential future compiler
+  errors/warnings, as the system frameworks might add a method with the same
+  selector which could make the message send to ``id`` ambiguous.
+
+- ``-Wtautological-compare`` now warns when comparing an unsigned integer and 0
+  regardless of whether the constant is signed or unsigned.
+
+- ``-Wtautological-compare`` now warns about comparing a signed integer and 0
+  when the signed integer is coerced to an unsigned type for the comparison.
+  ``-Wsign-compare`` was adjusted not to warn in this case.
+
+- ``-Wtautological-constant-compare`` is a new warning that warns on
+  tautological comparisons between integer variable of the type ``T`` and the
+  largest/smallest possible integer constant of that same type.
+
+- For C code, ``-Wsign-compare``, ``-Wsign-conversion``,
+  ``-Wtautological-constant-compare`` and
+  ``-Wtautological-constant-out-of-range-compare`` were adjusted to use the
+  underlying datatype of ``enum``.
+
+- ``-Wnull-pointer-arithmetic`` now warns about performing pointer arithmetic
+  on a null pointer. Such pointer arithmetic has an undefined behavior if the
+  offset is nonzero. It also now warns about arithmetic on a null pointer
+  treated as a cast from integer to pointer (GNU extension).
+
+- ``-Wzero-as-null-pointer-constant`` was adjusted not to warn on null pointer
+  constants that originate from system macros, except ``NULL`` macro.
+
+- ``-Wdelete-non-virtual-dtor`` can now fire in system headers, so that
+  ``std::unique_ptr<>`` deleting through a non-virtual dtor is now diagnosed.
+
+- ``-Wunreachable-code`` can now reason about ``__try``, ``__except`` and
+  ``__leave``.
+
 
 New Compiler Flags
 ------------------
 
-Clang can "tune" DWARF debugging information to suit one of several different
-debuggers. This fine-tuning can mean omitting DWARF features that the
-debugger does not need or use, or including DWARF extensions specific to the
-debugger. Clang supports tuning for three debuggers, as follows.
+- Clang supports the ``-mretpoline`` flag to enable `retpolines
+  <https://support.google.com/faqs/answer/7625886>`_. Code compiled with this
+  flag will be hardened against variant #2 of the Spectre attack. Indirect
+  branches from switches or gotos removed from the code, and indirect calls
+  will be made through a "retpoline" thunk. The necessary thunks will
+  automatically be inserted into the generated code. Clang also supports
+  ``-mretpoline-external-thunk`` which works like ``-mretpoline`` but requires
+  the user to provide their own thunk definitions. The external thunk names
+  start with ``__x86_indirect_thunk_`` and end in a register name. For 64-bit
+  platforms, only an ``r11`` thunk is used, but for 32-bit platforms ``eax``,
+  ``ecx``, ``edx``, and ``edi`` thunks are used.
 
-- ``-ggdb`` is equivalent to ``-g`` plus tuning for the GDB debugger. For
-  compatibility with GCC, Clang allows this option to be followed by a
-  single digit from 0 to 3 indicating the debugging information "level."
-  For example, ``-ggdb1`` is equivalent to ``-ggdb -g1``.
+- Clang now supports configuration files. These are collections of driver
+  options, which can be applied by specifying the configuration file, either
+  using command line option ``--config foo.cfg`` or encoding it into executable
+  name ``foo-clang``. Clang behaves as if the options from this file were inserted
+  before the options specified in command line. This feature is primary intended
+  to facilitate cross compilation. Details can be found in
+  `Clang Compiler User's Manual <UsersManual.html#configuration-files>`_.
 
-- ``-glldb`` is equivalent to ``-g`` plus tuning for the LLDB debugger.
+- The ``-fdouble-square-bracket-attributes`` and corresponding
+  ``-fno-double-square-bracket-attributes`` flags were added to enable or
+  disable ``[[]]`` attributes in any language mode. Currently, only a limited
+  number of attributes are supported outside of C++ mode. See the Clang
+  `attribute documentation <AttributeReference.html>`_ for more information
+  about which attributes are supported for each syntax.
 
-- ``-gsce`` is equivalent to ``-g`` plus tuning for the Sony Computer
-  Entertainment debugger.
+- Added the ``-std=c17``, ``-std=gnu17``, and ``-std=iso9899:2017`` language
+  mode flags for compatibility with GCC. This enables support for the next
+  version of the C standard, expected to be published by ISO in 2018. The only
+  difference between the ``-std=c17`` and ``-std=c11`` language modes is the
+  value of the ``__STDC_VERSION__`` macro, as C17 is a bug fix release.
 
-Specifying ``-g`` without a tuning option will use a target-dependent default.
+- Added the ``-fexperimental-isel`` and ``-fno-experimental-isel`` flags to
+  enable/disable the new GlobalISel instruction selection framework. This
+  feature is enabled by default for AArch64 at the ``-O0`` optimization level.
+  Support for other targets or optimization levels is currently incomplete.
 
-The new ``-fstrict-vtable-pointers`` flag enables better devirtualization
-support (experimental).
-
-
-Alignment
----------
-Clang has gotten better at passing down strict type alignment information to LLVM,
-and several targets have gotten better at taking advantage of that information.
-
-Dereferencing a pointer that is not adequately aligned for its type is undefined
-behavior.  It may crash on target architectures that strictly enforce alignment, but
-even on architectures that do not, frequent use of unaligned pointers may hurt
-the performance of the generated code.
-
-If you find yourself fixing a bug involving an inadequately aligned pointer, you
-have several options.
-
-The best option, when practical, is to increase the alignment of the memory.
-For example, this array is not guaranteed to be sufficiently aligned to store
-a pointer value:
-
-.. code-block:: c
-
-  char buffer[sizeof(const char*)];
-
-Writing a pointer directly into it violates C's alignment rules:
-
-.. code-block:: c
-
-  ((const char**) buffer)[0] = "Hello, world!\n";
-
-But you can use alignment attributes to increase the required alignment:
-
-.. code-block:: c
-
-  __attribute__((aligned(__alignof__(const char*))))
-  char buffer[sizeof(const char*)];
-
-When that's not practical, you can instead reduce the alignment requirements
-of the pointer.  If the pointer is to a struct that represents that layout of a
-serialized structure, consider making that struct packed; this will remove any
-implicit internal padding that the compiler might add to the struct and
-reduce its alignment requirement to 1.
-
-.. code-block:: c
-
-  struct file_header {
-    uint16_t magic_number;
-    uint16_t format_version;
-    uint16_t num_entries;
-  } __attribute__((packed));
-
-You may also override the default alignment assumptions of a pointer by
-using a typedef with explicit alignment:
-
-.. code-block:: c
-
-  typedef const char *unaligned_char_ptr __attribute__((aligned(1)));
-  ((unaligned_char_ptr*) buffer)[0] = "Hello, world!\n";
-
-The final option is to copy the memory into something that is properly
-aligned.  Be aware, however, that Clang will assume that pointers are
-properly aligned for their type when you pass them to a library function
-like memcpy.  For example, this code will assume that the source and
-destination pointers are both properly aligned for an int:
-
-.. code-block:: c
-
-  void copy_int_array(int *dest, const int *src, size_t num) {
-    memcpy(dest, src, num * sizeof(int));
-  }
-
-You may explicitly disable this assumption by casting the argument to a
-less-aligned pointer type:
-
-.. code-block:: c
-
-  void copy_unaligned_int_array(int *dest, const int *src, size_t num) {
-    memcpy((char*) dest, (const char*) src, num * sizeof(int));
-  }
-
-Clang promises not to look through the explicit cast when inferring the
-alignment of this memcpy.
+- New ``-nostdlib++`` flag to disable linking the C++ standard library. Similar
+  to using ``clang`` instead of ``clang++`` but doesn't disable ``-lm``.
 
 
-C Language Changes in Clang
----------------------------
+Attribute Changes in Clang
+--------------------------
 
-Better support for ``__builtin_object_size``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- Clang now supports the majority of its attributes under both the GNU-style
+  spelling (``__attribute((name))``) and the double square-bracket spelling
+  in the ``clang`` vendor namespace (``[[clang::name]]``). Attributes whose
+  syntax is specified by some other standard (such as CUDA and OpenCL
+  attributes) continue to follow their respective specification.
 
-Clang 3.8 has expanded support for the ``__builtin_object_size`` intrinsic.
-Specifically, ``__builtin_object_size`` will now fail less often when you're
-trying to get the size of a subobject. Additionally, the ``pass_object_size``
-attribute was added, which allows ``__builtin_object_size`` to successfully
-report the size of function parameters, without requiring that the function be
-inlined.
+- Added the ``__has_c_attribute()`` builtin preprocessor macro which allows
+  users to dynamically detect whether a double square-bracket attribute is
+  supported in C mode. This attribute syntax can be enabled with the
+  ``-fdouble-square-bracket-attributes`` flag.
+
+- The presence of ``__attribute__((availability(...)))`` on a declaration no
+  longer implies default visibility for that declaration on macOS.
 
 
-``overloadable`` attribute relaxations
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Windows Support
+---------------
 
-Previously, functions marked ``overloadable`` in C would strictly use C++'s
-type conversion rules, so the following code would not compile:
+- Clang now has initial, preliminary support for targeting Windows on
+  ARM64.
 
-.. code-block:: c
+- clang-cl now exposes the ``--version`` flag.
 
-  void foo(char *bar, char *baz) __attribute__((overloadable));
-  void foo(char *bar) __attribute__((overloadable));
 
-  void callFoo() {
-    int a;
-    foo(&a);
-  }
+C++ Language Changes in Clang
+-----------------------------
 
-Now, Clang is able to selectively use C's type conversion rules during overload
-resolution in C, which allows the above example to compile (albeit potentially
-with a warning about an implicit conversion from ``int*`` to ``char*``).
+- Clang's default C++ dialect is now ``gnu++14`` instead of ``gnu++98``. This
+  means Clang will by default accept code using features from C++14 and
+  conforming GNU extensions. Projects incompatible with C++14 can add
+  ``-std=gnu++98`` to their build settings to restore the previous behaviour.
+
+- Added support for some features from the C++ standard after C++17
+  (provisionally known as C++2a but expected to be C++20). This support can be
+  enabled with the ``-std=c++2a`` flag. This enables:
+
+  - Support for ``__VA_OPT__``, to allow variadic macros to easily provide
+    different expansions when they are invoked without variadic arguments.
+
+  - Recognition of the ``<=>`` token (the C++2a three-way comparison operator).
+
+  - Support for default member initializers for bit-fields.
+
+  - Lambda capture of ``*this``.
+
+  - Pointer-to-member calls using ``const &``-qualified pointers on temporary objects.
+
+  All of these features other than ``__VA_OPT__`` and ``<=>`` are made
+  available with a warning in earlier C++ language modes.
+
+- A warning has been added for a ``<=`` token followed immediately by a ``>``
+  character. Code containing such constructs will change meaning in C++2a due
+  to the addition of the ``<=>`` operator.
+
+- Clang implements the "destroying operator delete" feature described in C++
+  committee paper `P0722R1
+  <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0722r1.html>`,
+  which is targeting inclusion in C++2a but has not yet been voted into the C++
+  working draft. Support for this feature is enabled by the presence of the
+  standard library type ``std::destroying_delete_t``.
 
 OpenCL C Language Changes in Clang
 ----------------------------------
 
-Several OpenCL 2.0 features have been added, including:
+- Added subgroup builtins to enqueue kernel support.
 
-- Command-line option ``-std=CL2.0``.
+- Added CL2.0 atomics as Clang builtins that now accept
+  an additional memory scope parameter propagated to atomic IR instructions
+  (this is to align with the corresponding change in LLVM IR) (see `spec s6.13.11.4
+  <https://www.khronos.org/registry/OpenCL/specs/opencl-2.0-openclc.pdf#107>`_).
 
-- Generic address space (``__generic``) along with new conversion rules
-  between different address spaces and default address space deduction.
+- Miscellaneous fixes in the CL header.
 
-- Support for program scope variables with ``__global`` address space.
+- Allow per target selection of address space during CodeGen of certain OpenCL types.
+  Default target implementation is provided mimicking old behavior.
 
-- Pipe specifier was added (although no pipe functions are supported yet).
+- Macro ``__IMAGE_SUPPORT__`` is now automatically added (as per `spec s6.10
+  <https://www.khronos.org/registry/OpenCL/specs/opencl-2.0-openclc.pdf#55>`_).
 
-- Atomic types: ``atomic_int``, ``atomic_uint``, ``atomic_long``,
-  ``atomic_ulong``, ``atomic_float``, ``atomic_double``, ``atomic_flag``,
-  ``atomic_intptr_t``, ``atomic_uintptr_t``, ``atomic_size_t``,
-  ``atomic_ptrdiff_t`` and their usage with C11 style builtin functions.
+- Added ``cl_intel_subgroups`` and ``cl_intel_subgroups_short`` extensions.
 
-- Image types: ``image2d_depth_t``, ``image2d_array_depth_t``,
-  ``image2d_msaa_t``, ``image2d_array_msaa_t``, ``image2d_msaa_depth_t``,
-  ``image2d_array_msaa_depth_t``.
+- All function calls are marked by `the convergent attribute
+  <https://clang.llvm.org/docs/AttributeReference.html#convergent-clang-convergent>`_
+  to prevent optimizations that break SPMD program semantics. This will be removed
+  by LLVM passes if it can be proved that the function does not use convergent
+  operations.
 
-- Other types (for pipes and device side enqueue): ``clk_event_t``,
-  ``queue_t``, ``ndrange_t``, ``reserve_id_t``.
+- Create a kernel wrapper for enqueued blocks, which simplifies enqueue support by
+  providing common functionality.
 
-Several additional features/bugfixes have been added to the previous standards:
+- Added private address space explicitly in AST and refactored address space support
+  with several simplifications and bug fixes (`PR33419 <https://llvm.org/pr33419>`_
+  and `PR33420 <https://llvm.org/pr33420>`_).
 
-- A set of floating point arithmetic relaxation flags: ``-cl-no-signed-zeros``,
-  ``-cl-unsafe-math-optimizations``, ``-cl-finite-math-only``,
-  ``-cl-fast-relaxed-math``.
+- OpenCL now allows functions with empty parameters to be treated as if they had a
+  void parameter list (inspired from C++ support). OpenCL C spec update to follow.
 
-- Added ``^^`` to the list of reserved operations.
+- General miscellaneous refactoring and cleanup of blocks support for OpenCL to
+  remove unused parts inherited from Objective C implementation.
 
-- Improved vector support and diagnostics.
+- Miscellaneous improvements in vector diagnostics.
 
-- Improved diagnostics for function pointers.
+- Added half float load and store builtins without enabling half as a legal type
+  (``__builtin_store_half`` for double, ``__builtin_store_halff`` for float,
+  ``__builtin_load_half`` for double, ``__builtin_load_halff`` for float).
+
 
 OpenMP Support in Clang
------------------------
+----------------------------------
 
-OpenMP 3.1 is fully supported and is enabled by default with ``-fopenmp`` 
-which now uses the Clang OpenMP library instead of the GCC OpenMP library.
-The runtime can be built in-tree.  
+- Added options ``-f[no]-openmp-simd`` that support code emission only for OpenMP
+  SIMD-based directives, like ``#pragma omp simd``, ``#pragma omp parallel for simd``
+  etc. The code is emitted only for SIMD-based part of the combined directives
+  and clauses.
 
-In addition to OpenMP 3.1, several important elements of the OpenMP 4.0/4.5 
-are supported as well. We continue to aim to complete OpenMP 4.5
+- Added support for almost all target-based directives except for
+  ``#pragma omp target teams distribute parallel for [simd]``. Although, please
+  note that ``depend`` clauses on target-based directives are not supported yet.
+  Clang supports offloading to X86_64, AArch64 and PPC64[LE] devices.
 
-- ``map`` clause
-- task dependencies
-- ``num_teams`` clause
-- ``thread_limit`` clause
-- ``target`` and ``target data`` directive
-- ``target`` directive with implicit data mapping
-- ``target enter data`` and ``target exit data`` directive
-- Array sections [2.4, Array Sections].
-- Directive name modifiers for ``if`` clause [2.12, if Clause].
-- ``linear`` clause can be used in loop-based directives [2.7.2, loop Construct].
-- ``simdlen`` clause [2.8, SIMD Construct].
-- ``hint`` clause [2.13.2, critical Construct].
-- Parsing/semantic analysis of all non-device directives introduced in OpenMP 4.5.
+- Added support for ``reduction``-based clauses on ``task``-based directives from
+  upcoming OpenMP 5.0.
 
-The codegen for OpenMP constructs was significantly improved allowing us to produce much more stable and fast code.
-Full test cases of IR are also implemented.
+- The LLVM OpenMP runtime ``libomp`` now supports the OpenMP Tools Interface (OMPT)
+  on x86, x86_64, AArch64, and PPC64 on Linux, Windows, and macOS. If you observe
+  a measurable performance impact on one of your applications without a tool
+  attached, please rebuild the runtime library with ``-DLIBOMP_OMPT_SUPPORT=OFF`` and
+  file a bug at `LLVM's Bugzilla <https://bugs.llvm.org/>`_ or send a message to the
+  `OpenMP development list <http://lists.llvm.org/cgi-bin/mailman/listinfo/openmp-dev>`_.
 
-CUDA Support in Clang
----------------------
-Clang has experimental support for end-to-end CUDA compilation now:
-
-- The driver now detects CUDA installation, creates host and device compilation
-  pipelines, links device-side code with appropriate CUDA bitcode and produces
-  single object file with host and GPU code.
-
-- Implemented target attribute-based function overloading which allows Clang to
-  compile CUDA sources without splitting them into separate host/device TUs.
-
-Internal API Changes
---------------------
-
-These are major API changes that have happened since the 3.7 release of
-Clang. If upgrading an external codebase that uses Clang as a library,
-this section should help get you past the largest hurdles of upgrading.
-
-* With this release, the autoconf build system is deprecated. It will be removed
-  in the 3.9 release. Please migrate to using CMake. For more information see:
-  `Building LLVM with CMake <http://llvm.org/docs/CMake.html>`_
 
 AST Matchers
 ------------
-The AST matcher functions were renamed to reflect the exact AST node names,
-which is a breaking change to AST matching code. The following matchers were
-affected:
 
-=======================	============================
-Previous Matcher Name	New Matcher Name
-=======================	============================
-recordDecl		recordDecl and cxxRecordDecl
-ctorInitializer		cxxCtorInitializer
-constructorDecl		cxxConstructorDecl
-destructorDecl		cxxDestructorDecl
-methodDecl		cxxMethodDecl
-conversionDecl		cxxConversionDecl
-memberCallExpr		cxxMemberCallExpr
-constructExpr		cxxConstructExpr
-unresolvedConstructExpr	cxxUnresolvedConstructExpr
-thisExpr		cxxThisExpr
-bindTemporaryExpr	cxxBindTemporaryExpr
-newExpr			cxxNewExpr
-deleteExpr		cxxDeleteExpr
-defaultArgExpr		cxxDefaultArgExpr
-operatorCallExpr	cxxOperatorCallExpr
-forRangeStmt		cxxForRangeStmt
-catchStmt		cxxCatchStmt
-tryStmt			cxxTryStmt
-throwExpr		cxxThrowExpr
-boolLiteral		cxxBoolLiteral
-nullPtrLiteralExpr	cxxNullPtrLiteralExpr
-reinterpretCastExpr	cxxReinterpretCastExpr
-staticCastExpr		cxxStaticCastExpr
-dynamicCastExpr		cxxDynamicCastExpr
-constCastExpr		cxxConstCastExpr
-functionalCastExpr	cxxFunctionalCastExpr
-temporaryObjectExpr	cxxTemporaryObjectExpr
-CUDAKernalCallExpr	cudaKernelCallExpr
-=======================	============================
+The ``hasDeclaration`` matcher now works the same for ``Type`` and ``QualType`` and only
+ever looks through one level of sugaring in a limited number of cases.
 
-recordDecl() previously matched AST nodes of type CXXRecordDecl, but now
-matches AST nodes of type RecordDecl. If a CXXRecordDecl is required, use the
-cxxRecordDecl() matcher instead.
+There are two main patterns affected by this:
+
+-  ``qualType(hasDeclaration(recordDecl(...)))``: previously, we would look through
+   sugar like ``TypedefType`` to get at the underlying ``recordDecl``; now, we need
+   to explicitly remove the sugaring:
+   ``qualType(hasUnqualifiedDesugaredType(hasDeclaration(recordDecl(...))))``
+
+-  ``hasType(recordDecl(...))``: ``hasType`` internally uses ``hasDeclaration``; previously,
+   this matcher used to match for example ``TypedefTypes`` of the ``RecordType``, but
+   after the change they don't; to fix, use:
+
+   .. code-block:: c
+
+      hasType(hasUnqualifiedDesugaredType(
+          recordType(hasDeclaration(recordDecl(...)))))
+
+-  ``templateSpecializationType(hasDeclaration(classTemplateDecl(...)))``:
+   previously, we would directly match the underlying ``ClassTemplateDecl``;
+   now, we can explicitly match the ``ClassTemplateSpecializationDecl``, but that
+   requires to explicitly get the ``ClassTemplateDecl``:
+
+   .. code-block:: c
+
+      templateSpecializationType(hasDeclaration(
+          classTemplateSpecializationDecl(
+              hasSpecializedTemplate(classTemplateDecl(...)))))
+
+
+clang-format
+------------
+
+* Option ``IndentPPDirectives`` added to indent preprocessor directives on
+  conditionals.
+
+  +----------------------+----------------------+
+  | Before               | After                |
+  +======================+======================+
+  |  .. code-block:: c++ | .. code-block:: c++  |
+  |                      |                      |
+  |    #if FOO           |   #if FOO            |
+  |    #if BAR           |   #  if BAR          |
+  |    #include <foo>    |   #    include <foo> |
+  |    #endif            |   #  endif           |
+  |    #endif            |   #endif             |
+  +----------------------+----------------------+
+
+* Option ``-verbose`` added to the command line.
+  Shows the list of processed files.
+
+* Option ``IncludeBlocks`` added to merge and regroup multiple ``#include`` blocks during sorting.
+
+  +-------------------------+-------------------------+-------------------------+
+  | Before (Preserve)       | Merge                   | Regroup                 |
+  +=========================+=========================+=========================+
+  |  .. code-block:: c++    | .. code-block:: c++     | .. code-block:: c++     |
+  |                         |                         |                         |
+  |   #include "b.h"        |   #include "a.h"        |   #include "a.h"        |
+  |                         |   #include "b.h"        |   #include "b.h"        |
+  |   #include "a.b"        |   #include <lib/main.h> |                         |
+  |   #include <lib/main.h> |                         |   #include <lib/main.h> |
+  +-------------------------+-------------------------+-------------------------+
 
 
 Static Analyzer
 ---------------
 
-The scan-build and scan-view tools will now be installed with Clang. Use these
-tools to run the static analyzer on projects and view the produced results.
-
-Static analysis of C++ lambdas has been greatly improved, including
-interprocedural analysis of lambda applications.
-
-Several new checks were added:
-
-- The analyzer now checks for misuse of ``vfork()``.
-- The analyzer can now detect excessively-padded structs. This check can be
-  enabled by passing the following command to scan-build:
-  ``-enable-checker optin.performance.Padding``.
-- The checks to detect misuse of ``_Nonnull`` type qualifiers as well as checks
-  to detect misuse of Objective-C generics were added.
-- The analyzer now has opt in checks to detect localization errors in Cocoa
-  applications. The checks warn about uses of non-localized ``NSStrings``
-  passed to UI methods expecting localized strings and on ``NSLocalizedString``
-  macros that are missing the comment argument. These can be enabled by passing
-  the following command to scan-build:
-  ``-enable-checker optin.osx.cocoa.localizability``.
+- The Static Analyzer can now properly detect and diagnose unary pre-/post-
+  increment/decrement on an uninitialized value.
 
 
-Clang-tidy
-----------
+Undefined Behavior Sanitizer (UBSan)
+------------------------------------
 
-New checks have been added to clang-tidy:
-
-* Checks enforcing certain rules of the `CERT Secure Coding Standards
-  <https://www.securecoding.cert.org/confluence/display/seccode/SEI+CERT+Coding+Standards>`_:
-
-  * `cert-dcl03-c <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cert-dcl03-c.html>`_
-  * `cert-dcl50-cpp <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cert-dcl50-cpp.html>`_
-  * `cert-err52-cpp <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cert-err52-cpp.html>`_
-  * `cert-err58-cpp <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cert-err58-cpp.html>`_
-  * `cert-err60-cpp <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cert-err60-cpp.html>`_
-  * `cert-err61-cpp <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cert-err61-cpp.html>`_
-  * `cert-fio38-c <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cert-fio38-c.html>`_
-  * `cert-oop11-cpp <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cert-oop11-cpp.html>`_
-
-* Checks supporting the `C++ Core Guidelines
-  <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md>`_:
-
-  * `cppcoreguidelines-pro-bounds-array-to-pointer-decay <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cppcoreguidelines-pro-bounds-array-to-pointer-decay.html>`_
-  * `cppcoreguidelines-pro-bounds-constant-array-index <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cppcoreguidelines-pro-bounds-constant-array-index.html>`_
-  * `cppcoreguidelines-pro-bounds-pointer-arithmetic <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cppcoreguidelines-pro-bounds-pointer-arithmetic.html>`_
-  * `cppcoreguidelines-pro-type-const-cast <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cppcoreguidelines-pro-type-const-cast.html>`_
-  * `cppcoreguidelines-pro-type-cstyle-cast <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cppcoreguidelines-pro-type-cstyle-cast.html>`_
-  * `cppcoreguidelines-pro-type-reinterpret-cast <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cppcoreguidelines-pro-type-reinterpret-cast.html>`_
-  * `cppcoreguidelines-pro-type-static-cast-downcast <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cppcoreguidelines-pro-type-static-cast-downcast.html>`_
-  * `cppcoreguidelines-pro-type-union-access <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cppcoreguidelines-pro-type-union-access.html>`_
-  * `cppcoreguidelines-pro-type-vararg <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/cppcoreguidelines-pro-type-vararg.html>`_
-
-* The functionality of the clang-modernize tool has been moved to the new
-  ``modernize`` module in clang-tidy along with a few new checks:
-
-  * `modernize-loop-convert <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/modernize-loop-convert.html>`_
-  * `modernize-make-unique <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/modernize-make-unique.html>`_
-  * `modernize-pass-by-value <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/modernize-pass-by-value.html>`_
-  * `modernize-redundant-void-arg <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/modernize-redundant-void-arg.html>`_
-  * `modernize-replace-auto-ptr <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/modernize-replace-auto-ptr.html>`_
-  * `modernize-shrink-to-fit <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/modernize-shrink-to-fit.html>`_ (renamed from readability-shrink-to-fit)
-  * `modernize-use-auto <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/modernize-use-auto.html>`_
-  * `modernize-use-default <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/modernize-use-default.html>`_
-  * `modernize-use-nullptr <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/modernize-use-nullptr.html>`_
-  * `modernize-use-override <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/modernize-use-override.html>`_ (renamed from misc-use-override)
-
-* New checks flagging various readability-related issues:
-
-  * `readability-identifier-naming <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/readability-identifier-naming.html>`_
-  * `readability-implicit-bool-cast <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/readability-implicit-bool-cast.html>`_
-  * `readability-inconsistent-declaration-parameter-name <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/readability-inconsistent-declaration-parameter-name.html>`_
-  * `readability-uniqueptr-delete-release <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/readability-uniqueptr-delete-release.html>`_
-
-* New ``performance`` module for checks targeting potential performance issues:
-
-  * performance-unnecessary-copy-initialization
-
-* A few new checks have been added to the ``misc`` module:
-
-  * `misc-definitions-in-headers <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/misc-definitions-in-headers.html>`_
-  * misc-move-const-arg
-  * `misc-move-constructor-init <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/misc-move-constructor-init.html>`_
-  * `misc-new-delete-overloads <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/misc-new-delete-overloads.html>`_
-  * `misc-non-copyable-objects <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/misc-non-copyable-objects.html>`_
-  * `misc-sizeof-container <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/misc-sizeof-container.html>`_
-  * `misc-string-integer-assignment <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/misc-string-integer-assignment.html>`_
-  * `misc-throw-by-value-catch-by-reference <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/misc-throw-by-value-catch-by-reference.html>`_
-  * `misc-unused-alias-decls <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/misc-unused-alias-decls.html>`_
-  * `misc-unused-parameters <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/misc-unused-parameters.html>`_
-  * `misc-virtual-near-miss <http://llvm.org/releases/3.8.0/tools/clang/tools/extra/docs/clang-tidy/checks/misc-virtual-near-miss.html>`_
+* A minimal runtime is now available. It is suitable for use in production
+  environments, and has a small attack surface. It only provides very basic
+  issue logging and deduplication, and does not support ``-fsanitize=vptr``
+  checking.
 
 
 Additional Information

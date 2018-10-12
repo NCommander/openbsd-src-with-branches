@@ -1,6 +1,6 @@
-======================
-LLD 3.9 Release Notes
-======================
+=======================
+LLD 6.0.0 Release Notes
+=======================
 
 .. contents::
     :local:
@@ -8,95 +8,92 @@ LLD 3.9 Release Notes
 Introduction
 ============
 
-This document contains the release notes for the LLD linker, release 3.9.
-Here we describe the status of LLD, including major improvements
-from the previous release. All LLD releases may be downloaded
+This document contains the release notes for the lld linker, release 6.0.0.
+Here we describe the status of lld, including major improvements
+from the previous release. All lld releases may be downloaded
 from the `LLVM releases web site <http://llvm.org/releases/>`_.
 
-What's new in ELF Support?
-==========================
+Non-comprehensive list of changes in this release
+=================================================
 
-LLD 3.9 is a major milestone for us. It is the first release that can
-link real-world large userland programs, including LLVM/Clang/LLD
-themselves. In fact, for example, it can now be used to produce most
-userland programs distributed as part of FreeBSD.
-
-Many contributors have joined to the project to develop new features,
-port it to new architectures and fix issues since the last release.
-
-Link-Time Optimization
-----------------------
-
-Initial support for LTO has been added. It is compatible with
-`the LLVM gold plugin <http://llvm.org/docs/GoldPlugin.html>`_ in terms of
-command line flags and input file format so that LLD is usable as a
-drop-in replacement for GNU gold. LTO is implemented as a native
-feature unlike the GNU gold's plugin mechanism.
-
-Identical Code Folding
-----------------------
-
-LLD 3.9 can now merge identical code sections to produce smaller
-output files. It is expected to be used with ``-ffunction-sections``.
-
-Symbol Versioning
------------------
-
-LLD 3.9 is able to link against versioned symbols as well as produce
-versioned symbols. Both the original Sun's symbol versioning scheme
-and the GNU extension are supported.
-
-New Targets
------------
-
-LLD has expanded support for new targets, including ARM/Thumb, the x32
-ABI and MIPS N64 ABI, in addition to the existing support for x86,
-x86-64, MIPS, PowerPC and PPC64.
-
-TLS Relocation Optimizations
-----------------------------
-
-The ELF ABI specification of the thread-local variable define a few
-peephole optimizations linkers can do by rewriting instructions at the
-link-time to reduce run-time overhead to access TLS variables. That
-feature has been implemented.
-
-New Linker Flags
+ELF Improvements
 ----------------
 
-Many command line options have been added in this release, including:
+* A lot of bugs and compatibility issues have been identified and fixed as a
+  result of people using lld 5.0 as a standard system linker. In particular,
+  linker script and version script support has significantly improved that
+  it should be able to handle almost all scripts.
 
-- Symbol resolution and output options: ``-Bsymbolic-functions``,
-  ``-export-dynamic-symbol``, ``-image-base``, ``-pie``, ``-end-lib``,
-  ``-start-lib``, ``-build-id={md5,sha1,none,0x<hexstring>}``.
+* A mitigation for Spectre v2 has been implemented. If you pass ``-z
+  retpolineplt``, lld uses RET instruction instead of JMP instruction in PLT.
+  The option is available for x86 and x86-64.
 
-- Symbol versioning option: ``-dynamic-list``.
+* Identical Code Folding (ICF) now de-duplicates .eh_frame entries, so lld now
+  generates slightly smaller outputs than before when you pass ``--icf=all``.
 
-- LTO options: ``-lto-O``, ``-lto-aa-pipeline``, ``-lto-jobs``,
-  ``-lto-newpm-passes``, ``-plugin``, ``-plugin-eq``, ``-plugin-opt``,
-  ``-plugin-opt-eq``, ``-disable-verify``, ``-mllvm``.
+* Analysis for ``--as-needed`` is now done after garbage collection. If garbage
+  collector eliminates all sections that use some library, that library is
+  eliminated from DT_NEEDED tags. Previously, the analysis ran before garbage
+  collection.
 
-- Driver optionss: ``-help``, ``-version``, ``-unresolved-symbols``.
+* Size of code segment is now always rounded up to page size to make sure that
+  unused bytes at end of code segment is filled with trap instructions (such
+  as INT3) instead of zeros.
 
-- Debug options: ``-demangle``, ``-reproduce``, ``-save-temps``,
-  ``-strip-debug``, ``-trace``, ``-trace-symbol``,
-  ``-warn-execstack``.
+* lld is now able to generate Android-style compact dynamic relocation table.
+  You can turn on the feature by passing ``--pack-dyn-relocs=android``.
 
-- Exception handling option: ``-eh-frame-hdr``.
+* Debug information is used in more cases when reporting errors.
 
-- Identical Code Folding option: ``-icf``.
+* ``--gdb-index`` gets faster than before.
 
-Changes to the MIPS Target
---------------------------
+* String merging is now multi-threaded, which makes ``-O2`` faster.
 
-* Added support for MIPS N64 ABI.
-* Added support for TLS relocations for both O32 and N64 MIPS ABIs.
+* ``--hash-style=both`` is now default instead of ``--hash-style=sysv`` to
+  match the behavior of recent versions of GNU linkers.
 
-Building LLVM Toolchain with LLD
---------------------------------
+* ARM PLT entries automatically use short or long variants.
 
-A new CMake variable, ``LLVM_ENABLE_LLD``, has been added to use LLD
-to build the LLVM toolchain. If the varaible is true, ``-fuse-ld=lld``
-option will be added to linker flags so that ``ld.lld`` is used
-instead of default ``ld``.  Because ``-fuse-ld=lld`` is a new compiler
-driver option, you need Clang 3.8 or newer to use the feature.
+* lld can now identify and patch a code sequence that triggers AArch64 errata 843419.
+  Add ``--fix-cortex-a53-843419`` to enable the feature.
+
+* lld can now generate thunks for out of range branches.
+
+* MIPS port now generates all output dynamic relocations using Elf_Rel format only.
+
+* Added handling of the R_MIPS_26 relocation in case of N32/N64 ABIs and
+  generating proper PLT entries.
+
+* The following options have been added: ``--icf=none`` ``-z muldefs``
+  ``--plugin-opt`` ``--no-eh-frame-hdr`` ``--no-gdb-index``
+  ``--orphan-handling={place,discard,warn,error}``
+  ``--pack-dyn-relocs={none,android}`` ``--no-omagic``
+  ``--no-print-gc-sections`` ``--ignore-function-address-equality`` ``-z
+  retpolineplt`` ``--print-icf-sections`` ``--no-pie``
+
+COFF Improvements
+-----------------
+
+* A GNU ld style frontend for the COFF linker has been added for MinGW.
+  In MinGW environments, the linker is invoked with GNU ld style parameters;
+  which lld previously only supported when used as an ELF linker. When
+  a PE/COFF target is chosen, those parameters are rewritten into the
+  lld-link style parameters and the COFF linker is invoked instead.
+
+* Initial support for the ARM64 architecture has been added.
+
+* New ``--version`` flag.
+
+* Significantly improved support for writing PDB Files.
+
+* New ``--rsp-quoting`` flag, like ``clang-cl``.
+
+* ``/manifestuac:no`` no longer incorrectly disables ``/manifestdependency:``.
+
+* Only write ``.manifest`` files if ``/manifest`` is passed.
+
+WebAssembly Improvements
+------------------------
+
+* Initial version of WebAssembly support has landed. You can invoke the
+  WebAssembly linker by ``wasm-ld``.

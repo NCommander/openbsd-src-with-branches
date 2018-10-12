@@ -23,7 +23,11 @@ D: CMake, library layering
 
 N: Eric Christopher
 E: echristo@gmail.com
-D: Debug Information, autotools/configure/make build, inline assembly
+D: Debug Information, inline assembly
+
+N: Devin Coughlin
+E: dcoughlin@apple.com
+D: Clang Static Analyzer
 
 N: Doug Gregor
 E: dgregor@apple.com
@@ -41,10 +45,6 @@ N: Anton Korobeynikov
 E: anton@korobeynikov.info
 D: Exception handling, Windows codegen, ARM EABI
 
-N: Anna Zaks
-E: ganna@apple.com
-D: Clang Static Analyzer
-
 N: John McCall
 E: rjmccall@apple.com
 D: Clang LLVM IR generation
@@ -52,3 +52,7 @@ D: Clang LLVM IR generation
 N: Richard Smith
 E: richard@metafoo.co.uk
 D: All parts of Clang not covered by someone else
+
+N: Anastasia Stulova
+E: anastasia.stulova@arm.com
+D: OpenCL support

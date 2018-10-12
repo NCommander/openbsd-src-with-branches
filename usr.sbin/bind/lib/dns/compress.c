@@ -1,21 +1,23 @@
 /*
+ * Copyright (C) 2004-2006  Internet Systems Consortium, Inc. ("ISC")
  * Copyright (C) 1999-2001  Internet Software Consortium.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: compress.c,v 1.50 2001/06/04 19:32:59 tale Exp $ */
+/* $ISC: compress.c,v 1.52.18.5 2006/03/02 00:37:21 marka Exp $ */
+
+/*! \file */
 
 #define DNS_NAME_USEINLINE 1
 
@@ -45,7 +47,7 @@ dns_compress_init(dns_compress_t *cctx, int edns, isc_mem_t *mctx) {
 	unsigned int i;
 
 	REQUIRE(cctx != NULL);
-	REQUIRE(mctx != NULL);
+	REQUIRE(mctx != NULL);	/* See: rdataset.c:towiresorted(). */
 
 	cctx->allowed = 0;
 	cctx->edns = edns;
@@ -82,13 +84,31 @@ void
 dns_compress_setmethods(dns_compress_t *cctx, unsigned int allowed) {
 	REQUIRE(VALID_CCTX(cctx));
 
-	cctx->allowed = allowed;
+	cctx->allowed &= ~DNS_COMPRESS_ALL;
+	cctx->allowed |= (allowed & DNS_COMPRESS_ALL);
 }
 
 unsigned int
 dns_compress_getmethods(dns_compress_t *cctx) {
 	REQUIRE(VALID_CCTX(cctx));
-	return (cctx->allowed);
+	return (cctx->allowed & DNS_COMPRESS_ALL);
+}
+
+void
+dns_compress_setsensitive(dns_compress_t *cctx, isc_boolean_t sensitive) {
+	REQUIRE(VALID_CCTX(cctx));
+
+	if (sensitive)
+		cctx->allowed |= DNS_COMPRESS_CASESENSITIVE;
+	else
+		cctx->allowed &= ~DNS_COMPRESS_CASESENSITIVE;
+}
+
+isc_boolean_t
+dns_compress_getsensitive(dns_compress_t *cctx) {
+	REQUIRE(VALID_CCTX(cctx));
+
+	return (ISC_TF((cctx->allowed & DNS_COMPRESS_CASESENSITIVE) != 0));
 }
 
 int
@@ -111,7 +131,7 @@ do { \
  * If no match is found return ISC_FALSE.
  */
 isc_boolean_t
-dns_compress_findglobal(dns_compress_t *cctx, dns_name_t *name,
+dns_compress_findglobal(dns_compress_t *cctx, const dns_name_t *name,
 			dns_name_t *prefix, isc_uint16_t *offset)
 {
 	dns_name_t tname, nname;
@@ -138,8 +158,13 @@ dns_compress_findglobal(dns_compress_t *cctx, dns_name_t *name,
 		for (node = cctx->table[hash]; node != NULL; node = node->next)
 		{
 			NODENAME(node, &nname);
-			if (dns_name_equal(&nname, &tname))
-				break;
+			if ((cctx->allowed & DNS_COMPRESS_CASESENSITIVE) != 0) {
+				if (dns_name_caseequal(&nname, &tname))
+					break;
+			} else {
+				if (dns_name_equal(&nname, &tname))
+					break;
+			}
 		}
 		if (node != NULL)
 			break;
@@ -161,15 +186,15 @@ dns_compress_findglobal(dns_compress_t *cctx, dns_name_t *name,
 }
 
 static inline unsigned int
-name_length(dns_name_t *name) {
+name_length(const dns_name_t *name) {
 	isc_region_t r;
 	dns_name_toregion(name, &r);
 	return (r.length);
 }
 
 void
-dns_compress_add(dns_compress_t *cctx, dns_name_t *name, dns_name_t *prefix,
-		 isc_uint16_t offset)
+dns_compress_add(dns_compress_t *cctx, const dns_name_t *name,
+		 const dns_name_t *prefix, isc_uint16_t offset)
 {
 	dns_name_t tname;
 	unsigned int start;

@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "OrcTestCommon.h"
 #include "llvm/ExecutionEngine/Orc/CompileOnDemandLayer.h"
+#include "OrcTestCommon.h"
 #include "gtest/gtest.h"
 
 using namespace llvm;
@@ -18,19 +18,20 @@ namespace {
 
 class DummyCallbackManager : public orc::JITCompileCallbackManager {
 public:
-  DummyCallbackManager() : JITCompileCallbackManager(0) { }
+  DummyCallbackManager() : JITCompileCallbackManager(0) {}
+
 public:
-  void grow() override { llvm_unreachable("not implemented"); }
+  Error grow() override { llvm_unreachable("not implemented"); }
 };
 
 class DummyStubsManager : public orc::IndirectStubsManager {
 public:
-  std::error_code createStub(StringRef StubName, TargetAddress InitAddr,
-                             JITSymbolFlags Flags) override {
+  Error createStub(StringRef StubName, JITTargetAddress InitAddr,
+                   JITSymbolFlags Flags) override {
     llvm_unreachable("Not implemented");
   }
 
-  std::error_code createStubs(const StubInitsMap &StubInits) override {
+  Error createStubs(const StubInitsMap &StubInits) override {
     llvm_unreachable("Not implemented");
   }
 
@@ -42,34 +43,29 @@ public:
     llvm_unreachable("Not implemented");
   }
 
-  std::error_code updatePointer(StringRef Name,
-                                TargetAddress NewAddr) override {
+  Error updatePointer(StringRef Name, JITTargetAddress NewAddr) override {
     llvm_unreachable("Not implemented");
   }
 };
 
 TEST(CompileOnDemandLayerTest, FindSymbol) {
-  auto MockBaseLayer =
-    createMockBaseLayer<int>(DoNothingAndReturn<int>(0),
-                             DoNothingAndReturn<void>(),
-                             [](const std::string &Name, bool) {
-                               if (Name == "foo")
-                                 return JITSymbol(1, JITSymbolFlags::Exported);
-                               return JITSymbol(nullptr);
-                             },
-                             DoNothingAndReturn<JITSymbol>(nullptr));
+  MockBaseLayer<int, std::shared_ptr<Module>> TestBaseLayer;
+  TestBaseLayer.findSymbolImpl =
+    [](const std::string &Name, bool) {
+      if (Name == "foo")
+        return JITSymbol(1, JITSymbolFlags::Exported);
+      return JITSymbol(nullptr);
+    };
 
-  typedef decltype(MockBaseLayer) MockBaseLayerT;
   DummyCallbackManager CallbackMgr;
 
-  llvm::orc::CompileOnDemandLayer<MockBaseLayerT> COD(
-      MockBaseLayer, [](Function &F) { return std::set<Function *>{&F}; },
+  llvm::orc::CompileOnDemandLayer<decltype(TestBaseLayer)> COD(
+      TestBaseLayer, [](Function &F) { return std::set<Function *>{&F}; },
       CallbackMgr, [] { return llvm::make_unique<DummyStubsManager>(); }, true);
 
   auto Sym = COD.findSymbol("foo", true);
 
-  EXPECT_TRUE(!!Sym)
-    << "CompileOnDemand::findSymbol should call findSymbol in the base layer.";
+  EXPECT_TRUE(!!Sym) << "CompileOnDemand::findSymbol should call findSymbol in "
+                        "the base layer.";
 }
-
 }
