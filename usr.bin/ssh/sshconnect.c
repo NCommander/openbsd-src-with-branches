@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.304 2018/07/27 05:34:42 dtucker Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.305 2018/09/20 03:30:44 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -350,10 +350,6 @@ ssh_create_socket(struct addrinfo *ai)
 		}
 		if (res == NULL) {
 			error("getaddrinfo: no addrs");
-			goto fail;
-		}
-		if (res->ai_addrlen > sizeof(bindaddr)) {
-			error("%s: addr doesn't fit", __func__);
 			goto fail;
 		}
 		memcpy(&bindaddr, res->ai_addr, res->ai_addrlen);
