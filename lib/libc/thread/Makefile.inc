@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.15 2018/05/19 12:27:33 mpi Exp $
+#	$OpenBSD: Makefile.inc,v 1.16 2018/09/24 11:25:09 jsg Exp $
 
 .PATH: ${LIBCSRCDIR}/thread
 
@@ -22,7 +22,7 @@ notyet= rthread_condattr_clock.c \
 .if ${MACHINE_ARCH} == "aarch64" || ${MACHINE_ARCH} == "amd64" || \
     ${MACHINE_ARCH} == "arm" || ${MACHINE_ARCH} == "i386" || \
     ${MACHINE_ARCH} == "mips64" || ${MACHINE_ARCH} == "mips64el" || \
-    ${MACHINE_ARCH} == "sparc64"
+    ${MACHINE_ARCH} == "powerpc" || ${MACHINE_ARCH} == "sparc64"
 CFLAGS+= -DFUTEX
 SRCS+=	rthread_mutex.c \
 	rthread_cond.c
