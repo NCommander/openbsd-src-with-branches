@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.2 2014/04/20 22:22:18 claudio Exp $ */
+/*	$OpenBSD: parser.c,v 1.3 2014/04/21 17:44:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -235,8 +235,6 @@ parse_addr(const char *word, struct sockaddr_storage *sa)
 	hints.ai_protocol = IPPROTO_TCP;
 
 	if ((rv = getaddrinfo(word, "iscsi", &hints, &addrs)) == 0) {
-		if (sizeof(*sa) < addrs->ai_addrlen)
-			err(1, "parse_host: bork bork bork");
 		bcopy(addrs->ai_addr, sa, addrs->ai_addrlen);
 		freeaddrinfo(addrs);
 		return (0);
