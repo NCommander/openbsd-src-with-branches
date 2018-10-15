@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_fcgi.c,v 1.75 2017/07/31 08:02:49 ians Exp $	*/
+/*	$OpenBSD: server_fcgi.c,v 1.76 2018/05/19 13:56:56 jsing Exp $	*/
 
 /*
  * Copyright (c) 2014 Florian Obser <florian@openbsd.org>
@@ -655,7 +655,8 @@ server_fcgi_header(struct client *clt, unsigned int code)
 		return (-1);
 
 	/* HSTS header */
-	if (srv_conf->flags & SRVFLAG_SERVER_HSTS) {
+	if (srv_conf->flags & SRVFLAG_SERVER_HSTS &&
+	    srv_conf->flags & SRVFLAG_TLS) {
 		if ((cl =
 		    kv_add(&resp->http_headers, "Strict-Transport-Security",
 		    NULL)) == NULL ||
