@@ -1,4 +1,4 @@
-/*	$OpenBSD: inetd.c,v 1.158 2017/10/04 23:56:48 jca Exp $	*/
+/*	$OpenBSD: inetd.c,v 1.159 2018/04/26 12:42:51 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983,1991 The Regents of the University of California.
@@ -1248,9 +1248,6 @@ more:
 				continue;
 			}
 			for (res = res0; res; res = res->ai_next) {
-				if (res->ai_addrlen >
-				    sizeof(sep->se_ctrladdr_storage))
-					continue;
 				/*
 				 * If sep is unused, store host in there.
 				 * Otherwise, dup a new entry and prepend it.
