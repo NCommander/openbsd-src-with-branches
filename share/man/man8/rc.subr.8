@@ -1,4 +1,4 @@
-.\" 	$OpenBSD: rc.subr.8,v 1.33 2017/05/27 13:51:52 ajacoutot Exp $
+.\" 	$OpenBSD: rc.subr.8,v 1.34 2017/05/27 19:55:48 ajacoutot Exp $
 .\"
 .\" Copyright (c) 2011 Robert Nagy, Antoine Jacoutot, Ingo Schwarze
 .\" All rights reserved.
@@ -312,7 +312,7 @@ Holds the full
 command used to run the daemon.
 Defaults to:
 .Pp
-.Dl "su -l -c ${daemon_class} -s /bin/sh ${daemon_user} -c"
+.Dl "env -i HOME=/ su -m -c ${daemon_class} -s /bin/sh ${daemon_user} -c"
 .El
 If
 .Va daemon_rtable
