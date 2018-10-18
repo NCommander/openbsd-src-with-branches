@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.434 2018/10/14 10:21:30 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.435 2018/10/15 10:44:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -673,7 +673,6 @@ badnetdel:
 				peer = peer_get(imsg.hdr.peerid);
 				if (peer)
 					peer->throttled = 0;
-				break;
 			} else {
 				rde_dump_ctx_throttle(imsg.hdr.pid, 0);
 			}
