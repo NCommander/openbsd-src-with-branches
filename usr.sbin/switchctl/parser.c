@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.8 2017/08/01 13:11:11 deraadt Exp $	*/
+/*	$OpenBSD: parser.c,v 1.9 2018/10/15 11:30:37 florian Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -444,7 +444,13 @@ match_token(char *word, const struct token table[], int level)
 					res.uri.swa_type = SWITCH_CONN_TCP;
 				else if (strncmp(word, "tls:", len) == 0)
 					res.uri.swa_type = SWITCH_CONN_TLS;
-				else {
+				else if (strncmp(word, "/dev", len) == 0) {
+					res.uri.swa_type = SWITCH_CONN_LOCAL;
+					parse_addr(word, &res.uri.swa_addr);
+					match++;
+					t = &table[i];
+					break;
+				} else {
 					/* set the default */
 					res.uri.swa_type = SWITCH_CONN_TCP;
 					len = 0;
