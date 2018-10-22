@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-icmp6.c,v 1.20 2016/05/07 19:36:45 jca Exp $	*/
+/*	$OpenBSD: print-icmp6.c,v 1.21 2016/07/28 13:05:52 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1993, 1994
@@ -20,8 +20,6 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-#ifdef INET6
 
 #include <ctype.h>
 
@@ -885,6 +883,3 @@ trunc:
 	(void)printf("[|icmp6]");
 	return;
 }
-
-
-#endif /* INET6 */

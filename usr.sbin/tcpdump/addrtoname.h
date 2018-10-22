@@ -1,4 +1,4 @@
-/*	$OpenBSD: addrtoname.h,v 1.10 2004/01/28 19:44:55 canacar Exp $	*/
+/*	$OpenBSD: addrtoname.h,v 1.11 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1992, 1993, 1994, 1995, 1996, 1997
@@ -20,7 +20,7 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @(#) $Id$ (LBL)
+ * @(#) $Id: addrtoname.h,v 1.11 2007/10/07 16:41:05 deraadt Exp $ (LBL)
  */
 
 #ifndef BYTE_ORDER
@@ -39,18 +39,12 @@ extern char *tcpport_string(u_short);
 extern char *udpport_string(u_short);
 extern char *ipproto_string(u_int);
 extern char *getname(const u_char *);
-#ifdef INET6
 extern char *getname6(const u_char *);
-#endif
 extern char *intoa(u_int32_t);
 
 extern void init_addrtoname(u_int32_t, u_int32_t);
 extern struct hnamemem *newhnamemem(void);
-#ifdef INET6
 extern struct h6namemem *newh6namemem(void);
-#endif
 
 #define ipaddr_string(p) getname((const u_char *)(p))
-#ifdef INET6
 #define ip6addr_string(p) getname6((const u_char *)(p))
-#endif

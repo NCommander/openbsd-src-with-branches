@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-frag6.c,v 1.7 2015/01/16 06:40:21 deraadt Exp $	*/
+/*	$OpenBSD: print-frag6.c,v 1.8 2015/11/16 00:16:39 mmcc Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1993, 1994
@@ -20,8 +20,6 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
-#ifdef INET6
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -84,4 +82,3 @@ trunc:
 	return 65535;
 #undef TCHECK
 }
-#endif /* INET6 */

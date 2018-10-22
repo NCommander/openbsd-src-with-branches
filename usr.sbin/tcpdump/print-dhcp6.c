@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-dhcp6.c,v 1.9 2015/11/16 00:16:39 mmcc Exp $	*/
+/*	$OpenBSD: print-dhcp6.c,v 1.10 2015/11/18 15:36:20 mmcc Exp $	*/
 
 /*
  * Copyright (C) 1998 and 1999 WIDE Project.
@@ -28,8 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifdef INET6
 
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -329,5 +327,3 @@ dhcp6_print(const u_char *cp, u_int length,
 trunc:
 	printf("%s", tstr);
 }
-
-#endif /* INET6 */
