@@ -1,4 +1,6 @@
-# $OpenBSD: antarctica,v 1.38 2017/10/23 16:14:16 millert Exp $
+# $OpenBSD: antarctica,v 1.39 2018/03/27 21:22:13 millert Exp $
+# tzdb data for Antarctica and environs
+
 # This file is in the public domain, so clarified as of
 # 2009-05-17 by Arthur David Olson.
 
