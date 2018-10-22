@@ -1,4 +1,4 @@
-/*	$OpenBSD: fp_emulate.c,v 1.18 2017/09/02 15:56:29 visa Exp $	*/
+/*	$OpenBSD: fp_emulate.c,v 1.19 2017/09/16 05:04:34 visa Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -579,7 +579,7 @@ fpu_emulate_cop1(struct proc *p, struct trapframe *tf, uint32_t insn)
 
 	/*
 	 * Check for valid format.  FRType assumes bit 25 is always set,
-	 * so we need to check for it explicitely.
+	 * so we need to check for it explicitly.
 	 */
 
 	if ((insn & (1 << 25)) == 0)

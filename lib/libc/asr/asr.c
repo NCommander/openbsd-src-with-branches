@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.c,v 1.59 2018/03/13 12:25:34 jca Exp $	*/
+/*	$OpenBSD: asr.c,v 1.60 2018/04/28 15:16:49 schwarze Exp $	*/
 /*
  * Copyright (c) 2010-2012 Eric Faurot <eric@openbsd.org>
  *
@@ -303,7 +303,7 @@ _asr_async_free(struct asr_query *as)
 
 /*
  * Get a context from the given resolver. This takes a new reference to
- * the returned context, which *must* be explicitely dropped when done
+ * the returned context, which *must* be explicitly dropped when done
  * using this context.
  */
 struct asr_ctx *

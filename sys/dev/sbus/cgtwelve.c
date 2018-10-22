@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgtwelve.c,v 1.7 2013/05/31 22:07:45 deraadt Exp $	*/
+/*	$OpenBSD: cgtwelve.c,v 1.8 2013/10/20 20:07:30 miod Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003 Miodrag Vallat.  All rights reserved.
@@ -41,7 +41,7 @@
  * 8 bit and 24 bit color), and a lot of colormap combinations.
  *
  * All of this is driven by a set of three Bt462 ramdacs (latched unless
- * explicitely programmed), and a couple of other Matrox-specific chips.
+ * explicitly programmed), and a couple of other Matrox-specific chips.
  *
  * XXX The high res card is untested.
  */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.166 2016/10/19 08:28:20 guenther Exp $ */
+/*	$OpenBSD: pmap.c,v 1.167 2017/05/16 20:52:54 kettenis Exp $ */
 
 /*
  * Copyright (c) 2015 Martin Pieuchot
@@ -1086,7 +1086,7 @@ pmap_zero_page(struct vm_page *pg)
 
 	/*
 	 * Loop over & zero cache lines.  This code assumes that 64-bit
-	 * CPUs have 128-byte cache lines.  We explicitely use ``dcbzl''
+	 * CPUs have 128-byte cache lines.  We explicitly use ``dcbzl''
 	 * here because we do not clear the DCBZ_SIZE bit of the HID5
 	 * register in order to be compatible with code using ``dcbz''
 	 * and assuming that cache line size is 32.
