@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.100 2017/12/08 05:25:20 deraadt Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.101 2018/02/04 20:41:58 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -63,7 +63,7 @@ dlopen(const char *libname, int flags)
 		return RTLD_DEFAULT;
 
 	if ((flags & RTLD_TRACE) == RTLD_TRACE) {
-		_dl_traceld = "true";
+		_dl_traceld = 1;
 		_dl_tracelib = 1;
 	}
 
