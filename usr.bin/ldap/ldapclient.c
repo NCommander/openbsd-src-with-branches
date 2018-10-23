@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldapclient.c,v 1.3 2018/07/03 10:10:09 jmc Exp $	*/
+/*	$OpenBSD: ldapclient.c,v 1.4 2018/10/23 08:24:50 martijn Exp $	*/
 
 /*
  * Copyright (c) 2018 Reyk Floeter <reyk@openbsd.org>
@@ -301,6 +301,8 @@ ldapc_search(struct ldapc *ldap, struct ldapc_search *ls)
 	char				**outvalues;
 	int				 ret, i, code, fail = 0;
 
+	if (ldap->ldap_flags & F_LDIF)
+		printf("version: 1\n");
 	do {
 		if (aldap_search(ldap->ldap_al, ls->ls_basedn, ls->ls_scope,
 		    ls->ls_filter, ls->ls_attr, 0, ls->ls_sizelimit,
