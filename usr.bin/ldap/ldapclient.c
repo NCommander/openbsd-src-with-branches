@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldapclient.c,v 1.2 2018/06/26 09:47:20 reyk Exp $	*/
+/*	$OpenBSD: ldapclient.c,v 1.3 2018/07/03 10:10:09 jmc Exp $	*/
 
 /*
  * Copyright (c) 2018 Reyk Floeter <reyk@openbsd.org>
@@ -440,9 +440,11 @@ ldapc_printattr(struct ldapc *ldap, const char *key, const char *value)
 		/* Wrap lines */
 		for (outlen = 0, inlen = strlen(p);
 		    outlen < inlen;
-		    outlen += LDIF_LINELENGTH) {
+		    outlen += LDIF_LINELENGTH - 1) {
 			if (outlen)
 				putchar(' ');
+			if (outlen > LDIF_LINELENGTH)
+				outlen--;
 			/* max. line length - newline - optional indent */
 			left = MIN(inlen - outlen, outlen ?
 			    LDIF_LINELENGTH - 2 :
