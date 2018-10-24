@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_update.c,v 1.100 2018/09/29 07:43:36 claudio Exp $ */
+/*	$OpenBSD: rde_update.c,v 1.101 2018/10/15 10:44:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -543,9 +543,9 @@ up_generate_default(struct filter_head *rules, struct rde_peer *peer,
 	bzero(&p, sizeof(p));
 	bzero(&addr, sizeof(addr));
 	addr.aid = aid;
-	re = rib_get(peer->rib, &addr, 0);
+	re = rib_get(rib_byid(peer->loc_rib_id), &addr, 0);
 	if (re == NULL)
-		re = rib_add(peer->rib, &addr, 0);
+		re = rib_add(rib_byid(peer->loc_rib_id), &addr, 0);
 	p.re = re;
 	p.aspath = asp;
 	p.peer = peer;
