@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchctl.c,v 1.7 2017/01/31 05:53:08 jsg Exp $	*/
+/*	$OpenBSD: switchctl.c,v 1.8 2018/10/21 21:10:24 akoshibe Exp $	*/
 
 /*
  * Copyright (c) 2007-2015 Reyk Floeter <reyk@openbsd.org>
@@ -180,6 +180,9 @@ main(int argc, char *argv[])
 		}
 		err(1, "connect: %s", sock);
 	}
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	if (res->ibuf != NULL)
 		ibuf = res->ibuf;
