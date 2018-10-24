@@ -1,4 +1,4 @@
-/*	$OpenBSD: csh.c,v 1.43 2017/12/16 10:27:21 anton Exp $	*/
+/*	$OpenBSD: csh.c,v 1.44 2018/09/08 01:28:39 miko Exp $	*/
 /*	$NetBSD: csh.c,v 1.14 1995/04/29 23:21:28 mycroft Exp $	*/
 
 /*-
@@ -578,7 +578,7 @@ importpath(Char *cp)
      * i+2 where i is the number of colons in the path. There are i+1
      * directories in the path plus we need room for a zero terminator.
      */
-    pv = (Char **) xcalloc((size_t) (i + 2), sizeof(Char **));
+    pv = xcalloc(i + 2, sizeof(*pv));
     dp = cp;
     i = 0;
     if (*dp)
