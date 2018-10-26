@@ -1,4 +1,4 @@
-/*	$OpenBSD: getconf.c,v 1.18 2015/11/17 17:29:27 jca Exp $	*/
+/*	$OpenBSD: getconf.c,v 1.19 2016/10/28 07:22:59 schwarze Exp $	*/
 
 /*-
  * Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -513,6 +513,8 @@ main(int argc, char *argv[])
 		break;
 
 	case PATHCONF:
+		if (unveil(argv[1], "r") == -1)
+			err(1, "unveil");
 		if (pledge("stdio rpath", NULL) == -1)
 			err(1, "pledge");
 		errno = 0;
