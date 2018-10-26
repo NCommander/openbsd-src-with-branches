@@ -1,4 +1,4 @@
-/* $OpenBSD: rebound.c,v 1.99 2018/09/08 13:17:19 anton Exp $ */
+/* $OpenBSD: rebound.c,v 1.100 2018/09/10 19:22:53 anton Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -1031,6 +1031,12 @@ monitorloop(int ud, int ld, int ud6, int ld6, const char *confname)
 	int r, kq;
 	int conffd = -1;
 	struct timespec ts, *timeout = NULL;
+
+	if (unveil(confname, "r") == -1)
+		err(1, "unveil");
+
+	if (unveil("/usr/sbin/rebound", "x") == -1)
+		err(1, "unveil");
 
 	if (pledge("stdio rpath proc exec", NULL) == -1)
 		err(1, "pledge");
