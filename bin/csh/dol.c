@@ -1,4 +1,4 @@
-/*	$OpenBSD: dol.c,v 1.22 2018/09/08 01:28:39 miko Exp $	*/
+/*	$OpenBSD: dol.c,v 1.24 2018/09/18 06:56:09 deraadt Exp $	*/
 /*	$NetBSD: dol.c,v 1.8 1995/09/27 00:38:38 jtc Exp $	*/
 
 /*-
@@ -762,12 +762,8 @@ setDolp(Char *cp)
 	}
     }
 
-    if (dp) {
-	addla(dp);
-	free(dp);
-    }
-    else
-	addla(cp);
+    addla(cp);
+    free(cp);
 
     dolp = STRNULL;
     if (seterr)
