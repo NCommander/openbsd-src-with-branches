@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.152 2018/09/18 06:36:18 mestre Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.153 2018/10/27 09:47:36 phessler Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -201,6 +201,8 @@ ieee80211_del_ess(struct ieee80211com *ic, char *nwid, int all)
 			TAILQ_REMOVE(&ic->ic_ess, ess, ess_next);
 			explicit_bzero(ess, sizeof(*ess));
 			free(ess, M_DEVBUF, sizeof(*ess));
+			if (TAILQ_EMPTY(&ic->ic_ess))
+				ic->ic_flags &= ~IEEE80211_F_AUTO_JOIN;
 			if (all != 1)
 				return;
 		}
