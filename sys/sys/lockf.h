@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockf.h,v 1.9 2013/03/24 17:45:25 deraadt Exp $	*/
+/*	$OpenBSD: lockf.h,v 1.10 2018/10/27 08:47:09 anton Exp $	*/
 /*	$NetBSD: lockf.h,v 1.5 1994/06/29 06:44:33 cgd Exp $	*/
 
 /*
@@ -78,6 +78,8 @@ void	 lf_wakelock(struct lockf *);
 void	 lf_link(struct lockf *, struct lockf *);
 void	 lf_unlink(struct lockf *);
 __END_DECLS
+
+#define LOCKF_DIAGNOSTIC
 
 #ifdef LOCKF_DEBUG
 extern int lockf_debug;
