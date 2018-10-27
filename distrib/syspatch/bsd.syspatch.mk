@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.syspatch.mk,v 1.21 2018/06/25 16:29:00 deraadt Exp $
+#	$OpenBSD: bsd.syspatch.mk,v 1.22 2018/10/08 20:38:32 tb Exp $
 #
 # Copyright (c) 2016-2017 Robert Nagy <robert@openbsd.org>
 #
@@ -50,7 +50,6 @@ PATCH_ARGS=	-d ${SRCDIR} -z .orig --forward --quiet -E ${PATCH_STRIP}
 SYSPATCH_DIR=	${FAKE}/var/syspatch/${SYSPATCH_SHRT}
 FAKE=		${FAKEROOT}/syspatch/${SYSPATCH_SHRT}
 KERNEL=		$$(sysctl -n kern.osversion | cut -d '\#' -f 1)
-SUBDIR?=
 
 _PATCH_COOKIE=	${ERRATA}/.patch_done
 _BUILD_COOKIE=	${ERRATA}/.build_done
