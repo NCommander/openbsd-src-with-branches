@@ -113,7 +113,6 @@ int	db_panic = 1;
  * to break into console during boot. It's _really_ useful when debugging
  * some things in the kernel that can cause init(8) to crash.
  */
-#define DDB_SAFE_CONSOLE
 #ifdef DDB_SAFE_CONSOLE
 int	db_console = 1;
 #else
