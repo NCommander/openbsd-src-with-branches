@@ -312,7 +312,7 @@ Holds the full
 command used to run the daemon.
 Defaults to:
 .Pp
-.Dl "env -i HOME=/ su -m -c ${daemon_class} -s /bin/sh ${daemon_user} -c"
+.Dl "su -l -c ${daemon_class} -s /bin/sh ${daemon_user} -c"
 .El
 If
 .Va daemon_rtable

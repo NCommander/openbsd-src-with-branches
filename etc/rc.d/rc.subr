@@ -317,6 +317,6 @@ fi
 readonly daemon_class
 unset _rcflags _rcrtable _rcuser _rctimeout
 pexp="${daemon}${daemon_flags:+ ${daemon_flags}}"
-rcexec="env -i HOME=/ su -m -c ${daemon_class} -s /bin/sh ${daemon_user} -c"
+rcexec="su -l -c ${daemon_class} -s /bin/sh ${daemon_user} -c"
 [ "${daemon_rtable}" -eq 0 ] ||
 	rcexec="route -T ${daemon_rtable} exec ${rcexec}"
