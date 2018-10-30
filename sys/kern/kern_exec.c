@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.200 2018/07/20 21:57:26 deraadt Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.201 2018/08/05 14:23:57 beck Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -117,6 +117,8 @@ check_exec(struct proc *p, struct exec_package *epp)
 	ndp = epp->ep_ndp;
 	ndp->ni_cnd.cn_nameiop = LOOKUP;
 	ndp->ni_cnd.cn_flags = FOLLOW | LOCKLEAF | SAVENAME;
+	if (epp->ep_flags & EXEC_INDIR)
+		ndp->ni_cnd.cn_flags |= BYPASSUNVEIL;
 	/* first get the vnode */
 	if ((error = namei(ndp)) != 0)
 		return (error);
