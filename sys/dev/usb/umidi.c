@@ -1,4 +1,4 @@
-/*	$OpenBSD: umidi.c,v 1.48 2018/09/07 03:54:12 miko Exp $	*/
+/*	$OpenBSD: umidi.c,v 1.49 2018/09/07 04:03:30 miko Exp $	*/
 /*	$NetBSD: umidi.c,v 1.16 2002/07/11 21:14:32 augustss Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -317,7 +317,7 @@ umidi_flush(void *addr)
 	if (!mididev->out_jack || !mididev->opened)
 		return;
 
-	return out_jack_flush(mididev->out_jack);
+	out_jack_flush(mididev->out_jack);
 }
 
 void
