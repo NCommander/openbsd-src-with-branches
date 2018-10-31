@@ -1,4 +1,4 @@
-#	$OpenBSD: principals-command.sh,v 1.3 2016/09/26 21:34:38 bluhm Exp $
+#	$OpenBSD: principals-command.sh,v 1.4 2017/04/30 23:34:55 djm Exp $
 #	Placed in the Public Domain.
 
 tid="authorized principals command"
@@ -47,7 +47,7 @@ test $? -eq 0 || fatal "couldn't prepare principals command"
 $SUDO chmod 0755 "$PRINCIPALS_COMMAND"
 
 # Test explicitly-specified principals
-for privsep in yes no ; do
+for privsep in yes sandbox ; do
 	_prefix="privsep $privsep"
 
 	# Setup for AuthorizedPrincipalsCommand
