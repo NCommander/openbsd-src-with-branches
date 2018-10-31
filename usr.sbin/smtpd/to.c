@@ -1,4 +1,4 @@
-/*	$OpenBSD: to.c,v 1.32 2018/09/03 11:30:14 eric Exp $	*/
+/*	$OpenBSD: to.c,v 1.33 2018/09/08 10:05:07 eric Exp $	*/
 
 /*
  * Copyright (c) 2009 Jacek Masiulaniec <jacekm@dobremiasto.net>
@@ -506,7 +506,7 @@ rule_to_text(struct rule *r)
 	if (r->flag_smtp_starttls) {
 		if (r->flag_smtp_starttls < 0)
 			(void)strlcat(buf, "!", sizeof buf);
-		(void)strlcat(buf, "starttls ", sizeof buf);
+		(void)strlcat(buf, "tls ", sizeof buf);
 		(void)strlcat(buf, " ", sizeof buf);
 	}
 
