@@ -114,6 +114,10 @@
 	{ 255,    "ALL", 0 }, \
 	{ 0, NULL, 0}
 
+#define	HASHALGNAMES \
+	{ 1, "SHA-1", 0 }, \
+	{ 0, NULL, 0 }
+
 struct tbl {
 	unsigned int    value;
 	const char      *name;
@@ -125,6 +129,7 @@ static struct tbl tsigrcodes[] = { RCODENAMES TSIGRCODENAMES };
 static struct tbl certs[] = { CERTNAMES };
 static struct tbl secalgs[] = { SECALGNAMES };
 static struct tbl secprotos[] = { SECPROTONAMES };
+static struct tbl hashalgs[] = { HASHALGNAMES };
 
 static struct keyflag {
 	const char *name;
@@ -199,7 +204,7 @@ maybe_numeric(unsigned int *valuep, isc_textregion_t *source,
 	 * isc_parse_uint32().  isc_parse_uint32() requires
 	 * null termination, so we must make a copy.
 	 */
-	strncpy(buffer, source->base, NUMBERSIZE);
+	strlcpy(buffer, source->base, NUMBERSIZE);
 	INSIST(buffer[source->length] == '\0');
 
 	result = isc_parse_uint32(&n, buffer, 10);
@@ -318,6 +323,14 @@ dns_secproto_totext(dns_secproto_t secproto, isc_buffer_t *target) {
 }
 
 isc_result_t
+dns_hashalg_fromtext(unsigned char *hashalg, isc_textregion_t *source) {
+	unsigned int value;
+	RETERR(dns_mnemonic_fromtext(&value, source, hashalgs, 0xff));
+	*hashalg = value;
+	return (ISC_R_SUCCESS);
+}
+
+isc_result_t
 dns_keyflags_fromtext(dns_keyflags_t *flagsp, isc_textregion_t *source)
 {
 	isc_result_t result;
@@ -397,8 +410,7 @@ dns_rdataclass_fromtext(dns_rdataclass_t *classp, isc_textregion_t *source) {
 			char *endp;
 			unsigned int val;
 
-			strncpy(buf, source->base + 5, source->length - 5);
-			buf[source->length - 5] = '\0';
+			strlcpy(buf, source->base + 5, source->length - 5);
 			val = strtoul(buf, &endp, 10);
 			if (*endp == '\0' && val <= 0xffff) {
 				*classp = (dns_rdataclass_t)val;

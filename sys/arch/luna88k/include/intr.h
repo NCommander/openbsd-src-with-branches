@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.14 2004/01/08 14:29:45 miod Exp $	*/
+/*	$OpenBSD: intr.h,v 1.9 2014/12/28 13:03:18 aoyama Exp $	*/
 /*
  * Copyright (C) 2000 Steve Murphree, Jr.
  * All rights reserved.
@@ -26,107 +26,30 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _LUNA88K_INTR_H_
-#define _LUNA88K_INTR_H_
-/*
- * INTERRUPT STAT levels.  for 'systat vmstat'
- * intrcnt and friends are defined in locore.S
- * XXX smurph
- */
-
-#ifndef _LOCORE
-
-#define M88K_NIRQ	12
-
-#define M88K_SPUR_IRQ	0
-#define M88K_LEVEL1_IRQ	1
-#define M88K_LEVEL2_IRQ	2
-#define M88K_LEVEL3_IRQ	3
-#define M88K_LEVEL4_IRQ	4
-#define M88K_LEVEL5_IRQ	5
-#define M88K_LEVEL6_IRQ	6
-#define M88K_LEVEL7_IRQ	7
-/*
- * We keep track of these separately, but
- * they will be reflected with the above also.
- */
-#define M88K_CLK_IRQ	8
-#define M88K_SCLK_IRQ	9
-#define M88K_PCLK_IRQ	10
-#define M88K_NMI_IRQ	11
-
-extern int intrcnt[M88K_NIRQ];
-
-#endif
+#ifndef _MACHINE_INTR_H_
+#define _MACHINE_INTR_H_
 
 /*
  * IPL levels.
  */
 
 #define IPL_NONE	0
-#define IPL_SOFTCLOCK	1
-#define IPL_SOFTNET	1
+#define IPL_SOFTINT	1
 #define IPL_BIO		3
+#define IPL_AUDIO	4
 #define IPL_NET		4
-#define IPL_IMP		4
 #define IPL_TTY		5
 #define IPL_VM		5
 #define IPL_CLOCK	6
 #define IPL_STATCLOCK	6
+#define	IPL_SCHED	6
 #define IPL_HIGH	7
 #define IPL_NMI		7
 #define IPL_ABORT	7
 
-#ifdef _KERNEL
-#ifndef _LOCORE
-unsigned setipl(unsigned level);
-unsigned raiseipl(unsigned level);
-int spl0(void);
+#define IPL_MPFLOOR	IPL_TTY
+#define IPL_MPSAFE	0	/* no "mpsafe" interrupts */
 
-/* needs major cleanup - XXX nivas */
+#include <m88k/intr.h>
 
-/* SPL asserts */
-#ifdef DIAGNOSTIC
-/*
- * Although this function is implemented in MI code, it must be in this MD
- * header because we don't want this header to include MI includes.
- */
-void splassert_fail(int, int, const char *);
-extern int splassert_ctl;
-void splassert_check(int, const char *);
-#define splassert(__wantipl) do {			\
-	if (__predict_false(splassert_ctl > 0)) {	\
-		splassert_check(__wantipl, __func__);	\
-	}						\
-} while (0)
-#else
-#define	splassert(wantipl)	do { /* nothing */ } while (0)
-#endif
-
-#endif /* _LOCORE */
-
-#define spl1()		setipl(1)
-#define spl2()		setipl(2)
-#define spl3()		setipl(3)
-#define spl4()		setipl(4)
-#define spl5()		setipl(5)
-#define spl6()		setipl(6)
-#define spl7()		setipl(7)
-
-#define splnone			spl0
-#define spllowersoftclock()	setipl(IPL_SOFTCLOCK)
-#define splsoftclock()		setipl(IPL_SOFTCLOCK)
-#define splsoftnet()		setipl(IPL_SOFTNET)
-#define splbio()		raiseipl(IPL_BIO)
-#define splnet()		raiseipl(IPL_NET)
-#define spltty()		raiseipl(IPL_TTY)
-#define splclock()		raiseipl(IPL_CLOCK)
-#define splstatclock()		raiseipl(IPL_STATCLOCK)
-#define splimp()		raiseipl(IPL_IMP)
-#define splvm()			raiseipl(IPL_VM)
-#define splhigh()		setipl(IPL_HIGH)
-
-#define splx(x)		((x) ? setipl((x)) : spl0())
-
-#endif /* _KERNEL */
-#endif /* _LUNA88K_INTR_H_ */
+#endif /* _MACHINE_INTR_H_ */

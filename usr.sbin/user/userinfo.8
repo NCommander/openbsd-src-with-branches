@@ -1,5 +1,5 @@
-.\" $NetBSD: userinfo.8,v 1.2 2000/02/28 05:10:57 enami Exp $ */
-.\"
+.\" $OpenBSD: userinfo.8,v 1.14 2013/07/16 11:13:34 schwarze Exp $
+.\" $NetBSD: userinfo.8,v 1.8 2003/02/14 16:11:37 grant Exp $
 .\"
 .\" Copyright (c) 1999 Alistair G. Crooks.  All rights reserved.
 .\"
@@ -11,10 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by Alistair G. Crooks.
-.\" 4. The name of the author may not be used to endorse or promote
+.\" 3. The name of the author may not be used to endorse or promote
 .\"    products derived from this software without specific prior written
 .\"    permission.
 .\"
@@ -31,54 +28,56 @@
 .\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
 .\"
-.Dd November 30, 1999
+.Dd $Mdocdate: July 16 2013 $
 .Dt USERINFO 8
-.Os NetBSD
+.Os
 .Sh NAME
 .Nm userinfo
-.Nd displays user information
+.Nd display user information
 .Sh SYNOPSIS
-.Nm
+.Nm userinfo
 .Op Fl e
-.Op Fl v
 .Ar user
 .Sh DESCRIPTION
 The
 .Nm
-utility retrieves the user information from the system.
+utility displays information about the specified
+.Ar user .
+The fields shown are defined in
+.Xr master.passwd 5 .
+The encrypted password is only displayed if the calling user is the
+superuser.
 .Pp
-The following command line options are recognised:
+The options are as follows:
 .Bl -tag -width Ds
 .It Fl e
-return 0 if the user exists, and non-zero if the
-user does not exist, on the system. No information is
-displayed. This form of the command is useful for
+Do not display anything (quiet mode).
+This form of the command is useful for
 scripts which need to check whether a particular user
-name or uid is already in use on the system.
-.It Fl v
-perform any actions in a verbose manner.
+name or UID is already in use on the system.
 .El
-.Pp
-The user argument may either be a user's name, or a uid.
 .Pp
 The
+.Ar user
+argument may be either a user name or a user ID (UID).
+.Sh EXIT STATUS
+The
 .Nm
-utility exits 0 if the user name or uid exists, and non-zero if it does not.
-.Sh FILES
-.Bl -tag -width /etc/usermgmt.conf -compact
-.It Pa /etc/usermgmt.conf
-.El
+utility exits 0 if
+.Ar user
+exists, and non-zero if it does not.
 .Sh SEE ALSO
-.Xr passwd 5
+.Xr id 1 ,
+.Xr passwd 5 ,
+.Xr groupinfo 8 ,
+.Xr user 8
 .Sh HISTORY
 The
 .Nm
 utility first appeared in
-.Nx 1.5 .
-It is based on the
-.Ar addnerd
-package by the same author.
-.Sh AUTHOR
+.Ox 2.7 .
+.Sh AUTHORS
 The
 .Nm
-utility was written by Alistair G. Crooks (agc@netbsd.org).
+utility was written by
+.An Alistair G. Crooks Aq Mt agc@NetBSD.org .

@@ -1,5 +1,4 @@
-/*	$NetBSD: getservbyname.c,v 1.4 1995/02/25 06:20:36 cgd Exp $	*/
-
+/*	$OpenBSD: getservbyname.c,v 1.10 2005/08/06 20:30:03 espie Exp $ */
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,39 +28,45 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getservbyname.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getservbyname.c,v 1.4 1995/02/25 06:20:36 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <netdb.h>
+#include <stdio.h>
 #include <string.h>
 
-extern int _serv_stayopen;
-
-struct servent *
-getservbyname(name, proto)
-	const char *name, *proto;
+int
+getservbyname_r(const char *name, const char *proto, struct servent *se,
+    struct servent_data *sd)
 {
-	register struct servent *p;
-	register char **cp;
+	char **cp;
+	int error;
 
-	setservent(_serv_stayopen);
-	while (p = getservent()) {
-		if (strcmp(name, p->s_name) == 0)
+	setservent_r(sd->stayopen, sd);
+	while ((error = getservent_r(se, sd)) == 0) {
+		if (strcmp(name, se->s_name) == 0)
 			goto gotname;
-		for (cp = p->s_aliases; *cp; cp++)
+		for (cp = se->s_aliases; *cp; cp++)
 			if (strcmp(name, *cp) == 0)
 				goto gotname;
 		continue;
 gotname:
-		if (proto == 0 || strcmp(p->s_proto, proto) == 0)
+		if (proto == 0 || strcmp(se->s_proto, proto) == 0)
 			break;
 	}
-	if (!_serv_stayopen)
-		endservent();
-	return (p);
+	if (!sd->stayopen && sd->fp != NULL) {
+		fclose(sd->fp);
+		sd->fp = NULL;
+	}
+	return (error);
 }
+DEF_WEAK(getservbyname_r);
+
+struct servent *
+getservbyname(const char *name, const char *proto)
+{
+	extern struct servent_data _servent_data;
+	static struct servent serv;
+
+	if (getservbyname_r(name, proto, &serv, &_servent_data) != 0)
+		return (NULL);
+	return (&serv);
+}
+DEF_WEAK(getservbyname);

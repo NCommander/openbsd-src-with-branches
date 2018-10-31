@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,67 +32,33 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mount_fs.c	8.1 (Berkeley) 6/6/93
- *	$Id: mount_fs.c,v 1.3 1994/06/13 20:47:40 mycroft Exp $
+ *	$Id: mount_fs.c,v 1.13 2014/10/20 02:33:42 guenther Exp $
  */
 
 #include "am.h"
-#ifdef NFS_3
-typedef nfs_fh fhandle_t;
-#endif /* NFS_3 */
-#include <sys/mount.h>
 
+#include <unistd.h>
 #include <sys/stat.h>
 
 /*
  * Standard mount flags
  */
-#ifdef hpux
-/*
- * HP-UX has an annoying feature of printing
- * error msgs on /dev/console
- */
-#undef M_NOSUID
-#endif /* hpux */
 
 struct opt_tab mnt_flags[] = {
-	{ "ro", M_RDONLY },
-#ifdef M_CACHE
-	{ "nocache", M_NOCACHE },
-#endif /* M_CACHE */
-#ifdef M_GRPID
-	{ "grpid", M_GRPID },
-#endif /* M_GRPID */
-#ifdef M_MULTI
-	{ "multi", M_MULTI },
-#endif /* M_MULTI */
-#ifdef M_NODEV
-	{ "nodev", M_NODEV },
-#endif /* M_NODEV */
-#ifdef M_NOEXEC
-	{ "noexec", M_NOEXEC },
-#endif /* M_NOEXEC */
-#ifdef M_NOSUB
-	{ "nosub", M_NOSUB },
-#endif /* M_NOSUB */
-#ifdef M_NOSUID
-	{ "nosuid", M_NOSUID },
-#endif /* M_NOSUID */
-#ifdef M_SYNC
-	{ "sync", M_SYNC },
-#endif /* M_SYNC */
+	{ "ro",		MNT_RDONLY },
+	{ "nodev",	MNT_NODEV },
+	{ "noexec",	MNT_NOEXEC },
+	{ "nosuid",	MNT_NOSUID },
+	{ "sync",	MNT_SYNCHRONOUS },
 	{ 0, 0 }
 };
 
-int compute_mount_flags(mnt)
-struct mntent *mnt;
+int
+compute_mount_flags(struct mntent *mnt)
 {
 	struct opt_tab *opt;
 	int flags;
-#ifdef NFS_4
-	flags = M_NEWTYPE;
-#else
 	flags = 0;
-#endif /* NFS_4 */
 
 	/*
 	 * Crack basic mount options
@@ -107,49 +69,25 @@ struct mntent *mnt;
 	return flags;
 }
 
-int mount_fs P((struct mntent *mnt, int flags, caddr_t mnt_data, int retry, MTYPE_TYPE type));
-int mount_fs(mnt, flags, mnt_data, retry, type)
-struct mntent *mnt;
-int flags;
-caddr_t mnt_data;
-int retry;
-MTYPE_TYPE type;
+int
+mount_fs(struct mntent *mnt, int flags, caddr_t mnt_data, int retry,
+    const char *type)
 {
 	int error = 0;
-#ifdef MNTINFO_DEV
-	struct stat stb;
-	char *xopts = 0;
-#endif /* MNTINFO_DEV */
 
 #ifdef DEBUG
-#ifdef NFS_4
 	dlog("%s fstype %s (%s) flags %#x (%s)",
 		mnt->mnt_dir, type, mnt->mnt_type, flags, mnt->mnt_opts);
-#else
-	dlog("%s fstype %d (%s) flags %#x (%s)",
-		mnt->mnt_dir, type, mnt->mnt_type, flags, mnt->mnt_opts);
-#endif /* NFS_4 */
 #endif /* DEBUG */
 
 	/*
 	 * Fake some mount table entries for the automounter
 	 */
-#ifdef FASCIST_DF_COMMAND
-	/*
-	 * Some systems have a df command which blows up when
-	 * presented with an unknown mount type.
-	 */
-	if (STREQ(mnt->mnt_type, MNTTYPE_AUTO)) {
-		/*
-		 * Try it with the normal name
-		 */
-		mnt->mnt_type = FASCIST_DF_COMMAND;
-	}
-#endif /* FASCIST_DF_COMMAND */
 
 again:
 	clock_valid = 0;
-	error = MOUNT_TRAP(type, mnt, flags, mnt_data);
+	error = mount(type, mnt->mnt_dir, flags, mnt_data);
+
 	if (error < 0)
 		plog(XLOG_ERROR, "%s: mount: %m", mnt->mnt_dir);
 	if (error < 0 && --retry > 0) {
@@ -164,48 +102,10 @@ again:
 		return errno;
 	}
 
-#ifdef UPDATE_MTAB
-#ifdef MNTINFO_DEV
-	/*
-	 * Add the extra dev= field to the mount table.
-	 */
-	if (lstat(mnt->mnt_dir, &stb) == 0) {
-		char *zopts = (char *) xmalloc(strlen(mnt->mnt_opts) + 32);
-		xopts = mnt->mnt_opts;
-		if (sizeof(stb.st_dev) == 2) {
-			/* e.g. SunOS 4.1 */
-			sprintf(zopts, "%s,%s=%s%04lx", xopts, MNTINFO_DEV,
-					MNTINFO_PREF, (u_long) stb.st_dev & 0xffff);
-		} else {
-			/* e.g. System Vr4 */
-			sprintf(zopts, "%s,%s=%s%08lx", xopts, MNTINFO_DEV,
-					MNTINFO_PREF, (u_long) stb.st_dev);
-		}
-		mnt->mnt_opts = zopts;
-	}
-#endif /* MNTINFO_DEV */
-
-#ifdef FIXUP_MNTENT
-	/*
-	 * Additional fields in struct mntent
-	 * are fixed up here
-	 */
-	FIXUP_MNTENT(mnt);
-#endif
-
-	write_mntent(mnt);
-#ifdef MNTINFO_DEV
-	if (xopts) {
-		free(mnt->mnt_opts);
-		mnt->mnt_opts = xopts;
-	}
-#endif /* MNTINFO_DEV */
-#endif /* UPDATE_MTAB */
 
 	return 0;
 }
 
-#ifdef NEED_MNTOPT_PARSER
 /*
  * Some systems don't provide these to the user,
  * but amd needs them, so...
@@ -215,15 +115,15 @@ again:
 
 #include <ctype.h>
 
-static char *nextmntopt(p)
-char **p;
+static char *
+nextmntopt(char **p)
 {
 	char *cp = *p;
 	char *rp;
 	/*
 	 * Skip past white space
 	 */
-	while (*cp && isspace(*cp))
+	while (isspace((unsigned char)*cp))
 		cp++;
 	/*
 	 * Word starts here
@@ -248,15 +148,15 @@ char **p;
 	return rp;
 }
 
-char *hasmntopt(mnt, opt)
-struct mntent *mnt;
-char *opt;
+char *
+hasmntopt(struct mntent *mnt, char *opt)
 {
 	char t[MNTMAXSTR];
 	char *f;
 	char *o = t;
 	int l = strlen(opt);
-	strcpy(t, mnt->mnt_opts);
+
+	strlcpy(t, mnt->mnt_opts, sizeof(t));
 
 	while (*(f = nextmntopt(&o)))
 		if (strncmp(opt, f, l) == 0)
@@ -264,8 +164,3 @@ char *opt;
 
 	return 0;
 }
-#endif /* NEED_MNTOPT_PARSER */
-
-#ifdef MOUNT_HELPER_SOURCE
-#include MOUNT_HELPER_SOURCE
-#endif /* MOUNT_HELPER_SOURCE */

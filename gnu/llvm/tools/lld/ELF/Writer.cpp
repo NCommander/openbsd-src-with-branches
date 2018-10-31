@@ -110,7 +110,8 @@ StringRef elf::getOutputSectionName(InputSectionBase *S) {
   for (StringRef V :
        {".text.", ".rodata.", ".data.rel.ro.", ".data.", ".bss.rel.ro.",
         ".bss.", ".init_array.", ".fini_array.", ".ctors.", ".dtors.", ".tbss.",
-        ".gcc_except_table.", ".tdata.", ".ARM.exidx.", ".ARM.extab."}) {
+        ".gcc_except_table.", ".tdata.", ".ARM.exidx.", ".ARM.extab.",
+	".openbsd.randomdata."}) {
     StringRef Prefix = V.drop_back();
     if (S->Name.startswith(V) || S->Name == Prefix)
       return Prefix;
@@ -487,7 +488,7 @@ template <class ELFT> void Writer<ELFT>::run() {
 
 static bool shouldKeepInSymtab(SectionBase *Sec, StringRef SymName,
                                const Symbol &B) {
-  if (B.isFile() || B.isSection())
+  if (B.isSection())
     return false;
 
   // If sym references a section in a discarded group, don't keep it.
@@ -643,7 +644,11 @@ static bool isRelroSection(const OutputSection *Sec) {
   // However, if "-z now" is given, the lazy symbol resolution is
   // disabled, which enables us to put it into RELRO.
   if (Sec == InX::GotPlt->getParent())
+#ifndef __OpenBSD__
     return Config->ZNow;
+#else
+    return true;	/* kbind(2) means we can always put these in RELRO */
+#endif
 
   // .dynamic section contains data for the dynamic linker, and
   // there's no need to write to it at runtime, so it's better to put

@@ -1,3 +1,4 @@
+/*	$OpenBSD: wizard.c,v 1.19 2016/03/08 10:48:39 mestre Exp $	*/
 /*	$NetBSD: wizard.c,v 1.3 1995/04/24 12:21:41 cgd Exp $	*/
 
 /*-
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,103 +35,93 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)wizard.c	8.1 (Berkeley) 6/2/93";
-#else
-static char rcsid[] = "$NetBSD: wizard.c,v 1.3 1995/04/24 12:21:41 cgd Exp $";
-#endif
-#endif /* not lint */
+/*	Re-coding of advent in C: privileged operations			*/
 
-/*      Re-coding of advent in C: privileged operations                 */
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
-# include "hdr.h"
-#include <string.h>
+#include "extern.h"
+#include "hdr.h"
 
-datime(d,t)
-int *d,*t;
-{       int tvec[2],*tptr;
-	int *localtime();
+char    magic[6];
 
-	time(tvec);
-	tptr=localtime(tvec);
-	*d=tptr[7]+365*(tptr[5]-77);    /* day since 1977  (mod leap)   */
-	/* bug: this will overflow in the year 2066 AD                  */
-	/* it will be attributed to Wm the C's millenial celebration    */
-	*t=tptr[2]*60+tptr[1];          /* and minutes since midnite    */
-}                                       /* pretty painless              */
-
-
-char magic[6];
-
-poof()
+void
+poof(void)
 {
-	strcpy(magic, DECR(d,w,a,r,f));
+	strlcpy(magic, DECR(d,w,a,r,f), sizeof magic);
 	latncy = 45;
 }
 
-Start(n)
-{       int d,t,delay;
+int
+Start(void)
+{
+	time_t  t, delay;
 
-	datime(&d,&t);
-	delay=(d-saved)*1440+(t-savet); /* good for about a month     */
+	time(&t);
+	delay = (t - savet) / 60;	/* Minutes	*/
+	saved = -1;
 
 	if (delay >= latncy)
-	{       saved = -1;
-		return(FALSE);
-	}
+		return (FALSE);
 	printf("This adventure was suspended a mere %d minute%s ago.",
-		delay, delay == 1? "" : "s");
-	if (delay <= latncy/3)
-	{       mspeak(2);
+		(int)delay, delay == 1 ? "" : "s");
+	if (delay <= latncy / 3) {
+		mspeak(2);
 		exit(0);
 	}
 	mspeak(8);
-	if (!wizard())
-	{       mspeak(9);
+	if (!wizard()) {
+		mspeak(9);
 		exit(0);
 	}
-	saved = -1;
-	return(FALSE);
+	return (FALSE);
 }
 
-wizard()                /* not as complex as advent/10 (for now)        */
-{       register int wiz;
-	char *word,*x;
-	if (!yesm(16,0,7)) return(FALSE);
+int
+wizard(void)		/* not as complex as advent/10 (for now)	*/
+{
+	if (!yesm(16, 0, 7))
+		return (FALSE);
 	mspeak(17);
-	getin(&word,&x);
-	if (!weq(word,magic))
-	{       mspeak(20);
-		return(FALSE);
+	getin(wd1, sizeof(wd1), wd2, sizeof(wd2));
+	if (!weq(wd1, magic)) {
+		mspeak(20);
+		return (FALSE);
 	}
 	mspeak(19);
-	return(TRUE);
+	return (TRUE);
 }
 
-ciao(cmdfile)
-char *cmdfile;
-{       register char *c;
-	register int outfd, size;
-	char fname[80], buf[512];
-	extern unsigned filesize;
+void
+ciao(void)
+{
+	int	ch;
+	char   *c;
+	char    fname[PATH_MAX];
 
 	printf("What would you like to call the saved version?\n");
-	for (c=fname;; c++)
-		if ((*c=getchar())=='\n') break;
-	*c=0;
-	if (save(fname) != 0) return;           /* Save failed */
+	for (c = fname; c - fname < sizeof(fname); c++) {
+		if ((ch = getchar()) == '\n' || ch == EOF)
+			break;
+		*c = ch;
+	}
+	if (c - fname == sizeof(fname)) {
+		c--;
+		FLUSHLINE;
+	}
+	*c = '\0';
+	if (save(fname) != 0)
+		return;		/* Save failed */
 	printf("To resume, say \"adventure %s\".\n", fname);
 	printf("\"With these rooms I might now have been familiarly acquainted.\"\n");
 	exit(0);
 }
 
 
-ran(range)
-int range;
+int
+ran(int range)
 {
-	long rand(), i;
-
-	i = rand() % range;
-	return(i);
+	return (arc4random_uniform(range));
 }

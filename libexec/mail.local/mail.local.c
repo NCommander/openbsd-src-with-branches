@@ -1,4 +1,8 @@
+/*	$OpenBSD: mail.local.c,v 1.34 2015/07/06 15:02:51 millert Exp $	*/
+
 /*-
+ * Copyright (c) 1996-1998 Theo de Raadt <deraadt@theos.com>
+ * Copyright (c) 1996-1998 David Mazieres <dm@lcs.mit.edu>
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
  *
@@ -10,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,18 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1990 The Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)mail.local.c	5.6 (Berkeley) 6/19/91";*/
-static char rcsid[] = "$Id: mail.local.c,v 1.9 1995/06/03 22:47:20 mycroft Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -52,57 +41,60 @@ static char rcsid[] = "$Id: mail.local.c,v 1.9 1995/06/03 22:47:20 mycroft Exp $
 #include <pwd.h>
 #include <time.h>
 #include <unistd.h>
+#include <limits.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "pathnames.h"
+#include "mail.local.h"
 
-#define	FATAL		1
-#define	NOTFATAL	0
-
-int	deliver __P((int, char *, int));
-void	err __P((int, const char *, ...));
-void	notifybiff __P((char *));
-int	store __P((char *));
-void	usage __P((void));
-
-main(argc, argv)
-	int argc;
-	char **argv;
+int
+main(int argc, char *argv[])
 {
-	extern int optind;
-	extern char *optarg;
 	struct passwd *pw;
-	int ch, fd, eval, lockfile=0;
+	int ch, fd, eval, lockfile=1, holdme=0;
 	uid_t uid;
 	char *from;
 
 	openlog("mail.local", LOG_PERROR, LOG_MAIL);
 
 	from = NULL;
-	while ((ch = getopt(argc, argv, "ldf:r:")) != EOF)
-		switch(ch) {
+	while ((ch = getopt(argc, argv, "lLdf:r:H")) != -1)
+		switch (ch) {
 		case 'd':		/* backward compatible */
 			break;
 		case 'f':
 		case 'r':		/* backward compatible */
 			if (from)
-			    err(FATAL, "multiple -f options");
+				merr(FATAL, "multiple -f options");
 			from = optarg;
 			break;
 		case 'l':
-			lockfile++;
+			lockfile=1;
 			break;
-		case '?':
+		case 'L':
+			lockfile=0;
+			break;
+		case 'H':
+			holdme=1;
+			break;
 		default:
 			usage();
 		}
 	argc -= optind;
 	argv += optind;
 
-	if (!*argv)
-		usage();
+	/* Support -H flag for backwards compat */
+	if (holdme) {
+		execl(_PATH_LOCKSPOOL, "lockspool", (char *)NULL);
+		merr(FATAL, "execl: lockspool: %s", strerror(errno));
+	} else {
+		if (!*argv)
+			usage();
+		if (geteuid() != 0)
+			merr(FATAL, "may only be run by the superuser");
+	}
 
 	/*
 	 * If from not specified, use the name from getlogin() if the
@@ -114,139 +106,179 @@ main(argc, argv)
 	    !(pw = getpwnam(from)) || pw->pw_uid != uid))
 		from = (pw = getpwuid(uid)) ? pw->pw_name : "???";
 
-	fd = store(from);
+	fd = storemail(from);
 	for (eval = 0; *argv; ++argv)
 		eval |= deliver(fd, *argv, lockfile);
 	exit(eval);
 }
 
-store(from)
-	char *from;
+int
+storemail(char *from)
 {
-	FILE *fp;
+	FILE *fp = NULL;
 	time_t tval;
 	int fd, eline;
-	char *tn, line[2048];
+	size_t len;
+	char *line, *tbuf;
 
-	tn = strdup(_PATH_LOCTMP);
-	if ((fd = mkstemp(tn)) == -1 || !(fp = fdopen(fd, "w+")))
-		err(FATAL, "unable to open temporary file");
-	(void)unlink(tn);
-	free(tn);
+	if ((tbuf = strdup(_PATH_LOCTMP)) == NULL)
+		merr(FATAL, "unable to allocate memory");
+	if ((fd = mkstemp(tbuf)) == -1 || !(fp = fdopen(fd, "w+")))
+		merr(FATAL, "unable to open temporary file");
+	(void)unlink(tbuf);
+	free(tbuf);
 
 	(void)time(&tval);
 	(void)fprintf(fp, "From %s %s", from, ctime(&tval));
 
-	line[0] = '\0';
-	for (eline = 1; fgets(line, sizeof(line), stdin);) {
-		if (line[0] == '\n')
+	for (eline = 1, tbuf = NULL; (line = fgetln(stdin, &len));) {
+		/* We have to NUL-terminate the line since fgetln does not */
+		if (line[len - 1] == '\n')
+			line[len - 1] = '\0';
+		else {
+			/* No trailing newline, so alloc space and copy */
+			if ((tbuf = malloc(len + 1)) == NULL)
+				merr(FATAL, "unable to allocate memory");
+			memcpy(tbuf, line, len);
+			tbuf[len] = '\0';
+			line = tbuf;
+		}
+		if (line[0] == '\0')
 			eline = 1;
 		else {
-			if (eline && line[0] == 'F' && !bcmp(line, "From ", 5))
+			if (eline && line[0] == 'F' && len > 5 &&
+			    !memcmp(line, "From ", 5))
 				(void)putc('>', fp);
 			eline = 0;
 		}
-		(void)fprintf(fp, "%s", line);
+		(void)fprintf(fp, "%s\n", line);
 		if (ferror(fp))
 			break;
 	}
+	free(tbuf);
 
-	/* If message not newline terminated, need an extra. */
-	if (!index(line, '\n'))
-		(void)putc('\n', fp);
 	/* Output a newline; note, empty messages are allowed. */
 	(void)putc('\n', fp);
-
 	(void)fflush(fp);
 	if (ferror(fp))
-		err(FATAL, "temporary file write error");
+		merr(FATAL, "temporary file write error");
 	return(fd);
 }
 
-deliver(fd, name, lockfile)
-	int fd;
-	char *name;
-	int lockfile;
+int
+deliver(int fd, char *name, int lockfile)
 {
-	struct stat sb;
+	struct stat sb, fsb;
 	struct passwd *pw;
-	int created, mbfd, nr, nw, off, rval=0, lfd=-1;
-	char biffmsg[100], buf[8*1024], path[MAXPATHLEN], lpath[MAXPATHLEN];
+	int mbfd=-1, rval=1, lfd=-1;
+	char biffmsg[100], buf[8*1024], path[PATH_MAX];
 	off_t curoff;
+	size_t off;
+	ssize_t nr, nw;
 
 	/*
 	 * Disallow delivery to unknown names -- special mailboxes can be
 	 * handled in the sendmail aliases file.
 	 */
 	if (!(pw = getpwnam(name))) {
-		err(NOTFATAL, "unknown name: %s", name);
+		merr(NOTFATAL, "unknown name: %s", name);
 		return(1);
 	}
 
-	(void)sprintf(path, "%s/%s", _PATH_MAILDIR, name);
+	(void)snprintf(path, sizeof path, "%s/%s", _PATH_MAILDIR, name);
 
-	if(lockfile) {
-		(void)sprintf(lpath, "%s/%s.lock", _PATH_MAILDIR, name);
+	if (lockfile) {
+		lfd = getlock(name, pw);
+		if (lfd == -1)
+			return (1);
+	}
 
-		if((lfd = open(lpath, O_CREAT|O_WRONLY|O_EXCL,
+	/* after this point, always exit via bad to remove lockfile */
+retry:
+	if (lstat(path, &sb)) {
+		if (errno != ENOENT) {
+			merr(NOTFATAL, "%s: %s", path, strerror(errno));
+			goto bad;
+		}
+		if ((mbfd = open(path, O_APPEND|O_CREAT|O_EXCL|O_WRONLY|O_EXLOCK,
 		    S_IRUSR|S_IWUSR)) < 0) {
-			err(NOTFATAL, "%s: %s", lpath, strerror(errno));
-			return(1);
+			if (errno == EEXIST) {
+				/* file appeared since lstat */
+				goto retry;
+			} else {
+				merr(NOTFATAL, "%s: %s", path, strerror(errno));
+				goto bad;
+			}
+		}
+		/*
+		 * Set the owner and group.  Historically, binmail repeated
+		 * this at each mail delivery.  We no longer do this, assuming
+		 * that if the ownership or permissions were changed there
+		 * was a reason for doing so.
+		 */
+		if (fchown(mbfd, pw->pw_uid, pw->pw_gid) < 0) {
+			merr(NOTFATAL, "chown %u:%u: %s",
+			    pw->pw_uid, pw->pw_gid, name);
+			goto bad;
+		}
+	} else {
+		if (sb.st_nlink != 1 || !S_ISREG(sb.st_mode)) {
+			merr(NOTFATAL, "%s: linked or special file", path);
+			goto bad;
+		}
+		if ((mbfd = open(path, O_APPEND|O_WRONLY|O_EXLOCK,
+		    S_IRUSR|S_IWUSR)) < 0) {
+			merr(NOTFATAL, "%s: %s", path, strerror(errno));
+			goto bad;
+		}
+		if (fstat(mbfd, &fsb)) {
+			/* relating error to path may be bad style */
+			merr(NOTFATAL, "%s: %s", path, strerror(errno));
+			goto bad;
+		}
+		if (sb.st_dev != fsb.st_dev || sb.st_ino != fsb.st_ino) {
+			merr(NOTFATAL, "%s: changed after open", path);
+			goto bad;
+		}
+		/* paranoia? */
+		if (fsb.st_nlink != 1 || !S_ISREG(fsb.st_mode)) {
+			merr(NOTFATAL, "%s: linked or special file", path);
+			goto bad;
 		}
 	}
 
-	if (!(created = lstat(path, &sb)) &&
-	    (sb.st_nlink != 1 || S_ISLNK(sb.st_mode))) {
-		err(NOTFATAL, "%s: linked file", path);
-		return(1);
-	}
-	if((mbfd = open(path, O_APPEND|O_WRONLY|O_EXLOCK,
-	    S_IRUSR|S_IWUSR)) < 0) {
-		if ((mbfd = open(path, O_APPEND|O_CREAT|O_WRONLY|O_EXLOCK,
-		    S_IRUSR|S_IWUSR)) < 0) {
-		err(NOTFATAL, "%s: %s", path, strerror(errno));
-		return(1);
-	}
-	}
-
 	curoff = lseek(mbfd, 0, SEEK_END);
-	(void)sprintf(biffmsg, "%s@%qd\n", name, curoff);
+	(void)snprintf(biffmsg, sizeof biffmsg, "%s@%lld\n", name, curoff);
 	if (lseek(fd, 0, SEEK_SET) == (off_t)-1) {
-		err(FATAL, "temporary file: %s", strerror(errno));
-		rval = 1;
+		merr(NOTFATAL, "temporary file: %s", strerror(errno));
 		goto bad;
 	}
 
 	while ((nr = read(fd, buf, sizeof(buf))) > 0)
 		for (off = 0; off < nr;  off += nw)
 			if ((nw = write(mbfd, buf + off, nr - off)) < 0) {
-				err(NOTFATAL, "%s: %s", path, strerror(errno));
-				goto trunc;
+				merr(NOTFATAL, "%s: %s", path, strerror(errno));
+				(void)ftruncate(mbfd, curoff);
+				goto bad;
 			}
-	if (nr < 0) {
-		err(FATAL, "temporary file: %s", strerror(errno));
-trunc:		(void)ftruncate(mbfd, curoff);
-		rval = 1;
+
+	if (nr == 0) {
+		rval = 0;
+	} else {
+		(void)ftruncate(mbfd, curoff);
+		merr(FATAL, "temporary file: %s", strerror(errno));
 	}
 
-	/*
-	 * Set the owner and group.  Historically, binmail repeated this at
-	 * each mail delivery.  We no longer do this, assuming that if the
-	 * ownership or permissions were changed there was a reason for doing
-	 * so.
-	 */
 bad:
-	if(lockfile) {
-		if(lfd >= 0) {
-			unlink(lpath);
-			close(lfd);
-		}
+	if (lfd != -1) {
+		rellock();
+		close(lfd);
 	}
-	if (created) 
-		(void)fchown(mbfd, pw->pw_uid, pw->pw_gid);
 
-	(void)fsync(mbfd);		/* Don't wait for update. */
-	(void)close(mbfd);		/* Implicit unlock. */
+	if (mbfd != -1) {
+		(void)fsync(mbfd);		/* Don't wait for update. */
+		(void)close(mbfd);		/* Implicit unlock. */
+	}
 
 	if (!rval)
 		notifybiff(biffmsg);
@@ -254,68 +286,50 @@ bad:
 }
 
 void
-notifybiff(msg)
-	char *msg;
+notifybiff(char *msg)
 {
-	static struct sockaddr_in addr;
+	static struct addrinfo *res0;
+	struct addrinfo hints, *res;
 	static int f = -1;
-	struct hostent *hp;
-	struct servent *sp;
-	int len;
+	size_t len;
+	int error;
 
-	if (!addr.sin_family) {
-		/* Be silent if biff service not available. */
-		if (!(sp = getservbyname("biff", "udp")))
-			return;
-		if (!(hp = gethostbyname("localhost"))) {
-			err(NOTFATAL, "localhost: %s", strerror(errno));
+	if (res0 == NULL) {
+		memset(&hints, 0, sizeof(hints));
+		hints.ai_family = PF_UNSPEC;
+		hints.ai_socktype = SOCK_DGRAM;
+
+		error = getaddrinfo("localhost", "biff", &hints, &res0);
+		if (error) {
+			/* Be silent if biff service not available. */
+			if (error != EAI_SERVICE) {
+				merr(NOTFATAL, "localhost: %s",
+				    gai_strerror(error));
+			}
 			return;
 		}
-		addr.sin_len = sizeof(struct sockaddr_in);
-		addr.sin_family = hp->h_addrtype;
-		addr.sin_port = sp->s_port;
-		bcopy(hp->h_addr, &addr.sin_addr, hp->h_length);
 	}
-	if (f < 0 && (f = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-		err(NOTFATAL, "socket: %s", strerror(errno));
+
+	if (f == -1) {
+		for (res = res0; res != NULL; res = res->ai_next) {
+			f = socket(res->ai_family, res->ai_socktype,
+			    res->ai_protocol);
+			if (f != -1)
+				break;
+		}
+	}
+	if (f == -1) {
+		merr(NOTFATAL, "socket: %s", strerror(errno));
 		return;
 	}
-	len = strlen(msg) + 1;
-	if (sendto(f, msg, len, 0, (struct sockaddr *)&addr, sizeof(addr))
-	    != len)
-		err(NOTFATAL, "sendto biff: %s", strerror(errno));
+
+	len = strlen(msg) + 1;	/* XXX */
+	if (sendto(f, msg, len, 0, res->ai_addr, res->ai_addrlen) != len)
+		merr(NOTFATAL, "sendto biff: %s", strerror(errno));
 }
 
 void
-usage()
+usage(void)
 {
-	err(FATAL, "usage: mail.local [-f from] user ...");
-}
-
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-void
-#if __STDC__
-err(int isfatal, const char *fmt, ...)
-#else
-err(isfatal, fmt)
-	int isfatal;
-	char *fmt;
-	va_dcl
-#endif
-{
-	va_list ap;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	vsyslog(LOG_ERR, fmt, ap);
-	va_end(ap);
-	if (isfatal)
-		exit(1);
+	merr(FATAL, "usage: mail.local [-Ll] [-f from] user ...");
 }

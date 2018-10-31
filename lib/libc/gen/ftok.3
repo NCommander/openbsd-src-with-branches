@@ -1,4 +1,4 @@
-.\"	$NetBSD: ftok.3,v 1.2 1995/02/27 03:43:16 cgd Exp $
+.\"	$OpenBSD: ftok.3,v 1.16 2013/07/16 15:21:11 schwarze Exp $
 .\"
 .\" Copyright (c) 1994 SigmaSoft, Th. Lockert <tholo@sigmasoft.com>
 .\" All rights reserved.
@@ -25,17 +25,16 @@
 .\" OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 .\" ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd June 24, 1994
+.Dd $Mdocdate: July 16 2013 $
+.Dt FTOK 3
 .Os
-.Dt ftok 3
 .Sh NAME
 .Nm ftok
-.Nd create IPC indentifier from path name
+.Nd create IPC identifier from a pathname
 .Sh SYNOPSIS
-.Fd #include <sys/types.h>
-.Fd #include <sys/ipc.h>
+.In sys/ipc.h
 .Ft key_t
-.Fn ftok "const char *path" "char id" ;
+.Fn ftok "const char *path" "int id"
 .Sh DESCRIPTION
 The
 .Fn ftok
@@ -51,14 +50,17 @@ of an existing file and a user-selectable
 .Pp
 The specified
 .Fa path
-must specify an existing file that is accessible to the calling process
-or the call will fail.  Also, note that links to files will return the
-same key, given the same
+must refer to an existing file that is accessible to the calling process
+or the call will fail.
+Also, note that links to files will return the same key, given the same
 .Fa id .
+Only the 8 least significant bits of
+.Fa id
+are used in the key generation; the rest of the bits are ignored.
 .Sh RETURN VALUES
 The
 .Fn ftok
-function will return -1 if
+function will return (key_t)\-1 if
 .Fa path
 does not exist or if it cannot be accessed by the calling process.
 .Sh SEE ALSO
@@ -68,19 +70,17 @@ does not exist or if it cannot be accessed by the calling process.
 .Sh HISTORY
 The
 .Fn ftok
-function originate with System V and is typically used by programs
+function originated with System V and is typically used by programs
 that use the System V IPC routines.
-.Sh AUTHOR
-.Bl -tag
-Thorsten Lockert <tholo@sigmasoft.com>
-.El
+.Sh AUTHORS
+.An Thorsten Lockert Aq Mt tholo@sigmasoft.com
 .Sh BUGS
 The returned key is computed based on the device and inode of the
 specified
 .Fa path
 in combination with the given
 .Fa id .
-Thus is is quite possible for the routine to return duplicate keys
+Thus it is quite possible for the routine to return duplicate keys
 given that those fields are not 8- and 16-bit quantities like they
-were on System V based systems where this library routine's ancestor
+were on System V based systems where this library routine's ancestors
 were originally created.

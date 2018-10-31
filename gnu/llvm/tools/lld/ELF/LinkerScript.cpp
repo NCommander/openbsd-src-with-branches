@@ -776,6 +776,12 @@ void LinkerScript::adjustSectionsBeforeSorting() {
     auto *Sec = dyn_cast<OutputSection>(Cmd);
     if (!Sec)
       continue;
+
+    // Handle align (e.g. ".foo : ALIGN(16) { ... }").
+    if (Sec->AlignExpr)
+      Sec->Alignment =
+          std::max<uint32_t>(Sec->Alignment, Sec->AlignExpr().getValue());
+
     if (Sec->Live) {
       Flags = Sec->Flags & (SHF_ALLOC | SHF_WRITE | SHF_EXECINSTR);
       continue;
@@ -802,10 +808,6 @@ void LinkerScript::adjustSectionsAfterSorting() {
           error("memory region '" + Sec->LMARegionName + "' not declared");
       }
       Sec->MemRegion = findMemoryRegion(Sec);
-      // Handle align (e.g. ".foo : ALIGN(16) { ... }").
-      if (Sec->AlignExpr)
-        Sec->Alignment =
-            std::max<uint32_t>(Sec->Alignment, Sec->AlignExpr().getValue());
     }
   }
 

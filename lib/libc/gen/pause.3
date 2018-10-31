@@ -1,4 +1,4 @@
-.\"	$NetBSD: pause.3,v 1.4 1995/02/27 04:35:34 cgd Exp $
+.\"	$OpenBSD: pause.3,v 1.13 2013/07/17 05:42:11 schwarze Exp $
 .\"
 .\" Copyright (c) 1980, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,33 +27,30 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)pause.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: July 17 2013 $
 .Dt PAUSE 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm pause
 .Nd stop until signal
 .Sh SYNOPSIS
-.Fd #include <unistd.h>
+.In unistd.h
 .Ft int
 .Fn pause void
 .Sh DESCRIPTION
 .Bf -symbolic
-Pause is made obsolete by sigpause(3).
+Pause is made obsolete by
+.Xr sigsuspend 2 .
 .Ef
 .Pp
 The
 .Fn pause
-function
-forces a process to pause until
-a signal is received from either the
+function forces a process to pause until a signal is received from either the
 .Xr kill 2
-function
-or an interval timer.
-(See
-.Xr setitimer 2 . )
+function or an interval timer
+(see
+.Xr setitimer 2 ) .
+.Pp
 Upon termination of a signal handler started during a
 .Fn pause ,
 the
@@ -68,8 +61,9 @@ Always returns \-1.
 .Sh ERRORS
 The
 .Fn pause
-function
-always returns:
+function may set the global variable
+.Va errno
+to the following error:
 .Bl -tag -width Er
 .It Bq Er EINTR
 The call was interrupted.
@@ -77,10 +71,23 @@ The call was interrupted.
 .Sh SEE ALSO
 .Xr kill 2 ,
 .Xr select 2 ,
-.Xr sigpause 2
+.Xr setitimer 2 ,
+.Xr sigsuspend 2
 .Sh HISTORY
 A
 .Fn pause
-syscall
-appeared in 
-.At v6 .
+system call first appeared in the Programmer's Workbench (PWB/UNIX)
+and was then ported to
+.At v7 .
+It was reimplemented as a wrapper around the
+.Fn sigpause
+and
+.Fn sigblock
+system calls in
+.Bx 4.2 ,
+and around the
+.Xr sigsuspend 2
+and
+.Xr sigprocmask 2
+system calls in
+.Bx 4.3 Reno .

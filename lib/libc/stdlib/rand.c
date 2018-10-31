@@ -1,3 +1,4 @@
+/*	$OpenBSD: rand.c,v 1.17 2016/10/22 19:19:34 tb Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,25 +28,47 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)rand.c	5.6 (Berkeley) 6/24/91";*/
-static char *rcsid = "$Id: rand.c,v 1.4 1994/10/19 03:06:51 cgd Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <stdlib.h>
 
-static u_long next = 1;
+static int rand_deterministic;
+static u_int next = 1;
 
 int
-rand()
+rand_r(u_int *seed)
 {
-	return ((next = next * 1103515245 + 12345) % ((u_int)RAND_MAX + 1));
+	*seed = *seed * 1103515245 + 12345;
+	return (*seed & RAND_MAX);
+}
+DEF_WEAK(rand_r);
+
+#if defined(APIWARN)
+__warn_references(rand_r,
+    "rand_r() is not random, it is deterministic.");
+#endif
+
+int
+rand(void)
+{
+	if (rand_deterministic == 0)
+		return (arc4random() & RAND_MAX);
+	return (rand_r(&next));
+}
+
+#if defined(APIWARN)
+__warn_references(rand,
+    "rand() may return deterministic values, is that what you want?");
+#endif
+
+void
+srand(u_int seed)
+{
+	rand_deterministic = 0;
 }
 
 void
-srand(seed)
-u_int seed;
+srand_deterministic(u_int seed)
 {
+	rand_deterministic = 1;
 	next = seed;
 }

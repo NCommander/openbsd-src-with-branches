@@ -1,4 +1,5 @@
-/*	$NetBSD: pwd.c,v 1.7 1995/03/21 09:08:18 cgd Exp $	*/
+/*	$OpenBSD: pwd.c,v 1.13 2015/10/05 05:24:12 deraadt Exp $	*/
+/*	$NetBSD: pwd.c,v 1.22 2011/08/29 14:51:19 joerg Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993, 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,66 +30,91 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1991, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pwd.c	8.3 (Berkeley) 4/1/94";
-#else
-static char rcsid[] = "$NetBSD: pwd.c,v 1.7 1995/03/21 09:08:18 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <sys/stat.h>
 
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-void usage __P((void));
+extern char *__progname;
+static char *getcwd_logical(void);
+__dead static void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	int ch;
-	char *p;
+	int ch, lFlag = 0;
+	const char *p;
 
-	/*
-	 * Flags for pwd are a bit strange.  The POSIX 1003.2B/D9 document
-	 * has an optional -P flag for physical, which is what this program
-	 * will produce by default.  The logical flag, -L, should fail, as
-	 * there's no way to display a logical path after forking.  We don't
-	 * document either flag, only adding -P for future portability.
-	 */
-	while ((ch = getopt(argc, argv, "P")) != EOF)
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
+
+	while ((ch = getopt(argc, argv, "LP")) != -1) {
 		switch (ch) {
-		case 'P':
+		case 'L':
+			lFlag = 1;
 			break;
-		case '?':
+		case 'P':
+			lFlag = 0;
+			break;
 		default:
 			usage();
 		}
+	}
 	argc -= optind;
 	argv += optind;
 
 	if (argc != 0)
 		usage();
 
-	if ((p = getcwd(NULL, 0)) == NULL)
-		err(1, NULL);
-	(void)printf("%s\n", p);
-	exit(0);
+	if (lFlag)
+		p = getcwd_logical();
+	else
+		p = NULL;
+	if (p == NULL)
+		p = getcwd(NULL, 0);
+
+	if (p == NULL)
+		err(EXIT_FAILURE, NULL);
+
+	puts(p);
+
+	exit(EXIT_SUCCESS);
 }
 
-void
-usage()
+static char *
+getcwd_logical(void)
 {
+	char *pwd, *p;
+	struct stat s_pwd, s_dot;
 
-	(void)fprintf(stderr, "usage: pwd\n");
-	exit(1);
+	/* Check $PWD -- if it's right, it's fast. */
+	pwd = getenv("PWD");
+	if (pwd == NULL)
+		return NULL;
+	if (pwd[0] != '/')
+		return NULL;
+
+	/* check for . or .. components, including trailing ones */
+	for (p = pwd; *p != '\0'; p++)
+		if (p[0] == '/' && p[1] == '.') {
+			if (p[2] == '.')
+				p++;
+			if (p[2] == '\0' || p[2] == '/')
+				return NULL;
+		}
+
+	if (stat(pwd, &s_pwd) == -1 || stat(".", &s_dot) == -1)
+		return NULL;
+	if (s_pwd.st_dev != s_dot.st_dev || s_pwd.st_ino != s_dot.st_ino)
+		return NULL;
+	return pwd;
+}
+
+static void
+usage(void)
+{
+	fprintf(stderr, "usage: %s [-LP]\n", __progname);
+	exit(EXIT_FAILURE);
 }

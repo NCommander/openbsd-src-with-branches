@@ -23,24 +23,38 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-      builtin_define ("__unix__");		\
-      builtin_define ("__OpenBSD__");		\
-      builtin_assert ("system=unix");		\
-      builtin_assert ("system=OpenBSD");	\
+      OPENBSD_OS_CPP_BUILTINS_COMMON();		\
     }						\
   while (0)
 
 /* Layout of source language data types.  */
 
-/* This must agree with <machine/ansi.h>  */
+/* This must agree with <machine/_types.h>  */
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE "long unsigned int"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE "long int"
+
+#undef INTMAX_TYPE
+#define INTMAX_TYPE "long long int"
+
+#undef UINTMAX_TYPE
+#define UINTMAX_TYPE "long long unsigned int"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
+
+/* No structure field wants to be aligned rounder than this.
+   The huge 0x40000000 value should be enough to turn the
+   BIGGEST_FIELD_ALIGNMENT logic into a nop.  */
+#undef BIGGEST_FIELD_ALIGNMENT
+#define BIGGEST_FIELD_ALIGNMENT (TARGET_VAXC_ALIGNMENT ? 8 : 0x40000000)
+
+/* All configurations that don't use elf must be explicit about not using
+   dwarf unwind information. egcs doesn't try too hard to check internal
+   configuration files...  */
+#define DWARF2_UNWIND_INFO 0

@@ -638,7 +638,12 @@ void LinkerDriver::readConfigs(opt::InputArgList &Args) {
   Config->Optimize = args::getInteger(Args, OPT_O, 1);
   Config->OrphanHandling = getOrphanHandling(Args);
   Config->OutputFile = Args.getLastArgValue(OPT_o);
+#ifdef __OpenBSD__
+  Config->Pie = Args.hasFlag(OPT_pie, OPT_nopie,
+      !Args.hasArg(OPT_shared) && !Args.hasArg(OPT_relocatable));
+#else
   Config->Pie = Args.hasFlag(OPT_pie, OPT_nopie, false);
+#endif
   Config->PrintGcSections =
       Args.hasFlag(OPT_print_gc_sections, OPT_no_print_gc_sections, false);
   Config->Rpath = getRpath(Args);
@@ -956,7 +961,7 @@ static void excludeLibs(opt::InputArgList &Args, ArrayRef<InputFile *> Files) {
     if (Optional<StringRef> Archive = getArchiveName(File))
       if (All || Libs.count(path::filename(*Archive)))
         for (Symbol *Sym : File->getSymbols())
-          if (!Sym->isLocal())
+          if (!Sym->isLocal() && Sym->File == File)
             Sym->VersionId = VER_NDX_LOCAL;
 }
 

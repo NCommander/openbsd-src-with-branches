@@ -1,3 +1,4 @@
+/*	$OpenBSD: pr.h,v 1.4 2003/06/03 02:56:14 millert Exp $ */
 /*-
  * Copyright (c) 1991 Keith Muller.
  * Copyright (c) 1993
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,7 +32,6 @@
  * SUCH DAMAGE.
  *
  *      from: @(#)pr.h	8.1 (Berkeley) 6/6/93
- *	$Id: pr.h,v 1.1 1994/01/06 15:57:29 cgd Exp $
  */
 
 /*
@@ -63,6 +59,15 @@
 #define	FNAME		""
 #define	LBUF		8192
 #define	HDBUF		512
+#define INFF		'\f'
+#define OUTFF		'\f'
+
+/*
+ * termination return code from inln (also returns a byte count)
+ */
+#define END		-1
+#define FORM		1
+#define NORMAL		0
 
 /*
  * structure for vertical columns. Used to balance cols on last page

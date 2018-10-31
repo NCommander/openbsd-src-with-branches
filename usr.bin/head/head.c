@@ -1,3 +1,5 @@
+/*	$OpenBSD: head.c,v 1.20 2015/10/09 01:37:07 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1980, 1987 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,23 +29,15 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1980, 1987 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)head.c	5.5 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: head.c,v 1.5 1993/10/13 18:34:17 jtc Exp $";
-#endif /* not lint */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <limits.h>
+#include <err.h>
+#include <errno.h>
 #include <unistd.h>
 
-static void usage ();
+static void usage(void);
 
 /*
  * head - give the first few lines of a stream or of each of a set of files
@@ -56,43 +46,57 @@ static void usage ();
  */
 
 int
-main(argc, argv)
-	int	argc;
-	char	**argv;
+main(int argc, char *argv[])
 {
-	register int	ch, cnt;
-	int	firsttime, linecnt = 10;
+	FILE	*fp;
+	long	cnt;
+	int	ch, firsttime;
+	long	linecnt = 10;
+	char	*p = NULL;
+	int	status = 0;
+
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
 
 	/* handle obsolete -number syntax */
-	if (argc > 1 && argv[1][0] == '-' && isdigit(argv[1][1])) {
-		if ((linecnt = atoi(argv[1] + 1)) < 0) {
-			usage ();
-		}
-		argc--; argv++;
+	if (argc > 1 && argv[1][0] == '-' &&
+	    isdigit((unsigned char)argv[1][1])) {
+		p = argv[1] + 1;
+		argc--;
+		argv++;
 	}
 
-	while ((ch = getopt (argc, argv, "n:")) != EOF)
+	while ((ch = getopt(argc, argv, "n:")) != -1) {
 		switch (ch) {
 		case 'n':
-			if ((linecnt = atoi(optarg)) < 0)
-				usage ();
+			p = optarg;
 			break;
-
 		default:
-			usage();	
+			usage();
 		}
+	}
 	argc -= optind, argv += optind;
 
-	/* setlinebuf(stdout); */
+	if (p) {
+		const char *errstr;
+
+		linecnt = strtonum(p, 1, LONG_MAX, &errstr);
+		if (errstr)
+			errx(1, "line count %s: %s", errstr, p);
+	}
+
 	for (firsttime = 1; ; firsttime = 0) {
 		if (!*argv) {
 			if (!firsttime)
-				exit(0);
-		}
-		else {
-			if (!freopen(*argv, "r", stdin)) {
-				fprintf(stderr, "head: can't read %s.\n", *argv);
-				exit(1);
+				exit(status);
+			fp = stdin;
+			if (pledge("stdio", NULL) == -1)
+				err(1, "pledge");
+		} else {
+			if ((fp = fopen(*argv, "r")) == NULL) {
+				warn("%s", *argv++);
+				status = 1;
+				continue;
 			}
 			if (argc > 1) {
 				if (!firsttime)
@@ -101,19 +105,19 @@ main(argc, argv)
 			}
 			++argv;
 		}
-		for (cnt = linecnt; cnt; --cnt)
-			while ((ch = getchar()) != EOF)
+		for (cnt = linecnt; cnt && !feof(fp); --cnt)
+			while ((ch = getc(fp)) != EOF)
 				if (putchar(ch) == '\n')
 					break;
+		fclose(fp);
 	}
 	/*NOTREACHED*/
 }
 
 
 static void
-usage ()
+usage(void)
 {
-	fputs("usage: head [-n line_count] [file ...]\n", stderr);
+	fputs("usage: head [-count | -n count] [file ...]\n", stderr);
 	exit(1);
 }
-

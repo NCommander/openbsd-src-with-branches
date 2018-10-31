@@ -1,4 +1,4 @@
-/* crypto/dh/dh_lib.c */
+/* $OpenBSD: dh_lib.c,v 1.31 2018/04/14 07:09:21 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,205 +56,280 @@
  * [including the GNU Public Licence.]
  */
 
+#include <limits.h>
 #include <stdio.h>
-#include "cryptlib.h"
+
+#include <openssl/opensslconf.h>
+
 #include <openssl/bn.h>
 #include <openssl/dh.h>
+#include <openssl/err.h>
+
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #endif
 
-#ifdef OPENSSL_FIPS
-#include <openssl/fips.h>
-#endif
-
-const char DH_version[]="Diffie-Hellman" OPENSSL_VERSION_PTEXT;
-
 static const DH_METHOD *default_DH_method = NULL;
 
-void DH_set_default_method(const DH_METHOD *meth)
-	{
+void
+DH_set_default_method(const DH_METHOD *meth)
+{
 	default_DH_method = meth;
-	}
+}
 
-const DH_METHOD *DH_get_default_method(void)
-	{
-	if(!default_DH_method)
-		{
-#ifdef OPENSSL_FIPS
-		if (FIPS_mode())
-			return FIPS_dh_openssl();
-		else
-			return DH_OpenSSL();
-#else
+const DH_METHOD *
+DH_get_default_method(void)
+{
+	if (!default_DH_method)
 		default_DH_method = DH_OpenSSL();
-#endif
-		}
 	return default_DH_method;
-	}
+}
 
-int DH_set_method(DH *dh, const DH_METHOD *meth)
-	{
-	/* NB: The caller is specifically setting a method, so it's not up to us
-	 * to deal with which ENGINE it comes from. */
+int
+DH_set_method(DH *dh, const DH_METHOD *meth)
+{
+	/*
+	 * NB: The caller is specifically setting a method, so it's not up to us
+	 * to deal with which ENGINE it comes from.
+	 */
         const DH_METHOD *mtmp;
+
         mtmp = dh->meth;
-        if (mtmp->finish) mtmp->finish(dh);
+        if (mtmp->finish)
+		mtmp->finish(dh);
 #ifndef OPENSSL_NO_ENGINE
-	if (dh->engine)
-		{
-		ENGINE_finish(dh->engine);
-		dh->engine = NULL;
-		}
+	ENGINE_finish(dh->engine);
+	dh->engine = NULL;
 #endif
         dh->meth = meth;
-        if (meth->init) meth->init(dh);
+        if (meth->init)
+		meth->init(dh);
         return 1;
-	}
+}
 
-DH *DH_new(void)
-	{
+DH *
+DH_new(void)
+{
 	return DH_new_method(NULL);
-	}
+}
 
-DH *DH_new_method(ENGINE *engine)
-	{
+DH *
+DH_new_method(ENGINE *engine)
+{
 	DH *ret;
 
-	ret=(DH *)OPENSSL_malloc(sizeof(DH));
-	if (ret == NULL)
-		{
-		DHerr(DH_F_DH_NEW_METHOD,ERR_R_MALLOC_FAILURE);
-		return(NULL);
-		}
+	ret = malloc(sizeof(DH));
+	if (ret == NULL) {
+		DHerror(ERR_R_MALLOC_FAILURE);
+		return NULL;
+	}
 
 	ret->meth = DH_get_default_method();
 #ifndef OPENSSL_NO_ENGINE
-	if (engine)
-		{
-		if (!ENGINE_init(engine))
-			{
-			DHerr(DH_F_DH_NEW_METHOD, ERR_R_ENGINE_LIB);
-			OPENSSL_free(ret);
+	if (engine) {
+		if (!ENGINE_init(engine)) {
+			DHerror(ERR_R_ENGINE_LIB);
+			free(ret);
 			return NULL;
-			}
+		}
 		ret->engine = engine;
-		}
-	else
+	} else
 		ret->engine = ENGINE_get_default_DH();
-	if(ret->engine)
-		{
+	if(ret->engine) {
 		ret->meth = ENGINE_get_DH(ret->engine);
-		if(!ret->meth)
-			{
-			DHerr(DH_F_DH_NEW_METHOD,ERR_R_ENGINE_LIB);
+		if (ret->meth == NULL) {
+			DHerror(ERR_R_ENGINE_LIB);
 			ENGINE_finish(ret->engine);
-			OPENSSL_free(ret);
+			free(ret);
 			return NULL;
-			}
 		}
+	}
 #endif
 
-	ret->pad=0;
-	ret->version=0;
-	ret->p=NULL;
-	ret->g=NULL;
-	ret->length=0;
-	ret->pub_key=NULL;
-	ret->priv_key=NULL;
-	ret->q=NULL;
-	ret->j=NULL;
+	ret->pad = 0;
+	ret->version = 0;
+	ret->p = NULL;
+	ret->g = NULL;
+	ret->length = 0;
+	ret->pub_key = NULL;
+	ret->priv_key = NULL;
+	ret->q = NULL;
+	ret->j = NULL;
 	ret->seed = NULL;
 	ret->seedlen = 0;
 	ret->counter = NULL;
 	ret->method_mont_p=NULL;
 	ret->references = 1;
-	ret->flags=ret->meth->flags & ~DH_FLAG_NON_FIPS_ALLOW;
+	ret->flags = ret->meth->flags & ~DH_FLAG_NON_FIPS_ALLOW;
 	CRYPTO_new_ex_data(CRYPTO_EX_INDEX_DH, ret, &ret->ex_data);
-	if ((ret->meth->init != NULL) && !ret->meth->init(ret))
-		{
+	if (ret->meth->init != NULL && !ret->meth->init(ret)) {
 #ifndef OPENSSL_NO_ENGINE
-		if (ret->engine)
-			ENGINE_finish(ret->engine);
+		ENGINE_finish(ret->engine);
 #endif
 		CRYPTO_free_ex_data(CRYPTO_EX_INDEX_DH, ret, &ret->ex_data);
-		OPENSSL_free(ret);
-		ret=NULL;
-		}
-	return(ret);
+		free(ret);
+		ret = NULL;
 	}
+	return ret;
+}
 
-void DH_free(DH *r)
-	{
+void
+DH_free(DH *r)
+{
 	int i;
-	if(r == NULL) return;
+
+	if (r == NULL)
+		return;
 	i = CRYPTO_add(&r->references, -1, CRYPTO_LOCK_DH);
-#ifdef REF_PRINT
-	REF_PRINT("DH",r);
-#endif
-	if (i > 0) return;
-#ifdef REF_CHECK
-	if (i < 0)
-		{
-		fprintf(stderr,"DH_free, bad reference count\n");
-		abort();
-	}
-#endif
+	if (i > 0)
+		return;
 
 	if (r->meth->finish)
 		r->meth->finish(r);
 #ifndef OPENSSL_NO_ENGINE
-	if (r->engine)
-		ENGINE_finish(r->engine);
+	ENGINE_finish(r->engine);
 #endif
 
 	CRYPTO_free_ex_data(CRYPTO_EX_INDEX_DH, r, &r->ex_data);
 
-	if (r->p != NULL) BN_clear_free(r->p);
-	if (r->g != NULL) BN_clear_free(r->g);
-	if (r->q != NULL) BN_clear_free(r->q);
-	if (r->j != NULL) BN_clear_free(r->j);
-	if (r->seed) OPENSSL_free(r->seed);
-	if (r->counter != NULL) BN_clear_free(r->counter);
-	if (r->pub_key != NULL) BN_clear_free(r->pub_key);
-	if (r->priv_key != NULL) BN_clear_free(r->priv_key);
-	OPENSSL_free(r);
-	}
+	BN_clear_free(r->p);
+	BN_clear_free(r->g);
+	BN_clear_free(r->q);
+	BN_clear_free(r->j);
+	free(r->seed);
+	BN_clear_free(r->counter);
+	BN_clear_free(r->pub_key);
+	BN_clear_free(r->priv_key);
+	free(r);
+}
 
-int DH_up_ref(DH *r)
-	{
+int
+DH_up_ref(DH *r)
+{
 	int i = CRYPTO_add(&r->references, 1, CRYPTO_LOCK_DH);
-#ifdef REF_PRINT
-	REF_PRINT("DH",r);
-#endif
-#ifdef REF_CHECK
-	if (i < 2)
-		{
-		fprintf(stderr, "DH_up, bad reference count\n");
-		abort();
-		}
-#endif
-	return ((i > 1) ? 1 : 0);
+
+	return i > 1 ? 1 : 0;
+}
+
+int
+DH_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func,
+    CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func)
+{
+	return CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_DH, argl, argp, new_func,
+	    dup_func, free_func);
+}
+
+int
+DH_set_ex_data(DH *d, int idx, void *arg)
+{
+	return CRYPTO_set_ex_data(&d->ex_data, idx, arg);
+}
+
+void *
+DH_get_ex_data(DH *d, int idx)
+{
+	return CRYPTO_get_ex_data(&d->ex_data, idx);
+}
+
+int
+DH_size(const DH *dh)
+{
+	return BN_num_bytes(dh->p);
+}
+
+int
+DH_bits(const DH *dh)
+{
+	return BN_num_bits(dh->p);
+}
+
+ENGINE *
+DH_get0_engine(DH *dh)
+{
+	return dh->engine;
+}
+
+void
+DH_get0_pqg(const DH *dh, const BIGNUM **p, const BIGNUM **q, const BIGNUM **g)
+{
+	if (p != NULL)
+		*p = dh->p;
+	if (q != NULL)
+		*q = dh->q;
+	if (g != NULL)
+		*g = dh->g;
+}
+
+int
+DH_set0_pqg(DH *dh, BIGNUM *p, BIGNUM *q, BIGNUM *g)
+{
+	if ((dh->p == NULL && p == NULL) || (dh->g == NULL && g == NULL))
+		return 0;
+
+	if (p != NULL) {
+		BN_free(dh->p);
+		dh->p = p;
+	}
+	if (q != NULL) {
+		BN_free(dh->q);
+		dh->q = q;
+	}
+	if (g != NULL) {
+		BN_free(dh->g);
+		dh->g = g;
 	}
 
-int DH_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func,
-	     CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func)
-        {
-	return CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_DH, argl, argp,
-				new_func, dup_func, free_func);
-        }
+	return 1;
+}
 
-int DH_set_ex_data(DH *d, int idx, void *arg)
-	{
-	return(CRYPTO_set_ex_data(&d->ex_data,idx,arg));
+void
+DH_get0_key(const DH *dh, const BIGNUM **pub_key, const BIGNUM **priv_key)
+{
+	if (pub_key != NULL)
+		*pub_key = dh->pub_key;
+	if (priv_key != NULL)
+		*priv_key = dh->priv_key;
+}
+
+int
+DH_set0_key(DH *dh, BIGNUM *pub_key, BIGNUM *priv_key)
+{
+	if (pub_key != NULL) {
+		BN_free(dh->pub_key);
+		dh->pub_key = pub_key;
+	}
+	if (priv_key != NULL) {
+		BN_free(dh->priv_key);
+		dh->priv_key = priv_key;
 	}
 
-void *DH_get_ex_data(DH *d, int idx)
-	{
-	return(CRYPTO_get_ex_data(&d->ex_data,idx));
-	}
+	return 1;
+}
 
-int DH_size(const DH *dh)
-	{
-	return(BN_num_bytes(dh->p));
-	}
+void
+DH_clear_flags(DH *dh, int flags)
+{
+	dh->flags &= ~flags;
+}
+
+int
+DH_test_flags(const DH *dh, int flags)
+{
+	return dh->flags & flags;
+}
+
+void
+DH_set_flags(DH *dh, int flags)
+{
+	dh->flags |= flags;
+}
+
+int
+DH_set_length(DH *dh, long length)
+{
+	if (length < 0 || length > INT_MAX)
+		return 0;
+
+	dh->length = length;
+	return 1;
+}

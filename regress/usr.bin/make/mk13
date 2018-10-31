@@ -1,0 +1,6 @@
+# $OpenBSD$
+# Warning: the next line ends with a space !!!
+A= ends with space 
+
+a:
+	@echo "a$Aa"

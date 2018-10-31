@@ -1,0 +1,4 @@
+dnl	$OpenBSD: whatis,v 1.1 2017/01/25 02:29:25 patrick Exp $
+
+OpenBSD/MACHINE runs on the Pine64 and the Raspberry Pi 3.  Hardware support
+is currently limited, but this port is a heavy work in progress.

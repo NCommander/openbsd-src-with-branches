@@ -1,12 +1,69 @@
+/*	$OpenBSD: hack.engrave.c,v 1.8 2016/01/09 18:33:15 mestre Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.engrave.c,v 1.3 1995/03/23 08:30:08 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-#include	"hack.h"
+#include <stdlib.h>
+
+#include "hack.h"
 
 extern char *nomovemsg;
 extern char nul[];
@@ -23,9 +80,13 @@ struct engr {
 #define	BURN	3
 } *head_engr;
 
+static void del_engr(struct engr *);
+
 struct engr *
-engr_at(x,y) register xchar x,y; {
-register struct engr *ep = head_engr;
+engr_at(xchar x, xchar y)
+{
+	struct engr *ep = head_engr;
+
 	while(ep) {
 		if(x == ep->engr_x && y == ep->engr_y)
 			return(ep);
@@ -34,10 +95,13 @@ register struct engr *ep = head_engr;
 	return((struct engr *) 0);
 }
 
-sengr_at(s,x,y) register char *s; register xchar x,y; {
-register struct engr *ep = engr_at(x,y);
-register char *t;
-register int n;
+int
+sengr_at(char *s, xchar x, xchar y)
+{
+	struct engr *ep = engr_at(x,y);
+	char *t;
+	int n;
+
 	if(ep && ep->engr_time <= moves) {
 		t = ep->engr_txt;
 /*
@@ -52,17 +116,20 @@ register int n;
 	return(0);
 }
 
-u_wipe_engr(cnt)
-register int cnt;
+void
+u_wipe_engr(int cnt)
 {
 	if(!u.uswallow && !Levitation)
 		wipe_engr_at(u.ux, u.uy, cnt);
 }
 
-wipe_engr_at(x,y,cnt) register xchar x,y,cnt; {
-register struct engr *ep = engr_at(x,y);
-register int lth,pos;
-char ch;
+void
+wipe_engr_at(xchar x, xchar y, xchar cnt)
+{
+	struct engr *ep = engr_at(x,y);
+	int lth,pos;
+	char ch;
+
 	if(ep){
 		if((ep->engr_type != DUST) || Levitation) {
 			cnt = rn2(1 + 50/(cnt+1)) ? 0 : 1;
@@ -84,8 +151,11 @@ char ch;
 	}
 }
 
-read_engr_at(x,y) register int x,y; {
-register struct engr *ep = engr_at(x,y);
+void
+read_engr_at(int x, int y)
+{
+	struct engr *ep = engr_at(x,y);
+
 	if(ep && ep->engr_txt[0]) {
 	    switch(ep->engr_type) {
 	    case DUST:
@@ -104,35 +174,38 @@ register struct engr *ep = engr_at(x,y);
 	}
 }
 
-make_engr_at(x,y,s)
-register int x,y;
-register char *s;
+void
+make_engr_at(int x, int y, char *s)
 {
-	register struct engr *ep;
+	struct engr *ep;
+	size_t len = strlen(s) + 1;
 
-	if(ep = engr_at(x,y))
+	if ((ep = engr_at(x,y)))
 	    del_engr(ep);
 	ep = (struct engr *)
-	    alloc((unsigned)(sizeof(struct engr) + strlen(s) + 1));
+	    alloc((unsigned)(sizeof(struct engr) + len));
 	ep->nxt_engr = head_engr;
 	head_engr = ep;
 	ep->engr_x = x;
 	ep->engr_y = y;
 	ep->engr_txt = (char *)(ep + 1);
-	(void) strcpy(ep->engr_txt, s);
+	(void) strlcpy(ep->engr_txt, s, len);
 	ep->engr_time = 0;
 	ep->engr_type = DUST;
-	ep->engr_lth = strlen(s) + 1;
+	ep->engr_lth = len;
 }
 
-doengrave(){
-register int len;
-register char *sp;
-register struct engr *ep, *oep = engr_at(u.ux,u.uy);
-char buf[BUFSZ];
-xchar type;
-int spct;		/* number of leading spaces */
-register struct obj *otmp;
+int
+doengrave(void)
+{
+	int len;
+	char *sp;
+	struct engr *ep, *oep = engr_at(u.ux,u.uy);
+	char buf[BUFSZ];
+	xchar type;
+	int spct;		/* number of leading spaces */
+	struct obj *otmp;
+
 	multi = 0;
 
 	if(u.uswallow) {
@@ -155,7 +228,7 @@ register struct obj *otmp;
 			if(uwep && uwep->cursed) {
 			    /* Andreas Bormann */
 			    pline("Since your weapon is welded to your hand,");
-			    pline("you use the %s.", aobjnam(uwep, (char *) 0));
+			    pline("you use the %s.", aobjnam(uwep, NULL));
 			    otmp = uwep;
 			} else {
 			    if(!otmp)
@@ -247,11 +320,11 @@ register struct obj *otmp;
 	sp = (char *)(ep + 1);	/* (char *)ep + sizeof(struct engr) */
 	ep->engr_txt = sp;
 	if(oep) {
-		(void) strcpy(sp, oep->engr_txt);
-		(void) strcat(sp, buf);
+		(void) strlcpy(sp, oep->engr_txt, len + 1);
+		(void) strlcat(sp, buf, len + 1);
 		del_engr(oep);
 	} else
-		(void) strcpy(sp, buf);
+		(void) strlcpy(sp, buf, len + 1);
 	ep->engr_lth = len+1;
 	ep->engr_type = type;
 	ep->engr_time = moves-multi;
@@ -262,24 +335,30 @@ register struct obj *otmp;
 	return(1);
 }
 
-save_engravings(fd) int fd; {
-register struct engr *ep = head_engr;
+void
+save_engravings(int fd)
+{
+	struct engr *ep = head_engr;
+
 	while(ep) {
 		if(!ep->engr_lth || !ep->engr_txt[0]){
 			ep = ep->nxt_engr;
 			continue;
 		}
-		bwrite(fd, (char *) & (ep->engr_lth), sizeof(ep->engr_lth));
-		bwrite(fd, (char *) ep, sizeof(struct engr) + ep->engr_lth);
+		bwrite(fd,  &(ep->engr_lth), sizeof(ep->engr_lth));
+		bwrite(fd, ep, sizeof(struct engr) + ep->engr_lth);
 		ep = ep->nxt_engr;
 	}
-	bwrite(fd, (char *) nul, sizeof(unsigned));
+	bwrite(fd, nul, sizeof(unsigned));
 	head_engr = 0;
 }
 
-rest_engravings(fd) int fd; {
-register struct engr *ep;
-unsigned lth;
+void
+rest_engravings(int fd)
+{
+	struct engr *ep;
+	unsigned lth;
+
 	head_engr = 0;
 	while(1) {
 		mread(fd, (char *) &lth, sizeof(unsigned));
@@ -292,8 +371,11 @@ unsigned lth;
 	}
 }
 
-del_engr(ep) register struct engr *ep; {
-register struct engr *ept;
+static void
+del_engr(struct engr *ep)
+{
+	struct engr *ept;
+
 	if(ep == head_engr)
 		head_engr = ep->nxt_engr;
 	else {
@@ -307,5 +389,5 @@ register struct engr *ept;
 		return;
 	fnd:	;
 	}
-	free((char *) ep);
+	free(ep);
 }

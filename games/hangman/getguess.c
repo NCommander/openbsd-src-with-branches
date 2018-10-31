@@ -1,3 +1,4 @@
+/*	$OpenBSD: getguess.c,v 1.14 2015/12/31 15:20:36 mestre Exp $	*/
 /*	$NetBSD: getguess.c,v 1.5 1995/03/23 08:32:43 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,26 +30,23 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)getguess.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: getguess.c,v 1.5 1995/03/23 08:32:43 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <ctype.h>
+#include <curses.h>
+#include <termios.h>
+#include <unistd.h>
 
-#include <sys/ttydefaults.h>
 #include "hangman.h"
 
 /*
  * getguess:
  *	Get another guess
  */
-getguess()
+void
+getguess(void)
 {
-	register int	i;
-	register int	ch;
-	register bool	correct;
+	int	i;
+	unsigned char	ch, uch;
+	bool	correct;
 
 	leaveok(stdscr, FALSE);
 	for (;;) {
@@ -62,26 +56,47 @@ getguess()
 		if (isalpha(ch)) {
 			if (isupper(ch))
 				ch = tolower(ch);
-			if (Guessed[ch - 'a'])
-				mvprintw(MESGY, MESGX, "Already guessed '%c'", ch);
-			else
+			if (Guessed[ch - 'a']) {
+				move(MESGY, MESGX);
+				clrtoeol();
+				mvprintw(MESGY, MESGX, "Already guessed '%c'",
+				    ch);
+			} else
 				break;
-		}
-		else if (ch == CTRL('D'))
-			die();
-		else
-			mvprintw(MESGY, MESGX, "Not a valid guess: '%s'",
-				unctrl(ch));
+		} else if (isdigit(ch)) {
+			if (Guessed[ch - '0' + 26]) {
+				move(MESGY, MESGX);
+				clrtoeol();
+				mvprintw(MESGY, MESGX, "Already guessed '%c'",
+				    ch);
+			} else
+				break;
+		} else
+			if (ch == CTRL('D'))
+				die(0);
+			else {
+				move(MESGY, MESGX);
+				clrtoeol();
+				mvprintw(MESGY, MESGX,
+				    "Not a valid guess: '%s'", unctrl(ch));
+			}
 	}
 	leaveok(stdscr, TRUE);
 	move(MESGY, MESGX);
 	clrtoeol();
 
-	Guessed[ch - 'a'] = TRUE;
+	if (isalpha(ch))
+		Guessed[ch - 'a'] = TRUE;
+	else
+		Guessed[ch - '0' + 26] = TRUE;
 	correct = FALSE;
+	uch = toupper(ch);
 	for (i = 0; Word[i] != '\0'; i++)
 		if (Word[i] == ch) {
 			Known[i] = ch;
+			correct = TRUE;
+		} else if (Word[i] == uch) {
+			Known[i] = uch;
 			correct = TRUE;
 		}
 	if (!correct)
@@ -92,23 +107,22 @@ getguess()
  * readch;
  *	Read a character from the input
  */
-readch()
+unsigned char
+readch(void)
 {
-	register int	cnt, r;
-	auto char	ch;
+	int	cnt;
+	char	ch;
 
 	cnt = 0;
 	for (;;) {
-		if (read(0, &ch, sizeof ch) <= 0)
-		{
+		if (read(STDIN_FILENO, &ch, sizeof ch) <= 0) {
 			if (++cnt > 100)
-				die();
-		}
-		else if (ch == CTRL('L')) {
-			wrefresh(curscr);
-			mvcur(0, 0, curscr->cury, curscr->curx);
-		}
-		else
-			return ch;
+				die(0);
+		} else
+			if (ch == CTRL('L')) {
+				wrefresh(curscr);
+				mvcur(0, 0, curscr->_cury, curscr->_curx);
+			} else
+				return ch;
 	}
 }

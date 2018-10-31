@@ -1,11 +1,9 @@
-#	$NetBSD: Makefile,v 1.3 1995/04/22 07:42:31 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 5/31/93
+#	$OpenBSD: Makefile,v 1.7 2002/05/31 03:46:35 pjanzen Exp $
 
 PROG=	tetris
 SRCS=	input.c screen.c shapes.c scores.c tetris.c
 MAN=	tetris.6
-DPADD=	${LIBTERM}
-LDADD=	-ltermcap
-HIDEGAME=hidegame
+DPADD=	${LIBCURSES}
+LDADD=	-lcurses
 
 .include <bsd.prog.mk>

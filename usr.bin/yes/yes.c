@@ -1,3 +1,4 @@
+/*	$OpenBSD: yes.c,v 1.8 2009/10/27 23:59:50 deraadt Exp $	*/
 /*	$NetBSD: yes.c,v 1.3 1994/11/14 04:56:15 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,26 +30,20 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1987, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
+#include <err.h>
+#include <stdio.h>
+#include <unistd.h>
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)yes.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: yes.c,v 1.3 1994/11/14 04:56:15 jtc Exp $";
-#endif /* not lint */
-
-main(argc, argv)
-	int argc;
-	char **argv;
+int
+main(int argc, char *argv[])
 {
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
 	if (argc > 1)
-		for(;;)
+		for (;;)
 			puts(argv[1]);
-	else for (;;)
-		puts("y");
+	else
+		for (;;)
+			puts("y");
 }

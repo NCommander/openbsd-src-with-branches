@@ -1,4 +1,8 @@
-/*	$NetBSD: config.h,v 1.4 1995/06/14 15:19:03 christos Exp $	*/
+#ifndef CONFIG_H
+#define CONFIG_H
+
+/*	$OpenBSD: config.h,v 1.19 2012/12/07 07:08:16 espie Exp $	*/
+/*	$NetBSD: config.h,v 1.7 1996/11/06 17:59:03 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990 The Regents of the University of California.
@@ -17,11 +21,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,10 +37,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)config.h	5.9 (Berkeley) 6/1/90
+ *	from: @(#)config.h	8.1 (Berkeley) 6/6/93
  */
 
-#define	DEFSHELL	1			/* Bourne shell */
+#define DEFSHELL	1			/* Bourne shell */
 
 /*
  * DEFMAXJOBS
@@ -55,40 +55,77 @@
 #define DEFMAXLOCAL	1
 
 /*
- * INCLUDES
- * LIBRARIES
- *	These control the handling of the .INCLUDES and .LIBS variables.
- *	If INCLUDES is defined, the .INCLUDES variable will be filled
- *	from the search paths of those suffixes which are marked by
- *	.INCLUDES dependency lines. Similarly for LIBRARIES and .LIBS
- *	See suff.c for more details.
+ * SYSVINCLUDE
+ *	Recognize system V like include directives [include "filename"]
+ * SYSVVARSUB
+ *	Recognize system V like ${VAR:x=y} variable substitutions
  */
-#define INCLUDES
-#define LIBRARIES
+#define SYSVINCLUDE
+#define SYSVVARSUB
 
 /*
- * LIBSUFF
- *	Is the suffix used to denote libraries and is used by the Suff module
- *	to find the search path on which to seek any -l<xx> targets.
- *
- * RECHECK
- *	If defined, Make_Update will check a target for its current
- *	modification time after it has been re-made, setting it to the
- *	starting time of the make only if the target still doesn't exist.
- *	Unfortunately, under NFS the modification time often doesn't
- *	get updated in time, so a target will appear to not have been
- *	re-made, causing later targets to appear up-to-date. On systems
- *	that don't have this problem, you should defined this. Under
- *	NFS you probably should not, unless you aren't exporting jobs.
- *
- * POSIX
- *	If the POSIX standard for Make is to be followed. There are
- *	several areas that I dislike, hence this constant.
+ * SUNSHCMD
+ *	Recognize SunOS and Solaris:
+ *		VAR :sh= CMD	# Assign VAR to the command substitution of CMD
+ *		${VAR:sh}	# Return the command substitution of the value
+ *				# of ${VAR}
  */
-#define	LIBSUFF	".a"
-#define	RECHECK
+#define SUNSHCMD
 
-#ifndef RANLIBMAG
-#define RANLIBMAG "__.SYMDEF"
+#if !defined(__svr4__) && !defined(__SVR4) && !defined(__ELF__)
+# ifndef RANLIBMAG
+#  define RANLIBMAG "__.SYMDEF"
+# endif
 #endif
-/*#define POSIX*/
+
+#ifdef HAS_EXTENDED_GETCWD
+#define dogetcwd()	getcwd(NULL, 0)
+#else
+#define dogetcwd()	getcwd(emalloc(PATH_MAX), PATH_MAX)
+#endif
+
+#ifdef SYSVINCLUDE
+#define DOFEATURE_SYSVINCLUDE	FEATURE_SYSVINCLUDE
+#else
+#define DOFEATURE_SYSVINCLUDE	0
+#endif
+#ifdef SYSVVARSUB
+#define DOFEATURE_SYSVVARSUB	FEATURE_SYSVVARSUB
+#else
+#define DOFEATURE_SYSVVARSUB	0
+#endif
+#ifdef SUNSHCMD
+#define DOFEATURE_SUNSHCMD	FEATURE_SUNSHCMD
+#else
+#define DOFEATURE_SUNSHCMD	0
+#endif
+
+#ifndef DEFAULT_FEATURES
+#define DEFAULT_FEATURES	(FEATURE_UPPERLOWER | DOFEATURE_SYSVVARSUB | DOFEATURE_SYSVINCLUDE | DOFEATURE_SUNSHCMD | FEATURE_RECVARS | FEATURE_CONDINCLUDE)
+#endif
+
+#define FEATURES(x)	((DEFAULT_FEATURES & (x)) != 0)
+#define FEATURE_ODE		1
+#define FEATURE_UNIQ		2
+#define FEATURE_SORT		4
+#define FEATURE_UPPERLOWER	8
+#define FEATURE_SYSVVARSUB	16
+#define FEATURE_SYSVINCLUDE	32
+#define FEATURE_SUNSHCMD	64
+#define FEATURE_RECVARS		128
+#define FEATURE_CONDINCLUDE	256
+#define FEATURE_ASSIGN		512
+#define FEATURE_EXECMOD		1024
+
+/*
+ * There are several places where expandable buffers are used (parse.c and
+ * var.c). This constant is merely the starting point for those buffers. If
+ * lines tend to be much shorter than this, it would be best to reduce BSIZE.
+ * If longer, it should be increased. Reducing it will cause more copying to
+ * be done for longer lines, but will save space for shorter ones. In any
+ * case, it ought to be a power of two simply because most storage allocation
+ * schemes allocate in powers of two.
+ */
+#define MAKE_BSIZE		256	/* starting size for expandable buffers */
+
+#endif

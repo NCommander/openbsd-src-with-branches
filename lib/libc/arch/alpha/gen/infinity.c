@@ -1,3 +1,4 @@
+/*	$OpenBSD: infinity.c,v 1.4 2001/01/24 07:46:50 art Exp $	*/
 /*	$NetBSD: infinity.c,v 1.1 1995/02/10 17:50:23 cgd Exp $	*/
 
 /*
@@ -30,4 +31,5 @@
 #include <math.h>
 
 /* bytes for +Infinity on an Alpha (IEEE double format) */
-char __infinity[] = { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };
+char __infinity[] __attribute__((__aligned__(sizeof(double)))) =
+					{ 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };

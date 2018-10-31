@@ -1,58 +1,56 @@
-/*	$NetBSD: db_variables.c,v 1.7 1994/10/09 08:56:28 mycroft Exp $	*/
+/*	$OpenBSD: db_variables.c,v 1.17 2015/03/14 05:48:17 tedu Exp $	*/
+/*	$NetBSD: db_variables.c,v 1.8 1996/02/05 01:57:19 christos Exp $	*/
 
-/* 
+/*
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
- * 
+ *
  * Permission to use, copy, modify and distribute this software and its
  * documentation is hereby granted, provided that both the copyright
  * notice and this permission notice appear in all copies of the
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
- * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ *
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
- * 
+ *
  * Carnegie Mellon requests users of this software to return to
- * 
+ *
  *  Software Distribution Coordinator  or  Software.Distribution@CS.CMU.EDU
  *  School of Computer Science
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
- * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ *
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  */
 
 #include <sys/param.h>
-#include <sys/proc.h>
+#include <sys/systm.h>
 
 #include <machine/db_machdep.h>
 
 #include <ddb/db_lex.h>
 #include <ddb/db_variables.h>
-
-extern unsigned int	db_maxoff;
-
-extern int	db_radix;
-extern int	db_max_width;
-extern int	db_tab_stop_width;
-extern int	db_max_line;
+#include <ddb/db_command.h>
+#include <ddb/db_sym.h>
+#include <ddb/db_extern.h>
+#include <ddb/db_var.h>
 
 struct db_variable db_vars[] = {
-	{ "radix",	&db_radix, FCN_NULL },
-	{ "maxoff",	(int *)&db_maxoff, FCN_NULL },
-	{ "maxwidth",	&db_max_width, FCN_NULL },
-	{ "tabstops",	&db_tab_stop_width, FCN_NULL },
-	{ "lines",	&db_max_line, FCN_NULL },
+	{ "radix",	(long *)&db_radix, db_var_rw_int },
+	{ "maxoff",	(long *)&db_maxoff, db_var_rw_int },
+	{ "maxwidth",	(long *)&db_max_width, db_var_rw_int },
+	{ "tabstops",	(long *)&db_tab_stop_width, db_var_rw_int },
+	{ "lines",	(long *)&db_max_line, db_var_rw_int },
+	{ "log",	(long *)&db_log, db_var_rw_int }
 };
-struct db_variable *db_evars = db_vars + sizeof(db_vars)/sizeof(db_vars[0]);
+struct db_variable *db_evars = db_vars + nitems(db_vars);
 
 int
-db_find_variable(varp)
-	struct db_variable	**varp;
+db_find_variable(struct db_variable **varp)
 {
 	int	t;
 	struct db_variable *vp;
@@ -74,11 +72,11 @@ db_find_variable(varp)
 	}
 	db_error("Unknown variable\n");
 	/*NOTREACHED*/
+	return 0;
 }
 
 int
-db_get_variable(valuep)
-	db_expr_t	*valuep;
+db_get_variable(db_expr_t *valuep)
 {
 	struct db_variable *vp;
 
@@ -91,8 +89,7 @@ db_get_variable(valuep)
 }
 
 int
-db_set_variable(value)
-	db_expr_t	value;
+db_set_variable(db_expr_t value)
 {
 	struct db_variable *vp;
 
@@ -105,11 +102,10 @@ db_set_variable(value)
 }
 
 
-db_read_variable(vp, valuep)
-	struct db_variable *vp;
-	db_expr_t	*valuep;
+void
+db_read_variable(struct db_variable *vp, db_expr_t *valuep)
 {
-	int	(*func)() = vp->fcn;
+	int	(*func)(struct db_variable *, db_expr_t *, int) = vp->fcn;
 
 	if (func == FCN_NULL)
 	    *valuep = *(vp->valuep);
@@ -117,11 +113,10 @@ db_read_variable(vp, valuep)
 	    (*func)(vp, valuep, DB_VAR_GET);
 }
 
-db_write_variable(vp, valuep)
-	struct db_variable *vp;
-	db_expr_t	*valuep;
+void
+db_write_variable(struct db_variable *vp, db_expr_t *valuep)
 {
-	int	(*func)() = vp->fcn;
+	int	(*func)(struct db_variable *, db_expr_t *, int) = vp->fcn;
 
 	if (func == FCN_NULL)
 	    *(vp->valuep) = *valuep;
@@ -129,11 +124,11 @@ db_write_variable(vp, valuep)
 	    (*func)(vp, valuep, DB_VAR_SET);
 }
 
+/*ARGSUSED*/
 void
-db_set_cmd()
+db_set_cmd(db_expr_t addr, int have_addr, db_expr_t count, char *modif)
 {
 	db_expr_t	value;
-	int	(*func)();
 	struct db_variable *vp;
 	int	t;
 
@@ -162,3 +157,15 @@ db_set_cmd()
 
 	db_write_variable(vp, &value);
 }
+
+int
+db_var_rw_int(struct db_variable *var, db_expr_t *expr, int mode)
+{
+
+	if (mode == DB_VAR_SET)
+		*var->valuep = *(int *)expr;
+	else
+		*expr = *(int *)var->valuep;
+	return (0);
+}
+

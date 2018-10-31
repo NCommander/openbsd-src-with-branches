@@ -1,0 +1,7 @@
+#	$OpenBSD$
+ABORT BUSY ABORT 'NO CARRIER' '' ATZ OK ATDT*70,5551212
+CONNECT ''
+'' ''
+'' ''
+Userid:--Userid: myloginname
+assword?--assword? mypassword

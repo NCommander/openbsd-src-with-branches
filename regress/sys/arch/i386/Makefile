@@ -1,8 +1,14 @@
-#	$NetBSD: Makefile,v 1.2 1995/04/20 22:41:43 cgd Exp $
+#	$OpenBSD$
 
-SUBDIR+= ldt
+.if ${MACHINE_ARCH} == "i386"
+SUBDIR =
+SUBDIR +=	f00f
 
-regress: _SUBDIRUSE
+.elif make(regress) || make(all)
+${.TARGETS}:
+	@echo Regress for architecture i386 cannot run on ${MACHINE_ARCH}.
+	@echo SKIPPED
+.endif
 
 install:
 

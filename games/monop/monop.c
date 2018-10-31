@@ -1,3 +1,4 @@
+/*	$OpenBSD: monop.c,v 1.15 2016/01/08 18:19:47 mestre Exp $	*/
 /*	$NetBSD: monop.c,v 1.3 1995/03/23 08:34:52 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,31 +30,31 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)monop.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: monop.c,v 1.3 1995/03/23 08:34:52 cgd Exp $";
-#endif
-#endif /* not lint */
+#include "monop.def"
 
-# include	"monop.def"
+static void	getplayers(void);
+static void	init_players(void);
+static void	init_monops(void);
 
 /*
  *	This program implements a monopoly game
  */
-main(ac, av)
-reg int		ac;
-reg char	*av[]; {
+int
+main(int ac, char *av[])
+{
+	num_luck = sizeof lucky_mes / sizeof (char *);
 
+	if (pledge("stdio rpath wpath cpath", NULL) == -1)
+		err(1, "pledge");
 
-	srand(getpid());
+	init_decks();
+	init_monops();
 	if (ac > 1) {
 		if (!rest_f(av[1]))
 			restore();
@@ -65,71 +62,74 @@ reg char	*av[]; {
 	else {
 		getplayers();
 		init_players();
-		init_monops();
 	}
-	num_luck = sizeof lucky_mes / sizeof (char *);
-	init_decks();
-	signal(2, quit);
 	for (;;) {
 		printf("\n%s (%d) (cash $%d) on %s\n", cur_p->name, player + 1,
-			cur_p->money, board[cur_p->loc].name);
+			cur_p->money, board[(int)cur_p->loc].name);
 		printturn();
 		force_morg();
 		execute(getinp("-- Command: ", comlist));
 	}
 }
+
 /*
  *	This routine gets the names of the players
  */
-getplayers() {
-
-	reg char	*sp;
-	reg int		i, j;
-	char		buf[257];
+static void
+getplayers(void)
+{
+	int	i, j;
+	char	buf[257];
 
 blew_it:
 	for (;;) {
-		if ((num_play=get_int("How many players? ")) <= 0 ||
+		if ((num_play = get_int("How many players? ")) <= 1 ||
 		    num_play > MAX_PL)
-			printf("Sorry. Number must range from 1 to 9\n");
+			printf("Sorry. Number must range from 2 to %d\n",
+			    MAX_PL);
 		else
 			break;
 	}
-	cur_p = play = (PLAY *) calloc(num_play, sizeof (PLAY));
+	if ((cur_p = play = calloc(num_play, sizeof (PLAY))) == NULL)
+		err(1, NULL);
 	for (i = 0; i < num_play; i++) {
-over:
-		printf("Player %d's name: ", i + 1);
-		for (sp = buf; (*sp=getchar()) != '\n'; sp++)
-			continue;
-		if (sp == buf)
-			goto over;
-		*sp++ = '\0';
-		strcpy(name_list[i]=play[i].name=(char *)calloc(1,sp-buf),buf);
+		do {
+			printf("Player %d's name: ", i + 1);
+			fgets(buf, sizeof(buf), stdin);
+			if ((feof(stdin))) {
+				printf("user closed input stream, quitting...\n");
+				exit(0);
+			}
+			buf[strcspn(buf, "\n")] = '\0';
+		} while (strlen(buf) == 0);
+		if ((name_list[i] = play[i].name = strdup(buf)) == NULL)
+			err(1, NULL);
 		play[i].money = 1500;
 	}
 	name_list[i++] = "done";
 	name_list[i] = 0;
 	for (i = 0; i < num_play; i++)
-		for (j = i + 1; j < num_play; j++)
+		for (j = i + 1; j <= num_play; j++)
 			if (strcasecmp(name_list[i], name_list[j]) == 0) {
-				if (i != num_play - 1)
-					printf("Hey!!! Some of those are IDENTICAL!!  Let's try that again....\n");
+				if (j != num_play)
+					printf("Hey!!! Some of those are IDENTICAL!!  Let's try that again...\n");
 				else
 					printf("\"done\" is a reserved word.  Please try again\n");
 				for (i = 0; i < num_play; i++)
-					cfree(play[i].name);
-				cfree(play);
+					free(play[i].name);
+				free(play);
 				goto blew_it;
 			}
 }
 /*
  *	This routine figures out who goes first
  */
-init_players() {
-
-	reg int	i, rl, cur_max;
-	bool	over;
-	int	max_pl;
+static void
+init_players(void)
+{
+	int	i, rl, cur_max;
+	bool	over = 0;
+	int	max_pl = 0;
 
 again:
 	putchar('\n');
@@ -153,16 +153,17 @@ again:
 	printf("%s (%d) goes first\n", cur_p->name, max_pl + 1);
 }
 /*
- *	This routine initalizes the monopoly structures.
+ *	This routine initializes the monopoly structures.
  */
-init_monops() {
-
-	reg MON	*mp;
-	reg int	i;
+static void
+init_monops(void)
+{
+	MON	*mp;
+	int	i;
 
 	for (mp = mon; mp < &mon[N_MON]; mp++) {
 		mp->name = mp->not_m;
 		for (i = 0; i < mp->num_in; i++)
-			mp->sq[i] = &board[mp->sqnums[i]];
+			mp->sq[i] = &board[(int)mp->sqnums[i]];
 	}
 }

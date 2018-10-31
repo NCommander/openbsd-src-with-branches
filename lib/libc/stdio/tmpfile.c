@@ -1,5 +1,4 @@
-/*	$NetBSD: tmpfile.c,v 1.5 1995/02/02 02:10:43 jtc Exp $	*/
-
+/*	$OpenBSD: tmpfile.c,v 1.10 2005/10/10 12:00:52 espie Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,28 +31,23 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)tmpfile.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: tmpfile.c,v 1.5 1995/02/02 02:10:43 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <paths.h>
 
 FILE *
-tmpfile()
+tmpfile(void)
 {
 	sigset_t set, oset;
 	FILE *fp;
 	int fd, sverrno;
-#define	TRAILER	"tmp.XXXXXX"
+#define	TRAILER	"tmp.XXXXXXXXXX"
 	char buf[sizeof(_PATH_TMP) + sizeof(TRAILER)];
 
 	(void)memcpy(buf, _PATH_TMP, sizeof(_PATH_TMP) - 1);
@@ -67,8 +57,14 @@ tmpfile()
 	(void)sigprocmask(SIG_BLOCK, &set, &oset);
 
 	fd = mkstemp(buf);
-	if (fd != -1)
+	if (fd != -1) {
+		mode_t u;
+
 		(void)unlink(buf);
+		u = umask(0);
+		(void)umask(u);
+		(void)fchmod(fd, 0666 & ~u);
+	}
 
 	(void)sigprocmask(SIG_SETMASK, &oset, NULL);
 
@@ -83,3 +79,4 @@ tmpfile()
 	}
 	return (fp);
 }
+DEF_STRONG(tmpfile);

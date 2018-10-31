@@ -1,3 +1,4 @@
+.\"	$OpenBSD: sigpending.2,v 1.7 2015/05/31 23:54:25 schwarze Exp $
 .\"	$NetBSD: sigpending.2,v 1.2 1995/02/27 12:37:26 cgd Exp $
 .\"
 .\" Copyright (c) 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,19 +33,19 @@
 .\"
 .\"	@(#)sigpending.2	8.3 (Berkeley) 1/12/94
 .\"
-.Dd January 12, 1994
+.Dd $Mdocdate: May 31 2015 $
 .Dt SIGPENDING 2
 .Os
 .Sh NAME
 .Nm sigpending
 .Nd get pending signals
 .Sh SYNOPSIS
-.Fd #include <signal.h>
+.In signal.h
 .Ft int
 .Fn sigpending "sigset_t *set"
 .Sh DESCRIPTION
 The
-.Nm sigpending
+.Fn sigpending
 function returns a mask of the signals pending for delivery
 to the calling process in the location indicated by
 .Fa set .
@@ -56,19 +53,17 @@ Signals may be pending because they are currently masked,
 or transiently before delivery (although the latter case is not
 normally detectable).
 .Sh RETURN VALUES
-A 0 value indicated that the call succeeded.  A \-1 return value
-indicates an error occurred and
-.Va errno
-is set to indicated the reason.
+.Rv -std
 .Sh ERRORS
 The
-.Nm sigpending
+.Fn sigpending
 function does not currently detect any errors.
 .Sh SEE ALSO
 .Xr sigaction 2 ,
-.Xr sigprocmask 2
+.Xr sigprocmask 2 ,
+.Xr sigaddset 3
 .Sh STANDARDS
 The
-.Nm sigpending
+.Fn sigpending
 function is defined by
-.St -p1003.1-88 .
+.St -p1003.1-2008 .

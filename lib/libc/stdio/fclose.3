@@ -1,4 +1,4 @@
-.\"	$NetBSD: fclose.3,v 1.4 1995/02/02 01:15:33 jtc Exp $
+.\"	$OpenBSD: fclose.3,v 1.8 2013/07/17 05:42:11 schwarze Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,23 +31,20 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)fclose.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: July 17 2013 $
 .Dt FCLOSE 3
 .Os
 .Sh NAME
 .Nm fclose
 .Nd close a stream
 .Sh SYNOPSIS
-.Fd #include <stdio.h>
+.In stdio.h
 .Ft int
 .Fn fclose "FILE *stream"
 .Sh DESCRIPTION
 The
 .Fn fclose
-function
-dissociates the named
+function dissociates the named
 .Fa stream
 from its underlying file or set of functions.
 If the stream was being used for output, any buffered data is written
@@ -75,8 +68,7 @@ is not an open stream.
 .Pp
 The
 .Fn fclose
-function
-may also fail and set
+function may also fail and set
 .Va errno
 for any of the errors specified for the routines
 .Xr close 2
@@ -86,10 +78,14 @@ or
 .Xr close 2 ,
 .Xr fflush 3 ,
 .Xr fopen 3 ,
-.Xr setbuf 3
+.Xr setvbuf 3
 .Sh STANDARDS
 The
 .Fn fclose
-function
-conforms to
+function conforms to
 .St -ansiC .
+.Sh HISTORY
+The
+.Fn fclose
+function first appeared in
+.At v7 .

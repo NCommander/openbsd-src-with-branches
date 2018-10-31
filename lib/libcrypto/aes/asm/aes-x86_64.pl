@@ -352,7 +352,7 @@ ___
 ___
 	}
 $code.=<<___;
-	.byte	0xf3,0xc3			# rep ret
+	retq
 .size	_x86_64_AES_encrypt,.-_x86_64_AES_encrypt
 ___
 
@@ -580,7 +580,7 @@ $code.=<<___;
 	xor	4($key),$s1
 	xor	8($key),$s2
 	xor	12($key),$s3
-	.byte	0xf3,0xc3			# rep ret
+	retq
 .size	_x86_64_AES_encrypt_compact,.-_x86_64_AES_encrypt_compact
 ___
 
@@ -925,7 +925,7 @@ ___
 ___
 	}
 $code.=<<___;
-	.byte	0xf3,0xc3			# rep ret
+	retq
 .size	_x86_64_AES_decrypt,.-_x86_64_AES_decrypt
 ___
 
@@ -1179,7 +1179,7 @@ $code.=<<___;
 	xor	4($key),$s1
 	xor	8($key),$s2
 	xor	12($key),$s3
-	.byte	0xf3,0xc3			# rep ret
+	retq
 .size	_x86_64_AES_decrypt_compact,.-_x86_64_AES_decrypt_compact
 ___
 
@@ -1284,13 +1284,13 @@ $code.=<<___;
 ___
 }
 
-# int private_AES_set_encrypt_key(const unsigned char *userKey, const int bits,
+# int AES_set_encrypt_key(const unsigned char *userKey, const int bits,
 #                        AES_KEY *key)
 $code.=<<___;
-.globl	private_AES_set_encrypt_key
-.type	private_AES_set_encrypt_key,\@function,3
+.globl	AES_set_encrypt_key
+.type	AES_set_encrypt_key,\@function,3
 .align	16
-private_AES_set_encrypt_key:
+AES_set_encrypt_key:
 	push	%rbx
 	push	%rbp
 	push	%r12			# redundant, but allows to share 
@@ -1311,7 +1311,7 @@ private_AES_set_encrypt_key:
 	add	\$56,%rsp
 .Lenc_key_epilogue:
 	ret
-.size	private_AES_set_encrypt_key,.-private_AES_set_encrypt_key
+.size	AES_set_encrypt_key,.-AES_set_encrypt_key
 
 .type	_x86_64_AES_set_encrypt_key,\@abi-omnipotent
 .align	16
@@ -1496,7 +1496,7 @@ $code.=<<___;
 .Lbadpointer:
 	mov	\$-1,%rax
 .Lexit:
-	.byte	0xf3,0xc3			# rep ret
+	retq
 .size	_x86_64_AES_set_encrypt_key,.-_x86_64_AES_set_encrypt_key
 ___
 
@@ -1554,13 +1554,13 @@ $code.=<<___;
 ___
 }
 
-# int private_AES_set_decrypt_key(const unsigned char *userKey, const int bits,
+# int AES_set_decrypt_key(const unsigned char *userKey, const int bits,
 #                        AES_KEY *key)
 $code.=<<___;
-.globl	private_AES_set_decrypt_key
-.type	private_AES_set_decrypt_key,\@function,3
+.globl	AES_set_decrypt_key
+.type	AES_set_decrypt_key,\@function,3
 .align	16
-private_AES_set_decrypt_key:
+AES_set_decrypt_key:
 	push	%rbx
 	push	%rbp
 	push	%r12
@@ -1629,7 +1629,7 @@ $code.=<<___;
 	add	\$56,%rsp
 .Ldec_key_epilogue:
 	ret
-.size	private_AES_set_decrypt_key,.-private_AES_set_decrypt_key
+.size	AES_set_decrypt_key,.-AES_set_decrypt_key
 ___
 
 # void AES_cbc_encrypt (const void char *inp, unsigned char *out,
@@ -1655,6 +1655,7 @@ $code.=<<___;
 .type	AES_cbc_encrypt,\@function,6
 .align	16
 .extern	OPENSSL_ia32cap_P
+.hidden	OPENSSL_ia32cap_P
 .globl	asm_AES_cbc_encrypt
 .hidden	asm_AES_cbc_encrypt
 asm_AES_cbc_encrypt:
@@ -1684,7 +1685,7 @@ AES_cbc_encrypt:
 	jb	.Lcbc_slow_prologue
 	test	\$15,%rdx
 	jnz	.Lcbc_slow_prologue
-	bt	\$28,%r10d
+	bt	\$IA32CAP_BIT0_HT,%r10d
 	jc	.Lcbc_slow_prologue
 
 	# allocate aligned stack frame...
@@ -1944,7 +1945,7 @@ AES_cbc_encrypt:
 	lea	($key,%rax),%rax
 	mov	%rax,$keyend
 
-	# pick Te4 copy which can't "overlap" with stack frame or key scdedule
+	# pick Te4 copy which can't "overlap" with stack frame or key schedule
 	lea	2048($sbox),$sbox
 	lea	768-8(%rsp),%rax
 	sub	$sbox,%rax
@@ -2776,13 +2777,13 @@ cbc_se_handler:
 	.rva	.LSEH_end_AES_decrypt
 	.rva	.LSEH_info_AES_decrypt
 
-	.rva	.LSEH_begin_private_AES_set_encrypt_key
-	.rva	.LSEH_end_private_AES_set_encrypt_key
-	.rva	.LSEH_info_private_AES_set_encrypt_key
+	.rva	.LSEH_begin_AES_set_encrypt_key
+	.rva	.LSEH_end_AES_set_encrypt_key
+	.rva	.LSEH_info_AES_set_encrypt_key
 
-	.rva	.LSEH_begin_private_AES_set_decrypt_key
-	.rva	.LSEH_end_private_AES_set_decrypt_key
-	.rva	.LSEH_info_private_AES_set_decrypt_key
+	.rva	.LSEH_begin_AES_set_decrypt_key
+	.rva	.LSEH_end_AES_set_decrypt_key
+	.rva	.LSEH_info_AES_set_decrypt_key
 
 	.rva	.LSEH_begin_AES_cbc_encrypt
 	.rva	.LSEH_end_AES_cbc_encrypt
@@ -2798,11 +2799,11 @@ cbc_se_handler:
 	.byte	9,0,0,0
 	.rva	block_se_handler
 	.rva	.Ldec_prologue,.Ldec_epilogue	# HandlerData[]
-.LSEH_info_private_AES_set_encrypt_key:
+.LSEH_info_AES_set_encrypt_key:
 	.byte	9,0,0,0
 	.rva	key_se_handler
 	.rva	.Lenc_key_prologue,.Lenc_key_epilogue	# HandlerData[]
-.LSEH_info_private_AES_set_decrypt_key:
+.LSEH_info_AES_set_decrypt_key:
 	.byte	9,0,0,0
 	.rva	key_se_handler
 	.rva	.Ldec_key_prologue,.Ldec_key_epilogue	# HandlerData[]
@@ -2814,6 +2815,7 @@ ___
 
 $code =~ s/\`([^\`]*)\`/eval($1)/gem;
 
+print "#include \"x86_arch.h\"\n";
 print $code;
 
 close STDOUT;

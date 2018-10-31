@@ -1,4 +1,4 @@
-.\"	$NetBSD: fgets.3,v 1.5 1995/02/02 01:15:38 jtc Exp $
+.\"	$OpenBSD: fgets.3,v 1.34 2016/08/27 16:39:42 schwarze Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,79 +31,73 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)fgets.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: August 27 2016 $
 .Dt FGETS 3
 .Os
 .Sh NAME
-.Nm fgets ,
-.Nm gets
+.Nm fgets
 .Nd get a line from a stream
 .Sh SYNOPSIS
-.Fd #include <stdio.h>
+.In stdio.h
 .Ft char *
-.Fn fgets "char *str" "size_t size" "FILE *stream"
-.Ft char *
-.Fn gets "char *str"
+.Fn fgets "char *str" "int size" "FILE *stream"
 .Sh DESCRIPTION
 The
 .Fn fgets
-function
-reads at most one less than the number of characters specified by
-.Xr size
-from the given
+function reads at most
+.Ar size Ns \-1
+characters from the given
 .Fa stream
 and stores them in the string
 .Fa str .
 Reading stops when a newline character is found,
-at end-of-file or error.
+at end-of-file, on error, or after
+.Ar size Ns \-1
+bytes are read.
 The newline, if any, is retained.
-In any case a
-.Ql \e0
-character is appended to end the string.
-.Pp
-The
-.Fn gets
-function
-is equivalent to
+The string will be NUL-terminated if
 .Fn fgets
-with an infinite
-.Xr size
-and a
-.Fa stream
-of
-.Em stdin ,
-except that the newline character (if any) is not stored in the string.
-It is the caller's responsibility to ensure that the input line,
-if any, is sufficiently short to fit in the string.
+succeeds; otherwise the contents of
+.Fa str
+are undefined.
 .Sh RETURN VALUES
-.Pp
 Upon successful completion,
 .Fn fgets
-and 
-.Fn gets
-return
-a pointer to the string.
-If end-of-file or an error occurs before any characters are read, 
-they return
-.Dv NULL.
+returns a pointer to the string.
+If end-of-file or an error occurs before any characters are read,
+it returns
+.Dv NULL .
 The
 .Fn fgets
-and
-functions
-.Fn gets
-do not distinguish between end-of-file and error, and callers must use
+function does not distinguish between end-of-file and error,
+and callers must use
 .Xr feof 3
 and
 .Xr ferror 3
 to determine which occurred.
+Whether
+.Fn fgets
+can possibly fail with a
+.Ar size
+argument of 1 is implementation-dependent.
+On
+.Ox ,
+.Fn fgets
+will never return
+.Dv NULL
+when
+.Ar size
+is 1.
 .Sh ERRORS
 .Bl -tag -width Er
 .It Bq Er EBADF
 The given
 .Fa stream
 is not a readable stream.
+.It Bq Er EINVAL
+The given
+.Fa size
+is less than or equal to 0.
 .El
 .Pp
 The function
@@ -120,34 +110,92 @@ for any of the errors specified for the routines
 .Xr read 2 ,
 or
 .Xr malloc 3 .
-.Pp
-The function
-.Fn gets
-may also fail and set
-.Va errno
-for any of the errors specified for the routine
-.Xr getchar 3 .
 .Sh SEE ALSO
 .Xr feof 3 ,
 .Xr ferror 3 ,
-.Xr fgetln 3
+.Xr fgetws 3 ,
+.Xr getline 3
 .Sh STANDARDS
-The functions
+The function
 .Fn fgets
-and
-.Fn gets
-conform to
+conforms to
 .St -ansiC .
-.Sh BUGS
-Since it is usually impossible to ensure that the next input line
-is less than some arbitrary length, and because overflowing the
-input buffer is almost invariably a security violation, programs
-should
-.Em NEVER
-use
-.Fn gets .
-The
-.Fn gets
-function
-exists purely to conform to
-.St -ansiC .
+.Sh HISTORY
+The function
+.Fn fgets
+first appeared in
+.At v7 .
+.Sh CAVEATS
+The following bit of code illustrates a case where the programmer assumes a
+string is too long if it does not contain a newline:
+.Bd -literal -offset indent
+char buf[1024], *p;
+
+while (fgets(buf, sizeof(buf), fp) != NULL) {
+	if ((p = strchr(buf, '\en')) == NULL) {
+		fprintf(stderr, "input line too long.\en");
+		exit(1);
+	}
+	*p = '\e0';
+	printf("%s\en", buf);
+}
+.Ed
+.Pp
+While the error would be true if a line \*(Gt 1023 characters were read,
+it would be false in two other cases:
+.Bl -enum -offset indent
+.It
+If the last line in a file does not contain a newline, the string returned by
+.Fn fgets
+will not contain a newline either.
+Thus
+.Fn strchr
+will return
+.Dv NULL
+and the program will terminate, even if the line was valid.
+.It
+All C string functions, including
+.Fn strchr ,
+correctly assume the end of the string is represented by a NUL
+.Pq Sq \e0
+character.
+If the first character of a line returned by
+.Fn fgets
+were NUL,
+.Fn strchr
+would immediately return without considering the rest of the returned text
+which may indeed include a newline.
+.El
+.Pp
+Consider using
+.Xr getline 3
+instead when dealing with untrusted input.
+.Pp
+It is erroneous to assume that
+.Fn fgets
+never returns an empty string when successful.
+If a line starts with the NUL character, fgets will store the NUL and
+continue reading until it encounters a newline or end-of-file.
+This will result in an empty string being returned.
+The following bit of code illustrates a case where the programmer assumes
+the string cannot be zero length.
+.Bd -literal -offset indent
+char buf[1024];
+
+if (fgets(buf, sizeof(buf), fp) != NULL) {
+	/* WRONG */
+	if (buf[strlen(buf) - 1] == '\en')
+		buf[strlen(buf) - 1] = '\e0';
+}
+.Ed
+.Pp
+If
+.Fn strlen
+returns 0, the index into the buffer becomes \-1.
+One way to concisely and correctly trim a newline is shown below.
+.Bd -literal -offset indent
+char buf[1024];
+
+if (fgets(buf, sizeof(buf), fp) != NULL)
+	buf[strcspn(buf, "\en")] = '\e0';
+.Ed

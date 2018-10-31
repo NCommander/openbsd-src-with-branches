@@ -1,3 +1,5 @@
+.\"	$OpenBSD: write.1,v 1.18 2016/02/05 19:00:39 martijn Exp $
+.\"
 .\" Copyright (c) 1989, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -12,11 +14,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,9 +31,8 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)write.1	8.1 (Berkeley) 6/6/93
-.\"	$Id: write.1,v 1.3 1994/09/19 08:18:23 mycroft Exp $
 .\"
-.Dd June 6, 1993
+.Dd $Mdocdate: February 5 2016 $
 .Dt WRITE 1
 .Os
 .Sh NAME
@@ -46,12 +43,12 @@
 .Ar user
 .Op Ar ttyname
 .Sh DESCRIPTION
-.Nm Write
+.Nm
 allows you to communicate with other users, by copying lines from
 your terminal to theirs.
 .Pp
 When you run the
-.Nm write
+.Nm
 command, the user you are writing to gets a message of the form:
 .Pp
 .Dl Message from yourname@yourhost on yourtty at hh:mm ...
@@ -59,51 +56,88 @@ command, the user you are writing to gets a message of the form:
 Any further lines you enter will be copied to the specified user's
 terminal.
 If the other user wants to reply, they must run
-.Nm write
+.Nm
 as well.
 .Pp
 When you are done, type an end-of-file or interrupt character.
 The other user will see the message
-.Ql EOF
-indicating that the
-conversation is over.
+.Dq EOF
+indicating that the conversation is over.
 .Pp
-You can prevent people (other than the super-user) from writing to you
+You can prevent people (other than the superuser) from writing to you
 with the
 .Xr mesg 1
 command.
-Some commands, for example
-.Xr nroff 1
-and
+Some commands, such as
 .Xr pr 1 ,
-disallow writing automatically, so that your output isn't overwritten.
+disallow writing automatically, so that output isn't overwritten.
 .Pp
 If the user you want to write to is logged in on more than one terminal,
 you can specify which terminal to write to by specifying the terminal
 name as the second operand to the
-.Nm write
+.Nm
 command.
 Alternatively, you can let
-.Nm write
+.Nm
 select one of the terminals \- it will pick the one with the shortest
 idle time.
 This is so that if the user is logged in at work and also dialed up from
 home, the message will go to the right place.
 .Pp
 The traditional protocol for writing to someone is that the string
-.Ql \-o ,
+.Dq \-o ,
 either at the end of a line or on a line by itself, means that it's the
 other person's turn to talk.
 The string
-.Ql oo
+.Dq oo
 means that the person believes the conversation to be
 over.
+.Sh ASYNCHRONOUS EVENTS
+.Bl -tag -width SIGINTXXX
+.It Dv SIGINT
+Terminate
+.Nm
+and exit with a zero status.
+.El
+.Sh EXIT STATUS
+The
+.Nm
+utility exits with one of the following values:
+.Pp
+.Bl -tag -width Ds -offset indent -compact
+.It 0
+Normal behavior.
+.It >0
+The specified user is either not logged in or not accepting messages.
+.El
 .Sh SEE ALSO
 .Xr mesg 1 ,
 .Xr talk 1 ,
 .Xr who 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification, except that in this implementation the sender's
+locale is intentionally ignored in order to avoid sending characters
+that the receiving terminal may be unable to display, or even bytes
+that might break the receiving terminal's state.
+Non-ASCII characters are written as
+.Sq \&? .
 .Sh HISTORY
 A
 .Nm
 command appeared in
-.At v6 .
+.At v2 .
+.Sh BUGS
+The
+.Dq EOF
+message seen when the other
+.Nm
+terminates is indistinguishable from that party simply typing
+.Dq EOF
+to make you believe that any future messages did not come from them.
+Especially messages such as:
+.Pp
+.Dl "[1]    Done                   rm -rf *"

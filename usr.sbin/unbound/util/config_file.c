@@ -219,7 +219,7 @@ config_create(void)
 	cfg->trust_anchor_file_list = NULL;
 	cfg->trust_anchor_list = NULL;
 	cfg->trusted_keys_file_list = NULL;
-	cfg->trust_anchor_signaling = 1;
+	cfg->trust_anchor_signaling = 0;
 	cfg->root_key_sentinel = 1;
 	cfg->dlv_anchor_file = NULL;
 	cfg->dlv_anchor_list = NULL;

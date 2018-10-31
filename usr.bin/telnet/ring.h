@@ -1,3 +1,6 @@
+/*	$OpenBSD: ring.h,v 1.8 2014/07/20 06:24:19 guenther Exp $	*/
+/*	$NetBSD: ring.h,v 1.5 1996/02/28 21:04:09 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,18 +30,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)ring.h	8.1 (Berkeley) 6/6/93
- *	$Id: ring.h,v 1.3 1994/02/25 03:00:36 cgd Exp $
  */
-
-#if defined(P)
-# undef P
-#endif
-
-#if defined(__STDC__) || defined(LINT_ARGS)
-# define	P(x)	x
-#else
-# define	P(x)	()
-#endif
 
 /*
  * This defines a structure for a ring buffer.
@@ -55,43 +43,36 @@
  *
  */
 typedef struct {
-    unsigned char	*consume,	/* where data comes out of */
-			*supply,	/* where data comes in to */
-			*bottom,	/* lowest address in buffer */
-			*top,		/* highest address+1 in buffer */
-			*mark;		/* marker (user defined) */
-    int		size;		/* size in bytes of buffer */
-    u_long	consumetime,	/* help us keep straight full, empty, etc. */
-		supplytime;
+	unsigned char	*consume;	/* where data comes out of */
+	unsigned char	*supply;	/* where data comes in to */
+	unsigned char	*bottom;	/* lowest address in buffer */
+	unsigned char	*top;		/* highest address+1 in buffer */
+	unsigned char	*mark;		/* marker (user defined) */
+	int		size;		/* size in bytes of buffer */
+	unsigned long	consumetime;	/* help us keep straight full, empty, etc. */
+	unsigned long	supplytime;
 } Ring;
 
 /* Here are some functions and macros to deal with the ring buffer */
 
 /* Initialization routine */
-extern int
-	ring_init P((Ring *ring, unsigned char *buffer, int count));
+void	ring_init(Ring *ring, unsigned char *buffer, int size);
 
 /* Data movement routines */
-extern void
-	ring_supply_data P((Ring *ring, unsigned char *buffer, int count));
-#ifdef notdef
-extern void
-	ring_consume_data P((Ring *ring, unsigned char *buffer, int count));
-#endif
+void	ring_supply_data(Ring *ring, unsigned char *buffer, int count);
 
 /* Buffer state transition routines */
-extern void
-	ring_supplied P((Ring *ring, int count)),
-	ring_consumed P((Ring *ring, int count));
+void	ring_supplied(Ring *ring, int count);
+void	ring_consumed(Ring *ring, int count);
 
 /* Buffer state query routines */
-extern int
-	ring_empty_count P((Ring *ring)),
-	ring_empty_consecutive P((Ring *ring)),
-	ring_full_count P((Ring *ring)),
-	ring_full_consecutive P((Ring *ring));
+int	ring_empty_count(Ring *ring);
+int	ring_empty_consecutive(Ring *ring);
+int	ring_full_count(Ring *ring);
+int	ring_full_consecutive(Ring *ring);
 
+/* Buffer urgent data handling */
+void	ring_clear_mark(Ring *);
+void	ring_mark(Ring *);
+int	ring_at_mark(Ring *);
 
-extern void
-    ring_clear_mark(),
-    ring_mark();

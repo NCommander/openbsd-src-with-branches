@@ -1,3 +1,4 @@
+/*	$OpenBSD: debug.c,v 1.3 2001/01/29 02:05:43 niklas Exp $	*/
 /*	$NetBSD: debug.c,v 1.2 1995/04/20 22:39:42 cgd Exp $	*/
 
 #include <stdio.h>
@@ -218,7 +219,7 @@ FILE *d;
 			fprintf(d, ">");
 			break;
 		default:
-			fprintf(d, "!%d(%d)!", OP(*s), opnd);
+			fprintf(d, "!%ld(%ld)!", (long)OP(*s), (long)opnd);
 			break;
 		}
 		if (!done)
@@ -237,8 +238,8 @@ int ch;
 	static char buf[10];
 
 	if (isprint(ch) || ch == ' ')
-		sprintf(buf, "%c", ch);
+		snprintf(buf, sizeof buf, "%c", ch);
 	else
-		sprintf(buf, "\\%o", ch);
+		snprintf(buf, sizeof buf, "\\%o", ch);
 	return(buf);
 }

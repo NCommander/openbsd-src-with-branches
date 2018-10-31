@@ -1,3 +1,4 @@
+.\"     $OpenBSD: cmp.1,v 1.16 2014/01/25 21:58:06 jmc Exp $
 .\"     $NetBSD: cmp.1,v 1.4 1995/09/08 03:22:55 tls Exp $
 .\"
 .\" Copyright (c) 1987, 1990, 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,7 +33,7 @@
 .\"
 .\"     @(#)cmp.1	8.1 (Berkeley) 6/6/93
 .\"
-.Dd June 6, 1993
+.Dd $Mdocdate: January 25 2014 $
 .Dt CMP 1
 .Os
 .Sh NAME
@@ -48,7 +45,9 @@
 .Ar file1 file2
 .Op Ar skip1 Op Ar skip2
 .Sh DESCRIPTION
-The cmp utility compares two files of any type and writes the results
+The
+.Nm
+utility compares two files of any type and writes the results
 to the standard output.
 By default,
 .Nm
@@ -57,32 +56,36 @@ and line number at which the first difference occurred is reported.
 .Pp
 Bytes and lines are numbered beginning with one.
 .Pp
-The following options are available:
-.Bl -tag -width flag
+The options are as follows:
+.Bl -tag -width Ds
 .It Fl l
 Print the byte number (decimal) and the differing
 byte values (octal) for each difference.
 .It Fl s
+Silent.
 Print nothing for differing files; return exit
 status only.
 .El
 .Pp
 The optional arguments
 .Ar skip1
-and 
+and
 .Ar skip2
 are the byte offsets from the beginning of
 .Ar file1
 and
 .Ar file2 ,
 respectively, where the comparison will begin.
-The offset is decimal by default, but may be expressed as an hexadecimal
-or octal value by preceding it with a leading ``0x'' or ``0''.
-.Pp
+The offset is decimal by default, but may be expressed as a hexadecimal
+or octal value by preceding it with a leading
+.Dq 0x
+or
+.Dq 0 .
+.Sh EXIT STATUS
 The
-.Nm cmp
+.Nm
 utility exits with one of the following values:
-.Bl -tag -width 4n
+.Bl -tag -width Ds -offset indent
 .It 0
 The files are identical.
 .It 1
@@ -92,18 +95,32 @@ the other.
 In the latter case, if the
 .Fl s
 option has not been specified,
-.Nm cmp
-writes to standard output that EOF was reached in the shorter
+.Nm
+writes to standard error that
+.Dv EOF
+was reached in the shorter
 file (before any differences were found).
 .It >1
 An error occurred.
 .El
 .Sh SEE ALSO
 .Xr diff 1 ,
-.Xr diff3 1
+.Xr diff3 1 ,
+.Xr sdiff 1
 .Sh STANDARDS
 The
-.Nm cmp
-utility is expected to be
-.St -p1003.2
-compatible.
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
+.Pp
+The arguments
+.Ar skip1
+and
+.Ar skip2
+are extensions to that specification.
+.Sh HISTORY
+A
+.Nm
+command appeared in
+.At v1 .

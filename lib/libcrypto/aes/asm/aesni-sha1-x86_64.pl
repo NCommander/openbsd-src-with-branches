@@ -83,6 +83,7 @@ open OUT,"| \"$^X\" $xlate $flavour $output";
 $code.=<<___;
 .text
 .extern	OPENSSL_ia32cap_P
+.hidden	OPENSSL_ia32cap_P
 
 .globl	aesni_cbc_sha1_enc
 .type	aesni_cbc_sha1_enc,\@abi-omnipotent
@@ -93,10 +94,10 @@ aesni_cbc_sha1_enc:
 	mov	OPENSSL_ia32cap_P+4(%rip),%r11d
 ___
 $code.=<<___ if ($avx);
-	and	\$`1<<28`,%r11d		# mask AVX bit
-	and	\$`1<<30`,%r10d		# mask "Intel CPU" bit
+	and	\$IA32CAP_MASK1_AVX,%r11d	# mask AVX bit
+	and	\$IA32CAP_MASK0_INTEL,%r10d	# mask "Intel CPU" bit
 	or	%r11d,%r10d
-	cmp	\$`1<<28|1<<30`,%r10d
+	cmp	\$(IA32CAP_MASK1_AVX|IA32CAP_MASK0_INTEL),%r10d
 	je	aesni_cbc_sha1_enc_avx
 ___
 $code.=<<___;
@@ -1226,25 +1227,7 @@ sub rex {
     push @opcode,$rex|0x40	if($rex);
 }
 
-sub aesni {
-  my $line=shift;
-  my @opcode=(0x66);
-
-    if ($line=~/(aes[a-z]+)\s+%xmm([0-9]+),\s*%xmm([0-9]+)/) {
-	my %opcodelet = (
-		"aesenc" => 0xdc,	"aesenclast" => 0xdd
-	);
-	return undef if (!defined($opcodelet{$1}));
-	rex(\@opcode,$3,$2);
-	push @opcode,0x0f,0x38,$opcodelet{$1};
-	push @opcode,0xc0|($2&7)|(($3&7)<<3);	# ModR/M
-	return ".byte\t".join(',',@opcode);
-    }
-    return $line;
-}
-
 $code =~ s/\`([^\`]*)\`/eval($1)/gem;
-$code =~ s/\b(aes.*%xmm[0-9]+).*$/aesni($1)/gem;
 
 print $code;
 close STDOUT;

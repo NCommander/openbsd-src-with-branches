@@ -15,6 +15,7 @@
 #include "X86InstrBuilder.h"
 #include "X86InstrInfo.h"
 #include "X86MachineFunctionInfo.h"
+#include "X86ReturnProtectorLowering.h"
 #include "X86Subtarget.h"
 #include "X86TargetMachine.h"
 #include "llvm/ADT/SmallSet.h"
@@ -39,7 +40,7 @@ X86FrameLowering::X86FrameLowering(const X86Subtarget &STI,
                                    unsigned StackAlignOverride)
     : TargetFrameLowering(StackGrowsDown, StackAlignOverride,
                           STI.is64Bit() ? -8 : -4),
-      STI(STI), TII(*STI.getInstrInfo()), TRI(STI.getRegisterInfo()) {
+      STI(STI), TII(*STI.getInstrInfo()), TRI(STI.getRegisterInfo()), RPL() {
   // Cache a bunch of frame-related predicates for this subtarget.
   SlotSize = TRI->getSlotSize();
   Is64Bit = STI.is64Bit();
@@ -3058,4 +3059,8 @@ void X86FrameLowering::processFunctionBeforeFrameFinalized(
   addFrameReference(BuildMI(MBB, MBBI, DL, TII.get(X86::MOV64mi32)),
                     UnwindHelpFI)
       .addImm(-2);
+}
+
+const ReturnProtectorLowering *X86FrameLowering::getReturnProtector() const {
+  return &RPL;
 }

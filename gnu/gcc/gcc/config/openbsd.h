@@ -1,5 +1,5 @@
 /* Base configuration file for all OpenBSD targets.
-   Copyright (C) 1999, 2000, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2004, 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -14,9 +14,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GCC; see the file COPYING.  If not, write to
-the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.  */
+along with GCC; see the file COPYING.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 /* Common OpenBSD configuration. 
    All OpenBSD architectures include this file, which is intended as
@@ -54,6 +53,16 @@ Boston, MA 02110-1301, USA.  */
 
 /* The compiler is configured with ONLY the gcc/g++ standard headers.  */
 #undef INCLUDE_DEFAULTS
+#ifdef CROSS_COMPILE
+#define INCLUDE_DEFAULTS			\
+  {						\
+    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },	\
+    { GPLUSPLUS_TOOL_INCLUDE_DIR, "G++", 1, 1 }, \
+    { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1 }, \
+    { GPLUSPLUS_INCLUDE_DIR "/..", STANDARD_INCLUDE_COMPONENT, 0, 0 }, \
+    { 0, 0, 0, 0 }				\
+  }
+#else
 #define INCLUDE_DEFAULTS			\
   {						\
     { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },	\
@@ -62,6 +71,7 @@ Boston, MA 02110-1301, USA.  */
     { STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT, 0, 0 }, \
     { 0, 0, 0, 0 }				\
   }
+#endif
 
 /* Under OpenBSD, the normal location of the various *crt*.o files is the
    /usr/lib directory.  */
@@ -70,9 +80,39 @@ Boston, MA 02110-1301, USA.  */
 
 #endif
 
-
 /* Controlling the compilation driver.  */
 /* TARGET_OS_CPP_BUILTINS() common to all OpenBSD targets.  */
+#define OPENBSD_OS_CPP_BUILTINS_COMMON()	\
+  do						\
+    {						\
+      builtin_define ("__OpenBSD__");		\
+      builtin_define ("__unix__");		\
+      builtin_define ("__ANSI_COMPAT");		\
+      builtin_assert ("system=unix");		\
+      builtin_assert ("system=bsd");		\
+      builtin_assert ("system=OpenBSD");	\
+    }						\
+  while (0)
+
+/* TARGET_OS_CPP_BUILTINS() common to all OpenBSD ELF targets.  */
+#define OPENBSD_OS_CPP_BUILTINS_ELF()		\
+  do						\
+    {						\
+      OPENBSD_OS_CPP_BUILTINS_COMMON();		\
+      builtin_define ("__ELF__");		\
+    }						\
+  while (0)
+
+/* TARGET_OS_CPP_BUILTINS() common to all LP64 OpenBSD targets.  */
+#define OPENBSD_OS_CPP_BUILTINS_LP64()		\
+  do						\
+    {						\
+      builtin_define ("_LP64");			\
+      builtin_define ("__LP64__");		\
+    }						\
+  while (0)
+
+/* XXX old stuff TARGET_OS_CPP_BUILTINS() common to all OpenBSD targets.  */
 #define OPENBSD_OS_CPP_BUILTINS()		\
   do						\
     {						\
@@ -91,20 +131,13 @@ Boston, MA 02110-1301, USA.  */
    This two-stage defines makes it easy to pick that for targets that
    have subspecs.  */
 #ifdef CPP_CPU_SPEC
-#define OBSD_CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} %{pthread:-D_POSIX_THREADS}"
+#define OBSD_CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 #else
-#define OBSD_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_POSIX_THREADS}"
+#define OBSD_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 #endif
 
-/* LIB_SPEC appropriate for OpenBSD.  */
-#ifdef HAS_LIBC_R
-/*   -lc(_r)?(_p)?, select _r for threads, and _p for p or pg.  */
-# define OBSD_LIB_SPEC "%{!shared:-lc%{pthread:_r}%{p:_p}%{!p:%{pg:_p}}}"
-#else
-/* Include -lpthread if -pthread is specified on the command line. */
-# define OBSD_LIB_SPEC "%{!shared:%{pthread:-lpthread%{p:_p}%{!p:%{pg:_p}}}} %{!shared:-lc%{p:_p}%{!p:%{pg:_p}}}"
-#endif
-
+#undef LIB_SPEC
+#define LIB_SPEC OBSD_LIB_SPEC
 
 #ifndef OBSD_HAS_CORRECT_SPECS
 
@@ -138,6 +171,10 @@ Boston, MA 02110-1301, USA.  */
 #else
 #define LINK_SPEC \
   "%{g:%{!nostdlib:-L/usr/lib/debug}} %{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}}} %{shared:-Bshareable -x} -dc -dp %{R*} %{static:-Bstatic} %{assert*}"
+#endif
+
+#if defined(HAVE_LD_EH_FRAME_HDR)
+#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif
 
 #undef LIB_SPEC
@@ -282,15 +319,14 @@ do {									 \
 /* Storage layout.  */
 
 
-/* Otherwise, since we support weak, gthr.h erroneously tries to use
-   #pragma weak.  */
-#define GTHREAD_USE_WEAK 0
-
 /* bug work around: we don't want to support #pragma weak, but the current
    code layout needs HANDLE_PRAGMA_WEAK asserted for __attribute((weak)) to
    work.  On the other hand, we don't define HANDLE_PRAGMA_WEAK directly,
    as this depends on a few other details as well...  */
 #define HANDLE_SYSV_PRAGMA 1
+
+/* Define this so we can compile MS code for use with WINE.  */
+#define HANDLE_PRAGMA_PACK_PUSH_POP
 
 /* Stack is explicitly denied execution rights on OpenBSD platforms.  */
 #define ENABLE_EXECUTE_STACK						\
@@ -306,6 +342,16 @@ __enable_execute_stack (void *addr)					\
   if (mprotect (page, end - page, PROT_READ | PROT_WRITE | PROT_EXEC) < 0) \
     perror ("mprotect of trampoline code");				\
 }
+
+/* 
+ * Disable the use of unsafe builtin functions, (strcat, strcpy, stpcpy),
+ * making them easier to spot in the object files.
+ */
+#define NO_UNSAFE_BUILTINS
+
+/* The system headers on OpenBSD are C++-aware.  */
+#undef NO_IMPLICIT_EXTERN_C
+#define NO_IMPLICIT_EXTERN_C
 
 #include <sys/types.h>
 #include <sys/mman.h>

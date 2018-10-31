@@ -1,4 +1,5 @@
-/*	$NetBSD: varargs.h,v 1.10 1995/03/28 18:17:27 jtc Exp $	*/
+/*	$OpenBSD: varargs.h,v 1.5 2003/06/02 23:27:47 millert Exp $	*/
+/*	$NetBSD: varargs.h,v 1.14 1995/12/26 01:16:26 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,29 +37,22 @@
  *	@(#)varargs.h	8.2 (Berkeley) 3/22/94
  */
 
-#ifndef _I386_VARARGS_H_
-#define	_I386_VARARGS_H_
+#ifndef _MACHINE_VARARGS_H_
+#define	_MACHINE_VARARGS_H_
 
-#include <machine/ansi.h>
+#include <machine/stdarg.h>
 
-typedef _BSD_VA_LIST_	va_list;
-
-#define	va_dcl	int va_alist;
-
-#define	__va_promote(type) \
-	(((sizeof(type) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
-
-#define	va_start(ap) \
-	ap = (char *)&va_alist
-
-#ifdef _KERNEL
-#define	va_arg(ap, type) \
-	((type *)(ap += sizeof(type)))[-1]
+#if __GNUC__ == 1
+#define	__va_ellipsis
 #else
-#define	va_arg(ap, type) \
-	((type *)(ap += __va_promote(type), ap - __va_promote(type)))[0]
+#define	__va_ellipsis	...
 #endif
 
-#define	va_end(ap)	((void) 0)
+#define	va_alist	__builtin_va_alist
+#define	va_dcl		long __builtin_va_alist; __va_ellipsis
 
-#endif /* !_I386_VARARGS_H_ */
+#undef va_start
+#define	va_start(ap) \
+	((ap) = (va_list)&__builtin_va_alist)
+
+#endif /* !_MACHINE_VARARGS_H_ */

@@ -1,4 +1,4 @@
-/* crypto/ec/ec_lcl.h */
+/* $OpenBSD: ec_lcl.h,v 1.9 2018/07/15 05:38:48 jsg Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -69,18 +69,22 @@
  *
  */
 
-
 #include <stdlib.h>
 
 #include <openssl/obj_mac.h>
 #include <openssl/ec.h>
 #include <openssl/bn.h>
 
+__BEGIN_HIDDEN_DECLS
+
 #if defined(__SUNPRO_C)
 # if __SUNPRO_C >= 0x520
 # pragma error_messages (off,E_ARRAY_OF_INCOMPLETE_NONAME,E_ARRAY_OF_INCOMPLETE)
 # endif
 #endif
+
+#define bn_wexpand(a,words) (((words) <= (a)->dmax)?(a):bn_expand2((a),(words)))
+BIGNUM *bn_expand2(BIGNUM *a, int words);
 
 /* Use default functions for poin2oct, oct2point and compressed coordinates */
 #define EC_FLAGS_DEFAULT_OCT	0x1
@@ -156,10 +160,12 @@ struct ec_method_st {
 	int (*make_affine)(const EC_GROUP *, EC_POINT *, BN_CTX *);
 	int (*points_make_affine)(const EC_GROUP *, size_t num, EC_POINT *[], BN_CTX *);
 
-	/* used by EC_POINTs_mul, EC_POINT_mul, EC_POINT_precompute_mult, EC_POINT_have_precompute_mult
-	 * (default implementations are used if the 'mul' pointer is 0): */
-	int (*mul)(const EC_GROUP *group, EC_POINT *r, const BIGNUM *scalar,
-		size_t num, const EC_POINT *points[], const BIGNUM *scalars[], BN_CTX *);
+	/* used by EC_POINTs_mul, EC_POINT_mul, EC_POINT_precompute_mult, EC_POINT_have_precompute_mult */
+	int (*mul_generator_ct)(const EC_GROUP *, EC_POINT *r, const BIGNUM *scalar, BN_CTX *);
+	int (*mul_single_ct)(const EC_GROUP *group, EC_POINT *r, const BIGNUM *scalar,
+		const EC_POINT *point, BN_CTX *);
+	int (*mul_double_nonct)(const EC_GROUP *group, EC_POINT *r, const BIGNUM *g_scalar,
+		const BIGNUM *p_scalar, const EC_POINT *point, BN_CTX *);
 	int (*precompute_mult)(EC_GROUP *group, BN_CTX *);
 	int (*have_precompute_mult)(const EC_GROUP *group);
 
@@ -333,6 +339,11 @@ int ec_GFp_simple_make_affine(const EC_GROUP *, EC_POINT *, BN_CTX *);
 int ec_GFp_simple_points_make_affine(const EC_GROUP *, size_t num, EC_POINT *[], BN_CTX *);
 int ec_GFp_simple_field_mul(const EC_GROUP *, BIGNUM *r, const BIGNUM *a, const BIGNUM *b, BN_CTX *);
 int ec_GFp_simple_field_sqr(const EC_GROUP *, BIGNUM *r, const BIGNUM *a, BN_CTX *);
+int ec_GFp_simple_mul_generator_ct(const EC_GROUP *, EC_POINT *r, const BIGNUM *scalar, BN_CTX *);
+int ec_GFp_simple_mul_single_ct(const EC_GROUP *, EC_POINT *r, const BIGNUM *scalar,
+	const EC_POINT *point, BN_CTX *);
+int ec_GFp_simple_mul_double_nonct(const EC_GROUP *, EC_POINT *r, const BIGNUM *g_scalar,
+	const BIGNUM *p_scalar, const EC_POINT *point, BN_CTX *);
 
 
 /* method functions in ecp_mont.c */
@@ -423,6 +434,10 @@ int ec_GFp_nistp256_points_mul(const EC_GROUP *group, EC_POINT *r, const BIGNUM 
 int ec_GFp_nistp256_precompute_mult(EC_GROUP *group, BN_CTX *ctx);
 int ec_GFp_nistp256_have_precompute_mult(const EC_GROUP *group);
 
+#ifdef ECP_NISTZ256_ASM
+const EC_METHOD *EC_GFp_nistz256_method(void);
+#endif
+
 /* method functions in ecp_nistp521.c */
 int ec_GFp_nistp521_group_init(EC_GROUP *group);
 int ec_GFp_nistp521_group_set_curve(EC_GROUP *group, const BIGNUM *p, const BIGNUM *a, const BIGNUM *n, BN_CTX *);
@@ -443,4 +458,7 @@ void ec_GFp_nistp_points_make_affine_internal(size_t num, void *point_array,
 	void (*felem_inv)(void *out, const void *in),
 	void (*felem_contract)(void *out, const void *in));
 void ec_GFp_nistp_recode_scalar_bits(unsigned char *sign, unsigned char *digit, unsigned char in);
+
 #endif
+
+__END_HIDDEN_DECLS

@@ -55,9 +55,11 @@
 
 #include <config.h>
 
+#include <arpa/nameser.h>
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <netdb.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -209,13 +211,15 @@ lwres_resetaddr(lwres_addr_t *addr) {
 static char *
 lwres_strdup(lwres_context_t *ctx, const char *str) {
 	char *p;
+	size_t len;
 
 	REQUIRE(str != NULL);
 	REQUIRE(strlen(str) > 0U);
 
-	p = CTXMALLOC(strlen(str) + 1);
+	len = strlen(str);
+	p = CTXMALLOC(len + 1);
 	if (p != NULL)
-		strcpy(p, str);
+		strlcpy(p, str, len + 1);
 
 	return (p);
 }
@@ -238,8 +242,10 @@ lwres_conf_init(lwres_context_t *ctx) {
 	confdata->ndots = 1;
 	confdata->no_tld_query = 0;
 
-	for (i = 0; i < LWRES_CONFMAXNAMESERVERS; i++)
+	for (i = 0; i < LWRES_CONFMAXNAMESERVERS; i++) {
 		lwres_resetaddr(&confdata->nameservers[i]);
+		confdata->nameserverports[i] = 0;
+	}
 
 	for (i = 0; i < LWRES_CONFMAXSEARCH; i++)
 		confdata->search[i] = NULL;
@@ -259,8 +265,10 @@ lwres_conf_clear(lwres_context_t *ctx) {
 	REQUIRE(ctx != NULL);
 	confdata = &ctx->confdata;
 
-	for (i = 0; i < confdata->nsnext; i++)
+	for (i = 0; i < confdata->nsnext; i++) {
 		lwres_resetaddr(&confdata->nameservers[i]);
+		confdata->nameserverports[i] = 0;
+	}
 
 	if (confdata->domainname != NULL) {
 		CTXFREE(confdata->domainname,
@@ -294,6 +302,10 @@ lwres_conf_clear(lwres_context_t *ctx) {
 static lwres_result_t
 lwres_conf_parsenameserver(lwres_context_t *ctx,  FILE *fp) {
 	char word[LWRES_CONFMAXLINELEN];
+	char pbuf[NI_MAXSERV];
+	char *cp, *q;
+	const char *errstr;
+	lwres_uint16_t port;
 	int res;
 	lwres_conf_t *confdata;
 	lwres_addr_t address;
@@ -312,9 +324,34 @@ lwres_conf_parsenameserver(lwres_context_t *ctx,  FILE *fp) {
 	if (res != EOF && res != '\n')
 		return (LWRES_R_FAILURE); /* Extra junk on line. */
 
-	res = lwres_create_addr(word, &address, 1);
-	if (res == LWRES_R_SUCCESS)
-		confdata->nameservers[confdata->nsnext++] = address;
+	/* Handle addresses enclosed in [] 
+	 * (adapted from lib/libc/net/res_init.c) */
+	*pbuf = '\0';
+	cp = word;
+	if (*cp == '[') {
+		cp++;
+		if ((q = strchr(cp, ']')) == NULL)
+			return (LWRES_R_FAILURE);
+		*q++ = '\0';
+		/* Extract port, if specified */
+		if (*q++ == ':') {
+			if (strlcpy(pbuf, q, sizeof(pbuf)) >= sizeof(pbuf))
+				return (LWRES_R_FAILURE);
+		}
+	}
+	if (*pbuf != '\0') {
+		port = strtonum(pbuf, 1, 65535, &errstr);
+		if (errstr)
+			return (LWRES_R_FAILURE);
+	} else {
+		port = NAMESERVER_PORT;
+	}
+
+	res = lwres_create_addr(cp, &address, 1);
+	if (res == LWRES_R_SUCCESS) {
+		confdata->nameservers[confdata->nsnext] = address;
+		confdata->nameserverports[confdata->nsnext++] = port;
+	}
 
 	return (LWRES_R_SUCCESS);
 }

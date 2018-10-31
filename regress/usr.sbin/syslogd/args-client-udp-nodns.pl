@@ -14,9 +14,20 @@ our %args = (
     },
     syslogd => {
 	options => ["-un"],
+	loggrep => get_testlog(),
+    },
+    server => {
+	loggrep => get_testlog(),
+    },
+    pipe => {
+	loggrep => get_testlog(),
+    },
+    tty => {
+	loggrep => get_testlog(),
     },
     file => {
-	loggrep => qr/ 127.0.0.1 syslogd-regress\[\d+\]: /. get_log(),
+	# Sys::Syslog UDP is broken, it appends a \n\0.
+	loggrep => qr/ 127.0.0.1 syslogd-regress\[\d+\]: /.get_testlog().qr/ $/,
     },
 );
 

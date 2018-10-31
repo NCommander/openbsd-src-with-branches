@@ -1,3 +1,4 @@
+.\"	$OpenBSD: flock.2,v 1.19 2014/11/30 19:56:12 schwarze Exp $
 .\"	$NetBSD: flock.2,v 1.5 1995/02/27 12:32:32 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,39 +30,41 @@
 .\"
 .\"     @(#)flock.2	8.2 (Berkeley) 12/11/93
 .\"
-.Dd December 11, 1993
+.Dd $Mdocdate: November 30 2014 $
 .Dt FLOCK 2
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm flock
-.Nd "apply or remove an advisory lock on an open file"
+.Nd apply or remove an advisory lock on an open file
 .Sh SYNOPSIS
-.Fd #include <sys/file.h>
-.Fd #define	LOCK_SH	1	/* shared lock */
-.Fd #define	LOCK_EX	2	/* exclusive lock */
-.Fd #define	LOCK_NB	4	/* don't block when locking */
-.Fd #define	LOCK_UN	8	/* unlock */
+.In fcntl.h
 .Ft int
 .Fn flock "int fd" "int operation"
 .Sh DESCRIPTION
-.Fn Flock
+.Fn flock
 applies or removes an
 .Em advisory
 lock on the file associated with the file descriptor
 .Fa fd .
-A lock is applied by specifying an
+The
 .Fa operation
-parameter that is one of
+argument is one of:
+.Pp
+.Bl -tag -width LOCK_SH -offset indent -compact
+.It Dv LOCK_SH
+Apply a shared lock.
+.It Dv LOCK_EX
+Apply an exclusive lock.
+.It Dv LOCK_UN
+Remove an existing lock.
+.El
+.Pp
 .Dv LOCK_SH
-or
+and
 .Dv LOCK_EX
-with the optional addition of
-.Dv LOCK_NB .
-To unlock
-an existing lock
-.Dv operation
-should be
-.Dv LOCK_UN .
+may be combined with the optional
+.Dv LOCK_NB
+for nonblocking mode.
 .Pp
 Advisory locks allow cooperating processes to perform
 consistent operations on files, but do not guarantee
@@ -80,7 +79,7 @@ locks and
 locks.
 At any time multiple shared locks may be applied to a file,
 but at no time are multiple exclusive, or both shared and exclusive,
-locks allowed simultaneously on a file.  
+locks allowed simultaneously on a file.
 .Pp
 A shared lock may be
 .Em upgraded
@@ -89,33 +88,33 @@ the appropriate lock type; this results in the previous
 lock being released and the new lock applied (possibly
 after other processes have gained and released the lock).
 .Pp
-Requesting a lock on an object that is already locked
-normally causes the caller to be blocked until the lock may be
-acquired.  If
+Requesting a lock on an object that is already locked normally causes
+the caller to be blocked until the lock may be acquired.
+If
+.Fa operation
+is the bitwise OR of
 .Dv LOCK_NB
-is included in
-.Fa operation ,
-then this will not happen; instead the call will fail and
-the error
+and
+.Dv LOCK_SH
+or
+.Dv LOCK_EX ,
+then this will not happen; instead the call will fail and the error
 .Er EWOULDBLOCK
 will be returned.
 .Sh NOTES
-Locks are on files, not file descriptors.  That is, file descriptors
-duplicated through
+Locks are on files, not file descriptors.
+That is, file descriptors duplicated through
 .Xr dup 2
 or
 .Xr fork 2
 do not result in multiple instances of a lock, but rather multiple
-references to a single lock.  If a process holding a lock on a file
-forks and the child explicitly unlocks the file, the parent will
-lose its lock.
+references to a single lock.
+If a process holding a lock on a file forks and the child explicitly
+unlocks the file, the parent will lose its lock.
 .Pp
 Processes blocked awaiting a lock may be awakened by signals.
 .Sh RETURN VALUES
-Zero is returned if the operation was successful;
-on an error a -1 is returned and an error code is left in
-the global location
-.Va errno .
+.Rv -std
 .Sh ERRORS
 The
 .Fn flock
@@ -131,17 +130,20 @@ The argument
 is an invalid descriptor.
 .It Bq Er EINVAL
 The argument
-.Fa fd
-refers to an object other than a file.
+.Fa operation
+has an invalid value.
+.It Bq Er EOPNOTSUPP
+The referenced descriptor is not of the correct type.
 .El
 .Sh SEE ALSO
-.Xr open 2 ,
 .Xr close 2 ,
 .Xr dup 2 ,
 .Xr execve 2 ,
-.Xr fork 2
+.Xr fcntl 2 ,
+.Xr fork 2 ,
+.Xr open 2
 .Sh HISTORY
 The
 .Fn flock
-function call appeared in
-.Bx 4.2 .
+system call first appeared in
+.Bx 4.1c .

@@ -1,5 +1,4 @@
-/*	$NetBSD: wbuf.c,v 1.4 1995/02/02 02:10:58 jtc Exp $	*/
-
+/*	$OpenBSD: wbuf.c,v 1.12 2009/11/09 00:18:28 kurt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,14 +31,8 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)wbuf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: wbuf.c,v 1.4 1995/02/02 02:10:58 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <stdio.h>
+#include <errno.h>
 #include "local.h"
 
 /*
@@ -51,12 +40,12 @@ static char rcsid[] = "$NetBSD: wbuf.c,v 1.4 1995/02/02 02:10:58 jtc Exp $";
  * the given file.  Flush the buffer out if it is or becomes full,
  * or if c=='\n' and the file is line buffered.
  */
-__swbuf(c, fp)
-	register int c;
-	register FILE *fp;
+int
+__swbuf(int c, FILE *fp)
 {
-	register int n;
+	int n;
 
+	_SET_ORIENTATION(fp, -1);
 	/*
 	 * In case we cannot write, or longjmp takes us out early,
 	 * make sure _w is 0 (if fully- or un-buffered) or -_bf._size
@@ -65,8 +54,10 @@ __swbuf(c, fp)
 	 * calls might wrap _w from negative to positive.
 	 */
 	fp->_w = fp->_lbfsize;
-	if (cantwrite(fp))
+	if (cantwrite(fp)) {
+		errno = EBADF;
 		return (EOF);
+	}
 	c = (unsigned char)c;
 
 	/*
@@ -74,20 +65,21 @@ __swbuf(c, fp)
 	 * stuff c into the buffer.  If this causes the buffer to fill
 	 * completely, or if c is '\n' and the file is line buffered,
 	 * flush it (perhaps a second time).  The second flush will always
-	 * happen on unbuffered streams, where _bf._size==1; fflush()
+	 * happen on unbuffered streams, where _bf._size==1; __sflush()
 	 * guarantees that putc() will always call wbuf() by setting _w
 	 * to 0, so we need not do anything else.
 	 */
 	n = fp->_p - fp->_bf._base;
 	if (n >= fp->_bf._size) {
-		if (fflush(fp))
+		if (__sflush(fp))
 			return (EOF);
 		n = 0;
 	}
 	fp->_w--;
 	*fp->_p++ = c;
 	if (++n == fp->_bf._size || (fp->_flags & __SLBF && c == '\n'))
-		if (fflush(fp))
+		if (__sflush(fp))
 			return (EOF);
 	return (c);
 }
+DEF_STRONG(__swbuf);

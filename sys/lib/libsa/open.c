@@ -1,4 +1,5 @@
-/*	$NetBSD: open.c,v 1.9 1995/09/19 09:16:52 thorpej Exp $	*/
+/*	$OpenBSD: open.c,v 1.10 2003/08/11 06:23:09 deraadt Exp $	*/
+/*	$NetBSD: open.c,v 1.12 1996/09/30 16:01:21 ws Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,35 +33,36 @@
  * SUCH DAMAGE.
  *
  *	@(#)open.c	8.1 (Berkeley) 6/11/93
- *  
+ *
  *
  * Copyright (c) 1989, 1990, 1991 Carnegie Mellon University
  * All Rights Reserved.
  *
  * Author: Alessandro Forin
- * 
+ *
  * Permission to use, copy, modify and distribute this software and its
  * documentation is hereby granted, provided that both the copyright
  * notice and this permission notice appear in all copies of the
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
- * 
+ *
  * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
- * 
+ *
  * Carnegie Mellon requests users of this software to return to
- * 
+ *
  *  Software Distribution Coordinator  or  Software.Distribution@CS.CMU.EDU
  *  School of Computer Science
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
- * 
+ *
  * any improvements or extensions that they make and grant Carnegie the
  * rights to redistribute these changes.
  */
 
 #include "stand.h"
+
 struct open_file files[SOPEN_MAX];
 
 /*
@@ -72,12 +70,14 @@ struct open_file files[SOPEN_MAX];
  */
 
 int
-open(fname, mode)
-	const char *fname;
-	int mode;
+#ifndef __INTERNAL_LIBSA_CREAD
+open(const char *fname, int mode)
+#else
+oopen(const char *fname, int mode)
+#endif
 {
-	register struct open_file *f;
-	register int fd, i, error;
+	struct open_file *f;
+	int fd, i, error;
 	char *file;
 
 	/* find a free file descriptor */
@@ -92,18 +92,18 @@ fnd:
 	 * Convert open mode (0,1,2) to F_READ, F_WRITE.
 	 */
 	f->f_flags = mode + 1;
-	f->f_dev = (struct devsw *)0;
-	f->f_ops = (struct fs_ops *)0;
-	file = (char *)0;
+	f->f_dev = NULL;
+	f->f_ops = NULL;
+	file = NULL;
 	error = devopen(f, fname, &file);
 	if (error ||
-	    (((f->f_flags & F_NODEV) == 0) && f->f_dev == (struct devsw *)0))
+	    (((f->f_flags & F_NODEV) == 0) && f->f_dev == NULL))
 		goto err;
 
 	/* see if we opened a raw device; otherwise, 'file' is the file name. */
-	if (file == (char *)0 || *file == '\0') {
+	if (file == NULL || *file == '\0') {
 		f->f_flags |= F_RAW;
-		return (0);
+		return (fd);
 	}
 
 	/* pass file name to the different filesystem open routines */
@@ -114,51 +114,15 @@ fnd:
 			f->f_ops = &file_system[i];
 			return (fd);
 		}
+		if (error == ENOENT || error == ENOTDIR)
+			break;
 	}
 	if (!error)
 		error = ENOENT;
 
+	f->f_dev->dv_close(f);
 err:
 	f->f_flags = 0;
 	errno = error;
 	return (-1);
 }
-
-/*
- * Null filesystem
- */
-int	null_open (char *path, struct open_file *f)
-{
-	errno  = EIO;
-	return -1;
-}
-
-int	null_close(struct open_file *f)
-{
-	return 0;
-}
-
-ssize_t	null_read (struct open_file *f, void *buf, size_t size, size_t *resid)
-{
-	errno = EIO;
-	return -1;
-}
-
-ssize_t	null_write (struct open_file *f, void *buf, size_t size, size_t *resid)
-{
-	errno = EIO;
-	return -1;
-}
-
-off_t	null_seek (struct open_file *f, off_t offset, int where)
-{
-	errno = EIO;
-	return -1;
-}
-
-int	null_stat (struct open_file *f, struct stat *sb)
-{
-	errno = EIO;
-	return -1;
-}
-

@@ -1,3 +1,5 @@
+.\"	$OpenBSD: quot.8,v 1.13 2017/07/06 16:58:34 schwarze Exp $
+.\"
 .\" Copyright (C) 1994 Wolfgang Solfrank.
 .\" Copyright (C) 1994 TooLs GmbH.
 .\" All rights reserved.
@@ -27,11 +29,9 @@
 .\" OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 .\" ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\"	$Id: quot.8,v 1.3 1994/03/19 07:59:47 cgd Exp $
-.\"
-.Dd February 8, 1994
+.Dd $Mdocdate: July 6 2017 $
 .Dt QUOT 8
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm quot
 .Nd display disk space occupied by each user
@@ -40,10 +40,10 @@
 .Op Fl acfhknv
 .Op Ar filesystem ...
 .Sh DESCRIPTION
-.Nm Quot
+.Nm
 is used to gather statistics about the disk usage for each local user.
 .Pp
-The following options are available:
+The options are as follows:
 .Bl -tag -width Ds
 .It Fl a
 Include statistics for all mounted filesystems.
@@ -55,7 +55,7 @@ blocks in files with this or lower size.
 For each user, display count of files and space occupied.
 .It Fl h
 Estimate the number of blocks in each file based on its size.
-Despite that this doesn't give the correct resuls (it doesn't
+Despite that this doesn't give the correct results (it doesn't
 account for the holes in files), this option isn't any faster
 and thus is discouraged.
 .It Fl k
@@ -66,10 +66,10 @@ options causes the numbers to be reported in kilobyte counts.
 .It Fl n
 Given a list of inodes (plus some optional data on each line)
 in the standard input, for each file print out the owner (plus
-the remainder of the input line). This is traditionally used
-in the pipe:
+the remainder of the input line).
+This is traditionally used in the pipe:
 .Bd -literal -offset indent
-ncheck filesystem | sort +0n | quot -n filesystem
+# ncheck filesystem | sort -n | quot -n filesystem
 .Ed
 .Pp
 to get a report of files and their owners.
@@ -77,13 +77,13 @@ to get a report of files and their owners.
 In addition to the default output, display the number of files
 not accessed within 30, 60 and 90 days.
 .El
-.Sh ENVIRONMENTAL VARIABLES
+.Sh ENVIRONMENT
 .Bl -tag -width BLOCKSIZE
 .It Ev BLOCKSIZE
-If the environmental variable
+If the environment variable
 .Ev BLOCKSIZE
 is set, and the
-.Gl k
+.Fl k
 option is not specified, the block counts will be displayed in units of that
 size block.
 .El
@@ -93,4 +93,14 @@ size block.
 .Xr quota 1 ,
 .Xr getmntinfo 3 ,
 .Xr fstab 5 ,
-.Xr mount 8 ,
+.Xr mount 8
+.Sh HISTORY
+The
+.Nm
+utility first appeared in
+.At v7 .
+.Sh AUTHORS
+The current version was written by
+.An Wolfgang Solfrank Aq Mt ws@netbsd.org
+for
+.Nx 1.0 .

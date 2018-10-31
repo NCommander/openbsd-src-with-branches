@@ -1,4 +1,4 @@
-/*	$NetBSD: rec_search.c,v 1.6 1995/02/27 13:25:17 cgd Exp $	*/
+/*	$OpenBSD: rec_search.c,v 1.10 2005/03/23 19:34:59 otto Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,14 +28,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)rec_search.c	8.3 (Berkeley) 2/21/94";
-#else
-static char rcsid[] = "$NetBSD: rec_search.c,v 1.6 1995/02/27 13:25:17 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 
@@ -67,13 +55,10 @@ static char rcsid[] = "$NetBSD: rec_search.c,v 1.6 1995/02/27 13:25:17 cgd Exp $
  *	the bt_cur field of the tree.  A pointer to the field is returned.
  */
 EPG *
-__rec_search(t, recno, op)
-	BTREE *t;
-	recno_t recno;
-	enum SRCHOP op;
+__rec_search(BTREE *t, recno_t recno, enum SRCHOP op)
 {
-	register indx_t index;
-	register PAGE *h;
+	indx_t idx;
+	PAGE *h;
 	EPGNO *parent;
 	RINTERNAL *r;
 	pgno_t pg;
@@ -90,24 +75,23 @@ __rec_search(t, recno, op)
 			t->bt_cur.index = recno - total;
 			return (&t->bt_cur);
 		}
-		for (index = 0, top = NEXTINDEX(h);;) {
-			r = GETRINTERNAL(h, index);
-			if (++index == top || total + r->nrecs > recno)
+		for (idx = 0, top = NEXTINDEX(h);;) {
+			r = GETRINTERNAL(h, idx);
+			if (++idx == top || total + r->nrecs > recno)
 				break;
 			total += r->nrecs;
 		}
 
-		if (__bt_push(t, pg, index - 1) == RET_ERROR)
-			return (NULL);
+		BT_PUSH(t, pg, idx - 1);
 		
 		pg = r->pgno;
 		switch (op) {
 		case SDELETE:
-			--GETRINTERNAL(h, (index - 1))->nrecs;
+			--GETRINTERNAL(h, (idx - 1))->nrecs;
 			mpool_put(t->bt_mp, h, MPOOL_DIRTY);
 			break;
 		case SINSERT:
-			++GETRINTERNAL(h, (index - 1))->nrecs;
+			++GETRINTERNAL(h, (idx - 1))->nrecs;
 			mpool_put(t->bt_mp, h, MPOOL_DIRTY);
 			break;
 		case SEARCH:
@@ -126,8 +110,8 @@ err:	sverrno = errno;
 				--GETRINTERNAL(h, parent->index)->nrecs;
 			else
 				++GETRINTERNAL(h, parent->index)->nrecs;
-                        mpool_put(t->bt_mp, h, MPOOL_DIRTY);
-                }
+			mpool_put(t->bt_mp, h, MPOOL_DIRTY);
+		}
 	errno = sverrno;
 	return (NULL);
 }

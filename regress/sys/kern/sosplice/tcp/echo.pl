@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#	$OpenBSD: echo.pl,v 1.6 2012/07/09 14:23:17 bluhm Exp $
+#	$OpenBSD: echo.pl,v 1.1.1.1 2013/01/03 17:36:39 bluhm Exp $
 
 # Copyright (c) 2010-2013 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -26,7 +26,7 @@ use Server;
 require 'funcs.pl';
 
 sub usage {
-	die "usage: echo.pl copy|splice [test-args.pl]\n";
+	die "usage: echo.pl copy|splice [args-test.pl]\n";
 }
 
 my $test;

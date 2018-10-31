@@ -132,6 +132,10 @@ Wbad-function-cast
 C ObjC Var(warn_bad_function_cast)
 Warn about casting functions to incompatible types
 
+Wbounded
+C ObjC C++ Var(warn_bounded) Init(1)
+Warn about basic buffer size problems
+
 Wc++-compat
 C ObjC Var(warn_cxx_compat)
 Warn about C constructs that are not in the common subset of C and C++
@@ -402,6 +406,10 @@ Do not suppress warnings from system headers
 Wtraditional
 C ObjC Var(warn_traditional)
 Warn about features not present in traditional C
+
+Wtrampolines
+Common Var(warn_trampolines)
+Warn when trampolines are emitted
 
 Wtrigraphs
 C ObjC C++ ObjC++
@@ -703,6 +711,10 @@ C++ ObjC++
 fthreadsafe-statics
 C++ ObjC++
 -fno-threadsafe-statics	Do not generate thread-safe code for initializing local statics
+
+ftrampolines
+Common Var(flag_trampolines)
+Allows trampolines
 
 funsigned-bitfields
 C ObjC C++ ObjC++

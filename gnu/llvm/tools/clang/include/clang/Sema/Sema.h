@@ -10361,6 +10361,7 @@ public:
     FST_FreeBSDKPrintf,
     FST_OSTrace,
     FST_OSLog,
+    FST_Syslog,
     FST_Unknown
   };
   static FormatStringType GetFormatStringType(const FormatAttr *Format);

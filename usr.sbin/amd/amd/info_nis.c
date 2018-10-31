@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)info_nis.c	8.1 (Berkeley) 6/6/93
- *	$Id: info_nis.c,v 1.3 1994/06/13 20:47:27 mycroft Exp $
+ *	$Id: info_nis.c,v 1.12 2014/10/26 03:03:34 guenther Exp $
  */
 
 /*
@@ -45,16 +41,24 @@
 
 #include "am.h"
 
-#ifdef HAS_NIS_MAPS
+#include <unistd.h>
+
 #include <rpcsvc/yp_prot.h>
 #include <rpcsvc/ypclnt.h>
+#include <time.h>
+
+/*
+ * Sun's NIS+ server in NIS compat mode does not have yp_order()
+ */
+static int has_yp_order = FALSE;
 
 /*
  * Figure out the nis domain name
  */
-static int determine_nis_domain(P_void)
+static int
+determine_nis_domain(void)
 {
-static	int nis_not_running = 0;
+	static int nis_not_running = 0;
 
 	char default_domain[YPMAXDOMAIN];
 
@@ -69,7 +73,7 @@ static	int nis_not_running = 0;
 
 	if (!*default_domain) {
 		nis_not_running = 1;
-		plog(XLOG_WARNING, "NIS domain name is not set.  NIS ignored.");
+		plog(XLOG_INFO, "NIS domain name is not set.  NIS ignored.");
 		return ENOENT;
 	}
 
@@ -79,30 +83,27 @@ static	int nis_not_running = 0;
 }
 
 
-#ifdef HAS_NIS_RELOAD
 struct nis_callback_data {
 	mnt_map *ncd_m;
 	char *ncd_map;
-	void (*ncd_fn)();
+	void (*ncd_fn)(mnt_map *, char *, char *);
 };
 
 /*
  * Callback from yp_all
  */
-static int callback(status, key, kl, val, vl, data)
-int status;
-char *key;
-int kl;
-char *val;
-int vl;
-struct nis_callback_data *data;
+static int
+callback(unsigned long status, char *key, int kl, char *val, int vl, void *arg)
 {
+	struct nis_callback_data *data = arg;
+
 	if (status == YP_TRUE) {
 		/*
 		 * Add to list of maps
 		 */
 		char *kp = strnsave(key, kl);
 		char *vp = strnsave(val, vl);
+
 		(*data->ncd_fn)(data->ncd_m, kp, vp);
 
 		/*
@@ -121,21 +122,18 @@ struct nis_callback_data *data;
 
 #ifdef DEBUG
 			plog(XLOG_ERROR, "yp enumeration of %s: %s, status=%d, e=%d",
-					data->ncd_map, yperr_string(e), status, e);
+			    data->ncd_map, yperr_string(e), status, e);
 #else
-			plog(XLOG_ERROR, "yp enumeration of %s: %s", data->ncd_map, yperr_string(e));
+			plog(XLOG_ERROR, "yp enumeration of %s: %s",
+			    data->ncd_map, yperr_string(e));
 #endif
 		}
-
 		return TRUE;
 	}
 }
 
-int nis_reload P((mnt_map *m, char *map, void (*fn)()));
-int nis_reload(m, map, fn)
-mnt_map *m;
-char *map;
-void (*fn)();
+int
+nis_reload(mnt_map *m, char *map, void (*fn)(mnt_map *, char *, char *))
 {
 	struct ypall_callback cbinfo;
 	int error;
@@ -150,50 +148,72 @@ void (*fn)();
 	data.ncd_m = m;
 	data.ncd_map = map;
 	data.ncd_fn = fn;
-	cbinfo.data = (voidp) &data;
-	cbinfo.foreach = callback;
+	cbinfo.data = (void *)&data;
+	cbinfo.foreach = &callback;
 
 	error = yp_all(domain, map, &cbinfo);
 
 	if (error)
-		plog(XLOG_ERROR, "error grabbing nis map of %s: %s", map, yperr_string(ypprot_err(error)));
+		plog(XLOG_ERROR, "error grabbing nis map of %s: %s",
+		    map, yperr_string(ypprot_err(error)));
 
 	return error;
 }
-#endif /* HAS_NIS_RELOAD */
 
 /*
  * Try to locate a key using NIS.
  */
-int nis_search P((mnt_map *m, char *map, char *key, char **val, time_t *tp));
-int nis_search(m, map, key, val, tp)
-mnt_map *m;
-char *map;
-char *key;
-char **val;
-time_t *tp;
+int
+nis_search(mnt_map *m, char *map, char *key, char **val, time_t *tp)
 {
 	int outlen;
-	int res;
 	int order;
+	int res;
 
 	/*
 	 * Make sure domain initialised
 	 */
-	if (!domain) {
-		int error = determine_nis_domain();
-		if (error)
-			return error;
+	if (has_yp_order) {
+		/* check if map has changed */
+		if (yp_order(domain, map, &order))
+			return EIO;
+		if ((time_t) order > *tp) {
+			*tp = (time_t) order;
+			return -1;
+		}
+	} else {
+		/*
+		 * NIS+ server without yp_order
+		 * Check if timeout has expired to invalidate the cache
+		 */
+		order = time(NULL);
+		if ((time_t)order - *tp > am_timeo) {
+			*tp = (time_t)order;
+			return(-1);
+		}
 	}
 
-	/*
-	 * Check if map has changed
-	 */
-	if (yp_order(domain, map, &order))
-		return EIO;
-	if ((time_t) order > *tp) {
-		*tp = (time_t) order;
-		return -1;
+
+	if (has_yp_order) {
+		/*
+		 * Check if map has changed
+		 */
+		if (yp_order(domain, map, &order))
+			return EIO;
+		if ((time_t) order > *tp) {
+			*tp = (time_t) order;
+			return -1;
+		}
+	} else {
+		/*
+		 * NIS+ server without yp_order
+		 * Check if timeout has expired to invalidate the cache
+		 */
+		order = time(NULL);
+		if ((time_t)order - *tp > am_timeo) {
+			*tp = (time_t)order;
+			return(-1);
+		}
 	}
 
 	/*
@@ -217,15 +237,16 @@ time_t *tp;
 	}
 }
 
-int nis_init P((char *map, time_t *tp));
-int nis_init(map, tp)
-char *map;
-time_t *tp;
+int
+nis_init(char *map, time_t *tp)
 {
 	int order;
+	int yp_order_result;
+	char *master;
 
 	if (!domain) {
 		int error = determine_nis_domain();
+
 		if (error)
 			return error;
 	}
@@ -234,12 +255,28 @@ time_t *tp;
 	 * To see if the map exists, try to find
 	 * a master for it.
 	 */
-	if (yp_order(domain, map, &order))
-		return ENOENT;
-	*tp = (time_t) order;
+	yp_order_result = yp_order(domain, map, &order);
+	switch (yp_order_result) {
+	case 0:
+		has_yp_order = TRUE;
+		*tp = (time_t)order;
 #ifdef DEBUG
-	dlog("NIS master for %s@%s has order %d", map, domain, order);
+		dlog("NIS master for %s@%s has order %d", map, domain, order);
 #endif
+		break;
+	case YPERR_YPERR:
+		plog(XLOG_ERROR, "%s: %s", map, "NIS+ server");
+		/* NIS+ server found ! */
+		has_yp_order = FALSE;
+
+		/* try yp_master() instead */
+		if (yp_master(domain, map, &master))
+			return ENOENT;
+		else
+		        *tp = time(NULL); /* Use fake timestamps */
+		break;
+	default:
+		return ENOENT;
+	}
 	return 0;
 }
-#endif /* HAS_NIS_MAPS */

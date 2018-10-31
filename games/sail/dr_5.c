@@ -1,3 +1,4 @@
+/*	$OpenBSD: dr_5.c,v 1.4 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: dr_5.c,v 1.3 1995/04/22 10:36:51 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,22 +30,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dr_5.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: dr_5.c,v 1.3 1995/04/22 10:36:51 cgd Exp $";
-#endif
-#endif /* not lint */
+#include "extern.h"
 
-#include "externs.h"
-
-subtract(from, totalfrom, crewfrom, fromcap, pcfrom)
-struct ship *from, *fromcap;
-int pcfrom;
-register int  totalfrom, crewfrom[3];
+void
+subtract(struct ship *from, int totalfrom, int crewfrom[3],
+    struct ship *fromcap, int pcfrom)
 {
-	register int n;
+	int n;
 
 	if (fromcap == from && totalfrom) {		/* if not captured */
 		for (n = 0; n < 3; n++) {
@@ -60,23 +48,23 @@ register int  totalfrom, crewfrom[3];
 				totalfrom = 0;
 			}
 		}
-		Write(W_CREW, from, 0, crewfrom[0], crewfrom[1], crewfrom[2], 0);
+		Write(W_CREW, from, crewfrom[0], crewfrom[1], crewfrom[2], 0);
 	} else if (totalfrom) {
 		pcfrom -= totalfrom;
 		pcfrom = pcfrom < 0 ? 0 : pcfrom;
-		Write(W_PCREW, from, 0, pcfrom, 0, 0, 0);
+		Write(W_PCREW, from, pcfrom, 0, 0, 0);
 	}
 }
 
-mensent(from, to, crew, captured, pc, isdefense)
-struct ship *from, *to, **captured;
-int crew[3], *pc;
-char isdefense;
-{					/* returns # of crew squares sent */
+/* returns # of crew squares sent */
+int
+mensent(struct ship *from, struct ship *to, int crew[3], struct ship **captured,
+    int *pc, int isdefense)
+{
 	int men = 0;
-	register int n;
+	int n;
 	int c1, c2, c3;
-	register struct BP *bp;
+	struct BP *bp;
 
 	*pc = from->file->pcrew;
 	*captured = from->file->captured;

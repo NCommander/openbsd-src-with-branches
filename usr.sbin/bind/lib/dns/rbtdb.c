@@ -244,6 +244,7 @@ typedef struct rdatasetheader {
 #define RDATASET_ATTR_IGNORE		0x0004
 #define RDATASET_ATTR_RETAIN		0x0008
 #define RDATASET_ATTR_NXDOMAIN		0x0010
+#define RDATASET_ATTR_NEGATIVE          0x0100
 
 typedef struct acache_cbarg {
 	dns_rdatasetadditional_t	type;
@@ -278,6 +279,8 @@ struct acachectl {
 	(((header)->attributes & RDATASET_ATTR_RETAIN) != 0)
 #define NXDOMAIN(header) \
 	(((header)->attributes & RDATASET_ATTR_NXDOMAIN) != 0)
+#define NEGATIVE(header) \
+        (((header)->attributes & RDATASET_ATTR_NEGATIVE) != 0)
 
 #define DEFAULT_NODE_LOCK_COUNT		7	/*%< Should be prime. */
 #define DEFAULT_CACHE_NODE_LOCK_COUNT	1009	/*%< Should be prime. */
@@ -665,7 +668,7 @@ free_rbtdb(dns_rbtdb_t *rbtdb, isc_boolean_t log, isc_event_t *event) {
 			dns_name_format(&rbtdb->common.origin, buf,
 					sizeof(buf));
 		else
-			strcpy(buf, "<UNKNOWN>");
+			strlcpy(buf, "<UNKNOWN>", sizeof(buf));
 		isc_log_write(dns_lctx, DNS_LOGCATEGORY_DATABASE,
 			      DNS_LOGMODULE_CACHE, ISC_LOG_DEBUG(1),
 			      "done free_rbtdb(%s)", buf);
@@ -729,7 +732,7 @@ maybe_free_rbtdb(dns_rbtdb_t *rbtdb) {
 				dns_name_format(&rbtdb->common.origin, buf,
 						sizeof(buf));
 			else
-				strcpy(buf, "<UNKNOWN>");
+				strlcpy(buf, "<UNKNOWN>", sizeof(buf));
 			isc_log_write(dns_lctx, DNS_LOGCATEGORY_DATABASE,
 				      DNS_LOGMODULE_CACHE, ISC_LOG_DEBUG(1),
 				      "calling free_rbtdb(%s)", buf);
@@ -3648,7 +3651,7 @@ cache_find(dns_db_t *db, dns_name_t *name, dns_dbversion_t *version,
 	    result == DNS_R_NCACHENXRRSET) {
 		bind_rdataset(search.rbtdb, node, found, search.now,
 			      rdataset);
-		if (foundsig != NULL)
+		if (!NEGATIVE(found) && foundsig != NULL)
 			bind_rdataset(search.rbtdb, node, foundsig, search.now,
 				      sigrdataset);
 	}
@@ -3892,7 +3895,7 @@ detachnode(dns_db_t *db, dns_dbnode_t **targetp) {
 				dns_name_format(&rbtdb->common.origin, buf,
 						sizeof(buf));
 			else
-				strcpy(buf, "<UNKNOWN>");
+				strlcpy(buf, "<UNKNOWN>", sizeof(buf));
 			isc_log_write(dns_lctx, DNS_LOGCATEGORY_DATABASE,
 				      DNS_LOGMODULE_CACHE, ISC_LOG_DEBUG(1),
 				      "calling free_rbtdb(%s)", buf);
@@ -4234,7 +4237,7 @@ cache_findrdataset(dns_db_t *db, dns_dbnode_t *node, dns_dbversion_t *version,
 	}
 	if (found != NULL) {
 		bind_rdataset(rbtdb, rbtnode, found, now, rdataset);
-		if (foundsig != NULL)
+		if (!NEGATIVE(found) && foundsig != NULL)
 			bind_rdataset(rbtdb, rbtnode, foundsig, now,
 				      sigrdataset);
 	}

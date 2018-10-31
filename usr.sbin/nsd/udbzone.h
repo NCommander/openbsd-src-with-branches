@@ -39,12 +39,14 @@ struct zone_d {
 	udb_rel_ptr file_str;
 	/** modification time, time when the zone data was changed */
 	uint64_t mtime;
+	/** modification time, nsecs */
+	uint64_t mtime_nsec;
 	/** number of RRsets in the zone */
 	uint64_t rrset_count;
 	/** number of RRs in the zone */
 	uint64_t rr_count;
 	/** the length of the zone name */
-	udb_radstrlen_t namelen;
+	udb_radstrlen_type namelen;
 	/** if the zone is expired */
 	uint8_t expired;
 	/** if the zone has been changed by AXFR */
@@ -60,7 +62,7 @@ struct domain_d {
 	/** the list of rrsets for this name, single linked */
 	udb_rel_ptr rrsets;
 	/** length of the domain name */
-	udb_radstrlen_t namelen;
+	udb_radstrlen_type namelen;
 	/** the domain (wire uncompressed) name in DNS format */
 	uint8_t name[0];
 };
@@ -107,7 +109,8 @@ void udb_zone_delete(udb_base* udb, udb_ptr* zone);
 int udb_zone_search(udb_base* udb, udb_ptr* result, const uint8_t* dname,
 	size_t dlen);
 /** get modification time for zone or 0 */
-uint64_t udb_zone_get_mtime(udb_base* udb, const uint8_t* dname, size_t dlen);
+void udb_zone_get_mtime(udb_base* udb, const uint8_t* dname, size_t dlen,
+	struct timespec* mtime);
 /** set log str in udb, or remove it */
 void udb_zone_set_log_str(udb_base* udb, udb_ptr* zone, const char* str);
 /** set file str in udb, or remove it */

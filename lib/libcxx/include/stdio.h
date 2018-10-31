@@ -121,6 +121,8 @@ int vasprintf(char **sptr, const char *__restrict fmt, va_list ap);
 #undef clearerr
 #undef feof
 #undef ferror
+#undef putchar
+#undef getchar
 
 #endif
 

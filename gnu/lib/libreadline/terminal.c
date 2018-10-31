@@ -51,9 +51,7 @@
 /* System-specific feature definitions and include files. */
 #include "rldefs.h"
 
-#if defined (GWINSZ_IN_SYS_IOCTL) && !defined (TIOCGWINSZ)
 #  include <sys/ioctl.h>
-#endif /* GWINSZ_IN_SYS_IOCTL && !TIOCGWINSZ */
 
 #include "rltty.h"
 #include "tcap.h"
@@ -82,7 +80,7 @@ static int tcap_initialized;
 
 #if !defined (__linux__)
 #  if defined (__EMX__) || defined (NEED_EXTERN_PC)
-extern 
+extern
 #  endif /* __EMX__ || NEED_EXTERN_PC */
 char PC, *BC, *UP;
 #endif /* __linux__ */
@@ -208,7 +206,7 @@ _rl_get_screen_size (tty, ignore_env)
      is unset. */
   if (_rl_screenwidth <= 0)
     {
-      if (ignore_env == 0 && (ss = sh_get_env_value ("COLUMNS")))
+      if (ignore_env == 0 && (ss = sh_get_env_value ("COLUMNS")) && *ss != '\0')
 	_rl_screenwidth = atoi (ss);
 
 #if !defined (__DJGPP__)
@@ -221,7 +219,7 @@ _rl_get_screen_size (tty, ignore_env)
      is unset. */
   if (_rl_screenheight <= 0)
     {
-      if (ignore_env == 0 && (ss = sh_get_env_value ("LINES")))
+      if (ignore_env == 0 && (ss = sh_get_env_value ("LINES")) && *ss != '\0')
 	_rl_screenheight = atoi (ss);
 
 #if !defined (__DJGPP__)
@@ -280,7 +278,7 @@ rl_get_screen_size (rows, cols)
   if (cols)
     *cols = _rl_screenwidth;
 }
-     
+
 void
 rl_resize_terminal ()
 {
@@ -369,7 +367,7 @@ _rl_init_terminal_io (terminal_name)
   tty = rl_instream ? fileno (rl_instream) : 0;
   _rl_screenwidth = _rl_screenheight = 0;
 
-  if (term == 0)
+  if (term == 0 || *term == '\0')
     term = "dumb";
 
   /* I've separated this out for later work on not calling tgetent at all
@@ -610,7 +608,7 @@ rl_ding ()
 
 /* **************************************************************** */
 /*								    */
-/*	 	Controlling the Meta Key and Keypad		    */
+/*		Controlling the Meta Key and Keypad		    */
 /*								    */
 /* **************************************************************** */
 
@@ -637,7 +635,7 @@ _rl_control_keypad (on)
 
 /* **************************************************************** */
 /*								    */
-/*	 		Controlling the Cursor			    */
+/*			Controlling the Cursor			    */
 /*								    */
 /* **************************************************************** */
 

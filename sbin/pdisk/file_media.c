@@ -1,527 +1,365 @@
+/*	$OpenBSD: file_media.c,v 1.47 2016/01/30 17:09:11 krw Exp $	*/
+
 /*
  * file_media.c -
  *
- * Written by Eryk Vershen (eryk@apple.com)
+ * Written by Eryk Vershen
  */
 
 /*
  * Copyright 1997,1998 by Apple Computer, Inc.
- *              All Rights Reserved 
- *  
- * Permission to use, copy, modify, and distribute this software and 
- * its documentation for any purpose and without fee is hereby granted, 
- * provided that the above copyright notice appears in all copies and 
- * that both the copyright notice and this permission notice appear in 
- * supporting documentation. 
- *  
- * APPLE COMPUTER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE 
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
- * FOR A PARTICULAR PURPOSE. 
- *  
- * IN NO EVENT SHALL APPLE COMPUTER BE LIABLE FOR ANY SPECIAL, INDIRECT, OR 
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT, 
- * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION 
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *              All Rights Reserved
+ *
+ * Permission to use, copy, modify, and distribute this software and
+ * its documentation for any purpose and without fee is hereby granted,
+ * provided that the above copyright notice appears in all copies and
+ * that both the copyright notice and this permission notice appear in
+ * supporting documentation.
+ *
+ * APPLE COMPUTER DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE.
+ *
+ * IN NO EVENT SHALL APPLE COMPUTER BE LIABLE FOR ANY SPECIAL, INDIRECT, OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN ACTION OF CONTRACT,
+ * NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+ * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// for printf()
+#include <sys/param.h>		/* DEV_BSIZE */
+#include <sys/queue.h>
+
+#include <err.h>
 #include <stdio.h>
-// for malloc() & free()
 #include <stdlib.h>
-// for lseek(), read(), write(), close()
+#include <string.h>
 #include <unistd.h>
-// for open()
-#include <fcntl.h>
-// for LONG_MAX
-#include <limits.h>
-// for errno
-#include <errno.h>
 
-#ifdef __linux__
-#include <sys/ioctl.h>
-#include <linux/fs.h>
-#include <linux/hdreg.h>
-#include <sys/stat.h>
-#endif
-
+#include "partition_map.h"
 #include "file_media.h"
-#include "errors.h"
 
-
-/*
- * Defines
- */
-#ifdef __linux__
-#define LOFF_MAX 9223372036854775807LL
-extern __loff_t llseek __P ((int __fd, __loff_t __offset, int __whence));
-#else
-#define loff_t long
-#define llseek lseek
-#define LOFF_MAX LONG_MAX
-#endif
-
-
-/*
- * Types
- */
-typedef struct file_media *FILE_MEDIA;
-
-struct file_media {
-    struct media	m;
-    int			fd;
-    int			regular_file;
+struct ddmap_ondisk {
+    uint8_t	ddBlock[4];
+    uint8_t	ddSize[2];
+    uint8_t	ddType[2];
 };
 
-struct file_media_globals {
-    long		exists;
-    long		kind;
+struct block0_ondisk {
+    uint8_t	sbSig[2];
+    uint8_t	sbBlkSize[2];
+    uint8_t	sbBlkCount[4];
+    uint8_t	sbDevType[2];
+    uint8_t	sbDevId[2];
+    uint8_t	sbData[4];
+    uint8_t	sbDrvrCount[2];
+    uint8_t	sbDDMap[64];	/* ddmap_ondisk[8] */
+    uint8_t	reserved[430];
 };
 
-typedef struct file_media_iterator *FILE_MEDIA_ITERATOR;
-
-struct file_media_iterator {
-    struct media_iterator   m;
-    long		    style;
-    long		    index;
+struct dpme_ondisk {
+    uint8_t	dpme_signature[2];
+    uint8_t	dpme_reserved_1[2];
+    uint8_t	dpme_map_entries[4];
+    uint8_t	dpme_pblock_start[4];
+    uint8_t	dpme_pblocks[4];
+    uint8_t	dpme_name[DPISTRLEN];
+    uint8_t	dpme_type[DPISTRLEN];
+    uint8_t	dpme_lblock_start[4];
+    uint8_t	dpme_lblocks[4];
+    uint8_t	dpme_flags[4];
+    uint8_t	dpme_boot_block[4];
+    uint8_t	dpme_boot_bytes[4];
+    uint8_t	dpme_load_addr[4];
+    uint8_t	dpme_reserved_2[4];
+    uint8_t	dpme_goto_addr[4];
+    uint8_t	dpme_reserved_3[4];
+    uint8_t	dpme_checksum[4];
+    uint8_t	dpme_processor_id[16];
+    uint8_t	dpme_reserved_4[376];
 };
 
+static int	read_block(int, uint64_t, void *);
+static int	write_block(int, uint64_t, void *);
 
-/*
- * Global Constants
- */
-int potential_block_sizes[] = {
-    1, 512, 1024, 2048,
-    0
-};
-
-enum {
-    kSCSI_Disks = 0,
-    kATA_Devices = 1,
-    kSCSI_CDs = 2,
-    kMaxStyle = 2
-};
-
-
-/*
- * Global Variables
- */
-static long file_inited = 0;
-static struct file_media_globals file_info;
-
-/*
- * Forward declarations
- */
-int compute_block_size(int fd);
-void file_init(void);
-FILE_MEDIA new_file_media(void);
-long read_file_media(MEDIA m, long long offset, unsigned long count, void *address);
-long write_file_media(MEDIA m, long long offset, unsigned long count, void *address);
-long close_file_media(MEDIA m);
-long os_reload_file_media(MEDIA m);
-FILE_MEDIA_ITERATOR new_file_iterator(void);
-void reset_file_iterator(MEDIA_ITERATOR m);
-char *step_file_iterator(MEDIA_ITERATOR m);
-void delete_file_iterator(MEDIA_ITERATOR m);
-
-
-/*
- * Routines
- */
-void
-file_init(void)
+static int
+read_block(int fd, uint64_t sector, void *address)
 {
-    if (file_inited != 0) {
-	return;
-    }
-    file_inited = 1;
-    
-    file_info.kind = allocate_media_kind();
+	ssize_t off;
+
+	off = pread(fd, address, DEV_BSIZE, sector * DEV_BSIZE);
+	if (off == DEV_BSIZE)
+		return 1;
+
+	if (off == 0)
+		fprintf(stderr, "end of file encountered");
+	else if (off == -1)
+		warn("reading file failed");
+	else
+		fprintf(stderr, "short read");
+
+	return 0;
 }
 
-
-FILE_MEDIA
-new_file_media(void)
+static int
+write_block(int fd, uint64_t sector, void *address)
 {
-    return (FILE_MEDIA) new_media(sizeof(struct file_media));
-}
+	ssize_t off;
 
+	off = pwrite(fd, address, DEV_BSIZE, sector * DEV_BSIZE);
+	if (off == DEV_BSIZE)
+		return 1;
+
+	warn("writing to file failed");
+	return 0;
+}
 
 int
-compute_block_size(int fd)
+read_block0(int fd, struct partition_map *map)
 {
-    int size;
-    int max_size;
-    loff_t x;
-    long t;
-    int i;
-    char *buffer;
-    
-    max_size = 0;
-    for (i = 0; ; i++) {
-    	size = potential_block_sizes[i];
-    	if (size == 0) {
-	    break;
-    	}
-    	if (max_size < size) {
-	    max_size = size;
-    	}
-    }
-    
-    buffer = malloc(max_size);
-    if (buffer != 0) {
-	for (i = 0; ; i++) {
-	    size = potential_block_sizes[i];
-	    if (size == 0) {
-		break;
-	    }
-	    if ((x = llseek(fd, (loff_t)0, 0)) < 0) {
-		error(errno, "Can't seek on file");
-		break;
-	    }
-	    if ((t = read(fd, buffer, size)) == size) {
-		free(buffer);
-		return size;
-	    }
-	}
-    }
-    return 0;
-}
+	struct block0_ondisk *block0_ondisk;
+	struct ddmap_ondisk ddmap_ondisk;
+	int i;
 
+	block0_ondisk = malloc(sizeof(struct block0_ondisk));
+	if (block0_ondisk == NULL)
+		errx(1, "No memory to read block0");
 
-MEDIA
-open_file_as_media(char *file, int oflag)
-{
-    FILE_MEDIA	a;
-    int			fd;
-    loff_t off;
-#ifdef __linux__
-    struct stat info;
-#endif
-	
-    if (file_inited == 0) {
-	    file_init();
-    }
-    
-    a = 0;
-    fd = open(file, oflag);
-    if (fd >= 0) {
-	a = new_file_media();
-	if (a != 0) {
-	    a->m.kind = file_info.kind;
-	    a->m.grain = compute_block_size(fd);
-	    off = llseek(fd, (loff_t)0, 2);	/* seek to end of media */
-#if !defined(__linux__) && !defined(__unix__)
-	    if (off <= 0) {
-		off = 1; /* XXX not right? */
-	    }
-#endif
-	    //printf("file size = %Ld\n", off);
-	    a->m.size_in_bytes = (long long) off;
-	    a->m.do_read = read_file_media;
-	    a->m.do_write = write_file_media;
-	    a->m.do_close = close_file_media;
-	    a->m.do_os_reload = os_reload_file_media;
-	    a->fd = fd;
-	    a->regular_file = 0;
-#ifdef __linux__
-	    if (fstat(fd, &info) < 0) {
-		error(errno, "can't stat file '%s'", file);
-	    } else {
-		a->regular_file = S_ISREG(info.st_mode);
-	    }
-#endif
-	} else {
-	    close(fd);
-	}
-    }
-    return (MEDIA) a;
-}
+	if (read_block(fd, 0, block0_ondisk) == 0)
+		return 0;
 
+	memcpy(&map->sbSig, block0_ondisk->sbSig,
+	    sizeof(map->sbSig));
+	map->sbSig = betoh16(map->sbSig);
+	memcpy(&map->sbBlkSize, block0_ondisk->sbBlkSize,
+	    sizeof(map->sbBlkSize));
+	map->sbBlkSize = betoh16(map->sbBlkSize);
+	memcpy(&map->sbBlkCount, block0_ondisk->sbBlkCount,
+	    sizeof(map->sbBlkCount));
+	map->sbBlkCount = betoh32(map->sbBlkCount);
+	memcpy(&map->sbDevType, block0_ondisk->sbDevType,
+	    sizeof(map->sbDevType));
+	map->sbDevType = betoh16(map->sbDevType);
+	memcpy(&map->sbDevId, block0_ondisk->sbDevId,
+	    sizeof(map->sbDevId));
+	map->sbDevId = betoh16(map->sbDevId);
+	memcpy(&map->sbData, block0_ondisk->sbData,
+	    sizeof(map->sbData));
+	map->sbData = betoh32(map->sbData);
+	memcpy(&map->sbDrvrCount, block0_ondisk->sbDrvrCount,
+	    sizeof(map->sbDrvrCount));
+	map->sbDrvrCount = betoh16(map->sbDrvrCount);
 
-long
-read_file_media(MEDIA m, long long offset, unsigned long count, void *address)
-{
-    FILE_MEDIA a;
-    long rtn_value;
-    loff_t off;
-    int t;
-
-    a = (FILE_MEDIA) m;
-    rtn_value = 0;
-    if (a == 0) {
-	/* no media */
-	//printf("no media\n");
-    } else if (a->m.kind != file_info.kind) {
-	/* wrong kind - XXX need to error here - this is an internal problem */
-	//printf("wrong kind\n");
-    } else if (count <= 0 || count % a->m.grain != 0) {
-	/* can't handle size */
-	//printf("bad size\n");
-    } else if (offset < 0 || offset % a->m.grain != 0) {
-	/* can't handle offset */
-	//printf("bad offset\n");
-    } else if (offset + count > a->m.size_in_bytes && a->m.size_in_bytes != (long long) 0) {
-	/* check for offset (and offset+count) too large */
-	//printf("offset+count too large\n");
-    } else if (offset + count > (long long) LOFF_MAX) {
-	/* check for offset (and offset+count) too large */
-	//printf("offset+count too large 2\n");
-    } else {
-	/* do the read */
-	off = offset;
-	if ((off = llseek(a->fd, off, 0)) >= 0) {
-	    if ((t = read(a->fd, address, count)) == count) {
-		rtn_value = 1;
-	    } else {
-		//printf("read failed\n");
-	    }
-	} else {
-	    //printf("lseek failed\n");
-	}
-    }
-    return rtn_value;
-}
-
-
-long
-write_file_media(MEDIA m, long long offset, unsigned long count, void *address)
-{
-    FILE_MEDIA a;
-    long rtn_value;
-    loff_t off;
-    int t;
-	
-    a = (FILE_MEDIA) m;
-    rtn_value = 0;
-    if (a == 0) {
-	/* no media */
-    } else if (a->m.kind != file_info.kind) {
-	/* wrong kind - XXX need to error here - this is an internal problem */
-    } else if (count <= 0 || count % a->m.grain != 0) {
-	/* can't handle size */
-    } else if (offset < 0 || offset % a->m.grain != 0) {
-	/* can't handle offset */
-    } else if (offset + count > (long long) LOFF_MAX) {
-	/* check for offset (and offset+count) too large */
-    } else {
-	/* do the write  */
-	off = offset;
-	if ((off = llseek(a->fd, off, 0)) >= 0) {
-	    if ((t = write(a->fd, address, count)) == count) {
-		if (off + count > a->m.size_in_bytes) {
-			a->m.size_in_bytes = off + count;
-		}
-		rtn_value = 1;
-	    }
-	}
-    }
-    return rtn_value;
-}
-
-
-long
-close_file_media(MEDIA m)
-{
-    FILE_MEDIA a;
-    
-    a = (FILE_MEDIA) m;
-    if (a == 0) {
-	return 0;
-    } else if (a->m.kind != file_info.kind) {
-	/* XXX need to error here - this is an internal problem */
-	return 0;
-    }
-    
-    close(a->fd);
-    return 1;
-}
-
-
-long
-os_reload_file_media(MEDIA m)
-{
-    FILE_MEDIA a;
-    long rtn_value;
-#ifdef __linux__
-    int i;
-    int saved_errno;
-#endif
-	
-    a = (FILE_MEDIA) m;
-    rtn_value = 0;
-    if (a == 0) {
-	/* no media */
-    } else if (a->m.kind != file_info.kind) {
-	/* wrong kind - XXX need to error here - this is an internal problem */
-    } else if (a->regular_file) {
-	/* okay - nothing to do */
-	rtn_value = 1;
-    } else {
-#ifdef __linux__
-	sync();
-	sleep(2);
-	if ((i = ioctl(a->fd, BLKRRPART)) != 0) {
-	    saved_errno = errno;
-	} else {
-	    // some kernel versions (1.2.x) seem to have trouble
-	    // rereading the partition table, but if asked to do it
-	    // twice, the second time works. - biro@yggdrasil.com */
-	    sync();
-	    sleep(2);
-	    if ((i = ioctl(a->fd, BLKRRPART)) != 0) {
-		saved_errno = errno;
-	    }
+	for (i = 0; i < 8; i++) {
+		memcpy(&ddmap_ondisk,
+		    map->sbDDMap+i*sizeof(struct ddmap_ondisk),
+		    sizeof(ddmap_ondisk));
+		memcpy(&map->sbDDMap[i].ddBlock, &ddmap_ondisk.ddBlock,
+		    sizeof(map->sbDDMap[i].ddBlock));
+		map->sbDDMap[i].ddBlock =
+		    betoh32(map->sbDDMap[i].ddBlock);
+		memcpy(&map->sbDDMap[i].ddSize, &ddmap_ondisk.ddSize,
+		    sizeof(map->sbDDMap[i].ddSize));
+		map->sbDDMap[i].ddSize = betoh16(map->sbDDMap[i].ddSize);
+		memcpy(&map->sbDDMap[i].ddType, &ddmap_ondisk.ddType,
+		    sizeof(map->sbDDMap[i].ddType));
+		map->sbDDMap[i].ddType = betoh32(map->sbDDMap[i].ddType);
 	}
 
-	// printf("Syncing disks.\n");
-	sync();
-	sleep(4);		/* for sync() */
+	free(block0_ondisk);
+	return 1;
+}
 
-	if (i < 0) {
-	    error(saved_errno, "Re-read of partition table failed");
-	    printf("Reboot your system to ensure the "
-		    "partition table is updated.\n");
+int
+write_block0(int fd, struct partition_map *map)
+{
+	struct block0_ondisk *block0_ondisk;
+	struct ddmap_ondisk ddmap_ondisk;
+	int i, rslt;
+	uint32_t tmp32;
+	uint16_t tmp16;
+
+	block0_ondisk = malloc(sizeof(struct block0_ondisk));
+	if (block0_ondisk == NULL)
+		errx(1, "No memory to write block 0");
+
+	tmp16 = htobe16(map->sbSig);
+	memcpy(block0_ondisk->sbSig, &tmp16,
+	    sizeof(block0_ondisk->sbSig));
+	tmp16 = htobe16(map->sbBlkSize);
+	memcpy(block0_ondisk->sbBlkSize, &tmp16,
+	    sizeof(block0_ondisk->sbBlkSize));
+	tmp32 = htobe32(map->sbBlkCount);
+	memcpy(block0_ondisk->sbBlkCount, &tmp32,
+	    sizeof(block0_ondisk->sbBlkCount));
+	tmp16 = htobe16(map->sbDevType);
+	memcpy(block0_ondisk->sbDevType, &tmp16,
+	    sizeof(block0_ondisk->sbDevType));
+	tmp16 = htobe16(map->sbDevId);
+	memcpy(block0_ondisk->sbDevId, &tmp16,
+	    sizeof(block0_ondisk->sbDevId));
+	tmp32 = htobe32(map->sbData);
+	memcpy(block0_ondisk->sbData, &tmp32,
+	    sizeof(block0_ondisk->sbData));
+	tmp16 = htobe16(map->sbDrvrCount);
+	memcpy(block0_ondisk->sbDrvrCount, &tmp16,
+	    sizeof(block0_ondisk->sbDrvrCount));
+
+	for (i = 0; i < 8; i++) {
+		tmp32 = htobe32(map->sbDDMap[i].ddBlock);
+		memcpy(ddmap_ondisk.ddBlock, &tmp32,
+		    sizeof(ddmap_ondisk.ddBlock));
+		tmp16 = htobe16(map->sbDDMap[i].ddSize);
+		memcpy(&ddmap_ondisk.ddSize, &tmp16,
+		    sizeof(ddmap_ondisk.ddSize));
+		tmp16 = betoh32(map->sbDDMap[i].ddType);
+		memcpy(&ddmap_ondisk.ddType, &tmp16,
+		    sizeof(ddmap_ondisk.ddType));
+		memcpy(map->sbDDMap+i*sizeof(struct ddmap_ondisk),
+		    &ddmap_ondisk, sizeof(ddmap_ondisk));
 	}
-#endif
-	rtn_value = 1;
-    }
-    return rtn_value;
+
+	rslt = write_block(fd, 0, block0_ondisk);
+	free(block0_ondisk);
+	return rslt;
 }
 
-
-#pragma mark -
-
-
-FILE_MEDIA_ITERATOR
-new_file_iterator(void)
+int
+read_dpme(int fd, uint64_t sector, struct entry *entry)
 {
-    return (FILE_MEDIA_ITERATOR) new_media_iterator(sizeof(struct file_media_iterator));
+	struct dpme_ondisk *dpme_ondisk;
+
+	dpme_ondisk = malloc(sizeof(struct dpme_ondisk));
+	if (dpme_ondisk == NULL)
+		errx(1, "No memory to read dpme");
+
+	if (read_block(fd, sector, dpme_ondisk) == 0)
+		return 0;
+
+	memcpy(&entry->dpme_signature, dpme_ondisk->dpme_signature,
+	    sizeof(entry->dpme_signature));
+	memcpy(&entry->dpme_map_entries, dpme_ondisk->dpme_map_entries,
+	    sizeof(entry->dpme_map_entries));
+	memcpy(&entry->dpme_pblock_start, dpme_ondisk->dpme_pblock_start,
+	    sizeof(entry->dpme_pblock_start));
+	memcpy(&entry->dpme_pblocks, dpme_ondisk->dpme_pblocks,
+	    sizeof(entry->dpme_pblocks));
+	memcpy(&entry->dpme_lblock_start, dpme_ondisk->dpme_lblock_start,
+	    sizeof(entry->dpme_lblock_start));
+	memcpy(&entry->dpme_lblocks, dpme_ondisk->dpme_lblocks,
+	    sizeof(entry->dpme_lblocks));
+	memcpy(&entry->dpme_flags, dpme_ondisk->dpme_flags,
+	    sizeof(entry->dpme_flags));
+	memcpy(&entry->dpme_boot_block, dpme_ondisk->dpme_boot_block,
+	    sizeof(entry->dpme_boot_block));
+	memcpy(&entry->dpme_boot_bytes, dpme_ondisk->dpme_boot_bytes,
+	    sizeof(entry->dpme_boot_bytes));
+	memcpy(&entry->dpme_load_addr, dpme_ondisk->dpme_load_addr,
+	    sizeof(entry->dpme_load_addr));
+	memcpy(&entry->dpme_goto_addr, dpme_ondisk->dpme_goto_addr,
+	    sizeof(entry->dpme_goto_addr));
+	memcpy(&entry->dpme_checksum, dpme_ondisk->dpme_checksum,
+	    sizeof(entry->dpme_checksum));
+
+	entry->dpme_signature = betoh16(entry->dpme_signature);
+	entry->dpme_map_entries = betoh32(entry->dpme_map_entries);
+	entry->dpme_pblock_start = betoh32(entry->dpme_pblock_start);
+	entry->dpme_pblocks = betoh32(entry->dpme_pblocks);
+	entry->dpme_lblock_start = betoh32(entry->dpme_lblock_start);
+	entry->dpme_lblocks = betoh32(entry->dpme_lblocks);
+	entry->dpme_flags = betoh32(entry->dpme_flags);
+	entry->dpme_boot_block = betoh32(entry->dpme_boot_block);
+	entry->dpme_boot_bytes = betoh32(entry->dpme_boot_bytes);
+	entry->dpme_load_addr = betoh32(entry->dpme_load_addr);
+	entry->dpme_goto_addr = betoh32(entry->dpme_goto_addr);
+	entry->dpme_checksum = betoh32(entry->dpme_checksum);
+
+	memcpy(entry->dpme_reserved_1, dpme_ondisk->dpme_reserved_1,
+	    sizeof(entry->dpme_reserved_1));
+	memcpy(entry->dpme_reserved_2, dpme_ondisk->dpme_reserved_2,
+	    sizeof(entry->dpme_reserved_2));
+	memcpy(entry->dpme_reserved_3, dpme_ondisk->dpme_reserved_3,
+	    sizeof(entry->dpme_reserved_3));
+	memcpy(entry->dpme_reserved_4, dpme_ondisk->dpme_reserved_4,
+	    sizeof(entry->dpme_reserved_4));
+
+	strlcpy(entry->dpme_name, dpme_ondisk->dpme_name,
+	    sizeof(entry->dpme_name));
+	strlcpy(entry->dpme_type, dpme_ondisk->dpme_type,
+	    sizeof(entry->dpme_type));
+	strlcpy(entry->dpme_processor_id, dpme_ondisk->dpme_processor_id,
+	    sizeof(entry->dpme_processor_id));
+
+	free(dpme_ondisk);
+	return 1;
 }
 
-
-MEDIA_ITERATOR
-create_file_iterator(void)
+int
+write_dpme(int fd, uint64_t sector, struct entry *entry)
 {
-    FILE_MEDIA_ITERATOR a;
-    
-    if (file_inited == 0) {
-	file_init();
-    }
-    
-    a = new_file_iterator();
-    if (a != 0) {
-	a->m.kind = file_info.kind;
-	a->m.state = kInit;
-	a->m.do_reset = reset_file_iterator;
-	a->m.do_step = step_file_iterator;
-	a->m.do_delete = delete_file_iterator;
-	a->style = 0;
-	a->index = 0;
-    }
+	struct dpme_ondisk *dpme_ondisk;
+	int rslt;
+	uint32_t tmp32;
+	uint16_t tmp16;
 
-    return (MEDIA_ITERATOR) a;
-}
+	dpme_ondisk = malloc(sizeof(struct dpme_ondisk));
+	if (dpme_ondisk == NULL)
+		errx(1, "No memory to write dpme");
 
+	memcpy(dpme_ondisk->dpme_name, entry->dpme_name,
+	    sizeof(dpme_ondisk->dpme_name));
+	memcpy(dpme_ondisk->dpme_type, entry->dpme_type,
+	    sizeof(dpme_ondisk->dpme_type));
+	memcpy(dpme_ondisk->dpme_processor_id, entry->dpme_processor_id,
+	    sizeof(dpme_ondisk->dpme_processor_id));
 
-void
-reset_file_iterator(MEDIA_ITERATOR m)
-{
-    FILE_MEDIA_ITERATOR a;
-    
-    a = (FILE_MEDIA_ITERATOR) m;
-    if (a == 0) {
-	/* no media */
-    } else if (a->m.kind != file_info.kind) {
-	/* wrong kind - XXX need to error here - this is an internal problem */
-    } else if (a->m.state != kInit) {
-	a->m.state = kReset;
-    }
-}
+	memcpy(dpme_ondisk->dpme_reserved_1, entry->dpme_reserved_1,
+	    sizeof(dpme_ondisk->dpme_reserved_1));
+	memcpy(dpme_ondisk->dpme_reserved_2, entry->dpme_reserved_2,
+	    sizeof(dpme_ondisk->dpme_reserved_2));
+	memcpy(dpme_ondisk->dpme_reserved_3, entry->dpme_reserved_3,
+	    sizeof(dpme_ondisk->dpme_reserved_3));
+	memcpy(dpme_ondisk->dpme_reserved_4, entry->dpme_reserved_4,
+	    sizeof(dpme_ondisk->dpme_reserved_4));
 
+	tmp16 = htobe16(entry->dpme_signature);
+	memcpy(dpme_ondisk->dpme_signature, &tmp16,
+	    sizeof(dpme_ondisk->dpme_signature));
+	tmp32 = htobe32(entry->dpme_map_entries);
+	memcpy(dpme_ondisk->dpme_map_entries, &tmp32,
+	    sizeof(dpme_ondisk->dpme_map_entries));
+	tmp32 = htobe32(entry->dpme_pblock_start);
+	memcpy(dpme_ondisk->dpme_pblock_start, &tmp32,
+	    sizeof(dpme_ondisk->dpme_pblock_start));
+	tmp32 = htobe32(entry->dpme_pblocks);
+	memcpy(dpme_ondisk->dpme_pblocks, &tmp32,
+	    sizeof(dpme_ondisk->dpme_pblocks));
+	tmp32 = htobe32(entry->dpme_lblock_start);
+	memcpy(dpme_ondisk->dpme_lblock_start, &tmp32,
+	    sizeof(dpme_ondisk->dpme_lblock_start));
+	tmp32 = betoh32(entry->dpme_lblocks);
+	memcpy(dpme_ondisk->dpme_lblocks, &tmp32,
+	    sizeof(dpme_ondisk->dpme_lblocks));
+	tmp32 = betoh32(entry->dpme_flags);
+	memcpy(dpme_ondisk->dpme_flags, &tmp32,
+	    sizeof(dpme_ondisk->dpme_flags));
+	tmp32 = htobe32(entry->dpme_boot_block);
+	memcpy(dpme_ondisk->dpme_boot_block, &tmp32,
+	    sizeof(dpme_ondisk->dpme_boot_block));
+	tmp32 = htobe32(entry->dpme_boot_bytes);
+	memcpy(dpme_ondisk->dpme_boot_bytes, &tmp32,
+	    sizeof(dpme_ondisk->dpme_boot_bytes));
+	tmp32 = betoh32(entry->dpme_load_addr);
+	memcpy(dpme_ondisk->dpme_load_addr, &tmp32,
+	    sizeof(dpme_ondisk->dpme_load_addr));
+	tmp32 = betoh32(entry->dpme_goto_addr);
+	memcpy(dpme_ondisk->dpme_goto_addr, &tmp32,
+	    sizeof(dpme_ondisk->dpme_goto_addr));
+	tmp32 = betoh32(entry->dpme_checksum);
+	memcpy(dpme_ondisk->dpme_checksum, &tmp32,
+	    sizeof(dpme_ondisk->dpme_checksum));
 
-char *
-step_file_iterator(MEDIA_ITERATOR m)
-{
-    FILE_MEDIA_ITERATOR a;
-    char *result;
-    struct stat info;
-    
-    a = (FILE_MEDIA_ITERATOR) m;
-    if (a == 0) {
-	/* no media */
-    } else if (a->m.kind != file_info.kind) {
-	/* wrong kind - XXX need to error here - this is an internal problem */
-    } else {
-	switch (a->m.state) {
-	case kInit:
-	    a->m.state = kReset;
-	    /* fall through to reset */
-	case kReset:
-	    a->style = 0 /* first style */;
-	    a->index = 0 /* first index */;
-	    a->m.state = kIterating;
-	    /* fall through to iterate */
-	case kIterating:
-	    while (1) {
-		if (a->style > kMaxStyle) {
-		    break;
-		}
-#ifndef notdef
-		/* if old version of mklinux then skip CD drive */
-		if (a->style == kSCSI_Disks && a->index == 3) {
-		    a->index += 1;
-		}
-#endif
-		/* generate result */
-		result = (char *) malloc(20);
-		if (result != NULL) {
-		    /*
-		     * for DR3 we should actually iterate through:
-		     *
-		     *    /dev/sd[a...]    # first missing is end of list
-		     *    /dev/hd[a...]    # may be holes in sequence
-		     *    /dev/scd[0...]   # first missing is end of list
-		     *
-		     * and stop in each group when either a stat of
-		     * the name fails or if an open fails (except opens
-		     * will fail if you run not as root)
-		     */
-		    switch (a->style) {
-		    case kSCSI_Disks:
-			sprintf(result, "/dev/sd%c", 'a'+(int)a->index);
-			break;
-		    case kATA_Devices:
-			sprintf(result, "/dev/hd%c", 'a'+(int)a->index);
-			break;
-		    case kSCSI_CDs:
-			sprintf(result, "/dev/scd%c", '0'+(int)a->index);
-			break;
-		    }
-		    if (stat(result, &info) < 0) {
-			a->style += 1; /* next style */
-			a->index = 0; /* first index again */
-			free(result);
-			continue;
-		    }
-		}
-
-		a->index += 1; /* next index */
-		return result;
-	    }
-	    a->m.state = kEnd;
-	    /* fall through to end */
-	case kEnd:
-	default:
-	    break;
-	}
-    }
-    return 0 /* no entry */;
-}
-
-
-void
-delete_file_iterator(MEDIA_ITERATOR m)
-{
-    return;
+	rslt = write_block(fd, sector, dpme_ondisk);
+	free(dpme_ondisk);
+	return rslt;
 }
