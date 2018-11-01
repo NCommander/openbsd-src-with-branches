@@ -64,6 +64,13 @@ lka_proc_forked(const char *name, int fd)
 	dict_xset(&processors, name, processor);
 }
 
+struct io *
+lka_proc_get_io(const char *name)
+{
+	struct processor_instance	*processor = dict_xget(&processors, name);
+
+	return processor->io;
+}
 
 static void
 processor_io(struct io *io, int evt, void *arg)
