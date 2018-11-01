@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.41 2018/07/11 07:39:22 krw Exp $ */
+/*	$OpenBSD: parse.y,v 1.42 2018/09/07 07:35:31 miko Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -595,7 +595,8 @@ top:
 			} else if (c == '\\') {
 				if ((next = lgetc(quotec)) == EOF)
 					return (0);
-				if (next == quotec || c == ' ' || c == '\t')
+				if (next == quotec || next == ' ' ||
+				    next == '\t')
 					c = next;
 				else if (next == '\n') {
 					file->lineno++;
