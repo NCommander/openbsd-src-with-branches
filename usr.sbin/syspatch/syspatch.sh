@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: syspatch.sh,v 1.134 2017/12/29 18:56:36 ajacoutot Exp $
+# $OpenBSD: syspatch.sh,v 1.135 2018/03/10 12:34:53 ajacoutot Exp $
 #
 # Copyright (c) 2016, 2017 Antoine Jacoutot <ajacoutot@openbsd.org>
 #
@@ -140,6 +140,9 @@ install_file()
 	local _dst=$2 _fgrp _fmode _fown _src=$1
 	[[ -f ${_src} && -f ${_dst} ]]
 
+	# ignore symlinks
+	[[ ! -h ${_src} ]] || return 0
+
 	eval $(stat -f "_fmode=%OMp%OLp _fown=%Su _fgrp=%Sg" ${_src})
 
 	install -DFSp -m ${_fmode} -o ${_fown} -g ${_fgrp} ${_src} ${_dst}
@@ -196,6 +199,11 @@ rollback_patch()
 
 	for _file in ${_files}; do
 		((_ret == 0)) || break
+		# prevent reverting to a bogus syspatch
+		if [[ ${_file} == usr/sbin/syspatch &&
+			${_patch} == 63-021_syspatch ]]; then
+			break
+		fi
 		install_file ${_edir}/${_file} /${_file} || _ret=$?
 	done
 
@@ -304,4 +312,8 @@ if ((OPTIND == 1)); then
 	for _PATCH in ${_PATCHES}; do
 		apply_patch ${_OSrev}-${_PATCH}
 	done
+	# repair X -> Xorg
+	if [[ ! -h /usr/X11R6/bin/X ]]; then
+		ln -sf Xorg /usr/X11R6/bin/X
+	fi
 fi
