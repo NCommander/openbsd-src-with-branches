@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.255 2018/05/19 22:10:22 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.256 2018/05/23 12:18:58 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -201,7 +201,6 @@ void		 dispatch(struct interface_info *, int);
 void		 set_timeout( struct interface_info *, time_t,
     void (*)(struct interface_info *));
 void		 cancel_timeout(struct interface_info *);
-void		 sendhup(void);
 
 /* dhclient.c */
 extern char			*path_dhclient_conf;
