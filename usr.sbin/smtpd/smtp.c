@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp.c,v 1.159 2018/07/25 16:00:48 eric Exp $	*/
+/*	$OpenBSD: smtp.c,v 1.160 2018/11/03 13:42:24 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -322,10 +322,7 @@ smtp_accepted(struct listener *listener, int sock, const struct sockaddr_storage
 {
 	int     ret;
 
-	if (listener->filter[0])
-		ret = smtpf_session(listener, sock, ss, NULL);
-	else
-		ret = smtp_session(listener, sock, ss, NULL, io);
+	ret = smtp_session(listener, sock, ss, NULL, io);
 	if (ret == -1) {
 		log_warn("warn: Failed to create SMTP session");
 		close(sock);
