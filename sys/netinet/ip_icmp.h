@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_icmp.h,v 1.29 2017/01/29 19:58:47 bluhm Exp $	*/
+/*	$OpenBSD: ip_icmp.h,v 1.30 2017/04/14 20:46:31 bluhm Exp $	*/
 /*	$NetBSD: ip_icmp.h,v 1.10 1996/02/13 23:42:28 christos Exp $	*/
 
 /*
@@ -156,6 +156,7 @@ struct icmp_ext_obj_hdr {
 #define	ICMP_TSLEN	(8 + 3 * sizeof (u_int32_t))	/* timestamp */
 #define	ICMP_MASKLEN	12				/* address mask */
 #define	ICMP_ADVLENMIN	(8 + sizeof (struct ip) + 8)	/* min */
+#define	ICMP_ADVLENMAX	(8 + 60 + 40)			/* maximum */
 #define	ICMP_ADVLEN(p)	(8 + ((p)->icmp_ip.ip_hl << 2) + 8)
 	/* N.B.: must separately check that ip_hl >= 5 */
 
