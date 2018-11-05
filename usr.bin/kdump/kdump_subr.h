@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump_subr.h,v 1.20 2016/06/07 06:12:37 deraadt Exp $	*/
+/*	$OpenBSD: kdump_subr.h,v 1.21 2017/04/28 13:53:05 mpi Exp $	*/
 /*
  * Copyright(c) 2006 2006 David Kirchner <dpk@dpk.net>
  *
@@ -98,5 +98,6 @@ void evfflagsname(int, int);
 void pollfdeventname(int);
 void syslogflagname(int);
 void futexflagname(int);
+void flocktypename(int);
 
 extern int decimal, fancy, basecol, arg1;
