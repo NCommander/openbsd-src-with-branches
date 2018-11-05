@@ -1,4 +1,4 @@
-/* $OpenBSD: ecp_mont.c,v 1.15 2018/07/15 16:27:39 tb Exp $ */
+/* $OpenBSD: ecp_mont.c,v 1.16 2018/07/16 17:32:39 tb Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -109,7 +109,8 @@ EC_GFp_mont_method(void)
 		.field_sqr = ec_GFp_mont_field_sqr,
 		.field_encode = ec_GFp_mont_field_encode,
 		.field_decode = ec_GFp_mont_field_decode,
-		.field_set_to_one = ec_GFp_mont_field_set_to_one
+		.field_set_to_one = ec_GFp_mont_field_set_to_one,
+		.blind_coordinates = ec_GFp_simple_blind_coordinates,
 	};
 
 	return &ret;
