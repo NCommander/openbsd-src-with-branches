@@ -1,9 +1,11 @@
-#	$OpenBSD: Makefile,v 1.4 2014/06/20 10:38:22 miod Exp $
+#	$OpenBSD: Makefile,v 1.5 2018/07/10 16:58:15 tb Exp $
 
 SUBDIR= \
 	addsub \
 	general \
-	mont
+	mont \
+	rand
+
 
 install:
 
