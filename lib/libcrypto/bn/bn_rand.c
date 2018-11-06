@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_rand.c,v 1.20 2017/05/02 03:59:44 deraadt Exp $ */
+/* $OpenBSD: bn_rand.c,v 1.21 2018/11/05 23:52:47 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -285,7 +285,7 @@ bn_rand_interval(BIGNUM *rnd, const BIGNUM *lower_inc, const BIGNUM *upper_exc)
 	BIGNUM *len = NULL;
 	int ret = 0;
 
-	if (BN_cmp(lower_inc, upper_exc) <= 0)
+	if (BN_cmp(lower_inc, upper_exc) >= 0)
 		goto err;
 
 	if ((len = BN_new()) == NULL)
