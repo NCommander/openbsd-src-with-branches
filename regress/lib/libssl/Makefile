@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.26 2017/07/16 18:18:10 jsing Exp $
+#	$OpenBSD: Makefile,v 1.27 2018/11/07 01:20:20 bluhm Exp $
 
 SUBDIR= \
 	asn1 \
@@ -10,6 +10,7 @@ SUBDIR= \
 	server \
 	ssl \
 	tlsext \
+	key_schedule \
 	unit
 
 install:
