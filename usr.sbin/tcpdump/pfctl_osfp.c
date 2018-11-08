@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_osfp.c,v 1.13 2017/05/28 10:06:12 akfaew Exp $ */
+/*	$OpenBSD: pfctl_osfp.c,v 1.14 2018/11/08 14:06:09 brynet Exp $ */
 
 /*
  * Copyright (c) 2003 Mike Frantzen <frantzen@openbsd.org>
@@ -255,6 +255,7 @@ pfctl_file_fingerprints(int dev, int opts, const char *fp_filename)
 	if (opts & PF_OPT_VERBOSE2)
 		printf("Loaded %d passive OS fingerprints\n",
 		    fingerprint_count);
+	fclose(in);
 	return (0);
 }
 
