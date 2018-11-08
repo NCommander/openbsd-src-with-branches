@@ -1,4 +1,4 @@
-/*	$OpenBSD: local_passwd.c,v 1.53 2016/12/30 23:32:14 millert Exp $	*/
+/*	$OpenBSD: local_passwd.c,v 1.54 2018/10/25 06:41:38 mestre Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -75,6 +75,8 @@ local_passwd(char *uname, int authenticated)
 	if (unveil(_PATH_MASTERPASSWD_LOCK, "wc") == -1)
 		err(1, "unveil");
 	if (unveil(_PATH_MASTERPASSWD, "r") == -1)
+		err(1, "unveil");
+	if (unveil(_PATH_LOGIN_CONF, "r") == -1)
 		err(1, "unveil");
 	if (unveil(_PATH_BSHELL, "x") == -1)
 		err(1, "unveil");
