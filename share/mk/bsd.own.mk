@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.own.mk,v 1.190 2018/07/26 13:20:53 kettenis Exp $
+#	$OpenBSD: bsd.own.mk,v 1.191 2018/10/22 19:31:30 naddy Exp $
 #	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
 # Host-specific overrides
@@ -58,6 +58,12 @@ LINKER_VERSION?=bfd
 
 .if !empty(STATICPIE_ARCH:M${_arch})
 STATICPIE?=-pie
+.endif
+
+# Executables are always PIC on mips64.
+# Do not pass -fno-pie to the compiler because clang does not accept it.
+.if ${MACHINE_ARCH} == "mips64" || ${MACHINE_ARCH} == "mips64el"
+NOPIE_FLAGS?=
 .endif
 
 .if !empty(PIE_ARCH:M${_arch})
