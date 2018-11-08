@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.445 2018/11/04 12:34:54 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.446 2018/11/08 09:50:30 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -791,7 +791,7 @@ rde_dispatch_imsg_parent(struct imsgbuf *ibuf)
 				rib = rib_new(rn.name, rn.rtableid, rn.flags);
 			else if ((rib->flags & F_RIB_HASNOFIB) !=
 			    (rn.flags & F_RIB_HASNOFIB) || (rib->rtableid !=
-			    rn.rtableid && !(rib->flags & F_RIB_HASNOFIB))) {
+			    rn.rtableid && !(rn.flags & F_RIB_HASNOFIB))) {
 				struct filter_head	*in_rules;
 				struct rib_desc		*ribd = rib_desc(rib);
 				/*
