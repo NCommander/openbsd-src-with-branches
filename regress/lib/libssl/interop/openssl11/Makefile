@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2018/11/07 19:09:01 bluhm Exp $
+# $OpenBSD: Makefile,v 1.2 2018/11/07 20:46:28 bluhm Exp $
 
 .if ! exists(/usr/local/bin/eopenssl11)
 regress:
@@ -13,6 +13,13 @@ LDADD =			-lssl -lcrypto
 DPADD =			/usr/local/lib/eopenssl11/libssl.a \
 			/usr/local/lib/eopenssl11/libcrypto.a
 LD_LIBRARY_PATH =	/usr/local/lib/eopenssl11
+REGRESS_TARGETS =	run-self
+.for p in ${PROGS}
+REGRESS_TARGETS +=	run-ldd-$p run-$p
+.for x in nc self
+REGRESS_TARGETS +=	run-version-$x-$p run-protocol-$x-$p
+.endfor
+.endfor
 
 run-protocol-nc-client run-protocol-nc-server:
 	@echo '\n======== $@ ========'
