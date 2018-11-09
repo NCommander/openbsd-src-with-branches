@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto_bip.c,v 1.8 2017/03/23 04:10:10 tb Exp $	*/
+/*	$OpenBSD: ieee80211_crypto_bip.c,v 1.9 2017/05/02 17:07:06 mikeb Exp $	*/
 
 /*-
  * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -115,7 +115,7 @@ ieee80211_bip_encap(struct ieee80211com *ic, struct mbuf *m0,
 
 	m = m0;
 	/* reserve trailing space for MMIE */
-	if (M_TRAILINGSPACE(m) < IEEE80211_MMIE_LEN) {
+	if (m_trailingspace(m) < IEEE80211_MMIE_LEN) {
 		MGET(m->m_next, M_DONTWAIT, m->m_type);
 		if (m->m_next == NULL)
 			goto nospace;

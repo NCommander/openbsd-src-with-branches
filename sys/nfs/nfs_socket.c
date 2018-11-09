@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_socket.c,v 1.130 2018/07/30 12:22:14 mpi Exp $	*/
+/*	$OpenBSD: nfs_socket.c,v 1.131 2018/09/10 16:14:08 bluhm Exp $	*/
 /*	$NetBSD: nfs_socket.c,v 1.27 1996/04/15 20:20:00 thorpej Exp $	*/
 
 /*
@@ -1355,7 +1355,7 @@ nfs_realign_fixup(struct mbuf *m, struct mbuf *n, unsigned int *off)
 			return;
 
 		padding = min(ALIGN(n->m_len) - n->m_len, m->m_len);
-		if (padding > M_TRAILINGSPACE(n))
+		if (padding > m_trailingspace(n))
 			panic("nfs_realign_fixup: no memory to pad to");
 
 		bcopy(mtod(m, void *), mtod(n, char *) + n->m_len, padding);

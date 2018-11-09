@@ -1,4 +1,4 @@
-/*	$OpenBSD: icmp6.c,v 1.225 2018/07/11 13:06:16 claudio Exp $	*/
+/*	$OpenBSD: icmp6.c,v 1.226 2018/09/05 09:47:18 miko Exp $	*/
 /*	$KAME: icmp6.c,v 1.217 2001/06/20 15:03:29 jinmei Exp $	*/
 
 /*
@@ -1473,7 +1473,7 @@ icmp6_redirect_output(struct mbuf *m0, struct rtentry *rt)
 		goto fail;
 	m->m_pkthdr.ph_ifidx = 0;
 	m->m_len = 0;
-	maxlen = M_TRAILINGSPACE(m);
+	maxlen = m_trailingspace(m);
 	maxlen = min(IPV6_MMTU, maxlen);
 	/* just for safety */
 	if (maxlen < sizeof(struct ip6_hdr) + sizeof(struct icmp6_hdr) +
