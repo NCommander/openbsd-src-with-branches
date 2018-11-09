@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_clnt.c,v 1.38 2018/11/09 00:34:55 beck Exp $ */
+/* $OpenBSD: ssl_clnt.c,v 1.39 2018/11/09 05:43:39 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -309,6 +309,9 @@ ssl3_connect(SSL *s)
 						/* receive renewed session ticket */
 						S3I(s)->hs.state = SSL3_ST_CR_SESSION_TICKET_A;
 					}
+
+					/* No client certificate verification. */
+					tls1_transcript_free(s);
 				}
 			} else if (SSL_IS_DTLS(s)) {
 				S3I(s)->hs.state = DTLS1_ST_CR_HELLO_VERIFY_REQUEST_A;
