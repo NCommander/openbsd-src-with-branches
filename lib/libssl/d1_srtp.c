@@ -1,4 +1,4 @@
-/* $OpenBSD: d1_srtp.c,v 1.21 2017/02/07 02:08:38 beck Exp $ */
+/* $OpenBSD: d1_srtp.c,v 1.22 2017/08/27 02:58:04 doug Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -207,6 +207,7 @@ ssl_ctx_make_profiles(const char *profiles_string,
 			ptr = col + 1;
 	} while (col);
 
+	sk_SRTP_PROTECTION_PROFILE_free(*out);
 	*out = profiles;
 
 	return 0;
