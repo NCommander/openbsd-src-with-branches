@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencode.c,v 1.48 2018/02/06 02:55:48 dlg Exp $	*/
+/*	$OpenBSD: gencode.c,v 1.49 2018/06/03 10:29:28 sthen Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
@@ -2244,7 +2244,7 @@ gen_proto(v, proto, dir)
 		bpf_error("'ah proto' is bogus");
 
 	case Q_ESP:
-		bpf_error("'ah proto' is bogus");
+		bpf_error("'esp proto' is bogus");
 
 	default:
 		abort();
