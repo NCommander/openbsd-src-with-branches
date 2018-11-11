@@ -1,10 +1,10 @@
-/* $OpenBSD: armcap.c,v 1.5 2014/06/12 15:49:27 deraadt Exp $ */
+/* $OpenBSD: armcap.c,v 1.6 2014/06/20 21:00:46 deraadt Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <setjmp.h>
 #include <signal.h>
-#include <crypto.h>
+#include <openssl/crypto.h>
 
 #include "arm_arch.h"
 
@@ -31,9 +31,6 @@ void OPENSSL_cpuid_setup(void) __attribute__((constructor));
 void
 OPENSSL_cpuid_setup(void)
 {
-#ifndef __OpenBSD__
-	char *e;
-#endif
 #if __ARM_ARCH__ >= 7
 	struct sigaction	ill_oact, ill_act;
 	sigset_t		oset;
