@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.42 2018/09/07 07:35:31 miko Exp $ */
+/*	$OpenBSD: parse.y,v 1.43 2018/11/01 00:18:44 sashan Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -354,7 +354,8 @@ interface	: INTERFACE STRING {
 		}
 		;
 
-interface_block	: '{' optnl interfaceopts_l '}'
+interface_block	: /* empty */
+		| '{' optnl interfaceopts_l '}'
 		| '{' optnl '}'
 		;
 
