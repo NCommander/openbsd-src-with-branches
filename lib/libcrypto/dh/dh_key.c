@@ -1,4 +1,4 @@
-/* $OpenBSD: dh_key.c,v 1.34 2018/11/06 07:02:33 tb Exp $ */
+/* $OpenBSD: dh_key.c,v 1.36 2018/11/12 17:34:27 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -121,7 +121,7 @@ generate_key(DH *dh)
 			goto err;
 	}
 
-	if (pub_key == NULL) {
+	if ((pub_key = dh->pub_key) == NULL) {
 		if ((pub_key = BN_new()) == NULL)
 			goto err;
 	}
