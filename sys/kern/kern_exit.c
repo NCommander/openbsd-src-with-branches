@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.169 2018/08/25 15:38:07 anton Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.170 2018/10/04 20:07:54 kettenis Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -186,6 +186,8 @@ exit1(struct proc *p, int rv, int flags)
 #endif
 
 	if ((p->p_flag & P_THREAD) == 0) {
+		sigio_freelist(&pr->ps_sigiolst);
+
 		/* close open files and release open-file table */
 		fdfree(p);
 

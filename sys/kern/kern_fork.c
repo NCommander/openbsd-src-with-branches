@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.206 2018/08/25 15:38:07 anton Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.207 2018/08/30 03:30:25 visa Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -208,6 +208,7 @@ process_initialize(struct process *pr, struct proc *p)
 	LIST_INIT(&pr->ps_children);
 	LIST_INIT(&pr->ps_ftlist);
 	LIST_INIT(&pr->ps_kqlist);
+	LIST_INIT(&pr->ps_sigiolst);
 
 	timeout_set(&pr->ps_realit_to, realitexpire, pr);
 }
