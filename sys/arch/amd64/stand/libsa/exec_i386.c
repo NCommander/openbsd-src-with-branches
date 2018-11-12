@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_i386.c,v 1.22 2018/04/18 16:34:42 deraadt Exp $	*/
+/*	$OpenBSD: exec_i386.c,v 1.23 2018/04/23 23:14:10 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 1997-1998 Michael Shalayeff
@@ -141,7 +141,7 @@ run_loadfile(u_long *marks, int howto)
 
 	/*
 	 * This code may be used both for 64bit and 32bit.  Make sure the
-	 * bootarg is 32bit always on even on amd64.
+	 * bootarg is always 32bit, even on amd64.
 	 */
 #ifdef __amd64__
 	makebootargs32(av, &ac);
