@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_key_schedule.c,v 1.5 2018/11/10 00:18:25 beck Exp $ */
+/* $OpenBSD: tls13_key_schedule.c,v 1.6 2018/11/10 01:34:02 jsing Exp $ */
 /* Copyright (c) 2018, Bob Beck <beck@openbsd.org>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
@@ -151,6 +151,7 @@ tls13_secrets_create(const EVP_MD *digest, int resumption)
 	if (!EVP_DigestFinal_ex(mdctx, secrets->empty_hash.data, &mdlen))
 		goto err;
 	EVP_MD_CTX_free(mdctx);
+	mdctx = NULL;
 
 	if (secrets->empty_hash.len != mdlen)
 		goto err;
