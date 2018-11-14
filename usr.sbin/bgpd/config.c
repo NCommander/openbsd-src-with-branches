@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.76 2018/09/21 20:45:50 kn Exp $ */
+/*	$OpenBSD: config.c,v 1.77 2018/09/29 08:11:11 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -340,6 +340,7 @@ host(const char *s, struct bgpd_addr *h, u_int8_t *len)
 		mask = strtonum(p+1, 0, 128, &errstr);
 		if (errstr) {
 			log_warnx("prefixlen is %s: %s", errstr, p);
+			free(ps);
 			return (0);
 		}
 		p[0] = '\0';
