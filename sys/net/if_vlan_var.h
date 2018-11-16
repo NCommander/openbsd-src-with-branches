@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan_var.h,v 1.36 2016/04/19 23:31:32 dlg Exp $	*/
+/*	$OpenBSD: if_vlan_var.h,v 1.37 2017/01/24 10:08:30 krw Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -63,9 +63,9 @@ struct	ifvlan {
 	struct	arpcom ifv_ac;	/* make this an interface */
 	unsigned int ifv_ifp0;	/* parent interface of this vlan */
 	struct	ifv_linkmib {
+		int ifvm_prio; /* prio to apply on packet leaving if */
 		u_int16_t ifvm_proto; /* encapsulation ethertype */
 		u_int16_t ifvm_tag; /* tag to apply on packets leaving if */
-		u_int16_t ifvm_prio; /* prio to apply on packet leaving if */
 		u_int16_t ifvm_type; /* non-standard ethertype or 0x8100 */
 	}	ifv_mib;
 	LIST_HEAD(__vlan_mchead, vlan_mc_entry)	vlan_mc_listhead;
