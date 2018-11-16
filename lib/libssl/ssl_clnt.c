@@ -1533,10 +1533,7 @@ ssl3_get_server_key_exchange(SSL *s)
 				goto f_err;
 			}
 		} else if (pkey->type == EVP_PKEY_RSA) {
-			if (SSL_IS_DTLS(s))
-				sigalg = ssl_sigalg_lookup(SIGALG_RSA_PKCS1_SHA1);
-			else
-				sigalg = ssl_sigalg_lookup(SIGALG_RSA_PKCS1_MD5_SHA1);
+			sigalg = ssl_sigalg_lookup(SIGALG_RSA_PKCS1_MD5_SHA1);
 		} else if (pkey->type == EVP_PKEY_EC) {
 			sigalg = ssl_sigalg_lookup(SIGALG_ECDSA_SHA1);
 		} else {
@@ -1544,6 +1541,7 @@ ssl3_get_server_key_exchange(SSL *s)
 			al = SSL_AD_DECODE_ERROR;
 			goto f_err;
 		}
+		md = sigalg->md();
 
 		if (!CBS_get_u16_length_prefixed(&cbs, &signature))
 			goto truncated;
