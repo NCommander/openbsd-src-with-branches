@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.49 2018/09/24 21:30:00 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.50 2018/11/15 03:04:10 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1993
@@ -261,6 +261,7 @@ main(int argc, char *argv[])
 		gettable(tname, tabent);
 		if (strcmp(LO, saveLO) != 0) {
 			/* re-exec to apply new unveil */
+			closefrom(0);
 			execv(_PATH_GETTY, argv);
 			exit(0);
 		}
