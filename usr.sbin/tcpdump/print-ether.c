@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ether.c,v 1.33 2018/10/22 16:12:45 kn Exp $	*/
+/*	$OpenBSD: print-ether.c,v 1.34 2018/11/18 08:53:37 dlg Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -266,7 +266,7 @@ recurse:
 			pri = !pri;
 
 		printf("vid %d pri %d%s", vid, pri,
-		    vlan & 0x1000 ? " cfi " : " ");
+		    vlan & 0x1000 ? " dei " : " ");
 		ethertype = ntohs(*(unsigned short*)(p+2));
 		p += 4;
 		length -= 4;
