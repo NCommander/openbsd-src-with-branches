@@ -1,4 +1,4 @@
-/*	$OpenBSD: uplcom.c,v 1.71 2018/04/27 09:40:59 tb Exp $	*/
+/*	$OpenBSD: uplcom.c,v 1.72 2018/06/18 19:05:24 mikeb Exp $	*/
 /*	$NetBSD: uplcom.c,v 1.29 2002/09/23 05:51:23 simonb Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -254,7 +254,7 @@ uplcom_attach(struct device *parent, struct device *self, void *aux)
 	else
 		sc->sc_type_hx = 0;
 
-#ifdef USB_DEBUG
+#ifdef UPLCOM_DEBUG
 	/* print the chip type */
 	if (sc->sc_type_hx) {
 		DPRINTF(("uplcom_attach: chiptype 2303X\n"));
