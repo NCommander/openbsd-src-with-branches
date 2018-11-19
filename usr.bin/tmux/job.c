@@ -1,4 +1,4 @@
-/* $OpenBSD: job.c,v 1.52 2018/09/27 07:43:18 nicm Exp $ */
+/* $OpenBSD: job.c,v 1.53 2018/10/28 16:10:02 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -155,6 +155,8 @@ job_run(const char *cmd, struct session *s, const char *cwd,
 
 	job->event = bufferevent_new(job->fd, job_read_callback,
 	    job_write_callback, job_error_callback, job);
+	if (job->event == NULL)
+		fatalx("out of memory");
 	bufferevent_enable(job->event, EV_READ|EV_WRITE);
 
 	log_debug("run job %p: %s, pid %ld", job, job->cmd, (long) job->pid);
