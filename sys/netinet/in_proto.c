@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_proto.c,v 1.89 2018/02/07 01:09:57 dlg Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.90 2018/02/10 08:12:01 dlg Exp $	*/
 /*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
@@ -443,7 +443,6 @@ struct domain inetdomain = {
   .dom_name = "internet",
   .dom_protosw = inetsw,
   .dom_protoswNPROTOSW = &inetsw[nitems(inetsw)],
-  .dom_rtkeylen = sizeof(struct sockaddr_in),
   .dom_rtoffset = offsetof(struct sockaddr_in, sin_addr),
   .dom_maxplen = 32
 };
