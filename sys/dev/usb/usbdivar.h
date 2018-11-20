@@ -158,7 +158,6 @@ struct usbd_device {
 	const struct usbd_quirks     *quirks;  /* device quirks, always set */
 	struct usbd_hub	       *hub;           /* only if this is a hub */
 	struct device         **subdevs;       /* sub-devices, 0 terminated */
-	int			nsubdev;       /* size of the `subdevs' array */
 	int			ndevs;	       /* # of subdevs */
 
 	char                   *serial;        /* serial number, can be NULL */
