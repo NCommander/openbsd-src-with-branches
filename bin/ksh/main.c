@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.94 2018/11/16 06:41:58 nicm Exp $	*/
+/*	$OpenBSD: main.c,v 1.95 2018/11/17 18:14:58 deraadt Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -557,6 +557,7 @@ shell(Source *volatile s, volatile int toplevel)
 		case LERROR:
 		case LSHELL:
 			if (interactive) {
+				c_fc_reset();
 				if (i == LINTR)
 					shellf("\n");
 				/* Reset any eof that was read as part of a

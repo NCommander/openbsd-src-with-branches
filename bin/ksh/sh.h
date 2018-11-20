@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.72 2018/04/09 17:53:36 tobias Exp $	*/
+/*	$OpenBSD: sh.h,v 1.73 2018/05/18 13:25:20 benno Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -449,6 +449,7 @@ void	hist_init(Source *);
 void	hist_finish(void);
 void	histsave(int, const char *, int);
 int	c_fc(char **);
+void	c_fc_reset(void);
 void	sethistcontrol(const char *);
 void	sethistsize(int);
 void	sethistfile(const char *);
