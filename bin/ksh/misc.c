@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.70 2018/04/09 17:53:36 tobias Exp $	*/
+/*	$OpenBSD: misc.c,v 1.71 2018/11/16 06:41:58 nicm Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -299,8 +299,9 @@ change_flag(enum sh_flag f,
 		setgroups(1, &gid);
 		setresuid(ksheuid, ksheuid, ksheuid);
 
-		pledge("stdio rpath wpath cpath fattr flock getpw proc "
-		    "exec tty", NULL);
+		if (pledge("stdio rpath wpath cpath fattr flock getpw proc "
+		    "exec tty", NULL) == -1)
+			bi_errorf("pledge fail");
 		dropped_privileges = 1;
 	} else if (f == FPOSIX && newval) {
 		Flag(FBRACEEXPAND) = 0;
