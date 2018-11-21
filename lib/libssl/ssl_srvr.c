@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_srvr.c,v 1.59 2018/11/11 07:57:44 bcook Exp $ */
+/* $OpenBSD: ssl_srvr.c,v 1.60 2018/11/11 21:54:47 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -368,10 +368,7 @@ ssl3_accept(SSL *s)
 			S3I(s)->hs.next_state = SSL3_ST_SR_CLNT_HELLO_A;
 
 			/* HelloVerifyRequest resets Finished MAC. */
-			if (!tls1_transcript_init(s)) {
-				ret = -1;
-				goto end;
-			}
+			tls1_transcript_reset(s);
 			break;
 
 		case SSL3_ST_SW_SRVR_HELLO_A:
