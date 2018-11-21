@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcp.c,v 1.4 2017/11/05 20:01:09 reyk Exp $	*/
+/*	$OpenBSD: dhcp.c,v 1.5 2018/08/17 07:12:28 martijn Exp $	*/
 
 /*
  * Copyright (c) 2017 Reyk Floeter <reyk@openbsd.org>
@@ -109,7 +109,7 @@ dhcp_request(struct vionet_dev *dev, char *buf, size_t buflen, char **obuf)
 	resp.xid = req.xid;
 
 	if ((client_addr.s_addr =
-	    vm_priv_addr(&env->vmd_cfg.cfg_localprefix,
+	    vm_priv_addr(&env->vmd_cfg,
 	    dev->vm_vmid, dev->idx, 1)) == 0)
 		return (-1);
 	memcpy(&resp.yiaddr, &client_addr,
@@ -119,7 +119,7 @@ dhcp_request(struct vionet_dev *dev, char *buf, size_t buflen, char **obuf)
 	ss2sin(&pc.pc_dst)->sin_port = htons(CLIENT_PORT);
 
 	if ((server_addr.s_addr =
-	    vm_priv_addr(&env->vmd_cfg.cfg_localprefix,
+	    vm_priv_addr(&env->vmd_cfg,
 	    dev->vm_vmid, dev->idx, 0)) == 0)
 		return (-1);
 	memcpy(&resp.siaddr, &server_addr,
