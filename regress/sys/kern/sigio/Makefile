@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2018/11/13 13:05:42 visa Exp $
+#	$OpenBSD: Makefile,v 1.3 2018/11/19 12:55:18 visa Exp $
 
 PROG=		sigio_test
 SRCS=		main.c sigio_common.c sigio_pipe.c sigio_socket.c util.c
@@ -23,7 +23,7 @@ TESTS_ROOT+=	pipe_cansigio
 TESTS_ROOT+=	socket_cansigio
 
 .for t in ${TESTS}
-run-regress-${t}:
+run-regress-${t}: ${PROG}
 .if !empty(TESTS_ROOT:M${t})
 	${SUDO} ./${PROG} ${t}
 REGRESS_ROOT_TARGETS += run-regress-${t}
