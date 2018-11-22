@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_helper.c,v 1.8 2018/02/08 08:46:20 djm Exp $	*/
+/*	$OpenBSD: test_helper.c,v 1.9 2018/10/17 23:28:05 djm Exp $	*/
 /*
  * Copyright (c) 2011 Damien Miller <djm@mindrot.org>
  *
@@ -227,6 +227,7 @@ test_start(const char *n)
 #ifdef SIGINFO
 	signal(SIGINFO, siginfo);
 #endif
+	signal(SIGUSR1, siginfo);
 }
 
 void
