@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.836 2018/08/22 15:38:46 mpi Exp $
+#	$OpenBSD: GENERIC,v 1.837 2018/08/27 19:32:48 jcs Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -39,6 +39,7 @@ amdmsr0	at mainbus?		# MSR access for AMD Geode LX CPUs with GP
 
 pvbus0	at mainbus0		# Paravirtual device bus
 vmt0	at pvbus?		# VMware Tools
+pvclock0 at pvbus?		# KVM pvclock
 
 acpitimer*	at acpi?
 acpihpet*	at acpi?
