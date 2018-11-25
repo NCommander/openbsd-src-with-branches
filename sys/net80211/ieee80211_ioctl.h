@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_ioctl.h,v 1.33 2018/08/06 11:42:18 benno Exp $	*/
+/*	$OpenBSD: ieee80211_ioctl.h,v 1.34 2018/09/09 20:32:55 phessler Exp $	*/
 /*	$NetBSD: ieee80211_ioctl.h,v 1.7 2004/04/30 22:51:04 dyoung Exp $	*/
 
 /*-
@@ -304,6 +304,7 @@ struct ieee80211_joinreq_all {
 #define IEEE80211_JOIN_NWKEY	0x08
 #define IEEE80211_JOIN_WPA	0x10
 #define IEEE80211_JOIN_WPAPSK	0x20
+#define IEEE80211_JOIN_8021X	0x40
 
 /* node and requests */
 struct ieee80211_nodereq {
