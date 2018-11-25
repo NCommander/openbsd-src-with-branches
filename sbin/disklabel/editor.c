@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.350 2018/09/18 13:53:09 bluhm Exp $	*/
+/*	$OpenBSD: editor.c,v 1.351 2018/09/21 14:07:34 solene Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -1443,7 +1443,6 @@ sort_partitions(struct disklabel *lp)
 
 	for (npartitions = 0, i = 0; i < lp->d_npartitions; i++) {
 		if (lp->d_partitions[i].p_fstype != FS_UNUSED &&
-		    lp->d_partitions[i].p_fstype != FS_BOOT &&
 		    DL_GETPSIZE(&lp->d_partitions[i]) != 0)
 			spp[npartitions++] = &lp->d_partitions[i];
 	}
