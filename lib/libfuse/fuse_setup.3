@@ -1,4 +1,4 @@
-.\" $OpenBSD: fuse_setup.3,v 1.1 2018/07/08 02:28:42 helg Exp $
+.\" $OpenBSD: fuse_setup.3,v 1.2 2018/07/08 06:17:10 jmc Exp $
 .\"
 .\" Copyright (c) 2018 Helg Bredow <helg.bredow@openbsd.org>
 .\"
@@ -54,7 +54,7 @@ The file system will be mounted on
 .Fa mp ,
 which is the directory specified by the first
 argument that does not match one of the options recognised by
-.Xr fuse_parse_cmd_line 3 .
+.Xr fuse_parse_cmdline 3 .
 .Pp
 .Fa fuse_operations
 is a struct of size
@@ -69,7 +69,7 @@ will return NULL on failure.
 .Xr fuse_main 3 ,
 .Xr fuse_mount 3  ,
 .Xr fuse_new 3 ,
-.Xr fuse_parse_cmd_line 3 ,
+.Xr fuse_parse_cmdline 3 ,
 .Xr fuse_set_signal_handlers 3 ,
 .Xr fuse_teardown 3 ,
 .Xr fuse 4
