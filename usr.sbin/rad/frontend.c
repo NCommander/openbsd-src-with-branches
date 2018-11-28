@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.c,v 1.17 2018/11/16 19:45:40 reyk Exp $	*/
+/*	$OpenBSD: frontend.c,v 1.18 2018/11/21 09:50:19 reyk Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -791,10 +791,6 @@ merge_ra_interfaces(void)
 		ra_iface_conf = find_ra_iface_conf(
 		    &frontend_conf->ra_iface_list, ra_iface->conf_name);
 
-		if (ra_iface_conf->autoprefix)
-			get_interface_prefixes(ra_iface,
-			    ra_iface_conf->autoprefix);
-
 		log_debug("add static prefixes for %s", ra_iface->name);
 
 		SIMPLEQ_FOREACH(ra_prefix_conf, &ra_iface_conf->ra_prefix_list,
@@ -803,6 +799,11 @@ merge_ra_interfaces(void)
 			    &ra_prefix_conf->prefix,
 			    ra_prefix_conf->prefixlen, ra_prefix_conf);
 		}
+
+		if (ra_iface_conf->autoprefix)
+			get_interface_prefixes(ra_iface,
+			    ra_iface_conf->autoprefix);
+
 		build_packet(ra_iface);
 	}
 }
