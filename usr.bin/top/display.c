@@ -1,4 +1,4 @@
-/* $OpenBSD: display.c,v 1.56 2018/10/05 18:56:57 cheloha Exp $	 */
+/* $OpenBSD: display.c,v 1.57 2018/11/17 23:10:08 cheloha Exp $	 */
 
 /*
  *  Top users/processes display for Unix
@@ -817,7 +817,8 @@ show_help(void)
 	    "I | i        - toggle the display of idle processes\n"
 	    "k [-sig] pid - send signal `-sig' to process `pid'\n"
 	    "n|# count    - show `count' processes\n"
-	    "o field      - specify sort order (size, res, cpu, time, pri, pid, command)\n"
+	    "o [-]field   - specify sort order (size, res, cpu, time, pri, pid, command)\n"
+	    "               (o -field sorts in reverse)\n"
 	    "P pid        - highlight process `pid' (P+ switches highlighting off)\n"
 	    "p pid        - display process by `pid' (p+ selects all processes)\n"
 	    "q            - quit\n"
