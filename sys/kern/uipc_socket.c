@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.226 2018/07/30 12:22:14 mpi Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.227 2018/08/21 12:34:11 bluhm Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -661,9 +661,9 @@ soreceive(struct socket *so, struct mbuf **paddr, struct uio *uio,
 
 	mp = mp0;
 	if (paddr)
-		*paddr = 0;
+		*paddr = NULL;
 	if (controlp)
-		*controlp = 0;
+		*controlp = NULL;
 	if (flagsp)
 		flags = *flagsp &~ MSG_EOR;
 	else
@@ -810,8 +810,13 @@ dontblock:
 		}
 	}
 	while (m && m->m_type == MT_CONTROL && error == 0) {
+		int skip = 0;
 		if (flags & MSG_PEEK) {
-			if (controlp)
+			if (mtod(m, struct cmsghdr *)->cmsg_type ==
+			    SCM_RIGHTS) {
+				/* don't leak internalized SCM_RIGHTS msgs */
+				skip = 1;
+			} else if (controlp)
 				*controlp = m_copym(m, 0, m->m_len, M_NOWAIT);
 			m = m->m_next;
 		} else {
@@ -822,9 +827,7 @@ dontblock:
 			m = so->so_rcv.sb_mb;
 			sbsync(&so->so_rcv, nextrecord);
 			if (controlp) {
-				if (pr->pr_domain->dom_externalize &&
-				    mtod(cm, struct cmsghdr *)->cmsg_type ==
-				    SCM_RIGHTS) {
+				if (pr->pr_domain->dom_externalize) {
 					error =
 					    (*pr->pr_domain->dom_externalize)
 					    (cm, controllen, flags);
@@ -835,8 +838,7 @@ dontblock:
 				 * Dispose of any SCM_RIGHTS message that went
 				 * through the read path rather than recv.
 				 */
-				if (pr->pr_domain->dom_dispose &&
-				    mtod(cm, struct cmsghdr *)->cmsg_type == SCM_RIGHTS)
+				if (pr->pr_domain->dom_dispose)
 					pr->pr_domain->dom_dispose(cm);
 				m_free(cm);
 			}
@@ -845,7 +847,7 @@ dontblock:
 			nextrecord = so->so_rcv.sb_mb->m_nextpkt;
 		else
 			nextrecord = so->so_rcv.sb_mb;
-		if (controlp) {
+		if (controlp && !skip) {
 			orig_resid = 0;
 			controlp = &(*controlp)->m_next;
 		}
