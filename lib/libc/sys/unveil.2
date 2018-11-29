@@ -1,4 +1,4 @@
-.\" $OpenBSD: unveil.2,v 1.12 2018/10/28 22:42:33 beck Exp $
+.\" $OpenBSD: unveil.2,v 1.13 2018/11/29 21:18:39 deraadt Exp $
 .\"
 .\" Copyright (c) 2018 Bob Beck <beck@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: October 28 2018 $
+.Dd $Mdocdate: November 29 2018 $
 .Dt UNVEIL 2
 .Os
 .Sh NAME
@@ -44,7 +44,6 @@ system call remains capable of traversing to any
 .Ar path
 in the filesystem, so additional calls can set permissions at other
 points in the filesystem hierarchy.
-.Pp
 .Pp
 After establishing a collection of
 .Ar path
