@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioqcow2.c,v 1.7 2018/10/01 17:34:56 reyk Exp $	*/
+/*	$OpenBSD: vioqcow2.c,v 1.8 2018/10/08 16:32:01 reyk Exp $	*/
 
 /*
  * Copyright (c) 2018 Ori Bernstein <ori@eigenstate.org>
@@ -78,15 +78,15 @@ struct qcdisk {
 	int       fd;
 	uint64_t *l1;
 	off_t     end;
-	uint32_t  clustersz;
+	off_t	  clustersz;
 	off_t	  disksz; /* In bytes */
-	uint32_t cryptmethod;
+	uint32_t  cryptmethod;
 
 	uint32_t l1sz;
 	off_t	 l1off;
 
 	off_t	 refoff;
-	uint32_t refsz;
+	off_t	 refsz;
 
 	uint32_t nsnap;
 	off_t	 snapoff;
@@ -176,7 +176,7 @@ qc2_open(struct qcdisk *disk, int *fds, size_t nfd)
 	struct qcheader header;
 	uint64_t backingoff;
 	uint32_t backingsz;
-	size_t i;
+	off_t i;
 	int version, fd;
 
 	pthread_rwlock_init(&disk->lock, NULL);
