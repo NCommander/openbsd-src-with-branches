@@ -1,4 +1,4 @@
-/*	$OpenBSD: puc.c,v 1.26 2018/05/02 19:11:01 phessler Exp $	*/
+/*	$OpenBSD: puc.c,v 1.27 2018/11/05 15:13:56 kn Exp $	*/
 /*	$NetBSD: puc.c,v 1.3 1999/02/06 06:29:54 cgd Exp $	*/
 
 /*
@@ -64,6 +64,8 @@
 
 #include <dev/ic/comreg.h>
 #include <dev/ic/comvar.h>
+
+#include "com.h"
 
 struct puc_pci_softc {
 	struct puc_softc	sc_psc;
