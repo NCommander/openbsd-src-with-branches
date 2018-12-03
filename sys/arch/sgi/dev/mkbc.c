@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkbc.c,v 1.12 2012/08/10 17:49:31 shadchin Exp $  */
+/*	$OpenBSD: mkbc.c,v 1.13 2015/02/11 07:05:39 dlg Exp $  */
 
 /*
  * Copyright (c) 2006, 2007, Joel Sing
@@ -287,7 +287,7 @@ mkbc_attach(struct device *parent, struct device *self, void *aux)
 
 	/* Establish interrupt handler. */
 	if (macebus_intr_establish(maa->maa_intr, maa->maa_mace_intr,
-	    IST_EDGE, IPL_TTY, mkbcintr, msc, sc->sc_dv.dv_xname))
+	    IPL_TTY, mkbcintr, msc, sc->sc_dv.dv_xname))
 		printf("\n");
 	else
 		printf(": unable to establish interrupt\n");

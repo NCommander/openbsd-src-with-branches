@@ -1,4 +1,4 @@
-/*	$OpenBSD: power.c,v 1.14 2011/06/24 19:47:49 naddy Exp $	*/
+/*	$OpenBSD: power.c,v 1.15 2014/07/11 08:18:30 guenther Exp $	*/
 
 /*
  * Copyright (c) 2007 Jasper Lievisse Adriaanse <jasper@openbsd.org>
@@ -64,7 +64,7 @@ power_macebus_attach(struct device *parent, struct device *self, void *aux)
 
 	/* Establish interrupt handler. */
 	if (macebus_intr_establish(maa->maa_intr, maa->maa_mace_intr,
-	    IST_EDGE, IPL_TTY, power_intr, self, self->dv_xname))
+	    IPL_TTY, power_intr, self, self->dv_xname))
 		printf("\n");
 	else
 		printf(": unable to establish interrupt!\n");
