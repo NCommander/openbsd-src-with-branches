@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.175 2018/11/16 21:15:47 guenther Exp $ */
+/*	$OpenBSD: loader.c,v 1.176 2018/11/20 01:38:59 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -558,8 +558,9 @@ _dl_boot(const char **argv, char **envp, const long dyn_loff, long *dl_data)
 	 */
 	map_link = NULL;
 #ifdef __mips__
-	map_link = (struct r_debug **)(exe_obj->Dyn.info[DT_MIPS_RLD_MAP -
-	    DT_LOPROC + DT_NUM]);
+	if (exe_obj->Dyn.info[DT_MIPS_RLD_MAP - DT_LOPROC + DT_NUM] != 0)
+		map_link = (struct r_debug **)(exe_obj->Dyn.info[
+		    DT_MIPS_RLD_MAP - DT_LOPROC + DT_NUM] + exe_loff);
 #endif
 	if (map_link == NULL) {
 		for (dynp = exe_obj->load_dyn; dynp->d_tag; dynp++) {
