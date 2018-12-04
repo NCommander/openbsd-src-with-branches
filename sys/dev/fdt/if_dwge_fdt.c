@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dwge_fdt.c,v 1.7 2018/02/26 13:11:48 kettenis Exp $	*/
+/*	$OpenBSD: if_dwge_fdt.c,v 1.8 2018/08/06 10:52:30 patrick Exp $	*/
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -144,7 +144,7 @@ dwge_fdt_attach(struct device *parent, struct device *self, void *aux)
 	fsc->sc_ih = fdt_intr_establish(faa->fa_node, IPL_NET,
 	    dwge_fdt_intr, sc, sc->sc_dev.dv_xname);
 	if (fsc->sc_ih == NULL) {
-		printf(": unable to establish interrupt\n");
+		printf(": can't establish interrupt\n");
 		goto clrpwr;
 	}
 
