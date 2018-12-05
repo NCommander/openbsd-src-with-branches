@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$OpenBSD: malloc.3,v 1.120 2018/11/21 06:57:04 otto Exp $
+.\"	$OpenBSD: malloc.3,v 1.121 2018/11/21 09:22:58 jmc Exp $
 .\"
 .Dd $Mdocdate: November 21 2018 $
 .Dt MALLOC 3
@@ -63,7 +63,6 @@
 .Fn freezero "void *ptr" "size_t size"
 .Ft void *
 .Fn aligned_alloc "size_t alignment" "size_t size"
-.Ft size_t
 .Vt char *malloc_options ;
 .Sh DESCRIPTION
 The standard functions
