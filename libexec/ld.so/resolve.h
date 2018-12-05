@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.h,v 1.86 2018/11/16 21:15:47 guenther Exp $ */
+/*	$OpenBSD: resolve.h,v 1.87 2018/11/28 03:18:00 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -158,8 +158,6 @@ struct elf_object {
 #define mask_bm_gnu	hash_u.u_gnu.mask_bm
 #define shift2_gnu	hash_u.u_gnu.shift2
 #define symndx_gnu	hash_u.u_gnu.symndx
-
-	Elf_Dyn		*dynamic;
 
 	TAILQ_HEAD(,dep_node)	child_list;	/* direct dep libs of object */
 	TAILQ_HEAD(,dep_node)	grpsym_list;	/* ordered complete dep list */
