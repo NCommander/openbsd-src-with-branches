@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.62 2015/07/02 01:33:59 dlg Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.63 2016/05/07 22:46:54 kettenis Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -38,6 +38,7 @@
 
 #include <sys/device.h>
 #include <sys/sched.h>
+#include <sys/srp.h>
 
 struct cpu_info {
 	struct device *ci_dev;		/* our device */

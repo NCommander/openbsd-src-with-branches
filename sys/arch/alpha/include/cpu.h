@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.58 2017/05/29 14:19:49 mpi Exp $ */
+/* $OpenBSD: cpu.h,v 1.59 2018/04/09 04:11:04 deraadt Exp $ */
 /* $NetBSD: cpu.h,v 1.45 2000/08/21 02:03:12 thorpej Exp $ */
 
 /*-
@@ -101,6 +101,7 @@ typedef union alpha_t_float {
 #include <sys/cdefs.h>
 #include <sys/device.h>
 #include <sys/sched.h>
+#include <sys/srp.h>
 
 struct pcb;
 struct proc;

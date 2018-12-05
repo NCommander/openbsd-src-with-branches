@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.51 2018/06/30 15:23:36 deraadt Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.52 2018/08/06 18:39:13 kettenis Exp $	*/
 /*	$NetBSD: cpu.h,v 1.34 2003/06/23 11:01:08 martin Exp $	*/
 
 /*
@@ -149,6 +149,7 @@ void	arm32_vector_init(vaddr_t, int);
 
 #include <sys/device.h>
 #include <sys/sched.h>
+#include <sys/srp.h>
 
 struct cpu_info {
 	struct device *ci_dev;		/* Device corresponding to this CPU */

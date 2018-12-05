@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.126 2018/07/11 20:07:55 guenther Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.127 2018/08/21 19:04:40 deraadt Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 2003/04/26 18:39:39 fvdl Exp $	*/
 
 /*-
@@ -51,6 +51,7 @@
 #include <sys/device.h>
 #include <sys/sched.h>
 #include <sys/sensors.h>
+#include <sys/srp.h>
 
 #ifdef _KERNEL
 
