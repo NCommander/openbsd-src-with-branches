@@ -1,4 +1,4 @@
-/* $OpenBSD: kex.h,v 1.90 2018/07/10 09:36:58 sf Exp $ */
+/* $OpenBSD: kex.h,v 1.91 2018/07/11 18:53:29 markus Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -88,6 +88,7 @@ enum kex_exchange {
 };
 
 #define KEX_INIT_SENT	0x0001
+#define KEX_INITIAL	0x0002
 
 struct sshenc {
 	char	*name;
