@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.75 2018/10/03 06:38:35 djm Exp $ */
+/* $OpenBSD: misc.h,v 1.76 2018/11/16 03:26:01 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -133,7 +133,9 @@ void		put_u32_le(void *, u_int32_t)
 
 struct bwlimit {
 	size_t buflen;
-	u_int64_t rate, thresh, lamt;
+	u_int64_t rate;		/* desired rate in kbit/s */
+	u_int64_t thresh;	/* threshold after which we'll check timers */
+	u_int64_t lamt;		/* amount written in last timer interval */
 	struct timeval bwstart, bwend;
 };
 
