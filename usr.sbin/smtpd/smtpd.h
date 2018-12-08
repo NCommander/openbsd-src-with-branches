@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.580 2018/12/06 16:05:04 gilles Exp $	*/
+/*	$OpenBSD: smtpd.h,v 1.581 2018/12/07 08:05:59 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -386,9 +386,9 @@ struct table_backend {
 
 
 enum bounce_type {
-	B_ERROR,
-	B_WARNING,
-	B_DSN
+	B_FAILED,
+	B_DELAYED,
+	B_DELIVERED
 };
 
 enum dsn_ret {
