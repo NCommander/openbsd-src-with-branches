@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencode.h,v 1.17 2017/04/27 15:46:14 millert Exp $	*/
+/*	$OpenBSD: gencode.h,v 1.18 2018/06/03 10:29:28 sthen Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996
@@ -179,6 +179,7 @@ struct block *gen_multicast(int);
 struct block *gen_inbound(int);
 
 struct block *gen_vlan(int);
+struct block *gen_mpls(int);
 
 struct block *gen_pf_ifname(char *);
 struct block *gen_pf_rnr(int);
