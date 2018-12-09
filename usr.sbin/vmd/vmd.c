@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.c,v 1.106 2018/11/26 05:44:46 ori Exp $	*/
+/*	$OpenBSD: vmd.c,v 1.107 2018/12/04 08:15:09 claudio Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -452,7 +452,8 @@ vmd_dispatch_vmm(int fd, struct privsep_proc *p, struct imsg *imsg)
 			    __func__, vmr.vmr_id);
 			break;
 		}
-		if (vmr.vmr_result != EAGAIN) {
+		if (vmr.vmr_result != EAGAIN ||
+		    vm->vm_params.vmc_bootdevice) {
 			if (vm->vm_from_config)
 				vm_stop(vm, 0, __func__);
 			else
