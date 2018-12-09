@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.485 2018/09/11 07:53:38 sashan Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.486 2018/09/13 19:53:58 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1924,12 +1924,6 @@ struct pf_ruleset 	*pf_get_leaf_ruleset(char *, char **);
 struct pf_anchor 	*pf_create_anchor(struct pf_anchor *, const char *);
 struct pf_ruleset	*pf_find_or_create_ruleset(const char *);
 void			 pf_rs_initialize(void);
-
-#ifdef _KERNEL
-int			 pf_anchor_copyout(const struct pf_ruleset *,
-			    const struct pf_rule *, struct pfioc_rule *);
-void			 pf_anchor_remove(struct pf_rule *);
-#endif /* _KERNEL */
 
 /* The fingerprint functions can be linked into userland programs (tcpdump) */
 int	pf_osfp_add(struct pf_osfp_ioctl *);
