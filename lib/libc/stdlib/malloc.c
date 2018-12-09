@@ -1,4 +1,4 @@
-/*	$OpenBSD: malloc.c,v 1.254 2018/11/21 06:57:04 otto Exp $	*/
+/*	$OpenBSD: malloc.c,v 1.255 2018/11/27 17:29:55 otto Exp $	*/
 /*
  * Copyright (c) 2008, 2010, 2011, 2016 Otto Moerbeek <otto@drijf.net>
  * Copyright (c) 2012 Matthew Dempsky <matthew@openbsd.org>
@@ -260,8 +260,8 @@ hash(void *p)
 	return sum;
 }
 
-static inline
-struct dir_info *getpool(void)
+static inline struct dir_info *
+getpool(void)
 {
 	if (!mopts.malloc_mt)
 		return mopts.malloc_pool[0];
