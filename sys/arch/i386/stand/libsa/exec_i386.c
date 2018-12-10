@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_i386.c,v 1.44 2016/09/11 17:52:47 jsing Exp $	*/
+/*	$OpenBSD: exec_i386.c,v 1.45 2018/08/23 14:47:52 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997-1998 Michael Shalayeff
@@ -198,7 +198,6 @@ ucode_load(void)
 	buf = (char *)(1*1024*1024);
 
 	if (read(fd, buf, buflen) != buflen) {
-		free(buf, buflen);
 		return;
 	}
 
