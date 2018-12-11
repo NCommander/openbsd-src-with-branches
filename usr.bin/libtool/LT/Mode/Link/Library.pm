@@ -1,4 +1,4 @@
-# $OpenBSD: Library.pm,v 1.5 2014/04/16 14:39:06 zhuk Exp $
+# $OpenBSD: Library.pm,v 1.6 2018/04/07 17:54:54 espie Exp $
 
 # Copyright (c) 2007-2010 Steven Mestdagh <steven@openbsd.org>
 # Copyright (c) 2012 Marc Espie <espie@openbsd.org>
@@ -161,6 +161,7 @@ sub link
 
 	my @linkeropts = ();
 	if (!$ltconfig->noshared) {
+		push(@linkeropts, '-soname', $fname);
 		for my $d (@$RPdirs) {
 			push(@linkeropts, '-rpath', $d);
 		}
