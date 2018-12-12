@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.502 2018/11/16 09:49:15 espie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.503 2018/11/16 10:06:11 espie Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -721,6 +721,15 @@ Used by some options of
 .Xr dpb 1 ,
 suitable for
 .Ev BULK_TARGETS .
+.It Cm show-indexed
+Similar to
+.Cm show .
+Invoked as make show-indexed=name, show the contents of ${name${SUBPACKAGE}},
+or ${name} if the variable
+.Ev name
+is not
+.Ev SUBPACKAGE
+dependent.
 .It Cm show-prepare-results
 Print the list of actual installed packages found out by
 .Cm prepare .
