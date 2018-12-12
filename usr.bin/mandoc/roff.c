@@ -1,4 +1,4 @@
-/*	$OpenBSD: roff.c,v 1.215 2018/11/26 17:44:29 schwarze Exp $ */
+/*	$OpenBSD: roff.c,v 1.216 2018/12/04 02:53:45 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2015, 2017, 2018 Ingo Schwarze <schwarze@openbsd.org>
@@ -26,10 +26,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mandoc.h"
 #include "mandoc_aux.h"
 #include "mandoc_ohash.h"
+#include "mandoc.h"
 #include "roff.h"
+#include "tbl.h"
 #include "libmandoc.h"
 #include "roff_int.h"
 #include "libroff.h"
