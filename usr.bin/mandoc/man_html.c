@@ -1,4 +1,4 @@
-/*	$OpenBSD: man_html.c,v 1.110 2018/10/23 17:17:54 schwarze Exp $ */
+/*	$OpenBSD: man_html.c,v 1.111 2018/12/03 21:00:06 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2013,2014,2015,2017,2018 Ingo Schwarze <schwarze@openbsd.org>
@@ -24,7 +24,6 @@
 #include <string.h>
 
 #include "mandoc_aux.h"
-#include "mandoc.h"
 #include "roff.h"
 #include "man.h"
 #include "out.h"

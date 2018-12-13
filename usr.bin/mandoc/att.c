@@ -1,4 +1,4 @@
-/*	$OpenBSD: att.c,v 1.12 2017/06/24 14:38:27 schwarze Exp $ */
+/*	$OpenBSD: att.c,v 1.13 2018/12/13 07:29:35 schwarze Exp $ */
 /*
  * Copyright (c) 2009 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -17,7 +17,6 @@
 #include <sys/types.h>
 #include <string.h>
 
-#include "mandoc.h"
 #include "roff.h"
 #include "libmdoc.h"
 

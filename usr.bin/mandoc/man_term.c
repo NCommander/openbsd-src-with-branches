@@ -1,4 +1,4 @@
-/*	$OpenBSD: man_term.c,v 1.173 2018/08/26 16:18:38 schwarze Exp $ */
+/*	$OpenBSD: man_term.c,v 1.174 2018/12/03 21:00:06 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2015, 2017, 2018 Ingo Schwarze <schwarze@openbsd.org>
@@ -25,7 +25,6 @@
 #include <string.h>
 
 #include "mandoc_aux.h"
-#include "mandoc.h"
 #include "roff.h"
 #include "man.h"
 #include "out.h"
