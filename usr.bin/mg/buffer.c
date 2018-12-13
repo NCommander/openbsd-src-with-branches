@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.103 2017/03/13 20:32:58 florian Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.104 2017/08/06 04:39:45 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -28,6 +28,28 @@ static int usebufname(const char *);
 
 /* Flag for global working dir */
 extern int globalwd;
+
+/* ARGSUSED */
+int
+togglereadonlyall(int f, int n)
+{
+	struct buffer *bp = NULL;
+	int len = 0;
+
+	allbro = !allbro;
+	for (bp = bheadp; bp != NULL; bp = bp->b_bufp) {
+		len = strlen(bp->b_bname);
+		if (bp->b_bname[0] != '*' && bp->b_bname[len - 1] != '*') {
+			if (allbro)
+				bp->b_flag |= BFREADONLY;
+			else
+				bp->b_flag &= ~BFREADONLY;
+		}
+	}
+	curwp->w_rflag |= WFMODE;
+
+	return (TRUE);
+}
 
 /* ARGSUSED */
 int
