@@ -1,4 +1,4 @@
-/*	$OpenBSD: eqn_html.c,v 1.12 2017/07/08 14:51:01 schwarze Exp $ */
+/*	$OpenBSD: eqn_html.c,v 1.13 2017/07/14 13:32:27 schwarze Exp $ */
 /*
  * Copyright (c) 2011, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "mandoc.h"
+#include "eqn.h"
 #include "out.h"
 #include "html.h"
 
