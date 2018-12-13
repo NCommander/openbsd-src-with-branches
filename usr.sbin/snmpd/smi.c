@@ -1,4 +1,4 @@
-/*	$OpenBSD: smi.c,v 1.21 2018/07/23 19:51:39 rob Exp $	*/
+/*	$OpenBSD: smi.c,v 1.22 2018/07/31 11:01:29 claudio Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -404,7 +404,7 @@ smi_debug_elements(struct ber_element *root)
 		fprintf(stderr, "class: <INVALID>(%u) type: ", root->be_class);
 		break;
 	}
-	fprintf(stderr, "(%lu) encoding %lu ",
+	fprintf(stderr, "(%u) encoding %u ",
 	    root->be_type, root->be_encoding);
 
 	if ((value = smi_print_element(root)) == NULL)
