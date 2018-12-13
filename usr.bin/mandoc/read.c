@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.171 2018/08/24 22:56:37 schwarze Exp $ */
+/*	$OpenBSD: read.c,v 1.172 2018/08/25 16:43:52 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2018 Ingo Schwarze <schwarze@openbsd.org>
@@ -37,6 +37,7 @@
 #include "mdoc.h"
 #include "man.h"
 #include "libmandoc.h"
+#include "roff_int.h"
 
 #define	REPARSE_LIMIT	1000
 
