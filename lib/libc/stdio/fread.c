@@ -1,4 +1,4 @@
-/*	$OpenBSD: fread.c,v 1.14 2015/08/31 02:53:57 guenther Exp $ */
+/*	$OpenBSD: fread.c,v 1.12 2014/05/01 16:40:36 deraadt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -68,21 +68,6 @@ fread(void *buf, size_t size, size_t count, FILE *fp)
 		fp->_r = 0;
 	total = resid;
 	p = buf;
-
-	if ((fp->_flags & __SNBF) != 0) {
-		/*
-		 * We know if we're unbuffered that our buffer is empty, so
-		 * we can just read directly. This is much faster than the
-		 * loop below which will perform a series of one byte reads.
-		 */
-		while (resid > 0 && (r = (*fp->_read)(fp->_cookie, p, resid)) > 0) {
-			p += r;
-			resid -= r;
-		}
-		FUNLOCKFILE(fp);
-		return ((total - resid) / size);
-	}
-
 	while (resid > (r = fp->_r)) {
 		(void)memcpy(p, fp->_p, r);
 		fp->_p += r;
