@@ -1,4 +1,4 @@
-/*	$OpenBSD: st.c,v 1.11 2017/06/24 14:38:28 schwarze Exp $ */
+/*	$OpenBSD: st.c,v 1.12 2018/12/13 07:25:38 schwarze Exp $ */
 /*
  * Copyright (c) 2009, 2010 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 #include <sys/types.h>
+
+#include <stdio.h>
 #include <string.h>
 
 #include "mandoc.h"
