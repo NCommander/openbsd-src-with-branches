@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.97 2018/06/07 04:46:34 djm Exp $
+#	$OpenBSD: Makefile,v 1.98 2018/11/22 08:48:32 dtucker Exp $
 
 .ifndef SKIP_UNIT
 SUBDIR=		unittests
@@ -209,7 +209,6 @@ c-${s}:
 
 clean: ${CLEAN_SUBDIR}
 	rm -f ${CLEANFILES}
-	test -z "${SUDO}" || ${SUDO} rm -f ${SUDO_CLEAN}
 	rm -rf .putty
 
 .include <bsd.regress.mk>
