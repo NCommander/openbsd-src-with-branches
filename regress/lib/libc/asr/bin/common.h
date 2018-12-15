@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.15 2011/05/01 12:57:11 eric Exp $	*/
+/*	$OpenBSD: common.h,v 1.1.1.1 2012/07/13 17:49:53 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -41,6 +41,8 @@ const char *rcodetostr(uint16_t);
 
 uint16_t strtotype(const char*);
 uint16_t strtoclass(const char*);
+int strtoresopt(const char*);
+void parseresopt(const char*);
 
 void	print_rrsetinfo(struct rrsetinfo *);
 void	print_addrinfo(struct addrinfo *);

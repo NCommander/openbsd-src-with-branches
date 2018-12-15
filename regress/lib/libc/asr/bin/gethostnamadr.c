@@ -1,4 +1,4 @@
-/*	$OpenBSD: gethostnamadr.c,v 1.1.1.1 2012/07/13 17:49:54 eric Exp $	*/
+/*	$OpenBSD: gethostnamadr.c,v 1.2 2012/07/29 19:51:36 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -47,13 +47,16 @@ main(int argc, char *argv[])
 	int			 addrlen;
 
 	aflag = 0;
-	while((ch = getopt(argc, argv, "46ae")) !=  -1) {
+	while((ch = getopt(argc, argv, "46R:ae")) !=  -1) {
 		switch(ch) {
 		case '4':
 			family = AF_INET;
 			break;
 		case '6':
 			family = AF_INET6;
+			break;
+		case 'R':
+			parseresopt(optarg);
 			break;
 		case 'a':
 			aflag = 1;
