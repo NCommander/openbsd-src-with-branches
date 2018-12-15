@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdoc_markdown.c,v 1.27 2018/10/25 01:21:30 schwarze Exp $ */
+/*	$OpenBSD: mdoc_markdown.c,v 1.28 2018/12/03 21:00:06 schwarze Exp $ */
 /*
  * Copyright (c) 2017, 2018 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -588,6 +588,9 @@ md_word(const char *s)
 				break;
 			case ESCAPE_SPECIAL:
 				uc = mchars_spec2cp(seq, sz);
+				break;
+			case ESCAPE_UNDEF:
+				uc = *seq;
 				break;
 			case ESCAPE_DEVICE:
 				md_rawword("markdown");
