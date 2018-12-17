@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_etherip.c,v 1.39 2018/11/12 09:39:52 dlg Exp $	*/
+/*	$OpenBSD: if_etherip.c,v 1.40 2018/11/12 23:57:06 dlg Exp $	*/
 /*
  * Copyright (c) 2015 Kazuya GODA <goda@openbsd.org>
  *
@@ -329,6 +329,11 @@ etherip_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	default:
 		error = ether_ioctl(ifp, &sc->sc_ac, cmd, data);
 		break;
+	}
+
+	if (error == ENETRESET) {
+		/* no hardware to program */
+		error = 0;
 	}
 
 	return (error);

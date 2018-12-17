@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gre.c,v 1.140 2018/11/29 00:14:29 dlg Exp $ */
+/*	$OpenBSD: if_gre.c,v 1.141 2018/12/03 17:25:22 claudio Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -2644,6 +2644,11 @@ egre_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		break;
 	}
 
+	if (error == ENETRESET) {
+		/* no hardware to program */
+		error = 0;
+	}
+
 	return (error);
 }
 
@@ -2969,6 +2974,11 @@ eoip_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 	default:
 		error = ether_ioctl(ifp, &sc->sc_ac, cmd, data);
 		break;
+	}
+
+	if (error == ENETRESET) {
+		/* no hardware to program */
+		error = 0;
 	}
 
 	return (error);
