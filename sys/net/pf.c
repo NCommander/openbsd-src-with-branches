@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1078 2018/11/15 13:16:37 henning Exp $ */
+/*	$OpenBSD: pf.c,v 1.1079 2018/12/10 16:48:15 kn Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1279,7 +1279,7 @@ pf_purge(void *xnloops)
 	NET_UNLOCK();
 	KERNEL_UNLOCK();
 
-	timeout_add(&pf_purge_to, 1 * hz);
+	timeout_add_sec(&pf_purge_to, 1);
 }
 
 int32_t
