@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: ForwardDependencies.pm,v 1.13 2012/04/28 15:24:52 espie Exp $
+# $OpenBSD: ForwardDependencies.pm,v 1.14 2018/06/19 09:58:36 espie Exp $
 #
 # Copyright (c) 2009 Marc Espie <espie@openbsd.org>
 #
@@ -30,7 +30,6 @@ sub find
 	for my $old ($set->older) {
 		for my $f (OpenBSD::RequiredBy->new($old->pkgname)->list) {
 			next if defined $set->{older}{$f};
-			next if defined $set->{kept}{$f};
 			$forward->{$f} = 1;
 		}
 	}
