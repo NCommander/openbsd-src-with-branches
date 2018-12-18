@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.227 2018/08/21 12:34:11 bluhm Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.227.2.1 2018/11/29 17:02:22 bluhm Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -872,13 +872,21 @@ dontblock:
 		if (m->m_type == MT_OOBDATA) {
 			if (type != MT_OOBDATA)
 				break;
-		} else if (type == MT_OOBDATA)
+		} else if (type == MT_OOBDATA) {
+			break;
+		} else if (m->m_type == MT_CONTROL) {
+			/*
+			 * If there is more than one control message in the
+			 * stream, we do a short read.  Next can be received
+			 * or disposed by another system call.
+			 */
 			break;
 #ifdef DIAGNOSTIC
-		else if (m->m_type != MT_DATA && m->m_type != MT_HEADER)
+		} else if (m->m_type != MT_DATA && m->m_type != MT_HEADER) {
 			panic("receive 3: so %p, so_type %d, m %p, m_type %d",
 			    so, so->so_type, m, m->m_type);
 #endif
+		}
 		so->so_state &= ~SS_RCVATMARK;
 		len = uio->uio_resid;
 		if (so->so_oobmark && len > so->so_oobmark - offset)
