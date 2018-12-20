@@ -1,4 +1,4 @@
-/*	$OpenBSD: addrtoname.c,v 1.37 2016/12/14 19:12:16 jca Exp $	*/
+/*	$OpenBSD: addrtoname.c,v 1.38 2018/10/22 16:12:45 kn Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -737,6 +737,7 @@ static struct etherlist {
 	char *name;
 } etherlist[] = {
 	{{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, "Broadcast" },
+	{{ 0x01, 0x80, 0xc2, 0x00, 0x00, 0x0e }, "LLDP_Multicast" },
 	{{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, NULL }
 };
 
