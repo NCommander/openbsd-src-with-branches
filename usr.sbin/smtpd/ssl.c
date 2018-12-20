@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssl.c,v 1.88 2017/03/30 15:41:04 jsing Exp $	*/
+/*	$OpenBSD: ssl.c,v 1.89 2017/05/17 14:00:06 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -328,7 +328,7 @@ ssl_to_text(const SSL *ssl)
 {
 	static char buf[256];
 
-	(void)snprintf(buf, sizeof buf, "version=%s, cipher=%s, bits=%d",
+	(void)snprintf(buf, sizeof buf, "%s:%s:%d",
 	    SSL_get_version(ssl),
 	    SSL_get_cipher_name(ssl),
 	    SSL_get_cipher_bits(ssl, NULL));
