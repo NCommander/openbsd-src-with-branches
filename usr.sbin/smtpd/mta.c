@@ -1,4 +1,4 @@
-/*	$OpenBSD: mta.c,v 1.225 2018/09/19 05:31:12 eric Exp $	*/
+/*	$OpenBSD: mta.c,v 1.226 2018/09/24 16:14:34 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -310,14 +310,6 @@ mta_imsg(struct mproc *p, struct imsg *imsg)
 			preference = INT_MAX;
 		}
 		mta_on_preference(relay, preference);
-		return;
-
-	case IMSG_MTA_TLS_INIT:
-		mta_session_imsg(p, imsg);
-		return;
-
-	case IMSG_MTA_TLS_VERIFY:
-		mta_session_imsg(p, imsg);
 		return;
 
 	case IMSG_CTL_RESUME_ROUTE:
