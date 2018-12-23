@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_lookup.c,v 1.52 2018/05/02 02:24:56 visa Exp $	*/
+/*	$OpenBSD: ufs_lookup.c,v 1.53 2018/09/06 11:50:54 jsg Exp $	*/
 /*	$NetBSD: ufs_lookup.c,v 1.7 1996/02/09 22:36:06 christos Exp $	*/
 
 /*
@@ -496,7 +496,7 @@ found:
 		if ((DIP(dp, mode) & ISVTX) &&
 		    cred->cr_uid != 0 &&
 		    cred->cr_uid != DIP(dp, uid) &&
-		    (vdp->v_mount->mnt_flag & MNT_NOPERM) == 0 &&
+		    !vnoperm(vdp) &&
 		    DIP(VTOI(tdp), uid) != cred->cr_uid) {
 			vput(tdp);
 			return (EPERM);
