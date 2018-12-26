@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.602 2018/12/23 15:53:24 eric Exp $	*/
+/*	$OpenBSD: smtpd.h,v 1.603 2018/12/23 16:37:53 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -362,6 +362,7 @@ struct table {
 };
 
 struct table_backend {
+	const char *name;
 	const unsigned int	services;
 	int	(*config)(struct table *);
 	void   *(*open)(struct table *);

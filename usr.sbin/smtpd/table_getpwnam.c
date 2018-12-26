@@ -1,4 +1,4 @@
-/*	$OpenBSD: table_getpwnam.c,v 1.4 2015/01/20 17:37:54 deraadt Exp $	*/
+/*	$OpenBSD: table_getpwnam.c,v 1.5 2018/12/23 15:53:24 eric Exp $	*/
 
 /*
  * Copyright (c) 2012 Gilles Chehade <gilles@poolp.org>
@@ -46,6 +46,7 @@ static int table_getpwnam_lookup(void *, struct dict *, const char *, enum table
 static void  table_getpwnam_close(void *);
 
 struct table_backend table_backend_getpwnam = {
+	"getpwnam",
 	K_USERINFO,
 	table_getpwnam_config,
 	table_getpwnam_open,
