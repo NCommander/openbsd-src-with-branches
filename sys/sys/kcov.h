@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: kcov.h,v 1.1 2018/08/19 11:42:33 anton Exp $	*/
 
 /*
  * Copyright (c) 2018 Anton Lindqvist <anton@openbsd.org>
@@ -24,6 +24,9 @@
 #define KIOSETBUFSIZE	_IOW('K', 1, unsigned long)
 #define KIOENABLE	_IO('K', 2)
 #define KIODISABLE	_IO('K', 3)
+
+#define KCOV_MODE_NONE		0
+#define KCOV_MODE_TRACE_PC	1
 
 #ifdef _KERNEL
 
