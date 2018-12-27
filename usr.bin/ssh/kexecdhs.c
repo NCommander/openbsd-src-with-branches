@@ -1,4 +1,4 @@
-/* $OpenBSD: kexecdhs.c,v 1.16 2017/05/30 14:23:52 markus Exp $ */
+/* $OpenBSD: kexecdhs.c,v 1.17 2018/02/07 02:06:51 jsing Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 2010 Damien Miller.  All rights reserved.
@@ -141,8 +141,8 @@ input_kex_ecdh_init(int type, u_int32_t seq, struct ssh *ssh)
 	if ((r = kex_ecdh_hash(
 	    kex->hash_alg,
 	    group,
-	    kex->client_version_string,
-	    kex->server_version_string,
+	    kex->client_version,
+	    kex->server_version,
 	    sshbuf_ptr(kex->peer), sshbuf_len(kex->peer),
 	    sshbuf_ptr(kex->my), sshbuf_len(kex->my),
 	    server_host_key_blob, sbloblen,

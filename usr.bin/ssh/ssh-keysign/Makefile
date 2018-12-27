@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.14 2018/07/18 11:34:05 dtucker Exp $
+#	$OpenBSD: Makefile,v 1.15 2018/07/25 17:12:35 deraadt Exp $
 
 .PATH:		${.CURDIR}/..
 
-SRCS=	ssh-keysign.c readconf.c
+SRCS=	ssh-keysign.c readconf.c compat.c
 SRCS+=	atomicio.c cleanup.c fatal.c msg.c
 SRCS+=	uidswap.c
 SRCS+=	${SRCS_BASE} ${SRCS_KEY} ${SRCS_KEYP} ${SRCS_KRL} ${SRCS_PKT} \
