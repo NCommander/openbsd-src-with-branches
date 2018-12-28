@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchctl.c,v 1.12 2017/08/11 21:24:19 mpi Exp $	*/
+/*	$OpenBSD: switchctl.c,v 1.13 2018/11/09 14:14:31 claudio Exp $	*/
 
 /*
  * Copyright (c) 2016 Kazuya GODA <goda@openbsd.org>
@@ -236,10 +236,12 @@ switchwrite(dev_t dev, struct uio *uio, int ioflag)
 
 		sc->sc_swdev->swdev_inputm = NULL;
 	}
+	KASSERT(mhead->m_flags & M_PKTHDR);
 
 	while (len) {
 		trailing = ulmin(m_trailingspace(m), len);
-		if ((error = uiomove(mtod(m, caddr_t), trailing, uio)) != 0)
+		if ((error = uiomove(mtod(m, caddr_t) + m->m_len, trailing,
+		    uio)) != 0)
 			goto save_return;
 
 		len -= trailing;
