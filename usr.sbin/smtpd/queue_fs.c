@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue_fs.c,v 1.16 2018/05/14 15:23:05 gilles Exp $	*/
+/*	$OpenBSD: queue_fs.c,v 1.17 2018/05/31 21:06:12 gilles Exp $	*/
 
 /*
  * Copyright (c) 2011 Gilles Chehade <gilles@poolp.org>
@@ -32,7 +32,6 @@
 #include <fts.h>
 #include <imsg.h>
 #include <inttypes.h>
-#include <libgen.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>

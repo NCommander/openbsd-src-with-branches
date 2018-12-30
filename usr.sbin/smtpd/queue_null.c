@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue_null.c,v 1.6 2015/01/20 17:37:54 deraadt Exp $	*/
+/*	$OpenBSD: queue_null.c,v 1.7 2018/05/14 15:23:05 gilles Exp $	*/
 
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
@@ -29,7 +29,6 @@
 #include <fcntl.h>
 #include <imsg.h>
 #include <inttypes.h>
-#include <libgen.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>

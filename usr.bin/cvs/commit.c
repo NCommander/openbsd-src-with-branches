@@ -1,4 +1,4 @@
-/*	$OpenBSD: commit.c,v 1.157 2017/05/31 16:48:16 joris Exp $	*/
+/*	$OpenBSD: commit.c,v 1.158 2017/06/01 08:08:24 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -20,7 +20,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <libgen.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

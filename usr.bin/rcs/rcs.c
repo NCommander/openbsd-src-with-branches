@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcs.c,v 1.84 2015/11/02 16:45:21 nicm Exp $	*/
+/*	$OpenBSD: rcs.c,v 1.85 2016/05/09 13:03:55 schwarze Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -30,7 +30,6 @@
 #include <ctype.h>
 #include <err.h>
 #include <errno.h>
-#include <libgen.h>
 #include <pwd.h>
 #include <stdarg.h>
 #include <stdio.h>
