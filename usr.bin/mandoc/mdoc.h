@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdoc.h,v 1.69 2015/11/07 13:57:55 schwarze Exp $ */
+/*	$OpenBSD: mdoc.h,v 1.70 2017/04/24 23:06:09 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2014, 2015 Ingo Schwarze <schwarze@openbsd.org>
@@ -15,6 +15,9 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+struct	roff_node;
+struct	roff_man;
 
 enum	mdocargt {
 	MDOC_Split, /* -split */
