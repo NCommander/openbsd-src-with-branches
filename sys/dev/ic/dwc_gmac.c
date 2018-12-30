@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwc_gmac.c,v 1.9 2018/04/07 22:43:12 kettenis Exp $	*/
+/*	$OpenBSD: dwc_gmac.c,v 1.10 2018/05/06 17:08:08 kettenis Exp $	*/
 /* $NetBSD: dwc_gmac.c,v 1.34 2015/08/21 20:12:29 jmcneill Exp $ */
 
 /*-
@@ -290,7 +290,7 @@ dwc_gmac_reset(struct dwc_gmac_softc *sc)
 	size_t cnt;
 	bus_space_write_4(sc->sc_bst, sc->sc_bsh, AWIN_GMAC_DMA_BUSMODE,
 	    bus_space_read_4(sc->sc_bst, sc->sc_bsh, AWIN_GMAC_DMA_BUSMODE) | GMAC_BUSMODE_RESET);
-	for (cnt = 0; cnt < 3000; cnt++) {
+	for (cnt = 0; cnt < 30000; cnt++) {
 		if ((bus_space_read_4(sc->sc_bst, sc->sc_bsh, AWIN_GMAC_DMA_BUSMODE)
 		    & GMAC_BUSMODE_RESET) == 0)
 			return 0;
