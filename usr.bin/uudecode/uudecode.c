@@ -1,4 +1,4 @@
-/*	$OpenBSD: uudecode.c,v 1.22 2015/10/09 01:37:09 deraadt Exp $	*/
+/*	$OpenBSD: uudecode.c,v 1.23 2016/01/03 14:43:20 tb Exp $	*/
 /*	$FreeBSD: uudecode.c,v 1.49 2003/05/03 19:44:46 obrien Exp $	*/
 
 /*-
@@ -35,7 +35,6 @@
  * Used with uuencode.
  */
 
-#include <sys/socket.h>
 #include <sys/stat.h>
 
 #include <netinet/in.h>
