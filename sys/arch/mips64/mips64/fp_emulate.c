@@ -1,4 +1,4 @@
-/*	$OpenBSD: fp_emulate.c,v 1.19 2017/09/16 05:04:34 visa Exp $	*/
+/*	$OpenBSD: fp_emulate.c,v 1.20 2018/10/22 17:31:25 krw Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -935,12 +935,12 @@ fpu_c(struct proc *p, struct trapframe *tf, uint fmt, uint ft, uint fs,
 			/* comparison result intentionaly not written */
 			goto skip;
 		}
-	} else {
-		if ((uo | eq | lt) & op)
-			tf->fsr |= FPCSR_CONDVAL(cc);
-		else
-			tf->fsr &= ~FPCSR_CONDVAL(cc);
 	}
+
+	if ((uo | eq | lt) & op)
+		tf->fsr |= FPCSR_CONDVAL(cc);
+	else
+		tf->fsr &= ~FPCSR_CONDVAL(cc);
 skip:
 
 	return 0;
