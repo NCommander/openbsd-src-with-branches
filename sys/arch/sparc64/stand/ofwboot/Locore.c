@@ -1,4 +1,4 @@
-/*	$OpenBSD: Locore.c,v 1.14 2016/09/11 17:53:26 jsing Exp $	*/
+/*	$OpenBSD: Locore.c,v 1.15 2018/06/26 19:43:27 kettenis Exp $	*/
 /*	$NetBSD: Locore.c,v 1.1 2000/08/20 14:58:36 mrg Exp $	*/
 
 /*
@@ -37,6 +37,11 @@
 #include "openfirm.h"
 
 #include <machine/cpu.h>
+
+#ifdef SOFTRAID
+#include <dev/softraidvar.h>
+#include <lib/libsa/softraid.h>
+#endif
 
 static vaddr_t OF_claim_virt(vaddr_t vaddr, int len);
 static vaddr_t OF_alloc_virt(int len, int align);

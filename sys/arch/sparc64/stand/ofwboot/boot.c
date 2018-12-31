@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.28 2018/03/29 08:12:58 stsp Exp $	*/
+/*	$OpenBSD: boot.c,v 1.29 2018/08/10 16:41:35 jsing Exp $	*/
 /*	$NetBSD: boot.c,v 1.3 2001/05/31 08:55:19 mrg Exp $	*/
 /*
  * Copyright (c) 1997, 1999 Eduardo E. Horvath.  All rights reserved.
@@ -46,6 +46,7 @@
 #define ELFSIZE 64
 
 #include <lib/libsa/stand.h>
+#include <lib/libkern/funcs.h>
 
 #include <sys/param.h>
 #include <sys/exec.h>
