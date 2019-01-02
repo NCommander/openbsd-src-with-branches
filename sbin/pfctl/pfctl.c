@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.360 2018/09/18 12:55:19 kn Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.361 2018/12/27 16:33:44 kn Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2482,6 +2482,9 @@ main(int argc, char *argv[])
 		}
 	}
 
+	if (tblcmdopt == NULL ^ tableopt == NULL)
+		usage();
+
 	if (tblcmdopt != NULL) {
 		argc -= optind;
 		argv += optind;
@@ -2661,7 +2664,7 @@ main(int argc, char *argv[])
 		pfctl_kill_src_nodes(dev, ifaceopt, opts);
 
 	if (tblcmdopt != NULL) {
-		error = pfctl_command_tables(argc, argv, tableopt,
+		error = pfctl_table(argc, argv, tableopt,
 		    tblcmdopt, rulesopt, anchorname, opts);
 		rulesopt = NULL;
 	}
