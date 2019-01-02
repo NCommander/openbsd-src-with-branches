@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_regulator.c,v 1.7 2018/08/28 09:35:35 jsg Exp $	*/
+/*	$OpenBSD: ofw_regulator.c,v 1.8 2018/10/23 16:41:53 patrick Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -150,7 +150,7 @@ regulator_get_voltage(uint32_t phandle)
 		return 0;
 
 	if (OF_is_compatible(node, "regulator-fixed"))
-		return OF_getpropint(node, "regulator-min-voltage", 0);
+		return OF_getpropint(node, "regulator-min-microvolt", 0);
 
 	if (OF_is_compatible(node, "regulator-gpio"))
 		return regulator_gpio_get_voltage(node);
