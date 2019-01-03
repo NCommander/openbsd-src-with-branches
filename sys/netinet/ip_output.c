@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.348 2018/08/28 15:15:02 mpi Exp $	*/
+/*	$OpenBSD: ip_output.c,v 1.349 2018/12/20 13:27:54 claudio Exp $	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -860,9 +860,10 @@ ip_ctloutput(int op, struct socket *so, int level, int optname,
 	int error = 0;
 	u_int rtid = 0;
 
-	if (level != IPPROTO_IP) {
-		error = EINVAL;
-	} else switch (op) {
+	if (level != IPPROTO_IP)
+		return (EINVAL);
+
+	switch (op) {
 	case PRCO_SETOPT:
 		switch (optname) {
 		case IP_OPTIONS:
