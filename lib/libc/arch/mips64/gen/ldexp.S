@@ -1,4 +1,4 @@
-/* $OpenBSD: ldexp.S,v 1.7 2015/10/27 05:54:49 guenther Exp $ */
+/* $OpenBSD: ldexp.S,v 1.8 2017/10/15 12:07:27 visa Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -159,7 +159,7 @@ LEAF(ldexp, 0)
 	bge	t3, zero, 1f		# should result be negative infinity?
 	neg.d	$f0, $f0		# result is negative infinity
 1:
-	add.d	$f0, $f0		# cause overflow faults if enabled
+	add.d	$f0, $f0, $f0		# cause overflow faults if enabled
 	j	ra
 9:
 	mov.d	$f0, $f12		# yes, result is just x

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tlbhandler.S,v 1.47 2016/12/22 15:33:36 visa Exp $ */
+/*	$OpenBSD: tlbhandler.S,v 1.48 2018/12/13 16:35:07 visa Exp $ */
 
 /*
  * Copyright (c) 1995-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -337,7 +337,7 @@ sys_stk_chk:
 	GET_CPU_INFO(k1, k0)
 	PTR_L	k1, CI_CURPROCPADDR(k1)
 	PTR_SUBU k0, sp, k1			# check to see if we have a
-	sltiu	k0, 2048			#  valid kernel stack
+	sltiu	k0, k0, 2048			#  valid kernel stack
 	beqz	k0, go_k_general		# yes, handle.
 	nop
 
