@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_sets.c,v 1.5 2018/09/20 11:45:59 claudio Exp $ */
+/*	$OpenBSD: rde_sets.c,v 1.6 2018/10/26 16:53:55 claudio Exp $ */
 
 /*
  * Copyright (c) 2018 Claudio Jeker <claudio@openbsd.org>
@@ -127,6 +127,7 @@ set_new(size_t nmemb, size_t size)
 
 	rdemem.aset_cnt++;
 	rdemem.aset_size += sizeof(*set);
+	rdemem.aset_size += set->size * set->max;
 	return set;
 }
 
