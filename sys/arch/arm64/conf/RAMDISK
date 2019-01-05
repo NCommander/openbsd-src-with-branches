@@ -1,4 +1,4 @@
-# $OpenBSD: RAMDISK,v 1.75 2018/09/28 13:39:57 ccardenas Exp $
+# $OpenBSD: RAMDISK,v 1.76 2019/01/02 21:15:47 patrick Exp $
 #
 # GENERIC machine description file
 #
@@ -76,6 +76,7 @@ ahci*		at fdt?
 dwge*		at fdt?
 dwpcie*		at fdt?
 pci*		at dwpcie?
+ohci*		at fdt?
 ehci*		at fdt?
 pciecam*	at fdt?
 pci*		at pciecam?
