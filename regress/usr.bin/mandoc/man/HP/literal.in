@@ -1,27 +1,32 @@
-.\" $OpenBSD$
-.TH HP-LITERAL 1 "January 4, 2011"
+.\" $OpenBSD: literal.in,v 1.2 2017/07/04 14:53:23 schwarze Exp $
+.TH HP-LITERAL 1 "January 6, 2019"
 .SH NAME
 HP-literal \- hanged paragraphs in literal context
 .SH DESCRIPTION
-regular
-text
+BEGINTEST
+before hanged paragraph
 .HP 10n
 tag
 indented
 text
 .PP
 regular
-text
+paragraph
 .nf
 literal
 text
 .HP 10n
 tag
-indented
-text
+literal
+hanged
+paragraph
 .PP
 literal
-text
+paragraph
 .fi
 regular
 text
+.br
+ENDTEST
+.br
+end of file
