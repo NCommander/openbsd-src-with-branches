@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.170 2018/10/04 20:07:54 kettenis Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.171 2018/11/12 15:09:17 visa Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -192,6 +192,7 @@ exit1(struct proc *p, int rv, int flags)
 		fdfree(p);
 
 		timeout_del(&pr->ps_realit_to);
+		timeout_del(&pr->ps_rucheck_to);
 #ifdef SYSVSEM
 		semexit(pr);
 #endif
