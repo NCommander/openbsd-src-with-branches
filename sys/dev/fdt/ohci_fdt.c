@@ -1,4 +1,4 @@
-/*	$OpenBSD: ohci_fdt.c,v 1.4 2018/08/06 10:52:30 patrick Exp $ */
+/*	$OpenBSD: ohci_fdt.c,v 1.1 2019/01/04 23:55:29 dlg Exp $ */
 
 /*
  * Copyright (c) 2005, 2019 David Gwynne <dlg@openbsd.org>
@@ -117,7 +117,7 @@ ohci_fdt_attach(struct device *parent, struct device *self, void *aux)
 		printf(": can't establish interrupt\n");
 		goto disable_clocks;
 	}
-	printf(": fdt");
+	printf(": ");
 
 	strlcpy(sc->sc.sc_vendor, "Generic", sizeof(sc->sc.sc_vendor));
 

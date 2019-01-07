@@ -1,4 +1,4 @@
-/*	$OpenBSD: ohci_pci.c,v 1.39 2013/04/15 09:23:01 mglocker Exp $	*/
+/*	$OpenBSD: ohci_pci.c,v 1.40 2014/05/16 18:17:03 mpi Exp $	*/
 /*	$NetBSD: ohci_pci.c,v 1.23 2002/10/02 16:51:47 thorpej Exp $	*/
 
 /*
@@ -141,7 +141,7 @@ ohci_pci_attach(struct device *parent, struct device *self, void *aux)
 		splx(s);
 		return;
 	}
-	printf(": %s", intrstr);
+	printf(": %s, ", intrstr);
 
 	/* Figure out vendor for root hub descriptor. */
 	vendor = pci_findvendor(pa->pa_id);
