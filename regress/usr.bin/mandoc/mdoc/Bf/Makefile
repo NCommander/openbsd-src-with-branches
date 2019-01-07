@@ -1,7 +1,8 @@
-# $OpenBSD: Makefile,v 1.4 2014/07/04 16:11:42 schwarze Exp $
+# $OpenBSD: Makefile,v 1.5 2017/03/08 22:53:35 schwarze Exp $
 
-REGRESS_TARGETS	= nest multiargs badargs break broken
-LINT_TARGETS	= multiargs badargs break broken
+REGRESS_TARGETS	 = badargs break broken multiargs nest paragraph
+LINT_TARGETS	 = badargs break broken multiargs
+HTML_TARGETS	 = paragraph
 
 # mandoc -T markdown ignores .Bf, at least for now
 
