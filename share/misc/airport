@@ -1,4 +1,4 @@
-#	$OpenBSD: airport,v 1.67 2018/08/12 02:55:45 deraadt Exp $
+#	$OpenBSD: airport,v 1.68 2018/11/17 20:09:03 daniel Exp $
 #	@(#)airport	8.1 (Berkeley) 6/8/93
 #
 # Some of this information from the Airport Search Engine at
@@ -137,6 +137,7 @@ BAH:Bahrain International, Bahrain, Bahrain
 BAL:Batman, Batman, Turkey
 BAQ:Ernesto Cortissoz International, Barranquilla, Colombia
 BAX:Barnaul, Russia
+BBA:Balmaceda, Aysen, Chile
 BBI:Biju Patnaik, Bhubaneswar, India
 BBK:Kasane, Kasane, Botswana
 BBU:Bucharest Aurel Vlaicu/Baneasa, Bucharest, Romania
