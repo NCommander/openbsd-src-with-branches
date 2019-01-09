@@ -1,4 +1,4 @@
-/*	$OpenBSD: socks.c,v 1.24 2016/06/27 14:43:04 deraadt Exp $	*/
+/*	$OpenBSD: socks.c,v 1.25 2018/03/27 16:31:10 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist.  All rights reserved.
@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #include <resolv.h>
 #include <readpassphrase.h>
