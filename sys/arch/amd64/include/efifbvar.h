@@ -1,4 +1,4 @@
-/*	$OpenBSD: efifbvar.h,v 1.7 2018/04/25 00:46:28 jsg Exp $	*/
+/*	$OpenBSD: efifbvar.h,v 1.8 2018/09/22 17:41:52 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -33,5 +33,7 @@ void efifb_cnreattach(void);
 
 int efifb_cb_found(void);
 int efifb_cb_cnattach(void);
+
+psize_t efifb_stolen(void);
 
 #endif /* _MACHINE_EFIFB_H_ */
