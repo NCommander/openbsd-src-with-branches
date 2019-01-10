@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.c,v 1.74 2018/11/26 10:39:30 reyk Exp $	*/
+/*	$OpenBSD: virtio.c,v 1.75 2018/12/06 09:20:06 claudio Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -23,6 +23,7 @@
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcidevs.h>
 #include <dev/pv/virtioreg.h>
+#include <dev/pci/virtio_pcireg.h>
 #include <dev/pv/vioblkreg.h>
 #include <dev/pv/vioscsireg.h>
 
