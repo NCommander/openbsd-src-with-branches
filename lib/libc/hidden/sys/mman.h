@@ -1,4 +1,4 @@
-/*	$OpenBSD: mman.h,v 1.2 2015/09/12 15:01:33 guenther Exp $	*/
+/*	$OpenBSD: mman.h,v 1.3 2016/05/07 19:05:22 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -21,7 +21,6 @@
 #include_next <sys/mman.h>
 
 PROTO_NORMAL(madvise);
-PROTO_NORMAL(mincore);
 PROTO_NORMAL(minherit);
 PROTO_NORMAL(mlock);
 PROTO_NORMAL(mlockall);

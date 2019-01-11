@@ -370,12 +370,6 @@ struct sys_futimes_args {
 	syscallarg(const struct timeval *) tptr;
 };
 
-struct sys_mincore_args {
-	syscallarg(void *) addr;
-	syscallarg(size_t) len;
-	syscallarg(char *) vec;
-};
-
 struct sys_getgroups_args {
 	syscallarg(int) gidsetsize;
 	syscallarg(gid_t *) gidset;
@@ -1189,7 +1183,6 @@ int	sys_mprotect(struct proc *, void *, register_t *);
 int	sys_madvise(struct proc *, void *, register_t *);
 int	sys_utimes(struct proc *, void *, register_t *);
 int	sys_futimes(struct proc *, void *, register_t *);
-int	sys_mincore(struct proc *, void *, register_t *);
 int	sys_getgroups(struct proc *, void *, register_t *);
 int	sys_setgroups(struct proc *, void *, register_t *);
 int	sys_getpgrp(struct proc *, void *, register_t *);

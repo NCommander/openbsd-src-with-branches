@@ -237,9 +237,6 @@
 /* syscall: "futimes" ret: "int" args: "int" "const struct timeval *" */
 #define	SYS_futimes	77
 
-/* syscall: "mincore" ret: "int" args: "void *" "size_t" "char *" */
-#define	SYS_mincore	78
-
 /* syscall: "getgroups" ret: "int" args: "int" "gid_t *" */
 #define	SYS_getgroups	79
 

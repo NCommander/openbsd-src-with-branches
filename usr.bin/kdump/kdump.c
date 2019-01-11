@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.135 2018/10/21 19:56:26 guenther Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.136 2018/12/12 17:55:28 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -732,7 +732,6 @@ static const formatter scargs[][8] = {
     [SYS_utimes]	= { Ppath, Pptr },
     [SYS_futimes]	= { Pfd, Pptr },
     [SYS_kbind]		= { Pptr, Psize, Phexlonglong },
-    [SYS_mincore]	= { Pptr, Pbigsize, Pptr },
     [SYS_getgroups]	= { Pcount, Pptr },
     [SYS_setgroups]	= { Pcount, Pptr },
     [SYS_setpgid]	= { Ppid_t, Ppid_t },
