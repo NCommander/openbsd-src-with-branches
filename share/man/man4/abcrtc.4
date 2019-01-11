@@ -1,4 +1,4 @@
-.\"	$OpenBSD: islrtc.4,v 1.1 2018/04/07 18:30:53 kettenis Exp $
+.\"	$OpenBSD: abcrtc.4,v 1.1 2019/01/11 08:25:34 patrick Exp $
 .\"
 .\" Copyright (c) 2006 Theo de Raadt <deraadt@openbsd.org>
 .\" Copyright (c) 2018 Mark Kettenis <ketttenis@openbsd.org>
@@ -16,18 +16,18 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: April 7 2018 $
+.Dd $Mdocdate: January 11 2019 $
 .Dt ABCRTC 4
 .Os
 .Sh NAME
 .Nm abcrtc
-.Nd Abracon AB1805 Real Time Clock
+.Nd Abracon AB1805 real-time clock
 .Sh SYNOPSIS
 .Cd "abcrtc* at iic? addr 0x69"
 .Sh DESCRIPTION
 The
 .Nm
-driver provides support for the Abracon AB1805 Real Time Clock chip
+driver provides support for the Abracon AB1805 real-time clock chip
 and similar variants.
 .Sh SEE ALSO
 .Xr iic 4 ,
