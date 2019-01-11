@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.687 2018/11/10 21:22:17 kn Exp $	*/
+/*	$OpenBSD: parse.y,v 1.688 2018/11/15 03:22:01 dlg Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -4075,6 +4075,7 @@ process_tabledef(char *name, struct table_opts *opts, int popts)
 	if (pf->opts & PF_OPT_VERBOSE)
 		print_tabledef(name, opts->flags, opts->init_addr,
 		    &opts->init_nodes);
+	warn_duplicate_tables(name, pf->anchor->path);
 	if (!(pf->opts & PF_OPT_NOACTION) &&
 	    pfctl_define_table(name, opts->flags, opts->init_addr,
 	    pf->anchor->path, &ab, pf->anchor->ruleset.tticket)) {
