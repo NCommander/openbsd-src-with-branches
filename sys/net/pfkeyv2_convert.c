@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkeyv2_convert.c,v 1.63 2018/01/11 16:02:31 bluhm Exp $	*/
+/*	$OpenBSD: pfkeyv2_convert.c,v 1.64 2018/08/28 15:15:02 mpi Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@keromytis.org)
  *
@@ -904,9 +904,8 @@ export_counter(void **p, struct tdb *tdb)
 {
 	struct sadb_x_counter *scnt = (struct sadb_x_counter *)*p;
 
-	scnt->sadb_x_counter_len =
-	    sizeof(struct sadb_x_counter) / sizeof(uint64_t);
-	scnt->sadb_x_counter_exttype = SADB_X_EXT_COUNTER;
+	scnt->sadb_x_counter_len = sizeof(struct sadb_x_counter) /
+	    sizeof(uint64_t);
 	scnt->sadb_x_counter_ipackets = tdb->tdb_ipackets;
 	scnt->sadb_x_counter_opackets = tdb->tdb_opackets;
 	scnt->sadb_x_counter_ibytes = tdb->tdb_ibytes;
