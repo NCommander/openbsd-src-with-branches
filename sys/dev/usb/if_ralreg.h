@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ralreg.h,v 1.12 2006/11/13 20:06:38 damien Exp $  */
+/*	$OpenBSD: if_ralreg.h,v 1.13 2013/11/26 20:33:18 deraadt Exp $  */
 
 /*-
  * Copyright (c) 2005, 2006
@@ -21,7 +21,7 @@
 #define RAL_TX_DESC_SIZE	(sizeof (struct ural_tx_desc))
 
 #define RAL_CONFIG_NO	1
-#define RAL_IFACE_INDEX	0
+#define RAL_IFACE_NO	0
 
 #define RAL_WRITE_MAC		0x02
 #define RAL_READ_MAC		0x03
