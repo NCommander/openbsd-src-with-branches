@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.c,v 1.40 2018/10/30 16:52:19 remi Exp $ */
+/*	$OpenBSD: ospf6d.c,v 1.41 2018/12/29 16:04:31 remi Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -211,7 +211,7 @@ main(int argc, char *argv[])
 	log_setverbose(ospfd_conf->opts & OSPFD_OPT_VERBOSE);
 
 	if ((control_check(ospfd_conf->csock)) == -1)
-		fatalx("control socket check failed");
+		fatalx("ospf6d already running");
 
 	if (!debug)
 		daemon(1, 0);
