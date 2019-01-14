@@ -1,4 +1,4 @@
-/*	$OpenBSD: fmt_scaled.c,v 1.16 2017/03/16 02:40:46 dtucker Exp $	*/
+/*	$OpenBSD: fmt_scaled.c,v 1.17 2018/05/14 04:39:04 djm Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002, 2003 Ian F. Darwin.  All rights reserved.
@@ -218,12 +218,16 @@ fmt_scaled(long long number, char *result)
 	unsigned int i;
 	unit_type unit = NONE;
 
+	/* Not every negative long long has a positive representation. */
+	if (number == LLONG_MIN) {
+		errno = ERANGE;
+		return -1;
+	}
+
 	abval = llabs(number);
 
-	/* Not every negative long long has a positive representation.
-	 * Also check for numbers that are just too darned big to format
-	 */
-	if (abval < 0 || abval / 1024 >= scale_factors[SCALE_LENGTH-1]) {
+	/* Also check for numbers that are just too darned big to format. */
+	if (abval / 1024 >= scale_factors[SCALE_LENGTH-1]) {
 		errno = ERANGE;
 		return -1;
 	}
