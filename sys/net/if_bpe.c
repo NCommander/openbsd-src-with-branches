@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: if_bpe.c,v 1.1 2018/12/20 23:00:55 dlg Exp $ */
 /*
  * Copyright (c) 2018 David Gwynne <dlg@openbsd.org>
  *
@@ -16,6 +16,7 @@
  */
 
 #include "bpfilter.h"
+#include "pf.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>
