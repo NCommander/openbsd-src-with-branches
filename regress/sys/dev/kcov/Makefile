@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2018/12/27 10:10:13 anton Exp $
+#	$OpenBSD: Makefile,v 1.6 2018/12/27 19:38:01 anton Exp $
 
 PROG=		kcov
 WARNINGS=	yes
@@ -13,6 +13,7 @@ TESTS+=	coverage
 TESTS+=	dying
 TESTS+=	exec
 TESTS+=	fork
+TESTS+=	mmap
 TESTS+=	open
 TESTS+=	state
 
