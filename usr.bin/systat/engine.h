@@ -1,4 +1,4 @@
-/* $Id: engine.h,v 1.8 2013/09/07 11:43:49 reyk Exp $	 */
+/* $OpenBSD: engine.h,v 1.9 2018/02/08 07:00:33 martijn Exp $	 */
 /*
  * Copyright (c) 2001, 2007 Can Erkin Acar <canacar@openbsd.org>
  *
