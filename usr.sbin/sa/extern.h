@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.5 2016/08/14 22:29:01 krw Exp $ */
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
  * All rights reserved.
@@ -27,7 +28,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: extern.h,v 1.4 2015/01/16 06:40:20 deraadt Exp $
  */
 
 #include <sys/param.h>	/* MAXCOMLEN */
