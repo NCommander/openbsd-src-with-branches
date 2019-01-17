@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.c,v 1.133 2018/09/12 01:19:12 djm Exp $ */
+/* $OpenBSD: auth.c,v 1.134 2018/11/16 03:26:01 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <netdb.h>
+#include <time.h>
 
 #include "xmalloc.h"
 #include "match.h"
