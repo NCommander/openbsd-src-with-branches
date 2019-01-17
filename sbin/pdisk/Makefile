@@ -1,4 +1,4 @@
-#	$Id: Makefile,v 1.22 2016/01/25 23:43:20 krw Exp $
+#	$OpenBSD: Makefile,v 1.23 2016/01/27 14:19:59 krw Exp $
 
 .if ${MACHINE} == "macppc"
 PROG=	pdisk
