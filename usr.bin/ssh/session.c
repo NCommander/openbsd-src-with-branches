@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.307 2018/10/04 00:10:11 djm Exp $ */
+/* $OpenBSD: session.c,v 1.308 2018/11/16 03:26:01 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -126,7 +126,7 @@ extern int startup_pipe;
 extern void destroy_sensitive_data(void);
 extern struct sshbuf *loginmsg;
 extern struct sshauthopt *auth_opts;
-char *tun_fwd_ifnames; /* serverloop.c */
+extern char *tun_fwd_ifnames; /* serverloop.c */
 
 /* original command from peer. */
 const char *original_command = NULL;
