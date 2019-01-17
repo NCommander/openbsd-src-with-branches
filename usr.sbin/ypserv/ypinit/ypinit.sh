@@ -1,5 +1,5 @@
 #!/bin/sh
-#	$Id: ypinit.sh,v 1.12 2005/05/13 13:16:13 jmc Exp $
+#	$OpenBSD: ypinit.sh,v 1.13 2009/04/04 12:49:10 schwarze Exp $
 #
 # ypinit.sh - setup an master or slave server.
 #
