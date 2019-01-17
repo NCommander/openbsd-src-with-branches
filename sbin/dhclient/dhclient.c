@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.607 2019/01/14 04:54:46 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.608 2019/01/17 03:21:03 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -279,7 +279,8 @@ interface_state(struct interface_info *ifi)
 	    (ifa->ifa_flags & IFF_RUNNING) == 0) {
 		ifi->link_state = LINK_STATE_DOWN;
 	} else {
-		ifi->link_state = ((struct if_data *)ifa->ifa_data)->ifi_link_state;
+		ifi->link_state =
+		    ((struct if_data *)ifa->ifa_data)->ifi_link_state;
 	}
 	freeifaddrs(ifap);
 
