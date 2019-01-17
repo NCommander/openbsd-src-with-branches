@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.31 2018/11/10 08:10:31 beck Exp $
+#	$OpenBSD: Makefile,v 1.32 2018/11/10 08:35:43 beck Exp $
 
 SUBDIR += asn1
+SUBDIR += buffer
 SUBDIR += bytestring
 SUBDIR += ciphers
 SUBDIR += client
