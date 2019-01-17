@@ -1,4 +1,4 @@
-/*	$OpenBSD: fastfind.c,v 1.14 2017/12/08 17:26:42 millert Exp $	*/
+/*	$OpenBSD: fastfind.c,v 1.15 2019/01/14 09:06:04 schwarze Exp $	*/
 
 /*
  * Copyright (c) 1995 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
@@ -31,8 +31,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $Id: fastfind.c,v 1.14 2017/12/08 17:26:42 millert Exp $
  */
 
 #ifndef _LOCATE_STATISTIC_
