@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.20 2018/09/09 04:09:32 ccardenas Exp $
+#	$OpenBSD: Makefile,v 1.21 2018/12/10 21:30:33 claudio Exp $
 
-.if ${MACHINE} == "amd64" || ${MACHINE} == "i386"
+.if ${MACHINE} == "amd64"
 
 PROG=		vmd
 SRCS=		vmd.c control.c log.c priv.c proc.c config.c vmm.c
