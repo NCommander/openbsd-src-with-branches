@@ -1,4 +1,4 @@
-/*	$OpenBSD: html.h,v 1.61 2019/01/06 04:41:15 schwarze Exp $ */
+/*	$OpenBSD: html.h,v 1.62 2019/01/07 06:51:37 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2011, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2017, 2018, 2019 Ingo Schwarze <schwarze@openbsd.org>
@@ -79,6 +79,8 @@ enum	htmlfont {
 
 struct	tag {
 	struct tag	 *next;
+	int		  refcnt;
+	int		  closed;
 	enum htmltag	  tag;
 };
 
