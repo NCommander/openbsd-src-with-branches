@@ -1,4 +1,4 @@
-/* $OpenBSD: encode.c,v 1.24 2016/05/04 15:05:13 tedu Exp $ */
+/* $OpenBSD: encode.c,v 1.25 2018/08/24 19:45:11 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -111,6 +111,18 @@ static const unsigned char data_ascii2bin[128] = {
 	0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30,
 	0x31, 0x32, 0x33, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 };
+
+EVP_ENCODE_CTX *
+EVP_ENCODE_CTX_new(void)
+{
+	return calloc(1, sizeof(EVP_ENCODE_CTX));
+}
+
+void
+EVP_ENCODE_CTX_free(EVP_ENCODE_CTX *ctx)
+{
+	free(ctx);
+}
 
 void
 EVP_EncodeInit(EVP_ENCODE_CTX *ctx)
