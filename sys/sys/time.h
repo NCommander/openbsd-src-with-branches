@@ -259,7 +259,7 @@ extern volatile time_t time_second;	/* Seconds since epoch, wall time. */
 extern volatile time_t time_uptime;	/* Seconds since reboot. */
 
 /*
- * Functions for looking at our clock: [get]{bin,nano,micro}[up]time()
+ * Functions for looking at our clocks: [get]{bin,nano,micro}[boot|up]time()
  *
  * Functions without the "get" prefix returns the best timestamp
  * we can produce in the given format.
@@ -271,7 +271,10 @@ extern volatile time_t time_uptime;	/* Seconds since reboot. */
  * Functions containing "up" returns time relative to boot and
  * should be used for calculating time intervals.
  *
- * Functions without "up" returns GMT time.
+ * Functions containing "boot" return the GMT time at which the
+ * system booted.
+ *
+ * Functions with just "time" return the current GMT time.
  *
  * Functions with the "get" prefix returns a less precise result
  * much faster than the functions without "get" prefix and should
@@ -292,6 +295,9 @@ void	microuptime(struct timeval *);
 
 void	getnanouptime(struct timespec *);
 void	getmicrouptime(struct timeval *);
+
+void	binboottime(struct bintime *);
+void	microboottime(struct timeval *);
 
 struct proc;
 int	clock_gettime(struct proc *, clockid_t, struct timespec *);

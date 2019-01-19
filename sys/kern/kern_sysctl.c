@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.351 2018/11/17 23:10:08 cheloha Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.352 2018/11/19 16:12:06 tedu Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -384,7 +384,7 @@ kern_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 	case KERN_BOOTTIME: {
 		struct timeval bt;
 		memset(&bt, 0, sizeof bt);
-		TIMESPEC_TO_TIMEVAL(&bt, &boottime);
+		microboottime(&bt);
 		return (sysctl_rdstruct(oldp, oldlenp, newp, &bt, sizeof bt));
 	  }
 #ifndef SMALL_KERNEL
