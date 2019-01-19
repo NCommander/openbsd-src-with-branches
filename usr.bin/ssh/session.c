@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.309 2019/01/17 04:45:09 djm Exp $ */
+/* $OpenBSD: session.c,v 1.310 2019/01/19 21:31:32 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -344,7 +344,7 @@ do_authenticated(struct ssh *ssh, Authctxt *authctxt)
 		else
 			channel_permit_all(ssh, FORWARD_REMOTE);
 	}
-	auth_debug_send();
+	auth_debug_send(ssh);
 
 	prepare_auth_info_file(authctxt->pw, authctxt->session_info);
 
