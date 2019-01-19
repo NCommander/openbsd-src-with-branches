@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.308 2018/11/18 22:43:29 dtucker Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.309 2018/12/27 03:25:25 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -55,6 +55,9 @@
 #include "ssherr.h"
 #include "authfd.h"
 #include "kex.h"
+
+#include "opacket.h" /* XXX */
+extern struct ssh *active_state; /* XXX */
 
 struct sshkey *previous_host_key = NULL;
 

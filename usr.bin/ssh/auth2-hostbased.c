@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-hostbased.c,v 1.37 2018/08/28 12:17:45 mestre Exp $ */
+/* $OpenBSD: auth2-hostbased.c,v 1.38 2018/09/20 03:28:06 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -49,6 +49,8 @@
 #include "pathnames.h"
 #include "ssherr.h"
 #include "match.h"
+
+extern struct ssh *active_state; /* XXX */
 
 /* import */
 extern ServerOptions options;

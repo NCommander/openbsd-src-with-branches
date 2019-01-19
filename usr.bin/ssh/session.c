@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.308 2018/11/16 03:26:01 djm Exp $ */
+/* $OpenBSD: session.c,v 1.309 2019/01/17 04:45:09 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -91,6 +91,9 @@
 #ifdef KRB5
 #include <kafs.h>
 #endif
+
+#include "opacket.h" /* XXX */
+extern struct ssh *active_state; /* XXX */
 
 #define IS_INTERNAL_SFTP(c) \
 	(!strncmp(c, INTERNAL_SFTP_NAME, sizeof(INTERNAL_SFTP_NAME) - 1) && \

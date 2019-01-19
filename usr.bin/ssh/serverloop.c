@@ -1,4 +1,4 @@
-/* $OpenBSD: serverloop.c,v 1.208 2018/07/11 18:53:29 markus Exp $ */
+/* $OpenBSD: serverloop.c,v 1.209 2018/07/27 05:13:02 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -73,6 +73,9 @@
 #include "auth-options.h"
 #include "serverloop.h"
 #include "ssherr.h"
+
+#include "opacket.h" /* XXX */
+extern struct ssh *active_state; /* XXX */
 
 extern ServerOptions options;
 

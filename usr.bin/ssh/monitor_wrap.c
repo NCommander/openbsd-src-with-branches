@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor_wrap.c,v 1.106 2018/07/11 18:53:29 markus Exp $ */
+/* $OpenBSD: monitor_wrap.c,v 1.107 2018/07/20 03:46:34 djm Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -70,6 +70,9 @@
 #include "servconf.h"
 
 #include "ssherr.h"
+
+#include "opacket.h" /* XXX */
+extern struct ssh *active_state; /* XXX */
 
 /* Imports */
 extern struct monitor *pmonitor;

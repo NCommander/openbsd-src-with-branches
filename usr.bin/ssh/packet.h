@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.h,v 1.85 2018/07/06 09:03:02 sf Exp $ */
+/* $OpenBSD: packet.h,v 1.86 2018/07/09 21:20:26 markus Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -189,9 +189,5 @@ int	sshpkt_get_bignum2(struct ssh *ssh, BIGNUM *v);
 int	sshpkt_get_end(struct ssh *ssh);
 void	sshpkt_fmt_connection_id(struct ssh *ssh, char *s, size_t l);
 const u_char	*sshpkt_ptr(struct ssh *, size_t *lenp);
-
-/* OLD API */
-extern struct ssh *active_state;
-#include "opacket.h"
 
 #endif				/* PACKET_H */

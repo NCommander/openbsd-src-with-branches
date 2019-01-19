@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.317 2018/07/11 18:53:29 markus Exp $ */
+/* $OpenBSD: clientloop.c,v 1.318 2018/09/21 12:46:22 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -103,6 +103,9 @@
 #include "msg.h"
 #include "ssherr.h"
 #include "hostfile.h"
+
+#include "opacket.h" /* XXX */
+extern struct ssh *active_state; /* XXX */
 
 /* import options */
 extern Options options;
