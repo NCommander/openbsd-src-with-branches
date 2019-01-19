@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.612 2019/01/18 07:39:53 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.613 2019/01/18 08:07:19 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -102,8 +102,7 @@ char *log_procname;
 
 int nullfd = -1;
 int cmd_opts;
-
-volatile sig_atomic_t quit;
+int quit;
 
 const struct in_addr inaddr_any = { INADDR_ANY };
 const struct in_addr inaddr_broadcast = { INADDR_BROADCAST };
