@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.82 2017/12/30 20:46:59 guenther Exp $ */
+/*	$OpenBSD: machdep.c,v 1.83 2018/04/20 14:08:12 visa Exp $ */
 
 /*
  * Copyright (c) 2009, 2010, 2014 Miodrag Vallat.
@@ -116,6 +116,7 @@ int	ncpu = 1;		/* At least one CPU in the system. */
 int	nnodes = 1;		/* Number of NUMA nodes, only on 3A. */
 struct	user *proc0paddr;
 int	lid_action = 1;
+int	pwr_action = 1;
 
 #ifdef MULTIPROCESSOR
 uint64_t cpu_spinup_a0;
