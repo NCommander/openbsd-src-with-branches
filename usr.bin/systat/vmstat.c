@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmstat.c,v 1.88 2018/10/05 18:56:57 cheloha Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.89 2018/11/17 23:10:08 cheloha Exp $	*/
 /*	$NetBSD: vmstat.c,v 1.5 1996/05/10 23:16:40 thorpej Exp $	*/
 
 /*-
@@ -97,7 +97,6 @@ int select_vm(void);
 int vm_keyboard_callback(int);
 
 static	time_t t;
-static	double etime;
 static	float hertz;
 static	int nintr;
 static	long *intrloc;
@@ -336,6 +335,7 @@ showkre(void)
 	u_int64_t inttotal, intcnt;
 	int i, l, c;
 	static int failcnt = 0, first_run = 0;
+	double etime;
 
 	if (state == TIME) {
 		if (!first_run) {
@@ -676,7 +676,9 @@ copyinfo(struct Info *from, struct Info *to)
 static void
 dinfo(int dn, int c)
 {
-	double words, atime;
+	double words, atime, etime;
+
+	etime = naptime;
 
 	c += DISKCOL;
 
