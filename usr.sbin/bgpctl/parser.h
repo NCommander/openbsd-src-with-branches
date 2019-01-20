@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.32 2018/11/28 08:33:59 claudio Exp $ */
+/*	$OpenBSD: parser.h,v 1.33 2018/12/19 15:27:29 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -68,6 +68,7 @@ struct parse_result {
 	char			 shutcomm[SHUT_COMM_LEN];
 	char			*irr_outdir;
 	int			 flags;
+	int			 is_group;
 	u_int8_t		 validation_state;
 	u_int			 rtableid;
 	enum actions		 action;
