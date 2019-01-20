@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.30 2018/07/27 21:11:31 kettenis Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.31 2018/10/04 05:00:40 guenther Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.3 2003/05/08 10:27:43 fvdl Exp $	*/
 
 /*-
@@ -352,6 +352,8 @@ void cpu_ucode_apply(struct cpu_info *);
 
 struct cpu_info_full;
 void cpu_enter_pages(struct cpu_info_full *);
+
+int rdmsr_safe(u_int msr, uint64_t *);
 
 #endif /* _KERNEL */
 
