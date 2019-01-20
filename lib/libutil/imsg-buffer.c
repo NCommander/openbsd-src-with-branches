@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg-buffer.c,v 1.10 2017/04/11 09:57:19 reyk Exp $	*/
+/*	$OpenBSD: imsg-buffer.c,v 1.11 2017/12/14 09:27:44 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -70,7 +70,7 @@ ibuf_dynamic(size_t len, size_t max)
 static int
 ibuf_realloc(struct ibuf *buf, size_t len)
 {
-	u_char	*b;
+	unsigned char	*b;
 
 	/* on static buffers max is eq size and so the following fails */
 	if (buf->wpos + len > buf->max) {
