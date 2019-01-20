@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2019/01/16 19:28:36 anton Exp $
+#	$OpenBSD: Makefile,v 1.8 2019/01/19 17:25:17 anton Exp $
 
 PROG=		kcov
 WARNINGS=	yes
@@ -7,6 +7,7 @@ LDADD+=	-lpthread
 DPADD+=	${LIBPTHREAD}
 
 MODES+=	pc
+MODES+=	cmp
 
 TESTS+=	close
 TESTS+=	coverage
