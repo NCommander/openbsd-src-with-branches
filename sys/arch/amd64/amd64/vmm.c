@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.222 2018/12/10 21:13:59 claudio Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.223 2019/01/18 08:26:55 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -5847,6 +5847,7 @@ svm_handle_msr(struct vcpu *vcpu)
 	uint64_t insn_length, msr;
 	uint64_t *rax, *rcx, *rdx;
 	struct vmcb *vmcb = (struct vmcb *)vcpu->vc_control_va;
+	int i;
 
 	/* XXX: Validate RDMSR / WRMSR insn_length */
 	insn_length = 2;
@@ -5867,9 +5868,16 @@ svm_handle_msr(struct vcpu *vcpu)
 #endif /* VMM_DEBUG */
 		}
 	} else {
-		msr = rdmsr(*rcx);
-		*rax = msr & 0xFFFFFFFFULL;
-		*rdx = msr >> 32;
+		i = rdmsr_safe(*rcx, &msr);
+		if (i == 0) {
+			*rax = msr & 0xFFFFFFFFULL;
+			*rdx = msr >> 32;
+		} else {
+			DPRINTF("%s: rdmsr for unsupported MSR 0x%llx\n",
+			    __func__, *rcx);
+			*rax = 0;
+			*rdx = 0;
+		}
 	}
 
 	vcpu->vc_gueststate.vg_rip += insn_length;
