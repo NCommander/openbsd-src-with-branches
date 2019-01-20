@@ -1,4 +1,4 @@
-/*	$OpenBSD: bfd.c,v 1.72 2018/07/30 12:22:14 mpi Exp $	*/
+/*	$OpenBSD: bfd.c,v 1.73 2019/01/18 08:32:59 phessler Exp $	*/
 
 /*
  * Copyright (c) 2016-2018 Peter Hessler <phessler@openbsd.org>
@@ -195,7 +195,7 @@ bfdset(struct rtentry *rt)
 	bfd->bc_rt = rt;
 	rtref(bfd->bc_rt);	/* we depend on this route not going away */
 
-	microtime(bfd->bc_time);
+	getmicrotime(bfd->bc_time);
 	bfd_reset(bfd);
 	bfd->bc_neighbor->bn_ldiscr = arc4random();
 
@@ -956,7 +956,7 @@ bfd_set_uptime(struct bfd_config *bfd)
 {
 	struct timeval tv;
 
-	microtime(&tv);
+	getmicrotime(&tv);
 	bfd->bc_lastuptime = tv.tv_sec - bfd->bc_time->tv_sec;
 	memcpy(bfd->bc_time, &tv, sizeof(tv));
 }
