@@ -1,4 +1,4 @@
-/*	$OpenBSD: kcov.h,v 1.2 2018/12/27 10:04:16 anton Exp $	*/
+/*	$OpenBSD: kcov.h,v 1.3 2018/12/27 19:33:08 anton Exp $	*/
 
 /*
  * Copyright (c) 2018 Anton Lindqvist <anton@openbsd.org>
@@ -27,6 +27,7 @@
 
 #define KCOV_MODE_NONE		0
 #define KCOV_MODE_TRACE_PC	1
+#define KCOV_MODE_TRACE_CMP	2
 
 #ifdef _KERNEL
 
