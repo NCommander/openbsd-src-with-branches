@@ -187,7 +187,7 @@ rollback_patch()
 	local _edir _file _files _patch _ret=0
 
 	_patch="$(ls_installed | tail -1)"
-	[[ -n ${_patch} ]]
+	[[ -n ${_patch} ]] || return 0 # nothing to rollback
 
 	_edir=${_TMP}/${_patch}-rollback
 	_patch=${_OSrev}-${_patch}
