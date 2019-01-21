@@ -1,4 +1,4 @@
-/*	$OpenBSD: inode.h,v 1.49 2014/07/14 08:54:13 pelikan Exp $	*/
+/*	$OpenBSD: inode.h,v 1.50 2016/06/19 11:54:34 natano Exp $	*/
 /*	$NetBSD: inode.h,v 1.8 1995/06/15 23:22:50 cgd Exp $	*/
 
 /*
@@ -85,7 +85,7 @@ struct inode {
 	struct   cluster_info i_ci;
 	struct	 dquot *i_dquot[MAXQUOTAS]; /* Dquot structures. */
 	u_quad_t i_modrev;	/* Revision level for NFS lease. */
-	struct	 lockf *i_lockf;/* Head of byte-level lock list. */
+	struct	 lockf_state *i_lockf; /* Byte-level lock state. */
 	struct   rrwlock i_lock;/* Inode lock */
 
 	/*
