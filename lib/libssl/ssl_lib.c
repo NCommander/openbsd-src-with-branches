@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.195 2018/11/17 11:22:43 beck Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.196 2018/11/19 15:07:29 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -2492,6 +2492,8 @@ ssl_version_string(int ver)
 		return (SSL_TXT_TLSV1_1);
 	case TLS1_2_VERSION:
 		return (SSL_TXT_TLSV1_2);
+	case TLS1_3_VERSION:
+		return (SSL_TXT_TLSV1_3);
 	default:
 		return ("unknown");
 	}
