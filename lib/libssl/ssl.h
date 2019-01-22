@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl.h,v 1.161 2018/11/07 01:53:36 jsing Exp $ */
+/* $OpenBSD: ssl.h,v 1.162 2018/11/11 06:58:14 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1437,6 +1437,7 @@ const SSL_METHOD *DTLSv1_server_method(void);	/* DTLSv1.0 */
 const SSL_METHOD *DTLSv1_client_method(void);	/* DTLSv1.0 */
 
 STACK_OF(SSL_CIPHER) *SSL_get_ciphers(const SSL *s);
+STACK_OF(SSL_CIPHER) *SSL_get_client_ciphers(const SSL *s);
 
 int SSL_do_handshake(SSL *s);
 int SSL_renegotiate(SSL *s);
