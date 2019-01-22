@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.36 2018/10/10 11:46:59 reyk Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.37 2018/12/07 08:40:54 claudio Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -171,7 +171,7 @@ kr_init(void)
 	    &opt, sizeof(opt)) == -1)
 		log_warn("%s: SO_USELOOPBACK", __func__);	/* not fatal */
 
-	if (snmpd_env->sc_rtfilter && setsockopt(kr_state.ks_fd, PF_ROUTE,
+	if (snmpd_env->sc_rtfilter && setsockopt(kr_state.ks_fd, AF_ROUTE,
 	    ROUTE_MSGFILTER, &snmpd_env->sc_rtfilter,
 	    sizeof(snmpd_env->sc_rtfilter)) == -1)
 		log_warn("%s: ROUTE_MSGFILTER", __func__);
