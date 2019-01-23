@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.52 2019/01/21 10:28:52 tb Exp $
+# $OpenBSD: Makefile,v 1.53 2019/01/21 13:45:57 jsing Exp $
 
 .include <bsd.own.mk>
 .ifndef NOMAN
@@ -105,5 +105,4 @@ beforeinstall:
 	    -m ${SHAREMODE} ${.OBJDIR}/$p ${DESTDIR}/usr/lib/pkgconfig/
 .endfor
 
-.include <bsd.prog.mk>
 .include <bsd.subdir.mk>
