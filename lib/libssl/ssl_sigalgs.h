@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_sigalgs.h,v 1.7 2018/11/11 21:54:47 beck Exp $ */
+/* $OpenBSD: ssl_sigalgs.h,v 1.8 2018/11/16 02:41:16 beck Exp $ */
 /*
  * Copyright (c) 2018, Bob Beck <beck@openbsd.org>
  *
@@ -71,6 +71,8 @@ struct ssl_sigalg{
 
 extern uint16_t tls12_sigalgs[];
 extern size_t tls12_sigalgs_len;
+extern uint16_t tls13_sigalgs[];
+extern size_t tls13_sigalgs_len;
 
 const struct ssl_sigalg *ssl_sigalg_lookup(uint16_t sigalg);
 const struct ssl_sigalg *ssl_sigalg(uint16_t sigalg, uint16_t *values, size_t len);
