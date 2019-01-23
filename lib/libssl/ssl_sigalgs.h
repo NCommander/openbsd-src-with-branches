@@ -71,8 +71,6 @@ struct ssl_sigalg{
 
 extern uint16_t tls12_sigalgs[];
 extern size_t tls12_sigalgs_len;
-extern uint16_t tls13_sigalgs[];
-extern size_t tls13_sigalgs_len;
 
 const struct ssl_sigalg *ssl_sigalg_lookup(uint16_t sigalg);
 const struct ssl_sigalg *ssl_sigalg(uint16_t sigalg, uint16_t *values, size_t len);

@@ -1569,7 +1569,6 @@ ssl3_free(SSL *s)
 	freezero(S3I(s)->hs_tls13.x25519_private, X25519_KEY_LENGTH);
 	freezero(S3I(s)->hs_tls13.x25519_public, X25519_KEY_LENGTH);
 	freezero(S3I(s)->hs_tls13.x25519_peer_public, X25519_KEY_LENGTH);
-	freezero(S3I(s)->hs_tls13.cookie, S3I(s)->hs_tls13.cookie_len);
 
 	sk_X509_NAME_pop_free(S3I(s)->tmp.ca_names, X509_NAME_free);
 
@@ -1606,11 +1605,6 @@ ssl3_clear(SSL *s)
 	freezero(S3I(s)->hs_tls13.x25519_private, X25519_KEY_LENGTH);
 	freezero(S3I(s)->hs_tls13.x25519_public, X25519_KEY_LENGTH);
 	freezero(S3I(s)->hs_tls13.x25519_peer_public, X25519_KEY_LENGTH);
-	freezero(S3I(s)->hs_tls13.cookie, S3I(s)->hs_tls13.cookie_len);
-	S3I(s)->hs_tls13.cookie = NULL;
-	S3I(s)->hs_tls13.cookie_len = 0;
-
-	S3I(s)->hs.extensions_seen = 0;
 
 	rp = S3I(s)->rbuf.buf;
 	wp = S3I(s)->wbuf.buf;

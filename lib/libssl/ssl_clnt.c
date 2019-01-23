@@ -1680,8 +1680,7 @@ ssl3_get_certificate_request(SSL *s)
 			SSLerror(s, SSL_R_DATA_LENGTH_TOO_LONG);
 			goto err;
 		}
-		if (!tls1_process_sigalgs(s, &sigalgs, tls12_sigalgs,
-		    tls12_sigalgs_len)) {
+		if (!tls1_process_sigalgs(s, &sigalgs)) {
 			ssl3_send_alert(s, SSL3_AL_FATAL, SSL_AD_DECODE_ERROR);
 			SSLerror(s, SSL_R_SIGNATURE_ALGORITHMS_ERROR);
 			goto err;
