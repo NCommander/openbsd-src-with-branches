@@ -1,4 +1,4 @@
-/*	$OpenBSD: tls13_handshake.c,v 1.18 2019/01/21 13:45:57 jsing Exp $	*/
+/*	$OpenBSD: tls13_handshake.c,v 1.19 2019/01/21 14:19:51 jsing Exp $	*/
 /*
  * Copyright (c) 2018-2019 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2019 Joel Sing <jsing@openbsd.org>
@@ -149,7 +149,7 @@ struct tls13_handshake_action state_machine[] = {
 	},
 };
 
-static enum tls13_message_type handshakes[][TLS13_NUM_MESSAGE_TYPES] = {
+enum tls13_message_type handshakes[][TLS13_NUM_MESSAGE_TYPES] = {
 	[INITIAL] = {
 		CLIENT_HELLO,
 		SERVER_HELLO,
