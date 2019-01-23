@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.77 2018/12/07 04:36:09 dtucker Exp $ */
+/* $OpenBSD: misc.h,v 1.78 2018/12/27 03:25:25 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -57,6 +57,7 @@ int	 timeout_connect(int, const struct sockaddr *, socklen_t, int *);
 int	 a2port(const char *);
 int	 a2tun(const char *, int *);
 char	*put_host_port(const char *, u_short);
+char	*hpdelim2(char **, char *);
 char	*hpdelim(char **);
 char	*cleanhostname(char *);
 char	*colon(char *);
