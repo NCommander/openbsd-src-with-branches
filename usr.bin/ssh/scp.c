@@ -1,4 +1,4 @@
-/* $OpenBSD: scp.c,v 1.198 2018/11/16 03:03:10 djm Exp $ */
+/* $OpenBSD: scp.c,v 1.199 2019/01/21 22:50:42 tb Exp $ */
 /*
  * scp - secure remote copy.  This is basically patched BSD rcp which
  * uses ssh to do the data transfer (instead of using rcmd).
@@ -563,6 +563,7 @@ scpio(void *_cnt, size_t s)
 	off_t *cnt = (off_t *)_cnt;
 
 	*cnt += s;
+	refresh_progress_meter();
 	if (limit_kbps > 0)
 		bandwidth_limit(&bwlimit, s);
 	return 0;
