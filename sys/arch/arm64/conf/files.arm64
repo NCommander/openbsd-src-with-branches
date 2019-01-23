@@ -1,4 +1,4 @@
-# $OpenBSD: files.arm64,v 1.25 2018/07/05 19:25:38 kettenis Exp $
+# $OpenBSD: files.arm64,v 1.26 2018/07/30 10:56:00 kettenis Exp $
 
 maxpartitions	16
 maxusers	2 8 64
@@ -148,3 +148,8 @@ file	arch/arm64/arm64/acpi_machdep.c		acpi_fdt
 device	acpipci: pcibus
 attach	acpipci at acpi
 file	arch/arm64/dev/acpipci.c		acpipci
+
+device  apm
+attach  apm at mainbus
+file	arch/arm64/dev/apm.c			apm		needs-flag
+file	arch/arm64/arm64/acpiapm.c		apm
