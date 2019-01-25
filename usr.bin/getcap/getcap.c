@@ -1,7 +1,7 @@
-/*	$OpenBSD: getcap.c,v 1.6 2015/10/10 05:43:48 deraadt Exp $	*/
+/*	$OpenBSD: getcap.c,v 1.7 2017/01/20 03:47:31 krw Exp $	*/
 
 /*
- * Copyright (c) 2005 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 2005 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

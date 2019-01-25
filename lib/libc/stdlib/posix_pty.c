@@ -1,7 +1,7 @@
-/*	$OpenBSD: posix_pty.c,v 1.1 2012/12/03 20:08:33 millert Exp $	*/
+/*	$OpenBSD: posix_pty.c,v 1.2 2015/05/11 00:42:54 guenther Exp $	*/
 
 /*
- * Copyright (c) 2012 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 2012 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

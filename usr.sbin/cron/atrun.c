@@ -1,7 +1,7 @@
-/*	$OpenBSD: atrun.c,v 1.47 2017/10/23 15:15:22 jca Exp $	*/
+/*	$OpenBSD: atrun.c,v 1.48 2017/10/25 17:08:58 jca Exp $	*/
 
 /*
- * Copyright (c) 2002-2003 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 2002-2003 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

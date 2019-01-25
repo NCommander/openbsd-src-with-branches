@@ -1,7 +1,7 @@
-/*	$OpenBSD: strnlen.c,v 1.1 2012/04/26 01:22:31 matthew Exp $	*/
+/*	$OpenBSD: strnlen.c,v 1.2 2014/06/10 04:16:57 deraadt Exp $	*/
 
 /*
- * Copyright (c) 2010 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 2010 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

@@ -5,12 +5,12 @@
  *          Philip R. Karn <karn@chicago.qualcomm.com>
  *          John S. Walden <jsw@thumper.bellcore.com>
  *          Scott Chasin <chasin@crimelab.com>
- *          Todd C. Miller <Todd.Miller@courtesan.com>
+ *          Todd C. Miller <millert@openbsd.org>
  *	    Angelos D. Keromytis <adk@adk.gr>
  *
  * S/Key verification check, lookups, and authentication.
  *
- * $OpenBSD: skeylogin.c,v 1.60 2017/03/20 21:11:21 tb Exp $
+ * $OpenBSD: skeylogin.c,v 1.61 2017/04/17 21:55:20 deraadt Exp $
  */
 
 #ifdef	QUOTA

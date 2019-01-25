@@ -1,7 +1,7 @@
-/*	$OpenBSD: dl_dirname.c,v 1.1 2013/04/05 12:58:03 kurt Exp $	*/
+/*	$OpenBSD: dl_dirname.c,v 1.2 2015/01/16 16:18:07 deraadt Exp $	*/
 
 /*
- * Copyright (c) 1997, 2004 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1997, 2004 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

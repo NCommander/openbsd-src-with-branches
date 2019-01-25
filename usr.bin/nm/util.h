@@ -1,7 +1,7 @@
-/*	$OpenBSD: util.h,v 1.4 2015/06/23 15:16:34 semarie Exp $	*/
+/*	$OpenBSD: util.h,v 1.5 2015/08/13 19:13:28 miod Exp $	*/
 
 /*
- * Placed in the public domain by Todd C. Miller <Todd.Miller@courtesan.com>
+ * Placed in the public domain by Todd C. Miller <millert@openbsd.org>
  * on October 9, 2004.
  */
 

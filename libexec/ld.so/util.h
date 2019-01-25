@@ -1,7 +1,7 @@
-/*	$OpenBSD: util.h,v 1.32 2017/12/01 23:30:05 guenther Exp $	*/
+/*	$OpenBSD: util.h,v 1.33 2018/10/23 04:01:45 guenther Exp $	*/
 
 /*
- * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1998 Todd C. Miller <millert@openbsd.org>
  * All rights reserved.
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
  *

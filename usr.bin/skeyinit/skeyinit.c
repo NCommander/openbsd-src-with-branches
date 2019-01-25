@@ -1,4 +1,4 @@
-/*	$OpenBSD: skeyinit.c,v 1.72 2016/05/17 23:36:29 tb Exp $	*/
+/*	$OpenBSD: skeyinit.c,v 1.73 2018/04/26 12:42:51 guenther Exp $	*/
 
 /* OpenBSD S/Key (skeyinit.c)
  *
@@ -7,7 +7,7 @@
  *          Philip R. Karn <karn@chicago.qualcomm.com>
  *          John S. Walden <jsw@thumper.bellcore.com>
  *          Scott Chasin <chasin@crimelab.com>
- *          Todd C. Miller <Todd.Miller@courtesan.com>
+ *          Todd C. Miller <millert@openbsd.org>
  *
  * S/Key initialization and seed update
  */

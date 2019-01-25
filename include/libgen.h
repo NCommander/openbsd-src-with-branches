@@ -1,7 +1,7 @@
-/*	$OpenBSD: libgen.h,v 1.7 2003/06/17 21:56:23 millert Exp $	*/
+/*	$OpenBSD: libgen.h,v 1.8 2016/01/25 12:17:48 jca Exp $	*/
 
 /*
- * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1997 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

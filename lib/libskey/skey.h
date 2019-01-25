@@ -6,11 +6,11 @@
  *          Philip R. Karn <karn@chicago.qualcomm.com>
  *          John S. Walden <jsw@thumper.bellcore.com>
  *          Scott Chasin <chasin@crimelab.com>
- *          Todd C. Miller <Todd.Miller@courtesan.com>
+ *          Todd C. Miller <millert@openbsd.org>
  *
  * Main client header
  *
- * $OpenBSD: skey.h,v 1.20 2014/03/20 20:39:13 naddy Exp $
+ * $OpenBSD: skey.h,v 1.21 2017/03/20 21:11:21 tb Exp $
  */
 
 #ifndef _SKEY_H_

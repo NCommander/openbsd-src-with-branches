@@ -1,7 +1,7 @@
-/*	$OpenBSD: curses.h,v 1.3 2003/06/17 21:33:53 millert Exp $	*/
+/*	$OpenBSD: curses.h,v 1.4 2015/11/14 23:56:49 deraadt Exp $	*/
 
 /*
- * Placed in the public domain by Todd C. Miller <Todd.Miller@courtesan.com>
+ * Placed in the public domain by Todd C. Miller <millert@openbsd.org>
  * on June 17, 2003.
  */
 

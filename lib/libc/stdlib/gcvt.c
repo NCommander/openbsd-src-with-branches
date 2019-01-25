@@ -1,8 +1,8 @@
-/*	$OpenBSD: gcvt.c,v 1.12 2010/09/25 13:19:19 millert Exp $	*/
+/*	$OpenBSD: gcvt.c,v 1.13 2013/11/01 19:05:11 guenther Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003, 2006, 2010
- *	Todd C. Miller <Todd.Miller@courtesan.com>
+ *	Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

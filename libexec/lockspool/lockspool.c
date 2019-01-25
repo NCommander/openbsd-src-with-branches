@@ -1,8 +1,8 @@
-/*	$OpenBSD: lockspool.c,v 1.18 2015/11/24 00:19:29 deraadt Exp $	*/
+/*	$OpenBSD: lockspool.c,v 1.19 2018/08/08 22:59:33 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt <deraadt@theos.com>
- * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1998 Todd C. Miller <millert@openbsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

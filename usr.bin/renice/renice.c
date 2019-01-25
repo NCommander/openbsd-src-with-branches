@@ -1,7 +1,7 @@
-/*	$OpenBSD: renice.c,v 1.19 2015/10/22 07:52:29 deraadt Exp $	*/
+/*	$OpenBSD: renice.c,v 1.20 2016/09/19 20:20:38 bluhm Exp $	*/
 
 /*
- * Copyright (c) 2009, 2015 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 2009, 2015 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

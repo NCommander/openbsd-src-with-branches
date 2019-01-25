@@ -1,7 +1,7 @@
-/*	$OpenBSD: kvm_cd9660.c,v 1.6 2014/12/16 03:21:10 tedu Exp $	*/
+/*	$OpenBSD: kvm_cd9660.c,v 1.7 2016/10/02 23:11:55 guenther Exp $	*/
 
 /*
- * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 2009 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

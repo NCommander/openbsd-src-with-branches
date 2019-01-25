@@ -1,7 +1,7 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: strnlentest.c,v 1.1 2010/06/02 12:20:47 millert Exp $ */
 
 /*
- * Copyright (c) 2010 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 2010 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

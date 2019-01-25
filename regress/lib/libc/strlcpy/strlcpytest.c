@@ -1,7 +1,7 @@
-/*	$OpenBSD: strlcpytest.c,v 1.1 2014/12/02 20:23:05 millert Exp $ */
+/*	$OpenBSD: strlcpytest.c,v 1.2 2014/12/03 18:25:18 millert Exp $ */
 
 /*
- * Copyright (c) 2014 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 2014 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

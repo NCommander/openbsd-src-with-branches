@@ -1,7 +1,7 @@
-/*	$OpenBSD: fstat.c,v 1.95 2018/09/16 02:44:06 millert Exp $	*/
+/*	$OpenBSD: fstat.c,v 1.96 2019/01/21 07:16:28 dlg Exp $	*/
 
 /*
- * Copyright (c) 2009 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 2009 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

@@ -1,7 +1,7 @@
-/*	$OpenBSD: vasprintf.c,v 1.21 2017/03/16 14:32:02 millert Exp $	*/
+/*	$OpenBSD: vasprintf.c,v 1.22 2017/03/17 14:53:08 deraadt Exp $	*/
 
 /*
- * Copyright (c) 1997 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1997 Todd C. Miller <millert@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
