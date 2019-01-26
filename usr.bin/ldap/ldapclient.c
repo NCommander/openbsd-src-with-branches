@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldapclient.c,v 1.10 2018/11/27 12:04:57 martijn Exp $	*/
+/*	$OpenBSD: ldapclient.c,v 1.11 2018/11/29 14:25:07 tedu Exp $	*/
 
 /*
  * Copyright (c) 2018 Reyk Floeter <reyk@openbsd.org>
@@ -477,7 +477,6 @@ ldapc_printattr(struct ldapc *ldap, const char *key,
 		}
 
 		printf("%s: %s\n", key, p);
-		free(p);
 	}
 
 	free(p);
