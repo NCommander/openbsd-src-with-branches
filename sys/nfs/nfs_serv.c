@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_serv.c,v 1.111 2017/02/22 11:42:46 mpi Exp $	*/
+/*	$OpenBSD: nfs_serv.c,v 1.112 2017/12/30 20:47:00 guenther Exp $	*/
 /*     $NetBSD: nfs_serv.c,v 1.34 1997/05/12 23:37:12 fvdl Exp $       */
 
 /*
@@ -1715,7 +1715,7 @@ nfsrv_symlink(struct nfsrv_descript *nfsd, struct nfssvc_sock *slp,
 	nfsm_mtouio(&io, len2);
 	if (!info.nmi_v3) {
 		nfsm_dissect(sp, struct nfsv2_sattr *, NFSX_V2SATTR);
-		va.va_mode = fxdr_unsigned(u_int16_t, sp->sa_mode);
+		va.va_mode = nfstov_mode(sp->sa_mode);
 	}
 	*(pathcp + len2) = '\0';
 	if (nd.ni_vp) {
@@ -2080,12 +2080,12 @@ nfsrv_readdir(struct nfsrv_descript *nfsd, struct nfssvc_sock *slp,
 	}
 	off = toff;
 	cnt = fxdr_unsigned(int, *tl);
-	siz = ((cnt + DIRBLKSIZ - 1) & ~(DIRBLKSIZ - 1));
 	xfer = NFS_SRVMAXDATA(nfsd);
+	if (cnt > xfer || cnt < 0)
+		cnt = xfer;
+	siz = ((cnt + DIRBLKSIZ - 1) & ~(DIRBLKSIZ - 1));
 	if (siz > xfer)
 		siz = xfer;
-	if (cnt > xfer)
-		cnt = xfer;
 	fullsiz = siz;
 	error = nfsrv_fhtovp(fhp, 1, &vp, cred, slp, nam, &rdonly);
 	if (error) {
@@ -2273,19 +2273,18 @@ nfsrv_readdirplus(struct nfsrv_descript *nfsd, struct nfssvc_sock *slp,
 	fhp = &nfh.fh_generic;
 	nfsm_srvmtofh(fhp);
 	nfsm_dissect(tl, u_int32_t *, 6 * NFSX_UNSIGNED);
-	toff = fxdr_hyper(tl);
+	off = toff = fxdr_hyper(tl);
 	tl += 2;
 	verf = fxdr_hyper(tl);
 	tl += 2;
 	siz = fxdr_unsigned(int, *tl++);
 	cnt = fxdr_unsigned(int, *tl);
-	off = toff;
-	siz = ((siz + DIRBLKSIZ - 1) & ~(DIRBLKSIZ - 1));
 	xfer = NFS_SRVMAXDATA(nfsd);
+	if (cnt > xfer || cnt < 0)
+		cnt = xfer;
+	siz = ((siz + DIRBLKSIZ - 1) & ~(DIRBLKSIZ - 1));
 	if (siz > xfer)
 		siz = xfer;
-	if (cnt > xfer)
-		cnt = xfer;
 	fullsiz = siz;
 	error = nfsrv_fhtovp(fhp, 1, &vp, cred, slp, nam, &rdonly);
 	if (error) {
@@ -2520,6 +2519,8 @@ nfsrv_commit(struct nfsrv_descript *nfsd, struct nfssvc_sock *slp,
 	off = fxdr_hyper(tl);
 	tl += 2;
 	cnt = fxdr_unsigned(int, *tl);
+	if (cnt < 0)
+		cnt = 0;
 	error = nfsrv_fhtovp(fhp, 1, &vp, cred, slp, nam, &rdonly);
 	if (error) {
 		nfsm_reply(2 * NFSX_UNSIGNED);

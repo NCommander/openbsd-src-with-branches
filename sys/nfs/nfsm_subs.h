@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsm_subs.h,v 1.44 2014/12/18 20:59:21 tedu Exp $	*/
+/*	$OpenBSD: nfsm_subs.h,v 1.45 2015/08/29 23:07:51 deraadt Exp $	*/
 /*	$NetBSD: nfsm_subs.h,v 1.10 1996/03/20 21:59:56 fvdl Exp $	*/
 
 /*
@@ -173,7 +173,7 @@ struct nfsm_info {
 
 #define nfsm_strsiz(s, m) {						\
 	nfsm_dissect(tl, u_int32_t *,NFSX_UNSIGNED);			\
-	if (((s) = fxdr_unsigned(int32_t, *tl)) > (m)) {		\
+	if (((s) = fxdr_unsigned(int32_t, *tl)) < 0 || (s) > (m)) {	\
 		m_freem(info.nmi_mrep);					\
 		error = EBADRPC;					\
 		goto nfsmout;						\
