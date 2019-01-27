@@ -1,4 +1,4 @@
-.\"	$OpenBSD: nmea.4,v 1.26 2018/09/02 08:14:25 landry Exp $
+.\"	$OpenBSD: nmea.4,v 1.27 2019/01/26 22:53:25 landry Exp $
 .\"
 .\" Copyright (c) 2006, 2007 Marc Balmer <mbalmer@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 2 2018 $
+.Dd $Mdocdate: January 26 2019 $
 .Dt NMEA 4
 .Os
 .Sh NAME
@@ -58,7 +58,7 @@ is being used and tty timestamping has been turned on.
 Otherwise the sensor timestamp is taken when the initial `$' character of
 a message block is received from the NMEA device.
 .It GGA
-current fix data.
+Current fix data.
 The altitude in meters is extracted.
 .El
 .Pp
