@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.306 2018/09/16 11:41:44 visa Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.307 2018/09/26 14:51:44 visa Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -92,6 +92,7 @@ int dofutimens(struct proc *, int, struct timespec [2]);
 int dounmount_leaf(struct mount *, int, struct proc *);
 int unveil_add(struct proc *, struct nameidata *, const char *);
 void unveil_removevnode(struct vnode *vp);
+void unveil_free_traversed_vnodes(struct nameidata *);
 
 /*
  * Virtual File System System Calls
@@ -912,7 +913,7 @@ sys_unveil(struct proc *p, void *v, register_t *retval)
 
 	nd.ni_pledge = PLEDGE_UNVEIL;
 	if ((error = namei(&nd)) != 0)
-		return (error);
+		goto end;
 
 	/*
 	 * XXX Any access to the file or directory will allow us to
@@ -922,9 +923,10 @@ sys_unveil(struct proc *p, void *v, register_t *retval)
 	    (VOP_ACCESS(nd.ni_vp, VREAD, p->p_ucred, p) == 0 ||
 	    VOP_ACCESS(nd.ni_vp, VWRITE, p->p_ucred, p) == 0 ||
 	    VOP_ACCESS(nd.ni_vp, VEXEC, p->p_ucred, p) == 0)) ||
-	    VOP_ACCESS(nd.ni_dvp, VREAD, p->p_ucred, p) == 0 ||
+	    (nd.ni_dvp &&
+	    (VOP_ACCESS(nd.ni_dvp, VREAD, p->p_ucred, p) == 0 ||
 	    VOP_ACCESS(nd.ni_dvp, VWRITE, p->p_ucred, p) == 0 ||
-	    VOP_ACCESS(nd.ni_dvp, VEXEC, p->p_ucred, p) == 0)
+	    VOP_ACCESS(nd.ni_dvp, VEXEC, p->p_ucred, p) == 0)))
 		error = unveil_add(p, &nd, permissions);
 	else
 		error = EPERM;
@@ -934,6 +936,10 @@ sys_unveil(struct proc *p, void *v, register_t *retval)
 		vput(nd.ni_vp);
 	if (nd.ni_dvp && nd.ni_dvp != nd.ni_vp)
 		vput(nd.ni_dvp);
+	pool_put(&namei_pool, nd.ni_cnd.cn_pnbuf);
+end:
+	unveil_free_traversed_vnodes(&nd);
+
 	return (error);
 }
 
