@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.70 2019/01/27 01:39:05 dlg Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.71 2019/01/27 02:24:49 dlg Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -204,13 +204,6 @@ do_v6:
 			m_freem(m);
 			goto done;
 		}
-#if NMPE > 0
-		if (ifp->if_type == IFT_MPLS) {
-			smpls = satosmpls(rt_key(rt));
-			mpe_input(m, ifp, smpls, ttl);
-			goto done;
-		}
-#endif
 
 		KASSERT(rt->rt_gateway);
 
