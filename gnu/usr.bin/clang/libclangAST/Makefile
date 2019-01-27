@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2018/04/06 14:44:04 patrick Exp $
+# $OpenBSD: Makefile,v 1.5 2018/10/04 11:43:29 patrick Exp $
 
 LIB=	clangAST
 NOPIC=
@@ -23,6 +23,7 @@ SRCS=	APValue.cpp \
 	CommentLexer.cpp \
 	CommentParser.cpp \
 	CommentSema.cpp \
+	ComparisonCategories.cpp \
 	Decl.cpp \
 	DeclarationName.cpp \
 	DeclBase.cpp \

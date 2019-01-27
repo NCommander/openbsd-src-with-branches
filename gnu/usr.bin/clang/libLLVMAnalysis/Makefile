@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2017/10/04 20:57:09 patrick Exp $
+# $OpenBSD: Makefile,v 1.6 2018/04/06 14:44:04 patrick Exp $
 
 LIB=	LLVMAnalysis
 NOPIC=
@@ -66,12 +66,14 @@ SRCS=	AliasAnalysis.cpp \
 	MemorySSAUpdater.cpp \
 	ModuleDebugInfoPrinter.cpp \
 	ModuleSummaryAnalysis.cpp \
+	MustExecute.cpp \
 	ObjCARCAliasAnalysis.cpp \
 	ObjCARCAnalysisUtils.cpp \
 	ObjCARCInstKind.cpp \
 	OptimizationRemarkEmitter.cpp \
 	OrderedBasicBlock.cpp \
 	PHITransAddr.cpp \
+	PhiValues.cpp \
 	PostDominators.cpp \
 	ProfileSummaryInfo.cpp \
 	PtrUseVisitor.cpp \
@@ -82,6 +84,7 @@ SRCS=	AliasAnalysis.cpp \
 	ScalarEvolutionAliasAnalysis.cpp \
 	ScalarEvolutionExpander.cpp \
 	ScalarEvolutionNormalization.cpp \
+	SyntheticCountsUtils.cpp \
 	TargetLibraryInfo.cpp \
 	TargetTransformInfo.cpp \
 	Trace.cpp \

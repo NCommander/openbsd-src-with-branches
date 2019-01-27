@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2017/10/04 20:57:09 patrick Exp $
+# $OpenBSD: Makefile,v 1.6 2018/04/06 14:44:04 patrick Exp $
 
 LIB=	LLVMTransformUtils
 NOPIC=
@@ -34,8 +34,10 @@ SRCS=	ASanStackFrameLayout.cpp \
 	LCSSA.cpp \
 	LibCallsShrinkWrap.cpp \
 	Local.cpp \
+	LoopRotationUtils.cpp \
 	LoopSimplify.cpp \
 	LoopUnroll.cpp \
+	LoopUnrollAndJam.cpp \
 	LoopUnrollPeel.cpp \
 	LoopUnrollRuntime.cpp \
 	LoopUtils.cpp \
@@ -53,7 +55,6 @@ SRCS=	ASanStackFrameLayout.cpp \
 	SanitizerStats.cpp \
 	SimplifyCFG.cpp \
 	SimplifyIndVar.cpp \
-	SimplifyInstructions.cpp \
 	SimplifyLibCalls.cpp \
 	SplitModule.cpp \
 	SymbolRewriter.cpp \

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2017/10/04 20:57:10 patrick Exp $
+# $OpenBSD: Makefile,v 1.6 2018/04/06 14:44:04 patrick Exp $
 
 LIB=	LLVMipo
 NOPIC=
@@ -35,9 +35,11 @@ SRCS=	ArgumentPromotion.cpp \
 	PartialInlining.cpp \
 	PassManagerBuilder.cpp \
 	PruneEH.cpp \
+	SCCP.cpp \
 	SampleProfile.cpp \
 	StripDeadPrototypes.cpp \
 	StripSymbols.cpp \
+	SyntheticCountsPropagation.cpp \
 	ThinLTOBitcodeWriter.cpp \
 	WholeProgramDevirt.cpp
 

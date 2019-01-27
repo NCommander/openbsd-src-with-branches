@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:36 espie Exp $
+# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
 
 LIB=	lldbCore
 NOPIC=
@@ -15,6 +15,7 @@ SRCS=	Address.cpp \
 	Debugger.cpp \
 	Disassembler.cpp \
 	DumpDataExtractor.cpp \
+	DumpRegisterValue.cpp \
 	DynamicLoader.cpp \
 	EmulateInstruction.cpp \
 	Event.cpp \

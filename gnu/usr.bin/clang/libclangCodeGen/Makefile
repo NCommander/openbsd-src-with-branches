@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2017/07/09 15:28:36 espie Exp $
+# $OpenBSD: Makefile,v 1.5 2017/10/04 20:57:10 patrick Exp $
 
 LIB=	clangCodeGen
 NOPIC=
@@ -31,6 +31,7 @@ SRCS=	BackendUtil.cpp \
 	CGExprScalar.cpp \
 	CGGPUBuiltin.cpp \
 	CGLoopInfo.cpp \
+	CGNonTrivialStruct.cpp \
 	CGObjC.cpp \
 	CGObjCGNU.cpp \
 	CGObjCMac.cpp \

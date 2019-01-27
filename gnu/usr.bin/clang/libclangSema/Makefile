@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:50 pascal Exp $
+# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:36 espie Exp $
 
 LIB=	clangSema
 NOPIC=
@@ -8,13 +8,13 @@ CPPFLAGS+=	${CLANG_INCLUDES}
 
 .include <bsd.own.mk>
 SRCS=	AnalysisBasedWarnings.cpp \
-	AttributeList.cpp \
 	CodeCompleteConsumer.cpp \
 	DeclSpec.cpp \
 	DelayedDiagnostic.cpp \
 	IdentifierResolver.cpp \
 	JumpDiagnostics.cpp \
 	MultiplexExternalSemaSource.cpp \
+	ParsedAttr.cpp \
 	Scope.cpp \
 	ScopeInfo.cpp \
 	Sema.cpp \

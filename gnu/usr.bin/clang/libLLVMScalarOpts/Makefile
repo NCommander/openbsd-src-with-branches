@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2017/10/04 20:57:09 patrick Exp $
+# $OpenBSD: Makefile,v 1.6 2018/04/06 14:44:04 patrick Exp $
 
 LIB=	LLVMScalarOpts
 NOPIC=
@@ -28,6 +28,7 @@ SRCS=	ADCE.cpp \
 	IVUsersPrinter.cpp \
 	InductiveRangeCheckElimination.cpp \
 	IndVarSimplify.cpp \
+	InstSimplifyPass.cpp \
 	JumpThreading.cpp \
 	LICM.cpp \
 	LoopAccessAnalysisPrinter.cpp \
@@ -45,6 +46,7 @@ SRCS=	ADCE.cpp \
 	LoopSimplifyCFG.cpp \
 	LoopSink.cpp \
 	LoopStrengthReduce.cpp \
+	LoopUnrollAndJamPass.cpp \
 	LoopUnrollPass.cpp \
 	LoopUnswitch.cpp \
 	LoopVersioningLICM.cpp \

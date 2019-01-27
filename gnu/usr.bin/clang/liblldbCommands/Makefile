@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:36 espie Exp $
+# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
 
 LIB=	lldbCommands
 NOPIC=
@@ -8,7 +8,6 @@ NOPROFILE=
 
 SRCS=	CommandCompletions.cpp \
 	CommandObjectApropos.cpp \
-	CommandObjectArgs.cpp \
 	CommandObjectBreakpoint.cpp \
 	CommandObjectBreakpointCommand.cpp \
 	CommandObjectBugreport.cpp \
@@ -28,7 +27,7 @@ SRCS=	CommandCompletions.cpp \
 	CommandObjectRegister.cpp \
 	CommandObjectSettings.cpp \
 	CommandObjectSource.cpp \
-	CommandObjectSyntax.cpp \
+	CommandObjectStats.cpp \
 	CommandObjectTarget.cpp \
 	CommandObjectThread.cpp \
 	CommandObjectType.cpp \

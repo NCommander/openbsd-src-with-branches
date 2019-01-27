@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:50 pascal Exp $
+# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:35 espie Exp $
 
 LIB=	LLVMX86AsmPrinter
 NOPIC=
@@ -8,6 +8,7 @@ CPPFLAGS+=	-I${.OBJDIR}/../include/llvm/X86 -I${LLVM_SRCS}/lib/Target/X86
 
 .include <bsd.own.mk>
 SRCS=	X86ATTInstPrinter.cpp \
+	X86InstPrinterCommon.cpp \
 	X86IntelInstPrinter.cpp \
 	X86InstComments.cpp
 
