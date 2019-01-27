@@ -1,4 +1,4 @@
-/*	$OpenBSD: unwind.c,v 1.2 2019/01/24 17:39:43 florian Exp $	*/
+/*	$OpenBSD: unwind.c,v 1.3 2019/01/25 08:06:15 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -22,16 +22,10 @@
 #include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/syslog.h>
-#include <sys/uio.h>
 #include <sys/wait.h>
 
-#include <netinet/in.h>
 #include <net/if.h>
 #include <net/route.h>
-#include <netinet/in.h>
-#include <netinet/if_ether.h>
-#include <netinet6/in6_var.h>
-#include <netinet/icmp6.h>
 
 #include <err.h>
 #include <errno.h>

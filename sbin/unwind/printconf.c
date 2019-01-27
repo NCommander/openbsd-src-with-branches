@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.5 2018/08/03 13:14:46 florian Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.1 2019/01/23 13:11:00 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -17,15 +17,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/queue.h>
-#include <sys/socket.h>
-#include <sys/uio.h>
-
-#include <netinet/in.h>
-#include <net/if.h>
-
-#include <arpa/inet.h>
 
 #include <event.h>
 #include <imsg.h>
