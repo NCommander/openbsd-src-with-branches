@@ -1,4 +1,4 @@
-/*	$OpenBSD: cp.c,v 1.49 2018/09/07 07:44:15 martijn Exp $	*/
+/*	$OpenBSD: cp.c,v 1.51 2018/09/07 13:46:33 martijn Exp $	*/
 /*	$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $	*/
 
 /*
@@ -88,7 +88,7 @@ main(int argc, char *argv[])
 	char *target;
 
 	Hflag = Lflag = Pflag = Rflag = 0;
-	while ((ch = getopt(argc, argv, "HLPRfiprv")) != -1)
+	while ((ch = getopt(argc, argv, "HLPRafiprv")) != -1)
 		switch (ch) {
 		case 'H':
 			Hflag = 1;
@@ -104,6 +104,12 @@ main(int argc, char *argv[])
 			break;
 		case 'R':
 			Rflag = 1;
+			break;
+		case 'a':
+			Rflag = 1;
+			pflag = 1;
+			Pflag = 1;
+			Hflag = Lflag = 0;
 			break;
 		case 'f':
 			fflag = 1;
