@@ -1,4 +1,4 @@
-#	$OpenBSD: keyscan.sh,v 1.6 2017/04/30 23:34:55 djm Exp $
+#	$OpenBSD: keyscan.sh,v 1.7 2019/01/27 06:30:53 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="keyscan"
@@ -12,8 +12,6 @@ for i in $KEYTYPES; do
 	fi
 done
 echo "HostKeyAlgorithms $algs" >> sshd_config
-
-cat sshd_config
 
 start_sshd
 
