@@ -1,4 +1,4 @@
-/* $OpenBSD: mem_dbg.c,v 1.22 2014/06/12 15:49:27 deraadt Exp $ */
+/* $OpenBSD: mem_dbg.c,v 1.23 2018/08/24 19:16:03 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -162,23 +162,20 @@ void
 CRYPTO_dbg_malloc(void *addr, int num, const char *file, int line,
     int before_p)
 {
-	/* CRYPTO_dbg_malloc is no longer permitted */
-	abort();
+	OPENSSL_assert("CRYPTO_dbg_malloc is no longer permitted");
 }
 
 void
 CRYPTO_dbg_free(void *addr, int before_p)
 {
-	/* CRYPTO_dbg_free is no longer permitted */
-	abort();
+	OPENSSL_assert("CRYPTO_dbg_free is no longer permitted");
 }
 
 void
 CRYPTO_dbg_realloc(void *addr1, void *addr2, int num,
     const char *file, int line, int before_p)
 {
-	/* CRYPTO_dbg_realloc is no longer permitted */
-	abort();
+	OPENSSL_assert("CRYPTO_dbg_realloc is no longer permitted");
 }
 
 int
