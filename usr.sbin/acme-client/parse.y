@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.30 2018/09/07 07:35:30 miko Exp $ */
+/*	$OpenBSD: parse.y,v 1.31 2018/11/01 00:18:44 sashan Exp $ */
 
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -186,7 +186,16 @@ authority	: AUTHORITY STRING {
 				YYERROR;
 			}
 		} '{' optnl authorityopts_l '}' {
-			/* XXX enforce minimum config here */
+			if (auth->api == NULL) {
+				yyerror("authority %s: no api URL specified",
+				    auth->name);
+				YYERROR;
+			}
+			if (auth->account == NULL) {
+				yyerror("authority %s: no account key file "
+				    "specified", auth->name);
+				YYERROR;
+			}
 			auth = NULL;
 		}
 		;
