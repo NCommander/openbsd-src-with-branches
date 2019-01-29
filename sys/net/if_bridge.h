@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.h,v 1.58 2018/12/07 16:19:40 mpi Exp $	*/
+/*	$OpenBSD: if_bridge.h,v 1.59 2019/01/17 16:07:42 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -456,6 +456,7 @@ struct bridge_rtnode {
 	struct ether_addr		brt_addr;	/* dst addr */
 	struct bridge_tunneltag		brt_tunnel;	/* tunnel endpoint */
 };
+#define brt_family brt_tunnel.brtag_peer.sa.sa_family
 
 #ifndef BRIDGE_RTABLE_SIZE
 #define BRIDGE_RTABLE_SIZE	1024
