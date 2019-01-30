@@ -16,8 +16,7 @@
 
 #include "llvm/CodeGen/CallingConvLower.h"
 #include "llvm/CodeGen/MachineFunction.h"
-#include "llvm/CodeGen/MachineValueType.h"
-#include <vector>
+#include "llvm/Support/MachineValueType.h"
 
 namespace llvm {
 
@@ -42,6 +41,9 @@ class X86MachineFunctionInfo : public MachineFunctionInfo {
   /// stack frame in bytes.
   unsigned CalleeSavedFrameSize = 0;
 
+  // SaveArgSize - Number of register arguments saved on the stack
+  unsigned SaveArgSize = 0;
+
   /// BytesToPopOnReturn - Number of bytes function pops on return (in addition
   /// to the space used by the return address).
   /// Used on windows platform for stdcall & fastcall name decoration
@@ -50,7 +52,7 @@ class X86MachineFunctionInfo : public MachineFunctionInfo {
   /// ReturnAddrIndex - FrameIndex for return slot.
   int ReturnAddrIndex = 0;
 
-  /// \brief FrameIndex for return slot.
+  /// FrameIndex for return slot.
   int FrameAddrIndex = 0;
 
   /// TailCallReturnAddrDelta - The number of bytes by which return address
@@ -96,6 +98,12 @@ class X86MachineFunctionInfo : public MachineFunctionInfo {
   /// copies.
   bool IsSplitCSR = false;
 
+  /// True if this function uses the red zone.
+  bool UsesRedZone = false;
+
+  /// True if this function has WIN_ALLOCA instructions.
+  bool HasWinAlloca = false;
+
 private:
   /// ForwardedMustTailRegParms - A list of virtual and physical registers
   /// that must be forwarded to every musttail call.
@@ -118,6 +126,9 @@ public:
 
   unsigned getCalleeSavedFrameSize() const { return CalleeSavedFrameSize; }
   void setCalleeSavedFrameSize(unsigned bytes) { CalleeSavedFrameSize = bytes; }
+
+  unsigned getSaveArgSize() const { return SaveArgSize; }
+  void setSaveArgSize(unsigned bytes) { SaveArgSize = bytes; }
 
   unsigned getBytesToPopOnReturn() const { return BytesToPopOnReturn; }
   void setBytesToPopOnReturn (unsigned bytes) { BytesToPopOnReturn = bytes;}
@@ -167,6 +178,12 @@ public:
 
   bool isSplitCSR() const { return IsSplitCSR; }
   void setIsSplitCSR(bool s) { IsSplitCSR = s; }
+
+  bool getUsesRedZone() const { return UsesRedZone; }
+  void setUsesRedZone(bool V) { UsesRedZone = V; }
+
+  bool hasWinAlloca() const { return HasWinAlloca; }
+  void setHasWinAlloca(bool v) { HasWinAlloca = v; }
 };
 
 } // End llvm namespace
