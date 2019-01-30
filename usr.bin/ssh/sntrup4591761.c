@@ -1,3 +1,13 @@
+/*  $OpenBSD: $ */
+
+/*
+ * Public Domain, Authors:
+ * - Daniel J. Bernstein
+ * - Chitchanok Chuengsatiansup
+ * - Tanja Lange
+ * - Christine van Vredendaal
+ */
+
 #include <string.h>
 #include "crypto_api.h"
 
