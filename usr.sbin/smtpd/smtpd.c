@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.314 2018/12/23 14:26:02 gilles Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.315 2018/12/23 16:37:53 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1721,8 +1721,8 @@ parent_forward_open(char *username, char *directory, uid_t uid, gid_t gid)
 		return -1;
 	}
 
-	if (!secure_file(fd, pathname, directory, uid, 1)) {
-		log_warnx("warn: smtpd: %s: unsecure file", pathname);
+	if (!secure_forward(fd, pathname, directory, uid)) {
+		log_warnx("warn: smtpd: %s: unsecure file, can't be world-writeable", pathname);
 		close(fd);
 		return -1;
 	}
