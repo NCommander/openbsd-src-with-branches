@@ -1,4 +1,4 @@
-/*	$OpenBSD: athnvar.h,v 1.36 2016/01/05 18:41:15 stsp Exp $	*/
+/*	$OpenBSD: athnvar.h,v 1.37 2017/01/12 16:32:28 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -494,6 +494,7 @@ struct athn_softc {
 	int8_t				pdadc;
 	int8_t				tcomp;
 	int				olpc_ticks;
+	int				iqcal_ticks;
 
 	/* PA predistortion. */
 	uint16_t			gain1[AR_MAX_CHAINS];
