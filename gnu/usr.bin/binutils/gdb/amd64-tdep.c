@@ -371,8 +371,11 @@ amd64_classify (struct type *type, enum amd64_reg_class class[2])
   class[0] = class[1] = AMD64_NO_CLASS;
 
   /* Arguments of types (signed and unsigned) _Bool, char, short, int,
-     long, long long, and pointers are in the INTEGER class.  */
+     long, long long, and pointers are in the INTEGER class.  Similarly,
+     range types, used by languages such as Ada, are also in the INTEGER
+     class.  */
   if ((code == TYPE_CODE_INT || code == TYPE_CODE_ENUM
+       || code == TYPE_CODE_RANGE
        || code == TYPE_CODE_PTR || code == TYPE_CODE_REF)
       && (len == 1 || len == 2 || len == 4 || len == 8))
     class[0] = AMD64_INTEGER;
@@ -419,11 +422,28 @@ amd64_return_value (struct gdbarch *gdbarch, struct type *type,
   amd64_classify (type, class);
 
   /* 2. If the type has class MEMORY, then the caller provides space
-        for the return value and passes the address of this storage in
-        %rdi as if it were the first argument to the function. In
-        effect, this address becomes a hidden first argument.  */
+     for the return value and passes the address of this storage in
+     %rdi as if it were the first argument to the function. In effect,
+     this address becomes a hidden first argument.
+
+     On return %rax will contain the address that has been passed in
+     by the caller in %rdi.  */
   if (class[0] == AMD64_MEMORY)
-    return RETURN_VALUE_STRUCT_CONVENTION;
+    {
+      /* As indicated by the comment above, the ABI guarantees that we
+         can always find the return value just after the function has
+         returned.  */
+
+      if (readbuf)
+	{
+	  ULONGEST addr;
+
+	  regcache_raw_read_unsigned (regcache, AMD64_RAX_REGNUM, &addr);
+	  read_memory (addr, readbuf, TYPE_LENGTH (type));
+	}
+
+      return RETURN_VALUE_ABI_RETURNS_ADDRESS;
+    }
 
   gdb_assert (class[1] != AMD64_MEMORY);
   gdb_assert (len <= 16);
@@ -626,7 +646,7 @@ amd64_push_arguments (struct regcache *regcache, int nargs,
 }
 
 static CORE_ADDR
-amd64_push_dummy_call (struct gdbarch *gdbarch, CORE_ADDR func_addr,
+amd64_push_dummy_call (struct gdbarch *gdbarch, struct value *function,
 		       struct regcache *regcache, CORE_ADDR bp_addr,
 		       int nargs, struct value **args,	CORE_ADDR sp,
 		       int struct_return, CORE_ADDR struct_addr)
@@ -677,15 +697,12 @@ struct amd64_frame_cache
   int frameless_p;
 };
 
-/* Allocate and initialize a frame cache.  */
+/* Initialize the frame cache.  */
 
-static struct amd64_frame_cache *
-amd64_alloc_frame_cache (void)
+static void
+amd64_init_frame_cache (struct amd64_frame_cache *cache)
 {
-  struct amd64_frame_cache *cache;
   int i;
-
-  cache = FRAME_OBSTACK_ZALLOC (struct amd64_frame_cache);
 
   /* Base address.  */
   cache->base = 0;
@@ -700,6 +717,17 @@ amd64_alloc_frame_cache (void)
 
   /* Frameless until proven otherwise.  */
   cache->frameless_p = 1;
+}
+
+/* Allocate a frame cache.  */
+
+static struct amd64_frame_cache *
+amd64_alloc_frame_cache (void)
+{
+  struct amd64_frame_cache *cache;
+
+  cache = FRAME_OBSTACK_ZALLOC (struct amd64_frame_cache);
+  amd64_init_frame_cache(cache);
 
   return cache;
 }
@@ -710,8 +738,12 @@ amd64_alloc_frame_cache (void)
 
    We will handle only functions beginning with:
 
-      pushq %rbp        0x55
-      movq %rsp, %rbp   0x48 0x89 0xe5
+      movq $retguard(%rip), $reg  (0x4c or 0x48) 0x8b ?? ?? ?? ?? ??
+      xorq $off(%rsp), $reg       (0x4c or 0x48) 0x33 ?? 0x24
+      pushq %rbp                  0x55
+      movq %rsp, %rbp             0x48 0x89 0xe5
+
+   First 2 instructions for retguard are optional.
 
    Any function that doesn't start with this sequence will be assumed
    to have no prologue and thus no valid frame pointer in %rbp.  */
@@ -721,13 +753,30 @@ amd64_analyze_prologue (CORE_ADDR pc, CORE_ADDR current_pc,
 			struct amd64_frame_cache *cache)
 {
   static unsigned char proto[3] = { 0x48, 0x89, 0xe5 };
-  unsigned char buf[3];
+  unsigned char buf[10];
   unsigned char op;
 
   if (current_pc <= pc)
     return current_pc;
 
   op = read_memory_unsigned_integer (pc, 1);
+
+  /* Check for retguard */
+  if ((op == 0x4c || op == 0x48) && (current_pc > pc + 11))
+    {
+      read_memory (pc + 1, buf, 10);
+
+      /* Check for `movq (__retguard_ ## x)(%rip), %reg;'. */
+      if (buf[0] != 0x8b)
+	return pc;
+
+      /* Check for `xorq off(%rsp), %reg'. */
+      if ((buf[6] != 0x4c && buf[6] != 0x48)
+	  || buf[7] != 0x33 || buf[9] != 0x24)
+	return pc;
+      pc += 11;
+      op = read_memory_unsigned_integer (pc, 1);
+    }
 
   if (op == 0x55)		/* pushq %rbp */
     {
@@ -761,7 +810,8 @@ amd64_skip_prologue (CORE_ADDR start_pc)
   struct amd64_frame_cache cache;
   CORE_ADDR pc;
 
-  pc = amd64_analyze_prologue (start_pc, 0xffffffffffffffff, &cache);
+  amd64_init_frame_cache (&cache);
+  pc = amd64_analyze_prologue (start_pc, 0xffffffffffffffffLL, &cache);
   if (cache.frameless_p)
     return start_pc;
 
@@ -964,15 +1014,26 @@ static const struct frame_unwind amd64_sigtramp_frame_unwind =
 static const struct frame_unwind *
 amd64_sigtramp_frame_sniffer (struct frame_info *next_frame)
 {
-  CORE_ADDR pc = frame_pc_unwind (next_frame);
-  char *name;
+  struct gdbarch_tdep *tdep = gdbarch_tdep (get_frame_arch (next_frame));
 
-  find_pc_partial_function (pc, &name, NULL, NULL);
-  if (PC_IN_SIGTRAMP (pc, name))
+  /* We shouldn't even bother if we don't have a sigcontext_addr
+     handler.  */
+  if (tdep->sigcontext_addr == NULL)
+    return NULL;
+
+  if (tdep->sigtramp_p != NULL)
     {
-      gdb_assert (gdbarch_tdep (current_gdbarch)->sigcontext_addr);
+      if (tdep->sigtramp_p (next_frame))
+	return &amd64_sigtramp_frame_unwind;
+    }
 
-      return &amd64_sigtramp_frame_unwind;
+  if (tdep->sigtramp_start != 0)
+    {
+      CORE_ADDR pc = frame_pc_unwind (next_frame);
+
+      gdb_assert (tdep->sigtramp_end != 0);
+      if (pc >= tdep->sigtramp_start && pc < tdep->sigtramp_end)
+	return &amd64_sigtramp_frame_unwind;
     }
 
   return NULL;
@@ -1017,18 +1078,34 @@ amd64_frame_align (struct gdbarch *gdbarch, CORE_ADDR sp)
 }
 
 
-/* Supply register REGNUM from the floating-point register set REGSET
-   to register cache REGCACHE.  If REGNUM is -1, do this for all
-   registers in REGSET.  */
+/* Supply register REGNUM from the buffer specified by FPREGS and LEN
+   in the floating-point register set REGSET to register cache
+   REGCACHE.  If REGNUM is -1, do this for all registers in REGSET.  */
 
 static void
 amd64_supply_fpregset (const struct regset *regset, struct regcache *regcache,
 		       int regnum, const void *fpregs, size_t len)
 {
-  const struct gdbarch_tdep *tdep = regset->descr;
+  const struct gdbarch_tdep *tdep = gdbarch_tdep (regset->arch);
 
   gdb_assert (len == tdep->sizeof_fpregset);
   amd64_supply_fxsave (regcache, regnum, fpregs);
+}
+
+/* Collect register REGNUM from the register cache REGCACHE and store
+   it in the buffer specified by FPREGS and LEN as described by the
+   floating-point register set REGSET.  If REGNUM is -1, do this for
+   all registers in REGSET.  */
+
+static void
+amd64_collect_fpregset (const struct regset *regset,
+			const struct regcache *regcache,
+			int regnum, void *fpregs, size_t len)
+{
+  const struct gdbarch_tdep *tdep = gdbarch_tdep (regset->arch);
+
+  gdb_assert (len == tdep->sizeof_fpregset);
+  amd64_collect_fxsave (regcache, regnum, fpregs);
 }
 
 /* Return the appropriate register set for the core section identified
@@ -1043,11 +1120,8 @@ amd64_regset_from_core_section (struct gdbarch *gdbarch,
   if (strcmp (sect_name, ".reg2") == 0 && sect_size == tdep->sizeof_fpregset)
     {
       if (tdep->fpregset == NULL)
-	{
-	  tdep->fpregset = XMALLOC (struct regset);
-	  tdep->fpregset->descr = tdep;
-	  tdep->fpregset->supply_regset = amd64_supply_fpregset;
-	}
+	tdep->fpregset = regset_alloc (gdbarch, amd64_supply_fpregset,
+				       amd64_collect_fpregset);
 
       return tdep->fpregset;
     }
@@ -1157,7 +1231,7 @@ amd64_supply_fxsave (struct regcache *regcache, int regnum,
 {
   i387_supply_fxsave (regcache, regnum, fxsave);
 
-  if (fxsave)
+  if (fxsave && gdbarch_ptr_bit (get_regcache_arch (regcache)) == 64)
     {
       const char *regs = fxsave;
 
@@ -1181,19 +1255,11 @@ amd64_collect_fxsave (const struct regcache *regcache, int regnum,
 
   i387_collect_fxsave (regcache, regnum, fxsave);
 
-  if (regnum == -1 || regnum == I387_FISEG_REGNUM)
-    regcache_raw_collect (regcache, I387_FISEG_REGNUM, regs + 12);
-  if (regnum == -1 || regnum == I387_FOSEG_REGNUM)
-    regcache_raw_collect (regcache, I387_FOSEG_REGNUM, regs + 20);
-}
-
-/* Fill register REGNUM (if it is a floating-point or SSE register) in
-   *FXSAVE with the value in GDB's register cache.  If REGNUM is -1, do
-   this for all registers.  This function doesn't touch any of the
-   reserved bits in *FXSAVE.  */
-
-void
-amd64_fill_fxsave (char *fxsave, int regnum)
-{
-  amd64_collect_fxsave (current_regcache, regnum, fxsave);
+  if (gdbarch_ptr_bit (get_regcache_arch (regcache)) == 64)
+    {
+      if (regnum == -1 || regnum == I387_FISEG_REGNUM)
+	regcache_raw_collect (regcache, I387_FISEG_REGNUM, regs + 12);
+      if (regnum == -1 || regnum == I387_FOSEG_REGNUM)
+	regcache_raw_collect (regcache, I387_FOSEG_REGNUM, regs + 20);
+    }
 }
