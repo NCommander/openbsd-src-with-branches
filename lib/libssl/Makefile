@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.53 2019/01/21 13:45:57 jsing Exp $
+# $OpenBSD: Makefile,v 1.54 2019/01/23 00:50:39 tb Exp $
 
 .include <bsd.own.mk>
 .ifndef NOMAN
@@ -16,6 +16,9 @@ CFLAGS+= -Wall -Wundef
 CFLAGS+= -Werror
 .endif
 CFLAGS+= -DLIBRESSL_INTERNAL
+.ifdef TLS1_3
+CFLAGS+= -DLIBRESSL_HAS_TLS1_3
+.endif
 CFLAGS+= -I${.CURDIR}
 
 LDADD+= -L${BSDOBJDIR}/lib/libcrypto -lcrypto
