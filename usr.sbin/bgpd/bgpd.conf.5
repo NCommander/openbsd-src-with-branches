@@ -1,4 +1,4 @@
-.\" $OpenBSD: bgpd.conf.5,v 1.181 2018/10/06 13:59:32 jmc Exp $
+.\" $OpenBSD: bgpd.conf.5,v 1.182 2019/02/04 18:53:10 claudio Exp $
 .\"
 .\" Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
 .\" Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -16,7 +16,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: October 6 2018 $
+.Dd $Mdocdate: February 4 2019 $
 .Dt BGPD.CONF 5
 .Os
 .Sh NAME
@@ -806,7 +806,7 @@ The default is
 .Xc
 If set to
 .Ic yes ,
-all occurances of the neighbor AS in the
+all occurrences of the neighbor AS in the
 .Em AS path
 will be replaced with the local AS before running the filters.
 The Adj-RIB-In still holds the unmodified AS path.
