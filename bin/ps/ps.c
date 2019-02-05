@@ -1,4 +1,4 @@
-/*	$OpenBSD: ps.c,v 1.72 2018/08/08 14:38:31 deraadt Exp $	*/
+/*	$OpenBSD: ps.c,v 1.73 2018/09/16 02:44:06 millert Exp $	*/
 /*	$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $	*/
 
 /*-
@@ -272,9 +272,9 @@ main(int argc, char *argv[])
 	if (kd == NULL)
 		errx(1, "%s", errbuf);
 
-	if (unveil(_PATH_DEVDB, "r") == -1)
+	if (unveil(_PATH_DEVDB, "r") == -1 && errno != ENOENT)
 		err(1, "unveil");
-	if (unveil(_PATH_DEV, "r") == -1)
+	if (unveil(_PATH_DEV, "r") == -1 && errno != ENOENT)
 		err(1, "unveil");
 	if (swapf)
 		if (unveil(swapf, "r") == -1)
