@@ -1,4 +1,4 @@
-/*	$OpenBSD: savecore.c,v 1.59 2018/09/28 14:03:14 mestre Exp $	*/
+/*	$OpenBSD: savecore.c,v 1.60 2018/12/05 05:04:12 yasuoka Exp $	*/
 /*	$NetBSD: savecore.c,v 1.26 1996/03/18 21:16:05 leo Exp $	*/
 
 /*-
@@ -584,7 +584,7 @@ find_dev(dev_t dev, int type)
 		}
 	}
 	closedir(dfd);
-	syslog(LOG_ERR, "can't find device %d/%d", major(dev), minor(dev));
+	syslog(LOG_ERR, "can't find device %u/%u", major(dev), minor(dev));
 	exit(1);
 }
 

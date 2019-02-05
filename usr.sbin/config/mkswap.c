@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkswap.c,v 1.15 2015/01/16 06:40:16 deraadt Exp $	*/
+/*	$OpenBSD: mkswap.c,v 1.16 2016/10/16 17:50:00 tb Exp $	*/
 /*	$NetBSD: mkswap.c,v 1.5 1996/08/31 20:58:27 mycroft Exp $	*/
 
 /*
@@ -76,7 +76,7 @@ mkdevstr(dev_t d)
 	if (d == NODEV)
 		(void)snprintf(buf, sizeof buf, "NODEV");
 	else
-		(void)snprintf(buf, sizeof buf, "makedev(%d, %d)",
+		(void)snprintf(buf, sizeof buf, "makedev(%u, %u)",
 		    major(d), minor(d));
 	return buf;
 }
