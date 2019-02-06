@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_futex.c,v 1.10 2019/01/18 05:06:38 cheloha Exp $ */
+/*	$OpenBSD: sys_futex.c,v 1.11 2019/01/23 21:53:42 cheloha Exp $ */
 
 /*
  * Copyright (c) 2016-2017 Martin Pieuchot
@@ -240,7 +240,7 @@ futex_wait(uint32_t *uaddr, uint32_t val, const struct timespec *timeout,
 			return error;
 #ifdef KTRACE
 		if (KTRPOINT(p, KTR_STRUCT))
-			ktrabstimespec(p, &ts);
+			ktrreltimespec(p, &ts);
 #endif
 		if (ts.tv_sec < 0 || !timespecisvalid(&ts))
 			return EINVAL;
