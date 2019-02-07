@@ -1,4 +1,4 @@
-/*	$OpenBSD: cut.c,v 1.24 2018/03/30 09:25:06 tobias Exp $	*/
+/*	$OpenBSD: cut.c,v 1.25 2018/07/13 08:51:14 krw Exp $	*/
 /*	$NetBSD: cut.c,v 1.9 1995/09/02 05:59:23 jtc Exp $	*/
 
 /*
@@ -142,7 +142,7 @@ main(int argc, char *argv[])
 			}
 		}
 	else {
-		if (pledge("stdio rpath", NULL) == -1)
+		if (pledge("stdio", NULL) == -1)
 			err(1, "pledge");
 
 		fcn(stdin, "stdin");
