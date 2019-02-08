@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.201 2018/08/05 14:23:57 beck Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.202 2018/10/30 03:27:45 deraadt Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -470,6 +470,8 @@ sys_execve(struct proc *p, void *v, register_t *retval)
             (vaddr_t)vm->vm_minsaddr, PROT_NONE, TRUE))
                 goto exec_abort;
 #endif
+
+	memset(&arginfo, 0, sizeof(arginfo));
 
 	/* remember information about the process */
 	arginfo.ps_nargvstr = argc;
