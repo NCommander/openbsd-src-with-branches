@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.54 2019/01/23 00:50:39 tb Exp $
+# $OpenBSD: Makefile,v 1.55 2019/02/04 15:55:16 jsing Exp $
 
 .include <bsd.own.mk>
 .ifndef NOMAN
@@ -60,10 +60,10 @@ SRCS= \
 	ssl_srvr.c \
 	ssl_stat.c \
 	ssl_tlsext.c \
+	ssl_transcript.c \
 	ssl_txt.c \
 	ssl_versions.c \
 	t1_enc.c \
-	t1_hash.c \
 	t1_lib.c \
 	tls13_buffer.c \
 	tls13_client.c \
