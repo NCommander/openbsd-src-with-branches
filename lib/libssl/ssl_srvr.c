@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_srvr.c,v 1.62 2018/12/07 07:22:09 tb Exp $ */
+/* $OpenBSD: ssl_srvr.c,v 1.63 2019/01/18 00:54:42 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -575,7 +575,7 @@ ssl3_accept(SSL *s)
 				 * We need to get hashes here so if there is
 				 * a client cert, it can be verified.
 				 */
-				if (!tls1_handshake_hash_value(s,
+				if (!tls1_transcript_hash_value(s,
 				    S3I(s)->tmp.cert_verify_md,
 				    sizeof(S3I(s)->tmp.cert_verify_md),
 				    NULL)) {
@@ -1104,7 +1104,7 @@ ssl3_get_client_hello(SSL *s)
 		S3I(s)->hs.new_cipher = s->session->cipher;
 	}
 
-	if (!tls1_handshake_hash_init(s))
+	if (!tls1_transcript_hash_init(s))
 		goto err;
 
 	alg_k = S3I(s)->hs.new_cipher->algorithm_mkey;
