@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_ifattach.c,v 1.110 2018/08/26 22:30:00 mpi Exp $	*/
+/*	$OpenBSD: in6_ifattach.c,v 1.111 2018/10/05 07:06:09 florian Exp $	*/
 /*	$KAME: in6_ifattach.c,v 1.124 2001/07/18 08:32:51 jinmei Exp $	*/
 
 /*
@@ -374,7 +374,7 @@ in6_ifattach_linklocal(struct ifnet *ifp, struct in6_addr *ifid)
 		return (0); /* No need to install a connected route. */
 	}
 
-	flags = RTF_CONNECTED;
+	flags = RTF_CONNECTED | RTF_MPATH;
 	if ((ifp->if_flags & IFF_POINTOPOINT) == 0)
 		flags |= RTF_CLONING;
 
