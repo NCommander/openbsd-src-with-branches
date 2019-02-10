@@ -1,4 +1,4 @@
-/* $OpenBSD: sximmc.c,v 1.7 2018/12/04 11:25:48 kettenis Exp $ */
+/* $OpenBSD: sximmc.c,v 1.8 2018/12/29 14:09:00 patrick Exp $ */
 /* $NetBSD: awin_mmc.c,v 1.23 2015/11/14 10:32:40 bouyer Exp $ */
 
 /*-
@@ -646,7 +646,9 @@ sximmc_card_detect(sdmmc_chipset_handle_t sch)
 	struct sximmc_softc *sc = sch;
 	int inverted, val;
 
-	if (OF_getproplen(sc->sc_node, "non-removable") == 0)
+	/* XXX treat broken-cd as non-removable */
+	if (OF_getproplen(sc->sc_node, "non-removable") == 0 ||
+	    OF_getproplen(sc->sc_node, "broken-cd") == 0)
 		return 1;
 
 	val = gpio_controller_get_pin(sc->sc_gpio);
