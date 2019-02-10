@@ -46,6 +46,8 @@
                 X11
                     ICE
                     ..
+                    PM
+                    ..
                     SM
                     ..
                     Xaw
@@ -336,9 +338,27 @@
                 aclocal
                 ..
                 doc
+                    bigreqsproto
+                    ..
+                    compositeproto
+                    ..
+                    damageproto
+                    ..
+                    dri2proto
+                    ..
+                    dri3proto
+                    ..
+                    fixesproto
+                    ..
                     fontconfig
                         fontconfig-devel
                         ..
+                    ..
+                    fontsproto
+                    ..
+                    inputproto
+                    ..
+                    kbproto
                     ..
                     libFS
                     ..
@@ -365,6 +385,24 @@
                     libXtst
                     ..
                     libXvMC
+                    ..
+                    randrproto
+                    ..
+                    recordproto
+                    ..
+                    renderproto
+                    ..
+                    resproto
+                    ..
+                    scrnsaverproto
+                    ..
+                    x11proto
+                        SIAddresses
+                        ..
+                    ..
+                    xcmiscproto
+                    ..
+                    xextproto
                     ..
                     xorgproto
                         inputproto
