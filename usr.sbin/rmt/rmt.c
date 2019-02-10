@@ -1,4 +1,4 @@
-/*	$OpenBSD: rmt.c,v 1.20 2016/08/14 18:34:48 guenther Exp $	*/
+/*	$OpenBSD: rmt.c,v 1.21 2018/04/26 12:42:51 guenther Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -169,7 +169,7 @@ top:
 			f &= ~O_CREAT;
 		} else if (wflag) {
 			/*
-			 * Require, and force creation of, a nonexistant file,
+			 * Require, and force creation of, a nonexistent file,
 			 * unless we are reopening the last opened file again,
 			 * in which case it is opened read-only.
 			 */
