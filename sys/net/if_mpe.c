@@ -1,4 +1,4 @@
-/* $OpenBSD: if_mpe.c,v 1.77 2019/01/31 02:00:27 dlg Exp $ */
+/* $OpenBSD: if_mpe.c,v 1.78 2019/02/10 22:34:01 dlg Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@spootnik.org>
@@ -66,7 +66,7 @@ struct mpe_softc {
 
 void	mpeattach(int);
 int	mpe_output(struct ifnet *, struct mbuf *, struct sockaddr *,
-		       struct rtentry *);
+	    struct rtentry *);
 int	mpe_ioctl(struct ifnet *, u_long, caddr_t);
 void	mpe_start(struct ifnet *);
 int	mpe_clone_create(struct if_clone *, int);
