@@ -1,4 +1,4 @@
-/*	$Id: main.c,v 1.10 2019/02/12 17:58:35 benno Exp $ */
+/*	$Id: main.c,v 1.11 2019/02/12 19:39:57 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -298,6 +298,7 @@ main(int argc, char *argv[])
 		{ "perms",	no_argument,	&opts.preserve_perms,	1 },
 		{ "recursive",	no_argument,	&opts.recursive,	1 },
 		{ "times",	no_argument,	&opts.preserve_times,	1 },
+		{ "group",	no_argument,	&opts.preserve_gids,	1 },
 		{ NULL,		0,		NULL,			0 }};
 
 	/* Global pledge. */
