@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_mutex.c,v 1.3 2017/08/15 07:06:29 guenther Exp $ */
+/*	$OpenBSD: rthread_mutex.c,v 1.4 2019/01/29 17:41:14 mpi Exp $ */
 /*
  * Copyright (c) 2017 Martin Pieuchot <mpi@openbsd.org>
  * Copyright (c) 2012 Philip Guenther <guenther@openbsd.org>
@@ -169,7 +169,7 @@ _rthread_mutex_timedlock(pthread_mutex_t *mutexp, int trywait,
 		return (error);
 
 	/* Try hard to not enter the kernel. */
-	for (i = 0; i < SPIN_COUNT; i ++) {
+	for (i = 0; i < SPIN_COUNT; i++) {
 		if (mutex->lock == UNLOCKED)
 			break;
 
