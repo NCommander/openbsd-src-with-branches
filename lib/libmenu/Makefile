@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.16 2016/03/30 06:38:42 jmc Exp $
+# $OpenBSD: Makefile,v 1.17 2016/07/04 18:01:44 guenther Exp $
 
 LIB=	menu
 SRCS=	m_attribs.c m_cursor.c m_driver.c m_format.c \
@@ -20,9 +20,6 @@ includes:
 	  cmp -s $$i ${DESTDIR}/usr/include/$$i || \
 	  ${INSTALL} ${INSTALL_COPY} -m 444 -o $(BINOWN) -g $(BINGRP) $$i \
 	  ${DESTDIR}/usr/include; done
-
-menu.3: menu.3tbl
-	cp ${.ALLSRC} ${.TARGET}
 
 .include <bsd.own.mk>
 
