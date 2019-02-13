@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.53 2018/09/07 07:35:31 miko Exp $	*/
+/*	$OpenBSD: parse.y,v 1.54 2018/11/01 00:18:44 sashan Exp $	*/
 
 /*
  * Copyright (c) 2004 Ryan McBride <mcbride@openbsd.org>
@@ -597,7 +597,7 @@ top:
 	if (c == '-' || isdigit(c)) {
 		do {
 			*p++ = c;
-			if ((unsigned)(p-buf) >= sizeof(buf)) {
+			if ((size_t)(p-buf) >= sizeof(buf)) {
 				yyerror("string too long");
 				return (findeol());
 			}
@@ -636,7 +636,7 @@ nodigits:
 	if (isalnum(c) || c == ':' || c == '_' || c == '&' || c == '|') {
 		do {
 			*p++ = c;
-			if ((unsigned)(p-buf) >= sizeof(buf)) {
+			if ((size_t)(p-buf) >= sizeof(buf)) {
 				yyerror("string too long");
 				return (findeol());
 			}

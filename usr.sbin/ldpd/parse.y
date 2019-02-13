@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.69 2019/01/23 03:35:14 dlg Exp $ */
+/*	$OpenBSD: parse.y,v 1.70 2019/01/23 08:43:45 dlg Exp $ */
 
 /*
  * Copyright (c) 2013, 2015, 2016 Renato Westphal <renato@openbsd.org>
@@ -1166,7 +1166,7 @@ yylex(void)
 	if (c == '-' || isdigit(c)) {
 		do {
 			*p++ = c;
-			if ((unsigned)(p-buf) >= sizeof(buf)) {
+			if ((size_t)(p-buf) >= sizeof(buf)) {
 				yyerror("string too long");
 				return (findeol());
 			}
@@ -1205,7 +1205,7 @@ yylex(void)
 	if (isalnum(c) || c == ':' || c == '_') {
 		do {
 			*p++ = c;
-			if ((unsigned)(p-buf) >= sizeof(buf)) {
+			if ((size_t)(p-buf) >= sizeof(buf)) {
 				yyerror("string too long");
 				return (findeol());
 			}
