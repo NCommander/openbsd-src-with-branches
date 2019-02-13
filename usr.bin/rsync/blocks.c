@@ -1,4 +1,4 @@
-/*	$Id: blocks.c,v 1.4 2019/02/11 21:41:22 deraadt Exp $ */
+/*	$Id: blocks.c,v 1.5 2019/02/11 22:22:52 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -27,7 +27,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "md4.h"
+#include <openssl/md4.h>
+
 #include "extern.h"
 
 /*

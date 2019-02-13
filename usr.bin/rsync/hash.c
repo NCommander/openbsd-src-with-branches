@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$Id: hash.c,v 1.2 2019/02/10 23:24:14 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -21,8 +21,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <openssl/md4.h>
+
 #include "extern.h"
-#include "md4.h"
 
 /*
  * A fast 32-bit hash.
