@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mpw.c,v 1.34 2019/02/13 23:47:42 dlg Exp $ */
+/*	$OpenBSD: if_mpw.c,v 1.35 2019/02/14 01:21:29 dlg Exp $ */
 
 /*
  * Copyright (c) 2015 Rafael Zalamena <rzalamena@openbsd.org>
@@ -355,7 +355,7 @@ mpw_start(struct ifnet *ifp)
 		return;
 	}
 
-	rt = rtalloc(sstosa(&sc->sc_nexthop), RT_RESOLVE, ifp->if_rdomain);
+	rt = rtalloc(sstosa(&sc->sc_nexthop), RT_RESOLVE, 0);
 	if (!rtisvalid(rt)) {
 		IFQ_PURGE(&ifp->if_snd);
 		goto rtfree;
