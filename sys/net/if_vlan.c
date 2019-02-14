@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.180 2019/01/09 01:17:09 dlg Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.181 2019/01/23 23:17:25 dlg Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -46,8 +46,6 @@
  * capability is set on the parent.  In this case, vlan_start()
  * will not modify the ethernet header.
  */
-
-#include "mpw.h"
 
 #include <sys/param.h>
 #include <sys/kernel.h>
