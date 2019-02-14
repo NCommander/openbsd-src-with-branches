@@ -914,7 +914,7 @@ mrt_timeout(struct mrt_head *mrt)
 {
 	struct mrt	*m;
 	time_t		 now;
-	int		 timeout = -1;
+	int		 timeout = MRT_MAX_TIMEOUT;
 
 	now = time(NULL);
 	LIST_FOREACH(m, mrt, entry) {
@@ -925,12 +925,11 @@ mrt_timeout(struct mrt_head *mrt)
 				MRT2MC(m)->ReopenTimer =
 				    now + MRT2MC(m)->ReopenTimerInterval;
 			}
-			if (timeout == -1 ||
-			    MRT2MC(m)->ReopenTimer - now < timeout)
+			if (MRT2MC(m)->ReopenTimer - now < timeout)
 				timeout = MRT2MC(m)->ReopenTimer - now;
 		}
 	}
-	return (timeout);
+	return (timeout > 0 ? timeout : 0);
 }
 
 void

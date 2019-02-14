@@ -262,7 +262,7 @@ BROKEN	if (pledge("stdio rpath wpath cpath fattr unix route recvfd sendfd",
 		pfd[PFD_SOCK_ROUTE].events = POLLIN;
 
 		timeout = mrt_timeout(conf->mrt);
-		if (timeout == -1 || timeout > MAX_TIMEOUT)
+		if (timeout > MAX_TIMEOUT)
 			timeout = MAX_TIMEOUT;
 
 		if (poll(pfd, POLL_MAX, timeout * 1000) == -1)

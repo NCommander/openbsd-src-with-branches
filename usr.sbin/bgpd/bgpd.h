@@ -1093,6 +1093,7 @@ struct rde_hashstats {
 
 #define	MRT_FILE_LEN	512
 #define	MRT2MC(x)	((struct mrt_config *)(x))
+#define	MRT_MAX_TIMEOUT	7200
 
 enum mrt_type {
 	MRT_NONE,
