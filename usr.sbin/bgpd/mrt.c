@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.c,v 1.88 2018/12/30 13:53:07 denis Exp $ */
+/*	$OpenBSD: mrt.c,v 1.89 2019/01/21 02:07:56 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -914,7 +914,7 @@ mrt_timeout(struct mrt_head *mrt)
 {
 	struct mrt	*m;
 	time_t		 now;
-	int		 timeout = MRT_MAX_TIMEOUT;
+	int		 timeout = -1;
 
 	now = time(NULL);
 	LIST_FOREACH(m, mrt, entry) {
@@ -925,11 +925,12 @@ mrt_timeout(struct mrt_head *mrt)
 				MRT2MC(m)->ReopenTimer =
 				    now + MRT2MC(m)->ReopenTimerInterval;
 			}
-			if (MRT2MC(m)->ReopenTimer - now < timeout)
+			if (timeout == -1 ||
+			    MRT2MC(m)->ReopenTimer - now < timeout)
 				timeout = MRT2MC(m)->ReopenTimer - now;
 		}
 	}
-	return (timeout > 0 ? timeout : 0);
+	return (timeout);
 }
 
 void
