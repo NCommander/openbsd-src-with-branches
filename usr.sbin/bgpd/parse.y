@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.371 2019/02/12 09:02:41 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.372 2019/02/13 22:57:08 deraadt Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1111,7 +1111,7 @@ l3vpnopts	: RD STRING {
 				yyerror("bad encoding of rd");
 				YYERROR;
 			}
-			rd = betoh64(rd) & 0xffffffffffffULL;
+			rd = be64toh(rd) & 0xffffffffffffULL;
 			switch (ext.c.e.type) {
 			case EXT_COMMUNITY_TRANS_TWO_AS:
 				rd |= (0ULL << 48);
