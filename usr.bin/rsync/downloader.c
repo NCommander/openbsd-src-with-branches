@@ -1,4 +1,4 @@
-/*	$Id: downloader.c,v 1.11 2019/02/16 10:47:20 florian Exp $ */
+/*	$Id: downloader.c,v 1.12 2019/02/16 16:55:35 florian Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -22,7 +22,6 @@
 #include <fcntl.h>
 #include <inttypes.h>
 #include <math.h>
-#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
