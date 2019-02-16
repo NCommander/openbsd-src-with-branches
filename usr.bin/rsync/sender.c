@@ -1,4 +1,4 @@
-/*	$Id: sender.c,v 1.10 2019/02/16 16:59:34 florian Exp $ */
+/*	$Id: sender.c,v 1.11 2019/02/16 17:59:33 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -407,8 +407,8 @@ rsync_sender(struct sess *sess, int fdin,
 				 * put is in the token phase.
 				 */
 
-				sz = MIN(MAX_CHUNK,
-					up.stat.curlen - up.stat.curpos);
+				sz = MINIMUM(MAX_CHUNK,
+				    up.stat.curlen - up.stat.curpos);
 				if (!io_lowbuffer_alloc(sess, &wbuf,
 				    &wbufsz, &wbufmax, sizeof(int32_t))) {
 					ERRX1(sess, "io_lowbuffer_alloc");
