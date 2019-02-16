@@ -1,4 +1,4 @@
-/*	$Id: receiver.c,v 1.8 2019/02/14 18:30:11 florian Exp $ */
+/*	$Id: receiver.c,v 1.9 2019/02/16 05:06:30 deraadt Exp $ */
 
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -195,9 +195,6 @@ rsync_receiver(struct sess *sess, int fdin, int fdout, const char *root)
 	/*
 	 * Begin by conditionally getting all files we have currently
 	 * available in our destination.
-	 * XXX: THIS IS A BUG IN OPENBSD 6.4.
-	 * For newer version of OpenBSD, this is safe to put after the
-	 * unveil.
 	 */
 
 	if (sess->opts->del &&
