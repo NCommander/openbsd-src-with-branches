@@ -1,7 +1,8 @@
-/*	$Id: receiver.c,v 1.13 2019/02/16 10:47:20 florian Exp $ */
+/*	$Id: receiver.c,v 1.14 2019/02/16 10:48:05 florian Exp $ */
 
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
+ * Copyright (c) 2019 Florian Obser <florian@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
