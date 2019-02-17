@@ -1,4 +1,4 @@
-/*	$Id: io.c,v 1.7 2019/02/16 16:58:14 florian Exp $ */
+/*	$Id: io.c,v 1.8 2019/02/16 16:58:39 florian Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -464,7 +464,7 @@ io_lowbuffer_buf(struct sess *sess, void *buf,
 {
 	int32_t	tagbuf;
 
-	if (0 == valsz)
+	if (valsz == 0)
 		return;
 
 	if (!sess->mplex_writes) {

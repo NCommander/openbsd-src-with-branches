@@ -1,4 +1,4 @@
-/*	$Id: child.c,v 1.2 2019/02/10 23:24:14 benno Exp $ */
+/*	$Id: child.c,v 1.3 2019/02/11 21:41:22 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -49,7 +49,7 @@ rsync_child(const struct opts *opts, int fd, const struct fargs *f)
 		exit(EXIT_FAILURE);
 	}
 
-	for (i = 0; NULL != args[i]; i++)
+	for (i = 0; args[i] != NULL; i++)
 		LOG2(&sess, "exec[%zu] = %s", i, args[i]);
 
 	/* Make sure the child's stdin is from the sender. */
