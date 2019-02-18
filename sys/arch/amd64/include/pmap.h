@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.72 2019/01/19 04:07:12 mlarkin Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.73 2019/01/21 06:18:37 mlarkin Exp $	*/
 /*	$NetBSD: pmap.h,v 1.1 2003/04/26 18:39:46 fvdl Exp $	*/
 
 /*
@@ -343,9 +343,6 @@ struct pv_entry {			/* locked by its list's pvh_lock */
 /*
  * global kernel variables
  */
-
-/* PTDpaddr: is the physical address of the kernel's PDP */
-extern u_long PTDpaddr;
 
 extern struct pmap kernel_pmap_store;	/* kernel pmap */
 
