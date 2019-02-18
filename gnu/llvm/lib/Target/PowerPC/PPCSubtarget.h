@@ -18,10 +18,10 @@
 #include "PPCISelLowering.h"
 #include "PPCInstrInfo.h"
 #include "llvm/ADT/Triple.h"
+#include "llvm/CodeGen/SelectionDAGTargetInfo.h"
+#include "llvm/CodeGen/TargetSubtargetInfo.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/MC/MCInstrItineraries.h"
-#include "llvm/Target/TargetSelectionDAGInfo.h"
-#include "llvm/Target/TargetSubtargetInfo.h"
 #include <string>
 
 #define GET_SUBTARGETINFO_HEADER
@@ -46,6 +46,7 @@ namespace PPC {
     DIR_750,
     DIR_970,
     DIR_A2,
+    DIR_E500,
     DIR_E500mc,
     DIR_E5500,
     DIR_PWR3,
@@ -56,6 +57,7 @@ namespace PPC {
     DIR_PWR6X,
     DIR_PWR7,
     DIR_PWR8,
+    DIR_PWR9,
     DIR_64
   };
 }
@@ -64,6 +66,13 @@ class GlobalValue;
 class TargetMachine;
 
 class PPCSubtarget : public PPCGenSubtargetInfo {
+public:
+  enum POPCNTDKind {
+    POPCNTD_Unavailable,
+    POPCNTD_Slow,
+    POPCNTD_Fast
+  };
+
 protected:
   /// TargetTriple - What processor and OS we're targeting.
   Triple TargetTriple;
@@ -83,15 +92,18 @@ protected:
   bool Has64BitSupport;
   bool Use64BitRegs;
   bool UseCRBits;
-  bool UseSoftFloat;
+  bool HasHardFloat;
   bool IsPPC64;
   bool HasAltivec;
+  bool HasFPU;
   bool HasSPE;
   bool HasQPX;
   bool HasVSX;
   bool HasP8Vector;
   bool HasP8Altivec;
   bool HasP8Crypto;
+  bool HasP9Vector;
+  bool HasP9Altivec;
   bool HasFCPSGN;
   bool HasFSQRT;
   bool HasFRE, HasFRES, HasFRSQRTE, HasFRSQRTES;
@@ -101,7 +113,6 @@ protected:
   bool HasFPRND;
   bool HasFPCVT;
   bool HasISEL;
-  bool HasPOPCNTD;
   bool HasBPERMD;
   bool HasExtDiv;
   bool HasCMPB;
@@ -122,6 +133,11 @@ protected:
   bool HasHTM;
   bool HasFusion;
   bool HasFloat128;
+  bool IsISA3_0;
+  bool UseLongCalls;
+  bool SecurePlt;
+
+  POPCNTDKind HasPOPCNTD;
 
   /// When targeting QPX running a stock PPC64 Linux kernel where the stack
   /// alignment has not been changed, we need to keep the 16-byte alignment
@@ -132,7 +148,7 @@ protected:
   PPCFrameLowering FrameLowering;
   PPCInstrInfo InstrInfo;
   PPCTargetLowering TLInfo;
-  TargetSelectionDAGInfo TSInfo;
+  SelectionDAGTargetInfo TSInfo;
 
 public:
   /// This constructor initializes the data members to match that
@@ -167,7 +183,7 @@ public:
   const PPCTargetLowering *getTargetLowering() const override {
     return &TLInfo;
   }
-  const TargetSelectionDAGInfo *getSelectionDAGInfo() const override {
+  const SelectionDAGTargetInfo *getSelectionDAGInfo() const override {
     return &TSInfo;
   }
   const PPCRegisterInfo *getRegisterInfo() const override {
@@ -192,7 +208,7 @@ public:
   /// instructions, regardless of whether we are in 32-bit or 64-bit mode.
   bool has64BitSupport() const { return Has64BitSupport; }
   // useSoftFloat - Return true if soft-float option is turned on.
-  bool useSoftFloat() const { return UseSoftFloat; }
+  bool useSoftFloat() const { return !HasHardFloat; }
 
   /// use64BitRegs - Return true if in 64-bit mode or if we should use 64-bit
   /// registers in 32-bit mode when possible.  This can only true if
@@ -225,14 +241,16 @@ public:
   bool hasFPCVT() const { return HasFPCVT; }
   bool hasAltivec() const { return HasAltivec; }
   bool hasSPE() const { return HasSPE; }
+  bool hasFPU() const { return HasFPU; }
   bool hasQPX() const { return HasQPX; }
   bool hasVSX() const { return HasVSX; }
   bool hasP8Vector() const { return HasP8Vector; }
   bool hasP8Altivec() const { return HasP8Altivec; }
   bool hasP8Crypto() const { return HasP8Crypto; }
+  bool hasP9Vector() const { return HasP9Vector; }
+  bool hasP9Altivec() const { return HasP9Altivec; }
   bool hasMFOCRF() const { return HasMFOCRF; }
   bool hasISEL() const { return HasISEL; }
-  bool hasPOPCNTD() const { return HasPOPCNTD; }
   bool hasBPERMD() const { return HasBPERMD; }
   bool hasExtDiv() const { return HasExtDiv; }
   bool hasCMPB() const { return HasCMPB; }
@@ -241,6 +259,7 @@ public:
   bool hasOnlyMSYNC() const { return HasOnlyMSYNC; }
   bool isPPC4xx() const { return IsPPC4xx; }
   bool isPPC6xx() const { return IsPPC6xx; }
+  bool isSecurePlt() const {return SecurePlt; }
   bool isE500() const { return IsE500; }
   bool isFeatureMFTB() const { return FeatureMFTB; }
   bool isDeprecatedDST() const { return DeprecatedDST; }
@@ -258,9 +277,23 @@ public:
 
     return 16;
   }
+
+  // DarwinABI has a 224-byte red zone. PPC32 SVR4ABI(Non-DarwinABI) has no
+  // red zone and PPC64 SVR4ABI has a 288-byte red zone.
+  unsigned  getRedZoneSize() const {
+    return isDarwinABI() ? 224 : (isPPC64() ? 288 : 0);
+  }
+
   bool hasHTM() const { return HasHTM; }
   bool hasFusion() const { return HasFusion; }
   bool hasFloat128() const { return HasFloat128; }
+  bool isISA3_0() const { return IsISA3_0; }
+  bool useLongCalls() const { return UseLongCalls; }
+  bool needsSwapsForVSXMemOps() const {
+    return hasVSX() && isLittleEndian() && !hasP9Vector();
+  }
+
+  POPCNTDKind hasPOPCNTD() const { return HasPOPCNTD; }
 
   const Triple &getTargetTriple() const { return TargetTriple; }
 
@@ -271,12 +304,16 @@ public:
 
   bool isTargetELF() const { return TargetTriple.isOSBinFormatELF(); }
   bool isTargetMachO() const { return TargetTriple.isOSBinFormatMachO(); }
+  bool isTargetLinux() const { return TargetTriple.isOSLinux(); }
+  bool isTargetOpenBSD() const { return TargetTriple.isOSOpenBSD(); }
 
   bool isDarwinABI() const { return isTargetMachO() || isDarwin(); }
   bool isSVR4ABI() const { return !isDarwinABI(); }
   bool isELFv2ABI() const;
 
-  bool enableEarlyIfConversion() const override { return hasISEL(); }
+  /// Originally, this function return hasISEL(). Now we always enable it,
+  /// but may expand the ISEL instruction later.
+  bool enableEarlyIfConversion() const override { return true; }
 
   // Scheduling customization.
   bool enableMachineScheduler() const override;
@@ -286,8 +323,6 @@ public:
   void getCriticalPathRCs(RegClassVector &CriticalPathRCs) const override;
 
   void overrideSchedPolicy(MachineSchedPolicy &Policy,
-                           MachineInstr *begin,
-                           MachineInstr *end,
                            unsigned NumRegionInstrs) const override;
   bool useAA() const override;
 
@@ -296,6 +331,8 @@ public:
   /// classifyGlobalReference - Classify a global variable reference for the
   /// current subtarget accourding to how we should reference it.
   unsigned char classifyGlobalReference(const GlobalValue *GV) const;
+
+  bool isXRaySupported() const override { return IsPPC64 && IsLittleEndian; }
 };
 } // End llvm namespace
 
