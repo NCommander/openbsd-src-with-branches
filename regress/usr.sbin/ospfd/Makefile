@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2017/02/09 22:43:35 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.8 2018/10/06 10:52:24 bluhm Exp $
 
 # The following ports must be installed for the regression tests:
 # p5-AnyEvent		provide framework for multiple event loops
@@ -53,10 +53,10 @@ cleanup:
 # Only do that if necessary to keep visible output short.
 
 .if ${.CURDIR} == ${.OBJDIR}
-PERLINC =
+PERLINC =	-I${.OBJDIR}
 PERLPATH =
 .else
-PERLINC =	-I${.CURDIR}
+PERLINC =	-I${.CURDIR} -I${.OBJDIR}
 PERLPATH =	${.CURDIR}/
 .endif
 
