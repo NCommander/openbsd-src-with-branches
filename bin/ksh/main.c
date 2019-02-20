@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.95 2018/11/17 18:14:58 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.96 2018/11/20 07:02:23 martijn Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -35,6 +35,7 @@ uid_t	ksheuid;
 int	exstat;
 int	subst_exstat;
 const char *safe_prompt;
+int	disable_subst;
 
 Area	aperm;
 
