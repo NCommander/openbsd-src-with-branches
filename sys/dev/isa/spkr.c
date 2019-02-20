@@ -1,4 +1,4 @@
-/*	$OpenBSD: spkr.c,v 1.21 2016/03/19 11:34:22 mpi Exp $	*/
+/*	$OpenBSD: spkr.c,v 1.22 2017/12/30 23:08:29 guenther Exp $	*/
 /*	$NetBSD: spkr.c,v 1.1 1998/04/15 20:26:18 drochner Exp $	*/
 
 /*
@@ -483,6 +483,8 @@ spkrioctl(dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 	case SPKRTONE:
 		tp = (tone_t *)data;
 
+		if (tp->duration < 0 || tp->frequency < 0)
+			return (EINVAL);
 		if (tp->frequency == 0)
 			rest(tp->duration);
 		else
@@ -495,6 +497,8 @@ spkrioctl(dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 			error = copyin(tp, &ttp, sizeof(tone_t));
 			if (error)
 				return (error);
+			if (ttp.duration < 0 || ttp.frequency < 0)
+				return (EINVAL);
 			if (ttp.duration == 0)
 				break;
 			if (ttp.frequency == 0)
