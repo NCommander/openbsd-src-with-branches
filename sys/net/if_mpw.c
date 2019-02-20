@@ -206,8 +206,8 @@ mpw_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		shim.shim_label = MPLS_LABEL2SHIM(shim.shim_label);
 		rw_enter_write(&sc->sc_lock);
 		if (sc->sc_smpls.smpls_label != shim.shim_label) {
-		error = mpw_set_label(sc, shim.shim_label,
-			sc->sc_rdomain);
+			error = mpw_set_label(sc, shim.shim_label,
+			    sc->sc_rdomain);
 		}
 		rw_exit_write(&sc->sc_lock);
 		break;
