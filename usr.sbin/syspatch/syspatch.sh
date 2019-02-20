@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: syspatch.sh,v 1.140 2019/01/16 22:29:12 ajacoutot Exp $
+# $OpenBSD: syspatch.sh,v 1.142 2019/01/21 23:50:36 ajacoutot Exp $
 #
 # Copyright (c) 2016, 2017 Antoine Jacoutot <ajacoutot@openbsd.org>
 #
@@ -145,7 +145,7 @@ install_file()
 		ln -sf $(readlink ${_src}) ${_dst}
 	else
 		eval $(stat -f "_fmode=%OMp%OLp _fown=%Su _fgrp=%Sg" ${_src})
-		install -DFSp -m ${_fmode} -o ${_fown} -g ${_fgrp} ${_src} \
+		install -DFp -m ${_fmode} -o ${_fown} -g ${_fgrp} ${_src} \
 			${_dst}
 	fi
 }
