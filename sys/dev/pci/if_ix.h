@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.h,v 1.31 2015/12/31 19:07:37 kettenis Exp $	*/
+/*	$OpenBSD: if_ix.h,v 1.32 2016/11/21 17:21:33 mikeb Exp $	*/
 
 /******************************************************************************
 
@@ -169,7 +169,6 @@ struct tx_ring {
 	union ixgbe_adv_tx_desc	*tx_base;
 	struct ixgbe_tx_buf	*tx_buffers;
 	struct ixgbe_dma_alloc	txdma;
-	volatile uint32_t	tx_avail;
 	uint32_t		next_avail_desc;
 	uint32_t		next_to_clean;
 	enum {
