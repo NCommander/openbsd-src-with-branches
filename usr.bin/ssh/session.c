@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.313 2019/02/05 11:35:56 dtucker Exp $ */
+/* $OpenBSD: session.c,v 1.314 2019/02/10 11:10:57 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -218,7 +218,9 @@ auth_input_request_forwarding(struct ssh *ssh, struct passwd * pw)
  authsock_err:
 	free(auth_sock_name);
 	if (auth_sock_dir != NULL) {
+		temporarily_use_uid(pw);
 		rmdir(auth_sock_dir);
+		restore_uid();
 		free(auth_sock_dir);
 	}
 	if (sock != -1)
