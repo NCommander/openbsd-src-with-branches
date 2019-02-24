@@ -2878,6 +2878,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "ANT dev board",
 	},
 	{
+	    USB_VENDOR_DYNASTREAM, USB_PRODUCT_DYNASTREAM_ANTUSB2,
+	    "ANTUSB-2 Stick",
+	},
+	{
 	    USB_VENDOR_DYNASTREAM, USB_PRODUCT_DYNASTREAM_ANTUSBM,
 	    "ANTUSB-m Stick",
 	},
