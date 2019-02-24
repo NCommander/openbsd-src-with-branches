@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.27 2017/07/10 21:30:37 espie Exp $
+#	$OpenBSD: Makefile,v 1.28 2017/08/12 00:05:16 guenther Exp $
 
 OBJS=		crt0.o gcrt0.o
 OBJS+=		crtbegin.o crtend.o
@@ -88,7 +88,7 @@ crtendS.o: crtendS.c
 	@rm -f ${.TARGET}.o
 
 realinstall:
-	${INSTALL} ${INSTALL_COPY} -S -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${OBJS} \
 	    ${DESTDIR}/usr/lib
 
 .include <bsd.prog.mk>
