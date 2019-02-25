@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:35 espie Exp $
+# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
 
 LIB=	LLVMExecutionEngine
 NOPIC=
@@ -16,6 +16,7 @@ SRCS=	Execution.cpp \
 	IndirectionUtils.cpp \
 	Interpreter.cpp \
 	JITSymbol.cpp \
+	Legacy.cpp \
 	MCJIT.cpp \
 	NullResolver.cpp \
 	OrcABISupport.cpp \
