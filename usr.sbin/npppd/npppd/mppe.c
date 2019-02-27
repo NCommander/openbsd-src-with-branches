@@ -1,4 +1,4 @@
-/*	$OpenBSD: mppe.c,v 1.13 2015/12/05 18:43:36 mmcc Exp $ */
+/*	$OpenBSD: mppe.c,v 1.14 2017/05/30 17:22:00 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Id: mppe.c,v 1.13 2015/12/05 18:43:36 mmcc Exp $ */
+/* $Id: mppe.c,v 1.14 2017/05/30 17:22:00 yasuoka Exp $ */
 /**@file
  *
  * The implementation of MPPE(Microsoft Point-To-Point Encryption Protocol)
@@ -53,7 +53,6 @@
 #include <openssl/rc4.h>
 #endif
 
-#include "slist.h"
 #include "npppd.h"
 #include "debugutil.h"
 

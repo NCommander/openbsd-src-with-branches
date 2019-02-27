@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp.c,v 1.26 2015/12/05 18:43:36 mmcc Exp $ */
+/*	$OpenBSD: ppp.c,v 1.27 2017/08/11 16:41:47 goda Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* $Id: ppp.c,v 1.26 2015/12/05 18:43:36 mmcc Exp $ */
+/* $Id: ppp.c,v 1.27 2017/08/11 16:41:47 goda Exp $ */
 /**@file
  * This file provides PPP(Point-to-Point Protocol, RFC 1661) and
  * {@link :: _npppd_ppp PPP instance} related functions.
@@ -46,8 +46,6 @@
 #include <sys/time.h>
 #include <time.h>
 #include <event.h>
-
-#include "slist.h"
 
 #include "npppd.h"
 #include "time_utils.h"
