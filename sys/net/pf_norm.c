@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.207 2017/06/24 20:32:39 bluhm Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.209 2018/02/06 09:16:11 henning Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -723,10 +723,10 @@ pf_reassemble6(struct mbuf **m0, struct ip6_frag *fraghdr,
 	}
 
 	/* We have all the data */
-	extoff = frent->fe_extoff;
-	maxlen = frag->fr_maxlen;
 	frent = TAILQ_FIRST(&frag->fr_queue);
 	KASSERT(frent != NULL);
+	extoff = frent->fe_extoff;
+	maxlen = frag->fr_maxlen;
 	total = TAILQ_LAST(&frag->fr_queue, pf_fragq)->fe_off +
 	    TAILQ_LAST(&frag->fr_queue, pf_fragq)->fe_len;
 	hdrlen = frent->fe_hdrlen - sizeof(struct ip6_frag);
