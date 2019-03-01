@@ -2374,7 +2374,6 @@ ixgbe_get_buf(struct rx_ring *rxr, int i)
 	struct mbuf		*mp;
 	int			error;
 	union ixgbe_adv_rx_desc	*rxdesc;
-	size_t			 dsize = sizeof(union ixgbe_adv_rx_desc);
 
 	rxbuf = &rxr->rx_buffers[i];
 	rxdesc = &rxr->rx_base[i];
@@ -2403,13 +2402,7 @@ ixgbe_get_buf(struct rx_ring *rxr, int i)
 	    0, rxbuf->map->dm_mapsize, BUS_DMASYNC_PREREAD);
 	rxbuf->buf = mp;
 
-	bus_dmamap_sync(rxr->rxdma.dma_tag, rxr->rxdma.dma_map,
-	    dsize * i, dsize, BUS_DMASYNC_POSTWRITE);
-
 	rxdesc->read.pkt_addr = htole64(rxbuf->map->dm_segs[0].ds_addr);
-
-	bus_dmamap_sync(rxr->rxdma.dma_tag, rxr->rxdma.dma_map,
-	    dsize * i, dsize, BUS_DMASYNC_PREWRITE);
 
 	return (0);
 }
@@ -2503,6 +2496,10 @@ ixgbe_rxfill(struct rx_ring *rxr)
 	u_int		 slots;
 	int		 i;
 
+	bus_dmamap_sync(rxr->rxdma.dma_tag, rxr->rxdma.dma_map,
+	    0, rxr->rxdma.dma_map->dm_mapsize,
+	    BUS_DMASYNC_POSTWRITE);
+
 	i = rxr->last_desc_filled;
 	for (slots = if_rxr_get(&rxr->rx_ring, sc->num_rx_desc);
 	    slots > 0; slots--) {
@@ -2515,6 +2512,10 @@ ixgbe_rxfill(struct rx_ring *rxr)
 		rxr->last_desc_filled = i;
 		post = 1;
 	}
+
+	bus_dmamap_sync(rxr->rxdma.dma_tag, rxr->rxdma.dma_map,
+	    0, rxr->rxdma.dma_map->dm_mapsize,
+	    BUS_DMASYNC_PREWRITE);
 
 	if_rxr_put(&rxr->rx_ring, slots);
 
