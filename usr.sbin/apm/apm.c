@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.33 2017/07/23 12:51:20 anton Exp $	*/
+/*	$OpenBSD: apm.c,v 1.34 2018/08/14 06:38:33 mestre Exp $	*/
 
 /*
  *  Copyright (c) 1996 John T. Kohl
@@ -242,6 +242,10 @@ main(int argc, char *argv[])
 				usage();
 		}
 	}
+	argc -= optind;
+	argv += optind;
+	if (argc)
+		usage();
 
 	fd = open_socket(sockname);
 
