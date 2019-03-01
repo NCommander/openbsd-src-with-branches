@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.51 2018/12/11 07:44:25 claudio Exp $	*/
+/*	$OpenBSD: main.c,v 1.52 2018/12/14 07:56:17 jmc Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -599,6 +599,9 @@ ctl_create(struct parse_result *res, int argc, char *argv[])
 		}
 	}
 
+	if (argc > 0)
+		ctl_usage(res->ctl);
+
 	if (input) {
 		if (base && input)
 			errx(1, "conflicting -b and -i arguments");
@@ -913,6 +916,9 @@ ctl_start(struct parse_result *res, int argc, char *argv[])
 		}
 	}
 
+	if (argc > 0)
+		ctl_usage(res->ctl);
+
 	for (i = res->nnets; i < res->nifs; i++) {
 		/* Add interface that is not attached to a switch */
 		if (parse_network(res, "") == -1)
@@ -953,6 +959,9 @@ ctl_stop(struct parse_result *res, int argc, char *argv[])
 			/* NOTREACHED */
 		}
 	}
+
+	if (argc > 0)
+		ctl_usage(res->ctl);
 
 	/* VM id is only expected without the -a flag */
 	if ((res->action != CMD_STOPALL && ret == -1) ||
