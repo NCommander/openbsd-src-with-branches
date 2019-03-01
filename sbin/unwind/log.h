@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.h,v 1.1 2018/07/10 16:39:54 florian Exp $ */
+/*	$OpenBSD: uw_log.h,v 1.1 2019/01/23 13:11:00 florian Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>

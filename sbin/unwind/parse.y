@@ -1,4 +1,4 @@
-/*	$OpenBSD: uw_parse.y,v 1.10 2019/02/13 22:57:07 deraadt Exp $	*/
+/*	$OpenBSD: uw_parse.y,v 1.11 2019/02/17 14:49:15 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -39,7 +39,7 @@
 #include <syslog.h>
 #include <unistd.h>
 
-#include "uw_log.h"
+#include "log.h"
 #include "unwind.h"
 
 TAILQ_HEAD(files, file)		 files = TAILQ_HEAD_INITIALIZER(files);

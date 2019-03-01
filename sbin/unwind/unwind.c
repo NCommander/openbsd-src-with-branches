@@ -1,4 +1,4 @@
-/*	$OpenBSD: unwind.c,v 1.15 2019/02/17 14:49:15 florian Exp $	*/
+/*	$OpenBSD: unwind.c,v 1.16 2019/02/18 07:50:14 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -41,7 +41,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include "uw_log.h"
+#include "log.h"
 #include "unwind.h"
 #include "frontend.h"
 #include "resolver.h"

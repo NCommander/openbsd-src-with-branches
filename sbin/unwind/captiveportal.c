@@ -1,4 +1,4 @@
-/*	$OpenBSD: captiveportal.c,v 1.6 2019/02/18 07:50:14 florian Exp $	*/
+/*	$OpenBSD: captiveportal.c,v 1.7 2019/02/18 16:52:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -45,7 +45,7 @@
 #include <unistd.h>
 #include <vis.h>
 
-#include "uw_log.h"
+#include "log.h"
 #include "unwind.h"
 #include "captiveportal.h"
 
