@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread_rwlock.c,v 1.11 2018/04/24 16:28:42 pirofti Exp $ */
+/*	$OpenBSD: rthread_rwlock.c,v 1.12 2019/02/13 13:22:14 mpi Exp $ */
 /*
  * Copyright (c) 2019 Martin Pieuchot <mpi@openbsd.org>
  * Copyright (c) 2012 Philip Guenther <guenther@openbsd.org>
@@ -273,7 +273,7 @@ pthread_rwlock_unlock(pthread_rwlock_t *rwlockp)
 	} while (atomic_cas_uint(&rwlock->value, val, new) != val);
 
 	if (new == UNLOCKED && (val & WAITING))
-		_wake(&rwlock->value, COUNT(val));
+		_wake(&rwlock->value, INT_MAX);
 
 	return (0);
 }
