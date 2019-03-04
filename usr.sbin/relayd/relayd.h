@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.250 2018/08/06 17:31:31 benno Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.251 2018/09/09 21:06:51 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -702,6 +702,8 @@ struct relay_ticket_key {
 };
 #define	TLS_SESSION_LIFETIME	(2 * 3600)
 
+#define HTTPFLAG_WEBSOCKETS	0x01
+
 struct protocol {
 	objid_t			 id;
 	u_int32_t		 flags;
@@ -711,6 +713,7 @@ struct protocol {
 	u_int8_t		 tcpipttl;
 	u_int8_t		 tcpipminttl;
 	size_t			 httpheaderlen;
+	int			 httpflags;
 	u_int8_t		 tlsflags;
 	char			 tlsciphers[768];
 	char			 tlsdhparams[128];
@@ -1227,6 +1230,7 @@ const char
 	*relay_httpmethod_byid(u_int);
 const char
 	*relay_httperror_byid(u_int);
+int	 relay_http_priv_init(struct rsession *);
 int	 relay_httpdesc_init(struct ctl_relay_event *);
 ssize_t	 relay_http_time(time_t, char *, size_t);
 
