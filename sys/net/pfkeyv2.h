@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.h,v 1.79 2017/11/20 10:56:51 mpi Exp $ */
+/* $OpenBSD: pfkeyv2.h,v 1.80 2018/08/28 15:15:02 mpi Exp $ */
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) January 1998
  *
@@ -221,6 +221,7 @@ struct sadb_x_tap {
 struct sadb_x_counter {
 	uint16_t  sadb_x_counter_len;
 	uint16_t  sadb_x_counter_exttype;
+	uint32_t  sadb_x_counter_pad;
 	uint64_t  sadb_x_counter_ipackets;	/* Input IPsec packets */
 	uint64_t  sadb_x_counter_opackets;	/* Output IPsec packets */
 	uint64_t  sadb_x_counter_ibytes;	/* Input bytes */
