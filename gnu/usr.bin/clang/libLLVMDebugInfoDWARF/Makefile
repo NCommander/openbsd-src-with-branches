@@ -1,13 +1,11 @@
-# $OpenBSD: Makefile,v 1.4 2018/04/06 14:44:04 patrick Exp $
+# $OpenBSD: Makefile,v 1.5 2019/01/27 16:59:41 patrick Exp $
 
 LIB=	LLVMDebugInfoDWARF
-NOPIC=
 NOPROFILE=
 
 CPPFLAGS+=	-I${LLVM_SRCS}/include/llvm/DebugInfo/DWARF
 
-.include <bsd.own.mk>
-SRCS=	DWARFAbbreviationDeclaration.cpp \
+SRCS+=	DWARFAbbreviationDeclaration.cpp \
 	DWARFAcceleratorTable.cpp \
 	DWARFAddressRange.cpp \
 	DWARFCompileUnit.cpp \
@@ -36,8 +34,3 @@ SRCS=	DWARFAbbreviationDeclaration.cpp \
 	DWARFVerifier.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lib/DebugInfo/DWARF
-
-install:
-	@# Nothing here so far ...
-
-.include <bsd.lib.mk>

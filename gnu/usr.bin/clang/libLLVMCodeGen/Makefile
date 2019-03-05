@@ -1,14 +1,12 @@
-# $OpenBSD: Makefile,v 1.9 2019/01/27 16:59:41 patrick Exp $
+# $OpenBSD: Makefile,v 1.10 2019/02/26 23:39:51 jsg Exp $
 
 LIB=	LLVMCodeGen
-NOPIC=
 NOPROFILE=
 
 CPPFLAGS+=-I${LLVM_SRC}/include/llvm/CodeGen
 CPPFLAGS+=-I${LLVM_SRC}/include/llvm/CodeGen/PBQP
 
-.include <bsd.own.mk>
-SRCS=	AggressiveAntiDepBreaker.cpp \
+SRCS+=	AggressiveAntiDepBreaker.cpp \
 	AllocationOrder.cpp \
 	CodeGenAnalysis.cpp \
 	AtomicExpandPass.cpp \
@@ -180,9 +178,4 @@ CodeGenLowLevelType.cpp:
 
 .PATH:	${.CURDIR}/../../../llvm/lib/CodeGen
 
-install:
-	@# Nothing here so far ...
-
 CLEANFILES+= CodeGenAnalysis.cpp CodeGenLowLevelType.cpp
-
-.include <bsd.lib.mk>
