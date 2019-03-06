@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.12 2019/01/27 16:59:41 patrick Exp $
+# $OpenBSD: Makefile,v 1.13 2019/03/05 09:44:39 jsg Exp $
 
 .include <bsd.own.mk>
 
@@ -28,7 +28,8 @@ CPPFLAGS+=	-I${.CURDIR}/../../../llvm/tools/clang/include
 
 .PATH:	${.CURDIR}/../../../llvm/tools/clang/tools/driver
 
-LLVM_LIBDEPS=	clangFrontendTool \
+LLVM_LIBDEPS=	LLVM \
+		clangFrontendTool \
 		clangFrontend \
 		clangDriver \
 		clangDriverArch \
@@ -44,8 +45,5 @@ LLVM_LIBDEPS=	clangFrontendTool \
 		clangLex \
 		clangBasic \
 		clangBasicTargets
-
-DPADD+= ${.OBJDIR}/../libLLVM/libLLVM.a
-LDADD+= ${.OBJDIR}/../libLLVM/libLLVM.a
 
 .include <bsd.prog.mk>
