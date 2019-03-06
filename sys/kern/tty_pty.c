@@ -678,12 +678,6 @@ filt_ptcread(struct knote *kn, long hint)
 		    ((pti->pt_flags & PF_UCNTL) && pti->pt_ucntl))
 			kn->kn_data++;
 	}
-
-	if (!ISSET(tp->t_state, TS_CARR_ON)) {
-		kn->kn_flags |= EV_EOF;
-		return (1);
-	}
-
 	return (kn->kn_data > 0);
 }
 
