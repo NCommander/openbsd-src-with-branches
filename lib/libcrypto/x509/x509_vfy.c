@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_vfy.c,v 1.70 2018/04/08 16:57:57 beck Exp $ */
+/* $OpenBSD: x509_vfy.c,v 1.71 2018/08/19 20:19:31 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -159,7 +159,7 @@ x509_subject_cmp(X509 **a, X509 **b)
 }
 #endif
 
-/* Return 1 is a certificate is self signed */
+/* Return 1 if a certificate is self signed */
 static int
 cert_self_signed(X509 *x)
 {
