@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.353 2019/01/25 00:19:26 millert Exp $	*/
+/*	$OpenBSD: editor.c,v 1.354 2019/02/21 14:36:42 otto Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <millert@openbsd.org>
@@ -331,7 +331,7 @@ editor(int f)
 		case 'n':
 			if (!fstabfile) {
 				fputs("This option is not valid when run "
-				    "without the -f flag.\n", stderr);
+				    "without the -F or -f flags.\n", stderr);
 				break;
 			}
 			editor_name(&newlab, arg);
