@@ -1,4 +1,4 @@
-/* $OpenBSD: simplebus.c,v 1.8 2017/06/01 21:19:07 patrick Exp $ */
+/* $OpenBSD: simplebus.c,v 1.9 2019/01/03 23:04:51 dlg Exp $ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *
@@ -350,7 +350,7 @@ simplebus_dmamap_load_buffer(bus_dma_tag_t t, bus_dmamap_t map, void *buf,
 
 			/* All good, extract to address and translate. */
 			rto = range[0];
-			if (sc->sc_pacells == 2)
+			if (sc->sc_acells == 2)
 				rto = (rto << 32) + range[1];
 
 			map->dm_segs[seg].ds_addr -= rfrom;
