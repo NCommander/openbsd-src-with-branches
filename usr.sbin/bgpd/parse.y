@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.381 2019/02/27 04:16:02 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.382 2019/03/07 07:42:36 claudio Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1348,7 +1348,8 @@ peeropts	: REMOTEAS as4number	{
 
 			if ($3 == SAFI_NONE) {
 				for (aid = 0; aid < AID_MAX; aid++) {
-					if (aid2afi(aid, &afi, &safi) == -1)
+					if (aid2afi(aid, &afi, &safi) == -1 ||
+					    afi != $2)
 						continue;
 					curpeer->conf.capabilities.mp[aid] = 0;
 				}	
