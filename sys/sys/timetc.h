@@ -1,4 +1,4 @@
-/*	$OpenBSD: timetc.h,v 1.5 2014/04/03 17:58:31 beck Exp $ */
+/*	$OpenBSD: timetc.h,v 1.6 2018/05/28 18:05:42 guenther Exp $ */
 
 /*
  * Copyright (c) 2000 Poul-Henning Kamp <phk@FreeBSD.org>
@@ -87,5 +87,6 @@ void	tc_ticktock(void);
 void	inittimecounter(void);
 int	sysctl_tc(int *, u_int, void *, size_t *, void *, size_t);
 int	tc_adjfreq(int64_t *, int64_t *);
+void	tc_adjtime(int64_t *, int64_t *);
 
 #endif /* !_SYS_TIMETC_H_ */
