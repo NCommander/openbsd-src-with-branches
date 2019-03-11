@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.32 2019/03/02 05:34:59 pamela Exp $	*/
+/*	$OpenBSD: engine.c,v 1.33 2019/03/11 15:27:07 pamela Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -430,7 +430,9 @@ engine_dispatch_frontend(int fd, short event, void *bula)
 		switch (imsg.hdr.type) {
 #ifndef	SMALL
 		case IMSG_CTL_LOG_VERBOSE:
-			/* Already checked by frontend. */
+			if (IMSG_DATA_SIZE(imsg) != sizeof(verbose))
+				fatalx("%s: IMSG_CTL_LOG_VERBOSE wrong length: "
+				    "%lu", __func__, IMSG_DATA_SIZE(imsg));
 			memcpy(&verbose, imsg.data, sizeof(verbose));
 			log_setverbose(verbose);
 			break;
