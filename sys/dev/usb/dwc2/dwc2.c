@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwc2.c,v 1.46 2017/06/29 17:36:16 deraadt Exp $	*/
+/*	$OpenBSD: dwc2.c,v 1.47 2019/03/11 17:50:09 mpi Exp $	*/
 /*	$NetBSD: dwc2.c,v 1.32 2014/09/02 23:26:20 macallan Exp $	*/
 
 /*-
@@ -302,7 +302,11 @@ dwc2_allocx(struct usbd_bus *bus)
 		memset(dxfer, 0, sizeof(*dxfer));
 
 		dxfer->urb = dwc2_hcd_urb_alloc(sc->sc_hsotg,
-		    DWC2_MAXISOCPACKETS, GFP_KERNEL);
+		    DWC2_MAXISOCPACKETS, GFP_ATOMIC);
+		if (dxfer->urb == NULL) {
+			pool_put(&sc->sc_xferpool, dxfer);
+			return NULL;
+		}
 
 #ifdef DWC2_DEBUG
 		dxfer->xfer.busy_free = XFER_ONQU;
