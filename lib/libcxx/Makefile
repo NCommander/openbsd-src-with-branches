@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.10 2018/10/13 19:19:21 kettenis Exp $
+# $OpenBSD: Makefile,v 1.11 2019/02/04 17:04:33 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -53,7 +53,8 @@ SRCS+=		algorithm.cpp \
 		vector.cpp
 
 CPPFLAGS+=	-Wall -DLIBCXXABI -I${HDRDIR} -D_LIBCPP_BUILDING_LIBRARY \
-		-DLIBCXX_BUILDING_LIBCXXABI -I${AHDRDIR} -I${UHDRDIR}
+		-DLIBCXX_BUILDING_LIBCXXABI -I${AHDRDIR} -I${UHDRDIR} \
+		-DNDEBUG
 CXXFLAGS+=	-nostdlib -nostdinc++
 .if empty(CXXFLAGS:M-std=*)
 CXXFLAGS+=	-std=c++11
