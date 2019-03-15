@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: if_bnxtreg.h,v 1.1 2018/07/09 10:46:15 jmatthew Exp $	*/
 /*-
  *   BSD LICENSE
  *
@@ -27,9 +27,6 @@
  *   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/dev/bnxt/hsi_struct_def.h 323233 2017-09-06 20:19:30Z shurd $");
 
 /****************************************************************************
  *
