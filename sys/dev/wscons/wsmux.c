@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsmux.c,v 1.42 2019/02/20 17:54:34 anton Exp $	*/
+/*	$OpenBSD: wsmux.c,v 1.43 2019/03/02 07:42:03 anton Exp $	*/
 /*      $NetBSD: wsmux.c,v 1.37 2005/04/30 03:47:12 augustss Exp $      */
 
 /*
@@ -303,8 +303,8 @@ wsmuxclose(dev_t dev, int flags, int mode, struct proc *p)
 int
 wsmux_mux_close(struct wsevsrc *me)
 {
-	me->me_evp = NULL;
 	wsmux_do_close((struct wsmux_softc *)me);
+	me->me_evp = NULL;
 	return (0);
 }
 
