@@ -1,4 +1,4 @@
-/*	$OpenBSD: octcit.c,v 1.5 2018/01/23 14:47:21 visa Exp $	*/
+/*	$OpenBSD: octcit.c,v 1.6 2018/02/24 11:42:31 visa Exp $	*/
 
 /*
  * Copyright (c) 2017 Visa Hankala
@@ -27,6 +27,7 @@
 #include <sys/atomic.h>
 #include <sys/conf.h>
 #include <sys/device.h>
+#include <sys/evcount.h>
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 

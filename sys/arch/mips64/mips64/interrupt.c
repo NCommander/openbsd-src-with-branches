@@ -1,4 +1,4 @@
-/*	$OpenBSD: interrupt.c,v 1.68 2017/06/11 10:01:23 visa Exp $ */
+/*	$OpenBSD: interrupt.c,v 1.69 2018/02/24 11:42:31 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -28,10 +28,11 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/atomic.h>
+#include <sys/evcount.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/user.h>
-#include <sys/atomic.h>
 
 #include <uvm/uvm_extern.h>
 
