@@ -1,4 +1,4 @@
-/*	$OpenBSD: ctfdump.c,v 1.20 2019/03/16 07:36:56 sunil Exp $ */
+/*	$OpenBSD: ctfdump.c,v 1.21 2019/03/16 15:34:58 sunil Exp $ */
 
 /*
  * Copyright (c) 2016 Martin Pieuchot <mpi@openbsd.org>
@@ -476,6 +476,9 @@ ctf_dump_type(struct ctf_header *cth, const char *data, off_t dlen,
 		printf(" returns: %u args: (%u", ctt->ctt_type, *argp);
 		for (i = 1; i < vlen; i++) {
 			argp++;
+			if ((const char *)argp > data + dlen)
+				errx(1, "offset exceeds CTF section");
+
 			printf(", %u", *argp);
 		}
 		printf(")");
