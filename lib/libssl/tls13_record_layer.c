@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_record_layer.c,v 1.7 2019/02/25 16:52:34 jsing Exp $ */
+/* $OpenBSD: tls13_record_layer.c,v 1.8 2019/02/26 17:38:39 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -234,7 +234,7 @@ tls13_record_layer_process_alert(struct tls13_record_layer *rl)
 		return TLS13_IO_FAILURE;
 	}
 
-	rl->alert_cb(alert_level, alert_desc, rl->cb_arg);
+	rl->alert_cb(alert_desc, rl->cb_arg);
 
  err:
 	return ret;
