@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.83 2018/04/20 14:08:12 visa Exp $ */
+/*	$OpenBSD: machdep.c,v 1.84 2019/01/19 20:45:06 tedu Exp $ */
 
 /*
  * Copyright (c) 2009, 2010, 2014 Miodrag Vallat.
@@ -1257,6 +1257,12 @@ pmoncnputc(dev_t dev, int c)
 		pmon_printf("\n");
 	else
 		pmon_printf("%c", c);
+}
+
+void
+intr_barrier(void *cookie)
+{
+	sched_barrier(NULL);
 }
 
 #ifdef MULTIPROCESSOR

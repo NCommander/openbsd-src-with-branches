@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.157 2017/12/11 05:27:40 deraadt Exp $ */
+/*	$OpenBSD: machdep.c,v 1.158 2017/12/30 20:46:59 guenther Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -1005,4 +1005,10 @@ is_memory_range(paddr_t pa, psize_t len, psize_t limit)
 			return TRUE;
 
 	return FALSE;
+}
+
+void
+intr_barrier(void *cookie)
+{
+	sched_barrier(NULL);
 }
