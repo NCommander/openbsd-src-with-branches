@@ -1,4 +1,4 @@
-/*	$Id: client.c,v 1.10 2019/02/18 22:47:34 benno Exp $ */
+/*	$Id: client.c,v 1.11 2019/03/06 18:37:22 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -82,7 +82,7 @@ rsync_client(const struct opts *opts, int fd, const struct fargs *f)
 	 * Senders (and locals) send; receivers receive.
 	 */
 
-	if (FARGS_RECEIVER != f->mode) {
+	if (f->mode != FARGS_RECEIVER) {
 		LOG2(&sess, "client starting sender: %s",
 		    f->host == NULL ? "(local)" : f->host);
 		if (!rsync_sender(&sess, fd, fd, f->sourcesz,
