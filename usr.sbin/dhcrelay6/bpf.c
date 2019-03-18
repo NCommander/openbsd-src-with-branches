@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.1 2017/03/17 14:45:16 rzalamena Exp $ 	*/
+/*	$OpenBSD: bpf.c,v 1.2 2017/04/19 05:36:13 natano Exp $ 	*/
 
 /* BPF socket interface code, originally contributed by Archie Cobbs. */
 
@@ -203,7 +203,7 @@ if_register_receive(struct interface_info *info)
 		fatal("Can't set BPF direction capture");
 
 	/* Drop them so they don't go up in the network stack. */
-	flag = 1;
+	flag = BPF_FILDROP_CAPTURE;
 	if (ioctl(info->rfdesc, BIOCSFILDROP, &flag) == -1)
 		fatal("Can't set BPF filter drop");
 
