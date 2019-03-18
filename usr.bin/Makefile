@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.158 2018/11/30 07:05:49 ratchov Exp $
+#	$OpenBSD: Makefile,v 1.159 2018/11/30 07:08:24 ratchov Exp $
 
 .include <bsd.own.mk>
 
@@ -20,7 +20,7 @@ SUBDIR= apply arch at aucat audioctl awk banner \
 	nfsstat nice nm nl nohup openssl pagesize passwd paste patch pctr \
 	pkg-config pkill \
 	pr printenv printf quota radioctl rcs rdist rdistd \
-	readlink renice rev rpcgen rpcinfo rs rup rusers rwall \
+	readlink renice rev rpcgen rpcinfo rs rsync rup rusers rwall \
 	sdiff script sed sendbug shar showmount signify skey \
 	skeyaudit skeyinfo skeyinit sndiod \
 	sort spell split ssh stat su systat \
