@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.78 2018/01/04 02:27:55 krw Exp $	*/
+/*	$OpenBSD: parse.c,v 1.79 2018/01/04 03:02:05 krw Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -328,6 +328,6 @@ parse_warn(char *msg)
 			else
 				spaces[i] = ' ';
 		}
+		log_warnx("%s: %s^", log_procname, spaces);
 	}
-	log_warnx("%s: %s^", log_procname, spaces);
 }
