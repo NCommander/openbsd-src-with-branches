@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1062 2018/02/27 09:24:56 benno Exp $ */
+/*	$OpenBSD: pf.c,v 1.1063 2018/03/06 17:35:53 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -4947,7 +4947,7 @@ pf_test_state_icmp(struct pf_pdesc *pd, struct pf_state **state,
     u_short *reason)
 {
 	u_int16_t	 virtual_id, virtual_type;
-	u_int8_t	 icmptype;
+	u_int8_t	 icmptype, icmpcode;
 	int		 icmp_dir, iidx, ret, copyback = 0;
 
 	struct pf_state_key_cmp key;
@@ -4955,10 +4955,12 @@ pf_test_state_icmp(struct pf_pdesc *pd, struct pf_state **state,
 	switch (pd->proto) {
 	case IPPROTO_ICMP:
 		icmptype = pd->hdr.icmp.icmp_type;
+		icmpcode = pd->hdr.icmp.icmp_code;
 		break;
 #ifdef INET6
 	case IPPROTO_ICMPV6:
 		icmptype = pd->hdr.icmp6.icmp6_type;
+		icmpcode = pd->hdr.icmp6.icmp6_code;
 		break;
 #endif /* INET6 */
 	default:
@@ -5134,6 +5136,24 @@ pf_test_state_icmp(struct pf_pdesc *pd, struct pf_state **state,
 			unhandled_af(pd->af);
 		}
 
+		if (PF_ANEQ(pd->dst, pd2.src, pd->af)) {
+			if (pf_status.debug >= LOG_NOTICE) {
+				log(LOG_NOTICE,
+				    "pf: BAD ICMP %d:%d outer dst: ",
+				    icmptype, icmpcode);
+				pf_print_host(pd->src, 0, pd->af);
+				addlog(" -> ");
+				pf_print_host(pd->dst, 0, pd->af);
+				addlog(" inner src: ");
+				pf_print_host(pd2.src, 0, pd2.af);
+				addlog(" -> ");
+				pf_print_host(pd2.dst, 0, pd2.af);
+				addlog("\n");
+			}
+			REASON_SET(reason, PFRES_BADSTATE);
+			return (PF_DROP);
+		}
+
 		switch (pd2.proto) {
 		case IPPROTO_TCP: {
 			struct tcphdr		*th = &pd2.hdr.tcp;
@@ -5199,7 +5219,7 @@ pf_test_state_icmp(struct pf_pdesc *pd, struct pf_state **state,
 				if (pf_status.debug >= LOG_NOTICE) {
 					log(LOG_NOTICE,
 					    "pf: BAD ICMP %d:%d ",
-					    icmptype, pd->hdr.icmp.icmp_code);
+					    icmptype, icmpcode);
 					pf_print_host(pd->src, 0, pd->af);
 					addlog(" -> ");
 					pf_print_host(pd->dst, 0, pd->af);
@@ -5213,7 +5233,7 @@ pf_test_state_icmp(struct pf_pdesc *pd, struct pf_state **state,
 				if (pf_status.debug >= LOG_DEBUG) {
 					log(LOG_DEBUG,
 					    "pf: OK ICMP %d:%d ",
-					    icmptype, pd->hdr.icmp.icmp_code);
+					    icmptype, icmpcode);
 					pf_print_host(pd->src, 0, pd->af);
 					addlog(" -> ");
 					pf_print_host(pd->dst, 0, pd->af);
