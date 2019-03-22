@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.265 2018/08/22 15:38:46 mpi Exp $g
+#	$OpenBSD: GENERIC,v 1.266 2018/09/21 12:42:34 stsp Exp $g
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -293,7 +293,7 @@ zyd*	at uhub?		# Zydas ZD1211
 upgt*	at uhub?		# Conexant/Intersil PrismGT SoftMAC USB
 urtw*	at uhub?		# Realtek 8187
 udcf*	at uhub?		# Gude Expert mouseCLOCK
-umbg*	at uhub?		# Meinberg Funkuhren USB5131
+umbg*	at uhub?		# Meinberg Funkuhren USB5131/DCF600USB
 uthum*	at uhidev?		# TEMPerHUM sensor
 ugold*	at uhidev?		# gold TEMPer sensor
 utrh*	at uhidev?		# USBRH sensor
