@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.28 2016/03/05 17:41:55 mpi Exp $*/
+/*	$OpenBSD: db_machdep.h,v 1.29 2016/04/27 11:10:48 mpi Exp $*/
 /*	$NetBSD: db_machdep.h,v 1.13 1996/04/29 20:50:08 leo Exp $	*/
 
 /*
@@ -90,8 +90,6 @@ void	kdb_kintr(void *);
 void	db_save_regs(struct trapframe *frame);
 void	ddb_trap(void);
 db_expr_t db_dumpframe(u_int32_t pframe, int (*pr)(const char *, ...));
-
-extern struct mutex ddb_mp_mutex;
 
 #define DDB_STATE_NOT_RUNNING	0
 #define DDB_STATE_RUNNING	1
