@@ -1,4 +1,4 @@
-/*	$OpenBSD: mutex.h,v 1.15 2018/06/08 15:38:15 guenther Exp $	*/
+/*	$OpenBSD: mutex.h,v 1.16 2019/01/23 22:39:47 tedu Exp $	*/
 
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
@@ -157,5 +157,19 @@ void	_mtx_leave(struct mutex *, const char *, int);
 #define _mtx_leave(m)			__mtx_leave(m)
 
 #endif /* WITNESS */
+
+#if defined(_KERNEL) && defined(DDB)
+
+struct db_mutex {
+	struct cpu_info	*mtx_owner;
+	unsigned long	 mtx_intr_state;
+};
+
+#define DB_MUTEX_INITIALIZER	{ NULL, 0 }
+
+void	db_mtx_enter(struct db_mutex *);
+void	db_mtx_leave(struct db_mutex *);
+
+#endif /* _KERNEL && DDB */
 
 #endif
