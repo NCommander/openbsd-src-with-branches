@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_sess.c,v 1.80 2018/04/25 07:10:39 tb Exp $ */
+/* $OpenBSD: ssl_sess.c,v 1.81 2018/08/24 18:10:25 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -465,7 +465,8 @@ ssl_get_prev_session(SSL *s, const unsigned char *session_id,
 		try_session_cache = 0;
 		break;
 	default:
-		abort();
+		OPENSSL_assert("aborting; unreasonable ticket");
+		_exit(1);
 	}
 
 	if (try_session_cache && ret == NULL &&
