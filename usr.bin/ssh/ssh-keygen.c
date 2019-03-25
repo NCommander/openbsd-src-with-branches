@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.326 2019/01/23 04:51:02 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.327 2019/02/10 16:35:41 benno Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -60,8 +60,11 @@
 # define DEFAULT_KEY_TYPE_NAME "ed25519"
 #endif
 
-/* Number of bits in the RSA/DSA key.  This value can be set on the command line. */
-#define DEFAULT_BITS		2048
+/*
+ * Default number of bits in the RSA/DSA key.  This value can be overridden
+ * on the command line.
+ */
+#define DEFAULT_BITS		3072
 #define DEFAULT_BITS_DSA	1024
 #define DEFAULT_BITS_ECDSA	256
 
