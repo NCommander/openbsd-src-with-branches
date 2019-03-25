@@ -1,4 +1,4 @@
-/* $OpenBSD: tlsexttest.c,v 1.27 2019/01/24 02:56:41 beck Exp $ */
+/* $OpenBSD: tlsexttest.c,v 1.28 2019/02/03 14:03:46 jsing Exp $ */
 /*
  * Copyright (c) 2017 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2017 Doug Hogan <doug@openbsd.org>
@@ -1579,22 +1579,6 @@ test_tlsext_sigalgs_client(void)
 	}
 	if (CBS_len(&cbs) != 0) {
 		FAIL("extension data remaining");
-		goto done;
-	}
-
-	if (ssl->cert->pkeys[SSL_PKEY_RSA_SIGN].sigalg->md() != EVP_sha512()) {
-		fprintf(stderr, "FAIL: RSA sign digest mismatch\n");
-		failure = 1;
-		goto done;
-	}
-	if (ssl->cert->pkeys[SSL_PKEY_RSA_ENC].sigalg->md() != EVP_sha512()) {
-		fprintf(stderr, "FAIL: RSA enc digest mismatch\n");
-		failure = 1;
-		goto done;
-	}
-	if (ssl->cert->pkeys[SSL_PKEY_ECC].sigalg->md() != EVP_sha512()) {
-		fprintf(stderr, "FAIL: ECC digest mismatch\n");
-		failure = 1;
 		goto done;
 	}
 
