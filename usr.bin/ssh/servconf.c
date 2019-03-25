@@ -1,5 +1,5 @@
 
-/* $OpenBSD: servconf.c,v 1.348 2019/01/24 02:34:52 dtucker Exp $ */
+/* $OpenBSD: servconf.c,v 1.349 2019/03/06 22:14:23 dtucker Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -440,7 +440,6 @@ fill_default_server_options(ServerOptions *options)
 		options->auth_methods[0] = NULL;
 		options->num_auth_methods = 0;
 	}
-
 }
 
 /* Keyword tokens. */
