@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ssl.8,v 1.65 2017/07/08 02:13:36 tedu Exp $
+.\"	$OpenBSD: ssl.8,v 1.66 2017/07/08 17:52:44 tedu Exp $
 .\"
 .\" Copyright (c) 1999 Theo de Raadt, Bob Beck
 .\" All rights reserved.
@@ -65,13 +65,13 @@ To support HTTPS transactions in
 .Xr httpd 8
 you will need to generate an RSA certificate.
 .Bd -literal -offset indent
-# openssl genrsa -out /etc/ssl/private/server.key 2048
+# openssl genrsa -out /etc/ssl/private/server.key 4096
 .Ed
 .Pp
 Or, if you wish the key to be encrypted with a passphrase that you will
 have to type in when starting servers
 .Bd -literal -offset indent
-# openssl genrsa -aes256 -out /etc/ssl/private/server.key 2048
+# openssl genrsa -aes256 -out /etc/ssl/private/server.key 4096
 .Ed
 .Pp
 The next step is to generate a Certificate Signing Request (CSR) which is
