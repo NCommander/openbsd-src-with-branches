@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.c,v 1.42 2019/01/14 16:50:56 florian Exp $ */
+/*	$OpenBSD: ospf6d.c,v 1.43 2019/01/15 22:18:10 remi Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -611,6 +611,8 @@ ospf_reload(void)
 
 	if ((xconf = parse_config(conffile, ospfd_conf->opts)) == NULL)
 		return (-1);
+
+	/* XXX bail out if router-id changed */
 
 	/* send config to childs */
 	if (ospf_sendboth(IMSG_RECONF_CONF, xconf, sizeof(*xconf)) == -1)
