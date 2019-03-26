@@ -1,4 +1,4 @@
-/*	$Id: io.c,v 1.11 2019/02/18 21:55:27 benno Exp $ */
+/*	$Id: io.c,v 1.12 2019/02/18 22:47:34 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -571,7 +571,7 @@ io_read_long(struct sess *sess, int fd, int64_t *val)
 	if (!io_read_int(sess, fd, &sval)) {
 		ERRX1(sess, "io_read_int");
 		return 0;
-	} else if (sval != INT32_MAX) {
+	} else if (sval != -1) {
 		*val = sval;
 		return 1;
 	}
