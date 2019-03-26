@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.185.2.1 2018/06/16 20:37:22 guenther Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.185.2.2 2018/08/22 22:58:53 bluhm Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -290,6 +290,30 @@ extern struct gate_descriptor *idt;
 #define CR_READ		1
 #define CR_CLTS		2
 #define CR_LMSW		3
+
+static __inline void
+sidt(void *p)
+{
+	__asm volatile("sidt (%0)" : : "r" (p) : "memory");
+}
+
+static __inline void
+sgdt(void *p)
+{
+	__asm volatile("sgdt (%0)" : : "r" (p) : "memory");
+}
+
+static __inline void
+bare_lgdt(struct region_descriptor *p)
+{
+	__asm volatile("lgdt (%0)" : : "r" (p) : "memory");
+}
+
+static __inline void
+sldt(u_short *sel)
+{
+	__asm volatile("sldt (%0)" : : "r" (sel) : "memory");
+}
 
 /*
  * vmm_enabled
@@ -3916,7 +3940,8 @@ vcpu_run_vmx(struct vcpu *vcpu, struct vm_run_params *vrp)
 	struct schedstate_percpu *spc;
 	struct vmx_invvpid_descriptor vid;
 	uint64_t eii, procbased, int_st;
-	uint16_t irq;
+	uint16_t irq, ldt_sel;
+	struct region_descriptor gdtr, idtr;
 
 	resume = 0;
 	irq = vrp->vrp_irq;
@@ -4117,10 +4142,18 @@ vcpu_run_vmx(struct vcpu *vcpu, struct vm_run_params *vrp)
 			break;
 		}
 
+		sgdt(&gdtr);
+		sidt(&idtr);
+		sldt(&ldt_sel);
+
 		KERNEL_UNLOCK();
 		ret = vmx_enter_guest(&vcpu->vc_control_pa,
 		    &vcpu->vc_gueststate, resume,
 		    curcpu()->ci_vmm_cap.vcc_vmx.vmx_has_l1_flush_msr);
+
+		bare_lgdt(&gdtr);
+		lidt(&idtr);
+		lldt(ldt_sel);
 
 		/*
 		 * On exit, interrupts are disabled, and we are running with
