@@ -1,4 +1,4 @@
-/* $OpenBSD: a_int.c,v 1.31 2017/01/29 17:49:22 beck Exp $ */
+/* $OpenBSD: a_int.c,v 1.32 2019/03/23 18:48:14 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,10 +56,9 @@
  * [including the GNU Public Licence.]
  */
 
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
-
-#include <sys/limits.h>
 
 #include <openssl/asn1.h>
 #include <openssl/bn.h>
