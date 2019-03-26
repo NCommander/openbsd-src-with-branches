@@ -1,4 +1,4 @@
-/* $OpenBSD: vmm.c,v 1.41 2018/07/12 15:48:02 mlarkin Exp $ */
+/* $OpenBSD: vmm.c,v 1.42 2018/08/29 04:51:12 pd Exp $ */
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -274,6 +274,30 @@ extern int cpu_pae;
 #define CR_READ		1
 #define CR_CLTS		2
 #define CR_LMSW		3
+
+static __inline void
+bare_lgdt(struct region_descriptor *p)
+{
+	__asm volatile("lgdt (%0)" : : "r" (p) : "memory");
+}
+
+static __inline void
+sidt(void *p)
+{
+	__asm volatile("sidt (%0)" : : "r" (p) : "memory");
+}
+
+static __inline void
+sgdt(void *p)
+{
+	__asm volatile("sgdt (%0)" : : "r" (p) : "memory");
+}
+
+static __inline void
+sldt(u_short *sel)
+{
+	__asm volatile("sldt (%0)" : : "r" (sel) : "memory");
+}
 
 /*
  * vmm_enabled
@@ -3598,7 +3622,8 @@ vcpu_run_vmx(struct vcpu *vcpu, struct vm_run_params *vrp)
 	struct schedstate_percpu *spc;
 	struct vmx_invvpid_descriptor vid;
 	uint32_t eii, procbased, int_st;
-	uint16_t irq;
+	uint16_t irq, ldt_sel;
+	struct region_descriptor gdtr, idtr;
 
 	resume = 0;
 	irq = vrp->vrp_irq;
@@ -3788,6 +3813,10 @@ vcpu_run_vmx(struct vcpu *vcpu, struct vm_run_params *vrp)
 			invvpid(IA32_VMX_INVVPID_SINGLE_CTX_GLB, &vid);
 		}
 
+		sgdt(&gdtr);
+		sidt(&idtr);
+		sldt(&ldt_sel);
+
 		/* Start / resume the VCPU */
 #ifdef VMM_DEBUG
 		KERNEL_ASSERT_LOCKED();
@@ -3795,6 +3824,10 @@ vcpu_run_vmx(struct vcpu *vcpu, struct vm_run_params *vrp)
 		KERNEL_UNLOCK();
 		ret = vmx_enter_guest(&vcpu->vc_control_pa,
 		    &vcpu->vc_gueststate, resume, gdt.rd_base);
+
+		bare_lgdt(&gdtr);
+		lidt(&idtr);
+		lldt(ldt_sel);
 
 		exit_reason = VM_EXIT_NONE;
 		if (ret == 0) {
