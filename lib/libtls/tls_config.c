@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_config.c,v 1.52 2018/04/07 16:35:34 jsing Exp $ */
+/* $OpenBSD: tls_config.c,v 1.53 2018/11/29 14:24:23 tedu Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -616,8 +616,6 @@ tls_config_set_keypair_file_internal(struct tls_config *config,
     const char *cert_file, const char *key_file, const char *ocsp_file)
 {
 	if (tls_config_set_cert_file(config, cert_file) != 0)
-		return (-1);
-	if (tls_config_set_key_file(config, key_file) != 0)
 		return (-1);
 	if (tls_config_set_key_file(config, key_file) != 0)
 		return (-1);
