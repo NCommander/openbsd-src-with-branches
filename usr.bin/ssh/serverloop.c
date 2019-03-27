@@ -1,4 +1,4 @@
-/* $OpenBSD: serverloop.c,v 1.213 2019/01/19 22:30:52 djm Exp $ */
+/* $OpenBSD: serverloop.c,v 1.214 2019/03/06 21:06:59 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -244,9 +244,10 @@ wait_until_can_do_something(struct ssh *ssh,
 		uint64_t keepalive_ms =
 		    (uint64_t)options.client_alive_interval * 1000;
 
-		client_alive_scheduled = 1;
-		if (max_time_ms == 0 || max_time_ms > keepalive_ms)
+		if (max_time_ms == 0 || max_time_ms > keepalive_ms) {
 			max_time_ms = keepalive_ms;
+			client_alive_scheduled = 1;
+		}
 	}
 
 #if 0
