@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_jme.c,v 1.49 2017/01/22 10:17:38 dlg Exp $	*/
+/*	$OpenBSD: if_jme.c,v 1.50 2017/09/08 05:36:52 deraadt Exp $	*/
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -1738,7 +1738,7 @@ jme_rxeof(struct jme_softc *sc)
 		pktlen = JME_RX_BYTES(letoh32(desc->buflen));
 		if (nsegs != howmany(pktlen, MCLBYTES)) {
 			printf("%s: RX fragment count(%d) "
-			    "and packet size(%d) mismach\n",
+			    "and packet size(%d) mismatch\n",
 			     sc->sc_dev.dv_xname, nsegs, pktlen);
 			break;
 		}
