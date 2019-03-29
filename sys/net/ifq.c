@@ -457,10 +457,9 @@ ifiq_init(struct ifiqueue *ifiq, struct ifnet *ifp, unsigned int idx)
 void
 ifiq_destroy(struct ifiqueue *ifiq)
 {
-	if (!task_del(ifiq->ifiq_softnet, &ifiq->ifiq_task)) {
-		NET_ASSERT_UNLOCKED();
+	NET_ASSERT_UNLOCKED();
+	if (!task_del(ifiq->ifiq_softnet, &ifiq->ifiq_task))
 		taskq_barrier(ifiq->ifiq_softnet);
-	}
 
 	/* don't need to lock because this is the last use of the ifiq */
 	ml_purge(&ifiq->ifiq_ml);
