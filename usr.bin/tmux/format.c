@@ -1,4 +1,4 @@
-/* $OpenBSD: format.c,v 1.186 2019/03/19 19:01:50 nicm Exp $ */
+/* $OpenBSD: format.c,v 1.187 2019/03/28 21:05:15 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1025,7 +1025,9 @@ format_choose(struct format_tree *ft, const char *s, char **left, char **right,
 
 	if (expand) {
 		*left = format_expand(ft, left0);
+		free(left0);
 		*right = format_expand(ft, right0);
+		free(right0);
 	} else {
 		*left = left0;
 		*right = right0;
