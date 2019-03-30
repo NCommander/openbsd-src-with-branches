@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.338 2018/09/16 19:36:33 bluhm Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.339 2019/01/29 10:58:31 kn Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1627,7 +1627,7 @@ host(const char *s, int opts)
 		if_name++;
 	}
 
-	if ((p = strrchr(ps, '/')) != NULL) {
+	if ((p = strchr(ps, '/')) != NULL) {
 		mask = strtonum(p+1, 0, 128, &errstr);
 		if (errstr) {
 			fprintf(stderr, "netmask is %s: %s\n", errstr, p);
