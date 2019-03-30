@@ -1,4 +1,4 @@
-/*	$Id: main.c,v 1.36 2019/03/25 21:09:49 deraadt Exp $ */
+/*	$Id: main.c,v 1.37 2019/03/30 07:24:42 naddy Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -499,7 +499,7 @@ main(int argc, char *argv[])
 usage:
 	fprintf(stderr,
 	    "usage: %s [-aDglnoprtvz] [-e program] [--archive] [--compress]\n"
-	    "\t[--delete] [--devices] [--group] [--links] [--dry-run]\n"
+	    "\t[--del] [--delete] [--devices] [--group] [--links] [--dry-run]\n"
 	    "\t[--owner] [--perms] [--port=portnumber] [--recursive]\n"
 	    "\t[--rsh=program][--rsync-path=program] [--specials] [--times]\n"
 	    "\t[--verbose] [--version] source ... directory\n",
