@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.202 2019/01/19 18:50:24 uaa Exp $ */
+/*	$OpenBSD: ehci.c,v 1.203 2019/03/11 17:50:08 mpi Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -1431,7 +1431,7 @@ ehci_open(struct usbd_pipe *pipe)
 		);
 		/*
 		 * To reduce conflict with split isochronous transfer,
-		 * schedule (split) interrupt trasnfer at latter half of
+		 * schedule (split) interrupt transfer at latter half of
 		 * 1ms frame:
 		 *
 		 *         |<-------------- H-Frame -------------->|
