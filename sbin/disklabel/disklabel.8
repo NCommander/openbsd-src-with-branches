@@ -1,4 +1,4 @@
-.\"	$OpenBSD: disklabel.8,v 1.131 2019/03/07 14:22:18 jmc Exp $
+.\"	$OpenBSD: disklabel.8,v 1.132 2019/03/31 18:30:49 phessler Exp $
 .\"	$NetBSD: disklabel.8,v 1.9 1995/03/18 14:54:38 cgd Exp $
 .\"
 .\" Copyright (c) 1987, 1988, 1991, 1993
@@ -33,7 +33,7 @@
 .\"
 .\"	@(#)disklabel.8	8.2 (Berkeley) 4/19/94
 .\"
-.Dd $Mdocdate: March 7 2019 $
+.Dd $Mdocdate: March 31 2019 $
 .Dt DISKLABEL 8
 .Os
 .Sh NAME
@@ -541,8 +541,7 @@ mountpoint, min-max size range, and percentage of disk, space-separated.
 Max can be unlimited by specifying '*'.
 If only mountpoint and min size are given, the partition is created with that
 exact size.
-.Pp
-.Bd -literal -offset indent -compact
+.Bd -literal -offset indent
 /		250M
 swap		80M-256M 10%
 /tmp		120M-4G	8%
