@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.36 2018/07/04 22:26:20 drahn Exp $ */
+/* $OpenBSD: machdep.c,v 1.37 2019/01/31 14:35:06 patrick Exp $ */
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -369,6 +369,9 @@ int	waittime = -1;
 __dead void
 boot(int howto)
 {
+	if ((howto & RB_RESET) != 0)
+		goto doreset;
+
 	if (cold) {
 		if ((howto & RB_USERREQ) == 0)
 			howto |= RB_HALT;
@@ -412,6 +415,7 @@ haltsys:
 		cngetc();
 	}
 
+doreset:
 	printf("rebooting...\n");
 	delay(500000);
 	if (cpuresetfn)
