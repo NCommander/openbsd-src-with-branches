@@ -1,4 +1,4 @@
-.\"	$OpenBSD: unwind.conf.5,v 1.6 2019/02/05 19:26:49 jmc Exp $
+.\"	$OpenBSD: unwind.conf.5,v 1.7 2019/02/05 19:39:19 jmc Exp $
 .\"
 .\" Copyright (c) 2018 Florian Obser <florian@openbsd.org>
 .\" Copyright (c) 2005 Esben Norby <norby@openbsd.org>
@@ -63,12 +63,14 @@ forwarder { $fwd1 $fwd2 }
 .Ed
 .Sh GLOBAL CONFIGURATION
 .Bl -tag -width Ds
-.It Ic forwarder Brq Ar address Oo Ic port Ar number Oc Oo Ic DoT Oc ...
+.It Ic forwarder Brq Ar address Oo Ic port Ar number Oc Oo Oo Ic authentication name Ar name Oc Ic DoT Oc ...
 A list of addresses of DNS name servers to forward queries to.
 If
 .Ic DoT
 is specified, use DNS over TLS when sending queries to the server at
 .Ar address .
+.Ar name
+validates the certificate of the DNS over TLS server.
 .El
 .Pp
 .Nm unwind
