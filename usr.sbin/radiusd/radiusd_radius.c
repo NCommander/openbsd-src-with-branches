@@ -1,4 +1,4 @@
-/*	$OpenBSD: radiusd_radius.c,v 1.13 2017/05/30 16:30:22 yasuoka Exp $	*/
+/*	$OpenBSD: radiusd_radius.c,v 1.14 2019/04/01 09:25:14 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2013 Internet Initiative Japan Inc.
@@ -569,7 +569,7 @@ static void
 module_radius_req_on_success(struct module_radius_req *req,
     const u_char *pkt, size_t pktlen)
 {
-	module_accsreq_answer(req->module->base, req->q_id, 1, pkt, pktlen);
+	module_accsreq_answer(req->module->base, req->q_id, pkt, pktlen);
 	module_radius_req_free(req);
 }
 

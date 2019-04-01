@@ -1,4 +1,4 @@
-/*	$OpenBSD: radiusd_local.h,v 1.2 2015/07/27 08:58:09 yasuoka Exp $	*/
+/*	$OpenBSD: radiusd_local.h,v 1.3 2015/08/21 06:16:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2013 Internet Initiative Japan Inc.
@@ -120,7 +120,6 @@ struct radius_query {
 	RADIUS_PACKET			*req;
 	RADIUS_PACKET			*res;
 	int				 req_modified;
-	int				 res_modified;
 	char				 username[256]; /* original username */
 	TAILQ_ENTRY(radius_query)	 next;
 };
