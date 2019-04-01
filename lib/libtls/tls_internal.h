@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_internal.h,v 1.72 2018/04/07 16:35:34 jsing Exp $ */
+/* $OpenBSD: tls_internal.h,v 1.73 2018/11/06 20:34:54 jsing Exp $ */
 /*
  * Copyright (c) 2014 Jeremie Courreges-Anglas <jca@openbsd.org>
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
@@ -18,6 +18,8 @@
 
 #ifndef HEADER_TLS_INTERNAL_H
 #define HEADER_TLS_INTERNAL_H
+
+#include <pthread.h>
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -75,6 +77,7 @@ struct tls_ticket_key {
 struct tls_config {
 	struct tls_error error;
 
+	pthread_mutex_t mutex;
 	int refcount;
 
 	char *alpn;
