@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wb.c,v 1.68 2017/01/22 10:17:38 dlg Exp $	*/
+/*	$OpenBSD: if_wb.c,v 1.69 2017/07/13 17:45:00 naddy Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -660,7 +660,7 @@ wb_fixmedia(sc)
 	if (IFM_SUBTYPE(mii->mii_media_active) == IFM_10_T) {
 		media = mii->mii_media_active & ~IFM_10_T;
 		media |= IFM_100_TX;
-	} if (IFM_SUBTYPE(mii->mii_media_active) == IFM_100_TX) {
+	} else if (IFM_SUBTYPE(mii->mii_media_active) == IFM_100_TX) {
 		media = mii->mii_media_active & ~IFM_100_TX;
 		media |= IFM_10_T;
 	} else
