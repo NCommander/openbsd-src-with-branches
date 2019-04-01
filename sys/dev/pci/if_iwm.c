@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwm.c,v 1.236 2019/02/27 04:10:38 stsp Exp $	*/
+/*	$OpenBSD: if_iwm.c,v 1.237 2019/02/27 07:47:57 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014, 2016 genua gmbh <info@genua.de>
@@ -7339,11 +7339,10 @@ iwm_intr(void *arg)
 
 	if (r1 & IWM_CSR_INT_BIT_RF_KILL) {
 		handled |= IWM_CSR_INT_BIT_RF_KILL;
-		if (iwm_check_rfkill(sc)) {
-			task_add(systq, &sc->init_task);
-			rv = 1;
-			goto out;
-		}
+		iwm_check_rfkill(sc);
+		task_add(systq, &sc->init_task);
+		rv = 1;
+		goto out_ena;
 	}
 
 	if (r1 & IWM_CSR_INT_BIT_SW_ERR) {
