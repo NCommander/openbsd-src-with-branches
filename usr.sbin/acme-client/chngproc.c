@@ -1,4 +1,4 @@
-/*	$Id: chngproc.c,v 1.11 2017/01/24 12:53:52 deraadt Exp $ */
+/*	$Id: chngproc.c,v 1.12 2017/01/24 13:32:55 jsing Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -106,10 +106,12 @@ chngproc(int netsock, const char *root)
 		if (fd == -1) {
 			warn("%s", fs[fsz - 1]);
 			goto out;
-		} if (write(fd, fmt, strlen(fmt)) == -1) {
+		}
+		if (write(fd, fmt, strlen(fmt)) == -1) {
 			warn("%s", fs[fsz - 1]);
 			goto out;
-		} else if (close(fd) == -1) {
+		}
+		if (close(fd) == -1) {
 			warn("%s", fs[fsz - 1]);
 			goto out;
 		}
