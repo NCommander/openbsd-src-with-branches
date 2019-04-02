@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_xxx.c,v 1.34 2018/02/19 08:59:52 mpi Exp $	*/
+/*	$OpenBSD: kern_xxx.c,v 1.35 2018/03/08 22:04:18 bluhm Exp $	*/
 /*	$NetBSD: kern_xxx.c,v 1.32 1996/04/22 01:38:41 christos Exp $	*/
 
 /*
@@ -75,7 +75,7 @@ reboot(int howto)
 	/* NOTREACHED */
 }
 
-#if !defined(NO_PROPOLICE)
+#if !defined(NO_PROPOLICE) && !defined(_RET_PROTECTOR)
 void __stack_smash_handler(char [], int __attribute__((unused)));
 
 void
