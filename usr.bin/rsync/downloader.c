@@ -1,4 +1,4 @@
-/*	$Id: downloader.c,v 1.17 2019/02/18 22:47:34 benno Exp $ */
+/*	$Id: downloader.c,v 1.18 2019/03/23 16:04:28 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -414,7 +414,7 @@ rsync_downloader(struct download *p, struct sess *sess, int *ofd)
 
 		/* Create the temporary file. */
 
-		if (mktemplate(sess, &p->fname, 
+		if (mktemplate(sess, &p->fname,
 		    f->path, sess->opts->recursive) == -1) {
 			ERRX1(sess, "mktemplate");
 			goto out;
