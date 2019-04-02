@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.100 2019/03/18 21:46:02 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.101 2019/03/19 21:09:51 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -83,7 +83,8 @@ static const char *options_table_window_size_list[] = {
 			"#{?#{&&:#{window_bell_flag}," \
 				"#{!=:#{window-status-bell-style},default}}, " \
 				"#{window-status-bell-style}," \
-				"#{?#{&&:#{window_activity_flag}," \
+				"#{?#{&&:#{||:#{window_activity_flag}," \
+					     "#{window_silence_flag}}," \
 					"#{!=:" \
 					"#{window-status-activity-style}," \
 					"default}}, " \
@@ -104,7 +105,8 @@ static const char *options_table_window_size_list[] = {
 			"#{?#{&&:#{window_bell_flag}," \
 				"#{!=:#{window-status-bell-style},default}}, " \
 				"#{window-status-bell-style}," \
-				"#{?#{&&:#{window_activity_flag}," \
+				"#{?#{&&:#{||:#{window_activity_flag}," \
+					     "#{window_silence_flag}}," \
 					"#{!=:" \
 					"#{window-status-activity-style}," \
 					"default}}, " \
