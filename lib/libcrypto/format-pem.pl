@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-4 $OpenBSD: format-pem.pl,v 1.3 2018/12/16 11:56:53 sthen Exp $
+# $OpenBSD: format-pem.pl,v 1.4 2019/03/13 11:49:42 sthen Exp $
 #
 # Copyright (c) 2016 Stuart Henderson <sthen@openbsd.org>
 #
