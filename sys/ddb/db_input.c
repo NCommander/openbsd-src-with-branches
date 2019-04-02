@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_input.c,v 1.15 2016/01/25 14:30:30 mpi Exp $	*/
+/*	$OpenBSD: db_input.c,v 1.16 2016/04/19 12:23:25 mpi Exp $	*/
 /*	$NetBSD: db_input.c,v 1.7 1996/02/05 01:57:02 christos Exp $	*/
 
 /*
@@ -302,6 +302,8 @@ db_inputchar(int c)
 					db_history_last = db_history;
 			}
 			*db_history_last++ = '\0';
+			if (db_history_last == db_history + db_history_size)
+				db_history_last = db_history;
 		}
 		db_history_curr = db_history_last;
 #endif
