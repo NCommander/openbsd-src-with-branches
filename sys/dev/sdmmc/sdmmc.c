@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc.c,v 1.51 2018/08/09 13:52:36 patrick Exp $	*/
+/*	$OpenBSD: sdmmc.c,v 1.52 2018/12/29 11:37:30 patrick Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -181,7 +181,8 @@ sdmmc_activate(struct device *self, int act)
 	case DVACT_SUSPEND:
 		rv = config_activate_children(self, act);
 		/* If card in slot, cause a detach/re-attach */
-		if (ISSET(sc->sc_flags, SMF_CARD_PRESENT))
+		if (ISSET(sc->sc_flags, SMF_CARD_PRESENT) &&
+		    !ISSET(sc->sc_caps, SMC_CAPS_NONREMOVABLE))
 			sc->sc_dying = -1;
 		break;
 	case DVACT_RESUME:

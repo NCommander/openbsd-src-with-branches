@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdhc.c,v 1.60 2018/05/30 13:32:40 patrick Exp $	*/
+/*	$OpenBSD: sdhc.c,v 1.61 2018/09/06 10:15:17 patrick Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -334,6 +334,9 @@ sdhc_host_found(struct sdhc_softc *sc, bus_space_tag_t iot,
 
 	if (ISSET(sc->sc_flags, SDHC_F_NODDR50))
 		saa.caps &= ~SMC_CAPS_MMC_DDR52;
+
+	if (ISSET(sc->sc_flags, SDHC_F_NONREMOVABLE))
+		saa.caps |= SMC_CAPS_NONREMOVABLE;
 
 	hp->sdmmc = config_found(&sc->sc_dev, &saa, NULL);
 	if (hp->sdmmc == NULL) {

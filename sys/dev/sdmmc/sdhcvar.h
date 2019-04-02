@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdhcvar.h,v 1.10 2017/05/05 15:10:07 kettenis Exp $	*/
+/*	$OpenBSD: sdhcvar.h,v 1.11 2018/03/19 21:40:32 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -48,5 +48,6 @@ void	sdhc_needs_discover(struct sdhc_softc *);
 /* flag values */
 #define SDHC_F_NOPWR0		(1 << 0)
 #define SDHC_F_NODDR50		(1 << 1)
+#define SDHC_F_NONREMOVABLE	(1 << 2)
 
 #endif
