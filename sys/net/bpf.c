@@ -1,4 +1,4 @@
-/*	$OpenBSD: bpf.c,v 1.170 2018/07/13 08:51:15 bluhm Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.171 2019/03/18 00:05:52 dlg Exp $	*/
 /*	$NetBSD: bpf.c,v 1.33 1997/02/21 23:59:35 thorpej Exp $	*/
 
 /*
@@ -862,9 +862,24 @@ bpfioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 	case BIOCSRTIMEOUT:
 		{
 			struct timeval *tv = (struct timeval *)addr;
+			u_long rtout;
 
 			/* Compute number of ticks. */
-			d->bd_rtout = tv->tv_sec * hz + tv->tv_usec / tick;
+			if (tv->tv_sec < 0 || !timerisvalid(tv)) {
+				error = EINVAL;
+				break;
+			}
+			if (tv->tv_sec > ULONG_MAX / hz) {
+				error = EOVERFLOW;
+				break;
+			}
+			rtout = tv->tv_sec * hz;
+			if (tv->tv_usec / tick > ULONG_MAX - rtout) {
+				error = EOVERFLOW;
+				break;
+			}
+			rtout += tv->tv_usec / tick;
+			d->bd_rtout = rtout;
 			if (d->bd_rtout == 0 && tv->tv_usec != 0)
 				d->bd_rtout = 1;
 			break;
