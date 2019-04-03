@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $OpenBSD: emacs.sh,v 1.9 2017/08/22 20:14:57 anton Exp $
+# $OpenBSD: emacs.sh,v 1.10 2017/11/21 19:25:46 anton Exp $
 #
 # Copyright (c) 2017 Anton Lindqvist <anton@openbsd.org>
 # Copyright (c) 2017 Ingo Schwarze <schwarze@openbsd.org>
@@ -275,10 +275,6 @@ testseq ": 1\n\00333\0033." " # : 1\r\r\n # "
 # ^V, ^^: quote
 testseq "\0026\0001" " # ^A"
 testseq "\0036\0001" " # ^A"
-
-# ^L: redraw
-testseq "\0014" " # \r\n # "
-testseq "echo\0014" " # echo\r\n # echo"
 
 # [n] ^[^]: search-character-backward
 testseq "\0033\0035a" " # \0007"
