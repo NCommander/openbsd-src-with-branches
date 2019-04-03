@@ -1,4 +1,4 @@
-#	$OpenBSD: airport,v 1.71 2019/02/25 21:21:45 deraadt Exp $
+#	$OpenBSD: airport,v 1.72 2019/03/11 16:43:56 deraadt Exp $
 #	@(#)airport	8.1 (Berkeley) 6/8/93
 #
 # Some of this information from the Airport Search Engine at
@@ -1962,7 +1962,7 @@ YTH:Thompson, Manitoba, Canada
 YTO:All Airports around Toronto, Ontario, Canada
 YTS:Timmins, Ontario, Canada
 YTZ:Toronto-City Centre, Ontario, Canada
-YUL:Montreal Dorval International, Quebec, Canada
+YUL:Montreal-Pierre Elliott Trudeau International, Quebec, Canada
 YUM:Yuma, Arizona, USA
 YUY:Rouyn, Quebec, Canada
 YVA:Moroni (Hahaya/Iconi)Comoros
