@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2019/01/24 16:32:29 tb Exp $
+#	$OpenBSD: Makefile,v 1.5 2019/01/25 01:03:21 tb Exp $
 
 PROGS += handshake_table
 PROGS += valid_handshakes_terminate
@@ -36,6 +36,10 @@ CLEANFILES += handshake.${_FMT}
 run-$p: $p
 	@echo '\n======== $@ ========'
 	./$p
+
+.PHONY: run-$p
 .endfor
+
+.PHONY: print
 
 .include <bsd.regress.mk>
