@@ -147,6 +147,9 @@ gre_print_0(const u_char *p, u_int length)
 	l -= sizeof(proto);
 	length -= sizeof(proto);
 
+	if (vflag)
+		printf(" %04x", proto);
+
 	if ((flags & GRE_CP) | (flags & GRE_RP)) {
 		if (l < 2)
 			goto trunc;
