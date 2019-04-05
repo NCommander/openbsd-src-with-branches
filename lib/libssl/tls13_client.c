@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_client.c,v 1.14 2019/03/25 17:21:18 jsing Exp $ */
+/* $OpenBSD: tls13_client.c,v 1.15 2019/04/04 16:53:57 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -337,9 +337,6 @@ tls13_server_hello_recv(struct tls13_ctx *ctx)
 
 	/* See if we switched back to the legacy client method. */
 	if (s->method->internal->version < TLS1_3_VERSION)
-		return 1;
-
-	if (ctx->handshake_stage.hs_type & WITH_HRR)
 		return 1;
 
 	/* XXX - handle other key share types. */
