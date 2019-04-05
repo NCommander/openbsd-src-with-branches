@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ppp.c,v 1.31 2018/02/06 03:07:51 dlg Exp $	*/
+/*	$OpenBSD: print-ppp.c,v 1.32 2018/02/06 03:41:58 dlg Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -389,6 +389,9 @@ ppp_print(const u_char *p, u_int length)
 		break;
 	case PPP_IPV6CP:
 		handle_ipv6cp(p, l);
+		break;
+	case PPP_CDP:
+		cdp_print(p, length, l, 0);
 		break;
 	}
 }

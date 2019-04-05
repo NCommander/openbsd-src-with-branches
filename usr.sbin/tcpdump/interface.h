@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.h,v 1.78 2018/07/06 07:13:21 dlg Exp $	*/
+/*	$OpenBSD: interface.h,v 1.79 2018/10/22 16:12:45 kn Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -20,7 +20,7 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @(#) $Id: interface.h,v 1.78 2018/07/06 07:13:21 dlg Exp $ (LBL)
+ * @(#) $Id: interface.h,v 1.79 2018/10/22 16:12:45 kn Exp $ (LBL)
  */
 
 #ifndef tcpdump_interface_h
@@ -270,8 +270,7 @@ extern void ike_print(const u_char *, u_int);
 extern void udpencap_print(const u_char *, u_int, const u_char *);
 extern void ah_print(const u_char *, u_int, const u_char *);
 extern void esp_print(const u_char *, u_int, const u_char *);
-extern void cdp_print(const u_char *, u_int, u_int, const u_char *,
-	const u_char *);
+extern void cdp_print(const u_char *, u_int, u_int, int);
 extern void stp_print(const u_char *, u_int);
 extern void radius_print(const u_char *, u_int);
 extern void lwres_print(const u_char *, u_int);
