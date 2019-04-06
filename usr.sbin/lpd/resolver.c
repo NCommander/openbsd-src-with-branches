@@ -326,7 +326,8 @@ resolver_getaddrinfo_cb(struct asr_result *ar, void *arg)
 	m_add_int(s->proc, ar->ar_errno);
 	m_close(s->proc);
 
-	freeaddrinfo(ar->ar_addrinfo);
+	if (ar->ar_addrinfo)
+		freeaddrinfo(ar->ar_addrinfo);
 	free(s);
 }
 
