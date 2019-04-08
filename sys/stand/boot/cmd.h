@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.h,v 1.15 2004/06/24 22:10:18 tom Exp $	*/
+/*	$OpenBSD: cmd.h,v 1.16 2007/06/13 02:17:32 drahn Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -60,4 +60,5 @@ int read_conf(void);
 int bootparse(int);
 void boot(dev_t);
 
+int upgrade();
 int docmd(void);		/* No longer static: needed by regress test */
