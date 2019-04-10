@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_i386.c,v 1.24 2018/11/12 05:06:50 guenther Exp $	*/
+/*	$OpenBSD: exec_i386.c,v 1.26 2018/12/10 16:52:02 jsing Exp $	*/
 
 /*
  * Copyright (c) 1997-1998 Michael Shalayeff
@@ -59,7 +59,7 @@ extern struct cmd_state cmd;
 char *bootmac = NULL;
 
 void
-run_loadfile(u_long *marks, int howto)
+run_loadfile(uint64_t *marks, int howto)
 {
 	u_long entry;
 #ifdef EXEC_DEBUG

@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.3 2014/07/12 23:45:33 jasper Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.4 2014/07/14 10:23:58 jasper Exp $	*/
 
 /*
  * Copyright (c) 2013 Jasper Lievisse Adriaanse <jasper@openbsd.org>
@@ -27,7 +27,7 @@ extern char *kernelfile;
  */
 void    devboot(dev_t, char *);
 void    machdep(void);
-void    run_loadfile(u_long *, int);
+void    run_loadfile(uint64_t *, int);
 
 /*
  * CN30XX UART

@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.4 2014/02/23 20:01:04 miod Exp $	*/
+/*	$OpenBSD: boot.c,v 1.5 2017/03/16 18:08:58 miod Exp $	*/
 /*	$NetBSD: boot.c,v 1.3 2013/03/05 15:34:53 tsutsui Exp $	*/
 
 /*
@@ -164,7 +164,7 @@ bootunix(char *line)
 #if 0
 	int dev, unit, part;
 #endif
-	u_long marks[MARK_MAX];
+	uint64_t marks[MARK_MAX];
 	char *lparen, *rparen;
 	char rndpath[MAXPATHLEN];
 	static int rnd_loaded = 0;

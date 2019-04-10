@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.2 2010/04/03 19:13:27 miod Exp $	*/
+/*	$OpenBSD: exec.c,v 1.3 2014/11/18 20:51:01 krw Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -28,7 +28,7 @@ typedef void (*program)(int32_t, int32_t, int32_t *, int32_t, uint64_t *);
 #define	PTR_TO_CKSEG1(ptr)	(int32_t)(CKSEG1_BASE | (uint64_t)(ptr))
 
 void
-run_loadfile(u_long *marks, int howto)
+run_loadfile(uint64_t *marks, int howto)
 {
 	int32_t newargc;
 	int32_t *newargv;

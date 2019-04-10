@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.5 2017/02/08 09:18:24 patrick Exp $	*/
+/*	$OpenBSD: exec.c,v 1.6 2019/01/09 13:18:50 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2006, 2016 Mark Kettenis
@@ -88,7 +88,7 @@ cpu_inval_icache(void)
 }
 
 void
-run_loadfile(u_long *marks, int howto)
+run_loadfile(uint64_t *marks, int howto)
 {
 	char args[256];
 	char *cp;

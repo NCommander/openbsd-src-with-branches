@@ -1,4 +1,4 @@
-/*	$OpenBSD: devs.c,v 1.9 2014/07/13 09:26:08 jasper Exp $	*/
+/*	$OpenBSD: devs.c,v 1.10 2014/07/17 13:14:06 miod Exp $	*/
 
 /*
  * Copyright (c) 2006 Michael Shalayeff
@@ -71,7 +71,7 @@ cnspeed(dev_t dev, int sp)
 }
 
 void
-run_loadfile(u_long *marks, int howto)
+run_loadfile(uint64_t *marks, int howto)
 {
 	u_long entry;
 
