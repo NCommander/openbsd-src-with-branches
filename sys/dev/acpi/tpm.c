@@ -194,7 +194,6 @@ const char *tpm_hids[] = {
 	"BCM0102",
 	"NSC1200",
 	"ICO0102",
-	"MSFT0101",
 	NULL
 };
 
