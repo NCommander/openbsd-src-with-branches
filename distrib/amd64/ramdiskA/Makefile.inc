@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.7 2018/06/06 00:14:29 mortimer Exp $
+#	$OpenBSD: Makefile.inc,v 1.8 2019/04/05 21:08:00 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -74,7 +74,7 @@ bsd.rd:	mr.fs bsd
 
 bsd:
 	cd ${.CURDIR}/../../../sys/arch/amd64/compile/${RAMDISK} && \
-	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && env COPTS="-Oz -fno-ret-protector" ${MAKE}'
+	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && ${MAKE}'
 	cp -p ${.CURDIR}/../../../sys/arch/amd64/compile/${RAMDISK}/obj/bsd bsd
 
 mr.fs: instbin
