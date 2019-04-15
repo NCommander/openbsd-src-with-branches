@@ -355,7 +355,9 @@ if_sff_info(int s, const char *ifname, int dump)
 		}
 		error = if_inf8077(s, ifname, dump, &pg0);
 		break;
+	case SFF8024_ID_QSFP:
 	case SFF8024_ID_QSFP_PLUS:
+	case SFF8024_ID_QSFP28:
 		error = if_sff8636(s, ifname, dump, &pg0);
 		break;
 	}
