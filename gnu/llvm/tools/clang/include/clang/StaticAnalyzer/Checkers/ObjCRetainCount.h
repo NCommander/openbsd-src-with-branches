@@ -120,9 +120,6 @@ public:
     NoRet,
     /// Indicates that the returned value is an owned (+1) symbol.
     OwnedSymbol,
-    /// Indicates that the returned value is an owned (+1) symbol and
-    /// that it should be treated as freshly allocated.
-    OwnedAllocatedSymbol,
     /// Indicates that the returned value is an object with retain count
     /// semantics but that it is not owned (+0).  This is the default
     /// for getters, etc.
@@ -139,7 +136,7 @@ public:
     // by inlining the function
     NoRetHard
   };
-  
+
   /// Determines the object kind of a tracked object.
   enum ObjKind {
     /// Indicates that the tracked object is a CF object.  This is
@@ -148,39 +145,40 @@ public:
     /// Indicates that the tracked object is an Objective-C object.
     ObjC,
     /// Indicates that the tracked object could be a CF or Objective-C object.
-    AnyObj
+    AnyObj,
+    /// Indicates that the tracked object is a generalized object.
+    Generalized
   };
-  
+
 private:
   Kind K;
   ObjKind O;
-  
+
   RetEffect(Kind k, ObjKind o = AnyObj) : K(k), O(o) {}
-  
+
 public:
   Kind getKind() const { return K; }
-  
+
   ObjKind getObjKind() const { return O; }
-  
+
   bool isOwned() const {
-    return K == OwnedSymbol || K == OwnedAllocatedSymbol ||
-    K == OwnedWhenTrackedReceiver;
+    return K == OwnedSymbol || K == OwnedWhenTrackedReceiver;
   }
-  
+
   bool notOwned() const {
     return K == NotOwnedSymbol;
   }
-  
+
   bool operator==(const RetEffect &Other) const {
     return K == Other.K && O == Other.O;
   }
-  
+
   static RetEffect MakeOwnedWhenTrackedReceiver() {
     return RetEffect(OwnedWhenTrackedReceiver, ObjC);
   }
-  
-  static RetEffect MakeOwned(ObjKind o, bool isAllocated = false) {
-    return RetEffect(isAllocated ? OwnedAllocatedSymbol : OwnedSymbol, o);
+
+  static RetEffect MakeOwned(ObjKind o) {
+    return RetEffect(OwnedSymbol, o);
   }
   static RetEffect MakeNotOwned(ObjKind o) {
     return RetEffect(NotOwnedSymbol, o);

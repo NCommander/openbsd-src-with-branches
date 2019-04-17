@@ -2,6 +2,8 @@
 Clang Compiler User's Manual
 ============================
 
+.. include:: <isonum.txt>
+
 .. contents::
    :local:
 
@@ -23,6 +25,10 @@ processes code, please see :doc:`InternalsManual`. If you are interested in the
 `Clang Static Analyzer <http://clang-analyzer.llvm.org>`_, please see its web
 page.
 
+Clang is one component in a complete toolchain for C family languages.
+A separate document describes the other pieces necessary to
+:doc:`assemble a complete toolchain <Toolchain>`.
+
 Clang is designed to support the C family of programming languages,
 which includes :ref:`C <c>`, :ref:`Objective-C <objc>`, :ref:`C++ <cxx>`, and
 :ref:`Objective-C++ <objcxx>` as well as many dialects of those. For
@@ -35,6 +41,7 @@ specific section:
    variants depending on base language.
 -  :ref:`C++ Language <cxx>`
 -  :ref:`Objective C++ Language <objcxx>`
+-  :ref:`OpenCL C Language <opencl>`: v1.0, v1.1, v1.2, v2.0.
 
 In addition to these base languages and their dialects, Clang supports a
 broad variety of language extensions, which are documented in the
@@ -100,11 +107,13 @@ Options to Control Error and Warning Messages
 
 .. option:: -Wno-error=foo
 
-  Turn warning "foo" into an warning even if :option:`-Werror` is specified.
+  Turn warning "foo" into a warning even if :option:`-Werror` is specified.
 
 .. option:: -Wfoo
 
   Enable warning "foo".
+  See the :doc:`diagnostics reference <DiagnosticsReference>` for a complete
+  list of the warning flags that can be specified in this way.
 
 .. option:: -Wno-foo
 
@@ -133,13 +142,13 @@ Options to Control Error and Warning Messages
 .. option:: -ferror-limit=123
 
   Stop emitting diagnostics after 123 errors have been produced. The default is
-  20, and the error limit can be disabled with :option:`-ferror-limit=0`.
+  20, and the error limit can be disabled with `-ferror-limit=0`.
 
 .. option:: -ftemplate-backtrace-limit=123
 
   Only emit up to 123 template instantiation notes within the template
   instantiation backtrace for a single warning or error. The default is 10, and
-  the limit can be disabled with :option:`-ftemplate-backtrace-limit=0`.
+  the limit can be disabled with `-ftemplate-backtrace-limit=0`.
 
 .. _cl_diag_formatting:
 
@@ -312,6 +321,67 @@ output format of the diagnostics that it generates.
    This category can be used by clients that want to group diagnostics
    by category, so it should be a high level category. We want dozens
    of these, not hundreds or thousands of them.
+
+.. _opt_fsave-optimization-record:
+
+**-fsave-optimization-record**
+   Write optimization remarks to a YAML file.
+
+   This option, which defaults to off, controls whether Clang writes
+   optimization reports to a YAML file. By recording diagnostics in a file,
+   using a structured YAML format, users can parse or sort the remarks in a
+   convenient way.
+
+.. _opt_foptimization-record-file:
+
+**-foptimization-record-file**
+   Control the file to which optimization reports are written.
+
+   When optimization reports are being output (see
+   :ref:`-fsave-optimization-record <opt_fsave-optimization-record>`), this
+   option controls the file to which those reports are written.
+
+   If this option is not used, optimization records are output to a file named
+   after the primary file being compiled. If that's "foo.c", for example,
+   optimization records are output to "foo.opt.yaml".
+
+.. _opt_fdiagnostics-show-hotness:
+
+**-f[no-]diagnostics-show-hotness**
+   Enable profile hotness information in diagnostic line.
+
+   This option controls whether Clang prints the profile hotness associated
+   with diagnostics in the presence of profile-guided optimization information.
+   This is currently supported with optimization remarks (see
+   :ref:`Options to Emit Optimization Reports <rpass>`). The hotness information
+   allows users to focus on the hot optimization remarks that are likely to be
+   more relevant for run-time performance.
+
+   For example, in this output, the block containing the callsite of `foo` was
+   executed 3000 times according to the profile data:
+
+   ::
+
+         s.c:7:10: remark: foo inlined into bar (hotness: 3000) [-Rpass-analysis=inline]
+           sum += foo(x, x - 2);
+                  ^
+
+   This option is implied when
+   :ref:`-fsave-optimization-record <opt_fsave-optimization-record>` is used.
+   Otherwise, it defaults to off.
+
+.. _opt_fdiagnostics-hotness-threshold:
+
+**-fdiagnostics-hotness-threshold**
+   Prevent optimization remarks from being output if they do not have at least
+   this hotness value.
+
+   This option, which defaults to zero, controls the minimum hotness an
+   optimization remark would need in order to be output by Clang. This is
+   currently supported with optimization remarks (see :ref:`Options to Emit
+   Optimization Reports <rpass>`) when profile hotness information in
+   diagnostics is enabled (see
+   :ref:`-fdiagnostics-show-hotness <opt_fdiagnostics-show-hotness>`).
 
 .. _opt_fdiagnostics-fixit-info:
 
@@ -531,6 +601,18 @@ control the crash diagnostics.
 The -fno-crash-diagnostics flag can be helpful for speeding the process
 of generating a delta reduced test case.
 
+Clang is also capable of generating preprocessed source file(s) and associated
+run script(s) even without a crash. This is specially useful when trying to
+generate a reproducer for warnings or errors while using modules.
+
+.. option:: -gen-reproducer
+
+  Generates preprocessed source files, a reproducer script and if relevant, a
+  cache containing: built module pcm's and all headers needed to rebuilt the
+  same modules.
+
+.. _rpass:
+
 Options to Emit Optimization Reports
 ------------------------------------
 
@@ -543,15 +625,15 @@ vectorize a loop body.
 Clang offers a family of flags which the optimizers can use to emit
 a diagnostic in three cases:
 
-1. When the pass makes a transformation (:option:`-Rpass`).
+1. When the pass makes a transformation (`-Rpass`).
 
-2. When the pass fails to make a transformation (:option:`-Rpass-missed`).
+2. When the pass fails to make a transformation (`-Rpass-missed`).
 
 3. When the pass determines whether or not to make a transformation
-   (:option:`-Rpass-analysis`).
+   (`-Rpass-analysis`).
 
-NOTE: Although the discussion below focuses on :option:`-Rpass`, the exact
-same options apply to :option:`-Rpass-missed` and :option:`-Rpass-analysis`.
+NOTE: Although the discussion below focuses on `-Rpass`, the exact
+same options apply to `-Rpass-missed` and `-Rpass-analysis`.
 
 Since there are dozens of passes inside the compiler, each of these flags
 take a regular expression that identifies the name of the pass which should
@@ -567,12 +649,16 @@ compile the code with:
 
 Note that remarks from the inliner are identified with `[-Rpass=inline]`.
 To request a report from every optimization pass, you should use
-:option:`-Rpass=.*` (in fact, you can use any valid POSIX regular
+`-Rpass=.*` (in fact, you can use any valid POSIX regular
 expression). However, do not expect a report from every transformation
 made by the compiler. Optimization remarks do not really make sense
 outside of the major transformations (e.g., inlining, vectorization,
 loop optimizations) and not every optimization pass supports this
 feature.
+
+Note that when using profile-guided optimization information, profile hotness
+information can be included in the remarks (see
+:ref:`-fdiagnostics-show-hotness <opt_fdiagnostics-show-hotness>`).
 
 Current limitations
 ^^^^^^^^^^^^^^^^^^^
@@ -585,13 +671,13 @@ Current limitations
 2. Some source locations are not displayed correctly. The front end has
    a more detailed source location tracking than the locations included
    in the debug info (e.g., the front end can locate code inside macro
-   expansions). However, the locations used by :option:`-Rpass` are
+   expansions). However, the locations used by `-Rpass` are
    translated from debug annotations. That translation can be lossy,
    which results in some remarks having no location information.
 
 Other Options
 -------------
-Clang options that that don't fit neatly into other categories.
+Clang options that don't fit neatly into other categories.
 
 .. option:: -MV
 
@@ -608,6 +694,79 @@ a special character, which is the convention used by GNU Make. The -MV
 option tells Clang to put double-quotes around the entire filename, which
 is the convention used by NMake and Jom.
 
+Configuration files
+-------------------
+
+Configuration files group command-line options and allow all of them to be
+specified just by referencing the configuration file. They may be used, for
+example, to collect options required to tune compilation for particular
+target, such as -L, -I, -l, --sysroot, codegen options, etc.
+
+The command line option `--config` can be used to specify configuration
+file in a Clang invocation. For example:
+
+::
+
+    clang --config /home/user/cfgs/testing.txt
+    clang --config debug.cfg
+
+If the provided argument contains a directory separator, it is considered as
+a file path, and options are read from that file. Otherwise the argument is
+treated as a file name and is searched for sequentially in the directories:
+
+    - user directory,
+    - system directory,
+    - the directory where Clang executable resides.
+
+Both user and system directories for configuration files are specified during
+clang build using CMake parameters, CLANG_CONFIG_FILE_USER_DIR and
+CLANG_CONFIG_FILE_SYSTEM_DIR respectively. The first file found is used. It is
+an error if the required file cannot be found.
+
+Another way to specify a configuration file is to encode it in executable name.
+For example, if the Clang executable is named `armv7l-clang` (it may be a
+symbolic link to `clang`), then Clang will search for file `armv7l.cfg` in the
+directory where Clang resides.
+
+If a driver mode is specified in invocation, Clang tries to find a file specific
+for the specified mode. For example, if the executable file is named
+`x86_64-clang-cl`, Clang first looks for `x86_64-cl.cfg` and if it is not found,
+looks for `x86_64.cfg`.
+
+If the command line contains options that effectively change target architecture
+(these are -m32, -EL, and some others) and the configuration file starts with an
+architecture name, Clang tries to load the configuration file for the effective
+architecture. For example, invocation:
+
+::
+
+    x86_64-clang -m32 abc.c
+
+causes Clang search for a file `i368.cfg` first, and if no such file is found,
+Clang looks for the file `x86_64.cfg`.
+
+The configuration file consists of command-line options specified on one or
+more lines. Lines composed of whitespace characters only are ignored as well as
+lines in which the first non-blank character is `#`. Long options may be split
+between several lines by a trailing backslash. Here is example of a
+configuration file:
+
+::
+
+    # Several options on line
+    -c --target=x86_64-unknown-linux-gnu
+
+    # Long option split between lines
+    -I/usr/lib/gcc/x86_64-linux-gnu/5.4.0/../../../../\
+    include/c++/5.4.0
+
+    # other config files may be included
+    @linux.options
+
+Files included by `@file` directives in configuration files are resolved
+relative to the including file. For example, if a configuration file
+`~/.llvm/target.cfg` contains the directive `@os/linux.opts`, the file
+`linux.opts` is searched for in the directory `~/.llvm/os`.
 
 Language and Target-Independent Features
 ========================================
@@ -711,16 +870,20 @@ also allows you to push and pop the current warning state. This is
 particularly useful when writing a header file that will be compiled by
 other people, because you don't know what warning flags they build with.
 
-In the below example :option:`-Wmultichar` is ignored for only a single line of
-code, after which the diagnostics return to whatever state had previously
+In the below example :option:`-Wextra-tokens` is ignored for only a single line
+of code, after which the diagnostics return to whatever state had previously
 existed.
 
 .. code-block:: c
 
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wmultichar"
+  #if foo
+  #endif foo // warning: extra tokens at end of #endif directive
 
-  char b = 'df'; // no warning.
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wextra-tokens"
+
+  #if foo
+  #endif foo // no warning
 
   #pragma clang diagnostic pop
 
@@ -772,13 +935,15 @@ the pragma onwards within the same file.
 
 .. code-block:: c
 
-  char a = 'xy'; // warning
+  #if foo
+  #endif foo // warning: extra tokens at end of #endif directive
 
   #pragma clang system_header
 
-  char b = 'ab'; // no warning
+  #if foo
+  #endif foo // no warning
 
-The :option:`--system-header-prefix=` and :option:`--no-system-header-prefix=`
+The `--system-header-prefix=` and `--no-system-header-prefix=`
 command-line arguments can be used to override whether subsets of an include
 path are treated as system headers. When the name in a ``#include`` directive
 is found within a header search path and starts with a system prefix, the
@@ -847,7 +1012,7 @@ Generating a PCH File
 ^^^^^^^^^^^^^^^^^^^^^
 
 To generate a PCH file using Clang, one invokes Clang with the
-:option:`-x <language>-header` option. This mirrors the interface in GCC
+`-x <language>-header` option. This mirrors the interface in GCC
 for generating PCH files:
 
 .. code-block:: console
@@ -910,7 +1075,7 @@ location.
 Building a relocatable precompiled header requires two additional
 arguments. First, pass the ``--relocatable-pch`` flag to indicate that
 the resulting PCH file should be relocatable. Second, pass
-:option:`-isysroot /path/to/build`, which makes all includes for your library
+``-isysroot /path/to/build``, which makes all includes for your library
 relative to the build directory. For example:
 
 .. code-block:: console
@@ -920,9 +1085,9 @@ relative to the build directory. For example:
 When loading the relocatable PCH file, the various headers used in the
 PCH file are found from the system header root. For example, ``mylib.h``
 can be found in ``/usr/include/mylib.h``. If the headers are installed
-in some other system root, the :option:`-isysroot` option can be used provide
+in some other system root, the ``-isysroot`` option can be used provide
 a different system root from which the headers will be based. For
-example, :option:`-isysroot /Developer/SDKs/MacOSX10.4u.sdk` will look for
+example, ``-isysroot /Developer/SDKs/MacOSX10.4u.sdk`` will look for
 ``mylib.h`` in ``/Developer/SDKs/MacOSX10.4u.sdk/usr/include/mylib.h``.
 
 Relocatable precompiled headers are intended to be used in a limited
@@ -986,6 +1151,8 @@ are listed below.
 
 **-f[no-]sanitize-recover=check1,check2,...**
 
+**-f[no-]sanitize-recover=all**
+
    Controls which checks enabled by ``-fsanitize=`` flag are non-fatal.
    If the check is fatal, program will halt after the first error
    of this kind is detected and error report is printed.
@@ -1038,6 +1205,11 @@ are listed below.
    Enable simple code coverage in addition to certain sanitizers.
    See :doc:`SanitizerCoverage` for more details.
 
+**-f[no-]sanitize-stats**
+
+   Enable simple statistics gathering for the enabled sanitizers.
+   See :doc:`SanitizerStats` for more details.
+
 .. option:: -fsanitize-undefined-trap-on-error
 
    Deprecated alias for ``-fsanitize-trap=undefined``.
@@ -1047,6 +1219,61 @@ are listed below.
    Enable cross-DSO control flow integrity checks. This flag modifies
    the behavior of sanitizers in the ``cfi`` group to allow checking
    of cross-DSO virtual and indirect calls.
+
+.. option:: -fsanitize-cfi-icall-generalize-pointers
+
+   Generalize pointers in return and argument types in function type signatures
+   checked by Control Flow Integrity indirect call checking. See
+   :doc:`ControlFlowIntegrity` for more details.
+
+.. option:: -fstrict-vtable-pointers
+
+   Enable optimizations based on the strict rules for overwriting polymorphic
+   C++ objects, i.e. the vptr is invariant during an object's lifetime.
+   This enables better devirtualization. Turned off by default, because it is
+   still experimental.
+
+.. option:: -ffast-math
+
+   Enable fast-math mode. This defines the ``__FAST_MATH__`` preprocessor
+   macro, and lets the compiler make aggressive, potentially-lossy assumptions
+   about floating-point math.  These include:
+
+   * Floating-point math obeys regular algebraic rules for real numbers (e.g.
+     ``+`` and ``*`` are associative, ``x/y == x * (1/y)``, and
+     ``(a + b) * c == a * c + b * c``),
+   * operands to floating-point operations are not equal to ``NaN`` and
+     ``Inf``, and
+   * ``+0`` and ``-0`` are interchangeable.
+
+.. option:: -fdenormal-fp-math=[values]
+
+   Select which denormal numbers the code is permitted to require.
+
+   Valid values are: ``ieee``, ``preserve-sign``, and ``positive-zero``,
+   which correspond to IEEE 754 denormal numbers, the sign of a
+   flushed-to-zero number is preserved in the sign of 0, denormals are
+   flushed to positive zero, respectively.
+
+.. option:: -f[no-]strict-float-cast-overflow
+
+   When a floating-point value is not representable in a destination integer 
+   type, the code has undefined behavior according to the language standard.
+   By default, Clang will not guarantee any particular result in that case.
+   With the 'no-strict' option, Clang attempts to match the overflowing behavior
+   of the target's native float-to-int conversion instructions.
+
+.. option:: -fwhole-program-vtables
+
+   Enable whole-program vtable optimizations, such as single-implementation
+   devirtualization and virtual constant propagation, for classes with
+   :doc:`hidden LTO visibility <LTOVisibility>`. Requires ``-flto``.
+
+.. option:: -fforce-emit-vtables
+
+   In order to improve devirtualization, forces emitting of vtables even in
+   modules where it isn't necessary. It causes more inline virtual functions
+   to be emitted.
 
 .. option:: -fno-assume-sane-operator-new
 
@@ -1114,6 +1341,16 @@ are listed below.
    This option restricts the generated code to use general registers
    only. This only applies to the AArch64 architecture.
 
+.. option:: -mcompact-branches=[values]
+
+   Control the usage of compact branches for MIPSR6.
+
+   Valid values are: ``never``, ``optimal`` and ``always``.
+   The default value is ``optimal`` which generates compact branches
+   when a delay slot cannot be filled. ``never`` disables the usage of
+   compact branches and ``always`` generates compact branches whenever
+   possible.
+
 **-f[no-]max-type-align=[number]**
    Instruct the code generator to not enforce a higher alignment than the given
    number (of bytes) when accessing memory via an opaque pointer or reference.
@@ -1145,6 +1382,15 @@ are listed below.
         // value of -fmax-type-align.
       }
 
+.. option:: -faddrsig, -fno-addrsig
+
+   Controls whether Clang emits an address-significance table into the object
+   file. Address-significance tables allow linkers to implement `safe ICF
+   <https://research.google.com/pubs/archive/36912.pdf>`_ without the false
+   positives that can result from other implementation techniques such as
+   relocation scanning. Address-significance tables are enabled by default
+   on ELF targets when using the integrated assembler. This flag currently
+   only has an effect on ELF targets.
 
 Profile Guided Optimization
 ---------------------------
@@ -1152,7 +1398,8 @@ Profile Guided Optimization
 Profile information enables better optimization. For example, knowing that a
 branch is taken very frequently helps the compiler make better decisions when
 ordering basic blocks. Knowing that a function ``foo`` is called more
-frequently than another function ``bar`` helps the inliner.
+frequently than another function ``bar`` helps the inliner. Optimization
+levels ``-O2`` and above are recommended for use of profile guided optimization.
 
 Clang supports profile guided optimization with two different kinds of
 profiling. A sampling profiler can generate a profile with very low runtime
@@ -1293,7 +1540,7 @@ Sample Profile Text Format
 
 This section describes the ASCII text format for sampling profiles. It is,
 arguably, the easiest one to generate. If you are interested in generating any
-of the other two, consult the ``ProfileData`` library in in LLVM's source tree
+of the other two, consult the ``ProfileData`` library in LLVM's source tree
 (specifically, ``include/llvm/ProfileData/SampleProfReader.h``).
 
 .. code-block:: console
@@ -1309,7 +1556,7 @@ of the other two, consult the ``ProfileData`` library in in LLVM's source tree
       offsetB[.discriminator]: fnB:num_of_total_samples
        offsetB1[.discriminator]: number_of_samples [fn11:num fn12:num ... ]
 
-This is a nested tree in which the identation represents the nesting level
+This is a nested tree in which the indentation represents the nesting level
 of the inline stack. There are no blank lines in the file. And the spacing
 within a single line is fixed. Additional spaces will result in an error
 while reading the file.
@@ -1429,8 +1676,13 @@ instrumentation:
 
 2. Run the instrumented executable with inputs that reflect the typical usage.
    By default, the profile data will be written to a ``default.profraw`` file
-   in the current directory. You can override that default by setting the
-   ``LLVM_PROFILE_FILE`` environment variable to specify an alternate file.
+   in the current directory. You can override that default by using option
+   ``-fprofile-instr-generate=`` or by setting the ``LLVM_PROFILE_FILE`` 
+   environment variable to specify an alternate file. If non-default file name
+   is specified by both the environment variable and the command line option,
+   the environment variable takes precedence. The file name pattern specified
+   can include different modifiers: ``%p``, ``%h``, and ``%m``.
+
    Any instance of ``%p`` in that file name will be replaced by the process
    ID, so that you can easily distinguish the profile output from multiple
    runs.
@@ -1438,6 +1690,33 @@ instrumentation:
    .. code-block:: console
 
      $ LLVM_PROFILE_FILE="code-%p.profraw" ./code
+
+   The modifier ``%h`` can be used in scenarios where the same instrumented
+   binary is run in multiple different host machines dumping profile data
+   to a shared network based storage. The ``%h`` specifier will be substituted
+   with the hostname so that profiles collected from different hosts do not
+   clobber each other.
+
+   While the use of ``%p`` specifier can reduce the likelihood for the profiles
+   dumped from different processes to clobber each other, such clobbering can still
+   happen because of the ``pid`` re-use by the OS. Another side-effect of using
+   ``%p`` is that the storage requirement for raw profile data files is greatly
+   increased.  To avoid issues like this, the ``%m`` specifier can used in the profile
+   name.  When this specifier is used, the profiler runtime will substitute ``%m``
+   with a unique integer identifier associated with the instrumented binary. Additionally,
+   multiple raw profiles dumped from different processes that share a file system (can be
+   on different hosts) will be automatically merged by the profiler runtime during the
+   dumping. If the program links in multiple instrumented shared libraries, each library
+   will dump the profile data into its own profile data file (with its unique integer
+   id embedded in the profile name). Note that the merging enabled by ``%m`` is for raw
+   profile data generated by profiler runtime. The resulting merged "raw" profile data
+   file still needs to be converted to a different format expected by the compiler (
+   see step 3 below).
+
+   .. code-block:: console
+
+     $ LLVM_PROFILE_FILE="code-%m.profraw" ./code
+
 
 3. Combine profiles from multiple runs and convert the "raw" profile format to
    the input expected by clang. Use the ``merge`` command of the
@@ -1461,37 +1740,43 @@ instrumentation:
    profile. As you make changes to your code, clang may no longer be able to
    use the profile data. It will warn you when this happens.
 
-Profile generation and use can also be controlled by the GCC-compatible flags
-``-fprofile-generate`` and ``-fprofile-use``. Although these flags are
-semantically equivalent to their GCC counterparts, they *do not* handle
-GCC-compatible profiles. They are only meant to implement GCC's semantics
-with respect to profile creation and use.
+Profile generation using an alternative instrumentation method can be
+controlled by the GCC-compatible flags ``-fprofile-generate`` and
+``-fprofile-use``. Although these flags are semantically equivalent to
+their GCC counterparts, they *do not* handle GCC-compatible profiles.
+They are only meant to implement GCC's semantics with respect to
+profile creation and use.
 
 .. option:: -fprofile-generate[=<dirname>]
 
-  Without any other arguments, ``-fprofile-generate`` behaves identically to
-  ``-fprofile-instr-generate``. When given a directory name, it generates the
-  profile file ``default.profraw`` in the directory named ``dirname``. If
-  ``dirname`` does not exist, it will be created at runtime. The environment
-  variable ``LLVM_PROFILE_FILE`` can be used to override the directory and
-  filename for the profile file at runtime. For example,
+  The ``-fprofile-generate`` and ``-fprofile-generate=`` flags will use
+  an alternative instrumentation method for profile generation. When
+  given a directory name, it generates the profile file
+  ``default_%m.profraw`` in the directory named ``dirname`` if specified.
+  If ``dirname`` does not exist, it will be created at runtime. ``%m`` specifier
+  will be substituted with a unique id documented in step 2 above. In other words,
+  with ``-fprofile-generate[=<dirname>]`` option, the "raw" profile data automatic
+  merging is turned on by default, so there will no longer any risk of profile
+  clobbering from different running processes.  For example,
 
   .. code-block:: console
 
     $ clang++ -O2 -fprofile-generate=yyy/zzz code.cc -o code
 
   When ``code`` is executed, the profile will be written to the file
-  ``yyy/zzz/default.profraw``. This can be altered at runtime via the
-  ``LLVM_PROFILE_FILE`` environment variable:
+  ``yyy/zzz/default_xxxx.profraw``.
 
-  .. code-block:: console
+  To generate the profile data file with the compiler readable format, the 
+  ``llvm-profdata`` tool can be used with the profile directory as the input:
 
-    $ LLVM_PROFILE_FILE=/tmp/myprofile/code.profraw ./code
+   .. code-block:: console
 
-  The above invocation will produce the profile file
-  ``/tmp/myprofile/code.profraw`` instead of ``yyy/zzz/default.profraw``.
-  Notice that ``LLVM_PROFILE_FILE`` overrides the directory *and* the file
-  name for the profile file.
+     $ llvm-profdata merge -output=code.profdata yyy/zzz/
+
+ If the user wants to turn off the auto-merging feature, or simply override the
+ the profile dumping path specified at command line, the environment variable
+ ``LLVM_PROFILE_FILE`` can still be used to override
+ the directory and filename for the profile file at runtime.
 
 .. option:: -fprofile-use[=<pathname>]
 
@@ -1562,6 +1847,22 @@ below. If multiple flags are present, the last one is used.
 
   Generate complete debug info.
 
+Controlling Macro Debug Info Generation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Debug info for C preprocessor macros increases the size of debug information in
+the binary. Macro debug info generated by Clang can be controlled by the flags
+listed below.
+
+.. option:: -fdebug-macro
+
+  Generate debug info for preprocessor macros. This flag is discarded when
+  **-g0** is enabled.
+
+.. option:: -fno-debug-macro
+
+  Do not generate debug info for preprocessor macros (default).
+
 Controlling Debugger "Tuning"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1571,10 +1872,31 @@ features. You can "tune" the debug info for one of several different debuggers.
 
 .. option:: -ggdb, -glldb, -gsce
 
-  Tune the debug info for the ``gdb``, ``lldb``, or Sony Computer Entertainment
+  Tune the debug info for the ``gdb``, ``lldb``, or Sony PlayStation\ |reg|
   debugger, respectively. Each of these options implies **-g**. (Therefore, if
   you want both **-gline-tables-only** and debugger tuning, the tuning option
   must come first.)
+
+
+Controlling LLVM IR Output
+--------------------------
+
+Controlling Value Names in LLVM IR
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Emitting value names in LLVM IR increases the size and verbosity of the IR.
+By default, value names are only emitted in assertion-enabled builds of Clang.
+However, when reading IR it can be useful to re-enable the emission of value
+names to improve readability.
+
+.. option:: -fdiscard-value-names
+
+  Discard value names when generating LLVM IR.
+
+.. option:: -fno-discard-value-names
+
+  Do not discard value names when generating LLVM IR. This option can be used
+  to re-enable names for release builds of Clang.
 
 
 Comment Parsing Options
@@ -1632,8 +1954,8 @@ Differences between various standard modes
 ------------------------------------------
 
 clang supports the -std option, which changes what language mode clang
-uses. The supported modes for C are c89, gnu89, c94, c99, gnu99, c11,
-gnu11, and various aliases for those modes. If no -std option is
+uses. The supported modes for C are c89, gnu89, c99, gnu99, c11, gnu11,
+c17, gnu17, and various aliases for those modes. If no -std option is
 specified, clang defaults to gnu11 mode. Many C99 and C11 features are
 supported in earlier modes as a conforming extension, with a warning. Use
 ``-pedantic-errors`` to request an error if a feature from a later standard
@@ -1680,8 +2002,9 @@ Differences between ``*99`` and ``*11`` modes:
 -  Warnings for use of C11 features are disabled.
 -  ``__STDC_VERSION__`` is defined to ``201112L`` rather than ``199901L``.
 
-c94 mode is identical to c89 mode except that digraphs are enabled in
-c94 mode (FIXME: And ``__STDC_VERSION__`` should be defined!).
+Differences between ``*11`` and ``*17`` modes:
+
+-  ``__STDC_VERSION__`` is defined to ``201710L`` rather than ``201112L``.
 
 GCC extensions not implemented yet
 ----------------------------------
@@ -1689,10 +2012,6 @@ GCC extensions not implemented yet
 clang tries to be compatible with gcc as much as possible, but some gcc
 extensions are not implemented yet:
 
--  clang does not support #pragma weak (`bug
-   3679 <http://llvm.org/bugs/show_bug.cgi?id=3679>`_). Due to the uses
-   described in the bug, this is likely to be implemented at some point,
-   at least partially.
 -  clang does not support decimal floating point types (``_Decimal32`` and
    friends) or fixed-point types (``_Fract`` and friends); nobody has
    expressed interest in these features yet, so it's hard to say when
@@ -1710,9 +2029,10 @@ extensions are not implemented yet:
      ...
      local_function(1);
 
--  clang does not support global register variables; this is unlikely to
-   be implemented soon because it requires additional LLVM backend
-   support.
+-  clang only supports global register variables when the register specified
+   is non-allocatable (e.g. the stack pointer). Support for general global
+   register variables is unlikely to be implemented soon because it requires
+   additional LLVM backend support.
 -  clang does not support static initialization of flexible array
    members. This appears to be a rarely used extension, but could be
    implemented pending user demand.
@@ -1732,7 +2052,7 @@ missing from this list, please send an e-mail to cfe-dev. This list
 currently excludes C++; see :ref:`C++ Language Features <cxx>`. Also, this
 list does not include bugs in mostly-implemented features; please see
 the `bug
-tracker <http://llvm.org/bugs/buglist.cgi?quicksearch=product%3Aclang+component%3A-New%2BBugs%2CAST%2CBasic%2CDriver%2CHeaders%2CLLVM%2BCodeGen%2Cparser%2Cpreprocessor%2CSemantic%2BAnalyzer>`_
+tracker <https://bugs.llvm.org/buglist.cgi?quicksearch=product%3Aclang+component%3A-New%2BBugs%2CAST%2CBasic%2CDriver%2CHeaders%2CLLVM%2BCodeGen%2Cparser%2Cpreprocessor%2CSemantic%2BAnalyzer>`_
 for known existing bugs (FIXME: Is there a section for bug-reporting
 guidelines somewhere?).
 
@@ -1757,13 +2077,11 @@ Intentionally unsupported GCC extensions
 Microsoft extensions
 --------------------
 
-clang has some experimental support for extensions from Microsoft Visual
-C++; to enable it, use the ``-fms-extensions`` command-line option. This is
-the default for Windows targets. Note that the support is incomplete.
-Some constructs such as ``dllexport`` on classes are ignored with a warning,
-and others such as `Microsoft IDL annotations
-<http://msdn.microsoft.com/en-us/library/8tesw2eh.aspx>`_ are silently
-ignored.
+clang has support for many extensions from Microsoft Visual C++. To enable these
+extensions, use the ``-fms-extensions`` command-line option. This is the default
+for Windows targets. Clang does not implement every pragma or declspec provided
+by MSVC, but the popular ones, such as ``__declspec(dllexport)`` and ``#pragma
+comment(lib)`` are well supported.
 
 clang has a ``-fms-compatibility`` flag that makes clang accept enough
 invalid C++ to be able to parse most Microsoft headers. For example, it
@@ -1776,23 +2094,14 @@ for Windows targets.
 definitions until the end of a translation unit. This flag is enabled by
 default for Windows targets.
 
--  clang allows setting ``_MSC_VER`` with ``-fmsc-version=``. It defaults to
-   1700 which is the same as Visual C/C++ 2012. Any number is supported
-   and can greatly affect what Windows SDK and c++stdlib headers clang
-   can compile.
--  clang does not support the Microsoft extension where anonymous record
-   members can be declared using user defined typedefs.
--  clang supports the Microsoft ``#pragma pack`` feature for controlling
-   record layout. GCC also contains support for this feature, however
-   where MSVC and GCC are incompatible clang follows the MSVC
-   definition.
--  clang supports the Microsoft ``#pragma comment(lib, "foo.lib")`` feature for
-   automatically linking against the specified library.  Currently this feature
-   only works with the Visual C++ linker.
--  clang supports the Microsoft ``#pragma comment(linker, "/flag:foo")`` feature
-   for adding linker flags to COFF object files.  The user is responsible for
-   ensuring that the linker understands the flags.
--  clang defaults to C++11 for Windows targets.
+For compatibility with existing code that compiles with MSVC, clang defines the
+``_MSC_VER`` and ``_MSC_FULL_VER`` macros. These default to the values of 1800
+and 180000000 respectively, making clang look like an early release of Visual
+C++ 2013. The ``-fms-compatibility-version=`` flag overrides these values.  It
+accepts a dotted version tuple, such as 19.00.23506. Changing the MSVC
+compatibility version makes clang behave more like that version of MSVC. For
+example, ``-fms-compatibility-version=19`` will enable C++14 features and define
+``char16_t`` and ``char32_t`` as builtin types.
 
 .. _cxx:
 
@@ -1816,10 +2125,15 @@ Controlling implementation limits
   Sets the limit for recursive constexpr function invocations to N.  The
   default is 512.
 
+.. option:: -fconstexpr-steps=N
+
+  Sets the limit for the number of full-expressions evaluated in a single
+  constant expression evaluation.  The default is 1048576.
+
 .. option:: -ftemplate-depth=N
 
   Sets the limit for recursively nested template instantiations to N.  The
-  default is 256.
+  default is 1024.
 
 .. option:: -foperator-arrow-depth=N
 
@@ -1841,16 +2155,16 @@ Objective-C++ Language Features
 OpenMP Features
 ===============
 
-Clang supports all OpenMP 3.1 directives and clauses.  In addition, some
-features of OpenMP 4.0 are supported.  For example, ``#pragma omp simd``,
-``#pragma omp for simd``, ``#pragma omp parallel for simd`` directives, extended
-set of atomic constructs, ``proc_bind`` clause for all parallel-based
-directives, ``depend`` clause for ``#pragma omp task`` directive (except for
-array sections), ``#pragma omp cancel`` and ``#pragma omp cancellation point``
-directives, and ``#pragma omp taskgroup`` directive.
+Clang supports all OpenMP 4.5 directives and clauses. See :doc:`OpenMPSupport`
+for additional details.
 
-Use :option:`-fopenmp` to enable OpenMP. Support for OpenMP can be disabled with
-:option:`-fno-openmp`.
+Use `-fopenmp` to enable OpenMP. Support for OpenMP can be disabled with
+`-fno-openmp`.
+
+Use `-fopenmp-simd` to enable OpenMP simd features only, without linking
+the runtime library; for combined constructs
+(e.g. ``#pragma omp parallel for simd``) the non-simd directives and clauses
+will be ignored. This can be disabled with `-fno-openmp-simd`.
 
 Controlling implementation limits
 ---------------------------------
@@ -1859,9 +2173,405 @@ Controlling implementation limits
 
  Controls code generation for OpenMP threadprivate variables. In presence of
  this option all threadprivate variables are generated the same way as thread
- local variables, using TLS support. If :option:`-fno-openmp-use-tls`
+ local variables, using TLS support. If `-fno-openmp-use-tls`
  is provided or target does not support TLS, code generation for threadprivate
  variables relies on OpenMP runtime library.
+
+.. _opencl:
+
+OpenCL Features
+===============
+
+Clang can be used to compile OpenCL kernels for execution on a device
+(e.g. GPU). It is possible to compile the kernel into a binary (e.g. for AMD or
+Nvidia targets) that can be uploaded to run directly on a device (e.g. using
+`clCreateProgramWithBinary
+<https://www.khronos.org/registry/OpenCL/specs/opencl-1.1.pdf#111>`_) or
+into generic bitcode files loadable into other toolchains.
+
+Compiling to a binary using the default target from the installation can be done
+as follows:
+
+   .. code-block:: console
+
+     $ echo "kernel void k(){}" > test.cl
+     $ clang test.cl
+
+Compiling for a specific target can be done by specifying the triple corresponding
+to the target, for example:
+
+   .. code-block:: console
+
+     $ clang -target nvptx64-unknown-unknown test.cl
+     $ clang -target amdgcn-amd-amdhsa -mcpu=gfx900 test.cl
+
+Compiling to bitcode can be done as follows:
+
+   .. code-block:: console
+
+     $ clang -c -emit-llvm test.cl
+
+This will produce a generic test.bc file that can be used in vendor toolchains
+to perform machine code generation.
+
+Clang currently supports OpenCL C language standards up to v2.0.
+
+OpenCL Specific Options
+-----------------------
+
+Most of the OpenCL build options from `the specification v2.0 section 5.8.4
+<https://www.khronos.org/registry/cl/specs/opencl-2.0.pdf#200>`_ are available.
+
+Examples:
+
+   .. code-block:: console
+
+     $ clang -cl-std=CL2.0 -cl-single-precision-constant test.cl
+
+Some extra options are available to support special OpenCL features.
+
+.. option:: -finclude-default-header
+
+Loads standard includes during compilations. By default OpenCL headers are not
+loaded and therefore standard library includes are not available. To load them
+automatically a flag has been added to the frontend (see also :ref:`the section
+on the OpenCL Header <opencl_header>`):
+
+   .. code-block:: console
+
+     $ clang -Xclang -finclude-default-header test.cl
+
+Alternatively ``-include`` or ``-I`` followed by the path to the header location
+can be given manually.
+
+   .. code-block:: console
+
+     $ clang -I<path to clang>/lib/Headers/opencl-c.h test.cl
+
+In this case the kernel code should contain ``#include <opencl-c.h>`` just as a
+regular C include.
+
+.. _opencl_cl_ext:
+
+.. option:: -cl-ext
+
+Disables support of OpenCL extensions. All OpenCL targets provide a list
+of extensions that they support. Clang allows to amend this using the ``-cl-ext``
+flag with a comma-separated list of extensions prefixed with ``'+'`` or ``'-'``.
+The syntax: ``-cl-ext=<(['-'|'+']<extension>[,])+>``,  where extensions
+can be either one of `the OpenCL specification extensions
+<https://www.khronos.org/registry/cl/sdk/2.0/docs/man/xhtml/EXTENSION.html>`_
+or any known vendor extension. Alternatively, ``'all'`` can be used to enable
+or disable all known extensions.
+Example disabling double support for the 64-bit SPIR target:
+
+   .. code-block:: console
+
+     $ clang -cc1 -triple spir64-unknown-unknown -cl-ext=-cl_khr_fp64 test.cl
+
+Enabling all extensions except double support in R600 AMD GPU can be done using:
+
+   .. code-block:: console
+
+     $ clang -cc1 -triple r600-unknown-unknown -cl-ext=-all,+cl_khr_fp16 test.cl
+
+.. _opencl_fake_address_space_map:
+
+.. option:: -ffake-address-space-map
+
+Overrides the target address space map with a fake map.
+This allows adding explicit address space IDs to the bitcode for non-segmented
+memory architectures that don't have separate IDs for each of the OpenCL
+logical address spaces by default. Passing ``-ffake-address-space-map`` will
+add/override address spaces of the target compiled for with the following values:
+``1-global``, ``2-constant``, ``3-local``, ``4-generic``. The private address
+space is represented by the absence of an address space attribute in the IR (see
+also :ref:`the section on the address space attribute <opencl_addrsp>`).
+
+   .. code-block:: console
+
+     $ clang -ffake-address-space-map test.cl
+
+Some other flags used for the compilation for C can also be passed while
+compiling for OpenCL, examples: ``-c``, ``-O<1-4|s>``, ``-o``, ``-emit-llvm``, etc.
+
+OpenCL Targets
+--------------
+
+OpenCL targets are derived from the regular Clang target classes. The OpenCL
+specific parts of the target representation provide address space mapping as
+well as a set of supported extensions.
+
+Specific Targets
+^^^^^^^^^^^^^^^^
+
+There is a set of concrete HW architectures that OpenCL can be compiled for.
+
+- For AMD target:
+
+   .. code-block:: console
+
+     $ clang -target amdgcn-amd-amdhsa -mcpu=gfx900 test.cl
+
+- For Nvidia architectures:
+
+   .. code-block:: console
+
+     $ clang -target nvptx64-unknown-unknown test.cl
+
+
+Generic Targets
+^^^^^^^^^^^^^^^
+
+- SPIR is available as a generic target to allow portable bitcode to be produced
+  that can be used across GPU toolchains. The implementation follows `the SPIR
+  specification <https://www.khronos.org/spir>`_. There are two flavors
+  available for 32 and 64 bits.
+
+   .. code-block:: console
+
+    $ clang -target spir-unknown-unknown test.cl
+    $ clang -target spir64-unknown-unknown test.cl
+
+  All known OpenCL extensions are supported in the SPIR targets. Clang will
+  generate SPIR v1.2 compatible IR for OpenCL versions up to 2.0 and SPIR v2.0
+  for OpenCL v2.0.
+
+- x86 is used by some implementations that are x86 compatible and currently
+  remains for backwards compatibility (with older implementations prior to
+  SPIR target support). For "non-SPMD" targets which cannot spawn multiple
+  work-items on the fly using hardware, which covers practically all non-GPU
+  devices such as CPUs and DSPs, additional processing is needed for the kernels
+  to support multiple work-item execution. For this, a 3rd party toolchain,
+  such as for example `POCL <http://portablecl.org/>`_, can be used.
+
+  This target does not support multiple memory segments and, therefore, the fake
+  address space map can be added using the :ref:`-ffake-address-space-map
+  <opencl_fake_address_space_map>` flag.
+
+.. _opencl_header:
+
+OpenCL Header
+-------------
+
+By default Clang will not include standard headers and therefore OpenCL builtin
+functions and some types (i.e. vectors) are unknown. The default CL header is,
+however, provided in the Clang installation and can be enabled by passing the
+``-finclude-default-header`` flag to the Clang frontend.
+
+   .. code-block:: console
+
+     $ echo "bool is_wg_uniform(int i){return get_enqueued_local_size(i)==get_local_size(i);}" > test.cl
+     $ clang -Xclang -finclude-default-header -cl-std=CL2.0 test.cl
+
+Because the header is very large and long to parse, PCH (:doc:`PCHInternals`)
+and modules (:doc:`Modules`) are used internally to improve the compilation
+speed.
+
+To enable modules for OpenCL:
+
+   .. code-block:: console
+
+     $ clang -target spir-unknown-unknown -c -emit-llvm -Xclang -finclude-default-header -fmodules -fimplicit-module-maps -fmodules-cache-path=<path to the generated module> test.cl
+
+OpenCL Extensions
+-----------------
+
+All of the ``cl_khr_*`` extensions from `the official OpenCL specification
+<https://www.khronos.org/registry/OpenCL/sdk/2.0/docs/man/xhtml/EXTENSION.html>`_
+up to and including version 2.0 are available and set per target depending on the
+support available in the specific architecture.
+
+It is possible to alter the default extensions setting per target using
+``-cl-ext`` flag. (See :ref:`flags description <opencl_cl_ext>` for more details).
+
+Vendor extensions can be added flexibly by declaring the list of types and
+functions associated with each extensions enclosed within the following
+compiler pragma directives:
+
+  .. code-block:: c
+
+       #pragma OPENCL EXTENSION the_new_extension_name : begin
+       // declare types and functions associated with the extension here
+       #pragma OPENCL EXTENSION the_new_extension_name : end
+
+For example, parsing the following code adds ``my_t`` type and ``my_func``
+function to the custom ``my_ext`` extension.
+
+  .. code-block:: c
+
+       #pragma OPENCL EXTENSION my_ext : begin
+       typedef struct{
+         int a;
+       }my_t;
+       void my_func(my_t);
+       #pragma OPENCL EXTENSION my_ext : end
+
+Declaring the same types in different vendor extensions is disallowed.
+
+OpenCL Metadata
+---------------
+
+Clang uses metadata to provide additional OpenCL semantics in IR needed for
+backends and OpenCL runtime.
+
+Each kernel will have function metadata attached to it, specifying the arguments.
+Kernel argument metadata is used to provide source level information for querying
+at runtime, for example using the `clGetKernelArgInfo 
+<https://www.khronos.org/registry/OpenCL/specs/opencl-1.2.pdf#167>`_
+call.
+
+Note that ``-cl-kernel-arg-info`` enables more information about the original CL
+code to be added e.g. kernel parameter names will appear in the OpenCL metadata
+along with other information. 
+
+The IDs used to encode the OpenCL's logical address spaces in the argument info
+metadata follows the SPIR address space mapping as defined in the SPIR
+specification `section 2.2
+<https://www.khronos.org/registry/spir/specs/spir_spec-2.0.pdf#18>`_
+
+OpenCL-Specific Attributes
+--------------------------
+
+OpenCL support in Clang contains a set of attribute taken directly from the
+specification as well as additional attributes.
+
+See also :doc:`AttributeReference`.
+
+nosvm
+^^^^^
+
+Clang supports this attribute to comply to OpenCL v2.0 conformance, but it
+does not have any effect on the IR. For more details reffer to the specification
+`section 6.7.2
+<https://www.khronos.org/registry/cl/specs/opencl-2.0-openclc.pdf#49>`_
+
+
+opencl_unroll_hint
+^^^^^^^^^^^^^^^^^^
+
+The implementation of this feature mirrors the unroll hint for C.
+More details on the syntax can be found in the specification
+`section 6.11.5
+<https://www.khronos.org/registry/cl/specs/opencl-2.0-openclc.pdf#61>`_
+
+convergent
+^^^^^^^^^^
+
+To make sure no invalid optimizations occur for single program multiple data
+(SPMD) / single instruction multiple thread (SIMT) Clang provides attributes that
+can be used for special functions that have cross work item semantics.
+An example is the subgroup operations such as `intel_sub_group_shuffle 
+<https://www.khronos.org/registry/cl/extensions/intel/cl_intel_subgroups.txt>`_
+
+   .. code-block:: c
+
+     // Define custom my_sub_group_shuffle(data, c)
+     // that makes use of intel_sub_group_shuffle
+     r1 = ... 
+     if (r0) r1 = computeA();
+     // Shuffle data from r1 into r3
+     // of threads id r2.
+     r3 = my_sub_group_shuffle(r1, r2);
+     if (r0) r3 = computeB();
+
+with non-SPMD semantics this is optimized to the following equivalent code:
+
+   .. code-block:: c
+
+     r1 = ...
+     if (!r0)
+       // Incorrect functionality! The data in r1
+       // have not been computed by all threads yet.
+       r3 = my_sub_group_shuffle(r1, r2);
+     else {
+       r1 = computeA();
+       r3 = my_sub_group_shuffle(r1, r2);
+       r3 = computeB();
+     }
+
+Declaring the function ``my_sub_group_shuffle`` with the convergent attribute
+would prevent this:
+
+   .. code-block:: c
+
+     my_sub_group_shuffle() __attribute__((convergent));
+
+Using ``convergent`` guarantees correct execution by keeping CFG equivalence
+wrt operations marked as ``convergent``. CFG ``G´`` is equivalent to ``G`` wrt
+node ``Ni`` : ``iff ∀ Nj (i≠j)`` domination and post-domination relations with
+respect to ``Ni`` remain the same in both ``G`` and ``G´``. 
+
+noduplicate
+^^^^^^^^^^^
+
+``noduplicate`` is more restrictive with respect to optimizations than
+``convergent`` because a convergent function only preserves CFG equivalence.
+This allows some optimizations to happen as long as the control flow remains
+unmodified.
+
+   .. code-block:: c
+
+     for (int i=0; i<4; i++)
+       my_sub_group_shuffle()
+
+can be modified to:
+
+   .. code-block:: c
+
+     my_sub_group_shuffle();
+     my_sub_group_shuffle();
+     my_sub_group_shuffle();
+     my_sub_group_shuffle();
+
+while using ``noduplicate`` would disallow this. Also ``noduplicate`` doesn't
+have the same safe semantics of CFG as ``convergent`` and can cause changes in
+CFG that modify semantics of the original program.
+
+``noduplicate`` is kept for backwards compatibility only and it considered to be
+deprecated for future uses.
+
+.. _opencl_addrsp:
+
+address_space
+^^^^^^^^^^^^^
+
+Clang has arbitrary address space support using the ``address_space(N)``
+attribute, where ``N`` is an integer number in the range ``0`` to ``16777215``
+(``0xffffffu``).
+
+An OpenCL implementation provides a list of standard address spaces using
+keywords: ``private``, ``local``, ``global``, and ``generic``. In the AST and
+in the IR local, global, or generic will be represented by the address space
+attribute with the corresponding unique number. Note that private does not have
+any corresponding attribute added and, therefore, is represented by the absence
+of an address space number. The specific IDs for an address space do not have to
+match between the AST and the IR. Typically in the AST address space numbers
+represent logical segments while in the IR they represent physical segments.
+Therefore, machines with flat memory segments can map all AST address space
+numbers to the same physical segment ID or skip address space attribute
+completely while generating the IR. However, if the address space information
+is needed by the IR passes e.g. to improve alias analysis, it is recommended
+to keep it and only lower to reflect physical memory segments in the late
+machine passes.
+
+OpenCL builtins
+---------------
+
+There are some standard OpenCL functions that are implemented as Clang builtins:
+
+- All pipe functions from `section 6.13.16.2/6.13.16.3
+  <https://www.khronos.org/registry/cl/specs/opencl-2.0-openclc.pdf#160>`_ of
+  the OpenCL v2.0 kernel language specification. `
+
+- Address space qualifier conversion functions ``to_global``/``to_local``/``to_private``
+  from `section 6.13.9
+  <https://www.khronos.org/registry/cl/specs/opencl-2.0-openclc.pdf#101>`_.
+
+- All the ``enqueue_kernel`` functions from `section 6.13.17.1
+  <https://www.khronos.org/registry/cl/specs/opencl-2.0-openclc.pdf#164>`_ and
+  enqueue query functions from `section 6.13.17.5
+  <https://www.khronos.org/registry/cl/specs/opencl-2.0-openclc.pdf#171>`_.
 
 .. _target_features:
 
@@ -1883,7 +2593,7 @@ On ``x86_64-mingw32``, passing i128(by value) is incompatible with the
 Microsoft x64 calling convention. You might need to tweak
 ``WinX86_64ABIInfo::classify()`` in lib/CodeGen/TargetInfo.cpp.
 
-For the X86 target, clang supports the :option:`-m16` command line
+For the X86 target, clang supports the `-m16` command line
 argument which enables 16-bit code output. This is broadly similar to
 using ``asm(".code16gcc")`` with the GNU toolchain. The generated code
 and the ABI remains 32-bit but the assembler emits instructions
@@ -1984,7 +2694,7 @@ official `MinGW-w64 website <http://mingw-w64.sourceforge.net>`_.
 Clang expects the GCC executable "gcc.exe" compiled for
 ``i686-w64-mingw32`` (or ``x86_64-w64-mingw32``) to be present on PATH.
 
-`Some tests might fail <http://llvm.org/bugs/show_bug.cgi?id=9072>`_ on
+`Some tests might fail <https://bugs.llvm.org/show_bug.cgi?id=9072>`_ on
 ``x86_64-w64-mingw32``.
 
 .. _clang-cl:
@@ -1992,16 +2702,44 @@ Clang expects the GCC executable "gcc.exe" compiled for
 clang-cl
 ========
 
-clang-cl is an alternative command-line interface to Clang driver, designed for
+clang-cl is an alternative command-line interface to Clang, designed for
 compatibility with the Visual C++ compiler, cl.exe.
 
 To enable clang-cl to find system headers, libraries, and the linker when run
 from the command-line, it should be executed inside a Visual Studio Native Tools
 Command Prompt or a regular Command Prompt where the environment has been set
-up using e.g. `vcvars32.bat <http://msdn.microsoft.com/en-us/library/f2ccy3wt.aspx>`_.
+up using e.g. `vcvarsall.bat <http://msdn.microsoft.com/en-us/library/f2ccy3wt.aspx>`_.
 
-clang-cl can also be used from inside Visual Studio  by using an LLVM Platform
-Toolset.
+clang-cl can also be used from inside Visual Studio by selecting the LLVM
+Platform Toolset. The toolset is not part of the installer, but may be installed
+separately from the
+`Visual Studio Marketplace <https://marketplace.visualstudio.com/items?itemName=LLVMExtensions.llvm-toolchain>`_.
+To use the toolset, select a project in Solution Explorer, open its Property
+Page (Alt+F7), and in the "General" section of "Configuration Properties"
+change "Platform Toolset" to LLVM.  Doing so enables an additional Property
+Page for selecting the clang-cl executable to use for builds.
+
+To use the toolset with MSBuild directly, invoke it with e.g.
+``/p:PlatformToolset=LLVM``. This allows trying out the clang-cl toolchain
+without modifying your project files.
+
+It's also possible to point MSBuild at clang-cl without changing toolset by
+passing ``/p:CLToolPath=c:\llvm\bin /p:CLToolExe=clang-cl.exe``.
+
+When using CMake and the Visual Studio generators, the toolset can be set with the ``-T`` flag:
+
+  ::
+
+    cmake -G"Visual Studio 15 2017" -T LLVM ..
+
+When using CMake with the Ninja generator, set the ``CMAKE_C_COMPILER`` and
+``CMAKE_CXX_COMPILER`` variables to clang-cl:
+
+  ::
+
+    cmake -GNinja -DCMAKE_C_COMPILER="c:/Program Files (x86)/LLVM/bin/clang-cl.exe"
+        -DCMAKE_CXX_COMPILER="c:/Program Files (x86)/LLVM/bin/clang-cl.exe" ..
+
 
 Command-Line Options
 --------------------
@@ -2019,14 +2757,15 @@ with a warning. For example:
 
 To suppress warnings about unused arguments, use the ``-Qunused-arguments`` option.
 
-Options that are not known to clang-cl will cause errors. If they are spelled with a
-leading ``/``, they will be mistaken for a filename:
+Options that are not known to clang-cl will be ignored by default. Use the
+``-Werror=unknown-argument`` option in order to treat them as errors. If these
+options are spelled with a leading ``/``, they will be mistaken for a filename:
 
   ::
 
     clang-cl.exe: error: no such file or directory: '/foobar'
 
-Please `file a bug <http://llvm.org/bugs/enter_bug.cgi?product=clang&component=Driver>`_
+Please `file a bug <https://bugs.llvm.org/enter_bug.cgi?product=clang&component=Driver>`_
 for any valid cl.exe flags that clang-cl does not understand.
 
 Execute ``clang-cl /?`` to see a list of supported options:
@@ -2034,102 +2773,145 @@ Execute ``clang-cl /?`` to see a list of supported options:
   ::
 
     CL.EXE COMPATIBILITY OPTIONS:
-      /?                     Display available options
-      /arch:<value>          Set architecture for code generation
-      /Brepro-               Emit an object file which cannot be reproduced over time
-      /Brepro                Emit an object file which can be reproduced over time
-      /C                     Don't discard comments when preprocessing
-      /c                     Compile only
-      /D <macro[=value]>     Define macro
-      /EH<value>             Exception handling model
-      /EP                    Disable linemarker output and preprocess to stdout
-      /E                     Preprocess to stdout
-      /fallback              Fall back to cl.exe if clang-cl fails to compile
-      /FA                    Output assembly code file during compilation
-      /Fa<file or directory> Output assembly code to this file during compilation (with /FA)
-      /Fe<file or directory> Set output executable file or directory (ends in / or \)
-      /FI <value>            Include file before parsing
-      /Fi<file>              Set preprocess output file name (with /P)
-      /Fo<file or directory> Set output object file, or directory (ends in / or \) (with /c)
+      /?                      Display available options
+      /arch:<value>           Set architecture for code generation
+      /Brepro-                Emit an object file which cannot be reproduced over time
+      /Brepro                 Emit an object file which can be reproduced over time
+      /C                      Don't discard comments when preprocessing
+      /c                      Compile only
+      /d1PP                   Retain macro definitions in /E mode
+      /d1reportAllClassLayout Dump record layout information
+      /diagnostics:caret      Enable caret and column diagnostics (on by default)
+      /diagnostics:classic    Disable column and caret diagnostics
+      /diagnostics:column     Disable caret diagnostics but keep column info
+      /D <macro[=value]>      Define macro
+      /EH<value>              Exception handling model
+      /EP                     Disable linemarker output and preprocess to stdout
+      /execution-charset:<value>
+                              Runtime encoding, supports only UTF-8
+      /E                      Preprocess to stdout
+      /fallback               Fall back to cl.exe if clang-cl fails to compile
+      /FA                     Output assembly code file during compilation
+      /Fa<file or directory>  Output assembly code to this file during compilation (with /FA)
+      /Fe<file or directory>  Set output executable file or directory (ends in / or \)
+      /FI <value>             Include file before parsing
+      /Fi<file>               Set preprocess output file name (with /P)
+      /Fo<file or directory>  Set output object file, or directory (ends in / or \) (with /c)
       /fp:except-
       /fp:except
       /fp:fast
       /fp:precise
       /fp:strict
-      /GA                    Assume thread-local variables are defined in the executable
-      /GF-                   Disable string pooling
-      /GR-                   Disable emission of RTTI data
-      /GR                    Enable emission of RTTI data
-      /Gs<value>             Set stack probe size
-      /Gw-                   Don't put each data item in its own section
-      /Gw                    Put each data item in its own section
-      /Gy-                   Don't put each function in its own section
-      /Gy                    Put each function in its own section
-      /help                  Display available options
-      /I <dir>               Add directory to include search path
-      /J                     Make char type unsigned
-      /LDd                   Create debug DLL
-      /LD                    Create DLL
-      /link <options>        Forward options to the linker
-      /MDd                   Use DLL debug run-time
-      /MD                    Use DLL run-time
-      /MTd                   Use static debug run-time
-      /MT                    Use static run-time
-      /Ob0                   Disable inlining
-      /Od                    Disable optimization
-      /Oi-                   Disable use of builtin functions
-      /Oi                    Enable use of builtin functions
-      /Os                    Optimize for size
-      /Ot                    Optimize for speed
-      /O<value>              Optimization level
-      /o <file or directory> Set output file or directory (ends in / or \)
-      /P                     Preprocess to file
-      /Qvec-                 Disable the loop vectorization passes
-      /Qvec                  Enable the loop vectorization passes
-      /showIncludes          Print info about included files to stderr
-      /TC                    Treat all source files as C
-      /Tc <filename>         Specify a C source file
-      /TP                    Treat all source files as C++
-      /Tp <filename>         Specify a C++ source file
-      /U <macro>             Undefine macro
-      /vd<value>             Control vtordisp placement
-      /vmb                   Use a best-case representation method for member pointers
-      /vmg                   Use a most-general representation for member pointers
-      /vmm                   Set the default most-general representation to multiple inheritance
-      /vms                   Set the default most-general representation to single inheritance
-      /vmv                   Set the default most-general representation to virtual inheritance
-      /volatile:iso          Volatile loads and stores have standard semantics
-      /volatile:ms           Volatile loads and stores have acquire and release semantics
-      /W0                    Disable all warnings
-      /W1                    Enable -Wall
-      /W2                    Enable -Wall
-      /W3                    Enable -Wall
-      /W4                    Enable -Wall and -Wextra
-      /Wall                  Enable -Wall and -Wextra
-      /WX-                   Do not treat warnings as errors
-      /WX                    Treat warnings as errors
-      /w                     Disable all warnings
-      /Z7                    Enable CodeView debug information in object files
-      /Zc:sizedDealloc-      Disable C++14 sized global deallocation functions
-      /Zc:sizedDealloc       Enable C++14 sized global deallocation functions
-      /Zc:strictStrings      Treat string literals as const
-      /Zc:threadSafeInit-    Disable thread-safe initialization of static variables
-      /Zc:threadSafeInit     Enable thread-safe initialization of static variables
-      /Zc:trigraphs-         Disable trigraphs (default)
-      /Zc:trigraphs          Enable trigraphs
-      /Zi                    Alias for /Z7. Does not produce PDBs.
-      /Zl                    Don't mention any default libraries in the object file
-      /Zp                    Set the default maximum struct packing alignment to 1
-      /Zp<value>             Specify the default maximum struct packing alignment
-      /Zs                    Syntax-check only
+      /Fp<filename>           Set pch filename (with /Yc and /Yu)
+      /GA                     Assume thread-local variables are defined in the executable
+      /Gd                     Set __cdecl as a default calling convention
+      /GF-                    Disable string pooling
+      /GR-                    Disable emission of RTTI data
+      /Gregcall               Set __regcall as a default calling convention
+      /GR                     Enable emission of RTTI data
+      /Gr                     Set __fastcall as a default calling convention
+      /GS-                    Disable buffer security check
+      /GS                     Enable buffer security check
+      /Gs<value>              Set stack probe size
+      /guard:<value>          Enable Control Flow Guard with /guard:cf
+      /Gv                     Set __vectorcall as a default calling convention
+      /Gw-                    Don't put each data item in its own section
+      /Gw                     Put each data item in its own section
+      /GX-                    Disable exception handling
+      /GX                     Enable exception handling
+      /Gy-                    Don't put each function in its own section
+      /Gy                     Put each function in its own section
+      /Gz                     Set __stdcall as a default calling convention
+      /help                   Display available options
+      /imsvc <dir>            Add directory to system include search path, as if part of %INCLUDE%
+      /I <dir>                Add directory to include search path
+      /J                      Make char type unsigned
+      /LDd                    Create debug DLL
+      /LD                     Create DLL
+      /link <options>         Forward options to the linker
+      /MDd                    Use DLL debug run-time
+      /MD                     Use DLL run-time
+      /MTd                    Use static debug run-time
+      /MT                     Use static run-time
+      /Od                     Disable optimization
+      /Oi-                    Disable use of builtin functions
+      /Oi                     Enable use of builtin functions
+      /Os                     Optimize for size
+      /Ot                     Optimize for speed
+      /O<value>               Optimization level
+      /o <file or directory>  Set output file or directory (ends in / or \)
+      /P                      Preprocess to file
+      /Qvec-                  Disable the loop vectorization passes
+      /Qvec                   Enable the loop vectorization passes
+      /showIncludes           Print info about included files to stderr
+      /source-charset:<value> Source encoding, supports only UTF-8
+      /std:<value>            Language standard to compile for
+      /TC                     Treat all source files as C
+      /Tc <filename>          Specify a C source file
+      /TP                     Treat all source files as C++
+      /Tp <filename>          Specify a C++ source file
+      /utf-8                  Set source and runtime encoding to UTF-8 (default)
+      /U <macro>              Undefine macro
+      /vd<value>              Control vtordisp placement
+      /vmb                    Use a best-case representation method for member pointers
+      /vmg                    Use a most-general representation for member pointers
+      /vmm                    Set the default most-general representation to multiple inheritance
+      /vms                    Set the default most-general representation to single inheritance
+      /vmv                    Set the default most-general representation to virtual inheritance
+      /volatile:iso           Volatile loads and stores have standard semantics
+      /volatile:ms            Volatile loads and stores have acquire and release semantics
+      /W0                     Disable all warnings
+      /W1                     Enable -Wall
+      /W2                     Enable -Wall
+      /W3                     Enable -Wall
+      /W4                     Enable -Wall and -Wextra
+      /Wall                   Enable -Weverything
+      /WX-                    Do not treat warnings as errors
+      /WX                     Treat warnings as errors
+      /w                      Disable all warnings
+      /X                      Don't add %INCLUDE% to the include search path
+      /Y-                     Disable precompiled headers, overrides /Yc and /Yu
+      /Yc<filename>           Generate a pch file for all code up to and including <filename>
+      /Yu<filename>           Load a pch file and use it instead of all code up to and including <filename>
+      /Z7                     Enable CodeView debug information in object files
+      /Zc:sizedDealloc-       Disable C++14 sized global deallocation functions
+      /Zc:sizedDealloc        Enable C++14 sized global deallocation functions
+      /Zc:strictStrings       Treat string literals as const
+      /Zc:threadSafeInit-     Disable thread-safe initialization of static variables
+      /Zc:threadSafeInit      Enable thread-safe initialization of static variables
+      /Zc:trigraphs-          Disable trigraphs (default)
+      /Zc:trigraphs           Enable trigraphs
+      /Zc:twoPhase-           Disable two-phase name lookup in templates
+      /Zc:twoPhase            Enable two-phase name lookup in templates
+      /Zd                     Emit debug line number tables only
+      /Zi                     Alias for /Z7. Does not produce PDBs.
+      /Zl                     Don't mention any default libraries in the object file
+      /Zp                     Set the default maximum struct packing alignment to 1
+      /Zp<value>              Specify the default maximum struct packing alignment
+      /Zs                     Syntax-check only
 
     OPTIONS:
       -###                    Print (but do not run) the commands to run for this compilation
       --analyze               Run the static analyzer
+      -faddrsig               Emit an address-significance table
       -fansi-escape-codes     Use ANSI escape codes for diagnostics
+      -fblocks                Enable the 'blocks' language feature
+      -fcf-protection=<value> Instrument control-flow architecture protection. Options: return, branch, full, none.
+      -fcf-protection         Enable cf-protection in 'full' mode
       -fcolor-diagnostics     Use colors in diagnostics
+      -fcomplete-member-pointers
+                              Require member pointer base types to be complete if they would be significant under the Microsoft ABI
+      -fcoverage-mapping      Generate coverage mapping to enable code coverage analysis
+      -fdebug-macro           Emit macro debug information
+      -fdelayed-template-parsing
+                              Parse templated function definitions at the end of the translation unit
+      -fdiagnostics-absolute-paths
+                              Print absolute paths in diagnostics
       -fdiagnostics-parseable-fixits
                               Print fix-its in machine parseable form
+      -flto=<value>           Set LTO mode to either 'full' or 'thin'
+      -flto                   Enable LTO in 'full' mode
+      -fmerge-all-constants   Allow merging of constants
       -fms-compatibility-version=<value>
                               Dot-separated value representing the Microsoft compiler version
                               number to report in _MSC_VER (0 = don't define it (default))
@@ -2137,26 +2919,95 @@ Execute ``clang-cl /?`` to see a list of supported options:
       -fms-extensions         Accept some non-standard constructs supported by the Microsoft compiler
       -fmsc-version=<value>   Microsoft compiler version number to report in _MSC_VER
                               (0 = don't define it (default))
+      -fno-addrsig            Don't emit an address-significance table
+      -fno-builtin-<value>    Disable implicit builtin knowledge of a specific function
+      -fno-builtin            Disable implicit builtin knowledge of functions
+      -fno-complete-member-pointers
+                              Do not require member pointer base types to be complete if they would be significant under the Microsoft ABI
+      -fno-coverage-mapping   Disable code coverage analysis
+      -fno-debug-macro        Do not emit macro debug information
+      -fno-delayed-template-parsing
+                              Disable delayed template parsing
+      -fno-sanitize-address-poison-class-member-array-new-cookie
+                              Disable poisoning array cookies when using class member operator new[] in AddressSanitizer
+      -fno-sanitize-address-use-after-scope
+                              Disable use-after-scope detection in AddressSanitizer
+      -fno-sanitize-blacklist Don't use blacklist file for sanitizers
+      -fno-sanitize-cfi-cross-dso
+                              Disable control flow integrity (CFI) checks for cross-DSO calls.
       -fno-sanitize-coverage=<value>
                               Disable specified features of coverage instrumentation for Sanitizers
+      -fno-sanitize-memory-track-origins
+                              Disable origins tracking in MemorySanitizer
+      -fno-sanitize-memory-use-after-dtor
+                              Disable use-after-destroy detection in MemorySanitizer
       -fno-sanitize-recover=<value>
                               Disable recovery for specified sanitizers
+      -fno-sanitize-stats     Disable sanitizer statistics gathering.
+      -fno-sanitize-thread-atomics
+                              Disable atomic operations instrumentation in ThreadSanitizer
+      -fno-sanitize-thread-func-entry-exit
+                              Disable function entry/exit instrumentation in ThreadSanitizer
+      -fno-sanitize-thread-memory-access
+                              Disable memory access instrumentation in ThreadSanitizer
       -fno-sanitize-trap=<value>
                               Disable trapping for specified sanitizers
+      -fno-standalone-debug   Limit debug information produced to reduce size of debug binary
+      -fprofile-instr-generate=<file>
+                              Generate instrumented code to collect execution counts into <file>
+                              (overridden by LLVM_PROFILE_FILE env var)
+      -fprofile-instr-generate
+                              Generate instrumented code to collect execution counts into default.profraw file
+                              (overridden by '=' form of option or LLVM_PROFILE_FILE env var)
+      -fprofile-instr-use=<value>
+                              Use instrumentation data for profile-guided optimization
+      -fsanitize-address-field-padding=<value>
+                              Level of field padding for AddressSanitizer
+      -fsanitize-address-globals-dead-stripping
+                              Enable linker dead stripping of globals in AddressSanitizer
+      -fsanitize-address-poison-class-member-array-new-cookie
+                              Enable poisoning array cookies when using class member operator new[] in AddressSanitizer
+      -fsanitize-address-use-after-scope
+                              Enable use-after-scope detection in AddressSanitizer
       -fsanitize-blacklist=<value>
                               Path to blacklist file for sanitizers
+      -fsanitize-cfi-cross-dso
+                              Enable control flow integrity (CFI) checks for cross-DSO calls.
+      -fsanitize-cfi-icall-generalize-pointers
+                              Generalize pointers in CFI indirect call type signature checks
       -fsanitize-coverage=<value>
                               Specify the type of coverage instrumentation for Sanitizers
+      -fsanitize-memory-track-origins=<value>
+                              Enable origins tracking in MemorySanitizer
+      -fsanitize-memory-track-origins
+                              Enable origins tracking in MemorySanitizer
+      -fsanitize-memory-use-after-dtor
+                              Enable use-after-destroy detection in MemorySanitizer
       -fsanitize-recover=<value>
                               Enable recovery for specified sanitizers
+      -fsanitize-stats        Enable sanitizer statistics gathering.
+      -fsanitize-thread-atomics
+                              Enable atomic operations instrumentation in ThreadSanitizer (default)
+      -fsanitize-thread-func-entry-exit
+                              Enable function entry/exit instrumentation in ThreadSanitizer (default)
+      -fsanitize-thread-memory-access
+                              Enable memory access instrumentation in ThreadSanitizer (default)
       -fsanitize-trap=<value> Enable trapping for specified sanitizers
+      -fsanitize-undefined-strip-path-components=<number>
+                              Strip (or keep only, if negative) a given number of path components when emitting check metadata.
       -fsanitize=<check>      Turn on runtime checks for various forms of undefined or suspicious
                               behavior. See user manual for available checks
+      -fstandalone-debug      Emit full debug info for all types used by the program
+      -fwhole-program-vtables Enables whole-program vtable optimization. Requires -flto
       -gcodeview              Generate CodeView debug information
+      -gline-tables-only      Emit debug line number tables only
+      -miamcu                 Use Intel MCU ABI
       -mllvm <value>          Additional arguments to forward to LLVM's option processing
+      -nobuiltininc           Disable builtin #include directories
       -Qunused-arguments      Don't emit warning for unused driver arguments
       -R<remark>              Enable the specified remark
       --target=<value>        Generate code for the given target
+      --version               Print version information
       -v                      Show commands to run and use verbose output
       -W<warning>             Enable the specified warning
       -Xclang <arg>           Pass <arg> to the clang compiler

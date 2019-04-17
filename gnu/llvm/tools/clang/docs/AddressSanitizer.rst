@@ -14,7 +14,8 @@ following types of bugs:
 
 * Out-of-bounds accesses to heap, stack and globals
 * Use-after-free
-* Use-after-return (to some extent)
+* Use-after-return (runtime flag `ASAN_OPTIONS=detect_stack_use_after_return=1`)
+* Use-after-scope (clang flag `-fsanitize-address-use-after-scope`)
 * Double-free, invalid free
 * Memory leaks (experimental)
 
@@ -48,16 +49,16 @@ you may need to disable inlining (just use ``-O1``) and tail call elimination
     }
 
     # Compile and link
-    % clang -O1 -g -fsanitize=address -fno-omit-frame-pointer example_UseAfterFree.cc
+    % clang++ -O1 -g -fsanitize=address -fno-omit-frame-pointer example_UseAfterFree.cc
 
 or:
 
 .. code-block:: console
 
     # Compile
-    % clang -O1 -g -fsanitize=address -fno-omit-frame-pointer -c example_UseAfterFree.cc
+    % clang++ -O1 -g -fsanitize=address -fno-omit-frame-pointer -c example_UseAfterFree.cc
     # Link
-    % clang -g -fsanitize=address example_UseAfterFree.o
+    % clang++ -g -fsanitize=address example_UseAfterFree.o
 
 If a bug is detected, the program will print an error message to stderr and
 exit with a non-zero exit code. AddressSanitizer exits on the first detected error.
@@ -139,8 +140,15 @@ Memory leak detection
 ---------------------
 
 For more information on leak detector in AddressSanitizer, see
-:doc:`LeakSanitizer`. The leak detection is turned on by default on Linux;
+:doc:`LeakSanitizer`. The leak detection is turned on by default on Linux,
+and can be enabled using ``ASAN_OPTIONS=detect_leaks=1`` on OS X;
 however, it is not yet supported on other platforms.
+
+Writable/Executable paging detection
+------------------------------------
+
+The W^X detection is disabled by default and can be enabled using
+``ASAN_OPTIONS=detect_write_exec=1``.
 
 Issue Suppression
 =================
@@ -195,12 +203,16 @@ this purpose.
 Disabling Instrumentation with ``__attribute__((no_sanitize("address")))``
 --------------------------------------------------------------------------
 
-Some code should not be instrumented by AddressSanitizer. One may use the
-function attribute ``__attribute__((no_sanitize("address")))`` (which has
-deprecated synonyms `no_sanitize_address` and `no_address_safety_analysis`) to
-disable instrumentation of a particular function. This attribute may not be
-supported by other compilers, so we suggest to use it together with
+Some code should not be instrumented by AddressSanitizer. One may use
+the attribute ``__attribute__((no_sanitize("address")))`` (which has
+deprecated synonyms `no_sanitize_address` and
+`no_address_safety_analysis`) to disable instrumentation of a
+particular function. This attribute may not be supported by other
+compilers, so we suggest to use it together with
 ``__has_feature(address_sanitizer)``.
+
+The same attribute used on a global variable prevents AddressSanitizer
+from adding redzones around it and detecting out of bounds accesses.
 
 Suppressing Errors in Recompiled Code (Blacklist)
 -------------------------------------------------
@@ -232,6 +244,23 @@ problems happening in certain source files or with certain global variables.
     type:*BadInitClassSubstring*=init
     src:bad/init/files/*=init
 
+Suppressing memory leaks
+------------------------
+
+Memory leak reports produced by :doc:`LeakSanitizer` (if it is run as a part
+of AddressSanitizer) can be suppressed by a separate file passed as
+
+.. code-block:: bash
+
+    LSAN_OPTIONS=suppressions=MyLSan.supp
+
+which contains lines of the form `leak:<pattern>`. Memory leak will be
+suppressed if pattern matches any function name, source file name, or
+library name in the symbolized stack trace of the leak report. See
+`full documentation
+<https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer#suppressions>`_
+for more details.
+
 Limitations
 ===========
 
@@ -253,6 +282,7 @@ AddressSanitizer is supported on:
 * OS X 10.7 - 10.11 (i386/x86\_64)
 * iOS Simulator
 * Android ARM
+* NetBSD i386/x86\_64
 * FreeBSD i386/x86\_64 (tested on FreeBSD 11-current)
 
 Ports to various other platforms are in progress.

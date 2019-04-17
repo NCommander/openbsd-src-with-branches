@@ -12,23 +12,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "clang/Frontend/Utils.h"
 #include "clang/Basic/Diagnostic.h"
 #include "clang/Basic/FileManager.h"
 #include "clang/Basic/FileSystemStatCache.h"
 #include "clang/Basic/IdentifierTable.h"
 #include "clang/Basic/SourceManager.h"
+#include "clang/Frontend/Utils.h"
 #include "clang/Lex/Lexer.h"
 #include "clang/Lex/PTHManager.h"
 #include "clang/Lex/Preprocessor.h"
-#include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringMap.h"
+#include "llvm/Support/DJB.h"
 #include "llvm/Support/EndianStream.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/OnDiskHashTable.h"
 #include "llvm/Support/Path.h"
-#include "llvm/Support/raw_ostream.h"
 
 // FIXME: put this somewhere else?
 #ifndef S_ISDIR
@@ -59,30 +58,37 @@ public:
 
 
 class PTHEntryKeyVariant {
-  union { const FileEntry* FE; const char* Path; };
+  union {
+    const FileEntry *FE;
+    // FIXME: Use "StringRef Path;" when MSVC 2013 is dropped.
+    const char *PathPtr;
+  };
+  size_t PathSize;
   enum { IsFE = 0x1, IsDE = 0x2, IsNoExist = 0x0 } Kind;
   FileData *Data;
 
 public:
   PTHEntryKeyVariant(const FileEntry *fe) : FE(fe), Kind(IsFE), Data(nullptr) {}
 
-  PTHEntryKeyVariant(FileData *Data, const char *path)
-      : Path(path), Kind(IsDE), Data(new FileData(*Data)) {}
+  PTHEntryKeyVariant(FileData *Data, StringRef Path)
+      : PathPtr(Path.data()), PathSize(Path.size()), Kind(IsDE),
+        Data(new FileData(*Data)) {}
 
-  explicit PTHEntryKeyVariant(const char *path)
-      : Path(path), Kind(IsNoExist), Data(nullptr) {}
+  explicit PTHEntryKeyVariant(StringRef Path)
+      : PathPtr(Path.data()), PathSize(Path.size()), Kind(IsNoExist),
+        Data(nullptr) {}
 
   bool isFile() const { return Kind == IsFE; }
 
   StringRef getString() const {
-    return Kind == IsFE ? FE->getName() : Path;
+    return Kind == IsFE ? FE->getName() : StringRef(PathPtr, PathSize);
   }
 
   unsigned getKind() const { return (unsigned) Kind; }
 
   void EmitData(raw_ostream& Out) {
     using namespace llvm::support;
-    endian::Writer<little> LE(Out);
+    endian::Writer LE(Out, little);
     switch (Kind) {
     case IsFE: {
       // Emit stat information.
@@ -122,14 +128,14 @@ public:
   typedef unsigned offset_type;
 
   static hash_value_type ComputeHash(PTHEntryKeyVariant V) {
-    return llvm::HashString(V.getString());
+    return llvm::djbHash(V.getString());
   }
 
   static std::pair<unsigned,unsigned>
   EmitKeyDataLength(raw_ostream& Out, PTHEntryKeyVariant V,
                     const PTHEntry& E) {
     using namespace llvm::support;
-    endian::Writer<little> LE(Out);
+    endian::Writer LE(Out, little);
 
     unsigned n = V.getString().size() + 1 + 1;
     LE.write<uint16_t>(n);
@@ -143,7 +149,7 @@ public:
   static void EmitKey(raw_ostream& Out, PTHEntryKeyVariant V, unsigned n){
     using namespace llvm::support;
     // Emit the entry kind.
-    endian::Writer<little>(Out).write<uint8_t>((unsigned)V.getKind());
+    Out << char(V.getKind());
     // Emit the string.
     Out.write(V.getString().data(), n - 1);
   }
@@ -151,7 +157,7 @@ public:
   static void EmitData(raw_ostream& Out, PTHEntryKeyVariant V,
                        const PTHEntry& E, unsigned) {
     using namespace llvm::support;
-    endian::Writer<little> LE(Out);
+    endian::Writer LE(Out, little);
 
     // For file entries emit the offsets into the PTH file for token data
     // and the preprocessor blocks table.
@@ -183,14 +189,14 @@ class PTHWriter {
   typedef llvm::DenseMap<const IdentifierInfo*,uint32_t> IDMap;
   typedef llvm::StringMap<OffsetOpt, llvm::BumpPtrAllocator> CachedStrsTy;
 
-  IDMap IM;
   raw_pwrite_stream &Out;
   Preprocessor& PP;
-  uint32_t idcount;
+  IDMap IM;
+  std::vector<llvm::StringMapEntry<OffsetOpt>*> StrEntries;
   PTHMap PM;
   CachedStrsTy CachedStrs;
+  uint32_t idcount;
   Offset CurStrOffset;
-  std::vector<llvm::StringMapEntry<OffsetOpt>*> StrEntries;
 
   //// Get the persistent id for the given IdentifierInfo*.
   uint32_t ResolveID(const IdentifierInfo* II);
@@ -199,18 +205,17 @@ class PTHWriter {
   void EmitToken(const Token& T);
 
   void Emit8(uint32_t V) {
-    using namespace llvm::support;
-    endian::Writer<little>(Out).write<uint8_t>(V);
+    Out << char(V);
   }
 
   void Emit16(uint32_t V) {
     using namespace llvm::support;
-    endian::Writer<little>(Out).write<uint16_t>(V);
+    endian::write<uint16_t>(Out, V, little);
   }
 
   void Emit32(uint32_t V) {
     using namespace llvm::support;
-    endian::Writer<little>(Out).write<uint32_t>(V);
+    endian::write<uint32_t>(Out, V, little);
   }
 
   void EmitBuf(const char *Ptr, unsigned NumBytes) {
@@ -219,7 +224,7 @@ class PTHWriter {
 
   void EmitString(StringRef V) {
     using namespace llvm::support;
-    endian::Writer<little>(Out).write<uint16_t>(V.size());
+    endian::write<uint16_t>(Out, V.size(), little);
     EmitBuf(V.data(), V.size());
   }
 
@@ -241,7 +246,7 @@ public:
       : Out(out), PP(pp), idcount(0), CurStrOffset(0) {}
 
   PTHMap &getPM() { return PM; }
-  void GeneratePTH(const std::string &MainFile);
+  void GeneratePTH(StringRef MainFile);
 };
 } // end anonymous namespace
 
@@ -293,7 +298,7 @@ PTHEntry PTHWriter::LexTokens(Lexer& L) {
   // Pad 0's so that we emit tokens to a 4-byte alignment.
   // This speed up reading them back in.
   using namespace llvm::support;
-  endian::Writer<little> LE(Out);
+  endian::Writer LE(Out, little);
   uint32_t TokenOff = Out.tell();
   for (uint64_t N = llvm::OffsetToAlignment(TokenOff, 4); N; --N, ++TokenOff)
     LE.write<uint8_t>(0);
@@ -479,7 +484,7 @@ static void pwrite32le(raw_pwrite_stream &OS, uint32_t Val, uint64_t &Off) {
   Off += 4;
 }
 
-void PTHWriter::GeneratePTH(const std::string &MainFile) {
+void PTHWriter::GeneratePTH(StringRef MainFile) {
   // Generate the prologue.
   Out << "cfe-pth" << '\0';
   Emit32(PTHManager::Version);
@@ -550,7 +555,7 @@ public:
   StatListener(PTHMap &pm) : PM(pm) {}
   ~StatListener() override {}
 
-  LookupResult getStat(const char *Path, FileData &Data, bool isFile,
+  LookupResult getStat(StringRef Path, FileData &Data, bool isFile,
                        std::unique_ptr<vfs::File> *F,
                        vfs::FileSystem &FS) override {
     LookupResult Result = statChained(Path, Data, isFile, F, FS);
@@ -619,14 +624,14 @@ public:
   typedef unsigned offset_type;
 
   static hash_value_type ComputeHash(PTHIdKey* key) {
-    return llvm::HashString(key->II->getName());
+    return llvm::djbHash(key->II->getName());
   }
 
   static std::pair<unsigned,unsigned>
   EmitKeyDataLength(raw_ostream& Out, const PTHIdKey* key, uint32_t) {
     using namespace llvm::support;
     unsigned n = key->II->getLength() + 1;
-    endian::Writer<little>(Out).write<uint16_t>(n);
+    endian::write<uint16_t>(Out, n, little);
     return std::make_pair(n, sizeof(uint32_t));
   }
 
@@ -640,7 +645,7 @@ public:
   static void EmitData(raw_ostream& Out, PTHIdKey*, uint32_t pID,
                        unsigned) {
     using namespace llvm::support;
-    endian::Writer<little>(Out).write<uint32_t>(pID);
+    endian::write<uint32_t>(Out, pID, little);
   }
 };
 } // end anonymous namespace
@@ -656,7 +661,8 @@ std::pair<Offset,Offset> PTHWriter::EmitIdentifierTable() {
   //  (2) a map from (IdentifierInfo*, Offset)* -> persistent IDs
 
   // Note that we use 'calloc', so all the bytes are 0.
-  PTHIdKey *IIDMap = (PTHIdKey*)calloc(idcount, sizeof(PTHIdKey));
+  PTHIdKey *IIDMap = static_cast<PTHIdKey*>(
+      llvm::safe_calloc(idcount, sizeof(PTHIdKey)));
 
   // Create the hashtable.
   llvm::OnDiskChainedHashTableGenerator<PTHIdentifierTableTrait> IIOffMap;

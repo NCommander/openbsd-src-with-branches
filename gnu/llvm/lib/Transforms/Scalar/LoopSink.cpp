@@ -1,4 +1,4 @@
-//===-- LoopSink.cpp - Loop Sink Pass ------------------------===//
+//===-- LoopSink.cpp - Loop Sink Pass -------------------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -28,8 +28,10 @@
 //       InsertBBs = UseBBs - DomBBs + BB
 //   For BB in InsertBBs:
 //     Insert I at BB's beginning
+//
 //===----------------------------------------------------------------------===//
 
+#include "llvm/Transforms/Scalar/LoopSink.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/AliasSetTracker.h"
@@ -40,6 +42,7 @@
 #include "llvm/Analysis/LoopPass.h"
 #include "llvm/Analysis/ScalarEvolution.h"
 #include "llvm/Analysis/ScalarEvolutionAliasAnalysis.h"
+#include "llvm/Transforms/Utils/Local.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/LLVMContext.h"
@@ -47,7 +50,6 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/LoopPassManager.h"
-#include "llvm/Transforms/Utils/Local.h"
 #include "llvm/Transforms/Utils/LoopUtils.h"
 using namespace llvm;
 
@@ -150,6 +152,14 @@ findBBsToSinkInto(const Loop &L, const SmallPtrSetImpl<BasicBlock *> &UseBBs,
     }
   }
 
+  // Can't sink into blocks that have no valid insertion point.
+  for (BasicBlock *BB : BBsToSinkInto) {
+    if (BB->getFirstInsertionPt() == BB->end()) {
+      BBsToSinkInto.clear();
+      break;
+    }
+  }
+
   // If the total frequency of BBsToSinkInto is larger than preheader frequency,
   // do not sink.
   if (adjustedSumFreq(BBsToSinkInto, BFI) >
@@ -198,17 +208,19 @@ static bool sinkInstruction(Loop &L, Instruction &I,
   SmallVector<BasicBlock *, 2> SortedBBsToSinkInto;
   SortedBBsToSinkInto.insert(SortedBBsToSinkInto.begin(), BBsToSinkInto.begin(),
                              BBsToSinkInto.end());
-  std::sort(SortedBBsToSinkInto.begin(), SortedBBsToSinkInto.end(),
-            [&](BasicBlock *A, BasicBlock *B) {
-              return *LoopBlockNumber.find(A) < *LoopBlockNumber.find(B);
-            });
+  llvm::sort(SortedBBsToSinkInto.begin(), SortedBBsToSinkInto.end(),
+             [&](BasicBlock *A, BasicBlock *B) {
+               return LoopBlockNumber.find(A)->second <
+                      LoopBlockNumber.find(B)->second;
+             });
 
   BasicBlock *MoveBB = *SortedBBsToSinkInto.begin();
   // FIXME: Optimize the efficiency for cloned value replacement. The current
   //        implementation is O(SortedBBsToSinkInto.size() * I.num_uses()).
-  for (BasicBlock *N : SortedBBsToSinkInto) {
-    if (N == MoveBB)
-      continue;
+  for (BasicBlock *N : makeArrayRef(SortedBBsToSinkInto).drop_front(1)) {
+    assert(LoopBlockNumber.find(N)->second >
+               LoopBlockNumber.find(MoveBB)->second &&
+           "BBs not sorted!");
     // Clone I and replace its uses.
     Instruction *IC = I.clone();
     IC->setName(I.getName());
@@ -222,11 +234,11 @@ static bool sinkInstruction(Loop &L, Instruction &I,
     }
     // Replaces uses of I with IC in blocks dominated by N
     replaceDominatedUsesWith(&I, IC, DT, N);
-    DEBUG(dbgs() << "Sinking a clone of " << I << " To: " << N->getName()
-                 << '\n');
+    LLVM_DEBUG(dbgs() << "Sinking a clone of " << I << " To: " << N->getName()
+                      << '\n');
     NumLoopSunkCloned++;
   }
-  DEBUG(dbgs() << "Sinking " << I << " To: " << MoveBB->getName() << '\n');
+  LLVM_DEBUG(dbgs() << "Sinking " << I << " To: " << MoveBB->getName() << '\n');
   NumLoopSunk++;
   I.moveBefore(&*MoveBB->getFirstInsertionPt());
 
@@ -245,7 +257,7 @@ static bool sinkLoopInvariantInstructions(Loop &L, AAResults &AA, LoopInfo &LI,
 
   // Enable LoopSink only when runtime profile is available.
   // With static profile, the sinking decision may be sub-optimal.
-  if (!Preheader->getParent()->getEntryCount())
+  if (!Preheader->getParent()->hasProfileData())
     return false;
 
   const BlockFrequency PreheaderFreq = BFI.getBlockFreq(Preheader);
@@ -295,6 +307,42 @@ static bool sinkLoopInvariantInstructions(Loop &L, AAResults &AA, LoopInfo &LI,
   if (Changed && SE)
     SE->forgetLoopDispositions(&L);
   return Changed;
+}
+
+PreservedAnalyses LoopSinkPass::run(Function &F, FunctionAnalysisManager &FAM) {
+  LoopInfo &LI = FAM.getResult<LoopAnalysis>(F);
+  // Nothing to do if there are no loops.
+  if (LI.empty())
+    return PreservedAnalyses::all();
+
+  AAResults &AA = FAM.getResult<AAManager>(F);
+  DominatorTree &DT = FAM.getResult<DominatorTreeAnalysis>(F);
+  BlockFrequencyInfo &BFI = FAM.getResult<BlockFrequencyAnalysis>(F);
+
+  // We want to do a postorder walk over the loops. Since loops are a tree this
+  // is equivalent to a reversed preorder walk and preorder is easy to compute
+  // without recursion. Since we reverse the preorder, we will visit siblings
+  // in reverse program order. This isn't expected to matter at all but is more
+  // consistent with sinking algorithms which generally work bottom-up.
+  SmallVector<Loop *, 4> PreorderLoops = LI.getLoopsInPreorder();
+
+  bool Changed = false;
+  do {
+    Loop &L = *PreorderLoops.pop_back_val();
+
+    // Note that we don't pass SCEV here because it is only used to invalidate
+    // loops in SCEV and we don't preserve (or request) SCEV at all making that
+    // unnecessary.
+    Changed |= sinkLoopInvariantInstructions(L, AA, LI, DT, BFI,
+                                             /*ScalarEvolution*/ nullptr);
+  } while (!PreorderLoops.empty());
+
+  if (!Changed)
+    return PreservedAnalyses::all();
+
+  PreservedAnalyses PA;
+  PA.preserveSet<CFGAnalyses>();
+  return PA;
 }
 
 namespace {

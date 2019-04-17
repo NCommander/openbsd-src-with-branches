@@ -16,7 +16,6 @@
 #include "clang/AST/DeclGroup.h"
 #include "clang/AST/DeclObjC.h"
 #include "llvm/ADT/DenseSet.h"
-#include <deque>
 
 namespace clang {
   class FileEntry;
@@ -261,7 +260,7 @@ public:
   }
   unsigned getNumAttrs() const { return (unsigned)CXAttrs.size(); }
 
-  /// \brief Retain/Release only useful when we allocate a AttrListInfo from the
+  /// Retain/Release only useful when we allocate a AttrListInfo from the
   /// BumpPtrAllocator, and not from the stack; so that we keep a pointer
   // in the EntityInfo
   void Retain() { ++ref_cnt; }
@@ -343,7 +342,7 @@ public:
   CXTranslationUnit getCXTU() const { return CXTU; }
 
   void setASTContext(ASTContext &ctx);
-  void setPreprocessor(Preprocessor &PP);
+  void setPreprocessor(std::shared_ptr<Preprocessor> PP) override;
 
   bool shouldSuppressRefs() const {
     return IndexOptions & CXIndexOpt_SuppressRedundantRefs;
@@ -419,7 +418,7 @@ public:
   bool handleObjCCategory(const ObjCCategoryDecl *D);
   bool handleObjCCategoryImpl(const ObjCCategoryImplDecl *D);
 
-  bool handleObjCMethod(const ObjCMethodDecl *D);
+  bool handleObjCMethod(const ObjCMethodDecl *D, SourceLocation Loc);
 
   bool handleSynthesizedObjCProperty(const ObjCPropertyImplDecl *D);
   bool handleSynthesizedObjCMethod(const ObjCMethodDecl *D, SourceLocation Loc,
@@ -437,13 +436,15 @@ public:
                        const NamedDecl *Parent,
                        const DeclContext *DC,
                        const Expr *E = nullptr,
-                       CXIdxEntityRefKind Kind = CXIdxEntityRef_Direct);
+                       CXIdxEntityRefKind Kind = CXIdxEntityRef_Direct,
+                       CXSymbolRole Role = CXSymbolRole_None);
 
   bool handleReference(const NamedDecl *D, SourceLocation Loc,
                        const NamedDecl *Parent,
                        const DeclContext *DC,
                        const Expr *E = nullptr,
-                       CXIdxEntityRefKind Kind = CXIdxEntityRef_Direct);
+                       CXIdxEntityRefKind Kind = CXIdxEntityRef_Direct,
+                       CXSymbolRole Role = CXSymbolRole_None);
 
   bool isNotFromSourceFile(SourceLocation Loc) const;
 
@@ -464,12 +465,11 @@ public:
 private:
   bool handleDeclOccurence(const Decl *D, index::SymbolRoleSet Roles,
                            ArrayRef<index::SymbolRelation> Relations,
-                           FileID FID, unsigned Offset,
-                           ASTNodeInfo ASTNode) override;
+                           SourceLocation Loc, ASTNodeInfo ASTNode) override;
 
   bool handleModuleOccurence(const ImportDecl *ImportD,
                              index::SymbolRoleSet Roles,
-                             FileID FID, unsigned Offset) override;
+                             SourceLocation Loc) override;
 
   void finish() override;
 

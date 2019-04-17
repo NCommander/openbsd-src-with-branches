@@ -24,9 +24,7 @@
  *     Alex Deucher <alexander.deucher@amd.com>
  */
 
-#include <linux/types.h>
-#include <linux/bug.h>
-#include <linux/kernel.h>
+#include <dev/pci/drm/drm_linux.h>
 
 const u32 cik_default_state[] =
 {

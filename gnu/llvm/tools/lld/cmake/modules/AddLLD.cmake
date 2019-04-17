@@ -1,6 +1,36 @@
 macro(add_lld_library name)
-  llvm_add_library(${name} ${ARGN})
+  cmake_parse_arguments(ARG
+    "SHARED"
+    ""
+    ""
+    ${ARGN})
+  if(ARG_SHARED)
+    set(ARG_ENABLE_SHARED SHARED)
+  endif()
+  llvm_add_library(${name} ${ARG_ENABLE_SHARED} ${ARG_UNPARSED_ARGUMENTS})
   set_target_properties(${name} PROPERTIES FOLDER "lld libraries")
+
+  if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
+    if(${name} IN_LIST LLVM_DISTRIBUTION_COMPONENTS OR
+        NOT LLVM_DISTRIBUTION_COMPONENTS)
+      set(export_to_lldtargets EXPORT lldTargets)
+      set_property(GLOBAL PROPERTY LLD_HAS_EXPORTS True)
+    endif()
+
+    install(TARGETS ${name}
+      COMPONENT ${name}
+      ${export_to_lldtargets}
+      LIBRARY DESTINATION lib${LLVM_LIBDIR_SUFFIX}
+      ARCHIVE DESTINATION lib${LLVM_LIBDIR_SUFFIX}
+      RUNTIME DESTINATION bin)
+
+    if (${ARG_SHARED} AND NOT CMAKE_CONFIGURATION_TYPES)
+      add_llvm_install_targets(install-${name}
+        DEPENDS ${name}
+        COMPONENT ${name})
+    endif()
+    set_property(GLOBAL APPEND PROPERTY LLD_EXPORTS ${name})
+  endif()
 endmacro(add_lld_library)
 
 macro(add_lld_executable name)
@@ -28,11 +58,9 @@ macro(add_lld_tool name)
       COMPONENT ${name})
 
     if(NOT CMAKE_CONFIGURATION_TYPES)
-      add_custom_target(install-${name}
+      add_llvm_install_targets(install-${name}
         DEPENDS ${name}
-        COMMAND "${CMAKE_COMMAND}"
-        -DCMAKE_INSTALL_COMPONENT=${name}
-        -P "${CMAKE_BINARY_DIR}/cmake_install.cmake")
+        COMPONENT ${name})
     endif()
     set_property(GLOBAL APPEND PROPERTY LLD_EXPORTS ${name})
   endif()

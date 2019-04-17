@@ -65,7 +65,7 @@ struct FindFileIdRefVisitData {
     return cxtu::getASTUnit(TU)->getASTContext();
   }
 
-  /// \brief We are looking to find all semantically relevant identifiers,
+  /// We are looking to find all semantically relevant identifiers,
   /// so the definition of "canonical" here is different than in the AST, e.g.
   ///
   /// \code
@@ -129,7 +129,7 @@ private:
 
 } // end anonymous namespace.
 
-/// \brief For a macro \arg Loc, returns the file spelling location and sets
+/// For a macro \arg Loc, returns the file spelling location and sets
 /// to \arg isMacroArg whether the spelling resides inside a macro definition or
 /// a macro argument.
 static SourceLocation getFileSpellingLoc(SourceManager &SM,
@@ -411,7 +411,7 @@ extern "C" {
 
 CXResult clang_findReferencesInFile(CXCursor cursor, CXFile file,
                                     CXCursorAndRangeVisitor visitor) {
-  LogRef Log = Logger::make(LLVM_FUNCTION_NAME);
+  LogRef Log = Logger::make(__func__);
 
   if (clang_Cursor_isNull(cursor)) {
     if (Log)
@@ -485,7 +485,7 @@ CXResult clang_findIncludesInFile(CXTranslationUnit TU, CXFile file,
     return CXResult_Invalid;
   }
 
-  LogRef Log = Logger::make(LLVM_FUNCTION_NAME);
+  LogRef Log = Logger::make(__func__);
   if (!file) {
     if (Log)
       *Log << "Null file";
@@ -535,4 +535,3 @@ CXResult clang_findIncludesInFileWithBlock(CXTranslationUnit TU,
 }
 
 } // end: extern "C"
-

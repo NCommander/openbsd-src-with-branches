@@ -50,7 +50,7 @@ bool PPCDispatchGroupSBHazardRecognizer::isLoadAfterStore(SUnit *SU) {
         return true;
   }
 
-  return false; 
+  return false;
 }
 
 bool PPCDispatchGroupSBHazardRecognizer::isBCTRAfterSet(SUnit *SU) {
@@ -76,7 +76,7 @@ bool PPCDispatchGroupSBHazardRecognizer::isBCTRAfterSet(SUnit *SU) {
         return true;
   }
 
-  return false; 
+  return false;
 }
 
 // FIXME: Remove this when we don't need this:
@@ -162,8 +162,9 @@ unsigned PPCDispatchGroupSBHazardRecognizer::PreEmitNoops(SUnit *SU) {
     unsigned Directive =
         DAG->MF.getSubtarget<PPCSubtarget>().getDarwinDirective();
     // If we're using a special group-terminating nop, then we need only one.
+    // FIXME: the same for P9 as previous gen until POWER9 scheduling is ready
     if (Directive == PPC::DIR_PWR6 || Directive == PPC::DIR_PWR7 ||
-        Directive == PPC::DIR_PWR8 )
+        Directive == PPC::DIR_PWR8 || Directive == PPC::DIR_PWR9)
       return 1;
 
     return 5 - CurSlots;
@@ -179,9 +180,9 @@ void PPCDispatchGroupSBHazardRecognizer::EmitInstruction(SUnit *SU) {
       CurGroup.clear();
       CurSlots = CurBranches = 0;
     } else {
-      DEBUG(dbgs() << "**** Adding to dispatch group: SU(" <<
-                      SU->NodeNum << "): ");
-      DEBUG(DAG->dumpNode(SU));
+      LLVM_DEBUG(dbgs() << "**** Adding to dispatch group: SU(" << SU->NodeNum
+                        << "): ");
+      LLVM_DEBUG(DAG->dumpNode(SU));
 
       unsigned NSlots;
       bool MustBeFirst = mustComeFirst(MCID, NSlots);
@@ -223,8 +224,10 @@ void PPCDispatchGroupSBHazardRecognizer::EmitNoop() {
       DAG->MF.getSubtarget<PPCSubtarget>().getDarwinDirective();
   // If the group has now filled all of its slots, or if we're using a special
   // group-terminating nop, the group is complete.
+  // FIXME: the same for P9 as previous gen until POWER9 scheduling is ready
   if (Directive == PPC::DIR_PWR6 || Directive == PPC::DIR_PWR7 ||
-      Directive == PPC::DIR_PWR8 || CurSlots == 6)  {
+      Directive == PPC::DIR_PWR8 || Directive == PPC::DIR_PWR9 ||
+      CurSlots == 6) {
     CurGroup.clear();
     CurSlots = CurBranches = 0;
   } else {
@@ -265,7 +268,7 @@ PPCHazardRecognizer970::PPCHazardRecognizer970(const ScheduleDAG &DAG)
 }
 
 void PPCHazardRecognizer970::EndDispatchGroup() {
-  DEBUG(errs() << "=== Start of dispatch group\n");
+  LLVM_DEBUG(errs() << "=== Start of dispatch group\n");
   NumIssued = 0;
 
   // Structural hazard info.
@@ -327,7 +330,7 @@ getHazardType(SUnit *SU, int Stalls) {
 
   MachineInstr *MI = SU->getInstr();
 
-  if (MI->isDebugValue())
+  if (MI->isDebugInstr())
     return NoHazard;
 
   unsigned Opcode = MI->getOpcode();
@@ -385,7 +388,7 @@ getHazardType(SUnit *SU, int Stalls) {
 void PPCHazardRecognizer970::EmitInstruction(SUnit *SU) {
   MachineInstr *MI = SU->getInstr();
 
-  if (MI->isDebugValue())
+  if (MI->isDebugInstr())
     return;
 
   unsigned Opcode = MI->getOpcode();

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.31 2019/04/05 21:08:01 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.30 2017/09/19 19:23:57 jasper Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -77,7 +77,7 @@ ${IMAGE}: ${CBIN}
 
 bsd:
 	cd ${TOP}/../../sys/arch/sparc64/compile/${KERNEL} && \
-	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && ${MAKE}'
+	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && env COPTS=-Oz ${MAKE}'
 	cp -p ${TOP}/../../sys/arch/sparc64/compile/${KERNEL}/obj/bsd bsd
 
 unconfig:

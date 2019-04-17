@@ -46,9 +46,7 @@ public:
                                const ExplodedNode *const ExplNode,
                               BugReporter &BReporter) const;
 
-  /// Report a missing wait for a nonblocking call. A missing wait report
-  /// is emitted if a nonblocking call is not matched in the scope of a
-  /// function.
+  /// Report a missing wait for a nonblocking call.
   ///
   /// \param Req request that is not matched by a wait
   /// \param RequestRegion memory region of the request
@@ -80,7 +78,7 @@ private:
 
   /// Bug visitor class to find the node where the request region was previously
   /// used in order to include it into the BugReport path.
-  class RequestNodeVisitor : public BugReporterVisitorImpl<RequestNodeVisitor> {
+  class RequestNodeVisitor : public BugReporterVisitor {
   public:
     RequestNodeVisitor(const MemRegion *const MemoryRegion,
                        const std::string &ErrText)
@@ -92,10 +90,10 @@ private:
       ID.AddPointer(RequestRegion);
     }
 
-    PathDiagnosticPiece *VisitNode(const ExplodedNode *N,
-                                   const ExplodedNode *PrevN,
-                                   BugReporterContext &BRC,
-                                   BugReport &BR) override;
+    std::shared_ptr<PathDiagnosticPiece> VisitNode(const ExplodedNode *N,
+                                                   const ExplodedNode *PrevN,
+                                                   BugReporterContext &BRC,
+                                                   BugReport &BR) override;
 
   private:
     const MemRegion *const RequestRegion;

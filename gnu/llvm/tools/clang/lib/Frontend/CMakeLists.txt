@@ -3,8 +3,14 @@ add_subdirectory(Rewrite)
 set(LLVM_LINK_COMPONENTS
   BitReader
   Option
+  ProfileData
   Support
   )
+
+set(optional_deps intrinsics_gen)
+if (CLANG_BUILT_STANDALONE)
+  set(optional_deps)
+endif()
 
 add_clang_library(clangFrontend
   ASTConsumers.cpp
@@ -23,6 +29,7 @@ add_clang_library(clangFrontend
   FrontendAction.cpp
   FrontendActions.cpp
   FrontendOptions.cpp
+  FrontendTiming.cpp
   HeaderIncludeGen.cpp
   InitHeaderSearch.cpp
   InitPreprocessor.cpp
@@ -32,6 +39,7 @@ add_clang_library(clangFrontend
   ModuleDependencyCollector.cpp
   MultiplexConsumer.cpp
   PCHContainerOperations.cpp
+  PrecompiledPreamble.cpp
   PrintPreprocessedOutput.cpp
   SerializedDiagnosticPrinter.cpp
   SerializedDiagnosticReader.cpp
@@ -43,7 +51,7 @@ add_clang_library(clangFrontend
 
   DEPENDS
   ClangDriverOptions
-  intrinsics_gen
+  ${optional_deps}
 
   LINK_LIBS
   clangAST

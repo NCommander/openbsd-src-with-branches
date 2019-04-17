@@ -25,10 +25,8 @@
 #include "clang/AST/ExprObjC.h"
 #include "clang/AST/Type.h"
 #include "clang/Basic/TargetInfo.h"
-#include "llvm/IR/Module.h"
 
 namespace llvm {
-class Module;
 class Constant;
 class Function;
 class GlobalValue;
@@ -40,10 +38,8 @@ class LLVMContext;
 }
 
 namespace clang {
-
 namespace CodeGen {
 
-class CodeGenModule;
 class CGBlockInfo;
 
 // Flags stored in __block variables.
@@ -58,6 +54,7 @@ enum BlockByrefFlags {
 };
 
 enum BlockLiteralFlags {
+  BLOCK_IS_NOESCAPE      =  (1 << 23),
   BLOCK_HAS_COPY_DISPOSE =  (1 << 25),
   BLOCK_HAS_CXX_OBJ =       (1 << 26),
   BLOCK_IS_GLOBAL =         (1 << 28),
@@ -73,7 +70,7 @@ public:
   BlockFlags() : flags(0) {}
   BlockFlags(BlockLiteralFlags flag) : flags(flag) {}
   BlockFlags(BlockByrefFlags flag) : flags(flag) {}
-  
+
   uint32_t getBitMask() const { return flags; }
   bool empty() const { return flags == 0; }
 
@@ -163,6 +160,11 @@ public:
     EHScopeStack::stable_iterator Cleanup;
     CharUnits::QuantityType Offset;
 
+    /// Type of the capture field. Normally, this is identical to the type of
+    /// the capture's VarDecl, but can be different if there is an enclosing
+    /// lambda.
+    QualType FieldType;
+
   public:
     bool isIndex() const { return (Data & 1) != 0; }
     bool isConstant() const { return !isIndex(); }
@@ -189,10 +191,16 @@ public:
       return reinterpret_cast<llvm::Value*>(Data);
     }
 
-    static Capture makeIndex(unsigned index, CharUnits offset) {
+    QualType fieldType() const {
+      return FieldType;
+    }
+
+    static Capture makeIndex(unsigned index, CharUnits offset,
+                             QualType FieldType) {
       Capture v;
       v.Data = (index << 1) | 1;
       v.Offset = offset.getQuantity();
+      v.FieldType = FieldType;
       return v;
     }
 
@@ -200,14 +208,15 @@ public:
       Capture v;
       v.Data = reinterpret_cast<uintptr_t>(value);
       return v;
-    }    
+    }
   };
 
   /// CanBeGlobal - True if the block can be global, i.e. it has
   /// no non-constant captures.
   bool CanBeGlobal : 1;
 
-  /// True if the block needs a custom copy or dispose function.
+  /// True if the block has captures that would necessitate custom copy or
+  /// dispose helper functions if the block were escaping.
   bool NeedsCopyDispose : 1;
 
   /// HasCXXObject - True if the block's custom copy/dispose functions
@@ -217,13 +226,13 @@ public:
   /// UsesStret : True if the block uses an stret return.  Mutable
   /// because it gets set later in the block-creation process.
   mutable bool UsesStret : 1;
-  
+
   /// HasCapturedVariableLayout : True if block has captured variables
   /// and their layout meta-data has been generated.
   bool HasCapturedVariableLayout : 1;
 
   /// The mapping of allocated indexes within the block.
-  llvm::DenseMap<const VarDecl*, Capture> Captures;  
+  llvm::DenseMap<const VarDecl*, Capture> Captures;
 
   Address LocalAddress;
   llvm::StructType *StructureType;
@@ -232,7 +241,7 @@ public:
   CharUnits BlockSize;
   CharUnits BlockAlign;
   CharUnits CXXThisOffset;
-  
+
   // Offset of the gap caused by block header having a smaller
   // alignment than the alignment of the block descriptor. This
   // is the gap offset before the first capturued field.
@@ -269,6 +278,11 @@ public:
   }
 
   CGBlockInfo(const BlockDecl *blockDecl, StringRef Name);
+
+  // Indicates whether the block needs a custom copy or dispose function.
+  bool needsCopyDisposeHelpers() const {
+    return NeedsCopyDispose && !Block->doesNotEscape();
+  }
 };
 
 }  // end namespace CodeGen

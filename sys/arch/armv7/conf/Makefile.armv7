@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.armv7,v 1.43 2018/10/30 11:10:03 kettenis Exp $
+#	$OpenBSD: Makefile.armv7,v 1.42 2018/09/14 13:49:01 naddy Exp $
 
 # For instructions on building kernels consult the config(8) and options(4)
 # manual pages.
@@ -40,7 +40,6 @@ CMACHFLAGS+=	-fno-stack-protector
 .endif
 .if ${IDENT:M-DSMALL_KERNEL}
 SORTR=		cat
-COPTS?=		-Oz
 .endif
 .if ${COMPILER_VERSION:Mclang}
 NO_INTEGR_AS=	-no-integrated-as

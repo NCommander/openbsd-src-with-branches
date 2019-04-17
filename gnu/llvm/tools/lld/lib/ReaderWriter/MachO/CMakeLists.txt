@@ -18,12 +18,18 @@ add_lld_library(lldMachO
   StubsPass.cpp
   TLVPass.cpp
   WriterMachO.cpp
+
+  LINK_COMPONENTS
+    DebugInfoDWARF
+    Demangle
+    Object
+    Support
+
   LINK_LIBS
+    lldCommon
     lldCore
     lldYAML
-    LLVMObject
-    LLVMSupport
-    ${PTHREAD_LIB}
+    ${LLVM_PTHREAD_LIB}
   )
 
 include_directories(.)

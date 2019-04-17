@@ -1,6 +1,6 @@
-======================
-LLD 3.9 Release Notes
-======================
+=======================
+LLD 7.0.0 Release Notes
+=======================
 
 .. contents::
     :local:
@@ -8,95 +8,107 @@ LLD 3.9 Release Notes
 Introduction
 ============
 
-This document contains the release notes for the LLD linker, release 3.9.
-Here we describe the status of LLD, including major improvements
-from the previous release. All LLD releases may be downloaded
-from the `LLVM releases web site <http://llvm.org/releases/>`_.
+lld is a high-performance linker that supports ELF (Unix), COFF (Windows),
+Mach-O (macOS), MinGW and WebAssembly. lld is command-line-compatible with GNU
+linkers and Microsoft link.exe, and is significantly faster than the system
+default linkers.
 
-What's new in ELF Support?
-==========================
+lld 7 for ELF, COFF and MinGW are production-ready.
 
-LLD 3.9 is a major milestone for us. It is the first release that can
-link real-world large userland programs, including LLVM/Clang/LLD
-themselves. In fact, for example, it can now be used to produce most
-userland programs distributed as part of FreeBSD.
+* lld/ELF can build the entire FreeBSD/{AMD64,ARMv7} and will be the default
+  linker of the next version of the operating system.
 
-Many contributors have joined to the project to develop new features,
-port it to new architectures and fix issues since the last release.
+* lld/COFF is being used to create official builds of large popular programs
+  such as Chrome and Firefox.
 
-Link-Time Optimization
-----------------------
+* lld/MinGW is being used by Firefox for their MinGW builds. lld/MinGW still
+  needs a sysroot specifically built for lld, with llvm-dlltool, though.
 
-Initial support for LTO has been added. It is compatible with
-`the LLVM gold plugin <http://llvm.org/docs/GoldPlugin.html>`_ in terms of
-command line flags and input file format so that LLD is usable as a
-drop-in replacement for GNU gold. LTO is implemented as a native
-feature unlike the GNU gold's plugin mechanism.
+* lld/WebAssembly is used as the default (only) linker in Emscripten when using
+  the upstream LLVM compiler.
 
-Identical Code Folding
-----------------------
+* lld/Mach-O is still experimental.
 
-LLD 3.9 can now merge identical code sections to produce smaller
-output files. It is expected to be used with ``-ffunction-sections``.
+Non-comprehensive list of changes in this release
+=================================================
 
-Symbol Versioning
------------------
-
-LLD 3.9 is able to link against versioned symbols as well as produce
-versioned symbols. Both the original Sun's symbol versioning scheme
-and the GNU extension are supported.
-
-New Targets
------------
-
-LLD has expanded support for new targets, including ARM/Thumb, the x32
-ABI and MIPS N64 ABI, in addition to the existing support for x86,
-x86-64, MIPS, PowerPC and PPC64.
-
-TLS Relocation Optimizations
-----------------------------
-
-The ELF ABI specification of the thread-local variable define a few
-peephole optimizations linkers can do by rewriting instructions at the
-link-time to reduce run-time overhead to access TLS variables. That
-feature has been implemented.
-
-New Linker Flags
+ELF Improvements
 ----------------
 
-Many command line options have been added in this release, including:
+* Fixed a lot of long-tail compatibility issues with GNU linkers.
 
-- Symbol resolution and output options: ``-Bsymbolic-functions``,
-  ``-export-dynamic-symbol``, ``-image-base``, ``-pie``, ``-end-lib``,
-  ``-start-lib``, ``-build-id={md5,sha1,none,0x<hexstring>}``.
+* Added ``-z retpolineplt`` to emit a PLT entry that doesn't contain an indirect
+  jump instruction to mitigate Spectre v2 vulnerability.
 
-- Symbol versioning option: ``-dynamic-list``.
+* Added experimental support for `SHT_RELR sections
+  <https://groups.google.com/forum/#!topic/generic-abi/bX460iggiKg>`_ to create a
+  compact dynamic relocation table.
 
-- LTO options: ``-lto-O``, ``-lto-aa-pipeline``, ``-lto-jobs``,
-  ``-lto-newpm-passes``, ``-plugin``, ``-plugin-eq``, ``-plugin-opt``,
-  ``-plugin-opt-eq``, ``-disable-verify``, ``-mllvm``.
+* Added support for `split stacks <https://gcc.gnu.org/wiki/SplitStacks>`_.
 
-- Driver optionss: ``-help``, ``-version``, ``-unresolved-symbols``.
+* Added support for address significance table (section with type
+  SHT_LLVM_ADDRSIG) to improve Identical Code Folding (ICF). Combined with the
+  ``-faddrsig`` compiler option added to Clang 7, lld's ``--icf=all`` can now
+  safely merge functions and data to generate smaller outputs than before.
 
-- Debug options: ``-demangle``, ``-reproduce``, ``-save-temps``,
-  ``-strip-debug``, ``-trace``, ``-trace-symbol``,
-  ``-warn-execstack``.
+* Improved ``--gdb-index`` so that it is faster (`r336790
+  <https://reviews.llvm.org/rL336790>`_) and uses less memory (`r336672
+  <https://reviews.llvm.org/rL336672>`_).
 
-- Exception handling option: ``-eh-frame-hdr``.
+* Reduced memory usage of ``--compress-debug-sections`` (`r338913
+  <https://reviews.llvm.org/rL338913>`_).
 
-- Identical Code Folding option: ``-icf``.
+* Added linker script OVERLAY support (`r335714 <https://reviews.llvm.org/rL335714>`_).
 
-Changes to the MIPS Target
---------------------------
+* Added ``--warn-backref`` to make it easy to identify command line option order
+  that doesn't work with GNU linkers (`r329636 <https://reviews.llvm.org/rL329636>`_)
 
-* Added support for MIPS N64 ABI.
-* Added support for TLS relocations for both O32 and N64 MIPS ABIs.
+* Added ld.lld.1 man page (`r324512 <https://reviews.llvm.org/rL324512>`_).
 
-Building LLVM Toolchain with LLD
---------------------------------
+* Added support for multi-GOT.
 
-A new CMake variable, ``LLVM_ENABLE_LLD``, has been added to use LLD
-to build the LLVM toolchain. If the varaible is true, ``-fuse-ld=lld``
-option will be added to linker flags so that ``ld.lld`` is used
-instead of default ``ld``.  Because ``-fuse-ld=lld`` is a new compiler
-driver option, you need Clang 3.8 or newer to use the feature.
+* Added support for MIPS position-independent executable (PIE).
+
+* Fixed MIPS TLS GOT entries for local symbols in shared libraries.
+
+* Fixed calculation of MIPS GP relative relocations in case of relocatable
+  output.
+
+* Added support for PPCv2 ABI.
+
+* Removed an incomplete support of PPCv1 ABI.
+
+* Added support for Qualcomm Hexagon ISA.
+
+* Added the following flags: ``--apply-dynamic-relocs``, ``--check-sections``,
+  ``--cref``, ``--just-symbols``, ``--keep-unique``,
+  ``--no-allow-multiple-definition``, ``--no-apply-dynamic-relocs``,
+  ``--no-check-sections``, ``--no-gnu-unique, ``--no-pic-executable``,
+  ``--no-undefined-version``, ``--no-warn-common``, ``--pack-dyn-relocs=relr``,
+  ``--pop-state``, ``--print-icf-sections``, ``--push-state``,
+  ``--thinlto-index-only``, ``--thinlto-object-suffix-replace``,
+  ``--thinlto-prefix-replace``, ``--warn-backref``, ``-z combreloc``, ``-z
+  copyreloc``, ``-z initfirst``, ``-z keep-text-section-prefix``, ``-z lazy``,
+  ``-z noexecstack``, ``-z relro``, ``-z retpolineplt``, ``-z text``
+
+COFF Improvements
+-----------------
+
+* Improved correctness of exporting mangled stdcall symbols.
+
+* Completed support for ARM64 relocations.
+
+* Added support for outputting PDB debug info for MinGW targets.
+
+* Improved compatibility of output binaries with GNU binutils objcopy/strip.
+
+* Sped up PDB file creation.
+
+* Changed section layout to improve compatibility with link.exe.
+
+* `/subsystem` inference is improved to cover more corner cases.
+
+* Added the following flags: ``--color-diagnostics={always,never,auto}``,
+  ``--no-color-diagnostics``, ``/brepro``, ``/debug:full``, ``/debug:ghash``,
+  ``/guard:cf``, ``/guard:longjmp``, ``/guard:nolongjmp``, ``/integritycheck``,
+  ``/order``, ``/pdbsourcepath``, ``/timestamp``

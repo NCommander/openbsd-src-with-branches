@@ -1,4 +1,4 @@
-//===-- AnalyzerOptions.cpp - Analysis Engine Options -----------*- C++ -*-===//
+//===- AnalyzerOptions.cpp - Analysis Engine Options ----------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -16,12 +16,38 @@
 #include "clang/StaticAnalyzer/Core/Checker.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringSwitch.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/ADT/Twine.h"
 #include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/FileSystem.h"
 #include "llvm/Support/raw_ostream.h"
+#include <cassert>
+#include <cstddef>
+#include <utility>
+#include <vector>
 
 using namespace clang;
 using namespace ento;
 using namespace llvm;
+
+std::vector<StringRef>
+AnalyzerOptions::getRegisteredCheckers(bool IncludeExperimental /* = false */) {
+  static const StringRef StaticAnalyzerChecks[] = {
+#define GET_CHECKERS
+#define CHECKER(FULLNAME, CLASS, DESCFILE, HELPTEXT, GROUPINDEX, HIDDEN)       \
+  FULLNAME,
+#include "clang/StaticAnalyzer/Checkers/Checkers.inc"
+#undef CHECKER
+#undef GET_CHECKERS
+  };
+  std::vector<StringRef> Result;
+  for (StringRef CheckName : StaticAnalyzerChecks) {
+    if (!CheckName.startswith("debug.") &&
+        (IncludeExperimental || !CheckName.startswith("alpha.")))
+      Result.push_back(CheckName);
+  }
+  return Result;
+}
 
 AnalyzerOptions::UserModeKind AnalyzerOptions::getUserMode() {
   if (UserMode == UMK_NotSet) {
@@ -36,9 +62,32 @@ AnalyzerOptions::UserModeKind AnalyzerOptions::getUserMode() {
   return UserMode;
 }
 
+AnalyzerOptions::ExplorationStrategyKind
+AnalyzerOptions::getExplorationStrategy() {
+  if (ExplorationStrategy == ExplorationStrategyKind::NotSet) {
+    StringRef StratStr =
+        Config
+            .insert(std::make_pair("exploration_strategy", "unexplored_first_queue"))
+            .first->second;
+    ExplorationStrategy =
+        llvm::StringSwitch<ExplorationStrategyKind>(StratStr)
+            .Case("dfs", ExplorationStrategyKind::DFS)
+            .Case("bfs", ExplorationStrategyKind::BFS)
+            .Case("unexplored_first",
+                  ExplorationStrategyKind::UnexploredFirst)
+            .Case("unexplored_first_queue",
+                  ExplorationStrategyKind::UnexploredFirstQueue)
+            .Case("bfs_block_dfs_contents",
+                  ExplorationStrategyKind::BFSBlockDFSContents)
+            .Default(ExplorationStrategyKind::NotSet);
+    assert(ExplorationStrategy != ExplorationStrategyKind::NotSet &&
+           "User mode is invalid.");
+  }
+  return ExplorationStrategy;
+}
+
 IPAKind AnalyzerOptions::getIPAMode() {
   if (IPAMode == IPAK_NotSet) {
-
     // Use the User Mode to set the default IPA value.
     // Note, we have to add the string to the Config map for the ConfigDumper
     // checker to function properly.
@@ -150,6 +199,34 @@ bool AnalyzerOptions::getBooleanOption(Optional<bool> &V, StringRef Name,
 bool AnalyzerOptions::includeTemporaryDtorsInCFG() {
   return getBooleanOption(IncludeTemporaryDtorsInCFG,
                           "cfg-temporary-dtors",
+                          /* Default = */ true);
+}
+
+bool AnalyzerOptions::includeImplicitDtorsInCFG() {
+  return getBooleanOption(IncludeImplicitDtorsInCFG,
+                          "cfg-implicit-dtors",
+                          /* Default = */ true);
+}
+
+bool AnalyzerOptions::includeLifetimeInCFG() {
+  return getBooleanOption(IncludeLifetimeInCFG, "cfg-lifetime",
+                          /* Default = */ false);
+}
+
+bool AnalyzerOptions::includeLoopExitInCFG() {
+  return getBooleanOption(IncludeLoopExitInCFG, "cfg-loopexit",
+                          /* Default = */ false);
+}
+
+bool AnalyzerOptions::includeRichConstructorsInCFG() {
+  return getBooleanOption(IncludeRichConstructorsInCFG,
+                          "cfg-rich-constructors",
+                          /* Default = */ true);
+}
+
+bool AnalyzerOptions::includeScopesInCFG() {
+  return getBooleanOption(IncludeScopesInCFG,
+                          "cfg-scopes",
                           /* Default = */ false);
 }
 
@@ -168,7 +245,7 @@ bool AnalyzerOptions::mayInlineTemplateFunctions() {
 bool AnalyzerOptions::mayInlineCXXAllocator() {
   return getBooleanOption(InlineCXXAllocator,
                           "c++-allocator-inlining",
-                          /*Default=*/false);
+                          /*Default=*/true);
 }
 
 bool AnalyzerOptions::mayInlineCXXContainerMethods() {
@@ -183,6 +260,11 @@ bool AnalyzerOptions::mayInlineCXXSharedPtrDtor() {
                           /*Default=*/false);
 }
 
+bool AnalyzerOptions::mayInlineCXXTemporaryDtors() {
+  return getBooleanOption(InlineCXXTemporaryDtors,
+                          "c++-temp-dtor-inlining",
+                          /*Default=*/true);
+}
 
 bool AnalyzerOptions::mayInlineObjCMethod() {
   return getBooleanOption(ObjCInliningMode,
@@ -211,6 +293,12 @@ bool AnalyzerOptions::shouldSuppressInlinedDefensiveChecks() {
 bool AnalyzerOptions::shouldSuppressFromCXXStandardLibrary() {
   return getBooleanOption(SuppressFromCXXStandardLibrary,
                           "suppress-c++-stdlib",
+                          /* Default = */ true);
+}
+
+bool AnalyzerOptions::shouldCrosscheckWithZ3() {
+  return getBooleanOption(CrosscheckWithZ3,
+                          "crosscheck-with-z3",
                           /* Default = */ false);
 }
 
@@ -225,6 +313,18 @@ bool AnalyzerOptions::shouldWriteStableReportFilename() {
   return getBooleanOption(StableReportFilename,
                           "stable-report-filename",
                           /* Default = */ false);
+}
+
+bool AnalyzerOptions::shouldSerializeStats() {
+  return getBooleanOption(SerializeStats,
+                          "serialize-stats",
+                          /* Default = */ false);
+}
+
+bool AnalyzerOptions::shouldElideConstructors() {
+  return getBooleanOption(ElideConstructors,
+                          "elide-constructors",
+                          /* Default = */ true);
 }
 
 int AnalyzerOptions::getOptionAsInteger(StringRef Name, int DefaultVal,
@@ -264,7 +364,6 @@ unsigned AnalyzerOptions::getAlwaysInlineSize() {
 
 unsigned AnalyzerOptions::getMaxInlinableSize() {
   if (!MaxInlinableSize.hasValue()) {
-
     int DefaultValue = 0;
     UserModeKind HighLevelMode = getUserMode();
     switch (HighLevelMode) {
@@ -274,7 +373,7 @@ unsigned AnalyzerOptions::getMaxInlinableSize() {
         DefaultValue = 4;
         break;
       case UMK_Deep:
-        DefaultValue = 50;
+        DefaultValue = 100;
         break;
     }
 
@@ -287,6 +386,12 @@ unsigned AnalyzerOptions::getGraphTrimInterval() {
   if (!GraphTrimInterval.hasValue())
     GraphTrimInterval = getOptionAsInteger("graph-trim-interval", 1000);
   return GraphTrimInterval.getValue();
+}
+
+unsigned AnalyzerOptions::getMaxSymbolComplexity() {
+  if (!MaxSymbolComplexity.hasValue())
+    MaxSymbolComplexity = getOptionAsInteger("max-symbol-complexity", 35);
+  return MaxSymbolComplexity.getValue();
 }
 
 unsigned AnalyzerOptions::getMaxTimesInlineLarge() {
@@ -313,7 +418,7 @@ unsigned AnalyzerOptions::getMaxNodesPerTopLevelFunction() {
         DefaultValue = 75000;
         break;
       case UMK_Deep:
-        DefaultValue = 150000;
+        DefaultValue = 225000;
         break;
     }
     MaxNodesPerTopLevelFunction = getOptionAsInteger("max-nodes", DefaultValue);
@@ -343,4 +448,48 @@ bool AnalyzerOptions::shouldWidenLoops() {
   if (!WidenLoops.hasValue())
     WidenLoops = getBooleanOption("widen-loops", /*Default=*/false);
   return WidenLoops.getValue();
+}
+
+bool AnalyzerOptions::shouldUnrollLoops() {
+  if (!UnrollLoops.hasValue())
+    UnrollLoops = getBooleanOption("unroll-loops", /*Default=*/false);
+  return UnrollLoops.getValue();
+}
+
+bool AnalyzerOptions::shouldDisplayNotesAsEvents() {
+  if (!DisplayNotesAsEvents.hasValue())
+    DisplayNotesAsEvents =
+        getBooleanOption("notes-as-events", /*Default=*/false);
+  return DisplayNotesAsEvents.getValue();
+}
+
+bool AnalyzerOptions::shouldAggressivelySimplifyBinaryOperation() {
+  if (!AggressiveBinaryOperationSimplification.hasValue())
+    AggressiveBinaryOperationSimplification =
+      getBooleanOption("aggressive-binary-operation-simplification",
+                       /*Default=*/false);
+  return AggressiveBinaryOperationSimplification.getValue();
+}
+
+StringRef AnalyzerOptions::getCTUDir() {
+  if (!CTUDir.hasValue()) {
+    CTUDir = getOptionAsString("ctu-dir", "");
+    if (!llvm::sys::fs::is_directory(*CTUDir))
+      CTUDir = "";
+  }
+  return CTUDir.getValue();
+}
+
+bool AnalyzerOptions::naiveCTUEnabled() {
+  if (!NaiveCTU.hasValue()) {
+    NaiveCTU = getBooleanOption("experimental-enable-naive-ctu-analysis",
+                                /*Default=*/false);
+  }
+  return NaiveCTU.getValue();
+}
+
+StringRef AnalyzerOptions::getCTUIndexName() {
+  if (!CTUIndexName.hasValue())
+    CTUIndexName = getOptionAsString("ctu-index-name", "externalFnMap.txt");
+  return CTUIndexName.getValue();
 }

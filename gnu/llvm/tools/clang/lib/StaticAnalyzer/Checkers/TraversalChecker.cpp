@@ -25,10 +25,12 @@ using namespace ento;
 
 namespace {
 class TraversalDumper : public Checker< check::BranchCondition,
+                                        check::BeginFunction,
                                         check::EndFunction > {
 public:
   void checkBranchCondition(const Stmt *Condition, CheckerContext &C) const;
-  void checkEndFunction(CheckerContext &C) const;
+  void checkBeginFunction(CheckerContext &C) const;
+  void checkEndFunction(const ReturnStmt *RS, CheckerContext &C) const;
 };
 }
 
@@ -50,7 +52,12 @@ void TraversalDumper::checkBranchCondition(const Stmt *Condition,
                << Parent->getStmtClassName() << "\n";
 }
 
-void TraversalDumper::checkEndFunction(CheckerContext &C) const {
+void TraversalDumper::checkBeginFunction(CheckerContext &C) const {
+  llvm::outs() << "--BEGIN FUNCTION--\n";
+}
+
+void TraversalDumper::checkEndFunction(const ReturnStmt *RS,
+                                       CheckerContext &C) const {
   llvm::outs() << "--END FUNCTION--\n";
 }
 

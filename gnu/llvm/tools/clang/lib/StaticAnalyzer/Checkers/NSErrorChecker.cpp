@@ -61,7 +61,7 @@ void NSErrorMethodChecker::checkASTDecl(const ObjCMethodDecl *D,
     II = &D->getASTContext().Idents.get("NSError");
 
   bool hasNSError = false;
-  for (const auto *I : D->params())  {
+  for (const auto *I : D->parameters())  {
     if (IsNSError(I->getType(), II)) {
       hasNSError = true;
       break;
@@ -108,7 +108,7 @@ void CFErrorFunctionChecker::checkASTDecl(const FunctionDecl *D,
     II = &D->getASTContext().Idents.get("CFErrorRef");
 
   bool hasCFError = false;
-  for (auto I : D->params())  {
+  for (auto I : D->parameters())  {
     if (IsCFError(I->getType(), II)) {
       hasCFError = true;
       break;
@@ -186,8 +186,7 @@ static void setFlag(ProgramStateRef state, SVal val, CheckerContext &C) {
 }
 
 static QualType parameterTypeFromSVal(SVal val, CheckerContext &C) {
-  const StackFrameContext *
-    SFC = C.getLocationContext()->getCurrentStackFrame();
+  const StackFrameContext * SFC = C.getStackFrame();
   if (Optional<loc::MemRegionVal> X = val.getAs<loc::MemRegionVal>()) {
     const MemRegion* R = X->getRegion();
     if (const VarRegion *VR = R->getAs<VarRegion>())

@@ -1,4 +1,4 @@
-//===- ModuleSymbolTable.cpp - symbol table for in-memory IR ----*- C++ -*-===//
+//===- ModuleSymbolTable.cpp - symbol table for in-memory IR --------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -13,27 +13,44 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/Object/IRObjectFile.h"
+#include "llvm/Object/ModuleSymbolTable.h"
 #include "RecordStreamer.h"
 #include "llvm/ADT/STLExtras.h"
-#include "llvm/Bitcode/BitcodeReader.h"
-#include "llvm/IR/GVMaterializer.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Mangler.h"
+#include "llvm/ADT/SmallString.h"
+#include "llvm/ADT/StringMap.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/ADT/Triple.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/GlobalAlias.h"
+#include "llvm/IR/GlobalValue.h"
+#include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/Module.h"
 #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCContext.h"
+#include "llvm/MC/MCDirectives.h"
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCParser/MCAsmParser.h"
 #include "llvm/MC/MCParser/MCTargetAsmParser.h"
 #include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/MC/MCSubtargetInfo.h"
-#include "llvm/Object/ObjectFile.h"
+#include "llvm/MC/MCSymbol.h"
+#include "llvm/MC/MCTargetOptions.h"
+#include "llvm/Object/SymbolicFile.h"
+#include "llvm/Support/Casting.h"
+#include "llvm/Support/CodeGen.h"
+#include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/MemoryBuffer.h"
+#include "llvm/Support/SMLoc.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/raw_ostream.h"
+#include <algorithm>
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <string>
+
 using namespace llvm;
 using namespace object;
 
@@ -43,27 +60,23 @@ void ModuleSymbolTable::addModule(Module *M) {
   else
     FirstMod = M;
 
-  for (Function &F : *M)
-    SymTab.push_back(&F);
-  for (GlobalVariable &GV : M->globals())
+  for (GlobalValue &GV : M->global_values())
     SymTab.push_back(&GV);
-  for (GlobalAlias &GA : M->aliases())
-    SymTab.push_back(&GA);
 
-  CollectAsmSymbols(Triple(M->getTargetTriple()), M->getModuleInlineAsm(),
-                    [this](StringRef Name, BasicSymbolRef::Flags Flags) {
-                      SymTab.push_back(new (AsmSymbols.Allocate())
-                                           AsmSymbol(Name, Flags));
-                    });
+  CollectAsmSymbols(*M, [this](StringRef Name, BasicSymbolRef::Flags Flags) {
+    SymTab.push_back(new (AsmSymbols.Allocate()) AsmSymbol(Name, Flags));
+  });
 }
 
-void ModuleSymbolTable::CollectAsmSymbols(
-    const Triple &TT, StringRef InlineAsm,
-    function_ref<void(StringRef, BasicSymbolRef::Flags)> AsmSymbol) {
+static void
+initializeRecordStreamer(const Module &M,
+                         function_ref<void(RecordStreamer &)> Init) {
+  StringRef InlineAsm = M.getModuleInlineAsm();
   if (InlineAsm.empty())
     return;
 
   std::string Err;
+  const Triple TT(M.getTargetTriple());
   const Target *T = TargetRegistry::lookupTarget(TT.str(), Err);
   assert(T && T->hasMCAsmParser());
 
@@ -86,8 +99,8 @@ void ModuleSymbolTable::CollectAsmSymbols(
 
   MCObjectFileInfo MOFI;
   MCContext MCCtx(MAI.get(), MRI.get(), &MOFI);
-  MOFI.InitMCObjectFileInfo(TT, /*PIC*/ false, CodeModel::Default, MCCtx);
-  RecordStreamer Streamer(MCCtx);
+  MOFI.InitMCObjectFileInfo(TT, /*PIC*/ false, MCCtx);
+  RecordStreamer Streamer(MCCtx, M);
   T->createNullTargetStreamer(Streamer);
 
   std::unique_ptr<MemoryBuffer> Buffer(MemoryBuffer::getMemBuffer(InlineAsm));
@@ -106,34 +119,53 @@ void ModuleSymbolTable::CollectAsmSymbols(
   if (Parser->Run(false))
     return;
 
-  for (auto &KV : Streamer) {
-    StringRef Key = KV.first();
-    RecordStreamer::State Value = KV.second;
-    // FIXME: For now we just assume that all asm symbols are executable.
-    uint32_t Res = BasicSymbolRef::SF_Executable;
-    switch (Value) {
-    case RecordStreamer::NeverSeen:
-      llvm_unreachable("NeverSeen should have been replaced earlier");
-    case RecordStreamer::DefinedGlobal:
-      Res |= BasicSymbolRef::SF_Global;
-      break;
-    case RecordStreamer::Defined:
-      break;
-    case RecordStreamer::Global:
-    case RecordStreamer::Used:
-      Res |= BasicSymbolRef::SF_Undefined;
-      Res |= BasicSymbolRef::SF_Global;
-      break;
-    case RecordStreamer::DefinedWeak:
-      Res |= BasicSymbolRef::SF_Weak;
-      Res |= BasicSymbolRef::SF_Global;
-      break;
-    case RecordStreamer::UndefinedWeak:
-      Res |= BasicSymbolRef::SF_Weak;
-      Res |= BasicSymbolRef::SF_Undefined;
+  Init(Streamer);
+}
+
+void ModuleSymbolTable::CollectAsmSymbols(
+    const Module &M,
+    function_ref<void(StringRef, BasicSymbolRef::Flags)> AsmSymbol) {
+  initializeRecordStreamer(M, [&](RecordStreamer &Streamer) {
+    Streamer.flushSymverDirectives();
+
+    for (auto &KV : Streamer) {
+      StringRef Key = KV.first();
+      RecordStreamer::State Value = KV.second;
+      // FIXME: For now we just assume that all asm symbols are executable.
+      uint32_t Res = BasicSymbolRef::SF_Executable;
+      switch (Value) {
+      case RecordStreamer::NeverSeen:
+        llvm_unreachable("NeverSeen should have been replaced earlier");
+      case RecordStreamer::DefinedGlobal:
+        Res |= BasicSymbolRef::SF_Global;
+        break;
+      case RecordStreamer::Defined:
+        break;
+      case RecordStreamer::Global:
+      case RecordStreamer::Used:
+        Res |= BasicSymbolRef::SF_Undefined;
+        Res |= BasicSymbolRef::SF_Global;
+        break;
+      case RecordStreamer::DefinedWeak:
+        Res |= BasicSymbolRef::SF_Weak;
+        Res |= BasicSymbolRef::SF_Global;
+        break;
+      case RecordStreamer::UndefinedWeak:
+        Res |= BasicSymbolRef::SF_Weak;
+        Res |= BasicSymbolRef::SF_Undefined;
+      }
+      AsmSymbol(Key, BasicSymbolRef::Flags(Res));
     }
-    AsmSymbol(Key, BasicSymbolRef::Flags(Res));
-  }
+  });
+}
+
+void ModuleSymbolTable::CollectAsmSymvers(
+    const Module &M, function_ref<void(StringRef, StringRef)> AsmSymver) {
+  initializeRecordStreamer(M, [&](RecordStreamer &Streamer) {
+    for (auto &KV : Streamer.symverAliases())
+      for (auto &Alias : KV.second)
+        AsmSymver(KV.first->getName(), Alias);
+  });
 }
 
 void ModuleSymbolTable::printSymbolName(raw_ostream &OS, Symbol S) const {

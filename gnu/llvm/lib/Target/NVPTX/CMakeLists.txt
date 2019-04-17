@@ -1,18 +1,17 @@
 set(LLVM_TARGET_DEFINITIONS NVPTX.td)
 
-
-tablegen(LLVM NVPTXGenRegisterInfo.inc -gen-register-info)
-tablegen(LLVM NVPTXGenInstrInfo.inc -gen-instr-info)
 tablegen(LLVM NVPTXGenAsmWriter.inc -gen-asm-writer)
 tablegen(LLVM NVPTXGenDAGISel.inc -gen-dag-isel)
+tablegen(LLVM NVPTXGenInstrInfo.inc -gen-instr-info)
+tablegen(LLVM NVPTXGenRegisterInfo.inc -gen-register-info)
 tablegen(LLVM NVPTXGenSubtargetInfo.inc -gen-subtarget)
+
 add_public_tablegen_target(NVPTXCommonTableGen)
 
 set(NVPTXCodeGen_sources
   NVPTXAllocaHoisting.cpp
   NVPTXAsmPrinter.cpp
   NVPTXAssignValidGlobalNames.cpp
-  NVPTXFavorNonGenericAddrSpaces.cpp
   NVPTXFrameLowering.cpp
   NVPTXGenericToNVVM.cpp
   NVPTXISelDAGToDAG.cpp
@@ -20,7 +19,7 @@ set(NVPTXCodeGen_sources
   NVPTXImageOptimizer.cpp
   NVPTXInstrInfo.cpp
   NVPTXLowerAggrCopies.cpp
-  NVPTXLowerKernelArgs.cpp
+  NVPTXLowerArgs.cpp
   NVPTXLowerAlloca.cpp
   NVPTXPeephole.cpp
   NVPTXMCExpr.cpp
@@ -31,11 +30,12 @@ set(NVPTXCodeGen_sources
   NVPTXTargetMachine.cpp
   NVPTXTargetTransformInfo.cpp
   NVPTXUtilities.cpp
+  NVVMIntrRange.cpp
   NVVMReflect.cpp
   )
 
 add_llvm_target(NVPTXCodeGen ${NVPTXCodeGen_sources})
 
-add_subdirectory(TargetInfo)
 add_subdirectory(InstPrinter)
 add_subdirectory(MCTargetDesc)
+add_subdirectory(TargetInfo)

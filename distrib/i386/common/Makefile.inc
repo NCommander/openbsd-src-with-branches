@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.45 2019/04/05 21:08:00 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.44 2017/08/13 15:41:30 jasper Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -57,6 +57,8 @@ unconfig:
 DISKTYPE?=	rdroot
 MAKEFSARGS_RD=	-o disklabel=${DISKTYPE},minfree=0,density=4096
 
+COPTS= -Oz -mtune=i486
+
 bsd.gz: bsd.rd
 	cp bsd.rd bsd.strip
 	strip bsd.strip
@@ -69,7 +71,7 @@ bsd.rd:	${IMAGE} bsd
 
 bsd:
 	cd ${.CURDIR}/../../../sys/arch/i386/compile/${RAMDISK} && \
-	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && ${MAKE}'
+	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && env COPTS="${COPTS}" ${MAKE}'
 	cp -p ${.CURDIR}/../../../sys/arch/i386/compile/${RAMDISK}/obj/bsd bsd
 
 ${IMAGE}: ${CBIN}

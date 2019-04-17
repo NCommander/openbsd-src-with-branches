@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief This file defines the structure of a YAML document for serializing
+/// This file defines the structure of a YAML document for serializing
 /// diagnostics.
 ///
 //===----------------------------------------------------------------------===//
@@ -27,7 +27,7 @@ namespace llvm {
 namespace yaml {
 
 template <> struct MappingTraits<clang::tooling::Diagnostic> {
-  /// \brief Helper to (de)serialize a Diagnostic since we don't have direct
+  /// Helper to (de)serialize a Diagnostic since we don't have direct
   /// access to its data members.
   class NormalizedDiagnostic {
   public:
@@ -56,6 +56,9 @@ template <> struct MappingTraits<clang::tooling::Diagnostic> {
     MappingNormalization<NormalizedDiagnostic, clang::tooling::Diagnostic> Keys(
         Io, D);
     Io.mapRequired("DiagnosticName", Keys->DiagnosticName);
+    Io.mapRequired("Message", Keys->Message.Message);
+    Io.mapRequired("FileOffset", Keys->Message.FileOffset);
+    Io.mapRequired("FilePath", Keys->Message.FilePath);
 
     // FIXME: Export properly all the different fields.
 
@@ -77,22 +80,12 @@ template <> struct MappingTraits<clang::tooling::Diagnostic> {
   }
 };
 
-/// \brief Specialized MappingTraits to describe how a
+/// Specialized MappingTraits to describe how a
 /// TranslationUnitDiagnostics is (de)serialized.
 template <> struct MappingTraits<clang::tooling::TranslationUnitDiagnostics> {
   static void mapping(IO &Io, clang::tooling::TranslationUnitDiagnostics &Doc) {
     Io.mapRequired("MainSourceFile", Doc.MainSourceFile);
-
-    std::vector<clang::tooling::Diagnostic> Diagnostics;
-    for (auto &Diagnostic : Doc.Diagnostics) {
-      // FIXME: Export all diagnostics, not just the ones with fixes.
-      // Update MappingTraits<clang::tooling::Diagnostic>::mapping.
-      if (Diagnostic.Fix.size() > 0) {
-        Diagnostics.push_back(Diagnostic);
-      }
-    }
-    Io.mapRequired("Diagnostics", Diagnostics);
-    Doc.Diagnostics = Diagnostics;
+    Io.mapRequired("Diagnostics", Doc.Diagnostics);
   }
 };
 } // end namespace yaml

@@ -27,15 +27,16 @@
 #ifndef LLVM_SUPPORT_JAMCRC_H
 #define LLVM_SUPPORT_JAMCRC_H
 
-#include "llvm/ADT/ArrayRef.h"
 #include "llvm/Support/DataTypes.h"
 
 namespace llvm {
+template <typename T> class ArrayRef;
+
 class JamCRC {
 public:
   JamCRC(uint32_t Init = 0xFFFFFFFFU) : CRC(Init) {}
 
-  // \brief Update the CRC calculation with Data.
+  // Update the CRC calculation with Data.
   void update(ArrayRef<char> Data);
 
   uint32_t getCRC() const { return CRC; }

@@ -17,6 +17,7 @@
 #include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
 #include "clang/StaticAnalyzer/Core/Checker.h"
 #include "clang/StaticAnalyzer/Core/CheckerManager.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
 #include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
 #include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
 #include "llvm/ADT/SmallString.h"
@@ -32,8 +33,8 @@ class ArrayBoundCheckerV2 :
 
   enum OOB_Kind { OOB_Precedes, OOB_Excedes, OOB_Tainted };
 
-  void reportOOB(CheckerContext &C, ProgramStateRef errorState,
-                 OOB_Kind kind) const;
+  void reportOOB(CheckerContext &C, ProgramStateRef errorState, OOB_Kind kind,
+                 std::unique_ptr<BugReporterVisitor> Visitor = nullptr) const;
 
 public:
   void checkLocation(SVal l, bool isLoad, const Stmt*S,
@@ -67,18 +68,47 @@ public:
 
 static SVal computeExtentBegin(SValBuilder &svalBuilder,
                                const MemRegion *region) {
-  while (true)
-    switch (region->getKind()) {
+  const MemSpaceRegion *SR = region->getMemorySpace();
+  if (SR->getKind() == MemRegion::UnknownSpaceRegionKind)
+    return UnknownVal();
+  else
+    return svalBuilder.makeZeroArrayIndex();
+}
+
+// TODO: once the constraint manager is smart enough to handle non simplified
+// symbolic expressions remove this function. Note that this can not be used in
+// the constraint manager as is, since this does not handle overflows. It is
+// safe to assume, however, that memory offsets will not overflow.
+static std::pair<NonLoc, nonloc::ConcreteInt>
+getSimplifiedOffsets(NonLoc offset, nonloc::ConcreteInt extent,
+                     SValBuilder &svalBuilder) {
+  Optional<nonloc::SymbolVal> SymVal = offset.getAs<nonloc::SymbolVal>();
+  if (SymVal && SymVal->isExpression()) {
+    if (const SymIntExpr *SIE = dyn_cast<SymIntExpr>(SymVal->getSymbol())) {
+      llvm::APSInt constant =
+          APSIntType(extent.getValue()).convert(SIE->getRHS());
+      switch (SIE->getOpcode()) {
+      case BO_Mul:
+        // The constant should never be 0 here, since it the result of scaling
+        // based on the size of a type which is never 0.
+        if ((extent.getValue() % constant) != 0)
+          return std::pair<NonLoc, nonloc::ConcreteInt>(offset, extent);
+        else
+          return getSimplifiedOffsets(
+              nonloc::SymbolVal(SIE->getLHS()),
+              svalBuilder.makeIntVal(extent.getValue() / constant),
+              svalBuilder);
+      case BO_Add:
+        return getSimplifiedOffsets(
+            nonloc::SymbolVal(SIE->getLHS()),
+            svalBuilder.makeIntVal(extent.getValue() - constant), svalBuilder);
       default:
-        return svalBuilder.makeZeroArrayIndex();
-      case MemRegion::SymbolicRegionKind:
-        // FIXME: improve this later by tracking symbolic lower bounds
-        // for symbolic regions.
-        return UnknownVal();
-      case MemRegion::ElementRegionKind:
-        region = cast<SubRegion>(region)->getSuperRegion();
-        continue;
+        break;
+      }
     }
+  }
+
+  return std::pair<NonLoc, nonloc::ConcreteInt>(offset, extent);
 }
 
 void ArrayBoundCheckerV2::checkLocation(SVal location, bool isLoad,
@@ -95,7 +125,6 @@ void ArrayBoundCheckerV2::checkLocation(SVal location, bool isLoad,
   // have some flexibility in defining the base region, we can achieve
   // various levels of conservatism in our buffer overflow checking.
   ProgramStateRef state = checkerContext.getState();
-  ProgramStateRef originalState = state;
 
   SValBuilder &svalBuilder = checkerContext.getSValBuilder();
   const RegionRawOffsetV2 &rawOffset =
@@ -104,6 +133,8 @@ void ArrayBoundCheckerV2::checkLocation(SVal location, bool isLoad,
   if (!rawOffset.getRegion())
     return;
 
+  NonLoc rawOffsetVal = rawOffset.getByteOffset();
+
   // CHECK LOWER BOUND: Is byteOffset < extent begin?
   //  If so, we are doing a load/store
   //  before the first valid offset in the memory region.
@@ -111,9 +142,17 @@ void ArrayBoundCheckerV2::checkLocation(SVal location, bool isLoad,
   SVal extentBegin = computeExtentBegin(svalBuilder, rawOffset.getRegion());
 
   if (Optional<NonLoc> NV = extentBegin.getAs<NonLoc>()) {
-    SVal lowerBound =
-        svalBuilder.evalBinOpNN(state, BO_LT, rawOffset.getByteOffset(), *NV,
-                                svalBuilder.getConditionType());
+    if (NV->getAs<nonloc::ConcreteInt>()) {
+      std::pair<NonLoc, nonloc::ConcreteInt> simplifiedOffsets =
+          getSimplifiedOffsets(rawOffset.getByteOffset(),
+                               NV->castAs<nonloc::ConcreteInt>(),
+                               svalBuilder);
+      rawOffsetVal = simplifiedOffsets.first;
+      *NV = simplifiedOffsets.second;
+    }
+
+    SVal lowerBound = svalBuilder.evalBinOpNN(state, BO_LT, rawOffsetVal, *NV,
+                                              svalBuilder.getConditionType());
 
     Optional<NonLoc> lowerBoundToCheck = lowerBound.getAs<NonLoc>();
     if (!lowerBoundToCheck)
@@ -142,10 +181,18 @@ void ArrayBoundCheckerV2::checkLocation(SVal location, bool isLoad,
     if (!extentVal.getAs<NonLoc>())
       break;
 
-    SVal upperbound
-      = svalBuilder.evalBinOpNN(state, BO_GE, rawOffset.getByteOffset(),
-                                extentVal.castAs<NonLoc>(),
-                                svalBuilder.getConditionType());
+    if (extentVal.getAs<nonloc::ConcreteInt>()) {
+      std::pair<NonLoc, nonloc::ConcreteInt> simplifiedOffsets =
+          getSimplifiedOffsets(rawOffset.getByteOffset(),
+                               extentVal.castAs<nonloc::ConcreteInt>(),
+                               svalBuilder);
+      rawOffsetVal = simplifiedOffsets.first;
+      extentVal = simplifiedOffsets.second;
+    }
+
+    SVal upperbound = svalBuilder.evalBinOpNN(state, BO_GE, rawOffsetVal,
+                                              extentVal.castAs<NonLoc>(),
+                                              svalBuilder.getConditionType());
 
     Optional<NonLoc> upperboundToCheck = upperbound.getAs<NonLoc>();
     if (!upperboundToCheck)
@@ -157,13 +204,15 @@ void ArrayBoundCheckerV2::checkLocation(SVal location, bool isLoad,
 
     // If we are under constrained and the index variables are tainted, report.
     if (state_exceedsUpperBound && state_withinUpperBound) {
-      if (state->isTainted(rawOffset.getByteOffset()))
-        reportOOB(checkerContext, state_exceedsUpperBound, OOB_Tainted);
+      SVal ByteOffset = rawOffset.getByteOffset();
+      if (state->isTainted(ByteOffset)) {
+        reportOOB(checkerContext, state_exceedsUpperBound, OOB_Tainted,
+                  llvm::make_unique<TaintBugVisitor>(ByteOffset));
         return;
-    }
-
-    // If we are constrained enough to definitely exceed the upper bound, report.
-    if (state_exceedsUpperBound) {
+      }
+    } else if (state_exceedsUpperBound) {
+      // If we are constrained enough to definitely exceed the upper bound,
+      // report.
       assert(!state_withinUpperBound);
       reportOOB(checkerContext, state_exceedsUpperBound, OOB_Excedes);
       return;
@@ -174,13 +223,12 @@ void ArrayBoundCheckerV2::checkLocation(SVal location, bool isLoad,
   }
   while (false);
 
-  if (state != originalState)
-    checkerContext.addTransition(state);
+  checkerContext.addTransition(state);
 }
 
-void ArrayBoundCheckerV2::reportOOB(CheckerContext &checkerContext,
-                                    ProgramStateRef errorState,
-                                    OOB_Kind kind) const {
+void ArrayBoundCheckerV2::reportOOB(
+    CheckerContext &checkerContext, ProgramStateRef errorState, OOB_Kind kind,
+    std::unique_ptr<BugReporterVisitor> Visitor) const {
 
   ExplodedNode *errorNode = checkerContext.generateErrorNode(errorState);
   if (!errorNode)
@@ -207,18 +255,20 @@ void ArrayBoundCheckerV2::reportOOB(CheckerContext &checkerContext,
     break;
   }
 
-  checkerContext.emitReport(
-      llvm::make_unique<BugReport>(*BT, os.str(), errorNode));
+  auto BR = llvm::make_unique<BugReport>(*BT, os.str(), errorNode);
+  BR->addVisitor(std::move(Visitor));
+  checkerContext.emitReport(std::move(BR));
 }
 
-void RegionRawOffsetV2::dump() const {
+#ifndef NDEBUG
+LLVM_DUMP_METHOD void RegionRawOffsetV2::dump() const {
   dumpToStream(llvm::errs());
 }
 
 void RegionRawOffsetV2::dumpToStream(raw_ostream &os) const {
   os << "raw_offset_v2{" << getRegion() << ',' << getByteOffset() << '}';
 }
-
+#endif
 
 // Lazily computes a value to be used by 'computeOffset'.  If 'val'
 // is unknown or undefined, we lazily substitute '0'.  Otherwise,

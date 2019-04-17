@@ -78,6 +78,7 @@ public:
         }
       }
       // Pass through.
+      LLVM_FALLTHROUGH;
     case OMF_retain:
     case OMF_release:
       if (E->getReceiverKind() == ObjCMessageExpr::Instance)
@@ -157,7 +158,7 @@ public:
   }
 
 private:
-  /// \brief Checks for idioms where an unused -autorelease is common.
+  /// Checks for idioms where an unused -autorelease is common.
   ///
   /// Returns true for this idiom which is common in property
   /// setters:
@@ -250,7 +251,7 @@ private:
     while (OuterS && (isa<ParenExpr>(OuterS) ||
                       isa<CastExpr>(OuterS) ||
                       isa<ExprWithCleanups>(OuterS)));
-    
+
     if (!OuterS)
       return std::make_pair(prevStmt, nextStmt);
 
@@ -308,7 +309,7 @@ private:
     return nullptr;
   }
 
-  /// \brief Check if the retain/release is due to a GCD/XPC macro that are
+  /// Check if the retain/release is due to a GCD/XPC macro that are
   /// defined as:
   ///
   /// #define dispatch_retain(object) ({ dispatch_object_t _o = (object); _dispatch_object_validate(_o); (void)[_o retain]; })
@@ -418,7 +419,7 @@ private:
   bool isRemovable(Expr *E) const {
     return Removables.count(E);
   }
-  
+
   bool tryRemoving(Expr *E) const {
     if (isRemovable(E)) {
       Pass.TA.removeStmt(E);

@@ -17,7 +17,6 @@
 #include "CXTranslationUnit.h"
 #include "clang-c/Index.h"
 #include "clang/Frontend/ASTUnit.h"
-#include "llvm/ADT/SmallString.h"
 #include "llvm/Support/ErrorHandling.h"
 
 using namespace clang;
@@ -97,7 +96,7 @@ CXString createRef(StringRef String) {
 
 CXString createDup(StringRef String) {
   CXString Result;
-  char *Spelling = static_cast<char *>(malloc(String.size() + 1));
+  char *Spelling = static_cast<char *>(llvm::safe_malloc(String.size() + 1));
   memmove(Spelling, String.data(), String.size());
   Spelling[String.size()] = 0;
   Result.data = Spelling;
@@ -162,7 +161,6 @@ bool isManagedByPool(CXString str) {
 // libClang public APIs.
 //===----------------------------------------------------------------------===//
 
-extern "C" {
 const char *clang_getCString(CXString string) {
   if (string.private_flags == (unsigned) CXS_StringBuf) {
     return static_cast<const cxstring::CXStringBuf *>(string.data)->Data.data();
@@ -191,6 +189,4 @@ void clang_disposeStringSet(CXStringSet *set) {
   delete[] set->Strings;
   delete set;
 }
-
-} // end: extern "C"
 

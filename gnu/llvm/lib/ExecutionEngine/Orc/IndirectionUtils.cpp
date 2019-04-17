@@ -7,14 +7,47 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "llvm/ExecutionEngine/Orc/IndirectionUtils.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/Triple.h"
-#include "llvm/ExecutionEngine/Orc/IndirectionUtils.h"
+#include "llvm/ExecutionEngine/Orc/OrcABISupport.h"
 #include "llvm/IR/CallSite.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/Support/Format.h"
 #include "llvm/Transforms/Utils/Cloning.h"
-#include <set>
 #include <sstream>
+
+using namespace llvm;
+using namespace llvm::orc;
+
+namespace {
+
+class CompileCallbackMaterializationUnit : public orc::MaterializationUnit {
+public:
+  using CompileFunction = JITCompileCallbackManager::CompileFunction;
+
+  CompileCallbackMaterializationUnit(SymbolStringPtr Name,
+                                     CompileFunction Compile)
+      : MaterializationUnit(SymbolFlagsMap({{Name, JITSymbolFlags::Exported}})),
+        Name(std::move(Name)), Compile(std::move(Compile)) {}
+
+private:
+  void materialize(MaterializationResponsibility R) {
+    SymbolMap Result;
+    Result[Name] = JITEvaluatedSymbol(Compile(), JITSymbolFlags::Exported);
+    R.resolve(Result);
+    R.finalize();
+  }
+
+  void discard(const VSO &V, SymbolStringPtr Name) {
+    llvm_unreachable("Discard should never occur on a LMU?");
+  }
+
+  SymbolStringPtr Name;
+  CompileFunction Compile;
+};
+
+} // namespace
 
 namespace llvm {
 namespace orc {
@@ -22,7 +55,125 @@ namespace orc {
 void JITCompileCallbackManager::anchor() {}
 void IndirectStubsManager::anchor() {}
 
-Constant* createIRTypedAddress(FunctionType &FT, TargetAddress Addr) {
+Expected<JITTargetAddress>
+JITCompileCallbackManager::getCompileCallback(CompileFunction Compile) {
+  if (auto TrampolineAddr = getAvailableTrampolineAddr()) {
+    auto CallbackName = ES.getSymbolStringPool().intern(
+        std::string("cc") + std::to_string(++NextCallbackId));
+
+    std::lock_guard<std::mutex> Lock(CCMgrMutex);
+    AddrToSymbol[*TrampolineAddr] = CallbackName;
+    cantFail(CallbacksVSO.define(
+        llvm::make_unique<CompileCallbackMaterializationUnit>(
+            std::move(CallbackName), std::move(Compile))));
+    return *TrampolineAddr;
+  } else
+    return TrampolineAddr.takeError();
+}
+
+JITTargetAddress JITCompileCallbackManager::executeCompileCallback(
+    JITTargetAddress TrampolineAddr) {
+  SymbolStringPtr Name;
+
+  {
+    std::unique_lock<std::mutex> Lock(CCMgrMutex);
+    auto I = AddrToSymbol.find(TrampolineAddr);
+
+    // If this address is not associated with a compile callback then report an
+    // error to the execution session and return ErrorHandlerAddress to the
+    // callee.
+    if (I == AddrToSymbol.end()) {
+      Lock.unlock();
+      std::string ErrMsg;
+      {
+        raw_string_ostream ErrMsgStream(ErrMsg);
+        ErrMsgStream << "No compile callback for trampoline at "
+                     << format("0x%016x", TrampolineAddr);
+      }
+      ES.reportError(
+          make_error<StringError>(std::move(ErrMsg), inconvertibleErrorCode()));
+      return ErrorHandlerAddress;
+    } else
+      Name = I->second;
+  }
+
+  if (auto Sym = lookup({&CallbacksVSO}, Name))
+    return Sym->getAddress();
+  else {
+    // If anything goes wrong materializing Sym then report it to the session
+    // and return the ErrorHandlerAddress;
+    ES.reportError(Sym.takeError());
+    return ErrorHandlerAddress;
+  }
+}
+
+std::unique_ptr<JITCompileCallbackManager>
+createLocalCompileCallbackManager(const Triple &T, ExecutionSession &ES,
+                                  JITTargetAddress ErrorHandlerAddress) {
+  switch (T.getArch()) {
+    default: return nullptr;
+
+    case Triple::aarch64: {
+      typedef orc::LocalJITCompileCallbackManager<orc::OrcAArch64> CCMgrT;
+      return llvm::make_unique<CCMgrT>(ES, ErrorHandlerAddress);
+    }
+
+    case Triple::x86: {
+      typedef orc::LocalJITCompileCallbackManager<orc::OrcI386> CCMgrT;
+      return llvm::make_unique<CCMgrT>(ES, ErrorHandlerAddress);
+    }
+
+    case Triple::x86_64: {
+      if ( T.getOS() == Triple::OSType::Win32 ) {
+        typedef orc::LocalJITCompileCallbackManager<orc::OrcX86_64_Win32> CCMgrT;
+        return llvm::make_unique<CCMgrT>(ES, ErrorHandlerAddress);
+      } else {
+        typedef orc::LocalJITCompileCallbackManager<orc::OrcX86_64_SysV> CCMgrT;
+        return llvm::make_unique<CCMgrT>(ES, ErrorHandlerAddress);
+      }
+    }
+
+  }
+}
+
+std::function<std::unique_ptr<IndirectStubsManager>()>
+createLocalIndirectStubsManagerBuilder(const Triple &T) {
+  switch (T.getArch()) {
+    default:
+      return [](){
+        return llvm::make_unique<
+                       orc::LocalIndirectStubsManager<orc::OrcGenericABI>>();
+      };
+
+    case Triple::aarch64:
+      return [](){
+        return llvm::make_unique<
+                       orc::LocalIndirectStubsManager<orc::OrcAArch64>>();
+      };
+
+    case Triple::x86:
+      return [](){
+        return llvm::make_unique<
+                       orc::LocalIndirectStubsManager<orc::OrcI386>>();
+      };
+
+    case Triple::x86_64:
+      if (T.getOS() == Triple::OSType::Win32) {
+        return [](){
+          return llvm::make_unique<
+                     orc::LocalIndirectStubsManager<orc::OrcX86_64_Win32>>();
+        };
+      } else {
+        return [](){
+          return llvm::make_unique<
+                     orc::LocalIndirectStubsManager<orc::OrcX86_64_SysV>>();
+        };
+      }
+
+  }
+}
+
+Constant* createIRTypedAddress(FunctionType &FT, JITTargetAddress Addr) {
   Constant *AddrIntVal =
     ConstantInt::get(Type::getInt64Ty(FT.getContext()), Addr);
   Constant *AddrPtrVal =
@@ -95,7 +246,7 @@ static void raiseVisibilityOnValue(GlobalValue &V, GlobalRenamer &R) {
     V.setLinkage(GlobalValue::ExternalLinkage);
     V.setVisibility(GlobalValue::HiddenVisibility);
   }
-  V.setUnnamedAddr(false);
+  V.setUnnamedAddr(GlobalValue::UnnamedAddr::None);
   assert(!R.needsRenaming(V) && "Invalid global name.");
 }
 
@@ -114,9 +265,8 @@ void makeAllSymbolsExternallyAccessible(Module &M) {
 
 Function* cloneFunctionDecl(Module &Dst, const Function &F,
                             ValueToValueMapTy *VMap) {
-  assert(F.getParent() != &Dst && "Can't copy decl over existing function.");
   Function *NewF =
-    Function::Create(cast<FunctionType>(F.getType()->getElementType()),
+    Function::Create(cast<FunctionType>(F.getValueType()),
                      F.getLinkage(), F.getName(), &Dst);
   NewF->copyAttributesFrom(&F);
 
@@ -152,9 +302,8 @@ void moveFunctionBody(Function &OrigF, ValueToValueMapTy &VMap,
 
 GlobalVariable* cloneGlobalVariableDecl(Module &Dst, const GlobalVariable &GV,
                                         ValueToValueMapTy *VMap) {
-  assert(GV.getParent() != &Dst && "Can't copy decl over existing global var.");
   GlobalVariable *NewGV = new GlobalVariable(
-      Dst, GV.getType()->getElementType(), GV.isConstant(),
+      Dst, GV.getValueType(), GV.isConstant(),
       GV.getLinkage(), nullptr, GV.getName(), nullptr,
       GV.getThreadLocalMode(), GV.getType()->getAddressSpace());
   NewGV->copyAttributesFrom(&GV);
@@ -174,8 +323,8 @@ void moveGlobalVariableInitializer(GlobalVariable &OrigGV,
     assert(VMap[&OrigGV] == NewGV &&
            "Incorrect global variable mapping in VMap.");
   assert(NewGV->getParent() != OrigGV.getParent() &&
-         "moveGlobalVariable should only be used to move initializers between "
-         "modules");
+         "moveGlobalVariableInitializer should only be used to move "
+         "initializers between modules");
 
   NewGV->setInitializer(MapValue(OrigGV.getInitializer(), VMap, RF_None,
                                  nullptr, Materializer));
@@ -190,6 +339,15 @@ GlobalAlias* cloneGlobalAliasDecl(Module &Dst, const GlobalAlias &OrigA,
   NewA->copyAttributesFrom(&OrigA);
   VMap[&OrigA] = NewA;
   return NewA;
+}
+
+void cloneModuleFlagsMetadata(Module &Dst, const Module &Src,
+                              ValueToValueMapTy &VMap) {
+  auto *MFs = Src.getModuleFlagsMetadata();
+  if (!MFs)
+    return;
+  for (auto *MF : MFs->operands())
+    Dst.addModuleFlag(MapMetadata(MF, VMap));
 }
 
 } // End namespace orc.

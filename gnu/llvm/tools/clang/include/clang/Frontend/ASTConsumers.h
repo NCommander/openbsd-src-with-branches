@@ -31,13 +31,14 @@ class TargetOptions;
 // original C code.  The output is intended to be in a format such that
 // clang could re-parse the output back into the same AST, but the
 // implementation is still incomplete.
-std::unique_ptr<ASTConsumer> CreateASTPrinter(raw_ostream *OS,
+std::unique_ptr<ASTConsumer> CreateASTPrinter(std::unique_ptr<raw_ostream> OS,
                                               StringRef FilterString);
 
-// AST dumper: dumps the raw AST in human-readable form to stderr; this is
-// intended for debugging.
-std::unique_ptr<ASTConsumer> CreateASTDumper(StringRef FilterString,
-                                             bool DumpDecls,
+// AST dumper: dumps the raw AST in human-readable form to the given output
+// stream, or stdout if OS is nullptr.
+std::unique_ptr<ASTConsumer> CreateASTDumper(std::unique_ptr<raw_ostream> OS,
+                                             StringRef FilterString,
+                                             bool DumpDecls, bool Deserialize,
                                              bool DumpLookups);
 
 // AST Decl node lister: prints qualified names of all filterable AST Decl

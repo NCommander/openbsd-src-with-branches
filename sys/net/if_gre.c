@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gre.c,v 1.145 2019/01/04 11:16:03 benno Exp $ */
+/*	$OpenBSD: if_gre.c,v 1.144 2019/01/04 11:13:35 benno Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -3018,8 +3018,10 @@ gre_down(struct gre_softc *sc)
 	CLR(sc->sc_if.if_flags, IFF_RUNNING);
 
 	if (sc->sc_ka_state != GRE_KA_NONE) {
-		timeout_del_barrier(&sc->sc_ka_hold);
-		timeout_del_barrier(&sc->sc_ka_send);
+		if (!timeout_del(&sc->sc_ka_hold))
+			timeout_barrier(&sc->sc_ka_hold);
+		if (!timeout_del(&sc->sc_ka_send))
+			timeout_barrier(&sc->sc_ka_send);
 
 		sc->sc_ka_state = GRE_KA_DOWN;
 		gre_link_state(&sc->sc_if, sc->sc_ka_state);
@@ -3615,7 +3617,8 @@ nvgre_down(struct nvgre_softc *sc)
 	CLR(ifp->if_flags, IFF_RUNNING);
 
 	NET_UNLOCK();
-	timeout_del_barrier(&sc->sc_ether_age);
+	if (!timeout_del(&sc->sc_ether_age))
+		timeout_barrier(&sc->sc_ether_age);
 	ifq_barrier(&ifp->if_snd);
 	if (!task_del(softnet, &sc->sc_send_task))
 		taskq_barrier(softnet);
@@ -3921,8 +3924,10 @@ eoip_down(struct eoip_softc *sc)
 	CLR(sc->sc_ac.ac_if.if_flags, IFF_RUNNING);
 
 	if (sc->sc_ka_state != GRE_KA_NONE) {
-		timeout_del_barrier(&sc->sc_ka_hold);
-		timeout_del_barrier(&sc->sc_ka_send);
+		if (!timeout_del(&sc->sc_ka_hold))
+			timeout_barrier(&sc->sc_ka_hold);
+		if (!timeout_del(&sc->sc_ka_send))
+			timeout_barrier(&sc->sc_ka_send);
 
 		sc->sc_ka_state = GRE_KA_DOWN;
 		gre_link_state(&sc->sc_ac.ac_if, sc->sc_ka_state);

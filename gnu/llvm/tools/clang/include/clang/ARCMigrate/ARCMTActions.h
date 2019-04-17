@@ -22,7 +22,7 @@ protected:
   bool BeginInvocation(CompilerInstance &CI) override;
 
 public:
-  CheckAction(FrontendAction *WrappedAction);
+  CheckAction(std::unique_ptr<FrontendAction> WrappedAction);
 };
 
 class ModifyAction : public WrapperFrontendAction {
@@ -30,7 +30,7 @@ protected:
   bool BeginInvocation(CompilerInstance &CI) override;
 
 public:
-  ModifyAction(FrontendAction *WrappedAction);
+  ModifyAction(std::unique_ptr<FrontendAction> WrappedAction);
 };
 
 class MigrateSourceAction : public ASTFrontendAction {
@@ -49,20 +49,21 @@ protected:
   bool BeginInvocation(CompilerInstance &CI) override;
 
 public:
-  MigrateAction(FrontendAction *WrappedAction, StringRef migrateDir,
+  MigrateAction(std::unique_ptr<FrontendAction> WrappedAction,
+                StringRef migrateDir,
                 StringRef plistOut,
                 bool emitPremigrationARCErrors);
 };
 
-/// \brief Migrates to modern ObjC syntax.
+/// Migrates to modern ObjC syntax.
 class ObjCMigrateAction : public WrapperFrontendAction {
   std::string MigrateDir;
   unsigned    ObjCMigAction;
   FileRemapper Remapper;
   CompilerInstance *CompInst;
 public:
-  ObjCMigrateAction(FrontendAction *WrappedAction, StringRef migrateDir,
-                    unsigned migrateAction);
+  ObjCMigrateAction(std::unique_ptr<FrontendAction> WrappedAction,
+                    StringRef migrateDir, unsigned migrateAction);
 
 protected:
   std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI,

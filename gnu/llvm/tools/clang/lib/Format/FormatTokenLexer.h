@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief This file contains FormatTokenLexer, which tokenizes a source file
+/// This file contains FormatTokenLexer, which tokenizes a source file
 /// into a token stream suitable for ClangFormat.
 ///
 //===----------------------------------------------------------------------===//
@@ -23,12 +23,20 @@
 #include "clang/Format/Format.h"
 #include "llvm/Support/Regex.h"
 
+#include <stack>
+
 namespace clang {
 namespace format {
 
+enum LexerState {
+  NORMAL,
+  TEMPLATE_STRING,
+  TOKEN_STASHED,
+};
+
 class FormatTokenLexer {
 public:
-  FormatTokenLexer(const SourceManager &SourceMgr, FileID ID,
+  FormatTokenLexer(const SourceManager &SourceMgr, FileID ID, unsigned Column,
                    const FormatStyle &Style, encoding::Encoding Encoding);
 
   ArrayRef<FormatToken *> lex();
@@ -39,6 +47,7 @@ private:
   void tryMergePreviousTokens();
 
   bool tryMergeLessLess();
+  bool tryMergeNSStringLiteral();
 
   bool tryMergeTokens(ArrayRef<tok::TokenKind> Kinds, TokenType NewType);
 
@@ -53,7 +62,18 @@ private:
   // its text if successful.
   void tryParseJSRegexLiteral();
 
-  void tryParseTemplateString();
+  // Handles JavaScript template strings.
+  //
+  // JavaScript template strings use backticks ('`') as delimiters, and allow
+  // embedding expressions nested in ${expr-here}. Template strings can be
+  // nested recursively, i.e. expressions can contain template strings in turn.
+  //
+  // The code below parses starting from a backtick, up to a closing backtick or
+  // an opening ${. It also maintains a stack of lexing contexts to handle
+  // nested template parts by balancing curly braces.
+  void handleTemplateStrings();
+
+  void tryParsePythonComment();
 
   bool tryMerge_TMacro();
 
@@ -65,7 +85,7 @@ private:
 
   FormatToken *FormatTok;
   bool IsFirstToken;
-  bool GreaterStashed, LessStashed;
+  std::stack<LexerState> StateStack;
   unsigned Column;
   unsigned TrailingWhitespace;
   std::unique_ptr<Lexer> Lex;

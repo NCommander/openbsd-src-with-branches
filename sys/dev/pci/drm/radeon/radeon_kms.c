@@ -25,15 +25,12 @@
  *          Alex Deucher
  *          Jerome Glisse
  */
-#include <drm/drmP.h>
-#include <drm/drm_fb_helper.h>
+#include <dev/pci/drm/drmP.h>
+#include <dev/pci/drm/drm_fb_helper.h>
 #include "radeon.h"
-#include <drm/radeon_drm.h>
+#include <dev/pci/drm/radeon_drm.h>
 #include "radeon_asic.h"
 
-#include <linux/vga_switcheroo.h>
-#include <linux/slab.h>
-#include <linux/pm_runtime.h>
 #include "radeon_kfd.h"
 
 #if defined(CONFIG_VGA_SWITCHEROO)
@@ -319,20 +316,18 @@ radeondrm_setcolor(void *v, u_int index, u_int8_t r, u_int8_t g, u_int8_t b)
 {
 	struct sunfb *sf = v;
 	struct radeon_device *rdev = sf->sf_ro.ri_hw;
+	struct drm_fb_helper *fb_helper = (void *)rdev->mode_info.rfbdev;
 	u_int16_t red, green, blue;
-	struct radeon_crtc *radeon_crtc;
-	int i, crtc;
+	struct drm_crtc *crtc;
+	int i;
 
-	for (crtc = 0; i < rdev->num_crtc; crtc++) {
-		radeon_crtc = rdev->mode_info.crtcs[crtc];
+	for (i = 0; i < fb_helper->crtc_count; i++) {
+		crtc = fb_helper->crtc_info[i].mode_set.crtc;
 
 		red = (r << 8) | r;
 		green = (g << 8) | g;
 		blue = (b << 8) | b;
-
-		radeon_crtc->lut_r[index] = red >> 6;
-		radeon_crtc->lut_g[index] = green >> 6;
-		radeon_crtc->lut_b[index] = blue >> 6;
+		fb_helper->funcs->gamma_set(crtc, red, green, blue, index);
 	}
 }
 #endif
@@ -356,31 +351,6 @@ int radeon_driver_load_kms(struct drm_device *dev, unsigned long flags)
 	struct radeon_device *rdev;
 	int r, acpi_status;
 
-	if (!radeon_si_support) {
-		switch (flags & RADEON_FAMILY_MASK) {
-		case CHIP_TAHITI:
-		case CHIP_PITCAIRN:
-		case CHIP_VERDE:
-		case CHIP_OLAND:
-		case CHIP_HAINAN:
-			dev_info(dev->dev,
-				 "SI support disabled by module param\n");
-			return -ENODEV;
-		}
-	}
-	if (!radeon_cik_support) {
-		switch (flags & RADEON_FAMILY_MASK) {
-		case CHIP_KAVERI:
-		case CHIP_BONAIRE:
-		case CHIP_HAWAII:
-		case CHIP_KABINI:
-		case CHIP_MULLINS:
-			dev_info(dev->dev,
-				 "CIK support disabled by module param\n");
-			return -ENODEV;
-		}
-	}
-
 	rdev = kzalloc(sizeof(struct radeon_device), GFP_KERNEL);
 	if (rdev == NULL) {
 		return -ENOMEM;
@@ -398,8 +368,7 @@ int radeon_driver_load_kms(struct drm_device *dev, unsigned long flags)
 
 	if ((radeon_runtime_pm != 0) &&
 	    radeon_has_atpx() &&
-	    ((flags & RADEON_IS_IGP) == 0) &&
-	    !pci_is_thunderbolt_attached(dev->pdev))
+	    ((flags & RADEON_IS_IGP) == 0))
 		flags |= RADEON_IS_PX;
 
 	/* radeon_device_init should report only fatal error
@@ -432,8 +401,12 @@ int radeon_driver_load_kms(struct drm_device *dev, unsigned long flags)
 				"Error during ACPI methods call\n");
 	}
 
+#ifdef notyet
+	radeon_kfd_device_probe(rdev);
+	radeon_kfd_device_init(rdev);
+#endif
+
 	if (radeon_is_px(dev)) {
-		dev_pm_set_driver_flags(dev->dev, DPM_FLAG_NEVER_SKIP);
 		pm_runtime_use_autosuspend(dev->dev);
 		pm_runtime_set_autosuspend_delay(dev->dev, 5000);
 		pm_runtime_set_active(dev->dev);
@@ -628,8 +601,8 @@ radeondrm_attach_kms(struct device *parent, struct device *self, void *aux)
 	kms_driver.num_ioctls = radeon_max_kms_ioctl;
 	kms_driver.driver_features |= DRIVER_MODESET;
 
-	dev = drm_attach_pci(&kms_driver, pa, is_agp, rdev->console,
-	    self, NULL);
+	dev = (struct drm_device *)drm_attach_pci(&kms_driver, pa, is_agp,
+	    rdev->console, self);
 	rdev->ddev = dev;
 	rdev->pdev = dev->pdev;
 
@@ -832,11 +805,6 @@ radeondrm_attachhook(struct device *self)
 
 	config_found_sm(&rdev->self, &aa, wsemuldisplaydevprint,
 	    wsemuldisplaydevsubmatch);
-
-	/*
-	 * in linux via radeon_pci_probe -> drm_get_pci_dev -> drm_dev_register
-	 */
-	drm_dev_register(rdev->ddev, rdev->flags);
 }
 }
 
@@ -852,7 +820,7 @@ radeondrm_activate_kms(struct device *self, int act)
 	switch (act) {
 	case DVACT_QUIESCE:
 		rv = config_activate_children(self, act);
-		radeon_suspend_kms(rdev->ddev, true, true, false);
+		radeon_suspend_kms(rdev->ddev, true, true);
 		break;
 	case DVACT_SUSPEND:
 		break;
@@ -1310,11 +1278,13 @@ static int radeon_info_ioctl(struct drm_device *dev, void *data, struct drm_file
  */
 void radeon_driver_lastclose_kms(struct drm_device *dev)
 {
-#ifdef __sparc64__
 	struct radeon_device *rdev = dev->dev_private;
+
+#ifdef __sparc64__
 	fbwscons_setcolormap(&rdev->sf, radeondrm_setcolor);
 #endif
-	drm_fb_helper_lastclose(dev);
+	if (rdev->mode_info.mode_config_initialized)
+		radeon_fbdev_restore_mode(rdev);
 	vga_switcheroo_process_delayed_switch();
 }
 
@@ -1342,11 +1312,11 @@ int radeon_driver_open_kms(struct drm_device *dev, struct drm_file *file_priv)
 	if (rdev->family >= CHIP_CAYMAN) {
 		struct radeon_fpriv *fpriv;
 		struct radeon_vm *vm;
+		int r;
 
 		fpriv = kzalloc(sizeof(*fpriv), GFP_KERNEL);
 		if (unlikely(!fpriv)) {
-			r = -ENOMEM;
-			goto out_suspend;
+			return -ENOMEM;
 		}
 
 		if (rdev->accel_working) {
@@ -1354,14 +1324,14 @@ int radeon_driver_open_kms(struct drm_device *dev, struct drm_file *file_priv)
 			r = radeon_vm_init(rdev, vm);
 			if (r) {
 				kfree(fpriv);
-				goto out_suspend;
+				return r;
 			}
 
 			r = radeon_bo_reserve(rdev->ring_tmp_bo.bo, false);
 			if (r) {
 				radeon_vm_fini(rdev, vm);
 				kfree(fpriv);
-				goto out_suspend;
+				return r;
 			}
 
 			/* map the ib pool buffer read only into
@@ -1375,16 +1345,15 @@ int radeon_driver_open_kms(struct drm_device *dev, struct drm_file *file_priv)
 			if (r) {
 				radeon_vm_fini(rdev, vm);
 				kfree(fpriv);
-				goto out_suspend;
+				return r;
 			}
 		}
 		file_priv->driver_priv = fpriv;
 	}
 
-out_suspend:
 	pm_runtime_mark_last_busy(dev->dev);
 	pm_runtime_put_autosuspend(dev->dev);
-	return r;
+	return 0;
 }
 
 /**
@@ -1393,25 +1362,12 @@ out_suspend:
  * @dev: drm dev pointer
  * @file_priv: drm file
  *
- * On device close, tear down hyperz and cmask filps on r1xx-r5xx
- * (all asics).  And tear down vm on cayman+ (all asics).
+ * On device post close, tear down vm on cayman+ (all asics).
  */
 void radeon_driver_postclose_kms(struct drm_device *dev,
 				 struct drm_file *file_priv)
 {
 	struct radeon_device *rdev = dev->dev_private;
-
-	pm_runtime_get_sync(dev->dev);
-
-	mutex_lock(&rdev->gem.mutex);
-	if (rdev->hyperz_filp == file_priv)
-		rdev->hyperz_filp = NULL;
-	if (rdev->cmask_filp == file_priv)
-		rdev->cmask_filp = NULL;
-	mutex_unlock(&rdev->gem.mutex);
-
-	radeon_uvd_free_handles(rdev, file_priv);
-	radeon_vce_free_handles(rdev, file_priv);
 
 	/* new gpu have virtual address space support */
 	if (rdev->family >= CHIP_CAYMAN && file_priv->driver_priv) {
@@ -1432,8 +1388,31 @@ void radeon_driver_postclose_kms(struct drm_device *dev,
 		kfree(fpriv);
 		file_priv->driver_priv = NULL;
 	}
-	pm_runtime_mark_last_busy(dev->dev);
-	pm_runtime_put_autosuspend(dev->dev);
+}
+
+/**
+ * radeon_driver_preclose_kms - drm callback for pre close
+ *
+ * @dev: drm dev pointer
+ * @file_priv: drm file
+ *
+ * On device pre close, tear down hyperz and cmask filps on r1xx-r5xx
+ * (all asics).
+ */
+void radeon_driver_preclose_kms(struct drm_device *dev,
+				struct drm_file *file_priv)
+{
+	struct radeon_device *rdev = dev->dev_private;
+
+	mutex_lock(&rdev->gem.mutex);
+	if (rdev->hyperz_filp == file_priv)
+		rdev->hyperz_filp = NULL;
+	if (rdev->cmask_filp == file_priv)
+		rdev->cmask_filp = NULL;
+	mutex_unlock(&rdev->gem.mutex);
+
+	radeon_uvd_free_handles(rdev, file_priv);
+	radeon_vce_free_handles(rdev, file_priv);
 }
 
 /*
@@ -1443,19 +1422,19 @@ void radeon_driver_postclose_kms(struct drm_device *dev,
  * radeon_get_vblank_counter_kms - get frame count
  *
  * @dev: drm dev pointer
- * @pipe: crtc to get the frame count from
+ * @crtc: crtc to get the frame count from
  *
  * Gets the frame count on the requested crtc (all asics).
  * Returns frame count on success, -EINVAL on failure.
  */
-u32 radeon_get_vblank_counter_kms(struct drm_device *dev, unsigned int pipe)
+u32 radeon_get_vblank_counter_kms(struct drm_device *dev, int crtc)
 {
 	int vpos, hpos, stat;
 	u32 count;
 	struct radeon_device *rdev = dev->dev_private;
 
-	if (pipe >= rdev->num_crtc) {
-		DRM_ERROR("Invalid crtc %u\n", pipe);
+	if (crtc < 0 || crtc >= rdev->num_crtc) {
+		DRM_ERROR("Invalid crtc %d\n", crtc);
 		return -EINVAL;
 	}
 
@@ -1467,29 +1446,29 @@ u32 radeon_get_vblank_counter_kms(struct drm_device *dev, unsigned int pipe)
 	 * and start of vsync, so vpos >= 0 means to bump the hw frame counter
 	 * result by 1 to give the proper appearance to caller.
 	 */
-	if (rdev->mode_info.crtcs[pipe]) {
+	if (rdev->mode_info.crtcs[crtc]) {
 		/* Repeat readout if needed to provide stable result if
 		 * we cross start of vsync during the queries.
 		 */
 		do {
-			count = radeon_get_vblank_counter(rdev, pipe);
+			count = radeon_get_vblank_counter(rdev, crtc);
 			/* Ask radeon_get_crtc_scanoutpos to return vpos as
 			 * distance to start of vblank, instead of regular
 			 * vertical scanout pos.
 			 */
 			stat = radeon_get_crtc_scanoutpos(
-				dev, pipe, GET_DISTANCE_TO_VBLANKSTART,
+				dev, crtc, GET_DISTANCE_TO_VBLANKSTART,
 				&vpos, &hpos, NULL, NULL,
-				&rdev->mode_info.crtcs[pipe]->base.hwmode);
-		} while (count != radeon_get_vblank_counter(rdev, pipe));
+				&rdev->mode_info.crtcs[crtc]->base.hwmode);
+		} while (count != radeon_get_vblank_counter(rdev, crtc));
 
 		if (((stat & (DRM_SCANOUTPOS_VALID | DRM_SCANOUTPOS_ACCURATE)) !=
 		    (DRM_SCANOUTPOS_VALID | DRM_SCANOUTPOS_ACCURATE))) {
 			DRM_DEBUG_VBL("Query failed! stat %d\n", stat);
 		}
 		else {
-			DRM_DEBUG_VBL("crtc %u: dist from vblank start %d\n",
-				      pipe, vpos);
+			DRM_DEBUG_VBL("crtc %d: dist from vblank start %d\n",
+				      crtc, vpos);
 
 			/* Bump counter if we are at >= leading edge of vblank,
 			 * but before vsync where vpos would turn negative and
@@ -1501,7 +1480,7 @@ u32 radeon_get_vblank_counter_kms(struct drm_device *dev, unsigned int pipe)
 	}
 	else {
 	    /* Fallback to use value as is. */
-	    count = radeon_get_vblank_counter(rdev, pipe);
+	    count = radeon_get_vblank_counter(rdev, crtc);
 	    DRM_DEBUG_VBL("NULL mode info! Returned count may be wrong.\n");
 	}
 
@@ -1557,6 +1536,43 @@ void radeon_disable_vblank_kms(struct drm_device *dev, int crtc)
 	rdev->irq.crtc_vblank_int[crtc] = false;
 	radeon_irq_set(rdev);
 	spin_unlock_irqrestore(&rdev->irq.lock, irqflags);
+}
+
+/**
+ * radeon_get_vblank_timestamp_kms - get vblank timestamp
+ *
+ * @dev: drm dev pointer
+ * @crtc: crtc to get the timestamp for
+ * @max_error: max error
+ * @vblank_time: time value
+ * @flags: flags passed to the driver
+ *
+ * Gets the timestamp on the requested crtc based on the
+ * scanout position.  (all asics).
+ * Returns postive status flags on success, negative error on failure.
+ */
+int radeon_get_vblank_timestamp_kms(struct drm_device *dev, int crtc,
+				    int *max_error,
+				    struct timeval *vblank_time,
+				    unsigned flags)
+{
+	struct drm_crtc *drmcrtc;
+	struct radeon_device *rdev = dev->dev_private;
+
+	if (crtc < 0 || crtc >= dev->num_crtcs) {
+		DRM_ERROR("Invalid crtc %d\n", crtc);
+		return -EINVAL;
+	}
+
+	/* Get associated drm_crtc: */
+	drmcrtc = &rdev->mode_info.crtcs[crtc]->base;
+	if (!drmcrtc)
+		return -EINVAL;
+
+	/* Helper routine in DRM core does all the work: */
+	return drm_calc_vbltimestamp_from_scanoutpos(dev, crtc, max_error,
+						     vblank_time, flags,
+						     &drmcrtc->hwmode);
 }
 
 const struct drm_ioctl_desc radeon_ioctls_kms[] = {

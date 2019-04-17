@@ -1,4 +1,4 @@
-//===--- IndexSymbol.h - Types and functions for indexing symbols ---------===//
+//===- IndexSymbol.h - Types and functions for indexing symbols -*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -11,6 +11,7 @@
 #define LLVM_CLANG_INDEX_INDEXSYMBOL_H
 
 #include "clang/Basic/LLVM.h"
+#include "clang/Lex/MacroInfo.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/DataTypes.h"
 
@@ -51,45 +52,73 @@ enum class SymbolKind : uint8_t {
   Constructor,
   Destructor,
   ConversionFunction,
+
+  Parameter,
+  Using,
 };
 
-enum class SymbolLanguage {
+enum class SymbolLanguage : uint8_t {
   C,
   ObjC,
   CXX,
+  Swift,
 };
 
+/// Language specific sub-kinds.
 enum class SymbolSubKind : uint8_t {
+  None,
+  CXXCopyConstructor,
+  CXXMoveConstructor,
+  AccessorGetter,
+  AccessorSetter,
+  UsingTypename,
+  UsingValue,
+};
+
+typedef uint8_t SymbolPropertySet;
+/// Set of properties that provide additional info about a symbol.
+enum class SymbolProperty : SymbolPropertySet {
   Generic                       = 1 << 0,
   TemplatePartialSpecialization = 1 << 1,
   TemplateSpecialization        = 1 << 2,
   UnitTest                      = 1 << 3,
   IBAnnotated                   = 1 << 4,
   IBOutletCollection            = 1 << 5,
+  GKInspectable                 = 1 << 6,
+  Local                         = 1 << 7,
 };
-static const unsigned SymbolSubKindBitNum = 6;
-typedef unsigned SymbolSubKindSet;
+static const unsigned SymbolPropertyBitNum = 8;
 
 /// Set of roles that are attributed to symbol occurrences.
-enum class SymbolRole : uint16_t {
+///
+/// Low 9 bits of clang-c/include/Index.h CXSymbolRole mirrors this enum.
+enum class SymbolRole : uint32_t {
   Declaration = 1 << 0,
-  Definition  = 1 << 1,
-  Reference   = 1 << 2,
-  Read        = 1 << 3,
-  Write       = 1 << 4,
-  Call        = 1 << 5,
-  Dynamic     = 1 << 6,
-  AddressOf   = 1 << 7,
-  Implicit    = 1 << 8,
+  Definition = 1 << 1,
+  Reference = 1 << 2,
+  Read = 1 << 3,
+  Write = 1 << 4,
+  Call = 1 << 5,
+  Dynamic = 1 << 6,
+  AddressOf = 1 << 7,
+  Implicit = 1 << 8,
+  // FIXME: this is not mirrored in CXSymbolRole.
+  // Note that macro occurrences aren't currently supported in libclang.
+  Undefinition = 1 << 9, // macro #undef
 
   // Relation roles.
-  RelationChildOf     = 1 << 9,
-  RelationBaseOf      = 1 << 10,
-  RelationOverrideOf  = 1 << 11,
-  RelationReceivedBy  = 1 << 12,
-  RelationCalledBy    = 1 << 13,
+  RelationChildOf = 1 << 10,
+  RelationBaseOf = 1 << 11,
+  RelationOverrideOf = 1 << 12,
+  RelationReceivedBy = 1 << 13,
+  RelationCalledBy = 1 << 14,
+  RelationExtendedBy = 1 << 15,
+  RelationAccessorOf = 1 << 16,
+  RelationContainedBy = 1 << 17,
+  RelationIBTypeOf = 1 << 18,
+  RelationSpecializationOf = 1 << 19,
 };
-static const unsigned SymbolRoleBitNum = 14;
+static const unsigned SymbolRoleBitNum = 20;
 typedef unsigned SymbolRoleSet;
 
 /// Represents a relation to another symbol for a symbol occurrence.
@@ -103,25 +132,33 @@ struct SymbolRelation {
 
 struct SymbolInfo {
   SymbolKind Kind;
-  SymbolSubKindSet SubKinds;
+  SymbolSubKind SubKind;
   SymbolLanguage Lang;
+  SymbolPropertySet Properties;
 };
 
 SymbolInfo getSymbolInfo(const Decl *D);
 
+SymbolInfo getSymbolInfoForMacro(const MacroInfo &MI);
+
+bool isFunctionLocalSymbol(const Decl *D);
+
 void applyForEachSymbolRole(SymbolRoleSet Roles,
                             llvm::function_ref<void(SymbolRole)> Fn);
+bool applyForEachSymbolRoleInterruptible(SymbolRoleSet Roles,
+                            llvm::function_ref<bool(SymbolRole)> Fn);
 void printSymbolRoles(SymbolRoleSet Roles, raw_ostream &OS);
 
 /// \returns true if no name was printed, false otherwise.
 bool printSymbolName(const Decl *D, const LangOptions &LO, raw_ostream &OS);
 
 StringRef getSymbolKindString(SymbolKind K);
+StringRef getSymbolSubKindString(SymbolSubKind K);
 StringRef getSymbolLanguageString(SymbolLanguage K);
 
-void applyForEachSymbolSubKind(SymbolSubKindSet SubKinds,
-                            llvm::function_ref<void(SymbolSubKind)> Fn);
-void printSymbolSubKinds(SymbolSubKindSet SubKinds, raw_ostream &OS);
+void applyForEachSymbolProperty(SymbolPropertySet Props,
+                            llvm::function_ref<void(SymbolProperty)> Fn);
+void printSymbolProperties(SymbolPropertySet Props, raw_ostream &OS);
 
 } // namespace index
 } // namespace clang

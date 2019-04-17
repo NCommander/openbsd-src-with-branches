@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbdevs.c,v 1.30 2019/01/07 14:22:40 mpi Exp $	*/
+/*	$OpenBSD: usbdevs.c,v 1.29 2018/07/12 07:58:23 mpi Exp $	*/
 /*	$NetBSD: usbdevs.c,v 1.19 2002/02/21 00:34:31 christos Exp $	*/
 
 /*
@@ -39,7 +39,6 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <vis.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -76,8 +75,6 @@ usbdev(int f, uint8_t addr)
 	struct usb_device_info di;
 	int e, i, port, nports;
 	uint16_t change, status;
-	char vv[sizeof(di.udi_vendor)*4], vp[sizeof(di.udi_product)*4];
-	char vr[sizeof(di.udi_release)*4], vs[sizeof(di.udi_serial)*4];
 
 	di.udi_addr = addr;
 	e = ioctl(f, USB_DEVICEINFO, &di);
@@ -89,10 +86,8 @@ usbdev(int f, uint8_t addr)
 
 	printf("addr %02u: ", addr);
 	done[addr] = 1;
-	strvis(vv, di.udi_vendor, VIS_CSTYLE);
-	strvis(vp, di.udi_product, VIS_CSTYLE);
 	printf("%04x:%04x %s, %s", di.udi_vendorNo, di.udi_productNo,
-	    vv, vp);
+	    di.udi_vendor, di.udi_product);
 
 	if (verbose) {
 		printf("\n\t ");
@@ -122,11 +117,9 @@ usbdev(int f, uint8_t addr)
 		else
 			printf("unconfigured, ");
 
-		strvis(vr, di.udi_release, VIS_CSTYLE);
-		strvis(vs, di.udi_serial, VIS_CSTYLE);
-		printf("rev %s", vr);
+		printf("rev %s", di.udi_release);
 		if (strlen(di.udi_serial))
-			printf(", iSerial %s", vs);
+			printf(", iSerial %s", di.udi_serial);
 	}
 	printf("\n");
 

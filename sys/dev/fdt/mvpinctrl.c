@@ -1,4 +1,4 @@
-/* $OpenBSD: mvpinctrl.c,v 1.4 2018/03/21 09:17:21 kettenis Exp $ */
+/* $OpenBSD: mvpinctrl.c,v 1.3 2018/03/19 17:07:20 kettenis Exp $ */
 /*
  * Copyright (c) 2013,2016 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -94,18 +94,6 @@ struct mvpinctrl_pins mvpinctrl_pins[] = {
 	},
 	{
 		"marvell,cp110-pinctrl",
-		armada_cp110_pins, nitems(armada_cp110_pins)
-	},
-	{
-		"marvell,armada-7k-pinctrl",
-		armada_cp110_pins, nitems(armada_cp110_pins)
-	},
-	{
-		"marvell,armada-8k-cpm-pinctrl",
-		armada_cp110_pins, nitems(armada_cp110_pins)
-	},
-	{
-		"marvell,armada-8k-cps-pinctrl",
 		armada_cp110_pins, nitems(armada_cp110_pins)
 	},
 };

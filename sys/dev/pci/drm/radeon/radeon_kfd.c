@@ -20,7 +20,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <drm/drmP.h>
+#include <dev/pci/drm/drmP.h>
 #include "radeon.h"
 #include "cikd.h"
 #include "cik_reg.h"

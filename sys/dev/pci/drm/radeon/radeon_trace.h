@@ -2,11 +2,7 @@
 #if !defined(_RADEON_TRACE_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _RADEON_TRACE_H_
 
-#include <linux/stringify.h>
-#include <linux/types.h>
-#include <linux/tracepoint.h>
-
-#include <drm/drmP.h>
+#include <dev/pci/drm/drmP.h>
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM radeon

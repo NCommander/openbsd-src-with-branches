@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-include "clang/StaticAnalyzer/Checkers/CheckerBase.td"
+include "CheckerBase.td"
 
 //===----------------------------------------------------------------------===//
 // Packages.
@@ -38,10 +38,18 @@ def CoreAlpha : Package<"core">, InPackage<Alpha>, Hidden;
 // default. Such checkers belong in the alpha package.
 def OptIn : Package<"optin">;
 
+// In the Portability package reside checkers for finding code that relies on
+// implementation-defined behavior. Such checks are wanted for cross-platform
+// development, but unwanted for developers who target only a single platform.
+def PortabilityOptIn : Package<"portability">, InPackage<OptIn>;
+
 def Nullability : Package<"nullability">;
 
 def Cplusplus : Package<"cplusplus">;
 def CplusplusAlpha : Package<"cplusplus">, InPackage<Alpha>, Hidden;
+def CplusplusOptIn : Package<"cplusplus">, InPackage<OptIn>;
+
+def Valist : Package<"valist">;
 
 def DeadCode : Package<"deadcode">;
 def DeadCodeAlpha : Package<"deadcode">, InPackage<Alpha>, Hidden;
@@ -75,7 +83,16 @@ def LocalizabilityOptIn : Package<"localizability">, InPackage<CocoaOptIn>;
 def MPI : Package<"mpi">, InPackage<OptIn>;
 
 def LLVM : Package<"llvm">;
+
+// The APIModeling package is for checkers that model APIs and don't perform
+// any diagnostics. These checkers are always turned on; this package is
+// intended for API modeling that is not controlled by the target triple.
+def APIModeling : Package<"apiModeling">, Hidden;
+def GoogleAPIModeling : Package<"google">, InPackage<APIModeling>;
+
 def Debug : Package<"debug">;
+
+def CloneDetectionAlpha : Package<"clone">, InPackage<Alpha>, Hidden;
 
 //===----------------------------------------------------------------------===//
 // Core Checkers.
@@ -115,6 +132,10 @@ def DynamicTypePropagation : Checker<"DynamicTypePropagation">,
   HelpText<"Generate dynamic type information">,
   DescFile<"DynamicTypePropagation.cpp">;
 
+def NonnullGlobalConstantsChecker: Checker<"NonnilStringConstants">,
+  HelpText<"Assume that const string-like globals are non-null">,
+  DescFile<"NonilStringConstantsChecker.cpp">;
+
 } // end "core"
 
 let ParentPackage = CoreAlpha in {
@@ -130,6 +151,10 @@ def CastSizeChecker : Checker<"CastSize">,
 def CastToStructChecker : Checker<"CastToStruct">,
   HelpText<"Check for cast from non-struct pointer to struct pointer">,
   DescFile<"CastToStructChecker.cpp">;
+
+def ConversionChecker : Checker<"Conversion">,
+  HelpText<"Loss of sign/precision in implicit conversions">,
+  DescFile<"ConversionChecker.cpp">;
 
 def IdenticalExprChecker : Checker<"IdenticalExpr">,
   HelpText<"Warn about unintended use of identical expressions in operators">,
@@ -163,6 +188,10 @@ def DynamicTypeChecker : Checker<"DynamicTypeChecker">,
   HelpText<"Check for cases where the dynamic and the static type of an object are unrelated.">,
   DescFile<"DynamicTypeChecker.cpp">;
 
+def StackAddrAsyncEscapeChecker : Checker<"StackAddressAsyncEscape">,
+  HelpText<"Check that addresses to stack memory do not escape the function">,
+  DescFile<"StackAddrEscapeChecker.cpp">;
+
 } // end "alpha.core"
 
 let ParentPackage = Nullability in {
@@ -183,11 +212,19 @@ def NullablePassedToNonnullChecker : Checker<"NullablePassedToNonnull">,
   HelpText<"Warns when a nullable pointer is passed to a pointer which has a _Nonnull type.">,
   DescFile<"NullabilityChecker.cpp">;
 
-def NullableReturnedFromNonnullChecker : Checker<"NullablePassedToNonnull">,
+def NullableReturnedFromNonnullChecker : Checker<"NullableReturnedFromNonnull">,
   HelpText<"Warns when a nullable pointer is returned from a function that has _Nonnull return type.">,
   DescFile<"NullabilityChecker.cpp">;
 
 } // end "nullability"
+
+let ParentPackage = APIModeling in {
+
+def TrustNonnullChecker : Checker<"TrustNonnull">,
+  HelpText<"Trust that returns from framework methods annotated with _Nonnull are not null">,
+  DescFile<"TrustNonnullChecker.cpp">;
+
+}
 
 //===----------------------------------------------------------------------===//
 // Evaluate "builtin" functions.
@@ -239,6 +276,10 @@ def ReturnUndefChecker : Checker<"UndefReturn">,
 
 let ParentPackage = Cplusplus in {
 
+def InnerPointerChecker : Checker<"InnerPointer">,
+  HelpText<"Check for inner pointers of C++ containers used after re/deallocation">,
+  DescFile<"InnerPointerChecker.cpp">;
+
 def NewDeleteChecker : Checker<"NewDelete">,
   HelpText<"Check for double-free and use-after-free problems. Traces memory managed by new/delete.">,
   DescFile<"MallocChecker.cpp">;
@@ -247,15 +288,62 @@ def NewDeleteLeaksChecker : Checker<"NewDeleteLeaks">,
   HelpText<"Check for memory leaks. Traces memory managed by new/delete.">,
   DescFile<"MallocChecker.cpp">;
 
+def CXXSelfAssignmentChecker : Checker<"SelfAssignment">,
+  HelpText<"Checks C++ copy and move assignment operators for self assignment">,
+  DescFile<"CXXSelfAssignmentChecker.cpp">;
+
 } // end: "cplusplus"
 
-let ParentPackage = CplusplusAlpha in {
+let ParentPackage = CplusplusOptIn in {
 
 def VirtualCallChecker : Checker<"VirtualCall">,
   HelpText<"Check virtual function calls during construction or destruction">,
   DescFile<"VirtualCallChecker.cpp">;
 
+} // end: "optin.cplusplus"
+
+let ParentPackage = CplusplusAlpha in {
+
+def DeleteWithNonVirtualDtorChecker : Checker<"DeleteWithNonVirtualDtor">,
+  HelpText<"Reports destructions of polymorphic objects with a non-virtual "
+           "destructor in their base class">,
+  DescFile<"DeleteWithNonVirtualDtorChecker.cpp">;
+
+def IteratorRangeChecker : Checker<"IteratorRange">,
+  HelpText<"Check for iterators used outside their valid ranges">,
+  DescFile<"IteratorChecker.cpp">;
+
+def MisusedMovedObjectChecker: Checker<"MisusedMovedObject">,
+     HelpText<"Method calls on a moved-from object and copying a moved-from "
+              "object will be reported">,
+     DescFile<"MisusedMovedObjectChecker.cpp">;
+
+def UninitializedObjectChecker: Checker<"UninitializedObject">,
+     HelpText<"Reports uninitialized fields after object construction">,
+     DescFile<"UninitializedObjectChecker.cpp">;
+
 } // end: "alpha.cplusplus"
+
+
+//===----------------------------------------------------------------------===//
+// Valist checkers.
+//===----------------------------------------------------------------------===//
+
+let ParentPackage = Valist in {
+
+def UninitializedChecker : Checker<"Uninitialized">,
+  HelpText<"Check for usages of uninitialized (or already released) va_lists.">,
+  DescFile<"ValistChecker.cpp">;
+
+def UnterminatedChecker : Checker<"Unterminated">,
+  HelpText<"Check for va_lists which are not released by a va_end call.">,
+  DescFile<"ValistChecker.cpp">;
+
+def CopyToSelfChecker : Checker<"CopyToSelf">,
+  HelpText<"Check for va_lists which are copied onto itself.">,
+  DescFile<"ValistChecker.cpp">;
+
+} // end : "valist"
 
 //===----------------------------------------------------------------------===//
 // Deadcode checkers.
@@ -293,6 +381,15 @@ def PaddingChecker : Checker<"Padding">,
 //===----------------------------------------------------------------------===//
 
 let ParentPackage = InsecureAPI in {
+  def bcmp : Checker<"bcmp">,
+    HelpText<"Warn on uses of the 'bcmp' function">,
+    DescFile<"CheckSecuritySyntaxOnly.cpp">;
+  def bcopy : Checker<"bcopy">,
+    HelpText<"Warn on uses of the 'bcopy' function">,
+    DescFile<"CheckSecuritySyntaxOnly.cpp">;
+  def bzero : Checker<"bzero">,
+    HelpText<"Warn on uses of the 'bzero' function">,
+    DescFile<"CheckSecuritySyntaxOnly.cpp">;
   def gets : Checker<"gets">,
     HelpText<"Warn on uses of the 'gets' function">,
     DescFile<"CheckSecuritySyntaxOnly.cpp">;
@@ -342,6 +439,13 @@ def MallocOverflowSecurityChecker : Checker<"MallocOverflow">,
   HelpText<"Check for overflows in the arguments to malloc()">,
   DescFile<"MallocOverflowSecurityChecker.cpp">;
 
+// Operating systems specific PROT_READ/PROT_WRITE values is not implemented,
+// the defaults are correct for several common operating systems though,
+// but may need to be overridden via the related analyzer-config flags.
+def MmapWriteExecChecker : Checker<"MmapWriteExec">,
+  HelpText<"Warn on mmap() calls that are both writable and executable">,
+  DescFile<"MmapWriteExecChecker.cpp">;
+
 } // end "alpha.security"
 
 //===----------------------------------------------------------------------===//
@@ -362,7 +466,7 @@ def GenericTaintChecker : Checker<"TaintPropagation">,
 
 let ParentPackage = Unix in {
 
-def UnixAPIChecker : Checker<"API">,
+def UnixAPIMisuseChecker : Checker<"API">,
   HelpText<"Check calls to various UNIX/Posix functions">,
   DescFile<"UnixAPIChecker.cpp">;
 
@@ -381,6 +485,10 @@ def MismatchedDeallocatorChecker : Checker<"MismatchedDeallocator">,
 def VforkChecker : Checker<"Vfork">,
   HelpText<"Check for proper usage of vfork">,
   DescFile<"VforkChecker.cpp">;
+
+def StdCLibraryFunctionsChecker : Checker<"StdCLibraryFunctions">,
+  HelpText<"Improve modeling of the C standard library functions">,
+  DescFile<"StdLibraryFunctionsChecker.cpp">;
 
 } // end "unix"
 
@@ -401,6 +509,10 @@ def StreamChecker : Checker<"Stream">,
 def SimpleStreamChecker : Checker<"SimpleStream">,
   HelpText<"Check for misuses of stream APIs">,
   DescFile<"SimpleStreamChecker.cpp">;
+
+def BlockInCriticalSectionChecker : Checker<"BlockInCriticalSection">,
+  HelpText<"Check for calls to blocking functions inside a critical section">,
+  DescFile<"BlockInCriticalSectionChecker.cpp">;
 
 } // end "alpha.unix"
 
@@ -436,19 +548,29 @@ def CStringNotNullTerm : Checker<"NotNullTerminated">,
 
 let ParentPackage = OSX in {
 
+def NumberObjectConversionChecker : Checker<"NumberObjectConversion">,
+  HelpText<"Check for erroneous conversions of objects representing numbers into numbers">,
+  DescFile<"NumberObjectConversionChecker.cpp">;
+
 def MacOSXAPIChecker : Checker<"API">,
-  InPackage<OSX>,
   HelpText<"Check for proper uses of various Apple APIs">,
   DescFile<"MacOSXAPIChecker.cpp">;
 
 def MacOSKeychainAPIChecker : Checker<"SecKeychainAPI">,
-  InPackage<OSX>,
   HelpText<"Check for proper uses of Secure Keychain APIs">,
   DescFile<"MacOSKeychainAPIChecker.cpp">;
+
+def ObjCPropertyChecker : Checker<"ObjCProperty">,
+  HelpText<"Check for proper uses of Objective-C properties">,
+  DescFile<"ObjCPropertyChecker.cpp">;
 
 } // end "osx"
 
 let ParentPackage = Cocoa in {
+
+def RunLoopAutoreleaseLeakChecker : Checker<"RunLoopAutoreleaseLeak">,
+  HelpText<"Check for leaked memory in autorelease pools that will never be drained">,
+  DescFile<"RunLoopAutoreleaseLeakChecker.cpp">;
 
 def ObjCAtSyncChecker : Checker<"AtSync">,
   HelpText<"Check for nil pointers used as mutexes for @synchronized">,
@@ -515,7 +637,17 @@ def ObjCSuperDeallocChecker : Checker<"SuperDealloc">,
   HelpText<"Warn about improper use of '[super dealloc]' in Objective-C">,
   DescFile<"ObjCSuperDeallocChecker.cpp">;
 
+def AutoreleaseWriteChecker : Checker<"AutoreleaseWrite">,
+  HelpText<"Warn about potentially crashing writes to autoreleasing objects from different autoreleasing pools in Objective-C">,
+  DescFile<"ObjCAutoreleaseWriteChecker.cpp">;
 } // end "osx.cocoa"
+
+let ParentPackage = Performance in {
+
+def GCDAntipattern : Checker<"GCDAntipattern">,
+  HelpText<"Check for performance anti-patterns when using Grand Central Dispatch">,
+  DescFile<"GCDAntipatternChecker.cpp">;
+} // end "optin.performance"
 
 let ParentPackage = CocoaAlpha in {
 
@@ -539,8 +671,8 @@ def DirectIvarAssignmentForAnnotatedFunctions : Checker<"DirectIvarAssignmentFor
 
 let ParentPackage = CoreFoundation in {
 
-def CFNumberCreateChecker : Checker<"CFNumber">,
-  HelpText<"Check for proper uses of CFNumberCreate">,
+def CFNumberChecker : Checker<"CFNumber">,
+  HelpText<"Check for proper uses of CFNumber APIs">,
   DescFile<"BasicObjCFoundationChecks.cpp">;
 
 def CFRetainReleaseChecker : Checker<"CFRetainRelease">,
@@ -594,11 +726,26 @@ def LLVMConventionsChecker : Checker<"Conventions">,
   HelpText<"Check code for LLVM codebase conventions">,
   DescFile<"LLVMConventionsChecker.cpp">;
 
+
+
+//===----------------------------------------------------------------------===//
+// Checkers modeling Google APIs.
+//===----------------------------------------------------------------------===//
+
+def GTestChecker : Checker<"GTest">,
+  InPackage<GoogleAPIModeling>,
+  HelpText<"Model gtest assertion APIs">,
+  DescFile<"GTestChecker.cpp">;
+
 //===----------------------------------------------------------------------===//
 // Debugging checkers (for analyzer development).
 //===----------------------------------------------------------------------===//
 
 let ParentPackage = Debug in {
+
+def AnalysisOrderChecker : Checker<"AnalysisOrder">,
+  HelpText<"Print callbacks that are called during analysis in order">,
+  DescFile<"AnalysisOrder.cpp">;
 
 def DominatorsTreeDumper : Checker<"DumpDominators">,
   HelpText<"Print the dominance tree for a given CFG">,
@@ -652,8 +799,29 @@ def ExplodedGraphViewer : Checker<"ViewExplodedGraph">,
   HelpText<"View Exploded Graphs using GraphViz">,
   DescFile<"DebugCheckers.cpp">;
 
-def BugHashDumper : Checker<"DumpBugHash">,
-  HelpText<"Dump the bug hash for all statements.">,
-  DescFile<"DebugCheckers.cpp">;
-
 } // end "debug"
+
+
+//===----------------------------------------------------------------------===//
+// Clone Detection
+//===----------------------------------------------------------------------===//
+
+let ParentPackage = CloneDetectionAlpha in {
+
+def CloneChecker : Checker<"CloneChecker">,
+  HelpText<"Reports similar pieces of code.">,
+  DescFile<"CloneChecker.cpp">;
+
+} // end "clone"
+
+//===----------------------------------------------------------------------===//
+// Portability checkers.
+//===----------------------------------------------------------------------===//
+
+let ParentPackage = PortabilityOptIn in {
+
+def UnixAPIPortabilityChecker : Checker<"UnixAPI">,
+  HelpText<"Finds implementation-defined behavior in UNIX/Posix functions">,
+  DescFile<"UnixAPIChecker.cpp">;
+
+} // end optin.portability

@@ -1,4 +1,4 @@
-/* $OpenBSD: e_aes.c,v 1.35 2019/03/17 18:07:41 tb Exp $ */
+/* $OpenBSD: e_aes.c,v 1.34 2017/05/02 03:59:44 deraadt Exp $ */
 /* ====================================================================
  * Copyright (c) 2001-2011 The OpenSSL Project.  All rights reserved.
  *
@@ -829,10 +829,16 @@ aes_gcm_ctrl(EVP_CIPHER_CTX *c, int type, int arg, void *ptr)
 		EVP_CIPHER_CTX *out = ptr;
 		EVP_AES_GCM_CTX *gctx_out = out->cipher_data;
 
-		if (gctx->iv == c->iv) {
+		if (gctx->gcm.key) {
+			if (gctx->gcm.key != &gctx->ks)
+				return 0;
+			gctx_out->gcm.key = &gctx_out->ks;
+		}
+		if (gctx->iv == c->iv)
 			gctx_out->iv = out->iv;
-		} else {
-			if ((gctx_out->iv = calloc(1, gctx->ivlen)) == NULL)
+		else {
+			gctx_out->iv = malloc(gctx->ivlen);
+			if (!gctx_out->iv)
 				return 0;
 			memcpy(gctx_out->iv, gctx->iv, gctx->ivlen);
 		}
@@ -1237,7 +1243,17 @@ aes_ccm_ctrl(EVP_CIPHER_CTX *c, int type, int arg, void *ptr)
 		return 1;
 
 	case EVP_CTRL_COPY:
+	    {
+		EVP_CIPHER_CTX *out = ptr;
+		EVP_AES_CCM_CTX *cctx_out = out->cipher_data;
+
+		if (cctx->ccm.key) {
+			if (cctx->ccm.key != &cctx->ks)
+				return 0;
+			cctx_out->ccm.key = &cctx_out->ks;
+		}
 		return 1;
+	    }
 
 	default:
 		return -1;
@@ -1380,7 +1396,8 @@ aead_aes_gcm_init(EVP_AEAD_CTX *ctx, const unsigned char *key, size_t key_len,
 		return 0;
 	}
 
-	if ((gcm_ctx = calloc(1, sizeof(struct aead_aes_gcm_ctx))) == NULL)
+	gcm_ctx = malloc(sizeof(struct aead_aes_gcm_ctx));
+	if (gcm_ctx == NULL)
 		return 0;
 
 #ifdef AESNI_CAPABLE

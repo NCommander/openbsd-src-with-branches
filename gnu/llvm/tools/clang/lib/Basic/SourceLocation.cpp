@@ -1,4 +1,4 @@
-//==--- SourceLocation.cpp - Compact identifier for Source Files -*- C++ -*-==//
+//===- SourceLocation.cpp - Compact identifier for Source Files -----------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -12,11 +12,17 @@
 //===----------------------------------------------------------------------===//
 
 #include "clang/Basic/SourceLocation.h"
+#include "clang/Basic/LLVM.h"
 #include "clang/Basic/PrettyStackTrace.h"
 #include "clang/Basic/SourceManager.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/Support/Compiler.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
-#include <cstdio>
+#include <cassert>
+#include <string>
+#include <utility>
+
 using namespace clang;
 
 //===----------------------------------------------------------------------===//
@@ -43,7 +49,7 @@ void SourceLocation::print(raw_ostream &OS, const SourceManager &SM)const{
 
   if (isFileID()) {
     PresumedLoc PLoc = SM.getPresumedLoc(*this);
-    
+
     if (PLoc.isInvalid()) {
       OS << "<invalid>";
       return;
@@ -82,7 +88,6 @@ FileID FullSourceLoc::getFileID() const {
   return SrcMgr->getFileID(*this);
 }
 
-
 FullSourceLoc FullSourceLoc::getExpansionLoc() const {
   assert(isValid());
   return FullSourceLoc(SrcMgr->getExpansionLoc(*this), *SrcMgr);
@@ -91,6 +96,58 @@ FullSourceLoc FullSourceLoc::getExpansionLoc() const {
 FullSourceLoc FullSourceLoc::getSpellingLoc() const {
   assert(isValid());
   return FullSourceLoc(SrcMgr->getSpellingLoc(*this), *SrcMgr);
+}
+
+FullSourceLoc FullSourceLoc::getFileLoc() const {
+  assert(isValid());
+  return FullSourceLoc(SrcMgr->getFileLoc(*this), *SrcMgr);
+}
+
+PresumedLoc FullSourceLoc::getPresumedLoc(bool UseLineDirectives) const {
+  if (!isValid())
+    return PresumedLoc();
+
+  return SrcMgr->getPresumedLoc(*this, UseLineDirectives);
+}
+
+bool FullSourceLoc::isMacroArgExpansion(FullSourceLoc *StartLoc) const {
+  assert(isValid());
+  return SrcMgr->isMacroArgExpansion(*this, StartLoc);
+}
+
+FullSourceLoc FullSourceLoc::getImmediateMacroCallerLoc() const {
+  assert(isValid());
+  return FullSourceLoc(SrcMgr->getImmediateMacroCallerLoc(*this), *SrcMgr);
+}
+
+std::pair<FullSourceLoc, StringRef> FullSourceLoc::getModuleImportLoc() const {
+  if (!isValid())
+    return std::make_pair(FullSourceLoc(), StringRef());
+
+  std::pair<SourceLocation, StringRef> ImportLoc =
+      SrcMgr->getModuleImportLoc(*this);
+  return std::make_pair(FullSourceLoc(ImportLoc.first, *SrcMgr),
+                        ImportLoc.second);
+}
+
+unsigned FullSourceLoc::getFileOffset() const {
+  assert(isValid());
+  return SrcMgr->getFileOffset(*this);
+}
+
+unsigned FullSourceLoc::getLineNumber(bool *Invalid) const {
+  assert(isValid());
+  return SrcMgr->getLineNumber(getFileID(), getFileOffset(), Invalid);
+}
+
+unsigned FullSourceLoc::getColumnNumber(bool *Invalid) const {
+  assert(isValid());
+  return SrcMgr->getColumnNumber(getFileID(), getFileOffset(), Invalid);
+}
+
+const FileEntry *FullSourceLoc::getFileEntry() const {
+  assert(isValid());
+  return SrcMgr->getFileEntryForID(getFileID());
 }
 
 unsigned FullSourceLoc::getExpansionLineNumber(bool *Invalid) const {

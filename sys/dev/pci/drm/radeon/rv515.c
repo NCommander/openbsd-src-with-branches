@@ -25,9 +25,7 @@
  *          Alex Deucher
  *          Jerome Glisse
  */
-#include <linux/seq_file.h>
-#include <linux/slab.h>
-#include <drm/drmP.h>
+#include <dev/pci/drm/drmP.h>
 #include "rv515d.h"
 #include "radeon.h"
 #include "radeon_asic.h"
@@ -154,7 +152,8 @@ static void rv515_gpu_init(struct radeon_device *rdev)
 	unsigned pipe_select_current, gb_pipe_select, tmp;
 
 	if (r100_gui_wait_for_idle(rdev)) {
-		pr_warn("Failed to wait GUI idle while resetting GPU. Bad things might happen.\n");
+		printk(KERN_WARNING "Failed to wait GUI idle while "
+		       "resetting GPU. Bad things might happen.\n");
 	}
 	rv515_vga_render_disable(rdev);
 	r420_pipes_init(rdev);
@@ -165,10 +164,12 @@ static void rv515_gpu_init(struct radeon_device *rdev)
 	      (((gb_pipe_select >> 8) & 0xF) << 4);
 	WREG32_PLL(0x000D, tmp);
 	if (r100_gui_wait_for_idle(rdev)) {
-		pr_warn("Failed to wait GUI idle while resetting GPU. Bad things might happen.\n");
+		printk(KERN_WARNING "Failed to wait GUI idle while "
+		       "resetting GPU. Bad things might happen.\n");
 	}
 	if (rv515_mc_wait_for_idle(rdev)) {
-		pr_warn("Failed to wait MC idle while programming pipes. Bad things might happen.\n");
+		printk(KERN_WARNING "Failed to wait MC idle while "
+		       "programming pipes. Bad things might happen.\n");
 	}
 }
 

@@ -99,8 +99,8 @@ bool AArch64ExternalSymbolizer::tryAddingSymbolicOperand(
         EncodedInst |= MCRI.getEncodingValue(MI.getOperand(0).getReg()); // reg
         SymbolLookUp(DisInfo, EncodedInst, &ReferenceType, Address,
                      &ReferenceName);
-        CommentStream << format("0x%llx",
-                                0xfffffffffffff000LL & (Address + Value));
+        CommentStream << format("0x%llx", (0xfffffffffffff000LL & Address) +
+                                              Value * 0x1000);
     } else if (MI.getOpcode() == AArch64::ADDXri ||
                MI.getOpcode() == AArch64::LDRXui ||
                MI.getOpcode() == AArch64::LDRXl ||
@@ -134,9 +134,11 @@ bool AArch64ExternalSymbolizer::tryAddingSymbolicOperand(
       if (ReferenceType == LLVMDisassembler_ReferenceType_Out_LitPool_SymAddr)
         CommentStream << "literal pool symbol address: " << ReferenceName;
       else if (ReferenceType ==
-               LLVMDisassembler_ReferenceType_Out_LitPool_CstrAddr)
-        CommentStream << "literal pool for: \"" << ReferenceName << "\"";
-      else if (ReferenceType ==
+               LLVMDisassembler_ReferenceType_Out_LitPool_CstrAddr) {
+        CommentStream << "literal pool for: \"";
+        CommentStream.write_escaped(ReferenceName);
+        CommentStream << "\"";
+      } else if (ReferenceType ==
                LLVMDisassembler_ReferenceType_Out_Objc_CFString_Ref)
         CommentStream << "Objc cfstring ref: @\"" << ReferenceName << "\"";
       else if (ReferenceType ==

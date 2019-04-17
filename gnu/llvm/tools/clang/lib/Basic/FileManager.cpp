@@ -19,7 +19,6 @@
 
 #include "clang/Basic/FileManager.h"
 #include "clang/Basic/FileSystemStatCache.h"
-#include "clang/Frontend/PCHContainerOperations.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Config/llvm-config.h"
 #include "llvm/ADT/STLExtras.h"
@@ -27,10 +26,13 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
-#include <map>
-#include <set>
+#include <algorithm>
+#include <cassert>
+#include <climits>
+#include <cstdint>
+#include <cstdlib>
 #include <string>
-#include <system_error>
+#include <utility>
 
 using namespace clang;
 
@@ -48,14 +50,14 @@ using namespace clang;
 
 FileManager::FileManager(const FileSystemOptions &FSO,
                          IntrusiveRefCntPtr<vfs::FileSystem> FS)
-  : FS(FS), FileSystemOpts(FSO),
-    SeenDirEntries(64), SeenFileEntries(64), NextFileUID(0) {
+    : FS(std::move(FS)), FileSystemOpts(FSO), SeenDirEntries(64),
+      SeenFileEntries(64), NextFileUID(0) {
   NumDirLookups = NumFileLookups = 0;
   NumDirCacheMisses = NumFileCacheMisses = 0;
 
   // If the caller doesn't provide a virtual file system, just grab the real
   // file system.
-  if (!FS)
+  if (!this->FS)
     this->FS = vfs::getRealFileSystem();
 }
 
@@ -69,7 +71,7 @@ void FileManager::addStatCache(std::unique_ptr<FileSystemStatCache> statCache,
     StatCache = std::move(statCache);
     return;
   }
-  
+
   FileSystemStatCache *LastCache = StatCache.get();
   while (LastCache->getNextStatCache())
     LastCache = LastCache->getNextStatCache();
@@ -80,18 +82,18 @@ void FileManager::addStatCache(std::unique_ptr<FileSystemStatCache> statCache,
 void FileManager::removeStatCache(FileSystemStatCache *statCache) {
   if (!statCache)
     return;
-  
+
   if (StatCache.get() == statCache) {
     // This is the first stat cache.
     StatCache = StatCache->takeNextStatCache();
     return;
   }
-  
+
   // Find the stat cache in the list.
   FileSystemStatCache *PrevCache = StatCache.get();
   while (PrevCache && PrevCache->getNextStatCache() != statCache)
     PrevCache = PrevCache->getNextStatCache();
-  
+
   assert(PrevCache && "Stat cache not found for removal");
   PrevCache->setNextStatCache(statCache->takeNextStatCache());
 }
@@ -100,7 +102,7 @@ void FileManager::clearStatCaches() {
   StatCache.reset();
 }
 
-/// \brief Retrieve the directory that the given file name resides in.
+/// Retrieve the directory that the given file name resides in.
 /// Filename can point to either a real file or a virtual file.
 static const DirectoryEntry *getDirectoryFromFile(FileManager &FileMgr,
                                                   StringRef Filename,
@@ -124,7 +126,7 @@ static const DirectoryEntry *getDirectoryFromFile(FileManager &FileMgr,
 void FileManager::addAncestorsAsVirtualDirs(StringRef Path) {
   StringRef DirName = llvm::sys::path::parent_path(Path);
   if (DirName.empty())
-    return;
+    DirName = ".";
 
   auto &NamedDirEnt =
       *SeenDirEntries.insert(std::make_pair(DirName, nullptr)).first;
@@ -138,7 +140,7 @@ void FileManager::addAncestorsAsVirtualDirs(StringRef Path) {
 
   // Add the virtual directory to the cache.
   auto UDE = llvm::make_unique<DirectoryEntry>();
-  UDE->Name = NamedDirEnt.first().data();
+  UDE->Name = NamedDirEnt.first();
   NamedDirEnt.second = UDE.get();
   VirtualDirectoryEntries.push_back(std::move(UDE));
 
@@ -155,7 +157,7 @@ const DirectoryEntry *FileManager::getDirectory(StringRef DirName,
       DirName != llvm::sys::path::root_path(DirName) &&
       llvm::sys::path::is_separator(DirName.back()))
     DirName = DirName.substr(0, DirName.size()-1);
-#ifdef LLVM_ON_WIN32
+#ifdef _WIN32
   // Fixing a problem with "clang C:test.c" on Windows.
   // Stat("C:") does not recognize "C:" as a valid directory
   std::string DirNameStr;
@@ -183,7 +185,7 @@ const DirectoryEntry *FileManager::getDirectory(StringRef DirName,
 
   // Get the null-terminated directory name as stored as the key of the
   // SeenDirEntries map.
-  const char *InterndDirName = NamedDirEnt.first().data();
+  StringRef InterndDirName = NamedDirEnt.first();
 
   // Check to see if the directory exists.
   FileData Data;
@@ -201,7 +203,7 @@ const DirectoryEntry *FileManager::getDirectory(StringRef DirName,
   DirectoryEntry &UDE = UniqueRealDirs[Data.UniqueID];
 
   NamedDirEnt.second = &UDE;
-  if (!UDE.getName()) {
+  if (UDE.getName().empty()) {
     // We don't have this directory yet, add it.  We use the string
     // key from the SeenDirEntries map as the string.
     UDE.Name  = InterndDirName;
@@ -230,7 +232,7 @@ const FileEntry *FileManager::getFile(StringRef Filename, bool openFile,
 
   // Get the null-terminated file name as stored as the key of the
   // SeenFileEntries map.
-  const char *InterndFileName = NamedFileEnt.first().data();
+  StringRef InterndFileName = NamedFileEnt.first();
 
   // Look up the directory for the file.  When looking up something like
   // sys/foo.h we'll discover all of the search directories that have a 'sys'
@@ -245,7 +247,7 @@ const FileEntry *FileManager::getFile(StringRef Filename, bool openFile,
 
     return nullptr;
   }
-  
+
   // FIXME: Use the directory info to prune this, before doing the stat syscall.
   // FIXME: This will reduce the # syscalls.
 
@@ -313,6 +315,9 @@ const FileEntry *FileManager::getFile(StringRef Filename, bool openFile,
   UFE.InPCH = Data.InPCH;
   UFE.File = std::move(F);
   UFE.IsValid = true;
+  if (UFE.File)
+    if (auto RealPathName = UFE.File->getName())
+      UFE.RealPathName = *RealPathName;
   return &UFE;
 }
 
@@ -381,6 +386,7 @@ FileManager::getVirtualFile(StringRef Filename, off_t Size,
   UFE->ModTime = ModificationTime;
   UFE->Dir     = DirInfo;
   UFE->UID     = NextFileUID++;
+  UFE->IsValid = true;
   UFE->File.reset();
   return UFE;
 }
@@ -388,7 +394,7 @@ FileManager::getVirtualFile(StringRef Filename, off_t Size,
 bool FileManager::FixupRelativePath(SmallVectorImpl<char> &path) const {
   StringRef pathRef(path.data(), path.size());
 
-  if (FileSystemOpts.WorkingDir.empty() 
+  if (FileSystemOpts.WorkingDir.empty()
       || llvm::sys::path::is_absolute(pathRef))
     return false;
 
@@ -402,7 +408,7 @@ bool FileManager::makeAbsolutePath(SmallVectorImpl<char> &Path) const {
   bool Changed = FixupRelativePath(Path);
 
   if (!llvm::sys::path::is_absolute(StringRef(Path.data(), Path.size()))) {
-    llvm::sys::fs::make_absolute(Path);
+    FS->makeAbsolute(Path);
     Changed = true;
   }
 
@@ -418,7 +424,7 @@ FileManager::getBufferForFile(const FileEntry *Entry, bool isVolatile,
   if (isVolatile)
     FileSize = -1;
 
-  const char *Filename = Entry->getName();
+  StringRef Filename = Entry->getName();
   // If the file is already open, use the open file descriptor.
   if (Entry->File) {
     auto Result =
@@ -444,13 +450,13 @@ FileManager::getBufferForFile(const FileEntry *Entry, bool isVolatile,
 }
 
 llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>>
-FileManager::getBufferForFile(StringRef Filename) {
+FileManager::getBufferForFile(StringRef Filename, bool isVolatile) {
   if (FileSystemOpts.WorkingDir.empty())
-    return FS->getBufferForFile(Filename);
+    return FS->getBufferForFile(Filename, -1, true, isVolatile);
 
   SmallString<128> FilePath(Filename);
   FixupRelativePath(FilePath);
-  return FS->getBufferForFile(FilePath.c_str());
+  return FS->getBufferForFile(FilePath.c_str(), -1, true, isVolatile);
 }
 
 /// getStatValue - Get the 'stat' information for the specified path,
@@ -458,7 +464,7 @@ FileManager::getBufferForFile(StringRef Filename) {
 /// if the path points to a virtual file or does not exist, or returns
 /// false if it's an existent real file.  If FileDescriptor is NULL,
 /// do directory look-up instead of file look-up.
-bool FileManager::getStatValue(const char *Path, FileData &Data, bool isFile,
+bool FileManager::getStatValue(StringRef Path, FileData &Data, bool isFile,
                                std::unique_ptr<vfs::File> *F) {
   // FIXME: FileSystemOpts shouldn't be passed in here, all paths should be
   // absolute!
@@ -495,19 +501,18 @@ void FileManager::invalidateCache(const FileEntry *Entry) {
   UniqueRealFiles.erase(Entry->getUniqueID());
 }
 
-
 void FileManager::GetUniqueIDMapping(
                    SmallVectorImpl<const FileEntry *> &UIDToFiles) const {
   UIDToFiles.clear();
   UIDToFiles.resize(NextFileUID);
-  
+
   // Map file entries
   for (llvm::StringMap<FileEntry*, llvm::BumpPtrAllocator>::const_iterator
          FE = SeenFileEntries.begin(), FEEnd = SeenFileEntries.end();
        FE != FEEnd; ++FE)
     if (FE->getValue() && FE->getValue() != NON_EXISTENT_FILE)
       UIDToFiles[FE->getValue()->getUID()] = FE->getValue();
-  
+
   // Map virtual file entries
   for (const auto &VFE : VirtualFileEntries)
     if (VFE && VFE.get() != NON_EXISTENT_FILE)
@@ -529,23 +534,9 @@ StringRef FileManager::getCanonicalName(const DirectoryEntry *Dir) {
 
   StringRef CanonicalName(Dir->getName());
 
-#ifdef LLVM_ON_UNIX
-  char CanonicalNameBuf[PATH_MAX];
-  if (realpath(Dir->getName(), CanonicalNameBuf))
+  SmallString<4096> CanonicalNameBuf;
+  if (!FS->getRealPath(Dir->getName(), CanonicalNameBuf))
     CanonicalName = StringRef(CanonicalNameBuf).copy(CanonicalNameStorage);
-#else
-  SmallString<256> CanonicalNameBuf(CanonicalName);
-  llvm::sys::fs::make_absolute(CanonicalNameBuf);
-  llvm::sys::path::native(CanonicalNameBuf);
-  // We've run into needing to remove '..' here in the wild though, so
-  // remove it.
-  // On Windows, symlinks are significantly less prevalent, so removing
-  // '..' is pretty safe.
-  // Ideally we'd have an equivalent of `realpath` and could implement
-  // sys::fs::canonical across all the platforms.
-  llvm::sys::path::remove_dots(CanonicalNameBuf, /* remove_dot_dot */ true);
-  CanonicalName = StringRef(CanonicalNameBuf).copy(CanonicalNameStorage);
-#endif
 
   CanonicalDirNames.insert(std::make_pair(Dir, CanonicalName));
   return CanonicalName;
@@ -564,7 +555,3 @@ void FileManager::PrintStats() const {
 
   //llvm::errs() << PagesMapped << BytesOfPagesMapped << FSLookups;
 }
-
-// Virtual destructors for abstract base classes that need live in Basic.
-PCHContainerWriter::~PCHContainerWriter() {}
-PCHContainerReader::~PCHContainerReader() {}

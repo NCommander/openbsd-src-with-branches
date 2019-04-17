@@ -16,11 +16,13 @@
 #include "clang/Frontend/TextDiagnosticPrinter.h"
 #include "clang/Frontend/Utils.h"
 #include "clang/Lex/Preprocessor.h"
+#include "clang/Lex/PreprocessorOptions.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "clang/Sema/SemaDiagnostic.h"
 #include "clang/Serialization/ASTReader.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/Support/MemoryBuffer.h"
+#include <utility>
 using namespace clang;
 using namespace arcmt;
 
@@ -224,7 +226,7 @@ static void emitPremigrationErrors(const CapturedDiagList &arcDiags,
       new DiagnosticsEngine(DiagID, diagOpts, &printer,
                             /*ShouldOwnClient=*/false));
   Diags->setSourceManager(&PP.getSourceManager());
-  
+
   printer.BeginSourceFile(PP.getLangOpts(), &PP);
   arcDiags.reportDiagnostics(*Diags);
   printer.EndSourceFile();
@@ -269,7 +271,7 @@ bool arcmt::checkForManualIssues(
   Diags->setClient(&errRec, /*ShouldOwnClient=*/false);
 
   std::unique_ptr<ASTUnit> Unit(ASTUnit::LoadFromCompilerInvocationAction(
-      CInvok.release(), PCHContainerOps, Diags));
+      std::move(CInvok), PCHContainerOps, Diags));
   if (!Unit) {
     errRec.FinishCapture();
     return true;
@@ -303,7 +305,7 @@ bool arcmt::checkForManualIssues(
 
   // After parsing of source files ended, we want to reuse the
   // diagnostics objects to emit further diagnostics.
-  // We call BeginSourceFile because DiagnosticConsumer requires that 
+  // We call BeginSourceFile because DiagnosticConsumer requires that
   // diagnostics with source range information are emitted only in between
   // BeginSourceFile() and EndSourceFile().
   DiagClient->BeginSourceFile(Ctx.getLangOpts(), &Unit->getPreprocessor());
@@ -501,15 +503,15 @@ public:
 
 } // end anonymous namespace.
 
-/// \brief Anchor for VTable.
+/// Anchor for VTable.
 MigrationProcess::RewriteListener::~RewriteListener() { }
 
 MigrationProcess::MigrationProcess(
     const CompilerInvocation &CI,
     std::shared_ptr<PCHContainerOperations> PCHContainerOps,
     DiagnosticConsumer *diagClient, StringRef outputDir)
-    : OrigCI(CI), PCHContainerOps(PCHContainerOps), DiagClient(diagClient),
-      HadARCErrors(false) {
+    : OrigCI(CI), PCHContainerOps(std::move(PCHContainerOps)),
+      DiagClient(diagClient), HadARCErrors(false) {
   if (!outputDir.empty()) {
     IntrusiveRefCntPtr<DiagnosticIDs> DiagID(new DiagnosticIDs());
     IntrusiveRefCntPtr<DiagnosticsEngine> Diags(
@@ -545,7 +547,7 @@ bool MigrationProcess::applyTransform(TransformFn trans,
   ASTAction.reset(new ARCMTMacroTrackerAction(ARCMTMacroLocs));
 
   std::unique_ptr<ASTUnit> Unit(ASTUnit::LoadFromCompilerInvocationAction(
-      CInvok.release(), PCHContainerOps, Diags, ASTAction.get()));
+      std::move(CInvok), PCHContainerOps, Diags, ASTAction.get()));
   if (!Unit) {
     errRec.FinishCapture();
     return true;
@@ -570,7 +572,7 @@ bool MigrationProcess::applyTransform(TransformFn trans,
 
   // After parsing of source files ended, we want to reuse the
   // diagnostics objects to emit further diagnostics.
-  // We call BeginSourceFile because DiagnosticConsumer requires that 
+  // We call BeginSourceFile because DiagnosticConsumer requires that
   // diagnostics with source range information are emitted only in between
   // BeginSourceFile() and EndSourceFile().
   DiagClient->BeginSourceFile(Ctx.getLangOpts(), &Unit->getPreprocessor());

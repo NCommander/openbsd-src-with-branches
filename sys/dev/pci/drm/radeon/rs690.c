@@ -25,7 +25,7 @@
  *          Alex Deucher
  *          Jerome Glisse
  */
-#include <drm/drmP.h>
+#include <dev/pci/drm/drmP.h>
 #include "radeon.h"
 #include "radeon_asic.h"
 #include "radeon_audio.h"
@@ -52,7 +52,8 @@ static void rs690_gpu_init(struct radeon_device *rdev)
 	/* FIXME: is this correct ? */
 	r420_pipes_init(rdev);
 	if (rs690_mc_wait_for_idle(rdev)) {
-		pr_warn("Failed to wait MC idle while programming pipes. Bad things might happen.\n");
+		printk(KERN_WARNING "Failed to wait MC idle while "
+		       "programming pipes. Bad things might happen.\n");
 	}
 }
 

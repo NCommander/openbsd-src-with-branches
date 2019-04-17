@@ -1,4 +1,4 @@
-//===- unittest/Analysis/AnalyzerOptionsTest.cpp - SA Options test --------===//
+//===- unittest/StaticAnalyzer/AnalyzerOptionsTest.cpp - SA Options test --===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -13,6 +13,23 @@
 
 namespace clang {
 namespace ento {
+
+TEST(StaticAnalyzerOptions, getRegisteredCheckers) {
+  auto IsDebugChecker = [](StringRef CheckerName) {
+    return CheckerName.startswith("debug");
+  };
+  auto IsAlphaChecker = [](StringRef CheckerName) {
+    return CheckerName.startswith("alpha");
+  };
+  const auto &AllCheckers =
+      AnalyzerOptions::getRegisteredCheckers(/*IncludeExperimental=*/true);
+  EXPECT_FALSE(llvm::any_of(AllCheckers, IsDebugChecker));
+  EXPECT_TRUE(llvm::any_of(AllCheckers, IsAlphaChecker));
+
+  const auto &StableCheckers = AnalyzerOptions::getRegisteredCheckers();
+  EXPECT_FALSE(llvm::any_of(StableCheckers, IsDebugChecker));
+  EXPECT_FALSE(llvm::any_of(StableCheckers, IsAlphaChecker));
+}
 
 TEST(StaticAnalyzerOptions, SearchInParentPackageTests) {
   AnalyzerOptions Opts;
@@ -36,9 +53,9 @@ TEST(StaticAnalyzerOptions, SearchInParentPackageTests) {
   // search mode.
   CheckerOneMock CheckerOne;
   EXPECT_TRUE(Opts.getBooleanOption("Option", false, &CheckerOne));
-  // The package option is overriden with a checker option.
+  // The package option is overridden with a checker option.
   EXPECT_TRUE(Opts.getBooleanOption("Option", false, &CheckerOne, true));
-  // The Outer package option is overriden by the Inner package option. No
+  // The Outer package option is overridden by the Inner package option. No
   // package option is specified.
   EXPECT_TRUE(Opts.getBooleanOption("Option2", false, &CheckerOne, true));
   // No package option is specified and search in packages is turned off. The

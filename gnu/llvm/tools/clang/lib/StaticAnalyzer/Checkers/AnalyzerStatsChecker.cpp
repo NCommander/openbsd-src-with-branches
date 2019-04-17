@@ -43,7 +43,7 @@ void AnalyzerStatsChecker::checkEndAnalysis(ExplodedGraph &G,
                                             ExprEngine &Eng) const {
   const CFG *C = nullptr;
   const SourceManager &SM = B.getSourceManager();
-  llvm::SmallPtrSet<const CFGBlock*, 256> reachable;
+  llvm::SmallPtrSet<const CFGBlock*, 32> reachable;
 
   // Root node should have the location context of the top most function.
   const ExplodedNode *GraphRoot = *G.roots_begin();
@@ -122,6 +122,8 @@ void AnalyzerStatsChecker::checkEndAnalysis(ExplodedGraph &G,
       E = CE.blocks_exhausted_end(); I != E; ++I) {
     const BlockEdge &BE =  I->first;
     const CFGBlock *Exit = BE.getDst();
+    if (Exit->empty())
+      continue;
     const CFGElement &CE = Exit->front();
     if (Optional<CFGStmt> CS = CE.getAs<CFGStmt>()) {
       SmallString<128> bufI;

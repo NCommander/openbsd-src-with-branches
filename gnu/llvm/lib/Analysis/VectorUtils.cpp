@@ -11,22 +11,24 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "llvm/Analysis/VectorUtils.h"
 #include "llvm/ADT/EquivalenceClasses.h"
 #include "llvm/Analysis/DemandedBits.h"
 #include "llvm/Analysis/LoopInfo.h"
-#include "llvm/Analysis/ScalarEvolutionExpressions.h"
 #include "llvm/Analysis/ScalarEvolution.h"
+#include "llvm/Analysis/ScalarEvolutionExpressions.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
-#include "llvm/Analysis/VectorUtils.h"
+#include "llvm/Analysis/ValueTracking.h"
+#include "llvm/IR/Constants.h"
 #include "llvm/IR/GetElementPtrTypeIterator.h"
+#include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/PatternMatch.h"
 #include "llvm/IR/Value.h"
-#include "llvm/IR/Constants.h"
 
 using namespace llvm;
 using namespace llvm::PatternMatch;
 
-/// \brief Identify if the intrinsic is trivially vectorizable.
+/// Identify if the intrinsic is trivially vectorizable.
 /// This method returns true if the intrinsic's argument types are all
 /// scalars for the scalar form of the intrinsic and all vectors for
 /// the vector form of the intrinsic.
@@ -51,6 +53,7 @@ bool llvm::isTriviallyVectorizable(Intrinsic::ID ID) {
   case Intrinsic::nearbyint:
   case Intrinsic::round:
   case Intrinsic::bswap:
+  case Intrinsic::bitreverse:
   case Intrinsic::ctpop:
   case Intrinsic::pow:
   case Intrinsic::fma:
@@ -64,7 +67,7 @@ bool llvm::isTriviallyVectorizable(Intrinsic::ID ID) {
   }
 }
 
-/// \brief Identifies if the intrinsic has a scalar operand. It check for
+/// Identifies if the intrinsic has a scalar operand. It check for
 /// ctlz,cttz and powi special intrinsics whose argument is scalar.
 bool llvm::hasVectorInstrinsicScalarOpd(Intrinsic::ID ID,
                                         unsigned ScalarOpdIdx) {
@@ -78,171 +81,39 @@ bool llvm::hasVectorInstrinsicScalarOpd(Intrinsic::ID ID,
   }
 }
 
-/// \brief Check call has a unary float signature
-/// It checks following:
-/// a) call should have a single argument
-/// b) argument type should be floating point type
-/// c) call instruction type and argument type should be same
-/// d) call should only reads memory.
-/// If all these condition is met then return ValidIntrinsicID
-/// else return not_intrinsic.
-Intrinsic::ID
-llvm::checkUnaryFloatSignature(const CallInst &I,
-                               Intrinsic::ID ValidIntrinsicID) {
-  if (I.getNumArgOperands() != 1 ||
-      !I.getArgOperand(0)->getType()->isFloatingPointTy() ||
-      I.getType() != I.getArgOperand(0)->getType() || !I.onlyReadsMemory())
-    return Intrinsic::not_intrinsic;
-
-  return ValidIntrinsicID;
-}
-
-/// \brief Check call has a binary float signature
-/// It checks following:
-/// a) call should have 2 arguments.
-/// b) arguments type should be floating point type
-/// c) call instruction type and arguments type should be same
-/// d) call should only reads memory.
-/// If all these condition is met then return ValidIntrinsicID
-/// else return not_intrinsic.
-Intrinsic::ID
-llvm::checkBinaryFloatSignature(const CallInst &I,
-                                Intrinsic::ID ValidIntrinsicID) {
-  if (I.getNumArgOperands() != 2 ||
-      !I.getArgOperand(0)->getType()->isFloatingPointTy() ||
-      !I.getArgOperand(1)->getType()->isFloatingPointTy() ||
-      I.getType() != I.getArgOperand(0)->getType() ||
-      I.getType() != I.getArgOperand(1)->getType() || !I.onlyReadsMemory())
-    return Intrinsic::not_intrinsic;
-
-  return ValidIntrinsicID;
-}
-
-/// \brief Returns intrinsic ID for call.
+/// Returns intrinsic ID for call.
 /// For the input call instruction it finds mapping intrinsic and returns
 /// its ID, in case it does not found it return not_intrinsic.
-Intrinsic::ID llvm::getIntrinsicIDForCall(CallInst *CI,
-                                          const TargetLibraryInfo *TLI) {
-  // If we have an intrinsic call, check if it is trivially vectorizable.
-  if (IntrinsicInst *II = dyn_cast<IntrinsicInst>(CI)) {
-    Intrinsic::ID ID = II->getIntrinsicID();
-    if (isTriviallyVectorizable(ID) || ID == Intrinsic::lifetime_start ||
-        ID == Intrinsic::lifetime_end || ID == Intrinsic::assume)
-      return ID;
-    return Intrinsic::not_intrinsic;
-  }
-
-  if (!TLI)
+Intrinsic::ID llvm::getVectorIntrinsicIDForCall(const CallInst *CI,
+                                                const TargetLibraryInfo *TLI) {
+  Intrinsic::ID ID = getIntrinsicForCallSite(CI, TLI);
+  if (ID == Intrinsic::not_intrinsic)
     return Intrinsic::not_intrinsic;
 
-  LibFunc::Func Func;
-  Function *F = CI->getCalledFunction();
-  // We're going to make assumptions on the semantics of the functions, check
-  // that the target knows that it's available in this environment and it does
-  // not have local linkage.
-  if (!F || F->hasLocalLinkage() || !TLI->getLibFunc(F->getName(), Func))
-    return Intrinsic::not_intrinsic;
-
-  // Otherwise check if we have a call to a function that can be turned into a
-  // vector intrinsic.
-  switch (Func) {
-  default:
-    break;
-  case LibFunc::sin:
-  case LibFunc::sinf:
-  case LibFunc::sinl:
-    return checkUnaryFloatSignature(*CI, Intrinsic::sin);
-  case LibFunc::cos:
-  case LibFunc::cosf:
-  case LibFunc::cosl:
-    return checkUnaryFloatSignature(*CI, Intrinsic::cos);
-  case LibFunc::exp:
-  case LibFunc::expf:
-  case LibFunc::expl:
-    return checkUnaryFloatSignature(*CI, Intrinsic::exp);
-  case LibFunc::exp2:
-  case LibFunc::exp2f:
-  case LibFunc::exp2l:
-    return checkUnaryFloatSignature(*CI, Intrinsic::exp2);
-  case LibFunc::log:
-  case LibFunc::logf:
-  case LibFunc::logl:
-    return checkUnaryFloatSignature(*CI, Intrinsic::log);
-  case LibFunc::log10:
-  case LibFunc::log10f:
-  case LibFunc::log10l:
-    return checkUnaryFloatSignature(*CI, Intrinsic::log10);
-  case LibFunc::log2:
-  case LibFunc::log2f:
-  case LibFunc::log2l:
-    return checkUnaryFloatSignature(*CI, Intrinsic::log2);
-  case LibFunc::fabs:
-  case LibFunc::fabsf:
-  case LibFunc::fabsl:
-    return checkUnaryFloatSignature(*CI, Intrinsic::fabs);
-  case LibFunc::fmin:
-  case LibFunc::fminf:
-  case LibFunc::fminl:
-    return checkBinaryFloatSignature(*CI, Intrinsic::minnum);
-  case LibFunc::fmax:
-  case LibFunc::fmaxf:
-  case LibFunc::fmaxl:
-    return checkBinaryFloatSignature(*CI, Intrinsic::maxnum);
-  case LibFunc::copysign:
-  case LibFunc::copysignf:
-  case LibFunc::copysignl:
-    return checkBinaryFloatSignature(*CI, Intrinsic::copysign);
-  case LibFunc::floor:
-  case LibFunc::floorf:
-  case LibFunc::floorl:
-    return checkUnaryFloatSignature(*CI, Intrinsic::floor);
-  case LibFunc::ceil:
-  case LibFunc::ceilf:
-  case LibFunc::ceill:
-    return checkUnaryFloatSignature(*CI, Intrinsic::ceil);
-  case LibFunc::trunc:
-  case LibFunc::truncf:
-  case LibFunc::truncl:
-    return checkUnaryFloatSignature(*CI, Intrinsic::trunc);
-  case LibFunc::rint:
-  case LibFunc::rintf:
-  case LibFunc::rintl:
-    return checkUnaryFloatSignature(*CI, Intrinsic::rint);
-  case LibFunc::nearbyint:
-  case LibFunc::nearbyintf:
-  case LibFunc::nearbyintl:
-    return checkUnaryFloatSignature(*CI, Intrinsic::nearbyint);
-  case LibFunc::round:
-  case LibFunc::roundf:
-  case LibFunc::roundl:
-    return checkUnaryFloatSignature(*CI, Intrinsic::round);
-  case LibFunc::pow:
-  case LibFunc::powf:
-  case LibFunc::powl:
-    return checkBinaryFloatSignature(*CI, Intrinsic::pow);
-  }
-
+  if (isTriviallyVectorizable(ID) || ID == Intrinsic::lifetime_start ||
+      ID == Intrinsic::lifetime_end || ID == Intrinsic::assume ||
+      ID == Intrinsic::sideeffect)
+    return ID;
   return Intrinsic::not_intrinsic;
 }
 
-/// \brief Find the operand of the GEP that should be checked for consecutive
+/// Find the operand of the GEP that should be checked for consecutive
 /// stores. This ignores trailing indices that have no effect on the final
 /// pointer.
 unsigned llvm::getGEPInductionOperand(const GetElementPtrInst *Gep) {
   const DataLayout &DL = Gep->getModule()->getDataLayout();
   unsigned LastOperand = Gep->getNumOperands() - 1;
-  unsigned GEPAllocSize = DL.getTypeAllocSize(
-      cast<PointerType>(Gep->getType()->getScalarType())->getElementType());
+  unsigned GEPAllocSize = DL.getTypeAllocSize(Gep->getResultElementType());
 
   // Walk backwards and try to peel off zeros.
   while (LastOperand > 1 && match(Gep->getOperand(LastOperand), m_Zero())) {
     // Find the type we're currently indexing into.
     gep_type_iterator GEPTI = gep_type_begin(Gep);
-    std::advance(GEPTI, LastOperand - 1);
+    std::advance(GEPTI, LastOperand - 2);
 
     // If it's a type with the same allocation size as the result of the GEP we
     // can peel off the zero index.
-    if (DL.getTypeAllocSize(*GEPTI) != GEPAllocSize)
+    if (DL.getTypeAllocSize(GEPTI.getIndexedType()) != GEPAllocSize)
       break;
     --LastOperand;
   }
@@ -250,7 +121,7 @@ unsigned llvm::getGEPInductionOperand(const GetElementPtrInst *Gep) {
   return LastOperand;
 }
 
-/// \brief If the argument is a GEP, then returns the operand identified by
+/// If the argument is a GEP, then returns the operand identified by
 /// getGEPInductionOperand. However, if there is some other non-loop-invariant
 /// operand, it returns that instead.
 Value *llvm::stripGetElementPtr(Value *Ptr, ScalarEvolution *SE, Loop *Lp) {
@@ -269,7 +140,7 @@ Value *llvm::stripGetElementPtr(Value *Ptr, ScalarEvolution *SE, Loop *Lp) {
   return GEP->getOperand(InductionOperand);
 }
 
-/// \brief If a value has only one user that is a CastInst, return it.
+/// If a value has only one user that is a CastInst, return it.
 Value *llvm::getUniqueCastUse(Value *Ptr, Loop *Lp, Type *Ty) {
   Value *UniqueCast = nullptr;
   for (User *U : Ptr->users()) {
@@ -284,7 +155,7 @@ Value *llvm::getUniqueCastUse(Value *Ptr, Loop *Lp, Type *Ty) {
   return UniqueCast;
 }
 
-/// \brief Get the stride of a pointer access in a loop. Looks for symbolic
+/// Get the stride of a pointer access in a loop. Looks for symbolic
 /// strides "a[i*stride]". Returns the symbolic stride, or null otherwise.
 Value *llvm::getStrideFromPointer(Value *Ptr, ScalarEvolution *SE, Loop *Lp) {
   auto *PtrTy = dyn_cast<PointerType>(Ptr->getType());
@@ -292,7 +163,7 @@ Value *llvm::getStrideFromPointer(Value *Ptr, ScalarEvolution *SE, Loop *Lp) {
     return nullptr;
 
   // Try to remove a gep instruction to make the pointer (actually index at this
-  // point) easier analyzable. If OrigPtr is equal to Ptr we are analzying the
+  // point) easier analyzable. If OrigPtr is equal to Ptr we are analyzing the
   // pointer, otherwise, we are analyzing the index.
   Value *OrigPtr = Ptr;
 
@@ -318,8 +189,6 @@ Value *llvm::getStrideFromPointer(Value *Ptr, ScalarEvolution *SE, Loop *Lp) {
   // Strip off the size of access multiplication if we are still analyzing the
   // pointer.
   if (OrigPtr == Ptr) {
-    const DataLayout &DL = Lp->getHeader()->getModule()->getDataLayout();
-    DL.getTypeAllocSize(PtrTy->getElementType());
     if (const SCEVMulExpr *M = dyn_cast<SCEVMulExpr>(V)) {
       if (M->getOperand(0)->getSCEVType() != scConstant)
         return nullptr;
@@ -361,7 +230,7 @@ Value *llvm::getStrideFromPointer(Value *Ptr, ScalarEvolution *SE, Loop *Lp) {
   return Stride;
 }
 
-/// \brief Given a vector and an element number, see if the scalar value is
+/// Given a vector and an element number, see if the scalar value is
 /// already around as a register, for example if it were inserted then extracted
 /// from the vector.
 Value *llvm::findScalarElement(Value *V, unsigned EltNo) {
@@ -411,7 +280,7 @@ Value *llvm::findScalarElement(Value *V, unsigned EltNo) {
   return nullptr;
 }
 
-/// \brief Get splat value if the input is a splat vector or return nullptr.
+/// Get splat value if the input is a splat vector or return nullptr.
 /// This function is not fully general. It checks only 2 cases:
 /// the input value is (1) a splat constants vector or (2) a sequence
 /// of instructions that broadcast a single value into a vector.
@@ -433,7 +302,7 @@ const llvm::Value *llvm::getSplatValue(const Value *V) {
   auto *InsertEltInst =
     dyn_cast<InsertElementInst>(ShuffleInst->getOperand(0));
   if (!InsertEltInst || !isa<ConstantInt>(InsertEltInst->getOperand(2)) ||
-      !cast<ConstantInt>(InsertEltInst->getOperand(2))->isNullValue())
+      !cast<ConstantInt>(InsertEltInst->getOperand(2))->isZero())
     return nullptr;
 
   return InsertEltInst->getOperand(1);
@@ -502,6 +371,7 @@ llvm::computeMinimumValueSizes(ArrayRef<BasicBlock *> Blocks, DemandedBits &DB,
 
     uint64_t V = DB.getDemandedBits(I).getZExtValue();
     DBits[Leader] |= V;
+    DBits[I] = V;
 
     // Casts, loads and instructions outside of our range terminate a chain
     // successfully.
@@ -552,6 +422,20 @@ llvm::computeMinimumValueSizes(ArrayRef<BasicBlock *> Blocks, DemandedBits &DB,
     // Round up to a power of 2
     if (!isPowerOf2_64((uint64_t)MinBW))
       MinBW = NextPowerOf2(MinBW);
+
+    // We don't modify the types of PHIs. Reductions will already have been
+    // truncated if possible, and inductions' sizes will have been chosen by
+    // indvars.
+    // If we are required to shrink a PHI, abandon this entire equivalence class.
+    bool Abort = false;
+    for (auto MI = ECs.member_begin(I), ME = ECs.member_end(); MI != ME; ++MI)
+      if (isa<PHINode>(*MI) && MinBW < (*MI)->getType()->getScalarSizeInBits()) {
+        Abort = true;
+        break;
+      }
+    if (Abort)
+      continue;
+
     for (auto MI = ECs.member_begin(I), ME = ECs.member_end(); MI != ME; ++MI) {
       if (!isa<Instruction>(*MI))
         continue;
@@ -564,4 +448,130 @@ llvm::computeMinimumValueSizes(ArrayRef<BasicBlock *> Blocks, DemandedBits &DB,
   }
 
   return MinBWs;
+}
+
+/// \returns \p I after propagating metadata from \p VL.
+Instruction *llvm::propagateMetadata(Instruction *Inst, ArrayRef<Value *> VL) {
+  Instruction *I0 = cast<Instruction>(VL[0]);
+  SmallVector<std::pair<unsigned, MDNode *>, 4> Metadata;
+  I0->getAllMetadataOtherThanDebugLoc(Metadata);
+
+  for (auto Kind :
+       {LLVMContext::MD_tbaa, LLVMContext::MD_alias_scope,
+        LLVMContext::MD_noalias, LLVMContext::MD_fpmath,
+        LLVMContext::MD_nontemporal, LLVMContext::MD_invariant_load}) {
+    MDNode *MD = I0->getMetadata(Kind);
+
+    for (int J = 1, E = VL.size(); MD && J != E; ++J) {
+      const Instruction *IJ = cast<Instruction>(VL[J]);
+      MDNode *IMD = IJ->getMetadata(Kind);
+      switch (Kind) {
+      case LLVMContext::MD_tbaa:
+        MD = MDNode::getMostGenericTBAA(MD, IMD);
+        break;
+      case LLVMContext::MD_alias_scope:
+        MD = MDNode::getMostGenericAliasScope(MD, IMD);
+        break;
+      case LLVMContext::MD_fpmath:
+        MD = MDNode::getMostGenericFPMath(MD, IMD);
+        break;
+      case LLVMContext::MD_noalias:
+      case LLVMContext::MD_nontemporal:
+      case LLVMContext::MD_invariant_load:
+        MD = MDNode::intersect(MD, IMD);
+        break;
+      default:
+        llvm_unreachable("unhandled metadata");
+      }
+    }
+
+    Inst->setMetadata(Kind, MD);
+  }
+
+  return Inst;
+}
+
+Constant *llvm::createInterleaveMask(IRBuilder<> &Builder, unsigned VF,
+                                     unsigned NumVecs) {
+  SmallVector<Constant *, 16> Mask;
+  for (unsigned i = 0; i < VF; i++)
+    for (unsigned j = 0; j < NumVecs; j++)
+      Mask.push_back(Builder.getInt32(j * VF + i));
+
+  return ConstantVector::get(Mask);
+}
+
+Constant *llvm::createStrideMask(IRBuilder<> &Builder, unsigned Start,
+                                 unsigned Stride, unsigned VF) {
+  SmallVector<Constant *, 16> Mask;
+  for (unsigned i = 0; i < VF; i++)
+    Mask.push_back(Builder.getInt32(Start + i * Stride));
+
+  return ConstantVector::get(Mask);
+}
+
+Constant *llvm::createSequentialMask(IRBuilder<> &Builder, unsigned Start,
+                                     unsigned NumInts, unsigned NumUndefs) {
+  SmallVector<Constant *, 16> Mask;
+  for (unsigned i = 0; i < NumInts; i++)
+    Mask.push_back(Builder.getInt32(Start + i));
+
+  Constant *Undef = UndefValue::get(Builder.getInt32Ty());
+  for (unsigned i = 0; i < NumUndefs; i++)
+    Mask.push_back(Undef);
+
+  return ConstantVector::get(Mask);
+}
+
+/// A helper function for concatenating vectors. This function concatenates two
+/// vectors having the same element type. If the second vector has fewer
+/// elements than the first, it is padded with undefs.
+static Value *concatenateTwoVectors(IRBuilder<> &Builder, Value *V1,
+                                    Value *V2) {
+  VectorType *VecTy1 = dyn_cast<VectorType>(V1->getType());
+  VectorType *VecTy2 = dyn_cast<VectorType>(V2->getType());
+  assert(VecTy1 && VecTy2 &&
+         VecTy1->getScalarType() == VecTy2->getScalarType() &&
+         "Expect two vectors with the same element type");
+
+  unsigned NumElts1 = VecTy1->getNumElements();
+  unsigned NumElts2 = VecTy2->getNumElements();
+  assert(NumElts1 >= NumElts2 && "Unexpect the first vector has less elements");
+
+  if (NumElts1 > NumElts2) {
+    // Extend with UNDEFs.
+    Constant *ExtMask =
+        createSequentialMask(Builder, 0, NumElts2, NumElts1 - NumElts2);
+    V2 = Builder.CreateShuffleVector(V2, UndefValue::get(VecTy2), ExtMask);
+  }
+
+  Constant *Mask = createSequentialMask(Builder, 0, NumElts1 + NumElts2, 0);
+  return Builder.CreateShuffleVector(V1, V2, Mask);
+}
+
+Value *llvm::concatenateVectors(IRBuilder<> &Builder, ArrayRef<Value *> Vecs) {
+  unsigned NumVecs = Vecs.size();
+  assert(NumVecs > 1 && "Should be at least two vectors");
+
+  SmallVector<Value *, 8> ResList;
+  ResList.append(Vecs.begin(), Vecs.end());
+  do {
+    SmallVector<Value *, 8> TmpList;
+    for (unsigned i = 0; i < NumVecs - 1; i += 2) {
+      Value *V0 = ResList[i], *V1 = ResList[i + 1];
+      assert((V0->getType() == V1->getType() || i == NumVecs - 2) &&
+             "Only the last vector may have a different type");
+
+      TmpList.push_back(concatenateTwoVectors(Builder, V0, V1));
+    }
+
+    // Push the last vector if the total number of vectors is odd.
+    if (NumVecs % 2 != 0)
+      TmpList.push_back(ResList[NumVecs - 1]);
+
+    ResList = TmpList;
+    NumVecs = ResList.size();
+  } while (NumVecs > 1);
+
+  return ResList[0];
 }

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.i386,v 1.133 2019/04/14 10:14:50 jsg Exp $
+#	$OpenBSD: Makefile.i386,v 1.131 2019/01/18 01:34:50 pd Exp $
 
 # For instructions on building kernels consult the config(8) and options(4)
 # manual pages.
@@ -21,9 +21,7 @@ S!=	cd ../../../..; pwd
 _machdir?=	$S/arch/${_mach}
 _archdir?=	$S/arch/${_arch}
 
-INCLUDES=	-nostdinc -I$S -I${.OBJDIR} -I$S/arch \
-		-I$S/dev/pci/drm/include \
-		-I$S/dev/pci/drm/include/uapi
+INCLUDES=	-nostdinc -I$S -I${.OBJDIR} -I$S/arch
 CPPFLAGS=	${INCLUDES} ${IDENT} ${PARAM} -D_KERNEL -MD -MP
 CWARNFLAGS=	-Werror -Wall -Wimplicit-function-declaration \
 		-Wno-uninitialized -Wno-pointer-sign \
@@ -37,7 +35,6 @@ CMACHFLAGS+=	-fno-stack-protector
 .endif
 .if ${IDENT:M-DSMALL_KERNEL}
 SORTR=		cat
-COPTS?=		-Oz -mtune=i486 -mno-retpoline
 .elif ${COMPILER_VERSION:Mclang}
 CMACHFLAGS+=	-mretpoline
 .endif

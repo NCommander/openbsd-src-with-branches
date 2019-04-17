@@ -22,7 +22,7 @@
  * Authors: Alex Deucher
  */
 
-#include <drm/drmP.h>
+#include <dev/pci/drm/drmP.h>
 #include "radeon.h"
 #include "cikd.h"
 #include "kv_dpm.h"

@@ -38,8 +38,7 @@ class DynamicTypeChecker : public Checker<check::PostStmt<ImplicitCastExpr>> {
           new BugType(this, "Dynamic and static type mismatch", "Type Error"));
   }
 
-  class DynamicTypeBugVisitor
-      : public BugReporterVisitorImpl<DynamicTypeBugVisitor> {
+  class DynamicTypeBugVisitor : public BugReporterVisitor {
   public:
     DynamicTypeBugVisitor(const MemRegion *Reg) : Reg(Reg) {}
 
@@ -49,10 +48,10 @@ class DynamicTypeChecker : public Checker<check::PostStmt<ImplicitCastExpr>> {
       ID.AddPointer(Reg);
     }
 
-    PathDiagnosticPiece *VisitNode(const ExplodedNode *N,
-                                   const ExplodedNode *PrevN,
-                                   BugReporterContext &BRC,
-                                   BugReport &BR) override;
+    std::shared_ptr<PathDiagnosticPiece> VisitNode(const ExplodedNode *N,
+                                                   const ExplodedNode *PrevN,
+                                                   BugReporterContext &BRC,
+                                                   BugReport &BR) override;
 
   private:
     // The tracked region.
@@ -91,9 +90,11 @@ void DynamicTypeChecker::reportTypeError(QualType DynamicType,
   C.emitReport(std::move(R));
 }
 
-PathDiagnosticPiece *DynamicTypeChecker::DynamicTypeBugVisitor::VisitNode(
-    const ExplodedNode *N, const ExplodedNode *PrevN, BugReporterContext &BRC,
-    BugReport &BR) {
+std::shared_ptr<PathDiagnosticPiece>
+DynamicTypeChecker::DynamicTypeBugVisitor::VisitNode(const ExplodedNode *N,
+                                                     const ExplodedNode *PrevN,
+                                                     BugReporterContext &BRC,
+                                                     BugReport &BR) {
   ProgramStateRef State = N->getState();
   ProgramStateRef StatePrev = PrevN->getState();
 
@@ -107,12 +108,7 @@ PathDiagnosticPiece *DynamicTypeChecker::DynamicTypeBugVisitor::VisitNode(
     return nullptr;
 
   // Retrieve the associated statement.
-  const Stmt *S = nullptr;
-  ProgramPoint ProgLoc = N->getLocation();
-  if (Optional<StmtPoint> SP = ProgLoc.getAs<StmtPoint>()) {
-    S = SP->getStmt();
-  }
-
+  const Stmt *S = PathDiagnosticLocation::getStmt(N);
   if (!S)
     return nullptr;
 
@@ -148,7 +144,8 @@ PathDiagnosticPiece *DynamicTypeChecker::DynamicTypeBugVisitor::VisitNode(
   // Generate the extra diagnostic.
   PathDiagnosticLocation Pos(S, BRC.getSourceManager(),
                              N->getLocationContext());
-  return new PathDiagnosticEventPiece(Pos, OS.str(), true, nullptr);
+  return std::make_shared<PathDiagnosticEventPiece>(Pos, OS.str(), true,
+                                                    nullptr);
 }
 
 static bool hasDefinition(const ObjCObjectPointerType *ObjPtr) {

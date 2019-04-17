@@ -60,12 +60,14 @@ representation.
    :hidden:
 
    CMake
+   CMakePrimer
+   AdvancedBuilds
    HowToBuildOnARM
+   HowToCrossCompileBuiltinsOnArm
    HowToCrossCompileLLVM
    CommandGuide/index
    GettingStarted
    GettingStartedVS
-   BuildingLLVMWithAutotools
    FAQ
    Lexicon
    HowToAddABuilder
@@ -81,7 +83,11 @@ representation.
    GetElementPtr
    Frontend/PerformanceTips
    MCJITDesignAndImplementation
+   CodeOfConduct
    CompileCudaWithLLVM
+   ReportingGuide
+   Benchmarking
+   Docker
 
 :doc:`GettingStarted`
    Discusses how to get up and running quickly with the LLVM infrastructure.
@@ -95,16 +101,15 @@ representation.
 :doc:`HowToBuildOnARM`
    Notes on building and testing LLVM/Clang on ARM.
 
+:doc:`HowToCrossCompileBuiltinsOnArm`
+   Notes on cross-building and testing the compiler-rt builtins for Arm.
+
 :doc:`HowToCrossCompileLLVM`
    Notes on cross-building and testing LLVM/Clang.
 
 :doc:`GettingStartedVS`
    An addendum to the main Getting Started guide for those using Visual Studio
    on Windows.
-
-:doc:`BuildingLLVMWithAutotools`
-   An addendum to the Getting Started guide with instructions for building LLVM
-   with the Autotools build system.
 
 :doc:`tutorial/index`
    Tutorials about using LLVM. Includes a tutorial about making a custom
@@ -153,8 +158,11 @@ representation.
   misunderstood instruction.
 
 :doc:`Frontend/PerformanceTips`
-   A collection of tips for frontend authors on how to generate IR 
+   A collection of tips for frontend authors on how to generate IR
    which LLVM is able to effectively optimize.
+
+:doc:`Docker`
+   A reference for using Dockerfiles provided with LLVM.
 
 
 Programming Documentation
@@ -174,6 +182,9 @@ For developers of applications which use LLVM as a library.
    ProgrammersManual
    Extensions
    LibFuzzer
+   FuzzingLLVM
+   ScudoHardenedAllocator
+   OptBisect
 
 :doc:`LLVM Language Reference Manual <LangRef>`
   Defines the LLVM intermediate representation and the assembly form of the
@@ -205,7 +216,6 @@ For developers of applications which use LLVM as a library.
 
 `Doxygen generated documentation <http://llvm.org/doxygen/>`_
   (`classes <http://llvm.org/doxygen/inherits.html>`_)
-  (`tarball <http://llvm.org/doxygen/doxygen.tar.gz>`_)
 
 `Documentation for Go bindings <http://godoc.org/llvm.org/llvm/bindings/go/llvm>`_
 
@@ -218,6 +228,17 @@ For developers of applications which use LLVM as a library.
 :doc:`LibFuzzer`
   A library for writing in-process guided fuzzers.
 
+:doc:`FuzzingLLVM`
+  Information on writing and using Fuzzers to find bugs in LLVM.
+
+:doc:`ScudoHardenedAllocator`
+  A library that implements a security-hardened `malloc()`.
+
+:doc:`OptBisect`
+  A command line option for debugging optimization-induced failures.
+
+.. _index-subsystem-docs:
+
 Subsystem Documentation
 =======================
 
@@ -227,6 +248,7 @@ For API clients and LLVM developers.
    :hidden:
 
    AliasAnalysis
+   MemorySSA
    BitCodeFormat
    BlockFrequencyTerminology
    BranchWeightMetadata
@@ -255,9 +277,16 @@ For API clients and LLVM developers.
    CoverageMappingFormat
    Statepoints
    MergeFunctions
-   BitSets
+   TypeMetadata
    FaultMaps
    MIRLangRef
+   Coroutines
+   GlobalISel
+   XRay
+   XRayExample
+   XRayFDRFormat
+   PDB/index
+   CFIVerify
 
 :doc:`WritingAnLLVMPass`
    Information on how to write LLVM transformations and analyses.
@@ -281,6 +310,9 @@ For API clients and LLVM developers.
 :doc:`AliasAnalysis`
    Information on how to write a new alias analysis implementation or how to
    use existing analyses.
+
+:doc:`MemorySSA`
+   Information about the MemorySSA utility in LLVM, as well as how to use it.
 
 :doc:`GarbageCollection`
    The interfaces source-language compilers should use for compiling GC'd
@@ -338,10 +370,10 @@ For API clients and LLVM developers.
   Answers some questions about the new Attributes infrastructure.
 
 :doc:`NVPTXUsage`
-   This document describes using the NVPTX back-end to compile GPU kernels.
+   This document describes using the NVPTX backend to compile GPU kernels.
 
 :doc:`AMDGPUUsage`
-   This document describes how to use the AMDGPU back-end.
+   This document describes using the AMDGPU backend to compile GPU kernels.
 
 :doc:`StackMaps`
   LLVM support for mapping instruction addresses to the location of
@@ -370,6 +402,24 @@ For API clients and LLVM developers.
 :doc:`CompileCudaWithLLVM`
   LLVM support for CUDA.
 
+:doc:`Coroutines`
+  LLVM support for coroutines.
+
+:doc:`GlobalISel`
+  This describes the prototype instruction selection replacement, GlobalISel.
+
+:doc:`XRay`
+  High-level documentation of how to use XRay in LLVM.
+
+:doc:`XRayExample`
+  An example of how to debug an application with XRay.
+
+:doc:`The Microsoft PDB File Format <PDB/index>`
+  A detailed description of the Microsoft PDB (Program Database) file format.
+
+:doc:`CFIVerify`
+  A description of the verification tool for Control Flow Integrity.
+
 Development Process Documentation
 =================================
 
@@ -378,14 +428,17 @@ Information about LLVM's development process.
 .. toctree::
    :hidden:
 
+   Contributing
    DeveloperPolicy
-   MakefileGuide
    Projects
    LLVMBuild
    HowToReleaseLLVM
    Packaging
    ReleaseProcess
    Phabricator
+
+:doc:`Contributing`
+   An overview on how to contribute to LLVM.
 
 :doc:`DeveloperPolicy`
    The LLVM project's policy towards developers and their contributions.
@@ -399,9 +452,6 @@ Information about LLVM's development process.
 :doc:`LLVMBuild`
   Describes the LLVMBuild organization and files used by LLVM to specify
   component descriptions.
-
-:doc:`MakefileGuide`
-  Describes how the LLVM makefiles work and how to use them.
 
 :doc:`HowToReleaseLLVM`
   This is a guide to preparing LLVM releases. Most developers can ignore it.
@@ -484,6 +534,28 @@ This channel has several bots.
 * clang-bot - A `geordi <http://www.eelis.net/geordi/>`_ instance running
   near-trunk clang instead of gcc.
 
+Community wide proposals
+------------------------
+
+Proposals for massive changes in how the community behaves and how the work flow
+can be better.
+
+.. toctree::
+   :hidden:
+
+   CodeOfConduct
+   Proposals/GitHubMove
+   Proposals/VectorizationPlan
+
+:doc:`CodeOfConduct`
+   Proposal to adopt a code of conduct on the LLVM social spaces (lists, events,
+   IRC, etc).
+
+:doc:`Proposals/GitHubMove`
+   Proposal to move from SVN/Git to GitHub.
+
+:doc:`Proposals/VectorizationPlan`
+   Proposal to model the process and upgrade the infrastructure of LLVM's Loop Vectorizer.
 
 Indices and tables
 ==================

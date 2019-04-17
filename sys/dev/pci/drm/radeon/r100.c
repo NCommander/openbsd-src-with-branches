@@ -25,10 +25,8 @@
  *          Alex Deucher
  *          Jerome Glisse
  */
-#include <linux/seq_file.h>
-#include <linux/slab.h>
-#include <drm/drmP.h>
-#include <drm/radeon_drm.h>
+#include <dev/pci/drm/drmP.h>
+#include <dev/pci/drm/radeon_drm.h>
 #include "radeon_reg.h"
 #include "radeon.h"
 #include "radeon_asic.h"
@@ -37,9 +35,6 @@
 #include "rv200d.h"
 #include "rv250d.h"
 #include "atom.h"
-
-#include <linux/firmware.h>
-#include <linux/module.h>
 
 #include "r100_reg_safe.h"
 #include "rn50_reg_safe.h"
@@ -153,7 +148,7 @@ void r100_wait_for_vblank(struct radeon_device *rdev, int crtc)
  * bit to go high, when it does, we release the lock, and allow the
  * double buffered update to take place.
  */
-void r100_page_flip(struct radeon_device *rdev, int crtc_id, u64 crtc_base, bool async)
+void r100_page_flip(struct radeon_device *rdev, int crtc_id, u64 crtc_base)
 {
 	struct radeon_crtc *radeon_crtc = rdev->mode_info.crtcs[crtc_id];
 	u32 tmp = ((u32)crtc_base) | RADEON_CRTC_OFFSET__OFFSET_LOCK;
@@ -592,8 +587,7 @@ void r100_hpd_init(struct radeon_device *rdev)
 
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 		struct radeon_connector *radeon_connector = to_radeon_connector(connector);
-		if (radeon_connector->hpd.hpd != RADEON_HPD_NONE)
-			enable |= 1 << radeon_connector->hpd.hpd;
+		enable |= 1 << radeon_connector->hpd.hpd;
 		radeon_hpd_set_polarity(rdev, radeon_connector->hpd.hpd);
 	}
 	radeon_irq_kms_enable_hpd(rdev, enable);
@@ -615,8 +609,7 @@ void r100_hpd_fini(struct radeon_device *rdev)
 
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 		struct radeon_connector *radeon_connector = to_radeon_connector(connector);
-		if (radeon_connector->hpd.hpd != RADEON_HPD_NONE)
-			disable |= 1 << radeon_connector->hpd.hpd;
+		disable |= 1 << radeon_connector->hpd.hpd;
 	}
 	radeon_irq_kms_disable_hpd(rdev, disable);
 }
@@ -1042,9 +1035,11 @@ static int r100_cp_init_microcode(struct radeon_device *rdev)
 
 	err = request_firmware(&rdev->me_fw, fw_name, rdev->dev);
 	if (err) {
-		pr_err("radeon_cp: Failed to load firmware \"%s\"\n", fw_name);
+		printk(KERN_ERR "radeon_cp: Failed to load firmware \"%s\"\n",
+		       fw_name);
 	} else if (rdev->me_fw->size % 8) {
-		pr_err("radeon_cp: Bogus length %zu in firmware \"%s\"\n",
+		printk(KERN_ERR
+		       "radeon_cp: Bogus length %zu in firmware \"%s\"\n",
 		       rdev->me_fw->size, fw_name);
 		err = -EINVAL;
 		release_firmware(rdev->me_fw);
@@ -1069,7 +1064,11 @@ u32 r100_gfx_get_rptr(struct radeon_device *rdev,
 u32 r100_gfx_get_wptr(struct radeon_device *rdev,
 		      struct radeon_ring *ring)
 {
-	return RREG32(RADEON_CP_RB_WPTR);
+	u32 wptr;
+
+	wptr = RREG32(RADEON_CP_RB_WPTR);
+
+	return wptr;
 }
 
 void r100_gfx_set_wptr(struct radeon_device *rdev,
@@ -1085,7 +1084,8 @@ static void r100_cp_load_microcode(struct radeon_device *rdev)
 	int i, size;
 
 	if (r100_gui_wait_for_idle(rdev)) {
-		pr_warn("Failed to wait GUI idle while programming pipes. Bad things might happen.\n");
+		printk(KERN_WARNING "Failed to wait GUI idle while "
+		       "programming pipes. Bad things might happen.\n");
 	}
 
 	if (rdev->me_fw) {
@@ -1243,7 +1243,8 @@ void r100_cp_disable(struct radeon_device *rdev)
 	WREG32(RADEON_CP_CSQ_CNTL, 0);
 	WREG32(R_000770_SCRATCH_UMSK, 0);
 	if (r100_gui_wait_for_idle(rdev)) {
-		pr_warn("Failed to wait GUI idle while programming pipes. Bad things might happen.\n");
+		printk(KERN_WARNING "Failed to wait GUI idle while "
+		       "programming pipes. Bad things might happen.\n");
 	}
 }
 
@@ -1456,7 +1457,7 @@ int r100_cs_packet_parse_vline(struct radeon_cs_parser *p)
 	header = radeon_get_ib_value(p, h_idx);
 	crtc_id = radeon_get_ib_value(p, h_idx + 5);
 	reg = R100_CP_PACKET0_GET_REG(header);
-	crtc = drm_crtc_find(p->rdev->ddev, p->filp, crtc_id);
+	crtc = drm_crtc_find(p->rdev->ddev, crtc_id);
 	if (!crtc) {
 		DRM_ERROR("cannot find crtc %d\n", crtc_id);
 		return -ENOENT;
@@ -1877,7 +1878,8 @@ static int r100_packet0_check(struct radeon_cs_parser *p,
 		track->tex_dirty = true;
 		break;
 	default:
-		pr_err("Forbidden register 0x%04X in cs at %d\n", reg, idx);
+		printk(KERN_ERR "Forbidden register 0x%04X in cs at %d\n",
+		       reg, idx);
 		return -EINVAL;
 	}
 	return 0;
@@ -2481,7 +2483,8 @@ int r100_gui_wait_for_idle(struct radeon_device *rdev)
 	uint32_t tmp;
 
 	if (r100_rbbm_fifo_wait_for_entry(rdev, 64)) {
-		pr_warn("radeon: wait for empty RBBM fifo failed! Bad things might happen.\n");
+		printk(KERN_WARNING "radeon: wait for empty RBBM fifo failed !"
+		       " Bad things might happen.\n");
 	}
 	for (i = 0; i < rdev->usec_timeout; i++) {
 		tmp = RREG32(RADEON_RBBM_STATUS);
@@ -2547,7 +2550,7 @@ void r100_bm_disable(struct radeon_device *rdev)
 	mdelay(1);
 }
 
-int r100_asic_reset(struct radeon_device *rdev, bool hard)
+int r100_asic_reset(struct radeon_device *rdev)
 {
 	struct r100_mc_save save;
 	u32 status, tmp;
@@ -3142,8 +3145,7 @@ void r100_bandwidth_update(struct radeon_device *rdev)
 {
 	fixed20_12 trcd_ff, trp_ff, tras_ff, trbs_ff, tcas_ff;
 	fixed20_12 sclk_ff, mclk_ff, sclk_eff_ff, sclk_delay_ff;
-	fixed20_12 peak_disp_bw, mem_bw, pix_clk, pix_clk2, temp_ff;
-	fixed20_12 crit_point_ff = {0};
+	fixed20_12 peak_disp_bw, mem_bw, pix_clk, pix_clk2, temp_ff, crit_point_ff;
 	uint32_t temp, data, mem_trcd, mem_trp, mem_tras;
 	fixed20_12 memtcas_ff[8] = {
 		dfixed_init(1),
@@ -3197,7 +3199,7 @@ void r100_bandwidth_update(struct radeon_device *rdev)
 	fixed20_12 min_mem_eff;
 	fixed20_12 mc_latency_sclk, mc_latency_mclk, k1;
 	fixed20_12 cur_latency_mclk, cur_latency_sclk;
-	fixed20_12 disp_latency, disp_latency_overhead, disp_drain_rate = {0},
+	fixed20_12 disp_latency, disp_latency_overhead, disp_drain_rate,
 		disp_drain_rate2, read_return_rate;
 	fixed20_12 time_disp1_drop_priority;
 	int c;
@@ -3219,19 +3221,13 @@ void r100_bandwidth_update(struct radeon_device *rdev)
 	radeon_update_display_priority(rdev);
 
 	if (rdev->mode_info.crtcs[0]->base.enabled) {
-		const struct drm_framebuffer *fb =
-			rdev->mode_info.crtcs[0]->base.primary->fb;
-
 		mode1 = &rdev->mode_info.crtcs[0]->base.mode;
-		pixel_bytes1 = fb->format->cpp[0];
+		pixel_bytes1 = rdev->mode_info.crtcs[0]->base.primary->fb->bits_per_pixel / 8;
 	}
 	if (!(rdev->flags & RADEON_SINGLE_CRTC)) {
 		if (rdev->mode_info.crtcs[1]->base.enabled) {
-			const struct drm_framebuffer *fb =
-				rdev->mode_info.crtcs[1]->base.primary->fb;
-
 			mode2 = &rdev->mode_info.crtcs[1]->base.mode;
-			pixel_bytes2 = fb->format->cpp[0];
+			pixel_bytes2 = rdev->mode_info.crtcs[1]->base.primary->fb->bits_per_pixel / 8;
 		}
 	}
 
@@ -3295,7 +3291,7 @@ void r100_bandwidth_update(struct radeon_device *rdev)
 		mem_trp = ((temp >> 8) & 0x7) + 1;
 		mem_tras = ((temp >> 11) & 0xf) + 4;
 	} else if (rdev->family == CHIP_RV350 ||
-		   rdev->family == CHIP_RV380) {
+		   rdev->family <= CHIP_RV380) {
 		/* rv3x0 */
 		mem_trcd = (temp & 0x7) + 3;
 		mem_trp = ((temp >> 8) & 0x7) + 3;
@@ -3730,17 +3726,11 @@ int r100_ib_test(struct radeon_device *rdev, struct radeon_ring *ring)
 		DRM_ERROR("radeon: failed to schedule ib (%d).\n", r);
 		goto free_ib;
 	}
-	r = radeon_fence_wait_timeout(ib.fence, false, usecs_to_jiffies(
-		RADEON_USEC_IB_TEST_TIMEOUT));
-	if (r < 0) {
+	r = radeon_fence_wait(ib.fence, false);
+	if (r) {
 		DRM_ERROR("radeon: fence wait failed (%d).\n", r);
 		goto free_ib;
-	} else if (r == 0) {
-		DRM_ERROR("radeon: fence wait timed out.\n");
-		r = -ETIMEDOUT;
-		goto free_ib;
 	}
-	r = 0;
 	for (i = 0; i < rdev->usec_timeout; i++) {
 		tmp = RREG32(scratch);
 		if (tmp == 0xDEADBEEF) {

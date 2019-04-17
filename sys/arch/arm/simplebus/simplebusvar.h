@@ -1,4 +1,4 @@
-/* $OpenBSD: simplebusvar.h,v 1.1 2016/10/21 20:09:49 patrick Exp $ */
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *
@@ -28,7 +28,6 @@ struct simplebus_softc {
 	int			*sc_ranges;
 	int			 sc_rangeslen;
 	int			 sc_early;
-	int			 sc_early_nodes[64];
 };
 
 extern void simplebus_attach(struct device *, struct device *, void *);

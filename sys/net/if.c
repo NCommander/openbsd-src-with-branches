@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.575 2019/04/14 06:57:00 dlg Exp $	*/
+/*	$OpenBSD: if.c,v 1.573 2019/03/01 04:47:32 dlg Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -615,8 +615,6 @@ if_attach_common(struct ifnet *ifp)
 	ifp->if_snd.ifq_ifqs[0] = &ifp->if_snd;
 	ifp->if_ifqs = ifp->if_snd.ifq_ifqs;
 	ifp->if_nifqs = 1;
-	if (ifp->if_txmit == 0)
-		ifp->if_txmit = IF_TXMIT_DEFAULT;
 
 	ifiq_init(&ifp->if_rcv, ifp, 0);
 
@@ -904,6 +902,7 @@ if_input_process(struct ifnet *ifp, struct mbuf_list *ml)
 	struct mbuf *m;
 	struct ifih *ifih;
 	struct srp_ref sr;
+	int s;
 
 	if (ml_empty(ml))
 		return;
@@ -924,6 +923,7 @@ if_input_process(struct ifnet *ifp, struct mbuf_list *ml)
 	 * lists.
 	 */
 	NET_RLOCK();
+	s = splnet();
 	while ((m = ml_dequeue(ml)) != NULL) {
 		/*
 		 * Pass this mbuf to all input handlers of its
@@ -938,6 +938,7 @@ if_input_process(struct ifnet *ifp, struct mbuf_list *ml)
 		if (ifih == NULL)
 			m_freem(m);
 	}
+	splx(s);
 	NET_RUNLOCK();
 }
 

@@ -13,19 +13,21 @@
 
 // ===---------------------------------------------------------------------===//
 // The following definitions describe the simpler per-operand machine model.
-// This works with MachineScheduler. See MCSchedModel.h for details.
+// This works with MachineScheduler. See MCSchedule.h for details.
 
 // Cortex-A53 machine model for scheduling and other instruction cost heuristics.
 def CortexA53Model : SchedMachineModel {
   let MicroOpBufferSize = 0; // Explicitly set to zero since A53 is in-order.
   let IssueWidth = 2;        // 2 micro-ops are dispatched per cycle.
-  let MinLatency = 1 ;       // OperandCycles are interpreted as MinLatency.
   let LoadLatency = 3;       // Optimistic load latency assuming bypass.
                              // This is overriden by OperandCycles if the
                              // Itineraries are queried instead.
   let MispredictPenalty = 9; // Based on "Cortex-A53 Software Optimisation
                              // Specification - Instruction Timings"
                              // v 1.0 Spreadsheet
+  let CompleteModel = 1;
+
+  list<Predicate> UnsupportedFeatures = [HasSVE];
 }
 
 
@@ -108,6 +110,8 @@ def A53WriteVST2 : SchedWriteRes<[A53UnitLdSt]> { let Latency = 5;
                                                   let ResourceCycles = [2]; }
 def A53WriteVST3 : SchedWriteRes<[A53UnitLdSt]> { let Latency = 6;
                                                   let ResourceCycles = [3]; }
+
+def : WriteRes<WriteAtomic, []> { let Unsupported = 1; }
 
 // Branch
 def : WriteRes<WriteBr, [A53UnitB]>;
@@ -218,19 +222,19 @@ def : InstRW<[A53WriteVLD1], (instregex "LD2i(8|16|32|64)$")>;
 def : InstRW<[A53WriteVLD1], (instregex "LD2Rv(8b|4h|2s|1d|16b|8h|4s|2d)$")>;
 def : InstRW<[A53WriteVLD2], (instregex "LD2Twov(8b|4h|2s)$")>;
 def : InstRW<[A53WriteVLD4], (instregex "LD2Twov(16b|8h|4s|2d)$")>;
-def : InstRW<[A53WriteVLD1, WriteAdr], (instregex "LD2i(8|16|32|64)(_POST)?$")>;
-def : InstRW<[A53WriteVLD1, WriteAdr], (instregex "LD2Rv(8b|4h|2s|1d|16b|8h|4s|2d)(_POST)?$")>;
-def : InstRW<[A53WriteVLD2, WriteAdr], (instregex "LD2Twov(8b|4h|2s)(_POST)?$")>;
-def : InstRW<[A53WriteVLD4, WriteAdr], (instregex "LD2Twov(16b|8h|4s|2d)(_POST)?$")>;
+def : InstRW<[A53WriteVLD1, WriteAdr], (instregex "LD2i(8|16|32|64)_POST$")>;
+def : InstRW<[A53WriteVLD1, WriteAdr], (instregex "LD2Rv(8b|4h|2s|1d|16b|8h|4s|2d)_POST$")>;
+def : InstRW<[A53WriteVLD2, WriteAdr], (instregex "LD2Twov(8b|4h|2s)_POST$")>;
+def : InstRW<[A53WriteVLD4, WriteAdr], (instregex "LD2Twov(16b|8h|4s|2d)_POST$")>;
 
 def : InstRW<[A53WriteVLD2], (instregex "LD3i(8|16|32|64)$")>;
 def : InstRW<[A53WriteVLD2], (instregex "LD3Rv(8b|4h|2s|1d|16b|8h|4s|2d)$")>;
 def : InstRW<[A53WriteVLD4], (instregex "LD3Threev(8b|4h|2s|1d|16b|8h|4s)$")>;
-def : InstRW<[A53WriteVLD3], (instregex "LD3Threev(2d)$")>;
+def : InstRW<[A53WriteVLD3], (instregex "LD3Threev2d$")>;
 def : InstRW<[A53WriteVLD2, WriteAdr], (instregex "LD3i(8|16|32|64)_POST$")>;
 def : InstRW<[A53WriteVLD2, WriteAdr], (instregex "LD3Rv(8b|4h|2s|1d|16b|8h|4s|2d)_POST$")>;
 def : InstRW<[A53WriteVLD4, WriteAdr], (instregex "LD3Threev(8b|4h|2s|1d|16b|8h|4s)_POST$")>;
-def : InstRW<[A53WriteVLD3, WriteAdr], (instregex "LD3Threev(2d)_POST$")>;
+def : InstRW<[A53WriteVLD3, WriteAdr], (instregex "LD3Threev2d_POST$")>;
 
 def : InstRW<[A53WriteVLD2], (instregex "LD4i(8|16|32|64)$")>;
 def : InstRW<[A53WriteVLD2], (instregex "LD4Rv(8b|4h|2s|1d|16b|8h|4s|2d)$")>;

@@ -25,13 +25,6 @@ namespace llvm {
 
   //===--------------------------------------------------------------------===//
   //
-  // createAAEvalPass - This pass implements a simple N^2 alias analysis
-  // accuracy evaluator.
-  //
-  FunctionPass *createAAEvalPass();
-
-  //===--------------------------------------------------------------------===//
-  //
   // createObjCARCAAWrapperPass - This pass implements ObjC-ARC-based
   // alias analysis.
   //
@@ -47,10 +40,10 @@ namespace llvm {
 
   //===--------------------------------------------------------------------===//
   //
-  // createDependenceAnalysisPass - This creates an instance of the
-  // DependenceAnalysis pass.
+  // createDependenceAnalysisWrapperPass - This creates an instance of the
+  // DependenceAnalysisWrapper pass.
   //
-  FunctionPass *createDependenceAnalysisPass();
+  FunctionPass *createDependenceAnalysisWrapperPass();
 
   //===--------------------------------------------------------------------===//
   //
@@ -102,6 +95,14 @@ namespace llvm {
   // information and prints it with -analyze.
   //
   FunctionPass *createMemDerefPrinter();
+
+  //===--------------------------------------------------------------------===//
+  //
+  // createMustExecutePrinter - This pass collects information about which
+  // instructions within a loop are guaranteed to execute if the loop header is
+  // entered and prints it with -analyze.
+  //
+  FunctionPass *createMustExecutePrinter();
 
 }
 

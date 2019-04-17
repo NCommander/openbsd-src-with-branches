@@ -8,17 +8,17 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief This file lowers br_unless into br_if with an inverted condition.
+/// This file lowers br_unless into br_if with an inverted condition.
 ///
 /// br_unless is not currently in the spec, but it's very convenient for LLVM
 /// to use. This pass allows LLVM to use it, for now.
 ///
 //===----------------------------------------------------------------------===//
 
+#include "MCTargetDesc/WebAssemblyMCTargetDesc.h"
 #include "WebAssembly.h"
 #include "WebAssemblyMachineFunctionInfo.h"
 #include "WebAssemblySubtarget.h"
-#include "MCTargetDesc/WebAssemblyMCTargetDesc.h"
 #include "llvm/CodeGen/MachineFunctionPass.h"
 #include "llvm/CodeGen/MachineInstrBuilder.h"
 #include "llvm/Support/Debug.h"
@@ -29,7 +29,7 @@ using namespace llvm;
 
 namespace {
 class WebAssemblyLowerBrUnless final : public MachineFunctionPass {
-  const char *getPassName() const override {
+  StringRef getPassName() const override {
     return "WebAssembly Lower br_unless";
   }
 
@@ -47,26 +47,29 @@ public:
 } // end anonymous namespace
 
 char WebAssemblyLowerBrUnless::ID = 0;
+INITIALIZE_PASS(WebAssemblyLowerBrUnless, DEBUG_TYPE,
+                "Lowers br_unless into inverted br_if", false, false)
+
 FunctionPass *llvm::createWebAssemblyLowerBrUnless() {
   return new WebAssemblyLowerBrUnless();
 }
 
 bool WebAssemblyLowerBrUnless::runOnMachineFunction(MachineFunction &MF) {
-  DEBUG(dbgs() << "********** Lowering br_unless **********\n"
-                  "********** Function: "
-               << MF.getName() << '\n');
+  LLVM_DEBUG(dbgs() << "********** Lowering br_unless **********\n"
+                       "********** Function: "
+                    << MF.getName() << '\n');
 
   auto &MFI = *MF.getInfo<WebAssemblyFunctionInfo>();
   const auto &TII = *MF.getSubtarget<WebAssemblySubtarget>().getInstrInfo();
   auto &MRI = MF.getRegInfo();
 
   for (auto &MBB : MF) {
-    for (auto MII = MBB.begin(); MII != MBB.end(); ) {
+    for (auto MII = MBB.begin(); MII != MBB.end();) {
       MachineInstr *MI = &*MII++;
       if (MI->getOpcode() != WebAssembly::BR_UNLESS)
         continue;
 
-      unsigned Cond = MI->getOperand(0).getReg();
+      unsigned Cond = MI->getOperand(1).getReg();
       bool Inverted = false;
 
       // Attempt to invert the condition in place.
@@ -74,7 +77,7 @@ bool WebAssemblyLowerBrUnless::runOnMachineFunction(MachineFunction &MF) {
         assert(MRI.hasOneDef(Cond));
         MachineInstr *Def = MRI.getVRegDef(Cond);
         switch (Def->getOpcode()) {
-        using namespace WebAssembly;
+          using namespace WebAssembly;
         case EQ_I32: Def->setDesc(TII.get(NE_I32)); Inverted = true; break;
         case NE_I32: Def->setDesc(TII.get(EQ_I32)); Inverted = true; break;
         case GT_S_I32: Def->setDesc(TII.get(LE_S_I32)); Inverted = true; break;
@@ -99,22 +102,24 @@ bool WebAssemblyLowerBrUnless::runOnMachineFunction(MachineFunction &MF) {
         case NE_F32: Def->setDesc(TII.get(EQ_F32)); Inverted = true; break;
         case EQ_F64: Def->setDesc(TII.get(NE_F64)); Inverted = true; break;
         case NE_F64: Def->setDesc(TII.get(EQ_F64)); Inverted = true; break;
+        case EQZ_I32: {
+          // Invert an eqz by replacing it with its operand.
+          Cond = Def->getOperand(1).getReg();
+          Def->eraseFromParent();
+          Inverted = true;
+          break;
+        }
         default: break;
         }
       }
 
       // If we weren't able to invert the condition in place. Insert an
-      // expression to invert it.
+      // instruction to invert it.
       if (!Inverted) {
-        unsigned ZeroReg = MRI.createVirtualRegister(&WebAssembly::I32RegClass);
-        MFI.stackifyVReg(ZeroReg);
-        BuildMI(MBB, MI, MI->getDebugLoc(), TII.get(WebAssembly::CONST_I32), ZeroReg)
-            .addImm(0);
         unsigned Tmp = MRI.createVirtualRegister(&WebAssembly::I32RegClass);
+        BuildMI(MBB, MI, MI->getDebugLoc(), TII.get(WebAssembly::EQZ_I32), Tmp)
+            .addReg(Cond);
         MFI.stackifyVReg(Tmp);
-        BuildMI(MBB, MI, MI->getDebugLoc(), TII.get(WebAssembly::EQ_I32), Tmp)
-            .addReg(Cond)
-            .addReg(ZeroReg);
         Cond = Tmp;
         Inverted = true;
       }
@@ -123,8 +128,8 @@ bool WebAssemblyLowerBrUnless::runOnMachineFunction(MachineFunction &MF) {
       // delete the br_unless.
       assert(Inverted);
       BuildMI(MBB, MI, MI->getDebugLoc(), TII.get(WebAssembly::BR_IF))
-          .addReg(Cond)
-          .addOperand(MI->getOperand(1));
+          .add(MI->getOperand(0))
+          .addReg(Cond);
       MBB.erase(MI);
     }
   }

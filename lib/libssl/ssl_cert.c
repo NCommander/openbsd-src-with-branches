@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_cert.c,v 1.74 2019/03/25 17:33:26 jsing Exp $ */
+/* $OpenBSD: ssl_cert.c,v 1.73 2019/03/25 16:24:57 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -466,23 +466,17 @@ SSL_dup_CA_list(const STACK_OF(X509_NAME) *sk)
 {
 	int i;
 	STACK_OF(X509_NAME) *ret;
-	X509_NAME *name = NULL;
+	X509_NAME *name;
 
-	if ((ret = sk_X509_NAME_new_null()) == NULL)
-		goto err;
-
+	ret = sk_X509_NAME_new_null();
 	for (i = 0; i < sk_X509_NAME_num(sk); i++) {
-		if ((name = X509_NAME_dup(sk_X509_NAME_value(sk, i))) == NULL)
-			goto err;
-		if (!sk_X509_NAME_push(ret, name))
-			goto err;
+		name = X509_NAME_dup(sk_X509_NAME_value(sk, i));
+		if ((name == NULL) || !sk_X509_NAME_push(ret, name)) {
+			sk_X509_NAME_pop_free(ret, X509_NAME_free);
+			return (NULL);
+		}
 	}
 	return (ret);
-
- err:
-	X509_NAME_free(name);
-	sk_X509_NAME_pop_free(ret, X509_NAME_free);
-	return NULL;
 }
 
 void

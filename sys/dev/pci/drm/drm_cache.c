@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_cache.c,v 1.6 2018/04/25 01:27:46 jsg Exp $	*/
+/*	$OpenBSD: drm_cache.c,v 1.5 2018/04/20 16:09:36 deraadt Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis
  *
@@ -15,7 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <drm/drmP.h>
+#include <dev/pci/drm/drmP.h>
 
 #if defined(__i386__) || defined(__amd64__)
 static void

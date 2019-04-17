@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: GPL-2.0 OR MIT */
 /**************************************************************************
  *
  * Copyright (c) 2007-2010 VMware, Inc., Palo Alto, CA., USA
@@ -29,13 +28,10 @@
  * Authors: Thomas Hellstrom <thellstrom-at-vmware-dot-com>
  */
 
-#include <drm/ttm/ttm_module.h>
-#include <drm/ttm/ttm_bo_driver.h>
-#include <drm/ttm/ttm_placement.h>
-#include <drm/drm_mm.h>
-#include <linux/slab.h>
-#include <linux/spinlock.h>
-#include <linux/module.h>
+#include <dev/pci/drm/ttm/ttm_module.h>
+#include <dev/pci/drm/ttm/ttm_bo_driver.h>
+#include <dev/pci/drm/ttm/ttm_placement.h>
+#include <dev/pci/drm/drm_mm.h>
 
 /**
  * Currently we use a spinlock for the lock, but a mutex *may* be
@@ -55,8 +51,9 @@ static int ttm_bo_man_get_node(struct ttm_mem_type_manager *man,
 {
 	struct ttm_range_manager *rman = (struct ttm_range_manager *) man->priv;
 	struct drm_mm *mm = &rman->mm;
-	struct drm_mm_node *node;
-	enum drm_mm_insert_mode mode;
+	struct drm_mm_node *node = NULL;
+	enum drm_mm_search_flags sflags = DRM_MM_SEARCH_BEST;
+	enum drm_mm_allocator_flags aflags = DRM_MM_CREATE_DEFAULT;
 	unsigned long lpfn;
 	int ret;
 
@@ -68,15 +65,16 @@ static int ttm_bo_man_get_node(struct ttm_mem_type_manager *man,
 	if (!node)
 		return -ENOMEM;
 
-	mode = DRM_MM_INSERT_BEST;
-	if (place->flags & TTM_PL_FLAG_TOPDOWN)
-		mode = DRM_MM_INSERT_HIGH;
+	if (place->flags & TTM_PL_FLAG_TOPDOWN) {
+		sflags = DRM_MM_SEARCH_BELOW;
+		aflags = DRM_MM_CREATE_TOP;
+	}
 
 	spin_lock(&rman->lock);
-	ret = drm_mm_insert_node_in_range(mm, node,
-					  mem->num_pages,
+	ret = drm_mm_insert_node_in_range_generic(mm, node, mem->num_pages,
 					  mem->page_alignment, 0,
-					  place->fpfn, lpfn, mode);
+					  place->fpfn, lpfn,
+					  sflags, aflags);
 	spin_unlock(&rman->lock);
 
 	if (unlikely(ret)) {
@@ -137,20 +135,20 @@ static int ttm_bo_man_takedown(struct ttm_mem_type_manager *man)
 }
 
 static void ttm_bo_man_debug(struct ttm_mem_type_manager *man,
-			     struct drm_printer *printer)
+			     const char *prefix)
 {
 	struct ttm_range_manager *rman = (struct ttm_range_manager *) man->priv;
 
 	spin_lock(&rman->lock);
-	drm_mm_print(&rman->mm, printer);
+	drm_mm_debug_table(&rman->mm, prefix);
 	spin_unlock(&rman->lock);
 }
 
 const struct ttm_mem_type_manager_func ttm_bo_manager_func = {
-	.init = ttm_bo_man_init,
-	.takedown = ttm_bo_man_takedown,
-	.get_node = ttm_bo_man_get_node,
-	.put_node = ttm_bo_man_put_node,
-	.debug = ttm_bo_man_debug
+	ttm_bo_man_init,
+	ttm_bo_man_takedown,
+	ttm_bo_man_get_node,
+	ttm_bo_man_put_node,
+	ttm_bo_man_debug
 };
 EXPORT_SYMBOL(ttm_bo_manager_func);

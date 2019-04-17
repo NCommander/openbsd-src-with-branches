@@ -101,20 +101,31 @@ void ClangCheckerRegistry::warnIncompatible(DiagnosticsEngine *diags,
       << pluginAPIVersion;
 }
 
-std::unique_ptr<CheckerManager>
-ento::createCheckerManager(AnalyzerOptions &opts, const LangOptions &langOpts,
-                           ArrayRef<std::string> plugins,
-                           DiagnosticsEngine &diags) {
-  std::unique_ptr<CheckerManager> checkerMgr(
-      new CheckerManager(langOpts, &opts));
-
+static SmallVector<CheckerOptInfo, 8>
+getCheckerOptList(const AnalyzerOptions &opts) {
   SmallVector<CheckerOptInfo, 8> checkerOpts;
   for (unsigned i = 0, e = opts.CheckersControlList.size(); i != e; ++i) {
     const std::pair<std::string, bool> &opt = opts.CheckersControlList[i];
-    checkerOpts.push_back(CheckerOptInfo(opt.first.c_str(), opt.second));
+    checkerOpts.push_back(CheckerOptInfo(opt.first, opt.second));
   }
+  return checkerOpts;
+}
+
+std::unique_ptr<CheckerManager> ento::createCheckerManager(
+    AnalyzerOptions &opts, const LangOptions &langOpts,
+    ArrayRef<std::string> plugins,
+    ArrayRef<std::function<void(CheckerRegistry &)>> checkerRegistrationFns,
+    DiagnosticsEngine &diags) {
+  std::unique_ptr<CheckerManager> checkerMgr(
+      new CheckerManager(langOpts, opts));
+
+  SmallVector<CheckerOptInfo, 8> checkerOpts = getCheckerOptList(opts);
 
   ClangCheckerRegistry allCheckers(plugins, &diags);
+
+  for (const auto &Fn : checkerRegistrationFns)
+    Fn(allCheckers);
+
   allCheckers.initializeManager(*checkerMgr, checkerOpts);
   allCheckers.validateCheckerOptions(opts, diags);
   checkerMgr->finishedCheckerRegistration();
@@ -136,4 +147,13 @@ void ento::printCheckerHelp(raw_ostream &out, ArrayRef<std::string> plugins) {
   out << "USAGE: -analyzer-checker <CHECKER or PACKAGE,...>\n\n";
 
   ClangCheckerRegistry(plugins).printHelp(out);
+}
+
+void ento::printEnabledCheckerList(raw_ostream &out,
+                                   ArrayRef<std::string> plugins,
+                                   const AnalyzerOptions &opts) {
+  out << "OVERVIEW: Clang Static Analyzer Enabled Checkers List\n\n";
+
+  SmallVector<CheckerOptInfo, 8> checkerOpts = getCheckerOptList(opts);
+  ClangCheckerRegistry(plugins).printList(out, checkerOpts);
 }
