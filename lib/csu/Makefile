@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.28 2017/08/12 00:05:16 guenther Exp $
+#	$OpenBSD: Makefile,v 1.29 2019/02/24 12:57:14 kn Exp $
 
 OBJS=		crt0.o gcrt0.o
 OBJS+=		crtbegin.o crtend.o
@@ -38,6 +38,11 @@ RCFLAGS=-DRCRT0
 # Other archs aren't so lucky
 .if ${MACHINE_ARCH} != "amd64"
 RCFLAGS+=-fno-stack-protector 
+.endif
+
+# Prevent use of builtins and jump tables in _dl_boot_bind().
+.if ${MACHINE_CPU} == "mips64"
+RCFLAGS+=-fno-builtin -fno-jump-tables
 .endif
 
 DEPS = ${OBJS:.o=.d}
