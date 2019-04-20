@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.237 2019/04/02 05:06:39 mlarkin Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.238 2019/04/18 18:51:34 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -40,7 +40,7 @@
 
 #include <dev/isa/isareg.h>
 
-#define VMM_DEBUG
+/* #define VMM_DEBUG */
 
 void *l1tf_flush_region;
 
