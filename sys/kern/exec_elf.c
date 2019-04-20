@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.146 2018/08/05 14:23:57 beck Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.147 2018/12/06 18:59:31 guenther Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -957,7 +957,7 @@ int	coredump_note_elf(struct proc *, void *, size_t *);
 int	coredump_writenote_elf(struct proc *, void *, Elf_Note *,
 	    const char *, void *);
 
-#define	ELFROUNDSIZE	4	/* XXX Should it be sizeof(Elf_Word)? */
+#define	ELFROUNDSIZE	sizeof(Elf_Word)
 #define	elfround(x)	roundup((x), ELFROUNDSIZE)
 
 int
