@@ -1,4 +1,4 @@
-.\"	$OpenBSD: roff.7,v 1.90 2018/12/16 01:34:34 schwarze Exp $
+.\"	$OpenBSD: roff.7,v 1.91 2019/01/01 03:44:48 schwarze Exp $
 .\"
 .\" Copyright (c) 2010, 2011, 2012 Kristaps Dzonsons <kristaps@bsd.lv>
 .\" Copyright (c) 2010-2019 Ingo Schwarze <schwarze@openbsd.org>
@@ -15,7 +15,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: December 16 2018 $
+.Dd $Mdocdate: January 1 2019 $
 .Dt ROFF 7
 .Os
 .Sh NAME
@@ -503,10 +503,9 @@ This is a Heirloom extension and currently unsupported.
 .It Ic \&br
 Break the output line.
 .It Ic \&break
-Break out of a
+Break out of the innermost
 .Ic \&while
 loop.
-Currently unsupported.
 .It Ic \&breakchar Ar char ...
 Optional line break characters.
 This is a Heirloom extension and currently ignored.
