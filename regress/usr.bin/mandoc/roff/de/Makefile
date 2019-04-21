@@ -1,7 +1,7 @@
-# $OpenBSD: Makefile,v 1.11 2017/07/04 14:53:27 schwarze Exp $
+# $OpenBSD: Makefile,v 1.12 2019/02/06 20:54:28 schwarze Exp $
 
-REGRESS_TARGETS	 = append cond escname factorial indir infinite startde tab
-REGRESS_TARGETS	+= TH Dd
+REGRESS_TARGETS	 = append cond empty escname factorial
+REGRESS_TARGETS	+= indir infinite startde tab TH Dd
 LINT_TARGETS	 = escname indir infinite
 
 # groff-1.22.4 defect:
