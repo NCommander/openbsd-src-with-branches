@@ -913,8 +913,7 @@ ssl3_get_client_hello(SSL *s)
 
 		CBS_dup(&cbs, &ext_block);
 
-		i = ssl_get_prev_session(s, CBS_data(&session_id),
-		    CBS_len(&session_id), &ext_block);
+		i = ssl_get_prev_session(s, &session_id, &ext_block);
 		if (i == 1) { /* previous session */
 			s->internal->hit = 1;
 		} else if (i == -1)
