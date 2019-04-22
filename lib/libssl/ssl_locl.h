@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.244 2019/03/25 17:33:26 jsing Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.245 2019/04/04 16:44:24 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1327,7 +1327,6 @@ int ssl_check_clienthello_tlsext_early(SSL *s);
 int ssl_check_clienthello_tlsext_late(SSL *s);
 int ssl_check_serverhello_tlsext(SSL *s);
 
-#define tlsext_tick_md	EVP_sha256
 int tls1_process_ticket(SSL *s, const unsigned char *session_id,
     int session_id_len, CBS *ext_block, SSL_SESSION **ret);
 
