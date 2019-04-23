@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-set-option.c,v 1.122 2019/03/18 11:58:40 nicm Exp $ */
+/* $OpenBSD: cmd-set-option.c,v 1.123 2019/03/18 21:46:01 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -366,8 +366,6 @@ cmd_set_option_set(struct cmd *self, struct cmdq_item *item, struct options *oo,
 			return (-1);
 		}
 		return (0);
-	case OPTIONS_TABLE_ARRAY:
-		break;
 	}
 	return (-1);
 }
