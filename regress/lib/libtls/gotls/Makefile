@@ -1,6 +1,8 @@
-#	$OpenBSD: Makefile,v 1.1 2014/10/31 14:10:55 jsing Exp $
+#	$OpenBSD: Makefile,v 1.2 2016/09/02 21:30:34 bluhm Exp $
 
+.if ! (make(clean) || make(cleandir) || make(obj))
 GO_VERSION != sh -c "(go version) 2>/dev/null || true"
+.endif
 
 .if empty(GO_VERSION)
 regress:
