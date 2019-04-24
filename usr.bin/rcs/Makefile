@@ -1,7 +1,9 @@
-#	$OpenBSD: Makefile,v 1.39 2010/04/15 15:51:40 sobrado Exp $
+#	$OpenBSD: Makefile,v 1.40 2010/10/15 08:44:12 tobias Exp $
 
 PROG=	rcs
-MAN=	ci.1 co.1 ident.1 merge.1 rcs.1 rcsclean.1 rcsdiff.1 rcsmerge.1 rlog.1
+MAN=	ci.1 co.1 ident.1 merge.1 \
+	rcs.1 rcsclean.1 rcsdiff.1 rcsmerge.1 rlog.1 \
+	rcsfile.5
 
 SRCS=	ci.c co.c ident.c merge.c rcsclean.c rcsdiff.c rcsmerge.c rcsparse.c \
 	rcsprog.c rlog.c rcsutil.c buf.c date.y diff.c diff3.c rcs.c rcsnum.c \
