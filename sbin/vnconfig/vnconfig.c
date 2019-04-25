@@ -318,7 +318,7 @@ config(char **argv, int action, struct disklabel *dp, char *key, size_t keylen)
 		if (rv)
 			warn("VNDIOCCLR");
 		else if (verbose)
-			printf("%s: cleared\n", dev);
+			fprintf(stderr, "%s: cleared\n", dev);
 	}
 	/*
 	 * Configure the device
@@ -328,7 +328,8 @@ config(char **argv, int action, struct disklabel *dp, char *key, size_t keylen)
 		if (rv)
 			warn("VNDIOCSET");
 		else if (verbose)
-			printf("%s: %llu bytes on %s\n", dev, vndio.vnd_size,
+			fprintf(stderr,
+			    "%s: %llu bytes on %s\n", dev, vndio.vnd_size,
 			    file);
 	}
 
