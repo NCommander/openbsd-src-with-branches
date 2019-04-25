@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwi.c,v 1.137 2017/10/26 15:00:28 mpi Exp $	*/
+/*	$OpenBSD: if_iwi.c,v 1.138 2018/04/26 12:50:07 pirofti Exp $	*/
 
 /*-
  * Copyright (c) 2004-2008
@@ -647,9 +647,9 @@ iwi_media_change(struct ifnet *ifp)
 		return error;
 
 	if ((ifp->if_flags & (IFF_UP | IFF_RUNNING)) == (IFF_UP | IFF_RUNNING))
-		iwi_init(ifp);
+		error = iwi_init(ifp);
 
-	return 0;
+	return error;
 }
 
 void
