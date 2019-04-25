@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_i386.c,v 1.20 2017/05/31 08:40:32 yasuoka Exp $	*/
+/*	$OpenBSD: dev_i386.c,v 1.21 2017/11/25 19:02:07 patrick Exp $	*/
 
 /*
  * Copyright (c) 1996-1999 Michael Shalayeff
@@ -78,6 +78,16 @@ devopen(struct open_file *f, const char *fname, char **file)
 #endif
 		if ((rc = (*dp->dv_open)(f, file)) == 0) {
 			f->f_dev = dp;
+#ifdef EFIBOOT
+			if (strcmp("TFTP", dp->dv_name) != 0) {
+				/*
+				 * Clear bootmac, to signal that we loaded
+				 * this file from a non-network device.
+				 */
+				extern char *bootmac;
+				bootmac = NULL;
+			}
+#endif
 			return 0;
 		}
 #ifdef DEBUG
