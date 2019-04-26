@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-new-session.c,v 1.115 2019/03/12 13:56:30 nicm Exp $ */
+/* $OpenBSD: cmd-new-session.c,v 1.116 2019/04/17 14:37:48 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -329,7 +329,7 @@ cmd_new_session_exec(struct cmd *self, struct cmdq_item *item)
 	}
 
 	cmd_find_from_session(&fs, s, 0);
-	hooks_insert(s->hooks, item, &fs, "after-new-session");
+	cmdq_insert_hook(s, item, &fs, "after-new-session");
 
 	free(cwd);
 	free(newname);
