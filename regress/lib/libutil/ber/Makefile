@@ -1,7 +1,13 @@
-#	$OpenBSD: Makefile,v 1.1 2012/09/06 20:49:59 matthew Exp $
+#	$OpenBSD: Makefile,v 1.1 2019/03/26 22:20:54 rob Exp $
 
-PROG=ber_test
-LDADD=-lutil
-DPADD=${LIBUTIL}
+REGRESS_TARGETS= run-regress run-regress-int-i
+
+CFLAGS= -lutil
+
+run-regress: ber_test
+	./ber_test
+
+run-regress-int-i: ber_test_int_i
+	./ber_test_int_i
 
 .include <bsd.regress.mk>
