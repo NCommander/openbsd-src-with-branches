@@ -88,7 +88,6 @@ struct vlan_softc {
 	unsigned int		 sc_ifidx0;	/* parent interface */
 	int			 sc_rxprio;
 	int			 sc_prio;
-	u_int16_t		 sc_proto; /* encapsulation ethertype */
 	u_int16_t		 sc_tag;
 	u_int16_t		 sc_type; /* non-standard ethertype or 0x8100 */
 	LIST_HEAD(__vlan_mchead, vlan_mc_entry)
