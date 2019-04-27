@@ -83,22 +83,23 @@ struct vlan_mc_entry {
 };
 
 struct vlan_softc {
-	struct	arpcom ifv_ac;	/* make this an interface */
-	unsigned int ifv_ifidx0;	/* parent interface of this vlan */
-	int ifv_rxprio;
-	struct	ifv_linkmib {
-		int ifvm_prio; /* prio to apply on packet leaving if */
-		u_int16_t ifvm_proto; /* encapsulation ethertype */
-		u_int16_t ifvm_tag; /* tag to apply on packets leaving if */
-		u_int16_t ifvm_type; /* non-standard ethertype or 0x8100 */
-	}	ifv_mib;
-	LIST_HEAD(__vlan_mchead, vlan_mc_entry)	vlan_mc_listhead;
-	SRPL_ENTRY(vlan_softc) ifv_list;
-	int ifv_flags;
-	struct refcnt ifv_refcnt;
-	void *lh_cookie;
-	void *dh_cookie;
-	struct ifih *ifv_ifih;
+	struct arpcom		 ifv_ac;
+	unsigned int		 ifv_ifidx0;	/* parent interface */
+	int			 ifv_rxprio;
+	struct ifv_linkmib {
+		int		 ifvm_prio;
+		u_int16_t	 ifvm_proto; /* encapsulation ethertype */
+		u_int16_t	 ifvm_tag;
+		u_int16_t	 ifvm_type; /* non-standard ethertype or 0x8100 */
+	}			 ifv_mib;
+	LIST_HEAD(__vlan_mchead, vlan_mc_entry)
+				 vlan_mc_listhead;
+	SRPL_ENTRY(vlan_softc)	 ifv_list;
+	int			 ifv_flags;
+	struct refcnt		 ifv_refcnt;
+	void			*lh_cookie;
+	void			*dh_cookie;
+	struct ifih		*ifv_ifih;
 };
 
 #define	ifv_if		ifv_ac.ac_if
