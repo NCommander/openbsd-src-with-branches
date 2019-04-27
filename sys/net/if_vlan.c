@@ -413,14 +413,10 @@ vlan_input(struct ifnet *ifp0, struct mbuf *m, void *cookie)
 			break;
 	}
 
-	if (sc == NULL) {
-		ifp0->if_noproto++;
-		goto drop;
+	if (sc == NULL || !ISSET(sc->sc_if.if_flags, IFF_RUNNING)) {
+		m_freem(m);
+		goto leave;
 	}
-
-	if ((sc->sc_if.if_flags & (IFF_UP|IFF_RUNNING)) !=
-	    (IFF_UP|IFF_RUNNING))
-		goto drop;
 
 	/*
 	 * Having found a valid vlan interface corresponding to
@@ -450,12 +446,8 @@ vlan_input(struct ifnet *ifp0, struct mbuf *m, void *cookie)
 	}
 
 	if_vinput(&sc->sc_if, m);
+leave:
 	SRPL_LEAVE(&sr);
-	return (1);
-
-drop:
-	SRPL_LEAVE(&sr);
-	m_freem(m);
 	return (1);
 }
 
