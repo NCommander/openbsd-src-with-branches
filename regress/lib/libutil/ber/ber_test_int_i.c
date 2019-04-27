@@ -1,4 +1,4 @@
-/* $OpenBSD: ber_test_int_i.c,v 1.1 2019/04/27 03:01:39 rob Exp $
+/* $OpenBSD: ber_test_int_i.c,v 1.2 2019/04/27 03:36:19 rob Exp $
 */
 /*
  * Copyright (c) Rob Pierce <rob@openbsd.org>
@@ -36,7 +36,7 @@ struct test_vector {
 
 /*
  * ber_scanf_int failes on the negative boundary at 2^31.
- * va_arg() looks a little suspect.
+ * There may be a problem with the MSB processing in ber_read_element().
  */
 struct test_vector test_vectors[] = {
 	{
