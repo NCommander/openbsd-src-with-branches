@@ -1,4 +1,4 @@
-.\"	$OpenBSD: task_add.9,v 1.19 2019/04/01 03:23:45 dlg Exp $
+.\"	$OpenBSD: task_add.9,v 1.20 2019/04/01 06:28:05 jmc Exp $
 .\"
 .\" Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
 .\"
@@ -21,6 +21,7 @@
 .Nm taskq_create ,
 .Nm taskq_destroy ,
 .Nm taskq_barrier ,
+.Nm taskq_del_barrier ,
 .Nm task_set ,
 .Nm task_add ,
 .Nm task_del ,
@@ -40,6 +41,8 @@
 .Fn taskq_destroy "struct taskq *tq"
 .Ft void
 .Fn taskq_barrier "struct taskq *tq"
+.Ft void
+.Fn taskq_del_barrier "struct taskq *tq" "struct task *t"
 .Ft void
 .Fn task_set "struct task *t" "void (*fn)(void *)" "void *arg"
 .Ft int
@@ -100,6 +103,13 @@ returns.
 .Fn taskq_barrier
 is only supported on taskqs serviced by 1 thread,
 and may not be called by a task running in the specified taskq.
+.Pp
+.Fn taskq_del_barrier
+either removes
+.Fa t
+from the list of pending tasks on the
+.Fa tq
+taskq, or waits until any running task has completed.
 .Pp
 It is the responsibility of the caller to provide the
 .Fn task_set ,
@@ -181,6 +191,8 @@ and
 .Fn taskq_destroy
 can be called during autoconf, or from process context.
 .Fn taskq_barrier
+and
+.Fn taskq_del_barrier
 can be called from process context.
 .Fn task_set ,
 .Fn task_add ,
