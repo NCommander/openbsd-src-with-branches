@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.36 2019/04/05 21:08:01 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.37 2019/04/14 14:07:08 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -11,8 +11,6 @@ UTILS?=		${TOP}/../miniroot
 STRIPOPTS?=	-R .SUNW_ctf
 GZIPFLAGS?=	-9fn
 MTREE=		${UTILS}/mtree.conf
-
-RAMDISK=	RAMDISK
 
 all: bsd.rd
 
@@ -29,9 +27,9 @@ bsd.rd_unz: bsd ${IMAGE}
 	rdsetroot bsd.rd_unz ${IMAGE}
 
 bsd:
-	cd ${.CURDIR}/../../../sys/arch/sparc64/compile/${RAMDISK} && \
+	cd ${.CURDIR}/../../../sys/arch/sparc64/compile/RAMDISK && \
 	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && ${MAKE}'
-	cp -p ${.CURDIR}/../../../sys/arch/sparc64/compile/${RAMDISK}/obj/bsd bsd
+	cp -p ${.CURDIR}/../../../sys/arch/sparc64/compile/RAMDISK/obj/bsd bsd
 
 ${IMAGE}: ${CBIN}
 	rm -rf $@.d
