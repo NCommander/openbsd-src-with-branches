@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.37 2019/04/14 14:07:07 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.38 2019/04/28 14:48:09 deraadt Exp $
 
 TOP=		${.CURDIR}/..
 
@@ -61,14 +61,14 @@ bsd:
 	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && ${MAKE}'
 	cp -p ${.CURDIR}/../../../sys/arch/alpha/compile/${RAMDISK}/obj/bsd bsd
 
-${IMAGE}: ${CBIN}
+${IMAGE}: instbin
 	rm -rf $@.d
 	install -d -o root -g wheel $@.d
 	mtree -def ${MTREE} -p $@.d -u
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} REV=${REV} \
 	    TARGDIR=$@.d UTILS=${UTILS} RELEASEDIR=${RELEASEDIR} \
 	    sh ${UTILS}/runlist.sh ${LISTS}
-	rm $@.d/${CBIN}
+	rm $@.d/instbin
 	makefs ${MAKEFSARGS_RD} $@ $@.d
 
 unconfig:
