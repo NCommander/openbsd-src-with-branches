@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2015/09/19 10:44:43 miod Exp $
+#	$OpenBSD: Makefile,v 1.4 2019/04/28 14:48:09 deraadt Exp $
 
 TOP=	${.CURDIR}/..
 
@@ -24,7 +24,7 @@ vn_up: blank_filesystem
 	mount /dev/`cat vnd`a ${MOUNT_POINT}
 
 showit:
-	df -ki ${MOUNT_POINT}
+	df -i ${MOUNT_POINT}
 
 vn_down:
 	umount ${MOUNT_POINT}
