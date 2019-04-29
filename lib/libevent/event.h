@@ -1,4 +1,4 @@
-/*	$OpenBSD: event.h,v 1.29 2014/10/31 16:00:44 bluhm Exp $	*/
+/*	$OpenBSD: event.h,v 1.30 2015/01/05 23:14:36 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2000-2007 Niels Provos <provos@citi.umich.edu>
@@ -196,7 +196,7 @@ struct event {
 	TAILQ_ENTRY (event) ev_next;
 	TAILQ_ENTRY (event) ev_active_next;
 	TAILQ_ENTRY (event) ev_signal_next;
-	unsigned int min_heap_idx;	/* for managing timeouts */
+	size_t min_heap_idx;	/* for managing timeouts */
 
 	struct event_base *ev_base;
 
