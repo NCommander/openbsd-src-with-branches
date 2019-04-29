@@ -1,8 +1,4 @@
-#	$OpenBSD: Makefile,v 1.19 2019/04/28 17:35:45 deraadt Exp $
-
-TOP=	${.CURDIR}/..
-
-.include "${TOP}/Makefile.inc"
+#	$OpenBSD: Makefile,v 1.20 2019/04/29 01:48:40 deraadt Exp $
 
 CDROM=		install${OSrev}.iso
 

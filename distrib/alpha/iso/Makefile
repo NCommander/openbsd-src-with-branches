@@ -1,8 +1,4 @@
-#	$OpenBSD: Makefile,v 1.15 2014/09/21 13:44:44 deraadt Exp $
-
-TOP=	${.CURDIR}/..
-
-.include "${TOP}/Makefile.inc"
+#	$OpenBSD: Makefile,v 1.16 2019/04/28 14:48:09 deraadt Exp $
 
 CDROM=		install${OSrev}.iso
 RELXDIR?=	/home/relx-${MACHINE}
