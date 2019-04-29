@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: Makefile.inc,v 1.7 2013/11/29 12:35:47 aoyama Exp $
+#	$OpenBSD: Makefile.inc,v 1.8 2019/04/28 15:21:49 deraadt Exp $
 #
 
 # TOP is assumed to be defined by Makefile including this one.
@@ -28,7 +28,7 @@ instbin: instbin.mk instbin.cache instbin.c
 do_files:
 	mtree -def ${MTREE} -p ${MOUNT_POINT}/ -u
 	TOPDIR=${TOP} CURDIR=${.CURDIR} OBJDIR=${.OBJDIR} \
-	    REV=${REV} TARGDIR=${MOUNT_POINT} UTILS=${UTILS} \
+	    OSrev=${OSrev} TARGDIR=${MOUNT_POINT} UTILS=${UTILS} \
 	    RELEASEDIR=${RELEASEDIR} sh ${UTILS}/runlist.sh ${LISTS}
 	rm ${MOUNT_POINT}/instbin
 

@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.4 2019/04/28 14:48:09 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.5 2019/04/28 16:47:29 deraadt Exp $
 
 TOP=	${.CURDIR}/..
 
 .include "${TOP}/Makefile.inc"
 
-FS=		miniroot${REV}.fs
+FS=		miniroot${OSrev}.fs
 MOUNT_POINT=	/mnt
 
 .ifndef DESTDIR

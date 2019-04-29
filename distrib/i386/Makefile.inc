@@ -1,5 +1,3 @@
-#	$OpenBSD: Makefile.inc,v 1.12 1999/08/06 20:49:05 deraadt Exp $
-
-REV=	${OSrev}
+#	$OpenBSD: Makefile.inc,v 1.1 2002/04/22 02:40:02 deraadt Exp $
 
 .include <bsd.own.mk>
