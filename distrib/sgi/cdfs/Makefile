@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.21 2019/04/29 15:56:26 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.22 2019/04/30 17:46:05 deraadt Exp $
 
 CDROM=	cd${OSrev}.iso
 FFS=	ffs.img
@@ -65,7 +65,7 @@ install:
 .endif
 
 clean cleandir:
-	/bin/rm -f ${CDROM} ${FFS} xfs512.bin xfs
+	rm -f ${CDROM} ${FFS} xfs512.bin xfs
 	rm -rf cd-dir
 
 .include <bsd.obj.mk>

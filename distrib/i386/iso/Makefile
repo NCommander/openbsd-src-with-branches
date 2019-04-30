@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.21 2019/04/29 15:56:25 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.22 2019/04/30 17:46:03 deraadt Exp $
 
 FS=		install${OSrev}.fs
 FSSIZE=		921600
@@ -89,7 +89,7 @@ install:
 	cp ${CDROM} ${FS} ${RELDIR}/
 
 clean cleandir:
-	/bin/rm -f ${CDROM} ${FS}
+	rm -f ${CDROM} ${FS}
 	rm -rf cd-dir
 
 .include <bsd.obj.mk>

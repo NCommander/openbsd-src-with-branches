@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.23 2019/04/29 15:56:25 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.24 2019/04/30 17:46:03 deraadt Exp $
 
 MTREE=		${UTILS}/mtree.conf
 
@@ -47,7 +47,7 @@ install:
 .endif	# RELEASEDIR
 
 clean cleandir:
-	/bin/rm -f *.core mr.fs instbin instbin.mk instbin.cache \
+	rm -f *.core mr.fs instbin instbin.mk instbin.cache \
 	    lib*.a lib*.olist instbin.map *.o *.lo *.c
 	rm -f instbin.conf
 	rm -rf cd-dir mr.fs.d

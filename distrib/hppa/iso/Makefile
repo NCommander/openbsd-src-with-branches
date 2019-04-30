@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.17 2019/04/29 15:56:25 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.18 2019/04/30 17:46:03 deraadt Exp $
 
 CDROM=		install${OSrev}.iso
 RELXDIR?=	/home/relx-${MACHINE}
@@ -41,6 +41,6 @@ install:
 	cp ${CDROM} ${RELDIR}/
 
 clean cleandir:
-	/bin/rm -rf cd-dir ${CDROM}
+	rm -rf cd-dir ${CDROM}
 
 .include <bsd.obj.mk>
