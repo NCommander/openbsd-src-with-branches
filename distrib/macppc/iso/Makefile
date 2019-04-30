@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 2015/08/18 16:28:00 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.15 2019/04/29 15:56:26 deraadt Exp $
 
 CDROM=		install${OSrev}.iso
 RELXDIR?=	/home/relx-${MACHINE}
@@ -14,8 +14,8 @@ XBASE=		${RELXDIR}/xbase${OSrev}.tgz ${RELXDIR}/xfont${OSrev}.tgz \
 all: ${CDROM}
 
 ${CDROM}: ${BASE} ${XBASE}
-	-rm -rf ${.OBJDIR}/cd-dir/
-	-@mkdir -p ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}/
+	rm -rf ${.OBJDIR}/cd-dir/
+	mkdir -p ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}/
 
 	cp -p ${BASE} ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}
 	cp -p ${XBASE} ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE}
@@ -46,4 +46,3 @@ clean cleandir:
 	rm -rf cd-dir
 
 .include <bsd.obj.mk>
-.include <bsd.subdir.mk>

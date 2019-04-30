@@ -1,4 +1,4 @@
-#	$OpenBSD: list2sh.awk,v 1.19 2014/02/21 16:29:08 deraadt Exp $
+#	$OpenBSD: list2sh.awk,v 1.21 2014/02/21 19:14:23 deraadt Exp $
 
 BEGIN {
 	printf("cd ${OBJDIR}\n");
@@ -17,6 +17,11 @@ $1 == "COPY" {
 $1 == "REMOVE" {
 	printf("echo '%s'\n", $0);
 	printf("rm -f ${TARGDIR}/%s\n", $2);
+	next;
+}
+$1 == "MKDIR" {
+	printf("echo '%s'\n", $0);
+	printf("mkdir -p ${TARGDIR}/%s\n", $2);
 	next;
 }
 $1 == "STRIP" {
