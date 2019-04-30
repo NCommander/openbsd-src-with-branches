@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.3 2007/08/14 18:57:32 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 2007/10/18 18:16:20 deraadt Exp $
 
-SUBDIR= ramdisk_cd ramdiskA cdfs
+SUBDIR= ramdisk_cd ramdiskA
 
 .if	make(obj) || make(cleandir) || make(clean)
 SUBDIR+= iso
