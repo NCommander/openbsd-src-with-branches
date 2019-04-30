@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.41 2019/04/30 17:46:04 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.42 2019/04/30 21:14:59 deraadt Exp $
 
 CDROM=		cd${OSrev}.iso
 MTREE=		${UTILS}/mtree.conf
@@ -6,7 +6,7 @@ MTREE=		${UTILS}/mtree.conf
 LISTS=		${.CURDIR}/list
 UTILS=		${.CURDIR}/../../miniroot
 
-all:	${CDROM}
+all: ${CDROM}
 
 ${CDROM}: bsd.gz
 	rm -rf ${.OBJDIR}/cd-dir/

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.24 2019/04/30 17:46:03 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.25 2019/04/30 21:14:59 deraadt Exp $
 
 MTREE=		${UTILS}/mtree.conf
 
@@ -44,7 +44,7 @@ instbin.conf: ${LISTS}
 install:
 	cp bsd.rd ${RELEASEDIR}/bsd.rd
 	chmod a+r ${RELEASEDIR}/bsd.rd
-.endif	# RELEASEDIR
+.endif
 
 clean cleandir:
 	rm -f *.core mr.fs instbin instbin.mk instbin.cache \
