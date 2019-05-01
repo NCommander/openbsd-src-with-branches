@@ -22,7 +22,6 @@
 #include "util.h"
 #include "zonec.h"
 
-static void error(const char *format, ...) ATTR_FORMAT(printf, 1, 2);
 struct nsd nsd;
 
 /*
@@ -37,25 +36,11 @@ usage (void)
 		PACKAGE_VERSION, PACKAGE_BUGREPORT);
 }
 
-/*
- * Something went wrong, give error messages and exit.
- *
- */
-static void
-error(const char *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	log_vmsg(LOG_ERR, format, args);
-	va_end(args);
-	exit(1);
-}
-
 static void
 check_zone(struct nsd* nsd, const char* name, const char* fname)
 {
 	const dname_type* dname;
-	zone_options_t* zo;
+	zone_options_type* zo;
 	zone_type* zone;
 	unsigned errors;
 

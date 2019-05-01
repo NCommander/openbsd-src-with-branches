@@ -1,6 +1,8 @@
+/*	$OpenBSD: indent_globs.h,v 1.13 2015/08/20 22:32:41 deraadt Exp $ */
 /*
  * Copyright (c) 1985 Sun Microsystems, Inc.
- * Copyright (c) 1980 The Regents of the University of California.
+ * Copyright (c) 1980, 1993
+ *	The Regents of the University of California.
  * Copyright (c) 1976 Board of Trustees of the University of Illinois.
  * All rights reserved.
  *
@@ -12,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,8 +30,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	from: @(#)indent_globs.h	5.11 (Berkeley) 2/26/91
- *	$Id: indent_globs.h,v 1.2 1993/08/01 18:14:34 mycroft Exp $
+ *	from: @(#)indent_globs.h	8.1 (Berkeley) 6/6/93
  */
 
 #define BACKSLASH '\\'
@@ -56,32 +53,44 @@ FILE       *output;		/* the output file */
 
 #define CHECK_SIZE_CODE \
 	if (e_code >= l_code) { \
-	    register nsize = l_code-s_code+400; \
-	    codebuf = (char *) realloc(codebuf, nsize); \
+	    int nsize = l_code-s_code+400; \
+	\
+	    codebuf = realloc(codebuf, nsize); \
+	    if (codebuf == NULL) \
+		    err(1, NULL); \
 	    e_code = codebuf + (e_code-s_code) + 1; \
 	    l_code = codebuf + nsize - 5; \
 	    s_code = codebuf + 1; \
 	}
 #define CHECK_SIZE_COM \
 	if (e_com >= l_com) { \
-	    register nsize = l_com-s_com+400; \
-	    combuf = (char *) realloc(combuf, nsize); \
+	    int nsize = l_com-s_com+400; \
+	\
+	    combuf = realloc(combuf, nsize); \
+	    if (combuf == NULL) \
+		    err(1, NULL); \
 	    e_com = combuf + (e_com-s_com) + 1; \
 	    l_com = combuf + nsize - 5; \
 	    s_com = combuf + 1; \
 	}
 #define CHECK_SIZE_LAB \
 	if (e_lab >= l_lab) { \
-	    register nsize = l_lab-s_lab+400; \
-	    labbuf = (char *) realloc(labbuf, nsize); \
+	    int nsize = l_lab-s_lab+400; \
+	\
+	    labbuf = realloc(labbuf, nsize); \
+	    if (labbuf == NULL) \
+		    err(1, NULL); \
 	    e_lab = labbuf + (e_lab-s_lab) + 1; \
 	    l_lab = labbuf + nsize - 5; \
 	    s_lab = labbuf + 1; \
 	}
 #define CHECK_SIZE_TOKEN \
 	if (e_token >= l_token) { \
-	    register nsize = l_token-s_token+400; \
-	    tokenbuf = (char *) realloc(tokenbuf, nsize); \
+	    int nsize = l_token-s_token+400; \
+	\
+	    tokenbuf = realloc(tokenbuf, nsize); \
+	    if (tokenbuf == NULL) \
+		    err(1, NULL); \
 	    e_token = tokenbuf + (e_token-s_token) + 1; \
 	    l_token = tokenbuf + nsize - 5; \
 	    s_token = tokenbuf + 1; \
@@ -189,6 +198,8 @@ int         extra_expression_indent;	/* True if continuation lines from the
 					 * indented an extra tab stop so that
 					 * they don't conflict with the code
 					 * that follows */
+int	    use_tabs;			/* set true to use tabs for spacing,
+					 * false uses all spaces */
 
 /* -troff font state information */
 
@@ -197,7 +208,6 @@ struct fstate {
     char        size;
     int         allcaps:1;
 };
-char       *chfont();
 
 struct fstate
             keywordf,		/* keyword font */
@@ -218,7 +228,7 @@ struct parser_state {
     float       cstk[STACKSIZE];/* used to store case stmt indentation levels */
     int         box_com;	/* set to true when we are in a "boxed"
 				 * comment. In that case, the first non-blank
-				 * char should be lined up with the / in /* */
+				 * char should be lined up with the / in rem */
     int         comment_delta,
                 n_comment_delta;
     int         cast_mask;	/* indicates which close parens close off
@@ -309,3 +319,25 @@ int         ifdef_level;
 int	    rparen_count;
 struct parser_state state_stack[5];
 struct parser_state match_state[5];
+
+int compute_code_target(void);
+int compute_label_target(void);
+int count_spaces(int, char *);
+void diag(int, const char *, ...) __attribute__((__format__ (printf, 2, 3)));
+void dump_line(void);
+int eqin(char *, char *);
+void fill_buffer(void);
+int pad_output(int, int);
+void scan_profile(FILE *);
+void set_defaults(void);
+void set_option(char *);
+void addkey(char *, int);
+void set_profile(void);
+char   *chfont(struct fstate *, struct fstate *, char *);
+void parsefont(struct fstate *, char *);
+void writefdef(struct fstate *, int);
+int lexi(void);
+void reduce(void);
+void parse(int);
+void pr_comment(void);
+void bakcopy(void);

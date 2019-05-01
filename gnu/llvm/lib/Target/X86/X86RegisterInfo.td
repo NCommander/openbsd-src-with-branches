@@ -278,7 +278,7 @@ def K7 : X86Reg<"k7", 7>, DwarfRegNum<[125, 100, 100]>;
 // pseudo registers, but we still mark them as aliasing FP registers. That
 // way both kinds can be live without exceeding the stack depth. ST registers
 // are only live around inline assembly.
-def ST0 : X86Reg<"st(0)", 0>, DwarfRegNum<[33, 12, 11]>;
+def ST0 : X86Reg<"st", 0>, DwarfRegNum<[33, 12, 11]>;
 def ST1 : X86Reg<"st(1)", 1>, DwarfRegNum<[34, 13, 12]>;
 def ST2 : X86Reg<"st(2)", 2>, DwarfRegNum<[35, 14, 13]>;
 def ST3 : X86Reg<"st(3)", 3>, DwarfRegNum<[36, 15, 14]>;
@@ -288,7 +288,10 @@ def ST6 : X86Reg<"st(6)", 6>, DwarfRegNum<[39, 18, 17]>;
 def ST7 : X86Reg<"st(7)", 7>, DwarfRegNum<[40, 19, 18]>;
 
 // Floating-point status word
-def FPSW : X86Reg<"fpsw", 0>;
+def FPSW : X86Reg<"fpsr", 0>;
+
+// Floating-point control word
+def FPCW : X86Reg<"fpcr", 0>;
 
 // Status flags register.
 //
@@ -402,8 +405,8 @@ def GRH16 : RegisterClass<"X86", [i16], 16,
                                R15WH)>;
 
 def GR32 : RegisterClass<"X86", [i32], 32,
-                         (add EAX, ECX, EDX, ESI, EDI, EBX, EBP, ESP,
-                              R8D, R9D, R10D, R11D, R14D, R15D, R12D, R13D)>;
+                         (add EAX, ECX, EDX, ESI, EDI,
+                              R8D, R9D, R10D, R11D, R14D, R15D, R12D, R13D, EBX, EBP, ESP)>;
 
 // GR64 - 64-bit GPRs. This oddly includes RIP, which isn't accurate, since
 // RIP isn't really a register and it can't be used anywhere except in an
@@ -412,7 +415,7 @@ def GR32 : RegisterClass<"X86", [i32], 32,
 // tests because of the inclusion of RIP in this register class.
 def GR64 : RegisterClass<"X86", [i64], 64,
                          (add RAX, RCX, RDX, RSI, RDI, R8, R9, R10, R11,
-                              RBX, R14, R15, R12, R13, RBP, RSP, RIP)>;
+                              R14, R15, R12, R13, RBX, RBP, RSP, RIP)>;
 
 // Segment registers for use by MOV instructions (and others) that have a
 //   segment register as one operand.  Always contain a 16-bit segment
@@ -521,6 +524,9 @@ def RFP80 : RegisterClass<"X86",[f80], 32, (add RFP32)>;
 def RST : RegisterClass<"X86", [f80, f64, f32], 32, (sequence "ST%u", 0, 7)> {
   let isAllocatable = 0;
 }
+
+// Helper to allow %st to print as %st(0) when its encoded in the instruction.
+def RSTi : RegisterOperand<RST, "printSTiRegOperand">;
 
 // Generic vector registers: VR64 and VR128.
 // Ensure that float types are declared first - only float is legal on SSE1.

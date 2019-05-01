@@ -1,7 +1,9 @@
-#	$NetBSD: Makefile,v 1.7 1995/03/18 14:55:13 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/5/93
+#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:36:20 deraadt Exp $
 
 PROG=	dumpfs
 MAN=	dumpfs.8
+
+LDADD=  -lutil
+DPADD=  ${LIBUTIL}
 
 .include <bsd.prog.mk>

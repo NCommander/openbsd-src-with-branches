@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.3 2018/08/30 19:34:37 bluhm Exp $
 
 # The following ports must be installed:
 #
@@ -90,7 +90,7 @@ stamp-pf: addr.py pf.conf
 	rm -f stamp-stack stamp-pf
 	cat addr.py ${.CURDIR}/pf.conf | pfctl -n -f -
 	cat addr.py ${.CURDIR}/pf.conf | \
-	    ssh ${IPS_SSH} ${SUDO} pfctl -a regress -f -
+	    ssh ${REMOTE_SSH} ${SUDO} pfctl -a regress -f -
 	-ssh ${REMOTE_SSH} ${SUDO} pfctl -e
 	date >$@
 
@@ -98,15 +98,23 @@ REGRESS_TARGETS =
 FRAG_SCRIPTS !!=	cd ${.CURDIR} && ls -1 frag*.py
 
 run-regress-stack-frag_mf0long.py:
+	@echo '\n======== $@ ========'
 	# the stack allows fragments with data behind a fragment without MF
 	@echo DISABLED
 
 run-regress-stack-frag_mf0short.py:
+	@echo '\n======== $@ ========'
 	# the stack allows fragments without MF ending before other fragments
 	@echo DISABLED
 
 run-regress-stack-frag_mf1end.py:
+	@echo '\n======== $@ ========'
 	# the stack allows fragments with MF together with fragments without MF
+	@echo DISABLED
+
+run-regress-stack-frag_queuelimit.py:
+	@echo '\n======== $@ ========'
+	# the stack does not limit the amount of fragments during reassembly
 	@echo DISABLED
 
 .for sp in stack pf
@@ -145,7 +153,13 @@ REGRESS_TARGETS +=	run-regress-${sp}-ping run-regress-${sp}-fragping \
 
 # After running the tests, turn on pf on remote machine.
 # This is the expected default configuration.
-REGRESS_TARGETS +=	stamp-pf
+
+cleanup-pf:
+	rm -f stamp-stack stamp-pf
+	ssh ${REMOTE_SSH} ${SUDO} pfctl -a regress -Fa
+	-ssh ${REMOTE_SSH} ${SUDO} pfctl -e || true
+
+REGRESS_TARGETS +=	cleanup-pf
 
 CLEANFILES +=		addr.py *.pyc *.log stamp-*
 

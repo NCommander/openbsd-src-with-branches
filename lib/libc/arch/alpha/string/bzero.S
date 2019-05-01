@@ -1,4 +1,5 @@
-/*	$NetBSD: bzero.S,v 1.1 1995/08/14 04:09:26 cgd Exp $	*/
+/*	$OpenBSD: bzero.S,v 1.4 2005/08/07 16:40:13 espie Exp $	*/
+/*	$NetBSD: bzero.S,v 1.2 1996/10/17 03:08:12 cgd Exp $	*/
 
 /*
  * Copyright (c) 1995 Carnegie-Mellon University.
@@ -27,7 +28,7 @@
  * rights to redistribute these changes.
  */
 
-#include "DEFS.h"
+#include "SYS.h"
 
 LEAF(bzero,2)
 	ble	a1,bzero_done
@@ -107,4 +108,4 @@ bzero_finish_lp_done:
 bzero_done:
 	RET
 
-	END(bzero)
+	END_WEAK(bzero)

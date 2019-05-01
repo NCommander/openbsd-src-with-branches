@@ -1,3 +1,6 @@
+/*	$OpenBSD: rmjob.c,v 1.22 2015/01/16 06:40:17 deraadt Exp $	*/
+/*	$NetBSD: rmjob.c,v 1.16 2000/04/16 14:43:58 mrg Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,16 +30,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)rmjob.c	8.1 (Berkeley) 6/6/93";
-#endif /* not lint */
-
-#include <sys/param.h>
-
 #include <signal.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -65,17 +60,22 @@ extern char	*person;		/* name of person doing lprm */
 static char	root[] = "root";
 static int	all = 0;		/* eliminate all files (root only) */
 static int	cur_daemon;		/* daemon's pid */
-static char	current[40];		/* active control file name */
+static char	current[NAME_MAX];	/* active control file name */
 
-extern uid_t	uid, euid;		/* real and effective user id's */
-
-static	void	do_unlink __P((char *));
+static void	alarmer(int);
+static int	chk(char *);
+static void	do_unlink(char *);
+static int	iscf(const struct dirent *);
+static int	isowner(char *, char *);
+static int	lockchk(char *);
+static void	process(char *);
+static void	rmremote(void);
 
 void
-rmjob()
+rmjob(void)
 {
-	register int i, nitems;
-	int assasinated = 0;
+	int i, nitems;
+	int assassinated = 0;
 	struct dirent **files;
 	char *cp;
 
@@ -85,7 +85,7 @@ rmjob()
 		fatal("unknown printer");
 	else if (i == -3)
 		fatal("potential reference loop detected in printcap file");
-	if (cgetstr(bp, "lp", &LP) < 0)
+	if (cgetstr(bp, DEFLP, &LP) < 0)
 		LP = _PATH_DEFDEVLP;
 	if (cgetstr(bp, "rp", &RP) < 0)
 		RP = DEFLP;
@@ -94,7 +94,7 @@ rmjob()
 	if (cgetstr(bp,"lo", &LO) < 0)
 		LO = DEFLOCK;
 	cgetstr(bp, "rm", &RM);
-	if (cp = checkremote())
+	if ((cp = checkremote()) != NULL)
 		printf("Warning: %s\n", cp);
 
 	/*
@@ -116,24 +116,25 @@ rmjob()
 		person = root;
 	}
 
-	seteuid(euid);
+	PRIV_START;
 	if (chdir(SD) < 0)
 		fatal("cannot chdir to spool directory");
 	if ((nitems = scandir(".", &files, iscf, NULL)) < 0)
 		fatal("cannot access spool directory");
-	seteuid(uid);
+	PRIV_END;
 
 	if (nitems) {
 		/*
-		 * Check for an active printer daemon (in which case we
-		 *  kill it if it is reading our file) then remove stuff
-		 *  (after which we have to restart the daemon).
+		 * Check for an active printer daemon.  If one is running
+		 * and it is reading our file, kill it, then remove stuff.
+		 * Lastly, restart the daemon if it is not (or no longer)
+		 * running.
 		 */
 		if (lockchk(LO) && chk(current)) {
-			seteuid(euid);
-			assasinated = kill(cur_daemon, SIGINT) == 0;
-			seteuid(uid);
-			if (!assasinated)
+			PRIV_START;
+			assassinated = kill(cur_daemon, SIGINT) == 0;
+			PRIV_END;
+			if (!assassinated)
 				fatal("cannot kill printer daemon");
 		}
 		/*
@@ -146,38 +147,41 @@ rmjob()
 	/*
 	 * Restart the printer daemon if it was killed
 	 */
-	if (assasinated && !startdaemon(printer))
-		fatal("cannot restart printer daemon\n");
+	if (assassinated && !startdaemon(printer))
+		fatal("cannot restart printer daemon");
 	exit(0);
 }
 
 /*
  * Process a lock file: collect the pid of the active
- *  daemon and the file name of the active spool entry.
+ * daemon and the file name of the active spool entry.
  * Return boolean indicating existence of a lock file.
  */
-int
-lockchk(s)
-	char *s;
+static int
+lockchk(char *s)
 {
-	register FILE *fp;
-	register int i, n;
+	FILE *fp = NULL;
+	int fd, i, n;
 
-	seteuid(euid);
-	if ((fp = fopen(s, "r")) == NULL) {
+	/* NOTE: lock file is owned by root, not the user. */
+	PRIV_START;
+	fd = safe_open(s, O_RDONLY|O_NOFOLLOW, 0);
+	PRIV_END;
+	if (fd < 0 || (fp = fdopen(fd, "r")) == NULL) {
+		if (fd >= 0)
+			close(fd);
 		if (errno == EACCES)
 			fatal("can't access lock file");
 		else
 			return(0);
 	}
-	seteuid(uid);
-	if (!getline(fp)) {
-		(void) fclose(fp);
+	if (!get_line(fp)) {
+		(void)fclose(fp);
 		return(0);		/* no daemon present */
 	}
 	cur_daemon = atoi(line);
 	if (kill(cur_daemon, 0) < 0 && errno != EPERM) {
-		(void) fclose(fp);
+		(void)fclose(fp);
 		return(0);		/* no daemon present */
 	}
 	for (i = 1; (n = fread(current, sizeof(char), sizeof(current), fp)) <= 0; i++) {
@@ -188,59 +192,63 @@ lockchk(s)
 		sleep(i);
 	}
 	current[n-1] = '\0';
-	(void) fclose(fp);
+	(void)fclose(fp);
 	return(1);
 }
 
 /*
  * Process a control file.
  */
-void
-process(file)
-	char *file;
+static void
+process(char *file)
 {
-	FILE *cfp;
+	FILE *cfp = NULL;
+	int fd;
 
 	if (!chk(file))
 		return;
-	seteuid(euid);
-	if ((cfp = fopen(file, "r")) == NULL)
+	PRIV_START;
+	fd = safe_open(file, O_RDONLY|O_NOFOLLOW, 0);
+	PRIV_END;
+	if (fd < 0 || (cfp = fdopen(fd, "r")) == NULL) {
+		if (fd >= 0)
+			close(fd);
 		fatal("cannot open %s", file);
-	seteuid(uid);
-	while (getline(cfp)) {
+	}
+	while (get_line(cfp)) {
 		switch (line[0]) {
 		case 'U':  /* unlink associated files */
-			do_unlink(file);
+			if (strchr(line+1, '/') || strncmp(line+1, "df", 2))
+				break;
+			do_unlink(line+1);
 		}
 	}
-	(void) fclose(cfp);
+	(void)fclose(cfp);
 	do_unlink(file);
 }
 
 static void
-do_unlink(file)
-	char *file;
+do_unlink(char *file)
 {
 	int	ret;
 
 	if (from != host)
 		printf("%s: ", host);
-	seteuid(euid);
+	PRIV_START;
 	ret = unlink(file);
-	seteuid(uid);
+	PRIV_END;
 	printf(ret ? "cannot dequeue %s\n" : "%s dequeued\n", file);
 }
 
 /*
  * Do the dirty work in checking
  */
-int
-chk(file)
-	char *file;
+static int
+chk(char *file)
 {
-	register int *r, n;
-	register char **u, *cp;
-	FILE *cfp;
+	int *r, n, fd;
+	char **u, *cp;
+	FILE *cfp = NULL;
 
 	/*
 	 * Check for valid cf file name (mostly checking current).
@@ -254,15 +262,19 @@ chk(file)
 	/*
 	 * get the owner's name from the control file.
 	 */
-	seteuid(euid);
-	if ((cfp = fopen(file, "r")) == NULL)
+	PRIV_START;
+	fd = safe_open(file, O_RDONLY|O_NOFOLLOW, 0);
+	PRIV_END;
+	if (fd < 0 || (cfp = fdopen(fd, "r")) == NULL) {
+		if (fd >= 0)
+			close(fd);
 		return(0);
-	seteuid(uid);
-	while (getline(cfp)) {
+	}
+	while (get_line(cfp)) {
 		if (line[0] == 'P')
 			break;
 	}
-	(void) fclose(cfp);
+	(void)fclose(cfp);
 	if (line[0] != 'P')
 		return(0);
 
@@ -271,7 +283,7 @@ chk(file)
 	/*
 	 * Check the request list
 	 */
-	for (n = 0, cp = file+3; isdigit(*cp); )
+	for (n = 0, cp = file+3; isdigit((unsigned char)*cp); )
 		n = n * 10 + (*cp++ - '0');
 	for (r = requ; r < &requ[requests]; r++)
 		if (*r == n && isowner(line+1, file))
@@ -291,9 +303,8 @@ chk(file)
  * files sent from the remote machine to be removed.
  * Normal users can only remove the file from where it was sent.
  */
-int
-isowner(owner, file)
-	char *owner, *file;
+static int
+isowner(char *owner, char *file)
 {
 	if (!strcmp(person, root) && (from == host || !strcmp(from, file+6)))
 		return(1);
@@ -309,14 +320,15 @@ isowner(owner, file)
  * Check to see if we are sending files to a remote machine. If we are,
  * then try removing files on the remote machine.
  */
-void
-rmremote()
+static void
+rmremote(void)
 {
-	register char *cp;
-	register int i, rem;
+	char *cp;
+	int i, rem;
+	size_t n;
 	char buf[BUFSIZ];
 
-	if (!sendtorem)
+	if (!remote)
 		return;	/* not sending to a remote machine */
 
 	/*
@@ -325,39 +337,67 @@ rmremote()
 	 */
 	fflush(stdout);
 
-	(void)snprintf(buf, sizeof(buf), "\5%s %s", RP, all ? "-all" : person);
-	cp = buf;
+	/* the trailing space will be replaced with a newline later */
+	n = snprintf(buf, sizeof(buf), "\5%s %s ", RP, all ? "-all" : person);
+	if (n == -1 || n >= sizeof(buf))
+		goto bad;
+	cp = buf + n;
 	for (i = 0; i < users; i++) {
-		cp += strlen(cp);
+		n = strlcpy(cp, user[i], sizeof(buf) - (cp - buf + 1));
+		if (n >= sizeof(buf) - (cp - buf + 1))
+			goto bad;
+		cp += n;
 		*cp++ = ' ';
-		strcpy(cp, user[i]);
 	}
+	*cp = '\0';
 	for (i = 0; i < requests; i++) {
-		cp += strlen(cp);
-		(void) sprintf(cp, " %d", requ[i]);
+		n = snprintf(cp, sizeof(buf) - (cp - buf), "%d ", requ[i]);
+		if (n == -1 || n >= sizeof(buf) - (cp - buf))
+			goto bad;
+		cp += n;
 	}
-	strcat(cp, "\n");
-	rem = getport(RM);
+	cp[-1] = '\n';		/* replace space with newline, leave the NUL */
+	rem = getport(RM, 0);
 	if (rem < 0) {
 		if (from != host)
 			printf("%s: ", host);
 		printf("connection to %s is down\n", RM);
 	} else {
+		struct sigaction osa, nsa;
+
+		memset(&nsa, 0, sizeof(nsa));
+		nsa.sa_handler = alarmer;
+		sigemptyset(&nsa.sa_mask);
+		nsa.sa_flags = 0;
+		(void)sigaction(SIGALRM, &nsa, &osa);
+		alarm(wait_time);
+
 		i = strlen(buf);
 		if (write(rem, buf, i) != i)
 			fatal("Lost connection");
 		while ((i = read(rem, buf, sizeof(buf))) > 0)
-			(void) fwrite(buf, 1, i, stdout);
-		(void) close(rem);
+			(void)fwrite(buf, 1, i, stdout);
+		alarm(0);
+		(void)sigaction(SIGALRM, &osa, NULL);
+		(void)close(rem);
 	}
+	return;
+bad:
+	printf("remote buffer too large\n");
+	return;
+}
+
+static void
+alarmer(int s)
+{
+	/* nothing */
 }
 
 /*
  * Return 1 if the filename begins with 'cf'
  */
-int
-iscf(d)
-	struct dirent *d;
+static int
+iscf(const struct dirent *d)
 {
 	return(d->d_name[0] == 'c' && d->d_name[1] == 'f');
 }

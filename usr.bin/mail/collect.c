@@ -1,3 +1,6 @@
+/*	$OpenBSD: collect.c,v 1.33 2011/04/06 11:36:26 miod Exp $	*/
+/*	$NetBSD: collect.c,v 1.9 1997/07/09 05:25:45 mikel Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -30,11 +29,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char sccsid[] = "from: @(#)collect.c	8.2 (Berkeley) 4/19/94";
-static char rcsid[] = "$Id: collect.c,v 1.5 1995/02/08 16:15:52 jtc Exp $";
-#endif /* not lint */
 
 /*
  * Mail -- a mail program
@@ -56,58 +50,37 @@ static char rcsid[] = "$Id: collect.c,v 1.5 1995/02/08 16:15:52 jtc Exp $";
  * receipt of an interrupt signal, the partial message can be salted
  * away on dead.letter.
  */
-
-static	sig_t	saveint;		/* Previous SIGINT value */
-static	sig_t	savehup;		/* Previous SIGHUP value */
-static	sig_t	savetstp;		/* Previous SIGTSTP value */
-static	sig_t	savettou;		/* Previous SIGTTOU value */
-static	sig_t	savettin;		/* Previous SIGTTIN value */
 static	FILE	*collf;			/* File for saving away */
 static	int	hadintr;		/* Have seen one SIGINT so far */
 
-static	jmp_buf	colljmp;		/* To get back to work */
-static	int	colljmp_p;		/* whether to long jump */
-static	jmp_buf	collabort;		/* To end collection with error */
-
 FILE *
-collect(hp, printheaders)
-	struct header *hp;
-	int printheaders;
+collect(struct header *hp, int printheaders)
 {
 	FILE *fbuf;
-	int lc, cc, escape, eofcount;
-	register int c, t;
-	char linebuf[LINESIZE], *cp;
-	extern char *tempMail;
+	int lc, cc, fd, c, t, lastlong, rc, sig;
+	int escape, eofcount, longline;
 	char getsub;
-	int omask;
-	void collint(), collhup(), collstop();
+	char linebuf[LINESIZE], tempname[PATHSIZE], *cp;
 
 	collf = NULL;
-	/*
-	 * Start catching signals from here, but we're still die on interrupts
-	 * until we're in the main loop.
-	 */
-	omask = sigblock(sigmask(SIGINT) | sigmask(SIGHUP));
-	if ((saveint = signal(SIGINT, SIG_IGN)) != SIG_IGN)
-		signal(SIGINT, collint);
-	if ((savehup = signal(SIGHUP, SIG_IGN)) != SIG_IGN)
-		signal(SIGHUP, collhup);
-	savetstp = signal(SIGTSTP, collstop);
-	savettou = signal(SIGTTOU, collstop);
-	savettin = signal(SIGTTIN, collstop);
-	if (setjmp(collabort) || setjmp(colljmp)) {
-		rm(tempMail);
-		goto err;
-	}
-	sigsetmask(omask & ~(sigmask(SIGINT) | sigmask(SIGHUP)));
-
+	eofcount = 0;
+	hadintr = 0;
+	lastlong = 0;
+	longline = 0;
+	if ((cp = value("escape")) != NULL)
+		escape = *cp;
+	else
+		escape = ESCAPE;
 	noreset++;
-	if ((collf = Fopen(tempMail, "w+")) == NULL) {
-		perror(tempMail);
+
+	(void)snprintf(tempname, sizeof(tempname),
+	    "%s/mail.RsXXXXXXXXXX", tmpdir);
+	if ((fd = mkstemp(tempname)) == -1 ||
+	    (collf = Fdopen(fd, "w+")) == NULL) {
+		warn("%s", tempname);
 		goto err;
 	}
-	unlink(tempMail);
+	(void)rm(tempname);
 
 	/*
 	 * If we are going to prompt for a subject,
@@ -116,63 +89,73 @@ collect(hp, printheaders)
 	 */
 	t = GTO|GSUBJECT|GCC|GNL;
 	getsub = 0;
-	if (hp->h_subject == NOSTR && value("interactive") != NOSTR &&
-	    (value("ask") != NOSTR || value("asksub") != NOSTR))
+	if (hp->h_subject == NULL && value("interactive") != NULL &&
+	    (value("ask") != NULL || value("asksub") != NULL))
 		t &= ~GNL, getsub++;
 	if (printheaders) {
 		puthead(hp, stdout, t);
 		fflush(stdout);
 	}
-	if ((cp = value("escape")) != NOSTR)
-		escape = *cp;
-	else
-		escape = ESCAPE;
-	eofcount = 0;
-	hadintr = 0;
+	if (getsub && gethfromtty(hp, GSUBJECT) == -1)
+		goto err;
 
-	if (!setjmp(colljmp)) {
-		if (getsub)
-			grabh(hp, GSUBJECT);
-	} else {
-		/*
-		 * Come here for printing the after-signal message.
-		 * Duplicate messages won't be printed because
-		 * the write is aborted if we get a SIGTTOU.
-		 */
+	if (0) {
 cont:
-		if (hadintr) {
-			fflush(stdout);
-			fprintf(stderr,
-			"\n(Interrupt -- one more to kill letter)\n");
-		} else {
-			printf("(continue)\n");
+		/* Come here for printing the after-suspend message. */
+		if (isatty(0)) {
+			puts("(continue)");
 			fflush(stdout);
 		}
 	}
 	for (;;) {
-		colljmp_p = 1;
-		c = readline(stdin, linebuf, LINESIZE);
-		colljmp_p = 0;
+		c = readline(stdin, linebuf, LINESIZE, &sig);
+
+		/* Act on any signal caught during readline() ignoring 'c' */
+		switch (sig) {
+		case 0:
+			break;
+		case SIGINT:
+			if (collabort())
+				goto err;
+			continue;
+		case SIGHUP:
+			rewind(collf);
+			savedeadletter(collf);
+			/*
+			 * Let's pretend nobody else wants to clean up,
+			 * a true statement at this time.
+			 */
+			exit(1);
+		default:
+			/* Stopped due to job control */
+			(void)kill(0, sig);
+			goto cont;
+		}
+
+		/* No signal, check for error */
 		if (c < 0) {
-			if (value("interactive") != NOSTR &&
-			    value("ignoreeof") != NOSTR && ++eofcount < 25) {
-				printf("Use \".\" to terminate letter\n");
+			if (value("interactive") != NULL &&
+			    value("ignoreeof") != NULL && ++eofcount < 25) {
+				puts("Use \".\" to terminate letter");
 				continue;
 			}
 			break;
 		}
+		lastlong = longline;
+		longline = (c == LINESIZE - 1);
 		eofcount = 0;
 		hadintr = 0;
 		if (linebuf[0] == '.' && linebuf[1] == '\0' &&
-		    value("interactive") != NOSTR &&
-		    (value("dot") != NOSTR || value("ignoreeof") != NOSTR))
+		    value("interactive") != NULL && !lastlong &&
+		    (value("dot") != NULL || value("ignoreeof") != NULL))
 			break;
-		if (linebuf[0] != escape || value("interactive") == NOSTR) {
-			if (putline(collf, linebuf) < 0)
+		if (linebuf[0] != escape || value("interactive") == NULL ||
+		    lastlong) {
+			if (putline(collf, linebuf, !longline) < 0)
 				goto err;
 			continue;
 		}
-		c = linebuf[1];
+		c = (unsigned char)linebuf[1];
 		switch (c) {
 		default:
 			/*
@@ -180,18 +163,12 @@ cont:
 			 * Otherwise, it's an error.
 			 */
 			if (c == escape) {
-				if (putline(collf, &linebuf[1]) < 0)
+				if (putline(collf, &linebuf[1], !longline) < 0)
 					goto err;
 				else
 					break;
 			}
-			printf("Unknown tilde escape.\n");
-			break;
-		case 'C':
-			/*
-			 * Dump core.
-			 */
-			core();
+			puts("Unknown tilde escape.");
 			break;
 		case '!':
 			/*
@@ -218,8 +195,15 @@ cont:
 			 * Act like an interrupt happened.
 			 */
 			hadintr++;
-			collint(SIGINT);
-			exit(1);
+			collabort();
+			fputs("Interrupt\n", stderr);
+			goto err;
+		case 'x':
+			/*
+			 * Force a quit of sending mail.
+			 * Do not save the message.
+			 */
+			goto err;
 		case 'h':
 			/*
 			 * Grab a bunch of headers.
@@ -237,7 +221,7 @@ cont:
 			 * Set the Subject list.
 			 */
 			cp = &linebuf[2];
-			while (isspace(*cp))
+			while (isspace((unsigned char)*cp))
 				cp++;
 			hp->h_subject = savestr(cp);
 			break;
@@ -254,7 +238,8 @@ cont:
 			hp->h_bcc = cat(hp->h_bcc, extract(&linebuf[2], GBCC));
 			break;
 		case 'd':
-			strcpy(linebuf + 2, getdeadletter());
+			linebuf[2] = '\0';
+			strlcat(linebuf, getdeadletter(), sizeof(linebuf));
 			/* fall into . . . */
 		case 'r':
 		case '<':
@@ -264,36 +249,38 @@ cont:
 			 * then open it and copy the contents to collf.
 			 */
 			cp = &linebuf[2];
-			while (isspace(*cp))
+			while (isspace((unsigned char)*cp))
 				cp++;
 			if (*cp == '\0') {
-				printf("Interpolate what file?\n");
+				puts("Interpolate what file?");
 				break;
 			}
 			cp = expand(cp);
-			if (cp == NOSTR)
+			if (cp == NULL)
 				break;
 			if (isdir(cp)) {
 				printf("%s: Directory\n", cp);
 				break;
 			}
 			if ((fbuf = Fopen(cp, "r")) == NULL) {
-				perror(cp);
+				warn("%s", cp);
 				break;
 			}
 			printf("\"%s\" ", cp);
 			fflush(stdout);
 			lc = 0;
 			cc = 0;
-			while (readline(fbuf, linebuf, LINESIZE) >= 0) {
-				lc++;
-				if ((t = putline(collf, linebuf)) < 0) {
-					Fclose(fbuf);
+			while ((rc = readline(fbuf, linebuf, LINESIZE, NULL)) >= 0) {
+				if (rc != LINESIZE - 1)
+					lc++;
+				if ((t = putline(collf, linebuf,
+						 rc != LINESIZE-1)) < 0) {
+					(void)Fclose(fbuf);
 					goto err;
 				}
 				cc += t;
 			}
-			Fclose(fbuf);
+			(void)Fclose(fbuf);
 			printf("%d/%d\n", lc, cc);
 			break;
 		case 'w':
@@ -304,10 +291,10 @@ cont:
 			while (*cp == ' ' || *cp == '\t')
 				cp++;
 			if (*cp == '\0') {
-				fprintf(stderr, "Write what file!?\n");
+				fputs("Write what file!?\n", stderr);
 				break;
 			}
-			if ((cp = expand(cp)) == NOSTR)
+			if ((cp = expand(cp)) == NULL)
 				break;
 			rewind(collf);
 			exwrite(cp, collf, 1);
@@ -322,17 +309,17 @@ cont:
 			 * standard list processing garbage.
 			 * If ~f is given, we don't shift over.
 			 */
-			if (forward(linebuf + 2, collf, c) < 0)
+			if (forward(linebuf + 2, collf, tempname, c) < 0)
 				goto err;
 			goto cont;
 		case '?':
 			if ((fbuf = Fopen(_PATH_TILDE, "r")) == NULL) {
-				perror(_PATH_TILDE);
+				warn(_PATH_TILDE);
 				break;
 			}
 			while ((t = getc(fbuf)) != EOF)
-				(void) putchar(t);
-			Fclose(fbuf);
+				(void)putchar(t);
+			(void)Fclose(fbuf);
 			break;
 		case 'p':
 			/*
@@ -340,10 +327,10 @@ cont:
 			 * message without altering anything.
 			 */
 			rewind(collf);
-			printf("-------\nMessage contains:\n");
+			puts("-------\nMessage contains:");
 			puthead(hp, stdout, GTO|GSUBJECT|GCC|GBCC|GNL);
 			while ((t = getc(collf)) != EOF)
-				(void) putchar(t);
+				(void)putchar(t);
 			goto cont;
 		case '|':
 			/*
@@ -365,53 +352,58 @@ cont:
 			goto cont;
 		}
 	}
+
+	if (value("interactive") != NULL) {
+		if (value("askcc") != NULL || value("askbcc") != NULL) {
+			if (value("askcc") != NULL) {
+				if (gethfromtty(hp, GCC) == -1)
+					goto err;
+			}
+			if (value("askbcc") != NULL) {
+				if (gethfromtty(hp, GBCC) == -1)
+					goto err;
+			}
+		} else {
+			puts("EOT");
+			(void)fflush(stdout);
+		}
+	}
 	goto out;
 err:
 	if (collf != NULL) {
-		Fclose(collf);
+		(void)Fclose(collf);
 		collf = NULL;
 	}
 out:
 	if (collf != NULL)
 		rewind(collf);
 	noreset--;
-	sigblock(sigmask(SIGINT) | sigmask(SIGHUP));
-	signal(SIGINT, saveint);
-	signal(SIGHUP, savehup);
-	signal(SIGTSTP, savetstp);
-	signal(SIGTTOU, savettou);
-	signal(SIGTTIN, savettin);
-	sigsetmask(omask);
-	return collf;
+	return(collf);
 }
 
 /*
  * Write a file, ex-like if f set.
  */
 int
-exwrite(name, fp, f)
-	char name[];
-	FILE *fp;
-	int f;
+exwrite(char *name, FILE *fp, int f)
 {
-	register FILE *of;
-	register int c;
-	long cc;
-	int lc;
+	FILE *of;
+	int c;
+	ssize_t cc, lc;
 	struct stat junk;
 
 	if (f) {
 		printf("\"%s\" ", name);
 		fflush(stdout);
 	}
-	if (stat(name, &junk) >= 0 && (junk.st_mode & S_IFMT) == S_IFREG) {
+	if (stat(name, &junk) >= 0 && S_ISREG(junk.st_mode)) {
 		if (!f)
 			fprintf(stderr, "%s: ", name);
-		fprintf(stderr, "File exists\n");
+		fputs("File exists\n", stderr);
 		return(-1);
 	}
 	if ((of = Fopen(name, "w")) == NULL) {
-		perror(NOSTR);
+		warn(NULL);
 		return(-1);
 	}
 	lc = 0;
@@ -420,15 +412,15 @@ exwrite(name, fp, f)
 		cc++;
 		if (c == '\n')
 			lc++;
-		(void) putc(c, of);
+		(void)putc(c, of);
 		if (ferror(of)) {
-			perror(name);
-			Fclose(of);
+			warn("%s", name);
+			(void)Fclose(of);
 			return(-1);
 		}
 	}
-	Fclose(of);
-	printf("%d/%ld\n", lc, cc);
+	(void)Fclose(of);
+	printf("%lld/%lld\n", (long long)lc, (long long)cc);
 	fflush(stdout);
 	return(0);
 }
@@ -438,19 +430,21 @@ exwrite(name, fp, f)
  * On return, make the edit file the new temp file.
  */
 void
-mesedit(fp, c)
-	FILE *fp;
-	int c;
+mesedit(FILE *fp, int c)
 {
-	sig_t sigint = signal(SIGINT, SIG_IGN);
-	FILE *nf = run_editor(fp, (off_t)-1, c, 0);
+	FILE *nf;
+	struct sigaction oact;
+	sigset_t oset;
 
+	(void)ignoresig(SIGINT, &oact, &oset);
+	nf = run_editor(fp, (off_t)-1, c, 0);
 	if (nf != NULL) {
-		fseek(nf, 0L, 2);
+		fseek(nf, 0L, SEEK_END);
 		collf = nf;
-		Fclose(fp);
+		(void)Fclose(fp);
 	}
-	(void) signal(SIGINT, sigint);
+	(void)sigprocmask(SIG_SETMASK, &oset, NULL);
+	(void)sigaction(SIGINT, &oact, NULL);
 }
 
 /*
@@ -460,44 +454,47 @@ mesedit(fp, c)
  * Sh -c must return 0 to accept the new message.
  */
 void
-mespipe(fp, cmd)
-	FILE *fp;
-	char cmd[];
+mespipe(FILE *fp, char *cmd)
 {
 	FILE *nf;
-	sig_t sigint = signal(SIGINT, SIG_IGN);
-	extern char *tempEdit;
-	char *shell;
+	int fd;
+	char *shell, tempname[PATHSIZE];
+	struct sigaction oact;
+	sigset_t oset;
 
-	if ((nf = Fopen(tempEdit, "w+")) == NULL) {
-		perror(tempEdit);
+	(void)ignoresig(SIGINT, &oact, &oset);
+	(void)snprintf(tempname, sizeof(tempname),
+	    "%s/mail.ReXXXXXXXXXX", tmpdir);
+	if ((fd = mkstemp(tempname)) == -1 ||
+	    (nf = Fdopen(fd, "w+")) == NULL) {
+		warn("%s", tempname);
 		goto out;
 	}
-	(void) unlink(tempEdit);
+	(void)rm(tempname);
 	/*
 	 * stdin = current message.
 	 * stdout = new message.
 	 */
-	if ((shell = value("SHELL")) == NOSTR)
-		shell = _PATH_CSHELL;
+	shell = value("SHELL");
 	if (run_command(shell,
-	    0, fileno(fp), fileno(nf), "-c", cmd, NOSTR) < 0) {
-		(void) Fclose(nf);
+	    0, fileno(fp), fileno(nf), "-c", cmd, NULL) < 0) {
+		(void)Fclose(nf);
 		goto out;
 	}
 	if (fsize(nf) == 0) {
 		fprintf(stderr, "No bytes from \"%s\" !?\n", cmd);
-		(void) Fclose(nf);
+		(void)Fclose(nf);
 		goto out;
 	}
 	/*
 	 * Take new files.
 	 */
-	(void) fseek(nf, 0L, 2);
+	(void)fseek(nf, 0L, SEEK_END);
 	collf = nf;
-	(void) Fclose(fp);
+	(void)Fclose(fp);
 out:
-	(void) signal(SIGINT, sigint);
+	(void)sigprocmask(SIG_SETMASK, &oset, NULL);
+	(void)sigaction(SIGINT, &oact, NULL);
 }
 
 /*
@@ -509,118 +506,80 @@ out:
  * should shift over and 'f' if not.
  */
 int
-forward(ms, fp, f)
-	char ms[];
-	FILE *fp;
-	int f;
+forward(char *ms, FILE *fp, char *fn, int f)
 {
-	register int *msgvec;
-	extern char *tempMail;
+	int *msgvec;
 	struct ignoretab *ig;
 	char *tabst;
 
-	msgvec = (int *) salloc((msgCount+1) * sizeof *msgvec);
-	if (msgvec == (int *) NOSTR)
+	msgvec = (int *)salloc((msgCount+1) * sizeof(*msgvec));
+	if (msgvec == NULL)
 		return(0);
 	if (getmsglist(ms, msgvec, 0) < 0)
 		return(0);
 	if (*msgvec == 0) {
 		*msgvec = first(0, MMNORM);
-		if (*msgvec == NULL) {
-			printf("No appropriate messages\n");
+		if (*msgvec == 0) {
+			puts("No appropriate messages");
 			return(0);
 		}
-		msgvec[1] = NULL;
+		msgvec[1] = 0;
 	}
-	if (f == 'f' || f == 'F')
-		tabst = NOSTR;
-	else if ((tabst = value("indentprefix")) == NOSTR)
+	if (tolower(f) == 'f')
+		tabst = NULL;
+	else if ((tabst = value("indentprefix")) == NULL)
 		tabst = "\t";
 	ig = isupper(f) ? NULL : ignore;
-	printf("Interpolating:");
+	fputs("Interpolating:", stdout);
 	for (; *msgvec != 0; msgvec++) {
 		struct message *mp = message + *msgvec - 1;
 
 		touch(mp);
 		printf(" %d", *msgvec);
-		if (send(mp, fp, ig, tabst) < 0) {
-			perror(tempMail);
+		if (sendmessage(mp, fp, ig, tabst) < 0) {
+			warn("%s", fn);
 			return(-1);
 		}
 	}
-	printf("\n");
+	putchar('\n');
 	return(0);
 }
 
 /*
- * Print (continue) when continued after ^Z.
+ * User aborted during message composition.
+ * Save the partial message in ~/dead.letter.
  */
-/*ARGSUSED*/
-void
-collstop(s)
-	int s;
-{
-	sig_t old_action = signal(s, SIG_DFL);
-
-	sigsetmask(sigblock(0) & ~sigmask(s));
-	kill(0, s);
-	sigblock(sigmask(s));
-	signal(s, old_action);
-	if (colljmp_p) {
-		colljmp_p = 0;
-		hadintr = 0;
-		longjmp(colljmp, 1);
-	}
-}
-
-/*
- * On interrupt, come here to save the partial message in ~/dead.letter.
- * Then jump out of the collection loop.
- */
-/*ARGSUSED*/
-void
-collint(s)
-	int s;
+int
+collabort(void)
 {
 	/*
 	 * the control flow is subtle, because we can be called from ~q.
 	 */
-	if (!hadintr) {
-		if (value("ignore") != NOSTR) {
+	if (hadintr == 0 && isatty(0)) {
+		if (value("ignore") != NULL) {
 			puts("@");
 			fflush(stdout);
 			clearerr(stdin);
-			return;
+		} else {
+			fflush(stdout);
+			fputs("\n(Interrupt -- one more to kill letter)\n",
+			    stderr);
+			hadintr++;
 		}
-		hadintr = 1;
-		longjmp(colljmp, 1);
+		return(0);
 	}
+	fflush(stdout);
 	rewind(collf);
-	if (value("nosave") == NOSTR)
+	if (value("nosave") == NULL)
 		savedeadletter(collf);
-	longjmp(collabort, 1);
-}
-
-/*ARGSUSED*/
-void
-collhup(s)
-	int s;
-{
-	rewind(collf);
-	savedeadletter(collf);
-	/*
-	 * Let's pretend nobody else wants to clean up,
-	 * a true statement at this time.
-	 */
-	exit(1);
+	return(1);
 }
 
 void
-savedeadletter(fp)
-	register FILE *fp;
+savedeadletter(FILE *fp)
 {
-	register FILE *dbuf;
-	register int c;
+	FILE *dbuf;
+	int c;
 	char *cp;
 
 	if (fsize(fp) == 0)
@@ -628,11 +587,23 @@ savedeadletter(fp)
 	cp = getdeadletter();
 	c = umask(077);
 	dbuf = Fopen(cp, "a");
-	(void) umask(c);
+	(void)umask(c);
 	if (dbuf == NULL)
 		return;
 	while ((c = getc(fp)) != EOF)
-		(void) putc(c, dbuf);
-	Fclose(dbuf);
+		(void)putc(c, dbuf);
+	(void)Fclose(dbuf);
 	rewind(fp);
+}
+
+int
+gethfromtty(struct header *hp, int gflags)
+{
+
+	hadintr = 0;
+	while (grabh(hp, gflags) != 0) {
+		if (collabort())
+			return(-1);
+	}
+	return(0);
 }

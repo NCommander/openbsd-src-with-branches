@@ -25,6 +25,8 @@ char *program_name;
 char *program_path;
 char *command_name;
 
+char *global_session_id; /* Random session ID */
+
 /* I'd dynamically allocate this, but it seems like gethostname
    requires a fixed size array.  If I'm remembering the RFCs right,
    256 should be enough.  */
@@ -41,6 +43,7 @@ int really_quiet = 0;
 int quiet = 0;
 int trace = 0;
 int noexec = 0;
+int readonlyfs = 0;
 int logoff = 0;
 
 /* Set if we should be writing CVSADM directories at top level.  At
@@ -49,6 +52,8 @@ int logoff = 0;
 int top_level_admin = 0;
 
 mode_t cvsumask = UMASK_DFLT;
+char *RCS_citag = NULL;
+int disable_mdocdate = 0;
 
 char *CurDir;
 
@@ -106,7 +111,7 @@ static const struct cmd
 {
     { "add",      "ad",       "new",       add,       CVS_CMD_MODIFIES_REPOSITORY | CVS_CMD_USES_WORK_DIR },
     { "admin",    "adm",      "rcs",       admin,     CVS_CMD_MODIFIES_REPOSITORY | CVS_CMD_USES_WORK_DIR },
-    { "annotate", "ann",      NULL,        annotate,  CVS_CMD_USES_WORK_DIR },
+    { "annotate", "ann",      "blame",     annotate,  CVS_CMD_USES_WORK_DIR },
     { "checkout", "co",       "get",       checkout,  0 },
     { "commit",   "ci",       "com",       commit,    CVS_CMD_MODIFIES_REPOSITORY | CVS_CMD_USES_WORK_DIR },
     { "diff",     "di",       "dif",       diff,      CVS_CMD_USES_WORK_DIR },
@@ -171,24 +176,6 @@ static const char *const usg[] =
     "    (specify -H followed by a command name for command-specific help)\n",
     "  Specify --help to receive this message\n",
     "\n",
-
-    /* Some people think that a bug-reporting address should go here.  IMHO,
-       the web sites are better because anything else is very likely to go
-       obsolete in the years between a release and when someone might be
-       reading this help.  Besides, we could never adequately discuss
-       bug reporting in a concise enough way to put in a help message.  */
-
-    /* I was going to put this at the top, but usage() wants the %s to
-       be in the first line.  */
-    "The Concurrent Versions System (CVS) is a tool for version control.\n",
-    /* I really don't think I want to try to define "version control"
-       in one line.  I'm not sure one can get more concise than the
-       paragraph in ../cvs.spec without assuming the reader knows what
-       version control means.  */
-
-    "For CVS updates and additional information, see\n",
-    "    the CVS home page at http://www.cvshome.org/ or\n",
-    "    Pascal Molli's CVS site at http://www.loria.fr/~molli/cvs-index.html\n",
     NULL,
 };
 
@@ -251,6 +238,7 @@ static const char *const opt_usage[] =
     "    -n           Do not execute anything that will change the disk.\n",
     "    -t           Show trace of program execution -- try with -n.\n",
     "    -v           CVS version and copyright.\n",
+    "    -R           Read-only repository.\n",
     "    -T tmpdir    Use 'tmpdir' for temporary files.\n",
     "    -e editor    Use 'editor' for editing log information.\n",
     "    -d CVS_root  Overrides $CVSROOT as the root of the CVS tree.\n",
@@ -405,7 +393,7 @@ main (argc, argv)
     int help = 0;		/* Has the user asked for help?  This
 				   lets us support the `cvs -H cmd'
 				   convention to give help for cmd. */
-    static const char short_options[] = "+Qqrwtnlvb:T:e:d:Hfz:s:xa";
+    static const char short_options[] = "+Qqrwtnlvb:T:e:d:Hfz:s:xaR";
     static struct option long_options[] =
     {
         {"help", 0, NULL, 'H'},
@@ -444,6 +432,9 @@ main (argc, argv)
     program_name = last_component (argv[0]);
 #endif
 
+    if (pledge("stdio rpath wpath cpath fattr getpw proc exec inet dns tty", NULL) == -1)
+	    error (1, errno, "pledge init");
+
     /*
      * Query the environment variables up-front, so that
      * they can be overridden by command line arguments
@@ -468,6 +459,10 @@ main (argc, argv)
     }
     if (getenv (CVSREAD_ENV) != NULL)
 	cvswrite = 0;
+    if (getenv (CVSREADONLYFS_ENV)) {
+	readonlyfs = 1;
+	logoff = 1;
+    }
 
     /* Set this to 0 to force getopt initialization.  getopt() sets
        this to 1 internally.  */
@@ -537,6 +532,10 @@ main (argc, argv)
 		noexec = 1;
 	    case 'l':			/* Fall through */
 		logoff = 1;
+		break;
+	    case 'R':
+		logoff = 1;
+		readonlyfs = 1;
 		break;
 	    case 'v':
 		(void) fputs ("\n", stdout);
@@ -629,6 +628,27 @@ Copyright (c) 1989-2001 Brian Berliner, david d `zoo' zuhn, \n\
     if (argc < 1)
 	usage (usg);
 
+    /* Generate the cvs global session ID */
+
+    {
+	int i = 0;
+	u_int32_t c;
+	global_session_id = xmalloc(17);
+
+	while (i <= 16) {
+	    c = arc4random_uniform(75) + 48;
+	    if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90) ||
+	        (c >= 97 && c <= 122)) {
+		global_session_id[i] = c;
+		i++;
+	    }
+	}
+	global_session_id[16] = '\0';
+    }
+
+    if (trace)
+	fprintf (stderr, "main: Session ID is %s", global_session_id);
+
 
     /* Look up the command name. */
 
@@ -712,6 +732,12 @@ Copyright (c) 1989-2001 Brian Berliner, david d `zoo' zuhn, \n\
 
 #ifdef SERVER_SUPPORT
 	server_active = strcmp (command_name, "server") == 0;
+	if (server_active)
+	{
+	    if (pledge("stdio rpath wpath cpath fattr getpw proc exec", NULL) == -1)
+	        error (1, errno, "pledge");
+
+	}
 #endif
 
 	/* This is only used for writing into the history file.  For
@@ -896,6 +922,19 @@ Copyright (c) 1989-2001 Brian Berliner, david d `zoo' zuhn, \n\
 		if ((current_parsed_root = parse_cvsroot (current_root)) == NULL)
 		    error (1, 0, "Bad CVSROOT.");
 
+		if (current_parsed_root->method == pserver_method) {
+			if (strcmp(command_name, "login") == 0) {
+				if (pledge("stdio rpath wpath cpath fattr getpw inet dns tty", NULL) == -1)
+					error (1, errno, "pledge");
+			} else {
+				if (pledge("stdio rpath wpath cpath fattr getpw proc exec inet dns", NULL) == -1)
+					error (1, errno, "pledge");
+			}
+		} else {
+			if (pledge("stdio rpath wpath cpath fattr getpw proc exec", NULL) == -1)
+				error (1, errno, "pledge");
+		}
+
 		if (trace)
 		    fprintf (stderr, "%s-> main loop with CVSROOT=%s\n",
 			   CLIENT_SERVER_STR, current_root);
@@ -912,9 +951,9 @@ Copyright (c) 1989-2001 Brian Berliner, david d `zoo' zuhn, \n\
 
 		    path = xmalloc (strlen (current_parsed_root->directory)
 				    + sizeof (CVSROOTADM)
-				    + 2);
+				    + 20);
 		    (void) sprintf (path, "%s/%s", current_parsed_root->directory, CVSROOTADM);
-		    if (!isaccessible (path, R_OK | X_OK))
+		    if (readonlyfs == 0 && !isaccessible (path, R_OK | X_OK))
 		    {
 			save_errno = errno;
 			/* If this is "cvs init", the root need not exist yet.  */
@@ -1043,7 +1082,7 @@ Make_Date (rawdate)
 {
     time_t unixtime;
 
-    unixtime = get_date (rawdate, (struct timeb *) NULL);
+    unixtime = get_date (rawdate);
     if (unixtime == (time_t) - 1)
 	error (1, 0, "Can't parse date/time: %s", rawdate);
     return date_from_time_t (unixtime);
@@ -1150,5 +1189,5 @@ usage (cpp)
     (void) fprintf (stderr, *cpp++, program_name, command_name);
     for (; *cpp; cpp++)
 	(void) fprintf (stderr, *cpp);
-    error_exit ();
+    error_exit();
 }

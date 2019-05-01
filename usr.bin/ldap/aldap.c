@@ -1,5 +1,4 @@
-/*	$Id: aldap.c,v 1.39 2018/02/08 18:02:06 jca Exp $ */
-/*	$OpenBSD: aldap.c,v 1.39 2018/02/08 18:02:06 jca Exp $ */
+/*	$OpenBSD: aldap.c,v 1.6 2018/11/27 12:04:57 martijn Exp $ */
 
 /*
  * Copyright (c) 2008 Alexander Schrijver <aschrijver@openbsd.org>
@@ -39,7 +38,7 @@ static struct ber_element	*ldap_parse_search_filter(struct ber_element *,
 				    char *);
 static struct ber_element	*ldap_do_parse_search_filter(
 				    struct ber_element *, char **);
-char				**aldap_get_stringset(struct ber_element *);
+struct aldap_stringset		*aldap_get_stringset(struct ber_element *);
 char				*utoa(char *);
 static int			 isu8cont(unsigned char);
 char				*parseval(char *, size_t);
@@ -47,7 +46,7 @@ int				aldap_create_page_control(struct ber_element *,
 				    int, struct aldap_page_control *);
 int				aldap_send(struct aldap *,
 				    struct ber_element *);
-unsigned long			aldap_application(struct ber_element *);
+unsigned int			aldap_application(struct ber_element *);
 
 #ifdef DEBUG
 void			 ldap_debug_elements(struct ber_element *);
@@ -61,7 +60,7 @@ void			 ldap_debug_elements(struct ber_element *);
 #define LDAP_DEBUG(x, y)	do { } while (0)
 #endif
 
-unsigned long
+unsigned int
 aldap_application(struct ber_element *elm)
 {
 	return BER_TYPE_OCTETSTRING;
@@ -126,10 +125,10 @@ aldap_tls(struct aldap *ldap, struct tls_config *cfg, const char *name)
 int
 aldap_send(struct aldap *ldap, struct ber_element *root)
 {
-	int error, wrote;
 	void *ptr;
 	char *data;
 	size_t len, done;
+	ssize_t error, wrote;
 
 	len = ber_calc_len(root);
 	error = ber_write_elements(&ldap->ber, root);
@@ -168,8 +167,7 @@ aldap_req_starttls(struct aldap *ldap)
 		goto fail;
 
 	ber = ber_printf_elements(root, "d{tst", ++ldap->msgid, BER_CLASS_APP,
-	    (unsigned long) LDAP_REQ_EXTENDED, LDAP_STARTTLS_OID,
-	    BER_CLASS_CONTEXT, (unsigned long) 0);
+	    LDAP_REQ_EXTENDED, LDAP_STARTTLS_OID, BER_CLASS_CONTEXT, 0);
 	if (ber == NULL) {
 		ldap->err = ALDAP_ERR_OPERATION_FAILED;
 		goto fail;
@@ -201,8 +199,8 @@ aldap_bind(struct aldap *ldap, char *binddn, char *bindcred)
 		goto fail;
 
 	elm = ber_printf_elements(root, "d{tdsst", ++ldap->msgid, BER_CLASS_APP,
-	    (unsigned long)LDAP_REQ_BIND, VERSION, binddn, bindcred,
-	    BER_CLASS_CONTEXT, (unsigned long)LDAP_AUTH_SIMPLE);
+	    LDAP_REQ_BIND, VERSION, binddn, bindcred, BER_CLASS_CONTEXT,
+	    LDAP_AUTH_SIMPLE);
 	if (elm == NULL)
 		goto fail;
 
@@ -261,7 +259,7 @@ aldap_search(struct aldap *ldap, char *basedn, enum scope scope, char *filter,
 		goto fail;
 
 	ber = ber_printf_elements(root, "d{t", ++ldap->msgid, BER_CLASS_APP,
-	    (unsigned long) LDAP_REQ_SEARCH);
+	    LDAP_REQ_SEARCH);
 	if (ber == NULL) {
 		ldap->err = ALDAP_ERR_OPERATION_FAILED;
 		goto fail;
@@ -312,7 +310,7 @@ int
 aldap_create_page_control(struct ber_element *elm, int size,
     struct aldap_page_control *page)
 {
-	int len;
+	ssize_t len;
 	struct ber c;
 	struct ber_element *ber = NULL;
 
@@ -350,7 +348,7 @@ struct aldap_message *
 aldap_parse(struct aldap *ldap)
 {
 	int			 class;
-	unsigned long		 type;
+	unsigned int		 type;
 	long long		 msgid = 0;
 	struct aldap_message	*m;
 	struct ber_element	*a = NULL, *ep;
@@ -523,7 +521,7 @@ aldap_get_dn(struct aldap_message *msg)
 	return utoa(dn);
 }
 
-char **
+struct aldap_stringset *
 aldap_get_references(struct aldap_message *msg)
 {
 	if (msg->references == NULL)
@@ -577,11 +575,12 @@ aldap_count_attrs(struct aldap_message *msg)
 }
 
 int
-aldap_first_attr(struct aldap_message *msg, char **outkey, char ***outvalues)
+aldap_first_attr(struct aldap_message *msg, char **outkey,
+    struct aldap_stringset **outvalues)
 {
 	struct ber_element *b, *c;
 	char *key;
-	char **ret;
+	struct aldap_stringset *ret;
 
 	if (msg->body.search.attrs == NULL)
 		goto fail;
@@ -606,11 +605,12 @@ fail:
 }
 
 int
-aldap_next_attr(struct aldap_message *msg, char **outkey, char ***outvalues)
+aldap_next_attr(struct aldap_message *msg, char **outkey,
+    struct aldap_stringset **outvalues)
 {
 	struct ber_element *a, *b;
 	char *key;
-	char **ret;
+	struct aldap_stringset *ret;
 
 	if (msg->body.search.iter == NULL)
 		goto notfound;
@@ -641,11 +641,12 @@ notfound:
 }
 
 int
-aldap_match_attr(struct aldap_message *msg, char *inkey, char ***outvalues)
+aldap_match_attr(struct aldap_message *msg, char *inkey,
+    struct aldap_stringset **outvalues)
 {
 	struct ber_element *a, *b;
 	char *descr = NULL;
-	char **ret;
+	struct aldap_stringset *ret;
 
 	if (msg->body.search.attrs == NULL)
 		goto fail;
@@ -678,16 +679,12 @@ notfound:
 }
 
 int
-aldap_free_attr(char **values)
+aldap_free_attr(struct aldap_stringset *values)
 {
-	int i;
-
 	if (values == NULL)
 		return -1;
 
-	for (i = 0; values[i] != NULL; i++)
-		free(values[i]);
-
+	free(values->str);
 	free(values);
 
 	return (1);
@@ -837,33 +834,35 @@ fail:
  * internal functions
  */
 
-char **
+struct aldap_stringset *
 aldap_get_stringset(struct ber_element *elm)
 {
 	struct ber_element *a;
 	int i;
-	char **ret;
-	char *s;
+	struct aldap_stringset *ret;
 
 	if (elm->be_type != BER_TYPE_OCTETSTRING)
 		return NULL;
 
-	for (a = elm, i = 1; i > 0 && a != NULL && a->be_type ==
-	    BER_TYPE_OCTETSTRING; a = a->be_next, i++)
+	if ((ret = malloc(sizeof(*ret))) == NULL)
+		return NULL;
+	for (a = elm, ret->len = 0; a != NULL && a->be_type ==
+	    BER_TYPE_OCTETSTRING; a = a->be_next, ret->len++)
 		;
-	if (i == 1)
+	if (ret->len == 0) {
+		free(ret);
 		return NULL;
+	}
 
-	if ((ret = calloc(i + 1, sizeof(char *))) == NULL)
+	if ((ret->str = reallocarray(NULL, ret->len,
+	    sizeof(*(ret->str)))) == NULL) {
+		free(ret);
 		return NULL;
+	}
 
 	for (a = elm, i = 0; a != NULL && a->be_type == BER_TYPE_OCTETSTRING;
-	    a = a->be_next, i++) {
-
-		ber_get_string(a, &s);
-		ret[i] = utoa(s);
-	}
-	ret[i + 1] = NULL;
+	    a = a->be_next, i++)
+		(void) ber_get_ostring(a, &(ret->str[i]));
 
 	return ret;
 }
@@ -1218,7 +1217,7 @@ ldap_debug_elements(struct ber_element *root)
 		break;
 	case BER_CLASS_PRIVATE:
 		fprintf(stderr, "class: private(%u) type: ", root->be_class);
-		fprintf(stderr, "encoding (%lu) type: ", root->be_encoding);
+		fprintf(stderr, "encoding (%u) type: ", root->be_encoding);
 		break;
 	case BER_CLASS_CONTEXT:
 		/* XXX: this is not correct */
@@ -1233,7 +1232,7 @@ ldap_debug_elements(struct ber_element *root)
 		fprintf(stderr, "class: <INVALID>(%u) type: ", root->be_class);
 		break;
 	}
-	fprintf(stderr, "(%lu) encoding %lu ",
+	fprintf(stderr, "(%u) encoding %u ",
 	    root->be_type, root->be_encoding);
 
 	if (constructed)
@@ -1283,7 +1282,7 @@ ldap_debug_elements(struct ber_element *root)
 			fprintf(stderr, "<INVALID>\n");
 			break;
 		}
-		fprintf(stderr, "string \"%.*s\"\n",  len, buf);
+		fprintf(stderr, "string \"%.*s\"\n",  (int)len, buf);
 		break;
 	case BER_TYPE_NULL:	/* no payload */
 	case BER_TYPE_EOC:

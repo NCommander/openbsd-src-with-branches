@@ -1,53 +1,52 @@
+/*	$OpenBSD: rpc_util.c,v 1.16 2012/12/05 23:20:26 deraadt Exp $	*/
 /*	$NetBSD: rpc_util.c,v 1.6 1995/08/29 23:05:57 cgd Exp $	*/
-/*
- * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
- * unrestricted use provided that this legend is included on all tape
- * media and as a part of the software program in whole or part.  Users
- * may copy or modify Sun RPC without charge, but are not authorized
- * to license or distribute it to anyone else except as part of a product or
- * program developed by the user or with the express written consent of
- * Sun Microsystems, Inc.
- *
- * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
- * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- *
- * Sun RPC is provided with no support and without any obligation on the
- * part of Sun Microsystems, Inc. to assist in its use, correction,
- * modification or enhancement.
- *
- * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
- * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
- * OR ANY PART THEREOF.
- *
- * In no event will Sun Microsystems, Inc. be liable for any lost revenue
- * or profits or other special, indirect and consequential damages, even if
- * Sun has been advised of the possibility of such damages.
- *
- * Sun Microsystems, Inc.
- * 2550 Garcia Avenue
- * Mountain View, California  94043
- */
-
-#ifndef lint
-static char sccsid[] = "@(#)rpc_util.c 1.11 89/02/22 (C) 1987 SMI";
-#endif
 
 /*
- * rpc_util.c, Utility routines for the RPC protocol compiler 
+ * Copyright (c) 2010, Oracle America, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *     * Neither the name of the "Oracle America, Inc." nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *   COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <sys/cdefs.h>
+
+/*
+ * rpc_util.c, Utility routines for the RPC protocol compiler
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 #include "rpc_scan.h"
 #include "rpc_parse.h"
 #include "rpc_util.h"
 
 #define ARGEXT "argument"
 
-static void printwhere __P((void));
+static void printwhere(void);
 
 char curline[MAXLINESIZE];	/* current read line */
 char *where = curline;		/* current point in line */
@@ -65,8 +64,9 @@ FILE *fin;			/* file pointer of current input */
 list *defined;			/* list of defined things */
 
 /*
- * Reinitialize the world 
+ * Reinitialize the world
  */
+void
 reinitialize()
 {
 	memset(curline, 0, MAXLINESIZE);
@@ -76,8 +76,9 @@ reinitialize()
 }
 
 /*
- * string equality 
+ * string equality
  */
+int
 streq(a, b)
 	char *a;
 	char *b;
@@ -86,16 +87,15 @@ streq(a, b)
 }
 
 /*
- * find a value in a list 
+ * find a value in a list
  */
 definition *
 findval(lst, val, cmp)
 	list *lst;
 	char *val;
-	int (*cmp) ();
-
+	int (*cmp) (definition *, char *);
 {
-         
+
 	for (; lst != NULL; lst = lst->next) {
 		if ((*cmp) (lst->val, val)) {
 			return (lst->val);
@@ -105,7 +105,7 @@ findval(lst, val, cmp)
 }
 
 /*
- * store a value in a list 
+ * store a value in a list
  */
 void
 storeval(lstp, val)
@@ -115,26 +115,26 @@ storeval(lstp, val)
 	list **l;
 	list *lst;
 
-	
-	for (l = lstp; *l != NULL; l = (list **) & (*l)->next);
-	lst = ALLOC(list);
+	for (l = lstp; *l != NULL; l = (list **) & (*l)->next)
+		;
+	lst = malloc(sizeof(list));
+	if (lst == NULL) {
+		fprintf(stderr, "failed in alloc\n");
+		exit(1);
+	}
 	lst->val = val;
 	lst->next = NULL;
 	*l = lst;
 }
 
-static
-findit(def, type)
-	definition *def;
-	char *type;
+static int
+findit(definition *def, char *type)
 {
 	return (streq(def->def_name, type));
 }
 
 static char *
-fixit(type, orig)
-	char *type;
-	char *orig;
+fixit(char *type, char *orig)
 {
 	definition *def;
 
@@ -178,32 +178,30 @@ ptype(prefix, type, follow)
 {
 	if (prefix != NULL) {
 		if (streq(prefix, "enum")) {
-			f_print(fout, "enum ");
+			fprintf(fout, "enum ");
 		} else {
-			f_print(fout, "struct ");
+			fprintf(fout, "struct ");
 		}
 	}
 	if (streq(type, "bool")) {
-		f_print(fout, "bool_t ");
+		fprintf(fout, "bool_t ");
 	} else if (streq(type, "string")) {
-		f_print(fout, "char *");
+		fprintf(fout, "char *");
 	} else {
-		f_print(fout, "%s ", follow ? fixtype(type) : type);
+		fprintf(fout, "%s ", follow ? fixtype(type) : type);
 	}
 }
 
-static
-typedefed(def, type)
-	definition *def;
-	char *type;
+static int
+typedefed(definition *def, char *type)
 {
-	if (def->def_kind != DEF_TYPEDEF || def->def.ty.old_prefix != NULL) {
+	if (def->def_kind != DEF_TYPEDEF || def->def.ty.old_prefix != NULL)
 		return (0);
-	} else {
+	else
 		return (streq(def->def_name, type));
-	}
 }
 
+int
 isvectordef(type, rel)
 	char *type;
 	relation rel;
@@ -220,9 +218,8 @@ isvectordef(type, rel)
 			return (0);
 		case REL_ALIAS:
 			def = (definition *) FINDVAL(defined, type, typedefed);
-			if (def == NULL) {
+			if (def == NULL)
 				return (0);
-			}
 			type = def->def.ty.old_type;
 			rel = def->def.ty.rel;
 		}
@@ -237,9 +234,8 @@ locase(str)
 	static char buf[100];
 	char *p = buf;
 
-	while (c = *str++) {
+	while ((c = *str++))
 		*p++ = (c >= 'A' && c <= 'Z') ? (c - 'A' + 'a') : c;
-	}
 	*p = 0;
 	return (buf);
 }
@@ -249,7 +245,7 @@ pvname_svc(pname, vnum)
 	char *pname;
 	char *vnum;
 {
-	f_print(fout, "%s_%s_svc", locase(pname), vnum);
+	fprintf(fout, "%s_%s_svc", locase(pname), vnum);
 }
 
 void
@@ -257,26 +253,27 @@ pvname(pname, vnum)
 	char *pname;
 	char *vnum;
 {
-	f_print(fout, "%s_%s", locase(pname), vnum);
+	fprintf(fout, "%s_%s", locase(pname), vnum);
 }
 
 /*
- * print a useful (?) error message, and then die 
+ * print a useful (?) error message, and then die
  */
 void
 error(msg)
 	char *msg;
 {
 	printwhere();
-	f_print(stderr, "%s, line %d: ", infilename, linenum);
-	f_print(stderr, "%s\n", msg);
+	fprintf(stderr, "%s, line %d: ", infilename, linenum);
+	fprintf(stderr, "%s\n", msg);
 	crash();
 }
 
 /*
  * Something went wrong, unlink any files that we may have created and then
- * die. 
+ * die.
  */
+void
 crash()
 {
 	int i;
@@ -294,50 +291,47 @@ record_open(file)
 	if (nfiles < NFILES) {
 		outfiles[nfiles++] = file;
 	} else {
-		f_print(stderr, "too many files!\n");
+		fprintf(stderr, "too many files!\n");
 		crash();
 	}
 }
 
 static char expectbuf[100];
-static char *toktostr();
+static char *toktostr(tok_kind);
 
 /*
- * error, token encountered was not the expected one 
+ * error, token encountered was not the expected one
  */
 void
 expected1(exp1)
 	tok_kind exp1;
 {
-	s_print(expectbuf, "expected '%s'",
-		toktostr(exp1));
+	snprintf(expectbuf, sizeof expectbuf, "expected '%s'",
+	    toktostr(exp1));
 	error(expectbuf);
 }
 
 /*
- * error, token encountered was not one of two expected ones 
+ * error, token encountered was not one of two expected ones
  */
 void
 expected2(exp1, exp2)
 	tok_kind exp1, exp2;
 {
-	s_print(expectbuf, "expected '%s' or '%s'",
-		toktostr(exp1),
-		toktostr(exp2));
+	snprintf(expectbuf, sizeof expectbuf, "expected '%s' or '%s'",
+	    toktostr(exp1), toktostr(exp2));
 	error(expectbuf);
 }
 
 /*
- * error, token encountered was not one of 3 expected ones 
+ * error, token encountered was not one of 3 expected ones
  */
 void
 expected3(exp1, exp2, exp3)
 	tok_kind exp1, exp2, exp3;
 {
-	s_print(expectbuf, "expected '%s', '%s' or '%s'",
-		toktostr(exp1),
-		toktostr(exp2),
-		toktostr(exp3));
+	snprintf(expectbuf, sizeof expectbuf, "expected '%s', '%s' or '%s'",
+	    toktostr(exp1), toktostr(exp2), toktostr(exp3));
 	error(expectbuf);
 }
 
@@ -350,7 +344,6 @@ tabify(f, tab)
 		(void) fputc('\t', f);
 	}
 }
-
 
 static token tokstrings[] = {
 	{TOK_IDENT, "identifier"},
@@ -390,17 +383,17 @@ static token tokstrings[] = {
 };
 
 static char *
-toktostr(kind)
-	tok_kind kind;
+toktostr(tok_kind kind)
 {
 	token *sp;
 
-	for (sp = tokstrings; sp->kind != TOK_EOF && sp->kind != kind; sp++);
+	for (sp = tokstrings; sp->kind != TOK_EOF && sp->kind != kind; sp++)
+		;
 	return (sp->str);
 }
 
-static
-printbuf()
+static void
+printbuf(void)
 {
 	char c;
 	int i;
@@ -408,7 +401,7 @@ printbuf()
 
 #	define TABSIZE 4
 
-	for (i = 0; c = curline[i]; i++) {
+	for (i = 0; (c = curline[i]); i++) {
 		if (c == '\t') {
 			cnt = 8 - (i % TABSIZE);
 			c = ' ';
@@ -443,19 +436,20 @@ printwhere()
 	(void) fputc('\n', stderr);
 }
 
-char * 
-make_argname(pname, vname) 
+char *
+make_argname(pname, vname)
 	char *pname;
 	char *vname;
 {
 	char *name;
-	
-	name = (char *)malloc(strlen(pname) + strlen(vname) + strlen(ARGEXT) + 3);
+	int len = strlen(pname) + strlen(vname) + strlen(ARGEXT) + 3;
+
+	name = malloc(len);
 	if (!name) {
-		fprintf(stderr, "failed in malloc");
+		fprintf(stderr, "failed in malloc\n");
 		exit(1);
 	}
-	sprintf(name, "%s_%s_%s", locase(pname), vname, ARGEXT);
+	snprintf(name, len, "%s_%s_%s", locase(pname), vname, ARGEXT);
 	return(name);
 }
 
@@ -463,26 +457,26 @@ bas_type *typ_list_h;
 bas_type *typ_list_t;
 
 void
-add_type(len,type)
+add_type(len, type)
 	int len;
 	char *type;
 {
 	bas_type *ptr;
 
-	if ((ptr = (bas_type *)malloc(sizeof(bas_type))) == (bas_type *)NULL) {
-		fprintf(stderr, "failed in malloc");
+	if ((ptr = malloc(sizeof(bas_type))) == (bas_type *)NULL) {
+		fprintf(stderr, "failed in malloc\n");
 		exit(1);
 	}
 
-	ptr->name=type;
-	ptr->length=len;
-	ptr->next=NULL;
+	ptr->name = type;
+	ptr->length = len;
+	ptr->next = NULL;
 	if (typ_list_t == NULL) {
-		typ_list_t=ptr;
-		typ_list_h=ptr;
+		typ_list_t = ptr;
+		typ_list_h = ptr;
 	} else {
-		typ_list_t->next=ptr;
-		typ_list_t=ptr;
+		typ_list_t->next = ptr;
+		typ_list_t = ptr;
 	}
 }
 
@@ -492,14 +486,13 @@ find_type(type)
 {
 	bas_type * ptr;
 
-	ptr=typ_list_h;
-
+	ptr = typ_list_h;
 
 	while (ptr != NULL) {
-		if (strcmp(ptr->name,type) == 0)
+		if (strcmp(ptr->name, type) == 0)
 			return(ptr);
 		else
-			ptr=ptr->next;
+			ptr = ptr->next;
 	}
 	return(NULL);
 }

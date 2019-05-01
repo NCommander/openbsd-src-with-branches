@@ -1057,7 +1057,7 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB: This syntax is a GNU extension.
-#if _GLIBCPP_EXTERN_TEMPLATE
+#if defined(_GLIBCPP_EXTERN_TEMPLATE)
   extern template class basic_string<char>;
   extern template 
     basic_istream<char>& 
@@ -1072,7 +1072,7 @@ namespace std
     basic_istream<char>& 
     getline(basic_istream<char>&, string&);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#if defined(_GLIBCPP_USE_WCHAR_T) || defined(_GLIBCPP_USE_TYPE_WCHAR_T)
   extern template class basic_string<wchar_t>;
   extern template 
     basic_istream<wchar_t>& 

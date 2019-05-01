@@ -1,3 +1,5 @@
+/*	$OpenBSD: uname.c,v 1.18 2016/10/10 02:23:54 gsoares Exp $	*/
+
 /*
  * Copyright (c) 1994 Winning Strategies, Inc.
  * All rights reserved.
@@ -13,7 +15,7 @@
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
  *      This product includes software developed by Winning Strategies, Inc.
- * 4. The name of Winning Strategies, Inc. may not be used to endorse or 
+ * 4. The name of Winning Strategies, Inc. may not be used to endorse or
  *    promote products derived from this software without specific prior
  *    written permission.
  *
@@ -29,39 +31,37 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$Id: uname.c,v 1.7 1994/12/20 01:28:57 jtc Exp $";
-#endif /* not lint */
-
-#include <stdio.h>
-#include <locale.h>
-#include <unistd.h>
+#include <sys/param.h>	/* MACHINE_ARCH */
 #include <sys/utsname.h>
+
 #include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-static void usage();
+static void __dead usage(void);
 
-#define	PRINT_SYSNAME	0x01
-#define	PRINT_NODENAME	0x02
-#define	PRINT_RELEASE	0x04
-#define	PRINT_VERSION	0x08
-#define	PRINT_MACHINE	0x10
-#define	PRINT_ALL	0x1f
+#define	PRINT_SYSNAME		0x01
+#define	PRINT_NODENAME		0x02
+#define	PRINT_RELEASE		0x04
+#define	PRINT_VERSION		0x08
+#define	PRINT_MACHINE		0x10
+#define	PRINT_ALL		0x1f
+#define PRINT_MACHINE_ARCH	0x20
 
 int
-main(argc, argv) 
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	struct utsname u;
 	int c;
 	int space = 0;
 	int print_mask = 0;
 
-	setlocale(LC_ALL, "");
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
-	while ((c = getopt(argc,argv,"amnrsv")) != -1 ) {
-		switch ( c ) {
+	while ((c = getopt(argc, argv, "amnrsvp")) != -1 ) {
+		switch (c) {
 		case 'a':
 			print_mask |= PRINT_ALL;
 			break;
@@ -71,10 +71,13 @@ main(argc, argv)
 		case 'n':
 			print_mask |= PRINT_NODENAME;
 			break;
-		case 'r': 
+		case 'p':
+			print_mask |= PRINT_MACHINE_ARCH;
+			break;
+		case 'r':
 			print_mask |= PRINT_RELEASE;
 			break;
-		case 's': 
+		case 's':
 			print_mask |= PRINT_SYSNAME;
 			break;
 		case 'v':
@@ -82,53 +85,60 @@ main(argc, argv)
 			break;
 		default:
 			usage();
-			/* NOTREACHED */
 		}
 	}
-	
-	if (optind != argc) {
+
+	if (optind != argc)
 		usage();
-		/* NOTREACHED */
-	}
 
-	if (!print_mask) {
+	if (!print_mask)
 		print_mask = PRINT_SYSNAME;
-	}
 
-	if (uname(&u)) {
+	if (uname(&u) == -1)
 		err(1, NULL);
-		/* NOTREACHED */
-	}
 
 	if (print_mask & PRINT_SYSNAME) {
 		space++;
 		fputs(u.sysname, stdout);
 	}
 	if (print_mask & PRINT_NODENAME) {
-		if (space++) putchar(' ');
+		if (space++)
+			putchar(' ');
+
 		fputs(u.nodename, stdout);
 	}
 	if (print_mask & PRINT_RELEASE) {
-		if (space++) putchar(' ');
+		if (space++)
+			putchar(' ');
+
 		fputs(u.release, stdout);
 	}
 	if (print_mask & PRINT_VERSION) {
-		if (space++) putchar(' ');
+		if (space++)
+			putchar(' ');
+
 		fputs(u.version, stdout);
 	}
 	if (print_mask & PRINT_MACHINE) {
-		if (space++) putchar(' ');
+		if (space++)
+			putchar(' ');
+
 		fputs(u.machine, stdout);
+	}
+	if (print_mask & PRINT_MACHINE_ARCH) {
+		if (space++)
+			putchar(' ');
+
+		fputs(MACHINE_ARCH, stdout);
 	}
 	putchar('\n');
 
-	exit(0);
-	/* NOTREACHED */
+	return 0;
 }
 
-static void
-usage()
+static void __dead
+usage(void)
 {
-	fprintf(stderr, "usage: uname [-amnrsv]\n");
+	fprintf(stderr, "usage: uname [-amnprsv]\n");
 	exit(1);
 }

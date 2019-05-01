@@ -1,4 +1,4 @@
-/* crypto/cast/cast_lcl.h */
+/* $OpenBSD: cast_lcl.h,v 1.10 2014/06/12 15:49:28 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -55,14 +55,6 @@
  * copied and put under another distribution licence
  * [including the GNU Public Licence.]
  */
-
-
-#include "e_os.h"
-
-#ifdef OPENSSL_SYS_WIN32
-#include <stdlib.h>
-#endif
-
 
 #undef c2l
 #define c2l(c,l)	(l =((unsigned long)(*((c)++)))    , \
@@ -152,11 +144,8 @@
                          *((c)++)=(unsigned char)(((l)>> 8L)&0xff), \
                          *((c)++)=(unsigned char)(((l)     )&0xff))
 
-#if defined(OPENSSL_SYS_WIN32) && defined(_MSC_VER)
-#define ROTL(a,n)     (_lrotl(a,n))
-#else
+/* only invoked with 0 <= n <= 31 */
 #define ROTL(a,n)     ((((a)<<(n))&0xffffffffL)|((a)>>(32-(n))))
-#endif
 
 #define C_M    0x3fc
 #define C_0    22L

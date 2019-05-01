@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: proc.h,v 1.3 2016/05/18 20:21:13 guenther Exp $	*/
 /*	$NetBSD: proc.h,v 1.10 2005/12/11 12:18:58 christos Exp $	*/
 
 /*
@@ -59,6 +59,7 @@ struct mdproc {
 
 /* md_flags */
 #define	MDP_USEDFPU	0x0001	/* has used the FPU */
+#define	MDP_STEP	0x0002	/* single step */
 
 #ifdef _KERNEL
 #ifndef _LOCORE

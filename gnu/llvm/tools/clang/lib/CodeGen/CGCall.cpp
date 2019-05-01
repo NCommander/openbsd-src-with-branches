@@ -1936,6 +1936,8 @@ void CodeGenModule::ConstructAttributeList(
 
     FuncAttrs.addAttribute("disable-tail-calls",
                            llvm::toStringRef(DisableTailCalls));
+    if (CodeGenOpts.ReturnProtector)
+      FuncAttrs.addAttribute("ret-protector");
     GetCPUAndFeaturesAttributes(TargetDecl, FuncAttrs);
   }
 

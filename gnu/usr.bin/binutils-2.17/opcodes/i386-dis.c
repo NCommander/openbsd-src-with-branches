@@ -89,6 +89,7 @@ static void OP_MS (int, int);
 static void OP_XS (int, int);
 static void OP_M (int, int);
 static void OP_VMX (int, int);
+static void OP_VMX2 (int, int);
 static void OP_0fae (int, int);
 static void OP_0f07 (int, int);
 static void NOP_Fixup (int, int);
@@ -96,12 +97,16 @@ static void OP_3DNowSuffix (int, int);
 static void OP_SIMD_Suffix (int, int);
 static void SIMD_Fixup (int, int);
 static void PNI_Fixup (int, int);
+static void XCR_Fixup (int, int);
 static void SVME_Fixup (int, int);
 static void INVLPG_Fixup (int, int);
 static void BadOp (void);
 static void SEG_Fixup (int, int);
 static void VMX_Fixup (int, int);
 static void REP_Fixup (int, int);
+static void OP_0f38 (int, int);
+static void OP_0f3a (int, int);
+static void OP_data (int, int);
 
 struct dis_private {
   /* Points to first byte not fetched.  */
@@ -218,6 +223,7 @@ fetch_data (struct disassemble_info *info, bfd_byte *addr)
 #define Ma OP_E, v_mode
 #define M OP_M, 0		/* lea, lgdt, etc. */
 #define Mp OP_M, f_mode		/* 32 or 48 bit memory operand for LDS, LES etc */
+#define Mq OP_M, q_mode		/* 128 bit memory operand for INV{EPT,VPID,PCID} */
 #define Gb OP_G, b_mode
 #define Gv OP_G, v_mode
 #define Gd OP_G, d_mode
@@ -312,8 +318,13 @@ fetch_data (struct disassemble_info *info, bfd_byte *addr)
 #define MS OP_MS, v_mode
 #define XS OP_XS, v_mode
 #define VM OP_VMX, q_mode
+#define VM2 OP_VMX2, q_mode
 #define OPSUF OP_3DNowSuffix, 0
 #define OPSIMD OP_SIMD_Suffix, 0
+#define OP0FAE OP_0fae, v_mode
+#define OP0F38 OP_0f38, 0
+#define OP0F3A OP_0f3a, 0
+#define OPDATA OP_data, 0
 
 /* Used handle "rep" prefix for string instructions.  */
 #define Xbr REP_Fixup, eSI_reg
@@ -1402,7 +1413,7 @@ static const struct dis386 grps[][8] = {
   {
     { "sgdtIQ", VMX_Fixup, 0, XX, XX },
     { "sidtIQ", PNI_Fixup, 0, XX, XX },
-    { "lgdt{Q|Q||}",	 M, XX, XX },
+    { "lgdt{Q|Q||}",	 XCR_Fixup, 0, XX, XX },
     { "lidt{Q|Q||}",	 SVME_Fixup, 0, XX, XX },
     { "smswQ",	Ev, XX, XX },
     { "(bad)",	XX, XX, XX },
@@ -1429,7 +1440,7 @@ static const struct dis386 grps[][8] = {
     { "(bad)",	XX, XX, XX },
     { "(bad)",	XX, XX, XX },
     { "",	VM, XX, XX },		/* See OP_VMX.  */
-    { "vmptrst", Eq, XX, XX },
+    { "",	VM2, XX, XX },
   },
   /* GRP10 */
   {
@@ -1466,14 +1477,14 @@ static const struct dis386 grps[][8] = {
   },
   /* GRP13 */
   {
-    { "fxsave", Ev, XX, XX },
-    { "fxrstor", Ev, XX, XX },
-    { "ldmxcsr", Ev, XX, XX },
-    { "stmxcsr", Ev, XX, XX },
-    { "(bad)",	XX, XX, XX },
-    { "lfence", OP_0fae, 0, XX, XX },
-    { "mfence", OP_0fae, 0, XX, XX },
-    { "clflush", OP_0fae, 0, XX, XX },
+    { "fxsave",   OP0FAE, XX, XX },
+    { "fxrstor",  OP0FAE, XX, XX },
+    { "ldmxcsr",  OP0FAE, XX, XX },
+    { "stmxcsr",  OP0FAE, XX, XX },
+    { "xsave",	  Ev, XX, XX },
+    { "xrstor",   OP0FAE, XX, XX },
+    { "xsaveopt", OP0FAE, XX, XX },
+    { "clflush",  OP0FAE, XX, XX },
   },
   /* GRP14 */
   {
@@ -1762,9 +1773,10 @@ static const struct dis386 x86_64_table[][2] = {
   },
 };
 
-static const struct dis386 three_byte_table[][32] = {
+static const struct dis386 three_byte_table[][256] = {
   /* THREE_BYTE_0 */
   {
+    /* 00 */
     { "pshufb",		MX, EM, XX },
     { "phaddw",		MX, EM, XX },
     { "phaddd",		MX, EM, XX },
@@ -1781,6 +1793,7 @@ static const struct dis386 three_byte_table[][32] = {
     { "(bad)",		XX, XX, XX },
     { "(bad)",		XX, XX, XX },
     { "(bad)",		XX, XX, XX },
+    /* 10 */
     { "(bad)",		XX, XX, XX },
     { "(bad)",		XX, XX, XX },
     { "(bad)",		XX, XX, XX },
@@ -1796,10 +1809,249 @@ static const struct dis386 three_byte_table[][32] = {
     { "pabsb",		MX, EM, XX },
     { "pabsw",		MX, EM, XX },
     { "pabsd",		MX, EM, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 20 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 30 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 40 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 50 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 60 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 70 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 80 */
+    { "invept",		OPDATA, Gm, Mq },
+    { "invvpid",	OPDATA, Gm, Mq },
+    { "invpcid",	OPDATA, Gm, Mq },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 90 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* a0 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* b0 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* c0 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* d0 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "aesimc",		OP0F38, XX, XX },
+    { "aesenc",		OP0F38, XX, XX },
+    { "aesdec",		OP0F38, XX, XX },
+    { "aesenclast",	OP0F38, XX, XX },
+    { "aesdeclast",	OP0F38, XX, XX },
+    /* e0 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* f0 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
     { "(bad)",		XX, XX, XX }
   },
   /* THREE_BYTE_1 */
   {
+    /* 00 */
     { "(bad)",		XX, XX, XX },
     { "(bad)",		XX, XX, XX },
     { "(bad)",		XX, XX, XX },
@@ -1816,6 +2068,245 @@ static const struct dis386 three_byte_table[][32] = {
     { "(bad)",		XX, XX, XX },
     { "(bad)",		XX, XX, XX },
     { "palignr",	MX, EM, Ib },
+    /* 10 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 20 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 30 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 40 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "",		OP0F3A, XX, XX },	/* pclmul */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 50 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 60 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 70 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 80 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* 90 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* a0 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* b0 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* c0 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* d0 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "",		OP0F3A, XX, XX },	/* aeskeygenassist */
+    /* e0 */
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    { "(bad)",		XX, XX, XX },
+    /* f0 */
     { "(bad)",		XX, XX, XX },
     { "(bad)",		XX, XX, XX },
     { "(bad)",		XX, XX, XX },
@@ -2021,7 +2512,7 @@ static bfd_vma start_pc;
  * The function returns the length of this instruction in bytes.
  */
 
-static char intel_syntax;
+static int intel_syntax;
 static char open_char;
 static char close_char;
 static char separator_char;
@@ -2072,7 +2563,7 @@ print_insn (bfd_vma pc, disassemble_info *info)
   else
     address_mode = mode_32bit;
 
-  if (intel_syntax == (char) -1)
+  if (intel_syntax == -1)
     intel_syntax = (info->mach == bfd_mach_i386_i386_intel_syntax
 		    || info->mach == bfd_mach_x86_64_intel_syntax);
 
@@ -2823,7 +3314,7 @@ dofloat (int sizeflag)
 static void
 OP_ST (int bytemode ATTRIBUTE_UNUSED, int sizeflag ATTRIBUTE_UNUSED)
 {
-  oappend ("%st" + intel_syntax);
+  oappend (&"%st"[intel_syntax]);
 }
 
 static void
@@ -3161,32 +3652,32 @@ append_seg (void)
   if (prefixes & PREFIX_CS)
     {
       used_prefixes |= PREFIX_CS;
-      oappend ("%cs:" + intel_syntax);
+      oappend (&"%cs:"[intel_syntax]);
     }
   if (prefixes & PREFIX_DS)
     {
       used_prefixes |= PREFIX_DS;
-      oappend ("%ds:" + intel_syntax);
+      oappend (&"%ds:"[intel_syntax]);
     }
   if (prefixes & PREFIX_SS)
     {
       used_prefixes |= PREFIX_SS;
-      oappend ("%ss:" + intel_syntax);
+      oappend (&"%ss:"[intel_syntax]);
     }
   if (prefixes & PREFIX_ES)
     {
       used_prefixes |= PREFIX_ES;
-      oappend ("%es:" + intel_syntax);
+      oappend (&"%es:"[intel_syntax]);
     }
   if (prefixes & PREFIX_FS)
     {
       used_prefixes |= PREFIX_FS;
-      oappend ("%fs:" + intel_syntax);
+      oappend (&"%fs:"[intel_syntax]);
     }
   if (prefixes & PREFIX_GS)
     {
       used_prefixes |= PREFIX_GS;
-      oappend ("%gs:" + intel_syntax);
+      oappend (&"%gs:"[intel_syntax]);
     }
 }
 
@@ -3935,7 +4426,7 @@ OP_I64 (int bytemode, int sizeflag)
   op &= mask;
   scratchbuf[0] = '$';
   print_operand_value (scratchbuf + 1, 1, op);
-  oappend (scratchbuf + intel_syntax);
+  oappend (&scratchbuf[intel_syntax]);
   scratchbuf[0] = '\0';
 }
 
@@ -3985,7 +4476,7 @@ OP_sI (int bytemode, int sizeflag)
 
   scratchbuf[0] = '$';
   print_operand_value (scratchbuf + 1, 1, op);
-  oappend (scratchbuf + intel_syntax);
+  oappend (&scratchbuf[intel_syntax]);
 }
 
 static void
@@ -4138,7 +4629,7 @@ OP_ESreg (int code, int sizeflag)
 {
   if (intel_syntax)
     intel_operand_size (codep[-1] & 1 ? v_mode : b_mode, sizeflag);
-  oappend ("%es:" + intel_syntax);
+  oappend (&"%es:"[intel_syntax]);
   ptr_reg (code, sizeflag);
 }
 
@@ -4344,17 +4835,27 @@ OP_0fae (int bytemode, int sizeflag)
     {
       if (reg == 7)
 	strcpy (obuf + strlen (obuf) - sizeof ("clflush") + 1, "sfence");
+      else if (reg == 6)
+	strcpy (obuf + strlen (obuf) - sizeof ("xsaveopt") + 1, "mfence");
+      else if (reg == 5)
+	strcpy (obuf + strlen (obuf) - sizeof ("xrstor") + 1, "lfence");
 
-      if (reg < 5 || rm != 0)
+      if (reg < 4 && prefixes == PREFIX_REPZ)
+        {
+	  if (reg == 0)
+	    strcpy (obuf, "rdfsbase");
+	  else if (reg == 1)
+	    strcpy (obuf, "rdgsbase");
+	  else if (reg == 2)
+	    strcpy (obuf, "wrfsbase");
+	  else
+	    strcpy (obuf, "wrgsbase");
+        }
+      else if (reg < 5 || rm != 0)
 	{
 	  BadOp ();	/* bad sfence, mfence, or lfence */
 	  return;
 	}
-    }
-  else if (reg != 7)
-    {
-      BadOp ();		/* bad clflush */
-      return;
     }
 
   OP_E (bytemode, sizeflag);
@@ -4587,6 +5088,54 @@ PNI_Fixup (int extrachar ATTRIBUTE_UNUSED, int sizeflag)
 
       codep++;
     }
+  else if (mod == 3 && reg == 1 && rm <= 3)
+    {
+      size_t olen = strlen (obuf);
+      char *p = obuf + olen - 4;
+      if (*codep == 0xca)
+        strcpy (p, "clac");
+      else if (*codep == 0xcb)
+        strcpy (p, "stac");
+      codep++;
+    }
+  else
+    OP_M (0, sizeflag);
+}
+
+static void
+XCR_Fixup (int extrachar ATTRIBUTE_UNUSED, int sizeflag)
+{
+  if (mod == 3 && reg == 2 && rm <= 1)
+    {
+      /* Override "lgdt".  */
+      size_t olen = strlen (obuf);
+      char *p = obuf + olen - 4;
+
+      /* We might have a suffix when disassembling with -Msuffix.  */
+      if (*p == 'i')
+	--p;
+
+      /* Remove "addr16/addr32" if we aren't in Intel mode.  */
+      if (!intel_syntax
+	  && (prefixes & PREFIX_ADDR)
+	  && olen >= (4 + 7)
+	  && *(p - 1) == ' '
+	  && strncmp (p - 7, "addr", 4) == 0
+	  && (strncmp (p - 3, "16", 2) == 0
+	      || strncmp (p - 3, "32", 2) == 0))
+	p -= 7;
+
+      if (rm)
+	{
+	  strcpy (p, "xsetbv");
+	}
+      else
+	{
+	  strcpy (p, "xgetbv");
+	}
+
+      codep++;
+    }
   else
     OP_M (0, sizeflag);
 }
@@ -4777,14 +5326,37 @@ VMX_Fixup (int extrachar ATTRIBUTE_UNUSED, int sizeflag)
 static void
 OP_VMX (int bytemode, int sizeflag)
 {
-  used_prefixes |= (prefixes & (PREFIX_DATA | PREFIX_REPZ));
-  if (prefixes & PREFIX_DATA)
-    strcpy (obuf, "vmclear");
-  else if (prefixes & PREFIX_REPZ)
-    strcpy (obuf, "vmxon");
+  if (mod == 3)
+    {
+      strcpy (obuf, "rdrand");
+      OP_E (v_mode, sizeflag);
+    }
   else
-    strcpy (obuf, "vmptrld");
-  OP_E (bytemode, sizeflag);
+    {
+      used_prefixes |= (prefixes & (PREFIX_DATA | PREFIX_REPZ));
+      if (prefixes & PREFIX_DATA)
+	strcpy (obuf, "vmclear");
+      else if (prefixes & PREFIX_REPZ)
+	strcpy (obuf, "vmxon");
+      else
+	strcpy (obuf, "vmptrld");
+      OP_E (bytemode, sizeflag);
+    }
+}
+
+static void
+OP_VMX2 (int bytemode ATTRIBUTE_UNUSED, int sizeflag)
+{
+  if (mod == 3)
+    {
+      strcpy (obuf, "rdseed");
+      OP_E (v_mode, sizeflag);
+    }
+  else
+    {
+      strcpy (obuf, "vmptrst");
+      OP_E (q_mode, sizeflag);
+    }
 }
 
 static void
@@ -4857,5 +5429,123 @@ REP_Fixup (int bytemode, int sizeflag)
     default:
       abort ();
       break;
+    }
+}
+
+#define XMM_DST(rex, modrm) \
+	(((((rex) & ~0x40) & 0x4) ? 8 : 0) | (((modrm) & ~0xc0) >> 3))
+#define XMM_SRC(rex, modrm) \
+	(((((rex) & ~0x40) & 0x1) ? 8 : 0) | (((modrm) & ~0xc0) & 7))
+
+static struct {
+     unsigned char opc;
+     char *name;
+} pclmul[] = {
+  {  0x00, "pclmullqlqdq" },
+  {  0x01, "pclmulhqlqdq" },
+  {  0x10, "pclmullqhqdq" },
+  {  0x11, "pclmulhqhqdq" },
+};
+
+static void
+OP_0f3a (bytemode, sizeflag)
+     int bytemode ATTRIBUTE_UNUSED;
+     int sizeflag ATTRIBUTE_UNUSED;
+{
+  const char *mnemonic = NULL;
+  unsigned int i, xmms;
+  unsigned char op, imm;
+
+  obufp = obuf + strlen (obuf);
+
+  /* the last byte of the opcode has already been consumed by the caller */
+  codep--;
+  op = *codep;
+  codep++;
+
+  FETCH_DATA (the_info, codep + 2);
+
+  /* save xmm pair */
+  xmms = XMM_DST (rex, *codep) << 8;
+  xmms |= XMM_SRC (rex, *codep);
+  codep++;
+
+  /* save immediate field */
+  imm = *codep;
+  codep++;
+
+  if (op != 0x44 && op != 0xdf)
+   {
+     BadOp();
+     return;
+   }
+
+  switch (op)
+   {
+   case 0x44:
+     for (i = 0; i < sizeof(pclmul) / sizeof(pclmul[0]); i++)
+       if (pclmul[i].opc == imm)
+	 mnemonic = pclmul[i].name;
+
+     if (!mnemonic)
+      {
+	oappend ("pclmulqdq");
+        sprintf (scratchbuf, " $%#x,", imm);
+        oappend (scratchbuf);
+      }
+     else
+      {
+	oappend (mnemonic);
+	oappend (" ");
+      }
+     break;
+   case 0xdf:
+     oappend ("aeskeygenassist ");
+     sprintf (scratchbuf, " $%#x,", imm);
+     oappend (scratchbuf);
+     break;
+   }
+
+   sprintf (scratchbuf, "%%xmm%d,", xmms & 0xff);
+   oappend (scratchbuf);
+   sprintf (scratchbuf, "%%xmm%d", xmms >> 8);
+   oappend (scratchbuf);
+
+   used_prefixes |= (prefixes & PREFIX_DATA);
+   USED_REX(rex);
+}
+
+static void
+OP_0f38 (int bytemode ATTRIBUTE_UNUSED, int sizeflag ATTRIBUTE_UNUSED)
+{
+  unsigned int xmms;
+
+  FETCH_DATA (the_info, codep + 1);
+
+  /* save xmm pair */
+  xmms = XMM_DST (rex, *codep) << 8;
+  xmms |= XMM_SRC (rex, *codep);
+  codep++;
+
+  sprintf (scratchbuf, "%%xmm%d,", xmms & 0xff);
+  oappend (scratchbuf);
+  sprintf (scratchbuf, "%%xmm%d", xmms >> 8);
+  oappend (scratchbuf);
+
+  /* Consume mandatory prefix */
+  used_prefixes |= (prefixes & PREFIX_DATA);
+  USED_REX(rex);
+}
+
+/* suppress/require a mandatory 0x66 data size prefix */
+static void
+OP_data (int bytemode ATTRIBUTE_UNUSED, int sizeflag ATTRIBUTE_UNUSED)
+{
+  if (prefixes & PREFIX_DATA)
+    used_prefixes |= PREFIX_DATA;
+  else
+    {
+      BadOp();
+      return;
     }
 }

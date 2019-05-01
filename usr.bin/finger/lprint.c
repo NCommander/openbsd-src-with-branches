@@ -1,3 +1,5 @@
+/*	$OpenBSD: lprint.c,v 1.12 2015/03/15 00:41:28 millert Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,31 +32,24 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)lprint.c	5.13 (Berkeley) 10/31/90";*/
-static char rcsid[] = "$Id: lprint.c,v 1.4 1994/12/24 16:33:51 cgd Exp $";
-#endif /* not lint */
-
-#include <sys/types.h>
-#include <sys/file.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <tzfile.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <ctype.h>
 #include <paths.h>
+#include <vis.h>
 #include "finger.h"
+#include "extern.h"
 
 #define	LINE_LEN	80
 #define	TAB_LEN		8		/* 8 spaces between tabs */
 #define	_PATH_PLAN	".plan"
 #define	_PATH_PROJECT	".project"
 
-lflag_print()
+void
+lflag_print(void)
 {
-	extern int pplan;
-	register PERSON *pn;
+	PERSON *pn;
 
 	for (pn = phead;;) {
 		lprint(pn);
@@ -73,18 +64,17 @@ lflag_print()
 	}
 }
 
-lprint(pn)
-	register PERSON *pn;
+void
+lprint(PERSON *pn)
 {
-	extern time_t now;
-	register struct tm *delta;
-	register WHERE *w;
-	register int cpr, len, maxlen;
+	struct tm *delta;
+	WHERE *w;
+	int cpr, len, maxlen;
 	struct tm *tp;
 	int oddfield;
-	time_t time();
-	char *t, *tzn, *prphone();
+	char *t, *tzn;
 
+	cpr = 0;
 	/*
 	 * long format --
 	 *	login name
@@ -92,6 +82,7 @@ lprint(pn)
 	 *	home directory
 	 *	shell
 	 *	office, office phone, home phone if available
+	 *	mail status
 	 */
 	(void)printf("Login: %-15s\t\t\tName: %s\nDirectory: %-25s",
 	    pn->name, pn->realname, pn->dir);
@@ -107,30 +98,32 @@ lprint(pn)
 	if (pn->office && pn->officephone &&
 	    strlen(pn->office) + strlen(pn->officephone) +
 	    sizeof(OFFICE_TAG) + 2 <= 5 * TAB_LEN) {
-		(void)sprintf(tbuf, "%s: %s, %s", OFFICE_TAG, pn->office,
-		    prphone(pn->officephone));
+		(void)snprintf(tbuf, sizeof(tbuf), "%s: %s, %s",
+		    OFFICE_TAG, pn->office, prphone(pn->officephone));
 		oddfield = demi_print(tbuf, oddfield);
 	} else {
 		if (pn->office) {
-			(void)sprintf(tbuf, "%s: %s", OFFICE_TAG, pn->office);
+			(void)snprintf(tbuf, sizeof(tbuf), "%s: %s",
+			    OFFICE_TAG, pn->office);
 			oddfield = demi_print(tbuf, oddfield);
 		}
 		if (pn->officephone) {
-			(void)sprintf(tbuf, "%s: %s", OFFICE_PHONE_TAG,
-			    prphone(pn->officephone));
+			(void)snprintf(tbuf, sizeof(tbuf), "%s: %s",
+			    OFFICE_PHONE_TAG, prphone(pn->officephone));
 			oddfield = demi_print(tbuf, oddfield);
 		}
 	}
 	if (pn->homephone) {
-		(void)sprintf(tbuf, "%s: %s", "Home Phone",
-		    prphone(pn->homephone));
+		(void)snprintf(tbuf, sizeof(tbuf), "%s: %s",
+		    "Home Phone", prphone(pn->homephone));
 		oddfield = demi_print(tbuf, oddfield);
 	}
 	if (oddfield)
 		putchar('\n');
 
 	/*
-	 * long format con't: * if logged in
+	 * long format con't:
+	 * if logged in
 	 *	terminal
 	 *	idle time
 	 *	if messages allowed
@@ -159,7 +152,7 @@ lprint(pn)
 			delta = gmtime(&w->idletime);
 			if (delta->tm_yday || delta->tm_hour || delta->tm_min) {
 				cpr += printf("%-*s idle ",
-				    maxlen - strlen(w->tty) + 1, ",");
+				    (int)(maxlen - strlen(w->tty) + 1), ",");
 				if (delta->tm_yday > 0) {
 					cpr += printf("%d day%s ",
 					   delta->tm_yday,
@@ -183,7 +176,7 @@ lprint(pn)
 			tp = localtime(&w->loginat);
 			t = asctime(tp);
 			tzn = tp->tm_zone;
-			if (now - w->loginat > SECSPERDAY * DAYSPERNYEAR / 2)
+			if (now - w->loginat > SIXMONTHS)
 				cpr =
 				    printf("Last login %.16s %.4s (%s) on %s",
 				    t, t + 20, tzn, w->tty);
@@ -218,9 +211,8 @@ lprint(pn)
 	}
 }
 
-demi_print(str, oddfield)
-	char *str;
-	int oddfield;
+int
+demi_print(char *str, int oddfield)
 {
 	static int lenlast;
 	int lenthis, maxlen;
@@ -254,43 +246,35 @@ demi_print(str, oddfield)
 		(void)printf("%s", str);
 	oddfield = !oddfield;			/* toggle odd/even marker */
 	lenlast = lenthis;
-	return(oddfield);
+	return (oddfield);
 }
 
-show_text(directory, file_name, header)
-	char *directory, *file_name, *header;
+int
+show_text(char *directory, char *file_name, char *header)
 {
-	register int ch, lastc;
-	register FILE *fp;
+	int ch, lastc;
+	FILE *fp;
 
-	(void)sprintf(tbuf, "%s/%s", directory, file_name);
+	lastc = 0;
+	(void)snprintf(tbuf, sizeof(tbuf), "%s/%s", directory, file_name);
 	if ((fp = fopen(tbuf, "r")) == NULL)
-		return(0);
+		return (0);
 	(void)printf("%s\n", header);
 	while ((ch = getc(fp)) != EOF)
 		vputc(lastc = ch);
 	if (lastc != '\n')
 		(void)putchar('\n');
 	(void)fclose(fp);
-	return(1);
+	return (1);
 }
 
-vputc(ch)
-	register int ch;
+void
+vputc(int ch)
 {
-	int meta;
+	char visout[5], *s2;
 
-	if (!isascii(ch)) {
-		(void)putchar('M');
-		(void)putchar('-');
-		ch = toascii(ch);
-		meta = 1;
-	} else
-		meta = 0;
-	if (isprint(ch) || !meta && (ch == ' ' || ch == '\t' || ch == '\n'))
-		(void)putchar(ch);
-	else {
-		(void)putchar('^');
-		(void)putchar(ch == '\177' ? '?' : ch | 0100);
-	}
+	ch = toascii(ch);
+	vis(visout, ch, VIS_SAFE|VIS_NOSLASH, 0);
+	for (s2 = visout; *s2; s2++)
+		(void)putchar(*s2);
 }

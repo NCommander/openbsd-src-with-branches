@@ -36,6 +36,8 @@
 
 namespace libunwind {
 
+static UnwindInfoSectionsCache uwis_cache;
+
 #if defined(_LIBUNWIND_SUPPORT_DWARF_UNWIND)
 /// Cache of recently found FDEs.
 template <typename A>
@@ -646,6 +648,12 @@ private:
 
 #if defined (_LIBUNWIND_TARGET_MIPS_NEWABI)
   compact_unwind_encoding_t dwarfEncoding(Registers_mips_newabi &) const {
+    return 0;
+  }
+#endif
+
+#if defined (_LIBUNWIND_TARGET_SPARC64)
+  compact_unwind_encoding_t dwarfEncoding(Registers_sparc64 &) const {
     return 0;
   }
 #endif
@@ -1280,7 +1288,14 @@ void UnwindCursor<A, R>::setInfoBasedOnIPRegister(bool isReturnAddress) {
 
   // Ask address space object to find unwind sections for this pc.
   UnwindInfoSections sects;
-  if (_addressSpace.findUnwindSections(pc, sects)) {
+  bool have_sects = false;
+  if (uwis_cache.getUnwindInfoSectionsForPC(pc, sects))
+    have_sects = true;
+  else if (_addressSpace.findUnwindSections(pc, sects)) {
+    uwis_cache.setUnwindInfoSectionsForPC(pc, sects);
+    have_sects = true;
+  }
+  if (have_sects) {
 #if defined(_LIBUNWIND_SUPPORT_COMPACT_UNWIND)
     // If there is a compact unwind encoding table, look there first.
     if (sects.compact_unwind_section != 0) {

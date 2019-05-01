@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 1989 Jan-Simon Pendry
- * Copyright (c) 1989 Imperial College of Science, Technology & Medicine
- * Copyright (c) 1989, 1993
+ * Copyright (c) 1989, 1990 Jan-Simon Pendry
+ * Copyright (c) 1989, 1990 Imperial College of Science, Technology & Medicine
+ * Copyright (c) 1989, 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * This code is derived from software contributed to Berkeley by
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mtab.c	8.1 (Berkeley) 6/6/93
- *	$Id: mtab.c,v 1.3 1994/06/13 20:47:42 mycroft Exp $
+ *	$Id: mtab.c,v 1.6 2014/10/20 00:20:04 guenther Exp $
  */
 
 #include "am.h"
@@ -44,43 +40,39 @@
 /*
  * Firewall /etc/mtab entries
  */
-void mnt_free P((struct mntent *mp));
-void mnt_free(mp)
-struct mntent *mp;
+void
+mnt_free(struct mntent *mp)
 {
 	free(mp->mnt_fsname);
 	free(mp->mnt_dir);
 	free(mp->mnt_type);
 	free(mp->mnt_opts);
-	free((voidp) mp);
+	free(mp);
 }
 
 /*
  * Discard memory allocated for mount list
  */
-void discard_mntlist P((mntlist *mp));
-void discard_mntlist(mp)
-mntlist *mp;
+void
+discard_mntlist(mntlist *mp)
 {
 	mntlist *mp2;
 
-	while (mp2 = mp) {
+	while ((mp2 = mp)) {
 		mp = mp->mnext;
 		if (mp2->mnt)
 			mnt_free(mp2->mnt);
-		free((voidp) mp2);
+		free(mp2);
 	}
 }
 
 /*
  * Throw away a mount list
  */
-void free_mntlist P((mntlist *mp));
-void free_mntlist(mp)
-mntlist *mp;
+void
+free_mntlist(mntlist *mp)
 {
 	discard_mntlist(mp);
-	unlock_mntlist();
 }
 
 /*
@@ -88,10 +80,8 @@ mntlist *mp;
  * numeric option in the mount options (such as port=%d).
  * Returns 0 if the option is not specified.
  */
-int hasmntval P((struct mntent *mnt, char *opt));
-int hasmntval(mnt, opt)
-struct mntent *mnt;
-char *opt;
+int
+hasmntval(struct mntent *mnt, char *opt)
 {
 	char *str = hasmntopt(mnt, opt);
 	if (str) {
@@ -103,4 +93,61 @@ char *opt;
 	}
 
 	return 0;
+}
+
+static struct mntent *
+mnt_dup(struct statfs *mp)
+{
+	struct mntent *new_mp = ALLOC(mntent);
+
+	new_mp->mnt_fsname = strdup(mp->f_mntfromname);
+	new_mp->mnt_dir = strdup(mp->f_mntonname);
+	new_mp->mnt_type = strdup(mp->f_fstypename);
+	new_mp->mnt_opts = strdup("unset");
+	new_mp->mnt_freq = 0;
+	new_mp->mnt_passno = 0;
+
+	return new_mp;
+}
+
+/*
+ * Read a mount table into memory
+ */
+mntlist *
+read_mtab(char *fs)
+{
+	mntlist **mpp, *mhp;
+	struct statfs *mntbufp, *mntp;
+
+	int nloc = getmntinfo(&mntbufp, MNT_NOWAIT);
+
+	if (nloc == 0) {
+		plog(XLOG_ERROR, "Can't read mount table");
+		return 0;
+	}
+
+	mpp = &mhp;
+	for (mntp = mntbufp; mntp < mntbufp + nloc; mntp++) {
+		/*
+		 * Allocate a new slot
+		 */
+		*mpp = ALLOC(mntlist);
+
+		/*
+		 * Copy the data returned by getmntent
+		 */
+		(*mpp)->mnt = mnt_dup(mntp);
+
+		/*
+		 * Move to next pointer
+		 */
+		mpp = &(*mpp)->mnext;
+	}
+
+	/*
+	 * Terminate the list
+	 */
+	*mpp = 0;
+
+	return mhp;
 }

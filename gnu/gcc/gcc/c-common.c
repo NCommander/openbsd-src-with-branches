@@ -624,6 +624,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_deprecated_attribute },
   { "vector_size",	      1, 1, false, true, false,
 			      handle_vector_size_attribute },
+  { "bounded",		      3, 4, false, true, false, 
+			      handle_bounded_attribute },
   { "visibility",	      1, 1, false, false, false,
 			      handle_visibility_attribute },
   { "tls_model",	      1, 1, true,  false, false,
@@ -3414,9 +3416,9 @@ set_builtin_user_assembler_name (tree decl, const char *asmspec)
   builtin = built_in_decls [DECL_FUNCTION_CODE (decl)];
   set_user_assembler_name (builtin, asmspec);
   if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMCPY)
-    init_block_move_fn (asmspec);
+    init_block_move_fn (decl, asmspec);
   else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMSET)
-    init_block_clear_fn (asmspec);
+    init_block_clear_fn (decl, asmspec);
 }
 
 /* The number of named compound-literals generated thus far.  */
@@ -5703,6 +5705,9 @@ check_function_arguments (tree attrs, tree params, tree typelist)
 
   if (warn_format)
     check_function_sentinel (attrs, params, typelist);
+
+  if (warn_bounded)
+    check_function_bounded (NULL, attrs, params);
 }
 
 /* Generic argument checking recursion routine.  PARAM is the argument to

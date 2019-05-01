@@ -1,4 +1,4 @@
-/* crypto/md5/md5_one.c */
+/* $OpenBSD: md5_one.c,v 1.9 2015/09/10 15:03:59 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -61,10 +61,6 @@
 #include <openssl/md5.h>
 #include <openssl/crypto.h>
 
-#ifdef CHARSET_EBCDIC
-#include <openssl/ebcdic.h>
-#endif
-
 unsigned char *MD5(const unsigned char *d, size_t n, unsigned char *md)
 	{
 	MD5_CTX c;
@@ -73,25 +69,9 @@ unsigned char *MD5(const unsigned char *d, size_t n, unsigned char *md)
 	if (md == NULL) md=m;
 	if (!MD5_Init(&c))
 		return NULL;
-#ifndef CHARSET_EBCDIC
 	MD5_Update(&c,d,n);
-#else
-	{
-		char temp[1024];
-		unsigned long chunk;
-
-		while (n > 0)
-		{
-			chunk = (n > sizeof(temp)) ? sizeof(temp) : n;
-			ebcdic2ascii(temp, d, chunk);
-			MD5_Update(&c,temp,chunk);
-			n -= chunk;
-			d += chunk;
-		}
-	}
-#endif
 	MD5_Final(md,&c);
-	OPENSSL_cleanse(&c,sizeof(c)); /* security consideration */
+	explicit_bzero(&c,sizeof(c));
 	return(md);
 	}
 

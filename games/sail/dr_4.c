@@ -1,3 +1,4 @@
+/*	$OpenBSD: dr_4.c,v 1.4 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: dr_4.c,v 1.3 1995/04/22 10:36:50 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,20 +30,14 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dr_4.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: dr_4.c,v 1.3 1995/04/22 10:36:50 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdlib.h>
 
-#include "externs.h"
+#include "extern.h"
 
-ungrap(from, to)
-register struct ship *from, *to;
+void
+ungrap(struct ship *from, struct ship *to)
 {
-	register k;
+	int k;
 	char friend;
 
 	if ((k = grappled2(from, to)) == 0)
@@ -55,17 +46,17 @@ register struct ship *from, *to;
 	while (--k >= 0) {
 		if (friend || die() < 3) {
 			cleangrapple(from, to, 0);
-			makesignal(from, "ungrappling %s (%c%c)", to);
+			makesignal(from, "ungrappling $$", to);
 		}
 	}
 }
 
-grap(from, to)
-register struct ship *from, *to;
+void
+grap(struct ship *from, struct ship *to)
 {
 	if (capship(from)->nationality != capship(to)->nationality && die() > 2)
 		return;
-	Write(W_GRAP, from, 0, to->file->index, 0, 0, 0);
-	Write(W_GRAP, to, 0, from->file->index, 0, 0, 0);
-	makesignal(from, "grappled with %s (%c%c)", to);
+	Write(W_GRAP, from, to->file->index, 0, 0, 0);
+	Write(W_GRAP, to, from->file->index, 0, 0, 0);
+	makesignal(from, "grappled with $$", to);
 }

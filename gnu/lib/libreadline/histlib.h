@@ -34,9 +34,21 @@
 				    : ((a)[0] == (b)[0]) && (strncmp ((a), (b), (n)) == 0))
 #endif
 
-#ifndef savestring
-#define savestring(x) strcpy (xmalloc (1 + strlen (x)), (x))
-#endif
+#if !defined (savestring)
+#include <stdio.h>
+static char *
+xstrdup(const char *s)
+{
+	char * cp;
+	cp = strdup(s);
+	if (cp == NULL) {
+		fprintf (stderr, "xstrdup: out of virtual memory\n");
+		exit (2);
+	}
+	return(cp);
+}
+#define savestring(x) xstrdup(x)
+#endif /* !savestring */
 
 #ifndef whitespace
 #define whitespace(c) (((c) == ' ') || ((c) == '\t'))

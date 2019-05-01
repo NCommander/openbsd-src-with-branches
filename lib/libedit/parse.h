@@ -1,3 +1,6 @@
+/*	$OpenBSD: parse.h,v 1.7 2010/06/30 00:05:35 nicm Exp $	*/
+/*	$NetBSD: parse.h,v 1.8 2016/04/11 00:50:13 christos Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,11 +39,11 @@
  * el.parse.h: Parser functions
  */
 #ifndef _h_el_parse
-#define _h_el_parse
+#define	_h_el_parse
 
-protected int		 parse_line	__P((EditLine *, const char *)); 
-protected int		 parse__escape	__P((const char ** const));
-protected char *	 parse__string	__P((char *, const char *));
-protected int		 parse_cmd	__P((EditLine *, const char *));
+protected int	 parse_line(EditLine *, const wchar_t *);
+protected int	 parse__escape(const wchar_t **);
+protected wchar_t *parse__string(wchar_t *, const wchar_t *);
+protected int	 parse_cmd(EditLine *, const wchar_t *);
 
 #endif /* _h_el_parse */

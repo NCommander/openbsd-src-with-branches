@@ -1,5 +1,4 @@
-/*	$NetBSD: vsprintf.c,v 1.5 1995/02/02 02:10:56 jtc Exp $	*/
-
+/*	$OpenBSD: vsprintf.c,v 1.16 2009/11/09 00:18:28 kurt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,28 +31,29 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)vsprintf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: vsprintf.c,v 1.5 1995/02/02 02:10:56 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <stdio.h>
+#include <string.h>
 #include <limits.h>
+#include "local.h"
 
-vsprintf(str, fmt, ap)
-	char *str;
-	const char *fmt;
-	_BSD_VA_LIST_ ap;
+#if defined(APIWARN)
+__warn_references(vsprintf,
+    "vsprintf() is often misused, please use vsnprintf()");
+#endif
+
+int
+vsprintf(char *str, const char *fmt, __va_list ap)
 {
 	int ret;
 	FILE f;
+	struct __sfileext fext;
 
+	_FILEEXT_SETUP(&f, &fext);
+	f._file = -1;
 	f._flags = __SWR | __SSTR;
 	f._bf._base = f._p = (unsigned char *)str;
 	f._bf._size = f._w = INT_MAX;
-	ret = vfprintf(&f, fmt, ap);
-	*f._p = 0;
+	ret = __vfprintf(&f, fmt, ap);
+	*f._p = '\0';
 	return (ret);
 }

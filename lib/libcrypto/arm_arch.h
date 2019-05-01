@@ -1,3 +1,4 @@
+/* $OpenBSD: arm_arch.h,v 1.8 2018/01/07 12:35:52 kettenis Exp $ */
 #ifndef __ARM_ARCH_H__
 #define __ARM_ARCH_H__
 
@@ -12,7 +13,7 @@
 # elif defined(__GNUC__)
   /*
    * Why doesn't gcc define __ARM_ARCH__? Instead it defines
-   * bunch of below macros. See all_architectires[] table in
+   * bunch of below macros. See all_architectures[] table in
    * gcc/config/arm/arm.c. On a side note it defines
    * __ARMEL__/__ARMEB__ for little-/big-endian.
    */
@@ -37,15 +38,18 @@
 # endif
 #endif
 
-#ifdef OPENSSL_FIPSCANISTER
-#include <openssl/fipssyms.h>
+#if !defined(__ASSEMBLER__)
+extern unsigned int OPENSSL_armcap_P;
+
+#define ARMV7_NEON	(1<<0)
+#define ARMV8_AES	(1<<1)
+#define ARMV8_SHA1	(1<<2)
+#define ARMV8_SHA256	(1<<3)
+#define ARMV8_PMULL	(1<<4)
 #endif
 
-#if !__ASSEMBLER__
-extern unsigned int OPENSSL_armcap_P;
-                                     
-#define ARMV7_NEON      (1<<0)
-#define ARMV7_TICK      (1<<1)
+#if defined(__OpenBSD__)
+#define __STRICT_ALIGNMENT
 #endif
 
 #endif

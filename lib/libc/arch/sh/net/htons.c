@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: htons.c,v 1.1.1.1 2006/10/10 22:07:10 miod Exp $	*/
 /*	$NetBSD: htons.c,v 1.3 2005/12/24 23:10:08 perry Exp $	*/
 
 /*-
@@ -36,7 +36,7 @@
  */
 
 #include <sys/types.h>
-#include <machine/endian.h>
+#include <endian.h>
 
 #undef htons
 

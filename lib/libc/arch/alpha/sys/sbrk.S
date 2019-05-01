@@ -1,4 +1,5 @@
-/*	$NetBSD: sbrk.S,v 1.1 1995/02/10 17:50:38 cgd Exp $	*/
+/*	$OpenBSD: sbrk.S,v 1.7 2015/08/26 01:54:09 guenther Exp $	*/
+/*	$NetBSD: sbrk.S,v 1.4 1996/10/17 03:08:20 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -32,16 +33,20 @@
 	.globl	_end
 
 	.data
-EXPORT(curbrk)
+EXPORT(__curbrk)
 	.quad	_end
+	.size	__curbrk, . - __curbrk
+	.type	__curbrk,@object
 
 	.text
+	.weak	sbrk
 LEAF(sbrk, 1)
-	SETGP(pv)
-	ldq	a1, curbrk
+	br	pv, L1				/* XXX profiling */
+L1:	LDGP(pv)
+	ldq	a1, __curbrk
 	addq	a0, a1, a0
-	SYSCALL_NOLABEL(break)
-	stq	a0, curbrk
+	CALLSYS_ERROR(break)
+	stq	a0, __curbrk
 	mov	a1, v0
 	RET
 END(sbrk)

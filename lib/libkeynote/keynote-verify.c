@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: keynote-verify.c,v 1.16 2015/11/19 02:35:24 mmcc Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -8,7 +7,7 @@
  *
  * Copyright (C) 1998, 1999 by Angelos D. Keromytis.
  *	
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
@@ -22,31 +21,23 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include <ctype.h>
+#include <fcntl.h>
+#include <getopt.h>
+#include <regex.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <ctype.h>
-
-#ifdef WIN32
-#include <io.h>
-#include "getopt.h"
-#else
 #include <unistd.h>
-#ifdef NEED_GETOPT
-#include "getopt.h"
-#endif
-#endif
 
+#include "header.h"
 #include "keynote.h"
 
-extern int read_environment(char *);
-extern void parse_key(char *);
-
-int sessid;
+void	verifyusage(void);
 
 void
-usage(void)
+verifyusage(void)
 {
     fprintf(stderr, "Arguments:\n");
     fprintf(stderr, "\t-h:             This message\n");
@@ -59,16 +50,9 @@ usage(void)
     fprintf(stderr, "\t<filename>:     Non-local assertion\n");
 }
 
-#ifdef WIN32
 void
-#else
-int
-#endif
-main(int argc, char *argv[])
+keynote_verify(int argc, char *argv[])
 {
-#ifdef LoopTesting
-    int loopvar = 1000;
-#endif /* LoopTesting */
     int fd, i, ch, se = 0, cl = 8192, sk = 0, sl = 0, p, ac = argc;
     char *buf, **av = argv, **retv, **foov, *ptr;
     int numretv = 16, numret = 0, sn;
@@ -76,24 +60,20 @@ main(int argc, char *argv[])
 
     if (argc == 1)
     {
-	usage();
-	exit(-1);
+	verifyusage();
+	exit(1);
     }
 
-    if ((buf = (char *) calloc(cl, sizeof(char))) == (char *) NULL)
+    if ((buf = calloc(cl, sizeof(char))) == NULL)
     {
 	perror("calloc()");
-	exit(-1);
+	exit(1);
     }
 
-#ifdef LoopTesting
-    while(loopvar--) {
-#endif /* LoopTesting */
-
-    if ((retv = (char **) calloc(numretv, sizeof(char *))) == (char **) NULL)
+    if ((retv = calloc(numretv, sizeof(char *))) == NULL)
     {
 	perror("calloc()");
-	exit(-1);
+	exit(1);
     }
 
     /* "ac" and "av" are used for stress-testing, ignore otherwise */
@@ -115,7 +95,7 @@ main(int argc, char *argv[])
 	{
 	    case 'e':
 		if (read_environment(optarg) == -1)
-	 	  exit(-1);
+	 	  exit(1);
 		se = 1;
 		break;
 
@@ -124,25 +104,25 @@ main(int argc, char *argv[])
 
 		if ((fd = open(optarg, O_RDONLY, 0)) < 0)
 		{
-		    perror("open()");
-		    exit(-1);
+		    perror(optarg);
+		    exit(1);
 		}
 
 		if (fstat(fd, &sb) < 0)
 		{
 		    perror("fstat()");
-		    exit(-1);
+		    exit(1);
 		}
 
 		if (sb.st_size > cl - 1)
 		{
 		    free(buf);
 		    cl = sb.st_size + 1;
-		    buf = (char *) calloc(cl, sizeof(char));
-		    if (buf == (char *) NULL)
+		    buf = calloc(cl, sizeof(char));
+		    if (buf == NULL)
 		    {
 			perror("calloc()");
-			exit(-1);
+			exit(1);
 		    }
 		}
 
@@ -150,7 +130,7 @@ main(int argc, char *argv[])
 		if (i < 0)
 		{
 		    perror("read()");
-		    exit(-1);
+		    exit(1);
 		}
 
 		close(fd);
@@ -164,11 +144,11 @@ main(int argc, char *argv[])
 		    case ERROR_SYNTAX:
 			fprintf(stderr, "Syntax error adding authorizer "
 				"%s\n", optarg);
-			exit(-1);
+			exit(1);
 
 		    case ERROR_MEMORY:
 			perror("Out of memory.\n");
-			exit(-1);
+			exit(1);
 
 		    default:
 			fprintf(stderr, "Unknown error (%d).\n",
@@ -178,7 +158,7 @@ main(int argc, char *argv[])
 		break;
 
 	    case 'h':
-		usage();
+		verifyusage();
 		exit(0);
 
 	    case 'r':
@@ -186,21 +166,21 @@ main(int argc, char *argv[])
 		{
 		    fprintf(stderr,
 			    "Do not define two sets of return values.\n");
-		    exit(-1);
+		    exit(1);
 		}
 
 		sn = 1;
 
 		for (numret = 0;
-		     (ptr = index(optarg, ',')) != (char *) NULL;
+		     (ptr = strchr(optarg, ',')) != NULL;
 		     numret++)
 		{
 		    /* Running out of memory */
 		    if (numret > numretv - 3)
 		    {
 			numretv *= 2;
-			foov = (char **) calloc(numretv, sizeof(char **));
-			if (foov == (char **) NULL)
+			foov = calloc(numretv, sizeof(char **));
+			if (foov == NULL)
 			{
 			    /* 
 			     * If this were a real program, we 'd be freeing
@@ -208,34 +188,34 @@ main(int argc, char *argv[])
 			     * little sloppy.
 			     */
 			    perror("calloc()");
-			    exit(-1);
+			    exit(1);
 			}
 
-			bcopy(retv, foov, numretv * sizeof(char **));
+			memcpy(foov, retv, numretv * sizeof(char **));
 			free(retv);
 			retv = foov;
 		    }
 
-		    retv[numret] = (char *) calloc((ptr - optarg) + 1,
+		    retv[numret] = calloc((ptr - optarg) + 1,
 						       sizeof(char));
-		    if (retv[numret] == (char *) NULL)
+		    if (retv[numret] == NULL)
 		    {
 			/* Comment from above applies here as well */
 			perror("calloc()");
-			exit(-1);
+			exit(1);
 		    }
 
 		    /* Copy */
-		    bcopy(optarg, retv[numret], ptr - optarg);
+		    memcpy(retv[numret], optarg, ptr - optarg);
 		    optarg = ptr + 1;
 		}
 
 		/* Last component */
-		retv[numret] = (char *) strdup(optarg);
-		if (retv[numret] == (char *) NULL)
+		retv[numret] = strdup(optarg);
+		if (retv[numret] == NULL)
 		{
 		    perror("calloc()");
-		    exit(-1);
+		    exit(1);
 		}
 
 		numret++;
@@ -244,25 +224,25 @@ main(int argc, char *argv[])
 	    case 'l':
 		if ((fd = open(optarg, O_RDONLY, 0)) < 0)
 		{
-		    perror("open()");
-		    exit(-1);
+		    perror(optarg);
+		    exit(1);
 		}
 
 		if (fstat(fd, &sb) < 0)
 		{
 		    perror("fstat()");
-		    exit(-1);
+		    exit(1);
 		}
 
 		if (sb.st_size > cl - 1)
 		{
 		    free(buf);
 		    cl = sb.st_size + 1;
-		    buf = (char *) calloc(cl, sizeof(char));
-		    if (buf == (char *) NULL)
+		    buf = calloc(cl, sizeof(char));
+		    if (buf == NULL)
 		    {
 			perror("calloc()");
-			exit(-1);
+			exit(1);
 		    }
 		}
 
@@ -270,7 +250,7 @@ main(int argc, char *argv[])
 		if (i < 0)
 		{
 		    perror("read()");
-		    exit(-1);
+		    exit(1);
 		}
 
 		close(fd);
@@ -289,8 +269,8 @@ main(int argc, char *argv[])
 
 	    case '?':
 	    default:
-		usage();
-		exit(-1);
+		verifyusage();
+		exit(1);
 	}
     }
 
@@ -298,59 +278,55 @@ main(int argc, char *argv[])
     argv += optind;
     optind = 1;
 
-#ifdef LoopTesting
-    optreset = 1;
-#endif /* LoopTesting */
-
     if (sn == 0)
     {
 	fprintf(stderr,
 		"Should set return values before evaluations begin.\n");
-	exit(-1);
+	exit(1);
     }
 
     if (se == 0)
     {
 	fprintf(stderr, "Should set environment before evaluations begin.\n");
-	exit(-1);
+	exit(1);
     }
 
     if (sk == 0)
     {
 	fprintf(stderr, "Should specify at least one action authorizer.\n");
-	exit(-1);
+	exit(1);
     }
 
     if (sl == 0)
     {
 	fprintf(stderr,
 		"Should specify at least one trusted assertion (POLICY).\n");
-	exit(-1);
+	exit(1);
     }
 
     while (argc--)
     {
 	if ((fd = open(argv[argc], O_RDONLY, 0)) < 0)
 	{
-	    perror("open()");
-	    exit(-1);
+	    perror(argv[argc]);
+	    exit(1);
 	}
 
 	if (fstat(fd, &sb) < 0)
 	{
 	    perror("fstat()");
-	    exit(-1);
+	    exit(1);
 	}
 
 	if (sb.st_size > cl - 1)
 	{
 	    free(buf);
 	    cl = sb.st_size + 1;
-	    buf = (char *) calloc(cl, sizeof(char));
-	    if (buf == (char *) NULL)
+	    buf = calloc(cl, sizeof(char));
+	    if (buf == NULL)
 	    {
 		perror("calloc()");
-		exit(-1);
+		exit(1);
 	    }
 	}
 
@@ -358,7 +334,7 @@ main(int argc, char *argv[])
 	if (i < 0)
 	{
 	    perror("read()");
-	    exit(-1);
+	    exit(1);
 	}
 
 	close(fd);
@@ -375,34 +351,32 @@ main(int argc, char *argv[])
 
     p = kn_do_query(sessid, retv, numret); /* Evaluation time */
 
-#ifndef LoopTesting
     printf("Query result = ");
 
     switch (keynote_errno)
     {
 	case ERROR_MEMORY:
 	    printf("<out of memory>\n");
-	    exit(-1);
+	    exit(1);
 
 	case ERROR_SYNTAX:
 	    printf("<uninitialized authorizers or all POLICY "
 		   "assertions are malformed!>\n");
-	    exit(-1);
+	    exit(1);
 
 	case ERROR_NOTFOUND:
 	    printf("<session or other information not found!>\n");
-	    exit(-1);
+	    exit(1);
 
 	case 0:	/* No errors */
 	    break;
 
 	default:
 	    printf("<should never happen (%d)!>\n", keynote_errno);
-	    exit(-1);
+	    exit(1);
     }
 
     printf("%s\n", retv[p]);
-#endif /* LoopTesting */
 
     keynote_errno = 0;
 
@@ -433,15 +407,11 @@ main(int argc, char *argv[])
 
     kn_close(sessid);
 
-#ifdef LoopTesting
-    }
-#endif /* LoopTesting */
-
     /* This is a reminder that return values are not free'ed by KeyNote */
     for (sn = 0; sn < numret; sn++)
       free(retv[sn]);
     free(retv);
-    retv = (char **) NULL;
+    retv = NULL;
 
     exit(0);
 }

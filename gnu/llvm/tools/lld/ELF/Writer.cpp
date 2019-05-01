@@ -122,7 +122,8 @@ StringRef elf::getOutputSectionName(const InputSectionBase *S) {
   for (StringRef V :
        {".text.", ".rodata.", ".data.rel.ro.", ".data.", ".bss.rel.ro.",
         ".bss.", ".init_array.", ".fini_array.", ".ctors.", ".dtors.", ".tbss.",
-        ".gcc_except_table.", ".tdata.", ".ARM.exidx.", ".ARM.extab."}) {
+        ".gcc_except_table.", ".tdata.", ".ARM.exidx.", ".ARM.extab.",
+        ".openbsd.randomdata."}) {
     if (isSectionPrefix(V, S->Name))
       return V.drop_back();
   }
@@ -239,6 +240,7 @@ void elf::addReservedSymbols() {
   };
 
   ElfSym::Bss = Add("__bss_start", 0);
+  ElfSym::Data = Add("__data_start", 0);
   ElfSym::End1 = Add("end", -1);
   ElfSym::End2 = Add("_end", -1);
   ElfSym::Etext1 = Add("etext", -1);
@@ -673,7 +675,11 @@ static bool isRelroSection(const OutputSection *Sec) {
   // However, if "-z now" is given, the lazy symbol resolution is
   // disabled, which enables us to put it into RELRO.
   if (Sec == InX::GotPlt->getParent())
+#ifndef __OpenBSD__
     return Config->ZNow;
+#else
+    return true;	/* kbind(2) means we can always put these in RELRO */
+#endif
 
   // .dynamic section contains data for the dynamic linker, and
   // there's no need to write to it at runtime, so it's better to put
@@ -961,6 +967,9 @@ template <class ELFT> void Writer<ELFT>::setReservedSymbolSections() {
 
   if (ElfSym::Bss)
     ElfSym::Bss->Section = findSection(".bss");
+
+  if (ElfSym::Data)
+    ElfSym::Data->Section = findSection(".data");
 
   // Setup MIPS _gp_disp/__gnu_local_gp symbols which should
   // be equal to the _gp symbol's value.
@@ -1937,6 +1946,23 @@ template <class ELFT> void Writer<ELFT>::fixSectionAlignments() {
         return alignTo(Script->getDot(), Config->MaxPageSize);
       };
   };
+
+#ifdef __OpenBSD__
+  auto NXAlign = [](OutputSection *Cmd) {
+    if (Cmd && !Cmd->AddrExpr)
+      Cmd->AddrExpr = [=] {
+        return alignTo(Script->getDot(), 0x20000000);
+      };
+  };
+
+  PhdrEntry *firstRW = nullptr;
+  for (PhdrEntry *P : Phdrs)
+    if (P->p_type == PT_LOAD && (P->p_flags & PF_W))
+      firstRW = P;
+
+  if (Config->EMachine == EM_386 && firstRW)
+    NXAlign(firstRW->FirstSec);
+#endif
 
   for (const PhdrEntry *P : Phdrs)
     if (P->p_type == PT_LOAD && P->FirstSec)

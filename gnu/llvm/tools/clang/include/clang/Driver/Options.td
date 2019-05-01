@@ -1595,6 +1595,14 @@ def fstack_protector_strong : Flag<["-"], "fstack-protector-strong">, Group<f_Gr
   HelpText<"Use a strong heuristic to apply stack protectors to functions">;
 def fstack_protector : Flag<["-"], "fstack-protector">, Group<f_Group>,
   HelpText<"Enable stack protectors for functions potentially vulnerable to stack smashing">;
+def fno_ret_protector : Flag<["-"], "fno-ret-protector">, Group<f_Group>,
+  HelpText<"Disable return protector">;
+def fret_protector : Flag<["-"], "fret-protector">, Group<f_Group>,
+  HelpText<"Enable return protector">;
+def fno_fixup_gadgets : Flag<["-"], "fno-fixup-gadgets">, Group<f_Group>,
+  HelpText<"Disable FixupGadgets pass (x86 only)">;
+def ffixup_gadgets : Flag<["-"], "ffixup-gadgets">, Group<f_Group>,
+  HelpText<"Replace ROP friendly instructions with safe alternatives (x86 only)">;
 def fstandalone_debug : Flag<["-"], "fstandalone-debug">, Group<f_Group>, Flags<[CoreOption]>,
   HelpText<"Emit full debug info for all types used by the program">;
 def fno_standalone_debug : Flag<["-"], "fno-standalone-debug">, Group<f_Group>, Flags<[CoreOption]>,
@@ -2359,7 +2367,7 @@ def pthreads : Flag<["-"], "pthreads">;
 def pthread : Flag<["-"], "pthread">, Flags<[CC1Option]>,
   HelpText<"Support POSIX threads in generated code">;
 def no_pthread : Flag<["-"], "no-pthread">, Flags<[CC1Option]>;
-def p : Flag<["-"], "p">;
+def p : Flag<["-"], "p">, Alias<pg>;
 def pie : Flag<["-"], "pie">;
 def read__only__relocs : Separate<["-"], "read_only_relocs">;
 def remap : Flag<["-"], "remap">;
@@ -2810,6 +2818,8 @@ def mretpoline : Flag<["-"], "mretpoline">, Group<m_x86_Features_Group>;
 def mno_retpoline : Flag<["-"], "mno-retpoline">, Group<m_x86_Features_Group>;
 def mretpoline_external_thunk : Flag<["-"], "mretpoline-external-thunk">, Group<m_x86_Features_Group>;
 def mno_retpoline_external_thunk : Flag<["-"], "mno-retpoline-external-thunk">, Group<m_x86_Features_Group>;
+def msave_args : Flag<["-"], "msave-args">, Group<m_x86_Features_Group>;
+def mno_save_args : Flag<["-"], "mno-save-args">, Group<m_x86_Features_Group>;
 
 // These are legacy user-facing driver-level option spellings. They are always
 // aliases for options that are spelled using the more common Unix / GNU flag

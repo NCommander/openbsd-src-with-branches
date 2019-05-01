@@ -609,6 +609,7 @@ elf64_hppa_check_relocs (abfd, info, sec, relocs)
   if (info->relocatable)
     return TRUE;
 
+#if 0
   /* If this is the first dynamic object found in the link, create
      the special sections required for dynamic linking.  */
   if (! elf_hash_table (info)->dynamic_sections_created)
@@ -616,6 +617,7 @@ elf64_hppa_check_relocs (abfd, info, sec, relocs)
       if (! _bfd_elf_link_create_dynamic_sections (abfd, info))
 	return FALSE;
     }
+#endif
 
   hppa_info = elf64_hppa_hash_table (info);
   symtab_hdr = &elf_tdata (abfd)->symtab_hdr;
@@ -1643,7 +1645,7 @@ elf64_hppa_size_dynamic_sections (output_bfd, info)
   if (elf_hash_table (info)->dynamic_sections_created)
     {
       /* Set the contents of the .interp section to the interpreter.  */
-      if (info->executable)
+      if (info->executable && !info->static_link)
 	{
 	  s = bfd_get_section_by_name (dynobj, ".interp");
 	  BFD_ASSERT (s != NULL);

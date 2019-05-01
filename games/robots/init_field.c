@@ -1,3 +1,4 @@
+/*	$OpenBSD: init_field.c,v 1.7 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: init_field.c,v 1.3 1995/04/22 10:08:52 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,26 +30,17 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)init_field.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: init_field.c,v 1.3 1995/04/22 10:08:52 cgd Exp $";
-#endif
-#endif /* not lint */
-
-# include	"robots.h"
+#include "robots.h"
 
 /*
  * init_field:
- *	Lay down the initial pattern whih is constant across all levels,
+ *	Lay down the initial pattern which is constant across all levels,
  *	and initialize all the global variables.
  */
-init_field()
+void
+init_field(void)
 {
-	register int	i;
-	register WINDOW	*wp;
-	register int	j;
+	int	i;
 	static bool	first = TRUE;
 	static char	*desc[] = {
 				"Directions:",
@@ -82,7 +70,9 @@ init_field()
 
 	Dead = FALSE;
 	Waiting = FALSE;
+#ifndef NCURSES_VERSION
 	flushok(stdscr, TRUE);
+#endif
 	Score = 0;
 
 	erase();

@@ -1,3 +1,5 @@
+/*	$OpenBSD: extern.h,v 1.8 2013/12/10 16:38:04 naddy Exp $	*/
+
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,9 +31,10 @@
  *      @(#)extern.h	8.1 (Berkeley) 6/6/93
  */
 
-#include <sys/cdefs.h>
-#include <termios.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <stdio.h>
+#include <termios.h>
 
 /*
  * from stty.h
@@ -51,9 +50,8 @@ struct info {
 	struct winsize win;                     /* window info */
 }; 
 
-void       printjob __P((void));
-void       recvjob __P((void));
-void       sttyclearflags __P((struct termios *tp, int flags));
-void       sttysetflags __P((struct termios *tp, int flags));
-void       sttyclearlflags __P((struct termios *tp, int flags));
-void       sttysetlflags __P((struct termios *tp, int flags));
+int	   allowedhost(FILE *, struct sockaddr *, socklen_t);
+int	   ksearch(char ***, struct info *);
+int	   msearch(char ***, struct info *);
+void       printjob(void);
+void       recvjob(void);

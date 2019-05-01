@@ -25,6 +25,10 @@ struct region;
 #  define LOG_WARNING 4
 #  define LOG_NOTICE 5
 #  define LOG_INFO 6
+
+/* Unused, but passed to log_open. */
+#  define LOG_PID 0x01
+#  define LOG_DAEMON (3<<3)
 #endif
 
 #define ALIGN_UP(n, alignment)  \
@@ -198,6 +202,20 @@ write_uint32(void *dst, uint32_t data)
 #endif
 }
 
+static inline void
+write_uint64(void *dst, uint64_t data)
+{
+	uint8_t *p = (uint8_t *) dst;
+	p[0] = (uint8_t) ((data >> 56) & 0xff);
+	p[1] = (uint8_t) ((data >> 48) & 0xff);
+	p[2] = (uint8_t) ((data >> 40) & 0xff);
+	p[3] = (uint8_t) ((data >> 32) & 0xff);
+	p[4] = (uint8_t) ((data >> 24) & 0xff);
+	p[5] = (uint8_t) ((data >> 16) & 0xff);
+	p[6] = (uint8_t) ((data >> 8) & 0xff);
+	p[7] = (uint8_t) (data & 0xff);
+}
+
 /*
  * Copy data allowing for unaligned accesses in network byte order
  * (big endian).
@@ -222,6 +240,21 @@ read_uint32(const void *src)
 	uint8_t *p = (uint8_t *) src;
 	return (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
 #endif
+}
+
+static inline uint64_t
+read_uint64(const void *src)
+{
+	uint8_t *p = (uint8_t *) src;
+	return
+	    ((uint64_t)p[0] << 56) |
+	    ((uint64_t)p[1] << 48) |
+	    ((uint64_t)p[2] << 40) |
+	    ((uint64_t)p[3] << 32) |
+	    ((uint64_t)p[4] << 24) |
+	    ((uint64_t)p[5] << 16) |
+	    ((uint64_t)p[6] <<  8) |
+	    (uint64_t)p[7];
 }
 
 /*
@@ -269,6 +302,8 @@ timeval_to_timespec(struct timespec *left,
 	left->tv_nsec = 1000 * right->tv_usec;
 }
 
+/* get the time */
+void get_time(struct timespec* t);
 
 /*
  * Converts a string representation of a period of time into
@@ -310,7 +345,7 @@ int b32_ntop(uint8_t const *src, size_t srclength, char *target,
 void strip_string(char *str);
 
 /*
- * Convert a single (hexidecimal) digit to its integer value.
+ * Convert a single (hexadecimal) digit to its integer value.
  */
 int hexdigit_to_int(char ch);
 
@@ -374,5 +409,15 @@ void addr2str(
 	struct sockaddr_in *addr
 #endif
 	, char* str, size_t len);
+
+/** copy dirname string and append slash.  Previous dirname is leaked,
+ * but it is to be used once, at startup, for chroot */
+void append_trailing_slash(const char** dirname, struct region* region);
+
+/** true if filename starts with chroot or is not absolute */
+int file_inside_chroot(const char* fname, const char* chr);
+
+/** Something went wrong, give error messages and exit. */
+void error(const char *format, ...) ATTR_FORMAT(printf, 1, 2) ATTR_NORETURN;
 
 #endif /* _UTIL_H_ */

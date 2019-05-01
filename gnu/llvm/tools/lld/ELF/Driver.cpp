@@ -339,6 +339,7 @@ static bool getZFlag(opt::InputArgList &Args, StringRef K1, StringRef K2,
 static bool isKnown(StringRef S) {
   return S == "combreloc" || S == "copyreloc" || S == "defs" ||
          S == "execstack" || S == "hazardplt" || S == "initfirst" ||
+         S == "interpose" ||
          S == "keep-text-section-prefix" || S == "lazy" || S == "muldefs" ||
          S == "nocombreloc" || S == "nocopyreloc" || S == "nodelete" ||
          S == "nodlopen" || S == "noexecstack" ||
@@ -771,7 +772,8 @@ void LinkerDriver::readConfigs(opt::InputArgList &Args) {
   Config->IgnoreDataAddressEquality =
       Args.hasArg(OPT_ignore_data_address_equality);
   Config->IgnoreFunctionAddressEquality =
-      Args.hasArg(OPT_ignore_function_address_equality);
+      Args.hasFlag(OPT_ignore_function_address_equality,
+      OPT_no_ignore_function_address_equality, true);
   Config->Init = Args.getLastArgValue(OPT_init, "_init");
   Config->LTOAAPipeline = Args.getLastArgValue(OPT_lto_aa_pipeline);
   Config->LTODebugPassManager = Args.hasArg(OPT_lto_debug_pass_manager);
@@ -794,7 +796,12 @@ void LinkerDriver::readConfigs(opt::InputArgList &Args) {
   Config->Optimize = args::getInteger(Args, OPT_O, 1);
   Config->OrphanHandling = getOrphanHandling(Args);
   Config->OutputFile = Args.getLastArgValue(OPT_o);
+#ifdef __OpenBSD__
+  Config->Pie = Args.hasFlag(OPT_pie, OPT_no_pie,
+      !Args.hasArg(OPT_shared) && !Args.hasArg(OPT_relocatable));
+#else
   Config->Pie = Args.hasFlag(OPT_pie, OPT_no_pie, false);
+#endif
   Config->PrintIcfSections =
       Args.hasFlag(OPT_print_icf_sections, OPT_no_print_icf_sections, false);
   Config->PrintGcSections =
@@ -844,6 +851,7 @@ void LinkerDriver::readConfigs(opt::InputArgList &Args) {
   Config->ZExecstack = getZFlag(Args, "execstack", "noexecstack", false);
   Config->ZHazardplt = hasZOption(Args, "hazardplt");
   Config->ZInitfirst = hasZOption(Args, "initfirst");
+  Config->ZInterpose = hasZOption(Args, "interpose");
   Config->ZKeepTextSectionPrefix = getZFlag(
       Args, "keep-text-section-prefix", "nokeep-text-section-prefix", false);
   Config->ZNodelete = hasZOption(Args, "nodelete");

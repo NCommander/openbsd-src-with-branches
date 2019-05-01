@@ -66,15 +66,6 @@ static void config_start_include(const char* filename)
 		c_error_msg("include %s: malloc failure", filename);
 		return;
 	}
-	if (cfg_parser->chroot) {
-		int l = strlen(cfg_parser->chroot); /* chroot has trailing slash */
-		if (strncmp(cfg_parser->chroot, filename, l) != 0) {
-			c_error_msg("include file '%s' is not relative to chroot '%s'",
-				filename, cfg_parser->chroot);
-			return;
-		}
-		filename += l - 1; /* strip chroot without trailing slash */
-	}
 	nm = strdup(filename);
 	if(!nm) {
 		c_error_msg("include %s: strdup failure", filename);
@@ -103,21 +94,31 @@ static void config_start_include(const char* filename)
 
 static void config_start_include_glob(const char* filename)
 {
-	 /* check for wildcards */
+	/* check for wildcards */
 #ifdef HAVE_GLOB
-	 glob_t g;
-	 size_t i;
-	 int r, flags;
-	 if(!(!strchr(filename, '*') && !strchr(filename, '?') &&
+	glob_t g;
+	size_t i;
+	int r, flags;
+#endif /* HAVE_GLOB */
+	if (cfg_parser->chroot) {
+		int l = strlen(cfg_parser->chroot); /* chroot has trailing slash */
+		if (strncmp(cfg_parser->chroot, filename, l) != 0) {
+			c_error_msg("include file '%s' is not relative to chroot '%s'",
+				filename, cfg_parser->chroot);
+			return;
+		}
+		filename += l - 1; /* strip chroot without trailing slash */
+	}
+#ifdef HAVE_GLOB
+	if(!(!strchr(filename, '*') && !strchr(filename, '?') &&
 		 !strchr(filename, '[') && !strchr(filename, '{') &&
 		 !strchr(filename, '~'))) {
 		 flags = 0
 #ifdef GLOB_ERR
 		 	 | GLOB_ERR
 #endif
-#ifdef GLOB_NOSORT
-			 | GLOB_NOSORT
-#endif
+			 /* do not set GLOB_NOSORT so the results are sorted
+			    and in a predictable order. */
 #ifdef GLOB_BRACE
 			 | GLOB_BRACE
 #endif
@@ -141,9 +142,9 @@ static void config_start_include_glob(const char* filename)
 		}
 		globfree(&g);
 		return;
-	 }
+	}
 #endif /* HAVE_GLOB */
-	 config_start_include(filename);
+	config_start_include(filename);
 }
 
 static void config_end_include(void)
@@ -199,7 +200,9 @@ name{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_NAME;}
 ip-address{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_IP_ADDRESS;}
 interface{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_IP_ADDRESS;}
 ip-transparent{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_IP_TRANSPARENT;}
+ip-freebind{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_IP_FREEBIND;}
 debug-mode{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_DEBUG_MODE;}
+use-systemd{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_USE_SYSTEMD;}
 hide-version{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_HIDE_VERSION;}
 ip4-only{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_IP4_ONLY;}
 ip6-only{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_IP6_ONLY;}
@@ -207,12 +210,15 @@ do-ip4{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_DO_IP4;}
 do-ip6{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_DO_IP6;}
 database{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_DATABASE;}
 identity{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_IDENTITY;}
+version{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_VERSION;}
 nsid{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_NSID;}
 logfile{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_LOGFILE;}
 server-count{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_SERVER_COUNT;}
 tcp-count{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_TCP_COUNT;}
 tcp-query-count{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_TCP_QUERY_COUNT;}
 tcp-timeout{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_TCP_TIMEOUT;}
+tcp-mss{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_TCP_MSS;}
+outgoing-tcp-mss{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_OUTGOING_TCP_MSS;}
 ipv4-edns-size{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_IPV4_EDNS_SIZE;}
 ipv6-edns-size{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_IPV6_EDNS_SIZE;}
 pidfile{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_PIDFILE;}
@@ -232,6 +238,7 @@ zone{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_ZONE;}
 zonefile{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_ZONEFILE;}
 zonestats{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_ZONESTATS;}
 allow-notify{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_ALLOW_NOTIFY;}
+size-limit-xfr{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_SIZE_LIMIT_XFR;}
 request-xfr{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_REQUEST_XFR;}
 notify{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_NOTIFY;}
 notify-retry{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_NOTIFY_RETRY;}
@@ -262,8 +269,24 @@ rrl-whitelist-ratelimit{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_RRL_WHIT
 rrl-whitelist{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_RRL_WHITELIST;}
 zonefiles-check{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_ZONEFILES_CHECK;}
 zonefiles-write{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_ZONEFILES_WRITE;}
+dnstap{COLON}		{ LEXOUT(("v(%s) ", yytext)); return VAR_DNSTAP;}
+dnstap-enable{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_DNSTAP_ENABLE;}
+dnstap-socket-path{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_DNSTAP_SOCKET_PATH; }
+dnstap-send-identity{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_DNSTAP_SEND_IDENTITY; }
+dnstap-send-version{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_DNSTAP_SEND_VERSION; }
+dnstap-identity{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_DNSTAP_IDENTITY; }
+dnstap-version{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_DNSTAP_VERSION; }
+dnstap-log-auth-query-messages{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_DNSTAP_LOG_AUTH_QUERY_MESSAGES; }
+dnstap-log-auth-response-messages{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_DNSTAP_LOG_AUTH_RESPONSE_MESSAGES; }
 log-time-ascii{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_LOG_TIME_ASCII;}
 round-robin{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_ROUND_ROBIN;}
+minimal-responses{COLON} { LEXOUT(("v(%s) ", yytext)); return VAR_MINIMAL_RESPONSES;}
+refuse-any{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_REFUSE_ANY;}
+max-refresh-time{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_MAX_REFRESH_TIME;}
+min-refresh-time{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_MIN_REFRESH_TIME;}
+max-retry-time{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_MAX_RETRY_TIME;}
+min-retry-time{COLON}	{ LEXOUT(("v(%s) ", yytext)); return VAR_MIN_RETRY_TIME;}
+multi-master-check{COLON}      { LEXOUT(("v(%s) ", yytext)); return VAR_MULTI_MASTER_CHECK;}
 {NEWLINE}		{ LEXOUT(("NL\n")); cfg_parser->line++;}
 
 	/* Quoted strings. Strip leading and ending quotes */

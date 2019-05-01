@@ -182,6 +182,7 @@ struct Configuration {
   bool ZExecstack;
   bool ZHazardplt;
   bool ZInitfirst;
+  bool ZInterpose;
   bool ZKeepTextSectionPrefix;
   bool ZNodelete;
   bool ZNodlopen;

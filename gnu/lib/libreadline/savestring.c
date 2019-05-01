@@ -21,10 +21,11 @@
    59 Temple Place, Suite 330, Boston, MA 02111 USA. */
 
 #include <config.h>
+#include <stdio.h>
+#include <stdlib.h>
 #ifdef HAVE_STRING_H
 #  include <string.h>
 #endif
-#include "xmalloc.h"
 
 /* Backwards compatibility, now that savestring has been removed from
    all `public' readline header files. */
@@ -32,5 +33,11 @@ char *
 savestring (s)
      const char *s;
 {
-  return ((char *)strcpy ((char *)xmalloc (1 + strlen (s)), (s)));
+	char * cp;
+	cp = strdup(s);
+	if (cp == NULL) {
+		fprintf (stderr, "savestring: out of virtual memory\n");
+		exit (2);
+	}
+	return(cp);
 }

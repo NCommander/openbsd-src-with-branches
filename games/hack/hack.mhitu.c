@@ -1,23 +1,79 @@
+/*	$OpenBSD: hack.mhitu.c,v 1.7 2009/10/27 23:59:25 deraadt Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.mhitu.c,v 1.3 1995/03/23 08:30:42 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-#include	"hack.h"
-extern struct monst *makemon();
+#include "hack.h"
+
+extern struct monst *makemon(struct permonst *, int, int);
 
 /*
  * mhitu: monster hits you
  *	  returns 1 if monster dies (e.g. 'y', 'F'), 0 otherwise
  */
-mhitu(mtmp)
-register struct monst *mtmp;
+int
+mhitu(struct monst *mtmp)
 {
-	register struct permonst *mdat = mtmp->data;
-	register int tmp, ctmp;
+	struct permonst *mdat = mtmp->data;
+	int tmp, ctmp;
 
 	nomul(0);
 
@@ -63,11 +119,11 @@ register struct monst *mtmp;
 		mtmp->minvis = 0;
 		pmon(mtmp);
 	}
-	if(!index("1&DuxynNF",mdat->mlet))
+	if(!strchr("1&DuxynNF",mdat->mlet))
 		tmp = hitu(mtmp,d(mdat->damn,mdat->damd));
 	else
 		tmp = 0;
-	if(index(UNDEAD, mdat->mlet) && midnight())
+	if(strchr(UNDEAD, mdat->mlet) && midnight())
 		tmp += hitu(mtmp,d(mdat->damn,mdat->damd));
 
 	ctmp = tmp && !mtmp->mcan &&
@@ -100,7 +156,7 @@ register struct monst *mtmp;
 					Monnam(mtmp));
 				u.ustuck = mtmp;
 			} else if(u.ustuck == mtmp &&
-			    levl[mtmp->mx][mtmp->my].typ == POOL) {
+			    levl[(int)mtmp->mx][(int)mtmp->my].typ == POOL) {
 				pline("%s drowns you ...", Monnam(mtmp));
 				done("drowned");
 			}
@@ -290,7 +346,7 @@ register struct monst *mtmp;
 #ifndef NOWORM
 	case 'w':
 		if(tmp) wormhit(mtmp);
-#endif NOWORM
+#endif /* NOWORM */
 		break;
 	case 'X':
 		(void) hitu(mtmp,rnd(5));
@@ -298,7 +354,7 @@ register struct monst *mtmp;
 		(void) hitu(mtmp,rnd(5));
 		break;
 	case 'x':
-		{ register long side = rn2(2) ? RIGHT_SIDE : LEFT_SIDE;
+		{ long side = rn2(2) ? RIGHT_SIDE : LEFT_SIDE;
 		  pline("%s pricks in your %s leg!",
 			Monnam(mtmp), (side == RIGHT_SIDE) ? "right" : "left");
 		  set_wounded_legs(side, rnd(50));
@@ -322,11 +378,10 @@ register struct monst *mtmp;
 	return(0);
 }
 
-hitu(mtmp,dam)
-register struct monst *mtmp;
-register dam;
+int
+hitu(struct monst *mtmp, int dam)
 {
-	register tmp, res;
+	int tmp, res;
 
 	nomul(0);
 	if(u.uswallow) return(0);
@@ -334,9 +389,8 @@ register dam;
 	if(mtmp->mhide && mtmp->mundetected) {
 		mtmp->mundetected = 0;
 		if(!Blind) {
-			register struct obj *obj;
-			extern char * Xmonnam();
-			if(obj = o_at(mtmp->mx,mtmp->my))
+			struct obj *obj;
+			if ((obj = o_at(mtmp->mx,mtmp->my)))
 				pline("%s was hidden under %s!",
 					Xmonnam(mtmp), doname(obj));
 		}

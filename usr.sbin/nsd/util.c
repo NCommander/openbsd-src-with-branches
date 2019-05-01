@@ -393,6 +393,28 @@ write_socket(int s, const void *buf, size_t size)
 	return 1;
 }
 
+void get_time(struct timespec* t)
+{
+	struct timeval tv;
+#ifdef HAVE_CLOCK_GETTIME
+	/* first try nanosecond precision */
+	if(clock_gettime(CLOCK_REALTIME, t)>=0) {
+		return; /* success */
+	}
+	log_msg(LOG_ERR, "clock_gettime: %s", strerror(errno));
+#endif
+	/* try millisecond precision */
+	if(gettimeofday(&tv, NULL)>=0) {
+		t->tv_sec = tv.tv_sec;
+		t->tv_nsec = tv.tv_usec*1000;
+		return; /* success */
+	}
+	log_msg(LOG_ERR, "gettimeofday: %s", strerror(errno));
+	/* whole seconds precision */
+	t->tv_sec = time(0);
+	t->tv_nsec = 0;
+}
+
 int
 timespec_compare(const struct timespec *left,
 		 const struct timespec *right)
@@ -465,6 +487,10 @@ strtoserial(const char* nptr, const char** endptr)
 		case '7':
 		case '8':
 		case '9':
+			if((i*10)/10 != i)
+				/* number too large, return i
+				 * with *endptr != 0 as a failure*/
+				return i;
 			i *= 10;
 			i += (**endptr - '0');
 			break;
@@ -1059,3 +1085,38 @@ addr2str(
 		str, len))
 		strlcpy(str, "[unknown ip4, inet_ntop failed]", len);
 }
+
+void
+append_trailing_slash(const char** dirname, region_type* region)
+{
+	int l = strlen(*dirname);
+	if (l>0 && (*dirname)[l-1] != '/' && l < 0xffffff) {
+		char *dirname_slash = region_alloc(region, l+2);
+		memcpy(dirname_slash, *dirname, l+1);
+		strlcat(dirname_slash, "/", l+2);
+		/* old dirname is leaked, this is only used for chroot, once */
+		*dirname = dirname_slash;
+	}
+}
+
+int
+file_inside_chroot(const char* fname, const char* chr)
+{
+	/* true if filename starts with chroot or is not absolute */
+	return ((fname && fname[0] && strncmp(fname, chr, strlen(chr)) == 0) ||
+		(fname && fname[0] != '/'));
+}
+
+/*
+ * Something went wrong, give error messages and exit.
+ */
+void
+error(const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	log_vmsg(LOG_ERR, format, args);
+	va_end(args);
+	exit(1);
+}
+

@@ -13,34 +13,24 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_scalbf.c,v 1.3 1995/05/10 20:46:12 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
 #ifdef _SCALB_INT
-#ifdef __STDC__
-	float __ieee754_scalbf(float x, int fn)
-#else
-	float __ieee754_scalbf(x,fn)
-	float x; int fn;
-#endif
-#else
-#ifdef __STDC__
-	float __ieee754_scalbf(float x, float fn)
-#else
-	float __ieee754_scalbf(x,fn)
-	float x, fn;
-#endif
-#endif
+float
+scalbf(float x, int fn)
 {
-#ifdef _SCALB_INT
 	return scalbnf(x,fn);
+}
+DEF_NONSTD(scalbf);
+
 #else
-	if (isnanf(x)||isnanf(fn)) return x*fn;
-	if (!finitef(fn)) {
+
+float
+scalbf(float x, float fn)
+{
+	if (isnan(x)||isnan(fn)) return x*fn;
+	if (!isfinite(fn)) {
 	    if(fn>(float)0.0) return x*fn;
 	    else       return x/(-fn);
 	}
@@ -48,5 +38,6 @@ static char rcsid[] = "$NetBSD: e_scalbf.c,v 1.3 1995/05/10 20:46:12 jtc Exp $";
 	if ( fn > (float)65000.0) return scalbnf(x, 65000);
 	if (-fn > (float)65000.0) return scalbnf(x,-65000);
 	return scalbnf(x,(int)fn);
-#endif
 }
+DEF_NONSTD(scalbf);
+#endif

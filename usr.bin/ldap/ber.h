@@ -1,7 +1,7 @@
-/*	$OpenBSD: ber.h,v 1.3 2018/02/08 18:02:06 jca Exp $ */
+/*	$OpenBSD: ber.h,v 1.7 2018/08/12 22:04:09 rob Exp $ */
 
 /*
- * Copyright (c) 2007 Reyk Floeter <reyk@vantronix.net>
+ * Copyright (c) 2007, 2012 Reyk Floeter <reyk@openbsd.org>
  * Copyright (c) 2006, 2007 Claudio Jeker <claudio@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -17,13 +17,24 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef _BER_H
+#define _BER_H
+
+struct ber_octetstring {
+	size_t			 ostr_len;
+	const void		*ostr_val;
+};
+
 struct ber_element {
 	struct ber_element	*be_next;
-	unsigned long		 be_type;
-	unsigned long		 be_encoding;
+	unsigned int		 be_type;
+	unsigned int		 be_encoding;
 	size_t			 be_len;
+	off_t			 be_offs;
 	int			 be_free;
 	u_int8_t		 be_class;
+	void			(*be_cb)(void *, size_t);
+	void			*be_cbarg;
 	union {
 		struct ber_element	*bv_sub;
 		void			*bv_val;
@@ -35,6 +46,7 @@ struct ber_element {
 };
 
 struct ber {
+	off_t	 br_offs;
 	u_char	*br_wbuf;
 	u_char	*br_wptr;
 	u_char	*br_wend;
@@ -42,11 +54,11 @@ struct ber {
 	u_char	*br_rptr;
 	u_char	*br_rend;
 
-	unsigned long	(*br_application)(struct ber_element *);
+	unsigned int	(*br_application)(struct ber_element *);
 };
 
 /* well-known ber_element types */
-#define BER_TYPE_DEFAULT	((unsigned long)-1)
+#define BER_TYPE_DEFAULT	((unsigned int)-1)
 #define BER_TYPE_EOC		0
 #define BER_TYPE_BOOLEAN	1
 #define BER_TYPE_INTEGER	2
@@ -68,8 +80,9 @@ struct ber {
 #define BER_CLASS_MASK		0x3
 
 /* common definitions */
-#define BER_MIN_OID_LEN		2	/* OBJECT */
-#define BER_MAX_OID_LEN		32	/* OBJECT */
+#define BER_MIN_OID_LEN		2		/* OBJECT */
+#define BER_MAX_OID_LEN		32		/* OBJECT */
+#define BER_MAX_SEQ_ELEMENTS	USHRT_MAX	/* 65535 */
 
 struct ber_oid {
 	u_int32_t	bo_id[BER_MAX_OID_LEN + 1];
@@ -77,9 +90,9 @@ struct ber_oid {
 };
 
 __BEGIN_DECLS
-struct ber_element	*ber_get_element(unsigned long);
+struct ber_element	*ber_get_element(unsigned int);
 void			 ber_set_header(struct ber_element *, int,
-			    unsigned long);
+			    unsigned int);
 void			 ber_link_elements(struct ber_element *,
 			    struct ber_element *);
 struct ber_element	*ber_unlink_elements(struct ber_element *);
@@ -96,9 +109,13 @@ int			 ber_get_boolean(struct ber_element *, int *);
 struct ber_element	*ber_add_string(struct ber_element *, const char *);
 struct ber_element	*ber_add_nstring(struct ber_element *, const char *,
 			    size_t);
+struct ber_element	*ber_add_ostring(struct ber_element *,
+			    struct ber_octetstring *);
 int			 ber_get_string(struct ber_element *, char **);
 int			 ber_get_nstring(struct ber_element *, void **,
 			    size_t *);
+int			 ber_get_ostring(struct ber_element *,
+			    struct ber_octetstring *);
 struct ber_element	*ber_add_bitstring(struct ber_element *, const void *,
 			    size_t);
 int			 ber_get_bitstring(struct ber_element *, void **,
@@ -116,12 +133,20 @@ int			 ber_string2oid(const char *, struct ber_oid *);
 struct ber_element	*ber_printf_elements(struct ber_element *, char *, ...);
 int			 ber_scanf_elements(struct ber_element *, char *, ...);
 ssize_t			 ber_get_writebuf(struct ber *, void **);
-int			 ber_write_elements(struct ber *, struct ber_element *);
+ssize_t			 ber_write_elements(struct ber *, struct ber_element *);
 void			 ber_set_readbuf(struct ber *, void *, size_t);
 struct ber_element	*ber_read_elements(struct ber *, struct ber_element *);
+off_t			 ber_getpos(struct ber_element *);
+void			 ber_free_element(struct ber_element *);
 void			 ber_free_elements(struct ber_element *);
 size_t			 ber_calc_len(struct ber_element *);
 void			 ber_set_application(struct ber *,
-			    unsigned long (*)(struct ber_element *));
+			    unsigned int (*)(struct ber_element *));
+void			 ber_set_writecallback(struct ber_element *,
+			    void (*)(void *, size_t), void *);
 void			 ber_free(struct ber *);
+int			 ber_oid_cmp(struct ber_oid *, struct ber_oid *);
+
 __END_DECLS
+
+#endif /* _BER_H */

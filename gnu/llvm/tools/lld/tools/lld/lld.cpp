@@ -60,6 +60,7 @@ static Flavor getFlavor(StringRef S) {
       .Default(Invalid);
 }
 
+#ifndef __OpenBSD__
 static bool isPETarget(const std::vector<const char *> &V) {
   for (auto It = V.begin(); It + 1 != V.end(); ++It) {
     if (StringRef(*It) != "-m")
@@ -69,6 +70,7 @@ static bool isPETarget(const std::vector<const char *> &V) {
   }
   return false;
 }
+#endif
 
 static Flavor parseProgname(StringRef Progname) {
 #if __APPLE__
@@ -127,15 +129,19 @@ int main(int Argc, const char **Argv) {
   std::vector<const char *> Args(Argv, Argv + Argc);
   switch (parseFlavor(Args)) {
   case Gnu:
+#ifndef __OpenBSD__
     if (isPETarget(Args))
       return !mingw::link(Args);
+#endif
     return !elf::link(Args, canExitEarly());
+#ifndef __OpenBSD__
   case WinLink:
     return !coff::link(Args, canExitEarly());
   case Darwin:
     return !mach_o::link(Args, canExitEarly());
   case Wasm:
     return !wasm::link(Args, canExitEarly());
+#endif
   default:
     die("lld is a generic driver.\n"
         "Invoke ld.lld (Unix), ld64.lld (macOS), lld-link (Windows), wasm-lld"

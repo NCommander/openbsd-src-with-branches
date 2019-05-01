@@ -1,5 +1,4 @@
-/*	$NetBSD: siginterrupt.c,v 1.6 1995/03/04 01:56:00 cgd Exp $	*/
-
+/*	$OpenBSD: siginterrupt.c,v 1.7 2015/09/09 16:10:03 guenther Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,28 +28,19 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)siginterrupt.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: siginterrupt.c,v 1.6 1995/03/04 01:56:00 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <signal.h>
 
 /*
  * Set signal state to prevent restart of system calls
  * after an instance of the indicated signal.
  */
-siginterrupt(sig, flag)
-	int sig, flag;
+int
+siginterrupt(int sig, int flag)
 {
-	extern sigset_t __sigintr;
 	struct sigaction sa;
 	int ret;
 
-	if ((ret = sigaction(sig, (struct sigaction *)0, &sa)) < 0)
+	if ((ret = WRAP(sigaction)(sig, NULL, &sa)) < 0)
 		return (ret);
 	if (flag) {
 		sigaddset(&__sigintr, sig);
@@ -63,5 +49,5 @@ siginterrupt(sig, flag)
 		sigdelset(&__sigintr, sig);
 		sa.sa_flags |= SA_RESTART;
 	}
-	return (sigaction(sig, &sa, (struct sigaction *)0));
+	return (sigaction(sig, &sa, NULL));
 }

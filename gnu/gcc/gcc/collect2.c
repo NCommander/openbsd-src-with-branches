@@ -797,6 +797,11 @@ main (int argc, char **argv)
 
   no_demangle = !! getenv ("COLLECT_NO_DEMANGLE");
 
+  if (pledge ("stdio rpath wpath cpath proc exec", NULL) == -1) {
+      error ("cannot pledge");
+      collect_exit (1);
+  }
+
   /* Suppress demangling by the real linker, which may be broken.  */
   putenv (xstrdup ("COLLECT_NO_DEMANGLE="));
 
@@ -890,6 +895,10 @@ main (int argc, char **argv)
 #ifdef SIGBUS
   if (signal (SIGBUS, SIG_IGN) != SIG_IGN)
     signal (SIGBUS, handler);
+#endif
+#ifdef SIGPIPE
+  if (signal (SIGPIPE, SIG_IGN) != SIG_IGN)
+    signal (SIGPIPE, handler);
 #endif
 
   /* Extract COMPILER_PATH and PATH into our prefix list.  */

@@ -1,7 +1,10 @@
+/*	$OpenBSD: lexi.c,v 1.19 2015/08/20 22:32:41 deraadt Exp $	*/
+
 /*
- * Copyright (c) 1985 Sun Microsystems, Inc.
- * Copyright (c) 1980 The Regents of the University of California.
+ * Copyright (c) 1980, 1993
+ *	The Regents of the University of California.
  * Copyright (c) 1976 Board of Trustees of the University of Illinois.
+ * Copyright (c) 1985 Sun Microsystems, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,11 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)lexi.c	5.16 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: lexi.c,v 1.2 1993/08/01 18:14:31 mycroft Exp $";
-#endif /* not lint */
-
 /*
  * Here we have the token scanner for indent.  It scans off one token and puts
  * it in the global variable "token".  It returns a code, indicating the type
@@ -48,6 +42,7 @@ static char rcsid[] = "$Id: lexi.c,v 1.2 1993/08/01 18:14:31 mycroft Exp $";
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <err.h>
 #include "indent_globs.h"
 #include "indent_codes.h"
 
@@ -59,38 +54,40 @@ struct templ {
     int         rwcode;
 };
 
-struct templ specials[100] =
-{
-    "switch", 1,
-    "case", 2,
-    "break", 0,
-    "struct", 3,
-    "union", 3,
-    "enum", 3,
-    "default", 2,
-    "int", 4,
-    "char", 4,
-    "float", 4,
-    "double", 4,
-    "long", 4,
-    "short", 4,
-    "typdef", 4,
-    "unsigned", 4,
-    "register", 4,
-    "static", 4,
-    "global", 4,
-    "extern", 4,
-    "void", 4,
-    "goto", 0,
-    "return", 0,
-    "if", 5,
-    "while", 5,
-    "for", 5,
-    "else", 6,
-    "do", 6,
-    "sizeof", 7,
-    0, 0
+struct templ specialsinit[] = {
+	{ "switch", 1 },
+	{ "case", 2 },
+	{ "break", 0 },
+	{ "struct", 3 },
+	{ "union", 3 },
+	{ "enum", 3 },
+	{ "default", 2 },
+	{ "int", 4 },
+	{ "char", 4 },
+	{ "float", 4 },
+	{ "double", 4 },
+	{ "long", 4 },
+	{ "short", 4 },
+	{ "typedef", 4 },
+	{ "unsigned", 4 },
+	{ "register", 4 },
+	{ "static", 4 },
+	{ "global", 4 },
+	{ "extern", 4 },
+	{ "void", 4 },
+	{ "goto", 0 },
+	{ "return", 0 },
+	{ "if", 5 },
+	{ "while", 5 },
+	{ "for", 5 },
+	{ "else", 6 },
+	{ "do", 6 },
+	{ "sizeof", 7 },
 };
+
+struct templ *specials = specialsinit;
+int	nspecials = sizeof(specialsinit) / sizeof(specialsinit[0]);
+int	maxspecials;
 
 char        chartype[128] =
 {				/* this is used to facilitate the decision of
@@ -118,15 +115,15 @@ char        chartype[128] =
 
 
 int
-lexi()
+lexi(void)
 {
     int         unary_delim;	/* this is set to 1 if the current token
-				 * 
 				 * forces a following operator to be unary */
     static int  last_code;	/* the last token type returned */
     static int  l_struct;	/* set to 1 if the last token was 'struct' */
     int         code;		/* internal code to be returned */
     char        qchar;		/* the delimiter character for a string */
+    int		i;
 
     e_token = s_token;		/* point to start of place to save token */
     unary_delim = false;
@@ -142,18 +139,18 @@ lexi()
     }
 
     /* Scan an alphanumeric token */
-    if (chartype[*buf_ptr] == alphanum || buf_ptr[0] == '.' && isdigit(buf_ptr[1])) {
+    if (chartype[(int)*buf_ptr] == alphanum ||
+	(buf_ptr[0] == '.' && isdigit((unsigned char)buf_ptr[1]))) {
 	/*
 	 * we have a character or number
 	 */
-	register char *j;	/* used for searching thru list of
-				 * 
-				 * reserved words */
-	register struct templ *p;
-
-	if (isdigit(*buf_ptr) || buf_ptr[0] == '.' && isdigit(buf_ptr[1])) {
+	char *j;	/* used for searching thru list of
+			 * reserved words */
+	if (isdigit((unsigned char)*buf_ptr) ||
+	    (buf_ptr[0] == '.' && isdigit((unsigned char)buf_ptr[1]))) {
 	    int         seendot = 0,
-	                seenexp = 0;
+	                seenexp = 0,
+			seensfx = 0;
 	    if (*buf_ptr == '0' &&
 		    (buf_ptr[1] == 'x' || buf_ptr[1] == 'X')) {
 		*e_token++ = *buf_ptr++;
@@ -165,14 +162,15 @@ lexi()
 	    }
 	    else
 		while (1) {
-		    if (*buf_ptr == '.')
+		    if (*buf_ptr == '.') {
 			if (seendot)
 			    break;
 			else
 			    seendot++;
+		    }
 		    CHECK_SIZE_TOKEN;
 		    *e_token++ = *buf_ptr++;
-		    if (!isdigit(*buf_ptr) && *buf_ptr != '.')
+		    if (!isdigit((unsigned char)*buf_ptr) && *buf_ptr != '.') {
 			if ((*buf_ptr != 'E' && *buf_ptr != 'e') || seenexp)
 			    break;
 			else {
@@ -183,12 +181,36 @@ lexi()
 			    if (*buf_ptr == '+' || *buf_ptr == '-')
 				*e_token++ = *buf_ptr++;
 			}
+		    }
 		}
-	    if (*buf_ptr == 'L' || *buf_ptr == 'l')
+	    while (1) {
+		if (!(seensfx & 1) &&
+			(*buf_ptr == 'U' || *buf_ptr == 'u')) {
+		    CHECK_SIZE_TOKEN;
+		    *e_token++ = *buf_ptr++;
+		    seensfx |= 1;
+		    continue;
+		}
+        	if (!(seensfx & 2) &&
+			(*buf_ptr == 'L' || *buf_ptr == 'l')) {
+		    CHECK_SIZE_TOKEN;
+		    if (buf_ptr[1] == buf_ptr[0])
+		        *e_token++ = *buf_ptr++;
+		    *e_token++ = *buf_ptr++;
+		    seensfx |= 2;
+		    continue;
+		}
+		break;
+	    }
+	    if (!(seensfx & 1) &&    
+	        (*buf_ptr == 'F' || *buf_ptr == 'f')) {
+		CHECK_SIZE_TOKEN;
 		*e_token++ = *buf_ptr++;
+		seensfx |= 1;
+	    }
 	}
 	else
-	    while (chartype[*buf_ptr] == alphanum) {	/* copy it over */
+	    while (chartype[(int)*buf_ptr] == alphanum) {	/* copy it over */
 		CHECK_SIZE_TOKEN;
 		*e_token++ = *buf_ptr++;
 		if (buf_ptr >= buf_end)
@@ -208,15 +230,16 @@ lexi()
 	    ps.last_u_d = true;
 	    return (decl);
 	}
-	ps.last_u_d = false;	/* Operator after indentifier is binary */
+	ps.last_u_d = false;	/* Operator after identifier is binary */
 	last_code = ident;	/* Remember that this is the code we will
 				 * return */
 
 	/*
 	 * This loop will check if the token is a keyword.
 	 */
-	for (p = specials; (j = p->rwd) != 0; p++) {
-	    register char *p = s_token;	/* point at scanned token */
+	for (i = 0; i < nspecials; i++) {
+	    char *p = s_token;	/* point at scanned token */
+	    j = specials[i].rwd;
 	    if (*j++ != *p++ || *j++ != *p++)
 		continue;	/* This test depends on the fact that
 				 * identifiers are always at least 1 character
@@ -229,11 +252,11 @@ lexi()
 		    goto found_keyword;	/* I wish that C had a multi-level
 					 * break... */
 	}
-	if (p->rwd) {		/* we have a keyword */
+	if (i < nspecials) {		/* we have a keyword */
     found_keyword:
 	    ps.its_a_keyword = true;
 	    ps.last_u_d = true;
-	    switch (p->rwcode) {
+	    switch (specials[i].rwcode) {
 	    case 1:		/* it is a switch */
 		return (swstmt);
 	    case 2:		/* a case or default */
@@ -270,11 +293,11 @@ lexi()
 	    }			/* end of switch */
 	}			/* end of if (found_it) */
 	if (*buf_ptr == '(' && ps.tos <= 1 && ps.ind_level == 0) {
-	    register char *tp = buf_ptr;
+	    char *tp = buf_ptr;
 	    while (tp < buf_end)
 		if (*tp++ == ')' && (*tp == ';' || *tp == ','))
 		    goto not_proc;
-	    strncpy(ps.procname, token, sizeof ps.procname - 1);
+	    strlcpy(ps.procname, token, sizeof ps.procname);
 	    ps.in_parameter_declaration = 1;
 	    rparen_count = 1;
     not_proc:;
@@ -284,7 +307,8 @@ lexi()
 	 * token is in fact a declaration keyword -- one that has been
 	 * typedefd
 	 */
-	if (((*buf_ptr == '*' && buf_ptr[1] != '=') || isalpha(*buf_ptr) || *buf_ptr == '_')
+	if (((*buf_ptr == '*' && buf_ptr[1] != '=') ||
+	    isalpha((unsigned char)*buf_ptr) || *buf_ptr == '_')
 		&& !ps.p_l_follow
 	        && !ps.block_init
 		&& (ps.last_token == rparen || ps.last_token == semicolon ||
@@ -540,21 +564,42 @@ stop_lit:
 /*
  * Add the given keyword to the keyword table, using val as the keyword type
  */
-addkey(key, val)
-    char       *key;
+void
+addkey(char *key, int val)
 {
-    register struct templ *p = specials;
-    while (p->rwd)
+    struct templ *p;
+    int i;
+
+    for (i = 0; i < nspecials; i++) {
+	p = &specials[i];
 	if (p->rwd[0] == key[0] && strcmp(p->rwd, key) == 0)
 	    return;
-	else
-	    p++;
-    if (p >= specials + sizeof specials / sizeof specials[0])
-	return;			/* For now, table overflows are silently
-				 * ignored */
+    }
+
+    if (specials == specialsinit) {
+	/*
+	 * Whoa. Must reallocate special table.
+	 */
+	nspecials = sizeof (specialsinit) / sizeof (specialsinit[0]);
+	maxspecials = nspecials + (nspecials >> 2);
+	specials = calloc(maxspecials, sizeof specials[0]);
+	if (specials == NULL)
+	    err(1, NULL);
+	memcpy(specials, specialsinit, sizeof specialsinit);
+    } else if (nspecials >= maxspecials) {
+	int newspecials = maxspecials + (maxspecials >> 2);
+	struct templ *specials2;
+
+	specials2 = reallocarray(specials, newspecials, sizeof(specials[0]));
+	if (specials2 == NULL)
+	    err(1, NULL);
+	specials = specials2;
+	maxspecials = newspecials;
+    }
+
+    p = &specials[nspecials];
     p->rwd = key;
     p->rwcode = val;
-    p[1].rwd = 0;
-    p[1].rwcode = 0;
+    nspecials++;
     return;
 }

@@ -1,4 +1,5 @@
-/*	$NetBSD: lmin.c,v 1.2 1994/10/26 06:42:28 cgd Exp $	*/
+/*	$OpenBSD: lmin.c,v 1.3 2003/06/02 23:28:08 millert Exp $	*/
+/*	$NetBSD: lmin.c,v 1.3 1996/03/14 18:52:10 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1991 Regents of the University of California.
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,9 +32,11 @@
  *	@(#)subr_xxx.c	7.10 (Berkeley) 4/20/91
  */
 
+#define LIBKERN_INLINE
+#include <lib/libkern/libkern.h>
+
 long
-lmin(a, b)
-	long a, b;
+lmin(long a, long b)
 {
 	return (a < b ? a : b);
 }

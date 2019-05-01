@@ -1,3 +1,4 @@
+/*	$OpenBSD: talk.h,v 1.11 2009/05/09 11:05:01 chl Exp $	*/
 /*	$NetBSD: talk.h,v 1.3 1994/12/09 02:14:27 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,11 +32,19 @@
  *	@(#)talk.h	8.1 (Berkeley) 6/6/93
  */
 
+#include <netinet/in.h>
+#include <protocols/talkd.h>
+
 #include <curses.h>
+#include <signal.h>
 
 extern	int sockt;
 extern	int curses_initialized;
 extern	int invitation_waiting;
+extern	int high_print;
+
+extern	bool smooth_scroll;
+extern	volatile sig_atomic_t gotwinch;
 
 extern	char *current_state;
 extern	int current_line;
@@ -58,3 +63,30 @@ typedef struct xwin {
 extern	xwin_t my_win;
 extern	xwin_t his_win;
 extern	WINDOW *line_win;
+
+void	announce_invite(void);
+int	check_local(void);
+void	ctl_transact(struct in_addr, CTL_MSG, int, CTL_RESPONSE *);
+void	display(xwin_t *, char *, int);
+void	disp_msg(int);
+void	end_msgs(void);
+void	get_addrs(char *, char *);
+void	get_names(int, char **);
+void	init_display(void);
+void	invite_remote(void);
+int	look_for_invite(CTL_RESPONSE *);
+int	max(int, int);
+void	message(char *);
+void	open_ctl(void);
+void	open_sockt(void);
+void	quit(char *, int);
+int	readwin(WINDOW *, int, int);
+void	re_invite(int);
+void	send_delete(void);
+void	set_edit_chars(void);
+void	sig_sent(int);
+void	sig_winch(int);
+void	start_msgs(void);
+void	talk(void);
+void	xscroll(xwin_t *, int);
+void	resize_display(void);

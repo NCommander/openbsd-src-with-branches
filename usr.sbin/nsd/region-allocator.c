@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "region-allocator.h"
 #include "util.h"
@@ -22,12 +23,17 @@
 #ifdef ALIGNMENT
 #undef ALIGNMENT
 #endif
+#ifndef PACKED_STRUCTS
 #define REGION_ALIGN_UP(x, s)     (((x) + s - 1) & (~(s - 1)))
 #if SIZEOF_OFF_T > SIZEOF_VOIDP
 #define ALIGNMENT	(sizeof(off_t))
 #else
 #define ALIGNMENT	(sizeof(void *))
 #endif
+#else
+#define REGION_ALIGN_UP(x, s) ((x)<SIZEOF_VOIDP?SIZEOF_VOIDP:(x))
+#define ALIGNMENT 1
+#endif /* PACKED_STRUCTS */
 /* #define CHECK_DOUBLE_FREE 0 */ /* set to 1 to perform expensive check for double recycle() */
 
 typedef struct cleanup cleanup_type;
@@ -284,7 +290,13 @@ region_alloc(region_type *region, size_t size)
 			return NULL;
 
 		wasted = (region->chunk_size - region->allocated) & (~(ALIGNMENT-1));
-		if(wasted >= ALIGNMENT) {
+		if(
+#ifndef PACKED_STRUCTS
+			wasted >= ALIGNMENT
+#else
+			wasted >= SIZEOF_VOIDP
+#endif
+			) {
 			/* put wasted part in recycle bin for later use */
 			region->total_allocated += wasted;
 			++region->small_objects;
@@ -479,7 +491,7 @@ region_dump_stats(region_type *region, FILE *out)
 		(unsigned long) region->chunk_count,
 		(unsigned long) region->cleanup_count,
 		(unsigned long) region->recycle_size);
-	if(1 && region->recycle_bin) {
+	if(region->recycle_bin) {
 		/* print details of the recycle bin */
 		size_t i;
 		for(i=0; i<region->large_object_size; i++) {
@@ -529,7 +541,7 @@ region_log_stats(region_type *region)
 	len = strlen(str);
 	str+=len;
 	strl-=len;
-	if(1 && region->recycle_bin) {
+	if(region->recycle_bin) {
 		/* print details of the recycle bin */
 		size_t i;
 		for(i=0; i<region->large_object_size; i++) {

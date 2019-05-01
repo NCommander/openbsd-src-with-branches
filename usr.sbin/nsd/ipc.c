@@ -20,15 +20,17 @@
 #include "xfrd.h"
 #include "xfrd-notify.h"
 #include "difffile.h"
+#include "rrl.h"
 
 /* attempt to send NSD_STATS command to child fd */
 static void send_stat_to_child(struct main_ipc_handler_data* data, int fd);
 /* send reload request over the IPC channel */
-static void xfrd_send_reload_req(xfrd_state_t* xfrd);
+static void xfrd_send_reload_req(xfrd_state_type* xfrd);
 /* send quit request over the IPC channel */
-static void xfrd_send_quit_req(xfrd_state_t* xfrd);
+static void xfrd_send_quit_req(xfrd_state_type* xfrd);
 /* perform read part of handle ipc for xfrd */
-static void xfrd_handle_ipc_read(struct event* handler, xfrd_state_t* xfrd);
+static void xfrd_handle_ipc_read(struct event* handler, xfrd_state_type* xfrd);
+static void ipc_child_quit(struct nsd* nsd) ATTR_NORETURN;
 
 static void
 ipc_child_quit(struct nsd* nsd)
@@ -39,9 +41,12 @@ ipc_child_quit(struct nsd* nsd)
 	bind8_stats(nsd);
 #endif /* BIND8_STATS */
 
-#if 0 /* OS collects memory pages */
-	event_base_free(event_base);
-	region_destroy(server_region);
+#ifdef MEMCLEAN /* OS collects memory pages */
+#ifdef RATELIMIT
+	rrl_deinit(nsd->this_child->child_num);
+#endif
+	event_base_free(nsd->event_base);
+	region_destroy(nsd->server_region);
 #endif
 	server_shutdown(nsd);
 	exit(0);
@@ -82,7 +87,10 @@ child_handle_parent_command(int fd, short event, void* arg)
 		server_close_all_sockets(data->nsd->udp, data->nsd->ifs);
 		server_close_all_sockets(data->nsd->tcp, data->nsd->ifs);
 		/* mode == NSD_QUIT_CHILD */
-		(void)write(fd, &mode, sizeof(mode));
+		if(write(fd, &mode, sizeof(mode)) == -1) {
+			VERBOSITY(3, (LOG_INFO, "quit child write: %s",
+				strerror(errno)));
+		}
 		ipc_child_quit(data->nsd);
 		break;
 	case NSD_QUIT_WITH_STATS:
@@ -251,17 +259,17 @@ void
 stats_add(struct nsdst* total, struct nsdst* s)
 {
 	unsigned i;
-	for(i=0; i<sizeof(total->qtype)/sizeof(stc_t); i++)
+	for(i=0; i<sizeof(total->qtype)/sizeof(stc_type); i++)
 		total->qtype[i] += s->qtype[i];
-	for(i=0; i<sizeof(total->qclass)/sizeof(stc_t); i++)
+	for(i=0; i<sizeof(total->qclass)/sizeof(stc_type); i++)
 		total->qclass[i] += s->qclass[i];
 	total->qudp += s->qudp;
 	total->qudp6 += s->qudp6;
 	total->ctcp += s->ctcp;
 	total->ctcp6 += s->ctcp6;
-	for(i=0; i<sizeof(total->rcode)/sizeof(stc_t); i++)
+	for(i=0; i<sizeof(total->rcode)/sizeof(stc_type); i++)
 		total->rcode[i] += s->rcode[i];
-	for(i=0; i<sizeof(total->opcode)/sizeof(stc_t); i++)
+	for(i=0; i<sizeof(total->opcode)/sizeof(stc_type); i++)
 		total->opcode[i] += s->opcode[i];
 	total->dropped += s->dropped;
 	total->truncated += s->truncated;
@@ -282,17 +290,17 @@ void
 stats_subtract(struct nsdst* total, struct nsdst* s)
 {
 	unsigned i;
-	for(i=0; i<sizeof(total->qtype)/sizeof(stc_t); i++)
+	for(i=0; i<sizeof(total->qtype)/sizeof(stc_type); i++)
 		total->qtype[i] -= s->qtype[i];
-	for(i=0; i<sizeof(total->qclass)/sizeof(stc_t); i++)
+	for(i=0; i<sizeof(total->qclass)/sizeof(stc_type); i++)
 		total->qclass[i] -= s->qclass[i];
 	total->qudp -= s->qudp;
 	total->qudp6 -= s->qudp6;
 	total->ctcp -= s->ctcp;
 	total->ctcp6 -= s->ctcp6;
-	for(i=0; i<sizeof(total->rcode)/sizeof(stc_t); i++)
+	for(i=0; i<sizeof(total->rcode)/sizeof(stc_type); i++)
 		total->rcode[i] -= s->rcode[i];
-	for(i=0; i<sizeof(total->opcode)/sizeof(stc_t); i++)
+	for(i=0; i<sizeof(total->opcode)/sizeof(stc_type); i++)
 		total->opcode[i] -= s->opcode[i];
 	total->dropped -= s->dropped;
 	total->truncated -= s->truncated;
@@ -550,7 +558,7 @@ parent_handle_reload_command(netio_type *ATTR_UNUSED(netio),
 }
 
 static void
-xfrd_send_reload_req(xfrd_state_t* xfrd)
+xfrd_send_reload_req(xfrd_state_type* xfrd)
 {
 	sig_atomic_t req = NSD_RELOAD;
 	uint64_t p = xfrd->last_task->data;
@@ -595,7 +603,7 @@ ipc_xfrd_set_listening(struct xfrd_state* xfrd, short mode)
 }
 
 static void
-xfrd_send_shutdown_req(xfrd_state_t* xfrd)
+xfrd_send_shutdown_req(xfrd_state_type* xfrd)
 {
 	sig_atomic_t cmd = NSD_SHUTDOWN;
 	xfrd->ipc_send_blocked = 1;
@@ -609,7 +617,7 @@ xfrd_send_shutdown_req(xfrd_state_t* xfrd)
 }
 
 static void
-xfrd_send_quit_req(xfrd_state_t* xfrd)
+xfrd_send_quit_req(xfrd_state_type* xfrd)
 {
 	sig_atomic_t cmd = NSD_QUIT;
 	xfrd->ipc_send_blocked = 1;
@@ -623,7 +631,7 @@ xfrd_send_quit_req(xfrd_state_t* xfrd)
 }
 
 static void
-xfrd_send_stats(xfrd_state_t* xfrd)
+xfrd_send_stats(xfrd_state_type* xfrd)
 {
 	sig_atomic_t cmd = NSD_STATS;
 	DEBUG(DEBUG_IPC,1, (LOG_INFO, "xfrd: ipc send stats"));
@@ -637,14 +645,14 @@ xfrd_send_stats(xfrd_state_t* xfrd)
 void
 xfrd_handle_ipc(int ATTR_UNUSED(fd), short event, void* arg)
 {
-	xfrd_state_t* xfrd = (xfrd_state_t*)arg;
-        if ((event & EV_READ))
+	xfrd_state_type* xfrd = (xfrd_state_type*)arg;
+	if ((event & EV_READ))
 	{
 		/* first attempt to read as a signal from main
 		 * could block further send operations */
 		xfrd_handle_ipc_read(&xfrd->ipc_handler, xfrd);
 	}
-        if ((event & EV_WRITE))
+	if ((event & EV_WRITE))
 	{
 		if(xfrd->ipc_send_blocked) { /* wait for RELOAD_DONE */
 			ipc_xfrd_set_listening(xfrd, EV_PERSIST|EV_READ);
@@ -671,10 +679,10 @@ xfrd_handle_ipc(int ATTR_UNUSED(fd), short event, void* arg)
 }
 
 static void
-xfrd_handle_ipc_read(struct event* handler, xfrd_state_t* xfrd)
+xfrd_handle_ipc_read(struct event* handler, xfrd_state_type* xfrd)
 {
-        sig_atomic_t cmd;
-        int len;
+	sig_atomic_t cmd;
+	int len;
 
 	if(xfrd->ipc_conn->is_reading==2) {
 		buffer_type* tmp = xfrd->ipc_pass;
@@ -722,26 +730,26 @@ xfrd_handle_ipc_read(struct event* handler, xfrd_state_t* xfrd)
 		return;
 	}
 
-        if((len = read(handler->ev_fd, &cmd, sizeof(cmd))) == -1) {
+	if((len = read(handler->ev_fd, &cmd, sizeof(cmd))) == -1) {
 		if(errno != EINTR && errno != EAGAIN)
-                	log_msg(LOG_ERR, "xfrd_handle_ipc: read: %s",
-                        	strerror(errno));
-                return;
-        }
-        if(len == 0)
-        {
+			log_msg(LOG_ERR, "xfrd_handle_ipc: read: %s",
+				strerror(errno));
+		return;
+	}
+	if(len == 0)
+	{
 		/* parent closed the connection. Quit */
 		DEBUG(DEBUG_IPC,1, (LOG_INFO, "xfrd: main closed connection."));
 		xfrd->shutdown = 1;
 		return;
-        }
+	}
 
-        switch(cmd) {
-        case NSD_QUIT:
-        case NSD_SHUTDOWN:
+	switch(cmd) {
+	case NSD_QUIT:
+	case NSD_SHUTDOWN:
 		DEBUG(DEBUG_IPC,1, (LOG_INFO, "xfrd: main sent shutdown cmd."));
-                xfrd->shutdown = 1;
-                break;
+		xfrd->shutdown = 1;
+		break;
 	case NSD_RELOAD_DONE:
 		/* reload has finished */
 		DEBUG(DEBUG_IPC,1, (LOG_INFO, "xfrd: ipc recv RELOAD_DONE"));
@@ -777,11 +785,11 @@ xfrd_handle_ipc_read(struct event* handler, xfrd_state_t* xfrd)
 		ipc_xfrd_set_listening(xfrd, EV_PERSIST|EV_READ|EV_WRITE);
 		xfrd->need_to_send_quit = 1;
 		break;
-        default:
-                log_msg(LOG_ERR, "xfrd_handle_ipc: bad mode %d (%d)", (int)cmd,
+	default:
+		log_msg(LOG_ERR, "xfrd_handle_ipc: bad mode %d (%d)", (int)cmd,
 			(int)ntohl(cmd));
-                break;
-        }
+		break;
+	}
 
 	if(xfrd->ipc_conn->is_reading) {
 		/* setup read of info */

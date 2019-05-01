@@ -67,6 +67,7 @@ public:
   enum RegisterSavedWhere {
     kRegisterUnused,
     kRegisterInCFA,
+    kRegisterInCFADecrypt,
     kRegisterOffsetFromCFA,
     kRegisterInRegister,
     kRegisterAtExpression,
@@ -646,6 +647,17 @@ bool CFI_Parser<A>::parseInstructions(A &addressSpace, pint_t instructions,
       _LIBUNWIND_TRACE_DWARF("DW_CFA_val_expression(reg=%" PRIu64 ", "
                              "expression=0x%" PRIx64 ", length=%" PRIu64 ")\n",
                              reg, results->savedRegisters[reg].value, length);
+      break;
+    case DW_CFA_GNU_window_save:
+      // Hardcodes windowed registers for SPARC
+      for (reg = 16; reg < 32; reg++) {
+       if (reg == 31)
+         results->savedRegisters[reg].location = kRegisterInCFADecrypt;
+       else
+         results->savedRegisters[reg].location = kRegisterInCFA;
+       results->savedRegisters[reg].value = (reg - 16) * sizeof(pint_t);
+      }
+      _LIBUNWIND_TRACE_DWARF("DW_CFA_GNU_window_save");
       break;
     case DW_CFA_GNU_args_size:
       length = addressSpace.getULEB128(p, instructionsEnd);

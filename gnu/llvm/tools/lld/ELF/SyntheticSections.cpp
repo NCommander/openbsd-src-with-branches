@@ -1266,6 +1266,8 @@ template <class ELFT> void DynamicSection<ELFT>::finalizeContents() {
     DtFlags |= DF_SYMBOLIC;
   if (Config->ZInitfirst)
     DtFlags1 |= DF_1_INITFIRST;
+  if (Config->ZInterpose)
+    DtFlags1 |= DF_1_INTERPOSE;
   if (Config->ZNodelete)
     DtFlags1 |= DF_1_NODELETE;
   if (Config->ZNodlopen)
@@ -2935,7 +2937,9 @@ void elf::mergeSections() {
     }
 
     StringRef OutsecName = getOutputSectionName(MS);
-    uint32_t Alignment = std::max<uint32_t>(MS->Alignment, MS->Entsize);
+    uint32_t Alignment = MS->Alignment;
+    if (isPowerOf2_32(MS->Entsize))
+        Alignment = std::max<uint32_t>(Alignment, MS->Entsize);
 
     auto I = llvm::find_if(MergeSections, [=](MergeSyntheticSection *Sec) {
       // While we could create a single synthetic section for two different

@@ -1,4 +1,4 @@
-/* crypto/ec/ec.h */
+/* $OpenBSD: ec.h,v 1.15 2019/01/19 01:12:48 tb Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -83,7 +83,6 @@
 #endif
 
 #include <openssl/asn1.h>
-#include <openssl/symhacks.h>
 #ifndef OPENSSL_NO_DEPRECATED
 #include <openssl/bn.h>
 #endif
@@ -396,6 +395,8 @@ typedef struct {
  * are filled with the data of the first nitems internal groups */
 size_t EC_get_builtin_curves(EC_builtin_curve *r, size_t nitems);
 
+const char *EC_curve_nid2nist(int nid);
+int EC_curve_nist2nid(const char *name);
 
 /********************************************************************/
 /*                    EC_POINT functions                            */
@@ -696,9 +697,7 @@ int i2d_ECPKParameters(const EC_GROUP *, unsigned char **out);
 #ifndef OPENSSL_NO_BIO
 int     ECPKParameters_print(BIO *bp, const EC_GROUP *x, int off);
 #endif
-#ifndef OPENSSL_NO_FP_API
 int     ECPKParameters_print_fp(FILE *fp, const EC_GROUP *x, int off);
-#endif
 
 
 /********************************************************************/
@@ -706,6 +705,7 @@ int     ECPKParameters_print_fp(FILE *fp, const EC_GROUP *x, int off);
 /********************************************************************/
 
 typedef struct ec_key_st EC_KEY;
+typedef struct ec_key_method_st EC_KEY_METHOD;
 
 /* some values for the encoding_flag */
 #define EC_PKEY_NO_PARAMETERS	0x001
@@ -912,7 +912,7 @@ EC_KEY *o2i_ECPublicKey(EC_KEY **key, const unsigned char **in, long len);
  *               of bytes needed).
  *  \return 1 on success and 0 if an error occurred
  */
-int i2o_ECPublicKey(EC_KEY *key, unsigned char **out);
+int i2o_ECPublicKey(const EC_KEY *key, unsigned char **out);
 
 #ifndef OPENSSL_NO_BIO
 /** Prints out the ec parameters on human readable form.
@@ -931,7 +931,6 @@ int	ECParameters_print(BIO *bp, const EC_KEY *key);
 int	EC_KEY_print(BIO *bp, const EC_KEY *key, int off);
 
 #endif
-#ifndef OPENSSL_NO_FP_API
 /** Prints out the ec parameters on human readable form.
  *  \param  fp   file descriptor to which the information is printed
  *  \param  key  EC_KEY object
@@ -947,9 +946,45 @@ int	ECParameters_print_fp(FILE *fp, const EC_KEY *key);
  */
 int	EC_KEY_print_fp(FILE *fp, const EC_KEY *key, int off);
 
-#endif
+#define EC_KEY_get_ex_new_index(l, p, newf, dupf, freef) \
+    CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_EC_KEY, l, p, newf, dupf, freef)
+int EC_KEY_set_ex_data(EC_KEY *key, int idx, void *arg);
+void *EC_KEY_get_ex_data(const EC_KEY *key, int idx);
 
-#define ECParameters_dup(x) ASN1_dup_of(EC_KEY,i2d_ECParameters,d2i_ECParameters,x)
+const EC_KEY_METHOD *EC_KEY_OpenSSL(void);
+const EC_KEY_METHOD *EC_KEY_get_default_method(void);
+void EC_KEY_set_default_method(const EC_KEY_METHOD *meth);
+const EC_KEY_METHOD *EC_KEY_get_method(const EC_KEY *key);
+int EC_KEY_set_method(EC_KEY *key, const EC_KEY_METHOD *meth);
+EC_KEY *EC_KEY_new_method(ENGINE *engine);
+EC_KEY_METHOD *EC_KEY_METHOD_new(const EC_KEY_METHOD *meth);
+void EC_KEY_METHOD_free(EC_KEY_METHOD *meth);
+void EC_KEY_METHOD_set_init(EC_KEY_METHOD *meth,
+    int (*init)(EC_KEY *key),
+    void (*finish)(EC_KEY *key),
+    int (*copy)(EC_KEY *dest, const EC_KEY *src),
+    int (*set_group)(EC_KEY *key, const EC_GROUP *grp),
+    int (*set_private)(EC_KEY *key, const BIGNUM *priv_key),
+    int (*set_public)(EC_KEY *key, const EC_POINT *pub_key));
+void EC_KEY_METHOD_set_keygen(EC_KEY_METHOD *meth,
+    int (*keygen)(EC_KEY *key));
+void EC_KEY_METHOD_set_compute_key(EC_KEY_METHOD *meth,
+    int (*ckey)(void *out, size_t outlen, const EC_POINT *pub_key, EC_KEY *ecdh,
+	void *(*KDF) (const void *in, size_t inlen, void *out, size_t *outlen)));
+void EC_KEY_METHOD_get_init(const EC_KEY_METHOD *meth,
+    int (**pinit)(EC_KEY *key),
+    void (**pfinish)(EC_KEY *key),
+    int (**pcopy)(EC_KEY *dest, const EC_KEY *src),
+    int (**pset_group)(EC_KEY *key, const EC_GROUP *grp),
+    int (**pset_private)(EC_KEY *key, const BIGNUM *priv_key),
+    int (**pset_public)(EC_KEY *key, const EC_POINT *pub_key));
+void EC_KEY_METHOD_get_keygen(const EC_KEY_METHOD *meth,
+    int (**pkeygen)(EC_KEY *key));
+void EC_KEY_METHOD_get_compute_key(const EC_KEY_METHOD *meth,
+    int (**pck)(void *out, size_t outlen, const EC_POINT *pub_key, EC_KEY *ecdh,
+	void *(*KDF) (const void *in, size_t inlen, void *out, size_t *outlen)));
+
+EC_KEY *ECParameters_dup(EC_KEY *key);
 
 #ifndef __cplusplus
 #if defined(__SUNPRO_C)
@@ -996,6 +1031,12 @@ void ERR_load_EC_strings(void);
 #define EC_F_ECP_NIST_MOD_224				 204
 #define EC_F_ECP_NIST_MOD_256				 205
 #define EC_F_ECP_NIST_MOD_521				 206
+#define EC_F_ECP_NISTZ256_GET_AFFINE			 240
+#define EC_F_ECP_NISTZ256_MULT_PRECOMPUTE		 243
+#define EC_F_ECP_NISTZ256_POINTS_MUL			 241
+#define EC_F_ECP_NISTZ256_PRE_COMP_NEW			 244
+#define EC_F_ECP_NISTZ256_SET_WORDS			 245
+#define EC_F_ECP_NISTZ256_WINDOWED_MUL			 242
 #define EC_F_EC_ASN1_GROUP2CURVE			 153
 #define EC_F_EC_ASN1_GROUP2FIELDID			 154
 #define EC_F_EC_ASN1_GROUP2PARAMETERS			 155

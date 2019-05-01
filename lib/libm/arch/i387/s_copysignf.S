@@ -1,11 +1,10 @@
+/*	$OpenBSD: s_copysignf.S,v 1.3 2016/09/12 19:47:02 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
-
-RCSID("$NetBSD: s_copysignf.S,v 1.3 1995/05/08 23:53:25 jtc Exp $")
+#include "DEFS.h"
 
 ENTRY(copysignf)
 	movl	8(%esp),%edx
@@ -16,3 +15,4 @@ ENTRY(copysignf)
 	movl	%eax,4(%esp)
 	flds	4(%esp)
 	ret
+END_STD(copysignf)
