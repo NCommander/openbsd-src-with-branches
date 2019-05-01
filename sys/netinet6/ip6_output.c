@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.238 2018/07/12 15:51:50 mpi Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.239 2018/08/28 15:15:02 mpi Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -1620,8 +1620,12 @@ ip6_raw_ctloutput(int op, struct socket *so, int level, int optname,
 				break;
 			}
 			optval = *mtod(m, int *);
-			if ((optval % 2) != 0) {
-				/* the API assumes even offset values */
+			if (optval < -1 ||
+			    (optval > 0 && (optval % 2) != 0)) {
+				/*
+				 * The API assumes non-negative even offset
+				 * values or -1 as a special value.
+				 */
 				error = EINVAL;
 			} else if (so->so_proto->pr_protocol == IPPROTO_ICMPV6) {
 				if (optval != icmp6off)
