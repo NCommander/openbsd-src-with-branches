@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.125 2017/12/04 13:40:35 bluhm Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.126 2018/02/01 21:11:33 bluhm Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -185,7 +185,16 @@ rip6_input(struct mbuf **mp, int *offp, int proto, int af)
 		}
 		if (proto != IPPROTO_ICMPV6 && in6p->inp_cksum6 != -1) {
 			rip6stat_inc(rip6s_isum);
-			if (in6_cksum(m, proto, *offp,
+			/*
+			 * Although in6_cksum() does not need the position of
+			 * the checksum field for verification, enforce that it
+			 * is located within the packet.  Userland has given
+			 * a checksum offset, a packet too short for that is
+			 * invalid.  Avoid overflow with user supplied offset.
+			 */
+			if (m->m_pkthdr.len < *offp + 2 ||
+			    m->m_pkthdr.len - *offp - 2 < in6p->inp_cksum6 ||
+			    in6_cksum(m, proto, *offp,
 			    m->m_pkthdr.len - *offp)) {
 				rip6stat_inc(rip6s_badsum);
 				continue;
@@ -440,7 +449,7 @@ rip6_output(struct mbuf *m, struct socket *so, struct sockaddr *dstaddr,
 			off = offsetof(struct icmp6_hdr, icmp6_cksum);
 		else
 			off = in6p->inp_cksum6;
-		if (plen < off + 1) {
+		if (plen < 2 || plen - 2 < off) {
 			error = EINVAL;
 			goto bad;
 		}
