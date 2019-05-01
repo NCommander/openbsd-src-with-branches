@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2019/04/30 17:46:04 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.17 2019/04/30 21:14:59 deraadt Exp $
 
 CDROM=		install${OSrev}.iso
 RELXDIR?=	/home/relx-${MACHINE}
@@ -29,7 +29,7 @@ ${CDROM}: ${BASE} ${XBASE}
 	cp -p ${RELDIR}/ofwboot ${.OBJDIR}/cd-dir/
 
 
-	mkhybrid -v -v -r -part -hfs \
+	mkhybrid -r -part -hfs \
 	    -hfs-bless ${.OBJDIR}/cd-dir/${OSREV}/${MACHINE} \
 	    -map ${.CURDIR}/../../../gnu/usr.sbin/mkhybrid/src/more.mapping \
 	    -A "OpenBSD ${OSREV} ${MACHINE} Install CD" \
