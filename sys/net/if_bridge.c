@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.327 2019/04/15 03:26:55 visa Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.328 2019/04/28 22:15:57 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -1162,6 +1162,7 @@ bridge_process(struct ifnet *ifp, struct mbuf *m)
 		bridge_ifinput(ifp, mc);
 
 		bridgeintr_frame(brifp, ifp, m);
+		if_put(brifp);
 		return;
 	}
 
