@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.313 2019/02/01 03:52:23 dtucker Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.314 2019/02/27 19:37:01 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1252,6 +1252,7 @@ ssh_login(struct ssh *ssh, Sensitive *sensitive, const char *orighost,
 	ssh_kex2(ssh, host, hostaddr, port);
 	ssh_userauth2(ssh, local_user, server_user, host, sensitive);
 	free(local_user);
+	free(host);
 }
 
 /* print all known host keys for a given host, but skip keys of given type */
