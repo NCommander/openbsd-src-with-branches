@@ -1,4 +1,4 @@
-/* $OpenBSD: cfg.c,v 1.67 2019/04/03 06:43:19 nicm Exp $ */
+/* $OpenBSD: cfg.c,v 1.68 2019/04/18 11:07:28 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -302,9 +302,10 @@ load_cfg(const char *path, struct client *c, struct cmdq_item *item, int quiet)
 		free(buf);
 
 		new_item = cmdq_get_command(cmdlist, NULL, NULL, 0);
-		if (item != NULL)
+		if (item != NULL) {
 			cmdq_insert_after(item, new_item);
-		else
+			item = new_item;
+		} else
 			cmdq_append(c, new_item);
 		cmd_list_free(cmdlist);
 
