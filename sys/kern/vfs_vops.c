@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vops.c,v 1.19 2018/06/21 14:17:23 visa Exp $	*/
+/*	$OpenBSD: vfs_vops.c,v 1.20 2019/02/17 22:17:28 tedu Exp $	*/
 /*
  * Copyright (c) 2010 Thordur I. Bjornsson <thib@openbsd.org> 
  *
@@ -687,7 +687,6 @@ VOP_PATHCONF(struct vnode *vp, int name, register_t *retval)
 int
 VOP_ADVLOCK(struct vnode *vp, void *id, int op, struct flock *fl, int flags)
 {
-	int r;
 	struct vop_advlock_args a;
 	a.a_vp = vp;
 	a.a_id = id;
@@ -698,10 +697,7 @@ VOP_ADVLOCK(struct vnode *vp, void *id, int op, struct flock *fl, int flags)
 	if (vp->v_op->vop_advlock == NULL)
 		return (EOPNOTSUPP);
 
-	vp->v_inflight++;
-	r = (vp->v_op->vop_advlock)(&a);
-	vp->v_inflight--;
-	return r;
+	return (vp->v_op->vop_advlock)(&a);
 }
 
 int
