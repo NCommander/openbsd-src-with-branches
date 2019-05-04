@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ixl.c,v 1.36 2019/04/10 13:56:09 phessler Exp $ */
+/*	$OpenBSD: if_ixl.c,v 1.37 2019/04/15 03:26:55 visa Exp $ */
 
 /*
  * Copyright (c) 2013-2015, Intel Corporation
@@ -3707,7 +3707,7 @@ ixl_search_link_speed(uint8_t link_speed)
 	const struct ixl_speed_type *type;
 	unsigned int i;
 
-	for (i = 0; i < nitems(ixl_phy_type_map); i++) {
+	for (i = 0; i < nitems(ixl_speed_type_map); i++) {
 		type = &ixl_speed_type_map[i];
 
 		if (ISSET(type->dev_speed, link_speed))
