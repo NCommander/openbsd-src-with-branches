@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: sysupgrade.sh,v 1.11 2019/05/03 14:48:13 ian Exp $
+# $OpenBSD: sysupgrade.sh,v 1.12 2019/05/03 15:18:14 florian Exp $
 #
 # Copyright (c) 1997-2015 Todd Miller, Theo de Raadt, Ken Westerback
 # Copyright (c) 2015 Robert Peichaer <rpe@openbsd.org>
@@ -76,6 +76,8 @@ while getopts fnrs arg; do
 	*)	usage;;
 	esac
 done
+
+(($(id -u) != 0)) && ug_err "${0##*/}: need root privileges"
 
 if $RELEASE && $SNAP; then
 	usage
