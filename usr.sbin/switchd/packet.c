@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.4 2016/09/26 08:55:43 rzalamena Exp $	*/
+/*	$OpenBSD: packet.c,v 1.5 2017/08/06 17:31:19 rob Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -50,14 +50,10 @@ packet_ether_unicast(uint8_t *ea)
 }
 
 int
-packet_input(struct switchd *sc, struct switch_control *sw, uint32_t srcport,
-    uint32_t *dstport, struct ibuf *ibuf, size_t len, struct packet *pkt)
+packet_ether_input(struct ibuf *ibuf, size_t len, struct packet *pkt)
 {
 	struct ether_header	*eh;
-	struct macaddr		*src, *dst;
 
-	if (sw == NULL)
-		return (-1);
 	if (len < sizeof(*eh))
 		return (-1);
 
@@ -66,8 +62,24 @@ packet_input(struct switchd *sc, struct switch_control *sw, uint32_t srcport,
 		log_debug("short packet");
 		return (-1);
 	}
-	len -= sizeof(*eh);
 
+	pkt->pkt_eh = eh;
+	pkt->pkt_buf = (uint8_t *)eh;
+
+	return (0);
+}
+
+int
+packet_input(struct switchd *sc, struct switch_control *sw, uint32_t srcport,
+    uint32_t *dstport, struct packet *pkt)
+{
+	struct ether_header	*eh;
+	struct macaddr		*src, *dst;
+
+	if (sw == NULL)
+		return (-1);
+
+	eh = pkt->pkt_eh;
 	if ((packet_ether_unicast(eh->ether_shost) == -1) ||
 	    (src = switch_learn(sc, sw, eh->ether_shost, srcport)) == NULL)
 		return (-1);
@@ -85,9 +97,6 @@ packet_input(struct switchd *sc, struct switch_control *sw, uint32_t srcport,
 
 	if (dstport)
 		*dstport = dst == NULL ? OFP_PORT_ANY : dst->mac_port;
-
-	pkt->pkt_eh = eh;
-	pkt->pkt_buf = (uint8_t *)eh;
 
 	return (0);
 }
