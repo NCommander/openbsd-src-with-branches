@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootconfig.h,v 1.4 2011/11/08 22:41:41 krw Exp $	*/
+/*	$OpenBSD: bootconfig.h,v 1.1 2013/09/04 14:38:26 patrick Exp $	*/
 /*	$NetBSD: bootconfig.h,v 1.2 2001/06/21 22:08:28 chris Exp $	*/
 
 /*
@@ -62,7 +62,7 @@ typedef struct _BootConfig {
 extern BootConfig bootconfig;
 
 #endif	/* _KERNEL || _STANDALONE */
-#if defined(_KERNEL) 
+#if defined(_KERNEL)
 extern char *boot_args;
 extern char *boot_file;
 #endif	/* _KERNEL */
