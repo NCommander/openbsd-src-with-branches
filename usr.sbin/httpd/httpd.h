@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.143 2019/02/19 11:37:26 pirofti Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.144 2019/05/03 17:16:27 tb Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -475,7 +475,7 @@ struct fastcgi_param {
 	char			name[HTTPD_FCGI_NAME_MAX];
 	char			value[HTTPD_FCGI_VAL_MAX];
 
-	TAILQ_ENTRY(fastcgi_param) entry;	
+	TAILQ_ENTRY(fastcgi_param) entry;
 };
 TAILQ_HEAD(server_fcgiparams, fastcgi_param);
 
