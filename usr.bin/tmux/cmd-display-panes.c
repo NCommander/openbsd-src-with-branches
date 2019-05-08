@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-display-panes.c,v 1.23 2019/02/06 07:36:06 nicm Exp $ */
+/* $OpenBSD: cmd-display-panes.c,v 1.24 2019/05/07 20:01:41 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -18,7 +18,6 @@
 
 #include <sys/types.h>
 
-#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
