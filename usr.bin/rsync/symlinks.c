@@ -1,4 +1,4 @@
-/*	$Id: symlinks.c,v 1.3 2019/02/11 21:41:22 deraadt Exp $ */
+/*	$Id: symlinks.c,v 1.4 2019/05/08 20:00:25 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -29,7 +29,7 @@
  * The buffer must be passed to free() by the caller.
  */
 char *
-symlink_read(struct sess *sess, const char *path)
+symlink_read(const char *path)
 {
 	char	*buf = NULL;
 	size_t	 sz;
@@ -68,7 +68,7 @@ symlink_read(struct sess *sess, const char *path)
  * The buffer must be passed to free() by the caller.
  */
 char *
-symlinkat_read(struct sess *sess, int fd, const char *path)
+symlinkat_read(int fd, const char *path)
 {
 	char	*buf = NULL;
 	size_t	 sz;

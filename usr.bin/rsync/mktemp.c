@@ -1,4 +1,4 @@
-/*	$OpenBSD: mktemp.c,v 1.8 2019/04/02 11:05:55 deraadt Exp $ */
+/*	$OpenBSD: mktemp.c,v 1.9 2019/05/08 20:00:25 benno Exp $ */
 /*
  * Copyright (c) 1996-1998, 2008 Theo de Raadt
  * Copyright (c) 1997, 2008-2009 Todd C. Miller
@@ -283,7 +283,7 @@ mkstempsock(const char *root, char *path)
  * (excluding the final '\0').
  */
 int
-mktemplate(struct sess *sess, char **ret, const char *path, int recursive)
+mktemplate(char **ret, const char *path, int recursive)
 {
 	int		 n, dirlen;
 	const char	*cp;
