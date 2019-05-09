@@ -1,9 +1,0 @@
-.\" $OpenBSD$
-.Dd "bad date"
-.Dt DD-BADARG 1
-.Os
-.Sh NAME
-.Nm Dd-badarg
-.Nd date cannot be parsed
-.Sh DESCRIPTION
-some text
