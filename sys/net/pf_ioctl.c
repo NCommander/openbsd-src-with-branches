@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.342 2018/12/27 16:54:01 kn Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.343 2019/02/18 13:11:44 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -40,6 +40,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #include <sys/filio.h>
 #include <sys/fcntl.h>
@@ -2902,4 +2903,19 @@ pf_rule_copyin(struct pf_rule *from, struct pf_rule *to,
 	to->set_prio[1] = from->set_prio[1];
 
 	return (0);
+}
+
+int
+pf_sysctl(void *oldp, size_t *oldlenp, void *newp, size_t newlen)
+{
+	struct pf_status	pfs;
+
+	NET_RLOCK();
+	PF_LOCK();
+	memcpy(&pfs, &pf_status, sizeof(struct pf_status));
+	pfi_update_status(pfs.ifname, &pfs);
+	PF_UNLOCK();
+	NET_RUNLOCK();
+
+	return sysctl_rdstruct(oldp, oldlenp, newp, &pfs, sizeof(pfs));
 }
