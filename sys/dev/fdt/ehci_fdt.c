@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci_fdt.c,v 1.3 2017/12/30 16:32:52 kettenis Exp $ */
+/*	$OpenBSD: ehci_fdt.c,v 1.4 2018/08/06 10:52:30 patrick Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -195,6 +195,7 @@ ehci_next_phy(uint32_t *cells)
 void
 ehci_init_phy(struct ehci_fdt_softc *sc, uint32_t *cells)
 {
+	uint32_t phy_supply;
 	int node;
 	int i;
 
@@ -208,6 +209,10 @@ ehci_init_phy(struct ehci_fdt_softc *sc, uint32_t *cells)
 			return;
 		}
 	}
+
+	phy_supply = OF_getpropint(node, "phy-supply", 0);
+	if (phy_supply)
+		regulator_enable(phy_supply);
 }
 
 void
