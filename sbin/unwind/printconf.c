@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.7 2019/04/01 03:31:55 florian Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.8 2019/04/02 07:47:22 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -109,4 +109,7 @@ print_config(struct uw_conf *conf)
 		printf("\tauto %s\n", yesno(conf->captive_portal_auto));
 		printf("}\n");
 	}
+
+	if (conf->blocklist_file != NULL)
+		printf("block list \"%s\"\n", conf->blocklist_file);
 }
