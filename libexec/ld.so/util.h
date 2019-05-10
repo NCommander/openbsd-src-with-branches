@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.h,v 1.33 2018/10/23 04:01:45 guenther Exp $	*/
+/*	$OpenBSD: util.h,v 1.34 2019/01/25 00:19:26 millert Exp $	*/
 
 /*
  * Copyright (c) 1998 Todd C. Miller <millert@openbsd.org>
@@ -35,8 +35,18 @@
 #include <stdarg.h>
 #include <stddef.h>		/* for NULL */
 
+#ifndef __boot
+# if DO_CLEAN_BOOT
+#  define __boot	__attribute__((section(".boot.text")))
+#  define __boot_data	__attribute__((section(".boot.data")))
+# else
+#  define __boot
+#  define __boot_data
+# endif
+#endif
+
 __BEGIN_HIDDEN_DECLS
-void _dl_malloc_init(void);
+void _dl_malloc_init(void) __boot;
 void *_dl_malloc(size_t size);
 void *_dl_calloc(size_t nmemb, const size_t size);
 void *_dl_realloc(void *, size_t size);
