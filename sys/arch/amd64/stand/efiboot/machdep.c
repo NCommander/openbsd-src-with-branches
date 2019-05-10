@@ -34,6 +34,8 @@
 #include <machine/specialreg.h>
 #include <machine/vmmvar.h>
 
+#include "efiboot.h"
+
 volatile struct BIOS_regs	BIOS_regs;
 
 #if defined(DEBUG)
@@ -89,5 +91,5 @@ int
 check_skip_conf(void)
 {
 	/* Return non-zero (skip boot.conf) if Control "shift" key down */
-	return (pc_getshifts(0) & 0x04);
+	return (efi_cons_getshifts(0) & 0x04);
 }
