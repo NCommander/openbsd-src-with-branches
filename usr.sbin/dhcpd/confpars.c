@@ -1,4 +1,4 @@
-/*	$OpenBSD: confpars.c,v 1.33 2017/04/24 14:58:36 krw Exp $ */
+/*	$OpenBSD: confpars.c,v 1.34 2019/05/08 22:00:55 krw Exp $ */
 
 /*
  * Copyright (c) 1995, 1996, 1997 The Internet Software Consortium.
@@ -1491,7 +1491,9 @@ push_domain_list(char ***domains, size_t *count, char *domain)
 static void
 free_domain_list(char **domains, size_t count)
 {
-	for (size_t i = 0; i < count; i++)
+	size_t i;
+
+	for (i = 0; i < count; i++)
 		free(domains[i]);
 	free(domains);
 }
@@ -1504,7 +1506,7 @@ parse_domain_and_comp(FILE *cfile)
 	char		 *val, *domain;
 	unsigned char	 *buf = NULL;
 	unsigned char	**bufptrs = NULL;
-	size_t		  bufsiz = 0, bufn = 0, count = 0;
+	size_t		  bufsiz = 0, bufn = 0, count = 0, i;
 	int		  token = ';';
 
 	do {
@@ -1543,7 +1545,7 @@ parse_domain_and_comp(FILE *cfile)
 	/* dn_comp takes an int for the output buffer size */
 	if (!(bufsiz <= INT_MAX))
 		fatalx("Size of compressed domain buffer too large");
-	for (size_t i = 0; i < count; i++) {
+	for (i = 0; i < count; i++) {
 		int n;
 
 		/* see bufsiz <= INT_MAX assertion, above */
