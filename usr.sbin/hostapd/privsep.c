@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.24 2015/01/16 06:40:17 deraadt Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.25 2016/02/02 17:51:11 sthen Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@openbsd.org>
@@ -23,7 +23,6 @@
 #include <sys/time.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 #include <net/if_arp.h>
 #include <net/if_llc.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: brconfig.c,v 1.19 2018/02/24 06:31:47 dlg Exp $	*/
+/*	$OpenBSD: brconfig.c,v 1.20 2018/07/13 08:41:32 krw Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -36,7 +36,6 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 #include <net/if_bridge.h>

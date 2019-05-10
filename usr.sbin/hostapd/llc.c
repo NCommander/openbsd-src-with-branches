@@ -1,4 +1,4 @@
-/*	$OpenBSD: llc.c,v 1.5 2007/02/08 11:15:55 reyk Exp $	*/
+/*	$OpenBSD: llc.c,v 1.6 2015/01/16 06:40:17 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@openbsd.org>
@@ -22,7 +22,6 @@
 #include <sys/time.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 #include <net/if_arp.h>
 #include <net/if_llc.h>

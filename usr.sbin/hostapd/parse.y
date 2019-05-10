@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.59 2018/11/01 00:18:44 sashan Exp $	*/
+/*	$OpenBSD: parse.y,v 1.60 2019/02/13 22:57:08 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005, 2006 Reyk Floeter <reyk@openbsd.org>
@@ -29,7 +29,6 @@
 #include <sys/stat.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_media.h>
 #include <net/if_arp.h>
 #include <net/if_llc.h>

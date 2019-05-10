@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.400 2019/04/15 12:04:37 kn Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.401 2019/04/19 04:24:25 dlg Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -75,7 +75,6 @@
 #include <arpa/inet.h>
 #include <netinet/ip_ipsp.h>
 #include <netinet/if_ether.h>
-#include <net/if_enc.h>
 #include <net80211/ieee80211.h>
 #include <net80211/ieee80211_ioctl.h>
 #include <net/pfvar.h>

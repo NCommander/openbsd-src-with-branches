@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.13 2014/10/25 03:23:49 lteo Exp $ */
+/*	$OpenBSD: packet.c,v 1.14 2015/05/05 01:26:37 jsg Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -24,7 +24,6 @@
 #include <netinet/ip.h>
 #include <netinet/ip6.h>
 #include <arpa/inet.h>
-#include <net/if_dl.h>
 
 #include <errno.h>
 #include <event.h>

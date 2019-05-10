@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.163 2019/01/19 21:07:13 krw Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.164 2019/02/16 18:42:07 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -55,7 +55,6 @@
 #include <arpa/inet.h>
 
 #include <errno.h>
-#include <ifaddrs.h>
 #include <imsg.h>
 #include <limits.h>
 #include <poll.h>

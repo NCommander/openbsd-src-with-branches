@@ -1,4 +1,4 @@
-/*	$OpenBSD: l2tp_ctrl.c,v 1.21 2015/12/05 18:43:36 mmcc Exp $	*/
+/*	$OpenBSD: l2tp_ctrl.c,v 1.22 2018/03/16 12:31:09 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -26,7 +26,7 @@
  * SUCH DAMAGE.
  */
 /**@file Control connection processing functions for L2TP LNS */
-/* $Id: l2tp_ctrl.c,v 1.21 2015/12/05 18:43:36 mmcc Exp $ */
+/* $Id: l2tp_ctrl.c,v 1.22 2018/03/16 12:31:09 mpi Exp $ */
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -36,7 +36,6 @@
 #include <endian.h>
 #include <errno.h>
 #include <event.h>
-#include <ifaddrs.h>
 #include <netdb.h>
 #include <stdarg.h>
 #include <stddef.h>
