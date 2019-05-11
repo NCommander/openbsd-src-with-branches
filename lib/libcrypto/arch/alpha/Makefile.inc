@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.2 2014/05/03 17:23:55 miod Exp $
+# $OpenBSD: Makefile.inc,v 1.3 2014/11/17 20:31:21 miod Exp $
 
 # alpha-specific libcrypto build rules
 
@@ -19,8 +19,6 @@ CFLAGS+= -DGHASH_ASM
 SSLASM+= modes ghash-alpha
 # rc4
 SRCS+= rc4_enc.c rc4_skey.c
-## rc5
-#SRCS+= rc5_enc.c 
 # sha
 CFLAGS+= -DSHA1_ASM
 SSLASM+= sha sha1-alpha
