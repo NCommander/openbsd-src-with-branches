@@ -1,4 +1,4 @@
-/* $OpenBSD: resize.c,v 1.30 2019/03/16 17:14:07 nicm Exp $ */
+/* $OpenBSD: resize.c,v 1.31 2019/04/17 14:43:49 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -174,11 +174,12 @@ recalculate_sizes(void)
 	TAILQ_FOREACH(c, &clients, entry) {
 		if (ignore_client_size(c))
 			continue;
-		if (c->tty.sy <= status_line_size(c))
+		s = c->session;
+		if (c->tty.sy <= s->statuslines || (c->flags & CLIENT_CONTROL))
 			c->flags |= CLIENT_STATUSOFF;
 		else
 			c->flags &= ~CLIENT_STATUSOFF;
-		c->session->attached++;
+		s->attached++;
 	}
 
 	/* Walk each window and adjust the size. */
