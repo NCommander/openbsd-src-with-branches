@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.h,v 1.80 2018/08/05 09:33:13 mestre Exp $	*/
+/*	$OpenBSD: snmpd.h,v 1.81 2019/01/08 15:38:36 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -31,10 +31,10 @@
 #include <net/pfvar.h>
 #include <net/route.h>
 
+#include <ber.h>
 #include <stdio.h>
 #include <imsg.h>
 
-#include "ber.h"
 #include "snmp.h"
 
 #ifndef nitems

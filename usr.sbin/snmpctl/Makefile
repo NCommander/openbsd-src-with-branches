@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.7 2014/04/14 12:56:21 blambert Exp $
+#	$OpenBSD: Makefile,v 1.8 2019/01/17 06:21:46 tedu Exp $
 
 .PATH:		${.CURDIR}/../snmpd
 
 PROG=		snmpctl
-SRCS=		log.c ber.c smi.c snmpclient.c snmpctl.c parser.c agentx.c
+SRCS=		log.c smi.c snmpclient.c snmpctl.c parser.c agentx.c
 
 MAN=		snmpctl.8
 

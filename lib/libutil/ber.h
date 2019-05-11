@@ -1,4 +1,4 @@
-/*	$OpenBSD: ber.h,v 1.7 2018/08/12 22:04:09 rob Exp $ */
+/*	$OpenBSD: ber.h,v 1.15 2018/11/27 12:10:29 martijn Exp $ */
 
 /*
  * Copyright (c) 2007, 2012 Reyk Floeter <reyk@openbsd.org>

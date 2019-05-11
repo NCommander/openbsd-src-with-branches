@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.6 2016/11/09 20:31:56 jca Exp $	*/
+/*	$OpenBSD: util.c,v 1.7 2017/01/09 14:49:22 reyk Exp $	*/
 /*
  * Copyright (c) 2014 Bret Stephen Lambert <blambert@openbsd.org>
  *
@@ -21,12 +21,12 @@
 
 #include <net/if.h>
 
+#include <ber.h>
 #include <stdio.h>
 #include <string.h>
 #include <netdb.h>
 #include <event.h>
 
-#include "ber.h"
 #include "snmp.h"
 #include "snmpd.h"
 
