@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.3 2015/09/07 01:38:32 yasuoka Exp $
+#	$OpenBSD: Makefile,v 1.1 2019/05/11 02:33:34 mlarkin Exp $
 
 .if ${MACHINE} == "amd64"
 
-SUBDIR=		bootx64 bootia32
+SUBDIR=		bootia32
 
 .endif
 
