@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid_raid5.c,v 1.26 2016/05/31 15:19:12 jsing Exp $ */
+/* $OpenBSD: softraid_raid5.c,v 1.27 2016/10/07 19:17:50 krw Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2009 Marco Peereboom <marco@peereboom.us>
@@ -951,7 +951,5 @@ sr_raid5_scrub(struct sr_discipline *sd)
 		if (!slept)
 			tsleep(sd->sd_sc, PWAIT, "sr_yield", 1);
 	}
-done:
-	return;
 }
 #endif
