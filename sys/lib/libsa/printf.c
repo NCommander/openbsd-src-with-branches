@@ -1,4 +1,4 @@
-/*	$OpenBSD: printf.c,v 1.27 2015/06/14 10:55:50 miod Exp $	*/
+/*	$OpenBSD: printf.c,v 1.28 2018/01/17 08:46:15 patrick Exp $	*/
 /*	$NetBSD: printf.c,v 1.10 1996/11/30 04:19:21 gwr Exp $	*/
 
 /*-
@@ -132,7 +132,6 @@ reswitch:	switch (ch) {
 		case 'l':
 			lflag++;
 			goto rflag;
-#ifndef	STRIPPED
 		case 'b':
 		{
 			int set, n;
@@ -158,7 +157,6 @@ reswitch:	switch (ch) {
 				put('>');
 		}
 			break;
-#endif
 		case 'c':
 			ch = va_arg(ap, int);
 			put(ch & 0x7f);
