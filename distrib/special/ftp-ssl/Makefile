@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.11 2016/05/04 19:48:08 jca Exp $
+#	$OpenBSD: Makefile,v 1.1 2016/12/21 20:55:42 deraadt Exp $
 
 CFLAGS+=-DSMALL
 
 PROG=	ftp
-SRCS=	fetch.c ftp.c main.c small.c util.c cookie.c
+SRCS=	file.c ftp.c http.c main.c progressmeter.c url.c util.c xmalloc.c
 .PATH:	${.CURDIR}/../../../usr.bin/ftp
 
 LDADD+=	-lutil -ltls -lssl -lcrypto
