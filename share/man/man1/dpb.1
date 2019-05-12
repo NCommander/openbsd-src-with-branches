@@ -1,4 +1,4 @@
-.\"	$OpenBSD: dpb.1,v 1.12 2019/05/09 11:09:18 espie Exp $
+.\"	$OpenBSD: dpb.1,v 1.13 2019/05/12 12:20:30 espie Exp $
 .\"
 .\" Copyright (c) 2010-2013 Marc Espie <espie@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: May 9 2019 $
+.Dd $Mdocdate: May 12 2019 $
 .Dt DPB 1
 .Os
 .Sh NAME
@@ -1289,6 +1289,8 @@ figured that one yet) along with the more useful warning and die traces that
 happen when something wrong occurs.
 Especially useful for the warning messages that tend to be overwritten by
 subsequent displays.
+Will also contain error messages pertaining to failure at parsing existing 
+lock files.
 .It Pa dist/<distfile>.log
 Log of the
 .Xr ftp 1
