@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchctl.c,v 1.13 2018/11/09 14:14:31 claudio Exp $	*/
+/*	$OpenBSD: switchctl.c,v 1.14 2018/12/28 14:32:47 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2016 Kazuya GODA <goda@openbsd.org>
@@ -88,9 +88,7 @@ switchopen(dev_t dev, int flags, int mode, struct proc *p)
 
 	if ((sc = switch_dev2sc(dev)) == NULL) {
 		snprintf(name, sizeof(name), "switch%d", minor(dev));
-		NET_LOCK();
 		rv = if_clone_create(name, rdomain);
-		NET_UNLOCK();
 		if (rv != 0)
 			return (rv);
 		if ((sc = switch_dev2sc(dev)) == NULL)
