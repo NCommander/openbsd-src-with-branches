@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_switch.c,v 1.26 2019/04/28 22:15:57 mpi Exp $	*/
+/*	$OpenBSD: if_switch.c,v 1.27 2019/05/10 15:13:38 akoshibe Exp $	*/
 
 /*
  * Copyright (c) 2016 Kazuya GODA <goda@openbsd.org>
@@ -653,10 +653,7 @@ struct mbuf *
 switch_port_ingress(struct switch_softc *sc, struct ifnet *src_if,
     struct mbuf *m)
 {
-	struct switch_port	*swpo;
 	struct ether_header	 eh;
-
-	swpo = (struct switch_port *)src_if->if_switchport;
 
 	sc->sc_if.if_ipackets++;
 	sc->sc_if.if_ibytes += m->m_pkthdr.len;
