@@ -1,4 +1,4 @@
-/* $OpenBSD: style.c,v 1.18 2019/03/18 20:53:33 nicm Exp $ */
+/* $OpenBSD: style.c,v 1.19 2019/04/05 20:32:31 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -57,10 +57,8 @@ style_parse(struct style *sy, const struct grid_cell *base, const char *in)
 	style_copy(&saved, sy);
 
 	do {
-		while (*in != '\0' && strchr(delimiters, *in) != NULL) {
+		while (*in != '\0' && strchr(delimiters, *in) != NULL)
 			in++;
-			end--;
-		}
 		if (*in == '\0')
 			break;
 
