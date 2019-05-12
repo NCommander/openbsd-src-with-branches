@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmvar.h,v 1.62 2019/04/01 08:21:04 mlarkin Exp $	*/
+/*	$OpenBSD: vmmvar.h,v 1.63 2019/04/01 12:02:43 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -451,6 +451,7 @@ struct vm_exit {
 	};
 
 	struct vcpu_reg_state		vrs;
+	int				cpl;
 };
 
 struct vm_create_params {
