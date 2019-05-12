@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2018 Sunil Nimmagadda <sunil@openbsd.org>
  *

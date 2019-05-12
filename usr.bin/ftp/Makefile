@@ -1,3 +1,5 @@
+# $OpenBSD$
+
 # Define SMALL to disable command line editing
 #CFLAGS+=-DSMALL
 

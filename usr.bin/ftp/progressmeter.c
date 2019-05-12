@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2015 Sunil Nimmagadda <sunil@openbsd.org>
  * Copyright (c) 2003 Nils Nordman.  All rights reserved.
