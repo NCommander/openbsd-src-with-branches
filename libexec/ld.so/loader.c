@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.178 2019/05/10 13:29:21 guenther Exp $ */
+/*	$OpenBSD: loader.c,v 1.179 2019/05/11 21:02:35 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -228,7 +228,7 @@ _dl_dopreload(char *paths)
 
 	while ((cp = _dl_strsep(&dp, ":")) != NULL) {
 		shlib = _dl_load_shlib(cp, _dl_objects, OBJTYPE_LIB,
-		_dl_objects->obj_flags);
+		    _dl_objects->obj_flags);
 		if (shlib == NULL)
 			_dl_die("can't preload library '%s'", cp);
 		_dl_add_object(shlib);
