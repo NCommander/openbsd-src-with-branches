@@ -1,4 +1,4 @@
-.\"	$OpenBSD: mvuart.4,v 1.1 2019/05/11 15:47:58 patrick Exp $
+.\"	$OpenBSD: fusbtc.4,v 1.1 2019/05/11 16:00:12 patrick Exp $
 .\"
 .\" Copyright (c) 2019 Patrick Wildt <patrick@blueri.se>
 .\"
@@ -28,7 +28,8 @@ The
 driver provides support for the Fairchild FUSB302 USB Type-C port controller.
 It takes care of plug and unplug events on the USB Type-C port and discovers
 the orientation of the plug so that the USB SuperSpeed pins can be routed
-correctly.  Additionally it enables power on the USB Type-C port when a sink
+correctly.
+Additionally it enables power on the USB Type-C port when a sink
 is connected to power attached devices.
 .Sh SEE ALSO
 .Xr iic 4
