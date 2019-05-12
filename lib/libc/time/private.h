@@ -1,4 +1,4 @@
-/*	$OpenBSD: private.h,v 1.37 2015/04/07 01:47:04 millert Exp $	*/
+/*	$OpenBSD: private.h,v 1.38 2015/10/24 18:13:18 guenther Exp $	*/
 #ifndef PRIVATE_H
 
 #define PRIVATE_H
@@ -9,12 +9,9 @@
 */
 
 /* OpenBSD defaults */
-#define TM_GMTOFF		tm_gmtoff
-#define TM_ZONE			tm_zone
 #define PCTS			1
 #define ALL_STATE		1
 #define STD_INSPIRED		1
-#define USG_COMPAT		1
 
 /*
 ** This header is for use ONLY with the time conversion code.
