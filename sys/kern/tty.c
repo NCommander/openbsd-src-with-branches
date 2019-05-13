@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.142 2018/08/05 14:23:57 beck Exp $	*/
+/*	$OpenBSD: tty.c,v 1.143 2018/09/06 11:50:54 jsg Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -1676,11 +1676,11 @@ ttycheckoutq(struct tty *tp, int wait)
 
 	hiwat = tp->t_hiwat;
 	s = spltty();
-	oldsig = wait ? curproc->p_siglist : 0;
+	oldsig = wait ? SIGPENDING(curproc) : 0;
 	if (tp->t_outq.c_cc > hiwat + TTHIWATMINSPACE)
 		while (tp->t_outq.c_cc > hiwat) {
 			ttstart(tp);
-			if (wait == 0 || curproc->p_siglist != oldsig) {
+			if (wait == 0 || SIGPENDING(curproc) != oldsig) {
 				splx(s);
 				return (0);
 			}
