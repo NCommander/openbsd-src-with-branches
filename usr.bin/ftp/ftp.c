@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: ftp.c,v 1.102 2019/05/12 20:58:19 jasper Exp $ */
 
 /*
  * Copyright (c) 2015 Sunil Nimmagadda <sunil@openbsd.org>
@@ -343,7 +343,7 @@ ftp_eprt(FILE *fp)
 		return -1;
 	}
 
-	/* Find out the ephermal port chosen */
+	/* Find out the ephemeral port chosen */
 	len = sizeof(ss);
 	memset(&ss, 0, len);
 	if (getsockname(sock, (struct sockaddr *)&ss, &len) == -1) {
