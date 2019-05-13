@@ -1,4 +1,4 @@
-/*	$OpenBSD: pvbus.c,v 1.17 2017/06/22 06:21:12 jmatthew Exp $	*/
+/*	$OpenBSD: pvbus.c,v 1.18 2018/01/18 11:43:20 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -90,7 +90,7 @@ struct pvbus_type {
 	{ "VMwareVMware",	"VMware" },
 	{ "XenVMMXenVMM",	"Xen",	pvbus_xen, pvbus_xen_print },
 	{ "bhyve bhyve ",	"bhyve" },
-	{ VMM_HV_SIGNATURE,	"OpenBSD" },
+	{ VMM_HV_SIGNATURE,	"OpenBSD", pvbus_kvm },
 };
 
 struct bus_dma_tag pvbus_dma_tag = {
