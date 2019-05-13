@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.182 2018/08/24 12:45:27 visa Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.183 2018/11/05 17:05:50 anton Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -343,11 +343,6 @@ dodup3(struct proc *p, int old, int new, int flags, register_t *retval)
 restart:
 	if ((fp = fd_getfile(fdp, old)) == NULL)
 		return (EBADF);
-	if ((u_int)new >= p->p_rlimit[RLIMIT_NOFILE].rlim_cur ||
-	    (u_int)new >= maxfiles) {
-		FRELE(fp, p);
-		return (EBADF);
-	}
 	if (old == new) {
 		/*
 		 * NOTE! This doesn't clear the close-on-exec flag. This might
@@ -357,6 +352,11 @@ restart:
 		*retval = new;
 		FRELE(fp, p);
 		return (0);
+	}
+	if ((u_int)new >= p->p_rlimit[RLIMIT_NOFILE].rlim_cur ||
+	    (u_int)new >= maxfiles) {
+		FRELE(fp, p);
+		return (EBADF);
 	}
 	fdplock(fdp);
 	if (new >= fdp->fd_nfiles) {
