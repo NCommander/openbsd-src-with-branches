@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.68 2016/12/25 20:30:41 krw Exp $ */
+/*	$OpenBSD: nlist.c,v 1.69 2017/10/27 16:47:08 mpi Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -292,7 +292,7 @@ nlist(const char *name, struct nlist *list)
 {
 	int fd, n;
 
-	fd = open(name, O_RDONLY, 0);
+	fd = open(name, O_RDONLY | O_CLOEXEC);
 	if (fd < 0)
 		return (-1);
 	n = __fdnlist(fd, list);
