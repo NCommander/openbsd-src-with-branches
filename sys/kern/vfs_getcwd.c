@@ -1,4 +1,4 @@
-/* $OpenBSD: vfs_getcwd.c,v 1.30 2018/05/02 02:24:56 visa Exp $ */
+/* $OpenBSD: vfs_getcwd.c,v 1.31 2018/05/27 06:02:14 visa Exp $ */
 /* $NetBSD: vfs_getcwd.c,v 1.3.2.3 1999/07/11 10:24:09 sommerfeld Exp $ */
 
 /*
@@ -265,7 +265,7 @@ vfs_getcwd_getcache(struct vnode **lvpp, struct vnode **uvpp, char **bpp,
 	return (error);
 }
 
-/* Common routine shared by sys___getcwd() and vn_isunder() */
+/* Common routine shared by sys___getcwd() and vn_isunder() and sys___realpath() */
 int
 vfs_getcwd_common(struct vnode *lvp, struct vnode *rvp, char **bpp, char *bufp,
     int limit, int flags, struct proc *p)
