@@ -1,4 +1,4 @@
-/*	$OpenBSD: progressmeter.c,v 1.2 2019/05/12 20:58:19 jasper Exp $ */
+/*	$OpenBSD: progressmeter.c,v 1.3 2019/05/12 21:56:27 kmos Exp $ */
 
 /*
  * Copyright (c) 2015 Sunil Nimmagadda <sunil@openbsd.org>
@@ -248,7 +248,7 @@ refresh_progress_meter(void)
 			strlcat(buf, "    ", win_size);
 	}
 
-	write(STDERR_FILENO, buf, strlen(buf));
+	fwrite(buf, strlen(buf), 1, stderr);
 	last_update = now;
 }
 
@@ -314,7 +314,7 @@ stop_progress_meter(void)
 		refresh_progress_meter();
 
 	if (end_pos)
-		write(STDERR_FILENO, "\n", 1);
+		fprintf(stderr, "\n");
 
 	if (!verbose)
 		return;
