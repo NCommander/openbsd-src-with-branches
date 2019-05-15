@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.126 2019/05/14 18:25:31 florian Exp $ */
+/*	$OpenBSD: main.c,v 1.127 2019/05/15 11:53:22 kmos Exp $ */
 
 /*
  * Copyright (c) 2015 Sunil Nimmagadda <sunil@openbsd.org>
@@ -336,14 +336,16 @@ child(int sock, int argc, char **argv)
 		} else if ((dst_fp = fdopen(fd, "w")) == NULL)
 			err(1, "%s: fdopen", __func__);
 
+		init_stats(sz, &offset);
 		if (progressmeter) {
 			p = basename(url->path);
-			start_progress_meter(p, title, sz, &offset);
+			start_progress_meter(p, title);
 		}
 
 		url_save(url, dst_fp, &offset);
 		if (progressmeter)
 			stop_progress_meter();
+		finish_stats();
 
 		if (!tostdout)
 			fclose(dst_fp);
