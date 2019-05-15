@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.32 2017/10/17 19:31:56 naddy Exp $
+#	$OpenBSD: Makefile,v 1.33 2019/04/20 22:59:03 deraadt Exp $
 
 MAN=	pxeboot.8
 
@@ -17,7 +17,7 @@ BINMODE=644
 
 .PATH:	${SADIR}/libsa
 # i386 stuff (so, it will possibly load in the same 64k)
-SRCS+=	machdep.c exec_i386.c cmd_i386.c
+SRCS+=	machdep.c exec_i386.c cmd_i386.c run_amd64.S
 SRCS+=	gidt.S random_i386.S biosdev.c bioscons.c gateA20.c \
 	memprobe.c diskprobe.c time.c ## biosprobe.c
 SRCS+=	pxe.c pxe_call.S pxe_net.c pxe_udp.c
