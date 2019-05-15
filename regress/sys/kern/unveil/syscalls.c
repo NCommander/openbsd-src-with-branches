@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscalls.c,v 1.21 2019/02/10 16:42:35 phessler Exp $	*/
+/*	$OpenBSD: syscalls.c,v 1.22 2019/03/24 18:14:20 beck Exp $	*/
 
 /*
  * Copyright (c) 2017-2019 Bob Beck <beck@openbsd.org>
@@ -852,6 +852,23 @@ test_kn(int do_uv)
 }
 
 
+static int
+test_pathdiscover(int do_uv)
+{
+	struct stat sb;
+	if (do_uv) {
+		printf("testing path discovery\n");
+		if (unveil("/usr/share/man", "rx") == -1)
+			err(1, "%s:%d - unveil", __FILE__, __LINE__);
+	}
+	UV_SHOULD_SUCCEED((lstat("/usr/share/man", &sb) == -1), "lstat");
+	UV_SHOULD_SUCCEED((lstat("/usr/share/man/../../share/man", &sb) == -1), "lstat");
+	/* XXX XXX XXX This should fail */
+	UV_SHOULD_SUCCEED((lstat("/usr/share/man/../../local/../share/man", &sb) == -1), "lstat");
+	return 0;
+}
+
+
 int
 main (int argc, char *argv[])
 {
@@ -898,5 +915,6 @@ main (int argc, char *argv[])
 	failures += runcompare_internal(test_fork, 0);
 	failures += runcompare(test_dotdotup);
 	failures += runcompare(test_kn);
+	failures += runcompare(test_pathdiscover);
 	exit(failures);
 }
