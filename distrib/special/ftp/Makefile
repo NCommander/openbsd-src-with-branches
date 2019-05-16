@@ -3,7 +3,7 @@
 CFLAGS+=-DSMALL -DNOSSL
 
 PROG=	ftp
-SRCS=	file.c ftp.c http.c main.c progressmeter.c url.c util.c xmalloc.c
+SRCS=	fetch.c ftp.c main.c small.c util.c
 .PATH:	${.CURDIR}/../../../usr.bin/ftp
 
 LDADD+=	-lutil
