@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.102 2018/08/29 08:43:17 remi Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.103 2018/12/28 19:25:10 remi Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -561,6 +561,7 @@ int		 carp_demote_set(char *, int);
 
 /* parse.y */
 struct ospfd_conf	*parse_config(char *, int);
+u_int32_t		 get_rtr_id(void);
 int			 cmdline_symset(char *);
 void			 conf_clear_redist_list(struct redist_list *);
 
