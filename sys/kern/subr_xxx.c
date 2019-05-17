@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_xxx.c,v 1.15 2015/12/05 10:11:53 tedu Exp $	*/
+/*	$OpenBSD: subr_xxx.c,v 1.16 2018/04/03 08:58:05 mpi Exp $	*/
 /*	$NetBSD: subr_xxx.c,v 1.10 1996/02/04 02:16:51 christos Exp $	*/
 
 /*
@@ -39,6 +39,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/conf.h>
+#include <sys/smr.h>
 
 
 /*
@@ -159,6 +160,7 @@ assertwaitok(void)
 		return;
 
 	splassert(IPL_NONE);
+	SMR_ASSERT_NONCRITICAL();
 #ifdef DIAGNOSTIC
 	if (curcpu()->ci_mutex_level != 0)
 		panic("assertwaitok: non-zero mutex count: %d",
