@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5.c,v 1.93 2018/09/07 14:54:49 cheloha Exp $	*/
+/*	$OpenBSD: md5.c,v 1.94 2019/01/25 00:19:25 millert Exp $	*/
 
 /*
  * Copyright (c) 2001,2003,2005-2007,2010,2013,2014
@@ -421,7 +421,7 @@ digest_end(const struct hash_function *hf, void *ctx, char *buf, size_t bsize,
 		hf->final(digest, ctx);
 		if (b64_ntop(digest, hf->digestlen, buf, bsize) == -1)
 			errx(1, "error encoding base64");
-		freezero(digest, hf->digestlen);
+		free(digest);
 	} else {
 		hf->end(ctx, buf);
 	}
