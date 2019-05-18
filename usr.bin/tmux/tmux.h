@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.897 2019/05/12 08:58:09 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.898 2019/05/13 20:10:23 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1285,9 +1285,6 @@ struct cmd {
 	char			*file;
 	u_int			 line;
 
-#define CMD_CONTROL 0x1
-	int			 flags;
-
 	TAILQ_ENTRY(cmd)	 qentry;
 };
 
@@ -1316,6 +1313,7 @@ struct cmdq_shared {
 
 	int			 flags;
 #define CMDQ_SHARED_REPEAT 0x1
+#define CMDQ_SHARED_CONTROL 0x2
 
 	struct format_tree	*formats;
 
