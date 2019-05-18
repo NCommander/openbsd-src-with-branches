@@ -1,4 +1,4 @@
-/*	$OpenBSD: modify.c,v 1.20 2017/07/28 12:58:52 florian Exp $ */
+/*	$OpenBSD: modify.c,v 1.21 2018/05/14 07:53:47 reyk Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -326,8 +326,8 @@ ldap_modify(struct request *req)
 		case LDAP_MOD_DELETE:
 			/*
 			 * We're already in the "SET OF value
-			 * AttributeValue" (see RFC2411 section
-			 * 4.1.7) have either EOC, so all values
+			 * AttributeValue" (see RFC4511 section
+			 * 4.1.7) have either no content, so all values
 			 * for the attribute gets deleted, or we
 			 * have a (first) octetstring (there is one
 			 * for each AttributeValue to be deleted)
