@@ -1,4 +1,4 @@
-/*	$OpenBSD: sili.c,v 1.57 2015/09/09 18:24:26 deraadt Exp $ */
+/*	$OpenBSD: sili.c,v 1.58 2015/12/19 20:05:32 tb Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -767,7 +767,7 @@ sili_ports_alloc(struct sili_softc *sc)
 
 freeports:
 	/* bus_space(9) says subregions dont have to be freed */
-	free(sp, M_DEVBUF, sc->sc_nports * sizeof(struct sili_port));
+	free(sc->sc_ports, M_DEVBUF, sc->sc_nports * sizeof(struct sili_port));
 	sc->sc_ports = NULL;
 	return (1);
 }
