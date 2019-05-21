@@ -1,4 +1,4 @@
-/*	$OpenBSD: ber.c,v 1.6 2019/05/12 20:25:10 rob Exp $ */
+/*	$OpenBSD: ber.c,v 1.7 2019/05/16 21:12:33 rob Exp $ */
 
 /*
  * Copyright (c) 2007, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -1265,7 +1265,7 @@ ber_read_element(struct ber *ber, struct ber_element *elm)
 				return -1;
 
 			/* smallest number of contents octets only */
-			if ((i == 1 && last == 0 && (c & 0x80) == 0) || 
+			if ((i == 1 && last == 0 && (c & 0x80) == 0) ||
 			    (i == 1 && last == 0xff && (c & 0x80) != 0))
 				return -1;
 
