@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmouse.c,v 1.51 2019/02/19 07:01:02 anton Exp $ */
+/* $OpenBSD: wsmouse.c,v 1.52 2019/03/24 18:04:02 bru Exp $ */
 /* $NetBSD: wsmouse.c,v 1.35 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -330,7 +330,8 @@ wsmouseopen(dev_t dev, int flags, int mode, struct proc *p)
 		return (EBUSY);
 
 	evar = &sc->sc_base.me_evar;
-	wsevent_init(evar);
+	if (wsevent_init(evar))
+		return (EBUSY);
 
 	error = wsmousedoopen(sc, evar);
 	if (error) {
