@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-parse.y,v 1.1 2019/05/23 11:13:30 nicm Exp $ */
+/* $OpenBSD: cmd-parse.y,v 1.2 2019/05/23 14:03:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2019 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -356,7 +356,7 @@ command		: assignment TOKEN
 
 			$$ = xcalloc(1, sizeof *$$);
 			$$->name = $2;
-			$$->line = ps->input->line;
+			$$->line = ps->input->line - 1;
 
 		}
 		| assignment TOKEN arguments
@@ -365,7 +365,7 @@ command		: assignment TOKEN
 
 			$$ = xcalloc(1, sizeof *$$);
 			$$->name = $2;
-			$$->line = ps->input->line;
+			$$->line = ps->input->line - 1;
 
 			$$->argc = $3.argc;
 			$$->argv = $3.argv;
