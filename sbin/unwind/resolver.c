@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.c,v 1.39 2019/05/10 14:10:38 florian Exp $	*/
+/*	$OpenBSD: resolver.c,v 1.40 2019/05/14 14:51:31 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -1161,7 +1161,8 @@ best_resolver(void)
 	    uw_resolver_state_str[resolvers[UW_RES_DOT]->state] :
 	    "NA", captive_portal_state_str[captive_portal_state]);
 
-	if (captive_portal_state == UNKNOWN || captive_portal_state == BEHIND) {
+	if (captive_portal_state == PORTAL_UNKNOWN || captive_portal_state ==
+	    BEHIND) {
 		if (resolvers[UW_RES_DHCP] != NULL) {
 			res = resolvers[UW_RES_DHCP];
 			goto out;
