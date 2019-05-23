@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-queue.c,v 1.67 2019/05/20 11:46:06 nicm Exp $ */
+/* $OpenBSD: cmd-queue.c,v 1.68 2019/05/23 11:13:30 nicm Exp $ */
 
 /*
  * Copyright (c) 2013 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -181,6 +181,8 @@ cmdq_remove_group(struct cmdq_item *item)
 {
 	struct cmdq_item	*this, *next;
 
+	if (item->group == 0)
+		return;
 	this = TAILQ_NEXT(item, entry);
 	while (this != NULL) {
 		next = TAILQ_NEXT(this, entry);
