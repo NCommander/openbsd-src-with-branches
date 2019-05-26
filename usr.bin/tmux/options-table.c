@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.104 2019/04/23 20:36:55 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.105 2019/04/26 11:38:51 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -551,7 +551,7 @@ const struct options_table_entry options_table[] = {
 	{ .name = "word-separators",
 	  .type = OPTIONS_TABLE_STRING,
 	  .scope = OPTIONS_TABLE_SESSION,
-	  .default_str = " -_@"
+	  .default_str = " "
 	},
 
 	/* Window options. */
