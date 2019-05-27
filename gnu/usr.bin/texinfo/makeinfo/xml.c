@@ -1,5 +1,5 @@
 /* xml.c -- xml output.
-   $Id: xml.c,v 1.1.1.2 2006/07/17 16:03:49 espie Exp $
+   $Id: xml.c,v 1.2 2008/10/08 07:09:37 otto Exp $
 
    Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
@@ -1845,7 +1845,8 @@ xml_begin_index (void)
       if (xml_index_titles)
         {
           /* Remove the final > */
-          output_paragraph_offset--;
+          if (output_paragraph_offset)
+	    output_paragraph_offset--;
           /* and put  ID="node-name"><TITLE>Title</TITLE> */
           insert_string (xml_index_titles->title);
           free (xml_index_titles->title);
