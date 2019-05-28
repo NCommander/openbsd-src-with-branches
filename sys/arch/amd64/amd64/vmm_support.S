@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm_support.S,v 1.13 2018/08/21 19:04:38 deraadt Exp $	*/
+/*	$OpenBSD: vmm_support.S,v 1.14 2018/09/18 16:02:08 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -18,6 +18,7 @@
 #include "assym.h"
 #include <machine/param.h>
 #include <machine/asm.h>
+#include <machine/codepatch.h>
 #include <machine/psl.h>
 #include <machine/specialreg.h>
 
@@ -246,6 +247,19 @@ skip_init:
 	pushq	%rbp
 	pushq	%rbx
 	pushq	%rsi		/* Guest Regs Pointer */
+
+	/*
+	 * XXX this MDS mitigation and the L1TF mitigation are believed
+	 * XXX to overlap in some cases, but Intel hasn't provided the
+	 * XXX information yet to make the correct choices.
+	 */
+	CODEPATCH_START
+	subq	$8, %rsp
+	movw	%ds, (%rsp)
+	verw	(%rsp)
+	addq	$8, %rsp
+	CODEPATCH_END(CPTAG_MDS_VMM)
+	movq	(%rsp),%rsi	/* reload now that it's mucked with */
 
 	movq	$VMCS_HOST_IA32_RSP, %rdi
 	movq	%rsp, %rax
