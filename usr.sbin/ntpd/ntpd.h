@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntpd.h,v 1.137 2018/11/06 20:41:36 jsing Exp $ */
+/*	$OpenBSD: ntpd.h,v 1.138 2019/01/14 16:30:21 florian Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -108,6 +108,7 @@ struct listen_addr {
 struct ntp_addr {
 	struct ntp_addr		*next;
 	struct sockaddr_storage	 ss;
+	int			 notauth;
 };
 
 struct ntp_addr_wrap {

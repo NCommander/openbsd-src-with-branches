@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntp.c,v 1.148 2018/07/19 10:20:09 sthen Exp $ */
+/*	$OpenBSD: ntp.c,v 1.149 2019/01/07 20:33:40 tedu Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -512,13 +512,17 @@ ntp_dispatch_imsg_dns(void)
 			}
 
 			p = (u_char *)imsg.data;
-			while (dlen >= sizeof(struct sockaddr_storage)) {
+			while (dlen >= sizeof(struct sockaddr_storage) +
+			    sizeof(int)) {
 				if ((h = calloc(1, sizeof(struct ntp_addr))) ==
 				    NULL)
 					fatal(NULL);
 				memcpy(&h->ss, p, sizeof(h->ss));
 				p += sizeof(h->ss);
 				dlen -= sizeof(h->ss);
+				memcpy(&h->notauth, p, sizeof(int));
+				p += sizeof(int);
+				dlen -= sizeof(int);
 				if (peer->addr_head.pool) {
 					npeer = new_peer();
 					npeer->weight = peer->weight;
