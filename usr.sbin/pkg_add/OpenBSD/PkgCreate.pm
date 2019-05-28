@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgCreate.pm,v 1.152 2018/08/03 06:39:12 espie Exp $
+# $OpenBSD: PkgCreate.pm,v 1.153 2018/08/03 06:49:26 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -1297,9 +1297,7 @@ sub add_extra_info
 	    $subst->value('FTP');
 	if (defined $fullpkgpath || defined $cdrom || defined $ftp) {
 		$fullpkgpath //= '';
-		$cdrom //= 'no';
 		$ftp //= 'no';
-		$cdrom = 'yes' if $cdrom =~ m/^yes$/io;
 		$ftp = 'yes' if $ftp =~ m/^yes$/io;
 
 		OpenBSD::PackingElement::ExtraInfo->add($plist,
