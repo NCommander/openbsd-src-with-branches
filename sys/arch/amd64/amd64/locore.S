@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.115 2019/04/01 08:43:29 mortimer Exp $	*/
+/*	$OpenBSD: locore.S,v 1.116 2019/04/02 03:35:08 mortimer Exp $	*/
 /*	$NetBSD: locore.S,v 1.13 2004/03/25 18:33:17 drochner Exp $	*/
 
 /*
@@ -644,8 +644,6 @@ IDTVEC_NOALIGN(syscall)
 .Lsyscall_restore_registers:
 	RET_STACK_REFILL_WITH_RCX
 
-	movq	TF_RDI(%rsp),%rdi
-	movq	TF_RSI(%rsp),%rsi
 	movq	TF_R8(%rsp),%r8
 	movq	TF_R9(%rsp),%r9
 	movq	TF_R10(%rsp),%r10
@@ -653,6 +651,14 @@ IDTVEC_NOALIGN(syscall)
 	movq	TF_R13(%rsp),%r13
 	movq	TF_R14(%rsp),%r14
 	movq	TF_R15(%rsp),%r15
+
+	CODEPATCH_START
+	movw	%ds,TF_R8(%rsp)
+	verw	TF_R8(%rsp)
+	CODEPATCH_END(CPTAG_MDS)
+
+	movq	TF_RDI(%rsp),%rdi
+	movq	TF_RSI(%rsp),%rsi
 	movq	TF_RBP(%rsp),%rbp
 	movq	TF_RBX(%rsp),%rbx
 
@@ -811,8 +817,6 @@ intr_user_exit_post_ast:
 .Lintr_restore_registers:
 	RET_STACK_REFILL_WITH_RCX
 
-	movq	TF_RDI(%rsp),%rdi
-	movq	TF_RSI(%rsp),%rsi
 	movq	TF_R8(%rsp),%r8
 	movq	TF_R9(%rsp),%r9
 	movq	TF_R10(%rsp),%r10
@@ -820,6 +824,14 @@ intr_user_exit_post_ast:
 	movq	TF_R13(%rsp),%r13
 	movq	TF_R14(%rsp),%r14
 	movq	TF_R15(%rsp),%r15
+
+	CODEPATCH_START
+	movw	%ds,TF_R8(%rsp)
+	verw	TF_R8(%rsp)
+	CODEPATCH_END(CPTAG_MDS)
+
+	movq	TF_RDI(%rsp),%rdi
+	movq	TF_RSI(%rsp),%rsi
 	movq	TF_RBP(%rsp),%rbp
 	movq	TF_RBX(%rsp),%rbx
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.236 2019/04/02 05:03:00 mlarkin Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.237 2019/04/02 05:06:39 mlarkin Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -6140,7 +6140,7 @@ vmm_handle_cpuid(struct vcpu *vcpu)
 			*rax = 0;	/* Highest subleaf supported */
 			*rbx = curcpu()->ci_feature_sefflags_ebx & VMM_SEFF0EBX_MASK;
 			*rcx = curcpu()->ci_feature_sefflags_ecx & VMM_SEFF0ECX_MASK;
-			*rdx = 0;
+			*rdx = curcpu()->ci_feature_sefflags_edx & VMM_SEFF0EDX_MASK;
 		} else {
 			/* Unsupported subleaf */
 			DPRINTF("%s: function 0x07 (SEFF) unsupported subleaf "
