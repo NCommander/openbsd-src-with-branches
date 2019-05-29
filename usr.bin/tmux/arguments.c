@@ -1,4 +1,4 @@
-/* $OpenBSD: arguments.c,v 1.23 2019/05/27 12:16:27 nicm Exp $ */
+/* $OpenBSD: arguments.c,v 1.24 2019/05/28 18:30:30 nicm Exp $ */
 
 /*
  * Copyright (c) 2010 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -218,7 +218,7 @@ args_escape(const char *s)
 		return (escaped);
 	}
 
-	flags = VIS_OCTAL|VIS_TAB|VIS_NL;
+	flags = VIS_OCTAL|VIS_CSTYLE|VIS_TAB|VIS_NL;
 	if (s[strcspn(s, quoted)] != '\0')
 		flags |= VIS_DQ;
 	utf8_stravis(&escaped, s, flags);
