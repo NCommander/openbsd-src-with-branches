@@ -1,4 +1,4 @@
-/* $OpenBSD: vfs_getcwd.c,v 1.31 2018/05/27 06:02:14 visa Exp $ */
+/* $OpenBSD: vfs_getcwd.c,v 1.32 2019/05/13 22:55:27 beck Exp $ */
 /* $NetBSD: vfs_getcwd.c,v 1.3.2.3 1999/07/11 10:24:09 sommerfeld Exp $ */
 
 /*
@@ -420,7 +420,6 @@ sys___getcwd(struct proc *p, void *v, register_t *retval)
 		goto out;
 
 	lenused = bend - bp;
-	*retval = lenused;
 
 	/* Put the result into user buffer */
 	error = copyout(bp, SCARG(uap, buf), lenused);
