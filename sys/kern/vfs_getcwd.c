@@ -422,6 +422,11 @@ sys___getcwd(struct proc *p, void *v, register_t *retval)
 	/* Put the result into user buffer */
 	error = copyoutstr(bp, SCARG(uap, buf), MAXPATHLEN, NULL);
 
+#ifdef KTRACE
+	if (KTRPOINT(p, KTR_NAMEI))
+		ktrnamei(p, bp);
+#endif
+
 out:
 	free(path, M_TEMP, len);
 
