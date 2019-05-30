@@ -39,6 +39,7 @@
 #include <sys/lock.h>
 #include <sys/vnode.h>
 #include <sys/mount.h>
+#include <sys/ktrace.h>
 #include <sys/proc.h>
 #include <sys/uio.h>
 #include <sys/malloc.h>
@@ -394,8 +395,8 @@ int
 sys___getcwd(struct proc *p, void *v, register_t *retval) 
 {
 	struct sys___getcwd_args *uap = v;
-	int error, lenused, len = SCARG(uap, len);
-	char *path, *bp, *bend;
+	int error, len = SCARG(uap, len);
+	char *path, *bp;
 
 	if (len > MAXPATHLEN * 4)
 		len = MAXPATHLEN * 4;
@@ -405,7 +406,6 @@ sys___getcwd(struct proc *p, void *v, register_t *retval)
 	path = malloc(len, M_TEMP, M_WAITOK);
 
 	bp = &path[len];
-	bend = bp;
 	*(--bp) = '\0';
 
 	/*
@@ -419,10 +419,8 @@ sys___getcwd(struct proc *p, void *v, register_t *retval)
 	if (error)
 		goto out;
 
-	lenused = bend - bp;
-
 	/* Put the result into user buffer */
-	error = copyout(bp, SCARG(uap, buf), lenused);
+	error = copyoutstr(bp, SCARG(uap, buf), MAXPATHLEN, NULL);
 
 out:
 	free(path, M_TEMP, len);
