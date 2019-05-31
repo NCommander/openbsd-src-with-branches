@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.202 2018/10/30 03:27:45 deraadt Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.203 2019/02/08 12:51:57 bluhm Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -661,8 +661,10 @@ sys_execve(struct proc *p, void *v, register_t *retval)
 	}
 
 	/* reset CPU time usage for the thread, but not the process */
+	mtx_enter(&pr->ps_mtx);
 	timespecclear(&p->p_tu.tu_runtime);
 	p->p_tu.tu_uticks = p->p_tu.tu_sticks = p->p_tu.tu_iticks = 0;
+	mtx_leave(&pr->ps_mtx);
 
 	km_free(argp, NCARGS, &kv_exec, &kp_pageable);
 

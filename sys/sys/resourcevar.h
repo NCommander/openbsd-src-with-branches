@@ -1,4 +1,4 @@
-/*	$OpenBSD: resourcevar.h,v 1.19 2019/01/06 12:59:45 visa Exp $	*/
+/*	$OpenBSD: resourcevar.h,v 1.20 2019/05/31 04:46:18 visa Exp $	*/
 /*	$NetBSD: resourcevar.h,v 1.12 1995/11/22 23:01:53 cgd Exp $	*/
 
 /*
@@ -58,8 +58,7 @@ do {									\
 #ifdef _KERNEL
 void	 addupc_intr(struct proc *, u_long);
 void	 addupc_task(struct proc *, u_long, u_int);
-void	 tuagg_unlocked(struct process *, struct proc *);
-void	 tuagg(struct process *, struct proc *);
+void	 tuagg(struct proc *, struct timespec *);
 struct tusage;
 void	 calctsru(struct tusage *, struct timespec *, struct timespec *,
 	    struct timespec *);
