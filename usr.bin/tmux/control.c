@@ -1,4 +1,4 @@
-/* $OpenBSD: control.c,v 1.21 2019/05/18 21:14:10 nicm Exp $ */
+/* $OpenBSD: control.c,v 1.22 2019/05/23 11:13:30 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -91,7 +91,6 @@ control_callback(struct client *c, int closed, __unused void *data)
 		case CMD_PARSE_ERROR:
 			item = cmdq_get_callback(control_error, pr->error);
 			cmdq_append(c, item);
-			free(pr->error);
 			break;
 		case CMD_PARSE_SUCCESS:
 			item = cmdq_get_command(pr->cmdlist, NULL, NULL, 0);
