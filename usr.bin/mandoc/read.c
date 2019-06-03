@@ -1,4 +1,4 @@
-/*	$OpenBSD: read.c,v 1.182 2019/01/11 17:03:43 schwarze Exp $ */
+/*	$OpenBSD: read.c,v 1.183 2019/03/19 16:25:38 schwarze Exp $ */
 /*
  * Copyright (c) 2008, 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2019 Ingo Schwarze <schwarze@openbsd.org>
@@ -155,7 +155,7 @@ mparse_buf_r(struct mparse *curp, struct buf blk, size_t i, int start)
 	ln.sz = 256;
 	ln.buf = mandoc_malloc(ln.sz);
 	ln.next = NULL;
-	firstln = loop = NULL;
+	firstln = lastln = loop = NULL;
 	lnn = curp->line;
 	pos = 0;
 	inloop = 0;
