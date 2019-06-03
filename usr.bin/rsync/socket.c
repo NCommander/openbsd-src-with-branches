@@ -1,4 +1,4 @@
-/*	$Id: socket.c,v 1.23 2019/05/08 20:00:25 benno Exp $ */
+/*	$Id: socket.c,v 1.24 2019/05/08 21:30:11 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -455,6 +455,5 @@ rsync_socket(const struct opts *opts, int sd, const struct fargs *f)
 	rc = 0;
 out:
 	free(args);
-	close(sd);
 	return rc;
 }
