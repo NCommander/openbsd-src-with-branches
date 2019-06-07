@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.33 2019/03/11 15:27:07 pamela Exp $	*/
+/*	$OpenBSD: engine.c,v 1.34 2019/03/11 22:53:29 pamela Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -1121,7 +1121,7 @@ parse_ra(struct slaacd_iface *iface, struct imsg_ra *ra)
 
 	hbuf = sin6_to_str(&ra->from);
 	if (!IN6_IS_ADDR_LINKLOCAL(&ra->from.sin6_addr)) {
-		log_warnx("RA from non link local address %s", hbuf);
+		log_debug("RA from non link local address %s", hbuf);
 		return;
 	}
 
