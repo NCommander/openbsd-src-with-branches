@@ -1,4 +1,4 @@
-/*	$OpenBSD: sha2.c,v 1.25 2016/09/03 16:25:03 tedu Exp $	*/
+/*	$OpenBSD: sha2.c,v 1.26 2017/05/27 15:32:51 naddy Exp $	*/
 
 /*
  * FILE:	sha2.c
@@ -510,7 +510,7 @@ DEF_WEAK(SHA256Transform);
 void
 SHA256Update(SHA2_CTX *context, const u_int8_t *data, size_t len)
 {
-	size_t	freespace, usedspace;
+	u_int64_t	freespace, usedspace;
 
 	/* Calling with no data is valid (we do nothing) */
 	if (len == 0)
@@ -531,7 +531,7 @@ SHA256Update(SHA2_CTX *context, const u_int8_t *data, size_t len)
 		} else {
 			/* The buffer is not yet full */
 			memcpy(&context->buffer[usedspace], data, len);
-			context->bitcount[0] += len << 3;
+			context->bitcount[0] += (u_int64_t)len << 3;
 			/* Clean up: */
 			usedspace = freespace = 0;
 			return;
