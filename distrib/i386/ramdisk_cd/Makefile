@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 2019/05/01 20:53:55 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.13 2019/05/03 20:03:58 deraadt Exp $
 
 FS=		miniroot${OSrev}.fs
 FSSIZE=		7936
@@ -8,7 +8,7 @@ MOUNT_POINT=	/mnt
 MTREE=		${UTILS}/mtree.conf
 RAMDISK=	RAMDISK_CD
 
-LISTS=		${.CURDIR}/../common/list ${.CURDIR}/list.local
+LISTS=		${.CURDIR}/list
 UTILS=		${.CURDIR}/../../miniroot
 
 LBA=1
