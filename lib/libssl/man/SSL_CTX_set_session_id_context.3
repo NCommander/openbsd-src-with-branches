@@ -1,4 +1,4 @@
-.\"	$OpenBSD: SSL_CTX_set_session_id_context.3,v 1.4 2018/03/21 16:12:41 schwarze Exp $
+.\"	$OpenBSD: SSL_CTX_set_session_id_context.3,v 1.5 2018/03/21 17:58:58 schwarze Exp $
 .\"	OpenSSL b97fdb57 Nov 11 09:33:09 2016 +0100
 .\"
 .\" This file was written by Lutz Jaenicke <jaenicke@openssl.org>.
@@ -87,7 +87,7 @@ of length
 within which a session can be reused for the
 .Fa ssl
 object.
-.Sh NOTES
+.Pp
 Sessions are generated within a certain context.
 When exporting/importing sessions with
 .Xr i2d_SSL_SESSION 3
