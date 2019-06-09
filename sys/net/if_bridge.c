@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.333 2019/05/13 18:14:05 mpi Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.334 2019/06/09 17:40:34 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -361,7 +361,10 @@ bridge_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 			break;
 		}
 		if (ifs->if_bridgeidx != 0) {
-			error = EBUSY;
+			if (ifs->if_bridgeidx == ifp->if_index)
+				error = EEXIST;
+			else
+				error = EBUSY;
 			break;
 		}
 		SMR_SLIST_FOREACH_LOCKED(bif, &sc->sc_spanlist, bif_next) {
