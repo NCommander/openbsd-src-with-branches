@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.501 2019/04/23 11:56:41 dtucker Exp $ */
+/* $OpenBSD: ssh.c,v 1.502 2019/06/06 05:13:13 otto Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -146,7 +146,7 @@ char *config = NULL;
 
 /*
  * Name of the host we are connecting to.  This is the name given on the
- * command line, or the HostName specified for the user-supplied name in a
+ * command line, or the Hostname specified for the user-supplied name in a
  * configuration file.
  */
 char *host;
