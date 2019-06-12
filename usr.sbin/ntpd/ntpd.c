@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntpd.c,v 1.120 2019/01/14 16:30:21 florian Exp $ */
+/*	$OpenBSD: ntpd.c,v 1.121 2019/06/09 08:40:54 otto Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -179,7 +179,8 @@ main(int argc, char *argv[])
 	}
 
 	/* log to stderr until daemonized */
-	log_init(lconf.debug ? lconf.debug : 1, LOG_DAEMON);
+	log_init(1, LOG_DAEMON);
+	log_setverbose(lconf.verbose);
 
 	argc -= optind;
 	argv += optind;
