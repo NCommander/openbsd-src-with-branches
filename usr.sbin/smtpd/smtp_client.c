@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_client.c,v 1.8 2018/09/20 11:42:28 eric Exp $	*/
+/*	$OpenBSD: smtp_client.c,v 1.9 2019/05/14 12:08:54 eric Exp $	*/
 
 /*
  * Copyright (c) 2018 Eric Faurot <eric@openbsd.org>
@@ -619,7 +619,7 @@ smtp_client_io(struct io *io, int evt, void *arg)
 	case IO_TLSREADY:
 		proto->flags |= FLAG_TLS;
 		io_pause(proto->io, IO_IN);
-		smtp_verify_server_cert(proto->tag, proto, io_ssl(proto->io));
+		smtp_verify_server_cert(proto->tag, proto, io_tls(proto->io));
 		break;
 
 	case IO_DATAIN:
