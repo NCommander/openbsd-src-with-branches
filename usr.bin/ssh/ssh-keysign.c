@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keysign.c,v 1.56 2018/11/23 05:08:07 djm Exp $ */
+/* $OpenBSD: ssh-keysign.c,v 1.57 2019/06/06 05:13:13 otto Exp $ */
 /*
  * Copyright (c) 2002 Markus Friedl.  All rights reserved.
  *
@@ -244,7 +244,7 @@ main(int argc, char **argv)
 	if ((r = sshbuf_get_u32(b, (u_int *)&fd)) != 0)
 		fatal("%s: buffer error: %s", __progname, ssh_err(r));
 	if (fd < 0 || fd == STDIN_FILENO || fd == STDOUT_FILENO)
-		fatal("bad fd");
+		fatal("bad fd = %d", fd);
 	if ((host = get_local_name(fd)) == NULL)
 		fatal("cannot get local name for fd");
 
