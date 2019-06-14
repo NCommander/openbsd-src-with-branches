@@ -1,4 +1,4 @@
-/*	$Id: extern.h,v 1.12 2019/06/08 07:52:55 florian Exp $ */
+/*	$Id: extern.h,v 1.13 2019/06/12 11:09:25 gilles Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -207,7 +207,8 @@ int		 revokeproc(int, const char *, const char *,
 			int, int, const char *const *, size_t);
 int		 fileproc(int, const char *, const char *, const char *,
 			const char *);
-int		 keyproc(int, const char *, const char **, size_t);
+int		 keyproc(int, const char *, const char **, size_t,
+			enum keytype);
 int		 netproc(int, int, int, int, int, int, int,
 			struct authority_c *, const char *const *,
 			size_t);
@@ -274,11 +275,6 @@ char		*json_fmt_signed(const char *, const char *, const char *);
  * Should we print debugging messages?
  */
 int		 verbose;
-
-/*
- * Should we switch to ecdsa?
- */
-int		ecdsa;
 
 /*
  * What component is the process within (COMP__MAX for none)?
