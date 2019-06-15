@@ -28,9 +28,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$OpenBSD: realpath.3,v 1.19 2014/01/20 22:40:06 schwarze Exp $
+.\"	$OpenBSD: realpath.3,v 1.20 2019/06/15 15:40:44 deraadt Exp $
 .\"
-.Dd $Mdocdate: January 20 2014 $
+.Dd $Mdocdate: June 15 2019 $
 .Dt REALPATH 3
 .Os
 .Sh NAME
@@ -133,6 +133,7 @@ points to an empty string.
 A component of the path prefix is not a directory.
 .It Bq Er ENOMEM
 Sufficient storage space is unavailable for allocation.
+.El
 .Sh SEE ALSO
 .Xr readlink 1 ,
 .Xr getcwd 3
