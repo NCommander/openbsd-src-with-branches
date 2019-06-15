@@ -1,4 +1,4 @@
-/*	$Id: keyproc.c,v 1.13 2019/06/12 11:09:25 gilles Exp $ */
+/*	$Id: keyproc.c,v 1.14 2019/06/14 19:55:08 florian Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -132,6 +132,7 @@ keyproc(int netsock, const char *keyfile, const char **alts, size_t altsz,
 	} else {
 		if ((pkey = key_load(f, keyfile)) == NULL)
 			goto out;
+		/* XXX check if domain key type equals configured key type */
 		doddbg("%s: loaded domain key", keyfile);
 	}
 
