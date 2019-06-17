@@ -1,4 +1,4 @@
-/*	$Id: acctproc.c,v 1.18 2019/06/17 12:42:52 florian Exp $ */
+/*	$Id: acctproc.c,v 1.19 2019/06/17 15:03:34 florian Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -184,9 +184,7 @@ op_thumbprint(int fd, EVP_PKEY *pkey)
 
 	rc = 1;
 out:
-	if (ctx != NULL)
-		EVP_MD_CTX_free(ctx);
-
+	EVP_MD_CTX_free(ctx);
 	free(thumb);
 	free(dig);
 	free(dig64);
