@@ -1,4 +1,4 @@
-/*	$Id: rsa.c,v 1.7 2018/07/28 15:25:23 tb Exp $ */
+/*	$Id: key.c,v 1.1 2019/06/12 11:09:25 gilles Exp $ */
 /*
  * Copyright (c) 2019 Renaud Allard <renaud@allard.it>
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -81,11 +81,8 @@ ec_key_create(FILE *f, const char *fname)
 	EC_KEY		*eckey = NULL;
 	EVP_PKEY	*pkey = NULL;
 
-	if ((eckey = EC_KEY_new()) == NULL ) {
-		warnx("EC_KEY_new");
-		goto err;
-	} else if ((eckey = EC_KEY_new_by_curve_name(ECCTYPE)) == NULL ) {
-		warnx("EC_GROUP_new_by_curve_name");
+	if ((eckey = EC_KEY_new_by_curve_name(ECCTYPE)) == NULL ) {
+		warnx("EC_KEY_new_by_curve_name");
 		goto err;
 	}
 
