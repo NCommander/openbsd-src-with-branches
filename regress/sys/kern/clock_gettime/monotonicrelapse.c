@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: monotonicrelapse.c,v 1.1 2019/06/14 19:23:53 cheloha Exp $ */
 /*
  * Scott Cheloha <scottcheloha@gmail.com>, 2019.  Public Domain.
  */
@@ -9,6 +9,7 @@
 
 #include <err.h>
 #include <pthread.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -50,7 +51,7 @@ main(int argc, char *argv[])
 
 	for (i = 0; i < nthreads; i++) {
 		error = pthread_create(&thread[i], NULL, thread_func,
-		    (void *)(i + 1));
+		    (void *)((uintptr_t)i + 1));
 		if (error)
 			errc(1, error, "pthread_create");
 	}
