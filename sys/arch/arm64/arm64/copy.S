@@ -1,4 +1,4 @@
-/* $OpenBSD: copy.S,v 1.4 2017/12/30 10:20:34 kettenis Exp $ */
+/* $OpenBSD: copy.S,v 1.5 2018/08/12 17:15:10 mortimer Exp $ */
 /*
  * Copyright (c) 2015 Dale Rahn <drahn@dalerahn.com>
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
@@ -60,7 +60,7 @@ ENTRY(copyin)
 
 .Lcopyfault:
 	mov	x0, #EFAULT
-	ldr	x4, [x3, #(PCB_ONFAULT)]
+	str	x4, [x3, #(PCB_ONFAULT)]
 	RETGUARD_CHECK(copy, x15)
 	ret
 
