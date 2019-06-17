@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.55 2019/05/08 12:41:55 claudio Exp $ */
+/*	$OpenBSD: pfkey.c,v 1.56 2019/05/29 08:48:00 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -850,7 +850,6 @@ tcp_md5_set(int fd, struct peer *p)
 	return 0;
 }
 
-		
 int
 tcp_md5_listen(int fd, struct peer_head *p)
 {
