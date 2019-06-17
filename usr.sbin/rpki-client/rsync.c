@@ -1,4 +1,4 @@
-/*	$Id: rsync.c,v 1.1.1.1 2019/06/17 14:31:31 job Exp $ */
+/*	$Id: rsync.c,v 1.2 2019/06/17 15:04:59 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -15,9 +15,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <netinet/in.h>
 #include <assert.h>
 #include <err.h>
-#include <netinet/in.h>
 #include <resolv.h>
 #include <stdio.h>
 #include <stdlib.h>
