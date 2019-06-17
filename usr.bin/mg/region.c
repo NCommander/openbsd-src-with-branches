@@ -1,4 +1,4 @@
-/*	$OpenBSD: region.c,v 1.36 2016/09/08 07:50:09 lum Exp $	*/
+/*	$OpenBSD: region.c,v 1.37 2016/09/09 06:05:51 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -405,6 +405,7 @@ markbuffer(int f, int n)
 {
 	if (gotoeob(f,n) == FALSE)
 		return (FALSE);
+	(void) clearmark(f, n);
 	if (gotobob(f,n) == FALSE)
 		return (FALSE);
 	return (TRUE);
