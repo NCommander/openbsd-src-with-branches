@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.h,v 1.11 2019/06/12 11:09:25 gilles Exp $ */
+/*	$OpenBSD: parse.h,v 1.12 2019/06/14 19:55:08 florian Exp $ */
 /*
  * Copyright (c) 2016 Sebastian Benoit <benno@openbsd.org>
  *
@@ -34,9 +34,10 @@ enum keytype {
 
 struct authority_c {
 	TAILQ_ENTRY(authority_c)	 entry;
-	char		       	*name;
-	char		       	*api;
-	char		       	*account;
+	char				*name;
+	char				*api;
+	char				*account;
+	enum keytype			 keytype;
 };
 
 struct domain_c {
