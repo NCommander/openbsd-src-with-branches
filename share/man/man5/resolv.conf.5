@@ -1,4 +1,4 @@
-.\"	$OpenBSD: resolv.conf.5,v 1.54 2018/05/02 15:54:43 anton Exp $
+.\"	$OpenBSD: resolv.conf.5,v 1.55 2018/07/26 20:18:11 jmc Exp $
 .\"	$NetBSD: resolv.conf.5,v 1.7 1996/03/06 18:22:16 scottr Exp $
 .\"
 .\" Copyright (c) 1986, 1991 The Regents of the University of California.
@@ -30,7 +30,7 @@
 .\"
 .\"     @(#)resolver.5	5.12 (Berkeley) 5/10/91
 .\"
-.Dd $Mdocdate: May 2 2018 $
+.Dd $Mdocdate: July 26 2018 $
 .Dt RESOLV.CONF 5
 .Os
 .Sh NAME
@@ -246,9 +246,6 @@ non-EDNS0 DNS servers,
 so the option must be used only when all the servers listed in
 .Ic nameserver
 lines are able to handle the extension.
-On
-.Ox
-this option does nothing.
 .Pp
 To verify whether a server supports EDNS,
 query it using the
