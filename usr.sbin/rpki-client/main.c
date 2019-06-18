@@ -1,4 +1,4 @@
-/*	$Id: main.c,v 1.1.1.1 2019/06/17 14:31:31 job Exp $ */
+/*	$Id: main.c,v 1.2 2019/06/17 15:04:59 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -681,10 +681,10 @@ proc_rsync(const char *prog, int fd, int noop)
 				err(EXIT_FAILURE, "pledge");
 			i = 0;
 			args[i++] = (char *)prog;
-			args[i++] = strdup("-r");
-			args[i++] = strdup("-l");
-			args[i++] = strdup("-t");
-			args[i++] = strdup("--delete");
+			args[i++] = "-r";
+			args[i++] = "-l";
+			args[i++] = "-t";
+			args[i++] = "--delete";
 			args[i++] = uri;
 			args[i++] = dst;
 			args[i] = NULL;
