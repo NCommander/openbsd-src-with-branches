@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.309 2019/04/05 09:02:27 bentley Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.310 2019/05/11 07:18:15 deraadt Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 
@@ -89,6 +89,8 @@ etc
     ppp
     ..
     rc.d
+    ..
+    rpki
     ..
     skel
         .ssh			uname=root mode=0700
