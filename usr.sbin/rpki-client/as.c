@@ -1,4 +1,4 @@
-/*	$Id: as.c,v 1.2 2019/06/17 15:04:59 deraadt Exp $ */
+/*	$OpenBSD: as.c,v 1.3 2019/06/19 04:21:43 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
