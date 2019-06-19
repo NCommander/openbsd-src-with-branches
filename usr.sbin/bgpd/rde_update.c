@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_update.c,v 1.115 2019/06/17 11:02:20 claudio Exp $ */
+/*	$OpenBSD: rde_update.c,v 1.116 2019/06/17 12:02:44 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -605,8 +605,11 @@ up_dump_prefix(u_char *buf, int len, struct prefix_tree *prefix_head,
 		wpos += r;
 
 		/* make sure we only dump prefixes which belong together */
-		if (np == NULL || np->aspath != p->aspath ||
-		    np->nexthop != p->nexthop || np->nhflags != p->nhflags ||
+		if (np == NULL ||
+		    np->aspath != p->aspath ||
+		    np->communities != p->communities ||
+		    np->nexthop != p->nexthop ||
+		    np->nhflags != p->nhflags ||
 		    np->eor)
 			done = 1;
 
