@@ -206,13 +206,13 @@ x509_get_ski_aki(X509 *x, const char *fn, char **ski, char **aki)
 		    "missing AKI X509 extension", fn);
 		free(*ski);
 		return 0;
-	}
-	if (*ski == NULL) {
+	} else if (*ski == NULL) {
 		cryptowarnx("%s: RFC 6487 section 4.8.2: AKI: "
 		    "missing SKI X509 extension", fn);
 		free(*aki);
 		return 0;
 	}
 
+	assert(*ski != NULL && *aki != NULL);
 	return 1;
 }

@@ -401,7 +401,7 @@ mft_parse(X509 **x509, const char *fn, int force)
 		free(p.res->files);
 		p.res->filesz = 0;
 		p.res->files = NULL;
-	} else if (c == -1)
+	} else if (c < 0)
 		goto out;
 
 	rc = 1;
