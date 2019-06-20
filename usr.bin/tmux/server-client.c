@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.287 2019/06/11 13:09:00 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.288 2019/06/20 06:51:36 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1265,10 +1265,11 @@ server_client_loop(void)
 				break;
 		}
 		TAILQ_FOREACH(wp, &w->panes, entry) {
-			if (wl != NULL && wp->fd != -1) {
+			if (wp->fd != -1) {
 				if (focus)
 					server_client_check_focus(wp);
-				server_client_check_resize(wp);
+				if (wl != NULL)
+					server_client_check_resize(wp);
 			}
 			wp->flags &= ~PANE_REDRAW;
 		}
