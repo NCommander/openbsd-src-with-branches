@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: lim_cur.9,v 1.1 2019/06/21 09:39:48 visa Exp $
 .\"
 .\" Copyright (c) 2019 Visa Hankala
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: June 21 2019 $
 .Dt LIM_CUR 9
 .Os
 .Sh NAME
@@ -82,9 +82,9 @@ Sections denoted by
 and
 .Fn lim_read_leave
 cannot nest.
-It is not allowed to use
+Using
 .Fn lim_cur
-inside the read section
+inside the read section is not allowed
 because the function uses
 .Fn lim_read_enter
 and
