@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.macppc,v 1.95 2019/04/14 10:14:50 jsg Exp $
+#	$OpenBSD: Makefile.macppc,v 1.96 2019/04/14 14:07:06 deraadt Exp $
 
 # For instructions on building kernels consult the config(8) and options(4)
 # manual pages.
@@ -147,8 +147,7 @@ hardlink-obsd:
 	[[ ! -f /bsd ]] || cmp -s bsd /bsd || ln -f /bsd /obsd
 
 newinstall:
-	umask 077 && cp bsd /nbsd && mv /nbsd /bsd && \
-	    sha256 -h /var/db/kernel.SHA256 /bsd
+	install -F -m 700 bsd /bsd && sha256 -h /var/db/kernel.SHA256 /bsd
 
 install: update-link hardlink-obsd newinstall
 
