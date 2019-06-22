@@ -1,9 +1,9 @@
-/*	$OpenBSD: extend.c,v 1.63 2015/09/29 02:07:49 guenther Exp $	*/
+/*	$OpenBSD: extend.c,v 1.64 2016/09/01 21:06:09 lum Exp $	*/
 
 /* This file is in the public domain. */
 
 /*
- *	Extended (M-X) commands, rebinding, and	startup file processing.
+ *	Extended (M-x) commands, rebinding, and	startup file processing.
  */
 
 #include <sys/queue.h>

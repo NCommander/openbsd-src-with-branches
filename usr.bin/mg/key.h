@@ -1,4 +1,4 @@
-/*	$OpenBSD: key.h,v 1.4 2004/02/01 22:26:41 vincent Exp $	*/
+/*	$OpenBSD: key.h,v 1.5 2005/06/14 18:14:40 kjell Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -6,7 +6,7 @@
 
 #define MAXKEY	8			/* maximum number of prefix chars */
 
-struct key {				/* the chacter sequence in a key */
+struct key {				/* the character sequence in a key */
 	int	k_count;		/* number of chars */
 	KCHAR	k_chars[MAXKEY];	/* chars */
 };

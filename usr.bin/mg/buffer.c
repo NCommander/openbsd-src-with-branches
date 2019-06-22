@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.104 2017/08/06 04:39:45 bcallah Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.105 2018/12/13 14:59:16 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -292,7 +292,7 @@ static struct KEYMAPE (2) listbufmap = {
  * in two parts. The "makelist" routine figures out
  * the text, and puts it in a buffer. "popbuf"
  * then pops the data onto the screen. Bound to
- * "C-X C-B".
+ * "C-x C-b".
  */
 /* ARGSUSED */
 int
