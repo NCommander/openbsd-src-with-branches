@@ -1,4 +1,4 @@
-/* $OpenBSD: options.c,v 1.50 2019/06/20 11:59:59 nicm Exp $ */
+/* $OpenBSD: options.c,v 1.51 2019/06/20 18:13:04 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -784,7 +784,6 @@ options_scope_from_name(struct args *args, int window,
 			}
 			break;
 		}
-		scope = OPTIONS_TABLE_WINDOW;
 		/* FALLTHROUGH */
 	case OPTIONS_TABLE_WINDOW:
 		if (args_has(args, 'g')) {
