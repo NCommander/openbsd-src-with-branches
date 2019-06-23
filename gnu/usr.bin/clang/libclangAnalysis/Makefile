@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2017/07/09 15:28:36 espie Exp $
+# $OpenBSD: Makefile,v 1.4 2019/01/27 16:59:42 patrick Exp $
 
 LIB=	clangAnalysis
 NOPIC=
@@ -18,16 +18,12 @@ SRCS=	AnalysisDeclContext.cpp \
 	Consumed.cpp \
 	CodeInjector.cpp \
 	Dominators.cpp \
-	FormatString.cpp \
+	ExprMutationAnalyzer.cpp \
 	LiveVariables.cpp \
-	OSLog.cpp \
 	ObjCNoReturn.cpp \
 	PostOrderCFGView.cpp \
-	PrintfFormatString.cpp \
 	ProgramPoint.cpp \
-	PseudoConstantAnalysis.cpp \
 	ReachableCode.cpp \
-	ScanfFormatString.cpp \
 	ThreadSafety.cpp \
 	ThreadSafetyCommon.cpp \
 	ThreadSafetyLogical.cpp \

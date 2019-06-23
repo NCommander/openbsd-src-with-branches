@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2019/01/27 22:42:14 patrick Exp $
+# $OpenBSD: Makefile,v 1.5 2019/03/05 09:44:42 jsg Exp $
 
 .include <bsd.own.mk>
 
@@ -69,6 +69,13 @@ LLVM_LIBDEPS=	clangAST \
 		lldbSymbol \
 		lldbTarget \
 		lldbUtility
+
+Driver.o: Options.inc
+
+Options.inc: Options.td
+	${.OBJDIR}/../llvm-tblgen/llvm-tblgen -gen-opt-parser-defs \
+		-I ${LLVM_SRCS}/include \
+		-o ${.TARGET} ${.ALLSRC}
 
 LDADD+= -L ${.OBJDIR}/../libLLVM -lLLVM
 

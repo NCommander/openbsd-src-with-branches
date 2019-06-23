@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2019/01/27 16:59:41 patrick Exp $
+# $OpenBSD: Makefile,v 1.7 2019/03/05 09:44:40 jsg Exp $
 
 LIB=	LLVMInstrumentation
 NOPROFILE=
@@ -8,6 +8,7 @@ CPPFLAGS+=	-I${LLVM_SRCS}/include/llvm/Transforms
 SRCS+=	AddressSanitizer.cpp \
 	BoundsChecking.cpp \
 	CGProfile.cpp \
+	ControlHeightReduction.cpp \
 	DataFlowSanitizer.cpp \
 	EfficiencySanitizer.cpp \
 	GCOVProfiling.cpp \

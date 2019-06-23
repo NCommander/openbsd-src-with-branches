@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2019/02/26 23:39:51 jsg Exp $
+# $OpenBSD: Makefile,v 1.8 2019/03/05 09:44:40 jsg Exp $
 
 LIB=	LLVMCore
 NOPROFILE=
@@ -44,8 +44,10 @@ SRCS+=	AsmWriter.cpp \
 	Operator.cpp \
 	OptBisect.cpp \
 	Pass.cpp \
+	PassInstrumentation.cpp \
 	PassManager.cpp \
 	PassRegistry.cpp \
+	PassTimingInfo.cpp \
 	ProfileSummary.cpp \
 	SafepointIRVerifier.cpp \
 	Statepoint.cpp \

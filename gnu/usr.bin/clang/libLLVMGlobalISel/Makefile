@@ -1,10 +1,15 @@
-# $OpenBSD: Makefile,v 1.5 2019/02/26 23:39:51 jsg Exp $
+# $OpenBSD: Makefile,v 1.6 2019/03/05 09:44:40 jsg Exp $
 
 LIB=	LLVMGlobalISel
 NOPROFILE=
 
-SRCS+=	CallLowering.cpp \
+SRCS+=	CSEInfo.cpp \
+	CSEMIRBuilder.cpp \
+	CallLowering.cpp \
 	GlobalISel.cpp \
+	GISelChangeObserver.cpp \
+	Combiner.cpp \
+	CombinerHelper.cpp \
 	IRTranslator.cpp \
 	InstructionSelect.cpp \
 	InstructionSelector.cpp \

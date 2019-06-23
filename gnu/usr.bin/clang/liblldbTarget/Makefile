@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:36 espie Exp $
+# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
 
 LIB=	lldbTarget
 NOPIC=
@@ -34,6 +34,7 @@ SRCS=	ABI.cpp \
 	SectionLoadList.cpp \
 	StackFrame.cpp \
 	StackFrameList.cpp \
+	StackFrameRecognizer.cpp \
 	StackID.cpp \
 	StopInfo.cpp \
 	StructuredDataPlugin.cpp \

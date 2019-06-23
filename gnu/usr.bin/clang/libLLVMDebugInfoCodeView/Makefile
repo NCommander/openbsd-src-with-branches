@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2019/02/26 23:39:51 jsg Exp $
+# $OpenBSD: Makefile,v 1.8 2019/03/05 09:44:40 jsg Exp $
 
 LIB=	LLVMDebugInfoCodeView
 NOPROFILE=
@@ -33,13 +33,15 @@ SRCS+=	AppendingTypeTableBuilder.cpp \
 	RecordSerialization.cpp \
 	SimpleTypeSerializer.cpp \
 	StringsAndChecksums.cpp \
-	SymbolRecordMapping.cpp \
 	SymbolDumper.cpp \
+	SymbolRecordHelpers.cpp \
+	SymbolRecordMapping.cpp \
 	SymbolSerializer.cpp \
 	TypeDumpVisitor.cpp \
 	TypeIndex.cpp \
 	TypeIndexDiscovery.cpp \
 	TypeHashing.cpp \
+	TypeRecordHelpers.cpp \
 	TypeRecordMapping.cpp \
 	TypeStreamMerger.cpp \
 	TypeTableCollection.cpp

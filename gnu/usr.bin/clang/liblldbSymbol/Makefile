@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:36 espie Exp $
+# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
 
 LIB=	lldbSymbol
 NOPIC=
@@ -22,12 +22,9 @@ SRCS=	ArmUnwindInfo.cpp \
 	DWARFCallFrameInfo.cpp \
 	Function.cpp \
 	FuncUnwinders.cpp \
-	GoASTContext.cpp \
-	JavaASTContext.cpp \
 	LineEntry.cpp \
 	LineTable.cpp \
 	ObjectFile.cpp \
-	OCamlASTContext.cpp \
 	Symbol.cpp \
 	SymbolContext.cpp \
 	SymbolFile.cpp \

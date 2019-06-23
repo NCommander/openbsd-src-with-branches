@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2016/09/05 10:56:50 pascal Exp $
+# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:36 espie Exp $
 
 LIB=	clangSerialization
 NOPIC=
@@ -18,7 +18,8 @@ SRCS=	ASTCommon.cpp \
 	GlobalModuleIndex.cpp \
 	Module.cpp \
 	ModuleFileExtension.cpp \
-	ModuleManager.cpp
+	ModuleManager.cpp \
+	PCHContainerOperations.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/tools/clang/lib/Serialization
 
