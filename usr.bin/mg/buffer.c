@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.105 2018/12/13 14:59:16 lum Exp $	*/
+
 
 /* This file is in the public domain. */
 
@@ -112,7 +112,7 @@ usebuffer(int f, int n)
 		    EFNUL | EFNEW | EFBUF, curbp->b_altb->b_bname);
 
 	if (bufp == NULL)
-		return FALSE;
+		return (ABORT);
 
 	return (usebufname(bufp));
 }
