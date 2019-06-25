@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_descrip.c,v 1.184 2019/05/13 17:31:51 deraadt Exp $	*/
+/*	$OpenBSD: kern_descrip.c,v 1.185 2019/06/21 09:39:48 visa Exp $	*/
 /*	$NetBSD: kern_descrip.c,v 1.42 1996/03/30 22:24:38 christos Exp $	*/
 
 /*
@@ -518,7 +518,7 @@ restart:
 			break;
 
 		if (fp->f_type != DTYPE_VNODE) {
-			error = EBADF;
+			error = EINVAL;
 			break;
 		}
 		vp = fp->f_data;
