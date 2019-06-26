@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.54 2018/08/29 07:50:16 reyk Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.55 2018/12/13 14:59:16 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -39,7 +39,7 @@ static struct funmap functnames[] = {
 	{backword, "backward-word",},
 	{gotobob, "beginning-of-buffer",},
 	{gotobol, "beginning-of-line",},
-	{showmatch, "blink-and-insert",},
+	{ask_showmatch, "blink-and-insert",},
 	{bsmap, "bsmap-mode",},
 	{NULL, "c-x 4 prefix",},
 	{NULL, "c-x prefix",},
