@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mpip.c,v 1.6 2019/04/19 06:36:54 dlg Exp $ */
+/*	$OpenBSD: if_mpip.c,v 1.7 2019/04/19 07:39:37 dlg Exp $ */
 
 /*
  * Copyright (c) 2015 Rafael Zalamena <rzalamena@openbsd.org>
@@ -602,9 +602,8 @@ mpip_input(struct mpip_softc *sc, struct mbuf *m)
 	m->m_pkthdr.ph_ifidx = ifp->if_index;
 	m->m_pkthdr.ph_rtableid = ifp->if_rdomain;
 
-#if NPF > 0
-	pf_pkt_addr_changed(m);
-#endif
+	/* packet has not been processed by PF yet. */
+	KASSERT(m->m_pkthdr.pf.statekey == NULL);
 
 #if NBPFILTER > 0
 	{
