@@ -1,4 +1,4 @@
-/*	$OpenBSD: nvme_pci.c,v 1.6 2017/07/03 23:27:53 dlg Exp $ */
+/*	$OpenBSD: nvme_pci.c,v 1.7 2018/01/10 15:45:46 jcs Exp $ */
 
 /*
  * Copyright (c) 2014 David Gwynne <dlg@openbsd.org>
@@ -105,7 +105,8 @@ nvme_pci_attach(struct device *parent, struct device *self, void *aux)
 		return;
 	}
 
-	if (pci_intr_map_msi(pa, &ih) != 0) {
+	if (pci_intr_map_msix(pa, 0, &ih) != 0 &&
+	    pci_intr_map_msi(pa, &ih) != 0) {
 		if (pci_intr_map(pa, &ih) != 0) {
 			printf(": unable to map interrupt\n");
 			goto unmap;
