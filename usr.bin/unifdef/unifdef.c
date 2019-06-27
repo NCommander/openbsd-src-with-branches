@@ -56,7 +56,7 @@
 
 static const char copyright[] =
     #include "version.h"
-    "@(#) $Author: mmcc $\n"
+    "@(#) $Author: deraadt $\n"
     "@(#) $URL: http://dotat.at/prog/unifdef $\n"
 ;
 
@@ -1531,7 +1531,7 @@ astrcat(const char *s1, const char *s2)
 {
 	char *s;
 
-	if (asprintf(&s, "%s%s", s1, s2) < 0)
+	if (asprintf(&s, "%s%s", s1, s2) == -1)
 		err(2, "asprintf");
 	return (s);
 }
