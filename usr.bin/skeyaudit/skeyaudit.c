@@ -1,4 +1,4 @@
-/*	$OpenBSD: skeyaudit.c,v 1.27 2016/04/02 14:37:42 krw Exp $	*/
+/*	$OpenBSD: skeyaudit.c,v 1.28 2019/01/25 00:19:26 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 2000, 2003 Todd C. Miller <millert@openbsd.org>
@@ -212,7 +212,7 @@ runsendmail(struct passwd *pw, pid_t *pidp)
 	int pfd[2];
 	pid_t pid;
 
-	if (pipe(pfd) < 0)
+	if (pipe(pfd) == -1)
 		return(NULL);
 
 	switch (pid = fork()) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: skeyinit.c,v 1.73 2018/04/26 12:42:51 guenther Exp $	*/
+/*	$OpenBSD: skeyinit.c,v 1.74 2019/01/25 00:19:26 millert Exp $	*/
 
 /* OpenBSD S/Key (skeyinit.c)
  *
@@ -194,7 +194,7 @@ main(int argc, char **argv)
 		err(1, "pledge");
 
 	/* Build up a default seed based on the hostname and some randomness */
-	if (gethostname(hostname, sizeof(hostname)) < 0)
+	if (gethostname(hostname, sizeof(hostname)) == -1)
 		err(1, "gethostname");
 	for (i = 0, p = seed; hostname[i] && i < SKEY_NAMELEN; i++) {
 		if (isalnum((unsigned char)hostname[i]))

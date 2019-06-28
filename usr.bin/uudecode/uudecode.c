@@ -1,4 +1,4 @@
-/*	$OpenBSD: uudecode.c,v 1.25 2018/12/31 13:49:52 bluhm Exp $	*/
+/*	$OpenBSD: uudecode.c,v 1.26 2019/03/10 20:49:24 schwarze Exp $	*/
 /*	$FreeBSD: uudecode.c,v 1.49 2003/05/03 19:44:46 obrien Exp $	*/
 
 /*-
@@ -295,7 +295,7 @@ decode2(void)
 			warn("%s: %s", infile, outfile);
 			return (1);
 		}
-		if ((fd = open(outfile, flags, mode)) < 0 ||
+		if ((fd = open(outfile, flags, mode)) == -1 ||
 		    (outfp = fdopen(fd, "w")) == NULL) {
 			warn("%s: %s", infile, outfile);
 			return (1);

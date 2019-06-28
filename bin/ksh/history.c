@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.80 2018/01/15 22:30:38 jca Exp $	*/
+/*	$OpenBSD: history.c,v 1.81 2018/11/20 07:02:23 martijn Exp $	*/
 
 /*
  * command history
@@ -252,7 +252,7 @@ c_fc(char **wp)
 			return 1;
 		}
 
-		n = fstat(shf->fd, &statb) < 0 ? 128 :
+		n = fstat(shf->fd, &statb) == -1 ? 128 :
 		    statb.st_size + 1;
 		Xinit(xs, xp, n, hist_source->areap);
 		while ((n = shf_read(xp, Xnleft(xs, xp), shf)) > 0) {

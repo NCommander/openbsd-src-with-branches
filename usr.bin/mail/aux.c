@@ -1,4 +1,4 @@
-/*	$OpenBSD: aux.c,v 1.29 2015/10/16 17:56:07 mmcc Exp $	*/
+/*	$OpenBSD: aux.c,v 1.30 2018/09/16 02:38:57 millert Exp $	*/
 /*	$NetBSD: aux.c,v 1.5 1997/05/13 06:15:52 mikel Exp $	*/
 
 /*
@@ -98,7 +98,7 @@ isdir(char *name)
 {
 	struct stat sbuf;
 
-	if (stat(name, &sbuf) < 0)
+	if (stat(name, &sbuf) == -1)
 		return(0);
 	return(S_ISDIR(sbuf.st_mode));
 }

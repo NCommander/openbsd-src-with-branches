@@ -1,4 +1,4 @@
-/*	$OpenBSD: names.c,v 1.23 2015/10/16 17:56:07 mmcc Exp $	*/
+/*	$OpenBSD: names.c,v 1.24 2018/09/16 02:38:57 millert Exp $	*/
 /*	$NetBSD: names.c,v 1.5 1996/06/08 19:48:32 christos Exp $	*/
 
 /*
@@ -245,7 +245,7 @@ outof(struct name *names, FILE *fo, struct header *hp)
 			}
 			image = open(tempname, O_RDWR | O_CLOEXEC);
 			(void)rm(tempname);
-			if (image < 0) {
+			if (image == -1) {
 				warn("%s", tempname);
 				senderr++;
 				(void)Fclose(fout);
@@ -299,7 +299,7 @@ outof(struct name *names, FILE *fo, struct header *hp)
 				senderr++;
 				goto cant;
 			}
-			if ((f = dup(image)) < 0) {
+			if ((f = dup(image)) == -1) {
 				warn("dup");
 				fin = NULL;
 			} else

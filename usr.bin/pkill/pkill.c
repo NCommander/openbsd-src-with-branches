@@ -1,4 +1,4 @@
-/*	$OpenBSD: pkill.c,v 1.39 2016/10/10 02:22:59 gsoares Exp $	*/
+/*	$OpenBSD: pkill.c,v 1.40 2018/09/16 02:44:06 millert Exp $	*/
 /*	$NetBSD: pkill.c,v 1.5 2002/10/27 11:49:34 kleink Exp $	*/
 
 /*-
@@ -613,7 +613,7 @@ makelist(struct listhead *head, enum listtype type, char *src)
 			else
 				snprintf(buf, sizeof(buf), "/dev/%s", p);
 
-			if (stat(buf, &st) < 0) {
+			if (stat(buf, &st) == -1) {
 				if (errno == ENOENT)
 					errx(STATUS_BADUSAGE,
 					    "no such tty: `%s'", sp);

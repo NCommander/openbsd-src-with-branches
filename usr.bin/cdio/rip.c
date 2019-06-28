@@ -1,4 +1,4 @@
-/*	$OpenBSD: rip.c,v 1.16 2015/08/20 22:32:41 deraadt Exp $	*/
+/*	$OpenBSD: rip.c,v 1.17 2017/12/23 20:04:23 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2007 Alexey Vatchenko <av@bsdua.org>
@@ -306,7 +306,7 @@ write_sector(int fd, u_char *sec, u_int32_t secsize)
 
 	while (secsize > 0) {
 		res = write(fd, sec, secsize);
-		if (res < 0)
+		if (res == -1)
 			return (-1);
 
 		sec += res;
@@ -595,7 +595,7 @@ rip_tracks(char *arg, int (*next_track)(struct track *), int issorted)
 	int rc;
 
 	rc = ioctl(fd, CDIOREADTOCHEADER, &h);
-	if (rc < 0)
+	if (rc == -1)
 		return (rc);
 
 	if (h.starting_track > h.ending_track) {

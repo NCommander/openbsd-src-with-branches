@@ -1,4 +1,4 @@
-/*	$OpenBSD: function.c,v 1.45 2017/01/03 21:31:16 tedu Exp $	*/
+/*	$OpenBSD: function.c,v 1.46 2018/09/16 02:44:06 millert Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -331,10 +331,10 @@ f_delete(PLAN *plan, FTSENT *entry)
 #endif
 	/* rmdir directories, unlink everything else */
 	if (S_ISDIR(entry->fts_statp->st_mode)) {
-		if (rmdir(entry->fts_accpath) < 0 && errno != ENOTEMPTY)
+		if (rmdir(entry->fts_accpath) == -1 && errno != ENOTEMPTY)
 			warn("-delete: rmdir(%s)", entry->fts_path);
 	} else {
-		if (unlink(entry->fts_accpath) < 0)
+		if (unlink(entry->fts_accpath) == -1)
 			warn("-delete: unlink(%s)", entry->fts_path);
 
 	}

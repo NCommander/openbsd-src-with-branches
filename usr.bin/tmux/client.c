@@ -1,4 +1,4 @@
-/* $OpenBSD: client.c,v 1.128 2018/11/22 10:36:40 nicm Exp $ */
+/* $OpenBSD: client.c,v 1.129 2019/05/25 07:18:20 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -434,7 +434,7 @@ client_stdin_callback(__unused int fd, __unused short events,
 	struct msg_stdin_data	data;
 
 	data.size = read(STDIN_FILENO, data.data, sizeof data.data);
-	if (data.size < 0 && (errno == EINTR || errno == EAGAIN))
+	if (data.size == -1 && (errno == EINTR || errno == EAGAIN))
 		return;
 
 	proc_send(client_peer, MSG_STDIN, -1, &data, sizeof data);

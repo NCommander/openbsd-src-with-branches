@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.c,v 1.83 2015/11/05 09:48:21 nicm Exp $	*/
+/*	$OpenBSD: buf.c,v 1.84 2016/10/15 22:20:17 millert Exp $	*/
 /*
  * Copyright (c) 2003 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -225,7 +225,7 @@ open:
 		fatal("buf_write: buf_write_fd: `%s'", path);
 	}
 
-	if (fchmod(fd, mode) < 0)
+	if (fchmod(fd, mode) == -1)
 		cvs_log(LP_ERR, "permissions not set on file %s", path);
 
 	(void)close(fd);
@@ -259,7 +259,7 @@ buf_write_stmp(BUF *b, char *template, struct timeval *tv)
 
 	worklist_add(template, &temp_files);
 
-	if (lseek(fd, 0, SEEK_SET) < 0)
+	if (lseek(fd, 0, SEEK_SET) == -1)
 		fatal("buf_write_stmp: lseek: %s", strerror(errno));
 
 	return (fd);

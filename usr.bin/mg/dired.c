@@ -1,4 +1,4 @@
-/*	$OpenBSD: dired.c,v 1.87 2019/06/27 16:08:12 lum Exp $	*/
+/*	$OpenBSD: dired.c,v 1.89 2019/06/27 16:55:08 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -406,7 +406,7 @@ d_expunge(int f, int n)
 				curwp->w_dotline = tmp;
 				return (FALSE);
 			case FALSE:
-				if (unlink(fname) < 0) {
+				if (unlink(fname) == -1) {
 					(void)xbasename(sname, fname, NFILEN);
 					dobeep();
 					ewprintf("Could not delete '%s'", sname);
@@ -415,7 +415,7 @@ d_expunge(int f, int n)
 				}
 				break;
 			case TRUE:
-				if (rmdir(fname) < 0) {
+				if (rmdir(fname) == -1) {
 					(void)xbasename(sname, fname, NFILEN);
 					dobeep();
 					ewprintf("Could not delete directory "

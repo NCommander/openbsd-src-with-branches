@@ -1,4 +1,4 @@
-/*	$OpenBSD: isexec.c,v 1.10 2015/01/20 09:00:16 guenther Exp $	*/
+/*	$OpenBSD: isexec.c,v 1.11 2017/10/27 16:47:08 mpi Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -52,7 +52,7 @@ isexec(char *file, struct stat *statp)
 	    !(statp->st_mode & (S_IXUSR|S_IXGRP|S_IXOTH)))
 		return(FALSE);
 
-	if ((fd = open(file, O_RDONLY, 0)) < 0)
+	if ((fd = open(file, O_RDONLY, 0)) == -1)
 		return(FALSE);
 
 	r = read(fd, &hdr, sizeof(hdr)) == sizeof(hdr) &&

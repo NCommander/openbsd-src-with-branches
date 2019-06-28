@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.96 2018/11/20 07:02:23 martijn Exp $	*/
+/*	$OpenBSD: main.c,v 1.97 2019/02/20 23:59:17 schwarze Exp $	*/
 
 /*
  * startup, main loop, environments and error handling
@@ -280,7 +280,7 @@ main(int argc, char *argv[])
 
 		/* Try to use existing $PWD if it is valid */
 		if (pwd[0] != '/' ||
-		    stat(pwd, &s_pwd) < 0 || stat(".", &s_dot) < 0 ||
+		    stat(pwd, &s_pwd) == -1 || stat(".", &s_dot) == -1 ||
 		    s_pwd.st_dev != s_dot.st_dev ||
 		    s_pwd.st_ino != s_dot.st_ino)
 			pwdx = NULL;

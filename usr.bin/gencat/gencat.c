@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencat.c,v 1.17 2014/11/18 20:54:28 krw Exp $	*/
+/*	$OpenBSD: gencat.c,v 1.18 2015/10/10 21:29:59 deraadt Exp $	*/
 /*	$NetBSD: gencat.c,v 1.9 1998/10/09 17:00:56 itohy Exp $	*/
 
 /*-
@@ -155,13 +155,13 @@ main(int argc, char *argv[])
 	catfile = *argv++;
 
 	for (; *argv; argv++) {
-		if ((ifd = open(*argv, O_RDONLY)) < 0)
+		if ((ifd = open(*argv, O_RDONLY)) == -1)
 			err(1, "Unable to read %s", *argv);
 		MCParse(ifd);
 		close(ifd);
 	}
 
-	if ((ofd = open(catfile, O_WRONLY | O_TRUNC | O_CREAT, 0666)) < 0)
+	if ((ofd = open(catfile, O_WRONLY | O_TRUNC | O_CREAT, 0666)) == -1)
 		err(1, "Unable to create a new %s", catfile);
 	MCWriteCat(ofd);
 	exit(0);

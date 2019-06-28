@@ -1,4 +1,4 @@
-/*	$OpenBSD: cp.c,v 1.51 2018/09/07 13:46:33 martijn Exp $	*/
+/*	$OpenBSD: cp.c,v 1.52 2019/01/28 18:58:42 jca Exp $	*/
 /*	$NetBSD: cp.c,v 1.14 1995/09/07 06:14:51 jtc Exp $	*/
 
 /*
@@ -425,7 +425,7 @@ copy(char *argv[], enum op type, int fts_options)
 			 */
 			if (fts_dne(curr)) {
 				if (mkdir(to.p_path,
-				    curr->fts_statp->st_mode | S_IRWXU) < 0)
+				    curr->fts_statp->st_mode | S_IRWXU) == -1)
 					err(1, "%s", to.p_path);
 				else if (vflag)
 					(void)fprintf(stdout, "%s -> %s\n",

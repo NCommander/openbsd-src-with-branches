@@ -1,4 +1,4 @@
-/*	$OpenBSD: add.c,v 1.113 2016/10/13 20:51:25 fcambus Exp $	*/
+/*	$OpenBSD: add.c,v 1.114 2017/06/01 08:08:24 joris Exp $	*/
 /*
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2005, 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -257,7 +257,7 @@ cvs_add_tobranch(struct cvs_file *cf, char *tag)
 	cf->file_rpath = xstrdup(attic);
 
 	cf->repo_fd = open(cf->file_rpath, O_CREAT|O_RDONLY);
-	if (cf->repo_fd < 0)
+	if (cf->repo_fd == -1)
 		fatal("cvs_add_tobranch: %s: %s", cf->file_rpath,
 		    strerror(errno));
 
