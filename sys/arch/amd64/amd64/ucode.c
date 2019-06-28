@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucode.c,v 1.3 2018/01/14 20:15:37 bluhm Exp $	*/
+/*	$OpenBSD: ucode.c,v 1.4 2018/02/06 01:09:17 patrick Exp $	*/
 /*
  * Copyright (c) 2018 Stefan Fritsch <fritsch@genua.de>
  * Copyright (c) 2018 Patrick Wildt <patrick@blueri.se>
@@ -144,6 +144,7 @@ cpu_ucode_intel_apply(struct cpu_info *ci)
 	/* Apply microcode. */
 	data = (paddr_t)update;
 	data += sizeof(struct intel_ucode_header);
+	wbinvd();
 	wrmsr(MSR_BIOS_UPDT_TRIG, data);
 
 	new_rev = cpu_ucode_intel_rev();
