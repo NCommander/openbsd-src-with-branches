@@ -1,4 +1,4 @@
-/*	$OpenBSD: tables.c,v 1.52 2017/09/12 17:11:11 otto Exp $	*/
+/*	$OpenBSD: tables.c,v 1.53 2017/09/16 07:42:34 otto Exp $	*/
 /*	$NetBSD: tables.c,v 1.4 1995/03/21 09:07:45 cgd Exp $	*/
 
 /*-
@@ -468,7 +468,7 @@ ftime_start(void)
 	 * so it will get removed on exit
 	 */
 	memcpy(tempbase, _TFILE_BASE, sizeof(_TFILE_BASE));
-	if ((ffd = mkstemp(tempfile)) < 0) {
+	if ((ffd = mkstemp(tempfile)) == -1) {
 		syswarn(1, errno, "Unable to create temporary file: %s",
 		    tempfile);
 		return(-1);

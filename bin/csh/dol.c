@@ -1,4 +1,4 @@
-/*	$OpenBSD: dol.c,v 1.24 2018/09/18 06:56:09 deraadt Exp $	*/
+/*	$OpenBSD: dol.c,v 1.25 2018/10/26 14:36:03 miko Exp $	*/
 /*	$NetBSD: dol.c,v 1.8 1995/09/27 00:38:38 jtc Exp $	*/
 
 /*-
@@ -822,7 +822,7 @@ heredoc(Char *term)
     bool    quoted;
     char   tmp[] = "/tmp/sh.XXXXXXXX";
 
-    if (mkstemp(tmp) < 0)
+    if (mkstemp(tmp) == -1)
 	stderror(ERR_SYSTEM, tmp, strerror(errno));
     (void) unlink(tmp);		/* 0 0 inode! */
     Dv[0] = term;
