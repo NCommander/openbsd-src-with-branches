@@ -1,4 +1,4 @@
-/*	$OpenBSD: netgroup_mkdb.c,v 1.19 2015/09/10 18:59:34 deraadt Exp $	*/
+/*	$OpenBSD: netgroup_mkdb.c,v 1.20 2015/10/13 15:12:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -123,7 +123,7 @@ main(int argc, char *argv[])
 	else if (argc > 1)
 		usage();
 
-	if (atexit(cleanup))
+	if (atexit(cleanup) == -1)
 		err(1, "Cannot install exit handler");
 
 	/* Read and parse the netgroup file */
