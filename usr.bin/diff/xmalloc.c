@@ -1,4 +1,4 @@
-/* $OpenBSD: xmalloc.c,v 1.8 2015/09/25 16:16:26 tedu Exp $ */
+/* $OpenBSD: xmalloc.c,v 1.9 2015/11/17 18:25:02 tobias Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -78,7 +78,7 @@ xasprintf(char **ret, const char *fmt, ...)
 	i = vasprintf(ret, fmt, ap);
 	va_end(ap);
 
-	if (i < 0 || *ret == NULL)
+	if (i == -1)
 		err(2, "xasprintf");
 
 	return i;

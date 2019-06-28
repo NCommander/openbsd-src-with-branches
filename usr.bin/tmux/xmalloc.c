@@ -1,4 +1,4 @@
-/* $OpenBSD: xmalloc.c,v 1.10 2016/04/04 16:19:43 nicm Exp $ */
+/* $OpenBSD: xmalloc.c,v 1.11 2016/11/17 10:06:08 nicm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -111,7 +111,7 @@ xvasprintf(char **ret, const char *fmt, va_list ap)
 
 	i = vasprintf(ret, fmt, ap);
 
-	if (i < 0 || *ret == NULL)
+	if (i == -1)
 		fatalx("xasprintf: %s", strerror(errno));
 
 	return i;
