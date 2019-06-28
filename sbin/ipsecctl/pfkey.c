@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.59 2017/04/18 02:29:56 deraadt Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.60 2017/04/19 15:59:38 bluhm Exp $	*/
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
  * Copyright (c) 2003, 2004 Markus Friedl <markus@openbsd.org>
@@ -1315,7 +1315,7 @@ pfkey_monitor(int opts)
 	pfd[0].fd = fd;
 	pfd[0].events = POLLIN;
 	for (;;) {
-		if ((n = poll(pfd, 1, -1)) < 0)
+		if ((n = poll(pfd, 1, -1)) == -1)
 			err(2, "poll");
 		if (n == 0)
 			break;

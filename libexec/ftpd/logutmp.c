@@ -1,4 +1,4 @@
-/*	$OpenBSD: logutmp.c,v 1.12 2014/10/25 03:19:22 lteo Exp $	*/
+/*	$OpenBSD: logutmp.c,v 1.13 2016/08/14 22:57:31 guenther Exp $	*/
 /*
  * Portions Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -70,7 +70,7 @@ ftpd_login(struct utmp *ut)
 			topslot++;
 	}
 	if ((topslot < 0) || ((fd < 0) &&
-	    (fd = open(_PATH_UTMP, O_RDWR|O_CREAT, 0644)) < 0))
+	    (fd = open(_PATH_UTMP, O_RDWR|O_CREAT, 0644)) == -1))
 		return;
 
 	/*

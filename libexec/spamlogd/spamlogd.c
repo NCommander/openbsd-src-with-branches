@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamlogd.c,v 1.27 2016/03/16 14:47:04 mestre Exp $	*/
+/*	$OpenBSD: spamlogd.c,v 1.28 2018/10/25 06:41:50 mestre Exp $	*/
 
 /*
  * Copyright (c) 2006 Henning Brauer <henning@openbsd.org>
@@ -140,7 +140,7 @@ init_pcap(void)
 
 	pcap_freecode(&bpfp);
 
-	if (ioctl(pcap_fileno(hpcap), BIOCLOCK) < 0) {
+	if (ioctl(pcap_fileno(hpcap), BIOCLOCK) == -1) {
 		logmsg(LOG_ERR, "BIOCLOCK: %s", strerror(errno));
 		return (-1);
 	}

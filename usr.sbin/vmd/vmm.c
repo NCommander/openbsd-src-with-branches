@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.91 2018/12/04 08:15:09 claudio Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.92 2019/05/11 19:55:14 jasper Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -769,7 +769,7 @@ get_info_vm(struct privsep *ps, struct imsg *imsg, int terminate)
 	memset(&vir, 0, sizeof(vir));
 
 	/* First ioctl to see how many bytes needed (vip.vip_size) */
-	if (ioctl(env->vmd_fd, VMM_IOC_INFO, &vip) < 0)
+	if (ioctl(env->vmd_fd, VMM_IOC_INFO, &vip) == -1)
 		return (errno);
 
 	if (vip.vip_info_ct != 0)
@@ -781,7 +781,7 @@ get_info_vm(struct privsep *ps, struct imsg *imsg, int terminate)
 
 	/* Second ioctl to get the actual list */
 	vip.vip_info = info;
-	if (ioctl(env->vmd_fd, VMM_IOC_INFO, &vip) < 0) {
+	if (ioctl(env->vmd_fd, VMM_IOC_INFO, &vip) == -1) {
 		ret = errno;
 		free(info);
 		return (ret);

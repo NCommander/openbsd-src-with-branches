@@ -1,4 +1,4 @@
-/*	$OpenBSD: testdb.c,v 1.8 2009/10/27 23:59:51 deraadt Exp $	*/
+/*	$OpenBSD: testdb.c,v 1.9 2015/01/16 06:40:17 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -57,7 +57,7 @@ testdb(char *dbname)
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_VERSION;
 	kversionlen = sizeof(kversion);
-	if (sysctl(mib, 2, kversion, &kversionlen, NULL, 0) < 0)
+	if (sysctl(mib, 2, kversion, &kversionlen, NULL, 0) == -1)
 		goto close;
 
 	/* Read the version out of the database */

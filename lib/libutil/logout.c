@@ -1,4 +1,4 @@
-/*	$OpenBSD: logout.c,v 1.8 2005/08/02 21:46:23 espie Exp $	*/
+/*	$OpenBSD: logout.c,v 1.9 2015/12/28 20:11:36 guenther Exp $	*/
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -47,7 +47,7 @@ logout(const char *line)
 	int fd, rval;
 	UTMP ut;
 
-	if ((fd = open(_PATH_UTMP, O_RDWR|O_CLOEXEC)) < 0)
+	if ((fd = open(_PATH_UTMP, O_RDWR|O_CLOEXEC)) == -1)
 		return(0);
 	rval = 0;
 	while (read(fd, &ut, sizeof(UTMP)) == sizeof(UTMP)) {

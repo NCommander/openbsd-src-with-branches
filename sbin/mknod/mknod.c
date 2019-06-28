@@ -1,4 +1,4 @@
-/*	$OpenBSD: mknod.c,v 1.29 2016/03/07 19:16:06 tb Exp $	*/
+/*	$OpenBSD: mknod.c,v 1.30 2016/10/20 10:24:40 schwarze Exp $	*/
 /*	$NetBSD: mknod.c,v 1.8 1995/08/11 00:08:18 jtc Exp $	*/
 
 /*
@@ -196,7 +196,7 @@ domakenodes(struct node *node, int n)
 		}
 
 		r = mknod(node[i].name, node[i].mode, node[i].dev);
-		if (r < 0) {
+		if (r == -1) {
 			warn("%s", node[i].name);
 			rv = 1;
 		}

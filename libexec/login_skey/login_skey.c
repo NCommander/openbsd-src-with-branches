@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_skey.c,v 1.26 2017/07/20 15:47:29 bluhm Exp $	*/
+/*	$OpenBSD: login_skey.c,v 1.27 2019/01/25 00:19:26 millert Exp $	*/
 
 /*
  * Copyright (c) 2000, 2001, 2004 Todd C. Miller <millert@openbsd.org>
@@ -287,6 +287,6 @@ send_fd(int sock)
 
 	*(int *)CMSG_DATA(cmp) = fileno(skey.keyfile);
 
-	if (sendmsg(sock, &msg, 0) < 0)
+	if (sendmsg(sock, &msg, 0) == -1)
 		syslog(LOG_ERR, "sendmsg: %m");
 }

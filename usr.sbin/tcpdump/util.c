@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.27 2015/11/16 00:16:39 mmcc Exp $	*/
+/*	$OpenBSD: util.c,v 1.28 2019/01/26 00:53:57 procter Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -266,10 +266,10 @@ read_infile(char *fname)
 	char		*cp;
 
 	fd = open(fname, O_RDONLY);
-	if (fd < 0)
+	if (fd == -1)
 		error("can't open %s: %s", fname, pcap_strerror(errno));
 
-	if (fstat(fd, &buf) < 0)
+	if (fstat(fd, &buf) == -1)
 		error("can't stat %s: %s", fname, pcap_strerror(errno));
 
 	if (buf.st_size >= SSIZE_MAX)

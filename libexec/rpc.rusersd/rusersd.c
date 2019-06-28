@@ -1,4 +1,4 @@
-/*	$OpenBSD: rusersd.c,v 1.19 2016/09/04 15:03:13 jca Exp $	*/
+/*	$OpenBSD: rusersd.c,v 1.20 2018/04/26 12:42:51 guenther Exp $	*/
 
 /*-
  *  Copyright (c) 1993 John Brezak
@@ -94,7 +94,7 @@ main(int argc, char *argv[])
 	 * See if inetd started us
 	 */
 	fromlen = sizeof(from);
-	if (getsockname(0, (struct sockaddr *)&from, &fromlen) < 0) {
+	if (getsockname(0, (struct sockaddr *)&from, &fromlen) == -1) {
 		from_inetd = 0;
 		sock = RPC_ANYSOCK;
 		proto = IPPROTO_UDP;

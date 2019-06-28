@@ -1,4 +1,4 @@
-/* $OpenBSD: rresvport.c,v 1.10 2015/01/16 16:48:51 deraadt Exp $ */
+/* $OpenBSD: rresvport.c,v 1.11 2015/09/12 14:56:50 guenther Exp $ */
 /*
  * Copyright (c) 1995, 1996, 1998 Theo de Raadt.  All rights reserved.
  * Copyright (c) 1983, 1993, 1994
@@ -82,12 +82,12 @@ rresvport_af(int *alport, int af)
 	sa->sa_family = af;
 	
 	s = socket(af, SOCK_STREAM, 0);
-	if (s < 0)
+	if (s == -1)
 		return (-1);
 
 	*portp = htons(*alport);
 	if (*alport < IPPORT_RESERVED - 1) {
-		if (bind(s, sa, sa->sa_len) >= 0)
+		if (bind(s, sa, sa->sa_len) != -1)
 			return (s);
 		if (errno != EADDRINUSE) {
 			(void)close(s);

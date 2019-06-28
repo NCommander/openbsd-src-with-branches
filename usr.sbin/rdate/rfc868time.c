@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfc868time.c,v 1.10 2015/01/16 06:40:20 deraadt Exp $	*/
+/*	$OpenBSD: rfc868time.c,v 1.11 2018/08/18 15:25:20 mestre Exp $	*/
 /*	$NetBSD: rdate.c,v 1.4 1996/03/16 12:37:45 pk Exp $	*/
 
 /*
@@ -88,10 +88,10 @@ rfc868time_client(const char *hostname, int family, struct timeval *new,
 	s = -1;
 	for (res = res0; res; res = res->ai_next) {
 		s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-		if (s < 0)
+		if (s == -1)
 			continue;
 
-		if (connect(s, res->ai_addr, res->ai_addrlen) < 0) {
+		if (connect(s, res->ai_addr, res->ai_addrlen) == -1) {
 			close(s);
 			s = -1;
 			continue;
@@ -99,7 +99,7 @@ rfc868time_client(const char *hostname, int family, struct timeval *new,
 
 		break;
 	}
-	if (s < 0)
+	if (s == -1)
 		err(1, "Could not connect socket");
 	freeaddrinfo(res0);
 

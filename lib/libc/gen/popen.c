@@ -1,4 +1,4 @@
-/*	$OpenBSD: popen.c,v 1.20 2015/01/16 16:48:51 deraadt Exp $ */
+/*	$OpenBSD: popen.c,v 1.21 2015/08/31 02:53:57 guenther Exp $ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -70,7 +70,7 @@ popen(const char *program, const char *type)
 	if ((cur = malloc(sizeof(struct pid))) == NULL)
 		return (NULL);
 
-	if (pipe2(pdes, O_CLOEXEC) < 0) {
+	if (pipe2(pdes, O_CLOEXEC) == -1) {
 		free(cur);
 		return (NULL);
 	}

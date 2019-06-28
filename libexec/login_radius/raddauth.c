@@ -1,4 +1,4 @@
-/*	$OpenBSD: raddauth.c,v 1.28 2015/10/05 17:31:17 millert Exp $	*/
+/*	$OpenBSD: raddauth.c,v 1.29 2016/09/03 11:04:23 gsoares Exp $	*/
 
 /*-
  * Copyright (c) 1996, 1997 Berkeley Software Design, Inc. All rights reserved.
@@ -233,7 +233,7 @@ raddauth(char *username, char *class, char *style, char *challenge,
 	getsecret();
 
 	/* set up socket */
-	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
 		snprintf(_pwstate, sizeof(_pwstate), "%s", strerror(errno));
 		*emsg = _pwstate;
 		return (1);

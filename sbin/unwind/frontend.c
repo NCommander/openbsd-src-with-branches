@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.c,v 1.20 2019/05/10 14:10:38 florian Exp $	*/
+/*	$OpenBSD: frontend.c,v 1.21 2019/05/14 14:51:31 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -648,7 +648,7 @@ udp_receive(int fd, short events, void *arg)
 	uint8_t			*queryp;
 	char			*str_from, *str, buf[1024], *bufp;
 
-	if ((len = recvmsg(fd, &udpev->rcvmhdr, 0)) < 0) {
+	if ((len = recvmsg(fd, &udpev->rcvmhdr, 0)) == -1) {
 		log_warn("recvmsg");
 		return;
 	}

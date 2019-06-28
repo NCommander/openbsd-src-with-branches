@@ -1,4 +1,4 @@
-/*	$OpenBSD: nlist.c,v 1.51 2017/10/27 16:47:08 mpi Exp $	*/
+/*	$OpenBSD: nlist.c,v 1.52 2018/04/26 12:42:51 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -90,7 +90,7 @@ __elf_knlist(int fd, DB *db, int ksyms)
 		errx(1, "cannot allocate %zu bytes for symbol header",
 		    sizeof(Elf_Shdr) * eh.e_shnum);
 
-	if (fseek (fp, eh.e_shoff, SEEK_SET) < 0) {
+	if (fseek(fp, eh.e_shoff, SEEK_SET) == -1) {
 		fmterr = "no exec header";
 		error = -1;
 		goto done;

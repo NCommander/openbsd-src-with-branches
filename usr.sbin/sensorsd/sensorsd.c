@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensorsd.c,v 1.64 2019/05/16 14:36:58 deraadt Exp $ */
+/*	$OpenBSD: sensorsd.c,v 1.65 2019/05/31 15:55:50 schwarze Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -606,7 +606,7 @@ report_sdlim(struct sdlim_t *sdlim, time_t last_report)
 					    cmd[i]);
 					break;
 				}
-				if (r < 0 || (r >= len - n)) {
+				if (r == -1 || (r >= len - n)) {
 					syslog(LOG_CRIT, "could not parse "
 					    "command");
 					return;

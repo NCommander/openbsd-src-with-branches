@@ -1,4 +1,4 @@
-/*	$OpenBSD: evbuffer_tls.c,v 1.10 2017/03/03 20:26:23 bluhm Exp $ */
+/*	$OpenBSD: evbuffer_tls.c,v 1.11 2017/07/04 15:52:26 bluhm Exp $ */
 
 /*
  * Copyright (c) 2002-2004 Niels Provos <provos@citi.umich.edu>
@@ -229,7 +229,7 @@ buffertls_handshakecb(int fd, short event, void *arg)
 		what |= EVBUFFER_ERROR;
 		break;
 	}
-	if (res < 0)
+	if (res == -1)
 		goto error;
 
 	/* Handshake was successful, change to read and write callback. */

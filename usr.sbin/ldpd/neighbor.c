@@ -1,4 +1,4 @@
-/*	$OpenBSD: neighbor.c,v 1.79 2017/03/04 00:15:35 renato Exp $ */
+/*	$OpenBSD: neighbor.c,v 1.80 2019/01/23 02:02:04 dlg Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -547,7 +547,7 @@ nbr_connect_cb(int fd, short event, void *arg)
 	socklen_t	 len;
 
 	len = sizeof(error);
-	if (getsockopt(nbr->fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0) {
+	if (getsockopt(nbr->fd, SOL_SOCKET, SO_ERROR, &error, &len) == -1) {
 		log_warn("%s: getsockopt SOL_SOCKET SO_ERROR", __func__);
 		return;
 	}

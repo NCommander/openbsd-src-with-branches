@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpdump.c,v 1.89 2019/03/18 00:09:22 dlg Exp $	*/
+/*	$OpenBSD: tcpdump.c,v 1.90 2019/05/26 22:42:42 dlg Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -188,7 +188,7 @@ pcap_list_linktypes(pcap_t *p)
 	if (fd < 0)
 		error("Invalid bpf descriptor");
 
-	if (ioctl(fd, BIOCGDLTLIST, &dl) < 0)
+	if (ioctl(fd, BIOCGDLTLIST, &dl) == -1)
 		err(1, "BIOCGDLTLIST");
 
 	if (dl.bfl_len > MAXDLT)

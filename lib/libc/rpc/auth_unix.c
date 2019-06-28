@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_unix.c,v 1.25 2015/09/13 15:36:56 guenther Exp $ */
+/*	$OpenBSD: auth_unix.c,v 1.26 2015/11/01 03:45:29 guenther Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -194,7 +194,7 @@ authunix_create_default(void)
 	machname[MAX_MACHINE_NAME] = 0;
 	uid = geteuid();
 	gid = getegid();
-	if ((len = getgroups(NGRPS, gids)) < 0)
+	if ((len = getgroups(NGRPS, gids)) == -1)
 		return (NULL);
 	if (len > maxgrplist)
 		len = maxgrplist;

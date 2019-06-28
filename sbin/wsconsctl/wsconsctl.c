@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsconsctl.c,v 1.30 2017/04/06 17:33:39 jmc Exp $	*/
+/*	$OpenBSD: wsconsctl.c,v 1.31 2017/07/21 20:38:20 bru Exp $	*/
 /*	$NetBSD: wsconsctl.c,v 1.2 1998/12/29 22:40:20 hannken Exp $ */
 
 /*-
@@ -120,8 +120,8 @@ main(int argc, char *argv[])
 			for (devidx = 0;; devidx++) {
 				device = (*sw->nextdev)(devidx);
 				if (!device ||
-				    ((devfd = open(device, O_WRONLY)) < 0 &&
-				     (devfd = open(device, O_RDONLY)) < 0)) {
+				    ((devfd = open(device, O_WRONLY)) == -1 &&
+				     (devfd = open(device, O_RDONLY)) == -1)) {
 					if (!device || errno != ENXIO) {
 						if (device && errno != ENOENT) {
 							warn("%s", device);
@@ -170,8 +170,8 @@ main(int argc, char *argv[])
 				device = wdev;
 
 			if (!device ||
-			    ((devfd = open(device, O_WRONLY)) < 0 &&
-			     (devfd = open(device, O_RDONLY)) < 0)) {
+			    ((devfd = open(device, O_WRONLY)) == -1 &&
+			     (devfd = open(device, O_RDONLY)) == -1)) {
 				if (!device) {
 					const char *c = strchr(argv[i], '.');
 					int k;
