@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 2017/07/06 11:17:58 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.14 2017/07/28 09:32:49 aoyama Exp $
 
 .PATH: ${.CURDIR}/lib
 
@@ -8,7 +8,7 @@ LIB=	expat
 SRCS=	xmlparse.c xmltok.c xmlrole.c
 CFLAGS+=-I${.CURDIR} -DHAVE_EXPAT_CONFIG_H
 .if ${COMPILER_VERSION:L} != "gcc3"
-CFLAGS+=-fvisibility=hidden
+CFLAGS+=-fvisibility=hidden -DXML_ENABLE_VISIBILITY=1
 .endif
 
 PC_FILES=expat.pc
