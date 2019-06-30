@@ -1,4 +1,4 @@
-.\"	$OpenBSD: pcmcia.4,v 1.63 2016/09/03 13:37:41 guenther Exp $
+.\"	$OpenBSD: pcmcia.4,v 1.64 2016/09/03 18:06:41 jmc Exp $
 .\"	$NetBSD: pcmcia.4,v 1.4 1998/06/07 09:10:30 enami Exp $
 .\"
 .\" Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -46,7 +46,7 @@
 .Cd "pcmcia* at tcic?"
 .Pp
 .Cd "# luna88k"
-.Cd "pcic*   at cbus?"
+.Cd "pcic0   at cbus? port 0x3e0 iomem 0xd0000 iosiz 0x10000"
 .Cd "pcmcia* at pcic?"
 .Pp
 .Cd "# sparc64"
