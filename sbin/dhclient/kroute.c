@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.162 2019/05/10 16:51:13 benno Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.163 2019/05/17 20:42:44 krw Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -85,7 +85,7 @@ delete_addresses(char *name, int ioctlfd, struct in_addr newaddr,
 	struct ifaddrs			*ifap, *ifa;
 	int				 found;
 
-	if (getifaddrs(&ifap) != 0)
+	if (getifaddrs(&ifap) == -1)
 		fatal("getifaddrs");
 
 	found = 0;
