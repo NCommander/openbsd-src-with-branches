@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.636 2019/06/28 13:32:43 deraadt Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.637 2019/06/29 16:39:57 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -1797,9 +1797,6 @@ write_lease_db(char *name, struct client_lease_tq *lease_db)
 	struct client_lease	*lp;
 	char			*leasestr;
 	time_t			 cur_time;
-
-	if (leaseFile == NULL)
-		fatalx("lease file not open");
 
 	rewind(leaseFile);
 
