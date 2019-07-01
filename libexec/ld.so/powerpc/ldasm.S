@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.32 2017/08/27 21:59:52 deraadt Exp $ */
+/*	$OpenBSD: ldasm.S,v 1.33 2019/05/10 13:29:21 guenther Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -54,7 +54,7 @@ _dl_start:
 	addi	30, 30, _GLOBAL_OFFSET_TABLE_-1b@l
 
 	bcl	20, 31, 1f
-1:	mflr	18,
+1:	mflr	18
 	addis	18, 18, _DYNAMIC-1b@ha
 	addi	18, 18, _DYNAMIC-1b@l
 	lwz	4, 0(30)	# load address of _DYNAMIC according to got.
