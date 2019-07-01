@@ -1,4 +1,4 @@
-/*	$OpenBSD: man_term.c,v 1.181 2019/01/05 21:13:55 schwarze Exp $ */
+/*	$OpenBSD: man_term.c,v 1.182 2019/06/27 12:19:39 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2010-2015, 2017-2019 Ingo Schwarze <schwarze@openbsd.org>
@@ -313,7 +313,7 @@ pre_alternate(DECL_ARGS)
 		assert(nn->type == ROFFT_TEXT);
 		term_word(p, nn->string);
 		if (nn->flags & NODE_EOS)
-                	p->flags |= TERMP_SENTENCE;
+			p->flags |= TERMP_SENTENCE;
 		if (nn->next != NULL)
 			p->flags |= TERMP_NOSPACE;
 	}
