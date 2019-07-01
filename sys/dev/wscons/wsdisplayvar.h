@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplayvar.h,v 1.31 2017/07/19 14:34:10 kettenis Exp $ */
+/* $OpenBSD: wsdisplayvar.h,v 1.32 2019/05/04 11:34:48 kettenis Exp $ */
 /* $NetBSD: wsdisplayvar.h,v 1.30 2005/02/04 02:10:49 perry Exp $ */
 
 /*
@@ -253,6 +253,5 @@ void wsscrollback(void *v, int op);
 /*
  * screen burner
  */
-#define	WSDISPLAY_DEFBURNOUT	0	/* disabled */
-#define	WSDISPLAY_DEFBURNIN	250	/* ms */
-
+#define	WSDISPLAY_DEFBURNOUT_MSEC	0	/* disabled */
+#define	WSDISPLAY_DEFBURNIN_MSEC	250	/* milliseconds */
