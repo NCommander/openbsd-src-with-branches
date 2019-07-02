@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcb.h,v 1.4 2016/05/07 19:05:21 guenther Exp $	*/
+/*	$OpenBSD: tcb.h,v 1.5 2016/09/04 08:42:47 guenther Exp $	*/
 
 /*
  * Copyright (c) 2011 Philip Guenther <guenther@openbsd.org>
@@ -34,7 +34,7 @@
 /* powerpc offsets the TCB pointer 0x7000 bytes after the data */
 #define TCB_OFFSET	0x7000
 
-register void *__tcb __asm__ ("%r2");
+register void *__tcb __asm__ ("r2");
 #define TCB_GET()		(__tcb)
 #define TCB_SET(tcb)		((__tcb) = (tcb))
 
