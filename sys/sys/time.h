@@ -1,4 +1,4 @@
-/*	$OpenBSD: time.h,v 1.41 2019/06/03 01:27:30 cheloha Exp $	*/
+/*	$OpenBSD: time.h,v 1.42 2019/06/10 23:26:29 dlg Exp $	*/
 /*	$NetBSD: time.h,v 1.18 1996/04/23 10:29:33 mycroft Exp $	*/
 
 /*
@@ -297,7 +297,6 @@ void	microboottime(struct timeval *);
 struct proc;
 int	clock_gettime(struct proc *, clockid_t, struct timespec *);
 
-int	timespecfix(struct timespec *);
 int	itimerfix(struct timeval *);
 int	itimerdecr(struct itimerval *itp, int usec);
 void	itimerround(struct timeval *);
