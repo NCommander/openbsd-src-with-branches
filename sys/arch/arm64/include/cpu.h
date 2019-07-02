@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.12 2018/12/05 10:28:21 jsg Exp $ */
+/* $OpenBSD: cpu.h,v 1.13 2019/06/04 14:03:21 patrick Exp $ */
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
  *
@@ -110,6 +110,7 @@ struct cpu_info {
 
 	struct opp_table	*ci_opp_table;
 	volatile int		ci_opp_idx;
+	volatile int		ci_opp_max;
 	uint32_t		ci_cpu_supply;
 
 #ifdef MULTIPROCESSOR
