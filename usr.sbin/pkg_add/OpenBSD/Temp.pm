@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Temp.pm,v 1.28 2018/02/10 10:08:05 espie Exp $
+# $OpenBSD: Temp.pm,v 1.29 2018/10/04 09:17:00 espie Exp $
 #
 # Copyright (c) 2003-2005 Marc Espie <espie@openbsd.org>
 #
@@ -119,6 +119,11 @@ sub permanent_dir
 		$template = "$dir/$template";
 	}
 	return OpenBSD::MkTemp::mkdtemp($template);
+}
+
+sub tempbase
+{
+	return $tempbase;
 }
 
 1;
