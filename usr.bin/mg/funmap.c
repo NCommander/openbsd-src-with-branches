@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.56 2019/06/26 16:42:30 lum Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.57 2019/07/02 16:25:39 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -179,6 +179,7 @@ static struct funmap functnames[] = {
 	{searchagain, "search-again",},
 	{backsearch, "search-backward",},
 	{forwsearch, "search-forward",},
+	{ask_selfinsert, "self-insert-char",},
 	{selfinsert, "self-insert-command",},
 	{sentencespace, "sentence-end-double-space",},
 #ifdef REGEX
