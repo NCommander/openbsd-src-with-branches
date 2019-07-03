@@ -1,4 +1,4 @@
-/*	$OpenBSD: getnameinfo.c,v 1.7 2015/09/14 07:38:37 guenther Exp $	*/
+/*	$OpenBSD: getnameinfo.c,v 1.8 2015/10/02 20:56:14 deraadt Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -138,7 +138,7 @@ asr_print_port(const struct sockaddr *sa, const char *proto, char *buf, size_t b
 	}
 
 	r = snprintf(buf, buflen, "%u", ntohs(port));
-	if (r == -1) 	/* Actually, this can not happen */
+	if (r < 0 || r >= buflen) 	/* Actually, this can not happen */
 		return (0);
 
 	return (r);

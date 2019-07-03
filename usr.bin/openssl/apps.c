@@ -1,4 +1,4 @@
-/* $OpenBSD: apps.c,v 1.51 2019/02/09 15:49:21 inoguchi Exp $ */
+/* $OpenBSD: apps.c,v 1.52 2019/06/28 13:35:02 deraadt Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -1328,7 +1328,7 @@ save_serial(char *serialfile, char *suffix, BIGNUM *serial,
 	else
 		n = snprintf(serialpath, sizeof serialpath, "%s.%s",
 		    serialfile, suffix);
-	if (n == -1 || n >= sizeof(serialpath)) {
+	if (n < 0 || n >= sizeof(serialpath)) {
 		BIO_printf(bio_err, "serial too long\n");
 		goto err;
 	}

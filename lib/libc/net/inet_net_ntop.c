@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet_net_ntop.c,v 1.7 2012/06/22 19:13:37 gilles Exp $	*/
+/*	$OpenBSD: inet_net_ntop.c,v 1.8 2015/05/14 11:52:43 jsg Exp $	*/
 
 /*
  * Copyright (c) 2012 by Gilles Chehade <gilles@openbsd.org>
@@ -151,7 +151,7 @@ inet_net_ntop_ipv6(const u_char *src, int bits, char *dst, size_t size)
 		return (NULL);
 
 	ret = snprintf(dst, size, "%s/%d", buf, bits);
-	if (ret == -1 || ret >= size) {
+	if (ret < 0 || ret >= size) {
 		errno = EMSGSIZE;
 		return (NULL); 
 	}

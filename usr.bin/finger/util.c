@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.34 2018/06/17 15:00:29 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.35 2019/06/28 13:35:01 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -120,7 +120,7 @@ userinfo(PERSON *pn, struct passwd *pw)
 	}
 	len = snprintf(tbuf, sizeof(tbuf), "%s/%s", _PATH_MAILSPOOL,
 	    pw->pw_name);
-	if (len != -1 && len < sizeof(tbuf)) {
+	if (len >= 0 && len < sizeof(tbuf)) {
 		if (stat(tbuf, &sb) < 0) {
 			if (errno != ENOENT) {
 				warn("%s", tbuf);

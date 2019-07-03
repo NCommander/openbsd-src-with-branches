@@ -1,4 +1,4 @@
-/* $OpenBSD: moduli.c,v 1.33 2019/01/20 02:01:59 tb Exp $ */
+/* $OpenBSD: moduli.c,v 1.34 2019/01/23 09:49:00 dtucker Exp $ */
 /*
  * Copyright 1994 Phil Karn <karn@qualcomm.com>
  * Copyright 1996-1998, 2003 William Allen Simpson <wsimpson@greendragon.com>
@@ -447,7 +447,7 @@ write_checkpoint(char *cpfile, u_int32_t lineno)
 	int r;
 
 	r = snprintf(tmp, sizeof(tmp), "%s.XXXXXXXXXX", cpfile);
-	if (r == -1 || r >= PATH_MAX) {
+	if (r < 0 || r >= PATH_MAX) {
 		logit("write_checkpoint: temp pathname too long");
 		return;
 	}

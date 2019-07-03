@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.c,v 1.78 2019/06/17 19:51:23 tedu Exp $ */
+/* $OpenBSD: doas.c,v 1.79 2019/06/29 22:35:37 tedu Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -267,7 +267,7 @@ unveilcommands(const char *ipath, const char *cmd)
 
 		if (cp) {
 			int r = snprintf(buf, sizeof buf, "%s/%s", cp, cmd);
-			if (r != -1 && r < sizeof buf) {
+			if (r >= 0 && r < sizeof buf) {
 				if (unveil(buf, "x") != -1)
 					unveils++;
 			}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hostapd.c,v 1.39 2019/05/10 01:29:31 guenther Exp $	*/
+/*	$OpenBSD: hostapd.c,v 1.40 2019/06/28 13:32:47 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@openbsd.org>
@@ -109,7 +109,7 @@ hostapd_printf(const char *fmt, ...)
 		goto va_flush;
 	if (strlcpy(newfmt + n, fmt, sizeof(newfmt) - n) >= sizeof(newfmt) - n)
 		goto va_flush;
-	if (vsnprintf(printbuf, sizeof(printbuf), newfmt, ap) == -1)
+	if (vsnprintf(printbuf, sizeof(printbuf), newfmt, ap) < 0)
 		goto va_flush;
 	va_end(ap);
 
