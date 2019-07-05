@@ -1,4 +1,4 @@
-/* $OpenBSD: window-copy.c,v 1.225 2019/06/05 19:00:36 nicm Exp $ */
+/* $OpenBSD: window-copy.c,v 1.226 2019/06/13 20:38:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -2700,7 +2700,7 @@ window_copy_append_selection(struct window_mode_entry *wme)
 	struct window_pane		*wp = wme->wp;
 	char				*buf;
 	struct paste_buffer		*pb;
-	const char			*bufdata, *bufname;
+	const char			*bufdata, *bufname = NULL;
 	size_t				 len, bufsize;
 	struct screen_write_ctx		 ctx;
 
