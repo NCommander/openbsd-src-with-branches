@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.h,v 1.73 2016/11/29 10:09:57 reyk Exp $	*/
+/*	$OpenBSD: if_ether.h,v 1.74 2018/12/11 01:27:08 dlg Exp $	*/
 /*	$NetBSD: if_ether.h,v 1.22 1996/05/11 13:00:00 mycroft Exp $	*/
 
 /*
@@ -205,6 +205,7 @@ struct	arpcom {
 	int	 ac_multicnt;			/* length of ac_multiaddrs */
 	int	 ac_multirangecnt;		/* number of mcast ranges */
 
+	void	*ac_trunkport;
 };
 
 extern int arpt_keep;				/* arp resolved cache expire */
