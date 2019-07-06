@@ -1,4 +1,4 @@
-/* $OpenBSD: style.c,v 1.21 2019/06/27 15:17:41 nicm Exp $ */
+/* $OpenBSD: style.c,v 1.22 2019/07/01 06:56:00 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -30,7 +30,7 @@
 
 /* Default style. */
 static struct style style_default = {
-	{ 0, 0, 8, 8, 0, { { ' ' }, 0, 1, 1 } },
+	{ { { ' ' }, 0, 1, 1 }, 0, 0, 8, 8, 0  },
 
 	8,
 	STYLE_ALIGN_DEFAULT,
