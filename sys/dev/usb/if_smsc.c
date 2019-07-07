@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_smsc.c,v 1.31 2017/07/29 17:24:04 kettenis Exp $	*/
+/*	$OpenBSD: if_smsc.c,v 1.32 2018/08/25 17:09:40 mestre Exp $	*/
 /* $FreeBSD: src/sys/dev/usb/net/if_smsc.c,v 1.1 2012/08/15 04:03:55 gonzo Exp $ */
 /*-
  * Copyright (c) 2012
@@ -1118,10 +1118,6 @@ smsc_detach(struct device *self, int flags)
 		    sc->sc_dev.dv_xname);
 #endif
 
-	if (--sc->sc_refcnt >= 0) {
-		/* Wait for processes to go away. */
-		usb_detach_wait(&sc->sc_dev);
-	}
 	splx(s);
 
 	return (0);

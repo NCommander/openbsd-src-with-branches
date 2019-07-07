@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_axe.c,v 1.137 2016/04/13 11:03:37 mpi Exp $	*/
+/*	$OpenBSD: if_axe.c,v 1.138 2017/01/22 10:17:39 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, 2007 Jonathan Gray <jsg@openbsd.org>
@@ -881,10 +881,6 @@ axe_detach(struct device *self, int flags)
 		    sc->axe_dev.dv_xname);
 #endif
 
-	if (--sc->axe_refcnt >= 0) {
-		/* Wait for processes to go away. */
-		usb_detach_wait(&sc->axe_dev);
-	}
 	splx(s);
 
 	return (0);
