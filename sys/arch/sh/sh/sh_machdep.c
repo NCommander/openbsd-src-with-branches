@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh_machdep.c,v 1.47 2018/04/12 17:13:44 deraadt Exp $	*/
+/*	$OpenBSD: sh_machdep.c,v 1.48 2018/07/10 04:19:59 guenther Exp $	*/
 /*	$NetBSD: sh3_machdep.c,v 1.59 2006/03/04 01:13:36 uwe Exp $	*/
 
 /*
@@ -244,8 +244,7 @@ sh_startup(void)
 	vaddr_t minaddr, maxaddr;
 
 	printf("%s", version);
-	if (*cpu_model != '\0')
-		printf("%s\n", cpu_model);
+
 #ifdef DEBUG
 	printf("general exception handler:\t%d byte\n",
 	    sh_vector_generic_end - sh_vector_generic);
