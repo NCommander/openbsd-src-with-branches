@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_lookup.c,v 1.76 2019/01/03 21:52:31 beck Exp $	*/
+/*	$OpenBSD: vfs_lookup.c,v 1.77 2019/05/13 22:55:27 beck Exp $	*/
 /*	$NetBSD: vfs_lookup.c,v 1.17 1996/02/09 19:00:59 christos Exp $	*/
 
 /*
@@ -262,7 +262,7 @@ fail:
 				if ((cnp->cn_flags & LOCKPARENT) &&
 				    (cnp->cn_flags & ISLASTCN) &&
 				    (ndp->ni_vp != ndp->ni_dvp))
-					VOP_UNLOCK(ndp->ni_dvp);
+					vput(ndp->ni_dvp);
 				if (ndp->ni_vp) {
 					if ((cnp->cn_flags & LOCKLEAF))
 						vput(ndp->ni_vp);
