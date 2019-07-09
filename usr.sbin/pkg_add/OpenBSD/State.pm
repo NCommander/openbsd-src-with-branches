@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: State.pm,v 1.55 2019/03/11 16:31:24 espie Exp $
+# $OpenBSD: State.pm,v 1.56 2019/04/06 10:48:51 espie Exp $
 #
 # Copyright (c) 2007-2014 Marc Espie <espie@openbsd.org>
 #
@@ -135,6 +135,7 @@ sub sync_display
 OpenBSD::Auto::cache(installpath,
 	sub {
 		my $self = shift;
+		return undef if $self->defines('NOINSTALLPATH');
 		require OpenBSD::Paths;
 		open(my $fh, '<', OpenBSD::Paths->installurl) or return undef;
 		while (<$fh>) {
