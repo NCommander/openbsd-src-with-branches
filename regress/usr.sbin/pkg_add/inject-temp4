@@ -7,11 +7,13 @@ use OpenBSD::Temp;
 
 package OpenBSD::Temp;
 use Wrapper;
-
-wrap('permanent_dir', 
+wrap('permanent_file',
     sub {
-	my $original = shift;
-	$_[0] = "/nonexistent";
+    	my $original = shift;
+	if (!defined $_[0]) {
+		shift;
+		unshift @_, '/nonexistent';
+	}
 	goto &$original;
     });
 1;
