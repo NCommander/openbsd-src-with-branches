@@ -1,4 +1,4 @@
-/* $OpenBSD: control-notify.c,v 1.22 2018/11/19 13:35:40 nicm Exp $ */
+/* $OpenBSD: control-notify.c,v 1.23 2019/05/07 10:25:15 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -35,6 +35,9 @@ control_notify_input(struct client *c, struct window_pane *wp,
 
 	if (c->session == NULL)
 	    return;
+
+	if (c->flags & CLIENT_CONTROL_NOOUTPUT)
+		return;
 
 	/*
 	 * Only write input if the window pane is linked to a window belonging
