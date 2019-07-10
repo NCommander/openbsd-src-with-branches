@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.15 2019/05/28 06:49:46 otto Exp $ */
+/*	$OpenBSD: control.c,v 1.16 2019/07/07 19:17:40 otto Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -353,7 +353,7 @@ build_show_peer(struct ctl_show_peer *cp, struct ntp_peer *p)
 	if (p->addr_head.pool)
 		pool = "from pool ";
 
-	if (0 != strcmp(a, p->addr_head.name))
+	if (0 != strcmp(a, p->addr_head.name) || p->addr_head.pool)
 		addr_head_name = p->addr_head.name;
 
 	snprintf(cp->peer_desc, sizeof(cp->peer_desc),
