@@ -1,4 +1,4 @@
-/* $OpenBSD: fuse_vnops.c,v 1.51 2018/07/16 16:44:09 helg Exp $ */
+/* $OpenBSD: fuse_vnops.c,v 1.52 2018/07/18 10:47:02 helg Exp $ */
 /*
  * Copyright (c) 2012-2013 Sylvestre Gallon <ccna.syl@gmail.com>
  *
@@ -168,7 +168,7 @@ filt_fusefsread(struct knote *kn, long hint)
 		return (1);
 	}
 
-	kn->kn_data = ip->filesize - kn->kn_fp->f_offset;
+	kn->kn_data = ip->filesize - foffset_get(kn->kn_fp);
 	if (kn->kn_data == 0 && kn->kn_sfflags & NOTE_EOF) {
 		kn->kn_fflags |= NOTE_EOF;
 		return (1);
