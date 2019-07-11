@@ -1,4 +1,4 @@
-/*	$OpenBSD: arc4random_linux.h,v 1.10 2016/01/04 02:04:56 bcook Exp $	*/
+/*	$OpenBSD: arc4random_linux.h,v 1.11 2016/06/30 12:19:51 bcook Exp $	*/
 
 /*
  * Copyright (c) 1996, David Mazieres <dm@uun.org>
@@ -32,7 +32,7 @@ static pthread_mutex_t arc4random_mtx = PTHREAD_MUTEX_INITIALIZER;
 #define _ARC4_LOCK()   pthread_mutex_lock(&arc4random_mtx)
 #define _ARC4_UNLOCK() pthread_mutex_unlock(&arc4random_mtx)
 
-#ifdef __GLIBC__
+#if defined(__GLIBC__) && !(defined(__UCLIBC__) && !defined(__ARCH_USE_MMU__))
 extern void *__dso_handle;
 extern int __register_atfork(void (*)(void), void(*)(void), void (*)(void), void *);
 #define _ARC4_ATFORK(f) __register_atfork(NULL, NULL, (f), __dso_handle)
