@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.10 2015/05/06 03:30:03 dlg Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.11 2017/05/12 08:47:48 mpi Exp $	*/
 
 /*
  * Copyright (c) 2015 Martin Pieuchot
@@ -246,7 +246,7 @@ _atomic_addic_int_nv(volatile unsigned int *p, unsigned int v)
 	    "	stwcx.	%0, 0, %2	\n"
 	    "	bne-	1b		\n"
 	    : "=&r" (rv), "+m" (*p)
-	    : "r" (p), "n" (v)
+	    : "r" (p), "i" (v)
 	    : "cc", "xer");
 
 	return (rv);
@@ -265,7 +265,7 @@ _atomic_addic_long_nv(volatile unsigned long *p, unsigned long v)
 	    "	stwcx.	%0, 0, %2	\n"
 	    "	bne-	1b		\n"
 	    : "=&r" (rv), "+m" (*p)
-	    : "r" (p), "n" (v)
+	    : "r" (p), "i" (v)
 	    : "cc", "xer");
 
 	return (rv);
