@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.170 2018/11/04 19:36:25 bluhm Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.171 2019/02/06 17:32:16 bluhm Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -945,6 +945,7 @@ tcp_sysctl_tcpstat(void *oldp, size_t *oldlenp, void *newp)
 	ASSIGN(tcps_sack_rexmit_bytes);
 	ASSIGN(tcps_sack_rcv_opts);
 	ASSIGN(tcps_sack_snd_opts);
+	ASSIGN(tcps_sack_drop_opts);
 
 #undef ASSIGN
 
