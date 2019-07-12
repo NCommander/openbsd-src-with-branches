@@ -2017,7 +2017,7 @@ filt_msdosfsread(struct knote *kn, long hint)
 		return (1);
 	}
 
-	kn->kn_data = dep->de_FileSize - foffset_get(kn->kn_fp);
+	kn->kn_data = dep->de_FileSize - kn->kn_fp->f_offset;
 	if (kn->kn_data == 0 && kn->kn_sfflags & NOTE_EOF) {
 		kn->kn_fflags |= NOTE_EOF;
 		return (1);

@@ -226,7 +226,7 @@ filt_nfsread(struct knote *kn, long hint)
 		return (1);
 	}
 
-	kn->kn_data = np->n_size - foffset_get(kn->kn_fp);
+	kn->kn_data = np->n_size - kn->kn_fp->f_offset;
 #ifdef DEBUG
 	printf("nfsread event. %lld\n", kn->kn_data);
 #endif
