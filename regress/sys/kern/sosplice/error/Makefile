@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1.1.1 2013/01/03 17:36:39 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.2 2014/07/11 20:41:20 bluhm Exp $
 
 .include <bsd.regress.mk>
 
@@ -6,7 +6,7 @@
 # kernel error code.
 
 .for a in ${ARGS}
-run-regress-$a: $a
+run-$a: $a
 	@echo '\n======== $@ ========'
 .if empty (REMOTE_SSH)
 	time perl ${PERLINC} ${PERLPATH}error.pl ${PERLPATH}$a
