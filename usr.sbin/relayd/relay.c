@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.248 2019/06/26 12:13:47 reyk Exp $	*/
+/*	$OpenBSD: relay.c,v 1.249 2019/06/28 13:32:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -1638,7 +1638,8 @@ relay_connect(struct rsession *con)
 
 	getmonotime(&con->se_tv_start);
 
-	if (!TAILQ_EMPTY(&rlay->rl_tables)) {
+	if (con->se_out.ss.ss_family == AF_UNSPEC &&
+	    !TAILQ_EMPTY(&rlay->rl_tables)) {
 		if (relay_from_table(con) != 0)
 			return (-1);
 	} else if (con->se_out.ss.ss_family == AF_UNSPEC) {
