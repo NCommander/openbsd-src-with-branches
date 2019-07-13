@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.239 2019/06/28 13:32:50 deraadt Exp $	*/
+/*	$OpenBSD: parse.y,v 1.240 2019/07/05 06:49:27 patrick Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -1903,7 +1903,7 @@ forwardspec	: STRING port retry	{
 
 			TAILQ_INIT(&al);
 			if (host($1, &al, 1, &$2, NULL, -1) <= 0) {
-				yyerror("invalid listen ip: %s", $1);
+				yyerror("invalid forward ip: %s", $1);
 				free($1);
 				YYERROR;
 			}
