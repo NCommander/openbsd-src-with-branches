@@ -1,4 +1,4 @@
-/* $OpenBSD: gendsa.c,v 1.10 2018/02/07 05:47:55 jsing Exp $ */
+/* $OpenBSD: gendsa.c,v 1.11 2019/06/07 02:32:22 inoguchi Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -83,7 +83,7 @@ static struct {
 	char *passargout;
 } gendsa_config;
 
-static struct option gendsa_options[] = {
+static const struct option gendsa_options[] = {
 #ifndef OPENSSL_NO_AES
 	{
 		.name = "aes128",

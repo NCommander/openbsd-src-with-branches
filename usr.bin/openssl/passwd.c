@@ -1,4 +1,4 @@
-/* $OpenBSD: passwd.c,v 1.8 2017/01/20 08:57:12 deraadt Exp $ */
+/* $OpenBSD: passwd.c,v 1.9 2018/02/07 05:47:55 jsing Exp $ */
 
 #if defined OPENSSL_NO_MD5
 #define NO_MD5CRYPT_1
@@ -53,7 +53,7 @@ static struct {
 	int usecrypt;
 } passwd_config;
 
-static struct option passwd_options[] = {
+static const struct option passwd_options[] = {
 #ifndef NO_MD5CRYPT_1
 	{
 		.name = "1",

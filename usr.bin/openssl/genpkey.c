@@ -1,4 +1,4 @@
-/* $OpenBSD: genpkey.c,v 1.11 2018/02/07 05:47:55 jsing Exp $ */
+/* $OpenBSD: genpkey.c,v 1.12 2018/02/08 11:17:44 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006
  */
@@ -141,7 +141,7 @@ genpkey_opt_pkeyopt(char *arg)
 	return (0);
 }
 
-struct option genpkey_options[] = {
+static const struct option genpkey_options[] = {
 	{
 		.name = "algorithm",
 		.argname = "name",

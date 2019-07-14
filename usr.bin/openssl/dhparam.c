@@ -1,4 +1,4 @@
-/* $OpenBSD: dhparam.c,v 1.10 2018/02/07 04:57:06 jsing Exp $ */
+/* $OpenBSD: dhparam.c,v 1.11 2018/02/07 05:47:55 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -144,7 +144,7 @@ struct {
 	int text;
 } dhparam_config;
 
-struct option dhparam_options[] = {
+static const struct option dhparam_options[] = {
 	{
 		.name = "2",
 		.desc = "Generate DH parameters with a generator value of 2 "

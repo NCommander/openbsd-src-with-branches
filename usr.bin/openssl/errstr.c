@@ -1,4 +1,4 @@
-/* $OpenBSD: errstr.c,v 1.5 2015/10/10 22:28:51 doug Exp $ */
+/* $OpenBSD: errstr.c,v 1.6 2015/10/17 15:00:11 doug Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -72,7 +72,7 @@ struct {
 	int stats;
 } errstr_config;
 
-struct option errstr_options[] = {
+static const struct option errstr_options[] = {
 	{
 		.name = "stats",
 		.desc = "Print debugging statistics for the hash table",

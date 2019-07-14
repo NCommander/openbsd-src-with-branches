@@ -1,4 +1,4 @@
-/* $OpenBSD: nseq.c,v 1.7 2017/01/20 08:57:12 deraadt Exp $ */
+/* $OpenBSD: nseq.c,v 1.8 2018/02/07 05:47:55 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -70,7 +70,7 @@ static struct {
 	int toseq;
 } nseq_config;
 
-static struct option nseq_options[] = {
+static const struct option nseq_options[] = {
 	{
 		.name = "in",
 		.argname = "file",
