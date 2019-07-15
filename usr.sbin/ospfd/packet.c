@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.30 2010/05/26 13:56:08 nicm Exp $ */
+/*	$OpenBSD: packet.c,v 1.31 2014/10/25 03:23:49 lteo Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -96,8 +96,8 @@ send_packet(struct iface *iface, struct ibuf *buf, struct sockaddr_in *dst)
 			return (-1);
 
 	if (sendmsg(iface->fd, &msg, 0) == -1) {
-		log_warn("send_packet: error sending packet on interface %s",
-		    iface->name);
+		log_warn("%s: error sending packet to %s on interface %s",
+		    __func__, inet_ntoa(ip_hdr.ip_dst), iface->name);
 		return (-1);
 	}
 
