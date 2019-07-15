@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_proto.c,v 1.16 2017/11/04 16:48:09 mpi Exp $	*/
+/*	$OpenBSD: uipc_proto.c,v 1.17 2018/04/08 18:57:39 guenther Exp $	*/
 /*	$NetBSD: uipc_proto.c,v 1.8 1996/02/13 21:10:47 christos Exp $	*/
 
 /*-
@@ -79,6 +79,7 @@ struct protosw unixsw[] = {
 struct domain unixdomain = {
   .dom_family = AF_UNIX,
   .dom_name = "unix",
+  .dom_init = unp_init,
   .dom_externalize = unp_externalize,
   .dom_dispose = unp_dispose,
   .dom_protosw = unixsw,
