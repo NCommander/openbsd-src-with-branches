@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ssh-keygen.1,v 1.159 2019/05/20 00:20:35 djm Exp $
+.\"	$OpenBSD: ssh-keygen.1,v 1.160 2019/05/20 06:01:59 jmc Exp $
 .\"
 .\" Author: Tatu Ylonen <ylo@cs.hut.fi>
 .\" Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -419,11 +419,12 @@ The supported key formats are:
 .Dq RFC4716
 (RFC 4716/SSH2 public or private key),
 .Dq PKCS8
-(PEM PKCS8 public key)
+(PKCS8 public or private key)
 or
 .Dq PEM
 (PEM public key).
-The default conversion format is
+By default OpenSSH will write newly-generated private keys in its own
+format, but when converting public keys for export the default format is
 .Dq RFC4716 .
 Setting a format of
 .Dq PEM
