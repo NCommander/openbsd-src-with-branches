@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.180 2018/11/19 16:12:06 tedu Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.181 2019/03/04 07:09:54 deraadt Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -129,7 +129,7 @@ isdnssocket(struct socket *so)
 	return (so->so_state & SS_DNS);
 }
 
-/* For SS_DNS sockets, only allow port DNS (port 53) */ 
+/* For SS_DNS sockets, only allow port DNS (port 53) */
 static int
 dns_portcheck(struct proc *p, struct socket *so, void *nam, u_int *namelen)
 {
@@ -630,7 +630,7 @@ sendit(struct proc *p, int s, struct msghdr *mp, int flags, register_t *retsize)
 		}
 #ifdef KTRACE
 		if (KTRPOINT(p, KTR_STRUCT))
-		 	ktrsockaddr(p, mtod(to, caddr_t), mp->msg_namelen);
+			ktrsockaddr(p, mtod(to, caddr_t), mp->msg_namelen);
 #endif
 	}
 	if (mp->msg_control) {
