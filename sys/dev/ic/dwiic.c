@@ -1,4 +1,4 @@
-/* $OpenBSD: dwiic.c,v 1.3 2018/01/19 18:20:38 jcs Exp $ */
+/* $OpenBSD: dwiic.c,v 1.4 2018/05/23 22:08:00 kettenis Exp $ */
 /*
  * Synopsys DesignWare I2C controller
  *
@@ -136,6 +136,18 @@ dwiic_init(struct dwiic_softc *sc)
 		    sc->sc_dev.dv_xname, reg));
 		return 1;
 	}
+
+	/* fetch default timing parameters if not already specified */
+	if (!sc->ss_hcnt)
+		sc->ss_hcnt = dwiic_read(sc, DW_IC_SS_SCL_HCNT);
+	if (!sc->ss_lcnt)
+		sc->ss_lcnt = dwiic_read(sc, DW_IC_SS_SCL_LCNT);
+	if (!sc->fs_hcnt)
+		sc->fs_hcnt = dwiic_read(sc, DW_IC_FS_SCL_HCNT);
+	if (!sc->fs_lcnt)
+		sc->fs_lcnt = dwiic_read(sc, DW_IC_FS_SCL_LCNT);
+	if (!sc->sda_hold_time)
+		sc->sda_hold_time = dwiic_read(sc, DW_IC_SDA_HOLD);
 
 	/* disable the adapter */
 	dwiic_enable(sc, 0);
