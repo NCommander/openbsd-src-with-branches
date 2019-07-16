@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_rwlock.c,v 1.38 2019/04/23 13:35:12 visa Exp $	*/
+/*	$OpenBSD: kern_rwlock.c,v 1.39 2019/05/11 17:45:59 sashan Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003 Artur Grabowski <art@openbsd.org>
@@ -407,7 +407,7 @@ rw_assert_unlocked(struct rwlock *rwl)
 
 /* recursive rwlocks; */
 void
-_rrw_init_flags(struct rrwlock *rrwl, char *name, int flags,
+_rrw_init_flags(struct rrwlock *rrwl, const char *name, int flags,
     const struct lock_type *type)
 {
 	memset(rrwl, 0, sizeof(struct rrwlock));
