@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_msg.c,v 1.33 2016/09/15 02:00:16 dlg Exp $	*/
+/*	$OpenBSD: sysv_msg.c,v 1.34 2018/12/05 15:42:45 mpi Exp $	*/
 /*	$NetBSD: sysv_msg.c,v 1.19 1996/02/09 19:00:18 christos Exp $	*/
 /*
  * Copyright (c) 2009 Bret S. Lambert <blambert@openbsd.org>
@@ -588,7 +588,7 @@ msg_copyin(struct msg *msg, const char *ubuf, size_t len, struct proc *p)
 		return (error);
 	}
 
-	if (msg->msg_type < 0) {
+	if (msg->msg_type < 1) {
 		msg_free(msg);
 		return (EINVAL);
 	}
