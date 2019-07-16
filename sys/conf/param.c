@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.c,v 1.40 2019/04/28 14:51:16 deraadt Exp $	*/
+/*	$OpenBSD: param.c,v 1.41 2019/07/08 23:59:32 mlarkin Exp $	*/
 /*	$NetBSD: param.c,v 1.16 1996/03/12 03:08:40 mrg Exp $	*/
 
 /*
@@ -89,7 +89,7 @@ int	initialvnodes = NVNODE;
 int	maxprocess = NPROCESS;
 int	maxthread = NPROCESS + 8 * MAXUSERS;
 int	maxfiles = 5 * (NPROCESS + MAXUSERS) + 80;
-int	nmbclust = NMBCLUSTERS;
+long	nmbclust = NMBCLUSTERS;
 
 #ifndef MBLOWAT
 #define MBLOWAT		16
