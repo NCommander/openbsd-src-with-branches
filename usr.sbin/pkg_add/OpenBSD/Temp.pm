@@ -26,24 +26,26 @@ use OpenBSD::Error;
 
 our $tempbase = $ENV{'PKG_TMPDIR'} || OpenBSD::Paths->vartmp;
 
-# stuff that should be cleaned up on exit, registered by pid,
-# so that it gets cleaned on exit from the correct process
-
 my $dirs = {};
 my $files = {};
 
 my ($lastname, $lasterror, $lasttype);
 
-OpenBSD::Handler->register(
-    sub {
+my $cleanup = sub {
 	while (my ($name, $pid) = each %$files) {
 		unlink($name) if $pid == $$;
 	}
 	while (my ($dir, $pid) = each %$dirs) {
 		OpenBSD::Error->rmtree([$dir]) if $pid == $$;
 	}
-    });
+};
 
+END {
+	my $r = $?;
+	&$cleanup;
+	$? = $r;
+}
+OpenBSD::Handler->register($cleanup);
 
 sub dir
 {

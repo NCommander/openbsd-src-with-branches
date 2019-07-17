@@ -82,12 +82,18 @@ sub unique
 	return $o;
 }
 
-OpenBSD::Handler->register(
-    sub {
+my $cleanup = sub {
 	for my $repo (values %$cache) {
 		$repo->cleanup;
 	}
-    });
+};
+END {
+	my $a = $?;
+	&$cleanup;
+	$? = $a;
+}
+
+OpenBSD::Handler->register($cleanup);
 
 sub parse_fullurl
 {

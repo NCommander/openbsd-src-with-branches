@@ -214,7 +214,7 @@ sub _fatal
 	# the way is to eval { croak @_}; and decide what to do with $@.
 	delete $SIG{__DIE__};
 	$self->sync_display;
-	croak @_, "\n";
+	croak $self->{cmd}, ": ", @_, "\n";
 }
 
 sub fatal

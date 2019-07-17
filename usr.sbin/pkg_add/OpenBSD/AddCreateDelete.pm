@@ -187,25 +187,6 @@ sub handle_options
 	$state->handle_options($opt_string, $self, @usage);
 }
 
-sub try_and_run_command
-{
-	my ($self, $state) = @_;
-	if ($state->defines('debug')) {
-		$self->run_command($state);
-	} else {
-		try {
-			$self->run_command($state);
-		} catch {
-			$state->errsay("#1: #2", $state->{cmd}, $_);
-			OpenBSD::Handler->reset;
-			if ($_ =~ m/^Caught SIG(\w+)/o) {
-				kill $1, $$;
-			}
-			$state->{bad}++;
-		};
-	}
-}
-
 package OpenBSD::InteractiveStub;
 sub new
 {
