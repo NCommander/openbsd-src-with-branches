@@ -1,0 +1,9 @@
+#	$OpenBSD$
+
+SRCDIRS distrib/special
+
+COPY	${OBJDIR}/rdboot			sbin/init
+
+# copy the MAKEDEV script and make some devices
+SCRIPT	${DESTDIR}/dev/MAKEDEV			dev/MAKEDEV
+SPECIAL	cd dev; sh MAKEDEV boot
