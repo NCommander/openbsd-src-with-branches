@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.238 2019/01/20 23:43:13 claudio Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.239 2019/06/13 08:15:26 claudio Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -516,8 +516,8 @@ in_arpinput(struct ifnet *ifp, struct mbuf *m)
 	sin.sin_len = sizeof(sin);
 	sin.sin_family = AF_INET;
 
-	if (ETHER_IS_MULTICAST(&ea->arp_sha[0]) &&
-	    !memcmp(ea->arp_sha, etherbroadcastaddr, sizeof(ea->arp_sha))) {
+	if (ETHER_IS_MULTICAST(ea->arp_sha) &&
+	    ETHER_IS_BROADCAST(ea->arp_sha)) {
 		inet_ntop(AF_INET, &isaddr, addr, sizeof(addr));
 		log(LOG_ERR, "arp: ether address is broadcast for IP address "
 		    "%s!\n", addr);
