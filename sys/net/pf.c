@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1085 2019/07/11 09:39:52 sashan Exp $ */
+/*	$OpenBSD: pf.c,v 1.1086 2019/07/18 02:03:46 lteo Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -3963,8 +3963,9 @@ pf_test_rule(struct pf_pdesc *pd, struct pf_rule **rm, struct pf_state **sm,
 		 * insert an expired rule to gcl.
 		 */
 		rule_flag = r->rule_flag;
-		if (atomic_cas_uint(&r->rule_flag, rule_flag,
-		    rule_flag | PFRULE_EXPIRED) == rule_flag) {
+		if (((rule_flag & PFRULE_EXPIRED) == 0) &&
+		    atomic_cas_uint(&r->rule_flag, rule_flag,
+			rule_flag | PFRULE_EXPIRED) == rule_flag) {
 			r->exptime = time_second;
 			SLIST_INSERT_HEAD(&pf_rule_gcl, r, gcle);
 		}
