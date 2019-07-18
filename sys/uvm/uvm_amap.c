@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_amap.c,v 1.79 2017/01/31 17:08:51 dhill Exp $	*/
+/*	$OpenBSD: uvm_amap.c,v 1.80 2019/05/15 06:12:19 anton Exp $	*/
 /*	$NetBSD: uvm_amap.c,v 1.27 2000/11/25 06:27:59 chs Exp $	*/
 
 /*
@@ -683,7 +683,7 @@ ReStart:
 			 */
 			if (pg->pg_flags & PG_BUSY) {
 				atomic_setbits_int(&pg->pg_flags, PG_WANTED);
-				UVM_WAIT(pg, FALSE, "cownow", 0);
+				tsleep_nsec(pg, PVM, "cownow", INFSLP);
 				goto ReStart;
 			}
 

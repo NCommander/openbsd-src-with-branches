@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm.h,v 1.63 2018/10/31 08:50:25 kettenis Exp $	*/
+/*	$OpenBSD: uvm.h,v 1.64 2019/03/01 01:46:18 cheloha Exp $	*/
 /*	$NetBSD: uvm.h,v 1.24 2000/11/27 08:40:02 chs Exp $	*/
 
 /*
@@ -109,15 +109,6 @@ struct uvm {
  * holds all the internal UVM data
  */
 extern struct uvm uvm;
-
-/*
- * UVM_WAIT: wait... wrapper around the tsleep() function.
- */
-
-#define	UVM_WAIT(event, intr, msg, timo)				\
-do {									\
-	tsleep(event, PVM|(intr ? PCATCH : 0), msg, timo);		\
-} while (0)
 
 /*
  * UVM_PAGE_OWN: track page ownership (only if UVM_PAGE_TRKOWN)
