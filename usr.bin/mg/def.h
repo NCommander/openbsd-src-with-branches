@@ -1,4 +1,4 @@
-/*	$OpenBSD: def.h,v 1.162 2019/07/03 18:11:07 lum Exp $	*/
+/*	$OpenBSD: def.h,v 1.163 2019/07/17 18:18:37 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -98,6 +98,7 @@ typedef int	(*PF)(int, int);	/* generally useful type */
 
 #define MAX_TOKEN 64
 
+#define	BUFSIZE	128	/* Size of line contents in extend.c  */
 /*
  * Previously from sysdef.h
  */
@@ -580,6 +581,7 @@ int		 evalbuffer(int, int);
 int		 evalfile(int, int);
 int		 load(const char *);
 int		 excline(char *);
+char		*skipwhite(char *);
 
 /* help.c X */
 int		 desckey(int, int);
@@ -714,6 +716,10 @@ int		 togglevisiblebell(int, int);
 int		 dobeep_msgs(const char *, const char *);
 int		 dobeep_msg(const char *);
 void		 dobeep(void);
+
+/* interpreter.c */
+int		 foundparen(char *);
+int		 clearvars(void);
 
 /*
  * Externals.
