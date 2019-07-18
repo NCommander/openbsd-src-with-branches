@@ -1,4 +1,4 @@
-.\"	$OpenBSD: msgsnd.2,v 1.19 2014/12/10 19:19:00 schwarze Exp $
+.\"	$OpenBSD: msgsnd.2,v 1.20 2019/07/18 12:57:12 schwarze Exp $
 .\"	$NetBSD: msgsnd.2,v 1.2 1997/03/27 08:20:36 mikel Exp $
 .\"
 .\" Copyright (c) 1995 Frank van der Linden
@@ -30,7 +30,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"/
-.Dd $Mdocdate: December 10 2014 $
+.Dd $Mdocdate: July 18 2019 $
 .Dt MSGSND 2
 .Os
 .Sh NAME
@@ -92,7 +92,7 @@ The message will be sent.
 The message queue is removed, in which case \-1 will be returned, and
 .Va errno
 is set to
-.Er EINVAL .
+.Er EIDRM .
 .It
 The caller catches a signal.
 The call returns with
