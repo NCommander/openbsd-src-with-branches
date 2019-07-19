@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.59 2017/06/22 15:57:16 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.60 2019/05/14 13:44:25 tedu Exp $	*/
 /*	$NetBSD: main.c,v 1.22 1997/02/02 21:12:33 thorpej Exp $	*/
 
 /*
@@ -82,7 +82,7 @@ usage(void)
 
 	fprintf(stderr,
 		"usage: %s [-p] [-b builddir] [-s srcdir] [config-file]\n"
-		"       %s [-u] [-c cmdfile] [-f | -o outfile] -e infile\n",
+		"       %s -e [-u] [-c cmdfile] [-f | -o outfile] infile\n",
 		__progname, __progname);
 
 	exit(1);
