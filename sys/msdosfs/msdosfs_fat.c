@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_fat.c,v 1.31 2017/12/30 20:47:00 guenther Exp $	*/
+/*	$OpenBSD: msdosfs_fat.c,v 1.32 2018/05/07 14:43:01 mpi Exp $	*/
 /*	$NetBSD: msdosfs_fat.c,v 1.26 1997/10/17 11:24:02 ws Exp $	*/
 
 /*-
@@ -365,7 +365,8 @@ updatefats(struct msdosfsmount *pmp, struct buf *bp, uint32_t fatbn)
 		for (i = 1; i < pmp->pm_FATs; i++) {
 			fatbn += pmp->pm_FATsecs;
 			/* getblk() never fails */
-			bpn = getblk(pmp->pm_devvp, fatbn, bp->b_bcount, 0, 0);
+			bpn = getblk(pmp->pm_devvp, fatbn, bp->b_bcount, 0,
+			    INFSLP);
 			bcopy(bp->b_data, bpn->b_data, bp->b_bcount);
 			if (pmp->pm_flags & MSDOSFSMNT_WAITONFAT)
 				bwrite(bpn);
@@ -1018,10 +1019,10 @@ extendfile(struct denode *dep, uint32_t count, struct buf **bpp, uint32_t *ncp,
 				 */
 				if (dep->de_Attributes & ATTR_DIRECTORY)
 					bp = getblk(pmp->pm_devvp, cntobn(pmp, cn++),
-						    pmp->pm_bpcluster, 0, 0);
+					    pmp->pm_bpcluster, 0, INFSLP);
 				else {
 					bp = getblk(DETOV(dep), frcn++,
-					    pmp->pm_bpcluster, 0, 0);
+					    pmp->pm_bpcluster, 0, INFSLP);
 					/*
 					 * Do the bmap now, as in msdosfs_write
 					 */
