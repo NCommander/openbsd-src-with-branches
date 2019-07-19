@@ -1,4 +1,4 @@
-/*	$OpenBSD: spec_vnops.c,v 1.94 2018/07/07 15:40:02 visa Exp $	*/
+/*	$OpenBSD: spec_vnops.c,v 1.95 2018/07/07 15:41:25 visa Exp $	*/
 /*	$NetBSD: spec_vnops.c,v 1.29 1996/04/22 01:42:38 christos Exp $	*/
 
 /*
@@ -441,7 +441,7 @@ loop:
 		goto loop;
 	}
 	if (ap->a_waitfor == MNT_WAIT) {
-		vwaitforio (vp, 0, "spec_fsync", 0);
+		vwaitforio (vp, 0, "spec_fsync", INFSLP);
 
 #ifdef DIAGNOSTIC
 		if (!LIST_EMPTY(&vp->v_dirtyblkhd)) {
