@@ -1,11 +1,11 @@
-#	$OpenBSD: forwarding.sh,v 1.20 2017/04/30 23:34:55 djm Exp $
+#	$OpenBSD: forwarding.sh,v 1.21 2019/07/20 09:14:40 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="local and remote forwarding"
 
 start_sshd
 
-SLEEPTIME=10
+SLEEPTIME=${SLEEPTIME:-10}
 
 base=33
 last=$PORT
