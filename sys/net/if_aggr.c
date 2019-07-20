@@ -927,6 +927,13 @@ aggr_get_trunk(struct aggr_softc *sc, struct trunk_reqall *ra)
 			SET(rp.rp_flags, TRUNK_PORT_DISABLED);
 
 		opreq = &rp.rp_lacpreq;
+
+		opreq->actor_prio = sc->sc_lacp_prio;
+		memcpy(opreq->actor_mac, &sc->sc_ac.ac_enaddr,
+		    sizeof(req->actor_mac));
+		opreq->actor_key = ifp->if_index;
+		opreq->actor_portprio = sc->sc_lacp_port_prio;
+		opreq->actor_portno = ifp0->if_index;
 		opreq->actor_state = state | p->p_actor_state;
 
 		opreq->partner_prio =
