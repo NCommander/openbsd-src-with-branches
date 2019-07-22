@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchd.c,v 1.15 2017/01/09 14:49:22 reyk Exp $	*/
+/*	$OpenBSD: switchd.c,v 1.16 2018/09/10 13:21:39 akoshibe Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -191,6 +191,10 @@ main(int argc, char *argv[])
 
 	log_procinit("parent");
 
+	if (unveil("/", "r") == -1)
+		fatal("unveil");
+	if (unveil("/dev", "rw") == -1)
+		fatal("unveil");
 	/*
 	 * pledge in the parent process:
 	 * stdio - for malloc and basic I/O including events.
