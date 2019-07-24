@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.h,v 1.32 2018/07/17 07:02:11 claudio Exp $ */
+/*	$OpenBSD: mrt.h,v 1.33 2018/09/07 10:59:16 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -135,7 +135,7 @@ enum MRT_BGP4MP_SUBTYPES {
  */
 #define MRT_BGP4MP_IPv4_ENTRY_SIZE	18
 #define MRT_BGP4MP_IPv6_ENTRY_SIZE	30
-#define MRT_BGP4MP_MAX_PREFIXLEN	17
+#define MRT_BGP4MP_MAX_PREFIXLEN	256
 /*
  * The "new" table dump format consists of messages of type PROTOCOL_BGP4MP
  * and subtype BGP4MP_ENTRY.
