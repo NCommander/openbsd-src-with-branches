@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.36 2018/01/16 22:52:32 jca Exp $	*/
+/*	$OpenBSD: io.c,v 1.37 2019/06/28 13:34:59 deraadt Exp $	*/
 
 /*
  * shell buffered IO and formatted output
@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
