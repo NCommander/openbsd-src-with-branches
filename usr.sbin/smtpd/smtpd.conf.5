@@ -1,4 +1,4 @@
-.\"	$OpenBSD: smtpd.conf.5,v 1.210 2018/12/22 08:54:02 gilles Exp $
+.\"	$OpenBSD: smtpd.conf.5,v 1.211 2019/07/24 15:31:53 kmos Exp $
 .\"
 .\" Copyright (c) 2008 Janne Johansson <jj@openbsd.org>
 .\" Copyright (c) 2009 Jacek Masiulaniec <jacekm@dobremiasto.net>
@@ -17,7 +17,7 @@
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
 .\"
-.Dd $Mdocdate: December 22 2018 $
+.Dd $Mdocdate: July 24 2019 $
 .Dt SMTPD.CONF 5
 .Os
 .Sh NAME
@@ -250,9 +250,14 @@ Normal SMTP session with mandatory STARTTLS.
 Plain text SMTP session without TLS.
 .It lmtp
 LMTP session.
+.Ar port
+is required.
 .It smtps
-SMTP session with forced TLS on connection.
+SMTP session with forced TLS on connection, default port is 465.
 .El
+Unless noted,
+.Ar port
+defaults to 25.
 .Pp
 The
 .Ar label
