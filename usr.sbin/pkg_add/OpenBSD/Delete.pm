@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Delete.pm,v 1.158 2019/06/30 14:57:25 espie Exp $
+# $OpenBSD: Delete.pm,v 1.159 2019/07/10 11:56:01 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -121,7 +121,7 @@ sub unregister_dependencies
 		local $@;
 		try {
 			OpenBSD::RequiredBy->new($name)->delete($pkgname);
-		} catchall {
+		} catch {
 			$state->errsay($_);
 		};
 	}
