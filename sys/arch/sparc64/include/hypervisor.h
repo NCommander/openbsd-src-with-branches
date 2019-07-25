@@ -1,4 +1,4 @@
-/*	$OpenBSD: hypervisor.h,v 1.16 2017/12/06 16:20:53 kettenis Exp $	*/
+/*	$OpenBSD: hypervisor.h,v 1.17 2018/03/22 11:24:27 stsp Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -284,6 +284,20 @@ int64_t hv_ldc_copy(uint64_t ldc_id, uint64_t flags, uint64_t cookie,
 int64_t hv_ldc_mapin(uint64_t ldc_id, uint64_t cookie, paddr_t *raddr,
 	    uint64_t *perms);
 int64_t hv_ldc_unmap(paddr_t raddr, uint64_t *perms);
+
+/*
+ * Static Direct I/O services
+ */
+
+int64_t hv_pci_iov_root_configured(uint64_t devhandle);
+int64_t	hv_pci_real_config_get(uint64_t devhandle, uint64_t pci_device,
+            uint64_t pci_config_offset, uint64_t size,
+	    uint64_t *error_flag, uint64_t *data);
+int64_t	hv_pci_real_config_put(uint64_t devhandle, uint64_t pci_device,
+            uint64_t pci_config_offset, uint64_t size, uint64_t data,
+	    uint64_t *error_flag);
+int64_t hv_pci_error_send(uint64_t devhandle, uint64_t devino,
+	    uint64_t pci_device);
 
 /*
  * Cryptographic services
