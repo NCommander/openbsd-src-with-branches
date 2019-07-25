@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamlogd.c,v 1.29 2019/06/28 13:32:53 deraadt Exp $	*/
+/*	$OpenBSD: spamlogd.c,v 1.30 2019/07/25 14:53:21 brynet Exp $	*/
 
 /*
  * Copyright (c) 2006 Henning Brauer <henning@openbsd.org>
@@ -167,6 +167,7 @@ pflog_read_live(const char *source, int slen, int promisc, int to_ms,
 		if (ioctl(p->fd, BIOCSRTIMEOUT, &to) == -1) {
 			snprintf(ebuf, PCAP_ERRBUF_SIZE, "BIOCSRTIMEOUT: %s",
 			    pcap_strerror(errno));
+			goto bad;
 		}
 	}
 	if (promisc)
