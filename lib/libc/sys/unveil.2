@@ -1,4 +1,4 @@
-.\" $OpenBSD: unveil.2,v 1.16 2019/03/24 18:43:06 beck Exp $
+.\" $OpenBSD: unveil.2,v 1.17 2019/03/24 19:55:31 jmc Exp $
 .\"
 .\" Copyright (c) 2018 Bob Beck <beck@openbsd.org>
 .\"
@@ -126,6 +126,12 @@ argument does not match the attempted operation.
 is returned for paths for which no
 .Nm
 permissions qualify.
+After a process has terminated,
+.Xr lastcomm 1
+will mark it with the
+.Sq U
+flag if file access was prevented by
+.Fn unveil .
 .Pp
 .Fn unveil
 use can be tricky because programs misbehave badly when their files
