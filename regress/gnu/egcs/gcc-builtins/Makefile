@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2019/02/12 21:31:16 bluhm Exp $
+# $OpenBSD: Makefile,v 1.5 2019/07/25 14:17:11 bluhm Exp $
 
 GCC_BUILTINS=	sprintf-1 sprintf-2 sprintf-3 stpcpy-1 stpcpy-2 strcat-1 \
 		strcat-2 strcpy-1 strcpy-2 strncat-1 vsprintf-1 vsprintf-2 \
@@ -27,7 +27,7 @@ NOOBJ= Yes
 
 .if ${LINKER_VERSION} == "lld"
 # llvm linker does not support gcc warnings about insecure functions
-REGRESS_EXPECTED_FAILURES=	${REGRESS_TARGETS}
+REGRESS_EXPECTED_FAILURES=	${REGRESS_TARGETS:N*strncat*}
 .endif
 
 .if ${BUILD_GCC3:L} == "yes"
