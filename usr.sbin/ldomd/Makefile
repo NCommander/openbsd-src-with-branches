@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2012/10/27 18:34:03 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.3 2012/10/27 20:03:24 kettenis Exp $
 
 .if ${MACHINE} == "sparc64"
 
@@ -16,7 +16,7 @@ NOPROG=	yes
 
 .endif
 
-MAN=	ldomd.8
+MAN=	ldomd.8 ldom.conf.5
 MANSUBDIR=sparc64
 
 .include <bsd.prog.mk>
