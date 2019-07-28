@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2019/05/03 20:03:59 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2019/07/17 14:36:32 visa Exp $
 
 FS=		miniroot${OSrev}.fs
 FSSIZE=		24576
@@ -10,8 +10,8 @@ RAMDISK=	BOOT
 LISTS=		${.CURDIR}/list
 UTILS=		${.CURDIR}/../../miniroot
 
-MRDISKTYPE=	rdroot
-MRMAKEFSARGS=	-o disklabel=${MRDISKTYPE},minfree=0,density=4096
+MRDISKTYPE=	rdboot
+MRMAKEFSARGS=	-o disklabel=${MRDISKTYPE},minfree=0,density=1024
 
 all: bsd.rd
 
