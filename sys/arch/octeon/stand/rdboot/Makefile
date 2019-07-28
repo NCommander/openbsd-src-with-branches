@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2019/07/17 14:36:32 visa Exp $
 
 NOMAN=
 
@@ -7,10 +7,14 @@ PROG=		rdboot
 SRCS=		cmd.c disk.c rdboot.c vars.c
 LDADD+=		-lutil
 LDSTATIC+=	-static
+
+realinstall:
+	cd ${.CURDIR}/../../../../../distrib/octeon/boot && ${MAKE} bsd.rd
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
+	    ${.CURDIR}/../../../../../distrib/octeon/boot/obj/bsd.rd \
+	    ${DESTDIR}/usr/mdec/boot
 .else
 NOPROG=
 .endif
-
-install:
 
 .include <bsd.prog.mk>
