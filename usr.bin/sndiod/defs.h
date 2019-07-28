@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.2 2012/12/07 08:04:58 ratchov Exp $	*/
+/*	$OpenBSD: defs.h,v 1.3 2019/06/16 13:45:12 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -51,7 +51,7 @@
 /*
  * limits
  */
-#define NCHAN_MAX	16		/* max channel in a stream */
+#define NCHAN_MAX	64		/* max channel in a stream */
 #define RATE_MIN	4000		/* min sample rate */
 #define RATE_MAX	192000		/* max sample rate */
 #define BITS_MIN	1		/* min bits per sample */
