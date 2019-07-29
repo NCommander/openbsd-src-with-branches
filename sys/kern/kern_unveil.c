@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_unveil.c,v 1.27 2019/07/14 03:26:02 guenther Exp $	*/
+/*	$OpenBSD: kern_unveil.c,v 1.28 2019/07/25 09:37:32 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2017-2019 Bob Beck <beck@openbsd.org>
@@ -864,7 +864,7 @@ unveil_check_final(struct proc *p, struct nameidata *ni)
 #endif
 			/*
 			 * If dir has user set restrictions fail with
-			 * EACCESS. Otherwise, use any covering match
+			 * EACCES. Otherwise, use any covering match
 			 * that we found above this dir.
 			 */
 			if (uv->uv_flags & UNVEIL_USERSET) {
