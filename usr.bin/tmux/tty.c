@@ -1,4 +1,4 @@
-/* $OpenBSD: tty.c,v 1.328 2019/06/27 15:17:41 nicm Exp $ */
+/* $OpenBSD: tty.c,v 1.329 2019/07/16 14:11:52 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1879,6 +1879,8 @@ tty_invalidate(struct tty *tty)
 	tty->rlower = tty->rright = UINT_MAX;
 
 	if (tty->flags & TTY_STARTED) {
+		if (tty_use_margin(tty))
+			tty_puts(tty, "\033[?69h"); /* DECLRMM */
 		tty_putcode(tty, TTYC_SGR0);
 
 		tty->mode = ALL_MODES;
