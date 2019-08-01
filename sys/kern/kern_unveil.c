@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_unveil.c,v 1.28 2019/07/25 09:37:32 bluhm Exp $	*/
+/*	$OpenBSD: kern_unveil.c,v 1.29 2019/07/29 23:14:06 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2017-2019 Bob Beck <beck@openbsd.org>
@@ -309,8 +309,7 @@ unveil_find_cover(struct vnode *dp, struct proc *p)
 			break;
 		}
 
-		if (parent != vp)
-			vrele(vp);
+		vrele(vp);
 		(void) unveil_lookup(parent, p, &ret);
 		vput(parent);
 
