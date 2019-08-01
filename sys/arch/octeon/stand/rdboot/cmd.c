@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.1 2019/07/17 14:36:32 visa Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.2 2019/07/28 12:47:56 visa Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -405,6 +405,7 @@ Xls(void)
 		closedir(dir);
 
 		fchdir(oldcwd);
+		close(oldcwd);
 	}
 
 out:
