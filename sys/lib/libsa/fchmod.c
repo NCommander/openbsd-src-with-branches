@@ -1,5 +1,5 @@
-/*	$OpenBSD: ufs.h,v 1.6 2003/06/02 23:28:10 millert Exp $	*/
-/*	$NetBSD: ufs.h,v 1.5 1995/10/20 01:35:25 cgd Exp $	*/
+/*	$OpenBSD: fstat.c,v 1.4 2003/08/11 06:23:09 deraadt Exp $	*/
+/*	$NetBSD: stat.c,v 1.3 1994/10/26 05:45:07 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -29,17 +29,31 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)ufs.h	8.1 (Berkeley) 6/11/93
+ *	@(#)stat.c	8.1 (Berkeley) 6/11/93
  */
 
-int	ufs_open(char *path, struct open_file *f);
-int	ufs_close(struct open_file *f);
-int	ufs_read(struct open_file *f, void *buf,
-		size_t size, size_t *resid);
-int	ufs_write(struct open_file *f, void *buf,
-		size_t size, size_t *resid);
-off_t	ufs_seek(struct open_file *f, off_t offset, int where);
-int	ufs_stat(struct open_file *f, struct stat *sb);
-int	ufs_readdir(struct open_file *f, char *name);
-int	ufs_fchmod(struct open_file *f, mode_t mode);
+#include "stand.h"
 
+int
+fchmod(int fd, mode_t m)
+{
+	struct open_file *f = &files[fd];
+
+	if (f->f_ops->fchmod == NULL) {
+		errno = EOPNOTSUPP;
+		return (-1);
+	}
+	if ((unsigned)fd >= SOPEN_MAX || f->f_flags == 0) {
+		errno = EBADF;
+		return (-1);
+	}
+
+	/* operation not defined on raw devices */
+	if (f->f_flags & F_RAW) {
+		errno = EOPNOTSUPP;
+		return (-1);
+	}
+
+	errno = (f->f_ops->fchmod)(f, m);
+	return (0);
+}
