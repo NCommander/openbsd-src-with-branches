@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.104 2019/06/07 04:03:04 jmatthew Exp $
+# $OpenBSD: GENERIC,v 1.105 2019/08/03 23:27:34 deraadt Exp $
 #
 # GENERIC machine description file
 #
@@ -38,6 +38,7 @@ mainbus0	at root
 cpu0		at mainbus?
 apm0		at mainbus?
 efi0		at mainbus?
+smbios0		at efi?
 acpi0		at mainbus?
 acpibtn*	at acpi?
 acpiec*		at acpi?
