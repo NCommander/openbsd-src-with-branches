@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.241 2019/06/25 07:44:20 claudio Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.242 2019/07/03 06:15:48 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -2036,6 +2036,10 @@ network_bulk(struct parse_result *res)
 			if (res->action == NETWORK_BULK_ADD) {
 				imsg_compose(ibuf, IMSG_NETWORK_ADD,
 				    0, 0, -1, &net, sizeof(net));
+				/*
+				 * can't use send_filterset since that
+				 * would free the set.
+				 */
 				TAILQ_FOREACH(s, &res->set, entry) {
 					imsg_compose(ibuf,
 					    IMSG_FILTER_SET,
