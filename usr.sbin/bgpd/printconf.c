@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.137 2019/06/17 13:35:43 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.138 2019/07/24 20:25:27 benno Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -996,7 +996,7 @@ print_config(struct bgpd_config *conf, struct rib_names *rib_l)
 
 	print_mainconf(conf);
 	print_roa(&conf->roa);
-	print_as_sets(conf->as_sets);
+	print_as_sets(&conf->as_sets);
 	print_prefixsets(&conf->prefixsets);
 	print_originsets(&conf->originsets);
 	TAILQ_FOREACH(n, &conf->networks, entry)
