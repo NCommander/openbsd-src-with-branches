@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.328 2019/08/02 08:12:35 bluhm Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.329 2019/08/04 08:42:29 bluhm Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -3034,7 +3034,9 @@ sys_getdents(struct proc *p, void *v, register_t *retval)
 	auio.uio_resid = buflen;
 	auio.uio_offset = fp->f_offset;
 	error = VOP_READDIR(vp, &auio, fp->f_cred, &eofflag);
+	mtx_enter(&fp->f_mtx);
 	fp->f_offset = auio.uio_offset;
+	mtx_leave(&fp->f_mtx);
 	VOP_UNLOCK(vp);
 	if (error)
 		goto bad;
