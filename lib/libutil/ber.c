@@ -1,4 +1,4 @@
-/*	$OpenBSD: ber.c,v 1.8 2019/05/21 13:29:44 rob Exp $ */
+/*	$OpenBSD: ber.c,v 1.9 2019/06/01 19:40:05 rob Exp $ */
 
 /*
  * Copyright (c) 2007, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -545,9 +545,6 @@ ber_get_oid(struct ber_element *elm, struct ber_oid *o)
 
 	buf = elm->be_val;
 	len = elm->be_len;
-
-	if (!buf[i])
-		return (-1);
 
 	memset(o, 0, sizeof(*o));
 	o->bo_id[j++] = buf[i] / 40;
