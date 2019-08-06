@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.649 2019/08/05 15:20:29 krw Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.650 2019/08/05 16:22:00 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -642,8 +642,8 @@ main(int argc, char *argv[])
 		ifi->rbuf_max = newsize;
 	}
 
-	if (chroot(_PATH_VAREMPTY) == -1)
-		fatal("chroot(%s)", _PATH_VAREMPTY);
+	if (chroot(pw->pw_dir) == -1)
+		fatal("chroot(%s)", pw->pw_dir);
 	if (chdir("/") == -1)
 		fatal("chdir(\"/\")");
 

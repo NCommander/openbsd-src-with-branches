@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcrelay.c,v 1.63 2017/07/05 11:11:56 reyk Exp $ */
+/*	$OpenBSD: dhcrelay.c,v 1.64 2018/03/16 12:31:09 mpi Exp $ */
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@cvs.openbsd.org>
@@ -296,7 +296,7 @@ main(int argc, char *argv[])
 
 	if ((pw = getpwnam("_dhcp")) == NULL)
 		fatalx("user \"_dhcp\" not found");
-	if (chroot(_PATH_VAREMPTY) == -1)
+	if (chroot(pw->pw_dir) == -1)
 		fatal("chroot");
 	if (chdir("/") == -1)
 		fatal("chdir(\"/\")");
