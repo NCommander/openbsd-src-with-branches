@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.44 2016/04/13 10:34:32 mpi Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.45 2017/01/22 10:17:38 dlg Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -785,7 +785,8 @@ skip_buffer:
 		}
 	}
 
-	if_input(ifp, &ml);
+	if (ifiq_input(&ifp->if_rcv, &ml))
+		if_rxr_livelocked(&ring->rxr);
 
 	/* XXX Should we (try to) allocate buffers for ring 2 too? */
 	ring = &rq->cmd_ring[0];
