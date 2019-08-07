@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.390 2019/07/23 06:26:44 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.391 2019/08/05 08:46:55 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -58,10 +58,9 @@
 #define	BGPD_OPT_NOACTION		0x0004
 #define	BGPD_OPT_FORCE_DEMOTE		0x0008
 
-#define	BGPD_FLAG_NO_EVALUATE		0x0002
 #define	BGPD_FLAG_REFLECTOR		0x0004
-#define	BGPD_FLAG_NEXTHOP_BGP		0x0080
-#define	BGPD_FLAG_NEXTHOP_DEFAULT	0x1000
+#define	BGPD_FLAG_NEXTHOP_BGP		0x0010
+#define	BGPD_FLAG_NEXTHOP_DEFAULT	0x0020
 #define	BGPD_FLAG_DECISION_MASK		0x0f00
 #define	BGPD_FLAG_DECISION_ROUTEAGE	0x0100
 #define	BGPD_FLAG_DECISION_TRANS_AS	0x0200
