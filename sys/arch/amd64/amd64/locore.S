@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.116 2019/04/02 03:35:08 mortimer Exp $	*/
+/*	$OpenBSD: locore.S,v 1.116.2.1 2019/05/28 14:23:21 bluhm Exp $	*/
 /*	$NetBSD: locore.S,v 1.13 2004/03/25 18:33:17 drochner Exp $	*/
 
 /*
@@ -563,7 +563,7 @@ XUsyscall_meltdown:
 	 * (thank you, Intel), at which point we'll continue at the
 	 * "movq CPUVAR(KERN_RSP),%rax" after Xsyscall below.
 	 * In case the CPU speculates past the mov to cr3, we put a
-	 * retpoline-style pause-jmp-to-pause loop.
+	 * retpoline-style pause-lfence-jmp-to-pause loop.
 	 */
 	swapgs
 	movq	%rax,CPUVAR(SCRATCH)
