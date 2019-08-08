@@ -1,4 +1,4 @@
-/*	$OpenBSD: pftable.c,v 1.12 2018/11/25 15:31:12 deraadt Exp $ */
+/*	$OpenBSD: pftable.c,v 1.13 2019/06/28 13:32:47 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Damien Miller <djm@openbsd.org>
@@ -63,7 +63,7 @@ pftable_change(struct pf_table *pft)
 	if (pft->naddrs == 0 || pft->what == 0)
 		return (0);
 
-	if (devpf == -1 && ((devpf = open("/dev/pf", O_RDWR)) == -1))
+	if (devpf == -1 && ((devpf = open("/dev/pf", O_RDWR|O_CLOEXEC)) == -1))
 		fatal("open(/dev/pf)");
 
 	bzero(&tio, sizeof(tio));
@@ -90,7 +90,7 @@ pftable_clear(const char *name)
 {
 	struct pfioc_table tio;
 
-	if (devpf == -1 && ((devpf = open("/dev/pf", O_RDWR)) == -1))
+	if (devpf == -1 && ((devpf = open("/dev/pf", O_RDWR|O_CLOEXEC)) == -1))
 		fatal("open(/dev/pf)");
 
 	bzero(&tio, sizeof(tio));
@@ -111,7 +111,7 @@ pftable_exists(const char *name)
 	struct pfioc_table tio;
 	struct pfr_astats dummy;
 
-	if (devpf == -1 && ((devpf = open("/dev/pf", O_RDWR)) == -1))
+	if (devpf == -1 && ((devpf = open("/dev/pf", O_RDWR|O_CLOEXEC)) == -1))
 		fatal("open(/dev/pf)");
 
 	bzero(&tio, sizeof(tio));

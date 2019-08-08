@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.96 2019/03/31 16:57:38 claudio Exp $ */
+/*	$OpenBSD: control.c,v 1.97 2019/05/27 09:14:32 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -47,7 +47,7 @@ control_check(char *path)
 	sun.sun_family = AF_UNIX;
 	strlcpy(sun.sun_path, path, sizeof(sun.sun_path));
 
-	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+	if ((fd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0)) == -1) {
 		log_warn("%s: socket", __func__);
 		return (-1);
 	}
