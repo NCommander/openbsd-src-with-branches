@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpe.c,v 1.57 2019/04/29 16:04:05 rob Exp $	*/
+/*	$OpenBSD: snmpe.c,v 1.58 2019/05/13 07:24:50 martijn Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -120,6 +120,7 @@ snmpe_init(struct privsep *ps, struct privsep_proc *p, void *arg)
 		event_add(&so->s_ev, NULL);
 	}
 
+	/* no filesystem visibility */
 	if (unveil("/", "") == -1)
 		fatal("unveil");
 	if (unveil(NULL, NULL) == -1)
