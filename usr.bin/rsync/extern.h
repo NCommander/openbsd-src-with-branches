@@ -1,4 +1,4 @@
-/*	$Id: extern.h,v 1.30 2019/05/08 21:30:11 benno Exp $ */
+/*	$Id: extern.h,v 1.31 2019/06/02 17:36:48 florian Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -120,6 +120,7 @@ struct	opts {
 	char		*rsync_path;		/* --rsync-path */
 	char		*ssh_prog;		/* --rsh or -e */
 	char		*port;			/* --port */
+	char		*address;		/* --address */
 };
 
 /*
