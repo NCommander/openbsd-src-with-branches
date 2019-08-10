@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: cms_ess.c,v 1.11 2019/08/10 16:03:54 jsing Exp $ */
 /*
  * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
@@ -52,7 +52,7 @@
  * ====================================================================
  */
 
-#include "internal/cryptlib.h"
+#include "cryptlib.h"
 #include <openssl/asn1t.h>
 #include <openssl/pem.h>
 #include <openssl/rand.h>
