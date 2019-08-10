@@ -1,4 +1,4 @@
-.\"	$OpenBSD: smtpd.conf.5,v 1.211 2019/07/24 15:31:53 kmos Exp $
+.\"	$OpenBSD: smtpd.conf.5,v 1.212 2019/07/24 20:44:21 kn Exp $
 .\"
 .\" Copyright (c) 2008 Janne Johansson <jj@openbsd.org>
 .\" Copyright (c) 2009 Jacek Masiulaniec <jacekm@dobremiasto.net>
@@ -716,6 +716,16 @@ string for
 .Xr SSL_CTX_set_cipher_list 3 .
 The default is
 .Qq HIGH:!aNULL:!MD5 .
+.It Ic smtp limit Cm max\-mails Ar count
+Limit the number of messages to
+.Ar count
+for each session.
+The default is 100.
+.It Ic smtp limit Cm max\-rcpt Ar count
+Limit the number of recipients to
+.Ar count
+for each transaction.
+The default is 1000.
 .It Ic smtp Cm max\-message\-size Ar size
 Reject messages larger than
 .Ar size ,
