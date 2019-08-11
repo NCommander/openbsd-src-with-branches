@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.h,v 1.6 2002/03/23 13:30:24 espie Exp $	*/
+/*	$OpenBSD: cmd.h,v 1.7 2003/06/03 00:52:35 weingart Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -67,11 +67,7 @@ int Xshow(cmd_t *);
 int Xexit(cmd_t *);
 int Xquit(cmd_t *);
 int Xtimezone(cmd_t *);
-int Xnmbclusters(cmd_t *);
-int Xbufcachepct(cmd_t *);
 int Xnkmempg(cmd_t *);
-int Xshmseg(cmd_t *);
-int Xshmmaxpgs(cmd_t *);
 
 #endif /* _CMD_H */
 

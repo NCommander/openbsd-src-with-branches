@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukc.c,v 1.22 2016/10/19 16:39:02 tb Exp $ */
+/*	$OpenBSD: ukc.c,v 1.23 2017/09/27 15:14:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 1999-2001 Mats O Jansson.  All rights reserved.
@@ -132,7 +132,6 @@ WARNING this kernel doesn't support pseudo devices.\n");
 		nopdev = 1;
 	}
 
-	check_int(I_BUFCACHEPCT, "BUFCACHEPERCENT");
 	check_int(I_NKMEMPG, "NKMEMPAGES");
 
 	init();
