@@ -1,4 +1,4 @@
-/* $OpenBSD: cms_asn1.c,v 1.14 2019/08/10 18:15:52 jsing Exp $ */
+/* $OpenBSD: cms_asn1.c,v 1.15 2019/08/11 10:15:30 jsing Exp $ */
 /*
  * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
@@ -1448,7 +1448,13 @@ const ASN1_ITEM CMS_Attributes_Verify_it = {
 
 
 static const ASN1_TEMPLATE CMS_ReceiptsFrom_ch_tt[] = {
-	ASN1_IMP_EMBED(CMS_ReceiptsFrom, d.allOrFirstTier, INT32, 0),
+	{
+		.flags = ASN1_TFLG_IMPLICIT,
+		.tag = 0,
+		.offset = offsetof(CMS_ReceiptsFrom, d.allOrFirstTier),
+		.field_name = "d.allOrFirstTier",
+		.item = &INT32_it,
+	},
 	{
 		.flags = ASN1_TFLG_IMPLICIT | ASN1_TFLG_SEQUENCE_OF,
 		.tag = 1,
