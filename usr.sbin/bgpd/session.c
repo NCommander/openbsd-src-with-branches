@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.c,v 1.387 2019/06/28 09:14:36 claudio Exp $ */
+/*	$OpenBSD: session.c,v 1.388 2019/07/24 20:25:27 benno Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -385,18 +385,10 @@ session_main(int debug, int verbose)
 					bgp_fsm(p, EVNT_START);
 					break;
 				case Timer_IdleHoldReset:
-					p->IdleHoldTime /= 2;
-					if (p->IdleHoldTime <=
-					    INTERVAL_IDLE_HOLD_INITIAL) {
-						p->IdleHoldTime =
-						    INTERVAL_IDLE_HOLD_INITIAL;
-						timer_stop(p,
-						    Timer_IdleHoldReset);
-						p->errcnt = 0;
-					} else
-						timer_set(p,
-						    Timer_IdleHoldReset,
-						    p->IdleHoldTime);
+					p->IdleHoldTime =
+					    INTERVAL_IDLE_HOLD_INITIAL;
+					p->errcnt = 0;
+					timer_stop(p, Timer_IdleHoldReset);
 					break;
 				case Timer_CarpUndemote:
 					timer_stop(p, Timer_CarpUndemote);
