@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2019/08/06 15:49:57 claudio Exp $
+# $OpenBSD: Makefile,v 1.8 2019/08/07 07:57:48 claudio Exp $
 
 REGRESS_TARGETS	= 	network_statement md5 ovs mrt as0
 
@@ -19,8 +19,8 @@ mrt:
 	${SUDO} ksh ${.CURDIR}/$@.sh ${BGPD} ${.CURDIR} 11
 
 .if ! exists(/usr/local/bin/exabgp)
-# install exabgp from ports for additional tests
 as0:
+	# install exabgp from ports for additional tests
 	@echo SKIPPED
 .else
 
