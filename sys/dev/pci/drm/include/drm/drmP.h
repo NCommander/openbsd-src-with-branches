@@ -1,4 +1,4 @@
-/* $OpenBSD: drmP.h,v 1.2 2019/05/04 11:34:48 kettenis Exp $ */
+/* $OpenBSD: drmP.h,v 1.3 2019/07/25 05:48:16 jsg Exp $ */
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
  */
@@ -66,9 +66,6 @@
 #include <dev/pci/pcivar.h>
 #include <dev/pci/agpvar.h>
 #include <machine/bus.h>
-
-#define CONFIG_DRM_FBDEV_EMULATION 1
-#define CONFIG_BACKLIGHT_CLASS_DEVICE 1
 
 #include <linux/agp_backend.h>
 #include <linux/cdev.h>
