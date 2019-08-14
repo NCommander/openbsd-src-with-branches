@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.121 2019/05/11 16:30:23 patrick Exp $	*/
+/*	$OpenBSD: iked.h,v 1.122 2019/08/12 07:40:45 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -514,6 +514,7 @@ struct iked_message {
 	int			 msg_valid;
 	int			 msg_natt;
 	int			 msg_natt_rcvd;
+	int			 msg_nat_detected;
 	int			 msg_error;
 	int			 msg_e;
 	struct iked_message	*msg_parent;
