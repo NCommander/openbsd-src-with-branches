@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl.c,v 1.374 2019/06/28 13:32:45 deraadt Exp $ */
+/*	$OpenBSD: pfctl.c,v 1.375 2019/07/09 16:42:48 kn Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2248,6 +2248,7 @@ pfctl_reset(int dev, int opts)
 	pf.debug_set = 1;
 	pf.reass_set = 1;
 	pf.syncookieswat_set = 1;
+	pf.syncookies_set = 1;
 	pf.ifname = strdup("none");
 	if (pf.ifname == NULL)
 		err(1, "%s: strdup", __func__);
