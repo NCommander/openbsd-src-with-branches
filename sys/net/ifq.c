@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifq.c,v 1.32 2019/07/01 00:44:29 dlg Exp $ */
+/*	$OpenBSD: ifq.c,v 1.33 2019/07/03 10:19:45 dlg Exp $ */
 
 /*
  * Copyright (c) 2015 David Gwynne <dlg@openbsd.org>
@@ -397,7 +397,7 @@ ifq_hdatalen(struct ifqueue *ifq)
 	m = ifq_deq_begin(ifq);
 	if (m != NULL) {
 		len = m->m_pkthdr.len;
-		ifq_deq_commit(ifq, m);
+		ifq_deq_rollback(ifq, m);
 	}
 
 	return (len);
