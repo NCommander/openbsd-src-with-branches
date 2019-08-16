@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.147 2019/03/21 13:37:25 schwarze Exp $
+# $OpenBSD: Makefile,v 1.148 2019/03/21 14:15:13 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -95,6 +95,7 @@ MAN=	\
 	EC_GFp_simple_method.3 \
 	EC_GROUP_copy.3 \
 	EC_GROUP_new.3 \
+	EC_KEY_METHOD_new.3 \
 	EC_KEY_new.3 \
 	EC_POINT_add.3 \
 	EC_POINT_new.3 \
