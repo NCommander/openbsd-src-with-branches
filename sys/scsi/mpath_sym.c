@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_sym.c,v 1.22 2014/09/14 14:17:26 jsg Exp $ */
+/*	$OpenBSD: mpath_sym.c,v 1.23 2015/03/14 03:38:52 jsg Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -176,7 +176,6 @@ int
 sym_activate(struct device *self, int act)
 {
 	struct sym_softc *sc = (struct sym_softc *)self;
-	int rv = 0;
 
 	switch (act) {
 	case DVACT_DEACTIVATE:
@@ -184,7 +183,7 @@ sym_activate(struct device *self, int act)
 			mpath_path_detach(&sc->sc_path);
 		break;
 	}
-	return (rv);
+	return (0);
 }
 
 void
