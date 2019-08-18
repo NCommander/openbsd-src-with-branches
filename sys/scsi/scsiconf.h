@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.h,v 1.166 2017/05/29 07:47:13 krw Exp $	*/
+/*	$OpenBSD: scsiconf.h,v 1.167 2019/08/14 21:02:02 krw Exp $	*/
 /*	$NetBSD: scsiconf.h,v 1.35 1997/04/02 02:29:38 mycroft Exp $	*/
 
 /*
@@ -376,7 +376,6 @@ struct scsibus_softc {
 	struct device sc_dev;
 	struct scsi_link *adapter_link;	/* prototype supplied by adapter */
 	SLIST_HEAD(, scsi_link) sc_link_list;
-	u_int16_t sc_buswidth;
 };
 
 /*
