@@ -1,4 +1,4 @@
-/* $OpenBSD: drmP.h,v 1.3 2019/07/25 05:48:16 jsg Exp $ */
+/* $OpenBSD: drmP.h,v 1.4 2019/08/14 05:32:56 jsg Exp $ */
 /* drmP.h -- Private header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
  */
@@ -242,6 +242,7 @@ struct drm_attach_args {
 #define DRMDEVCF_PRIMARY_UNK	-1
 
 void	drm_linux_init(void);
+int	drm_linux_acpi_notify(struct aml_node *, int, void *);
 
 /* Device setup support (drm_drv.c) */
 int	drm_pciprobe(struct pci_attach_args *, const struct drm_pcidev * );
