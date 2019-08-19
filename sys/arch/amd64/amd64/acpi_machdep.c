@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.85 2018/08/19 08:23:47 kettenis Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.86 2018/10/23 17:51:32 kettenis Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -382,6 +382,8 @@ acpi_sleep_clocks(struct acpi_softc *sc, int state)
 void
 acpi_resume_clocks(struct acpi_softc *sc)
 {
+	cpu_init_msrs(&cpu_info_primary);
+
 #if NISA > 0
 	i8259_default_setup();
 #endif
