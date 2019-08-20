@@ -1,6 +1,6 @@
-@comment $OpenBSD: PLIST-libs,v 1.7 2016/09/19 09:16:51 ajacoutot Exp $
+@comment $OpenBSD: +CONTENTS,v 1.1 2018/06/18 13:58:55 espie Exp $
 @name cups-libs-2.2.8
-@comment pkgpath=print/cups,-libs cdrom=yes ftp=yes
+@comment pkgpath=print/cups,-libs ftp=yes
 @arch *
 +DESC
 @sha PR0u8PFMga/b6TrujLc3mwZyc4f2PuCKAFWEro5+E1w=
