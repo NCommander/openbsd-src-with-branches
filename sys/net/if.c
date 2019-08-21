@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.586 2019/06/30 23:02:28 dlg Exp $	*/
+/*	$OpenBSD: if.c,v 1.587 2019/08/06 22:57:54 bluhm Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -1972,16 +1972,12 @@ ifioctl(struct socket *so, u_long cmd, caddr_t data, struct proc *p)
 		}
 
 		if (ISSET(ifr->ifr_flags, IFXF_INET6_NOSOII) &&
-		    !ISSET(ifp->if_xflags, IFXF_INET6_NOSOII)) {
+		    !ISSET(ifp->if_xflags, IFXF_INET6_NOSOII))
 			ifp->if_xflags |= IFXF_INET6_NOSOII;
-			in6_soiiupdate(ifp);
-		}
 
 		if (!ISSET(ifr->ifr_flags, IFXF_INET6_NOSOII) &&
-		    ISSET(ifp->if_xflags, IFXF_INET6_NOSOII)) {
+		    ISSET(ifp->if_xflags, IFXF_INET6_NOSOII))
 			ifp->if_xflags &= ~IFXF_INET6_NOSOII;
-			in6_soiiupdate(ifp);
-		}
 
 #endif	/* INET6 */
 
