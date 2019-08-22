@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.54 2019/05/23 19:00:52 jasper Exp $	*/
+/*	$OpenBSD: clock.c,v 1.55 2019/08/21 20:44:09 cheloha Exp $	*/
 /*	$NetBSD: clock.c,v 1.39 1996/05/12 23:11:54 mycroft Exp $	*/
 
 /*-
@@ -648,7 +648,6 @@ resettodr(void)
 {
 	mc_todregs rtclk;
 	struct clock_ymdhms dt;
-	int diff;
 	int century;
 	int s;
 
