@@ -1,4 +1,4 @@
-/*	$Id: test-mft.c,v 1.1 2019/06/18 12:09:07 claudio Exp $ */
+/*	$Id: test-mft.c,v 1.2 2019/08/12 18:03:17 jsing Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -28,6 +28,8 @@
 #include <openssl/x509v3.h>
 
 #include "extern.h"
+
+int verbose;
 
 static void
 mft_print(const struct mft *p)
