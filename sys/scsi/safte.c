@@ -1,4 +1,4 @@
-/*	$OpenBSD: safte.c,v 1.52 2015/06/07 19:13:27 krw Exp $ */
+/*	$OpenBSD: safte.c,v 1.53 2015/08/23 01:55:39 tedu Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -320,7 +320,7 @@ safte_read_config(struct safte_softc *sc)
 	}
 
 	sc->sc_nsensors = config->nfans + config->npwrsup + config->ntemps +
-		(config->doorlock ? 1 : 0) + (config->alarm ? 1 : 0);
+	    (config->doorlock ? 1 : 0) + (config->alarm ? 1 : 0);
 
 	sc->sc_sensors = mallocarray(sc->sc_nsensors, sizeof(struct safte_sensor),
 	    M_DEVBUF, M_NOWAIT | M_ZERO);
