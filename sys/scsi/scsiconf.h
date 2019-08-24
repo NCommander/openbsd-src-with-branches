@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.h,v 1.168 2019/08/18 00:58:54 krw Exp $	*/
+/*	$OpenBSD: scsiconf.h,v 1.169 2019/08/20 13:40:37 krw Exp $	*/
 /*	$NetBSD: scsiconf.h,v 1.35 1997/04/02 02:29:38 mycroft Exp $	*/
 
 /*
@@ -513,7 +513,6 @@ int	scsi_probe_target(struct scsibus_softc *, int);
 int	scsi_probe_lun(struct scsibus_softc *, int, int);
 
 int	scsi_detach(struct scsibus_softc *, int, int, int);
-int	scsi_detach_bus(struct scsibus_softc *, int);
 int	scsi_detach_target(struct scsibus_softc *, int, int);
 int	scsi_detach_lun(struct scsibus_softc *, int, int, int);
 
