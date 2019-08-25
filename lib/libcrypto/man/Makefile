@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.154 2019/08/23 12:23:39 schwarze Exp $
+# $OpenBSD: Makefile,v 1.155 2019/08/25 06:20:22 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -158,7 +158,9 @@ MAN=	\
 	EVP_camellia_128_cbc.3 \
 	EVP_des_cbc.3 \
 	EVP_rc4.3 \
+	EVP_sm3.3 \
 	EVP_sm4_cbc.3 \
+	EVP_whirlpool.3 \
 	EXTENDED_KEY_USAGE_new.3 \
 	GENERAL_NAME_new.3 \
 	HMAC.3 \
