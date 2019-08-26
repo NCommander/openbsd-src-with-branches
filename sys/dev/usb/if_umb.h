@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_umb.h,v 1.3 2016/11/25 12:43:26 gerhard Exp $ */
+/*	$OpenBSD: if_umb.h,v 1.4 2017/04/18 13:27:55 gerhard Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -320,7 +320,7 @@ struct umb_info {
 	uint64_t		downlink_speed;
 
 #define UMB_MAX_DNSSRV			2
-	u_int32_t		ipv4dns[UMB_MAX_DNSSRV];
+	struct in_addr		ipv4dns[UMB_MAX_DNSSRV];
 };
 
 #ifdef _KERNEL
