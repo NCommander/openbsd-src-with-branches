@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.41 2019/06/01 11:45:01 kettenis Exp $ */
+/* $OpenBSD: machdep.c,v 1.42 2019/07/30 18:08:28 kettenis Exp $ */
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -229,6 +229,7 @@ fdt_find_cons(const char *name)
 	return (NULL);
 }
 
+extern void	amluart_init_cons(void);
 extern void	com_fdt_init_cons(void);
 extern void	imxuart_init_cons(void);
 extern void	mvuart_init_cons(void);
@@ -245,6 +246,7 @@ consinit(void)
 
 	consinit_called = 1;
 
+	amluart_init_cons();
 	com_fdt_init_cons();
 	imxuart_init_cons();
 	mvuart_init_cons();
