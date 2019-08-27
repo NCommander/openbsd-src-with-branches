@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.own.mk,v 1.197 2019/04/21 15:20:24 kettenis Exp $
+#	$OpenBSD: bsd.own.mk,v 1.198 2019/07/01 15:20:16 visa Exp $
 #	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
 # Host-specific overrides
@@ -43,7 +43,7 @@ BUILD_GCC3?=yes
 BUILD_GCC3?=no
 .endif
 .if !empty(GCC4_ARCH:M${_arch}) || ${MACHINE_ARCH} == "amd64" || \
-    ${MACHINE_ARCH} == "arm" || ${MACHINE_ARCH} == "i386" || \
+    ${MACHINE_ARCH} == "arm" || \
     ${MACHINE_ARCH} == "mips64"
 BUILD_GCC4?=yes
 .else
