@@ -1,4 +1,4 @@
-.\" $OpenBSD: drm.4,v 1.9 2019/05/21 22:55:20 jsg Exp $
+.\" $OpenBSD: drm.4,v 1.10 2019/05/21 23:57:10 jsg Exp $
 .\"
 .\" Copyright (c) 2008 Jason McIntyre <jmc@openbsd.org>
 .\"
@@ -29,6 +29,11 @@
 .Cd "wsdisplay0 at amdgpu? primary 1"
 .Cd "wsdisplay* at amdgpu? mux -1"
 .Pp
+.Cd "# arm64"
+.Cd "amdgpu* at pci?"
+.Cd "drm* at amdgpu?"
+.Cd "wsdisplay* at amdgpu?"
+.Pp
 .Cd "# amd64, i386"
 .Cd "inteldrm* at pci?"
 .Cd "intagp* at inteldrm?"
@@ -48,6 +53,7 @@
 .Cd "# arm64, loongson, macppc, sparc64"
 .Cd "radeondrm* at pci?"
 .Cd "drm* at radeondrm?"
+.Cd "wsdisplay* at radeondrm?"
 .Sh DESCRIPTION
 The
 .Nm
