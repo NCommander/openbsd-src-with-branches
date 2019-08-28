@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.406 2019/08/13 16:02:33 gilles Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.407 2019/08/14 21:11:25 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -2048,6 +2048,7 @@ smtp_send_banner(struct smtp_session *s)
 {
 	smtp_reply(s, "220 %s ESMTP %s", s->smtpname, SMTPD_NAME);
 	s->banner_sent = 1;
+	report_smtp_link_greeting("smtp-in", s->id, s->smtpname);
 }
 
 void
