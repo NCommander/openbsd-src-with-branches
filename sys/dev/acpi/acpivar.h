@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.102 2019/07/02 21:17:24 jcs Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.103 2019/08/27 22:39:53 deraadt Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -43,6 +43,7 @@ extern int acpi_debug;
 #endif
 
 extern int acpi_hasprocfvs;
+extern int acpi_haspci;
 
 struct klist;
 struct acpiec_softc;
