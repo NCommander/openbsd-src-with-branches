@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.924 2019/08/14 09:58:31 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.925 2019/08/16 11:49:12 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -843,6 +843,7 @@ struct window_pane {
 #define PANE_STATUSDRAWN 0x400
 #define PANE_EMPTY 0x800
 #define PANE_STYLECHANGED 0x1000
+#define PANE_RESIZED 0x2000
 
 	int		 argc;
 	char	       **argv;
