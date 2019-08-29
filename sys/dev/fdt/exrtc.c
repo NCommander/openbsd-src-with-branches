@@ -1,6 +1,6 @@
-/*	$OpenBSD: exrtc.c,v 1.1 2017/03/11 00:11:47 kettenis Exp $	*/
+/*	$OpenBSD: exrtc.c,v 1.2 2017/03/11 00:18:43 kettenis Exp $	*/
 /*
- * Copyright (c) 2017 Mark kettenis <kettenis@openbsd.org>
+ * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

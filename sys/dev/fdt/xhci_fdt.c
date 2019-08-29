@@ -1,6 +1,6 @@
-/*	$OpenBSD: xhci_fdt.c,v 1.12 2018/08/06 10:52:30 patrick Exp $	*/
+/*	$OpenBSD: xhci_fdt.c,v 1.13 2019/04/01 08:43:04 patrick Exp $	*/
 /*
- * Copyright (c) 2017 Mark kettenis <kettenis@openbsd.org>
+ * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

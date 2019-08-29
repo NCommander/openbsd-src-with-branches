@@ -1,6 +1,6 @@
-/*	$OpenBSD: rkdwusb.c,v 1.1 2017/08/11 22:06:20 kettenis Exp $	*/
+/*	$OpenBSD: rkdwusb.c,v 1.2 2018/04/08 13:33:01 kettenis Exp $	*/
 /*
- * Copyright (c) 2017 Mark kettenis <kettenis@openbsd.org>
+ * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

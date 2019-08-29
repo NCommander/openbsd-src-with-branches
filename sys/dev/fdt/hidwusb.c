@@ -1,6 +1,6 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: hidwusb.c,v 1.1 2018/08/27 13:56:11 kettenis Exp $	*/
 /*
- * Copyright (c) 2017, 2018 Mark kettenis <kettenis@openbsd.org>
+ * Copyright (c) 2017, 2018 Mark Kettenis <kettenis@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
