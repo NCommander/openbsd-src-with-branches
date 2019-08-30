@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.25 2016/03/30 06:38:42 jmc Exp $
+#	$OpenBSD: Makefile,v 1.26 2017/07/09 15:32:09 espie Exp $
 #	$NetBSD: Makefile,v 1.3 1996/05/10 21:54:24 cgd Exp $
 
 LIB=	pcap
-MAN=	pcap.3 pcap-filter.3
+MAN=	pcap_open_live.3 pcap-filter.3
 
 DEFS=	-DHAVE_SYS_IOCCOM_H -DHAVE_SYS_SOCKIO_H -DHAVE_ETHER_HOSTTON \
 	-DHAVE_STRERROR -DHAVE_SOCKADDR_SA_LEN -DLBL_ALIGN -DHAVE_IFADDRS_H \
