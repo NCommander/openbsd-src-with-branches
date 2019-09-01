@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdoc_html.c,v 1.202 2019/01/18 14:36:16 schwarze Exp $ */
+/*	$OpenBSD: mdoc_html.c,v 1.203 2019/03/01 10:48:58 schwarze Exp $ */
 /*
  * Copyright (c) 2008-2011, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2014-2019 Ingo Schwarze <schwarze@openbsd.org>
@@ -1698,7 +1698,7 @@ mdoc_quote_pre(MDOC_ARGS)
 		/*
 		 * Give up on semantic markup for now.
 		 * We cannot use TAG_SPAN because .Oo may contain blocks.
-		 * We cannot use TAG_IDIV because we might be in a
+		 * We cannot use TAG_DIV because we might be in a
 		 * phrasing context (like .Dl or .Pp); we cannot
 		 * close out a .Pp at this point either because
 		 * that would break the line.
