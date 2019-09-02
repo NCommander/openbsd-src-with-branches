@@ -1,4 +1,4 @@
-/*	$OpenBSD: alloc.c,v 1.9 2015/09/14 17:34:03 semarie Exp $	*/
+/*	$OpenBSD: alloc.c,v 1.10 2016/03/14 23:08:05 krw Exp $	*/
 /*	$NetBSD: alloc.c,v 1.1 1997/04/16 20:29:16 thorpej Exp $	*/
 
 /*
@@ -195,7 +195,7 @@ free(void *ptr, unsigned size)
 }
 
 void
-freeall()
+freeall(void)
 {
 #ifdef __notyet__		/* Firmware bug ?! */
 	struct ml *m;
