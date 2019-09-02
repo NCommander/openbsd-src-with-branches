@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.126 2018/12/05 10:28:21 jsg Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.127 2019/05/05 13:28:14 visa Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -267,7 +267,7 @@ void	smp_rendezvous_cpus(unsigned long, void (*)(void *), void *arg);
 #define MAXCPUS				1
 #define curcpu()			(&cpu_info_primary)
 #define	CPU_IS_PRIMARY(ci)		1
-#define cpu_number()			0
+#define cpu_number()			0UL
 #define cpu_unidle(ci)
 #define get_cpu_info(i)			(&cpu_info_primary)
 #endif
