@@ -1,9 +1,8 @@
-/*	$OpenBSD: i386_installboot.c,v 1.31 2017/10/27 16:47:08 mpi Exp $	*/
+/*	$OpenBSD: i386_installboot.c,v 1.32 2019/06/28 13:32:48 deraadt Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
  * Copyright (c) 2011 Joel Sing <jsing@openbsd.org>
- * Copyright (c) 2010 Otto Moerbeek <otto@openbsd.org>
  * Copyright (c) 2003 Tom Cosgrove <tom.cosgrove@arches-consulting.com>
  * Copyright (c) 1997 Michael Shalayeff
  * Copyright (c) 1994 Paul Kranenburg
