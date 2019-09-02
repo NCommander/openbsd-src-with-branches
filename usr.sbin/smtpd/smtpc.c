@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpc.c,v 1.5 2019/05/15 05:02:43 eric Exp $	*/
+/*	$OpenBSD: smtpc.c,v 1.6 2019/07/02 09:36:20 martijn Exp $	*/
 
 /*
  * Copyright (c) 2018 Eric Faurot <eric@openbsd.org>
@@ -229,7 +229,7 @@ parse_server(char *server)
 	else if (!strcmp(scheme, "smtps")) {
 		params.tls_req = TLS_SMTPS;
 		if (port == NULL)
-			port = "submission";
+			port = "smtps";
 	}
 	else if (!strcmp(scheme, "smtp")) {
 	}
