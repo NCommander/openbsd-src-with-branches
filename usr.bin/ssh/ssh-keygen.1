@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ssh-keygen.1,v 1.162 2019/07/19 03:38:01 djm Exp $
+.\"	$OpenBSD: ssh-keygen.1,v 1.163 2019/09/03 08:34:19 djm Exp $
 .\"
 .\" Author: Tatu Ylonen <ylo@cs.hut.fi>
 .\" Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -35,7 +35,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: July 19 2019 $
+.Dd $Mdocdate: September 3 2019 $
 .Dt SSH-KEYGEN 1
 .Os
 .Sh NAME
@@ -986,7 +986,7 @@ Indicates that this key is accepted as a certificate authority (CA) and
 that certificates signed by this CA may be accepted for verification.
 .It Cm namespaces="namespace-list"
 Specifies a pattern-list of namespaces that are accepted for this key.
-If this option is present, the the signature namespace embedded in the
+If this option is present, the signature namespace embedded in the
 signature object and presented on the verification command-line must
 match the specified list before the key will be considered acceptable.
 .El
