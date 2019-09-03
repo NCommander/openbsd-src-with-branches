@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.78 2018/12/27 03:25:25 djm Exp $ */
+/* $OpenBSD: misc.h,v 1.79 2019/01/23 21:50:56 dtucker Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -44,6 +44,7 @@ struct ForwardOptions {
 /* misc.c */
 
 char	*chop(char *);
+void	skip_space(char **);
 char	*strdelim(char **);
 char	*strdelimw(char **);
 int	 set_nonblock(int);
