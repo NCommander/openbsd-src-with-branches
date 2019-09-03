@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.25 2016/05/06 13:12:52 schwarze Exp $	*/
+/*	$OpenBSD: vi.c,v 1.26 2019/06/28 05:35:34 deraadt Exp $	*/
 /*	$NetBSD: vi.c,v 1.33 2011/02/17 16:44:48 joerg Exp $	*/
 
 /*-
@@ -1027,7 +1027,7 @@ vi_histedit(EditLine *el, wint_t c __attribute__((__unused__)))
 		unlink(tempfile);
 		return CC_ERROR;
 	}
-	line = reallocarray(NULL, len, sizeof(*line));
+	line = reallocarray(NULL, len + 1, sizeof(*line));
 	if (line == NULL) {
 		close(fd);
 		unlink(tempfile);
