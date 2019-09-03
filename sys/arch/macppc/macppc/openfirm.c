@@ -1,4 +1,4 @@
-/*	$OpenBSD: openfirm.c,v 1.10 2007/11/12 19:23:26 kettenis Exp $	*/
+/*	$OpenBSD: openfirm.c,v 1.11 2015/03/31 10:36:52 mpi Exp $	*/
 /*	$NetBSD: openfirm.c,v 1.1 1996/09/30 16:34:52 ws Exp $	*/
 
 /*
@@ -313,7 +313,7 @@ OF_boot(char *bootspec)
 }
 
 void
-OF_exit()
+OF_exit(void)
 {
 	static struct {
 		char *name;
