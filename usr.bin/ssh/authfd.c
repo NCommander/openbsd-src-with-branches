@@ -1,4 +1,4 @@
-/* $OpenBSD: authfd.c,v 1.114 2019/06/21 04:21:04 djm Exp $ */
+/* $OpenBSD: authfd.c,v 1.115 2019/06/28 13:35:04 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -310,6 +310,8 @@ ssh_free_identitylist(struct ssh_identitylist *idl)
 		if (idl->comments != NULL)
 			free(idl->comments[i]);
 	}
+	free(idl->keys);
+	free(idl->comments);
 	free(idl);
 }
 
