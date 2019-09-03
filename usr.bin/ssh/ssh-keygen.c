@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.344 2019/09/03 08:34:19 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.345 2019/09/03 08:35:27 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2712,7 +2712,7 @@ usage(void)
 	    "       ssh-keygen -A\n"
 	    "       ssh-keygen -k -f krl_file [-u] [-s ca_public] [-z version_number]\n"
 	    "                  file ...\n"
-	    "       ssh-keygen -Q -f le file ...\n"
+	    "       ssh-keygen -Q -f krl_file file ...\n"
 	    "       ssh-keygen -Y sign -f sign_key -n namespace\n"
 	    "       ssh-keygen -Y verify -I signer_identity -s signature_file\n"
 	    "                  -n namespace -f allowed_keys [-r revoked_keys]\n");
