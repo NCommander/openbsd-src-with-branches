@@ -1,4 +1,4 @@
-/*	$OpenBSD: efidev.c,v 1.2 2016/05/20 11:53:19 kettenis Exp $	*/
+/*	$OpenBSD: efidev.c,v 1.3 2019/07/29 22:33:26 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -80,8 +80,6 @@ efid_io(int rw, efi_diskinfo_t ed, u_int off, int nsect, void *buf)
 		memcpy(buf, data, nsect * DEV_BSIZE);
 		break;
 	case F_WRITE:
-		if (ed->blkio->Media->ReadOnly)
-			goto on_eio;
 		if (ed->blkio->Media->ReadOnly)
 			goto on_eio;
 		memcpy(data, buf, nsect * DEV_BSIZE);
