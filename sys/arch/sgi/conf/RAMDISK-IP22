@@ -1,12 +1,10 @@
-#	$OpenBSD: RAMDISK-IP22,v 1.14 2015/07/17 22:52:29 tedu Exp $
+#	$OpenBSD: RAMDISK-IP22,v 1.15 2015/11/02 20:14:36 miod Exp $
 #
 # THIS KERNEL IS FOR INDIGO (IP20), INDY (IP22) AND INDIGO2 (IP24) SYSTEMS ONLY.
 
 machine		sgi mips64
 maxusers	4
 
-option		TIMEZONE=0
-option		DST=0
 option		SMALL_KERNEL
 option		NO_PROPOLICE
 option		BOOT_CONFIG

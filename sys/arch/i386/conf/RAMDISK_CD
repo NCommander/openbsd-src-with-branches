@@ -1,10 +1,8 @@
-#	$OpenBSD: RAMDISK_CD,v 1.238 2018/05/01 14:12:11 phessler Exp $
+#	$OpenBSD: RAMDISK_CD,v 1.239 2018/08/03 01:50:15 kevlo Exp $
 
 machine		i386
 maxusers	4
 
-option		TIMEZONE=0
-option		DST=0
 option		SMALL_KERNEL
 option		NO_PROPOLICE
 option		BOOT_CONFIG

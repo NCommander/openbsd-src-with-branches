@@ -1,10 +1,8 @@
-#	$OpenBSD: RAMDISKC,v 1.8 2015/07/17 22:52:28 tedu Exp $
+#	$OpenBSD: RAMDISKC,v 1.9 2015/09/19 10:41:05 miod Exp $
 
 machine		alpha
 maxusers	4
 
-option		TIMEZONE=0
-option		DST=0
 option		SMALL_KERNEL
 option		NO_PROPOLICE
 option		BOOT_CONFIG
