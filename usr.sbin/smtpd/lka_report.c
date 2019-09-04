@@ -1,4 +1,4 @@
-/*	$OpenBSD: lka_report.c,v 1.27 2019/08/29 07:23:18 martijn Exp $	*/
+/*	$OpenBSD: lka_report.c,v 1.28 2019/09/04 07:28:27 gilles Exp $	*/
 
 /*
  * Copyright (c) 2018 Gilles Chehade <gilles@poolp.org>
@@ -35,7 +35,7 @@
 #include "smtpd.h"
 #include "log.h"
 
-#define	PROTOCOL_VERSION	"0.2"
+#define	PROTOCOL_VERSION	"0.3"
 
 struct reporter_proc {
 	TAILQ_ENTRY(reporter_proc)	entries;
