@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ssh-keygen.1,v 1.163 2019/09/03 08:34:19 djm Exp $
+.\"	$OpenBSD: ssh-keygen.1,v 1.164 2019/09/03 08:35:27 djm Exp $
 .\"
 .\" Author: Tatu Ylonen <ylo@cs.hut.fi>
 .\" Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -712,8 +712,8 @@ The format of the allowed signers file is documented in the
 section below.
 A file containing revoked keys can be passed using the
 .Fl r
-flag. The revocation file may be a KRL or a one-per-line list
-of public keys.
+flag.
+The revocation file may be a KRL or a one-per-line list of public keys.
 Successful verification by an authorized signer is signalled by
 .Nm
 returning a zero exit status.
@@ -960,7 +960,7 @@ uses a simple list of identities and keys to determine whether a signature
 comes from an authorized source.
 This "allowed signers" file uses a format patterned after the
 AUTHORIZED_KEYS FILE FORMAT described in
-.Xr sshd(8) .
+.Xr sshd 8 .
 Each line of the file contains the following space-separated fields:
 principals, options, keytype, base64-encoded key.
 Empty lines and lines starting with a
