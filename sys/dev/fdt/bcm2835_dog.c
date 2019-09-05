@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2015 Patrick Wildt <patrick@blueri.se>
  *
