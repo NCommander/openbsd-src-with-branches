@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.7 2018/07/09 21:56:06 markus Exp $
+#	$OpenBSD: Makefile,v 1.8 2018/07/25 17:12:35 deraadt Exp $
 
 .PATH:		${.CURDIR}/..
 
-SRCS=	ssh-pkcs11-helper.c ssh-pkcs11.c
+SRCS=	ssh-pkcs11-helper.c ${SRCS_PKCS11}
 SRCS+=	atomicio.c compat.c fatal.c readpass.c
 SRCS+=	${SRCS_KEY} ${SRCS_UTL} ${SRCS_BASE}
 
