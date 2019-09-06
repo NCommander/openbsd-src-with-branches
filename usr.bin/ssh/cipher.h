@@ -1,4 +1,4 @@
-/* $OpenBSD: cipher.h,v 1.52 2017/05/07 23:12:57 djm Exp $ */
+/* $OpenBSD: cipher.h,v 1.53 2018/09/13 02:08:33 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -38,7 +38,9 @@
 #define CIPHER_H
 
 #include <sys/types.h>
+#ifdef WITH_OPENSSL
 #include <openssl/evp.h>
+#endif
 #include "cipher-chachapoly.h"
 #include "cipher-aesctr.h"
 

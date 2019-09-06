@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keyscan.c,v 1.128 2019/06/28 13:35:04 deraadt Exp $ */
+/* $OpenBSD: ssh-keyscan.c,v 1.129 2019/07/12 04:08:39 djm Exp $ */
 /*
  * Copyright 1995, 1996 by David Mazieres <dm@lcs.mit.edu>.
  *
@@ -13,7 +13,9 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#ifdef WITH_OPENSSL
 #include <openssl/bn.h>
+#endif
 
 #include <errno.h>
 #include <netdb.h>

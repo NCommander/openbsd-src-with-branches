@@ -1,4 +1,4 @@
-/* $OpenBSD: cipher.c,v 1.111 2018/02/23 15:58:37 markus Exp $ */
+/* $OpenBSD: cipher.c,v 1.112 2018/09/13 02:08:33 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -47,6 +47,9 @@
 #include "ssherr.h"
 #include "digest.h"
 
+#ifndef WITH_OPENSSL
+#define EVP_CIPHER_CTX void
+#endif
 
 struct sshcipher_ctx {
 	int	plaintext;
