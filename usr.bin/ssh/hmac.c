@@ -1,4 +1,4 @@
-/* $OpenBSD: hmac.c,v 1.11 2015/01/15 21:37:14 markus Exp $ */
+/* $OpenBSD: hmac.c,v 1.12 2015/03/24 20:03:44 markus Exp $ */
 /*
  * Copyright (c) 2014 Markus Friedl.  All rights reserved.
  *
@@ -17,6 +17,7 @@
 
 #include <sys/types.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "sshbuf.h"
 #include "digest.h"

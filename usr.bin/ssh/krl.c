@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $OpenBSD: krl.c,v 1.42 2018/09/12 01:21:34 djm Exp $ */
+/* $OpenBSD: krl.c,v 1.43 2019/06/21 04:21:04 djm Exp $ */
 
 #include <sys/types.h>
 #include <sys/tree.h>
@@ -26,6 +26,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "sshbuf.h"
 #include "ssherr.h"

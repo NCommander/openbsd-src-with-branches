@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-kbdint.c,v 1.8 2017/05/30 14:29:59 markus Exp $ */
+/* $OpenBSD: auth2-kbdint.c,v 1.9 2018/07/09 21:35:50 markus Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -24,6 +24,9 @@
  */
 
 #include <sys/types.h>
+
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "xmalloc.h"
 #include "packet.h"

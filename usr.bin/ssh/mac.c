@@ -1,4 +1,4 @@
-/* $OpenBSD: mac.c,v 1.33 2016/07/08 03:44:42 djm Exp $ */
+/* $OpenBSD: mac.c,v 1.34 2017/05/08 22:57:38 djm Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -27,6 +27,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "digest.h"
 #include "hmac.h"

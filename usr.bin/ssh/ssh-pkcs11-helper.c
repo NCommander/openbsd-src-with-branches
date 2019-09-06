@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-pkcs11-helper.c,v 1.18 2019/05/16 08:47:27 dtucker Exp $ */
+/* $OpenBSD: ssh-pkcs11-helper.c,v 1.19 2019/06/06 05:13:13 otto Exp $ */
 /*
  * Copyright (c) 2010 Markus Friedl.  All rights reserved.
  *
@@ -19,6 +19,7 @@
 #include <sys/queue.h>
 #include <sys/time.h>
 
+#include <stdlib.h>
 #include <errno.h>
 #include <poll.h>
 #include <stdarg.h>

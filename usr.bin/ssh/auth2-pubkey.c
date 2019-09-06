@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-pubkey.c,v 1.92 2019/09/03 08:29:58 djm Exp $ */
+/* $OpenBSD: auth2-pubkey.c,v 1.93 2019/09/03 08:30:47 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <paths.h>

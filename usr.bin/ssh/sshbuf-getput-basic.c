@@ -1,4 +1,4 @@
-/*	$OpenBSD: sshbuf-getput-basic.c,v 1.7 2017/06/01 04:51:58 djm Exp $	*/
+/*	$OpenBSD: sshbuf-getput-basic.c,v 1.8 2019/07/14 23:32:27 djm Exp $	*/
 /*
  * Copyright (c) 2011 Damien Miller
  *
@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "ssherr.h"
 #define SSHBUF_INTERNAL
