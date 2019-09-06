@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.138 2019/07/09 23:48:08 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.139 2019/08/02 07:41:13 visa Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -265,11 +265,11 @@ trap(struct trapframe *trapframe)
 		if (!uvm_map_inentry(p, &p->p_spinentry, PROC_STACK(p),
 		    "[%s]%d/%d sp=%lx inside %lx-%lx: not MAP_STACK\n",
 		    uvm_map_inentry_sp, p->p_vmspace->vm_map.sserial))
-			return;
+			goto out;
 	}
 
 	itsa(trapframe, ci, p, type);
-
+out:
 	if (type & T_USER)
 		userret(p);
 }
