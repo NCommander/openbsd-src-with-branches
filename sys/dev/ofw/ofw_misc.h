@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_misc.h,v 1.4 2019/08/28 07:03:51 kettenis Exp $	*/
+/*	$OpenBSD: ofw_misc.h,v 1.5 2019/09/07 13:27:23 patrick Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis
  *
@@ -69,5 +69,21 @@ void	i2c_register(struct i2c_bus *);
 
 struct i2c_controller *i2c_bynode(int);
 struct i2c_controller *i2c_byphandle(uint32_t);
+
+/* SFP support */
+
+struct if_sffpage;
+struct sfp_device {
+	int	sd_node;
+	void	*sd_cookie;
+	int	(*sd_get_sffpage)(void *, struct if_sffpage *);
+
+	LIST_ENTRY(sfp_device) sd_list;
+	uint32_t sd_phandle;
+};
+
+void	sfp_register(struct sfp_device *);
+
+int	sfp_get_sffpage(uint32_t, struct if_sffpage *);
 
 #endif /* _DEV_OFW_MISC_H_ */
