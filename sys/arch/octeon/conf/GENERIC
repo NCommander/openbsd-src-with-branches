@@ -78,6 +78,9 @@ wd*		at pciide? flags 0x0000
 octsctl*	at fdt?
 ahci*		at octsctl?
 
+# NVMe controllers
+nvme*		at pci?
+
 # USB Controllers
 dwctwo0 	at iobus? irq 56
 octuctl*	at fdt?
