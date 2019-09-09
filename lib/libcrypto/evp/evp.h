@@ -1085,9 +1085,13 @@ void EVP_PKEY_asn1_set_ctrl(EVP_PKEY_ASN1_METHOD *ameth,
 #define EVP_PKEY_OP_TYPE_GEN \
 		(EVP_PKEY_OP_PARAMGEN | EVP_PKEY_OP_KEYGEN)
 
-#define	 EVP_PKEY_CTX_set_signature_md(ctx, md)	\
-		EVP_PKEY_CTX_ctrl(ctx, -1, EVP_PKEY_OP_TYPE_SIG,  \
-					EVP_PKEY_CTRL_MD, 0, (void *)md)
+#define EVP_PKEY_CTX_set_signature_md(ctx, md) \
+		EVP_PKEY_CTX_ctrl(ctx, -1, EVP_PKEY_OP_TYPE_SIG, \
+		    EVP_PKEY_CTRL_MD, 0, (void *)md)
+
+#define EVP_PKEY_CTX_get_signature_md(ctx, pmd) \
+		EVP_PKEY_CTX_ctrl(ctx, -1, EVP_PKEY_OP_TYPE_SIG, \
+		    EVP_PKEY_CTRL_GET_MD, 0, (void *)(pmd))
 
 #define EVP_PKEY_CTRL_MD		1
 #define EVP_PKEY_CTRL_PEER_KEY		2
@@ -1109,6 +1113,8 @@ void EVP_PKEY_asn1_set_ctrl(EVP_PKEY_ASN1_METHOD *ameth,
 #define EVP_PKEY_CTRL_CMS_SIGN		11
 
 #define EVP_PKEY_CTRL_CIPHER		12
+
+#define EVP_PKEY_CTRL_GET_MD		13
 
 #define EVP_PKEY_ALG_CTRL		0x1000
 

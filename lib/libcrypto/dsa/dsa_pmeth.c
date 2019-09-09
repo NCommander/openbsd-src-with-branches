@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa_pmeth.c,v 1.10 2014/07/11 08:44:48 jsing Exp $ */
+/* $OpenBSD: dsa_pmeth.c,v 1.11 2017/01/29 17:49:22 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -212,6 +212,10 @@ pkey_dsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
 			return 0;
 		}
 		dctx->md = p2;
+		return 1;
+
+	case EVP_PKEY_CTRL_GET_MD:
+		*(const EVP_MD **)p2 = dctx->md;
 		return 1;
 
 	case EVP_PKEY_CTRL_DIGESTINIT:
