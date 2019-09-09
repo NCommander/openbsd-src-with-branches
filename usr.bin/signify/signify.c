@@ -1,4 +1,4 @@
-/* $OpenBSD: signify.c,v 1.131 2019/03/23 07:10:06 tedu Exp $ */
+/* $OpenBSD: signify.c,v 1.132 2019/07/03 03:24:02 deraadt Exp $ */
 /*
  * Copyright (c) 2013 Ted Unangst <tedu@openbsd.org>
  *
@@ -504,7 +504,7 @@ readpubkey(const char *pubkeyfile, struct pubkey *pubkey,
     const char *sigcomment, const char *keytype)
 {
 	const char *safepath = "/etc/signify";
-	char keypath[1024];
+	char keypath[PATH_MAX];
 
 	if (!pubkeyfile) {
 		pubkeyfile = strstr(sigcomment, VERIFYWITH);
