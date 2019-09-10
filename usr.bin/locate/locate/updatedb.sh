@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#	$OpenBSD: updatedb.sh,v 1.15 2019/08/30 02:49:35 kmos Exp $
+#	$OpenBSD: updatedb.sh,v 1.16 2019/08/31 16:03:28 kmos Exp $
 #
 # Copyright (c) September 1995 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
 # All rights reserved.
@@ -70,10 +70,12 @@ while test $# != 0; do
 	shift
 done
 
-FCODESDIR=$( dirname "${FCODES}" )
-if [ ! -w "${FCODESDIR}" ]; then
-	echo "$0: no permission to create $FCODES"
-	exit 1
+if [ "${FCODES}" != "-" ]; then
+	FCODESDIR=$( dirname "${FCODES}" )
+	if [ ! -w "${FCODESDIR}" ]; then
+		echo "$0: no permission to create $FCODES"
+		exit 1
+	fi
 fi
 
 case X"$SEARCHPATHS" in 
