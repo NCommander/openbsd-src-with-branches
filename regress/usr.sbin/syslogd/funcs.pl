@@ -1,4 +1,4 @@
-#	$OpenBSD: funcs.pl,v 1.34 2017/11/27 16:53:04 sthen Exp $
+#	$OpenBSD: funcs.pl,v 1.35 2018/05/22 15:01:16 bluhm Exp $
 
 # Copyright (c) 2010-2015 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -64,7 +64,7 @@ sub write_log {
 
 	write_message($self, $testlog);
 	IO::Handle::flush(\*STDOUT);
-	${$self->{syslogd}}->loggrep($testlog, 2);
+	${$self->{syslogd}}->loggrep($testlog, 4);
 	write_shutdown($self);
 }
 
@@ -76,7 +76,7 @@ sub write_between2logs {
 	$func->($self, @_);
 	write_message($self, $testlog);
 	IO::Handle::flush(\*STDOUT);
-	${$self->{syslogd}}->loggrep($testlog, 2);
+	${$self->{syslogd}}->loggrep($testlog, 4);
 	write_shutdown($self);
 }
 
