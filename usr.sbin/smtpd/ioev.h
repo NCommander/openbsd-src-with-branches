@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioev.h,v 1.16 2016/11/30 17:43:32 eric Exp $	*/
+/*	$OpenBSD: ioev.h,v 1.17 2019/06/12 17:42:53 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -58,7 +58,8 @@ int io_paused(struct io *, int);
 int io_write(struct io *, const void *, size_t);
 int io_writev(struct io *, const struct iovec *, int);
 int io_print(struct io *, const char *);
-int io_printf(struct io *, const char *, ...);
+int io_printf(struct io *, const char *, ...)
+    __attribute__((__format__ (printf, 2, 3)));
 int io_vprintf(struct io *, const char *, va_list);
 size_t io_queued(struct io *);
 
