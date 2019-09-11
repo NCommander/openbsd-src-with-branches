@@ -1,7 +1,7 @@
 #
 # Example configuration file.
 #
-# See unbound.conf(5) man page, version 1.9.2.
+# See unbound.conf(5) man page, version 1.9.3.
 #
 # this is a comment.
 
@@ -492,7 +492,7 @@ server:
 	# auto-trust-anchor-file: "@UNBOUND_ROOTKEY_FILE@"
 
 	# trust anchor signaling sends a RFC8145 key tag query after priming.
-	# trust-anchor-signaling: no
+	# trust-anchor-signaling: yes
 
 	# Root key trust anchor sentinel (draft-ietf-dnsop-kskroll-sentinel)
 	# root-key-sentinel: yes
@@ -653,6 +653,9 @@ server:
 	# local-zone: "b.e.f.ip6.arpa." nodefault
 	# local-zone: "8.b.d.0.1.0.0.2.ip6.arpa." nodefault
 	# And for 64.100.in-addr.arpa. to 127.100.in-addr.arpa.
+
+	# Add example.com into ipset
+	# local-zone: "example.com" ipset
 
 	# If unbound is running service for the local host then it is useful
 	# to perform lan-wide lookups to the upstream, and unblock the
@@ -992,3 +995,14 @@ remote-control:
 #     redis-server-port: 6379
 #     # timeout (in ms) for communication with the redis server
 #     redis-timeout: 100
+
+# IPSet
+# Add specify domain into set via ipset.
+# Note: To enable ipset needs run unbound as root user.
+# ipset:
+#     # set name for ip v4 addresses
+#     name-v4: "list-v4"
+#     # set name for ip v6 addresses
+#     name-v6: "list-v6"
+#
+

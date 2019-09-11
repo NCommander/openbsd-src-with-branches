@@ -1,9 +1,0 @@
-# $OpenBSD$
-# Bug in the cond parsing code
-
-TEST=Yes
-.for i in 0 1 2 3 4 5 6 7
-.  for j in 0 1 2 3 4 5 6
-.      if TEST
-.  endfor
-.endfor
