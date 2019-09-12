@@ -1,4 +1,4 @@
-.\"	$OpenBSD: bpf_mtap.9,v 1.13 2018/02/01 12:21:24 dlg Exp $
+.\"	$OpenBSD: bpf_mtap.9,v 1.14 2018/02/02 10:52:44 jmc Exp $
 .\"
 .\" Copyright (c) 2016 David Gwynne <dlg@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: February 1 2018 $
+.Dd $Mdocdate: February 2 2018 $
 .Dt BPF_MTAP 9
 .Os
 .Sh NAME
@@ -66,7 +66,7 @@
 .Ft int
 .Fo bpf_mtap_hdr
 .Fa "caddr_t bpf"
-.Fa "caddr_t hdr"
+.Fa "const void *hdr"
 .Fa "u_int hdrlen"
 .Fa "const struct mbuf *m"
 .Fa "u_int direction"
