@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.278 2019/08/28 15:17:23 krw Exp $	*/
+/*	$OpenBSD: sd.c,v 1.279 2019/09/01 15:03:32 krw Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -1759,7 +1759,7 @@ sd_get_parms(struct sd_softc *sc, struct disk_parms *dp, int flags)
 	/*
 	 * Many UMASS devices choke when asked about their geometry. Most
 	 * don't have a meaningful geometry anyway, so just fake it if
-	 * scsi_size() worked.
+	 * sd_size() worked.
 	 */
 	if ((link->flags & SDEV_UMASS) && (dp->disksize > 0))
 		goto validate;
