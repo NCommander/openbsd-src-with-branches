@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.39 2019/06/01 09:54:19 reyk Exp $	*/
+/*	$OpenBSD: config.c,v 1.40 2019/06/26 12:13:47 reyk Exp $	*/
 
 /*
  * Copyright (c) 2011 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -363,6 +363,13 @@ config_gettable(struct relayd *env, struct imsg *imsg)
 	sb = IMSG_DATA_SIZE(imsg) - s;
 	if (sb > 0) {
 		if ((tb->sendbuf = get_string(p + s, sb)) == NULL) {
+			free(tb);
+			return (-1);
+		}
+	}
+	if (tb->conf.check == CHECK_BINSEND_EXPECT) {
+		tb->sendbinbuf = string2binary(tb->sendbuf);
+		if (tb->sendbinbuf == NULL) {
 			free(tb);
 			return (-1);
 		}
