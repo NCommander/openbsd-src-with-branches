@@ -1,4 +1,4 @@
-.\"	$OpenBSD: vmctl.8,v 1.68 2019/05/31 23:12:08 jmc Exp $
+.\"	$OpenBSD: vmctl.8,v 1.69 2019/08/08 20:37:08 fcambus Exp $
 .\"
 .\" Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: May 31 2019 $
+.Dd $Mdocdate: August 8 2019 $
 .Dt VMCTL 8
 .Os
 .Sh NAME
@@ -361,7 +361,7 @@ with an entry in the host machine's
 .Pa /etc/pf.conf
 similar to the following:
 .Bd -literal -offset indent
-pass out on $ext_if from 100.64.0.0/10 to any nat-to $ext_if
+pass out on egress from 100.64.0.0/10 to any nat-to (egress)
 .Ed
 .Pp
 If desired, DNS queries originating from guest VMs can be redirected to a
