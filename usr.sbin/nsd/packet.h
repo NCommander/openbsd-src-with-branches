@@ -132,7 +132,7 @@ struct query;
 #define	ARCOUNT(packet)		(buffer_read_u16_at((packet), 10))
 #define ARCOUNT_SET(packet, c)	(buffer_write_u16_at((packet), 10, (c)))
 
-/* Miscelaneous limits */
+/* Miscellaneous limits */
 #define MAX_PACKET_SIZE         65535   /* Maximum supported size of DNS packets.  */
 
 #define	QIOBUFSZ		(MAX_PACKET_SIZE + MAX_RR_SIZE)
@@ -140,11 +140,13 @@ struct query;
 #define	MAXRRSPP		10240    /* Maximum number of rr's per packet */
 #define MAX_COMPRESSED_DNAMES	MAXRRSPP /* Maximum number of compressed domains. */
 #define MAX_COMPRESSION_OFFSET  16383	 /* Compression pointers are 14 bit. */
-#define IPV4_MINIMAL_RESPONSE_SIZE 1480	 /* Recommended minimal edns size for IPv4 */
+#define IPV4_MINIMAL_RESPONSE_SIZE 1460	 /* Recommended minimal edns size for IPv4 */
 #define IPV6_MINIMAL_RESPONSE_SIZE 1220	 /* Recommended minimal edns size for IPv6 */
 
 /* use round robin rotation */
 extern int round_robin;
+/* use minimal responses (more minimal, with additional only for referrals) */
+extern int minimal_responses;
 
 /*
  * Encode RR with OWNER as owner name into QUERY.  Returns the number

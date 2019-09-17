@@ -30,7 +30,7 @@ extern "C"
 #endif /* __cplusplus */
 
 /* these need to be global, otherwise they cannot be used inside yacc */
-extern config_parser_state_t* cfg_parser;
+extern config_parser_state_type* cfg_parser;
 
 #if 0
 #define OUTYY(s) printf s /* used ONLY when debugging */
@@ -51,14 +51,15 @@ extern config_parser_state_t* cfg_parser;
 %token VAR_CHROOT VAR_USERNAME VAR_ZONESDIR VAR_XFRDFILE VAR_DIFFFILE
 %token VAR_XFRD_RELOAD_TIMEOUT VAR_TCP_QUERY_COUNT VAR_TCP_TIMEOUT
 %token VAR_IPV4_EDNS_SIZE VAR_IPV6_EDNS_SIZE VAR_DO_IP4 VAR_DO_IP6
+%token VAR_TCP_MSS VAR_OUTGOING_TCP_MSS VAR_IP_FREEBIND
 %token VAR_ZONEFILE 
 %token VAR_ZONE
-%token VAR_ALLOW_NOTIFY VAR_REQUEST_XFR VAR_NOTIFY VAR_PROVIDE_XFR 
+%token VAR_ALLOW_NOTIFY VAR_REQUEST_XFR VAR_NOTIFY VAR_PROVIDE_XFR VAR_SIZE_LIMIT_XFR 
 %token VAR_NOTIFY_RETRY VAR_OUTGOING_INTERFACE VAR_ALLOW_AXFR_FALLBACK
 %token VAR_KEY
 %token VAR_ALGORITHM VAR_SECRET
 %token VAR_AXFR VAR_UDP
-%token VAR_VERBOSITY VAR_HIDE_VERSION
+%token VAR_VERBOSITY VAR_HIDE_VERSION VAR_HIDE_IDENTITY
 %token VAR_PATTERN VAR_INCLUDEPATTERN VAR_ZONELISTFILE
 %token VAR_REMOTE_CONTROL VAR_CONTROL_ENABLE VAR_CONTROL_INTERFACE
 %token VAR_CONTROL_PORT VAR_SERVER_KEY_FILE VAR_SERVER_CERT_FILE
@@ -67,13 +68,23 @@ extern config_parser_state_t* cfg_parser;
 %token VAR_RRL_IPV4_PREFIX_LENGTH VAR_RRL_IPV6_PREFIX_LENGTH
 %token VAR_RRL_WHITELIST_RATELIMIT VAR_RRL_WHITELIST
 %token VAR_ZONEFILES_CHECK VAR_ZONEFILES_WRITE VAR_LOG_TIME_ASCII
-%token VAR_ROUND_ROBIN VAR_ZONESTATS VAR_REUSEPORT
+%token VAR_ROUND_ROBIN VAR_ZONESTATS VAR_REUSEPORT VAR_VERSION
+%token VAR_MAX_REFRESH_TIME VAR_MIN_REFRESH_TIME
+%token VAR_MAX_RETRY_TIME VAR_MIN_RETRY_TIME
+%token VAR_MULTI_MASTER_CHECK VAR_MINIMAL_RESPONSES VAR_REFUSE_ANY
+%token VAR_USE_SYSTEMD VAR_DNSTAP VAR_DNSTAP_ENABLE VAR_DNSTAP_SOCKET_PATH
+%token VAR_DNSTAP_SEND_IDENTITY VAR_DNSTAP_SEND_VERSION VAR_DNSTAP_IDENTITY
+%token VAR_DNSTAP_VERSION VAR_DNSTAP_LOG_AUTH_QUERY_MESSAGES
+%token VAR_DNSTAP_LOG_AUTH_RESPONSE_MESSAGES
+%token VAR_TLS_SERVICE_KEY VAR_TLS_SERVICE_OCSP VAR_TLS_SERVICE_PEM VAR_TLS_PORT
+%token VAR_SEND_BUFFER_SIZE VAR_RECEIVE_BUFFER_SIZE
+%token VAR_TCP_REJECT_OVERFLOW
 
 %%
 toplevelvars: /* empty */ | toplevelvars toplevelvar ;
 toplevelvar: serverstart contents_server | zonestart contents_zone | 
 	keystart contents_key | patternstart contents_pattern |
-	rcstart contents_rc;
+	rcstart contents_rc | dtstart contents_dt;
 
 /* server: declaration */
 serverstart: VAR_SERVER
@@ -93,25 +104,31 @@ content_server: server_ip_address | server_ip_transparent | server_debug_mode | 
 	server_tcp_query_count | server_tcp_timeout | server_ipv4_edns_size |
 	server_ipv6_edns_size | server_verbosity | server_hide_version |
 	server_zonelistfile | server_xfrdir |
+	server_tcp_mss | server_outgoing_tcp_mss |
 	server_rrl_size | server_rrl_ratelimit | server_rrl_slip | 
 	server_rrl_ipv4_prefix_length | server_rrl_ipv6_prefix_length | server_rrl_whitelist_ratelimit |
 	server_zonefiles_check | server_do_ip4 | server_do_ip6 |
 	server_zonefiles_write | server_log_time_ascii | server_round_robin |
-	server_reuseport;
+	server_reuseport | server_version | server_ip_freebind |
+	server_tls_service_key | server_tls_service_pem | server_tls_port |
+	server_minimal_responses | server_refuse_any | server_use_systemd |
+	server_hide_identity | server_tls_service_ocsp |
+	server_send_buffer_size | server_receive_buffer_size |
+	server_tcp_reject_overflow;
 server_ip_address: VAR_IP_ADDRESS STRING 
 	{ 
 		OUTYY(("P(server_ip_address:%s)\n", $2)); 
 		if(cfg_parser->current_ip_address_option) {
 			cfg_parser->current_ip_address_option->next = 
-				(ip_address_option_t*)region_alloc(
-				cfg_parser->opt->region, sizeof(ip_address_option_t));
+				(ip_address_option_type*)region_alloc(
+				cfg_parser->opt->region, sizeof(ip_address_option_type));
 			cfg_parser->current_ip_address_option = 
 				cfg_parser->current_ip_address_option->next;
 			cfg_parser->current_ip_address_option->next=0;
 		} else {
 			cfg_parser->current_ip_address_option = 
-				(ip_address_option_t*)region_alloc(
-				cfg_parser->opt->region, sizeof(ip_address_option_t));
+				(ip_address_option_type*)region_alloc(
+				cfg_parser->opt->region, sizeof(ip_address_option_type));
 			cfg_parser->current_ip_address_option->next=0;
 			cfg_parser->opt->ip_addresses = cfg_parser->current_ip_address_option;
 		}
@@ -128,12 +145,43 @@ server_ip_transparent: VAR_IP_TRANSPARENT STRING
 		else cfg_parser->opt->ip_transparent = (strcmp($2, "yes")==0);
 	}
 	;
+server_ip_freebind: VAR_IP_FREEBIND STRING
+	{
+		OUTYY(("P(server_ip_freebind:%s)\n", $2));
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
+			yyerror("expected yes or no.");
+		else cfg_parser->opt->ip_freebind = (strcmp($2, "yes")==0);
+	}
+	;
+server_send_buffer_size: VAR_SEND_BUFFER_SIZE STRING
+	{
+		int sz = atoi($2);
+		OUTYY(("P(server_send_buffer_size:%s)\n", $2));
+		if(sz < 0)
+			yyerror("non-negative number expected");
+		else cfg_parser->opt->send_buffer_size = sz;
+	}
+	;
+server_receive_buffer_size: VAR_RECEIVE_BUFFER_SIZE STRING
+	{
+		int sz = atoi($2);
+		OUTYY(("P(server_receive_buffer_size:%s)\n", $2));
+		if(sz < 0)
+			yyerror("non-negative number expected");
+		else cfg_parser->opt->receive_buffer_size = sz;
+	}
+	;
 server_debug_mode: VAR_DEBUG_MODE STRING 
 	{ 
 		OUTYY(("P(server_debug_mode:%s)\n", $2)); 
 		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
 			yyerror("expected yes or no.");
 		else cfg_parser->opt->debug_mode = (strcmp($2, "yes")==0);
+	}
+	;
+server_use_systemd: VAR_USE_SYSTEMD STRING 
+	{ 
+		OUTYY(("P(server_use_systemd:%s)\n", $2)); 
 	}
 	;
 server_verbosity: VAR_VERBOSITY STRING 
@@ -150,6 +198,14 @@ server_hide_version: VAR_HIDE_VERSION STRING
 		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
 			yyerror("expected yes or no.");
 		else cfg_parser->opt->hide_version = (strcmp($2, "yes")==0);
+	}
+	;
+server_hide_identity: VAR_HIDE_IDENTITY STRING 
+	{ 
+		OUTYY(("P(server_hide_identity:%s)\n", $2)); 
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
+			yyerror("expected yes or no.");
+		else cfg_parser->opt->hide_identity = (strcmp($2, "yes")==0);
 	}
 	;
 server_ip4_only: VAR_IP4_ONLY STRING 
@@ -215,6 +271,12 @@ server_identity: VAR_IDENTITY STRING
 		cfg_parser->opt->identity = region_strdup(cfg_parser->opt->region, $2);
 	}
 	;
+server_version: VAR_VERSION STRING
+	{ 
+		OUTYY(("P(server_version:%s)\n", $2)); 
+		cfg_parser->opt->version = region_strdup(cfg_parser->opt->region, $2);
+	}
+	;
 server_nsid: VAR_NSID STRING
 	{ 
 		unsigned char* nsid = 0;
@@ -273,6 +335,27 @@ server_round_robin: VAR_ROUND_ROBIN STRING
 		}
 	}
 	;
+server_minimal_responses: VAR_MINIMAL_RESPONSES STRING 
+	{ 
+		OUTYY(("P(server_minimal_responses:%s)\n", $2)); 
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
+			yyerror("expected yes or no.");
+		else {
+			cfg_parser->opt->minimal_responses = (strcmp($2, "yes")==0);
+			minimal_responses = cfg_parser->opt->minimal_responses;
+		}
+	}
+	;
+server_refuse_any: VAR_REFUSE_ANY STRING 
+	{ 
+		OUTYY(("P(server_refuse_any:%s)\n", $2)); 
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
+			yyerror("expected yes or no.");
+		else {
+			cfg_parser->opt->refuse_any = (strcmp($2, "yes")==0);
+		}
+	}
+	;
 server_server_count: VAR_SERVER_COUNT STRING
 	{ 
 		OUTYY(("P(server_server_count:%s)\n", $2)); 
@@ -287,6 +370,17 @@ server_tcp_count: VAR_TCP_COUNT STRING
 		if(atoi($2) <= 0)
 			yyerror("number greater than zero expected");
 		else cfg_parser->opt->tcp_count = atoi($2);
+	}
+	;
+server_tcp_reject_overflow: VAR_TCP_REJECT_OVERFLOW STRING
+	{
+		OUTYY(("P(server_reject_overflow_tcp:%s)\n", $2));
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0) {
+			yyerror("tcp-reject-overflow: expected yes or no.");
+		} else {
+			cfg_parser->opt->tcp_reject_overflow =
+				(strcmp($2, "yes")==0);
+		}
 	}
 	;
 server_pidfile: VAR_PIDFILE STRING
@@ -373,6 +467,22 @@ server_tcp_timeout: VAR_TCP_TIMEOUT STRING
 		if(atoi($2) == 0 && strcmp($2, "0") != 0)
 			yyerror("number expected");
 		cfg_parser->opt->tcp_timeout = atoi($2);
+	}
+	;
+server_tcp_mss: VAR_TCP_MSS STRING
+	{
+		OUTYY(("P(server_tcp_mss:%s)\n", $2));
+		if(atoi($2) == 0 && strcmp($2, "0") != 0)
+			yyerror("number expected");
+		cfg_parser->opt->tcp_mss = atoi($2);
+	}
+	;
+server_outgoing_tcp_mss: VAR_OUTGOING_TCP_MSS STRING
+	{
+		OUTYY(("P(server_outgoing_tcp_mss:%s)\n", $2));
+		if(atoi($2) == 0 && strcmp($2, "0") != 0)
+			yyerror("number expected");
+		cfg_parser->opt->outgoing_tcp_mss = atoi($2);
 	}
 	;
 server_ipv4_edns_size: VAR_IPV4_EDNS_SIZE STRING
@@ -463,7 +573,30 @@ server_zonefiles_write: VAR_ZONEFILES_WRITE STRING
 		else cfg_parser->opt->zonefiles_write = atoi($2);
 	}
 	;
-
+server_tls_service_key: VAR_TLS_SERVICE_KEY STRING
+	{
+		OUTYY(("P(server_tls_service_key:%s)\n", $2));
+		cfg_parser->opt->tls_service_key = region_strdup(cfg_parser->opt->region, $2);
+	}
+	;
+server_tls_service_ocsp: VAR_TLS_SERVICE_OCSP STRING
+	{
+		OUTYY(("P(server_tls_service_ocsp:%s)\n", $2));
+		cfg_parser->opt->tls_service_ocsp = region_strdup(cfg_parser->opt->region, $2);
+	}
+	;
+server_tls_service_pem: VAR_TLS_SERVICE_PEM STRING
+	{
+		OUTYY(("P(server_tls_service_pem:%s)\n", $2));
+		cfg_parser->opt->tls_service_pem = region_strdup(cfg_parser->opt->region, $2);
+	}
+	;
+server_tls_port: VAR_TLS_PORT STRING
+	{
+		OUTYY(("P(server_tls_port:%s)\n", $2));
+		cfg_parser->opt->tls_port = region_strdup(cfg_parser->opt->region, $2);
+	}
+	;
 rcstart: VAR_REMOTE_CONTROL
 	{
 		OUTYY(("\nP(remote-control:)\n"));
@@ -493,11 +626,18 @@ rc_control_port: VAR_CONTROL_PORT STRING
 	;
 rc_control_interface: VAR_CONTROL_INTERFACE STRING
 	{
-		ip_address_option_t* o = (ip_address_option_t*)region_alloc(
-			cfg_parser->opt->region, sizeof(ip_address_option_t));
+		ip_address_option_type* last = NULL;
+		ip_address_option_type* o = (ip_address_option_type*)region_alloc(
+			cfg_parser->opt->region, sizeof(ip_address_option_type));
 		OUTYY(("P(control_interface:%s)\n", $2));
-		o->next = cfg_parser->opt->control_interface;
-		cfg_parser->opt->control_interface = o;
+		/* append at end */
+		last = cfg_parser->opt->control_interface;
+		while(last && last->next)
+			last = last->next;
+		if(last == NULL)
+			cfg_parser->opt->control_interface = o;
+		else	last->next = o;
+		o->next = NULL;
 		o->address = region_strdup(cfg_parser->opt->region, $2);
 	}
 	;
@@ -523,6 +663,79 @@ rc_control_cert_file: VAR_CONTROL_CERT_FILE STRING
 	{
 	OUTYY(("P(rc_control_cert_file:%s)\n", $2));
 	cfg_parser->opt->control_cert_file = region_strdup(cfg_parser->opt->region, $2);
+	}
+	;
+
+/* dnstap: declaration */
+dtstart: VAR_DNSTAP
+	{
+		OUTYY(("\nP(dnstap:)\n"));
+	}
+	;
+contents_dt: contents_dt content_dt
+	| ;
+content_dt: dt_dnstap_enable | dt_dnstap_socket_path |
+	dt_dnstap_send_identity | dt_dnstap_send_version |
+	dt_dnstap_identity | dt_dnstap_version |
+	dt_dnstap_log_auth_query_messages |
+	dt_dnstap_log_auth_response_messages
+	;
+dt_dnstap_enable: VAR_DNSTAP_ENABLE STRING
+	{
+		OUTYY(("P(dt_dnstap_enable:%s)\n", $2));
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
+			yyerror("expected yes or no.");
+		else cfg_parser->opt->dnstap_enable = (strcmp($2, "yes")==0);
+	}
+	;
+dt_dnstap_socket_path: VAR_DNSTAP_SOCKET_PATH STRING
+	{
+		OUTYY(("P(dt_dnstap_socket_path:%s)\n", $2));
+		cfg_parser->opt->dnstap_socket_path = region_strdup(cfg_parser->opt->region, $2);
+	}
+	;
+dt_dnstap_send_identity: VAR_DNSTAP_SEND_IDENTITY STRING
+	{
+		OUTYY(("P(dt_dnstap_send_identity:%s)\n", $2));
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
+			yyerror("expected yes or no.");
+		else cfg_parser->opt->dnstap_send_identity = (strcmp($2, "yes")==0);
+	}
+	;
+dt_dnstap_send_version: VAR_DNSTAP_SEND_VERSION STRING
+	{
+		OUTYY(("P(dt_dnstap_send_version:%s)\n", $2));
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
+			yyerror("expected yes or no.");
+		else cfg_parser->opt->dnstap_send_version = (strcmp($2, "yes")==0);
+	}
+	;
+dt_dnstap_identity: VAR_DNSTAP_IDENTITY STRING
+	{
+		OUTYY(("P(dt_dnstap_identity:%s)\n", $2));
+		cfg_parser->opt->dnstap_identity = region_strdup(cfg_parser->opt->region, $2);
+	}
+	;
+dt_dnstap_version: VAR_DNSTAP_VERSION STRING
+	{
+		OUTYY(("P(dt_dnstap_version:%s)\n", $2));
+		cfg_parser->opt->dnstap_version = region_strdup(cfg_parser->opt->region, $2);
+	}
+	;
+dt_dnstap_log_auth_query_messages: VAR_DNSTAP_LOG_AUTH_QUERY_MESSAGES STRING
+	{
+		OUTYY(("P(dt_dnstap_log_auth_query_messages:%s)\n", $2));
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
+			yyerror("expected yes or no.");
+		else cfg_parser->opt->dnstap_log_auth_query_messages = (strcmp($2, "yes")==0);
+	}
+	;
+dt_dnstap_log_auth_response_messages: VAR_DNSTAP_LOG_AUTH_RESPONSE_MESSAGES STRING
+	{
+		OUTYY(("P(dt_dnstap_log_auth_response_messages:%s)\n", $2));
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
+			yyerror("expected yes or no.");
+		else cfg_parser->opt->dnstap_log_auth_response_messages = (strcmp($2, "yes")==0);
 	}
 	;
 
@@ -566,7 +779,9 @@ content_pattern: pattern_name | zone_config_item;
 zone_config_item: zone_zonefile | zone_allow_notify | zone_request_xfr |
 	zone_notify | zone_notify_retry | zone_provide_xfr | 
 	zone_outgoing_interface | zone_allow_axfr_fallback | include_pattern |
-	zone_rrl_whitelist | zone_zonestats;
+	zone_rrl_whitelist | zone_zonestats | zone_max_refresh_time |
+	zone_min_refresh_time | zone_max_retry_time | zone_min_retry_time |
+	zone_size_limit_xfr | zone_multi_master_check;
 pattern_name: VAR_NAME STRING
 	{ 
 		OUTYY(("P(pattern_name:%s)\n", $2)); 
@@ -669,7 +884,7 @@ zone_zonestats: VAR_ZONESTATS STRING
 	;
 zone_allow_notify: VAR_ALLOW_NOTIFY STRING STRING
 	{ 
-		acl_options_t* acl = parse_acl_info(cfg_parser->opt->region, $2, $3);
+		acl_options_type* acl = parse_acl_info(cfg_parser->opt->region, $2, $3);
 		OUTYY(("P(allow_notify:%s %s)\n", $2, $3)); 
 		if(cfg_parser->current_allow_notify)
 			cfg_parser->current_allow_notify->next = acl;
@@ -682,9 +897,17 @@ zone_request_xfr: VAR_REQUEST_XFR zone_request_xfr_data
 	{
 	}
 	;
+zone_size_limit_xfr: VAR_SIZE_LIMIT_XFR STRING
+	{ 
+		OUTYY(("P(size_limit_xfr:%s)\n", $2)); 
+		if(atoll($2) < 0)
+			yyerror("number >= 0 expected");
+		else cfg_parser->current_pattern->size_limit_xfr = atoll($2);
+	}
+	;
 zone_request_xfr_data: STRING STRING
 	{ 
-		acl_options_t* acl = parse_acl_info(cfg_parser->opt->region, $1, $2);
+		acl_options_type* acl = parse_acl_info(cfg_parser->opt->region, $1, $2);
 		OUTYY(("P(request_xfr:%s %s)\n", $1, $2)); 
 		if(acl->blocked) c_error("blocked address used for request-xfr");
 		if(acl->rangetype!=acl_range_single) c_error("address range used for request-xfr");
@@ -696,7 +919,7 @@ zone_request_xfr_data: STRING STRING
 	}
 	| VAR_AXFR STRING STRING
 	{ 
-		acl_options_t* acl = parse_acl_info(cfg_parser->opt->region, $2, $3);
+		acl_options_type* acl = parse_acl_info(cfg_parser->opt->region, $2, $3);
 		acl->use_axfr_only = 1;
 		OUTYY(("P(request_xfr:%s %s)\n", $2, $3)); 
 		if(acl->blocked) c_error("blocked address used for request-xfr");
@@ -709,7 +932,7 @@ zone_request_xfr_data: STRING STRING
 	}
 	| VAR_UDP STRING STRING
 	{ 
-		acl_options_t* acl = parse_acl_info(cfg_parser->opt->region, $2, $3);
+		acl_options_type* acl = parse_acl_info(cfg_parser->opt->region, $2, $3);
 		acl->allow_udp = 1;
 		OUTYY(("P(request_xfr:%s %s)\n", $2, $3)); 
 		if(acl->blocked) c_error("blocked address used for request-xfr");
@@ -723,7 +946,7 @@ zone_request_xfr_data: STRING STRING
 	;
 zone_notify: VAR_NOTIFY STRING STRING
 	{ 
-		acl_options_t* acl = parse_acl_info(cfg_parser->opt->region, $2, $3);
+		acl_options_type* acl = parse_acl_info(cfg_parser->opt->region, $2, $3);
 		OUTYY(("P(notify:%s %s)\n", $2, $3)); 
 		if(acl->blocked) c_error("blocked address used for notify");
 		if(acl->rangetype!=acl_range_single) c_error("address range used for notify");
@@ -747,7 +970,7 @@ zone_notify_retry: VAR_NOTIFY_RETRY STRING
 	;
 zone_provide_xfr: VAR_PROVIDE_XFR STRING STRING
 	{ 
-		acl_options_t* acl = parse_acl_info(cfg_parser->opt->region, $2, $3);
+		acl_options_type* acl = parse_acl_info(cfg_parser->opt->region, $2, $3);
 		OUTYY(("P(provide_xfr:%s %s)\n", $2, $3)); 
 		if(cfg_parser->current_provide_xfr)
 			cfg_parser->current_provide_xfr->next = acl;
@@ -758,7 +981,7 @@ zone_provide_xfr: VAR_PROVIDE_XFR STRING STRING
 	;
 zone_outgoing_interface: VAR_OUTGOING_INTERFACE STRING
 	{ 
-		acl_options_t* acl = parse_acl_info(cfg_parser->opt->region, $2, "NOKEY");
+		acl_options_type* acl = parse_acl_info(cfg_parser->opt->region, $2, "NOKEY");
 		OUTYY(("P(outgoing_interface:%s)\n", $2)); 
 		if(acl->rangetype!=acl_range_single) c_error("address range used for outgoing interface");
 		if(cfg_parser->current_outgoing_interface)
@@ -787,6 +1010,53 @@ zone_rrl_whitelist: VAR_RRL_WHITELIST STRING
 #endif
 	}
 	;
+zone_max_refresh_time: VAR_MAX_REFRESH_TIME STRING
+{
+	OUTYY(("P(zone_max_refresh_time:%s)\n", $2));
+	if(atoi($2) == 0 && strcmp($2, "0") != 0)
+		yyerror("number expected");
+	else {
+		cfg_parser->current_pattern->max_refresh_time = atoi($2);
+		cfg_parser->current_pattern->max_refresh_time_is_default = 0;
+	}
+};
+zone_min_refresh_time: VAR_MIN_REFRESH_TIME STRING
+{
+	OUTYY(("P(zone_min_refresh_time:%s)\n", $2));
+	if(atoi($2) == 0 && strcmp($2, "0") != 0)
+		yyerror("number expected");
+	else {
+		cfg_parser->current_pattern->min_refresh_time = atoi($2);
+		cfg_parser->current_pattern->min_refresh_time_is_default = 0;
+	}
+};
+zone_max_retry_time: VAR_MAX_RETRY_TIME STRING
+{
+	OUTYY(("P(zone_max_retry_time:%s)\n", $2));
+	if(atoi($2) == 0 && strcmp($2, "0") != 0)
+		yyerror("number expected");
+	else {
+		cfg_parser->current_pattern->max_retry_time = atoi($2);
+		cfg_parser->current_pattern->max_retry_time_is_default = 0;
+	}
+};
+zone_min_retry_time: VAR_MIN_RETRY_TIME STRING
+{
+	OUTYY(("P(zone_min_retry_time:%s)\n", $2));
+	if(atoi($2) == 0 && strcmp($2, "0") != 0)
+		yyerror("number expected");
+	else {
+		cfg_parser->current_pattern->min_retry_time = atoi($2);
+		cfg_parser->current_pattern->min_retry_time_is_default = 0;
+	}
+};
+zone_multi_master_check: VAR_MULTI_MASTER_CHECK STRING
+	{
+		OUTYY(("P(zone_multi_master_check:%s)\n", $2));
+		if(strcmp($2, "yes") != 0 && strcmp($2, "no") != 0)
+			yyerror("expected yes or no.");
+		else cfg_parser->current_pattern->multi_master_check = (strcmp($2, "yes")==0);
+	}
 
 /* key: declaration */
 keystart: VAR_KEY
@@ -799,6 +1069,7 @@ keystart: VAR_KEY
 			key_options_insert(cfg_parser->opt, cfg_parser->current_key);
 		}
 		cfg_parser->current_key = key_options_create(cfg_parser->opt->region);
+		cfg_parser->current_key->algorithm = region_strdup(cfg_parser->opt->region, "sha256");
 	}
 	;
 contents_key: contents_key content_key | content_key;
@@ -823,6 +1094,8 @@ key_algorithm: VAR_ALGORITHM STRING
 #ifndef NDEBUG
 		assert(cfg_parser->current_key);
 #endif
+		if(cfg_parser->current_key->algorithm)
+			region_recycle(cfg_parser->opt->region, cfg_parser->current_key->algorithm, strlen(cfg_parser->current_key->algorithm)+1);
 		cfg_parser->current_key->algorithm = region_strdup(cfg_parser->opt->region, $2);
 		if(tsig_get_algorithm_by_name($2) == NULL)
 			c_error_msg("Bad tsig algorithm %s", $2);

@@ -166,7 +166,7 @@ handle_timeouts(struct event_base* base, struct timeval* now,
 	wait->tv_sec = (time_t)-1;
 #endif
 
-	while((rbnode_t*)(p = (struct event*)rbtree_first(base->times))
+	while((rbnode_type*)(p = (struct event*)rbtree_first(base->times))
 		!=RBTREE_NULL) {
 #ifndef S_SPLINT_S
 		if(p->ev_timeout.tv_sec > now->tv_sec ||
@@ -304,8 +304,7 @@ event_base_free(struct event_base* base)
 {
 	if(!base)
 		return;
-	if(base->times)
-		free(base->times);
+	/* base->times is allocated in region and is freed with the region */
 	if(base->fds)
 		free(base->fds);
 	if(base->signals)
@@ -362,7 +361,7 @@ event_add(struct event* ev, struct timeval* tv)
 		struct timeval* now = ev->ev_base->time_tv;
 		ev->ev_timeout.tv_sec = tv->tv_sec + now->tv_sec;
 		ev->ev_timeout.tv_usec = tv->tv_usec + now->tv_usec;
-		while(ev->ev_timeout.tv_usec > 1000000) {
+		while(ev->ev_timeout.tv_usec >= 1000000) {
 			ev->ev_timeout.tv_usec -= 1000000;
 			ev->ev_timeout.tv_sec++;
 		}

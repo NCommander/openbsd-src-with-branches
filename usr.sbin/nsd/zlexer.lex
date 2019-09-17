@@ -7,6 +7,14 @@
  * See LICENSE for the license.
  *
  */
+/* because flex keeps having sign-unsigned compare problems that are unfixed*/
+#if defined(__clang__)||(defined(__GNUC__)&&((__GNUC__ >4)||(defined(__GNUC_MINOR__)&&(__GNUC__ ==4)&&(__GNUC_MINOR__ >=2))))
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
+/* ignore fallthrough warnings in the generated parse code case statements */
+#if defined(__clang__)||(defined(__GNUC__)&&(__GNUC__ >=7))
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#endif
 
 #include "config.h"
 
@@ -58,6 +66,10 @@ push_parser_state(FILE *input)
 static void
 pop_parser_state(void)
 {
+	if (parser->filename)
+		region_recycle(parser->region, (void *)parser->filename,
+			strlen(parser->filename)+1);
+
 	--include_stack_ptr;
 	parser->filename = zparser_stack[include_stack_ptr].filename;
 	parser->line = zparser_stack[include_stack_ptr].line;
@@ -81,6 +93,16 @@ parser_pop_stringbuf(void)
 	yy_delete_buffer(YY_CURRENT_BUFFER);
 	yy_switch_to_buffer(oldstate);
 	oldstate = NULL;
+}
+
+	static int paren_open = 0;
+	static enum lexer_state lexer_state = EXPECT_OWNER;
+void
+parser_flush(void)
+{
+	YY_FLUSH_BUFFER;
+	paren_open = 0;
+	lexer_state = EXPECT_OWNER;
 }
 
 #ifndef yy_set_bol /* compat definition, for flex 2.4.6 */
@@ -119,8 +141,6 @@ ANY     [^\"\n\\]|\\.
 %x	incl bitlabel quotedstring
 
 %%
-	static int paren_open = 0;
-	static enum lexer_state lexer_state = EXPECT_OWNER;
 {SPACE}*{COMMENT}.*	/* ignore */
 ^{DOLLAR}TTL            { lexer_state = PARSING_RDATA; return DOLLAR_TTL; }
 ^{DOLLAR}ORIGIN         { lexer_state = PARSING_RDATA; return DOLLAR_ORIGIN; }
@@ -131,8 +151,9 @@ ANY     [^\"\n\\]|\\.
 	 */
 ^{DOLLAR}INCLUDE        {
 	BEGIN(incl);
+	/* ignore case statement fallthrough on incl<EOF> flex rule */
 }
-<incl>\n 		|
+<incl>\n		|
 <incl><<EOF>>		{
 	int error_occurred = parser->error_occurred;
 	BEGIN(INITIAL);

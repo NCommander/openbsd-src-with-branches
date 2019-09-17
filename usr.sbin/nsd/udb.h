@@ -165,7 +165,9 @@ struct udb_glob_d {
 	volatile uint64_t rb_size;
 	/** segment of move rollback, for an XL chunk that overlaps. */
 	volatile uint64_t rb_seg;
-	/** linked list for content-listing, 0 if empty */
+	/** linked list for content-listing, 0 if empty;
+	 * this pointer is unused; and could be removed if the database
+	 * format is modified or updated. */
 	udb_rel_ptr content_list;
 	/** user global data pointer */
 	udb_rel_ptr user_global;
@@ -342,7 +344,7 @@ struct udb_alloc {
 /** magic string that starts an UDB file, uint64_t, note first byte=0, to mark
  * header start as a chunk. */
 #define UDB_MAGIC (((uint64_t)'u'<<48)|((uint64_t)'d'<<40)|((uint64_t)'b' \
-	<<32)|((uint64_t)'v'<<24)|((uint64_t)'0'<<16)|((uint64_t)'a'<<8))
+	<<32)|((uint64_t)'v'<<24)|((uint64_t)'0'<<16)|((uint64_t)'b'<<8))
 
 /* UDB BASE */
 /**

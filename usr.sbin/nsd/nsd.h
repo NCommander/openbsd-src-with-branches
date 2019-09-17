@@ -11,6 +11,9 @@
 #define	_NSD_H_
 
 #include <signal.h>
+#ifdef HAVE_OPENSSL_SSL_H
+#include <openssl/ssl.h>
+#endif
 
 #include "dns.h"
 #include "edns.h"
@@ -18,6 +21,9 @@ struct netio_handler;
 struct nsd_options;
 struct udb_base;
 struct daemon_remote;
+#ifdef USE_DNSTAP
+struct dt_collector;
+#endif
 
 /* The NSD runtime states and NSD ipc command values */
 #define	NSD_RUN	0
@@ -73,7 +79,7 @@ struct daemon_remote;
 
 #ifdef BIND8_STATS
 /* Counter for statistics */
-typedef	unsigned long stc_t;
+typedef	unsigned long stc_type;
 
 #define	LASTELEM(arr)	(sizeof(arr) / sizeof(arr[0]) - 1)
 
@@ -146,7 +152,7 @@ struct nsd_child
 	struct netio_handler* handler;
 
 #ifdef	BIND8_STATS
-	stc_t query_count;
+	stc_type query_count;
 #endif
 };
 
@@ -184,7 +190,11 @@ struct	nsd
 
 	/* mmaps with data exchange from xfrd and reload */
 	struct udb_base* task[2];
-	int mytask; /* the base used by this process */
+	int mytask;
+	/* the base used by this (child)process */
+	struct event_base* event_base;
+	/* the server_region used by this (child)process */
+	region_type* server_region;
 	struct netio_handler* xfrd_listener;
 	struct daemon_remote* rc;
 
@@ -223,6 +233,8 @@ struct	nsd
 	int current_tcp_count;
 	int tcp_query_count;
 	int tcp_timeout;
+	int tcp_mss;
+	int outgoing_tcp_mss;
 	size_t ipv4_edns_size;
 	size_t ipv6_edns_size;
 
@@ -231,14 +243,15 @@ struct	nsd
 	struct nsdst {
 		time_t	boot;
 		int	period;		/* Produce statistics dump every st_period seconds */
-		stc_t	qtype[257];	/* Counters per qtype */
-		stc_t	qclass[4];	/* Class IN or Class CH or other */
-		stc_t	qudp, qudp6;	/* Number of queries udp and udp6 */
-		stc_t	ctcp, ctcp6;	/* Number of tcp and tcp6 connections */
-		stc_t	rcode[17], opcode[6]; /* Rcodes & opcodes */
+		stc_type qtype[257];	/* Counters per qtype */
+		stc_type qclass[4];	/* Class IN or Class CH or other */
+		stc_type qudp, qudp6;	/* Number of queries udp and udp6 */
+		stc_type ctcp, ctcp6;	/* Number of tcp and tcp6 connections */
+		stc_type ctls, ctls6;	/* Number of tls and tls6 connections */
+		stc_type rcode[17], opcode[6]; /* Rcodes & opcodes */
 		/* Dropped, truncated, queries for nonconfigured zone, tx errors */
-		stc_t	dropped, truncated, wrongzone, txerr, rxerr;
-		stc_t 	edns, ednserr, raxfr, nona;
+		stc_type dropped, truncated, wrongzone, txerr, rxerr;
+		stc_type edns, ednserr, raxfr, nona;
 		uint64_t db_disk, db_mem;
 	} st;
 	/* per zone stats, each an array per zone-stat-idx, stats per zone is
@@ -254,12 +267,24 @@ struct	nsd
 	/* current zonestat array to use */
 	struct nsdst* zonestatnow;
 #endif /* BIND8_STATS */
+#ifdef USE_DNSTAP
+	/* the dnstap collector process info */
+	struct dt_collector* dt_collector;
+	/* the pipes from server processes to the dt_collector,
+	 * arrays of size child_count.  Kept open for (re-)forks. */
+	int *dt_collector_fd_send, *dt_collector_fd_recv;
+#endif /* USE_DNSTAP */
 	/* ratelimit for errors, time value */
 	time_t err_limit_time;
 	/* ratelimit for errors, packet count */
 	unsigned int err_limit_count;
 
 	struct nsd_options* options;
+
+#ifdef HAVE_SSL
+	/* TLS specific configuration */
+	SSL_CTX *tls_ctx;
+#endif
 };
 
 extern struct nsd nsd;
@@ -276,9 +301,10 @@ int server_init(struct nsd *nsd);
 int server_prepare(struct nsd *nsd);
 void server_main(struct nsd *nsd);
 void server_child(struct nsd *nsd);
-void server_shutdown(struct nsd *nsd);
+void server_shutdown(struct nsd *nsd) ATTR_NORETURN;
 void server_close_all_sockets(struct nsd_socket sockets[], size_t n);
 struct event_base* nsd_child_event_base(void);
+void service_remaining_tcp(struct nsd* nsd);
 /* extra domain numbers for temporary domains */
 #define EXTRA_DOMAIN_NUMBERS 1024
 #define SLOW_ACCEPT_TIMEOUT 2 /* in seconds */
@@ -295,6 +321,11 @@ void server_prepare_xfrd(struct nsd *nsd);
 void server_start_xfrd(struct nsd *nsd, int del_db, int reload_active);
 /* send SOA serial numbers to xfrd */
 void server_send_soa_xfrd(struct nsd *nsd, int shortsoa);
+#ifdef HAVE_SSL
+SSL_CTX* server_tls_ctx_setup(char* key, char* pem, char* verifypem);
+SSL_CTX* server_tls_ctx_create(struct nsd *nsd, char* verifypem, char* ocspfile);
+void perform_openssl_init(void);
+#endif
 ssize_t block_read(struct nsd* nsd, int s, void* p, ssize_t sz, int timeout);
 
 #endif	/* _NSD_H_ */
