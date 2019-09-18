@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmp.h,v 1.1 2019/08/09 06:17:59 martijn Exp $	*/
+/*	$OpenBSD: usm.h,v 1.1 2019/09/18 09:48:14 martijn Exp $	*/
 
 /*
  * Copyright (c) 2019 Martijn van Duren <martijn@openbsd.org>
@@ -18,6 +18,15 @@
 
 #include "snmp.h"
 
+enum usm_key_level {
+	USM_KEY_UNSET = 0,
+	USM_KEY_PASSWORD,
+	USM_KEY_MASTER,
+	USM_KEY_LOCALIZED
+};
+
 struct snmp_sec *usm_init(const char *, size_t);
+int usm_setauth(struct snmp_sec *, const EVP_MD *, const char *, size_t,
+    enum usm_key_level);
 int usm_setengineid(struct snmp_sec *, char *, size_t);
 int usm_setbootstime(struct snmp_sec *, uint32_t, uint32_t);
