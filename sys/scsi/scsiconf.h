@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.h,v 1.171 2019/08/28 15:17:23 krw Exp $	*/
+/*	$OpenBSD: scsiconf.h,v 1.172 2019/09/01 15:03:32 krw Exp $	*/
 /*	$NetBSD: scsiconf.h,v 1.35 1997/04/02 02:29:38 mycroft Exp $	*/
 
 /*
@@ -524,6 +524,7 @@ int	scsi_activate(struct scsibus_softc *, int, int, int);
 struct scsi_link *	scsi_get_link(struct scsibus_softc *, int, int);
 
 #define SID_ANSII_REV(x)	((x)->version & SID_ANSII)
+#define SID_RESPONSE_FORMAT(x)	((x)->response_format & SID_RESPONSE_DATA_FMT)
 
 #define SCSI_REV_0	0x00	/* No conformance to any standard. */
 #define SCSI_REV_1	0x01	/* (Obsolete) SCSI-1 in olden times. */
