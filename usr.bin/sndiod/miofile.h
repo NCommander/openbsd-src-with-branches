@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: miofile.h,v 1.1 2012/11/23 07:03:28 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -25,6 +25,7 @@ struct port_mio {
 };
 
 int  port_mio_open(struct port *);
+int  port_mio_reopen(struct port *);
 void port_mio_close(struct port *);
 
 #endif /* !defined(MIOFILE_H) */
