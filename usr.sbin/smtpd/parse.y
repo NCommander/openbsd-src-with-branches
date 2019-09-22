@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.261 2019/09/06 08:23:56 martijn Exp $	*/
+/*	$OpenBSD: parse.y,v 1.262 2019/09/20 17:46:05 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -542,8 +542,8 @@ srs:
 SRS KEY STRING {
 	conf->sc_srs_key = $3;
 }
-SRS KEY BACKUP STRING {
-	conf->sc_srs_key_backup = $3;
+| SRS KEY BACKUP STRING {
+	conf->sc_srs_key_backup = $4;
 }
 | SRS TTL STRING {
 	conf->sc_srs_ttl = delaytonum($3);
