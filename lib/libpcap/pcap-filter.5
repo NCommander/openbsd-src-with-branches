@@ -1,4 +1,4 @@
-.\"     $OpenBSD$
+.\"     $OpenBSD: pcap-filter.5,v 1.1 2019/09/25 16:59:00 jmc Exp $
 .\"
 .\" Copyright (c) 1987, 1988, 1989, 1990, 1991, 1992, 1994, 1995, 1996, 1997
 .\"	The Regents of the University of California.  All rights reserved.
@@ -20,7 +20,7 @@
 .\" WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
 .\" MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: September 25 2019 $
 .Dt PCAP-FILTER 5
 .Os
 .Sh NAME
@@ -32,11 +32,11 @@ compiles pcap filters for software such as
 .Xr tcpdump 8 .
 The resulting filter program can then be applied to
 some stream of packets to determine which packets will be supplied to
-.Fn pcap_loop ,
-.Fn pcap_dispatch ,
-.Fn pcap_next ,
+.Xr pcap_loop 3 ,
+.Xr pcap_dispatch 3 ,
+.Xr pcap_next 3 ,
 or
-.Fn pcap_next_ex .
+.Xr pcap_next_ex 3 .
 .Pp
 The filter expression consists of one or more
 .Em primitives .
