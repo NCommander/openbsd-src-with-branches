@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.c,v 1.21 2019/05/14 14:51:31 florian Exp $	*/
+/*	$OpenBSD: frontend.c,v 1.22 2019/06/28 13:32:46 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -1009,8 +1009,12 @@ parse_dhcp_lease(int fd)
 			if (**tok != '\0')
 				tok++;
 		}
+		if (toks[0] == NULL)
+			continue;
 		*tok = NULL;
 		if (strcmp(toks[0], "option") == 0) {
+			if (toks[1] == NULL || toks[2] == NULL)
+				continue;
 			if (strcmp(toks[1], "domain-name-servers") == 0) {
 				if((p = strchr(toks[2], ';')) != NULL) {
 					*p='\0';
@@ -1025,6 +1029,8 @@ parse_dhcp_lease(int fd)
 				}
 			}
 		} else if (strcmp(toks[0], "epoch") == 0) {
+			if (toks[1] == NULL)
+				continue;
 			if((p = strchr(toks[1], ';')) != NULL) {
 				*p='\0';
 				epoch = strtonum(toks[1], 0,
