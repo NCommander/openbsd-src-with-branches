@@ -1,4 +1,4 @@
-/* $OpenBSD: window-tree.c,v 1.39 2019/05/28 07:18:42 nicm Exp $ */
+/* $OpenBSD: window-tree.c,v 1.40 2019/08/16 11:49:12 nicm Exp $ */
 
 /*
  * Copyright (c) 2017 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -269,7 +269,7 @@ window_tree_cmp_pane(const void *a0, const void *b0)
 		result = (*a)->id - (*b)->id;
 	}
 	if (window_tree_sort->reversed)
-		result *= -1;
+		result = -result;
 	return (result);
 }
 
