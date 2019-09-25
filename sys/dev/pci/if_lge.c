@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lge.c,v 1.72 2016/04/13 10:34:32 mpi Exp $	*/
+/*	$OpenBSD: if_lge.c,v 1.73 2017/01/22 10:17:38 dlg Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -626,7 +626,7 @@ lge_newbuf(struct lge_softc *sc, struct lge_rx_desc *c, struct mbuf *m)
 	struct mbuf		*m_new = NULL;
 
 	if (m == NULL) {
-		m_new = MCLGETI(NULL, LGE_JLEN, NULL, M_DONTWAIT);
+		m_new = MCLGETI(NULL, M_DONTWAIT, NULL, LGE_JLEN);
 		if (m_new == NULL)
 			return (ENOBUFS);
 	} else {
