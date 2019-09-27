@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_scanner.h,v 1.9 2001/06/22 14:35:43 deraadt Exp $	*/
+/*	$OpenBSD: scsi_scanner.h,v 1.10 2005/12/10 01:30:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1995 Kenneth Stailey.  All rights reserved.
@@ -34,8 +34,8 @@
  * SCSI scanner interface description
  */
 
-#ifndef	_SCSI_SCANNER_H_
-#define _SCSI_SCANNER_H_
+#ifndef	_SCSI_SCSI_SCANNER_H
+#define _SCSI_SCSI_SCANNER_H
 
 /* SCSI scanner commands */
 #define GET_IMAGE_STATUS	0x0f
@@ -132,4 +132,4 @@ struct scsi_window_data {
 #define MUSTEK_ADF		0x10	/* ADF and backtracking selection */
 #define MUSTEK_LUT		0x55	/* look up table download */
 
-#endif /* _SCSI_SCANNER_H_ */
+#endif /* _SCSI_SCSI_SCANNER_H */
