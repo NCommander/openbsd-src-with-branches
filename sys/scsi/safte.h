@@ -1,4 +1,4 @@
-/*	$OpenBSD: safte.h,v 1.5 2005/08/22 04:23:58 david Exp $ */
+/*	$OpenBSD: safte.h,v 1.6 2006/01/08 06:28:42 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -29,7 +29,7 @@ struct safte_inq {
 	u_int8_t	revision[4];
 #ifdef notyet
 	u_int8_t	reserved[2];
-#endif
+#endif /* notyet */
 } __packed;
 #define SAFTE_INQ_LEN		54
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.h,v 1.24 2009/12/13 03:31:13 dlg Exp $	*/
+/*	$OpenBSD: cd.h,v 1.25 2009/12/16 10:51:28 dlg Exp $	*/
 /*	$NetBSD: scsi_cd.h,v 1.6 1996/03/19 03:06:39 mycroft Exp $	*/
 
 /*
@@ -270,4 +270,4 @@ struct scsi_read_dvd_structure_data {
 	u_int8_t	data[2048];
 };
 
-#endif
+#endif /* _SCSI_CD_H */
