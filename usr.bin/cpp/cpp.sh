@@ -1,5 +1,5 @@
 #!/bin/ksh
-#	$OpenBSD: cpp.sh,v 1.8 2010/05/03 18:34:01 drahn Exp $
+#	$OpenBSD: cpp.sh,v 1.9 2013/12/09 02:35:09 guenther Exp $
 
 #
 # Copyright (c) 1990 The Regents of the University of California.
@@ -39,7 +39,7 @@
 #	specifies -traditional
 #	doesn't search gcc-include
 #
-PATH=/usr/bin:/bin
+PATH=/usr/bin:/bin:/usr/sbin:/sbin
 TRAD=-traditional
 DGNUC="@GNUC@"
 STDINC="-I/usr/include"

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $OpenBSD: rmgroup.sh,v 1.1 1996/12/08 13:57:08 downsj Exp $
+# $OpenBSD: rmgroup.sh,v 1.2 1998/07/16 16:47:41 millert Exp $
 #
 # Copyright (c) 1996 Wolfram Schneider <wosch@FreeBSD.org>. Berlin.
 # All rights reserved.
@@ -8,7 +8,7 @@
 #
 # $From: rmgroup.sh,v 1.1 1996/10/30 20:58:47 wosch Exp $
 
-PATH=/bin:/usr/bin; export PATH
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 db=/etc/group
 
 case "$1" in
