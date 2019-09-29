@@ -1,4 +1,4 @@
-/*	$OpenBSD: sd.c,v 1.282 2019/09/20 15:35:42 krw Exp $	*/
+/*	$OpenBSD: sd.c,v 1.283 2019/09/27 17:22:31 krw Exp $	*/
 /*	$NetBSD: sd.c,v 1.111 1997/04/02 02:29:41 mycroft Exp $	*/
 
 /*-
@@ -766,7 +766,7 @@ sd_buf_done(struct scsi_xfer *xs)
 	case XS_SENSE:
 	case XS_SHORTSENSE:
 #ifdef SCSIDEBUG
-		scsi_sense_print_debug(xs);
+		scsi_show_sense(xs);
 #endif /* SCSIDEBUG */
 		error = sd_interpret_sense(xs);
 		if (error == 0) {
