@@ -1,4 +1,4 @@
-/*	$OpenBSD: sypwr.c,v 1.1 2017/12/31 11:13:59 kettenis Exp $	*/
+/*	$OpenBSD: sypwr.c,v 1.2 2018/08/03 21:07:34 kettenis Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -56,7 +56,7 @@ struct cfdriver sypwr_cd = {
 uint8_t	sypwr_read(struct sypwr_softc *, int);
 void	sypwr_write(struct sypwr_softc *, int, uint8_t);
 uint32_t sypwr_get_voltage(void *);
-int	sypwr_set_voltage(void *, uint32_t voltage);
+int	sypwr_set_voltage(void *, uint32_t);
 
 int
 sypwr_match(struct device *parent, void *match, void *aux)
