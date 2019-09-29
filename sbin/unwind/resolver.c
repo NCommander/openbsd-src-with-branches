@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.c,v 1.41 2019/05/23 15:09:17 florian Exp $	*/
+/*	$OpenBSD: resolver.c,v 1.42 2019/05/23 15:11:58 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -899,7 +899,7 @@ free_resolver(struct uw_resolver *res)
 		return;
 
 	log_debug("%s: [%p] ref_cnt: %d", __func__, res, res->ref_cnt);
-	
+
 	if (res->ref_cnt > 0)
 		res->stop = 1;
 	else {
