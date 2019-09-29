@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldomd.c,v 1.7 2016/08/28 00:51:48 guenther Exp $	*/
+/*	$OpenBSD: ldomd.c,v 1.8 2019/09/28 16:12:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -25,6 +25,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
 #include <string.h>
 #include <syslog.h>
 #include <time.h>
