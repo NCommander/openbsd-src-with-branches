@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.c,v 1.157 2018/07/12 15:51:50 mpi Exp $ */
+/*	$OpenBSD: ip_esp.c,v 1.158 2018/08/28 15:15:02 mpi Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -767,7 +767,7 @@ esp_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp, int skip,
 				hdr.flags |= M_AUTH;
 
 			bpf_mtap_hdr(encif->if_bpf, (char *)&hdr,
-			    ENC_HDRLEN, m, BPF_DIRECTION_OUT, NULL);
+			    ENC_HDRLEN, m, BPF_DIRECTION_OUT);
 		}
 	}
 #endif
