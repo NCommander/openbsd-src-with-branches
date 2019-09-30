@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.c,v 1.53 2018/02/25 01:45:01 guenther Exp $	*/
+/*	$OpenBSD: cpufunc.c,v 1.54 2018/06/04 22:10:58 kettenis Exp $	*/
 /*	$NetBSD: cpufunc.c,v 1.65 2003/11/05 12:53:15 scw Exp $	*/
 
 /*
@@ -423,7 +423,6 @@ armv7_setup()
 	cpu_auxcontrol(auxctrlmask, auxctrl);
 
 	/* Set the control register */
-	curcpu()->ci_ctrl = cpuctrl;
 	cpu_control(cpuctrlmask, cpuctrl);
 
 	/* And again. */
