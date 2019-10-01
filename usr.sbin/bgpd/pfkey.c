@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.58 2019/06/25 21:32:08 benno Exp $ */
+/*	$OpenBSD: pfkey.c,v 1.59 2019/09/30 12:10:38 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -805,6 +805,7 @@ pfkey_init(void)
 	return (pfkey_fd);
 }
 
+/* verify that connection is using TCP MD5UM if required by config */
 int
 tcp_md5_check(int fd, struct peer *p)
 {
@@ -830,6 +831,7 @@ tcp_md5_check(int fd, struct peer *p)
 	return 0;
 }
 
+/* enable or set TCP MD5SIG on a new client connection */
 int
 tcp_md5_set(int fd, struct peer *p)
 {
@@ -850,8 +852,9 @@ tcp_md5_set(int fd, struct peer *p)
 	return 0;
 }
 
+/* enable or prepare a new listening socket for TCP MD5SIG usage */
 int
-tcp_md5_listen(struct listen_addr *la, struct peer_head *p)
+tcp_md5_prep_listener(struct listen_addr *la, struct peer_head *p)
 {
 	int opt = 1;
 
@@ -865,4 +868,16 @@ tcp_md5_listen(struct listen_addr *la, struct peer_head *p)
 		return -1;
 	}
 	return 0;
+}
+
+/* add md5 key to all listening sockets, dummy function for portable */
+void
+tcp_md5_add_listener(struct bgpd_config *conf, struct peer *p)
+{
+}
+
+/* delete md5 key form all listening sockets, dummy function for portable */
+void
+tcp_md5_del_listener(struct bgpd_config *conf, struct peer *p)
+{
 }
