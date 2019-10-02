@@ -1,4 +1,4 @@
-#	$OpenBSD $
+#	$OpenBSD$
 
 MAN=	sysupgrade.8
 
