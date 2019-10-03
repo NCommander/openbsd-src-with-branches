@@ -1,4 +1,4 @@
-/*	$OpenBSD: table_proc.c,v 1.14 2018/12/27 09:30:29 eric Exp $	*/
+/*	$OpenBSD: table_proc.c,v 1.15 2018/12/27 14:23:41 eric Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -165,7 +165,8 @@ table_proc_close(struct table *table)
 	struct table_proc_priv	*priv = table->t_handle;
 
 	imsg_compose(&priv->ibuf, PROC_TABLE_CLOSE, 0, 0, -1, NULL, 0);
-	imsg_flush(&priv->ibuf);
+	if (imsg_flush(&priv->ibuf) == -1)
+		fatal("imsg_flush");
 
 	table->t_handle = NULL;
 }
