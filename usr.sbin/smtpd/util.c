@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.148 2019/09/29 10:03:49 gilles Exp $	*/
+/*	$OpenBSD: util.c,v 1.149 2019/09/30 08:31:41 martijn Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Markus Friedl.  All rights reserved.
@@ -781,6 +781,7 @@ getmailname(char *hostname, size_t len)
 
 	if (strlcpy(hostname, res->ai_canonname, len) >= len) {
 		fprintf(stderr, "hostname too long");
+		freeaddrinfo(res);
 		return -1;
 	}
 
