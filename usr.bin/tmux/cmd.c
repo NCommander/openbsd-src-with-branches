@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd.c,v 1.153 2019/07/06 20:56:34 nicm Exp $ */
+/* $OpenBSD: cmd.c,v 1.154 2019/08/29 07:13:48 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -385,7 +385,7 @@ cmd_find(const char *name, char **cause)
 {
 	const struct cmd_entry	**loop, *entry, *found = NULL;
 	int			  ambiguous;
-	char			  s[BUFSIZ];
+	char			  s[8192];
 
 	ambiguous = 0;
 	for (loop = cmd_table; *loop != NULL; loop++) {
