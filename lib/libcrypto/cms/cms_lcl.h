@@ -1,4 +1,4 @@
-/* $OpenBSD: cms_lcl.h,v 1.10 2019/08/11 10:15:30 jsing Exp $ */
+/* $OpenBSD: cms_lcl.h,v 1.11 2019/08/11 10:26:04 jsing Exp $ */
 /*
  * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
@@ -170,6 +170,8 @@ struct CMS_EncryptedContentInfo_st {
 	size_t keylen;
 	/* Set to 1 if we are debugging decrypt and don't fake keys for MMA */
 	int debug;
+	/* Set to 1 if we have no cert and need exta safety measures for MMA */
+	int havenocert;
 };
 
 struct CMS_RecipientInfo_st {
