@@ -1,4 +1,4 @@
-/* $OpenBSD: moduli.c,v 1.34 2019/01/23 09:49:00 dtucker Exp $ */
+/* $OpenBSD: moduli.c,v 1.35 2019/07/03 03:24:02 deraadt Exp $ */
 /*
  * Copyright 1994 Phil Karn <karn@qualcomm.com>
  * Copyright 1996-1998, 2003 William Allen Simpson <wsimpson@greendragon.com>
@@ -153,6 +153,8 @@ qfileout(FILE * ofile, u_int32_t otype, u_int32_t otests, u_int32_t otries,
 
 	time(&time_now);
 	gtm = gmtime(&time_now);
+	if (gtm == NULL)
+		return -1;
 
 	res = fprintf(ofile, "%04d%02d%02d%02d%02d%02d %u %u %u %u %x ",
 	    gtm->tm_year + 1900, gtm->tm_mon + 1, gtm->tm_mday,
