@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ether.h,v 1.28 2017/11/17 18:21:33 jca Exp $ */
+/*	$OpenBSD: ip_ether.h,v 1.29 2019/10/04 04:52:40 dlg Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@adk.gr)
  *
@@ -106,8 +106,6 @@ etheripstat_pkt(enum etheripstat_counters pcounter,
 {
 	counters_pkt(etheripcounters, pcounter, bcounter, v);
 }
-
-struct tdb;	/* XXX within #ifdef MPLS? */
 
 #endif /* _KERNEL */
 #endif /* _NETINET_IP_ETHER_H_ */
