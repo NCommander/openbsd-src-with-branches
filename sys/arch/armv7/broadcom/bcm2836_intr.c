@@ -1,4 +1,4 @@
-/* $OpenBSD: bcm2836_intr.c,v 1.2 2016/08/07 18:43:17 kettenis Exp $ */
+/* $OpenBSD: bcm2836_intr.c,v 1.3 2017/04/30 16:45:45 mpi Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2015 Patrick Wildt <patrick@blueri.se>
@@ -525,7 +525,7 @@ bcm_intc_intr_establish(int irqno, int level, int (*func)(void *),
 	ih = malloc(sizeof *ih, M_DEVBUF, M_WAITOK);
 	ih->ih_fun = func;
 	ih->ih_arg = arg;
-	ih->ih_ipl = level;
+	ih->ih_ipl = level & IPL_IRQMASK;
 	ih->ih_irq = irqno;
 	ih->ih_name = name;
 
