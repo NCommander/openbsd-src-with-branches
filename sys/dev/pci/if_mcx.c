@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mcx.c,v 1.34 2019/09/30 01:53:05 dlg Exp $ */
+/*	$OpenBSD: if_mcx.c,v 1.35 2019/09/30 10:38:55 dlg Exp $ */
 
 /*
  * Copyright (c) 2017 David Gwynne <dlg@openbsd.org>
@@ -1946,7 +1946,7 @@ struct mcx_softc {
 	struct mcx_dmamem	 sc_doorbell_mem;
 
 	int			 sc_eqn;
-	int			 sc_eq_cons;
+	uint32_t		 sc_eq_cons;
 	struct mcx_dmamem	 sc_eq_mem;
 	int			 sc_hardmtu;
 
