@@ -1,4 +1,4 @@
-/*	$OpenBSD: video.c,v 1.40 2016/07/03 20:05:44 mglocker Exp $	*/
+/*	$OpenBSD: video.c,v 1.41 2017/10/11 08:08:50 mpi Exp $	*/
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -182,7 +182,7 @@ videoread(dev_t dev, struct uio *uio, int ioflag)
 
 	if (sc->sc_frames_ready < 1) {
 		/* block userland read until a frame is ready */
-		error = tsleep(sc, PWAIT | PCATCH, "vid_rd", 0);
+		error = tsleep_nsec(sc, PWAIT | PCATCH, "vid_rd", INFSLP);
 		if (sc->sc_dying)
 			error = EIO;
 		if (error)
