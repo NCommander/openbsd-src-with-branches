@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_acct.c,v 1.39 2019/07/03 22:39:33 cheloha Exp $	*/
+/*	$OpenBSD: kern_acct.c,v 1.40 2019/08/15 07:29:21 anton Exp $	*/
 /*	$NetBSD: kern_acct.c,v 1.42 1996/02/04 02:15:12 christos Exp $	*/
 
 /*-
@@ -118,7 +118,7 @@ sys_acct(struct proc *p, void *v, register_t *retval)
 	 * writing and make sure it's 'normal'.
 	 */
 	if (SCARG(uap, path) != NULL) {
-		NDINIT(&nd, LOOKUP, NOFOLLOW, UIO_USERSPACE, SCARG(uap, path),
+		NDINIT(&nd, 0, 0, UIO_USERSPACE, SCARG(uap, path),
 		    p);
 		if ((error = vn_open(&nd, FWRITE|O_APPEND, 0)) != 0)
 			return (error);
