@@ -1,4 +1,4 @@
-/* $OpenBSD: xlights.c,v 1.7 2015/06/24 11:58:06 mpi Exp $ */
+/* $OpenBSD: xlights.c,v 1.8 2017/09/08 05:36:52 deraadt Exp $ */
 /*
  * Copyright (c) 2007 Gordon Willem Klok <gwk@openbsd,org>
  *
@@ -266,8 +266,8 @@ xlights_theosDOT(void *v)
 				} else {
 					xlights_startdma(sc);
 					while (sc->sc_dmasts)
-						tsleep(sc->sc_buf, PWAIT,
-						    "blinken", 0);
+						tsleep_nsec(sc->sc_buf, PWAIT,
+						    "blinken", INFSLP);
 					p = sc->sc_buf;
 				}
 			}
