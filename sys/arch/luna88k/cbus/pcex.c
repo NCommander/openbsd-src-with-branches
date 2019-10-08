@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcex.c,v 1.2 2014/12/28 13:03:18 aoyama Exp $	*/
+/*	$OpenBSD: pcex.c,v 1.3 2015/02/18 22:42:04 aoyama Exp $	*/
 
 /*
  * Copyright (c) 2014 Kenji Aoyama.
@@ -194,12 +194,12 @@ pcex_wait_int(struct pcex_softc *sc, u_int level)
 	if (sc->intr_use[level] == 0)
 		return EINVAL;	/* Not registered */
 
-	ret = tsleep(&(sc->intr_use[level]), PWAIT | PCATCH, "pcex",
-	    hz /* XXX: 1 sec. */);
+	ret = tsleep_nsec(&(sc->intr_use[level]), PWAIT | PCATCH, "pcex",
+	    SEC_TO_NSEC(1));	/* XXX 1 sec. */
 
 #ifdef PCEX_DEBUG
 	if (ret == EWOULDBLOCK)
-		printf("pcex_wait_int: timeout in tsleep\n");
+		printf("pcex_wait_int: timeout in tsleep_nsec\n");
 #endif
 	return ret;
 }
