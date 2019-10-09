@@ -1,4 +1,4 @@
-/* $OpenBSD: sshkey-xmss.c,v 1.4 2019/06/27 18:03:37 deraadt Exp $ */
+/* $OpenBSD: sshkey-xmss.c,v 1.5 2019/06/28 13:35:04 deraadt Exp $ */
 /*
  * Copyright (c) 2017 Markus Friedl.  All rights reserved.
  *
@@ -971,7 +971,8 @@ sshkey_xmss_decrypt_state(const struct sshkey *k, struct sshbuf *encoded,
 		goto out;
 	}
 	/* check that an appropriate amount of auth data is present */
-	if (sshbuf_len(encoded) < encrypted_len + authlen) {
+	if (sshbuf_len(encoded) < authlen ||
+	    sshbuf_len(encoded) - authlen < encrypted_len) {
 		r = SSH_ERR_INVALID_FORMAT;
 		goto out;
 	}
