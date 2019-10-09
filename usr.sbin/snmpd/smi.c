@@ -244,11 +244,7 @@ smi_find(struct oid *oid)
 struct oid *
 smi_nfind(struct oid *oid)
 {
-	struct oid *n;
-	n = RB_NFIND(oidtree, &smi_oidtree, oid);
-	if (smi_oid_cmp(oid, n) == 0)
-		n = RB_NEXT(oidtree, &smi_oidtree, n);
-	return n;
+	return (RB_NFIND(oidtree, &smi_oidtree, oid));
 }
 
 struct oid *
