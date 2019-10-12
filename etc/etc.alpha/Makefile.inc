@@ -1,6 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.26 2017/04/04 00:03:12 deraadt Exp $
-
-KERNELS += GENERIC.MP bsd.mp
+#	$OpenBSD: Makefile.inc,v 1.27 2019/04/26 04:50:13 deraadt Exp $
 
 KERNELS += GENERIC.MP bsd.mp
 
