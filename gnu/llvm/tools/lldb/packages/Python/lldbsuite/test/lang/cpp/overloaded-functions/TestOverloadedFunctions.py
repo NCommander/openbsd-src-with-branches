@@ -8,7 +8,7 @@ from lldbsuite.test.lldbtest import *
 from lldbsuite.test import lldbutil
 
 
-class CPPStaticMethodsTestCase(TestBase):
+class OverloadedFunctionsTestCase(TestBase):
 
     mydir = TestBase.compute_mydir(__file__)
 
@@ -16,13 +16,10 @@ class CPPStaticMethodsTestCase(TestBase):
         TestBase.setUp(self)
         self.line = line_number('main.cpp', '// breakpoint')
 
-    @expectedFailureAll(
-        oslist=["windows"],
-        bugnumber="llvm.org/pr24489: Name lookup not working correctly on Windows")
     def test_with_run_command(self):
         """Test that functions with the same name are resolved correctly"""
         self.build()
-        self.runCmd("file a.out", CURRENT_EXECUTABLE_SET)
+        self.runCmd("file " + self.getBuildArtifact("a.out"), CURRENT_EXECUTABLE_SET)
 
         lldbutil.run_break_set_by_file_and_line(
             self, "main.cpp", self.line, num_expected_locations=1, loc_exact=True)

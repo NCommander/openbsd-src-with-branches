@@ -15,7 +15,7 @@
 
 namespace llvm {
 
-/// \brief A helper class that resets the output stream's color if needed
+/// A helper class that resets the output stream's color if needed
 /// when destroyed.
 class ColoredRawOstream {
   ColoredRawOstream(const ColoredRawOstream &OS) = delete;
@@ -45,7 +45,7 @@ inline raw_ostream &operator<<(const ColoredRawOstream &OS, T &&Value) {
   return OS.OS << std::forward<T>(Value);
 }
 
-/// \brief Change the color of the output stream if the `IsColorUsed` flag
+/// Change the color of the output stream if the `IsColorUsed` flag
 /// is true. Returns an object that resets the color when destroyed.
 inline ColoredRawOstream colored_ostream(raw_ostream &OS,
                                          raw_ostream::Colors Color,
@@ -55,6 +55,7 @@ inline ColoredRawOstream colored_ostream(raw_ostream &OS,
     OS.changeColor(Color, Bold, BG);
   return ColoredRawOstream(OS, IsColorUsed);
 }
-}
+
+} // namespace llvm
 
 #endif // LLVM_COV_RENDERINGSUPPORT_H

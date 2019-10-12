@@ -20,11 +20,10 @@ class FrameAPITestCase(TestBase):
     mydir = TestBase.compute_mydir(__file__)
 
     @add_test_categories(['pyapi'])
-    @expectedFailureAll(oslist=["windows"], bugnumber="llvm.org/pr24778")
     def test_get_arg_vals_for_call_stack(self):
         """Exercise SBFrame.GetVariables() API to get argument vals."""
         self.build()
-        exe = os.path.join(os.getcwd(), "a.out")
+        exe = self.getBuildArtifact("a.out")
 
         # Create a target by the debugger.
         target = self.dbg.CreateTarget(exe)
@@ -90,7 +89,7 @@ class FrameAPITestCase(TestBase):
                 # Make sure on arm targets we dont mismatch PC value on the basis of thumb bit.
                 # Frame PC will not have thumb bit set in case of a thumb
                 # instruction as PC.
-                if self.getArchitecture() in ['arm']:
+                if self.getArchitecture() in ['arm', 'armv7', 'armv7k']:
                     pc_value_int &= ~1
                 self.assertTrue(
                     pc_value_int == frame.GetPC(),
@@ -127,7 +126,7 @@ class FrameAPITestCase(TestBase):
     def test_frame_api_boundary_condition(self):
         """Exercise SBFrame APIs with boundary condition inputs."""
         self.build()
-        exe = os.path.join(os.getcwd(), "a.out")
+        exe = self.getBuildArtifact("a.out")
 
         # Create a target by the debugger.
         target = self.dbg.CreateTarget(exe)
@@ -169,7 +168,7 @@ class FrameAPITestCase(TestBase):
     def test_frame_api_IsEqual(self):
         """Exercise SBFrame API IsEqual."""
         self.build()
-        exe = os.path.join(os.getcwd(), "a.out")
+        exe = self.getBuildArtifact("a.out")
 
         # Create a target by the debugger.
         target = self.dbg.CreateTarget(exe)

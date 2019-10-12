@@ -1,4 +1,4 @@
-//===-- R600MachineFunctionInfo.h - R600 Machine Function Info ----*- C++ -*-=//
+//===-- AMDGPUMachineFunctionInfo.h -------------------------------*- C++ -*-=//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -6,44 +6,73 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-//
-/// \file
-//===----------------------------------------------------------------------===//
 
-#ifndef LLVM_LIB_TARGET_R600_AMDGPUMACHINEFUNCTION_H
-#define LLVM_LIB_TARGET_R600_AMDGPUMACHINEFUNCTION_H
+#ifndef LLVM_LIB_TARGET_AMDGPU_AMDGPUMACHINEFUNCTION_H
+#define LLVM_LIB_TARGET_AMDGPU_AMDGPUMACHINEFUNCTION_H
 
+#include "llvm/ADT/DenseMap.h"
 #include "llvm/CodeGen/MachineFunction.h"
-#include <map>
 
 namespace llvm {
 
-class AMDGPUMachineFunction : public MachineFunctionInfo {
-  virtual void anchor();
-  unsigned ShaderType;
+class GCNSubtarget;
 
-public:
-  AMDGPUMachineFunction(const MachineFunction &MF);
-  /// A map to keep track of local memory objects and their offsets within
-  /// the local memory space.
-  std::map<const GlobalValue *, unsigned> LocalMemoryObjects;
+class AMDGPUMachineFunction : public MachineFunctionInfo {
+  /// A map to keep track of local memory objects and their offsets within the
+  /// local memory space.
+  SmallDenseMap<const GlobalValue *, unsigned, 4> LocalMemoryObjects;
+
+protected:
+  uint64_t ExplicitKernArgSize; // Cache for this.
+  unsigned MaxKernArgAlign; // Cache for this.
+
   /// Number of bytes in the LDS that are being used.
   unsigned LDSSize;
 
-  /// Start of implicit kernel args
-  unsigned ABIArgOffset;
+  // Kernels + shaders. i.e. functions called by the driver and not called
+  // by other functions.
+  bool IsEntryFunction;
 
-  unsigned getShaderType() const {
-    return ShaderType;
+  bool NoSignedZerosFPMath;
+
+  // Function may be memory bound.
+  bool MemoryBound;
+
+  // Kernel may need limited waves per EU for better performance.
+  bool WaveLimiter;
+
+public:
+  AMDGPUMachineFunction(const MachineFunction &MF);
+
+  uint64_t getExplicitKernArgSize() const {
+    return ExplicitKernArgSize;
   }
 
-  bool isKernel() const {
-    // FIXME: Assume everything is a kernel until function calls are supported.
-    return true;
+  unsigned getMaxKernArgAlign() const {
+    return MaxKernArgAlign;
   }
 
-  unsigned ScratchSize;
-  bool IsKernel;
+  unsigned getLDSSize() const {
+    return LDSSize;
+  }
+
+  bool isEntryFunction() const {
+    return IsEntryFunction;
+  }
+
+  bool hasNoSignedZerosFPMath() const {
+    return NoSignedZerosFPMath;
+  }
+
+  bool isMemoryBound() const {
+    return MemoryBound;
+  }
+
+  bool needsWaveLimiter() const {
+    return WaveLimiter;
+  }
+
+  unsigned allocateLDSGlobal(const DataLayout &DL, const GlobalValue &GV);
 };
 
 }

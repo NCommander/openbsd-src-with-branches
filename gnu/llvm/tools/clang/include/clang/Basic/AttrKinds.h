@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief Defines the clang::attr::Kind enum.
+/// Defines the clang::attr::Kind enum.
 ///
 //===----------------------------------------------------------------------===//
 
@@ -19,13 +19,13 @@ namespace clang {
 
 namespace attr {
 
-// \brief A list of all the recognized kinds of attributes.
+// A list of all the recognized kinds of attributes.
 enum Kind {
 #define ATTR(X) X,
-#define LAST_INHERITABLE_ATTR(X) X, LAST_INHERITABLE = X,
-#define LAST_INHERITABLE_PARAM_ATTR(X) X, LAST_INHERITABLE_PARAM = X,
+#define ATTR_RANGE(CLASS, FIRST_NAME, LAST_NAME) \
+  First##CLASS = FIRST_NAME,                    \
+  Last##CLASS = LAST_NAME,
 #include "clang/Basic/AttrList.inc"
-  NUM_ATTRS
 };
 
 } // end namespace attr

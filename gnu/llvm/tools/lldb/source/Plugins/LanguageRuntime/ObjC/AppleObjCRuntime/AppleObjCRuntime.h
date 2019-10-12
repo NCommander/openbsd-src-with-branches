@@ -10,12 +10,8 @@
 #ifndef liblldb_AppleObjCRuntime_h_
 #define liblldb_AppleObjCRuntime_h_
 
-// C Includes
-// C++ Includes
-// Other libraries and framework includes
 #include "llvm/ADT/Optional.h"
 
-// Project includes
 #include "AppleObjCTrampolineHandler.h"
 #include "AppleThreadPlanStepThroughObjCTrampoline.h"
 #include "lldb/Target/LanguageRuntime.h"
@@ -90,11 +86,21 @@ public:
   bool ExceptionBreakpointsExplainStop(lldb::StopInfoSP stop_reason) override;
 
   lldb::SearchFilterSP CreateExceptionSearchFilter() override;
+  
+  static std::tuple<FileSpec, ConstString> GetExceptionThrowLocation();
+
+  lldb::ValueObjectSP GetExceptionObjectForThread(
+      lldb::ThreadSP thread_sp) override;
+
+  lldb::ThreadSP GetBacktraceThreadFromException(
+      lldb::ValueObjectSP thread_sp) override;
 
   uint32_t GetFoundationVersion();
 
   virtual void GetValuesForGlobalCFBooleans(lldb::addr_t &cf_true,
                                             lldb::addr_t &cf_false);
+                                            
+  virtual bool IsTaggedPointer (lldb::addr_t addr) { return false; }
 
 protected:
   // Call CreateInstance instead.

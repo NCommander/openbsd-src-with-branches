@@ -31,21 +31,29 @@ using namespace tooling;
 
 namespace {
 
-void PrintStmt(raw_ostream &Out, const ASTContext *Context, const Stmt *S) {
+using PolicyAdjusterType =
+    Optional<llvm::function_ref<void(PrintingPolicy &Policy)>>;
+
+void PrintStmt(raw_ostream &Out, const ASTContext *Context, const Stmt *S,
+               PolicyAdjusterType PolicyAdjuster) {
   assert(S != nullptr && "Expected non-null Stmt");
   PrintingPolicy Policy = Context->getPrintingPolicy();
+  if (PolicyAdjuster)
+    (*PolicyAdjuster)(Policy);
   S->printPretty(Out, /*Helper*/ nullptr, Policy);
 }
 
 class PrintMatch : public MatchFinder::MatchCallback {
   SmallString<1024> Printed;
   unsigned NumFoundStmts;
+  PolicyAdjusterType PolicyAdjuster;
 
 public:
-  PrintMatch() : NumFoundStmts(0) {}
+  PrintMatch(PolicyAdjusterType PolicyAdjuster)
+      : NumFoundStmts(0), PolicyAdjuster(PolicyAdjuster) {}
 
   void run(const MatchFinder::MatchResult &Result) override {
-    const Stmt *S = Result.Nodes.getStmtAs<Stmt>("id");
+    const Stmt *S = Result.Nodes.getNodeAs<Stmt>("id");
     if (!S)
       return;
     NumFoundStmts++;
@@ -53,7 +61,7 @@ public:
       return;
 
     llvm::raw_svector_ostream Out(Printed);
-    PrintStmt(Out, Result.Context, S);
+    PrintStmt(Out, Result.Context, S, PolicyAdjuster);
   }
 
   StringRef getPrinted() const {
@@ -68,9 +76,10 @@ public:
 template <typename T>
 ::testing::AssertionResult
 PrintedStmtMatches(StringRef Code, const std::vector<std::string> &Args,
-                   const T &NodeMatch, StringRef ExpectedPrinted) {
+                   const T &NodeMatch, StringRef ExpectedPrinted,
+                   PolicyAdjusterType PolicyAdjuster = None) {
 
-  PrintMatch Printer;
+  PrintMatch Printer(PolicyAdjuster);
   MatchFinder Finder;
   Finder.addMatcher(NodeMatch, &Printer);
   std::unique_ptr<FrontendActionFactory> Factory(
@@ -97,65 +106,73 @@ PrintedStmtMatches(StringRef Code, const std::vector<std::string> &Args,
   return ::testing::AssertionSuccess();
 }
 
+enum class StdVer { CXX98, CXX11, CXX14, CXX17, CXX2a };
+
+DeclarationMatcher FunctionBodyMatcher(StringRef ContainingFunction) {
+  return functionDecl(hasName(ContainingFunction),
+                      has(compoundStmt(has(stmt().bind("id")))));
+}
+
+template <typename T>
 ::testing::AssertionResult
-PrintedStmtCXX98Matches(StringRef Code, const StatementMatcher &NodeMatch,
-                        StringRef ExpectedPrinted) {
-  std::vector<std::string> Args;
-  Args.push_back("-std=c++98");
-  Args.push_back("-Wno-unused-value");
-  return PrintedStmtMatches(Code, Args, NodeMatch, ExpectedPrinted);
+PrintedStmtCXXMatches(StdVer Standard, StringRef Code, const T &NodeMatch,
+                      StringRef ExpectedPrinted,
+                      PolicyAdjusterType PolicyAdjuster = None) {
+  const char *StdOpt;
+  switch (Standard) {
+  case StdVer::CXX98: StdOpt = "-std=c++98"; break;
+  case StdVer::CXX11: StdOpt = "-std=c++11"; break;
+  case StdVer::CXX14: StdOpt = "-std=c++14"; break;
+  case StdVer::CXX17: StdOpt = "-std=c++17"; break;
+  case StdVer::CXX2a: StdOpt = "-std=c++2a"; break;
+  }
+
+  std::vector<std::string> Args = {
+    StdOpt,
+    "-Wno-unused-value",
+  };
+  return PrintedStmtMatches(Code, Args, NodeMatch, ExpectedPrinted,
+                            PolicyAdjuster);
 }
 
-::testing::AssertionResult PrintedStmtCXX98Matches(
-                                              StringRef Code,
-                                              StringRef ContainingFunction,
-                                              StringRef ExpectedPrinted) {
-  std::vector<std::string> Args;
-  Args.push_back("-std=c++98");
-  Args.push_back("-Wno-unused-value");
-  return PrintedStmtMatches(Code,
-                            Args,
-                            functionDecl(hasName(ContainingFunction),
-                                         has(compoundStmt(has(stmt().bind("id"))))),
-                            ExpectedPrinted);
-}
-
+template <typename T>
 ::testing::AssertionResult
-PrintedStmtCXX11Matches(StringRef Code, const StatementMatcher &NodeMatch,
-                        StringRef ExpectedPrinted) {
-  std::vector<std::string> Args;
-  Args.push_back("-std=c++11");
-  Args.push_back("-Wno-unused-value");
-  return PrintedStmtMatches(Code, Args, NodeMatch, ExpectedPrinted);
+PrintedStmtMSMatches(StringRef Code, const T &NodeMatch,
+                     StringRef ExpectedPrinted,
+                     PolicyAdjusterType PolicyAdjuster = None) {
+  std::vector<std::string> Args = {
+    "-std=c++98",
+    "-target", "i686-pc-win32",
+    "-fms-extensions",
+    "-Wno-unused-value",
+  };
+  return PrintedStmtMatches(Code, Args, NodeMatch, ExpectedPrinted,
+                            PolicyAdjuster);
 }
 
-::testing::AssertionResult PrintedStmtMSMatches(
-                                              StringRef Code,
-                                              StringRef ContainingFunction,
-                                              StringRef ExpectedPrinted) {
-  std::vector<std::string> Args;
-  Args.push_back("-target");
-  Args.push_back("i686-pc-win32");
-  Args.push_back("-std=c++98");
-  Args.push_back("-fms-extensions");
-  Args.push_back("-Wno-unused-value");
-  return PrintedStmtMatches(Code,
-                            Args,
-                            functionDecl(hasName(ContainingFunction),
-                                         has(compoundStmt(has(stmt().bind("id"))))),
-                            ExpectedPrinted);
+template <typename T>
+::testing::AssertionResult
+PrintedStmtObjCMatches(StringRef Code, const T &NodeMatch,
+                       StringRef ExpectedPrinted,
+                       PolicyAdjusterType PolicyAdjuster = None) {
+  std::vector<std::string> Args = {
+    "-ObjC",
+    "-fobjc-runtime=macosx-10.12.0",
+  };
+  return PrintedStmtMatches(Code, Args, NodeMatch, ExpectedPrinted,
+                            PolicyAdjuster);
 }
 
 } // unnamed namespace
 
 TEST(StmtPrinter, TestIntegerLiteral) {
-  ASSERT_TRUE(PrintedStmtCXX98Matches(
+  ASSERT_TRUE(PrintedStmtCXXMatches(StdVer::CXX98,
     "void A() {"
     "  1, -1, 1U, 1u,"
     "  1L, 1l, -1L, 1UL, 1ul,"
     "  1LL, -1LL, 1ULL;"
     "}",
-    "A",
+    FunctionBodyMatcher("A"),
     "1 , -1 , 1U , 1U , "
     "1L , 1L , -1L , 1UL , 1UL , "
     "1LL , -1LL , 1ULL"));
@@ -170,7 +187,7 @@ TEST(StmtPrinter, TestMSIntegerLiteral) {
     "  1i32, -1i32, 1ui32, "
     "  1i64, -1i64, 1ui64;"
     "}",
-    "A",
+    FunctionBodyMatcher("A"),
     "1i8 , -1i8 , 1Ui8 , "
     "1i16 , -1i16 , 1Ui16 , "
     "1 , -1 , 1U , "
@@ -179,15 +196,15 @@ TEST(StmtPrinter, TestMSIntegerLiteral) {
 }
 
 TEST(StmtPrinter, TestFloatingPointLiteral) {
-  ASSERT_TRUE(PrintedStmtCXX98Matches(
+  ASSERT_TRUE(PrintedStmtCXXMatches(StdVer::CXX98,
     "void A() { 1.0f, -1.0f, 1.0, -1.0, 1.0l, -1.0l; }",
-    "A",
+    FunctionBodyMatcher("A"),
     "1.F , -1.F , 1. , -1. , 1.L , -1.L"));
     // Should be: with semicolon
 }
 
 TEST(StmtPrinter, TestCXXConversionDeclImplicit) {
-  ASSERT_TRUE(PrintedStmtCXX98Matches(
+  ASSERT_TRUE(PrintedStmtCXXMatches(StdVer::CXX98,
     "struct A {"
       "operator void *();"
       "A operator&(A);"
@@ -201,7 +218,7 @@ TEST(StmtPrinter, TestCXXConversionDeclImplicit) {
 }
 
 TEST(StmtPrinter, TestCXXConversionDeclExplicit) {
-  ASSERT_TRUE(PrintedStmtCXX11Matches(
+  ASSERT_TRUE(PrintedStmtCXXMatches(StdVer::CXX11,
     "struct A {"
       "operator void *();"
       "A operator&(A);"
@@ -213,4 +230,42 @@ TEST(StmtPrinter, TestCXXConversionDeclExplicit) {
     cxxMemberCallExpr(anything()).bind("id"),
     "(a & b)"));
     // WRONG; Should be: (a & b).operator void *()
+}
+
+TEST(StmtPrinter, TestNoImplicitBases) {
+  const char *CPPSource = R"(
+class A {
+  int field;
+  int member() { return field; }
+};
+)";
+  // No implicit 'this'.
+  ASSERT_TRUE(PrintedStmtCXXMatches(StdVer::CXX11,
+      CPPSource, memberExpr(anything()).bind("id"), "field",
+      PolicyAdjusterType(
+          [](PrintingPolicy &PP) { PP.SuppressImplicitBase = true; })));
+  // Print implicit 'this'.
+  ASSERT_TRUE(PrintedStmtCXXMatches(StdVer::CXX11,
+      CPPSource, memberExpr(anything()).bind("id"), "this->field"));
+
+  const char *ObjCSource = R"(
+@interface I {
+   int ivar;
+}
+@end
+@implementation I
+- (int) method {
+  return ivar;
+}
+@end
+      )";
+  // No implicit 'self'.
+  ASSERT_TRUE(PrintedStmtObjCMatches(ObjCSource, returnStmt().bind("id"),
+                                     "return ivar;\n",
+                                     PolicyAdjusterType([](PrintingPolicy &PP) {
+                                       PP.SuppressImplicitBase = true;
+                                     })));
+  // Print implicit 'self'.
+  ASSERT_TRUE(PrintedStmtObjCMatches(ObjCSource, returnStmt().bind("id"),
+                                     "return self->ivar;\n"));
 }

@@ -1,4 +1,7 @@
-set(LLVM_LINK_COMPONENTS support)
+set(LLVM_LINK_COMPONENTS
+  BinaryFormat
+  Support
+  )
 
 add_clang_library(clangAST
   APValue.cpp
@@ -7,6 +10,8 @@ add_clang_library(clangAST
   ASTDiagnostic.cpp
   ASTDumper.cpp
   ASTImporter.cpp
+  ASTImporterLookupTable.cpp
+  ASTStructuralEquivalence.cpp
   ASTTypeTraits.cpp
   AttrImpl.cpp
   CXXInheritance.cpp
@@ -16,6 +21,8 @@ add_clang_library(clangAST
   CommentLexer.cpp
   CommentParser.cpp
   CommentSema.cpp
+  ComparisonCategories.cpp
+  DataCollection.cpp
   Decl.cpp
   DeclarationName.cpp
   DeclBase.cpp
@@ -31,7 +38,9 @@ add_clang_library(clangAST
   ExprConstant.cpp
   ExprCXX.cpp
   ExprObjC.cpp
+  ExternalASTMerger.cpp
   ExternalASTSource.cpp
+  FormatString.cpp
   InheritViz.cpp
   ItaniumCXXABI.cpp
   ItaniumMangle.cpp
@@ -40,11 +49,16 @@ add_clang_library(clangAST
   MicrosoftMangle.cpp
   NestedNameSpecifier.cpp
   NSAPI.cpp
+  ODRHash.cpp
+  OSLog.cpp
   OpenMPClause.cpp
   ParentMap.cpp
+  PrintfFormatString.cpp
+  QualTypeNames.cpp
   RawCommentList.cpp
   RecordLayout.cpp
   RecordLayoutBuilder.cpp
+  ScanfFormatString.cpp
   SelectorLocationsKind.cpp
   Stmt.cpp
   StmtCXX.cpp
@@ -56,6 +70,7 @@ add_clang_library(clangAST
   StmtViz.cpp
   TemplateBase.cpp
   TemplateName.cpp
+  TextNodeDumper.cpp
   Type.cpp
   TypeLoc.cpp
   TypePrinter.cpp

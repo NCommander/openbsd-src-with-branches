@@ -324,8 +324,6 @@ public:
 
     clang::ASTContext &ast_ctx(interface_decl->getASTContext());
 
-    clang::QualType return_qual_type;
-
     const bool isInstance = instance;
     const bool isVariadic = false;
     const bool isSynthesized = false;
@@ -560,7 +558,7 @@ AppleObjCDeclVendor::FindDecls(const ConstString &name, bool append,
       LIBLLDB_LOG_EXPRESSIONS)); // FIXME - a more appropriate log channel?
 
   if (log)
-    log->Printf("AppleObjCDeclVendor::FindTypes [%u] ('%s', %s, %u, )",
+    log->Printf("AppleObjCDeclVendor::FindDecls [%u] ('%s', %s, %u, )",
                 current_id, (const char *)name.AsCString(),
                 append ? "true" : "false", max_matches);
 
@@ -652,4 +650,12 @@ AppleObjCDeclVendor::FindDecls(const ConstString &name, bool append,
   } while (0);
 
   return ret;
+}
+
+clang::ExternalASTMerger::ImporterSource
+AppleObjCDeclVendor::GetImporterSource() {
+        return {*m_ast_ctx.getASTContext(),
+                *m_ast_ctx.getFileManager(),
+                m_ast_ctx.GetOriginMap()
+        };
 }

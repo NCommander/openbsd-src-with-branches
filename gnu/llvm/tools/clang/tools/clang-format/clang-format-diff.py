@@ -17,22 +17,22 @@ This script reads input from a unified diff and reformats all the changed
 lines. This is useful to reformat all the lines touched by a specific patch.
 Example usage for git/svn users:
 
-  git diff -U0 HEAD^ | clang-format-diff.py -p1 -i
+  git diff -U0 --no-color HEAD^ | clang-format-diff.py -p1 -i
   svn diff --diff-cmd=diff -x-U0 | clang-format-diff.py -i
 
 """
+from __future__ import absolute_import, division, print_function
 
 import argparse
 import difflib
 import re
-import string
 import subprocess
-import StringIO
 import sys
 
-
-# Change this to the full path if clang-format is not on the path.
-binary = 'clang-format'
+if sys.version_info.major >= 3:
+    from io import StringIO
+else:
+    from io import BytesIO as StringIO
 
 
 def main():
@@ -56,10 +56,11 @@ def main():
                       help='let clang-format sort include blocks')
   parser.add_argument('-v', '--verbose', action='store_true',
                       help='be more verbose, ineffective without -i')
-  parser.add_argument(
-      '-style',
-      help=
-      'formatting style to apply (LLVM, Google, Chromium, Mozilla, WebKit)')
+  parser.add_argument('-style',
+                      help='formatting style to apply (LLVM, Google, Chromium, '
+                      'Mozilla, WebKit)')
+  parser.add_argument('-binary', default='clang-format',
+                      help='location of binary to use for clang-format')
   args = parser.parse_args()
 
   # Extract changed lines for each file.
@@ -87,15 +88,15 @@ def main():
         line_count = int(match.group(3))
       if line_count == 0:
         continue
-      end_line = start_line + line_count - 1;
+      end_line = start_line + line_count - 1
       lines_by_file.setdefault(filename, []).extend(
           ['-lines', str(start_line) + ':' + str(end_line)])
 
   # Reformat files containing changes in place.
-  for filename, lines in lines_by_file.iteritems():
+  for filename, lines in lines_by_file.items():
     if args.i and args.verbose:
-      print 'Formatting', filename
-    command = [binary, filename]
+      print('Formatting {}'.format(filename))
+    command = [args.binary, filename]
     if args.i:
       command.append('-i')
     if args.sort_includes:
@@ -103,20 +104,23 @@ def main():
     command.extend(lines)
     if args.style:
       command.extend(['-style', args.style])
-    p = subprocess.Popen(command, stdout=subprocess.PIPE,
-                         stderr=None, stdin=subprocess.PIPE)
+    p = subprocess.Popen(command,
+                         stdout=subprocess.PIPE,
+                         stderr=None,
+                         stdin=subprocess.PIPE,
+                         universal_newlines=True)
     stdout, stderr = p.communicate()
     if p.returncode != 0:
-      sys.exit(p.returncode);
+      sys.exit(p.returncode)
 
     if not args.i:
       with open(filename) as f:
         code = f.readlines()
-      formatted_code = StringIO.StringIO(stdout).readlines()
+      formatted_code = StringIO(stdout).readlines()
       diff = difflib.unified_diff(code, formatted_code,
                                   filename, filename,
                                   '(before formatting)', '(after formatting)')
-      diff_string = string.join(diff, '')
+      diff_string = ''.join(diff)
       if len(diff_string) > 0:
         sys.stdout.write(diff_string)
 

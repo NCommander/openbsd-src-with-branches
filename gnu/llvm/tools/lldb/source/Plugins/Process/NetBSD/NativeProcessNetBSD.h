@@ -10,12 +10,8 @@
 #ifndef liblldb_NativeProcessNetBSD_H_
 #define liblldb_NativeProcessNetBSD_H_
 
-// C++ Includes
-
-// Other libraries and framework includes
-
-#include "lldb/Core/ArchSpec.h"
 #include "lldb/Target/MemoryRegionInfo.h"
+#include "lldb/Utility/ArchSpec.h"
 #include "lldb/Utility/FileSpec.h"
 
 #include "NativeThreadNetBSD.h"
@@ -24,10 +20,10 @@
 namespace lldb_private {
 namespace process_netbsd {
 /// @class NativeProcessNetBSD
-/// @brief Manages communication with the inferior (debugee) process.
+/// Manages communication with the inferior (debugee) process.
 ///
-/// Upon construction, this class prepares and launches an inferior process for
-/// debugging.
+/// Upon construction, this class prepares and launches an inferior process
+/// for debugging.
 ///
 /// Changes in the inferior process state are broadcasted.
 class NativeProcessNetBSD : public NativeProcessProtocol {
@@ -62,9 +58,6 @@ public:
   Status ReadMemory(lldb::addr_t addr, void *buf, size_t size,
                     size_t &bytes_read) override;
 
-  Status ReadMemoryWithoutTrap(lldb::addr_t addr, void *buf, size_t size,
-                               size_t &bytes_read) override;
-
   Status WriteMemory(lldb::addr_t addr, const void *buf, size_t size,
                      size_t &bytes_written) override;
 
@@ -77,7 +70,7 @@ public:
 
   size_t UpdateThreads() override;
 
-  bool GetArchitecture(ArchSpec &arch) const override;
+  const ArchSpec &GetArchitecture() const override { return m_arch; }
 
   Status SetBreakpoint(lldb::addr_t addr, uint32_t size,
                        bool hardware) override;
@@ -97,16 +90,6 @@ public:
   static Status PtraceWrapper(int req, lldb::pid_t pid, void *addr = nullptr,
                               int data = 0, int *result = nullptr);
 
-protected:
-  // ---------------------------------------------------------------------
-  // NativeProcessProtocol protected interface
-  // ---------------------------------------------------------------------
-
-  Status
-  GetSoftwareBreakpointTrapOpcode(size_t trap_opcode_size_hint,
-                                  size_t &actual_opcode_size,
-                                  const uint8_t *&trap_opcode_bytes) override;
-
 private:
   MainLoop::SignalHandleUP m_sigchld_handle;
   ArchSpec m_arch;
@@ -121,7 +104,7 @@ private:
 
   bool HasThreadNoLock(lldb::tid_t thread_id);
 
-  NativeThreadNetBSDSP AddThread(lldb::tid_t thread_id);
+  NativeThreadNetBSD &AddThread(lldb::tid_t thread_id);
 
   void MonitorCallback(lldb::pid_t pid, int signal);
   void MonitorExited(lldb::pid_t pid, WaitStatus status);
@@ -129,8 +112,6 @@ private:
   void MonitorSIGTRAP(lldb::pid_t pid);
   void MonitorSignal(lldb::pid_t pid, int signal);
 
-  Status GetSoftwareBreakpointPCOffset(uint32_t &actual_opcode_size);
-  Status FixupBreakpointPCAsNeeded(NativeThreadNetBSD &thread);
   Status PopulateMemoryRegionCache();
   void SigchldHandler();
 

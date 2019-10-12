@@ -10,16 +10,13 @@
 #include "llvm/DebugInfo/PDB/PDBSymbolCustom.h"
 
 #include "llvm/DebugInfo/PDB/IPDBRawSymbol.h"
-#include "llvm/DebugInfo/PDB/PDBSymbol.h"
 #include "llvm/DebugInfo/PDB/PDBSymDumper.h"
+#include "llvm/DebugInfo/PDB/PDBSymbol.h"
 
 #include <utility>
 
 using namespace llvm;
-
-PDBSymbolCustom::PDBSymbolCustom(const IPDBSession &PDBSession,
-                                 std::unique_ptr<IPDBRawSymbol> CustomSymbol)
-    : PDBSymbol(PDBSession, std::move(CustomSymbol)) {}
+using namespace llvm::pdb;
 
 void PDBSymbolCustom::getDataBytes(llvm::SmallVector<uint8_t, 32> &bytes) {
   RawSymbol->getDataBytes(bytes);

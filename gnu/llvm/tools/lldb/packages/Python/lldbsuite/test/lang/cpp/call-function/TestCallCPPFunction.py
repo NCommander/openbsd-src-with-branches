@@ -16,13 +16,10 @@ class CallCPPFunctionTestCase(TestBase):
         TestBase.setUp(self)
         self.line = line_number('main.cpp', '// breakpoint')
 
-    @expectedFailureAll(
-        oslist=["windows"],
-        bugnumber="llvm.org/pr24489: Name lookup not working correctly on Windows")
     def test_with_run_command(self):
         """Test calling a function by basename"""
         self.build()
-        self.runCmd("file a.out", CURRENT_EXECUTABLE_SET)
+        self.runCmd("file " + self.getBuildArtifact("a.out"), CURRENT_EXECUTABLE_SET)
 
         lldbutil.run_break_set_by_file_and_line(
             self, "main.cpp", self.line, num_expected_locations=1, loc_exact=True)

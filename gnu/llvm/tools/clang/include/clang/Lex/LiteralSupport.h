@@ -19,6 +19,7 @@
 #include "clang/Basic/LLVM.h"
 #include "clang/Basic/TokenKinds.h"
 #include "llvm/ADT/APFloat.h"
+#include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/DataTypes.h"
@@ -49,7 +50,7 @@ class NumericLiteralParser {
 
   unsigned radix;
 
-  bool saw_exponent, saw_period, saw_ud_suffix;
+  bool saw_exponent, saw_period, saw_ud_suffix, saw_fixed_point_suffix;
 
   SmallString<32> UDSuffixBuf;
 
@@ -61,15 +62,23 @@ public:
   bool isUnsigned : 1;
   bool isLong : 1;          // This is *not* set for long long.
   bool isLongLong : 1;
+  bool isHalf : 1;          // 1.0h
   bool isFloat : 1;         // 1.0f
   bool isImaginary : 1;     // 1.0i
+  bool isFloat16 : 1;       // 1.0f16
+  bool isFloat128 : 1;      // 1.0q
   uint8_t MicrosoftInteger; // Microsoft suffix extension i8, i16, i32, or i64.
 
+  bool isFract : 1;         // 1.0hr/r/lr/uhr/ur/ulr
+  bool isAccum : 1;         // 1.0hk/k/lk/uhk/uk/ulk
+
+  bool isFixedPointLiteral() const { return saw_fixed_point_suffix; }
+
   bool isIntegerLiteral() const {
-    return !saw_period && !saw_exponent;
+    return !saw_period && !saw_exponent && !isFixedPointLiteral();
   }
   bool isFloatingLiteral() const {
-    return saw_period || saw_exponent;
+    return (saw_period || saw_exponent) && !isFixedPointLiteral();
   }
 
   bool hasUDSuffix() const {
@@ -101,15 +110,28 @@ public:
   /// literal exactly, and false otherwise.
   llvm::APFloat::opStatus GetFloatValue(llvm::APFloat &Result);
 
+  /// GetFixedPointValue - Convert this numeric literal value into a
+  /// scaled integer that represents this value. Returns true if an overflow
+  /// occurred when calculating the integral part of the scaled integer or
+  /// calculating the digit sequence of the exponent.
+  bool GetFixedPointValue(llvm::APInt &StoreVal, unsigned Scale);
+
 private:
 
   void ParseNumberStartingWithZero(SourceLocation TokLoc);
+  void ParseDecimalOrOctalCommon(SourceLocation TokLoc);
 
   static bool isDigitSeparator(char C) { return C == '\''; }
 
+  /// Determine whether the sequence of characters [Start, End) contains
+  /// any real digits (not digit separators).
+  bool containsDigits(const char *Start, const char *End) {
+    return Start != End && (Start + 1 != End || !isDigitSeparator(Start[0]));
+  }
+
   enum CheckSeparatorKind { CSK_BeforeDigits, CSK_AfterDigits };
 
-  /// \brief Ensure that we don't have a digit separator here.
+  /// Ensure that we don't have a digit separator here.
   void checkSeparator(SourceLocation TokLoc, const char *Pos,
                       CheckSeparatorKind IsAfterDigits);
 
@@ -186,7 +208,7 @@ class StringLiteralParser {
   const LangOptions &Features;
   const TargetInfo &Target;
   DiagnosticsEngine *Diags;
-  
+
   unsigned MaxTokenLength;
   unsigned SizeBound;
   unsigned CharByteWidth;
@@ -208,7 +230,7 @@ public:
       ResultPtr(ResultBuf.data()), hadError(false), Pascal(false) {
     init(StringToks);
   }
-    
+
 
   bool hadError;
   bool Pascal;
@@ -248,6 +270,8 @@ public:
     assert(!UDSuffixBuf.empty() && "no ud-suffix");
     return UDSuffixOffset;
   }
+
+  static bool isValidUDSuffix(const LangOptions &LangOpts, StringRef Suffix);
 
 private:
   void init(ArrayRef<Token> StringToks);

@@ -106,12 +106,12 @@ FunctionModRefBehavior ObjCARCAAResult::getModRefBehavior(const Function *F) {
   return AAResultBase::getModRefBehavior(F);
 }
 
-ModRefInfo ObjCARCAAResult::getModRefInfo(ImmutableCallSite CS,
+ModRefInfo ObjCARCAAResult::getModRefInfo(const CallBase *Call,
                                           const MemoryLocation &Loc) {
   if (!EnableARCOpts)
-    return AAResultBase::getModRefInfo(CS, Loc);
+    return AAResultBase::getModRefInfo(Call, Loc);
 
-  switch (GetBasicARCInstKind(CS.getInstruction())) {
+  switch (GetBasicARCInstKind(Call)) {
   case ARCInstKind::Retain:
   case ARCInstKind::RetainRV:
   case ARCInstKind::Autorelease:
@@ -123,27 +123,21 @@ ModRefInfo ObjCARCAAResult::getModRefInfo(ImmutableCallSite CS,
     // These functions don't access any memory visible to the compiler.
     // Note that this doesn't include objc_retainBlock, because it updates
     // pointers when it copies block data.
-    return MRI_NoModRef;
+    return ModRefInfo::NoModRef;
   default:
     break;
   }
 
-  return AAResultBase::getModRefInfo(CS, Loc);
+  return AAResultBase::getModRefInfo(Call, Loc);
 }
 
-ObjCARCAAResult ObjCARCAA::run(Function &F, AnalysisManager<Function> *AM) {
-  return ObjCARCAAResult(F.getParent()->getDataLayout(),
-                         AM->getResult<TargetLibraryAnalysis>(F));
+ObjCARCAAResult ObjCARCAA::run(Function &F, FunctionAnalysisManager &AM) {
+  return ObjCARCAAResult(F.getParent()->getDataLayout());
 }
-
-char ObjCARCAA::PassID;
 
 char ObjCARCAAWrapperPass::ID = 0;
-INITIALIZE_PASS_BEGIN(ObjCARCAAWrapperPass, "objc-arc-aa",
-                      "ObjC-ARC-Based Alias Analysis", false, true)
-INITIALIZE_PASS_DEPENDENCY(TargetLibraryInfoWrapperPass)
-INITIALIZE_PASS_END(ObjCARCAAWrapperPass, "objc-arc-aa",
-                    "ObjC-ARC-Based Alias Analysis", false, true)
+INITIALIZE_PASS(ObjCARCAAWrapperPass, "objc-arc-aa",
+                "ObjC-ARC-Based Alias Analysis", false, true)
 
 ImmutablePass *llvm::createObjCARCAAWrapperPass() {
   return new ObjCARCAAWrapperPass();
@@ -154,8 +148,7 @@ ObjCARCAAWrapperPass::ObjCARCAAWrapperPass() : ImmutablePass(ID) {
 }
 
 bool ObjCARCAAWrapperPass::doInitialization(Module &M) {
-  Result.reset(new ObjCARCAAResult(
-      M.getDataLayout(), getAnalysis<TargetLibraryInfoWrapperPass>().getTLI()));
+  Result.reset(new ObjCARCAAResult(M.getDataLayout()));
   return false;
 }
 
@@ -166,5 +159,4 @@ bool ObjCARCAAWrapperPass::doFinalization(Module &M) {
 
 void ObjCARCAAWrapperPass::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.setPreservesAll();
-  AU.addRequired<TargetLibraryInfoWrapperPass>();
 }

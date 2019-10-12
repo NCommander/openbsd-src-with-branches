@@ -32,13 +32,11 @@ class MultipleBreakpointTestCase(TestBase):
     @expectedFailureAll(
         oslist=["freebsd"],
         bugnumber="llvm.org/pr18190 thread states not properly maintained")
-    @expectedFailureAll(
-        oslist=["windows"],
-        bugnumber="llvm.org/pr24668: Breakpoints not resolved correctly")
+    @skipIfWindows # This is flakey on Windows: llvm.org/pr24668, llvm.org/pr38373
     def test(self):
         """Test simultaneous breakpoints in multiple threads."""
         self.build(dictionary=self.getBuildFlags())
-        exe = os.path.join(os.getcwd(), "a.out")
+        exe = self.getBuildArtifact("a.out")
         self.runCmd("file " + exe, CURRENT_EXECUTABLE_SET)
 
         # This should create a breakpoint in the main thread.

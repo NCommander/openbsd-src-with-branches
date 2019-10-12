@@ -41,12 +41,12 @@ Older swig versions will simply ignore this setting.
 */
 %define MODULEIMPORT
 "try:
-    # Try a relative import first
-    from . import $module
+    # Try an absolute import first.  If we're being loaded from lldb,
+    # _lldb should be a built-in module.
+    import $module
 except ImportError:
-    # Maybe absolute import will work (if we're being loaded from lldb, it
-    # should).
-    import $module"
+    # Relative import should work if we are being loaded by Python.
+    from . import $module"
 %enddef
 // These versions will not generate working python modules, so error out early.
 #if SWIG_VERSION >= 0x030009 && SWIG_VERSION < 0x030011
@@ -82,6 +82,7 @@ import six
 #include "lldb/API/SBBlock.h"
 #include "lldb/API/SBBreakpoint.h"
 #include "lldb/API/SBBreakpointLocation.h"
+#include "lldb/API/SBBreakpointName.h"
 #include "lldb/API/SBBroadcaster.h"
 #include "lldb/API/SBCommandInterpreter.h"
 #include "lldb/API/SBCommandReturnObject.h"
@@ -111,6 +112,7 @@ import six
 #include "lldb/API/SBModuleSpec.h"
 #include "lldb/API/SBPlatform.h"
 #include "lldb/API/SBProcess.h"
+#include "lldb/API/SBProcessInfo.h"
 #include "lldb/API/SBQueue.h"
 #include "lldb/API/SBQueueItem.h"
 #include "lldb/API/SBSection.h"
@@ -167,6 +169,7 @@ import six
 %include "./interface/SBBlock.i"
 %include "./interface/SBBreakpoint.i"
 %include "./interface/SBBreakpointLocation.i"
+%include "./interface/SBBreakpointName.i"
 %include "./interface/SBBroadcaster.i"
 %include "./interface/SBCommandInterpreter.i"
 %include "./interface/SBCommandReturnObject.i"
@@ -184,6 +187,7 @@ import six
 %include "./interface/SBFrame.i"
 %include "./interface/SBFunction.i"
 %include "./interface/SBHostOS.i"
+%include "./interface/SBInitializerOptions.i"
 %include "./interface/SBInstruction.i"
 %include "./interface/SBInstructionList.i"
 %include "./interface/SBLanguageRuntime.i"
@@ -196,6 +200,7 @@ import six
 %include "./interface/SBModuleSpec.i"
 %include "./interface/SBPlatform.i"
 %include "./interface/SBProcess.i"
+%include "./interface/SBProcessInfo.i"
 %include "./interface/SBQueue.i"
 %include "./interface/SBQueueItem.i"
 %include "./interface/SBSection.i"

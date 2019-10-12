@@ -7,11 +7,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-// C Includes
-// C++ Includes
-// Other libraries and framework includes
-// Project includes
-#include "lldb/Core/ArchSpec.h"
 #include "lldb/Symbol/Function.h"
 #include "lldb/Symbol/ObjectFile.h"
 #include "lldb/Symbol/Symbol.h"
@@ -19,6 +14,7 @@
 #include "lldb/Target/Process.h"
 #include "lldb/Target/Target.h"
 #include "lldb/Target/Thread.h"
+#include "lldb/Utility/ArchSpec.h"
 
 #include "RegisterContextMacOSXFrameBackchain.h"
 
@@ -85,8 +81,6 @@ size_t UnwindMacOSXFrameBackchain::GetStackFrameData_i386(
   if (process == NULL)
     return 0;
 
-  std::pair<lldb::addr_t, lldb::addr_t> fp_pc_pair;
-
   struct Frame_i386 {
     uint32_t fp;
     uint32_t pc;
@@ -120,7 +114,7 @@ size_t UnwindMacOSXFrameBackchain::GetStackFrameData_i386(
   if (!m_cursors.empty()) {
     lldb::addr_t first_frame_pc = m_cursors.front().pc;
     if (first_frame_pc != LLDB_INVALID_ADDRESS) {
-      const uint32_t resolve_scope =
+      const SymbolContextItem resolve_scope =
           eSymbolContextModule | eSymbolContextCompUnit |
           eSymbolContextFunction | eSymbolContextSymbol;
 
@@ -139,8 +133,8 @@ size_t UnwindMacOSXFrameBackchain::GetStackFrameData_i386(
       if (addr_range_ptr) {
         if (first_frame->GetFrameCodeAddress() ==
             addr_range_ptr->GetBaseAddress()) {
-          // We are at the first instruction, so we can recover the
-          // previous PC by dereferencing the SP
+          // We are at the first instruction, so we can recover the previous PC
+          // by dereferencing the SP
           lldb::addr_t first_frame_sp = reg_ctx->GetSP(0);
           // Read the real second frame return address into frame.pc
           if (first_frame_sp &&
@@ -179,8 +173,6 @@ size_t UnwindMacOSXFrameBackchain::GetStackFrameData_x86_64(
 
   StackFrame *first_frame = exe_ctx.GetFramePtr();
 
-  std::pair<lldb::addr_t, lldb::addr_t> fp_pc_pair;
-
   struct Frame_x86_64 {
     uint64_t fp;
     uint64_t pc;
@@ -213,7 +205,7 @@ size_t UnwindMacOSXFrameBackchain::GetStackFrameData_x86_64(
   if (!m_cursors.empty()) {
     lldb::addr_t first_frame_pc = m_cursors.front().pc;
     if (first_frame_pc != LLDB_INVALID_ADDRESS) {
-      const uint32_t resolve_scope =
+      const SymbolContextItem resolve_scope =
           eSymbolContextModule | eSymbolContextCompUnit |
           eSymbolContextFunction | eSymbolContextSymbol;
 
@@ -232,8 +224,8 @@ size_t UnwindMacOSXFrameBackchain::GetStackFrameData_x86_64(
       if (addr_range_ptr) {
         if (first_frame->GetFrameCodeAddress() ==
             addr_range_ptr->GetBaseAddress()) {
-          // We are at the first instruction, so we can recover the
-          // previous PC by dereferencing the SP
+          // We are at the first instruction, so we can recover the previous PC
+          // by dereferencing the SP
           lldb::addr_t first_frame_sp = reg_ctx->GetSP(0);
           // Read the real second frame return address into frame.pc
           if (process->ReadMemory(first_frame_sp, &frame.pc, sizeof(frame.pc),

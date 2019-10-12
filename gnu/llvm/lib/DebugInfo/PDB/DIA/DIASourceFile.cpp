@@ -7,28 +7,22 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "llvm/DebugInfo/PDB/DIA/DIASourceFile.h"
+#include "llvm/DebugInfo/PDB/ConcreteSymbolEnumerator.h"
 #include "llvm/DebugInfo/PDB/DIA/DIAEnumSymbols.h"
 #include "llvm/DebugInfo/PDB/DIA/DIASession.h"
-#include "llvm/DebugInfo/PDB/DIA/DIASourceFile.h"
-#include "llvm/Support/ConvertUTF.h"
+#include "llvm/DebugInfo/PDB/DIA/DIAUtils.h"
+#include "llvm/DebugInfo/PDB/PDBSymbolCompiland.h"
 
 using namespace llvm;
+using namespace llvm::pdb;
 
 DIASourceFile::DIASourceFile(const DIASession &PDBSession,
                              CComPtr<IDiaSourceFile> DiaSourceFile)
     : Session(PDBSession), SourceFile(DiaSourceFile) {}
 
 std::string DIASourceFile::getFileName() const {
-  CComBSTR FileName16;
-  HRESULT Result = SourceFile->get_fileName(&FileName16);
-  if (S_OK != Result)
-    return std::string();
-
-  std::string FileName8;
-  llvm::ArrayRef<char> FileNameBytes(reinterpret_cast<char *>(FileName16.m_str),
-                                     FileName16.ByteLength());
-  llvm::convertUTF16ToUTF8String(FileNameBytes, FileName8);
-  return FileName8;
+  return invokeBstrMethod(*SourceFile, &IDiaSourceFile::get_fileName);
 }
 
 uint32_t DIASourceFile::getUniqueId() const {
@@ -56,12 +50,15 @@ PDB_Checksum DIASourceFile::getChecksumType() const {
   return static_cast<PDB_Checksum>(Type);
 }
 
-std::unique_ptr<IPDBEnumSymbols> DIASourceFile::getCompilands() const {
+std::unique_ptr<IPDBEnumChildren<PDBSymbolCompiland>>
+DIASourceFile::getCompilands() const {
   CComPtr<IDiaEnumSymbols> DiaEnumerator;
   HRESULT Result = SourceFile->get_compilands(&DiaEnumerator);
   if (S_OK != Result)
     return nullptr;
 
-  return std::unique_ptr<IPDBEnumSymbols>(
+  auto Enumerator = std::unique_ptr<IPDBEnumSymbols>(
       new DIAEnumSymbols(Session, DiaEnumerator));
+  return std::unique_ptr<IPDBEnumChildren<PDBSymbolCompiland>>(
+      new ConcreteSymbolEnumerator<PDBSymbolCompiland>(std::move(Enumerator)));
 }

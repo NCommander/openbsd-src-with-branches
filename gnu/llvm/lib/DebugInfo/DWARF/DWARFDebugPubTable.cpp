@@ -1,4 +1,4 @@
-//===-- DWARFDebugPubTable.cpp ---------------------------------------------===//
+//===- DWARFDebugPubTable.cpp ---------------------------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -8,16 +8,22 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/DebugInfo/DWARF/DWARFDebugPubTable.h"
+#include "llvm/DebugInfo/DWARF/DWARFDataExtractor.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/BinaryFormat/Dwarf.h"
+#include "llvm/Support/DataExtractor.h"
 #include "llvm/Support/Format.h"
 #include "llvm/Support/raw_ostream.h"
+#include <cstdint>
 
 using namespace llvm;
-using namespace llvm::dwarf;
+using namespace dwarf;
 
-DWARFDebugPubTable::DWARFDebugPubTable(StringRef Data, bool LittleEndian,
-                                       bool GnuStyle)
+DWARFDebugPubTable::DWARFDebugPubTable(const DWARFObject &Obj,
+                                       const DWARFSection &Sec,
+                                       bool LittleEndian, bool GnuStyle)
     : GnuStyle(GnuStyle) {
-  DataExtractor PubNames(Data, LittleEndian, 0);
+  DWARFDataExtractor PubNames(Obj, Sec, LittleEndian, 0);
   uint32_t Offset = 0;
   while (PubNames.isValidOffset(Offset)) {
     Sets.push_back({});
@@ -25,23 +31,22 @@ DWARFDebugPubTable::DWARFDebugPubTable(StringRef Data, bool LittleEndian,
 
     SetData.Length = PubNames.getU32(&Offset);
     SetData.Version = PubNames.getU16(&Offset);
-    SetData.Offset = PubNames.getU32(&Offset);
+    SetData.Offset = PubNames.getRelocatedValue(4, &Offset);
     SetData.Size = PubNames.getU32(&Offset);
 
-    while (Offset < Data.size()) {
+    while (Offset < Sec.Data.size()) {
       uint32_t DieRef = PubNames.getU32(&Offset);
       if (DieRef == 0)
         break;
       uint8_t IndexEntryValue = GnuStyle ? PubNames.getU8(&Offset) : 0;
-      const char *Name = PubNames.getCStr(&Offset);
+      StringRef Name = PubNames.getCStrRef(&Offset);
       SetData.Entries.push_back(
           {DieRef, PubIndexEntryDescriptor(IndexEntryValue), Name});
     }
   }
 }
 
-void DWARFDebugPubTable::dump(StringRef Name, raw_ostream &OS) const {
-  OS << "\n." << Name << " contents: a\n";
+void DWARFDebugPubTable::dump(raw_ostream &OS) const {
   for (const Set &S : Sets) {
     OS << "length = " << format("0x%08x", S.Length);
     OS << " version = " << format("0x%04x", S.Version);
@@ -54,7 +59,7 @@ void DWARFDebugPubTable::dump(StringRef Name, raw_ostream &OS) const {
       OS << format("0x%8.8x ", E.SecOffset);
       if (GnuStyle) {
         StringRef EntryLinkage =
-            dwarf::GDBIndexEntryLinkageString(E.Descriptor.Linkage);
+            GDBIndexEntryLinkageString(E.Descriptor.Linkage);
         StringRef EntryKind = dwarf::GDBIndexEntryKindString(E.Descriptor.Kind);
         OS << format("%-8s", EntryLinkage.data()) << ' '
            << format("%-8s", EntryKind.data()) << ' ';

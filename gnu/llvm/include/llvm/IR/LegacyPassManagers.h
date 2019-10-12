@@ -14,13 +14,11 @@
 #ifndef LLVM_IR_LEGACYPASSMANAGERS_H
 #define LLVM_IR_LEGACYPASSMANAGERS_H
 
-#include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Pass.h"
-#include <map>
 #include <vector>
 
 //===----------------------------------------------------------------------===//
@@ -93,12 +91,13 @@
 #include "llvm/Support/PrettyStackTrace.h"
 
 namespace llvm {
-  class Module;
-  class Pass;
-  class StringRef;
-  class Value;
-  class Timer;
-  class PMDataManager;
+template <typename T> class ArrayRef;
+class Module;
+class Pass;
+class StringRef;
+class Value;
+class Timer;
+class PMDataManager;
 
 // enums for debugging strings
 enum PassDebuggingString {
@@ -280,13 +279,13 @@ private:
   // when we have multiple instances of the same pass since they'll usually
   // have the same analysis usage and can share storage.
   FoldingSet<AUFoldingSetNode> UniqueAnalysisUsages;
-  
+
   // Allocator used for allocating UAFoldingSetNodes.  This handles deletion of
   // all allocated nodes in one fell swoop.
   SpecificBumpPtrAllocator<AUFoldingSetNode> AUFoldingSetNodeAllocator;
-  
+
   // Maps from a pass to it's associated entry in UniqueAnalysisUsages.  Does
-  // not own the storage associated with either key or value.. 
+  // not own the storage associated with either key or value..
   DenseMap<Pass *, AnalysisUsage*> AnUsageMap;
 
   /// Collection of PassInfo objects found via analysis IDs and in this top
@@ -404,6 +403,27 @@ public:
       InheritedAnalysis[Index++] = (*I)->getAvailableAnalysis();
   }
 
+  /// Set the initial size of the module if the user has specified that they
+  /// want remarks for size.
+  /// Returns 0 if the remark was not requested.
+  unsigned initSizeRemarkInfo(
+      Module &M,
+      StringMap<std::pair<unsigned, unsigned>> &FunctionToInstrCount);
+
+  /// Emit a remark signifying that the number of IR instructions in the module
+  /// changed.
+  /// \p F is optionally passed by passes which run on Functions, and thus
+  /// always know whether or not a non-empty function is available.
+  ///
+  /// \p FunctionToInstrCount maps the name of a \p Function to a pair. The
+  /// first member of the pair is the IR count of the \p Function before running
+  /// \p P, and the second member is the IR count of the \p Function after
+  /// running \p P.
+  void emitInstrCountChangedRemark(
+      Pass *P, Module &M, int64_t Delta, unsigned CountBefore,
+      StringMap<std::pair<unsigned, unsigned>> &FunctionToInstrCount,
+      Function *F = nullptr);
+
 protected:
   // Top level manager.
   PMTopLevelManager *TPM;
@@ -487,9 +507,7 @@ public:
   // Print passes managed by this manager
   void dumpPassStructure(unsigned Offset) override;
 
-  const char *getPassName() const override {
-    return "Function Pass Manager";
-  }
+  StringRef getPassName() const override { return "Function Pass Manager"; }
 
   FunctionPass *getContainedPass(unsigned N) {
     assert ( N < PassVector.size() && "Pass number out of range!");
@@ -502,7 +520,6 @@ public:
   }
 };
 
-Timer *getPassTimer(Pass *);
 }
 
 #endif

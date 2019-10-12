@@ -28,16 +28,12 @@ class ExprCommandCallUserDefinedFunction(TestBase):
             'main.cpp',
             '// Please test these expressions while stopped at this line:')
 
-    @expectedFlakeyDsym("llvm.org/pr20274")
-    @expectedFailureAll(
-        oslist=["windows"],
-        bugnumber="llvm.org/pr24489: Name lookup not working correctly on Windows")
     def test(self):
         """Test return values of user defined function calls."""
         self.build()
 
         # Set breakpoint in main and run exe
-        self.runCmd("file a.out", CURRENT_EXECUTABLE_SET)
+        self.runCmd("file " + self.getBuildArtifact("a.out"), CURRENT_EXECUTABLE_SET)
         lldbutil.run_break_set_by_file_and_line(
             self, "main.cpp", self.line, num_expected_locations=-1, loc_exact=True)
 

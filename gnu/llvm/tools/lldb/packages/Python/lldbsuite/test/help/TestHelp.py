@@ -230,3 +230,23 @@ class HelpCommandTestCase(TestBase):
             'command alias --long-help "I am a very friendly alias" -- averyfriendlyalias help')
         self.expect("help averyfriendlyalias", matching=True,
                     substrs=['I am a very friendly alias'])
+    @no_debug_info_test
+    def test_alias_prints_origin(self):
+        """Test that 'help <unique_match_to_alias>' prints the alias origin."""
+        def cleanup():
+            self.runCmd('command unalias alongaliasname', check=False)
+
+        self.addTearDownHook(cleanup)
+        self.runCmd('command alias alongaliasname help')
+        self.expect("help alongaliasna", matching=True,
+                    substrs=["'alongaliasna' is an abbreviation for 'help'"])
+
+    @no_debug_info_test
+    def test_help_format_output(self):
+        """Test that help output reaches TerminalWidth."""
+        self.runCmd(
+            'settings set term-width 108')
+        self.expect(
+            "help format",
+            matching=True,
+            substrs=['<format> -- One of the format names'])

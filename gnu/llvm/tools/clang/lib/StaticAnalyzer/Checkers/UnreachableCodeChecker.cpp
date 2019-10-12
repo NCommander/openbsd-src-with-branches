@@ -13,7 +13,7 @@
 // A similar flow-sensitive only check exists in Analysis/ReachableCode.cpp
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
+#include "clang/StaticAnalyzer/Checkers/BuiltinCheckerRegistration.h"
 #include "clang/AST/ParentMap.h"
 #include "clang/Basic/Builtins.h"
 #include "clang/Basic/SourceManager.h"
@@ -26,10 +26,6 @@
 #include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
 #include "llvm/ADT/SmallSet.h"
 
-// The number of CFGBlock pointers we want to reserve memory for. This is used
-// once for each function we analyze.
-#define DEFAULT_CFGBLOCKS 256
-
 using namespace clang;
 using namespace ento;
 
@@ -39,7 +35,7 @@ public:
   void checkEndAnalysis(ExplodedGraph &G, BugReporter &B,
                         ExprEngine &Eng) const;
 private:
-  typedef llvm::SmallSet<unsigned, DEFAULT_CFGBLOCKS> CFGBlocksSet;
+  typedef llvm::SmallSet<unsigned, 32> CFGBlocksSet;
 
   static inline const Stmt *getUnreachableStmt(const CFGBlock *CB);
   static void FindUnreachableEntryPoints(const CFGBlock *CB,
@@ -116,7 +112,7 @@ void UnreachableCodeChecker::checkEndAnalysis(ExplodedGraph &G,
       continue;
 
     // Check for false positives
-    if (CB->size() > 0 && isInvalidPath(CB, *PM))
+    if (isInvalidPath(CB, *PM))
       continue;
 
     // It is good practice to always have a "default" label in a "switch", even
@@ -136,7 +132,8 @@ void UnreachableCodeChecker::checkEndAnalysis(ExplodedGraph &G,
            ci != ce; ++ci) {
         if (Optional<CFGStmt> S = (*ci).getAs<CFGStmt>())
           if (const CallExpr *CE = dyn_cast<CallExpr>(S->getStmt())) {
-            if (CE->getBuiltinCallee() == Builtin::BI__builtin_unreachable) {
+            if (CE->getBuiltinCallee() == Builtin::BI__builtin_unreachable ||
+                CE->isBuiltinAssumeFalse(Eng.getContext())) {
               foundUnreachable = true;
               break;
             }
@@ -151,6 +148,14 @@ void UnreachableCodeChecker::checkEndAnalysis(ExplodedGraph &G,
     PathDiagnosticLocation DL;
     SourceLocation SL;
     if (const Stmt *S = getUnreachableStmt(CB)) {
+      // In macros, 'do {...} while (0)' is often used. Don't warn about the
+      // condition 0 when it is unreachable.
+      if (S->getBeginLoc().isMacroID())
+        if (const auto *I = dyn_cast<IntegerLiteral>(S))
+          if (I->getValue() == 0ULL)
+            if (const Stmt *Parent = PM->getParent(S))
+              if (isa<DoStmt>(Parent))
+                continue;
       SR = S->getSourceRange();
       DL = PathDiagnosticLocation::createBegin(S, B.getSourceManager(), LC);
       SL = DL.asLocation();
@@ -195,8 +200,10 @@ void UnreachableCodeChecker::FindUnreachableEntryPoints(const CFGBlock *CB,
 // Find the Stmt* in a CFGBlock for reporting a warning
 const Stmt *UnreachableCodeChecker::getUnreachableStmt(const CFGBlock *CB) {
   for (CFGBlock::const_iterator I = CB->begin(), E = CB->end(); I != E; ++I) {
-    if (Optional<CFGStmt> S = I->getAs<CFGStmt>())
-      return S->getStmt();
+    if (Optional<CFGStmt> S = I->getAs<CFGStmt>()) {
+      if (!isa<DeclStmt>(S->getStmt()))
+        return S->getStmt();
+    }
   }
   if (const Stmt *S = CB->getTerminator())
     return S;
@@ -225,7 +232,7 @@ bool UnreachableCodeChecker::isInvalidPath(const CFGBlock *CB,
   if (!pred)
     return false;
 
-  // Get the predecessor block's terminator conditon
+  // Get the predecessor block's terminator condition
   const Stmt *cond = pred->getTerminatorCondition();
 
   //assert(cond && "CFGBlock's predecessor has a terminator condition");

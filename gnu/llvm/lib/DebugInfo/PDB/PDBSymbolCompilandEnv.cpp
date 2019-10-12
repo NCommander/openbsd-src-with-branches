@@ -10,20 +10,19 @@
 #include "llvm/DebugInfo/PDB/PDBSymbolCompilandEnv.h"
 
 #include "llvm/DebugInfo/PDB/IPDBRawSymbol.h"
-#include "llvm/DebugInfo/PDB/PDBSymbol.h"
 #include "llvm/DebugInfo/PDB/PDBSymDumper.h"
+#include "llvm/DebugInfo/PDB/PDBSymbol.h"
 
 #include <utility>
 
 using namespace llvm;
-
-PDBSymbolCompilandEnv::PDBSymbolCompilandEnv(
-    const IPDBSession &PDBSession, std::unique_ptr<IPDBRawSymbol> Symbol)
-    : PDBSymbol(PDBSession, std::move(Symbol)) {}
+using namespace llvm::pdb;
 
 std::string PDBSymbolCompilandEnv::getValue() const {
-  // call RawSymbol->getValue() and convert the result to an std::string.
-  return std::string();
+  Variant Value = RawSymbol->getValue();
+  if (Value.Type != PDB_VariantType::String)
+    return std::string();
+  return std::string(Value.Value.String);
 }
 
 void PDBSymbolCompilandEnv::dump(PDBSymDumper &Dumper) const {

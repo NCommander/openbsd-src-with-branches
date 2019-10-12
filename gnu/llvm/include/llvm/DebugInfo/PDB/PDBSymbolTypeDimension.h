@@ -16,21 +16,18 @@
 namespace llvm {
 
 class raw_ostream;
+namespace pdb {
 
 class PDBSymbolTypeDimension : public PDBSymbol {
-public:
-  PDBSymbolTypeDimension(const IPDBSession &PDBSession,
-                         std::unique_ptr<IPDBRawSymbol> Symbol);
-
   DECLARE_PDB_SYMBOL_CONCRETE_TYPE(PDB_SymType::Dimension)
-
+public:
   void dump(PDBSymDumper &Dumper) const override;
 
   FORWARD_SYMBOL_METHOD(getLowerBoundId)
   FORWARD_SYMBOL_METHOD(getUpperBoundId)
-  FORWARD_SYMBOL_METHOD(getSymIndexId)
 };
 
 } // namespace llvm
+}
 
 #endif // LLVM_DEBUGINFO_PDB_PDBSYMBOLTYPEDIMENSION_H

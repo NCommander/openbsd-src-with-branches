@@ -23,10 +23,15 @@ DiagnosticMessage::DiagnosticMessage(llvm::StringRef Message)
 DiagnosticMessage::DiagnosticMessage(llvm::StringRef Message,
                                      const SourceManager &Sources,
                                      SourceLocation Loc)
-    : Message(Message) {
+    : Message(Message), FileOffset(0) {
   assert(Loc.isValid() && Loc.isFileID());
   FilePath = Sources.getFilename(Loc);
-  FileOffset = Sources.getFileOffset(Loc);
+
+  // Don't store offset in the scratch space. It doesn't tell anything to the
+  // user. Moreover, it depends on the history of macro expansions and thus
+  // prevents deduplication of warnings in headers.
+  if (!FilePath.empty())
+    FileOffset = Sources.getFileOffset(Loc);
 }
 
 Diagnostic::Diagnostic(llvm::StringRef DiagnosticName,
@@ -35,9 +40,9 @@ Diagnostic::Diagnostic(llvm::StringRef DiagnosticName,
       BuildDirectory(BuildDirectory) {}
 
 Diagnostic::Diagnostic(llvm::StringRef DiagnosticName,
-                       DiagnosticMessage &Message,
-                       llvm::StringMap<Replacements> &Fix,
-                       SmallVector<DiagnosticMessage, 1> &Notes,
+                       const DiagnosticMessage &Message,
+                       const llvm::StringMap<Replacements> &Fix,
+                       const SmallVector<DiagnosticMessage, 1> &Notes,
                        Level DiagLevel, llvm::StringRef BuildDirectory)
     : DiagnosticName(DiagnosticName), Message(Message), Fix(Fix), Notes(Notes),
       DiagLevel(DiagLevel), BuildDirectory(BuildDirectory) {}

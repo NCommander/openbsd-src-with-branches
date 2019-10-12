@@ -12,8 +12,8 @@
 // modules, accessing global variables, etc.
 //===----------------------------------------------------------------------===//
 
-#include "llvm/ExecutionEngine/MCJIT.h"
 #include "MCJITTestBase.h"
+#include "llvm/ExecutionEngine/MCJIT.h"
 #include "gtest/gtest.h"
 
 using namespace llvm;
@@ -175,7 +175,7 @@ TEST_F(MCJITMultipleModuleTest, two_module_consecutive_call_case) {
   std::unique_ptr<Module> A, B;
   Function *FA1, *FA2, *FB;
   createTwoModuleExternCase(A, FA1, B, FB);
-  FA2 = insertSimpleCallFunction<int32_t(int32_t, int32_t)>(A.get(), FA1);
+  FA2 = insertSimpleCallFunction(A.get(), FA1);
 
   createJIT(std::move(A));
   TheJIT->addModule(std::move(B));
@@ -203,15 +203,18 @@ TEST_F(MCJITMultipleModuleTest, two_module_global_variables_case) {
   std::unique_ptr<Module> A, B;
   Function *FA, *FB;
   GlobalVariable *GVA, *GVB, *GVC;
+
   A.reset(createEmptyModule("A"));
   B.reset(createEmptyModule("B"));
 
   int32_t initialNum = 7;
   GVA = insertGlobalInt32(A.get(), "GVA", initialNum);
   GVB = insertGlobalInt32(B.get(), "GVB", initialNum);
-  FA = startFunction<int32_t(void)>(A.get(), "FA");
+  FA = startFunction(A.get(),
+                     FunctionType::get(Builder.getInt32Ty(), {}, false), "FA");
   endFunctionWithRet(FA, Builder.CreateLoad(GVA));
-  FB = startFunction<int32_t(void)>(B.get(), "FB");
+  FB = startFunction(B.get(),
+                     FunctionType::get(Builder.getInt32Ty(), {}, false), "FB");
   endFunctionWithRet(FB, Builder.CreateLoad(GVB));
 
   GVC = insertGlobalInt32(B.get(), "GVC", initialNum);

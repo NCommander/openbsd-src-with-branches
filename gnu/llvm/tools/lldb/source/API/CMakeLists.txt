@@ -2,21 +2,12 @@ if ( CMAKE_SYSTEM_NAME MATCHES "Windows" )
   add_definitions( -DEXPORT_LIBLLDB )
 endif()
 
-# Include this so that add_lldb_library() has the list of dependencies
-# for liblldb to link against
-include(${LLDB_PROJECT_ROOT}/cmake/LLDBDependencies.cmake)
-
-option(LLDB_BUILD_FRAMEWORK "Build the Darwin LLDB.framework" Off)
-
-if(LLDB_BUILD_FRAMEWORK AND CMAKE_VERSION VERSION_LESS 3.7)
-  message(FATAL_ERROR "LLDB_BUILD_FRAMEWORK is not supported on CMake < 3.7")
-endif()
-
-if (LLDB_BUILD_FRAMEWORK AND NOT APPLE)
-  message(FATAL_ERROR "LLDB.framework cannot be generated unless targeting Apple platforms.")
-endif()
-
 get_property(LLDB_ALL_PLUGINS GLOBAL PROPERTY LLDB_PLUGINS)
+
+if(NOT LLDB_DISABLE_PYTHON)
+  get_target_property(lldb_scripts_dir swig_wrapper BINARY_DIR)
+  set(lldb_python_wrapper ${lldb_scripts_dir}/LLDBWrapPython.cpp)
+endif()
 
 add_lldb_library(liblldb SHARED
   SBAddress.cpp
@@ -24,6 +15,8 @@ add_lldb_library(liblldb SHARED
   SBBlock.cpp
   SBBreakpoint.cpp
   SBBreakpointLocation.cpp
+  SBBreakpointName.cpp
+  SBBreakpointOptionCommon.cpp
   SBBroadcaster.cpp
   SBCommandInterpreter.cpp
   SBCommandReturnObject.cpp
@@ -41,6 +34,7 @@ add_lldb_library(liblldb SHARED
   SBFrame.cpp
   SBFunction.cpp
   SBHostOS.cpp
+  SBInitializerOptions.cpp
   SBInstruction.cpp
   SBInstructionList.cpp
   SBLanguageRuntime.cpp
@@ -53,6 +47,7 @@ add_lldb_library(liblldb SHARED
   SBModuleSpec.cpp
   SBPlatform.cpp
   SBProcess.cpp
+  SBProcessInfo.cpp
   SBQueue.cpp
   SBQueueItem.cpp
   SBSection.cpp
@@ -83,7 +78,7 @@ add_lldb_library(liblldb SHARED
   SBWatchpoint.cpp
   SBUnixSignals.cpp
   SystemInitializerFull.cpp
-  ${LLDB_WRAP_PYTHON}
+  ${lldb_python_wrapper}
 
   LINK_LIBS
     lldbBase
@@ -102,25 +97,31 @@ add_lldb_library(liblldb SHARED
     Support
   )
 
-if (LLVM_ENABLE_WERROR)
-  if (MSVC)
-    set_property(SOURCE ${LLDB_WRAP_PYTHON} APPEND_STRING PROPERTY COMPILE_FLAGS " /W0")
-  else()
-    set_property(SOURCE ${LLDB_WRAP_PYTHON} APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
-  endif()
-endif()
+if(lldb_python_wrapper)
+  add_dependencies(liblldb swig_wrapper)
 
-# This should not be part of LLDBDependencies.cmake, because we don't
-# want every single library taking a dependency on the script interpreters.
-target_link_libraries(liblldb PRIVATE
-  lldbPluginScriptInterpreterNone
-  lldbPluginScriptInterpreterPython
-  )
+  if (MSVC)
+    set_property(SOURCE ${lldb_python_wrapper} APPEND_STRING PROPERTY COMPILE_FLAGS " /W0")
+  else()
+    set_property(SOURCE ${lldb_python_wrapper} APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
+  endif()
+
+  set_source_files_properties(${lldb_python_wrapper} PROPERTIES GENERATED ON)
+  if (CLANG_CL)
+    set_property(SOURCE ${lldb_python_wrapper} APPEND_STRING
+      PROPERTY COMPILE_FLAGS " -Wno-unused-function")
+  endif()
+  if (LLVM_COMPILER_IS_GCC_COMPATIBLE AND
+      NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
+    set_property(SOURCE ${lldb_python_wrapper} APPEND_STRING
+      PROPERTY COMPILE_FLAGS " -Wno-sequence-point -Wno-cast-qual")
+  endif ()
+endif()
 
 set_target_properties(liblldb
   PROPERTIES
   VERSION ${LLDB_VERSION}
-  )
+)
 
 if (NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
   if (NOT LLDB_EXPORT_ALL_SYMBOLS)
@@ -147,28 +148,9 @@ else()
   set_target_properties(liblldb
     PROPERTIES
     OUTPUT_NAME lldb
-    )
+  )
 endif()
-
-if (LLDB_WRAP_PYTHON)
-  add_dependencies(liblldb swig_wrapper)
-endif()
-target_link_libraries(liblldb PRIVATE ${LLDB_SYSTEM_LIBS})
 
 if(LLDB_BUILD_FRAMEWORK)
-  file(GLOB public_headers ${LLDB_SOURCE_DIR}/include/lldb/API/*.h)
-  set_target_properties(liblldb PROPERTIES
-    OUTPUT_NAME LLDB
-    FRAMEWORK On
-    FRAMEWORK_VERSION ${LLDB_FRAMEWORK_VERSION}
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${LLDB_FRAMEWORK_INSTALL_DIR}
-    PUBLIC_HEADER "${public_headers}")
-
-  add_custom_command(TARGET liblldb POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:liblldb>/Versions/${LLDB_FRAMEWORK_VERSION}
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${LLDB_SOURCE_DIR}/include/lldb/API $<TARGET_FILE_DIR:liblldb>/Headers
-    COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Headers ${CMAKE_BINARY_DIR}/${LLDB_FRAMEWORK_INSTALL_DIR}/LLDB.framework/Headers 
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX}/clang/${LLDB_VERSION} $<TARGET_FILE_DIR:liblldb>/Resources/Clang
-    )
+  include(LLDBFramework)
 endif()
-

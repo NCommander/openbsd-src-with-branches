@@ -1,4 +1,4 @@
-// SValBuilder.cpp - Basic class for all SValBuilder implementations -*- C++ -*-
+//===- SValBuilder.cpp - Basic class for all SValBuilder implementations --===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -13,12 +13,33 @@
 //===----------------------------------------------------------------------===//
 
 #include "clang/StaticAnalyzer/Core/PathSensitive/SValBuilder.h"
+#include "clang/AST/ASTContext.h"
+#include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/ExprCXX.h"
+#include "clang/AST/ExprObjC.h"
+#include "clang/AST/Stmt.h"
+#include "clang/AST/Type.h"
+#include "clang/Basic/LLVM.h"
+#include "clang/Analysis/AnalysisDeclContext.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/APSIntType.h"
 #include "clang/StaticAnalyzer/Core/PathSensitive/BasicValueFactory.h"
 #include "clang/StaticAnalyzer/Core/PathSensitive/MemRegion.h"
 #include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/ProgramState_Fwd.h"
 #include "clang/StaticAnalyzer/Core/PathSensitive/SVals.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/Store.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/SubEngine.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/SymExpr.h"
+#include "clang/StaticAnalyzer/Core/PathSensitive/SymbolManager.h"
+#include "llvm/ADT/APSInt.h"
+#include "llvm/ADT/None.h"
+#include "llvm/ADT/Optional.h"
+#include "llvm/Support/Casting.h"
+#include "llvm/Support/Compiler.h"
+#include <cassert>
+#include <tuple>
 
 using namespace clang;
 using namespace ento;
@@ -27,7 +48,7 @@ using namespace ento;
 // Basic SVal creation.
 //===----------------------------------------------------------------------===//
 
-void SValBuilder::anchor() { }
+void SValBuilder::anchor() {}
 
 DefinedOrUnknownSVal SValBuilder::makeZeroVal(QualType type) {
   if (Loc::isLocType(type))
@@ -36,8 +57,11 @@ DefinedOrUnknownSVal SValBuilder::makeZeroVal(QualType type) {
   if (type->isIntegralOrEnumerationType())
     return makeIntVal(0, type);
 
+  if (type->isArrayType() || type->isRecordType() || type->isVectorType() ||
+      type->isAnyComplexType())
+    return makeCompoundVal(type, BasicVals.getEmptySValList());
+
   // FIXME: Handle floats.
-  // FIXME: Handle structs.
   return UnknownVal();
 }
 
@@ -92,12 +116,12 @@ nonloc::ConcreteInt SValBuilder::makeBoolVal(const CXXBoolLiteralExpr *boolean){
 }
 
 DefinedOrUnknownSVal
-SValBuilder::getRegionValueSymbolVal(const TypedValueRegion* region) {
+SValBuilder::getRegionValueSymbolVal(const TypedValueRegion *region) {
   QualType T = region->getValueType();
 
   if (T->isNullPtrType())
     return makeZeroVal(T);
-  
+
   if (!SymbolManager::canSymbolicate(T))
     return UnknownVal();
 
@@ -146,7 +170,6 @@ DefinedOrUnknownSVal SValBuilder::conjureSymbolVal(const void *symbolTag,
   return nonloc::SymbolVal(sym);
 }
 
-
 DefinedOrUnknownSVal SValBuilder::conjureSymbolVal(const Stmt *stmt,
                                                    const LocationContext *LCtx,
                                                    QualType type,
@@ -182,11 +205,12 @@ SValBuilder::getConjuredHeapSymbolVal(const Expr *E,
 DefinedSVal SValBuilder::getMetadataSymbolVal(const void *symbolTag,
                                               const MemRegion *region,
                                               const Expr *expr, QualType type,
+                                              const LocationContext *LCtx,
                                               unsigned count) {
   assert(SymbolManager::canSymbolicate(type) && "Invalid metadata symbol type");
 
   SymbolRef sym =
-      SymMgr.getMetadataSymbol(region, expr, type, count, symbolTag);
+      SymMgr.getMetadataSymbol(region, expr, type, LCtx, count, symbolTag);
 
   if (Loc::isLocType(type))
     return loc::MemRegionVal(MemMgr.getSymbolicRegion(sym));
@@ -213,6 +237,22 @@ SValBuilder::getDerivedRegionValueSymbolVal(SymbolRef parentSymbol,
   return nonloc::SymbolVal(sym);
 }
 
+DefinedSVal SValBuilder::getMemberPointer(const DeclaratorDecl *DD) {
+  assert(!DD || isa<CXXMethodDecl>(DD) || isa<FieldDecl>(DD));
+
+  if (const auto *MD = dyn_cast_or_null<CXXMethodDecl>(DD)) {
+    // Sema treats pointers to static member functions as have function pointer
+    // type, so return a function pointer for the method.
+    // We don't need to play a similar trick for static member fields
+    // because these are represented as plain VarDecls and not FieldDecls
+    // in the AST.
+    if (MD->isStatic())
+      return getFunctionPointer(MD);
+  }
+
+  return nonloc::PointerToMember(DD);
+}
+
 DefinedSVal SValBuilder::getFunctionPointer(const FunctionDecl *func) {
   return loc::MemRegionVal(MemMgr.getFunctionCodeRegion(func));
 }
@@ -231,8 +271,8 @@ DefinedSVal SValBuilder::getBlockPointer(const BlockDecl *block,
 /// Return a memory region for the 'this' object reference.
 loc::MemRegionVal SValBuilder::getCXXThis(const CXXMethodDecl *D,
                                           const StackFrameContext *SFC) {
-  return loc::MemRegionVal(getRegionManager().
-                           getCXXThisRegion(D->getThisType(getContext()), SFC));
+  return loc::MemRegionVal(
+      getRegionManager().getCXXThisRegion(D->getThisType(), SFC));
 }
 
 /// Return a memory region for the 'this' object reference.
@@ -257,19 +297,19 @@ Optional<SVal> SValBuilder::getConstantVal(const Expr *E) {
     return makeZeroVal(E->getType());
 
   case Stmt::ObjCStringLiteralClass: {
-    const ObjCStringLiteral *SL = cast<ObjCStringLiteral>(E);
+    const auto *SL = cast<ObjCStringLiteral>(E);
     return makeLoc(getRegionManager().getObjCStringRegion(SL));
   }
 
   case Stmt::StringLiteralClass: {
-    const StringLiteral *SL = cast<StringLiteral>(E);
+    const auto *SL = cast<StringLiteral>(E);
     return makeLoc(getRegionManager().getStringRegion(SL));
   }
 
   // Fast-path some expressions to avoid the overhead of going through the AST's
   // constant evaluator
   case Stmt::CharacterLiteralClass: {
-    const CharacterLiteral *C = cast<CharacterLiteral>(E);
+    const auto *C = cast<CharacterLiteral>(E);
     return makeIntVal(C->getValue(), C->getType());
   }
 
@@ -277,7 +317,7 @@ Optional<SVal> SValBuilder::getConstantVal(const Expr *E) {
     return makeBoolVal(cast<CXXBoolLiteralExpr>(E));
 
   case Stmt::TypeTraitExprClass: {
-    const TypeTraitExpr *TE = cast<TypeTraitExpr>(E);
+    const auto *TE = cast<TypeTraitExpr>(E);
     return makeTruthVal(TE->getValue(), TE->getType());
   }
 
@@ -290,12 +330,19 @@ Optional<SVal> SValBuilder::getConstantVal(const Expr *E) {
   case Stmt::CXXNullPtrLiteralExprClass:
     return makeNull();
 
+  case Stmt::CStyleCastExprClass:
+  case Stmt::CXXFunctionalCastExprClass:
+  case Stmt::CXXConstCastExprClass:
+  case Stmt::CXXReinterpretCastExprClass:
+  case Stmt::CXXStaticCastExprClass:
   case Stmt::ImplicitCastExprClass: {
-    const CastExpr *CE = cast<CastExpr>(E);
+    const auto *CE = cast<CastExpr>(E);
     switch (CE->getCastKind()) {
     default:
       break;
     case CK_ArrayToPointerDecay:
+    case CK_IntegralToPointer:
+    case CK_NoOp:
     case CK_BitCast: {
       const Expr *SE = CE->getSubExpr();
       Optional<SVal> Val = getConstantVal(SE);
@@ -305,6 +352,7 @@ Optional<SVal> SValBuilder::getConstantVal(const Expr *E) {
     }
     }
     // FALLTHROUGH
+    LLVM_FALLTHROUGH;
   }
 
   // If we don't have a special case, fall back to the AST's constant evaluator.
@@ -314,9 +362,9 @@ Optional<SVal> SValBuilder::getConstantVal(const Expr *E) {
       return None;
 
     ASTContext &Ctx = getContext();
-    llvm::APSInt Result;
+    Expr::EvalResult Result;
     if (E->EvaluateAsInt(Result, Ctx))
-      return makeIntVal(Result);
+      return makeIntVal(Result.Val.getInt());
 
     if (Loc::isLocType(E->getType()))
       if (E->isNullPointerConstant(Ctx, Expr::NPC_ValueDependentIsNotNull))
@@ -327,20 +375,17 @@ Optional<SVal> SValBuilder::getConstantVal(const Expr *E) {
   }
 }
 
-//===----------------------------------------------------------------------===//
-
-SVal SValBuilder::makeSymExprValNN(ProgramStateRef State,
-                                   BinaryOperator::Opcode Op,
+SVal SValBuilder::makeSymExprValNN(BinaryOperator::Opcode Op,
                                    NonLoc LHS, NonLoc RHS,
                                    QualType ResultTy) {
-  if (!State->isTainted(RHS) && !State->isTainted(LHS))
-    return UnknownVal();
-
   const SymExpr *symLHS = LHS.getAsSymExpr();
   const SymExpr *symRHS = RHS.getAsSymExpr();
+
   // TODO: When the Max Complexity is reached, we should conjure a symbol
   // instead of generating an Unknown value and propagate the taint info to it.
-  const unsigned MaxComp = 10000; // 100000 28X
+  const unsigned MaxComp = StateMgr.getOwningEngine()
+                               .getAnalysisManager()
+                               .options.MaxSymbolComplexity;
 
   if (symLHS && symRHS &&
       (symLHS->computeComplexity() + symRHS->computeComplexity()) <  MaxComp)
@@ -357,15 +402,18 @@ SVal SValBuilder::makeSymExprValNN(ProgramStateRef State,
   return UnknownVal();
 }
 
-
 SVal SValBuilder::evalBinOp(ProgramStateRef state, BinaryOperator::Opcode op,
                             SVal lhs, SVal rhs, QualType type) {
-
   if (lhs.isUndef() || rhs.isUndef())
     return UndefinedVal();
 
   if (lhs.isUnknown() || rhs.isUnknown())
     return UnknownVal();
+
+  if (lhs.getAs<nonloc::LazyCompoundVal>() ||
+      rhs.getAs<nonloc::LazyCompoundVal>()) {
+    return UnknownVal();
+  }
 
   if (Optional<Loc> LV = lhs.getAs<Loc>()) {
     if (Optional<Loc> RV = rhs.getAs<Loc>())
@@ -387,10 +435,19 @@ SVal SValBuilder::evalBinOp(ProgramStateRef state, BinaryOperator::Opcode op,
                      type);
 }
 
+ConditionTruthVal SValBuilder::areEqual(ProgramStateRef state, SVal lhs,
+                                        SVal rhs) {
+  return state->isNonNull(evalEQ(state, lhs, rhs));
+}
+
+SVal SValBuilder::evalEQ(ProgramStateRef state, SVal lhs, SVal rhs) {
+  return evalBinOp(state, BO_EQ, lhs, rhs, getConditionType());
+}
+
 DefinedOrUnknownSVal SValBuilder::evalEQ(ProgramStateRef state,
                                          DefinedOrUnknownSVal lhs,
                                          DefinedOrUnknownSVal rhs) {
-  return evalBinOp(state, BO_EQ, lhs, rhs, getConditionType())
+  return evalEQ(state, static_cast<SVal>(lhs), static_cast<SVal>(rhs))
       .castAs<DefinedOrUnknownSVal>();
 }
 
@@ -399,7 +456,7 @@ DefinedOrUnknownSVal SValBuilder::evalEQ(ProgramStateRef state,
 /// Assumes the input types are canonical.
 static bool shouldBeModeledWithNoOp(ASTContext &Context, QualType ToTy,
                                                          QualType FromTy) {
-  while (Context.UnwrapSimilarPointerTypes(ToTy, FromTy)) {
+  while (Context.UnwrapSimilarTypes(ToTy, FromTy)) {
     Qualifiers Quals1, Quals2;
     ToTy = Context.getUnqualifiedArrayType(ToTy, Quals1);
     FromTy = Context.getUnqualifiedArrayType(FromTy, Quals2);
@@ -414,6 +471,10 @@ static bool shouldBeModeledWithNoOp(ASTContext &Context, QualType ToTy,
 
   // If we are casting to void, the 'From' value can be used to represent the
   // 'To' value.
+  //
+  // FIXME: Doing this after unwrapping the types doesn't make any sense. A
+  // cast from 'int**' to 'void**' is not special in the way that a cast from
+  // 'int*' to 'void*' is.
   if (ToTy->isVoidType())
     return true;
 
@@ -428,7 +489,6 @@ static bool shouldBeModeledWithNoOp(ASTContext &Context, QualType ToTy,
 // of the original value is known to be greater than the max of the target type.
 SVal SValBuilder::evalIntegralCast(ProgramStateRef state, SVal val,
                                    QualType castTy, QualType originalTy) {
-
   // No truncations if target type is big enough.
   if (getContext().getTypeSize(castTy) >= getContext().getTypeSize(originalTy))
     return evalCast(val, castTy, originalTy);
@@ -451,7 +511,7 @@ SVal SValBuilder::evalIntegralCast(ProgramStateRef state, SVal val,
   NonLoc FromVal = val.castAs<NonLoc>();
   QualType CmpTy = getConditionType();
   NonLoc CompVal =
-      evalBinOpNN(state, BO_LT, FromVal, ToTypeMaxVal, CmpTy).castAs<NonLoc>();
+      evalBinOpNN(state, BO_LE, FromVal, ToTypeMaxVal, CmpTy).castAs<NonLoc>();
   ProgramStateRef IsNotTruncated, IsTruncated;
   std::tie(IsNotTruncated, IsTruncated) = state->assume(CompVal);
   if (!IsNotTruncated && IsTruncated) {
@@ -522,8 +582,8 @@ SVal SValBuilder::evalCast(SVal val, QualType castTy, QualType originalTy) {
   }
 
   // Check for casts from array type to another type.
-  if (const ArrayType *arrayT =
-                      dyn_cast<ArrayType>(originalTy.getCanonicalType())) {
+  if (const auto *arrayT =
+          dyn_cast<ArrayType>(originalTy.getCanonicalType())) {
     // We will always decay to a pointer.
     QualType elemTy = arrayT->getElementType();
     val = StateMgr.ArrayToPointer(val.castAs<Loc>(), elemTy);

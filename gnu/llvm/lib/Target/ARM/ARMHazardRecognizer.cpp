@@ -13,7 +13,7 @@
 #include "ARMSubtarget.h"
 #include "llvm/CodeGen/MachineInstr.h"
 #include "llvm/CodeGen/ScheduleDAG.h"
-#include "llvm/Target/TargetRegisterInfo.h"
+#include "llvm/CodeGen/TargetRegisterInfo.h"
 using namespace llvm;
 
 static bool hasRAWHazard(MachineInstr *DefMI, MachineInstr *MI,
@@ -37,7 +37,7 @@ ARMHazardRecognizer::getHazardType(SUnit *SU, int Stalls) {
 
   MachineInstr *MI = SU->getInstr();
 
-  if (!MI->isDebugValue()) {
+  if (!MI->isDebugInstr()) {
     // Look for special VMLA / VMLS hazards. A VMUL / VADD / VSUB following
     // a VMLA / VMLS will cause 4 cycle stall.
     const MCInstrDesc &MCID = MI->getDesc();
@@ -50,8 +50,7 @@ ARMHazardRecognizer::getHazardType(SUnit *SU, int Stalls) {
 
       // Skip over one non-VFP / NEON instruction.
       if (!LastMI->isBarrier() &&
-          // On A9, AGU and NEON/FPU are muxed.
-          !(TII.getSubtarget().isLikeA9() && LastMI->mayLoadOrStore()) &&
+          !(TII.getSubtarget().hasMuxedUnits() && LastMI->mayLoadOrStore()) &&
           (LastMCID.TSFlags & ARMII::DomainMask) == ARMII::DomainGeneral) {
         MachineBasicBlock::iterator I = LastMI;
         if (I != LastMI->getParent()->begin()) {
@@ -82,7 +81,7 @@ void ARMHazardRecognizer::Reset() {
 
 void ARMHazardRecognizer::EmitInstruction(SUnit *SU) {
   MachineInstr *MI = SU->getInstr();
-  if (!MI->isDebugValue()) {
+  if (!MI->isDebugInstr()) {
     LastMI = MI;
     FpMLxStalls = 0;
   }

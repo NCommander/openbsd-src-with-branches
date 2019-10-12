@@ -63,11 +63,9 @@ public:
 
   /// Return the given metadata, creating a replaceable forward reference if
   /// necessary.
-  Metadata *getMetadataFwdRef(unsigned Idx);
+  Metadata *getMetadataFwdRefOrLoad(unsigned Idx);
 
-  MDNode *getMDNodeFwdRefOrNull(unsigned Idx);
-
-  /// Return the DISubprogra metadata for a Function if any, null otherwise.
+  /// Return the DISubprogram metadata for a Function if any, null otherwise.
   DISubprogram *lookupSubprogramForFunction(Function *F);
 
   /// Parse a `METADATA_ATTACHMENT` block for a function.
@@ -79,6 +77,9 @@ public:
 
   unsigned size() const;
   void shrinkTo(unsigned N);
+
+  /// Perform bitcode upgrades on llvm.dbg.* calls.
+  void upgradeDebugIntrinsics(Function &F);
 };
 }
 

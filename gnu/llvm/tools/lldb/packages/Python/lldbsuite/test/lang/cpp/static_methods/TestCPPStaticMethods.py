@@ -16,11 +16,10 @@ class CPPStaticMethodsTestCase(TestBase):
         TestBase.setUp(self)
         self.line = line_number('main.cpp', '// Break at this line')
 
-    @expectedFailureAll(oslist=["windows"])
     def test_with_run_command(self):
         """Test that static methods are properly distinguished from regular methods"""
         self.build()
-        self.runCmd("file a.out", CURRENT_EXECUTABLE_SET)
+        self.runCmd("file " + self.getBuildArtifact("a.out"), CURRENT_EXECUTABLE_SET)
 
         lldbutil.run_break_set_by_file_and_line(
             self, "main.cpp", self.line, num_expected_locations=1, loc_exact=True)

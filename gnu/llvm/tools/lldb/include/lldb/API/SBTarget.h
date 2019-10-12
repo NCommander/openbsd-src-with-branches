@@ -10,10 +10,6 @@
 #ifndef LLDB_SBTarget_h_
 #define LLDB_SBTarget_h_
 
-// C Includes
-// C++ Includes
-// Other libraries and framework includes
-// Project includes
 #include "lldb/API/SBAddress.h"
 #include "lldb/API/SBAttachInfo.h"
 #include "lldb/API/SBBreakpoint.h"
@@ -74,6 +70,33 @@ public:
   static const char *GetBroadcasterClassName();
 
   lldb::SBProcess GetProcess();
+
+  //------------------------------------------------------------------
+  /// Sets whether we should collect statistics on lldb or not.
+  ///
+  /// @param[in] v
+  ///     A boolean to control the collection.
+  /// @return
+  ///     void
+  //------------------------------------------------------------------
+  void SetCollectingStats(bool v);
+
+  //------------------------------------------------------------------
+  /// Returns whether statistics collection are enabled.
+  ///
+  /// @return
+  ///     true if statistics are currently being collected, false
+  ///     otherwise.
+  //------------------------------------------------------------------
+  bool GetCollectingStats();
+
+  //------------------------------------------------------------------
+  /// Returns a dump of the collected statistics.
+  ///
+  /// @return
+  ///     A SBStructuredData with the statistics collected.
+  //------------------------------------------------------------------
+  lldb::SBStructuredData GetStatistics();
 
   //------------------------------------------------------------------
   /// Return the platform object associated with the target.
@@ -163,6 +186,7 @@ public:
                          bool stop_at_entry, lldb::SBError &error);
 
   SBProcess LoadCore(const char *core_file);
+  SBProcess LoadCore(const char *core_file, lldb::SBError &error);
 
   //------------------------------------------------------------------
   /// Launch a new process with sensible defaults.
@@ -218,14 +242,6 @@ public:
   lldb::SBProcess AttachToProcessWithID(SBListener &listener, lldb::pid_t pid,
                                         lldb::SBError &error);
 
-#if defined(__APPLE__)
-  // We need to keep this around for a build or two since Xcode links
-  // to the 32 bit version of this function. We will take it out soon.
-  lldb::SBProcess AttachToProcessWithID(SBListener &listener,
-                                        ::pid_t pid, // 32 bit int process ID
-                                        lldb::SBError &error); // DEPRECATED
-#endif
-
   //------------------------------------------------------------------
   /// Attach to process with name.
   ///
@@ -277,6 +293,10 @@ public:
 
   lldb::SBFileSpec GetExecutable();
 
+  // Append the path mapping (from -> to) to the target's paths mapping list.
+  void AppendImageSearchPath(const char *from, const char *to,
+                             lldb::SBError &error);
+
   bool AddModule(lldb::SBModule &module);
 
   lldb::SBModule AddModule(const char *path, const char *triple,
@@ -296,6 +316,21 @@ public:
   lldb::SBDebugger GetDebugger() const;
 
   lldb::SBModule FindModule(const lldb::SBFileSpec &file_spec);
+
+  //------------------------------------------------------------------
+  /// Find compile units related to *this target and passed source
+  /// file.
+  ///
+  /// @param[in] sb_file_spec
+  ///     A lldb::SBFileSpec object that contains source file
+  ///     specification.
+  ///
+  /// @return
+  ///     A lldb::SBSymbolContextList that gets filled in with all of
+  ///     the symbol contexts for all the matches.
+  //------------------------------------------------------------------
+  lldb::SBSymbolContextList
+  FindCompileUnits(const lldb::SBFileSpec &sb_file_spec);
 
   lldb::ByteOrder GetByteOrder();
 
@@ -566,6 +601,11 @@ public:
   BreakpointCreateByLocation(const lldb::SBFileSpec &file_spec, uint32_t line,
                              lldb::addr_t offset, SBFileSpecList &module_list);
 
+  lldb::SBBreakpoint
+  BreakpointCreateByLocation(const lldb::SBFileSpec &file_spec, uint32_t line,
+                             uint32_t column, lldb::addr_t offset,
+                             SBFileSpecList &module_list);
+
   lldb::SBBreakpoint BreakpointCreateByName(const char *symbol_name,
                                             const char *module_name = nullptr);
 
@@ -643,6 +683,37 @@ public:
   lldb::SBBreakpoint BreakpointCreateByAddress(addr_t address);
 
   lldb::SBBreakpoint BreakpointCreateBySBAddress(SBAddress &address);
+  
+  //------------------------------------------------------------------
+  /// Create a breakpoint using a scripted resolver.
+  ///
+  /// @param[in] class_name
+  ///    This is the name of the class that implements a scripted resolver.
+  ///
+  /// @param[in] extra_args
+  ///    This is an SBStructuredData object that will get passed to the
+  ///    constructor of the class in class_name.  You can use this to 
+  ///    reuse the same class, parametrizing with entries from this 
+  ///    dictionary.
+  ///
+  /// @param module_list
+  ///    If this is non-empty, this will be used as the module filter in the 
+  ///    SearchFilter created for this breakpoint.
+  ///
+  /// @param file_list
+  ///    If this is non-empty, this will be used as the comp unit filter in the 
+  ///    SearchFilter created for this breakpoint.
+  ///
+  /// @return
+  ///     An SBBreakpoint that will set locations based on the logic in the
+  ///     resolver's search callback.
+  //------------------------------------------------------------------
+  lldb::SBBreakpoint BreakpointCreateFromScript(
+      const char *class_name,
+      SBStructuredData &extra_args,
+      const SBFileSpecList &module_list,
+      const SBFileSpecList &file_list,
+      bool request_hardware = false);
 
   //------------------------------------------------------------------
   /// Read breakpoints from source_file and return the newly created
@@ -725,6 +796,10 @@ public:
   // false if the name is not a valid breakpoint name, true otherwise.
   bool FindBreakpointsByName(const char *name, SBBreakpointList &bkpt_list);
 
+  void GetBreakpointNames(SBStringList &names);
+
+  void DeleteBreakpointName(const char *name);
+
   bool EnableAllBreakpoints();
 
   bool DisableAllBreakpoints();
@@ -777,8 +852,7 @@ public:
                                           const void *buf, size_t size);
 
   // The "WithFlavor" is necessary to keep SWIG from getting confused about
-  // overloaded arguments when
-  // using the buf + size -> Python Object magic.
+  // overloaded arguments when using the buf + size -> Python Object magic.
 
   lldb::SBInstructionList GetInstructionsWithFlavor(lldb::SBAddress base_addr,
                                                     const char *flavor_string,
@@ -818,6 +892,7 @@ protected:
   friend class SBAddress;
   friend class SBBlock;
   friend class SBBreakpointList;
+  friend class SBBreakpointNameImpl;
   friend class SBDebugger;
   friend class SBExecutionContext;
   friend class SBFunction;
@@ -828,10 +903,11 @@ protected:
   friend class SBSourceManager;
   friend class SBSymbol;
   friend class SBValue;
+  friend class SBVariablesOptions;
 
   //------------------------------------------------------------------
-  // Constructors are private, use static Target::Create function to
-  // create an instance of this class.
+  // Constructors are private, use static Target::Create function to create an
+  // instance of this class.
   //------------------------------------------------------------------
 
   lldb::TargetSP GetSP() const;

@@ -9,10 +9,6 @@
 
 #include "LibStdcpp.h"
 
-// C Includes
-// C++ Includes
-// Other libraries and framework includes
-// Project includes
 #include "lldb/Core/ValueObject.h"
 #include "lldb/Core/ValueObjectConstResult.h"
 #include "lldb/DataFormatters/StringPrinter.h"
@@ -117,11 +113,8 @@ bool LibstdcppMapIteratorSyntheticFrontEnd::Update() {
 
   CompilerType my_type(valobj_sp->GetCompilerType());
   if (my_type.GetNumTemplateArguments() >= 1) {
-    TemplateArgumentKind kind;
-    CompilerType pair_type = my_type.GetTemplateArgument(0, kind);
-    if (kind != eTemplateArgumentKindType &&
-        kind != eTemplateArgumentKindTemplate &&
-        kind != eTemplateArgumentKindTemplateExpansion)
+    CompilerType pair_type = my_type.GetTypeTemplateArgument(0);
+    if (!pair_type)
       return false;
     m_pair_type = pair_type;
   } else
@@ -304,8 +297,11 @@ bool lldb_private::formatters::LibStdcppWStringSummaryProvider(
       if (!wchar_compiler_type)
         return false;
 
-      const uint32_t wchar_size = wchar_compiler_type.GetBitSize(
-          nullptr); // Safe to pass NULL for exe_scope here
+      // Safe to pass nullptr for exe_scope here.
+      llvm::Optional<uint64_t> size = wchar_compiler_type.GetBitSize(nullptr);
+      if (!size)
+        return false;
+      const uint32_t wchar_size = *size;
 
       StringPrinter::ReadStringAndDumpToStreamOptions options(valobj);
       Status error;

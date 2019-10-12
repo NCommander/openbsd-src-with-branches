@@ -34,6 +34,7 @@
 //  a - The type should only be assembled.
 //  p - The type should only be precompiled.
 //  u - The type can be user specified (with -x).
+//  m - Precompiling this type produces a module file.
 //  A - The type's temporary suffix should be appended when generating
 //      outputs of this type.
 
@@ -45,6 +46,9 @@ TYPE("cl",                       CL,           PP_C,            "cl",    "u")
 TYPE("cuda-cpp-output",          PP_CUDA,      INVALID,         "cui",   "u")
 TYPE("cuda",                     CUDA,         PP_CUDA,         "cu",    "u")
 TYPE("cuda",                     CUDA_DEVICE,  PP_CUDA,         "cu",    "")
+TYPE("hip-cpp-output",           PP_HIP,       INVALID,         "cui",   "u")
+TYPE("hip",                      HIP,          PP_HIP,          "cu",    "u")
+TYPE("hip",                      HIP_DEVICE,   PP_HIP,          "cu",    "")
 TYPE("objective-c-cpp-output",   PP_ObjC,      INVALID,         "mi",    "u")
 TYPE("objc-cpp-output",          PP_ObjC_Alias, INVALID,        "mi",    "u")
 TYPE("objective-c",              ObjC,         PP_ObjC,         "m",     "u")
@@ -53,6 +57,7 @@ TYPE("c++",                      CXX,          PP_CXX,          "cpp",   "u")
 TYPE("objective-c++-cpp-output", PP_ObjCXX,    INVALID,         "mii",   "u")
 TYPE("objc++-cpp-output",        PP_ObjCXX_Alias, INVALID,      "mii",   "u")
 TYPE("objective-c++",            ObjCXX,       PP_ObjCXX,       "mm",    "u")
+TYPE("renderscript",             RenderScript, PP_C,            "rs",    "u")
 
 // C family input files to precompile.
 TYPE("c-header-cpp-output",      PP_CHeader,   INVALID,         "i",     "p")
@@ -64,6 +69,8 @@ TYPE("c++-header-cpp-output",    PP_CXXHeader, INVALID,         "ii",    "p")
 TYPE("c++-header",               CXXHeader,    PP_CXXHeader,    "hh",    "pu")
 TYPE("objective-c++-header-cpp-output", PP_ObjCXXHeader, INVALID, "mii", "p")
 TYPE("objective-c++-header",     ObjCXXHeader, PP_ObjCXXHeader, "h",     "pu")
+TYPE("c++-module",               CXXModule,    PP_CXXModule,    "cppm",  "mu")
+TYPE("c++-module-cpp-output",    PP_CXXModule, INVALID,         "iim",   "m")
 
 // Other languages.
 TYPE("ada",                      Ada,          INVALID,         nullptr, "u")
@@ -93,4 +100,6 @@ TYPE("treelang",                 Treelang,     INVALID,         nullptr, "u")
 TYPE("image",                    Image,        INVALID,         "out",   "")
 TYPE("dSYM",                     dSYM,         INVALID,         "dSYM",  "A")
 TYPE("dependencies",             Dependencies, INVALID,         "d",     "")
+TYPE("cuda-fatbin",              CUDA_FATBIN,  INVALID,         "fatbin","A")
+TYPE("hip-fatbin",               HIP_FATBIN,   INVALID,         "hipfb", "A")
 TYPE("none",                     Nothing,      INVALID,         nullptr, "u")

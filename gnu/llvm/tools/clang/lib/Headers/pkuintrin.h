@@ -1,4 +1,4 @@
-/*===------------- pkuintrin.h - PKU intrinsics ------------------===
+/*===---- pkuintrin.h - PKU intrinsics -------------------------------------===
  *
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,9 +38,9 @@ _rdpkru_u32(void)
 }
 
 static __inline__ void __DEFAULT_FN_ATTRS
-_wrpkru(unsigned int val)
+_wrpkru(unsigned int __val)
 {
-  return __builtin_ia32_wrpkru(val);
+  __builtin_ia32_wrpkru(__val);
 }
 
 #undef __DEFAULT_FN_ATTRS

@@ -22,15 +22,15 @@ namespace {
 template<typename T>
 class ValueMapTest : public testing::Test {
 protected:
+  LLVMContext Context;
   Constant *ConstantV;
   std::unique_ptr<BitCastInst> BitcastV;
   std::unique_ptr<BinaryOperator> AddV;
 
-  ValueMapTest() :
-    ConstantV(ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 0)),
-    BitcastV(new BitCastInst(ConstantV, Type::getInt32Ty(getGlobalContext()))),
-    AddV(BinaryOperator::CreateAdd(ConstantV, ConstantV)) {
-  }
+  ValueMapTest()
+      : ConstantV(ConstantInt::get(Type::getInt32Ty(Context), 0)),
+        BitcastV(new BitCastInst(ConstantV, Type::getInt32Ty(Context))),
+        AddV(BinaryOperator::CreateAdd(ConstantV, ConstantV)) {}
 };
 
 // Run everything on Value*, a subtype to make sure that casting works as
@@ -195,7 +195,7 @@ struct LockMutex : ValueMapConfig<KeyT, MutexT> {
   static MutexT *getMutex(const ExtraData &Data) { return Data.M; }
 };
 // FIXME: These tests started failing on Windows.
-#if LLVM_ENABLE_THREADS && !defined(LLVM_ON_WIN32)
+#if LLVM_ENABLE_THREADS && !defined(_WIN32)
 TYPED_TEST(ValueMapTest, LocksMutex) {
   sys::Mutex M(false);  // Not recursive.
   bool CalledRAUW = false, CalledDeleted = false;
@@ -292,4 +292,4 @@ TYPED_TEST(ValueMapTest, SurvivesModificationByConfig) {
   EXPECT_EQ(0u, VM.count(this->AddV.get()));
 }
 
-}
+} // end namespace

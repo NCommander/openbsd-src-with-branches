@@ -16,13 +16,10 @@ class RvalueReferencesTestCase(TestBase):
     @expectedFailureAll(
         compiler="icc",
         bugnumber="ICC (13.1, 14-beta) do not emit DW_TAG_rvalue_reference_type.")
-    @expectedFailureAll(
-        oslist=["windows"],
-        bugnumber="llvm.org/pr24489: Name lookup not working correctly on Windows")
     def test_with_run_command(self):
         """Test that rvalues are supported in the C++ expression parser"""
         self.build()
-        self.runCmd("file a.out", CURRENT_EXECUTABLE_SET)
+        self.runCmd("file " + self.getBuildArtifact("a.out"), CURRENT_EXECUTABLE_SET)
 
         self.set_breakpoint(line_number('main.cpp', '// breakpoint 1'))
         self.set_breakpoint(line_number('main.cpp', '// breakpoint 2'))

@@ -9,7 +9,6 @@
 
 #include "llvm/Analysis/ProfileSummaryInfo.h"
 #include "llvm/Analysis/BlockFrequencyInfo.h"
-#include "llvm/Analysis/BlockFrequencyInfoImpl.h"
 #include "llvm/Analysis/BranchProbabilityInfo.h"
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/AsmParser/Parser.h"
@@ -119,8 +118,8 @@ TEST_F(ProfileSummaryInfoTest, TestNoProfile) {
   BasicBlock *BB1 = BB0.getTerminator()->getSuccessor(0);
 
   BlockFrequencyInfo BFI = buildBFI(*F);
-  EXPECT_FALSE(PSI.isHotBB(&BB0, &BFI));
-  EXPECT_FALSE(PSI.isColdBB(&BB0, &BFI));
+  EXPECT_FALSE(PSI.isHotBlock(&BB0, &BFI));
+  EXPECT_FALSE(PSI.isColdBlock(&BB0, &BFI));
 
   CallSite CS1(BB1->getFirstNonPHI());
   EXPECT_FALSE(PSI.isHotCallSite(CS1, &BFI));
@@ -157,10 +156,10 @@ TEST_F(ProfileSummaryInfoTest, InstrProf) {
   BasicBlock *BB3 = BB1->getSingleSuccessor();
 
   BlockFrequencyInfo BFI = buildBFI(*F);
-  EXPECT_TRUE(PSI.isHotBB(&BB0, &BFI));
-  EXPECT_TRUE(PSI.isHotBB(BB1, &BFI));
-  EXPECT_FALSE(PSI.isHotBB(BB2, &BFI));
-  EXPECT_TRUE(PSI.isHotBB(BB3, &BFI));
+  EXPECT_TRUE(PSI.isHotBlock(&BB0, &BFI));
+  EXPECT_TRUE(PSI.isHotBlock(BB1, &BFI));
+  EXPECT_FALSE(PSI.isHotBlock(BB2, &BFI));
+  EXPECT_TRUE(PSI.isHotBlock(BB3, &BFI));
 
   CallSite CS1(BB1->getFirstNonPHI());
   auto *CI2 = BB2->getFirstNonPHI();
@@ -189,21 +188,25 @@ TEST_F(ProfileSummaryInfoTest, SampleProf) {
   BasicBlock *BB3 = BB1->getSingleSuccessor();
 
   BlockFrequencyInfo BFI = buildBFI(*F);
-  EXPECT_TRUE(PSI.isHotBB(&BB0, &BFI));
-  EXPECT_TRUE(PSI.isHotBB(BB1, &BFI));
-  EXPECT_FALSE(PSI.isHotBB(BB2, &BFI));
-  EXPECT_TRUE(PSI.isHotBB(BB3, &BFI));
+  EXPECT_TRUE(PSI.isHotBlock(&BB0, &BFI));
+  EXPECT_TRUE(PSI.isHotBlock(BB1, &BFI));
+  EXPECT_FALSE(PSI.isHotBlock(BB2, &BFI));
+  EXPECT_TRUE(PSI.isHotBlock(BB3, &BFI));
 
   CallSite CS1(BB1->getFirstNonPHI());
   auto *CI2 = BB2->getFirstNonPHI();
+  // Manually attach branch weights metadata to the call instruction.
+  SmallVector<uint32_t, 1> Weights;
+  Weights.push_back(1000);
+  MDBuilder MDB(M->getContext());
+  CI2->setMetadata(LLVMContext::MD_prof, MDB.createBranchWeights(Weights));
   CallSite CS2(CI2);
 
-  EXPECT_TRUE(PSI.isHotCallSite(CS1, &BFI));
-  EXPECT_FALSE(PSI.isHotCallSite(CS2, &BFI));
+  EXPECT_FALSE(PSI.isHotCallSite(CS1, &BFI));
+  EXPECT_TRUE(PSI.isHotCallSite(CS2, &BFI));
 
   // Test that CS2 is considered hot when it gets an MD_prof metadata with
   // weights that exceed the hot count threshold.
-  MDBuilder MDB(M->getContext());
   CI2->setMetadata(llvm::LLVMContext::MD_prof, MDB.createBranchWeights({400}));
   EXPECT_TRUE(PSI.isHotCallSite(CS2, &BFI));
 }

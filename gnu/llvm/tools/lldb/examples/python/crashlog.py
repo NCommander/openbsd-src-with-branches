@@ -94,11 +94,9 @@ class CrashLog(symbolication.Symbolicator):
     thread_regex = re.compile('^Thread ([0-9]+)([^:]*):(.*)')
     app_backtrace_regex = re.compile(
         '^Application Specific Backtrace ([0-9]+)([^:]*):(.*)')
-    frame_regex = re.compile('^([0-9]+)\s+([^ ]+)\s+(0x[0-9a-fA-F]+) +(.*)')
+    frame_regex = re.compile('^([0-9]+)\s+(.+?)\s+(0x[0-9a-fA-F]{7}[0-9a-fA-F]+) +(.*)')
     image_regex_uuid = re.compile(
-        '(0x[0-9a-fA-F]+)[- ]+(0x[0-9a-fA-F]+) +[+]?([^ ]+) +([^<]+)<([-0-9a-fA-F]+)> (.*)')
-    image_regex_no_uuid = re.compile(
-        '(0x[0-9a-fA-F]+)[- ]+(0x[0-9a-fA-F]+) +[+]?([^ ]+) +([^/]+)/(.*)')
+        '(0x[0-9a-fA-F]+)[-\s]+(0x[0-9a-fA-F]+)\s+[+]?(.+?)\s+(\(.+\))?\s?(<([-0-9a-fA-F]+)>)? (.*)')
     empty_line_regex = re.compile('^$')
 
     class Thread:
@@ -246,6 +244,25 @@ class CrashLog(symbolication.Symbolicator):
             self.identifier = identifier
             self.version = version
 
+        def find_matching_slice(self):
+            dwarfdump_cmd_output = commands.getoutput(
+                'dwarfdump --uuid "%s"' % self.path)
+            self_uuid = self.get_uuid()
+            for line in dwarfdump_cmd_output.splitlines():
+                match = self.dwarfdump_uuid_regex.search(line)
+                if match:
+                    dwarf_uuid_str = match.group(1)
+                    dwarf_uuid = uuid.UUID(dwarf_uuid_str)
+                    if self_uuid == dwarf_uuid:
+                        self.resolved_path = self.path
+                        self.arch = match.group(2)
+                        return True
+            if not self.resolved_path:
+                self.unavailable = True
+                print("error\n    error: unable to locate '%s' with UUID %s"
+                      % (self.path, uuid_str))
+                return False
+
         def locate_module_and_debug_symbols(self):
             # Don't load a module twice...
             if self.resolved:
@@ -277,22 +294,25 @@ class CrashLog(symbolication.Symbolicator):
                                     plist['DBGSymbolRichExecutable'])
                                 self.resolved_path = self.path
             if not self.resolved_path and os.path.exists(self.path):
-                dwarfdump_cmd_output = commands.getoutput(
-                    'dwarfdump --uuid "%s"' % self.path)
-                self_uuid = self.get_uuid()
-                for line in dwarfdump_cmd_output.splitlines():
-                    match = self.dwarfdump_uuid_regex.search(line)
-                    if match:
-                        dwarf_uuid_str = match.group(1)
-                        dwarf_uuid = uuid.UUID(dwarf_uuid_str)
-                        if self_uuid == dwarf_uuid:
-                            self.resolved_path = self.path
-                            self.arch = match.group(2)
-                            break
-                if not self.resolved_path:
-                    self.unavailable = True
-                    print "error\n    error: unable to locate '%s' with UUID %s" % (self.path, uuid_str)
+                if not self.find_matching_slice():
                     return False
+            if not self.resolved_path and not os.path.exists(self.path):
+                try:
+                    import subprocess
+                    dsym = subprocess.check_output(
+                        ["/usr/bin/mdfind",
+                         "com_apple_xcode_dsym_uuids == %s"%uuid_str])[:-1]
+                    if dsym and os.path.exists(dsym):
+                        print('falling back to binary inside "%s"'%dsym)
+                        self.symfile = dsym
+                        dwarf_dir = os.path.join(dsym, 'Contents/Resources/DWARF')
+                        for filename in os.listdir(dwarf_dir):
+                            self.path = os.path.join(dwarf_dir, filename)
+                            if not self.find_matching_slice():
+                                return False
+                            break
+                except:
+                    pass
             if (self.resolved_path and os.path.exists(self.resolved_path)) or (
                     self.path and os.path.exists(self.path)):
                 print 'ok'
@@ -455,25 +475,16 @@ class CrashLog(symbolication.Symbolicator):
             elif parse_mode == PARSE_MODE_IMAGES:
                 image_match = self.image_regex_uuid.search(line)
                 if image_match:
-                    image = CrashLog.DarwinImage(int(image_match.group(1), 0),
-                                                 int(image_match.group(2), 0),
-                                                 image_match.group(3).strip(),
-                                                 image_match.group(4).strip(),
-                                                 uuid.UUID(image_match.group(5)),
-                                                 image_match.group(6))
+                    (img_lo, img_hi, img_name, img_version,
+                     _, img_uuid, img_path) = image_match.groups()
+                    image = CrashLog.DarwinImage(int(img_lo, 0), int(img_hi, 0),
+                                                 img_name.strip(),
+                                                 img_version.strip()
+                                                 if img_version else "",
+                                                 uuid.UUID(img_uuid), img_path)
                     self.images.append(image)
                 else:
-                    image_match = self.image_regex_no_uuid.search(line)
-                    if image_match:
-                        image = CrashLog.DarwinImage(int(image_match.group(1), 0),
-                                                     int(image_match.group(2), 0),
-                                                     image_match.group(3).strip(),
-                                                     image_match.group(4).strip(),
-                                                     None,
-                                                     image_match.group(5))
-                        self.images.append(image)
-                    else:
-                        print "error: image regex failed for: %s" % line
+                    print "error: image regex failed for: %s" % line
 
             elif parse_mode == PARSE_MODE_THREGS:
                 stripped_line = line.strip()
@@ -680,7 +691,7 @@ def interactive_crashlogs(options, args):
     interpreter.cmdloop()
 
 
-def save_crashlog(debugger, command, result, dict):
+def save_crashlog(debugger, command, exe_ctx, result, dict):
     usage = "usage: %prog [options] <output-path>"
     description = '''Export the state of current target into a crashlog file'''
     parser = optparse.OptionParser(
@@ -709,11 +720,12 @@ def save_crashlog(debugger, command, result, dict):
             "error: failed to open file '%s' for writing...",
             args[0])
         return
-    target = debugger.GetSelectedTarget()
+    target = exe_ctx.target
     if target:
         identifier = target.executable.basename
-        if lldb.process:
-            pid = lldb.process.id
+        process = exe_ctx.process
+        if process:
+            pid = process.id
             if pid != lldb.LLDB_INVALID_PROCESS_ID:
                 out_file.write(
                     'Process:         %s [%u]\n' %
@@ -726,8 +738,8 @@ def save_crashlog(debugger, command, result, dict):
             'OS Version:      Mac OS X %s (%s)\n' %
             (platform.mac_ver()[0], commands.getoutput('sysctl -n kern.osversion')))
         out_file.write('Report Version:  9\n')
-        for thread_idx in range(lldb.process.num_threads):
-            thread = lldb.process.thread[thread_idx]
+        for thread_idx in range(process.num_threads):
+            thread = process.thread[thread_idx]
             out_file.write('\nThread %u:\n' % (thread_idx))
             for (frame_idx, frame) in enumerate(thread.frames):
                 frame_pc = frame.pc

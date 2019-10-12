@@ -15,6 +15,8 @@ import subprocess
 
 class SBBreakpointCallbackCase(TestBase):
 
+    NO_DEBUG_INFO_TESTCASE = True
+
     def setUp(self):
         TestBase.setUp(self)
         self.generateSource('driver.cpp')
@@ -66,7 +68,7 @@ class SBBreakpointCallbackCase(TestBase):
     # clang-cl does not support throw or catch (llvm.org/pr24538)
     @skipIfWindows
     @expectedFlakeyFreeBSD
-    @expectedFailureAll(oslist=["linux"])
+    @skipIf(oslist=["linux"]) # flakey
     def test_sb_api_listener_resume(self):
         """ Test that a process can be resumed from a non-main thread. """
         self.build_and_test(
@@ -87,16 +89,20 @@ class SBBreakpointCallbackCase(TestBase):
 
         self.inferior = 'inferior_program'
         self.buildProgram('inferior.cpp', self.inferior)
-        self.addTearDownHook(lambda: os.remove(self.inferior))
+        self.addTearDownHook(lambda:
+                             os.remove(self.getBuildArtifact(self.inferior)))
 
         self.buildDriver(sources, test_name)
-        self.addTearDownHook(lambda: os.remove(test_name))
+        self.addTearDownHook(lambda:
+                             os.remove(self.getBuildArtifact(test_name)))
 
-        test_exe = os.path.join(os.getcwd(), test_name)
+        test_exe = self.getBuildArtifact(test_name)
         self.signBinary(test_exe)
-        exe = [test_exe, self.inferior]
+        exe = [test_exe, self.getBuildArtifact(self.inferior)]
 
         env = {self.dylibPath: self.getLLDBLibraryEnvVal()}
+        if 'LLDB_DEBUGSERVER_PATH' in os.environ:
+            env['LLDB_DEBUGSERVER_PATH'] = os.environ['LLDB_DEBUGSERVER_PATH']
         if self.TraceOn():
             print("Running test %s" % " ".join(exe))
             check_call(exe, env=env)

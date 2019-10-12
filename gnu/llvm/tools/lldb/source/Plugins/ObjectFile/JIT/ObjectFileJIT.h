@@ -10,10 +10,6 @@
 #ifndef liblldb_ObjectFileJIT_h_
 #define liblldb_ObjectFileJIT_h_
 
-// C Includes
-// C++ Includes
-// Other libraries and framework includes
-// Project includes
 #include "lldb/Core/Address.h"
 #include "lldb/Symbol/ObjectFile.h"
 
@@ -77,23 +73,23 @@ public:
 
   void Dump(lldb_private::Stream *s) override;
 
-  bool GetArchitecture(lldb_private::ArchSpec &arch) override;
+  lldb_private::ArchSpec GetArchitecture() override;
 
   bool GetUUID(lldb_private::UUID *uuid) override;
 
   uint32_t GetDependentModules(lldb_private::FileSpecList &files) override;
 
-  size_t ReadSectionData(const lldb_private::Section *section,
+  size_t ReadSectionData(lldb_private::Section *section,
                          lldb::offset_t section_offset, void *dst,
-                         size_t dst_len) const override;
+                         size_t dst_len) override;
 
   size_t
-  ReadSectionData(const lldb_private::Section *section,
-                  lldb_private::DataExtractor &section_data) const override;
+  ReadSectionData(lldb_private::Section *section,
+                  lldb_private::DataExtractor &section_data) override;
 
   lldb_private::Address GetEntryPointAddress() override;
 
-  lldb_private::Address GetHeaderAddress() override;
+  lldb_private::Address GetBaseAddress() override;
 
   ObjectFile::Type CalculateType() override;
 

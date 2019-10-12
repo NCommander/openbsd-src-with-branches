@@ -18,11 +18,16 @@ class TestQueues(TestBase):
 
     @skipUnlessDarwin
     @add_test_categories(['pyapi'])
-    @expectedFailureAll(bugnumber="rdar://30915340")
-    def test_with_python_api(self):
+    def test_with_python_api_queues(self):
         """Test queues inspection SB APIs."""
         self.build()
         self.queues()
+
+    @skipUnlessDarwin
+    @add_test_categories(['pyapi'])
+    def test_with_python_api_queues_with_backtrace(self):
+        """Test queues inspection SB APIs."""
+        self.build()
         self.queues_with_libBacktraceRecording()
 
     def setUp(self):
@@ -106,7 +111,7 @@ class TestQueues(TestBase):
 
     def queues(self):
         """Test queues inspection SB APIs without libBacktraceRecording."""
-        exe = os.path.join(os.getcwd(), "a.out")
+        exe = self.getBuildArtifact("a.out")
 
         target = self.dbg.CreateTarget(exe)
         self.assertTrue(target, VALID_TARGET)
@@ -114,7 +119,7 @@ class TestQueues(TestBase):
         break1 = target.BreakpointCreateByName("stopper", 'a.out')
         self.assertTrue(break1, VALID_BREAKPOINT)
         process = target.LaunchSimple(
-            None, None, self.get_process_working_directory())
+            [], None, self.get_process_working_directory())
         self.assertTrue(process, PROCESS_IS_VALID)
         threads = lldbutil.get_threads_stopped_at_breakpoint(process, break1)
         if len(threads) != 1:
@@ -231,8 +236,9 @@ class TestQueues(TestBase):
                 "requested_qos.printable_name",
                 stream),
             "Get QoS printable string for unspecified QoS thread")
+        qosName = stream.GetData()
         self.assertTrue(
-            stream.GetData() == "User Initiated",
+            qosName == "User Initiated" or qosName == "Default",
             "unspecified QoS thread name is valid")
         stream.Clear()
         self.assertTrue(
@@ -246,7 +252,7 @@ class TestQueues(TestBase):
 
     def queues_with_libBacktraceRecording(self):
         """Test queues inspection SB APIs with libBacktraceRecording present."""
-        exe = os.path.join(os.getcwd(), "a.out")
+        exe = self.getBuildArtifact("a.out")
 
         if not os.path.isfile(
                 '/Applications/Xcode.app/Contents/Developer/usr/lib/libBacktraceRecording.dylib'):
@@ -267,10 +273,14 @@ class TestQueues(TestBase):
         self.assertTrue(break1, VALID_BREAKPOINT)
 
         # Now launch the process, and do not stop at entry point.
+        libbtr_path = "/Applications/Xcode.app/Contents/Developer/usr/lib/libBacktraceRecording.dylib"
+        if self.getArchitecture() in ['arm', 'arm64', 'arm64e', 'arm64_32', 'armv7', 'armv7k']:
+            libbtr_path = "/Developer/usr/lib/libBacktraceRecording.dylib"
+
         process = target.LaunchSimple(
-            None,
+            [],
             [
-                'DYLD_INSERT_LIBRARIES=/Applications/Xcode.app/Contents/Developer/usr/lib/libBacktraceRecording.dylib',
+                'DYLD_INSERT_LIBRARIES=%s' % (libbtr_path),
                 'DYLD_LIBRARY_PATH=/usr/lib/system/introspection'],
             self.get_process_working_directory())
 

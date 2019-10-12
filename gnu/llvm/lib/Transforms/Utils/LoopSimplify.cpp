@@ -37,21 +37,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Utils/LoopSimplify.h"
 #include "llvm/ADT/DepthFirstIterator.h"
 #include "llvm/ADT/SetOperations.h"
 #include "llvm/ADT/SetVector.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Analysis/AliasAnalysis.h"
-#include "llvm/Analysis/BasicAliasAnalysis.h"
 #include "llvm/Analysis/AssumptionCache.h"
+#include "llvm/Analysis/BasicAliasAnalysis.h"
 #include "llvm/Analysis/DependenceAnalysis.h"
 #include "llvm/Analysis/GlobalsModRef.h"
 #include "llvm/Analysis/InstructionSimplify.h"
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Analysis/ScalarEvolution.h"
 #include "llvm/Analysis/ScalarEvolutionAliasAnalysis.h"
+#include "llvm/Transforms/Utils/Local.h"
 #include "llvm/IR/CFG.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DataLayout.h"
@@ -64,14 +65,13 @@
 #include "llvm/IR/Type.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Transforms/Utils.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
-#include "llvm/Transforms/Utils/Local.h"
 #include "llvm/Transforms/Utils/LoopUtils.h"
 using namespace llvm;
 
 #define DEBUG_TYPE "loop-simplify"
 
-STATISTIC(NumInserted, "Number of pre-header or exit blocks inserted");
 STATISTIC(NumNested  , "Number of nested loops split out");
 
 // If the block isn't already, move the new block to right after some 'outside
@@ -137,49 +137,18 @@ BasicBlock *llvm::InsertPreheaderForLoop(Loop *L, DominatorTree *DT,
   // Split out the loop pre-header.
   BasicBlock *PreheaderBB;
   PreheaderBB = SplitBlockPredecessors(Header, OutsideBlocks, ".preheader", DT,
-                                       LI, PreserveLCSSA);
+                                       LI, nullptr, PreserveLCSSA);
   if (!PreheaderBB)
     return nullptr;
 
-  DEBUG(dbgs() << "LoopSimplify: Creating pre-header "
-               << PreheaderBB->getName() << "\n");
+  LLVM_DEBUG(dbgs() << "LoopSimplify: Creating pre-header "
+                    << PreheaderBB->getName() << "\n");
 
   // Make sure that NewBB is put someplace intelligent, which doesn't mess up
   // code layout too horribly.
   placeSplitBlockCarefully(PreheaderBB, OutsideBlocks, L);
 
   return PreheaderBB;
-}
-
-/// \brief Ensure that the loop preheader dominates all exit blocks.
-///
-/// This method is used to split exit blocks that have predecessors outside of
-/// the loop.
-static BasicBlock *rewriteLoopExitBlock(Loop *L, BasicBlock *Exit,
-                                        DominatorTree *DT, LoopInfo *LI,
-                                        bool PreserveLCSSA) {
-  SmallVector<BasicBlock*, 8> LoopBlocks;
-  for (pred_iterator I = pred_begin(Exit), E = pred_end(Exit); I != E; ++I) {
-    BasicBlock *P = *I;
-    if (L->contains(P)) {
-      // Don't do this if the loop is exited via an indirect branch.
-      if (isa<IndirectBrInst>(P->getTerminator())) return nullptr;
-
-      LoopBlocks.push_back(P);
-    }
-  }
-
-  assert(!LoopBlocks.empty() && "No edges coming in from outside the loop?");
-  BasicBlock *NewExitBB = nullptr;
-
-  NewExitBB = SplitBlockPredecessors(Exit, LoopBlocks, ".loopexit", DT, LI,
-                                     PreserveLCSSA);
-  if (!NewExitBB)
-    return nullptr;
-
-  DEBUG(dbgs() << "LoopSimplify: Creating dedicated exit block "
-               << NewExitBB->getName() << "\n");
-  return NewExitBB;
 }
 
 /// Add the specified block, and all of its predecessors, to the specified set,
@@ -201,7 +170,7 @@ static void addBlockAndPredsToSet(BasicBlock *InputBB, BasicBlock *StopBlock,
   } while (!Worklist.empty());
 }
 
-/// \brief The first part of loop-nestification is to find a PHI node that tells
+/// The first part of loop-nestification is to find a PHI node that tells
 /// us how to partition the loops.
 static PHINode *findPHIToPartitionLoops(Loop *L, DominatorTree *DT,
                                         AssumptionCache *AC) {
@@ -209,7 +178,7 @@ static PHINode *findPHIToPartitionLoops(Loop *L, DominatorTree *DT,
   for (BasicBlock::iterator I = L->getHeader()->begin(); isa<PHINode>(I); ) {
     PHINode *PN = cast<PHINode>(I);
     ++I;
-    if (Value *V = SimplifyInstruction(PN, DL, nullptr, DT, AC)) {
+    if (Value *V = SimplifyInstruction(PN, {DL, nullptr, DT, AC})) {
       // This is a degenerate PHI already, don't modify it!
       PN->replaceAllUsesWith(V);
       PN->eraseFromParent();
@@ -226,7 +195,7 @@ static PHINode *findPHIToPartitionLoops(Loop *L, DominatorTree *DT,
   return nullptr;
 }
 
-/// \brief If this loop has multiple backedges, try to pull one of them out into
+/// If this loop has multiple backedges, try to pull one of them out into
 /// a nested loop.
 ///
 /// This is important for code that looks like
@@ -273,7 +242,7 @@ static Loop *separateNestedLoop(Loop *L, BasicBlock *Preheader,
       OuterLoopPreds.push_back(PN->getIncomingBlock(i));
     }
   }
-  DEBUG(dbgs() << "LoopSimplify: Splitting out a new outer loop\n");
+  LLVM_DEBUG(dbgs() << "LoopSimplify: Splitting out a new outer loop\n");
 
   // If ScalarEvolution is around and knows anything about values in
   // this loop, tell it to forget them, because we're about to
@@ -282,14 +251,14 @@ static Loop *separateNestedLoop(Loop *L, BasicBlock *Preheader,
     SE->forgetLoop(L);
 
   BasicBlock *NewBB = SplitBlockPredecessors(Header, OuterLoopPreds, ".outer",
-                                             DT, LI, PreserveLCSSA);
+                                             DT, LI, nullptr, PreserveLCSSA);
 
   // Make sure that NewBB is put someplace intelligent, which doesn't mess up
   // code layout too horribly.
   placeSplitBlockCarefully(NewBB, OuterLoopPreds, L);
 
   // Create the new outer loop.
-  Loop *NewOuter = new Loop();
+  Loop *NewOuter = LI->AllocateLoop();
 
   // Change the parent loop to use the outer loop as its child now.
   if (Loop *Parent = L->getParentLoop())
@@ -326,6 +295,8 @@ static Loop *separateNestedLoop(Loop *L, BasicBlock *Preheader,
     else
       NewOuter->addChildLoop(L->removeChildLoop(SubLoops.begin() + I));
 
+  SmallVector<BasicBlock *, 8> OuterLoopBlocks;
+  OuterLoopBlocks.push_back(NewBB);
   // Now that we know which blocks are in L and which need to be moved to
   // OuterLoop, move any blocks that need it.
   for (unsigned i = 0; i != L->getBlocks().size(); ++i) {
@@ -333,16 +304,35 @@ static Loop *separateNestedLoop(Loop *L, BasicBlock *Preheader,
     if (!BlocksInL.count(BB)) {
       // Move this block to the parent, updating the exit blocks sets
       L->removeBlockFromLoop(BB);
-      if ((*LI)[BB] == L)
+      if ((*LI)[BB] == L) {
         LI->changeLoopFor(BB, NewOuter);
+        OuterLoopBlocks.push_back(BB);
+      }
       --i;
     }
+  }
+
+  // Split edges to exit blocks from the inner loop, if they emerged in the
+  // process of separating the outer one.
+  formDedicatedExitBlocks(L, DT, LI, PreserveLCSSA);
+
+  if (PreserveLCSSA) {
+    // Fix LCSSA form for L. Some values, which previously were only used inside
+    // L, can now be used in NewOuter loop. We need to insert phi-nodes for them
+    // in corresponding exit blocks.
+    // We don't need to form LCSSA recursively, because there cannot be uses
+    // inside a newly created loop of defs from inner loops as those would
+    // already be a use of an LCSSA phi node.
+    formLCSSA(*L, *DT, LI, SE);
+
+    assert(NewOuter->isRecursivelyLCSSAForm(*DT, *LI) &&
+           "LCSSA is broken after separating nested loops!");
   }
 
   return NewOuter;
 }
 
-/// \brief This method is called when the specified loop has more than one
+/// This method is called when the specified loop has more than one
 /// backedge in it.
 ///
 /// If this occurs, revector all of these backedges to target a new basic block
@@ -381,8 +371,8 @@ static BasicBlock *insertUniqueBackedgeBlock(Loop *L, BasicBlock *Preheader,
   BranchInst *BETerminator = BranchInst::Create(Header, BEBlock);
   BETerminator->setDebugLoc(Header->getFirstNonPHI()->getDebugLoc());
 
-  DEBUG(dbgs() << "LoopSimplify: Inserting unique backedge block "
-               << BEBlock->getName() << "\n");
+  LLVM_DEBUG(dbgs() << "LoopSimplify: Inserting unique backedge block "
+                    << BEBlock->getName() << "\n");
 
   // Move the new backedge block to right after the last backedge block.
   Function::iterator InsertPos = ++BackedgeBlocks.back()->getIterator();
@@ -439,13 +429,21 @@ static BasicBlock *insertUniqueBackedgeBlock(Loop *L, BasicBlock *Preheader,
   }
 
   // Now that all of the PHI nodes have been inserted and adjusted, modify the
-  // backedge blocks to just to the BEBlock instead of the header.
+  // backedge blocks to jump to the BEBlock instead of the header.
+  // If one of the backedges has llvm.loop metadata attached, we remove
+  // it from the backedge and add it to BEBlock.
+  unsigned LoopMDKind = BEBlock->getContext().getMDKindID("llvm.loop");
+  MDNode *LoopMD = nullptr;
   for (unsigned i = 0, e = BackedgeBlocks.size(); i != e; ++i) {
-    TerminatorInst *TI = BackedgeBlocks[i]->getTerminator();
+    Instruction *TI = BackedgeBlocks[i]->getTerminator();
+    if (!LoopMD)
+      LoopMD = TI->getMetadata(LoopMDKind);
+    TI->setMetadata(LoopMDKind, nullptr);
     for (unsigned Op = 0, e = TI->getNumSuccessors(); Op != e; ++Op)
       if (TI->getSuccessor(Op) == Header)
         TI->setSuccessor(Op, BEBlock);
   }
+  BEBlock->getTerminator()->setMetadata(LoopMDKind, LoopMD);
 
   //===--- Update all analyses which we must preserve now -----------------===//
 
@@ -459,7 +457,7 @@ static BasicBlock *insertUniqueBackedgeBlock(Loop *L, BasicBlock *Preheader,
   return BEBlock;
 }
 
-/// \brief Simplify one loop and queue further loops for simplification.
+/// Simplify one loop and queue further loops for simplification.
 static bool simplifyOneLoop(Loop *L, SmallVectorImpl<Loop *> &Worklist,
                             DominatorTree *DT, LoopInfo *LI,
                             ScalarEvolution *SE, AssumptionCache *AC,
@@ -486,17 +484,12 @@ ReprocessLoop:
     // Delete each unique out-of-loop (and thus dead) predecessor.
     for (BasicBlock *P : BadPreds) {
 
-      DEBUG(dbgs() << "LoopSimplify: Deleting edge from dead predecessor "
-                   << P->getName() << "\n");
+      LLVM_DEBUG(dbgs() << "LoopSimplify: Deleting edge from dead predecessor "
+                        << P->getName() << "\n");
 
-      // Inform each successor of each dead pred.
-      for (succ_iterator SI = succ_begin(P), SE = succ_end(P); SI != SE; ++SI)
-        (*SI)->removePredecessor(P);
       // Zap the dead pred's terminator and replace it with unreachable.
-      TerminatorInst *TI = P->getTerminator();
-       TI->replaceAllUsesWith(UndefValue::get(TI->getType()));
-      P->getTerminator()->eraseFromParent();
-      new UnreachableInst(P->getContext(), P);
+      Instruction *TI = P->getTerminator();
+      changeToUnreachable(TI, /*UseLLVMTrap=*/false, PreserveLCSSA);
       Changed = true;
     }
   }
@@ -506,21 +499,17 @@ ReprocessLoop:
   // trip count computations.
   SmallVector<BasicBlock*, 8> ExitingBlocks;
   L->getExitingBlocks(ExitingBlocks);
-  for (SmallVectorImpl<BasicBlock *>::iterator I = ExitingBlocks.begin(),
-       E = ExitingBlocks.end(); I != E; ++I)
-    if (BranchInst *BI = dyn_cast<BranchInst>((*I)->getTerminator()))
+  for (BasicBlock *ExitingBlock : ExitingBlocks)
+    if (BranchInst *BI = dyn_cast<BranchInst>(ExitingBlock->getTerminator()))
       if (BI->isConditional()) {
         if (UndefValue *Cond = dyn_cast<UndefValue>(BI->getCondition())) {
 
-          DEBUG(dbgs() << "LoopSimplify: Resolving \"br i1 undef\" to exit in "
-                       << (*I)->getName() << "\n");
+          LLVM_DEBUG(dbgs()
+                     << "LoopSimplify: Resolving \"br i1 undef\" to exit in "
+                     << ExitingBlock->getName() << "\n");
 
           BI->setCondition(ConstantInt::get(Cond->getType(),
                                             !L->contains(BI->getSuccessor(0))));
-
-          // This may make the loop analyzable, force SCEV recomputation.
-          if (SE)
-            SE->forgetLoop(L);
 
           Changed = true;
         }
@@ -530,36 +519,16 @@ ReprocessLoop:
   BasicBlock *Preheader = L->getLoopPreheader();
   if (!Preheader) {
     Preheader = InsertPreheaderForLoop(L, DT, LI, PreserveLCSSA);
-    if (Preheader) {
-      ++NumInserted;
+    if (Preheader)
       Changed = true;
-    }
   }
 
   // Next, check to make sure that all exit nodes of the loop only have
   // predecessors that are inside of the loop.  This check guarantees that the
   // loop preheader/header will dominate the exit blocks.  If the exit block has
   // predecessors from outside of the loop, split the edge now.
-  SmallVector<BasicBlock*, 8> ExitBlocks;
-  L->getExitBlocks(ExitBlocks);
-
-  SmallSetVector<BasicBlock *, 8> ExitBlockSet(ExitBlocks.begin(),
-                                               ExitBlocks.end());
-  for (SmallSetVector<BasicBlock *, 8>::iterator I = ExitBlockSet.begin(),
-         E = ExitBlockSet.end(); I != E; ++I) {
-    BasicBlock *ExitBlock = *I;
-    for (pred_iterator PI = pred_begin(ExitBlock), PE = pred_end(ExitBlock);
-         PI != PE; ++PI)
-      // Must be exactly this loop: no subloops, parent loops, or non-loop preds
-      // allowed.
-      if (!L->contains(*PI)) {
-        if (rewriteLoopExitBlock(L, ExitBlock, DT, LI, PreserveLCSSA)) {
-          ++NumInserted;
-          Changed = true;
-        }
-        break;
-      }
-  }
+  if (formDedicatedExitBlocks(L, DT, LI, PreserveLCSSA))
+    Changed = true;
 
   // If the header has more than two predecessors at this point (from the
   // preheader and from multiple backedges), we must adjust the loop.
@@ -588,10 +557,8 @@ ReprocessLoop:
     // insert a new block that all backedges target, then make it jump to the
     // loop header.
     LoopLatch = insertUniqueBackedgeBlock(L, Preheader, DT, LI);
-    if (LoopLatch) {
-      ++NumInserted;
+    if (LoopLatch)
       Changed = true;
-    }
   }
 
   const DataLayout &DL = L->getHeader()->getModule()->getDataLayout();
@@ -602,10 +569,12 @@ ReprocessLoop:
   PHINode *PN;
   for (BasicBlock::iterator I = L->getHeader()->begin();
        (PN = dyn_cast<PHINode>(I++)); )
-    if (Value *V = SimplifyInstruction(PN, DL, nullptr, DT, AC)) {
+    if (Value *V = SimplifyInstruction(PN, {DL, nullptr, DT, AC})) {
       if (SE) SE->forgetValue(PN);
-      PN->replaceAllUsesWith(V);
-      PN->eraseFromParent();
+      if (!PreserveLCSSA || LI->replacementPreservesLCSSAForm(PN, V)) {
+        PN->replaceAllUsesWith(V);
+        PN->eraseFromParent();
+      }
     }
 
   // If this loop has multiple exits and the exits all go to the same
@@ -617,14 +586,22 @@ ReprocessLoop:
   // loop-invariant instructions out of the way to open up more
   // opportunities, and the disadvantage of having the responsibility
   // to preserve dominator information.
-  bool UniqueExit = true;
-  if (!ExitBlocks.empty())
-    for (unsigned i = 1, e = ExitBlocks.size(); i != e; ++i)
-      if (ExitBlocks[i] != ExitBlocks[0]) {
-        UniqueExit = false;
-        break;
+  auto HasUniqueExitBlock = [&]() {
+    BasicBlock *UniqueExit = nullptr;
+    for (auto *ExitingBB : ExitingBlocks)
+      for (auto *SuccBB : successors(ExitingBB)) {
+        if (L->contains(SuccBB))
+          continue;
+
+        if (!UniqueExit)
+          UniqueExit = SuccBB;
+        else if (UniqueExit != SuccBB)
+          return false;
       }
-  if (UniqueExit) {
+
+    return true;
+  };
+  if (HasUniqueExitBlock()) {
     for (unsigned i = 0, e = ExitingBlocks.size(); i != e; ++i) {
       BasicBlock *ExitingBlock = ExitingBlocks[i];
       if (!ExitingBlock->getSinglePredecessor()) continue;
@@ -637,11 +614,8 @@ ReprocessLoop:
       // comparison and the branch.
       bool AllInvariant = true;
       bool AnyInvariant = false;
-      for (BasicBlock::iterator I = ExitingBlock->begin(); &*I != BI; ) {
+      for (auto I = ExitingBlock->instructionsWithoutDebug().begin(); &*I != BI; ) {
         Instruction *Inst = &*I++;
-        // Skip debug info intrinsics.
-        if (isa<DbgInfoIntrinsic>(Inst))
-          continue;
         if (Inst == CI)
           continue;
         if (!L->makeLoopInvariant(Inst, AnyInvariant,
@@ -668,15 +642,8 @@ ReprocessLoop:
 
       // Success. The block is now dead, so remove it from the loop,
       // update the dominator tree and delete it.
-      DEBUG(dbgs() << "LoopSimplify: Eliminating exiting block "
-                   << ExitingBlock->getName() << "\n");
-
-      // Notify ScalarEvolution before deleting this block. Currently assume the
-      // parent loop doesn't change (spliting edges doesn't count). If blocks,
-      // CFG edges, or other values in the parent loop change, then we need call
-      // to forgetLoop() for the parent instead.
-      if (SE)
-        SE->forgetLoop(L);
+      LLVM_DEBUG(dbgs() << "LoopSimplify: Eliminating exiting block "
+                        << ExitingBlock->getName() << "\n");
 
       assert(pred_begin(ExitingBlock) == pred_end(ExitingBlock));
       Changed = true;
@@ -691,11 +658,19 @@ ReprocessLoop:
       }
       DT->eraseNode(ExitingBlock);
 
-      BI->getSuccessor(0)->removePredecessor(ExitingBlock);
-      BI->getSuccessor(1)->removePredecessor(ExitingBlock);
+      BI->getSuccessor(0)->removePredecessor(
+          ExitingBlock, /* DontDeleteUselessPHIs */ PreserveLCSSA);
+      BI->getSuccessor(1)->removePredecessor(
+          ExitingBlock, /* DontDeleteUselessPHIs */ PreserveLCSSA);
       ExitingBlock->eraseFromParent();
     }
   }
+
+  // Changing exit conditions for blocks may affect exit counts of this loop and
+  // any of its paretns, so we must invalidate the entire subtree if we've made
+  // any changes.
+  if (Changed && SE)
+    SE->forgetTopmostLoop(L);
 
   return Changed;
 }
@@ -704,6 +679,17 @@ bool llvm::simplifyLoop(Loop *L, DominatorTree *DT, LoopInfo *LI,
                         ScalarEvolution *SE, AssumptionCache *AC,
                         bool PreserveLCSSA) {
   bool Changed = false;
+
+#ifndef NDEBUG
+  // If we're asked to preserve LCSSA, the loop nest needs to start in LCSSA
+  // form.
+  if (PreserveLCSSA) {
+    assert(DT && "DT not available.");
+    assert(LI && "LI not available.");
+    assert(L->isRecursivelyLCSSAForm(*DT, *LI) &&
+           "Requested to preserve LCSSA, but it's already broken.");
+  }
+#endif
 
   // Worklist maintains our depth-first queue of loops in this nest to process.
   SmallVector<Loop *, 4> Worklist;
@@ -731,11 +717,6 @@ namespace {
       initializeLoopSimplifyPass(*PassRegistry::getPassRegistry());
     }
 
-    DominatorTree *DT;
-    LoopInfo *LI;
-    ScalarEvolution *SE;
-    AssumptionCache *AC;
-
     bool runOnFunction(Function &F) override;
 
     void getAnalysisUsage(AnalysisUsage &AU) const override {
@@ -753,7 +734,8 @@ namespace {
       AU.addPreserved<GlobalsAAWrapperPass>();
       AU.addPreserved<ScalarEvolutionWrapperPass>();
       AU.addPreserved<SCEVAAWrapperPass>();
-      AU.addPreserved<DependenceAnalysis>();
+      AU.addPreservedID(LCSSAID);
+      AU.addPreserved<DependenceAnalysisWrapperPass>();
       AU.addPreservedID(BreakCriticalEdgesID);  // No critical edges added.
     }
 
@@ -768,9 +750,6 @@ INITIALIZE_PASS_BEGIN(LoopSimplify, "loop-simplify",
 INITIALIZE_PASS_DEPENDENCY(AssumptionCacheTracker)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(LoopInfoWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(BasicAAWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(GlobalsAAWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(SCEVAAWrapperPass)
 INITIALIZE_PASS_END(LoopSimplify, "loop-simplify",
                 "Canonicalize natural loops", false, false)
 
@@ -783,18 +762,54 @@ Pass *llvm::createLoopSimplifyPass() { return new LoopSimplify(); }
 ///
 bool LoopSimplify::runOnFunction(Function &F) {
   bool Changed = false;
-  LI = &getAnalysis<LoopInfoWrapperPass>().getLoopInfo();
-  DT = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+  LoopInfo *LI = &getAnalysis<LoopInfoWrapperPass>().getLoopInfo();
+  DominatorTree *DT = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
   auto *SEWP = getAnalysisIfAvailable<ScalarEvolutionWrapperPass>();
-  SE = SEWP ? &SEWP->getSE() : nullptr;
-  AC = &getAnalysis<AssumptionCacheTracker>().getAssumptionCache(F);
+  ScalarEvolution *SE = SEWP ? &SEWP->getSE() : nullptr;
+  AssumptionCache *AC =
+      &getAnalysis<AssumptionCacheTracker>().getAssumptionCache(F);
+
   bool PreserveLCSSA = mustPreserveAnalysisID(LCSSAID);
 
   // Simplify each loop nest in the function.
   for (LoopInfo::iterator I = LI->begin(), E = LI->end(); I != E; ++I)
     Changed |= simplifyLoop(*I, DT, LI, SE, AC, PreserveLCSSA);
 
+#ifndef NDEBUG
+  if (PreserveLCSSA) {
+    bool InLCSSA = all_of(
+        *LI, [&](Loop *L) { return L->isRecursivelyLCSSAForm(*DT, *LI); });
+    assert(InLCSSA && "LCSSA is broken after loop-simplify.");
+  }
+#endif
   return Changed;
+}
+
+PreservedAnalyses LoopSimplifyPass::run(Function &F,
+                                        FunctionAnalysisManager &AM) {
+  bool Changed = false;
+  LoopInfo *LI = &AM.getResult<LoopAnalysis>(F);
+  DominatorTree *DT = &AM.getResult<DominatorTreeAnalysis>(F);
+  ScalarEvolution *SE = AM.getCachedResult<ScalarEvolutionAnalysis>(F);
+  AssumptionCache *AC = &AM.getResult<AssumptionAnalysis>(F);
+
+  // Note that we don't preserve LCSSA in the new PM, if you need it run LCSSA
+  // after simplifying the loops.
+  for (LoopInfo::iterator I = LI->begin(), E = LI->end(); I != E; ++I)
+    Changed |= simplifyLoop(*I, DT, LI, SE, AC, /*PreserveLCSSA*/ false);
+
+  if (!Changed)
+    return PreservedAnalyses::all();
+
+  PreservedAnalyses PA;
+  PA.preserve<DominatorTreeAnalysis>();
+  PA.preserve<LoopAnalysis>();
+  PA.preserve<BasicAA>();
+  PA.preserve<GlobalsAA>();
+  PA.preserve<SCEVAA>();
+  PA.preserve<ScalarEvolutionAnalysis>();
+  PA.preserve<DependenceAnalysis>();
+  return PA;
 }
 
 // FIXME: Restore this code when we re-enable verification in verifyAnalysis

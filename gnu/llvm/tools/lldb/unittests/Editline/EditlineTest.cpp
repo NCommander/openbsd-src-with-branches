@@ -20,10 +20,13 @@
 #include "gtest/gtest.h"
 
 #include "lldb/Host/Editline.h"
+#include "lldb/Host/FileSystem.h"
 #include "lldb/Host/Pipe.h"
 #include "lldb/Host/PseudoTerminal.h"
 #include "lldb/Utility/Status.h"
 #include "lldb/Utility/StringList.h"
+
+using namespace lldb_private;
 
 namespace {
 const size_t TIMEOUT_MILLIS = 5000;
@@ -81,7 +84,7 @@ private:
 
   std::unique_ptr<lldb_private::Editline> _editline_sp;
 
-  lldb_utility::PseudoTerminal _pty;
+  PseudoTerminal _pty;
   int _pty_master_fd;
   int _pty_slave_fd;
 
@@ -244,6 +247,8 @@ private:
 
 public:
   void SetUp() {
+    FileSystem::Initialize();
+
     // We need a TERM set properly for editline to work as expected.
     setenv("TERM", "vt100", 1);
 
@@ -261,6 +266,8 @@ public:
     _el_adapter.CloseInput();
     if (_sp_output_thread)
       _sp_output_thread->join();
+
+    FileSystem::Terminate();
   }
 
   EditlineAdapter &GetEditlineAdapter() { return _el_adapter; }

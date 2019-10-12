@@ -17,6 +17,7 @@
 namespace clang {
 
 class Stmt;
+class AnalyzerOptions;
 
 namespace ento {
 
@@ -30,7 +31,7 @@ protected:
                                                  StringRef InFile) override;
 };
 
-/// \brief Frontend action to parse model files.
+/// Frontend action to parse model files.
 ///
 /// This frontend action is responsible for parsing model files. Model files can
 /// not be parsed on their own, they rely on type information that is available
@@ -51,7 +52,12 @@ private:
   llvm::StringMap<Stmt *> &Bodies;
 };
 
-void printCheckerHelp(raw_ostream &OS, ArrayRef<std::string> plugins);
+void printCheckerHelp(raw_ostream &OS, ArrayRef<std::string> plugins,
+                      DiagnosticsEngine &diags);
+void printEnabledCheckerList(raw_ostream &OS, ArrayRef<std::string> plugins,
+                             const AnalyzerOptions &opts,
+                             DiagnosticsEngine &diags);
+void printAnalyzerConfigList(raw_ostream &OS);
 
 } // end GR namespace
 

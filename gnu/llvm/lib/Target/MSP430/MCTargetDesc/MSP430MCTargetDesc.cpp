@@ -14,7 +14,6 @@
 #include "MSP430MCTargetDesc.h"
 #include "InstPrinter/MSP430InstPrinter.h"
 #include "MSP430MCAsmInfo.h"
-#include "llvm/MC/MCCodeGenInfo.h"
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/MC/MCSubtargetInfo.h"
@@ -48,15 +47,6 @@ createMSP430MCSubtargetInfo(const Triple &TT, StringRef CPU, StringRef FS) {
   return createMSP430MCSubtargetInfoImpl(TT, CPU, FS);
 }
 
-static MCCodeGenInfo *createMSP430MCCodeGenInfo(const Triple &TT,
-                                                Reloc::Model RM,
-                                                CodeModel::Model CM,
-                                                CodeGenOpt::Level OL) {
-  MCCodeGenInfo *X = new MCCodeGenInfo();
-  X->initMCCodeGenInfo(RM, CM, OL);
-  return X;
-}
-
 static MCInstPrinter *createMSP430MCInstPrinter(const Triple &T,
                                                 unsigned SyntaxVariant,
                                                 const MCAsmInfo &MAI,
@@ -68,25 +58,15 @@ static MCInstPrinter *createMSP430MCInstPrinter(const Triple &T,
 }
 
 extern "C" void LLVMInitializeMSP430TargetMC() {
-  // Register the MC asm info.
-  RegisterMCAsmInfo<MSP430MCAsmInfo> X(TheMSP430Target);
+  Target &T = getTheMSP430Target();
 
-  // Register the MC codegen info.
-  TargetRegistry::RegisterMCCodeGenInfo(TheMSP430Target,
-                                        createMSP430MCCodeGenInfo);
-
-  // Register the MC instruction info.
-  TargetRegistry::RegisterMCInstrInfo(TheMSP430Target, createMSP430MCInstrInfo);
-
-  // Register the MC register info.
-  TargetRegistry::RegisterMCRegInfo(TheMSP430Target,
-                                    createMSP430MCRegisterInfo);
-
-  // Register the MC subtarget info.
-  TargetRegistry::RegisterMCSubtargetInfo(TheMSP430Target,
-                                          createMSP430MCSubtargetInfo);
-
-  // Register the MCInstPrinter.
-  TargetRegistry::RegisterMCInstPrinter(TheMSP430Target,
-                                        createMSP430MCInstPrinter);
+  RegisterMCAsmInfo<MSP430MCAsmInfo> X(T);
+  TargetRegistry::RegisterMCInstrInfo(T, createMSP430MCInstrInfo);
+  TargetRegistry::RegisterMCRegInfo(T, createMSP430MCRegisterInfo);
+  TargetRegistry::RegisterMCSubtargetInfo(T, createMSP430MCSubtargetInfo);
+  TargetRegistry::RegisterMCInstPrinter(T, createMSP430MCInstPrinter);
+  TargetRegistry::RegisterMCCodeEmitter(T, createMSP430MCCodeEmitter);
+  TargetRegistry::RegisterMCAsmBackend(T, createMSP430MCAsmBackend);
+  TargetRegistry::RegisterObjectTargetStreamer(
+      T, createMSP430ObjectTargetStreamer);
 }

@@ -20,7 +20,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/Analysis/ScalarEvolutionAliasAnalysis.h"
-#include "llvm/Analysis/TargetLibraryInfo.h"
 using namespace llvm;
 
 AliasResult SCEVAAResult::alias(const MemoryLocation &LocA,
@@ -28,7 +27,7 @@ AliasResult SCEVAAResult::alias(const MemoryLocation &LocA,
   // If either of the memory references is empty, it doesn't matter what the
   // pointer values are. This allows the code below to ignore this special
   // case.
-  if (LocA.Size == 0 || LocB.Size == 0)
+  if (LocA.Size.isZero() || LocB.Size.isZero())
     return NoAlias;
 
   // This is SCEVAAResult. Get the SCEVs!
@@ -44,8 +43,12 @@ AliasResult SCEVAAResult::alias(const MemoryLocation &LocA,
   if (SE.getEffectiveSCEVType(AS->getType()) ==
       SE.getEffectiveSCEVType(BS->getType())) {
     unsigned BitWidth = SE.getTypeSizeInBits(AS->getType());
-    APInt ASizeInt(BitWidth, LocA.Size);
-    APInt BSizeInt(BitWidth, LocB.Size);
+    APInt ASizeInt(BitWidth, LocA.Size.hasValue()
+                                 ? LocA.Size.getValue()
+                                 : MemoryLocation::UnknownSize);
+    APInt BSizeInt(BitWidth, LocB.Size.hasValue()
+                                 ? LocB.Size.getValue()
+                                 : MemoryLocation::UnknownSize);
 
     // Compute the difference between the two pointers.
     const SCEV *BA = SE.getMinusSCEV(BS, AS);
@@ -79,10 +82,10 @@ AliasResult SCEVAAResult::alias(const MemoryLocation &LocA,
   Value *BO = GetBaseValue(BS);
   if ((AO && AO != LocA.Ptr) || (BO && BO != LocB.Ptr))
     if (alias(MemoryLocation(AO ? AO : LocA.Ptr,
-                             AO ? +MemoryLocation::UnknownSize : LocA.Size,
+                             AO ? LocationSize::unknown() : LocA.Size,
                              AO ? AAMDNodes() : LocA.AATags),
               MemoryLocation(BO ? BO : LocB.Ptr,
-                             BO ? +MemoryLocation::UnknownSize : LocB.Size,
+                             BO ? LocationSize::unknown() : LocB.Size,
                              BO ? AAMDNodes() : LocB.AATags)) == NoAlias)
       return NoAlias;
 
@@ -111,18 +114,16 @@ Value *SCEVAAResult::GetBaseValue(const SCEV *S) {
   return nullptr;
 }
 
-SCEVAAResult SCEVAA::run(Function &F, AnalysisManager<Function> *AM) {
-  return SCEVAAResult(AM->getResult<TargetLibraryAnalysis>(F),
-                      AM->getResult<ScalarEvolutionAnalysis>(F));
-}
+AnalysisKey SCEVAA::Key;
 
-char SCEVAA::PassID;
+SCEVAAResult SCEVAA::run(Function &F, FunctionAnalysisManager &AM) {
+  return SCEVAAResult(AM.getResult<ScalarEvolutionAnalysis>(F));
+}
 
 char SCEVAAWrapperPass::ID = 0;
 INITIALIZE_PASS_BEGIN(SCEVAAWrapperPass, "scev-aa",
                       "ScalarEvolution-based Alias Analysis", false, true)
 INITIALIZE_PASS_DEPENDENCY(ScalarEvolutionWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(TargetLibraryInfoWrapperPass)
 INITIALIZE_PASS_END(SCEVAAWrapperPass, "scev-aa",
                     "ScalarEvolution-based Alias Analysis", false, true)
 
@@ -136,13 +137,11 @@ SCEVAAWrapperPass::SCEVAAWrapperPass() : FunctionPass(ID) {
 
 bool SCEVAAWrapperPass::runOnFunction(Function &F) {
   Result.reset(
-      new SCEVAAResult(getAnalysis<TargetLibraryInfoWrapperPass>().getTLI(),
-                       getAnalysis<ScalarEvolutionWrapperPass>().getSE()));
+      new SCEVAAResult(getAnalysis<ScalarEvolutionWrapperPass>().getSE()));
   return false;
 }
 
 void SCEVAAWrapperPass::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.setPreservesAll();
   AU.addRequired<ScalarEvolutionWrapperPass>();
-  AU.addRequired<TargetLibraryInfoWrapperPass>();
 }

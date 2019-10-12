@@ -15,7 +15,7 @@ build system or Makefiles, nor choosing the right CMake options, etc.
 Also, it does not cover all the possible options, nor does it contain
 specific examples for specific architectures. For a concrete example, the
 `instructions for cross-compiling LLVM itself
-<http://llvm.org/docs/HowToCrossCompileLLVM.html>`_ may be of interest.
+<https://llvm.org/docs/HowToCrossCompileLLVM.html>`_ may be of interest.
 
 After reading this document, you should be familiar with the main issues
 related to cross-compilation, and what main compiler options Clang provides
@@ -32,7 +32,7 @@ when compiling your code.
 
 On the other hand, Clang/LLVM is natively a cross-compiler, meaning that
 one set of programs can compile to all targets by setting the ``-target``
-option. That makes it a lot easier for programers wishing to compile to
+option. That makes it a lot easier for programmers wishing to compile to
 different platforms and architectures, and for compiler developers that
 only have to maintain one build system, and for OS distributions, that
 need only one set of main packages.
@@ -78,14 +78,14 @@ go ahead, creating code for the host platform, which will break later
 on when assembling or linking.
 
 The triple has the general format ``<arch><sub>-<vendor>-<sys>-<abi>``, where:
- * ``arch`` = ``x86``, ``arm``, ``thumb``, ``mips``, etc.
+ * ``arch`` = ``x86_64``, ``i386``, ``arm``, ``thumb``, ``mips``, etc.
  * ``sub`` = for ex. on ARM: ``v5``, ``v6m``, ``v7a``, ``v7m``, etc.
  * ``vendor`` = ``pc``, ``apple``, ``nvidia``, ``ibm``, etc.
  * ``sys`` = ``none``, ``linux``, ``win32``, ``darwin``, ``cuda``, etc.
  * ``abi`` = ``eabi``, ``gnu``, ``android``, ``macho``, ``elf``, etc.
 
 The sub-architecture options are available for their own architectures,
-of course, so "x86v7a" doesn't make sense. The vendor needs to be 
+of course, so "x86v7a" doesn't make sense. The vendor needs to be
 specified only if there's a relevant change, for instance between PC
 and Apple. Most of the time it can be omitted (and Unknown)
 will be assumed, which sets the defaults for the specified architecture.

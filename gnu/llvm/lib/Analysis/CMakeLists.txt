@@ -1,6 +1,7 @@
 add_llvm_library(LLVMAnalysis
   AliasAnalysis.cpp
   AliasAnalysisEvaluator.cpp
+  AliasAnalysisSummary.cpp
   AliasSetTracker.cpp
   Analysis.cpp
   AssumptionCache.cpp
@@ -10,12 +11,14 @@ add_llvm_library(LLVMAnalysis
   BranchProbabilityInfo.cpp
   CFG.cpp
   CFGPrinter.cpp
-  CFLAliasAnalysis.cpp
+  CFLAndersAliasAnalysis.cpp
+  CFLSteensAliasAnalysis.cpp
   CGSCCPassManager.cpp
   CallGraph.cpp
   CallGraphSCCPass.cpp
   CallPrinter.cpp
   CaptureTracking.cpp
+  CmpInstAnalysis.cpp
   CostModel.cpp
   CodeMetrics.cpp
   ConstantFolding.cpp
@@ -27,18 +30,27 @@ add_llvm_library(LLVMAnalysis
   DominanceFrontier.cpp
   EHPersonalities.cpp
   GlobalsModRef.cpp
+  GuardUtils.cpp
+  IVDescriptors.cpp
   IVUsers.cpp
+  IndirectCallPromotionAnalysis.cpp
   InlineCost.cpp
   InstCount.cpp
+  InstructionPrecedenceTracking.cpp
   InstructionSimplify.cpp
   Interval.cpp
   IntervalPartition.cpp
   IteratedDominanceFrontier.cpp
+  LazyBranchProbabilityInfo.cpp
+  LazyBlockFrequencyInfo.cpp
   LazyCallGraph.cpp
   LazyValueInfo.cpp
+  LegacyDivergenceAnalysis.cpp
   Lint.cpp
   Loads.cpp
   LoopAccessAnalysis.cpp
+  LoopAnalysisManager.cpp
+  LoopUnrollAnalyzer.cpp
   LoopInfo.cpp
   LoopPass.cpp
   MemDepPrinter.cpp
@@ -46,13 +58,21 @@ add_llvm_library(LLVMAnalysis
   MemoryBuiltins.cpp
   MemoryDependenceAnalysis.cpp
   MemoryLocation.cpp
+  MemorySSA.cpp
+  MemorySSAUpdater.cpp
   ModuleDebugInfoPrinter.cpp
+  ModuleSummaryAnalysis.cpp
+  MustExecute.cpp
   ObjCARCAliasAnalysis.cpp
   ObjCARCAnalysisUtils.cpp
   ObjCARCInstKind.cpp
+  OptimizationRemarkEmitter.cpp
   OrderedBasicBlock.cpp
+  OrderedInstructions.cpp
   PHITransAddr.cpp
+  PhiValues.cpp
   PostDominators.cpp
+  ProfileSummaryInfo.cpp
   PtrUseVisitor.cpp
   RegionInfo.cpp
   RegionPass.cpp
@@ -61,17 +81,23 @@ add_llvm_library(LLVMAnalysis
   ScalarEvolutionAliasAnalysis.cpp
   ScalarEvolutionExpander.cpp
   ScalarEvolutionNormalization.cpp
-  SparsePropagation.cpp
+  StackSafetyAnalysis.cpp
+  SyncDependenceAnalysis.cpp
+  SyntheticCountsUtils.cpp
   TargetLibraryInfo.cpp
   TargetTransformInfo.cpp
   Trace.cpp
   TypeBasedAliasAnalysis.cpp
+  TypeMetadataUtils.cpp
   ScopedNoAliasAA.cpp
+  ValueLattice.cpp
+  ValueLatticeUtils.cpp
   ValueTracking.cpp
   VectorUtils.cpp
 
   ADDITIONAL_HEADER_DIRS
   ${LLVM_MAIN_INCLUDE_DIR}/llvm/Analysis
-  )
 
-add_dependencies(LLVMAnalysis intrinsics_gen)
+  DEPENDS
+  intrinsics_gen
+  )

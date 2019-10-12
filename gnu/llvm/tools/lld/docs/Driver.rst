@@ -2,6 +2,9 @@
 Driver
 ======
 
+Note: this document discuss Mach-O port of LLD. For ELF and COFF,
+see :doc:`index`.
+
 .. contents::
    :local:
 
@@ -62,13 +65,13 @@ Adding an Option to an existing Flavor
 Adding a Flavor
 ===============
 
-#. Add an entry for the flavor in :file:`include/lld/Driver/Driver.h` to
+#. Add an entry for the flavor in :file:`include/lld/Common/Driver.h` to
    :cpp:class:`lld::UniversalDriver::Flavor`.
 
 #. Add an entry in :file:`lib/Driver/UniversalDriver.cpp` to
    :cpp:func:`lld::Driver::strToFlavor` and
    :cpp:func:`lld::UniversalDriver::link`.
-   This allows the flavor to be selected via symlink and :option:`-flavor`.
+   This allows the flavor to be selected via symlink and `-flavor`.
 
 #. Add a tablegen file called :file:`lib/Driver/{flavor}Options.td` that
    describes the options. If the options are a superset of another driver, that

@@ -51,7 +51,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
+#include "clang/StaticAnalyzer/Checkers/BuiltinCheckerRegistration.h"
 #include "clang/StaticAnalyzer/Core/Checker.h"
 #include "clang/StaticAnalyzer/Core/CheckerManager.h"
 #include "clang/StaticAnalyzer/Core/PathSensitive/CallEvent.h"
@@ -440,7 +440,10 @@ StdLibraryFunctionsChecker::findFunctionSummary(const FunctionDecl *FD,
   BasicValueFactory &BVF = SVB.getBasicValueFactory();
   initFunctionSummaries(BVF);
 
-  std::string Name = FD->getQualifiedNameAsString();
+  IdentifierInfo *II = FD->getIdentifier();
+  if (!II)
+    return None;
+  StringRef Name = II->getName();
   if (Name.empty() || !C.isCLibraryFunction(FD, Name))
     return None;
 

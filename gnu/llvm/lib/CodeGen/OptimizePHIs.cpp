@@ -1,4 +1,4 @@
-//===-- OptimizePHIs.cpp - Optimize machine instruction PHIs --------------===//
+//===- OptimizePHIs.cpp - Optimize machine instruction PHIs ---------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -12,34 +12,40 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/CodeGen/Passes.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/Statistic.h"
+#include "llvm/CodeGen/MachineBasicBlock.h"
+#include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineFunctionPass.h"
 #include "llvm/CodeGen/MachineInstr.h"
+#include "llvm/CodeGen/MachineOperand.h"
 #include "llvm/CodeGen/MachineRegisterInfo.h"
-#include "llvm/IR/Function.h"
-#include "llvm/Target/TargetInstrInfo.h"
-#include "llvm/Target/TargetSubtargetInfo.h"
+#include "llvm/CodeGen/TargetRegisterInfo.h"
+#include "llvm/CodeGen/TargetSubtargetInfo.h"
+#include "llvm/Pass.h"
+#include <cassert>
+
 using namespace llvm;
 
-#define DEBUG_TYPE "phi-opt"
+#define DEBUG_TYPE "opt-phis"
 
 STATISTIC(NumPHICycles, "Number of PHI cycles replaced");
 STATISTIC(NumDeadPHICycles, "Number of dead PHI cycles");
 
 namespace {
+
   class OptimizePHIs : public MachineFunctionPass {
     MachineRegisterInfo *MRI;
     const TargetInstrInfo *TII;
 
   public:
     static char ID; // Pass identification
+
     OptimizePHIs() : MachineFunctionPass(ID) {
       initializeOptimizePHIsPass(*PassRegistry::getPassRegistry());
     }
 
-    bool runOnMachineFunction(MachineFunction &MF) override;
+    bool runOnMachineFunction(MachineFunction &Fn) override;
 
     void getAnalysisUsage(AnalysisUsage &AU) const override {
       AU.setPreservesCFG();
@@ -47,23 +53,26 @@ namespace {
     }
 
   private:
-    typedef SmallPtrSet<MachineInstr*, 16> InstrSet;
-    typedef SmallPtrSetIterator<MachineInstr*> InstrSetIterator;
+    using InstrSet = SmallPtrSet<MachineInstr *, 16>;
+    using InstrSetIterator = SmallPtrSetIterator<MachineInstr *>;
 
     bool IsSingleValuePHICycle(MachineInstr *MI, unsigned &SingleValReg,
                                InstrSet &PHIsInCycle);
     bool IsDeadPHICycle(MachineInstr *MI, InstrSet &PHIsInCycle);
     bool OptimizeBB(MachineBasicBlock &MBB);
   };
-}
+
+} // end anonymous namespace
 
 char OptimizePHIs::ID = 0;
+
 char &llvm::OptimizePHIsID = OptimizePHIs::ID;
-INITIALIZE_PASS(OptimizePHIs, "opt-phis",
+
+INITIALIZE_PASS(OptimizePHIs, DEBUG_TYPE,
                 "Optimize machine instruction PHIs", false, false)
 
 bool OptimizePHIs::runOnMachineFunction(MachineFunction &Fn) {
-  if (skipOptnoneFunction(*Fn.getFunction()))
+  if (skipFunction(Fn.getFunction()))
     return false;
 
   MRI = &Fn.getRegInfo();
@@ -81,10 +90,10 @@ bool OptimizePHIs::runOnMachineFunction(MachineFunction &Fn) {
 }
 
 /// IsSingleValuePHICycle - Check if MI is a PHI where all the source operands
-/// are copies of SingleValReg, possibly via copies through other PHIs.  If
+/// are copies of SingleValReg, possibly via copies through other PHIs. If
 /// SingleValReg is zero on entry, it is set to the register with the single
-/// non-copy value.  PHIsInCycle is a set used to keep track of the PHIs that
-/// have been scanned.
+/// non-copy value. PHIsInCycle is a set used to keep track of the PHIs that
+/// have been scanned. PHIs may be grouped by cycle, several cycles or chains.
 bool OptimizePHIs::IsSingleValuePHICycle(MachineInstr *MI,
                                          unsigned &SingleValReg,
                                          InstrSet &PHIsInCycle) {
@@ -110,8 +119,10 @@ bool OptimizePHIs::IsSingleValuePHICycle(MachineInstr *MI,
     if (SrcMI && SrcMI->isCopy() &&
         !SrcMI->getOperand(0).getSubReg() &&
         !SrcMI->getOperand(1).getSubReg() &&
-        TargetRegisterInfo::isVirtualRegister(SrcMI->getOperand(1).getReg()))
-      SrcMI = MRI->getVRegDef(SrcMI->getOperand(1).getReg());
+        TargetRegisterInfo::isVirtualRegister(SrcMI->getOperand(1).getReg())) {
+      SrcReg = SrcMI->getOperand(1).getReg();
+      SrcMI = MRI->getVRegDef(SrcReg);
+    }
     if (!SrcMI)
       return false;
 
@@ -120,7 +131,7 @@ bool OptimizePHIs::IsSingleValuePHICycle(MachineInstr *MI,
         return false;
     } else {
       // Fail if there is more than one non-phi/non-move register.
-      if (SingleValReg != 0)
+      if (SingleValReg != 0 && SingleValReg != SrcReg)
         return false;
       SingleValReg = SrcReg;
     }
@@ -144,7 +155,7 @@ bool OptimizePHIs::IsDeadPHICycle(MachineInstr *MI, InstrSet &PHIsInCycle) {
   if (PHIsInCycle.size() == 16)
     return false;
 
-  for (MachineInstr &UseMI : MRI->use_instructions(DstReg)) {
+  for (MachineInstr &UseMI : MRI->use_nodbg_instructions(DstReg)) {
     if (!UseMI.isPHI() || !IsDeadPHICycle(&UseMI, PHIsInCycle))
       return false;
   }
@@ -171,6 +182,9 @@ bool OptimizePHIs::OptimizeBB(MachineBasicBlock &MBB) {
       if (!MRI->constrainRegClass(SingleValReg, MRI->getRegClass(OldReg)))
         continue;
 
+      // for the case SingleValReg taken from copy instr
+      MRI->clearKillFlags(SingleValReg);
+
       MRI->replaceRegWith(OldReg, SingleValReg);
       MI->eraseFromParent();
       ++NumPHICycles;
@@ -184,7 +198,7 @@ bool OptimizePHIs::OptimizeBB(MachineBasicBlock &MBB) {
       for (InstrSetIterator PI = PHIsInCycle.begin(), PE = PHIsInCycle.end();
            PI != PE; ++PI) {
         MachineInstr *PhiMI = *PI;
-        if (&*MII == PhiMI)
+        if (MII == PhiMI)
           ++MII;
         PhiMI->eraseFromParent();
       }

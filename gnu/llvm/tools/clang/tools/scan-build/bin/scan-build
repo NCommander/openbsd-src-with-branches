@@ -51,11 +51,14 @@ my %Options = (
   OutputDir => undef,        # Parent directory to store HTML files.
   HtmlTitle => basename($CurrentDir)." - scan-build results",
   IgnoreErrors => 0,         # Ignore build errors.
+  KeepCC => 0,               # Do not override CC and CXX make variables
   ViewResults => 0,          # View results when the build terminates.
   ExitStatusFoundBugs => 0,  # Exit status reflects whether bugs were found
+  ShowDescription => 0,      # Display the description of the defect in the list
   KeepEmpty => 0,            # Don't remove output directory even with 0 results.
   EnableCheckers => {},
   DisableCheckers => {},
+  Excludes => [],
   UseCC => undef,            # C compiler to use for compilation.
   UseCXX => undef,           # C++ compiler to use for compilation.
   AnalyzerTarget => undef,
@@ -69,7 +72,8 @@ my %Options = (
   MaxLoop => 0,
   PluginsToLoad => [],
   AnalyzerDiscoveryMethod => undef,
-  OverrideCompiler => 0      # The flag corresponding to the --override-compiler command line option.
+  OverrideCompiler => 0,      # The flag corresponding to the --override-compiler command line option.
+  ForceAnalyzeDebugCode => 0
 );
 lock_keys(%Options);
 
@@ -417,6 +421,20 @@ sub ScanFile {
          # The file no longer exists: use the original path.
          $BugFile = $1;
       }
+
+      # Get just the path
+      my $p = dirname($BugFile);
+      # Check if the path is found in the list of exclude
+      if (grep { $p =~ m/$_/ } @{$Options{Excludes}}) {
+         if ($Options{Verbose}) {
+             Diag("File '$BugFile' deleted: part of an ignored directory.\n");
+         }
+
+       # File in an ignored directory. Remove it
+       unlink("$Dir/$FName");
+       return;
+      }
+
       UpdatePrefix($BugFile);
     }
     elsif (/<!-- BUGPATHLENGTH (.*) -->$/) {
@@ -452,6 +470,10 @@ sub ScanFile {
 
   push @$Index,[ $FName, $BugCategory, $BugType, $BugFile, $BugFunction, $BugLine,
                  $BugPathLength ];
+
+  if ($Options{ShowDescription}) {
+      push @{ $Index->[-1] }, $BugDescription
+  }
 }
 
 ##----------------------------------------------------------------------------##
@@ -745,6 +767,15 @@ print OUT <<ENDTEXT;
   <td>Function/Method</td>
   <td class="Q">Line</td>
   <td class="Q">Path Length</td>
+ENDTEXT
+
+if ($Options{ShowDescription}) {
+print OUT <<ENDTEXT;
+    <td class="Q">Description</td>
+ENDTEXT
+}
+
+print OUT <<ENDTEXT;
   <td class="sorttable_nosort"></td>
   <!-- REPORTBUGCOL -->
 </tr></thead>
@@ -770,10 +801,10 @@ ENDTEXT
 
       print OUT "<tr class=\"bt_$x\">";
       print OUT "<td class=\"DESC\">";
-      print OUT $row->[1];
+      print OUT $row->[1]; # $BugCategory
       print OUT "</td>";
       print OUT "<td class=\"DESC\">";
-      print OUT $row->[2];
+      print OUT $row->[2]; # $BugType
       print OUT "</td>";
 
       # Update the file prefix.
@@ -801,11 +832,11 @@ ENDTEXT
       print OUT "</td>";
 
       print OUT "<td class=\"DESC\">";
-      print OUT $row->[4];
+      print OUT $row->[4]; # Function
       print OUT "</td>";
 
       # Print out the quantities.
-      for my $j ( 5 .. 6 ) {
+      for my $j ( 5 .. 6 ) { # Line & Path length
         print OUT "<td class=\"Q\">$row->[$j]</td>";
       }
 
@@ -951,7 +982,8 @@ sub SetEnv {
                    'CCC_CC',
                    'CCC_CXX',
                    'CCC_REPORT_FAILURES',
-                   'CLANG_ANALYZER_TARGET') {
+                   'CLANG_ANALYZER_TARGET',
+                   'CCC_ANALYZER_FORCE_ANALYZE_DEBUG_CODE') {
     my $x = $EnvVars->{$var};
     if (defined $x) { $ENV{$var} = $x }
   }
@@ -996,7 +1028,7 @@ sub RunXcodebuild {
   }
   close(DETECT_XCODE);
 
-  # If --override-compiler is explicitely requested, resort to the old
+  # If --override-compiler is explicitly requested, resort to the old
   # behavior regardless of Xcode version.
   if ($Options{OverrideCompiler}) {
     $oldBehavior = 1;
@@ -1046,6 +1078,7 @@ sub RunXcodebuild {
 sub RunBuildCommand {
   my $Args = shift;
   my $IgnoreErrors = shift;
+  my $KeepCC = shift;
   my $Cmd = $Args->[0];
   my $CCAnalyzer = shift;
   my $CXXAnalyzer = shift;
@@ -1061,7 +1094,7 @@ sub RunBuildCommand {
   if ($Cmd =~ /(.*\/?gcc[^\/]*$)/ or
       $Cmd =~ /(.*\/?cc[^\/]*$)/ or
       $Cmd =~ /(.*\/?llvm-gcc[^\/]*$)/ or
-      $Cmd =~ /(.*\/?clang$)/ or
+      $Cmd =~ /(.*\/?clang[^\/]*$)/ or
       $Cmd =~ /(.*\/?ccc-analyzer[^\/]*$)/) {
 
     if (!($Cmd =~ /ccc-analyzer/) and !defined $ENV{"CCC_CC"}) {
@@ -1083,8 +1116,10 @@ sub RunBuildCommand {
     unshift @$Args, $CXXAnalyzer;
   }
   elsif ($Cmd eq "make" or $Cmd eq "gmake" or $Cmd eq "mingw32-make") {
-    AddIfNotPresent($Args, "CC=$CCAnalyzer");
-    AddIfNotPresent($Args, "CXX=$CXXAnalyzer");
+    if (!$KeepCC) {
+      AddIfNotPresent($Args, "CC=$CCAnalyzer");
+      AddIfNotPresent($Args, "CXX=$CXXAnalyzer");
+    }
     if ($IgnoreErrors) {
       AddIfNotPresent($Args,"-k");
       AddIfNotPresent($Args,"-i");
@@ -1118,6 +1153,11 @@ OPTIONS:
    Also analyze functions in #included files.  By default, such functions
    are skipped unless they are called by functions within the main source file.
 
+ --force-analyze-debug-code
+
+   Tells analyzer to enable assertions in code even if they were disabled
+   during compilation to enable more precise results.
+
  -o <output location>
 
    Specifies the output directory for analyzer reports. Subdirectories will be
@@ -1137,12 +1177,27 @@ OPTIONS:
    currently supports make and xcodebuild. This is a convenience option; one
    can specify this behavior directly using build options.
 
+ --keep-cc
+
+   Do not override CC and CXX make variables. Useful when running make in
+   autoconf-based (and similar) projects where configure can add extra flags
+   to those variables.
+
  --html-title [title]
  --html-title=[title]
 
    Specify the title used on generated HTML pages. If not specified, a default
    title will be used.
 
+ --show-description
+
+   Display the description of defects in the list
+
+ -sarif
+
+  By default the output of scan-build is a set of HTML files. This option
+  outputs the results in SARIF format.
+ 
  -plist
 
    By default the output of scan-build is a set of HTML files. This option
@@ -1157,7 +1212,13 @@ OPTIONS:
 
    By default, the exit status of scan-build is the same as the executed build
    command. Specifying this option causes the exit status of scan-build to be 1
-   if it found potential bugs and 0 otherwise.
+   if it found potential bugs and the exit status of the build itself otherwise.
+
+ --exclude <path>
+
+   Do not run static analyzer against files found in this
+   directory (You can specify this option multiple times).
+   Could be useful when project contains 3rd party libraries.
 
  --use-cc [compiler path]
  --use-cc=[compiler path]
@@ -1211,7 +1272,7 @@ ADVANCED OPTIONS:
 
  -maxloop <loop count>
 
-   Specifiy the number of times a block can be visited before giving up.
+   Specify the number of times a block can be visited before giving up.
    Default is 4. Increase for more comprehensive coverage at a cost of speed.
 
  -internal-stats
@@ -1507,6 +1568,12 @@ sub ProcessArgs {
       next;
     }
 
+    if ($arg eq "--keep-cc") {
+      shift @$Args;
+      $Options{KeepCC} = 1;
+      next;
+    }
+
     if ($arg =~ /^--use-cc(=(.+))?$/) {
       shift @$Args;
       my $cc;
@@ -1579,6 +1646,12 @@ sub ProcessArgs {
       next;
     }
 
+    if ($arg eq "--show-description") {
+      shift @$Args;
+      $Options{ShowDescription} = 1;
+      next;
+    }
+
     if ($arg eq "-store") {
       shift @$Args;
       $Options{StoreModel} = shift @$Args;
@@ -1594,6 +1667,12 @@ sub ProcessArgs {
     if ($arg eq "-internal-stats") {
       shift @$Args;
       $Options{InternalStats} = 1;
+      next;
+    }
+
+    if ($arg eq "-sarif") {
+      shift @$Args;
+      $Options{OutputFormat} = "sarif";
       next;
     }
 
@@ -1651,6 +1730,15 @@ sub ProcessArgs {
       next;
     }
 
+    if ($arg eq "--exclude") {
+      shift @$Args;
+      my $arg = shift @$Args;
+      # Remove the trailing slash if any
+      $arg =~ s|/$||;
+      push @{$Options{Excludes}}, $arg;
+      next;
+    }
+
     if ($arg eq "-load-plugin") {
       shift @$Args;
       push @{$Options{PluginsToLoad}}, shift @$Args;
@@ -1678,6 +1766,12 @@ sub ProcessArgs {
     if ($arg eq "--override-compiler") {
       shift @$Args;
       $Options{OverrideCompiler} = 1;
+      next;
+    }
+
+    if ($arg eq "--force-analyze-debug-code") {
+      shift @$Args;
+      $Options{ForceAnalyzeDebugCode} = 1;
       next;
     }
 
@@ -1760,13 +1854,13 @@ Diag("Using '$Clang' for static analysis\n");
 SetHtmlEnv(\@ARGV, $Options{OutputDir});
 
 my @AnalysesToRun;
-foreach (sort { $Options{EnableCheckers}{$a} <=> $Options{EnableCheckers}{$b} } 
-         keys %{$Options{EnableCheckers}}) { 
+foreach (sort { $Options{EnableCheckers}{$a} <=> $Options{EnableCheckers}{$b} }
+         keys %{$Options{EnableCheckers}}) {
   # Push checkers in order they were enabled.
   push @AnalysesToRun, "-analyzer-checker", $_;
 }
-foreach (sort { $Options{DisableCheckers}{$a} <=> $Options{DisableCheckers}{$b} } 
-         keys %{$Options{DisableCheckers}}) { 
+foreach (sort { $Options{DisableCheckers}{$a} <=> $Options{DisableCheckers}{$b} }
+         keys %{$Options{DisableCheckers}}) {
   # Push checkers in order they were disabled.
   push @AnalysesToRun, "-analyzer-disable-checker", $_;
 }
@@ -1796,17 +1890,21 @@ my %EnvVars = (
   'CCC_ANALYZER_CONSTRAINTS_MODEL' => $Options{ConstraintsModel},
   'CCC_ANALYZER_INTERNAL_STATS' => $Options{InternalStats},
   'CCC_ANALYZER_OUTPUT_FORMAT' => $Options{OutputFormat},
-  'CLANG_ANALYZER_TARGET' => $Options{AnalyzerTarget}
+  'CLANG_ANALYZER_TARGET' => $Options{AnalyzerTarget},
+  'CCC_ANALYZER_FORCE_ANALYZE_DEBUG_CODE' => $Options{ForceAnalyzeDebugCode}
 );
 
 # Run the build.
-my $ExitStatus = RunBuildCommand(\@ARGV, $Options{IgnoreErrors}, $Cmd, $CmdCXX,
-                                \%EnvVars);
+my $ExitStatus = RunBuildCommand(\@ARGV, $Options{IgnoreErrors}, $Options{KeepCC},
+	                        $Cmd, $CmdCXX, \%EnvVars);
 
 if (defined $Options{OutputFormat}) {
-  if ($Options{OutputFormat} =~ /plist/) {
+  if ($Options{OutputFormat} =~ /plist/ ||
+      $Options{OutputFormat} =~ /sarif/) {
     Diag "Analysis run complete.\n";
-    Diag "Analysis results (plist files) deposited in '$Options{OutputDir}'\n";
+    Diag "Analysis results (" .
+      ($Options{OutputFormat} =~ /plist/ ? "plist" : "sarif") .
+      " files) deposited in '$Options{OutputDir}'\n";
   }
   if ($Options{OutputFormat} =~ /html/) {
     # Postprocess the HTML directory.
@@ -1824,7 +1922,7 @@ if (defined $Options{OutputFormat}) {
 
     if ($Options{ExitStatusFoundBugs}) {
       exit 1 if ($NumBugs > 0);
-      exit 0;
+      exit $ExitStatus;
     }
   }
 }

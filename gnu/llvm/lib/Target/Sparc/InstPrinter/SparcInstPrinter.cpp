@@ -16,6 +16,7 @@
 #include "llvm/MC/MCExpr.h"
 #include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCRegisterInfo.h"
+#include "llvm/MC/MCSubtargetInfo.h"
 #include "llvm/MC/MCSymbol.h"
 #include "llvm/Support/raw_ostream.h"
 using namespace llvm;
@@ -115,8 +116,21 @@ void SparcInstPrinter::printOperand(const MCInst *MI, int opNum,
   }
 
   if (MO.isImm()) {
-    O << (int)MO.getImm();
-    return;
+    switch (MI->getOpcode()) {
+      default:
+        O << (int)MO.getImm();
+        return;
+
+      case SP::TICCri: // Fall through
+      case SP::TICCrr: // Fall through
+      case SP::TRAPri: // Fall through
+      case SP::TRAPrr: // Fall through
+      case SP::TXCCri: // Fall through
+      case SP::TXCCrr: // Fall through
+        // Only seven-bit values up to 127.
+        O << ((int) MO.getImm() & 0x7f);
+        return;
+    }
   }
 
   assert(MO.isExpr() && "Unknown operand kind in printOperand");
@@ -166,6 +180,11 @@ void SparcInstPrinter::printCCOperand(const MCInst *MI, int opNum,
     // Make sure CC is a fp conditional flag.
     CC = (CC < 16) ? (CC + 16) : CC;
     break;
+  case SP::CBCOND:
+  case SP::CBCONDA:
+    // Make sure CC is a cp conditional flag.
+    CC = (CC < 32) ? (CC + 32) : CC;
+    break;
   }
   O << SPARCCondCodeToString((SPCC::CondCodes)CC);
 }
@@ -175,4 +194,27 @@ bool SparcInstPrinter::printGetPCX(const MCInst *MI, unsigned opNum,
                                    raw_ostream &O) {
   llvm_unreachable("FIXME: Implement SparcInstPrinter::printGetPCX.");
   return true;
+}
+
+void SparcInstPrinter::printMembarTag(const MCInst *MI, int opNum,
+                                      const MCSubtargetInfo &STI,
+                                      raw_ostream &O) {
+  static const char *const TagNames[] = {
+      "#LoadLoad",  "#StoreLoad", "#LoadStore", "#StoreStore",
+      "#Lookaside", "#MemIssue",  "#Sync"};
+
+  unsigned Imm = MI->getOperand(opNum).getImm();
+
+  if (Imm > 127) {
+    O << Imm;
+    return;
+  }
+
+  bool First = true;
+  for (unsigned i = 0; i < sizeof(TagNames) / sizeof(char *); i++) {
+    if (Imm & (1 << i)) {
+      O << (First ? "" : " | ") << TagNames[i];
+      First = false;
+    }
+  }
 }

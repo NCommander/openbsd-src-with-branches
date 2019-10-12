@@ -8,19 +8,20 @@
 //===----------------------------------------------------------------------===//
 
 #include "lld/Core/LinkingContext.h"
-#include "lld/Core/Resolver.h"
+#include "lld/Core/File.h"
+#include "lld/Core/Node.h"
 #include "lld/Core/Simple.h"
 #include "lld/Core/Writer.h"
-#include "llvm/ADT/Triple.h"
+#include <algorithm>
 
 namespace lld {
 
-LinkingContext::LinkingContext() {}
+LinkingContext::LinkingContext() = default;
 
-LinkingContext::~LinkingContext() {}
+LinkingContext::~LinkingContext() = default;
 
-bool LinkingContext::validate(raw_ostream &diagnostics) {
-  return validateImpl(diagnostics);
+bool LinkingContext::validate() {
+  return validateImpl();
 }
 
 llvm::Error LinkingContext::writeFile(const File &linkedFile) const {
@@ -59,7 +60,7 @@ LinkingContext::createUndefinedSymbolFile(StringRef filename) const {
 }
 
 void LinkingContext::createInternalFiles(
-    std::vector<std::unique_ptr<File> > &result) const {
+    std::vector<std::unique_ptr<File>> &result) const {
   if (std::unique_ptr<File> file = createEntrySymbolFile())
     result.push_back(std::move(file));
   if (std::unique_ptr<File> file = createUndefinedSymbolFile())

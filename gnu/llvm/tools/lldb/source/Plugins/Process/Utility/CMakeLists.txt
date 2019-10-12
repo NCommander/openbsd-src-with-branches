@@ -1,5 +1,3 @@
-include_directories(../../../Utility/)
-
 add_lldb_library(lldbPluginProcessUtility PLUGIN
   DynamicRegisterInfo.cpp
   FreeBSDSignals.cpp
@@ -7,6 +5,7 @@ add_lldb_library(lldbPluginProcessUtility PLUGIN
   HistoryThread.cpp
   HistoryUnwind.cpp
   InferiorCallPOSIX.cpp
+  LinuxProcMaps.cpp
   LinuxSignals.cpp
   MipsLinuxSignals.cpp
   NativeRegisterContextRegisterInfo.cpp
@@ -39,11 +38,13 @@ add_lldb_library(lldbPluginProcessUtility PLUGIN
   RegisterContextPOSIX_arm64.cpp
   RegisterContextPOSIX_mips64.cpp
   RegisterContextPOSIX_powerpc.cpp
+  RegisterContextPOSIX_ppc64le.cpp
   RegisterContextPOSIX_s390x.cpp
   RegisterContextPOSIX_x86.cpp
   RegisterContextThreadMemory.cpp
   RegisterInfoPOSIX_arm.cpp
   RegisterInfoPOSIX_arm64.cpp
+  RegisterInfoPOSIX_ppc64le.cpp
   StopInfoMachException.cpp
   ThreadMemory.cpp
   UnwindLLDB.cpp
@@ -58,7 +59,6 @@ add_lldb_library(lldbPluginProcessUtility PLUGIN
     lldbSymbol
     lldbTarget
     lldbUtility
-    lldbPluginProcessElfCore
   LINK_COMPONENTS
     Support
   )

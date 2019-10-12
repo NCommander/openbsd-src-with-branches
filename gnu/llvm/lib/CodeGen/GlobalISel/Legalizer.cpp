@@ -14,23 +14,38 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/CodeGen/GlobalISel/Legalizer.h"
+#include "llvm/ADT/PostOrderIterator.h"
+#include "llvm/ADT/SetVector.h"
+#include "llvm/CodeGen/GlobalISel/CSEInfo.h"
+#include "llvm/CodeGen/GlobalISel/CSEMIRBuilder.h"
+#include "llvm/CodeGen/GlobalISel/GISelChangeObserver.h"
+#include "llvm/CodeGen/GlobalISel/GISelWorkList.h"
+#include "llvm/CodeGen/GlobalISel/LegalizationArtifactCombiner.h"
 #include "llvm/CodeGen/GlobalISel/LegalizerHelper.h"
-#include "llvm/CodeGen/GlobalISel/Legalizer.h"
+#include "llvm/CodeGen/GlobalISel/Utils.h"
+#include "llvm/CodeGen/MachineOptimizationRemarkEmitter.h"
 #include "llvm/CodeGen/MachineRegisterInfo.h"
 #include "llvm/CodeGen/TargetPassConfig.h"
+#include "llvm/CodeGen/TargetSubtargetInfo.h"
 #include "llvm/Support/Debug.h"
-#include "llvm/Target/TargetInstrInfo.h"
-#include "llvm/Target/TargetSubtargetInfo.h"
+
+#include <iterator>
 
 #define DEBUG_TYPE "legalizer"
 
 using namespace llvm;
+
+static cl::opt<bool>
+    EnableCSEInLegalizer("enable-cse-in-legalizer",
+                         cl::desc("Should enable CSE in Legalizer"),
+                         cl::Optional, cl::init(false));
 
 char Legalizer::ID = 0;
 INITIALIZE_PASS_BEGIN(Legalizer, DEBUG_TYPE,
                       "Legalize the Machine IR a function's Machine IR", false,
                       false)
 INITIALIZE_PASS_DEPENDENCY(TargetPassConfig)
+INITIALIZE_PASS_DEPENDENCY(GISelCSEAnalysisWrapperPass)
 INITIALIZE_PASS_END(Legalizer, DEBUG_TYPE,
                     "Legalize the Machine IR a function's Machine IR", false,
                     false)
@@ -41,139 +56,198 @@ Legalizer::Legalizer() : MachineFunctionPass(ID) {
 
 void Legalizer::getAnalysisUsage(AnalysisUsage &AU) const {
   AU.addRequired<TargetPassConfig>();
+  AU.addRequired<GISelCSEAnalysisWrapperPass>();
+  AU.addPreserved<GISelCSEAnalysisWrapperPass>();
+  getSelectionDAGFallbackAnalysisUsage(AU);
   MachineFunctionPass::getAnalysisUsage(AU);
 }
 
 void Legalizer::init(MachineFunction &MF) {
 }
 
-bool Legalizer::combineExtracts(MachineInstr &MI, MachineRegisterInfo &MRI,
-                                const TargetInstrInfo &TII) {
-  bool Changed = false;
-  if (MI.getOpcode() != TargetOpcode::G_EXTRACT)
-    return Changed;
-
-  unsigned NumDefs = (MI.getNumOperands() - 1) / 2;
-  unsigned SrcReg = MI.getOperand(NumDefs).getReg();
-  MachineInstr &SeqI = *MRI.def_instr_begin(SrcReg);
-  if (SeqI.getOpcode() != TargetOpcode::G_SEQUENCE)
-      return Changed;
-
-  unsigned NumSeqSrcs = (SeqI.getNumOperands() - 1) / 2;
-  bool AllDefsReplaced = true;
-
-  // Try to match each register extracted with a corresponding insertion formed
-  // by the G_SEQUENCE.
-  for (unsigned Idx = 0, SeqIdx = 0; Idx < NumDefs; ++Idx) {
-    MachineOperand &ExtractMO = MI.getOperand(Idx);
-    assert(ExtractMO.isReg() && ExtractMO.isDef() &&
-           "unexpected extract operand");
-
-    unsigned ExtractReg = ExtractMO.getReg();
-    unsigned ExtractPos = MI.getOperand(NumDefs + Idx + 1).getImm();
-
-    while (SeqIdx < NumSeqSrcs &&
-           SeqI.getOperand(2 * SeqIdx + 2).getImm() < ExtractPos)
-      ++SeqIdx;
-
-    if (SeqIdx == NumSeqSrcs) {
-      AllDefsReplaced = false;
-      continue;
-    }
-
-    unsigned OrigReg = SeqI.getOperand(2 * SeqIdx + 1).getReg();
-    if (SeqI.getOperand(2 * SeqIdx + 2).getImm() != ExtractPos ||
-        MRI.getType(OrigReg) != MRI.getType(ExtractReg)) {
-      AllDefsReplaced = false;
-      continue;
-    }
-
-    assert(!TargetRegisterInfo::isPhysicalRegister(OrigReg) &&
-           "unexpected physical register in G_SEQUENCE");
-
-    // Finally we can replace the uses.
-    for (auto &Use : MRI.use_operands(ExtractReg)) {
-      Changed = true;
-      Use.setReg(OrigReg);
-    }
+static bool isArtifact(const MachineInstr &MI) {
+  switch (MI.getOpcode()) {
+  default:
+    return false;
+  case TargetOpcode::G_TRUNC:
+  case TargetOpcode::G_ZEXT:
+  case TargetOpcode::G_ANYEXT:
+  case TargetOpcode::G_SEXT:
+  case TargetOpcode::G_MERGE_VALUES:
+  case TargetOpcode::G_UNMERGE_VALUES:
+  case TargetOpcode::G_CONCAT_VECTORS:
+  case TargetOpcode::G_BUILD_VECTOR:
+    return true;
   }
-
-  if (AllDefsReplaced) {
-    // If SeqI was the next instruction in the BB and we removed it, we'd break
-    // the outer iteration.
-    assert(std::next(MachineBasicBlock::iterator(MI)) != SeqI &&
-           "G_SEQUENCE does not dominate G_EXTRACT");
-
-    MI.eraseFromParent();
-
-    if (MRI.use_empty(SrcReg))
-      SeqI.eraseFromParent();
-    Changed = true;
-  }
-
-  return Changed;
 }
+using InstListTy = GISelWorkList<256>;
+using ArtifactListTy = GISelWorkList<128>;
+
+namespace {
+class LegalizerWorkListManager : public GISelChangeObserver {
+  InstListTy &InstList;
+  ArtifactListTy &ArtifactList;
+
+public:
+  LegalizerWorkListManager(InstListTy &Insts, ArtifactListTy &Arts)
+      : InstList(Insts), ArtifactList(Arts) {}
+
+  void createdInstr(MachineInstr &MI) override {
+    // Only legalize pre-isel generic instructions.
+    // Legalization process could generate Target specific pseudo
+    // instructions with generic types. Don't record them
+    if (isPreISelGenericOpcode(MI.getOpcode())) {
+      if (isArtifact(MI))
+        ArtifactList.insert(&MI);
+      else
+        InstList.insert(&MI);
+    }
+    LLVM_DEBUG(dbgs() << ".. .. New MI: " << MI);
+  }
+
+  void erasingInstr(MachineInstr &MI) override {
+    LLVM_DEBUG(dbgs() << ".. .. Erasing: " << MI);
+    InstList.remove(&MI);
+    ArtifactList.remove(&MI);
+  }
+
+  void changingInstr(MachineInstr &MI) override {
+    LLVM_DEBUG(dbgs() << ".. .. Changing MI: " << MI);
+  }
+
+  void changedInstr(MachineInstr &MI) override {
+    // When insts change, we want to revisit them to legalize them again.
+    // We'll consider them the same as created.
+    LLVM_DEBUG(dbgs() << ".. .. Changed MI: " << MI);
+    createdInstr(MI);
+  }
+};
+} // namespace
 
 bool Legalizer::runOnMachineFunction(MachineFunction &MF) {
   // If the ISel pipeline failed, do not bother running that pass.
   if (MF.getProperties().hasProperty(
           MachineFunctionProperties::Property::FailedISel))
     return false;
-  DEBUG(dbgs() << "Legalize Machine IR for: " << MF.getName() << '\n');
+  LLVM_DEBUG(dbgs() << "Legalize Machine IR for: " << MF.getName() << '\n');
   init(MF);
   const TargetPassConfig &TPC = getAnalysis<TargetPassConfig>();
-  const LegalizerInfo &LegalizerInfo = *MF.getSubtarget().getLegalizerInfo();
-  LegalizerHelper Helper(MF);
+  GISelCSEAnalysisWrapper &Wrapper =
+      getAnalysis<GISelCSEAnalysisWrapperPass>().getCSEWrapper();
+  MachineOptimizationRemarkEmitter MORE(MF, /*MBFI=*/nullptr);
 
-  // FIXME: an instruction may need more than one pass before it is legal. For
-  // example on most architectures <3 x i3> is doubly-illegal. It would
-  // typically proceed along a path like: <3 x i3> -> <3 x i8> -> <8 x i8>. We
-  // probably want a worklist of instructions rather than naive iterate until
-  // convergence for performance reasons.
-  bool Changed = false;
-  MachineBasicBlock::iterator NextMI;
-  for (auto &MBB : MF)
-    for (auto MI = MBB.begin(); MI != MBB.end(); MI = NextMI) {
-      // Get the next Instruction before we try to legalize, because there's a
-      // good chance MI will be deleted.
-      NextMI = std::next(MI);
+  const size_t NumBlocks = MF.size();
+  MachineRegisterInfo &MRI = MF.getRegInfo();
 
+  // Populate Insts
+  InstListTy InstList;
+  ArtifactListTy ArtifactList;
+  ReversePostOrderTraversal<MachineFunction *> RPOT(&MF);
+  // Perform legalization bottom up so we can DCE as we legalize.
+  // Traverse BB in RPOT and within each basic block, add insts top down,
+  // so when we pop_back_val in the legalization process, we traverse bottom-up.
+  for (auto *MBB : RPOT) {
+    if (MBB->empty())
+      continue;
+    for (MachineInstr &MI : *MBB) {
       // Only legalize pre-isel generic instructions: others don't have types
       // and are assumed to be legal.
-      if (!isPreISelGenericOpcode(MI->getOpcode()))
+      if (!isPreISelGenericOpcode(MI.getOpcode()))
         continue;
-
-      auto Res = Helper.legalizeInstr(*MI, LegalizerInfo);
-
-      // Error out if we couldn't legalize this instruction. We may want to fall
-      // back to DAG ISel instead in the future.
-      if (Res == LegalizerHelper::UnableToLegalize) {
-        if (!TPC.isGlobalISelAbortEnabled()) {
-          MF.getProperties().set(
-              MachineFunctionProperties::Property::FailedISel);
-          return false;
-        }
-        std::string Msg;
-        raw_string_ostream OS(Msg);
-        OS << "unable to legalize instruction: ";
-        MI->print(OS);
-        report_fatal_error(OS.str());
+      if (isArtifact(MI))
+        ArtifactList.insert(&MI);
+      else
+        InstList.insert(&MI);
+    }
+  }
+  std::unique_ptr<MachineIRBuilder> MIRBuilder;
+  GISelCSEInfo *CSEInfo = nullptr;
+  bool IsO0 = TPC.getOptLevel() == CodeGenOpt::Level::None;
+  // Disable CSE for O0.
+  bool EnableCSE = !IsO0 && EnableCSEInLegalizer;
+  if (EnableCSE) {
+    MIRBuilder = make_unique<CSEMIRBuilder>();
+    std::unique_ptr<CSEConfig> Config = make_unique<CSEConfig>();
+    CSEInfo = &Wrapper.get(std::move(Config));
+    MIRBuilder->setCSEInfo(CSEInfo);
+  } else
+    MIRBuilder = make_unique<MachineIRBuilder>();
+  // This observer keeps the worklist updated.
+  LegalizerWorkListManager WorkListObserver(InstList, ArtifactList);
+  // We want both WorkListObserver as well as CSEInfo to observe all changes.
+  // Use the wrapper observer.
+  GISelObserverWrapper WrapperObserver(&WorkListObserver);
+  if (EnableCSE && CSEInfo)
+    WrapperObserver.addObserver(CSEInfo);
+  // Now install the observer as the delegate to MF.
+  // This will keep all the observers notified about new insertions/deletions.
+  RAIIDelegateInstaller DelInstall(MF, &WrapperObserver);
+  LegalizerHelper Helper(MF, WrapperObserver, *MIRBuilder.get());
+  const LegalizerInfo &LInfo(Helper.getLegalizerInfo());
+  LegalizationArtifactCombiner ArtCombiner(*MIRBuilder.get(), MF.getRegInfo(),
+                                           LInfo);
+  auto RemoveDeadInstFromLists = [&WrapperObserver](MachineInstr *DeadMI) {
+    WrapperObserver.erasingInstr(*DeadMI);
+  };
+  bool Changed = false;
+  do {
+    while (!InstList.empty()) {
+      MachineInstr &MI = *InstList.pop_back_val();
+      assert(isPreISelGenericOpcode(MI.getOpcode()) && "Expecting generic opcode");
+      if (isTriviallyDead(MI, MRI)) {
+        LLVM_DEBUG(dbgs() << MI << "Is dead; erasing.\n");
+        MI.eraseFromParentAndMarkDBGValuesForRemoval();
+        continue;
       }
 
+      // Do the legalization for this instruction.
+      auto Res = Helper.legalizeInstrStep(MI);
+      // Error out if we couldn't legalize this instruction. We may want to
+      // fall back to DAG ISel instead in the future.
+      if (Res == LegalizerHelper::UnableToLegalize) {
+        Helper.MIRBuilder.stopObservingChanges();
+        reportGISelFailure(MF, TPC, MORE, "gisel-legalize",
+                           "unable to legalize instruction", MI);
+        return false;
+      }
       Changed |= Res == LegalizerHelper::Legalized;
     }
-
-
-  MachineRegisterInfo &MRI = MF.getRegInfo();
-  const TargetInstrInfo &TII = *MF.getSubtarget().getInstrInfo();
-  for (auto &MBB : MF) {
-    for (auto MI = MBB.begin(); MI != MBB.end(); MI = NextMI) {
-      // Get the next Instruction before we try to legalize, because there's a
-      // good chance MI will be deleted.
-      NextMI = std::next(MI);
-
-      Changed |= combineExtracts(*MI, MRI, TII);
+    while (!ArtifactList.empty()) {
+      MachineInstr &MI = *ArtifactList.pop_back_val();
+      assert(isPreISelGenericOpcode(MI.getOpcode()) && "Expecting generic opcode");
+      if (isTriviallyDead(MI, MRI)) {
+        LLVM_DEBUG(dbgs() << MI << "Is dead\n");
+        RemoveDeadInstFromLists(&MI);
+        MI.eraseFromParentAndMarkDBGValuesForRemoval();
+        continue;
+      }
+      SmallVector<MachineInstr *, 4> DeadInstructions;
+      if (ArtCombiner.tryCombineInstruction(MI, DeadInstructions)) {
+        for (auto *DeadMI : DeadInstructions) {
+          LLVM_DEBUG(dbgs() << *DeadMI << "Is dead\n");
+          RemoveDeadInstFromLists(DeadMI);
+          DeadMI->eraseFromParentAndMarkDBGValuesForRemoval();
+        }
+        Changed = true;
+        continue;
+      }
+      // If this was not an artifact (that could be combined away), this might
+      // need special handling. Add it to InstList, so when it's processed
+      // there, it has to be legal or specially handled.
+      else
+        InstList.insert(&MI);
     }
+  } while (!InstList.empty());
+
+  // For now don't support if new blocks are inserted - we would need to fix the
+  // outerloop for that.
+  if (MF.size() != NumBlocks) {
+    MachineOptimizationRemarkMissed R("gisel-legalize", "GISelFailure",
+                                      MF.getFunction().getSubprogram(),
+                                      /*MBB=*/nullptr);
+    R << "inserting blocks is not supported yet";
+    reportGISelFailure(MF, TPC, MORE, R);
+    return false;
   }
 
   return Changed;

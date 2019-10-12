@@ -10,10 +10,6 @@
 #ifndef liblldb_PlatformWindows_h_
 #define liblldb_PlatformWindows_h_
 
-// C Includes
-// C++ Includes
-// Other libraries and framework includes
-// Project includes
 #include "lldb/Target/Platform.h"
 
 namespace lldb_private {
@@ -118,7 +114,7 @@ public:
 
   bool CanDebugProcess() override;
 
-  size_t GetEnvironment(StringList &env) override;
+  Environment GetEnvironment() override;
 
   // FIXME not sure what the _sigtramp equivalent would be on this platform
   void CalculateTrapHandlerSymbolNames() override {}

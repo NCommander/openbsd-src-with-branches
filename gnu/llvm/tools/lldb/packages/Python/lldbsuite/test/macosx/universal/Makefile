@@ -1,19 +1,25 @@
-CC ?= clang
+LEVEL := ../../make
 
-testit: testit.i386 testit.x86_64
-	lipo -create -o testit testit.i386 testit.x86_64
+EXE := testit
 
-testit.i386: testit.i386.o
-	$(CC) -arch i386 -o testit.i386 testit.i386.o
+include $(LEVEL)/Makefile.rules
+
+all: testit
+
+testit: testit.x86_64h testit.x86_64
+	lipo -create -o testit $^
+
+testit.x86_64h: testit.x86_64h.o
+	$(CC) -arch x86_64h -o testit.x86_64h $<
 
 testit.x86_64: testit.x86_64.o
-	$(CC) -arch x86_64 -o testit.x86_64 testit.x86_64.o
+	$(CC) -arch x86_64 -o testit.x86_64 $<
 
-testit.i386.o: main.c
-	$(CC) -g -O0 -arch i386 -c -o testit.i386.o main.c
+testit.x86_64h.o: main.c
+	$(CC) -g -O0 -arch x86_64h -c -o testit.x86_64h.o $<
 
 testit.x86_64.o: main.c
-	$(CC) -g -O0 -arch x86_64 -c -o testit.x86_64.o main.c
+	$(CC) -g -O0 -arch x86_64 -c -o testit.x86_64.o $<
 
-clean:
+clean::
 	rm -rf $(wildcard testit* *~)

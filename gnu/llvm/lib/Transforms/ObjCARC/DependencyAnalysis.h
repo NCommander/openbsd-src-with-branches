@@ -24,6 +24,7 @@
 #define LLVM_LIB_TRANSFORMS_OBJCARC_DEPENDENCYANALYSIS_H
 
 #include "llvm/ADT/SmallPtrSet.h"
+#include "llvm/Analysis/ObjCARCInstKind.h"
 
 namespace llvm {
   class BasicBlock;
@@ -37,7 +38,7 @@ namespace objcarc {
 class ProvenanceAnalysis;
 
 /// \enum DependenceKind
-/// \brief Defines different dependence kinds among various ARC constructs.
+/// Defines different dependence kinds among various ARC constructs.
 ///
 /// There are several kinds of dependence-like concepts in use here.
 ///

@@ -11,14 +11,11 @@
 #define LLD_WASM_SYMBOL_TABLE_H
 
 #include "InputFiles.h"
+#include "LTO.h"
 #include "Symbols.h"
-
+#include "lld/Common/LLVM.h"
 #include "llvm/ADT/CachedHashString.h"
-#include "llvm/ADT/DenseMap.h"
-#include "llvm/Support/raw_ostream.h"
-
-using llvm::object::WasmSymbol;
-using llvm::wasm::WasmSignature;
+#include "llvm/ADT/DenseSet.h"
 
 namespace lld {
 namespace wasm {
@@ -40,27 +37,56 @@ class InputSegment;
 class SymbolTable {
 public:
   void addFile(InputFile *File);
+  void addCombinedLTOObject();
 
   std::vector<ObjFile *> ObjectFiles;
+  std::vector<BitcodeFile *> BitcodeFiles;
+  std::vector<InputFunction *> SyntheticFunctions;
+  std::vector<InputGlobal *> SyntheticGlobals;
 
-  void reportDuplicate(Symbol *Existing, InputFile *NewFile);
   void reportRemainingUndefines();
 
   ArrayRef<Symbol *> getSymbols() const { return SymVector; }
   Symbol *find(StringRef Name);
 
-  Symbol *addDefined(InputFile *F, const WasmSymbol *Sym,
-                     const InputSegment *Segment = nullptr);
-  Symbol *addUndefined(InputFile *F, const WasmSymbol *Sym);
-  Symbol *addUndefinedFunction(StringRef Name, const WasmSignature *Type);
-  Symbol *addDefinedGlobal(StringRef Name);
-  void addLazy(ArchiveFile *F, const Archive::Symbol *Sym);
+  Symbol *addDefinedFunction(StringRef Name, uint32_t Flags, InputFile *File,
+                             InputFunction *Function);
+  Symbol *addDefinedData(StringRef Name, uint32_t Flags, InputFile *File,
+                         InputSegment *Segment, uint32_t Address,
+                         uint32_t Size);
+  Symbol *addDefinedGlobal(StringRef Name, uint32_t Flags, InputFile *File,
+                           InputGlobal *G);
+  Symbol *addDefinedEvent(StringRef Name, uint32_t Flags, InputFile *File,
+                          InputEvent *E);
+
+  Symbol *addUndefinedFunction(StringRef Name, StringRef ImportName,
+                               StringRef ImportModule, uint32_t Flags,
+                               InputFile *File, const WasmSignature *Signature);
+  Symbol *addUndefinedData(StringRef Name, uint32_t Flags, InputFile *File);
+  Symbol *addUndefinedGlobal(StringRef Name, StringRef ImportName,
+                             StringRef ImportModule,  uint32_t Flags,
+                             InputFile *File, const WasmGlobalType *Type);
+
+  void addLazy(ArchiveFile *F, const llvm::object::Archive::Symbol *Sym);
+
+  bool addComdat(StringRef Name);
+
+  DefinedData *addSyntheticDataSymbol(StringRef Name, uint32_t Flags);
+  DefinedGlobal *addSyntheticGlobal(StringRef Name, uint32_t Flags,
+                                    InputGlobal *Global);
+  DefinedFunction *addSyntheticFunction(StringRef Name, uint32_t Flags,
+                                        InputFunction *Function);
 
 private:
-  std::pair<Symbol *, bool> insert(StringRef Name);
+  std::pair<Symbol *, bool> insert(StringRef Name, InputFile *File);
 
   llvm::DenseMap<llvm::CachedHashStringRef, Symbol *> SymMap;
   std::vector<Symbol *> SymVector;
+
+  llvm::DenseSet<llvm::CachedHashStringRef> Comdats;
+
+  // For LTO.
+  std::unique_ptr<BitcodeCompiler> LTO;
 };
 
 extern SymbolTable *Symtab;

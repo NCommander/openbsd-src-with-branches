@@ -10,10 +10,6 @@
 #ifndef liblldb_AppleObjCDeclVendor_h_
 #define liblldb_AppleObjCDeclVendor_h_
 
-// C Includes
-// C++ Includes
-// Other libraries and framework includes
-// Project includes
 #include "lldb/Symbol/ClangASTContext.h"
 #include "lldb/Symbol/DeclVendor.h"
 #include "lldb/Target/ObjCLanguageRuntime.h"
@@ -29,6 +25,8 @@ public:
 
   uint32_t FindDecls(const ConstString &name, bool append, uint32_t max_matches,
                      std::vector<clang::NamedDecl *> &decls) override;
+
+  clang::ExternalASTMerger::ImporterSource GetImporterSource() override;
 
   friend class AppleObjCExternalASTSource;
 

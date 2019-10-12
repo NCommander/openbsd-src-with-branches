@@ -17,8 +17,11 @@ Using Clang as a Compiler
    :maxdepth: 1
 
    UsersManual
+   Toolchain
    LanguageExtensions
+   ClangCommandLineReference
    AttributeReference
+   DiagnosticsReference
    CrossCompilation
    ThreadSafetyAnalysis
    AddressSanitizer
@@ -28,11 +31,17 @@ Using Clang as a Compiler
    DataFlowSanitizer
    LeakSanitizer
    SanitizerCoverage
+   SanitizerStats
    SanitizerSpecialCaseList
    ControlFlowIntegrity
+   LTOVisibility
    SafeStack
+   ShadowCallStack
+   SourceBasedCodeCoverage
    Modules
    MSVCCompatibility
+   OpenMPSupport
+   ThinLTO
    CommandGuide/index
    FAQ
 
@@ -53,6 +62,7 @@ Using Clang as a Library
    LibASTMatchers
    HowToSetupToolingForLLVM
    JSONCompilationDatabase
+   RefactoringEngine
 
 Using Clang Tools
 =================
@@ -73,8 +83,9 @@ Design Documents
 
    InternalsManual
    DriverInternals
-   PTHInternals
    PCHInternals
+   ItaniumMangleAbiTags
+   HardwareAssistedAddressSanitizerDesign.rst
 
 
 Indices and tables

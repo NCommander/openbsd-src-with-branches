@@ -8,17 +8,20 @@
 //===----------------------------------------------------------------------===//
 
 #include "SymbolTable.h"
-
 #include "Config.h"
+#include "InputChunks.h"
+#include "InputEvent.h"
+#include "InputGlobal.h"
 #include "WriterUtils.h"
 #include "lld/Common/ErrorHandler.h"
 #include "lld/Common/Memory.h"
-
-#include <unordered_set>
+#include "llvm/ADT/SetVector.h"
 
 #define DEBUG_TYPE "lld"
 
 using namespace llvm;
+using namespace llvm::wasm;
+using namespace llvm::object;
 using namespace lld;
 using namespace lld::wasm;
 
@@ -28,210 +31,368 @@ void SymbolTable::addFile(InputFile *File) {
   log("Processing: " + toString(File));
   File->parse();
 
-  if (auto *F = dyn_cast<ObjFile>(File))
+  // LLVM bitcode file
+  if (auto *F = dyn_cast<BitcodeFile>(File))
+    BitcodeFiles.push_back(F);
+  else if (auto *F = dyn_cast<ObjFile>(File))
     ObjectFiles.push_back(F);
 }
 
-void SymbolTable::reportRemainingUndefines() {
-  std::unordered_set<Symbol *> Undefs;
-  for (Symbol *Sym : SymVector) {
-    if (Sym->isUndefined() && !Sym->isWeak() &&
-        Config->AllowUndefinedSymbols.count(Sym->getName()) == 0) {
-      Undefs.insert(Sym);
-    }
-  }
-
-  if (Undefs.empty())
+// This function is where all the optimizations of link-time
+// optimization happens. When LTO is in use, some input files are
+// not in native object file format but in the LLVM bitcode format.
+// This function compiles bitcode files into a few big native files
+// using LLVM functions and replaces bitcode symbols with the results.
+// Because all bitcode files that the program consists of are passed
+// to the compiler at once, it can do whole-program optimization.
+void SymbolTable::addCombinedLTOObject() {
+  if (BitcodeFiles.empty())
     return;
 
-  for (ObjFile *File : ObjectFiles)
-    for (Symbol *Sym : File->getSymbols())
-      if (Undefs.count(Sym))
-        error(toString(File) + ": undefined symbol: " + toString(*Sym));
+  // Compile bitcode files and replace bitcode symbols.
+  LTO.reset(new BitcodeCompiler);
+  for (BitcodeFile *F : BitcodeFiles)
+    LTO->add(*F);
 
-  for (Symbol *Sym : Undefs)
-    if (!Sym->getFile())
-      error("undefined symbol: " + toString(*Sym));
+  for (StringRef Filename : LTO->compile()) {
+    auto *Obj = make<ObjFile>(MemoryBufferRef(Filename, "lto.tmp"));
+    Obj->parse();
+    ObjectFiles.push_back(Obj);
+  }
+}
+
+void SymbolTable::reportRemainingUndefines() {
+  for (Symbol *Sym : SymVector) {
+    if (!Sym->isUndefined() || Sym->isWeak())
+      continue;
+    if (Config->AllowUndefinedSymbols.count(Sym->getName()) != 0)
+      continue;
+    if (!Sym->IsUsedInRegularObj)
+      continue;
+    error(toString(Sym->getFile()) + ": undefined symbol: " + toString(*Sym));
+  }
 }
 
 Symbol *SymbolTable::find(StringRef Name) {
-  auto It = SymMap.find(CachedHashStringRef(Name));
-  if (It == SymMap.end())
-    return nullptr;
-  return It->second;
+  return SymMap.lookup(CachedHashStringRef(Name));
 }
 
-std::pair<Symbol *, bool> SymbolTable::insert(StringRef Name) {
+std::pair<Symbol *, bool> SymbolTable::insert(StringRef Name, InputFile *File) {
+  bool Inserted = false;
   Symbol *&Sym = SymMap[CachedHashStringRef(Name)];
-  if (Sym)
-    return {Sym, false};
-  Sym = make<Symbol>(Name, false);
-  SymVector.emplace_back(Sym);
-  return {Sym, true};
+  if (!Sym) {
+    Sym = reinterpret_cast<Symbol *>(make<SymbolUnion>());
+    Sym->IsUsedInRegularObj = false;
+    SymVector.emplace_back(Sym);
+    Inserted = true;
+  }
+  if (!File || File->kind() == InputFile::ObjectKind)
+    Sym->IsUsedInRegularObj = true;
+  return {Sym, Inserted};
 }
 
-void SymbolTable::reportDuplicate(Symbol *Existing, InputFile *NewFile) {
-  error("duplicate symbol: " + toString(*Existing) + "\n>>> defined in " +
-        toString(Existing->getFile()) + "\n>>> defined in " +
-        toString(NewFile));
-}
-
-// Get the signature for a given function symbol, either by looking
-// it up in function sections (for defined functions), of the imports section
-// (for imported functions).
-static const WasmSignature *getFunctionSig(const ObjFile &Obj,
-                                           const WasmSymbol &Sym) {
-  DEBUG(dbgs() << "getFunctionSig: " << Sym.Name << "\n");
-  const WasmObjectFile *WasmObj = Obj.getWasmObj();
-  return &WasmObj->types()[Sym.FunctionType];
+static void reportTypeError(const Symbol *Existing, const InputFile *File,
+                            llvm::wasm::WasmSymbolType Type) {
+  error("symbol type mismatch: " + toString(*Existing) + "\n>>> defined as " +
+        toString(Existing->getWasmType()) + " in " +
+        toString(Existing->getFile()) + "\n>>> defined as " + toString(Type) +
+        " in " + toString(File));
 }
 
 // Check the type of new symbol matches that of the symbol is replacing.
 // For functions this can also involve verifying that the signatures match.
-static void checkSymbolTypes(const Symbol &Existing, const InputFile &F,
-                             const WasmSymbol &New,
-                             const WasmSignature *NewSig) {
-  if (Existing.isLazy())
-    return;
-
-  bool NewIsFunction = New.Type == WasmSymbol::SymbolType::FUNCTION_EXPORT ||
-                       New.Type == WasmSymbol::SymbolType::FUNCTION_IMPORT;
-
-  // First check the symbol types match (i.e. either both are function
-  // symbols or both are data symbols).
-  if (Existing.isFunction() != NewIsFunction) {
-    error("symbol type mismatch: " + New.Name + "\n>>> defined as " +
-          (Existing.isFunction() ? "Function" : "Global") + " in " +
-          toString(Existing.getFile()) + "\n>>> defined as " +
-          (NewIsFunction ? "Function" : "Global") + " in " + F.getName());
+static void checkFunctionType(Symbol *Existing, const InputFile *File,
+                              const WasmSignature *NewSig) {
+  auto ExistingFunction = dyn_cast<FunctionSymbol>(Existing);
+  if (!ExistingFunction) {
+    reportTypeError(Existing, File, WASM_SYMBOL_TYPE_FUNCTION);
     return;
   }
 
-  // For function symbols, optionally check the function signature matches too.
-  if (!NewIsFunction || !Config->CheckSignatures)
-    return;
-  // Skip the signature check if the existing function has no signature (e.g.
-  // if it is an undefined symbol generated by --undefined command line flag).
-  if (!Existing.hasFunctionType())
+  if (!NewSig)
     return;
 
-  DEBUG(dbgs() << "checkSymbolTypes: " << New.Name << "\n");
-  assert(NewSig);
-
-  const WasmSignature &OldSig = Existing.getFunctionType();
-  if (*NewSig == OldSig)
+  const WasmSignature *OldSig = ExistingFunction->Signature;
+  if (!OldSig) {
+    ExistingFunction->Signature = NewSig;
     return;
+  }
 
-  error("function signature mismatch: " + New.Name + "\n>>> defined as " +
-        toString(OldSig) + " in " + toString(Existing.getFile()) +
-        "\n>>> defined as " + toString(*NewSig) + " in " + F.getName());
+  if (*NewSig != *OldSig)
+    warn("function signature mismatch: " + Existing->getName() +
+         "\n>>> defined as " + toString(*OldSig) + " in " +
+         toString(Existing->getFile()) + "\n>>> defined as " +
+         toString(*NewSig) + " in " + toString(File));
 }
 
-Symbol *SymbolTable::addDefinedGlobal(StringRef Name) {
-  DEBUG(dbgs() << "addDefinedGlobal: " << Name << "\n");
+static void checkGlobalType(const Symbol *Existing, const InputFile *File,
+                            const WasmGlobalType *NewType) {
+  if (!isa<GlobalSymbol>(Existing)) {
+    reportTypeError(Existing, File, WASM_SYMBOL_TYPE_GLOBAL);
+    return;
+  }
+
+  const WasmGlobalType *OldType = cast<GlobalSymbol>(Existing)->getGlobalType();
+  if (*NewType != *OldType) {
+    error("Global type mismatch: " + Existing->getName() + "\n>>> defined as " +
+          toString(*OldType) + " in " + toString(Existing->getFile()) +
+          "\n>>> defined as " + toString(*NewType) + " in " + toString(File));
+  }
+}
+
+static void checkEventType(const Symbol *Existing, const InputFile *File,
+                           const WasmEventType *NewType,
+                           const WasmSignature *NewSig) {
+  auto ExistingEvent = dyn_cast<EventSymbol>(Existing);
+  if (!isa<EventSymbol>(Existing)) {
+    reportTypeError(Existing, File, WASM_SYMBOL_TYPE_EVENT);
+    return;
+  }
+
+  const WasmEventType *OldType = cast<EventSymbol>(Existing)->getEventType();
+  const WasmSignature *OldSig = ExistingEvent->Signature;
+  if (NewType->Attribute != OldType->Attribute)
+    error("Event type mismatch: " + Existing->getName() + "\n>>> defined as " +
+          toString(*OldType) + " in " + toString(Existing->getFile()) +
+          "\n>>> defined as " + toString(*NewType) + " in " + toString(File));
+  if (*NewSig != *OldSig)
+    warn("Event signature mismatch: " + Existing->getName() +
+         "\n>>> defined as " + toString(*OldSig) + " in " +
+         toString(Existing->getFile()) + "\n>>> defined as " +
+         toString(*NewSig) + " in " + toString(File));
+}
+
+static void checkDataType(const Symbol *Existing, const InputFile *File) {
+  if (!isa<DataSymbol>(Existing))
+    reportTypeError(Existing, File, WASM_SYMBOL_TYPE_DATA);
+}
+
+DefinedFunction *SymbolTable::addSyntheticFunction(StringRef Name,
+                                                   uint32_t Flags,
+                                                   InputFunction *Function) {
+  LLVM_DEBUG(dbgs() << "addSyntheticFunction: " << Name << "\n");
+  assert(!find(Name));
+  SyntheticFunctions.emplace_back(Function);
+  return replaceSymbol<DefinedFunction>(insert(Name, nullptr).first, Name,
+                                        Flags, nullptr, Function);
+}
+
+DefinedData *SymbolTable::addSyntheticDataSymbol(StringRef Name,
+                                                 uint32_t Flags) {
+  LLVM_DEBUG(dbgs() << "addSyntheticDataSymbol: " << Name << "\n");
+  assert(!find(Name));
+  return replaceSymbol<DefinedData>(insert(Name, nullptr).first, Name, Flags);
+}
+
+DefinedGlobal *SymbolTable::addSyntheticGlobal(StringRef Name, uint32_t Flags,
+                                               InputGlobal *Global) {
+  LLVM_DEBUG(dbgs() << "addSyntheticGlobal: " << Name << " -> " << Global
+                    << "\n");
+  assert(!find(Name));
+  SyntheticGlobals.emplace_back(Global);
+  return replaceSymbol<DefinedGlobal>(insert(Name, nullptr).first, Name, Flags,
+                                      nullptr, Global);
+}
+
+static bool shouldReplace(const Symbol *Existing, InputFile *NewFile,
+                          uint32_t NewFlags) {
+  // If existing symbol is undefined, replace it.
+  if (!Existing->isDefined()) {
+    LLVM_DEBUG(dbgs() << "resolving existing undefined symbol: "
+                      << Existing->getName() << "\n");
+    return true;
+  }
+
+  // Now we have two defined symbols. If the new one is weak, we can ignore it.
+  if ((NewFlags & WASM_SYMBOL_BINDING_MASK) == WASM_SYMBOL_BINDING_WEAK) {
+    LLVM_DEBUG(dbgs() << "existing symbol takes precedence\n");
+    return false;
+  }
+
+  // If the existing symbol is weak, we should replace it.
+  if (Existing->isWeak()) {
+    LLVM_DEBUG(dbgs() << "replacing existing weak symbol\n");
+    return true;
+  }
+
+  // Neither symbol is week. They conflict.
+  error("duplicate symbol: " + toString(*Existing) + "\n>>> defined in " +
+        toString(Existing->getFile()) + "\n>>> defined in " +
+        toString(NewFile));
+  return true;
+}
+
+Symbol *SymbolTable::addDefinedFunction(StringRef Name, uint32_t Flags,
+                                        InputFile *File,
+                                        InputFunction *Function) {
+  LLVM_DEBUG(dbgs() << "addDefinedFunction: " << Name << " ["
+                    << (Function ? toString(Function->Signature) : "none")
+                    << "]\n");
   Symbol *S;
   bool WasInserted;
-  std::tie(S, WasInserted) = insert(Name);
+  std::tie(S, WasInserted) = insert(Name, File);
+
+  if (WasInserted || S->isLazy()) {
+    replaceSymbol<DefinedFunction>(S, Name, Flags, File, Function);
+    return S;
+  }
+
+  if (Function)
+    checkFunctionType(S, File, &Function->Signature);
+
+  if (shouldReplace(S, File, Flags)) {
+    // If the new defined function doesn't have signture (i.e. bitcode
+    // functions) but the old symbols does then preserve the old signature
+    const WasmSignature *OldSig = nullptr;
+    if (auto* F = dyn_cast<FunctionSymbol>(S))
+      OldSig = F->Signature;
+    auto NewSym = replaceSymbol<DefinedFunction>(S, Name, Flags, File, Function);
+    if (!NewSym->Signature)
+      NewSym->Signature = OldSig;
+  }
+  return S;
+}
+
+Symbol *SymbolTable::addDefinedData(StringRef Name, uint32_t Flags,
+                                    InputFile *File, InputSegment *Segment,
+                                    uint32_t Address, uint32_t Size) {
+  LLVM_DEBUG(dbgs() << "addDefinedData:" << Name << " addr:" << Address
+                    << "\n");
+  Symbol *S;
+  bool WasInserted;
+  std::tie(S, WasInserted) = insert(Name, File);
+
+  if (WasInserted || S->isLazy()) {
+    replaceSymbol<DefinedData>(S, Name, Flags, File, Segment, Address, Size);
+    return S;
+  }
+
+  checkDataType(S, File);
+
+  if (shouldReplace(S, File, Flags))
+    replaceSymbol<DefinedData>(S, Name, Flags, File, Segment, Address, Size);
+  return S;
+}
+
+Symbol *SymbolTable::addDefinedGlobal(StringRef Name, uint32_t Flags,
+                                      InputFile *File, InputGlobal *Global) {
+  LLVM_DEBUG(dbgs() << "addDefinedGlobal:" << Name << "\n");
+
+  Symbol *S;
+  bool WasInserted;
+  std::tie(S, WasInserted) = insert(Name, File);
+
+  if (WasInserted || S->isLazy()) {
+    replaceSymbol<DefinedGlobal>(S, Name, Flags, File, Global);
+    return S;
+  }
+
+  checkGlobalType(S, File, &Global->getType());
+
+  if (shouldReplace(S, File, Flags))
+    replaceSymbol<DefinedGlobal>(S, Name, Flags, File, Global);
+  return S;
+}
+
+Symbol *SymbolTable::addDefinedEvent(StringRef Name, uint32_t Flags,
+                                     InputFile *File, InputEvent *Event) {
+  LLVM_DEBUG(dbgs() << "addDefinedEvent:" << Name << "\n");
+
+  Symbol *S;
+  bool WasInserted;
+  std::tie(S, WasInserted) = insert(Name, File);
+
+  if (WasInserted || S->isLazy()) {
+    replaceSymbol<DefinedEvent>(S, Name, Flags, File, Event);
+    return S;
+  }
+
+  checkEventType(S, File, &Event->getType(), &Event->Signature);
+
+  if (shouldReplace(S, File, Flags))
+    replaceSymbol<DefinedEvent>(S, Name, Flags, File, Event);
+  return S;
+}
+
+Symbol *SymbolTable::addUndefinedFunction(StringRef Name, StringRef ImportName,
+                                          StringRef ImportModule,
+                                          uint32_t Flags, InputFile *File,
+                                          const WasmSignature *Sig) {
+  LLVM_DEBUG(dbgs() << "addUndefinedFunction: " << Name <<
+             " [" << (Sig ? toString(*Sig) : "none") << "]\n");
+
+  Symbol *S;
+  bool WasInserted;
+  std::tie(S, WasInserted) = insert(Name, File);
+
   if (WasInserted)
-    S->update(Symbol::DefinedGlobalKind);
-  else if (!S->isGlobal())
-    error("symbol type mismatch: " + Name);
-  return S;
-}
-
-Symbol *SymbolTable::addDefined(InputFile *F, const WasmSymbol *Sym,
-                                const InputSegment *Segment) {
-  DEBUG(dbgs() << "addDefined: " << Sym->Name << "\n");
-  Symbol *S;
-  bool WasInserted;
-  Symbol::Kind Kind = Symbol::DefinedFunctionKind;
-  const WasmSignature *NewSig = nullptr;
-  if (Sym->Type == WasmSymbol::SymbolType::GLOBAL_EXPORT)
-    Kind = Symbol::DefinedGlobalKind;
+    replaceSymbol<UndefinedFunction>(S, Name, ImportName, ImportModule, Flags,
+                                     File, Sig);
+  else if (auto *Lazy = dyn_cast<LazySymbol>(S))
+    Lazy->fetch();
   else
-    NewSig = getFunctionSig(*cast<ObjFile>(F), *Sym);
+    checkFunctionType(S, File, Sig);
 
-  std::tie(S, WasInserted) = insert(Sym->Name);
-  if (WasInserted) {
-    S->update(Kind, F, Sym, Segment, NewSig);
-  } else if (S->isLazy()) {
-    // The existing symbol is lazy. Replace it without checking types since
-    // lazy symbols don't have any type information.
-    DEBUG(dbgs() << "replacing existing lazy symbol: " << Sym->Name << "\n");
-    S->update(Kind, F, Sym, Segment, NewSig);
-  } else if (!S->isDefined()) {
-    // The existing symbol table entry is undefined. The new symbol replaces
-    // it, after checking the type matches
-    DEBUG(dbgs() << "resolving existing undefined symbol: " << Sym->Name
-                 << "\n");
-    checkSymbolTypes(*S, *F, *Sym, NewSig);
-    S->update(Kind, F, Sym, Segment, NewSig);
-  } else if (Sym->isWeak()) {
-    // the new symbol is weak we can ignore it
-    DEBUG(dbgs() << "existing symbol takes precedence\n");
-  } else if (S->isWeak()) {
-    // the new symbol is not weak and the existing symbol is, so we replace
-    // it
-    DEBUG(dbgs() << "replacing existing weak symbol\n");
-    checkSymbolTypes(*S, *F, *Sym, NewSig);
-    S->update(Kind, F, Sym, Segment, NewSig);
-  } else {
-    // neither symbol is week. They conflict.
-    reportDuplicate(S, F);
-  }
   return S;
 }
 
-Symbol *SymbolTable::addUndefinedFunction(StringRef Name,
-                                          const WasmSignature *Type) {
+Symbol *SymbolTable::addUndefinedData(StringRef Name, uint32_t Flags,
+                                      InputFile *File) {
+  LLVM_DEBUG(dbgs() << "addUndefinedData: " << Name << "\n");
+
   Symbol *S;
   bool WasInserted;
-  std::tie(S, WasInserted) = insert(Name);
-  if (WasInserted) {
-    S->update(Symbol::UndefinedFunctionKind, nullptr, nullptr, nullptr, Type);
-  } else if (!S->isFunction()) {
-    error("symbol type mismatch: " + Name);
-  }
+  std::tie(S, WasInserted) = insert(Name, File);
+
+  if (WasInserted)
+    replaceSymbol<UndefinedData>(S, Name, Flags, File);
+  else if (auto *Lazy = dyn_cast<LazySymbol>(S))
+    Lazy->fetch();
+  else if (S->isDefined())
+    checkDataType(S, File);
   return S;
 }
 
-Symbol *SymbolTable::addUndefined(InputFile *F, const WasmSymbol *Sym) {
-  DEBUG(dbgs() << "addUndefined: " << Sym->Name << "\n");
+Symbol *SymbolTable::addUndefinedGlobal(StringRef Name, StringRef ImportName,
+                                        StringRef ImportModule, uint32_t Flags,
+                                        InputFile *File,
+                                        const WasmGlobalType *Type) {
+  LLVM_DEBUG(dbgs() << "addUndefinedGlobal: " << Name << "\n");
+
   Symbol *S;
   bool WasInserted;
-  Symbol::Kind Kind = Symbol::UndefinedFunctionKind;
-  const WasmSignature *NewSig = nullptr;
-  if (Sym->Type == WasmSymbol::SymbolType::GLOBAL_IMPORT)
-    Kind = Symbol::UndefinedGlobalKind;
-  else
-    NewSig = getFunctionSig(*cast<ObjFile>(F), *Sym);
-  std::tie(S, WasInserted) = insert(Sym->Name);
-  if (WasInserted) {
-    S->update(Kind, F, Sym, nullptr, NewSig);
-  } else if (S->isLazy()) {
-    DEBUG(dbgs() << "resolved by existing lazy\n");
-    auto *AF = cast<ArchiveFile>(S->getFile());
-    AF->addMember(&S->getArchiveSymbol());
-  } else if (S->isDefined()) {
-    DEBUG(dbgs() << "resolved by existing\n");
-    checkSymbolTypes(*S, *F, *Sym, NewSig);
-  }
+  std::tie(S, WasInserted) = insert(Name, File);
+
+  if (WasInserted)
+    replaceSymbol<UndefinedGlobal>(S, Name, ImportName, ImportModule, Flags,
+                                   File, Type);
+  else if (auto *Lazy = dyn_cast<LazySymbol>(S))
+    Lazy->fetch();
+  else if (S->isDefined())
+    checkGlobalType(S, File, Type);
   return S;
 }
 
-void SymbolTable::addLazy(ArchiveFile *F, const Archive::Symbol *Sym) {
-  DEBUG(dbgs() << "addLazy: " << Sym->getName() << "\n");
+void SymbolTable::addLazy(ArchiveFile *File, const Archive::Symbol *Sym) {
+  LLVM_DEBUG(dbgs() << "addLazy: " << Sym->getName() << "\n");
   StringRef Name = Sym->getName();
+
   Symbol *S;
   bool WasInserted;
-  std::tie(S, WasInserted) = insert(Name);
+  std::tie(S, WasInserted) = insert(Name, nullptr);
+
   if (WasInserted) {
-    S->update(Symbol::LazyKind, F);
-    S->setArchiveSymbol(*Sym);
-  } else if (S->isUndefined()) {
-    // There is an existing undefined symbol.  The can load from the
-    // archive.
-    DEBUG(dbgs() << "replacing existing undefined\n");
-    F->addMember(Sym);
+    replaceSymbol<LazySymbol>(S, Name, File, *Sym);
+    return;
   }
+
+  // If there is an existing undefined symbol, load a new one from the archive.
+  if (S->isUndefined()) {
+    LLVM_DEBUG(dbgs() << "replacing existing undefined\n");
+    File->addMember(Sym);
+  }
+}
+
+bool SymbolTable::addComdat(StringRef Name) {
+  return Comdats.insert(CachedHashStringRef(Name)).second;
 }

@@ -12,19 +12,16 @@
 
 #include "PDBSymbol.h"
 #include "PDBTypes.h"
-#include <string>
 
 namespace llvm {
 
 class raw_ostream;
 
+namespace pdb {
+
 class PDBSymbolExe : public PDBSymbol {
-public:
-  PDBSymbolExe(const IPDBSession &PDBSession,
-               std::unique_ptr<IPDBRawSymbol> ExeSymbol);
-
   DECLARE_PDB_SYMBOL_CONCRETE_TYPE(PDB_SymType::Exe)
-
+public:
   void dump(PDBSymDumper &Dumper) const override;
 
   FORWARD_SYMBOL_METHOD(getAge)
@@ -35,12 +32,14 @@ public:
   FORWARD_SYMBOL_METHOD(getName)
   FORWARD_SYMBOL_METHOD(getSignature)
   FORWARD_SYMBOL_METHOD(getSymbolsFileName)
-  FORWARD_SYMBOL_METHOD(getSymIndexId)
+
+  uint32_t getPointerByteSize() const;
 
 private:
   void dumpChildren(raw_ostream &OS, StringRef Label, PDB_SymType ChildType,
                     int Indent) const;
 };
 } // namespace llvm
+}
 
 #endif // LLVM_DEBUGINFO_PDB_PDBSYMBOLEXE_H

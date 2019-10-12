@@ -21,15 +21,18 @@
 #ifndef LLVM_CODEGEN_GLOBALISEL_MACHINELEGALIZEHELPER_H
 #define LLVM_CODEGEN_GLOBALISEL_MACHINELEGALIZEHELPER_H
 
+#include "llvm/CodeGen/GlobalISel/CallLowering.h"
 #include "llvm/CodeGen/GlobalISel/MachineIRBuilder.h"
-#include "llvm/CodeGen/MachineFunctionPass.h"
 #include "llvm/CodeGen/LowLevelType.h"
+#include "llvm/CodeGen/MachineFunctionPass.h"
+#include "llvm/CodeGen/RuntimeLibcalls.h"
 
 namespace llvm {
 // Forward declarations.
 class LegalizerInfo;
 class Legalizer;
 class MachineRegisterInfo;
+class GISelChangeObserver;
 
 class LegalizerHelper {
 public:
@@ -46,7 +49,10 @@ public:
     UnableToLegalize,
   };
 
-  LegalizerHelper(MachineFunction &MF);
+  LegalizerHelper(MachineFunction &MF, GISelChangeObserver &Observer,
+                  MachineIRBuilder &B);
+  LegalizerHelper(MachineFunction &MF, const LegalizerInfo &LI,
+                  GISelChangeObserver &Observer, MachineIRBuilder &B);
 
   /// Replace \p MI by a sequence of legal instructions that can implement the
   /// same operation. Note that this means \p MI may be deleted, so any iterator
@@ -55,11 +61,7 @@ public:
   ///
   /// Considered as an opaque blob, the legal code will use and define the same
   /// registers as \p MI.
-  LegalizeResult legalizeInstrStep(MachineInstr &MI,
-                                   const LegalizerInfo &LegalizerInfo);
-
-  LegalizeResult legalizeInstr(MachineInstr &MI,
-                               const LegalizerInfo &LegalizerInfo);
+  LegalizeResult legalizeInstrStep(MachineInstr &MI);
 
   /// Legalize an instruction by emiting a runtime library call instead.
   LegalizeResult libcall(MachineInstr &MI);
@@ -87,17 +89,46 @@ public:
   LegalizeResult moreElementsVector(MachineInstr &MI, unsigned TypeIdx,
                                     LLT WideTy);
 
+  /// Expose MIRBuilder so clients can set their own RecordInsertInstruction
+  /// functions
+  MachineIRBuilder &MIRBuilder;
+
+  /// Expose LegalizerInfo so the clients can re-use.
+  const LegalizerInfo &getLegalizerInfo() const { return LI; }
+
 private:
+  /// Legalize a single operand \p OpIdx of the machine instruction \p MI as a
+  /// Use by extending the operand's type to \p WideTy using the specified \p
+  /// ExtOpcode for the extension instruction, and replacing the vreg of the
+  /// operand in place.
+  void widenScalarSrc(MachineInstr &MI, LLT WideTy, unsigned OpIdx,
+                      unsigned ExtOpcode);
+
+  /// Legalize a single operand \p OpIdx of the machine instruction \p MI as a
+  /// Def by extending the operand's type to \p WideTy and truncating it back
+  /// with the \p TruncOpcode, and replacing the vreg of the operand in place.
+  void widenScalarDst(MachineInstr &MI, LLT WideTy, unsigned OpIdx = 0,
+                      unsigned TruncOpcode = TargetOpcode::G_TRUNC);
 
   /// Helper function to split a wide generic register into bitwise blocks with
   /// the given Type (which implies the number of blocks needed). The generic
   /// registers created are appended to Ops, starting at bit 0 of Reg.
   void extractParts(unsigned Reg, LLT Ty, int NumParts,
-                    SmallVectorImpl<unsigned> &Ops);
+                    SmallVectorImpl<unsigned> &VRegs);
 
-  MachineIRBuilder MIRBuilder;
+  LegalizeResult lowerBitCount(MachineInstr &MI, unsigned TypeIdx, LLT Ty);
+
   MachineRegisterInfo &MRI;
+  const LegalizerInfo &LI;
+  /// To keep track of changes made by the LegalizerHelper.
+  GISelChangeObserver &Observer;
 };
+
+/// Helper function that creates the given libcall.
+LegalizerHelper::LegalizeResult
+createLibcall(MachineIRBuilder &MIRBuilder, RTLIB::Libcall Libcall,
+              const CallLowering::ArgInfo &Result,
+              ArrayRef<CallLowering::ArgInfo> Args);
 
 } // End namespace llvm.
 

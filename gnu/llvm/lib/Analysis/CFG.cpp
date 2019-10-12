@@ -71,7 +71,7 @@ void llvm::FindFunctionBackedges(const Function &F,
 /// successor.
 unsigned llvm::GetSuccessorNumber(const BasicBlock *BB,
     const BasicBlock *Succ) {
-  const TerminatorInst *Term = BB->getTerminator();
+  const Instruction *Term = BB->getTerminator();
 #ifndef NDEBUG
   unsigned e = Term->getNumSuccessors();
 #endif
@@ -85,8 +85,9 @@ unsigned llvm::GetSuccessorNumber(const BasicBlock *BB,
 /// isCriticalEdge - Return true if the specified edge is a critical edge.
 /// Critical edges are edges from a block with multiple successors to a block
 /// with multiple predecessors.
-bool llvm::isCriticalEdge(const TerminatorInst *TI, unsigned SuccNum,
+bool llvm::isCriticalEdge(const Instruction *TI, unsigned SuccNum,
                           bool AllowIdenticalEdges) {
+  assert(TI->isTerminator() && "Must be a terminator to have successors!");
   assert(SuccNum < TI->getNumSuccessors() && "Illegal edge specification!");
   if (TI->getNumSuccessors() == 1) return false;
 
@@ -138,7 +139,7 @@ bool llvm::isPotentiallyReachableFromMany(
   // Limit the number of blocks we visit. The goal is to avoid run-away compile
   // times on large CFGs without hampering sensible code. Arbitrarily chosen.
   unsigned Limit = 32;
-  SmallSet<const BasicBlock*, 64> Visited;
+  SmallPtrSet<const BasicBlock*, 32> Visited;
   do {
     BasicBlock *BB = Worklist.pop_back_val();
     if (!Visited.insert(BB).second)

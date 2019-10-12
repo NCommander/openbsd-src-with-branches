@@ -17,7 +17,6 @@
 
 #include "llvm/MC/MCWinEH.h"
 #include "llvm/Support/Win64EH.h"
-#include <vector>
 
 namespace llvm {
 class MCStreamer;
@@ -57,6 +56,14 @@ public:
   void Emit(MCStreamer &Streamer) const override;
   void EmitUnwindInfo(MCStreamer &Streamer, WinEH::FrameInfo *FI) const override;
 };
+
+class ARM64UnwindEmitter : public WinEH::UnwindEmitter {
+public:
+  void Emit(MCStreamer &Streamer) const override;
+  void EmitUnwindInfo(MCStreamer &Streamer,
+                      WinEH::FrameInfo *FI) const override;
+};
+
 }
 } // end namespace llvm
 

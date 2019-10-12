@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "BreakpointPrinter.h"
+#include "Debugify.h"
 #include "NewPMDriver.h"
 #include "PassPrinters.h"
 #include "llvm/ADT/Triple.h"
@@ -23,7 +24,9 @@
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
 #include "llvm/Bitcode/BitcodeWriterPass.h"
-#include "llvm/CodeGen/CommandFlags.h"
+#include "llvm/CodeGen/CommandFlags.inc"
+#include "llvm/CodeGen/TargetPassConfig.h"
+#include "llvm/Config/llvm-config.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/DebugInfo.h"
 #include "llvm/IR/IRPrintingPasses.h"
@@ -40,16 +43,17 @@
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Host.h"
-#include "llvm/Support/ManagedStatic.h"
+#include "llvm/Support/InitLLVM.h"
 #include "llvm/Support/PluginLoader.h"
-#include "llvm/Support/PrettyStackTrace.h"
-#include "llvm/Support/Signals.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/SystemUtils.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/ToolOutputFile.h"
+#include "llvm/Support/YAMLTraits.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/Transforms/Coroutines.h"
+#include "llvm/Transforms/IPO/AlwaysInliner.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include <algorithm>
@@ -96,17 +100,38 @@ static cl::opt<bool>
 OutputAssembly("S", cl::desc("Write output as LLVM assembly"));
 
 static cl::opt<bool>
-NoVerify("disable-verify", cl::desc("Do not verify result module"), cl::Hidden);
+    OutputThinLTOBC("thinlto-bc",
+                    cl::desc("Write output as ThinLTO-ready bitcode"));
+
+static cl::opt<bool>
+    SplitLTOUnit("thinlto-split-lto-unit",
+                 cl::desc("Enable splitting of a ThinLTO LTOUnit"));
+
+static cl::opt<std::string> ThinLinkBitcodeFile(
+    "thin-link-bitcode-file", cl::value_desc("filename"),
+    cl::desc(
+        "A file in which to write minimized bitcode for the thin link only"));
+
+static cl::opt<bool>
+NoVerify("disable-verify", cl::desc("Do not run the verifier"), cl::Hidden);
 
 static cl::opt<bool>
 VerifyEach("verify-each", cl::desc("Verify after each transform"));
+
+static cl::opt<bool>
+    DisableDITypeMap("disable-debug-info-type-map",
+                     cl::desc("Don't use a uniquing type map for debug info"));
 
 static cl::opt<bool>
 StripDebug("strip-debug",
            cl::desc("Strip debugger symbol info from translation unit"));
 
 static cl::opt<bool>
-DisableInline("disable-inlining", cl::desc("Do not run the inliner pass"));
+    StripNamedMetadata("strip-named-metadata",
+                       cl::desc("Strip module-level named metadata"));
+
+static cl::opt<bool> DisableInline("disable-inlining",
+                                   cl::desc("Do not run the inliner pass"));
 
 static cl::opt<bool>
 DisableOptimizations("disable-opt",
@@ -115,6 +140,10 @@ DisableOptimizations("disable-opt",
 static cl::opt<bool>
 StandardLinkOpts("std-link-opts",
                  cl::desc("Include the standard link time optimizations"));
+
+static cl::opt<bool>
+OptLevelO0("O0",
+  cl::desc("Optimization level 0. Similar to clang -O0"));
 
 static cl::opt<bool>
 OptLevelO1("O1",
@@ -135,6 +164,10 @@ OptLevelOz("Oz",
 static cl::opt<bool>
 OptLevelO3("O3",
            cl::desc("Optimization level 3. Similar to clang -O3"));
+
+static cl::opt<unsigned>
+CodeGenOptLevel("codegen-opt-level",
+                cl::desc("Override optimization level for codegen hooks"));
 
 static cl::opt<std::string>
 TargetTriple("mtriple", cl::desc("Override target triple for module"));
@@ -158,6 +191,12 @@ DisableSLPVectorization("disable-slp-vectorization",
                         cl::desc("Disable the slp vectorization pass"),
                         cl::init(false));
 
+static cl::opt<bool> EmitSummaryIndex("module-summary",
+                                      cl::desc("Emit module summary index"),
+                                      cl::init(false));
+
+static cl::opt<bool> EmitModuleHash("module-hash", cl::desc("Emit module hash"),
+                                    cl::init(false));
 
 static cl::opt<bool>
 DisableSimplifyLibCalls("disable-simplify-libcalls",
@@ -172,14 +211,29 @@ QuietA("quiet", cl::desc("Alias for -q"), cl::aliasopt(Quiet));
 static cl::opt<bool>
 AnalyzeOnly("analyze", cl::desc("Only perform analysis, no optimization"));
 
+static cl::opt<bool> EnableDebugify(
+    "enable-debugify",
+    cl::desc(
+        "Start the pipeline with debugify and end it with check-debugify"));
+
+static cl::opt<bool> DebugifyEach(
+    "debugify-each",
+    cl::desc(
+        "Start each pass with debugify and end it with check-debugify"));
+
+static cl::opt<std::string>
+    DebugifyExport("debugify-export",
+                   cl::desc("Export per-pass debugify statistics to this file"),
+                   cl::value_desc("filename"), cl::init(""));
+
 static cl::opt<bool>
 PrintBreakpoints("print-breakpoints-for-testing",
                  cl::desc("Print select breakpoints location for testing"));
 
-static cl::opt<std::string>
-DefaultDataLayout("default-data-layout",
-          cl::desc("data layout string to use if not specified by module"),
-          cl::value_desc("layout-string"), cl::init(""));
+static cl::opt<std::string> ClDataLayout("data-layout",
+                                         cl::desc("data layout string to use"),
+                                         cl::value_desc("layout-string"),
+                                         cl::init(""));
 
 static cl::opt<bool> PreserveBitcodeUseListOrder(
     "preserve-bc-uselistorder",
@@ -196,6 +250,73 @@ static cl::opt<bool>
              cl::desc("Run all passes twice, re-using the same pass manager."),
              cl::init(false), cl::Hidden);
 
+static cl::opt<bool> DiscardValueNames(
+    "discard-value-names",
+    cl::desc("Discard names from Value (other than GlobalValue)."),
+    cl::init(false), cl::Hidden);
+
+static cl::opt<bool> Coroutines(
+  "enable-coroutines",
+  cl::desc("Enable coroutine passes."),
+  cl::init(false), cl::Hidden);
+
+static cl::opt<bool> PassRemarksWithHotness(
+    "pass-remarks-with-hotness",
+    cl::desc("With PGO, include profile count in optimization remarks"),
+    cl::Hidden);
+
+static cl::opt<unsigned> PassRemarksHotnessThreshold(
+    "pass-remarks-hotness-threshold",
+    cl::desc("Minimum profile count required for an optimization remark to be output"),
+    cl::Hidden);
+
+static cl::opt<std::string>
+    RemarksFilename("pass-remarks-output",
+                    cl::desc("YAML output filename for pass remarks"),
+                    cl::value_desc("filename"));
+
+class OptCustomPassManager : public legacy::PassManager {
+  DebugifyStatsMap DIStatsMap;
+
+public:
+  using super = legacy::PassManager;
+
+  void add(Pass *P) override {
+    // Wrap each pass with (-check)-debugify passes if requested, making
+    // exceptions for passes which shouldn't see -debugify instrumentation.
+    bool WrapWithDebugify = DebugifyEach && !P->getAsImmutablePass() &&
+                            !isIRPrintingPass(P) && !isBitcodeWriterPass(P);
+    if (!WrapWithDebugify) {
+      super::add(P);
+      return;
+    }
+
+    // Apply -debugify/-check-debugify before/after each pass and collect
+    // debug info loss statistics.
+    PassKind Kind = P->getPassKind();
+    StringRef Name = P->getPassName();
+
+    // TODO: Implement Debugify for BasicBlockPass, LoopPass.
+    switch (Kind) {
+      case PT_Function:
+        super::add(createDebugifyFunctionPass());
+        super::add(P);
+        super::add(createCheckDebugifyFunctionPass(true, Name, &DIStatsMap));
+        break;
+      case PT_Module:
+        super::add(createDebugifyModulePass());
+        super::add(P);
+        super::add(createCheckDebugifyModulePass(true, Name, &DIStatsMap));
+        break;
+      default:
+        super::add(P);
+        break;
+    }
+  }
+
+  const DebugifyStatsMap &getDebugifyStatsMap() const { return DIStatsMap; }
+};
+
 static inline void addPass(legacy::PassManagerBase &PM, Pass *P) {
   // Add the pass to the pass manager...
   PM.add(P);
@@ -211,8 +332,10 @@ static inline void addPass(legacy::PassManagerBase &PM, Pass *P) {
 /// OptLevel - Optimization Level
 static void AddOptimizationPasses(legacy::PassManagerBase &MPM,
                                   legacy::FunctionPassManager &FPM,
-                                  unsigned OptLevel, unsigned SizeLevel) {
-  FPM.add(createVerifierPass()); // Verify that input is correct
+                                  TargetMachine *TM, unsigned OptLevel,
+                                  unsigned SizeLevel) {
+  if (!NoVerify || VerifyEach)
+    FPM.add(createVerifierPass()); // Verify that input is correct
 
   PassManagerBuilder Builder;
   Builder.OptLevel = OptLevel;
@@ -221,9 +344,9 @@ static void AddOptimizationPasses(legacy::PassManagerBase &MPM,
   if (DisableInline) {
     // No inlining pass
   } else if (OptLevel > 1) {
-    Builder.Inliner = createFunctionInliningPass(OptLevel, SizeLevel);
+    Builder.Inliner = createFunctionInliningPass(OptLevel, SizeLevel, false);
   } else {
-    Builder.Inliner = createAlwaysInlinerPass();
+    Builder.Inliner = createAlwaysInlinerLegacyPass();
   }
   Builder.DisableUnitAtATime = !UnitAtATime;
   Builder.DisableUnrollLoops = (DisableLoopUnrolling.getNumOccurrences() > 0) ?
@@ -239,6 +362,12 @@ static void AddOptimizationPasses(legacy::PassManagerBase &MPM,
   // When #pragma vectorize is on for SLP, do the same as above
   Builder.SLPVectorize =
       DisableSLPVectorization ? false : OptLevel > 1 && SizeLevel < 2;
+
+  if (TM)
+    TM->adjustPassManager(Builder);
+
+  if (Coroutines)
+    addCoroutinePassesToExtensionPoints(Builder);
 
   Builder.populateFunctionPassManager(FPM);
   Builder.populateModulePassManager(MPM);
@@ -260,6 +389,8 @@ static void AddStandardLinkPasses(legacy::PassManagerBase &PM) {
 //
 
 static CodeGenOpt::Level GetCodeGenOptLevel() {
+  if (CodeGenOptLevel.getNumOccurrences())
+    return static_cast<CodeGenOpt::Level>(unsigned(CodeGenOptLevel));
   if (OptLevelO1)
     return CodeGenOpt::Less;
   if (OptLevelO2)
@@ -281,10 +412,9 @@ static TargetMachine* GetTargetMachine(Triple TheTriple, StringRef CPUStr,
     return nullptr;
   }
 
-  return TheTarget->createTargetMachine(TheTriple.getTriple(),
-                                        CPUStr, FeaturesStr, Options,
-                                        RelocModel, CMModel,
-                                        GetCodeGenOptLevel());
+  return TheTarget->createTargetMachine(TheTriple.getTriple(), CPUStr,
+                                        FeaturesStr, Options, getRelocModel(),
+                                        getCodeModel(), GetCodeGenOptLevel());
 }
 
 #ifdef LINK_POLLY_INTO_TOOLS
@@ -297,22 +427,22 @@ void initializePollyPasses(llvm::PassRegistry &Registry);
 // main for opt
 //
 int main(int argc, char **argv) {
-  sys::PrintStackTraceOnErrorSignal();
-  llvm::PrettyStackTraceProgram X(argc, argv);
+  InitLLVM X(argc, argv);
 
   // Enable debug stream buffering.
   EnableDebugBuffering = true;
 
-  llvm_shutdown_obj Y;  // Call llvm_shutdown() on exit.
-  LLVMContext &Context = getGlobalContext();
+  LLVMContext Context;
 
   InitializeAllTargets();
   InitializeAllTargetMCs();
   InitializeAllAsmPrinters();
+  InitializeAllAsmParsers();
 
   // Initialize passes
   PassRegistry &Registry = *PassRegistry::getPassRegistry();
   initializeCore(Registry);
+  initializeCoroutines(Registry);
   initializeScalarOpts(Registry);
   initializeObjCARCOpts(Registry);
   initializeVectorization(Registry);
@@ -320,16 +450,31 @@ int main(int argc, char **argv) {
   initializeAnalysis(Registry);
   initializeTransformUtils(Registry);
   initializeInstCombine(Registry);
+  initializeAggressiveInstCombine(Registry);
   initializeInstrumentation(Registry);
   initializeTarget(Registry);
   // For codegen passes, only passes that do IR to IR transformation are
   // supported.
+  initializeExpandMemCmpPassPass(Registry);
+  initializeScalarizeMaskedMemIntrinPass(Registry);
   initializeCodeGenPreparePass(Registry);
   initializeAtomicExpandPass(Registry);
-  initializeRewriteSymbolsPass(Registry);
+  initializeRewriteSymbolsLegacyPassPass(Registry);
   initializeWinEHPreparePass(Registry);
   initializeDwarfEHPreparePass(Registry);
+  initializeSafeStackLegacyPassPass(Registry);
   initializeSjLjEHPreparePass(Registry);
+  initializePreISelIntrinsicLoweringLegacyPassPass(Registry);
+  initializeGlobalMergePass(Registry);
+  initializeIndirectBrExpandPassPass(Registry);
+  initializeInterleavedLoadCombinePass(Registry);
+  initializeInterleavedAccessPass(Registry);
+  initializeEntryExitInstrumenterPass(Registry);
+  initializePostInlineEntryExitInstrumenterPass(Registry);
+  initializeUnreachableBlockElimLegacyPassPass(Registry);
+  initializeExpandReductionsPass(Registry);
+  initializeWasmEHPreparePass(Registry);
+  initializeWriteBitcodePassPass(Registry);
 
 #ifdef LINK_POLLY_INTO_TOOLS
   polly::initializePollyPasses(Registry);
@@ -345,8 +490,32 @@ int main(int argc, char **argv) {
 
   SMDiagnostic Err;
 
+  Context.setDiscardValueNames(DiscardValueNames);
+  if (!DisableDITypeMap)
+    Context.enableDebugTypeODRUniquing();
+
+  if (PassRemarksWithHotness)
+    Context.setDiagnosticsHotnessRequested(true);
+
+  if (PassRemarksHotnessThreshold)
+    Context.setDiagnosticsHotnessThreshold(PassRemarksHotnessThreshold);
+
+  std::unique_ptr<ToolOutputFile> OptRemarkFile;
+  if (RemarksFilename != "") {
+    std::error_code EC;
+    OptRemarkFile =
+        llvm::make_unique<ToolOutputFile>(RemarksFilename, EC, sys::fs::F_None);
+    if (EC) {
+      errs() << EC.message() << '\n';
+      return 1;
+    }
+    Context.setDiagnosticsOutputFile(
+        llvm::make_unique<yaml::Output>(OptRemarkFile->os()));
+  }
+
   // Load the input module...
-  std::unique_ptr<Module> M = parseIRFile(InputFilename, Err, Context);
+  std::unique_ptr<Module> M =
+      parseIRFile(InputFilename, Err, Context, !NoVerify, ClDataLayout);
 
   if (!M) {
     Err.print(argv[0], errs());
@@ -357,6 +526,18 @@ int main(int argc, char **argv) {
   if (StripDebug)
     StripDebugInfo(*M);
 
+  // Erase module-level named metadata, if requested.
+  if (StripNamedMetadata) {
+    while (!M->named_metadata_empty()) {
+      NamedMDNode *NMD = &*M->named_metadata_begin();
+      M->eraseNamedMetadata(NMD);
+    }
+  }
+
+  // If we are supposed to override the target triple or data layout, do so now.
+  if (!TargetTriple.empty())
+    M->setTargetTriple(Triple::normalize(TargetTriple));
+
   // Immediately run the verifier to catch any problems before starting up the
   // pass pipelines.  Otherwise we can crash on broken code during
   // doInitialization().
@@ -366,12 +547,9 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // If we are supposed to override the target triple, do so now.
-  if (!TargetTriple.empty())
-    M->setTargetTriple(Triple::normalize(TargetTriple));
-
   // Figure out what stream we are supposed to write to...
-  std::unique_ptr<tool_output_file> Out;
+  std::unique_ptr<ToolOutputFile> Out;
+  std::unique_ptr<ToolOutputFile> ThinLinkOut;
   if (NoOutput) {
     if (!OutputFilename.empty())
       errs() << "WARNING: The -o (output filename) option is ignored when\n"
@@ -382,10 +560,19 @@ int main(int argc, char **argv) {
       OutputFilename = "-";
 
     std::error_code EC;
-    Out.reset(new tool_output_file(OutputFilename, EC, sys::fs::F_None));
+    Out.reset(new ToolOutputFile(OutputFilename, EC, sys::fs::F_None));
     if (EC) {
       errs() << EC.message() << '\n';
       return 1;
+    }
+
+    if (!ThinLinkBitcodeFile.empty()) {
+      ThinLinkOut.reset(
+          new ToolOutputFile(ThinLinkBitcodeFile, EC, sys::fs::F_None));
+      if (EC) {
+        errs() << EC.message() << '\n';
+        return 1;
+      }
     }
   }
 
@@ -413,10 +600,15 @@ int main(int argc, char **argv) {
     if (CheckBitcodeOutputToConsole(Out->os(), !Quiet))
       NoOutput = true;
 
+  if (OutputThinLTOBC)
+    M->addModuleFlag(Module::Error, "EnableSplitLTOUnit", SplitLTOUnit);
+
   if (PassPipeline.getNumOccurrences() > 0) {
     OutputKind OK = OK_NoOutput;
     if (!NoOutput)
-      OK = OutputAssembly ? OK_OutputAssembly : OK_OutputBitcode;
+      OK = OutputAssembly
+               ? OK_OutputAssembly
+               : (OutputThinLTOBC ? OK_OutputThinLTOBitcode : OK_OutputBitcode);
 
     VerifierKind VK = VK_VerifyInAndOut;
     if (NoVerify)
@@ -427,17 +619,19 @@ int main(int argc, char **argv) {
     // The user has asked to use the new pass manager and provided a pipeline
     // string. Hand off the rest of the functionality to the new code for that
     // layer.
-    return runPassPipeline(argv[0], Context, *M, TM.get(), Out.get(),
-                           PassPipeline, OK, VK, PreserveAssemblyUseListOrder,
-                           PreserveBitcodeUseListOrder)
+    return runPassPipeline(argv[0], *M, TM.get(), Out.get(), ThinLinkOut.get(),
+                           OptRemarkFile.get(), PassPipeline, OK, VK,
+                           PreserveAssemblyUseListOrder,
+                           PreserveBitcodeUseListOrder, EmitSummaryIndex,
+                           EmitModuleHash, EnableDebugify)
                ? 0
                : 1;
   }
 
   // Create a PassManager to hold and optimize the collection of passes we are
   // about to build.
-  //
-  legacy::PassManager Passes;
+  OptCustomPassManager Passes;
+  bool AddOneTimeDebugifyPasses = EnableDebugify && !DebugifyEach;
 
   // Add an appropriate TargetLibraryInfo pass for the module's triple.
   TargetLibraryInfoImpl TLII(ModuleTriple);
@@ -447,18 +641,16 @@ int main(int argc, char **argv) {
     TLII.disableAllFunctions();
   Passes.add(new TargetLibraryInfoWrapperPass(TLII));
 
-  // Add an appropriate DataLayout instance for this module.
-  const DataLayout &DL = M->getDataLayout();
-  if (DL.isDefault() && !DefaultDataLayout.empty()) {
-    M->setDataLayout(DefaultDataLayout);
-  }
-
   // Add internal analysis passes from the target machine.
   Passes.add(createTargetTransformInfoWrapperPass(TM ? TM->getTargetIRAnalysis()
                                                      : TargetIRAnalysis()));
 
+  if (AddOneTimeDebugifyPasses)
+    Passes.add(createDebugifyModulePass());
+
   std::unique_ptr<legacy::FunctionPassManager> FPasses;
-  if (OptLevelO1 || OptLevelO2 || OptLevelOs || OptLevelOz || OptLevelO3) {
+  if (OptLevelO0 || OptLevelO1 || OptLevelO2 || OptLevelOs || OptLevelOz ||
+      OptLevelO3) {
     FPasses.reset(new legacy::FunctionPassManager(M.get()));
     FPasses->add(createTargetTransformInfoWrapperPass(
         TM ? TM->getTargetIRAnalysis() : TargetIRAnalysis()));
@@ -471,8 +663,8 @@ int main(int argc, char **argv) {
         OutputFilename = "-";
 
       std::error_code EC;
-      Out = llvm::make_unique<tool_output_file>(OutputFilename, EC,
-                                                sys::fs::F_None);
+      Out = llvm::make_unique<ToolOutputFile>(OutputFilename, EC,
+                                              sys::fs::F_None);
       if (EC) {
         errs() << EC.message() << '\n';
         return 1;
@@ -480,6 +672,13 @@ int main(int argc, char **argv) {
     }
     Passes.add(createBreakpointPrinter(Out->os()));
     NoOutput = true;
+  }
+
+  if (TM) {
+    // FIXME: We should dyn_cast this when supported.
+    auto &LTM = static_cast<LLVMTargetMachine &>(*TM);
+    Pass *TPC = LTM.createPassConfig(Passes);
+    Passes.add(TPC);
   }
 
   // Create a new optimization pass for each one specified on the command line
@@ -490,36 +689,39 @@ int main(int argc, char **argv) {
       StandardLinkOpts = false;
     }
 
+    if (OptLevelO0 && OptLevelO0.getPosition() < PassList.getPosition(i)) {
+      AddOptimizationPasses(Passes, *FPasses, TM.get(), 0, 0);
+      OptLevelO0 = false;
+    }
+
     if (OptLevelO1 && OptLevelO1.getPosition() < PassList.getPosition(i)) {
-      AddOptimizationPasses(Passes, *FPasses, 1, 0);
+      AddOptimizationPasses(Passes, *FPasses, TM.get(), 1, 0);
       OptLevelO1 = false;
     }
 
     if (OptLevelO2 && OptLevelO2.getPosition() < PassList.getPosition(i)) {
-      AddOptimizationPasses(Passes, *FPasses, 2, 0);
+      AddOptimizationPasses(Passes, *FPasses, TM.get(), 2, 0);
       OptLevelO2 = false;
     }
 
     if (OptLevelOs && OptLevelOs.getPosition() < PassList.getPosition(i)) {
-      AddOptimizationPasses(Passes, *FPasses, 2, 1);
+      AddOptimizationPasses(Passes, *FPasses, TM.get(), 2, 1);
       OptLevelOs = false;
     }
 
     if (OptLevelOz && OptLevelOz.getPosition() < PassList.getPosition(i)) {
-      AddOptimizationPasses(Passes, *FPasses, 2, 2);
+      AddOptimizationPasses(Passes, *FPasses, TM.get(), 2, 2);
       OptLevelOz = false;
     }
 
     if (OptLevelO3 && OptLevelO3.getPosition() < PassList.getPosition(i)) {
-      AddOptimizationPasses(Passes, *FPasses, 3, 0);
+      AddOptimizationPasses(Passes, *FPasses, TM.get(), 3, 0);
       OptLevelO3 = false;
     }
 
     const PassInfo *PassInf = PassList[i];
     Pass *P = nullptr;
-    if (PassInf->getTargetMachineCtor())
-      P = PassInf->getTargetMachineCtor()(TM.get());
-    else if (PassInf->getNormalCtor())
+    if (PassInf->getNormalCtor())
       P = PassInf->getNormalCtor()();
     else
       errs() << argv[0] << ": cannot create pass: "
@@ -562,22 +764,25 @@ int main(int argc, char **argv) {
     StandardLinkOpts = false;
   }
 
+  if (OptLevelO0)
+    AddOptimizationPasses(Passes, *FPasses, TM.get(), 0, 0);
+
   if (OptLevelO1)
-    AddOptimizationPasses(Passes, *FPasses, 1, 0);
+    AddOptimizationPasses(Passes, *FPasses, TM.get(), 1, 0);
 
   if (OptLevelO2)
-    AddOptimizationPasses(Passes, *FPasses, 2, 0);
+    AddOptimizationPasses(Passes, *FPasses, TM.get(), 2, 0);
 
   if (OptLevelOs)
-    AddOptimizationPasses(Passes, *FPasses, 2, 1);
+    AddOptimizationPasses(Passes, *FPasses, TM.get(), 2, 1);
 
   if (OptLevelOz)
-    AddOptimizationPasses(Passes, *FPasses, 2, 2);
+    AddOptimizationPasses(Passes, *FPasses, TM.get(), 2, 2);
 
   if (OptLevelO3)
-    AddOptimizationPasses(Passes, *FPasses, 3, 0);
+    AddOptimizationPasses(Passes, *FPasses, TM.get(), 3, 0);
 
-  if (OptLevelO1 || OptLevelO2 || OptLevelOs || OptLevelOz || OptLevelO3) {
+  if (FPasses) {
     FPasses->doInitialization();
     for (Function &F : *M)
       FPasses->run(F);
@@ -588,12 +793,15 @@ int main(int argc, char **argv) {
   if (!NoVerify && !VerifyEach)
     Passes.add(createVerifierPass());
 
+  if (AddOneTimeDebugifyPasses)
+    Passes.add(createCheckDebugifyModulePass(false));
+
   // In run twice mode, we want to make sure the output is bit-by-bit
   // equivalent if we run the pass manager again, so setup two buffers and
   // a stream to write to them. Note that llc does something similar and it
   // may be worth to abstract this out in the future.
   SmallVector<char, 0> Buffer;
-  SmallVector<char, 0> CompileTwiceBuffer;
+  SmallVector<char, 0> FirstRunBuffer;
   std::unique_ptr<raw_svector_ostream> BOS;
   raw_ostream *OS = nullptr;
 
@@ -605,47 +813,68 @@ int main(int argc, char **argv) {
       BOS = make_unique<raw_svector_ostream>(Buffer);
       OS = BOS.get();
     }
-    if (OutputAssembly)
+    if (OutputAssembly) {
+      if (EmitSummaryIndex)
+        report_fatal_error("Text output is incompatible with -module-summary");
+      if (EmitModuleHash)
+        report_fatal_error("Text output is incompatible with -module-hash");
       Passes.add(createPrintModulePass(*OS, "", PreserveAssemblyUseListOrder));
+    } else if (OutputThinLTOBC)
+      Passes.add(createWriteThinLTOBitcodePass(
+          *OS, ThinLinkOut ? &ThinLinkOut->os() : nullptr));
     else
-      Passes.add(createBitcodeWriterPass(*OS, PreserveBitcodeUseListOrder));
+      Passes.add(createBitcodeWriterPass(*OS, PreserveBitcodeUseListOrder,
+                                         EmitSummaryIndex, EmitModuleHash));
   }
 
   // Before executing passes, print the final values of the LLVM options.
   cl::PrintOptionValues();
 
-  // If requested, run all passes again with the same pass manager to catch
-  // bugs caused by persistent state in the passes
-  if (RunTwice) {
-      std::unique_ptr<Module> M2(CloneModule(M.get()));
-      Passes.run(*M2);
-      CompileTwiceBuffer = Buffer;
-      Buffer.clear();
-  }
+  if (!RunTwice) {
+    // Now that we have all of the passes ready, run them.
+    Passes.run(*M);
+  } else {
+    // If requested, run all passes twice with the same pass manager to catch
+    // bugs caused by persistent state in the passes.
+    std::unique_ptr<Module> M2(CloneModule(*M));
+    // Run all passes on the original module first, so the second run processes
+    // the clone to catch CloneModule bugs.
+    Passes.run(*M);
+    FirstRunBuffer = Buffer;
+    Buffer.clear();
 
-  // Now that we have all of the passes ready, run them.
-  Passes.run(*M);
+    Passes.run(*M2);
 
-  // Compare the two outputs and make sure they're the same
-  if (RunTwice) {
+    // Compare the two outputs and make sure they're the same
     assert(Out);
-    if (Buffer.size() != CompileTwiceBuffer.size() ||
-        (memcmp(Buffer.data(), CompileTwiceBuffer.data(), Buffer.size()) !=
-         0)) {
-      errs() << "Running the pass manager twice changed the output.\n"
-                "Writing the result of the second run to the specified output.\n"
-                "To generate the one-run comparison binary, just run without\n"
-                "the compile-twice option\n";
+    if (Buffer.size() != FirstRunBuffer.size() ||
+        (memcmp(Buffer.data(), FirstRunBuffer.data(), Buffer.size()) != 0)) {
+      errs()
+          << "Running the pass manager twice changed the output.\n"
+             "Writing the result of the second run to the specified output.\n"
+             "To generate the one-run comparison binary, just run without\n"
+             "the compile-twice option\n";
       Out->os() << BOS->str();
       Out->keep();
+      if (OptRemarkFile)
+        OptRemarkFile->keep();
       return 1;
     }
     Out->os() << BOS->str();
   }
 
+  if (DebugifyEach && !DebugifyExport.empty())
+    exportDebugifyStats(DebugifyExport, Passes.getDebugifyStatsMap());
+
   // Declare success.
   if (!NoOutput || PrintBreakpoints)
     Out->keep();
+
+  if (OptRemarkFile)
+    OptRemarkFile->keep();
+
+  if (ThinLinkOut)
+    ThinLinkOut->keep();
 
   return 0;
 }

@@ -16,7 +16,7 @@ my ($SYMBIAN_ROOT, $SYMBIAN_VERSION, $SDK_NAME, $SDK_VARIANT, $SDK_VERSION) =
 my $UID  = do "uid.pl" or die $@;
 my %PORT = %{ do "port.pl" or die $@ };
 
-my $ARM = 'thumb'; # TODO
+my $ARM = 'armv5';#'thumb'; # TODO
 my $S60SDK = $ENV{S60SDK}; # from sdk.pl
 my $S80SDK = $ENV{S80SDK}; # from sdk.pl
 my $S90SDK = $ENV{S90SDK}; # from sdk.pl
@@ -72,7 +72,7 @@ for my $target (@target) {
         print "\tErrno.pm\n";
         $copy{"ext\\Errno\\Errno.pm"} = "$lib\\Perl\\$R_V_SV\\Errno.pm";
 
-        open( my $cfg, "symbian/install.cfg" )
+        open( my $cfg, '<', "symbian/install.cfg" )
           or die "$!: symbian/install.cfg: $!\n";
         while (<$cfg>) {
             next unless /^lib\s+(.+)/;
@@ -98,7 +98,7 @@ for my $target (@target) {
             my $ext = $1;
             $ext =~ s!-!::!g;
             print "\t$ext\n";
-            if ( open( my $pkg, $lst ) ) {
+            if ( open( my $pkg, '<', $lst ) ) {
                 while (<$pkg>) {
                     if (m!^"(.+)"-"(.+)"$!) {
                         my ( $src, $dst ) = ( $1, $2 );
@@ -165,7 +165,7 @@ qq[;Supports Series 80 v2.0\n(0x101F8ED2), 0, 0, 0, {"Series80ProductID"}\n] :
 qq[;Supports Series 90 v1.1\n(0x101FBE05), 0, 0, 0, {"Series90ProductID"}\n] :
          ";Supports Series NN";
 
-    open PKG, ">$pkg" or die "$0: failed to create $pkg: $!\n";
+    open PKG, '>', $pkg or die "$0: failed to create $pkg: $!\n";
     print PKG <<__EOF__;
 ; \u$target installation script
 ;
@@ -175,6 +175,9 @@ qq[;Supports Series 90 v1.1\n(0x101FBE05), 0, 0, 0, {"Series90ProductID"}\n] :
 ; The installation name and header data
 ;
 #{"\u$target"},($uid),$MAJOR,$MINOR,$PATCH
+;
+;Localised Vendor name
+%{"Vendor-EN"}
 ;
 ; Private key and certificate (unused)
 ;

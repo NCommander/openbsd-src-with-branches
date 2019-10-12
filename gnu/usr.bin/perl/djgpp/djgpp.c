@@ -1,19 +1,5 @@
-#include <libc/stubs.h>
-#include <io.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <libc/file.h>
-#include <process.h>
-#include <fcntl.h>
-#include <glob.h>
-#include <sys/fsext.h>
-#include <crt0.h>
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
+#define PERLIO_NOT_STDIO 0
+#include "djgpp.h"
 
 /* hold file pointer, command, mode, and the status of the command */
 struct pipe_list {
@@ -27,7 +13,7 @@ struct pipe_list {
 static struct pipe_list *pl = NULL;
 
 FILE *
-popen (const char *cm, const char *md) /* program name, pipe mode */
+djgpp_popen (const char *cm, const char *md) /* program name, pipe mode */
 {
   struct pipe_list *l1;
   int fd;
@@ -75,7 +61,7 @@ popen (const char *cm, const char *md) /* program name, pipe mode */
 }
 
 int
-pclose (FILE *pp)
+djgpp_pclose (FILE *pp)
 {
   struct pipe_list *l1, **l2;   /* list pointers */
   int retval=-1;		/* function return value */
@@ -117,23 +103,21 @@ pclose (FILE *pp)
 #define EXECF_EXEC 1
 
 static int
-convretcode (int rc,char *prog,int fl)
+convretcode (pTHX_ int rc,char *prog,int fl)
 {
-    if (rc < 0 && PL_dowarn)
-        warn ("Can't %s \"%s\": %s",fl ? "exec" : "spawn",prog,Strerror (errno));
-    if (rc > 0)
-        return rc <<= 8;
-    if (rc < 0)
-        return 255 << 8;
-    return 0;
+    if (rc < 0 && ckWARN(WARN_EXEC))
+        Perl_warner(aTHX_ packWARN(WARN_EXEC),"Can't %s \"%s\": %s",
+		    fl ? "exec" : "spawn",prog,Strerror (errno));
+    if (rc >= 0)
+        return rc << 8;
+    return -1;
 }
 
 int
-do_aspawn (SV *really,SV **mark,SV **sp)
+do_aspawn (pTHX_ SV *really,SV **mark,SV **sp)
 {
-    dTHR;
     int  rc;
-    char **a,*tmps,**argv;
+    char **a,*tmps,**argv; 
     STRLEN n_a;
 
     if (sp<=mark)
@@ -145,7 +129,7 @@ do_aspawn (SV *really,SV **mark,SV **sp)
             *a++ = SvPVx(*mark, n_a);
         else
             *a++ = "";
-    *a = Nullch;
+    *a = NULL;
 
     if (argv[0][0] != '/' && argv[0][0] != '\\'
         && !(argv[0][0] && argv[0][1] == ':'
@@ -164,11 +148,12 @@ do_aspawn (SV *really,SV **mark,SV **sp)
 #define EXTRA "\x00\x00\x00\x00\x00\x00"
 
 int
-do_spawn2 (char *cmd,int execf)
+do_spawn2 (pTHX_ char *cmd,int execf)
 {
-    char **a,*s,*shell,*metachars;
-    int  rc,unixysh;
+    char **argv,**a,*s,*shell,*metachars;
+    int  rc,unixysh,result;
 
+    ENTER;
     if ((shell=getenv("SHELL"))==NULL && (shell=getenv("COMSPEC"))==NULL)
     	shell="c:\\command.com" EXTRA;
 
@@ -178,7 +163,7 @@ do_spawn2 (char *cmd,int execf)
     while (*cmd && isSPACE(*cmd))
 	cmd++;
 
-    if (strnEQ (cmd,"/bin/sh",7) && isSPACE (cmd[7]))
+    if (strBEGINs (cmd,"/bin/sh") && isSPACE (cmd[7]))
         cmd+=5;
 
     /* save an extra exec if possible */
@@ -189,7 +174,7 @@ do_spawn2 (char *cmd,int execf)
     {
         if (*cmd=='.' && isSPACE (cmd[1]))
             goto doshell;
-        if (strnEQ (cmd,"exec",4) && isSPACE (cmd[4]))
+        if (strBEGINs (cmd,"exec") && isSPACE (cmd[4]))
             goto doshell;
         for (s=cmd; *s && isALPHA (*s); s++) ;	/* catch VAR=val gizmo */
             if (*s=='=')
@@ -205,14 +190,18 @@ do_spawn2 (char *cmd,int execf)
 	    }
 doshell:
 	    if (execf==EXECF_EXEC)
-                return convretcode (execl (shell,shell,unixysh ? "-c" : "/c",cmd,NULL),cmd,execf);
-            return convretcode (system (cmd),cmd,execf);
+                result = convretcode (execl (shell,shell,unixysh ? "-c" : "/c",cmd,NULL),cmd,execf);
+	    else
+		result = convretcode (system (cmd),cmd,execf);
+	    goto leave;
 	}
 
-    New (1303,PL_Argv,(s-cmd)/2+2,char*);
-    PL_Cmd=savepvn (cmd,s-cmd);
-    a=PL_Argv;
-    for (s=PL_Cmd; *s;) {
+    Newx (argv,(s-cmd)/2+2,char*);
+    SAVEFREEPV(argv);
+    cmd=savepvn (cmd,s-cmd);
+    SAVEFREEPV(cmd);
+    a=argv;
+    for (s=cmd; *s;) {
 	while (*s && isSPACE (*s)) s++;
 	if (*s)
 	    *(a++)=s;
@@ -220,27 +209,32 @@ doshell:
 	if (*s)
 	    *s++='\0';
     }
-    *a=Nullch;
-    if (!PL_Argv[0])
-        return -1;
+    *a=NULL;
+    if (!argv[0]) {
+        result = -1;
+	goto leave;
+    }
 
     if (execf==EXECF_EXEC)
-        rc=execvp (PL_Argv[0],PL_Argv);
+        rc=execvp (argv[0],argv);
     else
-        rc=spawnvp (P_WAIT,PL_Argv[0],PL_Argv);
-    return convretcode (rc,PL_Argv[0],execf);
+        rc=spawnvp (P_WAIT,argv[0],argv);
+    result = convretcode (rc,argv[0],execf);
+leave:
+    LEAVE;
+    return result;
 }
 
 int
-do_spawn (char *cmd)
+do_spawn (pTHX_ char *cmd)
 {
-    return do_spawn2 (cmd,EXECF_SPAWN);
+    return do_spawn2 (aTHX_ cmd,EXECF_SPAWN);
 }
 
 bool
-do_exec (char *cmd)
+Perl_do_exec (pTHX_ const char *cmd)
 {
-    do_spawn2 (cmd,EXECF_EXEC);
+    do_spawn2 (aTHX_ cmd,EXECF_EXEC);
     return FALSE;
 }
 
@@ -281,7 +275,7 @@ glob_handler (__FSEXT_Fnumber n,int *rv,va_list args)
             STRLEN len;
             glob_t pglob;
 
-            if (strnNE (name,"/dev/dosglob/",13))
+            if (! strBEGINs (name,"/dev/dosglob/"))
                 break;
             if ((gi=searchfd (-1)) == NULL)
                 break;
@@ -333,10 +327,10 @@ glob_handler (__FSEXT_Fnumber n,int *rv,va_list args)
             if ((gi=searchfd (fd))==NULL)
                 break;
 
-            if (siz+gi->pos>gi->size)
-                siz=gi->size-gi->pos;
+            if (siz+gi->pos > gi->size)
+                siz = gi->size - gi->pos;
             memcpy (buf,gi->pos+gi->matches,siz);
-            gi->pos+=siz;
+            gi->pos += siz;
             *rv=siz;
             return 1;
         }
@@ -362,12 +356,13 @@ XS(dos_GetCwd)
     dXSARGS;
 
     if (items)
-        croak ("Usage: Dos::GetCwd()");
+        Perl_croak (aTHX_ "Usage: Dos::GetCwd()");
     {
         char tmp[PATH_MAX+2];
         ST(0)=sv_newmortal ();
         if (getcwd (tmp,PATH_MAX+1)!=NULL)
             sv_setpv ((SV*)ST(0),tmp);
+	SvTAINTED_on(ST(0));
     }
     XSRETURN (1);
 }
@@ -379,8 +374,24 @@ XS(dos_UseLFN)
     XSRETURN_IV (_USE_LFN);
 }
 
+XS(XS_Cwd_sys_cwd)
+{
+    dXSARGS;
+    if (items != 0)
+	Perl_croak_nocontext("Usage: Cwd::sys_cwd()");
+    {
+	char p[MAXPATHLEN];
+	char *	RETVAL;
+	RETVAL = getcwd(p, MAXPATHLEN);
+	ST(0) = sv_newmortal();
+	sv_setpv((SV*)ST(0), RETVAL);
+	SvTAINTED_on(ST(0));
+    }
+    XSRETURN(1);
+}
+
 void
-init_os_extras()
+Perl_init_os_extras(pTHX)
 {
     char *file = __FILE__;
 
@@ -388,6 +399,7 @@ init_os_extras()
     
     newXS ("Dos::GetCwd",dos_GetCwd,file);
     newXS ("Dos::UseLFN",dos_UseLFN,file);
+    newXS ("Cwd::sys_cwd",XS_Cwd_sys_cwd,file);
 
     /* install my File System Extension for globbing */
     __FSEXT_add_open_handler (glob_handler);
@@ -398,7 +410,8 @@ static char *perlprefix;
 
 #define PERL5 "/perl5"
 
-char *djgpp_pathexp (const char *p)
+char *
+djgpp_pathexp (const char *p)
 {
     static char expp[PATH_MAX];
     strcpy (expp,perlprefix);
@@ -432,5 +445,37 @@ Perl_DJGPP_init (int *argcp,char ***argvp)
     }
     else
         strcpy (perlprefix,"..");
+}
+
+int
+djgpp_fflush (FILE *fp)
+{
+    int res;
+
+    if ((res = fflush(fp)) == 0 && fp) {
+	Stat_t s;
+	if (Fstat(fileno(fp), &s) == 0 && !S_ISSOCK(s.st_mode))
+	    res = fsync(fileno(fp));
+    }
+/*
+ * If the flush succeeded but set end-of-file, we need to clear
+ * the error because our caller may check ferror().  BTW, this
+ * probably means we just flushed an empty file.
+ */
+    if (res == 0 && fp && ferror(fp) == EOF) clearerr(fp);
+
+    return res;
+}
+
+int djgpp_get_stream_mode(FILE *f)
+{
+    extern char *__file_handle_modes;
+
+    int mode = __file_handle_modes[fileno(f)];
+    if (f->_flag & _IORW)
+        return mode | O_RDWR;
+    if (f->_flag & _IOWRT)
+        return mode | O_WRONLY;
+    return mode | O_RDONLY;
 }
 

@@ -76,11 +76,14 @@ example, to get a list of all of the definitions that subclass a particular type
   ADD16rr, ADD32mi, ADD32mi8, ADD32mr, ADD32ri, ADD32ri8, ADD32rm, ADD32rr,
   ADD64mi32, ADD64mi8, ADD64mr, ADD64ri32, ...
 
-The default backend prints out all of the records.
+The default backend prints out all of the records. There is also a general
+backend which outputs all the records as a JSON data structure, enabled using
+the `-dump-json` option.
 
 If you plan to use TableGen, you will most likely have to write a `backend`_
 that extracts the information specific to what you need and formats it in the
-appropriate way.
+appropriate way. You can do this by extending TableGen itself in C++, or by
+writing a script in any language that can consume the JSON output.
 
 Example
 -------
@@ -90,7 +93,7 @@ of the classes, then all of the definitions.  This is a good way to see what the
 various definitions expand to fully.  Running this on the ``X86.td`` file prints
 this (at the time of this writing):
 
-.. code-block:: llvm
+.. code-block:: text
 
   ...
   def ADD32rr {   // Instruction X86Inst I
@@ -155,7 +158,7 @@ by the code generator, and specifying it all manually would be unmaintainable,
 prone to bugs, and tiring to do in the first place.  Because we are using
 TableGen, all of the information was derived from the following definition:
 
-.. code-block:: llvm
+.. code-block:: text
 
   let Defs = [EFLAGS],
       isCommutable = 1,                  // X = ADD Y,Z --> X = ADD Z,Y
@@ -170,13 +173,6 @@ class ``X86Inst``), which is defined in the X86-specific TableGen file, to
 factor out the common features that instructions of its class share.  A key
 feature of TableGen is that it allows the end-user to define the abstractions
 they prefer to use when describing their information.
-
-Each ``def`` record has a special entry called "NAME".  This is the name of the
-record ("``ADD32rr``" above).  In the general case ``def`` names can be formed
-from various kinds of string processing expressions and ``NAME`` resolves to the
-final value obtained after resolving all of those expressions.  The user may
-refer to ``NAME`` anywhere she desires to use the ultimate name of the ``def``.
-``NAME`` should not be defined anywhere else in user code to avoid conflicts.
 
 Syntax
 ======
@@ -201,7 +197,7 @@ TableGen.
 **TableGen definitions** are the concrete form of 'records'.  These generally do
 not have any undefined values, and are marked with the '``def``' keyword.
 
-.. code-block:: llvm
+.. code-block:: text
 
   def FeatureFPARMv8 : SubtargetFeature<"fp-armv8", "HasFPARMv8", "true",
                                         "Enable ARMv8 FP">;
@@ -220,11 +216,11 @@ floating point instructions in the X86 backend).  TableGen keeps track of all of
 the classes that are used to build up a definition, so the backend can find all
 definitions of a particular class, such as "Instruction".
 
-.. code-block:: llvm
+.. code-block:: text
 
  class ProcNoItin<string Name, list<SubtargetFeature> Features>
        : Processor<Name, NoItineraries, Features>;
-  
+
 Here, the class ProcNoItin, receiving parameters `Name` of type `string` and
 a list of target features is specializing the class Processor by passing the
 arguments down as well as hard-coding NoItineraries.
@@ -235,7 +231,7 @@ If a multiclass inherits from another multiclass, the definitions in the
 sub-multiclass become part of the current multiclass, as if they were declared
 in the current multiclass.
 
-.. code-block:: llvm
+.. code-block:: text
 
   multiclass ro_signed_pats<string T, string Rm, dag Base, dag Offset, dag Extend,
                           dag address, ValueType sty> {
