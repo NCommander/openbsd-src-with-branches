@@ -945,6 +945,7 @@ noslash:
 			if (verbose)
 				fprintf(ttyout, "Retrying %s\n", origline);
 			retried = 1;
+			ftp_close(&fin, &tls, &fd);
 			rval = url_get(origline, proxyenv, savefile, lastfile);
 		}
 		goto cleanup_url_get;
