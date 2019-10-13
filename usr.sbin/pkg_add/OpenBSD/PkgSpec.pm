@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgSpec.pm,v 1.44 2014/02/04 07:59:40 espie Exp $
+# $OpenBSD: PkgSpec.pm,v 1.45 2014/03/07 09:45:53 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -289,7 +289,11 @@ LOOP1:
 		}
 	}
 
-	return @result;
+	if (wantarray) {
+		return @result;
+	} else {
+		return 0;
+	}
 }
 
 sub match_libs_ref
