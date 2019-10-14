@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.118 2019/02/19 11:37:26 pirofti Exp $	*/
+/*	$OpenBSD: server.c,v 1.119 2019/06/28 13:32:47 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -1036,7 +1036,10 @@ server_error(struct bufferevent *bev, short error, void *arg)
 	struct evbuffer		*dst;
 
 	if (error & EVBUFFER_TIMEOUT) {
-		server_abort_http(clt, 408, "timeout");
+		if (!clt->clt_headersdone && clt->clt_line > 0)
+			server_abort_http(clt, 408, "timeout");
+		else
+			server_close(clt, "timeout");
 		return;
 	}
 	if (error & EVBUFFER_ERROR) {
