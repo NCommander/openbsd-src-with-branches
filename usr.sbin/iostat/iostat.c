@@ -1,4 +1,4 @@
-/*	$OpenBSD: iostat.c,v 1.40 2018/02/10 19:49:50 cheloha Exp $	*/
+/*	$OpenBSD: iostat.c,v 1.41 2018/09/05 09:35:49 yasuoka Exp $	*/
 /*	$NetBSD: iostat.c,v 1.10 1996/10/25 18:21:58 scottr Exp $	*/
 
 /*
@@ -161,6 +161,12 @@ main(int argc, char *argv[])
 		todo |= SHOW_CPU | SHOW_TTY | SHOW_STATS_1;
 
 	dkinit(0);
+
+	if (unveil("/", "") == -1)
+		err(1, "unveil");
+	if (unveil(NULL, NULL) == -1)
+		err(1, "unveil");
+
 	dkreadstats();
 	selectdrives(argv);
 

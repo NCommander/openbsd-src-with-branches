@@ -1,4 +1,4 @@
-/* $OpenBSD: main.c,v 1.69 2019/01/17 05:56:29 tedu Exp $	 */
+/* $OpenBSD: main.c,v 1.70 2019/06/28 13:35:04 deraadt Exp $	 */
 /*
  * Copyright (c) 2001, 2007 Can Erkin Acar
  * Copyright (c) 2001 Daniel Hartmeier
@@ -525,6 +525,11 @@ main(int argc, char *argv[])
 	}
 
 	setup_term(maxlines);
+
+	if (unveil("/", "r") == -1)
+		err(1, "unveil");
+	if (unveil(NULL, NULL) == -1)
+		err(1, "unveil");
 
 	if (rawmode && countmax == 0)
 		countmax = 1;
