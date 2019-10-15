@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88k_machdep.c,v 1.68 2017/05/29 14:19:50 mpi Exp $	*/
+/*	$OpenBSD: m88k_machdep.c,v 1.69 2018/10/22 17:31:24 krw Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -564,9 +564,7 @@ cpu_emergency_disable()
 		 * to mi_switch().
 		 */
 		SCHED_LOCK(s);
-		p->p_priority = p->p_usrpri;
-		p->p_stat = SRUN;
-		setrunqueue(p);
+		setrunqueue(p->p_cpu, p, p->p_usrpri);
 		p->p_ru.ru_nvcsw++;
 		SCHED_UNLOCK(s);
 	}
