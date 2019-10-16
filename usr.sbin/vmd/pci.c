@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci.c,v 1.26 2018/07/10 20:43:15 reyk Exp $	*/
+/*	$OpenBSD: pci.c,v 1.27 2018/07/12 10:15:44 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -286,8 +286,9 @@ pci_handle_io(struct vm_run_params *vrp)
 			    __progname);
 		}
 	} else {
-		log_warnx("%s: no pci i/o function for reg 0x%llx",
-		    __progname, (uint64_t)reg);
+		DPRINTF("%s: no pci i/o function for reg 0x%llx (dir=%d "
+		    "guest %%rip=0x%llx", __progname, (uint64_t)reg, dir,
+		    vei->vrs.vrs_gprs[VCPU_REGS_RIP]);
 		/* Reads from undefined ports return 0xFF */
 		if (dir == VEI_DIR_IN)
 			set_return_data(vei, 0xFFFFFFFF);
