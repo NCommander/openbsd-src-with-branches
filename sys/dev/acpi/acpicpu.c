@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.82 2018/06/29 17:39:18 kettenis Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.83 2018/09/19 05:23:16 guenther Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
@@ -472,7 +472,7 @@ acpicpu_add_cdeppkg(struct aml_value *val, void *arg)
 
 	/*
 	 * errors: unexpected object type, bad length, mismatched length,
-	 * and bad CSD revision 
+	 * and bad CSD revision
 	 */
 	if (val->type != AML_OBJTYPE_PACKAGE || val->length < 6 ||
 	    val->length != val->v_package[0]->v_integer ||
