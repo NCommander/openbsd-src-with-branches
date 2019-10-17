@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkbc.c,v 1.13 2015/02/11 07:05:39 dlg Exp $  */
+/*	$OpenBSD: mkbc.c,v 1.14 2018/12/03 13:46:30 visa Exp $  */
 
 /*
  * Copyright (c) 2006, 2007, Joel Sing
@@ -747,7 +747,7 @@ pckbc_enqueue_cmd(pckbc_tag_t self, pckbc_slot_t slot, u_char *cmd, int len,
 	if (q->polling)
 		res = (sync ? nc->status : 0);
 	else if (sync) {
-		if ((res = tsleep(nc, 0, "kbccmd", 1*hz))) {
+		if ((res = tsleep_nsec(nc, 0, "kbccmd", SEC_TO_NSEC(1)))) {
 			TAILQ_REMOVE(&q->cmdqueue, nc, next);
 			mkbc_cleanup(t);
 		} else
