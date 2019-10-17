@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_pcb.h,v 1.115 2018/10/04 17:33:41 bluhm Exp $	*/
+/*	$OpenBSD: in_pcb.h,v 1.116 2019/07/15 12:40:42 bluhm Exp $	*/
 /*	$NetBSD: in_pcb.h,v 1.14 1996/02/13 23:42:00 christos Exp $	*/
 
 /*
@@ -287,8 +287,8 @@ struct inpcb *
 int	 in6_pcbaddrisavail(struct inpcb *, struct sockaddr_in6 *, int,
 	    struct proc *);
 int	 in6_pcbconnect(struct inpcb *, struct mbuf *);
-int	 in6_setsockaddr(struct inpcb *, struct mbuf *);
-int	 in6_setpeeraddr(struct inpcb *, struct mbuf *);
+void	 in6_setsockaddr(struct inpcb *, struct mbuf *);
+void	 in6_setpeeraddr(struct inpcb *, struct mbuf *);
 #endif /* INET6 */
 void	 in_pcbinit(struct inpcbtable *, int);
 struct inpcb *
