@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwmvar.h,v 1.37 2017/12/08 21:16:01 stsp Exp $	*/
+/*	$OpenBSD: if_iwmvar.h,v 1.38 2019/02/24 09:37:18 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -388,6 +388,7 @@ struct iwm_softc {
 	struct iwm_tx_ring txq[IWM_MAX_QUEUES];
 	struct iwm_rx_ring rxq;
 	int qfullmsk;
+	int cmdqid;
 
 	int sc_sf_state;
 
