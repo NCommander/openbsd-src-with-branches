@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.c,v 1.44 2019/09/29 17:52:02 otto Exp $	*/
+/*	$OpenBSD: resolver.c,v 1.45 2019/09/30 18:07:09 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -744,8 +744,14 @@ parse_dhcp_forwarders(char *forwarders)
 		new_forwarders();
 		if (resolver_conf->captive_portal_auto)
 			check_captive_portal(1);
-	} else
+	} else {
+		while ((uw_forwarder =
+		    SIMPLEQ_FIRST(&new_forwarder_list)) != NULL) {
+			SIMPLEQ_REMOVE_HEAD(&new_forwarder_list, entry);
+			free(uw_forwarder);
+		}
 		log_debug("%s: forwarders didn't change", __func__);
+	}
 }
 
 void
