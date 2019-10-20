@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: sysupgrade.sh,v 1.26 2019/10/14 06:58:53 ajacoutot Exp $
+# $OpenBSD: sysupgrade.sh,v 1.27 2019/10/19 13:14:23 tb Exp $
 #
 # Copyright (c) 1997-2015 Todd Miller, Theo de Raadt, Ken Westerback
 # Copyright (c) 2015 Robert Peichaer <rpe@openbsd.org>
@@ -51,7 +51,7 @@ unpriv()
 	fi
 	(($# >= 1))
 
-	# propagate error code to the caller instead of failing hard
+	# XXX ksh(1) bug; send error code to the caller instead of failing hard
 	set +e
 	eval su -s /bin/sh ${_user} -c "'$@'" || _rc=$?
 	set -e
