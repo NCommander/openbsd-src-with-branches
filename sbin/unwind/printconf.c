@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.9 2019/05/10 14:10:38 florian Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.10 2019/05/13 23:13:24 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -107,5 +107,6 @@ print_config(struct uw_conf *conf)
 	}
 
 	if (conf->blocklist_file != NULL)
-		printf("block list \"%s\"\n", conf->blocklist_file);
+		printf("block list \"%s\"%s\n", conf->blocklist_file,
+		    conf->blocklist_log ? " log" : "");
 }
