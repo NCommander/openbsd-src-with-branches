@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.c,v 1.2 2016/12/15 20:32:44 krw Exp $ */
+/* $OpenBSD: doas.c,v 1.3 2017/01/21 08:18:53 krw Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -44,9 +44,11 @@ parseuid(const char *s, uid_t *uid)
 
 	if ((pw = getpwnam(s)) != NULL) {
 		*uid = pw->pw_uid;
+		if (*uid == UID_MAX)
+			return -1;
 		return 0;
 	}
-	*uid = strtonum(s, 0, UID_MAX, &errstr);
+	*uid = strtonum(s, 0, UID_MAX - 1, &errstr);
 	if (errstr)
 		return -1;
 	return 0;
