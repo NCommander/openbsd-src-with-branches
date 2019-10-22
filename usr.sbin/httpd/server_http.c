@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_http.c,v 1.132 2019/05/08 21:41:06 tb Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.133 2019/05/08 21:46:56 tb Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2018 Reyk Floeter <reyk@openbsd.org>
@@ -1332,7 +1332,8 @@ server_response(struct httpd *httpd, struct client *clt)
 			goto fail;
 
 		log_debug("%s: rewrote %s?%s -> %s?%s", __func__,
-		    desc->http_path, desc->http_query, path, query);
+		    desc->http_path, desc->http_query ? desc->http_query : "",
+		    path, query ? query : "");
 
 		free(desc->http_path_alias);
 		if ((desc->http_path_alias = strdup(path)) == NULL)
