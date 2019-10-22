@@ -1,39 +1,15 @@
+/*	$OpenBSD: v_sentence.c,v 1.6 2009/10/27 23:59:48 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996
+ *	Keith Bostic.  All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * See the LICENSE file for redistribution information.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)v_sentence.c	8.17 (Berkeley) 8/17/94";
-#endif /* not lint */
+#include "config.h"
 
 #include <sys/types.h>
 #include <sys/queue.h>
@@ -42,16 +18,10 @@ static char sccsid[] = "@(#)v_sentence.c	8.17 (Berkeley) 8/17/94";
 #include <bitstring.h>
 #include <ctype.h>
 #include <limits.h>
-#include <signal.h>
 #include <stdio.h>
-#include <termios.h>
 
-#include "compat.h"
-#include <db.h>
-#include <regex.h>
-
+#include "../common/common.h"
 #include "vi.h"
-#include "vcmd.h"
 
 /*
  * !!!
@@ -76,12 +46,11 @@ static char sccsid[] = "@(#)v_sentence.c	8.17 (Berkeley) 8/17/94";
 /*
  * v_sentencef -- [count])
  *	Move forward count sentences.
+ *
+ * PUBLIC: int v_sentencef(SCR *, VICMD *);
  */
 int
-v_sentencef(sp, ep, vp)
-	SCR *sp;
-	EXF *ep;
-	VICMDARG *vp;
+v_sentencef(SCR *sp, VICMD *vp)
 {
 	enum { BLANK, NONE, PERIOD } state;
 	VCS cs;
@@ -90,7 +59,7 @@ v_sentencef(sp, ep, vp)
 
 	cs.cs_lno = vp->m_start.lno;
 	cs.cs_cno = vp->m_start.cno;
-	if (cs_init(sp, ep, &cs))
+	if (cs_init(sp, &cs))
 		return (1);
 
 	cnt = F_ISSET(vp, VC_C1SET) ? vp->count : 1;
@@ -101,8 +70,8 @@ v_sentencef(sp, ep, vp)
 	 * This may not handle "  .  " correctly, but it's real unclear
 	 * what correctly means in that case.
 	 */
-	if (cs.cs_flags == CS_EMP || cs.cs_flags == 0 && isblank(cs.cs_ch)) {
-		if (cs_fblank(sp, ep, &cs))
+	if (cs.cs_flags == CS_EMP || (cs.cs_flags == 0 && isblank(cs.cs_ch))) {
+		if (cs_fblank(sp, &cs))
 			return (1);
 		if (--cnt == 0) {
 			if (vp->m_start.lno != cs.cs_lno ||
@@ -113,16 +82,16 @@ v_sentencef(sp, ep, vp)
 	}
 
 	for (state = NONE;;) {
-		if (cs_next(sp, ep, &cs))
+		if (cs_next(sp, &cs))
 			return (1);
 		if (cs.cs_flags == CS_EOF)
 			break;
 		if (cs.cs_flags == CS_EOL) {
 			if ((state == PERIOD || state == BLANK) && --cnt == 0) {
-				if (cs_next(sp, ep, &cs))
+				if (cs_next(sp, &cs))
 					return (1);
 				if (cs.cs_flags == 0 &&
-				    isblank(cs.cs_ch) && cs_fblank(sp, ep, &cs))
+				    isblank(cs.cs_ch) && cs_fblank(sp, &cs))
 					return (1);
 				goto okret;
 			}
@@ -132,7 +101,7 @@ v_sentencef(sp, ep, vp)
 		if (cs.cs_flags == CS_EMP) {	/* An EMP is two sentences. */
 			if (--cnt == 0)
 				goto okret;
-			if (cs_fblank(sp, ep, &cs))
+			if (cs_fblank(sp, &cs))
 				return (1);
 			if (--cnt == 0)
 				goto okret;
@@ -162,7 +131,7 @@ v_sentencef(sp, ep, vp)
 				break;
 			}
 			if (state == BLANK && --cnt == 0) {
-				if (cs_fblank(sp, ep, &cs))
+				if (cs_fblank(sp, &cs))
 					return (1);
 				goto okret;
 			}
@@ -175,7 +144,7 @@ v_sentencef(sp, ep, vp)
 
 	/* EOF is a movement sink, but it's an error not to have moved. */
 	if (vp->m_start.lno == cs.cs_lno && vp->m_start.cno == cs.cs_cno) {
-		v_eof(sp, ep, NULL);
+		v_eof(sp, NULL);
 		return (1);
 	}
 
@@ -185,24 +154,25 @@ okret:	vp->m_stop.lno = cs.cs_lno;
 	/*
 	 * !!!
 	 * Historic, uh, features, yeah, that's right, call 'em features.
-	 * If the ending cursor position is at the first column in the
-	 * line, i.e. the movement is cutting an entire line, the buffer
-	 * is in line mode, and the ending position is the last character
-	 * of the previous line.
+	 * If the starting and ending cursor positions are at the first
+	 * column in their lines, i.e. the movement is cutting entire lines,
+	 * the buffer is in line mode, and the ending position is the last
+	 * character of the previous line.  Note check to make sure that
+	 * it's not within a single line.
 	 *
-	 * Non-motion commands move to the end of the range.  VC_D and
-	 * VC_Y stay at the start.  Ignore VC_C and VC_DEF.  Adjust the
-	 * end of the range for motion commands.
+	 * Non-motion commands move to the end of the range.  Delete and
+	 * yank stay at the start.  Ignore others.  Adjust the end of the
+	 * range for motion commands.
 	 */
 	if (ISMOTION(vp)) {
 		if (vp->m_start.cno == 0 &&
 		    (cs.cs_flags != 0 || vp->m_stop.cno == 0)) {
-			if (file_gline(sp, ep,
-			    --vp->m_stop.lno, &len) == NULL) {
-				GETLINE_ERR(sp, vp->m_stop.lno);
-				return (1);
+			if (vp->m_start.lno < vp->m_stop.lno) {
+				if (db_get(sp,
+				    --vp->m_stop.lno, DBG_FATAL, NULL, &len))
+					return (1);
+				vp->m_stop.cno = len ? len - 1 : 0;
 			}
-			vp->m_stop.cno = len ? len - 1 : 0;
 			F_SET(vp, VM_LMODE);
 		} else
 			--vp->m_stop.cno;
@@ -215,12 +185,11 @@ okret:	vp->m_stop.lno = cs.cs_lno;
 /*
  * v_sentenceb -- [count](
  *	Move backward count sentences.
+ *
+ * PUBLIC: int v_sentenceb(SCR *, VICMD *);
  */
 int
-v_sentenceb(sp, ep, vp)
-	SCR *sp;
-	EXF *ep;
-	VICMDARG *vp;
+v_sentenceb(SCR *sp, VICMD *vp)
 {
 	VCS cs;
 	recno_t slno;
@@ -237,7 +206,7 @@ v_sentenceb(sp, ep, vp)
 
 	cs.cs_lno = vp->m_start.lno;
 	cs.cs_cno = vp->m_start.cno;
-	if (cs_init(sp, ep, &cs))
+	if (cs_init(sp, &cs))
 		return (1);
 
 	cnt = F_ISSET(vp, VC_C1SET) ? vp->count : 1;
@@ -254,24 +223,24 @@ v_sentenceb(sp, ep, vp)
 	 * Berkeley was once a major center of drug activity.
 	 */
 	if (cs.cs_flags == CS_EMP) {
-		if (cs_bblank(sp, ep, &cs))
+		if (cs_bblank(sp, &cs))
 			return (1);
 		for (;;) {
-			if (cs_prev(sp, ep, &cs))
+			if (cs_prev(sp, &cs))
 				return (1);
 			if (cs.cs_flags != CS_EOL)
 				break;
 		}
 	} else if (cs.cs_flags == 0 && !isblank(cs.cs_ch))
 		for (;;) {
-			if (cs_prev(sp, ep, &cs))
+			if (cs_prev(sp, &cs))
 				return (1);
 			if (cs.cs_flags != 0 || isblank(cs.cs_ch))
 				break;
 		}
 
 	for (last = 0;;) {
-		if (cs_prev(sp, ep, &cs))
+		if (cs_prev(sp, &cs))
 			return (1);
 		if (cs.cs_flags == CS_SOF)	/* SOF is a movement sink. */
 			break;
@@ -282,7 +251,7 @@ v_sentenceb(sp, ep, vp)
 		if (cs.cs_flags == CS_EMP) {
 			if (--cnt == 0)
 				goto ret;
-			if (cs_bblank(sp, ep, &cs))
+			if (cs_bblank(sp, &cs))
 				return (1);
 			last = 0;
 			continue;
@@ -304,13 +273,13 @@ ret:			slno = cs.cs_lno;
 			 * and special characters.
 			 */
 			do {
-				if (cs_next(sp, ep, &cs))
+				if (cs_next(sp, &cs))
 					return (1);
 			} while (!cs.cs_flags &&
 			    (cs.cs_ch == ')' || cs.cs_ch == ']' ||
 			    cs.cs_ch == '"' || cs.cs_ch == '\''));
 			if ((cs.cs_flags || isblank(cs.cs_ch)) &&
-			    cs_fblank(sp, ep, &cs))
+			    cs_fblank(sp, &cs))
 				return (1);
 
 			/*
@@ -328,7 +297,7 @@ ret:			slno = cs.cs_lno;
 			 * and the sentence, it could be a real sentence.
 			 */
 			for (;;) {
-				if (cs_prev(sp, ep, &cs))
+				if (cs_prev(sp, &cs))
 					return (1);
 				if (cs.cs_flags == CS_EOL)
 					continue;
@@ -369,18 +338,17 @@ okret:	vp->m_stop.lno = cs.cs_lno;
 	 * All commands move to the end of the range.  Adjust the start of
 	 * the range for motion commands.
 	 */
-	if (ISMOTION(vp))
+	if (ISMOTION(vp)) {
 		if (vp->m_start.cno == 0 &&
 		    (cs.cs_flags != 0 || vp->m_stop.cno == 0)) {
-			if (file_gline(sp, ep,
-			    --vp->m_start.lno, &len) == NULL) {
-				GETLINE_ERR(sp, vp->m_start.lno);
+			if (db_get(sp,
+			    --vp->m_start.lno, DBG_FATAL, NULL, &len))
 				return (1);
-			}
 			vp->m_start.cno = len ? len - 1 : 0;
 			F_SET(vp, VM_LMODE);
 		} else
 			--vp->m_start.cno;
+	}
 	vp->m_final = vp->m_stop;
 	return (0);
 }

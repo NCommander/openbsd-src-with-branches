@@ -1,3 +1,5 @@
+.\" $OpenBSD: 3.t,v 1.4 2002/06/11 22:47:07 millert Exp $
+.\"
 .\" Copyright (c) 1983, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -40,34 +38,25 @@ remove files other than their own.
 The strategy used to maintain protected
 spooling areas is as follows:
 .IP \(bu 3
-The spooling area is writable only by a \fIdaemon\fP user
-and \fIdaemon\fP group.
+The spooling area is writable only by \fIroot\fP and
+and the \fIdaemon\fP group.
 .IP \(bu 3
-The \fIlpr\fP program runs set-user-id to \fIroot\fP and
-set-group-id to group \fIdaemon\fP.  The \fIroot\fP access permits
-reading any file required. Accessibility is verified
-with an \fIaccess\fP\|(2) call.  The group ID
-is used in setting up proper ownership of files
-in the spooling area for \fIlprm\fP.
+The \fIlpr\fP and \fIlprm\fP programs run set-user-id to user \fIdaemon\fP and
+set-group-id to group \fIdaemon\fP.
 .IP \(bu 3
-Control files in a spooling area are made with \fIdaemon\fP
+The \fIlpc\fP and \fIlpq\fP programs run set-group-id to group \fIdaemon\fP
+to access spool files.
+.IP \(bu 3
+Control and data files in a spooling area are made with \fIdaemon\fP
 ownership and group ownership \fIdaemon\fP.  Their mode is 0660.
-This insures control files are not modified by a user
+This ensures control files are not modified by a user
 and that no user can remove files except through \fIlprm\fP.
 .IP \(bu 3
-The spooling programs,
-\fIlpd\fP, \fIlpq\fP, and \fIlprm\fP run set-user-id to \fIroot\fP
-and set-group-id to group \fIdaemon\fP to access spool files and printers.
-.IP \(bu 3
-The printer server, \fIlpd\fP,
-uses the same verification procedures as \fIrshd\fP\|(8C)
-in authenticating remote clients.  The host on which a client
-resides must be present in the file /etc/hosts.equiv or /etc/hosts.lpd and
-the request message must come from a reserved port number.
-.PP
-In practice, none of \fIlpd\fP, \fIlpq\fP, or
-\fIlprm\fP would have to run as user \fIroot\fP if remote
-spooling were not supported.  In previous incarnations of
-the printer system \fIlpd\fP ran set-user-id to \fIdaemon\fP,
-set-group-id to group \fIspooling\fP, and \fIlpq\fP and \fIlprm\fP ran
-set-group-id to group \fIspooling\fP.
+The printer server, \fIlpd\fP, runs as \fIroot\fP but spends most
+of its time with the effective user-id set to \fIdaemon\fP and the
+effective group-id set to \fIdaemon\fP.  As a result, spool files
+it creates belong to user and group \fIdaemon\fP.  \fILpd\fP uses
+the same verification procedures as \fIrshd\fP\|(8) in authenticating
+remote clients.  The host on which a client resides must be present
+in the file /etc/hosts.equiv or /etc/hosts.lpd and the request
+message must come from a reserved port number.

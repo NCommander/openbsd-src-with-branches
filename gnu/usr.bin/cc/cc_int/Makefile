@@ -1,12 +1,12 @@
 # $FreeBSD: src/gnu/usr.bin/cc/cc_int/Makefile,v 1.52.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.2 2009/10/18 02:47:27 kurt Exp $
 
 .include <bsd.own.mk>
 
 .include "${.CURDIR}/../Makefile.inc"
 .include "${.CURDIR}/../Makefile.ver"
 
-.PATH: ../cc_tools ${GCCDIR} ${GCCDIR}/config/${GCC_CPU}
+.PATH: ../cc_tools ${GCCDIR} ${GCCDIR}/config ${GCCDIR}/config/${GCC_CPU}
 
 LIB=	backend
 NOPROFILE=	Yes
@@ -14,7 +14,7 @@ NOPIC=		Yes
 
 EXTRA_OBJS=
 GGC=		ggc-page.o
-host_hook_obj=	host-default.o
+host_hook_obj=	host-openbsd.o
 
 #
 # Most lists copied verbatim from GCC Makefiles.
@@ -88,7 +88,7 @@ C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
   c-convert.o c-aux-info.o c-common.o c-opts.o c-format.o c-semantics.o \
   c-incpath.o cppdefault.o c-ppoutput.o c-cppbuiltin.o prefix.o \
   c-objc-common.o c-dump.o c-pch.o c-parser.o $(C_TARGET_OBJS) \
-  c-gimplify.o tree-mudflap.o c-pretty-print.o c-omp.o
+  c-gimplify.o tree-mudflap.o c-pretty-print.o c-omp.o c-bounded.o
 
 # Language-specific object files for C.
 C_OBJS = c-lang.o stub-objc.o $(C_AND_OBJC_OBJS)

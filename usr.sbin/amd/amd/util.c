@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)util.c	8.1 (Berkeley) 6/6/93
- *	$Id: util.c,v 1.3 1994/06/13 20:48:09 mycroft Exp $
+ *	$Id: util.c,v 1.15 2014/10/26 03:28:41 guenther Exp $
  */
 
 /*
@@ -45,15 +41,15 @@
 
 #include "am.h"
 #include <ctype.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <netdb.h>
 
 
-char *strnsave(str, len)
-Const char *str;
-int len;
+char *
+strnsave(const char *str, int len)
 {
-	char *sp = (char *) xmalloc(len+1);
+	char *sp = xmalloc(len+1);
 
 	bcopy(str, sp, len);
 	sp[len] = 0;
@@ -61,65 +57,56 @@ int len;
 	return sp;
 }
 
-char *strdup(s)
-Const char *s;
-{
-	return strnsave(s, strlen(s));
-}
-
 /*
  * Concatenate three strings and store in buffer pointed to
  * by p, making p large enough to hold the strings
  */
-char *str3cat(p, s1, s2, s3)
-char *p;
-char *s1;
-char *s2;
-char *s3;
+char *
+str3cat(char *p, char *s1, char *s2, char *s3)
 {
-	int l1 = strlen(s1);
-	int l2 = strlen(s2);
-	int l3 = strlen(s3);
-	p = (char *) xrealloc(p, l1 + l2 + l3 + 1);
+	size_t l1 = strlen(s1);
+	size_t l2 = strlen(s2);
+	size_t l3 = strlen(s3);
+
+	if (l1 > SIZE_MAX - l2 || l1 + l2 > SIZE_MAX - l3)
+		 xmallocfailure();
+	p = xreallocarray(p, l1 + l2 + l3 + 1, 1);
 	bcopy(s1, p, l1);
 	bcopy(s2, p + l1, l2);
 	bcopy(s3, p + l1 + l2, l3 + 1);
 	return p;
 }
 
-char *strealloc(p, s)
-char *p;
-char *s;
+char *
+strealloc(char *p, char *s)
 {
-	int len = strlen(s) + 1;
+	size_t len = strlen(s) + 1;
 
-	p = (char *) xrealloc((voidp) p, len);
+	if (len > SIZE_MAX - 1)
+		 xmallocfailure();
+	p = xreallocarray(p, len, 1);
 
-	strcpy(p, s);
-#ifdef DEBUG_MEM
-	malloc_verify();
-#endif /* DEBUG_MEM */
+	strlcpy(p, s, len);
 	return p;
 }
 
-char **strsplit P((char *s, int ch, int qc));
-char **strsplit(s, ch, qc)
-char *s;
-int ch;
-int qc;
+char **
+strsplit(char *s, int ch, int qc)
 {
 	char **ivec;
 	int ic = 0;
 	int done = 0;
 
-	ivec = (char **) xmalloc((ic+1)*sizeof(char *));
+	ivec = xreallocarray(NULL, ic + 1, sizeof *ivec);
 
 	while (!done) {
 		char *v;
 		/*
 		 * skip to split char
 		 */
-		while (*s && (ch == ' ' ? (isascii(*s) && isspace(*s)) : *s == ch))
+		while (*s && (ch == ' ' ?
+		    (isascii((unsigned char)*s) && isspace((unsigned char)*s)) :
+		    *s == ch))
 				*s++ = '\0';
 
 		/*
@@ -136,14 +123,16 @@ int qc;
 		/*
 		 * skip to split char
 		 */
-		while (*s && !(ch == ' ' ? (isascii(*s) && isspace(*s)) : *s == ch)) {
+		while (*s && !(ch == ' ' ?
+		    (isascii((unsigned char)*s) && isspace((unsigned char)*s)) :
+		    *s == ch)) {
 			if (*s++ == qc) {
 				/*
 				 * Skip past string.
 				 */
 				s++;
 				while (*s && *s != qc)
-				 	s++;
+					s++;
 				if (*s == qc)
 					s++;
 			}
@@ -157,7 +146,7 @@ int qc;
 		 * save string in new ivec slot
 		 */
 		ivec[ic++] = v;
-		ivec = (char **) xrealloc((voidp) ivec, (ic+1)*sizeof(char *));
+		ivec = xreallocarray(ivec, ic + 1, sizeof *ivec);
 #ifdef DEBUG
 		Debug(D_STR)
 			plog(XLOG_DEBUG, "strsplit saved \"%s\"", v);
@@ -185,9 +174,8 @@ int qc;
  * to skip from right to left and do partial
  * matches along the way -- ie more expensive.
  */
-static void domain_strip P((char *otherdom, char *localdom));
-static void domain_strip(otherdom, localdom)
-char *otherdom, *localdom;
+static void
+domain_strip(char *otherdom, char *localdom)
 {
 #ifdef PARTIAL_DOMAINS
         char *p1 = otherdom-1;
@@ -214,9 +202,8 @@ char *otherdom, *localdom;
 /*
  * Normalize a host name
  */
-void host_normalize P((char **chp));
-void host_normalize(chp)
-char **chp;
+void
+host_normalize(char **chp)
 {
 	/*
 	 * Normalize hosts is used to resolve host name aliases
@@ -242,13 +229,11 @@ char **chp;
  * addr is in network byte order.
  * sizeof(buf) needs to be at least 16.
  */
-char *inet_dquad P((char *buf, unsigned long addr));
-char *inet_dquad(buf, addr)
-char *buf;
-unsigned long addr;
+char *
+inet_dquad(char *buf, size_t buflen, u_int32_t addr)
 {
 	addr = ntohl(addr);
-	sprintf(buf, "%d.%d.%d.%d",
+	snprintf(buf, buflen, "%d.%d.%d.%d",
 		((addr >> 24) & 0xff),
 		((addr >> 16) & 0xff),
 		((addr >> 8) & 0xff),
@@ -261,9 +246,8 @@ unsigned long addr;
  * problems with macro expansions.
  */
 static char invalid_keys[] = "\"'!;@ \t\n";
-int valid_key P((char *key));
-int valid_key(key)
-char *key;
+int
+valid_key(char *key)
 {
 	while (*key)
 		if (strchr(invalid_keys, *key++))
@@ -271,9 +255,8 @@ char *key;
 	return TRUE;
 }
 
-void going_down P((int rc));
-void going_down(rc)
-int rc;
+void
+going_down(int rc)
 {
 	if (foreground) {
 		if (amd_state != Start) {
@@ -294,34 +277,23 @@ int rc;
 }
 
 
-int bind_resv_port P((int so, u_short *pp));
-int bind_resv_port(so, pp)
-int so;
-u_short *pp;
+int
+bind_resv_port(int so, u_short *pp)
 {
 	struct sockaddr_in sin;
 	int rc;
-	unsigned short port;
 
-	bzero((voidp) &sin, sizeof(sin));
+	bzero(&sin, sizeof(sin));
 	sin.sin_family = AF_INET;
 
-	port = IPPORT_RESERVED;
-
-	do {
-		--port;
-		sin.sin_port = htons(port);
-		rc = bind(so, (struct sockaddr *) &sin, sizeof(sin));
-	} while (rc < 0 && port > IPPORT_RESERVED/2);
-
+	rc = bindresvport(so, &sin);
 	if (pp && rc == 0)
-		*pp = port;
+		*pp = ntohs(sin.sin_port);
 	return rc;
 }
 
-void forcibly_timeout_mp P((am_node *mp));
-void forcibly_timeout_mp(mp)
-am_node *mp;
+void
+forcibly_timeout_mp(am_node *mp)
 {
 	mntfs *mf = mp->am_mnt;
 	/*
@@ -339,9 +311,8 @@ am_node *mp;
 	}
 }
 
-void mf_mounted P((mntfs *mf));
-void mf_mounted(mf)
-mntfs *mf;
+void
+mf_mounted(mntfs *mf)
 {
 	int quoted;
 	int wasmounted = mf->mf_flags & MFF_MOUNTED;
@@ -376,9 +347,8 @@ mntfs *mf;
 		mf->mf_ops->fs_type, mf->mf_mount);
 }
 
-void am_mounted P((am_node *mp));
-void am_mounted(mp)
-am_node *mp;
+void
+am_mounted(am_node *mp)
 {
 	mntfs *mf = mp->am_mnt;
 
@@ -433,9 +403,8 @@ am_node *mp;
 	amd_stats.d_mok++;
 }
 
-int mount_node P((am_node *mp));
-int mount_node(mp)
-am_node *mp;
+int
+mount_node(am_node *mp)
 {
 	mntfs *mf = mp->am_mnt;
 	int error;
@@ -453,9 +422,8 @@ am_node *mp;
 	return error;
 }
 
-void am_unmounted P((am_node *mp));
-void am_unmounted(mp)
-am_node *mp;
+void
+am_unmounted(am_node *mp)
 {
 	mntfs *mf = mp->am_mnt;
 
@@ -481,17 +449,15 @@ am_node *mp;
 	free_map(mp);
 }
 
-int auto_fmount P((am_node *mp));
-int auto_fmount(mp)
-am_node *mp;
+int
+auto_fmount(am_node *mp)
 {
 	mntfs *mf = mp->am_mnt;
 	return (*mf->mf_ops->fmount_fs)(mf);
 }
 
-int auto_fumount P((am_node *mp));
-int auto_fumount(mp)
-am_node *mp;
+int
+auto_fumount(am_node *mp)
 {
 	mntfs *mf = mp->am_mnt;
 	return (*mf->mf_ops->fumount_fs)(mf);
@@ -502,10 +468,10 @@ am_node *mp;
  *
  * TODO: Need a better strategy for handling errors
  */
-static int dofork(P_void);
-static int dofork()
+static pid_t
+dofork(void)
 {
-	int pid;
+	pid_t pid;
 top:
 	pid = fork();
 
@@ -522,10 +488,10 @@ top:
 	return pid;
 }
 
-int background(P_void);
-int background()
+pid_t
+background(void)
 {
-	int pid = dofork();
+	pid_t pid = dofork();
 	if (pid == 0) {
 #ifdef DEBUG
 		dlog("backgrounded");
@@ -539,10 +505,8 @@ int background()
 /*
  * Make all the directories in the path.
  */
-int mkdirs P((char *path, int mode));
-int mkdirs(path, mode)
-char *path;
-int mode;
+int
+mkdirs(char *path, int mode)
 {
 	/*
 	 * take a copy in case path is in readonly store
@@ -559,7 +523,7 @@ int mode;
 	 * This assumes we are root so that we can do mkdir in a
 	 * mode 555 directory...
 	 */
-	while (sp = strchr(sp+1, '/')) {
+	while ((sp = strchr(sp+1, '/'))) {
 		*sp = '\0';
 		if (mkdir(p2, mode) < 0) {
 			error_so_far = errno;
@@ -579,22 +543,6 @@ int mode;
 #endif
 	}
 
-#ifdef SUNOS4_WORKAROUND
-	/*
-	 * Do a sync - if we do rmdirs() immediately
-	 * and then the system crashes it leaves
-	 * the filesystem in a state that fsck -p
-	 * can't fix.  (Observed more than once on
-	 * SunOS 4 ...)
-	 *
-	 * The problem was caused by a bug somewhere
-	 * in the UFS code which has since been fixed
-	 * (at least at Berkeley).
-	 *
-	 * Attempted workaround - XXX.
-	 */
-	sync();
-#endif /* SUNOS4_WORKAROUND */
 
 	free(p2);
 
@@ -608,9 +556,8 @@ int mode;
  * been created by Amd (not mode dr-x) or an rmdir
  * fails for any reason.
  */
-void rmdirs P((char *dir));
-void rmdirs(dir)
-char *dir;
+void
+rmdirs(char *dir)
 {
 	char *xdp = strdup(dir);
 	char *dp;

@@ -1,7 +1,7 @@
 #
 # Example configuration file.
 #
-# See unbound.conf(5) man page, version 1.9.3.
+# See unbound.conf(5) man page, version 1.9.4.
 #
 # this is a comment.
 
@@ -492,7 +492,7 @@ server:
 	# auto-trust-anchor-file: "@UNBOUND_ROOTKEY_FILE@"
 
 	# trust anchor signaling sends a RFC8145 key tag query after priming.
-	# trust-anchor-signaling: yes
+	# trust-anchor-signaling: no
 
 	# Root key trust anchor sentinel (draft-ietf-dnsop-kskroll-sentinel)
 	# root-key-sentinel: yes

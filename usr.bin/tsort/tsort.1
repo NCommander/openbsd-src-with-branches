@@ -1,4 +1,5 @@
-.\"	$NetBSD: tsort.1,v 1.5 1994/12/07 01:06:24 jtc Exp $
+.\"	$OpenBSD: tsort.1,v 1.23 2012/03/29 22:04:28 jmc Exp $
+.\"	$NetBSD: tsort.1,v 1.6 1996/01/17 20:37:49 mycroft Exp $
 .\"
 .\" Copyright (c) 1990, 1993, 1994
 .\"	The Regents of the University of California.  All rights reserved.
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,7 +33,7 @@
 .\"
 .\"     @(#)tsort.1	8.3 (Berkeley) 4/1/94
 .\"
-.Dd April 1, 1994
+.Dd $Mdocdate: March 29 2012 $
 .Dt TSORT 1
 .Os
 .Sh NAME
@@ -44,19 +41,24 @@
 .Nd topological sort of a directed graph
 .Sh SYNOPSIS
 .Nm tsort
-.Op Fl l
+.Op Fl flqrvw
+.Op Fl h Ar file
 .Op Ar file
 .Sh DESCRIPTION
-.Nm Tsort
+.Nm tsort
 takes a list of pairs of node names representing directed arcs in
 a graph and prints the nodes in topological order on standard output.
+That is, the input describes a partial ordering relation, from which
+.Nm
+computes a total order compatible with this partial ordering.
+.Pp
 Input is taken from the named
 .Ar file ,
 or from standard input if no file
 is given.
 .Pp
 Node names in the input are separated by white space and there must
-be an even number of node pairs.
+be an even number of node names.
 .Pp
 Presence of a node in a graph can be represented by an arc from the node
 to itself.
@@ -68,12 +70,91 @@ Cycles are reported on standard error.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl l 
+.It Fl f
+Resolve ambiguities by selecting nodes based on the order of appearance
+of the first component of the pairs.
+.It Fl h Ar file
+Use
+.Ar file ,
+which holds an ordered list of nodes, to resolve ambiguities.
+In case of duplicates, the first entry is chosen.
+.It Fl l
 Search for and display the longest cycle.
-Can take a very long time.
+Can take a very long time, as it may need to solve an NP-complete problem.
+.It Fl q
+Do not display informational messages about cycles.
+This is primarily intended for building libraries, where optimal ordering
+is not critical, and cycles occur often.
+.It Fl r
+Reverse the ordering relation.
+.It Fl v
+Inform on the exact number of edges broken while breaking cycles.
+If a hints file was used, inform on seen nodes absent from that file.
+.It Fl w
+Exit with exit code the number of cycles
+.Nm
+had to break.
 .El
+.Sh EXIT STATUS
+.Ex -std tsort
+.Sh EXAMPLES
+Faced with the input:
+.Bd -literal -offset indent
+a b
+b c
+b d
+d f
+c e
+.Ed
+.Pp
+.Nm
+outputs:
+.Bd -literal -offset indent
+a
+b
+c
+e
+d
+f
+.Ed
+.Pp
+which is one total ordering compatible with the individual relations.
+There is no unicity, another compatible total ordering would be:
+.Bd -literal -offset indent
+a
+b
+c
+d
+e
+f
+.Ed
+.Pp
+.Nm
+is commonly used to analyze dependencies and find a correct build order
+in a static way, whereas
+.Xr make 1
+accomplishes the same task in a dynamic way.
 .Sh SEE ALSO
-.Xr ar 1
+.Xr ar 1 ,
+.Xr lorder 1 ,
+.Xr make 1
+.Rs
+.%A Donald E. Knuth
+.%B The Art of Computer Programming
+.%V Vol. 1
+.%P pp. 258\(en268
+.%D 1973
+.Re
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
+.Pp
+The flags
+.Op Fl fhlqrvw
+are extensions to that specification.
 .Sh HISTORY
 A
 .Nm
@@ -81,5 +162,6 @@ command appeared in
 .At v7 .
 This
 .Nm tsort
-command and manual page are derived from sources contributed to Berkeley by
-Michael Rendell of Memorial University of Newfoundland.
+command was completely rewritten by Marc Espie for
+.Ox ,
+to finally use the well-known optimal algorithms for topological sorting.

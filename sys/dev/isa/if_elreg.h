@@ -1,3 +1,4 @@
+/*	$OpenBSD: if_elreg.h,v 1.4 1994/10/27 04:17:29 cgd Exp $	*/
 /*	$NetBSD: if_elreg.h,v 1.4 1994/10/27 04:17:29 cgd Exp $	*/
 
 /*

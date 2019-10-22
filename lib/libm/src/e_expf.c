@@ -13,20 +13,12 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_expf.c,v 1.5 1995/05/10 20:45:05 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
 static const volatile float huge = 1.0e+30;
 
-#ifdef __STDC__
 static const float
-#else
-static float
-#endif
 one	= 1.0,
 halF[2]	= {0.5,-0.5,},
 twom100 = 7.8886090522e-31,      /* 2**-100=0x0d800000 */
@@ -43,12 +35,8 @@ P3   =  6.6137559770e-05, /* 0x388ab355 */
 P4   = -1.6533901999e-06, /* 0xb5ddea0e */
 P5   =  4.1381369442e-08; /* 0x3331bb4c */
 
-#ifdef __STDC__
-	float __ieee754_expf(float x)	/* default IEEE double exp */
-#else
-	float __ieee754_expf(x)	/* default IEEE double exp */
-	float x;
-#endif
+float
+expf(float x)	/* default IEEE double exp */
 {
 	float y,hi,lo,c,t;
 	int32_t k,xsb;
@@ -57,6 +45,7 @@ P5   =  4.1381369442e-08; /* 0x3331bb4c */
 	GET_FLOAT_WORD(hx,x);
 	xsb = (hx>>31)&1;		/* sign bit of x */
 	hx &= 0x7fffffff;		/* high word of |x| */
+	k = 0;
 
     /* filter out non-finite argument */
 	if(hx >= 0x42b17218) {			/* if |x|>=88.721... */
@@ -83,7 +72,6 @@ P5   =  4.1381369442e-08; /* 0x3331bb4c */
 	else if(hx < 0x31800000)  {	/* when |x|<2**-28 */
 	    if(huge+x>one) return one+x;/* trigger inexact */
 	}
-	else k = 0;
 
     /* x is now in primary range */
 	t  = x*x;
@@ -102,3 +90,4 @@ P5   =  4.1381369442e-08; /* 0x3331bb4c */
 	    return y*twom100;
 	}
 }
+DEF_STD(expf);

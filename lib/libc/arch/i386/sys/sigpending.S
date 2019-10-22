@@ -1,3 +1,4 @@
+/*	$OpenBSD: sigpending.S,v 1.4 2005/08/07 11:30:38 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,15 +29,7 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)sigpending.s	5.1 (Berkeley) 7/1/90
- *	$Id: sigpending.S,v 1.2 1993/10/21 02:19:38 jtc Exp $
  */
-
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$Id: sigpending.S,v 1.2 1993/10/21 02:19:38 jtc Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
 
 #include "SYS.h"
 
@@ -49,3 +38,4 @@ SYSCALL(sigpending)
 	movl	%eax,(%ecx)		# store old mask
 	xorl	%eax,%eax
 	ret
+SYSCALL_END(sigpending)

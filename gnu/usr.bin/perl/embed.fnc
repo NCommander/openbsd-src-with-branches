@@ -440,6 +440,7 @@ p	|bool|do_exec3	|NN const char *incmd|int fd|int do_report
 #endif
 #if defined(PERL_IN_DOIO_C)
 s	|void	|exec_failed	|NN const char *cmd|int fd|int do_report
+s	|bool	|argvout_final	|NN MAGIC *mg|NN IO *io|bool not_implicit
 #endif
 #if defined(HAS_MSG) || defined(HAS_SEM) || defined(HAS_SHM)
 : Defined in doio.c, used only in pp_sys.c
@@ -2793,9 +2794,11 @@ s	|bool	|isa_lookup	|NN HV *stash|NN const char * const name \
 #endif
 
 #if defined(PERL_IN_LOCALE_C)
+#  ifdef USE_LOCALE
 sn	|const char*|category_name |const int category
 s	|const char*|switch_category_locale_to_template|const int switch_category|const int template_category|NULLOK const char * template_locale
 s	|void	|restore_switched_locale|const int category|NULLOK const char * const original_locale
+#  endif
 #  ifdef HAS_NL_LANGINFO
 sn	|const char*|my_nl_langinfo|const nl_item item|bool toggle
 #  else

@@ -1,81 +1,34 @@
+/*	$OpenBSD: pathnames.h,v 1.22 2015/11/12 21:12:05 millert Exp $	*/
+
 /* Copyright 1993,1994 by Paul Vixie
- * All rights reserved
+ * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
  *
- * Distribute freely, except: don't remove my name from the source or
- * documentation (don't take credit for my work), mark your changes (don't
- * get me blamed for your possible bugs), don't alter or remove this
- * notice.  May be sold if buildable source is provided to buyer.  No
- * warrantee of any kind, express or implied, is included with this
- * software; use at your own risk, responsibility for damages (if any) to
- * anyone resulting from the use of this software rests entirely with the
- * user.
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * Send bug reports, bug fixes, enhancements, requests, flames, etc., and
- * I'll try to keep a version up to date.  I can be reached as follows:
- * Paul Vixie          <paul@vix.com>          uunet!decwrl!vixie!paul
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
- * $Id: pathnames.h,v 1.2 1994/01/13 21:59:27 jtc Exp $
- */
+#ifndef _PATHNAMES_H_
+#define _PATHNAMES_H_
 
-#if (defined(BSD)) && (BSD >= 199103) || defined(__linux) || defined(AIX)
-# include <paths.h>
-#endif /*BSD*/
+#include <paths.h>
 
-#ifndef CRONDIR
-			/* CRONDIR is where crond(8) and crontab(1) both chdir
-			 * to; SPOOL_DIR, ALLOW_FILE, DENY_FILE, and LOG_FILE
-			 * are all relative to this directory.
-			 */
-#define CRONDIR		"/var/cron"
-#endif
+#define	_PATH_AT_ALLOW		"/var/cron/at.allow"
+#define	_PATH_AT_DENY		"/var/cron/at.deny"
+#define	_PATH_AT_SPOOL		"/var/cron/atjobs"
+#define	_PATH_CRON_ALLOW	"/var/cron/cron.allow"
+#define	_PATH_CRON_DENY		"/var/cron/cron.deny"
+#define	_PATH_CRON_SOCK		"/var/run/cron.sock"
+#define	_PATH_CRON_SPOOL	"/var/cron/tabs"
+#define	_PATH_SYS_CRONTAB	"/etc/crontab"
 
-			/* SPOOLDIR is where the crontabs live.
-			 * This directory will have its modtime updated
-			 * whenever crontab(1) changes a crontab; this is
-			 * the signal for crond(8) to look at each individual
-			 * crontab file and reload those whose modtimes are
-			 * newer than they were last time around (or which
-			 * didn't exist last time around...)
-			 */
-#define SPOOL_DIR	"tabs"
-
-			/* undefining these turns off their features.  note
-			 * that ALLOW_FILE and DENY_FILE must both be defined
-			 * in order to enable the allow/deny code.  If neither
-			 * LOG_FILE or SYSLOG is defined, we don't log.  If
-			 * both are defined, we log both ways.
-			 */
-#define	ALLOW_FILE	"allow"		/*-*/
-#define DENY_FILE	"deny"		/*-*/
-/* #define LOG_FILE	"log"		/*-*/
-
-			/* where should the daemon stick its PID?
-			 */
-#ifdef _PATH_VARRUN
-# define PIDDIR	_PATH_VARRUN
-#else
-# define PIDDIR "/etc/"
-#endif
-#define PIDFILE		"%scron.pid"
-
-			/* 4.3BSD-style crontab */
-#define SYSCRONTAB	"/etc/crontab"
-
-			/* what editor to use if no EDITOR or VISUAL
-			 * environment variable specified.
-			 */
-#if defined(_PATH_VI)
-# define EDITOR _PATH_VI
-#else
-# define EDITOR "/usr/ucb/vi"
-#endif
-
-#ifndef _PATH_BSHELL
-# define _PATH_BSHELL "/bin/sh"
-#endif
-
-#ifndef _PATH_DEFPATH
-# define _PATH_DEFPATH "/usr/bin:/bin"
-#endif
+#endif /* _PATHNAMES_H_ */

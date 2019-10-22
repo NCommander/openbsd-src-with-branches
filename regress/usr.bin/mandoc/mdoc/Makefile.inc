@@ -1,0 +1,3 @@
+# $OpenBSD$
+
+.include "../Makefile.inc"

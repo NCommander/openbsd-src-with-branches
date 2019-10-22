@@ -1,10 +1,9 @@
-# $Id: Makefile,v 1.2 1994/12/22 12:30:58 cgd Exp $
+#	$OpenBSD: Makefile,v 1.6 1997/09/21 11:50:55 deraadt Exp $
 
 PROG= skeyinit
-BINOWN=root
-BINMODE=4555
-CFLAGS+= -I${.CURDIR}/../../lib/libskey
-DPADD=	${LIBCRYPT} ${LIBSKEY}
-LDADD=	-lcrypt -lskey
+BINGRP=auth
+BINMODE=2555
+DPADD=	${LIBSKEY}
+LDADD=	-lskey
 
 .include <bsd.prog.mk>

@@ -13,7 +13,7 @@
  */
 
 /*
- * This is my modest contributon to OpenSSL project (see
+ * This is my modest contribution to OpenSSL project (see
  * http://www.openssl.org/ for more information about it) and is
  * a drop-in UltraSPARC ISA replacement for crypto/bn/bn_asm.c
  * module. For updates see http://fy.chalmers.se/~appro/hpe/.
@@ -52,7 +52,7 @@
  *	# cd ../..
  *	# make; make test
  *
- * Q. V8plus achitecture? What kind of beast is that?
+ * Q. V8plus architecture? What kind of beast is that?
  * A. Well, it's rather a programming model than an architecture...
  *    It's actually v9-compliant, i.e. *any* UltraSPARC, CPU under
  *    special conditions, namely when kernel doesn't preserve upper
@@ -71,7 +71,7 @@
  *
  * Q. 64-bit registers under 32-bit kernels? Didn't you just say it
  *    doesn't work?
- * A. You can't adress *all* registers as 64-bit wide:-( The catch is
+ * A. You can't address *all* registers as 64-bit wide:-( The catch is
  *    that you actually may rely upon %o0-%o5 and %g1-%g4 being fully
  *    preserved if you're in a leaf function, i.e. such never calling
  *    any other functions. All functions in this module are leaf and

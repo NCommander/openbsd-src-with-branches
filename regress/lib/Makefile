@@ -1,8 +1,21 @@
-#	$NetBSD: Makefile,v 1.2 1995/04/20 22:38:24 cgd Exp $
+#	$OpenBSD: Makefile,v 1.20 2017/07/03 16:24:51 bluhm Exp $
 
-SUBDIR+= libc
-
-regress: _SUBDIRUSE
+SUBDIR+=	csu
+SUBDIR+=	libc
+SUBDIR+=	libcrypto
+SUBDIR+=	libedit
+SUBDIR+=	libevent
+SUBDIR+=	libexpat
+SUBDIR+=	libfuse
+SUBDIR+=	libm
+SUBDIR+=	libpthread
+SUBDIR+=	libradius
+SUBDIR+=	libskey
+SUBDIR+=	libsndio
+SUBDIR+=	libssl
+SUBDIR+=	libtls
+SUBDIR+=	libusbhid
+SUBDIR+=	libutil
 
 install:
 

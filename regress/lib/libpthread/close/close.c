@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_close.c,v 1.3 2000/10/04 06:03:10 d Exp $	*/
+/*	$OpenBSD: close.c,v 1.6 2011/10/01 11:00:38 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -34,22 +34,68 @@
 
 /*
  * Test the semantics of close() while a select() is happening.
- * Not a great test. You need the 'discard' service running in inetd for
- * this to work.
+ * Not a great test.
  */
 
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "test.h"
 
+#define	BUFSIZE	4096
+
 int fd;
 
-void* new_thread(void* arg)
+/*
+ * meat of inetd discard service -- ignore data
+ */
+static void
+discard(int s)
+{
+	char buffer[BUFSIZE];
+
+	while ((errno = 0, read(s, buffer, sizeof(buffer)) > 0) ||
+	    errno == EINTR)
+		;
+}
+
+/*
+ * Listen on localhost:TEST_PORT for a connection
+ */
+#define TEST_PORT	9876
+
+static void
+server(void)
+{
+	int	sock;
+	int	client;
+	int	client_addr_len;
+	struct sockaddr_in	serv_addr;
+	struct sockaddr		client_addr;
+
+	CHECKe(sock = socket(AF_INET, SOCK_STREAM, 0));
+	bzero((char *) &serv_addr, sizeof serv_addr);
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	serv_addr.sin_port = htons(TEST_PORT);
+	CHECKe(bind(sock, (struct sockaddr *) &serv_addr, sizeof serv_addr));
+	CHECKe(listen(sock,3));
+
+	client_addr_len = sizeof client_addr;
+	CHECKe(client = accept(sock, &client_addr, &client_addr_len ));
+	CHECKe(close(sock));
+	discard(client);
+	CHECKe(close(client));
+	exit(0);
+}
+
+static void *
+new_thread(void* arg)
 {
 	fd_set r;
 	int ret;
@@ -61,34 +107,48 @@ void* new_thread(void* arg)
 	printf("child: writing some garbage to fd %d\n", fd);
 	CHECKe(write(fd, garbage, sizeof garbage));
 	printf("child: calling select() with fd %d\n", fd);
-	CHECKe(ret = select(fd + 1, &r, NULL, NULL, NULL));
-	printf("child: select() returned %d\n", ret);
+	ASSERT((ret = select(fd + 1, &r, NULL, NULL, NULL)) == -1);
+	ASSERT(errno == EBADF);
+	printf("child: select() returned %d, errno %d = %s [correct]\n", ret,
+	       errno, strerror(errno));
 	return NULL;
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 	pthread_t thread;
 	pthread_attr_t attr;
 	struct sockaddr_in addr;
 	int ret;
 
+	/* fork and have the child open a listener */
+	signal(SIGCHLD, SIG_IGN);
+	switch (fork()) {
+	case 0:
+		server();
+		exit(0);
+	case -1:
+		exit(errno);
+	default:
+		sleep(2);
+	}
+
 	/* Open up a TCP connection to the local discard port */
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-	addr.sin_port = htons(9);	/* port 9/tcp is discard service */
+	addr.sin_port = htons(TEST_PORT);
 
 	CHECKe(fd = socket(AF_INET, SOCK_STREAM, 0));
-	printf("main: connecting to discard port with fd %d\n", fd);
+	printf("main: connecting to test port with fd %d\n", fd);
 	ret = connect(fd, (struct sockaddr *)&addr, sizeof addr);
 	if (ret == -1)
-		fprintf(stderr, "connect() failed: ensure that the discard port is enabled for inetd(8)\n");
+		fprintf(stderr, "connect() failed\n");
 	CHECKe(ret);
 	printf("main: connected on fd %d\n", fd);
 
 	CHECKr(pthread_attr_init(&attr));
-	CHECKe(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED));
+	CHECKr(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED));
 	printf("starting child thread\n");
 	CHECKr(pthread_create(&thread, &attr, new_thread, NULL));
 	sleep(1);

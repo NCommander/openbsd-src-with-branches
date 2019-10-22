@@ -2302,8 +2302,10 @@ Perl_my_popen_list(pTHX_ const char *mode, int n, SV **args)
 	    if (p[THAT] != (*mode == 'r'))	/* if dup2() didn't close it */
 		PerlLIO_close(p[THAT]);	/* close parent's end of _the_ pipe */
 	}
-	else
+	else {
+	    setfd_cloexec_or_inhexec_by_sysfdness(p[THIS]);
 	    PerlLIO_close(p[THAT]);	/* close parent's end of _the_ pipe */
+        }
 #if !defined(HAS_FCNTL) || !defined(F_SETFD)
 	/* No automatic close - do it by hand */
 #  ifndef NOFILE
@@ -2441,8 +2443,10 @@ Perl_my_popen(pTHX_ const char *cmd, const char *mode)
 	    if (p[THAT] != (*mode == 'r'))	/* if dup2() didn't close it */
 		PerlLIO_close(p[THAT]);
 	}
-	else
+	else {
+	    setfd_cloexec_or_inhexec_by_sysfdness(p[THIS]);
 	    PerlLIO_close(p[THAT]);
+	}
 #ifndef OS2
 	if (doexec) {
 #if !defined(HAS_FCNTL) || !defined(F_SETFD)
@@ -4421,6 +4425,9 @@ Perl_parse_unicode_opts(pTHX_ const char **popt)
 U32
 Perl_seed(pTHX)
 {
+#if defined(__OpenBSD__)
+	return arc4random();
+#else
     /*
      * This is really just a quick hack which grabs various garbage
      * values.  It really should be a real hash algorithm which
@@ -4489,6 +4496,7 @@ Perl_seed(pTHX)
     u += SEED_C5 * (U32)PTR2UV(&when);
 #endif
     return u;
+#endif
 }
 
 void

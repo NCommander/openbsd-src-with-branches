@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD: output-bgpd.c,v 1.10 2019/08/20 16:01:52 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,7 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include "config.h"
 
 #include <assert.h>
 #include <err.h>
@@ -26,65 +25,23 @@
 
 #include "extern.h"
 
-static int
-cmp(const void *p1, const void *p2)
-{
-	const char *a1 = *(const char **)p1, *a2 = *(const char **)p2;
-
-	return strcmp(a1, a2);
-}
-
 void
-output_bgpd(const struct roa **roas, size_t roasz,
-	int quiet, size_t *routes, size_t *unique)
+output_bgpd(FILE *out, struct vrp_tree *vrps)
 {
-	char	  buf1[64], buf2[32], linebuf[128];
-	char	**lines = NULL;
-	size_t	  i, j, k;
+	char		 buf1[64], buf2[32];
+	struct vrp	*v;
 
-	*routes = *unique = 0;
+	fprintf(out, "roa-set {\n");
 
-	for (i = 0; i < roasz; i++)
-		for (j = 0; j < roas[i]->ipsz; j++)
-			(*routes)++;
+	RB_FOREACH(v, vrp_tree, vrps) {
+		ip_addr_print(&v->addr, v->afi, buf1, sizeof(buf1));
+		if (v->maxlength > v->addr.prefixlen)
+			snprintf(buf2, sizeof(buf2), "maxlen %u ",
+			    v->maxlength);
+		else
+			buf2[0] = '\0';
+		fprintf(out, "\t%s %ssource-as %u\n", buf1, buf2, v->asid);
+	}
 
-	if ((lines = calloc(*routes, sizeof(char *))) == NULL)
-		err(EXIT_FAILURE, NULL);
-
-	for (i = k = 0; i < roasz; i++)
-		for (j = 0; j < roas[i]->ipsz; j++) {
-			ip_addr_print(&roas[i]->ips[j].addr,
-				roas[i]->ips[j].afi, buf1, sizeof(buf1));
-			if (roas[i]->ips[j].maxlength >
-			    (roas[i]->ips[j].addr.sz * 8 -
-			     roas[i]->ips[j].addr.unused))
-				snprintf(buf2, sizeof(buf2),
-					"maxlen %zu ",
-					roas[i]->ips[j].maxlength);
-			else
-				buf2[0] = '\0';
-			snprintf(linebuf, sizeof(linebuf),
-				"%s %ssource-as %" PRIu32,
-				buf1, buf2, roas[i]->asid);
-			if ((lines[k++] = strdup(linebuf)) == NULL)
-				err(EXIT_FAILURE, NULL);
-		}
-
-	assert(k == *routes);
-	qsort(lines, *routes, sizeof(char *), cmp);
-
-	if (!quiet)
-		puts("roa-set {");
-	for (i = 0; i < *routes; i++)
-		if (i == 0 || strcmp(lines[i], lines[i - 1])) {
-			if (!quiet)
-				printf("    %s\n", lines[i]);
-			(*unique)++;
-		}
-	if (!quiet)
-		puts("}");
-
-	for (i = 0; i < *routes; i++)
-		free(lines[i]);
-	free(lines);
+	fprintf(out, "}\n");
 }

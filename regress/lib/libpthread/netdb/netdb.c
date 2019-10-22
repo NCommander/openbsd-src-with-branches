@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_netdb.c,v 1.4 2000/01/06 06:54:43 d Exp $	*/
+/*	$OpenBSD: netdb.c,v 1.2 2001/09/20 16:43:15 todd Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -46,9 +46,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include "test.h"
 
-static void test_serv()
+static void
+test_serv(void)
 {
 	struct servent *serv;
 
@@ -56,7 +58,8 @@ static void test_serv()
 	printf("getservbyname -> port %d\n", ntohs(serv->s_port));
 }
 
-static void test_host()
+static void
+test_host(void)
 {
 	struct hostent *host;
 	struct in_addr addr;
@@ -66,7 +69,8 @@ static void test_host()
 	printf("gethostbyname -> %s\n", inet_ntoa(addr));
 }
 
-static void test_localhost()
+static void
+test_localhost(void)
 {
 	struct hostent *host;
 

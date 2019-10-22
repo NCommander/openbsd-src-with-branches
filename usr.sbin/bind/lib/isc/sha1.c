@@ -16,9 +16,7 @@
  */
 
 /* $ISC: sha1.c,v 1.14.18.2 2005/04/29 00:16:49 marka Exp $ */
-
-/*	$NetBSD: sha1.c,v 1.5 2000/01/22 22:19:14 mycroft Exp $	*/
-/*	$OpenBSD: sha1.c,v 1.9 1997/07/23 21:12:32 kstailey Exp $	*/
+/* $OpenBSD: sha1.c,v 1.1.1.3 2007/12/09 12:34:07 jakob Exp $ */
 
 /*! \file
  * SHA-1 in C

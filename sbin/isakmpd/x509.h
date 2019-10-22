@@ -1,7 +1,10 @@
-/*	$Id: x509.h,v 1.5 1998/08/21 13:47:54 provos Exp $	*/
+/* $OpenBSD: x509.h,v 1.21 2004/05/23 18:17:56 hshoexer Exp $	 */
+/* $EOM: x509.h,v 1.11 2000/09/28 12:53:27 niklas Exp $	 */
 
 /*
- * Copyright (c) 1998 Niels Provos.  All rights reserved.
+ * Copyright (c) 1998, 1999 Niels Provos.  All rights reserved.
+ * Copyright (c) 1999 Angelos D. Keromytis.  All rights reserved.
+ * Copyright (c) 2000, 2001 Niklas Hallqvist.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +14,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -36,63 +34,58 @@
 #ifndef _X509_H_
 #define _X509_H_
 
-#include "pkcs.h"		/* for struct rsa_public_key */
+#include "libcrypto.h"
+
+#define X509v3_RFC_NAME		1
+#define X509v3_DNS_NAME		2
+#define X509v3_IP_ADDR		7
 
 struct x509_attribval {
-  char *type;
-  char *val;
+	char           *type;
+	char           *val;
 };
 
 /*
- * The acceptable certification authority 
- * XXX we only support two names at the moment, as of ASN this can
- * be dynamic but we dont care for now.
+ * The acceptable certification authority.
+ * XXX We only support two names at the moment, as of ASN this can
+ * be dynamic but we don't care for now.
  */
-
 struct x509_aca {
-  struct x509_attribval name1;
-  struct x509_attribval name2;
+	struct x509_attribval name1;
+	struct x509_attribval name2;
 };
 
-struct exchange;
+struct X509;
+struct X509_STORE;
 
-struct x509_certificate {
-  u_int32_t version;
-  u_int32_t serialnumber;
-  char *signaturetype;
-  struct x509_attribval issuer1;	/* At the moment Country */
-  struct x509_attribval issuer2;	/* At the moment Organization  */
-  struct x509_attribval subject1;	/* At the moment Country */
-  struct x509_attribval subject2;	/* At the moment Organization  */
-  struct x509_attribval extension;	/* Raw Extension */
-  char *start;       		/* Certificate Validity Start and End */
-  char *end;
-  struct rsa_public_key key;
-};
+/* Functions provided by cert handler.  */
 
-int x509_certreq_validate (u_int8_t *, u_int32_t);
-void *x509_certreq_decode (u_int8_t *, u_int32_t);
-void x509_free_aca (void *);
-int x509_cert_obtain (struct exchange *, void *, u_int8_t **, u_int32_t *);
-int x509_cert_get_key (u_int8_t *, u_int32_t, void *);
-int x509_cert_get_subject (u_int8_t *, u_int32_t, u_int8_t **, u_int32_t *);
+int             x509_certreq_validate(u_int8_t *, u_int32_t);
+int             x509_certreq_decode(void **, u_int8_t *, u_int32_t);
+void            x509_cert_free(void *);
+void           *x509_cert_get(u_int8_t *, u_int32_t);
+int             x509_cert_get_key(void *, void *);
+int             x509_cert_get_subjects(void *, int *, u_int8_t ***, u_int32_t **);
+int             x509_cert_init(void);
+int             x509_crl_init(void);
+int             x509_cert_obtain(u_int8_t *, size_t, void *, u_int8_t **,
+		    u_int32_t *);
+int             x509_cert_validate(void *);
+void            x509_free_aca(void *);
+void           *x509_cert_dup(void *);
+void            x509_serialize(void *, u_int8_t **, u_int32_t *);
+char           *x509_printable(void *);
+void           *x509_from_printable(char *);
+int		x509_ca_count(void);
 
-void x509_get_attribval (struct norm_type *, struct x509_attribval *);
-void x509_set_attribval (struct norm_type *, struct x509_attribval *);
-void x509_free_attrbival (struct x509_attribval *);
+/* Misc. X509 certificate functions.  */
 
-int x509_validate_signed (u_int8_t *, u_int32_t, struct rsa_public_key *,
-			  u_int8_t **, u_int32_t *);
-int x509_create_signed (u_int8_t *, u_int32_t, struct rsa_private_key *,
-			u_int8_t **, u_int32_t *);
-int x509_decode_certificate (u_int8_t *, u_int32_t, struct x509_certificate *);
-int x509_encode_certificate (struct x509_certificate *, u_int8_t **,
-			     u_int32_t *);
-void x509_free_certificate (struct x509_certificate *);
+char           *x509_DN_string(u_int8_t *, size_t);
+int             x509_cert_insert(int, void *);
+int             x509_cert_subjectaltname(X509 * cert, u_char **, u_int *);
+X509           *x509_from_asn(u_char *, u_int);
+int             x509_generate_kn(int, X509 *);
+int             x509_read_from_dir(X509_STORE *, char *, int, int *);
+int             x509_read_crls_from_dir(X509_STORE *, char *);
 
-int x509_decode_cert_extension (u_int8_t *, u_int32_t, 
-				struct x509_certificate *);
-int x509_encode_cert_extension (struct x509_certificate *, u_int8_t **,
-				u_int32_t *);
-
-#endif /* _X509_H_ */
+#endif				/* _X509_H_ */

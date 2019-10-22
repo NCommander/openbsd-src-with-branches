@@ -1,0 +1,27 @@
+dnl	$OpenBSD: hardware,v 1.6 2018/08/15 06:31:58 jsg Exp $
+The following machines are targeted by OpenBSD/MACHINE:
+
+	Allwinner A64/H5
+		Pine64 Pine 64/64+
+		NanoPi A64
+		Orange Pi PC2
+	AMD Opteron A1100 (Seattle)
+		AMD Seattle Development Board
+		SoftIron OverDrive 1000
+		SoftIron OverDrive 3000
+	Amlogic G12A/B
+		Hardkernel ODROID-N2
+	Ampere eMAG
+		Lenovo ThinkSystem HR330A
+		Lenovo ThinkSystem HR350A
+	Broadcom BCM2837
+		Raspberry Pi 3
+	Marvell ARMADA 7K/8K
+		SolidRun/Marvell MACCHIATObin
+	Rockchip RK3328/RK3399
+		Pine64 ROCK64
+		Pine64 ROCKPro64
+		Firefly-RK3399
+		Theobroma Systems RK3399-Q7
+	Socionext SC2A11
+		Socionext SynQuacer-E Developerbox

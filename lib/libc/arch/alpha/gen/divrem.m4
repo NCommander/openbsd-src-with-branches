@@ -1,4 +1,5 @@
-/*	$NetBSD: divrem.m4,v 1.5 1995/09/30 03:09:07 cgd Exp $	*/
+/*	$OpenBSD: divrem.m4,v 1.4 2003/03/01 00:19:08 miod Exp $	*/
+/*	$NetBSD: divrem.m4,v 1.7 1996/10/17 03:08:04 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -54,18 +55,43 @@ define(CC, `t2')
 define(T_0, `t3')
 ifelse(S, `true', `define(NEG, `t4')')
 
-#include "DEFS.h"
+#include <machine/asm.h>
 
-LEAF(NAME, 0)					/* XXX */
+/*
+ * These functions use t11 as an input, which makes them incompatible with
+ * the secureplt calling sequence. The compiler knows about this, and will
+ * ask for a call through a got relocation. But this can only work if the
+ * linker omits creating a plt entry for the symbol. In order to achieve
+ * this, we need to declare it as `notype' instead of `function', which
+ * means that LEAF(NAME, 0) can't be used as it uses .ent which forces the
+ * `function' type.
+ */
+	.globl	NAME
+	.type	NAME, @notype
+	.usepv	NAME, no
+
+	.cfi_startproc
+	.cfi_return_column ra
+NAME:
+	MCOUNT
 	lda	sp, -64(sp)
+	.cfi_def_cfa_offset 64
 	stq	BIT, 0(sp)
+	.cfi_rel_offset BIT, 0
 	stq	I, 8(sp)
+	.cfi_rel_offset I, 8
 	stq	CC, 16(sp)
+	.cfi_rel_offset CC, 16
 	stq	T_0, 24(sp)
-ifelse(S, `true',
-`	stq	NEG, 32(sp)')
+	.cfi_rel_offset T_0, 24
+ifelse(S, `true',`dnl
+	stq	NEG, 32(sp)
+	.cfi_rel_offset NEG, 32
+')dnl
 	stq	A, 40(sp)
+	.cfi_rel_offset A, 40
 	stq	B, 48(sp)
+	.cfi_rel_offset B, 48
 	mov	zero, RESULT			/* Initialize result to zero */
 
 ifelse(S, `true',
@@ -112,7 +138,7 @@ ifelse(WORDSIZE, `32', `
 	/* kill the special cases. */
 	beq	B, Ldotrap			/* division by zero! */
 
-1:	cmpult	A, B, CC			/* A < B? */
+	cmpult	A, B, CC			/* A < B? */
 	/* RESULT is already zero, from above.  A is untouched. */
 	bne	CC, Lret_result
 
@@ -125,7 +151,7 @@ ifelse(WORDSIZE, `32', `
 	 * Find out how many bits of zeros are at the beginning of the divisor.
 	 */
 LBbits:
-	CONST(1, T_0)				/* I = 0; BIT = 1<<WORDSIZE-1 */
+	ldiq	T_0, 1				/* I = 0; BIT = 1<<WORDSIZE-1 */
 	mov	zero, I
 	sll	T_0, WORDSIZE-1, BIT
 LBloop:
@@ -138,7 +164,7 @@ LBloop:
 
 LAbits:
 	beq	I, Ldodiv			/* If I = 0, divide now.  */
-	CONST(1, T_0)				/* BIT = 1<<WORDSIZE-1 */
+	ldiq	T_0, 1				/* BIT = 1<<WORDSIZE-1 */
 	sll	T_0, WORDSIZE-1, BIT
 
 LAloop:
@@ -150,7 +176,7 @@ LAloop:
 
 Ldodiv:
 	sll	B, I, B				/* B <<= i */
-	CONST(1, T_0)
+	ldiq	T_0, 1
 	sll	T_0, I, BIT
 
 Ldivloop:
@@ -171,27 +197,41 @@ ifelse(OP, `div',
 ifelse(S, `true',
 `
 	/* Check to see if we should negate it. */
-	subqv	zero, RESULT, T_0
+	subq	zero, RESULT, T_0
 	cmovlbs	NEG, T_0, RESULT
 ')
 
 	ldq	BIT, 0(sp)
+	.cfi_restore BIT
 	ldq	I, 8(sp)
+	.cfi_restore I
 	ldq	CC, 16(sp)
+	.cfi_restore CC
 	ldq	T_0, 24(sp)
-ifelse(S, `true',
-`	ldq	NEG, 32(sp)')
+	.cfi_restore T_0
+ifelse(S, `true',`dnl
+	ldq	NEG, 32(sp)
+	.cfi_restore NEG
+')dnl
 	ldq	A, 40(sp)
+	.cfi_restore A
 	ldq	B, 48(sp)
+	.cfi_restore B
 	lda	sp, 64(sp)
+	.cfi_def_cfa_offset 0
 	ret	zero, (t9), 1
 
 Ldotrap:
-	CONST(-2, a0)			/* This is the signal to SIGFPE! */
+	ldiq	a0, -2			/* This is the signal to SIGFPE! */
 	call_pal PAL_gentrap
 ifelse(OP, `div',
 `', `	mov	zero, A			/* so that zero will be returned */
 ')
 	br	zero, Lret_result
 
-END(NAME)
+/*
+ * For the reasons stated above, we can not use END(NAME) either, as it
+ * expands to .end which requires a matching .ent.
+ */
+	.cfi_endproc
+	.size	NAME, . - NAME

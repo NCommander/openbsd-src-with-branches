@@ -1,0 +1,3 @@
+	$OpenBSD$
+
+These tests must be run as root, /mnt must be clean.

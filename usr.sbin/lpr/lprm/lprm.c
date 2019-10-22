@@ -1,3 +1,6 @@
+/*	$OpenBSD: lprm.c,v 1.20 2014/01/22 19:31:00 tobias Exp $	*/
+/*	$$NetBSD: lprm.c,v 1.9 1999/08/16 03:12:32 simonb Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -11,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,16 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1983, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-static char sccsid[] = "@(#)lprm.c	8.1 (Berkeley) 6/6/93";
-#endif /* not lint */
-
 /*
  * lprm - remove the current user's spool entry
  *
@@ -49,20 +38,24 @@ static char sccsid[] = "@(#)lprm.c	8.1 (Berkeley) 6/6/93";
  *
  * Using information in the lock file, lprm will kill the
  * currently active daemon (if necessary), remove the associated files,
- * and startup a new daemon.  Priviledged users may remove anyone's spool
+ * and startup a new daemon.  Privileged users may remove anyone's spool
  * entries, otherwise one can only remove their own.
  */
 
-#include <sys/param.h>
 
-#include <syslog.h>
+#include <ctype.h>
+#include <signal.h>
 #include <dirent.h>
+#include <err.h>
+#include <errno.h>
 #include <pwd.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
+#include <syslog.h>
+#include <unistd.h>
+#include <limits.h>
+
 #include "lp.h"
 #include "lp.local.h"
 
@@ -74,75 +67,94 @@ int	 requ[MAXREQUESTS];	/* job number of spool entries */
 int	 requests;		/* # of spool requests */
 char	*user[MAXUSERS];	/* users to process */
 int	 users;			/* # of users in user array */
-uid_t	 uid, euid;		/* real and effective user id's */
+volatile sig_atomic_t gotintr;	/* set when we receive SIGINT */
+static char luser[LOGIN_NAME_MAX];	/* buffer for person */
 
-static char	luser[16];	/* buffer for person */
-
-void usage __P((void));
+static __dead void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char **argv)
 {
-	register char *arg;
-	struct passwd *p;
+	struct passwd *pw;
+	char *cp;
+	long l;
+	int ch;
 
-	uid = getuid();
-	euid = geteuid();
-	seteuid(uid);	/* be safe */
-	name = argv[0];
+	/*
+	 * Simulate setuid daemon w/ PRIV_END called.
+	 * We don't want lpr to actually be setuid daemon since that
+	 * requires that the lpr binary be owned by user daemon, which
+	 * is potentially unsafe.
+	 */
+	if ((pw = getpwuid(DEFUID)) == NULL)
+		errx(1, "daemon uid (%u) not in password file", DEFUID);
+	effective_uid = pw->pw_uid;
+	real_uid = getuid();
+	effective_gid = pw->pw_gid;
+	real_gid = getgid();
+	setresgid(real_gid, real_gid, effective_gid);
+	setresuid(real_uid, real_uid, effective_uid);
+
 	gethostname(host, sizeof(host));
-	openlog("lpd", 0, LOG_LPR);
-	if ((p = getpwuid(getuid())) == NULL)
+	openlog("lprm", 0, LOG_LPR);
+	if ((pw = getpwuid(real_uid)) == NULL)
 		fatal("Who are you?");
-	if (strlen(p->pw_name) >= sizeof(luser))
+	if (strlen(pw->pw_name) >= sizeof(luser))
 		fatal("Your name is too long");
-	strcpy(luser, p->pw_name);
+	strlcpy(luser, pw->pw_name, sizeof(luser));
 	person = luser;
-	while (--argc) {
-		if ((arg = *++argv)[0] == '-')
-			switch (arg[1]) {
-			case 'P':
-				if (arg[2])
-					printer = &arg[2];
-				else if (argc > 1) {
-					argc--;
-					printer = *++argv;
-				}
-				break;
-			case '\0':
-				if (!users) {
-					users = -1;
-					break;
-				}
-			default:
-				usage();
-			}
-		else {
-			if (users < 0)
-				usage();
-			if (isdigit(arg[0])) {
-				if (requests >= MAXREQUESTS)
-					fatal("Too many requests");
-				requ[requests++] = atoi(arg);
-			} else {
-				if (users >= MAXUSERS)
-					fatal("Too many users");
-				user[users++] = arg;
-			}
+	while ((ch = getopt(argc, argv, "P:w:-")) != -1) {
+		switch (ch) {
+		case '-':
+			users = -1;
+			break;
+		case 'P':
+			printer = optarg;
+			break;
+		case 'w':
+			l = strtol(optarg, &cp, 10);
+			if (*cp != '\0' || l < 0 || l >= INT_MAX)
+				errx(1, "wait time must be positive integer: %s",
+				    optarg);
+			wait_time = (u_int)l;
+			if (wait_time < 30)
+				warnx("warning: wait time less than 30 seconds");
+			break;
+		default:
+			usage();
 		}
 	}
+	argc -= optind;
+	argv += optind;
+
 	if (printer == NULL && (printer = getenv("PRINTER")) == NULL)
 		printer = DEFLP;
+	if (users < 0 && argc != 0)
+		usage();
+	while (argc > 0) {
+		if (isdigit((unsigned char)*argv[0])) {
+			if (requests >= MAXREQUESTS)
+				fatal("Too many requests");
+			requ[requests++] = atoi(argv[0]);
+		} else {
+			if (users >= MAXUSERS)
+				fatal("Too many users");
+			user[users++] = argv[0];
+		}
+		argc--;
+		argv++;
+	}
 
 	rmjob();
 	exit(0);
 }
 
-void
-usage()
+static __dead void
+usage(void)
 {
-	fprintf(stderr, "usage: lprm [-] [-Pprinter] [[job #] [user] ...]\n");
+	extern char *__progname;
+
+	fprintf(stderr, "usage: %s [-] [-Pprinter] [[job# ...] [user ...]]\n",
+	    __progname);
 	exit(2);
 }

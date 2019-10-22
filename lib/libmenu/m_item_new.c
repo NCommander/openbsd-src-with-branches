@@ -1,31 +1,52 @@
+/* $OpenBSD$ */
+
+/****************************************************************************
+ * Copyright (c) 1998-2005,2006 Free Software Foundation, Inc.              *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
+
+/****************************************************************************
+ *   Author:  Juergen Pfeifer, 1995,1997                                    *
+ ****************************************************************************/
 
 /***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
-
-/***************************************************************************
-* Module menu_item_new                                                     *
+* Module m_item_new                                                        *
 * Create and destroy menu items                                            *
-* Set and get marker string for menu
+* Set and get marker string for menu                                       *
 ***************************************************************************/
 
 #include "menu.priv.h"
+
+#if USE_WIDEC_SUPPORT
+#if HAVE_WCTYPE_H
+#include <wctype.h>
+#endif
+#endif
+
+MODULE_ID("$Id: m_item_new.c,v 1.27 2006/12/17 19:47:09 tom Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
@@ -37,16 +58,44 @@
 |   Return Values :  TRUE     - if string is printable
 |                    FALSE    - if string contains non-printable characters
 +--------------------------------------------------------------------------*/
-static bool Is_Printable_String(const char *s)
+static bool
+Is_Printable_String(const char *s)
 {
+  int result = TRUE;
+
+#if USE_WIDEC_SUPPORT
+  int count = mbstowcs(0, s, 0);
+  wchar_t *temp = 0;
+
   assert(s);
-  while(*s)
+
+  if (count > 0
+      && (temp = typeCalloc(wchar_t, (2 + (unsigned)count))) != 0)
     {
-      if (!isprint((unsigned char)*s))
-	return FALSE;
+      int n;
+
+      mbstowcs(temp, s, (unsigned)count);
+      for (n = 0; n < count; ++n)
+	if (!iswprint((wint_t) temp[n]))
+	  {
+	    result = FALSE;
+	    break;
+	  }
+      free(temp);
+    }
+#else
+  assert(s);
+  while (*s)
+    {
+      if (!isprint(UChar(*s)))
+	{
+	  result = FALSE;
+	  break;
+	}
       s++;
     }
-  return TRUE;
+#endif
+  return result;
 }
 
 /*---------------------------------------------------------------------------
@@ -59,38 +108,46 @@ static bool Is_Printable_String(const char *s)
 |
 |   Return Values :  The item pointer or NULL if creation failed.
 +--------------------------------------------------------------------------*/
-ITEM *new_item(char *name, char *description)
+NCURSES_EXPORT(ITEM *)
+new_item(const char *name, const char *description)
 {
   ITEM *item;
-  
-  if ( !name || (*name == '\0') || !Is_Printable_String(name) )
+
+  T((T_CALLED("new_item(\"%s\", \"%s\")"),
+     name ? name : "",
+     description ? description : ""));
+
+  if (!name || (*name == '\0') || !Is_Printable_String(name))
     {
-      item = (ITEM *)0;
-      SET_ERROR( E_BAD_ARGUMENT );
+      item = (ITEM *) 0;
+      SET_ERROR(E_BAD_ARGUMENT);
     }
   else
     {
-      item = (ITEM *)calloc(1,sizeof(ITEM));
+      item = (ITEM *) calloc(1, sizeof(ITEM));
       if (item)
 	{
-	  *item  = _nc_Default_Item; /* hope we have struct assignment */
-	  
-	  item->name.str 	   = name;
-	  item->name.length	   = strlen(name);
-	  
-	  item->description.str    = description;
-	  if (description && Is_Printable_String(description))
-	    item->description.length = strlen(description);
+	  *item = _nc_Default_Item;	/* hope we have struct assignment */
+
+	  item->name.length = strlen(name);
+	  item->name.str = name;
+
+	  if (description && (*description != '\0') &&
+	      Is_Printable_String(description))
+	    {
+	      item->description.length = strlen(description);
+	      item->description.str = description;
+	    }
 	  else
 	    {
 	      item->description.length = 0;
-	      item->description.str    = (char *)0;
+	      item->description.str = (char *)0;
 	    }
 	}
       else
-	SET_ERROR( E_SYSTEM_ERROR );
-    }  
-  return(item);
+	SET_ERROR(E_SYSTEM_ERROR);
+    }
+  returnItem(item);
 }
 
 /*---------------------------------------------------------------------------
@@ -104,21 +161,25 @@ ITEM *new_item(char *name, char *description)
 |                    E_BAD_ARGUMENT    - invalid value has been passed
 |                    E_CONNECTED       - item is still connected to a menu    
 +--------------------------------------------------------------------------*/
-int free_item(ITEM * item)
+NCURSES_EXPORT(int)
+free_item(ITEM * item)
 {
+  T((T_CALLED("free_item(%p)"), item));
+
   if (!item)
-    RETURN( E_BAD_ARGUMENT );
+    RETURN(E_BAD_ARGUMENT);
 
   if (item->imenu)
-    RETURN( E_CONNECTED );
-  
+    RETURN(E_CONNECTED);
+
   free(item);
-  RETURN( E_OK );
+
+  RETURN(E_OK);
 }
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
-|   Function      :  int set_menu_mark( MENU *menu, char *mark )
+|   Function      :  int set_menu_mark( MENU *menu, const char *mark )
 |   
 |   Description   :  Set the mark string used to indicate the current
 |                    item (single-valued menu) or the selected items
@@ -131,43 +192,68 @@ int free_item(ITEM * item)
 |
 |   Return Values :  E_OK               - success
 |                    E_BAD_ARGUMENT     - an invalid value has been passed
+|                    E_SYSTEM_ERROR     - no memory to store mark
 +--------------------------------------------------------------------------*/
-int set_menu_mark(MENU * menu, char * mark)
+NCURSES_EXPORT(int)
+set_menu_mark(MENU * menu, const char *mark)
 {
-  int l;
-  
-  if ( mark && *mark && Is_Printable_String(mark) )
+  unsigned l;
+
+  T((T_CALLED("set_menu_mark(%p,%s)"), menu, _nc_visbuf(mark)));
+
+  if (mark && (*mark != '\0') && Is_Printable_String(mark))
     l = strlen(mark);
   else
     l = 0;
-  
-  if ( menu )
+
+  if (menu)
     {
+      char *old_mark = menu->mark;
+      unsigned short old_status = menu->status;
+
       if (menu->status & _POSTED)
 	{
 	  /* If the menu is already posted, the geometry is fixed. Then
 	     we can only accept a mark with exactly the same length */
-	  if (menu->marklen != l) 
+	  if (menu->marklen != (int)l)
 	    RETURN(E_BAD_ARGUMENT);
-	}	
-      menu->mark    = l ? mark : (char *)0;
+	}
       menu->marklen = l;
-      
+      if (l)
+	{
+	  menu->mark = (char *)malloc(l + 1);
+	  if (menu->mark)
+	    {
+	      strlcpy(menu->mark, mark, l+1);
+	      if (menu != &_nc_Default_Menu)
+		menu->status |= _MARK_ALLOCATED;
+	    }
+	  else
+	    {
+	      menu->mark = old_mark;
+	      RETURN(E_SYSTEM_ERROR);
+	    }
+	}
+      else
+	menu->mark = (char *)0;
+
+      if ((old_status & _MARK_ALLOCATED) && old_mark)
+	free(old_mark);
+
       if (menu->status & _POSTED)
 	{
-	  _nc_Draw_Menu( menu );
-	  _nc_Show_Menu( menu );
+	  _nc_Draw_Menu(menu);
+	  _nc_Show_Menu(menu);
 	}
       else
 	{
 	  /* Recalculate the geometry */
-	  _nc_Calculate_Item_Length_and_Width( menu );			
+	  _nc_Calculate_Item_Length_and_Width(menu);
 	}
     }
   else
     {
-      _nc_Default_Menu.mark    = l ? mark : (char *)0;
-      _nc_Default_Menu.marklen = l;
+      returnCode(set_menu_mark(&_nc_Default_Menu, mark));
     }
   RETURN(E_OK);
 }
@@ -180,9 +266,11 @@ int set_menu_mark(MENU * menu, char * mark)
 |
 |   Return Values :  The marker string pointer or NULL if no marker defined
 +--------------------------------------------------------------------------*/
-char *menu_mark(const MENU * menu)
+NCURSES_EXPORT(const char *)
+menu_mark(const MENU * menu)
 {
-  return Normalize_Menu( menu )->mark;
+  T((T_CALLED("menu_mark(%p)"), menu));
+  returnPtr(Normalize_Menu(menu)->mark);
 }
 
 /* m_item_new.c */

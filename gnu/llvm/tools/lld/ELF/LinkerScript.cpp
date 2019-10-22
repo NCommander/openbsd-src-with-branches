@@ -771,13 +771,13 @@ void LinkerScript::assignOffsets(OutputSection *Sec) {
   if (Ctx->MemRegion)
     Dot = Ctx->MemRegion->CurPos;
 
-  switchTo(Sec);
-
   if (Sec->LMAExpr)
     Ctx->LMAOffset = Sec->LMAExpr().getValue() - Dot;
 
   if (MemoryRegion *MR = Sec->LMARegion)
     Ctx->LMAOffset = MR->CurPos - Dot;
+
+  switchTo(Sec);
 
   // If neither AT nor AT> is specified for an allocatable section, the linker
   // will set the LMA such that the difference between VMA and LMA for the

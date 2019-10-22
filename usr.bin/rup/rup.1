@@ -1,4 +1,4 @@
-.\" -*- nroff -*-
+.\"	$OpenBSD: rup.1,v 1.13 2007/05/31 19:20:15 jmc Exp $
 .\"
 .\" Copyright (c) 1985, 1991 The Regents of the University of California.
 .\" All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,33 +27,32 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: rup.1,v 1.9 1994/01/11 18:29:44 jtc Exp $
 .\"
-.Dd June 7, 1993
+.Dd $Mdocdate: May 31 2007 $
 .Dt RUP 1
-.Os BSD 4.3
+.Os
 .Sh NAME
-.Nm rup 
+.Nm rup
 .Nd remote status display
 .Sh SYNOPSIS
-.Nm rup 
+.Nm rup
 .Op Fl dhlt
 .Op Ar host ...
 .Sh DESCRIPTION
-.Nm rup
+.Nm
 displays a summary of the current system status of a particular
-.Em host 
+.Ar host
 or all hosts on the local network.
 The output shows the current time of day, how long the system has
 been up,
 and the load averages.
 The load average numbers give the number of jobs in the run queue
-averaged over 1, 5 and 15 minutes.
+averaged over 1, 5, and 15 minutes.
 .Pp
-The following options are available:
-.Bl -tag -width indent
+The options are as follows:
+.Bl -tag -width Ds
 .It Fl d
-For each host, report what it's local time is.
+For each host, report what its local time is.
 This is useful for checking time synchronization on a network.
 .It Fl h
 Sort the display alphabetically by host name.
@@ -71,37 +66,36 @@ The
 .Xr rpc.rstatd 8
 daemon must be running on the remote host for this command to
 work.
-.Nm rup
-uses an RPC protocol defined in /usr/include/rpcsvc/rstat.x.
-.Sh EXAMPLE
-.Bd -unfilled -offset indent -compact
-example% rup otherhost
+.Nm
+uses an RPC protocol defined in
+.Pa /usr/include/rpcsvc/rstat.x .
+.Sh EXAMPLES
+.Bd -literal -offset indent
+$ rup otherhost
 otherhost      up 6 days, 16:45,  load average: 0.20, 0.23, 0.18
-example%
 .Ed
 .Sh DIAGNOSTICS
-.Bl -tag -width indent
+.Bl -diag
 .It rup: RPC: Program not registered
 The
 .Xr rpc.rstatd 8
 daemon has not been started on the remote host.
 .It rup: RPC: Timed out
-A communication error occurred.  Either the network is
-excessively congested, or the
+A communication error occurred.
+Either the network is excessively congested, or the
 .Xr rpc.rstatd 8
 daemon has terminated on the remote host.
 .It rup: RPC: Port mapper failure - RPC: Timed out
 The remote host is not running the portmapper (see
-.Xr portmap 8 ),
-and cannot accommodate any RPC-based services.  The host may be down.
+.Xr portmap 8 ) ,
+and cannot accommodate any RPC-based services.
+The host may be down.
 .El
 .Sh SEE ALSO
-.Xr ruptime 1 ,
 .Xr portmap 8 ,
 .Xr rpc.rstatd 8
 .Sh HISTORY
 The
-.Nm rup
+.Nm
 command
-appeared in
-.Tn SunOS .
+appeared in SunOS.

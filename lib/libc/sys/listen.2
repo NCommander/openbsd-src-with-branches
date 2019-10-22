@@ -1,4 +1,5 @@
-.\"	$NetBSD: listen.2,v 1.6 1995/02/27 12:34:05 cgd Exp $
+.\"	$OpenBSD: listen.2,v 1.14 2014/12/10 19:19:00 schwarze Exp $
+.\"	$NetBSD: listen.2,v 1.7 1996/02/16 20:38:45 phil Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,14 +30,14 @@
 .\"
 .\"     @(#)listen.2	8.2 (Berkeley) 12/11/93
 .\"
-.Dd December 11, 1993
+.Dd $Mdocdate: December 10 2014 $
 .Dt LISTEN 2
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm listen
 .Nd listen for connections on a socket
 .Sh SYNOPSIS
-.Fd #include <sys/socket.h>
+.In sys/socket.h
 .Ft int
 .Fn listen "int s" "int backlog"
 .Sh DESCRIPTION
@@ -58,7 +55,7 @@ The
 call applies only to sockets of type
 .Dv SOCK_STREAM
 or
-.Dv SOCK_SEQPACKET.
+.Dv SOCK_SEQPACKET .
 .Pp
 The
 .Fa backlog
@@ -71,9 +68,9 @@ receive an error with an indication of
 or, if the underlying protocol supports retransmission,
 the request may be ignored so that retries may succeed.
 .Sh RETURN VALUES
-A 0 return value indicates success; -1 indicates an error.
+.Rv -std
 .Sh ERRORS
-.Fn Listen
+.Fn listen
 will fail if:
 .Bl -tag -width Er
 .It Bq Er EBADF
@@ -87,17 +84,26 @@ is not a socket.
 .It Bq Er EOPNOTSUPP
 The socket is not of a type that supports the operation
 .Fn listen .
+.It Bq Er EINVAL
+The socket is already connected.
 .El
 .Sh SEE ALSO
 .Xr accept 2 ,
 .Xr connect 2 ,
-.Xr socket 2
-.Sh BUGS
+.Xr socket 2 ,
+.Xr sysctl 8
+.Sh STANDARDS
 The
-.Fa backlog
-is currently limited (silently) to 5.
+.Fn listen
+function conforms to
+.St -p1003.1-2008 .
 .Sh HISTORY
 The
 .Fn listen
-function call appeared in
-.Bx 4.2 .
+system call first appeared in
+.Bx 4.1c .
+.Sh BUGS
+The
+.Fa backlog
+is currently limited (silently) to the value of the kern.somaxconn
+sysctl, which defaults to 128.

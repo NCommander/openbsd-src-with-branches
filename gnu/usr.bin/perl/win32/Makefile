@@ -38,7 +38,7 @@ INST_TOP	= $(INST_DRV)\perl
 # versioned installation can be obtained by setting INST_TOP above to a
 # path that includes an arbitrary version string.
 #
-#INST_VER	= \5.28.1
+#INST_VER	= \5.28.2
 
 #
 # Comment this out if you DON'T want your perl installation to have
@@ -551,6 +551,15 @@ DEFINES		= $(DEFINES) -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
 # Likewise for deprecated Winsock APIs in VC++ 14.0 onwards for now.
 !IF "$(CCTYPE)" == "MSVC140" || "$(CCTYPE)" == "MSVC141"
 DEFINES		= $(DEFINES) -D_WINSOCK_DEPRECATED_NO_WARNINGS
+!ENDIF
+
+# The Windows Server 2003 SP1 SDK compiler only defines _configthreadlocale() if
+# _MT is defined, i.e. when using /MT (the LIBCMT.lib version of the CRT), which
+# the perl build doesn't use. We therefore specify NO_THREAD_SAFE_LOCALE so that
+# perl.h doesn't set USE_THREAD_SAFE_LOCALE, which it otherwise would do since
+# _MSC_VER is 1400 for this compiler (as per MSVC80).
+!IF "$(CCTYPE)" == "SDK2003SP1"
+DEFINES		= $(DEFINES) -DNO_THREAD_SAFE_LOCALE
 !ENDIF
 
 # In VS 2005 (VC++ 8.0) Microsoft changes time_t from 32-bit to
@@ -1282,7 +1291,7 @@ utils: $(PERLEXE) ..\utils\Makefile
 	copy ..\README.tw       ..\pod\perltw.pod
 	copy ..\README.vos      ..\pod\perlvos.pod
 	copy ..\README.win32    ..\pod\perlwin32.pod
-	copy ..\pod\perldelta.pod ..\pod\perl5281delta.pod
+	copy ..\pod\perldelta.pod ..\pod\perl5282delta.pod
 	cd ..\win32
 	$(PERLEXE) $(PL2BAT) $(UTILS)
 	$(MINIPERL) -I..\lib ..\autodoc.pl ..
@@ -1356,6 +1365,7 @@ distclean: realclean
 	-if exist $(LIBDIR)\MIME rmdir /s /q $(LIBDIR)\MIME
 	-if exist $(LIBDIR)\Module rmdir /s /q $(LIBDIR)\Module
 	-if exist $(LIBDIR)\Net\FTP rmdir /s /q $(LIBDIR)\Net\FTP
+	-if exist $(LIBDIR)\OpenBSD rmdir /s /q $(LIBDIR)\OpenBSD
 	-if exist $(LIBDIR)\Params rmdir /s /q $(LIBDIR)\Params
 	-if exist $(LIBDIR)\Parse rmdir /s /q $(LIBDIR)\Parse
 	-if exist $(LIBDIR)\Perl rmdir /s /q $(LIBDIR)\Perl
@@ -1382,7 +1392,7 @@ distclean: realclean
 	-if exist $(LIBDIR)\Win32API rmdir /s /q $(LIBDIR)\Win32API
 	-if exist $(LIBDIR)\XS rmdir /s /q $(LIBDIR)\XS
 	-cd $(PODDIR) && del /f *.html *.bat roffitall \
-	    perl5281delta.pod perlaix.pod perlamiga.pod perlandroid.pod \
+	    perl5282delta.pod perlaix.pod perlamiga.pod perlandroid.pod \
 	    perlapi.pod perlbs2000.pod perlce.pod perlcn.pod perlcygwin.pod \
 	    perldos.pod perlfreebsd.pod perlhaiku.pod perlhpux.pod \
 	    perlhurd.pod perlintern.pod perlirix.pod perljp.pod perlko.pod \
@@ -1390,8 +1400,7 @@ distclean: realclean
 	    perlnetware.pod perlopenbsd.pod perlos2.pod perlos390.pod \
 	    perlos400.pod perlplan9.pod perlqnx.pod perlriscos.pod \
 	    perlsolaris.pod perlsymbian.pod perlsynology.pod perltoc.pod \
-	    perltru64.pod perltw.pod perluniprops.pod perlvos.pod \
-	    perlwin32.pod
+	    perltru64.pod perltw.pod perlvos.pod perlwin32.pod
 	-cd ..\utils && del /f h2ph splain perlbug pl2pm h2xs \
 	    perldoc perlivp libnetcfg enc2xs encguess piconv cpan *.bat \
 	    xsubpp pod2html instmodsh json_pp prove ptar ptardiff ptargrep shasum corelist zipdetails

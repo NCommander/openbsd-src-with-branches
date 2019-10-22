@@ -1,3 +1,4 @@
+/*	$OpenBSD: ed.h,v 1.21 2015/10/09 21:24:05 tobias Exp $	*/
 /*	$NetBSD: ed.h,v 1.23 1995/03/21 09:04:40 cgd Exp $	*/
 
 /* ed.h: type and constant definitions for the ed editor. */
@@ -29,36 +30,17 @@
  *	@(#)ed.h,v 1.5 1994/02/01 00:34:39 alm Exp
  */
 
-#include <sys/types.h>
-#if defined(BSD) && BSD >= 199103 || defined(__386BSD__)
-# include <sys/param.h>		/* for MAXPATHLEN */
-#endif
-#include <errno.h>
-#if defined(sun) || defined(__NetBSD__)
-# include <limits.h>
-#endif
+#include <limits.h>
 #include <regex.h>
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 #define ERR		(-2)
 #define EMOD		(-3)
 #define FATAL		(-4)
 
-#ifndef MAXPATHLEN
-# define MAXPATHLEN 255		/* _POSIX_PATH_MAX */
-#endif
-
 #define MINBUFSZ 512		/* minimum buffer size - must be > 0 */
 #define SE_MAX 30		/* max subexpressions in a regular expression */
-#ifdef INT_MAX
-# define LINECHARS INT_MAX	/* max chars per line */
-#else
-# define LINECHARS MAXINT	/* max chars per line */
-#endif
+#define LINECHARS INT_MAX	/* max chars per line */
 
 /* gflags */
 #define GLB 001		/* global command */
@@ -66,8 +48,6 @@
 #define GLS 004		/* list after command */
 #define GNP 010		/* enumerate after command */
 #define GSG 020		/* global substitute */
-
-typedef regex_t pattern_t;
 
 /* Line node */
 typedef struct	line {
@@ -104,59 +84,37 @@ typedef struct undo {
 /* SPL1: disable some interrupts (requires reliable signals) */
 #define SPL1() mutex++
 
-/* SPL0: enable all interrupts; check sigflags (requires reliable signals) */
-#define SPL0() \
-if (--mutex == 0) { \
-	if (sigflags & (1 << (SIGHUP - 1))) handle_hup(SIGHUP); \
-	if (sigflags & (1 << (SIGINT - 1))) handle_int(SIGINT); \
-}
+/* SPL0: enable all interrupts; check signal flags (requires reliable signals) */
+#define SPL0()						\
+	do {						\
+		if (--mutex == 0) {			\
+			if (sighup)			\
+				handle_hup(SIGHUP);	\
+			if (sigint)			\
+				handle_int(SIGINT);	\
+		}					\
+	} while (0)
 
-/* STRTOL: convert a string to long */
-#define STRTOL(i, p) { \
-	if (((i = strtol(p, &p, 10)) == LONG_MIN || i == LONG_MAX) && \
-	    errno == ERANGE) { \
-		sprintf(errmsg, "number out of range"); \
+/* STRTOI: convert a string to int */
+#define STRTOI(i, p) { \
+	long l = strtol(p, &p, 10); \
+	if (l <= INT_MIN || l >= INT_MAX) { \
+		seterrmsg("number out of range"); \
 	    	i = 0; \
 		return ERR; \
-	} \
+	} else \
+		i = (int)l; \
 }
 
-#if defined(sun) || defined(NO_REALLOC_NULL)
 /* REALLOC: assure at least a minimum size for buffer b */
 #define REALLOC(b,n,i,err) \
 if ((i) > (n)) { \
 	int ti = (n); \
 	char *ts; \
 	SPL1(); \
-	if ((b) != NULL) { \
-		if ((ts = (char *) realloc((b), ti += max((i), MINBUFSZ))) == NULL) { \
-			fprintf(stderr, "%s\n", strerror(errno)); \
-			sprintf(errmsg, "out of memory"); \
-			SPL0(); \
-			return err; \
-		} \
-	} else { \
-		if ((ts = (char *) malloc(ti += max((i), MINBUFSZ))) == NULL) { \
-			fprintf(stderr, "%s\n", strerror(errno)); \
-			sprintf(errmsg, "out of memory"); \
-			SPL0(); \
-			return err; \
-		} \
-	} \
-	(n) = ti; \
-	(b) = ts; \
-	SPL0(); \
-}
-#else /* NO_REALLOC_NULL */
-/* REALLOC: assure at least a minimum size for buffer b */
-#define REALLOC(b,n,i,err) \
-if ((i) > (n)) { \
-	int ti = (n); \
-	char *ts; \
-	SPL1(); \
-	if ((ts = (char *) realloc((b), ti += max((i), MINBUFSZ))) == NULL) { \
-		fprintf(stderr, "%s\n", strerror(errno)); \
-		sprintf(errmsg, "out of memory"); \
+	if ((ts = realloc((b), ti += max((i), MINBUFSZ))) == NULL) { \
+		perror(NULL); \
+		seterrmsg("out of memory"); \
 		SPL0(); \
 		return err; \
 	} \
@@ -164,7 +122,6 @@ if ((i) > (n)) { \
 	(b) = ts; \
 	SPL0(); \
 }
-#endif /* NO_REALLOC_NULL */
 
 /* REQUE: link pred before succ */
 #define REQUE(pred, succ) (pred)->q_forw = (succ), (succ)->q_back = (pred)
@@ -185,95 +142,44 @@ if ((i) > (n)) { \
 /* NEWLINE_TO_NUL: overwrite newlines with ASCII NULs */
 #define NEWLINE_TO_NUL(s, l) translit_text(s, l, '\n', '\0')
 
-#ifdef sun
-# define strerror(n) sys_errlist[n]
-#endif
-
-#ifndef __P
-# ifndef __STDC__
-#  define __P(proto) ()
-# else
-#  define __P(proto) proto
-# endif
-#endif
-
 /* Local Function Declarations */
-void add_line_node __P((line_t *));
-int append_lines __P((long));
-int apply_subst_template __P((char *, regmatch_t *, int, int));
-int build_active_list __P((int));
-int cbc_decode __P((char *, FILE *));
-int cbc_encode __P((char *, int, FILE *));
-int check_addr_range __P((long, long));
-void clear_active_list __P((void));
-void clear_undo_stack __P((void));
-int close_sbuf __P((void));
-int copy_lines __P((long));
-int delete_lines __P((long, long));
-void des_error __P((char *));
-int display_lines __P((long, long, int));
-line_t *dup_line_node __P((line_t *));
-int exec_command __P((void));
-long exec_global __P((int, int));
-void expand_des_key __P((char *, char *));
-int extract_addr_range __P((void));
-char *extract_pattern __P((int));
-int extract_subst_tail __P((int *, long *));
-char *extract_subst_template __P((void));
-int filter_lines __P((long, long, char *));
-int flush_des_file __P((FILE *));
-line_t *get_addressed_line_node __P((long));
-pattern_t *get_compiled_pattern __P((void));
-int get_des_char __P((FILE *));
-char *get_extended_line __P((int *, int));
-char *get_filename __P((void));
-int get_keyword __P((void));
-long get_line_node_addr __P((line_t *));
-long get_matching_node_addr __P((pattern_t *, int));
-long get_marked_node_addr __P((int));
-char *get_sbuf_line __P((line_t *));
-int get_shell_command __P((void));
-int get_stream_line __P((FILE *));
-int get_tty_line __P((void));
-void handle_hup __P((int));
-void handle_int __P((int));
-void handle_winch __P((int));
-int has_trailing_escape __P((char *, char *));
-int hex_to_binary __P((int, int));
-void init_buffers __P((void));
-void init_des_cipher __P((void));
-int is_legal_filename __P((char *));
-int join_lines __P((long, long));
-int mark_line_node __P((line_t *, int));
-int move_lines __P((long));
-line_t *next_active_node __P(());
-long next_addr __P((void));
-int open_sbuf __P((void));
-char *parse_char_class __P((char *));
-int pop_undo_stack __P((void));
-undo_t *push_undo_stack __P((int, long, long));
-int put_des_char __P((int, FILE *));
-char *put_sbuf_line __P((char *));
-int put_stream_line __P((FILE *, char *, int));
-int put_tty_line __P((char *, int, long, int));
-void quit __P((int));
-long read_file __P((char *, long));
-long read_stream __P((FILE *, long));
-int search_and_replace __P((pattern_t *, int, int));
-int set_active_node __P((line_t *));
-void set_des_key __P((char *));
-void signal_hup __P((int));
-void signal_int __P((int));
-char *strip_escapes __P((char *));
-int substitute_matching_text __P((pattern_t *, line_t *, int, int));
-char *translit_text __P((char *, int, int, int));
-void unmark_line_node __P((line_t *));
-void unset_active_nodes __P((line_t *, line_t *));
-long write_file __P((char *, char *, long, long));
-long write_stream __P((FILE *, long, long));
+void add_line_node(line_t *);
+int build_active_list(int);
+void clear_active_list(void);
+void clear_undo_stack(void);
+int close_sbuf(void);
+int delete_lines(int, int);
+int display_lines(int, int, int);
+int exec_command(void);
+int exec_global(int, int);
+int extract_addr_range(void);
+int extract_subst_tail(int *, int *);
+line_t *get_addressed_line_node(int);
+regex_t *get_compiled_pattern(void);
+char *get_extended_line(int *, int);
+int get_line_node_addr(line_t *);
+char *get_sbuf_line(line_t *);
+int get_tty_line(void);
+void handle_hup(int);
+void handle_int(int);
+int has_trailing_escape(char *, char *);
+void init_buffers(void);
+int open_sbuf(void);
+int pop_undo_stack(void);
+undo_t *push_undo_stack(int, int, int);
+char *put_sbuf_line(char *);
+int put_tty_line(char *, int, int, int);
+void quit(int);
+int read_file(char *, int);
+int search_and_replace(regex_t *, int, int);
+void seterrmsg(char *);
+char *strip_escapes(char *);
+char *translit_text(char *, int, int, int);
+void unmark_line_node(line_t *);
+void unset_active_nodes(line_t *, line_t *);
+int write_file(char *, char *, int, int);
 
 /* global buffers */
-extern char stdinbuf[];
 extern char *ibuf;
 extern char *ibufp;
 extern int ibufsz;
@@ -282,16 +188,14 @@ extern int ibufsz;
 extern int isbinary;
 extern int isglobal;
 extern int modified;
-extern int mutex;
-extern int sigflags;
+
+extern volatile sig_atomic_t mutex;
+extern volatile sig_atomic_t sighup;
+extern volatile sig_atomic_t sigint;
 
 /* global vars */
-extern long addr_last;
-extern long current_addr;
-extern char errmsg[];
-extern long first_addr;
+extern int addr_last;
+extern int current_addr;
+extern int first_addr;
 extern int lineno;
-extern long second_addr;
-#ifdef sun
-extern char *sys_errlist[];
-#endif
+extern int second_addr;

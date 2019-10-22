@@ -1,3 +1,4 @@
+/*	$OpenBSD: parseconf.c,v 1.13 2016/05/29 02:19:02 guenther Exp $	*/
 /*	$NetBSD: parseconf.c,v 1.4 1995/10/06 05:12:16 thorpej Exp $	*/
 
 /*
@@ -20,11 +21,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,18 +43,10 @@
  * Author: Jeff Forys, University of Utah CSS
  */
 
-#ifndef lint
-/*static char sccsid[] = "@(#)parseconf.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$NetBSD: parseconf.c,v 1.4 1995/10/06 05:12:16 thorpej Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <ctype.h>
 #include <dirent.h>
-#include <fcntl.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,15 +70,13 @@ static char rcsid[] = "$NetBSD: parseconf.c,v 1.4 1995/10/06 05:12:16 thorpej Ex
 **		  to create a linked list of default boot files.
 */
 int
-ParseConfig()
+ParseConfig(void)
 {
-	FILE *fp;
-	CLIENT *client;
+	char line[C_LINELEN], *cp, *bcp;
+	int i, j, linecnt = 0;
 	u_int8_t *addr;
-	char line[C_LINELEN];
-	register char *cp, *bcp;
-	register int i, j;
-	int omask, linecnt = 0;
+	CLIENT *client;
+	FILE *fp;
 
 	if (BootAny)				/* ignore config file */
 		return(1);
@@ -98,28 +85,22 @@ ParseConfig()
 
 	if ((fp = fopen(ConfigFile, "r")) == NULL) {
 		syslog(LOG_ERR, "ParseConfig: can't open config file (%s)",
-		       ConfigFile);
+		    ConfigFile);
 		return(0);
 	}
-
-	/*
-	 *  We've got to block SIGHUP to prevent reconfiguration while
-	 *  dealing with the linked list of Clients.  This can be done
-	 *  when actually linking the new client into the list, but
-	 *  this could have unexpected results if the server was HUP'd
-	 *  whilst reconfiguring.  Hence, it is done here.
-	 */
-	omask = sigblock(sigmask(SIGHUP));
 
 	/*
 	 *  GETSTR positions `bcp' at the start of the current token,
 	 *  and null terminates it.  `cp' is positioned at the start
 	 *  of the next token.  spaces & commas are separators.
 	 */
-#define GETSTR	while (isspace(*cp) || *cp == ',') cp++;	\
-		bcp = cp;					\
-		while (*cp && *cp!=',' && !isspace(*cp)) cp++;	\
-		if (*cp) *cp++ = '\0'
+#define GETSTR	while (isspace((unsigned char)*cp) || *cp == ',')	\
+			cp++;						\
+		bcp = cp;						\
+		while (*cp && *cp!=',' && !isspace((unsigned char)*cp))	\
+			cp++;						\
+		if (*cp)						\
+			*cp++ = '\0'
 
 	/*
 	 *  For each line, parse it into a new CLIENT struct.
@@ -130,7 +111,7 @@ ParseConfig()
 		if (*line == '\0' || *line == '#')	/* ignore comment */
 			continue;
 
-		if ((cp = index(line,'#')) != NULL)	/* trash comments */
+		if ((cp = strchr(line,'#')) != NULL)	/* trash comments */
 			*cp = '\0';
 
 		cp = line;				/* init `cp' */
@@ -143,8 +124,8 @@ ParseConfig()
 		 */
 		if ((addr = ParseAddr(bcp)) == NULL) {
 			syslog(LOG_ERR,
-			       "ParseConfig: line %d: cant parse <%s>",
-			       linecnt, bcp);
+			    "ParseConfig: line %d: cant parse <%s>",
+			    linecnt, bcp);
 			continue;
 		}
 
@@ -156,13 +137,13 @@ ParseConfig()
 		/*
 		 *  If no boot files are spec'd, use the default list.
 		 *  Otherwise, validate each file (`bcp') against the
-		 *  list of boot-able files.
+		 *  list of bootable files.
 		 */
 		i = 0;
-		if (bcp == cp)				/* no files spec'd */
+		if (bcp == cp) {			/* no files spec'd */
 			for (; i < C_MAXFILE && BootFiles[i] != NULL; i++)
 				client->files[i] = BootFiles[i];
-		else {
+		} else {
 			do {
 				/*
 				 *  For each boot file spec'd, make sure it's
@@ -171,8 +152,9 @@ ParseConfig()
 				 */
 				for (j = 0; ; j++) {
 					if (j==C_MAXFILE||BootFiles[j]==NULL) {
-						syslog(LOG_ERR, "ParseConfig: line %d: no boot file (%s)",
-						       linecnt, bcp);
+						syslog(LOG_ERR,
+						    "ParseConfig: line %d: no boot file (%s)",
+						    linecnt, bcp);
 						break;
 					}
 					if (STREQN(BootFiles[j], bcp)) {
@@ -195,7 +177,7 @@ ParseConfig()
 			 *  the entire record is invalidated.
 			 */
 			if (i == 0) {
-				FreeClient(client);	
+				FreeClient(client);
 				continue;
 			}
 		}
@@ -210,9 +192,6 @@ ParseConfig()
 	}
 
 	(void) fclose(fp);				/* close config file */
-
-	(void) sigsetmask(omask);			/* reset signal mask */
-
 	return(1);					/* return success */
 }
 
@@ -246,13 +225,12 @@ ParseConfig()
 **		  be copied if it's to be saved.
 */
 u_int8_t *
-ParseAddr(str)
-	char *str;
+ParseAddr(char *str)
 {
 	static u_int8_t addr[RMP_ADDRLEN];
-	register char *cp;
-	register unsigned i;
-	register int part, subpart;
+	int part, subpart;
+	unsigned int i;
+	char *cp;
 
 	bzero((char *)&addr[0], RMP_ADDRLEN);	/* zero static buffer */
 
@@ -271,10 +249,11 @@ ParseAddr(str)
 		/*
 		 *  Convert hex character to an integer.
 		 */
-		if (isdigit(*cp))
+		if (isdigit((unsigned char)*cp))
 			i = *cp - '0';
 		else {
-			i = (isupper(*cp)? tolower(*cp): *cp) - 'a' + 10;
+			i = (isupper((unsigned char)*cp) ?
+			    tolower((unsigned char)*cp) : *cp) - 'a' + 10;
 			if (i < 10 || i > 15)		/* not a hex char */
 				return(NULL);
 		}
@@ -310,12 +289,12 @@ ParseAddr(str)
 **		  called to re-order it's list of boot file pointers.
 */
 int
-GetBootFiles()
+GetBootFiles(void)
 {
-	DIR *dfd;
 	struct stat statb;
-	register struct dirent *dp;
-	register int i;
+	struct dirent *dp;
+	DIR *dfd;
+	int i;
 
 	/*
 	 *  Free the current list of boot files.
@@ -329,7 +308,7 @@ GetBootFiles()
 	 *  Open current directory to read boot file names.
 	 */
 	if ((dfd = opendir(".")) == NULL) {	/* open BootDir */
-		syslog(LOG_ERR, "GetBootFiles: can't open directory (%s)\n",
+		syslog(LOG_ERR, "GetBootFiles: can't open directory (%s)",
 		       BootDir);
 		return(0);
 	}
@@ -341,7 +320,7 @@ GetBootFiles()
 	 */
 	i = 0;
 	for (dp = readdir(dfd); dp != NULL; dp = readdir(dfd)) {
-		if (stat(dp->d_name, &statb) < 0 ||
+		if (stat(dp->d_name, &statb) == -1 ||
 		    (statb.st_mode & S_IFMT) != S_IFREG)
 			continue;
 		if (i == C_MAXFILE)
@@ -355,7 +334,7 @@ GetBootFiles()
 	(void) closedir(dfd);			/* close BootDir */
 
 	if (i == 0)				/* cant find any boot files */
-		syslog(LOG_ERR, "GetBootFiles: no boot files (%s)\n", BootDir);
+		syslog(LOG_ERR, "GetBootFiles: no boot files (%s)", BootDir);
 
 	return(i);
 }

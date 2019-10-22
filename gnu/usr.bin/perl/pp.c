@@ -1693,7 +1693,8 @@ PP(pp_repeat)
 	    else {
 		dTOPss;
 		ASSUME(MARK + 1 == SP);
-		XPUSHs(sv);
+                MEXTEND(SP, 1);
+                PUSHs(sv);
 		MARK[1] = &PL_sv_undef;
 	    }
 	    SP = MARK + 2;
@@ -2941,12 +2942,13 @@ PP(pp_srand)
                              "Integer overflow in srand");
             anum = UV_MAX;
         }
+        (void)srand48_deterministic((Rand_seed_t)anum);
     }
     else {
         anum = seed();
+        (void)seedDrand01((Rand_seed_t)anum);
     }
 
-    (void)seedDrand01((Rand_seed_t)anum);
     PL_srand_called = TRUE;
     if (anum)
 	XPUSHu(anum);

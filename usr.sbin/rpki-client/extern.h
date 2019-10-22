@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD: extern.h,v 1.7 2019/08/20 16:01:52 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -17,12 +17,7 @@
 #ifndef EXTERN_H
 #define EXTERN_H
 
-#if !HAVE_PLEDGE
-# define pledge(x, y) (1)
-#endif
-#if !HAVE_UNVEIL
-# define unveil(x, y) (1)
-#endif
+#include <sys/tree.h>
 
 enum	cert_as_type {
 	CERT_AS_ID, /* single identifier */
@@ -56,8 +51,8 @@ struct	cert_as {
  * In rpki-client, we only accept the IPV4 and IPV6 AFI values.
  */
 enum	afi {
-	AFI_IPV4,
-	AFI_IPV6
+	AFI_IPV4 = 1,
+	AFI_IPV6 = 2
 };
 
 /*
@@ -66,9 +61,8 @@ enum	afi {
  * It may either be IPv4 or IPv6.
  */
 struct	ip_addr {
-	size_t		 sz; /* length of valid bytes */
 	unsigned char	 addr[16]; /* binary address prefix */
-	size_t		 unused; /* unused bits in last byte or zero */
+	unsigned char	 prefixlen; /* number of valid bits in address */
 };
 
 /*
@@ -93,10 +87,10 @@ enum	cert_ip_type {
  * encodes both the AFI and a single address or range.
  */
 struct	cert_ip {
-	enum afi	   afi; /* AFI value */
-	enum cert_ip_type  type; /* type of IP entry */
-	unsigned char	   min[16]; /* full range minimum */
-	unsigned char	   max[16]; /* full range maximum */
+	enum afi		afi; /* AFI value */
+	enum cert_ip_type	type; /* type of IP entry */
+	unsigned char		min[16]; /* full range minimum */
+	unsigned char		max[16]; /* full range maximum */
 	union {
 		struct ip_addr ip; /* singular address */
 		struct ip_addr_range range; /* range */
@@ -130,9 +124,10 @@ struct	cert {
  */
 struct	tal {
 	char		**uri; /* well-formed rsync URIs */
-	size_t		  urisz; /* number of URIs */
-	unsigned char	 *pkey; /* DER-encoded public key */
-	size_t		  pkeysz; /* length of pkey */
+	size_t		 urisz; /* number of URIs */
+	unsigned char	*pkey; /* DER-encoded public key */
+	size_t		 pkeysz; /* length of pkey */
+	char		*descr; /* basename of tal file */
 };
 
 /*
@@ -181,7 +176,25 @@ struct	roa {
 	int		 valid; /* validated resources */
 	char		*ski; /* SKI */
 	char		*aki; /* AKI */
+	char		*tal; /* basename of TAL for this cert */
 };
+
+/*
+ * A single VRP element (including ASID)
+ */
+struct vrp {
+	RB_ENTRY(vrp)	entry;
+	struct ip_addr	addr;
+	uint32_t	asid;
+	char		*tal; /* basename of TAL for this cert */
+	enum afi	afi;
+	unsigned char	maxlength;
+};
+/*
+ * Tree of VRP sorted by afi, addr, maxlength and asid
+ */
+RB_HEAD(vrp_tree, vrp);
+RB_PROTOTYPE(vrp_tree, vrp, entry, vrpcmp);
 
 /*
  * An authentication tuple.
@@ -192,6 +205,7 @@ struct	auth {
 	struct cert	*cert; /* owner information */
 	size_t		 id; /* self-index */
 	size_t		 parent; /* index of parent pair (or self) */
+	char		*tal; /* basename of TAL for this cert */
 	char		*fn; /* FIXME: debugging */
 };
 
@@ -208,6 +222,9 @@ enum	rtype {
 	RTYPE_CRL
 };
 
+/* global variables */
+extern int verbose;
+
 /* Routines for RPKI entities. */
 
 void		 tal_buffer(char **, size_t *, size_t *, const struct tal *);
@@ -223,20 +240,21 @@ struct cert	*cert_read(int);
 
 void		 mft_buffer(char **, size_t *, size_t *, const struct mft *);
 void		 mft_free(struct mft *);
-struct mft 	*mft_parse(X509 **, const char *, int);
-struct mft 	*mft_read(int);
+struct mft	*mft_parse(X509 **, const char *, int);
+struct mft	*mft_read(int);
 
 void		 roa_buffer(char **, size_t *, size_t *, const struct roa *);
 void		 roa_free(struct roa *);
-struct roa 	*roa_parse(X509 **, const char *, const unsigned char *);
+struct roa	*roa_parse(X509 **, const char *, const unsigned char *);
 struct roa	*roa_read(int);
+void		 roa_insert_vrps(struct vrp_tree *, struct roa *, size_t *, size_t *);
 
-X509_CRL 	*crl_parse(const char *, const unsigned char *);
+X509_CRL	*crl_parse(const char *, const unsigned char *);
 
 /* Validation of our objects. */
 
 ssize_t		 valid_cert(const char *, const struct auth *, size_t, const struct cert *);
-int		 valid_roa(const char *, const struct auth *, size_t, const struct roa *);
+ssize_t		 valid_roa(const char *, const struct auth *, size_t, const struct roa *);
 ssize_t		 valid_ta(const char *, const struct auth *, size_t, const struct cert *);
 
 /* Working with CMS files. */
@@ -252,7 +270,7 @@ int		 ip_addr_parse(const ASN1_BIT_STRING *,
 void		 ip_addr_print(const struct ip_addr *, enum afi, char *, size_t);
 void		 ip_addr_buffer(char **, size_t *, size_t *, const struct ip_addr *);
 void		 ip_addr_range_buffer(char **, size_t *, size_t *, const struct ip_addr_range *);
-void	 	 ip_addr_read(int, struct ip_addr *);
+void		 ip_addr_read(int, struct ip_addr *);
 void		 ip_addr_range_read(int, struct ip_addr_range *);
 int		 ip_addr_cmp(const struct ip_addr *, const struct ip_addr *);
 int		 ip_addr_check_overlap(const struct cert_ip *,
@@ -272,7 +290,7 @@ int		 as_check_covered(uint32_t, uint32_t,
 
 /* Rsync-specific. */
 
-int	 	 rsync_uri_parse(const char **, size_t *,
+int		 rsync_uri_parse(const char **, size_t *,
 			const char **, size_t *, const char **, size_t *,
 			enum rtype *, const char *);
 
@@ -306,6 +324,7 @@ int		 x509_get_ski_aki(X509 *, const char *, char **, char **);
 
 /* Output! */
 
-void		 output_bgpd(const struct roa **, size_t, int, size_t *, size_t *);
+void		 output_bgpd(FILE *, struct vrp_tree *);
+void		 output_json(FILE *, struct vrp_tree *);
 
 #endif /* ! EXTERN_H */

@@ -1,0 +1,22 @@
+.\" $OpenBSD: nest.in,v 1.2 2017/07/04 14:53:24 schwarze Exp $
+.Dd $Mdocdate: January 7 2019 $
+.Dt BF-PARAGRAPH 1
+.Os
+.Sh NAME
+.Nm Bf-paragraph
+.Nd interaction of paragraphs and font blocks
+.Sh DESCRIPTION
+BEGINTEST
+.Pp
+normal
+text
+.Bf -literal
+literal
+text
+.Pp
+literal
+paragraph
+.Ef
+ENDTEST
+.br
+end of file

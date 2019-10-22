@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)efs_ops.c	8.1 (Berkeley) 6/6/93
- *	$Id: efs_ops.c,v 1.3 1994/06/13 20:47:07 mycroft Exp $
+ *	$Id: efs_ops.c,v 1.3 2003/06/02 23:36:51 millert Exp $
  */
 
 #include "am.h"
@@ -54,22 +50,20 @@
 /*
  * EFS file system always matches
  */
-static char *efs_match(fo)
-am_opts *fo;
+static char *
+efs_match(am_opts *fo)
 {
 	return strdup("(error-hook)");
 }
 
-/*ARGSUSED*/
-static int efs_fmount(mf)
-mntfs *mf;
+static int
+efs_fmount(mntfs *mf)
 {
 	return ENOENT;
 }
 
-/*ARGSUSED*/
-static int efs_fumount(mf)
-mntfs *mf;
+static int
+efs_fumount(mntfs *mf)
 {
 	/*
 	 * Always succeed
@@ -83,12 +77,8 @@ mntfs *mf;
  * Should never get here in the automounter.
  * If we do then just give an error.
  */
-/*ARGSUSED*/
-am_node *efs_lookuppn(mp, fname, error_return, op)
-am_node *mp;
-char *fname;
-int *error_return;
-int op;
+am_node *
+efs_lookuppn(am_node *mp, char *fname, int *error_return, int op)
 {
 	*error_return = ESTALE;
 	return 0;
@@ -99,13 +89,9 @@ int op;
  * Should never get here in the automounter.
  * If we do then just give an error.
  */
-/*ARGSUSED*/
-int efs_readdir(mp, cookie, dp, ep, count)
-am_node *mp;
-nfscookie cookie;
-dirlist *dp;
-entry *ep;
-int count;
+int
+efs_readdir(am_node *mp, nfscookie cookie, dirlist *dp, entry *ep,
+    int count)
 {
 	return ESTALE;
 }

@@ -1,4 +1,4 @@
-/*	$NetBSD: remove.c,v 1.4 1995/02/02 02:10:23 jtc Exp $	*/
+/*	$OpenBSD: remove.c,v 1.8 2015/08/31 02:53:57 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,18 +32,19 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)remove.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: remove.c,v 1.4 1995/02/02 02:10:23 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
-#include <unistd.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
-remove(file)
-	const char *file;
+int
+remove(const char *file)
 {
+	struct stat st;
+
+	if (lstat(file, &st) == -1)
+		return (-1);
+	if (S_ISDIR(st.st_mode))
+		return (rmdir(file));
 	return (unlink(file));
 }
+DEF_STRONG(remove);

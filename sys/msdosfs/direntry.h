@@ -1,8 +1,9 @@
-/*	$NetBSD: direntry.h,v 1.9 1995/03/29 22:08:52 briggs Exp $	*/
+/*	$OpenBSD: direntry.h,v 1.6 2002/03/14 01:27:09 millert Exp $	*/
+/*	$NetBSD: direntry.h,v 1.13 1997/10/17 11:23:45 ws Exp $	*/
 
 /*-
- * Copyright (C) 1994 Wolfgang Solfrank.
- * Copyright (C) 1994 TooLs GmbH.
+ * Copyright (C) 1994, 1995, 1997 Wolfgang Solfrank.
+ * Copyright (C) 1994, 1995, 1997 TooLs GmbH.
  * All rights reserved.
  * Original code by Paul Popelka (paulp@uts.amdahl.com) (see below).
  *
@@ -33,17 +34,17 @@
  */
 /*
  * Written by Paul Popelka (paulp@uts.amdahl.com)
- * 
+ *
  * You can do anything you want with this software, just don't say you wrote
  * it, and don't remove this notice.
- * 
+ *
  * This software is provided "as is".
- * 
+ *
  * The author supplies this software to be publicly redistributed on the
  * understanding that the author is not responsible for the correct
  * functioning of this software in any circumstances and is not liable for
  * any damages caused by this software.
- * 
+ *
  * October 1992
  */
 
@@ -64,12 +65,37 @@ struct direntry {
 #define	ATTR_VOLUME	0x08		/* entry is a volume label */
 #define	ATTR_DIRECTORY	0x10		/* entry is a directory name */
 #define	ATTR_ARCHIVE	0x20		/* file is new or modified */
-	u_int8_t	deReserved[10];	/* reserved */
-	u_int8_t	deTime[2];	/* create/last update time */
-	u_int8_t	deDate[2];	/* create/last update date */
+	u_int8_t	deLowerCase;	/* case for base and extension */
+#define	CASE_LOWER_BASE	0x08		/* base is lower case */
+#define	CASE_LOWER_EXT	0x10		/* extension is lower case */
+	u_int8_t	deCTimeHundredth; /* create time, 1/100th of a sec */
+	u_int8_t	deCTime[2];	/* create time */
+	u_int8_t	deCDate[2];	/* create date */
+	u_int8_t	deADate[2];	/* access date */
+	u_int8_t	deHighClust[2];	/* high byte of cluster number */
+	u_int8_t	deMTime[2];	/* last update time */
+	u_int8_t	deMDate[2];	/* last update date */
 	u_int8_t	deStartCluster[2]; /* starting cluster of file */
 	u_int8_t	deFileSize[4];	/* size of file in bytes */
 };
+
+/*
+ * Structure of a Win95 long name directory entry
+ */
+struct winentry {
+	u_int8_t	weCnt;
+#define	WIN_LAST	0x40
+#define	WIN_CNT		0x3f
+	u_int8_t	wePart1[10];
+	u_int8_t	weAttributes;
+#define	ATTR_WIN95	0x0f
+	u_int8_t	weReserved1;
+	u_int8_t	weChksum;
+	u_int8_t	wePart2[12];
+	u_int16_t	weReserved2;
+	u_int8_t	wePart3[4];
+};
+#define	WIN_CHARS	13	/* Number of chars per winentry */
 
 /*
  * This is the format of the contents of the deTime field in the direntry
@@ -96,8 +122,13 @@ struct direntry {
 #define DD_YEAR_SHIFT		9
 
 #ifdef _KERNEL
-void unix2dostime __P((struct timespec *tsp, u_int16_t *ddp, u_int16_t *dtp));
-void dos2unixtime __P((u_int dd, u_int dt, struct timespec *tsp));
-int dos2unixfn __P((u_char dn[11], u_char *un));
-void unix2dosfn __P((u_char *un, u_char dn[11], int unlen));
+void unix2dostime(struct timespec *tsp, u_int16_t *ddp, u_int16_t *dtp, u_int8_t *dhp);
+void dos2unixtime(u_int dd, u_int dt, u_int dh, struct timespec *tsp);
+int dos2unixfn(u_char dn[11], u_char *un, int lower);
+int unix2dosfn(u_char *un, u_char dn[12], int unlen, u_int gen);
+int unix2winfn(u_char *un, int unlen, struct winentry *wep, int cnt, int chksum);
+int winChkName(u_char *un, int unlen, struct winentry *wep, int chksum);
+int win2unixfn(struct winentry *wep, struct dirent *dp, int chksum);
+u_int8_t winChksum(u_int8_t *name);
+int winSlotCnt(u_char *un, int unlen);
 #endif	/* _KERNEL */

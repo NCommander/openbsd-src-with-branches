@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD: io.c,v 1.4 2019/06/28 13:32:50 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,7 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include "config.h"
 
 #include <sys/queue.h>
 
@@ -63,7 +62,7 @@ io_simple_write(int fd, const void *res, size_t sz)
 
 	if (sz == 0)
 		return;
-	if ((ssz = write(fd, res, sz)) < 0)
+	if ((ssz = write(fd, res, sz)) == -1)
 		err(EXIT_FAILURE, "write");
 	else if ((size_t)ssz != sz)
 		errx(EXIT_FAILURE, "write: short write");
@@ -136,7 +135,7 @@ io_str_write(int fd, const char *p)
 /*
  * Read of a binary buffer that must be on a blocking descriptor.
  * Does nothing if "sz" is zero.
- * This will fail and exit on EOF or short reads.
+ * This will fail and exit on EOF.
  */
 void
 io_simple_read(int fd, void *res, size_t sz)
@@ -146,13 +145,12 @@ io_simple_read(int fd, void *res, size_t sz)
 again:
 	if (sz == 0)
 		return;
-	if ((ssz = read(fd, res, sz)) < 0)
+	if ((ssz = read(fd, res, sz)) == -1)
 		err(EXIT_FAILURE, "read");
 	else if (ssz == 0)
 		errx(EXIT_FAILURE, "read: unexpected end of file");
 	else if ((size_t)ssz == sz)
 		return;
-	warnx("read: short read: %zu remain", sz - (size_t)ssz);
 	sz -= ssz;
 	res += ssz;
 	goto again;
