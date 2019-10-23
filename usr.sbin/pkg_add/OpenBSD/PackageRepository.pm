@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageRepository.pm,v 1.168 2019/08/20 11:11:53 espie Exp $
+# $OpenBSD: PackageRepository.pm,v 1.169 2019/10/13 16:21:46 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -341,7 +341,7 @@ sub parse_problems
 			next;
 		}
 		# http error
-		if (m/^ftp: Error retrieving file: 404/o) {
+		if (m/^ftp: Error retrieving .*: 404/o) {
 			if (!defined $object) {
 				$self->{no_such_dir} = 1;
 				next;
