@@ -1259,23 +1259,6 @@ readwrite(int net_fd, struct tls *tls_ctx)
 		if (pfd[POLL_NETIN].fd == -1 && netinbufpos == 0) {
 			pfd[POLL_STDOUT].fd = -1;
 		}
-
-		if (((usetls || Nflag) && (pfd[POLL_NETIN].fd == -1)) ||
-		    (usetls && pfd[POLL_NETOUT].fd == -1)) {
-			/*
-			 * -N says: shutdown(2) the 'network socket'
-			 * after EOF on the input
-			 *
-			 * for TLS we need to die if either end is
-			 * toast, since both reading and writing to
-			 * the socket may be necessary for any higher
-			 * level tls operation
-			 */
-			shutdown(pfd[POLL_NETOUT].fd, SHUT_WR);
-			shutdown(pfd[POLL_NETIN].fd, SHUT_RD);
-			pfd[POLL_NETOUT].fd = -1;
-			pfd[POLL_NETIN].fd = -1;
-		}
 	}
 }
 
