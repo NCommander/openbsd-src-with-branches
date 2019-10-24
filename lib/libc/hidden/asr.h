@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.h,v 1.2 2015/10/18 01:45:48 deraadt Exp $	*/
+/*	$OpenBSD: asr.h,v 1.3 2015/10/23 00:52:49 deraadt Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -21,6 +21,8 @@
 #include_next <asr.h>
 
 PROTO_DEPRECATED(asr_abort);
+PROTO_NORMAL(asr_resolver_from_string);
+PROTO_NORMAL(asr_resolver_free);
 PROTO_NORMAL(asr_run);
 PROTO_NORMAL(asr_run_sync);
 PROTO_NORMAL(getaddrinfo_async);
