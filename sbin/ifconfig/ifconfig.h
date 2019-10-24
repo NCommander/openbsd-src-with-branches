@@ -1,4 +1,4 @@
-/*	$OpenBSD: brconfig.h,v 1.15 2019/07/25 13:56:23 krw Exp $	*/
+/*	$OpenBSD: ifconfig.h,v 1.1 2019/10/17 18:37:38 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2009 Claudio Jeker <claudio@openbsd.org>
@@ -19,7 +19,7 @@
 extern int aflag;
 extern int ifaliases;
 extern int sock;
-extern char name[IFNAMSIZ];
+extern char ifname[IFNAMSIZ];
 
 void printb(char *, unsigned int, unsigned char *);
 
@@ -66,11 +66,11 @@ void bridge_priority(const char *, int);
 void bridge_rules(const char *, int);
 void bridge_rulefile(const char *, int);
 void bridge_flushrule(const char *, int);
-int is_bridge(char *);
+int is_bridge(void);
 void bridge_status(void);
 int bridge_rule(int, char **, int);
 void switch_status(void);
 void switch_datapathid(const char *, int);
 void switch_portno(const char *, const char *);
 
-int if_sff_info(const char *, int);
+int if_sff_info(int);
