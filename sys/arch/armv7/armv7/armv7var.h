@@ -1,4 +1,4 @@
-/* $OpenBSD: armv7var.h,v 1.14 2016/10/09 01:40:43 jsg Exp $ */
+/* $OpenBSD: armv7var.h,v 1.15 2016/10/23 19:05:09 kettenis Exp $ */
 /*
  * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
@@ -18,6 +18,8 @@
 
 #ifndef __ARMV7VAR_H__
 #define __ARMV7VAR_H__
+
+extern struct bus_space armv7_bs_tag;
 
 /* Boards device list */
 struct board_dev {
