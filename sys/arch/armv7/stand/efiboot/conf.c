@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.18 2019/08/04 13:45:15 deraadt Exp $	*/
+/*	$OpenBSD: conf.c,v 1.19 2019/08/13 09:00:20 patrick Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -36,7 +36,7 @@
 #include "efidev.h"
 #include "efipxe.h"
 
-const char version[] = "1.6";
+const char version[] = "1.7";
 int	debug = 0;
 
 struct fs_ops file_system[] = {
@@ -57,6 +57,7 @@ int ndevs = nitems(devsw);
 
 struct consdev constab[] = {
 	{ efi_cons_probe, efi_cons_init, efi_cons_getc, efi_cons_putc },
+	{ efi_fb_probe, efi_fb_init, efi_cons_getc, efi_cons_putc },
 	{ NULL }
 };
 struct consdev *cn_tab;
