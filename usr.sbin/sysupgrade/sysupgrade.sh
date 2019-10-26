@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: sysupgrade.sh,v 1.27 2019/10/19 13:14:23 tb Exp $
+# $OpenBSD: sysupgrade.sh,v 1.28 2019/10/20 09:10:43 ajacoutot Exp $
 #
 # Copyright (c) 1997-2015 Todd Miller, Theo de Raadt, Ken Westerback
 # Copyright (c) 2015 Robert Peichaer <rpe@openbsd.org>
@@ -136,7 +136,7 @@ fi
 
 cd ${SETSDIR}
 
-unpriv -f SHA256.sig ftp -Vmo SHA256.sig ${URL}SHA256.sig
+unpriv -f SHA256.sig ftp -N sysupgrade -Vmo SHA256.sig ${URL}SHA256.sig
 
 _KEY=openbsd-${_KERNV[0]%.*}${_KERNV[0]#*.}-base.pub
 _NEXTKEY=openbsd-${NEXT_VERSION%.*}${NEXT_VERSION#*.}-base.pub
@@ -176,7 +176,7 @@ done
 
 [[ -n ${OLD_FILES} ]] && rm ${OLD_FILES}
 for f in ${DL}; do
-	unpriv -f $f ftp -Vmo ${f} ${URL}${f}
+	unpriv -f $f ftp -N sysupgrade -Vmo ${f} ${URL}${f}
 done
 
 if [[ -n ${DL} ]]; then
