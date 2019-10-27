@@ -1,4 +1,4 @@
-/*	$OpenBSD: history.c,v 1.82 2019/06/28 13:34:59 deraadt Exp $	*/
+/*	$OpenBSD: history.c,v 1.83 2019/10/27 14:58:52 jca Exp $	*/
 
 /*
  * command history
@@ -13,7 +13,6 @@
  */
 
 #include <sys/stat.h>
-#include <sys/uio.h>
 
 #include <errno.h>
 #include <fcntl.h>
