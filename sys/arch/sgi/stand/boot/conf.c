@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.4 2011/03/13 00:13:53 deraadt Exp $ */
+/*	$OpenBSD: conf.c,v 1.5 2012/03/19 17:38:31 miod Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -26,6 +26,8 @@
  *
  */
 #include <stand.h>
+
+const char version[] = "1.10";
 
 extern void	nullsys();
 extern int	nodev();
