@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2016/11/06 16:42:00 tb Exp $
+#	$OpenBSD: Makefile,v 1.7 2019/04/20 22:59:04 deraadt Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -32,7 +32,7 @@ SRCS+=	ufs.c cd9660.c
 
 CFLAGS+=-DNO_NET
 
-SRCS+=	loadfile.c
+SRCS+=	loadfile.c arc4.c
 
 ${OBJS}:	${.CURDIR}/../Makefile.inc
 

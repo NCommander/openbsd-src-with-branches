@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rdboot.c,v 1.1 2019/07/17 14:36:32 visa Exp $	*/
 
 /*
  * Copyright (c) 2019 Visa Hankala
@@ -49,7 +49,7 @@ void	kexec(void);
 
 struct cmd_state cmd;
 int octbootfd = -1;
-const char version[] = "1.0";
+const char version[] = "1.1";
 
 int
 main(void)
