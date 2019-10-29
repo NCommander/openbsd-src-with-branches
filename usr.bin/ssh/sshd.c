@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.536 2019/06/21 04:21:05 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.537 2019/06/28 13:35:04 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -272,10 +272,7 @@ close_startup_pipes(void)
 static void
 sighup_handler(int sig)
 {
-	int save_errno = errno;
-
 	received_sighup = 1;
-	errno = save_errno;
 }
 
 /*
