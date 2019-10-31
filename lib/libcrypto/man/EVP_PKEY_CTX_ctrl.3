@@ -1,4 +1,4 @@
-.\" $OpenBSD: EVP_PKEY_CTX_ctrl.3,v 1.18 2019/10/29 18:22:21 schwarze Exp $
+.\" $OpenBSD: EVP_PKEY_CTX_ctrl.3,v 1.19 2019/10/29 18:40:47 schwarze Exp $
 .\" full merge up to: OpenSSL 99d63d46 Oct 26 13:56:48 2016 -0400
 .\" selective merge up to: OpenSSL df75c2bf Dec 9 01:02:36 2018 +0100
 .\"
@@ -405,6 +405,7 @@ The
 .Fn EVP_PKEY_CTX_set_rsa_keygen_bits
 macro sets the RSA key length for RSA key generation to
 .Fa mbits .
+The smallest supported value is 512 bits.
 If not specified, 1024 bits is used.
 .Pp
 The
