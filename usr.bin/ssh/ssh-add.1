@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ssh-add.1,v 1.68 2019/01/21 07:09:10 jmc Exp $
+.\"	$OpenBSD: ssh-add.1,v 1.69 2019/01/21 12:53:35 djm Exp $
 .\"
 .\" Author: Tatu Ylonen <ylo@cs.hut.fi>
 .\" Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -46,6 +46,7 @@
 .Op Fl cDdkLlqvXx
 .Op Fl E Ar fingerprint_hash
 .Op Fl t Ar life
+.Op Fl S Ar provider
 .Op Ar
 .Nm ssh-add
 .Fl s Ar pkcs11
@@ -134,6 +135,11 @@ Be quiet after a successful operation.
 .It Fl s Ar pkcs11
 Add keys provided by the PKCS#11 shared library
 .Ar pkcs11 .
+.It Fl S Ar provider
+Specifies a path to a security key provider library that will be used when
+adding any security key-hosted keys, overriding the default of using the
+.Ev "SSH_SK_PROVIDER"
+environment variable to specify a provider.
 .It Fl T Ar pubkey ...
 Tests whether the private keys that correspond to the specified
 .Ar pubkey
@@ -189,6 +195,9 @@ to make this work.)
 Identifies the path of a
 .Ux Ns -domain
 socket used to communicate with the agent.
+.It Ev SSH_SK_PROVIDER
+Specifies the path to a security key provider library used to interact with
+hardware security keys.
 .El
 .Sh FILES
 .Bl -tag -width Ds
