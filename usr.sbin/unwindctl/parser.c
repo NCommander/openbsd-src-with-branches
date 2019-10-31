@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.2 2019/01/27 12:41:39 florian Exp $	*/
+/*	$OpenBSD: parser.c,v 1.3 2019/02/03 12:02:30 florian Exp $	*/
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -74,6 +74,7 @@ static const struct token t_status[] = {
 	{KEYWORD,	"dhcp",		STATUS_DHCP,		NULL},
 	{KEYWORD,	"static",	STATUS_STATIC,		NULL},
 	{KEYWORD,	"DoT",		STATUS_DOT,		NULL},
+	{KEYWORD,	"asr",		STATUS_ASR,		NULL},
 	{ENDTOKEN,	"",		STATUS,			NULL}
 };
 
