@@ -1,4 +1,4 @@
-/* $OpenBSD: pathnames.h,v 1.28 2018/02/23 15:58:37 markus Exp $ */
+/* $OpenBSD: pathnames.h,v 1.29 2019/10/31 21:15:14 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -118,6 +118,11 @@
 
 /* Location of ssh-pkcs11-helper to support keys in tokens */
 #define _PATH_SSH_PKCS11_HELPER		"/usr/libexec/ssh-pkcs11-helper"
+
+/* Location of ssh-sk-helper to support keys in security keys */
+#ifndef _PATH_SSH_SK_HELPER
+#define _PATH_SSH_SK_HELPER		"/usr/libexec/ssh-sk-helper"
+#endif
 
 /* xauth for X11 forwarding */
 #define _PATH_XAUTH			"/usr/X11R6/bin/xauth"
