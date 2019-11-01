@@ -1,4 +1,4 @@
-#	$OpenBSD: krl.sh,v 1.7 2018/09/12 01:23:48 djm Exp $
+#	$OpenBSD: krl.sh,v 1.8 2019/07/25 09:17:35 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="key revocation lists"
@@ -6,7 +6,7 @@ tid="key revocation lists"
 # Use ed25519 by default since it's fast and it's supported when building
 # w/out OpenSSL.  Populate ktype[2-4] with the other types if supported.
 ktype1=ed25519; ktype2=ed25519; ktype3=ed25519; ktype4=ed25519
-for t in `${SSH} -Q key-plain`; do
+for t in `${SSH} -Q key-plain | grep -v ^sk-`; do
 	case "$t" in
 		ecdsa*)		ktype2=ecdsa ;;
 		ssh-rsa)	ktype3=rsa ;;
