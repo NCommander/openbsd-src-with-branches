@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfctl.c,v 1.64 2016/12/05 22:39:25 jca Exp $ */
+/*	$OpenBSD: ospfctl.c,v 1.65 2018/07/11 12:09:34 remi Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -122,8 +122,8 @@ main(int argc, char *argv[])
 
 	bzero(&sun, sizeof(sun));
 	sun.sun_family = AF_UNIX;
-
 	strlcpy(sun.sun_path, sockname, sizeof(sun.sun_path));
+
 	if (connect(ctl_sock, (struct sockaddr *)&sun, sizeof(sun)) == -1)
 		err(1, "connect: %s", sockname);
 
