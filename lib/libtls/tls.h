@@ -1,4 +1,4 @@
-/* $OpenBSD: tls.h,v 1.54 2018/11/06 20:34:54 jsing Exp $ */
+/* $OpenBSD: tls.h,v 1.55 2018/11/29 14:24:23 tedu Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -190,6 +190,7 @@ const uint8_t *tls_peer_cert_chain_pem(struct tls *_ctx, size_t *_len);
 
 const char *tls_conn_alpn_selected(struct tls *_ctx);
 const char *tls_conn_cipher(struct tls *_ctx);
+int tls_conn_cipher_strength(struct tls *_ctx);
 const char *tls_conn_servername(struct tls *_ctx);
 int tls_conn_session_resumed(struct tls *_ctx);
 const char *tls_conn_version(struct tls *_ctx);
