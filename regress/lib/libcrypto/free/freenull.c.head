@@ -1,7 +1,8 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: freenull.c.head,v 1.2 2018/07/10 20:55:57 tb Exp $	*/
 
 #include <openssl/asn1.h>
 #include <openssl/cmac.h>
+#include <openssl/cms.h>
 #include <openssl/comp.h>
 #include <openssl/conf_api.h>
 #include <openssl/dso.h>
