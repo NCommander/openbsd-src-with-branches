@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall_mi.h,v 1.20 2019/06/01 22:42:18 deraadt Exp $	*/
+/*	$OpenBSD: syscall_mi.h,v 1.21 2019/06/14 05:52:42 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -138,6 +138,7 @@ mi_child_return(struct proc *p)
 	KERNEL_UNLOCK();
 #endif
 
+	dispatch_deadproc();
 	userret(p);
 
 #ifdef KTRACE
