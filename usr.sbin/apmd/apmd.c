@@ -92,8 +92,8 @@ logmsg(int prio, const char *msg, ...)
 
 	va_start(ap, msg);
 	if (debug) {
-		vfprintf(stdout, msg, ap);
-		fprintf(stdout, "\n");
+		vfprintf(stderr, msg, ap);
+		fprintf(stderr, "\n");
 	} else {
 		vsyslog(prio, msg, ap);
 	}
