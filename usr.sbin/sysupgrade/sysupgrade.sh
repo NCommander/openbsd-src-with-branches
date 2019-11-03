@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: sysupgrade.sh,v 1.28 2019/10/20 09:10:43 ajacoutot Exp $
+# $OpenBSD: sysupgrade.sh,v 1.29 2019/10/26 04:04:20 deraadt Exp $
 #
 # Copyright (c) 1997-2015 Todd Miller, Theo de Raadt, Ken Westerback
 # Copyright (c) 2015 Robert Peichaer <rpe@openbsd.org>
@@ -114,7 +114,11 @@ if ! $RELEASE && [[ ${#_KERNV[*]} == 2 ]]; then
 	SNAP=true
 fi
 
-NEXT_VERSION=$(echo ${_KERNV[0]} + 0.1 | bc)
+if $RELEASE && [[ ${_KERNV[1]} == '-beta' ]]; then
+	NEXT_VERSION=${_KERNV[0]}
+else
+	NEXT_VERSION=$(echo ${_KERNV[0]} + 0.1 | bc)
+fi
 
 if $SNAP; then
 	URL=${MIRROR}/snapshots/${ARCH}/
