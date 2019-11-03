@@ -1,4 +1,4 @@
-/*	$OpenBSD: unwind.h,v 1.19 2019/10/31 12:51:43 florian Exp $	*/
+/*	$OpenBSD: unwind.h,v 1.20 2019/10/31 12:54:40 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -126,6 +126,7 @@ enum imsg_type {
 struct uw_forwarder {
 	SIMPLEQ_ENTRY(uw_forwarder)		 entry;
 	char					 name[1024]; /* XXX */
+	uint16_t				 port;
 };
 
 SIMPLEQ_HEAD(uw_forwarder_head, uw_forwarder);

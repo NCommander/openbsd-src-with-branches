@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.h,v 1.5 2019/04/02 07:45:11 florian Exp $	*/
+/*	$OpenBSD: resolver.h,v 1.6 2019/04/02 07:47:23 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -51,6 +51,7 @@ struct ctl_resolver_info {
 	enum uw_resolver_state	 state;
 	enum uw_resolver_type	 type;
 	int			 selected;
+	int			 oppdot;
 };
 
 void	 resolver(int, int);
