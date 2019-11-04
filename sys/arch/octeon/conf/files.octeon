@@ -1,4 +1,4 @@
-#	$OpenBSD: files.octeon,v 1.54 2019/09/15 07:15:14 visa Exp $
+#	$OpenBSD: files.octeon,v 1.55 2019/09/28 22:20:24 deraadt Exp $
 
 # Standard stanzas config(8) can't run without
 maxpartitions 16
@@ -173,6 +173,14 @@ file	arch/octeon/dev/octsctl.c			octsctl
 device	octxctl: fdt
 attach	octxctl at fdt
 file	arch/octeon/dev/octxctl.c			octxctl
+
+device	ogxnexus {}
+attach	ogxnexus at fdt
+file	arch/octeon/dev/ogxnexus.c			ogxnexus
+
+device	ogx: ether, ifnet, ifmedia, mii
+attach	ogx at ogxnexus
+file	arch/octeon/dev/if_ogx.c			ogx
 
 pseudo-device	octboot
 file	arch/octeon/dev/octboot.c			octboot needs-flag
