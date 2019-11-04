@@ -5,6 +5,7 @@ int asn1parse_main(int argc, char **argv);
 int ca_main(int argc, char **argv);
 int certhash_main(int argc, char **argv);
 int ciphers_main(int argc, char **argv);
+int cms_main(int argc, char **argv);
 int crl2pkcs7_main(int argc, char **argv);
 int crl_main(int argc, char **argv);
 int dgst_main(int argc, char **argv);
