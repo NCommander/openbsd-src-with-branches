@@ -138,7 +138,6 @@ mi_child_return(struct proc *p)
 	KERNEL_UNLOCK();
 #endif
 
-	dispatch_deadproc();
 	userret(p);
 
 #ifdef KTRACE

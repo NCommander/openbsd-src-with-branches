@@ -567,8 +567,8 @@ void	setrunnable(struct proc *);
 void	endtsleep(void *);
 void	unsleep(struct proc *);
 void	reaper(void *);
-void	dispatch_deadproc(void);
 void	exit1(struct proc *, int, int);
+void	exit2(struct proc *);
 int	dowait4(struct proc *, pid_t, int *, int, struct rusage *,
 	    register_t *);
 void	cpu_fork(struct proc *_curp, struct proc *_child, void *_stack,

@@ -413,7 +413,6 @@ mi_switch(void)
 
 	SCHED_ASSERT_UNLOCKED();
 
-	dispatch_deadproc();
 	smr_idle();
 
 	/*
