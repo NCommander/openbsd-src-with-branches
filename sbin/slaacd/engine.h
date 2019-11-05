@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.h,v 1.1 2017/06/03 10:00:29 florian Exp $	*/
+/*	$OpenBSD: engine.h,v 1.2 2018/07/27 06:20:01 bket Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -23,8 +23,6 @@ struct imsg_proposal {
 	struct sockaddr_in6		addr;
 	struct in6_addr			mask;
 	struct sockaddr_in6		gateway;
-	struct sockaddr_rtdns		rdns;
-	struct sockaddr_rtsearch	dnssl;
 	int				rtm_addrs;
 };
 
