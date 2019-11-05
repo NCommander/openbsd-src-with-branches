@@ -1,4 +1,4 @@
-/*	$OpenBSD: htons.S,v 1.3 2003/06/02 23:28:09 millert Exp $	*/
+/*	$OpenBSD: htons.S,v 1.4 2007/11/25 18:25:36 deraadt Exp $	*/
 /*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -42,3 +42,4 @@ ENTRY(htons)
 	sethi	%hi(0xffff0000), %o1
 	retl
 	 andn	%o0, %o1, %o0
+END(htons)
