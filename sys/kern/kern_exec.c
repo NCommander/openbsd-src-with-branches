@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.207 2019/07/15 04:11:03 visa Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.208 2019/08/02 02:17:35 cheloha Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -749,8 +749,7 @@ exec_abort:
 	 * get rid of the (new) address space we have created, if any, get rid
 	 * of our namei data and vnode, and exit noting failure
 	 */
-	uvm_deallocate(&vm->vm_map, VM_MIN_ADDRESS,
-		VM_MAXUSER_ADDRESS - VM_MIN_ADDRESS);
+	uvm_unmap(&vm->vm_map, VM_MIN_ADDRESS, VM_MAXUSER_ADDRESS);
 	if (pack.ep_interp != NULL)
 		pool_put(&namei_pool, pack.ep_interp);
 	if (pack.ep_emul_arg != NULL)
