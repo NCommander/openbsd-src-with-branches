@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2019/01/25 01:03:21 tb Exp $
+#	$OpenBSD: Makefile,v 1.6 2019/04/04 21:29:27 tb Exp $
 
 PROGS += handshake_table
 PROGS += valid_handshakes_terminate
@@ -10,7 +10,7 @@ REGRESS_TARGETS += run-$p
 LDADD =		${SSL_INT} -lcrypto
 DPADD =		${LIBCRYPTO} ${LIBSSL}
 WARNINGS =	Yes
-CFLAGS +=	-DLIBRESSL_INTERNAL -Wundef -Werror -I$(BSDSRCDIR)/lib/libssl
+CFLAGS +=	-DLIBRESSL_INTERNAL -Wundef -Werror -I${BSDSRCDIR}/lib/libssl
 
 print:	handshake_table
 	@./handshake_table -C
