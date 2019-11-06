@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_run.h,v 1.10 2010/11/27 19:57:23 miod Exp $	*/
+/*	$OpenBSD: db_run.h,v 1.11 2016/01/25 14:30:30 mpi Exp $	*/
 /*	$NetBSD: db_run.h,v 1.3 1996/02/05 01:57:14 christos Exp $	*/
 
 /*
@@ -39,8 +39,8 @@
 extern	int db_inst_count;
 extern	int db_cmd_loop_done;
 
-boolean_t db_stop_at_pc(db_regs_t *, boolean_t *);
-void db_restart_at_pc(db_regs_t *, boolean_t);
+int db_stop_at_pc(db_regs_t *, int *);
+void db_restart_at_pc(db_regs_t *, int);
 void db_single_step(db_regs_t *);
 #ifndef db_set_single_step
 void db_set_single_step(db_regs_t *);

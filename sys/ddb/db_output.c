@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_output.c,v 1.31 2017/04/20 12:41:43 visa Exp $	*/
+/*	$OpenBSD: db_output.c,v 1.32 2018/05/07 15:52:47 visa Exp $	*/
 /*	$NetBSD: db_output.c,v 1.13 1996/04/01 17:27:14 christos Exp $	*/
 
 /*
@@ -238,7 +238,7 @@ db_stack_dump(void)
 
 	intrace = 1;
 	printf("Starting stack trace...\n");
-	db_stack_trace_print((db_expr_t)__builtin_frame_address(0), TRUE,
+	db_stack_trace_print((db_expr_t)__builtin_frame_address(0), 1,
 	    256 /* low limit */, "", printf);
 	printf("End of stack trace.\n");
 	intrace = 0;
