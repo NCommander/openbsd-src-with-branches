@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.19 2010/05/24 15:04:54 deraadt Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.20 2014/10/15 17:22:56 miod Exp $	*/
 
 /* TODO parse 64bit insns or rewrite */
 
@@ -2309,9 +2309,7 @@ fmpyaddDasm(i, ofs, w)
 }
 
 vaddr_t
-db_disasm(loc, flag)
-	vaddr_t loc;
-	boolean_t flag;
+db_disasm(vaddr_t loc, int flag)
 {
 	register const struct inst *i;
 	register const struct majoropcode *m;
