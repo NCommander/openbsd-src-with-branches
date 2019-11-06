@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.43 2019/02/02 14:32:58 visa Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.44 2019/10/26 05:44:59 guenther Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.1 2003/04/26 18:39:27 fvdl Exp $	*/
 
 /*
@@ -84,15 +84,15 @@ const unsigned long *db_reg_args[6] = {
 };
 
 void
-db_stack_trace_print(db_expr_t addr, boolean_t have_addr, db_expr_t count,
+db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
     char *modif, int (*pr)(const char *, ...))
 {
 	struct callframe *frame, *lastframe;
 	unsigned long	*argp, *arg0;
 	db_addr_t	callpc;
 	unsigned int	cr4save = CR4_SMEP|CR4_SMAP;
-	boolean_t	kernel_only = TRUE;
-	boolean_t	trace_proc = FALSE;
+	int		kernel_only = 1;
+	int		trace_proc = 0;
 	struct proc	*p;
 
 	{
@@ -101,9 +101,9 @@ db_stack_trace_print(db_expr_t addr, boolean_t have_addr, db_expr_t count,
 
 		while ((c = *cp++) != 0) {
 			if (c == 'p')
-				trace_proc = TRUE;
+				trace_proc = 1;
 			if (c == 'u')
-				kernel_only = FALSE;
+				kernel_only = 0;
 		}
 	}
 
