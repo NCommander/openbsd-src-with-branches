@@ -1,4 +1,4 @@
-/*	$OpenBSD: unwind.h,v 1.20 2019/10/31 12:54:40 florian Exp $	*/
+/*	$OpenBSD: unwind.h,v 1.21 2019/11/03 09:46:11 otto Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -66,7 +66,7 @@ enum uw_resolver_type {
 static const char * const	uw_resolver_type_str[] = {
 	"recursor",
 	"dhcp",
-	"asr",
+	"stub",
 	"forwarder",
 	"DoT"
 };
