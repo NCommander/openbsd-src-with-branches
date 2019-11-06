@@ -1,4 +1,4 @@
-/*	$OpenBSD: tal.c,v 1.9 2019/11/04 09:35:43 claudio Exp $ */
+/*	$OpenBSD: tal.c,v 1.10 2019/11/04 09:39:06 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -141,6 +141,8 @@ tal_parse(const char *fn, char *buf)
 	size_t		 dlen;
 
 	p = tal_parse_buffer(fn, buf);
+	if (p == NULL)
+		return NULL;
 
 	/* extract the TAL basename (without .tal suffix) */
 	d = basename(fn);
