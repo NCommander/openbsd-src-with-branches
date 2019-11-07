@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.4 2018/03/20 15:45:32 mpi Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.5 2019/03/23 05:47:23 visa Exp $	*/
 /*      $NetBSD: db_interface.c,v 1.12 2001/07/22 11:29:46 wiz Exp $ */
 
 /*
@@ -46,7 +46,7 @@
 struct db_mutex ddb_mp_mutex = DB_MUTEX_INITIALIZER;
 volatile int ddb_state = DDB_STATE_NOT_RUNNING;
 volatile cpuid_t ddb_active_cpu;
-boolean_t        db_switch_cpu;
+int	        db_switch_cpu;
 long             db_switch_to_cpu;
 #endif
 
@@ -92,9 +92,9 @@ db_trap_glue(struct trapframe *frame)
 
 			s = splhigh();
 			db_active++;
-			cnpollc(TRUE);
+			cnpollc(1);
 			db_trap(T_BREAKPOINT, 0);
-			cnpollc(FALSE);
+			cnpollc(0);
 			db_active--;
 			splx(s);
 
