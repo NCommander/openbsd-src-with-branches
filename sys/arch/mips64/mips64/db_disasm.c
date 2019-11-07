@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.16 2012/09/29 21:37:03 miod Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.17 2015/09/23 17:03:27 miod Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -51,7 +51,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)kadb.c	8.1 (Berkeley) 6/10/93
- *      $Id: db_disasm.c,v 1.16 2012/09/29 21:37:03 miod Exp $
+ *      $Id: db_disasm.c,v 1.17 2015/09/23 17:03:27 miod Exp $
  */
 
 #ifdef _KERNEL
@@ -1016,7 +1016,7 @@ loadstore:
 
 #ifdef _KERNEL
 db_addr_t
-db_disasm(db_addr_t loc, boolean_t altfmt)
+db_disasm(db_addr_t loc, int altfmt)
 {
 	extern uint32_t kdbpeek(vaddr_t);
 

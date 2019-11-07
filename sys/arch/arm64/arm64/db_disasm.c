@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: db_disasm.c,v 1.1 2016/12/17 23:38:33 patrick Exp $ */
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
  *
@@ -23,7 +23,7 @@
 #include <ddb/db_access.h>
 
 vaddr_t
-db_disasm(vaddr_t loc, boolean_t altfmt)
+db_disasm(vaddr_t loc, int altfmt)
 {
 	return loc + 4;
 }
