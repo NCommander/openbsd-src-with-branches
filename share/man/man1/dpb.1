@@ -1,4 +1,4 @@
-.\"	$OpenBSD: dpb.1,v 1.17 2019/07/01 12:05:22 espie Exp $
+.\"	$OpenBSD: dpb.1,v 1.18 2019/11/07 16:17:45 espie Exp $
 .\"
 .\" Copyright (c) 2010-2013 Marc Espie <espie@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: July 1 2019 $
+.Dd $Mdocdate: November 7 2019 $
 .Dt DPB 1
 .Os
 .Sh NAME
@@ -267,7 +267,7 @@ User for all fetch activities if possible
 .Ar _pfetch
 .Pc .
 .It Ar FTP_ONLY
-Don't fetch distfiles that are not allowed for ftp.
+Don't fetch distfiles/don't build packages that are not allowed for ftp.
 .It Ar HISTORY_ONLY
 Don't fetch or build anything.
 Only run
