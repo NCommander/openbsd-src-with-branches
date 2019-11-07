@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.240 2019/07/17 16:46:18 mpi Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.241 2019/10/16 10:22:01 mpi Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -207,6 +207,8 @@ arp_rtrequest(struct ifnet *ifp, int req, struct rtentry *rt)
 		break;
 
 	case RTM_INVALIDATE:
+		if (la == NULL)
+			break;
 		if (!ISSET(rt->rt_flags, RTF_LOCAL))
 			arpinvalidate(rt);
 		break;
