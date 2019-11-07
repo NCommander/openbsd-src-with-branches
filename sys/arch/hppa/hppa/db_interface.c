@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.43 2018/03/20 15:45:32 mpi Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.44 2018/05/04 02:54:23 visa Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -216,7 +216,7 @@ db_ktrap(int type, int code, db_regs_t *regs)
  *  Any address is allowed for now.
  */
 int
-db_valid_breakpoint(db_addr_t addr)
+db_valid_breakpoint(vaddr_t addr)
 {
 	return (1);
 }
