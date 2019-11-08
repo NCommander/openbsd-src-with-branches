@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwmvar.h,v 1.43 2019/11/04 11:29:11 stsp Exp $	*/
+/*	$OpenBSD: if_iwmvar.h,v 1.44 2019/11/04 11:59:52 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -381,6 +381,7 @@ struct iwm_softc {
 	int			ba_start;
 	int			ba_tid;
 	uint16_t		ba_ssn;
+	uint16_t		ba_winsize;
 
 	/* Task for HT protection updates. */
 	struct task		htprot_task;
