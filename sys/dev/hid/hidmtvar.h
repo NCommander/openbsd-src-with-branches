@@ -1,4 +1,4 @@
-/* $OpenBSD: hidmtvar.h,v 1.6 2018/08/25 18:32:05 jcs Exp $ */
+/* $OpenBSD: hidmtvar.h,v 1.7 2018/08/25 20:31:31 jcs Exp $ */
 /*
  * Copyright (c) 2016 joshua stein <jcs@openbsd.org>
  *
@@ -63,7 +63,7 @@ struct hidmt {
 
 	struct hidmt_contact sc_contacts[HIDMT_MAX_CONTACTS];
 	int		sc_cur_contactcount;
-	int		sc_button;
+	int		sc_buttons;
 };
 
 int	hidmt_set_input_mode(struct hidmt *, uint16_t);
