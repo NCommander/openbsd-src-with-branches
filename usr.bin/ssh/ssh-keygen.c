@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.359 2019/10/31 21:28:27 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.360 2019/11/07 08:38:38 naddy Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2802,7 +2802,7 @@ main(int argc, char **argv)
 	sk_provider = getenv("SSH_SK_PROVIDER");
 
 	/* Remaining character: d */
-	while ((opt = getopt(argc, argv, "ABHLQUXceghiklopquvxy"
+	while ((opt = getopt(argc, argv, "ABHLQUXceghiklopquvy"
 	    "C:D:E:F:G:I:J:K:M:N:O:P:R:S:T:V:W:Y:Z:"
 	    "a:b:f:g:j:m:n:r:s:t:w:x:z:")) != -1) {
 		switch (opt) {
