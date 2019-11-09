@@ -51,10 +51,15 @@ public:
 
   bool CanDebugProcess() override;
 
+  lldb::ProcessSP DebugProcess(ProcessLaunchInfo &launch_info, Debugger &debugger,
+                               Target *target, Status &error) override;
+
   void CalculateTrapHandlerSymbolNames() override;
 
-  uint64_t ConvertMmapFlagsToPlatform(const ArchSpec &arch,
-                                      unsigned flags) override;
+  MmapArgList GetMmapArgumentList(const ArchSpec &arch, lldb::addr_t addr,
+                                  lldb::addr_t length, unsigned prot,
+                                  unsigned flags, lldb::addr_t fd,
+                                  lldb::addr_t offset) override;
 
 private:
   DISALLOW_COPY_AND_ASSIGN(PlatformOpenBSD);
