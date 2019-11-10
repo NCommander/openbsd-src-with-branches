@@ -1,4 +1,4 @@
-/*	$OpenBSD: eqdf2.c,v 1.2 2012/12/05 23:20:00 deraadt Exp $	*/
+/*	$OpenBSD: eqdf2.c,v 1.3 2015/09/13 14:21:46 miod Exp $	*/
 /* $NetBSD: eqdf2.c,v 1.1 2000/06/06 08:15:02 bjh21 Exp $ */
 
 /*
@@ -9,7 +9,7 @@
 #include "milieu.h"
 #include <softfloat.h>
 
-flag __eqdf2(float64, float64);
+flag __eqdf2(float64, float64) __dso_protected;
 
 flag
 __eqdf2(float64 a, float64 b)
