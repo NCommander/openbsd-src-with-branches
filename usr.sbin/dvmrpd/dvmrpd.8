@@ -1,4 +1,4 @@
-.\"	$OpenBSD: dvmrpd.8,v 1.9 2013/08/14 06:32:37 jmc Exp $
+.\"	$OpenBSD: dvmrpd.8,v 1.10 2015/07/27 17:28:39 sobrado Exp $
 .\"
 .\" Copyright (c) 2004, 2005, 2006 Esben Norby <norby@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: August 14 2013 $
+.Dd $Mdocdate: July 27 2015 $
 .Dt DVMRPD 8
 .Os
 .Sh NAME
@@ -58,19 +58,16 @@ DVMRP is used for handling multicast routing exclusively.
 It is not required that a unicast routing protocol is used in
 conjunction with DVMRP.
 .Pp
+To have
 .Nm
-is usually started at boot time, and can be enabled by
-setting the following in
-.Pa /etc/rc.conf.local :
+enabled at boot time, use
+.Dq rcctl enable dvmrpd ,
+which sets
 .Pp
-.Dl dvmrpd_flags=\&"\&"
+.Dl dvmrpd_flags=\(dq\(dq
 .Pp
-See
-.Xr rc 8
-and
-.Xr rc.conf 8
-for more information on the boot process
-and enabling daemons.
+in
+.Xr rc.conf.local 8 .
 .Pp
 A running
 .Nm
