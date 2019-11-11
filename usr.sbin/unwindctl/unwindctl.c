@@ -1,4 +1,4 @@
-/*	$OpenBSD: unwindctl.c,v 1.9 2019/11/03 09:49:02 otto Exp $	*/
+/*	$OpenBSD: unwindctl.c,v 1.10 2019/11/06 14:19:59 florian Exp $	*/
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -27,6 +27,7 @@
 #include <net/if.h>
 #include <net/if_media.h>
 #include <net/if_types.h>
+#include <net/route.h>
 
 #include <err.h>
 #include <errno.h>
