@@ -1,9 +1,11 @@
-#	$OpenBSD: Makefile.inc,v 1.72 2019/10/31 21:23:19 djm Exp $
+#	$OpenBSD: Makefile.inc,v 1.73 2019/10/31 21:37:33 djm Exp $
 
 .include <bsd.own.mk>
 
 CFLAGS+=	-I${.CURDIR}/..
+.if ${MACHINE} != "hppa"
 CFLAGS+=	-fstack-protector-all
+.endif
 
 CDIAGFLAGS=	-Wall
 CDIAGFLAGS+=	-Wextra
