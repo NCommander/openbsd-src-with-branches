@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucom.c,v 1.67 2018/02/19 08:59:52 mpi Exp $ */
+/*	$OpenBSD: ucom.c,v 1.68 2019/07/19 00:17:15 cheloha Exp $ */
 /*	$NetBSD: ucom.c,v 1.49 2003/01/01 00:10:25 thorpej Exp $	*/
 
 /*
@@ -291,7 +291,7 @@ ucom_shutdown(struct ucom_softc *sc)
 	 */
 	if (ISSET(tp->t_cflag, HUPCL)) {
 		ucom_dtr(sc, 0);
-		(void)tsleep(sc, TTIPRI, ttclos, hz);
+		tsleep_nsec(sc, TTIPRI, ttclos, SEC_TO_NSEC(1));
 	}
 }
 

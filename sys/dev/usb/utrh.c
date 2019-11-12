@@ -1,4 +1,4 @@
-/*	$OpenBSD: utrh.c,v 1.20 2016/03/19 11:41:56 mpi Exp $   */
+/*	$OpenBSD: utrh.c,v 1.21 2017/04/08 02:57:25 deraadt Exp $   */
 
 /*
  * Copyright (c) 2009 Yojiro UO <yuo@nui.org>
@@ -221,7 +221,7 @@ utrh_refresh(void *arg)
 		return;
 
 	/* wait till sensor data are updated, 1s will be enough */
-	tsleep(&sc->sc_sensortask, 0, "utrh", (1*hz));
+	tsleep_nsec(&sc->sc_sensortask, 0, "utrh", SEC_TO_NSEC(1));
 
 	/* turn off LED 1 */
 	ledbuf[1] = 0x0;

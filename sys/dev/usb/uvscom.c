@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvscom.c,v 1.36 2018/03/15 00:42:41 kevlo Exp $ */
+/*	$OpenBSD: uvscom.c,v 1.37 2018/04/27 08:08:06 guenther Exp $ */
 /*	$NetBSD: uvscom.c,v 1.9 2003/02/12 15:36:20 ichiro Exp $	*/
 /*-
  * Copyright (c) 2001-2002, Shunsuke Akiyama <akiyama@jp.FreeBSD.org>.
@@ -706,7 +706,7 @@ uvscom_open(void *addr, int portno)
 		/* unit is not ready */
 
 		for (i = UVSCOM_UNIT_WAIT; i > 0; --i) {
-			tsleep(&err, TTIPRI, "uvsop", hz);	/* XXX */
+			tsleep_nsec(&err, TTIPRI, "uvsop", SEC_TO_NSEC(1));
 			if (ISSET(sc->sc_usr, UVSCOM_USTAT_MASK))
 				break;
 		}
