@@ -1,4 +1,4 @@
-/*	$OpenBSD: ruleset.c,v 1.44 2019/08/11 17:23:12 gilles Exp $ */
+/*	$OpenBSD: ruleset.c,v 1.45 2019/11/04 00:05:38 gilles Exp $ */
 
 /*
  * Copyright (c) 2009 Gilles Chehade <gilles@poolp.org>
@@ -84,9 +84,12 @@ ruleset_match_from(struct rule *r, const struct envelope *evp)
 	}
 	else {
 		key = ss_to_text(&evp->ss);
-		if (strcmp(key, "local") == 0)
-			if (r->flag_from_socket)
+		if (r->flag_from_socket) {
+			if (strcmp(key, "local") == 0)
 				return MATCH_RESULT(1, r->flag_from);
+			else
+				return r->flag_from < 0 ? 1 : 0;
+		}
 	}
 	if (r->flag_from_regex)
 		service = K_REGEX;
