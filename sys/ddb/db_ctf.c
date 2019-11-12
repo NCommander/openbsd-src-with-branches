@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_ctf.c,v 1.27 2018/08/31 11:57:04 bluhm Exp $	*/
+/*	$OpenBSD: db_ctf.c,v 1.28 2019/11/07 13:16:25 mpi Exp $	*/
 
 /*
  * Copyright (c) 2016-2017 Martin Pieuchot
@@ -171,7 +171,7 @@ db_ctf_func_numargs(Elf_Sym *st)
 			return vlen;
 	}
 
-	return -1;
+	return 0;
 }
 
 /*
