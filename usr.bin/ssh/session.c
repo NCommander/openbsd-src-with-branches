@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.315 2019/02/22 03:37:11 djm Exp $ */
+/* $OpenBSD: session.c,v 1.316 2019/06/28 13:35:04 deraadt Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -52,6 +52,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <limits.h>
 

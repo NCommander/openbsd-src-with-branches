@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.326 2019/06/28 13:35:04 deraadt Exp $ */
+/* $OpenBSD: clientloop.c,v 1.327 2019/07/24 08:57:00 mestre Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -74,6 +74,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <termios.h>
 #include <pwd.h>
 #include <unistd.h>

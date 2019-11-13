@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.311 2019/11/12 19:33:08 markus Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.312 2019/11/12 22:36:44 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -35,6 +35,7 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include <signal.h>
 #include <pwd.h>
 #include <unistd.h>

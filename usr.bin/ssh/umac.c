@@ -1,4 +1,4 @@
-/* $OpenBSD: umac.c,v 1.16 2017/12/12 15:06:12 naddy Exp $ */
+/* $OpenBSD: umac.c,v 1.17 2018/04/10 00:10:49 djm Exp $ */
 /* -----------------------------------------------------------------------
  *
  * umac.c -- C Implementation UMAC Message Authentication
@@ -68,6 +68,7 @@
 #include <sys/types.h>
 #include <endian.h>
 #include <string.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
