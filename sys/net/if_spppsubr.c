@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_spppsubr.c,v 1.178 2019/06/22 20:15:09 kn Exp $	*/
+/*	$OpenBSD: if_spppsubr.c,v 1.179 2019/06/24 21:36:53 kn Exp $	*/
 /*
  * Synchronous PPP link level subroutines.
  *
@@ -873,6 +873,8 @@ sppp_ioctl(struct ifnet *ifp, u_long cmd, void *data)
 		break;
 
 	case SIOCSSPPPPARAMS:
+		if ((rv = suser(curproc)) != 0)
+			break;
 		rv = sppp_set_params(sp, ifr);
 		break;
 
