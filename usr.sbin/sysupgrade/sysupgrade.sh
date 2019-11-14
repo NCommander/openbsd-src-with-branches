@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD$
+# $OpenBSD: sysupgrade.sh,v 1.25.2.1 2019/10/02 17:18:14 benno Exp $
 #
 # Copyright (c) 1997-2015 Todd Miller, Theo de Raadt, Ken Westerback
 # Copyright (c) 2015 Robert Peichaer <rpe@openbsd.org>
@@ -196,6 +196,9 @@ if ! ${KEEP}; then
 rm -f /home/_sysupgrade/{${CLEAN}}
 __EOT
 fi
+
+echo Fetching updated firmware.
+fw_update || echo "Warning: firmware not updated."
 
 install -F -m 700 bsd.rd /bsd.upgrade
 sync
