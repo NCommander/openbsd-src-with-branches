@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-kill-pane.c,v 1.25 2017/04/22 10:22:39 nicm Exp $ */
+/* $OpenBSD: cmd-kill-pane.c,v 1.26 2018/04/10 10:48:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -37,7 +37,7 @@ const struct cmd_entry cmd_kill_pane_entry = {
 
 	.target = { 't', CMD_FIND_PANE, 0 },
 
-	.flags = 0,
+	.flags = CMD_AFTERHOOK,
 	.exec = cmd_kill_pane_exec
 };
 
