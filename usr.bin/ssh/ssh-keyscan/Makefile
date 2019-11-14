@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 2018/02/23 05:14:05 djm Exp $
+#	$OpenBSD: Makefile,v 1.13 2018/07/25 17:12:35 deraadt Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -11,6 +11,9 @@ PROG=	ssh-keyscan
 BINDIR=	/usr/bin
 
 .include <bsd.prog.mk>
+
+LDADD+= -lfido2 -lcbor -lusbhid
+DPADD+=	${LIBFIDO2} ${LIBCBOR} ${LIBUSBHID}
 
 LDADD+= -lcrypto -lz -lutil
 DPADD+= ${LIBCRYPTO} ${LIBZ} ${LIBUTIL}

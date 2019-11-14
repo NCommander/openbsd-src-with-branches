@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-add.c,v 1.143 2019/10/31 21:19:56 djm Exp $ */
+/* $OpenBSD: ssh-add.c,v 1.144 2019/11/12 19:33:08 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -706,6 +706,9 @@ main(int argc, char **argv)
 			ret = 1;
 		goto done;
 	}
+
+	if (skprovider == NULL)
+		skprovider = "internal";
 
 	argc -= optind;
 	argv += optind;
