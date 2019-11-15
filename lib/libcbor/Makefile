@@ -1,8 +1,8 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2019/11/14 21:11:34 djm Exp $
 
 .PATH: ${.CURDIR}/src ${.CURDIR}/src/cbor ${.CURDIR}/src/cbor/internal
 
-CFLAGS+= -I${.CURDIR}/src -DHAVE_ENDIAN_H
+CFLAGS+= -I${.CURDIR}/src -DHAVE_ENDIAN_H -std=c99
 
 LIB=	cbor
 SRCS=	cbor.c
