@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: lib_redrawln.c,v 1.3 2010/01/12 23:22:06 nicm Exp $ */
 
 /****************************************************************************
  * Copyright (c) 1998-2006,2007 Free Software Foundation, Inc.              *
@@ -41,7 +41,7 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$Id: lib_redrawln.c,v 1.12 2007/10/13 20:08:56 tom Exp $")
+MODULE_ID("$Id: lib_redrawln.c,v 1.3 2010/01/12 23:22:06 nicm Exp $")
 
 NCURSES_EXPORT(int)
 wredrawln(WINDOW *win, int beg, int num)
@@ -65,14 +65,14 @@ wredrawln(WINDOW *win, int beg, int num)
 	returnCode(ERR);
 
     end = beg + num;
-    if (end > curscr->_maxy + 1)
-	end = curscr->_maxy + 1;
+    if (end > curscr->_maxy + 1 - win->_begy)
+	end = curscr->_maxy + 1 - win->_begy;
     if (end > win->_maxy + 1)
 	end = win->_maxy + 1;
 
     len = (win->_maxx + 1);
-    if (len > (size_t) (curscr->_maxx + 1))
-	len = (size_t) (curscr->_maxx + 1);
+    if (len > (size_t) (curscr->_maxx + 1 - win->_begx))
+	len = (size_t) (curscr->_maxx + 1 - win->_begx);
     len *= sizeof(curscr->_line[0].text[0]);
 
     for (i = beg; i < end; i++) {
