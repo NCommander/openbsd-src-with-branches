@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.101 2016/12/26 23:43:52 krw Exp $	*/
+/*	$OpenBSD: options.c,v 1.102 2018/09/13 12:33:43 millert Exp $	*/
 /*	$NetBSD: options.c,v 1.6 1996/03/26 23:54:18 mrg Exp $	*/
 
 /*-
@@ -1226,7 +1226,8 @@ cpio_options(int argc, char **argv)
 				 * create an archive
 				 */
 				act = ARCHIVE;
-				frmt = &(fsub[F_CPIO]);
+				if (frmt == NULL)
+					frmt = &(fsub[F_CPIO]);
 				break;
 			case 'p':
 				/*
