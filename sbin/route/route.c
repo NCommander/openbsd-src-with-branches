@@ -1296,7 +1296,7 @@ print_rtmsg(struct rt_msghdr *rtm, int msglen)
 			printf("unknown");
 			break;
 		}
-		printf(" table %u, ifidx %u, ",
+		printf(" table %u, if# %u, ",
 		    rtm->rtm_tableid, rtm->rtm_index);
 		printf("pid: %ld, seq %d, errno %d\nflags:",
 		    (long)rtm->rtm_pid, rtm->rtm_seq, rtm->rtm_errno);
@@ -1362,7 +1362,7 @@ print_rtmsg(struct rt_msghdr *rtm, int msglen)
 		}
 		break;
 	default:
-		printf(", priority %u, table %u, ifidx %u, ",
+		printf(", priority %u, table %u, if# %u, ",
 		    rtm->rtm_priority, rtm->rtm_tableid, rtm->rtm_index);
 		printf("pid: %ld, seq %d, errno %d\nflags:",
 		    (long)rtm->rtm_pid, rtm->rtm_seq, rtm->rtm_errno);
