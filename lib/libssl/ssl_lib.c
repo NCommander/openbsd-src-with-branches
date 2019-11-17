@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.205 2019/05/15 09:13:16 bcook Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.206 2019/11/04 19:17:28 otto Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1012,7 +1012,7 @@ SSL_shutdown(SSL *s)
 	}
 
 	if (s != NULL && !SSL_in_init(s))
-		return (ssl3_shutdown(s));
+		return (s->method->internal->ssl_shutdown(s));
 
 	return (1);
 }
