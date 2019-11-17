@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_client.c,v 1.17 2019/11/17 00:16:58 beck Exp $ */
+/* $OpenBSD: tls13_client.c,v 1.18 2019/11/17 03:04:18 beck Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -25,7 +25,7 @@
 #include "tls13_handshake.h"
 #include "tls13_internal.h"
 
-int
+static int
 tls13_connect(struct tls13_ctx *ctx)
 {
 	if (ctx->mode != TLS13_HS_CLIENT)
