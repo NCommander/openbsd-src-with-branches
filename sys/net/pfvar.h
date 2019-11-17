@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.491 2019/07/02 09:04:53 yasuoka Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.492 2019/07/09 11:30:19 yasuoka Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -39,6 +39,7 @@
 #include <sys/rwlock.h>
 #include <sys/syslimits.h>
 #include <sys/refcnt.h>
+#include <sys/timeout.h>
 
 #include <netinet/in.h>
 
@@ -1432,7 +1433,7 @@ enum pf_divert_types {
 };
 
 struct pf_pktdelay {
-	struct timeout	*to;
+	struct timeout	 to;
 	struct mbuf	*m;
 	u_int		 ifidx;
 };

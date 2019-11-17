@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.343 2019/02/18 13:11:44 bluhm Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.344 2019/05/09 14:59:30 claudio Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2863,6 +2863,7 @@ pf_rule_copyin(struct pf_rule *from, struct pf_rule *to,
 		if ((to->match_tag = pf_tagname2tag(to->match_tagname, 1)) == 0)
 			return (EBUSY);
 	to->scrub_flags = from->scrub_flags;
+	to->delay = from->delay;
 	to->uid = from->uid;
 	to->gid = from->gid;
 	to->rule_flag = from->rule_flag;
