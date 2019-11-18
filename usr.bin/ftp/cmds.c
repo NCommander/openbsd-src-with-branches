@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmds.c,v 1.82 2019/05/16 12:44:17 florian Exp $	*/
+/*	$OpenBSD: cmds.c,v 1.83 2019/06/28 13:35:01 deraadt Exp $	*/
 /*	$NetBSD: cmds.c,v 1.27 1997/08/18 10:20:15 lukem Exp $	*/
 
 /*
@@ -286,12 +286,12 @@ usage:
 						tp = cp;
 						tp2 = tmpbuf;
 						while ((*tp2 = *tp) != '\0') {
-						     if (isupper((unsigned char)*tp2)) {
-							    *tp2 =
-								tolower((unsigned char)*tp2);
-						     }
-						     tp++;
-						     tp2++;
+							if (isupper((unsigned char)*tp2)) {
+								*tp2 =
+								    tolower((unsigned char)*tp2);
+							}
+							tp++;
+							tp2++;
 						}
 					}
 					tp = tmpbuf;
