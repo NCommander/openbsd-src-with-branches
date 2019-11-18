@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.363 2019/11/12 22:36:44 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.364 2019/11/14 21:27:30 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2972,6 +2972,7 @@ main(int argc, char **argv)
 			break;
 		case 'Y':
 			sign_op = optarg;
+			break;
 		case 'w':
 			sk_provider = optarg;
 			break;
