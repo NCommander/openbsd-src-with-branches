@@ -1,4 +1,4 @@
-/*	$OpenBSD: roa.c,v 1.5 2019/10/08 10:04:36 claudio Exp $ */
+/*	$OpenBSD: roa.c,v 1.6 2019/10/16 17:37:46 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -450,6 +450,11 @@ roa_read(int fd)
 	return p;
 }
 
+/*
+ * Add each IP address in the ROA into the VRP tree.
+ * Updates "vrps" to be the number of VRPs and "uniqs" to be the unique
+ * number of addresses.
+ */
 void
 roa_insert_vrps(struct vrp_tree *tree, struct roa *roa, size_t *vrps,
     size_t *uniqs)
