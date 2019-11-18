@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.507 2019/09/13 04:27:35 djm Exp $ */
+/* $OpenBSD: ssh.c,v 1.508 2019/10/31 21:18:28 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -60,6 +60,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <limits.h>
 #include <locale.h>

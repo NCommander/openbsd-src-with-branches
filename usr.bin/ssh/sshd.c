@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.539 2019/10/31 21:23:19 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.540 2019/11/13 11:25:11 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -60,6 +60,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <limits.h>
 
