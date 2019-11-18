@@ -1,4 +1,4 @@
-/* $OpenBSD: xhci.c,v 1.106 2019/10/06 17:30:00 mpi Exp $ */
+/* $OpenBSD: xhci.c,v 1.107 2019/11/18 20:08:49 patrick Exp $ */
 
 /*
  * Copyright (c) 2014-2015 Martin Pieuchot
@@ -2900,7 +2900,7 @@ xhci_device_generic_start(struct usbd_xfer *xfer)
 	/* If the buffer crosses a 64k boundary, we need one more. */
 	len = XHCI_TRB_MAXSIZE - (paddr & (XHCI_TRB_MAXSIZE - 1));
 	if (len < xfer->length)
-		ntrb++;
+		ntrb = howmany(xfer->length - len, XHCI_TRB_MAXSIZE) + 1;
 	else
 		len = xfer->length;
 
