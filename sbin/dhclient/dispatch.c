@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.164 2019/02/16 18:42:07 krw Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.165 2019/05/10 01:29:31 guenther Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -58,6 +58,7 @@
 #include <imsg.h>
 #include <limits.h>
 #include <poll.h>
+#include <resolv.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -93,6 +94,8 @@ dispatch(struct interface_info *ifi, int routefd)
 			time(&ifi->startup_time);
 			free(ifi->configured);
 			ifi->configured = NULL;
+			free(ifi->unwind_info);
+			ifi->unwind_info = NULL;
 			ifi->state = S_PREBOOT;
 			state_preboot(ifi);
 		}
