@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.19 2018/07/11 15:41:19 remi Exp $ */
+/*	$OpenBSD: printconf.c,v 1.20 2018/12/28 19:25:10 remi Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -148,6 +148,9 @@ print_iface(struct iface *iface)
 		}
 		printf("\t\trouter-priority %d\n", iface->priority);
 		printf("\t\ttransmit-delay %d\n", iface->transmit_delay);
+
+		if (iface->p2p)
+			printf("\t\ttype p2p\n");
 
 		printf("\t\tauth-type %s\n", if_auth_name(iface->auth_type));
 		switch (iface->auth_type) {
