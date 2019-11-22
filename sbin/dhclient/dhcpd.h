@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpd.h,v 1.282 2019/07/30 12:48:27 krw Exp $	*/
+/*	$OpenBSD: dhcpd.h,v 1.283 2019/11/19 14:35:08 krw Exp $	*/
 
 /*
  * Copyright (c) 2004 Henning Brauer <henning@openbsd.org>
@@ -250,4 +250,4 @@ void		 write_resolv_conf(void);
 void		 propose(struct proposal *);
 void		 revoke_proposal(struct proposal *);
 
-void		 tell_unwind(struct unwind_info *, int, int);
+void		 tell_unwind(struct unwind_info *, int);
