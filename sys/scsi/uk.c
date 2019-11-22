@@ -1,4 +1,4 @@
-/*	$OpenBSD: uk.c,v 1.18 2016/03/12 15:16:04 krw Exp $	*/
+/*	$OpenBSD: uk.c,v 1.19 2017/09/08 05:36:53 deraadt Exp $	*/
 /*	$NetBSD: uk.c,v 1.15 1996/03/17 00:59:57 thorpej Exp $	*/
 
 /*
@@ -159,7 +159,7 @@ ukclose(dev_t dev, int flag, int fmt, struct proc *p)
 		return (ENXIO);
 
 	SC_DEBUG(sc->sc_link, SDEV_DB1, ("closing\n"));
-	sc->sc_link->flags &= ~SDEV_OPEN;
+	CLR(sc->sc_link->flags, SDEV_OPEN);
 
 	device_unref(&sc->sc_dev);
 	return (0);
