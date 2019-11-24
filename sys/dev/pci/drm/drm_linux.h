@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_linux.h,v 1.91 2018/08/20 19:33:31 kettenis Exp $	*/
+/*	$OpenBSD: drm_linux.h,v 1.92 2018/10/31 08:50:25 kettenis Exp $	*/
 /*
  * Copyright (c) 2013, 2014, 2015 Mark Kettenis
  * Copyright (c) 2017 Martin Pieuchot
@@ -171,6 +171,7 @@ hweight64(uint64_t x)
 #define upper_32_bits(_val)	((u32)(((_val) >> 16) >> 16))
 #define DMA_BIT_MASK(n) (((n) == 64) ? ~0ULL : (1ULL<<(n)) -1)
 #define BIT(x)			(1UL << x)
+#define BITS_PER_BYTE		8
 #define BITS_TO_LONGS(x)	howmany((x), 8 * sizeof(long))
 
 #define DECLARE_BITMAP(x, y)	unsigned long x[BITS_TO_LONGS(y)];
