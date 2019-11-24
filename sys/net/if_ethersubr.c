@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.259 2019/02/20 00:03:15 dlg Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.260 2019/07/17 16:46:17 mpi Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -170,6 +170,9 @@ ether_ioctl(struct ifnet *ifp, struct arpcom *arp, u_long cmd, caddr_t data)
 void
 ether_rtrequest(struct ifnet *ifp, int req, struct rtentry *rt)
 {
+	if (rt == NULL)
+		return;
+
 	switch (rt_key(rt)->sa_family) {
 	case AF_INET:
 		arp_rtrequest(ifp, req, rt);
