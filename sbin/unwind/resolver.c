@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.c,v 1.74 2019/11/23 08:17:10 florian Exp $	*/
+/*	$OpenBSD: resolver.c,v 1.75 2019/11/23 08:57:52 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -516,7 +516,7 @@ resolver_dispatch_frontend(int fd, short event, void *bula)
 				new_static_dot_forwarders();
 			}
 			break;
-		case IMSG_RECHECK_RESOLVERS:
+		case IMSG_NETWORK_CHANGED:
 			schedule_recheck_all_resolvers();
 			break;
 		case IMSG_REPLACE_DNS:
