@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.12 2017/12/21 00:41:22 djm Exp $
+#	$OpenBSD: Makefile.inc,v 1.13 2018/10/17 23:28:05 djm Exp $
 
 REGRESS_FAIL_EARLY?=	yes
 
@@ -73,6 +73,9 @@ DPADD+= ${LIBUTIL}
 LDADD+= -lcrypto
 DPADD+= ${LIBCRYPTO}
 .endif
+
+LDADD+= -lfido2 -lcbor -lusbhid
+DPADD+= ${LIBFIDO2} ${LIBCBOR} ${LIBUSBHID}
 
 UNITTEST_ARGS?=
 
