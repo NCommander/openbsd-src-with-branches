@@ -1,9 +1,11 @@
-#	$OpenBSD: Makefile,v 1.103 2019/07/16 03:21:54 dtucker Exp $
+#	$OpenBSD: Makefile,v 1.104 2019/09/03 08:37:45 djm Exp $
 
 .ifndef SKIP_UNIT
 SUBDIR=		unittests
 .endif
 SUBDIR+=	misc
+
+REGRESS_SETUP_ONCE=misc	# For sk-dummy.so
 
 REGRESS_FAIL_EARLY?=	yes
 REGRESS_TARGETS=	t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 t12
