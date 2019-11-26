@@ -1,4 +1,4 @@
-#	$OpenBSD: agent-getpeereid.sh,v 1.9 2017/09/13 14:58:26 bluhm Exp $
+#	$OpenBSD: agent-getpeereid.sh,v 1.10 2018/02/09 03:40:22 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="disallow agent attach from other uid"
@@ -25,7 +25,7 @@ case "x$SUDO" in
 esac
 
 trace "start agent"
-eval `${SSHAGENT} -s -a ${ASOCK}` > /dev/null
+eval `${SSHAGENT} ${EXTRA_AGENT_ARGS} -s -a ${ASOCK}` > /dev/null
 r=$?
 if [ $r -ne 0 ]; then
 	fail "could not start ssh-agent: exit code $r"
