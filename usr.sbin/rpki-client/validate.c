@@ -1,4 +1,4 @@
-/*	$OpenBSD: validate.c,v 1.5 2019/10/08 10:04:36 claudio Exp $ */
+/*	$OpenBSD: validate.c,v 1.6 2019/11/18 08:38:27 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -144,7 +144,7 @@ valid_ta(const char *fn, const struct auth *auths,
  * its AKI.
  * Returns the parent index or -1 on failure.
  */
-static ssize_t
+ssize_t
 valid_ski_aki(const char *fn, const struct auth *auths,
     size_t authsz, const char *ski, const char *aki)
 {
