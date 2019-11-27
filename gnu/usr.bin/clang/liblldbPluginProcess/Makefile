@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2019/06/23 22:07:44 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2019/11/09 16:45:48 mortimer Exp $
 
 LIB=	lldbPluginProcess
 NOPIC=
@@ -33,6 +33,7 @@ SRCS=	CrashReason.cpp \
 	NativeRegisterContextRegisterInfo.cpp \
 	NativeThreadOpenBSD.cpp \
 	NetBSDSignals.cpp \
+	OpenBSDSignals.cpp \
 	ProcessElfCore.cpp \
 	ProcessGDBRemote.cpp \
 	ProcessGDBRemoteLog.cpp \
