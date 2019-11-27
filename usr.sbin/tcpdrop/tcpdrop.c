@@ -1,4 +1,4 @@
-/* $OpenBSD: tcpdrop.c,v 1.17 2015/01/16 06:40:21 deraadt Exp $ */
+/* $OpenBSD: tcpdrop.c,v 1.18 2018/11/08 07:14:37 mestre Exp $ */
 
 /*
  * Copyright (c) 2004 Markus Friedl <markus@openbsd.org>
@@ -32,6 +32,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <resolv.h>
 
 __dead void	 usage(void);
 
@@ -63,9 +64,9 @@ main(int argc, char **argv)
 	struct tcp_ident_mapping tir;
 	int gaierr, rval = 0;
 
-	if (unveil("/etc/hosts", "r") == -1)
+	if (unveil(_PATH_HOSTS, "r") == -1)
 		err(1, "unveil");
-	if (unveil("/etc/resolv.conf", "r") == -1)
+	if (unveil(_PATH_RESCONF, "r") == -1)
 		err(1, "unveil");
 	if (unveil(NULL, NULL) == -1)
 		err(1, "unveil");
