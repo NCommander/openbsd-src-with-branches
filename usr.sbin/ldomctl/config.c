@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.26 2019/07/28 14:55:59 kettenis Exp $	*/
+/*	$OpenBSD: config.c,v 1.27 2019/08/05 19:27:47 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2012, 2018 Mark Kettenis
@@ -2870,4 +2870,20 @@ build_config(const char *filename)
 
 	guest_finalize(primary);
 	hvmd_finalize();
+}
+
+void
+list_components(void)
+{
+	struct component *component;
+
+	pri = md_read("pri");
+	if (pri == NULL)
+		err(1, "unable to get PRI");
+
+	pri_init(pri);
+
+	TAILQ_FOREACH(component, &components, link) {
+		printf("%s\n", component->path);
+	}
 }
