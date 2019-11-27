@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.393 2019/09/27 10:33:06 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.394 2019/10/01 08:57:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -717,11 +717,10 @@ struct ctl_show_rib {
 	u_int32_t		med;
 	u_int32_t		weight;
 	u_int32_t		flags;
-	u_int16_t		aspath_len;
 	u_int8_t		prefixlen;
 	u_int8_t		origin;
 	u_int8_t		validation_state;
-	/* plus a aspath_len bytes long aspath */
+	/* plus an aspath */
 };
 
 enum as_spec {
