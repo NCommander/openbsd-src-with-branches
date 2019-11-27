@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.h,v 1.9 2019/11/21 05:01:22 florian Exp $	*/
+/*	$OpenBSD: resolver.h,v 1.10 2019/11/25 18:10:42 otto Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -62,4 +62,3 @@ struct ctl_forwarder_info {
 void	 resolver(int, int);
 int	 resolver_imsg_compose_main(int, pid_t, void *, uint16_t);
 int	 resolver_imsg_compose_frontend(int, pid_t, void *, uint16_t);
-int	 resolver_imsg_compose_captiveportal(int, pid_t, void *, uint16_t);
