@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsiconf.h,v 1.176 2019/09/27 23:07:42 krw Exp $	*/
+/*	$OpenBSD: scsiconf.h,v 1.177 2019/11/25 17:02:57 krw Exp $	*/
 /*	$NetBSD: scsiconf.h,v 1.35 1997/04/02 02:29:38 mycroft Exp $	*/
 
 /*
@@ -489,6 +489,8 @@ int	scsi_mode_sense_big(struct scsi_link *, int, int,
 	    struct scsi_mode_header_big *, size_t, int, int);
 void *	scsi_mode_sense_page(struct scsi_mode_header *, int);
 void *	scsi_mode_sense_big_page(struct scsi_mode_header_big *, int);
+void	scsi_parse_blkdesc(struct scsi_link *, union scsi_mode_sense_buf *, int,
+	    u_int32_t *, u_int64_t *, u_int32_t *);
 int	scsi_do_mode_sense(struct scsi_link *, int,
 	    union scsi_mode_sense_buf *, void **, u_int32_t *, u_int64_t *,
 	    u_int32_t *, int, int, int *);
