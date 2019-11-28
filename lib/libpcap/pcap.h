@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcap.h,v 1.19 2018/04/05 03:47:27 lteo Exp $	*/
+/*	$OpenBSD: pcap.h,v 1.20 2018/06/03 10:29:28 sthen Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995, 1996, 1997
@@ -92,7 +92,7 @@ typedef enum {
 struct pcap_pkthdr {
 	struct bpf_timeval ts;	/* time stamp */
 	bpf_u_int32 caplen;	/* length of portion present */
-	bpf_u_int32 len;	/* length this packet (off wire) */
+	bpf_u_int32 len;	/* length of this packet (off wire) */
 };
 
 /*
