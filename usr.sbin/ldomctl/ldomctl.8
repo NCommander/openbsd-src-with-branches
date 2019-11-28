@@ -1,4 +1,4 @@
-.\"     $OpenBSD: ldomctl.8,v 1.16 2019/11/27 19:54:10 kn Exp $
+.\"     $OpenBSD: ldomctl.8,v 1.17 2019/11/28 17:51:55 kn Exp $
 .\"
 .\" Copyright (c) 2012 Mark Kettenis <kettenis@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: November 27 2019 $
+.Dd $Mdocdate: November 28 2019 $
 .Dt LDOMCTL 8 sparc64
 .Os
 .Sh NAME
@@ -34,6 +34,10 @@ information about domains running on the system.
 .Pp
 The following commands are available:
 .Bl -tag -width Ds
+.It Cm console Ar domain
+Using
+.Xr cu 1
+connect to the console of the guest domain.
 .It Cm delete Ar configuration
 Delete the specified configuration from non-volatile storage.
 .It Cm download Ar directory
@@ -166,7 +170,7 @@ This example bridges guest domains into the physical network:
 .Pp
 Access the console of the first domain and boot it:
 .Bd -literal -offset indent
-# cu -l ttyV0
+# ldomctl console puffy
 ok boot disk1
 .Ed
 .Sh SEE ALSO
