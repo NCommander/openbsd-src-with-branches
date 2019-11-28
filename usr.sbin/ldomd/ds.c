@@ -1,4 +1,4 @@
-/*	$OpenBSD: ds.c,v 1.8 2018/07/13 08:46:07 kettenis Exp $	*/
+/*	$OpenBSD: ds.c,v 1.9 2019/10/20 16:18:36 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 #include "ds.h"
-#include "util.h"
+#include "ldom_util.h"
 
 void	ldc_rx_ctrl_vers(struct ldc_conn *, struct ldc_pkt *);
 void	ldc_rx_ctrl_rtr(struct ldc_conn *, struct ldc_pkt *);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.h,v 1.3 2012/11/24 10:42:46 kettenis Exp $	*/
+/*	$OpenBSD: $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis

@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.27 2019/08/05 19:27:47 kettenis Exp $	*/
+/*	$OpenBSD: config.c,v 1.28 2019/11/27 19:54:10 kn Exp $	*/
 
 /*
  * Copyright (c) 2012, 2018 Mark Kettenis
@@ -28,7 +28,7 @@
 
 #include "mdesc.h"
 #include "ldomctl.h"
-#include "util.h"
+#include "ldom_util.h"
 
 #define LDC_GUEST	0
 #define LDC_HV		1

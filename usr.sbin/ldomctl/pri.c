@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pri.c,v 1.1 2012/11/04 19:04:11 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -21,7 +21,7 @@
 
 #include "ds.h"
 #include "mdesc.h"
-#include "util.h"
+#include "ldom_util.h"
 
 void	pri_start(struct ldc_conn *, uint64_t);
 void	pri_rx_data(struct ldc_conn *, uint64_t, void *, size_t);

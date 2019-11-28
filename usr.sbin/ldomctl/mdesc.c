@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdesc.c,v 1.11 2018/09/16 12:17:05 kettenis Exp $	*/
+/*	$OpenBSD: mdesc.c,v 1.12 2019/07/14 14:40:55 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -25,7 +25,7 @@
 #include <string.h>
 
 #include "mdesc.h"
-#include "util.h"
+#include "ldom_util.h"
 
 struct md_name *
 md_find_name(struct md *md, const char *str)
