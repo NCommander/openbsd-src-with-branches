@@ -1,4 +1,4 @@
-/*	$OpenBSD: mft.c,v 1.7 2019/08/13 13:27:26 claudio Exp $ */
+/*	$OpenBSD: mft.c,v 1.8 2019/10/23 07:36:29 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -96,7 +96,7 @@ check_validity(const ASN1_GENERALIZEDTIME *from,
 static int
 mft_parse_filehash(struct parse *p, const ASN1_OCTET_STRING *os)
 {
-	const ASN1_SEQUENCE_ANY *seq;
+	ASN1_SEQUENCE_ANY	*seq;
 	const ASN1_TYPE		*file, *hash;
 	char			*fn = NULL;
 	const unsigned char	*d = os->data;
