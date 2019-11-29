@@ -216,6 +216,10 @@ device	rkdwusb: fdt
 attach	rkdwusb at fdt
 file	dev/fdt/rkdwusb.c		rkdwusb
 
+device	rkemmcphy
+attach	rkemmcphy at fdt
+file	dev/fdt/rkemmcphy.c		rkemmcphy
+
 device	rkgrf: fdt
 attach	rkgrf at fdt
 file	dev/fdt/rkgrf.c			rkgrf
