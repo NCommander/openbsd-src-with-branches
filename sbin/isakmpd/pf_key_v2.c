@@ -1,4 +1,4 @@
-/* $OpenBSD: pf_key_v2.c,v 1.199 2017/08/06 13:54:04 mpi Exp $  */
+/* $OpenBSD: pf_key_v2.c,v 1.200 2017/12/05 20:31:45 jca Exp $  */
 /* $EOM: pf_key_v2.c,v 1.79 2000/12/12 00:33:19 niklas Exp $	 */
 
 /*
@@ -1552,8 +1552,7 @@ pf_key_v2_flow(struct sockaddr *laddr, struct sockaddr *lmask,
 	flowtype.sadb_protocol_len = sizeof flowtype / PF_KEY_V2_CHUNK;
 	flowtype.sadb_protocol_direction =
 	    ingress ? IPSP_DIRECTION_IN : IPSP_DIRECTION_OUT;
-	flowtype.sadb_protocol_proto =
-	    ingress ? SADB_X_FLOW_TYPE_USE : SADB_X_FLOW_TYPE_REQUIRE;
+	flowtype.sadb_protocol_proto = SADB_X_FLOW_TYPE_REQUIRE;
 
 	if (pf_key_v2_msg_add(flow, (struct sadb_ext *)&flowtype, 0) == -1)
 		goto cleanup;
