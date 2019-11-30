@@ -1,4 +1,4 @@
-/*	$OpenBSD: owtemp.c,v 1.15 2010/07/08 07:19:54 jasper Exp $	*/
+/*	$OpenBSD: owtemp.c,v 1.16 2014/09/14 14:17:25 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006, 2009 Alexander Yurchenko <grange@openbsd.org>
@@ -158,7 +158,7 @@ owtemp_update(void *arg)
 	 * at least this period.
 	 */
 	onewire_write_byte(sc->sc_onewire, DS1920_CMD_CONVERT);
-	tsleep(sc, PRIBIO, "owtemp", hz);
+	tsleep_nsec(sc, PRIBIO, "owtemp", SEC_TO_NSEC(1));
 
 	if (onewire_reset(sc->sc_onewire) != 0)
 		goto done;
