@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcidump.c,v 1.54 2019/06/02 02:37:12 dlg Exp $	*/
+/*	$OpenBSD: pcidump.c,v 1.55 2019/06/28 13:32:49 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 David Gwynne <loki@animata.net>
@@ -187,6 +187,11 @@ main(int argc, char *argv[])
 		if (romfd == -1)
 			err(1, "%s", romfile);
 	}
+
+	if (unveil("/dev", "r") == -1)
+		err(1, "unveil");
+	if (unveil(NULL, NULL) == -1)
+		err(1, "unveil");
 
 	if (hex > 1)
 		size = 256;
