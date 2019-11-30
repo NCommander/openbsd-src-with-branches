@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_rwlock.c,v 1.42 2019/11/16 16:21:10 visa Exp $	*/
+/*	$OpenBSD: kern_rwlock.c,v 1.43 2019/11/29 12:41:33 mpi Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003 Artur Grabowski <art@openbsd.org>
@@ -231,7 +231,7 @@ rw_enter(struct rwlock *rwl, int flags)
 	 */
 	unsigned int spin = (_kernel_lock_held()) ? 0 : RW_SPINS;
 #endif
-	int error;
+	int error, prio;
 #ifdef WITNESS
 	int lop_flags;
 
@@ -273,9 +273,12 @@ retry:
 		if (flags & RW_NOSLEEP)
 			return (EBUSY);
 
-		sleep_setup(&sls, rwl, op->wait_prio, rwl->rwl_name);
+		prio = op->wait_prio;
 		if (flags & RW_INTR)
-			sleep_setup_signal(&sls, op->wait_prio | PCATCH);
+			prio |= PCATCH;
+		sleep_setup(&sls, rwl, prio, rwl->rwl_name);
+		if (flags & RW_INTR)
+			sleep_setup_signal(&sls);
 
 		do_sleep = !rw_cas(&rwl->rwl_owner, o, set);
 
