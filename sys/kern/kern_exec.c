@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.209 2019/11/05 08:18:47 mpi Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.210 2019/11/29 06:34:45 deraadt Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -125,10 +125,6 @@ check_exec(struct proc *p, struct exec_package *epp)
 	epp->ep_vp = vp = ndp->ni_vp;
 
 	/* check for regular file */
-	if (vp->v_type == VDIR) {
-		error = EISDIR;
-		goto bad1;
-	}
 	if (vp->v_type != VREG) {
 		error = EACCES;
 		goto bad1;
