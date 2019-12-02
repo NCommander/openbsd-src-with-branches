@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.4 2019/10/31 12:51:43 florian Exp $	*/
+/*	$OpenBSD: parser.h,v 1.5 2019/11/06 14:19:59 florian Exp $	*/
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -29,7 +29,8 @@ enum actions {
 	STATUS_DHCP,
 	STATUS_STATIC,
 	STATUS_DOT,
-	STATUS_STUB
+	STATUS_STUB,
+	STATUS_ALL
 };
 
 struct parse_result {
