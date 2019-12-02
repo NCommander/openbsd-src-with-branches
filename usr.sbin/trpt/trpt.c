@@ -400,9 +400,8 @@ tcp_trace(short act, short ostate, struct tcpcb *tp,
 		for (i = 0; i < TCPT_NTIMERS; i++) {
 			if (timeout_pending(&tp->t_timer[i]))
 				continue;
-			printf("%s%s=%lld.%09ld", cp, tcptimers[i],
-			    (long long)tp->t_timer[i].to_time.tv_sec,
-			    tp->t_timer[i].to_time.tv_nsec);
+			printf("%s%s=%d", cp, tcptimers[i],
+			    tp->t_timer[i].to_time);
 			if (i == TCPT_REXMT)
 				printf(" (t_rxtshft=%d)", tp->t_rxtshift);
 			cp = ", ";
