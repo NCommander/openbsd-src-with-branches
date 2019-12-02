@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: syscall_segment.c,v 1.1 2019/11/27 17:15:36 mortimer Exp $	*/
 
 #include <stdlib.h>
 #include <unistd.h>

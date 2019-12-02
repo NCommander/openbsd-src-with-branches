@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2019/11/27 17:15:36 mortimer Exp $
 
-PROG= syscall_segment
+PROG= syscall_library
 LIBDIR= ${.CURDIR}/../libgadgetsyscall/${__objdir}
 LDADD+= -L${LIBDIR} -lgadgetsyscall
 
