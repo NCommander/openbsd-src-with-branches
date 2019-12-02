@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.178 2019/11/14 23:48:37 jca Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.179 2019/11/18 04:37:35 deraadt Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -178,7 +178,6 @@ tooslow(int signo)
 
 /*
  * Retrieve URL, via the proxy in $proxyvar if necessary.
- * Modifies the string argument given.
  * Returns -1 on failure, 0 on success
  */
 static int
