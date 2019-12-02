@@ -1,4 +1,4 @@
-/*	$OpenBSD: output-json.c,v 1.2 2019/10/16 17:38:46 claudio Exp $ */
+/*	$OpenBSD: output-json.c,v 1.3 2019/11/30 02:31:12 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  *
@@ -47,6 +47,5 @@ output_json(struct vrp_tree *vrps)
 
 	fprintf(out, "\n\t]\n}\n");
 
-	output_finish(out, "json");
+	output_finish(out);
 }
-

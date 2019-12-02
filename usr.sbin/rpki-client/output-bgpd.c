@@ -1,4 +1,4 @@
-/*	$OpenBSD: output-bgpd.c,v 1.12 2019/10/16 17:38:46 claudio Exp $ */
+/*	$OpenBSD: output-bgpd.c,v 1.13 2019/11/30 02:31:12 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -43,5 +43,5 @@ output_bgpd(struct vrp_tree *vrps)
 
 	fprintf(out, "}\n");
 
-	output_finish(out, "openbgpd");
+	output_finish(out);
 }

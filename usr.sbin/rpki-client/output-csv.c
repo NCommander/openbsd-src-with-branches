@@ -1,4 +1,4 @@
-/*	$OpenBSD: output-csv.c,v 1.2 2019/11/18 08:36:38 claudio Exp $ */
+/*	$OpenBSD: output-csv.c,v 1.3 2019/11/30 02:31:12 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  *
@@ -37,5 +37,5 @@ output_csv(struct vrp_tree *vrps)
 		    v->tal);
 	}
 
-	output_finish(out, "csv");
+	output_finish(out);
 }
