@@ -1,4 +1,4 @@
-/*	$OpenBSD: pch.c,v 1.60 2018/04/07 14:55:13 anton Exp $	*/
+/*	$OpenBSD: pch.c,v 1.61 2019/12/02 22:17:32 jca Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -104,7 +104,7 @@ open_patch_file(const char *filename)
 		if (pfp == NULL)
 			pfatal("can't create %s", TMPPATNAME);
 		while (getline(&buf, &bufsz, stdin) != -1)
-			fprintf(pfp, "%s", buf);
+			fputs(buf, pfp);
 		fclose(pfp);
 		filename = TMPPATNAME;
 	}
