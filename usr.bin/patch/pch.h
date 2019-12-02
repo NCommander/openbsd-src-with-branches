@@ -3,8 +3,8 @@ LINENUM		strtolinenum(char *, char **);
 
 extern FILE	*pfp;
 extern LINENUM	p_input_line;
-char		*pgets(char *, int, FILE *);
-/*	$OpenBSD: pch.h,v 1.9 2003/10/31 20:20:45 millert Exp $	*/
+int		pgetline(char **, size_t *, FILE *);
+/*	$OpenBSD: pch.h,v 1.10 2015/10/16 07:33:47 tobias Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
