@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_disk.h,v 1.38 2019/09/27 23:07:42 krw Exp $	*/
+/*	$OpenBSD: scsi_disk.h,v 1.39 2019/11/25 17:02:57 krw Exp $	*/
 /*	$NetBSD: scsi_disk.h,v 1.10 1996/07/05 16:19:05 christos Exp $	*/
 
 /*
@@ -313,7 +313,6 @@ struct scsi_reassign_blocks_data {
 };
 
 /* Only the lower 6 bits of the pg_code field are used for page #. */
-#define	DISK_PGCODE(pg, n)	((pg) != NULL) && (((pg)->pg_code & 0x3f) == n)
 #define PAGE_DISK_FORMAT	3
 #define PAGE_RIGID_GEOMETRY	4
 #define PAGE_FLEX_GEOMETRY	5
