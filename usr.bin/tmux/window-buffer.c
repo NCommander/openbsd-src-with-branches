@@ -1,4 +1,4 @@
-/* $OpenBSD: window-buffer.c,v 1.21 2019/05/29 20:05:15 nicm Exp $ */
+/* $OpenBSD: window-buffer.c,v 1.22 2019/08/16 11:49:12 nicm Exp $ */
 
 /*
  * Copyright (c) 2017 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -334,7 +334,7 @@ window_buffer_resize(struct window_mode_entry *wme, u_int sx, u_int sy)
 }
 
 static void
-window_buffer_do_delete(void* modedata, void *itemdata,
+window_buffer_do_delete(void *modedata, void *itemdata,
     __unused struct client *c, __unused key_code key)
 {
 	struct window_buffer_modedata	*data = modedata;
@@ -348,7 +348,7 @@ window_buffer_do_delete(void* modedata, void *itemdata,
 }
 
 static void
-window_buffer_do_paste(void* modedata, void *itemdata, struct client *c,
+window_buffer_do_paste(void *modedata, void *itemdata, struct client *c,
     __unused key_code key)
 {
 	struct window_buffer_modedata	*data = modedata;
