@@ -1,4 +1,4 @@
-/*	$OpenBSD: unwind.h,v 1.42 2019/12/02 06:26:52 otto Exp $	*/
+/*	$OpenBSD: unwind.h,v 1.43 2019/12/03 16:16:25 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -158,7 +158,7 @@ struct uw_conf {
 
 struct query_imsg {
 	uint64_t	 id;
-	char		 qname[255];
+	char		 qname[NI_MAXHOST];
 	int		 t;
 	int		 c;
 	int		 err;
