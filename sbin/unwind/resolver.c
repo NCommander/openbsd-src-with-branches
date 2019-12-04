@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.c,v 1.96 2019/12/03 16:17:00 florian Exp $	*/
+/*	$OpenBSD: resolver.c,v 1.97 2019/12/03 16:17:48 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -986,6 +986,9 @@ resolve_done(struct uw_resolver *res, void *arg, int rcode,
 		goto servfail;
 
 	query_imsg->err = 0;
+
+	if (sec == SECURE)
+		res->state = VALIDATING;
 
 	if (res->state == VALIDATING && sec == BOGUS) {
 		query_imsg->bogus = find_force(&resolver_conf->force,
