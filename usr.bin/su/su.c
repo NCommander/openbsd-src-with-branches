@@ -1,4 +1,4 @@
-/*	$OpenBSD: su.c,v 1.72 2018/10/21 13:18:19 deraadt Exp $	*/
+/*	$OpenBSD: su.c,v 1.73 2019/01/28 01:38:06 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -149,11 +149,11 @@ main(int argc, char **argv)
 	if (pwd == NULL)
 		auth_errx(as, 1, "who are you?");
 	if ((username = strdup(pwd->pw_name)) == NULL)
-		auth_errx(as, 1, "can't allocate memory");
+		auth_err(as, 1, NULL);
 	if (asme && !altshell) {
 		if (pwd->pw_shell && *pwd->pw_shell) {
 			if ((shell = strdup(pwd->pw_shell)) == NULL)
-				auth_errx(as, 1, "can't allocate memory");
+				auth_err(as, 1, NULL);
 		} else {
 			shell = _PATH_BSHELL;
 			iscsh = NO;
@@ -194,7 +194,7 @@ main(int argc, char **argv)
 		auth_clean(as);
 		if (auth_setitem(as, AUTHV_INTERACTIVE, "True") != 0 ||
 		    auth_setitem(as, AUTHV_NAME, user) != 0)
-			auth_errx(as, 1, "can't allocate memory");
+			auth_err(as, 1, NULL);
 		if ((user = auth_getitem(as, AUTHV_NAME)) == NULL)
 			auth_errx(as, 1, "internal error");
 		if (auth_setpwd(as, NULL) || (pwd = auth_getpwd(as)) == NULL) {
@@ -223,6 +223,8 @@ main(int argc, char **argv)
 		}
 		fprintf(stderr, "Login incorrect\n");
 	}
+	if (pwd == NULL)
+		auth_errx(as, 1, "internal error");
 
 	if (pledge("stdio unveil rpath getpw exec id", NULL) == -1)
 		err(1, "pledge");
@@ -234,7 +236,7 @@ main(int argc, char **argv)
 				auth_errx(as, 1, "permission denied (shell).");
 		} else if (pwd->pw_shell && *pwd->pw_shell) {
 			if ((shell = strdup(pwd->pw_shell)) == NULL)
-				auth_errx(as, 1, "can't allocate memory");
+				auth_err(as, 1, NULL);
 			iscsh = UNSET;
 		} else {
 			shell = _PATH_BSHELL;
