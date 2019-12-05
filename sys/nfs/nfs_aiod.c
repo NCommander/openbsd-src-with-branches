@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_aiod.c,v 1.6 2014/07/12 18:43:52 tedu Exp $	*/
+/*	$OpenBSD: nfs_aiod.c,v 1.7 2015/08/28 00:03:54 deraadt Exp $	*/
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -112,7 +112,7 @@ loop:	/* Loop around until SIGKILL */
 		}
 
 		while (!(aiod->nad_flags & NFSAIOD_WAKEUP))
-			tsleep(aiod, PWAIT, "aiodidle", 0);
+			tsleep_nsec(aiod, PWAIT, "aiodidle", INFSLP);
 
 		/*
 		 * Wakeup for this aiod happens in one of the following

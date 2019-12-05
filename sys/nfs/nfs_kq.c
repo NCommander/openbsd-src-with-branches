@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_kq.c,v 1.24 2019/07/12 13:56:27 solene Exp $ */
+/*	$OpenBSD: nfs_kq.c,v 1.25 2019/08/05 08:35:59 anton Exp $ */
 /*	$NetBSD: nfs_kq.c,v 1.7 2003/10/30 01:43:10 simonb Exp $	*/
 
 /*-
@@ -193,7 +193,7 @@ filt_nfsdetach(struct knote *kn)
 			while (ke->flags & KEVQ_BUSY) {
 				ke->flags |= KEVQ_WANT;
 				rw_exit_write(&nfskevq_lock);
-				(void) tsleep(ke, PSOCK, "nfskqdet", 0);
+				tsleep_nsec(ke, PSOCK, "nfskqdet", INFSLP);
 				rw_enter_write(&nfskevq_lock);
 			}
 
