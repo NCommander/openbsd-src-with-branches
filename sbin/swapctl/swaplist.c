@@ -1,4 +1,4 @@
-/*	$OpenBSD: swaplist.c,v 1.12 2015/12/10 17:27:00 mmcc Exp $	*/
+/*	$OpenBSD: swaplist.c,v 1.13 2019/06/28 13:32:46 deraadt Exp $	*/
 /*	$NetBSD: swaplist.c,v 1.8 1998/10/08 10:00:31 mrg Exp $	*/
 
 /*
@@ -13,8 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
