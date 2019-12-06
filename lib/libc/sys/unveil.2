@@ -1,4 +1,4 @@
-.\" $OpenBSD: unveil.2,v 1.18 2019/07/25 13:13:53 bluhm Exp $
+.\" $OpenBSD: unveil.2,v 1.19 2019/07/25 13:47:40 schwarze Exp $
 .\"
 .\" Copyright (c) 2018 Bob Beck <beck@openbsd.org>
 .\"
@@ -62,7 +62,8 @@ promise.
 .Pp
 The
 .Fa permissions
-argument points to a string consisting of the following characters:
+argument points to a string consisting of zero or more of the following
+characters:
 .Pp
 .Bl -tag -width "XXXX" -offset indent -compact
 .It Cm r
