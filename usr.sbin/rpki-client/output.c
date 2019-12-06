@@ -1,4 +1,4 @@
-/*	$OpenBSD: output.c,v 1.2 2019/12/04 23:01:54 benno Exp $ */
+/*	$OpenBSD: output.c,v 1.3 2019/12/04 23:03:05 benno Exp $ */
 /*
  * Copyright (c) 2019 Theo de Raadt <deraadt@openbsd.org>
  *
@@ -28,8 +28,7 @@
 
 #include "extern.h"
 
-char		*outputdir = _PATH_ROA_DIR;
-FILE		*output = NULL;
+char		*outputdir;
 char		 output_tmpname[PATH_MAX];
 char		 output_name[PATH_MAX];
 
