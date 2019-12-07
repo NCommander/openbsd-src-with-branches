@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.68 2019/10/05 00:08:50 guenther Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.69 2019/10/23 19:55:08 guenther Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -237,9 +237,6 @@ _dl_md_reloc_got(elf_object_t *object, int lazy)
 		return 0;
 
 	pltgot = (Elf_Addr *)object->Dyn.info[DT_PLTGOT];
-
-	if (object->traced)
-		lazy = 1;
 
 	if (!lazy || pltgot == NULL) {
 		fails = _dl_md_reloc(object, DT_JMPREL, DT_PLTRELSZ);
