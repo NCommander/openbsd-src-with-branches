@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.518 2019/11/27 19:22:53 espie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.519 2019/12/08 12:54:36 espie Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -24,7 +24,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate: November 27 2019 $
+.Dd $Mdocdate: December 8 2019 $
 .Dt BSD.PORT.MK 5
 .Os
 .Sh NAME
@@ -1895,6 +1895,13 @@ User settings.
 If set to
 .Sq Yes ,
 do not print anything when ignoring a port.
+.it Ev INSTALL_DEBUG_PACKAGES
+User settings.
+Defaults to
+.Sq \&No .
+If
+.Sq Yes ,
+install available debug packages during all install/update targets.
 .It Ev INSTALL_{PROGRAM,SCRIPT,DATA,MAN}[_DIR]
 Macros to use to install a program, a script, data, or a man page (or the
 corresponding directory), respectively.
