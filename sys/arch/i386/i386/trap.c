@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.140 2019/07/09 23:48:07 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.141 2019/09/06 12:22:01 deraadt Exp $	*/
 /*	$NetBSD: trap.c,v 1.95 1996/05/05 06:50:02 mycroft Exp $	*/
 
 /*-
@@ -63,10 +63,6 @@
 #endif
 
 #include <sys/exec.h>
-#ifdef KVM86
-#include <machine/kvm86.h>
-#define KVM86MODE (kvm86_incall)
-#endif
 
 #include "isa.h"
 #include "npx.h"
@@ -193,12 +189,6 @@ trap(struct trapframe *frame)
 		/*NOTREACHED*/
 
 	case T_PROTFLT:
-#ifdef KVM86
-		if (KVM86MODE) {
-			kvm86_gpfault(frame);
-			return;
-		}
-#endif
 	case T_SEGNPFLT:
 	case T_ALIGNFLT:
 		/* Check for copyin/copyout fault. */
