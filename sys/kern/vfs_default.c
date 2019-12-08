@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_default.c,v 1.42 2016/03/12 00:27:15 bluhm Exp $  */
+/*	$OpenBSD: vfs_default.c,v 1.43 2017/01/10 19:48:32 bluhm Exp $  */
 
 /*
  * Portions of this code are:
@@ -88,8 +88,7 @@ vop_generic_revoke(void *v)
 		 */
 		if (vp->v_flag & VXLOCK) {
 			vp->v_flag |= VXWANT;
-			tsleep(vp, PINOD, "vop_generic_revokeall", 0);
-
+			tsleep_nsec(vp, PINOD, "vop_generic_revokeall", INFSLP);
 			return(0);
 		}
 

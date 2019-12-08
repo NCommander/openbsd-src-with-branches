@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vops.c,v 1.21 2019/05/03 14:24:13 visa Exp $	*/
+/*	$OpenBSD: vfs_vops.c,v 1.22 2019/08/26 18:56:29 anton Exp $	*/
 /*
  * Copyright (c) 2010 Thordur I. Bjornsson <thib@openbsd.org> 
  *
@@ -607,7 +607,7 @@ VOP_LOCK(struct vnode *vp, int flags)
 		 * before continuing.
 		 */
 		KASSERT(vp->v_flag & VXLOCK);
-		tsleep(&vp->v_lockcount, PINOD, "vop_lock", 0);
+		tsleep_nsec(&vp->v_lockcount, PINOD, "vop_lock", INFSLP);
 		KASSERT(vp->v_lockcount == 0);
 	}
 
