@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.h,v 1.58 2019/07/09 09:33:55 patrick Exp $ */
+/*	$OpenBSD: uvideo.h,v 1.59 2019/08/07 11:14:16 patrick Exp $ */
 
 /*
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -455,7 +455,12 @@ struct uvideo_frame_buffer {
 	uint32_t	 fmt_flags;
 };
 
-#define UVIDEO_MAX_BUFFERS	32
+/*
+ * 1920x1080 uncompressed (e.g. YUYV422) requires ~4MB image data per frame.
+ * 4MB * 8 frame buffers = 32MB kernel memory required.
+ * With 8 frame buffers we are pretty safe not to run out of kernel memory.
+ */
+#define UVIDEO_MAX_BUFFERS	8
 struct uvideo_mmap {
 	SIMPLEQ_ENTRY(uvideo_mmap)	q_frames;
 	uint8_t				*buf;
