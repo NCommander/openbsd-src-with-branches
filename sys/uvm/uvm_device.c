@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_device.c,v 1.55 2018/08/20 10:00:04 kettenis Exp $	*/
+/*	$OpenBSD: uvm_device.c,v 1.56 2019/07/18 23:47:33 cheloha Exp $	*/
 /*	$NetBSD: uvm_device.c,v 1.30 2000/11/25 06:27:59 chs Exp $	*/
 
 /*
@@ -243,7 +243,8 @@ again:
 		 * lock interleaving. -- this is ok in this case since the
 		 * locks are both IPL_NONE
 		 */
-		msleep(udv, &udv_lock, PVM | PNORELOCK, "udv_detach", 0);
+		msleep_nsec(udv, &udv_lock, PVM | PNORELOCK, "udv_detach",
+		    INFSLP);
 		goto again;
 	}
 
