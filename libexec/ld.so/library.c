@@ -1,4 +1,4 @@
-/*	$OpenBSD: library.c,v 1.83 2019/10/04 17:42:16 guenther Exp $ */
+/*	$OpenBSD: library.c,v 1.84 2019/11/29 06:34:44 deraadt Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -325,7 +325,8 @@ _dl_tryload_shlib(const char *libname, int type, int flags)
 		if (soname != NULL &&
 		    _dl_strncmp(soname, "libc.so.", 8) == 0) {
 			if (_dl_msyscall(exec_start, exec_size) == -1)
-				_dl_printf("msyscall %lx %lx error\n");
+				_dl_printf("msyscall %lx %lx error\n",
+				    exec_start, exec_size);
 		}
 	} else {
 		_dl_munmap((void *)libaddr, maxva - minva);
