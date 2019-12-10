@@ -1,4 +1,4 @@
-/*	$OpenBSD: getusershell.c,v 1.16 2015/09/14 16:09:13 tedu Exp $ */
+/*	$OpenBSD: getusershell.c,v 1.17 2015/12/08 16:28:26 tedu Exp $ */
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -28,10 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#include <ctype.h>
-#include <limits.h>
 #include <paths.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
