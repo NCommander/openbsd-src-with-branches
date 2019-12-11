@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.h,v 1.196 2019/10/22 21:19:22 cheloha Exp $	*/
+/*	$OpenBSD: sysctl.h,v 1.197 2019/12/06 08:33:25 mpi Exp $	*/
 /*	$NetBSD: sysctl.h,v 1.16 1996/04/09 20:55:36 cgd Exp $	*/
 
 /*
@@ -628,7 +628,7 @@ do {									\
 	(kp)->p_stat = (p)->p_stat;					\
 	(kp)->p_nice = (pr)->ps_nice;					\
 									\
-	(kp)->p_xstat = (p)->p_xstat;					\
+	(kp)->p_xstat = W_EXITCODE((pr)->ps_xexit, (pr)->ps_xsig);	\
 	(kp)->p_acflag = (pr)->ps_acflag;				\
 	(kp)->p_pledge = (pr)->ps_pledge;				\
 									\
