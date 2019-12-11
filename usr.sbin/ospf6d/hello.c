@@ -1,4 +1,4 @@
-/*	$OpenBSD: hello.c,v 1.17 2014/11/18 20:54:28 krw Exp $ */
+/*	$OpenBSD: hello.c,v 1.18 2018/02/22 07:43:29 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -104,7 +104,7 @@ send_hello(struct iface *iface)
 	if (upd_ospf_hdr(buf, iface))
 		goto fail;
 
-	ret = send_packet(iface, buf->buf, buf->wpos, &dst);
+	ret = send_packet(iface, buf, &dst);
 
 	ibuf_free(buf);
 	return (ret);
