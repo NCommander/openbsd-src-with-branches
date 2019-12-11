@@ -1,4 +1,4 @@
-#	$OpenBSD: hostkey-agent.sh,v 1.8 2019/11/01 01:55:41 djm Exp $
+#	$OpenBSD: hostkey-agent.sh,v 1.9 2019/11/26 23:43:10 djm Exp $
 #	Placed in the Public Domain.
 
 tid="hostkey agent"
@@ -30,7 +30,7 @@ cp $OBJ/known_hosts.orig $OBJ/known_hosts
 
 unset SSH_AUTH_SOCK
 
-for ps in no yes; do
+for ps in yes; do
 	for k in `${SSH} -Q key-plain | filter_sk` ; do
 		verbose "key type $k privsep=$ps"
 		cp $OBJ/sshd_proxy.orig $OBJ/sshd_proxy
