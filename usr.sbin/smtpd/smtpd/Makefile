@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.103 2019/09/18 11:26:30 eric Exp $
+#	$OpenBSD: Makefile,v 1.104 2019/09/20 17:46:05 gilles Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -25,7 +25,6 @@ SRCS+=	limit.c
 SRCS+=	lka.c
 SRCS+=	lka_filter.c
 SRCS+=	lka_proc.c
-SRCS+=	lka_report.c
 SRCS+=	lka_session.c
 SRCS+=	log.c
 SRCS+=	mailaddr.c
