@@ -1,4 +1,4 @@
-/*	$OpenBSD: socketvar.h,v 1.88 2018/11/19 13:15:37 visa Exp $	*/
+/*	$OpenBSD: socketvar.h,v 1.89 2019/02/15 05:55:21 dlg Exp $	*/
 /*	$NetBSD: socketvar.h,v 1.18 1996/02/09 18:25:38 christos Exp $	*/
 
 /*-
@@ -194,6 +194,7 @@ static inline long
 sbspace(struct socket *so, struct sockbuf *sb)
 {
 	KASSERT(sb == &so->so_rcv || sb == &so->so_snd);
+	soassertlocked(so);
 	return lmin(sb->sb_hiwat - sb->sb_cc, sb->sb_mbmax - sb->sb_mbcnt);
 }
 
