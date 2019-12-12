@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_optimize.c,v 1.41 2019/03/07 08:01:52 kn Exp $ */
+/*	$OpenBSD: pfctl_optimize.c,v 1.42 2019/06/28 13:32:45 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Mike Frantzen <frantzen@openbsd.org>
@@ -270,7 +270,10 @@ pfctl_optimize_ruleset(struct pfctl *pf, struct pf_ruleset *rs)
 	struct pf_rule *r;
 	struct pf_rulequeue *old_rules;
 
-	DEBUG("optimizing ruleset");
+	if (TAILQ_EMPTY(rs->rules.active.ptr))
+		return (0);
+
+	DEBUG("optimizing ruleset \"%s\"", rs->anchor->path);
 	memset(&table_buffer, 0, sizeof(table_buffer));
 	skip_init();
 	TAILQ_INIT(&opt_queue);
