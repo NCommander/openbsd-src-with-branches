@@ -1,4 +1,4 @@
-/*	$OpenBSD: adjacency.c,v 1.25 2016/06/18 17:11:37 renato Exp $ */
+/*	$OpenBSD: adjacency.c,v 1.26 2016/06/18 17:31:32 renato Exp $ */
 
 /*
  * Copyright (c) 2013, 2015 Renato Westphal <renato@openbsd.org>
@@ -119,6 +119,9 @@ adj_find(struct hello_source *source)
 
 	LIST_FOREACH(adj, &global.adj_list, global_entry) {
 		if (adj->source.type != source->type)
+			continue;
+
+		if (adj->lsr_id.s_addr != source->lsr_id.s_addr)
 			continue;
 
 		switch (source->type) {
