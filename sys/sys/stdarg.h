@@ -1,4 +1,4 @@
-/*	$OpenBSD: stdarg.h,v 1.7 2009/09/17 20:46:55 jsg Exp $ */
+/*	$OpenBSD: stdarg.h,v 1.8 2011/03/02 18:31:58 matthew Exp $ */
 /*
  * Copyright (c) 2003, 2004  Marc espie <espie@openbsd.org>
  *
@@ -41,7 +41,7 @@ typedef __builtin_va_list __gnuc_va_list;
 typedef __gnuc_va_list va_list;
 
 #else
-#include <machine/stdarg.h>
+#error "unsupported compiler"
 #endif
 
 #if __ISO_C_VISIBLE >= 1999
