@@ -1,4 +1,4 @@
-/* $OpenBSD: sshkey.h,v 1.39 2019/11/13 07:53:10 markus Exp $ */
+/* $OpenBSD: sshkey.h,v 1.40 2019/11/25 00:51:37 djm Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -44,6 +44,9 @@
 
 #define SSH_RSA_MINIMUM_MODULUS_SIZE	1024
 #define SSH_KEY_MAX_SIGN_DATA_SIZE	(1 << 20)
+
+/* Version of protocol expected from ssh-sk-helper */
+#define SSH_SK_HELPER_VERSION	1
 
 struct sshbuf;
 
