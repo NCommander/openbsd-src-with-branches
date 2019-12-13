@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.62 2018/08/19 18:01:04 deraadt Exp $	*/
+/*	$OpenBSD: conf.c,v 1.63 2018/08/31 04:20:37 visa Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -279,7 +279,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 77: was USB scanners */
 	cdev_notdef(),			/* 78 */
 	cdev_bio_init(NBIO,bio),	/* 79: ioctl tunnel */
-	cdev_notdef(),			/* 80: gpr? XXX */
+	cdev_notdef(),			/* 80 */
 	cdev_ptm_init(NPTY,ptm),	/* 81: pseudo-tty ptm device */
 	cdev_hotplug_init(NHOTPLUG,hotplug), /* 82: devices hot plugging */
 	cdev_acpi_init(NACPI,acpi),	/* 83: ACPI */
