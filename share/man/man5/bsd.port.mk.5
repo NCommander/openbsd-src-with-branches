@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.521 2019/12/08 13:05:04 espie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.522 2019/12/08 14:07:08 jmc Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -3512,6 +3512,9 @@ so the
 script excepts debug information on all binaries and libraries.
 Most probably, the build machinery for that specific port omitted -g
 somewhere, or it runs strips during fake anyway.
+It can also occur if
+.Ev DEBUG_PACKAGES
+includes subpackages with no files holding debug info.
 .It "Warning: symlink(s) point to non existent file."
 Warning message comes from
 .Xr pkg_create 1 .
@@ -3729,6 +3732,16 @@ Figuring out what files contain debug information is entirely achieved through
 and
 .Cm @static-lib
 annotations in the base packing-lists.
+.Pp
+Debug packages will be produced for all subpackages in
+.Ev DEBUG_PACKAGES .
+Usually, the heuristics of trimming arch-independent packages
+from
+.Ev BUILD_PACKAGES
+is enough.
+In case this still produces empty debug packages, the
+.Ev DEBUG_PACKAGES
+list should be produced manually.
 .Pp
 The actual debug packages are not registered through
 .Xr register-plist 1
