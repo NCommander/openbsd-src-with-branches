@@ -1,4 +1,4 @@
-/*      $OpenBSD: eap.c,v 1.55 2018/09/13 04:07:20 miko Exp $ */
+/*      $OpenBSD: eap.c,v 1.56 2018/09/14 08:37:34 miko Exp $ */
 /*	$NetBSD: eap.c,v 1.46 2001/09/03 15:07:37 reinoud Exp $ */
 
 /*
@@ -1471,7 +1471,7 @@ eap_malloc(void *addr, int direction, size_t size, int pool, int flags)
 		return (0);
 	error = eap_allocmem(sc, size, 16, p);
 	if (error) {
-		free(p, pool, 0);
+		free(p, pool, sizeof(*p));
 		return (0);
 	}
 	p->next = sc->sc_dmas;
@@ -1489,7 +1489,7 @@ eap_free(void *addr, void *ptr, int pool)
 		if (KERNADDR(p) == ptr) {
 			eap_freemem(sc, p);
 			*pp = p->next;
-			free(p, pool, 0);
+			free(p, pool, sizeof(*p));
 			return;
 		}
 	}
