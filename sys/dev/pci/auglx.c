@@ -1,4 +1,4 @@
-/*      $OpenBSD: auglx.c,v 1.15 2016/09/19 06:46:44 ratchov Exp $	*/
+/*      $OpenBSD: auglx.c,v 1.16 2016/12/20 15:45:29 ratchov Exp $	*/
 
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -587,7 +587,7 @@ auglx_allocm(void *v, int direction, size_t size, int pool, int flags)
 
 	error = auglx_allocmem(sc, size, PAGE_SIZE, p);
 	if (error) {
-		free(p, pool, 0);
+		free(p, pool, sizeof(*p));
 		return NULL;
 	}
 
@@ -608,7 +608,7 @@ auglx_freem(void *v, void *ptr, int pool)
 		if (p->addr == ptr) {
 			auglx_freemem(sc, p);
 			*pp = p->next;
-			free(p, pool, 0);
+			free(p, pool, sizeof(*p));
 			return;
 		}
 	}
