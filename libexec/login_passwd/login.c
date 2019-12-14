@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.18 2018/06/13 15:02:09 reyk Exp $	*/
+/*	$OpenBSD: login.c,v 1.19 2018/09/30 13:29:24 ajacoutot Exp $	*/
 
 /*-
  * Copyright (c) 1995 Berkeley Software Design, Inc. All rights reserved.
@@ -137,7 +137,7 @@ main(int argc, char **argv)
 		password = readpassphrase("Password:", pbuf, sizeof(pbuf), RPP_ECHO_OFF);
 		break;
 	case MODE_CHALLENGE:
-		fprintf(back, BI_AUTH "\n");
+		fprintf(back, BI_SILENT "\n");
 		exit(0);
 		break;
 	default:
