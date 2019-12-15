@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_aggr.c,v 1.24 2019/11/11 03:37:41 dlg Exp $ */
+/*	$OpenBSD: if_aggr.c,v 1.25 2019/12/11 11:55:12 dlg Exp $ */
 
 /*
  * Copyright (c) 2019 The University of Queensland
@@ -2450,6 +2450,7 @@ aggr_iff(struct aggr_softc *sc)
 				    promisc ? "on" : "off");
 			}
 		}
+		rw_exit_read(&sc->sc_lock);
 
 		sc->sc_promisc = promisc;
 	}
