@@ -1,4 +1,4 @@
-/*	$OpenBSD: message.c,v 1.13 2019/12/09 20:41:24 remi Exp $ */
+/*	$OpenBSD: message.c,v 1.12 2014/10/25 03:23:49 lteo Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -105,14 +105,14 @@ send_triggered_update(struct iface *iface, struct rip_route *rr)
 	u_int16_t		 afi, route_tag;
 	u_int32_t		 address, netmask, nexthop, metric;
 
+	if (iface->passive)
+		return (0);
+
 	inet_aton(ALL_RIP_ROUTERS, &dst.sin_addr);
 
 	dst.sin_port = htons(RIP_PORT);
 	dst.sin_family = AF_INET;
 	dst.sin_len = sizeof(struct sockaddr_in);
-
-	if (iface->passive)
-		return (0);
 
 	if ((buf = ibuf_open(iface->mtu - sizeof(struct ip) -
 	    sizeof(struct udphdr))) == NULL)
@@ -166,12 +166,14 @@ send_request(struct packet_head *r_list, struct iface *i, struct nbr *nbr)
 		port = htons(RIP_PORT);
 	}
 
+	if (iface->passive) {
+		clear_list(r_list);
+		return (0);
+	}
+
 	dst.sin_port = port;
 	dst.sin_family = AF_INET;
 	dst.sin_len = sizeof(struct sockaddr_in);
-
-	if (iface->passive)
-		return (0);
 
 	while (!TAILQ_EMPTY(r_list)) {
 		if ((buf = ibuf_open(iface->mtu - sizeof(struct ip) -
@@ -240,12 +242,14 @@ send_response(struct packet_head *r_list, struct iface *i, struct nbr *nbr)
 		port = htons(RIP_PORT);
 	}
 
+	if (iface->passive) {
+		clear_list(r_list);
+		return (0);
+	}
+
 	dst.sin_port = port;
 	dst.sin_family = AF_INET;
 	dst.sin_len = sizeof(struct sockaddr_in);
-
-	if (iface->passive)
-		return (0);
 
 	while (!TAILQ_EMPTY(r_list)) {
 		if ((buf = ibuf_open(iface->mtu - sizeof(struct ip) -
