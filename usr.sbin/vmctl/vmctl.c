@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmctl.c,v 1.71 2019/09/07 09:11:14 tobhe Exp $	*/
+/*	$OpenBSD: vmctl.c,v 1.72 2019/12/12 03:53:38 pd Exp $	*/
 
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
@@ -768,8 +768,6 @@ print_vm_info(struct vmop_info_result *list, size_t ct)
 				(void)strlcpy(user, name, sizeof(user));
 			/* get group name */
 			if (vmi->vir_gid != -1) {
-				if (vmi->vir_uid == 0)
-					*user = '\0';
 				name = group_from_gid(vmi->vir_gid, 1);
 				if (name == NULL)
 					(void)snprintf(group, sizeof(group),
