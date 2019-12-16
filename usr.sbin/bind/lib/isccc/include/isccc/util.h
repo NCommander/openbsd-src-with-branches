@@ -1,32 +1,46 @@
 /*
+ * Portions Copyright (C) 2004-2007, 2014  Internet Systems Consortium, Inc. ("ISC")
  * Portions Copyright (C) 2001  Internet Software Consortium.
- * Portions Copyright (C) 2001  Nominum, Inc.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM AND
- * NOMINUM DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING
- * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT
- * SHALL INTERNET SOFTWARE CONSORTIUM OR NOMINUM BE LIABLE FOR ANY
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC AND NOMINUM DISCLAIMS ALL
+ * WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY
  * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Portions Copyright (C) 2001  Nominum, Inc.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC AND NOMINUM DISCLAIMS ALL
+ * WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: util.h,v 1.3 2001/05/03 18:38:17 bwelling Exp $ */
+/* $Id: util.h,v 1.11 2007/08/28 07:20:43 tbox Exp $ */
 
 #ifndef ISCCC_UTIL_H
 #define ISCCC_UTIL_H 1
 
 #include <isc/util.h>
 
-/*
+/*! \file isccc/util.h
+ * \brief
  * Macros for dealing with unaligned numbers.
  *
- * Note: no side effects are allowed when invoking these macros!
+ * \note no side effects are allowed when invoking these macros!
  */
 
 #define GET8(v, w) \
@@ -38,37 +52,37 @@
 #define GET16(v, w) \
 	do { \
 		v = (unsigned int)w[0] << 8; \
- 		v |= (unsigned int)w[1]; \
+		v |= (unsigned int)w[1]; \
 		w += 2; \
 	} while (0)
 
 #define GET24(v, w) \
 	do { \
- 		v = (unsigned int)w[0] << 16; \
- 		v |= (unsigned int)w[1] << 8; \
- 		v |= (unsigned int)w[2]; \
+		v = (unsigned int)w[0] << 16; \
+		v |= (unsigned int)w[1] << 8; \
+		v |= (unsigned int)w[2]; \
 		w += 3; \
 	} while (0)
 
 #define GET32(v, w) \
 	do { \
 		v = (unsigned int)w[0] << 24; \
- 		v |= (unsigned int)w[1] << 16; \
- 		v |= (unsigned int)w[2] << 8; \
- 		v |= (unsigned int)w[3]; \
+		v |= (unsigned int)w[1] << 16; \
+		v |= (unsigned int)w[2] << 8; \
+		v |= (unsigned int)w[3]; \
 		w += 4; \
 	} while (0)
 
 #define GET64(v, w) \
 	do { \
 		v = (isc_uint64_t)w[0] << 56; \
- 		v |= (isc_uint64_t)w[1] << 48; \
- 		v |= (isc_uint64_t)w[2] << 40; \
- 		v |= (isc_uint64_t)w[3] << 32; \
- 		v |= (isc_uint64_t)w[4] << 24; \
- 		v |= (isc_uint64_t)w[5] << 16; \
- 		v |= (isc_uint64_t)w[6] << 8; \
- 		v |= (isc_uint64_t)w[7]; \
+		v |= (isc_uint64_t)w[1] << 48; \
+		v |= (isc_uint64_t)w[2] << 40; \
+		v |= (isc_uint64_t)w[3] << 32; \
+		v |= (isc_uint64_t)w[4] << 24; \
+		v |= (isc_uint64_t)w[5] << 16; \
+		v |= (isc_uint64_t)w[6] << 8; \
+		v |= (isc_uint64_t)w[7]; \
 		w += 8; \
 	} while (0)
 
@@ -77,7 +91,7 @@
 		GET8(v, w); \
 		if (v == 0) \
 			d = ISCCC_TRUE; \
- 		else { \
+		else { \
 			d = ISCCC_FALSE; \
 			if (v == 255) \
 				GET16(v, w); \
@@ -87,7 +101,7 @@
 #define GETC32(v, w) \
 	do { \
 		GET24(v, w); \
- 		if (v == 0xffffffu) \
+		if (v == 0xffffffu) \
 			GET32(v, w); \
 	} while (0)
 
@@ -95,7 +109,7 @@
 
 #define GET_MEM(v, c, w) \
 	do { \
-		memcpy(v, w, c); \
+		memmove(v, w, c); \
 		w += c; \
 	} while (0)
 
@@ -179,7 +193,7 @@
 
 #define PUT_MEM(s, c, w) \
 	do { \
-		memcpy(w, s, c); \
+		memmove(w, s, c); \
 		w += c; \
 	} while (0)
 
@@ -193,7 +207,7 @@
 	(r).rend = (r).rstart + strlen(s); \
 } while (0)
 
-/*
+/*%
  * Use this to remove the const qualifier of a variable to assign it to
  * a non-const variable or pass it as a non-const function argument ...
  * but only when you are sure it won't then be changed!

@@ -1,23 +1,24 @@
 /*
- * Copyright (C) 1999-2001  Internet Software Consortium.
+ * Copyright (C) 2004, 2005, 2007, 2014, 2015  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 1999-2003  Internet Software Consortium.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: ifiter_sysctl.c,v 1.14 2001/06/04 19:33:34 tale Exp $ */
+/* $Id: ifiter_sysctl.c,v 1.25 2007/06/19 23:47:18 tbox Exp $ */
 
-/*
+/*! \file
+ * \brief
  * Obtain the list of network interfaces using sysctl.
  * See TCP/IP Illustrated Volume 2, sections 19.8, 19.14,
  * and 19.16.
@@ -29,6 +30,8 @@
 #include <net/route.h>
 #include <net/if_dl.h>
 
+#include <isc/print.h>
+
 /* XXX what about Alpha? */
 #ifdef sgi
 #define ROUNDUP(a) ((a) > 0 ? \
@@ -36,7 +39,7 @@
 		sizeof(__uint64_t))
 #else
 #define ROUNDUP(a) ((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) \
-                    : sizeof(long))
+		    : sizeof(long))
 #endif
 
 #define IFITER_MAGIC		ISC_MAGIC('I', 'F', 'I', 'S')
@@ -57,9 +60,9 @@ struct isc_interfaceiter {
 static int mib[6] = {
 	CTL_NET,
 	PF_ROUTE,
-        0,
+	0,
 	0, 			/* Any address family. */
-        NET_RT_IFLIST,
+	NET_RT_IFLIST,
 	0 			/* Flags. */
 };
 
@@ -69,6 +72,8 @@ isc_interfaceiter_create(isc_mem_t *mctx, isc_interfaceiter_t **iterp) {
 	isc_result_t result;
 	size_t bufsize;
 	size_t bufused;
+	char strbuf[ISC_STRERRORSIZE];
+
 	REQUIRE(mctx != NULL);
 	REQUIRE(iterp != NULL);
 	REQUIRE(*iterp == NULL);
@@ -85,13 +90,14 @@ isc_interfaceiter_create(isc_mem_t *mctx, isc_interfaceiter_t **iterp) {
 	 */
 	bufsize = 0;
 	if (sysctl(mib, 6, NULL, &bufsize, NULL, (size_t) 0) < 0) {
+		isc__strerror(errno, strbuf, sizeof(strbuf));
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 				 isc_msgcat_get(isc_msgcat,
 						ISC_MSGSET_IFITERSYSCTL,
 						ISC_MSG_GETIFLISTSIZE,
 						"getting interface "
 						"list size: sysctl: %s"),
-				 strerror(errno));
+				 strbuf);
 		result = ISC_R_UNEXPECTED;
 		goto failure;
 	}
@@ -105,13 +111,14 @@ isc_interfaceiter_create(isc_mem_t *mctx, isc_interfaceiter_t **iterp) {
 
 	bufused = bufsize;
 	if (sysctl(mib, 6, iter->buf, &bufused, NULL, (size_t) 0) < 0) {
+		isc__strerror(errno, strbuf, sizeof(strbuf));
 		UNEXPECTED_ERROR(__FILE__, __LINE__,
 				 isc_msgcat_get(isc_msgcat,
 						ISC_MSGSET_IFITERSYSCTL,
 						ISC_MSG_GETIFLIST,
 						"getting interface list: "
 						"sysctl: %s"),
-				 strerror(errno));
+				 strbuf);
 		result = ISC_R_UNEXPECTED;
 		goto failure;
 	}
@@ -132,7 +139,7 @@ isc_interfaceiter_create(isc_mem_t *mctx, isc_interfaceiter_t **iterp) {
  failure:
 	if (iter->buf != NULL)
 		isc_mem_put(mctx, iter->buf, iter->bufsize);
-	isc_mem_put(mctx, iter, sizeof *iter);
+	isc_mem_put(mctx, iter, sizeof(*iter));
 	return (result);
 }
 
@@ -166,7 +173,7 @@ internal_current(isc_interfaceiter_t *iter) {
 			namelen = sizeof(iter->current.name) - 1;
 
 		memset(iter->current.name, 0, sizeof(iter->current.name));
-		memcpy(iter->current.name, sdl->sdl_data, namelen);
+		memmove(iter->current.name, sdl->sdl_data, namelen);
 
 		iter->current.flags = 0;
 
@@ -234,19 +241,22 @@ internal_current(isc_interfaceiter_t *iter) {
 			return (ISC_R_IGNORE);
 
 		family = addr_sa->sa_family;
-		if (family != AF_INET) /* XXX IP6 */
+		if (family != AF_INET && family != AF_INET6)
 			return (ISC_R_IGNORE);
 
 		iter->current.af = family;
 
-		get_addr(family, &iter->current.address, addr_sa);
+		get_addr(family, &iter->current.address, addr_sa,
+			 iter->current.name);
 
 		if (mask_sa != NULL)
-			get_addr(family, &iter->current.netmask, mask_sa);
+			get_addr(family, &iter->current.netmask, mask_sa,
+				 iter->current.name);
 
 		if (dst_sa != NULL &&
-		    (iter->current.flags & IFF_POINTOPOINT) != 0)
-			get_addr(family, &iter->current.dstaddress, dst_sa);
+		    (iter->current.flags & INTERFACE_F_POINTTOPOINT) != 0)
+			get_addr(family, &iter->current.dstaddress, dst_sa,
+				 iter->current.name);
 
 		return (ISC_R_SUCCESS);
 	} else {
@@ -288,3 +298,7 @@ internal_destroy(isc_interfaceiter_t *iter) {
 	 */
 }
 
+static
+void internal_first(isc_interfaceiter_t *iter) {
+	iter->pos = 0;
+}

@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2004  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 2004, 2005, 2007, 2015  Internet Systems Consortium, Inc. ("ISC")
  * Copyright (C) 2002  Internet Software Consortium.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
@@ -15,7 +15,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: order.c,v 1.4.202.4 2004/03/08 09:04:30 marka Exp $ */
+/* $Id: order.c,v 1.10 2007/06/19 23:47:16 tbox Exp $ */
+
+/*! \file */
 
 #include <config.h>
 
@@ -46,21 +48,29 @@ struct dns_order {
 	ISC_LIST(dns_order_ent_t)	ents;
 	isc_mem_t			*mctx;
 };
-	
+
 #define DNS_ORDER_MAGIC ISC_MAGIC('O','r','d','r')
 #define DNS_ORDER_VALID(order)	ISC_MAGIC_VALID(order, DNS_ORDER_MAGIC)
 
 isc_result_t
 dns_order_create(isc_mem_t *mctx, dns_order_t **orderp) {
 	dns_order_t *order;
+	isc_result_t result;
+
 	REQUIRE(orderp != NULL && *orderp == NULL);
 
 	order = isc_mem_get(mctx, sizeof(*order));
 	if (order == NULL)
 		return (ISC_R_NOMEMORY);
-	
+
 	ISC_LIST_INIT(order->ents);
-	isc_refcount_init(&order->references, 1);     /* Implicit attach. */
+
+	/* Implicit attach. */
+	result = isc_refcount_init(&order->references, 1);
+	if (result != ISC_R_SUCCESS) {
+		isc_mem_put(mctx, order, sizeof(*order));
+		return (result);
+	}
 
 	order->mctx = NULL;
 	isc_mem_attach(mctx, &order->mctx);
@@ -78,7 +88,7 @@ dns_order_add(dns_order_t *order, dns_name_t *name,
 
 	REQUIRE(DNS_ORDER_VALID(order));
 	REQUIRE(mode == DNS_RDATASETATTR_RANDOMIZE ||
-	        mode == DNS_RDATASETATTR_FIXEDORDER ||
+		mode == DNS_RDATASETATTR_FIXEDORDER ||
 		mode == 0 /* DNS_RDATASETATTR_CYCLIC */ );
 
 	ent = isc_mem_get(order->mctx, sizeof(*ent));
@@ -98,7 +108,7 @@ dns_order_add(dns_order_t *order, dns_name_t *name,
 
 static inline isc_boolean_t
 match(dns_name_t *name1, dns_name_t *name2) {
-	
+
 	if (dns_name_iswildcard(name2))
 		return(dns_name_matcheswildcard(name1, name2));
 	return (dns_name_equal(name1, name2));
@@ -122,7 +132,7 @@ dns_order_find(dns_order_t *order, dns_name_t *name,
 		if (match(name, dns_fixedname_name(&ent->name)))
 			return (ent->mode);
 	}
-	return (0);
+	return (DNS_RDATASETATTR_RANDOMIZE);
 }
 
 void

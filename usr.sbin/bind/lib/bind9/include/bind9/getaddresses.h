@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2004  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 2004-2007, 2009  Internet Systems Consortium, Inc. ("ISC")
  * Copyright (C) 2001  Internet Software Consortium.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
@@ -15,10 +15,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: getaddresses.h,v 1.2.200.3 2004/03/08 09:04:28 marka Exp $ */
+/* $Id: getaddresses.h,v 1.11 2009/01/17 23:47:42 tbox Exp $ */
 
 #ifndef BIND9_GETADDRESSES_H
 #define BIND9_GETADDRESSES_H 1
+
+/*! \file bind9/getaddresses.h */
 
 #include <isc/lang.h>
 #include <isc/types.h>
@@ -30,7 +32,7 @@ ISC_LANG_BEGINDECLS
 isc_result_t
 bind9_getaddresses(const char *hostname, in_port_t port,
 		   isc_sockaddr_t *addrs, int addrsize, int *addrcount);
-/*
+/*%<
  * Use the system resolver to get the addresses associated with a hostname.
  * If successful, the number of addresses found is returned in 'addrcount'.
  * If a hostname lookup is performed and addresses of an unknown family is
@@ -38,19 +40,19 @@ bind9_getaddresses(const char *hostname, in_port_t port,
  * first 'addrsize' are returned and the remainder silently truncated.
  *
  * This routine may block.  If called by a program using the isc_app
- * framework, it should be surounded by isc_app_block()/isc_app_unblock().
+ * framework, it should be surrounded by isc_app_block()/isc_app_unblock().
  *
  *  Requires:
- *	'hostname' is not NULL.
- *	'addrs' is not NULL.
- *	'addrsize' > 0
- *	'addrcount' is not NULL.
+ *\li	'hostname' is not NULL.
+ *\li	'addrs' is not NULL.
+ *\li	'addrsize' > 0
+ *\li	'addrcount' is not NULL.
  *
- * 
+ *
  * Returns:
- *	ISC_R_SUCCESS
- *	ISC_R_NOTFOUND
- *	ISC_R_NOFAMILYSUPPORT - 'hostname' is an IPv6 address, and IPv6 is
+ *\li	#ISC_R_SUCCESS
+ *\li	#ISC_R_NOTFOUND
+ *\li	#ISC_R_NOFAMILYSUPPORT - 'hostname' is an IPv6 address, and IPv6 is
  *		not supported.
  */
 

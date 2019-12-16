@@ -1,21 +1,21 @@
 /*
+ * Copyright (C) 2004, 2007, 2009, 2015  Internet Systems Consortium, Inc. ("ISC")
  * Copyright (C) 1998-2001  Internet Software Consortium.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: mb_7.c,v 1.41 2001/07/16 03:06:11 marka Exp $ */
+/* $Id: mb_7.c,v 1.47 2009/12/04 22:06:37 tbox Exp $ */
 
 /* Reviewed: Wed Mar 15 17:31:26 PST 2000 by bwelling */
 
@@ -30,7 +30,7 @@ fromtext_mb(ARGS_FROMTEXT) {
 	dns_name_t name;
 	isc_buffer_t buffer;
 
-	REQUIRE(type == 7);
+	REQUIRE(type == dns_rdatatype_mb);
 
 	UNUSED(type);
 	UNUSED(rdclass);
@@ -41,8 +41,9 @@ fromtext_mb(ARGS_FROMTEXT) {
 
 	dns_name_init(&name, NULL);
 	buffer_fromregion(&buffer, &token.value.as_region);
-	origin = (origin != NULL) ? origin : dns_rootname;
-	RETTOK(dns_name_fromtext(&name, &buffer, origin, downcase, target));
+	if (origin == NULL)
+		origin = dns_rootname;
+	RETTOK(dns_name_fromtext(&name, &buffer, origin, options, target));
 	return (ISC_R_SUCCESS);
 }
 
@@ -53,7 +54,7 @@ totext_mb(ARGS_TOTEXT) {
 	dns_name_t prefix;
 	isc_boolean_t sub;
 
-	REQUIRE(rdata->type == 7);
+	REQUIRE(rdata->type == dns_rdatatype_mb);
 	REQUIRE(rdata->length != 0);
 
 	dns_name_init(&name, NULL);
@@ -69,17 +70,17 @@ totext_mb(ARGS_TOTEXT) {
 
 static inline isc_result_t
 fromwire_mb(ARGS_FROMWIRE) {
-        dns_name_t name;
+	dns_name_t name;
 
-	REQUIRE(type == 7);
+	REQUIRE(type == dns_rdatatype_mb);
 
 	UNUSED(type);
 	UNUSED(rdclass);
 
 	dns_decompress_setmethods(dctx, DNS_COMPRESS_GLOBAL14);
 
-        dns_name_init(&name, NULL);
-        return (dns_name_fromwire(&name, source, dctx, downcase, target));
+	dns_name_init(&name, NULL);
+	return (dns_name_fromwire(&name, source, dctx, options, target));
 }
 
 static inline isc_result_t
@@ -88,7 +89,7 @@ towire_mb(ARGS_TOWIRE) {
 	dns_offsets_t offsets;
 	isc_region_t region;
 
-	REQUIRE(rdata->type == 7);
+	REQUIRE(rdata->type == dns_rdatatype_mb);
 	REQUIRE(rdata->length != 0);
 
 	dns_compress_setmethods(cctx, DNS_COMPRESS_GLOBAL14);
@@ -109,7 +110,7 @@ compare_mb(ARGS_COMPARE) {
 
 	REQUIRE(rdata1->type == rdata2->type);
 	REQUIRE(rdata1->rdclass == rdata2->rdclass);
-	REQUIRE(rdata1->type == 7);
+	REQUIRE(rdata1->type == dns_rdatatype_mb);
 	REQUIRE(rdata1->length != 0);
 	REQUIRE(rdata2->length != 0);
 
@@ -130,7 +131,7 @@ fromstruct_mb(ARGS_FROMSTRUCT) {
 	dns_rdata_mb_t *mb = source;
 	isc_region_t region;
 
-	REQUIRE(type == 7);
+	REQUIRE(type == dns_rdatatype_mb);
 	REQUIRE(source != NULL);
 	REQUIRE(mb->common.rdtype == type);
 	REQUIRE(mb->common.rdclass == rdclass);
@@ -148,7 +149,7 @@ tostruct_mb(ARGS_TOSTRUCT) {
 	dns_rdata_mb_t *mb = target;
 	dns_name_t name;
 
-	REQUIRE(rdata->type == 7);
+	REQUIRE(rdata->type == dns_rdatatype_mb);
 	REQUIRE(target != NULL);
 	REQUIRE(rdata->length != 0);
 
@@ -184,7 +185,7 @@ additionaldata_mb(ARGS_ADDLDATA) {
 	dns_offsets_t offsets;
 	isc_region_t region;
 
-	REQUIRE(rdata->type == 7);
+	REQUIRE(rdata->type == dns_rdatatype_mb);
 
 	dns_name_init(&name, offsets);
 	dns_rdata_toregion(rdata, &region);
@@ -198,13 +199,42 @@ digest_mb(ARGS_DIGEST) {
 	isc_region_t r;
 	dns_name_t name;
 
-	REQUIRE(rdata->type == 7);
+	REQUIRE(rdata->type == dns_rdatatype_mb);
 
 	dns_rdata_toregion(rdata, &r);
 	dns_name_init(&name, NULL);
 	dns_name_fromregion(&name, &r);
 
 	return (dns_name_digest(&name, digest, arg));
+}
+
+static inline isc_boolean_t
+checkowner_mb(ARGS_CHECKOWNER) {
+
+	REQUIRE(type == dns_rdatatype_mb);
+
+	UNUSED(type);
+	UNUSED(rdclass);
+	UNUSED(wildcard);
+
+	return (dns_name_ismailbox(name));
+}
+
+static inline isc_boolean_t
+checknames_mb(ARGS_CHECKNAMES) {
+
+	REQUIRE(rdata->type == dns_rdatatype_mb);
+
+	UNUSED(rdata);
+	UNUSED(owner);
+	UNUSED(bad);
+
+	return (ISC_TRUE);
+}
+
+static inline int
+casecompare_mb(ARGS_COMPARE) {
+	return (compare_mb(rdata1, rdata2));
 }
 
 #endif	/* RDATA_GENERIC_MB_7_C */

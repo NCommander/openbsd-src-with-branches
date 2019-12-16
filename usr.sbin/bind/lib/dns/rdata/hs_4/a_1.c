@@ -1,21 +1,21 @@
 /*
- * Copyright (C) 1999-2001  Internet Software Consortium.
+ * Copyright (C) 2004, 2007, 2009, 2014, 2015  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 1999-2002  Internet Software Consortium.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: a_1.c,v 1.25 2001/07/16 03:06:37 marka Exp $ */
+/* $Id: a_1.c,v 1.33 2009/12/04 22:06:37 tbox Exp $ */
 
 /* reviewed: Thu Mar 16 15:58:36 PST 2000 by brister */
 
@@ -32,23 +32,23 @@ fromtext_hs_a(ARGS_FROMTEXT) {
 	struct in_addr addr;
 	isc_region_t region;
 
-	REQUIRE(type == 1);
-	REQUIRE(rdclass == 4);
+	REQUIRE(type == dns_rdatatype_a);
+	REQUIRE(rdclass == dns_rdataclass_hs);
 
 	UNUSED(type);
 	UNUSED(origin);
-	UNUSED(downcase);
+	UNUSED(options);
 	UNUSED(rdclass);
 
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_string,
 				      ISC_FALSE));
 
-	if (getquad(token.value.as_pointer, &addr, lexer, callbacks) != 1)
+	if (getquad(DNS_AS_STR(token), &addr, lexer, callbacks) != 1)
 		RETTOK(DNS_R_BADDOTTEDQUAD);
 	isc_buffer_availableregion(target, &region);
 	if (region.length < 4)
 		return (ISC_R_NOSPACE);
-	memcpy(region.base, &addr, 4);
+	memmove(region.base, &addr, 4);
 	isc_buffer_add(target, 4);
 	return (ISC_R_SUCCESS);
 }
@@ -57,8 +57,8 @@ static inline isc_result_t
 totext_hs_a(ARGS_TOTEXT) {
 	isc_region_t region;
 
-	REQUIRE(rdata->type == 1);
-	REQUIRE(rdata->rdclass == 4);
+	REQUIRE(rdata->type == dns_rdatatype_a);
+	REQUIRE(rdata->rdclass == dns_rdataclass_hs);
 	REQUIRE(rdata->length == 4);
 
 	UNUSED(tctx);
@@ -72,12 +72,12 @@ fromwire_hs_a(ARGS_FROMWIRE) {
 	isc_region_t sregion;
 	isc_region_t tregion;
 
-	REQUIRE(type == 1);
-	REQUIRE(rdclass == 4);
+	REQUIRE(type == dns_rdatatype_a);
+	REQUIRE(rdclass == dns_rdataclass_hs);
 
 	UNUSED(type);
 	UNUSED(dctx);
-	UNUSED(downcase);
+	UNUSED(options);
 	UNUSED(rdclass);
 
 	isc_buffer_activeregion(source, &sregion);
@@ -87,7 +87,7 @@ fromwire_hs_a(ARGS_FROMWIRE) {
 	if (tregion.length < 4)
 		return (ISC_R_NOSPACE);
 
-	memcpy(tregion.base, sregion.base, 4);
+	memmove(tregion.base, sregion.base, 4);
 	isc_buffer_forward(source, 4);
 	isc_buffer_add(target, 4);
 	return (ISC_R_SUCCESS);
@@ -97,8 +97,8 @@ static inline isc_result_t
 towire_hs_a(ARGS_TOWIRE) {
 	isc_region_t region;
 
-	REQUIRE(rdata->type == 1);
-	REQUIRE(rdata->rdclass == 4);
+	REQUIRE(rdata->type == dns_rdatatype_a);
+	REQUIRE(rdata->rdclass == dns_rdataclass_hs);
 	REQUIRE(rdata->length == 4);
 
 	UNUSED(cctx);
@@ -106,7 +106,7 @@ towire_hs_a(ARGS_TOWIRE) {
 	isc_buffer_availableregion(target, &region);
 	if (region.length < rdata->length)
 		return (ISC_R_NOSPACE);
-	memcpy(region.base, rdata->data, rdata->length);
+	memmove(region.base, rdata->data, rdata->length);
 	isc_buffer_add(target, 4);
 	return (ISC_R_SUCCESS);
 }
@@ -117,8 +117,8 @@ compare_hs_a(ARGS_COMPARE) {
 
 	REQUIRE(rdata1->type == rdata2->type);
 	REQUIRE(rdata1->rdclass == rdata2->rdclass);
-	REQUIRE(rdata1->type == 1);
-	REQUIRE(rdata1->rdclass == 4);
+	REQUIRE(rdata1->type == dns_rdatatype_a);
+	REQUIRE(rdata1->rdclass == dns_rdataclass_hs);
 	REQUIRE(rdata1->length == 4);
 	REQUIRE(rdata2->length == 4);
 
@@ -134,8 +134,8 @@ fromstruct_hs_a(ARGS_FROMSTRUCT) {
 	dns_rdata_hs_a_t *a = source;
 	isc_uint32_t n;
 
-	REQUIRE(type == 1);
-	REQUIRE(rdclass == 4);
+	REQUIRE(type == dns_rdatatype_a);
+	REQUIRE(rdclass == dns_rdataclass_hs);
 	REQUIRE(source != NULL);
 	REQUIRE(a->common.rdtype == type);
 	REQUIRE(a->common.rdclass == rdclass);
@@ -154,8 +154,8 @@ tostruct_hs_a(ARGS_TOSTRUCT) {
 	isc_uint32_t n;
 	isc_region_t region;
 
-	REQUIRE(rdata->type == 1);
-	REQUIRE(rdata->rdclass == 4);
+	REQUIRE(rdata->type == dns_rdatatype_a);
+	REQUIRE(rdata->rdclass == dns_rdataclass_hs);
 	REQUIRE(rdata->length == 4);
 
 	UNUSED(mctx);
@@ -180,8 +180,8 @@ freestruct_hs_a(ARGS_FREESTRUCT) {
 
 static inline isc_result_t
 additionaldata_hs_a(ARGS_ADDLDATA) {
-	REQUIRE(rdata->type == 1);
-	REQUIRE(rdata->rdclass == 4);
+	REQUIRE(rdata->type == dns_rdatatype_a);
+	REQUIRE(rdata->rdclass == dns_rdataclass_hs);
 
 	UNUSED(rdata);
 	UNUSED(add);
@@ -194,12 +194,44 @@ static inline isc_result_t
 digest_hs_a(ARGS_DIGEST) {
 	isc_region_t r;
 
-	REQUIRE(rdata->type == 1);
-	REQUIRE(rdata->rdclass == 4);
+	REQUIRE(rdata->type == dns_rdatatype_a);
+	REQUIRE(rdata->rdclass == dns_rdataclass_hs);
 
 	dns_rdata_toregion(rdata, &r);
 
 	return ((digest)(arg, &r));
+}
+
+static inline isc_boolean_t
+checkowner_hs_a(ARGS_CHECKOWNER) {
+
+	REQUIRE(type == dns_rdatatype_a);
+	REQUIRE(rdclass == dns_rdataclass_hs);
+
+	UNUSED(name);
+	UNUSED(type);
+	UNUSED(rdclass);
+	UNUSED(wildcard);
+
+	return (ISC_TRUE);
+}
+
+static inline isc_boolean_t
+checknames_hs_a(ARGS_CHECKNAMES) {
+
+	REQUIRE(rdata->type == dns_rdatatype_a);
+	REQUIRE(rdata->rdclass == dns_rdataclass_hs);
+
+	UNUSED(rdata);
+	UNUSED(owner);
+	UNUSED(bad);
+
+	return (ISC_TRUE);
+}
+
+static inline int
+casecompare_hs_a(ARGS_COMPARE) {
+	return (compare_hs_a(rdata1, rdata2));
 }
 
 #endif	/* RDATA_HS_4_A_1_C */

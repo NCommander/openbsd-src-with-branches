@@ -1,25 +1,25 @@
 /*
- * Copyright (C) 1999-2001  Internet Software Consortium.
+ * Copyright (C) 2004, 2005, 2007, 2009, 2014, 2015  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 1999-2002  Internet Software Consortium.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: aaaa_28.c,v 1.36 2001/07/16 03:06:41 marka Exp $ */
+/* $Id: aaaa_28.c,v 1.47 2009/12/04 22:06:37 tbox Exp $ */
 
 /* Reviewed: Thu Mar 16 16:52:50 PST 2000 by bwelling */
 
-/* RFC 1886 */
+/* RFC1886 */
 
 #ifndef RDATA_IN_1_AAAA_28_C
 #define RDATA_IN_1_AAAA_28_C
@@ -34,24 +34,24 @@ fromtext_in_aaaa(ARGS_FROMTEXT) {
 	unsigned char addr[16];
 	isc_region_t region;
 
-	REQUIRE(type == 28);
-	REQUIRE(rdclass == 1);
+	REQUIRE(type == dns_rdatatype_aaaa);
+	REQUIRE(rdclass == dns_rdataclass_in);
 
 	UNUSED(type);
 	UNUSED(origin);
-	UNUSED(downcase);
+	UNUSED(options);
 	UNUSED(rdclass);
 	UNUSED(callbacks);
 
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_string,
 				      ISC_FALSE));
 
-	if (inet_pton(AF_INET6, token.value.as_pointer, addr) != 1)
+	if (inet_pton(AF_INET6, DNS_AS_STR(token), addr) != 1)
 		RETTOK(DNS_R_BADAAAA);
 	isc_buffer_availableregion(target, &region);
 	if (region.length < 16)
 		return (ISC_R_NOSPACE);
-	memcpy(region.base, addr, 16);
+	memmove(region.base, addr, 16);
 	isc_buffer_add(target, 16);
 	return (ISC_R_SUCCESS);
 }
@@ -62,8 +62,8 @@ totext_in_aaaa(ARGS_TOTEXT) {
 
 	UNUSED(tctx);
 
-	REQUIRE(rdata->type == 28);
-	REQUIRE(rdata->rdclass == 1);
+	REQUIRE(rdata->type == dns_rdatatype_aaaa);
+	REQUIRE(rdata->rdclass == dns_rdataclass_in);
 	REQUIRE(rdata->length == 16);
 
 	dns_rdata_toregion(rdata, &region);
@@ -75,12 +75,12 @@ fromwire_in_aaaa(ARGS_FROMWIRE) {
 	isc_region_t sregion;
 	isc_region_t tregion;
 
-	REQUIRE(type == 28);
-	REQUIRE(rdclass == 1);
+	REQUIRE(type == dns_rdatatype_aaaa);
+	REQUIRE(rdclass == dns_rdataclass_in);
 
 	UNUSED(type);
 	UNUSED(dctx);
-	UNUSED(downcase);
+	UNUSED(options);
 	UNUSED(rdclass);
 
 	isc_buffer_activeregion(source, &sregion);
@@ -90,7 +90,7 @@ fromwire_in_aaaa(ARGS_FROMWIRE) {
 	if (tregion.length < 16)
 		return (ISC_R_NOSPACE);
 
-	memcpy(tregion.base, sregion.base, 16);
+	memmove(tregion.base, sregion.base, 16);
 	isc_buffer_forward(source, 16);
 	isc_buffer_add(target, 16);
 	return (ISC_R_SUCCESS);
@@ -102,14 +102,14 @@ towire_in_aaaa(ARGS_TOWIRE) {
 
 	UNUSED(cctx);
 
-	REQUIRE(rdata->type == 28);
-	REQUIRE(rdata->rdclass == 1);
+	REQUIRE(rdata->type == dns_rdatatype_aaaa);
+	REQUIRE(rdata->rdclass == dns_rdataclass_in);
 	REQUIRE(rdata->length == 16);
 
 	isc_buffer_availableregion(target, &region);
 	if (region.length < rdata->length)
 		return (ISC_R_NOSPACE);
-	memcpy(region.base, rdata->data, rdata->length);
+	memmove(region.base, rdata->data, rdata->length);
 	isc_buffer_add(target, 16);
 	return (ISC_R_SUCCESS);
 }
@@ -121,22 +121,22 @@ compare_in_aaaa(ARGS_COMPARE) {
 
 	REQUIRE(rdata1->type == rdata2->type);
 	REQUIRE(rdata1->rdclass == rdata2->rdclass);
-	REQUIRE(rdata1->type == 28);
-	REQUIRE(rdata1->rdclass == 1);
+	REQUIRE(rdata1->type == dns_rdatatype_aaaa);
+	REQUIRE(rdata1->rdclass == dns_rdataclass_in);
 	REQUIRE(rdata1->length == 16);
 	REQUIRE(rdata2->length == 16);
 
 	dns_rdata_toregion(rdata1, &r1);
 	dns_rdata_toregion(rdata2, &r2);
-	return (compare_region(&r1, &r2));
+	return (isc_region_compare(&r1, &r2));
 }
 
 static inline isc_result_t
 fromstruct_in_aaaa(ARGS_FROMSTRUCT) {
 	dns_rdata_in_aaaa_t *aaaa = source;
 
-	REQUIRE(type == 28);
-	REQUIRE(rdclass == 1);
+	REQUIRE(type == dns_rdatatype_aaaa);
+	REQUIRE(rdclass == dns_rdataclass_in);
 	REQUIRE(source != NULL);
 	REQUIRE(aaaa->common.rdtype == type);
 	REQUIRE(aaaa->common.rdclass == rdclass);
@@ -152,8 +152,8 @@ tostruct_in_aaaa(ARGS_TOSTRUCT) {
 	dns_rdata_in_aaaa_t *aaaa = target;
 	isc_region_t r;
 
-	REQUIRE(rdata->type == 28);
-	REQUIRE(rdata->rdclass == 1);
+	REQUIRE(rdata->type == dns_rdatatype_aaaa);
+	REQUIRE(rdata->rdclass == dns_rdataclass_in);
 	REQUIRE(target != NULL);
 	REQUIRE(rdata->length == 16);
 
@@ -165,7 +165,7 @@ tostruct_in_aaaa(ARGS_TOSTRUCT) {
 
 	dns_rdata_toregion(rdata, &r);
 	INSIST(r.length == 16);
-	memcpy(aaaa->in6_addr.s6_addr, r.base, 16);
+	memmove(aaaa->in6_addr.s6_addr, r.base, 16);
 
 	return (ISC_R_SUCCESS);
 }
@@ -175,16 +175,16 @@ freestruct_in_aaaa(ARGS_FREESTRUCT) {
 	dns_rdata_in_aaaa_t *aaaa = source;
 
 	REQUIRE(source != NULL);
-	REQUIRE(aaaa->common.rdclass == 1);
-	REQUIRE(aaaa->common.rdtype == 28);
+	REQUIRE(aaaa->common.rdclass == dns_rdataclass_in);
+	REQUIRE(aaaa->common.rdtype == dns_rdatatype_aaaa);
 
 	UNUSED(aaaa);
 }
 
 static inline isc_result_t
 additionaldata_in_aaaa(ARGS_ADDLDATA) {
-	REQUIRE(rdata->type == 28);
-	REQUIRE(rdata->rdclass == 1);
+	REQUIRE(rdata->type == dns_rdatatype_aaaa);
+	REQUIRE(rdata->rdclass == dns_rdataclass_in);
 
 	UNUSED(rdata);
 	UNUSED(add);
@@ -197,12 +197,55 @@ static inline isc_result_t
 digest_in_aaaa(ARGS_DIGEST) {
 	isc_region_t r;
 
-	REQUIRE(rdata->type == 28);
-	REQUIRE(rdata->rdclass == 1);
+	REQUIRE(rdata->type == dns_rdatatype_aaaa);
+	REQUIRE(rdata->rdclass == dns_rdataclass_in);
 
 	dns_rdata_toregion(rdata, &r);
 
 	return ((digest)(arg, &r));
 }
 
+static inline isc_boolean_t
+checkowner_in_aaaa(ARGS_CHECKOWNER) {
+	dns_name_t prefix, suffix;
+
+	REQUIRE(type == dns_rdatatype_aaaa);
+	REQUIRE(rdclass == dns_rdataclass_in);
+
+	UNUSED(type);
+	UNUSED(rdclass);
+
+	/*
+	 * Handle Active Diretory gc._msdcs.<forest> name.
+	 */
+	if (dns_name_countlabels(name) > 2U) {
+		dns_name_init(&prefix, NULL);
+		dns_name_init(&suffix, NULL);
+		dns_name_split(name, dns_name_countlabels(name) - 2,
+			       &prefix, &suffix);
+		if (dns_name_equal(&gc_msdcs, &prefix) &&
+		    dns_name_ishostname(&suffix, ISC_FALSE))
+			return (ISC_TRUE);
+	}
+
+	return (dns_name_ishostname(name, wildcard));
+}
+
+static inline isc_boolean_t
+checknames_in_aaaa(ARGS_CHECKNAMES) {
+
+	REQUIRE(rdata->type == dns_rdatatype_aaaa);
+	REQUIRE(rdata->rdclass == dns_rdataclass_in);
+
+	UNUSED(rdata);
+	UNUSED(owner);
+	UNUSED(bad);
+
+	return (ISC_TRUE);
+}
+
+static inline int
+casecompare_in_aaaa(ARGS_COMPARE) {
+	return (compare_in_aaaa(rdata1, rdata2));
+}
 #endif	/* RDATA_IN_1_AAAA_28_C */

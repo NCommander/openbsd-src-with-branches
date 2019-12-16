@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2004  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 2004-2007, 2012, 2013  Internet Systems Consortium, Inc. ("ISC")
  * Copyright (C) 2001  Internet Software Consortium.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
@@ -15,11 +15,15 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: version.h,v 1.2.224.3 2004/03/08 09:04:40 marka Exp $ */
+/* $Id: version.h,v 1.9.1234.1 2012/02/11 22:37:57 each Exp $ */
+
+/*! \file dns/version.h */
 
 #include <isc/platform.h>
 
 LIBDNS_EXTERNAL_DATA extern const char dns_version[];
+LIBDNS_EXTERNAL_DATA extern const char dns_major[];
+LIBDNS_EXTERNAL_DATA extern const char dns_mapapi[];
 
 LIBDNS_EXTERNAL_DATA extern const unsigned int dns_libinterface;
 LIBDNS_EXTERNAL_DATA extern const unsigned int dns_librevision;

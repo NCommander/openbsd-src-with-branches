@@ -1,21 +1,21 @@
 /*
- * Copyright (C) 1998-2001  Internet Software Consortium.
+ * Copyright (C) 2004-2008, 2010, 2012, 2014  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 1998-2002  Internet Software Consortium.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: buffer.h,v 1.39 2001/02/07 01:36:12 bwelling Exp $ */
+/* $Id: buffer.h,v 1.55 2010/12/20 23:47:21 tbox Exp $ */
 
 #ifndef ISC_BUFFER_H
 #define ISC_BUFFER_H 1
@@ -24,10 +24,9 @@
  ***** Module Info
  *****/
 
-/*
- * Buffers
+/*! \file isc/buffer.h
  *
- * A buffer is a region of memory, together with a set of related subregions.
+ * \brief A buffer is a region of memory, together with a set of related subregions.
  * Buffers are used for parsing and I/O operations.
  *
  * The 'used region' and the 'available' region are disjoint, and their
@@ -51,6 +50,7 @@
  * is empty.  If the current offset advances beyond the chosen offset, the
  * active region will also be empty.
  *
+ * \verbatim
  *  /------------entire length---------------\
  *  /----- used region -----\/-- available --\
  *  +----------------------------------------+
@@ -69,9 +69,11 @@
  * a-b == consumed region.
  * b-d == remaining region.
  * b-c == optional active region.
+ *\endverbatim
  *
  * The following invariants are maintained by all routines:
  *
+ *\code
  *	length > 0
  *
  *	base is a valid pointer to length bytes of memory
@@ -82,21 +84,22 @@
  *
  *	0 <= active <= used
  *	(although active < current implies empty active region)
+ *\endcode
  *
- * MP:
+ * \li MP:
  *	Buffers have no synchronization.  Clients must ensure exclusive
  *	access.
  *
- * Reliability:
+ * \li Reliability:
  *	No anticipated impact.
  *
- * Resources:
+ * \li Resources:
  *	Memory: 1 pointer + 6 unsigned integers per buffer.
  *
- * Security:
+ * \li Security:
  *	No anticipated impact.
  *
- * Standards:
+ * \li Standards:
  *	None.
  */
 
@@ -108,19 +111,21 @@
 #include <isc/magic.h>
 #include <isc/types.h>
 
-/*
- * To make many functions be inline macros (via #define) define this.
+/*!
+ * To make many functions be inline macros (via \#define) define this.
  * If it is undefined, a function will be used.
  */
 /* #define ISC_BUFFER_USEINLINE */
 
 ISC_LANG_BEGINDECLS
 
-/***
+/*@{*/
+/*!
  *** Magic numbers
  ***/
 #define ISC_BUFFER_MAGIC		0x42756621U	/* Buf!. */
 #define ISC_BUFFER_VALID(b)		ISC_MAGIC_VALID(b, ISC_BUFFER_MAGIC)
+/*@}*/
 
 /*
  * The following macros MUST be used only on valid buffers.  It is the
@@ -129,7 +134,8 @@ ISC_LANG_BEGINDECLS
  * another macro.)
  */
 
-/*
+/*@{*/
+/*!
  * Fundamental buffer elements.  (A through E in the introductory comment.)
  */
 #define isc_buffer_base(b)    ((void *)(b)->base)			  /*a*/
@@ -140,8 +146,10 @@ ISC_LANG_BEGINDECLS
 #define isc_buffer_used(b)    \
 		((void *)((unsigned char *)(b)->base + (b)->used))        /*d*/
 #define isc_buffer_length(b)  ((b)->length)				  /*e*/
+/*@}*/
 
-/*
+/*@{*/
+/*!
  * Derived lengths.  (Described in the introductory comment.)
  */
 #define isc_buffer_usedlength(b)	((b)->used)		      /* d-a */
@@ -149,8 +157,9 @@ ISC_LANG_BEGINDECLS
 #define isc_buffer_remaininglength(b)	((b)->used - (b)->current)    /* d-b */
 #define isc_buffer_activelength(b)	((b)->active - (b)->current)  /* c-b */
 #define isc_buffer_availablelength(b)	((b)->length - (b)->used)     /* e-d */
+/*@}*/
 
-/*
+/*!
  * Note that the buffer structure is public.  This is principally so buffer
  * operations can be implemented using macros.  Applications are strongly
  * discouraged from directly manipulating the structure.
@@ -159,14 +168,16 @@ ISC_LANG_BEGINDECLS
 struct isc_buffer {
 	unsigned int		magic;
 	void		       *base;
-	/* The following integers are byte offsets from 'base'. */
+	/*@{*/
+	/*! The following integers are byte offsets from 'base'. */
 	unsigned int		length;
 	unsigned int		used;
 	unsigned int 		current;
 	unsigned int 		active;
-	/* linkable */
+	/*@}*/
+	/*! linkable */
 	ISC_LINK(isc_buffer_t)	link;
-	/* private internal elements */
+	/*! private internal elements */
 	isc_mem_t	       *mctx;
 };
 
@@ -177,397 +188,468 @@ struct isc_buffer {
 isc_result_t
 isc_buffer_allocate(isc_mem_t *mctx, isc_buffer_t **dynbuffer,
 		    unsigned int length);
-/*
- * Allocate a dynamic linkable buffer which has "length" bytes in the
+/*!<
+ * \brief Allocate a dynamic linkable buffer which has "length" bytes in the
  * data region.
  *
  * Requires:
- *	"mctx" is valid.
+ *\li	"mctx" is valid.
  *
- *	"dynbuffer" is non-NULL, and "*dynbuffer" is NULL.
+ *\li	"dynbuffer" is non-NULL, and "*dynbuffer" is NULL.
  *
  * Returns:
- *	ISC_R_SUCCESS		- success
- *	ISC_R_NOMEMORY		- no memory available
+ *\li	ISC_R_SUCCESS		- success
+ *\li	ISC_R_NOMEMORY		- no memory available
  *
  * Note:
- *	Changing the buffer's length field is not permitted.
+ *\li	Changing the buffer's length field is not permitted.
  */
 
 void
 isc_buffer_free(isc_buffer_t **dynbuffer);
-/*
- * Release resources allocated for a dynamic buffer.
+/*!<
+ * \brief Release resources allocated for a dynamic buffer.
  *
  * Requires:
- *	"dynbuffer" is not NULL.
+ *\li	"dynbuffer" is not NULL.
  *
- *	"*dynbuffer" is a valid dynamic buffer.
+ *\li	"*dynbuffer" is a valid dynamic buffer.
  *
  * Ensures:
- *	"*dynbuffer" will be NULL on return, and all memory associated with
+ *\li	"*dynbuffer" will be NULL on return, and all memory associated with
  *	the dynamic buffer is returned to the memory context used in
  *	isc_buffer_allocate().
  */
 
 void
-isc__buffer_init(isc_buffer_t *b, const void *base, unsigned int length);
-/*
- * Make 'b' refer to the 'length'-byte region starting at base.
+isc__buffer_init(isc_buffer_t *b, void *base, unsigned int length);
+/*!<
+ * \brief Make 'b' refer to the 'length'-byte region starting at base.
  *
  * Requires:
  *
- *	'length' > 0
+ *\li	'length' > 0
  *
- *	'base' is a pointer to a sequence of 'length' bytes.
+ *\li	'base' is a pointer to a sequence of 'length' bytes.
+ *
+ */
+
+void
+isc__buffer_initnull(isc_buffer_t *b);
+/*!<
+ *\brief Initialize a buffer 'b' with a null data and zero length/
+ */
+
+void
+isc_buffer_reinit(isc_buffer_t *b, void *base, unsigned int length);
+/*!<
+ * \brief Make 'b' refer to the 'length'-byte region starting at base.
+ * Any existing data will be copied.
+ *
+ * Requires:
+ *
+ *\li	'length' > 0 AND length >= previous length
+ *
+ *\li	'base' is a pointer to a sequence of 'length' bytes.
  *
  */
 
 void
 isc__buffer_invalidate(isc_buffer_t *b);
-/*
- * Make 'b' an invalid buffer.
+/*!<
+ * \brief Make 'b' an invalid buffer.
  *
  * Requires:
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
  * Ensures:
- *	If assertion checking is enabled, future attempts to use 'b' without
+ *\li	If assertion checking is enabled, future attempts to use 'b' without
  *	calling isc_buffer_init() on it will cause an assertion failure.
  */
 
 void
 isc__buffer_region(isc_buffer_t *b, isc_region_t *r);
-/*
- * Make 'r' refer to the region of 'b'.
+/*!<
+ * \brief Make 'r' refer to the region of 'b'.
  *
  * Requires:
  *
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	'r' points to a region structure.
+ *\li	'r' points to a region structure.
  */
 
 void
 isc__buffer_usedregion(isc_buffer_t *b, isc_region_t *r);
-/*
- * Make 'r' refer to the used region of 'b'.
+/*!<
+ * \brief Make 'r' refer to the used region of 'b'.
  *
  * Requires:
  *
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	'r' points to a region structure.
+ *\li	'r' points to a region structure.
  */
 
 void
 isc__buffer_availableregion(isc_buffer_t *b, isc_region_t *r);
-/*
- * Make 'r' refer to the available region of 'b'.
+/*!<
+ * \brief Make 'r' refer to the available region of 'b'.
  *
  * Requires:
  *
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	'r' points to a region structure.
+ *\li	'r' points to a region structure.
  */
 
 void
 isc__buffer_add(isc_buffer_t *b, unsigned int n);
-/*
- * Increase the 'used' region of 'b' by 'n' bytes.
+/*!<
+ * \brief Increase the 'used' region of 'b' by 'n' bytes.
  *
  * Requires:
  *
- *	'b' is a valid buffer
+ *\li	'b' is a valid buffer
  *
- *	used + n <= length
+ *\li	used + n <= length
  *
  */
 
 void
 isc__buffer_subtract(isc_buffer_t *b, unsigned int n);
-/*
- * Decrease the 'used' region of 'b' by 'n' bytes.
+/*!<
+ * \brief Decrease the 'used' region of 'b' by 'n' bytes.
  *
  * Requires:
  *
- *	'b' is a valid buffer
+ *\li	'b' is a valid buffer
  *
- *	used >= n
+ *\li	used >= n
  *
  */
 
 void
 isc__buffer_clear(isc_buffer_t *b);
-/*
- * Make the used region empty.
+/*!<
+ * \brief Make the used region empty.
  *
  * Requires:
  *
- *	'b' is a valid buffer
+ *\li	'b' is a valid buffer
  *
  * Ensures:
  *
- *	used = 0
+ *\li	used = 0
  *
  */
 
 void
 isc__buffer_consumedregion(isc_buffer_t *b, isc_region_t *r);
-/*
- * Make 'r' refer to the consumed region of 'b'.
+/*!<
+ * \brief Make 'r' refer to the consumed region of 'b'.
  *
  * Requires:
  *
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	'r' points to a region structure.
+ *\li	'r' points to a region structure.
  */
 
 void
 isc__buffer_remainingregion(isc_buffer_t *b, isc_region_t *r);
-/*
- * Make 'r' refer to the remaining region of 'b'.
+/*!<
+ * \brief Make 'r' refer to the remaining region of 'b'.
  *
  * Requires:
  *
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	'r' points to a region structure.
+ *\li	'r' points to a region structure.
  */
 
 void
 isc__buffer_activeregion(isc_buffer_t *b, isc_region_t *r);
-/*
- * Make 'r' refer to the active region of 'b'.
+/*!<
+ * \brief Make 'r' refer to the active region of 'b'.
  *
  * Requires:
  *
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	'r' points to a region structure.
+ *\li	'r' points to a region structure.
  */
 
 void
 isc__buffer_setactive(isc_buffer_t *b, unsigned int n);
-/*
- * Sets the end of the active region 'n' bytes after current.
+/*!<
+ * \brief Sets the end of the active region 'n' bytes after current.
  *
  * Requires:
  *
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	current + n <= used
+ *\li	current + n <= used
  */
 
 void
 isc__buffer_first(isc_buffer_t *b);
-/*
- * Make the consumed region empty.
+/*!<
+ * \brief Make the consumed region empty.
  *
  * Requires:
  *
- *	'b' is a valid buffer
+ *\li	'b' is a valid buffer
  *
  * Ensures:
  *
- *	current == 0
+ *\li	current == 0
  *
  */
 
 void
 isc__buffer_forward(isc_buffer_t *b, unsigned int n);
-/*
- * Increase the 'consumed' region of 'b' by 'n' bytes.
+/*!<
+ * \brief Increase the 'consumed' region of 'b' by 'n' bytes.
  *
  * Requires:
  *
- *	'b' is a valid buffer
+ *\li	'b' is a valid buffer
  *
- *	current + n <= used
+ *\li	current + n <= used
  *
  */
 
 void
 isc__buffer_back(isc_buffer_t *b, unsigned int n);
-/*
- * Decrease the 'consumed' region of 'b' by 'n' bytes.
+/*!<
+ * \brief Decrease the 'consumed' region of 'b' by 'n' bytes.
  *
  * Requires:
  *
- *	'b' is a valid buffer
+ *\li	'b' is a valid buffer
  *
- *	n <= current
+ *\li	n <= current
  *
  */
 
 void
 isc_buffer_compact(isc_buffer_t *b);
-/*
- * Compact the used region by moving the remaining region so it occurs
+/*!<
+ * \brief Compact the used region by moving the remaining region so it occurs
  * at the start of the buffer.  The used region is shrunk by the size of
  * the consumed region, and the consumed region is then made empty.
  *
  * Requires:
  *
- *	'b' is a valid buffer
+ *\li	'b' is a valid buffer
  *
  * Ensures:
  *
- *	current == 0
+ *\li	current == 0
  *
- *	The size of the used region is now equal to the size of the remaining
+ *\li	The size of the used region is now equal to the size of the remaining
  *	region (as it was before the call).  The contents of the used region
  *	are those of the remaining region (as it was before the call).
  */
 
 isc_uint8_t
 isc_buffer_getuint8(isc_buffer_t *b);
-/*
- * Read an unsigned 8-bit integer from 'b' and return it.
+/*!<
+ * \brief Read an unsigned 8-bit integer from 'b' and return it.
  *
  * Requires:
  *
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	The length of the available region of 'b' is at least 1.
+ *\li	The length of the available region of 'b' is at least 1.
  *
  * Ensures:
  *
- *	The current pointer in 'b' is advanced by 1.
+ *\li	The current pointer in 'b' is advanced by 1.
  *
  * Returns:
  *
- *	A 8-bit unsigned integer.
+ *\li	A 8-bit unsigned integer.
  */
 
 void
 isc__buffer_putuint8(isc_buffer_t *b, isc_uint8_t val);
-/*
- * Store an unsigned 8-bit integer from 'val' into 'b'.
+/*!<
+ * \brief Store an unsigned 8-bit integer from 'val' into 'b'.
  *
  * Requires:
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	The length of the unused region of 'b' is at least 1.
+ *\li	The length of the unused region of 'b' is at least 1.
  *
  * Ensures:
- *	The used pointer in 'b' is advanced by 1.
+ *\li	The used pointer in 'b' is advanced by 1.
  */
 
 isc_uint16_t
 isc_buffer_getuint16(isc_buffer_t *b);
-/*
- * Read an unsigned 16-bit integer in network byte order from 'b', convert
+/*!<
+ * \brief Read an unsigned 16-bit integer in network byte order from 'b', convert
  * it to host byte order, and return it.
  *
  * Requires:
  *
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	The length of the available region of 'b' is at least 2.
+ *\li	The length of the available region of 'b' is at least 2.
  *
  * Ensures:
  *
- *	The current pointer in 'b' is advanced by 2.
+ *\li	The current pointer in 'b' is advanced by 2.
  *
  * Returns:
  *
- *	A 16-bit unsigned integer.
+ *\li	A 16-bit unsigned integer.
  */
 
 void
 isc__buffer_putuint16(isc_buffer_t *b, isc_uint16_t val);
-/*
- * Store an unsigned 16-bit integer in host byte order from 'val'
+/*!<
+ * \brief Store an unsigned 16-bit integer in host byte order from 'val'
  * into 'b' in network byte order.
  *
  * Requires:
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	The length of the unused region of 'b' is at least 2.
+ *\li	The length of the unused region of 'b' is at least 2.
  *
  * Ensures:
- *	The used pointer in 'b' is advanced by 2.
+ *\li	The used pointer in 'b' is advanced by 2.
  */
 
 isc_uint32_t
 isc_buffer_getuint32(isc_buffer_t *b);
-/*
- * Read an unsigned 32-bit integer in network byte order from 'b', convert
+/*!<
+ * \brief Read an unsigned 32-bit integer in network byte order from 'b', convert
  * it to host byte order, and return it.
  *
  * Requires:
  *
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	The length of the available region of 'b' is at least 4.
+ *\li	The length of the available region of 'b' is at least 4.
  *
  * Ensures:
  *
- *	The current pointer in 'b' is advanced by 4.
+ *\li	The current pointer in 'b' is advanced by 4.
  *
  * Returns:
  *
- *	A 32-bit unsigned integer.
+ *\li	A 32-bit unsigned integer.
  */
 
 void
 isc__buffer_putuint32(isc_buffer_t *b, isc_uint32_t val);
-/*
- * Store an unsigned 32-bit integer in host byte order from 'val'
+/*!<
+ * \brief Store an unsigned 32-bit integer in host byte order from 'val'
  * into 'b' in network byte order.
  *
  * Requires:
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	The length of the unused region of 'b' is at least 4.
+ *\li	The length of the unused region of 'b' is at least 4.
  *
  * Ensures:
- *	The used pointer in 'b' is advanced by 4.
+ *\li	The used pointer in 'b' is advanced by 4.
+ */
+
+isc_uint64_t
+isc_buffer_getuint48(isc_buffer_t *b);
+/*!<
+ * \brief Read an unsigned 48-bit integer in network byte order from 'b',
+ * convert it to host byte order, and return it.
+ *
+ * Requires:
+ *
+ *\li	'b' is a valid buffer.
+ *
+ *\li	The length of the available region of 'b' is at least 6.
+ *
+ * Ensures:
+ *
+ *\li	The current pointer in 'b' is advanced by 6.
+ *
+ * Returns:
+ *
+ *\li	A 48-bit unsigned integer (stored in a 64-bit integer).
+ */
+
+void
+isc__buffer_putuint48(isc_buffer_t *b, isc_uint64_t val);
+/*!<
+ * \brief Store an unsigned 48-bit integer in host byte order from 'val'
+ * into 'b' in network byte order.
+ *
+ * Requires:
+ *\li	'b' is a valid buffer.
+ *
+ *\li	The length of the unused region of 'b' is at least 6.
+ *
+ * Ensures:
+ *\li	The used pointer in 'b' is advanced by 6.
+ */
+
+void
+isc__buffer_putuint24(isc_buffer_t *b, isc_uint32_t val);
+/*!<
+ * Store an unsigned 24-bit integer in host byte order from 'val'
+ * into 'b' in network byte order.
+ *
+ * Requires:
+ *\li	'b' is a valid buffer.
+ *
+ *	The length of the unused region of 'b' is at least 3.
+ *
+ * Ensures:
+ *\li	The used pointer in 'b' is advanced by 3.
  */
 
 void
 isc__buffer_putmem(isc_buffer_t *b, const unsigned char *base,
 		   unsigned int length);
-/*
- * Copy 'length' bytes of memory at 'base' into 'b'.
+/*!<
+ * \brief Copy 'length' bytes of memory at 'base' into 'b'.
  *
  * Requires:
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	'base' points to 'length' bytes of valid memory.
+ *\li	'base' points to 'length' bytes of valid memory.
  *
  */
 
 void
 isc__buffer_putstr(isc_buffer_t *b, const char *source);
-/*
- * Copy 'source' into 'b', not including terminating NUL.
+/*!<
+ * \brief Copy 'source' into 'b', not including terminating NUL.
  *
  * Requires:
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	'source' to be a valid NULL terminated string.
+ *\li	'source' to be a valid NULL terminated string.
  *
- *	strlen(source) <= isc_buffer_available(b)
+ *\li	strlen(source) <= isc_buffer_available(b)
  */
 
 isc_result_t
 isc_buffer_copyregion(isc_buffer_t *b, const isc_region_t *r);
-/*
- * Copy the contents of 'r' into 'b'.
+/*!<
+ * \brief Copy the contents of 'r' into 'b'.
  *
  * Requires:
- *	'b' is a valid buffer.
+ *\li	'b' is a valid buffer.
  *
- *	'r' is a valid region.
+ *\li	'r' is a valid region.
  *
  * Returns:
  *
- *	ISC_R_SUCCESS
- *	ISC_R_NOSPACE			The available region of 'b' is not
+ *\li	ISC_R_SUCCESS
+ *\li	ISC_R_NOSPACE			The available region of 'b' is not
  *					big enough.
  */
 
@@ -580,14 +662,14 @@ ISC_LANG_ENDDECLS
  * ones beginning with "isc__"
  */
 
-/*
+/*! \note
  * XXXDCL Something more could be done with initializing buffers that
- * point to const data.  For example, a new function, isc_buffer_initconst,
- * could be used, and a new boolean flag in the buffer structure could
- * indicate whether the buffer was initialized with that function.
- * (isc_bufer_init itself would be reprototyped to *not* have its "base"
- * parameter be const.)  Then if the boolean were true, the isc_buffer_put*
- * functions could assert a contractual requirement for a non-const buffer.
+ * point to const data.  For example, isc_buffer_constinit() could
+ * set a new boolean flag in the buffer structure indicating whether
+ * the buffer was initialized with that function.  * Then if the
+ * boolean were true, the isc_buffer_put* functions could assert a
+ * contractual requirement for a non-const buffer.
+ *
  * One drawback is that the isc_buffer_* functions (macros) that return
  * pointers would still need to return non-const pointers to avoid compiler
  * warnings, so it would be up to code that uses them to have to deal
@@ -599,12 +681,7 @@ ISC_LANG_ENDDECLS
  */
 #define ISC__BUFFER_INIT(_b, _base, _length) \
 	do { \
-		union { \
-			const void *	konst; \
-			void *		var; \
-		} _u; \
-		_u.konst = (_base); \
-		(_b)->base = _u.var; \
+		(_b)->base = _base; \
 		(_b)->length = (_length); \
 		(_b)->used = 0; \
 		(_b)->current = 0; \
@@ -613,6 +690,8 @@ ISC_LANG_ENDDECLS
 		ISC_LINK_INIT(_b, link); \
 		(_b)->magic = ISC_BUFFER_MAGIC; \
 	} while (0)
+
+#define ISC__BUFFER_INITNULL(_b) ISC__BUFFER_INIT(_b, NULL, 0)
 
 #define ISC__BUFFER_INVALIDATE(_b) \
 	do { \
@@ -708,7 +787,7 @@ ISC_LANG_ENDDECLS
 
 #define ISC__BUFFER_PUTMEM(_b, _base, _length) \
 	do { \
-		memcpy(isc_buffer_used(_b), (_base), (_length)); \
+		memmove(isc_buffer_used(_b), (_base), (_length)); \
 		(_b)->used += (_length); \
 	} while (0)
 
@@ -718,7 +797,7 @@ ISC_LANG_ENDDECLS
 		unsigned char *_cp; \
 		_length = strlen(_source); \
 		_cp = isc_buffer_used(_b); \
-		memcpy(_cp, (_source), _length); \
+		memmove(_cp, (_source), _length); \
 		(_b)->used += (_length); \
 	} while (0)
 
@@ -741,6 +820,17 @@ ISC_LANG_ENDDECLS
 		_cp[1] = (unsigned char)(_val2 & 0x00ffU); \
 	} while (0)
 
+#define ISC__BUFFER_PUTUINT24(_b, _val) \
+	do { \
+		unsigned char *_cp; \
+		isc_uint32_t _val2 = (_val); \
+		_cp = isc_buffer_used(_b); \
+		(_b)->used += 3; \
+		_cp[0] = (unsigned char)((_val2 & 0xff0000U) >> 16); \
+		_cp[1] = (unsigned char)((_val2 & 0xff00U) >> 8); \
+		_cp[2] = (unsigned char)(_val2 & 0x00ffU); \
+	} while (0)
+
 #define ISC__BUFFER_PUTUINT32(_b, _val) \
 	do { \
 		unsigned char *_cp; \
@@ -755,6 +845,7 @@ ISC_LANG_ENDDECLS
 
 #if defined(ISC_BUFFER_USEINLINE)
 #define isc_buffer_init			ISC__BUFFER_INIT
+#define isc_buffer_initnull		ISC__BUFFER_INITNULL
 #define isc_buffer_invalidate		ISC__BUFFER_INVALIDATE
 #define isc_buffer_region		ISC__BUFFER_REGION
 #define isc_buffer_usedregion		ISC__BUFFER_USEDREGION
@@ -773,9 +864,11 @@ ISC_LANG_ENDDECLS
 #define isc_buffer_putstr		ISC__BUFFER_PUTSTR
 #define isc_buffer_putuint8		ISC__BUFFER_PUTUINT8
 #define isc_buffer_putuint16		ISC__BUFFER_PUTUINT16
+#define isc_buffer_putuint24		ISC__BUFFER_PUTUINT24
 #define isc_buffer_putuint32		ISC__BUFFER_PUTUINT32
 #else
 #define isc_buffer_init			isc__buffer_init
+#define isc_buffer_initnull		isc__buffer_initnull
 #define isc_buffer_invalidate		isc__buffer_invalidate
 #define isc_buffer_region		isc__buffer_region
 #define isc_buffer_usedregion		isc__buffer_usedregion
@@ -794,7 +887,20 @@ ISC_LANG_ENDDECLS
 #define isc_buffer_putstr		isc__buffer_putstr
 #define isc_buffer_putuint8		isc__buffer_putuint8
 #define isc_buffer_putuint16		isc__buffer_putuint16
+#define isc_buffer_putuint24		isc__buffer_putuint24
 #define isc_buffer_putuint32		isc__buffer_putuint32
 #endif
+
+#define isc_buffer_constinit(_b, _d, _l) \
+	do { \
+		union { void *_var; const void *_const; } _deconst; \
+		_deconst._const = (_d); \
+		isc_buffer_init((_b), _deconst._var, (_l)); \
+	} while (0)
+
+/*
+ * No inline method for this one (yet).
+ */
+#define isc_buffer_putuint48		isc__buffer_putuint48
 
 #endif /* ISC_BUFFER_H */

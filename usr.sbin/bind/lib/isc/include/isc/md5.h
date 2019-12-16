@@ -1,24 +1,25 @@
 /*
+ * Copyright (C) 2004-2007, 2009, 2010, 2014, 2016  Internet Systems Consortium, Inc. ("ISC")
  * Copyright (C) 2000, 2001  Internet Software Consortium.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: md5.h,v 1.8 2001/01/09 21:57:11 bwelling Exp $ */
+/* $Id: md5.h,v 1.20 2010/01/07 23:48:54 tbox Exp $ */
 
-/*
- * This is the header file for the MD5 message-digest algorithm.
+/*! \file isc/md5.h
+ * \brief This is the header file for the MD5 message-digest algorithm.
+ *
  * The algorithm is due to Ron Rivest.  This code was
  * written by Colin Plumb in 1993, no copyright is claimed.
  * This code is in the public domain; do with it what you wish.
@@ -42,16 +43,41 @@
 #ifndef ISC_MD5_H
 #define ISC_MD5_H 1
 
+#include <pk11/site.h>
+
+#ifndef PK11_MD5_DISABLE
+
 #include <isc/lang.h>
+#include <isc/platform.h>
 #include <isc/types.h>
 
-#define ISC_MD5_DIGESTLENGTH 16
+#define ISC_MD5_DIGESTLENGTH 16U
+#define ISC_MD5_BLOCK_LENGTH 64U
+
+#ifdef ISC_PLATFORM_OPENSSLHASH
+#include <openssl/opensslv.h>
+#include <openssl/evp.h>
+
+typedef struct {
+	EVP_MD_CTX *ctx;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+	EVP_MD_CTX _ctx;
+#endif
+} isc_md5_t;
+
+#elif PKCS11CRYPTO
+#include <pk11/pk11.h>
+
+typedef pk11_context_t isc_md5_t;
+
+#else
 
 typedef struct {
 	isc_uint32_t buf[4];
 	isc_uint32_t bytes[2];
 	isc_uint32_t in[16];
 } isc_md5_t;
+#endif
 
 ISC_LANG_BEGINDECLS
 
@@ -68,5 +94,7 @@ void
 isc_md5_final(isc_md5_t *ctx, unsigned char *digest);
 
 ISC_LANG_ENDDECLS
+
+#endif /* !PK11_MD5_DISABLE */
 
 #endif /* ISC_MD5_H */

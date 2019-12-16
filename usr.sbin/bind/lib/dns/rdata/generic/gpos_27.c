@@ -1,25 +1,25 @@
 /*
- * Copyright (C) 1999-2001  Internet Software Consortium.
+ * Copyright (C) 2004, 2005, 2007, 2009, 2014, 2015  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 1999-2002  Internet Software Consortium.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: gpos_27.c,v 1.32 2001/07/16 03:06:05 marka Exp $ */
+/* $Id: gpos_27.c,v 1.43 2009/12/04 22:06:37 tbox Exp $ */
 
 /* reviewed: Wed Mar 15 16:48:45 PST 2000 by brister */
 
-/* RFC 1712 */
+/* RFC1712 */
 
 #ifndef RDATA_GENERIC_GPOS_27_C
 #define RDATA_GENERIC_GPOS_27_C
@@ -31,15 +31,15 @@ fromtext_gpos(ARGS_FROMTEXT) {
 	isc_token_t token;
 	int i;
 
-	REQUIRE(type == 27);
+	REQUIRE(type == dns_rdatatype_gpos);
 
 	UNUSED(type);
 	UNUSED(rdclass);
 	UNUSED(origin);
-	UNUSED(downcase);
+	UNUSED(options);
 	UNUSED(callbacks);
 
-	for (i = 0; i < 3 ; i++) {
+	for (i = 0; i < 3; i++) {
 		RETERR(isc_lex_getmastertoken(lexer, &token,
 					      isc_tokentype_qstring,
 					      ISC_FALSE));
@@ -53,15 +53,15 @@ totext_gpos(ARGS_TOTEXT) {
 	isc_region_t region;
 	int i;
 
-	REQUIRE(rdata->type == 27);
+	REQUIRE(rdata->type == dns_rdatatype_gpos);
 	REQUIRE(rdata->length != 0);
 
 	UNUSED(tctx);
 
 	dns_rdata_toregion(rdata, &region);
 
-	for (i = 0; i < 3 ; i++) {
-		RETERR(txt_totext(&region, target));
+	for (i = 0; i < 3; i++) {
+		RETERR(txt_totext(&region, ISC_TRUE, target));
 		if (i != 2)
 			RETERR(str_totext(" ", target));
 	}
@@ -73,14 +73,14 @@ static inline isc_result_t
 fromwire_gpos(ARGS_FROMWIRE) {
 	int i;
 
-	REQUIRE(type == 27);
+	REQUIRE(type == dns_rdatatype_gpos);
 
 	UNUSED(type);
 	UNUSED(dctx);
 	UNUSED(rdclass);
-	UNUSED(downcase);
+	UNUSED(options);
 
-	for (i = 0 ; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		RETERR(txt_fromwire(source, target));
 	return (ISC_R_SUCCESS);
 }
@@ -88,7 +88,7 @@ fromwire_gpos(ARGS_FROMWIRE) {
 static inline isc_result_t
 towire_gpos(ARGS_TOWIRE) {
 
-	REQUIRE(rdata->type == 27);
+	REQUIRE(rdata->type == dns_rdatatype_gpos);
 	REQUIRE(rdata->length != 0);
 
 	UNUSED(cctx);
@@ -103,20 +103,20 @@ compare_gpos(ARGS_COMPARE) {
 
 	REQUIRE(rdata1->type == rdata2->type);
 	REQUIRE(rdata1->rdclass == rdata2->rdclass);
-	REQUIRE(rdata1->type == 27);
+	REQUIRE(rdata1->type == dns_rdatatype_gpos);
 	REQUIRE(rdata1->length != 0);
 	REQUIRE(rdata2->length != 0);
 
 	dns_rdata_toregion(rdata1, &r1);
 	dns_rdata_toregion(rdata2, &r2);
-	return (compare_region(&r1, &r2));
+	return (isc_region_compare(&r1, &r2));
 }
 
 static inline isc_result_t
 fromstruct_gpos(ARGS_FROMSTRUCT) {
 	dns_rdata_gpos_t *gpos = source;
 
-	REQUIRE(type == 27);
+	REQUIRE(type == dns_rdatatype_gpos);
 	REQUIRE(source != NULL);
 	REQUIRE(gpos->common.rdtype == type);
 	REQUIRE(gpos->common.rdclass == rdclass);
@@ -137,7 +137,7 @@ tostruct_gpos(ARGS_TOSTRUCT) {
 	dns_rdata_gpos_t *gpos = target;
 	isc_region_t region;
 
-	REQUIRE(rdata->type == 27);
+	REQUIRE(rdata->type == dns_rdatatype_gpos);
 	REQUIRE(target != NULL);
 	REQUIRE(rdata->length != 0);
 
@@ -188,7 +188,7 @@ freestruct_gpos(ARGS_FREESTRUCT) {
 	dns_rdata_gpos_t *gpos = source;
 
 	REQUIRE(source != NULL);
-	REQUIRE(gpos->common.rdtype == 27);
+	REQUIRE(gpos->common.rdtype == dns_rdatatype_gpos);
 
 	if (gpos->mctx == NULL)
 		return;
@@ -204,7 +204,7 @@ freestruct_gpos(ARGS_FREESTRUCT) {
 
 static inline isc_result_t
 additionaldata_gpos(ARGS_ADDLDATA) {
-	REQUIRE(rdata->type == 27);
+	REQUIRE(rdata->type == dns_rdatatype_gpos);
 
 	UNUSED(rdata);
 	UNUSED(add);
@@ -217,11 +217,41 @@ static inline isc_result_t
 digest_gpos(ARGS_DIGEST) {
 	isc_region_t r;
 
-	REQUIRE(rdata->type == 27);
+	REQUIRE(rdata->type == dns_rdatatype_gpos);
 
 	dns_rdata_toregion(rdata, &r);
 
 	return ((digest)(arg, &r));
+}
+
+static inline isc_boolean_t
+checkowner_gpos(ARGS_CHECKOWNER) {
+
+	REQUIRE(type == dns_rdatatype_gpos);
+
+	UNUSED(name);
+	UNUSED(type);
+	UNUSED(rdclass);
+	UNUSED(wildcard);
+
+	return (ISC_TRUE);
+}
+
+static inline isc_boolean_t
+checknames_gpos(ARGS_CHECKNAMES) {
+
+	REQUIRE(rdata->type == dns_rdatatype_gpos);
+
+	UNUSED(rdata);
+	UNUSED(owner);
+	UNUSED(bad);
+
+	return (ISC_TRUE);
+}
+
+static inline int
+casecompare_gpos(ARGS_COMPARE) {
+	return (compare_gpos(rdata1, rdata2));
 }
 
 #endif	/* RDATA_GENERIC_GPOS_27_C */

@@ -1,25 +1,25 @@
 /*
- * Copyright (C) 1999-2001  Internet Software Consortium.
+ * Copyright (C) 2004, 2005, 2007, 2009, 2014, 2015  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) 1999-2002  Internet Software Consortium.
  *
- * Permission to use, copy, modify, and distribute this software for any
+ * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
- * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
- * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
- * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
- * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
- * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $ISC: x25_19.c,v 1.31 2001/07/16 03:06:36 marka Exp $ */
+/* $Id: x25_19.c,v 1.41 2009/12/04 22:06:37 tbox Exp $ */
 
 /* Reviewed: Thu Mar 16 16:15:57 PST 2000 by bwelling */
 
-/* RFC 1183 */
+/* RFC1183 */
 
 #ifndef RDATA_GENERIC_X25_19_C
 #define RDATA_GENERIC_X25_19_C
@@ -31,12 +31,12 @@ fromtext_x25(ARGS_FROMTEXT) {
 	isc_token_t token;
 	unsigned int i;
 
-	REQUIRE(type == 19);
+	REQUIRE(type == dns_rdatatype_x25);
 
 	UNUSED(type);
 	UNUSED(rdclass);
 	UNUSED(origin);
-	UNUSED(downcase);
+	UNUSED(options);
 	UNUSED(callbacks);
 
 	RETERR(isc_lex_getmastertoken(lexer, &token, isc_tokentype_qstring,
@@ -56,23 +56,23 @@ totext_x25(ARGS_TOTEXT) {
 
 	UNUSED(tctx);
 
-	REQUIRE(rdata->type == 19);
+	REQUIRE(rdata->type == dns_rdatatype_x25);
 	REQUIRE(rdata->length != 0);
 
 	dns_rdata_toregion(rdata, &region);
-	return (txt_totext(&region, target));
+	return (txt_totext(&region, ISC_TRUE, target));
 }
 
 static inline isc_result_t
 fromwire_x25(ARGS_FROMWIRE) {
 	isc_region_t sr;
 
-	REQUIRE(type == 19);
+	REQUIRE(type == dns_rdatatype_x25);
 
 	UNUSED(type);
 	UNUSED(dctx);
 	UNUSED(rdclass);
-	UNUSED(downcase);
+	UNUSED(options);
 
 	isc_buffer_activeregion(source, &sr);
 	if (sr.length < 5)
@@ -84,7 +84,7 @@ static inline isc_result_t
 towire_x25(ARGS_TOWIRE) {
 	UNUSED(cctx);
 
-	REQUIRE(rdata->type == 19);
+	REQUIRE(rdata->type == dns_rdatatype_x25);
 	REQUIRE(rdata->length != 0);
 
 	return (mem_tobuffer(target, rdata->data, rdata->length));
@@ -97,13 +97,13 @@ compare_x25(ARGS_COMPARE) {
 
 	REQUIRE(rdata1->type == rdata2->type);
 	REQUIRE(rdata1->rdclass == rdata2->rdclass);
-	REQUIRE(rdata1->type == 19);
+	REQUIRE(rdata1->type == dns_rdatatype_x25);
 	REQUIRE(rdata1->length != 0);
 	REQUIRE(rdata2->length != 0);
 
 	dns_rdata_toregion(rdata1, &r1);
 	dns_rdata_toregion(rdata2, &r2);
-	return (compare_region(&r1, &r2));
+	return (isc_region_compare(&r1, &r2));
 }
 
 static inline isc_result_t
@@ -111,7 +111,7 @@ fromstruct_x25(ARGS_FROMSTRUCT) {
 	dns_rdata_x25_t *x25 = source;
 	isc_uint8_t i;
 
-	REQUIRE(type == 19);
+	REQUIRE(type == dns_rdatatype_x25);
 	REQUIRE(source != NULL);
 	REQUIRE(x25->common.rdtype == type);
 	REQUIRE(x25->common.rdclass == rdclass);
@@ -136,7 +136,7 @@ tostruct_x25(ARGS_TOSTRUCT) {
 	dns_rdata_x25_t *x25 = target;
 	isc_region_t r;
 
-	REQUIRE(rdata->type == 19);
+	REQUIRE(rdata->type == dns_rdatatype_x25);
 	REQUIRE(target != NULL);
 	REQUIRE(rdata->length != 0);
 
@@ -159,7 +159,7 @@ static inline void
 freestruct_x25(ARGS_FREESTRUCT) {
 	dns_rdata_x25_t *x25 = source;
 	REQUIRE(source != NULL);
-	REQUIRE(x25->common.rdtype == 19);
+	REQUIRE(x25->common.rdtype == dns_rdatatype_x25);
 
 	if (x25->mctx == NULL)
 		return;
@@ -171,7 +171,7 @@ freestruct_x25(ARGS_FREESTRUCT) {
 
 static inline isc_result_t
 additionaldata_x25(ARGS_ADDLDATA) {
-	REQUIRE(rdata->type == 19);
+	REQUIRE(rdata->type == dns_rdatatype_x25);
 
 	UNUSED(rdata);
 	UNUSED(add);
@@ -184,11 +184,41 @@ static inline isc_result_t
 digest_x25(ARGS_DIGEST) {
 	isc_region_t r;
 
-	REQUIRE(rdata->type == 19);
+	REQUIRE(rdata->type == dns_rdatatype_x25);
 
 	dns_rdata_toregion(rdata, &r);
 
 	return ((digest)(arg, &r));
+}
+
+static inline isc_boolean_t
+checkowner_x25(ARGS_CHECKOWNER) {
+
+	REQUIRE(type == dns_rdatatype_x25);
+
+	UNUSED(name);
+	UNUSED(type);
+	UNUSED(rdclass);
+	UNUSED(wildcard);
+
+	return (ISC_TRUE);
+}
+
+static inline isc_boolean_t
+checknames_x25(ARGS_CHECKNAMES) {
+
+	REQUIRE(rdata->type == dns_rdatatype_x25);
+
+	UNUSED(rdata);
+	UNUSED(owner);
+	UNUSED(bad);
+
+	return (ISC_TRUE);
+}
+
+static inline int
+casecompare_x25(ARGS_COMPARE) {
+	return (compare_x25(rdata1, rdata2));
 }
 
 #endif	/* RDATA_GENERIC_X25_19_C */
