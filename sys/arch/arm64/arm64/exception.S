@@ -1,4 +1,4 @@
-/* $OpenBSD: exception.S,v 1.8 2018/08/03 18:36:01 kettenis Exp $ */
+/* $OpenBSD: exception.S,v 1.9 2019/03/15 05:42:38 kevlo Exp $ */
 /*-
  * Copyright (c) 2014 Andrew Turner
  * All rights reserved.
@@ -161,6 +161,8 @@ handle_el1h_sync:
 	bl	do_el1h_sync
 	restore_registers 1
 	eret
+	dsb nsh
+	isb
 
 handle_el1h_irq:
 	save_registers 1
@@ -168,6 +170,8 @@ handle_el1h_irq:
 	bl	arm_cpu_intr
 	restore_registers 1
 	eret
+	dsb nsh
+	isb
 
 handle_el1h_error:
 	brk	0xf13
