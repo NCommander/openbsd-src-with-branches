@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005, 2007  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) Internet Systems Consortium, Inc. ("ISC")
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ipseckey_45.h,v 1.4 2007/06/19 23:47:17 tbox Exp $ */
+/* $Id: ipseckey_45.h,v 1.2 2019/12/16 16:16:25 deraadt Exp $ */
 
 #ifndef GENERIC_IPSECKEY_45_H
 #define GENERIC_IPSECKEY_45_H 1

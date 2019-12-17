@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010, 2014  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) Internet Systems Consortium, Inc. ("ISC")
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dns64.h,v 1.3 2010/12/08 23:51:56 tbox Exp $ */
+/* $Id: dns64.h,v 1.1 2019/12/16 16:31:33 deraadt Exp $ */
 
 #ifndef DNS_DNS64_H
 #define DNS_DNS64_H 1

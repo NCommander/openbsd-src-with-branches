@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) Internet Systems Consortium, Inc. ("ISC")
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: clientinfo.h,v 1.3 2011/10/11 23:46:45 tbox Exp $ */
+/* $Id: clientinfo.h,v 1.1 2019/12/16 16:31:33 deraadt Exp $ */
 
 #ifndef DNS_CLIENTINFO_H
 #define DNS_CLIENTINFO_H 1

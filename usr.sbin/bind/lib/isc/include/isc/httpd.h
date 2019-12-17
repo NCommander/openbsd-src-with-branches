@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2008, 2014  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) Internet Systems Consortium, Inc. ("ISC")
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: httpd.h,v 1.9 2008/08/08 05:06:49 marka Exp $ */
+/* $Id: httpd.h,v 1.1 2019/12/16 16:31:35 deraadt Exp $ */
 
 #ifndef ISC_HTTPD_H
 #define ISC_HTTPD_H 1

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) Internet Systems Consortium, Inc. ("ISC")
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,7 +17,7 @@
 #ifndef GENERIC_KEYDATA_65533_H
 #define GENERIC_KEYDATA_65533_H 1
 
-/* $Id: keydata_65533.h,v 1.2 2009/06/30 02:52:32 each Exp $ */
+/* $Id: keydata_65533.h,v 1.1 2019/12/16 16:31:34 deraadt Exp $ */
 
 typedef struct dns_rdata_keydata {
 	dns_rdatacommon_t	common;

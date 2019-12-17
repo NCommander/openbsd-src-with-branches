@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008, 2009  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) Internet Systems Consortium, Inc. ("ISC")
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: portset.h,v 1.6 2009/06/25 05:28:34 marka Exp $ */
+/* $Id: portset.h,v 1.1 2019/12/16 16:31:35 deraadt Exp $ */
 
 /*! \file isc/portset.h
  * \brief Transport Protocol Port Manipulation Module

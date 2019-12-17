@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2016  Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (C) Internet Systems Consortium, Inc. ("ISC")
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: backtrace-emptytbl.c,v 1.3 2009/09/01 20:13:44 each Exp $ */
+/* $Id: backtrace-emptytbl.c,v 1.1 2019/12/16 16:31:35 deraadt Exp $ */
 
 /*! \file */
 

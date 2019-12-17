@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2004-2009, 2011-2014, 2016  Internet Systems Consortium, Inc. ("ISC")
- * Copyright (C) 1998-2002  Internet Software Consortium.
+ * Copyright (C) Internet Systems Consortium, Inc. ("ISC")
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id$ */
+/* $Id: socket.h,v 1.6 2019/12/16 16:16:26 deraadt Exp $ */
 
 #ifndef ISC_SOCKET_H
 #define ISC_SOCKET_H 1
