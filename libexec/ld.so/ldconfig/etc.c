@@ -1,4 +1,4 @@
-/* $OpenBSD: etc.c,v 1.6 2006/05/12 23:20:52 deraadt Exp $ */
+/* $OpenBSD: etc.c,v 1.7 2006/05/12 23:35:16 deraadt Exp $ */
 
 /* Public Domain */
 
@@ -10,6 +10,12 @@
 #include "ld.h"
 
 #define	OOM_MSG	"Out of memory"
+
+__dead void
+_dl_oom(void)
+{
+	err(1, OOM_MSG);
+}
 
 char *
 xstrdup(const char *s)
