@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.50 2017/01/23 08:37:08 deraadt Exp $	*/
+/*	$OpenBSD: conf.c,v 1.51 2019/12/17 13:08:55 reyk Exp $	*/
 /*	$NetBSD: conf.c,v 1.10 2002/04/19 01:04:38 wiz Exp $	*/
 
 /*
@@ -123,7 +123,7 @@ cdev_decl(pci);
 #include "ucom.h"
 #include "ugen.h"
 #include "uhid.h"
-#incluee "fido.h"
+#include "fido.h"
 #include "ulpt.h"
 
 /*
