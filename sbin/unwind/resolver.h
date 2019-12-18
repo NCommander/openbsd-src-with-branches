@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.h,v 1.15 2019/12/02 06:26:52 otto Exp $	*/
+/*	$OpenBSD: resolver.h,v 1.16 2019/12/08 09:47:50 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -58,6 +58,17 @@ struct ctl_forwarder_info {
 	char		 ip[INET6_ADDRSTRLEN];
 	uint32_t	 if_index;
 	int		 src;
+};
+
+struct ctl_mem_info {
+	size_t		 msg_cache_used;
+	size_t		 msg_cache_max;
+	size_t		 rrset_cache_used;
+	size_t		 rrset_cache_max;
+	size_t		 key_cache_used;
+	size_t		 key_cache_max;
+	size_t		 neg_cache_used;
+	size_t		 neg_cache_max;
 };
 
 void	 resolver(int, int);

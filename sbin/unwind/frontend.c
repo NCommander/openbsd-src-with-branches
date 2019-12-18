@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.c,v 1.47 2019/12/11 15:50:47 otto Exp $	*/
+/*	$OpenBSD: frontend.c,v 1.48 2019/12/13 14:37:03 otto Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -484,6 +484,7 @@ frontend_dispatch_resolver(int fd, short event, void *bula)
 			break;
 		case IMSG_CTL_RESOLVER_INFO:
 		case IMSG_CTL_AUTOCONF_RESOLVER_INFO:
+		case IMSG_CTL_MEM_INFO:
 		case IMSG_CTL_END:
 			control_imsg_relay(&imsg);
 			break;

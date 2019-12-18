@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.9 2019/12/03 14:35:05 otto Exp $	*/
+/*	$OpenBSD: parser.c,v 1.10 2019/12/08 09:47:51 florian Exp $	*/
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -69,6 +69,7 @@ static const struct token t_log[] = {
 static const struct token t_status[] = {
 	{NOTOKEN,	"",		NONE,		NULL},
 	{KEYWORD,	"autoconf",	AUTOCONF,	NULL},
+	{KEYWORD,	"memory",	MEM,		NULL},
 	{ENDTOKEN,	"",		NONE,		NULL}
 };
 
