@@ -1,4 +1,4 @@
-/*	$OpenBSD: vldcp.c,v 1.17 2018/03/22 11:24:27 stsp Exp $	*/
+/*	$OpenBSD: vldcp.c,v 1.18 2019/10/12 15:55:31 cheloha Exp $	*/
 /*
  * Copyright (c) 2009, 2012 Mark Kettenis
  *
@@ -584,7 +584,7 @@ vldcppoll(dev_t dev, int events, struct proc *p)
 
 	sc = vldcp_lookup(dev);
 	if (sc == NULL)
-		return (ENXIO);
+		return (POLLERR);
 	lc = &sc->sc_lc;
 
 	s = spltty();

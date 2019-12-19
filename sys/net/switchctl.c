@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchctl.c,v 1.15 2019/05/12 16:38:02 sashan Exp $	*/
+/*	$OpenBSD: switchctl.c,v 1.16 2019/10/16 10:20:48 mpi Exp $	*/
 
 /*
  * Copyright (c) 2016 Kazuya GODA <goda@openbsd.org>
@@ -361,7 +361,7 @@ switchpoll(dev_t dev, int events, struct proc *p)
 	struct switch_softc	*sc = switch_dev2sc(dev);
 
 	if (sc == NULL)
-		return (ENXIO);
+		return (POLLERR);
 
 	if (events & (POLLIN | POLLRDNORM)) {
 		if (!mq_empty(&sc->sc_swdev->swdev_outq) ||
