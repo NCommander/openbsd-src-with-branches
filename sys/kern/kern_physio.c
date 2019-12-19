@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_physio.c,v 1.42 2014/11/16 12:31:00 deraadt Exp $	*/
+/*	$OpenBSD: kern_physio.c,v 1.43 2015/03/14 03:38:50 jsg Exp $	*/
 /*	$NetBSD: kern_physio.c,v 1.28 1997/05/19 10:43:28 pk Exp $	*/
 
 /*-
@@ -163,7 +163,7 @@ physio(void (*strategy)(struct buf *), dev_t dev, int flags,
 
 			/* [wait for the transfer to complete] */
 			while ((bp->b_flags & B_DONE) == 0)
-				tsleep(bp, PRIBIO + 1, "physio", 0);
+				tsleep_nsec(bp, PRIBIO + 1, "physio", INFSLP);
 
 			/* Mark it busy again, so nobody else will use it. */
 			bp->b_flags |= B_BUSY;

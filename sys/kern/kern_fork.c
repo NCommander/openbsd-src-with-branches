@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.217 2019/11/29 20:12:19 guenther Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.218 2019/11/29 21:32:04 guenther Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -491,7 +491,7 @@ fork1(struct proc *curp, int flags, void (*func)(void *), void *arg,
 	 */
 	if (flags & FORK_PPWAIT)
 		while (curpr->ps_flags & PS_ISPWAIT)
-			tsleep(curpr, PWAIT, "ppwait", 0);
+			tsleep_nsec(curpr, PWAIT, "ppwait", INFSLP);
 
 	/*
 	 * If we're tracing the child, alert the parent too.
