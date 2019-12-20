@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.166 2018/12/05 10:28:21 jsg Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.167 2019/01/18 01:34:50 pd Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -364,6 +364,7 @@ extern int cpu_apmi_edx;
 extern u_int cpu_mwait_size;
 extern u_int cpu_mwait_states;
 extern void cpu_update_nmi_cr3(vaddr_t);
+extern void cpu_tsx_disable(struct cpu_info *);
 
 /* machdep.c */
 extern int cpu_apmhalt;
