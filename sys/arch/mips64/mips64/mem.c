@@ -1,4 +1,4 @@
-/*	$OpenBSD: mem.c,v 1.22 2016/09/25 15:23:37 deraadt Exp $	*/
+/*	$OpenBSD: mem.c,v 1.23 2017/12/14 03:30:43 guenther Exp $	*/
 /*	$NetBSD: mem.c,v 1.6 1995/04/10 11:55:03 mycroft Exp $	*/
 
 /*
@@ -61,7 +61,7 @@
 
 #include <uvm/uvm_extern.h>
 
-boolean_t is_memory_range(paddr_t, psize_t, psize_t);
+int is_memory_range(paddr_t, psize_t, psize_t);
 
 caddr_t zeropage;
 
@@ -99,7 +99,7 @@ int
 mmrw(dev_t dev, struct uio *uio, int flags)
 {
 	struct iovec *iov;
-	boolean_t allowed;
+	int allowed;
 	int error = 0;
 	size_t c;
 	vaddr_t v;
