@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.87 2019/08/19 21:22:26 deraadt Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.88 2019/08/27 22:39:51 deraadt Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -481,6 +481,7 @@ acpi_resume_cpu(struct acpi_softc *sc, int state)
 	acpi_resume_pm(sc, state);
 
 	cpu_ucode_apply(&cpu_info_primary);
+	cpu_tsx_disable(&cpu_info_primary);
 	fpuinit(&cpu_info_primary);
 	cpu_init(&cpu_info_primary);
 
