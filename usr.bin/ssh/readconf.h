@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.h,v 1.129 2018/11/23 05:08:07 djm Exp $ */
+/* $OpenBSD: readconf.h,v 1.130 2019/10/31 21:18:28 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -29,6 +29,7 @@ struct allowed_cname {
 
 typedef struct {
 	int     forward_agent;	/* Forward authentication agent. */
+	char   *forward_agent_sock_path; /* Optional path of the agent. */
 	int     forward_x11;	/* Forward X11 display. */
 	int     forward_x11_timeout;	/* Expiration for Cookies */
 	int     forward_x11_trusted;	/* Trust Forward X11 display. */
