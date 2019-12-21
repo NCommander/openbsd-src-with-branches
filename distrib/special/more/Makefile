@@ -1,12 +1,10 @@
-#	$OpenBSD: Makefile,v 1.11 2015/11/14 23:40:12 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.12 2015/11/15 07:12:50 deraadt Exp $
 
 PROG=	more
 CFLAGS+= -I. -I${.CURDIR}/
 SRCS=	more.c tputs.c termcap.c tgoto.c
 
 CLEANFILES+=morehelp.h
-
-beforedepend: morehelp.h
 
 morehelp.h: ${.CURDIR}/more.help
 	echo -n 'const char *more_help = "' > morehelp.h

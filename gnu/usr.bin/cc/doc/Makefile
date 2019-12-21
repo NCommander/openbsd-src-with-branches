@@ -1,5 +1,5 @@
 # $FreeBSD: src/gnu/usr.bin/cc/doc/Makefile,v 1.14.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD: Makefile,v 1.1.1.1 2009/10/15 20:50:20 robert Exp $
+# $OpenBSD: Makefile,v 1.2 2016/11/08 17:39:12 tb Exp $
 
 .include <bsd.own.mk>
 
@@ -61,9 +61,6 @@ all:	${INFOF}
 
 clean: _SUBDIRUSE
 	rm -f ${CLEANFILES}
-
-depend:
-	# Nothing here so far...
 
 install: ${INFOF}
 .for x in ${INFOS}
