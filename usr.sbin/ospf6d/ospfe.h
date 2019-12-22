@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.h,v 1.19 2014/10/25 03:23:49 lteo Exp $ */
+/*	$OpenBSD: ospfe.h,v 1.20 2019/12/11 21:33:56 denis Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -142,7 +142,7 @@ struct ctl_iface	*if_to_ctl(struct iface *);
 int	 if_join_group(struct iface *, struct in6_addr *);
 int	 if_leave_group(struct iface *, struct in6_addr *);
 int	 if_set_mcast(struct iface *);
-void	 if_set_recvbuf(int);
+void	 if_set_sockbuf(int);
 int	 if_set_mcast_loop(int);
 int	 if_set_ipv6_pktinfo(int, int);
 int	 if_set_ipv6_checksum(int);
