@@ -1,4 +1,4 @@
-.\"	$OpenBSD: boot.8,v 1.65 2019/10/20 16:13:35 kn Exp $
+.\"	$OpenBSD: boot.8,v 1.66 2019/10/20 22:15:08 kn Exp $
 .\"
 .\" Copyright (c) 1997-2001 Michael Shalayeff
 .\" All rights reserved.
@@ -204,6 +204,11 @@ on the console device.
 .It Ic help
 Prints a list of available commands and machine dependent
 commands, if any.
+.It Ic hexdump Ar addr size
+Show
+.Ar size
+bytes of memory at address
+.Ar addr .
 .It Ic machine Op Ar command
 Issues machine-dependent commands.
 These are defined for i386 architecture:
