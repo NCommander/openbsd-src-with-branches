@@ -1,4 +1,4 @@
-/*	$OpenBSD: database.c,v 1.16 2019/05/10 13:50:34 claudio Exp $ */
+/*	$OpenBSD: database.c,v 1.17 2019/12/11 21:33:56 denis Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -134,8 +134,7 @@ send_db_description(struct nbr *nbr)
 		fatalx("send_db_description: unknown interface type");
 	}
 
-	dd_hdr.opts = htonl(area_ospf_options(area_find(oeconf,
-	    nbr->iface->area_id)));
+	dd_hdr.opts = htonl(area_ospf_options(nbr->iface->area));
 	dd_hdr.bits = bits;
 	dd_hdr.dd_seq_num = htonl(nbr->dd_seq_num);
 
