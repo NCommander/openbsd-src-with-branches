@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_linux.c,v 1.51 2019/11/30 11:19:17 visa Exp $	*/
+/*	$OpenBSD: drm_linux.c,v 1.52 2019/12/25 11:31:41 kettenis Exp $	*/
 /*
  * Copyright (c) 2013 Jonathan Gray <jsg@openbsd.org>
  * Copyright (c) 2015, 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -1875,6 +1875,12 @@ register_shrinker(struct shrinker *shrinker)
 {
 	TAILQ_INSERT_TAIL(&shrinkers, shrinker, next);
 	return 0;
+}
+
+void
+unregister_shrinker(struct shrinker *shrinker)
+{
+	TAILQ_REMOVE(&shrinkers, shrinker, next);
 }
 
 void
