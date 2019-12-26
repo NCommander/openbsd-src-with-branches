@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.h,v 1.41 2019/12/16 08:28:33 denis Exp $ */
+/*	$OpenBSD: ospf6d.h,v 1.42 2019/12/23 07:33:49 denis Exp $ */
 
 /*
  * Copyright (c) 2004, 2007 Esben Norby <norby@openbsd.org>
@@ -329,6 +329,7 @@ struct iface {
 	u_int8_t		 if_type;
 	u_int8_t		 linkstate;
 	u_int8_t		 priority;
+	u_int8_t		 p2p;
 	u_int8_t		 cflags;
 #define F_IFACE_PASSIVE		0x01
 #define F_IFACE_CONFIGURED	0x02

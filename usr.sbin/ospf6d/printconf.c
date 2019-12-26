@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.7 2018/07/12 13:45:03 remi Exp $ */
+/*	$OpenBSD: printconf.c,v 1.8 2018/12/29 16:04:31 remi Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -134,6 +134,9 @@ print_iface(struct iface *iface)
 	printf("\t\trouter-dead-time %d\n", iface->dead_interval);
 	printf("\t\trouter-priority %d\n", iface->priority);
 	printf("\t\ttransmit-delay %d\n", iface->transmit_delay);
+
+	if (iface->p2p)
+		printf("\t\ttype p2p\n");
 
 	printf("\t}\n");
 }
