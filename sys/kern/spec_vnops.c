@@ -1,4 +1,4 @@
-/*	$OpenBSD: spec_vnops.c,v 1.97 2019/07/25 01:43:21 cheloha Exp $	*/
+/*	$OpenBSD: spec_vnops.c,v 1.98 2019/10/29 16:24:42 visa Exp $	*/
 /*	$NetBSD: spec_vnops.c,v 1.29 1996/04/22 01:42:38 christos Exp $	*/
 
 /*
@@ -60,7 +60,7 @@
 
 int	spec_open_clone(struct vop_open_args *);
 
-struct vnode *speclisth[SPECHSZ];
+struct vnodechain speclisth[SPECHSZ];
 
 struct vops spec_vops = {
 	.vop_lookup	= vop_generic_lookup,
