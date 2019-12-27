@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211.c,v 1.80 2019/11/09 13:21:04 stsp Exp $	*/
+/*	$OpenBSD: ieee80211.c,v 1.81 2019/11/15 09:29:21 mlarkin Exp $	*/
 /*	$NetBSD: ieee80211.c,v 1.19 2004/06/06 05:45:29 dyoung Exp $	*/
 
 /*-
@@ -76,6 +76,9 @@ ieee80211_begin_bgscan(struct ifnet *ifp)
 
 	if ((ic->ic_flags & IEEE80211_F_BGSCAN) ||
 	    ic->ic_state != IEEE80211_S_RUN || ic->ic_mgt_timer != 0)
+		return;
+
+	if ((ic->ic_flags & IEEE80211_F_RSNON) && !ic->ic_bss->ni_port_valid)
 		return;
 
 	if (ic->ic_bgscan_start != NULL && ic->ic_bgscan_start(ic) == 0) {
