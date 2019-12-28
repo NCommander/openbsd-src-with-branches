@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.51 2019/12/03 12:38:34 tobhe Exp $	*/
+/*	$OpenBSD: policy.c,v 1.52 2019/12/10 12:20:17 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -562,6 +562,9 @@ void
 childsa_free(struct iked_childsa *csa)
 {
 	struct iked_childsa *csb;
+
+	if (csa == NULL)
+		return;
 
 	if (csa->csa_children) {
 		/* XXX should not happen */
