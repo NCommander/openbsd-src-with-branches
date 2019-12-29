@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpiireg.h,v 1.13 2018/06/19 10:32:41 jmatthew Exp $	*/
+/*	$OpenBSD: mpiireg.h,v 1.14 2019/09/12 22:22:53 jmatthew Exp $	*/
 /*
  * Copyright (c) 2010 Mike Belopuhov
  * Copyright (c) 2009 James Giannoules
@@ -1355,7 +1355,7 @@ struct mpii_cfg_raid_vol_pg1 {
 
 	u_int8_t		guid[24];
 
-	u_int8_t		name[32];
+	u_int8_t		name[16];
 
 	u_int64_t		wwid;
 
