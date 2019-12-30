@@ -1,0 +1,6 @@
+5.009002
+SvPVbyte_force                 # U
+op_refcnt_lock                 # U
+op_refcnt_unlock               # U
+savesvpv                       # U
+vnormal                        # U
