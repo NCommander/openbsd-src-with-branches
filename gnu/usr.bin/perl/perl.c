@@ -3,7 +3,7 @@
  *
  *    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
  *    2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
- *    2013, 2014, 2015, 2016, 2017, 2018 by Larry Wall and others
+ *    2013, 2014, 2015, 2016, 2017, 2018, 2019 by Larry Wall and others
  *
  *    You may distribute under the terms of either the GNU General Public
  *    License or the Artistic License, as specified in the README file.
@@ -95,6 +95,7 @@ S_init_tls_and_interp(PerlInterpreter *my_perl)
         KEYWORD_PLUGIN_MUTEX_INIT;
 	HINTS_REFCNT_INIT;
         LOCALE_INIT;
+        USER_PROP_MUTEX_INIT;
 	MUTEX_INIT(&PL_dollarzero_mutex);
 	MUTEX_INIT(&PL_my_ctx_mutex);
 #  endif
@@ -667,6 +668,21 @@ perl_destruct(pTHXx)
     FREETMPS;
     assert(PL_scopestack_ix == 0);
 
+    /* normally when we get here, PL_parser should be null due to having
+     * its original (null) value restored by SAVEt_PARSER during leaving
+     * scope (usually before run-time starts in fact).
+     * But if a thread is created within a BEGIN block, the parser is
+     * duped, but the SAVEt_PARSER savestack entry isn't. So PL_parser
+     * never gets cleaned up.
+     * Clean it up here instead. This is a bit of a hack.
+     */
+    if (PL_parser) {
+        /* stop parser_free() stomping on PL_curcop */
+        PL_parser->saved_curcop = PL_curcop;
+        parser_free(PL_parser);
+    }
+
+
     /* Need to flush since END blocks can produce output */
     /* flush stdout separately, since we can identify it */
 #ifdef USE_PERLIO
@@ -1137,12 +1153,21 @@ perl_destruct(pTHXx)
         /* This also makes sure we aren't using a locale object that gets freed
          * below */
         const locale_t old_locale = uselocale(LC_GLOBAL_LOCALE);
-        if (old_locale != LC_GLOBAL_LOCALE) {
+        if (   old_locale != LC_GLOBAL_LOCALE
+#  ifdef USE_POSIX_2008_LOCALE
+            && old_locale != PL_C_locale_obj
+#  endif
+        ) {
+            DEBUG_Lv(PerlIO_printf(Perl_debug_log,
+                     "%s:%d: Freeing %p\n", __FILE__, __LINE__, old_locale));
             freelocale(old_locale);
         }
     }
 #  ifdef USE_LOCALE_NUMERIC
     if (PL_underlying_numeric_obj) {
+        DEBUG_Lv(PerlIO_printf(Perl_debug_log,
+                    "%s:%d: Freeing %p\n", __FILE__, __LINE__,
+                    PL_underlying_numeric_obj));
         freelocale(PL_underlying_numeric_obj);
         PL_underlying_numeric_obj = (locale_t) NULL;
     }
@@ -1166,14 +1191,8 @@ perl_destruct(pTHXx)
     }
 
     /* clear character classes  */
-    SvREFCNT_dec(PL_utf8_mark);
-    SvREFCNT_dec(PL_InBitmap);
 #ifdef USE_LOCALE_CTYPE
     SvREFCNT_dec(PL_warn_locale);
-#endif
-    PL_utf8_mark	= NULL;
-    PL_InBitmap          = NULL;
-#ifdef USE_LOCALE_CTYPE
     PL_warn_locale       = NULL;
 #endif
 
@@ -1336,8 +1355,8 @@ perl_destruct(pTHXx)
 	    for (sv = sva + 1; sv < svend; ++sv) {
 		if (SvTYPE(sv) != (svtype)SVTYPEMASK) {
 		    PerlIO_printf(Perl_debug_log, "leaked: sv=0x%p"
-			" flags=0x%"UVxf
-			" refcnt=%"UVuf pTHX__FORMAT "\n"
+			" flags=0x%" UVxf
+			" refcnt=%" UVuf pTHX__FORMAT "\n"
 			"\tallocated at %s:%d %s %s (parent 0x%" UVxf ");"
 			"serial %" UVuf "\n",
 			(void*)sv, (UV)sv->sv_flags, (UV)sv->sv_refcnt
@@ -1951,7 +1970,7 @@ S_Internals_V(pTHX_ CV *cv)
 			     " PERL_USE_SAFE_PUTENV"
 #  endif
 #  ifdef SILENT_NO_TAINT_SUPPORT
-                             " SILENT_NO_TAINT_SUPPORT"
+			     " SILENT_NO_TAINT_SUPPORT"
 #  endif
 #  ifdef UNLINK_ALL_VERSIONS
 			     " UNLINK_ALL_VERSIONS"
@@ -1977,6 +1996,9 @@ S_Internals_V(pTHX_ CV *cv)
 #  ifdef USE_SITECUSTOMIZE
 			     " USE_SITECUSTOMIZE"
 #  endif	       
+#  ifdef USE_THREAD_SAFE_LOCALE
+			     " USE_THREAD_SAFE_LOCALE"
+#  endif
 	;
     PERL_UNUSED_ARG(cv);
     PERL_UNUSED_VAR(items);
@@ -2285,7 +2307,7 @@ S_parse_body(pTHX_ char **env, XSINIT_t xsinit)
        This could possibly be wasteful if PERL_INTERNAL_RAND_SEED is invalid,
        but avoids duplicating the logic from perl_construct().
     */
-    if (PL_tainting &&
+    if (TAINT_get &&
         PerlProc_getuid() == PerlProc_geteuid() &&
         PerlProc_getgid() == PerlProc_getegid()) {
         Perl_drand48_init_r(&PL_internal_random_state, seed());
@@ -3351,7 +3373,7 @@ Perl_get_debug_opts(pTHX_ const char **s, bool givehelp)
 	}
     }
     else if (isDIGIT(**s)) {
-        const char* e;
+        const char* e = *s + strlen(*s);
 	if (grok_atoUV(*s, &uv, &e))
             *s = e;
 	for (; isWORDCHAR(**s); (*s)++) ;
@@ -3760,7 +3782,7 @@ S_minus_v(pTHX)
 #endif
 
 	PerlIO_printf(PIO_stdout,
-		      "\n\nCopyright 1987-2018, Larry Wall\n");
+		      "\n\nCopyright 1987-2019, Larry Wall\n");
 #ifdef MSDOS
 	PerlIO_printf(PIO_stdout,
 		      "\nMS-DOS port Copyright (c) 1989, 1990, Diomidis Spinellis\n");
@@ -3946,6 +3968,7 @@ S_open_script(pTHX_ const char *scriptname, bool dosearch, bool *suidscript)
         UV uv;
 	/* if find_script() returns, it returns a malloc()-ed value */
 	scriptname = PL_origfilename = find_script(scriptname, dosearch, NULL, 1);
+        s = scriptname + strlen(scriptname);
 
 	if (strBEGINs(scriptname, "/dev/fd/")
             && isDIGIT(scriptname[8])
