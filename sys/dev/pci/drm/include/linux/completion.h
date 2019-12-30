@@ -1,4 +1,4 @@
-/*	$OpenBSD: completion.h,v 1.1 2019/04/14 10:14:53 jsg Exp $	*/
+/*	$OpenBSD: completion.h,v 1.2 2019/04/23 13:35:12 visa Exp $	*/
 /*
  * Copyright (c) 2015, 2018 Mark Kettenis
  *
@@ -65,7 +65,7 @@ wait_for_completion_interruptible(struct completion *x)
 
 	mtx_enter(&x->wait.lock);
 	while (x->done == 0) {
-		ret = msleep(x, &x->wait.lock, PCATCH, "wfci", 0);
+		ret = msleep_nsec(x, &x->wait.lock, PCATCH, "wfci", INFSLP);
 		if (ret) {
 			mtx_leave(&x->wait.lock);
 			return (ret == EWOULDBLOCK) ? 0 : -ret;
