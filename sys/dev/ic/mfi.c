@@ -1,4 +1,4 @@
-/* $OpenBSD: mfi.c,v 1.169 2018/08/14 05:22:21 jmatthew Exp $ */
+/* $OpenBSD: mfi.c,v 1.170 2019/03/05 01:40:20 jmatthew Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -958,7 +958,7 @@ mfi_exec(struct mfi_softc *sc, struct mfi_ccb *ccb)
 
 	mtx_enter(&m);
 	while (ccb->ccb_cookie != NULL)
-		msleep(ccb, &m, PRIBIO, "mfiexec", 0);
+		msleep_nsec(ccb, &m, PRIBIO, "mfiexec", INFSLP);
 	mtx_leave(&m);
 }
 

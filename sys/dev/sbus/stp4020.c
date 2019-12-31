@@ -1,4 +1,4 @@
-/*	$OpenBSD: stp4020.c,v 1.19 2016/03/19 11:34:22 mpi Exp $	*/
+/*	$OpenBSD: stp4020.c,v 1.20 2018/12/27 11:09:17 claudio Exp $	*/
 /*	$NetBSD: stp4020.c,v 1.23 2002/06/01 23:51:03 lukem Exp $	*/
 
 /*-
@@ -292,7 +292,7 @@ stp4020_event_thread(void *arg)
 		s = splhigh();
 		if ((socket = ffs(sc->events)) == 0) {
 			splx(s);
-			(void)tsleep(&sc->events, PWAIT, "stp4020_ev", 0);
+			tsleep_nsec(&sc->events, PWAIT, "stp4020_ev", INFSLP);
 			continue;
 		}
 		socket--;

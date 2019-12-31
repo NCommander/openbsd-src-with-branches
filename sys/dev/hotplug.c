@@ -1,4 +1,4 @@
-/*	$OpenBSD: hotplug.c,v 1.15 2015/03/14 03:38:46 jsg Exp $	*/
+/*	$OpenBSD: hotplug.c,v 1.16 2016/06/07 01:31:54 tedu Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -154,7 +154,7 @@ again:
 	if (flags & IO_NDELAY)
 		return (EAGAIN);
 
-	error = tsleep(&evqueue, PRIBIO | PCATCH, "htplev", 0);
+	error = tsleep_nsec(&evqueue, PRIBIO | PCATCH, "htplev", INFSLP);
 	if (error)
 		return (error);
 	goto again;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpii.c,v 1.122 2019/12/28 04:38:22 kn Exp $	*/
+/*	$OpenBSD: mpii.c,v 1.123 2019/12/29 21:30:21 kn Exp $	*/
 /*
  * Copyright (c) 2010, 2012 Mike Belopuhov
  * Copyright (c) 2009 James Giannoules
@@ -2876,7 +2876,7 @@ mpii_wait(struct mpii_softc *sc, struct mpii_ccb *ccb)
 
 	mtx_enter(&mtx);
 	while (ccb->ccb_cookie != NULL)
-		msleep(ccb, &mtx, PRIBIO, "mpiiwait", 0);
+		msleep_nsec(ccb, &mtx, PRIBIO, "mpiiwait", INFSLP);
 	mtx_leave(&mtx);
 
 	ccb->ccb_cookie = cookie;

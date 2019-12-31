@@ -1,4 +1,4 @@
-/*	$OpenBSD: twe.c,v 1.45 2015/03/14 03:38:47 jsg Exp $	*/
+/*	$OpenBSD: twe.c,v 1.46 2016/01/22 00:40:25 jsg Exp $	*/
 
 /*
  * Copyright (c) 2000-2002 Michael Shalayeff.  All rights reserved.
@@ -487,7 +487,7 @@ twe_thread(v)
 
 		TWE_UNLOCK(sc, lock);
 		sc->sc_thread_on = 1;
-		tsleep(sc, PWAIT, "twespank", 0);
+		tsleep_nsec(sc, PWAIT, "twespank", INFSLP);
 	}
 }
 

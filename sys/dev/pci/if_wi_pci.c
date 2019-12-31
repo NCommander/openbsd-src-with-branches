@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_pci.c,v 1.52 2015/11/24 17:11:39 mpi Exp $	*/
+/*	$OpenBSD: if_wi_pci.c,v 1.53 2019/01/25 00:19:26 millert Exp $	*/
 
 /*
  * Copyright (c) 2001-2003 Todd C. Miller <millert@openbsd.org>
@@ -177,7 +177,7 @@ wi_pci_wakeup(struct wi_softc *sc)
 
 	s = splnet();
 	while (sc->wi_flags & WI_FLAGS_BUSY)
-		tsleep(&sc->wi_flags, 0, "wipwr", 0);
+		tsleep_nsec(&sc->wi_flags, 0, "wipwr", INFSLP);
 	sc->wi_flags |= WI_FLAGS_BUSY;
 
 	wi_init(sc);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgt.c,v 1.94 2019/08/27 14:57:48 stsp Exp $  */
+/*	$OpenBSD: pgt.c,v 1.95 2019/09/12 12:55:07 stsp Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -1128,7 +1128,7 @@ pgt_per_device_kthread(void *argp)
 	while (!sck->sck_exit) {
 		if (!sck->sck_update && !sck->sck_reset &&
 		    TAILQ_EMPTY(&sck->sck_traps))
-			tsleep(&sc->sc_kthread, 0, "pgtkth", 0);
+			tsleep_nsec(&sc->sc_kthread, 0, "pgtkth", INFSLP);
 		if (sck->sck_reset) {
 			DPRINTF(("%s: [thread] async reset\n",
 			    sc->sc_dev.dv_xname));
