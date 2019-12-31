@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.373 2019/08/28 22:39:09 kettenis Exp $ */
+/* $OpenBSD: acpi.c,v 1.374 2019/09/07 13:46:20 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -32,6 +32,7 @@
 #include <sys/sysctl.h>
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
+#include <sys/sensors.h>
 
 #ifdef HIBERNATE
 #include <sys/hibernate.h>
