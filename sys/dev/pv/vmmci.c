@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmci.c,v 1.4 2019/03/24 18:21:12 sf Exp $	*/
+/*	$OpenBSD: vmmci.c,v 1.5 2019/05/26 15:20:04 sf Exp $	*/
 
 /*
  * Copyright (c) 2017 Reyk Floeter <reyk@openbsd.org>
@@ -25,6 +25,7 @@
 #include <sys/device.h>
 #include <sys/pool.h>
 #include <sys/proc.h>
+#include <sys/sensors.h>
 
 #include <machine/bus.h>
 
