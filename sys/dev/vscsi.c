@@ -1,4 +1,4 @@
-/*	$OpenBSD: vscsi.c,v 1.43 2019/12/31 10:05:32 mpi Exp $ */
+/*	$OpenBSD: vscsi.c,v 1.44 2019/12/31 13:48:31 visa Exp $ */
 
 /*
  * Copyright (c) 2008 David Gwynne <dlg@openbsd.org>
@@ -646,8 +646,8 @@ vscsiclose(dev_t dev, int flags, int mode, struct proc *p)
 
 	mtx_enter(&sc->sc_state_mtx);
 	while (sc->sc_ref_count > 0) {
-		msleep(&sc->sc_ref_count, &sc->sc_state_mtx,
-		    PRIBIO, "vscsiref", 0);
+		msleep_nsec(&sc->sc_ref_count, &sc->sc_state_mtx,
+		    PRIBIO, "vscsiref", INFSLP);
 	}
 	mtx_leave(&sc->sc_state_mtx);
 
