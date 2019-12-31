@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi.c,v 1.43 2017/07/19 22:23:54 kettenis Exp $	*/
+/*	$OpenBSD: midi.c,v 1.44 2019/12/22 19:11:45 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexandre Ratchov
@@ -66,15 +66,21 @@ struct cfdriver midi_cd = {
 void filt_midiwdetach(struct knote *);
 int filt_midiwrite(struct knote *, long);
 
-struct filterops midiwrite_filtops = {
-	1, NULL, filt_midiwdetach, filt_midiwrite
+const struct filterops midiwrite_filtops = {
+	.f_isfd		= 1,
+	.f_attach	= NULL,
+	.f_detach	= filt_midiwdetach,
+	.f_event	= filt_midiwrite,
 };
 
 void filt_midirdetach(struct knote *);
 int filt_midiread(struct knote *, long);
 
-struct filterops midiread_filtops = {
-	1, NULL, filt_midirdetach, filt_midiread
+const struct filterops midiread_filtops = {
+	.f_isfd		= 1,
+	.f_attach	= NULL,
+	.f_detach	= filt_midirdetach,
+	.f_event	= filt_midiread,
 };
 
 void

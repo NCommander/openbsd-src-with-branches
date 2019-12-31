@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_pty.c,v 1.93 2019/03/11 17:13:31 anton Exp $	*/
+/*	$OpenBSD: tty_pty.c,v 1.94 2019/07/19 00:17:16 cheloha Exp $	*/
 /*	$NetBSD: tty_pty.c,v 1.33.4.1 1996/06/02 09:08:11 mrg Exp $	*/
 
 /*
@@ -717,10 +717,19 @@ filt_ptcwrite(struct knote *kn, long hint)
 	return (kn->kn_data > 0);
 }
 
-struct filterops ptcread_filtops =
-	{ 1, NULL, filt_ptcrdetach, filt_ptcread };
-struct filterops ptcwrite_filtops =
-	{ 1, NULL, filt_ptcwdetach, filt_ptcwrite };
+const struct filterops ptcread_filtops = {
+	.f_isfd		= 1,
+	.f_attach	= NULL,
+	.f_detach	= filt_ptcrdetach,
+	.f_event	= filt_ptcread,
+};
+
+const struct filterops ptcwrite_filtops = {
+	.f_isfd		= 1,
+	.f_attach	= NULL,
+	.f_detach	= filt_ptcwdetach,
+	.f_event	= filt_ptcwrite,
+};
 
 int
 ptckqfilter(dev_t dev, struct knote *kn)

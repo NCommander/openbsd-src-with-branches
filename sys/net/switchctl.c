@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchctl.c,v 1.16 2019/10/16 10:20:48 mpi Exp $	*/
+/*	$OpenBSD: switchctl.c,v 1.17 2019/12/19 12:04:38 reyk Exp $	*/
 
 /*
  * Copyright (c) 2016 Kazuya GODA <goda@openbsd.org>
@@ -59,11 +59,18 @@ int	filt_switch_write(struct knote *, long);
 int	switch_dev_output(struct switch_softc *, struct mbuf *);
 void	switch_dev_wakeup(struct switch_softc *);
 
-struct filterops switch_rd_filtops = {
-	1, NULL, filt_switch_rdetach, filt_switch_read
+const struct filterops switch_rd_filtops = {
+	.f_isfd		= 1,
+	.f_attach	= NULL,
+	.f_detach	= filt_switch_rdetach,
+	.f_event	= filt_switch_read,
 };
-struct filterops switch_wr_filtops = {
-	1, NULL, filt_switch_wdetach, filt_switch_write
+
+const struct filterops switch_wr_filtops = {
+	.f_isfd		= 1,
+	.f_attach	= NULL,
+	.f_detach	= filt_switch_wdetach,
+	.f_event	= filt_switch_write,
 };
 
 struct switch_softc *

@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.119 2019/05/22 16:11:21 cheloha Exp $	*/
+/*	$OpenBSD: apm.c,v 1.120 2019/10/12 15:56:17 cheloha Exp $	*/
 
 /*-
  * Copyright (c) 1998-2001 Michael Shalayeff. All rights reserved.
@@ -103,8 +103,11 @@ struct cfattach apm_ca = {
 void	filt_apmrdetach(struct knote *kn);
 int	filt_apmread(struct knote *kn, long hint);
 
-struct filterops apmread_filtops = {
-	1, NULL, filt_apmrdetach, filt_apmread
+const struct filterops apmread_filtops = {
+	.f_isfd		= 1,
+	.f_attach	= NULL,
+	.f_detach	= filt_apmrdetach,
+	.f_event	= filt_apmread,
 };
 
 #define	APM_RESUME_HOLDOFF	3
