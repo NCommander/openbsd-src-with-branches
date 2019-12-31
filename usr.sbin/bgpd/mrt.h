@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.h,v 1.33 2018/09/07 10:59:16 claudio Exp $ */
+/*	$OpenBSD: mrt.h,v 1.34 2019/07/24 08:58:24 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -21,7 +21,7 @@
 /*
  * MRT binary packet format
  * For more info see:
- * draft-ietf-grow-mrt-11.txt, "MRT routing information export format"
+ * RFC6396 , "MRT Routing Information Export Format"
  * http://www.quagga.net/docs/docs-multi/Packet-Binary-Dump-Format.html
  */
 
