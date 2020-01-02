@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.h,v 1.84 2019/06/11 05:33:01 martijn Exp $	*/
+/*	$OpenBSD: snmpd.h,v 1.85 2019/06/11 05:36:32 martijn Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -593,6 +593,7 @@ struct snmpd {
 	int			 sc_ncpu;
 	int64_t			*sc_cpustates;
 	int			 sc_rtfilter;
+	int			 sc_pfaddrfilter;
 
 	int			 sc_min_seclevel;
 	int			 sc_readonly;

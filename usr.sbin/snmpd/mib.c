@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.96 2019/08/13 12:52:41 sthen Exp $	*/
+/*	$OpenBSD: mib.c,v 1.97 2019/10/24 12:39:27 tb Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Knight <joel@openbsd.org>
@@ -2218,6 +2218,9 @@ mib_pftableaddrs(struct oid *oid, struct ber_oid *o, struct ber_element **elm)
 	struct pfr_astats	 as;
 	int			 tblidx;
 
+	if (snmpd_env->sc_pfaddrfilter)
+		return (-1);
+
 	tblidx = o->bo_id[OIDIDX_pfTblAddr + 1];
 	mps_decodeinaddr(o, &as.pfras_a.pfra_ip4addr, OIDIDX_pfTblAddr + 2);
 	as.pfras_a.pfra_net = o->bo_id[OIDIDX_pfTblAddr + 6];
@@ -2305,6 +2308,9 @@ mib_pftableaddrstable(struct oid *oid, struct ber_oid *o, struct ber_oid *no)
 	struct pfr_astats	 as;
 	struct oid		 a, b;
 	u_int32_t		 id, tblidx;
+
+	if (snmpd_env->sc_pfaddrfilter)
+		return (NULL);
 
 	bcopy(&oid->o_id, no, sizeof(*no));
 	id = oid->o_oidlen - 1;
