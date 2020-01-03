@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.h,v 1.42 2019/12/23 07:33:49 denis Exp $ */
+/*	$OpenBSD: ospf6d.h,v 1.43 2019/12/26 10:24:18 remi Exp $ */
 
 /*
  * Copyright (c) 2004, 2007 Esben Norby <norby@openbsd.org>
@@ -425,7 +425,6 @@ extern struct n2id_labels rt_labels;
 struct ctl_iface {
 	char			 name[IF_NAMESIZE];
 	struct in6_addr		 addr;
-	struct in6_addr		 mask;
 	struct in_addr		 area;
 	struct in_addr		 rtr_id;
 	struct in_addr		 dr_id;
