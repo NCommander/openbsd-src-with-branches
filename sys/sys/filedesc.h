@@ -1,4 +1,4 @@
-/*	$OpenBSD: filedesc.h,v 1.40 2018/06/25 09:36:28 mpi Exp $	*/
+/*	$OpenBSD: filedesc.h,v 1.41 2018/07/02 14:36:33 visa Exp $	*/
 /*	$NetBSD: filedesc.h,v 1.14 1996/04/09 20:55:28 cgd Exp $	*/
 
 /*
@@ -136,6 +136,7 @@ void	fdcloseexec(struct proc *);
 struct file *fd_iterfile(struct file *, struct proc *);
 struct file *fd_getfile(struct filedesc *, int);
 struct file *fd_getfile_mode(struct filedesc *, int, int);
+int	fd_checkclosed(struct filedesc *, int, struct file *);
 
 int	closef(struct file *, struct proc *);
 int	getsock(struct proc *, int, struct file **);
