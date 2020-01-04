@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.87 2017/02/27 21:53:11 rpe Exp $
+# $OpenBSD: Makefile,v 1.88 2018/06/20 08:53:49 espie Exp $
 
 .include <bsd.own.mk>
 
@@ -89,6 +89,7 @@ LIBBASE=/usr/libdata/perl5
 
 PODS= \
     OpenBSD::md5 \
+    OpenBSD::style \
     OpenBSD::Getopt \
     OpenBSD::IdCache \
     OpenBSD::Intro \
