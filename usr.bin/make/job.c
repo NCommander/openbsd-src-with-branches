@@ -1,4 +1,4 @@
-/*	$OpenBSD: job.c,v 1.143 2019/12/30 11:01:16 espie Exp $	*/
+/*	$OpenBSD: job.c,v 1.144 2019/12/31 13:59:14 espie Exp $	*/
 /*	$NetBSD: job.c,v 1.16 1996/11/06 17:59:08 christos Exp $	*/
 
 /*
@@ -546,8 +546,7 @@ postprocess_job(Job *job)
 	} else if (job->exit_type != JOB_EXIT_OKAY && keepgoing)
 		free(job);
 
-	if (errorJobs != NULL && !keepgoing &&
-	    aborting != ABORT_INTERRUPT)
+	if (errorJobs != NULL && aborting != ABORT_INTERRUPT)
 		aborting = ABORT_ERROR;
 
 	if (aborting == ABORT_ERROR && DEBUG(QUICKDEATH))
