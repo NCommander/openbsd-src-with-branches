@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.128 2019/04/01 07:00:52 tedu Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.129 2019/12/31 10:07:31 mpi Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -891,6 +891,11 @@ luna88k_ext_int(struct trapframe *eframe)
 
 		cur_isr = *(volatile uint32_t *)ci->ci_intr_mask;
 		cur_int_level = cur_isr >> 29;
+
+		/* Again, ignore 'hardware lied' interrupt */
+		if ( !(cur_isr & (1 << (cur_int_level + 17))))
+			goto out;
+
 	} while (cur_int_level != 0);
 
 out:
