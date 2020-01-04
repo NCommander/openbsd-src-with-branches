@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd.c,v 1.154 2019/08/29 07:13:48 nicm Exp $ */
+/* $OpenBSD: cmd.c,v 1.155 2019/10/03 10:24:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -661,7 +661,7 @@ char *
 cmd_template_replace(const char *template, const char *s, int idx)
 {
 	char		 ch, *buf;
-	const char	*ptr, *cp, quote[] = "\"\\$;";
+	const char	*ptr, *cp, quote[] = "\"\\$;~";
 	int		 replaced, quoted;
 	size_t		 len;
 
