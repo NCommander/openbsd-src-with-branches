@@ -1,4 +1,4 @@
-/* $OpenBSD: drm_drv.c,v 1.167 2019/12/31 13:48:31 visa Exp $ */
+/* $OpenBSD: drm_drv.c,v 1.168 2020/01/04 13:07:55 jsg Exp $ */
 /*-
  * Copyright 2007-2009 Owain G. Ainsworth <oga@openbsd.org>
  * Copyright © 2008 Intel Corporation
@@ -48,7 +48,6 @@
 #include <sys/poll.h>
 #include <sys/specdev.h>
 #include <sys/systm.h>
-#include <sys/ttycom.h> /* for TIOCSGRP */
 #include <sys/vnode.h>
 #include <sys/event.h>
 
