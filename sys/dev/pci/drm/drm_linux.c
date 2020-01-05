@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_linux.c,v 1.53 2019/12/26 13:36:15 jsg Exp $	*/
+/*	$OpenBSD: drm_linux.c,v 1.54 2019/12/30 09:30:31 mpi Exp $	*/
 /*
  * Copyright (c) 2013 Jonathan Gray <jsg@openbsd.org>
  * Copyright (c) 2015, 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -1549,7 +1549,7 @@ dmabuf_seek(struct file *fp, off_t *offset, int whence, struct proc *p)
 	return (0);
 }
 
-struct fileops dmabufops = {
+const struct fileops dmabufops = {
 	.fo_read	= dmabuf_read,
 	.fo_write	= dmabuf_write,
 	.fo_ioctl	= dmabuf_ioctl,
