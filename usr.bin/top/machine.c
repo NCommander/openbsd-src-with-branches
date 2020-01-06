@@ -1,4 +1,4 @@
-/* $OpenBSD: machine.c,v 1.100 2019/10/08 20:51:03 kn Exp $	 */
+/* $OpenBSD: machine.c,v 1.101 2019/12/16 19:21:17 guenther Exp $	 */
 
 /*-
  * Copyright (c) 1994 Thorsten Lockert <tholo@sigmasoft.com>
@@ -544,6 +544,14 @@ format_comm(struct kinfo_proc *kp)
 	if (buf[0] == '\0')
 		return (kp->p_comm);
 	return (buf);
+}
+
+void
+skip_next_process(struct handle *hndl)
+{
+	/* find and remember the next proc structure */
+	hndl->next_proc++;
+	hndl->remaining--;
 }
 
 char *
