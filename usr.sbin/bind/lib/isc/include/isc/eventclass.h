@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: eventclass.h,v 1.2 2019/12/16 16:16:26 deraadt Exp $ */
+/* $Id: eventclass.h,v 1.3 2019/12/17 01:46:35 sthen Exp $ */
 
 #ifndef ISC_EVENTCLASS_H
 #define ISC_EVENTCLASS_H 1
@@ -46,7 +46,6 @@
 #define	ISC_EVENTCLASS_APP		ISC_EVENTCLASS(5)
 #define	ISC_EVENTCLASS_OMAPI		ISC_EVENTCLASS(6)
 #define	ISC_EVENTCLASS_RATELIMITER	ISC_EVENTCLASS(7)
-#define	ISC_EVENTCLASS_ISCCC		ISC_EVENTCLASS(8)
 /*@}*/
 
 #endif /* ISC_EVENTCLASS_H */
