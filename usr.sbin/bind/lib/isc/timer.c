@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: timer.c,v 1.3 2019/12/16 16:16:26 deraadt Exp $ */
+/* $Id: timer.c,v 1.4 2019/12/17 01:46:34 sthen Exp $ */
 
 /*! \file */
 
@@ -41,11 +41,7 @@
 #endif
 
 /* See task.c about the following definition: */
-#ifdef ISC_PLATFORM_USETHREADS
-#define USE_TIMER_THREAD
-#else
 #define USE_SHARED_MANAGER
-#endif	/* ISC_PLATFORM_USETHREADS */
 
 #ifndef USE_TIMER_THREAD
 #include "timer_p.h"
