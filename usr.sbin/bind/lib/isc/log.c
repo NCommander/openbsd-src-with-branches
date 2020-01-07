@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: log.c,v 1.10 2019/12/16 16:16:26 deraadt Exp $ */
+/* $Id: log.c,v 1.11 2019/12/17 01:46:34 sthen Exp $ */
 
 /*! \file
  * \author  Principal Authors: DCL */
@@ -1150,9 +1150,6 @@ greatest_version(isc_logchannel_t *channel, int versions, int *greatestp) {
 	isc_dir_t dir;
 	isc_result_t result;
 	char sep = '/';
-#ifdef _WIN32
-	char *bname2;
-#endif
 
 	REQUIRE(channel->type == ISC_LOG_TOFILE);
 
@@ -1161,14 +1158,6 @@ greatest_version(isc_logchannel_t *channel, int versions, int *greatestp) {
 	 * with isc_mem_strdup in isc_log_createchannel.
 	 */
 	bname = strrchr(FILE_NAME(channel), sep);
-#ifdef _WIN32
-	bname2 = strrchr(FILE_NAME(channel), '\\');
-	if ((bname != NULL && bname2 != NULL && bname2 > bname) ||
-	    (bname == NULL && bname2 != NULL)) {
-		bname = bname2;
-		sep = '\\';
-	}
-#endif
 	if (bname != NULL) {
 		*bname++ = '\0';
 		dirname = FILE_NAME(channel);
