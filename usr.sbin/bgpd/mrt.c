@@ -1,4 +1,4 @@
-/*	$OpenBSD: mrt.c,v 1.100 2019/08/08 20:06:29 claudio Exp $ */
+/*	$OpenBSD: mrt.c,v 1.101 2019/12/31 12:02:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -233,7 +233,7 @@ mrt_attr_dump(struct ibuf *buf, struct rde_aspath *a, struct rde_community *c,
 			DUMP_NLONG(nhbuf, 0);	/* set RD to 0 */
 			DUMP_NLONG(nhbuf, 0);
 			if (ibuf_add(nhbuf, &nexthop->v6,
-			    sizeof(struct in6_addr)) == -1) 
+			    sizeof(struct in6_addr)) == -1)
 				goto fail;
 			break;
 		}
