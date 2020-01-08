@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigio.c,v 1.3 2018/11/20 19:37:10 anton Exp $	*/
+/*	$OpenBSD: sigio.c,v 1.4 2018/12/17 19:26:25 anton Exp $	*/
 
 /*
  * Copyright (c) 2018 Anton Lindqvist <anton@openbsd.org>
@@ -208,7 +208,7 @@ test_common_getown(int fd, int dofcntl)
 			errx(1, "ioctl: FIOGETOWN: expected 0, got %d", pgrp);
 	}
 
-	arg = getpid();
+	arg = -getpgrp();
 	if (ioctl(fd, FIOSETOWN, &arg) == -1)
 		err(1, "ioctl: FIOSETOWN");
 	if (dofcntl) {
