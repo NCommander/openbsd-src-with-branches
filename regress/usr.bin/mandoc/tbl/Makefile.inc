@@ -1,13 +1,7 @@
-# $OpenBSD: Makefile.inc,v 1.2 2015/02/03 19:37:25 schwarze Exp $
-
-TBL = /usr/local/bin/tbl
+# $OpenBSD: Makefile.inc,v 1.3 2017/03/08 22:53:36 schwarze Exp $
 
 SKIP_TMAN ?= ALL
 SKIP_MARKDOWN ?= ALL
-
-.for t in ${REGRESS_TARGETS}
-${t}.out_ascii: ${t}.in
-	${TBL} ${.ALLSRC} | ${NROFF} ${NOPTS} -Tascii > ${.TARGET}
-.endfor
+GOPTS = -t
 
 .include "../Makefile.inc"
