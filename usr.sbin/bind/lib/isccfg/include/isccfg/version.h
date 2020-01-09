@@ -14,14 +14,14 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: version.h,v 1.2 2019/12/16 16:16:28 deraadt Exp $ */
+/* $Id: version.h,v 1.3 2019/12/17 01:46:38 sthen Exp $ */
 
 /*! \file isccfg/version.h */
 
 #include <isc/platform.h>
 
-LIBISCCFG_EXTERNAL_DATA extern const char cfg_version[];
+extern const char cfg_version[];
 
-LIBISCCFG_EXTERNAL_DATA extern const unsigned int cfg_libinterface;
-LIBISCCFG_EXTERNAL_DATA extern const unsigned int cfg_librevision;
-LIBISCCFG_EXTERNAL_DATA extern const unsigned int cfg_libage;
+extern const unsigned int cfg_libinterface;
+extern const unsigned int cfg_librevision;
+extern const unsigned int cfg_libage;

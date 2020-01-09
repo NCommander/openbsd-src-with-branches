@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: stats.c,v 1.2 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: stats.c,v 1.3 2019/12/17 01:46:32 sthen Exp $ */
 
 /*! \file */
 
@@ -404,7 +404,7 @@ dns_opcodestats_dump(dns_stats_t *stats, dns_opcodestats_dumper_t dump_fn,
 /***
  *** Obsolete variables and functions follow:
  ***/
-LIBDNS_EXTERNAL_DATA const char *dns_statscounter_names[DNS_STATS_NCOUNTERS] =
+const char *dns_statscounter_names[DNS_STATS_NCOUNTERS] =
 	{
 	"success",
 	"referral",

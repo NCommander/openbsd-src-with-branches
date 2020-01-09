@@ -16,7 +16,7 @@
 
 /*
  * Principal Author: Brian Wellington
- * $Id: dst_lib.c,v 1.2 2019/12/16 16:16:24 deraadt Exp $
+ * $Id: dst_lib.c,v 1.3 2019/12/17 01:46:31 sthen Exp $
  */
 
 /*! \file */
@@ -35,7 +35,7 @@
  *** Globals
  ***/
 
-LIBDNS_EXTERNAL_DATA isc_msgcat_t *		dst_msgcat = NULL;
+isc_msgcat_t *		dst_msgcat = NULL;
 
 
 /***

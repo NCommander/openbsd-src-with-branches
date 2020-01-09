@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: lib.h,v 1.2 2019/12/16 16:16:25 deraadt Exp $ */
+/* $Id: lib.h,v 1.3 2019/12/17 01:46:32 sthen Exp $ */
 
 #ifndef DNS_LIB_H
 #define DNS_LIB_H 1
@@ -29,8 +29,8 @@ ISC_LANG_BEGINDECLS
 /*%
  * Tuning: external query load in packets per seconds.
  */
-LIBDNS_EXTERNAL_DATA extern unsigned int dns_pps;
-LIBDNS_EXTERNAL_DATA extern isc_msgcat_t *dns_msgcat;
+extern unsigned int dns_pps;
+extern isc_msgcat_t *dns_msgcat;
 
 void
 dns_lib_initmsgcat(void);

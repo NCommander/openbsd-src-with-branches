@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: string.h,v 1.6 2019/12/17 01:46:35 sthen Exp $ */
+/* $Id: string.h,v 1.7 2020/01/09 13:47:14 florian Exp $ */
 
 #ifndef ISC_STRING_H
 #define ISC_STRING_H 1
@@ -29,9 +29,7 @@
 
 #include <string.h>
 
-#ifdef ISC_PLATFORM_HAVESTRINGSH
 #include <strings.h>
-#endif
 
 #define ISC_STRING_MAGIC 0x5e
 
