@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ipv6.h,v 1.2 2019/12/16 16:16:26 deraadt Exp $ */
+/* $Id: ipv6.h,v 1.3 2019/12/17 01:46:35 sthen Exp $ */
 
 #ifndef ISC_IPV6_H
 #define ISC_IPV6_H 1
@@ -78,21 +78,15 @@ LIBISC_EXTERNAL_DATA extern const struct in6_addr in6addr_any;
 LIBISC_EXTERNAL_DATA extern const struct in6_addr in6addr_loopback;
 
 struct sockaddr_in6 {
-#ifdef ISC_PLATFORM_HAVESALEN
 	isc_uint8_t		sin6_len;
 	isc_uint8_t		sin6_family;
-#else
-	isc_uint16_t		sin6_family;
-#endif
 	isc_uint16_t		sin6_port;
 	isc_uint32_t		sin6_flowinfo;
 	struct in6_addr		sin6_addr;
 	isc_uint32_t		sin6_scope_id;
 };
 
-#ifdef ISC_PLATFORM_HAVESALEN
 #define SIN6_LEN 1
-#endif
 
 /*%
  * Unspecified
