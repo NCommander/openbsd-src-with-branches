@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: tsig.h,v 1.3 2019/12/17 01:46:32 sthen Exp $ */
+/* $Id: tsig.h,v 1.4 2020/01/09 13:52:23 florian Exp $ */
 
 #ifndef DNS_TSIG_H
 #define DNS_TSIG_H 1
@@ -37,10 +37,6 @@
 /*
  * Algorithms.
  */
-LIBDNS_EXTERNAL_DATA extern dns_name_t *dns_tsig_gssapi_name;
-#define DNS_TSIG_GSSAPI_NAME		dns_tsig_gssapi_name
-LIBDNS_EXTERNAL_DATA extern dns_name_t *dns_tsig_gssapims_name;
-#define DNS_TSIG_GSSAPIMS_NAME		dns_tsig_gssapims_name
 LIBDNS_EXTERNAL_DATA extern dns_name_t *dns_tsig_hmacsha1_name;
 #define DNS_TSIG_HMACSHA1_NAME		dns_tsig_hmacsha1_name
 LIBDNS_EXTERNAL_DATA extern dns_name_t *dns_tsig_hmacsha224_name;
