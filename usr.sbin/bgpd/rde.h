@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.230 2020/01/09 13:31:52 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.231 2020/01/09 14:44:55 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org> and
@@ -215,14 +215,16 @@ struct rde_aspath {
 	struct attr			**others;
 	struct aspath			*aspath;
 	u_int64_t			 hash;
+	int				 refcnt;
 	u_int32_t			 flags;		/* internally used */
+#define	aspath_hashstart	med
 	u_int32_t			 med;		/* multi exit disc */
 	u_int32_t			 lpref;		/* local pref */
 	u_int32_t			 weight;	/* low prio lpref */
-	int				 refcnt;
 	u_int16_t			 rtlabelid;	/* route label id */
 	u_int16_t			 pftableid;	/* pf table id */
 	u_int8_t			 origin;
+#define	aspath_hashend		others_len
 	u_int8_t			 others_len;
 };
 
