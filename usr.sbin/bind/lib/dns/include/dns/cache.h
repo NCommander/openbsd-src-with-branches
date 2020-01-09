@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: cache.h,v 1.2 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: cache.h,v 1.3 2019/12/17 01:46:32 sthen Exp $ */
 
 #ifndef DNS_CACHE_H
 #define DNS_CACHE_H 1
@@ -50,7 +50,7 @@
 
 #include <isc/json.h>
 #include <isc/lang.h>
-#include <isc/stats.h>
+
 #include <isc/stdtime.h>
 
 #include <dns/types.h>
