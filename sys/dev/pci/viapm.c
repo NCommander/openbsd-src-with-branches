@@ -1,4 +1,4 @@
-/*	$OpenBSD: viapm.c,v 1.16 2012/10/05 10:51:28 haesbaert Exp $	*/
+/*	$OpenBSD: viapm.c,v 1.17 2018/07/05 10:09:11 fcambus Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis <kettenis@openbsd.org>
@@ -602,7 +602,8 @@ viapm_i2c_exec(void *cookie, i2c_op_t op, i2c_addr_t addr,
 		viapm_intr(sc);
 	} else {
 		/* Wait for interrupt */
-		if (tsleep(sc, PRIBIO, "iicexec", VIAPM_SMBUS_TIMEOUT * hz))
+		if (tsleep_nsec(sc, PRIBIO, "iicexec",
+		    SEC_TO_NSEC(VIAPM_SMBUS_TIMEOUT)))
 			goto timeout;
 	}
 

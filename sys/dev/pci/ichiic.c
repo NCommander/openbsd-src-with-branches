@@ -1,4 +1,4 @@
-/*	$OpenBSD: ichiic.c,v 1.41 2018/04/02 08:39:24 henning Exp $	*/
+/*	$OpenBSD: ichiic.c,v 1.42 2019/05/08 15:20:05 jsg Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -311,7 +311,8 @@ ichiic_i2c_exec(void *cookie, i2c_op_t op, i2c_addr_t addr,
 		ichiic_intr(sc);
 	} else {
 		/* Wait for interrupt */
-		if (tsleep(sc, PRIBIO, "ichiic", ICHIIC_TIMEOUT * hz))
+		if (tsleep_nsec(sc, PRIBIO, "ichiic",
+		    SEC_TO_NSEC(ICHIIC_TIMEOUT)))
 			goto timeout;
 	}
 

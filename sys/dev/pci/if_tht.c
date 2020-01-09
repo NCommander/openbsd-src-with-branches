@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tht.c,v 1.139 2016/04/13 10:34:32 mpi Exp $ */
+/*	$OpenBSD: if_tht.c,v 1.140 2017/01/22 10:17:38 dlg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -1066,7 +1066,7 @@ tht_down(struct tht_softc *sc)
 
 	while (tht_fifo_writable(sc, &sc->sc_txt) < sc->sc_txt.tf_len &&
 	    tht_fifo_readable(sc, &sc->sc_txf) > 0)
-		tsleep(sc, 0, "thtdown", hz);
+		tsleep_nsec(sc, 0, "thtdown", SEC_TO_NSEC(1));
 
 	sc->sc_imr = THT_IMR_DOWN(sc->sc_port);
 	tht_write(sc, THT_REG_IMR, sc->sc_imr);
