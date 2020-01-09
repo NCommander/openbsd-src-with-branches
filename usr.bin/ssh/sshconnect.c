@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.322 2019/11/12 19:33:08 markus Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.323 2019/11/13 04:47:52 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -74,7 +74,7 @@ static void warn_changed_key(struct sshkey *);
 /* Expand a proxy command */
 static char *
 expand_proxy_command(const char *proxy_command, const char *user,
-    const char *host, const char *host_arg, int port)
+    const char *host_arg, const char *host, int port)
 {
 	char *tmp, *ret, strport[NI_MAXSERV];
 
