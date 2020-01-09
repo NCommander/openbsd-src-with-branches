@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: time.c,v 1.6 2019/12/17 01:46:37 sthen Exp $ */
+/* $Id: time.c,v 1.7 2020/01/07 19:08:10 florian Exp $ */
 
 /*! \file */
 
@@ -30,7 +30,7 @@
 
 #include <isc/log.h>
 #include <isc/platform.h>
-#include <isc/print.h>
+
 #include <isc/strerror.h>
 #include <isc/string.h>
 #include <isc/time.h>

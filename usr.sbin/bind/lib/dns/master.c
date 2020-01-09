@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: master.c,v 1.7 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: master.c,v 1.8 2019/12/17 01:46:32 sthen Exp $ */
 
 /*! \file */
 
@@ -24,7 +24,7 @@
 #include <isc/lex.h>
 #include <isc/magic.h>
 #include <isc/mem.h>
-#include <isc/print.h>
+
 #include <isc/serial.h>
 #include <isc/stdio.h>
 #include <isc/stdtime.h>

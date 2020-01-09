@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: strerror.c,v 1.2 2019/12/16 16:16:27 deraadt Exp $ */
+/* $Id: strerror.c,v 1.3 2019/12/17 01:46:37 sthen Exp $ */
 
 /*! \file */
 
@@ -25,7 +25,7 @@
 
 #include <isc/mutex.h>
 #include <isc/once.h>
-#include <isc/print.h>
+
 #include <isc/strerror.h>
 #include <isc/util.h>
 

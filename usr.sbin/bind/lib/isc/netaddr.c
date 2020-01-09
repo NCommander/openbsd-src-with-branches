@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: netaddr.c,v 1.4 2019/12/17 01:46:34 sthen Exp $ */
+/* $Id: netaddr.c,v 1.5 2020/01/09 13:45:33 florian Exp $ */
 
 /*! \file */
 
@@ -26,7 +26,7 @@
 #include <isc/msgs.h>
 #include <isc/net.h>
 #include <isc/netaddr.h>
-#include <isc/print.h>
+
 #include <isc/sockaddr.h>
 #include <isc/string.h>
 #include <isc/util.h>

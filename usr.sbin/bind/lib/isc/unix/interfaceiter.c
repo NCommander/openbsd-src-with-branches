@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: interfaceiter.c,v 1.3 2019/12/17 01:46:37 sthen Exp $ */
+/* $Id: interfaceiter.c,v 1.4 2020/01/09 13:45:33 florian Exp $ */
 
 /*! \file */
 
@@ -37,7 +37,7 @@
 #include <isc/mem.h>
 #include <isc/msgs.h>
 #include <isc/net.h>
-#include <isc/print.h>
+
 #include <isc/result.h>
 #include <isc/strerror.h>
 #include <isc/string.h>

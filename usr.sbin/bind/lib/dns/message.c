@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: message.c,v 1.8 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: message.c,v 1.9 2019/12/17 01:46:32 sthen Exp $ */
 
 /*! \file */
 
@@ -27,7 +27,7 @@
 
 #include <isc/buffer.h>
 #include <isc/mem.h>
-#include <isc/print.h>
+
 #include <isc/string.h>		/* Required for HP/UX (and others?) */
 #include <isc/util.h>
 

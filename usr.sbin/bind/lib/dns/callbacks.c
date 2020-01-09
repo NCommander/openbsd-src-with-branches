@@ -14,13 +14,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: callbacks.c,v 1.2 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: callbacks.c,v 1.3 2019/12/17 01:46:31 sthen Exp $ */
 
 /*! \file */
 
 #include <config.h>
 
-#include <isc/print.h>
+
 #include <isc/util.h>
 
 #include <dns/callbacks.h>

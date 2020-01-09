@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: stats.c,v 1.1 2019/12/16 16:31:35 deraadt Exp $ */
+/* $Id: stats.c,v 1.2 2019/12/17 01:46:34 sthen Exp $ */
 
 /*! \file */
 
@@ -27,7 +27,7 @@
 #include <isc/magic.h>
 #include <isc/mem.h>
 #include <isc/platform.h>
-#include <isc/print.h>
+
 #include <isc/rwlock.h>
 #include <isc/stats.h>
 #include <isc/util.h>

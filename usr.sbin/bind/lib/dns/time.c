@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: time.c,v 1.6 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: time.c,v 1.7 2019/12/17 01:46:32 sthen Exp $ */
 
 /*! \file */
 
@@ -25,7 +25,7 @@
 #include <time.h>
 #include <ctype.h>
 
-#include <isc/print.h>
+
 #include <isc/region.h>
 #include <isc/serial.h>
 #include <isc/stdtime.h>

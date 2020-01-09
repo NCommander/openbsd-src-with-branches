@@ -15,7 +15,7 @@
  */
 
 /*
- * $Id: tsig.c,v 1.7 2019/12/16 16:16:24 deraadt Exp $
+ * $Id: tsig.c,v 1.8 2019/12/17 01:46:32 sthen Exp $
  */
 /*! \file */
 #include <config.h>
@@ -23,7 +23,7 @@
 
 #include <isc/buffer.h>
 #include <isc/mem.h>
-#include <isc/print.h>
+
 #include <isc/refcount.h>
 #include <isc/serial.h>
 #include <isc/string.h>		/* Required for HP/UX (and others?) */

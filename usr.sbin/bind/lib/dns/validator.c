@@ -14,13 +14,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: validator.c,v 1.8 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: validator.c,v 1.9 2019/12/17 01:46:32 sthen Exp $ */
 
 #include <config.h>
 
 #include <isc/base32.h>
 #include <isc/mem.h>
-#include <isc/print.h>
+
 #include <isc/sha2.h>
 #include <isc/string.h>
 #include <isc/task.h>

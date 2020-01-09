@@ -49,7 +49,7 @@
  * USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: sdlz.c,v 1.2 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: sdlz.c,v 1.3 2019/12/17 01:46:32 sthen Exp $ */
 
 /*! \file */
 
@@ -65,7 +65,7 @@
 #include <isc/magic.h>
 #include <isc/mem.h>
 #include <isc/once.h>
-#include <isc/print.h>
+
 #include <isc/region.h>
 
 #include <dns/callbacks.h>

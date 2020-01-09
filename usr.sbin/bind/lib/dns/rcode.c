@@ -14,18 +14,20 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: rcode.c,v 1.5 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: rcode.c,v 1.6 2019/12/17 01:46:32 sthen Exp $ */
 
 #include <config.h>
 #include <ctype.h>
+#include <limits.h>
+#include <stdlib.h>
 
 #include <isc/buffer.h>
 #include <isc/parseint.h>
-#include <isc/print.h>
+
 #include <isc/region.h>
 #include <isc/result.h>
 #include <isc/stdio.h>
-#include <isc/stdlib.h>
+
 #include <isc/string.h>
 #include <isc/types.h>
 #include <isc/util.h>

@@ -14,9 +14,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ifiter_ioctl.c,v 1.10 2019/12/17 01:46:37 sthen Exp $ */
+/* $Id: ifiter_ioctl.c,v 1.11 2020/01/09 13:45:33 florian Exp $ */
 
-#include <isc/print.h>
+
 
 /*! \file
  * \brief

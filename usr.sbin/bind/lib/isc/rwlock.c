@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: rwlock.c,v 1.7 2019/12/17 01:46:34 sthen Exp $ */
+/* $Id: rwlock.c,v 1.8 2020/01/07 19:08:09 florian Exp $ */
 
 /*! \file */
 
@@ -26,7 +26,7 @@
 #include <isc/magic.h>
 #include <isc/msgs.h>
 #include <isc/platform.h>
-#include <isc/print.h>
+
 #include <isc/rwlock.h>
 #include <isc/util.h>
 

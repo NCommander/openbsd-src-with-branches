@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: journal.c,v 1.2 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: journal.c,v 1.3 2019/12/17 01:46:32 sthen Exp $ */
 
 #include <config.h>
 
@@ -24,7 +24,7 @@
 
 #include <isc/file.h>
 #include <isc/mem.h>
-#include <isc/print.h>
+
 #include <isc/stdio.h>
 #include <isc/string.h>
 #include <isc/util.h>

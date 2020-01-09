@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: rdata.c,v 1.13 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: rdata.c,v 1.14 2019/12/17 01:46:32 sthen Exp $ */
 
 /*! \file */
 
@@ -26,9 +26,9 @@
 #include <isc/lex.h>
 #include <isc/mem.h>
 #include <isc/parseint.h>
-#include <isc/print.h>
+
 #include <isc/string.h>
-#include <isc/stdlib.h>
+
 #include <isc/util.h>
 
 #include <dns/callbacks.h>

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ssu_external.c,v 1.1 2019/12/16 16:31:33 deraadt Exp $ */
+/* $Id: ssu_external.c,v 1.2 2019/12/17 01:46:32 sthen Exp $ */
 
 /*
  * This implements external update-policy rules.  This allows permission
@@ -34,7 +34,7 @@
 #include <isc/magic.h>
 #include <isc/mem.h>
 #include <isc/netaddr.h>
-#include <isc/print.h>
+
 #include <isc/result.h>
 #include <isc/string.h>
 #include <isc/util.h>
