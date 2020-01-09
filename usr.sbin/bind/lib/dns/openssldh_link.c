@@ -33,20 +33,11 @@
 
 /*
  * Principal Author: Brian Wellington
- * $Id: openssldh_link.c,v 1.4 2019/12/17 01:46:32 sthen Exp $
+ * $Id: openssldh_link.c,v 1.5 2020/01/09 13:52:23 florian Exp $
  */
-
-#ifdef OPENSSL
 
 #include <config.h>
 
 
 
-#else /* OPENSSL */
-
-#include <isc/util.h>
-
-EMPTY_TRANSLATION_UNIT
-
-#endif /* OPENSSL */
 /*! \file */

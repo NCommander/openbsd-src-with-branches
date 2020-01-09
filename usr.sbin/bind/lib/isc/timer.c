@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: timer.c,v 1.6 2020/01/07 19:09:26 florian Exp $ */
+/* $Id: timer.c,v 1.7 2020/01/09 13:47:14 florian Exp $ */
 
 /*! \file */
 
@@ -35,10 +35,6 @@
 #include <isc/time.h>
 #include <isc/timer.h>
 #include <isc/util.h>
-
-#ifdef OPENSSL_LEAKS
-#include <openssl/err.h>
-#endif
 
 /* See task.c about the following definition: */
 #define USE_SHARED_MANAGER
@@ -812,10 +808,6 @@ run(void *uap) {
 				      ISC_MSG_WAKEUP, "wakeup"));
 	}
 	UNLOCK(&manager->lock);
-
-#ifdef OPENSSL_LEAKS
-	ERR_remove_state(0);
-#endif
 
 	return ((isc_threadresult_t)0);
 }
