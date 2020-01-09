@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: adb.h,v 1.5 2019/12/16 16:16:24 deraadt Exp $ */
+/* $Id: adb.h,v 1.6 2019/12/17 01:46:32 sthen Exp $ */
 
 #ifndef DNS_ADB_H
 #define DNS_ADB_H 1
@@ -781,7 +781,7 @@ dns_adb_getsit(dns_adb_t *adb, dns_adbaddrinfo_t *addr,
  */
 
 void
-dns_adb_setquota(dns_adb_t *adb, isc_uint32_t quota, isc_uint32_t freq,
+dns_adb_setquota(dns_adb_t *adb, uint32_t quota, uint32_t freq,
 		 double low, double high, double discount);
 /*%<
  * Set the baseline ADB quota, and configure parameters for the

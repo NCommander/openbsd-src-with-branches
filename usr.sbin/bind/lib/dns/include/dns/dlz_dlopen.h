@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dlz_dlopen.h,v 1.1 2019/12/16 16:31:33 deraadt Exp $ */
+/* $Id: dlz_dlopen.h,v 1.2 2019/12/17 01:46:32 sthen Exp $ */
 
 /*! \file dns/dlz_dlopen.h */
 
@@ -139,7 +139,7 @@ typedef isc_boolean_t dlz_dlopen_ssumatch_t(const char *signer,
 					    const char *tcpaddr,
 					    const char *type,
 					    const char *key,
-					    isc_uint32_t keydatalen,
+					    uint32_t keydatalen,
 					    unsigned char *keydata,
 					    void *dbdata);
 

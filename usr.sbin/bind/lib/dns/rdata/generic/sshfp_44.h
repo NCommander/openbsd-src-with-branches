@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: sshfp_44.h,v 1.4 2019/12/16 16:16:25 deraadt Exp $ */
+/* $Id: sshfp_44.h,v 1.5 2019/12/17 01:46:33 sthen Exp $ */
 
 /*!
  *  \brief Per RFC 4255 */
@@ -25,9 +25,9 @@
 typedef struct dns_rdata_sshfp {
 	dns_rdatacommon_t	common;
 	isc_mem_t		*mctx;
-	isc_uint8_t		algorithm;
-	isc_uint8_t		digest_type;
-	isc_uint16_t		length;
+	uint8_t		algorithm;
+	uint8_t		digest_type;
+	uint16_t		length;
 	unsigned char		*digest;
 } dns_rdata_sshfp_t;
 

@@ -17,7 +17,7 @@
 #ifndef GENERIC_X25_19_H
 #define GENERIC_X25_19_H 1
 
-/* $Id: x25_19.h,v 1.2 2019/12/16 16:16:25 deraadt Exp $ */
+/* $Id: x25_19.h,v 1.3 2019/12/17 01:46:33 sthen Exp $ */
 
 /*!
  *  \brief Per RFC1183 */
@@ -26,7 +26,7 @@ typedef struct dns_rdata_x25 {
 	dns_rdatacommon_t	common;
 	isc_mem_t		*mctx;
 	unsigned char		*x25;
-	isc_uint8_t		x25_len;
+	uint8_t		x25_len;
 } dns_rdata_x25_t;
 
 #endif /* GENERIC_X25_19_H */

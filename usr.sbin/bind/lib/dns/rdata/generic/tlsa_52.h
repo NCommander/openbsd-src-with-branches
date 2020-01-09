@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: tlsa_52.h,v 1.2 2019/12/16 16:16:25 deraadt Exp $ */
+/* $Id: tlsa_52.h,v 1.3 2019/12/17 01:46:33 sthen Exp $ */
 
 #ifndef GENERIC_TLSA_52_H
 #define GENERIC_TLSA_52_H 1
@@ -25,10 +25,10 @@
 typedef struct dns_rdata_tlsa {
 	dns_rdatacommon_t	common;
 	isc_mem_t		*mctx;
-	isc_uint8_t		usage;
-	isc_uint8_t		selector;
-	isc_uint8_t		match;
-	isc_uint16_t		length;
+	uint8_t		usage;
+	uint8_t		selector;
+	uint8_t		match;
+	uint16_t		length;
 	unsigned char		*data;
 } dns_rdata_tlsa_t;
 

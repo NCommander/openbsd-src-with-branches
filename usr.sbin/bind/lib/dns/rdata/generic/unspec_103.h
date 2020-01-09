@@ -18,13 +18,13 @@
 #ifndef GENERIC_UNSPEC_103_H
 #define GENERIC_UNSPEC_103_H 1
 
-/* $Id: unspec_103.h,v 1.2 2019/12/16 16:16:25 deraadt Exp $ */
+/* $Id: unspec_103.h,v 1.3 2019/12/17 01:46:33 sthen Exp $ */
 
 typedef struct dns_rdata_unspec_t {
 	dns_rdatacommon_t	common;
 	isc_mem_t		*mctx;
 	unsigned char		*data;
-	isc_uint16_t		datalen;
+	uint16_t		datalen;
 } dns_rdata_unspec_t;
 
 #endif /* GENERIC_UNSPEC_103_H */

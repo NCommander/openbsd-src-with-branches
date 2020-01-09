@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: netaddr.h,v 1.3 2019/12/17 01:46:35 sthen Exp $ */
+/* $Id: netaddr.h,v 1.4 2020/01/09 14:18:30 florian Exp $ */
 
 #ifndef ISC_NETADDR_H
 #define ISC_NETADDR_H 1
@@ -37,7 +37,7 @@ struct isc_netaddr {
 		struct in6_addr in6;
 		char un[sizeof(((struct sockaddr_un *)0)->sun_path)];
 	} type;
-	isc_uint32_t zone;
+	uint32_t zone;
 };
 
 isc_boolean_t
@@ -109,9 +109,9 @@ isc_result_t
 isc_netaddr_frompath(isc_netaddr_t *netaddr, const char *path);
 
 void
-isc_netaddr_setzone(isc_netaddr_t *netaddr, isc_uint32_t zone);
+isc_netaddr_setzone(isc_netaddr_t *netaddr, uint32_t zone);
 
-isc_uint32_t
+uint32_t
 isc_netaddr_getzone(const isc_netaddr_t *netaddr);
 
 void

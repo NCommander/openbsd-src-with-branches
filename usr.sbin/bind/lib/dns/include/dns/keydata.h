@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: keydata.h,v 1.1 2019/12/16 16:31:33 deraadt Exp $ */
+/* $Id: keydata.h,v 1.2 2019/12/17 01:46:32 sthen Exp $ */
 
 #ifndef DNS_KEYDATA_H
 #define DNS_KEYDATA_H 1
@@ -47,8 +47,8 @@ dns_keydata_todnskey(dns_rdata_keydata_t *keydata,
 isc_result_t
 dns_keydata_fromdnskey(dns_rdata_keydata_t *keydata,
 		       dns_rdata_dnskey_t *dnskey,
-		       isc_uint32_t refresh, isc_uint32_t addhd,
-		       isc_uint32_t removehd, isc_mem_t *mctx);
+		       uint32_t refresh, uint32_t addhd,
+		       uint32_t removehd, isc_mem_t *mctx);
 
 ISC_LANG_ENDDECLS
 

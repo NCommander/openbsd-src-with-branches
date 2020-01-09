@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: iptable.c,v 1.1 2019/12/16 16:31:33 deraadt Exp $ */
+/* $Id: iptable.c,v 1.2 2019/12/17 01:46:32 sthen Exp $ */
 
 #include <config.h>
 
@@ -63,7 +63,7 @@ static isc_boolean_t dns_iptable_pos = ISC_TRUE;
  */
 isc_result_t
 dns_iptable_addprefix(dns_iptable_t *tab, isc_netaddr_t *addr,
-		      isc_uint16_t bitlen, isc_boolean_t pos)
+		      uint16_t bitlen, isc_boolean_t pos)
 {
 	isc_result_t result;
 	isc_prefix_t pfx;

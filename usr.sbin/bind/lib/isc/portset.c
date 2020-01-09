@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: portset.c,v 1.1 2019/12/16 16:31:35 deraadt Exp $ */
+/* $Id: portset.c,v 1.2 2019/12/17 01:46:34 sthen Exp $ */
 
 /*! \file */
 
@@ -26,7 +26,7 @@
 #include <isc/types.h>
 #include <isc/util.h>
 
-#define ISC_PORTSET_BUFSIZE (65536 / (sizeof(isc_uint32_t) * 8))
+#define ISC_PORTSET_BUFSIZE (65536 / (sizeof(uint32_t) * 8))
 
 /*%
  * Internal representation of portset.  It's an array of 32-bit integers, each
@@ -35,7 +35,7 @@
  */
 struct isc_portset {
 	unsigned int nports;	/*%< number of ports in the set */
-	isc_uint32_t buf[ISC_PORTSET_BUFSIZE];
+	uint32_t buf[ISC_PORTSET_BUFSIZE];
 };
 
 static inline isc_boolean_t
