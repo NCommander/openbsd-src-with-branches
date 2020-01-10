@@ -1,4 +1,4 @@
-/*	$OpenBSD: midivar.h,v 1.9 2015/05/16 09:56:10 ratchov Exp $	*/
+/*	$OpenBSD: midivar.h,v 1.10 2017/07/19 22:23:54 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexandre Ratchov
@@ -25,7 +25,6 @@
 #include <sys/proc.h>
 #include <sys/timeout.h>
 
-#define MIDI_MAXWRITE	32	/* max bytes to give to the uart at once */
 #define MIDI_RATE	3125	/* midi uart baud rate in bytes/second */
 
 /*
