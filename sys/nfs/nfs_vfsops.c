@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vfsops.c,v 1.123 2019/12/26 13:28:49 bluhm Exp $	*/
+/*	$OpenBSD: nfs_vfsops.c,v 1.124 2020/01/08 15:03:10 mpi Exp $	*/
 /*	$NetBSD: nfs_vfsops.c,v 1.46.4.1 1996/05/25 22:40:35 fvdl Exp $	*/
 
 /*
@@ -804,7 +804,7 @@ nfs_sync(struct mount *mp, int waitfor, int stall, struct ucred *cred, struct pr
 	 * Force stale buffer cache information to be flushed.
 	 */
 loop:
-	LIST_FOREACH(vp, &mp->mnt_vnodelist, v_mntvnodes) {
+	TAILQ_FOREACH(vp, &mp->mnt_vnodelist, v_mntvnodes) {
 		/*
 		 * If the vnode that we are about to sync is no longer
 		 * associated with this mount point, start over.
