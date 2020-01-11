@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.8 2017/06/25 22:06:06 bluhm Exp $
+# $OpenBSD: Makefile,v 1.9 2018/06/28 02:47:55 gsoares Exp $
 
 OUT=${.CURDIR}/out
 DIT=dc=example,dc=com
@@ -39,9 +39,10 @@ bootstrap:
 
 .if ! (make(clean) || make(cleandir) || make(obj))
 .END:
-	@[ -f ${.OBJDIR}/ldapd.pid ] &&\
+	@if [ -f ${.OBJDIR}/ldapd.pid ]; then \
 	    ${SUDO} kill $$(cat ${.OBJDIR}/ldapd.pid) &&\
-	    rm ${.OBJDIR}/ldapd.pid
+	    rm ${.OBJDIR}/ldapd.pid; \
+	fi
 .endif
 
 connect: bootstrap
