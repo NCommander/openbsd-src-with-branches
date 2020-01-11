@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipmi.c,v 1.106 2019/12/19 09:01:50 kettenis Exp $ */
+/*	$OpenBSD: ipmi.c,v 1.107 2019/12/31 10:05:32 mpi Exp $ */
 
 /*
  * Copyright (c) 2015 Masao Uebayashi
@@ -1171,8 +1171,8 @@ signextend(unsigned long val, int bits)
 long
 ipmi_convert(u_int8_t v, struct sdrtype1 *s1, long adj)
 {
-	short	M, B;
-	char	K1, K2;
+	int16_t	M, B;
+	int8_t	K1, K2;
 	long	val;
 
 	/* Calculate linear reading variables */
