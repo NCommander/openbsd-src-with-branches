@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_pty.c,v 1.94 2019/07/19 00:17:16 cheloha Exp $	*/
+/*	$OpenBSD: tty_pty.c,v 1.95 2019/12/31 13:48:32 visa Exp $	*/
 /*	$NetBSD: tty_pty.c,v 1.33.4.1 1996/06/02 09:08:11 mrg Exp $	*/
 
 /*
@@ -477,8 +477,8 @@ ptcread(dev_t dev, struct uio *uio, int flag)
 			return (0);	/* EOF */
 		if (flag & IO_NDELAY)
 			return (EWOULDBLOCK);
-		error = tsleep(&tp->t_outq.c_cf, TTIPRI | PCATCH,
-		    ttyin, 0);
+		error = tsleep_nsec(&tp->t_outq.c_cf, TTIPRI | PCATCH, ttyin,
+		    INFSLP);
 		if (error)
 			return (error);
 	}
@@ -587,8 +587,7 @@ block:
 			error = EWOULDBLOCK;
 		goto done;
 	}
-	error = tsleep(&tp->t_rawq.c_cf, TTOPRI | PCATCH,
-	    ttyout, 0);
+	error = tsleep_nsec(&tp->t_rawq.c_cf, TTOPRI | PCATCH, ttyout, INFSLP);
 	if (error == 0)
 		goto again;
 
