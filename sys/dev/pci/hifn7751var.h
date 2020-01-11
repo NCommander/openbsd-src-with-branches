@@ -1,4 +1,4 @@
-/*	$OpenBSD: hifn7751var.h,v 1.52 2004/01/20 21:01:55 jason Exp $	*/
+/*	$OpenBSD: hifn7751var.h,v 1.53 2010/12/15 23:34:23 mikeb Exp $	*/
 
 /*
  * Invertex AEON / Hifn 7751 driver
@@ -156,7 +156,7 @@ struct hifn_softc {
 #define	HIFN_IS_7956		0x40	/* Hifn 7955/7956 part */
 	struct timeout sc_rngto, sc_tickto;
 	int sc_rngfirst;
-	int sc_rnghz;
+	int sc_rngms;			/* timeout interval (milliseconds) */
 	int sc_c_busy, sc_s_busy, sc_d_busy, sc_r_busy, sc_active;
 	struct hifn_session *sc_sessions;
 	pci_chipset_tag_t sc_pci_pc;
