@@ -1,4 +1,4 @@
-/*	$OpenBSD: autri.c,v 1.42 2016/12/20 15:45:29 ratchov Exp $	*/
+/*	$OpenBSD: autri.c,v 1.43 2019/12/04 20:21:35 fcambus Exp $	*/
 
 /*
  * Copyright (c) 2001 SOMEYA Yoshihiko and KUROSAWA Takahiro.
@@ -1352,7 +1352,8 @@ autri_midi_close(void *addr)
 
 	DPRINTF(("autri_midi_close()\n"));
 
-	tsleep(sc, PWAIT, "autri", hz/10); /* give uart a chance to drain */
+	/* give uart a chance to drain */
+	tsleep_nsec(sc, PWAIT, "autri", MSEC_TO_NSEC(100));
 
 	sc->sc_iintr = NULL;
 	sc->sc_ointr = NULL;
