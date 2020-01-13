@@ -1,7 +1,7 @@
 #ifndef _JOB_H_
 #define _JOB_H_
 
-/*	$OpenBSD: job.h,v 1.32 2020/01/13 14:51:50 espie Exp $	*/
+/*	$OpenBSD: job.h,v 1.33 2020/01/13 15:19:04 espie Exp $	*/
 /*	$NetBSD: job.h,v 1.5 1996/11/06 17:59:10 christos Exp $ */
 
 /*
@@ -84,6 +84,10 @@ extern void print_errors(void);
  *	or a signal coming in.
  */
 extern void handle_running_jobs(void);
+/* loop_handle_running_jobs();
+ *	handle running jobs until they're finished.
+ */
+extern void loop_handle_running_jobs(void);
 
 /* handle_all_signals();
  *	if a signal was received, react accordingly.
