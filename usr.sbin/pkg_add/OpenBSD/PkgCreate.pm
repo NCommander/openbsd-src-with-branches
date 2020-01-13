@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgCreate.pm,v 1.164 2019/11/07 15:36:51 espie Exp $
+# $OpenBSD: PkgCreate.pm,v 1.165 2020/01/09 11:01:25 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -987,7 +987,7 @@ sub ask_tree
 	}
 	my $pid = open(my $fh, "-|");
 	if (!defined $pid) {
-		$state->fatal("cannot fork: $!");
+		$state->fatal("cannot fork: #1", $!);
 	}
 	if ($pid == 0) {
 		$ENV{FULLPATH} = 'Yes';
