@@ -1,5 +1,5 @@
-# $OpenBSD: Makefile,v 1.5 2016/09/05 09:53:53 schwarze Exp $
+# $OpenBSD: Makefile,v 1.6 2017/07/27 15:08:37 bluhm Exp $
 
-SUBDIR =	check_isw mbrtowc setlocale wcrtomb
+SUBDIR =	check_isw mbrtowc setlocale uselocale wcrtomb
 
 .include <bsd.subdir.mk>
