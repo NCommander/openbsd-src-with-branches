@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf.c,v 1.27 2015/04/29 00:42:12 millert Exp $	*/
+/*	$OpenBSD: buf.c,v 1.28 2019/12/21 15:26:47 espie Exp $	*/
 /*	$NetBSD: buf.c,v 1.9 1996/12/31 17:53:21 christos Exp $ */
 
 /*
@@ -151,6 +151,15 @@ Buf_printf(Buffer bp, const char *fmt, ...)
 		va_end(vb);
 	}
 	bp->inPtr += n;
+}
+
+void
+Buf_Reinit(Buffer bp, size_t size)
+{
+	if (bp->buffer == NULL)
+		Buf_Init(bp, size);
+	else
+		Buf_Reset(bp);
 }
 
 void
