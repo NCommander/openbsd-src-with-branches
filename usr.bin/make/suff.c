@@ -1,4 +1,4 @@
-/*	$OpenBSD: suff.c,v 1.100 2020/01/13 14:05:21 espie Exp $ */
+/*	$OpenBSD: suff.c,v 1.101 2020/01/13 14:07:35 espie Exp $ */
 /*	$NetBSD: suff.c,v 1.13 1996/11/06 17:59:25 christos Exp $	*/
 
 /*
@@ -60,7 +60,6 @@
 #include "lst.h"
 #include "memory.h"
 #include "gnode.h"
-#include "make.h"
 #include "stats.h"
 #include "dump.h"
 #include "expandchildren.h"
