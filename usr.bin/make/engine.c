@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.62 2020/01/13 14:15:21 espie Exp $ */
+/*	$OpenBSD: engine.c,v 1.63 2020/01/13 14:51:50 espie Exp $ */
 /*
  * Copyright (c) 2012 Marc Espie.
  *
@@ -615,7 +615,7 @@ job_attach_node(Job *job, GNode *node)
 }
 
 void
-job_handle_status(Job *job, int status)
+handle_job_status(Job *job, int status)
 {
 	bool silent;
 	int dying;
