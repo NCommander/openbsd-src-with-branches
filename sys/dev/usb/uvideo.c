@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.c,v 1.204 2019/10/06 16:24:14 beck Exp $ */
+/*	$OpenBSD: uvideo.c,v 1.205 2019/10/14 09:20:48 mpi Exp $ */
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -644,10 +644,10 @@ uvideo_detach(struct device *self, int flags)
 	/* Wait for outstanding requests to complete */
 	usbd_delay_ms(sc->sc_udev, UVIDEO_NFRAMES_MAX);
 
-	uvideo_vs_free_frame(sc);
-
 	if (sc->sc_videodev != NULL)
 		rv = config_detach(sc->sc_videodev, flags);
+
+	uvideo_vs_free_frame(sc);
 
 	return (rv);
 }
