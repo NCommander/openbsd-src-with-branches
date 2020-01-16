@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_msg.c,v 1.59 2019/11/15 13:55:13 tobhe Exp $	*/
+/*	$OpenBSD: ikev2_msg.c,v 1.60 2019/11/28 12:16:28 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -78,7 +78,7 @@ ikev2_msg_cb(int fd, short event, void *arg)
 		return;
 
 	if (socket_getport((struct sockaddr *)&msg.msg_local) ==
-	    IKED_NATT_PORT) {
+	    env->sc_nattport) {
 		if (memcmp(&natt, buf, sizeof(natt)) != 0)
 			return;
 		msg.msg_natt = 1;
