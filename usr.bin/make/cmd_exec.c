@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd_exec.c,v 1.9 2016/03/05 13:12:12 espie Exp $ */
+/*	$OpenBSD: cmd_exec.c,v 1.10 2016/03/28 11:27:37 chl Exp $ */
 /*
  * Copyright (c) 2001 Marc Espie.
  *
@@ -35,6 +35,7 @@
 #include "buf.h"
 #include "memory.h"
 #include "pathnames.h"
+#include "job.h"
 
 char *
 Cmd_Exec(const char *cmd, char **err)
@@ -67,6 +68,7 @@ Cmd_Exec(const char *cmd, char **err)
 	/* Fork */
 	switch (cpid = fork()) {
 	case 0:
+		reset_signal_mask();
 		/* Close input side of pipe */
 		(void)close(fds[0]);
 
