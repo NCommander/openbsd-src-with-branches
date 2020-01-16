@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdsp.c,v 1.45 2018/05/02 02:24:55 visa Exp $	*/
+/*	$OpenBSD: vdsp.c,v 1.46 2019/10/06 16:24:14 beck Exp $	*/
 /*
  * Copyright (c) 2009, 2011, 2014 Mark Kettenis
  *
@@ -894,7 +894,8 @@ vdsp_sendmsg(struct vdsp_softc *sc, void *msg, size_t len, int dowait)
 			 * we specify a timeout such that we don't
 			 * block forever.
 			 */
-			err = tsleep(lc->lc_txq, PWAIT, "vdsp", 1);
+			err = tsleep_nsec(lc->lc_txq, PWAIT, "vdsp",
+			    MSEC_TO_NSEC(10));
 		}
 	} while (dowait && err == EWOULDBLOCK);
 }
