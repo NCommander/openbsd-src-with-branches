@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_linux.c,v 1.54 2019/12/30 09:30:31 mpi Exp $	*/
+/*	$OpenBSD: drm_linux.c,v 1.55 2020/01/05 13:46:02 visa Exp $	*/
 /*
  * Copyright (c) 2013 Jonathan Gray <jsg@openbsd.org>
  * Copyright (c) 2015, 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -115,20 +115,8 @@ schedule_timeout(long timeout)
 int
 wake_up_process(struct proc *p)
 {
-	int s, r = 0;
-
-	SCHED_LOCK(s);
 	atomic_cas_ptr(&sch_proc, p, NULL);
-	if (p->p_wchan) {
-		if (p->p_stat == SSLEEP) {
-			setrunnable(p);
-			r = 1;
-		} else
-			unsleep(p);
-	}
-	SCHED_UNLOCK(s);
-
-	return r;
+	return wakeup_proc(p, NULL);
 }
 
 void
