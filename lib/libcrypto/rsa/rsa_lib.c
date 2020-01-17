@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_lib.c,v 1.38 2019/10/24 15:47:15 jsing Exp $ */
+/* $OpenBSD: rsa_lib.c,v 1.39 2019/11/01 03:41:40 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -209,6 +209,7 @@ RSA_free(RSA *r)
 	BN_clear_free(r->iqmp);
 	BN_BLINDING_free(r->blinding);
 	BN_BLINDING_free(r->mt_blinding);
+	RSA_PSS_PARAMS_free(r->pss);
 	free(r);
 }
 
