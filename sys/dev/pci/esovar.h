@@ -1,4 +1,4 @@
-/*	$OpenBSD: esovar.h,v 1.5 2010/09/07 16:21:44 deraadt Exp $	*/
+/*	$OpenBSD: esovar.h,v 1.6 2010/09/21 20:11:44 jakemsr Exp $	*/
 /*	$NetBSD: esovar.h,v 1.5 2004/05/25 21:38:11 kleink Exp $	*/
 
 /*
@@ -129,7 +129,7 @@ struct eso_softc {
 	void			(*sc_rintr)(void *);
 	void *			sc_rarg;
 
-	/* Auto-initialize DMA transfer block drain timeouts, in ticks */
+	/* Auto-initialize DMA transfer block drain timeouts, in milliseconds */
 	int			sc_pdrain;
 	int			sc_rdrain;
 
