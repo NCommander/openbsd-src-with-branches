@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_config.c,v 1.56 2019/04/04 15:09:09 jsing Exp $ */
+/* $OpenBSD: tls_config.c,v 1.57 2019/11/16 06:44:33 beck Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -253,6 +253,8 @@ tls_config_parse_protocols(uint32_t *protocols, const char *protostr)
 			proto = TLS_PROTOCOL_TLSv1_1;
 		else if (strcasecmp(p, "tlsv1.2") == 0)
 			proto = TLS_PROTOCOL_TLSv1_2;
+		else if (strcasecmp(p, "tlsv1.3") == 0)
+			proto = TLS_PROTOCOL_TLSv1_3;
 
 		if (proto == 0) {
 			free(s);
