@@ -14,14 +14,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ipseckey_45.h,v 1.3 2019/12/17 01:46:33 sthen Exp $ */
+/* $Id: ipseckey_45.h,v 1.4 2020/01/09 18:17:17 florian Exp $ */
 
 #ifndef GENERIC_IPSECKEY_45_H
 #define GENERIC_IPSECKEY_45_H 1
 
 typedef struct dns_rdata_ipseckey {
 	dns_rdatacommon_t	common;
-	isc_mem_t		*mctx;
 	uint8_t		precedence;
 	uint8_t		gateway_type;
 	uint8_t		algorithm;

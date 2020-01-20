@@ -17,7 +17,7 @@
 #ifndef GENERIC_SPF_99_H
 #define GENERIC_SPF_99_H 1
 
-/* $Id: spf_99.h,v 1.3 2019/12/17 01:46:33 sthen Exp $ */
+/* $Id: spf_99.h,v 1.4 2020/01/09 18:17:18 florian Exp $ */
 
 typedef struct dns_rdata_spf_string {
 		uint8_t    length;
@@ -26,7 +26,6 @@ typedef struct dns_rdata_spf_string {
 
 typedef struct dns_rdata_spf {
 	dns_rdatacommon_t       common;
-	isc_mem_t               *mctx;
 	unsigned char           *txt;
 	uint16_t            txt_len;
 	/* private */

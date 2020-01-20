@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: lex.h,v 1.2 2019/12/16 16:16:26 deraadt Exp $ */
+/* $Id: lex.h,v 1.3 2019/12/17 01:46:35 sthen Exp $ */
 
 #ifndef ISC_LEX_H
 #define ISC_LEX_H 1
@@ -142,7 +142,7 @@ typedef struct isc_token {
  ***/
 
 isc_result_t
-isc_lex_create(isc_mem_t *mctx, size_t max_token, isc_lex_t **lexp);
+isc_lex_create(size_t max_token, isc_lex_t **lexp);
 /*%<
  * Create a lexer.
  *

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: symtab.h,v 1.2 2019/12/16 16:16:26 deraadt Exp $ */
+/* $Id: symtab.h,v 1.3 2019/12/17 01:46:35 sthen Exp $ */
 
 #ifndef ISC_SYMTAB_H
 #define ISC_SYMTAB_H 1
@@ -111,7 +111,7 @@ ISC_LANG_BEGINDECLS
 
 /*% Create a symbol table. */
 isc_result_t
-isc_symtab_create(isc_mem_t *mctx, unsigned int size,
+isc_symtab_create(unsigned int size,
 		  isc_symtabaction_t undefine_action, void *undefine_arg,
 		  isc_boolean_t case_sensitive, isc_symtab_t **symtabp);
 

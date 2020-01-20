@@ -17,14 +17,13 @@
 #ifndef GENERIC_KEY_25_H
 #define GENERIC_KEY_25_H 1
 
-/* $Id: key_25.h,v 1.3 2019/12/17 01:46:33 sthen Exp $ */
+/* $Id: key_25.h,v 1.4 2020/01/09 18:17:17 florian Exp $ */
 
 /*!
  * \brief Per RFC2535 */
 
 typedef struct dns_rdata_key {
 	dns_rdatacommon_t	common;
-	isc_mem_t *		mctx;
 	uint16_t		flags;
 	uint8_t		protocol;
 	uint8_t		algorithm;

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: nsec3.h,v 1.2 2019/12/17 01:46:32 sthen Exp $ */
+/* $Id: nsec3.h,v 1.3 2020/01/18 16:55:01 florian Exp $ */
 
 #ifndef DNS_NSEC3_H
 #define DNS_NSEC3_H 1
@@ -105,7 +105,7 @@ dns_nsec3_activex(dns_db_t *db, dns_dbversion_t *version,
 
 isc_result_t
 dns_nsec3_maxiterations(dns_db_t *db, dns_dbversion_t *version,
-			isc_mem_t *mctx, unsigned int *iterationsp);
+			unsigned int *iterationsp);
 /*%<
  * Find the maximum permissible number of iterations allowed based on
  * the key strength.

@@ -17,7 +17,7 @@
 #ifndef IN_1_SRV_33_H
 #define IN_1_SRV_33_H 1
 
-/* $Id: srv_33.h,v 1.3 2019/12/17 01:46:34 sthen Exp $ */
+/* $Id: srv_33.h,v 1.4 2020/01/09 18:17:18 florian Exp $ */
 
 /* Reviewed: Fri Mar 17 13:01:00 PST 2000 by bwelling */
 
@@ -26,7 +26,6 @@
 
 typedef struct dns_rdata_in_srv {
 	dns_rdatacommon_t	common;
-	isc_mem_t		*mctx;
 	uint16_t		priority;
 	uint16_t		weight;
 	uint16_t		port;

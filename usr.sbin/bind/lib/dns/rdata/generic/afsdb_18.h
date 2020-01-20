@@ -17,14 +17,13 @@
 #ifndef GENERIC_AFSDB_18_H
 #define GENERIC_AFSDB_18_H 1
 
-/* $Id: afsdb_18.h,v 1.3 2019/12/17 01:46:33 sthen Exp $ */
+/* $Id: afsdb_18.h,v 1.4 2020/01/09 18:17:17 florian Exp $ */
 
 /*!
  *  \brief Per RFC1183 */
 
 typedef struct dns_rdata_afsdb {
 	dns_rdatacommon_t	common;
-	isc_mem_t		*mctx;
 	uint16_t		subtype;
 	dns_name_t		server;
 } dns_rdata_afsdb_t;

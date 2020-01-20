@@ -18,11 +18,10 @@
 #ifndef GENERIC_MF_4_H
 #define GENERIC_MF_4_H 1
 
-/* $Id: mf_4.h,v 1.2 2019/12/16 16:16:25 deraadt Exp $ */
+/* $Id: mf_4.h,v 1.3 2019/12/17 01:46:33 sthen Exp $ */
 
 typedef struct dns_rdata_mf {
 	dns_rdatacommon_t	common;
-	isc_mem_t		*mctx;
 	dns_name_t		mf;
 } dns_rdata_mf_t;
 

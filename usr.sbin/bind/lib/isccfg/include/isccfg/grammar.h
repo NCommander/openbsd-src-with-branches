@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: grammar.h,v 1.4 2020/01/09 14:18:30 florian Exp $ */
+/* $Id: grammar.h,v 1.5 2020/01/09 18:17:20 florian Exp $ */
 
 #ifndef ISCCFG_GRAMMAR_H
 #define ISCCFG_GRAMMAR_H 1
@@ -181,7 +181,6 @@ struct cfg_listelt {
 
 /*% The parser object. */
 struct cfg_parser {
-	isc_mem_t *	mctx;
 	isc_log_t *	lctx;
 	isc_lex_t *	lexer;
 	unsigned int    errors;

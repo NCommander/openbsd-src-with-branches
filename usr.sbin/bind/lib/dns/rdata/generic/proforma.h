@@ -18,11 +18,10 @@
 #ifndef GENERIC_PROFORMA_H
 #define GENERIC_PROFORMA_H 1
 
-/* $Id: proforma.h,v 1.2 2019/12/16 16:16:25 deraadt Exp $ */
+/* $Id: proforma.h,v 1.3 2019/12/17 01:46:33 sthen Exp $ */
 
 typedef struct dns_rdata_# {
 	dns_rdatacommon_t	common;
-	isc_mem_t		*mctx;	/* if required */
 	/* type & class specific elements */
 } dns_rdata_#_t;
 

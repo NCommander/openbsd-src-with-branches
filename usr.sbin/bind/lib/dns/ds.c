@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ds.c,v 1.3 2019/12/17 01:46:31 sthen Exp $ */
+/* $Id: ds.c,v 1.4 2020/01/09 13:52:23 florian Exp $ */
 
 /*! \file */
 
@@ -125,7 +125,6 @@ dns_ds_buildrdata(dns_name_t *owner, dns_rdata_t *key,
 		break;
 	}
 
-	ds.mctx = NULL;
 	ds.common.rdclass = key->rdclass;
 	ds.common.rdtype = dns_rdatatype_ds;
 	ds.algorithm = r.base[3];

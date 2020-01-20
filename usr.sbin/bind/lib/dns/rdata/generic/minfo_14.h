@@ -18,11 +18,10 @@
 #ifndef GENERIC_MINFO_14_H
 #define GENERIC_MINFO_14_H 1
 
-/* $Id: minfo_14.h,v 1.2 2019/12/16 16:16:25 deraadt Exp $ */
+/* $Id: minfo_14.h,v 1.3 2019/12/17 01:46:33 sthen Exp $ */
 
 typedef struct dns_rdata_minfo {
 	dns_rdatacommon_t	common;
-	isc_mem_t		*mctx;
 	dns_name_t		rmailbox;
 	dns_name_t		emailbox;
 } dns_rdata_minfo_t;

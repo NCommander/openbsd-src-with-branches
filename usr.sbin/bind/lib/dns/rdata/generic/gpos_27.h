@@ -17,14 +17,13 @@
 #ifndef GENERIC_GPOS_27_H
 #define GENERIC_GPOS_27_H 1
 
-/* $Id: gpos_27.h,v 1.3 2019/12/17 01:46:33 sthen Exp $ */
+/* $Id: gpos_27.h,v 1.4 2020/01/09 18:17:17 florian Exp $ */
 
 /*!
  *  \brief per RFC1712 */
 
 typedef struct dns_rdata_gpos {
 	dns_rdatacommon_t	common;
-	isc_mem_t		*mctx;
 	char			*longitude;
 	char			*latitude;
 	char			*altitude;
