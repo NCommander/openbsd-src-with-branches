@@ -1,4 +1,4 @@
-/*	$Id: http.c,v 1.27 2019/06/28 13:32:46 deraadt Exp $ */
+/*	$Id: http.c,v 1.28 2019/07/12 15:01:33 florian Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -193,10 +193,6 @@ http_disconnect(struct http *http)
 		do {
 			rc = tls_close(http->ctx);
 		} while (rc == TLS_WANT_POLLIN || rc == TLS_WANT_POLLOUT);
-
-		if (rc < 0)
-			warnx("%s: tls_close: %s", http->src.ip,
-			    tls_error(http->ctx));
 
 		tls_free(http->ctx);
 	}
