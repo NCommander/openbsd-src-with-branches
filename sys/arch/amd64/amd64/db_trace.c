@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.47 2019/11/10 10:03:33 mpi Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.48 2020/01/09 15:18:58 bluhm Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.1 2003/04/26 18:39:27 fvdl Exp $	*/
 
 /*
@@ -30,6 +30,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/stacktrace.h>
 #include <sys/user.h>
 
 #include <machine/db_machdep.h>
@@ -255,13 +256,13 @@ db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
 }
 
 void
-db_save_stack_trace(struct db_stack_trace *st)
+stacktrace_save(struct stacktrace *st)
 {
 	struct callframe *frame, *lastframe;
 
 	frame = __builtin_frame_address(0);
 	st->st_count = 0;
-	while (st->st_count < DB_STACK_TRACE_MAX) {
+	while (st->st_count < STACKTRACE_MAX) {
 		st->st_pc[st->st_count++] = frame->f_retaddr;
 
 		lastframe = frame;
