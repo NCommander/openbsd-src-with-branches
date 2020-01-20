@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.61 2019/12/08 12:29:42 mpi Exp $  */
+/*       $OpenBSD: vfs_sync.c,v 1.62 2020/01/16 16:35:04 mpi Exp $  */
 
 /*
  *  Portions of this code are:
@@ -256,7 +256,7 @@ int   sync_fsync(void *);
 int   sync_inactive(void *);
 int   sync_print(void *);
 
-struct vops sync_vops = {
+const struct vops sync_vops = {
 	.vop_close	= nullop,
 	.vop_fsync	= sync_fsync,
 	.vop_inactive	= sync_inactive,

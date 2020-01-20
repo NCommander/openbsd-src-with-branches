@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_node.c,v 1.69 2018/05/05 11:54:11 mpi Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.70 2018/05/27 06:02:15 visa Exp $	*/
 /*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
 
 /*
@@ -59,7 +59,7 @@ struct pool nfs_node_pool;
 extern int prtactive;
 
 /* XXX */
-extern struct vops nfs_vops;
+extern const struct vops nfs_vops;
 
 /* filehandle to node lookup. */
 static __inline int

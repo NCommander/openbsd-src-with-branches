@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_specops.c,v 1.4 2013/12/23 20:35:19 tedu Exp $	*/
+/*	$OpenBSD: tmpfs_specops.c,v 1.5 2015/01/21 22:26:52 deraadt Exp $	*/
 /*	$NetBSD: tmpfs_specops.c,v 1.10 2011/05/24 20:17:49 rmind Exp $	*/
 
 /*
@@ -51,7 +51,7 @@ int	tmpfs_spec_write	(void *);
  * file system.
  */
 
-struct vops tmpfs_specvops = {
+const struct vops tmpfs_specvops = {
 	.vop_close	= spec_close,
 	.vop_access	= tmpfs_access,
 	.vop_getattr	= tmpfs_getattr,

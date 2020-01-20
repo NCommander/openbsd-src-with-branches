@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vnops.c,v 1.43 2018/04/28 03:13:05 visa Exp $	*/
+/*	$OpenBSD: ntfs_vnops.c,v 1.44 2018/05/02 02:24:56 visa Exp $	*/
 /*	$NetBSD: ntfs_vnops.c,v 1.6 2003/04/10 21:57:26 jdolecek Exp $	*/
 
 /*
@@ -664,7 +664,7 @@ ntfs_pathconf(void *v)
 /*
  * Global vfs data structures
  */
-struct vops ntfs_vops = {
+const struct vops ntfs_vops = {
 	.vop_getattr	= ntfs_getattr,
 	.vop_inactive	= ntfs_inactive,
 	.vop_reclaim	= ntfs_reclaim,

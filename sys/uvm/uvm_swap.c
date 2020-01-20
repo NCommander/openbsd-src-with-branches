@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_swap.c,v 1.144 2019/04/02 13:07:28 visa Exp $	*/
+/*	$OpenBSD: uvm_swap.c,v 1.145 2019/12/05 12:46:54 mpi Exp $	*/
 /*	$NetBSD: uvm_swap.c,v 1.40 2000/11/17 11:39:39 mrg Exp $	*/
 
 /*
@@ -820,7 +820,7 @@ swap_on(struct proc *p, struct swapdev *sdp)
 	long addr;
 	struct vattr va;
 #if defined(NFSCLIENT)
-	extern struct vops nfs_vops;
+	extern const struct vops nfs_vops;
 #endif /* defined(NFSCLIENT) */
 	dev_t dev;
 

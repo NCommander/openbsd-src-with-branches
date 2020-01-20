@@ -1,4 +1,4 @@
-/*	$OpenBSD: udf_extern.h,v 1.13 2013/06/02 15:35:18 deraadt Exp $	*/
+/*	$OpenBSD: udf_extern.h,v 1.14 2018/02/10 05:24:23 deraadt Exp $	*/
 
 /*
  * Written by Pedro Martelletto <pedro@ambientworks.net> in February 2005.
@@ -65,6 +65,6 @@ extern struct pool unode_pool;
 extern struct pool udf_ds_pool;
 
 /* Set of UDF vnode operations.*/
-extern struct vops udf_vops;
+extern const struct vops udf_vops;
 
 #endif /* _KERNEL */

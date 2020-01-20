@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_denode.c,v 1.63 2018/05/27 06:02:14 visa Exp $	*/
+/*	$OpenBSD: msdosfs_denode.c,v 1.64 2019/07/25 01:43:21 cheloha Exp $	*/
 /*	$NetBSD: msdosfs_denode.c,v 1.23 1997/10/17 11:23:58 ws Exp $	*/
 
 /*-
@@ -183,7 +183,7 @@ deget(struct msdosfsmount *pmp, uint32_t dirclust, uint32_t diroffset,
     struct denode **depp)
 {
 	int error;
-	extern struct vops msdosfs_vops;
+	extern const struct vops msdosfs_vops;
 	struct direntry *direntptr;
 	struct denode *ldep;
 	struct vnode *nvp;
