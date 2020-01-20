@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: keydata.c,v 1.2 2019/12/17 01:46:32 sthen Exp $ */
+/* $Id: keydata.c,v 1.3 2020/01/09 18:17:15 florian Exp $ */
 
 /*! \file */
 
@@ -23,7 +23,7 @@
 
 #include <isc/buffer.h>
 #include <isc/mem.h>
-#include <isc/string.h>
+#include <string.h>
 #include <isc/util.h>
 
 #include <dns/rdata.h>

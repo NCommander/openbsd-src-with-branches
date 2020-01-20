@@ -14,14 +14,14 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: nsec.c,v 1.3 2019/12/17 01:46:32 sthen Exp $ */
+/* $Id: nsec.c,v 1.4 2020/01/18 16:55:00 florian Exp $ */
 
 /*! \file */
 
 #include <config.h>
 
 #include <isc/log.h>
-#include <isc/string.h>
+#include <string.h>
 #include <isc/util.h>
 
 

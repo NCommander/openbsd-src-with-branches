@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: buffer.c,v 1.3 2019/12/17 01:46:34 sthen Exp $ */
+/* $Id: buffer.c,v 1.4 2020/01/09 18:17:19 florian Exp $ */
 
 /*! \file */
 
@@ -23,7 +23,7 @@
 #include <isc/buffer.h>
 #include <isc/mem.h>
 #include <isc/region.h>
-#include <isc/string.h>
+#include <string.h>
 #include <isc/util.h>
 
 void

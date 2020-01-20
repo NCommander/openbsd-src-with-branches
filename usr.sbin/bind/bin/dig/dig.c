@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dig.c,v 1.36 2020/01/09 18:17:14 florian Exp $ */
+/* $Id: dig.c,v 1.37 2020/01/10 16:13:08 schwarze Exp $ */
 
 /*! \file */
 #include <sys/cdefs.h>
@@ -29,7 +29,7 @@
 #include <isc/parseint.h>
 #include <isc/platform.h>
 
-#include <isc/string.h>
+#include <string.h>
 #include <isc/task.h>
 #include <isc/util.h>
 

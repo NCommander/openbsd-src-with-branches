@@ -15,7 +15,7 @@
  */
 
 /*
- * $Id: dnssec.c,v 1.11 2020/01/09 18:17:14 florian Exp $
+ * $Id: dnssec.c,v 1.12 2020/01/18 16:55:00 florian Exp $
  */
 
 /*! \file */
@@ -28,7 +28,7 @@
 #include <isc/dir.h>
 #include <isc/mem.h>
 #include <isc/serial.h>
-#include <isc/string.h>
+#include <string.h>
 #include <isc/util.h>
 
 

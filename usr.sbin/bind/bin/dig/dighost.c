@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dighost.c,v 1.30 2020/01/20 18:40:55 florian Exp $ */
+/* $Id: dighost.c,v 1.31 2020/01/20 18:41:48 florian Exp $ */
 
 /*! \file
  *  \note
@@ -79,7 +79,7 @@
 #include <isc/safe.h>
 #include <isc/serial.h>
 #include <isc/sockaddr.h>
-#include <isc/string.h>
+#include <string.h>
 #include <isc/task.h>
 #include <isc/timer.h>
 #include <isc/types.h>

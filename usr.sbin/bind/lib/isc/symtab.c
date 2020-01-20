@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: symtab.c,v 1.2 2019/12/16 16:16:26 deraadt Exp $ */
+/* $Id: symtab.c,v 1.3 2019/12/17 01:46:34 sthen Exp $ */
 
 /*! \file */
 
@@ -24,7 +24,7 @@
 
 #include <isc/magic.h>
 #include <isc/mem.h>
-#include <isc/string.h>
+#include <string.h>
 #include <isc/symtab.h>
 #include <isc/util.h>
 

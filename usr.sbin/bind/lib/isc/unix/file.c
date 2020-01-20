@@ -43,7 +43,7 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: file.c,v 1.9 2020/01/09 14:24:08 florian Exp $ */
+/* $Id: file.c,v 1.10 2020/01/09 18:17:19 florian Exp $ */
 
 /*! \file */
 
@@ -69,7 +69,7 @@
 #include <isc/log.h>
 #include <isc/mem.h>
 
-#include <isc/string.h>
+#include <string.h>
 #include <isc/time.h>
 #include <isc/util.h>
 

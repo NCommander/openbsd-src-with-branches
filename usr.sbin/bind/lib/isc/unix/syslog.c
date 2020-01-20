@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: syslog.c,v 1.2 2019/12/16 16:16:27 deraadt Exp $ */
+/* $Id: syslog.c,v 1.3 2019/12/17 01:46:37 sthen Exp $ */
 
 /*! \file */
 
@@ -24,7 +24,7 @@
 #include <syslog.h>
 
 #include <isc/result.h>
-#include <isc/string.h>
+#include <string.h>
 #include <isc/syslog.h>
 #include <isc/util.h>
 

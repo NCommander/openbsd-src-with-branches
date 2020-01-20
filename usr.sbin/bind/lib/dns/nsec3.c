@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: nsec3.c,v 1.3 2020/01/09 18:17:15 florian Exp $ */
+/* $Id: nsec3.c,v 1.4 2020/01/18 16:55:00 florian Exp $ */
 
 #include <config.h>
 
@@ -23,7 +23,7 @@
 #include <isc/hex.h>
 #include <isc/iterated_hash.h>
 #include <isc/log.h>
-#include <isc/string.h>
+#include <string.h>
 #include <isc/util.h>
 #include <isc/safe.h>
 

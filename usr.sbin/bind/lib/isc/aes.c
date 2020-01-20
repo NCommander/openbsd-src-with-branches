@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: aes.c,v 1.3 2020/01/09 13:52:23 florian Exp $ */
+/* $Id: aes.c,v 1.4 2020/01/09 14:18:30 florian Exp $ */
 
 /*! \file isc/aes.c */
 
@@ -23,7 +23,7 @@
 #include <isc/assertions.h>
 #include <isc/aes.h>
 #include <isc/platform.h>
-#include <isc/string.h>
+#include <string.h>
 #include <isc/types.h>
 #include <isc/util.h>
 

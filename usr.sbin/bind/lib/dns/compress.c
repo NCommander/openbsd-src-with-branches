@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: compress.c,v 1.4 2020/01/09 18:17:14 florian Exp $ */
+/* $Id: compress.c,v 1.5 2020/01/20 18:40:55 florian Exp $ */
 
 /*! \file */
 
@@ -23,7 +23,7 @@
 #include <config.h>
 
 #include <isc/mem.h>
-#include <isc/string.h>
+#include <string.h>
 #include <isc/util.h>
 
 #include <dns/compress.h>
