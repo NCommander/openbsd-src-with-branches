@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: assertions.c,v 1.4 2020/01/07 19:11:17 florian Exp $ */
+/* $Id: assertions.c,v 1.5 2020/01/09 13:47:13 florian Exp $ */
 
 /*! \file */
 
@@ -98,8 +98,6 @@ default_callback(const char *file, int line, isc_assertiontype_t type,
 		 const char *cond)
 {
 	fprintf(stderr, "%s:%d: %s(%s) %s\n",
-		file, line, isc_assertion_typetotext(type), cond,
-		isc_msgcat_get(isc_msgcat, ISC_MSGSET_GENERAL,
-			       ISC_MSG_FAILED, "failed"));
+		file, line, isc_assertion_typetotext(type), cond, "failed");
 	fflush(stderr);
 }
