@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: sha2.h,v 1.4 2020/01/09 13:52:23 florian Exp $ */
+/* $Id: sha2.h,v 1.5 2020/01/09 18:17:19 florian Exp $ */
 
 /*	$FreeBSD: src/sys/crypto/sha2/sha2.h,v 1.1.2.1 2001/07/03 11:01:36 ume Exp $	*/
 /*	$KAME: sha2.h,v 1.3 2001/03/12 08:27:48 itojun Exp $	*/
@@ -83,12 +83,12 @@
 #include <openssl/evp.h>
 #endif
 
-#if defined(ISC_PLATFORM_OPENSSLHASH) && !defined(LIBRESSL_VERSION_NUMBER)
+#if defined(ISC_PLATFORM_OPENSSLHASH)
 
 
 typedef struct {
 	EVP_MD_CTX *ctx;
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	EVP_MD_CTX _ctx;
 #endif
 } isc_sha2_t;
