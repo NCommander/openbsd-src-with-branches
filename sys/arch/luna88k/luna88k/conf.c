@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.30 2016/09/04 10:51:23 naddy Exp $	*/
+/*	$OpenBSD: conf.c,v 1.31 2016/12/17 05:22:34 aoyama Exp $	*/
 
 /*-
  * Copyright (c) 1991 The Regents of the University of California.
@@ -67,6 +67,7 @@
 #include "wsmouse.h"
 #include "wsmux.h"
 
+#include "dt.h"
 #include "pf.h"
 #include "vscsi.h"
 #include "pppx.h"
@@ -131,7 +132,7 @@ struct cdevsw	cdevsw[] =
 	cdev_tty_init(NCOM, com),	/* 27: serial port (on PCMCIA) */
 	cdev_disk_init(NWD,wd),		/* 28: IDE disk (on PCMCIA) */
 	cdev_notdef(),			/* 29 */
-	cdev_notdef(),			/* 30 */
+	cdev_dt_init(NDT,dt),		/* 30: dynamic tracer */
 	cdev_notdef(),			/* 31 */
 	cdev_notdef(),			/* 32 */
 	cdev_notdef(),			/* 33 */

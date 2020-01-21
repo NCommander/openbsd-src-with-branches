@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.163 2019/12/13 20:57:54 deraadt Exp $	*/
+/*	$OpenBSD: conf.c,v 1.164 2019/12/17 13:08:55 reyk Exp $	*/
 /*	$NetBSD: conf.c,v 1.75 1996/05/03 19:40:20 christos Exp $	*/
 
 /*
@@ -168,6 +168,7 @@ cdev_decl(drm);
 cdev_decl(pci);
 #endif
 
+#include "dt.h"
 #include "pf.h"
 #include "hotplug.h"
 #include "gpio.h"
@@ -216,7 +217,7 @@ struct cdevsw	cdevsw[] =
 	cdev_spkr_init(NSPKR,spkr),	/* 27: PC speaker */
 	cdev_notdef(),			/* 28: was LKM */
 	cdev_notdef(),			/* 29 */
-	cdev_notdef(),			/* 30 */
+	cdev_dt_init(NDT,dt),		/* 30: dynamic tracer */
 	cdev_notdef(),			/* 31 */
 	cdev_notdef(),			/* 32 */
 	cdev_notdef(),			/* 33 */

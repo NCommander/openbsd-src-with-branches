@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.64 2019/12/13 20:57:54 deraadt Exp $	*/
+/*	$OpenBSD: conf.c,v 1.65 2019/12/17 13:08:54 reyk Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Charles M. Hannum.  All rights reserved.
@@ -176,6 +176,7 @@ cdev_decl(viocon);
 cdev_decl(pci);
 #endif
 
+#include "dt.h"
 #include "pf.h"
 #include "hotplug.h"
 #include "gpio.h"
@@ -223,7 +224,7 @@ struct cdevsw	cdevsw[] =
 	cdev_spkr_init(NSPKR,spkr),	/* 27: PC speaker */
 	cdev_notdef(),			/* 28 was LKM */
 	cdev_notdef(),			/* 29 */
-	cdev_notdef(),			/* 30 */
+	cdev_dt_init(NDT,dt),		/* 30: dynamic tracer */
 	cdev_notdef(),			/* 31 */
 	cdev_notdef(),			/* 32 */
 	cdev_notdef(),			/* 33 */
