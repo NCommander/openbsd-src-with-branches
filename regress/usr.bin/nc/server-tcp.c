@@ -1,4 +1,4 @@
-/*	$OpenBSD: server-tcp.c,v 1.1 2020/01/16 21:11:17 bluhm Exp $	*/
+/*	$OpenBSD: server-tcp.c,v 1.2 2020/01/17 20:45:50 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2020 Alexander Bluhm <bluhm@openbsd.org>
@@ -127,6 +127,7 @@ listen_socket(const char *host, const char *port)
 			cause = "bind";
 			save_errno = errno;
 			close(s);
+			s = -1;
 			errno = save_errno;
 			continue;
 		}
