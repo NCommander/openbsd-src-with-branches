@@ -14,13 +14,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: refcount.c,v 1.3 2019/12/17 01:46:34 sthen Exp $ */
+/* $Id: refcount.c,v 1.4 2020/01/07 19:08:09 florian Exp $ */
 
 #include <config.h>
 
 #include <stddef.h>
 
-#include <isc/mutex.h>
 #include <isc/refcount.h>
 #include <isc/result.h>
 #include <isc/util.h>

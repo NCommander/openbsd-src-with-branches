@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: util.h,v 1.3 2019/12/17 01:46:35 sthen Exp $ */
+/* $Id: util.h,v 1.4 2020/01/20 18:46:57 florian Exp $ */
 
 #ifndef ISC_UTIL_H
 #define ISC_UTIL_H 1
@@ -87,17 +87,6 @@
 
 #include <isc/result.h>		/* Contractual promise. */
 
-#define LOCK(lp) do { \
-	RUNTIME_CHECK(isc_mutex_lock((lp)) == ISC_R_SUCCESS); \
-	} while (0)
-#define UNLOCK(lp) do { \
-	RUNTIME_CHECK(isc_mutex_unlock((lp)) == ISC_R_SUCCESS); \
-	} while (0)
-#define ISLOCKED(lp) (1)
-#define DESTROYLOCK(lp) \
-	RUNTIME_CHECK(isc_mutex_destroy((lp)) == ISC_R_SUCCESS)
-
-
 #define BROADCAST(cvp) do { \
 	RUNTIME_CHECK(isc_condition_broadcast((cvp)) == ISC_R_SUCCESS); \
 	} while (0)
@@ -124,9 +113,6 @@
 #define RWUNLOCK(lp, t) do { \
 	RUNTIME_CHECK(isc_rwlock_unlock((lp), (t)) == ISC_R_SUCCESS); \
 	} while (0)
-
-#define DESTROYMUTEXBLOCK(bp, n) \
-	RUNTIME_CHECK(isc_mutexblock_destroy((bp), (n)) == ISC_R_SUCCESS)
 
 /*
  * List Macros.
