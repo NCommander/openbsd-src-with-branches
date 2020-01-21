@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.219 2019/12/19 17:40:11 mpi Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.220 2020/01/06 10:25:10 visa Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -191,7 +191,9 @@ process_initialize(struct process *pr, struct proc *p)
 	LIST_INIT(&pr->ps_children);
 	LIST_INIT(&pr->ps_ftlist);
 	LIST_INIT(&pr->ps_sigiolst);
+	TAILQ_INIT(&pr->ps_tslpqueue);
 
+	rw_init(&pr->ps_lock, "pslock");
 	mtx_init(&pr->ps_mtx, IPL_MPFLOOR);
 
 	timeout_set(&pr->ps_realit_to, realitexpire, pr);
