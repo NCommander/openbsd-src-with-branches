@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.146 2019/12/17 13:08:54 reyk Exp $	*/
+/*	$OpenBSD: conf.h,v 1.147 2020/01/21 16:16:23 mpi Exp $	*/
 /*	$NetBSD: conf.h,v 1.33 1996/05/03 20:03:32 christos Exp $	*/
 
 /*-
@@ -601,6 +601,7 @@ cdev_decl(tun);
 cdev_decl(tap);
 cdev_decl(switch);
 cdev_decl(pppx);
+cdev_decl(pppac);
 
 cdev_decl(random);
 
