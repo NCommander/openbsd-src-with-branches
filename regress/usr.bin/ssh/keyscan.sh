@@ -1,4 +1,4 @@
-#	$OpenBSD: keyscan.sh,v 1.11 2019/11/26 23:43:10 djm Exp $
+#	$OpenBSD: keyscan.sh,v 1.12 2019/12/16 02:39:05 djm Exp $
 #	Placed in the Public Domain.
 
 tid="keyscan"
@@ -16,7 +16,7 @@ start_sshd
 
 for t in $SSH_KEYTYPES; do
 	trace "keyscan type $t"
-	${SSHKEYSCAN} -t $t -p $PORT 127.0.0.1 127.0.0.1 127.0.0.1 \
+	${SSHKEYSCAN} -t $t -T 15 -p $PORT 127.0.0.1 127.0.0.1 127.0.0.1 \
 		> /dev/null 2>&1
 	r=$?
 	if [ $r -ne 0 ]; then
