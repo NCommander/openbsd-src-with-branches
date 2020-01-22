@@ -1,4 +1,4 @@
-/*	$OpenBSD: brconfig.c,v 1.23 2019/10/17 18:37:38 bluhm Exp $	*/
+/*	$OpenBSD: brconfig.c,v 1.24 2019/10/24 18:54:10 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -353,7 +353,7 @@ bridge_list(char *delim)
 				if ((1 << (v - 1)) & reqp->ifbr_protected)
 					printf(",%u", v);
 			}
-		};
+		}
 		if (reqp->ifbr_ifsflags & IFBIF_STP)
 			printf(" %s role %s",
 			    stpstates[reqp->ifbr_state],

@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfsd.c,v 1.38 2018/01/05 08:13:31 mpi Exp $	*/
+/*	$OpenBSD: nfsd.c,v 1.39 2019/06/28 13:32:45 deraadt Exp $	*/
 /*	$NetBSD: nfsd.c,v 1.19 1996/02/18 23:18:56 mycroft Exp $	*/
 
 /*
@@ -135,7 +135,7 @@ main(int argc, char *argv[])
 			break;
 		default:
 			usage();
-		};
+		}
 	argv += optind;
 	argc -= optind;
 

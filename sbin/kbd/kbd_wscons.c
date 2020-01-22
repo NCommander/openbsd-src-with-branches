@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd_wscons.c,v 1.32 2016/10/03 13:03:49 jca Exp $ */
+/*	$OpenBSD: kbd_wscons.c,v 1.33 2019/06/28 13:32:44 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Mats O Jansson.  All rights reserved.
@@ -198,7 +198,7 @@ kbd_list(void)
 			default:
 				t = SA_MAX;
 				break;
-			};
+			}
 
 			if (t != SA_MAX) {
 				kbds[t]++;
