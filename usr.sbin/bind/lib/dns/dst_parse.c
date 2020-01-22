@@ -33,10 +33,10 @@
 
 /*%
  * Principal Author: Brian Wellington
- * $Id: dst_parse.c,v 1.8 2020/01/20 18:49:45 florian Exp $
+ * $Id: dst_parse.c,v 1.9 2020/01/20 18:51:52 florian Exp $
  */
 
-#include <config.h>
+
 
 #include <isc/base64.h>
 #include <isc/dir.h>

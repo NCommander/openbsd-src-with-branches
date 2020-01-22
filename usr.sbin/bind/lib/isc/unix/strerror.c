@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: strerror.c,v 1.5 2020/01/20 18:51:53 florian Exp $ */
+/* $Id: strerror.c,v 1.6 2020/01/21 23:59:20 tedu Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 
 #include <stdio.h>
 #include <string.h>

@@ -33,10 +33,10 @@
 
 /*
  * Principal Author: Brian Wellington
- * $Id: hmac_link.c,v 1.7 2020/01/20 18:51:52 florian Exp $
+ * $Id: hmac_link.c,v 1.8 2020/01/22 06:47:14 florian Exp $
  */
 
-#include <config.h>
+
 
 #include <isc/buffer.h>
 #include <isc/hmacmd5.h>

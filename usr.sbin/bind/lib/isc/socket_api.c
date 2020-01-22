@@ -14,9 +14,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: socket_api.c,v 1.5 2020/01/21 10:11:09 deraadt Exp $ */
+/* $Id: socket_api.c,v 1.6 2020/01/21 23:59:20 tedu Exp $ */
 
-#include <config.h>
+
 
 #include <isc/app.h>
 #include <isc/magic.h>

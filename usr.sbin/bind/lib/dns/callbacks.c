@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: callbacks.c,v 1.3 2019/12/17 01:46:31 sthen Exp $ */
+/* $Id: callbacks.c,v 1.4 2020/01/09 13:47:12 florian Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 
 
 #include <isc/util.h>

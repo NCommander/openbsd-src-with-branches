@@ -14,14 +14,14 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: hmacmd5.c,v 1.4 2020/01/07 19:09:26 florian Exp $ */
+/* $Id: hmacmd5.c,v 1.5 2020/01/09 13:52:23 florian Exp $ */
 
 /*! \file
  * This code implements the HMAC-MD5 keyed hash algorithm
  * described in RFC2104.
  */
 
-#include "config.h"
+
 
 
 

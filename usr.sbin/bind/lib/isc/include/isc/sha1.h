@@ -17,7 +17,7 @@
 #ifndef ISC_SHA1_H
 #define ISC_SHA1_H 1
 
-/* $Id: sha1.h,v 1.6 2020/01/21 11:06:47 tb Exp $ */
+/* $Id: sha1.h,v 1.7 2020/01/22 06:47:15 florian Exp $ */
 
 /*	$NetBSD: sha1.h,v 1.2 1998/05/29 22:55:44 thorpej Exp $	*/
 
@@ -28,7 +28,7 @@
  */
 
 #include <isc/lang.h>
-#include <isc/platform.h>
+
 #include <isc/types.h>
 
 #define ISC_SHA1_DIGESTLENGTH 20U

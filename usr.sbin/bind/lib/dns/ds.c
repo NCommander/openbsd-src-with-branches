@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ds.c,v 1.5 2020/01/20 18:51:52 florian Exp $ */
+/* $Id: ds.c,v 1.6 2020/01/22 06:47:14 florian Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 
 #include <string.h>
 

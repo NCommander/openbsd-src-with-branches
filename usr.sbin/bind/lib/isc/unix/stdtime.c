@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: stdtime.c,v 1.2 2019/12/16 16:16:27 deraadt Exp $ */
+/* $Id: stdtime.c,v 1.3 2019/12/17 01:46:37 sthen Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 
 #include <stddef.h>	/* NULL */
 #include <stdlib.h>	/* NULL */

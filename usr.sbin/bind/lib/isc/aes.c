@@ -14,15 +14,15 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: aes.c,v 1.6 2020/01/21 11:06:47 tb Exp $ */
+/* $Id: aes.c,v 1.7 2020/01/22 06:47:15 florian Exp $ */
 
 /*! \file isc/aes.c */
 
-#include "config.h"
+
 
 #include <isc/assertions.h>
 #include <isc/aes.h>
-#include <isc/platform.h>
+
 #include <string.h>
 #include <isc/types.h>
 #include <isc/util.h>

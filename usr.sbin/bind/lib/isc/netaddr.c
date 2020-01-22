@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: netaddr.c,v 1.9 2020/01/20 18:46:57 florian Exp $ */
+/* $Id: netaddr.c,v 1.10 2020/01/20 18:49:46 florian Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 
 #include <stdio.h>
 

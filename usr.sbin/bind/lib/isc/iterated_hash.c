@@ -14,9 +14,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: iterated_hash.c,v 1.1 2019/12/16 16:31:35 deraadt Exp $ */
+/* $Id: iterated_hash.c,v 1.2 2019/12/17 01:46:34 sthen Exp $ */
 
-#include "config.h"
+
 
 #include <stdio.h>
 

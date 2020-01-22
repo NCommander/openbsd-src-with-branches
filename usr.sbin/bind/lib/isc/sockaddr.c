@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: sockaddr.c,v 1.13 2020/01/20 18:46:57 florian Exp $ */
+/* $Id: sockaddr.c,v 1.14 2020/01/20 18:49:46 florian Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 
 #include <stdio.h>
 

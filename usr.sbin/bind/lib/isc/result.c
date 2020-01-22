@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: result.c,v 1.4 2020/01/20 18:46:57 florian Exp $ */
+/* $Id: result.c,v 1.5 2020/01/21 23:59:20 tedu Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 
 #include <stddef.h>
 #include <stdlib.h>

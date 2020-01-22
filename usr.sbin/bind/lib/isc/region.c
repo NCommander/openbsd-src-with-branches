@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: region.c,v 1.2 2019/12/16 16:16:26 deraadt Exp $ */
+/* $Id: region.c,v 1.3 2019/12/17 01:46:34 sthen Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 
 #include <stdlib.h>
 #include <string.h>

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: commandline.h,v 1.3 2019/12/17 01:46:35 sthen Exp $ */
+/* $Id: commandline.h,v 1.4 2020/01/09 14:18:30 florian Exp $ */
 
 #ifndef ISC_COMMANDLINE_H
 #define ISC_COMMANDLINE_H 1
@@ -23,7 +23,7 @@
 
 #include <isc/boolean.h>
 #include <isc/lang.h>
-#include <isc/platform.h>
+
 
 /*% Index into parent argv vector. */
 extern int isc_commandline_index;

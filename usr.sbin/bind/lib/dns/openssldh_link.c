@@ -33,10 +33,10 @@
 
 /*
  * Principal Author: Brian Wellington
- * $Id: openssldh_link.c,v 1.5 2020/01/09 13:52:23 florian Exp $
+ * $Id: openssldh_link.c,v 1.6 2020/01/09 14:21:27 florian Exp $
  */
 
-#include <config.h>
+
 
 
 

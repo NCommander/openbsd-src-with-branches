@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: master.c,v 1.12 2020/01/20 18:51:52 florian Exp $ */
+/* $Id: master.c,v 1.13 2020/01/21 23:59:20 tedu Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 #include <stdlib.h>
 #include <isc/event.h>
 #include <isc/lex.h>

@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dig.c,v 1.39 2020/01/20 18:51:52 florian Exp $ */
+/* $Id: dig.c,v 1.40 2020/01/21 06:59:25 jmc Exp $ */
 
 /*! \file */
 #include <sys/cdefs.h>
-#include <config.h>
+
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
@@ -27,7 +27,7 @@
 #include <isc/app.h>
 #include <isc/netaddr.h>
 #include <isc/parseint.h>
-#include <isc/platform.h>
+
 
 #include <string.h>
 #include <isc/task.h>

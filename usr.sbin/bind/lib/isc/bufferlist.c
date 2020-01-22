@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: bufferlist.c,v 1.2 2019/12/16 16:16:25 deraadt Exp $ */
+/* $Id: bufferlist.c,v 1.3 2019/12/17 01:46:34 sthen Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 
 #include <stddef.h>
 

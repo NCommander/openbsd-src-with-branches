@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: result.c,v 1.6 2019/12/17 01:46:32 sthen Exp $ */
+/* $Id: result.c,v 1.7 2020/01/20 18:46:57 florian Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 
 #include <isc/once.h>
 #include <isc/util.h>

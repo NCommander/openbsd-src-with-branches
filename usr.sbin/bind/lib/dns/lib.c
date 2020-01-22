@@ -14,11 +14,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: lib.c,v 1.8 2020/01/20 18:51:52 florian Exp $ */
+/* $Id: lib.c,v 1.9 2020/01/21 23:59:20 tedu Exp $ */
 
 /*! \file */
 
-#include <config.h>
+
 
 #include <stddef.h>
 

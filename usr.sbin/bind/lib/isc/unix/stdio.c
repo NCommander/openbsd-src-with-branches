@@ -14,9 +14,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: stdio.c,v 1.3 2019/12/17 01:46:37 sthen Exp $ */
+/* $Id: stdio.c,v 1.4 2020/01/22 08:17:01 tedu Exp $ */
 
-#include <config.h>
+
 
 #include <errno.h>
 #include <unistd.h>

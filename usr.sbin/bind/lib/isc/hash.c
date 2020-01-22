@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: hash.c,v 1.11 2020/01/21 23:59:20 tedu Exp $ */
+/* $Id: hash.c,v 1.12 2020/01/22 12:57:21 florian Exp $ */
 
 /*! \file
  * Some portion of this code was derived from universal hash function
@@ -55,7 +55,7 @@ or otherwise) arising in any way out of the use of this software, even
 if advised of the possibility of such damage.
 */
 
-#include <config.h>
+
 #include <stdlib.h>
 
 #include <isc/hash.h>
