@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6opt.c,v 1.8 2015/01/16 16:48:51 deraadt Exp $	*/
+/*	$OpenBSD: ip6opt.c,v 1.9 2017/04/27 23:52:35 millert Exp $	*/
 /*	$KAME: ip6opt.c,v 1.18 2005/06/15 07:11:35 keiichi Exp $	*/
 
 /*
@@ -155,7 +155,7 @@ inet6_opt_append(void *extbuf, socklen_t extlen, int offset, u_int8_t type,
 int
 inet6_opt_finish(void *extbuf, socklen_t extlen, int offset)
 {
-	int updatelen = offset > 0 ? (1 + ((offset - 1) | 7)) : 0;;
+	int updatelen = offset > 0 ? (1 + ((offset - 1) | 7)) : 0;
 
 	if (extbuf) {
 		u_int8_t *padp;

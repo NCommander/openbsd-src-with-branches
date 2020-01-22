@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_community.c,v 1.1 2019/06/17 11:02:19 claudio Exp $ */
+/*	$OpenBSD: rde_community.c,v 1.2 2019/06/24 06:39:49 claudio Exp $ */
 
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
@@ -147,7 +147,7 @@ fc2c(struct community *fc, struct rde_peer *peer, struct community *c,
 
 			c->data1 = fc->data1;
 			c->data2 = fc->data2;
-			return 0;;
+			return 0;
 		}
 
 		if (m) {
