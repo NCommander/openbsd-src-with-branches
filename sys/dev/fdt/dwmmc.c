@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwmmc.c,v 1.21 2019/09/20 20:46:15 kettenis Exp $	*/
+/*	$OpenBSD: dwmmc.c,v 1.22 2020/01/09 14:35:20 mpi Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis
  *
@@ -545,6 +545,7 @@ dwmmc_intr(void *arg)
 
 	stat = HREAD4(sc, SDMMC_MINTSTS);
 	if (stat & SDMMC_RINTSTS_SDIO) {
+		HWRITE4(sc, SDMMC_RINTSTS, SDMMC_RINTSTS_SDIO);
 		HCLR4(sc, SDMMC_INTMASK, SDMMC_RINTSTS_SDIO);
 		sdmmc_card_intr(sc->sc_sdmmc);
 		handled = 1;
@@ -569,7 +570,6 @@ dwmmc_card_intr_ack(sdmmc_chipset_handle_t sch)
 {
 	struct dwmmc_softc *sc = sch;
 
-	HWRITE4(sc, SDMMC_RINTSTS, SDMMC_RINTSTS_SDIO);
 	HSET4(sc, SDMMC_INTMASK, SDMMC_RINTSTS_SDIO);
 }
 
