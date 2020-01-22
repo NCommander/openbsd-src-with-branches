@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: util.h,v 1.4 2020/01/20 18:46:57 florian Exp $ */
+/* $Id: util.h,v 1.5 2020/01/21 23:59:20 tedu Exp $ */
 
 #ifndef ISC_UTIL_H
 #define ISC_UTIL_H 1
@@ -140,7 +140,7 @@
 /*%
  * Performance
  */
-#include <isc/likely.h>
+
 
 /*
  * Assertions
