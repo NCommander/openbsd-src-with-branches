@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.383 2020/01/14 15:07:30 naddy Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.384 2020/01/21 11:06:09 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1241,8 +1241,10 @@ known_hosts_find_delete(struct hostkey_foreach_line *l, void *_ctx)
 				if (fp == NULL || ra == NULL)
 					fatal("%s: sshkey_fingerprint failed",
 					    __func__);
-				mprintf("%s %s %s %s\n", ctx->host,
-				    sshkey_type(l->key), fp, l->comment);
+				mprintf("%s %s %s%s%s\n", ctx->host,
+				    sshkey_type(l->key), fp,
+				    l->comment[0] ? " " : "",
+				    l->comment);
 				if (log_level_get() >= SYSLOG_LEVEL_VERBOSE)
 					printf("%s\n", ra);
 				free(ra);
