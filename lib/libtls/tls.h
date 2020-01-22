@@ -1,4 +1,4 @@
-/* $OpenBSD: tls.h,v 1.56 2019/11/02 13:37:59 jsing Exp $ */
+/* $OpenBSD: tls.h,v 1.57 2020/01/20 08:39:21 jsing Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -39,7 +39,7 @@ extern "C" {
 	 TLS_PROTOCOL_TLSv1_2|TLS_PROTOCOL_TLSv1_3)
 
 #define TLS_PROTOCOLS_ALL TLS_PROTOCOL_TLSv1
-#define TLS_PROTOCOLS_DEFAULT TLS_PROTOCOL_TLSv1_2
+#define TLS_PROTOCOLS_DEFAULT (TLS_PROTOCOL_TLSv1_2|TLS_PROTOCOL_TLSv1_3)
 
 #define TLS_WANT_POLLIN		-2
 #define TLS_WANT_POLLOUT	-3
