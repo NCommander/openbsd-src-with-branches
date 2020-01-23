@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm.c,v 1.32 2014/07/12 18:48:17 tedu Exp $
+/*	$OpenBSD: trm.c,v 1.33 2015/05/07 01:09:56 jsg Exp $
  * ------------------------------------------------------------
  *   O.S       : OpenBSD
  *   File Name : trm.c
@@ -134,10 +134,7 @@ struct  cfdriver trm_cd = {
 };
 
 struct scsi_adapter trm_switch = {
-	trm_scsi_cmd,
-	trm_minphys,
-	NULL,
-	NULL
+	trm_scsi_cmd, trm_minphys, NULL, NULL, NULL
 };
 
 /* 

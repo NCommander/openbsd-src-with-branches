@@ -1,4 +1,4 @@
-/*	$OpenBSD: osiop.c,v 1.50 2014/12/19 07:23:57 deraadt Exp $	*/
+/*	$OpenBSD: osiop.c,v 1.51 2017/04/30 16:45:46 mpi Exp $	*/
 /*	$NetBSD: osiop.c,v 1.9 2002/04/05 18:27:54 bouyer Exp $	*/
 
 /*
@@ -181,10 +181,7 @@ struct cfdriver osiop_cd = {
 };
 
 struct scsi_adapter osiop_adapter = {
-	osiop_scsicmd,
-	osiop_minphys,
-	NULL,
-	NULL,
+	osiop_scsicmd, osiop_minphys, NULL, NULL, NULL
 };
 
 void

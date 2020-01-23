@@ -1,4 +1,4 @@
-/*	$OpenBSD: cac.c,v 1.54 2014/12/19 07:23:57 deraadt Exp $	*/
+/*	$OpenBSD: cac.c,v 1.55 2015/09/01 05:46:00 deraadt Exp $	*/
 /*	$NetBSD: cac.c,v 1.15 2000/11/08 19:20:35 ad Exp $	*/
 
 /*
@@ -99,7 +99,7 @@ void    cac_scsi_cmd(struct scsi_xfer *);
 void	cacminphys(struct buf *bp, struct scsi_link *sl);
 
 struct scsi_adapter cac_switch = {
-	cac_scsi_cmd, cacminphys, 0, 0,
+	cac_scsi_cmd, cacminphys, NULL, NULL, NULL
 };
 
 void	*cac_ccb_alloc(void *);

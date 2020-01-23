@@ -1,4 +1,4 @@
-/*	$OpenBSD: wds.c,v 1.43 2017/09/08 05:36:52 deraadt Exp $	*/
+/*	$OpenBSD: wds.c,v 1.44 2019/12/31 10:05:32 mpi Exp $	*/
 /*	$NetBSD: wds.c,v 1.13 1996/11/03 16:20:31 mycroft Exp $	*/
 
 #undef	WDSDIAG
@@ -169,10 +169,7 @@ void	wds_timeout(void *);
 int	wdsprint(void *, const char *);
 
 struct scsi_adapter wds_switch = {
-	wds_scsi_cmd,
-	wdsminphys,
-	0,
-	0,
+	wds_scsi_cmd, wdsminphys, NULL, NULL, NULL
 };
 
 int	wdsprobe(struct device *, void *, void *);

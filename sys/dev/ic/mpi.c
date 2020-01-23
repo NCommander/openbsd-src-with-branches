@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpi.c,v 1.207 2019/11/14 21:13:58 krw Exp $ */
+/*	$OpenBSD: mpi.c,v 1.208 2019/12/31 10:05:32 mpi Exp $ */
 
 /*
  * Copyright (c) 2005, 2006, 2009 David Gwynne <dlg@openbsd.org>
@@ -70,11 +70,7 @@ int			mpi_scsi_ioctl(struct scsi_link *, u_long, caddr_t,
 			    int);
 
 struct scsi_adapter mpi_switch = {
-	mpi_scsi_cmd,
-	mpi_minphys,
-	mpi_scsi_probe,
-	NULL,
-	mpi_scsi_ioctl
+	mpi_scsi_cmd, mpi_minphys, mpi_scsi_probe, NULL, mpi_scsi_ioctl
 };
 
 struct mpi_dmamem	*mpi_dmamem_alloc(struct mpi_softc *, size_t);

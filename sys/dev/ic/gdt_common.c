@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdt_common.c,v 1.63 2014/07/08 17:19:25 deraadt Exp $	*/
+/*	$OpenBSD: gdt_common.c,v 1.64 2018/08/14 05:22:21 jmatthew Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000, 2003 Niklas Hallqvist.  All rights reserved.
@@ -93,7 +93,7 @@ struct cfdriver gdt_cd = {
 };
 
 struct scsi_adapter gdt_switch = {
-	gdt_scsi_cmd, gdtminphys, 0, 0,
+	gdt_scsi_cmd, gdtminphys, NULL, NULL, NULL
 };
 
 int gdt_cnt = 0;

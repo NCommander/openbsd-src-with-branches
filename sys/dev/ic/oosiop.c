@@ -1,4 +1,4 @@
-/*	$OpenBSD: oosiop.c,v 1.21 2014/07/08 17:19:25 deraadt Exp $	*/
+/*	$OpenBSD: oosiop.c,v 1.22 2014/07/13 23:10:23 deraadt Exp $	*/
 /*	$NetBSD: oosiop.c,v 1.4 2003/10/29 17:45:55 tsutsui Exp $	*/
 
 /*
@@ -130,10 +130,7 @@ struct cfdriver oosiop_cd = {
 };
 
 struct scsi_adapter oosiop_adapter = {
-	oosiop_scsicmd,
-	oosiop_minphys,
-	NULL,
-	NULL
+	oosiop_scsicmd, oosiop_minphys, NULL, NULL, NULL
 };
 
 void *

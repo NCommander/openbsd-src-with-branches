@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic7xxx_openbsd.c,v 1.55 2016/08/17 01:17:54 krw Exp $	*/
+/*	$OpenBSD: aic7xxx_openbsd.c,v 1.56 2017/12/12 12:33:36 krw Exp $	*/
 /*	$NetBSD: aic7xxx_osm.c,v 1.14 2003/11/02 11:07:44 wiz Exp $	*/
 
 /*
@@ -63,10 +63,7 @@ struct cfdriver ahc_cd = {
 
 static struct scsi_adapter ahc_switch =
 {
-	ahc_action,
-	ahc_minphys,
-	0,
-	0,
+	ahc_action, ahc_minphys, NULL, NULL, NULL
 };
 
 /*
