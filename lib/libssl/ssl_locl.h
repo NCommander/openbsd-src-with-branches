@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.254 2020/01/23 06:15:44 beck Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.255 2020/01/23 10:40:59 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -393,8 +393,6 @@ typedef struct ssl_method_internal_st {
 	int (*ssl_renegotiate)(SSL *s);
 	int (*ssl_renegotiate_check)(SSL *s);
 
-	long (*ssl_get_message)(SSL *s, int st1, int stn, int mt,
-	    long max, int *ok);
 	int (*ssl_pending)(const SSL *s);
 	int (*ssl_read_bytes)(SSL *s, int type, unsigned char *buf, int len,
 	    int peek);
