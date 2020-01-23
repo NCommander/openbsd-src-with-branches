@@ -1,9 +1,15 @@
-#	$OpenBSD: proxy-connect.sh,v 1.10 2017/04/30 23:34:55 djm Exp $
+#	$OpenBSD: proxy-connect.sh,v 1.11 2017/09/26 22:39:25 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="proxy connect"
 
-for c in no yes; do
+if [ "`${SSH} -Q compression`" = "none" ]; then
+	comp="no"
+else
+	comp="no yes"
+fi
+
+for c in $comp; do
 	verbose "plain username comp=$c"
 	opts="-oCompression=$c -F $OBJ/ssh_proxy"
 	SSH_CONNECTION=`${SSH} $opts 999.999.999.999 'echo $SSH_CONNECTION'`
