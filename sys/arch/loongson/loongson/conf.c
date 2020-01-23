@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.26 2019/12/20 13:25:02 visa Exp $ */
+/*	$OpenBSD: conf.c,v 1.27 2020/01/21 16:16:22 mpi Exp $ */
 
 /*
  * Copyright (c) 1992, 1993
@@ -226,6 +226,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 86 */
 	cdev_drm_init(NDRM,drm),	/* 87: drm */
 	cdev_fido_init(NFIDO,fido),	/* 88: FIDO/U2F security key */
+	cdev_pppx_init(NPPPX,pppac),	/* 89: PPP Access Concentrator */
 };
 
 int	nchrdev = nitems(cdevsw);

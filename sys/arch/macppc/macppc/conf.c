@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.69 2019/12/17 13:08:56 reyk Exp $ */
+/*	$OpenBSD: conf.c,v 1.70 2020/01/21 16:16:23 mpi Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -229,6 +229,7 @@ struct cdevsw cdevsw[] = {
 	cdev_fuse_init(NFUSE,fuse),	/* 88: fuse */
 	cdev_switch_init(NSWITCH,switch), /* 89: switch(4) control interface */
 	cdev_fido_init(NFIDO,fido),	/* 90: FIDO/U2F security key */
+	cdev_pppx_init(NPPPX,pppac),	/* 91: PPP Access Concentrator */
 };
 int nchrdev = nitems(cdevsw);
 
