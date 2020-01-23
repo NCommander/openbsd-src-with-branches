@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.205 2019/11/25 10:23:36 djm Exp $ */
+/* $OpenBSD: monitor.c,v 1.206 2019/12/15 18:57:30 djm Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -330,9 +330,9 @@ monitor_child_postauth(struct ssh *ssh, struct monitor *pmonitor)
 	pmonitor->m_recvfd = -1;
 
 	monitor_set_child_handler(pmonitor->m_pid);
-	signal(SIGHUP, &monitor_child_handler);
-	signal(SIGTERM, &monitor_child_handler);
-	signal(SIGINT, &monitor_child_handler);
+	ssh_signal(SIGHUP, &monitor_child_handler);
+	ssh_signal(SIGTERM, &monitor_child_handler);
+	ssh_signal(SIGINT, &monitor_child_handler);
 
 	mon_dispatch = mon_dispatch_postauth20;
 
