@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 2019/11/14 21:27:30 djm Exp $
+#	$OpenBSD: Makefile,v 1.15 2019/12/13 19:09:10 djm Exp $
 
 .PATH:		${.CURDIR}/..
 
@@ -12,6 +12,11 @@ BINDIR=	/usr/bin
 
 .include <bsd.prog.mk>
 
-LDADD+= -lcrypto -lz -lutil
-DPADD+= ${LIBCRYPTO} ${LIBZ} ${LIBUTIL}
+LDADD+= -lcrypto -lutil
+DPADD+= ${LIBCRYPTO} ${LIBUTIL}
+
+.if (${ZLIB:L} == "yes")
+LDADD+=	-lz
+DPADD+=	${LIBZ}
+.endif
 

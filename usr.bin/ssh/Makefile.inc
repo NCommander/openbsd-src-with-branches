@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.79 2019/11/18 16:08:57 naddy Exp $
+#	$OpenBSD: Makefile.inc,v 1.80 2019/12/13 19:09:10 djm Exp $
 
 .include <bsd.own.mk>
 
@@ -34,9 +34,14 @@ CDIAGFLAGS+=	-Wold-style-definition
 WARNINGS=yes
 
 OPENSSL?=	yes
+ZLIB?=		yes
 
 .if (${OPENSSL:L} == "yes")
 CFLAGS+=	-DWITH_OPENSSL
+.endif
+
+.if (${ZLIB:L} == "yes")
+CFLAGS+=	-DWITH_ZLIB
 .endif
 
 CFLAGS+=	-DENABLE_PKCS11
