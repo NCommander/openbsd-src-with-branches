@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ssh-keygen.1,v 1.192 2020/01/18 15:45:41 naddy Exp $
+.\"	$OpenBSD: ssh-keygen.1,v 1.193 2020/01/18 21:16:43 naddy Exp $
 .\"
 .\" Author: Tatu Ylonen <ylo@cs.hut.fi>
 .\" Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -137,6 +137,10 @@
 .Fl Q
 .Fl f Ar krl_file
 .Ar
+.Nm ssh-keygen
+.Fl Y Cm find-principal
+.Fl s Ar signature_file
+.Fl f Ar allowed_signers_file
 .Nm ssh-keygen
 .Fl Y Cm check-novalidate
 .Fl n Ar namespace
@@ -614,6 +618,17 @@ The maximum is 3.
 Specifies a path to a library that will be used when creating
 FIDO authenticator-hosted keys, overriding the default of using
 the internal USB HID support.
+.It Fl Y Cm find-principal
+Find the principal associated with the public key of a signature,
+provided using the
+.Fl s
+flag in an authorized signers file provided using the
+.Fl f
+flag.
+The format of the allowed signers file is documented in the
+.Sx ALLOWED SIGNERS
+section below. If a matching principal is found, it is returned
+on standard output.
 .It Fl Y Cm check-novalidate
 Checks that a signature generated using
 .Nm
