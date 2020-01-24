@@ -223,6 +223,15 @@ tls13_client_hello_process(struct tls13_ctx *ctx, CBS *cbs)
 		goto err;
 	}
 
+	/* Store legacy session identifier so we can echo it. */
+	if (CBS_len(&session_id) > sizeof(ctx->hs->legacy_session_id)) {
+		ctx->alert = SSL_AD_ILLEGAL_PARAMETER;
+		goto err;
+	}
+	if (!CBS_write_bytes(&session_id, ctx->hs->legacy_session_id,
+	    sizeof(ctx->hs->legacy_session_id), &ctx->hs->legacy_session_id_len))
+		goto err;
+
 	/* Parse cipher suites list and select preferred cipher. */
 	if ((ciphers = ssl_bytes_to_cipher_list(s, &cipher_suites)) == NULL) {
 		ctx->alert = SSL_AD_ILLEGAL_PARAMETER;
