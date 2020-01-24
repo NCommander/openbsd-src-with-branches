@@ -1,4 +1,4 @@
-/* $OpenBSD: myproposal.h,v 1.65 2020/01/22 04:58:23 tedu Exp $ */
+/* $OpenBSD: myproposal.h,v 1.66 2020/01/23 02:46:49 dtucker Exp $ */
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -87,8 +87,7 @@
 	"ssh-ed25519," \
 	"sk-ssh-ed25519@openssh.com," \
 	"rsa-sha2-512," \
-	"rsa-sha2-256," \
-	"ssh-rsa"
+	"rsa-sha2-256"
 
 #define	KEX_DEFAULT_COMP	"none,zlib@openssh.com"
 #define	KEX_DEFAULT_LANG	""
