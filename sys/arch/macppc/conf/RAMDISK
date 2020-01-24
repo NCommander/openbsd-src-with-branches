@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK,v 1.118 2018/09/22 10:12:42 stsp Exp $
+#	$OpenBSD: RAMDISK,v 1.119 2019/09/04 14:29:42 cheloha Exp $
 
 machine		macppc powerpc
 maxusers	4
@@ -116,7 +116,6 @@ ukphy*		at mii?			# generic unknown PHYs
 
 bm*		at macobio?		# bmac ethernet
 mc*		at macobio?		# MACE ethernet
-mesh*		at macobio? flags 0xffff# MESH SCSI
 adb*		at macobio?		# Apple Desktop Bus
 wi*		at macobio?		# Apple Airport 802.11DS
 macgpio*	at macobio?		# GPIO, PMU interrupt router.
