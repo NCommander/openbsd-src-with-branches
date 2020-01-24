@@ -1,4 +1,4 @@
-/*	$OpenBSD: mountd.c,v 1.86 2018/04/28 09:56:21 guenther Exp $	*/
+/*	$OpenBSD: mountd.c,v 1.87 2019/06/28 13:32:45 deraadt Exp $	*/
 /*	$NetBSD: mountd.c,v 1.31 1996/02/18 11:57:53 fvdl Exp $	*/
 
 /*
@@ -210,7 +210,7 @@ void	mountd_svc_run(void);
 struct exportlist *exphead;
 struct mountlist *mlhead;
 struct grouplist *grphead;
-char exname[PATH_MAX];
+const char *exname;
 struct xucred def_anon = {
 	.cr_uid		= (uid_t) -2,
 	.cr_gid		= (gid_t) -2,
@@ -265,7 +265,10 @@ main(int argc, char *argv[])
 	exphead = NULL;
 	mlhead = NULL;
 
-	strlcpy(exname, argc == 1? *argv : _PATH_EXPORTS, sizeof(exname));
+	if (argc == 1)
+		exname = *argv;
+	else
+		exname = _PATH_EXPORTS;
 
 	openlog("mountd", LOG_PID, LOG_DAEMON);
 	if (debug)
