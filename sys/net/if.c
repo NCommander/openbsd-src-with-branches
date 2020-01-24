@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.598 2019/11/13 21:25:04 bluhm Exp $	*/
+/*	$OpenBSD: if.c,v 1.599 2019/11/14 01:02:02 dlg Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -70,7 +70,6 @@
 #include "ppp.h"
 #include "pppoe.h"
 #include "switch.h"
-#include "trunk.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>
