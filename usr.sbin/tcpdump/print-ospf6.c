@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ospf6.c,v 1.9 2015/11/16 00:16:39 mmcc Exp $	*/
+/*	$OpenBSD: print-ospf6.c,v 1.10 2018/10/22 16:12:45 kn Exp $	*/
 
 
 /*
@@ -458,10 +458,10 @@ ospf6_print_lsa(const struct lsa *lsap)
 	}
 
 								/* { (ctags) */
-	fputs(" }", stdout);
+	printf(" }");
 	return (0);
 trunc:
-	fputs(" }", stdout);
+	printf(" }");
 	return (1);
 }
 
@@ -653,5 +653,5 @@ ospf6_print(const u_char *bp, u_int length)
 
 	return;
 trunc:
-	fputs(tstr, stdout);
+	printf("%s", tstr);
 }
