@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-pkcs11.h,v 1.4 2015/01/15 09:40:00 djm Exp $ */
+/* $OpenBSD: ssh-pkcs11.h,v 1.5 2019/01/20 22:51:37 djm Exp $ */
 /*
  * Copyright (c) 2010 Markus Friedl.  All rights reserved.
  *
@@ -24,7 +24,7 @@
 
 int	pkcs11_init(int);
 void	pkcs11_terminate(void);
-int	pkcs11_add_provider(char *, char *, struct sshkey ***);
+int	pkcs11_add_provider(char *, char *, struct sshkey ***, char ***);
 int	pkcs11_del_provider(char *);
 #ifdef WITH_PKCS11_KEYGEN
 struct sshkey *
