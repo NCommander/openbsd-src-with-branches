@@ -1,4 +1,4 @@
-/* $OpenBSD: hostfile.c,v 1.75 2019/06/28 01:23:50 deraadt Exp $ */
+/* $OpenBSD: hostfile.c,v 1.76 2019/07/07 01:05:00 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -564,6 +564,7 @@ hostfile_replace_entries(const char *filename, const char *host, const char *ip,
 	/* Remove all entries for the specified host from the file */
 	if ((r = hostkeys_foreach(filename, host_delete, &ctx, host, ip,
 	    HKF_WANT_PARSE_KEY)) != 0) {
+		oerrno = errno;
 		error("%s: hostkeys_foreach failed: %s", __func__, ssh_err(r));
 		goto fail;
 	}
