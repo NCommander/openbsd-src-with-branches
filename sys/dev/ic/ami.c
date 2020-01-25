@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.237 2020/01/11 21:38:11 cheloha Exp $	*/
+/*	$OpenBSD: ami.c,v 1.238 2020/01/23 07:53:00 krw Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -1195,7 +1195,6 @@ amiminphys(struct buf *bp, struct scsi_link *sl)
 {
 	if (bp->b_bcount > AMI_MAXFER)
 		bp->b_bcount = AMI_MAXFER;
-	minphys(bp);
 }
 
 void

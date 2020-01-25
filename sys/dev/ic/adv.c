@@ -1,4 +1,4 @@
-/*	$OpenBSD: adv.c,v 1.37 2017/09/08 05:36:52 deraadt Exp $	*/
+/*	$OpenBSD: adv.c,v 1.38 2020/01/23 07:52:59 krw Exp $	*/
 /*	$NetBSD: adv.c,v 1.6 1998/10/28 20:39:45 dante Exp $	*/
 
 /*
@@ -521,7 +521,6 @@ advminphys(struct buf *bp, struct scsi_link *sl)
 {
 	if (bp->b_bcount > ((ASC_MAX_SG_LIST - 1) * PAGE_SIZE))
 		bp->b_bcount = ((ASC_MAX_SG_LIST - 1) * PAGE_SIZE);
-	minphys(bp);
 }
 
 

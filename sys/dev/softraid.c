@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.395 2019/07/04 18:09:17 bluhm Exp $ */
+/* $OpenBSD: softraid.c,v 1.396 2019/08/08 02:19:55 cheloha Exp $ */
 /*
  * Copyright (c) 2007, 2008, 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -1894,7 +1894,6 @@ sr_minphys(struct buf *bp, struct scsi_link *sl)
 	/* XXX currently using SR_MAXFER = MAXPHYS */
 	if (bp->b_bcount > SR_MAXFER)
 		bp->b_bcount = SR_MAXFER;
-	minphys(bp);
 }
 
 void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: osiop.c,v 1.51 2017/04/30 16:45:46 mpi Exp $	*/
+/*	$OpenBSD: osiop.c,v 1.52 2020/01/23 07:53:00 krw Exp $	*/
 /*	$NetBSD: osiop.c,v 1.9 2002/04/05 18:27:54 bouyer Exp $	*/
 
 /*
@@ -352,7 +352,6 @@ osiop_minphys(struct buf *bp, struct scsi_link *sl)
 {
 	if (bp->b_bcount > OSIOP_MAX_XFER)
 		bp->b_bcount = OSIOP_MAX_XFER;
-	minphys(bp);
 }
 
 void *
