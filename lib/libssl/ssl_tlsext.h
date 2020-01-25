@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_tlsext.h,v 1.20 2019/01/24 02:56:41 beck Exp $ */
+/* $OpenBSD: ssl_tlsext.h,v 1.21 2019/01/28 15:44:33 beck Exp $ */
 /*
  * Copyright (c) 2016, 2017 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2017 Doug Hogan <doug@openbsd.org>
@@ -27,7 +27,7 @@
 #define SSL_TLSEXT_MSG_CT	0x0008	/* Certificate */
 #define SSL_TLSEXT_MSG_CR	0x0010	/* CertificateRequest */
 #define SSL_TLSEXT_MSG_NST	0x0020	/* NewSessionTicket */
-#define SSL_TLSEXT_MSG_HRR	0x0030	/* HelloRetryRequest */
+#define SSL_TLSEXT_MSG_HRR	0x0040	/* HelloRetryRequest */
 
 __BEGIN_HIDDEN_DECLS
 
