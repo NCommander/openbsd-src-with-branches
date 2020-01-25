@@ -1,4 +1,4 @@
-#	$OpenBSD: test-exec.sh,v 1.72 2020/01/23 10:19:59 dtucker Exp $
+#	$OpenBSD: test-exec.sh,v 1.73 2020/01/24 01:29:23 dtucker Exp $
 #	Placed in the Public Domain.
 
 USER=`id -un`
@@ -53,6 +53,9 @@ SCP=scp
 PLINK=/usr/local/bin/plink
 PUTTYGEN=/usr/local/bin/puttygen
 CONCH=/usr/local/bin/conch
+
+# Tools used by multiple tests
+NC=nc
 
 if [ "x$TEST_SSH_SSH" != "x" ]; then
 	SSH="${TEST_SSH_SSH}"

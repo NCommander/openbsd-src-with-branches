@@ -1,11 +1,10 @@
-#	$OpenBSD: multiplex.sh,v 1.30 2019/07/05 04:03:13 dtucker Exp $
+#	$OpenBSD: multiplex.sh,v 1.31 2020/01/25 00:27:56 dtucker Exp $
 #	Placed in the Public Domain.
 
 CTL=$OBJ/ctl-sock
 
 tid="connection multiplexing"
 
-NC=nc
 P=3301  # test port
 
 wait_for_mux_master_ready()
