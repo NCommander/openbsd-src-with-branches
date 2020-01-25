@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.28 2019/11/14 21:27:30 djm Exp $
+#	$OpenBSD: Makefile,v 1.29 2019/12/13 19:09:10 djm Exp $
 
 .PATH:		${.CURDIR}/..
 
 SRCS=	ssh-add.c
-SRCS+=	atomicio.c authfd.c cleanup.c fatal.c readpass.c
+SRCS+=	authfd.c cleanup.c fatal.c readpass.c
 SRCS+=	${SRCS_BASE} ${SRCS_KEY} ${SRCS_KEYP} ${SRCS_KRL} ${SRCS_UTL}
 SRCS+=	${SRCS_SK_CLIENT}
 
