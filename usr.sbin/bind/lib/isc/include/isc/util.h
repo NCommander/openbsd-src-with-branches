@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: util.h,v 1.5 2020/01/21 23:59:20 tedu Exp $ */
+/* $Id: util.h,v 1.6 2020/01/22 12:57:22 florian Exp $ */
 
 #ifndef ISC_UTIL_H
 #define ISC_UTIL_H 1
@@ -106,13 +106,6 @@
 
 #define WAITUNTIL(cvp, lp, tp) \
 	isc_condition_waituntil((cvp), (lp), (tp))
-
-#define RWLOCK(lp, t) do { \
-	RUNTIME_CHECK(isc_rwlock_lock((lp), (t)) == ISC_R_SUCCESS); \
-	} while (0)
-#define RWUNLOCK(lp, t) do { \
-	RUNTIME_CHECK(isc_rwlock_unlock((lp), (t)) == ISC_R_SUCCESS); \
-	} while (0)
 
 /*
  * List Macros.
