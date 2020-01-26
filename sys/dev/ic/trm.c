@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm.c,v 1.34 2020/01/23 07:53:00 krw Exp $
+/*	$OpenBSD: trm.c,v 1.35 2020/01/25 21:48:42 krw Exp $
  * ------------------------------------------------------------
  *   O.S       : OpenBSD
  *   File Name : trm.c
@@ -2430,7 +2430,7 @@ trm_initACB(struct trm_softc *sc, int unit)
 	}
 
 	sc->sc_adapter.scsi_cmd     = trm_scsi_cmd; 
-	sc->sc_adapter.scsi_minphys = trm_minphys;
+	sc->sc_adapter.dev_minphys  = trm_minphys;
 
 	sc->sc_link.adapter_softc    = sc;
 	sc->sc_link.adapter_target   = sc->sc_AdaptSCSIID;

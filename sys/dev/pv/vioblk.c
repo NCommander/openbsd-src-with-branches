@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioblk.c,v 1.12 2019/03/24 18:22:36 sf Exp $	*/
+/*	$OpenBSD: vioblk.c,v 1.13 2019/05/26 15:20:04 sf Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch.
@@ -227,7 +227,7 @@ vioblk_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_queued = 0;
 
 	sc->sc_switch.scsi_cmd = vioblk_scsi_cmd;
-	sc->sc_switch.scsi_minphys = scsi_minphys;
+	sc->sc_switch.dev_minphys = scsi_minphys;
 	sc->sc_switch.dev_probe = vioblk_dev_probe;
 	sc->sc_switch.dev_free = vioblk_dev_free;
 
