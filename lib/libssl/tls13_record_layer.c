@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_record_layer.c,v 1.25 2020/01/24 04:36:29 beck Exp $ */
+/* $OpenBSD: tls13_record_layer.c,v 1.26 2020/01/25 09:20:56 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -622,6 +622,9 @@ tls13_record_layer_seal_record_plaintext(struct tls13_record_layer *rl,
 
 	if (!tls13_record_set_data(rl->wrec, data, data_len))
 		goto err;
+
+	rl->wrec_content_len = content_len;
+	rl->wrec_content_type = content_type;
 
 	return 1;
 
