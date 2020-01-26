@@ -1,4 +1,4 @@
-/* $OpenBSD: syscall.c,v 1.2 2018/01/12 22:20:28 kettenis Exp $ */
+/* $OpenBSD: syscall.c,v 1.3 2018/04/09 22:21:05 kettenis Exp $ */
 /*
  * Copyright (c) 2015 Dale Rahn <drahn@dalerahn.com>
  *
@@ -98,7 +98,7 @@ svc_handler(trapframe_t *frame)
 
 	case ERESTART:
 		/*
-		 * Reconstruct the pc to point at the swi.
+		 * Reconstruct the pc to point at the svc.
 		 */
 		frame->tf_elr -= 4;
 		break;
