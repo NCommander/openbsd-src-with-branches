@@ -1,4 +1,4 @@
-/* $OpenBSD: dump.c,v 1.10 2019/12/21 15:29:25 espie Exp $ */
+/* $OpenBSD: dump.c,v 1.11 2020/01/13 14:07:35 espie Exp $ */
 /*
  * Copyright (c) 2012 Marc Espie.
  *
@@ -117,7 +117,7 @@ TargPrintNode(GNode *gn, bool full)
 	}
 	if (full) {
 		printf("# %d unmade prerequisites\n", gn->children_left);
-		if (! (gn->type & (OP_JOIN|OP_USE|OP_EXEC))) {
+		if (! (gn->type & OP_USE)) {
 			if (!is_out_of_date(gn->mtime)) {
 				printf("# last modified %s: %s\n",
 				      time_to_string(&gn->mtime),
