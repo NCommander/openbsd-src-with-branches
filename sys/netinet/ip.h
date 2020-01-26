@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip.h,v 1.17 2017/08/08 12:23:56 bluhm Exp $	*/
+/*	$OpenBSD: ip.h,v 1.18 2017/08/08 18:25:31 tj Exp $	*/
 /*	$NetBSD: ip.h,v 1.9 1995/05/15 01:22:44 cgd Exp $	*/
 
 /*
@@ -98,6 +98,7 @@ struct ip {
  * Definitions for DiffServ Codepoints as per RFC2474
  */
 #define	IPTOS_DSCP_CS0		0x00
+#define	IPTOS_DSCP_LE		0x01
 #define	IPTOS_DSCP_CS1		0x20
 #define	IPTOS_DSCP_AF11		0x28
 #define	IPTOS_DSCP_AF12		0x30
