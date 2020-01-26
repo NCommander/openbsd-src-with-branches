@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdsk.c,v 1.49 2018/01/17 15:52:34 stsp Exp $	*/
+/*	$OpenBSD: vdsk.c,v 1.50 2020/01/26 00:53:31 krw Exp $	*/
 /*
  * Copyright (c) 2009, 2011 Mark Kettenis
  *
@@ -915,7 +915,7 @@ vdsk_io_put(void *xsc, void *io)
 
 #ifdef DIAGNOSTIC
 	if (sc != io)
-		panic("vsdk_io_put: unexpected io");
+		panic("vdsk_io_put: unexpected io");
 #endif
 
 	s = splbio();
