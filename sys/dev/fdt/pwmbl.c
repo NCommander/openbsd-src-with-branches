@@ -112,6 +112,8 @@ pwmbl_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_def_level = OF_getpropint(faa->fa_node,
 	    "default-brightness-level", sc->sc_max_level);
 
+	pwmbl_set_brightness(sc, sc->sc_def_level);
+
 	sc_pwmbl = sc;
 	ws_get_param = pwmbl_get_param;
 	ws_set_param = pwmbl_set_param;
