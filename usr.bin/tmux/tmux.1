@@ -1,4 +1,4 @@
-.\" $OpenBSD: tmux.1,v 1.705 2020/01/25 16:40:32 nicm Exp $
+.\" $OpenBSD: tmux.1,v 1.706 2020/01/27 08:53:13 nicm Exp $
 .\"
 .\" Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
 .\"
@@ -14,7 +14,7 @@
 .\" IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
 .\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: January 25 2020 $
+.Dd $Mdocdate: January 27 2020 $
 .Dt TMUX 1
 .Os
 .Sh NAME
@@ -1287,6 +1287,17 @@ shows the parsed commands and line numbers if possible.
 Start the
 .Nm
 server, if not already running, without creating any sessions.
+.Pp
+Note that as by default the
+.Nm
+server will exit with no sessions, this is only useful if a session is created in
+.Pa ~/.tmux.conf ,
+.Ic exit-empty
+is turned off, or another command is run as part of the same command sequence.
+For example:
+.Bd -literal -offset indent
+$ tmux start \\; show -g
+.Ed
 .It Xo Ic suspend-client
 .Op Fl t Ar target-client
 .Xc
