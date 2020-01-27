@@ -1,4 +1,4 @@
-/* $OpenBSD: acpisbs.c,v 1.7 2018/06/29 17:39:18 kettenis Exp $ */
+/* $OpenBSD: acpisbs.c,v 1.8 2019/05/09 18:29:25 cheloha Exp $ */
 /*
  * Smart Battery subsystem device driver
  * ACPI 5.0 spec section 10
@@ -27,6 +27,8 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
+
+#include <machine/apmvar.h>
 
 #include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>
@@ -377,6 +379,7 @@ acpisbs_notify(struct aml_node *node, int notify_type, void *arg)
 		if (diff.tv_sec > ACPISBS_POLL_FREQ) {
 			acpisbs_read(sc);
 			acpisbs_refresh_sensors(sc);
+			acpi_record_event(sc->sc_acpi, APM_POWER_CHANGE);
 			getmicrouptime(&sc->sc_lastpoll);
 		}
 		break;
