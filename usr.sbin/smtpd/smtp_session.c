@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.414 2019/10/03 05:08:21 gilles Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.415 2019/10/04 08:34:29 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -2215,24 +2215,22 @@ smtp_mailaddr(struct mailaddr *maddr, char *line, int mailfrom, char **args,
 		memmove(maddr->user, p, strlen(p) + 1);
 	}
 
-	if (!valid_localpart(maddr->user) ||
-	    !valid_domainpart(maddr->domain)) {
-		/* accept empty return-path in MAIL FROM, required for bounces */
-		if (mailfrom && maddr->user[0] == '\0' && maddr->domain[0] == '\0')
-			return (1);
+	/* accept empty return-path in MAIL FROM, required for bounces */
+	if (mailfrom && maddr->user[0] == '\0' && maddr->domain[0] == '\0')
+		return (1);
 
-		/* no user-part, reject */
-		if (maddr->user[0] == '\0')
-			return (0);
-
-		/* no domain, local user */
-		if (maddr->domain[0] == '\0') {
-			(void)strlcpy(maddr->domain, domain,
-			    sizeof(maddr->domain));
-			return (1);
-		}
+	/* no or invalid user-part, reject */
+	if (maddr->user[0] == '\0' || !valid_localpart(maddr->user))
 		return (0);
+
+	/* no domain part, local user */
+	if (maddr->domain[0] == '\0') {
+		(void)strlcpy(maddr->domain, domain,
+			sizeof(maddr->domain));
 	}
+
+	if (!valid_domainpart(maddr->domain))
+		return (0);
 
 	return (1);
 }
