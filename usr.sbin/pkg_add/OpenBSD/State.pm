@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: State.pm,v 1.62 2019/07/24 18:05:26 espie Exp $
+# $OpenBSD: State.pm,v 1.63 2019/12/04 10:45:19 espie Exp $
 #
 # Copyright (c) 2007-2014 Marc Espie <espie@openbsd.org>
 #
@@ -23,7 +23,7 @@ package OpenBSD::PackageRepositoryFactory;
 sub new
 {
 	my ($class, $state) = @_;
-	bless {state => $state}, $class;
+	return bless {state => $state}, $class;
 }
 
 sub locator
