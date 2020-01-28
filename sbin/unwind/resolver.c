@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.c,v 1.119 2019/12/23 15:03:46 florian Exp $	*/
+/*	$OpenBSD: resolver.c,v 1.120 2020/01/20 20:41:43 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -1650,10 +1650,7 @@ replace_forwarders(struct uw_forwarder_head *new_list, struct
 		free(uw_forwarder);
 	}
 
-	while ((uw_forwarder = TAILQ_FIRST(new_list)) != NULL) {
-		TAILQ_REMOVE(new_list, uw_forwarder, entry);
-		TAILQ_INSERT_TAIL(old_list, uw_forwarder, entry);
-	}
+	TAILQ_CONCAT(old_list, new_list, entry);
 }
 
 int
