@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: time.c,v 1.10 2020/01/20 18:49:45 florian Exp $ */
+/* $Id: time.c,v 1.11 2020/01/22 13:02:09 florian Exp $ */
 
 /*! \file */
 

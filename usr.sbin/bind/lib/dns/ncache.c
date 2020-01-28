@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ncache.c,v 1.10 2020/01/20 18:51:52 florian Exp $ */
+/* $Id: ncache.c,v 1.11 2020/01/22 13:02:09 florian Exp $ */
 
 /*! \file */
 
@@ -29,7 +29,7 @@
 #include <dns/rdata.h>
 #include <dns/rdatalist.h>
 #include <dns/rdataset.h>
-#include <dns/rdatastruct.h>
+#include "rdatastruct.h"
 
 #define DNS_NCACHE_RDATA 20U
 

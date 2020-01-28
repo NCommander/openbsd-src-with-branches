@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dig.c,v 1.42 2020/01/25 10:59:19 florian Exp $ */
+/* $Id: dig.c,v 1.43 2020/01/26 14:50:47 jca Exp $ */
 
 /*! \file */
 #include <sys/cdefs.h>
@@ -2020,6 +2020,12 @@ dig_shutdown() {
 /*% Main processing routine for dig */
 int
 main(int argc, char **argv) {
+	extern char *__progname;
+
+	if (strcmp("host", __progname) == 0)
+		return host_main(argc, argv);
+	if (strcmp("nslookup", __progname) == 0)
+		return nslookup_main(argc, argv);
 
 	dig_setup(argc, argv);
 	dig_query_setup(ISC_FALSE, ISC_FALSE, argc, argv);

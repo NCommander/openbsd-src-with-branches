@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: result.c,v 1.8 2020/01/22 13:02:09 florian Exp $ */
+/* $Id: result.c,v 1.9 2020/01/26 11:24:19 florian Exp $ */
 
 /*! \file */
 #include <isc/util.h>
