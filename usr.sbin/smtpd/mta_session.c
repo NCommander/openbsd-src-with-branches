@@ -1,4 +1,4 @@
-/*	$OpenBSD: mta_session.c,v 1.121 2019/09/18 11:26:30 eric Exp $	*/
+/*	$OpenBSD: mta_session.c,v 1.122 2019/09/20 17:46:05 gilles Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -1255,40 +1255,20 @@ mta_io(struct io *io, int evt, void *arg)
 		break;
 
 	case IO_ERROR:
-		log_debug("debug: mta: %p: IO error: %s", s, io_error(io));
-		if (!s->ready) {
-			mta_error(s, "IO Error: %s", io_error(io));
-			mta_connect(s);
-			break;
-		}
-		else if (!(s->flags & (MTA_FORCE_TLS|MTA_FORCE_SMTPS|MTA_FORCE_ANYSSL))) {
-			/* error in non-strict SSL negotiation, downgrade to plain */
-			if (s->flags & MTA_TLS) {
-				log_info("smtp-out: Error on session %016"PRIx64
-				    ": opportunistic TLS failed, "
-				    "downgrading to plain", s->id);
-				s->flags &= ~MTA_TLS;
-				s->flags |= MTA_DOWNGRADE_PLAIN;
-				mta_connect(s);
-				break;
-			}
-		}
-		mta_error(s, "IO Error: %s", io_error(io));
-		mta_free(s);
-		break;
-
 	case IO_TLSERROR:
-		log_debug("debug: mta: %p: TLS IO error: %s", s, io_error(io));
-		if (!(s->flags & (MTA_FORCE_TLS|MTA_FORCE_SMTPS|MTA_FORCE_ANYSSL))) {
+		log_debug("debug: mta: %p: IO error: %s", s, io_error(io));
+
+		if (s->state == MTA_STARTTLS && s->use_smtp_tls) {
 			/* error in non-strict SSL negotiation, downgrade to plain */
-			log_info("smtp-out: TLS Error on session %016"PRIx64
-			    ": TLS failed, "
+			log_info("smtp-out: Error on session %016"PRIx64
+			    ": opportunistic TLS failed, "
 			    "downgrading to plain", s->id);
 			s->flags &= ~MTA_TLS;
 			s->flags |= MTA_DOWNGRADE_PLAIN;
 			mta_connect(s);
 			break;
 		}
+
 		mta_error(s, "IO Error: %s", io_error(io));
 		mta_free(s);
 		break;
