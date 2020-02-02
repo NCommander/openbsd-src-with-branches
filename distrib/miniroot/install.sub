@@ -892,11 +892,7 @@ dhcp_request() {
 	ifconfig $_if group dhcp >/dev/null 2>&1
 
 	if [[ -x /sbin/dhclient ]]; then
-		/sbin/dhclient -c /dev/stdin $_if <<__EOT
-backoff-cutoff 2;
-reboot 5;
-timeout 10;
-__EOT
+		/sbin/dhclient $_if
 	else
 		echo "DHCP leases not available during install - no /sbin/dhclient."
 	fi
