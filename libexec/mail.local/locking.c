@@ -1,4 +1,4 @@
-/*	$OpenBSD: locking.c,v 1.11 2014/01/17 21:42:47 tobias Exp $	*/
+/*	$OpenBSD: locking.c,v 1.12 2015/01/16 06:39:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996-1998 Theo de Raadt <deraadt@theos.com>
@@ -55,7 +55,7 @@ rellock(void)
 }
 
 int
-getlock(char *name, struct passwd *pw)
+getlock(const char *name, struct passwd *pw)
 {
 	struct stat sb, fsb;
 	int lfd=-1;
