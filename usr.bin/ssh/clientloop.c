@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.337 2020/01/29 08:17:49 djm Exp $ */
+/* $OpenBSD: clientloop.c,v 1.338 2020/01/30 07:20:57 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2173,7 +2173,8 @@ client_input_hostkeys(struct ssh *ssh)
 	/* Find which keys we already know about. */
 	for (i = 0; i < options.num_user_hostfiles; i++) {
 		debug("%s: searching %s for %s / %s", __func__,
-		    options.user_hostfiles[i], ctx->host_str, ctx->ip_str);
+		    options.user_hostfiles[i], ctx->host_str,
+		    ctx->ip_str ? ctx->ip_str : "(null)");
 		if ((r = hostkeys_foreach(options.user_hostfiles[i],
 		    hostkeys_find, ctx, ctx->host_str, ctx->ip_str,
 		    HKF_WANT_PARSE_KEY|HKF_WANT_MATCH)) != 0) {
