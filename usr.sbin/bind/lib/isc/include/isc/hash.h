@@ -14,10 +14,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: hash.h,v 1.7 2020/01/09 18:17:19 florian Exp $ */
+/* $Id: hash.h,v 1.8 2020/01/20 18:51:53 florian Exp $ */
 
 #ifndef ISC_HASH_H
 #define ISC_HASH_H 1
+
+#include <inttypes.h>
 
 #include <isc/types.h>
 
