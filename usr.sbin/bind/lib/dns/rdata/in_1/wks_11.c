@@ -14,18 +14,18 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: wks_11.c,v 1.10 2020/01/20 18:51:53 florian Exp $ */
+/* $Id: wks_11.c,v 1.11 2020/01/21 23:59:20 tedu Exp $ */
 
 /* Reviewed: Fri Mar 17 15:01:49 PST 2000 by explorer */
 
 #ifndef RDATA_IN_1_WKS_11_C
 #define RDATA_IN_1_WKS_11_C
 
+#include <netdb.h>
 #include <limits.h>
 #include <stdlib.h>
 
 #include <isc/net.h>
-#include <isc/netdb.h>
 
 /*
  * Redefine CHECK here so cppcheck "sees" the define.
