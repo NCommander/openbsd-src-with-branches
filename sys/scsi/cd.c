@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd.c,v 1.242 2020/01/26 00:53:31 krw Exp $	*/
+/*	$OpenBSD: cd.c,v 1.243 2020/01/27 07:41:02 krw Exp $	*/
 /*	$NetBSD: cd.c,v 1.100 1997/04/02 02:29:30 mycroft Exp $	*/
 
 /*
@@ -98,7 +98,7 @@ struct cd_softc {
 	struct disk		 sc_dk;
 
 	int			 sc_flags;
-#define	CDF_ANCIENT	0x10		/* disk is ancient; for minphys */
+#define	CDF_ANCIENT	0x10		/* disk is ancient; for cdminphys */
 #define	CDF_DYING	0x40		/* dying, when deactivated */
 #define CDF_WAITING	0x100
 	struct scsi_link	*sc_link;	/* contains targ, lun, etc. */
@@ -695,9 +695,10 @@ cdminphys(struct buf *bp)
 			bp->b_bcount = max;
 	}
 
-	(*link->adapter->dev_minphys)(bp, link);
-	if (link->adapter->dev_minphys != scsi_minphys)
-		scsi_minphys(bp, link);
+	if (link->adapter->dev_minphys != NULL)
+		(*link->adapter->dev_minphys)(bp, link);
+
+	minphys(bp);
 
 	device_unref(&sc->sc_dev);
 }

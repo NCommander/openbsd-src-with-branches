@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdvar.h,v 1.44 2019/10/23 13:50:50 krw Exp $	*/
+/*	$OpenBSD: sdvar.h,v 1.45 2019/11/08 16:13:28 krw Exp $	*/
 /*	$NetBSD: sdvar.h,v 1.7 1998/08/17 00:49:03 mycroft Exp $	*/
 
 /*-
@@ -57,7 +57,7 @@ struct sd_softc {
 	struct bufq		sc_bufq;
 
 	int			flags;
-#define	SDF_ANCIENT	0x10		/* disk is ancient; for minphys */
+#define	SDF_ANCIENT	0x10		/* disk is ancient; for sdminphys */
 #define	SDF_DIRTY	0x20		/* disk is dirty; needs cache flush */
 #define	SDF_DYING	0x40		/* dying, when deactivated */
 #define	SDF_WAITING	0x80
