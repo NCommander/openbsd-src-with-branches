@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_internal.h,v 1.58 2020/01/30 17:09:23 jsing Exp $ */
+/* $OpenBSD: tls13_internal.h,v 1.59 2020/02/05 06:12:43 tb Exp $ */
 /*
  * Copyright (c) 2018 Bob Beck <beck@openbsd.org>
  * Copyright (c) 2018 Theo Buehler <tb@openbsd.org>
@@ -287,6 +287,7 @@ int tls13_legacy_shutdown(SSL *ssl);
 #define	TLS13_MT_KEY_UPDATE			24
 #define	TLS13_MT_MESSAGE_HASH			254
 
+int tls13_handshake_msg_record(struct tls13_ctx *ctx);
 int tls13_handshake_perform(struct tls13_ctx *ctx);
 
 int tls13_client_hello_send(struct tls13_ctx *ctx, CBB *cbb);
