@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.261 2020/02/05 16:47:34 jsing Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.262 2020/02/05 17:30:30 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -463,6 +463,7 @@ typedef struct ssl_handshake_tls13_st {
 	/* Version proposed by peer server. */
 	uint16_t server_version;
 
+	uint16_t server_group;
 	struct tls13_key_share *key_share;
 	struct tls13_secrets *secrets;
 
