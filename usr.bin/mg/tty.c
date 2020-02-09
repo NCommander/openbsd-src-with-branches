@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.35 2015/03/19 21:48:05 bcallah Exp $	*/
+/*	$OpenBSD: tty.c,v 1.36 2015/11/18 18:44:50 jasper Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -44,6 +44,11 @@ static int	 insdel;	/* Do we have both insert & delete line? */
 static const char	*scroll_fwd;	/* How to scroll forward. */
 
 static void	 winchhandler(int);
+
+volatile sig_atomic_t	 winch_flag;
+int			 tceeol;
+int			 tcinsl;
+int			 tcdell;
 
 /* ARGSUSED */
 static void
