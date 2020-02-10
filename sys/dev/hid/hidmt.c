@@ -1,4 +1,4 @@
-/* $OpenBSD: hidmt.c,v 1.9 2018/08/25 20:31:31 jcs Exp $ */
+/* $OpenBSD: hidmt.c,v 1.10 2019/11/08 01:20:22 yasuoka Exp $ */
 /*
  * HID multitouch driver for devices conforming to Windows Precision Touchpad
  * standard
@@ -175,6 +175,8 @@ hidmt_setup(struct device *self, struct hidmt *mt, void *desc, int dlen)
 		struct hidmt_data *input;
 
 		if (h.report_ID != mt->sc_rep_input)
+			continue;
+		if (h.kind != hid_input)
 			continue;
 
 		switch (h.usage) {
