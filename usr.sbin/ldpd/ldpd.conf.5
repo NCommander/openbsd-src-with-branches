@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ldpd.conf.5,v 1.38 2019/03/31 19:08:30 procter Exp $
+.\"	$OpenBSD: ldpd.conf.5,v 1.39 2019/03/31 20:14:14 jmc Exp $
 .\"
 .\" Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
 .\" Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -388,10 +388,12 @@ The default is
 .Ic yes .
 .El
 .Sh FILES
-.Bl -tag -width "/etc/ldpd.conf" -compact
+.Bl -tag -width /etc/examples/ldpd.conf -compact
 .It Pa /etc/ldpd.conf
 .Xr ldpd 8
 configuration file
+.It Pa /etc/examples/ldpd.conf
+example configuration file
 .El
 .Sh SEE ALSO
 .Xr ldpctl 8 ,
