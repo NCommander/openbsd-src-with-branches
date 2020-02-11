@@ -1,4 +1,4 @@
-/*	$Id: main.c,v 1.47 2019/06/03 15:37:48 naddy Exp $ */
+/*	$Id: main.c,v 1.48 2019/08/09 05:28:01 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -509,7 +509,7 @@ main(int argc, char *argv[])
 	exit(rc);
 usage:
 	fprintf(stderr, "usage: %s"
-	    " [-aDglnoprtvx] [-e program] [--address=bind_address] [--del]\n"
+	    " [-aDglnoprtvx] [-e program] [--address=sourceaddr] [--del]\n"
 	    "\t[--numeric-ids] [--port=portnumber] [--rsync-path=program]\n"
 	    "\t[--version] source ... directory\n",
 	    getprogname());
