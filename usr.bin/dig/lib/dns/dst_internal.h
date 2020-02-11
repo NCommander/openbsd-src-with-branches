@@ -31,7 +31,7 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dst_internal.h,v 1.10 2020/01/22 06:47:14 florian Exp $ */
+/* $Id: dst_internal.h,v 1.1 2020/02/07 09:58:52 florian Exp $ */
 
 #ifndef DST_DST_INTERNAL_H
 #define DST_DST_INTERNAL_H 1
@@ -198,7 +198,7 @@ struct dst_func {
 /*%
  * Initializers
  */
-isc_result_t dst__openssl_init(const char *engine);
+isc_result_t dst__openssl_init(void);
 
 isc_result_t dst__hmacsha1_init(struct dst_func **funcp);
 isc_result_t dst__hmacsha224_init(struct dst_func **funcp);
