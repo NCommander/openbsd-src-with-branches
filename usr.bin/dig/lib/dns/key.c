@@ -14,12 +14,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: key.c,v 1.1 2020/02/07 09:58:52 florian Exp $ */
+/* $Id: key.c,v 1.2 2020/02/11 17:23:29 florian Exp $ */
 
 
 
 #include <stddef.h>
-#include <stdlib.h>
+#include <stdint.h>
 
 #include <isc/region.h>
 #include <isc/util.h>

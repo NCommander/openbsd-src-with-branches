@@ -14,15 +14,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: stdio.c,v 1.7 2020/02/04 19:18:57 florian Exp $ */
+/* $Id: stdio.c,v 1.1 2020/02/07 09:58:54 florian Exp $ */
 
 
 
 #include <errno.h>
-#include <unistd.h>
 
 #include <isc/stdio.h>
-#include <isc/util.h>
 
 #include "errno2result.h"
 

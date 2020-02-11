@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: rdata.c,v 1.20 2020/01/28 17:17:05 florian Exp $ */
+/* $Id: rdata.c,v 1.1 2020/02/07 09:58:52 florian Exp $ */
 
 /*! \file */
 
@@ -35,18 +35,15 @@
 #include <dns/callbacks.h>
 #include <dns/cert.h>
 #include <dns/compress.h>
-#include <dns/dsdigest.h>
 #include "enumtype.h"
 #include <dns/keyflags.h>
 #include <dns/keyvalues.h>
 #include <dns/message.h>
 #include <dns/rcode.h>
 #include <dns/rdata.h>
-#include <dns/rdataclass.h>
 #include "rdatastruct.h"
 #include <dns/rdatatype.h>
 #include <dns/result.h>
-#include <dns/secalg.h>
 #include <dns/secproto.h>
 #include <dns/time.h>
 #include <dns/ttl.h>

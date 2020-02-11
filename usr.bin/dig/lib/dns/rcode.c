@@ -14,11 +14,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: rcode.c,v 1.11 2020/01/22 13:02:09 florian Exp $ */
+/* $Id: rcode.c,v 1.1 2020/02/07 09:58:52 florian Exp $ */
 
 
 #include <ctype.h>
-#include <limits.h>
 #include <stdlib.h>
 
 #include <isc/buffer.h>
@@ -26,7 +25,6 @@
 
 #include <isc/region.h>
 #include <isc/result.h>
-#include <isc/stdio.h>
 
 #include <string.h>
 #include <isc/types.h>

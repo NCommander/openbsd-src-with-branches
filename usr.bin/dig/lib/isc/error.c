@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: error.c,v 1.6 2020/01/22 13:02:09 florian Exp $ */
+/* $Id: error.c,v 1.1 2020/02/07 09:58:53 florian Exp $ */
 
 /*! \file */
 
@@ -24,8 +24,6 @@
 #include <stdlib.h>
 
 #include <isc/error.h>
-#include <isc/msgs.h>
-
 
 /*% Default unexpected callback. */
 static void

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: timer.c,v 1.16 2020/01/26 11:25:30 florian Exp $ */
+/* $Id: timer.c,v 1.1 2020/02/07 09:58:54 florian Exp $ */
 
 /*! \file */
 
@@ -22,9 +22,7 @@
 #include <stdlib.h>
 #include <isc/app.h>
 #include <isc/heap.h>
-#include <isc/log.h>
 #include <isc/magic.h>
-#include <isc/msgs.h>
 #include <isc/task.h>
 #include <isc/time.h>
 #include <isc/timer.h>
