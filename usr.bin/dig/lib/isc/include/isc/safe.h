@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: safe.h,v 1.2 2019/12/17 01:46:35 sthen Exp $ */
+/* $Id: safe.h,v 1.1 2020/02/07 09:58:54 florian Exp $ */
 
 #ifndef ISC_SAFE_H
 #define ISC_SAFE_H 1
@@ -32,12 +32,6 @@ isc_safe_memequal(const void *s1, const void *s2, size_t n);
  * Returns ISC_TRUE iff. two blocks of memory are equal, otherwise
  * ISC_FALSE.
  *
- */
-
-int
-isc_safe_memcompare(const void *b1, const void *b2, size_t len);
-/*%<
- * Clone of libc memcmp() which is safe to differential timing attacks.
  */
 
 void

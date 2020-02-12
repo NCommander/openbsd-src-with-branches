@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: cfg.h,v 1.6 2020/01/28 17:09:03 florian Exp $ */
+/* $Id: cfg.h,v 1.1 2020/02/07 09:58:54 florian Exp $ */
 
 #ifndef ISCCFG_CFG_H
 #define ISCCFG_CFG_H 1
@@ -147,12 +147,6 @@ cfg_map_getname(const cfg_obj_t *mapobj);
  * Returns:
  * \li     A pointer to a configuration object naming the map object,
  *	or NULL if the map object does not have a name.
- */
-
-isc_boolean_t
-cfg_obj_isstring(const cfg_obj_t *obj);
-/*%<
- * Return true iff 'obj' is of string type.
  */
 
 const char *

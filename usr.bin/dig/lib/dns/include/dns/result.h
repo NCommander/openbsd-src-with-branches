@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: result.h,v 1.6 2019/12/17 01:46:32 sthen Exp $ */
+/* $Id: result.h,v 1.1 2020/02/07 09:58:52 florian Exp $ */
 
 #ifndef DNS_RESULT_H
 #define DNS_RESULT_H 1
@@ -194,9 +194,6 @@ dns_result_totext(isc_result_t);
 
 void
 dns_result_register(void);
-
-dns_rcode_t
-dns_result_torcode(isc_result_t result);
 
 ISC_LANG_ENDDECLS
 

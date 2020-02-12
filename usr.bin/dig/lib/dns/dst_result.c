@@ -16,7 +16,7 @@
 
 /*%
  * Principal Author: Brian Wellington
- * $Id: dst_result.c,v 1.6 2020/01/26 11:24:19 florian Exp $
+ * $Id: dst_result.c,v 1.1 2020/02/07 09:58:52 florian Exp $
  */
 
 #include <isc/util.h>
@@ -69,13 +69,6 @@ initialize(void) {
 		once = ISC_TRUE;
 		initialize_action();
 	}
-}
-
-const char *
-dst_result_totext(isc_result_t result) {
-	initialize();
-
-	return (isc_result_totext(result));
 }
 
 void

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: secproto.h,v 1.3 2019/12/17 01:46:32 sthen Exp $ */
+/* $Id: secproto.h,v 1.1 2020/02/07 09:58:52 florian Exp $ */
 
 #ifndef DNS_SECPROTO_H
 #define DNS_SECPROTO_H 1
@@ -43,26 +43,6 @@ dns_secproto_fromtext(dns_secproto_t *secprotop, isc_textregion_t *source);
  *\li	ISC_R_SUCCESS			on success
  *\li	ISC_R_RANGE			numeric type is out of range
  *\li	DNS_R_UNKNOWN			mnemonic type is unknown
- */
-
-isc_result_t
-dns_secproto_totext(dns_secproto_t secproto, isc_buffer_t *target);
-/*%<
- * Put a textual representation of the DNSSEC security protocol 'secproto'
- * into 'target'.
- *
- * Requires:
- *\li	'secproto' is a valid secproto.
- *
- *\li	'target' is a valid text buffer.
- *
- * Ensures,
- *	if the result is success:
- *	\li	The used space in 'target' is updated.
- *
- * Returns:
- *\li	ISC_R_SUCCESS			on success
- *\li	ISC_R_NOSPACE			target buffer is too small
  */
 
 ISC_LANG_ENDDECLS
