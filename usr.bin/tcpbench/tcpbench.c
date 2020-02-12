@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpbench.c,v 1.59 2018/09/28 19:01:52 bluhm Exp $	*/
+/*	$OpenBSD: tcpbench.c,v 1.60 2019/11/26 17:51:33 stsp Exp $	*/
 
 /*
  * Copyright (c) 2008 Damien Miller <djm@mindrot.org>
@@ -185,7 +185,7 @@ usage(void)
 {
 	fprintf(stderr,
 	    "usage: tcpbench -l\n"
-	    "       tcpbench [-46RUuv] [-B buf] [-b addr] [-k kvars] [-n connections]\n"
+	    "       tcpbench [-46RUuv] [-B buf] [-b sourceaddr] [-k kvars] [-n connections]\n"
 	    "                [-p port] [-r interval] [-S space] [-T toskeyword]\n"
 	    "                [-t secs] [-V rtable] hostname\n"
 	    "       tcpbench -s [-46Uuv] [-B buf] [-k kvars] [-p port] [-r interval]\n"

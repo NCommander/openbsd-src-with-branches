@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp-proxy.c,v 1.36 2016/09/26 17:15:19 jca Exp $ */
+/*	$OpenBSD: ftp-proxy.c,v 1.37 2019/06/28 13:32:47 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Camiel Dobbelaar, <cd@sentia.nl>
@@ -1133,7 +1133,7 @@ sock_ntop(struct sockaddr *sa)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-6Adrv] [-a address] [-b address]"
+	fprintf(stderr, "usage: %s [-6Adrv] [-a sourceaddr] [-b address]"
 	    " [-D level] [-m maxsessions]\n                 [-P port]"
 	    " [-p port] [-q queue] [-R address] [-T tag]\n"
             "                 [-t timeout]\n", __progname);
