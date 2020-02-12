@@ -33,7 +33,7 @@
 
 /*
  * Principal Author: Brian Wellington
- * $Id: dst_api.c,v 1.2 2020/02/11 17:23:29 florian Exp $
+ * $Id: dst_api.c,v 1.3 2020/02/11 23:26:11 jsg Exp $
  */
 
 /*! \file */
@@ -369,6 +369,7 @@ dst_key_fromnamedfile(const char *filename, const char *dirname,
 	RETERR(isc_lex_create(1500, &lex));
 	RETERR(isc_lex_openfile(lex, newfilename));
 	free(newfilename);
+	newfilename = NULL;
 
 	RETERR(key->func->parse(key, lex, pubkey));
 	isc_lex_destroy(&lex);
