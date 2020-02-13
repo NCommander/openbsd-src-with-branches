@@ -14,14 +14,14 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: errno2result.c,v 1.2 2020/02/11 17:22:31 florian Exp $ */
+/* $Id: errno2result.c,v 1.3 2020/02/13 12:03:51 jsg Exp $ */
 
 /*! \file */
 
 #include <errno.h>
+#include <string.h>
 
 #include <isc/result.h>
-#include <isc/strerror.h>
 #include <isc/util.h>
 
 #include "errno2result.h"
@@ -36,8 +36,6 @@ isc_result_t
 isc___errno2result(int posixerrno, isc_boolean_t dolog,
 		   const char *file, unsigned int line)
 {
-	char strbuf[ISC_STRERRORSIZE];
-
 	switch (posixerrno) {
 	case ENOTDIR:
 	case ELOOP:
@@ -89,10 +87,9 @@ isc___errno2result(int posixerrno, isc_boolean_t dolog,
 		return (ISC_R_CONNREFUSED);
 	default:
 		if (dolog) {
-			isc__strerror(posixerrno, strbuf, sizeof(strbuf));
 			UNEXPECTED_ERROR(file, line, "unable to convert errno "
 					 "to isc_result: %d: %s",
-					 posixerrno, strbuf);
+					 posixerrno, strerror(posixerrno));
 		}
 		/*
 		 * XXXDCL would be nice if perhaps this function could
