@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dig.c,v 1.5 2020/02/13 09:38:34 jsg Exp $ */
+/* $Id: dig.c,v 1.6 2020/02/13 10:40:24 jsg Exp $ */
 
 /*! \file */
 #include <sys/cdefs.h>
@@ -47,16 +47,6 @@
 	else 						\
 		isc_buffer_putstr(b, s); 		\
 }
-
-#ifndef DNS_NAME_INITABSOLUTE
-#define DNS_NAME_INITABSOLUTE(A,B) { \
-	DNS_NAME_MAGIC, \
-	A, sizeof(A), sizeof(B), \
-	DNS_NAMEATTR_READONLY | DNS_NAMEATTR_ABSOLUTE, \
-	B, NULL, { (void *)-1, (void *)-1}, \
-	{NULL, NULL} \
-}
-#endif
 
 dig_lookup_t *default_lookup = NULL;
 
