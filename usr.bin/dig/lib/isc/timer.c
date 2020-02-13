@@ -14,13 +14,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: timer.c,v 1.3 2020/02/12 13:05:04 jsg Exp $ */
+/* $Id: timer.c,v 1.4 2020/02/13 10:40:24 jsg Exp $ */
 
 /*! \file */
 
 
 #include <stdlib.h>
-#include <isc/app.h>
 #include <isc/heap.h>
 #include <isc/magic.h>
 #include <isc/task.h>

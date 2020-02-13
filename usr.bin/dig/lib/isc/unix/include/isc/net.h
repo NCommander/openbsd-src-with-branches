@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: net.h,v 1.2 2020/02/11 17:22:31 florian Exp $ */
+/* $Id: net.h,v 1.3 2020/02/13 09:29:34 jsg Exp $ */
 
 #ifndef ISC_NET_H
 #define ISC_NET_H 1
@@ -73,16 +73,12 @@
  ***/
 
 
-#include <sys/types.h>
 #include <sys/socket.h>		/* Contractual promise. */
-
-#include <net/if.h>
 
 #include <netinet/in.h>		/* Contractual promise. */
 #include <arpa/inet.h>		/* Contractual promise. */
 
 #include <isc/lang.h>
-#include <isc/types.h>
 
 /*% IP address. */
 #define ISC__IPADDR(x)	((uint32_t)htonl((uint32_t)(x)))

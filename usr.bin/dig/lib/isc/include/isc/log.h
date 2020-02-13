@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: log.h,v 1.1 2020/02/07 09:58:54 florian Exp $ */
+/* $Id: log.h,v 1.2 2020/02/12 13:05:04 jsg Exp $ */
 
 #ifndef ISC_LOG_H
 #define ISC_LOG_H 1
@@ -23,7 +23,6 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <syslog.h> /* XXXDCL NT */
 
 #include <isc/formatcheck.h>
 #include <isc/lang.h>

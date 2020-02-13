@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: rdata.c,v 1.3 2020/02/12 13:05:03 jsg Exp $ */
+/* $Id: rdata.c,v 1.4 2020/02/13 10:40:24 jsg Exp $ */
 
 /*! \file */
 
@@ -38,7 +38,6 @@
 #include "enumtype.h"
 #include <dns/keyflags.h>
 #include <dns/keyvalues.h>
-#include <dns/message.h>
 #include <dns/rcode.h>
 #include <dns/rdata.h>
 #include "rdatastruct.h"
