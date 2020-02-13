@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: assertions.c,v 1.2 2020/02/11 23:26:11 jsg Exp $ */
+/* $Id: assertions.c,v 1.3 2020/02/12 13:05:04 jsg Exp $ */
 
 /*! \file */
 
@@ -38,7 +38,6 @@ static isc_assertioncallback_t isc_assertion_failed_cb = default_callback;
  */
 
 /*% assertion failed handler */
-/* coverity[+kill] */
 void
 isc_assertion_failed(const char *file, int line, isc_assertiontype_t type,
 		     const char *cond)
