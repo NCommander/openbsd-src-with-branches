@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: timer.h,v 1.1 2020/02/07 09:58:54 florian Exp $ */
+/* $Id: timer.h,v 1.2 2020/02/12 13:05:04 jsg Exp $ */
 
 #ifndef ISC_TIMER_H
 #define ISC_TIMER_H 1
@@ -74,10 +74,7 @@
 #include <isc/types.h>
 #include <isc/event.h>
 #include <isc/eventclass.h>
-#include <isc/lang.h>
 #include <isc/time.h>
-
-ISC_LANG_BEGINDECLS
 
 /***
  *** Types
@@ -387,7 +384,5 @@ void isc_timermgr_poke(isc_timermgr_t *m);
  */
 typedef isc_result_t
 (*isc_timermgrcreatefunc_t)(isc_timermgr_t **managerp);
-
-ISC_LANG_ENDDECLS
 
 #endif /* ISC_TIMER_H */

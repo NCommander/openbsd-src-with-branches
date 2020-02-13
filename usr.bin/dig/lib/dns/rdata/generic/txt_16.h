@@ -18,7 +18,7 @@
 #ifndef GENERIC_TXT_16_H
 #define GENERIC_TXT_16_H 1
 
-/* $Id: txt_16.h,v 1.1 2020/02/07 09:58:53 florian Exp $ */
+/* $Id: txt_16.h,v 1.2 2020/02/12 13:05:04 jsg Exp $ */
 
 typedef struct dns_rdata_txt_string {
 		uint8_t    length;
@@ -32,10 +32,5 @@ typedef struct dns_rdata_txt {
 	/* private */
 	uint16_t            offset;
 } dns_rdata_txt_t;
-
-/*
- * ISC_LANG_BEGINDECLS and ISC_LANG_ENDDECLS are already done
- * via rdatastructpre.h and rdatastructsuf.h.
- */
 
 #endif /* GENERIC_TXT_16_H */

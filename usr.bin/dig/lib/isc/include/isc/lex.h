@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: lex.h,v 1.1 2020/02/07 09:58:54 florian Exp $ */
+/* $Id: lex.h,v 1.2 2020/02/12 13:05:04 jsg Exp $ */
 
 #ifndef ISC_LEX_H
 #define ISC_LEX_H 1
@@ -52,11 +52,8 @@
 
 #include <stdio.h>
 
-#include <isc/lang.h>
 #include <isc/region.h>
 #include <isc/types.h>
-
-ISC_LANG_BEGINDECLS
 
 /***
  *** Options
@@ -355,8 +352,5 @@ isc_lex_isfile(isc_lex_t *lex);
  * \li	#ISC_TRUE if the current input is a file,
  *\li	#ISC_FALSE otherwise.
  */
-
-
-ISC_LANG_ENDDECLS
 
 #endif /* ISC_LEX_H */

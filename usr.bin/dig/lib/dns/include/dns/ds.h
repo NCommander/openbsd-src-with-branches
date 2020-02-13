@@ -14,12 +14,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ds.h,v 1.4 2020/02/04 19:34:39 florian Exp $ */
+/* $Id: ds.h,v 1.1 2020/02/07 09:58:52 florian Exp $ */
 
 #ifndef DNS_DS_H
 #define DNS_DS_H 1
-
-#include <isc/lang.h>
 
 #include <dns/types.h>
 
