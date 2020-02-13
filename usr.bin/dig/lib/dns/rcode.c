@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: rcode.c,v 1.3 2020/02/12 13:05:03 jsg Exp $ */
+/* $Id: rcode.c,v 1.4 2020/02/13 08:18:03 florian Exp $ */
 
 
 #include <ctype.h>
@@ -72,12 +72,6 @@
 	{ 13, "RESERVED13", TOTEXTONLY}, \
 	{ 14, "RESERVED14", TOTEXTONLY}, \
 	{ 15, "RESERVED15", TOTEXTONLY},
-
-#define ERCODENAMES \
-	/* extended rcodes */ \
-	{ dns_rcode_badvers, "BADVERS", 0}, \
-	{ dns_rcode_badcookie, "BADCOOKIE", 0}, \
-	{ 0, NULL, 0 }
 
 #define TSIGRCODENAMES \
 	/* extended rcodes */ \
