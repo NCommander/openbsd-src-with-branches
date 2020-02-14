@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.9 2016/05/26 14:17:58 schwarze Exp $	*/
+/*	$OpenBSD: main.c,v 1.10 2016/07/13 06:17:11 guenther Exp $	*/
 /*	$NetBSD: main.c,v 1.2 1995/04/20 22:39:51 cgd Exp $	*/
 
 #include <stdio.h>
@@ -41,8 +41,6 @@ main(int argc, char *argv[])
 	int c;
 	int errflg = 0;
 	register int i;
-	extern int optind;
-	extern char *optarg;
 
 	progname = argv[0];
 

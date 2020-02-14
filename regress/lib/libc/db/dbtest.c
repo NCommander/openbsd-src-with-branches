@@ -1,4 +1,4 @@
-/*	$OpenBSD: dbtest.c,v 1.15 2017/04/16 16:04:48 kettenis Exp $	*/
+/*	$OpenBSD: dbtest.c,v 1.16 2017/07/27 15:08:37 bluhm Exp $	*/
 /*	$NetBSD: dbtest.c,v 1.8 1996/05/03 21:57:48 cgd Exp $	*/
 
 /*-
@@ -76,8 +76,6 @@ int XXlineno;				/* Fast breakpoint for gdb. */
 int
 main(int argc, char *argv[])
 {
-	extern int optind;
-	extern char *optarg;
 	enum S command, state;
 	DB *dbp;
 	DBT data, key, keydata;

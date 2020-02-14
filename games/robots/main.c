@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.27 2018/08/23 06:26:35 mestre Exp $	*/
+/*	$OpenBSD: main.c,v 1.28 2019/06/28 13:32:52 deraadt Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1995/04/22 10:08:54 cgd Exp $	*/
 
 /*
@@ -56,7 +56,6 @@ main(int ac, char *av[])
 	int		score_err = 0; /* hold errno from score file open */
 	int		ch;
 	int		ret;
-	extern int	optind;
 	char		*home;
 #ifdef FANCY
 	char		*sp;
