@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpe.c,v 1.59 2019/08/08 16:50:52 mestre Exp $	*/
+/*	$OpenBSD: snmpe.c,v 1.60 2019/10/24 12:39:27 tb Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -766,6 +766,8 @@ snmpe_response(struct snmp_message *msg)
 		msg->sm_varbindresp = ober_unlink_elements(msg->sm_pduend);
 
 	switch (msg->sm_error) {
+	case SNMP_ERROR_NONE:
+		break;
 	case SNMP_ERROR_TOOBIG:
 		stats->snmp_intoobigs++;
 		break;
