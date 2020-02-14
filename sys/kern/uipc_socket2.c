@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.101 2019/04/16 13:15:32 yasuoka Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.102 2020/01/15 13:17:35 mpi Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -408,11 +408,9 @@ sowakeup(struct socket *so, struct sockbuf *sb)
 		sb->sb_flags &= ~SB_WAIT;
 		wakeup(&sb->sb_cc);
 	}
-	KERNEL_LOCK();
 	if (so->so_state & SS_ASYNC)
 		pgsigio(&so->so_sigio, SIGIO, 0);
 	selwakeup(&sb->sb_sel);
-	KERNEL_UNLOCK();
 }
 
 /*
