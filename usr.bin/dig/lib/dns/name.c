@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: name.c,v 1.5 2020/02/13 10:40:24 jsg Exp $ */
+/* $Id: name.c,v 1.6 2020/02/13 16:55:20 florian Exp $ */
 
 /*! \file */
 #include <ctype.h>
@@ -1982,7 +1982,7 @@ dns_name_fromstring2(dns_name_t *target, const char *src,
 
 	REQUIRE(src != NULL);
 
-	isc_buffer_constinit(&buf, src, strlen(src));
+	isc_buffer_init(&buf, (void *)src, strlen(src));
 	isc_buffer_add(&buf, strlen(src));
 	if (BINDABLE(target) && target->buffer != NULL)
 		name = target;
