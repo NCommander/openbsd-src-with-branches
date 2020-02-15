@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_record.c,v 1.2 2019/01/20 09:12:05 jsing Exp $ */
+/* $OpenBSD: tls13_record.c,v 1.3 2019/01/21 00:24:19 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -16,8 +16,6 @@
  */
 
 #include "ssl_locl.h"
-
-#include <openssl/curve25519.h>
 
 #include "tls13_internal.h"
 #include "tls13_record.h"
