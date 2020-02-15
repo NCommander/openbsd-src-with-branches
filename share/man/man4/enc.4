@@ -1,4 +1,4 @@
-.\"	$OpenBSD: enc.4,v 1.28 2010/06/29 21:28:37 reyk Exp $
+.\"	$OpenBSD: enc.4,v 1.29 2015/02/16 16:38:54 naddy Exp $
 .\"
 .\" Copyright (c) 2006 Jason McIntyre <jmc@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: June 29 2010 $
+.Dd $Mdocdate: February 16 2015 $
 .Dt ENC 4
 .Os
 .Sh NAME
@@ -108,7 +108,6 @@ interface to see packets prior to encapsulation and after decapsulation.
 For example:
 .Bd -literal -offset 3n
 # tcpdump -envps 1500 -i enc0 -l | grep 10.0.0.33
-tcpdump: WARNING: enc0: no IPv4 address assigned
 tcpdump: listening on enc0, link-type ENC
 15:05:08.934708 (authentic,confidential): SPI 0x6bcac587: \e
 	172.25.0.45 > 1.2.3.4: 10.9.9.28.7001 > 10.0.0.33.7000: \e
