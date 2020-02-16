@@ -14,14 +14,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dst.h,v 1.3 2020/02/12 13:05:04 jsg Exp $ */
+/* $Id: dst.h,v 1.4 2020/02/13 13:53:01 jsg Exp $ */
 
 #ifndef DST_DST_H
 #define DST_DST_H 1
 
 /*! \file dst/dst.h */
-
-#include <isc/stdtime.h>
 
 #include <dns/types.h>
 #include <dns/log.h>

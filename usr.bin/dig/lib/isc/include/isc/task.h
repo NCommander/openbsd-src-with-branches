@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: task.h,v 1.2 2020/02/12 13:05:04 jsg Exp $ */
+/* $Id: task.h,v 1.3 2020/02/13 13:53:01 jsg Exp $ */
 
 #ifndef ISC_TASK_H
 #define ISC_TASK_H 1
@@ -80,10 +80,7 @@
  ***/
 
 #include <isc/eventclass.h>
-
-#include <isc/stdtime.h>
 #include <isc/types.h>
-
 
 #define ISC_TASKEVENT_FIRSTEVENT	(ISC_EVENTCLASS_TASK + 0)
 #define ISC_TASKEVENT_SHUTDOWN		(ISC_EVENTCLASS_TASK + 1)
