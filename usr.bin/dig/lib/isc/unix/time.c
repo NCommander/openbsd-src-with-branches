@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: time.c,v 1.5 2020/02/13 12:03:51 jsg Exp $ */
+/* $Id: time.c,v 1.6 2020/02/13 21:34:06 jung Exp $ */
 
 /*! \file */
 
@@ -76,9 +76,6 @@ interval_iszero(const interval_t *i) {
 /***
  *** Absolute Times
  ***/
-
-static const isc_time_t epoch = { 0, 0 };
-const isc_time_t * const isc_time_epoch = &epoch;
 
 void
 isc_time_set(isc_time_t *t, unsigned int seconds, unsigned int nanoseconds) {
