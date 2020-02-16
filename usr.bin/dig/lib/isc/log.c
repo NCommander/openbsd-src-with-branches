@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: log.c,v 1.7 2020/02/13 16:57:55 florian Exp $ */
+/* $Id: log.c,v 1.8 2020/02/16 18:05:09 florian Exp $ */
 
 /*! \file
  * \author  Principal Authors: DCL */
@@ -979,9 +979,8 @@ isc_log_doit(isc_log_t *lctx, isc_logcategory_t *category,
 				struct timespec oldest;
 				struct timespec interval;
 				size_t size;
-
-				interval_set(&interval,
-						 lcfg->duplicate_interval, 0);
+				interval.tv_sec = lcfg->duplicate_interval;
+				interval.tv_nsec = 0;
 
 				/*
 				 * 'oldest' is the age of the oldest messages
