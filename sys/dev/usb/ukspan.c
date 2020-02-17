@@ -1,3 +1,5 @@
+/*	$OpenBSD$ */
+
 /*
  * Copyright (c) 2019 Cody Cutler <ccutler@csail.mit.edu>
  *
