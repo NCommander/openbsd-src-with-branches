@@ -1,4 +1,4 @@
-dnl	$OpenBS$
+dnl	$OpenBSD$
 Installation is supported from several media types, including:
 
 	FFS partitions
