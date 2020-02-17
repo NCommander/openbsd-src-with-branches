@@ -17,7 +17,7 @@
 #ifndef ISC_SHA1_H
 #define ISC_SHA1_H 1
 
-/* $Id: sha1.h,v 1.3 2020/02/13 12:03:51 jsg Exp $ */
+/* $Id: sha1.h,v 1.4 2020/02/13 13:53:01 jsg Exp $ */
 
 /*	$NetBSD: sha1.h,v 1.2 1998/05/29 22:55:44 thorpej Exp $	*/
 
@@ -39,9 +39,6 @@ typedef struct {
 
 void
 isc_sha1_init(isc_sha1_t *ctx);
-
-void
-isc_sha1_invalidate(isc_sha1_t *ctx);
 
 void
 isc_sha1_update(isc_sha1_t *ctx, const unsigned char *data, unsigned int len);

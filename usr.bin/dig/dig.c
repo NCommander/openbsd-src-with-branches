@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dig.c,v 1.8 2020/02/13 19:29:47 florian Exp $ */
+/* $Id: dig.c,v 1.9 2020/02/15 11:57:11 jsg Exp $ */
 
 /*! \file */
 #include <sys/cdefs.h>
@@ -625,13 +625,6 @@ printgreeting(int argc, char **argv, dig_lookup_t *lookup) {
 		}
 	}
 }
-
-/*%
- * We're not using isc_commandline_parse() here since the command line
- * syntax of dig is quite a bit different from that which can be described
- * by that routine.
- * XXX doc options
- */
 
 static void
 plus_option(const char *option, isc_boolean_t is_batchfile,
