@@ -1,4 +1,4 @@
-/*	$OpenBSD: kthread.h,v 1.5 2011/05/30 18:51:17 martynas Exp $	*/
+/*	$OpenBSD: kthread.h,v 1.6 2013/11/18 20:21:51 deraadt Exp $	*/
 /*	$NetBSD: kthread.h,v 1.2 1998/11/14 00:08:49 thorpej Exp $	*/
 
 /*-
@@ -39,8 +39,7 @@
  */
 
 #ifdef _KERNEL
-#include <sys/proc.h>	/* struct proc, tsleep(), wakeup() */
-
+struct proc;
 int	kthread_create(void (*)(void *), void *, struct proc **,
 	    const char *);
 void	kthread_create_deferred(void (*)(void *), void *);

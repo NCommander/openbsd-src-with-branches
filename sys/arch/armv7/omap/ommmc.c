@@ -1,4 +1,4 @@
-/*	$OpenBSD: ommmc.c,v 1.31 2017/01/21 05:42:03 guenther Exp $	*/
+/*	$OpenBSD: ommmc.c,v 1.32 2020/01/13 13:30:42 mpi Exp $	*/
 
 /*
  * Copyright (c) 2009 Dale Rahn <drahn@openbsd.org>
@@ -23,7 +23,6 @@
 #include <sys/param.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
-#include <sys/kthread.h>
 #include <sys/malloc.h>
 #include <sys/systm.h>
 #include <machine/bus.h>

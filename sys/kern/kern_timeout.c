@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_timeout.c,v 1.70 2020/01/03 20:11:11 cheloha Exp $	*/
+/*	$OpenBSD: kern_timeout.c,v 1.71 2020/01/13 09:51:52 mpi Exp $	*/
 /*
  * Copyright (c) 2001 Thomas Nordin <nordin@openbsd.org>
  * Copyright (c) 2000-2001 Artur Grabowski <art@openbsd.org>
@@ -28,6 +28,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kthread.h>
+#include <sys/proc.h>
 #include <sys/timeout.h>
 #include <sys/mutex.h>
 #include <sys/kernel.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sched.h,v 1.1 2019/04/14 10:14:53 jsg Exp $	*/
 /*
  * Copyright (c) 2013, 2014, 2015 Mark Kettenis
  *
@@ -23,7 +23,6 @@
 #include <sys/kernel.h>
 #include <sys/stdint.h>
 #include <sys/mutex.h>
-#include <sys/proc.h>
 #include <linux/wait.h>
 #include <linux/hrtimer.h>
 
@@ -47,6 +46,7 @@ long schedule_timeout(long);
 
 #define io_schedule_timeout(x)	schedule_timeout(x)
 
+struct proc;
 int wake_up_process(struct proc *p);
 
 #endif

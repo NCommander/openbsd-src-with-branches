@@ -1,4 +1,4 @@
-/* $OpenBSD: dwiic_acpi.c,v 1.11 2019/07/31 16:07:21 jcs Exp $ */
+/* $OpenBSD: dwiic_acpi.c,v 1.12 2019/08/04 15:44:17 kettenis Exp $ */
 /*
  * Synopsys DesignWare I2C controller
  *
@@ -20,7 +20,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/kthread.h>
 
 #include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>
