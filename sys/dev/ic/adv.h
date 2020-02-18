@@ -1,10 +1,10 @@
-/*	$OpenBSD: adv.h,v 1.5 2002/03/14 01:26:53 millert Exp $	*/
+/*	$OpenBSD: adv.h,v 1.6 2008/06/26 05:42:15 ray Exp $	*/
 /*      $NetBSD: adv.h,v 1.3 1998/09/26 16:02:56 dante Exp $        */
 
 /*
  * Generic driver definitions and exported functions for the Advanced
  * Systems Inc. Narrow SCSI controllers
- * 
+ *
  * Copyright (c) 1998 The NetBSD Foundation, Inc.
  * All rights reserved.
  *
