@@ -1,4 +1,4 @@
-/*	$OpenBSD: stp4020.c,v 1.20 2018/12/27 11:09:17 claudio Exp $	*/
+/*	$OpenBSD: stp4020.c,v 1.21 2019/12/31 10:05:33 mpi Exp $	*/
 /*	$NetBSD: stp4020.c,v 1.23 2002/06/01 23:51:03 lukem Exp $	*/
 
 /*-
@@ -832,23 +832,20 @@ stp4020_chip_intr_string(pcmcia_chipset_handle_t pch, void *ih)
  * XXX - assumes a context
  */
 void
-stp4020_delay(unsigned int ms)
+stp4020_delay(unsigned int usecs)
 {
-	unsigned int nticks;
+	int chan;
 
-	/* Convert to nticks */
-	nticks = (ms * hz) / 1000000;
-
-	if (cold || nticks == 0) {
-		delay(ms);
+	if (cold || usecs < tick) {
+		delay(usecs);
 		return;
 	}
 
 #ifdef DEBUG
-	if (nticks > 60 * hz)
-		panic("stp4020: preposterous delay: %u", nticks);
+	if (USEC_TO_NSEC(usecs) > SEC_TO_NSEC(60))
+		panic("stp4020: preposterous delay: %uus", usecs);
 #endif
-	tsleep(&nticks, 0, "stp4020_delay", nticks);
+	tsleep_nsec(&chan, 0, "stp4020_delay", USEC_TO_NSEC(usecs));
 }
 
 #ifdef STP4020_DEBUG
