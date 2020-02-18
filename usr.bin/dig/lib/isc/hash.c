@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: hash.c,v 1.1 2020/02/07 09:58:53 florian Exp $ */
+/* $Id: hash.c,v 1.2 2020/02/17 18:58:39 jung Exp $ */
 
 /*! \file
  * Some portion of this code was derived from universal hash function
@@ -59,13 +59,9 @@ if advised of the possibility of such damage.
 #include <stdlib.h>
 
 #include <isc/hash.h>
-#include <isc/magic.h>
 #include <isc/refcount.h>
 #include <string.h>
 #include <isc/util.h>
-
-#define HASH_MAGIC		ISC_MAGIC('H', 'a', 's', 'h')
-#define VALID_HASH(h)		ISC_MAGIC_VALID((h), HASH_MAGIC)
 
 /*%
  * A large 32-bit prime number that specifies the range of the hash output.
@@ -83,7 +79,6 @@ typedef uint16_t hash_random_t;
 
 /*% isc hash structure */
 struct isc_hash {
-	unsigned int	magic;
 	isc_boolean_t	initialized;
 	isc_refcount_t	refcnt;
 	size_t		limit;	/*%< upper limit of key length */

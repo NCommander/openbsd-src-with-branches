@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dig.c,v 1.9 2020/02/15 11:57:11 jsg Exp $ */
+/* $Id: dig.c,v 1.10 2020/02/17 18:58:39 jung Exp $ */
 
 /*! \file */
 #include <sys/cdefs.h>
@@ -1940,7 +1940,6 @@ dig_shutdown() {
 
 	cancel_all();
 	destroy_libs();
-	isc_app_finish();
 }
 
 /*% Main processing routine for dig */
