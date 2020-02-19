@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: result.h,v 1.1 2020/02/07 09:58:54 florian Exp $ */
+/* $Id: result.h,v 1.2 2020/02/13 13:53:01 jsg Exp $ */
 
 #ifndef ISC_RESULT_H
 #define ISC_RESULT_H 1
@@ -39,8 +39,6 @@
 #define ISC_R_NORESOURCES		13	/*%< not enough free resources */
 #define ISC_R_EOF			14	/*%< end of file */
 #define ISC_R_BOUND			15	/*%< socket already bound */
-#define ISC_R_RELOAD			16	/*%< reload */
-#define ISC_R_SUSPEND	      ISC_R_RELOAD	/*%< alias of 'reload' */
 #define ISC_R_LOCKBUSY			17	/*%< lock busy */
 #define ISC_R_EXISTS			18	/*%< already exists */
 #define ISC_R_NOSPACE			19	/*%< ran out of space */
