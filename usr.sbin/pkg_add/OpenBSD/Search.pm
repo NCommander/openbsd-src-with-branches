@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Search.pm,v 1.29 2016/06/14 15:41:31 espie Exp $
+# $OpenBSD: Search.pm,v 1.30 2018/04/25 09:45:30 espie Exp $
 #
 # Copyright (c) 2007 Marc Espie <espie@openbsd.org>
 #
@@ -26,6 +26,13 @@ sub match_locations
 
 	my @l = map {$o->new_location($_)} $self->match($o);
 	return \@l;
+}
+
+sub keep_all
+{
+	my $self = shift;
+	$self->{keep_all} = 1;
+	return $self;
 }
 
 package OpenBSD::Search::PkgSpec;
