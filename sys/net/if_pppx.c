@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pppx.c,v 1.74 2020/01/28 16:26:09 visa Exp $ */
+/*	$OpenBSD: if_pppx.c,v 1.75 2020/02/18 15:06:27 cheloha Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -191,7 +191,7 @@ void		filt_pppx_rdetach(struct knote *);
 int		filt_pppx_read(struct knote *, long);
 
 const struct filterops pppx_rd_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_pppx_rdetach,
 	.f_event	= filt_pppx_read,
@@ -201,7 +201,7 @@ void		filt_pppx_wdetach(struct knote *);
 int		filt_pppx_write(struct knote *, long);
 
 const struct filterops pppx_wr_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_pppx_wdetach,
 	.f_event	= filt_pppx_write,

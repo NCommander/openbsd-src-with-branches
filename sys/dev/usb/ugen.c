@@ -1,4 +1,4 @@
-/*	$OpenBSD: ugen.c,v 1.100 2019/12/31 13:48:31 visa Exp $ */
+/*	$OpenBSD: ugen.c,v 1.101 2020/01/04 11:37:33 mpi Exp $ */
 /*	$NetBSD: ugen.c,v 1.63 2002/11/26 18:49:48 christos Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/ugen.c,v 1.26 1999/11/17 22:33:41 n_hibma Exp $	*/
 
@@ -1329,21 +1329,21 @@ filt_ugenread_isoc(struct knote *kn, long hint)
 }
 
 const struct filterops ugenread_intr_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_ugenrdetach,
 	.f_event	= filt_ugenread_intr,
 };
 
 const struct filterops ugenread_isoc_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_ugenrdetach,
 	.f_event	= filt_ugenread_isoc,
 };
 
 const struct filterops ugen_seltrue_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_ugenrdetach,
 	.f_event	= filt_seltrue,

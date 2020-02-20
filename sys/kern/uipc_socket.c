@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.239 2020/01/15 13:17:35 mpi Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.240 2020/02/14 14:32:44 mpi Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -73,21 +73,21 @@ int	filt_sowrite(struct knote *kn, long hint);
 int	filt_solisten(struct knote *kn, long hint);
 
 const struct filterops solisten_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_sordetach,
 	.f_event	= filt_solisten,
 };
 
 const struct filterops soread_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_sordetach,
 	.f_event	= filt_soread,
 };
 
 const struct filterops sowrite_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_sowdetach,
 	.f_event	= filt_sowrite,

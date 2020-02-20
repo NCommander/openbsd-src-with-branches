@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.33 2019/12/31 13:48:31 visa Exp $	*/
+/*	$OpenBSD: apm.c,v 1.34 2020/02/16 23:37:23 jca Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -94,7 +94,7 @@ int apm_getdefaultinfo(struct apm_power_info *);
 int apm_suspend(int state);
 
 const struct filterops apmread_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_apmrdetach,
 	.f_event	= filt_apmread,

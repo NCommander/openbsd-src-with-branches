@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhid.c,v 1.75 2019/12/31 13:48:31 visa Exp $ */
+/*	$OpenBSD: uhid.c,v 1.76 2020/01/18 09:00:52 visa Exp $ */
 /*	$NetBSD: uhid.c,v 1.57 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -461,14 +461,14 @@ filt_uhidread(struct knote *kn, long hint)
 }
 
 const struct filterops uhidread_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_uhidrdetach,
 	.f_event	= filt_uhidread,
 };
 
 const struct filterops uhid_seltrue_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_uhidrdetach,
 	.f_event	= filt_seltrue,

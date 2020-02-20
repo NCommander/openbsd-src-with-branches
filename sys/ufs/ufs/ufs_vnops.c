@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vnops.c,v 1.146 2019/08/05 08:35:59 anton Exp $	*/
+/*	$OpenBSD: ufs_vnops.c,v 1.147 2019/12/31 13:48:32 visa Exp $	*/
 /*	$NetBSD: ufs_vnops.c,v 1.18 1996/05/11 18:28:04 mycroft Exp $	*/
 
 /*
@@ -1893,21 +1893,21 @@ bad:
 }
 
 const struct filterops ufsread_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_ufsdetach,
 	.f_event	= filt_ufsread,
 };
 
 const struct filterops ufswrite_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_ufsdetach,
 	.f_event	= filt_ufswrite,
 };
 
 const struct filterops ufsvnode_filtops = {
-	.f_isfd		= 1,
+	.f_flags	= FILTEROP_ISFD,
 	.f_attach	= NULL,
 	.f_detach	= filt_ufsdetach,
 	.f_event	= filt_ufsvnode,
