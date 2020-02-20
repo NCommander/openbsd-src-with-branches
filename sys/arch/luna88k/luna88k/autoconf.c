@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.22 2017/11/03 09:07:54 aoyama Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.23 2018/01/27 22:55:23 naddy Exp $	*/
 /*
  * Copyright (c) 1998 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -124,7 +124,7 @@ get_autoboot_device(void)
 	/* Assume default controller is internal spc (spc0) */
 	strlcpy(autoboot.cont, "spc0", sizeof(autoboot.cont));
 
-	/* Get boot controler and SCSI target from NVRAM */
+	/* Get boot controller and SCSI target from NVRAM */
 	value = nvram_by_symbol("boot_unit");
 	if (value != NULL) {
 		len = strlen(value);
