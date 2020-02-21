@@ -1,4 +1,4 @@
-/*	$OpenBSD: signalvar.h,v 1.36 2019/05/13 19:21:31 bluhm Exp $	*/
+/*	$OpenBSD: signalvar.h,v 1.37 2020/01/03 09:46:41 claudio Exp $	*/
 /*	$NetBSD: signalvar.h,v 1.17 1996/04/22 01:23:31 christos Exp $	*/
 
 /*
@@ -54,7 +54,6 @@ struct	sigacts {
 	sigset_t ps_sigignore;		/* signals being ignored */
 	sigset_t ps_sigcatch;		/* signals being caught by user */
 	int	ps_flags;		/* signal flags, below */
-	int	ps_refcnt;		/* reference count */
 };
 
 /* signal flags */
@@ -177,9 +176,7 @@ int	killpg1(struct proc *, int, int, int);
 void	signal_init(void);
 
 struct sigacts *sigactsinit(struct process *);
-struct sigacts *sigactsshare(struct process *);
 void	sigstkinit(struct sigaltstack *);
-void	sigactsunshare(struct process *);
 void	sigactsfree(struct process *);
 
 /*
