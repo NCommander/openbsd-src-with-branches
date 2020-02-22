@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vnops.c,v 1.111 2020/01/05 13:46:02 visa Exp $	*/
+/*	$OpenBSD: vfs_vnops.c,v 1.112 2020/02/16 19:34:59 anton Exp $	*/
 /*	$NetBSD: vfs_vnops.c,v 1.20 1996/02/04 02:18:41 christos Exp $	*/
 
 /*
@@ -510,6 +510,7 @@ vn_ioctl(struct file *fp, u_long com, caddr_t data, struct proc *p)
 	struct vattr vattr;
 	int error = ENOTTY;
 
+	KERNEL_LOCK();
 	switch (vp->v_type) {
 
 	case VREG:
@@ -541,6 +542,7 @@ vn_ioctl(struct file *fp, u_long com, caddr_t data, struct proc *p)
 	default:
 		break;
 	}
+	KERNEL_UNLOCK();
 
 	return (error);
 }
