@@ -140,7 +140,7 @@ struct sysent sysent[] = {
 	    sys_sigpending },			/* 52 = sigpending */
 	{ 2, s(struct sys_fstat_args), 0,
 	    sys_fstat },			/* 53 = fstat */
-	{ 3, s(struct sys_ioctl_args), 0,
+	{ 3, s(struct sys_ioctl_args), SY_NOLOCK | 0,
 	    sys_ioctl },			/* 54 = ioctl */
 	{ 1, s(struct sys_reboot_args), 0,
 	    sys_reboot },			/* 55 = reboot */
