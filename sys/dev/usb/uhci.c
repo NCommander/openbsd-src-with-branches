@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhci.c,v 1.147 2019/03/12 08:13:50 ratchov Exp $	*/
+/*	$OpenBSD: uhci.c,v 1.148 2019/11/27 11:16:59 mpi Exp $	*/
 /*	$NetBSD: uhci.c,v 1.172 2003/02/23 04:19:26 simonb Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/uhci.c,v 1.33 1999/11/17 22:33:41 n_hibma Exp $	*/
 
@@ -2633,7 +2633,7 @@ uhci_open(struct usbd_pipe *pipe)
 			return (USBD_INVAL);
 		}
 	} else {
-		switch (ed->bmAttributes & UE_XFERTYPE) {
+		switch (UE_GET_XFERTYPE(ed->bmAttributes)) {
 		case UE_CONTROL:
 			pipe->methods = &uhci_device_ctrl_methods;
 			upipe->u.ctl.sqh = uhci_alloc_sqh(sc);

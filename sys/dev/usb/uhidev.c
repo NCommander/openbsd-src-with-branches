@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhidev.c,v 1.77 2019/11/13 10:40:03 patrick Exp $	*/
+/*	$OpenBSD: uhidev.c,v 1.78 2020/01/04 11:40:56 mpi Exp $	*/
 /*	$NetBSD: uhidev.c,v 1.14 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -168,14 +168,14 @@ uhidev_attach(struct device *parent, struct device *self, void *aux)
 		    ed->bLength, ed->bDescriptorType,
 		    ed->bEndpointAddress & UE_ADDR,
 		    UE_GET_DIR(ed->bEndpointAddress)==UE_DIR_IN? "in" : "out",
-		    ed->bmAttributes & UE_XFERTYPE,
+		    UE_GET_XFERTYPE(ed->bmAttributes),
 		    UGETW(ed->wMaxPacketSize), ed->bInterval));
 
 		if (UE_GET_DIR(ed->bEndpointAddress) == UE_DIR_IN &&
-		    (ed->bmAttributes & UE_XFERTYPE) == UE_INTERRUPT) {
+		    UE_GET_XFERTYPE(ed->bmAttributes) == UE_INTERRUPT) {
 			sc->sc_iep_addr = ed->bEndpointAddress;
 		} else if (UE_GET_DIR(ed->bEndpointAddress) == UE_DIR_OUT &&
-		    (ed->bmAttributes & UE_XFERTYPE) == UE_INTERRUPT) {
+		    UE_GET_XFERTYPE(ed->bmAttributes) == UE_INTERRUPT) {
 			sc->sc_oep_addr = ed->bEndpointAddress;
 		} else {
 			printf("%s: unexpected endpoint\n", DEVNAME(sc));

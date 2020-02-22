@@ -1,4 +1,4 @@
-/*	$OpenBSD: uftdi.c,v 1.74 2015/06/18 09:47:16 mpi Exp $ 	*/
+/*	$OpenBSD: uftdi.c,v 1.75 2016/12/12 04:35:04 jsg Exp $ 	*/
 /*	$NetBSD: uftdi.c,v 1.14 2003/02/23 04:20:07 simonb Exp $	*/
 
 /*
@@ -793,7 +793,7 @@ uftdi_attach(struct device *parent, struct device *self, void *aux)
 
 		addr = ed->bEndpointAddress;
 		dir = UE_GET_DIR(ed->bEndpointAddress);
-		attr = ed->bmAttributes & UE_XFERTYPE;
+		attr = UE_GET_XFERTYPE(ed->bmAttributes);
 		if (dir == UE_DIR_IN && attr == UE_BULK) {
 			uca.bulkin = addr;
 			uca.ibufsize = (UGETW(ed->wMaxPacketSize) > 0) ?
