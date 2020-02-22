@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: hash.c,v 1.2 2020/02/17 18:58:39 jung Exp $ */
+/* $Id: hash.c,v 1.3 2020/02/18 18:11:27 florian Exp $ */
 
 /*! \file
  * Some portion of this code was derived from universal hash function
@@ -62,11 +62,6 @@ if advised of the possibility of such damage.
 #include <isc/refcount.h>
 #include <string.h>
 #include <isc/util.h>
-
-/*%
- * A large 32-bit prime number that specifies the range of the hash output.
- */
-#define PRIME32 0xFFFFFFFB              /* 2^32 -  5 */
 
 /*@{*/
 /*%

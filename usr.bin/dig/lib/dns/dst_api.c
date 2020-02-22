@@ -33,7 +33,7 @@
 
 /*
  * Principal Author: Brian Wellington
- * $Id: dst_api.c,v 1.5 2020/02/18 18:11:27 florian Exp $
+ * $Id: dst_api.c,v 1.6 2020/02/20 18:07:59 florian Exp $
  */
 
 /*! \file */
@@ -57,8 +57,6 @@
 #include <dst/result.h>
 
 #include "dst_internal.h"
-
-#define DST_AS_STR(t) ((t).value.as_textregion.base)
 
 static dst_func_t *dst_t_func[DST_MAX_ALGS];
 static isc_boolean_t dst_initialized = ISC_FALSE;

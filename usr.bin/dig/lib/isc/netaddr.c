@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: netaddr.c,v 1.4 2020/02/13 16:55:44 florian Exp $ */
+/* $Id: netaddr.c,v 1.5 2020/02/17 18:58:39 jung Exp $ */
 
 /*! \file */
 
@@ -156,7 +156,3 @@ isc_netaddr_issitelocal(isc_netaddr_t *na) {
 		return (ISC_FALSE);
 	}
 }
-
-#define ISC_IPADDR_ISNETZERO(i) \
-	       (((uint32_t)(i) & ISC__IPADDR(0xff000000)) \
-		== ISC__IPADDR(0x00000000))
