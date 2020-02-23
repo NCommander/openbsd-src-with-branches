@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dst.h,v 1.7 2020/02/22 19:47:06 jung Exp $ */
+/* $Id: dst.h,v 1.8 2020/02/23 08:51:53 florian Exp $ */
 
 #ifndef DST_DST_H
 #define DST_DST_H 1
@@ -227,9 +227,7 @@ dst_key_todns(const dst_key_t *key, isc_buffer_t *target);
  */
 
 isc_result_t
-dst_key_frombuffer(dns_name_t *name, unsigned int alg,
-		   unsigned int flags, unsigned int protocol,
-		   dns_rdataclass_t rdclass,
+dst_key_frombuffer(unsigned int alg, unsigned int flags, unsigned int protocol,
 		   isc_buffer_t *source, dst_key_t **keyp);
 /*%<
  * Converts a buffer containing DNS KEY RDATA into a DST key.
