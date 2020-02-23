@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: rdata.c,v 1.10 2020/02/22 19:47:06 jung Exp $ */
+/* $Id: rdata.c,v 1.11 2020/02/22 19:51:03 jung Exp $ */
 
 /*! \file */
 
@@ -32,7 +32,6 @@
 
 #include <isc/util.h>
 
-#include <dns/callbacks.h>
 #include <dns/cert.h>
 #include <dns/compress.h>
 #include "enumtype.h"
