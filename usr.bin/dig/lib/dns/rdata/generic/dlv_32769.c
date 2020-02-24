@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dlv_32769.c,v 1.5 2020/02/24 12:06:51 florian Exp $ */
+/* $Id: dlv_32769.c,v 1.6 2020/02/24 17:43:52 florian Exp $ */
 
 /* RFC3658 */
 
@@ -59,13 +59,6 @@ towire_dlv(ARGS_TOWIRE) {
 }
 
 
-static inline isc_result_t
-fromstruct_dlv(ARGS_FROMSTRUCT) {
-
-	REQUIRE(type == dns_rdatatype_dlv);
-
-	return (generic_fromstruct_ds(rdclass, type, source, target));
-}
 
 static inline isc_result_t
 tostruct_dlv(ARGS_TOSTRUCT) {
