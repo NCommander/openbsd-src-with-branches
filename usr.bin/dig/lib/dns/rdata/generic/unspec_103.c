@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: unspec_103.c,v 1.3 2020/02/23 19:54:26 jung Exp $ */
+/* $Id: unspec_103.c,v 1.4 2020/02/24 12:06:14 florian Exp $ */
 
 #ifndef RDATA_GENERIC_UNSPEC_103_C
 #define RDATA_GENERIC_UNSPEC_103_C
@@ -106,18 +106,6 @@ freestruct_unspec(ARGS_FREESTRUCT) {
 		free(unspec->data);
 }
 
-static inline isc_boolean_t
-checkowner_unspec(ARGS_CHECKOWNER) {
-
-	REQUIRE(type == dns_rdatatype_unspec);
-
-	UNUSED(name);
-	UNUSED(type);
-	UNUSED(rdclass);
-	UNUSED(wildcard);
-
-	return (ISC_TRUE);
-}
 
 
 #endif	/* RDATA_GENERIC_UNSPEC_103_C */

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: sig_24.c,v 1.3 2020/02/23 19:54:26 jung Exp $ */
+/* $Id: sig_24.c,v 1.4 2020/02/24 12:06:14 florian Exp $ */
 
 /* Reviewed: Fri Mar 17 09:05:02 PST 2000 by gson */
 
@@ -382,17 +382,5 @@ covers_sig(dns_rdata_t *rdata) {
 	return (type);
 }
 
-static inline isc_boolean_t
-checkowner_sig(ARGS_CHECKOWNER) {
-
-	REQUIRE(type == dns_rdatatype_sig);
-
-	UNUSED(name);
-	UNUSED(type);
-	UNUSED(rdclass);
-	UNUSED(wildcard);
-
-	return (ISC_TRUE);
-}
 
 #endif	/* RDATA_GENERIC_SIG_24_C */

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: uri_256.c,v 1.3 2020/02/23 19:54:26 jung Exp $ */
+/* $Id: uri_256.c,v 1.4 2020/02/24 12:06:14 florian Exp $ */
 
 #ifndef GENERIC_URI_256_C
 #define GENERIC_URI_256_C 1
@@ -178,18 +178,6 @@ freestruct_uri(ARGS_FREESTRUCT) {
 		free(uri->target);
 }
 
-static inline isc_boolean_t
-checkowner_uri(ARGS_CHECKOWNER) {
-
-	REQUIRE(type == dns_rdatatype_uri);
-
-	UNUSED(name);
-	UNUSED(type);
-	UNUSED(rdclass);
-	UNUSED(wildcard);
-
-	return (ISC_TRUE);
-}
 
 
 #endif /* GENERIC_URI_256_C */

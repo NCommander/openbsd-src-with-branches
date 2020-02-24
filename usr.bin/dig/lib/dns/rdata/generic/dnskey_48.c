@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dnskey_48.c,v 1.3 2020/02/23 19:54:26 jung Exp $ */
+/* $Id: dnskey_48.c,v 1.4 2020/02/24 12:06:13 florian Exp $ */
 
 /*
  * Reviewed: Wed Mar 15 16:47:10 PST 2000 by halley.
@@ -95,18 +95,6 @@ freestruct_dnskey(ARGS_FREESTRUCT) {
 	generic_freestruct_key(source);
 }
 
-static inline isc_boolean_t
-checkowner_dnskey(ARGS_CHECKOWNER) {
-
-	REQUIRE(type == dns_rdatatype_dnskey);
-
-	UNUSED(name);
-	UNUSED(type);
-	UNUSED(rdclass);
-	UNUSED(wildcard);
-
-	return (ISC_TRUE);
-}
 
 
 #endif	/* RDATA_GENERIC_DNSKEY_48_C */
