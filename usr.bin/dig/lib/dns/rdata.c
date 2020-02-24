@@ -14,27 +14,23 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: rdata.c,v 1.12 2020/02/23 04:15:57 jsg Exp $ */
+/* $Id: rdata.c,v 1.13 2020/02/23 19:54:25 jung Exp $ */
 
 /*! \file */
 
 
 #include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <isc/base64.h>
 #include <isc/hex.h>
 #include <isc/lex.h>
-
 #include <isc/parseint.h>
-
-#include <string.h>
-
 #include <isc/util.h>
 
 #include <dns/cert.h>
 #include <dns/compress.h>
-#include "enumtype.h"
 #include <dns/keyvalues.h>
 #include <dns/rcode.h>
 #include <dns/rdata.h>
