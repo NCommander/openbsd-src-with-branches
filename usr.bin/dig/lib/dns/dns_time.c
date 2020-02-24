@@ -14,19 +14,18 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dns_time.c,v 1.4 2020/02/16 21:12:41 florian Exp $ */
+/* $Id: dns_time.c,v 1.5 2020/02/23 19:54:25 jung Exp $ */
 
 /*! \file */
 
 #include <stdio.h>
 #include <string.h>		/* Required for HP/UX (and others?) */
 #include <time.h>
-#include <ctype.h>
 
 #include <isc/region.h>
 #include <isc/serial.h>
+#include <isc/result.h>
 
-#include <dns/result.h>
 #include <dns/time.h>
 
 static const int days[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dig.c,v 1.10 2020/02/17 18:58:39 jung Exp $ */
+/* $Id: dig.c,v 1.11 2020/02/18 18:11:27 florian Exp $ */
 
 /*! \file */
 #include <sys/cdefs.h>
@@ -27,6 +27,7 @@
 
 #include <string.h>
 #include <isc/util.h>
+#include <isc/time.h>
 
 #include <dns/fixedname.h>
 #include <dns/masterdump.h>
