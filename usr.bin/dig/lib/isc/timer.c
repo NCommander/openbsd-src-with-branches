@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: timer.c,v 1.20 2020/02/21 07:44:50 florian Exp $ */
+/* $Id: timer.c,v 1.21 2020/02/22 19:50:05 jung Exp $ */
 
 /*! \file */
 
@@ -27,9 +27,6 @@
 #include <isc/util.h>
 
 #include "timer_p.h"
-
-typedef struct isc_timer isc_timer_t;
-typedef struct isc_timermgr isc_timermgr_t;
 
 struct isc_timer {
 	/*! Not locked. */
