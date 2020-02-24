@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: gpos_27.c,v 1.4 2020/02/24 12:06:13 florian Exp $ */
+/* $Id: gpos_27.c,v 1.5 2020/02/24 12:06:51 florian Exp $ */
 
 /* reviewed: Wed Mar 15 16:48:45 PST 2000 by brister */
 
@@ -142,18 +142,6 @@ tostruct_gpos(ARGS_TOSTRUCT) {
 	return (ISC_R_NOMEMORY);
 }
 
-static inline void
-freestruct_gpos(ARGS_FREESTRUCT) {
-	dns_rdata_gpos_t *gpos = source;
-
-	REQUIRE(source != NULL);
-	REQUIRE(gpos->common.rdtype == dns_rdatatype_gpos);
-
-
-	free(gpos->longitude);
-	free(gpos->latitude);
-	free(gpos->altitude);
-}
 
 
 

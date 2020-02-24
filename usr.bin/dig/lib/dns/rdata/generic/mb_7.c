@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: mb_7.c,v 1.4 2020/02/24 12:06:13 florian Exp $ */
+/* $Id: mb_7.c,v 1.5 2020/02/24 12:06:51 florian Exp $ */
 
 /* Reviewed: Wed Mar 15 17:31:26 PST 2000 by bwelling */
 
@@ -117,14 +117,6 @@ tostruct_mb(ARGS_TOSTRUCT) {
 	return (ISC_R_SUCCESS);
 }
 
-static inline void
-freestruct_mb(ARGS_FREESTRUCT) {
-	dns_rdata_mb_t *mb = source;
-
-	REQUIRE(source != NULL);
-
-	dns_name_free(&mb->mb);
-}
 
 
 
