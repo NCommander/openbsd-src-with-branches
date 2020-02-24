@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dighost.c,v 1.20 2020/02/24 17:44:44 florian Exp $ */
+/* $Id: dighost.c,v 1.21 2020/02/24 17:45:25 florian Exp $ */
 
 /*! \file
  *  \note
@@ -45,7 +45,6 @@
 #include <dns/rdataclass.h>
 #include <dns/rdatalist.h>
 #include <dns/rdataset.h>
-#include "rdatastruct.h"
 #include <dns/rdatatype.h>
 #include <dns/result.h>
 #include <dns/tsig.h>
