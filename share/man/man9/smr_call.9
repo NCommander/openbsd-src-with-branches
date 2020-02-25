@@ -1,4 +1,4 @@
-.\"	$OpenBSD: smr_call.9,v 1.1 2019/02/26 14:28:20 visa Exp $
+.\"	$OpenBSD: smr_call.9,v 1.2 2019/07/05 04:41:23 dlg Exp $
 .\"
 .\" Copyright (c) 2019 Visa Hankala
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: February 26 2019 $
+.Dd $Mdocdate: July 5 2019 $
 .Dt SMR_CALL 9
 .Os
 .Sh NAME
@@ -118,7 +118,7 @@ can be called during autoconf, from process context, or from interrupt context.
 .Fn smr_barrier
 and
 .Fn smr_flush
-can be called during autoconf, or from process context.
+can be called from process context.
 .Sh SEE ALSO
 .Xr mutex 9 ,
 .Xr rwlock 9 ,
