@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: refcount.h,v 1.1 2020/02/07 09:58:54 florian Exp $ */
+/* $Id: refcount.h,v 1.2 2020/02/13 13:53:01 jsg Exp $ */
 
 #ifndef ISC_REFCOUNT_H
 #define ISC_REFCOUNT_H 1
@@ -83,7 +83,6 @@
  * Requires:
  *	ref != NULL.
  */
-
 
 /*
  * Sample implementations

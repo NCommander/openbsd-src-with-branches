@@ -14,15 +14,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: hmacsha.c,v 1.2 2020/02/11 17:28:46 florian Exp $ */
+/* $Id: hmacsha.c,v 1.3 2020/02/11 23:26:11 jsg Exp $ */
 
 /*
  * This code implements the HMAC-SHA1, HMAC-SHA224, HMAC-SHA256, HMAC-SHA384
  * and HMAC-SHA512 keyed hash algorithm described in RFC 2104 and
  * draft-ietf-dnsext-tsig-sha-01.txt.
  */
-
-
 
 #include <isc/hmacsha.h>
 

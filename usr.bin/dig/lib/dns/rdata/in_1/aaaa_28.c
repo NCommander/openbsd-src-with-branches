@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: aaaa_28.c,v 1.7 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: aaaa_28.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /* Reviewed: Thu Mar 16 16:52:50 PST 2000 by bwelling */
 
@@ -84,10 +84,5 @@ towire_in_aaaa(ARGS_TOWIRE) {
 	isc_buffer_add(target, 16);
 	return (ISC_R_SUCCESS);
 }
-
-
-
-
-
 
 #endif	/* RDATA_IN_1_AAAA_28_C */

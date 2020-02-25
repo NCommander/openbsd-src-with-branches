@@ -14,11 +14,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: sockaddr.c,v 1.5 2020/02/13 12:03:51 jsg Exp $ */
+/* $Id: sockaddr.c,v 1.6 2020/02/13 16:55:44 florian Exp $ */
 
 /*! \file */
-
-
 
 #include <stdio.h>
 

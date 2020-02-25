@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: grammar.h,v 1.1 2020/02/07 09:58:54 florian Exp $ */
+/* $Id: grammar.h,v 1.2 2020/02/25 02:35:46 jsg Exp $ */
 
 #ifndef ISCCFG_GRAMMAR_H
 #define ISCCFG_GRAMMAR_H 1
@@ -98,7 +98,6 @@ struct cfg_obj {
 	const char *	file;
 	unsigned int    line;
 };
-
 
 /*% A list element. */
 struct cfg_listelt {

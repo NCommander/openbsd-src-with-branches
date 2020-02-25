@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dlv_32769.c,v 1.7 2020/02/24 17:44:44 florian Exp $ */
+/* $Id: dlv_32769.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /* RFC3658 */
 
@@ -57,11 +57,5 @@ towire_dlv(ARGS_TOWIRE) {
 	dns_rdata_toregion(rdata, &sr);
 	return (mem_tobuffer(target, sr.base, sr.length));
 }
-
-
-
-
-
-
 
 #endif	/* RDATA_GENERIC_DLV_32769_C */

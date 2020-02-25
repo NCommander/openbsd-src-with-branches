@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: wks_11.c,v 1.8 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: wks_11.c,v 1.9 2020/02/24 17:45:26 florian Exp $ */
 
 /* Reviewed: Fri Mar 17 15:01:49 PST 2000 by explorer */
 
@@ -110,11 +110,5 @@ towire_in_wks(ARGS_TOWIRE) {
 	dns_rdata_toregion(rdata, &sr);
 	return (mem_tobuffer(target, sr.base, sr.length));
 }
-
-
-
-
-
-
 
 #endif	/* RDATA_IN_1_WKS_11_C */

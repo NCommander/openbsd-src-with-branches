@@ -14,11 +14,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: netaddr.c,v 1.5 2020/02/17 18:58:39 jung Exp $ */
+/* $Id: netaddr.c,v 1.6 2020/02/22 19:51:03 jung Exp $ */
 
 /*! \file */
-
-
 
 #include <stdio.h>
 

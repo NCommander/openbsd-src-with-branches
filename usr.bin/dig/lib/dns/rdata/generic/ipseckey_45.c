@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ipseckey_45.c,v 1.7 2020/02/24 17:44:44 florian Exp $ */
+/* $Id: ipseckey_45.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 #ifndef RDATA_GENERIC_IPSECKEY_45_C
 #define RDATA_GENERIC_IPSECKEY_45_C
@@ -171,11 +171,5 @@ towire_ipseckey(ARGS_TOWIRE) {
 	dns_rdata_toregion(rdata, &region);
 	return (mem_tobuffer(target, region.base, region.length));
 }
-
-
-
-
-
-
 
 #endif	/* RDATA_GENERIC_IPSECKEY_45_C */

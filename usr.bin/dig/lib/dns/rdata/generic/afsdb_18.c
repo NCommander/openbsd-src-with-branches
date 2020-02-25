@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: afsdb_18.c,v 1.7 2020/02/24 17:44:44 florian Exp $ */
+/* $Id: afsdb_18.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /* Reviewed: Wed Mar 15 14:59:00 PST 2000 by explorer */
 
@@ -101,10 +101,5 @@ towire_afsdb(ARGS_TOWIRE) {
 
 	return (dns_name_towire(&name, cctx, target));
 }
-
-
-
-
-
 
 #endif	/* RDATA_GENERIC_AFSDB_18_C */

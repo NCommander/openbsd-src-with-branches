@@ -14,11 +14,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: assertions.c,v 1.3 2020/02/12 13:05:04 jsg Exp $ */
+/* $Id: assertions.c,v 1.4 2020/02/13 08:15:31 florian Exp $ */
 
 /*! \file */
-
-
 
 #include <stdio.h>
 #include <stdlib.h>

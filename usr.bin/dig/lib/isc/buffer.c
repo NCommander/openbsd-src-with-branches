@@ -14,10 +14,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: buffer.c,v 1.4 2020/02/22 19:47:06 jung Exp $ */
+/* $Id: buffer.c,v 1.5 2020/02/22 19:48:48 jung Exp $ */
 
 /*! \file */
-
 
 #include <stdlib.h>
 #include <isc/buffer.h>

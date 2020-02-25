@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: timer.c,v 1.22 2020/02/24 00:17:44 aoyama Exp $ */
+/* $Id: timer.c,v 1.23 2020/02/24 13:49:38 jsg Exp $ */
 
 /*! \file */
 
@@ -274,7 +274,6 @@ isc_timer_touch(isc_timer_t *timer) {
 	/*
 	 * Set the last-touched time of 'timer' to the current time.
 	 */
-
 
 	clock_gettime(CLOCK_MONOTONIC, &now);
 	timespecadd(&now, &timer->interval, &timer->idle);

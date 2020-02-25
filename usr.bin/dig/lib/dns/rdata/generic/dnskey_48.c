@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dnskey_48.c,v 1.7 2020/02/24 17:44:44 florian Exp $ */
+/* $Id: dnskey_48.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /*
  * Reviewed: Wed Mar 15 16:47:10 PST 2000 by halley.
@@ -60,11 +60,5 @@ towire_dnskey(ARGS_TOWIRE) {
 	dns_rdata_toregion(rdata, &sr);
 	return (mem_tobuffer(target, sr.base, sr.length));
 }
-
-
-
-
-
-
 
 #endif	/* RDATA_GENERIC_DNSKEY_48_C */

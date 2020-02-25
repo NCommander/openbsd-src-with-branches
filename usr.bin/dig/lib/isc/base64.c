@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: base64.c,v 1.2 2020/02/23 23:40:22 jsg Exp $ */
+/* $Id: base64.c,v 1.3 2020/02/24 13:49:38 jsg Exp $ */
 
 /*! \file */
 
@@ -30,7 +30,6 @@
 	if (_r != ISC_R_SUCCESS) \
 		return (_r); \
 	} while (0)
-
 
 /*@{*/
 /*!

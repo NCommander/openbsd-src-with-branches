@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: uri_256.c,v 1.7 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: uri_256.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 #ifndef GENERIC_URI_256_C
 #define GENERIC_URI_256_C 1
@@ -94,11 +94,5 @@ towire_uri(ARGS_TOWIRE) {
 	dns_rdata_toregion(rdata, &region);
 	return (mem_tobuffer(target, region.base, region.length));
 }
-
-
-
-
-
-
 
 #endif /* GENERIC_URI_256_C */

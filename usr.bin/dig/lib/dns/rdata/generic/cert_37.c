@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: cert_37.c,v 1.7 2020/02/24 17:44:44 florian Exp $ */
+/* $Id: cert_37.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /* Reviewed: Wed Mar 15 21:14:32 EST 2000 by tale */
 
@@ -107,10 +107,5 @@ towire_cert(ARGS_TOWIRE) {
 	dns_rdata_toregion(rdata, &sr);
 	return (mem_tobuffer(target, sr.base, sr.length));
 }
-
-
-
-
-
 
 #endif	/* RDATA_GENERIC_CERT_37_C */

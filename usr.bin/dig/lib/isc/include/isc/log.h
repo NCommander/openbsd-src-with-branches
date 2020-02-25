@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: log.h,v 1.5 2020/02/13 16:57:55 florian Exp $ */
+/* $Id: log.h,v 1.6 2020/02/17 18:58:39 jung Exp $ */
 
 #ifndef ISC_LOG_H
 #define ISC_LOG_H 1
@@ -23,8 +23,6 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-
-
 
 #include <isc/types.h>
 

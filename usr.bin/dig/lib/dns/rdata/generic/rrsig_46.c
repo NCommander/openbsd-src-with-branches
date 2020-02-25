@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: rrsig_46.c,v 1.7 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: rrsig_46.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /* Reviewed: Fri Mar 17 09:05:02 PST 2000 by gson */
 
@@ -217,10 +217,6 @@ towire_rrsig(ARGS_TOWIRE) {
 	return (mem_tobuffer(target, sr.base, sr.length));
 }
 
-
-
-
-
 static inline dns_rdatatype_t
 covers_rrsig(dns_rdata_t *rdata) {
 	dns_rdatatype_t type;
@@ -233,7 +229,5 @@ covers_rrsig(dns_rdata_t *rdata) {
 
 	return (type);
 }
-
-
 
 #endif	/* RDATA_GENERIC_RRSIG_46_C */

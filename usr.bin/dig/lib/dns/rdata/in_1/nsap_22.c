@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: nsap_22.c,v 1.7 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: nsap_22.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /* Reviewed: Fri Mar 17 10:41:07 PST 2000 by gson */
 
@@ -77,11 +77,5 @@ towire_in_nsap(ARGS_TOWIRE) {
 
 	return (mem_tobuffer(target, rdata->data, rdata->length));
 }
-
-
-
-
-
-
 
 #endif	/* RDATA_IN_1_NSAP_22_C */

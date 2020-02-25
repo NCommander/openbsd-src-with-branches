@@ -14,9 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: key.c,v 1.6 2020/02/22 19:47:06 jung Exp $ */
-
-
+/* $Id: key.c,v 1.7 2020/02/23 23:40:21 jsg Exp $ */
 
 #include <stddef.h>
 #include <stdint.h>

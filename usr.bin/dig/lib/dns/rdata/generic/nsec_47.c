@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: nsec_47.c,v 1.7 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: nsec_47.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /* reviewed: Wed Mar 15 18:21:15 PST 2000 by brister */
 
@@ -93,10 +93,5 @@ towire_nsec(ARGS_TOWIRE) {
 
 	return (mem_tobuffer(target, sr.base, sr.length));
 }
-
-
-
-
-
 
 #endif	/* RDATA_GENERIC_NSEC_47_C */

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: name.c,v 1.11 2020/02/24 15:09:14 jsg Exp $ */
+/* $Id: name.c,v 1.12 2020/02/24 16:11:20 florian Exp $ */
 
 /*! \file */
 #include <ctype.h>
@@ -188,7 +188,6 @@ dns_name_invalidate(dns_name_t *name) {
 	 * Make 'name' invalid.
 	 */
 
-
 	name->ndata = NULL;
 	name->length = 0;
 	name->labels = 0;
@@ -216,7 +215,6 @@ dns_name_isabsolute(const dns_name_t *name) {
 	/*
 	 * Does 'name' end in the root label?
 	 */
-
 
 	if ((name->attributes & DNS_NAMEATTR_ABSOLUTE) != 0)
 		return (ISC_TRUE);
@@ -523,7 +521,6 @@ dns_name_countlabels(const dns_name_t *name) {
 	/*
 	 * How many labels does 'name' have?
 	 */
-
 
 	ENSURE(name->labels <= 128);
 

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: a6_38.c,v 1.7 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: a6_38.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /* RFC2874 */
 
@@ -149,11 +149,5 @@ towire_in_a6(ARGS_TOWIRE) {
 	dns_name_fromregion(&name, &sr);
 	return (dns_name_towire(&name, cctx, target));
 }
-
-
-
-
-
-
 
 #endif	/* RDATA_IN_1_A6_38_C */

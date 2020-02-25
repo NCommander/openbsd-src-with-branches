@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: naptr_35.c,v 1.7 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: naptr_35.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /* Reviewed: Thu Mar 16 16:52:50 PST 2000 by bwelling */
 
@@ -269,11 +269,5 @@ towire_naptr(ARGS_TOWIRE) {
 	dns_name_fromregion(&name, &sr);
 	return (dns_name_towire(&name, cctx, target));
 }
-
-
-
-
-
-
 
 #endif	/* RDATA_GENERIC_NAPTR_35_C */

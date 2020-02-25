@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: tkey_249.c,v 1.7 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: tkey_249.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /*
  * Reviewed: Thu Mar 16 17:35:30 PST 2000 by halley.
@@ -222,10 +222,5 @@ towire_tkey(ARGS_TOWIRE) {
 
 	return (mem_tobuffer(target, sr.base, sr.length));
 }
-
-
-
-
-
 
 #endif	/* RDATA_GENERIC_TKEY_249_C */

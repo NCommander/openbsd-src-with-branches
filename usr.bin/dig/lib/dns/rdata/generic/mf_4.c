@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: mf_4.c,v 1.7 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: mf_4.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /* reviewed: Wed Mar 15 17:47:33 PST 2000 by brister */
 
@@ -76,11 +76,5 @@ towire_mf(ARGS_TOWIRE) {
 
 	return (dns_name_towire(&name, cctx, target));
 }
-
-
-
-
-
-
 
 #endif	/* RDATA_GENERIC_MF_4_C */

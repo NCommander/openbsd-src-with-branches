@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: px_26.c,v 1.7 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: px_26.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
 
 /* Reviewed: Mon Mar 20 10:44:27 PST 2000 */
 
@@ -136,11 +136,5 @@ towire_in_px(ARGS_TOWIRE) {
 	dns_name_fromregion(&name, &region);
 	return (dns_name_towire(&name, cctx, target));
 }
-
-
-
-
-
-
 
 #endif	/* RDATA_IN_1_PX_26_C */

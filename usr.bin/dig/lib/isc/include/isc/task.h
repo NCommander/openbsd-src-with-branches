@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: task.h,v 1.6 2020/02/18 18:11:27 florian Exp $ */
+/* $Id: task.h,v 1.7 2020/02/22 19:47:07 jung Exp $ */
 
 #ifndef ISC_TASK_H
 #define ISC_TASK_H 1
@@ -73,7 +73,6 @@
  * of purging solves this problem.  As a general rule, producers should only
  * unsend events which they have sent.
  */
-
 
 /***
  *** Imports.
@@ -213,7 +212,6 @@ isc_task_sendanddetach(isc_task_t **taskp, isc_event_t **eventp);
  *	the task has been shutdown,
  *		all resources used by the task will be freed.
  */
-
 
 unsigned int
 isc_task_purgerange(isc_task_t *task, void *sender, isc_eventtype_t first,

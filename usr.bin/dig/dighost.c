@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dighost.c,v 1.21 2020/02/24 17:45:25 florian Exp $ */
+/* $Id: dighost.c,v 1.22 2020/02/24 17:57:54 florian Exp $ */
 
 /*! \file
  *  \note
@@ -2530,7 +2530,6 @@ force_timeout(dig_query_t *query) {
 	if (query->timer != NULL)
 		isc_timer_detach(&query->timer);
 }
-
 
 static void
 connect_done(isc_task_t *task, isc_event_t *event);

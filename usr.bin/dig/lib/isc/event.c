@@ -14,13 +14,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: event.c,v 1.1 2020/02/07 09:58:53 florian Exp $ */
+/* $Id: event.c,v 1.2 2020/02/12 13:05:04 jsg Exp $ */
 
 /*!
  * \file
  * \author Principal Author: Bob Halley
  */
-
 
 #include <stdlib.h>
 #include <isc/event.h>

@@ -14,9 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: refcount.c,v 1.6 2020/01/22 13:02:10 florian Exp $ */
-
-
+/* $Id: refcount.c,v 1.1 2020/02/07 09:58:54 florian Exp $ */
 
 #include <stddef.h>
 
