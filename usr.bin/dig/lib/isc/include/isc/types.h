@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: types.h,v 1.2 2020/02/16 18:05:09 florian Exp $ */
+/* $Id: types.h,v 1.3 2020/02/23 11:06:22 jsg Exp $ */
 
 #ifndef ISC_TYPES_H
 #define ISC_TYPES_H 1
@@ -37,7 +37,6 @@
 
 /* Core Types.  Alphabetized by defined type. */
 
-typedef struct isc_appctx		isc_appctx_t;	 	/*%< Application context */
 typedef struct isc_buffer		isc_buffer_t;		/*%< Buffer */
 typedef ISC_LIST(isc_buffer_t)		isc_bufferlist_t;	/*%< Buffer List */
 typedef struct isc_event		isc_event_t;		/*%< Event */
