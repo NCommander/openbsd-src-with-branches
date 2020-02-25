@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.294 2019/12/30 15:48:12 mpi Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.295 2020/01/01 07:06:35 jsg Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -550,6 +550,9 @@ main(void *framep)
 	/* Boot the secondary processors. */
 	cpu_boot_secondary_processors();
 #endif
+
+	/* Now that all CPUs partake in scheduling, start SMR thread. */
+	smr_startup_thread();
 
 	config_process_deferred_mountroot();
 
