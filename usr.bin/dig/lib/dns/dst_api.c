@@ -33,16 +33,15 @@
 
 /*
  * Principal Author: Brian Wellington
- * $Id: dst_api.c,v 1.13 2020/02/25 16:54:24 deraadt Exp $
+ * $Id: dst_api.c,v 1.14 2020/02/25 17:06:08 deraadt Exp $
  */
 
 /*! \file */
 #include <stdlib.h>
+#include <string.h>
 
 #include <isc/buffer.h>
 #include <isc/refcount.h>
-#include <isc/safe.h>
-#include <string.h>
 #include <isc/util.h>
 
 #include <dns/keyvalues.h>
