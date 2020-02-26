@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: uri_256.c,v 1.10 2020/02/26 18:38:15 florian Exp $ */
+/* $Id: uri_256.c,v 1.11 2020/02/26 18:47:25 florian Exp $ */
 
 #ifndef GENERIC_URI_256_C
 #define GENERIC_URI_256_C 1
@@ -38,7 +38,7 @@ totext_uri(ARGS_TOTEXT) {
 	priority = uint16_fromregion(&region);
 	isc_region_consume(&region, 2);
 	snprintf(buf, sizeof(buf), "%u ", priority);
-	RETERR(str_totext(buf, target));
+	RETERR(isc_str_tobuffer(buf, target));
 
 	/*
 	 * Weight
@@ -46,7 +46,7 @@ totext_uri(ARGS_TOTEXT) {
 	weight = uint16_fromregion(&region);
 	isc_region_consume(&region, 2);
 	snprintf(buf, sizeof(buf), "%u ", weight);
-	RETERR(str_totext(buf, target));
+	RETERR(isc_str_tobuffer(buf, target));
 
 	/*
 	 * Target URI

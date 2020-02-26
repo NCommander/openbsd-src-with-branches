@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: nsec_47.c,v 1.10 2020/02/26 18:38:15 florian Exp $ */
+/* $Id: nsec_47.c,v 1.11 2020/02/26 18:47:25 florian Exp $ */
 
 /* reviewed: Wed Mar 15 18:21:15 PST 2000 by brister */
 
@@ -47,7 +47,7 @@ totext_nsec(ARGS_TOTEXT) {
 	 * Don't leave a trailing space when there's no typemap present.
 	 */
 	if (sr.length > 0) {
-		RETERR(str_totext(" ", target));
+		RETERR(isc_str_tobuffer(" ", target));
 	}
 	return (typemap_totext(&sr, NULL, target));
 }
