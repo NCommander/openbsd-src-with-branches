@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-options.c,v 1.89 2019/09/13 04:36:43 dtucker Exp $ */
+/* $OpenBSD: auth-options.c,v 1.90 2019/11/25 00:54:23 djm Exp $ */
 /*
  * Copyright (c) 2018 Damien Miller <djm@mindrot.org>
  *
@@ -219,8 +219,7 @@ sshauthopt_free(struct sshauthopt *opts)
 		free(opts->permitlisten[i]);
 	free(opts->permitlisten);
 
-	explicit_bzero(opts, sizeof(*opts));
-	free(opts);
+	freezero(opts, sizeof(*opts));
 }
 
 struct sshauthopt *

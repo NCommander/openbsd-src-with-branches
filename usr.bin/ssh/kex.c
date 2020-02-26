@@ -1,4 +1,4 @@
-/* $OpenBSD: kex.c,v 1.155 2019/10/08 22:40:39 dtucker Exp $ */
+/* $OpenBSD: kex.c,v 1.156 2020/01/23 10:24:29 dtucker Exp $ */
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
  *
@@ -657,8 +657,7 @@ kex_free_newkeys(struct newkeys *newkeys)
 	}
 	free(newkeys->mac.name);
 	explicit_bzero(&newkeys->mac, sizeof(newkeys->mac));
-	explicit_bzero(newkeys, sizeof(*newkeys));
-	free(newkeys);
+	freezero(newkeys, sizeof(*newkeys));
 }
 
 void

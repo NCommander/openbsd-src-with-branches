@@ -1,4 +1,4 @@
-/* $OpenBSD: authfd.c,v 1.120 2019/11/13 04:47:52 deraadt Exp $ */
+/* $OpenBSD: authfd.c,v 1.121 2019/12/21 02:19:13 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -560,10 +560,8 @@ ssh_remove_identity(int sock, struct sshkey *key)
 		goto out;
 	r = decode_reply(type);
  out:
-	if (blob != NULL) {
-		explicit_bzero(blob, blen);
-		free(blob);
-	}
+	if (blob != NULL)
+		freezero(blob, blen);
 	sshbuf_free(msg);
 	return r;
 }

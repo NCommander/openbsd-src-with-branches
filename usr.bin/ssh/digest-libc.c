@@ -1,4 +1,4 @@
-/* $OpenBSD: digest-libc.c,v 1.5 2015/05/05 02:48:17 jsg Exp $ */
+/* $OpenBSD: digest-libc.c,v 1.6 2017/05/08 22:57:38 djm Exp $ */
 /*
  * Copyright (c) 2013 Damien Miller <djm@mindrot.org>
  * Copyright (c) 2014 Markus Friedl.  All rights reserved.
@@ -220,8 +220,7 @@ ssh_digest_free(struct ssh_digest_ctx *ctx)
 		if (digest) {
 			explicit_bzero(ctx->mdctx, digest->ctx_len);
 			free(ctx->mdctx);
-			explicit_bzero(ctx, sizeof(*ctx));
-			free(ctx);
+			freezero(ctx, sizeof(*ctx));
 		}
 	}
 }
