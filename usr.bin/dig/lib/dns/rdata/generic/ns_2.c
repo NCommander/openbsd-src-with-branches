@@ -14,14 +14,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ns_2.c,v 1.6 2020/02/24 17:44:45 florian Exp $ */
+/* $Id: ns_2.c,v 1.7 2020/02/25 05:00:43 jsg Exp $ */
 
 /* Reviewed: Wed Mar 15 18:15:00 PST 2000 by bwelling */
 
 #ifndef RDATA_GENERIC_NS_2_C
 #define RDATA_GENERIC_NS_2_C
-
-#define RRTYPE_NS_ATTRIBUTES (DNS_RDATATYPEATTR_ZONECUTAUTH)
 
 static inline isc_result_t
 totext_ns(ARGS_TOTEXT) {

@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dnskey_48.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
+/* $Id: dnskey_48.c,v 1.9 2020/02/25 05:00:43 jsg Exp $ */
 
 /*
  * Reviewed: Wed Mar 15 16:47:10 PST 2000 by halley.
@@ -26,8 +26,6 @@
 #define RDATA_GENERIC_DNSKEY_48_C
 
 #include <dst/dst.h>
-
-#define RRTYPE_DNSKEY_ATTRIBUTES (DNS_RDATATYPEATTR_DNSSEC)
 
 static inline isc_result_t
 totext_dnskey(ARGS_TOTEXT) {

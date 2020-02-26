@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: wks_11.c,v 1.9 2020/02/24 17:45:26 florian Exp $ */
+/* $Id: wks_11.c,v 1.10 2020/02/25 05:00:43 jsg Exp $ */
 
 /* Reviewed: Fri Mar 17 15:01:49 PST 2000 by explorer */
 
@@ -26,8 +26,6 @@
 #include <stdlib.h>
 
 #include <isc/net.h>
-
-#define RRTYPE_WKS_ATTRIBUTES (0)
 
 static inline isc_result_t
 totext_in_wks(ARGS_TOTEXT) {

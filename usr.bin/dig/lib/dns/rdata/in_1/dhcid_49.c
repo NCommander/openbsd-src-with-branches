@@ -14,14 +14,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: dhcid_49.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
+/* $Id: dhcid_49.c,v 1.9 2020/02/25 05:00:43 jsg Exp $ */
 
 /* RFC 4701 */
 
 #ifndef RDATA_IN_1_DHCID_49_C
 #define RDATA_IN_1_DHCID_49_C 1
-
-#define RRTYPE_DHCID_ATTRIBUTES 0
 
 static inline isc_result_t
 totext_in_dhcid(ARGS_TOTEXT) {

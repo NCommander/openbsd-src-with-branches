@@ -14,14 +14,12 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ptr_12.c,v 1.8 2020/02/24 17:45:26 florian Exp $ */
+/* $Id: ptr_12.c,v 1.9 2020/02/25 05:00:43 jsg Exp $ */
 
 /* Reviewed: Thu Mar 16 14:05:12 PST 2000 by explorer */
 
 #ifndef RDATA_GENERIC_PTR_12_C
 #define RDATA_GENERIC_PTR_12_C
-
-#define RRTYPE_PTR_ATTRIBUTES (0)
 
 static inline isc_result_t
 totext_ptr(ARGS_TOTEXT) {
