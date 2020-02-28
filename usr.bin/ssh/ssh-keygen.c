@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.398 2020/02/07 03:27:54 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.399 2020/02/26 13:40:09 jsg Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1648,7 +1648,7 @@ prepare_options_buf(struct sshbuf *c, int which)
 	if ((which & OPTIONS_EXTENSIONS) != 0 &&
 	    (certflags_flags & CERTOPT_USER_RC) != 0)
 		add_flag_option(c, "permit-user-rc");
-	if ((which & OPTIONS_CRITICAL) != 0 &&
+	if ((which & OPTIONS_EXTENSIONS) != 0 &&
 	    (certflags_flags & CERTOPT_NO_REQUIRE_USER_PRESENCE) != 0)
 		add_flag_option(c, "no-touch-required");
 	if ((which & OPTIONS_CRITICAL) != 0 &&
