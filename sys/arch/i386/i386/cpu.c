@@ -526,8 +526,7 @@ rdrand(void *v)
 	struct timeout *tmo = v;
 	extern int      has_rdrand;
 	extern int      has_rdseed;
-	uint32_t r;
-	uint64_t tsc = 0;
+	uint32_t r, tsc = 0;
 	uint8_t valid = 0;
 	int i;
 

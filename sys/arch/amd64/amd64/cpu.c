@@ -1219,7 +1219,7 @@ rdrand(void *v)
 		uint64_t u64;
 		uint32_t u32[2];
 	} r, t;
-	uint64_t tsc;
+	uint32_t tsc;
 	uint8_t valid = 0;
 
 	tsc = rdtsc();

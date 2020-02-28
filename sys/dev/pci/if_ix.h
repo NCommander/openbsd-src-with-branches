@@ -244,7 +244,7 @@ struct ix_softc {
 	uint32_t		shadow_vfta[IXGBE_VFTA_SIZE];
 
 	/* Info about the interface */
-	uint64_t		phy_layer;
+	uint64_t		optics;
 	uint32_t		fc; /* local flow ctrl setting */
 	uint16_t		max_frame_size;
 	uint16_t		num_segs;

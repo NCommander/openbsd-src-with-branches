@@ -3,12 +3,9 @@
 
 SUBDIR=	csu libarch libc libcbor libcompiler_rt libcrypto libcurses \
 	libcxxabi libcxx libedit libelf libevent libexpat \
-	libform libfuse libkeynote libkvm libl libm libmenu \
+	libfido2 libform libfuse libkeynote libkvm libl libm libmenu \
 	libossaudio libpanel libpcap libradius librthread \
 	librpcsvc libskey libsndio libssl libtls libusbhid \
 	libutil liby libz
-
-# Build these last because of library dependencies.
-SUBDIR+=libfido2
 
 .include <bsd.subdir.mk>
