@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwmvar.h,v 1.49 2019/12/18 09:52:15 stsp Exp $	*/
+/*	$OpenBSD: if_iwmvar.h,v 1.50 2020/02/12 16:02:51 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -558,6 +558,7 @@ struct iwm_node {
 };
 #define IWM_STATION_ID 0
 #define IWM_AUX_STA_ID 1
+#define IWM_MONITOR_STA_ID 2
 
 #define IWM_ICT_SIZE		4096
 #define IWM_ICT_COUNT		(IWM_ICT_SIZE / sizeof (uint32_t))
