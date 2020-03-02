@@ -1,4 +1,4 @@
-/* $OpenBSD: spawn.c,v 1.13 2020/01/01 21:51:33 nicm Exp $ */
+/* $OpenBSD: spawn.c,v 1.14 2020/01/28 10:21:21 nicm Exp $ */
 
 /*
  * Copyright (c) 2019 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -230,9 +230,9 @@ spawn_pane(struct spawn_context *sc, char **cause)
 	 * the pane's stored one unless specified.
 	 */
 	if (sc->cwd != NULL)
-		cwd = format_single(item, sc->cwd, c, s, NULL, NULL);
+		cwd = format_single(item, sc->cwd, c, item->target.s, NULL, NULL);
 	else if (~sc->flags & SPAWN_RESPAWN)
-		cwd = xstrdup(server_client_get_cwd(c, s));
+		cwd = xstrdup(server_client_get_cwd(c, item->target.s));
 	else
 		cwd = NULL;
 
