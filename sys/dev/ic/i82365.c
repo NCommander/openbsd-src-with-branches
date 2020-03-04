@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365.c,v 1.37 2019/12/31 10:05:32 mpi Exp $	*/
+/*	$OpenBSD: i82365.c,v 1.38 2020/02/25 02:09:22 cheloha Exp $	*/
 /*	$NetBSD: i82365.c,v 1.10 1998/06/09 07:36:55 thorpej Exp $	*/
 
 /*
@@ -429,7 +429,7 @@ pcic_event_thread(arg)
 		} else {
 			splx(s);
 			/* sleep .25s to be enqueued chatterling interrupts */
-			tsleep(pcic_event_thread, PWAIT, "pcicss",
+			tsleep_nsec(pcic_event_thread, PWAIT, "pcicss",
 			    MSEC_TO_NSEC(250));
 		}
 		pcic_event_process(h, pe);
