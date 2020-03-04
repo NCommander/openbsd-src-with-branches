@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftpcmd.y,v 1.67 2019/05/08 23:56:48 tedu Exp $	*/
+/*	$OpenBSD: ftpcmd.y,v 1.68 2019/06/28 13:32:53 deraadt Exp $	*/
 /*	$NetBSD: ftpcmd.y,v 1.7 1996/04/08 19:03:11 jtc Exp $	*/
 
 /*
@@ -374,7 +374,7 @@ cmd
 	| LIST check_login CRLF
 		{
 			if ($2)
-				retrieve(RET_LIST, NULL);
+				retrieve(RET_LIST, ".");
 		}
 	| LIST check_login SP pathname CRLF
 		{
