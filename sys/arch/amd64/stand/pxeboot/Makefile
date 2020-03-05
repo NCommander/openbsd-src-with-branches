@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.36 2019/10/29 02:55:51 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.37 2019/11/28 00:17:11 bluhm Exp $
 
 MAN=	pxeboot.8
 
@@ -40,7 +40,7 @@ SRCS+=	close.c closeall.c dev.c disklabel.c dkcksum.c fchmod.c fstat.c \
 	loadfile.c arc4.c elf32.c elf64.c
 SRCS+=	ether.c net.c netif.c rpc.c
 SRCS+=	bootp.c bootparam.c
-SRCS+=	ufs.c nfs.c tftp.c
+SRCS+=	ufs.c ufs2.c nfs.c tftp.c
 
 .PATH:	${S}/lib/libkern/arch/amd64 ${S}/lib/libkern
 SRCS+=	divdi3.c moddi3.c qdivrem.c udivdi3.c umoddi3.c
