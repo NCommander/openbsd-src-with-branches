@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.400 2020/02/28 01:07:28 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.401 2020/03/06 18:15:04 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -3003,9 +3003,9 @@ do_download_sk(const char *skprovider, const char *device)
 		free(path);
 		if ((r = sshkey_save_public(keys[i], pubpath,
 		    keys[i]->sk_application)) != 0) {
-			free(pubpath);
 			error("Saving public key \"%s\" failed: %s",
 			    pubpath, ssh_err(r));
+			free(pubpath);
 			break;
 		}
 		free(pubpath);
