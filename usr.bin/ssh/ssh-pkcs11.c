@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-pkcs11.c,v 1.46 2019/10/01 10:22:53 djm Exp $ */
+/* $OpenBSD: ssh-pkcs11.c,v 1.47 2020/01/25 00:03:36 djm Exp $ */
 /*
  * Copyright (c) 2010 Markus Friedl.  All rights reserved.
  * Copyright (c) 2014 Pedro Martelletto. All rights reserved.
@@ -1602,6 +1602,8 @@ fail:
 	}
 	if (handle)
 		dlclose(handle);
+	if (ret > 0)
+		ret = -1;
 	return (ret);
 }
 
