@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.201 2020/02/20 16:56:52 visa Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.203 2020/03/02 22:27:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Theo de Raadt.
@@ -299,6 +299,7 @@ enqueue_randomness(u_int val)
 	struct timespec	ts;
 	u_int qlen;
 
+	timespecclear(&ts);
 	if (timeout_initialized(&rnd_timeout))
 		nanotime(&ts);
 
