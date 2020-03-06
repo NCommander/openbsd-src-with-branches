@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2.c,v 1.156 2019/06/28 05:44:09 deraadt Exp $ */
+/* $OpenBSD: auth2.c,v 1.157 2019/09/06 04:53:27 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -207,7 +207,7 @@ input_service_request(int type, u_int32_t seq, struct ssh *ssh)
 	r = 0;
  out:
 	free(service);
-	return 0;
+	return r;
 }
 
 #define MIN_FAIL_DELAY_SECONDS 0.005
