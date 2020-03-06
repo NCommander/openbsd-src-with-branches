@@ -1,4 +1,4 @@
-/*	$OpenBSD: lndir.c,v 1.22 2015/10/10 14:23:12 deraadt Exp $	*/
+/*	$OpenBSD: lndir.c,v 1.23 2019/06/28 13:35:01 deraadt Exp $	*/
 /* $XConsortium: lndir.c /main/15 1995/08/30 10:56:18 gildea $ */
 
 /*
@@ -85,7 +85,7 @@ main(int argc, char *argv[])
 	struct stat fs, ts;
 	char *fn, *tn;
 
-	if (pledge("stdio rpath wpath cpath", NULL) == -1)
+	if (pledge("stdio rpath cpath", NULL) == -1)
 		err(1, "pledge");
 
 	while (++argv, --argc) {
