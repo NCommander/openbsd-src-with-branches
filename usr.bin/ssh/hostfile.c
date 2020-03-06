@@ -1,4 +1,4 @@
-/* $OpenBSD: hostfile.c,v 1.77 2020/01/25 00:21:08 djm Exp $ */
+/* $OpenBSD: hostfile.c,v 1.78 2020/02/26 13:40:09 jsg Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -310,7 +310,7 @@ check_key_not_revoked(struct hostkeys *hostkeys, struct sshkey *k)
 			continue;
 		if (sshkey_equal_public(k, hostkeys->entries[i].key))
 			return -1;
-		if (is_cert &&
+		if (is_cert && k != NULL &&
 		    sshkey_equal_public(k->cert->signature_key,
 		    hostkeys->entries[i].key))
 			return -1;
