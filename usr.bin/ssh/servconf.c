@@ -1,5 +1,5 @@
 
-/* $OpenBSD: servconf.c,v 1.359 2020/01/23 10:24:29 dtucker Exp $ */
+/* $OpenBSD: servconf.c,v 1.360 2020/01/31 22:42:45 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -1910,7 +1910,7 @@ process_server_config_line_depth(ServerOptions *options, char *line,
 			value++;
 			found = 0;
 			if (*arg2 != '/' && *arg2 != '~') {
-				xasprintf(&arg, "%s/%s", SSHDIR, arg);
+				xasprintf(&arg, "%s/%s", SSHDIR, arg2);
 			} else
 				arg = xstrdup(arg2);
 
