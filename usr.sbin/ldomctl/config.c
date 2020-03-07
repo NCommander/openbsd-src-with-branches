@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.33 2020/02/20 20:38:44 kn Exp $	*/
+/*	$OpenBSD: config.c,v 1.34 2020/02/21 19:39:28 kn Exp $	*/
 
 /*
  * Copyright (c) 2012, 2018 Mark Kettenis
@@ -2887,7 +2887,7 @@ list_components(void)
 	if (pri == NULL)
 		err(1, "unable to get PRI");
 
-	pri_init(pri);
+	pri_init_components(pri);
 
 	TAILQ_FOREACH(component, &components, link) {
 		printf("%s\n", component->path);
