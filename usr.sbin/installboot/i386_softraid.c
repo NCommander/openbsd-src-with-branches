@@ -190,7 +190,6 @@ sr_install_bootldr(int devfd, char *dev)
 	sym_set_value(pbr_symbols, "_inodeblk", inodeblk);
 	sym_set_value(pbr_symbols, "_inodedbl", inodedbl);
 	sym_set_value(pbr_symbols, "_nblocks", nblocks);
-	sym_set_value(pbr_symbols, "_blkincr", 0);
 
 	if (verbose)
 		fprintf(stderr, "%s is %d blocks x %d bytes\n",
