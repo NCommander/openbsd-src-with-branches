@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.387 2019/06/24 22:26:25 bluhm Exp $	*/
+/*	$OpenBSD: route.c,v 1.388 2020/01/08 10:02:55 claudio Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -1297,7 +1297,7 @@ rt_ifa_dellocal(struct ifaddr *ifa)
 /*
  * Remove all addresses attached to ``ifa''.
  */
-int
+void
 rt_ifa_purge(struct ifaddr *ifa)
 {
 	struct ifnet		*ifp = ifa->ifa_ifp;
@@ -1330,8 +1330,6 @@ rt_ifa_purge(struct ifaddr *ifa)
 		if (error)
 			break;
 	}
-
-	return error;
 }
 
 int
