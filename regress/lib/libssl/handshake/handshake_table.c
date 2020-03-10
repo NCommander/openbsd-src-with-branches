@@ -1,4 +1,4 @@
-/*	$OpenBSD: handshake_table.c,v 1.10 2019/02/13 17:04:17 tb Exp $	*/
+/*	$OpenBSD: handshake_table.c,v 1.11 2019/04/05 20:25:25 tb Exp $	*/
 /*
  * Copyright (c) 2019 Theo Buehler <tb@openbsd.org>
  *
@@ -218,17 +218,11 @@ mt2str(enum tls13_message_type mt)
 	case CLIENT_FINISHED:
 		ret = "CLIENT_FINISHED";
 		break;
-	case CLIENT_KEY_UPDATE:
-		ret = "CLIENT_KEY_UPDATE";
-		break;
 	case SERVER_HELLO:
 		ret = "SERVER_HELLO";
 		break;
 	case SERVER_HELLO_RETRY:
 		ret = "SERVER_HELLO_RETRY";
-		break;
-	case SERVER_NEW_SESSION_TICKET:
-		ret = "SERVER_NEW_SESSION_TICKET";
 		break;
 	case SERVER_ENCRYPTED_EXTENSIONS:
 		ret = "SERVER_ENCRYPTED_EXTENSIONS";
