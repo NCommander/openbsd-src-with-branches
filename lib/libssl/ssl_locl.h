@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.265 2020/02/21 16:07:00 jsing Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.266 2020/02/21 16:18:52 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1013,7 +1013,6 @@ typedef struct sess_cert_st {
 /*#define RSA_DEBUG	*/
 
 typedef struct ssl3_enc_method {
-	int (*enc)(SSL *, int);
 	unsigned int enc_flags;
 } SSL3_ENC_METHOD;
 
