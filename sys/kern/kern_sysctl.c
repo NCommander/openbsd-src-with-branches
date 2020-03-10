@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.353 2019/01/19 01:53:44 cheloha Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.354 2019/01/29 14:07:15 visa Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -1462,7 +1462,7 @@ sysctl_doproc(int *name, u_int namelen, char *where, size_t *sizep)
 	buflen = where != NULL ? *sizep : 0;
 	needed = error = 0;
 
-	if (namelen != 4 || name[2] < 0 || name[3] < 0 ||
+	if (namelen != 4 || name[2] <= 0 || name[3] < 0 ||
 	    name[2] > sizeof(*kproc))
 		return (EINVAL);
 	op = name[0];
