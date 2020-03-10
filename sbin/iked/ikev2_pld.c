@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_pld.c,v 1.76 2019/11/28 12:16:28 tobhe Exp $	*/
+/*	$OpenBSD: ikev2_pld.c,v 1.77 2020/02/21 15:17:34 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -866,6 +866,7 @@ ikev2_pld_certreq(struct iked *env, struct ikev2_payload *pld,
 	}
 	if ((cr->cr_data = ibuf_new(buf, len)) == NULL) {
 		log_info("%s: failed to allocate buffer.", __func__);
+		free(cr);
 		return (-1);
 	}
 	cr->cr_type = cert.cert_type;
