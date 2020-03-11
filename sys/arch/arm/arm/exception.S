@@ -1,4 +1,4 @@
-/*	$OpenBSD: exception.S,v 1.8 2018/06/03 18:58:11 kettenis Exp $	*/
+/*	$OpenBSD: exception.S,v 1.9 2018/08/06 18:39:13 kettenis Exp $	*/
 /*	$NetBSD: exception.S,v 1.13 2003/10/31 16:30:15 scw Exp $	*/
 
 /*
@@ -93,6 +93,8 @@ ASENTRY_NP(swi_entry)
 	DO_AST
 	PULLFRAME
 	movs	pc, lr			/* Exit */
+	dsb	nsh
+	isb
 
 /*
  * prefetch_abort_entry:
