@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.240 2020/02/14 14:32:44 mpi Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.241 2020/02/20 16:56:52 visa Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -1430,9 +1430,15 @@ somove(struct socket *so, int wait)
 	/*
 	 * By splicing sockets connected to localhost, userland might create a
 	 * loop.  Dissolve splicing with error if loop is detected by counter.
+	 *
+	 * If we deal with looped broadcast/multicast packet we bail out with
+	 * no error to suppress splice termination.
 	 */
-	if ((m->m_flags & M_PKTHDR) && m->m_pkthdr.ph_loopcnt++ >= M_MAXLOOP) {
-		error = ELOOP;
+	if ((m->m_flags & M_PKTHDR) &&
+	    ((m->m_pkthdr.ph_loopcnt++ >= M_MAXLOOP) ||
+	    ((m->m_flags & M_LOOP) && (m->m_flags & (M_BCAST|M_MCAST))))) {
+		if (m->m_pkthdr.ph_loopcnt >= M_MAXLOOP)
+			error = ELOOP;
 		goto release;
 	}
 
