@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.264 2020/02/26 06:32:22 pd Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.265 2020/02/28 16:47:41 mortimer Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -6876,7 +6876,9 @@ vmm_gpa_is_valid(struct vcpu *vcpu, paddr_t gpa, size_t obj_size)
 {
 	struct vm *vm = vcpu->vc_parent;
 	struct vm_mem_range *vmr;
-	for (size_t i = 0; i < vm->vm_nmemranges; ++i) {
+	size_t i;
+
+	for (i = 0; i < vm->vm_nmemranges; ++i) {
 		vmr = &vm->vm_memranges[i];
 		if (vmr->vmr_size >= obj_size &&
 		    vmr->vmr_gpa <= gpa &&
