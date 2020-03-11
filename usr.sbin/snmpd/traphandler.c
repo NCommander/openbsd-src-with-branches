@@ -1,4 +1,4 @@
-/*	$OpenBSD: traphandler.c,v 1.14 2019/08/14 04:43:32 martijn Exp $	*/
+/*	$OpenBSD: traphandler.c,v 1.15 2019/10/24 12:39:27 tb Exp $	*/
 
 /*
  * Copyright (c) 2014 Bret Stephen Lambert <blambert@openbsd.org>
@@ -232,10 +232,13 @@ traphandler_parse(char *buf, size_t n, struct ber_element **req,
 
 	switch (vers) {
 	case SNMP_V1:
-		if (ober_scanf_elements(elm, "{oSddd",
-		    trapoid, &gtype, &etype, uptime) == -1)
+		if (ober_scanf_elements(elm, "{oSddde",
+		    trapoid, &gtype, &etype, uptime, &elm) == -1)
 			goto done;
 		traphandler_v1translate(trapoid, gtype, etype);
+		if (elm->be_type != BER_TYPE_SEQUENCE)
+			goto done;
+		*vbinds = elm->be_sub;
 		break;
 
 	case SNMP_V2:
