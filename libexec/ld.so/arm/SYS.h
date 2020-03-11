@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.25 2017/01/24 07:48:37 guenther Exp $ */
+/*	$OpenBSD: SYS.h,v 1.1 2017/08/27 21:59:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Dale Rahn
@@ -31,7 +31,9 @@
 
 #define SYSTRAP(x) \
 	ldr	r12, =SYS_ ## x;			\
-	swi	0
+	swi	0;					\
+	nop;						\
+	nop
 
 #define DL_SYSCALL(n)					\
 	.global		__CONCAT(_dl_,n)		;\
