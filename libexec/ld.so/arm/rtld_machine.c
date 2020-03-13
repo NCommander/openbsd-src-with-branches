@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.38 2019/11/28 16:54:30 guenther Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.39 2019/12/07 22:57:47 guenther Exp $ */
 
 /*
  * Copyright (c) 2004 Dale Rahn
@@ -364,7 +364,7 @@ _dl_bind(elf_object_t *object, int relidx)
 		register long  arg3 __asm("r2") = 0xffffffff &  cookie;
 		register long  arg4 __asm("r3") = 0xffffffff & (cookie >> 32);
 
-		__asm volatile("swi 0" : "+r" (arg1), "+r" (arg2)
+		__asm volatile("swi 0; nop; nop" : "+r" (arg1), "+r" (arg2)
 		    : "r" (syscall_num), "r" (arg3), "r" (arg4)
 		    : "cc", "memory");
 	}
