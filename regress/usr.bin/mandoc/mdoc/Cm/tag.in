@@ -1,0 +1,21 @@
+.\" $OpenBSD: basic.in,v 1.2 2017/07/04 14:53:24 schwarze Exp $
+.Dd $Mdocdate: March 13 2020 $
+.Dt CM-TAG 1
+.Os
+.Sh NAME
+.Nm Cm-tag
+.Nd tagging of command modifier macros
+.Sh DESCRIPTION
+BEGINTEST
+.Bl -tag -width Ds
+.It Cm one | two
+text
+.It Xo
+.Cm three
+.Xc
+text
+.El
+.Tg
+.Cm four
+.Pp
+ENDTEST

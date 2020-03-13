@@ -1,8 +1,9 @@
-# $OpenBSD: Makefile,v 1.9 2019/01/06 04:41:15 schwarze Exp $
+# $OpenBSD: Makefile,v 1.10 2020/02/27 01:25:58 schwarze Exp $
 
-REGRESS_TARGETS = bullet empty literal longhead manyargs spacing vert width
+REGRESS_TARGETS = bullet empty literal longhead manyargs spacing tag vert width
+TAG_TARGETS	= empty tag
 UTF8_TARGETS	= bullet
 LINT_TARGETS	= empty
-HTML_TARGETS	= bullet literal
+HTML_TARGETS	= bullet empty literal tag
 
 .include <bsd.regress.mk>

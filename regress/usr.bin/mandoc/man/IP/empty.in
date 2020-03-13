@@ -1,8 +1,9 @@
-.\" $OpenBSD$
+.\" $OpenBSD: empty.in,v 1.2 2017/07/04 14:53:23 schwarze Exp $
 .TH IP-EMPTY 1 "July 17, 2012"
 .SH NAME
 IP-empty \- empty indented paragraphs
 .SH DESCRIPTION
+BEGINTEST
 regular
 text
 .IP
@@ -25,3 +26,4 @@ text
 .RE
 regular
 text
+ENDTEST
