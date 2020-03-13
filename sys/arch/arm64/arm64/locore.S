@@ -1,4 +1,4 @@
-/* $OpenBSD: locore.S,v 1.29 2020/02/16 09:33:47 kettenis Exp $ */
+/* $OpenBSD: locore.S,v 1.30 2020/03/11 13:41:53 deraadt Exp $ */
 /*-
  * Copyright (c) 2012-2014 Andrew Turner
  * All rights reserved.
@@ -109,6 +109,8 @@ drop_to_el1:
 	isb
 
 	eret
+	dsb	nsh
+	isb
 
 	.align 3
 .Lsctlr_res1:
