@@ -1,4 +1,4 @@
-/*	$OpenBSD: fnmatch.c,v 1.20 2016/02/26 21:15:31 millert Exp $	*/
+/*	$OpenBSD: fnmatch.c,v 1.21 2016/03/01 20:29:03 millert Exp $	*/
 
 /* Copyright (c) 2011, VMware, Inc.
  * All rights reserved.
@@ -289,7 +289,7 @@ int fnmatch(const char *pattern, const char *string, int flags)
 	const int leading_dir = !!(flags & FNM_LEADING_DIR);
 	const char *dummyptr, *matchptr, *strendseg;
 	int wild;
-	/* For '*' wild processing only; surpress 'used before initialization'
+	/* For '*' wild processing only; suppress 'used before initialization'
 	 * warnings with dummy initialization values;
 	 */
 	const char *strstartseg = NULL;
