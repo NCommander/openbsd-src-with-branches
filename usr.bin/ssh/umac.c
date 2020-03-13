@@ -1,4 +1,4 @@
-/* $OpenBSD: umac.c,v 1.18 2019/11/13 04:47:52 deraadt Exp $ */
+/* $OpenBSD: umac.c,v 1.19 2020/02/26 13:40:09 jsg Exp $ */
 /* -----------------------------------------------------------------------
  *
  * umac.c -- C Implementation UMAC Message Authentication
@@ -39,7 +39,7 @@
   * at http://www.esat.kuleuven.ac.be/~rijmen/rijndael/ (search for
   * "Barreto"). The only two files needed are rijndael-alg-fst.c and
   * rijndael-alg-fst.h. Brian Gladman's version is distributed with the GNU
-  * Public lisence at http://fp.gladman.plus.com/AES/index.htm. It
+  * Public license at http://fp.gladman.plus.com/AES/index.htm. It
   * includes a fast IA-32 assembly version. The OpenSSL crypo library is
   * the third.
   *

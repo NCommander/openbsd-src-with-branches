@@ -1,4 +1,4 @@
-/* $OpenBSD: gss-serv.c,v 1.30 2017/06/24 06:34:38 djm Exp $ */
+/* $OpenBSD: gss-serv.c,v 1.31 2018/07/09 21:37:55 markus Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Simon Wilkinson. All rights reserved.
@@ -333,7 +333,7 @@ ssh_gssapi_storecreds(void)
 		debug("ssh_gssapi_storecreds: Not a GSSAPI mechanism");
 }
 
-/* This allows GSSAPI methods to do things to the childs environment based
+/* This allows GSSAPI methods to do things to the child's environment based
  * on the passed authentication process and credentials.
  */
 /* As user */
