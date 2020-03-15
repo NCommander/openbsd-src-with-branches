@@ -18,7 +18,6 @@
 
 #define NVME_IO_Q	1
 #define NVME_HIB_Q	2
-#define NVME_MAXPHYS	(128 * 1024)
 
 struct nvme_dmamem {
 	bus_dmamap_t		ndm_map;
