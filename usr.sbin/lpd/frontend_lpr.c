@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend_lpr.c,v 1.1.1.1 2018/04/27 16:14:35 eric Exp $	*/
+/*	$OpenBSD: frontend_lpr.c,v 1.2 2019/04/04 19:25:45 eric Exp $	*/
 
 /*
  * Copyright (c) 2017 Eric Faurot <eric@openbsd.org>
@@ -581,7 +581,7 @@ lpr_parsejobfilter(struct lpr_conn *conn, struct lp_jobfilter *jf, int argc,
 
 	for (i = 0; i < argc; i++) {
 		arg = argv[i];
-		if (isdigit((unsigned int)arg[0])) {
+		if (isdigit((unsigned char)arg[0])) {
 			if (jf->njob == LP_MAXREQUESTS) {
 				lpr_reply(conn, "Too many requests");
 				return -1;
