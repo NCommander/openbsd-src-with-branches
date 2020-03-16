@@ -1,4 +1,4 @@
-/*	$OpenBSD: spkr.c,v 1.22 2017/12/30 23:08:29 guenther Exp $	*/
+/*	$OpenBSD: spkr.c,v 1.23 2019/02/20 07:00:31 anton Exp $	*/
 /*	$NetBSD: spkr.c,v 1.1 1998/04/15 20:26:18 drochner Exp $	*/
 
 /*
@@ -425,7 +425,7 @@ spkrwrite(dev_t dev, struct uio *uio, int flags)
 	size_t n;
 	int error;
 #ifdef SPKRDEBUG
-	printf("spkrwrite: entering with dev = %x, count = %d\n",
+	printf("spkrwrite: entering with dev = %x, count = %zu\n",
 	    dev, uio->uio_resid);
 #endif /* SPKRDEBUG */
 
