@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-add.c,v 1.153 2020/02/18 08:58:33 dtucker Exp $ */
+/* $OpenBSD: ssh-add.c,v 1.154 2020/02/26 13:40:09 jsg Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -711,7 +711,7 @@ main(int argc, char **argv)
 			break;
 		case 't':
 			if ((lifetime = convtime(optarg)) == -1 ||
-			    lifetime < 0 || lifetime > UINT32_MAX) {
+			    lifetime < 0 || (u_long)lifetime > UINT32_MAX) {
 				fprintf(stderr, "Invalid lifetime\n");
 				ret = 1;
 				goto done;
