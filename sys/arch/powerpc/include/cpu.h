@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.64 2018/12/05 10:28:21 jsg Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.65 2019/03/23 05:27:53 visa Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -336,7 +336,7 @@ ppc_mftb(void)
 	u_long scratch;
 	u_int64_t tb;
 
-	__asm volatile ("1: mftbu %0; mftb %0+1; mftbu %1;"
+	__asm volatile ("1: mftbu %0; mftb %L0; mftbu %1;"
 	    " cmpw 0,%0,%1; bne 1b" : "=r"(tb), "=r"(scratch));
 	return tb;
 }
