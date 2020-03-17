@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_ifattach.c,v 1.114 2019/08/21 15:32:18 florian Exp $	*/
+/*	$OpenBSD: in6_ifattach.c,v 1.115 2019/11/08 07:16:29 dlg Exp $	*/
 /*	$KAME: in6_ifattach.c,v 1.124 2001/07/18 08:32:51 jinmei Exp $	*/
 
 /*
@@ -245,7 +245,7 @@ in6_ifattach_linklocal(struct ifnet *ifp, struct in6_addr *ifid)
 	 * configure link-local address.
 	 */
 	bzero(&ifra, sizeof(ifra));
-	strncpy(ifra.ifra_name, ifp->if_xname, sizeof(ifra.ifra_name));
+	strlcpy(ifra.ifra_name, ifp->if_xname, sizeof(ifra.ifra_name));
 	ifra.ifra_addr.sin6_family = AF_INET6;
 	ifra.ifra_addr.sin6_len = sizeof(struct sockaddr_in6);
 	ifra.ifra_addr.sin6_addr.s6_addr16[0] = htons(0xfe80);
@@ -320,7 +320,7 @@ in6_ifattach_loopback(struct ifnet *ifp)
 		return (0);
 
 	bzero(&ifra, sizeof(ifra));
-	strncpy(ifra.ifra_name, ifp->if_xname, sizeof(ifra.ifra_name));
+	strlcpy(ifra.ifra_name, ifp->if_xname, sizeof(ifra.ifra_name));
 	ifra.ifra_prefixmask.sin6_len = sizeof(struct sockaddr_in6);
 	ifra.ifra_prefixmask.sin6_family = AF_INET6;
 	ifra.ifra_prefixmask.sin6_addr = in6mask128;
