@@ -1,4 +1,4 @@
-/*	$OpenBSD: namei.h,v 1.43 2019/09/11 15:01:40 beck Exp $	*/
+/*	$OpenBSD: namei.h,v 1.44 2019/11/29 20:58:17 guenther Exp $	*/
 /*	$NetBSD: namei.h,v 1.11 1996/02/09 18:25:20 christos Exp $	*/
 
 /*
@@ -38,6 +38,8 @@
 #include <sys/queue.h>
 #include <sys/tree.h>
 #include <sys/uio.h>
+
+struct unveil;
 
 /*
  * Encapsulation of namei parameters.
