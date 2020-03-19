@@ -1,4 +1,4 @@
-/* $OpenBSD: grid.c,v 1.100 2019/09/24 20:44:58 nicm Exp $ */
+/* $OpenBSD: grid.c,v 1.101 2019/12/03 10:47:22 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -258,7 +258,10 @@ grid_create(u_int sx, u_int sy, u_int hlimit)
 	gd->sx = sx;
 	gd->sy = sy;
 
-	gd->flags = GRID_HISTORY;
+	if (hlimit != 0)
+		gd->flags = GRID_HISTORY;
+	else
+		gd->flags = 0;
 
 	gd->hscrolled = 0;
 	gd->hsize = 0;
