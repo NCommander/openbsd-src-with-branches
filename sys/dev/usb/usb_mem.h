@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_mem.h,v 1.14 2013/04/15 09:23:02 mglocker Exp $ */
+/*	$OpenBSD: usb_mem.h,v 1.15 2016/11/30 10:19:18 mpi Exp $ */
 /*	$NetBSD: usb_mem.h,v 1.20 2003/05/03 18:11:42 wiz Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_mem.h,v 1.9 1999/11/17 22:33:47 n_hibma Exp $	*/
 
@@ -40,6 +40,7 @@ struct usb_dma_block {
         caddr_t kaddr;
         bus_dma_segment_t segs[1];
         int nsegs;
+	int coherent;
         size_t size;
         size_t align;
 	struct usb_frag_dma *frags;
