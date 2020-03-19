@@ -1,4 +1,4 @@
-.\" $OpenBSD: tmux.1,v 1.717 2020/03/12 13:25:45 nicm Exp $
+.\" $OpenBSD: tmux.1,v 1.718 2020/03/12 13:48:33 nicm Exp $
 .\"
 .\" Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
 .\"
@@ -4918,6 +4918,7 @@ give the position of the menu.
 Both may be a row or column number, or one of the following special values:
 .Bl -column "XXXXX" "XXXX" -offset indent
 .It Sy "Value" Ta Sy "Flag" Ta Sy "Meaning"
+.It Li "C" Ta "Both" Ta "The centre of the terminal"
 .It Li "R" Ta Fl x Ta "The right side of the terminal"
 .It Li "P" Ta "Both" Ta "The bottom left of the pane"
 .It Li "M" Ta "Both" Ta "The mouse position"
