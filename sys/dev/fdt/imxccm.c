@@ -1,4 +1,4 @@
-/* $OpenBSD: imxccm.c,v 1.15 2019/04/01 08:49:35 patrick Exp $ */
+/* $OpenBSD: imxccm.c,v 1.16 2020/03/11 12:17:42 patrick Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -937,6 +937,9 @@ imxccm_enable(void *cookie, uint32_t *cells, int on)
 
 	if (sc->sc_gates == imx8mq_gates) {
 		switch (idx) {
+		case IMX8MQ_CLK_32K:
+			/* always on */
+			return;
 		case IMX8MQ_CLK_PCIE1_CTRL:
 		case IMX8MQ_CLK_PCIE2_CTRL:
 			pcells[0] = sc->sc_phandle;
