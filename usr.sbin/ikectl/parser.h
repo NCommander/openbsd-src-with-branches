@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.14 2015/11/02 10:27:44 jsg Exp $	*/
+/*	$OpenBSD: parser.h,v 1.15 2020/03/18 22:12:43 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2007-2013 Reyk Floeter <reyk@openbsd.org>
@@ -55,6 +55,7 @@ enum actions {
 	CA_KEY_IMPORT,
 	SHOW_CA,
 	SHOW_CA_CERTIFICATES,
+	SHOW_SA,
 	RESET_ID
 };
 
