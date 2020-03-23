@@ -1,4 +1,4 @@
-/*	$OpenBSD: btrace.c,v 1.8 2020/03/19 15:55:55 mpi Exp $ */
+/*	$OpenBSD: btrace.c,v 1.9 2020/03/23 14:55:51 mpi Exp $ */
 
 /*
  * Copyright (c) 2019 - 2020 Martin Pieuchot <mpi@openbsd.org>
@@ -646,6 +646,10 @@ builtin_arg(struct dt_evt *dtev, enum bt_argtype dat)
 	return buf;
 }
 
+
+/*
+ * Empty a map:		{ clear(@map); }
+ */
 void
 stmt_clear(struct bt_stmt *bs)
 {
@@ -787,6 +791,9 @@ stmt_time(struct bt_stmt *bs, struct dt_evt *dtev)
 	printf("%s", buf);
 }
 
+/*
+ * Set entries to 0:	{ zero(@map); }
+ */
 void
 stmt_zero(struct bt_stmt *bs)
 {
