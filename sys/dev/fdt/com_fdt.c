@@ -1,4 +1,4 @@
-/* $OpenBSD: com_fdt.c,v 1.2 2018/07/20 05:37:06 jsg Exp $ */
+/* $OpenBSD: com_fdt.c,v 1.3 2018/08/06 10:52:30 patrick Exp $ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *
@@ -105,6 +105,7 @@ com_fdt_attach(struct device *parent, struct device *self, void *aux)
 		return;
 
 	clock_enable(faa->fa_node, NULL);
+	reset_deassert_all(faa->fa_node);
 
 	/*
 	 * Determine the clock frequency after enabling the clock.
