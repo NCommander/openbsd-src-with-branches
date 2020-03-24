@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.296 2019/11/22 15:28:05 florian Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.297 2019/11/24 07:56:03 claudio Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -858,14 +858,12 @@ fail:
 			return (error);
 		}
 	}
-	if (rtm) {
-		if (m_copyback(m, 0, len, rtm, M_NOWAIT)) {
-			m_freem(m);
-			m = NULL;
-		} else if (m->m_pkthdr.len > len)
-			m_adj(m, len - m->m_pkthdr.len);
-		free(rtm, M_RTABLE, len);
-	}
+	if (m_copyback(m, 0, len, rtm, M_NOWAIT)) {
+		m_freem(m);
+		m = NULL;
+	} else if (m->m_pkthdr.len > len)
+		m_adj(m, len - m->m_pkthdr.len);
+	free(rtm, M_RTABLE, len);
 	if (m)
 		route_input(m, so, info.rti_info[RTAX_DST] ?
 		    info.rti_info[RTAX_DST]->sa_family : AF_UNSPEC);
