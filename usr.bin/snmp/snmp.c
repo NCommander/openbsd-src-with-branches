@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmp.c,v 1.8 2019/10/08 10:00:42 martijn Exp $	*/
+/*	$OpenBSD: snmp.c,v 1.9 2019/10/24 12:39:26 tb Exp $	*/
 
 /*
  * Copyright (c) 2019 Martijn van Duren <martijn@openbsd.org>
@@ -359,9 +359,11 @@ snmp_resolve(struct snmp_agent *agent, struct ber_element *pdu, int reply)
 				errno = EPROTO;
 				direction = POLLOUT;
 				tries--;
-				continue;
+				break;
 			}
 		}
+		if (varbind != NULL)
+			continue;
 
 		free(message);
 		return pdu;
