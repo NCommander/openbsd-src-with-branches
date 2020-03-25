@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: dt_prov_syscall.c,v 1.1 2020/01/21 16:16:23 mpi Exp $ */
 
 /*
  * Copyright (c) 2019 Martin Pieuchot <mpi@openbsd.org>
@@ -148,7 +148,7 @@ dt_prov_syscall_entry(struct dt_provider *dtpv, ...)
 	SMR_SLIST_FOREACH(dp, &dtp->dtp_pcbs, dp_pnext) {
 		struct dt_evt *dtev;
 
-		dtev = dt_pcb_ring_get(dp);
+		dtev = dt_pcb_ring_get(dp, 0);
 		if (dtev == NULL)
 			continue;
 
@@ -190,7 +190,7 @@ dt_prov_syscall_return(struct dt_provider *dtpv, ...)
 	SMR_SLIST_FOREACH(dp, &dtp->dtp_pcbs, dp_pnext) {
 		struct dt_evt *dtev;
 
-		dtev = dt_pcb_ring_get(dp);
+		dtev = dt_pcb_ring_get(dp, 0);
 		if (dtev == NULL)
 			continue;
 
