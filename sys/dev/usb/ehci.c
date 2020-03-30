@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.207 2020/03/19 14:18:38 patrick Exp $ */
+/*	$OpenBSD: ehci.c,v 1.208 2020/03/21 12:08:31 patrick Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -2524,8 +2524,6 @@ ehci_alloc_itd(struct ehci_softc *sc)
 
 	freeitd = NULL;
 	LIST_FOREACH(itd, &sc->sc_freeitds, u.free_list) {
-		if (itd == NULL)
-			break;
 		if (itd->slot != frindex && itd->slot != previndex) {
 			freeitd = itd;
 			break;
