@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.14 2019/05/10 01:29:31 guenther Exp $	*/
+/*	$OpenBSD: parse.y,v 1.15 2019/10/18 06:03:25 otto Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -964,8 +964,8 @@ conf_get_ra_prefix(struct in6_addr *addr, int prefixlen)
 	if (prefix == NULL)
 		errx(1, "%s: calloc", __func__);
 	prefix->prefixlen = prefixlen;
-	prefix->vltime = 2592000;	/* 30 days */
-	prefix->pltime = 604800;	/* 7 days */
+	prefix->vltime = ADV_VALID_LIFETIME;
+	prefix->pltime = ADV_PREFERRED_LIFETIME;
 	prefix->lflag = 1;
 	prefix->aflag = 1;
 
