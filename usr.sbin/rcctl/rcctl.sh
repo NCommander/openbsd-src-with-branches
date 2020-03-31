@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: rcctl.sh,v 1.106 2017/05/30 12:04:27 tb Exp $
+# $OpenBSD: rcctl.sh,v 1.107 2018/10/21 21:20:40 ajacoutot Exp $
 #
 # Copyright (c) 2014, 2015 Antoine Jacoutot <ajacoutot@openbsd.org>
 # Copyright (c) 2014 Ingo Schwarze <schwarze@openbsd.org>
@@ -239,6 +239,7 @@ svc_ls()
 			;;
 		*)
 			_ret=1
+			;;
 	esac
 
 	return ${_ret}
