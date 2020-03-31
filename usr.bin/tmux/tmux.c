@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.c,v 1.193 2020/03/12 09:26:34 nicm Exp $ */
+/* $OpenBSD: tmux.c,v 1.194 2020/03/17 11:10:12 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -332,9 +332,9 @@ main(int argc, char **argv)
 
 	global_environ = environ_create();
 	for (var = environ; *var != NULL; var++)
-		environ_put(global_environ, *var);
+		environ_put(global_environ, *var, 0);
 	if ((cwd = find_cwd()) != NULL)
-		environ_set(global_environ, "PWD", "%s", cwd);
+		environ_set(global_environ, "PWD", 0, "%s", cwd);
 
 	global_options = options_create(NULL);
 	global_s_options = options_create(NULL);
