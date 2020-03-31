@@ -1,4 +1,4 @@
-/* $OpenBSD: am335x.c,v 1.10 2017/03/01 05:10:05 jsg Exp $ */
+/* $OpenBSD: am335x.c,v 1.11 2017/09/08 05:36:51 deraadt Exp $ */
 
 /*
  * Copyright (c) 2011 Uwe Stuehler <uwe@openbsd.org>
@@ -24,12 +24,6 @@
 
 #define PRCM_SIZE	0x2000
 #define PRCM_ADDR	0x44E00000
-
-#define SCM_SIZE	0x2000
-#define SCM_ADDR	0x44E10000
-
-#define INTC_SIZE	0x300
-#define INTC_ADDR	0x48200000
 
 #define DMTIMERx_SIZE	0x80
 #define DMTIMER0_ADDR	0x44E05000
@@ -58,24 +52,6 @@ struct armv7_dev am335x_devs[] = {
 	{ .name = "prcm",
 	  .unit = 0,
 	  .mem = { { PRCM_ADDR, PRCM_SIZE } },
-	},
-
-	/*
-	 * System Control Module
-	 */
-
-	{ .name = "sitaracm",
-	  .unit = 0,
-	  .mem = { { SCM_ADDR, SCM_SIZE } },
-	},
-
-	/*
-	 * Interrupt Controller
-	 */
-
-	{ .name = "intc",
-	  .unit = 0,
-	  .mem = { { INTC_ADDR, INTC_SIZE } },
 	},
 
 	/*
