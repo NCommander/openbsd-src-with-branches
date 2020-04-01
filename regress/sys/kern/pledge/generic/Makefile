@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2017/02/21 15:46:25 tb Exp $
+#	$OpenBSD: Makefile,v 1.9 2017/10/12 15:07:53 bluhm Exp $
 PROG=	generic
 SRCS=	main.c manager.c test_stdio.c test_tty.c
 NOMAN=	yes
@@ -9,6 +9,7 @@ CFLAGS+=	-Wall -Werror
 REGRESS_TARGETS+=	test_normal
 
 test_normal: ${PROG}
+	ulimit -c unlimited && \
 	./${PROG} | diff -I OpenBSD -u ${.CURDIR}/tests.out -
 
 .include <bsd.regress.mk>
