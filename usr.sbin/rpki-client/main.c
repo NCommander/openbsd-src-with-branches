@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.59 2020/03/06 17:42:45 job Exp $ */
+/*	$OpenBSD: main.c,v 1.60 2020/04/01 10:54:19 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -884,6 +884,12 @@ proc_parser_mft(struct entity *entp, int force, X509_STORE *store,
 	X509_STORE_CTX_cleanup(ctx);
 	sk_X509_free(chain);
 	X509_free(x509);
+
+	if (!mft_check(entp->uri, mft)) {
+		mft_free(mft);
+		return NULL;
+	}
+
 	return mft;
 }
 
