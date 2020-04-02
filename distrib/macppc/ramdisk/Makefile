@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.45 2019/05/02 02:59:29 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.46 2019/05/03 20:03:58 deraadt Exp $
 
 CDROM=		cd${OSrev}.iso
 MTREE=		${UTILS}/mtree.conf
@@ -55,7 +55,7 @@ mr.fs: instbin
 	makefs ${MRMAKEFSARGS} $@ $@.d
 
 instbin.mk instbin.cache instbin.c: instbin.conf
-	crunchgen -E -D ${.CURDIR}/../../.. -L ${DESTDIR}/usr/lib \
+	crunchgen -E -M -D ${.CURDIR}/../../.. -L ${DESTDIR}/usr/lib \
 	    -c instbin.c -e instbin -m instbin.mk instbin.conf
 
 instbin: instbin.mk instbin.cache instbin.c
