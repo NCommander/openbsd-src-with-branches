@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_machdep.h,v 1.8 2015/03/31 10:36:52 mpi Exp $	*/
+/*	$OpenBSD: ofw_machdep.h,v 1.9 2015/04/07 14:36:34 mpi Exp $	*/
 
 /*
  * Copyright (c) 2002, Miodrag Vallat.
@@ -26,6 +26,9 @@
  *
  */
 
+#include <machine/cpu.h>
+#include <machine/psl.h>
+
 extern int cons_backlight_available;
 
 void ofwconprobe(void);
@@ -49,3 +52,12 @@ void of_setbrightness(int);
 void of_setcolors(const uint8_t *, unsigned int, unsigned int);
 
 void OF_quiesce(void);
+
+static inline uint32_t
+ofw_msr(void)
+{
+	uint32_t s = ppc_mfmsr();
+
+	ppc_mtmsr(s & ~(PSL_EE|PSL_RI)); /* turn off interrupts */
+	return s;
+}
