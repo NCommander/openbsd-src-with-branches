@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.105 2019/11/26 23:41:23 djm Exp $
+#	$OpenBSD: Makefile,v 1.106 2020/01/31 23:25:08 djm Exp $
 
 .ifndef SKIP_UNIT
 SUBDIR=		unittests
@@ -57,6 +57,7 @@ LTESTS= 	connect \
 		cfgparse \
 		cfgmatch \
 		cfgmatchlisten \
+		percent \
 		addrmatch \
 		localcommand \
 		forcecommand \
