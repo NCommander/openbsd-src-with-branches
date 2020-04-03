@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: utf8.h,v 1.1 2016/05/25 23:48:45 schwarze Exp $ */
 /*
  * Copyright (c) 2016 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -21,4 +21,6 @@ int	 fmprintf(FILE *, const char *, ...)
 	     __attribute__((format(printf, 2, 3)));
 int	 vfmprintf(FILE *, const char *, va_list);
 int	 snmprintf(char *, size_t, int *, const char *, ...)
+	     __attribute__((format(printf, 4, 5)));
+int	 asmprintf(char **, size_t, int *, const char *, ...)
 	     __attribute__((format(printf, 4, 5)));

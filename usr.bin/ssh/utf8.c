@@ -1,4 +1,4 @@
-/* $OpenBSD: utf8.c,v 1.8 2018/08/21 13:56:27 schwarze Exp $ */
+/* $OpenBSD: utf8.c,v 1.9 2020/03/06 18:12:55 markus Exp $ */
 /*
  * Copyright (c) 2016 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -243,6 +243,20 @@ snmprintf(char *str, size_t sz, int *wp, const char *fmt, ...)
 		free(cp);
 	} else
 		*str = '\0';
+	return ret;
+}
+
+int
+asmprintf(char **outp, size_t sz, int *wp, const char *fmt, ...)
+{
+	va_list	 ap;
+	int	 ret;
+
+	*outp = NULL;
+	va_start(ap, fmt);
+	ret = vasnmprintf(outp, sz, wp, fmt, ap);
+	va_end(ap);
+
 	return ret;
 }
 
