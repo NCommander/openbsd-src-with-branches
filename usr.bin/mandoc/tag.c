@@ -1,4 +1,4 @@
-/* $OpenBSD: tag.c,v 1.30 2020/03/21 00:17:01 schwarze Exp $ */
+/* $OpenBSD: tag.c,v 1.31 2020/04/02 22:10:27 schwarze Exp $ */
 /*
  * Copyright (c) 2015,2016,2018,2019,2020 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
