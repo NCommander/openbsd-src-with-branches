@@ -1,4 +1,4 @@
-/*	$OpenBSD: ptrace_test.c,v 1.1 2020/02/28 12:48:30 mpi Exp $ */
+/*	$OpenBSD: ptrace_test.c,v 1.2 2020/03/16 12:00:19 mpi Exp $ */
 
 /*-
  * Copyright (c) 2015 John Baldwin <jhb@FreeBSD.org>
@@ -42,7 +42,6 @@ __FBSDID("$FreeBSD$");
 #include <sys/user.h>
 #include <sys/wait.h>
 #include <errno.h>
-#include <machine/cpufunc.h>
 #include <pthread.h>
 #include <sched.h>
 #include <semaphore.h>
