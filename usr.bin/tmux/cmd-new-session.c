@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-new-session.c,v 1.121 2019/09/19 09:02:30 nicm Exp $ */
+/* $OpenBSD: cmd-new-session.c,v 1.122 2019/11/14 08:00:30 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -334,7 +334,7 @@ cmd_new_session_exec(struct cmd *self, struct cmdq_item *item)
 	if (args_has(args, 'P')) {
 		if ((template = args_get(args, 'F')) == NULL)
 			template = NEW_SESSION_TEMPLATE;
-		cp = format_single(item, template, c, s, NULL, NULL);
+		cp = format_single(item, template, c, s, s->curw, NULL);
 		cmdq_print(item, "%s", cp);
 		free(cp);
 	}
