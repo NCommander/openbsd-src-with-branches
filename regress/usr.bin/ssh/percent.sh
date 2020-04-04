@@ -1,11 +1,11 @@
-#	$OpenBSD: percent.sh,v 1.3 2020/04/03 05:43:11 dtucker Exp $
+#	$OpenBSD: percent.sh,v 1.4 2020/04/03 07:53:10 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="percent expansions"
 
 USER=`id -u -n`
 USERID=`id -u`
-HOST=`hostname -s`
+HOST=`hostname | cut -f1 -d.`
 HOSTNAME=`hostname`
 
 # Localcommand is evaluated after connection because %T is not available
