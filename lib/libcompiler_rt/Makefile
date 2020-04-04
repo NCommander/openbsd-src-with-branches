@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.13 2018/10/21 05:13:49 visa Exp $
+# $OpenBSD: Makefile,v 1.14 2018/12/25 09:20:49 claudio Exp $
 
 .include <bsd.own.mk>
 
@@ -275,7 +275,8 @@ SRCS+=	comparetf2.c \
 .endif
 
 .if ${RTARCH} == "ppc"
-SRCS+=	divtc3.c \
+SRCS+=	atomic_lock_free.c \
+	divtc3.c \
 	fixtfdi.c \
 	fixunstfdi.c \
 	floatditf.c \
