@@ -1,4 +1,4 @@
-#       $OpenBSD: install.md,v 1.24 2017/01/22 23:43:54 rpe Exp $
+#       $OpenBSD: install.md,v 1.25 2017/07/28 18:15:44 rpe Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -32,7 +32,8 @@
 #
 
 MDTERM=vt100
-MDROOTFSOPT="-f 1024 -b 8192"
+MDFSOPT=-O1
+MDROOTFSOPT="-f 1024 -b 8192 -O1"
 NCPU=$(sysctl -n hw.ncpufound)
 
 md_installboot() {
