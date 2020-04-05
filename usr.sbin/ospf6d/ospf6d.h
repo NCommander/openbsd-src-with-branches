@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.h,v 1.44 2020/01/03 17:45:02 denis Exp $ */
+/*	$OpenBSD: ospf6d.h,v 1.45 2020/01/21 20:38:52 remi Exp $ */
 
 /*
  * Copyright (c) 2004, 2007 Esben Norby <norby@openbsd.org>
@@ -483,6 +483,7 @@ struct ctl_rt {
 	enum dst_type		 d_type;
 	u_int8_t		 flags;
 	u_int8_t		 prefixlen;
+	u_int8_t		 connected;
 };
 
 struct ctl_sum {
