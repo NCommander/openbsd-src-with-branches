@@ -1,4 +1,4 @@
-/*	$OpenBSD: pledge.h,v 1.39 2019/01/21 20:09:37 landry Exp $	*/
+/*	$OpenBSD: pledge.h,v 1.40 2019/06/19 16:55:51 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -72,9 +72,9 @@
 #define PLEDGE_YPACTIVE	0x8000000000000000ULL	/* YP use detected and allowed */
 
 #ifdef PLEDGENAMES
-static struct {
+static const struct {
 	uint64_t	bits;
-	char		*name;
+	const char	*name;
 } pledgenames[] = {
 	{ PLEDGE_RPATH,		"rpath" },
 	{ PLEDGE_WPATH,		"wpath" },
