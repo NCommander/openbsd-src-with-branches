@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.292 2020/03/19 13:55:20 anton Exp $	*/
+/*	$OpenBSD: proc.h,v 1.293 2020/03/20 08:14:07 claudio Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -610,6 +610,7 @@ struct sleep_state {
 	int sls_do_sleep;
 	int sls_locked;
 	int sls_sig;
+	int sls_unwind;
 	int sls_timeout;
 };
 
