@@ -1,8 +1,10 @@
-# $OpenBSD: Makefile,v 1.6 2017/03/08 22:53:36 schwarze Exp $
+# $OpenBSD: Makefile,v 1.1 2020/03/13 00:31:06 schwarze Exp $
 
-REGRESS_TARGETS = warn
-TAG_TARGETS	= warn
+REGRESS_TARGETS = column list warn
+TAG_TARGETS	= column list warn
 LINT_TARGETS	= warn
-HTML_TARGETS	= warn
+HTML_TARGETS	= column list warn
+
+SKIP_TMAN	= column
 
 .include <bsd.regress.mk>
