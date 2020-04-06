@@ -1,6 +1,6 @@
-/* $OpenBSD: acpisony.c,v 1.6 2014/09/14 14:17:24 jsg Exp $ */
+/* $OpenBSD: acpisony.c,v 1.7 2017/02/28 10:39:07 natano Exp $ */
 /*
- * Copyright (c) 2010 Paul Irofti <pirofti@openbsd.org>
+ * Copyright (c) 2010 Paul Irofti <paul@irofti.net>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

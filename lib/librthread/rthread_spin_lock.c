@@ -1,6 +1,6 @@
-/*	$OpenBSD: rthread_spin_lock.c,v 1.3 2013/06/01 20:47:40 tedu Exp $	*/
+/*	$OpenBSD: rthread_spin_lock.c,v 1.4 2016/09/04 10:13:35 akfaew Exp $	*/
 /*
- * Copyright (c) 2012 Paul Irofti <pirofti@openbsd.org>
+ * Copyright (c) 2012 Paul Irofti <paul@irofti.net>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
