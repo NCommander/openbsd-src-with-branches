@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi.c,v 1.170 2019/11/07 12:56:34 bluhm Exp $	*/
+/*	$OpenBSD: if_wi.c,v 1.171 2019/12/31 10:05:32 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1865,8 +1865,8 @@ wi_ioctl(struct ifnet *ifp, u_long command, caddr_t data)
 		timeout_add(&sc->wi_scan_timeout, len);
 
 		/* Let the userspace process wait for completion */
-		error = tsleep(&sc->wi_scan_lock, PCATCH, "wiscan",
-		    hz * IEEE80211_SCAN_TIMEOUT);
+		error = tsleep_nsec(&sc->wi_scan_lock, PCATCH, "wiscan",
+		    SEC_TO_NSEC(IEEE80211_SCAN_TIMEOUT));
 		break;
 	case SIOCG80211ALLNODES:
 	    {
