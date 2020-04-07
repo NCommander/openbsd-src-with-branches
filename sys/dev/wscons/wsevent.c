@@ -1,4 +1,4 @@
-/* $OpenBSD: wsevent.c,v 1.22 2019/12/31 13:48:31 visa Exp $ */
+/* $OpenBSD: wsevent.c,v 1.23 2020/02/20 16:56:52 visa Exp $ */
 /* $NetBSD: wsevent.c,v 1.16 2003/08/07 16:31:29 agc Exp $ */
 
 /*
@@ -236,7 +236,7 @@ wsevent_kqfilter(struct wseventvar *ev, struct knote *kn)
 	kn->kn_hook = ev;
 
 	s = splwsevent();
-	SLIST_INSERT_HEAD(klist, kn, kn_selnext);
+	klist_insert(klist, kn);
 	splx(s);
 
 	return (0);
@@ -250,7 +250,7 @@ filt_wseventdetach(struct knote *kn)
 	int s;
 
 	s = splwsevent();
-	SLIST_REMOVE(klist, kn, knote, kn_selnext);
+	klist_remove(klist, kn);
 	splx(s);
 }
 
