@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_tty.c,v 1.23 2018/04/28 03:13:04 visa Exp $	*/
+/*	$OpenBSD: tty_tty.c,v 1.24 2018/05/02 02:24:56 visa Exp $	*/
 /*	$NetBSD: tty_tty.c,v 1.13 1996/03/30 22:24:46 christos Exp $	*/
 
 /*-
@@ -160,5 +160,5 @@ cttykqfilter(dev_t dev, struct knote *kn)
 
 	if (ttyvp == NULL)
 		return (ENXIO);
-	return (VOP_KQFILTER(ttyvp, kn));
+	return (VOP_KQFILTER(ttyvp, FREAD|FWRITE, kn));
 }
