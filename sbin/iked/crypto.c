@@ -1,4 +1,4 @@
-/*	$OpenBSD: crypto.c,v 1.22 2017/08/28 16:28:13 otto Exp $	*/
+/*	$OpenBSD: crypto.c,v 1.23 2020/02/14 13:02:31 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -401,6 +401,7 @@ cipher_free(struct iked_cipher *encr)
 		EVP_CIPHER_CTX_cleanup(encr->encr_ctx);
 		free(encr->encr_ctx);
 	}
+	ibuf_release(encr->encr_iv);
 	ibuf_release(encr->encr_key);
 	free(encr);
 }
