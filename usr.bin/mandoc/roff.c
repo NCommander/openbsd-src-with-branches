@@ -1,4 +1,4 @@
-/* $OpenBSD: roff.c,v 1.244 2020/04/03 11:34:19 schwarze Exp $ */
+/* $OpenBSD: roff.c,v 1.245 2020/04/06 09:55:49 schwarze Exp $ */
 /*
  * Copyright (c) 2010-2015, 2017-2020 Ingo Schwarze <schwarze@openbsd.org>
  * Copyright (c) 2008-2012, 2014 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -1101,6 +1101,7 @@ roff_node_free(struct roff_node *n)
 		free(n->norm);
 	eqn_box_free(n->eqn);
 	free(n->string);
+	free(n->tag);
 	free(n);
 }
 

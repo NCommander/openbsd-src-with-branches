@@ -1,4 +1,4 @@
-/* $OpenBSD: roff.h,v 1.54 2020/02/27 21:38:27 schwarze Exp $	*/
+/* $OpenBSD: roff.h,v 1.55 2020/04/06 09:55:49 schwarze Exp $	*/
 /*
  * Copyright (c) 2013-2015, 2017-2020 Ingo Schwarze <schwarze@openbsd.org>
  * Copyright (c) 2008, 2009, 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -506,6 +506,7 @@ struct	roff_node {
 	struct mdoc_arg	 *args;    /* BLOCK/ELEM */
 	union mdoc_data	 *norm;    /* Normalized arguments. */
 	char		 *string;  /* TEXT */
+	char		 *tag;     /* For less(1) :t and HTML id=. */
 	struct tbl_span	 *span;    /* TBL */
 	struct eqn_box	 *eqn;     /* EQN */
 	int		  line;    /* Input file line number. */
