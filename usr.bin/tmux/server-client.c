@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.312 2020/03/31 17:14:40 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.313 2020/04/01 11:47:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1898,6 +1898,8 @@ server_client_command_done(struct cmdq_item *item, __unused void *data)
 
 	if (~c->flags & CLIENT_ATTACHED)
 		c->flags |= CLIENT_EXIT;
+	else if (~c->flags & CLIENT_DETACHING)
+		tty_send_requests(&c->tty);
 	return (CMD_RETURN_NORMAL);
 }
 
