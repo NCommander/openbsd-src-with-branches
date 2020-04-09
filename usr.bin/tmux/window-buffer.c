@@ -1,4 +1,4 @@
-/* $OpenBSD: window-buffer.c,v 1.24 2019/12/13 09:15:13 nicm Exp $ */
+/* $OpenBSD: window-buffer.c,v 1.25 2020/02/11 07:01:09 nicm Exp $ */
 
 /*
  * Copyright (c) 2017 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -348,9 +348,8 @@ window_buffer_do_paste(void *modedata, void *itemdata, struct client *c,
 {
 	struct window_buffer_modedata	*data = modedata;
 	struct window_buffer_itemdata	*item = itemdata;
-	struct paste_buffer		*pb;
 
-	if ((pb = paste_get_name(item->name)) != NULL)
+	if (paste_get_name(item->name) != NULL)
 		mode_tree_run_command(c, NULL, data->command, item->name);
 }
 
