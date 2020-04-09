@@ -1,4 +1,4 @@
-/*	$OpenBSD: types.h,v 1.33 2020/03/18 22:12:43 tobhe Exp $	*/
+/*	$OpenBSD: types.h,v 1.34 2020/03/22 15:59:05 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -46,9 +46,7 @@
 
 #define IKED_OPT_VERBOSE	0x00000001
 #define IKED_OPT_NOACTION	0x00000002
-#define IKED_OPT_NONATT		0x00000004
-#define IKED_OPT_NATT		0x00000008
-#define IKED_OPT_PASSIVE	0x00000010
+#define IKED_OPT_PASSIVE	0x00000004
 
 #define IKED_IKE_PORT		500
 #define IKED_NATT_PORT		4500
