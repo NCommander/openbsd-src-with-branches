@@ -239,7 +239,7 @@ let Predicates = [Is64Bit] in {
 let DecoderMethod = "DecodeLoadInt" in
   defm LDX   : Load<"ldx", 0b001011, load, I64Regs, i64>;
 
-let mayLoad = 1, isCodeGenOnly = 1, isAsmParserOnly = 1 in
+let mayLoad = 1, isAsmParserOnly = 1 in
   def TLS_LDXrr : F3_1<3, 0b001011,
                        (outs IntRegs:$dst), (ins MEMrr:$addr, TLSSym:$sym),
                        "ldx [$addr], $dst, $sym",
@@ -337,6 +337,7 @@ def FMOVD_XCC : F4_3<0b110101, 0b000010, (outs DFPRegs:$rd),
                       "fmovd$cond %xcc, $rs2, $rd",
                       [(set f64:$rd,
                        (SPselectxcc f64:$rs2, f64:$f, imm:$cond))]>;
+let Predicates = [Is64Bit, HasHardQuad] in
 def FMOVQ_XCC : F4_3<0b110101, 0b000011, (outs QFPRegs:$rd),
                       (ins QFPRegs:$rs2, QFPRegs:$f, CCOp:$cond),
                       "fmovq$cond %xcc, $rs2, $rd",
@@ -437,11 +438,11 @@ def FXTOD : F3_3u<2, 0b110100, 0b010001000,
                  (outs DFPRegs:$rd), (ins DFPRegs:$rs2),
                  "fxtod $rs2, $rd",
                  [(set DFPRegs:$rd, (SPxtof DFPRegs:$rs2))]>;
+let Predicates = [Is64Bit, HasHardQuad] in
 def FXTOQ : F3_3u<2, 0b110100, 0b010001100,
                  (outs QFPRegs:$rd), (ins DFPRegs:$rs2),
                  "fxtoq $rs2, $rd",
-                 [(set QFPRegs:$rd, (SPxtof DFPRegs:$rs2))]>,
-                 Requires<[HasHardQuad]>;
+                 [(set QFPRegs:$rd, (SPxtof DFPRegs:$rs2))]>;
 
 def FSTOX : F3_3u<2, 0b110100, 0b010000001,
                  (outs DFPRegs:$rd), (ins FPRegs:$rs2),
@@ -451,11 +452,11 @@ def FDTOX : F3_3u<2, 0b110100, 0b010000010,
                  (outs DFPRegs:$rd), (ins DFPRegs:$rs2),
                  "fdtox $rs2, $rd",
                  [(set DFPRegs:$rd, (SPftox DFPRegs:$rs2))]>;
+let Predicates = [Is64Bit, HasHardQuad] in
 def FQTOX : F3_3u<2, 0b110100, 0b010000011,
                  (outs DFPRegs:$rd), (ins QFPRegs:$rs2),
                  "fqtox $rs2, $rd",
-                 [(set DFPRegs:$rd, (SPftox QFPRegs:$rs2))]>,
-                 Requires<[HasHardQuad]>;
+                 [(set DFPRegs:$rd, (SPftox QFPRegs:$rs2))]>;
 
 } // Predicates = [Is64Bit]
 
@@ -492,7 +493,7 @@ let Predicates = [Is64Bit], Constraints = "$swap = $rd", asi = 0b10000000 in {
                                      I64Regs:$swap),
                  "casx [$rs1], $rs2, $rd",
                  [(set i64:$rd,
-                     (atomic_cmp_swap i64:$rs1, i64:$rs2, i64:$swap))]>;
+                     (atomic_cmp_swap_64 i64:$rs1, i64:$rs2, i64:$swap))]>;
 
 } // Predicates = [Is64Bit], Constraints = ...
 
@@ -501,47 +502,14 @@ let Predicates = [Is64Bit] in {
 def : Pat<(atomic_fence imm, imm), (MEMBARi 0xf)>;
 
 // atomic_load_64 addr -> load addr
-def : Pat<(i64 (atomic_load ADDRrr:$src)), (LDXrr ADDRrr:$src)>;
-def : Pat<(i64 (atomic_load ADDRri:$src)), (LDXri ADDRri:$src)>;
+def : Pat<(i64 (atomic_load_64 ADDRrr:$src)), (LDXrr ADDRrr:$src)>;
+def : Pat<(i64 (atomic_load_64 ADDRri:$src)), (LDXri ADDRri:$src)>;
 
 // atomic_store_64 val, addr -> store val, addr
-def : Pat<(atomic_store ADDRrr:$dst, i64:$val), (STXrr ADDRrr:$dst, $val)>;
-def : Pat<(atomic_store ADDRri:$dst, i64:$val), (STXri ADDRri:$dst, $val)>;
+def : Pat<(atomic_store_64 ADDRrr:$dst, i64:$val), (STXrr ADDRrr:$dst, $val)>;
+def : Pat<(atomic_store_64 ADDRri:$dst, i64:$val), (STXri ADDRri:$dst, $val)>;
 
 } // Predicates = [Is64Bit]
-
-let usesCustomInserter = 1, hasCtrlDep = 1, mayLoad = 1, mayStore = 1,
-    Defs = [ICC] in
-multiclass AtomicRMW<SDPatternOperator op32, SDPatternOperator op64> {
-
-  def _32 : Pseudo<(outs IntRegs:$rd),
-                   (ins ptr_rc:$addr, IntRegs:$rs2), "",
-                   [(set i32:$rd, (op32 iPTR:$addr, i32:$rs2))]>;
-
-  let Predicates = [Is64Bit] in
-  def _64 : Pseudo<(outs I64Regs:$rd),
-                   (ins ptr_rc:$addr, I64Regs:$rs2), "",
-                   [(set i64:$rd, (op64 iPTR:$addr, i64:$rs2))]>;
-}
-
-defm ATOMIC_LOAD_ADD  : AtomicRMW<atomic_load_add_32,  atomic_load_add_64>;
-defm ATOMIC_LOAD_SUB  : AtomicRMW<atomic_load_sub_32,  atomic_load_sub_64>;
-defm ATOMIC_LOAD_AND  : AtomicRMW<atomic_load_and_32,  atomic_load_and_64>;
-defm ATOMIC_LOAD_OR   : AtomicRMW<atomic_load_or_32,   atomic_load_or_64>;
-defm ATOMIC_LOAD_XOR  : AtomicRMW<atomic_load_xor_32,  atomic_load_xor_64>;
-defm ATOMIC_LOAD_NAND : AtomicRMW<atomic_load_nand_32, atomic_load_nand_64>;
-defm ATOMIC_LOAD_MIN  : AtomicRMW<atomic_load_min_32,  atomic_load_min_64>;
-defm ATOMIC_LOAD_MAX  : AtomicRMW<atomic_load_max_32,  atomic_load_max_64>;
-defm ATOMIC_LOAD_UMIN : AtomicRMW<atomic_load_umin_32, atomic_load_umin_64>;
-defm ATOMIC_LOAD_UMAX : AtomicRMW<atomic_load_umax_32, atomic_load_umax_64>;
-
-// There is no 64-bit variant of SWAP, so use a pseudo.
-let usesCustomInserter = 1, hasCtrlDep = 1, mayLoad = 1, mayStore = 1,
-    Defs = [ICC], Predicates = [Is64Bit] in
-def ATOMIC_SWAP_64 : Pseudo<(outs I64Regs:$rd),
-                            (ins ptr_rc:$addr, I64Regs:$rs2), "",
-                            [(set i64:$rd,
-                                  (atomic_swap_64 iPTR:$addr, i64:$rs2))]>;
 
 let Predicates = [Is64Bit], hasSideEffects = 1, Uses = [ICC], cc = 0b10 in
  defm TXCC : TRAP<"%xcc">;
