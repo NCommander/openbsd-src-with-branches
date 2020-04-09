@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 2020/02/17 15:37:09 tobhe Exp $
+#	$OpenBSD: Makefile,v 1.10 2020/02/21 15:21:47 tobhe Exp $
 
 # Copyright (c) 2020 Tobias Heider <tobhe@openbsd.org>
 #
@@ -115,8 +115,8 @@ SETUP_SYSCTL = \
 	ssh ${RIGHT_SSH} "sysctl $$sysctl"
 
 SETUP_START = \
-	ssh ${LEFT_SSH} "ipsecctl -F; pkill iked; iked -6 $$iked_flags -f /tmp/test.conf"; \
-	ssh ${RIGHT_SSH} "ipsecctl -F; pkill iked; iked -6 $$iked_flags -f /tmp/test.conf"
+	ssh ${LEFT_SSH} "ipsecctl -F; pkill iked; iked $$iked_flags -f /tmp/test.conf"; \
+	ssh ${RIGHT_SSH} "ipsecctl -F; pkill iked; iked $$iked_flags -f /tmp/test.conf"
 
 SETUP_CERT = \
 	echo "ALTNAME = $$name-from-$$caname" > $$name-from-$$caname.cnf; \
