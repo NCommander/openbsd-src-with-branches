@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.389 2020/03/10 21:35:40 krw Exp $	*/
+/*	$OpenBSD: route.c,v 1.390 2020/03/21 20:12:37 krw Exp $	*/
 /*	$NetBSD: route.c,v 1.14 1996/02/13 22:00:46 christos Exp $	*/
 
 /*
@@ -452,7 +452,7 @@ rt_setgwroute(struct rtentry *rt, u_int rtableid)
 	/*
 	 * To avoid reference counting problems when writting link-layer
 	 * addresses in an outgoing packet, we ensure that the lifetime
-	 * of a cached entry is greater that the bigger lifetime of the
+	 * of a cached entry is greater than the bigger lifetime of the
 	 * gateway entries it is pointed by.
 	 */
 	nhrt->rt_flags |= RTF_CACHED;
