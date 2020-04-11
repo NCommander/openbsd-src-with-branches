@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.267 2019/11/07 11:46:42 dlg Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.268 2020/04/11 10:23:16 stsp Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -1688,10 +1688,10 @@ pfsync_sendout(void)
 		count = 0;
 		while ((st = TAILQ_FIRST(&sc->sc_qs[q])) != NULL) {
 			TAILQ_REMOVE(&sc->sc_qs[q], st, sync_list);
-			st->sync_state = PFSYNC_S_NONE;
 #ifdef PFSYNC_DEBUG
 			KASSERT(st->sync_state == q);
 #endif
+			st->sync_state = PFSYNC_S_NONE;
 			pfsync_qs[q].write(st, m->m_data + offset);
 			offset += pfsync_qs[q].len;
 
