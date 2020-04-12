@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_aggr.c,v 1.27 2019/12/23 09:03:24 dlg Exp $ */
+/*	$OpenBSD: if_aggr.c,v 1.28 2020/03/11 07:01:42 dlg Exp $ */
 
 /*
  * Copyright (c) 2019 The University of Queensland
@@ -589,8 +589,10 @@ aggr_clone_destroy(struct ifnet *ifp)
 	if_detach(ifp);
 
 	/* last ref, no need to lock. aggr_p_dtor locks anyway */
+	NET_LOCK();
 	while ((p = TAILQ_FIRST(&sc->sc_ports)) != NULL)
 		aggr_p_dtor(sc, p, "destroy");
+	NET_UNLOCK();
 
 	free(sc, M_DEVBUF, sizeof(*sc));
 
