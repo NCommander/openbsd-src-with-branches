@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-confirm-before.c,v 1.37 2019/05/23 11:13:30 nicm Exp $ */
+/* $OpenBSD: cmd-confirm-before.c,v 1.38 2020/04/13 08:26:27 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -109,7 +109,7 @@ cmd_confirm_before_callback(struct client *c, void *data, const char *s,
 		cmdq_append(c, new_item);
 		break;
 	case CMD_PARSE_SUCCESS:
-		new_item = cmdq_get_command(pr->cmdlist, NULL, NULL, 0);
+		new_item = cmdq_get_command(pr->cmdlist, NULL);
 		cmd_list_free(pr->cmdlist);
 		cmdq_append(c, new_item);
 		break;
