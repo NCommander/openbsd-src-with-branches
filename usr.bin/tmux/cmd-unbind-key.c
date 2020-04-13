@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-unbind-key.c,v 1.29 2016/10/16 19:04:05 nicm Exp $ */
+/* $OpenBSD: cmd-unbind-key.c,v 1.30 2017/01/24 21:50:22 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -42,7 +42,7 @@ const struct cmd_entry cmd_unbind_key_entry = {
 static enum cmd_retval
 cmd_unbind_key_exec(struct cmd *self, struct cmdq_item *item)
 {
-	struct args	*args = self->args;
+	struct args	*args = cmd_get_args(self);
 	key_code	 key;
 	const char	*tablename;
 

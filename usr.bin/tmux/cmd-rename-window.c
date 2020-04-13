@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-rename-window.c,v 1.21 2018/03/01 12:53:08 nicm Exp $ */
+/* $OpenBSD: cmd-rename-window.c,v 1.22 2018/03/23 19:17:03 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -45,7 +45,7 @@ const struct cmd_entry cmd_rename_window_entry = {
 static enum cmd_retval
 cmd_rename_window_exec(struct cmd *self, struct cmdq_item *item)
 {
-	struct args	*args = self->args;
+	struct args	*args = cmd_get_args(self);
 	struct client	*c = cmd_find_client(item, NULL, 1);
 	struct session	*s = item->target.s;
 	struct winlink	*wl = item->target.wl;

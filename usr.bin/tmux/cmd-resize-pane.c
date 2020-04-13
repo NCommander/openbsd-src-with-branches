@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-resize-pane.c,v 1.40 2020/03/21 13:16:15 nicm Exp $ */
+/* $OpenBSD: cmd-resize-pane.c,v 1.41 2020/03/31 17:13:20 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -49,7 +49,7 @@ const struct cmd_entry cmd_resize_pane_entry = {
 static enum cmd_retval
 cmd_resize_pane_exec(struct cmd *self, struct cmdq_item *item)
 {
-	struct args		*args = self->args;
+	struct args		*args = cmd_get_args(self);
 	struct cmdq_shared	*shared = item->shared;
 	struct window_pane	*wp = item->target.wp;
 	struct winlink		*wl = item->target.wl;
