@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-lock-server.c,v 1.26 2017/04/22 10:22:39 nicm Exp $ */
+/* $OpenBSD: cmd-lock-server.c,v 1.27 2020/04/13 08:26:27 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -64,13 +64,14 @@ const struct cmd_entry cmd_lock_client_entry = {
 static enum cmd_retval
 cmd_lock_server_exec(struct cmd *self, struct cmdq_item *item)
 {
-	struct args	*args = cmd_get_args(self);
-	struct client	*c;
+	struct args		*args = cmd_get_args(self);
+	struct cmd_find_state	*target = cmdq_get_target(item);
+	struct client		*c;
 
 	if (cmd_get_entry(self) == &cmd_lock_server_entry)
 		server_lock();
 	else if (cmd_get_entry(self) == &cmd_lock_session_entry)
-		server_lock_session(item->target.s);
+		server_lock_session(target->s);
 	else {
 		if ((c = cmd_find_client(item, args_get(args, 't'), 0)) == NULL)
 			return (CMD_RETURN_ERROR);
