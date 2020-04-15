@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.c,v 1.65 2020/03/08 14:52:20 ratchov Exp $	*/
+/*	$OpenBSD: dev.c,v 1.66 2020/03/31 06:29:05 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -2239,6 +2239,9 @@ ctl_log(struct ctl *c)
 	log_puts(c->func);
 	log_puts("=");
 	switch (c->type) {
+	case CTL_NONE:
+		log_puts("none");
+		break;
 	case CTL_NUM:
 	case CTL_SW:
 		log_putu(c->curval);
