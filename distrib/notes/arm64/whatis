@@ -1,4 +1,6 @@
-dnl	$OpenBSD: whatis,v 1.1 2017/01/25 02:29:25 patrick Exp $
+dnl	$OpenBSD: whatis,v 1.2 2017/01/25 03:10:06 patrick Exp $
 
-OpenBSD/MACHINE runs on the Pine64 and the Raspberry Pi 3.  Hardware support
-is currently limited, but this port is a heavy work in progress.
+OpenBSD/MACHINE runs on a wide variety of hardware that integrates
+64-bit ARMv8 processors.  OpenBSD/MACHINE requires a minimal UEFI
+firmware (including U-Boot) and supports both ACPI and device-tree
+based hardware enumeration.
