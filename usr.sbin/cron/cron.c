@@ -1,4 +1,4 @@
-/*	$OpenBSD: cron.c,v 1.77 2017/10/23 15:15:22 jca Exp $	*/
+/*	$OpenBSD: cron.c,v 1.78 2020/02/11 12:42:01 schwarze Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -497,6 +497,7 @@ sigchld_reaper(void)
 		case 0:
 			break;
 		default:
+			job_exit(pid);
 			break;
 		}
 	} while (pid > 0);

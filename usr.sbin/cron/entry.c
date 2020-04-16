@@ -1,4 +1,4 @@
-/*	$OpenBSD: entry.c,v 1.49 2018/06/13 11:27:30 job Exp $	*/
+/*	$OpenBSD: entry.c,v 1.50 2020/04/15 01:59:34 millert Exp $	*/
 
 /*
  * Copyright 1988,1990,1993,1994 by Paul Vixie
@@ -353,6 +353,14 @@ load_entry(FILE *file, void (*error_func)(const char *), struct passwd *pw,
 				goto eof;
 			}
 			e->flags |= DONT_LOG;
+			break;
+		case 's':
+			/* only allow the user to set the option once */
+			if ((e->flags & SINGLE_JOB) == SINGLE_JOB) {
+				ecode = e_option;
+				goto eof;
+			}
+			e->flags |= SINGLE_JOB;
 			break;
 		default:
 			ecode = e_option;
