@@ -41,7 +41,8 @@
 int
 ip_addr_afi_parse(const char *fn, const ASN1_OCTET_STRING *p, enum afi *afi)
 {
-	uint16_t v;
+	char	 buf[2];
+	short	 v;
 
 	if (p->length == 0 || p->length > 3) {
 		warnx("%s: invalid field length, want 1--3, have %d",
@@ -49,8 +50,8 @@ ip_addr_afi_parse(const char *fn, const ASN1_OCTET_STRING *p, enum afi *afi)
 		return 0;
 	}
 
-	memcpy(&v, p->data, sizeof(v));
-	v = ntohs(v);
+	memcpy(buf, p->data, sizeof(uint16_t));
+	v = ntohs(*(uint16_t *)buf);
 
 	/* Only accept IPv4 and IPv6 AFIs. */
 
