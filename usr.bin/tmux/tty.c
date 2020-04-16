@@ -1,4 +1,4 @@
-/* $OpenBSD: tty.c,v 1.346 2020/03/24 08:09:44 nicm Exp $ */
+/* $OpenBSD: tty.c,v 1.347 2020/04/09 12:16:16 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1426,6 +1426,20 @@ tty_draw_line(struct tty *tty, struct window_pane *wp, struct screen *s,
 	tty_update_mode(tty, tty->mode, s);
 }
 
+void
+tty_sync_start(struct tty *tty)
+{
+	if ((tty->term->flags|tty->term_flags) & TERM_SYNC)
+		tty_puts(tty, "\033P=1s\033\\");
+}
+
+void
+tty_sync_end(struct tty *tty)
+{
+	if ((tty->term->flags|tty->term_flags) & TERM_SYNC)
+		tty_puts(tty, "\033P=2s\033\\");
+}
+
 static int
 tty_client_ready(struct client *c, struct window_pane *wp)
 {
@@ -1917,6 +1931,18 @@ tty_cmd_rawstring(struct tty *tty, const struct tty_ctx *ctx)
 {
 	tty_add(tty, ctx->ptr, ctx->num);
 	tty_invalidate(tty);
+}
+
+void
+tty_cmd_syncstart(struct tty *tty, __unused const struct tty_ctx *ctx)
+{
+	tty_sync_start(tty);
+}
+
+void
+tty_cmd_syncend(struct tty *tty, __unused const struct tty_ctx *ctx)
+{
+	tty_sync_end(tty);
 }
 
 static void
