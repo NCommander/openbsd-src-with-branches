@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_internal.h,v 1.60 2020/02/05 16:42:29 jsing Exp $ */
+/* $OpenBSD: tls13_internal.h,v 1.61 2020/03/10 17:15:02 jsing Exp $ */
 /*
  * Copyright (c) 2018 Bob Beck <beck@openbsd.org>
  * Copyright (c) 2018 Theo Buehler <tb@openbsd.org>
@@ -123,7 +123,8 @@ int tls13_update_server_traffic_secret(struct tls13_secrets *secrets);
  */
 struct tls13_key_share;
 
-struct tls13_key_share *tls13_key_share_new(int nid);
+struct tls13_key_share *tls13_key_share_new(uint16_t group_id);
+struct tls13_key_share *tls13_key_share_new_nid(int nid);
 void tls13_key_share_free(struct tls13_key_share *ks);
 
 uint16_t tls13_key_share_group(struct tls13_key_share *ks);
