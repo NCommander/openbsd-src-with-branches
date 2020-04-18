@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.39 2020/03/25 14:59:23 mpi Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.40 2020/03/29 15:14:28 visa Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.18 1996/05/03 19:42:01 christos Exp $	*/
 
 /*
@@ -291,12 +291,6 @@ stacktrace_save_at(struct stacktrace *st, unsigned int skip)
 		if (!INKERNEL(frame->f_retaddr))
 			break;
 	}
-}
-
-void
-stacktrace_save(struct stacktrace *st)
-{
-	return stacktrace_save_at(st, 0);
 }
 
 vaddr_t
