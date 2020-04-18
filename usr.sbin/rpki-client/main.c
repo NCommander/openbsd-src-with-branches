@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.62 2020/04/16 11:25:43 claudio Exp $ */
+/*	$OpenBSD: main.c,v 1.63 2020/04/16 17:01:01 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -1688,6 +1688,6 @@ usage:
 	fprintf(stderr,
 	    "usage: rpki-client [-Bcfjnov] [-b sourceaddr] [-d cachedir]"
 	    " [-e rsync_prog]\n"
-	    "            [-T table] [-t tal] [outputdir]\n");
+	    "                   [-T table] [-t tal] [outputdir]\n");
 	return 1;
 }
