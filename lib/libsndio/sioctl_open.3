@@ -1,4 +1,4 @@
-.\" $OpenBSD: sioctl_open.3,v 1.1 2020/02/26 13:53:58 ratchov Exp $
+.\" $OpenBSD: sioctl_open.3,v 1.2 2020/02/26 14:41:42 ratchov Exp $
 .\"
 .\" Copyright (c) 2011-2020 Alexandre Ratchov <alex@caoua.org>
 .\"
@@ -73,7 +73,7 @@ The
 .Ar name
 parameter gives the device string discussed in
 .Xr sndio 7 .
-In most cases it should be set to SIOCTL_DEVANY to allow
+In most cases it should be set to SIO_DEVANY to allow
 the user to select it using the
 .Ev AUDIODEVICE
 environment variable.
