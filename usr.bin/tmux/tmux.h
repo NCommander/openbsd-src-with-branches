@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.1010 2020/04/18 21:35:32 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.1011 2020/04/20 13:25:36 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1992,7 +1992,6 @@ void	tty_cmd_reverseindex(struct tty *, const struct tty_ctx *);
 void	tty_cmd_setselection(struct tty *, const struct tty_ctx *);
 void	tty_cmd_rawstring(struct tty *, const struct tty_ctx *);
 void	tty_cmd_syncstart(struct tty *, const struct tty_ctx *);
-void	tty_cmd_syncend(struct tty *, const struct tty_ctx *);
 
 /* tty-term.c */
 extern struct tty_terms tty_terms;

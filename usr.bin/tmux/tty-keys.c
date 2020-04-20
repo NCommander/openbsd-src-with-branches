@@ -1,4 +1,4 @@
-/* $OpenBSD: tty-keys.c,v 1.125 2020/04/17 09:06:10 nicm Exp $ */
+/* $OpenBSD: tty-keys.c,v 1.126 2020/04/20 13:25:36 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1150,7 +1150,7 @@ tty_keys_device_status_report(struct tty *tty, const char *buf, size_t len,
 		    "cstyle,"
 		    "margins,"
 		    "sync,"
-		    "title,",
+		    "title",
 		    ",");
 	} else if (strncmp(tmp, "TMUX ", 5) == 0) {
 		tty_add_features(&c->term_features,
