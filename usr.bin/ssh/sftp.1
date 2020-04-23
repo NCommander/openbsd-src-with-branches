@@ -1,4 +1,4 @@
-.\" $OpenBSD: sftp.1,v 1.129 2020/04/03 04:34:15 djm Exp $
+.\" $OpenBSD: sftp.1,v 1.130 2020/04/03 05:53:52 jmc Exp $
 .\"
 .\" Copyright (c) 2001 Damien Miller.  All rights reserved.
 .\"
@@ -635,7 +635,7 @@ Equivalent to
 with the
 .Fl a
 flag set.
-.It Ic rename Ar oldpath Ar newpath
+.It Ic rename Ar oldpath newpath
 Rename remote file from
 .Ar oldpath
 to
@@ -646,7 +646,7 @@ Delete remote file specified by
 .It Ic rmdir Ar path
 Remove remote directory specified by
 .Ar path .
-.It Ic symlink Ar oldpath Ar newpath
+.It Ic symlink Ar oldpath newpath
 Create a symbolic link from
 .Ar oldpath
 to
