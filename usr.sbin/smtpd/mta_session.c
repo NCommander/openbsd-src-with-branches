@@ -1,4 +1,4 @@
-/*	$OpenBSD: mta_session.c,v 1.133 2020/02/24 23:54:27 millert Exp $	*/
+/*	$OpenBSD: mta_session.c,v 1.134 2020/04/10 19:28:57 beck Exp $	*/
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -1256,6 +1256,10 @@ mta_io(struct io *io, int evt, void *arg)
 			}
 			return;
 		}
+
+		/* Strip trailing '\r' */
+		if (len && line[len - 1] == '\r')
+			line[--len] = '\0';
 
 		log_trace(TRACE_MTA, "mta: %p: <<< %s", s, line);
 		mta_report_protocol_server(s, line);

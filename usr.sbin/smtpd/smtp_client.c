@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_client.c,v 1.12 2019/09/10 12:08:26 eric Exp $	*/
+/*	$OpenBSD: smtp_client.c,v 1.13 2020/02/24 23:54:27 millert Exp $	*/
 
 /*
  * Copyright (c) 2018 Eric Faurot <eric@openbsd.org>
@@ -679,6 +679,10 @@ smtp_client_readline(struct smtp_client *proto)
 			smtp_client_abort(proto, FAIL_PROTO, "Line too long");
 		return 0;
 	}
+
+	/* Strip trailing '\r' */
+	if (len && line[len - 1] == '\r')
+		line[--len] = '\0';
 
 	log_trace(TRACE_SMTPCLT, "%p: <<< %s", proto, line);
 

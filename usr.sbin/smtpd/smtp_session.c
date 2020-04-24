@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.424 2020/02/03 15:53:52 gilles Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.425 2020/03/15 16:34:57 millert Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1131,6 +1131,10 @@ smtp_io(struct io *io, int evt, void *arg)
 		/* No complete line received */
 		if (line == NULL)
 			return;
+
+		/* Strip trailing '\r' */
+		if (len && line[len - 1] == '\r')
+			line[--len] = '\0';
 
 		/* Message body */
 		eom = 0;
