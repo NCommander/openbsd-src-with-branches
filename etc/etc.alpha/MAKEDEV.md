@@ -1,6 +1,6 @@
 define(MACHINE,alpha)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.73 2020/01/23 02:47:28 dlg Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.74 2020/01/24 14:11:01 mpi Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -107,7 +107,7 @@ ttyB*|ttyc*)
 dnl
 dnl *** alpha specific targets
 dnl
-twrget(all, au, audio, 0, 1, 2)dnl
+twrget(all, au, audio, 0, 1, 2, 3)dnl
 target(all, bio)dnl
 target(all, ch, 0)dnl
 target(all, vscsi, 0)dnl
