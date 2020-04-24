@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.c,v 1.327 2020/04/03 02:27:12 dtucker Exp $ */
+/* $OpenBSD: readconf.c,v 1.328 2020/04/03 03:12:11 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1161,7 +1161,7 @@ parse_char_array:
 			while ((arg = strdelim(&s)) != NULL && *arg != '\0') {
 				if ((*uintptr) >= max_entries)
 					fatal("%s line %d: "
-					    "too many authorized keys files.",
+					    "too many known hosts files.",
 					    filename, linenum);
 				cpptr[(*uintptr)++] = xstrdup(arg);
 			}
