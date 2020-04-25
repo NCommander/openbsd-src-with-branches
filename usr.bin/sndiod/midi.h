@@ -1,4 +1,4 @@
-/*	$OpenBSD: midi.h,v 1.10 2019/09/21 04:42:46 ratchov Exp $	*/
+/*	$OpenBSD: midi.h,v 1.11 2020/01/23 05:27:17 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -110,6 +110,7 @@ void midi_out(struct midi *, unsigned char *, int);
 void midi_send(struct midi *, unsigned char *, int);
 void midi_fill(struct midi *);
 void midi_tag(struct midi *, unsigned int);
+unsigned int midi_tags(struct midi *);
 void midi_link(struct midi *, struct midi *);
 
 void port_log(struct port *);
