@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.93 2020/04/14 11:30:15 tobhe Exp $	*/
+/*	$OpenBSD: parse.y,v 1.94 2020/04/23 20:17:48 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -2510,7 +2510,7 @@ print_policy(struct iked_policy *pol)
 			print_verbose(" inet6");
 	}
 
-	if (pol->pol_rdomain)
+	if (pol->pol_rdomain >= 0)
 		print_verbose(" rdomain %d", pol->pol_rdomain);
 
 	RB_FOREACH(flow, iked_flows, &pol->pol_flows) {
