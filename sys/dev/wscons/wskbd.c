@@ -1,4 +1,4 @@
-/* $OpenBSD: wskbd.c,v 1.103 2020/03/24 08:11:59 anton Exp $ */
+/* $OpenBSD: wskbd.c,v 1.104 2020/04/19 15:05:15 kettenis Exp $ */
 /* $NetBSD: wskbd.c,v 1.80 2005/05/04 01:52:16 augustss Exp $ */
 
 /*
@@ -1177,13 +1177,11 @@ getkeyrepeat:
 	case WSKBDIO_GETBACKLIGHT:
 		if (wskbd_get_backlight != NULL)
 			return (*wskbd_get_backlight)((struct wskbd_backlight *)data);
-		error = ENOTTY;
 		break;
 
 	case WSKBDIO_SETBACKLIGHT:
 		if (wskbd_set_backlight != NULL)
 			return (*wskbd_set_backlight)((struct wskbd_backlight *)data);
-		error = ENOTTY;
 		break;
 	}
 
