@@ -1,4 +1,4 @@
-.\"	$OpenBSD: iic.4,v 1.104 2020/04/25 15:16:00 kettenis Exp $
+.\"	$OpenBSD: iic.4,v 1.105 2020/04/25 23:00:11 kettenis Exp $
 .\"
 .\" Copyright (c) 2004, 2006 Alexander Yurchenko <grange@openbsd.org>
 .\"
@@ -91,7 +91,7 @@ AMD-8111 SMBus controller
 AMD-756/766/768/8111 Power Management and SMBus controller
 .It Xr amliic 4
 Amlogic I2C controller
-.I Xr bcmbsc 4
+.It Xr bcmbsc 4
 Broadcom Serial Control controller
 .It Xr dwiic 4
 Synopsys DesignWare I2C controller
@@ -168,6 +168,8 @@ ROHM BD718x7 Power Management IC
 Bosch motion sensor
 .It Xr ccpmic 4
 Intel Crystal Cove Power Management IC
+.It Xr dsxrtc 4
+Maxim DS3231/DS3232 real-time clock
 .It Xr ecadc 4
 environmental monitoring subsystem temperature sensor
 .It Xr fanpwr 4
@@ -200,8 +202,6 @@ National Semiconductor LM75/LM76/LM77 temperature sensor
 Maxim DS1624/DS1631/DS1721 temperature sensor
 .It Xr maxrtc 4
 Maxim DS1307 real-time clock
-.It Xr dsxrtc 4
-Maxim DS3231/DS3232 real-time clock
 .It Xr maxtmp 4
 Maxim MAX6642/MAX6690 temperature sensor
 .It Xr mcprtc 4
