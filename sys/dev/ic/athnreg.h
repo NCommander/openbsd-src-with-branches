@@ -1,4 +1,4 @@
-/*	$OpenBSD: athnreg.h,v 1.23 2019/05/17 01:05:20 kevlo Exp $	*/
+/*	$OpenBSD: athnreg.h,v 1.24 2020/04/20 08:50:06 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -279,6 +279,10 @@
 
 /* Bits for AR_IER. */
 #define AR_IER_ENABLE	0x00000001
+
+/* Bits for AR_MIRT. */
+#define AR_MIRT_RATE_THRES_M	0x0000ffff
+#define AR_MIRT_RATE_THRES_S	0 
 
 /* Bits for AR_TIMT. */
 #define AR_TIMT_LAST_M	0x0000ffff
