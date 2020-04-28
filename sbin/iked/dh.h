@@ -1,4 +1,4 @@
-/*	$OpenBSD: dh.h,v 1.10 2017/03/27 17:17:49 mikeb Exp $	*/
+/*	$OpenBSD: dh.h,v 1.11 2017/10/27 14:26:35 patrick Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -21,9 +21,8 @@
 
 enum group_type {
 	GROUP_MODP		= 0,
-	GROUP_EC2N		= 1,
-	GROUP_ECP		= 2,
-	GROUP_CURVE25519	= 3
+	GROUP_ECP		= 1,
+	GROUP_CURVE25519	= 2
 };
 
 struct group_id {
