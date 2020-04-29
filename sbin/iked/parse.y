@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.96 2020/04/28 15:18:52 tobhe Exp $	*/
+/*	$OpenBSD: parse.y,v 1.97 2020/04/29 14:55:21 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -2485,7 +2485,7 @@ print_policy(struct iked_policy *pol)
 		print_verbose(" active");
 	else
 		print_verbose(" passive");
-	
+
 	if (pol->pol_flags & IKED_POLICY_IPCOMP)
 		print_verbose(" ipcomp");
 
