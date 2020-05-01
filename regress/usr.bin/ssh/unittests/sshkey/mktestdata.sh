@@ -1,5 +1,5 @@
 #!/bin/sh
-# $OpenBSD: mktestdata.sh,v 1.6 2017/04/30 23:33:48 djm Exp $
+# $OpenBSD: mktestdata.sh,v 1.7 2018/09/12 01:36:45 djm Exp $
 
 PW=mekmitasdigoat
 
@@ -56,8 +56,8 @@ ecdsa_params() {
 	    awk '/^pub:/,/^ASN1 OID:/' | #\
 	    grep -v '^[a-zA-Z]' | tr -d ' \n:' > ${_outbase}.pub
 	openssl ec -noout -text -in $_in | \
-	    grep "ASN1 OID:" | tr -d '\n' | \
-	    sed 's/.*: //;s/ *$//' > ${_outbase}.curve
+	    grep "ASN1 OID:" | \
+	    sed 's/.*: //;s/ *$//' | tr -d '\n' > ${_outbase}.curve
 	for x in priv pub curve ; do
 		echo "" >> ${_outbase}.$x
 		echo ============ ${_outbase}.$x
