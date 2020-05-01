@@ -1,4 +1,4 @@
-/* $OpenBSD: utf8.h,v 1.1 2016/05/25 23:48:45 schwarze Exp $ */
+/* $OpenBSD: utf8.h,v 1.2 2020/04/03 02:25:21 djm Exp $ */
 /*
  * Copyright (c) 2016 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+int	 vasnmprintf(char **, size_t, int *, const char *, va_list);
 int	 mprintf(const char *, ...)
 	     __attribute__((format(printf, 1, 2)));
 int	 fmprintf(FILE *, const char *, ...)
