@@ -25,6 +25,7 @@
 #include <string.h>
 #include <limits.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <openssl/x509v3.h>
 
@@ -173,18 +174,19 @@ set_signal_handler(void)
 int
 outputheader(FILE *out, struct stats *st)
 {
-	char		hn[NI_MAXHOST], tbuf[26];
+	char		hn[NI_MAXHOST], tbuf[80];
+	struct tm	*tp;
 	time_t		t;
 
 	time(&t);
 	setenv("TZ", "UTC", 1);
-	ctime_r(&t, tbuf);
-	*strrchr(tbuf, '\n') = '\0';
+	tp = localtime(&t);
+	strftime(tbuf, sizeof tbuf, "%a %b %e %H:%M:%S %Z %Y", tp);
 
 	gethostname(hn, sizeof hn);
 
 	if (fprintf(out,
-	    "# Generated on host %s at %s UTC\n"
+	    "# Generated on host %s at %s\n"
 	    "# Processing time %lld seconds (%lld seconds user, %lld seconds system)\n"
 	    "# Route Origin Authorizations: %zu (%zu failed parse, %zu invalid)\n"
 	    "# Certificates: %zu (%zu failed parse, %zu invalid)\n"
