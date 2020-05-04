@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_umb.c,v 1.32 2020/02/18 08:09:37 gerhard Exp $ */
+/*	$OpenBSD: if_umb.c,v 1.33 2020/04/27 11:16:51 gerhard Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -1945,7 +1945,7 @@ tryv6:;
 		goto done;
 	}
 
-	if ((avail_v4 & (MBIM_IPCONF_HAS_ADDRINFO | MBIM_IPCONF_HAS_GWINFO)) ==
+	if ((avail_v6 & (MBIM_IPCONF_HAS_ADDRINFO | MBIM_IPCONF_HAS_GWINFO)) ==
 	    (MBIM_IPCONF_HAS_ADDRINFO | MBIM_IPCONF_HAS_GWINFO)) {
 		n = letoh32(ic->ipv6_naddr);
 		off = letoh32(ic->ipv6_addroffs);
