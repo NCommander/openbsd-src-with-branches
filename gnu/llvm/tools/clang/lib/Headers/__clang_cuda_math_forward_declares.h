@@ -140,6 +140,7 @@ __DEVICE__ long lrint(double);
 __DEVICE__ long lrint(float);
 __DEVICE__ long lround(double);
 __DEVICE__ long lround(float);
+__DEVICE__ long long llround(float); // No llround(double).
 __DEVICE__ double modf(double, double *);
 __DEVICE__ float modf(float, float *);
 __DEVICE__ double nan(const char *);
@@ -148,8 +149,6 @@ __DEVICE__ double nearbyint(double);
 __DEVICE__ float nearbyint(float);
 __DEVICE__ double nextafter(double, double);
 __DEVICE__ float nextafter(float, float);
-__DEVICE__ double nexttoward(double, double);
-__DEVICE__ float nexttoward(float, float);
 __DEVICE__ double pow(double, double);
 __DEVICE__ double pow(double, int);
 __DEVICE__ float pow(float, float);
@@ -183,7 +182,23 @@ __DEVICE__ float tgamma(float);
 __DEVICE__ double trunc(double);
 __DEVICE__ float trunc(float);
 
+// Notably missing above is nexttoward, which we don't define on
+// the device side because libdevice doesn't give us an implementation, and we
+// don't want to be in the business of writing one ourselves.
+
+// We need to define these overloads in exactly the namespace our standard
+// library uses (including the right inline namespace), otherwise they won't be
+// picked up by other functions in the standard library (e.g. functions in
+// <complex>).  Thus the ugliness below.
+#ifdef _LIBCPP_BEGIN_NAMESPACE_STD
+_LIBCPP_BEGIN_NAMESPACE_STD
+#else
 namespace std {
+#ifdef _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+#endif
+#endif
+
 using ::abs;
 using ::acos;
 using ::acosh;
@@ -235,12 +250,12 @@ using ::log2;
 using ::logb;
 using ::lrint;
 using ::lround;
+using ::llround;
 using ::modf;
 using ::nan;
 using ::nanf;
 using ::nearbyint;
 using ::nextafter;
-using ::nexttoward;
 using ::pow;
 using ::remainder;
 using ::remquo;
@@ -256,7 +271,15 @@ using ::tan;
 using ::tanh;
 using ::tgamma;
 using ::trunc;
+
+#ifdef _LIBCPP_END_NAMESPACE_STD
+_LIBCPP_END_NAMESPACE_STD
+#else
+#ifdef _GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_END_NAMESPACE_VERSION
+#endif
 } // namespace std
+#endif
 
 #pragma pop_macro("__DEVICE__")
 

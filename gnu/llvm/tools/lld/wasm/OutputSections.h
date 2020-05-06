@@ -10,13 +10,11 @@
 #ifndef LLD_WASM_OUTPUT_SECTIONS_H
 #define LLD_WASM_OUTPUT_SECTIONS_H
 
-#include "InputSegment.h"
+#include "InputChunks.h"
 #include "WriterUtils.h"
 #include "lld/Common/ErrorHandler.h"
+#include "lld/Common/LLVM.h"
 #include "llvm/ADT/DenseMap.h"
-
-using llvm::raw_ostream;
-using llvm::raw_string_ostream;
 
 namespace lld {
 
@@ -28,7 +26,6 @@ std::string toString(const wasm::OutputSection &Section);
 namespace wasm {
 
 class OutputSegment;
-class ObjFile;
 
 class OutputSection {
 public:
@@ -36,7 +33,7 @@ public:
       : Type(Type), Name(Name) {}
   virtual ~OutputSection() = default;
 
-  std::string getSectionName() const;
+  StringRef getSectionName() const;
   void setOffset(size_t NewOffset) {
     log("setOffset: " + toString(*this) + ": " + Twine(NewOffset));
     Offset = NewOffset;
@@ -61,7 +58,7 @@ public:
   SyntheticSection(uint32_t Type, std::string Name = "")
       : OutputSection(Type, Name), BodyOutputStream(Body) {
     if (!Name.empty())
-      writeStr(BodyOutputStream, Name);
+      writeStr(BodyOutputStream, Name, "section name");
   }
 
   void writeTo(uint8_t *Buf) override {
@@ -83,35 +80,19 @@ public:
   std::string Body;
 
 protected:
-  raw_string_ostream BodyOutputStream;
-};
-
-// Some synthetic sections (e.g. "name" and "linking") have subsections.
-// Just like the synthetic sections themselves these need to be created before
-// they can be written out (since they are preceded by their length). This
-// class is used to create subsections and then write them into the stream
-// of the parent section.
-class SubSection : public SyntheticSection {
-public:
-  explicit SubSection(uint32_t Type) : SyntheticSection(Type) {}
-
-  std::string getSectionName() const;
-  void writeToStream(raw_ostream &OS) {
-    writeBytes(OS, Header.data(), Header.size());
-    writeBytes(OS, Body.data(), Body.size());
-  }
+  llvm::raw_string_ostream BodyOutputStream;
 };
 
 class CodeSection : public OutputSection {
 public:
-  explicit CodeSection(uint32_t NumFunctions, ArrayRef<ObjFile *> Objs);
+  explicit CodeSection(ArrayRef<InputFunction *> Functions);
   size_t getSize() const override { return Header.size() + BodySize; }
   void writeTo(uint8_t *Buf) override;
   uint32_t numRelocations() const override;
   void writeRelocations(raw_ostream &OS) const override;
 
 protected:
-  ArrayRef<ObjFile *> InputObjects;
+  ArrayRef<InputFunction *> Functions;
   std::string CodeSectionHeader;
   size_t BodySize = 0;
 };
@@ -128,6 +109,29 @@ protected:
   ArrayRef<OutputSegment *> Segments;
   std::string DataSectionHeader;
   size_t BodySize = 0;
+};
+
+// Represents a custom section in the output file.  Wasm custom sections are
+// used for storing user-defined metadata.  Unlike the core sections types
+// they are identified by their string name.
+// The linker combines custom sections that have the same name by simply
+// concatenating them.
+// Note that some custom sections such as "name" and "linking" are handled
+// separately and are instead synthesized by the linker.
+class CustomSection : public OutputSection {
+public:
+  CustomSection(std::string Name, ArrayRef<InputSection *> InputSections);
+  size_t getSize() const override {
+    return Header.size() + NameData.size() + PayloadSize;
+  }
+  void writeTo(uint8_t *Buf) override;
+  uint32_t numRelocations() const override;
+  void writeRelocations(raw_ostream &OS) const override;
+
+protected:
+  size_t PayloadSize;
+  ArrayRef<InputSection *> InputSections;
+  std::string NameData;
 };
 
 } // namespace wasm

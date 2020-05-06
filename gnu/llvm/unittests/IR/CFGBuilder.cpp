@@ -11,7 +11,6 @@
 
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/TypeBuilder.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
 #include "gtest/gtest.h"
@@ -23,7 +22,7 @@ using namespace llvm;
 CFGHolder::CFGHolder(StringRef ModuleName, StringRef FunctionName)
     : Context(llvm::make_unique<LLVMContext>()),
       M(llvm::make_unique<Module>(ModuleName, *Context)) {
-  FunctionType *FTy = TypeBuilder<void(), false>::get(*Context);
+  FunctionType *FTy = FunctionType::get(Type::getVoidTy(*Context), {}, false);
   F = cast<Function>(M->getOrInsertFunction(FunctionName, FTy));
 }
 CFGHolder::~CFGHolder() = default;
@@ -36,9 +35,9 @@ CFGBuilder::CFGBuilder(Function *F, const std::vector<Arc> &InitialArcs,
 }
 
 static void ConnectBlocks(BasicBlock *From, BasicBlock *To) {
-  DEBUG(dbgs() << "Creating BB arc " << From->getName() << " -> "
-               << To->getName() << "\n";
-        dbgs().flush());
+  LLVM_DEBUG(dbgs() << "Creating BB arc " << From->getName() << " -> "
+                    << To->getName() << "\n";
+             dbgs().flush());
   auto *IntTy = IntegerType::get(From->getContext(), 32);
 
   if (isa<UnreachableInst>(From->getTerminator()))
@@ -57,9 +56,9 @@ static void ConnectBlocks(BasicBlock *From, BasicBlock *To) {
 }
 
 static void DisconnectBlocks(BasicBlock *From, BasicBlock *To) {
-  DEBUG(dbgs() << "Deleting BB arc " << From->getName() << " -> "
-               << To->getName() << "\n";
-        dbgs().flush());
+  LLVM_DEBUG(dbgs() << "Deleting BB arc " << From->getName() << " -> "
+                    << To->getName() << "\n";
+             dbgs().flush());
   SwitchInst *SI = cast<SwitchInst>(From->getTerminator());
 
   if (SI->getNumCases() == 0) {

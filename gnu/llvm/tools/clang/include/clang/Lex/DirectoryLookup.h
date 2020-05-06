@@ -24,7 +24,7 @@ class DirectoryEntry;
 class FileEntry;
 class HeaderSearch;
 class Module;
-  
+
 /// DirectoryLookup - This class represents one entry in the search list that
 /// specifies the search order for directories in \#include directives.  It
 /// represents either a directory, a framework, or a headermap.
@@ -54,14 +54,14 @@ private:
   /// LookupType - This indicates whether this DirectoryLookup object is a
   /// normal directory, a framework, or a headermap.
   unsigned LookupType : 2;
-  
-  /// \brief Whether this is a header map used when building a framework.
+
+  /// Whether this is a header map used when building a framework.
   unsigned IsIndexHeaderMap : 1;
 
-  /// \brief Whether we've performed an exhaustive search for module maps
+  /// Whether we've performed an exhaustive search for module maps
   /// within the subdirectories of this directory.
   unsigned SearchedAllModuleMaps : 1;
-  
+
 public:
   /// DirectoryLookup ctor - Note that this ctor *does not take ownership* of
   /// 'dir'.
@@ -88,7 +88,7 @@ public:
 
   /// getName - Return the directory or filename corresponding to this lookup
   /// object.
-  const char *getName() const;
+  StringRef getName() const;
 
   /// getDir - Return the directory that this entry refers to.
   ///
@@ -118,11 +118,11 @@ public:
   /// isHeaderMap - Return true if this is a header map, not a normal directory.
   bool isHeaderMap() const { return getLookupType() == LT_HeaderMap; }
 
-  /// \brief Determine whether we have already searched this entire
+  /// Determine whether we have already searched this entire
   /// directory for module maps.
   bool haveSearchedAllModuleMaps() const { return SearchedAllModuleMaps; }
 
-  /// \brief Specify whether we have already searched all of the subdirectories
+  /// Specify whether we have already searched all of the subdirectories
   /// for module maps.
   void setSearchedAllModuleMaps(bool SAMM) {
     SearchedAllModuleMaps = SAMM;
@@ -134,22 +134,25 @@ public:
     return (SrcMgr::CharacteristicKind)DirCharacteristic;
   }
 
-  /// \brief Whether this describes a system header directory.
+  /// Whether this describes a system header directory.
   bool isSystemHeaderDirectory() const {
     return getDirCharacteristic() != SrcMgr::C_User;
   }
 
-  /// \brief Whether this header map is building a framework or not.
-  bool isIndexHeaderMap() const { 
-    return isHeaderMap() && IsIndexHeaderMap; 
+  /// Whether this header map is building a framework or not.
+  bool isIndexHeaderMap() const {
+    return isHeaderMap() && IsIndexHeaderMap;
   }
-  
+
   /// LookupFile - Lookup the specified file in this search path, returning it
   /// if it exists or returning null if not.
   ///
   /// \param Filename The file to look up relative to the search paths.
   ///
   /// \param HS The header search instance to search with.
+  ///
+  /// \param IncludeLoc the source location of the #include or #import
+  /// directive.
   ///
   /// \param SearchPath If not NULL, will be set to the search path relative
   /// to which the file was found.
@@ -172,6 +175,7 @@ public:
   /// a framework include ("Foo.h" -> "Foo/Foo.h"), set the new name to this
   /// vector and point Filename to it.
   const FileEntry *LookupFile(StringRef &Filename, HeaderSearch &HS,
+                              SourceLocation IncludeLoc,
                               SmallVectorImpl<char> *SearchPath,
                               SmallVectorImpl<char> *RelativePath,
                               Module *RequestingModule,
@@ -187,7 +191,7 @@ private:
       SmallVectorImpl<char> *RelativePath,
       Module *RequestingModule,
       ModuleMap::KnownHeader *SuggestedModule,
-      bool &InUserSpecifiedSystemHeader) const;
+      bool &InUserSpecifiedSystemFramework) const;
 
 };
 

@@ -1,11 +1,13 @@
 set (FILES
-  FileSpecTest.cpp
   FileSystemTest.cpp
+  HostInfoTest.cpp
   HostTest.cpp
   MainLoopTest.cpp
+  NativeProcessProtocolTest.cpp
   SocketAddressTest.cpp
   SocketTest.cpp
   SymbolsTest.cpp
+  TaskPoolTest.cpp
 )
 
 if (CMAKE_SYSTEM_NAME MATCHES "Linux|Android")
@@ -20,4 +22,6 @@ add_lldb_unittest(HostTests
   LINK_LIBS
     lldbCore
     lldbHost
+    lldbUtilityHelpers
+    LLVMTestingSupport
   )

@@ -432,36 +432,56 @@ NSAPI::getNSNumberFactoryMethodKind(QualType T) const {
     return NSAPI::NSNumberWithDouble;
   case BuiltinType::Bool:
     return NSAPI::NSNumberWithBool;
-    
+
   case BuiltinType::Void:
   case BuiltinType::WChar_U:
   case BuiltinType::WChar_S:
+  case BuiltinType::Char8:
   case BuiltinType::Char16:
   case BuiltinType::Char32:
   case BuiltinType::Int128:
   case BuiltinType::LongDouble:
+  case BuiltinType::ShortAccum:
+  case BuiltinType::Accum:
+  case BuiltinType::LongAccum:
+  case BuiltinType::UShortAccum:
+  case BuiltinType::UAccum:
+  case BuiltinType::ULongAccum:
+  case BuiltinType::ShortFract:
+  case BuiltinType::Fract:
+  case BuiltinType::LongFract:
+  case BuiltinType::UShortFract:
+  case BuiltinType::UFract:
+  case BuiltinType::ULongFract:
+  case BuiltinType::SatShortAccum:
+  case BuiltinType::SatAccum:
+  case BuiltinType::SatLongAccum:
+  case BuiltinType::SatUShortAccum:
+  case BuiltinType::SatUAccum:
+  case BuiltinType::SatULongAccum:
+  case BuiltinType::SatShortFract:
+  case BuiltinType::SatFract:
+  case BuiltinType::SatLongFract:
+  case BuiltinType::SatUShortFract:
+  case BuiltinType::SatUFract:
+  case BuiltinType::SatULongFract:
   case BuiltinType::UInt128:
+  case BuiltinType::Float16:
+  case BuiltinType::Float128:
   case BuiltinType::NullPtr:
   case BuiltinType::ObjCClass:
   case BuiltinType::ObjCId:
   case BuiltinType::ObjCSel:
-  case BuiltinType::OCLImage1d:
-  case BuiltinType::OCLImage1dArray:
-  case BuiltinType::OCLImage1dBuffer:
-  case BuiltinType::OCLImage2d:
-  case BuiltinType::OCLImage2dArray:
-  case BuiltinType::OCLImage2dDepth:
-  case BuiltinType::OCLImage2dArrayDepth:
-  case BuiltinType::OCLImage2dMSAA:
-  case BuiltinType::OCLImage2dArrayMSAA:
-  case BuiltinType::OCLImage2dMSAADepth:
-  case BuiltinType::OCLImage2dArrayMSAADepth:
-  case BuiltinType::OCLImage3d:
+#define IMAGE_TYPE(ImgType, Id, SingletonId, Access, Suffix) \
+  case BuiltinType::Id:
+#include "clang/Basic/OpenCLImageTypes.def"
+#define EXT_OPAQUE_TYPE(ExtType, Id, Ext) \
+  case BuiltinType::Id:
+#include "clang/Basic/OpenCLExtensionTypes.def"
   case BuiltinType::OCLSampler:
   case BuiltinType::OCLEvent:
   case BuiltinType::OCLClkEvent:
   case BuiltinType::OCLQueue:
-  case BuiltinType::OCLNDRange:
   case BuiltinType::OCLReserveID:
   case BuiltinType::BoundMember:
   case BuiltinType::Dependent:
@@ -474,27 +494,27 @@ NSAPI::getNSNumberFactoryMethodKind(QualType T) const {
   case BuiltinType::OMPArraySection:
     break;
   }
-  
+
   return None;
 }
 
-/// \brief Returns true if \param T is a typedef of "BOOL" in objective-c.
+/// Returns true if \param T is a typedef of "BOOL" in objective-c.
 bool NSAPI::isObjCBOOLType(QualType T) const {
   return isObjCTypedef(T, "BOOL", BOOLId);
 }
-/// \brief Returns true if \param T is a typedef of "NSInteger" in objective-c.
+/// Returns true if \param T is a typedef of "NSInteger" in objective-c.
 bool NSAPI::isObjCNSIntegerType(QualType T) const {
   return isObjCTypedef(T, "NSInteger", NSIntegerId);
 }
-/// \brief Returns true if \param T is a typedef of "NSUInteger" in objective-c.
+/// Returns true if \param T is a typedef of "NSUInteger" in objective-c.
 bool NSAPI::isObjCNSUIntegerType(QualType T) const {
   return isObjCTypedef(T, "NSUInteger", NSUIntegerId);
 }
 
 StringRef NSAPI::GetNSIntegralKind(QualType T) const {
-  if (!Ctx.getLangOpts().ObjC1 || T.isNull())
+  if (!Ctx.getLangOpts().ObjC || T.isNull())
     return StringRef();
-  
+
   while (const TypedefType *TDT = T->getAs<TypedefType>()) {
     StringRef NSIntegralResust =
       llvm::StringSwitch<StringRef>(
@@ -544,7 +564,7 @@ bool NSAPI::isSubclassOfNSClass(ObjCInterfaceDecl *InterfaceDecl,
 
 bool NSAPI::isObjCTypedef(QualType T,
                           StringRef name, IdentifierInfo *&II) const {
-  if (!Ctx.getLangOpts().ObjC1)
+  if (!Ctx.getLangOpts().ObjC)
     return false;
   if (T.isNull())
     return false;
@@ -563,7 +583,7 @@ bool NSAPI::isObjCTypedef(QualType T,
 
 bool NSAPI::isObjCEnumerator(const Expr *E,
                              StringRef name, IdentifierInfo *&II) const {
-  if (!Ctx.getLangOpts().ObjC1)
+  if (!Ctx.getLangOpts().ObjC)
     return false;
   if (!E)
     return false;
@@ -587,6 +607,14 @@ Selector NSAPI::getOrInitSelector(ArrayRef<StringRef> Ids,
            I = Ids.begin(), E = Ids.end(); I != E; ++I)
       Idents.push_back(&Ctx.Idents.get(*I));
     Sel = Ctx.Selectors.getSelector(Idents.size(), Idents.data());
+  }
+  return Sel;
+}
+
+Selector NSAPI::getOrInitNullarySelector(StringRef Id, Selector &Sel) const {
+  if (Sel.isNull()) {
+    IdentifierInfo *Ident = &Ctx.Idents.get(Id);
+    Sel = Ctx.Selectors.getSelector(0, &Ident);
   }
   return Sel;
 }

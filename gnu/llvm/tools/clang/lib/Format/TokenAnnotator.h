@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief This file implements a token annotator, i.e. creates
+/// This file implements a token annotator, i.e. creates
 /// \c AnnotatedTokens out of \c FormatTokens with required extra information.
 ///
 //===----------------------------------------------------------------------===//
@@ -18,7 +18,6 @@
 
 #include "UnwrappedLineParser.h"
 #include "clang/Format/Format.h"
-#include <string>
 
 namespace clang {
 class SourceManager;
@@ -40,10 +39,13 @@ class AnnotatedLine {
 public:
   AnnotatedLine(const UnwrappedLine &Line)
       : First(Line.Tokens.front().Tok), Level(Line.Level),
+        MatchingOpeningBlockLineIndex(Line.MatchingOpeningBlockLineIndex),
+        MatchingClosingBlockLineIndex(Line.MatchingClosingBlockLineIndex),
         InPPDirective(Line.InPPDirective),
         MustBeDeclaration(Line.MustBeDeclaration), MightBeFunctionDecl(false),
         IsMultiVariableDeclStmt(false), Affected(false),
-        LeadingEmptyLinesAffected(false), ChildrenAffected(false) {
+        LeadingEmptyLinesAffected(false), ChildrenAffected(false),
+        FirstStartColumn(Line.FirstStartColumn) {
     assert(!Line.Tokens.empty());
 
     // Calculate Next and Previous for all tokens. Note that we must overwrite
@@ -83,7 +85,15 @@ public:
   /// \c true if this line starts with the given tokens in order, ignoring
   /// comments.
   template <typename... Ts> bool startsWith(Ts... Tokens) const {
-    return startsWith(First, Tokens...);
+    return First && First->startsSequence(Tokens...);
+  }
+
+  /// \c true if this line ends with the given tokens in reversed order,
+  /// ignoring comments.
+  /// For example, given tokens [T1, T2, T3, ...], the function returns true if
+  /// this line is like "... T3 T2 T1".
+  template <typename... Ts> bool endsWith(Ts... Tokens) const {
+    return Last && Last->endsSequence(Tokens...);
   }
 
   /// \c true if this line looks like a function definition instead of a
@@ -95,6 +105,13 @@ public:
     return !Last->isOneOf(tok::semi, tok::comment);
   }
 
+  /// \c true if this line starts a namespace definition.
+  bool startsWithNamespace() const {
+    return startsWith(tok::kw_namespace) ||
+           startsWith(tok::kw_inline, tok::kw_namespace) ||
+           startsWith(tok::kw_export, tok::kw_namespace);
+  }
+
   FormatToken *First;
   FormatToken *Last;
 
@@ -102,6 +119,8 @@ public:
 
   LineType Type;
   unsigned Level;
+  size_t MatchingOpeningBlockLineIndex;
+  size_t MatchingClosingBlockLineIndex;
   bool InPPDirective;
   bool MustBeDeclaration;
   bool MightBeFunctionDecl;
@@ -115,35 +134,25 @@ public:
   /// input ranges.
   bool LeadingEmptyLinesAffected;
 
-  /// \c True if a one of this line's children intersects with an input range.
+  /// \c True if one of this line's children intersects with an input range.
   bool ChildrenAffected;
+
+  unsigned FirstStartColumn;
 
 private:
   // Disallow copying.
   AnnotatedLine(const AnnotatedLine &) = delete;
   void operator=(const AnnotatedLine &) = delete;
-
-  template <typename A, typename... Ts>
-  bool startsWith(FormatToken *Tok, A K1) const {
-    while (Tok && Tok->is(tok::comment))
-      Tok = Tok->Next;
-    return Tok && Tok->is(K1);
-  }
-
-  template <typename A, typename... Ts>
-  bool startsWith(FormatToken *Tok, A K1, Ts... Tokens) const {
-    return startsWith(Tok, K1) && startsWith(Tok->Next, Tokens...);
-  }
 };
 
-/// \brief Determines extra information about the tokens comprising an
+/// Determines extra information about the tokens comprising an
 /// \c UnwrappedLine.
 class TokenAnnotator {
 public:
   TokenAnnotator(const FormatStyle &Style, const AdditionalKeywords &Keywords)
       : Style(Style), Keywords(Keywords) {}
 
-  /// \brief Adapts the indent levels of comment lines to the indent of the
+  /// Adapts the indent levels of comment lines to the indent of the
   /// subsequent line.
   // FIXME: Can/should this be done in the UnwrappedLineParser?
   void setCommentLineLevels(SmallVectorImpl<AnnotatedLine *> &Lines);
@@ -152,14 +161,14 @@ public:
   void calculateFormattingInformation(AnnotatedLine &Line);
 
 private:
-  /// \brief Calculate the penalty for splitting before \c Tok.
+  /// Calculate the penalty for splitting before \c Tok.
   unsigned splitPenalty(const AnnotatedLine &Line, const FormatToken &Tok,
                         bool InFunctionDecl);
 
   bool spaceRequiredBetween(const AnnotatedLine &Line, const FormatToken &Left,
                             const FormatToken &Right);
 
-  bool spaceRequiredBefore(const AnnotatedLine &Line, const FormatToken &Tok);
+  bool spaceRequiredBefore(const AnnotatedLine &Line, const FormatToken &Right);
 
   bool mustBreakBefore(const AnnotatedLine &Line, const FormatToken &Right);
 

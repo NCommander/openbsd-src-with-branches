@@ -23,7 +23,6 @@ class TestExprLookupAnonStructTypedef(TestBase):
         # Find the breakpoint
         self.line = line_number('main.cpp', '// lldb testsuite break')
 
-    @expectedFailureAll(oslist=["windows"])
     @expectedFailureAll(
         oslist=['linux'],
         archs=['arm'],
@@ -32,7 +31,8 @@ class TestExprLookupAnonStructTypedef(TestBase):
         """Test typedeffed untagged struct arguments for function call expressions"""
         self.build()
 
-        self.runCmd("file a.out", CURRENT_EXECUTABLE_SET)
+        self.runCmd("file "+self.getBuildArtifact("a.out"),
+                    CURRENT_EXECUTABLE_SET)
         lldbutil.run_break_set_by_file_and_line(
             self,
             "main.cpp",

@@ -1,10 +1,10 @@
 //===- TargetCallingConv.td - Target Calling Conventions ---*- tablegen -*-===//
-// 
+//
 //                     The LLVM Compiler Infrastructure
 //
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
-// 
+//
 //===----------------------------------------------------------------------===//
 //
 // This file defines the target-independent interfaces with which targets
@@ -40,6 +40,16 @@ class CCIf<string predicate, CCAction A> : CCPredicateAction<A> {
 /// CCIfByVal - If the current argument has ByVal parameter attribute, apply
 /// Action A.
 class CCIfByVal<CCAction A> : CCIf<"ArgFlags.isByVal()", A> {
+}
+
+/// CCIfSwiftSelf - If the current argument has swiftself parameter attribute,
+/// apply Action A.
+class CCIfSwiftSelf<CCAction A> : CCIf<"ArgFlags.isSwiftSelf()", A> {
+}
+
+/// CCIfSwiftError - If the current argument has swifterror parameter attribute,
+/// apply Action A.
+class CCIfSwiftError<CCAction A> : CCIf<"ArgFlags.isSwiftError()", A> {
 }
 
 /// CCIfConsecutiveRegs - If the current argument has InConsecutiveRegs

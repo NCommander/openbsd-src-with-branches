@@ -35,11 +35,12 @@ class FieldDecl;
 class MangleContext;
 
 namespace CodeGen {
+class CGCallee;
 class CodeGenFunction;
 class CodeGenModule;
 struct CatchTypeInfo;
 
-/// \brief Implements C++ ABI-specific code generation functions.
+/// Implements C++ ABI-specific code generation functions.
 class CGCXXABI {
 protected:
   CodeGenModule &CGM;
@@ -72,9 +73,10 @@ protected:
     return CGF.CXXStructorImplicitParamValue;
   }
 
-  /// Perform prolog initialization of the parameter variable suitable
-  /// for 'this' emitted by buildThisParam.
-  void EmitThisParam(CodeGenFunction &CGF);
+  /// Loads the incoming C++ this pointer as it was passed by the caller.
+  llvm::Value *loadIncomingCXXThis(CodeGenFunction &CGF);
+
+  void setCXXABIThisValue(CodeGenFunction &CGF, llvm::Value *ThisPtr);
 
   ASTContext &getContext() const { return CGM.getContext(); }
 
@@ -105,6 +107,16 @@ public:
   virtual bool HasThisReturn(GlobalDecl GD) const { return false; }
 
   virtual bool hasMostDerivedReturn(GlobalDecl GD) const { return false; }
+
+  /// Returns true if the target allows calling a function through a pointer
+  /// with a different signature than the actual function (or equivalently,
+  /// bitcasting a function or function pointer to a different function type).
+  /// In principle in the most general case this could depend on the target, the
+  /// calling convention, and the actual types of the arguments and return
+  /// value. Here it just means whether the signature mismatch could *ever* be
+  /// allowed; in other words, does the target do strict checking of signatures
+  /// for all calls.
+  virtual bool canCallMismatchedFunctionType() const { return true; }
 
   /// If the C++ ABI requires the given type be returned in a particular way,
   /// this method sets RetAI and returns true.
@@ -144,7 +156,7 @@ public:
   /// Load a member function from an object and a member function
   /// pointer.  Apply the this-adjustment and set 'This' to the
   /// adjusted value.
-  virtual llvm::Value *EmitLoadOfMemberFunctionPointer(
+  virtual CGCallee EmitLoadOfMemberFunctionPointer(
       CodeGenFunction &CGF, const Expr *E, Address This,
       llvm::Value *&ThisPtrForCall, llvm::Value *MemPtr,
       const MemberPointerType *MPT);
@@ -210,7 +222,7 @@ protected:
   /// is required.
   llvm::Constant *getMemberPointerAdjustment(const CastExpr *E);
 
-  /// \brief Computes the non-virtual adjustment needed for a member pointer
+  /// Computes the non-virtual adjustment needed for a member pointer
   /// conversion along an inheritance path stored in an APValue.  Unlike
   /// getMemberPointerAdjustment(), the adjustment can be negative if the path
   /// is from a derived type to a base type.
@@ -225,7 +237,7 @@ public:
   virtual void emitThrow(CodeGenFunction &CGF, const CXXThrowExpr *E) = 0;
   virtual llvm::GlobalVariable *getThrowInfo(QualType T) { return nullptr; }
 
-  /// \brief Determine whether it's possible to emit a vtable for \p RD, even
+  /// Determine whether it's possible to emit a vtable for \p RD, even
   /// though we do not know that the vtable has been marked as used by semantic
   /// analysis.
   virtual bool canSpeculativelyEmitVTable(const CXXRecordDecl *RD) const = 0;
@@ -280,17 +292,40 @@ public:
   /// Emit constructor variants required by this ABI.
   virtual void EmitCXXConstructors(const CXXConstructorDecl *D) = 0;
 
+  /// Notes how many arguments were added to the beginning (Prefix) and ending
+  /// (Suffix) of an arg list.
+  ///
+  /// Note that Prefix actually refers to the number of args *after* the first
+  /// one: `this` arguments always come first.
+  struct AddedStructorArgs {
+    unsigned Prefix = 0;
+    unsigned Suffix = 0;
+    AddedStructorArgs() = default;
+    AddedStructorArgs(unsigned P, unsigned S) : Prefix(P), Suffix(S) {}
+    static AddedStructorArgs prefix(unsigned N) { return {N, 0}; }
+    static AddedStructorArgs suffix(unsigned N) { return {0, N}; }
+  };
+
   /// Build the signature of the given constructor or destructor variant by
   /// adding any required parameters.  For convenience, ArgTys has been
   /// initialized with the type of 'this'.
-  virtual void buildStructorSignature(const CXXMethodDecl *MD, StructorType T,
-                                      SmallVectorImpl<CanQualType> &ArgTys) = 0;
+  virtual AddedStructorArgs
+  buildStructorSignature(const CXXMethodDecl *MD, StructorType T,
+                         SmallVectorImpl<CanQualType> &ArgTys) = 0;
 
   /// Returns true if the given destructor type should be emitted as a linkonce
   /// delegating thunk, regardless of whether the dtor is defined in this TU or
   /// not.
   virtual bool useThunkForDtorVariant(const CXXDestructorDecl *Dtor,
                                       CXXDtorType DT) const = 0;
+
+  virtual void setCXXDestructorDLLStorage(llvm::GlobalValue *GV,
+                                          const CXXDestructorDecl *Dtor,
+                                          CXXDtorType DT) const;
+
+  virtual llvm::GlobalValue::LinkageTypes
+  getCXXDestructorLinkage(GVALinkage Linkage, const CXXDestructorDecl *Dtor,
+                          CXXDtorType DT) const;
 
   /// Emit destructor variants required by this ABI.
   virtual void EmitCXXDestructors(const CXXDestructorDecl *D) = 0;
@@ -326,11 +361,10 @@ public:
   virtual void addImplicitStructorParams(CodeGenFunction &CGF, QualType &ResTy,
                                          FunctionArgList &Params) = 0;
 
-  /// Perform ABI-specific "this" parameter adjustment in a virtual function
-  /// prologue.
-  virtual llvm::Value *adjustThisParameterInVirtualFunctionPrologue(
-      CodeGenFunction &CGF, GlobalDecl GD, llvm::Value *This) {
-    return This;
+  /// Get the ABI-specific "this" parameter adjustment to apply in the prologue
+  /// of a virtual function.
+  virtual CharUnits getVirtualFunctionPrologueThisAdjustment(GlobalDecl GD) {
+    return CharUnits::Zero();
   }
 
   /// Emit the ABI-specific prolog for the function.
@@ -338,9 +372,9 @@ public:
 
   /// Add any ABI-specific implicit arguments needed to call a constructor.
   ///
-  /// \return The number of args added to the call, which is typically zero or
-  /// one.
-  virtual unsigned
+  /// \return The number of arguments added at the beginning and end of the
+  /// call, which is typically zero or one.
+  virtual AddedStructorArgs
   addImplicitConstructorArgs(CodeGenFunction &CGF, const CXXConstructorDecl *D,
                              CXXCtorType Type, bool ForVirtualBase,
                              bool Delegating, CallArgList &Args) = 0;
@@ -360,7 +394,7 @@ public:
   isVirtualOffsetNeededForVTableField(CodeGenFunction &CGF,
                                       CodeGenFunction::VPtr Vptr) = 0;
 
-  /// Checks if ABI requires to initilize vptrs for given dynamic class.
+  /// Checks if ABI requires to initialize vptrs for given dynamic class.
   virtual bool doStructorsInitializeVPtrs(const CXXRecordDecl *VTableClass) = 0;
 
   /// Get the address point of the vtable for the given base subobject.
@@ -387,11 +421,10 @@ public:
                                                 CharUnits VPtrOffset) = 0;
 
   /// Build a virtual function pointer in the ABI-specific way.
-  virtual llvm::Value *getVirtualFunctionPointer(CodeGenFunction &CGF,
-                                                 GlobalDecl GD,
-                                                 Address This,
-                                                 llvm::Type *Ty,
-                                                 SourceLocation Loc) = 0;
+  virtual CGCallee getVirtualFunctionPointer(CodeGenFunction &CGF,
+                                             GlobalDecl GD, Address This,
+                                             llvm::Type *Ty,
+                                             SourceLocation Loc) = 0;
 
   /// Emit the ABI-specific virtual destructor call.
   virtual llvm::Value *
@@ -408,6 +441,7 @@ public:
   /// base tables.
   virtual void emitVirtualInheritanceTables(const CXXRecordDecl *RD) = 0;
 
+  virtual bool exportThunk() = 0;
   virtual void setThunkLinkage(llvm::Function *Thunk, bool ForVTable,
                                GlobalDecl GD, bool ReturnAdjustment) = 0;
 
@@ -556,6 +590,13 @@ public:
   /// Emit a single constructor/destructor with the given type from a C++
   /// constructor Decl.
   virtual void emitCXXStructor(const CXXMethodDecl *MD, StructorType Type) = 0;
+
+  /// Load a vtable from This, an object of polymorphic type RD, or from one of
+  /// its virtual bases if it does not have its own vtable. Returns the vtable
+  /// and the class from which the vtable was loaded.
+  virtual std::pair<llvm::Value *, const CXXRecordDecl *>
+  LoadVTablePtr(CodeGenFunction &CGF, Address This,
+                const CXXRecordDecl *RD) = 0;
 };
 
 // Create an instance of a C++ ABI class:
@@ -566,6 +607,17 @@ CGCXXABI *CreateItaniumCXXABI(CodeGenModule &CGM);
 /// Creates a Microsoft-family ABI.
 CGCXXABI *CreateMicrosoftCXXABI(CodeGenModule &CGM);
 
+struct CatchRetScope final : EHScopeStack::Cleanup {
+  llvm::CatchPadInst *CPI;
+
+  CatchRetScope(llvm::CatchPadInst *CPI) : CPI(CPI) {}
+
+  void Emit(CodeGenFunction &CGF, Flags flags) override {
+    llvm::BasicBlock *BB = CGF.createBasicBlock("catchret.dest");
+    CGF.Builder.CreateCatchRet(CPI, BB);
+    CGF.EmitBlock(BB);
+  }
+};
 }
 }
 

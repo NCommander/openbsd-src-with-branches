@@ -16,7 +16,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "MPIChecker.h"
-#include "../ClangSACheckers.h"
+#include "clang/StaticAnalyzer/Checkers/BuiltinCheckerRegistration.h"
 
 namespace clang {
 namespace ento {
@@ -43,7 +43,8 @@ void MPIChecker::checkDoubleNonblocking(const CallEvent &PreCallEvent,
   // double nonblocking detected
   if (Req && Req->CurrentState == Request::State::Nonblocking) {
     ExplodedNode *ErrorNode = Ctx.generateNonFatalErrorNode();
-    BReporter.reportDoubleNonblocking(PreCallEvent, *Req, MR, ErrorNode, Ctx.getBugReporter());
+    BReporter.reportDoubleNonblocking(PreCallEvent, *Req, MR, ErrorNode,
+                                      Ctx.getBugReporter());
     Ctx.addTransition(ErrorNode->getState(), ErrorNode);
   }
   // no error
@@ -85,7 +86,8 @@ void MPIChecker::checkUnmatchedWaits(const CallEvent &PreCallEvent,
         State = ErrorNode->getState();
       }
       // A wait has no matching nonblocking call.
-      BReporter.reportUnmatchedWait(PreCallEvent, ReqRegion, ErrorNode, Ctx.getBugReporter());
+      BReporter.reportUnmatchedWait(PreCallEvent, ReqRegion, ErrorNode,
+                                    Ctx.getBugReporter());
     }
   }
 
@@ -98,9 +100,6 @@ void MPIChecker::checkUnmatchedWaits(const CallEvent &PreCallEvent,
 
 void MPIChecker::checkMissingWaits(SymbolReaper &SymReaper,
                                    CheckerContext &Ctx) const {
-  if (!SymReaper.hasDeadSymbols())
-    return;
-
   ProgramStateRef State = Ctx.getState();
   const auto &Requests = State->get<RequestMap>();
   if (Requests.isEmpty())
@@ -118,7 +117,8 @@ void MPIChecker::checkMissingWaits(SymbolReaper &SymReaper,
           ErrorNode = Ctx.generateNonFatalErrorNode(State, &Tag);
           State = ErrorNode->getState();
         }
-        BReporter.reportMissingWait(Req.second, Req.first, ErrorNode, Ctx.getBugReporter());
+        BReporter.reportMissingWait(Req.second, Req.first, ErrorNode,
+                                    Ctx.getBugReporter());
       }
       State = State->remove<RequestMap>(Req.first);
     }
@@ -150,9 +150,9 @@ void MPIChecker::allRegionsUsedByWait(
   MemRegionManager *const RegionManager = MR->getMemRegionManager();
 
   if (FuncClassifier->isMPI_Waitall(CE.getCalleeIdentifier())) {
-    const MemRegion *SuperRegion{nullptr};
+    const SubRegion *SuperRegion{nullptr};
     if (const ElementRegion *const ER = MR->getAs<ElementRegion>()) {
-      SuperRegion = ER->getSuperRegion();
+      SuperRegion = cast<SubRegion>(ER->getSuperRegion());
     }
 
     // A single request is passed to MPI_Waitall.

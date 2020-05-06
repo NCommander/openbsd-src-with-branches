@@ -14,9 +14,6 @@
 #include "lldb/Initialization/SystemInitializerCommon.h"
 #include "lldb/Interpreter/CommandInterpreter.h"
 #include "lldb/Symbol/ClangASTContext.h"
-#include "lldb/Symbol/GoASTContext.h"
-#include "lldb/Symbol/JavaASTContext.h"
-#include "lldb/Symbol/OCamlASTContext.h"
 #include "lldb/Utility/Timer.h"
 
 #include "Plugins/ABI/MacOSX-arm/ABIMacOSX_arm.h"
@@ -33,6 +30,7 @@
 #include "Plugins/ABI/SysV-s390x/ABISysV_s390x.h"
 #include "Plugins/ABI/SysV-x86_64/ABISysV_x86_64.h"
 #include "Plugins/Architecture/Arm/ArchitectureArm.h"
+#include "Plugins/Architecture/PPC64/ArchitecturePPC64.h"
 #include "Plugins/Disassembler/llvm/DisassemblerLLVMC.h"
 #include "Plugins/DynamicLoader/MacOSX-DYLD/DynamicLoaderMacOS.h"
 #include "Plugins/DynamicLoader/MacOSX-DYLD/DynamicLoaderMacOSXDYLD.h"
@@ -40,25 +38,24 @@
 #include "Plugins/DynamicLoader/Static/DynamicLoaderStatic.h"
 #include "Plugins/DynamicLoader/Windows-DYLD/DynamicLoaderWindowsDYLD.h"
 #include "Plugins/Instruction/ARM64/EmulateInstructionARM64.h"
+#include "Plugins/Instruction/PPC64/EmulateInstructionPPC64.h"
 #include "Plugins/InstrumentationRuntime/ASan/ASanRuntime.h"
 #include "Plugins/InstrumentationRuntime/MainThreadChecker/MainThreadCheckerRuntime.h"
 #include "Plugins/InstrumentationRuntime/TSan/TSanRuntime.h"
 #include "Plugins/InstrumentationRuntime/UBSan/UBSanRuntime.h"
 #include "Plugins/JITLoader/GDB/JITLoaderGDB.h"
 #include "Plugins/Language/CPlusPlus/CPlusPlusLanguage.h"
-#include "Plugins/Language/Go/GoLanguage.h"
-#include "Plugins/Language/Java/JavaLanguage.h"
-#include "Plugins/Language/OCaml/OCamlLanguage.h"
 #include "Plugins/Language/ObjC/ObjCLanguage.h"
 #include "Plugins/Language/ObjCPlusPlus/ObjCPlusPlusLanguage.h"
 #include "Plugins/LanguageRuntime/CPlusPlus/ItaniumABI/ItaniumABILanguageRuntime.h"
-#include "Plugins/LanguageRuntime/Go/GoLanguageRuntime.h"
-#include "Plugins/LanguageRuntime/Java/JavaLanguageRuntime.h"
 #include "Plugins/LanguageRuntime/ObjC/AppleObjCRuntime/AppleObjCRuntimeV1.h"
 #include "Plugins/LanguageRuntime/ObjC/AppleObjCRuntime/AppleObjCRuntimeV2.h"
 #include "Plugins/LanguageRuntime/RenderScript/RenderScriptRuntime/RenderScriptRuntime.h"
 #include "Plugins/MemoryHistory/asan/MemoryHistoryASan.h"
-#include "Plugins/OperatingSystem/Go/OperatingSystemGo.h"
+#include "Plugins/ObjectFile/Breakpad/ObjectFileBreakpad.h"
+#include "Plugins/ObjectFile/ELF/ObjectFileELF.h"
+#include "Plugins/ObjectFile/Mach-O/ObjectFileMachO.h"
+#include "Plugins/ObjectFile/PECOFF/ObjectFilePECOFF.h"
 #include "Plugins/Platform/Android/PlatformAndroid.h"
 #include "Plugins/Platform/FreeBSD/PlatformFreeBSD.h"
 #include "Plugins/Platform/Kalimba/PlatformKalimba.h"
@@ -73,6 +70,7 @@
 #include "Plugins/Process/gdb-remote/ProcessGDBRemote.h"
 #include "Plugins/Process/minidump/ProcessMinidump.h"
 #include "Plugins/ScriptInterpreter/None/ScriptInterpreterNone.h"
+#include "Plugins/SymbolFile/Breakpad/SymbolFileBreakpad.h"
 #include "Plugins/SymbolFile/DWARF/SymbolFileDWARF.h"
 #include "Plugins/SymbolFile/DWARF/SymbolFileDWARFDebugMap.h"
 #include "Plugins/SymbolFile/PDB/SymbolFilePDB.h"
@@ -115,11 +113,18 @@ SystemInitializerTest::SystemInitializerTest() {}
 
 SystemInitializerTest::~SystemInitializerTest() {}
 
-void SystemInitializerTest::Initialize() {
-  SystemInitializerCommon::Initialize();
+llvm::Error
+SystemInitializerTest::Initialize(const InitializerOptions &options) {
+  if (auto e = SystemInitializerCommon::Initialize(options))
+    return e;
+
+  breakpad::ObjectFileBreakpad::Initialize();
+  ObjectFileELF::Initialize();
+  ObjectFileMachO::Initialize();
+  ObjectFilePECOFF::Initialize();
+
   ScriptInterpreterNone::Initialize();
 
-  OperatingSystemGo::Initialize();
 
   platform_freebsd::PlatformFreeBSD::Initialize();
   platform_linux::PlatformLinux::Initialize();
@@ -142,9 +147,6 @@ void SystemInitializerTest::Initialize() {
   llvm::InitializeAllDisassemblers();
 
   ClangASTContext::Initialize();
-  GoASTContext::Initialize();
-  JavaASTContext::Initialize();
-  OCamlASTContext::Initialize();
 
   ABIMacOSX_i386::Initialize();
   ABIMacOSX_arm::Initialize();
@@ -161,6 +163,7 @@ void SystemInitializerTest::Initialize() {
   ABISysV_s390x::Initialize();
 
   ArchitectureArm::Initialize();
+  ArchitecturePPC64::Initialize();
 
   DisassemblerLLVMC::Initialize();
 
@@ -174,27 +177,24 @@ void SystemInitializerTest::Initialize() {
   MainThreadCheckerRuntime::Initialize();
 
   SymbolVendorELF::Initialize();
+  breakpad::SymbolFileBreakpad::Initialize();
   SymbolFileDWARF::Initialize();
   SymbolFilePDB::Initialize();
   SymbolFileSymtab::Initialize();
   UnwindAssemblyInstEmulation::Initialize();
   UnwindAssembly_x86::Initialize();
   EmulateInstructionARM64::Initialize();
+  EmulateInstructionPPC64::Initialize();
   SymbolFileDWARFDebugMap::Initialize();
   ItaniumABILanguageRuntime::Initialize();
   AppleObjCRuntimeV2::Initialize();
   AppleObjCRuntimeV1::Initialize();
   SystemRuntimeMacOSX::Initialize();
   RenderScriptRuntime::Initialize();
-  GoLanguageRuntime::Initialize();
-  JavaLanguageRuntime::Initialize();
 
   CPlusPlusLanguage::Initialize();
-  GoLanguage::Initialize();
-  JavaLanguage::Initialize();
   ObjCLanguage::Initialize();
   ObjCPlusPlusLanguage::Initialize();
-  OCamlLanguage::Initialize();
 
 #if defined(_WIN32)
   ProcessWindows::Initialize();
@@ -237,6 +237,8 @@ void SystemInitializerTest::Initialize() {
   // AFTER PluginManager::Initialize is called.
 
   Debugger::SettingsInitialize();
+
+  return llvm::Error::success();
 }
 
 void SystemInitializerTest::Terminate() {
@@ -249,9 +251,6 @@ void SystemInitializerTest::Terminate() {
   PluginManager::Terminate();
 
   ClangASTContext::Terminate();
-  GoASTContext::Terminate();
-  JavaASTContext::Terminate();
-  OCamlASTContext::Terminate();
 
   ABIMacOSX_i386::Terminate();
   ABIMacOSX_arm::Terminate();
@@ -277,26 +276,24 @@ void SystemInitializerTest::Terminate() {
   UndefinedBehaviorSanitizerRuntime::Terminate();
   MainThreadCheckerRuntime::Terminate();
   SymbolVendorELF::Terminate();
+  breakpad::SymbolFileBreakpad::Terminate();
   SymbolFileDWARF::Terminate();
   SymbolFilePDB::Terminate();
   SymbolFileSymtab::Terminate();
   UnwindAssembly_x86::Terminate();
   UnwindAssemblyInstEmulation::Terminate();
   EmulateInstructionARM64::Terminate();
+  EmulateInstructionPPC64::Terminate();
   SymbolFileDWARFDebugMap::Terminate();
   ItaniumABILanguageRuntime::Terminate();
   AppleObjCRuntimeV2::Terminate();
   AppleObjCRuntimeV1::Terminate();
   SystemRuntimeMacOSX::Terminate();
   RenderScriptRuntime::Terminate();
-  JavaLanguageRuntime::Terminate();
 
   CPlusPlusLanguage::Terminate();
-  GoLanguage::Terminate();
-  JavaLanguage::Terminate();
   ObjCLanguage::Terminate();
   ObjCPlusPlusLanguage::Terminate();
-  OCamlLanguage::Terminate();
 
 #if defined(__APPLE__)
   DynamicLoaderDarwinKernel::Terminate();
@@ -324,7 +321,6 @@ void SystemInitializerTest::Terminate() {
   DynamicLoaderStatic::Terminate();
   DynamicLoaderWindowsDYLD::Terminate();
 
-  OperatingSystemGo::Terminate();
 
   platform_freebsd::PlatformFreeBSD::Terminate();
   platform_linux::PlatformLinux::Terminate();
@@ -339,6 +335,11 @@ void SystemInitializerTest::Terminate() {
   PlatformiOSSimulator::Terminate();
   PlatformDarwinKernel::Terminate();
 #endif
+
+  breakpad::ObjectFileBreakpad::Terminate();
+  ObjectFileELF::Terminate();
+  ObjectFileMachO::Terminate();
+  ObjectFilePECOFF::Terminate();
 
   // Now shutdown the common parts, in reverse order.
   SystemInitializerCommon::Terminate();

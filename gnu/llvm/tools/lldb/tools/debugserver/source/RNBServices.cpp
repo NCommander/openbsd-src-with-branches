@@ -57,9 +57,9 @@ int GetProcesses(CFMutableArrayRef plistMutableArray, bool all_users) {
 
       const pid_t pid = proc_info.kp_proc.p_pid;
       // Skip zombie processes and processes with unset status
-      if (kinfo_user_matches == false || // User is acceptable
-          pid == our_pid ||              // Skip this process
-          pid == 0 ||                    // Skip kernel (kernel pid is zero)
+      if (!kinfo_user_matches || // User is acceptable
+          pid == our_pid ||      // Skip this process
+          pid == 0 ||            // Skip kernel (kernel pid is zero)
           proc_info.kp_proc.p_stat ==
               SZOMB || // Zombies are bad, they like brains...
           proc_info.kp_proc.p_flag & P_TRACED || // Being debugged?
@@ -80,7 +80,7 @@ int GetProcesses(CFMutableArrayRef plistMutableArray, bool all_users) {
       ::CFDictionarySetValue(appInfoDict.get(), DTSERVICES_APP_PID_KEY,
                              pidCFNumber.get());
 
-      // Set the a boolean to indicate if this is the front most
+      // Set a boolean to indicate if this is the front most
       ::CFDictionarySetValue(appInfoDict.get(), DTSERVICES_APP_FRONTMOST_KEY,
                              kCFBooleanFalse);
 
@@ -169,7 +169,7 @@ int ListApplications(std::string &plist, bool opt_runningApps,
                                pidCFNumber.get());
       }
 
-      // Set the a boolean to indicate if this is the front most
+      // Set a boolean to indicate if this is the front most
       if (sbsFrontAppID.get() && displayIdentifier &&
           (::CFStringCompare(sbsFrontAppID.get(), displayIdentifier, 0) ==
            kCFCompareEqualTo))
@@ -220,7 +220,7 @@ int ListApplications(std::string &plist, bool opt_runningApps,
     CFIndex size = ::CFDataGetLength(plistData.get());
     const UInt8 *bytes = ::CFDataGetBytePtr(plistData.get());
     if (bytes != NULL && size > 0) {
-      plist.assign((char *)bytes, size);
+      plist.assign((const char *)bytes, size);
       return 0; // Success
     } else {
       DNBLogError("empty application property list.");

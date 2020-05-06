@@ -7,12 +7,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/ADT/SmallString.h"
+#include "llvm/Support/YAMLParser.h"
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/SourceMgr.h"
-#include "llvm/Support/YAMLParser.h"
 #include "gtest/gtest.h"
 
 namespace llvm {
@@ -181,6 +180,7 @@ TEST(YAMLParser, HandlesEndOfFileGracefully) {
 }
 
 TEST(YAMLParser, HandlesNullValuesInKeyValueNodesGracefully) {
+  ExpectParseError("KeyValueNode with null key", "? \"\n:");
   ExpectParseError("KeyValueNode with null value", "test: '");
 }
 

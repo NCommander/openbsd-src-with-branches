@@ -1,4 +1,4 @@
-//===--- HexagonDepOperands.td --------------------------------------------===//
+//===----------------------------------------------------------------------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -6,19 +6,15 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
+// Automatically generated file, please consult code owner before editing.
+//===----------------------------------------------------------------------===//
 
-def s3_0ImmOperand : AsmOperandClass { let Name = "s3_0Imm"; let RenderMethod = "addSignedImmOperands"; }
-def s3_0Imm : Operand<i32> { let ParserMatchClass = s3_0ImmOperand; let DecoderMethod = "s3_0ImmDecoder"; }
-def s3_0ImmPred : PatLeaf<(i32 imm), [{ return isShiftedInt<3, 0>(N->getSExtValue());}]>;
 def s4_0ImmOperand : AsmOperandClass { let Name = "s4_0Imm"; let RenderMethod = "addSignedImmOperands"; }
 def s4_0Imm : Operand<i32> { let ParserMatchClass = s4_0ImmOperand; let DecoderMethod = "s4_0ImmDecoder"; }
 def s4_0ImmPred : PatLeaf<(i32 imm), [{ return isShiftedInt<4, 0>(N->getSExtValue());}]>;
 def s29_3ImmOperand : AsmOperandClass { let Name = "s29_3Imm"; let RenderMethod = "addSignedImmOperands"; }
 def s29_3Imm : Operand<i32> { let ParserMatchClass = s29_3ImmOperand; let DecoderMethod = "s29_3ImmDecoder"; }
 def s29_3ImmPred : PatLeaf<(i32 imm), [{ return isShiftedInt<32, 3>(N->getSExtValue());}]>;
-def s10_6ImmOperand : AsmOperandClass { let Name = "s10_6Imm"; let RenderMethod = "addSignedImmOperands"; }
-def s10_6Imm : Operand<i32> { let ParserMatchClass = s10_6ImmOperand; let DecoderMethod = "s10_6ImmDecoder"; }
-def s10_6ImmPred : PatLeaf<(i32 imm), [{ return isShiftedInt<10, 6>(N->getSExtValue());}]>;
 def u6_0ImmOperand : AsmOperandClass { let Name = "u6_0Imm"; let RenderMethod = "addImmOperands"; }
 def u6_0Imm : Operand<i32> { let ParserMatchClass = u6_0ImmOperand; let DecoderMethod = "unsignedImmDecoder"; }
 def u6_0ImmPred : PatLeaf<(i32 imm), [{ return isShiftedUInt<6, 0>(N->getSExtValue());}]>;
@@ -61,6 +57,9 @@ def u1_0ImmPred : PatLeaf<(i32 imm), [{ return isShiftedUInt<1, 0>(N->getSExtVal
 def s31_1ImmOperand : AsmOperandClass { let Name = "s31_1Imm"; let RenderMethod = "addSignedImmOperands"; }
 def s31_1Imm : Operand<i32> { let ParserMatchClass = s31_1ImmOperand; let DecoderMethod = "s31_1ImmDecoder"; }
 def s31_1ImmPred : PatLeaf<(i32 imm), [{ return isShiftedInt<32, 1>(N->getSExtValue());}]>;
+def s3_0ImmOperand : AsmOperandClass { let Name = "s3_0Imm"; let RenderMethod = "addSignedImmOperands"; }
+def s3_0Imm : Operand<i32> { let ParserMatchClass = s3_0ImmOperand; let DecoderMethod = "s3_0ImmDecoder"; }
+def s3_0ImmPred : PatLeaf<(i32 imm), [{ return isShiftedInt<3, 0>(N->getSExtValue());}]>;
 def s30_2ImmOperand : AsmOperandClass { let Name = "s30_2Imm"; let RenderMethod = "addSignedImmOperands"; }
 def s30_2Imm : Operand<i32> { let ParserMatchClass = s30_2ImmOperand; let DecoderMethod = "s30_2ImmDecoder"; }
 def s30_2ImmPred : PatLeaf<(i32 imm), [{ return isShiftedInt<32, 2>(N->getSExtValue());}]>;
@@ -127,6 +126,3 @@ def u8_0ImmPred : PatLeaf<(i32 imm), [{ return isShiftedUInt<8, 0>(N->getSExtVal
 def u30_2ImmOperand : AsmOperandClass { let Name = "u30_2Imm"; let RenderMethod = "addImmOperands"; }
 def u30_2Imm : Operand<i32> { let ParserMatchClass = u30_2ImmOperand; let DecoderMethod = "unsignedImmDecoder"; }
 def u30_2ImmPred : PatLeaf<(i32 imm), [{ return isShiftedUInt<32, 2>(N->getSExtValue());}]>;
-def s10_0ImmOperand : AsmOperandClass { let Name = "s10_0Imm"; let RenderMethod = "addSignedImmOperands"; }
-def s10_0Imm : Operand<i32> { let ParserMatchClass = s10_0ImmOperand; let DecoderMethod = "s10_0ImmDecoder"; }
-def s10_0ImmPred : PatLeaf<(i32 imm), [{ return isShiftedInt<10, 0>(N->getSExtValue());}]>;

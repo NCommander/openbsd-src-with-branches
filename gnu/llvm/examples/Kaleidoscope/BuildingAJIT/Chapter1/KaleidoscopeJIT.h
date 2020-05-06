@@ -1,4 +1,4 @@
-//===----- KaleidoscopeJIT.h - A simple JIT for Kaleidoscope ----*- C++ -*-===//
+//===- KaleidoscopeJIT.h - A simple JIT for Kaleidoscope --------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -14,86 +14,68 @@
 #ifndef LLVM_EXECUTIONENGINE_ORC_KALEIDOSCOPEJIT_H
 #define LLVM_EXECUTIONENGINE_ORC_KALEIDOSCOPEJIT_H
 
-#include "llvm/ADT/STLExtras.h"
-#include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/ExecutionEngine/RuntimeDyld.h"
-#include "llvm/ExecutionEngine/SectionMemoryManager.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/ExecutionEngine/JITSymbol.h"
 #include "llvm/ExecutionEngine/Orc/CompileUtils.h"
-#include "llvm/ExecutionEngine/Orc/JITSymbol.h"
+#include "llvm/ExecutionEngine/Orc/Core.h"
+#include "llvm/ExecutionEngine/Orc/ExecutionUtils.h"
 #include "llvm/ExecutionEngine/Orc/IRCompileLayer.h"
-#include "llvm/ExecutionEngine/Orc/LambdaResolver.h"
-#include "llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h"
+#include "llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h"
+#include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
+#include "llvm/ExecutionEngine/SectionMemoryManager.h"
 #include "llvm/IR/DataLayout.h"
-#include "llvm/IR/Mangler.h"
-#include "llvm/Support/DynamicLibrary.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/Target/TargetMachine.h"
-#include <algorithm>
+#include "llvm/IR/LLVMContext.h"
 #include <memory>
-#include <string>
-#include <vector>
 
 namespace llvm {
 namespace orc {
 
 class KaleidoscopeJIT {
 private:
-  std::unique_ptr<TargetMachine> TM;
-  const DataLayout DL;
-  ObjectLinkingLayer<> ObjectLayer;
-  IRCompileLayer<decltype(ObjectLayer)> CompileLayer;
+  ExecutionSession ES;
+  RTDyldObjectLinkingLayer ObjectLayer;
+  IRCompileLayer CompileLayer;
+
+  DataLayout DL;
+  MangleAndInterner Mangle;
+  ThreadSafeContext Ctx;
 
 public:
-  typedef decltype(CompileLayer)::ModuleSetHandleT ModuleHandle;
-
-  KaleidoscopeJIT()
-      : TM(EngineBuilder().selectTarget()), DL(TM->createDataLayout()),
-        CompileLayer(ObjectLayer, SimpleCompiler(*TM)) {
-    llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
+  KaleidoscopeJIT(JITTargetMachineBuilder JTMB, DataLayout DL)
+      : ObjectLayer(ES,
+                    []() { return llvm::make_unique<SectionMemoryManager>(); }),
+        CompileLayer(ES, ObjectLayer, ConcurrentIRCompiler(std::move(JTMB))),
+        DL(std::move(DL)), Mangle(ES, this->DL),
+        Ctx(llvm::make_unique<LLVMContext>()) {
+    ES.getMainJITDylib().setGenerator(
+        cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(DL)));
   }
 
-  TargetMachine &getTargetMachine() { return *TM; }
+  static Expected<std::unique_ptr<KaleidoscopeJIT>> Create() {
+    auto JTMB = JITTargetMachineBuilder::detectHost();
 
-  ModuleHandle addModule(std::unique_ptr<Module> M) {
-    // Build our symbol resolver:
-    // Lambda 1: Look back into the JIT itself to find symbols that are part of
-    //           the same "logical dylib".
-    // Lambda 2: Search for external symbols in the host process.
-    auto Resolver = createLambdaResolver(
-        [&](const std::string &Name) {
-          if (auto Sym = CompileLayer.findSymbol(Name, false))
-            return Sym.toRuntimeDyldSymbol();
-          return RuntimeDyld::SymbolInfo(nullptr);
-        },
-        [](const std::string &Name) {
-          if (auto SymAddr =
-                RTDyldMemoryManager::getSymbolAddressInProcess(Name))
-            return RuntimeDyld::SymbolInfo(SymAddr, JITSymbolFlags::Exported);
-          return RuntimeDyld::SymbolInfo(nullptr);
-        });
+    if (!JTMB)
+      return JTMB.takeError();
 
-    // Build a singlton module set to hold our module.
-    std::vector<std::unique_ptr<Module>> Ms;
-    Ms.push_back(std::move(M));
+    auto DL = JTMB->getDefaultDataLayoutForTarget();
+    if (!DL)
+      return DL.takeError();
 
-    // Add the set to the JIT with the resolver we created above and a newly
-    // created SectionMemoryManager.
-    return CompileLayer.addModuleSet(std::move(Ms),
-                                     make_unique<SectionMemoryManager>(),
-                                     std::move(Resolver));
+    return llvm::make_unique<KaleidoscopeJIT>(std::move(*JTMB), std::move(*DL));
   }
 
-  JITSymbol findSymbol(const std::string Name) {
-    std::string MangledName;
-    raw_string_ostream MangledNameStream(MangledName);
-    Mangler::getNameWithPrefix(MangledNameStream, Name, DL);
-    return CompileLayer.findSymbol(MangledNameStream.str(), true);
+  const DataLayout &getDataLayout() const { return DL; }
+
+  LLVMContext &getContext() { return *Ctx.getContext(); }
+
+  Error addModule(std::unique_ptr<Module> M) {
+    return CompileLayer.add(ES.getMainJITDylib(),
+                            ThreadSafeModule(std::move(M), Ctx));
   }
 
-  void removeModule(ModuleHandle H) {
-    CompileLayer.removeModuleSet(H);
+  Expected<JITEvaluatedSymbol> lookup(StringRef Name) {
+    return ES.lookup({&ES.getMainJITDylib()}, Mangle(Name.str()));
   }
-
 };
 
 } // end namespace orc

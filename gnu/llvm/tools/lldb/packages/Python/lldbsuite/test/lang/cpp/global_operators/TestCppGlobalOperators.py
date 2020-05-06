@@ -20,9 +20,7 @@ class TestCppGlobalOperators(TestBase):
         self.assertTrue(src_file_spec.IsValid(), "Main source file")
 
         # Get the path of the executable
-        cwd = os.getcwd()
-        exe_file = "a.out"
-        exe_path = os.path.join(cwd, exe_file)
+        exe_path = self.getBuildArtifact("a.out")
 
         # Load the executable
         target = self.dbg.CreateTarget(exe_path)
@@ -51,7 +49,6 @@ class TestCppGlobalOperators(TestBase):
 
         return thread.GetSelectedFrame()
 
-    @expectedFailureAll(oslist=["windows"], bugnumber="llvm.org/pr21765")
     def test_equals_operator(self):
         frame = self.prepare_executable_and_get_frame()
 
@@ -89,7 +86,6 @@ class TestCppGlobalOperators(TestBase):
         self.assertTrue(got_type.IsPointerType())
         self.assertEqual(got_type.GetPointeeType().GetName(), "Struct")
 
-    @expectedFailureAll(oslist=["windows"], bugnumber="llvm.org/pr21765")
     def test_operator_new(self):
         frame = self.prepare_executable_and_get_frame()
 

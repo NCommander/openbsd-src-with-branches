@@ -6,9 +6,27 @@
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-///
-/// GNU ld style linker driver for COFF currently supporting mingw-w64.
-///
+//
+// MinGW is a GNU development environment for Windows. It consists of GNU
+// tools such as GCC and GNU ld. Unlike Cygwin, there's no POSIX-compatible
+// layer, as it aims to be a native development toolchain.
+//
+// lld/MinGW is a drop-in replacement for GNU ld/MinGW.
+//
+// Being a native development tool, a MinGW linker is not very different from
+// Microsoft link.exe, so a MinGW linker can be implemented as a thin wrapper
+// for lld/COFF. This driver takes Unix-ish command line options, translates
+// them to Windows-ish ones, and then passes them to lld/COFF.
+//
+// When this driver calls the lld/COFF driver, it passes a hidden option
+// "-lldmingw" along with other user-supplied options, to run the lld/COFF
+// linker in "MinGW mode".
+//
+// There are subtle differences between MS link.exe and GNU ld/MinGW, and GNU
+// ld/MinGW implements a few GNU-specific features. Such features are directly
+// implemented in lld/COFF and enabled only when the linker is running in MinGW
+// mode.
+//
 //===----------------------------------------------------------------------===//
 
 #include "lld/Common/Driver.h"
@@ -136,6 +154,8 @@ bool mingw::link(ArrayRef<const char *> ArgsArr, raw_ostream &Diag) {
     Add("-output-def:" + StringRef(A->getValue()));
   if (auto *A = Args.getLastArg(OPT_image_base))
     Add("-base:" + StringRef(A->getValue()));
+  if (auto *A = Args.getLastArg(OPT_map))
+    Add("-lldmap:" + StringRef(A->getValue()));
 
   if (auto *A = Args.getLastArg(OPT_o))
     Add("-out:" + StringRef(A->getValue()));
@@ -144,16 +164,25 @@ bool mingw::link(ArrayRef<const char *> ArgsArr, raw_ostream &Diag) {
   else
     Add("-out:a.exe");
 
+  if (auto *A = Args.getLastArg(OPT_pdb)) {
+    Add("-debug");
+    Add("-pdb:" + StringRef(A->getValue()));
+  } else if (Args.hasArg(OPT_strip_debug)) {
+    Add("-debug:symtab");
+  } else if (!Args.hasArg(OPT_strip_all)) {
+    Add("-debug:dwarf");
+  }
+
   if (Args.hasArg(OPT_shared))
     Add("-dll");
   if (Args.hasArg(OPT_verbose))
     Add("-verbose");
   if (Args.hasArg(OPT_export_all_symbols))
     Add("-export-all-symbols");
-  if (!Args.hasArg(OPT_strip_all))
-    Add("-debug:dwarf");
   if (Args.hasArg(OPT_large_address_aware))
     Add("-largeaddressaware");
+  if (Args.hasArg(OPT_kill_at))
+    Add("-kill-at");
 
   if (Args.getLastArgValue(OPT_m) != "thumb2pe" &&
       Args.getLastArgValue(OPT_m) != "arm64pe" && !Args.hasArg(OPT_dynamicbase))
@@ -201,9 +230,14 @@ bool mingw::link(ArrayRef<const char *> ArgsArr, raw_ostream &Diag) {
   else
     Add("-alternatename:__image_base__=__ImageBase");
 
+  for (auto *A : Args.filtered(OPT_require_defined))
+    Add("-include:" + StringRef(A->getValue()));
+
   std::vector<StringRef> SearchPaths;
-  for (auto *A : Args.filtered(OPT_L))
+  for (auto *A : Args.filtered(OPT_L)) {
     SearchPaths.push_back(A->getValue());
+    Add("-libpath:" + StringRef(A->getValue()));
+  }
 
   StringRef Prefix = "";
   bool Static = false;

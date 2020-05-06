@@ -26,8 +26,9 @@ PrintModulePass::PrintModulePass(raw_ostream &OS, const std::string &Banner,
     : OS(OS), Banner(Banner),
       ShouldPreserveUseListOrder(ShouldPreserveUseListOrder) {}
 
-PreservedAnalyses PrintModulePass::run(Module &M) {
-  OS << Banner;
+PreservedAnalyses PrintModulePass::run(Module &M, ModuleAnalysisManager &) {
+  if (!Banner.empty())
+    OS << Banner << "\n";
   if (llvm::isFunctionInPrintList("*"))
     M.print(OS, nullptr, ShouldPreserveUseListOrder);
   else {
@@ -42,9 +43,14 @@ PrintFunctionPass::PrintFunctionPass() : OS(dbgs()) {}
 PrintFunctionPass::PrintFunctionPass(raw_ostream &OS, const std::string &Banner)
     : OS(OS), Banner(Banner) {}
 
-PreservedAnalyses PrintFunctionPass::run(Function &F) {
-  if (isFunctionInPrintList(F.getName()))
-    OS << Banner << static_cast<Value &>(F);
+PreservedAnalyses PrintFunctionPass::run(Function &F,
+                                         FunctionAnalysisManager &) {
+  if (isFunctionInPrintList(F.getName())) {
+    if (forcePrintModuleIR())
+      OS << Banner << " (function: " << F.getName() << ")\n" << *F.getParent();
+    else
+      OS << Banner << static_cast<Value &>(F);
+  }
   return PreservedAnalyses::all();
 }
 
@@ -61,13 +67,16 @@ public:
       : ModulePass(ID), P(OS, Banner, ShouldPreserveUseListOrder) {}
 
   bool runOnModule(Module &M) override {
-    P.run(M);
+    ModuleAnalysisManager DummyMAM;
+    P.run(M, DummyMAM);
     return false;
   }
 
   void getAnalysisUsage(AnalysisUsage &AU) const override {
     AU.setPreservesAll();
   }
+
+  StringRef getPassName() const override { return "Print Module IR"; }
 };
 
 class PrintFunctionPassWrapper : public FunctionPass {
@@ -81,13 +90,16 @@ public:
 
   // This pass just prints a banner followed by the function as it's processed.
   bool runOnFunction(Function &F) override {
-    P.run(F);
+    FunctionAnalysisManager DummyFAM;
+    P.run(F, DummyFAM);
     return false;
   }
 
   void getAnalysisUsage(AnalysisUsage &AU) const override {
     AU.setPreservesAll();
   }
+
+  StringRef getPassName() const override { return "Print Function IR"; }
 };
 
 class PrintBasicBlockPass : public BasicBlockPass {
@@ -108,19 +120,21 @@ public:
   void getAnalysisUsage(AnalysisUsage &AU) const override {
     AU.setPreservesAll();
   }
+
+  StringRef getPassName() const override { return "Print BasicBlock IR"; }
 };
 
 }
 
 char PrintModulePassWrapper::ID = 0;
 INITIALIZE_PASS(PrintModulePassWrapper, "print-module",
-                "Print module to stderr", false, false)
+                "Print module to stderr", false, true)
 char PrintFunctionPassWrapper::ID = 0;
 INITIALIZE_PASS(PrintFunctionPassWrapper, "print-function",
-                "Print function to stderr", false, false)
+                "Print function to stderr", false, true)
 char PrintBasicBlockPass::ID = 0;
 INITIALIZE_PASS(PrintBasicBlockPass, "print-bb", "Print BB to stderr", false,
-                false)
+                true)
 
 ModulePass *llvm::createPrintModulePass(llvm::raw_ostream &OS,
                                         const std::string &Banner,
@@ -136,4 +150,12 @@ FunctionPass *llvm::createPrintFunctionPass(llvm::raw_ostream &OS,
 BasicBlockPass *llvm::createPrintBasicBlockPass(llvm::raw_ostream &OS,
                                                 const std::string &Banner) {
   return new PrintBasicBlockPass(OS, Banner);
+}
+
+bool llvm::isIRPrintingPass(Pass *P) {
+  const char *PID = (const char*)P->getPassID();
+
+  return (PID == &PrintModulePassWrapper::ID)
+      || (PID == &PrintFunctionPassWrapper::ID)
+      || (PID == &PrintBasicBlockPass::ID);
 }

@@ -21,17 +21,17 @@ namespace {
 class FormatTestSelective : public ::testing::Test {
 protected:
   std::string format(llvm::StringRef Code, unsigned Offset, unsigned Length) {
-    DEBUG(llvm::errs() << "---\n");
-    DEBUG(llvm::errs() << Code << "\n\n");
+    LLVM_DEBUG(llvm::errs() << "---\n");
+    LLVM_DEBUG(llvm::errs() << Code << "\n\n");
     std::vector<tooling::Range> Ranges(1, tooling::Range(Offset, Length));
-    bool IncompleteFormat = false;
+    FormattingAttemptStatus Status;
     tooling::Replacements Replaces =
-        reformat(Style, Code, Ranges, "<stdin>", &IncompleteFormat);
-    EXPECT_FALSE(IncompleteFormat) << Code << "\n\n";
-    std::string Result = applyAllReplacements(Code, Replaces);
-    EXPECT_NE("", Result);
-    DEBUG(llvm::errs() << "\n" << Result << "\n\n");
-    return Result;
+        reformat(Style, Code, Ranges, "<stdin>", &Status);
+    EXPECT_TRUE(Status.FormatComplete) << Code << "\n\n";
+    auto Result = applyAllReplacements(Code, Replaces);
+    EXPECT_TRUE(static_cast<bool>(Result));
+    LLVM_DEBUG(llvm::errs() << "\n" << *Result << "\n\n");
+    return *Result;
   }
 
   FormatStyle Style = getLLVMStyle();
@@ -111,13 +111,19 @@ TEST_F(FormatTestSelective, FormatsCommentsLocally) {
             format("int   a; // comment\n"
                    "int    b; // comment",
                    0, 0));
-  EXPECT_EQ("int   a; // comment\n"
-            "         // line 2\n"
+  EXPECT_EQ("int a; // comment\n"
+            "       // line 2\n"
             "int b;",
             format("int   a; // comment\n"
                    "            // line 2\n"
                    "int b;",
                    28, 0));
+  EXPECT_EQ("int   a; // comment\n"
+            "// comment 2\n"
+            "int b;",
+            format("int   a; // comment\n"
+                   "// comment 2\n"
+                   "int b;", 28, 0));
   EXPECT_EQ("int aaaaaa; // comment\n"
             "int b;\n"
             "int c; // unrelated comment",
@@ -169,6 +175,72 @@ TEST_F(FormatTestSelective, FormatsCommentsLocally) {
                    "int xx; //\n"
                    "int xxxxx; //",
                    0, 0));
+}
+
+TEST_F(FormatTestSelective, ContinueReindenting) {
+  // When we change an indent, we continue formatting as long as following
+  // lines are not indented correctly.
+  EXPECT_EQ("int   i;\n"
+            "int b;\n"
+            "int c;\n"
+            "int d;\n"
+            "int e;\n"
+            "  int f;\n",
+            format("int   i;\n"
+                   "  int b;\n"
+                   " int   c;\n"
+                   "  int d;\n"
+                   "int e;\n"
+                   "  int f;\n",
+                   11, 0));
+}
+
+TEST_F(FormatTestSelective, ReindentClosingBrace) {
+  EXPECT_EQ("int   i;\n"
+            "int f() {\n"
+            "  int a;\n"
+            "  int b;\n"
+            "}\n"
+            " int c;\n",
+            format("int   i;\n"
+                   "  int f(){\n"
+                   "int a;\n"
+                   "int b;\n"
+                   "  }\n"
+                   " int c;\n",
+                   11, 0));
+  EXPECT_EQ("void f() {\n"
+            "  if (foo) {\n"
+            "    b();\n"
+            "  } else {\n"
+            "    c();\n"
+            "  }\n"
+            "int d;\n"
+            "}\n",
+            format("void f() {\n"
+                   "  if (foo) {\n"
+                   "b();\n"
+                   "}else{\n"
+                   "c();\n"
+                   "}\n"
+                   "int d;\n"
+                   "}\n",
+                   13, 0));
+  EXPECT_EQ("int i = []() {\n"
+            "  class C {\n"
+            "    int a;\n"
+            "    int b;\n"
+            "  };\n"
+            "  int c;\n"
+            "};\n",
+            format("int i = []() {\n"
+                   "  class C{\n"
+                   "int a;\n"
+                   "int b;\n"
+                   "};\n"
+                   "int c;\n"
+                   "  };\n",
+                   17, 0));
 }
 
 TEST_F(FormatTestSelective, IndividualStatementsOfNestedBlocks) {
@@ -278,6 +350,23 @@ TEST_F(FormatTestSelective, IndividualStatementsOfNestedBlocks) {
                    "  };\n"
                    "});",
                    0, 0));
+  EXPECT_EQ("SomeFunction(\n"
+            "    [] {\n"
+            "      int i;\n"
+            "      return i;\n" // Format this line.
+            "    },\n"
+            "    [] {\n"
+            "       return 2;\n" // Don't fix this.
+            "    });",
+            format("SomeFunction(\n"
+                   "    [] {\n"
+                   "      int i;\n"
+                   "       return i;\n" // Format this line.
+                   "    },\n"
+                   "    [] {\n"
+                   "       return 2;\n" // Don't fix this.
+                   "    });",
+                   40, 0));
 }
 
 TEST_F(FormatTestSelective, WrongIndent) {
@@ -302,7 +391,7 @@ TEST_F(FormatTestSelective, WrongIndent) {
 }
 
 TEST_F(FormatTestSelective, AlwaysFormatsEntireMacroDefinitions) {
-  Style.AlignEscapedNewlinesLeft = true;
+  Style.AlignEscapedNewlines = FormatStyle::ENAS_Left;
   EXPECT_EQ("int  i;\n"
             "#define A \\\n"
             "  int i;  \\\n"
@@ -444,7 +533,7 @@ TEST_F(FormatTestSelective, ReformatRegionAdjustsIndent) {
 TEST_F(FormatTestSelective, UnderstandsTabs) {
   Style.IndentWidth = 8;
   Style.UseTab = FormatStyle::UT_Always;
-  Style.AlignEscapedNewlinesLeft = true;
+  Style.AlignEscapedNewlines = FormatStyle::ENAS_Left;
   EXPECT_EQ("void f() {\n"
             "\tf();\n"
             "\tg();\n"
@@ -480,7 +569,7 @@ TEST_F(FormatTestSelective, StopFormattingWhenLeavingScope) {
       "  if (a) {\n"
       "    g();\n"
       "    h();\n"
-      "}\n"
+      "  }\n"
       "\n"
       "void g() {\n"
       "}",
@@ -493,6 +582,26 @@ TEST_F(FormatTestSelective, StopFormattingWhenLeavingScope) {
              "void g() {\n" // Make sure not to format this.
              "}",
              15, 0));
+}
+
+TEST_F(FormatTestSelective, SelectivelyRequoteJavaScript) {
+  Style = getGoogleStyle(FormatStyle::LK_JavaScript);
+  EXPECT_EQ(
+      "var x = \"a\";\n"
+      "var x = 'a';\n"
+      "var x = \"a\";",
+      format("var x = \"a\";\n"
+             "var x = \"a\";\n"
+             "var x = \"a\";",
+             20, 0));
+}
+
+TEST_F(FormatTestSelective, KeepsIndentAfterCommentSectionImport) {
+  std::string Code = "#include <a> // line 1\n" // 23 chars long
+                     "             // line 2\n" // 23 chars long
+                     "\n"                       // this newline is char 47
+                     "int i;";                  // this line is not indented
+  EXPECT_EQ(Code, format(Code, 47, 1));
 }
 
 } // end namespace

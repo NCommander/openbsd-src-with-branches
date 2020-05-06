@@ -10,8 +10,7 @@
 ///
 /// This file provides the primary interface to the instcombine pass. This pass
 /// is suitable for use in the new pass manager. For a pass that works with the
-/// legacy pass manager, please look for \c createInstructionCombiningPass() in
-/// Scalar.h.
+/// legacy pass manager, use \c createInstructionCombiningPass().
 ///
 //===----------------------------------------------------------------------===//
 
@@ -24,23 +23,52 @@
 
 namespace llvm {
 
-class InstCombinePass {
+class InstCombinePass : public PassInfoMixin<InstCombinePass> {
   InstCombineWorklist Worklist;
+  bool ExpensiveCombines;
 
 public:
   static StringRef name() { return "InstCombinePass"; }
 
-  // Explicitly define constructors for MSVC.
-  InstCombinePass() {}
-  InstCombinePass(InstCombinePass &&Arg) : Worklist(std::move(Arg.Worklist)) {}
-  InstCombinePass &operator=(InstCombinePass &&RHS) {
-    Worklist = std::move(RHS.Worklist);
-    return *this;
-  }
+  explicit InstCombinePass(bool ExpensiveCombines = true)
+      : ExpensiveCombines(ExpensiveCombines) {}
 
-  PreservedAnalyses run(Function &F, AnalysisManager<Function> *AM);
+  PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM);
 };
 
+/// The legacy pass manager's instcombine pass.
+///
+/// This is a basic whole-function wrapper around the instcombine utility. It
+/// will try to combine all instructions in the function.
+class InstructionCombiningPass : public FunctionPass {
+  InstCombineWorklist Worklist;
+  const bool ExpensiveCombines;
+
+public:
+  static char ID; // Pass identification, replacement for typeid
+
+  InstructionCombiningPass(bool ExpensiveCombines = true)
+      : FunctionPass(ID), ExpensiveCombines(ExpensiveCombines) {
+    initializeInstructionCombiningPassPass(*PassRegistry::getPassRegistry());
+  }
+
+  void getAnalysisUsage(AnalysisUsage &AU) const override;
+  bool runOnFunction(Function &F) override;
+};
+
+//===----------------------------------------------------------------------===//
+//
+// InstructionCombining - Combine instructions to form fewer, simple
+// instructions. This pass does not modify the CFG, and has a tendency to make
+// instructions dead, so a subsequent DCE pass is useful.
+//
+// This pass combines things like:
+//    %Y = add int 1, %X
+//    %Z = add int 1, %Y
+// into:
+//    %Z = add int 2, %X
+//
+FunctionPass *createInstructionCombiningPass(bool ExpensiveCombines = true);
 }
 
 #endif

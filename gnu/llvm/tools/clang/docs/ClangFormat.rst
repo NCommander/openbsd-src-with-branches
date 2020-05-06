@@ -11,7 +11,7 @@ Standalone Tool
 ===============
 
 :program:`clang-format` is located in `clang/tools/clang-format` and can be used
-to format C/C++/Obj-C code.
+to format C/C++/Java/JavaScript/Objective-C/Protobuf code.
 
 .. code-block:: console
 
@@ -71,6 +71,7 @@ to format C/C++/Obj-C code.
                                 Use -style="{key: value, ...}" to set specific
                                 parameters, e.g.:
                                   -style="{BasedOnStyle: llvm, IndentWidth: 8}"
+    -verbose                  - If set, shows the list of processed files
 
   Generic Options:
 
@@ -120,6 +121,18 @@ entity.
 It operates on the current, potentially unsaved buffer and does not create
 or save any files. To revert a formatting, just undo.
 
+An alternative option is to format changes when saving a file and thus to
+have a zero-effort integration into the coding workflow. To do this, add this to
+your `.vimrc`:
+
+.. code-block:: vim
+
+  function! Formatonsave()
+    let l:formatdiff = 1
+    pyf ~/llvm/tools/clang/tools/clang-format/clang-format.py
+  endfunction
+  autocmd BufWritePre *.h,*.cc,*.cpp call Formatonsave()
+
 
 Emacs Integration
 =================
@@ -156,14 +169,15 @@ Visual Studio Integration
 =========================
 
 Download the latest Visual Studio extension from the `alpha build site
-<http://llvm.org/builds/>`_. The default key-binding is Ctrl-R,Ctrl-F.
+<https://llvm.org/builds/>`_. The default key-binding is Ctrl-R,Ctrl-F.
 
 
 Script for patch reformatting
 =============================
 
-The python script `clang/tools/clang-format-diff.py` parses the output of
-a unified diff and reformats all contained lines with :program:`clang-format`.
+The python script `clang/tools/clang-format/clang-format-diff.py` parses the
+output of a unified diff and reformats all contained lines with
+:program:`clang-format`.
 
 .. code-block:: console
 
@@ -184,13 +198,19 @@ So to reformat all the lines in the latest :program:`git` commit, just do:
 
 .. code-block:: console
 
-  git diff -U0 HEAD^ | clang-format-diff.py -i -p1
+  git diff -U0 --no-color HEAD^ | clang-format-diff.py -i -p1
+
+With Mercurial/:program:`hg`:
+
+.. code-block:: console
+
+  hg diff -U0 --color=never | clang-format-diff.py -i -p1
 
 In an SVN client, you can do:
 
 .. code-block:: console
 
-  svn diff --diff-cmd=diff -x-U0 | clang-format-diff.py -i
+  svn diff --diff-cmd=diff -x -U0 | clang-format-diff.py -i
 
-The :option:`-U0` will create a diff without context lines (the script would format
+The option `-U0` will create a diff without context lines (the script would format
 those as well).

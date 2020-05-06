@@ -15,7 +15,7 @@ Using Precompiled Headers with ``clang``
 The Clang compiler frontend, ``clang -cc1``, supports two command line options
 for generating and using PCH files.
 
-To generate PCH files using ``clang -cc1``, use the option :option:`-emit-pch`:
+To generate PCH files using ``clang -cc1``, use the option `-emit-pch`:
 
 .. code-block:: bash
 
@@ -24,7 +24,7 @@ To generate PCH files using ``clang -cc1``, use the option :option:`-emit-pch`:
 This option is transparently used by ``clang`` when generating PCH files.  The
 resulting PCH file contains the serialized form of the compiler's internal
 representation after it has completed parsing and semantic analysis.  The PCH
-file can then be used as a prefix header with the :option:`-include-pch`
+file can then be used as a prefix header with the `-include-pch`
 option:
 
 .. code-block:: bash
@@ -70,7 +70,7 @@ minimizes both creation time and the time required to initially load the AST
 file.  The AST file itself contains a serialized representation of Clang's
 abstract syntax trees and supporting data structures, stored using the same
 compressed bitstream as `LLVM's bitcode file format
-<http://llvm.org/docs/BitCodeFormat.html>`_.
+<https://llvm.org/docs/BitCodeFormat.html>`_.
 
 Clang's AST files are loaded "lazily" from disk.  When an AST file is initially
 loaded, Clang reads only a small amount of data from the AST file to establish
@@ -84,7 +84,7 @@ With this approach, the cost of using an AST file for a translation unit is
 proportional to the amount of code actually used from the AST file, rather than
 being proportional to the size of the AST file itself.
 
-When given the :option:`-print-stats` option, Clang produces statistics
+When given the `-print-stats` option, Clang produces statistics
 describing how much of the AST file was actually loaded from disk.  For a
 simple "Hello, World!" program that includes the Apple ``Cocoa.h`` header
 (which is built as a precompiled header), this option illustrates how little of
@@ -134,7 +134,7 @@ only contain the serialized AST.
 The ``clangast`` section is organized into several different blocks, each of
 which contains the serialized representation of a part of Clang's internal
 representation.  Each of the blocks corresponds to either a block or a record
-within `LLVM's bitstream format <http://llvm.org/docs/BitCodeFormat.html>`_.
+within `LLVM's bitstream format <https://llvm.org/docs/BitCodeFormat.html>`_.
 The contents of each of these logical blocks are described below.
 
 .. image:: PCHLayout.png
@@ -142,7 +142,7 @@ The contents of each of these logical blocks are described below.
 The ``llvm-objdump`` utility provides a ``-raw-clang-ast`` option to extract the
 binary contents of the AST section from an object file container.
 
-The `llvm-bcanalyzer <http://llvm.org/docs/CommandGuide/llvm-bcanalyzer.html>`_
+The `llvm-bcanalyzer <https://llvm.org/docs/CommandGuide/llvm-bcanalyzer.html>`_
 utility can be used to examine the actual structure of the bitstream for the AST
 section.  This information can be used both to help understand the structure of
 the AST section and to isolate areas where the AST representation can still be

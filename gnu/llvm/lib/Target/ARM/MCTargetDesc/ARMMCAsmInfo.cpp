@@ -13,7 +13,6 @@
 
 #include "ARMMCAsmInfo.h"
 #include "llvm/ADT/Triple.h"
-#include "llvm/Support/CommandLine.h"
 
 using namespace llvm;
 
@@ -32,8 +31,11 @@ ARMMCAsmInfoDarwin::ARMMCAsmInfoDarwin(const Triple &TheTriple) {
 
   SupportsDebugInformation = true;
 
+  // Conditional Thumb 4-byte instructions can have an implicit IT.
+  MaxInstLength = 6;
+
   // Exceptions handling
-  ExceptionsType = TheTriple.isOSDarwin() && !TheTriple.isWatchOS()
+  ExceptionsType = (TheTriple.isOSDarwin() && !TheTriple.isWatchABI())
                        ? ExceptionHandling::SjLj
                        : ExceptionHandling::DwarfCFI;
 
@@ -57,9 +59,11 @@ ARMELFMCAsmInfo::ARMELFMCAsmInfo(const Triple &TheTriple) {
 
   SupportsDebugInformation = true;
 
+  // Conditional Thumb 4-byte instructions can have an implicit IT.
+  MaxInstLength = 6;
+
   // Exceptions handling
   switch (TheTriple.getOS()) {
-  case Triple::Bitrig:
   case Triple::NetBSD:
     ExceptionsType = ExceptionHandling::DwarfCFI;
     break;
@@ -88,9 +92,13 @@ void ARMCOFFMCAsmInfoMicrosoft::anchor() { }
 
 ARMCOFFMCAsmInfoMicrosoft::ARMCOFFMCAsmInfoMicrosoft() {
   AlignmentIsInBytes = false;
-
+  ExceptionsType = ExceptionHandling::WinEH;
   PrivateGlobalPrefix = "$M";
   PrivateLabelPrefix = "$M";
+  CommentString = ";";
+
+  // Conditional Thumb 4-byte instructions can have an implicit IT.
+  MaxInstLength = 6;
 }
 
 void ARMCOFFMCAsmInfoGNU::anchor() { }
@@ -106,10 +114,12 @@ ARMCOFFMCAsmInfoGNU::ARMCOFFMCAsmInfoGNU() {
   PrivateLabelPrefix = ".L";
 
   SupportsDebugInformation = true;
-  ExceptionsType = ExceptionHandling::None;
+  ExceptionsType = ExceptionHandling::DwarfCFI;
   UseParensForSymbolVariant = true;
 
-  UseIntegratedAssembler = false;
-  DwarfRegNumForCFI = true;
-}
+  UseIntegratedAssembler = true;
+  DwarfRegNumForCFI = false;
 
+  // Conditional Thumb 4-byte instructions can have an implicit IT.
+  MaxInstLength = 6;
+}

@@ -7,11 +7,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/DebugInfo/PDB/PDBSymbol.h"
-#include "llvm/DebugInfo/PDB/DIA/DIADataStream.h"
 #include "llvm/DebugInfo/PDB/DIA/DIAEnumDebugStreams.h"
+#include "llvm/DebugInfo/PDB/DIA/DIADataStream.h"
+#include "llvm/DebugInfo/PDB/PDBSymbol.h"
 
 using namespace llvm;
+using namespace llvm::pdb;
 
 DIAEnumDebugStreams::DIAEnumDebugStreams(
     CComPtr<IDiaEnumDebugStreams> DiaEnumerator)
@@ -44,10 +45,3 @@ std::unique_ptr<IPDBDataStream> DIAEnumDebugStreams::getNext() {
 }
 
 void DIAEnumDebugStreams::reset() { Enumerator->Reset(); }
-
-DIAEnumDebugStreams *DIAEnumDebugStreams::clone() const {
-  CComPtr<IDiaEnumDebugStreams> EnumeratorClone;
-  if (S_OK != Enumerator->Clone(&EnumeratorClone))
-    return nullptr;
-  return new DIAEnumDebugStreams(EnumeratorClone);
-}

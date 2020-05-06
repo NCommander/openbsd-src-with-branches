@@ -14,13 +14,14 @@
 #ifndef LLVM_IR_AUTOUPGRADE_H
 #define LLVM_IR_AUTOUPGRADE_H
 
-#include <string>
+#include "llvm/ADT/StringRef.h"
 
 namespace llvm {
   class CallInst;
   class Constant;
   class Function;
   class Instruction;
+  class MDNode;
   class Module;
   class GlobalVariable;
   class Type;
@@ -36,6 +37,10 @@ namespace llvm {
   /// intrinsic function with a call to the specified new function.
   void UpgradeIntrinsicCall(CallInst *CI, Function *NewFn);
 
+  // This upgrades the comment for objc retain release markers in inline asm
+  // calls
+  void UpgradeInlineAsmString(std::string *AsmStr);
+
   /// This is an auto-upgrade hook for any old intrinsic function syntaxes
   /// which need to have both the function updated as well as all calls updated
   /// to the new function. This should only be run in a post-processing fashion
@@ -46,9 +51,20 @@ namespace llvm {
   /// if it requires upgrading.
   bool UpgradeGlobalVariable(GlobalVariable *GV);
 
-  /// If the TBAA tag for the given instruction uses the scalar TBAA format,
-  /// we upgrade it to the struct-path aware TBAA format.
-  void UpgradeInstWithTBAATag(Instruction *I);
+  /// This checks for module flags which should be upgraded. It returns true if
+  /// module is modified.
+  bool UpgradeModuleFlags(Module &M);
+
+  /// This checks for objc retain release marker which should be upgraded. It
+  /// returns true if module is modified.
+  bool UpgradeRetainReleaseMarker(Module &M);
+
+  void UpgradeSectionAttributes(Module &M);
+
+  /// If the given TBAA tag uses the scalar TBAA format, create a new node
+  /// corresponding to the upgrade to the struct-path aware TBAA format.
+  /// Otherwise return the \p TBAANode itself.
+  MDNode *UpgradeTBAANode(MDNode &TBAANode);
 
   /// This is an auto-upgrade for bitcast between pointers with different
   /// address spaces: the instruction is replaced by a pair ptrtoint+inttoptr.
@@ -64,8 +80,14 @@ namespace llvm {
   /// info. Return true if module is modified.
   bool UpgradeDebugInfo(Module &M);
 
-  /// Upgrade a metadata string constant in place.
-  void UpgradeMDStringConstant(std::string &String);
+  /// Check whether a string looks like an old loop attachment tag.
+  inline bool mayBeOldLoopAttachmentTag(StringRef Name) {
+    return Name.startswith("llvm.vectorizer.");
+  }
+
+  /// Upgrade the loop attachment metadata node.
+  MDNode *upgradeInstructionLoopAttachment(MDNode &N);
+
 } // End llvm namespace
 
 #endif

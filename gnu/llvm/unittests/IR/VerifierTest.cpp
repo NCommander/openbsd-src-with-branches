@@ -1,4 +1,4 @@
-//===- llvm/unittest/IR/VerifierTest.cpp - Verifier unit tests ------------===//
+//===- llvm/unittest/IR/VerifierTest.cpp - Verifier unit tests --*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -9,10 +9,12 @@
 
 #include "llvm/IR/Verifier.h"
 #include "llvm/IR/Constants.h"
+#include "llvm/IR/DIBuilder.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/GlobalAlias.h"
 #include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
@@ -22,7 +24,7 @@ namespace llvm {
 namespace {
 
 TEST(VerifierTest, Branch_i1) {
-  LLVMContext &C = getGlobalContext();
+  LLVMContext C;
   Module M("M", C);
   FunctionType *FTy = FunctionType::get(Type::getVoidTy(C), /*isVarArg=*/false);
   Function *F = cast<Function>(M.getOrInsertFunction("foo", FTy));
@@ -45,13 +47,13 @@ TEST(VerifierTest, Branch_i1) {
 }
 
 TEST(VerifierTest, InvalidRetAttribute) {
-  LLVMContext &C = getGlobalContext();
+  LLVMContext C;
   Module M("M", C);
   FunctionType *FTy = FunctionType::get(Type::getInt32Ty(C), /*isVarArg=*/false);
   Function *F = cast<Function>(M.getOrInsertFunction("foo", FTy));
-  AttributeSet AS = F->getAttributes();
-  F->setAttributes(AS.addAttribute(C, AttributeSet::ReturnIndex,
-                                   Attribute::UWTable));
+  AttributeList AS = F->getAttributes();
+  F->setAttributes(
+      AS.addAttribute(C, AttributeList::ReturnIndex, Attribute::UWTable));
 
   std::string Error;
   raw_string_ostream ErrorOS(Error);
@@ -61,10 +63,10 @@ TEST(VerifierTest, InvalidRetAttribute) {
 }
 
 TEST(VerifierTest, CrossModuleRef) {
-  LLVMContext &C = getGlobalContext();
+  LLVMContext C;
   Module M1("M1", C);
   Module M2("M2", C);
-  Module M3("M2", C);
+  Module M3("M3", C);
   FunctionType *FTy = FunctionType::get(Type::getInt32Ty(C), /*isVarArg=*/false);
   Function *F1 = cast<Function>(M1.getOrInsertFunction("foo1", FTy));
   Function *F2 = cast<Function>(M2.getOrInsertFunction("foo2", FTy));
@@ -86,7 +88,21 @@ TEST(VerifierTest, CrossModuleRef) {
 
   std::string Error;
   raw_string_ostream ErrorOS(Error);
-  EXPECT_FALSE(verifyModule(M2, &ErrorOS));
+  EXPECT_TRUE(verifyModule(M2, &ErrorOS));
+  EXPECT_TRUE(StringRef(ErrorOS.str())
+                  .equals("Global is used by function in a different module\n"
+                          "i32 ()* @foo2\n"
+                          "; ModuleID = 'M2'\n"
+                          "i32 ()* @foo3\n"
+                          "; ModuleID = 'M3'\n"
+                          "Global is referenced in a different module!\n"
+                          "i32 ()* @foo2\n"
+                          "; ModuleID = 'M2'\n"
+                          "  %call = call i32 @foo2()\n"
+                          "i32 ()* @foo1\n"
+                          "; ModuleID = 'M1'\n"));
+
+  Error.clear();
   EXPECT_TRUE(verifyModule(M1, &ErrorOS));
   EXPECT_TRUE(StringRef(ErrorOS.str()).equals(
       "Referencing function in another module!\n"
@@ -105,7 +121,75 @@ TEST(VerifierTest, CrossModuleRef) {
   F3->eraseFromParent();
 }
 
-
-
+TEST(VerifierTest, InvalidVariableLinkage) {
+  LLVMContext C;
+  Module M("M", C);
+  new GlobalVariable(M, Type::getInt8Ty(C), false,
+                     GlobalValue::LinkOnceODRLinkage, nullptr, "Some Global");
+  std::string Error;
+  raw_string_ostream ErrorOS(Error);
+  EXPECT_TRUE(verifyModule(M, &ErrorOS));
+  EXPECT_TRUE(
+      StringRef(ErrorOS.str()).startswith("Global is external, but doesn't "
+                                          "have external or weak linkage!"));
 }
+
+TEST(VerifierTest, InvalidFunctionLinkage) {
+  LLVMContext C;
+  Module M("M", C);
+
+  FunctionType *FTy = FunctionType::get(Type::getVoidTy(C), /*isVarArg=*/false);
+  Function::Create(FTy, GlobalValue::LinkOnceODRLinkage, "foo", &M);
+  std::string Error;
+  raw_string_ostream ErrorOS(Error);
+  EXPECT_TRUE(verifyModule(M, &ErrorOS));
+  EXPECT_TRUE(
+      StringRef(ErrorOS.str()).startswith("Global is external, but doesn't "
+                                          "have external or weak linkage!"));
 }
+
+TEST(VerifierTest, DetectInvalidDebugInfo) {
+  {
+    LLVMContext C;
+    Module M("M", C);
+    DIBuilder DIB(M);
+    DIB.createCompileUnit(dwarf::DW_LANG_C89, DIB.createFile("broken.c", "/"),
+                          "unittest", false, "", 0);
+    DIB.finalize();
+    EXPECT_FALSE(verifyModule(M));
+
+    // Now break it by inserting non-CU node to the list of CUs.
+    auto *File = DIB.createFile("not-a-CU.f", ".");
+    NamedMDNode *NMD = M.getOrInsertNamedMetadata("llvm.dbg.cu");
+    NMD->addOperand(File);
+    EXPECT_TRUE(verifyModule(M));
+  }
+  {
+    LLVMContext C;
+    Module M("M", C);
+    DIBuilder DIB(M);
+    auto *CU = DIB.createCompileUnit(dwarf::DW_LANG_C89,
+                                     DIB.createFile("broken.c", "/"),
+                                     "unittest", false, "", 0);
+    new GlobalVariable(M, Type::getInt8Ty(C), false,
+                       GlobalValue::ExternalLinkage, nullptr, "g");
+
+    auto *F = cast<Function>(M.getOrInsertFunction(
+        "f", FunctionType::get(Type::getVoidTy(C), false)));
+    IRBuilder<> Builder(BasicBlock::Create(C, "", F));
+    Builder.CreateUnreachable();
+    F->setSubprogram(DIB.createFunction(
+        CU, "f", "f", DIB.createFile("broken.c", "/"), 1, nullptr, 1,
+        DINode::FlagZero,
+        DISubprogram::SPFlagLocalToUnit | DISubprogram::SPFlagDefinition));
+    DIB.finalize();
+    EXPECT_FALSE(verifyModule(M));
+
+    // Now break it by not listing the CU at all.
+    M.eraseNamedMetadata(M.getOrInsertNamedMetadata("llvm.dbg.cu"));
+    EXPECT_TRUE(verifyModule(M));
+  }
+}
+
+} // end anonymous namespace
+} // end namespace llvm

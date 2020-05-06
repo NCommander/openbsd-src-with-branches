@@ -36,7 +36,7 @@ using namespace llvm::objcarc;
 #define DEBUG_TYPE "objc-arc-ap-elim"
 
 namespace {
-  /// \brief Autorelease pool elimination.
+  /// Autorelease pool elimination.
   class ObjCARCAPElim : public ModulePass {
     void getAnalysisUsage(AnalysisUsage &AU) const override;
     bool runOnModule(Module &M) override;
@@ -70,7 +70,7 @@ void ObjCARCAPElim::getAnalysisUsage(AnalysisUsage &AU) const {
 /// possibly produce autoreleases.
 bool ObjCARCAPElim::MayAutorelease(ImmutableCallSite CS, unsigned Depth) {
   if (const Function *Callee = CS.getCalledFunction()) {
-    if (Callee->isDeclaration() || Callee->mayBeOverridden())
+    if (!Callee->hasExactDefinition())
       return true;
     for (const BasicBlock &BB : *Callee) {
       for (const Instruction &I : BB)
@@ -103,10 +103,12 @@ bool ObjCARCAPElim::OptimizeBB(BasicBlock *BB) {
       // zap the pair.
       if (Push && cast<CallInst>(Inst)->getArgOperand(0) == Push) {
         Changed = true;
-        DEBUG(dbgs() << "ObjCARCAPElim::OptimizeBB: Zapping push pop "
-                        "autorelease pair:\n"
-                        "                           Pop: " << *Inst << "\n"
-                     << "                           Push: " << *Push << "\n");
+        LLVM_DEBUG(dbgs() << "ObjCARCAPElim::OptimizeBB: Zapping push pop "
+                             "autorelease pair:\n"
+                             "                           Pop: "
+                          << *Inst << "\n"
+                          << "                           Push: " << *Push
+                          << "\n");
         Inst->eraseFromParent();
         Push->eraseFromParent();
       }
@@ -130,6 +132,9 @@ bool ObjCARCAPElim::runOnModule(Module &M) {
 
   // If nothing in the Module uses ARC, don't do anything.
   if (!ModuleHasARC(M))
+    return false;
+
+  if (skipModule(M))
     return false;
 
   // Find the llvm.global_ctors variable, as the first step in

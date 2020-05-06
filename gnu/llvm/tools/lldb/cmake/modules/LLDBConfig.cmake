@@ -4,38 +4,74 @@ set(LLDB_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(LLDB_SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/source")
 set(LLDB_INCLUDE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
+set(LLDB_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(LLDB_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+  message(FATAL_ERROR
+    "In-source builds are not allowed. CMake would overwrite the makefiles "
+    "distributed with LLDB. Please create a directory and run cmake from "
+    "there, passing the path to this source directory as the last argument. "
+    "This process created the file `CMakeCache.txt' and the directory "
+    "`CMakeFiles'. Please delete them.")
+endif()
+
 set(LLDB_LINKER_SUPPORTS_GROUPS OFF)
 if (LLVM_COMPILER_IS_GCC_COMPATIBLE AND NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
   # The Darwin linker doesn't understand --start-group/--end-group.
   set(LLDB_LINKER_SUPPORTS_GROUPS ON)
 endif()
 
-set(LLDB_DEFAULT_DISABLE_PYTHON 0)
-set(LLDB_DEFAULT_DISABLE_CURSES 0)
+set(default_disable_python OFF)
+set(default_disable_curses OFF)
+set(default_disable_libedit OFF)
 
-if ( CMAKE_SYSTEM_NAME MATCHES "Windows" )
-  set(LLDB_DEFAULT_DISABLE_CURSES 1)
-elseif (CMAKE_SYSTEM_NAME MATCHES "Android" )
-  set(LLDB_DEFAULT_DISABLE_PYTHON 1)
-  set(LLDB_DEFAULT_DISABLE_CURSES 1)
+if(DEFINED LLVM_ENABLE_LIBEDIT AND NOT LLVM_ENABLE_LIBEDIT)
+  set(default_disable_libedit ON)
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+  set(default_disable_curses ON)
+  set(default_disable_libedit ON)
+elseif(CMAKE_SYSTEM_NAME MATCHES "Android")
+  set(default_disable_python ON)
+  set(default_disable_curses ON)
+  set(default_disable_libedit ON)
 elseif(IOS)
-  set(LLDB_DEFAULT_DISABLE_PYTHON 1)
+  set(default_disable_python ON)
 endif()
 
-if(IOS)
-  add_definitions(-DNO_XPC_SERVICES)
+option(LLDB_DISABLE_PYTHON "Disable Python scripting integration." ${default_disable_python})
+option(LLDB_DISABLE_CURSES "Disable Curses integration." ${default_disable_curses})
+option(LLDB_DISABLE_LIBEDIT "Disable the use of editline." ${default_disable_libedit})
+option(LLDB_RELOCATABLE_PYTHON "Use the PYTHONHOME environment variable to locate Python." OFF)
+option(LLDB_USE_SYSTEM_SIX "Use six.py shipped with system and do not install a copy of it" OFF)
+option(LLDB_USE_ENTITLEMENTS "When codesigning, use entitlements if available" ON)
+option(LLDB_BUILD_FRAMEWORK "Build LLDB.framework (Darwin only)" OFF)
+option(LLDB_NO_INSTALL_DEFAULT_RPATH "Disable default RPATH settings in binaries" OFF)
+
+if(LLDB_BUILD_FRAMEWORK)
+  if(NOT APPLE)
+    message(FATAL_ERROR "LLDB.framework can only be generated when targeting Apple platforms")
+  endif()
+  # CMake 3.6 did not correctly emit POST_BUILD commands for Apple Framework targets
+  if(CMAKE_VERSION VERSION_LESS 3.7)
+    message(FATAL_ERROR "LLDB_BUILD_FRAMEWORK is not supported on CMake < 3.7")
+  endif()
+
+  set(LLDB_FRAMEWORK_VERSION A CACHE STRING "LLDB.framework version (default is A)")
+  set(LLDB_FRAMEWORK_BUILD_DIR bin CACHE STRING "Output directory for LLDB.framework")
+  set(LLDB_FRAMEWORK_INSTALL_DIR Library/Frameworks CACHE STRING "Install directory for LLDB.framework")
+  set(LLDB_FRAMEWORK_TOOLS darwin-debug;debugserver;lldb-argdumper;lldb-server CACHE INTERNAL
+      "List of tools to include in LLDB.framework/Resources")
+
+  # Set designated directory for all dSYMs. Essentially, this emits the
+  # framework's dSYM outside of the framework directory.
+  if(LLVM_EXTERNALIZE_DEBUGINFO)
+    set(LLVM_EXTERNALIZE_DEBUGINFO_OUTPUT_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/bin CACHE STRING
+        "Directory to emit dSYM files stripped from executables and libraries (Darwin Only)")
+  endif()
 endif()
-
-set(LLDB_DISABLE_PYTHON ${LLDB_DEFAULT_DISABLE_PYTHON} CACHE BOOL
-  "Disables the Python scripting integration.")
-set(LLDB_DISABLE_CURSES ${LLDB_DEFAULT_DISABLE_CURSES} CACHE BOOL
-  "Disables the Curses integration.")
-
-set(LLDB_RELOCATABLE_PYTHON 0 CACHE BOOL
-  "Causes LLDB to use the PYTHONHOME environment variable to locate Python.")
-
-set(LLDB_USE_SYSTEM_SIX 0 CACHE BOOL
-  "Use six.py shipped with system and do not install a copy of it")
 
 if (NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
   set(LLDB_EXPORT_ALL_SYMBOLS 0 CACHE BOOL
@@ -235,12 +271,19 @@ if (CXX_SUPPORTS_NO_VLA_EXTENSION)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-vla-extension")
 endif ()
 
+check_cxx_compiler_flag("-Wno-gnu-anonymous-struct"
+                        CXX_SUPPORTS_NO_GNU_ANONYMOUS_STRUCT)
+
+check_cxx_compiler_flag("-Wno-nested-anon-types"
+                        CXX_SUPPORTS_NO_NESTED_ANON_TYPES)
+
 # Disable MSVC warnings
 if( MSVC )
   add_definitions(
     -wd4018 # Suppress 'warning C4018: '>=' : signed/unsigned mismatch'
     -wd4068 # Suppress 'warning C4068: unknown pragma'
     -wd4150 # Suppress 'warning C4150: deletion of pointer to incomplete type'
+    -wd4201 # Suppress 'warning C4201: nonstandard extension used: nameless struct/union'
     -wd4251 # Suppress 'warning C4251: T must have dll-interface to be used by clients of class U.'
     -wd4521 # Suppress 'warning C4521: 'type' : multiple copy constructors specified'
     -wd4530 # Suppress 'warning C4530: C++ exception handler used, but unwind semantics are not enabled.'
@@ -252,20 +295,20 @@ if (CMAKE_SYSTEM_NAME MATCHES "Windows")
     add_definitions( -D_UNICODE -DUNICODE )
 endif()
 
-set(LLDB_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(LLDB_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
-
-if (CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-  message(FATAL_ERROR "In-source builds are not allowed. CMake would overwrite "
-"the makefiles distributed with LLDB. Please create a directory and run cmake "
-"from there, passing the path to this source directory as the last argument. "
-"This process created the file `CMakeCache.txt' and the directory "
-"`CMakeFiles'. Please delete them.")
+# If LLDB_VERSION_* is specified, use it, if not use LLVM_VERSION_*.
+if(NOT DEFINED LLDB_VERSION_MAJOR)
+  set(LLDB_VERSION_MAJOR ${LLVM_VERSION_MAJOR})
 endif()
-
-# Compute the LLDB version from the LLVM version.
-string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?" LLDB_VERSION
-  ${PACKAGE_VERSION})
+if(NOT DEFINED LLDB_VERSION_MINOR)
+  set(LLDB_VERSION_MINOR ${LLVM_VERSION_MINOR})
+endif()
+if(NOT DEFINED LLDB_VERSION_PATCH)
+  set(LLDB_VERSION_PATCH ${LLVM_VERSION_PATCH})
+endif()
+if(NOT DEFINED LLDB_VERSION_SUFFIX)
+  set(LLDB_VERSION_SUFFIX ${LLVM_VERSION_SUFFIX})
+endif()
+set(LLDB_VERSION "${LLDB_VERSION_MAJOR}.${LLDB_VERSION_MINOR}.${LLDB_VERSION_PATCH}${LLDB_VERSION_SUFFIX}")
 message(STATUS "LLDB version: ${LLDB_VERSION}")
 
 include_directories(BEFORE
@@ -275,7 +318,7 @@ include_directories(BEFORE
 
 if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
   install(DIRECTORY include/
-    COMPONENT lldb_headers
+    COMPONENT lldb-headers
     DESTINATION include
     FILES_MATCHING
     PATTERN "*.h"
@@ -285,20 +328,24 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
     )
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/
-    COMPONENT lldb_headers
+    COMPONENT lldb-headers
     DESTINATION include
     FILES_MATCHING
     PATTERN "*.h"
     PATTERN ".svn" EXCLUDE
     PATTERN ".cmake" EXCLUDE
     )
+
+  add_custom_target(lldb-headers)
+  set_target_properties(lldb-headers PROPERTIES FOLDER "Misc")
+
+  if (NOT CMAKE_CONFIGURATION_TYPES)
+    add_llvm_install_targets(install-lldb-headers
+                             COMPONENT lldb-headers)
+  endif()
 endif()
 
-if (NOT LIBXML2_FOUND AND NOT (CMAKE_SYSTEM_NAME MATCHES "Windows"))
-  # Skip Libxml2 on Windows.  In CMake 3.4 and higher, the algorithm for
-  # finding libxml2 got "smarter", and it can now locate the version which is
-  # in gnuwin32, even though that version does not contain the headers that
-  # LLDB uses.
+if (NOT LIBXML2_FOUND)
   find_package(LibXml2)
 endif()
 
@@ -313,11 +360,6 @@ if (APPLE)
   find_library(CORE_FOUNDATION_LIBRARY CoreFoundation)
   find_library(SECURITY_LIBRARY Security)
 
-  set(LLDB_FRAMEWORK_INSTALL_DIR Library/Frameworks CACHE STRING "Output directory for LLDB.framework")
-  set(LLDB_FRAMEWORK_VERSION A CACHE STRING "LLDB.framework version (default is A)")
-  set(LLDB_FRAMEWORK_RESOURCE_DIR
-    LLDB.framework/Versions/${LLDB_FRAMEWORK_VERSION}/Resources)
-
   add_definitions( -DLIBXML2_DEFINED )
   list(APPEND system_libs xml2
        ${CURSES_LIBRARIES}
@@ -326,23 +368,26 @@ if (APPLE)
        ${CORE_SERVICES_LIBRARY}
        ${SECURITY_LIBRARY}
        ${DEBUG_SYMBOLS_LIBRARY})
-
-else()
-  if (LIBXML2_FOUND)
-    add_definitions( -DLIBXML2_DEFINED )
-    list(APPEND system_libs ${LIBXML2_LIBRARIES})
-    include_directories(${LIBXML2_INCLUDE_DIR})
-  endif()
-
+  include_directories(${LIBXML2_INCLUDE_DIR})
+elseif(LIBXML2_FOUND AND LIBXML2_VERSION_STRING VERSION_GREATER 2.8)
+  add_definitions( -DLIBXML2_DEFINED )
+  list(APPEND system_libs ${LIBXML2_LIBRARIES})
+  include_directories(${LIBXML2_INCLUDE_DIR})
 endif()
 
-if (HAVE_LIBPTHREAD)
-  list(APPEND system_libs pthread)
-endif(HAVE_LIBPTHREAD)
-
-if (HAVE_LIBDL)
-  list(APPEND system_libs ${CMAKE_DL_LIBS})
+if( WIN32 AND NOT CYGWIN )
+  set(PURE_WINDOWS 1)
 endif()
+
+if(NOT PURE_WINDOWS)
+  set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+  find_package(Threads REQUIRED)
+  list(APPEND system_libs ${CMAKE_THREAD_LIBS_INIT})
+endif()
+
+list(APPEND system_libs ${CMAKE_DL_LIBS})
+
+SET(SKIP_LLDB_SERVER_BUILD OFF CACHE BOOL "Skip building lldb-server")
 
 # Figure out if lldb could use lldb-server.  If so, then we'll
 # ensure we build lldb-server when an lldb target is being built.
@@ -395,15 +440,6 @@ if(LLDB_USING_LIBSTDCXX)
             "- enable exceptions (via LLVM_ENABLE_EH)\n"
             "- ignore this warning and accept occasional instability")
     endif()
-endif()
-
-if(MSVC)
-    set(LLDB_USE_BUILTIN_DEMANGLER ON)
-else()
-    option(LLDB_USE_BUILTIN_DEMANGLER "Use lldb's builtin demangler instead of the system one" ON)
-endif()
-if(LLDB_USE_BUILTIN_DEMANGLER)
-    add_definitions(-DLLDB_USE_BUILTIN_DEMANGLER)
 endif()
 
 if ((CMAKE_SYSTEM_NAME MATCHES "Android") AND LLVM_BUILD_STATIC AND

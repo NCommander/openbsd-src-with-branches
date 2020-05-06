@@ -11,29 +11,26 @@
 
 #include "PDBSymbol.h"
 #include "PDBTypes.h"
-#include <string>
 
 namespace llvm {
 
 class raw_ostream;
+namespace pdb {
 
 class PDBSymbolAnnotation : public PDBSymbol {
-public:
-  PDBSymbolAnnotation(const IPDBSession &PDBSession,
-                      std::unique_ptr<IPDBRawSymbol> Symbol);
-
   DECLARE_PDB_SYMBOL_CONCRETE_TYPE(PDB_SymType::Annotation)
 
+public:
   void dump(PDBSymDumper &Dumper) const override;
 
   FORWARD_SYMBOL_METHOD(getAddressOffset)
   FORWARD_SYMBOL_METHOD(getAddressSection)
   FORWARD_SYMBOL_METHOD(getDataKind)
   FORWARD_SYMBOL_METHOD(getRelativeVirtualAddress)
-  FORWARD_SYMBOL_METHOD(getSymIndexId)
   // FORWARD_SYMBOL_METHOD(getValue)
   FORWARD_SYMBOL_METHOD(getVirtualAddress)
 };
+}
 }
 
 #endif // LLVM_DEBUGINFO_PDB_PDBSYMBOLANNOTATION_H

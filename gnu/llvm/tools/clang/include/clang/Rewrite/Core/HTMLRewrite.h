@@ -31,7 +31,8 @@ namespace html {
   /// start/end tags are placed at the start/end of each line if the range is
   /// multiline.
   void HighlightRange(Rewriter &R, SourceLocation B, SourceLocation E,
-                      const char *StartTag, const char *EndTag);
+                      const char *StartTag, const char *EndTag,
+                      bool IsTokenRange = true);
 
   /// HighlightRange - Highlight a range in the source code with the specified
   /// start/end tags.  The Start/end of the range must be in the same file.
@@ -62,8 +63,8 @@ namespace html {
 
   void AddLineNumbers(Rewriter& R, FileID FID);
 
-  void AddHeaderFooterInternalBuiltinCSS(Rewriter& R, FileID FID,
-                                         const char *title = nullptr);
+  void AddHeaderFooterInternalBuiltinCSS(Rewriter &R, FileID FID,
+                                         StringRef title);
 
   /// SyntaxHighlight - Relex the specified FileID and annotate the HTML with
   /// information about keywords, comments, etc.

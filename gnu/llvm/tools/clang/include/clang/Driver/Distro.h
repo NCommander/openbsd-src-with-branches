@@ -10,7 +10,7 @@
 #ifndef LLVM_CLANG_DRIVER_DISTRO_H
 #define LLVM_CLANG_DRIVER_DISTRO_H
 
-#include "clang/Basic/VirtualFileSystem.h"
+#include "llvm/Support/VirtualFileSystem.h"
 
 namespace clang {
 namespace driver {
@@ -26,17 +26,20 @@ public:
     // NB: Releases of a particular Linux distro should be kept together
     // in this enum, because some tests are done by integer comparison against
     // the first and last known member in the family, e.g. IsRedHat().
+    AlpineLinux,
     ArchLinux,
     DebianLenny,
     DebianSqueeze,
     DebianWheezy,
     DebianJessie,
     DebianStretch,
+    DebianBuster,
     Exherbo,
     RHEL5,
     RHEL6,
     RHEL7,
     Fedora,
+    Gentoo,
     OpenSUSE,
     UbuntuHardy,
     UbuntuIntrepid,
@@ -57,6 +60,10 @@ public:
     UbuntuXenial,
     UbuntuYakkety,
     UbuntuZesty,
+    UbuntuArtful,
+    UbuntuBionic,
+    UbuntuCosmic,
+    UbuntuDisco,
     UnknownDistro
   };
 
@@ -75,7 +82,7 @@ public:
   Distro(DistroType D) : DistroVal(D) {}
 
   /// Detects the distribution using specified VFS.
-  explicit Distro(clang::vfs::FileSystem& VFS);
+  explicit Distro(llvm::vfs::FileSystem &VFS);
 
   bool operator==(const Distro &Other) const {
     return DistroVal == Other.DistroVal;
@@ -106,13 +113,21 @@ public:
   }
 
   bool IsDebian() const {
-    return DistroVal >= DebianLenny && DistroVal <= DebianStretch;
+    return DistroVal >= DebianLenny && DistroVal <= DebianBuster;
   }
 
   bool IsUbuntu() const {
-    return DistroVal >= UbuntuHardy && DistroVal <= UbuntuZesty;
+    return DistroVal >= UbuntuHardy && DistroVal <= UbuntuDisco;
   }
- 
+
+  bool IsAlpineLinux() const {
+    return DistroVal == AlpineLinux;
+  }
+
+  bool IsGentoo() const {
+    return DistroVal == Gentoo;
+  }
+
   /// @}
 };
 

@@ -372,7 +372,7 @@ static Value *generateUnsignedDivisionCode(Value *Dividend, Value *Divisor,
 /// information about the operands are known. Implements both 32bit and 64bit
 /// scalar division.
 ///
-/// @brief Replace Rem with generated code.
+/// Replace Rem with generated code.
 bool llvm::expandRemainder(BinaryOperator *Rem) {
   assert((Rem->getOpcode() == Instruction::SRem ||
           Rem->getOpcode() == Instruction::URem) &&
@@ -390,6 +390,8 @@ bool llvm::expandRemainder(BinaryOperator *Rem) {
     Value *Remainder = generateSignedRemainderCode(Rem->getOperand(0),
                                                    Rem->getOperand(1), Builder);
 
+    // Check whether this is the insert point while Rem is still valid.
+    bool IsInsertPoint = Rem->getIterator() == Builder.GetInsertPoint();
     Rem->replaceAllUsesWith(Remainder);
     Rem->dropAllReferences();
     Rem->eraseFromParent();
@@ -397,7 +399,7 @@ bool llvm::expandRemainder(BinaryOperator *Rem) {
     // If we didn't actually generate an urem instruction, we're done
     // This happens for example if the input were constant. In this case the
     // Builder insertion point was unchanged
-    if (Rem == Builder.GetInsertPoint().getNodePtrUnchecked())
+    if (IsInsertPoint)
       return true;
 
     BinaryOperator *BO = dyn_cast<BinaryOperator>(Builder.GetInsertPoint());
@@ -428,7 +430,7 @@ bool llvm::expandRemainder(BinaryOperator *Rem) {
 /// when more information about the operands are known. Implements both
 /// 32bit and 64bit scalar division.
 ///
-/// @brief Replace Div with generated code.
+/// Replace Div with generated code.
 bool llvm::expandDivision(BinaryOperator *Div) {
   assert((Div->getOpcode() == Instruction::SDiv ||
           Div->getOpcode() == Instruction::UDiv) &&
@@ -446,6 +448,9 @@ bool llvm::expandDivision(BinaryOperator *Div) {
     // Lower the code to unsigned division, and reset Div to point to the udiv.
     Value *Quotient = generateSignedDivisionCode(Div->getOperand(0),
                                                  Div->getOperand(1), Builder);
+
+    // Check whether this is the insert point while Div is still valid.
+    bool IsInsertPoint = Div->getIterator() == Builder.GetInsertPoint();
     Div->replaceAllUsesWith(Quotient);
     Div->dropAllReferences();
     Div->eraseFromParent();
@@ -453,7 +458,7 @@ bool llvm::expandDivision(BinaryOperator *Div) {
     // If we didn't actually generate an udiv instruction, we're done
     // This happens for example if the input were constant. In this case the
     // Builder insertion point was unchanged
-    if (Div == Builder.GetInsertPoint().getNodePtrUnchecked())
+    if (IsInsertPoint)
       return true;
 
     BinaryOperator *BO = dyn_cast<BinaryOperator>(Builder.GetInsertPoint());
@@ -471,13 +476,13 @@ bool llvm::expandDivision(BinaryOperator *Div) {
   return true;
 }
 
-/// Generate code to compute the remainder of two integers of bitwidth up to 
+/// Generate code to compute the remainder of two integers of bitwidth up to
 /// 32 bits. Uses the above routines and extends the inputs/truncates the
 /// outputs to operate in 32 bits; that is, these routines are good for targets
-/// that have no or very little suppport for smaller than 32 bit integer 
+/// that have no or very little suppport for smaller than 32 bit integer
 /// arithmetic.
 ///
-/// @brief Replace Rem with emulation code.
+/// Replace Rem with emulation code.
 bool llvm::expandRemainderUpTo32Bits(BinaryOperator *Rem) {
   assert((Rem->getOpcode() == Instruction::SRem ||
           Rem->getOpcode() == Instruction::URem) &&
@@ -522,11 +527,11 @@ bool llvm::expandRemainderUpTo32Bits(BinaryOperator *Rem) {
   return expandRemainder(cast<BinaryOperator>(ExtRem));
 }
 
-/// Generate code to compute the remainder of two integers of bitwidth up to 
+/// Generate code to compute the remainder of two integers of bitwidth up to
 /// 64 bits. Uses the above routines and extends the inputs/truncates the
 /// outputs to operate in 64 bits.
 ///
-/// @brief Replace Rem with emulation code.
+/// Replace Rem with emulation code.
 bool llvm::expandRemainderUpTo64Bits(BinaryOperator *Rem) {
   assert((Rem->getOpcode() == Instruction::SRem ||
           Rem->getOpcode() == Instruction::URem) &&
@@ -575,7 +580,7 @@ bool llvm::expandRemainderUpTo64Bits(BinaryOperator *Rem) {
 /// in 32 bits; that is, these routines are good for targets that have no
 /// or very little support for smaller than 32 bit integer arithmetic.
 ///
-/// @brief Replace Div with emulation code.
+/// Replace Div with emulation code.
 bool llvm::expandDivisionUpTo32Bits(BinaryOperator *Div) {
   assert((Div->getOpcode() == Instruction::SDiv ||
           Div->getOpcode() == Instruction::UDiv) &&
@@ -608,7 +613,7 @@ bool llvm::expandDivisionUpTo32Bits(BinaryOperator *Div) {
   } else {
     ExtDividend = Builder.CreateZExt(Div->getOperand(0), Int32Ty);
     ExtDivisor = Builder.CreateZExt(Div->getOperand(1), Int32Ty);
-    ExtDiv = Builder.CreateUDiv(ExtDividend, ExtDivisor);  
+    ExtDiv = Builder.CreateUDiv(ExtDividend, ExtDivisor);
   }
   Trunc = Builder.CreateTrunc(ExtDiv, DivTy);
 
@@ -623,7 +628,7 @@ bool llvm::expandDivisionUpTo32Bits(BinaryOperator *Div) {
 /// above routines and extends the inputs/truncates the outputs to operate
 /// in 64 bits.
 ///
-/// @brief Replace Div with emulation code.
+/// Replace Div with emulation code.
 bool llvm::expandDivisionUpTo64Bits(BinaryOperator *Div) {
   assert((Div->getOpcode() == Instruction::SDiv ||
           Div->getOpcode() == Instruction::UDiv) &&
@@ -657,7 +662,7 @@ bool llvm::expandDivisionUpTo64Bits(BinaryOperator *Div) {
   } else {
     ExtDividend = Builder.CreateZExt(Div->getOperand(0), Int64Ty);
     ExtDivisor = Builder.CreateZExt(Div->getOperand(1), Int64Ty);
-    ExtDiv = Builder.CreateUDiv(ExtDividend, ExtDivisor);  
+    ExtDiv = Builder.CreateUDiv(ExtDividend, ExtDivisor);
   }
   Trunc = Builder.CreateTrunc(ExtDiv, DivTy);
 

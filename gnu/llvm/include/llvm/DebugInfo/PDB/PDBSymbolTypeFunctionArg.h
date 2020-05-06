@@ -16,22 +16,19 @@
 namespace llvm {
 
 class raw_ostream;
+namespace pdb {
 
 class PDBSymbolTypeFunctionArg : public PDBSymbol {
-public:
-  PDBSymbolTypeFunctionArg(const IPDBSession &PDBSession,
-                           std::unique_ptr<IPDBRawSymbol> Symbol);
-
   DECLARE_PDB_SYMBOL_CONCRETE_TYPE(PDB_SymType::FunctionArg)
-
+public:
   void dump(PDBSymDumper &Dumper) const override;
 
-  FORWARD_SYMBOL_METHOD(getClassParentId)
-  FORWARD_SYMBOL_METHOD(getLexicalParentId)
-  FORWARD_SYMBOL_METHOD(getSymIndexId)
-  FORWARD_SYMBOL_METHOD(getTypeId)
+  FORWARD_SYMBOL_ID_METHOD(getClassParent)
+  FORWARD_SYMBOL_ID_METHOD(getLexicalParent)
+  FORWARD_SYMBOL_ID_METHOD(getType)
 };
 
 } // namespace llvm
+}
 
 #endif // LLVM_DEBUGINFO_PDB_PDBSYMBOLTYPEFUNCTIONARG_H

@@ -93,12 +93,11 @@ public:
 
 private:
   void printOperand(const MCInst *MI, unsigned OpNo, raw_ostream &O);
-  void printUnsignedImm(const MCInst *MI, int opNum, raw_ostream &O);
-  void printUnsignedImm8(const MCInst *MI, int opNum, raw_ostream &O);
+  template <unsigned Bits, unsigned Offset = 0>
+  void printUImm(const MCInst *MI, int opNum, raw_ostream &O);
   void printMemOperand(const MCInst *MI, int opNum, raw_ostream &O);
   void printMemOperandEA(const MCInst *MI, int opNum, raw_ostream &O);
   void printFCCOperand(const MCInst *MI, int opNum, raw_ostream &O);
-  void printRegisterPair(const MCInst *MI, int opNum, raw_ostream &O);
   void printSHFMask(const MCInst *MI, int opNum, raw_ostream &O);
 
   bool printAlias(const char *Str, const MCInst &MI, unsigned OpNo,

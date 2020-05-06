@@ -243,11 +243,6 @@ sub Analyze {
       push @Args, "-Xclang", $arg;
     }
 
-    # Display Ubiviz graph?
-    if (defined $ENV{'CCC_UBI'}) {
-      push @Args, "-Xclang", "-analyzer-viz-egraph-ubigraph";
-    }
-
     if (defined $AnalyzerTarget) {
       push @Args, "-target", $AnalyzerTarget;
     }
@@ -385,7 +380,8 @@ my %CompilerLinkerOptionMap = (
   '-target' => 1,
   '-v' => 0,
   '-mmacosx-version-min' => 0, # This is really a 1 argument, but always has '='
-  '-miphoneos-version-min' => 0 # This is really a 1 argument, but always has '='
+  '-miphoneos-version-min' => 0, # This is really a 1 argument, but always has '='
+  '--target' => 0
 );
 
 my %IgnoredOptionMap = (
@@ -418,7 +414,7 @@ my %LangMap = (
   'cc'  => 'c++',
   'C'   => 'c++',
   'ii'  => 'c++-cpp-output',
-  'i'   => $IsCXX ? 'c++-cpp-output' : 'c-cpp-output',
+  'i'   => $IsCXX ? 'c++-cpp-output' : 'cpp-output',
   'm'   => 'objective-c',
   'mi'  => 'objective-c-cpp-output',
   'mm'  => 'objective-c++',
@@ -438,7 +434,7 @@ my %LangsAccepted = (
   "c" => 1,
   "c++" => 1,
   "objective-c++" => 1,
-  "c-cpp-output" => 1,
+  "cpp-output" => 1,
   "objective-c-cpp-output" => 1,
   "c++-cpp-output" => 1
 );
@@ -491,6 +487,9 @@ if (defined $ENV{'CCC_ANALYZER_LOG'}) { $Verbose = 2; }
 
 # Get the HTML output directory.
 my $HtmlDir = $ENV{'CCC_ANALYZER_HTML'};
+
+# Get force-analyze-debug-code option.
+my $ForceAnalyzeDebugCode = $ENV{'CCC_ANALYZER_FORCE_ANALYZE_DEBUG_CODE'};
 
 my %DisabledArchs = ('ppc' => 1, 'ppc64' => 1);
 my %ArchsSeen;
@@ -682,6 +681,11 @@ foreach (my $i = 0; $i < scalar(@ARGV); ++$i) {
   }
 }
 
+# Forcedly enable debugging if requested by user.
+if ($ForceAnalyzeDebugCode) {
+  push @CompileOpts, '-UNDEBUG';
+}
+
 # If we are on OSX and have an installation where the
 # default SDK is inferred by xcrun use xcrun to infer
 # the SDK.
@@ -742,9 +746,10 @@ if ($Action eq 'compile' or $Action eq 'link') {
 
     if (defined $OutputFormat) {
       push @AnalyzeArgs, "-analyzer-output=" . $OutputFormat;
-      if ($OutputFormat =~ /plist/) {
+      if ($OutputFormat =~ /plist/ || $OutputFormat =~ /sarif/) {
         # Change "Output" to be a file.
-        my ($h, $f) = tempfile("report-XXXXXX", SUFFIX => ".plist",
+        my $Suffix = $OutputFormat =~ /plist/ ? ".plist" : ".sarif";
+        my ($h, $f) = tempfile("report-XXXXXX", SUFFIX => $Suffix,
                                DIR => $HtmlDir);
         $ResultFile = $f;
         # If the HtmlDir is not set, we should clean up the plist files.

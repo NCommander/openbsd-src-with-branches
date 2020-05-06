@@ -10,29 +10,55 @@
 #ifndef LLD_ELF_WRITER_H
 #define LLD_ELF_WRITER_H
 
+#include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/StringRef.h"
+#include <cstdint>
 #include <memory>
-
-namespace llvm {
-  class StringRef;
-}
 
 namespace lld {
 namespace elf {
-template <class ELFT> class InputSectionBase;
-template <class ELFT> class ObjectFile;
-template <class ELFT> class SymbolTable;
+class InputFile;
+class OutputSection;
+class InputSectionBase;
+template <class ELFT> class ObjFile;
+class SymbolTable;
+template <class ELFT> void writeResult();
 
-template <class ELFT> void writeResult(SymbolTable<ELFT> *Symtab);
+// This describes a program header entry.
+// Each contains type, access flags and range of output sections that will be
+// placed in it.
+struct PhdrEntry {
+  PhdrEntry(unsigned Type, unsigned Flags) : p_type(Type), p_flags(Flags) {}
+  void add(OutputSection *Sec);
 
-template <class ELFT> void markLive();
+  uint64_t p_paddr = 0;
+  uint64_t p_vaddr = 0;
+  uint64_t p_memsz = 0;
+  uint64_t p_filesz = 0;
+  uint64_t p_offset = 0;
+  uint32_t p_align = 0;
+  uint32_t p_type = 0;
+  uint32_t p_flags = 0;
 
-template <class ELFT>
-llvm::StringRef getOutputSectionName(InputSectionBase<ELFT> *S);
+  OutputSection *FirstSec = nullptr;
+  OutputSection *LastSec = nullptr;
+  bool HasLMA = false;
 
-template <class ELFT>
-void reportDiscarded(InputSectionBase<ELFT> *IS,
-                     const std::unique_ptr<elf::ObjectFile<ELFT>> &File);
-}
-}
+  uint64_t LMAOffset = 0;
+};
+
+void addReservedSymbols();
+llvm::StringRef getOutputSectionName(const InputSectionBase *S);
+
+template <class ELFT> uint32_t calcMipsEFlags();
+
+uint8_t getMipsFpAbiFlag(uint8_t OldFlag, uint8_t NewFlag,
+                         llvm::StringRef FileName);
+
+bool isMipsN32Abi(const InputFile *F);
+bool isMicroMips();
+bool isMipsR6();
+} // namespace elf
+} // namespace lld
 
 #endif

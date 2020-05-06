@@ -10,10 +10,6 @@
 #ifndef LLDB_SBDefines_h_
 #define LLDB_SBDefines_h_
 
-// C Includes
-// C++ Includes
-// Other libraries and framework includes
-// Project includes
 
 #include "lldb/lldb-defines.h"
 #include "lldb/lldb-enumerations.h"
@@ -32,6 +28,8 @@ class LLDB_API SBAddress;
 class LLDB_API SBBlock;
 class LLDB_API SBBreakpoint;
 class LLDB_API SBBreakpointLocation;
+class LLDB_API SBBreakpointName;
+class LLDB_API SBBreakpointNameImpl;
 class LLDB_API SBBroadcaster;
 class LLDB_API SBCommand;
 class LLDB_API SBCommandInterpreter;
@@ -53,6 +51,7 @@ class LLDB_API SBFileSpecList;
 class LLDB_API SBFrame;
 class LLDB_API SBFunction;
 class LLDB_API SBHostOS;
+class LLDB_API SBInitializerOptions;
 class LLDB_API SBInstruction;
 class LLDB_API SBInstructionList;
 class LLDB_API SBLanguageRuntime;
@@ -65,6 +64,7 @@ class LLDB_API SBModule;
 class LLDB_API SBModuleSpec;
 class LLDB_API SBModuleSpecList;
 class LLDB_API SBProcess;
+class LLDB_API SBProcessInfo;
 class LLDB_API SBQueue;
 class LLDB_API SBQueueItem;
 class LLDB_API SBSection;
@@ -98,6 +98,10 @@ class LLDB_API SBValueList;
 class LLDB_API SBVariablesOptions;
 class LLDB_API SBWatchpoint;
 class LLDB_API SBUnixSignals;
+
+typedef bool (*SBBreakpointHitCallback)(void *baton, SBProcess &process,
+                                        SBThread &thread,
+                                        lldb::SBBreakpointLocation &location);
 }
 
 #endif // LLDB_SBDefines_h_

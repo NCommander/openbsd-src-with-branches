@@ -25,14 +25,41 @@ using namespace lldb_private;
 
 namespace {
 std::atomic<uint32_t> g_pipe_serial(0);
+constexpr llvm::StringLiteral g_pipe_name_prefix = "\\\\.\\Pipe\\";
+} // namespace
+
+PipeWindows::PipeWindows()
+    : m_read(INVALID_HANDLE_VALUE), m_write(INVALID_HANDLE_VALUE),
+      m_read_fd(PipeWindows::kInvalidDescriptor),
+      m_write_fd(PipeWindows::kInvalidDescriptor) {
+  ZeroMemory(&m_read_overlapped, sizeof(m_read_overlapped));
+  ZeroMemory(&m_write_overlapped, sizeof(m_write_overlapped));
 }
 
-PipeWindows::PipeWindows() {
-  m_read = INVALID_HANDLE_VALUE;
-  m_write = INVALID_HANDLE_VALUE;
+PipeWindows::PipeWindows(pipe_t read, pipe_t write)
+    : m_read((HANDLE)read), m_write((HANDLE)write),
+      m_read_fd(PipeWindows::kInvalidDescriptor),
+      m_write_fd(PipeWindows::kInvalidDescriptor) {
+  assert(read != LLDB_INVALID_PIPE || write != LLDB_INVALID_PIPE);
 
-  m_read_fd = -1;
-  m_write_fd = -1;
+  // Don't risk in passing file descriptors and getting handles from them by
+  // _get_osfhandle since the retrieved handles are highly likely unrecognized
+  // in the current process and usually crashes the program.  Pass handles
+  // instead since the handle can be inherited.
+
+  if (read != LLDB_INVALID_PIPE) {
+    m_read_fd = _open_osfhandle((intptr_t)read, _O_RDONLY);
+    // Make sure the fd and native handle are consistent.
+    if (m_read_fd < 0)
+      m_read = INVALID_HANDLE_VALUE;
+  }
+
+  if (write != LLDB_INVALID_PIPE) {
+    m_write_fd = _open_osfhandle((intptr_t)write, _O_WRONLY);
+    if (m_write_fd < 0)
+      m_write = INVALID_HANDLE_VALUE;
+  }
+
   ZeroMemory(&m_read_overlapped, sizeof(m_read_overlapped));
   ZeroMemory(&m_write_overlapped, sizeof(m_write_overlapped));
 }
@@ -40,11 +67,27 @@ PipeWindows::PipeWindows() {
 PipeWindows::~PipeWindows() { Close(); }
 
 Status PipeWindows::CreateNew(bool child_process_inherit) {
-  // Even for anonymous pipes, we open a named pipe.  This is because you cannot
-  // get
-  // overlapped i/o on Windows without using a named pipe.  So we synthesize a
-  // unique
-  // name.
+  // Create an anonymous pipe with the specified inheritance.
+  SECURITY_ATTRIBUTES sa{sizeof(SECURITY_ATTRIBUTES), 0,
+                         child_process_inherit ? TRUE : FALSE};
+  BOOL result = ::CreatePipe(&m_read, &m_write, &sa, 1024);
+  if (result == FALSE)
+    return Status(::GetLastError(), eErrorTypeWin32);
+
+  m_read_fd = _open_osfhandle((intptr_t)m_read, _O_RDONLY);
+  ZeroMemory(&m_read_overlapped, sizeof(m_read_overlapped));
+  m_read_overlapped.hEvent = ::CreateEventA(nullptr, TRUE, FALSE, nullptr);
+
+  m_write_fd = _open_osfhandle((intptr_t)m_write, _O_WRONLY);
+  ZeroMemory(&m_write_overlapped, sizeof(m_write_overlapped));
+
+  return Status();
+}
+
+Status PipeWindows::CreateNewNamed(bool child_process_inherit) {
+  // Even for anonymous pipes, we open a named pipe.  This is because you
+  // cannot get overlapped i/o on Windows without using a named pipe.  So we
+  // synthesize a unique name.
   uint32_t serial = g_pipe_serial.fetch_add(1);
   std::string pipe_name;
   llvm::raw_string_ostream pipe_name_stream(pipe_name);
@@ -62,11 +105,11 @@ Status PipeWindows::CreateNew(llvm::StringRef name,
   if (CanRead() || CanWrite())
     return Status(ERROR_ALREADY_EXISTS, eErrorTypeWin32);
 
-  std::string pipe_path = "\\\\.\\Pipe\\";
+  std::string pipe_path = g_pipe_name_prefix;
   pipe_path.append(name);
 
-  // Always open for overlapped i/o.  We implement blocking manually in Read and
-  // Write.
+  // Always open for overlapped i/o.  We implement blocking manually in Read
+  // and Write.
   DWORD read_mode = FILE_FLAG_OVERLAPPED;
   m_read = ::CreateNamedPipeA(
       pipe_path.c_str(), PIPE_ACCESS_INBOUND | read_mode,
@@ -77,7 +120,8 @@ Status PipeWindows::CreateNew(llvm::StringRef name,
   ZeroMemory(&m_read_overlapped, sizeof(m_read_overlapped));
   m_read_overlapped.hEvent = ::CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
-  // Open the write end of the pipe.
+  // Open the write end of the pipe. Note that closing either the read or 
+  // write end of the pipe could directly close the pipe itself.
   Status result = OpenNamedPipe(name, child_process_inherit, false);
   if (!result.Success()) {
     CloseReadFileDescriptor();
@@ -113,7 +157,7 @@ Status PipeWindows::CreateWithUniqueName(llvm::StringRef prefix,
 
 Status PipeWindows::OpenAsReader(llvm::StringRef name,
                                  bool child_process_inherit) {
-  if (CanRead() || CanWrite())
+  if (CanRead())
     return Status(ERROR_ALREADY_EXISTS, eErrorTypeWin32);
 
   return OpenNamedPipe(name, child_process_inherit, true);
@@ -123,7 +167,7 @@ Status
 PipeWindows::OpenAsWriterWithTimeout(llvm::StringRef name,
                                      bool child_process_inherit,
                                      const std::chrono::microseconds &timeout) {
-  if (CanRead() || CanWrite())
+  if (CanWrite())
     return Status(ERROR_ALREADY_EXISTS, eErrorTypeWin32);
 
   return OpenNamedPipe(name, child_process_inherit, false);
@@ -139,7 +183,7 @@ Status PipeWindows::OpenNamedPipe(llvm::StringRef name,
   SECURITY_ATTRIBUTES attributes = {};
   attributes.bInheritHandle = child_process_inherit;
 
-  std::string pipe_path = "\\\\.\\Pipe\\";
+  std::string pipe_path = g_pipe_name_prefix;
   pipe_path.append(name);
 
   if (is_read) {
@@ -172,9 +216,9 @@ int PipeWindows::GetWriteFileDescriptor() const { return m_write_fd; }
 
 int PipeWindows::ReleaseReadFileDescriptor() {
   if (!CanRead())
-    return -1;
+    return PipeWindows::kInvalidDescriptor;
   int result = m_read_fd;
-  m_read_fd = -1;
+  m_read_fd = PipeWindows::kInvalidDescriptor;
   if (m_read_overlapped.hEvent)
     ::CloseHandle(m_read_overlapped.hEvent);
   m_read = INVALID_HANDLE_VALUE;
@@ -184,9 +228,9 @@ int PipeWindows::ReleaseReadFileDescriptor() {
 
 int PipeWindows::ReleaseWriteFileDescriptor() {
   if (!CanWrite())
-    return -1;
+    return PipeWindows::kInvalidDescriptor;
   int result = m_write_fd;
-  m_write_fd = -1;
+  m_write_fd = PipeWindows::kInvalidDescriptor;
   m_write = INVALID_HANDLE_VALUE;
   ZeroMemory(&m_write_overlapped, sizeof(m_write_overlapped));
   return result;
@@ -198,9 +242,10 @@ void PipeWindows::CloseReadFileDescriptor() {
 
   if (m_read_overlapped.hEvent)
     ::CloseHandle(m_read_overlapped.hEvent);
+
   _close(m_read_fd);
   m_read = INVALID_HANDLE_VALUE;
-  m_read_fd = -1;
+  m_read_fd = PipeWindows::kInvalidDescriptor;
   ZeroMemory(&m_read_overlapped, sizeof(m_read_overlapped));
 }
 
@@ -210,7 +255,7 @@ void PipeWindows::CloseWriteFileDescriptor() {
 
   _close(m_write_fd);
   m_write = INVALID_HANDLE_VALUE;
-  m_write_fd = -1;
+  m_write_fd = PipeWindows::kInvalidDescriptor;
   ZeroMemory(&m_write_overlapped, sizeof(m_write_overlapped));
 }
 
@@ -250,12 +295,10 @@ Status PipeWindows::ReadWithTimeout(void *buf, size_t size,
   DWORD wait_result = ::WaitForSingleObject(m_read_overlapped.hEvent, timeout);
   if (wait_result != WAIT_OBJECT_0) {
     // The operation probably failed.  However, if it timed out, we need to
-    // cancel the I/O.
-    // Between the time we returned from WaitForSingleObject and the time we
-    // call CancelIoEx,
-    // the operation may complete.  If that hapens, CancelIoEx will fail and
-    // return ERROR_NOT_FOUND.
-    // If that happens, the original operation should be considered to have been
+    // cancel the I/O. Between the time we returned from WaitForSingleObject
+    // and the time we call CancelIoEx, the operation may complete.  If that
+    // hapens, CancelIoEx will fail and return ERROR_NOT_FOUND. If that
+    // happens, the original operation should be considered to have been
     // successful.
     bool failed = true;
     DWORD failure_error = ::GetLastError();
@@ -268,9 +311,8 @@ Status PipeWindows::ReadWithTimeout(void *buf, size_t size,
       return Status(failure_error, eErrorTypeWin32);
   }
 
-  // Now we call GetOverlappedResult setting bWait to false, since we've already
-  // waited
-  // as long as we're willing to.
+  // Now we call GetOverlappedResult setting bWait to false, since we've
+  // already waited as long as we're willing to.
   if (!GetOverlappedResult(m_read, &m_read_overlapped, &sys_bytes_read, FALSE))
     return Status(::GetLastError(), eErrorTypeWin32);
 

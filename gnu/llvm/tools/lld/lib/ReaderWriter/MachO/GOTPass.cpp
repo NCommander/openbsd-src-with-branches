@@ -35,9 +35,9 @@
 #include "ArchHandler.h"
 #include "File.h"
 #include "MachOPasses.h"
+#include "lld/Common/LLVM.h"
 #include "lld/Core/DefinedAtom.h"
 #include "lld/Core/File.h"
-#include "lld/Core/LLVM.h"
 #include "lld/Core/Reference.h"
 #include "lld/Core/Simple.h"
 #include "llvm/ADT/DenseMap.h"
@@ -134,7 +134,7 @@ private:
     for (const GOTEntryAtom *slot : entries)
       mergedFile.addAtom(*slot);
 
-    return llvm::Error();
+    return llvm::Error::success();
   }
 
   bool shouldReplaceTargetWithGOTAtom(const Atom *target, bool canBypassGOT) {

@@ -25,12 +25,6 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 
-#define MANGLE_CHECKER 0
-
-#if MANGLE_CHECKER
-#include <cxxabi.h>
-#endif
-
 using namespace clang;
 
 // FIXME: For blocks we currently mimic GCC's mangling scheme, which leaves
@@ -44,7 +38,7 @@ static void mangleFunctionBlock(MangleContext &Context,
   if (discriminator == 0)
     Out << "__" << Outer << "_block_invoke";
   else
-    Out << "__" << Outer << "_block_invoke_" << discriminator+1; 
+    Out << "__" << Outer << "_block_invoke_" << discriminator+1;
 }
 
 void MangleContext::anchor() { }
@@ -52,6 +46,7 @@ void MangleContext::anchor() { }
 enum CCMangling {
   CCM_Other,
   CCM_Fast,
+  CCM_RegCall,
   CCM_Vector,
   CCM_Std
 };
@@ -102,6 +97,11 @@ bool MangleContext::shouldMangleDeclName(const NamedDecl *D) {
   if (CC != CCM_Other)
     return true;
 
+  // If the declaration has an owning module for linkage purposes that needs to
+  // be mangled, we must mangle its name.
+  if (!D->hasExternalFormalLinkage() && D->getOwningModuleForLinkage())
+    return true;
+
   // In C, functions with no attributes never need to be mangled. Fastpath them.
   if (!getASTContext().getLangOpts().CPlusPlus && !D->hasAttrs())
     return false;
@@ -126,9 +126,9 @@ void MangleContext::mangleName(const NamedDecl *D, raw_ostream &Out) {
     // llvm mangler on ELF is a nop, so we can just avoid adding the \01
     // marker.  We also avoid adding the marker if this is an alias for an
     // LLVM intrinsic.
-    StringRef UserLabelPrefix =
-        getASTContext().getTargetInfo().getUserLabelPrefix();
-    if (!UserLabelPrefix.empty() && !ALA->getLabel().startswith("llvm."))
+    char GlobalPrefix =
+        getASTContext().getTargetInfo().getDataLayout().getGlobalPrefix();
+    if (GlobalPrefix && !ALA->getLabel().startswith("llvm."))
       Out << '\01'; // LLVM IR Marker for __asm("foo")
 
     Out << ALA->getLabel();
@@ -152,6 +152,8 @@ void MangleContext::mangleName(const NamedDecl *D, raw_ostream &Out) {
     Out << '_';
   else if (CC == CCM_Fast)
     Out << '@';
+  else if (CC == CCM_RegCall)
+    Out << "__regcall3__";
 
   if (!MCXX)
     Out << D->getIdentifier()->getName();
@@ -177,9 +179,9 @@ void MangleContext::mangleName(const NamedDecl *D, raw_ostream &Out) {
       ++ArgWords;
   for (const auto &AT : Proto->param_types())
     // Size should be aligned to pointer size.
-    ArgWords += llvm::RoundUpToAlignment(ASTContext.getTypeSize(AT),
-                                         TI.getPointerWidth(0)) /
-                TI.getPointerWidth(0);
+    ArgWords +=
+        llvm::alignTo(ASTContext.getTypeSize(AT), TI.getPointerWidth(0)) /
+        TI.getPointerWidth(0);
   Out << ((TI.getPointerWidth(0) / 8) * ArgWords);
 }
 
@@ -254,20 +256,28 @@ void MangleContext::mangleBlock(const DeclContext *DC, const BlockDecl *BD,
   mangleFunctionBlock(*this, Buffer, BD, Out);
 }
 
+void MangleContext::mangleObjCMethodNameWithoutSize(const ObjCMethodDecl *MD,
+                                                    raw_ostream &OS) {
+  const ObjCContainerDecl *CD =
+  dyn_cast<ObjCContainerDecl>(MD->getDeclContext());
+  assert (CD && "Missing container decl in GetNameForMethod");
+  OS << (MD->isInstanceMethod() ? '-' : '+') << '[';
+  if (const ObjCCategoryImplDecl *CID = dyn_cast<ObjCCategoryImplDecl>(CD)) {
+    OS << CID->getClassInterface()->getName();
+    OS << '(' << *CID << ')';
+  } else {
+    OS << CD->getName();
+  }
+  OS << ' ';
+  MD->getSelector().print(OS);
+  OS << ']';
+}
+
 void MangleContext::mangleObjCMethodName(const ObjCMethodDecl *MD,
                                          raw_ostream &Out) {
   SmallString<64> Name;
   llvm::raw_svector_ostream OS(Name);
-  
-  const ObjCContainerDecl *CD =
-  dyn_cast<ObjCContainerDecl>(MD->getDeclContext());
-  assert (CD && "Missing container decl in GetNameForMethod");
-  OS << (MD->isInstanceMethod() ? '-' : '+') << '[' << CD->getName();
-  if (const ObjCCategoryImplDecl *CID = dyn_cast<ObjCCategoryImplDecl>(CD))
-    OS << '(' << *CID << ')';
-  OS << ' ';
-  MD->getSelector().print(OS);
-  OS << ']';
-  
+
+  mangleObjCMethodNameWithoutSize(MD, OS);
   Out << OS.str().size() << OS.str();
 }

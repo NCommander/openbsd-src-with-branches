@@ -11,12 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
+#include "clang/StaticAnalyzer/Checkers/BuiltinCheckerRegistration.h"
 #include "clang/Analysis/Analyses/Dominators.h"
 #include "clang/Analysis/Analyses/LiveVariables.h"
 #include "clang/Analysis/CallGraph.h"
 #include "clang/StaticAnalyzer/Core/Checker.h"
-#include "clang/StaticAnalyzer/Core/IssueHash.h"
 #include "clang/StaticAnalyzer/Core/BugReporter/BugType.h"
 #include "clang/StaticAnalyzer/Core/PathSensitive/AnalysisManager.h"
 #include "clang/StaticAnalyzer/Core/PathSensitive/CheckerContext.h"
@@ -67,6 +66,25 @@ public:
 
 void ento::registerLiveVariablesDumper(CheckerManager &mgr) {
   mgr.registerChecker<LiveVariablesDumper>();
+}
+
+//===----------------------------------------------------------------------===//
+// LiveStatementsDumper
+//===----------------------------------------------------------------------===//
+
+namespace {
+class LiveStatementsDumper : public Checker<check::ASTCodeBody> {
+public:
+  void checkASTCodeBody(const Decl *D, AnalysisManager& Mgr,
+                        BugReporter &BR) const {
+    if (LiveVariables *L = Mgr.getAnalysis<RelaxedLiveVariables>(D))
+      L->dumpStmtLiveness(Mgr.getSourceManager());
+  }
+};
+}
+
+void ento::registerLiveStatementsDumper(CheckerManager &mgr) {
+  mgr.registerChecker<LiveStatementsDumper>();
 }
 
 //===----------------------------------------------------------------------===//
@@ -183,7 +201,9 @@ public:
 
     llvm::errs() << "[config]\n";
     for (unsigned I = 0, E = Keys.size(); I != E; ++I)
-      llvm::errs() << Keys[I]->getKey() << " = " << Keys[I]->second << '\n';
+      llvm::errs() << Keys[I]->getKey() << " = "
+                   << (Keys[I]->second.empty() ? "\"\"" : Keys[I]->second)
+                   << '\n';
 
     llvm::errs() << "[stats]\n" << "num-entries = " << Keys.size() << '\n';
   }
@@ -213,35 +233,3 @@ void ento::registerExplodedGraphViewer(CheckerManager &mgr) {
   mgr.registerChecker<ExplodedGraphViewer>();
 }
 
-//===----------------------------------------------------------------------===//
-// DumpBugHash 
-//===----------------------------------------------------------------------===//
-
-namespace {
-class BugHashDumper : public Checker<check::PostStmt<Stmt>> {
-public:
-  mutable std::unique_ptr<BugType> BT;
-
-  void checkPostStmt(const Stmt *S, CheckerContext &C) const {
-    if (!BT)
-      BT.reset(new BugType(this, "Dump hash components", "debug"));
-
-    ExplodedNode *N = C.generateNonFatalErrorNode();
-    if (!N)
-      return;
-
-    const LangOptions &Opts = C.getLangOpts();
-    const SourceManager &SM = C.getSourceManager();
-    FullSourceLoc FL(S->getLocStart(), SM);
-    std::string HashContent =
-        GetIssueString(SM, FL, getCheckName().getName(), BT->getCategory(),
-                       C.getLocationContext()->getDecl(), Opts);
-
-    C.emitReport(llvm::make_unique<BugReport>(*BT, HashContent, N));
-  }
-};
-}
-
-void ento::registerBugHashDumper(CheckerManager &mgr) {
-  mgr.registerChecker<BugHashDumper>();
-}

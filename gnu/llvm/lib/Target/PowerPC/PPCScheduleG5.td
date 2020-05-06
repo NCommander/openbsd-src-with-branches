@@ -40,7 +40,7 @@ def G5Itineraries : ProcessorItineraries<
   InstrItinData<IIC_IntMulLI    , [InstrStage<4, [G5_IU1, G5_IU2]>]>,
   InstrItinData<IIC_IntRFID     , [InstrStage<1, [G5_IU2]>]>,
   InstrItinData<IIC_IntRotateD  , [InstrStage<2, [G5_IU1, G5_IU2]>]>,
-  InstrItinData<IIC_IntRotateDI , [InstrStage<2, [G5_IU1, G5_IU2]>]>,  
+  InstrItinData<IIC_IntRotateDI , [InstrStage<2, [G5_IU1, G5_IU2]>]>,
   InstrItinData<IIC_IntRotate   , [InstrStage<4, [G5_IU1, G5_IU2]>]>,
   InstrItinData<IIC_IntShift    , [InstrStage<2, [G5_IU1, G5_IU2]>]>,
   InstrItinData<IIC_IntTrapD    , [InstrStage<1, [G5_IU1, G5_IU2]>]>,
@@ -51,14 +51,13 @@ def G5Itineraries : ProcessorItineraries<
   InstrItinData<IIC_BrMCRX      , [InstrStage<3, [G5_BPU]>]>,
   InstrItinData<IIC_LdStDCBF    , [InstrStage<3, [G5_SLU]>]>,
   InstrItinData<IIC_LdStLoad    , [InstrStage<3, [G5_SLU]>]>,
-  InstrItinData<IIC_LdStLoadUpd , [InstrStage<3, [G5_SLU]>]>,  
-  InstrItinData<IIC_LdStLoadUpdX, [InstrStage<3, [G5_SLU]>]>,  
+  InstrItinData<IIC_LdStLoadUpd , [InstrStage<3, [G5_SLU]>]>,
+  InstrItinData<IIC_LdStLoadUpdX, [InstrStage<3, [G5_SLU]>]>,
   InstrItinData<IIC_LdStStore   , [InstrStage<3, [G5_SLU]>]>,
-  InstrItinData<IIC_LdStStoreUpd, [InstrStage<3, [G5_SLU]>]>,  
   InstrItinData<IIC_LdStDSS     , [InstrStage<10, [G5_SLU]>]>,
   InstrItinData<IIC_LdStICBI    , [InstrStage<40, [G5_SLU]>]>,
   InstrItinData<IIC_LdStSTFD    , [InstrStage<4, [G5_SLU]>]>,
-  InstrItinData<IIC_LdStSTFDU   , [InstrStage<4, [G5_SLU]>]>,  
+  InstrItinData<IIC_LdStSTFDU   , [InstrStage<4, [G5_SLU]>]>,
   InstrItinData<IIC_LdStLD      , [InstrStage<3, [G5_SLU]>]>,
   InstrItinData<IIC_LdStLDU     , [InstrStage<3, [G5_SLU]>]>,
   InstrItinData<IIC_LdStLDUX    , [InstrStage<3, [G5_SLU]>]>,
@@ -67,8 +66,8 @@ def G5Itineraries : ProcessorItineraries<
   InstrItinData<IIC_LdStLFDU    , [InstrStage<5, [G5_SLU]>]>,
   InstrItinData<IIC_LdStLFDUX   , [InstrStage<5, [G5_SLU]>]>,
   InstrItinData<IIC_LdStLHA     , [InstrStage<5, [G5_SLU]>]>,
-  InstrItinData<IIC_LdStLHAU    , [InstrStage<5, [G5_SLU]>]>,  
-  InstrItinData<IIC_LdStLHAUX   , [InstrStage<5, [G5_SLU]>]>,  
+  InstrItinData<IIC_LdStLHAU    , [InstrStage<5, [G5_SLU]>]>,
+  InstrItinData<IIC_LdStLHAUX   , [InstrStage<5, [G5_SLU]>]>,
   InstrItinData<IIC_LdStLMW     , [InstrStage<64, [G5_SLU]>]>,
   InstrItinData<IIC_LdStLVecX   , [InstrStage<3, [G5_SLU]>]>,
   InstrItinData<IIC_LdStLWA     , [InstrStage<5, [G5_SLU]>]>,
@@ -76,8 +75,8 @@ def G5Itineraries : ProcessorItineraries<
   InstrItinData<IIC_LdStSLBIA   , [InstrStage<40, [G5_SLU]>]>, // needs work
   InstrItinData<IIC_LdStSLBIE   , [InstrStage<2, [G5_SLU]>]>,
   InstrItinData<IIC_LdStSTD     , [InstrStage<3, [G5_SLU]>]>,
-  InstrItinData<IIC_LdStSTDU    , [InstrStage<3, [G5_SLU]>]>,
-  InstrItinData<IIC_LdStSTDUX   , [InstrStage<3, [G5_SLU]>]>,
+  InstrItinData<IIC_LdStSTU     , [InstrStage<3, [G5_SLU]>]>,
+  InstrItinData<IIC_LdStSTUX    , [InstrStage<3, [G5_SLU]>]>,
   InstrItinData<IIC_LdStSTDCX   , [InstrStage<11, [G5_SLU]>]>,
   InstrItinData<IIC_LdStSTVEBX  , [InstrStage<5, [G5_SLU]>]>,
   InstrItinData<IIC_LdStSTWCX   , [InstrStage<11, [G5_SLU]>]>,
@@ -118,11 +117,12 @@ def G5Itineraries : ProcessorItineraries<
 
 def G5Model : SchedMachineModel {
   let IssueWidth = 4;  // 4 (non-branch) instructions are dispatched per cycle.
-  let MinLatency = 0;  // Out-of-order dispatch.
   let LoadLatency = 3; // Optimistic load latency assuming bypass.
                        // This is overriden by OperandCycles if the
                        // Itineraries are queried instead.
   let MispredictPenalty = 16;
+
+  let CompleteModel = 0;
 
   let Itineraries = G5Itineraries;
 }

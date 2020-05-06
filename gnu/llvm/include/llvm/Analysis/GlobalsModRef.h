@@ -35,6 +35,7 @@ class GlobalsAAResult : public AAResultBase<GlobalsAAResult> {
   class FunctionInfo;
 
   const DataLayout &DL;
+  const TargetLibraryInfo &TLI;
 
   /// The globals that do not have their addresses taken.
   SmallPtrSet<const GlobalValue *, 8> NonAddressTakenGlobals;
@@ -76,6 +77,7 @@ class GlobalsAAResult : public AAResultBase<GlobalsAAResult> {
 
 public:
   GlobalsAAResult(GlobalsAAResult &&Arg);
+  ~GlobalsAAResult();
 
   static GlobalsAAResult analyzeModule(Module &M, const TargetLibraryInfo &TLI,
                                        CallGraph &CG);
@@ -86,7 +88,7 @@ public:
   AliasResult alias(const MemoryLocation &LocA, const MemoryLocation &LocB);
 
   using AAResultBase::getModRefInfo;
-  ModRefInfo getModRefInfo(ImmutableCallSite CS, const MemoryLocation &Loc);
+  ModRefInfo getModRefInfo(const CallBase *Call, const MemoryLocation &Loc);
 
   /// getModRefBehavior - Return the behavior of the specified function if
   /// called from the specified call site.  The call site may be null in which
@@ -96,7 +98,7 @@ public:
   /// getModRefBehavior - Return the behavior of the specified function if
   /// called from the specified call site.  The call site may be null in which
   /// case the most generic behavior of this function should be returned.
-  FunctionModRefBehavior getModRefBehavior(ImmutableCallSite CS);
+  FunctionModRefBehavior getModRefBehavior(const CallBase *Call);
 
 private:
   FunctionInfo *getFunctionInfo(const Function *F);
@@ -111,25 +113,19 @@ private:
   void CollectSCCMembership(CallGraph &CG);
 
   bool isNonEscapingGlobalNoAlias(const GlobalValue *GV, const Value *V);
-  ModRefInfo getModRefInfoForArgument(ImmutableCallSite CS,
+  ModRefInfo getModRefInfoForArgument(const CallBase *Call,
                                       const GlobalValue *GV);
 };
 
 /// Analysis pass providing a never-invalidated alias analysis result.
-class GlobalsAA {
+class GlobalsAA : public AnalysisInfoMixin<GlobalsAA> {
+  friend AnalysisInfoMixin<GlobalsAA>;
+  static AnalysisKey Key;
+
 public:
   typedef GlobalsAAResult Result;
 
-  /// \brief Opaque, unique identifier for this analysis pass.
-  static void *ID() { return (void *)&PassID; }
-
-  GlobalsAAResult run(Module &M, AnalysisManager<Module> *AM);
-
-  /// \brief Provide access to a name for this pass for debugging purposes.
-  static StringRef name() { return "GlobalsAA"; }
-
-private:
-  static char PassID;
+  GlobalsAAResult run(Module &M, ModuleAnalysisManager &AM);
 };
 
 /// Legacy wrapper pass to provide the GlobalsAAResult object.

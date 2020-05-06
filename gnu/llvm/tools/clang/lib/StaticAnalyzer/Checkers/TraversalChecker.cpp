@@ -11,7 +11,7 @@
 // as it builds the ExplodedGraph.
 //
 //===----------------------------------------------------------------------===//
-#include "ClangSACheckers.h"
+#include "clang/StaticAnalyzer/Checkers/BuiltinCheckerRegistration.h"
 #include "clang/AST/ParentMap.h"
 #include "clang/AST/StmtObjC.h"
 #include "clang/StaticAnalyzer/Core/Checker.h"
@@ -25,10 +25,12 @@ using namespace ento;
 
 namespace {
 class TraversalDumper : public Checker< check::BranchCondition,
+                                        check::BeginFunction,
                                         check::EndFunction > {
 public:
   void checkBranchCondition(const Stmt *Condition, CheckerContext &C) const;
-  void checkEndFunction(CheckerContext &C) const;
+  void checkBeginFunction(CheckerContext &C) const;
+  void checkEndFunction(const ReturnStmt *RS, CheckerContext &C) const;
 };
 }
 
@@ -45,12 +47,17 @@ void TraversalDumper::checkBranchCondition(const Stmt *Condition,
   // It is mildly evil to print directly to llvm::outs() rather than emitting
   // warnings, but this ensures things do not get filtered out by the rest of
   // the static analyzer machinery.
-  SourceLocation Loc = Parent->getLocStart();
+  SourceLocation Loc = Parent->getBeginLoc();
   llvm::outs() << C.getSourceManager().getSpellingLineNumber(Loc) << " "
                << Parent->getStmtClassName() << "\n";
 }
 
-void TraversalDumper::checkEndFunction(CheckerContext &C) const {
+void TraversalDumper::checkBeginFunction(CheckerContext &C) const {
+  llvm::outs() << "--BEGIN FUNCTION--\n";
+}
+
+void TraversalDumper::checkEndFunction(const ReturnStmt *RS,
+                                       CheckerContext &C) const {
   llvm::outs() << "--END FUNCTION--\n";
 }
 

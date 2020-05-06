@@ -8,6 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "clang/Driver/Distro.h"
+#include "clang/Basic/LLVM.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/StringSwitch.h"
@@ -17,14 +18,14 @@
 using namespace clang::driver;
 using namespace clang;
 
-static Distro::DistroType DetectDistro(vfs::FileSystem &VFS) {
+static Distro::DistroType DetectDistro(llvm::vfs::FileSystem &VFS) {
   llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> File =
       VFS.getBufferForFile("/etc/lsb-release");
   if (File) {
     StringRef Data = File.get()->getBuffer();
     SmallVector<StringRef, 16> Lines;
     Data.split(Lines, "\n");
-	Distro::DistroType Version = Distro::UnknownDistro;
+    Distro::DistroType Version = Distro::UnknownDistro;
     for (StringRef Line : Lines)
       if (Version == Distro::UnknownDistro && Line.startswith("DISTRIB_CODENAME="))
         Version = llvm::StringSwitch<Distro::DistroType>(Line.substr(17))
@@ -47,6 +48,10 @@ static Distro::DistroType DetectDistro(vfs::FileSystem &VFS) {
                       .Case("xenial", Distro::UbuntuXenial)
                       .Case("yakkety", Distro::UbuntuYakkety)
                       .Case("zesty", Distro::UbuntuZesty)
+                      .Case("artful", Distro::UbuntuArtful)
+                      .Case("bionic", Distro::UbuntuBionic)
+                      .Case("cosmic", Distro::UbuntuCosmic)
+                      .Case("disco", Distro::UbuntuDisco)
                       .Default(Distro::UnknownDistro);
     if (Version != Distro::UnknownDistro)
       return Version;
@@ -87,6 +92,8 @@ static Distro::DistroType DetectDistro(vfs::FileSystem &VFS) {
         return Distro::DebianJessie;
       case 9:
         return Distro::DebianStretch;
+      case 10:
+        return Distro::DebianBuster;
       default:
         return Distro::UnknownDistro;
       }
@@ -125,10 +132,16 @@ static Distro::DistroType DetectDistro(vfs::FileSystem &VFS) {
   if (VFS.exists("/etc/exherbo-release"))
     return Distro::Exherbo;
 
+  if (VFS.exists("/etc/alpine-release"))
+    return Distro::AlpineLinux;
+
   if (VFS.exists("/etc/arch-release"))
     return Distro::ArchLinux;
+
+  if (VFS.exists("/etc/gentoo-release"))
+    return Distro::Gentoo;
 
   return Distro::UnknownDistro;
 }
 
-Distro::Distro(vfs::FileSystem &VFS) : DistroVal(DetectDistro(VFS)) {}
+Distro::Distro(llvm::vfs::FileSystem &VFS) : DistroVal(DetectDistro(VFS)) {}

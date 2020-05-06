@@ -9,16 +9,12 @@
 
 #include "ABISysV_x86_64.h"
 
-// C Includes
-// C++ Includes
-// Other libraries and framework includes
 #include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/StringSwitch.h"
 #include "llvm/ADT/Triple.h"
 
-// Project includes
 #include "lldb/Core/Module.h"
 #include "lldb/Core/PluginManager.h"
-#include "lldb/Core/RegisterValue.h"
 #include "lldb/Core/Value.h"
 #include "lldb/Core/ValueObjectConstResult.h"
 #include "lldb/Core/ValueObjectMemory.h"
@@ -32,6 +28,7 @@
 #include "lldb/Utility/ConstString.h"
 #include "lldb/Utility/DataExtractor.h"
 #include "lldb/Utility/Log.h"
+#include "lldb/Utility/RegisterValue.h"
 #include "lldb/Utility/Status.h"
 
 using namespace lldb;
@@ -1094,11 +1091,8 @@ size_t ABISysV_x86_64::GetRedZoneSize() const { return 128; }
 
 ABISP
 ABISysV_x86_64::CreateInstance(lldb::ProcessSP process_sp, const ArchSpec &arch) {
-  static ABISP g_abi_sp;
   if (arch.GetTriple().getArch() == llvm::Triple::x86_64) {
-    if (!g_abi_sp)
-      g_abi_sp.reset(new ABISysV_x86_64(process_sp));
-    return g_abi_sp;
+    return ABISP(new ABISysV_x86_64(process_sp));
   }
   return ABISP();
 }
@@ -1160,48 +1154,6 @@ bool ABISysV_x86_64::PrepareTrivialCall(Thread &thread, addr_t sp,
   ProcessSP process_sp(thread.GetProcess());
 
   RegisterValue reg_value;
-
-#if 0
-    // This code adds an extra frame so that we don't lose the function that we came from
-    // by pushing the PC and the FP and then writing the current FP to point to the FP value
-    // we just pushed. It is disabled for now until the stack backtracing code can be debugged.
-
-    // Save current PC
-    const RegisterInfo *fp_reg_info = reg_ctx->GetRegisterInfo (eRegisterKindGeneric, LLDB_REGNUM_GENERIC_FP);
-    if (reg_ctx->ReadRegister(pc_reg_info, reg_value))
-    {
-        if (log)
-            log->Printf("Pushing the current PC onto the stack: 0x%" PRIx64 ": 0x%" PRIx64, (uint64_t)sp, reg_value.GetAsUInt64());
-        
-        if (!process_sp->WritePointerToMemory(sp, reg_value.GetAsUInt64(), error))
-            return false;
-
-        sp -= 8;
-        
-        // Save current FP
-        if (reg_ctx->ReadRegister(fp_reg_info, reg_value))
-        {
-            if (log)
-                log->Printf("Pushing the current FP onto the stack: 0x%" PRIx64 ": 0x%" PRIx64, (uint64_t)sp, reg_value.GetAsUInt64());
-            
-            if (!process_sp->WritePointerToMemory(sp, reg_value.GetAsUInt64(), error))
-                return false;
-        }
-        // Setup FP backchain
-        reg_value.SetUInt64 (sp);
-        
-        if (log)
-            log->Printf("Writing FP:  0x%" PRIx64 " (for FP backchain)", reg_value.GetAsUInt64());
-
-        if (!reg_ctx->WriteRegister(fp_reg_info, reg_value))
-        {
-            return false;
-        }
-        
-        sp -= 8;
-    }
-#endif
-
   if (log)
     log->Printf("Pushing the return address onto the stack: 0x%" PRIx64
                 ": 0x%" PRIx64,
@@ -1308,21 +1260,22 @@ bool ABISysV_x86_64::GetArgumentValues(Thread &thread,
     if (!value)
       return false;
 
-    // We currently only support extracting values with Clang QualTypes.
-    // Do we care about others?
+    // We currently only support extracting values with Clang QualTypes. Do we
+    // care about others?
     CompilerType compiler_type = value->GetCompilerType();
-    if (!compiler_type)
+    llvm::Optional<uint64_t> bit_size = compiler_type.GetBitSize(&thread);
+    if (!bit_size)
       return false;
     bool is_signed;
 
     if (compiler_type.IsIntegerOrEnumerationType(is_signed)) {
-      ReadIntegerArgument(value->GetScalar(), compiler_type.GetBitSize(&thread),
-                          is_signed, thread, argument_register_ids,
-                          current_argument_register, current_stack_argument);
+      ReadIntegerArgument(value->GetScalar(), *bit_size, is_signed, thread,
+                          argument_register_ids, current_argument_register,
+                          current_stack_argument);
     } else if (compiler_type.IsPointerType()) {
-      ReadIntegerArgument(value->GetScalar(), compiler_type.GetBitSize(&thread),
-                          false, thread, argument_register_ids,
-                          current_argument_register, current_stack_argument);
+      ReadIntegerArgument(value->GetScalar(), *bit_size, false, thread,
+                          argument_register_ids, current_argument_register,
+                          current_stack_argument);
     }
   }
 
@@ -1380,8 +1333,13 @@ Status ABISysV_x86_64::SetReturnValueObject(lldb::StackFrameSP &frame_sp,
       error.SetErrorString(
           "We don't support returning complex values at present");
     else {
-      size_t bit_width = compiler_type.GetBitSize(frame_sp.get());
-      if (bit_width <= 64) {
+      llvm::Optional<uint64_t> bit_width =
+          compiler_type.GetBitSize(frame_sp.get());
+      if (!bit_width) {
+        error.SetErrorString("can't get type size");
+        return error;
+      }
+      if (*bit_width <= 64) {
         const RegisterInfo *xmm0_info =
             reg_ctx->GetRegisterInfoByName("xmm0", 0);
         RegisterValue xmm0_value;
@@ -1412,8 +1370,8 @@ Status ABISysV_x86_64::SetReturnValueObject(lldb::StackFrameSP &frame_sp,
 
   if (!set_it_simple) {
     // Okay we've got a structure or something that doesn't fit in a simple
-    // register.
-    // We should figure out where it really goes, but we don't support this yet.
+    // register. We should figure out where it really goes, but we don't
+    // support this yet.
     error.SetErrorString("We only support setting simple integer and float "
                          "return types at present.");
   }
@@ -1444,11 +1402,14 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectSimple(
     if (type_flags & eTypeIsInteger) {
       // Extract the register context so we can read arguments from registers
 
-      const size_t byte_size = return_compiler_type.GetByteSize(nullptr);
+      llvm::Optional<uint64_t> byte_size =
+          return_compiler_type.GetByteSize(nullptr);
+      if (!byte_size)
+        return return_valobj_sp;
       uint64_t raw_value = thread.GetRegisterContext()->ReadRegisterAsUnsigned(
           reg_ctx->GetRegisterInfoByName("rax", 0), 0);
       const bool is_signed = (type_flags & eTypeIsSigned) != 0;
-      switch (byte_size) {
+      switch (*byte_size) {
       default:
         break;
 
@@ -1488,8 +1449,9 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectSimple(
       if (type_flags & eTypeIsComplex) {
         // Don't handle complex yet.
       } else {
-        const size_t byte_size = return_compiler_type.GetByteSize(nullptr);
-        if (byte_size <= sizeof(long double)) {
+        llvm::Optional<uint64_t> byte_size =
+            return_compiler_type.GetByteSize(nullptr);
+        if (byte_size && *byte_size <= sizeof(long double)) {
           const RegisterInfo *xmm0_info =
               reg_ctx->GetRegisterInfoByName("xmm0", 0);
           RegisterValue xmm0_value;
@@ -1497,13 +1459,13 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectSimple(
             DataExtractor data;
             if (xmm0_value.GetData(data)) {
               lldb::offset_t offset = 0;
-              if (byte_size == sizeof(float)) {
+              if (*byte_size == sizeof(float)) {
                 value.GetScalar() = (float)data.GetFloat(&offset);
                 success = true;
-              } else if (byte_size == sizeof(double)) {
+              } else if (*byte_size == sizeof(double)) {
                 value.GetScalar() = (double)data.GetDouble(&offset);
                 success = true;
-              } else if (byte_size == sizeof(long double)) {
+              } else if (*byte_size == sizeof(long double)) {
                 // Don't handle long double since that can be encoded as 80 bit
                 // floats...
               }
@@ -1526,19 +1488,20 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectSimple(
     return_valobj_sp = ValueObjectConstResult::Create(
         thread.GetStackFrameAtIndex(0).get(), value, ConstString(""));
   } else if (type_flags & eTypeIsVector) {
-    const size_t byte_size = return_compiler_type.GetByteSize(nullptr);
-    if (byte_size > 0) {
+    llvm::Optional<uint64_t> byte_size =
+        return_compiler_type.GetByteSize(nullptr);
+    if (byte_size && *byte_size > 0) {
       const RegisterInfo *altivec_reg =
           reg_ctx->GetRegisterInfoByName("xmm0", 0);
       if (altivec_reg == nullptr)
         altivec_reg = reg_ctx->GetRegisterInfoByName("mm0", 0);
 
       if (altivec_reg) {
-        if (byte_size <= altivec_reg->byte_size) {
+        if (*byte_size <= altivec_reg->byte_size) {
           ProcessSP process_sp(thread.GetProcess());
           if (process_sp) {
             std::unique_ptr<DataBufferHeap> heap_data_ap(
-                new DataBufferHeap(byte_size, 0));
+                new DataBufferHeap(*byte_size, 0));
             const ByteOrder byte_order = process_sp->GetByteOrder();
             RegisterValue reg_value;
             if (reg_ctx->ReadRegister(altivec_reg, reg_value)) {
@@ -1555,14 +1518,14 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectSimple(
               }
             }
           }
-        } else if (byte_size <= altivec_reg->byte_size * 2) {
+        } else if (*byte_size <= altivec_reg->byte_size * 2) {
           const RegisterInfo *altivec_reg2 =
               reg_ctx->GetRegisterInfoByName("xmm1", 0);
           if (altivec_reg2) {
             ProcessSP process_sp(thread.GetProcess());
             if (process_sp) {
               std::unique_ptr<DataBufferHeap> heap_data_ap(
-                  new DataBufferHeap(byte_size, 0));
+                  new DataBufferHeap(*byte_size, 0));
               const ByteOrder byte_order = process_sp->GetByteOrder();
               RegisterValue reg_value;
               RegisterValue reg_value2;
@@ -1612,11 +1575,13 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectImpl(
   if (!reg_ctx_sp)
     return return_valobj_sp;
 
-  const size_t bit_width = return_compiler_type.GetBitSize(&thread);
+  llvm::Optional<uint64_t> bit_width = return_compiler_type.GetBitSize(&thread);
+  if (!bit_width)
+    return return_valobj_sp;
   if (return_compiler_type.IsAggregateType()) {
     Target *target = exe_ctx.GetTargetPtr();
     bool is_memory = true;
-    if (bit_width <= 128) {
+    if (*bit_width <= 128) {
       ByteOrder target_byte_order = target->GetArchitecture().GetByteOrder();
       DataBufferSP data_sp(new DataBufferHeap(16, 0));
       DataExtractor return_ext(data_sp, target_byte_order,
@@ -1663,20 +1628,21 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectImpl(
 
         CompilerType field_compiler_type = return_compiler_type.GetFieldAtIndex(
             idx, name, &field_bit_offset, nullptr, nullptr);
-        const size_t field_bit_width = field_compiler_type.GetBitSize(&thread);
+        llvm::Optional<uint64_t> field_bit_width =
+            field_compiler_type.GetBitSize(&thread);
 
-        // if we don't know the size of the field (e.g. invalid type), just bail
-        // out
-        if (field_bit_width == 0)
+        // if we don't know the size of the field (e.g. invalid type), just
+        // bail out
+        if (!field_bit_width || *field_bit_width == 0)
           break;
 
         // If there are any unaligned fields, this is stored in memory.
-        if (field_bit_offset % field_bit_width != 0) {
+        if (field_bit_offset % *field_bit_width != 0) {
           is_memory = true;
           break;
         }
 
-        uint32_t field_byte_width = field_bit_width / 8;
+        uint32_t field_byte_width = *field_bit_width / 8;
         uint32_t field_byte_offset = field_bit_offset / 8;
 
         DataExtractor *copy_from_extractor = nullptr;
@@ -1702,18 +1668,17 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectImpl(
             copy_from_offset = integer_bytes - 8;
             integer_bytes += field_byte_width;
           } else {
-            // The last field didn't fit.  I can't see how that would happen w/o
-            // the overall size being
-            // greater than 16 bytes.  For now, return a nullptr return value
-            // object.
+            // The last field didn't fit.  I can't see how that would happen
+            // w/o the overall size being greater than 16 bytes.  For now,
+            // return a nullptr return value object.
             return return_valobj_sp;
           }
         } else if (field_compiler_type.IsFloatingPointType(count, is_complex)) {
           // Structs with long doubles are always passed in memory.
-          if (field_bit_width == 128) {
+          if (*field_bit_width == 128) {
             is_memory = true;
             break;
-          } else if (field_bit_width == 64) {
+          } else if (*field_bit_width == 64) {
             // These have to be in a single xmm register.
             if (fp_bytes == 0)
               copy_from_extractor = &xmm0_data;
@@ -1722,12 +1687,11 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectImpl(
 
             copy_from_offset = 0;
             fp_bytes += field_byte_width;
-          } else if (field_bit_width == 32) {
+          } else if (*field_bit_width == 32) {
             // This one is kind of complicated.  If we are in an "eightbyte"
-            // with another float, we'll
-            // be stuffed into an xmm register with it.  If we are in an
-            // "eightbyte" with one or more ints,
-            // then we will be stuffed into the appropriate GPR with them.
+            // with another float, we'll be stuffed into an xmm register with
+            // it.  If we are in an "eightbyte" with one or more ints, then we
+            // will be stuffed into the appropriate GPR with them.
             bool in_gpr;
             if (field_byte_offset % 8 == 0) {
               // We are at the beginning of one of the eightbytes, so check the
@@ -1749,9 +1713,9 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectImpl(
                 }
               }
             } else if (field_byte_offset % 4 == 0) {
-              // We are inside of an eightbyte, so see if the field before us is
-              // floating point:
-              // This could happen if somebody put padding in the structure.
+              // We are inside of an eightbyte, so see if the field before us
+              // is floating point: This could happen if somebody put padding
+              // in the structure.
               if (idx == 0)
                 in_gpr = false;
               else {
@@ -1797,9 +1761,9 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectImpl(
           }
         }
 
-        // These two tests are just sanity checks.  If I somehow get the
-        // type calculation wrong above it is better to just return nothing
-        // than to assert or crash.
+        // These two tests are just sanity checks.  If I somehow get the type
+        // calculation wrong above it is better to just return nothing than to
+        // assert or crash.
         if (!copy_from_extractor)
           return return_valobj_sp;
         if (copy_from_offset + field_byte_width >
@@ -1823,9 +1787,8 @@ ValueObjectSP ABISysV_x86_64::GetReturnValueObjectImpl(
     // FIXME: This is just taking a guess, rax may very well no longer hold the
     // return storage location.
     // If we are going to do this right, when we make a new frame we should
-    // check to see if it uses a memory
-    // return, and if we are at the first instruction and if so stash away the
-    // return location.  Then we would
+    // check to see if it uses a memory return, and if we are at the first
+    // instruction and if so stash away the return location.  Then we would
     // only return the memory return value if we know it is valid.
 
     if (is_memory) {
@@ -1899,61 +1862,24 @@ bool ABISysV_x86_64::RegisterIsVolatile(const RegisterInfo *reg_info) {
 
 // See "Register Usage" in the
 // "System V Application Binary Interface"
-// "AMD64 Architecture Processor Supplement"
-// (or "x86-64(tm) Architecture Processor Supplement" in earlier revisions)
-// (this doc is also commonly referred to as the x86-64/AMD64 psABI)
-// Edited by Michael Matz, Jan Hubicka, Andreas Jaeger, and Mark Mitchell
-// current version is 0.99.6 released 2012-07-02 at
-// http://refspecs.linuxfoundation.org/elf/x86-64-abi-0.99.pdf
+// "AMD64 Architecture Processor Supplement" (or "x86-64(tm) Architecture
+// Processor Supplement" in earlier revisions) (this doc is also commonly
+// referred to as the x86-64/AMD64 psABI) Edited by Michael Matz, Jan Hubicka,
+// Andreas Jaeger, and Mark Mitchell current version is 0.99.6 released
+// 2012-07-02 at http://refspecs.linuxfoundation.org/elf/x86-64-abi-0.99.pdf
 // It's being revised & updated at https://github.com/hjl-tools/x86-psABI/
 
 bool ABISysV_x86_64::RegisterIsCalleeSaved(const RegisterInfo *reg_info) {
-  if (reg_info) {
-    // Preserved registers are :
-    //    rbx, rsp, rbp, r12, r13, r14, r15
-    //    mxcsr (partially preserved)
-    //    x87 control word
-
-    const char *name = reg_info->name;
-    if (name[0] == 'r') {
-      switch (name[1]) {
-      case '1': // r12, r13, r14, r15
-        if (name[2] >= '2' && name[2] <= '5')
-          return name[3] == '\0';
-        break;
-
-      default:
-        break;
-      }
-    }
-
-    // Accept shorter-variant versions, rbx/ebx, rip/ eip, etc.
-    if (name[0] == 'r' || name[0] == 'e') {
-      switch (name[1]) {
-      case 'b': // rbp, rbx
-        if (name[2] == 'p' || name[2] == 'x')
-          return name[3] == '\0';
-        break;
-
-      case 'i': // rip
-        if (name[2] == 'p')
-          return name[3] == '\0';
-        break;
-
-      case 's': // rsp
-        if (name[2] == 'p')
-          return name[3] == '\0';
-        break;
-      }
-    }
-    if (name[0] == 's' && name[1] == 'p' && name[2] == '\0') // sp
-      return true;
-    if (name[0] == 'f' && name[1] == 'p' && name[2] == '\0') // fp
-      return true;
-    if (name[0] == 'p' && name[1] == 'c' && name[2] == '\0') // pc
-      return true;
-  }
-  return false;
+  if (!reg_info)
+    return false;
+  assert(reg_info->name != nullptr && "unnamed register?");
+  std::string Name = std::string(reg_info->name);
+  bool IsCalleeSaved =
+      llvm::StringSwitch<bool>(Name)
+          .Cases("r12", "r13", "r14", "r15", "rbp", "ebp", "rbx", "ebx", true)
+          .Cases("rip", "eip", "rsp", "esp", "sp", "fp", "pc", true)
+          .Default(false);
+  return IsCalleeSaved;
 }
 
 void ABISysV_x86_64::Initialize() {

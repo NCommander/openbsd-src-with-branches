@@ -15,7 +15,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
+#include "clang/StaticAnalyzer/Checkers/BuiltinCheckerRegistration.h"
 #include "clang/StaticAnalyzer/Core/BugReporter/BugReporter.h"
 #include "clang/StaticAnalyzer/Core/Checker.h"
 
@@ -58,8 +58,7 @@ void ObjCPropertyChecker::checkCopyMutable(const ObjCPropertyDecl *D,
   if (const ObjCInterfaceDecl *IntD =
           dyn_cast<ObjCInterfaceDecl>(D->getDeclContext())) {
     ImplD = IntD->getImplementation();
-  } else {
-    const ObjCCategoryDecl *CatD = cast<ObjCCategoryDecl>(D->getDeclContext());
+  } else if (auto *CatD = dyn_cast<ObjCCategoryDecl>(D->getDeclContext())) {
     ImplD = CatD->getClassInterface()->getImplementation();
   }
 

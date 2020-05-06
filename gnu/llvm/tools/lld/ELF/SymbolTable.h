@@ -12,15 +12,14 @@
 
 #include "InputFiles.h"
 #include "LTO.h"
+#include "lld/Common/Strings.h"
+#include "llvm/ADT/CachedHashString.h"
 #include "llvm/ADT/DenseMap.h"
 
 namespace lld {
 namespace elf {
-class Lazy;
-template <class ELFT> class OutputSectionBase;
-struct Symbol;
-
-typedef llvm::CachedHash<StringRef> SymName;
+class Defined;
+class SectionBase;
 
 // SymbolTable is a bucket of all known symbols, including defined,
 // undefined, or lazy symbols (the last one is symbols in archive
@@ -34,77 +33,64 @@ typedef llvm::CachedHash<StringRef> SymName;
 // to replace the lazy symbol. The logic is implemented in the
 // add*() functions, which are called by input files as they are parsed. There
 // is one add* function per symbol type.
-template <class ELFT> class SymbolTable {
-  typedef typename ELFT::Sym Elf_Sym;
-  typedef typename ELFT::uint uintX_t;
-
+class SymbolTable {
 public:
-  void addFile(std::unique_ptr<InputFile> File);
-  void addCombinedLtoObject();
+  template <class ELFT> void addFile(InputFile *File);
+  template <class ELFT> void addCombinedLTOObject();
+  void wrap(Symbol *Sym, Symbol *Real, Symbol *Wrap);
 
-  llvm::ArrayRef<Symbol *> getSymbols() const { return SymVector; }
+  ArrayRef<Symbol *> getSymbols() const { return SymVector; }
 
-  const std::vector<std::unique_ptr<ObjectFile<ELFT>>> &getObjectFiles() const {
-    return ObjectFiles;
-  }
-
-  const std::vector<std::unique_ptr<SharedFile<ELFT>>> &getSharedFiles() const {
-    return SharedFiles;
-  }
-
-  DefinedRegular<ELFT> *addAbsolute(StringRef Name,
-                                    uint8_t Visibility = llvm::ELF::STV_HIDDEN);
-  DefinedRegular<ELFT> *addIgnored(StringRef Name,
-                                   uint8_t Visibility = llvm::ELF::STV_HIDDEN);
-
-  Symbol *addUndefined(StringRef Name);
+  template <class ELFT>
   Symbol *addUndefined(StringRef Name, uint8_t Binding, uint8_t StOther,
                        uint8_t Type, bool CanOmitFromDynSym, InputFile *File);
 
-  Symbol *addRegular(StringRef Name, const Elf_Sym &Sym,
-                     InputSectionBase<ELFT> *Section);
-  Symbol *addRegular(StringRef Name, uint8_t Binding, uint8_t StOther);
-  Symbol *addSynthetic(StringRef N, OutputSectionBase<ELFT> *Section,
-                       uintX_t Value);
-  void addShared(SharedFile<ELFT> *F, StringRef Name, const Elf_Sym &Sym,
-                 const typename ELFT::Verdef *Verdef);
+  Defined *addDefined(StringRef Name, uint8_t StOther, uint8_t Type,
+                      uint64_t Value, uint64_t Size, uint8_t Binding,
+                      SectionBase *Section, InputFile *File);
 
-  void addLazyArchive(ArchiveFile *F, const llvm::object::Archive::Symbol S);
-  void addLazyObject(StringRef Name, LazyObjectFile &Obj);
-  Symbol *addBitcode(StringRef Name, bool IsWeak, uint8_t StOther, uint8_t Type,
-                     bool CanOmitFromDynSym, BitcodeFile *File);
+  template <class ELFT>
+  void addShared(StringRef Name, SharedFile<ELFT> &F,
+                 const typename ELFT::Sym &Sym, uint32_t Alignment,
+                 uint32_t VerdefIndex);
 
-  Symbol *addCommon(StringRef N, uint64_t Size, uint64_t Alignment,
+  template <class ELFT>
+  void addLazyArchive(StringRef Name, ArchiveFile &F,
+                      const llvm::object::Archive::Symbol S);
+
+  template <class ELFT> void addLazyObject(StringRef Name, LazyObjFile &Obj);
+
+  Symbol *addBitcode(StringRef Name, uint8_t Binding, uint8_t StOther,
+                     uint8_t Type, bool CanOmitFromDynSym, BitcodeFile &File);
+
+  Symbol *addCommon(StringRef Name, uint64_t Size, uint32_t Alignment,
                     uint8_t Binding, uint8_t StOther, uint8_t Type,
-                    InputFile *File);
+                    InputFile &File);
 
-  void scanUndefinedFlags();
-  void scanShlibUndefined();
-  void scanDynamicList();
+  std::pair<Symbol *, bool> insert(StringRef Name, uint8_t Visibility,
+                                   bool CanOmitFromDynSym, InputFile *File);
+
+  template <class ELFT> void fetchLazy(Symbol *Sym);
+
   void scanVersionScript();
-  void scanSymbolVersions();
 
-  SymbolBody *find(StringRef Name);
+  Symbol *find(StringRef Name);
 
   void trace(StringRef Name);
-  void wrap(StringRef Name);
+
+  void handleDynamicList();
 
 private:
-  std::vector<SymbolBody *> findAll(StringRef Pattern);
-  std::pair<Symbol *, bool> insert(StringRef Name);
-  std::pair<Symbol *, bool> insert(StringRef Name, uint8_t Type,
-                                   uint8_t Visibility, bool CanOmitFromDynSym,
-                                   bool IsUsedInRegularObj, InputFile *File);
+  std::pair<Symbol *, bool> insertName(StringRef Name);
 
-  std::string conflictMsg(SymbolBody *Existing, InputFile *NewFile);
-  void reportDuplicate(SymbolBody *Existing, InputFile *NewFile);
+  std::vector<Symbol *> findByVersion(SymbolVersion Ver);
+  std::vector<Symbol *> findAllByVersion(SymbolVersion Ver);
 
-  std::map<std::string, SymbolBody *> getDemangledSyms();
-
-  struct SymIndex {
-    int Idx : 31;
-    unsigned Traced : 1;
-  };
+  llvm::StringMap<std::vector<Symbol *>> &getDemangledSyms();
+  void handleAnonymousVersion();
+  void assignExactVersion(SymbolVersion Ver, uint16_t VersionId,
+                          StringRef VersionName);
+  void assignWildcardVersion(SymbolVersion Ver, uint16_t VersionId);
 
   // The order the global symbols are in is not defined. We can use an arbitrary
   // order, but it has to be reproducible. That is true even when cross linking.
@@ -113,31 +99,28 @@ private:
   // but a bit inefficient.
   // FIXME: Experiment with passing in a custom hashing or sorting the symbols
   // once symbol resolution is finished.
-  llvm::DenseMap<SymName, SymIndex> Symtab;
+  llvm::DenseMap<llvm::CachedHashStringRef, int> SymMap;
   std::vector<Symbol *> SymVector;
-  llvm::BumpPtrAllocator Alloc;
 
   // Comdat groups define "link once" sections. If two comdat groups have the
   // same name, only one of them is linked, and the other is ignored. This set
   // is used to uniquify them.
-  llvm::DenseSet<StringRef> ComdatGroups;
-
-  // The symbol table owns all file objects.
-  std::vector<std::unique_ptr<ArchiveFile>> ArchiveFiles;
-  std::vector<std::unique_ptr<ObjectFile<ELFT>>> ObjectFiles;
-  std::vector<std::unique_ptr<LazyObjectFile>> LazyObjectFiles;
-  std::vector<std::unique_ptr<SharedFile<ELFT>>> SharedFiles;
-  std::vector<std::unique_ptr<BitcodeFile>> BitcodeFiles;
+  llvm::DenseSet<llvm::CachedHashStringRef> ComdatGroups;
 
   // Set of .so files to not link the same shared object file more than once.
-  llvm::DenseSet<StringRef> SoNames;
+  llvm::DenseMap<StringRef, InputFile *> SoNames;
 
-  std::unique_ptr<BitcodeCompiler> Lto;
+  // A map from demangled symbol names to their symbol objects.
+  // This mapping is 1:N because two symbols with different versions
+  // can have the same name. We use this map to handle "extern C++ {}"
+  // directive in version scripts.
+  llvm::Optional<llvm::StringMap<std::vector<Symbol *>>> DemangledSyms;
+
+  // For LTO.
+  std::unique_ptr<BitcodeCompiler> LTO;
 };
 
-template <class ELFT> struct Symtab { static SymbolTable<ELFT> *X; };
-template <class ELFT> SymbolTable<ELFT> *Symtab<ELFT>::X;
-
+extern SymbolTable *Symtab;
 } // namespace elf
 } // namespace lld
 

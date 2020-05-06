@@ -24,12 +24,11 @@ class Radar9673644TestCase(TestBase):
         self.main_source = "main.c"
         self.line = line_number(self.main_source, '// Set breakpoint here.')
 
-    @expectedFailureAll(oslist=["windows"], bugnumber="llvm.org/pr21765")
     def test_expr_commands(self):
         """The following expression commands should just work."""
         self.build()
 
-        self.runCmd("file a.out", CURRENT_EXECUTABLE_SET)
+        self.runCmd("file " + self.getBuildArtifact("a.out"), CURRENT_EXECUTABLE_SET)
 
         lldbutil.run_break_set_by_file_and_line(
             self,
@@ -42,7 +41,7 @@ class Radar9673644TestCase(TestBase):
 
         # rdar://problem/9673664 lldb expression evaluation problem
 
-        self.expect('expr char c[] = "foo"; c[0]',
+        self.expect('expr char str[] = "foo"; str[0]',
                     substrs=["'f'"])
         # runCmd: expr char c[] = "foo"; c[0]
         # output: (char) $0 = 'f'

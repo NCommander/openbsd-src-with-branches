@@ -21,7 +21,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "ClangSACheckers.h"
+#include "clang/StaticAnalyzer/Checkers/BuiltinCheckerRegistration.h"
 #include "clang/AST/Attr.h"
 #include "clang/AST/DeclObjC.h"
 #include "clang/AST/StmtVisitor.h"
@@ -123,7 +123,7 @@ void DirectIvarAssignment::checkASTDecl(const ObjCImplementationDecl *D,
   IvarToPropertyMapTy IvarToPropMap;
 
   // Find all properties for this class.
-  for (const auto *PD : InterD->properties()) {
+  for (const auto *PD : InterD->instance_properties()) {
     // Find the corresponding IVar.
     const ObjCIvarDecl *ID = findPropertyBackingIvar(PD, InterD,
                                                      Mgr.getASTContext());

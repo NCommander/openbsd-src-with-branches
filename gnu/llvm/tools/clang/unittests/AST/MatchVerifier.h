@@ -23,19 +23,11 @@
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/Tooling/Tooling.h"
+#include "Language.h"
 #include "gtest/gtest.h"
 
 namespace clang {
 namespace ast_matchers {
-
-enum Language { 
-    Lang_C,
-    Lang_C89,
-    Lang_CXX,
-    Lang_CXX11,
-    Lang_OpenCL,
-    Lang_OBJCXX
-};
 
 /// \brief Base class for verifying some property of nodes found by a matcher.
 template <typename NodeType>
@@ -61,6 +53,9 @@ public:
                                  const MatcherType &AMatcher,
                                  std::vector<std::string>& Args,
                                  Language L);
+
+  template <typename MatcherType>
+  testing::AssertionResult match(const Decl *D, const MatcherType &AMatcher);
 
 protected:
   void run(const MatchFinder::MatchResult &Result) override;
@@ -110,6 +105,10 @@ testing::AssertionResult MatchVerifier<NodeType>::match(
     Args.push_back("-std=c++11");
     FileName = "input.cc";
     break;
+  case Lang_CXX14:
+    Args.push_back("-std=c++14");
+    FileName = "input.cc";
+    break;
   case Lang_OpenCL:
     FileName = "input.cl";
     break;
@@ -122,6 +121,22 @@ testing::AssertionResult MatchVerifier<NodeType>::match(
   setFailure("Could not find match");
   if (!tooling::runToolOnCodeWithArgs(Factory->create(), Code, Args, FileName))
     return testing::AssertionFailure() << "Parsing error";
+  if (!Verified)
+    return testing::AssertionFailure() << VerifyResult;
+  return testing::AssertionSuccess();
+}
+
+/// \brief Runs a matcher over some AST, and returns the result of the
+/// verifier for the matched node.
+template <typename NodeType> template <typename MatcherType>
+testing::AssertionResult MatchVerifier<NodeType>::match(
+    const Decl *D, const MatcherType &AMatcher) {
+  MatchFinder Finder;
+  Finder.addMatcher(AMatcher.bind(""), this);
+
+  setFailure("Could not find match");
+  Finder.match(*D, D->getASTContext());
+
   if (!Verified)
     return testing::AssertionFailure() << VerifyResult;
   return testing::AssertionSuccess();

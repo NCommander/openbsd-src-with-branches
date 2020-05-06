@@ -16,7 +16,7 @@
 #include "clang/AST/DeclObjC.h"
 #include "clang/Basic/IdentifierTable.h"
 #include "clang/Serialization/ASTDeserializationListener.h"
-#include "llvm/ADT/StringExtras.h"
+#include "llvm/Support/DJB.h"
 
 using namespace clang;
 
@@ -91,8 +91,89 @@ serialization::TypeIdxFromBuiltin(const BuiltinType *BT) {
   case BuiltinType::LongDouble:
     ID = PREDEF_TYPE_LONGDOUBLE_ID;
     break;
+  case BuiltinType::ShortAccum:
+    ID = PREDEF_TYPE_SHORT_ACCUM_ID;
+    break;
+  case BuiltinType::Accum:
+    ID = PREDEF_TYPE_ACCUM_ID;
+    break;
+  case BuiltinType::LongAccum:
+    ID = PREDEF_TYPE_LONG_ACCUM_ID;
+    break;
+  case BuiltinType::UShortAccum:
+    ID = PREDEF_TYPE_USHORT_ACCUM_ID;
+    break;
+  case BuiltinType::UAccum:
+    ID = PREDEF_TYPE_UACCUM_ID;
+    break;
+  case BuiltinType::ULongAccum:
+    ID = PREDEF_TYPE_ULONG_ACCUM_ID;
+    break;
+  case BuiltinType::ShortFract:
+    ID = PREDEF_TYPE_SHORT_FRACT_ID;
+    break;
+  case BuiltinType::Fract:
+    ID = PREDEF_TYPE_FRACT_ID;
+    break;
+  case BuiltinType::LongFract:
+    ID = PREDEF_TYPE_LONG_FRACT_ID;
+    break;
+  case BuiltinType::UShortFract:
+    ID = PREDEF_TYPE_USHORT_FRACT_ID;
+    break;
+  case BuiltinType::UFract:
+    ID = PREDEF_TYPE_UFRACT_ID;
+    break;
+  case BuiltinType::ULongFract:
+    ID = PREDEF_TYPE_ULONG_FRACT_ID;
+    break;
+  case BuiltinType::SatShortAccum:
+    ID = PREDEF_TYPE_SAT_SHORT_ACCUM_ID;
+    break;
+  case BuiltinType::SatAccum:
+    ID = PREDEF_TYPE_SAT_ACCUM_ID;
+    break;
+  case BuiltinType::SatLongAccum:
+    ID = PREDEF_TYPE_SAT_LONG_ACCUM_ID;
+    break;
+  case BuiltinType::SatUShortAccum:
+    ID = PREDEF_TYPE_SAT_USHORT_ACCUM_ID;
+    break;
+  case BuiltinType::SatUAccum:
+    ID = PREDEF_TYPE_SAT_UACCUM_ID;
+    break;
+  case BuiltinType::SatULongAccum:
+    ID = PREDEF_TYPE_SAT_ULONG_ACCUM_ID;
+    break;
+  case BuiltinType::SatShortFract:
+    ID = PREDEF_TYPE_SAT_SHORT_FRACT_ID;
+    break;
+  case BuiltinType::SatFract:
+    ID = PREDEF_TYPE_SAT_FRACT_ID;
+    break;
+  case BuiltinType::SatLongFract:
+    ID = PREDEF_TYPE_SAT_LONG_FRACT_ID;
+    break;
+  case BuiltinType::SatUShortFract:
+    ID = PREDEF_TYPE_SAT_USHORT_FRACT_ID;
+    break;
+  case BuiltinType::SatUFract:
+    ID = PREDEF_TYPE_SAT_UFRACT_ID;
+    break;
+  case BuiltinType::SatULongFract:
+    ID = PREDEF_TYPE_SAT_ULONG_FRACT_ID;
+    break;
+  case BuiltinType::Float16:
+    ID = PREDEF_TYPE_FLOAT16_ID;
+    break;
+  case BuiltinType::Float128:
+    ID = PREDEF_TYPE_FLOAT128_ID;
+    break;
   case BuiltinType::NullPtr:
     ID = PREDEF_TYPE_NULLPTR_ID;
+    break;
+  case BuiltinType::Char8:
+    ID = PREDEF_TYPE_CHAR8_ID;
     break;
   case BuiltinType::Char16:
     ID = PREDEF_TYPE_CHAR16_ID;
@@ -127,42 +208,16 @@ serialization::TypeIdxFromBuiltin(const BuiltinType *BT) {
   case BuiltinType::ObjCSel:
     ID = PREDEF_TYPE_OBJC_SEL;
     break;
-  case BuiltinType::OCLImage1d:
-    ID = PREDEF_TYPE_IMAGE1D_ID;
+#define IMAGE_TYPE(ImgType, Id, SingletonId, Access, Suffix) \
+  case BuiltinType::Id: \
+    ID = PREDEF_TYPE_##Id##_ID; \
     break;
-  case BuiltinType::OCLImage1dArray:
-    ID = PREDEF_TYPE_IMAGE1D_ARR_ID;
+#include "clang/Basic/OpenCLImageTypes.def"
+#define EXT_OPAQUE_TYPE(ExtType, Id, Ext) \
+  case BuiltinType::Id: \
+    ID = PREDEF_TYPE_##Id##_ID; \
     break;
-  case BuiltinType::OCLImage1dBuffer:
-    ID = PREDEF_TYPE_IMAGE1D_BUFF_ID;
-    break;
-  case BuiltinType::OCLImage2d:
-    ID = PREDEF_TYPE_IMAGE2D_ID;
-    break;
-  case BuiltinType::OCLImage2dArray:
-    ID = PREDEF_TYPE_IMAGE2D_ARR_ID;
-    break;
-  case BuiltinType::OCLImage2dDepth:
-    ID = PREDEF_TYPE_IMAGE2D_DEP_ID;
-    break;
-  case BuiltinType::OCLImage2dArrayDepth:
-    ID = PREDEF_TYPE_IMAGE2D_ARR_DEP_ID;
-    break;
-  case BuiltinType::OCLImage2dMSAA:
-    ID = PREDEF_TYPE_IMAGE2D_MSAA_ID;
-    break;
-  case BuiltinType::OCLImage2dArrayMSAA:
-    ID = PREDEF_TYPE_IMAGE2D_ARR_MSAA_ID;
-    break;
-  case BuiltinType::OCLImage2dMSAADepth:
-    ID = PREDEF_TYPE_IMAGE2D_MSAA_DEP_ID;
-    break;
-  case BuiltinType::OCLImage2dArrayMSAADepth:
-    ID = PREDEF_TYPE_IMAGE2D_ARR_MSAA_DEPTH_ID;
-    break;
-  case BuiltinType::OCLImage3d:
-    ID = PREDEF_TYPE_IMAGE3D_ID;
-    break;
+#include "clang/Basic/OpenCLExtensionTypes.def"
   case BuiltinType::OCLSampler:
     ID = PREDEF_TYPE_SAMPLER_ID;
     break;
@@ -174,9 +229,6 @@ serialization::TypeIdxFromBuiltin(const BuiltinType *BT) {
     break;
   case BuiltinType::OCLQueue:
     ID = PREDEF_TYPE_QUEUE_ID;
-    break;
-  case BuiltinType::OCLNDRange:
-    ID = PREDEF_TYPE_NDRANGE_ID;
     break;
   case BuiltinType::OCLReserveID:
     ID = PREDEF_TYPE_RESERVE_ID_ID;
@@ -199,7 +251,7 @@ unsigned serialization::ComputeHash(Selector Sel) {
   unsigned R = 5381;
   for (unsigned I = 0; I != N; ++I)
     if (IdentifierInfo *II = Sel.getIdentifierInfoForSlot(I))
-      R = llvm::HashString(II->getName(), R);
+      R = llvm::djbHash(II->getName(), R);
   return R;
 }
 
@@ -211,6 +263,7 @@ serialization::getDefinitiveDeclContext(const DeclContext *DC) {
   case Decl::ExternCContext:
   case Decl::Namespace:
   case Decl::LinkageSpec:
+  case Decl::Export:
     return nullptr;
 
   // C/C++ tag types can only be defined in one place.
@@ -258,7 +311,7 @@ serialization::getDefinitiveDeclContext(const DeclContext *DC) {
   default:
     llvm_unreachable("Unhandled DeclContext in AST reader");
   }
-  
+
   llvm_unreachable("Unhandled decl kind");
 }
 
@@ -281,11 +334,13 @@ bool serialization::isRedeclarableDeclKind(unsigned Kind) {
   case Decl::VarTemplateSpecialization:
   case Decl::VarTemplatePartialSpecialization:
   case Decl::Function:
+  case Decl::CXXDeductionGuide:
   case Decl::CXXMethod:
   case Decl::CXXConstructor:
   case Decl::CXXDestructor:
   case Decl::CXXConversion:
   case Decl::UsingShadow:
+  case Decl::ConstructorUsingShadow:
   case Decl::Var:
   case Decl::FunctionTemplate:
   case Decl::ClassTemplate:
@@ -311,6 +366,7 @@ bool serialization::isRedeclarableDeclKind(unsigned Kind) {
   case Decl::NonTypeTemplateParm:
   case Decl::TemplateTemplateParm:
   case Decl::Using:
+  case Decl::UsingPack:
   case Decl::ObjCMethod:
   case Decl::ObjCCategory:
   case Decl::ObjCCategoryImpl:
@@ -318,7 +374,10 @@ bool serialization::isRedeclarableDeclKind(unsigned Kind) {
   case Decl::ObjCProperty:
   case Decl::ObjCCompatibleAlias:
   case Decl::LinkageSpec:
+  case Decl::Export:
   case Decl::ObjCPropertyImpl:
+  case Decl::PragmaComment:
+  case Decl::PragmaDetectMismatch:
   case Decl::FileScopeAsm:
   case Decl::AccessSpec:
   case Decl::Friend:
@@ -329,7 +388,12 @@ bool serialization::isRedeclarableDeclKind(unsigned Kind) {
   case Decl::ClassScopeFunctionSpecialization:
   case Decl::Import:
   case Decl::OMPThreadPrivate:
+  case Decl::OMPRequires:
+  case Decl::OMPCapturedExpr:
+  case Decl::OMPDeclareReduction:
   case Decl::BuiltinTemplate:
+  case Decl::Decomposition:
+  case Decl::Binding:
     return false;
 
   // These indirectly derive from Redeclarable<T> but are not actually
@@ -361,9 +425,21 @@ bool serialization::needsAnonymousDeclarationNumber(const NamedDecl *D) {
     return true;
   }
 
-  // Otherwise, we only care about anonymous class members.
+  // At block scope, we number everything that we need to deduplicate, since we
+  // can't just use name matching to keep things lined up.
+  // FIXME: This is only necessary for an inline function or a template or
+  // similar.
+  if (D->getLexicalDeclContext()->isFunctionOrMethod()) {
+    if (auto *VD = dyn_cast<VarDecl>(D))
+      return VD->isStaticLocal();
+    // FIXME: What about CapturedDecls (and declarations nested within them)?
+    return isa<TagDecl>(D) || isa<BlockDecl>(D);
+  }
+
+  // Otherwise, we only care about anonymous class members / block-scope decls.
+  // FIXME: We need to handle lambdas and blocks within inline / templated
+  // variables too.
   if (D->getDeclName() || !isa<CXXRecordDecl>(D->getLexicalDeclContext()))
     return false;
   return isa<TagDecl>(D) || isa<FieldDecl>(D);
 }
-

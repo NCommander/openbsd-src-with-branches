@@ -62,14 +62,17 @@ void PPCSubtarget::initializeEnvironment() {
   Has64BitSupport = false;
   Use64BitRegs = false;
   UseCRBits = false;
-  UseSoftFloat = false;
+  HasHardFloat = false;
   HasAltivec = false;
   HasSPE = false;
+  HasFPU = false;
   HasQPX = false;
   HasVSX = false;
   HasP8Vector = false;
   HasP8Altivec = false;
   HasP8Crypto = false;
+  HasP9Vector = false;
+  HasP9Altivec = false;
   HasFCPSGN = false;
   HasFSQRT = false;
   HasFRE = false;
@@ -82,7 +85,6 @@ void PPCSubtarget::initializeEnvironment() {
   HasFPRND = false;
   HasFPCVT = false;
   HasISEL = false;
-  HasPOPCNTD = false;
   HasBPERMD = false;
   HasExtDiv = false;
   HasCMPB = false;
@@ -103,12 +105,17 @@ void PPCSubtarget::initializeEnvironment() {
   HasHTM = false;
   HasFusion = false;
   HasFloat128 = false;
+  IsISA3_0 = false;
+  UseLongCalls = false;
+  SecurePlt = false;
+
+  HasPOPCNTD = POPCNTD_Unavailable;
 }
 
 void PPCSubtarget::initSubtargetFeatures(StringRef CPU, StringRef FS) {
   // Determine default and user specified characteristics
   std::string CPUName = CPU;
-  if (CPUName.empty()) {
+  if (CPUName.empty() || CPU == "generic") {
     // If cross-compiling with -march=ppc64le without -mcpu
     if (TargetTriple.getArch() == Triple::ppc64le)
       CPUName = "ppc64le";
@@ -131,6 +138,19 @@ void PPCSubtarget::initSubtargetFeatures(StringRef CPU, StringRef FS) {
   if (isDarwin())
     HasLazyResolverStubs = true;
 
+  if (TargetTriple.isOSNetBSD() || TargetTriple.isOSOpenBSD())
+    SecurePlt = true;
+
+  if (HasSPE && IsPPC64)
+    report_fatal_error( "SPE is only supported for 32-bit targets.\n", false);
+  if (HasSPE && (HasAltivec || HasQPX || HasVSX || HasFPU))
+    report_fatal_error(
+        "SPE and traditional floating point cannot both be enabled.\n", false);
+
+  // If not SPE, set standard FPU
+  if (!HasSPE)
+    HasFPU = true;
+
   // QPX requires a 32-byte aligned stack. Note that we need to do this if
   // we're compiling for a BG/Q system regardless of whether or not QPX
   // is enabled because external functions will assume this alignment.
@@ -142,39 +162,24 @@ void PPCSubtarget::initSubtargetFeatures(StringRef CPU, StringRef FS) {
   IsLittleEndian = (TargetTriple.getArch() == Triple::ppc64le);
 }
 
-/// hasLazyResolverStub - Return true if accesses to the specified global have
-/// to go through a dyld lazy resolution stub.  This means that an extra load
-/// is required to get the address of the global.
+/// Return true if accesses to the specified global have to go through a dyld
+/// lazy resolution stub.  This means that an extra load is required to get the
+/// address of the global.
 bool PPCSubtarget::hasLazyResolverStub(const GlobalValue *GV) const {
-  // We never have stubs if HasLazyResolverStubs=false or if in static mode.
-  if (!HasLazyResolverStubs || TM.getRelocationModel() == Reloc::Static)
+  if (!HasLazyResolverStubs)
     return false;
-  bool isDecl = GV->isDeclaration();
-  if (GV->hasHiddenVisibility() && !isDecl && !GV->hasCommonLinkage())
-    return false;
-  return GV->hasWeakLinkage() || GV->hasLinkOnceLinkage() ||
-         GV->hasCommonLinkage() || isDecl;
-}
-
-// Embedded cores need aggressive scheduling (and some others also benefit).
-static bool needsAggressiveScheduling(unsigned Directive) {
-  switch (Directive) {
-  default: return false;
-  case PPC::DIR_440:
-  case PPC::DIR_A2:
-  case PPC::DIR_E500mc:
-  case PPC::DIR_E5500:
-  case PPC::DIR_PWR7:
-  case PPC::DIR_PWR8:
+  if (!TM.shouldAssumeDSOLocal(*GV->getParent(), GV))
     return true;
-  }
+  // 32 bit macho has no relocation for a-b if a is undefined, even if b is in
+  // the section that is being relocated. This means we have to use o load even
+  // for GVs that are known to be local to the dso.
+  if (GV->isDeclarationForLinker() || GV->hasCommonLinkage())
+    return true;
+  return false;
 }
 
 bool PPCSubtarget::enableMachineScheduler() const {
-  // Enable MI scheduling for the embedded cores.
-  // FIXME: Enable this for all cores (some additional modeling
-  // may be necessary).
-  return needsAggressiveScheduling(DarwinDirective);
+  return true;
 }
 
 // This overrides the PostRAScheduler bit in the SchedModel for each CPU.
@@ -191,30 +196,28 @@ void PPCSubtarget::getCriticalPathRCs(RegClassVector &CriticalPathRCs) const {
 }
 
 void PPCSubtarget::overrideSchedPolicy(MachineSchedPolicy &Policy,
-                                       MachineInstr *begin,
-                                       MachineInstr *end,
                                        unsigned NumRegionInstrs) const {
-  if (needsAggressiveScheduling(DarwinDirective)) {
-    Policy.OnlyTopDown = false;
-    Policy.OnlyBottomUp = false;
-  }
-
+  // The GenericScheduler that we use defaults to scheduling bottom up only.
+  // We want to schedule from both the top and the bottom and so we set
+  // OnlyBottomUp to false.
+  // We want to do bi-directional scheduling since it provides a more balanced
+  // schedule leading to better performance.
+  Policy.OnlyBottomUp = false;
   // Spilling is generally expensive on all PPC cores, so always enable
   // register-pressure tracking.
   Policy.ShouldTrackPressure = true;
 }
 
 bool PPCSubtarget::useAA() const {
-  // Use AA during code generation for the embedded cores.
-  return needsAggressiveScheduling(DarwinDirective);
+  return true;
 }
 
 bool PPCSubtarget::enableSubRegLiveness() const {
   return UseSubRegLiveness;
 }
 
-unsigned char PPCSubtarget::classifyGlobalReference(
-    const GlobalValue *GV) const {
+unsigned char
+PPCSubtarget::classifyGlobalReference(const GlobalValue *GV) const {
   // Note that currently we don't generate non-pic references.
   // If a caller wants that, this will have to be updated.
 
@@ -222,23 +225,9 @@ unsigned char PPCSubtarget::classifyGlobalReference(
   if (TM.getCodeModel() == CodeModel::Large)
     return PPCII::MO_PIC_FLAG | PPCII::MO_NLP_FLAG;
 
-  unsigned char flags = PPCII::MO_PIC_FLAG;
-
-  // Only if the relocation mode is PIC do we have to worry about
-  // interposition. In all other cases we can use a slightly looser standard to
-  // decide how to access the symbol.
-  if (TM.getRelocationModel() == Reloc::PIC_) {
-    // If it's local, or it's non-default, it can't be interposed.
-    if (!GV->hasLocalLinkage() &&
-        GV->hasDefaultVisibility()) {
-      flags |= PPCII::MO_NLP_FLAG;
-    }
-    return flags;
-  }
-
-  if (GV->isStrongDefinitionForLinker())
-    return flags;
-  return flags | PPCII::MO_NLP_FLAG;
+  if (TM.shouldAssumeDSOLocal(*GV->getParent(), GV))
+    return PPCII::MO_PIC_FLAG;
+  return PPCII::MO_PIC_FLAG | PPCII::MO_NLP_FLAG;
 }
 
 bool PPCSubtarget::isELFv2ABI() const { return TM.isELFv2ABI(); }

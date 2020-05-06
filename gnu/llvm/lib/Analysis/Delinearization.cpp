@@ -14,11 +14,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/IR/Constants.h"
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Analysis/Passes.h"
 #include "llvm/Analysis/ScalarEvolution.h"
 #include "llvm/Analysis/ScalarEvolutionExpressions.h"
+#include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/InstIterator.h"
@@ -26,7 +26,6 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Type.h"
 #include "llvm/Pass.h"
-#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
 
@@ -70,16 +69,6 @@ bool Delinearization::runOnFunction(Function &F) {
   return false;
 }
 
-static Value *getPointerOperand(Instruction &Inst) {
-  if (LoadInst *Load = dyn_cast<LoadInst>(&Inst))
-    return Load->getPointerOperand();
-  else if (StoreInst *Store = dyn_cast<StoreInst>(&Inst))
-    return Store->getPointerOperand();
-  else if (GetElementPtrInst *Gep = dyn_cast<GetElementPtrInst>(&Inst))
-    return Gep->getPointerOperand();
-  return nullptr;
-}
-
 void Delinearization::print(raw_ostream &O, const Module *) const {
   O << "Delinearization on function " << F->getName() << ":\n";
   for (inst_iterator I = inst_begin(F), E = inst_end(F); I != E; ++I) {
@@ -94,7 +83,7 @@ void Delinearization::print(raw_ostream &O, const Module *) const {
     // Delinearize the memory access as analyzed in all the surrounding loops.
     // Do not analyze memory accesses outside loops.
     for (Loop *L = LI->getLoopFor(BB); L != nullptr; L = L->getParentLoop()) {
-      const SCEV *AccessFn = SE->getSCEVAtScope(getPointerOperand(*Inst), L);
+      const SCEV *AccessFn = SE->getSCEVAtScope(getPointerOperand(Inst), L);
 
       const SCEVUnknown *BasePointer =
           dyn_cast<SCEVUnknown>(SE->getPointerBase(AccessFn));

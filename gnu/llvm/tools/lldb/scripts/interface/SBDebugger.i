@@ -28,7 +28,7 @@ def disassemble_instructions (insts):
 # Create a new debugger instance
 debugger = lldb.SBDebugger.Create()
 
-# When we step or continue, don't return from the function until the process 
+# When we step or continue, don't return from the function until the process
 # stops. We do this by setting the async mode to false.
 debugger.SetAsync (False)
 
@@ -46,7 +46,7 @@ if target:
     # Launch the process. Since we specified synchronous mode, we won't return
     # from this function until we hit the breakpoint at main
     process = target.LaunchSimple (None, None, os.getcwd())
-    
+
     # Make sure the launch went ok
     if process:
         # Print some simple process info
@@ -122,10 +122,13 @@ public:
 
     static void
     Initialize();
-    
+
+    static void
+    Initialize(lldb::SBInitializerOptions& options);
+
     static void
     Terminate();
-    
+
     static lldb::SBDebugger
     Create();
 
@@ -155,8 +158,8 @@ public:
 
     void
     SetAsync (bool b);
-    
-    bool 
+
+    bool
     GetAsync ();
 
     void
@@ -214,6 +217,11 @@ public:
     CreateTarget (const char *filename);
 
     %feature("docstring",
+    "The dummy target holds breakpoints and breakpoint names that will prime newly created targets."
+    ) GetDummyTarget;
+    lldb::SBTarget GetDummyTarget();
+
+    %feature("docstring",
     "Return true if target is deleted from the target list of the debugger."
     ) DeleteTarget;
     bool
@@ -243,9 +251,37 @@ public:
 
     lldb::SBPlatform
     GetSelectedPlatform();
-    
+
     void
     SetSelectedPlatform(lldb::SBPlatform &platform);
+
+    %feature("docstring",
+    "Get the number of currently active platforms."
+    ) GetNumPlatforms;
+    uint32_t
+    GetNumPlatforms ();
+
+    %feature("docstring",
+    "Get one of the currently active platforms."
+    ) GetPlatformAtIndex;
+    lldb::SBPlatform
+    GetPlatformAtIndex (uint32_t idx);
+
+    %feature("docstring",
+    "Get the number of available platforms."
+    ) GetNumAvailablePlatforms;
+    uint32_t
+    GetNumAvailablePlatforms ();
+
+    %feature("docstring", "
+    Get the name and description of one of the available platforms.
+
+    @param idx Zero-based index of the platform for which info should be
+               retrieved, must be less than the value returned by
+               GetNumAvailablePlatforms().
+    ") GetAvailablePlatformInfoAtIndex;
+    lldb::SBStructuredData
+    GetAvailablePlatformInfoAtIndex (uint32_t idx);
 
     lldb::SBSourceManager
     GetSourceManager ();
@@ -254,7 +290,7 @@ public:
     // SBPlatform from this class.
     lldb::SBError
     SetCurrentPlatform (const char *platform_name);
-    
+
     bool
     SetCurrentPlatformSDKRoot (const char *sysroot);
 
@@ -262,8 +298,8 @@ public:
     // an interface to the Set/Get UseExternalEditor.
     bool
     SetUseExternalEditor (bool input);
-    
-    bool 
+
+    bool
     GetUseExternalEditor ();
 
     bool
@@ -287,6 +323,8 @@ public:
     static const char *
     StateAsCString (lldb::StateType state);
 
+    static SBStructuredData GetBuildConfiguration();
+
     static bool
     StateIsRunningState (lldb::StateType state);
 
@@ -307,7 +345,7 @@ public:
 
     void
     DispatchInputEndOfFile ();
-    
+
     const char *
     GetInstanceName  ();
 
@@ -331,14 +369,17 @@ public:
 
     lldb::user_id_t
     GetID ();
-    
+
     const char *
     GetPrompt() const;
 
     void
     SetPrompt (const char *prompt);
-        
-    lldb::ScriptLanguage 
+
+    const char *
+    GetReproducerPath() const;
+
+    lldb::ScriptLanguage
     GetScriptLanguage() const;
 
     void
@@ -346,31 +387,31 @@ public:
 
     bool
     GetCloseInputOnEOF () const;
-    
+
     void
     SetCloseInputOnEOF (bool b);
-    
+
     lldb::SBTypeCategory
     GetCategory (const char* category_name);
-    
+
     SBTypeCategory
     GetCategory (lldb::LanguageType lang_type);
-    
+
     lldb::SBTypeCategory
     CreateCategory (const char* category_name);
-    
+
     bool
     DeleteCategory (const char* category_name);
-    
+
     uint32_t
     GetNumCategories ();
-    
+
     lldb::SBTypeCategory
     GetCategoryAtIndex (uint32_t);
-    
+
     lldb::SBTypeCategory
     GetDefaultCategory();
-    
+
     lldb::SBTypeFormat
     GetFormatForType (lldb::SBTypeNameSpecifier);
 
@@ -390,7 +431,7 @@ public:
                            int  &num_errors,
                            bool &quit_requested,
                            bool &stopped_for_crash);
-    
+
     lldb::SBError
     RunREPL (lldb::LanguageType language, const char *repl_options);
 }; // class SBDebugger

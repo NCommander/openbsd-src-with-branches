@@ -25,39 +25,38 @@ QualType CXXCatchStmt::getCaughtType() const {
 
 CXXTryStmt *CXXTryStmt::Create(const ASTContext &C, SourceLocation tryLoc,
                                Stmt *tryBlock, ArrayRef<Stmt *> handlers) {
-  std::size_t Size = sizeof(CXXTryStmt);
-  Size += ((handlers.size() + 1) * sizeof(Stmt *));
-
-  void *Mem = C.Allocate(Size, llvm::alignOf<CXXTryStmt>());
+  const size_t Size = totalSizeToAlloc<Stmt *>(handlers.size() + 1);
+  void *Mem = C.Allocate(Size, alignof(CXXTryStmt));
   return new (Mem) CXXTryStmt(tryLoc, tryBlock, handlers);
 }
 
 CXXTryStmt *CXXTryStmt::Create(const ASTContext &C, EmptyShell Empty,
                                unsigned numHandlers) {
-  std::size_t Size = sizeof(CXXTryStmt);
-  Size += ((numHandlers + 1) * sizeof(Stmt *));
-
-  void *Mem = C.Allocate(Size, llvm::alignOf<CXXTryStmt>());
+  const size_t Size = totalSizeToAlloc<Stmt *>(numHandlers + 1);
+  void *Mem = C.Allocate(Size, alignof(CXXTryStmt));
   return new (Mem) CXXTryStmt(Empty, numHandlers);
 }
 
 CXXTryStmt::CXXTryStmt(SourceLocation tryLoc, Stmt *tryBlock,
                        ArrayRef<Stmt *> handlers)
     : Stmt(CXXTryStmtClass), TryLoc(tryLoc), NumHandlers(handlers.size()) {
-  Stmt **Stmts = reinterpret_cast<Stmt **>(this + 1);
+  Stmt **Stmts = getStmts();
   Stmts[0] = tryBlock;
   std::copy(handlers.begin(), handlers.end(), Stmts + 1);
 }
 
-CXXForRangeStmt::CXXForRangeStmt(DeclStmt *Range, DeclStmt *BeginEndStmt,
+CXXForRangeStmt::CXXForRangeStmt(Stmt *Init, DeclStmt *Range,
+                                 DeclStmt *BeginStmt, DeclStmt *EndStmt,
                                  Expr *Cond, Expr *Inc, DeclStmt *LoopVar,
                                  Stmt *Body, SourceLocation FL,
                                  SourceLocation CAL, SourceLocation CL,
                                  SourceLocation RPL)
     : Stmt(CXXForRangeStmtClass), ForLoc(FL), CoawaitLoc(CAL), ColonLoc(CL),
       RParenLoc(RPL) {
+  SubExprs[INIT] = Init;
   SubExprs[RANGE] = Range;
-  SubExprs[BEGINEND] = BeginEndStmt;
+  SubExprs[BEGINSTMT] = BeginStmt;
+  SubExprs[ENDSTMT] = EndStmt;
   SubExprs[COND] = Cond;
   SubExprs[INC] = Inc;
   SubExprs[LOOPVAR] = LoopVar;
@@ -83,4 +82,47 @@ VarDecl *CXXForRangeStmt::getLoopVariable() {
 
 const VarDecl *CXXForRangeStmt::getLoopVariable() const {
   return const_cast<CXXForRangeStmt *>(this)->getLoopVariable();
+}
+
+CoroutineBodyStmt *CoroutineBodyStmt::Create(
+    const ASTContext &C, CoroutineBodyStmt::CtorArgs const &Args) {
+  std::size_t Size = totalSizeToAlloc<Stmt *>(
+      CoroutineBodyStmt::FirstParamMove + Args.ParamMoves.size());
+
+  void *Mem = C.Allocate(Size, alignof(CoroutineBodyStmt));
+  return new (Mem) CoroutineBodyStmt(Args);
+}
+
+CoroutineBodyStmt *CoroutineBodyStmt::Create(const ASTContext &C, EmptyShell,
+                                             unsigned NumParams) {
+  std::size_t Size = totalSizeToAlloc<Stmt *>(
+      CoroutineBodyStmt::FirstParamMove + NumParams);
+
+  void *Mem = C.Allocate(Size, alignof(CoroutineBodyStmt));
+  auto *Result = new (Mem) CoroutineBodyStmt(CtorArgs());
+  Result->NumParams = NumParams;
+  auto *ParamBegin = Result->getStoredStmts() + SubStmt::FirstParamMove;
+  std::uninitialized_fill(ParamBegin, ParamBegin + NumParams,
+                          static_cast<Stmt *>(nullptr));
+  return Result;
+}
+
+CoroutineBodyStmt::CoroutineBodyStmt(CoroutineBodyStmt::CtorArgs const &Args)
+    : Stmt(CoroutineBodyStmtClass), NumParams(Args.ParamMoves.size()) {
+  Stmt **SubStmts = getStoredStmts();
+  SubStmts[CoroutineBodyStmt::Body] = Args.Body;
+  SubStmts[CoroutineBodyStmt::Promise] = Args.Promise;
+  SubStmts[CoroutineBodyStmt::InitSuspend] = Args.InitialSuspend;
+  SubStmts[CoroutineBodyStmt::FinalSuspend] = Args.FinalSuspend;
+  SubStmts[CoroutineBodyStmt::OnException] = Args.OnException;
+  SubStmts[CoroutineBodyStmt::OnFallthrough] = Args.OnFallthrough;
+  SubStmts[CoroutineBodyStmt::Allocate] = Args.Allocate;
+  SubStmts[CoroutineBodyStmt::Deallocate] = Args.Deallocate;
+  SubStmts[CoroutineBodyStmt::ReturnValue] = Args.ReturnValue;
+  SubStmts[CoroutineBodyStmt::ResultDecl] = Args.ResultDecl;
+  SubStmts[CoroutineBodyStmt::ReturnStmt] = Args.ReturnStmt;
+  SubStmts[CoroutineBodyStmt::ReturnStmtOnAllocFailure] =
+      Args.ReturnStmtOnAllocFailure;
+  std::copy(Args.ParamMoves.begin(), Args.ParamMoves.end(),
+            const_cast<Stmt **>(getParamMoves().data()));
 }

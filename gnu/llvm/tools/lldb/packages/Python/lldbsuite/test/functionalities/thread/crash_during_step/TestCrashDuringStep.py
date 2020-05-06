@@ -12,7 +12,7 @@ from lldbsuite.test.lldbtest import *
 from lldbsuite.test import lldbutil
 
 
-class CreateDuringStepTestCase(TestBase):
+class CrashDuringStepTestCase(TestBase):
 
     mydir = TestBase.compute_mydir(__file__)
 
@@ -20,13 +20,12 @@ class CreateDuringStepTestCase(TestBase):
         TestBase.setUp(self)
         self.breakpoint = line_number('main.cpp', '// Set breakpoint here')
 
-    @expectedFailureAll(oslist=["windows"], bugnumber="llvm.org/pr24778")
     # IO error due to breakpoint at invalid address
     @expectedFailureAll(triple=re.compile('^mips'))
     def test_step_inst_with(self):
         """Test thread creation during step-inst handling."""
         self.build(dictionary=self.getBuildFlags())
-        exe = os.path.join(os.getcwd(), "a.out")
+        exe = self.getBuildArtifact("a.out")
 
         target = self.dbg.CreateTarget(exe)
         self.assertTrue(target and target.IsValid(), "Target is valid")

@@ -1,68 +1,79 @@
-set(LLVM_SOURCE_DIR "${LLVM_MAIN_SRC_DIR}")
-set(LLVM_BINARY_DIR "${LLVM_BINARY_DIR}")
-set(LLVM_BUILD_MODE "%(build_mode)s")
-set(LLVM_TOOLS_DIR "${LLVM_TOOLS_BINARY_DIR}/%(build_config)s")
-set(LLVM_LIBS_DIR "${LLVM_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX}/%(build_config)s")
-set(CLANG_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
-set(CLANG_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/..")
-if(BUILD_SHARED_LIBS)
-  set(ENABLE_SHARED 1)
-else()
-  set(ENABLE_SHARED 0)
-endif(BUILD_SHARED_LIBS)
+# Test runner infrastructure for LLDB. This configures the LLDB test trees
+# for use by Lit, and delegates to LLVM's lit test handlers.
 
-option(LLDB_TEST_CLANG "Use in-tree clang when testing lldb" Off)
-set(LLDB_TEST_C_COMPILER "" CACHE STRING "C compiler to use when testing LLDB")
-set(LLDB_TEST_CXX_COMPILER "" CACHE STRING "C++ compiler to use when testing LLDB")
+if (CMAKE_CFG_INTDIR STREQUAL ".")
+  set(LLVM_BUILD_MODE ".")
+else ()
+  set(LLVM_BUILD_MODE "%(build_mode)s")
+endif ()
 
-configure_lit_site_cfg(
-  ${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.in
-  ${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg)
-configure_lit_site_cfg(
-  ${CMAKE_CURRENT_SOURCE_DIR}/Unit/lit.site.cfg.in
-  ${CMAKE_CURRENT_BINARY_DIR}/Unit/lit.site.cfg
-  )
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+  set(LLDB_IS_64_BITS 1)
+endif()
 
-set(LLDB_TEST_DEPS
+get_property(LLDB_DOTEST_ARGS GLOBAL PROPERTY LLDB_DOTEST_ARGS_PROPERTY)
+
+string(REPLACE ${CMAKE_CFG_INTDIR} ${LLVM_BUILD_MODE} LLDB_LIBS_DIR ${LLVM_LIBRARY_OUTPUT_INTDIR})
+string(REPLACE ${CMAKE_CFG_INTDIR} ${LLVM_BUILD_MODE} LLDB_TOOLS_DIR ${LLVM_RUNTIME_OUTPUT_INTDIR})
+string(REPLACE ${CMAKE_CFG_INTDIR} ${LLVM_BUILD_MODE} LLDB_DOTEST_ARGS "${LLDB_DOTEST_ARGS}")
+
+list(APPEND LLDB_TEST_DEPS
   LLDBUnitTests
+  dsymutil
+  llc
   lldb
+  lldb-test
+  llvm-config
+  llvm-mc
+  llvm-objcopy
   )
+
+if(TARGET lld)
+  list(APPEND LLDB_TEST_DEPS lld)
+endif()
+
+# the value is not canonicalized within LLVM
+llvm_canonicalize_cmake_booleans(
+  LLDB_DISABLE_PYTHON
+  LLVM_ENABLE_ZLIB
+  LLDB_IS_64_BITS)
+
+configure_lit_site_cfg(
+  ${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.py.in
+  ${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg.py
+  MAIN_CONFIG
+  ${CMAKE_CURRENT_SOURCE_DIR}/lit.cfg.py)
+configure_lit_site_cfg(
+  ${CMAKE_CURRENT_SOURCE_DIR}/Unit/lit.site.cfg.py.in
+  ${CMAKE_CURRENT_BINARY_DIR}/Unit/lit.site.cfg.py
+  MAIN_CONFIG
+  ${CMAKE_CURRENT_SOURCE_DIR}/Unit/lit.cfg.py)
+configure_lit_site_cfg(
+  ${CMAKE_CURRENT_SOURCE_DIR}/Suite/lit.site.cfg.in
+  ${CMAKE_CURRENT_BINARY_DIR}/Suite/lit.site.cfg)
 
 if(NOT LLDB_BUILT_STANDALONE)
-  list(APPEND LLDB_TEST_DEPS FileCheck not)
-endif()
-  
-# lldb-server is not built on every platform.
-if (TARGET lldb-server)
-  list(APPEND LLDB_TEST_DEPS lldb-server)
-endif()
-  
-if(APPLE)
-  list(APPEND LLDB_TEST_DEPS debugserver)
-endif()
-
-if(LLDB_TEST_CLANG)
-  if(LLDB_TEST_C_COMPILER OR LLDB_TEST_CXX_COMPILER)
-    message(SEND_ERROR "Cannot override LLDB_TEST_<LANG>_COMPILER and set LLDB_TEST_CLANG.")
-  endif()
-  list(APPEND LLDB_TEST_DEPS clang)
-endif()
-
-set(LLDB_TEST_PARAMS
-  lldb_site_config=${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg
+  list(APPEND LLDB_TEST_DEPS
+    FileCheck
+    count
+    not
   )
+endif()
 
 add_lit_testsuite(check-lldb-lit "Running lldb lit test suite"
   ${CMAKE_CURRENT_BINARY_DIR}
-  PARAMS lldb_site_config=${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg
-       lldb_unit_site_config=${CMAKE_CURRENT_BINARY_DIR}/Unit/lit.site.cfg
   DEPENDS ${LLDB_TEST_DEPS}
   )
 
 set_target_properties(check-lldb-lit PROPERTIES FOLDER "LLDB tests")
 
-add_lit_testsuites(LLDB ${CMAKE_CURRENT_SOURCE_DIR}
-  PARAMS lldb_site_config=${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg
-         lldb_unit_site_config=${CMAKE_CURRENT_BINARY_DIR}/Unit/lit.site.cfg
+# If we're building with an in-tree clang, then list clang as a dependency
+# to run tests.
+if (TARGET clang)
+  add_dependencies(check-lldb-lit clang)
+endif()
+
+add_lit_testsuites(LLDB
+  ${CMAKE_CURRENT_SOURCE_DIR}
   DEPENDS ${LLDB_TEST_DEPS}
   )

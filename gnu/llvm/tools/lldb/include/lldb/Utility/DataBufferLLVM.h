@@ -11,27 +11,22 @@
 #define LLDB_CORE_DATABUFFERLLVM_H
 
 #include "lldb/Utility/DataBuffer.h"
-#include "lldb/lldb-types.h" // for offset_t
+#include "lldb/lldb-types.h"
 
 #include <memory>
-#include <stdint.h> // for uint8_t, uint64_t
+#include <stdint.h>
 
 namespace llvm {
-class MemoryBuffer;
+class WritableMemoryBuffer;
 class Twine;
 }
 
 namespace lldb_private {
 
+class FileSystem;
 class DataBufferLLVM : public DataBuffer {
 public:
   ~DataBufferLLVM();
-
-  static std::shared_ptr<DataBufferLLVM>
-  CreateSliceFromPath(const llvm::Twine &Path, uint64_t Size, uint64_t Offset, bool Private = false);
-
-  static std::shared_ptr<DataBufferLLVM>
-  CreateFromPath(const llvm::Twine &Path, bool NullTerminate = false, bool Private = false);
 
   uint8_t *GetBytes() override;
   const uint8_t *GetBytes() const override;
@@ -40,12 +35,12 @@ public:
   char *GetChars() { return reinterpret_cast<char *>(GetBytes()); }
 
 private:
-  /// \brief Construct a DataBufferLLVM from \p Buffer.  \p Buffer must be a
-  /// valid pointer.
-  explicit DataBufferLLVM(std::unique_ptr<llvm::MemoryBuffer> Buffer);
-  const uint8_t *GetBuffer() const;
+  friend FileSystem;
+  /// Construct a DataBufferLLVM from \p Buffer.  \p Buffer must be a valid
+  /// pointer.
+  explicit DataBufferLLVM(std::unique_ptr<llvm::WritableMemoryBuffer> Buffer);
 
-  std::unique_ptr<llvm::MemoryBuffer> Buffer;
+  std::unique_ptr<llvm::WritableMemoryBuffer> Buffer;
 };
 }
 

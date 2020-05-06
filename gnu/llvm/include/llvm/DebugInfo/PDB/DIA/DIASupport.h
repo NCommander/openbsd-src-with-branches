@@ -29,5 +29,6 @@
 // DIA headers must come after windows headers.
 #include <cvconst.h>
 #include <dia2.h>
+#include <diacreate.h>
 
 #endif // LLVM_DEBUGINFO_PDB_DIA_DIASUPPORT_H

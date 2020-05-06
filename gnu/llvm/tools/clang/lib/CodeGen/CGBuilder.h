@@ -10,6 +10,7 @@
 #ifndef LLVM_CLANG_LIB_CODEGEN_CGBUILDER_H
 #define LLVM_CLANG_LIB_CODEGEN_CGBUILDER_H
 
+#include "llvm/IR/DataLayout.h"
 #include "llvm/IR/IRBuilder.h"
 #include "Address.h"
 #include "CodeGenTypeCache.h"
@@ -19,18 +20,16 @@ namespace CodeGen {
 
 class CodeGenFunction;
 
-/// \brief This is an IRBuilder insertion helper that forwards to
+/// This is an IRBuilder insertion helper that forwards to
 /// CodeGenFunction::InsertHelper, which adds necessary metadata to
 /// instructions.
-template <bool PreserveNames>
-class CGBuilderInserter
-    : protected llvm::IRBuilderDefaultInserter<PreserveNames> {
+class CGBuilderInserter : protected llvm::IRBuilderDefaultInserter {
 public:
   CGBuilderInserter() = default;
   explicit CGBuilderInserter(CodeGenFunction *CGF) : CGF(CGF) {}
 
 protected:
-  /// \brief This forwards to CodeGenFunction::InsertHelper.
+  /// This forwards to CodeGenFunction::InsertHelper.
   void InsertHelper(llvm::Instruction *I, const llvm::Twine &Name,
                     llvm::BasicBlock *BB,
                     llvm::BasicBlock::iterator InsertPt) const;
@@ -38,17 +37,10 @@ private:
   CodeGenFunction *CGF = nullptr;
 };
 
-// Don't preserve names on values in an optimized build.
-#ifdef NDEBUG
-#define PreserveNames false
-#else
-#define PreserveNames true
-#endif
+typedef CGBuilderInserter CGBuilderInserterTy;
 
-typedef CGBuilderInserter<PreserveNames> CGBuilderInserterTy;
-
-typedef llvm::IRBuilder<PreserveNames, llvm::ConstantFolder,
-                        CGBuilderInserterTy> CGBuilderBaseTy;
+typedef llvm::IRBuilder<llvm::ConstantFolder, CGBuilderInserterTy>
+    CGBuilderBaseTy;
 
 class CGBuilderTy : public CGBuilderBaseTy {
   /// Storing a reference to the type cache here makes it a lot easier
@@ -110,11 +102,6 @@ public:
     assert(Addr->getType()->getPointerElementType() == Ty);
     return CreateAlignedLoad(Addr, Align.getQuantity(), Name);
   }
-  llvm::LoadInst *CreateAlignedLoad(llvm::Value *Addr, CharUnits Align,
-                                    bool IsVolatile,
-                                    const llvm::Twine &Name = "") {
-    return CreateAlignedLoad(Addr, Align.getQuantity(), IsVolatile, Name);
-  }
 
   // Note that we intentionally hide the CreateStore APIs that don't
   // take an alignment.
@@ -129,22 +116,9 @@ public:
                                       CharUnits Align, bool IsVolatile = false) {
     return CreateAlignedStore(Val, Addr, Align.getQuantity(), IsVolatile);
   }
-  
+
   // FIXME: these "default-aligned" APIs should be removed,
   // but I don't feel like fixing all the builtin code right now.
-  llvm::LoadInst *CreateDefaultAlignedLoad(llvm::Value *Addr,
-                                           const llvm::Twine &Name = "") {
-    return CGBuilderBaseTy::CreateLoad(Addr, false, Name);
-  }
-  llvm::LoadInst *CreateDefaultAlignedLoad(llvm::Value *Addr,
-                                           const char *Name) {
-    return CGBuilderBaseTy::CreateLoad(Addr, false, Name);
-  }
-  llvm::LoadInst *CreateDefaultAlignedLoad(llvm::Value *Addr, bool IsVolatile,
-                                           const llvm::Twine &Name = "") {
-    return CGBuilderBaseTy::CreateLoad(Addr, IsVolatile, Name);
-  }
-
   llvm::StoreInst *CreateDefaultAlignedStore(llvm::Value *Val,
                                              llvm::Value *Addr,
                                              bool IsVolatile = false) {
@@ -171,6 +145,13 @@ public:
                    Addr.getAlignment());
   }
 
+  using CGBuilderBaseTy::CreateAddrSpaceCast;
+  Address CreateAddrSpaceCast(Address Addr, llvm::Type *Ty,
+                              const llvm::Twine &Name = "") {
+    return Address(CreateAddrSpaceCast(Addr.getPointer(), Ty, Name),
+                   Addr.getAlignment());
+  }
+
   /// Cast the element type of the given address to a different type,
   /// preserving information like the alignment and address space.
   Address CreateElementBitCast(Address Addr, llvm::Type *Ty,
@@ -193,6 +174,12 @@ public:
     return Address(CreateStructGEP(Addr.getElementType(),
                                    Addr.getPointer(), Index, Name),
                    Addr.getAlignment().alignmentAtOffset(Offset));
+  }
+  Address CreateStructGEP(Address Addr, unsigned Index,
+                          const llvm::StructLayout *Layout,
+                          const llvm::Twine &Name = "") {
+    auto Offset = CharUnits::fromQuantity(Layout->getElementOffset(Index));
+    return CreateStructGEP(Addr, Index, Offset, Name);
   }
 
   /// Given
@@ -257,6 +244,21 @@ public:
                    Addr.getAlignment().alignmentAtOffset(Offset));
   }
 
+  using CGBuilderBaseTy::CreateConstInBoundsGEP2_32;
+  Address CreateConstInBoundsGEP2_32(Address Addr, unsigned Idx0,
+                                      unsigned Idx1, const llvm::DataLayout &DL,
+                                      const llvm::Twine &Name = "") {
+    auto *GEP = cast<llvm::GetElementPtrInst>(CreateConstInBoundsGEP2_32(
+        Addr.getElementType(), Addr.getPointer(), Idx0, Idx1, Name));
+    llvm::APInt Offset(
+        DL.getIndexSizeInBits(Addr.getType()->getPointerAddressSpace()), 0,
+        /*IsSigned=*/true);
+    if (!GEP->accumulateConstantOffset(DL, Offset))
+      llvm_unreachable("offset of GEP with constants is always computable");
+    return Address(GEP, Addr.getAlignment().alignmentAtOffset(
+                            CharUnits::fromQuantity(Offset.getSExtValue())));
+  }
+
   llvm::Value *CreateConstInBoundsByteGEP(llvm::Value *Ptr, CharUnits Offset,
                                           const llvm::Twine &Name = "") {
     assert(Ptr->getType()->getPointerElementType() == TypeCache.Int8Ty);
@@ -271,23 +273,23 @@ public:
   using CGBuilderBaseTy::CreateMemCpy;
   llvm::CallInst *CreateMemCpy(Address Dest, Address Src, llvm::Value *Size,
                                bool IsVolatile = false) {
-    auto Align = std::min(Dest.getAlignment(), Src.getAlignment());
-    return CreateMemCpy(Dest.getPointer(), Src.getPointer(), Size,
-                        Align.getQuantity(), IsVolatile);
+    return CreateMemCpy(Dest.getPointer(), Dest.getAlignment().getQuantity(),
+                        Src.getPointer(), Src.getAlignment().getQuantity(),
+                        Size,IsVolatile);
   }
   llvm::CallInst *CreateMemCpy(Address Dest, Address Src, uint64_t Size,
                                bool IsVolatile = false) {
-    auto Align = std::min(Dest.getAlignment(), Src.getAlignment());
-    return CreateMemCpy(Dest.getPointer(), Src.getPointer(), Size,
-                        Align.getQuantity(), IsVolatile);
+    return CreateMemCpy(Dest.getPointer(), Dest.getAlignment().getQuantity(),
+                        Src.getPointer(), Src.getAlignment().getQuantity(),
+                        Size, IsVolatile);
   }
 
   using CGBuilderBaseTy::CreateMemMove;
   llvm::CallInst *CreateMemMove(Address Dest, Address Src, llvm::Value *Size,
                                 bool IsVolatile = false) {
-    auto Align = std::min(Dest.getAlignment(), Src.getAlignment());
-    return CreateMemMove(Dest.getPointer(), Src.getPointer(), Size,
-                         Align.getQuantity(), IsVolatile);
+    return CreateMemMove(Dest.getPointer(), Dest.getAlignment().getQuantity(),
+                         Src.getPointer(), Src.getAlignment().getQuantity(),
+                         Size, IsVolatile);
   }
 
   using CGBuilderBaseTy::CreateMemSet;
@@ -297,8 +299,6 @@ public:
                         Dest.getAlignment().getQuantity(), IsVolatile);
   }
 };
-
-#undef PreserveNames
 
 }  // end namespace CodeGen
 }  // end namespace clang

@@ -11,10 +11,6 @@
 #ifndef liblldb_RegisterContextDarwin_arm64_h_
 #define liblldb_RegisterContextDarwin_arm64_h_
 
-// C Includes
-// C++ Includes
-// Other libraries and framework includes
-// Project includes
 #include "lldb/Target/RegisterContext.h"
 #include "lldb/lldb-private.h"
 
@@ -78,7 +74,7 @@ public:
   };
 
   struct VReg {
-    uint8_t bytes[16];
+    llvm::AlignedCharArray<16, 16> bytes;
   };
 
   // mirrors <mach/arm/thread_status.h> arm_neon_state64_t

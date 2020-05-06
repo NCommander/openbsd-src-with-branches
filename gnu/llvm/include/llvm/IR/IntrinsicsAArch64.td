@@ -13,9 +13,6 @@
 
 let TargetPrefix = "aarch64" in {
 
-def int_aarch64_thread_pointer : GCCBuiltin<"__builtin_thread_pointer">,
-            Intrinsic<[llvm_ptr_ty], [], [IntrNoMem]>;
-
 def int_aarch64_ldxr : Intrinsic<[llvm_i64_ty], [llvm_anyptr_ty]>;
 def int_aarch64_ldaxr : Intrinsic<[llvm_i64_ty], [llvm_anyptr_ty]>;
 def int_aarch64_stxr : Intrinsic<[llvm_i32_ty], [llvm_i64_ty, llvm_anyptr_ty]>;
@@ -41,17 +38,17 @@ def int_aarch64_udiv : Intrinsic<[llvm_anyint_ty], [LLVMMatchType<0>,
 def int_aarch64_hint : Intrinsic<[], [llvm_i32_ty]>;
 
 //===----------------------------------------------------------------------===//
-// RBIT
-
-def int_aarch64_rbit : Intrinsic<[llvm_anyint_ty], [LLVMMatchType<0>],
-                                 [IntrNoMem]>;
-
-//===----------------------------------------------------------------------===//
 // Data Barrier Instructions
 
-def int_aarch64_dmb : GCCBuiltin<"__builtin_arm_dmb">, Intrinsic<[], [llvm_i32_ty]>;
-def int_aarch64_dsb : GCCBuiltin<"__builtin_arm_dsb">, Intrinsic<[], [llvm_i32_ty]>;
-def int_aarch64_isb : GCCBuiltin<"__builtin_arm_isb">, Intrinsic<[], [llvm_i32_ty]>;
+def int_aarch64_dmb : GCCBuiltin<"__builtin_arm_dmb">, MSBuiltin<"__dmb">, Intrinsic<[], [llvm_i32_ty]>;
+def int_aarch64_dsb : GCCBuiltin<"__builtin_arm_dsb">, MSBuiltin<"__dsb">, Intrinsic<[], [llvm_i32_ty]>;
+def int_aarch64_isb : GCCBuiltin<"__builtin_arm_isb">, MSBuiltin<"__isb">, Intrinsic<[], [llvm_i32_ty]>;
+
+// A space-consuming intrinsic primarily for testing block and jump table
+// placements. The first argument is the number of bytes this "instruction"
+// takes up, the second and return value are essentially chains, used to force
+// ordering during ISel.
+def int_aarch64_space : Intrinsic<[llvm_i64_ty], [llvm_i32_ty, llvm_i64_ty], []>;
 
 }
 
@@ -155,11 +152,24 @@ let TargetPrefix = "aarch64" in {  // All intrinsics start with "llvm.aarch64.".
   class AdvSIMD_CvtFPToFx_Intrinsic
     : Intrinsic<[llvm_anyint_ty], [llvm_anyfloat_ty, llvm_i32_ty],
                 [IntrNoMem]>;
+
+  class AdvSIMD_1Arg_Intrinsic
+    : Intrinsic<[llvm_any_ty], [LLVMMatchType<0>], [IntrNoMem]>;
+
+  class AdvSIMD_Dot_Intrinsic
+    : Intrinsic<[llvm_anyvector_ty],
+                [LLVMMatchType<0>, llvm_anyvector_ty, LLVMMatchType<1>],
+                [IntrNoMem]>;
+
+  class AdvSIMD_FP16FML_Intrinsic
+    : Intrinsic<[llvm_anyvector_ty],
+                [LLVMMatchType<0>, llvm_anyvector_ty, LLVMMatchType<1>],
+                [IntrNoMem]>;
 }
 
 // Arithmetic ops
 
-let Properties = [IntrNoMem] in {
+let TargetPrefix = "aarch64", IntrProperties = [IntrNoMem] in {
   // Vector Add Across Lanes
   def int_aarch64_neon_saddv : AdvSIMD_1VectorArg_Int_Across_Intrinsic;
   def int_aarch64_neon_uaddv : AdvSIMD_1VectorArg_Int_Across_Intrinsic;
@@ -212,7 +222,7 @@ let Properties = [IntrNoMem] in {
 
   // Vector Extending Multiply
   def int_aarch64_neon_fmulx : AdvSIMD_2FloatArg_Intrinsic {
-    let Properties = [IntrNoMem, Commutative];
+    let IntrProperties = [IntrNoMem, Commutative];
   }
 
   // Vector Saturating Doubling Long Multiply
@@ -253,7 +263,7 @@ let Properties = [IntrNoMem] in {
   // Vector Max
   def int_aarch64_neon_smax : AdvSIMD_2VectorArg_Intrinsic;
   def int_aarch64_neon_umax : AdvSIMD_2VectorArg_Intrinsic;
-  def int_aarch64_neon_fmax : AdvSIMD_2VectorArg_Intrinsic;
+  def int_aarch64_neon_fmax : AdvSIMD_2FloatArg_Intrinsic;
   def int_aarch64_neon_fmaxnmp : AdvSIMD_2VectorArg_Intrinsic;
 
   // Vector Max Across Lanes
@@ -265,7 +275,7 @@ let Properties = [IntrNoMem] in {
   // Vector Min
   def int_aarch64_neon_smin : AdvSIMD_2VectorArg_Intrinsic;
   def int_aarch64_neon_umin : AdvSIMD_2VectorArg_Intrinsic;
-  def int_aarch64_neon_fmin : AdvSIMD_2VectorArg_Intrinsic;
+  def int_aarch64_neon_fmin : AdvSIMD_2FloatArg_Intrinsic;
   def int_aarch64_neon_fminnmp : AdvSIMD_2VectorArg_Intrinsic;
 
   // Vector Min/Max Number
@@ -363,7 +373,7 @@ let Properties = [IntrNoMem] in {
   def int_aarch64_neon_sqxtun : AdvSIMD_1VectorArg_Narrow_Intrinsic;
 
   // Vector Absolute Value
-  def int_aarch64_neon_abs : AdvSIMD_1IntArg_Intrinsic;
+  def int_aarch64_neon_abs : AdvSIMD_1Arg_Intrinsic;
 
   // Vector Saturating Absolute Value
   def int_aarch64_neon_sqabs : AdvSIMD_1IntArg_Intrinsic;
@@ -421,6 +431,16 @@ let Properties = [IntrNoMem] in {
   // Scalar FP Inexact Narrowing
   def int_aarch64_sisd_fcvtxn : Intrinsic<[llvm_float_ty], [llvm_double_ty],
                                         [IntrNoMem]>;
+
+  // v8.2-A Dot Product
+  def int_aarch64_neon_udot : AdvSIMD_Dot_Intrinsic;
+  def int_aarch64_neon_sdot : AdvSIMD_Dot_Intrinsic;
+
+  // v8.2-A FP16 Fused Multiply-Add Long
+  def int_aarch64_neon_fmlal : AdvSIMD_FP16FML_Intrinsic;
+  def int_aarch64_neon_fmlsl : AdvSIMD_FP16FML_Intrinsic;
+  def int_aarch64_neon_fmlal2 : AdvSIMD_FP16FML_Intrinsic;
+  def int_aarch64_neon_fmlsl2 : AdvSIMD_FP16FML_Intrinsic;
 }
 
 let TargetPrefix = "aarch64" in {  // All intrinsics start with "llvm.aarch64.".
@@ -436,70 +456,70 @@ def int_aarch64_neon_vcopy_lane: AdvSIMD_2Vector2Index_Intrinsic;
 let TargetPrefix = "aarch64" in {  // All intrinsics start with "llvm.aarch64.".
   class AdvSIMD_1Vec_Load_Intrinsic
       : Intrinsic<[llvm_anyvector_ty], [LLVMAnyPointerType<LLVMMatchType<0>>],
-                  [IntrReadArgMem]>;
+                  [IntrReadMem, IntrArgMemOnly]>;
   class AdvSIMD_1Vec_Store_Lane_Intrinsic
     : Intrinsic<[], [llvm_anyvector_ty, llvm_i64_ty, llvm_anyptr_ty],
-                [IntrReadWriteArgMem, NoCapture<2>]>;
+                [IntrArgMemOnly, NoCapture<2>]>;
 
   class AdvSIMD_2Vec_Load_Intrinsic
     : Intrinsic<[llvm_anyvector_ty, LLVMMatchType<0>],
                 [LLVMAnyPointerType<LLVMMatchType<0>>],
-                [IntrReadArgMem]>;
+                [IntrReadMem, IntrArgMemOnly]>;
   class AdvSIMD_2Vec_Load_Lane_Intrinsic
     : Intrinsic<[llvm_anyvector_ty, LLVMMatchType<0>],
                 [LLVMMatchType<0>, LLVMMatchType<0>,
                  llvm_i64_ty, llvm_anyptr_ty],
-                [IntrReadArgMem]>;
+                [IntrReadMem, IntrArgMemOnly]>;
   class AdvSIMD_2Vec_Store_Intrinsic
     : Intrinsic<[], [llvm_anyvector_ty, LLVMMatchType<0>,
                      LLVMAnyPointerType<LLVMMatchType<0>>],
-                [IntrReadWriteArgMem, NoCapture<2>]>;
+                [IntrArgMemOnly, NoCapture<2>]>;
   class AdvSIMD_2Vec_Store_Lane_Intrinsic
     : Intrinsic<[], [llvm_anyvector_ty, LLVMMatchType<0>,
                  llvm_i64_ty, llvm_anyptr_ty],
-                [IntrReadWriteArgMem, NoCapture<3>]>;
+                [IntrArgMemOnly, NoCapture<3>]>;
 
   class AdvSIMD_3Vec_Load_Intrinsic
     : Intrinsic<[llvm_anyvector_ty, LLVMMatchType<0>, LLVMMatchType<0>],
                 [LLVMAnyPointerType<LLVMMatchType<0>>],
-                [IntrReadArgMem]>;
+                [IntrReadMem, IntrArgMemOnly]>;
   class AdvSIMD_3Vec_Load_Lane_Intrinsic
     : Intrinsic<[llvm_anyvector_ty, LLVMMatchType<0>, LLVMMatchType<0>],
                 [LLVMMatchType<0>, LLVMMatchType<0>, LLVMMatchType<0>,
                  llvm_i64_ty, llvm_anyptr_ty],
-                [IntrReadArgMem]>;
+                [IntrReadMem, IntrArgMemOnly]>;
   class AdvSIMD_3Vec_Store_Intrinsic
     : Intrinsic<[], [llvm_anyvector_ty, LLVMMatchType<0>,
                      LLVMMatchType<0>, LLVMAnyPointerType<LLVMMatchType<0>>],
-                [IntrReadWriteArgMem, NoCapture<3>]>;
+                [IntrArgMemOnly, NoCapture<3>]>;
   class AdvSIMD_3Vec_Store_Lane_Intrinsic
     : Intrinsic<[], [llvm_anyvector_ty,
                  LLVMMatchType<0>, LLVMMatchType<0>,
                  llvm_i64_ty, llvm_anyptr_ty],
-                [IntrReadWriteArgMem, NoCapture<4>]>;
+                [IntrArgMemOnly, NoCapture<4>]>;
 
   class AdvSIMD_4Vec_Load_Intrinsic
     : Intrinsic<[llvm_anyvector_ty, LLVMMatchType<0>,
                  LLVMMatchType<0>, LLVMMatchType<0>],
                 [LLVMAnyPointerType<LLVMMatchType<0>>],
-                [IntrReadArgMem]>;
+                [IntrReadMem, IntrArgMemOnly]>;
   class AdvSIMD_4Vec_Load_Lane_Intrinsic
     : Intrinsic<[llvm_anyvector_ty, LLVMMatchType<0>,
                  LLVMMatchType<0>, LLVMMatchType<0>],
                 [LLVMMatchType<0>, LLVMMatchType<0>,
                  LLVMMatchType<0>, LLVMMatchType<0>,
                  llvm_i64_ty, llvm_anyptr_ty],
-                [IntrReadArgMem]>;
+                [IntrReadMem, IntrArgMemOnly]>;
   class AdvSIMD_4Vec_Store_Intrinsic
     : Intrinsic<[], [llvm_anyvector_ty, LLVMMatchType<0>,
                  LLVMMatchType<0>, LLVMMatchType<0>,
                  LLVMAnyPointerType<LLVMMatchType<0>>],
-                [IntrReadWriteArgMem, NoCapture<4>]>;
+                [IntrArgMemOnly, NoCapture<4>]>;
   class AdvSIMD_4Vec_Store_Lane_Intrinsic
     : Intrinsic<[], [llvm_anyvector_ty, LLVMMatchType<0>,
                  LLVMMatchType<0>, LLVMMatchType<0>,
                  llvm_i64_ty, llvm_anyptr_ty],
-                [IntrReadWriteArgMem, NoCapture<5>]>;
+                [IntrArgMemOnly, NoCapture<5>]>;
 }
 
 // Memory ops
@@ -579,6 +599,14 @@ def int_aarch64_neon_tbx1 : AdvSIMD_Tbx1_Intrinsic;
 def int_aarch64_neon_tbx2 : AdvSIMD_Tbx2_Intrinsic;
 def int_aarch64_neon_tbx3 : AdvSIMD_Tbx3_Intrinsic;
 def int_aarch64_neon_tbx4 : AdvSIMD_Tbx4_Intrinsic;
+
+let TargetPrefix = "aarch64" in {
+  class FPCR_Get_Intrinsic
+    : Intrinsic<[llvm_i64_ty], [], [IntrNoMem]>;
+}
+
+// FPCR
+def int_aarch64_get_fpcr : FPCR_Get_Intrinsic;
 
 let TargetPrefix = "aarch64" in {
   class Crypto_AES_DataKey_Intrinsic

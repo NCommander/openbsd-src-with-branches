@@ -14,16 +14,16 @@
 #include "lldb/Utility/ConstString.h"
 #include "lldb/Utility/Flags.h"
 #include "lldb/Utility/UserID.h"
-#include "lldb/lldb-defines.h"      // for DISALLOW_COPY_AND_ASSIGN
-#include "lldb/lldb-enumerations.h" // for SectionType
-#include "lldb/lldb-forward.h"      // for SectionSP, ModuleSP, SectionWP
-#include "lldb/lldb-types.h"        // for addr_t, offset_t, user_id_t
+#include "lldb/lldb-defines.h"
+#include "lldb/lldb-enumerations.h"
+#include "lldb/lldb-forward.h"
+#include "lldb/lldb-types.h"
 
-#include <memory> // for enable_shared_from_this
-#include <vector> // for vector
+#include <memory>
+#include <vector>
 
-#include <stddef.h> // for size_t
-#include <stdint.h> // for uint32_t, UINT32_MAX
+#include <stddef.h>
+#include <stdint.h>
 
 namespace lldb_private {
 class Address;
@@ -182,6 +182,8 @@ public:
 
   lldb::SectionType GetType() const { return m_type; }
 
+  const char *GetTypeAsCString() const;
+
   lldb::SectionSP GetParent() const { return m_parent_wp.lock(); }
 
   bool IsThreadSpecific() const { return m_thread_specific; }
@@ -238,7 +240,7 @@ public:
   ///     section has no data or \a offset is not a valid offset
   ///     in this section.
   //------------------------------------------------------------------
-  lldb::offset_t GetSectionData(DataExtractor &data) const;
+  lldb::offset_t GetSectionData(DataExtractor &data);
 
   uint32_t GetLog2Align() { return m_log2align; }
 
@@ -246,6 +248,10 @@ public:
 
   // Get the number of host bytes required to hold a target byte
   uint32_t GetTargetByteSize() const { return m_target_byte_size; }
+
+  bool IsRelocated() const { return m_relocated; }
+
+  void SetIsRelocated(bool b) { m_relocated = b; }
 
 protected:
   ObjectFile *m_obj_file;   // The object file that data for this section should
@@ -266,15 +272,15 @@ protected:
   SectionList m_children; // Child sections
   bool m_fake : 1, // If true, then this section only can contain the address if
                    // one of its
-      // children contains an address. This allows for gaps between the children
-      // that are contained in the address range for this section, but do not
-      // produce
-      // hits unless the children contain the address.
+      // children contains an address. This allows for gaps between the
+      // children that are contained in the address range for this section, but
+      // do not produce hits unless the children contain the address.
       m_encrypted : 1,         // Set to true if the contents are encrypted
       m_thread_specific : 1,   // This section is thread specific
       m_readable : 1,          // If this section has read permissions
       m_writable : 1,          // If this section has write permissions
-      m_executable : 1;        // If this section has executable permissions
+      m_executable : 1,        // If this section has executable permissions
+      m_relocated : 1;         // If this section has had relocations applied
   uint32_t m_target_byte_size; // Some architectures have non-8-bit byte size.
                                // This is specified as
                                // as a multiple number of a host bytes

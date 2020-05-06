@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// \brief This file defines the clang::ento::ModelInjector class which implements the
+/// This file defines the clang::ento::ModelInjector class which implements the
 /// clang::CodeInjector interface. This class is responsible for injecting
 /// function definitions that were synthesized from model files.
 ///
@@ -25,11 +25,7 @@
 #define LLVM_CLANG_SA_FRONTEND_MODELINJECTOR_H
 
 #include "clang/Analysis/CodeInjector.h"
-#include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/StringMap.h"
-#include <map>
-#include <memory>
-#include <vector>
 
 namespace clang {
 
@@ -47,7 +43,7 @@ public:
   Stmt *getBody(const ObjCMethodDecl *D) override;
 
 private:
-  /// \brief Synthesize a body for a declaration
+  /// Synthesize a body for a declaration
   ///
   /// This method first looks up the appropriate model file based on the
   /// model-path configuration option and the name of the declaration that is

@@ -1,4 +1,4 @@
-//===----- KaleidoscopeJIT.h - A simple JIT for Kaleidoscope ----*- C++ -*-===//
+//===- KaleidoscopeJIT.h - A simple JIT for Kaleidoscope --------*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -14,101 +14,81 @@
 #ifndef LLVM_EXECUTIONENGINE_ORC_KALEIDOSCOPEJIT_H
 #define LLVM_EXECUTIONENGINE_ORC_KALEIDOSCOPEJIT_H
 
-#include "llvm/ADT/STLExtras.h"
-#include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/ExecutionEngine/RuntimeDyld.h"
-#include "llvm/ExecutionEngine/SectionMemoryManager.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/ExecutionEngine/JITSymbol.h"
 #include "llvm/ExecutionEngine/Orc/CompileUtils.h"
-#include "llvm/ExecutionEngine/Orc/JITSymbol.h"
+#include "llvm/ExecutionEngine/Orc/Core.h"
+#include "llvm/ExecutionEngine/Orc/ExecutionUtils.h"
 #include "llvm/ExecutionEngine/Orc/IRCompileLayer.h"
 #include "llvm/ExecutionEngine/Orc/IRTransformLayer.h"
-#include "llvm/ExecutionEngine/Orc/LambdaResolver.h"
-#include "llvm/ExecutionEngine/Orc/ObjectLinkingLayer.h"
+#include "llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h"
+#include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
+#include "llvm/ExecutionEngine/SectionMemoryManager.h"
 #include "llvm/IR/DataLayout.h"
-#include "llvm/IR/Mangler.h"
-#include "llvm/Support/DynamicLibrary.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/Target/TargetMachine.h"
-#include <algorithm>
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/Transforms/InstCombine/InstCombine.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Scalar/GVN.h"
 #include <memory>
-#include <string>
-#include <vector>
 
 namespace llvm {
 namespace orc {
 
 class KaleidoscopeJIT {
 private:
-  std::unique_ptr<TargetMachine> TM;
-  const DataLayout DL;
-  ObjectLinkingLayer<> ObjectLayer;
-  IRCompileLayer<decltype(ObjectLayer)> CompileLayer;
+  ExecutionSession ES;
+  RTDyldObjectLinkingLayer ObjectLayer;
+  IRCompileLayer CompileLayer;
+  IRTransformLayer OptimizeLayer;
 
-  typedef std::function<std::unique_ptr<Module>(std::unique_ptr<Module>)>
-    OptimizeFunction;
-
-  IRTransformLayer<decltype(CompileLayer), OptimizeFunction> OptimizeLayer;
+  DataLayout DL;
+  MangleAndInterner Mangle;
+  ThreadSafeContext Ctx;
 
 public:
-  typedef decltype(OptimizeLayer)::ModuleSetHandleT ModuleHandle;
-
-  KaleidoscopeJIT()
-      : TM(EngineBuilder().selectTarget()), DL(TM->createDataLayout()),
-        CompileLayer(ObjectLayer, SimpleCompiler(*TM)),
-        OptimizeLayer(CompileLayer,
-                      [this](std::unique_ptr<Module> M) {
-                        return optimizeModule(std::move(M));
-                      }) {
-    llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
+  KaleidoscopeJIT(JITTargetMachineBuilder JTMB, DataLayout DL)
+      : ObjectLayer(ES,
+                    []() { return llvm::make_unique<SectionMemoryManager>(); }),
+        CompileLayer(ES, ObjectLayer, ConcurrentIRCompiler(std::move(JTMB))),
+        OptimizeLayer(ES, CompileLayer, optimizeModule),
+        DL(std::move(DL)), Mangle(ES, this->DL),
+        Ctx(llvm::make_unique<LLVMContext>()) {
+    ES.getMainJITDylib().setGenerator(
+        cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(DL)));
   }
 
-  TargetMachine &getTargetMachine() { return *TM; }
+  const DataLayout &getDataLayout() const { return DL; }
 
-  ModuleHandle addModule(std::unique_ptr<Module> M) {
-    // Build our symbol resolver:
-    // Lambda 1: Look back into the JIT itself to find symbols that are part of
-    //           the same "logical dylib".
-    // Lambda 2: Search for external symbols in the host process.
-    auto Resolver = createLambdaResolver(
-        [&](const std::string &Name) {
-          if (auto Sym = OptimizeLayer.findSymbol(Name, false))
-            return Sym.toRuntimeDyldSymbol();
-          return RuntimeDyld::SymbolInfo(nullptr);
-        },
-        [](const std::string &Name) {
-          if (auto SymAddr =
-                RTDyldMemoryManager::getSymbolAddressInProcess(Name))
-            return RuntimeDyld::SymbolInfo(SymAddr, JITSymbolFlags::Exported);
-          return RuntimeDyld::SymbolInfo(nullptr);
-        });
+  LLVMContext &getContext() { return *Ctx.getContext(); }
 
-    // Build a singlton module set to hold our module.
-    std::vector<std::unique_ptr<Module>> Ms;
-    Ms.push_back(std::move(M));
+  static Expected<std::unique_ptr<KaleidoscopeJIT>> Create() {
+    auto JTMB = JITTargetMachineBuilder::detectHost();
 
-    // Add the set to the JIT with the resolver we created above and a newly
-    // created SectionMemoryManager.
-    return OptimizeLayer.addModuleSet(std::move(Ms),
-                                      make_unique<SectionMemoryManager>(),
-                                      std::move(Resolver));
+    if (!JTMB)
+      return JTMB.takeError();
+
+    auto DL = JTMB->getDefaultDataLayoutForTarget();
+    if (!DL)
+      return DL.takeError();
+
+    return llvm::make_unique<KaleidoscopeJIT>(std::move(*JTMB), std::move(*DL));
   }
 
-  JITSymbol findSymbol(const std::string Name) {
-    std::string MangledName;
-    raw_string_ostream MangledNameStream(MangledName);
-    Mangler::getNameWithPrefix(MangledNameStream, Name, DL);
-    return OptimizeLayer.findSymbol(MangledNameStream.str(), true);
+  Error addModule(std::unique_ptr<Module> M) {
+    return OptimizeLayer.add(ES.getMainJITDylib(),
+                             ThreadSafeModule(std::move(M), Ctx));
   }
 
-  void removeModule(ModuleHandle H) {
-    OptimizeLayer.removeModuleSet(H);
+  Expected<JITEvaluatedSymbol> lookup(StringRef Name) {
+    return ES.lookup({&ES.getMainJITDylib()}, Mangle(Name.str()));
   }
 
 private:
-
-  std::unique_ptr<Module> optimizeModule(std::unique_ptr<Module> M) {
+  static Expected<ThreadSafeModule>
+  optimizeModule(ThreadSafeModule TSM, const MaterializationResponsibility &R) {
     // Create a function pass manager.
-    auto FPM = llvm::make_unique<legacy::FunctionPassManager>(M.get());
+    auto FPM = llvm::make_unique<legacy::FunctionPassManager>(TSM.getModule());
 
     // Add some optimizations.
     FPM->add(createInstructionCombiningPass());
@@ -119,12 +99,11 @@ private:
 
     // Run the optimizations over all functions in the module being added to
     // the JIT.
-    for (auto &F : *M)
+    for (auto &F : *TSM.getModule())
       FPM->run(F);
 
-    return M;
+    return TSM;
   }
-
 };
 
 } // end namespace orc

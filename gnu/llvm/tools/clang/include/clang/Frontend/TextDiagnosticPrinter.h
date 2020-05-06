@@ -29,7 +29,7 @@ class TextDiagnosticPrinter : public DiagnosticConsumer {
   raw_ostream &OS;
   IntrusiveRefCntPtr<DiagnosticOptions> DiagOpts;
 
-  /// \brief Handle to the currently active text diagnostic emitter.
+  /// Handle to the currently active text diagnostic emitter.
   std::unique_ptr<TextDiagnostic> TextDiag;
 
   /// A string to prefix to error messages.
@@ -45,7 +45,7 @@ public:
   /// setPrefix - Set the diagnostic printer prefix string, which will be
   /// printed at the start of any diagnostics. If empty, no prefix string is
   /// used.
-  void setPrefix(std::string Value) { Prefix = Value; }
+  void setPrefix(std::string Value) { Prefix = std::move(Value); }
 
   void BeginSourceFile(const LangOptions &LO, const Preprocessor *PP) override;
   void EndSourceFile() override;
