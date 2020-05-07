@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_record_layer.c,v 1.32 2020/05/02 00:31:54 inoguchi Exp $ */
+/* $OpenBSD: tls13_record_layer.c,v 1.33 2020/05/03 15:57:25 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -812,6 +812,16 @@ tls13_record_layer_read_record(struct tls13_record_layer *rl)
 		goto err;
 
 	tls13_record_layer_rrec_free(rl);
+
+	/*
+	 * On receiving a handshake or alert record with empty inner plaintext,
+	 * we must terminate the connection with an unexpected_message alert.
+	 * See RFC 8446 section 5.4.
+	 */
+	if (CBS_len(&rl->rbuf_cbs) == 0 &&
+	    (rl->rbuf_content_type == SSL3_RT_ALERT ||
+	     rl->rbuf_content_type == SSL3_RT_HANDSHAKE))
+		return tls13_send_alert(rl, SSL3_AD_UNEXPECTED_MESSAGE);
 
 	switch (rl->rbuf_content_type) {
 	case SSL3_RT_ALERT:
