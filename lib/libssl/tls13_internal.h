@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_internal.h,v 1.67 2020/04/28 20:37:22 jsing Exp $ */
+/* $OpenBSD: tls13_internal.h,v 1.68 2020/05/09 15:05:50 beck Exp $ */
 /*
  * Copyright (c) 2018 Bob Beck <beck@openbsd.org>
  * Copyright (c) 2018 Theo Buehler <tb@openbsd.org>
@@ -218,6 +218,7 @@ struct tls13_ctx {
 	uint8_t	mode;
 	struct tls13_handshake_stage handshake_stage;
 	int handshake_completed;
+	int middlebox_compat;
 
 	int close_notify_sent;
 	int close_notify_recv;
