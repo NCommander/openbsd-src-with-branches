@@ -1,4 +1,4 @@
-/*	$OpenBSD: event.h,v 1.34 2020/04/04 08:57:36 mpi Exp $	*/
+/*	$OpenBSD: event.h,v 1.35 2020/04/07 13:27:52 visa Exp $	*/
 
 /*-
  * Copyright (c) 1999,2000,2001 Jonathan Lemon <jlemon@FreeBSD.org>
@@ -136,10 +136,10 @@ struct klist {
  */
 #define NOTE_SUBMIT	0x01000000		/* initial knote submission */
 
-#define KNOTE(list_, hint)	do { \
-					struct klist *list = (list_); \
-					if ((list) != NULL) \
-						knote((list), (hint)); \
+#define KNOTE(list, hint)	do { \
+					struct klist *__list = (list); \
+					if (__list != NULL) \
+						knote(__list, hint); \
 				} while (0)
 
 #define	KN_HASHSIZE		64		/* XXX should be tunable */
