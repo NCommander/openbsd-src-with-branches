@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.63 2020/02/15 14:40:38 jsing Exp $
+# $OpenBSD: Makefile,v 1.64 2020/03/13 16:40:42 jsing Exp $
 
 .include <bsd.own.mk>
 .ifndef NOMAN
@@ -19,6 +19,9 @@ CFLAGS+= -DLIBRESSL_INTERNAL
 .ifdef TLS1_3
 CFLAGS+= -DLIBRESSL_HAS_TLS1_3_CLIENT
 CFLAGS+= -DLIBRESSL_HAS_TLS1_3_SERVER
+.endif
+.ifdef TLS1_3_DEBUG
+CFLAGS+= -DTLS13_DEBUG
 .endif
 CFLAGS+= -I${.CURDIR}
 
