@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.211 2020/01/26 07:24:47 jsing Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.212 2020/03/16 15:25:14 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -299,7 +299,7 @@ SSL_new(SSL_CTX *ctx)
 	s->internal->tlsext_ocsp_ids = NULL;
 	s->internal->tlsext_ocsp_exts = NULL;
 	s->internal->tlsext_ocsp_resp = NULL;
-	s->internal->tlsext_ocsp_resplen = -1;
+	s->internal->tlsext_ocsp_resp_len = 0;
 	CRYPTO_add(&ctx->references, 1, CRYPTO_LOCK_SSL_CTX);
 	s->initial_ctx = ctx;
 

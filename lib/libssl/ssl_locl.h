@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.271 2020/03/16 15:25:14 tb Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.272 2020/04/18 14:07:56 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -747,9 +747,10 @@ typedef struct ssl_internal_st {
 	/* OCSP status request only */
 	STACK_OF(OCSP_RESPID) *tlsext_ocsp_ids;
 	X509_EXTENSIONS *tlsext_ocsp_exts;
+
 	/* OCSP response received or to be sent */
 	unsigned char *tlsext_ocsp_resp;
-	int tlsext_ocsp_resplen;
+	size_t tlsext_ocsp_resp_len;
 
 	/* RFC4507 session ticket expected to be received or sent */
 	int tlsext_ticket_expected;
