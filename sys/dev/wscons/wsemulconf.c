@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemulconf.c,v 1.8 2010/08/28 12:48:14 miod Exp $ */
+/* $OpenBSD: wsemulconf.c,v 1.9 2015/03/14 03:38:50 jsg Exp $ */
 /* $NetBSD: wsemulconf.c,v 1.4 2000/01/05 11:19:37 drochner Exp $ */
 
 /*
@@ -78,7 +78,7 @@ wsemul_pick(const char *name)
 const char *
 wsemul_getname(int idx)
 {
-	if (idx >= nitems(wsemul_conf) - 1)
+	if (idx < 0 || idx >= nitems(wsemul_conf) - 1)
 		return (NULL);
 	return (wsemul_conf[idx]->name);
 }
