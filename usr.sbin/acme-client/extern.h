@@ -1,4 +1,4 @@
-/*	$Id: extern.h,v 1.16 2019/06/17 12:42:52 florian Exp $ */
+/*	$Id: extern.h,v 1.17 2020/02/07 14:34:15 florian Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -159,6 +159,7 @@ enum	chngstatus {
 struct	chng {
 	char		*uri; /* uri on ACME server */
 	char		*token; /* token we must offer */
+	char		*error; /* "detail" field in case of error */
 	size_t		 retry; /* how many times have we tried */
 	enum chngstatus	 status; /* challenge accepted? */
 };
