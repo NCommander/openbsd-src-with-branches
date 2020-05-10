@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.226 2019/10/01 08:57:47 claudio Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.227 2019/10/02 08:58:34 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -829,6 +829,10 @@ dispatch_imsg(struct imsgbuf *ibuf, int idx, struct bgpd_config *conf)
 			else {
 				reconfig = 1;
 				reconfpid = imsg.hdr.pid;
+				if (imsg.hdr.len == IMSG_HEADER_SIZE + REASON_LEN &&
+				    ((char *)imsg.data)[0])
+					log_info("reload due to: %.*s",
+					    REASON_LEN, log_reason(imsg.data));
 			}
 			break;
 		case IMSG_CTL_FIB_COUPLE:

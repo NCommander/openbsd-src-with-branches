@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.36 2019/06/17 11:03:07 claudio Exp $ */
+/*	$OpenBSD: parser.h,v 1.37 2019/06/25 07:44:20 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -64,7 +64,7 @@ struct parse_result {
 	struct community	 community;
 	char			 peerdesc[PEER_DESCR_LEN];
 	char			 rib[PEER_DESCR_LEN];
-	char			 shutcomm[SHUT_COMM_LEN];
+	char			 reason[REASON_LEN];
 	const char		*ext_comm_subtype;
 	u_int64_t		 rd;
 	int			 flags;
