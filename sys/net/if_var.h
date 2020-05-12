@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_var.h,v 1.103 2019/11/08 07:16:29 dlg Exp $	*/
+/*	$OpenBSD: if_var.h,v 1.104 2020/04/12 07:02:43 dlg Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -387,6 +387,7 @@ void	if_rxr_init(struct if_rxring *, u_int, u_int);
 u_int	if_rxr_get(struct if_rxring *, u_int);
 
 #define if_rxr_put(_r, _c)	do { (_r)->rxr_alive -= (_c); } while (0)
+#define if_rxr_needrefill(_r)	((_r)->rxr_alive < (_r)->rxr_lwm)
 #define if_rxr_inuse(_r)	((_r)->rxr_alive)
 #define if_rxr_cwm(_r)		((_r)->rxr_cwm)
 
