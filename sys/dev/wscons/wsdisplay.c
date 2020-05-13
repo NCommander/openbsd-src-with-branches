@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.132 2019/05/04 11:34:48 kettenis Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.133 2019/07/01 19:38:40 kn Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.82 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -1253,7 +1253,7 @@ wsdisplay_internal_ioctl(struct wsdisplay_softc *sc, struct wsscreen *scr,
 
 	case WSDISPLAYIO_GETSCREENTYPE:
 #define d ((struct wsdisplay_screentype *)data)
-		if (d->idx >= sc->sc_scrdata->nscreens)
+		if (d->idx < 0 || d->idx >= sc->sc_scrdata->nscreens)
 			return(EINVAL);
 
 		d->nidx = sc->sc_scrdata->nscreens;
