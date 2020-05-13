@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc.c,v 1.53 2019/04/02 07:08:40 stsp Exp $	*/
+/*	$OpenBSD: sdmmc.c,v 1.54 2019/12/31 10:05:33 mpi Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -29,6 +29,7 @@
 #include <sys/malloc.h>
 #include <sys/rwlock.h>
 #include <sys/systm.h>
+#include <sys/time.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>
@@ -577,10 +578,8 @@ sdmmc_init(struct sdmmc_softc *sc)
 void
 sdmmc_delay(u_int usecs)
 {
-	int nticks = usecs / (1000000 / hz);
-
-	if (!cold && nticks > 0)
-		tsleep(&sdmmc_delay, PWAIT, "mmcdly", nticks);
+	if (!cold && usecs > tick)
+		tsleep_nsec(&sdmmc_delay, PWAIT, "mmcdly", USEC_TO_NSEC(usecs));
 	else
 		delay(usecs);
 }
