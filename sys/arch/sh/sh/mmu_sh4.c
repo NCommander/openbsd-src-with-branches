@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mmu_sh4.c,v 1.2 2008/06/26 05:42:13 ray Exp $	*/
 /*	$NetBSD: mmu_sh4.c,v 1.11 2006/03/04 01:13:35 uwe Exp $	*/
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -49,7 +42,7 @@
 static inline void __sh4_itlb_invalidate_all(void);
 
 static inline void
-__sh4_itlb_invalidate_all()
+__sh4_itlb_invalidate_all(void)
 {
 	_reg_write_4(SH4_ITLB_AA, 0);
 	_reg_write_4(SH4_ITLB_AA | (1 << SH4_ITLB_E_SHIFT), 0);
@@ -58,7 +51,7 @@ __sh4_itlb_invalidate_all()
 }
 
 void
-sh4_mmu_start()
+sh4_mmu_start(void)
 {
 	/* Zero clear all TLB entry */
 	_reg_write_4(SH4_MMUCR, 0);	/* zero wired entry */
@@ -122,7 +115,7 @@ sh4_tlb_invalidate_asid(int asid)
 }
 
 void
-sh4_tlb_invalidate_all()
+sh4_tlb_invalidate_all(void)
 {
 	uint32_t a;
 	int e, eend, s;

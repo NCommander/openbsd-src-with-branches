@@ -27,11 +27,11 @@ offset=2
 chunk=4
 while 40+8*(offset+chunk) < len(payload):
 	frag.append(IP(src=LOCAL_ADDR, dst=REMOTE_ADDR, proto=1, id=fid,
-	    flags='MF', frag=offset)/
+	    frag=offset, flags='MF')/
 	    str(packet)[20+(8*offset):20+8*(offset+chunk)])
 	offset+=chunk
-frag.append(IP(src=LOCAL_ADDR, dst=REMOTE_ADDR, proto=1, id=fid, frag=offset)/
-    str(packet)[20+(8*offset):])
+frag.append(IP(src=LOCAL_ADDR, dst=REMOTE_ADDR, proto=1, id=fid,
+	frag=offset)/str(packet)[20+(8*offset):])
 eth=[]
 for f in frag:
 	eth.append(Ether(src=LOCAL_MAC, dst=REMOTE_MAC)/f)
@@ -57,7 +57,7 @@ for a in ans:
 		print "reply cksum=%#x" % (reply_cksum)
 		# change request checksum incrementaly and check with reply
 		diff_cksum=~(~reply_cksum+~(~request_cksum+~0x0800+0x0000))
-		if diff_cksum != -1:
+		if diff_cksum & 0xffff != 0xffff and diff_cksum & 0xffff != 0:
 			print "CHECKSUM ERROR diff cksum=%#x" % (diff_cksum)
 			exit(1)
 		exit(0)

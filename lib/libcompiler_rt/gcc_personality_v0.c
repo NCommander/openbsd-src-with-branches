@@ -12,6 +12,17 @@
 #include "int_lib.h"
 
 #include <unwind.h>
+#if defined(__arm__) && !defined(__ARM_DWARF_EH__) && !defined(__USING_SJLJ_EXCEPTIONS__)
+/*
+ * When building with older compilers (e.g. clang <3.9), it is possible that we
+ * have a version of unwind.h which does not provide the EHABI declarations
+ * which are quired for the C personality to conform to the specification.  In
+ * order to provide forward compatibility for such compilers, we re-declare the
+ * necessary interfaces in the helper to permit a standalone compilation of the
+ * builtins (which contains the C unwinding personality for historical reasons).
+ */
+#include "unwind-ehabi-helpers.h"
+#endif
 
 /*
  * Pointer encodings documented at:
@@ -195,8 +206,8 @@ __gcc_personality_v0(int version, _Unwind_Action actions,
     if ( lsda == (uint8_t*) 0 )
         return continueUnwind(exceptionObject, context);
 
-    uintptr_t pc = _Unwind_GetIP(context)-1;
-    uintptr_t funcStart = _Unwind_GetRegionStart(context);
+    uintptr_t pc = (uintptr_t)_Unwind_GetIP(context)-1;
+    uintptr_t funcStart = (uintptr_t)_Unwind_GetRegionStart(context);
     uintptr_t pcOffset = pc - funcStart;
 
     /* Parse LSDA header. */
@@ -238,4 +249,3 @@ __gcc_personality_v0(int version, _Unwind_Action actions,
     /* No landing pad found, continue unwinding. */
     return continueUnwind(exceptionObject, context);
 }
-

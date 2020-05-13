@@ -1,6 +1,8 @@
+/*	$OpenBSD: chroot.c,v 1.13 2009/10/27 23:59:51 deraadt Exp $	*/
+
 /*
- * Copyright (c) 1988 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,43 +29,120 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1988 The Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)chroot.c	5.8 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: chroot.c,v 1.4 1994/01/07 20:34:23 jtc Exp $";
-#endif /* not lint */
-
+#include <sys/types.h>
+#include <ctype.h>
+#include <err.h>
+#include <errno.h>
+#include <grp.h>
+#include <limits.h>
+#include <login_cap.h>
+#include <paths.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <paths.h>
-#include <err.h>
+#include <unistd.h>
 
-main(argc, argv)
-	int argc;
-	char **argv;
+int		main(int, char **);
+__dead void	usage(void);
+
+int
+main(int argc, char **argv)
 {
-	char *shell;
+	struct group	*grp;
+	struct passwd	*pwd;
+	login_cap_t	*lc;
+	const char	*shell;
+	char		*user, *group, *grouplist;
+	gid_t		gidlist[NGROUPS_MAX];
+	int		ch, ngids;
+	int		flags = LOGIN_SETALL & ~(LOGIN_SETLOGIN|LOGIN_SETUSER);
 
-	if (argc < 2) {
-		(void)fprintf(stderr, "usage: chroot newroot [command]\n");
-		exit(1);
+	lc = NULL;
+	ngids = 0;
+	pwd = NULL;
+	user = grouplist = NULL;
+	while ((ch = getopt(argc, argv, "g:u:")) != -1) {
+		switch(ch) {
+		case 'u':
+			user = optarg;
+			if (*user == '\0')
+				usage();
+			break;
+		case 'g':
+			grouplist = optarg;
+			if (*grouplist == '\0')
+				usage();
+			break;
+		default:
+			usage();
+		}
 	}
-	if (chdir(argv[1]) || chroot("."))
+	argc -= optind;
+	argv += optind;
+
+	if (argc < 1)
+		usage();
+
+	if (user != NULL) {
+		if ((pwd = getpwnam(user)) == NULL)
+			errx(1, "no such user `%s'", user);
+		if ((lc = login_getclass(pwd->pw_class)) == NULL)
+			err(1, "unable to get login class for `%s'", user);
+	}
+
+	while ((group = strsep(&grouplist, ",")) != NULL) {
+		if (*group == '\0')
+			continue;
+
+		if (ngids == NGROUPS_MAX)
+			errx(1, "too many supplementary groups provided");
+		if ((grp = getgrnam(group)) == NULL)
+			errx(1, "no such group `%s'", group);
+		gidlist[ngids++] = grp->gr_gid;
+	}
+
+	if (ngids != 0) {
+		if (setgid(gidlist[0]) != 0)
+			err(1, "setgid");
+		if (setgroups(ngids, gidlist) != 0)
+			err(1, "setgroups");
+		flags &= ~LOGIN_SETGROUP;
+	}
+	if (lc != NULL) {
+		if (setusercontext(lc, pwd, pwd->pw_uid, flags) == -1)
+			err(1, "setusercontext");
+	}
+
+	if (chroot(argv[0]) != 0 || chdir("/") != 0)
+		err(1, "%s", argv[0]);
+
+	if (pwd != NULL) {
+		/* only set login name if we are/can be a session leader */
+		if (getsid(0) == getpid() || setsid() != -1)
+			setlogin(pwd->pw_name);
+		if (setuid(pwd->pw_uid) != 0)
+			err(1, "setuid");
+	}
+
+	if (argv[1]) {
+		execvp(argv[1], &argv[1]);
 		err(1, "%s", argv[1]);
-	if (argv[2]) {
-		execvp(argv[2], &argv[2]);
-		err(1, "%s", argv[2]);
-	} else {
-		if (!(shell = getenv("SHELL")))
-			shell = _PATH_BSHELL;
-		execlp(shell, shell, "-i", (char *)NULL);
-		err(1, "%s", shell);
 	}
+
+	if ((shell = getenv("SHELL")) == NULL || *shell == '\0')
+		shell = _PATH_BSHELL;
+	execlp(shell, shell, "-i", (char *)NULL);
+	err(1, "%s", shell);
 	/* NOTREACHED */
+}
+
+__dead void
+usage(void)
+{
+	extern char *__progname;
+
+	(void)fprintf(stderr, "usage: %s [-g group,group,...] [-u user] "
+	    "newroot [command]\n", __progname);
+	exit(1);
 }

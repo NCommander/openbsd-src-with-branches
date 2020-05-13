@@ -1,4 +1,4 @@
-/* crypto/rc2/rc2_skey.c */
+/* $OpenBSD$ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -85,10 +85,6 @@ static const unsigned char key_table[256]={
 	0xfe,0x7f,0xc1,0xad,
 	};
 
-#if defined(_MSC_VER) && defined(_ARM_)
-#pragma optimize("g",off)
-#endif
-
 /* It has come to my attention that there are 2 versions of the RC2
  * key schedule.  One which is normal, and anther which has a hook to
  * use a reduced key length.
@@ -96,13 +92,6 @@ static const unsigned char key_table[256]={
  * the same as specifying 1024 for the 'bits' parameter.  Bsafe uses
  * a version where the bits parameter is the same as len*8 */
 void RC2_set_key(RC2_KEY *key, int len, const unsigned char *data, int bits)
-#ifdef OPENSSL_FIPS
-	{
-	fips_cipher_abort(RC2);
-	private_RC2_set_key(key, len, data, bits);
-	}
-void private_RC2_set_key(RC2_KEY *key, int len, const unsigned char *data, int bits)
-#endif
 	{
 	int i,j;
 	unsigned char *k;
@@ -147,7 +136,3 @@ void private_RC2_set_key(RC2_KEY *key, int len, const unsigned char *data, int b
 	for (i=127; i>=0; i-=2)
 		*(ki--)=((k[i]<<8)|k[i-1])&0xffff;
 	}
-
-#if defined(_MSC_VER)
-#pragma optimize("",on)
-#endif

@@ -1,3 +1,5 @@
+.\"	$OpenBSD: rwall.1,v 1.7 2003/06/03 02:56:15 millert Exp $
+.\"
 .\" Copyright (c) 1983, 1990 The Regents of the University of California.
 .\" All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,11 +28,10 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)rwall.1	6.7 (Berkeley) 4/23/91
-.\"	$Id: rwall.1,v 1.5 1994/01/11 18:32:08 jtc Exp $
 .\"
-.Dd April 23, 1991
+.Dd $Mdocdate$
 .Dt RWALL 1
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm rwall
 .Nd send a message to users logged on a host
@@ -44,9 +41,9 @@
 .Op Ar file
 .Sh DESCRIPTION
 The
-.Nm rwall
-command sends a message to the users logged into the specified host. The
-message to be sent can be typed in and terminated with EOF or it can
+.Nm
+command sends a message to the users logged into the specified host.
+The message to be sent can be typed in and terminated with EOF or it can
 be in a
 .Ar file .
 .Sh DIAGNOSTICS
@@ -56,14 +53,15 @@ The
 .Xr rpc.rwalld 8
 daemon has not been started on the remote host.
 .It rwall: RPC: Timed out
-A communication error occurred.  Either the network is
-excessively congested, or the
+A communication error occurred.
+Either the network is excessively congested, or the
 .Xr rpc.rwalld 8
 daemon has terminated on the remote host.
 .It rwall: RPC: Port mapper failure - RPC: Timed out
 The remote host is not running the portmapper (see
-.Xr portmap 8 ),
-and cannot accommodate any RPC-based services.  The host may be down.
+.Xr portmap 8 ) ,
+and cannot accommodate any RPC-based services.
+The host may be down.
 .El
 .Sh SEE ALSO
 .Xr wall 1 ,
@@ -71,7 +69,7 @@ and cannot accommodate any RPC-based services.  The host may be down.
 .Xr rpc.rwalld 8
 .Sh HISTORY
 The
-.Nm rwall
+.Nm
 command
 appeared in
 .Tn SunOS .

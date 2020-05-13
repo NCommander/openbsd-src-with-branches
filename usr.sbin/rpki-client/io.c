@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD: io.c,v 1.7 2019/11/29 01:46:46 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,7 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include "config.h"
 
 #include <sys/queue.h>
 
@@ -36,9 +35,9 @@ io_socket_blocking(int fd)
 	int	 fl;
 
 	if ((fl = fcntl(fd, F_GETFL, 0)) == -1)
-		err(EXIT_FAILURE, "fcntl");
+		err(1, "fcntl");
 	if (fcntl(fd, F_SETFL, fl & ~O_NONBLOCK) == -1)
-		err(EXIT_FAILURE, "fcntl");
+		err(1, "fcntl");
 }
 
 void
@@ -47,9 +46,9 @@ io_socket_nonblocking(int fd)
 	int	 fl;
 
 	if ((fl = fcntl(fd, F_GETFL, 0)) == -1)
-		err(EXIT_FAILURE, "fcntl");
+		err(1, "fcntl");
 	if (fcntl(fd, F_SETFL, fl | O_NONBLOCK) == -1)
-		err(EXIT_FAILURE, "fcntl");
+		err(1, "fcntl");
 }
 
 /*
@@ -63,10 +62,10 @@ io_simple_write(int fd, const void *res, size_t sz)
 
 	if (sz == 0)
 		return;
-	if ((ssz = write(fd, res, sz)) < 0)
-		err(EXIT_FAILURE, "write");
+	if ((ssz = write(fd, res, sz)) == -1)
+		err(1, "write");
 	else if ((size_t)ssz != sz)
-		errx(EXIT_FAILURE, "write: short write");
+		errx(1, "write: short write");
 }
 
 /*
@@ -79,7 +78,7 @@ io_simple_buffer(char **b, size_t *bsz,
 
 	if (*bsz + sz > *bmax) {
 		if ((*b = realloc(*b, *bsz + sz)) == NULL)
-			err(EXIT_FAILURE, NULL);
+			err(1, NULL);
 		*bmax = *bsz + sz;
 	}
 
@@ -136,25 +135,26 @@ io_str_write(int fd, const char *p)
 /*
  * Read of a binary buffer that must be on a blocking descriptor.
  * Does nothing if "sz" is zero.
- * This will fail and exit on EOF or short reads.
+ * This will fail and exit on EOF.
  */
 void
 io_simple_read(int fd, void *res, size_t sz)
 {
 	ssize_t	 ssz;
+	char	*tmp;
 
+	tmp = res; /* arithmetic on a pointer to void is a GNU extension */
 again:
 	if (sz == 0)
 		return;
-	if ((ssz = read(fd, res, sz)) < 0)
-		err(EXIT_FAILURE, "read");
+	if ((ssz = read(fd, tmp, sz)) == -1)
+		err(1, "read");
 	else if (ssz == 0)
-		errx(EXIT_FAILURE, "read: unexpected end of file");
+		errx(1, "read: unexpected end of file");
 	else if ((size_t)ssz == sz)
 		return;
-	warnx("read: short read: %zu remain", sz - (size_t)ssz);
 	sz -= ssz;
-	res += ssz;
+	tmp += ssz;
 	goto again;
 }
 
@@ -172,7 +172,7 @@ io_buf_read_alloc(int fd, void **res, size_t *sz)
 	if (*sz == 0)
 		return;
 	if ((*res = malloc(*sz)) == NULL)
-		err(EXIT_FAILURE, NULL);
+		err(1, NULL);
 	io_simple_read(fd, *res, *sz);
 }
 
@@ -187,6 +187,6 @@ io_str_read(int fd, char **res)
 
 	io_simple_read(fd, &sz, sizeof(size_t));
 	if ((*res = calloc(sz + 1, 1)) == NULL)
-		err(EXIT_FAILURE, NULL);
+		err(1, NULL);
 	io_simple_read(fd, *res, sz);
 }

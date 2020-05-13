@@ -1,4 +1,5 @@
-/*	$NetBSD: bpf.c,v 1.5 1995/10/06 05:12:12 thorpej Exp $	*/
+/*	$OpenBSD: bpf.c,v 1.26 2017/04/19 05:36:13 natano Exp $	*/
+/*	$NetBSD: bpf.c,v 1.5.2.1 1995/11/14 08:45:42 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1988, 1992 The University of Utah and the Center
@@ -20,11 +21,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,12 +43,6 @@
  * Author: Jeff Forys, University of Utah CSS
  */
 
-#ifndef lint
-/*static char sccsid[] = "@(#)bpf.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$NetBSD: bpf.c,v 1.5 1995/10/06 05:12:12 thorpej Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
@@ -61,16 +52,18 @@ static char rcsid[] = "$NetBSD: bpf.c,v 1.5 1995/10/06 05:12:12 thorpej Exp $";
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <limits.h>
+#include <ifaddrs.h>
 #include "defs.h"
-#include "pathnames.h"
 
 static int BpfFd = -1;
-static unsigned BpfLen = 0;
+static unsigned int BpfLen = 0;
 static u_int8_t *BpfPkt = NULL;
 
 /*
@@ -80,29 +73,20 @@ static u_int8_t *BpfPkt = NULL;
 **		None.
 **
 **	Returns:
-**		File descriptor of opened BPF device (for select() etc).
+**		File descriptor of opened BPF device
 **
 **	Side Effects:
 **		If an error is encountered, the program terminates here.
 */
 int
-BpfOpen()
+BpfOpen(void)
 {
 	struct ifreq ifr;
-	char bpfdev[32];
-	int n = 0;
+	int n;
 
-	/*
-	 *  Open the first available BPF device.
-	 */
-	do {
-		(void) sprintf(bpfdev, _PATH_BPF, n++);
-		BpfFd = open(bpfdev, O_RDWR);
-	} while (BpfFd < 0 && (errno == EBUSY || errno == EPERM));
-
-	if (BpfFd < 0) {
-		syslog(LOG_ERR, "bpf: no available devices: %m");
-		Exit(0);
+	if ((BpfFd = open("/dev/bpf", O_RDWR)) == -1) {
+		syslog(LOG_ERR, "bpf: can't open device: %m");
+		DoExit();
 	}
 
 	/*
@@ -110,31 +94,31 @@ BpfOpen()
 	 *  type and make sure it's type Ethernet.
 	 */
 	(void) strncpy(ifr.ifr_name, IntfName, sizeof(ifr.ifr_name));
-	if (ioctl(BpfFd, BIOCSETIF, (caddr_t)&ifr) < 0) {
+	if (ioctl(BpfFd, BIOCSETIF, (caddr_t)&ifr) == -1) {
 		syslog(LOG_ERR, "bpf: ioctl(BIOCSETIF,%s): %m", IntfName);
-		Exit(0);
+		DoExit();
 	}
 
 	/*
 	 *  Make sure we are dealing with an Ethernet device.
 	 */
-	if (ioctl(BpfFd, BIOCGDLT, (caddr_t)&n) < 0) {
+	if (ioctl(BpfFd, BIOCGDLT, (caddr_t)&n) == -1) {
 		syslog(LOG_ERR, "bpf: ioctl(BIOCGDLT): %m");
-		Exit(0);
+		DoExit();
 	}
 	if (n != DLT_EN10MB) {
 		syslog(LOG_ERR,"bpf: %s: data-link type %d unsupported",
-		       IntfName, n);
-		Exit(0);
+		    IntfName, n);
+		DoExit();
 	}
 
 	/*
 	 *  On read(), return packets immediately (do not buffer them).
 	 */
 	n = 1;
-	if (ioctl(BpfFd, BIOCIMMEDIATE, (caddr_t)&n) < 0) {
+	if (ioctl(BpfFd, BIOCIMMEDIATE, (caddr_t)&n) == -1) {
 		syslog(LOG_ERR, "bpf: ioctl(BIOCIMMEDIATE): %m");
-		Exit(0);
+		DoExit();
 	}
 
 	/*
@@ -148,30 +132,30 @@ BpfOpen()
 #endif
 	ifr.ifr_addr.sa_family = AF_UNSPEC;
 	bcopy(&RmpMcastAddr[0], (char *)&ifr.ifr_addr.sa_data[0], RMP_ADDRLEN);
-	if (ioctl(BpfFd, SIOCADDMULTI, (caddr_t)&ifr) < 0) {
+	if (ioctl(BpfFd, SIOCADDMULTI, (caddr_t)&ifr) == -1) {
 		syslog(LOG_WARNING,
 		    "bpf: can't add mcast addr (%m), setting promiscuous mode");
 
-		if (ioctl(BpfFd, BIOCPROMISC, (caddr_t)0) < 0) {
+		if (ioctl(BpfFd, BIOCPROMISC, (caddr_t)0) == -1) {
 			syslog(LOG_ERR, "bpf: can't set promiscuous mode: %m");
-			Exit(0);
+			DoExit();
 		}
 	}
 
 	/*
 	 *  Ask BPF how much buffer space it requires and allocate one.
 	 */
-	if (ioctl(BpfFd, BIOCGBLEN, (caddr_t)&BpfLen) < 0) {
+	if (ioctl(BpfFd, BIOCGBLEN, (caddr_t)&BpfLen) == -1) {
 		syslog(LOG_ERR, "bpf: ioctl(BIOCGBLEN): %m");
-		Exit(0);
+		DoExit();
 	}
 	if (BpfPkt == NULL)
-		BpfPkt = (u_int8_t *)malloc(BpfLen);
+		BpfPkt = malloc(BpfLen);
 
 	if (BpfPkt == NULL) {
 		syslog(LOG_ERR, "bpf: out of memory (%u bytes for bpfpkt)",
-		       BpfLen);
-		Exit(0);
+		    BpfLen);
+		DoExit();
 	}
 
 	/*
@@ -179,25 +163,69 @@ BpfOpen()
 	 *  it down BPF's throat (i.e. set up the packet filter).
 	 */
 	{
-#define	RMP	((struct rmp_packet *)0)
+#define	RMP(field)	offsetof(struct rmp_packet, field)
 		static struct bpf_insn bpf_insn[] = {
-		    { BPF_LD|BPF_B|BPF_ABS,  0, 0, (long)&RMP->hp_llc.dsap },
+		    /* make sure it is a 802.3 packet */
+		    { BPF_LD|BPF_H|BPF_ABS,  0, 0, RMP(hp_hdr.len) },
+		    { BPF_JMP|BPF_JGE|BPF_K, 7, 0, 0x600 },
+
+		    { BPF_LD|BPF_B|BPF_ABS,  0, 0, RMP(hp_llc.dsap) },
 		    { BPF_JMP|BPF_JEQ|BPF_K, 0, 5, IEEE_DSAP_HP },
-		    { BPF_LD|BPF_H|BPF_ABS,  0, 0, (long)&RMP->hp_llc.cntrl },
+		    { BPF_LD|BPF_H|BPF_ABS,  0, 0, RMP(hp_llc.cntrl) },
 		    { BPF_JMP|BPF_JEQ|BPF_K, 0, 3, IEEE_CNTL_HP },
-		    { BPF_LD|BPF_H|BPF_ABS,  0, 0, (long)&RMP->hp_llc.dxsap },
+		    { BPF_LD|BPF_H|BPF_ABS,  0, 0, RMP(hp_llc.dxsap) },
 		    { BPF_JMP|BPF_JEQ|BPF_K, 0, 1, HPEXT_DXSAP },
+		    { BPF_RET|BPF_K,         0, 0, RMP_MAX_PACKET },
+		    { BPF_RET|BPF_K,         0, 0, 0x0 }
+		};
+
+		static struct bpf_insn bpf_wf_insn[] = {
+		    /* make sure it is a 802.3 packet */
+		    { BPF_LD|BPF_H|BPF_ABS,  0, 0, RMP(hp_hdr.len) },
+		    { BPF_JMP|BPF_JGE|BPF_K, 12, 0, 0x600 },
+
+		    /* check the SNAP header */
+		    { BPF_LD|BPF_B|BPF_ABS,  0, 0, RMP(hp_llc.dsap) },
+		    { BPF_JMP|BPF_JEQ|BPF_K, 0, 10, IEEE_DSAP_HP },
+		    { BPF_LD|BPF_H|BPF_ABS,  0, 0, RMP(hp_llc.cntrl) },
+		    { BPF_JMP|BPF_JEQ|BPF_K, 0, 8, IEEE_CNTL_HP },
+
+		    { BPF_LD|BPF_H|BPF_ABS,  0, 0, RMP(hp_llc.sxsap) },
+		    { BPF_JMP|BPF_JEQ|BPF_K, 0, 6, HPEXT_DXSAP },
+		    { BPF_LD|BPF_H|BPF_ABS,  0, 0, RMP(hp_llc.dxsap) },
+		    { BPF_JMP|BPF_JEQ|BPF_K, 0, 4, HPEXT_SXSAP },
+
+		    /* check return type code */
+		    { BPF_LD|BPF_B|BPF_ABS,  0, 0,
+		        RMP(rmp_proto.rmp_raw.rmp_type) },
+		    { BPF_JMP|BPF_JEQ|BPF_K, 1, 0, RMP_BOOT_REPL },
+		    { BPF_JMP|BPF_JEQ|BPF_K, 0, 1, RMP_READ_REPL },
+
 		    { BPF_RET|BPF_K,         0, 0, RMP_MAX_PACKET },
 		    { BPF_RET|BPF_K,         0, 0, 0x0 }
 		};
 #undef	RMP
 		static struct bpf_program bpf_pgm = {
-		    sizeof(bpf_insn)/sizeof(bpf_insn[0]), bpf_insn
+			sizeof(bpf_insn)/sizeof(bpf_insn[0]), bpf_insn
 		};
 
-		if (ioctl(BpfFd, BIOCSETF, (caddr_t)&bpf_pgm) < 0) {
+		static struct bpf_program bpf_w_pgm = {
+			sizeof(bpf_wf_insn)/sizeof(bpf_wf_insn[0]), bpf_wf_insn
+		};
+
+		if (ioctl(BpfFd, BIOCSETF, (caddr_t)&bpf_pgm) == -1) {
 			syslog(LOG_ERR, "bpf: ioctl(BIOCSETF): %m");
-			Exit(0);
+			DoExit();
+		}
+
+		if (ioctl(BpfFd, BIOCSETWF, (caddr_t)&bpf_w_pgm) == -1) {
+			syslog(LOG_ERR, "bpf: ioctl(BIOCSETWF): %m");
+			DoExit();
+		}
+
+		if (ioctl(BpfFd, BIOCLOCK) == -1) {
+			syslog(LOG_ERR, "bpf: ioctl(BIOCLOCK): %m");
+			DoExit();
 		}
 	}
 
@@ -220,79 +248,54 @@ BpfOpen()
 **		None.
 */
 char *
-BpfGetIntfName(errmsg)
-	char **errmsg;
+BpfGetIntfName(char **errmsg)
 {
-	struct ifreq ibuf[8], *ifrp, *ifend, *mp;
-	struct ifconf ifc;
-	int fd;
-	int minunit, n;
+	int minunit = 999, n;
 	char *cp;
-	static char device[sizeof(ifrp->ifr_name)];
+	const char *errstr;
+	static char device[IFNAMSIZ];
 	static char errbuf[128] = "No Error!";
+	struct ifaddrs *ifap, *ifa, *mp = NULL;
 
 	if (errmsg != NULL)
 		*errmsg = errbuf;
 
-	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		(void) strcpy(errbuf, "bpf: socket: %m");
+	if (getifaddrs(&ifap) != 0) {
+		(void) strlcpy(errbuf, "bpf: getifaddrs: %m", sizeof(errbuf));
 		return(NULL);
 	}
-	ifc.ifc_len = sizeof ibuf;
-	ifc.ifc_buf = (caddr_t)ibuf;
 
-#ifdef OSIOCGIFCONF
-	if (ioctl(fd, OSIOCGIFCONF, (char *)&ifc) < 0 ||
-	    ifc.ifc_len < sizeof(struct ifreq)) {
-		(void) strcpy(errbuf, "bpf: ioctl(OSIOCGIFCONF): %m");
-		return(NULL);
-	}
-#else
-	if (ioctl(fd, SIOCGIFCONF, (char *)&ifc) < 0 ||
-	    ifc.ifc_len < sizeof(struct ifreq)) {
-		(void) strcpy(errbuf, "bpf: ioctl(SIOCGIFCONF): %m");
-		return(NULL);
-	}
-#endif
-	ifrp = ibuf;
-	ifend = (struct ifreq *)((char *)ibuf + ifc.ifc_len);
-	
-	mp = 0;
-	minunit = 666;
-	for (; ifrp < ifend; ++ifrp) {
-		if (ioctl(fd, SIOCGIFFLAGS, (char *)ifrp) < 0) {
-			(void) strcpy(errbuf, "bpf: ioctl(SIOCGIFFLAGS): %m");
-			return(NULL);
-		}
-
+	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
 		/*
 		 *  If interface is down or this is the loopback interface,
 		 *  ignore it.
 		 */
-		if ((ifrp->ifr_flags & IFF_UP) == 0 ||
+		if ((ifa->ifa_flags & IFF_UP) == 0 ||
 #ifdef IFF_LOOPBACK
-		    (ifrp->ifr_flags & IFF_LOOPBACK))
+		    (ifa->ifa_flags & IFF_LOOPBACK))
 #else
-		    (strcmp(ifrp->ifr_name, "lo0") == 0))
+		    (strcmp(ifa->ifa_name, "lo0") == 0))
 #endif
 			continue;
 
-		for (cp = ifrp->ifr_name; !isdigit(*cp); ++cp)
+		for (cp = ifa->ifa_name; !isdigit((unsigned char)*cp); ++cp)
 			;
-		n = atoi(cp);
-		if (n < minunit) {
+		n = strtonum(cp, 0, INT_MAX, &errstr);
+		if (errstr == NULL && n < minunit) {
 			minunit = n;
-			mp = ifrp;
+			mp = ifa;
 		}
 	}
 
-	(void) close(fd);
 	if (mp == 0) {
-		(void) strcpy(errbuf, "bpf: no interfaces found");
+		(void) strlcpy(errbuf, "bpf: no interfaces found",
+		    sizeof(errbuf));
+		freeifaddrs(ifap);
 		return(NULL);
 	}
 
-	(void) strcpy(device, mp->ifr_name);
+	(void) strlcpy(device, mp->ifa_name, sizeof device);
+	freeifaddrs(ifap);
 	return(device);
 }
 
@@ -310,11 +313,9 @@ BpfGetIntfName(errmsg)
 **		None.
 */
 int
-BpfRead(rconn, doread)
-	RMPCONN *rconn;
-	int doread;
+BpfRead(RMPCONN *rconn, int doread)
 {
-	register int datlen, caplen, hdrlen;
+	int datlen, caplen, hdrlen;
 	static u_int8_t *bp = NULL, *ep = NULL;
 	int cc;
 
@@ -323,7 +324,7 @@ BpfRead(rconn, doread)
 	 *  We let the caller decide whether or not we can issue a read().
 	 */
 	if (doread) {
-		if ((cc = read(BpfFd, (char *)BpfPkt, (int)BpfLen)) < 0) {
+		if ((cc = read(BpfFd, (char *)BpfPkt, (int)BpfLen)) == -1) {
 			syslog(LOG_ERR, "bpf: read: %m");
 			return(0);
 		} else {
@@ -344,15 +345,15 @@ BpfRead(rconn, doread)
 
 		if (caplen != datlen)
 			syslog(LOG_ERR,
-			       "bpf: short packet dropped (%d of %d bytes)",
-			       caplen, datlen);
+			    "bpf: short packet dropped (%d of %d bytes)",
+			    caplen, datlen);
 		else if (caplen > sizeof(struct rmp_packet))
 			syslog(LOG_ERR, "bpf: large packet dropped (%d bytes)",
-			       caplen);
+			    caplen);
 		else {
-			rconn->rmplen = htons(caplen);
-			bcopy((char *)&bhp->bh_tstamp, (char *)&rconn->tstamp,
-			      sizeof(struct timeval));
+			rconn->rmplen = caplen;
+			rconn->tstamp.tv_sec = bhp->bh_tstamp.tv_sec;
+			rconn->tstamp.tv_usec = bhp->bh_tstamp.tv_usec;
 			bcopy((char *)bp + hdrlen, (char *)&rconn->rmp, caplen);
 		}
 		bp += BPF_WORDALIGN(caplen + hdrlen);
@@ -376,50 +377,12 @@ BpfRead(rconn, doread)
 **		None.
 */
 int
-BpfWrite(rconn)
-	RMPCONN *rconn;
+BpfWrite(RMPCONN *rconn)
 {
-	if (write(BpfFd, (char *)&rconn->rmp, ntohs(rconn->rmplen)) < 0) {
+	if (write(BpfFd, (char *)&rconn->rmp, rconn->rmplen) == -1) {
 		syslog(LOG_ERR, "write: %s: %m", EnetStr(rconn));
 		return(0);
 	}
 
 	return(1);
-}
-
-/*
-**  BpfClose -- Close a BPF device.
-**
-**	Parameters:
-**		None.
-**
-**	Returns:
-**		Nothing.
-**
-**	Side Effects:
-**		None.
-*/
-void
-BpfClose()
-{
-	struct ifreq ifr;
-
-	if (BpfPkt != NULL) {
-		free((char *)BpfPkt);
-		BpfPkt = NULL;
-	}
-
-	if (BpfFd == -1)
-		return;
-
-#ifdef MSG_EOR
-	ifr.ifr_addr.sa_len = RMP_ADDRLEN + 2;
-#endif
-	ifr.ifr_addr.sa_family = AF_UNSPEC;
-	bcopy(&RmpMcastAddr[0], (char *)&ifr.ifr_addr.sa_data[0], RMP_ADDRLEN);
-	if (ioctl(BpfFd, SIOCDELMULTI, (caddr_t)&ifr) < 0)
-		(void) ioctl(BpfFd, BIOCPROMISC, (caddr_t)0);
-
-	(void) close(BpfFd);
-	BpfFd = -1;
 }

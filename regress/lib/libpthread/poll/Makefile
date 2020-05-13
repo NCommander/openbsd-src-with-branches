@@ -1,6 +1,5 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.2 2002/01/03 00:43:47 art Exp $
 
 PROG=	poll
-SRCS=	poll.c
-
-.include <bsd.prog.mk>
+LDADD=	-lutil
+.include <bsd.regress.mk>

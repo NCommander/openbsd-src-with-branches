@@ -1,232 +1,190 @@
+/*	$OpenBSD: setlocale.c,v 1.29 2018/03/29 16:39:04 schwarze Exp $	*/
 /*
- * Copyright (c) 1991, 1993
- *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 2017 Ingo Schwarze <schwarze@openbsd.org>
  *
- * This code is derived from software contributed to Berkeley by
- * Paul Borman at Krystal Technologies.
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)setlocale.c	8.1 (Berkeley) 7/4/93";
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/localedef.h>
 #include <locale.h>
-#include <limits.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <paths.h>
 
-/*
- * Category names for getenv()
- */
-static char *categories[_LC_LAST] = {
-    "LC_ALL",
-    "LC_COLLATE",
-    "LC_CTYPE",
-    "LC_MONETARY",
-    "LC_NUMERIC",
-    "LC_TIME",
-    "LC_MESSAGES"
-};
+#include "rune.h"
 
-/*
- * Current locales for each category
- */
-static char current_categories[_LC_LAST][32] = {
-    "C",
-    "C",
-    "C",
-    "C",
-    "C",
-    "C",
-    "C"
-};
+static void
+freegl(char **oldgl)
+{
+	int ic;
 
-/*
- * The locales we are going to try and load
- */
-static char new_categories[_LC_LAST][32];
+	if (oldgl == NULL)
+		return;
+	for (ic = LC_ALL; ic < _LC_LAST; ic++)
+		free(oldgl[ic]);
+	free(oldgl);
+}
 
-static char current_locale_string[_LC_LAST * 33];
-static char *PathLocale;
+static char **
+dupgl(char **oldgl)
+{
+	char **newgl;
+	int ic;
 
-static char	*currentlocale __P((void));
-static char	*loadlocale __P((int));
+	if ((newgl = calloc(_LC_LAST, sizeof(*newgl))) == NULL)	
+		return NULL;
+	for (ic = LC_ALL; ic < _LC_LAST; ic++) {
+		if ((newgl[ic] = strdup(ic == LC_ALL ? "" :
+		    oldgl == NULL ? "C" : oldgl[ic])) == NULL) {
+			freegl(newgl);
+			return NULL;
+		}
+	}
+	return newgl;
+}
+
+static int
+changegl(int category, const char *locname, char **gl)
+{
+	char *cp;
+
+	if ((locname = _get_locname(category, locname)) == NULL ||
+	    (cp = strdup(locname)) == NULL)
+		return -1;
+
+	free(gl[category]);
+	gl[category] = cp;
+	return 0;
+}
 
 char *
-setlocale(category, locale)
-	int category;
-	const char *locale;
+setlocale(int category, const char *locname)
 {
-	int found, i, len;
-	char *env, *r;
+	/*
+	 * Even though only LC_CTYPE has any effect in the OpenBSD
+	 * base system, store complete information about the global
+	 * locale, such that third-party software can access it,
+	 * both via setlocale(3) and via locale(1).
+	 */
+	static char	  global_locname[256];
+	static char	**global_locale;
 
-	if (!PathLocale && !(PathLocale = getenv("PATH_LOCALE")))
-		PathLocale = _PATH_LOCALE;
+	char **newgl, *firstname, *nextname;
+	int ic;
 
-	if (category < 0 || category >= _LC_LAST)
-		return (NULL);
-
-	if (!locale)
-		return (category ?
-		    current_categories[category] : currentlocale());
+	if (category < LC_ALL || category >= _LC_LAST)
+		return NULL;
 
 	/*
-	 * Default to the current locale for everything.
+	 * Change the global locale.
 	 */
-	for (i = 1; i < _LC_LAST; ++i)
-		(void)strcpy(new_categories[i], current_categories[i]);
+	if (locname != NULL) {
+		if ((newgl = dupgl(global_locale)) == NULL)
+			return NULL;
+		if (category == LC_ALL && strchr(locname, '/') != NULL) {
 
-	/*
-	 * Now go fill up new_categories from the locale argument
-	 */
-	if (!*locale) {
-		env = getenv(categories[category]);
-
-		if (!env)
-			env = getenv(categories[0]);
-
-		if (!env)
-			env = getenv("LANG");
-
-		if (!env)
-			env = "C";
-
-		(void) strncpy(new_categories[category], env, 31);
-		new_categories[category][31] = 0;
-		if (!category) {
-			for (i = 1; i < _LC_LAST; ++i) {
-				if (!(env = getenv(categories[i])))
-					env = new_categories[0];
-				(void)strncpy(new_categories[i], env, 31);
-				new_categories[i][31] = 0;
+			/* One value for each category. */
+			if ((firstname = strdup(locname)) == NULL) {
+				freegl(newgl);
+				return NULL;
 			}
-		}
-	} else if (category)  {
-		(void)strncpy(new_categories[category], locale, 31);
-		new_categories[category][31] = 0;
-	} else {
-		if ((r = strchr(locale, '/')) == 0) {
-			for (i = 1; i < _LC_LAST; ++i) {
-				(void)strncpy(new_categories[i], locale, 31);
-				new_categories[i][31] = 0;
+			nextname = firstname;
+			for (ic = 1; ic < _LC_LAST; ic++)
+				if (nextname == NULL || changegl(ic,
+				    strsep(&nextname, "/"), newgl) == -1)
+					break;
+			free(firstname);
+			if (ic < _LC_LAST || nextname != NULL) {
+				freegl(newgl);
+				return NULL;
 			}
 		} else {
-			for (i = 1; r[1] == '/'; ++r);
-			if (!r[1])
-				return (NULL);	/* Hmm, just slashes... */
-			do {
-				len = r - locale > 31 ? 31 : r - locale;
-				(void)strncpy(new_categories[i++], locale, len);
-				new_categories[i++][len] = 0;
-				locale = r;
-				while (*locale == '/')
-				    ++locale;
-				while (*++r && *r != '/');
-			} while (*locale);
-			while (i < _LC_LAST)
-				(void)strcpy(new_categories[i],
-				    new_categories[i-1]);
+
+			/* One value only. */
+			if (changegl(category, locname, newgl) == -1) {
+				freegl(newgl);
+				return NULL;
+			}
+
+			/* One common value for all categories. */
+			if (category == LC_ALL) {
+				for (ic = 1; ic < _LC_LAST; ic++) {
+					if (changegl(ic, locname,
+					    newgl) == -1) {
+						freegl(newgl);
+						return NULL;
+					}
+				}
+			}
 		}
+	} else
+		newgl = global_locale;
+
+	/*
+	 * Assemble a string representation of the globale locale.
+	 */
+
+	/* setlocale(3) was never called with a non-NULL argument. */
+	if (newgl == NULL) {
+		(void)strlcpy(global_locname, "C", sizeof(global_locname));
+		goto done;
 	}
 
-	if (category)
-		return (loadlocale(category));
-
-	found = 0;
-	for (i = 1; i < _LC_LAST; ++i)
-		if (loadlocale(i) != NULL)
-			found = 1;
-	if (found)
-	    return (currentlocale());
-	return (NULL);
-}
-
-static char *
-currentlocale()
-{
-	int i;
-
-	(void)strcpy(current_locale_string, current_categories[1]);
-
-	for (i = 2; i < _LC_LAST; ++i)
-		if (strcmp(current_categories[1], current_categories[i])) {
-			(void)snprintf(current_locale_string,
-			    sizeof(current_locale_string), "%s/%s/%s/%s/%s",
-			    current_categories[1], current_categories[2],
-			    current_categories[3], current_categories[4],
-			    current_categories[5]);
-			break;
-		}
-	return (current_locale_string);
-}
-
-static char *
-loadlocale(category)
-	int category;
-{
-	char name[PATH_MAX];
-
-	if (strcmp(new_categories[category],
-	    current_categories[category]) == 0)
-		return (current_categories[category]);
-
-	if (!strcmp(new_categories[category], "C") ||
-		!strcmp(new_categories[category], "POSIX")) {
-
-		/*
-		 * Some day this will need to reset the locale to the default
-		 * C locale.  Since we have no way to change them as of yet,
-		 * there is no need to reset them.
-		 */
-		(void)strcpy(current_categories[category],
-		    new_categories[category]);
-		return (current_categories[category]);
+	/* Individual category, or LC_ALL uniformly set. */
+	if (category > LC_ALL || newgl[LC_ALL][0] != '\0') {
+		if (strlcpy(global_locname, newgl[category],
+		    sizeof(global_locname)) >= sizeof(global_locname))
+			global_locname[0] = '\0';
+		goto done;
 	}
 
 	/*
-	 * Some day we will actually look at this file.
+	 * Check whether all categories agree and return either
+	 * the single common name for all categories or a string
+	 * listing the names for all categories.
 	 */
-	(void)snprintf(name, sizeof(name), "%s/%s/%s",
-	    PathLocale, new_categories[category], categories[category]);
-
-	switch (category) {
-		case LC_CTYPE:
-		case LC_COLLATE:
-		case LC_MESSAGES:
-		case LC_MONETARY:
-		case LC_NUMERIC:
-		case LC_TIME:
-			return (NULL);
+	for (ic = 2; ic < _LC_LAST; ic++)
+		if (strcmp(newgl[ic], newgl[1]) != 0)
+			break;
+	if (ic == _LC_LAST) {
+		if (strlcpy(global_locname, newgl[1],
+		    sizeof(global_locname)) >= sizeof(global_locname))
+			global_locname[0] = '\0';
+	} else {
+		ic = snprintf(global_locname, sizeof(global_locname),
+		    "%s/%s/%s/%s/%s/%s", newgl[1], newgl[2], newgl[3],
+		    newgl[4], newgl[5], newgl[6]);
+		if (ic < 0 || ic >= sizeof(global_locname))
+			global_locname[0] = '\0';
 	}
+
+done:
+	if (locname != NULL) {
+		/*
+		 * We can't replace the global locale earlier
+		 * because we first have to make sure that we
+		 * also have the memory required to report success.
+		 */
+		if (global_locname[0] != '\0') {
+			freegl(global_locale);
+			global_locale = newgl;
+			if (category == LC_ALL || category == LC_CTYPE)
+				_GlobalRuneLocale =
+				    strchr(newgl[LC_CTYPE], '.') == NULL ?
+				    &_DefaultRuneLocale : _Utf8RuneLocale;
+		} else {
+			freegl(newgl);
+			return NULL;
+		}
+	}
+	return global_locname;
 }
+DEF_STRONG(setlocale);

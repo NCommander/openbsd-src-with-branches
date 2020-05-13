@@ -1,57 +1,78 @@
-#!/bin/sh -
 #
-#	@(#)weekly	5.14 (Berkeley) 6/23/91
+#	$OpenBSD: weekly,v 1.29 2019/12/30 16:49:51 espie Exp $
 #
-
-PATH=/bin:/sbin:/usr/sbin:/usr/bin:/usr/libexec
-export PATH
-
-host=`hostname -s`
-echo "Subject: $host weekly run output"
-
-#echo ""
-#echo "Removing old .o files:"
-#find /usr/src -name '*.o' -atime +21 -print -a -exec rm -f {} \;
-
-# see if /usr/src exists and is local
-# before looking there for checked-out files
-
-#if [ -d /usr/src -a \
-#  X"`find -f /usr/src ! -fstype local -prune -or -type d -print -prune`" != X ];
-#then
-#	echo "looking for checked out files:"
-#	TDIR=/tmp/_checkout$$
+# For local additions, create the file /etc/weekly.local.
+# To get section headers, use the function next_part in weekly.local.
 #
-#	mkdir $TDIR
-#	for file in `find -f /usr/src ! -fstype local -prune -or \
-#	    -name 'p.*' -print | egrep 'SCCS/p\.'`; do
-#		owner=`awk '{ print $3 }' $file`
-#		echo "$owner	$file"
-#		echo $file >> $TDIR/$owner
-#	done | sed -e 's,SCCS/p.,,'
-#	for file in $TDIR/*; do
-#		sed -e 's,SCCS/p.,,' $file | \
-#		    Mail -s 'checked out files' `basename $file`
-#	done
-#	rm -rf $TDIR
-#fi
+umask 022
 
-if [ -f /usr/lib/uucp/clean.weekly ]; then
+PARTOUT=/var/log/weekly.part
+MAINOUT=/var/log/weekly.out
+install -o 0 -g 0 -m 600    /dev/null $PARTOUT
+install -o 0 -g 0 -m 600 -b /dev/null $MAINOUT
+
+start_part() {
+	TITLE=$1
+	exec > $PARTOUT 2>&1
+}
+
+end_part() {
+	exec >> $MAINOUT 2>&1
+	test -s $PARTOUT || return
 	echo ""
-	echo "Cleaning up UUCP:"
-	echo /usr/lib/uucp/clean.weekly | su daemon
-fi
-echo ""
+	echo "$TITLE"
+	cat $PARTOUT
+}
 
-# Rotation of message log now handled automatically by cron and 'newsyslog'
+next_part() {
+	end_part
+	start_part "$1"
+}
 
-echo ""
+run_script() {
+	f=/etc/$1
+	test -e $f || return
+	if [ `stat -f '%Sp%u' $f | cut -b1,6,9,11-` != '---0' ]; then
+		echo "$f has insecure permissions, skipping:"
+		ls -l $f
+		return
+	fi
+	. $f
+}
+
+start_part "Running weekly.local:"
+run_script "weekly.local"
+
+next_part "Rebuilding locate database:"
 if [ -f /var/db/locate.database ]; then
-	echo "Rebuilding locate database:"
-	chmod 644 /var/db/locate.database
-	chown nobody.nobody /var/db/locate.database
-	echo /usr/libexec/locate.updatedb | nice -5 su -m nobody 2>/dev/null
-	chown root.wheel /var/db/locate.database
-else
-	echo "Not rebuilding locate database; no /var/db/locate.database"
+	if TMP=`mktemp /var/db/locate.database.XXXXXXXXXX`; then
+		trap 'rm -f $TMP; exit 1' 0 1 15
+		UPDATEDB="/usr/libexec/locate.updatedb"
+		echo "${UPDATEDB} --fcodes=-" | \
+		    nice -5 su -m nobody 1>$TMP
+		if [ $? -ne 0 ]; then
+			echo "Rebuilding locate database failed"
+		elif ! locate -d $TMP /etc/weekly >/dev/null; then
+			echo "Not installing invalid locate database"
+		else
+			chmod 444 $TMP
+			chown root:wheel $TMP
+			mv -f $TMP /var/db/locate.database
+		fi
+	else
+		echo "Not rebuilding locate database; can't create temp file"
+	fi
 fi
+
+next_part "Rebuilding whatis databases:"
+/usr/sbin/makewhatis $MAKEWHATISARGS
+
+next_part "Doing login accounting:"
+[ "X$LOGINACCOUNTING" = X1 ] && {
+	ac -p | sort -nr -k 2
+}
+
+end_part
+rm -f $PARTOUT
+
+[ -s $MAINOUT ] && mail -s "`hostname` weekly output" root < $MAINOUT

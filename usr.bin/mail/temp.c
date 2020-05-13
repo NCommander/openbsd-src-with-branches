@@ -1,3 +1,6 @@
+/*	$OpenBSD: temp.c,v 1.17 2016/07/28 21:37:45 tedu Exp $	*/
+/*	$NetBSD: temp.c,v 1.5 1996/06/08 19:48:42 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,13 +30,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "from: @(#)temp.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: temp.c,v 1.4 1994/11/28 20:03:40 jtc Exp $";
-#endif /* not lint */
-
 #include "rcv.h"
-#include <errno.h>
+#include <pwd.h>
 #include "extern.h"
 
 /*
@@ -46,52 +40,47 @@ static char rcsid[] = "$Id: temp.c,v 1.4 1994/11/28 20:03:40 jtc Exp $";
  * Give names to all the temporary files that we will need.
  */
 
-char	*tempMail;
-char	*tempQuit;
-char	*tempEdit;
-char	*tempResid;
-char	*tempMesg;
-char	*tmpdir;
+char *tmpdir;
 
 void
-tinit()
+tinit(void)
 {
-	register char *cp;
-	int len;
+	char *cp;
 
-	if ((tmpdir = getenv("TMPDIR")) == NULL) {
-		tmpdir = _PATH_TMP;
+	tmpdir = _PATH_TMP;
+	if ((tmpdir = strdup(tmpdir)) == NULL)
+		err(1, "strdup");
+
+	/* Strip trailing '/' if necessary */
+	cp = tmpdir + strlen(tmpdir) - 1;
+	while (cp > tmpdir && *cp == '/') {
+		*cp = '\0';
+		cp--;
 	}
-
-	tempMail  = tempnam (tmpdir, "Rs");
-	tempResid = tempnam (tmpdir, "Rq");
-	tempQuit  = tempnam (tmpdir, "Rm");
-	tempEdit  = tempnam (tmpdir, "Re");
-	tempMesg  = tempnam (tmpdir, "Rx");
 
 	/*
 	 * It's okay to call savestr in here because main will
 	 * do a spreserve() after us.
 	 */
-	if (myname != NOSTR) {
-		if (getuserid(myname) < 0) {
-			printf("\"%s\" is not a user of this system\n",
-			    myname);
-			exit(1);
-		}
+	if (myname != NULL) {
+		uid_t uid;
+
+		if (uid_from_user(myname, &uid) == -1)
+			errx(1, "\"%s\" is not a user of this system", myname);
 	} else {
-		if ((cp = username()) == NOSTR) {
-			myname = "ubluit";
-			if (rcvmode) {
-				printf("Who are you!?\n");
+		if ((myname = username()) == NULL) {
+			myname = "nobody";
+			if (rcvmode)
 				exit(1);
-			}
 		} else
-			myname = savestr(cp);
+			myname = savestr(myname);
 	}
-	if ((cp = getenv("HOME")) == NOSTR)
-		cp = ".";
-	homedir = savestr(cp);
+	if ((cp = getenv("HOME")) == NULL || *cp == '\0' ||
+	    strlen(cp) >= PATHSIZE)
+		homedir = NULL;
+	else
+		homedir = savestr(cp);
 	if (debug)
-		printf("user = %s, homedir = %s\n", myname, homedir);
+		printf("user = %s, homedir = %s\n", myname,
+		    homedir ? homedir : "NONE");
 }

@@ -1,0 +1,15 @@
+# $OpenBSD$
+# checks that hex constants evaluate correctly
+# (bug from NetBSD)
+
+B=222
+.if $B == 0xDE
+A=0
+.else
+A=1
+.endif
+
+all:
+	@exit $A
+
+.PHONY: all

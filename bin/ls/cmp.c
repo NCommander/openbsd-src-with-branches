@@ -1,4 +1,5 @@
-/*	$NetBSD: cmp.c,v 1.8 1995/03/21 09:06:20 cgd Exp $	*/
+/*	$OpenBSD: cmp.c,v 1.5 2003/06/11 23:42:12 deraadt Exp $	*/
+/*	$NetBSD: cmp.c,v 1.10 1996/07/08 10:32:01 mycroft Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,14 +33,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)cmp.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: cmp.c,v 1.8 1995/03/21 09:06:20 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -54,79 +43,125 @@ static char rcsid[] = "$NetBSD: cmp.c,v 1.8 1995/03/21 09:06:20 cgd Exp $";
 #include "extern.h"
 
 int
-namecmp(a, b)
-	const FTSENT *a, *b;
+namecmp(const FTSENT *a, const FTSENT *b)
 {
 	return (strcmp(a->fts_name, b->fts_name));
 }
 
 int
-revnamecmp(a, b)
-	const FTSENT *a, *b;
+revnamecmp(const FTSENT *a, const FTSENT *b)
 {
 	return (strcmp(b->fts_name, a->fts_name));
 }
 
 int
-modcmp(a, b)
-	const FTSENT *a, *b;
+modcmp(const FTSENT *a, const FTSENT *b)
 {
-	return (b->fts_statp->st_mtime - a->fts_statp->st_mtime);
+	if (b->fts_statp->st_mtime > a->fts_statp->st_mtime)
+		return (1);
+	else if (b->fts_statp->st_mtime < a->fts_statp->st_mtime)
+		return (-1);
+	else if (b->fts_statp->st_mtimensec > a->fts_statp->st_mtimensec)
+		return (1);
+	else if (b->fts_statp->st_mtimensec < a->fts_statp->st_mtimensec)
+		return (-1);
+	else
+		return (namecmp(a, b));
 }
 
 int
-revmodcmp(a, b)
-	const FTSENT *a, *b;
+revmodcmp(const FTSENT *a, const FTSENT *b)
 {
-	return (a->fts_statp->st_mtime - b->fts_statp->st_mtime);
+	if (b->fts_statp->st_mtime > a->fts_statp->st_mtime)
+		return (-1);
+	else if (b->fts_statp->st_mtime < a->fts_statp->st_mtime)
+		return (1);
+	else if (b->fts_statp->st_mtimensec > a->fts_statp->st_mtimensec)
+		return (-1);
+	else if (b->fts_statp->st_mtimensec < a->fts_statp->st_mtimensec)
+		return (1);
+	else
+		return (revnamecmp(a, b));
 }
 
 int
-acccmp(a, b)
-	const FTSENT *a, *b;
+acccmp(const FTSENT *a, const FTSENT *b)
 {
-	return (b->fts_statp->st_atime - a->fts_statp->st_atime);
+	if (b->fts_statp->st_atime > a->fts_statp->st_atime)
+		return (1);
+	else if (b->fts_statp->st_atime < a->fts_statp->st_atime)
+		return (-1);
+	else if (b->fts_statp->st_atimensec > a->fts_statp->st_atimensec)
+		return (1);
+	else if (b->fts_statp->st_atimensec < a->fts_statp->st_atimensec)
+		return (-1);
+	else
+		return (namecmp(a, b));
 }
 
 int
-revacccmp(a, b)
-	const FTSENT *a, *b;
+revacccmp(const FTSENT *a, const FTSENT *b)
 {
-	return (a->fts_statp->st_atime - b->fts_statp->st_atime);
+	if (b->fts_statp->st_atime > a->fts_statp->st_atime)
+		return (-1);
+	else if (b->fts_statp->st_atime < a->fts_statp->st_atime)
+		return (1);
+	else if (b->fts_statp->st_atimensec > a->fts_statp->st_atimensec)
+		return (-1);
+	else if (b->fts_statp->st_atimensec < a->fts_statp->st_atimensec)
+		return (1);
+	else
+		return (revnamecmp(a, b));
 }
 
 int
-statcmp(a, b)
-	const FTSENT *a, *b;
+statcmp(const FTSENT *a, const FTSENT *b)
 {
-	return (b->fts_statp->st_ctime - a->fts_statp->st_ctime);
+	if (b->fts_statp->st_ctime > a->fts_statp->st_ctime)
+		return (1);
+	else if (b->fts_statp->st_ctime < a->fts_statp->st_ctime)
+		return (-1);
+	else if (b->fts_statp->st_ctimensec > a->fts_statp->st_ctimensec)
+		return (1);
+	else if (b->fts_statp->st_ctimensec < a->fts_statp->st_ctimensec)
+		return (-1);
+	else
+		return (namecmp(a, b));
 }
 
 int
-revstatcmp(a, b)
-	const FTSENT *a, *b;
+revstatcmp(const FTSENT *a, const FTSENT *b)
 {
-	return (a->fts_statp->st_ctime - b->fts_statp->st_ctime);
+	if (b->fts_statp->st_ctime > a->fts_statp->st_ctime)
+		return (-1);
+	else if (b->fts_statp->st_ctime < a->fts_statp->st_ctime)
+		return (1);
+	else if (b->fts_statp->st_ctimensec > a->fts_statp->st_ctimensec)
+		return (-1);
+	else if (b->fts_statp->st_ctimensec < a->fts_statp->st_ctimensec)
+		return (1);
+	else
+		return (revnamecmp(a, b));
 }
 
 int
-sizecmp(a, b)
-	const FTSENT *a, *b;
+sizecmp(const FTSENT *a, const FTSENT *b)
 {
 	if (b->fts_statp->st_size > a->fts_statp->st_size)
-		return 1;
+		return (1);
 	if (b->fts_statp->st_size < a->fts_statp->st_size)
-		return -1;
-	return 0;
+		return (-1);
+	else
+		return (namecmp(a, b));
 }
 
 int
-revsizecmp(a, b)
-	const FTSENT *a, *b;
+revsizecmp(const FTSENT *a, const FTSENT *b)
 {
-	if (a->fts_statp->st_size > b->fts_statp->st_size)
-		return 1;
-	if (a->fts_statp->st_size < b->fts_statp->st_size)
-		return -1;
-	return 0;
+	if (b->fts_statp->st_size > a->fts_statp->st_size)
+		return (-1);
+	if (b->fts_statp->st_size < a->fts_statp->st_size)
+		return (1);
+	else
+		return (revnamecmp(a, b));
 }

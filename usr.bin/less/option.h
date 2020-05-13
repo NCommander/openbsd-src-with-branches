@@ -1,12 +1,13 @@
 /*
  * Copyright (C) 1984-2012  Mark Nudelman
+ * Modified for use with illumos by Garrett D'Amore.
+ * Copyright 2014 Garrett D'Amore <garrett@damore.org>
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
  *
  * For more information, see the README file.
  */
-
 
 #define	END_OPTION_STRING	('$')
 
@@ -23,10 +24,11 @@
 #define	HL_REPAINT	0200	/* Repaint hilites after toggling option */
 #define	NO_QUERY	0400	/* Option cannot be queried with "_" cmd */
 #define	INIT_HANDLER	01000	/* Call option handler function at startup */
+#define	MORE_OK		02000	/* Allow when less_is_more */
 
 #define	OTYPE		(BOOL|TRIPLE|NUMBER|STRING|NOVAR)
 
-#define OLETTER_NONE    '\1'     /* Invalid option letter */
+#define	OLETTER_NONE	'\1'	/* Invalid option letter */
 
 /*
  * Argument to a handling function tells what type of activity:
@@ -40,27 +42,24 @@
 #define	OPT_TOGGLE	1
 #define	OPT_UNSET	2
 #define	OPT_SET		3
-#define OPT_NO_PROMPT	0100
+#define	OPT_NO_PROMPT	0100
 
 /* Error code from findopt_name */
-#define OPT_AMBIG       1
+#define	OPT_AMBIG	1
 
-struct optname
-{
-	char *oname;            /* Long (GNU-style) option name */
-	struct optname *onext;  /* List of synonymous option names */
+struct optname {
+	char *oname;		/* Long (GNU-style) option name */
+	struct optname *onext;	/* List of synonymous option names */
 };
 
-#define OPTNAME_MAX	32	/* Max length of long option name */
+#define	OPTNAME_MAX	32	/* Max length of long option name */
 
-struct loption
-{
+struct loption {
 	char oletter;		/* The controlling letter (a-z) */
 	struct optname *onames; /* Long (GNU-style) option name */
 	int otype;		/* Type of the option */
 	int odefault;		/* Default value */
 	int *ovar;		/* Pointer to the associated variable */
-	void (*ofunc)();	/* Pointer to special handling function */
+	void (*ofunc)(int, char *); /* Pointer to special handling function */
 	char *odesc[3];		/* Description of each value */
 };
-

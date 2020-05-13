@@ -1,7 +1,7 @@
 #!/usr/bin/perl
-#	$OpenBSD$
+#	$OpenBSD: remote.pl,v 1.3 2014/08/18 22:58:19 bluhm Exp $
 
-# Copyright (c) 2010-2013 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -31,24 +31,24 @@ require 'funcs.pl';
 sub usage {
 	die <<"EOF";
 usage:
-    remote.pl localport remoteaddr remoteport [test-args.pl]
+    remote.pl localport remoteaddr remoteport [args-test.pl]
 	Run test with local client and server.  Remote relay
 	forwarding from remoteaddr remoteport to server localport
 	has to be started manually.
-    remote.pl copy|splice listenaddr connectaddr connectport [test-args.pl]
+    remote.pl copy|splice listenaddr connectaddr connectport [args-test.pl]
 	Only start remote relay.
-    remote.pl copy|splice localaddr remoteaddr remotessh [test-args.pl]
+    remote.pl copy|splice localaddr remoteaddr remotessh [args-test.pl]
 	Run test with local client and server.  Remote relay is
 	started automatically with ssh on remotessh.
 EOF
 }
 
-my $test;
+my $testfile;
 our %args;
 if (@ARGV and -f $ARGV[-1]) {
-	$test = pop;
-	do $test
-	    or die "Do test file $test failed: ", $@ || $!;
+	$testfile = pop;
+	do $testfile
+	    or die "Do test file $testfile failed: ", $@ || $!;
 }
 my $mode =
 	@ARGV == 3 && $ARGV[0] =~ /^\d+$/ && $ARGV[2] =~ /^\d+$/ ? "manual" :
@@ -61,7 +61,7 @@ if ($mode eq "relay") {
 	$r = Relay->new(
 	    forward		=> $ARGV[0],
 	    logfile		=> dirname($0)."/remote.log",
-	    idle		=> 5,
+	    idle		=> 3,
 	    func		=> \&relay,
 	    %{$args{relay}},
 	    protocol		=> "udp",
@@ -91,6 +91,7 @@ if ($mode eq "relay") {
 }
 
 my $s = Server->new(
+    idle		=> 4,
     func		=> \&read_datagram,
     %{$args{server}},
     protocol		=> "udp",
@@ -102,7 +103,7 @@ if ($mode eq "auto") {
 	$r = Remote->new(
 	    forward		=> $ARGV[0],
 	    logfile		=> "relay.log",
-	    testfile		=> $test,
+	    testfile		=> $testfile,
 	    %{$args{relay}},
 	    remotessh		=> $ARGV[3],
 	    protocol		=> "udp",

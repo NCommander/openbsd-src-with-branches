@@ -246,16 +246,6 @@ In April, 1989, Brian Berliner designed and coded @sc{cvs}.
 Jeff Polk later helped Brian with the design of the @sc{cvs}
 module and vendor branch support.
 
-@cindex Source, getting CVS source
-You can get @sc{cvs} in a variety of ways, including
-free download from the internet.  For more information
-on downloading @sc{cvs} and other @sc{cvs} topics, see:
-
-@example
-http://www.cvshome.org/
-http://www.loria.fr/~molli/cvs-index.html
-@end example
-
 @cindex Mailing list
 @cindex List, mailing list
 @cindex Newsgroups
@@ -2588,7 +2578,7 @@ might be possible to modify @sc{cvs} to prevent that,
 but no one has done so as of this writing.
 @c OpenBSD uses chroot() and copies the repository to
 @c provide anonymous read-only access (for details see
-@c http://www.openbsd.org/anoncvs.shar).  While this
+@c https://www.openbsd.org/anoncvs.shar).  While this
 @c closes the most obvious holes, I'm not sure it
 @c closes enough holes to recommend it (plus it is
 @c *very* easy to accidentally screw up a setup of this
@@ -12363,14 +12353,14 @@ patterns is:
 @cindex Automatically ignored files
 @example
     RCS     SCCS    CVS     CVS.adm
-    RCSLOG  cvslog.*
+    RCSLOG  cvslog.*        .git
     tags    TAGS
-    .make.state     .nse_depinfo
+    .make.state     .nse_depinfo   .*.swp
     *~      #*      .#*     ,*      _$*     *$
     *.old   *.bak   *.BAK   *.orig  *.rej   .del-*
     *.a     *.olb   *.o     *.obj   *.so    *.exe
-    *.Z     *.elc   *.ln
-    core
+    *.Z     *.elc   *.ln    *.depend
+    *.core
 @end example
 
 @item
@@ -13622,24 +13612,6 @@ fix for inclusion in future releases of @sc{cvs}, see
 the file @sc{hacking} in the @sc{cvs} source
 distribution.  It contains much more information on the
 process of submitting fixes.
-
-@item
-There may be resources on the net which can help.  Two
-good places to start are:
-
-@example
-http://www.cvshome.org
-http://www.loria.fr/~molli/cvs-index.html
-@end example
-
-If you are so inspired, increasing the information
-available on the net is likely to be appreciated.  For
-example, before the standard @sc{cvs} distribution
-worked on Windows 95, there was a web page with some
-explanation and patches for running @sc{cvs} on Windows
-95, and various people helped out by mentioning this
-page on mailing lists or newsgroups when the subject
-came up.
 
 @item
 It is also possible to report bugs to @code{bug-cvs}.

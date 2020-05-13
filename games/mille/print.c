@@ -1,3 +1,4 @@
+/*	$OpenBSD: print.c,v 1.8 2016/01/08 18:05:58 mestre Exp $	*/
 /*	$NetBSD: print.c,v 1.4 1995/03/24 05:02:02 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)print.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: print.c,v 1.4 1995/03/24 05:02:02 cgd Exp $";
-#endif
-#endif /* not lint */
-
-# include	"mille.h"
+#include "mille.h"
 
 /*
  * @(#)print.c	1.1 (Berkeley) 4/1/82
@@ -50,10 +39,11 @@ static char rcsid[] = "$NetBSD: print.c,v 1.4 1995/03/24 05:02:02 cgd Exp $";
 # define	COMP_STRT	20
 # define	CARD_STRT	2
 
-prboard() {
-
-	reg PLAY	*pp;
-	reg int		i, j, k, temp;
+void
+prboard(void)
+{
+	PLAY	*pp;
+	int	i, j, k, temp;
 
 	for (k = 0; k < 2; k++) {
 		pp = &Player[k];
@@ -68,8 +58,8 @@ prboard() {
 		show_card(14, temp, pp->battle, &pp->sh_battle);
 		show_card(16, temp, pp->speed, &pp->sh_speed);
 		for (i = C_25; i <= C_200; i++) {
-			reg char	*name;
-			reg int		end;
+			const char	*name;
+			int	end;
 
 			if (pp->nummiles[i] == pp->sh_nummiles[i])
 				continue;
@@ -104,9 +94,8 @@ prboard() {
  * show_card:
  *	Show the given card if it is different from the last one shown
  */
-show_card(y, x, c, lc)
-int		y, x;
-register CARD	c, *lc;
+void
+show_card(int y, int x, CARD c, CARD *lc)
 {
 	if (c == *lc)
 		return;
@@ -117,11 +106,11 @@ register CARD	c, *lc;
 
 static char	Score_fmt[] = "%4d";
 
-prscore(for_real)
-reg bool	for_real; {
-
-	reg PLAY	*pp;
-	reg int		x;
+void
+prscore(bool for_real)
+{
+	PLAY	*pp;
+	int	x;
 
 	stdscr = Score;
 	for (pp = Player; pp < &Player[2]; pp++) {
@@ -163,9 +152,8 @@ reg bool	for_real; {
  *	Show a score value if it is different from the last time we
  *	showed it.
  */
-show_score(y, x, s, ls)
-int		y, x;
-register int	s, *ls;
+void
+show_score(int y, int x, int s, int *ls)
 {
 	if (s == *ls)
 		return;

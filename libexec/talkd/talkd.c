@@ -1,3 +1,5 @@
+/*	$OpenBSD: talkd.c,v 1.25 2016/02/05 10:13:51 mestre Exp $	*/
+
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,98 +29,108 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1983 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)talkd.c	5.8 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: talkd.c,v 1.2 1993/08/01 18:29:30 mycroft Exp $";
-#endif /* not lint */
-
 /*
  * The top level of the daemon, the format is heavily borrowed
- * from rwhod.c. Basically: find out who and where you are; 
+ * from rwhod.c. Basically: find out who and where you are;
  * disconnect all descriptors and ttys, and then endless
  * loop on waiting for and processing requests
  */
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <protocols/talkd.h>
-#include <signal.h>
-#include <syslog.h>
-#include <time.h>
+
 #include <errno.h>
-#include <unistd.h>
+#include <limits.h>
+#include <paths.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <paths.h>
+#include <syslog.h>
+#include <unistd.h>
 
-CTL_MSG		request;
-CTL_RESPONSE	response;
+#include "talkd.h"
 
-int	sockt;
 int	debug = 0;
-void	timeout();
+void	timeout(int);
 long	lastmsgtime;
 
-char	hostname[32];
+char	hostname[HOST_NAME_MAX+1];
 
 #define TIMEOUT 30
 #define MAXIDLE 120
 
-main(argc, argv)
-	int argc;
-	char *argv[];
+int
+main(int argc, char *argv[])
 {
-	register CTL_MSG *mp = &request;
-	int cc;
-
-	if (getuid()) {
-		fprintf(stderr, "%s: getuid: not super-user", argv[0]);
+	if (getuid() != 0) {
+		fprintf(stderr, "%s: getuid: not super-user\n", argv[0]);
 		exit(1);
 	}
 	openlog("talkd", LOG_PID, LOG_DAEMON);
-	if (gethostname(hostname, sizeof (hostname) - 1) < 0) {
+	if (gethostname(hostname, sizeof(hostname)) == -1) {
 		syslog(LOG_ERR, "gethostname: %m");
 		_exit(1);
 	}
-	if (chdir(_PATH_DEV) < 0) {
+	if (chdir(_PATH_DEV) == -1) {
 		syslog(LOG_ERR, "chdir: %s: %m", _PATH_DEV);
 		_exit(1);
 	}
 	if (argc > 1 && strcmp(argv[1], "-d") == 0)
 		debug = 1;
+	init_table();
 	signal(SIGALRM, timeout);
 	alarm(TIMEOUT);
-	for (;;) {
-		extern int errno;
 
-		cc = recv(0, (char *)mp, sizeof (*mp), 0);
-		if (cc != sizeof (*mp)) {
-			if (cc < 0 && errno != EINTR)
-				syslog(LOG_WARNING, "recv: %m");
+	if (pledge("stdio rpath wpath cpath inet dns", NULL) == -1) {
+		syslog(LOG_ERR, "pledge: %m");
+		_exit(1);
+	}
+
+	for (;;) {
+		CTL_RESPONSE response;
+		socklen_t len = sizeof(response.addr);
+		CTL_MSG	request;
+		int cc;
+		struct sockaddr ctl_addr;
+
+		memset(&response, 0, sizeof(response));
+		cc = recvfrom(STDIN_FILENO, (char *)&request,
+		    sizeof(request), 0, (struct sockaddr *)&response.addr,
+		    &len);
+		if (cc != sizeof(request)) {
+			if (cc == -1 && errno != EINTR)
+				syslog(LOG_WARNING, "recvfrom: %m");
 			continue;
 		}
+
+		/* Force NUL termination */
+		request.l_name[sizeof(request.l_name) - 1] = '\0';
+		request.r_name[sizeof(request.r_name) - 1] = '\0';
+		request.r_tty[sizeof(request.r_tty) - 1] = '\0';
+
+		memcpy(&ctl_addr, &request.ctl_addr, sizeof(ctl_addr));
+		ctl_addr.sa_family = ntohs(request.ctl_addr.sa_family);
+		ctl_addr.sa_len = sizeof(ctl_addr);
+		if (ctl_addr.sa_family != AF_INET)
+			continue;
+
 		lastmsgtime = time(0);
-		process_request(mp, &response);
+		process_request(&request, &response);
 		/* can block here, is this what I want? */
-		cc = sendto(sockt, (char *)&response,
-		    sizeof (response), 0, (struct sockaddr *)&mp->ctl_addr,
-		    sizeof (mp->ctl_addr));
-		if (cc != sizeof (response))
+		cc = sendto(STDOUT_FILENO, (char *)&response,
+		    sizeof(response), 0, &ctl_addr, sizeof(ctl_addr));
+		if (cc != sizeof(response))
 			syslog(LOG_WARNING, "sendto: %m");
 	}
 }
 
 void
-timeout()
+timeout(int signo)
 {
+	int save_errno = errno;
 
 	if (time(0) - lastmsgtime >= MAXIDLE)
 		_exit(0);
 	alarm(TIMEOUT);
+	errno = save_errno;
 }

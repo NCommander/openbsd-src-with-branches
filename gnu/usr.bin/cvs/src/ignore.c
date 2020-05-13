@@ -33,9 +33,10 @@ static int ign_size;			/* This many slots available (plus
 static int ign_hold = -1;		/* Index where first "temporary" item
 					 * is held */
 
-const char *ign_default = ". .. core RCSLOG tags TAGS RCS SCCS .make.state\
+const char *ign_default = ". .. RCSLOG tags TAGS RCS SCCS .make.state\
+ .*.swp *.core .git\
  .nse_depinfo #* .#* cvslog.* ,* CVS CVS.adm .del-* *.a *.olb *.o *.obj\
- *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$";
+ *.so *.Z *~ *.old *.elc *.ln *.bak *.BAK *.orig *.rej *.exe _$* *$ *.depend";
 
 #define IGN_GROW 16			/* grow the list by 16 elements at a
 					 * time */
@@ -157,7 +158,7 @@ ign_add_file (file, hold)
 	    error (0, errno, "cannot open %s", file);
 	return;
     }
-    while (getline (&line, &line_allocated, fp) >= 0)
+    while (get_line (&line, &line_allocated, fp) >= 0)
 	ign_add (line, hold);
     if (ferror (fp))
 	error (0, errno, "cannot read %s", file);

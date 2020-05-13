@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD: rsync.c,v 1.6 2019/06/19 16:30:37 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,11 +14,10 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include "config.h"
 
+#include <netinet/in.h>
 #include <assert.h>
 #include <err.h>
-#include <netinet/in.h>
 #include <resolv.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,9 +36,9 @@
  */
 int
 rsync_uri_parse(const char **hostp, size_t *hostsz,
-	const char **modulep, size_t *modulesz,
-	const char **pathp, size_t *pathsz,
-	enum rtype *rtypep, const char *uri)
+    const char **modulep, size_t *modulesz,
+    const char **pathp, size_t *pathsz,
+    enum rtype *rtypep, const char *uri)
 {
 	const char	*host, *module, *path;
 	size_t		 sz;
@@ -87,7 +86,7 @@ rsync_uri_parse(const char **hostp, size_t *hostsz,
 
 	/* The non-zero-length module follows the hostname. */
 
-	if ('\0' == module[1]) {
+	if (module[1] == '\0') {
 		warnx("%s: zero-length rsync module", uri);
 		return 0;
 	}
@@ -97,7 +96,7 @@ rsync_uri_parse(const char **hostp, size_t *hostsz,
 	/* The path component is optional. */
 
 	if ((path = strchr(module, '/')) == NULL) {
-		assert('\0' != *module);
+		assert(*module != '\0');
 		if (modulep != NULL)
 			*modulep = module;
 		if (modulesz != NULL)
@@ -130,8 +129,6 @@ rsync_uri_parse(const char **hostp, size_t *hostsz,
 			*rtypep = RTYPE_CER;
 		else if (strcasecmp(path + sz - 4, ".crl") == 0)
 			*rtypep = RTYPE_CRL;
-		else if (strcasecmp(path + sz - 4, ".tal") == 0)
-			*rtypep = RTYPE_TAL;
 	}
 
 	return 1;

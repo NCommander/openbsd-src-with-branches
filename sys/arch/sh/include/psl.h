@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: psl.h,v 1.3 2007/02/26 19:34:41 miod Exp $	*/
 /*	$NetBSD: psl.h,v 1.8 2005/12/11 12:18:58 christos Exp $	*/
 
 /*-
@@ -39,23 +39,23 @@
 #define	_SH_PSL_H_
 
 /*
- * SuperH Processer Status Register.
+ * SuperH Processor Status Register.
  */
 #define	PSL_TBIT	0x00000001	/* T bit */
 #define	PSL_SBIT	0x00000002	/* S bit */
 #define	PSL_IMASK	0x000000f0	/* Interrupt Mask bit */
 #define	PSL_QBIT	0x00000100	/* Q bit */
 #define	PSL_MBIT	0x00000200	/* M bit */
+#define	PSL_FD		0x00008000	/* FPU Disable bit */
 #define	PSL_BL		0x10000000	/* Exception Block bit */
 #define	PSL_RB		0x20000000	/* Register Bank bit */
 #define	PSL_MD		0x40000000	/* Processor Mode bit */
-                                        /* 1 = kernel, 0 = user */
 
 #define	PSL_MBO		0x00000000	/* must be one bits */
-#define	PSL_MBZ		0x8ffffc0c	/* must be zero bits */
+#define	PSL_MBZ		0x8fff7c0c	/* must be zero bits */
 
 #define	PSL_USERSET	0
-#define	PSL_USERSTATIC	(PSL_BL|PSL_RB|PSL_MD|PSL_IMASK|PSL_MBO|PSL_MBZ)
+#define	PSL_USERSTATIC	(PSL_BL|PSL_RB|PSL_MD|PSL_IMASK|PSL_FD|PSL_MBO|PSL_MBZ)
 
 #define	KERNELMODE(sr)		((sr) & PSL_MD)
 
@@ -69,8 +69,6 @@ int _cpu_intr_resume(int);
 int _cpu_exception_suspend(void);
 void _cpu_exception_resume(int);
 #endif /* !_LOCORE */
-
-#include <machine/intr.h>
 #endif /* _KERNEL */
 
 #endif /* !_SH_PSL_H_ */

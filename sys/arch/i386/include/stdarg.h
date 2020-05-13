@@ -1,4 +1,5 @@
-/*	$NetBSD: stdarg.h,v 1.9 1995/03/28 18:17:21 jtc Exp $	*/
+/*	$OpenBSD: stdarg.h,v 1.15 2011/03/23 16:54:35 pirofti Exp $	*/
+/*	$NetBSD: stdarg.h,v 1.12 1995/12/25 23:15:31 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,27 +32,23 @@
  *	@(#)stdarg.h	8.1 (Berkeley) 6/10/93
  */
 
-#ifndef _I386_STDARG_H_
-#define	_I386_STDARG_H_
+#ifndef _MACHINE_STDARG_H_
+#define	_MACHINE_STDARG_H_
 
-#include <machine/ansi.h>
+#include <sys/cdefs.h>
+#include <machine/_types.h>
 
-typedef _BSD_VA_LIST_	va_list;
+typedef __va_list	va_list;
 
-#define	__va_promote(type) \
-	(((sizeof(type) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
+#define	__va_size(type) \
+	(((sizeof(type) + sizeof(long) - 1) / sizeof(long)) * sizeof(long))
 
-#define	va_start(ap, last) \
-	(ap = ((char *)&(last) + __va_promote(last)))
+#define va_start(ap, last) \
+	((ap) = (va_list)__builtin_next_arg(last))
 
-#ifdef _KERNEL
 #define	va_arg(ap, type) \
-	((type *)(ap += sizeof(type)))[-1]
-#else
-#define	va_arg(ap, type) \
-	((type *)(ap += __va_promote(type), ap - __va_promote(type)))[0]
-#endif
+	(*(type *)((ap) += __va_size(type), (ap) - __va_size(type)))
 
-#define	va_end(ap)	((void)0)
+#define	va_end(ap)	
 
-#endif /* !_I386_STDARG_H_ */
+#endif /* !_MACHINE_STDARG_H_ */

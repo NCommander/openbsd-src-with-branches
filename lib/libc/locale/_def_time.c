@@ -1,12 +1,13 @@
+/*	$OpenBSD: _def_time.c,v 1.5 2011/10/09 06:39:53 ajacoutot Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <sys/localedef.h>
 #include <locale.h>
+#include "localedef.h"
 
-const _TimeLocale _DefaultTimeLocale = 
+const _TimeLocale _DefaultTimeLocale =
 {
 	{
 		"Sun","Mon","Tue","Wed","Thu","Fri","Sat",
@@ -26,7 +27,7 @@ const _TimeLocale _DefaultTimeLocale =
 	{
 		"AM", "PM"
 	},
-	"%a %b %d %H:%M:%S %Y",
+	"%a %b %e %H:%M:%S %Y",
 	"%m/%d/%y",
 	"%H:%M:%S",
 	"%I:%M:%S %p"

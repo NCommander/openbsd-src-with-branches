@@ -1,0 +1,5 @@
+$FRAGMENTATION
+ikev2 "test" active $IPCOMP $TMODE esp from $LOCAL_ADDR to $PEER_ADDR \
+	peer $PEER_ADDR \
+	srcid $SRCID \
+	$AUTH

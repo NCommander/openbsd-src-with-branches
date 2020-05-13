@@ -1,3 +1,4 @@
+/* $OpenBSD: _setjmp.S,v 1.5 2005/08/07 11:30:38 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,15 +29,11 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)_setjmp.s	5.1 (Berkeley) 4/23/90
- *	$Id: _setjmp.S,v 1.3 1993/10/21 01:39:55 jtc Exp $
  */
 
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$Id: _setjmp.S,v 1.3 1993/10/21 01:39:55 jtc Exp $"
-#endif
+#include <machine/asm.h>
+
+	.global	__jmpxor
 
 /*
  * C library -- _setjmp, _longjmp
@@ -52,31 +45,46 @@
  * The previous signal state is NOT restored.
  */
 
-#include "DEFS.h"
-
 ENTRY(_setjmp)
+	call	1f
+1:	popl	%ecx
+	addl	$__jmpxor-1b,%ecx	# load cookie address
 	movl	4(%esp),%eax
 	movl	0(%esp),%edx
-	movl	%edx, 0(%eax)		/* rta */
+	xorl	0(%ecx),%edx		# use eip cookie
+	movl	%edx, 0(%eax)
 	movl	%ebx, 4(%eax)
-	movl	%esp, 8(%eax)
-	movl	%ebp,12(%eax)
+	movl	%esp,   %edx
+	xorl	4(%ecx),%edx		# use esp cookie
+	movl	%edx, 8(%eax)
+	movl	8(%ecx),%ecx		# load ebp cookie over cookie address
+	xorl	%ebp,   %ecx
+	movl	%ecx,12(%eax)
 	movl	%esi,16(%eax)
 	movl	%edi,20(%eax)
 	xorl	%eax,%eax
 	ret
+END(_setjmp)
 
 ENTRY(_longjmp)
-	movl	4(%esp),%edx
-	movl	8(%esp),%eax
-	movl	0(%edx),%ecx
-	movl	4(%edx),%ebx
-	movl	8(%edx),%esp
+	call	1f
+1:	popl	%ecx
+	addl	$__jmpxor-1b,%ecx	# load cookie address
+	movl	 4(%esp),%edx
+	movl	 8(%esp),%eax
+	movl	 4(%edx),%ebx
+	movl	 8(%edx),%esi		# load xor'ed esp into safe register
+	xorl	 4(%ecx),%esi		# use esp cookie
+	movl	   %esi, %esp		# un-xor'ed esp is safe to use
 	movl	12(%edx),%ebp
+	xorl	 8(%ecx),%ebp		# use ebp cookie
 	movl	16(%edx),%esi
 	movl	20(%edx),%edi
+	movl	 0(%ecx),%ecx		# load eip cookie over cookie address
+	xorl	 0(%edx),%ecx		# overwrite eip cookie
 	testl	%eax,%eax
 	jnz	1f
 	incl	%eax
 1:	movl	%ecx,0(%esp)
 	ret
+END(_longjmp)

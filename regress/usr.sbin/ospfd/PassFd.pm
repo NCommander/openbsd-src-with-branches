@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Copyright (c) 2014 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any

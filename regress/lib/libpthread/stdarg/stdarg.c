@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_stdarg.c,v 1.3 2000/10/04 05:50:58 d Exp $	*/
+/*	$OpenBSD: stdarg.c,v 1.4 2001/12/12 21:18:34 fgsch Exp $	*/
 /* David Leonard <d@openbsd.org>, 2001. Public Domain. */
 
 /*
@@ -8,20 +8,21 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include "test.h"
 
 #define EQ(v,exp) _CHECK(v, == exp, NULL) 
 
 int thing;
 
-int
+static int
 test1(char *fmt, ...)
 {
 	va_list	ap;
 
 	char	ch;
 	int	i;
-	char	c;
+	int	c;
 	long	l;
 	void 	*p;
 	char 	*ofmt = fmt;
@@ -34,7 +35,7 @@ test1(char *fmt, ...)
 		EQ(i, 1234);
 		break;
 	    case 'c':		
-		c = va_arg(ap, char); 
+		c = va_arg(ap, int); 
 		EQ(c, 'x');
 		break;
 	    case 'l':		
@@ -46,17 +47,17 @@ test1(char *fmt, ...)
 		EQ(p, &thing);
 		break;
 	    default:
-		fprintf(stderr, "unexpected character 0x%02x `%c' in %s(%p) at %p\n",
-			ch, ch, ofmt, ofmt, fmt);
+		fprintf(stderr,
+		    "unexpected character 0x%02x `%c' in %s(%p) at %p\n",
+		    ch, ch, ofmt, ofmt, fmt);
 		ASSERT(0);
 	    }
 	va_end(ap);
 	return 9;
 }
 
-void * 
-run_test(arg)
-	void *arg;
+static void * 
+run_test(void *arg)
 {
 	char *msg = (char *)arg;
 	int i;
@@ -72,7 +73,7 @@ run_test(arg)
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 	pthread_t t1, t2;
 

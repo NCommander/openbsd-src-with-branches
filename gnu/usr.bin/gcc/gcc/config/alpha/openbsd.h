@@ -18,43 +18,52 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* We settle for little endian for now.  */
-#define TARGET_ENDIAN_DEFAULT 0
-
-#define OBSD_NO_DYNAMIC_LIBRARIES
-#define OBSD_HAS_DECLARE_FUNCTION_NAME
-#define OBSD_HAS_DECLARE_FUNCTION_SIZE
-#define OBSD_HAS_DECLARE_OBJECT
-
-/* alpha ecoff supports only weak aliases, see below.  */
-#define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS (FILE,NAME,0)
-
-#include <openbsd.h>
-
 /* Controlling the compilation driver.  */
+
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT \
+	(MASK_FP | MASK_FPREGS | MASK_IEEE | MASK_IEEE_CONFORMANT | MASK_GAS)
 
 /* alpha needs __start.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "%{!nostdlib:%{!r*:%{!e*:-e __start}}} -dc -dp %{assert*}"
+  "%{!shared:%{!nostdlib:%{!r*:%{!e*:-e __start}}}} \
+   %{shared:-shared} %{R*} \
+   %{static:-Bstatic} \
+   %{!static:-Bdynamic} \
+   %{rdynamic:-export-dynamic} \
+   %{assert*} \
+   %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.so}"
+
+/* As an elf system, we need crtbegin/crtend stuff.  */
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+	%{!shared: %{pg:gcrt0%O%s} %{!pg:%{p:gcrt0%O%s} %{!p:crt0%O%s}} \
+	crtbegin%O%s} %{shared:crtbeginS%O%s}"
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC "%{!shared:crtend%O%s} %{shared:crtendS%O%s}"
 
 /* run-time target specifications */
 #define TARGET_OS_CPP_BUILTINS()		\
     do {					\
-	builtin_define ("__OpenBSD__");		\
-	builtin_define ("__ANSI_COMPAT");	\
-	builtin_define ("__unix__");		\
-	builtin_assert ("system=unix");		\
+	OPENBSD_OS_CPP_BUILTINS_ELF();		\
+	OPENBSD_OS_CPP_BUILTINS_LP64();		\
     } while (0)
 
 /* Layout of source language data types.  */
 
-/* This must agree with <machine/ansi.h> */
+/* This must agree with <machine/_types.h> */
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"
 
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
+
+#undef INTMAX_TYPE
+#define INTMAX_TYPE "long long int"
+
+#undef UINTMAX_TYPE
+#define UINTMAX_TYPE "long long unsigned int"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
@@ -62,68 +71,17 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
+/* Output and generation of labels.  */
 #define LOCAL_LABEL_PREFIX	"."
 
-/* We don't have an init section yet.  */
-#undef HAS_INIT_SECTION
+/* .set on alpha is not used to output labels.  */
+#undef SET_ASM_OP
 
-/* collect2 support (assembler format: macros for initialization).  */
+/* don't want no friggin' stack checks.  */
+#undef STACK_CHECK_BUILTIN
+#define STACK_CHECK_BUILTIN 0
 
-/* Don't tell collect2 we use COFF as we don't have (yet ?) a dynamic ld
-   library with the proper functions to handle this -> collect2 will
-   default to using nm.  */
-#undef OBJECT_FORMAT_COFF
-#undef EXTENDED_COFF
-
-/* Assembler format: exception region output.  */
-
-/* All configurations that don't use elf must be explicit about not using
-   dwarf unwind information. egcs doesn't try too hard to check internal
-   configuration files...  */
-#ifdef INCOMING_RETURN_ADDR_RTX
-#undef DWARF2_UNWIND_INFO
-#define DWARF2_UNWIND_INFO 0
-#endif
-
-/* Assembler format: file framework.  */
-
-/* Taken from alpha/osf.h. This used to be common to all alpha
-   configurations, but elf has departed from it.
-   Check alpha/alpha.h, alpha/osf.h for it when egcs is upgraded.  */
-#ifndef ASM_FILE_START
-#define ASM_FILE_START(FILE)					\
-{								\
-  alpha_write_verstamp (FILE);					\
-  fprintf (FILE, "\t.set noreorder\n");				\
-  fprintf (FILE, "\t.set volatile\n");                          \
-  fprintf (FILE, "\t.set noat\n");				\
-  if (TARGET_SUPPORT_ARCH)					\
-    fprintf (FILE, "\t.arch %s\n",				\
-             TARGET_CPU_EV6 ? "ev6"				\
-	     : (TARGET_CPU_EV5					\
-		? (TARGET_MAX ? "pca56" : TARGET_BWX ? "ev56" : "ev5") \
-		: "ev4"));					\
-								\
-  ASM_OUTPUT_SOURCE_FILENAME (FILE, main_input_filename);	\
-}
-#endif
-
-/* Assembler format: label output.  */
-
-#define ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,VALUE)	\
- do {						\
-  fputs ("\t.weakext\t", FILE);			\
-  assemble_name (FILE, NAME);			\
-  if (VALUE)					\
-    {						\
-      fputs (" , ", FILE);			\
-      assemble_name (FILE, VALUE);		\
-    }						\
-  fputc ('\n', FILE);				\
- } while (0)
-
-
+/* OpenBSD doesn't currently support thread-local storage. */
+/* alpha.c undefs TARGET_HAVE_TLS and redefines it to HAVE_AS_TLS !?!?! */
+#undef HAVE_AS_TLS
+#define HAVE_AS_TLS false

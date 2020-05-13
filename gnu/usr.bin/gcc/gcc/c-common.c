@@ -39,9 +39,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "except.h"		/* For USING_SJLJ_EXCEPTIONS.  */
 #include "tree-inline.h"
-#include "c-tree.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
+extern tree lookup_name PARAMS ((tree)); /* Declared in c-tree.h. */
 
 /* We let tm.h override the types used here, to handle trivial differences
    such as the choice of unsigned int or long unsigned int for size_t.
@@ -333,6 +333,9 @@ int warn_format_nonliteral;
 
 int warn_format_security;
 
+/* Warn about buffer size mismatches.  */
+
+int warn_bounded = 1;
 
 /* C/ObjC language option variables.  */
 
@@ -767,6 +770,8 @@ static tree handle_vector_size_attribute PARAMS ((tree *, tree, tree, int,
 						  bool *));
 static tree handle_nonnull_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
+static tree handle_sentinel_attribute	PARAMS ((tree *, tree, tree, int,
+						 bool *));
 static tree handle_nothrow_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
 static tree handle_cleanup_attribute	PARAMS ((tree *, tree, tree, int,
@@ -774,6 +779,7 @@ static tree handle_cleanup_attribute	PARAMS ((tree *, tree, tree, int,
 static tree vector_size_helper PARAMS ((tree, tree));
 
 static void check_function_nonnull	PARAMS ((tree, tree));
+static void check_function_sentinel 	PARAMS ((tree, tree));
 static void check_nonnull_arg		PARAMS ((void *, tree,
 						 unsigned HOST_WIDE_INT));
 static bool nonnull_check_p		PARAMS ((tree, unsigned HOST_WIDE_INT));
@@ -850,12 +856,16 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_deprecated_attribute },
   { "vector_size",	      1, 1, false, true, false,
 			      handle_vector_size_attribute },
+  { "bounded",		      3, 4, false, true, false,
+			      handle_bounded_attribute },
   { "visibility",	      1, 1, true,  false, false,
 			      handle_visibility_attribute },
   { "tls_model",	      1, 1, true,  false, false,
 			      handle_tls_model_attribute },
   { "nonnull",                0, -1, false, true, true,
 			      handle_nonnull_attribute },
+  { "sentinel",               0, 0, false, true, true,
+			      handle_sentinel_attribute },
   { "nothrow",                0, 0, true,  false, false,
 			      handle_nothrow_attribute },
   { "may_alias",	      0, 0, false, true, false, NULL },
@@ -3052,6 +3062,7 @@ c_sizeof_or_alignof_type (type, op, complain)
   const char *op_name;
   tree value = NULL;
   enum tree_code type_code = TREE_CODE (type);
+  bool sizeof_ptr_flag = false;
   
   my_friendly_assert (op == SIZEOF_EXPR || op == ALIGNOF_EXPR, 20020720);
   op_name = op == SIZEOF_EXPR ? "sizeof" : "__alignof__";
@@ -3083,10 +3094,15 @@ c_sizeof_or_alignof_type (type, op, complain)
   else
     {
       if (op == SIZEOF_EXPR)
-	/* Convert in case a char is more than one unit.  */
-	value = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
-			    size_int (TYPE_PRECISION (char_type_node)
-				      / BITS_PER_UNIT));
+        {
+	  /* Convert in case a char is more than one unit.  */
+	  value = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
+		  	      size_int (TYPE_PRECISION (char_type_node)
+				        / BITS_PER_UNIT));
+
+          if (type_code == POINTER_TYPE)
+            sizeof_ptr_flag = true;
+        }
       else
 	value = size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
     }
@@ -3097,7 +3113,10 @@ c_sizeof_or_alignof_type (type, op, complain)
      `size_t', which is just a typedef for an ordinary integer type.  */
   value = fold (build1 (NOP_EXPR, size_type_node, value));
   my_friendly_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (value)), 20001021);
-  
+ 
+  if (sizeof_ptr_flag)
+    SIZEOF_PTR_DERIVED (value) = 1;
+
   return value;
 }
 
@@ -4985,6 +5004,17 @@ cb_register_builtins (pfile)
   else
     cpp_define (pfile, "__FINITE_MATH_ONLY__=0");
 
+  if (flag_pic)
+    {
+      builtin_define_with_int_value ("__pic__", flag_pic);
+      builtin_define_with_int_value ("__PIC__", flag_pic);
+    }
+  if (flag_pie)
+    {
+      builtin_define_with_int_value ("__pie__", flag_pie);
+      builtin_define_with_int_value ("__PIE__", flag_pie);
+    }
+
   if (flag_iso)
     cpp_define (pfile, "__STRICT_ANSI__");
 
@@ -6381,6 +6411,115 @@ vector_size_helper (type, bottom)
   return outer;
 }
 
+/* Handle a "sentinel" attribute. */
+
+static tree
+handle_sentinel_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name ATTRIBUTE_UNUSED;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  tree params = TYPE_ARG_TYPES (*node);
+
+  if (!params)
+    {
+      warning ("%qs attribute requires prototypes with named arguments",
+               IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else
+    {
+      while (TREE_CHAIN (params))
+	params = TREE_CHAIN (params);
+
+      if (VOID_TYPE_P (TREE_VALUE (params)))
+        {
+	  warning ("%qs attribute only applies to variadic functions",
+		   IDENTIFIER_POINTER (name));
+	  *no_add_attrs = true;
+	}
+    }
+  
+  if (args)
+    {
+      tree position = TREE_VALUE (args);
+
+      STRIP_NOPS (position);
+      if (TREE_CODE (position) != INTEGER_CST)
+        {
+	  warning ("requested position is not an integer constant");
+	  *no_add_attrs = true;
+	}
+      else
+        {
+	  if (tree_int_cst_lt (position, integer_zero_node))
+	    {
+	      warning ("requested position is less than zero");
+	      *no_add_attrs = true;
+	    }
+	}
+    }
+  
+  return NULL_TREE;
+}
+
+/* Check that the Nth argument of a function call (counting backwards
+   from the end) is a (pointer)0.  */
+
+static void
+check_function_sentinel (attrs, params)
+	tree attrs;
+	tree params;
+{
+  tree attr = lookup_attribute ("sentinel", attrs);
+
+  if (attr)
+    {
+      if (!params)
+	warning ("missing sentinel in function call");
+      else
+        {
+	  tree sentinel, end;
+	  unsigned pos = 0;
+	  
+	  if (TREE_VALUE (attr))
+	    {
+	      tree p = TREE_VALUE (TREE_VALUE (attr));
+	      STRIP_NOPS (p);
+	      pos = TREE_INT_CST_LOW (p);
+	    }
+
+	  sentinel = end = params;
+
+	  /* Advance `end' ahead of `sentinel' by `pos' positions.  */
+	  while (pos > 0 && TREE_CHAIN (end))
+	    {
+	      pos--;
+	      end = TREE_CHAIN (end);
+	    }
+	  if (pos > 0)
+	    {
+	      warning ("not enough arguments to fit a sentinel");
+	      return;
+	    }
+
+	  /* Now advance both until we find the last parameter.  */
+	  while (TREE_CHAIN (end))
+	    {
+	      end = TREE_CHAIN (end);
+	      sentinel = TREE_CHAIN (sentinel);
+	    }
+
+	  /* Validate the sentinel.  */
+	  if (!POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (sentinel)))
+	      || !integer_zerop (TREE_VALUE (sentinel)))
+	    warning ("missing sentinel in function call");
+	}
+    }
+}
+
 /* Handle the "nonnull" attribute.  */
 static tree
 handle_nonnull_attribute (node, name, args, flags, no_add_attrs)
@@ -6593,7 +6732,13 @@ check_function_arguments (attrs, params)
   /* Check for errors in format strings.  */
 
   if (warn_format)
-    check_function_format (NULL, attrs, params);
+    {
+      check_function_format (NULL, attrs, params);
+      check_function_sentinel (attrs, params);
+    }
+
+  if (warn_bounded)
+    check_function_bounded (NULL, attrs, params);
 }
 
 /* Generic argument checking recursion routine.  PARAM is the argument to

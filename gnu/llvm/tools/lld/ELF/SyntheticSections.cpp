@@ -1547,7 +1547,14 @@ static bool compRelocations(const DynamicReloc &A, const DynamicReloc &B) {
   bool BIsRel = B.Type == Target->RelativeRel;
   if (AIsRel != BIsRel)
     return AIsRel;
-  return A.getSymIndex() < B.getSymIndex();
+
+  if (!AIsRel) {
+    auto AIndex = A.getSymIndex();
+    auto BIndex = B.getSymIndex();
+    if (AIndex != BIndex)
+      return AIndex < BIndex;
+  }
+  return A.getOffset() < B.getOffset();
 }
 
 template <class ELFT> void RelocationSection<ELFT>::writeTo(uint8_t *Buf) {
@@ -3001,7 +3008,9 @@ void elf::mergeSections() {
     }
 
     StringRef OutsecName = getOutputSectionName(MS);
-    uint32_t Alignment = std::max<uint32_t>(MS->Alignment, MS->Entsize);
+    uint32_t Alignment = MS->Alignment;
+    if (isPowerOf2_32(MS->Entsize))
+        Alignment = std::max<uint32_t>(Alignment, MS->Entsize);
 
     auto I = llvm::find_if(MergeSections, [=](MergeSyntheticSection *Sec) {
       // While we could create a single synthetic section for two different

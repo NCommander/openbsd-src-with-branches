@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_sock_2.c,v 1.6 2001/07/09 07:04:40 deraadt Exp $	*/
+/*	$OpenBSD: socket2.c,v 1.6 2005/10/30 23:59:43 fgsch Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -51,6 +51,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 #include "test.h"
 
 struct sockaddr_in a_sout;
@@ -58,9 +59,8 @@ struct sockaddr_in a_sout;
 #define MESSAGE5 "This should be message #5"
 #define MESSAGE6 "This should be message #6"
 
-void *
-sock_write(arg)
-	void *arg;
+static void *
+sock_write(void *arg)
 {
 	int fd = *(int *)arg;
 
@@ -71,8 +71,8 @@ sock_write(arg)
 
 static pthread_mutex_t waiter_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void*
-waiter(sig)
+static void *
+waiter(void *arg)
 {
 	int status;
 	pid_t pid;
@@ -88,9 +88,8 @@ waiter(sig)
 	return (NULL);
 }
 
-void *
-sock_accept(arg)
-	void *arg;
+static void *
+sock_accept(void *arg)
 {
 	pthread_t thread, wthread;
 	struct sockaddr a_sin;
@@ -126,10 +125,12 @@ sock_accept(arg)
 	CHECKr(pthread_mutex_lock(&waiter_mutex));
 	CHECKr(pthread_create(&wthread, NULL, waiter, NULL));
 
+	snprintf(buf, sizeof buf, "%d", port);
+
 	CHECKe(pid = fork());
 	switch(pid) {
 	case 0:
-		execl("socket2a", "socket2a", "fork okay", (char *)NULL);
+		execl("socket2a", "socket2a", "fork okay", buf, (char *)NULL);
 		DIE(errno, "execl");
 	default:
 		break;
@@ -172,12 +173,12 @@ sock_accept(arg)
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 	pthread_t thread;
 
-	setbuf(stdout, NULL);
-	setbuf(stderr, NULL);
+	setvbuf(stdout, NULL, _IONBF, 0);
+	setvbuf(stderr, NULL, _IONBF, 0);
 
 	CHECKr(pthread_create(&thread, NULL, sock_accept, 
 	    (void *)0xdeadbeaf));

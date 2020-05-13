@@ -3103,6 +3103,11 @@ SparcTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
   case SP::SELECT_CC_DFP_ICC:
   case SP::SELECT_CC_QFP_ICC:
     return expandSelectCC(MI, BB, SP::BCOND);
+  case SP::SELECT_CC_Int_XCC:
+  case SP::SELECT_CC_FP_XCC:
+  case SP::SELECT_CC_DFP_XCC:
+  case SP::SELECT_CC_QFP_XCC:
+    return expandSelectCC(MI, BB, SP::BPXCC);
   case SP::SELECT_CC_Int_FCC:
   case SP::SELECT_CC_FP_FCC:
   case SP::SELECT_CC_DFP_FCC:
@@ -3258,6 +3263,8 @@ SparcTargetLowering::getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
     case 'r':
       if (VT == MVT::v2i32)
         return std::make_pair(0U, &SP::IntPairRegClass);
+      else if (VT == MVT::i64 && Subtarget->is64Bit())
+	return std::make_pair(0U, &SP::I64RegsRegClass);
       else
         return std::make_pair(0U, &SP::IntRegsRegClass);
     case 'f':

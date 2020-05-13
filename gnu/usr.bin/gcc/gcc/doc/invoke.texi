@@ -221,7 +221,7 @@ in the following sections.
 -Wno-import  -Wnonnull  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
--Wsign-compare  -Wstrict-aliasing @gol
+-Wsign-compare  -Wstack-protector  -Wstrict-aliasing @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum @gol
 -Wsystem-headers  -Wtrigraphs  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wunreachable-code @gol
@@ -279,6 +279,7 @@ in the following sections.
 -fno-sched-interblock  -fno-sched-spec  -fsched-spec-load @gol
 -fsched-spec-load-dangerous  -fsignaling-nans @gol
 -fsingle-precision-constant  -fssa  -fssa-ccp  -fssa-dce @gol
+-fstack-protector  -fstack-protector-all  -fstack-protector-strong @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  @gol
 --param @var{name}=@var{value} @gol
@@ -304,7 +305,7 @@ in the following sections.
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -l@var{library} @gol
--nostartfiles  -nodefaultlibs  -nostdlib @gol
+-nostartfiles  -nodefaultlibs  -nostdlib -pie @gol
 -s  -static  -static-libgcc  -shared  -shared-libgcc  -symbolic @gol
 -Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
@@ -386,16 +387,11 @@ in the following sections.
 -msdata=@var{sdata-type}  -G @var{num}}
 
 @emph{M88K Options}
-@gccoptlist{-m88000  -m88100  -m88110  -mbig-pic @gol
--mcheck-zero-division  -mhandle-large-shift @gol
--midentify-revision  -mno-check-zero-division @gol
--mno-ocs-debug-info  -mno-ocs-frame-position @gol
--mno-optimize-arg-area  -mno-serialize-volatile @gol
--mno-underscores  -mocs-debug-info @gol
--mocs-frame-position  -moptimize-arg-area @gol
--mserialize-volatile  -mshort-data-@var{num}  -msvr3 @gol
--msvr4  -mtrap-large-shift  -muse-div-instruction @gol
--mversion-03.00  -mwarn-passed-structs}
+@gccoptlist{-m88000  -m88100  -m88110 @gol
+-mcheck-zero-division  -mno-check-zero-division @gol
+-muse-div-instruction @gol
+-mserialize-volatile  -mno-serialize-volatile @gol
+-mhandle-large-shift  -mtrap-large-shift}
 
 @emph{RS/6000 and PowerPC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
@@ -657,7 +653,7 @@ in the following sections.
 -fasynchronous-unwind-tables @gol
 -finhibit-size-directive  -finstrument-functions @gol
 -fno-common  -fno-ident  -fno-gnu-linker @gol
--fpcc-struct-return  -fpic  -fPIC @gol
+-fpcc-struct-return  -fpic  -fPIC -fpie -fPIE @gol
 -freg-struct-return  -fshared-data  -fshort-enums @gol
 -fshort-double  -fshort-wchar  -fvolatile @gol
 -fvolatile-global  -fvolatile-static @gol
@@ -2770,6 +2766,11 @@ itself is likely to take inordinate amounts of time.
 @item -Werror
 @opindex Werror
 Make all warnings into errors.
+
+@item -Wstack-protector
+@opindex Wstack-protector
+This option is only active when @option{-fstack-protector} is active.  It
+warns about functions that will not be protected against stack smashing.
 @end table
 
 @node Debugging Options
@@ -4261,6 +4262,21 @@ Perform Sparse Conditional Constant Propagation in SSA form.  Requires
 Perform aggressive dead-code elimination in SSA form.  Requires @option{-fssa}.
 Like @option{-fssa}, this is an experimental feature.
 
+@item -fstack-protector
+Emit extra code to check for buffer overflows, such as stack smashing
+attacks.  This is done by adding a guard variable to functions with
+vulnerable objects.  This includes functions with buffers larger
+than 8 bytes.  The guards are initialized when a function is entered
+and then checked when the function exits.  If a guard check fails,
+an error message is printed and the program exits.
+
+@item -fstack-protector-all
+Like @option{-fstack-protector} except that all functions are protected.
+
+@item -fstack-protector-strong
+Like @option{-fstack-protector} but includes additional functions to
+be protected --- those that have local array definitions, or have
+references to local frame addresses.
 
 @item --param @var{name}=@var{value}
 @opindex param
@@ -4596,6 +4612,13 @@ This ensures that you have no unresolved references to internal GCC
 library subroutines.  (For example, @samp{__main}, used to ensure C++
 constructors will be called; @pxref{Collect2,,@code{collect2}, gccint,
 GNU Compiler Collection (GCC) Internals}.)
+
+@item -pie
+@opindex pie
+Produce a position independent executable on targets which support it.
+For predictable results, you must also specify the same set of options
+that were used to generate code (@option{-fpie}, @option{-fPIE},
+or model suboptions) when you specify this option.
 
 @item -s
 @opindex s
@@ -6435,82 +6458,6 @@ runs on the m88110.
 Generate code that works best for the m88110, and may not run
 on the m88100.
 
-@item -mbig-pic
-@opindex mbig-pic
-Obsolete option to be removed from the next revision.
-Use @option{-fPIC}.
-
-@item -midentify-revision
-@opindex midentify-revision
-@cindex identifying source, compiler (88k)
-Include an @code{ident} directive in the assembler output recording the
-source file name, compiler name and version, timestamp, and compilation
-flags used.
-
-@item -mno-underscores
-@opindex mno-underscores
-@cindex underscores, avoiding (88k)
-In assembler output, emit symbol names without adding an underscore
-character at the beginning of each name.  The default is to use an
-underscore as prefix on each name.
-
-@item -mocs-debug-info
-@itemx -mno-ocs-debug-info
-@opindex mocs-debug-info
-@opindex mno-ocs-debug-info
-@cindex OCS (88k)
-@cindex debugging, 88k OCS
-Include (or omit) additional debugging information (about registers used
-in each stack frame) as specified in the 88open Object Compatibility
-Standard, ``OCS''@.  This extra information allows debugging of code that
-has had the frame pointer eliminated.  The default for SVr4 and Delta 88
-SVr3.2 is to include this information; other 88k configurations omit this
-information by default.
-
-@item -mocs-frame-position
-@opindex mocs-frame-position
-@cindex register positions in frame (88k)
-When emitting COFF debugging information for automatic variables and
-parameters stored on the stack, use the offset from the canonical frame
-address, which is the stack pointer (register 31) on entry to the
-function.  The SVr4 and Delta88 SVr3.2, and BCS configurations use
-@option{-mocs-frame-position}; other 88k configurations have the default
-@option{-mno-ocs-frame-position}.
-
-@item -mno-ocs-frame-position
-@opindex mno-ocs-frame-position
-@cindex register positions in frame (88k)
-When emitting COFF debugging information for automatic variables and
-parameters stored on the stack, use the offset from the frame pointer
-register (register 30).  When this option is in effect, the frame
-pointer is not eliminated when debugging information is selected by the
--g switch.
-
-@item -moptimize-arg-area
-@opindex moptimize-arg-area
-@cindex arguments in frame (88k)
-Save space by reorganizing the stack frame.  This option generates code
-that does not agree with the 88open specifications, but uses less
-memory.
-
-@itemx -mno-optimize-arg-area
-@opindex mno-optimize-arg-area
-Do not reorganize the stack frame to save space.  This is the default.
-The generated conforms to the specification, but uses more memory.
-
-@item -mshort-data-@var{num}
-@opindex mshort-data
-@cindex smaller data references (88k)
-@cindex r0-relative references (88k)
-Generate smaller data references by making them relative to @code{r0},
-which allows loading a value using a single instruction (rather than the
-usual two).  You control which data references are affected by
-specifying @var{num} with this option.  For example, if you specify
-@option{-mshort-data-512}, then the data references affected are those
-involving displacements of less than 512 bytes.
-@option{-mshort-data-@var{num}} is not effective for @var{num} greater
-than 64k.
-
 @item -mserialize-volatile
 @opindex mserialize-volatile
 @itemx -mno-serialize-volatile
@@ -6539,34 +6486,6 @@ MC88100 processor, you may use @option{-mno-serialize-volatile}.
 The extra code generated to guarantee consistency may affect the
 performance of your application.  If you know that you can safely
 forgo this guarantee, you may use @option{-mno-serialize-volatile}.
-
-@item -msvr4
-@itemx -msvr3
-@opindex msvr4
-@opindex msvr3
-@cindex assembler syntax, 88k
-@cindex SVr4
-Turn on (@option{-msvr4}) or off (@option{-msvr3}) compiler extensions
-related to System V release 4 (SVr4).  This controls the following:
-
-@enumerate
-@item
-Which variant of the assembler syntax to emit.
-@item
-@option{-msvr4} makes the C preprocessor recognize @samp{#pragma weak}
-that is used on System V release 4.
-@item
-@option{-msvr4} makes GCC issue additional declaration directives used in
-SVr4.
-@end enumerate
-
-@option{-msvr4} is the default for the m88k-motorola-sysv4 configuration.
-@option{-msvr3} is the default for all other m88k configurations.
-
-@item -mversion-03.00
-@opindex mversion-03.00
-This option is obsolete, and is ignored.
-@c ??? which asm syntax better for GAS?  option there too?
 
 @item -mno-check-zero-division
 @itemx -mcheck-zero-division
@@ -6628,14 +6547,6 @@ particular, the behavior of such a division with and without
 Include code to detect bit-shifts of more than 31 bits; respectively,
 trap such shifts or emit code to handle them properly.  By default GCC
 makes no special provision for large bit shifts.
-
-@item -mwarn-passed-structs
-@opindex mwarn-passed-structs
-@cindex structure passing (88k)
-Warn when a function passes a struct as an argument or result.
-Structure-passing conventions have changed during the evolution of the C
-language, and are often the source of portability problems.  By default,
-GCC issues no such warning.
 @end table
 
 @c break page here to avoid unsightly interparagraph stretch.
@@ -10752,6 +10663,15 @@ and the SPARC.
 
 Position-independent code requires special support, and therefore works
 only on certain machines.
+
+@item -fpie
+@itemx -fPIE
+@opindex fpie
+@opindex fPIE
+These options are similar to @option{-fpic} and @option{-fPIC}, but
+generated position independent code can be only linked into executables.
+Usually these options are used when @option{-pie} GCC option will be
+used during linking.
 
 @item -ffixed-@var{reg}
 @opindex ffixed

@@ -1,3 +1,4 @@
+/*	$OpenBSD: printlist.c,v 1.7 2009/10/27 23:59:38 deraadt Exp $	*/
 /*	$NetBSD: printlist.c,v 1.5 1995/04/19 07:16:23 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,13 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)printlist.c	8.1 (Berkeley) 6/6/93";
-#else
-static char rcsid[] = "$NetBSD: printlist.c,v 1.5 1995/04/19 07:16:23 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <string.h>
 
 #include "gprof.h"
 
@@ -62,26 +53,21 @@ struct stringlist	*elist = &ehead;
 struct stringlist	Ehead = { 0 , 0 };
 struct stringlist	*Elist = &Ehead;
 
-addlist( listp , funcname )
-    struct stringlist	*listp;
-    char		*funcname;
+void
+addlist(struct stringlist *listp, char *funcname)
 {
     struct stringlist	*slp;
 
-    slp = (struct stringlist *) malloc( sizeof(struct stringlist));
-    if ( slp == (struct stringlist *) 0 ) {
-	fprintf( stderr, "gprof: ran out room for printlist\n" );
-	done();
-    }
+    slp = malloc(sizeof(struct stringlist));
+    if (slp == (struct stringlist *) 0)
+	errx(0, "ran out room for printlist");
     slp -> next = listp -> next;
     slp -> string = funcname;
     listp -> next = slp;
 }
 
 bool
-onlist( listp , funcname )
-    struct stringlist	*listp;
-    char		*funcname;
+onlist(struct stringlist *listp, const char *funcname)
 {
     struct stringlist	*slp;
 

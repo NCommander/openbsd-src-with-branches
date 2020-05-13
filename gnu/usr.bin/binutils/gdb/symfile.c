@@ -48,6 +48,7 @@
 #include "readline/readline.h"
 #include "gdb_assert.h"
 #include "block.h"
+#include "varobj.h"
 
 #include <sys/types.h>
 #include <fcntl.h>
@@ -586,7 +587,7 @@ syms_from_objfile (struct objfile *objfile,
 
      We no longer warn if the lowest section is not a text segment (as
      happens for the PA64 port.  */
-  if (!mainline && addrs && addrs->other[0].name)
+  if (addrs && addrs->other[0].name)
     {
       asection *lower_sect;
       asection *sect;
@@ -987,6 +988,10 @@ symbol_file_clear (int from_tty)
       && !query ("Discard symbol table from `%s'? ",
 		 symfile_objfile->name))
     error ("Not confirmed.");
+#ifdef CLEAR_SOLIB
+      CLEAR_SOLIB ();
+#endif
+
     free_all_objfiles ();
 
     /* solib descriptors may have handles to objfiles.  Since their
@@ -1797,7 +1802,7 @@ void
 reread_symbols (void)
 {
   struct objfile *objfile;
-  long new_modtime;
+  time_t new_modtime;
   int reread_one = 0;
   struct stat new_statbuf;
   int res;
@@ -1978,6 +1983,8 @@ reread_symbols (void)
 
 	      /* Discard cleanups as symbol reading was successful.  */
 	      discard_cleanups (old_cleanups);
+
+	      init_entry_point_info (objfile);
 
 	      /* If the mtime has changed between the time we set new_modtime
 	         and now, we *want* this to be out of date, so don't call stat
@@ -2338,6 +2345,7 @@ clear_symtab_users (void)
   clear_pc_function_cache ();
   if (deprecated_target_new_objfile_hook)
     deprecated_target_new_objfile_hook (NULL);
+  varobj_refresh ();
 }
 
 static void

@@ -1,3 +1,5 @@
+.\" $OpenBSD: 1.t,v 1.3 2002/05/18 23:03:04 millert Exp $
+.\"
 .\" Copyright (c) 1983, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -56,12 +54,12 @@ following files and commands:
 .TS
 l l.
 /etc/printcap	printer configuration and capability data base
-/usr/lib/lpd	line printer daemon, does all the real work
-/usr/ucb/lpr	program to enter a job in a printer queue
-/usr/ucb/lpq	spooling queue examination program
-/usr/ucb/lprm	program to delete jobs from a queue
-/etc/lpc	program to administer printers and spooling queues
-/dev/printer	socket on which lpd listens
+/usr/sbin/lpd	line printer daemon, does all the real work
+/usr/bin/lpr	program to enter a job in a printer queue
+/usr/bin/lpq	spooling queue examination program
+/usr/bin/lprm	program to delete jobs from a queue
+/usr/sbin/lpc	program to administer printers and spooling queues
+/var/run/printer	socket on which lpd listens
 .TE
 .DE
 The file /etc/printcap is a master data base describing line

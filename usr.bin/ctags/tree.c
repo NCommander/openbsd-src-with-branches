@@ -1,3 +1,4 @@
+/*	$OpenBSD: tree.c,v 1.12 2015/08/22 04:23:07 semarie Exp $	*/
 /*	$NetBSD: tree.c,v 1.4 1995/03/26 20:14:11 glass Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,53 +30,44 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)tree.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: tree.c,v 1.4 1995/03/26 20:14:11 glass Exp $";
-#endif
-#endif /* not lint */
-
 #include <err.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/dirent.h>
 
 #include "ctags.h"
 
-static void	add_node __P((NODE *, NODE *));
-static void	free_tree __P((NODE *));
+bool	in_preload = NO;
+
+static void	add_node(NODE *, NODE *);
+static void	free_tree(NODE *);
 
 /*
  * pfnote --
  *	enter a new node in the tree
  */
 void
-pfnote(name, ln)
-	char	*name;
-	int	ln;
+pfnote(char *name, int ln)
 {
 	NODE	*np;
 	char	*fp;
-	char	nbuf[MAXTOKEN];
+	char	nbuf[1+MAXNAMLEN+1];
 
-	/*NOSTRICT*/
-	if (!(np = (NODE *)malloc(sizeof(NODE)))) {
+	if (!(np = malloc(sizeof(NODE)))) {
 		warnx("too many entries to sort");
 		put_entries(head);
 		free_tree(head);
-		/*NOSTRICT*/
-		if (!(head = np = (NODE *)malloc(sizeof(NODE))))
-			err(1, "out of space");
+		if (!(head = np = malloc(sizeof(NODE))))
+			err(1, NULL);
 	}
 	if (!xflag && !strcmp(name, "main")) {
 		if (!(fp = strrchr(curfile, '/')))
 			fp = curfile;
 		else
 			++fp;
-		(void)sprintf(nbuf, "M%s", fp);
+		(void)snprintf(nbuf, sizeof nbuf, "M%s", fp);
 		fp = strrchr(nbuf, '.');
 		if (fp && !fp[2])
 			*fp = EOS;
@@ -90,6 +78,8 @@ pfnote(name, ln)
 	np->file = curfile;
 	np->lno = ln;
 	np->left = np->right = 0;
+	np->been_warned = NO;
+	np->dynfile = in_preload;
 	if (!(np->pat = strdup(lbuf)))
 		err(1, NULL);
 	if (!head)
@@ -99,9 +89,7 @@ pfnote(name, ln)
 }
 
 static void
-add_node(node, cur_node)
-	NODE	*node,
-		*cur_node;
+add_node(NODE *node, NODE *cur_node)
 {
 	int	dif;
 
@@ -109,12 +97,16 @@ add_node(node, cur_node)
 	if (!dif) {
 		if (node->file == cur_node->file) {
 			if (!wflag)
-				fprintf(stderr, "Duplicate entry in file %s, line %d: %s\nSecond entry ignored\n", node->file, lineno, node->entry);
+				fprintf(stderr, "Duplicate entry in file %s, "
+				    "line %d: %s\nSecond entry ignored\n",
+				    node->file, lineno, node->entry);
 			return;
 		}
 		if (!cur_node->been_warned)
 			if (!wflag)
-				fprintf(stderr, "Duplicate entry in files %s and %s: %s (Warning only)\n", node->file, cur_node->file, node->entry);
+				fprintf(stderr, "Duplicate entry in files %s "
+				    "and %s: %s (Warning only)\n",
+				    node->file, cur_node->file, node->entry);
 		cur_node->been_warned = YES;
 	}
 	else if (dif < 0)
@@ -129,13 +121,16 @@ add_node(node, cur_node)
 }
 
 static void
-free_tree(node)
-	NODE	*node;
+free_tree(NODE *node)
 {
-	while (node) {
-		if (node->right)
-			free_tree(node->right);
+	if (node) {
+		free_tree(node->left);
+		free_tree(node->right);
+
+		free(node->entry);
+		free(node->pat);
+		if (node->dynfile == YES)
+			free(node->file);
 		free(node);
-		node = node->left;
 	}
 }

@@ -1,23 +1,16 @@
-/*	$NetBSD: krpc.h,v 1.3 1995/04/24 21:54:56 gwr Exp $	*/
+/*	$OpenBSD: krpc.h,v 1.6 2008/05/17 17:27:24 thib Exp $	*/
+/*	$NetBSD: krpc.h,v 1.4 1995/12/19 23:07:11 cgd Exp $	*/
 
-#include <sys/cdefs.h>
+int krpc_call(struct sockaddr_in *, u_int, u_int, u_int, struct mbuf **,
+    struct mbuf **, int);
+int krpc_portmap(struct sockaddr_in *, u_int, u_int, u_int16_t *);
 
-int krpc_call __P((struct sockaddr_in *sin, \
-	u_int prog, u_int vers, u_int func, \
-	struct mbuf **data, struct mbuf **from));
+struct mbuf *xdr_string_encode(char *, int);
+struct mbuf *xdr_string_decode(struct mbuf *, char *, int *);
+struct mbuf *xdr_inaddr_encode(struct in_addr *);
+struct mbuf *xdr_inaddr_decode(struct mbuf *, struct in_addr *);
 
-int krpc_portmap __P((struct sockaddr_in *sin, \
-	u_int prog, u_int vers, u_int16_t *portp));
-
-struct mbuf * xdr_string_encode __P((char *str, int len));
-struct mbuf * xdr_string_decode __P((struct mbuf *m, char *str, int *len_p));
-struct mbuf * xdr_inaddr_encode __P((struct in_addr *ia));
-struct mbuf * xdr_inaddr_decode __P((struct mbuf *m, struct in_addr *ia));
-
-
-/*
- * RPC definitions for the portmapper
- */
+/* RPC definitions for the portmapper. */
 #define	PMAPPORT		111
 #define	PMAPPROG		100000
 #define	PMAPVERS		2
@@ -28,10 +21,7 @@ struct mbuf * xdr_inaddr_decode __P((struct mbuf *m, struct in_addr *ia));
 #define	PMAPPROC_DUMP		4
 #define	PMAPPROC_CALLIT		5
 
-
-/*
- * RPC definitions for bootparamd
- */
+/* RPC definitions for bootparamd. */
 #define	BOOTPARAM_PROG		100026
 #define	BOOTPARAM_VERS		1
 #define BOOTPARAM_WHOAMI	1

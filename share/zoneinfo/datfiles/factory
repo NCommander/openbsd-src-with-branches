@@ -1,8 +1,13 @@
-# @(#)factory	7.1
+# $OpenBSD: factory,v 1.12 2018/10/22 21:44:28 millert Exp $
+# tzdb data for noncommittal factory settings
 
-# For companies who don't want to put time zone specification in
-# their installation procedures.  When users run date, they'll get the message.
-# Also useful for the "comp.sources" version.
+# This file is in the public domain, so clarified as of
+# 2009-05-17 by Arthur David Olson.
 
-# Zone	NAME	GMTOFF	RULES	FORMAT
-Zone	Factory	0	- "Local time zone must be set--see zic manual page"
+# For distributors who don't want to specify a timezone in their
+# installation procedures.  Users who run 'date' will get the
+# time zone abbreviation "-00", indicating that the actual time zone
+# is unknown.
+
+# Zone	NAME	STDOFF	RULES	FORMAT
+Zone	Factory	0	-	-00

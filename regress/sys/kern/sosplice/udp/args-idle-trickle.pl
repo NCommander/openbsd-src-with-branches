@@ -1,10 +1,10 @@
-# test idle timeout
+# test idle timeout, must not be to short
 
 use strict;
 use warnings;
 use List::Util qw(sum);
 
-my @lengths = (0, 1, 2, 3, 4, 5);
+my @lengths = (1, 2, 3);
 
 our %args = (
     client => {
@@ -15,10 +15,7 @@ our %args = (
 	idle => 2,
 	timeout => 1,
     },
-    server => {
-	num => scalar @lengths,
-    },
     len => sum(@lengths),
     lengths => "@lengths",
-    md5 => "a5612eb5137e859bf52c515a890241a5",
+    md5 => "868972544a6c4312aa52568c8dfa2366",
 );

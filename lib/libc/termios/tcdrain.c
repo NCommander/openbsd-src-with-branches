@@ -1,5 +1,4 @@
-/*	$NetBSD: tcdrain.c,v 1.2 1995/06/26 23:05:10 jtc Exp $	*/
-
+/*	$OpenBSD: tcdrain.c,v 1.5 2005/08/05 13:03:00 espie Exp $ */
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,20 +28,18 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)termios.c	8.2 (Berkeley) 2/21/94";
-#else
-static char rcsid[] = "$NetBSD: tcdrain.c,v 1.2 1995/06/26 23:05:10 jtc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/ioctl.h>
 #include <termios.h>
 
+#include "cancel.h"
+
 int
-tcdrain(fd)
-	int fd;
+tcdrain(int fd)
 {
-	return (ioctl(fd, TIOCDRAIN, 0));
+	int ret;
+
+	ENTER_CANCEL_POINT(1);
+	ret = ioctl(fd, TIOCDRAIN, 0);
+	LEAVE_CANCEL_POINT(ret == -1);
+	return (ret);
 }

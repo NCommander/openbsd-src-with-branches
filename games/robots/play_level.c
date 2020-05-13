@@ -1,3 +1,4 @@
+/*	$OpenBSD: play_level.c,v 1.9 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: play_level.c,v 1.3 1995/04/22 10:09:03 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,24 +30,16 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)play_level.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: play_level.c,v 1.3 1995/04/22 10:09:03 cgd Exp $";
-#endif
-#endif /* not lint */
-
-# include	"robots.h"
+#include "robots.h"
 
 /*
  * play_level:
  *	Let the player play the current level
  */
-play_level()
+void
+play_level(void)
 {
-	register COORD	*cp;
-	register int	y, x, bonus;
+	COORD	*cp;
 
 	move(My_pos.y, My_pos.x);
 	addch(PLAYER);
@@ -62,27 +51,24 @@ play_level()
 		addch(ROBOT);
 	}
 	refresh();
-# ifdef DEBUG
+#ifdef DEBUG
 	standout();
 	move(Min.y, Min.x);
 	addch(inch());
 	move(Max.y, Max.x);
 	addch(inch());
 	standend();
-# endif DEBUG
-	setjmp(End_move);
-	flush_in();
+#endif /* DEBUG */
+	flushinp();
 	while (!Dead && Num_robots > 0) {
 		move(My_pos.y, My_pos.x);
 		if (!jumping())
 			refresh();
 		get_move();
-		if (Real_time)
-			alarm(0);
 		if (Field[My_pos.y][My_pos.x] != 0)
 			Dead = TRUE;
 		if (!Dead)
-			move_robots(FALSE);
+			move_robots();
 		if (Was_bonus) {
 			move(Y_PROMPT, X_PROMPT);
 			clrtoeol();

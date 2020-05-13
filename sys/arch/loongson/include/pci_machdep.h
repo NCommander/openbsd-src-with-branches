@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.h,v 1.7 2009/07/21 21:25:19 miod Exp $ */
+/*	$OpenBSD: pci_machdep.h,v 1.9 2014/03/27 22:16:03 miod Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -44,6 +44,7 @@ struct mips_pci_chipset {
     pcitag_t	(*pc_make_tag)(void *, int, int, int);
     void	(*pc_decompose_tag)(void *, pcitag_t, int *,
 		    int *, int *);
+    int		(*pc_conf_size)(void *, pcitag_t);
     pcireg_t	(*pc_conf_read)(void *, pcitag_t, int);
     void	(*pc_conf_write)(void *, pcitag_t, int, pcireg_t);
 
@@ -66,20 +67,35 @@ struct mips_pci_chipset {
     (*(c)->pc_make_tag)((c)->pc_conf_v, (b), (d), (f))
 #define	pci_decompose_tag(c, t, bp, dp, fp)				\
     (*(c)->pc_decompose_tag)((c)->pc_conf_v, (t), (bp), (dp), (fp))
+#define	pci_conf_size(c, t)						\
+    (*(c)->pc_conf_size)((c)->pc_conf_v, (t))
 #define	pci_conf_read(c, t, r)						\
     (*(c)->pc_conf_read)((c)->pc_conf_v, (t), (r))
 #define	pci_conf_write(c, t, r, v)					\
     (*(c)->pc_conf_write)((c)->pc_conf_v, (t), (r), (v))
 #define	pci_intr_map(c, ihp)				\
     (*(c)->pa_pc->pc_intr_map)((c), (ihp))
+#define	pci_intr_map_msi(c, ihp)	(-1)
+#define	pci_intr_map_msix(c, vec, ihp)	(-1)
 #define	pci_intr_string(c, ih)						\
     (*(c)->pc_intr_string)((c)->pc_intr_v, (ih))
 #define	pci_intr_establish(c, ih, l, h, a, nm)				\
     (*(c)->pc_intr_establish)((c)->pc_intr_v, (ih), (l), (h), (a), (nm))
 #define	pci_intr_disestablish(c, iv)					\
     (*(c)->pc_intr_disestablish)((c)->pc_intr_v, (iv))
+#define	pci_probe_device_hook(c, a)	(0)
 
-/* CPU view of PCI resources */
-extern paddr_t loongson_pci_base;
+#define	pci_min_powerstate(c, t)	(PCI_PMCSR_STATE_D3)
+#define	pci_set_powerstate_md(c, t, s, p)
+
 /* PCI view of CPU memory */
 extern paddr_t loongson_dma_base;
+
+/*
+ * Functions used during early system configuration.
+ */
+
+extern pcitag_t (*pci_make_tag_early)(int, int, int);
+extern pcireg_t (*pci_conf_read_early)(pcitag_t, int);
+
+#define	pci_dev_postattach(a, b)

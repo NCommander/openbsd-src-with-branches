@@ -1,6 +1,6 @@
-#	$Id: Makefile,v 1.2 1993/08/02 17:55:12 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.4 2005/05/16 15:22:46 espie Exp $
 
 PROG=	patch
-SRCS=	patch.c pch.c inp.c version.c util.c backupfile.c
+SRCS=	patch.c pch.c inp.c util.c backupfile.c mkpath.c ed.c
 
 .include <bsd.prog.mk>

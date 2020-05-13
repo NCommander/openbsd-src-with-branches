@@ -33,6 +33,7 @@
 #include "opcode/mips.h"
 #include "itbl-ops.h"
 #include "dwarf2dbg.h"
+#include "dw2gencfi.h"
 
 #ifdef DEBUG
 #define DBG(x) printf x
@@ -255,6 +256,15 @@ static int mips_32bitmode = 0;
    || (ISA) == ISA_MIPS64R2          \
    )
 
+/* Return true if ISA supports 64 bit wide float registers.  */
+#define ISA_HAS_64BIT_FPRS(ISA) (    \
+   (ISA) == ISA_MIPS3                \
+   || (ISA) == ISA_MIPS4             \
+   || (ISA) == ISA_MIPS5             \
+   || (ISA) == ISA_MIPS32R2          \
+   || (ISA) == ISA_MIPS64            \
+   || (ISA) == ISA_MIPS64R2)
+
 /* Return true if ISA supports 64-bit right rotate (dror et al.)
    instructions.  */
 #define ISA_HAS_DROR(ISA) (	\
@@ -268,11 +278,24 @@ static int mips_32bitmode = 0;
    || (ISA) == ISA_MIPS64R2	\
    )
 
+/* Return true if ISA supports single-precision floats in odd registers.  */
+#define ISA_HAS_ODD_SINGLE_FPR(ISA) (   \
+   (ISA) == ISA_MIPS32                  \
+   || (ISA) == ISA_MIPS32R2             \
+   || (ISA) == ISA_MIPS64               \
+   || (ISA) == ISA_MIPS64R2)
+
+/* Return true if ISA supports move to/from high part of a 64-bit
+   floating register.  */
+#define ISA_HAS_MXHC1(ISA) (     \
+   (ISA) == ISA_MIPS32R2         \
+   || (ISA) == ISA_MIPS64R2)
+
 #define HAVE_32BIT_GPRS		                   \
     (mips_opts.gp32 || ! ISA_HAS_64BIT_REGS (mips_opts.isa))
 
 #define HAVE_32BIT_FPRS                            \
-    (mips_opts.fp32 || ! ISA_HAS_64BIT_REGS (mips_opts.isa))
+    (mips_opts.fp32 || ! ISA_HAS_64BIT_FPRS (mips_opts.isa))
 
 #define HAVE_64BIT_GPRS (! HAVE_32BIT_GPRS)
 #define HAVE_64BIT_FPRS (! HAVE_32BIT_FPRS)
@@ -280,6 +303,9 @@ static int mips_32bitmode = 0;
 #define HAVE_NEWABI (mips_abi == N32_ABI || mips_abi == N64_ABI)
 
 #define HAVE_64BIT_OBJECTS (mips_abi == N64_ABI)
+
+/* True if relocations are stored in-place.  */
+#define HAVE_IN_PLACE_ADDENDS (!HAVE_NEWABI)
 
 /* We can only have 64bit addresses if the object file format
    supports it.  */
@@ -290,6 +316,12 @@ static int mips_32bitmode = 0;
         && mips_pic != EMBEDDED_PIC))
 
 #define HAVE_64BIT_ADDRESSES (! HAVE_32BIT_ADDRESSES)
+
+/* The size of symbolic constants (i.e., expressions of the form
+   "SYMBOL" or "SYMBOL + OFFSET").  */
+#define HAVE_32BIT_SYMBOLS \
+   (HAVE_32BIT_ADDRESSES || !HAVE_64BIT_OBJECTS || mips_opts.sym32)
+#define HAVE_64BIT_SYMBOLS (!HAVE_32BIT_SYMBOLS)
 
 /* Addresses are loaded in different ways, depending on the address size
    in use.  The n32 ABI Documentation also mandates the use of additions
@@ -630,6 +662,8 @@ static int mips_fix_vr4120;
    efficient expansion.  */
 
 static int mips_relax_branch;
+
+static int mips_fix_loongson2f_btb;
 
 /* The expansion of many macros depends on the type of symbol that
    they refer to.  For example, when generating position-dependent code,
@@ -853,7 +887,7 @@ static struct {
   /* The first variant frag for this macro.  */
   fragS *first_frag;
 } mips_macro_warning;
-
+
 /* Prototypes for static functions.  */
 
 #define internalError()							\
@@ -867,6 +901,7 @@ static void mips_no_prev_insn (int);
 static void mips16_macro_build
   (expressionS *, const char *, const char *, va_list);
 static void load_register (int, expressionS *, int);
+static void macro_build (expressionS *, const char *, const char *, ...);
 static void macro_start (void);
 static void macro_end (void);
 static void macro (struct mips_cl_insn * ip);
@@ -921,10 +956,17 @@ static int validate_mips_insn (const struct mips_opcode *);
 struct mips_cpu_info
 {
   const char *name;           /* CPU or ISA name.  */
-  int is_isa;                 /* Is this an ISA?  (If 0, a CPU.) */
+  int flags;                  /* ASEs available, or ISA flag.  */
   int isa;                    /* ISA level.  */
   int cpu;                    /* CPU number (default CPU if ISA).  */
 };
+
+#define MIPS_CPU_IS_ISA		0x0001	/* Is this an ISA?  (If 0, a CPU.) */
+#define MIPS_CPU_ASE_SMARTMIPS	0x0002	/* CPU implements SmartMIPS ASE */
+#define MIPS_CPU_ASE_DSP	0x0004	/* CPU implements DSP ASE */
+#define MIPS_CPU_ASE_MT		0x0008	/* CPU implements MT ASE */
+#define MIPS_CPU_ASE_MIPS3D	0x0010	/* CPU implements MIPS-3D ASE */
+#define MIPS_CPU_ASE_MDMX	0x0020	/* CPU implements MDMX ASE */
 
 static const struct mips_cpu_info *mips_parse_cpu (const char *, const char *);
 static const struct mips_cpu_info *mips_cpu_info_from_isa (int);
@@ -1124,6 +1166,296 @@ mips_target_format (void)
     }
 }
 
+/* Defining all the symbolic register names.  */
+struct regname {
+  const char *name;
+  unsigned int num;
+};
+
+#define RTYPE_MASK	0x1ff00
+#define RTYPE_NUM	0x00100
+#define RTYPE_FPU	0x00200
+#define RTYPE_FCC	0x00400
+#define RTYPE_VEC	0x00800
+#define RTYPE_GP	0x01000
+#define RTYPE_CP0	0x02000
+#define RTYPE_PC	0x04000
+#define RTYPE_ACC	0x08000
+#define RTYPE_CCC	0x10000
+#define RNUM_MASK	0x000ff
+#define RWARN		0x80000
+
+#define GENERIC_REGISTER_NUMBERS \
+    {"$0",     RTYPE_NUM | 0},  \
+    {"$1",     RTYPE_NUM | 1},  \
+    {"$2",     RTYPE_NUM | 2},  \
+    {"$3",     RTYPE_NUM | 3},  \
+    {"$4",     RTYPE_NUM | 4},  \
+    {"$5",     RTYPE_NUM | 5},  \
+    {"$6",     RTYPE_NUM | 6},  \
+    {"$7",     RTYPE_NUM | 7},  \
+    {"$8",     RTYPE_NUM | 8},  \
+    {"$9",     RTYPE_NUM | 9},  \
+    {"$10",    RTYPE_NUM | 10}, \
+    {"$11",    RTYPE_NUM | 11}, \
+    {"$12",    RTYPE_NUM | 12}, \
+    {"$13",    RTYPE_NUM | 13}, \
+    {"$14",    RTYPE_NUM | 14}, \
+    {"$15",    RTYPE_NUM | 15}, \
+    {"$16",    RTYPE_NUM | 16}, \
+    {"$17",    RTYPE_NUM | 17}, \
+    {"$18",    RTYPE_NUM | 18}, \
+    {"$19",    RTYPE_NUM | 19}, \
+    {"$20",    RTYPE_NUM | 20}, \
+    {"$21",    RTYPE_NUM | 21}, \
+    {"$22",    RTYPE_NUM | 22}, \
+    {"$23",    RTYPE_NUM | 23}, \
+    {"$24",    RTYPE_NUM | 24}, \
+    {"$25",    RTYPE_NUM | 25}, \
+    {"$26",    RTYPE_NUM | 26}, \
+    {"$27",    RTYPE_NUM | 27}, \
+    {"$28",    RTYPE_NUM | 28}, \
+    {"$29",    RTYPE_NUM | 29}, \
+    {"$30",    RTYPE_NUM | 30}, \
+    {"$31",    RTYPE_NUM | 31} 
+
+#define FPU_REGISTER_NAMES      \
+    {"$f0",    RTYPE_FPU | 0},  \
+    {"$f1",    RTYPE_FPU | 1},  \
+    {"$f2",    RTYPE_FPU | 2},  \
+    {"$f3",    RTYPE_FPU | 3},  \
+    {"$f4",    RTYPE_FPU | 4},  \
+    {"$f5",    RTYPE_FPU | 5},  \
+    {"$f6",    RTYPE_FPU | 6},  \
+    {"$f7",    RTYPE_FPU | 7},  \
+    {"$f8",    RTYPE_FPU | 8},  \
+    {"$f9",    RTYPE_FPU | 9},  \
+    {"$f10",   RTYPE_FPU | 10}, \
+    {"$f11",   RTYPE_FPU | 11}, \
+    {"$f12",   RTYPE_FPU | 12}, \
+    {"$f13",   RTYPE_FPU | 13}, \
+    {"$f14",   RTYPE_FPU | 14}, \
+    {"$f15",   RTYPE_FPU | 15}, \
+    {"$f16",   RTYPE_FPU | 16}, \
+    {"$f17",   RTYPE_FPU | 17}, \
+    {"$f18",   RTYPE_FPU | 18}, \
+    {"$f19",   RTYPE_FPU | 19}, \
+    {"$f20",   RTYPE_FPU | 20}, \
+    {"$f21",   RTYPE_FPU | 21}, \
+    {"$f22",   RTYPE_FPU | 22}, \
+    {"$f23",   RTYPE_FPU | 23}, \
+    {"$f24",   RTYPE_FPU | 24}, \
+    {"$f25",   RTYPE_FPU | 25}, \
+    {"$f26",   RTYPE_FPU | 26}, \
+    {"$f27",   RTYPE_FPU | 27}, \
+    {"$f28",   RTYPE_FPU | 28}, \
+    {"$f29",   RTYPE_FPU | 29}, \
+    {"$f30",   RTYPE_FPU | 30}, \
+    {"$f31",   RTYPE_FPU | 31}
+
+#define FPU_CONDITION_CODE_NAMES \
+    {"$fcc0",  RTYPE_FCC | 0},  \
+    {"$fcc1",  RTYPE_FCC | 1},  \
+    {"$fcc2",  RTYPE_FCC | 2},  \
+    {"$fcc3",  RTYPE_FCC | 3},  \
+    {"$fcc4",  RTYPE_FCC | 4},  \
+    {"$fcc5",  RTYPE_FCC | 5},  \
+    {"$fcc6",  RTYPE_FCC | 6},  \
+    {"$fcc7",  RTYPE_FCC | 7}
+
+#define COPROC_CONDITION_CODE_NAMES        \
+    {"$cc0",   RTYPE_FCC | RTYPE_CCC | 0}, \
+    {"$cc1",   RTYPE_FCC | RTYPE_CCC | 1}, \
+    {"$cc2",   RTYPE_FCC | RTYPE_CCC | 2}, \
+    {"$cc3",   RTYPE_FCC | RTYPE_CCC | 3}, \
+    {"$cc4",   RTYPE_FCC | RTYPE_CCC | 4}, \
+    {"$cc5",   RTYPE_FCC | RTYPE_CCC | 5}, \
+    {"$cc6",   RTYPE_FCC | RTYPE_CCC | 6}, \
+    {"$cc7",   RTYPE_FCC | RTYPE_CCC | 7}
+
+#define N32N64_SYMBOLIC_REGISTER_NAMES \
+    {"$a4",    RTYPE_GP | 8},  \
+    {"$a5",    RTYPE_GP | 9},  \
+    {"$a6",    RTYPE_GP | 10}, \
+    {"$a7",    RTYPE_GP | 11}, \
+    {"$ta0",   RTYPE_GP | 8},  /* alias for $a4 */ \
+    {"$ta1",   RTYPE_GP | 9},  /* alias for $a5 */ \
+    {"$ta2",   RTYPE_GP | 10}, /* alias for $a6 */ \
+    {"$ta3",   RTYPE_GP | 11}, /* alias for $a7 */ \
+    {"$t0",    RTYPE_GP | 12}, \
+    {"$t1",    RTYPE_GP | 13}, \
+    {"$t2",    RTYPE_GP | 14}, \
+    {"$t3",    RTYPE_GP | 15}
+
+#define O32_SYMBOLIC_REGISTER_NAMES \
+    {"$t0",    RTYPE_GP | 8},  \
+    {"$t1",    RTYPE_GP | 9},  \
+    {"$t2",    RTYPE_GP | 10}, \
+    {"$t3",    RTYPE_GP | 11}, \
+    {"$t4",    RTYPE_GP | 12}, \
+    {"$t5",    RTYPE_GP | 13}, \
+    {"$t6",    RTYPE_GP | 14}, \
+    {"$t7",    RTYPE_GP | 15}, \
+    {"$ta0",   RTYPE_GP | 12}, /* alias for $t4 */ \
+    {"$ta1",   RTYPE_GP | 13}, /* alias for $t5 */ \
+    {"$ta2",   RTYPE_GP | 14}, /* alias for $t6 */ \
+    {"$ta3",   RTYPE_GP | 15}  /* alias for $t7 */ 
+
+/* Remaining symbolic register names */
+#define SYMBOLIC_REGISTER_NAMES \
+    {"$zero",  RTYPE_GP | 0},  \
+    {"$at",    RTYPE_GP | 1},  \
+    {"$AT",    RTYPE_GP | 1},  \
+    {"$v0",    RTYPE_GP | 2},  \
+    {"$v1",    RTYPE_GP | 3},  \
+    {"$a0",    RTYPE_GP | 4},  \
+    {"$a1",    RTYPE_GP | 5},  \
+    {"$a2",    RTYPE_GP | 6},  \
+    {"$a3",    RTYPE_GP | 7},  \
+    {"$s0",    RTYPE_GP | 16}, \
+    {"$s1",    RTYPE_GP | 17}, \
+    {"$s2",    RTYPE_GP | 18}, \
+    {"$s3",    RTYPE_GP | 19}, \
+    {"$s4",    RTYPE_GP | 20}, \
+    {"$s5",    RTYPE_GP | 21}, \
+    {"$s6",    RTYPE_GP | 22}, \
+    {"$s7",    RTYPE_GP | 23}, \
+    {"$t8",    RTYPE_GP | 24}, \
+    {"$t9",    RTYPE_GP | 25}, \
+    {"$k0",    RTYPE_GP | 26}, \
+    {"$kt0",   RTYPE_GP | 26}, \
+    {"$k1",    RTYPE_GP | 27}, \
+    {"$kt1",   RTYPE_GP | 27}, \
+    {"$gp",    RTYPE_GP | 28}, \
+    {"$sp",    RTYPE_GP | 29}, \
+    {"$s8",    RTYPE_GP | 30}, \
+    {"$fp",    RTYPE_GP | 30}, \
+    {"$ra",    RTYPE_GP | 31}
+
+#define MIPS16_SPECIAL_REGISTER_NAMES \
+    {"$pc",    RTYPE_PC | 0}
+
+#define MDMX_VECTOR_REGISTER_NAMES \
+    /* {"$v0", RTYPE_VEC | 0},  clash with REG 2 above */ \
+    /* {"$v1", RTYPE_VEC | 1},  clash with REG 3 above */ \
+    {"$v2",    RTYPE_VEC | 2},  \
+    {"$v3",    RTYPE_VEC | 3},  \
+    {"$v4",    RTYPE_VEC | 4},  \
+    {"$v5",    RTYPE_VEC | 5},  \
+    {"$v6",    RTYPE_VEC | 6},  \
+    {"$v7",    RTYPE_VEC | 7},  \
+    {"$v8",    RTYPE_VEC | 8},  \
+    {"$v9",    RTYPE_VEC | 9},  \
+    {"$v10",   RTYPE_VEC | 10}, \
+    {"$v11",   RTYPE_VEC | 11}, \
+    {"$v12",   RTYPE_VEC | 12}, \
+    {"$v13",   RTYPE_VEC | 13}, \
+    {"$v14",   RTYPE_VEC | 14}, \
+    {"$v15",   RTYPE_VEC | 15}, \
+    {"$v16",   RTYPE_VEC | 16}, \
+    {"$v17",   RTYPE_VEC | 17}, \
+    {"$v18",   RTYPE_VEC | 18}, \
+    {"$v19",   RTYPE_VEC | 19}, \
+    {"$v20",   RTYPE_VEC | 20}, \
+    {"$v21",   RTYPE_VEC | 21}, \
+    {"$v22",   RTYPE_VEC | 22}, \
+    {"$v23",   RTYPE_VEC | 23}, \
+    {"$v24",   RTYPE_VEC | 24}, \
+    {"$v25",   RTYPE_VEC | 25}, \
+    {"$v26",   RTYPE_VEC | 26}, \
+    {"$v27",   RTYPE_VEC | 27}, \
+    {"$v28",   RTYPE_VEC | 28}, \
+    {"$v29",   RTYPE_VEC | 29}, \
+    {"$v30",   RTYPE_VEC | 30}, \
+    {"$v31",   RTYPE_VEC | 31}
+
+#define MIPS_DSP_ACCUMULATOR_NAMES \
+    {"$ac0",   RTYPE_ACC | 0}, \
+    {"$ac1",   RTYPE_ACC | 1}, \
+    {"$ac2",   RTYPE_ACC | 2}, \
+    {"$ac3",   RTYPE_ACC | 3}
+
+static const struct regname reg_names[] = {
+  GENERIC_REGISTER_NUMBERS,
+  FPU_REGISTER_NAMES,
+  FPU_CONDITION_CODE_NAMES,
+  COPROC_CONDITION_CODE_NAMES,
+
+  /* The $txx registers depends on the abi,
+     these will be added later into the symbol table from
+     one of the tables below once mips_abi is set after 
+     parsing of arguments from the command line. */
+  SYMBOLIC_REGISTER_NAMES,
+
+  MIPS16_SPECIAL_REGISTER_NAMES,
+  MDMX_VECTOR_REGISTER_NAMES,
+  MIPS_DSP_ACCUMULATOR_NAMES,
+  {0, 0}
+};
+
+static const struct regname reg_names_o32[] = {
+  O32_SYMBOLIC_REGISTER_NAMES,
+  {0, 0}
+};
+
+static const struct regname reg_names_n32n64[] = {
+  N32N64_SYMBOLIC_REGISTER_NAMES,
+  {0, 0}
+};
+
+static int
+reg_lookup (char **s, unsigned int types, unsigned int *regnop)
+{
+  symbolS *symbolP;
+  char *e;
+  char save_c;
+  int reg = -1;
+
+  /* Find end of name.  */
+  e = *s;
+  if (is_name_beginner (*e))
+    ++e;
+  while (is_part_of_name (*e))
+    ++e;
+
+  /* Terminate name.  */
+  save_c = *e;
+  *e = '\0';
+
+  /* Look for a register symbol.  */
+  if ((symbolP = symbol_find (*s)) && S_GET_SEGMENT (symbolP) == reg_section)
+    {
+      int r = S_GET_VALUE (symbolP);
+      if (r & types)
+       reg = r & RNUM_MASK;
+      else if ((types & RTYPE_VEC) && (r & ~1) == (RTYPE_GP | 2))
+       /* Convert GP reg $v0/1 to MDMX reg $v0/1!  */
+       reg = (r & RNUM_MASK) - 2;
+    }
+  /* Else see if this is a register defined in an itbl entry.  */
+  else if ((types & RTYPE_GP) && itbl_have_entries)
+    {
+      char *n = *s;
+      unsigned long r;
+
+      if (*n == '$')
+       ++n;
+      if (itbl_get_reg_val (n, &r))
+       reg = r & RNUM_MASK;
+    }
+
+  /* Advance to next token if a register was recognised.  */
+  if (reg >= 0)
+    *s = e;
+  else if (types & RWARN)
+    as_warn ("Unrecognized register name `%s'", *s);
+
+  *e = save_c;
+  if (regnop)
+    *regnop = reg;
+  return reg >= 0;
+}
+
 /* This function is called once, at assembler startup time.  It should
    set up all the tables, etc. that the MD part of the assembler will need.  */
 
@@ -1195,46 +1527,20 @@ md_begin (void)
 
   /* We add all the general register names to the symbol table.  This
      helps us detect invalid uses of them.  */
-  for (i = 0; i < 32; i++)
-    {
-      char buf[5];
-
-      sprintf (buf, "$%d", i);
-      symbol_table_insert (symbol_new (buf, reg_section, i,
-				       &zero_address_frag));
-    }
-  symbol_table_insert (symbol_new ("$ra", reg_section, RA,
-				   &zero_address_frag));
-  symbol_table_insert (symbol_new ("$fp", reg_section, FP,
-				   &zero_address_frag));
-  symbol_table_insert (symbol_new ("$sp", reg_section, SP,
-				   &zero_address_frag));
-  symbol_table_insert (symbol_new ("$gp", reg_section, GP,
-				   &zero_address_frag));
-  symbol_table_insert (symbol_new ("$at", reg_section, AT,
-				   &zero_address_frag));
-  symbol_table_insert (symbol_new ("$kt0", reg_section, KT0,
-				   &zero_address_frag));
-  symbol_table_insert (symbol_new ("$kt1", reg_section, KT1,
-				   &zero_address_frag));
-  symbol_table_insert (symbol_new ("$zero", reg_section, ZERO,
-				   &zero_address_frag));
-  symbol_table_insert (symbol_new ("$pc", reg_section, -1,
-				   &zero_address_frag));
-
-  /* If we don't add these register names to the symbol table, they
-     may end up being added as regular symbols by operand(), and then
-     make it to the object file as undefined in case they're not
-     regarded as local symbols.  They're local in o32, since `$' is a
-     local symbol prefix, but not in n32 or n64.  */
-  for (i = 0; i < 8; i++)
-    {
-      char buf[6];
-
-      sprintf (buf, "$fcc%i", i);
-      symbol_table_insert (symbol_new (buf, reg_section, -1,
-				       &zero_address_frag));
-    }
+  for (i = 0; reg_names[i].name; i++) 
+    symbol_table_insert (symbol_new (reg_names[i].name, reg_section,
+                                    reg_names[i].num, // & RNUM_MASK,
+				    &zero_address_frag));
+  if (HAVE_NEWABI)
+    for (i = 0; reg_names_n32n64[i].name; i++) 
+      symbol_table_insert (symbol_new (reg_names_n32n64[i].name, reg_section,
+                                      reg_names_n32n64[i].num, // & RNUM_MASK,
+				      &zero_address_frag));
+  else
+    for (i = 0; reg_names_o32[i].name; i++) 
+      symbol_table_insert (symbol_new (reg_names_o32[i].name, reg_section,
+                                      reg_names_o32[i].num, // & RNUM_MASK,
+                                      &zero_address_frag));
 
   mips_no_prev_insn (FALSE);
 
@@ -1250,6 +1556,7 @@ md_begin (void)
   if (USE_GLOBAL_POINTER_OPT)
     bfd_set_gp_size (stdoutput, g_switch_value);
 
+#ifdef OBJ_ELF
   if (OUTPUT_FLAVOR == bfd_target_elf_flavour)
     {
       /* On a native system, sections must be aligned to 16 byte
@@ -1287,9 +1594,7 @@ md_begin (void)
 	    bfd_set_section_flags (stdoutput, sec, flags);
 	    bfd_set_section_alignment (stdoutput, sec, HAVE_NEWABI ? 3 : 2);
 
-#ifdef OBJ_ELF
 	    mips_regmask_frag = frag_more (sizeof (Elf32_External_RegInfo));
-#endif
 	  }
 	else
 	  {
@@ -1299,7 +1604,6 @@ md_begin (void)
 	    bfd_set_section_flags (stdoutput, sec, flags);
 	    bfd_set_section_alignment (stdoutput, sec, 3);
 
-#ifdef OBJ_ELF
 	    /* Set up the option header.  */
 	    {
 	      Elf_Internal_Options opthdr;
@@ -1316,7 +1620,6 @@ md_begin (void)
 
 	      mips_regmask_frag = frag_more (sizeof (Elf64_External_RegInfo));
 	    }
-#endif
 	  }
 
 	if (ECOFF_DEBUGGING)
@@ -1326,7 +1629,6 @@ md_begin (void)
 					  SEC_HAS_CONTENTS | SEC_READONLY);
 	    (void) bfd_set_section_alignment (stdoutput, sec, 2);
 	  }
-#ifdef OBJ_ELF
 	else if (OUTPUT_FLAVOR == bfd_target_elf_flavour && mips_flag_pdr)
 	  {
 	    pdr_seg = subseg_new (".pdr", (subsegT) 0);
@@ -1335,11 +1637,11 @@ md_begin (void)
 					  | SEC_DEBUGGING);
 	    (void) bfd_set_section_alignment (stdoutput, pdr_seg, 2);
 	  }
-#endif
 
 	subseg_set (seg, subseg);
       }
     }
+#endif /* OBJ_ELF */
 
   if (! ECOFF_DEBUGGING)
     md_obj_begin ();
@@ -2968,6 +3270,41 @@ macro_end (void)
     }
 }
 
+/* Fix jump through register issue on loongson2f processor for kernel code:
+   force a BTB clear before the jump to prevent it from being incorrectly
+   prefetched by the branch prediction engine. */
+
+static void
+macro_build_jrpatch (expressionS *ep, unsigned int sreg)
+{
+  if (!mips_fix_loongson2f_btb)
+    return;
+
+  if (sreg == ZERO || sreg == KT0 || sreg == KT1 || sreg == AT)
+    return;
+
+  if (mips_opts.noat)
+    {
+      as_warn (_("unable to apply loongson2f BTB workaround when .set noat"));
+      return;
+    }
+
+  /* li $at, COP_0_BTB_CLEAR | COP_0_RAS_DISABLE */
+  ep->X_op = O_constant;
+  ep->X_add_number = 3;
+  macro_build (ep, "ori", "t,r,i", AT, ZERO, BFD_RELOC_LO16);
+
+  /* dmtc0 $at, COP_0_DIAG */
+  macro_build (NULL, "dmtc0", "t,G", AT, 22);
+
+  /* Hide these two instructions to avoid getting a ``macro expanded into
+     multiple instructions'' warning. */
+  if (mips_relax.sequence != 2)
+    mips_macro_warning.sizes[0] -= 2 * 4;
+  if (mips_relax.sequence != 1)
+    mips_macro_warning.sizes[1] -= 2 * 4;
+}
+
 /* Build an instruction created by a macro expansion.  This is passed
    a pointer to the count of instructions created so far, an
    expression, the name of the instruction to build, an operand format
@@ -3336,6 +3673,7 @@ macro_build_jalr (expressionS *ep)
       frag_grow (8);
       f = frag_more (0);
     }
+  macro_build_jrpatch (ep, PIC_CALL_REG);
   macro_build (NULL, "jalr", "d,s", RA, PIC_CALL_REG);
   if (HAVE_NEWABI)
     fix_new_exp (frag_now, f - frag_now->fr_literal,
@@ -5509,6 +5847,26 @@ macro (struct mips_cl_insn *ip)
 
       break;
 
+    case M_JR_S:
+      macro_build_jrpatch (&expr1, sreg);
+      macro_build (NULL, "jr", "s", sreg);
+      return;	/* didn't modify $at */
+
+    case M_J_S:
+      macro_build_jrpatch (&expr1, sreg);
+      macro_build (NULL, "j", "s", sreg);
+      return;	/* didn't modify $at */
+
+    case M_JALR_S:
+      macro_build_jrpatch (&expr1, sreg);
+      macro_build (NULL, "jalr", "s", sreg);
+      return;	/* didn't modify $at */
+
+    case M_JALR_DS:
+      macro_build_jrpatch (&expr1, sreg);
+      macro_build (NULL, "jalr", "d,s", dreg, sreg);
+      return;	/* didn't modify $at */
+
     case M_J_A:
       /* The j instruction may not be used in PIC code, since it
 	 requires an absolute address.  We convert it to a b
@@ -5528,12 +5886,16 @@ macro (struct mips_cl_insn *ip)
     case M_JAL_2:
       if (mips_pic == NO_PIC
 	  || mips_pic == EMBEDDED_PIC)
-	macro_build (NULL, "jalr", "d,s", dreg, sreg);
+	{
+	  macro_build_jrpatch (&expr1, sreg);
+	  macro_build (NULL, "jalr", "d,s", dreg, sreg);
+	}
       else if (mips_pic == SVR4_PIC)
 	{
 	  if (sreg != PIC_CALL_REG)
 	    as_warn (_("MIPS PIC call to register other than $25"));
 
+	  macro_build_jrpatch (&expr1, sreg);
 	  macro_build (NULL, "jalr", "d,s", dreg, sreg);
 	  if (! HAVE_NEWABI)
 	    {
@@ -8064,6 +8426,9 @@ mips_ip (char *str, struct mips_cl_insn *ip)
   unsigned int limlo, limhi;
   char *s_reset;
   char save_c = 0;
+  offsetT min_range, max_range;
+  int argnum;
+  unsigned int rtype;
 
   insn_error = NULL;
 
@@ -8166,6 +8531,7 @@ mips_ip (char *str, struct mips_cl_insn *ip)
       ip->insn_mo = insn;
       ip->insn_opcode = insn->match;
       insn_error = NULL;
+      argnum = 1;
       for (args = insn->args;; ++args)
 	{
 	  int is_mdmx;
@@ -8468,6 +8834,20 @@ do_msbd:
 	      s = expr_end;
 	      continue;
 
+            case 'G':                /* Coprocessor destination register.  */
+              if (((ip->insn_opcode >> OP_SH_OP) & OP_MASK_OP) == OP_OP_COP0)
+                ok = reg_lookup (&s, RTYPE_NUM | RTYPE_CP0, &regno);
+              else
+                ok = reg_lookup (&s, RTYPE_NUM | RTYPE_GP, &regno);
+              ip->insn_opcode |= regno << OP_SH_RD;
+              if (ok) 
+                {
+                  lastregno = regno;
+                  continue;
+                }
+              else
+                break;
+
 	    case 'b':		/* base register */
 	    case 'd':		/* destination register */
 	    case 's':		/* source register */
@@ -8476,106 +8856,21 @@ do_msbd:
 	    case 'v':		/* both dest and source */
 	    case 'w':		/* both dest and target */
 	    case 'E':		/* coprocessor target register */
-	    case 'G':		/* coprocessor destination register */
 	    case 'K':		/* 'rdhwr' destination register */
 	    case 'x':		/* ignore register name */
 	    case 'z':		/* must be zero register */
 	    case 'U':           /* destination register (clo/clz).  */
 	      s_reset = s;
-	      if (s[0] == '$')
-		{
-
-		  if (ISDIGIT (s[1]))
-		    {
-		      ++s;
-		      regno = 0;
-		      do
-			{
-			  regno *= 10;
-			  regno += *s - '0';
-			  ++s;
-			}
-		      while (ISDIGIT (*s));
-		      if (regno > 31)
-			as_bad (_("Invalid register number (%d)"), regno);
-		    }
-		  else if (*args == 'E' || *args == 'G' || *args == 'K')
-		    goto notreg;
+              if (*args == 'E' || *args == 'K')
+                ok = reg_lookup (&s, RTYPE_NUM, &regno);
 		  else
 		    {
-		      if (s[1] == 'r' && s[2] == 'a')
-			{
-			  s += 3;
-			  regno = RA;
+                  ok = reg_lookup (&s, RTYPE_NUM | RTYPE_GP, &regno);
+                  if (regno == AT && ! mips_opts.noat)
+                    as_warn ("Used $at without \".set noat\"");
 			}
-		      else if (s[1] == 'f' && s[2] == 'p')
+              if (ok)
 			{
-			  s += 3;
-			  regno = FP;
-			}
-		      else if (s[1] == 's' && s[2] == 'p')
-			{
-			  s += 3;
-			  regno = SP;
-			}
-		      else if (s[1] == 'g' && s[2] == 'p')
-			{
-			  s += 3;
-			  regno = GP;
-			}
-		      else if (s[1] == 'a' && s[2] == 't')
-			{
-			  s += 3;
-			  regno = AT;
-			}
-		      else if (s[1] == 'k' && s[2] == 't' && s[3] == '0')
-			{
-			  s += 4;
-			  regno = KT0;
-			}
-		      else if (s[1] == 'k' && s[2] == 't' && s[3] == '1')
-			{
-			  s += 4;
-			  regno = KT1;
-			}
-		      else if (s[1] == 'z' && s[2] == 'e' && s[3] == 'r' && s[4] == 'o')
-			{
-			  s += 5;
-			  regno = ZERO;
-			}
-		      else if (itbl_have_entries)
-			{
-			  char *p, *n;
-			  unsigned long r;
-
-			  p = s + 1; 	/* advance past '$' */
-			  n = itbl_get_field (&p);  /* n is name */
-
-			  /* See if this is a register defined in an
-			     itbl entry.  */
-			  if (itbl_get_reg_val (n, &r))
-			    {
-			      /* Get_field advances to the start of
-				 the next field, so we need to back
-				 rack to the end of the last field.  */
-			      if (p)
-				s = p - 1;
-			      else
-				s = strchr (s, '\0');
-			      regno = r;
-			    }
-			  else
-			    goto notreg;
-			}
-		      else
-			goto notreg;
-		    }
-		  if (regno == AT
-		      && ! mips_opts.noat
-		      && *args != 'E'
-		      && *args != 'G'
-		      && *args != 'K')
-		    as_warn (_("Used $at without \".set noat\""));
 		  c = *args;
 		  if (*s == ' ')
 		    ++s;
@@ -8640,7 +8935,6 @@ do_msbd:
 		  lastregno = regno;
 		  continue;
 		}
-	    notreg:
 	      switch (*args++)
 		{
 		case 'r':
@@ -8700,26 +8994,19 @@ do_msbd:
 	    case 'R':		/* floating point source register */
 	    case 'V':
 	    case 'W':
+              rtype = RTYPE_FPU;
+              if (is_mdmx
+                  || (mips_opts.ase_mdmx
+                      && (ip->insn_mo->pinfo & FP_D)
+                      && (ip->insn_mo->pinfo & (INSN_COPROC_MOVE_DELAY
+                                                | INSN_COPROC_MEMORY_DELAY
+                                                | INSN_LOAD_COPROC_DELAY
+                                                | INSN_LOAD_MEMORY_DELAY
+                                                | INSN_STORE_MEMORY))))
+                rtype |= RTYPE_VEC;
 	      s_reset = s;
-	      /* Accept $fN for FP and MDMX register numbers, and in
-                 addition accept $vN for MDMX register numbers.  */
-	      if ((s[0] == '$' && s[1] == 'f' && ISDIGIT (s[2]))
-		  || (is_mdmx != 0 && s[0] == '$' && s[1] == 'v'
-		      && ISDIGIT (s[2])))
-		{
-		  s += 2;
-		  regno = 0;
-		  do
+              if (reg_lookup (&s, rtype, &regno))
 		    {
-		      regno *= 10;
-		      regno += *s - '0';
-		      ++s;
-		    }
-		  while (ISDIGIT (*s));
-
-		  if (regno > 31)
-		    as_bad (_("Invalid float register number (%d)"), regno);
-
 		  if ((regno & 1) != 0
 		      && HAVE_32BIT_FPRS
 		      && ! (strcmp (str, "mtc1") == 0
@@ -9126,19 +9413,11 @@ do_msbd:
 
 	    case 'N':		/* 3 bit branch condition code */
 	    case 'M':		/* 3 bit compare condition code */
-	      if (strncmp (s, "$fcc", 4) != 0)
+              rtype = RTYPE_CCC;
+              if (ip->insn_mo->pinfo & (FP_D| FP_S))
+                rtype |= RTYPE_FCC;
+              if (!reg_lookup (&s, rtype, &regno))
 		break;
-	      s += 4;
-	      regno = 0;
-	      do
-		{
-		  regno *= 10;
-		  regno += *s - '0';
-		  ++s;
-		}
-	      while (ISDIGIT (*s));
-	      if (regno > 7)
-		as_bad (_("Invalid condition code register $fcc%d"), regno);
 	      if ((strcmp(str + strlen(str) - 3, ".ps") == 0
 		   || strcmp(str + strlen(str) - 5, "any2f") == 0
 		   || strcmp(str + strlen(str) - 5, "any2t") == 0)
@@ -9392,69 +9671,18 @@ mips16_ip (char *str, struct mips_cl_insn *ip)
 	    case 'R':
 	    case 'X':
 	    case 'Y':
-	      if (s[0] != '$')
-		break;
 	      s_reset = s;
-	      if (ISDIGIT (s[1]))
+              if (!reg_lookup (&s, RTYPE_NUM | RTYPE_GP, &regno))
 		{
-		  ++s;
-		  regno = 0;
-		  do
+                  if (c == 'v' || c == 'w')
 		    {
-		      regno *= 10;
-		      regno += *s - '0';
-		      ++s;
-		    }
-		  while (ISDIGIT (*s));
-		  if (regno > 31)
-		    {
-		      as_bad (_("invalid register number (%d)"), regno);
-		      regno = 2;
-		    }
-		}
+                      if (c == 'v')
+                        ip->insn_opcode |= lastregno << MIPS16OP_SH_RX;
 	      else
-		{
-		  if (s[1] == 'r' && s[2] == 'a')
-		    {
-		      s += 3;
-		      regno = RA;
+                        ip->insn_opcode |= lastregno << MIPS16OP_SH_RY;
+                      ++args;
+                      continue;
 		    }
-		  else if (s[1] == 'f' && s[2] == 'p')
-		    {
-		      s += 3;
-		      regno = FP;
-		    }
-		  else if (s[1] == 's' && s[2] == 'p')
-		    {
-		      s += 3;
-		      regno = SP;
-		    }
-		  else if (s[1] == 'g' && s[2] == 'p')
-		    {
-		      s += 3;
-		      regno = GP;
-		    }
-		  else if (s[1] == 'a' && s[2] == 't')
-		    {
-		      s += 3;
-		      regno = AT;
-		    }
-		  else if (s[1] == 'k' && s[2] == 't' && s[3] == '0')
-		    {
-		      s += 4;
-		      regno = KT0;
-		    }
-		  else if (s[1] == 'k' && s[2] == 't' && s[3] == '1')
-		    {
-		      s += 4;
-		      regno = KT1;
-		    }
-		  else if (s[1] == 'z' && s[2] == 'e' && s[3] == 'r' && s[4] == 'o')
-		    {
-		      s += 5;
-		      regno = ZERO;
-		    }
-		  else
 		    break;
 		}
 
@@ -9668,29 +9896,18 @@ mips16_ip (char *str, struct mips_cl_insn *ip)
 		  mask = 7 << 3;
 		while (*s != '\0')
 		  {
-		    int freg, reg1, reg2;
+		    unsigned int freg, reg1, reg2;
 
 		    while (*s == ' ' || *s == ',')
 		      ++s;
-		    if (*s != '$')
-		      {
-			as_bad (_("can't parse register list"));
-			break;
-		      }
-		    ++s;
-		    if (*s != 'f')
+                    if (reg_lookup (&s, RTYPE_GP | RTYPE_NUM, &reg1))
 		      freg = 0;
-		    else
-		      {
+                    else if (reg_lookup (&s, RTYPE_FPU, &reg1))
 			freg = 1;
-			++s;
-		      }
-		    reg1 = 0;
-		    while (ISDIGIT (*s))
+                    else
 		      {
-			reg1 *= 10;
-			reg1 += *s - '0';
-			++s;
+                        as_bad (_("can't parse register list"));
+                        break;
 		      }
 		    if (*s == ' ')
 		      ++s;
@@ -9699,26 +9916,12 @@ mips16_ip (char *str, struct mips_cl_insn *ip)
 		    else
 		      {
 			++s;
-			if (*s != '$')
-			  break;
-			++s;
-			if (freg)
-			  {
-			    if (*s == 'f')
-			      ++s;
-			    else
-			      {
-				as_bad (_("invalid register list"));
-				break;
-			      }
-			  }
-			reg2 = 0;
-			while (ISDIGIT (*s))
-			  {
-			    reg2 *= 10;
-			    reg2 += *s - '0';
-			    ++s;
-			  }
+                        if (!reg_lookup (&s, freg ? RTYPE_FPU 
+                                         : (RTYPE_GP | RTYPE_NUM), &reg2))
+                          {
+                            as_bad (_("invalid register list"));
+                            break;
+                          }
 		      }
 		    if (freg && reg1 == 0 && reg2 == 0 && c == 'L')
 		      {
@@ -10258,9 +10461,13 @@ struct option md_longopts[] =
 #define OPTION_NO_FIX_VR4120 (OPTION_FIX_BASE + 3)
   {"mfix-vr4120",    no_argument, NULL, OPTION_FIX_VR4120},
   {"mno-fix-vr4120", no_argument, NULL, OPTION_NO_FIX_VR4120},
+#define	OPTION_FIX_LOONGSON2F_BTB (OPTION_FIX_BASE + 4)
+#define	OPTION_NO_FIX_LOONGSON2F_BTB (OPTION_FIX_BASE + 5)
+  {"mfix-loongson2f-btb", no_argument, NULL, OPTION_FIX_LOONGSON2F_BTB},
+  {"mno-fix-loongson2f-btb", no_argument, NULL, OPTION_NO_FIX_LOONGSON2F_BTB},
 
   /* Miscellaneous options.  */
-#define OPTION_MISC_BASE (OPTION_FIX_BASE + 4)
+#define OPTION_MISC_BASE (OPTION_FIX_BASE + 6)
 #define OPTION_MEMBEDDED_PIC (OPTION_MISC_BASE + 0)
   {"membedded-pic", no_argument, NULL, OPTION_MEMBEDDED_PIC},
 #define OPTION_TRAP (OPTION_MISC_BASE + 1)
@@ -10505,6 +10712,14 @@ md_parse_option (int c, char *arg)
 
     case OPTION_NO_FIX_VR4120:
       mips_fix_vr4120 = 0;
+      break;
+
+    case OPTION_FIX_LOONGSON2F_BTB:
+      mips_fix_loongson2f_btb = 1;
+      break;
+
+    case OPTION_NO_FIX_LOONGSON2F_BTB:
+      mips_fix_loongson2f_btb = 0;
       break;
 
     case OPTION_RELAX_BRANCH:
@@ -12478,73 +12693,11 @@ s_mips_weakext (int ignore ATTRIBUTE_UNUSED)
 int
 tc_get_register (int frame)
 {
-  int reg;
+  unsigned int reg;
 
   SKIP_WHITESPACE ();
-  if (*input_line_pointer++ != '$')
-    {
-      as_warn (_("expected `$'"));
-      reg = ZERO;
-    }
-  else if (ISDIGIT (*input_line_pointer))
-    {
-      reg = get_absolute_expression ();
-      if (reg < 0 || reg >= 32)
-	{
-	  as_warn (_("Bad register number"));
-	  reg = ZERO;
-	}
-    }
-  else
-    {
-      if (strncmp (input_line_pointer, "ra", 2) == 0)
-	{
-	  reg = RA;
-	  input_line_pointer += 2;
-	}
-      else if (strncmp (input_line_pointer, "fp", 2) == 0)
-	{
-	  reg = FP;
-	  input_line_pointer += 2;
-	}
-      else if (strncmp (input_line_pointer, "sp", 2) == 0)
-	{
-	  reg = SP;
-	  input_line_pointer += 2;
-	}
-      else if (strncmp (input_line_pointer, "gp", 2) == 0)
-	{
-	  reg = GP;
-	  input_line_pointer += 2;
-	}
-      else if (strncmp (input_line_pointer, "at", 2) == 0)
-	{
-	  reg = AT;
-	  input_line_pointer += 2;
-	}
-      else if (strncmp (input_line_pointer, "kt0", 3) == 0)
-	{
-	  reg = KT0;
-	  input_line_pointer += 3;
-	}
-      else if (strncmp (input_line_pointer, "kt1", 3) == 0)
-	{
-	  reg = KT1;
-	  input_line_pointer += 3;
-	}
-      else if (strncmp (input_line_pointer, "zero", 4) == 0)
-	{
-	  reg = ZERO;
-	  input_line_pointer += 4;
-	}
-      else
-	{
-	  as_warn (_("Unrecognized register name"));
-	  reg = ZERO;
-	  while (ISALNUM(*input_line_pointer))
-	   input_line_pointer++;
-	}
-    }
+  if (! reg_lookup (&input_line_pointer, RWARN | RTYPE_NUM | RTYPE_GP, &reg))
+    reg = 0;
   if (frame)
     {
       mips_frame_reg = reg != 0 ? reg : SP;
@@ -14106,15 +14259,15 @@ s_loc (int x)
 static const struct mips_cpu_info mips_cpu_info_table[] =
 {
   /* Entries for generic ISAs */
-  { "mips1",          1,      ISA_MIPS1,      CPU_R3000 },
-  { "mips2",          1,      ISA_MIPS2,      CPU_R6000 },
-  { "mips3",          1,      ISA_MIPS3,      CPU_R4000 },
-  { "mips4",          1,      ISA_MIPS4,      CPU_R8000 },
-  { "mips5",          1,      ISA_MIPS5,      CPU_MIPS5 },
-  { "mips32",         1,      ISA_MIPS32,     CPU_MIPS32 },
-  { "mips32r2",       1,      ISA_MIPS32R2,   CPU_MIPS32R2 },
-  { "mips64",         1,      ISA_MIPS64,     CPU_MIPS64 },
-  { "mips64r2",       1,      ISA_MIPS64R2,   CPU_MIPS64R2 },
+  { "mips1",          MIPS_CPU_IS_ISA,      ISA_MIPS1,      CPU_R3000 },
+  { "mips2",          MIPS_CPU_IS_ISA,      ISA_MIPS2,      CPU_R6000 },
+  { "mips3",          MIPS_CPU_IS_ISA,      ISA_MIPS3,      CPU_R4000 },
+  { "mips4",          MIPS_CPU_IS_ISA,      ISA_MIPS4,      CPU_R8000 },
+  { "mips5",          MIPS_CPU_IS_ISA,      ISA_MIPS5,      CPU_MIPS5 },
+  { "mips32",         MIPS_CPU_IS_ISA,      ISA_MIPS32,     CPU_MIPS32 },
+  { "mips32r2",       MIPS_CPU_IS_ISA,      ISA_MIPS32R2,   CPU_MIPS32R2 },
+  { "mips64",         MIPS_CPU_IS_ISA,      ISA_MIPS64,     CPU_MIPS64 },
+  { "mips64r2",       MIPS_CPU_IS_ISA,      ISA_MIPS64R2,   CPU_MIPS64R2 },
 
   /* MIPS I */
   { "r3000",          0,      ISA_MIPS1,      CPU_R3000 },
@@ -14137,6 +14290,13 @@ static const struct mips_cpu_info mips_cpu_info_table[] =
   { "r4600",          0,      ISA_MIPS3,      CPU_R4600 },
   { "orion",          0,      ISA_MIPS3,      CPU_R4600 },
   { "r4650",          0,      ISA_MIPS3,      CPU_R4650 },
+
+  /* Loongson 2F */
+  /* First step to getting full Loongson opcode support.
+     Not just a MIPS III, not quite anything else. */
+  /* XXX: Not yet, keep commented out for now
+  { "loongson2f",     0,      ISA_L2F,        CPU_L2F },
+  */
 
   /* MIPS IV */
   { "r8000",          0,      ISA_MIPS4,      CPU_R8000 },
@@ -14278,7 +14438,7 @@ mips_cpu_info_from_isa (int isa)
   int i;
 
   for (i = 0; mips_cpu_info_table[i].name != NULL; i++)
-    if (mips_cpu_info_table[i].is_isa
+    if ((mips_cpu_info_table[i].flags & MIPS_CPU_IS_ISA)
 	&& isa == mips_cpu_info_table[i].isa)
       return (&mips_cpu_info_table[i]);
 
@@ -14374,6 +14534,7 @@ MIPS options:\n\
 -no-mips16		do not generate mips16 instructions\n"));
   fprintf (stream, _("\
 -mfix-vr4120		work around certain VR4120 errata\n\
+-mfix-loongson2f-btb	work around Loongson2F BTB errata\n\
 -mgp32			use 32-bit GPRs, regardless of the chosen ISA\n\
 -mfp32			use 32-bit FPRs, regardless of the chosen ISA\n\
 -O0			remove unneeded NOPs, do not swap branches\n\
@@ -14428,4 +14589,23 @@ mips_dwarf2_addr_size (void)
     return 8;
   else
     return 4;
+}
+
+/* Standard calling conventions leave the CFA at SP on entry.  */
+void
+mips_cfi_frame_initial_instructions (void)
+{
+  cfi_add_CFA_def_cfa_register (SP);
+}
+
+int
+tc_mips_regname_to_dw2regnum (char *regname)
+{
+  unsigned int regnum = -1;
+  unsigned int reg;
+
+  if (reg_lookup (&regname, RTYPE_GP | RTYPE_NUM, &reg))
+    regnum = reg;
+
+  return regnum;
 }

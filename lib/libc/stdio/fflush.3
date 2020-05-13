@@ -1,4 +1,4 @@
-.\"	$NetBSD: fflush.3,v 1.4 1995/02/02 01:15:36 jtc Exp $
+.\"	$OpenBSD: fflush.3,v 1.12 2015/11/04 21:30:13 tedu Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,9 +31,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)fflush.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: November 4 2015 $
 .Dt FFLUSH 3
 .Os
 .Sh NAME
@@ -45,7 +39,7 @@
 .Nm fpurge
 .Nd flush a stream
 .Sh SYNOPSIS
-.Fd #include <stdio.h>
+.In stdio.h
 .Ft int
 .Fn fflush "FILE *stream"
 .Ft int
@@ -76,7 +70,7 @@ For input streams this discards any input read from the underlying object
 but not yet obtained via
 .Xr getc 3 ;
 this includes any text pushed back via
-.Xr ungetc .
+.Xr ungetc 3 .
 .Sh RETURN VALUES
 Upon successful completion 0 is returned.
 Otherwise,
@@ -87,8 +81,8 @@ is set to indicate the error.
 .Sh ERRORS
 .Bl -tag -width Er
 .It Bq Er EBADF
-.Fa Stream
-is not an open stream, or, in the case of
+.Fa stream
+is not an open stream or, in the case of
 .Fn fflush ,
 not a stream open for writing.
 .El
@@ -101,12 +95,20 @@ for any of the errors specified for the routine
 .Xr write 2 .
 .Sh SEE ALSO
 .Xr write 2 ,
-.Xr fopen 3 ,
 .Xr fclose 3 ,
-.Xr setbuf 3
+.Xr fopen 3 ,
+.Xr setvbuf 3
 .Sh STANDARDS
 The
 .Fn fflush
-function
-conforms to
+function conforms to
 .St -ansiC .
+.Sh HISTORY
+A predecessor
+.Fn flush
+first appeared in
+.At v1 .
+The
+.Fn fflush
+function first appeared in
+.At v4 .

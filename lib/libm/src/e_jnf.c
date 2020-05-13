@@ -13,34 +13,17 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_jnf.c,v 1.5 1995/05/10 20:45:37 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const float
-#else
-static float
-#endif
-invsqrtpi=  5.6418961287e-01, /* 0x3f106ebb */
 two   =  2.0000000000e+00, /* 0x40000000 */
 one   =  1.0000000000e+00; /* 0x3F800000 */
 
-#ifdef __STDC__
 static const float zero  =  0.0000000000e+00;
-#else
-static float zero  =  0.0000000000e+00;
-#endif
 
-#ifdef __STDC__
-	float __ieee754_jnf(int n, float x)
-#else
-	float __ieee754_jnf(n,x)
-	int n; float x;
-#endif
+float
+jnf(int n, float x)
 {
 	int32_t i,hx,ix, sgn;
 	float a, b, temp, di;
@@ -58,16 +41,16 @@ static float zero  =  0.0000000000e+00;
 		x = -x;
 		hx ^= 0x80000000;
 	}
-	if(n==0) return(__ieee754_j0f(x));
-	if(n==1) return(__ieee754_j1f(x));
+	if(n==0) return(j0f(x));
+	if(n==1) return(j1f(x));
 	sgn = (n&1)&(hx>>31);	/* even n -- 0, odd n -- sign(x) */
 	x = fabsf(x);
 	if(ix==0||ix>=0x7f800000) 	/* if x is 0 or inf */
 	    b = zero;
 	else if((float)n<=x) {   
 		/* Safe to use J(n+1,x)=2n/x *J(n,x)-J(n-1,x) */
-	    a = __ieee754_j0f(x);
-	    b = __ieee754_j1f(x);
+	    a = j0f(x);
+	    b = j1f(x);
 	    for(i=1;i<n;i++){
 		temp = b;
 		b = b*((float)(i+i)/x) - a; /* avoid underflow */
@@ -142,7 +125,7 @@ static float zero  =  0.0000000000e+00;
 		 */
 		tmp = n;
 		v = two/x;
-		tmp = tmp*__ieee754_logf(fabsf(v*tmp));
+		tmp = tmp*logf(fabsf(v*tmp));
 		if(tmp<(float)8.8721679688e+01) {
 	    	    for(i=n-1,di=(float)(i+i);i>0;i--){
 		        temp = b;
@@ -166,18 +149,14 @@ static float zero  =  0.0000000000e+00;
 			}
 	     	    }
 		}
-	    	b = (t*__ieee754_j0f(x)/b);
+	    	b = (t*j0f(x)/b);
 	    }
 	}
 	if(sgn==1) return -b; else return b;
 }
 
-#ifdef __STDC__
-	float __ieee754_ynf(int n, float x) 
-#else
-	float __ieee754_ynf(n,x) 
-	int n; float x;
-#endif
+float
+ynf(int n, float x) 
 {
 	int32_t i,hx,ix,ib;
 	int32_t sign;
@@ -194,12 +173,12 @@ static float zero  =  0.0000000000e+00;
 		n = -n;
 		sign = 1 - ((n&1)<<1);
 	}
-	if(n==0) return(__ieee754_y0f(x));
-	if(n==1) return(sign*__ieee754_y1f(x));
+	if(n==0) return(y0f(x));
+	if(n==1) return(sign*y1f(x));
 	if(ix==0x7f800000) return zero;
 
-	a = __ieee754_y0f(x);
-	b = __ieee754_y1f(x);
+	a = y0f(x);
+	b = y1f(x);
 	/* quit if b is -inf */
 	GET_FLOAT_WORD(ib,b);
 	for(i=1;i<n&&ib!=0xff800000;i++){ 

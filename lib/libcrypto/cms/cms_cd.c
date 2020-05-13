@@ -1,5 +1,6 @@
-/* crypto/cms/cms_cd.c */
-/* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
+/* $OpenBSD: cms_cd.c,v 1.14 2019/08/11 10:38:27 jsing Exp $ */
+/*
+ * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
  */
 /* ====================================================================
@@ -10,7 +11,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -58,37 +59,34 @@
 #include <openssl/err.h>
 #include <openssl/cms.h>
 #include <openssl/bio.h>
-#ifndef OPENSSL_NO_COMP
 #include <openssl/comp.h>
-#endif
 #include "cms_lcl.h"
-
-DECLARE_ASN1_ITEM(CMS_CompressedData)
 
 #ifdef ZLIB
 
 /* CMS CompressedData Utilities */
 
-CMS_ContentInfo *cms_CompressedData_create(int comp_nid)
-	{
+CMS_ContentInfo *
+cms_CompressedData_create(int comp_nid)
+{
 	CMS_ContentInfo *cms;
 	CMS_CompressedData *cd;
-	/* Will need something cleverer if there is ever more than one
+
+	/*
+	 * Will need something cleverer if there is ever more than one
 	 * compression algorithm or parameters have some meaning...
 	 */
-	if (comp_nid != NID_zlib_compression)
-		{
-		CMSerr(CMS_F_CMS_COMPRESSEDDATA_CREATE,
-				CMS_R_UNSUPPORTED_COMPRESSION_ALGORITHM);
+	if (comp_nid != NID_zlib_compression) {
+		CMSerror(CMS_R_UNSUPPORTED_COMPRESSION_ALGORITHM);
 		return NULL;
-		}
+	}
 	cms = CMS_ContentInfo_new();
-	if (!cms)
+	if (cms == NULL)
 		return NULL;
 
-	cd = M_ASN1_new_of(CMS_CompressedData);
+	cd = (CMS_CompressedData *)ASN1_item_new(&CMS_CompressedData_it);
 
-	if (!cd)
+	if (cd == NULL)
 		goto err;
 
 	cms->contentType = OBJ_nid2obj(NID_id_smime_ct_compressedData);
@@ -97,40 +95,34 @@ CMS_ContentInfo *cms_CompressedData_create(int comp_nid)
 	cd->version = 0;
 
 	X509_ALGOR_set0(cd->compressionAlgorithm,
-			OBJ_nid2obj(NID_zlib_compression),
-			V_ASN1_UNDEF, NULL);
+			        OBJ_nid2obj(NID_zlib_compression), V_ASN1_UNDEF, NULL);
 
 	cd->encapContentInfo->eContentType = OBJ_nid2obj(NID_pkcs7_data);
 
 	return cms;
 
-	err:
-
-	if (cms)
-		CMS_ContentInfo_free(cms);
-
+ err:
+	CMS_ContentInfo_free(cms);
 	return NULL;
-	}
+}
 
-BIO *cms_CompressedData_init_bio(CMS_ContentInfo *cms)
-	{
+BIO *
+cms_CompressedData_init_bio(CMS_ContentInfo *cms)
+{
 	CMS_CompressedData *cd;
-	ASN1_OBJECT *compoid;
-	if (OBJ_obj2nid(cms->contentType) != NID_id_smime_ct_compressedData)
-		{
-		CMSerr(CMS_F_CMS_COMPRESSEDDATA_INIT_BIO,
-				CMS_R_CONTENT_TYPE_NOT_COMPRESSED_DATA);
+	const ASN1_OBJECT *compoid;
+
+	if (OBJ_obj2nid(cms->contentType) != NID_id_smime_ct_compressedData) {
+		CMSerror(CMS_R_CONTENT_TYPE_NOT_COMPRESSED_DATA);
 		return NULL;
-		}
+	}
 	cd = cms->d.compressedData;
 	X509_ALGOR_get0(&compoid, NULL, NULL, cd->compressionAlgorithm);
-	if (OBJ_obj2nid(compoid) != NID_zlib_compression)
-		{
-		CMSerr(CMS_F_CMS_COMPRESSEDDATA_INIT_BIO,
-				CMS_R_UNSUPPORTED_COMPRESSION_ALGORITHM);
+	if (OBJ_obj2nid(compoid) != NID_zlib_compression) {
+		CMSerror(CMS_R_UNSUPPORTED_COMPRESSION_ALGORITHM);
 		return NULL;
-		}
-	return BIO_new(BIO_f_zlib());
 	}
+	return BIO_new(BIO_f_zlib());
+}
 
 #endif

@@ -1,4 +1,5 @@
-/*	$NetBSD: clockvar.h,v 1.1 1995/06/28 02:44:59 cgd Exp $	*/
+/*	$OpenBSD: clockvar.h,v 1.4 1996/10/30 22:37:59 niklas Exp $	*/
+/*	$NetBSD: clockvar.h,v 1.2 1996/04/17 22:01:21 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -48,30 +49,15 @@ struct clocktime {
 };
 
 /*
- * clockdesc structure:
+ * clockfns structure:
  *
- * provides clock-specific functions to do necessary operations.
+ * function switch used by chip-independent clock code, to access
+ * chip-dependent routines.
  */
-struct clock_softc {
-	struct	device sc_dev;
-
-	/*
-	 * The functions that all types of clock provide.
-	 */
-	void	(*sc_attach) __P((struct device *parent, struct device *self,
-		    void *aux));
-	void	(*sc_init) __P((struct clock_softc *csc));
-	void	(*sc_get) __P((struct clock_softc *csc, time_t base,
-		    struct clocktime *ct));
-	void	(*sc_set) __P((struct clock_softc *csc, struct clocktime *ct));
-
-	/*
-	 * Private storage for particular clock types.
-	 */
-	void	*sc_data;
-
-	/*
-	 * Has the time been initialized?
-	 */
-	int	sc_initted;
+struct clockfns {
+	void	(*cf_init)(struct device *);
+	void	(*cf_get)(struct device *, time_t, struct clocktime *);
+	void	(*cf_set)(struct device *, struct clocktime *);
 };
+
+void clockattach(struct device *, const struct clockfns *);

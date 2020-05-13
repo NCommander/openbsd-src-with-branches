@@ -1,4 +1,5 @@
-.\"	$NetBSD: bind.2,v 1.7 1995/02/27 12:31:54 cgd Exp $
+.\"	$OpenBSD: bind.2,v 1.20 2015/01/19 15:54:11 millert Exp $
+.\"	$NetBSD: bind.2,v 1.8 1995/10/12 15:40:46 jtc Exp $
 .\"
 .\" Copyright (c) 1983, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,79 +30,91 @@
 .\"
 .\"     @(#)bind.2	8.1 (Berkeley) 6/4/93
 .\"
-.Dd June 4, 1993
+.Dd $Mdocdate: January 19 2015 $
 .Dt BIND 2
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm bind
 .Nd bind a name to a socket
 .Sh SYNOPSIS
-.Fd #include <sys/types.h>
-.Fd #include <sys/socket.h>
+.In sys/socket.h
 .Ft int
-.Fn bind "int s" "struct sockaddr *name" "int namelen"
+.Fn bind "int s" "const struct sockaddr *name" "socklen_t namelen"
 .Sh DESCRIPTION
-.Fn Bind
+.Fn bind
 assigns a name to an unnamed socket.
-When a socket is created 
-with
+When a socket is created with
 .Xr socket 2
-it exists in a name space (address family)
-but has no name assigned.
-.Fn Bind
+it exists in a name space (address family) but has no name assigned.
+.Fn bind
 requests that
 .Fa name
 be assigned to the socket.
+.Fa namelen
+indicates the amount of space pointed to by
+.Fa name ,
+in bytes; the
+.Fa sa_len
+member of
+.Fa name
+is ignored.
 .Sh NOTES
-Binding a name in the UNIX domain creates a socket in the file
-system that must be deleted by the caller when it is no longer
-needed (using
+Binding a name in the
+.Ux Ns -domain
+creates a socket in the file system that must be deleted by the caller
+when it is no longer needed (using
 .Xr unlink 2 ) .
 .Pp
 The rules used in name binding vary between communication domains.
 Consult the manual entries in section 4 for detailed information.
 .Sh RETURN VALUES
-If the bind is successful, a 0 value is returned.
-A return value of -1 indicates an error, which is
-further specified in the global
-.Va errno .
+.Rv -std
 .Sh ERRORS
 The
 .Fn bind
-call will fail if:
+function will fail if:
 .Bl -tag -width Er
 .It Bq Er EBADF
-.Fa S
+.Fa s
 is not a valid descriptor.
 .It Bq Er ENOTSOCK
-.Fa S
+.Fa s
 is not a socket.
 .It Bq Er EADDRNOTAVAIL
 The specified address is not available from the local machine.
 .It Bq Er EADDRINUSE
 The specified address is already in use.
 .It Bq Er EINVAL
-The socket is already bound to an address.
+The socket is already bound to an address, or
+.Fa namelen
+is not a valid length for the supplied address.
+.It Bq Er EAFNOSUPPORT
+The family of the socket and that requested in
+.Va name->sa_family
+are not equivalent.
+.It Bq Er ENOBUFS
+Insufficient buffer space is available.
 .It Bq Er EACCES
 The requested address is protected, and the current user
 has inadequate permission to access it.
 .It Bq Er EFAULT
 The
 .Fa name
-parameter is not in a valid part of the user
-address space.
+parameter is not in a valid part of the user address space.
 .El
 .Pp
-The following errors are specific to binding names in the UNIX domain.
+The following errors are specific to binding names in the
+.Ux Ns -domain .
 .Bl -tag -width Er
 .It Bq Er ENOTDIR
 A component of the path prefix is not a directory.
 .It Bq Er ENAMETOOLONG
-A component of a pathname exceeded 
-.Dv {NAME_MAX}
-characters, or an entire path name exceeded 
-.Dv {PATH_MAX}
-characters.
+A component of a pathname exceeded
+.Dv NAME_MAX
+characters, or an entire pathname (including the terminating NUL)
+exceeded
+.Dv PATH_MAX
+bytes.
 .It Bq Er ENOENT
 A prefix component of the path name does not exist.
 .It Bq Er ELOOP
@@ -119,11 +128,16 @@ An empty pathname was specified.
 .El
 .Sh SEE ALSO
 .Xr connect 2 ,
+.Xr getsockname 2 ,
 .Xr listen 2 ,
-.Xr socket 2 ,
-.Xr getsockname 2
+.Xr socket 2
+.Sh STANDARDS
+The
+.Fn bind
+function conforms to
+.St -p1003.1-2008 .
 .Sh HISTORY
 The
 .Fn bind
-function call appeared in
-.Bx 4.2 .
+system call first appeared in
+.Bx 4.1c .

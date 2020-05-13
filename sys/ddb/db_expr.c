@@ -1,81 +1,89 @@
-/*	$NetBSD: db_expr.c,v 1.4 1994/06/29 06:31:06 cgd Exp $	*/
+/*	$OpenBSD: db_expr.c,v 1.16 2019/11/07 10:51:46 mpi Exp $	*/
+/*	$NetBSD: db_expr.c,v 1.5 1996/02/05 01:56:58 christos Exp $	*/
 
-/* 
+/*
  * Mach Operating System
- * Copyright (c) 1991,1990 Carnegie Mellon University
+ * Copyright (c) 1993,1992,1991,1990 Carnegie Mellon University
  * All Rights Reserved.
- * 
+ *
  * Permission to use, copy, modify and distribute this software and its
  * documentation is hereby granted, provided that both the copyright
  * notice and this permission notice appear in all copies of the
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
- * 
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS 
+ *
+ * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
- * 
+ *
  * Carnegie Mellon requests users of this software to return to
- * 
+ *
  *  Software Distribution Coordinator  or  Software.Distribution@CS.CMU.EDU
  *  School of Computer Science
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
- * 
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
+ *
+ * any improvements or extensions that they make and grant Carnegie Mellon
+ * the rights to redistribute these changes.
  *
  *	Author: David B. Golub, Carnegie Mellon University
  *	Date:	7/90
  */
 
 #include <sys/param.h>
-#include <sys/proc.h>
 
 #include <machine/db_machdep.h>
 
 #include <ddb/db_lex.h>
 #include <ddb/db_access.h>
 #include <ddb/db_command.h>
+#include <ddb/db_sym.h>
+#include <ddb/db_extern.h>
+#include <ddb/db_variables.h>
 
-boolean_t
-db_term(valuep)
-	db_expr_t *valuep;
+int db_term(db_expr_t *);
+int db_unary(db_expr_t *);
+int db_mult_expr(db_expr_t *);
+int db_add_expr(db_expr_t *);
+int db_shift_expr(db_expr_t *);
+
+int
+db_term(db_expr_t *valuep)
 {
 	int	t;
 
 	t = db_read_token();
 	if (t == tIDENT) {
-	    if (!db_value_of_name(db_tok_string, valuep)) {
+	    if (db_symbol_by_name(db_tok_string, valuep) == NULL) {
 		db_error("Symbol not found\n");
 		/*NOTREACHED*/
 	    }
-	    return (TRUE);
+	    return 1;
 	}
 	if (t == tNUMBER) {
-	    *valuep = (db_expr_t)db_tok_number;
-	    return (TRUE);
+	    *valuep = db_tok_number;
+	    return 1;
 	}
 	if (t == tDOT) {
 	    *valuep = (db_expr_t)db_dot;
-	    return (TRUE);
+	    return 1;
 	}
 	if (t == tDOTDOT) {
 	    *valuep = (db_expr_t)db_prev;
-	    return (TRUE);
+	    return 1;
 	}
 	if (t == tPLUS) {
 	    *valuep = (db_expr_t) db_next;
-	    return (TRUE);
+	    return 1;
 	}
 	if (t == tDITTO) {
 	    *valuep = (db_expr_t)db_last_addr;
-	    return (TRUE);
+	    return 1;
 	}
 	if (t == tDOLLAR) {
 	    if (!db_get_variable(valuep))
-		return (FALSE);
-	    return (TRUE);
+		return 0;
+	    return 1;
 	}
 	if (t == tLPAREN) {
 	    if (!db_expression(valuep)) {
@@ -87,15 +95,14 @@ db_term(valuep)
 		db_error("Syntax error\n");
 		/*NOTREACHED*/
 	    }
-	    return (TRUE);
+	    return 1;
 	}
 	db_unread_token(t);
-	return (FALSE);
+	return 0;
 }
 
-boolean_t
-db_unary(valuep)
-	db_expr_t *valuep;
+int
+db_unary(db_expr_t *valuep)
 {
 	int	t;
 
@@ -106,7 +113,7 @@ db_unary(valuep)
 		/*NOTREACHED*/
 	    }
 	    *valuep = -*valuep;
-	    return (TRUE);
+	    return 1;
 	}
 	if (t == tSTAR) {
 	    /* indirection */
@@ -114,22 +121,21 @@ db_unary(valuep)
 		db_error("Syntax error\n");
 		/*NOTREACHED*/
 	    }
-	    *valuep = db_get_value((db_addr_t)*valuep, sizeof(int), FALSE);
-	    return (TRUE);
+	    *valuep = db_get_value((vaddr_t)*valuep, sizeof(vaddr_t), 0);
+	    return 1;
 	}
 	db_unread_token(t);
 	return (db_term(valuep));
 }
 
-boolean_t
-db_mult_expr(valuep)
-	db_expr_t *valuep;
+int
+db_mult_expr(db_expr_t *valuep)
 {
 	db_expr_t	lhs, rhs;
 	int		t;
 
 	if (!db_unary(&lhs))
-	    return (FALSE);
+	    return 0;
 
 	t = db_read_token();
 	while (t == tSTAR || t == tSLASH || t == tPCT || t == tHASH) {
@@ -155,18 +161,17 @@ db_mult_expr(valuep)
 	}
 	db_unread_token(t);
 	*valuep = lhs;
-	return (TRUE);
+	return 1;
 }
 
-boolean_t
-db_add_expr(valuep)
-	db_expr_t *valuep;
+int
+db_add_expr(db_expr_t *valuep)
 {
 	db_expr_t	lhs, rhs;
 	int		t;
 
 	if (!db_mult_expr(&lhs))
-	    return (FALSE);
+	    return 0;
 
 	t = db_read_token();
 	while (t == tPLUS || t == tMINUS) {
@@ -182,18 +187,17 @@ db_add_expr(valuep)
 	}
 	db_unread_token(t);
 	*valuep = lhs;
-	return (TRUE);
+	return 1;
 }
 
-boolean_t
-db_shift_expr(valuep)
-	db_expr_t *valuep;
+int
+db_shift_expr(db_expr_t *valuep)
 {
 	db_expr_t	lhs, rhs;
 	int		t;
 
 	if (!db_add_expr(&lhs))
-	    return (FALSE);
+	    return 0;
 
 	t = db_read_token();
 	while (t == tSHIFT_L || t == tSHIFT_R) {
@@ -215,12 +219,11 @@ db_shift_expr(valuep)
 	}
 	db_unread_token(t);
 	*valuep = lhs;
-	return (TRUE);
+	return 1;
 }
 
 int
-db_expression(valuep)
-	db_expr_t *valuep;
+db_expression(db_expr_t *valuep)
 {
 	return (db_shift_expr(valuep));
 }

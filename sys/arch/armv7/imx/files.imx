@@ -1,0 +1,13 @@
+#	$OpenBSD: files.imx,v 1.30 2018/04/02 17:45:38 patrick Exp $
+
+device imxdog
+attach imxdog at fdt
+file	arch/armv7/imx/imxdog.c		imxdog
+
+device imxahci: scsi, atascsi
+attach imxahci at fdt
+file	arch/armv7/imx/imxahci.c	imxahci
+
+device imxtemp
+attach imxtemp at fdt
+file	arch/armv7/imx/imxtemp.c	imxtemp

@@ -1,3 +1,5 @@
+/*	$OpenBSD: process.c,v 1.22 2016/02/01 07:25:51 mestre Exp $	*/
+
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,11 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)process.c	5.10 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: process.c,v 1.2 1993/08/01 18:29:34 mycroft Exp $";
-#endif /* not lint */
-
 /*
  * process.c handles the requests, which can be of three types:
  *	ANNOUNCE - announce to a user that a talk is wanted
@@ -44,26 +37,29 @@ static char rcsid[] = "$Id: process.c,v 1.2 1993/08/01 18:29:34 mycroft Exp $";
  *		  in the table for the local user
  *	DELETE - delete invitation
  */
-#include <sys/param.h>
-#include <sys/stat.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
+#include <sys/stat.h>
+#include <arpa/inet.h>
 #include <protocols/talkd.h>
+
+#include <ctype.h>
+#include <limits.h>
 #include <netdb.h>
-#include <syslog.h>
+#include <paths.h>
 #include <stdio.h>
 #include <string.h>
-#include <paths.h>
+#include <syslog.h>
+#include <utmp.h>
 
-CTL_MSG *find_request();
-CTL_MSG *find_match();
+#include "talkd.h"
 
-process_request(mp, rp)
-	register CTL_MSG *mp;
-	register CTL_RESPONSE *rp;
+#define	satosin(sa)	((struct sockaddr_in *)(sa))
+
+void
+process_request(CTL_MSG *mp, CTL_RESPONSE *rp)
 {
-	register CTL_MSG *ptr;
-	extern int debug;
+	CTL_MSG *ptr;
+	char *s;
 
 	rp->vers = TALK_VERSION;
 	rp->type = mp->type;
@@ -74,20 +70,37 @@ process_request(mp, rp)
 		return;
 	}
 	mp->id_num = ntohl(mp->id_num);
-	mp->addr.sa_family = ntohs(mp->addr.sa_family);
-	if (mp->addr.sa_family != AF_INET) {
+	if (ntohs(mp->addr.sa_family) != AF_INET) {
 		syslog(LOG_WARNING, "Bad address, family %d",
-		    mp->addr.sa_family);
+		    ntohs(mp->addr.sa_family));
 		rp->answer = BADADDR;
 		return;
 	}
-	mp->ctl_addr.sa_family = ntohs(mp->ctl_addr.sa_family);
-	if (mp->ctl_addr.sa_family != AF_INET) {
+	if (ntohs(mp->ctl_addr.sa_family) != AF_INET) {
 		syslog(LOG_WARNING, "Bad control address, family %d",
-		    mp->ctl_addr.sa_family);
+		    ntohs(mp->ctl_addr.sa_family));
 		rp->answer = BADCTLADDR;
 		return;
 	}
+	for (s = mp->l_name; *s; s++)
+		if (!isprint((unsigned char)*s)) {
+			syslog(LOG_NOTICE, "Illegal user name. Aborting");
+			rp->answer = FAILED;
+			return;
+		}
+	if (memcmp(&satosin(&rp->addr)->sin_addr,
+	    &satosin(&mp->ctl_addr)->sin_addr,
+	    sizeof(struct in_addr))) {
+		char buf1[32], buf2[32];
+
+		strlcpy(buf1, inet_ntoa(satosin(&rp->addr)->sin_addr),
+		    sizeof(buf1));
+		strlcpy(buf2, inet_ntoa(satosin(&mp->ctl_addr)->sin_addr),
+		    sizeof(buf2));
+		syslog(LOG_WARNING, "addresses are different, %s != %s",
+		    buf1, buf2);
+	}
+	rp->addr.sa_family = 0;
 	mp->pid = ntohl(mp->pid);
 	if (debug)
 		print_request("process_request", mp);
@@ -99,7 +112,7 @@ process_request(mp, rp)
 
 	case LEAVE_INVITE:
 		ptr = find_request(mp);
-		if (ptr != (CTL_MSG *)0) {
+		if (ptr != NULL) {
 			rp->id_num = htonl(ptr->id_num);
 			rp->answer = SUCCESS;
 		} else
@@ -108,10 +121,10 @@ process_request(mp, rp)
 
 	case LOOK_UP:
 		ptr = find_match(mp);
-		if (ptr != (CTL_MSG *)0) {
+		if (ptr != NULL) {
 			rp->id_num = htonl(ptr->id_num);
 			rp->addr = ptr->addr;
-			rp->addr.sa_family = htons(ptr->addr.sa_family);
+			rp->addr.sa_family = ptr->addr.sa_family;
 			rp->answer = SUCCESS;
 		} else
 			rp->answer = NOT_HERE;
@@ -129,24 +142,22 @@ process_request(mp, rp)
 		print_response("process_request", rp);
 }
 
-do_announce(mp, rp)
-	register CTL_MSG *mp;
-	CTL_RESPONSE *rp;
+void
+do_announce(CTL_MSG *mp, CTL_RESPONSE *rp)
 {
 	struct hostent *hp;
 	CTL_MSG *ptr;
 	int result;
 
 	/* see if the user is logged */
-	result = find_user(mp->r_name, mp->r_tty);
+	result = find_user(mp->r_name, mp->r_tty, sizeof(mp->r_tty));
 	if (result != SUCCESS) {
 		rp->answer = result;
 		return;
 	}
-#define	satosin(sa)	((struct sockaddr_in *)(sa))
 	hp = gethostbyaddr((char *)&satosin(&mp->ctl_addr)->sin_addr,
-		sizeof (struct in_addr), AF_INET);
-	if (hp == (struct hostent *)0) {
+		sizeof(struct in_addr), AF_INET);
+	if (hp == NULL) {
 		rp->answer = MACHINE_UNKNOWN;
 		return;
 	}
@@ -171,46 +182,58 @@ do_announce(mp, rp)
 	}
 }
 
-#include <utmp.h>
-
 /*
  * Search utmp for the local user
  */
-find_user(name, tty)
-	char *name, *tty;
+int
+find_user(char *name, char *tty, size_t ttyl)
 {
-	struct utmp ubuf;
+	struct utmp ubuf, ubuf1;
 	int status;
-	FILE *fd;
-	struct stat statb;
-	char ftty[20];
+	FILE *fp;
+	char line[UT_LINESIZE+1];
+	char ftty[PATH_MAX];
+	time_t	idle, now;
 
-	if ((fd = fopen(_PATH_UTMP, "r")) == NULL) {
+	time(&now);
+	idle = INT_MAX;
+	if ((fp = fopen(_PATH_UTMP, "r")) == NULL) {
 		fprintf(stderr, "talkd: can't read %s.\n", _PATH_UTMP);
 		return (FAILED);
 	}
-#define SCMPN(a, b)	strncmp(a, b, sizeof (a))
+#define SCMPN(a, b)	strncmp(a, b, sizeof(a))
 	status = NOT_HERE;
-	(void) strcpy(ftty, _PATH_DEV);
-	while (fread((char *) &ubuf, sizeof ubuf, 1, fd) == 1)
+	(void) strlcpy(ftty, _PATH_DEV, sizeof(ftty));
+	while (fread((char *) &ubuf, sizeof(ubuf), 1, fp) == 1)
 		if (SCMPN(ubuf.ut_name, name) == 0) {
 			if (*tty == '\0') {
-				status = PERMISSION_DENIED;
 				/* no particular tty was requested */
-				(void) strcpy(ftty+5, ubuf.ut_line);
-				if (stat(ftty,&statb) == 0) {
-					if (!(statb.st_mode & 020))
-						continue;
-					(void) strcpy(tty, ubuf.ut_line);
-					status = SUCCESS;
-					break;
+				struct stat statb;
+
+				memcpy(line, ubuf.ut_line, UT_LINESIZE);
+				line[sizeof(line)-1] = '\0';
+				ftty[sizeof(_PATH_DEV)-1] = '\0';
+				strlcat(ftty, line, sizeof(ftty));
+				if (stat(ftty, &statb) == 0) {
+					if (!(statb.st_mode & S_IWGRP)) {
+						if (status == NOT_HERE)
+							status = PERMISSION_DENIED;
+					} else if (now - statb.st_atime < idle) {
+						idle = now - statb.st_atime;
+						status = SUCCESS;
+						ubuf1 = ubuf;
+					}
 				}
-			}
-			if (strcmp(ubuf.ut_line, tty) == 0) {
+			} else if (SCMPN(ubuf.ut_line, tty) == 0) {
 				status = SUCCESS;
 				break;
 			}
 		}
-	fclose(fd);
+	fclose(fp);
+	if (*tty == '\0' && status == SUCCESS) {
+		memcpy(line, ubuf1.ut_line, UT_LINESIZE);
+		line[sizeof(line)-1] = '\0';
+		strlcpy(tty, line, ttyl);
+	}
 	return (status);
 }

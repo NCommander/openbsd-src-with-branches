@@ -1,7 +1,10 @@
-# @(#) $Id: Makefile,v 1.2 1994/12/22 11:40:02 cgd Exp $
+#	$OpenBSD: Makefile,v 1.6 2002/07/27 08:47:19 jakob Exp $
 
 PROG=	rdate
-SRCS=	rdate.c
+SRCS=	rdate.c rfc868time.c ntp.c ntpleaps.c
+CFLAGS+=-Wall
+DPADD+= ${LIBUTIL}
+LDADD+= -lutil
 
 MAN=	rdate.8
 

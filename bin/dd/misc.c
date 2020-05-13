@@ -1,3 +1,4 @@
+/*	$OpenBSD: misc.c,v 1.22 2017/10/24 14:21:10 schwarze Exp $	*/
 /*	$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $	*/
 
 /*-
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,20 +34,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)misc.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
+#include <sys/time.h>
 
-#include <err.h>
+#include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -58,49 +46,53 @@ static char rcsid[] = "$NetBSD: misc.c,v 1.4 1995/03/21 09:04:10 cgd Exp $";
 #include "extern.h"
 
 void
-summary()
+summary(void)
 {
-	time_t secs;
-	char buf[100];
+	struct timespec elapsed, now;
+	double nanosecs;
 
-	(void)time(&secs);
-	if ((secs -= st.start) == 0)
-		secs = 1;
-	/* Use snprintf(3) so that we don't reenter stdio(3). */
-	(void)snprintf(buf, sizeof(buf),
-	    "%u+%u records in\n%u+%u records out\n",
+	if (ddflags & C_NOINFO)
+		return;
+
+	clock_gettime(CLOCK_MONOTONIC, &now);
+	timespecsub(&now, &st.start, &elapsed);
+	nanosecs = ((double)elapsed.tv_sec * 1000000000) + elapsed.tv_nsec;
+	if (nanosecs == 0)
+		nanosecs = 1;
+
+	/* Be async safe: use dprintf(3). */
+	dprintf(STDERR_FILENO, "%zu+%zu records in\n%zu+%zu records out\n",
 	    st.in_full, st.in_part, st.out_full, st.out_part);
-	(void)write(STDERR_FILENO, buf, strlen(buf));
+
 	if (st.swab) {
-		(void)snprintf(buf, sizeof(buf), "%u odd length swab %s\n",
-		     st.swab, (st.swab == 1) ? "block" : "blocks");
-		(void)write(STDERR_FILENO, buf, strlen(buf));
+		dprintf(STDERR_FILENO, "%zu odd length swab %s\n",
+		    st.swab, (st.swab == 1) ? "block" : "blocks");
 	}
 	if (st.trunc) {
-		(void)snprintf(buf, sizeof(buf), "%u truncated %s\n",
-		     st.trunc, (st.trunc == 1) ? "block" : "blocks");
-		(void)write(STDERR_FILENO, buf, strlen(buf));
+		dprintf(STDERR_FILENO, "%zu truncated %s\n",
+		    st.trunc, (st.trunc == 1) ? "block" : "blocks");
 	}
-	(void)snprintf(buf, sizeof(buf),
-	    "%u bytes transferred in %u secs (%u bytes/sec)\n",
-	    st.bytes, secs, st.bytes / secs);
-	(void)write(STDERR_FILENO, buf, strlen(buf));
+	if (!(ddflags & C_NOXFER)) {
+		dprintf(STDERR_FILENO,
+		    "%lld bytes transferred in %lld.%03ld secs "
+		    "(%0.0f bytes/sec)\n", (long long)st.bytes,
+		    (long long)elapsed.tv_sec, elapsed.tv_nsec / 1000000,
+		    ((double)st.bytes * 1000000000) / nanosecs);
+	}
 }
 
-/* ARGSUSED */
 void
-summaryx(notused)
-	int notused;
+summaryx(int notused)
 {
+	int save_errno = errno;
 
 	summary();
+	errno = save_errno;
 }
 
-/* ARGSUSED */
 void
-terminate(notused)
-	int notused;
+terminate(int signo)
 {
-
-	exit(0);
+	summary();
+	_exit(128 + signo);
 }

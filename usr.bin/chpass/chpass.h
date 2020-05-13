@@ -1,4 +1,5 @@
-/*	$NetBSD: chpass.h,v 1.3 1995/03/26 04:55:26 glass Exp $	*/
+/*	$OpenBSD: chpass.h,v 1.10 2009/03/05 20:53:13 millert Exp $	*/
+/*	$NetBSD: chpass.h,v 1.4 1996/05/15 21:50:44 jtc Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993, 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,7 +36,8 @@ struct passwd;
 
 typedef struct _entry {
 	char *prompt;
-	int (*func)(), restricted, len;
+	int (*func)(char *, struct passwd *, struct _entry *);
+	int restricted, len;
 	char *except, *save;
 } ENTRY;
 
@@ -50,23 +48,28 @@ typedef struct _entry {
 #define	E_NAME		7
 #define	E_SHELL		12
 
+/* edit() return values. */
+#define	EDIT_OK		0
+#define	EDIT_NOCHANGE	1
+#define	EDIT_ERROR	-1
+
 extern ENTRY list[];
 extern uid_t uid;
 
-int	 atot __P((char *, time_t *));
-void	 display __P((int, struct passwd *));
-void	 edit __P((struct passwd *));
-char    *ok_shell __P((char *));
-int	 p_change __P((char *, struct passwd *, ENTRY *));
-int	 p_class __P((char *, struct passwd *, ENTRY *));
-int	 p_expire __P((char *, struct passwd *, ENTRY *));
-int	 p_gecos __P((char *, struct passwd *, ENTRY *));
-int	 p_gid __P((char *, struct passwd *, ENTRY *));
-int	 p_hdir __P((char *, struct passwd *, ENTRY *));
-int	 p_login __P((char *, struct passwd *, ENTRY *));
-int	 p_login __P((char *, struct passwd *, ENTRY *));
-int	 p_passwd __P((char *, struct passwd *, ENTRY *));
-int	 p_shell __P((char *, struct passwd *, ENTRY *));
-int	 p_uid __P((char *, struct passwd *, ENTRY *));
-char    *ttoa __P((time_t));
-int	 verify __P((struct passwd *));
+int	 atot(char *, time_t *);
+void	 display(char *, int, struct passwd *);
+int	 edit(char *, struct passwd *);
+int	 ok_shell(char *, char **);
+int	 p_change(char *, struct passwd *, ENTRY *);
+int	 p_class(char *, struct passwd *, ENTRY *);
+int	 p_expire(char *, struct passwd *, ENTRY *);
+int	 p_gecos(char *, struct passwd *, ENTRY *);
+int	 p_gid(char *, struct passwd *, ENTRY *);
+int	 p_hdir(char *, struct passwd *, ENTRY *);
+int	 p_login(char *, struct passwd *, ENTRY *);
+int	 p_login(char *, struct passwd *, ENTRY *);
+int	 p_passwd(char *, struct passwd *, ENTRY *);
+int	 p_shell(char *, struct passwd *, ENTRY *);
+int	 p_uid(char *, struct passwd *, ENTRY *);
+char    *ttoa(char *, size_t, time_t);
+int	 verify(char *, struct passwd *);

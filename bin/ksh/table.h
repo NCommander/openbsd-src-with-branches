@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: table.h,v 1.14 2018/04/09 17:53:36 tobias Exp $	*/
 
 /* $From: table.h,v 1.3 1994/05/31 13:34:34 michael Exp $ */
 
@@ -8,23 +8,26 @@
 
 struct table {
 	Area   *areap;		/* area to allocate entries */
-	short	size, nfree;	/* hash size (always 2^^n), free entries */
+	int	size, nfree;	/* hash size (always 2^^n), free entries */
 	struct	tbl **tbls;	/* hashed table items */
 };
 
 struct tbl {			/* table item */
-	INT32	flag;		/* flags */
+	int	flag;		/* flags */
 	int	type;		/* command type (see below), base (if INTEGER),
 				 * or offset from val.s of value (if EXPORT) */
 	Area	*areap;		/* area to allocate from */
 	union {
 		char *s;	/* string */
-		long i;		/* integer */
-		int (*f) ARGS((char **));	/* int function */
+		int64_t i;	/* integer */
+		int (*f)(char **);	/* int function */
 		struct op *t;	/* "function" tree */
 	} val;			/* value */
 	int	index;		/* index for an array */
-	int	field;		/* field with for -L/-R/-Z */
+	union {
+	    int	field;		/* field with for -L/-R/-Z */
+	    int errno_;		/* CEXEC/CTALIAS */
+	} u2;
 	union {
 		struct tbl *array;	/* array values */
 		char *fpath;		/* temporary path to undef function */
@@ -54,12 +57,20 @@ struct tbl {			/* table item */
 #define INT_L		BIT(20)	/* long integer (no-op) */
 #define IMPORT		BIT(21)	/* flag to typeset(): no arrays, must have = */
 #define LOCAL_COPY	BIT(22)	/* with LOCAL - copy attrs from existing var */
+#define EXPRINEVAL	BIT(23)	/* contents currently being evaluated */
+#define EXPRLVALUE	BIT(24)	/* useable as lvalue (temp flag) */
 /* flag bits used for taliases/builtins/aliases/keywords/functions */
 #define KEEPASN		BIT(8)	/* keep command assignments (eg, var=x cmd) */
 #define FINUSE		BIT(9)	/* function being executed */
 #define FDELETE		BIT(10)	/* function deleted while it was executing */
-#define SPEC_BI		BIT(11)	/* a POSIX special builtin */
-#define REG_BI		BIT(12)	/* a POSIX regular builtin */
+#define FKSH		BIT(11)	/* function defined with function x (vs x()) */
+#define SPEC_BI		BIT(12)	/* a POSIX special builtin */
+#define REG_BI		BIT(13)	/* a POSIX regular builtin */
+/* Attributes that can be set by the user (used to decide if an unset param
+ * should be repoted by set/typeset).  Does not include ARRAY or LOCAL.
+ */
+#define USERATTRIB	(EXPORT|INTEGER|RDONLY|LJUST|RJUST|ZEROFIL\
+			 |LCASEV|UCASEV_AL|INT_U|INT_L)
 
 /* command types */
 #define	CNONE	0		/* undefined */
@@ -101,8 +112,10 @@ struct block {
 	/*struct arg_info argi;*/
 	char	**argv;
 	int	argc;
+	int	flags;		/* see BF_* */
 	struct	table vars;	/* local variables */
 	struct	table funs;	/* local functions */
+	Getopt	getopts_state;
 #if 1
 	char *	error;		/* error handler */
 	char *	exit;		/* exit handler */
@@ -112,24 +125,26 @@ struct block {
 	struct	block *next;	/* enclosing block */
 };
 
+/* Values for struct block.flags */
+#define BF_DOGETOPTS	BIT(0)	/* save/restore getopts state */
+
 /*
- * Used by twalk() and tnext() routines.
+ * Used by ktwalk() and ktnext() routines.
  */
 struct tstate {
 	int left;
 	struct tbl **next;
 };
 
-
-EXTERN	struct table taliases;	/* tracked aliases */
-EXTERN	struct table builtins;	/* built-in commands */
-EXTERN	struct table aliases;	/* aliases */
-EXTERN	struct table keywords;	/* keywords */
-EXTERN	struct table homedirs;	/* homedir() cache */
+extern	struct table taliases;	/* tracked aliases */
+extern	struct table builtins;	/* built-in commands */
+extern	struct table aliases;	/* aliases */
+extern	struct table keywords;	/* keywords */
+extern	struct table homedirs;	/* homedir() cache */
 
 struct builtin {
 	const char   *name;
-	int  (*func) ARGS((char **));
+	int  (*func)(char **);
 };
 
 /* these really are externs! Look in table.c for them */
@@ -145,21 +160,34 @@ extern const struct builtin shbuiltins [], kshbuiltins [];
 #define	V_MAILPATH		6
 #define	V_MAILCHECK		7
 #define	V_RANDOM		8
-#define V_HISTSIZE		9
-#define V_HISTFILE		10
-#define V_VISUAL		11
-#define V_EDITOR		12
-#define V_COLUMNS		13
-#define V_POSIXLY_CORRECT	14
-#define V_TMOUT			15
-#define V_TMPDIR		16
+#define	V_HISTCONTROL		9
+#define	V_HISTSIZE		10
+#define	V_HISTFILE		11
+#define	V_VISUAL		12
+#define	V_EDITOR		13
+#define	V_COLUMNS		14
+#define	V_POSIXLY_CORRECT	15
+#define	V_TMOUT			16
+#define	V_TMPDIR		17
+#define	V_LINENO		18
+#define	V_TERM			19
 
 /* values for set_prompt() */
 #define PS1	0		/* command */
 #define PS2	1		/* command continuation */
 
-EXTERN	const char   *path;	/* PATH value */
-EXTERN	const char   *def_path;	/* path to use if PATH not set */
-EXTERN	char   *tmpdir;		/* TMPDIR value */
-EXTERN	const char   *prompt;
-EXTERN	int	cur_prompt;	/* PS1 or PS2 */
+extern char *search_path;	/* copy of either PATH or def_path */
+extern const char *def_path;	/* path to use if PATH not set */
+extern char *tmpdir;		/* TMPDIR value */
+extern const char *prompt;
+extern int cur_prompt;		/* PS1 or PS2 */
+extern int current_lineno;	/* LINENO value */
+
+unsigned int	hash(const char *);
+void		ktinit(struct table *, Area *, int);
+struct tbl *	ktsearch(struct table *, const char *, unsigned int);
+struct tbl *	ktenter(struct table *, const char *, unsigned int);
+void		ktdelete(struct tbl *);
+void		ktwalk(struct tstate *, struct table *);
+struct tbl *	ktnext(struct tstate *);
+struct tbl **	ktsort(struct table *);

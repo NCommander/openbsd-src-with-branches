@@ -1,3 +1,4 @@
+/*	$OpenBSD: cfscores.c,v 1.23 2016/01/08 20:23:54 mestre Exp $	*/
 /*	$NetBSD: cfscores.c,v 1.3 1995/03/21 15:08:37 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,23 +30,14 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1983, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)cfscores.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: cfscores.c,v 1.3 1995/03/21 15:08:37 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/types.h>
-#include <pwd.h>
-#include "pathnames.h"
+#include <err.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 struct betinfo {
 	long	hand;		/* cost of dealing hand */
@@ -63,92 +51,89 @@ struct betinfo {
 };
 
 int dbfd;
+char scorepath[PATH_MAX];
 
-main(argc, argv)
-	int argc;
-	char *argv[];
+void	printuser(void);
+
+int
+main(int argc, char *argv[])
 {
-	register struct passwd *pw;
-	int uid;
+	const char *home;
+	int ret;
 
-	if (argc > 2) {
-		printf("Usage: cfscores [user]\n");
-		exit(1);
-	}
-	dbfd = open(_PATH_SCORE, 0);
-	if (dbfd < 0) {
-		perror(_PATH_SCORE);
-		exit(2);
-	}
-	setpwent();
-	if (argc == 1) {
-		uid = getuid();
-		pw = getpwuid(uid);
-		if (pw == 0) {
-			printf("You are not listed in the password file?!?\n");
-			exit(2);
-		}
-		printuser(pw, 1);
-		exit(0);
-	}
-	if (strcmp(argv[1], "-a") == 0) {
-		while ((pw = getpwent()) != 0)
-			printuser(pw, 0);
-		exit(0);
-	}
-	pw = getpwnam(argv[1]);
-	if (pw == 0) {
-		printf("User %s unknown\n", argv[1]);
-		exit(3);
-	}
-	printuser(pw, 1);
-	exit(0);
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
+	
+	home = getenv("HOME");
+	if (home == NULL || *home == '\0')
+		err(1, "getenv");
+
+	ret = snprintf(scorepath, sizeof(scorepath), "%s/%s", home,
+	    ".cfscores");
+	if (ret < 0 || ret >= PATH_MAX)
+		errc(1, ENAMETOOLONG, "%s/%s", home, ".cfscores");
+
+	dbfd = open(scorepath, O_RDONLY);
+	if (dbfd < 0)
+		err(2, "%s", scorepath);
+
+	printuser();
+	return 0;
 }
 
-/*
- * print out info for specified password entry
- */
-printuser(pw, printfail)
-	register struct passwd *pw;
-	int printfail;
+void
+printuser(void)
 {
 	struct betinfo total;
+	const char *name;
 	int i;
 
-	if (pw->pw_uid < 0) {
-		printf("Bad uid %d\n", pw->pw_uid);
-		return;
-	}
-	i = lseek(dbfd, pw->pw_uid * sizeof(struct betinfo), 0);
-	if (i < 0) {
-		perror("lseek");
-		return;
-	}
+	name = getlogin();
+	if (name == NULL || *name == '\0')
+		name = " ??? ";
+
 	i = read(dbfd, (char *)&total, sizeof(total));
 	if (i < 0) {
-		perror("read");
+		warn("lseek %s", scorepath);
 		return;
 	}
 	if (i == 0 || total.hand == 0) {
-		if (printfail)
-			printf("%s has never played canfield.\n", pw->pw_name);
+		printf("%s has never played canfield.\n", name);
 		return;
 	}
+	i = strlen(name);
 	printf("*----------------------*\n");
-	if (total.worth >= 0)
-		printf("* Winnings for %-8s*\n", pw->pw_name);
-	else
-		printf("* Losses for %-10s*\n", pw->pw_name);
+	if (total.worth >= 0) {
+		if (i <= 8)
+			printf("* Winnings for %-8s*\n", name);
+		else {
+			printf("*     Winnings for     *\n");
+			if (i <= 20)
+				printf("* %20s *\n", name);
+			else
+				printf("%s\n", name);
+		}
+	} else {
+		if (i <= 10)
+			printf("* Losses for %-10s*\n", name);
+		else {
+			printf("*      Losses for      *\n");
+			if (i <= 20)
+				printf("* %20s *\n", name);
+			else
+				printf("%s\n", name);
+		}
+	}
 	printf("*======================*\n");
 	printf("|Costs           Total |\n");
-	printf("| Hands       %8d |\n", total.hand);
-	printf("| Inspections %8d |\n", total.inspection);
-	printf("| Games       %8d |\n", total.game);
-	printf("| Runs        %8d |\n", total.runs);
-	printf("| Information %8d |\n", total.information);
-	printf("| Think time  %8d |\n", total.thinktime);
-	printf("|Total Costs  %8d |\n", total.wins - total.worth);
-	printf("|Winnings     %8d |\n", total.wins);
-	printf("|Net Worth    %8d |\n", total.worth);
+	printf("| Hands       %8ld |\n", total.hand);
+	printf("| Inspections %8ld |\n", total.inspection);
+	printf("| Games       %8ld |\n", total.game);
+	printf("| Runs        %8ld |\n", total.runs);
+	printf("| Information %8ld |\n", total.information);
+	printf("| Think time  %8ld |\n", total.thinktime);
+	printf("|Total Costs  %8ld |\n", total.wins - total.worth);
+	printf("|Winnings     %8ld |\n", total.wins);
+	printf("|Net Worth    %8ld |\n", total.worth);
 	printf("*----------------------*\n\n");
 }

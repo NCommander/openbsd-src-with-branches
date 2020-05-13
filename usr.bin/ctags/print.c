@@ -1,3 +1,4 @@
+/*	$OpenBSD: print.c,v 1.7 2012/03/04 04:05:15 fgsch Exp $	*/
 /*	$NetBSD: print.c,v 1.4 1995/09/27 01:06:58 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)print.c	8.3 (Berkeley) 4/2/94";
-#else 
-static char rcsid[] = "$NetBSD: print.c,v 1.4 1995/09/27 01:06:58 jtc Exp $";
-#endif
-#endif /* not lint */
-
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,12 +39,12 @@ static char rcsid[] = "$NetBSD: print.c,v 1.4 1995/09/27 01:06:58 jtc Exp $";
 #include "ctags.h"
 
 /*
- * getline --
+ * get_line --
  *	get the line the token of interest occurred on,
  *	prepare it for printing.
  */
 void
-getline()
+get_line(void)
 {
 	long	saveftell;
 	int	c;
@@ -65,7 +54,7 @@ getline()
 	saveftell = ftell(inf);
 	(void)fseek(inf, lineftell, SEEK_SET);
 	if (xflag)
-		for (cp = lbuf; GETC(!=, '\n'); *cp++ = c)
+		for (cp = lbuf; GETC(!=, EOF) && c != '\n'; *cp++ = c)
 			continue;
 	/*
 	 * do all processing here, so we don't step through the
@@ -101,8 +90,7 @@ getline()
  *	write out the tags
  */
 void
-put_entries(node)
-	NODE	*node;
+put_entries(NODE *node)
 {
 
 	if (node->left)
@@ -111,7 +99,7 @@ put_entries(node)
 		printf("%s %s %d\n",
 		    node->entry, node->file, (node->lno + 63) / 64);
 	else if (xflag)
-		printf("%-16s%4d %-16s %s\n",
+		printf("%-16s %4d %-16s %s\n",
 		    node->entry, node->lno, node->file, node->pat);
 	else
 		fprintf(outf, "%s\t%s\t%c^%s%c\n",

@@ -1,3 +1,4 @@
+/*	$OpenBSD: trap.h,v 1.5 2005/10/26 20:32:59 marco Exp $	*/
 /*	$NetBSD: trap.h,v 1.4 1994/10/27 04:16:30 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,7 +43,7 @@
 #define	T_PRIVINFLT	 0	/* privileged instruction */
 #define	T_BPTFLT	 1	/* breakpoint trap */
 #define	T_ARITHTRAP	 2	/* arithmetic trap */
-#define	T_ASTFLT	 3	/* asynchronous system trap */
+#define	T_RESERVED	 3	/* reserved fault base */
 #define	T_PROTFLT	 4	/* protection fault */
 #define	T_TRCTRAP	 5	/* trace trap */
 #define	T_PAGEFLT	 6	/* page fault */
@@ -57,11 +54,12 @@
 #define	T_BOUND		11	/* bounds check fault */
 #define	T_DNA		12	/* device not available fault */
 #define	T_DOUBLEFLT	13	/* double fault */
-#define	T_FPOPFLT	14	/* fp coprocessor operand fetch fault */
+#define	T_FPOPFLT	14	/* fp coprocessor operand fetch fault (![P]Pro)*/
 #define	T_TSSFLT	15	/* invalid tss fault */
 #define	T_SEGNPFLT	16	/* segment not present fault */
 #define	T_STKFLT	17	/* stack fault */
-#define	T_RESERVED	18	/* reserved fault base */
+#define	T_MACHK		18	/* machine check ([P]Pro) */
+#define	T_XFTRAP	19	/* SIMD FP exception */
 
 /* Trap's coming from user mode */
 #define	T_USER	0x100

@@ -13,26 +13,14 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_frexpf.c,v 1.5 1995/05/10 20:47:26 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const float
-#else
-static float
-#endif
 two25 =  3.3554432000e+07; /* 0x4c000000 */
 
-#ifdef __STDC__
-	float frexpf(float x, int *eptr)
-#else
-	float frexpf(x, eptr)
-	float x; int *eptr;
-#endif
+float
+frexpf(float x, int *eptr)
 {
 	int32_t hx,ix;
 	GET_FLOAT_WORD(hx,x);
@@ -47,6 +35,6 @@ two25 =  3.3554432000e+07; /* 0x4c000000 */
 	}
 	*eptr += (ix>>23)-126;
 	hx = (hx&0x807fffff)|0x3f000000;
-	*(int*)&x = hx;
+	SET_FLOAT_WORD(x,hx);
 	return x;
 }

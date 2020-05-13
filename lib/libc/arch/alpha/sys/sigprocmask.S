@@ -1,4 +1,5 @@
-/*	$NetBSD: sigprocmask.S,v 1.1 1995/02/10 17:50:41 cgd Exp $	*/
+/*	$OpenBSD: sigprocmask.S,v 1.5 2005/08/07 16:40:13 espie Exp $	*/
+/*	$NetBSD: sigprocmask.S,v 1.2 1996/10/17 03:08:21 cgd Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -29,16 +30,15 @@
 
 #include "SYS.h"
 
-LEAF(sigprocmask, 3)
+SYSLEAF_HIDDEN(sigprocmask, 3)
 	mov	a2, a5			/* safe */
 	cmoveq	a1, 1, a0		/* if set == NULL, how = SIG_BLOCK */
 	beq	a1, Ldoit		/* and set = 0, and do it. */
 	ldl	a1, 0(a1)		/* load the set from *set */
-Ldoit:	SYSCALL_NOLABEL(sigprocmask)
+Ldoit:	CALLSYS_ERROR(sigprocmask)
 	beq	a5, Lret		/* if they don't want old mask, done */	
 	stl	v0, 0(a5)		/* otherwise, give it to them. */
 Lret:	mov	zero, v0
 	RET
 
-	END(sigprocmask)
-
+SYSCALL_END_HIDDEN(sigprocmask)

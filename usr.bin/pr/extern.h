@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.5 2003/06/03 02:56:14 millert Exp $ */
 /*-
  * Copyright (c) 1991 Keith Muller.
  * Copyright (c) 1993
@@ -14,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,27 +32,26 @@
  * SUCH DAMAGE.
  *
  *      from: @(#)extern.h	8.1 (Berkeley) 6/6/93
- *	$Id: extern.h,v 1.1 1994/01/06 15:57:19 cgd Exp $
  */
 
 extern int eoptind;
 extern char *eoptarg;
 
-void	 addnum __P((char *, int, int));
-int	 egetopt __P((int, char * const *, const char *));
-void	 flsh_errs __P((void));
-int	 horzcol __P((int, char **));
-int	 inln __P((FILE *, char *, int, int *, int, int *));
-int	 inskip __P((FILE *, int, int));
-void	 mfail __P((void));
-int	 mulfile __P((int, char **));
-FILE	*nxtfile __P((int, char **, char **, char *, int));
-int	 onecol __P((int, char **));
-int	 otln __P((char *, int, int *, int *, int));
-void	 pfail __P((void));
-int	 prhead __P((char *, char *, int));
-int	 prtail __P((int, int));
-int	 setup __P((int, char **));
-void	 terminate __P((int));
-void	 usage __P((void));
-int	 vertcol __P((int, char **));
+void	 addnum(char *, int, int);
+int	 egetopt(int, char * const *, const char *);
+void	 flsh_errs(void);
+int	 horzcol(int, char **);
+int	 inln(FILE *, char *, int, int *, int *, int, int *);
+int	 inskip(FILE *, int, int);
+void	 mfail(void);
+int	 mulfile(int, char **);
+FILE	*nxtfile(int, char **, char **, char *, int);
+int	 onecol(int, char **);
+int	 otln(char *, int, int *, int *, int);
+void	 pfail(void);
+int	 prhead(char *, char *, int);
+int	 prtail(int, int);
+int	 setup(int, char **);
+void	 terminate(int);
+void	 usage(void);
+int	 vertcol(int, char **);

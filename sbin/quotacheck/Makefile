@@ -1,9 +1,12 @@
-#	$NetBSD: Makefile,v 1.5 1995/03/18 14:59:19 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/5/93
+#	$OpenBSD: Makefile,v 1.6 1997/09/21 11:37:57 deraadt Exp $
 
 PROG=	quotacheck
-SRCS=	quotacheck.c preen.c
+SRCS=	quotacheck.c preen.c fsutil.c
+CFLAGS+=-I${.CURDIR}/../fsck
 MAN=	quotacheck.8
 .PATH:	${.CURDIR}/../fsck
+
+LDADD+=-lutil
+DPADD+=${LIBUTIL}
 
 .include <bsd.prog.mk>

@@ -3405,7 +3405,7 @@ void
 tc_headers_hook(headers)
      object_headers *headers;
 {
-#ifdef TE_NetBSD
+#if defined(TE_NetBSD) || defined(TE_OpenBSD)
   N_SET_INFO(headers->header, OMAGIC, M_VAX4K_NETBSD, 0);
   headers->header.a_info = htonl(headers->header.a_info);
 #endif

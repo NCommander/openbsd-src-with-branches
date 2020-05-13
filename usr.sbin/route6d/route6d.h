@@ -1,6 +1,5 @@
-/*
- * $Header: /cvsroot/kame/kame/kame/kame/route6d/route6d.h,v 1.1.1.1 1999/08/08 23:31:35 itojun Exp $
- */
+/*	$OpenBSD: route6d.h,v 1.6 2001/12/01 23:27:23 miod Exp $	*/
+/*	$KAME: route6d.h,v 1.4 2001/01/15 03:50:54 inoue Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -31,17 +30,14 @@
  * SUCH DAMAGE.
  */
 
-/* not yet in use 
-#define	ROUTE6D_CONF	"/usr/local/v6/etc/route6d.conf"
-*/
-
-#define	ROUTE6D_DUMP	"/var/tmp/route6d_dump"
-#define	ROUTE6D_PID	"/var/run/route6d.pid"
+#define	ROUTE6D_DUMP	"/var/run/route6d_dump"
 
 #define	RIP6_VERSION	1
 
 #define	RIP6_REQUEST	1
 #define	RIP6_RESPONSE	2
+
+#define	IFC_CHANGED	1
 
 struct netinfo6 {
 	struct	in6_addr	rip6_dest;

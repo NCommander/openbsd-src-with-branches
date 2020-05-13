@@ -31,10 +31,18 @@ Boston, MA 02111-1307, USA.  */
 /* Define __HAVE_68881__ in preprocessor, unless -msoft-float is specified.
    This will control the use of inline 68881 insns in certain macros.  */
 #undef CPP_SPEC
-#define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__ -D__HAVE_FPU__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_POSIX_THREADS}"
+#define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__ -D__HAVE_FPU__} " OBSD_CPP_SPEC
 
 /* Run-time target specifications.  */
-#define CPP_PREDEFINES "-D__unix__ -D__m68k__ -D__mc68000__ -D__mc68020__ -D__OpenBSD__ -Asystem=unix -Asystem=OpenBSD -Acpu=m68k -Amachine=m68k"
+#define TARGET_OS_CPP_BUILTINS()			\
+  do							\
+    {							\
+      OPENBSD_OS_CPP_BUILTINS_COMMON();			\
+      builtin_define ("__m68k__");			\
+      builtin_define ("__mc68000__");			\
+      builtin_define ("__mc68020__");			\
+    }							\
+  while (0)
 
 /* m68k as needs to know about the processor subtype.  */
 #undef ASM_SPEC
@@ -42,12 +50,18 @@ Boston, MA 02111-1307, USA.  */
 
 /* Layout of source language data types.  */
 
-/* This must agree with <machine/ansi.h> */
+/* This must agree with <machine/_types.h> */
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE "long unsigned int"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE "long int"
+
+#undef INTMAX_TYPE
+#define INTMAX_TYPE "long long int"
+
+#undef UINTMAX_TYPE
+#define UINTMAX_TYPE "long long unsigned int"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"

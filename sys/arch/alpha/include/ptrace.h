@@ -1,3 +1,4 @@
+/*	$OpenBSD: ptrace.h,v 1.5 2011/03/23 16:54:34 pirofti Exp $	*/
 /*	$NetBSD: ptrace.h,v 1.1 1995/02/13 23:07:51 cgd Exp $	*/
 
 /*
@@ -30,11 +31,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef _MACHINE_PTRACE_H_
+#define _MACHINE_PTRACE_H_
+
 /*
  * Alpha-dependent ptrace definitions.
- * Note that PT_STEP is _not_ supported.
  */
 #define PT_GETREGS      (PT_FIRSTMACH + 0)
 #define PT_SETREGS      (PT_FIRSTMACH + 1)
 #define PT_GETFPREGS    (PT_FIRSTMACH + 2)
 #define PT_SETFPREGS    (PT_FIRSTMACH + 3)
+#define PT_STEP		(PT_FIRSTMACH + 4)
+
+#ifdef _KERNEL
+# define FIX_SSTEP(p)	process_sstep(p, 0)
+#endif
+
+#endif

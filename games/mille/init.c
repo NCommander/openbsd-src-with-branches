@@ -1,3 +1,4 @@
+/*	$OpenBSD: init.c,v 1.9 2016/01/08 18:05:58 mestre Exp $	*/
 /*	$NetBSD: init.c,v 1.5 1995/03/24 05:01:40 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,27 +30,23 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)init.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: init.c,v 1.5 1995/03/24 05:01:40 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdlib.h>
+#include <string.h>
 
-# include	"mille.h"
+#include "mille.h"
 
 /*
  * @(#)init.c	1.1 (Berkeley) 4/1/82
  */
 
-init() {
+void
+init(void)
+{
+	PLAY	*pp;
+	int	i, j;
+	CARD	card;
 
-	reg PLAY	*pp;
-	reg int		i, j;
-	reg CARD	card;
-
-	bzero(Numseen, sizeof Numseen);
+	memset(Numseen, 0, sizeof Numseen);
 	Numgos = 0;
 
 	for (i = 0; i < 2; i++) {
@@ -67,7 +60,7 @@ init() {
 			pp->hand[j] = *--Topcard;
 			if (i == COMP) {
 				account(card = *Topcard);
-				if (issafety(card))
+				if (is_safety(card))
 					pp->safety[card - S_CONV] = S_IN_HAND;
 			}
 		}
@@ -90,17 +83,14 @@ init() {
 	End = 700;
 }
 
-shuffle() {
+void
+shuffle(void)
+{
+	int	i, r;
+	CARD	temp;
 
-	reg int		i, r;
-	reg CARD	temp;
-
-	for (i = 0; i < DECK_SZ; i++) {
-		r = roll(1, DECK_SZ) - 1;
-		if (r < 0 || r > DECK_SZ - 1) {
-			fprintf(stderr, "shuffle: card no. error: %d\n", r);
-			die(1);
-		}
+	for (i = DECK_SZ - 1; i > 0; i--) {
+		r = arc4random_uniform(i + 1);
 		temp = Deck[r];
 		Deck[r] = Deck[i];
 		Deck[i] = temp;
@@ -108,10 +98,11 @@ shuffle() {
 	Topcard = &Deck[DECK_SZ];
 }
 
-newboard() {
-
-	register int	i;
-	register PLAY	*pp;
+void
+newboard(void)
+{
+	int		i;
+	PLAY		*pp;
 	static int	first = TRUE;
 
 	if (first) {
@@ -166,10 +157,11 @@ newboard() {
 	newscore();
 }
 
-newscore() {
-
-	reg int		i, new;
-	register PLAY	*pp;
+void
+newscore(void)
+{
+	int		i, new;
+	PLAY		*pp;
 	static int	was_full = -1;
 	static int	last_win = -1;
 

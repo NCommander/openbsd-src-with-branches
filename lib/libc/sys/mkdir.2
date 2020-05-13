@@ -1,3 +1,4 @@
+.\"	$OpenBSD: mkdir.2,v 1.17 2015/09/10 17:55:21 schwarze Exp $
 .\"	$NetBSD: mkdir.2,v 1.8 1995/02/27 12:34:22 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,49 +30,80 @@
 .\"
 .\"     @(#)mkdir.2	8.2 (Berkeley) 12/11/93
 .\"
-.Dd December 11, 1993
+.Dd $Mdocdate: September 10 2015 $
 .Dt MKDIR 2
-.Os BSD 4.2
+.Os
 .Sh NAME
-.Nm mkdir
+.Nm mkdir ,
+.Nm mkdirat
 .Nd make a directory file
 .Sh SYNOPSIS
-.Fd #include <sys/types.h>
-.Fd #include <sys/stat.h>
+.In sys/stat.h
 .Ft int
 .Fn mkdir "const char *path" "mode_t mode"
+.In sys/stat.h
+.In fcntl.h
+.Ft int
+.Fn mkdirat "int fd" "const char *path" "mode_t mode"
 .Sh DESCRIPTION
 The directory
 .Fa path
 is created with the access permissions specified by
 .Fa mode
-and restricted by the the
+and restricted by the
 .Xr umask 2
 of the calling process.
 .Pp
 The directory's owner ID is set to the process's effective user ID.
 The directory's group ID is set to that of the parent directory in
 which it is created.
+.Pp
+The
+.Fn mkdirat
+function is equivalent to
+.Fn mkdir
+except that where
+.Fa path
+specifies a relative path,
+the newly created directory is created relative to
+the directory associated with file descriptor
+.Fa fd
+instead of the current working directory.
+.Pp
+If
+.Fn mkdirat
+is passed the special value
+.Dv AT_FDCWD
+(defined in
+.In fcntl.h )
+in the
+.Fa fd
+parameter, the current working directory is used
+and the behavior is identical to a call to
+.Fn mkdir .
 .Sh RETURN VALUES
-A 0 return value indicates success.  A -1 return value
-indicates an error, and an error code is stored in
-.Va errno .
+.Rv -std
 .Sh ERRORS
-.Fn Mkdir
+.Fn mkdir
+and
+.Fn mkdirat
 will fail and no directory will be created if:
 .Bl -tag -width Er
 .It Bq Er ENOTDIR
 A component of the path prefix is not a directory.
 .It Bq Er ENAMETOOLONG
-A component of a pathname exceeded 
-.Dv {NAME_MAX}
-characters, or an entire path name exceeded 
-.Dv {PATH_MAX}
-characters.
+A component of a pathname exceeded
+.Dv NAME_MAX
+characters, or an entire pathname (including the terminating NUL)
+exceeded
+.Dv PATH_MAX
+bytes.
 .It Bq Er ENOENT
 A component of the path prefix does not exist.
 .It Bq Er EACCES
-Search permission is denied for a component of the path prefix.
+Search permission is denied for a component of the path prefix,
+or write permission is denied
+on the parent directory of the directory to be created.
 .It Bq Er ELOOP
 Too many symbolic links were encountered in translating the pathname.
 .It Bq Er EROFS
@@ -100,15 +128,74 @@ An I/O error occurred while making the directory entry or allocating the inode.
 .It Bq Er EIO
 An I/O error occurred while reading from or writing to the file system.
 .It Bq Er EFAULT
-.Fa Path
+.Fa path
 points outside the process's allocated address space.
+.El
+.Pp
+Additionally,
+.Fn mkdirat
+will fail if:
+.Bl -tag -width Er
+.It Bq Er EBADF
+The
+.Fa path
+argument specifies a relative path and the
+.Fa fd
+argument is neither
+.Dv AT_FDCWD
+nor a valid file descriptor.
+.It Bq Er ENOTDIR
+The
+.Fa path
+argument specifies a relative path and the
+.Fa fd
+argument is a valid file descriptor but it does not reference a directory.
+.It Bq Er EACCES
+The
+.Fa path
+argument specifies a relative path but search permission is denied
+for the directory which the
+.Fa fd
+file descriptor references.
 .El
 .Sh SEE ALSO
 .Xr chmod 2 ,
 .Xr stat 2 ,
 .Xr umask 2
 .Sh STANDARDS
-The 
+The
 .Fn mkdir
-function conforms to 
-.St -p1003.1-88 .
+and
+.Fn mkdirat
+functions conform to
+.St -p1003.1-2008 .
+.Sh HISTORY
+A
+.Fn mkdir
+system call first appeared in
+.At v1 .
+It was renamed to
+.Fn makdir
+in
+.At v2 .
+However, it did not exist from
+.At v4
+to
+.Bx 4.1 ;
+in those releases,
+.Xr mknod 2
+had to be used.
+Since
+.Fn mkdir
+reappeared in
+.Bx 4.1c ,
+it no longer requires superuser privileges and it automatically creates the
+.Sq \&.
+and
+.Sq \&..
+directory entries.
+.Pp
+The
+.Fn mkdirat
+system call has been available since
+.Ox 5.0 .

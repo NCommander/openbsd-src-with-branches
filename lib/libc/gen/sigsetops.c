@@ -1,5 +1,4 @@
-/*	$NetBSD: sigsetops.c,v 1.10 1995/03/04 01:56:07 cgd Exp $	*/
-
+/*	$OpenBSD: sigsetops.c,v 1.6 2010/12/31 02:58:57 guenther Exp $ */
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,14 +30,7 @@
  *	@(#)sigsetops.c	8.1 (Berkeley) 6/4/93
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)sigsetops.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: sigsetops.c,v 1.10 1995/03/04 01:56:07 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
+#define _ANSI_LIBRARY
 #include <errno.h>
 #include <signal.h>
 
@@ -53,25 +41,23 @@ static char rcsid[] = "$NetBSD: sigsetops.c,v 1.10 1995/03/04 01:56:07 cgd Exp $
 #undef sigismember
 
 int
-sigemptyset(set)
-	sigset_t *set;
+sigemptyset(sigset_t *set)
 {
 	*set = 0;
 	return (0);
 }
+DEF_WEAK(sigemptyset);
 
 int
-sigfillset(set)
-	sigset_t *set;
+sigfillset(sigset_t *set)
 {
 	*set = ~(sigset_t)0;
 	return (0);
 }
+DEF_WEAK(sigfillset);
 
 int
-sigaddset(set, signo)
-	sigset_t *set;
-	int signo;
+sigaddset(sigset_t *set, int signo)
 {
 	if (signo <= 0 || signo >= NSIG) {
 		errno = EINVAL;
@@ -80,11 +66,10 @@ sigaddset(set, signo)
 	*set |= sigmask(signo);
 	return (0);
 }
+DEF_WEAK(sigaddset);
 
 int
-sigdelset(set, signo)
-	sigset_t *set;
-	int signo;
+sigdelset(sigset_t *set, int signo)
 {
 	if (signo <= 0 || signo >= NSIG) {
 		errno = EINVAL;
@@ -93,11 +78,10 @@ sigdelset(set, signo)
 	*set &= ~sigmask(signo);
 	return (0);
 }
+DEF_WEAK(sigdelset);
 
 int
-sigismember(set, signo)
-	const sigset_t *set;
-	int signo;
+sigismember(const sigset_t *set, int signo)
 {
 	if (signo <= 0 || signo >= NSIG) {
 		errno = EINVAL;
@@ -105,3 +89,4 @@ sigismember(set, signo)
 	}
 	return ((*set & sigmask(signo)) != 0);
 }
+DEF_WEAK(sigismember);

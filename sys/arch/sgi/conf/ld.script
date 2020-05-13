@@ -1,0 +1,32 @@
+OUTPUT_FORMAT("elf64-tradbigmips")
+OUTPUT_ARCH(mips)
+ENTRY(__start)
+
+SECTIONS
+{
+	.text :		{ *(.text .text.* .gnu.linkonce.t.*) }
+	PROVIDE (etext = .);
+	.rodata :	{ *(.rodata .rodata.* .gnu.linkonce.r.*) }
+	_gp = ALIGN(16) + 0x7ff0;
+	.data :		{ *(.data .data.* .gnu.linkonce.d.*) }
+	.openbsd.randomdata :
+	{
+		/* XXX shouldn't this be placed next to rodata? */
+		__retguard_start = ABSOLUTE(.);
+		*(.openbsd.randomdata.retguard .openbsd.randomdata.retguard.*)
+		/* XXX . = ALIGN(0x1000); */
+		__retguard_end = ABSOLUTE(.);
+		*(.openbsd.randomdata .openbsd.randomdata.*)
+	}
+	PROVIDE (edata = .);
+	.sbss :		{ *(.sbss .sbss.* .gnu.linkonce.sb.* .scommon) }
+	.bss :		{ *(.bss .bss.* .gnu.linkonce.b.* COMMON) }
+	PROVIDE (_end = .);
+	PROVIDE (end = .);
+	/DISCARD/ :
+	{
+		*(.pdr)
+		*(.mdebug.abi64)
+		*(.MIPS.options)
+	}
+}

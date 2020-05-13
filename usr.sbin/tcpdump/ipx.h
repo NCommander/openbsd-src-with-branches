@@ -1,9 +1,9 @@
-/*	$NetBSD: ipx.h,v 1.2 1995/03/06 19:10:19 mycroft Exp $	*/
+/*	$OpenBSD: ipx.h,v 1.6 2000/10/03 14:31:55 ho Exp $	*/
 
 /*
  * IPX protocol formats 
  *
- * @(#) Header: ipx.h,v 1.1 94/06/09 11:47:03 mccanne Exp
+ * @(#) $Id$
  */
 
 /* well-known sockets */

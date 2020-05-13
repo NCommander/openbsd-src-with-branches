@@ -1,7 +1,12 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.5 2018/07/10 16:58:15 tb Exp $
 
-PROG=	bntest
-LDADD=	-lcrypto
-DPADD=	${LIBCRYPTO}
+SUBDIR= \
+	addsub \
+	general \
+	mont \
+	rand
 
-.include <bsd.regress.mk>
+
+install:
+
+.include <bsd.subdir.mk>

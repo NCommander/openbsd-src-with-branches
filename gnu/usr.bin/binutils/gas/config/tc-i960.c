@@ -673,7 +673,7 @@ md_assemble (textP)
 	case REG:
 	  if (branch_predict)
 	    {
-	      as_warn (bp_error_msg);
+	      as_warn ("%s", bp_error_msg);
 	    }
 	  reg_fmt (args, oP);
 	  break;
@@ -682,7 +682,7 @@ md_assemble (textP)
 	    {
 	      if (branch_predict)
 		{
-		  as_warn (bp_error_msg);
+		  as_warn ("%s", bp_error_msg);
 		}
 	      mem_fmt (args, oP, 1);
 	      break;
@@ -694,14 +694,14 @@ md_assemble (textP)
 	case MEM16:
 	  if (branch_predict)
 	    {
-	      as_warn (bp_error_msg);
+	      as_warn ("%s", bp_error_msg);
 	    }
 	  mem_fmt (args, oP, 0);
 	  break;
 	case CALLJ:
 	  if (branch_predict)
 	    {
-	      as_warn (bp_error_msg);
+	      as_warn ("%s", bp_error_msg);
 	    }
 	  /* Output opcode & set up "fixup" (relocation); flag
 	     relocation as 'callj' type.  */
