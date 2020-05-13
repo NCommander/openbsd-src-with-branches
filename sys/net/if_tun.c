@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.220 2020/04/07 13:27:52 visa Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.221 2020/04/12 11:56:52 mpi Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -775,8 +775,8 @@ tun_dev_read(dev_t dev, struct uio *uio, int ioflag)
 
 	ifp = &sc->sc_if;
 
-	error = ifq_deq_sleep(&ifp->if_snd, &m0, ioflag, (PZERO + 1)|PCATCH,
-	    "tunread", &sc->sc_reading, &sc->sc_dev);
+	error = ifq_deq_sleep(&ifp->if_snd, &m0, ISSET(ioflag, IO_NDELAY),
+	    (PZERO + 1)|PCATCH, "tunread", &sc->sc_reading, &sc->sc_dev);
 	if (error != 0)
 		goto put;
 
