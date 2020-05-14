@@ -1,4 +1,4 @@
-/*	$OpenBSD: output.c,v 1.13 2020/04/30 13:46:39 deraadt Exp $ */
+/*	$OpenBSD: output.c,v 1.15 2020/05/03 20:24:02 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Theo de Raadt <deraadt@openbsd.org>
  *
@@ -111,7 +111,7 @@ output_createtmp(char *name)
 		err(1, "path too long");
 	fd = mkostemp(output_tmpname, O_CLOEXEC);
 	if (fd == -1)
-		err(1, "mkostemp");
+		err(1, "mkostemp: %s", output_tmpname);
 	(void) fchmod(fd, 0644);
 	f = fdopen(fd, "w");
 	if (f == NULL)
