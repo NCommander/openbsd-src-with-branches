@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.97 2019/10/24 12:39:27 tb Exp $	*/
+/*	$OpenBSD: mib.c,v 1.98 2020/01/02 10:55:53 florian Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Knight <joel@openbsd.org>
@@ -1681,7 +1681,7 @@ mib_pfinfo(struct oid *oid, struct ber_oid *o, struct ber_element **elm)
 		*elm = ober_add_integer(*elm, s.running);
 		break;
 	case 2:
-		if (!clock_gettime(CLOCK_UPTIME, &uptime))
+		if (!clock_gettime(CLOCK_BOOTTIME, &uptime))
 			runtime = uptime.tv_sec - s.since;
 		runtime *= 100;
 		*elm = ober_add_integer(*elm, runtime);

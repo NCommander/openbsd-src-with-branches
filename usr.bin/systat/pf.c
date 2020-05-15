@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.10 2019/05/09 15:01:09 claudio Exp $ */
+/*	$OpenBSD: pf.c,v 1.11 2019/06/28 13:35:04 deraadt Exp $ */
 /*
  * Copyright (c) 2001, 2007 Can Erkin Acar <canacar@openbsd.org>
  *
@@ -228,7 +228,7 @@ print_pf(void)
 	if (end > num_disp)
 		end = num_disp;
 
-	if (!clock_gettime(CLOCK_UPTIME, &uptime))
+	if (!clock_gettime(CLOCK_BOOTTIME, &uptime))
 		tm = uptime.tv_sec - s->since;
 
 	ADD_LINE_S("pf", "Status", s->running ? "Enabled" : "Disabled");

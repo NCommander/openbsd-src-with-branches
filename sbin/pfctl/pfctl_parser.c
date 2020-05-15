@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.341 2019/06/28 13:32:45 deraadt Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.342 2019/10/17 21:54:28 millert Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -535,7 +535,7 @@ print_status(struct pf_status *s, struct pfctl_watermarks *synflwats, int opts)
 	char			buf[PF_MD5_DIGEST_LENGTH * 2 + 1];
 	static const char	hex[] = "0123456789abcdef";
 
-	if (!clock_gettime(CLOCK_UPTIME, &uptime))
+	if (!clock_gettime(CLOCK_BOOTTIME, &uptime))
 		runtime = uptime.tv_sec - s->since;
 	running = s->running ? "Enabled" : "Disabled";
 
