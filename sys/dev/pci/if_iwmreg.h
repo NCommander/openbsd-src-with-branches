@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwmreg.h,v 1.45 2019/11/26 07:37:50 patrick Exp $	*/
+/*	$OpenBSD: if_iwmreg.h,v 1.46 2020/03/05 14:56:50 stsp Exp $	*/
 
 /******************************************************************************
  *
@@ -5500,7 +5500,7 @@ struct iwm_scan_channel_cfg_umac {
 	uint8_t channel_num;
 	uint8_t iter_count;
 	uint16_t iter_interval;
-} __packed; /* SCAN_CHANNEL_CFG_S_VER2 */
+} __packed; /* SCAN_CHANNEL_CFG_S_VER1 */
 
 /**
  * struct iwm_scan_umac_schedule
