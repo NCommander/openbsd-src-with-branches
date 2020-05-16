@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.61 2019/12/12 08:21:34 denis Exp $ */
+/*	$OpenBSD: kroute.c,v 1.62 2019/12/16 08:28:33 denis Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -1023,12 +1023,6 @@ if_announce(void *msg)
 		break;
 	case IFAN_DEPARTURE:
 		iface = if_find(ifan->ifan_index);
-		if (iface->cflags & F_IFACE_CONFIGURED) {
-			main_imsg_compose_rde(IMSG_IFDELETE, 0,
-			    &iface->ifindex, sizeof(iface->ifindex));
-			main_imsg_compose_ospfe(IMSG_IFDELETE, 0,
-			    &iface->ifindex, sizeof(iface->ifindex));
-		}
 		if_del(iface);
 		break;
 	}
