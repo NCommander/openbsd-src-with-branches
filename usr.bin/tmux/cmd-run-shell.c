@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-run-shell.c,v 1.66 2020/04/13 10:59:58 nicm Exp $ */
+/* $OpenBSD: cmd-run-shell.c,v 1.67 2020/04/13 20:51:57 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -190,7 +190,8 @@ cmd_run_shell_callback(struct job *job)
 		retcode = WTERMSIG(status);
 		xasprintf(&msg, "'%s' terminated by signal %d", cmd, retcode);
 		retcode += 128;
-	}
+	} else
+		retcode = 0;
 	if (msg != NULL)
 		cmd_run_shell_print(job, msg);
 	free(msg);
