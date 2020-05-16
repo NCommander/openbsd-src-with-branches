@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.340 2020/05/16 16:16:07 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.341 2020/05/16 16:20:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1035,7 +1035,7 @@ have_event:
 out:
 	/* Apply modifiers if any. */
 	if (b & MOUSE_MASK_META)
-		key |= KEYC_ESCAPE;
+		key |= KEYC_META;
 	if (b & MOUSE_MASK_CTRL)
 		key |= KEYC_CTRL;
 	if (b & MOUSE_MASK_SHIFT)
