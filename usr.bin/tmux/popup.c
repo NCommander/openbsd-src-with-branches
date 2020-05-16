@@ -1,4 +1,4 @@
-/* $OpenBSD: popup.c,v 1.14 2020/05/16 15:24:28 nicm Exp $ */
+/* $OpenBSD: popup.c,v 1.15 2020/05/16 15:34:08 nicm Exp $ */
 
 /*
  * Copyright (c) 2020 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -70,8 +70,10 @@ popup_set_client_cb(struct tty_ctx *ttyctx, struct client *c)
 {
 	struct popup_data	*pd = ttyctx->arg;
 
+	if (c != pd->c)
+		return (0);
 	if (pd->c->flags & CLIENT_REDRAWOVERLAY)
-		return (-1);
+		return (0);
 
 	ttyctx->bigger = 0;
 	ttyctx->wox = 0;
