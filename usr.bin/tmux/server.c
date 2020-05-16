@@ -1,4 +1,4 @@
-/* $OpenBSD: server.c,v 1.190 2020/05/16 15:47:22 nicm Exp $ */
+/* $OpenBSD: server.c,v 1.191 2020/05/16 16:07:55 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -199,6 +199,7 @@ server_start(struct tmuxproc *client, int flags, struct event_base *base,
 	    "tty ps", NULL) != 0)
 		fatal("pledge failed");
 
+	input_key_build();
 	RB_INIT(&windows);
 	RB_INIT(&all_window_panes);
 	TAILQ_INIT(&clients);
