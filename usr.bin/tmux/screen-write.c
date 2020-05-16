@@ -1,4 +1,4 @@
-/* $OpenBSD: screen-write.c,v 1.178 2020/05/16 15:34:08 nicm Exp $ */
+/* $OpenBSD: screen-write.c,v 1.179 2020/05/16 16:02:24 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -184,10 +184,10 @@ screen_write_initctx(struct screen_write_ctx *ctx, struct tty_ctx *ttyctx,
 	}
 
 	if (ctx->wp != NULL &&
-	    !ctx->sync &&
+	    (~ctx->flags & SCREEN_WRITE_SYNC) &&
 	    (sync || ctx->wp != ctx->wp->window->active)) {
 		tty_write(tty_cmd_syncstart, ttyctx);
-		ctx->sync = 1;
+		ctx->flags |= SCREEN_WRITE_SYNC;
 	}
 }
 
