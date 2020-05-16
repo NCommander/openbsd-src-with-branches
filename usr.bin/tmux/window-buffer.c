@@ -1,4 +1,4 @@
-/* $OpenBSD: window-buffer.c,v 1.25 2020/02/11 07:01:09 nicm Exp $ */
+/* $OpenBSD: window-buffer.c,v 1.26 2020/04/09 13:52:31 nicm Exp $ */
 
 /*
  * Copyright (c) 2017 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -37,7 +37,7 @@ static void		 window_buffer_key(struct window_mode_entry *,
 #define WINDOW_BUFFER_DEFAULT_COMMAND "paste-buffer -b '%%'"
 
 #define WINDOW_BUFFER_DEFAULT_FORMAT \
-	"#{buffer_size} bytes (#{t:buffer_created})"
+	"#{t/p:buffer_created}: #{buffer_sample}"
 
 static const struct menu_item window_buffer_menu_items[] = {
 	{ "Paste", 'p', NULL },
