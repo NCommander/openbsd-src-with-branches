@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-join-pane.c,v 1.43 2020/04/13 14:46:04 nicm Exp $ */
+/* $OpenBSD: cmd-join-pane.c,v 1.44 2020/04/22 21:15:33 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 George Nachman <tmux@georgester.com>
@@ -136,6 +136,7 @@ cmd_join_pane_exec(struct cmd *self, struct cmdq_item *item)
 
 	layout_close_pane(src_wp);
 
+	server_client_remove_pane(src_wp);
 	window_lost_pane(src_w, src_wp);
 	TAILQ_REMOVE(&src_w->panes, src_wp, entry);
 
