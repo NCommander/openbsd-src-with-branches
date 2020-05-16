@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-set-option.c,v 1.134 2020/05/16 15:01:31 nicm Exp $ */
+/* $OpenBSD: cmd-set-option.c,v 1.135 2020/05/16 16:02:24 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -18,7 +18,6 @@
 
 #include <sys/types.h>
 
-#include <fnmatch.h>
 #include <stdlib.h>
 #include <string.h>
 
