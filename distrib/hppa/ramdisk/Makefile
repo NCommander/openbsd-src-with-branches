@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.44 2019/05/03 20:03:58 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.45 2019/05/12 16:05:44 deraadt Exp $
 
-LIF=		lif${OSrev}.fs
+LIF=		lif${OSrev}.img
 CDROM=		cd${OSrev}.iso
 MTREE=		${UTILS}/mtree.conf
 RAMDISK=	RAMDISK

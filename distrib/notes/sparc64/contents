@@ -1,4 +1,4 @@
-dnl	$OpenBSD: contents,v 1.53 2015/12/30 23:49:00 rpe Exp $
+dnl	$OpenBSD: contents,v 1.54 2017/09/25 10:47:46 jsg Exp $
 TopPart
 
 OpenBSDminiroot
@@ -12,7 +12,7 @@ OpenBSDfloppy
 			- Ultra 1/1E
 			- Ultra 2
 
-	floppyB{:--:}OSrev.fs	Another MACHINE boot and installation floppy;
+	floppyB{:--:}OSrev.img	Another MACHINE boot and installation floppy;
 			see below.
 			This floppy image will boot on some PCI-based
 			MACHINE models, such as:

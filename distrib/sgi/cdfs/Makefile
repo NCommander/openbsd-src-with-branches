@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.27 2019/05/03 23:49:06 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.28 2019/05/03 23:53:05 deraadt Exp $
 
-FS=		miniroot${OSrev}.fs
+FS=		miniroot${OSrev}.img
 CDROM=		cd${OSrev}.iso
 # must match the size of `minicdroot' in disktab
 CDFSMB=	15

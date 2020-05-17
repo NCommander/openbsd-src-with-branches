@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile.inc,v 1.24 2019/09/25 06:20:22 jsg Exp $
+#	$OpenBSD: Makefile.inc,v 1.25 2019/10/31 00:37:25 jsg Exp $
 
-FS=		miniroot-${BOARD}-${OSrev}.fs
+FS=		miniroot-${BOARD}-${OSrev}.img
 FSSIZE=		67584	# ffs+msdos, actually
 MOUNT_POINT=	/mnt
 

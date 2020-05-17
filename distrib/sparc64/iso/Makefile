@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.20 2019/04/30 17:46:05 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.21 2019/04/30 21:15:00 deraadt Exp $
 
 CDROM=		install${OSrev}.iso
 RELXDIR?=	/home/relx-${MACHINE}
@@ -43,7 +43,7 @@ ${CDROM}: ${BASE} ${XBASE}
 	disklabel -w `cat vnd` fakecdrom "OpenBSD${OSrev}${MACHINE}"
 	vnconfig -u `cat vnd`
 	rm -f vnd
-	mksuncd f ${.OBJDIR}/${CDROM} ${.OBJDIR}/../miniroot/miniroot${OSrev}.fs
+	mksuncd f ${.OBJDIR}/${CDROM} ${.OBJDIR}/../miniroot/miniroot${OSrev}.img
 
 unconfig:
 	-umount -f ${MOUNT_POINT}
