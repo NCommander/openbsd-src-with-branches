@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.59 2017/04/30 16:45:45 mpi Exp $	*/
+/*	$OpenBSD: clock.c,v 1.60 2020/04/28 12:24:20 kettenis Exp $	*/
 /*	$NetBSD: clock.c,v 1.41 2001/07/24 19:29:25 eeh Exp $ */
 
 /*
@@ -170,7 +170,7 @@ struct cfattach clock_fhc_ca = {
 };
 
 /* Global TOD clock handle & idprom pointer */
-todr_chip_handle_t todr_handle = NULL;
+extern todr_chip_handle_t todr_handle;
 static struct idprom *idprom;
 
 static int	timermatch(struct device *, void *, void *);
