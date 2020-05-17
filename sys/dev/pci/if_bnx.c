@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnx.c,v 1.125 2018/03/10 10:51:46 sthen Exp $	*/
+/*	$OpenBSD: if_bnx.c,v 1.126 2019/12/06 01:58:47 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2006 Broadcom Corporation
@@ -676,7 +676,7 @@ bnx_attach(struct device *parent, struct device *self, void *aux)
 	    BNX_PCICFG_MISC_CONFIG_REG_WINDOW_ENA |
 	    BNX_PCICFG_MISC_CONFIG_TARGET_MB_WORD_SWAP);
 
-	/* Save ASIC revsion info. */
+	/* Save ASIC revision info. */
 	sc->bnx_chipid =  REG_RD(sc, BNX_MISC_ID);
 
 	/*
