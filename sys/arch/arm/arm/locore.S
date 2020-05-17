@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.19 2019/10/27 10:26:12 kettenis Exp $	*/
+/*	$OpenBSD: locore.S,v 1.20 2020/03/11 13:24:16 deraadt Exp $	*/
 /*	$NetBSD: locore.S,v 1.14 2003/04/20 16:21:40 thorpej Exp $	*/
 
 /*
@@ -251,6 +251,7 @@ ENTRY_NP(cpu_reset)
 
 #endif	/* OFW */
 
+#ifdef DDB
 /*
  * setjump + longjmp
  */
@@ -271,3 +272,4 @@ _C_LABEL(esym):	.word	_C_LABEL(end)
 
 ENTRY_NP(abort)
 	b	_C_LABEL(abort)
+#endif /* DDB */

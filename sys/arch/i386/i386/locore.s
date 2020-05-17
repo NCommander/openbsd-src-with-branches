@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.189 2018/06/22 13:21:14 bluhm Exp $	*/
+/*	$OpenBSD: locore.s,v 1.190 2018/07/09 19:20:29 guenther Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -781,6 +781,7 @@ NENTRY(lgdt)
 	pushl	%eax
 	lret
 
+#ifdef DDB
 ENTRY(setjmp)
 	movl	4(%esp),%eax
 	movl	%ebx,(%eax)		# save ebx
@@ -805,6 +806,7 @@ ENTRY(longjmp)
 	xorl	%eax,%eax		# return (1);
 	incl	%eax
 	ret
+#endif /* DDB */
 
 /*****************************************************************************/
 		

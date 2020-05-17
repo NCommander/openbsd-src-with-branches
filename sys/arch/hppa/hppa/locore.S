@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.198 2017/06/05 18:59:06 deraadt Exp $	*/
+/*	$OpenBSD: locore.S,v 1.199 2017/07/16 22:47:37 guenther Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -2427,7 +2427,7 @@ fic_short				/* flush one line at a time */
 	nop
 EXIT(ficache)
 
-
+#ifdef DDB
 LEAF_ENTRY(setjmp)
 /*
  * Save the other general registers whose contents are expected to remain
@@ -2486,7 +2486,7 @@ LEAF_ENTRY(longjmp)
 	bv	0(rp)
 	ldi	1, ret0
 EXIT(longjmp)
-
+#endif /* DDB */
 
 	.align	32
 
