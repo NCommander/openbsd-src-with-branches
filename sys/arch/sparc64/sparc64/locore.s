@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.187 2019/11/05 08:17:21 mpi Exp $	*/
+/*	$OpenBSD: locore.s,v 1.188 2020/05/17 13:48:31 deraadt Exp $	*/
 /*	$NetBSD: locore.s,v 1.137 2001/08/13 06:10:10 jdolecek Exp $	*/
 
 /*
@@ -1953,7 +1953,7 @@ winfixfill:
  * make the handler issue a `saved' instruction immediately
  * after creating the trapframe.
  *
- * The fillowing is duplicated from datafault:
+ * The following is duplicated from datafault:
  */
 	wrpr	%g0, PSTATE_KERN|PSTATE_AG, %pstate	! We need to save volatile stuff to AG regs
 #ifdef DEBUG
