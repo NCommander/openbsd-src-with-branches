@@ -1,4 +1,4 @@
-/*	$OpenBSD: net.h,v 1.9 2014/07/13 15:31:20 mpi Exp $	*/
+/*	$OpenBSD: net.h,v 1.10 2014/11/19 20:28:56 miod Exp $	*/
 /*	$NetBSD: net.h,v 1.10 1995/10/20 00:46:30 cgd Exp $	*/
 
 /*
@@ -115,7 +115,7 @@ ssize_t	sendrecv(struct iodesc *,
 
 /* Utilities: */
 const char *ether_sprintf(const u_char *);
-int	in_cksum(const void *, int);
+u_int16_t in_cksum(const void *, size_t);
 const char *inet_ntoa(struct in_addr);
 const char *intoa(u_int32_t);		/* similar to inet_ntoa */
 u_int32_t inet_addr(const char *);
