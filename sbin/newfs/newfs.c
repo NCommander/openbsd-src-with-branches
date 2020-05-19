@@ -1,4 +1,4 @@
-/*	$OpenBSD: newfs.c,v 1.112 2019/06/28 13:32:45 deraadt Exp $	*/
+/*	$OpenBSD: newfs.c,v 1.113 2020/05/18 06:20:44 otto Exp $	*/
 /*	$NetBSD: newfs.c,v 1.20 1996/05/16 07:13:03 thorpej Exp $	*/
 
 /*
@@ -194,7 +194,7 @@ main(int argc, char *argv[])
 	u_int64_t nsecs;
 
 	if (strstr(__progname, "mfs"))
-		mfs = Nflag = quiet = 1;
+		mfs = Nflag = quiet = Oflag = 1;
 
 	getphysmem();
 	maxpartitions = getmaxpartitions();
