@@ -1384,7 +1384,7 @@ ieee80211_get_assoc_req(struct ieee80211com *ic, struct ieee80211_node *ni,
 		return NULL;
 
 	frm = mtod(m, u_int8_t *);
-	capinfo = 0;
+	capinfo = IEEE80211_CAPINFO_ESS;
 	if (ic->ic_flags & IEEE80211_F_WEPON)
 		capinfo |= IEEE80211_CAPINFO_PRIVACY;
 	if ((ic->ic_flags & IEEE80211_F_SHPREAMBLE) &&
