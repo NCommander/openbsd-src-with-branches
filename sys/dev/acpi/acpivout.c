@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivout.c,v 1.21 2020/04/06 00:01:08 pirofti Exp $	*/
+/*	$OpenBSD: acpivout.c,v 1.22 2020/04/19 15:05:14 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Paul Irofti <paul@irofti.net>
  *
@@ -114,12 +114,14 @@ acpivout_attach(struct device *parent, struct device *self, void *aux)
 	    ws_get_param || ws_set_param)
 		return;
 
-	ws_get_param = acpivout_get_param;
-	ws_set_param = acpivout_set_param;
-
 	acpivout_get_bcl(sc);
+	if (sc->sc_bcl_len == 0)
+		return;
 
 	sc->sc_brightness = acpivout_get_brightness(sc);
+
+	ws_get_param = acpivout_get_param;
+	ws_set_param = acpivout_set_param;
 }
 
 int
