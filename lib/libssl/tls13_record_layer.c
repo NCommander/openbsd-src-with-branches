@@ -931,7 +931,7 @@ tls13_record_layer_read_internal(struct tls13_record_layer *rl,
 				rl->phh = 0;
 
 				if (ret == TLS13_IO_SUCCESS)
-					return TLS13_IO_WANT_POLLIN;
+					return TLS13_IO_WANT_RETRY;
 
 				return ret;
 			}
