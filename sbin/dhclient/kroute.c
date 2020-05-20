@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.177 2020/05/20 18:27:16 krw Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.178 2020/05/20 19:13:34 krw Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -256,7 +256,7 @@ get_rtaddrs(int addrs, struct sockaddr *sa, struct sockaddr **rti_info)
 	}
 }
 /*
- * route_in_rtstatic() finds the position of the route in *rtm withing
+ * route_in_rtstatic() finds the position of the route in *rtm within
  * the list of routes in rtstatic.
  *
  * If the route is not contained in rtstatic, return rtstatic_len.
