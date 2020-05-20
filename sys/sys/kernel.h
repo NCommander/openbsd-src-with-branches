@@ -1,4 +1,4 @@
-/*	$OpenBSD: kernel.h,v 1.21 2019/08/21 20:44:09 cheloha Exp $	*/
+/*	$OpenBSD: kernel.h,v 1.22 2019/09/07 01:23:23 cheloha Exp $	*/
 /*	$NetBSD: kernel.h,v 1.11 1995/03/03 01:24:16 cgd Exp $	*/
 
 /*-
@@ -61,5 +61,3 @@ extern int profhz;		/* profiling clock's frequency */
 extern int lbolt;		/* once a second sleep address */
 extern int tickdelta;
 extern long timedelta;
-
-extern struct bintime naptime;	/* time spent suspended */
