@@ -1,4 +1,4 @@
-/* $OpenBSD: spawn.c,v 1.22 2020/04/23 05:48:42 nicm Exp $ */
+/* $OpenBSD: spawn.c,v 1.23 2020/05/16 16:20:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2019 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -439,7 +439,6 @@ spawn_pane(struct spawn_context *sc, char **cause)
 	_exit(1);
 
 complete:
-	new_wp->pipe_off = 0;
 	new_wp->flags &= ~PANE_EXITED;
 
 	sigprocmask(SIG_SETMASK, &oldset, NULL);
