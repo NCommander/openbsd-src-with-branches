@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.180 2020/05/20 23:54:53 krw Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.181 2020/05/21 00:22:37 krw Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -294,7 +294,7 @@ route_pos(struct rt_msghdr *rtm, uint8_t *rtstatic,
 	dstaddr &= netmaskaddr;
 	i = 0;
 	while (i < rtstatic_len)  {
-		len = extract_classless_route(&rtstatic[i], rtstatic_len - i,
+		len = extract_route(&rtstatic[i], rtstatic_len - i,
 		    &rtstaticdstaddr, &rtstaticnetmaskaddr,
 		    &rtstaticgatewayaddr);
 		if (len == 0)
@@ -490,7 +490,7 @@ set_routes(char *name, int index, int rdomain, int routefd, struct in_addr addr,
 	/* Add classless static routes. */
 	i = 0;
 	while (i < rtstatic_len) {
-		len = extract_classless_route(&rtstatic[i], rtstatic_len - i,
+		len = extract_route(&rtstatic[i], rtstatic_len - i,
 		    &dest.s_addr, &netmask.s_addr, &gateway.s_addr);
 		if (len == 0)
 			return;
@@ -773,11 +773,13 @@ set_mtu(char *name, int ioctlfd, uint16_t mtu)
 }
 
 /*
- * extract_classless_route() extracts the encoded route pointed to by rtstatic.
+ * extract_route() decodes the route pointed to by rtstatic into its
+ * {destination, netmask, gateway} and returns the number of bytes consumed
+ * from rtstatic.
  */
 unsigned int
-extract_classless_route(uint8_t *rtstatic, unsigned int rtstatic_len,
-    in_addr_t *dest, in_addr_t *netmask, in_addr_t *gateway)
+extract_route(uint8_t *rtstatic, unsigned int rtstatic_len, in_addr_t *dest,
+    in_addr_t *netmask, in_addr_t *gateway)
 {
 	unsigned int	 bits, bytes, len;
 
