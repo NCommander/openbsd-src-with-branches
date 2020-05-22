@@ -16,6 +16,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-char cpu_model[64];
+#include <sys/param.h>
+#include <sys/systm.h>
 
-struct cpu_info *cpu_info_primary;
+#include <machine/trap.h>
+
+extern void opal_cec_reboot(void);
+
+void
+trap(struct trapframe *frame)
+{
+	printf("trap type %lx at lr %lx\n", frame->exc, frame->lr);
+	opal_cec_reboot();
+}
