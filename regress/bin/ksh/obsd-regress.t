@@ -1,4 +1,4 @@
-#	$OpenBSD: obsd-regress.t,v 1.9 2018/12/08 12:12:45 jca Exp $
+#	$OpenBSD: obsd-regress.t,v 1.10 2018/12/08 21:03:51 jca Exp $
 
 #
 # ksh regression tests from OpenBSD
@@ -92,6 +92,17 @@ stdin:
 	echo "should not print"
 arguments: !-e!
 expected-exit: e != 0
+---
+
+name: or-list-error-2
+description:
+	Test exit status of || list in -e mode
+stdin:
+	eval false || true
+	echo "should print"
+expected-stdout:
+	should print
+arguments: !-e!
 ---
 
 name: var-functions
