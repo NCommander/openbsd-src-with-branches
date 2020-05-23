@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_server.c,v 1.50 2020/05/21 18:34:34 jsing Exp $ */
+/* $OpenBSD: tls13_server.c,v 1.51 2020/05/22 02:37:27 beck Exp $ */
 /*
  * Copyright (c) 2019, 2020 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
@@ -364,6 +364,8 @@ tls13_client_hello_retry_recv(struct tls13_ctx *ctx, CBS *cbs)
 	/* XXX - need further checks. */
 	if (s->method->internal->version < TLS1_3_VERSION)
 		return 0;
+
+	ctx->hs->hrr = 0;
 
 	return 1;
 }
