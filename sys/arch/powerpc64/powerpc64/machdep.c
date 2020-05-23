@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.7 2020/05/22 15:29:21 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.8 2020/05/22 16:27:49 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -23,6 +23,7 @@
 #include <sys/extent.h>
 
 #include <machine/cpufunc.h>
+#include <machine/opal.h>
 #include <machine/psl.h>
 #include <machine/trap.h>
 
@@ -48,11 +49,6 @@ char machine[] = MACHINE;
 struct user *proc0paddr;
 
 caddr_t esym;
-
-extern void opal_console_write(int64_t, int64_t *, const uint8_t *);
-extern void opal_cec_reboot(void);
-
-void opal_printf(const char *fmt, ...);
 
 extern char _start[], _end[];
 extern char __bss_start[];
