@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.h,v 1.24 2012/12/08 20:38:10 kettenis Exp $	*/
+/*	$OpenBSD: conf.h,v 1.25 2020/05/13 08:10:03 mpi Exp $	*/
 /*	$NetBSD: conf.h,v 1.9 2001/03/26 12:33:26 lukem Exp $	*/
 
 /*-
@@ -64,7 +64,8 @@ cdev_decl(vdsp);
 #define	cdev_gen_init(c,n) { \
 	dev_init(c,n,open), dev_init(c,n,close), dev_init(c,n,read), \
 	dev_init(c,n,write), dev_init(c,n,ioctl), (dev_type_stop((*))) nullop, \
-	0, dev_init(c,n,poll), (dev_type_mmap((*))) enodev }
+	0, dev_init(c,n,poll), (dev_type_mmap((*))) enodev, \
+	0, 0, dev_init(c,n,kqfilter) }
 
 cdev_decl(cn);
 
