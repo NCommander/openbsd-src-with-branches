@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwpcie.c,v 1.19 2020/04/27 11:41:31 patrick Exp $	*/
+/*	$OpenBSD: dwpcie.c,v 1.20 2020/04/27 12:17:29 patrick Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -768,9 +768,8 @@ dwpcie_imx8mq_init(struct dwpcie_softc *sc)
 
 	if (reset_gpiolen > 0) {
 		gpio_controller_set_pin(reset_gpio, 1);
-		delay(20000);
+		delay(100000);
 		gpio_controller_set_pin(reset_gpio, 0);
-		delay(20000);
 	}
 
 	reset_deassert(sc->sc_node, "pciephy");
