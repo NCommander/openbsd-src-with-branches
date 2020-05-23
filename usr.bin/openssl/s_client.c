@@ -1,4 +1,4 @@
-/* $OpenBSD: s_client.c,v 1.44 2020/04/26 01:59:27 inoguchi Exp $ */
+/* $OpenBSD: s_client.c,v 1.45 2020/05/22 16:11:23 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -653,6 +653,9 @@ s_client_main(int argc, char **argv)
 		ERR_print_errors(bio_err);
 		goto end;
 	}
+
+	SSL_CTX_clear_mode(ctx, SSL_MODE_AUTO_RETRY);
+
 	if (vpm)
 		SSL_CTX_set1_param(ctx, vpm);
 
