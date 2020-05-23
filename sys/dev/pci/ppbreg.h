@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppbreg.h,v 1.4 2009/11/19 20:43:32 kettenis Exp $	*/
+/*	$OpenBSD: ppbreg.h,v 1.5 2014/09/15 14:22:07 kettenis Exp $	*/
 /*	$NetBSD: ppbreg.h,v 1.3 2001/07/06 18:07:16 mcr Exp $	*/
 
 /*
@@ -83,6 +83,7 @@
 #define PPB_IOBASE_SHIFT   0
 #define PPB_IOLIMIT_SHIFT  8
 #define PPB_IO_MASK   0xf000
+#define PPB_IO_32BIT  0x0001
 #define PPB_IO_SHIFT  8
 #define PPB_IO_MIN    4096
 
