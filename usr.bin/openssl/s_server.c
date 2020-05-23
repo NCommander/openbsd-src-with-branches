@@ -1,4 +1,4 @@
-/* $OpenBSD: s_server.c,v 1.34 2020/05/10 16:55:28 beck Exp $ */
+/* $OpenBSD: s_server.c,v 1.35 2020/05/13 10:18:03 inoguchi Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1502,6 +1502,8 @@ sv_body(char *hostname, int s, unsigned char *context)
 					ret = 1;
 					goto err;
 				}
+				if (k <= 0)
+					continue;
 				l += k;
 				i -= k;
 				if (i <= 0)
