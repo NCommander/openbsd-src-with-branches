@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISKBIG,v 1.101 2017/11/02 14:04:24 mpi Exp $
+#	$OpenBSD: RAMDISKBIG,v 1.102 2019/09/04 14:29:41 cheloha Exp $
 
 machine		alpha
 maxusers	4
@@ -81,8 +81,6 @@ zstty*		at zs? channel 1
 tcds*		at tc?
 asc*		at tcds?
 asc*		at tc?
-#cfb*		at tc?
-#sfb*		at tc?
 le*		at tc?
 
 apecs*		at mainbus?
