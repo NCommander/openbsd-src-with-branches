@@ -4,14 +4,14 @@ NOMAN=
 #MAN=		boot.8
 
 .if ${MACHINE} == "octeon"
-all: boot
+all: bsd rdboot
 
 bsd:
 	cd ${.CURDIR}/../../compile/BOOT && \
 	    ${MAKE} config && ${MAKE} clean && ${MAKE}
 	cp -p ${.CURDIR}/../../compile/BOOT/obj/bsd bsd
 
-rdboot: ${.CURDIR}/../rdboot/obj/rdboot
+rdboot:
 	cp -p ${.CURDIR}/../rdboot/obj/rdboot rdboot
 	strip rdboot
 
