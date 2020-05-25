@@ -1,4 +1,4 @@
-/*	$OpenBSD: odyssey.c,v 1.11 2014/03/09 10:01:25 miod Exp $ */
+/*	$OpenBSD: odyssey.c,v 1.12 2017/09/08 05:36:52 deraadt Exp $ */
 /*
  * Copyright (c) 2009, 2010 Joel Sing <jsing@openbsd.org>
  *
@@ -672,7 +672,7 @@ odyssey_alloc_screen(void *v, const struct wsscreen_descr *type,
 	*curyp = 0;
 
 	/* Correct screen attributes. */
-	screen->ri.ri_ops.alloc_attr(&screen->ri, 0, 0, 0, attrp);
+	screen->ri.ri_ops.pack_attr(&screen->ri, 0, 0, 0, attrp);
 	screen->attr = *attrp;
 
 	return (0);
@@ -1135,7 +1135,7 @@ odyssey_cnattach()
 	/*
 	 * Attach wsdisplay.
 	 */
-	screen->ri.ri_ops.alloc_attr(&screen->ri, 0, 0, 0, &screen->attr);
+	screen->ri.ri_ops.pack_attr(&screen->ri, 0, 0, 0, &screen->attr);
 	wsdisplay_cnattach(&odyssey_stdscreen, &screen->ri, 0, 0, screen->attr);
 
 	return 0;

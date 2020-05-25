@@ -1,4 +1,4 @@
-/*	$OpenBSD: creator.c,v 1.50 2015/12/11 16:07:01 mpi Exp $	*/
+/*	$OpenBSD: creator.c,v 1.51 2017/09/08 05:36:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -248,7 +248,7 @@ creator_ioctl(v, cmd, data, flags, p)
 				creator_ras_init(sc);
 
 			/* Clear screen. */
-			ri->ri_ops.alloc_attr(ri,
+			ri->ri_ops.pack_attr(ri,
 			    WSCOL_BLACK, WSCOL_WHITE, WSATTR_WSCOLORS, &attr);
 			ri->ri_ops.eraserows(ri, 0, ri->ri_rows, attr);
 		} 
