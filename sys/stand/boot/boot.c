@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.49 2019/08/03 15:22:19 deraadt Exp $	*/
+/*	$OpenBSD: boot.c,v 1.50 2019/10/29 02:55:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003 Dale Rahn
@@ -109,10 +109,12 @@ boot(dev_t bootdev)
 
 		loadrandom(BOOTRANDOM, rnddata, sizeof(rnddata));
 #ifdef MDRANDOM
-		mdrandom(rnddata, sizeof(rnddata));
+		if (mdrandom(rnddata, sizeof(rnddata)) == 0)
+			cmd.boothowto |= RB_GOODRANDOM;
 #endif
 #ifdef FWRANDOM
-		fwrandom(rnddata, sizeof(rnddata));
+		if (fwrandom(rnddata, sizeof(rnddata)) == 0)
+			cmd.boothowto |= RB_GOODRANDOM;
 #endif
 		rc4_keysetup(&randomctx, rnddata, sizeof rnddata);
 		rc4_skip(&randomctx, 1536);
