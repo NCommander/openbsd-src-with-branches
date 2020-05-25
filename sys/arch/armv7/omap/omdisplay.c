@@ -1,4 +1,4 @@
-/* $OpenBSD: omdisplay.c,v 1.6 2019/05/06 03:45:58 mlarkin Exp $ */
+/* $OpenBSD: omdisplay.c,v 1.7 2020/05/25 06:45:25 jsg Exp $ */
 /*
  * Copyright (c) 2007 Dale Rahn <drahn@openbsd.org>
  *
@@ -443,7 +443,7 @@ void omdisplay_initialize(struct omdisplay_softc *sc,
 void omdisplay_setup_rasops(struct omdisplay_softc *sc,
     struct rasops_info *rinfo);
 int omdisplay_alloc_screen(void *v, const struct wsscreen_descr *_type,
-    void **cookiep, int *curxp, int *curyp, long *attrp);
+    void **cookiep, int *curxp, int *curyp, uint32_t *attrp);
 int omdisplay_new_screen(struct omdisplay_softc *sc,
     struct omdisplay_screen *scr, int depth);
 paddr_t omdisplay_mmap(void *v, off_t offset, int prot);
@@ -1142,7 +1142,7 @@ omdisplay_setup_rasops(struct omdisplay_softc *sc, struct rasops_info *rinfo)
 
 int
 omdisplay_alloc_screen(void *v, const struct wsscreen_descr *_type,
-    void **cookiep, int *curxp, int *curyp, long *attrp)
+    void **cookiep, int *curxp, int *curyp, uint32_t *attrp)
 {
 	struct omdisplay_softc *sc = v;
 	struct omdisplay_screen *scr;
