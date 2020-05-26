@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: disk.c,v 1.1 2019/07/17 14:36:32 visa Exp $	*/
 
 /*
  * Copyright (c) 2019 Visa Hankala
@@ -180,7 +180,8 @@ disk_open(const char *path)
 
 	memset(&ffs_args, 0, sizeof(ffs_args));
 	ffs_args.fspec = devpath;
-	if (mount(MOUNT_FFS, "/mnt", MNT_RDONLY, &ffs_args) == -1) {
+	if (mount(MOUNT_FFS, "/mnt", MNT_FORCE | MNT_NOATIME,
+	    &ffs_args) == -1) {
 		fprintf(stderr, "failed to mount %s: %s\n", devpath,
 		    strerror(errno));
 		return NULL;
