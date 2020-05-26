@@ -197,6 +197,12 @@ loadrandom(char *name, char *buf, size_t buflen)
 		error = -1;
 		goto done;
 	}
+	if (sb.st_mode & S_ISTXT) {
+		printf("NOTE: random seed is being reused.\n");
+		error = -1;
+		goto done;
+	}
+	fchmod(fd, sb.st_mode | S_ISTXT);
 done:
 	close(fd);
 	return (error);
