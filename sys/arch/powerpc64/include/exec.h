@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: exec.h,v 1.1 2020/05/16 17:11:14 kettenis Exp $ */
 
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
@@ -24,7 +24,7 @@
 #define ARCH_ELFSIZE		64
 
 #define ELF_TARG_CLASS		ELFCLASS64
-#define ELF_TARG_DATA		ELFDATA2LSB
-#define ELF_TARG_MACH		EM_AARCH64
+#define ELF_TARG_DATA		ELFDATA2MSB
+#define ELF_TARG_MACH		EM_PPC64
 
 #endif
