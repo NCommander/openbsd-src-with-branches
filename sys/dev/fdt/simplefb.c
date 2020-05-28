@@ -1,4 +1,4 @@
-/*	$OpenBSD: simplefb.c,v 1.9 2020/05/25 06:45:25 jsg Exp $	*/
+/*	$OpenBSD: simplefb.c,v 1.10 2020/05/25 09:55:48 jsg Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -103,6 +103,7 @@ struct wsdisplay_accessops simplefb_accessops = {
 	.getchar = rasops_getchar,
 	.load_font = rasops_load_font,
 	.list_font = rasops_list_font,
+	.scrollback = rasops_scrollback
 };
 
 int
