@@ -1,4 +1,4 @@
-/*	$OpenBSD: inode.h,v 1.50 2016/06/19 11:54:34 natano Exp $	*/
+/*	$OpenBSD: inode.h,v 1.51 2019/01/21 18:09:21 anton Exp $	*/
 /*	$NetBSD: inode.h,v 1.8 1995/06/15 23:22:50 cgd Exp $	*/
 
 /*
@@ -344,6 +344,6 @@ struct ufid {
 	u_int16_t ufid_len;	/* Length of structure. */
 	u_int16_t ufid_pad;	/* Force 32-bit alignment. */
 	ufsino_t  ufid_ino;	/* File number (ino). */
-	int32_t	  ufid_gen;	/* Generation number. */
+	u_int32_t ufid_gen;	/* Generation number. */
 };
 #endif /* _KERNEL */
