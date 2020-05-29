@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.384 2020/05/11 17:57:17 jca Exp $ */
+/* $OpenBSD: acpi.c,v 1.385 2020/05/14 13:07:10 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -42,7 +42,6 @@
 #include <machine/cpufunc.h>
 #include <machine/bus.h>
 
-#include <dev/rndvar.h>
 #include <dev/pci/pcivar.h>
 #include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>

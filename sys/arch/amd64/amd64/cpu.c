@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.146 2020/02/28 04:59:06 deraadt Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.148 2020/02/28 05:31:41 deraadt Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -77,7 +77,6 @@
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/memrange.h>
-#include <dev/rndvar.h>
 #include <sys/atomic.h>
 #include <sys/user.h>
 

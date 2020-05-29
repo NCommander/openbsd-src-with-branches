@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.40 2019/08/04 14:28:58 kettenis Exp $	*/
+/*	$OpenBSD: bios.c,v 1.41 2019/10/23 10:14:46 jsg Exp $	*/
 /*
  * Copyright (c) 2006 Gordon Willem Klok <gklok@cogeco.ca>
  *
@@ -28,8 +28,6 @@
 
 #include <dev/isa/isareg.h>
 #include <amd64/include/isa_machdep.h>
-
-#include <dev/rndvar.h>
 
 #include "acpi.h"
 #include "mpbios.h"

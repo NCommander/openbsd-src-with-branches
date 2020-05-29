@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdpm.c,v 1.33 2018/04/28 15:44:59 jasper Exp $	*/
+/*	$OpenBSD: amdpm.c,v 1.34 2020/01/09 14:35:19 mpi Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -59,7 +59,6 @@
 #include <dev/pci/pcireg.h>
 #include <dev/pci/pcidevs.h>
 
-#include <dev/rndvar.h>
 #include <dev/i2c/i2cvar.h>
 
 #ifdef AMDPM_DEBUG

@@ -1,4 +1,4 @@
-/*	$OpenBSD: octrng.c,v 1.7 2018/04/28 15:44:59 jasper Exp $	*/
+/*	$OpenBSD: octrng.c,v 1.8 2020/04/06 00:01:08 pirofti Exp $	*/
 /*
  * Copyright (c) 2013 Paul Irofti <paul@irofti.net>
  *
@@ -19,8 +19,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/timeout.h>
-
-#include <dev/rndvar.h>
 
 #include <machine/octeonvar.h>
 #include <machine/octeonreg.h>

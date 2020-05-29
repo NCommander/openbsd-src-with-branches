@@ -1,4 +1,4 @@
-/*	$OpenBSD: smbios.c,v 1.3 2019/08/04 14:28:58 kettenis Exp $	*/
+/*	$OpenBSD: smbios.c,v 1.4 2019/10/23 10:14:46 jsg Exp $	*/
 /*
  * Copyright (c) 2006 Gordon Willem Klok <gklok@cogeco.ca>
  * Copyright (c) 2019 Mark Kettenis <kettenis@openbsd.org>
@@ -26,7 +26,6 @@
 #include <machine/smbiosvar.h>
 
 #include <dev/ofw/fdt.h>
-#include <dev/rndvar.h>
 
 struct smbios_entry smbios_entry;
 /*

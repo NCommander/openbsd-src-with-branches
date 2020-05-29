@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.249 2019/11/28 16:27:25 guenther Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.250 2019/12/25 00:15:36 cheloha Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -92,7 +92,6 @@
 #include <nfs/nfs.h>
 
 #include <ddb/db_var.h>
-#include <dev/rndvar.h>
 
 #include <ctype.h>
 #include <err.h>

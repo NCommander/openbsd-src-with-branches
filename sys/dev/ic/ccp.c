@@ -1,4 +1,4 @@
-/*	$OpenBSD: ccp.c,v 1.1 2018/04/20 04:37:21 dlg Exp $ */
+/*	$OpenBSD: ccp.c,v 1.2 2018/04/28 15:44:59 jasper Exp $ */
 
 /*
  * Copyright (c) 2018 David Gwynne <dlg@openbsd.org>
@@ -25,8 +25,6 @@
 #include <sys/timeout.h>
 
 #include <machine/bus.h>
-
-#include <dev/rndvar.h>
 
 #include <dev/ic/ccpvar.h>
 

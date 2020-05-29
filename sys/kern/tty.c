@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.154 2020/04/07 13:27:51 visa Exp $	*/
+/*	$OpenBSD: tty.c,v 1.155 2020/05/08 07:31:46 mpi Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -66,7 +66,6 @@
 #include <uvm/uvm_extern.h>
 
 #include <dev/cons.h>
-#include <dev/rndvar.h>
 
 #include "pty.h"
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: harmony.c,v 1.33 2016/09/19 06:46:43 ratchov Exp $	*/
+/*	$OpenBSD: harmony.c,v 1.34 2018/04/28 15:44:59 jasper Exp $	*/
 
 /*
  * Copyright (c) 2003 Jason L. Wright (jason@thought.net)
@@ -41,7 +41,6 @@
 
 #include <sys/audioio.h>
 #include <dev/audio_if.h>
-#include <dev/rndvar.h>
 
 #include <machine/cpu.h>
 #include <machine/intr.h>

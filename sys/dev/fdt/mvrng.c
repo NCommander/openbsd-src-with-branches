@@ -1,4 +1,4 @@
-/*	$OpenBSD: mvrng.c,v 1.1 2018/04/02 21:40:59 kettenis Exp $	*/
+/*	$OpenBSD: mvrng.c,v 1.2 2018/04/28 15:44:59 jasper Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -23,7 +23,6 @@
 #include <machine/bus.h>
 #include <machine/fdt.h>
 
-#include <dev/rndvar.h>
 #include <dev/ofw/openfirm.h>
 #include <dev/ofw/fdt.h>
 

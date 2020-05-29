@@ -1,4 +1,4 @@
-/*	$OpenBSD: viornd.c,v 1.2 2018/04/28 15:44:59 jasper Exp $	*/
+/*	$OpenBSD: viornd.c,v 1.3 2019/05/26 15:20:04 sf Exp $	*/
 
 /*
  * Copyright (c) 2014 Stefan Fritsch <sf@sfritsch.de>
@@ -23,7 +23,6 @@
 #include <machine/bus.h>
 #include <sys/device.h>
 #include <sys/pool.h>
-#include <dev/rndvar.h>
 #include <dev/pv/virtioreg.h>
 #include <dev/pv/virtiovar.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsec.c,v 1.164 2018/04/28 15:44:59 jasper Exp $	*/
+/*	$OpenBSD: ubsec.c,v 1.165 2020/01/10 23:09:23 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -50,7 +50,6 @@
 
 #include <crypto/cryptodev.h>
 #include <crypto/cryptosoft.h>
-#include <dev/rndvar.h>
 #include <crypto/md5.h>
 #include <crypto/sha1.h>
 

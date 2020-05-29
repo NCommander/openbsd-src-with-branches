@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.217 2020/05/27 02:17:23 deraadt Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.218 2020/05/29 01:13:14 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Theo de Raadt.
@@ -81,7 +81,6 @@
 #define KEYSTREAM_ONLY
 #include <crypto/chacha_private.h>
 
-#include <dev/rndvar.h>
 #include <uvm/uvm_extern.h>
 
 /*

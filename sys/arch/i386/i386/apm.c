@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.122 2020/02/20 16:56:51 visa Exp $	*/
+/*	$OpenBSD: apm.c,v 1.123 2020/04/07 13:27:50 visa Exp $	*/
 
 /*-
  * Copyright (c) 1998-2001 Michael Shalayeff. All rights reserved.
@@ -50,7 +50,6 @@
 #include <sys/buf.h>
 #include <sys/reboot.h>
 #include <sys/event.h>
-#include <dev/rndvar.h>
 
 #include <machine/conf.h>
 #include <machine/cpu.h>

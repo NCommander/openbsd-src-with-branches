@@ -1,4 +1,4 @@
-/*	$OpenBSD: rkrng.c,v 1.1 2020/04/03 16:29:17 kettenis Exp $	*/
+/*	$OpenBSD: rkrng.c,v 1.2 2020/04/09 09:25:50 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -23,7 +23,6 @@
 #include <machine/bus.h>
 #include <machine/fdt.h>
 
-#include <dev/rndvar.h>
 #include <dev/ofw/openfirm.h>
 #include <dev/ofw/ofw_clock.h>
 #include <dev/ofw/fdt.h>

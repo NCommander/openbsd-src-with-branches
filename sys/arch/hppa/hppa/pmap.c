@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.172 2016/10/19 08:28:20 guenther Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.173 2017/04/30 16:45:45 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -44,8 +44,6 @@
 
 #include <machine/cpufunc.h>
 #include <machine/iomod.h>
-
-#include <dev/rndvar.h>
 
 #ifdef PMAPDEBUG
 #define	DPRINTF(l,s)	do {		\

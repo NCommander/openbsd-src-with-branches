@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmci.c,v 1.5 2019/05/26 15:20:04 sf Exp $	*/
+/*	$OpenBSD: vmmci.c,v 1.6 2019/12/31 01:26:56 jsg Exp $	*/
 
 /*
  * Copyright (c) 2017 Reyk Floeter <reyk@openbsd.org>
@@ -32,7 +32,6 @@
 #include <dev/pv/virtioreg.h>
 #include <dev/pv/virtiovar.h>
 #include <dev/pv/pvvar.h>
-#include <dev/rndvar.h>
 
 enum vmmci_cmd {
 	VMMCI_NONE = 0,

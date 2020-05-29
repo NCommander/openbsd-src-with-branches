@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.35 2020/02/20 16:56:51 visa Exp $	*/
+/*	$OpenBSD: apm.c,v 1.36 2020/04/07 13:27:50 visa Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -45,7 +45,6 @@
 #include <sys/event.h>
 #include <sys/reboot.h>
 #include <sys/hibernate.h>
-#include <dev/rndvar.h>
 
 #include <machine/autoconf.h>
 #include <machine/conf.h>

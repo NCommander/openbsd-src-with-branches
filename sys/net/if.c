@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.604 2020/05/26 14:58:55 visa Exp $	*/
+/*	$OpenBSD: if.c,v 1.605 2020/05/27 11:19:28 mpi Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -86,8 +86,6 @@
 #include <sys/percpu.h>
 #include <sys/proc.h>
 #include <sys/stdint.h>	/* uintptr_t */
-
-#include <dev/rndvar.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>
