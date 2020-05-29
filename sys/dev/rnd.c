@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.216 2020/05/26 14:27:24 deraadt Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.217 2020/05/27 02:17:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Theo de Raadt.
@@ -66,13 +66,11 @@
  */
 
 #include <sys/param.h>
-#include <sys/systm.h>
 #include <sys/event.h>
 #include <sys/ioctl.h>
 #include <sys/malloc.h>
 #include <sys/timeout.h>
 #include <sys/atomic.h>
-#include <sys/mutex.h>
 #include <sys/task.h>
 #include <sys/msgbuf.h>
 #include <sys/mount.h>
@@ -84,8 +82,6 @@
 #include <crypto/chacha_private.h>
 
 #include <dev/rndvar.h>
-
-#include <uvm/uvm_param.h>
 #include <uvm/uvm_extern.h>
 
 /*
