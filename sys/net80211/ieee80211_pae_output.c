@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_pae_output.c,v 1.29 2017/03/01 19:28:48 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_pae_output.c,v 1.30 2017/12/21 12:09:38 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2007,2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -444,7 +444,7 @@ ieee80211_send_4way_msg4(struct ieee80211com *ic, struct ieee80211_node *ni)
 	struct mbuf *m;
 	u_int16_t info;
 
-	ni->ni_rsn_supp_state = RNSA_SUPP_PTKDONE;
+	ni->ni_rsn_supp_state = RSNA_SUPP_PTKDONE;
 	m = ieee80211_get_eapol_key(M_DONTWAIT, MT_DATA, 0);
 	if (m == NULL)
 		return ENOMEM;

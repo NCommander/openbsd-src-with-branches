@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.h,v 1.84 2019/12/29 13:49:22 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_node.h,v 1.85 2020/01/15 09:34:27 phessler Exp $	*/
 /*	$NetBSD: ieee80211_node.h,v 1.9 2004/04/30 22:57:32 dyoung Exp $	*/
 
 /*-
@@ -172,7 +172,7 @@ enum {
 	RSNA_SUPP_INITIALIZE,		/* not expecting any messages */
 	RSNA_SUPP_PTKSTART,		/* awaiting handshake message 1 */
 	RSNA_SUPP_PTKNEGOTIATING,	/* got message 1 and derived PTK */
-	RNSA_SUPP_PTKDONE		/* got message 3 and authenticated AP */
+	RSNA_SUPP_PTKDONE		/* got message 3 and authenticated AP */
 };
 
 struct ieee80211_rxinfo {
