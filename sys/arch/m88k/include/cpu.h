@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.66 2018/12/05 10:28:21 jsg Exp $ */
+/*	$OpenBSD: cpu.h,v 1.67 2019/08/28 13:48:40 aoyama Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -228,6 +228,8 @@ struct cpu_info *set_cpu_number(cpuid_t);
 #endif
 
 #define	curpcb			curcpu()->ci_curpcb
+
+unsigned int cpu_rnd_messybits(void);
 
 #endif /* _LOCORE */
 

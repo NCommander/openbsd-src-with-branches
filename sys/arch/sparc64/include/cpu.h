@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.92 2017/12/03 10:55:50 mpi Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.93 2018/12/05 10:28:21 jsg Exp $	*/
 /*	$NetBSD: cpu.h,v 1.28 2001/06/14 22:56:58 thorpej Exp $ */
 
 /*
@@ -210,6 +210,8 @@ void	cpu_unidle(struct cpu_info *);
 
 #define curpcb		__curcpu->ci_cpcb
 #define fpproc		__curcpu->ci_fpproc
+
+unsigned int cpu_rnd_messybits(void);
 
 /*
  * On processors with multiple threads we force a thread switch.

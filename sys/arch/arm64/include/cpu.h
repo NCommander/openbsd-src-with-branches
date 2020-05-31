@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.15 2020/05/17 11:05:15 kettenis Exp $ */
+/* $OpenBSD: cpu.h,v 1.16 2020/05/17 13:36:33 kettenis Exp $ */
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
  *
@@ -182,6 +182,8 @@ void cpu_boot_secondary_processors(void);
 #define CPU_BUSY_CYCLE()	__asm volatile("yield" : : : "memory")
 
 #define curpcb		curcpu()->ci_curpcb
+
+unsigned int		cpu_rnd_messybits(void);
 
 /*
  * Scheduling glue

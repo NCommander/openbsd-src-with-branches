@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.189 2020/05/16 14:44:45 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.190 2020/05/25 15:10:18 deraadt Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -912,4 +912,13 @@ cpu_switchto(struct proc *oldproc, struct proc *newproc)
 #endif
 
 	cpu_switchto_asm(oldproc, newproc);
+}
+
+unsigned int
+cpu_rnd_messybits(void)
+{
+	struct timespec ts;
+
+	nanotime(&ts);
+	return (ts.tv_nsec ^ (ts.tv_sec << 20));
 }

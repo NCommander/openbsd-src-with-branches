@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.86 2019/04/01 07:00:52 tedu Exp $ */
+/*	$OpenBSD: machdep.c,v 1.87 2019/04/01 07:02:04 tedu Exp $ */
 
 /*
  * Copyright (c) 2009, 2010, 2014 Miodrag Vallat.
@@ -1354,3 +1354,12 @@ hw_ipi_intr_clear(u_long cpuid)
 }
 
 #endif /* MULTIPROCESSOR */
+
+unsigned int
+cpu_rnd_messybits(void)
+{
+	struct timespec ts;
+
+	nanotime(&ts);
+	return (ts.tv_nsec ^ (ts.tv_sec << 20));
+}
