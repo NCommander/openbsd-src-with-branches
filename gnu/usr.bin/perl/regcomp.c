@@ -110,6 +110,7 @@ typedef struct scan_frame {
     regnode *next_regnode;      /* next node to process when last is reached */
     U32 prev_recursed_depth;
     I32 stopparen;              /* what stopparen do we use */
+    bool in_gosub;              /* this or an outer frame is for GOSUB */
 
     struct scan_frame *this_prev_frame; /* this previous frame */
     struct scan_frame *prev_frame;      /* previous frame */
@@ -4178,6 +4179,44 @@ S_unwind_scan_frames(pTHX_ const void *p)
     } while (f);
 }
 
+/* Follow the next-chain of the current node and optimize away
+   all the NOTHINGs from it.
+ */
+STATIC void
+S_rck_elide_nothing(pTHX_ regnode *node)
+{
+    dVAR;
+
+    PERL_ARGS_ASSERT_RCK_ELIDE_NOTHING;
+
+    if (OP(node) != CURLYX) {
+        const int max = (reg_off_by_arg[OP(node)]
+                        ? I32_MAX
+                          /* I32 may be smaller than U16 on CRAYs! */
+                        : (I32_MAX < U16_MAX ? I32_MAX : U16_MAX));
+        int off = (reg_off_by_arg[OP(node)] ? ARG(node) : NEXT_OFF(node));
+        int noff;
+        regnode *n = node;
+
+        /* Skip NOTHING and LONGJMP. */
+        while (
+            (n = regnext(n))
+            && (
+                (PL_regkind[OP(n)] == NOTHING && (noff = NEXT_OFF(n)))
+                || ((OP(n) == LONGJMP) && (noff = ARG(n)))
+            )
+            && off + noff < max
+        ) {
+            off += noff;
+        }
+        if (reg_off_by_arg[OP(node)])
+            ARG(node) = off;
+        else
+            NEXT_OFF(node) = off;
+    }
+    return;
+}
+
 /* the return from this sub is the minimum length that could possibly match */
 STATIC SSize_t
 S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
@@ -4187,7 +4226,7 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
 			I32 stopparen,
                         U32 recursed_depth,
 			regnode_ssc *and_withp,
-			U32 flags, U32 depth)
+			U32 flags, U32 depth, bool was_mutate_ok)
 			/* scanp: Start here (read-write). */
 			/* deltap: Write maxlen-minlen here. */
 			/* last: Stop before this one. */
@@ -4265,6 +4304,10 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
                                    node length to get a real minimum (because
                                    the folded version may be shorter) */
 	bool unfolded_multi_char = FALSE;
+        /* avoid mutating ops if we are anywhere within the recursed or
+         * enframed handling for a GOSUB: the outermost level will handle it.
+         */
+        bool mutate_ok = was_mutate_ok && !(frame && frame->in_gosub);
 	/* Peephole optimizer: */
         DEBUG_STUDYDATA("Peep", data, depth, is_inf);
         DEBUG_PEEP("Peep", scan, depth, flags);
@@ -4275,30 +4318,13 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
          * parsing code, as each (?:..) is handled by a different invocation of
          * reg() -- Yves
          */
-        JOIN_EXACT(scan,&min_subtract, &unfolded_multi_char, 0);
+        if (mutate_ok)
+            JOIN_EXACT(scan,&min_subtract, &unfolded_multi_char, 0);
 
-	/* Follow the next-chain of the current node and optimize
-	   away all the NOTHINGs from it.  */
-	if (OP(scan) != CURLYX) {
-	    const int max = (reg_off_by_arg[OP(scan)]
-		       ? I32_MAX
-		       /* I32 may be smaller than U16 on CRAYs! */
-		       : (I32_MAX < U16_MAX ? I32_MAX : U16_MAX));
-	    int off = (reg_off_by_arg[OP(scan)] ? ARG(scan) : NEXT_OFF(scan));
-	    int noff;
-	    regnode *n = scan;
-
-	    /* Skip NOTHING and LONGJMP. */
-	    while ((n = regnext(n))
-		   && ((PL_regkind[OP(n)] == NOTHING && (noff = NEXT_OFF(n)))
-		       || ((OP(n) == LONGJMP) && (noff = ARG(n))))
-		   && off + noff < max)
-		off += noff;
-	    if (reg_off_by_arg[OP(scan)])
-		ARG(scan) = off;
-	    else
-		NEXT_OFF(scan) = off;
-	}
+        /* Follow the next-chain of the current node and optimize
+           away all the NOTHINGs from it.
+         */
+        rck_elide_nothing(scan);
 
 	/* The principal pseudo-switch.  Cannot be a switch, since we
 	   look into several different things.  */
@@ -4325,7 +4351,7 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
             /* DEFINEP study_chunk() recursion */
             (void)study_chunk(pRExC_state, &scan, &minlen,
                               &deltanext, next, &data_fake, stopparen,
-                              recursed_depth, NULL, f, depth+1);
+                              recursed_depth, NULL, f, depth+1, mutate_ok);
 
             scan = next;
         } else
@@ -4393,7 +4419,8 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
                     /* recurse study_chunk() for each BRANCH in an alternation */
 		    minnext = study_chunk(pRExC_state, &scan, minlenp,
                                       &deltanext, next, &data_fake, stopparen,
-                                      recursed_depth, NULL, f,depth+1);
+                                      recursed_depth, NULL, f, depth+1,
+                                      mutate_ok);
 
 		    if (min1 > minnext)
 			min1 = minnext;
@@ -4460,9 +4487,10 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
 		    }
 		}
 
-                if (PERL_ENABLE_TRIE_OPTIMISATION &&
-                        OP( startbranch ) == BRANCH )
-                {
+                if (PERL_ENABLE_TRIE_OPTIMISATION
+                    && OP(startbranch) == BRANCH
+                    && mutate_ok
+                ) {
 		/* demq.
 
                    Assuming this was/is a branch we are dealing with: 'scan'
@@ -4913,6 +4941,9 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
                 newframe->stopparen = stopparen;
                 newframe->prev_recursed_depth = recursed_depth;
                 newframe->this_prev_frame= frame;
+                newframe->in_gosub = (
+                    (frame && frame->in_gosub) || OP(scan) == GOSUB
+                );
 
                 DEBUG_STUDYDATA("frame-new", data, depth, is_inf);
                 DEBUG_PEEP("fnew", scan, depth, flags);
@@ -5133,7 +5164,7 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
                                   (mincount == 0
                                    ? (f & ~SCF_DO_SUBSTR)
                                    : f)
-                                  ,depth+1);
+                                  , depth+1, mutate_ok);
 
 		if (flags & SCF_DO_STCLASS)
 		    data->start_class = oclass;
@@ -5181,6 +5212,12 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
 		    (void)ReREFCNT_inc(RExC_rx_sv);
 		}
 
+                if ( ( minnext > 0 && mincount >= SSize_t_MAX / minnext )
+                    || min >= SSize_t_MAX - minnext * mincount )
+                {
+                    FAIL("Regexp out of space");
+                }
+
 		min += minnext * mincount;
 		is_inf_internal |= deltanext == SSize_t_MAX
                          || (maxcount == REG_INFTY && minnext + deltanext > 0);
@@ -5195,7 +5232,9 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
 		if (  OP(oscan) == CURLYX && data
 		      && data->flags & SF_IN_PAR
 		      && !(data->flags & SF_HAS_EVAL)
-		      && !deltanext && minnext == 1 ) {
+		      && !deltanext && minnext == 1
+                      && mutate_ok
+                ) {
 		    /* Try to optimize to CURLYN.  */
 		    regnode *nxt = NEXTOPER(oscan) + EXTRA_STEP_2ARGS;
 		    regnode * const nxt1 = nxt;
@@ -5241,10 +5280,10 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
 		      && !(data->flags & SF_HAS_EVAL)
 		      && !deltanext	/* atom is fixed width */
 		      && minnext != 0	/* CURLYM can't handle zero width */
-
                          /* Nor characters whose fold at run-time may be
                           * multi-character */
                       && ! (RExC_seen & REG_UNFOLDED_MULTI_SEEN)
+                      && mutate_ok
 		) {
 		    /* XXXX How to optimize if data == 0? */
 		    /* Optimize to a simpler form.  */
@@ -5292,7 +5331,8 @@ S_study_chunk(pTHX_ RExC_state_t *pRExC_state, regnode **scanp,
 			/* Optimize again: */
                         /* recurse study_chunk() on optimised CURLYX => CURLYM */
 			study_chunk(pRExC_state, &nxt1, minlenp, &deltanext, nxt,
-                                    NULL, stopparen, recursed_depth, NULL, 0,depth+1);
+                                    NULL, stopparen, recursed_depth, NULL, 0,
+                                    depth+1, mutate_ok);
 		    }
 		    else
 			oscan->flags = 0;
@@ -5419,11 +5459,7 @@ Perl_re_printf( aTHX_  "LHS=%" UVuf " RHS=%" UVuf "\n",
 		if (data && (fl & SF_HAS_EVAL))
 		    data->flags |= SF_HAS_EVAL;
 	      optimize_curly_tail:
-		if (OP(oscan) != CURLYX) {
-		    while (PL_regkind[OP(next = regnext(oscan))] == NOTHING
-			   && NEXT_OFF(next))
-			NEXT_OFF(oscan) += NEXT_OFF(next);
-		}
+		rck_elide_nothing(oscan);
 		continue;
 
 	    default:
@@ -5713,7 +5749,8 @@ Perl_re_printf( aTHX_  "LHS=%" UVuf " RHS=%" UVuf "\n",
                 /* recurse study_chunk() for lookahead body */
                 minnext = study_chunk(pRExC_state, &nscan, minlenp, &deltanext,
                                       last, &data_fake, stopparen,
-                                      recursed_depth, NULL, f, depth+1);
+                                      recursed_depth, NULL, f, depth+1,
+                                      mutate_ok);
                 if (scan->flags) {
                     if (deltanext) {
 			FAIL("Variable length lookbehind not implemented");
@@ -5805,7 +5842,7 @@ Perl_re_printf( aTHX_  "LHS=%" UVuf " RHS=%" UVuf "\n",
                 *minnextp = study_chunk(pRExC_state, &nscan, minnextp,
                                         &deltanext, last, &data_fake,
                                         stopparen, recursed_depth, NULL,
-                                        f,depth+1);
+                                        f, depth+1, mutate_ok);
                 if (scan->flags) {
                     if (deltanext) {
 			FAIL("Variable length lookbehind not implemented");
@@ -5966,7 +6003,8 @@ Perl_re_printf( aTHX_  "LHS=%" UVuf " RHS=%" UVuf "\n",
                         /* optimise study_chunk() for TRIE */
                         minnext = study_chunk(pRExC_state, &scan, minlenp,
                             &deltanext, (regnode *)nextbranch, &data_fake,
-                            stopparen, recursed_depth, NULL, f,depth+1);
+                            stopparen, recursed_depth, NULL, f, depth+1,
+                            mutate_ok);
                     }
                     if (nextbranch && PL_regkind[OP(nextbranch)]==BRANCH)
                         nextbranch= regnext((regnode*)nextbranch);
@@ -7651,7 +7689,7 @@ Perl_re_op_compile(pTHX_ SV ** const patternp, int pat_count,
             &data, -1, 0, NULL,
             SCF_DO_SUBSTR | SCF_WHILEM_VISITED_POS | stclass_flag
                           | (restudied ? SCF_TRIE_DOING_RESTUDY : 0),
-            0);
+            0, TRUE);
 
 
         CHECK_RESTUDY_GOTO_butfirst(LEAVE_with_name("study_chunk"));
@@ -7780,7 +7818,7 @@ Perl_re_op_compile(pTHX_ SV ** const patternp, int pat_count,
             SCF_DO_STCLASS_AND|SCF_WHILEM_VISITED_POS|(restudied
                                                       ? SCF_TRIE_DOING_RESTUDY
                                                       : 0),
-            0);
+            0, TRUE);
 
         CHECK_RESTUDY_GOTO_butfirst(NOOP);
 
