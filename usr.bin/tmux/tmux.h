@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.1058 2020/06/01 09:43:01 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.1059 2020/06/01 19:39:25 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1852,6 +1852,7 @@ extern int		 ptm_fd;
 extern const char	*shell_command;
 int		 checkshell(const char *);
 void		 setblocking(int, int);
+uint64_t	 get_timer(void);
 const char	*sig2name(int);
 const char	*find_cwd(void);
 const char	*find_home(void);
