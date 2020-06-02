@@ -1,4 +1,4 @@
-/* $OpenBSD: grid-view.c,v 1.32 2019/07/16 10:30:56 nicm Exp $ */
+/* $OpenBSD: grid-view.c,v 1.33 2019/08/16 08:52:25 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -43,6 +43,13 @@ grid_view_set_cell(struct grid *gd, u_int px, u_int py,
     const struct grid_cell *gc)
 {
 	grid_set_cell(gd, grid_view_x(gd, px), grid_view_y(gd, py), gc);
+}
+
+/* Set padding. */
+void
+grid_view_set_padding(struct grid *gd, u_int px, u_int py)
+{
+	grid_set_padding(gd, grid_view_x(gd, px), grid_view_y(gd, py));
 }
 
 /* Set cells. */
