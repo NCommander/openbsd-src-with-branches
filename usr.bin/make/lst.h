@@ -1,7 +1,7 @@
 #ifndef _LST_H_
 #define _LST_H_
 
-/*	$OpenBSD: lst.h,v 1.30 2015/10/14 13:50:22 espie Exp $ */
+/*	$OpenBSD: lst.h,v 1.31 2015/10/14 13:52:11 espie Exp $ */
 /*	$NetBSD: lst.h,v 1.7 1996/11/06 17:59:12 christos Exp $ */
 
 /*
@@ -60,7 +60,7 @@ struct ListNode_ {
 
 typedef void (*SimpleProc)(void *);
 typedef bool (*FindProc)(void *, void *);
-typedef int (*FindProcConst)(void *, const void *);
+typedef bool (*FindProcConst)(void *, const void *);
 typedef void (*ForEachProc)(void *, void *);
 typedef void *(*DuplicateProc)(void *);
 
