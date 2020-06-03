@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpi.c,v 1.150 2020/05/15 14:21:08 stsp Exp $	*/
+/*	$OpenBSD: if_wpi.c,v 1.151 2020/05/23 08:42:51 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2006-2008
@@ -1271,6 +1271,7 @@ wpi_rx_done(struct wpi_softc *sc, struct wpi_rx_desc *desc,
 			ic->ic_stats.is_ccmp_dec_errs++;
 			ifp->if_ierrors++;
 			m_freem(m);
+			ieee80211_release_node(ic, ni);
 			return;
 		}
 		/* Check whether decryption was successful or not. */
@@ -1279,11 +1280,13 @@ wpi_rx_done(struct wpi_softc *sc, struct wpi_rx_desc *desc,
 			ic->ic_stats.is_ccmp_dec_errs++;
 			ifp->if_ierrors++;
 			m_freem(m);
+			ieee80211_release_node(ic, ni);
 			return;
 		}
 		if (wpi_ccmp_decap(sc, m, &ni->ni_pairwise_key) != 0) {
 			ifp->if_ierrors++;
 			m_freem(m);
+			ieee80211_release_node(ic, ni);
 			return;
 		}
 		rxi.rxi_flags |= IEEE80211_RXI_HWDEC;
