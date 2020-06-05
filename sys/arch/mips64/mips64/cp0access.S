@@ -1,4 +1,4 @@
-/*	$OpenBSD: cp0access.S,v 1.19 2012/10/03 11:18:23 miod Exp $ */
+/*	$OpenBSD: cp0access.S,v 1.20 2016/08/16 13:03:58 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -220,3 +220,15 @@ LEAF(cp0_set_trapbase, 0)
 	 NOP
 END(cp0_set_trapbase)
 #endif
+
+LEAF(cpu_rnd_messybits, 0)
+	MFC0	v0, COP_0_COUNT
+	MFC0_HAZARD
+#ifndef CPU_R8000
+	MFC0	v1, COP_0_BAD_VADDR
+	MFC0_HAZARD
+	xor	v0, v1
+#endif
+	j	ra
+	 NOP
+END(cpu_rnd_messybits)
