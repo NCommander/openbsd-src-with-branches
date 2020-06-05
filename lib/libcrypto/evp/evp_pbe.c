@@ -1,4 +1,4 @@
-/* $OpenBSD: evp_pbe.c,v 1.24 2017/01/21 04:38:23 jsing Exp $ */
+/* $OpenBSD: evp_pbe.c,v 1.25 2017/01/29 17:49:23 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -114,6 +114,8 @@ static const EVP_PBE_CTL builtin_pbe[] = {
 	{EVP_PBE_TYPE_PRF, NID_hmacWithSHA384, -1, NID_sha384, 0},
 	{EVP_PBE_TYPE_PRF, NID_hmacWithSHA512, -1, NID_sha512, 0},
 	{EVP_PBE_TYPE_PRF, NID_id_HMACGostR3411_94, -1, NID_id_GostR3411_94, 0},
+	{EVP_PBE_TYPE_PRF, NID_id_tc26_hmac_gost_3411_12_256, -1, NID_id_tc26_gost3411_2012_256, 0},
+	{EVP_PBE_TYPE_PRF, NID_id_tc26_hmac_gost_3411_12_512, -1, NID_id_tc26_gost3411_2012_512, 0},
 };
 
 int
