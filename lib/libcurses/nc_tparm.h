@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: nc_tparm.h,v 1.1 2010/01/12 23:21:59 nicm Exp $ */
 
 /****************************************************************************
  * Copyright (c) 2006 Free Software Foundation, Inc.                        *
@@ -32,7 +32,7 @@
  *  Author: Thomas E. Dickey                        2006                    *
  ****************************************************************************/
 
-/* $Id: nc_tparm.h,v 1.4 2006/11/26 00:49:25 tom Exp $ */
+/* $Id: nc_tparm.h,v 1.1 2010/01/12 23:21:59 nicm Exp $ */
 
 /*
  * Cast parameters past the formatting-string for tparm() to match the
@@ -61,7 +61,6 @@
 #define TPARM_4(a,b,c,d,e) TPARM_5(a,b,c,d,e,0)
 #define TPARM_3(a,b,c,d) TPARM_4(a,b,c,d,0)
 #define TPARM_2(a,b,c) TPARM_3(a,b,c,0)
-#define TPARM_1(a,b) TPARM_2(a,b,0)
 #define TPARM_1(a,b) TPARM_2(a,b,0)
 #define TPARM_0(a) TPARM_1(a,0)
 #endif
