@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_pinctrl.c,v 1.1 2016/08/06 17:12:34 kettenis Exp $	*/
+/*	$OpenBSD: ofw_pinctrl.c,v 1.2 2017/03/12 11:44:42 kettenis Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -64,6 +64,9 @@ int
 pinctrl_byphandle(uint32_t phandle)
 {
 	struct pinctrl *pc;
+
+	if (phandle == 0)
+		return -1;
 
 	LIST_FOREACH(pc, &pinctrls, pc_list) {
 		if (pc->pc_phandle == phandle)
