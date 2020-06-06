@@ -1,4 +1,4 @@
-/*	$OpenBSD: impact.c,v 1.10 2020/05/25 06:45:25 jsg Exp $	*/
+/*	$OpenBSD: impact.c,v 1.11 2020/05/25 09:55:48 jsg Exp $	*/
 
 /*
  * Copyright (c) 2010, 2012 Miodrag Vallat.
@@ -537,7 +537,7 @@ impact_do_cursor(struct rasops_info *ri)
 }
 
 int
-impact_putchar(void *cookie, int row, int col, u_int uc, uint32_tattr)
+impact_putchar(void *cookie, int row, int col, u_int uc, uint32_t attr)
 {
 	struct rasops_info *ri = cookie;
 	struct impact_screen *scr = ri->ri_hw;
