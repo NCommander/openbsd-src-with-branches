@@ -1,4 +1,4 @@
-/*	$OpenBSD: biovar.h,v 1.44 2015/05/29 00:33:37 uebayasi Exp $	*/
+/*	$OpenBSD: biovar.h,v 1.45 2016/08/14 04:08:03 dlg Exp $	*/
 
 /*
  * Copyright (c) 2002 Niklas Hallqvist.  All rights reserved.
@@ -25,6 +25,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef _SYS_DEV_BIOVAR_H_
+#define _SYS_DEV_BIOVAR_H_
 
 /*
  * Devices getting ioctls through this interface should use ioctl class 'B'
@@ -305,3 +308,5 @@ void	bio_info(struct bio_status *, int, const char *, ...);
 void	bio_warn(struct bio_status *, int, const char *, ...);
 void	bio_error(struct bio_status *, int, const char *, ...);
 #endif
+
+#endif /* _SYS_DEV_BIOVAR_H_ */
