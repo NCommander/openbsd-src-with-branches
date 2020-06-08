@@ -1,4 +1,4 @@
-/* $OpenBSD: drm_agpsupport.c,v 1.26 2014/03/13 13:35:21 kettenis Exp $ */
+/* $OpenBSD: drm_agpsupport.c,v 1.27 2019/04/14 10:14:51 jsg Exp $ */
 /*-
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -33,7 +33,19 @@
  * Support code for tying the kernel AGP support to DRM drivers.
  */
 
-#include <drm/drmP.h>
+#include <linux/module.h>
+#include <linux/pci.h>
+#include <linux/slab.h>
+
+#include <asm/agp.h>
+
+#include <drm/drm_agpsupport.h>
+#include <drm/drm_device.h>
+#include <drm/drm_drv.h>
+#include <drm/drm_file.h>
+#include <drm/drm_print.h>
+
+#include "drm_legacy.h"
 
 #if IS_ENABLED(CONFIG_AGP)
 

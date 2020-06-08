@@ -1,4 +1,4 @@
-/* $OpenBSD: dwhdmi.h,v 1.1 2020/03/02 10:37:23 kettenis Exp $ */
+/* $OpenBSD: dwhdmi.h,v 1.2 2020/03/04 13:38:22 kettenis Exp $ */
 /* $NetBSD: dw_hdmi.h,v 1.6 2019/12/22 23:23:32 thorpej Exp $ */
 
 /*-
@@ -36,7 +36,8 @@
 #include <dev/audio/audio_dai.h>
 #endif
 
-#include <drm/drmP.h>
+#include <drm/drm_connector.h>
+#include <drm/drm_bridge.h>
 
 struct dwhdmi_softc;
 
