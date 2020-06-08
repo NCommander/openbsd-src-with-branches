@@ -5,6 +5,7 @@ maxusers	2 8 128
 
 file	arch/powerpc64/powerpc64/locore.S
 file	arch/powerpc64/powerpc64/autoconf.c
+file	arch/powerpc64/powerpc64/bus_dma.c
 file	arch/powerpc64/powerpc64/bus_space.c
 file	arch/powerpc64/powerpc64/conf.c
 file	arch/powerpc64/powerpc64/cpu.c
