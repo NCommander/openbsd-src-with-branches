@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.160 2015/12/29 19:12:56 gsoares Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.161 2016/07/04 01:39:12 millert Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -518,6 +518,14 @@ rcs_main(int argc, char **argv)
 				 */
 				if (rdp->rd_flags & RCS_RD_SELECT) {
 					rcsnum_tostr(rdp->rd_num, b, sizeof(b));
+
+					if (rdp->rd_locker != NULL) {
+						errx(1, "%s: can't remove "
+						    "locked revision %s",
+						    fpath, b);
+						continue;
+					}
+
 					if (!(rcsflags & QUIET)) {
 						(void)fprintf(stderr, "deleting"
 						    " revision %s\n", b);
