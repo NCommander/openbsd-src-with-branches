@@ -50,6 +50,10 @@ include "scsi/files.scsi"
 include "dev/mii/files.mii"
 include "dev/pci/files.pci"
 
+device	opal
+attach	opal at fdt
+file	arch/powerpc64/dev/opal.c		opal
+
 device	phb: pcibus
 attach	phb at fdt
 file	arch/powerpc64/dev/phb.c		phb
