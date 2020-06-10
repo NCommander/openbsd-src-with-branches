@@ -24,3 +24,16 @@ phb*		at fdt?
 pci*		at phb?
 ppb*		at pci?
 pci*		at ppb?
+ahci*		at pci? disable
+bge*		at pci?
+xhci*		at pci? disable
+usb*		at xhci?
+
+scsibus*	at scsi?
+sd*		at scsibus?
+
+# USB devices
+uhub*		at usb?			# USB Hubs
+uhub*		at uhub?		# USB Hubs
+
+brgphy*		at mii?			# Broadcom Gigabit PHYs
