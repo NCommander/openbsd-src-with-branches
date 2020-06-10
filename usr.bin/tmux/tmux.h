@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.1064 2020/06/05 09:32:15 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.1065 2020/06/05 11:20:51 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1668,6 +1668,7 @@ struct client {
 	}		 exit_type;
 	enum msgtype	 exit_msgtype;
 	char		*exit_session;
+	char		*exit_message;
 
 	struct key_table *keytable;
 
