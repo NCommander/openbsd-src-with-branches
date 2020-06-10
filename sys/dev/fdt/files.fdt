@@ -7,6 +7,10 @@ device	pinctrl
 attach	pinctrl at fdt
 file	dev/fdt/pinctrl.c		pinctrl
 
+device	simpleamp
+attach	simpleamp at fdt
+file	dev/fdt/simpleamp.c		simpleamp
+
 device	simpleaudio: audio
 attach	simpleaudio at fdt
 file	dev/fdt/simpleaudio.c		simpleaudio
