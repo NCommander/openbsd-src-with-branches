@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.6 2002/12/19 21:24:28 millert Exp $	*/
+/*	$OpenBSD: parse.c,v 1.7 2017/10/09 14:51:31 deraadt Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -260,7 +260,7 @@ int isarg(const char *s)		/* is s in argument list for current function? */
 	Node *p = arglist;
 	int n;
 
-	for (n = 0; p != 0; p = p->nnext, n++)
+	for (n = 0; p != NULL; p = p->nnext, n++)
 		if (strcmp(((Cell *)(p->narg[0]))->nval, s) == 0)
 			return n;
 	return -1;
