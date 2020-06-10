@@ -1,4 +1,4 @@
-/*	$OpenBSD: b.c,v 1.19 2017/10/09 14:51:31 deraadt Exp $	*/
+/*	$OpenBSD: b.c,v 1.20 2018/01/24 16:28:25 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -757,7 +757,7 @@ struct charclass {
 	{ "alnum",	5,	isalnum },
 	{ "alpha",	5,	isalpha },
 #ifndef HAS_ISBLANK
-	{ "blank",	5,	isspace }, /* was isblank */
+	{ "blank",	5,	xisblank },
 #else
 	{ "blank",	5,	isblank },
 #endif
