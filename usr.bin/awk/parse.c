@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.7 2017/10/09 14:51:31 deraadt Exp $	*/
+/*	$OpenBSD: parse.c,v 1.8 2020/06/10 21:02:33 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -34,7 +34,7 @@ Node *nodealloc(int n)
 {
 	Node *x;
 
-	x = (Node *) malloc(sizeof(Node) + (n-1)*sizeof(Node *));
+	x = malloc(sizeof(*x) + (n-1) * sizeof(x));
 	if (x == NULL)
 		FATAL("out of space in nodealloc");
 	x->nnext = NULL;
