@@ -525,6 +525,10 @@ device	tcpci
 attach	tcpci at i2c
 file	dev/fdt/tcpci.c			tcpci
 
+device	escodec
+attach	escodec at i2c
+file	dev/fdt/es8316ac.c		escodec
+
 device	cwfg
 attach	cwfg at i2c
 file	dev/fdt/cwfg.c			cwfg
