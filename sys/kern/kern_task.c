@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_task.c,v 1.27 2019/12/19 17:40:11 mpi Exp $ */
+/*	$OpenBSD: kern_task.c,v 1.28 2020/06/07 23:23:30 dlg Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -288,7 +288,7 @@ taskq_do_barrier(struct taskq *tq)
 	while (tq->tq_bthreads < tq->tq_nthreads) {
 		/* shove the task into the queue for a worker to pick up */
 		SET(t.t_flags, TASK_ONQUEUE);
-		TAILQ_INSERT_HEAD(&tq->tq_worklist, &t, t_entry);
+		TAILQ_INSERT_TAIL(&tq->tq_worklist, &t, t_entry);
 		wakeup_one(tq);
 
 		msleep_nsec(&tq->tq_bthreads, &tq->tq_mtx,
