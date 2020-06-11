@@ -313,6 +313,10 @@ device	rkiic: i2cbus
 attach	rkiic at fdt
 file	dev/fdt/rkiic.c			rkiic
 
+device	rkiis
+attach	rkiis at fdt
+file	dev/fdt/rkiis.c			rkiis
+
 device	rkpmic
 attach	rkpmic at i2c
 file	dev/fdt/rkpmic.c		rkpmic
