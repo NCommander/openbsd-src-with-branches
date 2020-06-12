@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mcx.c,v 1.49 2020/06/02 08:17:15 jmatthew Exp $ */
+/*	$OpenBSD: if_mcx.c,v 1.50 2020/06/11 23:11:26 dlg Exp $ */
 
 /*
  * Copyright (c) 2017 David Gwynne <dlg@openbsd.org>
@@ -2004,9 +2004,6 @@ struct mcx_softc {
 
 	uint32_t		 sc_tx_cons;
 	uint32_t		 sc_tx_prod;
-
-	uint64_t		 sc_last_cq_db;
-	uint64_t		 sc_last_srq_db;
 };
 #define DEVNAME(_sc) ((_sc)->sc_dev.dv_xname)
 
