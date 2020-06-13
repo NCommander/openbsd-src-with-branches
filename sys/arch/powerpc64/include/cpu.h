@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.8 2020/06/09 18:58:58 kettenis Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.9 2020/06/10 19:06:53 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -56,6 +56,7 @@ struct cpu_info {
 	
 	volatile int 	ci_cpl;
 	uint32_t	ci_ipending;
+	uint32_t	ci_idepth;
 #ifdef DIAGNOSTIC
 	int		ci_mutex_level;
 #endif

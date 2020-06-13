@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.4 2020/06/10 19:06:53 kettenis Exp $	*/
+/*	$OpenBSD: trap.c,v 1.5 2020/06/12 22:01:01 gkoehler Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -25,6 +25,7 @@
 #include <machine/trap.h>
 
 void	decr_intr(struct trapframe *); /* clock.c */
+void	hvi_intr(struct trapframe *);
 
 void
 trap(struct trapframe *frame)
@@ -32,6 +33,9 @@ trap(struct trapframe *frame)
 	switch (frame->exc) {
 	case EXC_DECR:
 		decr_intr(frame);
+		return;
+	case EXC_HVI:
+		hvi_intr(frame);
 		return;
 #ifdef DDB
 	case EXC_PGM:
