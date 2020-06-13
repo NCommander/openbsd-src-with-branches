@@ -1,4 +1,4 @@
-/*	$OpenBSD: completion.h,v 1.4 2020/06/08 04:48:14 jsg Exp $	*/
+/*	$OpenBSD: completion.h,v 1.5 2020/06/13 06:13:33 jsg Exp $	*/
 /*
  * Copyright (c) 2015, 2018 Mark Kettenis
  *
@@ -132,7 +132,7 @@ complete(struct completion *x)
 	if (x->done != UINT_MAX)
 		x->done++;
 	mtx_leave(&x->wait.lock);
-	wakeup(x);
+	wakeup_one(x);
 }
 
 static inline void
