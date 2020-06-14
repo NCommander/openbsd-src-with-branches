@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_linux.c,v 1.58 2020/03/15 10:14:49 claudio Exp $	*/
+/*	$OpenBSD: drm_linux.c,v 1.59 2020/06/08 04:47:58 jsg Exp $	*/
 /*
  * Copyright (c) 2013 Jonathan Gray <jsg@openbsd.org>
  * Copyright (c) 2015, 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -548,7 +548,7 @@ kmap(struct vm_page *pg)
 }
 
 void
-kunmap(void *addr)
+kunmap_va(void *addr)
 {
 	vaddr_t va = (vaddr_t)addr;
 
