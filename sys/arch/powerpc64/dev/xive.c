@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: xive.c,v 1.1 2020/06/13 22:58:42 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -234,8 +234,9 @@ xive_intr_establish(uint32_t girq, int type, int level,
 		return NULL;
 	lirq = sc->sc_lirq++;
 
-	error = opal_xive_get_irq_info(girq, &flags, &eoi_page,
-	    &trig_page, &esb_shift, NULL);
+	error = opal_xive_get_irq_info(girq, opal_phys(&flags),
+	    opal_phys(&eoi_page), opal_phys(&trig_page),
+	    opal_phys(&esb_shift), NULL);
 	if (error != OPAL_SUCCESS)
 		return NULL;
 	page_size = 1 << esb_shift;
