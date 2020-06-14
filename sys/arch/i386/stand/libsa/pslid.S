@@ -1,4 +1,4 @@
-/*	$OpenBSD: gidt.S,v 1.37 2019/11/09 17:58:48 deraadt Exp $	*/
+/*	$OpenBSD: pslid.S,v 1.1 2020/06/14 16:00:11 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -31,7 +31,6 @@
 
 #include <machine/asm.h>
 #include <machine/psl.h>
-#include <assym.h>
 
 	.globl	_C_LABEL(pslid)
 ENTRY(pslid)
