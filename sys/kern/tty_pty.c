@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_pty.c,v 1.98 2020/04/07 13:27:51 visa Exp $	*/
+/*	$OpenBSD: tty_pty.c,v 1.99 2020/05/21 09:34:06 mpi Exp $	*/
 /*	$NetBSD: tty_pty.c,v 1.33.4.1 1996/06/02 09:08:11 mrg Exp $	*/
 
 /*
@@ -678,6 +678,8 @@ filt_ptcread(struct knote *kn, long hint)
 
 	if (!ISSET(tp->t_state, TS_CARR_ON)) {
 		kn->kn_flags |= EV_EOF;
+		if (kn->kn_flags & __EV_POLL)
+			kn->kn_flags |= __EV_HUP;
 		return (1);
 	}
 
