@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.51 2018/01/22 09:08:43 mpi Exp $	*/
+/*	$OpenBSD: intr.c,v 1.52 2019/03/25 18:45:27 guenther Exp $	*/
 /*	$NetBSD: intr.c,v 1.3 2003/03/03 22:16:20 fvdl Exp $	*/
 
 /*
@@ -674,9 +674,10 @@ intr_printconfig(void)
 }
 
 void
-intr_barrier(void *ih)
+intr_barrier(void *cookie)
 {
-	sched_barrier(NULL);
+	struct intrhand *ih = cookie;
+	sched_barrier(ih->ih_cpu);
 }
 
 /*
