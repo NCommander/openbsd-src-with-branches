@@ -1,4 +1,4 @@
-/*	$OpenBSD: kref.h,v 1.1 2019/04/14 10:14:53 jsg Exp $	*/
+/*	$OpenBSD: kref.h,v 1.2 2020/06/08 04:48:14 jsg Exp $	*/
 /*
  * Copyright (c) 2015 Mark Kettenis
  *
@@ -66,13 +66,6 @@ kref_put(struct kref *ref, void (*release)(struct kref *ref))
 		return 1;
 	}
 	return 0;
-}
-
-static inline void
-kref_sub(struct kref *ref, unsigned int v, void (*release)(struct kref *ref))
-{
-	if (atomic_sub_int_nv(&ref->refcount, v) == 0)
-		release(ref);
 }
 
 static inline int
