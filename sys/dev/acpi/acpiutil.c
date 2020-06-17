@@ -1,4 +1,4 @@
-/* $OpenBSD: acpiutil.c,v 1.7 2010/07/13 21:10:50 deraadt Exp $ */
+/* $OpenBSD: acpiutil.c,v 1.8 2015/03/14 03:38:47 jsg Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -15,7 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
+#include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
 
