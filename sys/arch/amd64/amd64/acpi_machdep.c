@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.89 2019/12/20 07:49:31 jsg Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.90 2020/04/12 09:21:19 kettenis Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -195,7 +195,7 @@ acpi_intr_establish(int irq, int flags, int level,
 
 	type = (flags & LR_EXTIRQ_MODE) ? IST_EDGE : IST_LEVEL;
 	return (intr_establish(-1, (struct pic *)apic, map->ioapic_pin,
-	    type, level, handler, arg, what));
+	    type, level, NULL, handler, arg, what));
 #else
 	return NULL;
 #endif
