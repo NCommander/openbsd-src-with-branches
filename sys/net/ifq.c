@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifq.c,v 1.37 2020/03/10 08:45:28 tobhe Exp $ */
+/*	$OpenBSD: ifq.c,v 1.39 2020/05/21 00:06:16 dlg Exp $ */
 
 /*
  * Copyright (c) 2015 David Gwynne <dlg@openbsd.org>
@@ -695,8 +695,8 @@ priq_idx(unsigned int nqueues, const struct mbuf *m)
 {
 	unsigned int flow = 0;
 
-	if (ISSET(m->m_pkthdr.ph_flowid, M_FLOWID_VALID))
-		flow = m->m_pkthdr.ph_flowid & M_FLOWID_MASK;
+	if (ISSET(m->m_pkthdr.csum_flags, M_FLOWID))
+		flow = m->m_pkthdr.ph_flowid;
 
 	return (flow % nqueues);
 }
