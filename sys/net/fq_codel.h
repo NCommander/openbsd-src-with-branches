@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
  * Copyright (c) 2017 Mike Belopuhov
  *
