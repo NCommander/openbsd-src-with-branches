@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.171 2019/02/06 17:32:16 bluhm Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.172 2019/07/12 19:43:51 bluhm Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -1060,6 +1060,19 @@ tcp_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 
 	case TCPCTL_STATS:
 		return (tcp_sysctl_tcpstat(oldp, oldlenp, newp));
+
+	case TCPCTL_SYN_BUCKET_LIMIT:
+		NET_LOCK();
+		nval = tcp_syn_bucket_limit;
+		error = sysctl_int(oldp, oldlenp, newp, newlen, &nval);
+		if (!error && nval != tcp_syn_bucket_limit) {
+			if (nval > 0)
+				tcp_syn_bucket_limit = nval;
+			else
+				error = EINVAL;
+		}
+		NET_UNLOCK();
+		return (error);
 
 	case TCPCTL_SYN_USE_LIMIT:
 		NET_LOCK();
