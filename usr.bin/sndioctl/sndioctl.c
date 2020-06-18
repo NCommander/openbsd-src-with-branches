@@ -1,4 +1,4 @@
-/*	$OpenBSD: sndioctl.c,v 1.11 2020/05/25 09:14:50 mestre Exp $	*/
+/*	$OpenBSD: sndioctl.c,v 1.12 2020/06/18 05:28:49 ratchov Exp $	*/
 /*
  * Copyright (c) 2014-2020 Alexandre Ratchov <alex@caoua.org>
  *
@@ -848,8 +848,15 @@ ondesc(void *arg, struct sioctl_desc *d, int curval)
 		}
 	}
 
-	if (d->type == SIOCTL_NONE)
+	switch (d->type) {
+	case SIOCTL_NUM:
+	case SIOCTL_SW:
+	case SIOCTL_VEC:
+	case SIOCTL_LIST:
+		break;
+	default:
 		return;
+	}
 
 	/*
 	 * find the right position to insert the new widget
