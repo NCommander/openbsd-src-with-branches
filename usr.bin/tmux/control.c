@@ -1,4 +1,4 @@
-/* $OpenBSD: control.c,v 1.41 2020/06/11 09:55:47 nicm Exp $ */
+/* $OpenBSD: control.c,v 1.42 2020/06/12 08:35:01 nicm Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -695,6 +695,7 @@ control_discard(struct client *c)
 
 	RB_FOREACH(cp, control_panes, &cs->panes)
 		control_discard_pane(c, cp);
+	bufferevent_disable(cs->read_event, EV_READ);
 }
 
 /* Stop control mode. */
