@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.107 2020/04/03 02:33:31 dtucker Exp $
+#	$OpenBSD: Makefile,v 1.108 2020/04/20 04:44:47 djm Exp $
 
 .ifndef SKIP_UNIT
 SUBDIR=		unittests
@@ -32,6 +32,7 @@ LTESTS= 	connect \
 		agent-getpeereid \
 		agent-timeout \
 		agent-ptrace \
+		agent-subprocess \
 		keyscan \
 		keygen-change \
 		keygen-convert \
