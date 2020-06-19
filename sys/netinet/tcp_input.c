@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.363 2019/11/29 22:06:19 tobhe Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.364 2019/12/06 14:43:14 tobhe Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -1708,7 +1708,7 @@ trimthenstep6:
 		u_int incr = tp->t_maxseg;
 
 		if (cw > tp->snd_ssthresh)
-			incr = incr * incr / cw;
+			incr = max(incr * incr / cw, 1);
 		if (tp->t_dupacks < tcprexmtthresh)
 			tp->snd_cwnd = ulmin(cw + incr,
 			    TCP_MAXWIN << tp->snd_scale);
