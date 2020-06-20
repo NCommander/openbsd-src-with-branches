@@ -1,4 +1,4 @@
-/*	$OpenBSD: pass1.c,v 1.44 2017/04/10 08:19:12 fcambus Exp $	*/
+/*	$OpenBSD: pass1.c,v 1.45 2017/04/12 15:23:08 millert Exp $	*/
 /*	$NetBSD: pass1.c,v 1.16 1996/09/27 22:45:15 christos Exp $	*/
 
 /*
@@ -66,7 +66,7 @@ pass1(void)
 	ino_t inumber, inosused, ninosused;
 	size_t inospace;
 	struct inostat *info;
-	int c;
+	u_int c;
 	struct inodesc idesc;
 	daddr_t i, cgd;
 	u_int8_t *cp;

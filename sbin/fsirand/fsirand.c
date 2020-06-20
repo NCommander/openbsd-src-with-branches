@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsirand.c,v 1.41 2019/06/28 13:32:43 deraadt Exp $	*/
+/*	$OpenBSD: fsirand.c,v 1.42 2020/02/17 19:00:58 otto Exp $	*/
 
 /*
  * Copyright (c) 1997 Todd C. Miller <millert@openbsd.org>
@@ -101,7 +101,8 @@ fsirand(char *device)
 	ino_t inumber;
 	daddr_t sblockloc, dblk;
 	char sbuf[SBSIZE], sbuftmp[SBSIZE];
-	int devfd, n, cg, i;
+	int devfd, n, i;
+	u_int cg;
 	char *devpath, *ib;
 	u_int32_t bsize = DEV_BSIZE;
 	struct disklabel label;
