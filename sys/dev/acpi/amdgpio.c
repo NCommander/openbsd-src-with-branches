@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdgpio.c,v 1.2 2020/01/26 00:11:42 jsg Exp $	*/
+/*	$OpenBSD: amdgpio.c,v 1.3 2020/05/22 10:16:37 kettenis Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  * Copyright (c) 2019 James Hastings
@@ -265,7 +265,7 @@ amdgpio_intr(void *arg)
 
 	/* One status bit for every four pins */
 	for (i = 0; i < AMDGPIO_IRQ_BITS; i++, pin += 4) {
-		if (status & (1 << i)) {
+		if (status & (1ULL << i)) {
 			for (j = 0; j < AMDGPIO_IRQ_PINS; j++) {
 				if (amdgpio_pin_intr(sc, pin + j))
 					rc = 1;
