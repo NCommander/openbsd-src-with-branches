@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_ifattach.c,v 1.115 2019/11/08 07:16:29 dlg Exp $	*/
+/*	$OpenBSD: in6_ifattach.c,v 1.116 2020/03/17 09:53:59 tobhe Exp $	*/
 /*	$KAME: in6_ifattach.c,v 1.124 2001/07/18 08:32:51 jinmei Exp $	*/
 
 /*
@@ -387,6 +387,13 @@ in6_ifattach(struct ifnet *ifp)
 		error = in6_ifattach_loopback(ifp);
 		if (error)
 			return (error);
+	}
+
+	/* Interfaces that rely on strong a priori cryptographic binding of
+	 * IP addresses are incompatible with automatically assigned llv6. */
+	switch (ifp->if_type) {
+	case IFT_WIREGUARD:
+		return (0);
 	}
 
 	/* Assign a link-local address, if there's none. */
