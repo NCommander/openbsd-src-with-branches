@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: pmap.h,v 1.4 2020/06/17 18:58:55 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -71,6 +71,9 @@ extern struct pmap kernel_pmap_store;
 #define pmap_update(pm)
 
 void	pmap_bootstrap(void);
+
+int	pmap_set_user_slb(pmap_t, vaddr_t);
+void	pmap_unset_user_slb(void);
 
 #ifdef DDB
 struct pte;
