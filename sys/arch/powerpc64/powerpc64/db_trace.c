@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.3 2020/06/12 22:01:01 gkoehler Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.4 2020/06/21 21:57:35 kettenis Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.15 1996/02/22 23:23:41 gwr Exp $	*/
 
 /*
@@ -153,7 +153,7 @@ db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
 
 		if (lr == (vaddr_t)&trapexit) {
 			struct trapframe *frame =
-			    (struct trapframe *)(sp + 48);
+			    (struct trapframe *)(sp + 32);
 
 			if ((frame->srr1 & PSL_PR) && frame->exc == EXC_SC) {
 				(*pr)("--- syscall (number %ld) ---\n",
