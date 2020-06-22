@@ -1,3 +1,5 @@
+/*	$OpenBSD: if_aggr.c,v 1.31 2020/06/17 06:45:22 dlg Exp $ */
+
 /*
  * Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  * Copyright (C) 2019-2020 Matt Dunwoodie <ncon@noconroy.net>
