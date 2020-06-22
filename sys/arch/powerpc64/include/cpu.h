@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.13 2020/06/18 21:52:57 kettenis Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.14 2020/06/21 13:23:59 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -113,8 +113,8 @@ void delay(u_int);
 
 #define setsoftast()		aston(curcpu()->ci_curproc)
 
-#define PROC_STACK(p)		0
-#define PROC_PC(p)		0
+#define PROC_STACK(p)		((p)->p_md.md_regs->fixreg[1])
+#define PROC_PC(p)		((p)->p_md.md_regs->srr0)
 
 void	proc_trampoline(void);
 
