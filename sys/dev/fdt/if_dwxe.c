@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dwxe.c,v 1.14 2019/09/29 13:04:03 kettenis Exp $	*/
+/*	$OpenBSD: if_dwxe.c,v 1.15 2019/10/07 00:40:04 jmatthew Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
@@ -966,13 +966,14 @@ dwxe_rx_proc(struct dwxe_softc *sc)
 			sc->sc_rx_cons++;
 	}
 
+	if (ifiq_input(&ifp->if_rcv, &ml))
+		if_rxr_livelocked(&sc->sc_rx_ring);
+
 	dwxe_fill_rx_ring(sc);
 
 	bus_dmamap_sync(sc->sc_dmat, DWXE_DMA_MAP(sc->sc_rxring), 0,
 	    DWXE_DMA_LEN(sc->sc_rxring),
 	    BUS_DMASYNC_PREREAD | BUS_DMASYNC_PREWRITE);
-
-	if_input(ifp, &ml);
 }
 
 void
