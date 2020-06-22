@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: bcmgenet.c,v 1.1 2020/04/14 21:02:39 kettenis Exp $ */
 /* $NetBSD: bcmgenet.c,v 1.3 2020/02/27 17:30:07 jmcneill Exp $ */
 
 /*-
@@ -729,8 +729,10 @@ genet_rxintr(struct genet_softc *sc, int qid)
 		sc->sc_rx.next = index;
 		sc->sc_rx.pidx = pidx;
 
+		if (ifiq_input(&ifp->if_rcv, &ml))
+			if_rxr_livelocked(&sc->sc_rx_ring);
+
 		genet_fill_rx_ring(sc, qid);
-		if_input(ifp, &ml);
 	}
 }
 

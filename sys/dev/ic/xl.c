@@ -1,4 +1,4 @@
-/*	$OpenBSD: xl.c,v 1.131 2016/04/13 10:49:26 mpi Exp $	*/
+/*	$OpenBSD: xl.c,v 1.132 2017/01/22 10:17:38 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -1213,6 +1213,9 @@ again:
 		ml_enqueue(&ml, m);
 	}
 
+	if (ifiq_input(&ifp->if_rcv, &ml))
+		if_rxr_livelocked(&sc->xl_cdata.xl_rx_ring);
+
 	xl_fill_rx_ring(sc);
 
 	/*
@@ -1235,8 +1238,6 @@ again:
 		xl_fill_rx_ring(sc);
 		goto again;
 	}
-
-	if_input(ifp, &ml);
 }
 
 /*

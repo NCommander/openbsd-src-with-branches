@@ -1,4 +1,4 @@
-/*	$OpenBSD: hme.c,v 1.80 2016/04/13 10:49:26 mpi Exp $	*/
+/*	$OpenBSD: hme.c,v 1.81 2017/01/22 10:17:38 dlg Exp $	*/
 /*	$NetBSD: hme.c,v 1.21 2001/07/07 15:59:37 thorpej Exp $	*/
 
 /*-
@@ -844,7 +844,8 @@ hme_rint(struct hme_softc *sc)
 		ml_enqueue(&ml, m);
 	}
 
-	if_input(ifp, &ml);
+	if (ifiq_input(&ifp->if_rcv, &ml))
+		if_rxr_livelocked(&sc->sc_rx_ring);
 
 	sc->sc_rx_cons = ri;
 	hme_fill_rx_ring(sc);
