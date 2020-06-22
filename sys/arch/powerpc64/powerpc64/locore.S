@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.14 2020/06/21 13:23:59 kettenis Exp $	*/
+/*	$OpenBSD: locore.S,v 1.15 2020/06/22 16:22:58 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -128,6 +128,7 @@ proc_trampoline:
 	mr	%r3, %r30
 	mtctr	%r12
 	bctrl
+	addi	%r1, %r1, -16
 	b	trapexit
 
 /*
@@ -285,6 +286,5 @@ longjmp:
 	ld	%r30, 0xa0(%r3)
 	ld	%r31, 0xa8(%r3)
 	mr	%r4, %r3	/* return val */
-	addi	%r1, %r1, -16
 	blr
 #endif
