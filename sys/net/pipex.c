@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.114 2020/05/31 03:14:59 dlg Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.115 2020/06/18 14:20:12 mvs Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -473,8 +473,10 @@ pipex_unlink_session(struct pipex_session *session)
 		break;
 	}
 #endif
-
+	if (session->state == PIPEX_STATE_CLOSE_WAIT)
+		LIST_REMOVE(session, state_list);
 	LIST_REMOVE(session, session_list);
+	session->state = PIPEX_STATE_CLOSED;
 
 	/* if final session is destroyed, stop timer */
 	if (LIST_EMPTY(&pipex_session_list))
