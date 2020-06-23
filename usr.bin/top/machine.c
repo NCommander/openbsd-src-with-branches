@@ -1,4 +1,4 @@
-/* $OpenBSD: machine.c,v 1.101 2019/12/16 19:21:17 guenther Exp $	 */
+/* $OpenBSD: machine.c,v 1.102 2020/01/06 20:05:10 zhuk Exp $	 */
 
 /*-
  * Copyright (c) 1994 Thorsten Lockert <tholo@sigmasoft.com>
@@ -491,10 +491,7 @@ get_process_info(struct system_info *si, struct process_select *sel,
 		}
 	}
 
-	/* if requested, sort the "interesting" processes */
-	if (compare != NULL)
-		qsort((char *) pref, active_procs,
-		    sizeof(struct kinfo_proc *), compare);
+	qsort((char *)pref, active_procs, sizeof(struct kinfo_proc *), compare);
 	/* remember active and total counts */
 	si->p_total = total_procs;
 	si->p_active = pref_len = active_procs;
