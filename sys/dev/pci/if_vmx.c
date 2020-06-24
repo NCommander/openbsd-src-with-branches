@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.58 2020/06/17 06:36:17 dlg Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.59 2020/06/17 07:08:39 dlg Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -322,10 +322,9 @@ vmxnet3_attach(struct device *parent, struct device *self, void *aux)
 			}
 			snprintf(q->intrname, sizeof(q->intrname), "%s:%d",
 			    self->dv_xname, i);
-			/* this should be pci_intr_establish_cpu */
-			q->ih = pci_intr_establish(pa->pa_pc, ih,
+			q->ih = pci_intr_establish_cpu(pa->pa_pc, ih,
 			    IPL_NET | IPL_MPSAFE,
-			    /* intrmap_cpu(sc->sc_intrmap, i), */
+			    intrmap_cpu(sc->sc_intrmap, i),
 			    vmxnet3_intr_queue, q, q->intrname);
 
 			q->intr = vec;
