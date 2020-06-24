@@ -1,4 +1,4 @@
-/* $OpenBSD: machine.c,v 1.102 2020/01/06 20:05:10 zhuk Exp $	 */
+/* $OpenBSD: machine.c,v 1.103 2020/06/23 19:12:47 kn Exp $	 */
 
 /*-
  * Copyright (c) 1994 Thorsten Lockert <tholo@sigmasoft.com>
@@ -83,11 +83,6 @@ static char header[] =
 	"%5d %-8.8s %3d %4d %5s %5s %-9s %-7.7s %6s %5.2f%% %s"
 
 /* process state names for the "STATE" column of the display */
-/*
- * the extra nulls in the string "run" are for adding a slash and the
- * processor number when needed
- */
-
 char	*state_abbrev[] = {
 	"", "start", "run", "sleep", "stop", "zomb", "dead", "onproc"
 };
