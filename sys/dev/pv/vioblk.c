@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioblk.c,v 1.17 2020/02/14 15:56:47 krw Exp $	*/
+/*	$OpenBSD: vioblk.c,v 1.18 2020/06/21 16:46:34 krw Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch.
@@ -241,7 +241,7 @@ vioblk_attach(struct device *parent, struct device *self, void *aux)
 	/* Only valid target/lun is 0/0. */
 	sc->sc_link.adapter_buswidth = 1;
 	sc->sc_link.luns = 1;
-	sc->sc_link.adapter_target = sc->sc_link.adapter_buswidth;;
+	sc->sc_link.adapter_target = SDEV_NO_ADAPTER_TARGET;
 	DNPRINTF(1, "%s: qsize: %d\n", __func__, qsize);
 	if (virtio_has_feature(vsc, VIRTIO_BLK_F_RO))
 		sc->sc_link.flags |= SDEV_READONLY;
