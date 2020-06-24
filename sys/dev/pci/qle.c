@@ -1,4 +1,4 @@
-/*	$OpenBSD: qle.c,v 1.51 2020/02/05 16:29:30 krw Exp $ */
+/*	$OpenBSD: qle.c,v 1.52 2020/03/25 05:30:18 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2013, 2014 Jonathan Matthew <jmatthew@openbsd.org>
@@ -657,7 +657,7 @@ qle_attach(struct device *parent, struct device *self, void *aux)
 	/* we should be good to go now, attach scsibus */
 	sc->sc_link.adapter = &qle_switch;
 	sc->sc_link.adapter_softc = sc;
-	sc->sc_link.adapter_target = QLE_MAX_TARGETS;
+	sc->sc_link.adapter_target = SDEV_NO_ADAPTER_TARGET;
 	sc->sc_link.adapter_buswidth = QLE_MAX_TARGETS;
 	sc->sc_link.openings = sc->sc_maxcmds;
 	sc->sc_link.pool = &sc->sc_iopool;
