@@ -1,4 +1,4 @@
-/*	$OpenBSD: bridgectl.c,v 1.19 2019/05/12 19:53:22 mpi Exp $	*/
+/*	$OpenBSD: bridgectl.c,v 1.20 2019/07/09 15:15:49 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -397,9 +397,9 @@ bridge_rtagenode(struct ifnet *ifp, int age)
 			LIST_FOREACH(n, &sc->sc_rts[i], brt_next) {
 				/* Cap the expiry time to 'age' */
 				if (n->brt_ifidx == ifp->if_index &&
-				    n->brt_age > time_uptime + age &&
+				    n->brt_age > getuptime() + age &&
 				    (n->brt_flags & IFBAF_TYPEMASK) == IFBAF_DYNAMIC)
-					n->brt_age = time_uptime + age;
+					n->brt_age = getuptime() + age;
 			}
 		}
 		mtx_leave(&sc->sc_mtx);

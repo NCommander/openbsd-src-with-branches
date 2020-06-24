@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmci.c,v 1.6 2019/12/31 01:26:56 jsg Exp $	*/
+/*	$OpenBSD: vmmci.c,v 1.7 2020/05/29 04:42:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2017 Reyk Floeter <reyk@openbsd.org>
@@ -174,7 +174,7 @@ vmmci_config_change(struct virtio_softc *vsc)
 		pvbus_reboot(&sc->sc_dev);
 		break;
 	case VMMCI_SYNCRTC:
-		inittodr(time_second);
+		inittodr(gettime());
 		sc->sc_cmd = VMMCI_NONE;
 		break;	
 	default:
