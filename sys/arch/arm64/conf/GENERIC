@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.170 2020/06/18 18:05:00 kettenis Exp $
+# $OpenBSD: GENERIC,v 1.171 2020/06/20 18:13:18 kettenis Exp $
 #
 # GENERIC machine description file
 #
@@ -206,6 +206,8 @@ mvkpcie*	at fdt?
 pci*		at mvkpcie?
 mvmdio*		at fdt?
 mvneta*		at fdt?
+#mvppc*		at fdt?
+#mvpp*		at mvppc?
 mvrng*		at fdt?
 mvrtc*		at fdt?
 mvspi*		at fdt?
