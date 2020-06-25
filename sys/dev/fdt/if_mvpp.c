@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: if_mvpp.c,v 1.1 2020/06/25 12:09:11 patrick Exp $	*/
 /*
  * Copyright (c) 2008, 2019 Mark Kettenis <kettenis@openbsd.org>
  * Copyright (c) 2017, 2020 Patrick Wildt <patrick@blueri.se>
@@ -184,7 +184,7 @@ struct mvpp2_port {
 #define sc_lladdr	sc_ac.ac_enaddr
 	struct mii_data		sc_mii;
 #define sc_media	sc_mii.mii_media
-	struct mii_device	*sc_mdio;
+	struct mii_bus		*sc_mdio;
 	char			sc_cur_lladdr[ETHER_ADDR_LEN];
 
 	enum {
