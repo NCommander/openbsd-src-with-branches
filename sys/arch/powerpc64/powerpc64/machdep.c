@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.33 2020/06/26 21:51:14 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.34 2020/06/26 22:32:22 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -616,6 +616,7 @@ setregs(struct proc *p, struct exec_package *pack, u_long stack,
 
 	copyin((void *)p->p_p->ps_strings, &arginfo, sizeof(arginfo));
 
+	memset(frame, 0, sizeof(*frame));
 	frame->fixreg[1] = stack;
 	frame->fixreg[3] = retval[0] = arginfo.ps_nargvstr;
 	frame->fixreg[4] = retval[1] = (register_t)arginfo.ps_argvstr;
