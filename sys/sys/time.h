@@ -1,4 +1,4 @@
-/*	$OpenBSD: time.h,v 1.52 2020/06/22 21:16:07 cheloha Exp $	*/
+/*	$OpenBSD: time.h,v 1.53 2020/06/26 03:21:46 jsg Exp $	*/
 /*	$NetBSD: time.h,v 1.18 1996/04/23 10:29:33 mycroft Exp $	*/
 
 /*
@@ -249,9 +249,6 @@ TIMEVAL_TO_BINTIME(const struct timeval *tv, struct bintime *bt)
 	/* 18446744073709 = int(2^64 / 1000000) */
 	bt->frac = (uint64_t)tv->tv_usec * (uint64_t)18446744073709ULL;
 }
-
-extern volatile time_t time_second;	/* Seconds since epoch, wall time. */
-extern volatile time_t time_uptime;	/* Seconds since reboot. */
 
 /*
  * Functions for looking at our clocks: [get]{bin,nano,micro}[boot|up]time()
