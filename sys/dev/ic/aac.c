@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.77 2020/06/24 18:59:30 krw Exp $	*/
+/*	$OpenBSD: aac.c,v 1.78 2020/06/24 22:03:41 cheloha Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -275,7 +275,6 @@ aac_attach(struct aac_softc *sc)
 	sc->aac_link.adapter_target = SDEV_NO_ADAPTER_TARGET;
 	sc->aac_link.pool = &sc->aac_iopool;
 
-	bzero(&saa, sizeof(saa));
 	saa.saa_sc_link = &sc->aac_link;
 
 	config_found(&sc->aac_dev, &saa, scsiprint);

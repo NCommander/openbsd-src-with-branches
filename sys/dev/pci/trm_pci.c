@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm_pci.c,v 1.3 2006/01/21 23:20:44 miod Exp $
+/*	$OpenBSD: trm_pci.c,v 1.4 2006/11/28 23:59:45 dlg Exp $
  * ------------------------------------------------------------
  *       O.S     : OpenBSD
  *    FILE NAME  : trm_pci.c                          
@@ -153,7 +153,6 @@ trm_pci_attach(struct device *parent, struct device *self, void *aux)
 		if (intrstr != NULL)
 			printf(": %s\n", intrstr);
 
-		bzero(&saa, sizeof(saa));
 		saa.saa_sc_link = &sc->sc_link;
 
 		/* Tell SCSI layer about our SCSI bus */
