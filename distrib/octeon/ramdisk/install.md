@@ -35,17 +35,11 @@ MDDKDEVS='/^[sw]d[0-9] /s/ .*//p;/^octcf[0-9] /s/ .*//p'
 NCPU=$(sysctl -n hw.ncpufound)
 
 md_installboot() {
-	local _disk=$1
-
-	if mount -t msdos /dev/${_disk}i /mnt2 && \
-	   cp /mnt/usr/mdec/boot /mnt2/boot; then
-		umount /mnt2
-		return
+	if ! installboot -r /mnt ${1}; then
+		echo "\nFailed to install bootblocks."
+		echo "You will not be able to boot OpenBSD from ${1}."
+		exit
 	fi
-
-	echo "Failed to install bootblocks."
-	echo "You will not be able to boot OpenBSD from $_disk."
-	exit
 }
 
 md_prep_fdisk() {

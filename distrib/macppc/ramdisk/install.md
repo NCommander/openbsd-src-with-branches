@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.71 2017/07/28 18:15:44 rpe Exp $
+#	$OpenBSD: install.md,v 1.72 2017/12/01 18:13:48 stsp Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -36,16 +36,10 @@ MDXDM=y
 NCPU=$(sysctl -n hw.ncpufound)
 
 md_installboot() {
-	local _disk=$1
-
-	# If there is an MSDOS partition on the boot disk, copy ofwboot
-	# into it.
-	if disk_has $_disk mbr openbsd; then
-		if mount /dev/${_disk}i /mnt2 >/dev/null 2>&1; then
-			# Use cat to avoid holes created by cp(1)
-			cat /mnt/usr/mdec/ofwboot > /mnt2/ofwboot
-			umount /mnt2
-		fi
+	if ! installboot -r /mnt ${1}; then
+		echo "\nFailed to install bootblocks."
+		echo "You will not be able to boot OpenBSD from ${1}."
+		exit
 	fi
 }
 
