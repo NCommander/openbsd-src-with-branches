@@ -1,4 +1,4 @@
-/*	$OpenBSD: uha.c,v 1.30 2020/02/15 18:02:00 krw Exp $	*/
+/*	$OpenBSD: uha.c,v 1.31 2020/06/27 14:29:45 krw Exp $	*/
 /*	$NetBSD: uha.c,v 1.3 1996/10/13 01:37:29 christos Exp $	*/
 
 #undef UHADEBUG
@@ -168,7 +168,7 @@ uha_mscp_free(xsc, xmscp)
  */
 void *
 uha_mscp_alloc(xsc)
-	void *xsc;	
+	void *xsc;
 {
 	struct uha_softc *sc = xsc;
 	struct uha_mscp *mscp;
