@@ -1,4 +1,4 @@
-/*	$OpenBSD: xive.c,v 1.3 2020/06/14 19:21:43 kettenis Exp $	*/
+/*	$OpenBSD: xive.c,v 1.4 2020/06/26 18:03:49 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -283,6 +283,9 @@ xive_intr_establish(uint32_t girq, int type, int level,
 	ih->ih_esb_trig = trig;
 	ih->ih_xive_flags = flags;
 	sc->sc_handler[lirq] = ih;
+
+	if (name != NULL)
+		evcount_attach(&ih->ih_count, name, &ih->ih_girq);
 
 	xive_unmask(sc, ih);
 
