@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.476 2019/12/21 21:40:00 espie Exp $
+#	$OpenBSD: Makefile,v 1.477 2020/01/24 06:17:37 tedu Exp $
 
 .include <bsd.own.mk>
 
@@ -303,7 +303,7 @@ distrib:
 
 SUBDIR+= etc.alpha etc.amd64 etc.arm64 etc.armv7
 SUBDIR+= etc.hppa etc.i386 etc.landisk etc.loongson etc.luna88k
-SUBDIR+= etc.macppc etc.octeon
+SUBDIR+= etc.macppc etc.octeon etc.powerpc64
 SUBDIR+= etc.sgi etc.sparc64
 
 .include <bsd.subdir.mk>
