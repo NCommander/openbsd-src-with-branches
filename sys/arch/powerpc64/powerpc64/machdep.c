@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.36 2020/06/27 15:04:49 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.37 2020/06/28 00:07:22 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -385,8 +385,15 @@ opal_cnputc(dev_t dev, int c)
 {
 	uint64_t len = 1;
 	char ch = c;
+	int64_t error;
 
 	opal_console_write(0, opal_phys(&len), opal_phys(&ch));
+	while (1) {
+		error = opal_console_flush(0);
+		if (error != OPAL_BUSY && error != OPAL_PARTIAL)
+			break;
+		delay(1);
+	}
 }
 
 void
