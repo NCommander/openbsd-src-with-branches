@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: bc.y,v 1.50 2017/02/23 06:41:46 otto Exp $	*/
+/*	$OpenBSD: bc.y,v 1.51 2017/07/02 23:19:07 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -1050,6 +1050,8 @@ escape(const char *str)
 					*p++ = '\\';
 					break;
 				}
+				if (*str == '\0')
+					break;
 				str++;
 			} else {
 				*p++ = '\\';
