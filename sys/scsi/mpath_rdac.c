@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_rdac.c,v 1.23 2015/03/14 03:38:52 jsg Exp $ */
+/*	$OpenBSD: mpath_rdac.c,v 1.24 2019/08/17 15:31:41 krw Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -178,7 +178,7 @@ int
 rdac_match(struct device *parent, void *match, void *aux)
 {
 	struct scsi_attach_args *sa = aux;
-	struct scsi_inquiry_data *inq = sa->sa_inqbuf;
+	struct scsi_inquiry_data *inq = &sa->sa_sc_link->inqdata;
 	struct rdac_device *s;
 	int i;
 
