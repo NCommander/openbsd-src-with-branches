@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.c,v 1.293 2020/06/24 15:12:09 markus Exp $ */
+/* $OpenBSD: packet.c,v 1.294 2020/06/26 11:26:01 semarie Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -629,6 +629,8 @@ ssh_packet_close_internal(struct ssh *ssh, int do_close)
 		ssh->remote_ipaddr = NULL;
 		free(ssh->state);
 		ssh->state = NULL;
+		kex_free(ssh->kex);
+		ssh->kex = NULL;
 	}
 }
 
