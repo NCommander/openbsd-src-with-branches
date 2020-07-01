@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: atomic.h,v 1.1 2020/05/16 17:11:14 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2015 Martin Pieuchot
@@ -117,8 +117,8 @@ _atomic_swap_uint(volatile unsigned int *p, unsigned int v)
 	unsigned int rv;
 
 	__asm volatile (
-	    "1:	ldarx	%0, 0, %2	\n"
-	    "	stdcx.	%3, 0, %2	\n"
+	    "1:	lwarx	%0, 0, %2	\n"
+	    "	stwcx.	%3, 0, %2	\n"
 	    "	bne-	1b		\n"
 	    : "=&r" (rv), "+m" (*p)
 	    : "r" (p), "r" (v)
