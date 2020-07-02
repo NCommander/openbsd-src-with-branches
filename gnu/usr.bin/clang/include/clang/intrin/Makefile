@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.19 2019/06/23 22:07:38 patrick Exp $
+# $OpenBSD: Makefile,v 1.20 2019/09/01 16:40:03 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -103,7 +103,7 @@ HEADERS+=	adxintrin.h \
 		xsavecintrin.h \
 		xsavesintrin.h \
 		xtestintrin.h
-.elif ${MACHINE_ARCH} == "powerpc"
+.elif ${MACHINE_ARCH} == "powerpc" || ${MACHINE_ARCH} == "powerpc64"
 HEADERS+=	altivec.h \
 		htmintrin.h \
 		htmxlintrin.h
