@@ -1,4 +1,4 @@
-/*	$OpenBSD: trm.h,v 1.4 2020/02/06 15:34:29 krw Exp $
+/*	$OpenBSD: trm.h,v 1.5 2020/02/06 19:17:54 krw Exp $
  * ------------------------------------------------------------
  *   O.S       : OpenBSD
  *   File Name : trm.h
@@ -527,5 +527,7 @@ struct trm_adapter_nvram
 
 int   trm_Interrupt(void *);
 int   trm_init(struct trm_softc *, int);
+void  trm_scsi_cmd(struct scsi_xfer *);
+
 
 #endif /* trm_h */
