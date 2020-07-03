@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_parse.y,v 1.13 2020/04/24 15:10:41 mpi Exp $	*/
+/*	$OpenBSD: bt_parse.y,v 1.14 2020/06/22 13:14:47 kn Exp $	*/
 
 /*
  * Copyright (c) 2019 - 2020 Martin Pieuchot <mpi@openbsd.org>
@@ -592,6 +592,8 @@ again:
 		for (pc = 0, c = lgetc(); c != EOF; c = lgetc()) {
 			if (pc == '*' && c == '/')
 				goto again;
+			else if (c == '\n')
+				yylval.lineno++;
 			pc = c;
 		}
 	}
