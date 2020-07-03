@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.319 2020/03/13 03:17:07 djm Exp $ */
+/* $OpenBSD: session.c,v 1.320 2020/06/26 04:45:11 dtucker Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -1208,6 +1208,9 @@ child_close_fds(struct ssh *ssh)
 	 * descriptors left by system functions.  They will be closed later.
 	 */
 	endpwent();
+
+	/* Stop directing logs to a high-numbered fd before we close it */
+	log_redirect_stderr_to(NULL);
 
 	/*
 	 * Close any extra open file descriptors so that we don't have them
