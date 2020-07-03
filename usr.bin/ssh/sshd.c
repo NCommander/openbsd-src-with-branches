@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.556 2020/06/05 06:18:07 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.557 2020/06/18 23:34:19 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -920,7 +920,7 @@ send_rexec_state(int fd, struct sshbuf *conf)
 	    (r = sshbuf_put_stringb(m, inc)) != 0)
 		fatal("%s: buffer error: %s", __func__, ssh_err(r));
 	if (ssh_msg_send(fd, 0, m) == -1)
-		fatal("%s: ssh_msg_send failed", __func__);
+		error("%s: ssh_msg_send failed", __func__);
 
 	sshbuf_free(m);
 	sshbuf_free(inc);
