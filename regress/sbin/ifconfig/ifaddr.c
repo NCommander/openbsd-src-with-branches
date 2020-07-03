@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifaddr.c,v 1.2 2019/11/30 05:51:20 bluhm Exp $	*/
+/*	$OpenBSD: ifaddr.c,v 1.3 2019/12/19 20:23:25 jmc Exp $	*/
 
 /*
  * This file has been copied from ifconfig and adapted to test
@@ -1382,7 +1382,7 @@ in6_alias(struct in6_ifreq *creq)
 			printf(" deprecated");
 		if (ifr6.ifr_ifru.ifru_flags6 & IN6_IFF_AUTOCONF)
 			printf(" autoconf");
-		if (ifr6.ifr_ifru.ifru_flags6 & IN6_IFF_PRIVACY)
+		if (ifr6.ifr_ifru.ifru_flags6 & IN6_IFF_TEMPORARY)
 			printf(" autoconfprivacy");
 	}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_var.h,v 1.71 2017/10/26 15:05:41 mpi Exp $	*/
+/*	$OpenBSD: in6_var.h,v 1.72 2018/05/06 15:21:25 florian Exp $	*/
 /*	$KAME: in6_var.h,v 1.55 2001/02/16 12:49:45 itojun Exp $	*/
 
 /*
@@ -297,7 +297,7 @@ struct	in6_aliasreq {
 #define IN6_IFF_DETACHED	0x08	/* may be detached from the link */
 #define IN6_IFF_DEPRECATED	0x10	/* deprecated address */
 #define IN6_IFF_AUTOCONF	0x40	/* autoconfigurable address. */
-#define IN6_IFF_PRIVACY		0x80	/* RFC 4941 temporary address */
+#define IN6_IFF_TEMPORARY	0x80	/* RFC 4941 temporary address */
 
 #ifdef _KERNEL
 #define IN6_ARE_MASKED_ADDR_EQUAL(d, a, m)	(	\
