@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.21 2020/07/01 16:58:07 kettenis Exp $	*/
+/*	$OpenBSD: trap.c,v 1.22 2020/07/02 21:51:05 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -152,6 +152,7 @@ trap(struct trapframe *frame)
 			pmap_slbd_cache(pm, slbd);
 			break;
 		}
+		frame->dsisr = 0;
 		/* FALLTHROUGH */
 
 	case EXC_DSI|EXC_USER:
