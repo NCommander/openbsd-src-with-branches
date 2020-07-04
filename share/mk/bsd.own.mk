@@ -1,4 +1,4 @@
-#	$OpenBSD: bsd.own.mk,v 1.201 2020/04/02 17:58:43 kettenis Exp $
+#	$OpenBSD: bsd.own.mk,v 1.202 2020/05/30 19:22:00 drahn Exp $
 #	$NetBSD: bsd.own.mk,v 1.24 1996/04/13 02:08:09 thorpej Exp $
 
 # Host-specific overrides
@@ -22,10 +22,6 @@ LLD_ARCH=aarch64 amd64 arm i386 powerpc64
 
 .if ${MACHINE} == "sgi"
 GCC4_ARCH+=mips64
-.endif
-
-.if ${MACHINE_ARCH} == "powerpc64"
-NOPIC=
 .endif
 
 # m88k: ?
