@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: syspatch.sh,v 1.161 2020/05/24 16:47:43 tb Exp $
+# $OpenBSD: syspatch.sh,v 1.162 2020/07/04 14:08:27 ajacoutot Exp $
 #
 # Copyright (c) 2016, 2017 Antoine Jacoutot <ajacoutot@openbsd.org>
 #
@@ -257,10 +257,7 @@ unpriv()
 	fi
 	(($# >= 1))
 
-	# XXX ksh(1) bug; send error code to the caller instead of failing hard
-	set +e
 	eval su -s /bin/sh ${_user} -c "'$@'" || _rc=$?
-	set -e
 
 	[[ -n ${_file} ]] && chown root "${_file}"
 
