@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.16 2020/06/22 16:58:20 kettenis Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.17 2020/07/01 16:59:00 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -105,7 +105,7 @@ cpu_rnd_messybits(void)
 	uint64_t tb;
 
 	__asm volatile("mftb %0" : "=r" (tb));
-	return ((tb > 32) ^ tb);
+	return ((tb >> 32) ^ tb);
 }
 
 void need_resched(struct cpu_info *);
