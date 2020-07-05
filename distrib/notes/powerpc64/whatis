@@ -1,0 +1,4 @@
+dnl	$OpenBSD$
+
+OpenBSD/MACHINE runs on systems equiped with IBM POWER9 processors and
+OPAL firmware.
