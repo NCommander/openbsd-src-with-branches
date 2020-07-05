@@ -1,5 +1,5 @@
-#	$OpenBSD: Makefile.inc,v 1.5 2020/05/17 17:04:28 deraadt Exp $
+#	$OpenBSD: Makefile.inc,v 1.1 2020/07/05 20:03:31 kettenis Exp $
 
 bootblocks:
 
-MDEXT=	bsd.rd
+MDEXT=	bsd.rd miniroot${OSrev}.img
