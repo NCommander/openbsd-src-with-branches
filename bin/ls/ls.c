@@ -1,4 +1,4 @@
-/*	$OpenBSD: ls.c,v 1.50 2018/02/04 22:09:33 deraadt Exp $	*/
+/*	$OpenBSD: ls.c,v 1.51 2018/09/13 15:23:32 millert Exp $	*/
 /*	$NetBSD: ls.c,v 1.18 1996/07/09 09:16:29 mycroft Exp $	*/
 
 /*
@@ -369,8 +369,10 @@ traverse(int argc, char *argv[], int options)
 		switch (p->fts_info) {
 		case FTS_D:
 			if (p->fts_name[0] == '.' &&
-			    p->fts_level != FTS_ROOTLEVEL && !f_listdot)
+			    p->fts_level != FTS_ROOTLEVEL && !f_listdot) {
+				(void)fts_set(ftsp, p, FTS_SKIP);
 				break;
+			}
 
 			/*
 			 * If already output something, put out a newline as
