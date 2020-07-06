@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.123 2020/05/31 06:23:58 dlg Exp $ */
+/*	$OpenBSD: machdep.c,v 1.124 2020/06/05 13:35:21 visa Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -151,8 +151,9 @@ struct timecounter ioclock_timecounter = {
 	.tc_name = "ioclock",
 	.tc_quality = 0,		/* ioclock can be overridden
 					 * by cp0 counter */
-	.tc_priv = 0			/* clock register,
+	.tc_priv = 0,			/* clock register,
 					 * determined at runtime */
+	.tc_user = 0,			/* expose to user */
 };
 
 static int

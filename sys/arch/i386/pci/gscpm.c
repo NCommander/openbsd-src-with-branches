@@ -1,4 +1,4 @@
-/*	$OpenBSD: gscpm.c,v 1.8 2010/08/02 04:37:42 deraadt Exp $	*/
+/*	$OpenBSD: gscpm.c,v 1.9 2012/08/16 18:42:04 tedu Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -55,7 +55,9 @@ struct timecounter gscpm_timecounter = {
 	0xffffff,		/* counter_mask */
 	3579545,		/* frequency */
 	"GSCPM",		/* name */
-	1000			/* quality */
+	1000,			/* quality */
+	NULL,			/* private bits */
+	0			/* expose to user */
 };
 
 struct cfattach gscpm_ca = {

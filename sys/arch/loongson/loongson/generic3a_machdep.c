@@ -1,4 +1,4 @@
-/*	$OpenBSD: generic3a_machdep.c,v 1.7 2017/05/10 16:04:21 visa Exp $	*/
+/*	$OpenBSD: generic3a_machdep.c,v 1.8 2017/05/21 13:00:53 visa Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010, 2012 Miodrag Vallat.
@@ -98,7 +98,9 @@ struct timecounter rs780e_timecounter = {
 	.tc_counter_mask = 0xffffffffu,	/* truncated to 32 bits */
 	.tc_frequency = HPET_FREQ,
 	.tc_name = "hpet",
-	.tc_quality = 100
+	.tc_quality = 100,
+	.tc_priv = NULL,
+	.tc_user = 0,
 };
 
 /* Firmware entry points */

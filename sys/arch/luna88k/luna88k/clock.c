@@ -1,4 +1,4 @@
-/* $OpenBSD: clock.c,v 1.13 2017/11/03 09:07:54 aoyama Exp $ */
+/* $OpenBSD: clock.c,v 1.14 2020/05/12 15:13:18 kettenis Exp $ */
 /* $NetBSD: clock.c,v 1.2 2000/01/11 10:29:35 nisimura Exp $ */
 
 /*
@@ -112,7 +112,9 @@ struct timecounter clock_tc = {
 	.tc_counter_mask = 0xffffffff,
 	.tc_frequency = 0, /* will be filled in */
 	.tc_name = "clock",
-	.tc_quality = 0
+	.tc_quality = 0,
+	.tc_priv = NULL,
+	.tc_user = 0,
 };
 
 /*

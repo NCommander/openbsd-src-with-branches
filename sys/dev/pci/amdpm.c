@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdpm.c,v 1.34 2020/01/09 14:35:19 mpi Exp $	*/
+/*	$OpenBSD: amdpm.c,v 1.35 2020/05/29 04:42:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -82,7 +82,9 @@ static struct timecounter amdpm_timecounter = {
 	0xffffff,		/* counter_mask */
 	AMDPM_FREQUENCY,	/* frequency */
 	"AMDPM",		/* name */
-	1000			/* quality */
+	1000,			/* quality */
+	NULL,			/* private bits */
+	0,			/* expose to user */
 };
 
 #define	AMDPM_CONFREG	0x40

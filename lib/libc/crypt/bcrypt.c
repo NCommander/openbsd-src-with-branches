@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcrypt.c,v 1.56 2016/06/26 21:04:08 tedu Exp $	*/
+/*	$OpenBSD: bcrypt.c,v 1.57 2016/08/26 08:25:02 guenther Exp $	*/
 
 /*
  * Copyright (c) 2014 Ted Unangst <tedu@openbsd.org>
@@ -248,9 +248,9 @@ _bcrypt_autorounds(void)
 	char buf[_PASSWORD_LEN];
 	int duration;
 
-	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &before);
+	WRAP(clock_gettime)(CLOCK_THREAD_CPUTIME_ID, &before);
 	bcrypt_newhash("testpassword", r, buf, sizeof(buf));
-	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &after);
+	WRAP(clock_gettime)(CLOCK_THREAD_CPUTIME_ID, &after);
 
 	duration = after.tv_sec - before.tv_sec;
 	duration *= 1000000;
