@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.c,v 1.263 2020/03/04 21:15:38 kettenis Exp $	*/
+/*	$OpenBSD: uvm_map.c,v 1.264 2020/03/25 14:55:14 mpi Exp $	*/
 /*	$NetBSD: uvm_map.c,v 1.86 2000/11/27 08:40:03 chs Exp $	*/
 
 /*
@@ -2609,7 +2609,7 @@ uvm_map_pageable_all(struct vm_map *map, int flags, vsize_t limit)
 #endif
 
 	/*
-	 * uvm_map_pageable_wire will release lcok
+	 * uvm_map_pageable_wire will release lock
 	 */
 	return uvm_map_pageable_wire(map, RBT_MIN(uvm_map_addr, &map->addr),
 	    NULL, map->min_offset, map->max_offset, 0);
