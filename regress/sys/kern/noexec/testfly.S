@@ -1,4 +1,4 @@
-/*	$OpenBSD: testfly.S,v 1.6 2019/01/31 19:14:12 bluhm Exp $	*/
+/*	$OpenBSD: testfly.S,v 1.7 2019/05/10 15:57:39 visa Exp $	*/
 
 /*
  * Copyright (c) 2002,2003 Michael Shalayeff
@@ -62,6 +62,12 @@ END(testfly)
 LEAF(testfly, 0)
 	jr	ra
 	nop
+END(testfly)
+#endif
+
+#ifdef __powerpc__
+ENTRY(testfly)
+	blr
 END(testfly)
 #endif
 
