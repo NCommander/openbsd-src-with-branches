@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.82 2020/01/21 16:16:23 mpi Exp $	*/
+/*	$OpenBSD: conf.c,v 1.83 2020/01/23 02:40:22 dlg Exp $	*/
 /*	$NetBSD: conf.c,v 1.17 2001/03/26 12:33:26 lukem Exp $ */
 
 /*
@@ -112,6 +112,7 @@ cdev_decl(pci);
 #include "pf.h"
 
 #include "ksyms.h"
+#include "kstat.h"
 
 #include "hotplug.h"
 #include "vscsi.h"
@@ -203,7 +204,7 @@ struct cdevsw	cdevsw[] =
 	cdev_notdef(),			/* 48 */
 	cdev_notdef(),			/* 49 */
 	cdev_notdef(),			/* 50 */
-	cdev_notdef(),			/* 51 */
+	cdev_kstat_init(NKSTAT,kstat),	/* 51: kernel statistics */ 
 #ifdef USER_PCICONF
 	cdev_pci_init(NPCI,pci),	/* 52: PCI user */
 #else
