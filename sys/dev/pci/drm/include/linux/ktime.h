@@ -1,4 +1,4 @@
-/*	$OpenBSD: ktime.h,v 1.2 2020/06/08 04:48:14 jsg Exp $	*/
+/*	$OpenBSD: ktime.h,v 1.3 2020/06/29 08:42:00 jsg Exp $	*/
 /*
  * Copyright (c) 2013, 2014, 2015 Mark Kettenis
  *
@@ -29,7 +29,7 @@ ktime_get(void)
 {
 	struct timeval tv;
 	
-	getmicrouptime(&tv);
+	microuptime(&tv);
 	return tv;
 }
 
@@ -63,7 +63,7 @@ ktime_to_ns(struct timeval tv)
 static inline int64_t
 ktime_get_raw_ns(void)
 {
-	return ktime_to_ns(ktime_get());
+	return ktime_to_ns(ktime_get_raw());
 }
 
 static inline struct timespec64
