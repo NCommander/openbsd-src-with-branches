@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.74 2018/11/20 07:02:23 martijn Exp $	*/
+/*	$OpenBSD: sh.h,v 1.75 2019/02/20 23:59:17 schwarze Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -158,6 +158,7 @@ enum sh_flag {
 	FNOTIFY,	/* -b: asynchronous job completion notification */
 	FNOUNSET,	/* -u: using an unset var is an error */
 	FPHYSICAL,	/* -o physical: don't do logical cd's/pwd's */
+	FPIPEFAIL,	/* -o pipefail: all commands in pipeline can affect $? */
 	FPOSIX,		/* -o posix: be posixly correct */
 	FPRIVILEGED,	/* -p: use suid_profile */
 	FRESTRICTED,	/* -r: restricted shell */
