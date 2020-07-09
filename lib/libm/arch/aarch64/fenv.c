@@ -1,4 +1,4 @@
-/* $OpenBSD: fenv.c,v 1.2 2018/03/16 10:22:52 kettenis Exp $ */
+/* $OpenBSD: fenv.c,v 1.3 2019/03/12 22:14:50 patrick Exp $ */
 /*-
  * Copyright (c) 2004-2005 David Schultz <das@FreeBSD.ORG>
  * All rights reserved.
@@ -83,7 +83,6 @@ fegetexceptflag(fexcept_t *flagp, int excepts)
 	*flagp = r & excepts;
 	return (0);
 }
-DEF_STD(fegetexceptflag);
 
 /*
  * The feraiseexcept() function raises the supported floating-point exceptions
