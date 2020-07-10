@@ -1,4 +1,4 @@
-/* $OpenBSD: if_bce.c,v 1.51 2016/04/13 10:34:32 mpi Exp $ */
+/* $OpenBSD: if_bce.c,v 1.52 2017/01/22 10:17:38 dlg Exp $ */
 /* $NetBSD: if_bce.c,v 1.3 2003/09/29 01:53:02 mrg Exp $	 */
 
 /*
@@ -533,7 +533,7 @@ bce_start(struct ifnet *ifp)
 	while (txsfree > 0) {
 
 		/* Grab a packet off the queue. */
-		IFQ_DEQUEUE(&ifp->if_snd, m0);
+		m0 = ifq_dequeue(&ifp->if_snd);
 		if (m0 == NULL)
 			break;
 

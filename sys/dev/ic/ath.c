@@ -1,4 +1,4 @@
-/*      $OpenBSD: ath.c,v 1.117 2019/09/12 12:55:06 stsp Exp $  */
+/*      $OpenBSD: ath.c,v 1.118 2020/02/19 11:05:04 claudio Exp $  */
 /*	$NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $	*/
 
 /*-
@@ -845,7 +845,7 @@ ath_start(struct ifnet *ifp)
 				splx(s);
 				break;
 			}
-			IFQ_DEQUEUE(&ifp->if_snd, m);
+			m = ifq_dequeue(&ifp->if_snd);
 			if (m == NULL) {
 				s = splnet();
 				TAILQ_INSERT_TAIL(&sc->sc_txbuf, bf, bf_list);

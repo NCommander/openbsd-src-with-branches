@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ste.c,v 1.64 2016/04/13 10:34:32 mpi Exp $ */
+/*	$OpenBSD: if_ste.c,v 1.65 2017/01/22 10:17:38 dlg Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -1325,7 +1325,7 @@ ste_start(struct ifnet *ifp)
 			break;
 		}
 
-		IFQ_DEQUEUE(&ifp->if_snd, m_head);
+		m_head = ifq_dequeue(&ifp->if_snd);
 		if (m_head == NULL)
 			break;
 

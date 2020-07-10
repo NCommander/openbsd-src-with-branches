@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cas.c,v 1.50 2016/04/13 10:34:32 mpi Exp $	*/
+/*	$OpenBSD: if_cas.c,v 1.51 2017/01/22 10:17:38 dlg Exp $	*/
 
 /*
  *
@@ -1885,7 +1885,7 @@ cas_start(struct ifnet *ifp)
 			break;
 		}
 
-		IFQ_DEQUEUE(&ifp->if_snd, m);
+		m = ifq_dequeue(&ifp->if_snd);
 		if (m == NULL)
 			break;
 

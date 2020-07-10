@@ -1,4 +1,4 @@
-/* $OpenBSD: if_cpsw.c,v 1.46 2020/03/31 13:00:27 kettenis Exp $ */
+/* $OpenBSD: if_cpsw.c,v 1.47 2020/04/05 14:02:29 kettenis Exp $ */
 /*	$NetBSD: if_cpsw.c,v 1.3 2013/04/17 14:36:34 bouyer Exp $	*/
 
 /*
@@ -534,7 +534,7 @@ cpsw_start(struct ifnet *ifp)
 			break;
 		}
 
-		IFQ_DEQUEUE(&ifp->if_snd, m);
+		m = ifq_dequeue(&ifp->if_snd);
 		if (m == NULL)
 			break;
 

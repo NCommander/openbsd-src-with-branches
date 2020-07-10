@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwi.c,v 1.142 2019/09/18 23:52:32 dlg Exp $	*/
+/*	$OpenBSD: if_iwi.c,v 1.143 2019/09/30 01:53:05 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2004-2008
@@ -1380,7 +1380,7 @@ iwi_start(struct ifnet *ifp)
 			break;
 		}
 
-		IFQ_DEQUEUE(&ifp->if_snd, m0);
+		m0 = ifq_dequeue(&ifp->if_snd);
 		if (m0 == NULL)
 			break;
 

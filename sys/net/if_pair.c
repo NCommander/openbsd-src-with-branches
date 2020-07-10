@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pair.c,v 1.11 2018/01/09 15:24:24 bluhm Exp $	*/
+/*	$OpenBSD: if_pair.c,v 1.13 2019/04/27 05:16:15 dlg Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -169,7 +169,7 @@ pairstart(struct ifnet *ifp)
 	pairedifp = if_get(sc->sc_pairedif);
 
 	for (;;) {
-		IFQ_DEQUEUE(&ifp->if_snd, m);
+		m = ifq_dequeue(&ifp->if_snd);
 		if (m == NULL)
 			break;
 

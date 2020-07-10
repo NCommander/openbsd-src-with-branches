@@ -1,4 +1,4 @@
-/*	$OpenBSD: am79900.c,v 1.6 2015/11/25 03:09:58 dlg Exp $	*/
+/*	$OpenBSD: am79900.c,v 1.7 2017/01/22 10:17:37 dlg Exp $	*/
 /*	$NetBSD: am79900.c,v 1.23 2012/02/02 19:43:02 tls Exp $	*/
 
 /*-
@@ -506,7 +506,7 @@ am79900_start(struct ifnet *ifp)
 			    sc->sc_no_td, sc->sc_last_td);
 		}
 
-		IFQ_DEQUEUE(&ifp->if_snd, m);
+		m = ifq_dequeue(&ifp->if_snd);
 		if (m == NULL)
 			break;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx.c,v 1.121 2017/10/26 15:00:28 mpi Exp $ */
+/*	$OpenBSD: acx.c,v 1.122 2020/01/11 08:16:18 cheloha Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -950,7 +950,7 @@ acx_start(struct ifnet *ifp)
 				ni = m->m_pkthdr.ph_cookie;
 				goto encapped;
 			} else {
-				IFQ_DEQUEUE(&ifp->if_snd, m);
+				m = ifq_dequeue(&ifp->if_snd);
 				if (m == NULL)
 					break;
 			}

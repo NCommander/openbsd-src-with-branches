@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.221 2020/04/12 11:56:52 mpi Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.222 2020/05/13 00:48:06 dlg Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -1060,7 +1060,7 @@ tun_start(struct ifnet *ifp)
 
 	splassert(IPL_NET);
 
-	if (IFQ_LEN(&ifp->if_snd))
+	if (ifq_len(&ifp->if_snd))
 		tun_wakeup(sc);
 }
 

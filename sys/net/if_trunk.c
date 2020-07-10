@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_trunk.c,v 1.145 2020/05/21 00:44:36 dlg Exp $	*/
+/*	$OpenBSD: if_trunk.c,v 1.146 2020/06/17 06:45:22 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -1009,7 +1009,7 @@ trunk_start(struct ifnet *ifp)
 	int error;
 
 	for (;;) {
-		IFQ_DEQUEUE(&ifp->if_snd, m);
+		m = ifq_dequeue(&ifp->if_snd);
 		if (m == NULL)
 			break;
 

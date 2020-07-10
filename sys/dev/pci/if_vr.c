@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.153 2017/01/22 10:17:38 dlg Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.154 2020/06/22 02:31:33 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1318,7 +1318,7 @@ vr_start(struct ifnet *ifp)
 			break;
 		}
 
-		IFQ_DEQUEUE(&ifp->if_snd, m);
+		m = ifq_dequeue(&ifp->if_snd);
 		if (m == NULL)
 			break;
 

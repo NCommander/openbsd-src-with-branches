@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwn.c,v 1.232 2020/06/03 11:37:39 jmatthew Exp $	*/
+/*	$OpenBSD: if_iwn.c,v 1.233 2020/06/11 11:27:44 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2007-2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -3751,7 +3751,7 @@ iwn_start(struct ifnet *ifp)
 			break;
 
 		/* Encapsulate and send data frames. */
-		IFQ_DEQUEUE(&ifp->if_snd, m);
+		m = ifq_dequeue(&ifp->if_snd);
 		if (m == NULL)
 			break;
 #if NBPFILTER > 0

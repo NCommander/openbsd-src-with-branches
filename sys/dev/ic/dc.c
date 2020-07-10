@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc.c,v 1.151 2016/05/04 18:38:57 kettenis Exp $	*/
+/*	$OpenBSD: dc.c,v 1.152 2017/01/22 10:17:37 dlg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -2574,7 +2574,7 @@ dc_start(struct ifnet *ifp)
 	struct mbuf *m;
 	int idx;
 
-	if (!sc->dc_link && IFQ_LEN(&ifp->if_snd) < 10)
+	if (!sc->dc_link && ifq_len(&ifp->if_snd) < 10)
 		return;
 
 	if (ifq_is_oactive(&ifp->if_snd))

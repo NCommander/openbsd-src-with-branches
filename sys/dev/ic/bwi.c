@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwi.c,v 1.127 2017/10/26 15:00:28 mpi Exp $	*/
+/*	$OpenBSD: bwi.c,v 1.128 2019/09/12 12:55:07 stsp Exp $	*/
 
 /*
  * Copyright (c) 2007 The DragonFly Project.  All rights reserved.
@@ -7189,7 +7189,7 @@ bwi_start(struct ifnet *ifp)
 			if (ic->ic_state != IEEE80211_S_RUN)
 				break;
 
-			IFQ_DEQUEUE(&ifp->if_snd, m);
+			m = ifq_dequeue(&ifp->if_snd);
 			if (m == NULL)
 				break;
 

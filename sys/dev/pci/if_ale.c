@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ale.c,v 1.45 2017/01/22 10:17:38 dlg Exp $	*/
+/*	$OpenBSD: if_ale.c,v 1.46 2017/09/08 05:36:52 deraadt Exp $	*/
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -998,7 +998,7 @@ ale_start(struct ifnet *ifp)
 			break;
 		}
 
-		IFQ_DEQUEUE(&ifp->if_snd, m);
+		m = ifq_dequeue(&ifp->if_snd);
 		if (m == NULL)
 			break;
 

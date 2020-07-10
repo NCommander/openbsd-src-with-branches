@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_alc.c,v 1.51 2019/06/17 08:17:21 kevlo Exp $	*/
+/*	$OpenBSD: if_alc.c,v 1.52 2019/07/06 13:55:20 kevlo Exp $	*/
 /*-
  * Copyright (c) 2009, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -1915,7 +1915,7 @@ alc_start(struct ifnet *ifp)
 			break;
 		}
 
-		IFQ_DEQUEUE(&ifp->if_snd, m);
+		m = ifq_dequeue(&ifp->if_snd);
 		if (m == NULL)
 			break;
 

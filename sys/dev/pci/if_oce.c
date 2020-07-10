@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_oce.c,v 1.100 2017/11/27 16:53:04 sthen Exp $	*/
+/*	$OpenBSD: if_oce.c,v 1.101 2020/06/22 02:31:32 dlg Exp $	*/
 
 /*
  * Copyright (c) 2012 Mike Belopuhov
@@ -1180,7 +1180,7 @@ oce_start(struct ifnet *ifp)
 		return;
 
 	for (;;) {
-		IFQ_DEQUEUE(&ifp->if_snd, m);
+		m = ifq_dequeue(&ifp->if_snd);
 		if (m == NULL)
 			break;
 
