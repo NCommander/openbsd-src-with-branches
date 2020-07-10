@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ure.c,v 1.14 2020/03/10 01:11:30 kevlo Exp $	*/
+/*	$OpenBSD: if_ure.c,v 1.15 2020/06/09 07:43:39 gerhard Exp $	*/
 /*-
  * Copyright (c) 2015, 2016, 2019 Kevin Lo <kevlo@openbsd.org>
  * All rights reserved.
@@ -1824,7 +1824,7 @@ ure_txeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 	m_freem(c->uc_mbuf);
 	c->uc_mbuf = NULL;
 
-	if (!IFQ_IS_EMPTY(&ifp->if_snd))
+	if (!ifq_empty(&ifp->if_snd))
 		ure_start(ifp);
 
 	splx(s);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xe.c,v 1.58 2016/04/13 10:49:26 mpi Exp $	*/
+/*	$OpenBSD: if_xe.c,v 1.59 2017/01/22 10:17:39 dlg Exp $	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist, Brandon Creighton, Job de Haas
@@ -718,7 +718,7 @@ xe_intr(arg)
 	}
 			
 	/* Try to start more packets transmitting. */
-	if (IFQ_IS_EMPTY(&ifp->if_snd) == 0)
+	if (ifq_empty(&ifp->if_snd) == 0)
 		xe_start(ifp);
 
 	/* Detected excessive collisions? */

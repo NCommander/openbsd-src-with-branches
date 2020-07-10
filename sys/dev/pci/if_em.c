@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_em.c,v 1.353 2020/06/09 07:36:10 mpi Exp $ */
+/* $OpenBSD: if_em.c,v 1.354 2020/06/22 02:31:32 dlg Exp $ */
 /* $FreeBSD: if_em.c,v 1.46 2004/09/29 18:28:28 mlaier Exp $ */
 
 #include <dev/pci/if_em.h>
@@ -1935,7 +1935,7 @@ em_setup_interface(struct em_softc *sc)
 	ifp->if_watchdog = em_watchdog;
 	ifp->if_hardmtu =
 		sc->hw.max_frame_size - ETHER_HDR_LEN - ETHER_CRC_LEN;
-	IFQ_SET_MAXLEN(&ifp->if_snd, sc->sc_tx_slots - 1);
+	ifq_set_maxlen(&ifp->if_snd, sc->sc_tx_slots - 1);
 
 	ifp->if_capabilities = IFCAP_VLAN_MTU;
 

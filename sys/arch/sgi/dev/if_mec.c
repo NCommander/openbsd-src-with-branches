@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mec.c,v 1.39 2018/12/10 05:40:34 visa Exp $ */
+/*	$OpenBSD: if_mec.c,v 1.40 2018/12/10 05:42:34 visa Exp $ */
 /*	$NetBSD: if_mec_mace.c,v 1.5 2004/08/01 06:36:36 tsutsui Exp $ */
 
 /*
@@ -460,7 +460,7 @@ mec_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_watchdog = mec_watchdog;
 
 	if_attach(ifp);
-	IFQ_SET_MAXLEN(&ifp->if_snd, MEC_NTXDESC - 1);
+	ifq_set_maxlen(&ifp->if_snd, MEC_NTXDESC - 1);
 	ether_ifattach(ifp);
 
 	/* Establish interrupt handler. */

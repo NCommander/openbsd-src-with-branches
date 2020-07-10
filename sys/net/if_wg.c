@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wg.c,v 1.7 2020/06/23 10:03:49 tobhe Exp $ */
+/*	$OpenBSD: if_wg.c,v 1.8 2020/07/04 06:06:16 procter Exp $ */
 
 /*
  * Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
@@ -2652,7 +2652,7 @@ wg_clone_create(struct if_clone *ifc, int unit)
 	ifp->if_output = wg_output;
 
 	ifp->if_type = IFT_WIREGUARD;
-	IFQ_SET_MAXLEN(&ifp->if_snd, IFQ_MAXLEN);
+	ifq_set_maxlen(&ifp->if_snd, IFQ_MAXLEN);
 
 	if_attach(ifp);
 	if_alloc_sadl(ifp);

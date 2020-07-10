@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.154 2020/06/22 02:31:33 dlg Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.155 2020/07/10 13:22:21 patrick Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1167,7 +1167,7 @@ vr_intr(void *arg)
 		}
 	}
 
-	if (!IFQ_IS_EMPTY(&ifp->if_snd))
+	if (!ifq_empty(&ifp->if_snd))
 		vr_start(ifp);
 
 	return (claimed);
@@ -1584,7 +1584,7 @@ vr_watchdog(struct ifnet *ifp)
 	printf("%s: watchdog timeout\n", sc->sc_dev.dv_xname);
 	vr_init(sc);
 
-	if (!IFQ_IS_EMPTY(&ifp->if_snd))
+	if (!ifq_empty(&ifp->if_snd))
 		vr_start(ifp);
 }
 

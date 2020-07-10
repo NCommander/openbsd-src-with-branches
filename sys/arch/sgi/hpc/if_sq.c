@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sq.c,v 1.28 2017/01/22 10:17:37 dlg Exp $	*/
+/*	$OpenBSD: if_sq.c,v 1.29 2017/03/08 15:07:10 mpi Exp $	*/
 /*	$NetBSD: if_sq.c,v 1.42 2011/07/01 18:53:47 dyoung Exp $	*/
 
 /*
@@ -362,7 +362,7 @@ sq_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_flags = IFF_BROADCAST | IFF_MULTICAST;
 
 	if_attach(ifp);
-	IFQ_SET_MAXLEN(&ifp->if_snd, SQ_NTXDESC - 1);
+	ifq_set_maxlen(&ifp->if_snd, SQ_NTXDESC - 1);
 	ether_ifattach(ifp);
 
 	if (haa->hpc_regs->revision == 3) {

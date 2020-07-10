@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mue.c,v 1.7 2019/07/07 06:40:10 kevlo Exp $	*/
+/*	$OpenBSD: if_mue.c,v 1.8 2020/06/09 07:43:39 gerhard Exp $	*/
 
 /*
  * Copyright (c) 2018 Kevin Lo <kevlo@openbsd.org>
@@ -1169,7 +1169,7 @@ mue_txeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 	m_freem(c->mue_mbuf);
 	c->mue_mbuf = NULL;
 
-	if (IFQ_IS_EMPTY(&ifp->if_snd) == 0)
+	if (ifq_empty(&ifp->if_snd) == 0)
 		mue_start(ifp);
 
 	splx(s);
@@ -1282,7 +1282,7 @@ mue_watchdog(struct ifnet *ifp)
 	usbd_get_xfer_status(c->mue_xfer, NULL, NULL, NULL, &stat);
 	mue_txeof(c->mue_xfer, c, stat);
 
-	if (!IFQ_IS_EMPTY(&ifp->if_snd))
+	if (!ifq_empty(&ifp->if_snd))
 		mue_start(ifp);
 	splx(s);
 }
