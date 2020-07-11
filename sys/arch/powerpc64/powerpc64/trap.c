@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.25 2020/07/10 18:30:28 kettenis Exp $	*/
+/*	$OpenBSD: trap.c,v 1.26 2020/07/10 18:34:24 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -267,13 +267,15 @@ trap(struct trapframe *frame)
 		break;
 
 	case EXC_FPU|EXC_USER:
-		restore_vsx(p);
+		if ((frame->srr1 & (PSL_FP|PSL_VEC|PSL_VSX)) == 0)
+			restore_vsx(p);
 		curpcb->pcb_flags |= PCB_FP;
 		frame->srr1 |= PSL_FP;
 		break;
 
 	case EXC_VEC|EXC_USER:
-		restore_vsx(p);
+		if ((frame->srr1 & (PSL_FP|PSL_VEC|PSL_VSX)) == 0)
+			restore_vsx(p);
 		curpcb->pcb_flags |= PCB_VEC;
 		frame->srr1 |= PSL_VEC;
 		break;
