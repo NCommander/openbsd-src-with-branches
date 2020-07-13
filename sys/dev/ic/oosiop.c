@@ -1,4 +1,4 @@
-/*	$OpenBSD: oosiop.c,v 1.28 2020/06/27 17:28:58 krw Exp $	*/
+/*	$OpenBSD: oosiop.c,v 1.29 2020/07/11 13:34:06 krw Exp $	*/
 /*	$NetBSD: oosiop.c,v 1.4 2003/10/29 17:45:55 tsutsui Exp $	*/
 
 /*
@@ -723,7 +723,7 @@ oosiop_scsicmd(struct scsi_xfer *xs)
 	int s, err;
 	int dopoll;
 
-	sc = (struct oosiop_softc *)xs->sc_link->adapter_softc;
+	sc = xs->sc_link->adapter_softc;
 
 	s = splbio();
 
