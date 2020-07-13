@@ -1,4 +1,4 @@
-/* $OpenBSD: mfii.c,v 1.74 2020/07/11 13:34:06 krw Exp $ */
+/* $OpenBSD: mfii.c,v 1.75 2020/07/13 13:43:31 krw Exp $ */
 
 /*
  * Copyright (c) 2012 David Gwynne <dlg@openbsd.org>
@@ -2180,7 +2180,7 @@ mfii_scsi_ioctl(struct scsi_link *link, u_long cmd, caddr_t addr, int flag)
 
 	default:
 		if (sc->sc_ioctl)
-			return (sc->sc_ioctl(link->adapter_softc, cmd, addr));
+			return (sc->sc_ioctl(&sc->sc_dev, cmd, addr));
 		break;
 	}
 
