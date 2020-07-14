@@ -1,4 +1,4 @@
-/*	$OpenBSD: tib.h,v 1.6 2017/11/28 18:57:02 kettenis Exp $	*/
+/*	$OpenBSD: tib.h,v 1.7 2019/05/10 13:29:21 guenther Exp $	*/
 /*
  * Copyright (c) 2011,2014 Philip Guenther <guenther@openbsd.org>
  *
@@ -143,8 +143,13 @@ struct tib {
 	int	tib_canceled;
 	int	tib_errno;
 	void	*tib_locale;
+#ifdef __powerpc64__
+	void	*tib_thread;
+	void	*tib_dtv;		/* internal to the runtime linker */
+#else
 	void	*tib_dtv;		/* internal to the runtime linker */
 	void	*tib_thread;
+#endif
 };
 
 
