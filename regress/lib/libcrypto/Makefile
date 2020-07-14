@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.36 2019/03/17 17:49:12 tb Exp $
+#	$OpenBSD: Makefile,v 1.37 2019/11/02 15:39:44 jsing Exp $
 
 SUBDIR += aead
 SUBDIR += aeswrap
@@ -8,6 +8,7 @@ SUBDIR += bf
 SUBDIR += bio
 SUBDIR += bn
 SUBDIR += cast
+SUBDIR += certs
 SUBDIR += chacha
 SUBDIR += cms
 SUBDIR += cts128
