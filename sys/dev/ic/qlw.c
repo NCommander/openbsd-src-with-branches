@@ -1,4 +1,4 @@
-/*	$OpenBSD: qlw.c,v 1.39 2020/07/05 21:54:44 krw Exp $ */
+/*	$OpenBSD: qlw.c,v 1.40 2020/07/11 13:34:06 krw Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -658,7 +658,7 @@ qlw_handle_resp(struct qlw_softc *sc, u_int16_t id)
 
 		case QLW_IOCB_STATUS_WIDE_FAILED:
 			DPRINTF(QLW_D_INTR, "%s: wide failed\n", DEVNAME(sc));
-			sc->sc_link->quirks |= SDEV_NOWIDE;
+			xs->sc_link->quirks |= SDEV_NOWIDE;
 			atomic_setbits_int(&sc->sc_update_required[bus],
 			    1 << xs->sc_link->target);
 			task_add(systq, &sc->sc_update_task);
@@ -668,7 +668,7 @@ qlw_handle_resp(struct qlw_softc *sc, u_int16_t id)
 
 		case QLW_IOCB_STATUS_SYNCXFER_FAILED:
 			DPRINTF(QLW_D_INTR, "%s: sync failed\n", DEVNAME(sc));
-			sc->sc_link->quirks |= SDEV_NOSYNC;
+			xs->sc_link->quirks |= SDEV_NOSYNC;
 			atomic_setbits_int(&sc->sc_update_required[bus],
 			    1 << xs->sc_link->target);
 			task_add(systq, &sc->sc_update_task);
