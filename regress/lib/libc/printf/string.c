@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: string.c,v 1.1 2020/07/08 01:18:04 schwarze Exp $ */
 /*
  * Copyright (c) 2020 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -255,7 +255,7 @@ main(int argc, char *argv[])
 	const wchar_t	 ws[] = { 0x0421, 0x043e, 0x0444, 0x044f, 0 };
 	const wchar_t	 wsbad[] = { 0x0391, 0xdeef, 0x3c9, 0 };
 	int		 badarg, picky;
-	char		 ch;
+	int		 ch;
 
 	badarg = picky = 0;
 	while ((ch = getopt(argc, argv, "pv")) != -1) {

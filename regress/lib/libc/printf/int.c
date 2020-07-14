@@ -1,4 +1,4 @@
-/* $OpenBSD: string.c,v 1.1 2020/07/08 01:18:04 schwarze Exp $ */
+/* $OpenBSD: int.c,v 1.1 2020/07/09 01:49:15 schwarze Exp $ */
 /*
  * Copyright (c) 2020 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -178,7 +178,7 @@ int
 main(int argc, char *argv[])
 {
 	int		 badarg, picky;
-	char		 ch;
+	int		 ch;
 
 	badarg = picky = 0;
 	while ((ch = getopt(argc, argv, "pv")) != -1) {
