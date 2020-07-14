@@ -1,4 +1,4 @@
-/*	$OpenBSD: intc.h,v 1.2 2014/03/29 18:09:28 guenther Exp $ */
+/*	$OpenBSD: intc.h,v 1.3 2019/05/06 03:45:58 mlarkin Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -63,8 +63,8 @@ find_first_bit( uint32_t bits )
 void intc_intr_bootstrap(vaddr_t);
 
 void intc_irq_handler(void *);
-void *intc_intr_establish(int irqno, int level, int (*func)(void *),
-    void *cookie, char *name);
+void *intc_intr_establish(int irqno, int level, struct cpu_info *ci,
+    int (*func)(void *), void *cookie, char *name);
 void intc_intr_disestablish(void *cookie);
 const char *intc_intr_string(void *cookie);
 
