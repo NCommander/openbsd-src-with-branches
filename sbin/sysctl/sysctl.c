@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysctl.c,v 1.250 2019/12/25 00:15:36 cheloha Exp $	*/
+/*	$OpenBSD: sysctl.c,v 1.251 2020/05/29 04:42:23 deraadt Exp $	*/
 /*	$NetBSD: sysctl.c,v 1.9 1995/09/30 07:12:50 thorpej Exp $	*/
 
 /*
@@ -2758,6 +2758,9 @@ print_sensor(struct sensor *s)
 			break;
 		case SENSOR_VELOCITY:
 			printf("%4.3f m/s", s->value / 1000000.0);
+			break;
+		case SENSOR_ENERGY:
+			printf("%.2f J", s->value / 1000000.0);
 			break;
 		default:
 			printf("unknown");
