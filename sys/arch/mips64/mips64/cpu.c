@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.74 2020/05/29 04:42:24 deraadt Exp $ */
+/*	$OpenBSD: cpu.c,v 1.75 2020/07/11 15:18:08 visa Exp $ */
 
 /*
  * Copyright (c) 1997-2004 Opsycon AB (www.opsycon.se)
@@ -514,7 +514,7 @@ cpu_boot_secondary_processors(void)
 	CPU_INFO_FOREACH(cii, ci) {
 		if ((ci->ci_flags & CPUF_PRESENT) == 0)
 			continue;
-		if (ci->ci_flags & CPUF_PRIMARY)
+		if (CPU_IS_PRIMARY(ci))
 			continue;
 
 		ci->ci_randseed = (arc4random() & 0x7fffffff) + 1;
