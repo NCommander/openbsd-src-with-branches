@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.153 2020/02/20 16:56:52 visa Exp $	*/
+/*	$OpenBSD: tty.c,v 1.158 2020/07/14 14:33:03 deraadt Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -226,14 +226,15 @@ ttyclose(struct tty *tp)
 
 
 /*
- * Process input of a single character received on a tty.
+ * Process input of a single character received on a tty.  Returns 0 for
+ * simple operations, 1 for costly ones (ptcwrite needs to know).
  */
 int
 ttyinput(int c, struct tty *tp)
 {
 	int iflag, lflag;
 	u_char *cc;
-	int i, error;
+	int i, error, ret = 0;
 	int s;
 
 	enqueue_randomness(tp->t_dev << 8 | c);
@@ -341,7 +342,7 @@ parmrk:				(void)putc(0377 | TTY_QUOTE, &tp->t_rawq);
 					ttyflush(tp, FWRITE);
 					ttyecho(c, tp);
 					if (tp->t_rawq.c_cc + tp->t_canq.c_cc)
-						ttyretype(tp);
+						ret = ttyretype(tp);
 					SET(tp->t_lflag, FLUSHO);
 				}
 				goto startoutput;
@@ -442,7 +443,7 @@ parmrk:				(void)putc(0377 | TTY_QUOTE, &tp->t_rawq);
 		 */
 		if (CCEQ(cc[VERASE], c)) {
 			if (tp->t_rawq.c_cc)
-				ttyrub(unputc(&tp->t_rawq), tp);
+				ret = ttyrub(unputc(&tp->t_rawq), tp);
 			goto endcase;
 		}
 		/*
@@ -451,10 +452,11 @@ parmrk:				(void)putc(0377 | TTY_QUOTE, &tp->t_rawq);
 		if (CCEQ(cc[VKILL], c)) {
 			if (ISSET(lflag, ECHOKE) &&
 			    tp->t_rawq.c_cc == tp->t_rocount &&
-			    !ISSET(lflag, ECHOPRT))
+			    !ISSET(lflag, ECHOPRT)) {
 				while (tp->t_rawq.c_cc)
-					ttyrub(unputc(&tp->t_rawq), tp);
-			else {
+					if (ttyrub(unputc(&tp->t_rawq), tp))
+						ret = 1;
+			} else {
 				ttyecho(c, tp);
 				if (ISSET(lflag, ECHOK) ||
 				    ISSET(lflag, ECHOKE))
@@ -476,14 +478,16 @@ parmrk:				(void)putc(0377 | TTY_QUOTE, &tp->t_rawq);
 			 * erase whitespace
 			 */
 			while ((c = unputc(&tp->t_rawq)) == ' ' || c == '\t')
-				ttyrub(c, tp);
+				if (ttyrub(c, tp))
+					ret = 1;
 			if (c == -1)
 				goto endcase;
 			/*
 			 * erase last char of word and remember the
 			 * next chars type (for ALTWERASE)
 			 */
-			ttyrub(c, tp);
+			if (ttyrub(c, tp))
+				ret = 1;
 			c = unputc(&tp->t_rawq);
 			if (c == -1)
 				goto endcase;
@@ -496,7 +500,8 @@ parmrk:				(void)putc(0377 | TTY_QUOTE, &tp->t_rawq);
 			 * erase rest of word
 			 */
 			do {
-				ttyrub(c, tp);
+				if (ttyrub(c, tp))
+					ret = 1;
 				c = unputc(&tp->t_rawq);
 				if (c == -1)
 					goto endcase;
@@ -509,7 +514,7 @@ parmrk:				(void)putc(0377 | TTY_QUOTE, &tp->t_rawq);
 		 * reprint line (^R)
 		 */
 		if (CCEQ(cc[VREPRINT], c) && ISSET(lflag, IEXTEN)) {
-			ttyretype(tp);
+			ret = ttyretype(tp);
 			goto endcase;
 		}
 		/*
@@ -576,12 +581,13 @@ endcase:
 	 */
 	if (ISSET(tp->t_state, TS_TTSTOP) &&
 	    !ISSET(iflag, IXANY) && cc[VSTART] != cc[VSTOP])
-		return (0);
+		return (ret);
 restartoutput:
 	CLR(tp->t_lflag, FLUSHO);
 	CLR(tp->t_state, TS_TTSTOP);
 startoutput:
-	return (ttstart(tp));
+	ttstart(tp);
+	return (ret);
 }
 
 /*
@@ -1882,7 +1888,7 @@ ovhiwat:
  * Rubout one character from the rawq of tp
  * as cleanly as possible.
  */
-void
+int
 ttyrub(int c, struct tty *tp)
 {
 	u_char *cp;
@@ -1890,15 +1896,14 @@ ttyrub(int c, struct tty *tp)
 	int tabc, s;
 
 	if (!ISSET(tp->t_lflag, ECHO) || ISSET(tp->t_lflag, EXTPROC))
-		return;
+		return 0;
 	CLR(tp->t_lflag, FLUSHO);
 	if (ISSET(tp->t_lflag, ECHOE)) {
 		if (tp->t_rocount == 0) {
 			/*
 			 * Screwed by ttwrite; retype
 			 */
-			ttyretype(tp);
-			return;
+			return ttyretype(tp);
 		}
 		if (c == ('\t' | TTY_QUOTE) || c == ('\n' | TTY_QUOTE))
 			ttyrubo(tp, 2);
@@ -1917,10 +1922,8 @@ ttyrub(int c, struct tty *tp)
 					ttyrubo(tp, 2);
 				break;
 			case TAB:
-				if (tp->t_rocount < tp->t_rawq.c_cc) {
-					ttyretype(tp);
-					return;
-				}
+				if (tp->t_rocount < tp->t_rawq.c_cc)
+					return ttyretype(tp);
 				s = spltty();
 				savecol = tp->t_column;
 				SET(tp->t_state, TS_CNTTB);
@@ -1958,6 +1961,7 @@ ttyrub(int c, struct tty *tp)
 	} else
 		ttyecho(tp->t_cc[VERASE], tp);
 	--tp->t_rocount;
+	return 0;
 }
 
 /*
@@ -1979,7 +1983,7 @@ ttyrubo(struct tty *tp, int cnt)
  *	Reprint the rawq line.  Note, it is assumed that c_cc has already
  *	been checked.
  */
-void
+int
 ttyretype(struct tty *tp)
 {
 	u_char *cp;
@@ -2001,6 +2005,11 @@ ttyretype(struct tty *tp)
 
 	tp->t_rocount = tp->t_rawq.c_cc;
 	tp->t_rocol = 0;
+	/*
+	 * Yield because of expense, or possible ptcwrite() injection flood.
+	 * Also check for interrupt, and return upwards.
+	 */
+	return tsleep_nsec(tp, TTIPRI | PCATCH, "ttyretype", 1);
 }
 
 /*
