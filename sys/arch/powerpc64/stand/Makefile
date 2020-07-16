@@ -1,6 +1,5 @@
-# dummy
-all:
+#	$OpenBSD: Makefile,v 1.4 2019/08/04 08:53:14 visa Exp $
 
-clean:
+SUBDIR+=	rdboot boot
 
-includes:
+.include <bsd.subdir.mk>
