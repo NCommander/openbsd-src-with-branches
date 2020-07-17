@@ -1,4 +1,4 @@
-#	$OpenBSD: percent.sh,v 1.7 2020/05/29 04:32:26 dtucker Exp $
+#	$OpenBSD: percent.sh,v 1.8 2020/07/17 03:26:58 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="percent expansions"
@@ -82,6 +82,7 @@ for i in matchexec localcommand remotecommand controlpath identityagent \
 	trial $i '%L' $HOST
 	trial $i '%l' $HOSTNAME
 	trial $i '%n' somehost
+	trial $i '%k' localhost-with-alias
 	trial $i '%p' $PORT
 	trial $i '%r' $REMUSER
 	trial $i '%u' $USER
