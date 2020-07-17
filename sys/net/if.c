@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.611 2020/06/30 09:31:38 kn Exp $	*/
+/*	$OpenBSD: if.c,v 1.612 2020/07/10 13:23:34 patrick Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -1281,12 +1281,12 @@ if_clone_destroy(const char *name)
 	if (ifc == NULL)
 		return (EINVAL);
 
+	if (ifc->ifc_destroy == NULL)
+		return (EOPNOTSUPP);
+
 	ifp = ifunit(name);
 	if (ifp == NULL)
 		return (ENXIO);
-
-	if (ifc->ifc_destroy == NULL)
-		return (EOPNOTSUPP);
 
 	NET_LOCK();
 	if (ifp->if_flags & IFF_UP) {
