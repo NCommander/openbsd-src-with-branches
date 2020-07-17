@@ -33,8 +33,8 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" $OpenBSD: ssh_config.5,v 1.328 2020/05/29 05:48:39 jmc Exp $
-.Dd $Mdocdate: May 29 2020 $
+.\" $OpenBSD: ssh_config.5,v 1.329 2020/07/17 03:23:10 dtucker Exp $
+.Dd $Mdocdate: July 17 2020 $
 .Dt SSH_CONFIG 5
 .Os
 .Sh NAME
@@ -1851,6 +1851,9 @@ Local user's home directory.
 The remote hostname.
 .It %i
 The local user ID.
+.It %k
+The host key alias if specified, otherwise the orignal remote hostname given
+on the command line.
 .It %L
 The local hostname.
 .It %l
