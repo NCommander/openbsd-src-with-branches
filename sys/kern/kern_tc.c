@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_tc.c,v 1.62 2020/07/06 13:33:09 pirofti Exp $ */
+/*	$OpenBSD: kern_tc.c,v 1.63 2020/07/16 23:06:43 cheloha Exp $ */
 
 /*
  * Copyright (c) 2000 Poul-Henning Kamp <phk@FreeBSD.org>
@@ -575,8 +575,8 @@ tc_windup(struct bintime *new_boottime, struct bintime *new_offset,
 	 * the contents, the generation must be zero.
 	 */
 	tho = timehands;
+	ogen = tho->th_generation;
 	th = tho->th_next;
-	ogen = th->th_generation;
 	th->th_generation = 0;
 	membar_producer();
 	memcpy(th, tho, offsetof(struct timehands, th_generation));
