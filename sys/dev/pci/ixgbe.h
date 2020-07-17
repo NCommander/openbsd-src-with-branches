@@ -1,4 +1,4 @@
-/*	$OpenBSD: ixgbe.h,v 1.29 2020/03/02 01:59:01 jmatthew Exp $	*/
+/*	$OpenBSD: ixgbe.h,v 1.30 2020/07/17 06:27:36 dlg Exp $	*/
 
 /******************************************************************************
 
@@ -58,6 +58,7 @@
 
 #include <net/if.h>
 #include <net/if_media.h>
+#include <net/toeplitz.h>
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
