@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.168 2020/07/17 06:27:36 dlg Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.169 2020/07/17 06:33:07 dlg Exp $	*/
 
 /******************************************************************************
 
@@ -33,6 +33,8 @@
 
 ******************************************************************************/
 /* FreeBSD: src/sys/dev/ixgbe/ixgbe.c 251964 Jun 18 21:28:19 2013 UTC */
+
+#include <net/toeplitz.h>
 
 #include <dev/pci/if_ix.h>
 #include <dev/pci/ixgbe_type.h>
