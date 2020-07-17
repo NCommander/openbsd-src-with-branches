@@ -1,4 +1,4 @@
-/*	$OpenBSD: ixgbe.h,v 1.28 2020/02/28 05:22:53 deraadt Exp $	*/
+/*	$OpenBSD: ixgbe.h,v 1.29 2020/03/02 01:59:01 jmatthew Exp $	*/
 
 /******************************************************************************
 
@@ -53,6 +53,7 @@
 #include <sys/timeout.h>
 #include <sys/pool.h>
 #include <sys/rwlock.h>
+#include <sys/intrmap.h>
 #include <sys/atomic.h>
 
 #include <net/if.h>
