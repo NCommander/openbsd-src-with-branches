@@ -1,4 +1,4 @@
-/*	$OpenBSD: timetc.h,v 1.1 2020/07/06 13:33:07 pirofti Exp $ */
+/*	$OpenBSD: timetc.h,v 1.1 2020/07/06 13:33:08 pirofti Exp $ */
 /*
  * Copyright (c) 2020 Paul Irofti <paul@irofti.net>
  *
@@ -15,9 +15,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _MACHINE_TIMETC_H_
-#define _MACHINE_TIMETC_H_
+#ifndef _MIPS64_TIMETC_H_
+#define _MIPS64_TIMETC_H_
 
-#include <mips64/timetc.h>
+#define TC_CP0_COUNT	1
 
-#endif	/* _MACHINE_TIMETC_H_ */
+#endif	/* _MIPS64_TIMETC_H_ */

@@ -1,6 +1,6 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: usertc.c,v 1.1 2020/07/06 13:33:05 pirofti Exp $	*/
 /*
- * Copyright (c) 2020 Paul Irofti <paul@irofti.net>
+ * Copyright (c) 2020 Visa Hankala
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,4 +18,31 @@
 #include <sys/types.h>
 #include <sys/timetc.h>
 
-int (*const _tc_get_timecount)(struct timekeep *, u_int *) = NULL;
+static inline u_int
+get_cp0_count(void)
+{
+	uint32_t count;
+
+	__asm__ volatile (
+	"	.set	push\n"
+	"	.set	mips64r2\n"
+	"	rdhwr	%0, $2\n"
+	"	.set	pop\n"
+	: "=r" (count));
+
+	return count;
+}
+
+static int
+tc_get_timecount(struct timekeep *tk, u_int *tc)
+{
+	switch (tk->tk_user) {
+	case TC_CP0_COUNT:
+		*tc = get_cp0_count();
+		return 0;
+	}
+
+	return -1;
+}
+
+int (*const _tc_get_timecount)(struct timekeep *, u_int *) = tc_get_timecount;
