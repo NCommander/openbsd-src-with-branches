@@ -1,4 +1,4 @@
-/*	$OpenBSD: armv7_installboot.c,v 1.4 2019/06/28 13:32:48 deraadt Exp $	*/
+/*	$OpenBSD: loongson_installboot.c,v 1.1 2020/06/27 15:35:29 deraadt Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -95,7 +95,7 @@ write_filesystem(struct disklabel *dl, char part)
 {
 	static char *fsckfmt = "/sbin/fsck_ext2fs %s >/dev/null";
 	static char *newfsfmt ="/sbin/newfs_ext2fs %s >/dev/null";
-	struct ufs_args args;
+	struct ext2fs_args args;
 	char cmd[60];
 	char dst[PATH_MAX];
 	char *src;
