@@ -41,6 +41,7 @@
 
 #include "bpfilter.h"
 #include "vlan.h"
+#include "kstat.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -55,6 +56,7 @@
 #include <sys/rwlock.h>
 #include <sys/intrmap.h>
 #include <sys/atomic.h>
+#include <sys/kstat.h>
 
 #include <net/if.h>
 #include <net/if_media.h>
