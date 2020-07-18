@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.3 2020/07/10 17:04:49 deraadt Exp $
+#	$OpenBSD: install.md,v 1.4 2020/07/12 22:47:16 kettenis Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -32,7 +32,7 @@
 # machine dependent section of installation/upgrade script.
 #
 
-NCPU=$(sysctl -n hw.ncpufound)
+NCPU=1 #$(sysctl -n hw.ncpufound)
 NEWFSARGS_msdos="-F 16 -L boot"
 MOUNT_ARGS_msdos="-o-l"
 
