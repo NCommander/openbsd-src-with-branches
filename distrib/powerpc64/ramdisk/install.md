@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.5 2020/07/18 14:25:32 deraadt Exp $
+#	$OpenBSD: install.md,v 1.6 2020/07/18 15:29:29 deraadt Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -34,7 +34,6 @@
 
 NCPU=1 #$(sysctl -n hw.ncpufound)
 NEWFSARGS_msdos="-F 16 -L boot"
-MOUNT_ARGS_msdos="-o-l"
 
 md_installboot() {
 	if ! installboot -r /mnt ${1}; then
