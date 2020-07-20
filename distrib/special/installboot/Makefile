@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 2020/06/27 15:35:29 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.13 2020/06/28 14:52:19 deraadt Exp $
 
 .PATH: ${.CURDIR}/../../../usr.sbin/installboot
 
@@ -27,6 +27,8 @@ SRCS += landisk_installboot.c
 SRCS += loongson_installboot.c
 .elif ${MACHINE} == "macppc"
 SRCS += macppc_installboot.c
+.elif ${MACHINE} == "powerpc64"
+SRCS += powerpc64_installboot.c
 .elif ${MACHINE} == "octeon"
 SRCS += octeon_installboot.c
 .elif ${MACHINE} == "sparc64"
