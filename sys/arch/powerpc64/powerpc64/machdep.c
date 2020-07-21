@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.52 2020/07/17 20:24:07 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.53 2020/07/18 20:21:01 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -456,6 +456,12 @@ copyin(const void *uaddr, void *kaddr, size_t len)
 	}
 
 	return 0;
+}
+
+int
+copyin32(const uint32_t *uaddr, uint32_t *kaddr)
+{
+	return copyin(uaddr, kaddr, sizeof(uint32_t));
 }
 
 int
