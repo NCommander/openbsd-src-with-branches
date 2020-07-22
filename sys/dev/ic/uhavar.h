@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhavar.h,v 1.3 2010/06/30 19:06:16 mk Exp $	*/
+/*	$OpenBSD: uhavar.h,v 1.4 2011/04/03 12:42:36 krw Exp $	*/
 /*	$NetBSD: uhavar.h,v 1.3 1996/10/21 22:34:43 thorpej Exp $	*/
 
 /*
@@ -56,7 +56,6 @@ struct uha_softc {
 
 	int sc_nummscps;
 	int sc_scsi_dev;		/* our scsi id */
-	struct scsi_link sc_link;
 };
 
 void	uha_attach(struct uha_softc *);
