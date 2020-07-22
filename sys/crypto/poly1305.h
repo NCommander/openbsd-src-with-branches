@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Public Domain poly1305 from Andrew Moon
  *

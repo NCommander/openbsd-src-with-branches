@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2008 Damien Miller <djm@mindrot.org>
  *

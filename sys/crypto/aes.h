@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2016 Thomas Pornin <pornin@bolet.org>
  * Copyright (c) 2016 Mike Belopuhov
