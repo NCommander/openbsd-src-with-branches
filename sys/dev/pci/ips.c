@@ -1,4 +1,4 @@
-/*	$OpenBSD: ips.c,v 1.125 2020/07/20 14:41:13 krw Exp $	*/
+/*	$OpenBSD: ips.c,v 1.126 2020/07/22 13:16:04 krw Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007, 2009 Alexander Yurchenko <grange@openbsd.org>
@@ -1908,7 +1908,7 @@ ips_copperhead_status(struct ips_softc *sc)
 	u_int32_t sqhead, sqtail, status;
 
 	sqhead = bus_space_read_4(sc->sc_iot, sc->sc_ioh, IPS_REG_SQH);
-	DPRINTF(IPS_D_XFER, ("%s: sqhead 0x%08x, sqtail 0x%08x\n",
+	DPRINTF(IPS_D_XFER, ("%s: sqhead 0x%08x, sqtail 0x%08lx\n",
 	    sc->sc_dev.dv_xname, sqhead, sc->sc_sqtail));
 
 	sqtail = sc->sc_sqtail + sizeof(u_int32_t);

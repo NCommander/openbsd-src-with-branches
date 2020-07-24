@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciss.c,v 1.86 2020/07/19 18:57:57 krw Exp $	*/
+/*	$OpenBSD: ciss.c,v 1.87 2020/07/20 14:41:13 krw Exp $	*/
 
 /*
  * Copyright (c) 2005,2006 Michael Shalayeff
@@ -468,7 +468,7 @@ ciss_cmd(struct ciss_ccb *ccb, int flags, int wait)
 		cmd->sgin = dmap->dm_nsegs;
 
 		sgd = dmap->dm_segs;
-		CISS_DPRINTF(CISS_D_DMA, ("data=%p/%u<0x%lx/%u",
+		CISS_DPRINTF(CISS_D_DMA, ("data=%p/%zu<0x%lx/%lu",
 		    ccb->ccb_data, ccb->ccb_len, sgd->ds_addr, sgd->ds_len));
 
 		for (i = 0; i < dmap->dm_nsegs; sgd++, i++) {
@@ -479,7 +479,7 @@ ciss_cmd(struct ciss_ccb *ccb, int flags, int wait)
 			cmd->sgl[i].flags = htole32(0);
 			if (i)
 				CISS_DPRINTF(CISS_D_DMA,
-				    (",0x%lx/%u", sgd->ds_addr, sgd->ds_len));
+				    (",0x%lx/%lu", sgd->ds_addr, sgd->ds_len));
 		}
 
 		CISS_DPRINTF(CISS_D_DMA, ("> "));

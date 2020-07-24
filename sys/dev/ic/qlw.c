@@ -1,4 +1,4 @@
-/*	$OpenBSD: qlw.c,v 1.43 2020/07/19 18:57:58 krw Exp $ */
+/*	$OpenBSD: qlw.c,v 1.44 2020/07/20 14:41:13 krw Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -39,7 +39,9 @@
 #include <dev/ic/qlwvar.h>
 
 #ifndef SMALL_KERNEL
+#ifndef QLW_DEBUG
 #define QLW_DEBUG
+#endif
 #endif
 
 #ifdef QLW_DEBUG
