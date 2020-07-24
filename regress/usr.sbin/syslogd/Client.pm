@@ -1,6 +1,6 @@
-#	$OpenBSD: Client.pm,v 1.10 2017/04/17 14:27:46 bluhm Exp $
+#	$OpenBSD: Client.pm,v 1.11 2017/09/13 00:35:53 bluhm Exp $
 
-# Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2010-2020 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -30,6 +30,8 @@ use Sys::Syslog qw(:standard :extended :macros);
 sub new {
 	my $class = shift;
 	my %args = @_;
+	$args{ktracepid} = "ktrace" if $args{ktrace};
+	$args{ktracepid} = $ENV{KTRACE} if $ENV{KTRACE};
 	$args{ktracefile} ||= "client.ktrace";
 	$args{logfile} ||= "client.log";
 	$args{up} ||= "Openlog";
