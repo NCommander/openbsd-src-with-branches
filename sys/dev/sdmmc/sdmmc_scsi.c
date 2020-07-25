@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmc_scsi.c,v 1.51 2020/07/20 14:41:14 krw Exp $	*/
+/*	$OpenBSD: sdmmc_scsi.c,v 1.52 2020/07/22 13:16:05 krw Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -136,7 +136,7 @@ sdmmc_scsi_attach(struct sdmmc_softc *sc)
 
 	sc->sc_scsibus = scbus;
 
-	bzero(&saa, sizeof(saa));
+	saa.sf = NULL;
 	saa.saa.saa_adapter_target = SDMMC_SCSIID_HOST;
 	saa.saa.saa_adapter_buswidth = scbus->sc_ntargets;
 	saa.saa.saa_adapter_softc = sc;
