@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.265 2020/03/12 19:21:01 krw Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.266 2020/07/16 14:44:55 krw Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -2654,7 +2654,7 @@ const char *flagnames[16] = {
 	"DB4",
 	"EJECTING",
 	"ATAPI",
-	"2NDBUS",
+	"FLAG0x0400",
 	"UMASS",
 	"VIRTUAL",
 	"OWN",
