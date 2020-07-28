@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_switch.c,v 1.34 2020/07/22 20:37:35 mvs Exp $	*/
+/*	$OpenBSD: if_switch.c,v 1.35 2020/07/28 07:37:05 kn Exp $	*/
 
 /*
  * Copyright (c) 2016 Kazuya GODA <goda@openbsd.org>
@@ -165,6 +165,7 @@ switch_clone_create(struct if_clone *ifc, int unit)
 	ifp->if_start = NULL;
 	ifp->if_type = IFT_BRIDGE;
 	ifp->if_hdrlen = ETHER_HDR_LEN;
+	ifp->if_xflags = IFXF_CLONED;
 	TAILQ_INIT(&sc->sc_swpo_list);
 
 	sc->sc_unit = unit;
