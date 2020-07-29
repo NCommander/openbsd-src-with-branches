@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tpmr.c,v 1.16 2020/07/24 00:45:40 kn Exp $ */
+/*	$OpenBSD: if_tpmr.c,v 1.18 2020/07/28 07:41:19 kn Exp $ */
 
 /*
  * Copyright (c) 2019 The University of Queensland
@@ -410,10 +410,6 @@ tpmr_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		return (ENXIO);
 
 	switch (cmd) {
-	case SIOCSIFADDR:
-		error = EAFNOSUPPORT;
-		break;
-
 	case SIOCSIFFLAGS:
 		if (ISSET(ifp->if_flags, IFF_UP)) {
 			if (!ISSET(ifp->if_flags, IFF_RUNNING))
