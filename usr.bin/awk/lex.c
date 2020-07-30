@@ -1,4 +1,4 @@
-/*	$OpenBSD: lex.c,v 1.22 2020/06/23 16:54:40 millert Exp $	*/
+/*	$OpenBSD: lex.c,v 1.23 2020/07/13 14:03:52 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -551,7 +551,9 @@ int regexpr(void)
 			 */
 			if (!do_posix) {
 				if (c == '[') {
-					if (openclass == 0 || peek() == ':') {
+					int nextc = peek();
+					if (openclass == 0 || nextc == ':' ||
+					    nextc == '.' || nextc == '=') {
 						if (++openclass == 1)
 							cstart = bp;
 					}
