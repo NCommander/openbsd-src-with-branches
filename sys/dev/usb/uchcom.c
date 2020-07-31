@@ -1,4 +1,4 @@
-/*	$OpenBSD: uchcom.c,v 1.26 2017/04/06 04:48:54 deraadt Exp $	*/
+/*	$OpenBSD: uchcom.c,v 1.27 2017/04/08 02:57:25 deraadt Exp $	*/
 /*	$NetBSD: uchcom.c,v 1.1 2007/09/03 17:57:37 tshiozak Exp $	*/
 
 /*
@@ -794,7 +794,6 @@ uchcom_close_intr_pipe(struct uchcom_softc *sc)
 	usbd_status err;
 
 	if (sc->sc_intr_pipe != NULL) {
-		usbd_abort_pipe(sc->sc_intr_pipe);
 		err = usbd_close_pipe(sc->sc_intr_pipe);
 		if (err)
 			printf("%s: close interrupt pipe failed: %s\n",

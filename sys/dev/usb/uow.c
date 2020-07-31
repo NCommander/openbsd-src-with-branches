@@ -1,4 +1,4 @@
-/*	$OpenBSD: uow.c,v 1.35 2016/11/06 12:58:01 mpi Exp $	*/
+/*	$OpenBSD: uow.c,v 1.36 2020/01/04 11:36:05 mpi Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -245,18 +245,12 @@ uow_detach(struct device *self, int flags)
 
 	s = splusb();
 
-	if (sc->sc_ph_ibulk != NULL) {
-		usbd_abort_pipe(sc->sc_ph_ibulk);
+	if (sc->sc_ph_ibulk != NULL)
 		usbd_close_pipe(sc->sc_ph_ibulk);
-	}
-	if (sc->sc_ph_obulk != NULL) {
-		usbd_abort_pipe(sc->sc_ph_obulk);
+	if (sc->sc_ph_obulk != NULL)
 		usbd_close_pipe(sc->sc_ph_obulk);
-	}
-	if (sc->sc_ph_intr != NULL) {
-		usbd_abort_pipe(sc->sc_ph_intr);
+	if (sc->sc_ph_intr != NULL)
 		usbd_close_pipe(sc->sc_ph_intr);
-	}
 
 	if (sc->sc_xfer_in != NULL)
 		usbd_free_xfer(sc->sc_xfer_in);

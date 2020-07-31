@@ -1,4 +1,4 @@
-/*	$OpenBSD: uts.c,v 1.41 2018/03/15 00:42:41 kevlo Exp $ */
+/*	$OpenBSD: uts.c,v 1.42 2019/11/06 20:25:14 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -216,7 +216,6 @@ uts_detach(struct device *self, int flags)
 	int rv = 0;
 
 	if (sc->sc_intr_pipe != NULL) {
-		usbd_abort_pipe(sc->sc_intr_pipe);
 		usbd_close_pipe(sc->sc_intr_pipe);
 		sc->sc_intr_pipe = NULL;
 	}
@@ -288,7 +287,6 @@ uts_disable(void *v)
 
 	/* Disable interrupts. */
 	if (sc->sc_intr_pipe != NULL) {
-		usbd_abort_pipe(sc->sc_intr_pipe);
 		usbd_close_pipe(sc->sc_intr_pipe);
 		sc->sc_intr_pipe = NULL;
 	}

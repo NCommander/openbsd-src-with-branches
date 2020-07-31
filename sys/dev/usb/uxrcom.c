@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: uxrcom.c,v 1.1 2019/03/27 22:08:51 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -208,7 +208,6 @@ uxrcom_detach(struct device *self, int flags)
 	int rv = 0;
 
 	if (sc->sc_intr_pipe != NULL) {
-		usbd_abort_pipe(sc->sc_intr_pipe);
 		usbd_close_pipe(sc->sc_intr_pipe);
 		sc->sc_intr_pipe = NULL;
 	}
@@ -247,7 +246,6 @@ uxrcom_close(void *vsc, int portno)
 		return;
 
 	if (sc->sc_intr_pipe != NULL) {
-		usbd_abort_pipe(sc->sc_intr_pipe);
 		err = usbd_close_pipe(sc->sc_intr_pipe);
 		if (err)
 			printf("%s: close intr pipe failed: %s\n",

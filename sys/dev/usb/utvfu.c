@@ -1,4 +1,4 @@
-/*	$OpenBSD: utvfu.c,v 1.9 2016/09/19 06:46:44 ratchov Exp $ */
+/*	$OpenBSD: utvfu.c,v 1.10 2019/10/14 09:20:48 mpi Exp $ */
 /*
  * Copyright (c) 2013 Lubomir Rintel
  * Copyright (c) 2013 Federico Simoncelli
@@ -1164,7 +1164,6 @@ void
 utvfu_vs_close(struct utvfu_softc *sc)
 {
 	if (sc->sc_iface.pipeh != NULL) {
-		usbd_abort_pipe(sc->sc_iface.pipeh);
 		usbd_close_pipe(sc->sc_iface.pipeh);
 		sc->sc_iface.pipeh = NULL;
 	}

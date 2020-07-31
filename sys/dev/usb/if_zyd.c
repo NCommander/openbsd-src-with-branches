@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_zyd.c,v 1.123 2020/04/02 17:36:32 stsp Exp $	*/
+/*	$OpenBSD: if_zyd.c,v 1.124 2020/07/10 13:22:21 patrick Exp $	*/
 
 /*-
  * Copyright (c) 2006 by Damien Bergamini <damien.bergamini@free.fr>
@@ -518,7 +518,6 @@ zyd_close_pipes(struct zyd_softc *sc)
 
 	for (i = 0; i < ZYD_ENDPT_CNT; i++) {
 		if (sc->zyd_ep[i] != NULL) {
-			usbd_abort_pipe(sc->zyd_ep[i]);
 			usbd_close_pipe(sc->zyd_ep[i]);
 			sc->zyd_ep[i] = NULL;
 		}

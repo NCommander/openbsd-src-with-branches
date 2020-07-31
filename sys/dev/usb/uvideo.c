@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.c,v 1.207 2020/05/30 09:01:04 feinerer Exp $ */
+/*	$OpenBSD: uvideo.c,v 1.208 2020/07/05 11:47:50 landry Exp $ */
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -1970,7 +1970,6 @@ uvideo_vs_close(struct uvideo_softc *sc)
 	}
 
 	if (sc->sc_vs_cur->pipeh) {
-		usbd_abort_pipe(sc->sc_vs_cur->pipeh);
 		usbd_close_pipe(sc->sc_vs_cur->pipeh);
 		sc->sc_vs_cur->pipeh = NULL;
 	}
