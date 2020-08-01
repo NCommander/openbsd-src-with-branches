@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwxvar.h,v 1.9 2020/06/22 16:25:55 stsp Exp $	*/
+/*	$OpenBSD: if_iwxvar.h,v 1.10 2020/06/22 16:27:37 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -476,6 +476,7 @@ struct iwx_softc {
 	struct iwx_notif_statistics sc_stats;
 	int sc_noise;
 
+	int sc_pm_support;
 	int sc_ltr_enabled;
 
 	int sc_integrated;
