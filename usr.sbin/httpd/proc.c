@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.37 2017/05/28 10:37:26 benno Exp $	*/
+/*	$OpenBSD: proc.c,v 1.38 2018/09/09 21:06:51 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2010 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -401,7 +401,7 @@ proc_kill(struct privsep *ps)
 			free(cause);
 		} else
 			log_warnx("lost child: pid %u", pid);
-	} while (pid != -1 || (pid == -1 && errno == EINTR));
+	} while (pid != -1 || errno == EINTR);
 }
 
 void
