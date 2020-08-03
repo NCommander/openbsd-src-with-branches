@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:34 espie Exp $
+# $OpenBSD: Makefile,v 1.3 2019/03/05 09:44:40 jsg Exp $
 
 LIB=	LLVMAsmParser
 NOPROFILE=
@@ -9,4 +9,4 @@ SRCS+=	LLLexer.cpp \
 	LLParser.cpp \
 	Parser.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/lib/AsmParser
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/AsmParser

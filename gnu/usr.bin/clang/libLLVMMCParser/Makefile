@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2019/03/05 09:44:41 jsg Exp $
+# $OpenBSD: Makefile,v 1.4 2019/06/23 22:07:40 patrick Exp $
 
 LIB=	LLVMMCParser
 NOPROFILE=
@@ -16,4 +16,4 @@ SRCS+=	AsmLexer.cpp \
 	MCTargetAsmParser.cpp \
 	WasmAsmParser.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/lib/MC/MCParser
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/MC/MCParser

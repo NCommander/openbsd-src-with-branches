@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
+# $OpenBSD: Makefile,v 1.2 2019/01/27 16:59:42 patrick Exp $
 
 LIB=	lldbPluginInstruction
 NOPIC=
@@ -12,11 +12,11 @@ SRCS=	EmulateInstructionARM.cpp \
 	EmulateInstructionPPC64.cpp \
 	EmulationStateARM.cpp \
 
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/Instruction/ARM
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/Instruction/ARM64
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/Instruction/MIPS
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/Instruction/MIPS64
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/Instruction/PPC64
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/Instruction/ARM
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/Instruction/ARM64
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/Instruction/MIPS
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/Instruction/MIPS64
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/Instruction/PPC64
 
 install:
 	@# Nothing here so far ...

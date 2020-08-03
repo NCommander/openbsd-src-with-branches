@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:36 espie Exp $
+# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
 
 LIB=	lldbPluginDisassembler
 NOPIC=
@@ -7,7 +7,7 @@ NOPROFILE=
 .include <bsd.own.mk>
 SRCS=	DisassemblerLLVMC.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/Disassembler/llvm
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/Disassembler/llvm
 
 install:
 	@# Nothing here so far ...

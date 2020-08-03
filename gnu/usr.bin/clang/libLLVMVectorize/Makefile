@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2019/03/05 09:44:42 jsg Exp $
+# $OpenBSD: Makefile,v 1.8 2019/06/23 22:07:41 patrick Exp $
 
 LIB=	LLVMVectorize
 NOPROFILE=
@@ -11,9 +11,10 @@ SRCS+=	LoadStoreVectorizer.cpp \
 	SLPVectorizer.cpp \
 	VPlan.cpp \
 	VPlanHCFGBuilder.cpp \
-	VPlanHCFGTransforms.cpp \
+	VPlanPredicator.cpp \
 	VPlanSLP.cpp \
+	VPlanTransforms.cpp \
 	VPlanVerifier.cpp \
 	Vectorize.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/lib/Transforms/Vectorize
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/Transforms/Vectorize

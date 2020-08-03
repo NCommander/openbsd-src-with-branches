@@ -1,9 +1,9 @@
-# $OpenBSD: Makefile,v 1.4 2017/10/04 20:57:10 patrick Exp $
+# $OpenBSD: Makefile,v 1.5 2018/04/06 14:44:04 patrick Exp $
 
 LIB=	lldCore
 NOPROFILE=
 
-CPPFLAGS+=	-I${LLVM_SRCS}/tools/lld/include
+CPPFLAGS+=	-I${LLD_SRCS}/include
 
 .include <bsd.own.mk>
 SRCS=	DefinedAtom.cpp \
@@ -15,7 +15,7 @@ SRCS=	DefinedAtom.cpp \
 	SymbolTable.cpp \
 	Writer.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/tools/lld/lib/Core
+.PATH:	${.CURDIR}/../../../llvm/lld/lib/Core
 
 install:
 	@# Nothing here so far ...

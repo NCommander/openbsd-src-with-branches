@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile.shared,v 1.1 2019/03/05 09:44:42 jsg Exp $
 
 LIB=	LLVMTableGen
 
@@ -20,6 +20,6 @@ SRCS+=	TableGenError.cpp \
 TableGenError.cpp:
 	ln -s ${LLVM_SRCS}/lib/TableGen/Error.cpp $@
 
-.PATH:	${.CURDIR}/../../../llvm/lib/TableGen
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/TableGen
 
 CLEANFILES+= TableGenError.cpp

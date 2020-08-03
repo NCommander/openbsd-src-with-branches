@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.8 2019/03/05 09:44:40 jsg Exp $
+# $OpenBSD: Makefile,v 1.9 2019/06/23 22:07:40 patrick Exp $
 
 LIB=	LLVMDebugInfoCodeView
 NOPROFILE=
@@ -49,6 +49,6 @@ SRCS+=	AppendingTypeTableBuilder.cpp \
 DebugInfoCodeViewEnumTables.cpp:
 	ln -s ${LLVM_SRCS}/lib/DebugInfo/CodeView/EnumTables.cpp $@
 
-.PATH:	${.CURDIR}/../../../llvm/lib/DebugInfo/CodeView
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/DebugInfo/CodeView
 
 CLEANFILES+= DebugInfoCodeViewEnumTables.cpp

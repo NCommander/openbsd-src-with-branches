@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:34 espie Exp $
+# $OpenBSD: Makefile,v 1.3 2019/03/05 09:44:39 jsg Exp $
 
 LIB=	LLVMAArch64Utils
 NOPROFILE=
@@ -8,4 +8,4 @@ CPPFLAGS+=	-I${.OBJDIR}/../include/llvm/AArch64 \
 
 SRCS+=	AArch64BaseInfo.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/lib/Target/AArch64/Utils
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/Target/AArch64/Utils

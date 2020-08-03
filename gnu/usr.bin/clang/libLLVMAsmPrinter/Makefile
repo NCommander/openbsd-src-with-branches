@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2019/03/05 09:44:40 jsg Exp $
+# $OpenBSD: Makefile,v 1.6 2019/06/23 22:07:39 patrick Exp $
 
 LIB=	LLVMAsmPrinter
 NOPROFILE=
@@ -29,4 +29,4 @@ SRCS+=	ARMException.cpp \
 	WinCFGuard.cpp \
 	WinException.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/lib/CodeGen/AsmPrinter
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/CodeGen/AsmPrinter

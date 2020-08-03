@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2019/01/27 16:59:42 patrick Exp $
+# $OpenBSD: Makefile,v 1.3 2019/06/23 22:07:43 patrick Exp $
 
 LIB=	lldbCore
 NOPIC=
@@ -22,6 +22,7 @@ SRCS=	Address.cpp \
 	FormatEntity.cpp \
 	Highlighter.cpp \
 	IOHandler.cpp \
+	IOHandlerCursesGUI.cpp \
 	Mangled.cpp \
 	Module.cpp \
 	ModuleChild.cpp \
@@ -50,7 +51,7 @@ SRCS=	Address.cpp \
 	ValueObjectSyntheticFilter.cpp \
 	ValueObjectVariable.cpp \
 
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Core
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Core
 
 install:
 	@# Nothing here so far ...
@@ -59,3 +60,4 @@ install:
 
 CPPFLAGS+=	${LLDB_INCLUDES}
 CPPFLAGS+=	${CLANG_INCLUDES}
+CPPFLAGS+=	-I${.OBJDIR}/../include/lldb/Core

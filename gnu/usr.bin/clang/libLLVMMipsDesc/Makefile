@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:35 espie Exp $
+# $OpenBSD: Makefile,v 1.3 2019/03/05 09:44:41 jsg Exp $
 
 LIB=	LLVMMipsDesc
 NOPROFILE=
@@ -10,6 +10,7 @@ SRCS+=	MipsABIInfo.cpp \
 	MipsAsmBackend.cpp \
 	MipsELFObjectWriter.cpp \
 	MipsELFStreamer.cpp \
+	MipsInstPrinter.cpp \
 	MipsMCAsmInfo.cpp \
 	MipsMCCodeEmitter.cpp \
 	MipsMCExpr.cpp \
@@ -18,4 +19,4 @@ SRCS+=	MipsABIInfo.cpp \
 	MipsOptionRecord.cpp \
 	MipsTargetStreamer.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/lib/Target/Mips/MCTargetDesc
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/Target/Mips/MCTargetDesc

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2019/01/29 00:18:23 jsg Exp $
+# $OpenBSD: Makefile,v 1.2 2019/03/05 09:44:39 jsg Exp $
 
 LIB=	LLVMAMDGPUAsmParser
 NOPROFILE=
@@ -8,4 +8,4 @@ CPPFLAGS+=	-I${.OBJDIR}/../include/llvm/AMDGPU \
 
 SRCS+=	AMDGPUAsmParser.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/lib/Target/AMDGPU/AsmParser
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/Target/AMDGPU/AsmParser

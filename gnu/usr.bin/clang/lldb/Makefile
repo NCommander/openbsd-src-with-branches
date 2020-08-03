@@ -1,10 +1,11 @@
-# $OpenBSD: Makefile,v 1.5 2019/03/05 09:44:42 jsg Exp $
+# $OpenBSD: Makefile,v 1.6 2019/06/23 22:07:45 patrick Exp $
 
 .include <bsd.own.mk>
 
 NOPROG=	lldb
 BINDIR=	/usr/bin
 LIBEXECDIR=/usr/libexec
+
 SRCS=	Driver.cpp \
 	Platform.cpp \
 	lldb.cpp
@@ -14,9 +15,9 @@ LDADD+=		-lcurses -ledit -lpanel
 CPPFLAGS+=	${LLDB_INCLUDES}
 CPPFLAGS+=	${CLANG_INCLUDES}
 
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/tools/driver
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/docs
+.PATH:	${.CURDIR}/../../../llvm/lldb/source
+.PATH:	${.CURDIR}/../../../llvm/lldb/tools/driver
+.PATH:	${.CURDIR}/../../../llvm/lldb/docs
 
 LLVM_LIBDEPS=	clangAST \
 		clangAnalysis \

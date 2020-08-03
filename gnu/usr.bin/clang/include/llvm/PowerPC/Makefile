@@ -1,8 +1,8 @@
-# $OpenBSD: Makefile,v 1.1 2016/09/19 11:39:05 pascal Exp $
+# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:34 espie Exp $
 
 .include <bsd.own.mk>
 
-LLVM_SRCS=	${.CURDIR}/../../../../../llvm
+LLVM_SRCS=	${.CURDIR}/../../../../../llvm/llvm
 
 HDRS=	PPCGenAsmMatcher.inc PPCGenAsmWriter.inc \
 	PPCGenCallingConv.inc \

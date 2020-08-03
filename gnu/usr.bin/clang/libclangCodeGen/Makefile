@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2017/10/04 20:57:10 patrick Exp $
+# $OpenBSD: Makefile,v 1.6 2019/01/27 16:59:42 patrick Exp $
 
 LIB=	clangCodeGen
 NOPIC=
@@ -58,12 +58,13 @@ SRCS=	BackendUtil.cpp \
 	MicrosoftCXXABI.cpp \
 	ModuleBuilder.cpp \
 	ObjectFilePCHContainerOperations.cpp \
+	PatternInit.cpp \
 	SanitizerMetadata.cpp \
 	SwiftCallingConv.cpp \
 	TargetInfo.cpp \
 	VarBypassDetector.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/tools/clang/lib/CodeGen
+.PATH:	${.CURDIR}/../../../llvm/clang/lib/CodeGen
 
 install:
 	@# Nothing here so far ...

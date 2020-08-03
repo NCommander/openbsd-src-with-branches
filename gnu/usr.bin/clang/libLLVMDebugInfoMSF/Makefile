@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2017/10/04 20:57:09 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2019/03/05 09:44:40 jsg Exp $
 
 LIB=	LLVMDebugInfoMSF
 NOPROFILE=
@@ -10,4 +10,4 @@ SRCS+=	MappedBlockStream.cpp \
 	MSFCommon.cpp \
 	MSFError.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/lib/DebugInfo/MSF
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/DebugInfo/MSF

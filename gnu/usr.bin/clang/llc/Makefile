@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2019/03/05 09:44:42 jsg Exp $
+# $OpenBSD: Makefile,v 1.4 2019/03/06 14:35:28 jsg Exp $
 
 .include <bsd.own.mk>
 
@@ -7,7 +7,7 @@ NOMAN=
 
 SRCS=	llc.cpp
 
-.PATH: ${.CURDIR}/../../../llvm/tools/llc
+.PATH: ${.CURDIR}/../../../llvm/llvm/tools/llc
 
 LLVM_LIBDEPS=	LLVM
 

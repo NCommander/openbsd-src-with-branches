@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:35 espie Exp $
+# $OpenBSD: Makefile,v 1.3 2019/03/05 09:44:42 jsg Exp $
 
 LIB=	LLVMSparcDisassembler
 NOPROFILE=
@@ -8,4 +8,4 @@ CPPFLAGS+=	-I${.OBJDIR}/../include/llvm/Sparc \
 
 SRCS+=	SparcDisassembler.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/lib/Target/Sparc/Disassembler
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/Target/Sparc/Disassembler

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2017/10/04 20:57:09 patrick Exp $
+# $OpenBSD: Makefile,v 1.5 2019/03/05 09:44:41 jsg Exp $
 
 LIB=	LLVMSelectionDAG
 NOPROFILE=
@@ -29,4 +29,4 @@ SRCS+=	DAGCombiner.cpp \
 	ScheduleDAGVLIW.cpp \
 	TargetLowering.cpp
 
-.PATH:	${.CURDIR}/../../../llvm/lib/CodeGen/SelectionDAG
+.PATH:	${.CURDIR}/../../../llvm/llvm/lib/CodeGen/SelectionDAG

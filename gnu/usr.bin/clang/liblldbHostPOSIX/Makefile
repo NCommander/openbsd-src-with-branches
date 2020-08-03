@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2017/07/09 15:28:36 espie Exp $
+# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
 
 LIB=	lldbHostPOSIX
 NOPIC=
@@ -7,7 +7,7 @@ NOPROFILE=
 .include <bsd.own.mk>
 SRCS=	ConnectionFileDescriptorPosix.cpp \
 	DomainSocket.cpp \
-	FileSystem.cpp \
+	FileSystemPosix.cpp \
 	HostInfoPosix.cpp \
 	HostProcessPosix.cpp \
 	HostThreadPosix.cpp \
@@ -15,7 +15,7 @@ SRCS=	ConnectionFileDescriptorPosix.cpp \
 	PipePosix.cpp \
 	ProcessLauncherPosixFork.cpp \
 
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Host/posix
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Host/posix
 
 install:
 	@# Nothing here so far ...

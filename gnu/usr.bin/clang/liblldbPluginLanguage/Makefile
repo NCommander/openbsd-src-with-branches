@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
+# $OpenBSD: Makefile,v 1.2 2019/06/23 22:07:43 patrick Exp $
 
 LIB=	lldbPluginLanguage
 NOPIC=
@@ -40,10 +40,10 @@ SRCS=	BlockPointer.cpp \
 	ObjCLanguage.cpp \
 	ObjCPlusPlusLanguage.cpp \
 
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/Language/CPlusPlus
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/Language/ClangCommon
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/Language/ObjC
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/Language/ObjCPlusPlus
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/Language/CPlusPlus
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/Language/ClangCommon
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/Language/ObjC
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/Language/ObjCPlusPlus
 
 install:
 	@# Nothing here so far ...

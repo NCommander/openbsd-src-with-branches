@@ -1,12 +1,11 @@
-# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
+# $OpenBSD: Makefile,v 1.2 2019/01/27 16:59:42 patrick Exp $
 
 LIB=	lldbPluginDynamicLoader
 NOPIC=
 NOPROFILE=
 
 .include <bsd.own.mk>
-SRCS=	AuxVector.cpp \
-	DYLDRendezvous.cpp \
+SRCS=	DYLDRendezvous.cpp \
 	DynamicLoaderDarwin.cpp \
 	DynamicLoaderDarwinKernel.cpp \
 	DynamicLoaderHexagonDYLD.cpp \
@@ -17,12 +16,12 @@ SRCS=	AuxVector.cpp \
 	DynamicLoaderWindowsDYLD.cpp \
 	HexagonDYLDRendezvous.cpp \
 
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/DynamicLoader/Darwin-Kernel
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/DynamicLoader/Hexagon-DYLD
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/DynamicLoader/MacOSX-DYLD
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/DynamicLoader/POSIX-DYLD
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/DynamicLoader/Static
-.PATH:	${.CURDIR}/../../../llvm/tools/lldb/source/Plugins/DynamicLoader/Windows-DYLD
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/DynamicLoader/Darwin-Kernel
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/DynamicLoader/Hexagon-DYLD
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/DynamicLoader/MacOSX-DYLD
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/DynamicLoader/POSIX-DYLD
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/DynamicLoader/Static
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/DynamicLoader/Windows-DYLD
 
 install:
 	@# Nothing here so far ...
@@ -31,3 +30,4 @@ install:
 
 CPPFLAGS+=	${LLDB_INCLUDES}
 CPPFLAGS+=	${CLANG_INCLUDES}
+CPPFLAGS+=	-I${.OBJDIR}/../include/lldb/Plugins
