@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.8 2015/05/31 23:12:17 schwarze Exp $
+# $OpenBSD: Makefile,v 1.9 2017/06/14 14:01:34 schwarze Exp $
 
-REGRESS_TARGETS	= if ie close numeric register strcmp string before-Dd
-LINT_TARGETS	= if close
+REGRESS_TARGETS	= if ie close de numeric register strcmp string before-Dd
+LINT_TARGETS	= if close de
 
 .include <bsd.regress.mk>
