@@ -1,4 +1,4 @@
-/*	$OpenBSD: vis.c,v 1.19 2015/10/09 01:37:09 deraadt Exp $	*/
+/*	$OpenBSD: vis.c,v 1.20 2016/08/31 09:45:00 jsg Exp $	*/
 /*	$NetBSD: vis.c,v 1.4 1994/12/20 16:13:03 jtc Exp $	*/
 
 /*-
@@ -130,10 +130,11 @@ void
 process(FILE *fp)
 {
 	static int col = 0;
-	char *cp = "\0"+1;	/* so *(cp-1) starts out != '\n' */
+	char *cp = "\0";
 	int c, rachar; 
 	char buff[5];
 	
+	cp++;			/* so *(cp-1) starts out != '\n' */
 	c = getc(fp);
 	while (c != EOF) {
 		rachar = getc(fp);
