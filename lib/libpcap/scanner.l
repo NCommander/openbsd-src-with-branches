@@ -221,6 +221,7 @@ not		return '!';
 
 len|length	return LEN;
 rnd|random	return RND;
+sample		return SAMPLE;
 inbound		return INBOUND;
 outbound	return OUTBOUND;
 
