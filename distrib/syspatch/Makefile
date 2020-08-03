@@ -1,3 +1,0 @@
-.MAIN: all
-all:
-	# noop
