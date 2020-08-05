@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.358 2020/06/18 08:34:22 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.359 2020/07/06 09:14:20 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1662,8 +1662,6 @@ server_client_reset_state(struct client *c)
 		s = wp->screen;
 	if (s != NULL)
 		mode = s->mode;
-	if (c->prompt_string != NULL || c->message_string != NULL)
-		mode &= ~MODE_CURSOR;
 	log_debug("%s: client %s mode %x", __func__, c->name, mode);
 
 	/* Reset region and margin. */
