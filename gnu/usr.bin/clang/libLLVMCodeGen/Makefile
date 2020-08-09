@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.12 2019/06/23 22:07:39 patrick Exp $
+# $OpenBSD: Makefile,v 1.13 2020/08/03 14:45:25 patrick Exp $
 
 LIB=	LLVMCodeGen
 NOPROFILE=
@@ -123,6 +123,9 @@ SRCS+=	AggressiveAntiDepBreaker.cpp \
 	ProcessImplicitDefs.cpp \
 	PrologEpilogInserter.cpp \
 	PseudoSourceValue.cpp \
+	RDFGraph.cpp \
+	RDFLiveness.cpp \
+	RDFRegisters.cpp \
 	ReachingDefAnalysis.cpp \
 	RegAllocBase.cpp \
 	RegAllocBasic.cpp \
