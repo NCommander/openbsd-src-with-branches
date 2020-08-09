@@ -1,8 +1,0 @@
-top                                                             top
-file2                                                         | file1
-same1                                                           same1
-                                                              > file1only
-same2                                                           same2
-file2only                                                     <
-same3                                                           same3
-bottom                                                          bottom
