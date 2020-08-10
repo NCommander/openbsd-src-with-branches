@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.184 2020/05/28 15:48:29 otto Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.185 2020/06/24 22:03:45 cheloha Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -813,7 +813,7 @@ ffs_mountfs(struct vnode *devvp, struct mount *mp, struct proc *p)
 		printf("ffs_mountfs(): obsolete rotational table format, "
 		    "please use fsck_ffs(8) -c 1\n");
 #endif
-		error = EFTYPE;
+		error = EROFS;
 		goto out;
 	}
 
