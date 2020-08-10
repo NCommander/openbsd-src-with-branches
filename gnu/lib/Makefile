@@ -1,8 +1,8 @@
-#	$OpenBSD: Makefile,v 1.21 2017/04/17 15:53:21 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.22 2017/08/10 16:06:59 mortimer Exp $
 
 .include <bsd.own.mk>
 
-SUBDIR+=libiberty libreadline
+SUBDIR+=libcompiler_rt libiberty libreadline
 .if make(obj)
 SUBDIR+=libstdc++ libstdc++-v3 libsupc++-v3
 .else
