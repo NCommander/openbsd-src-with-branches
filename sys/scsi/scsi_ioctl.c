@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_ioctl.c,v 1.63 2019/12/07 15:16:24 krw Exp $	*/
+/*	$OpenBSD: scsi_ioctl.c,v 1.64 2020/07/16 14:44:55 krw Exp $	*/
 /*	$NetBSD: scsi_ioctl.c,v 1.23 1996/10/12 23:23:17 christos Exp $	*/
 
 /*
@@ -45,6 +45,7 @@
 #include <sys/fcntl.h>
 
 #include <scsi/scsi_all.h>
+#include <scsi/scsi_debug.h>
 #include <scsi/scsiconf.h>
 
 #include <sys/scsiio.h>
