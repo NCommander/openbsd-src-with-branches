@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.h,v 1.132 2020/01/23 02:46:49 dtucker Exp $ */
+/* $OpenBSD: readconf.h,v 1.133 2020/04/03 02:27:12 dtucker Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -97,6 +97,7 @@ typedef struct {
 	struct sshkey *certificates[SSH_MAX_CERTIFICATE_FILES];
 
 	int	add_keys_to_agent;
+	int	add_keys_to_agent_lifespan;
 	char   *identity_agent;		/* Optional path to ssh-agent socket */
 
 	/* Local TCP/IP forward requests. */
