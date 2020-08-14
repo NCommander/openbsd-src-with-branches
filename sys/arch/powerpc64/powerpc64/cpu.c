@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.14 2020/07/22 20:41:26 kettenis Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.15 2020/08/04 11:48:57 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -329,7 +329,7 @@ cpu_boot_secondary_processors(void)
 int
 cpu_intr(void *arg)
 {
-	struct cpu_info *ci;
+	struct cpu_info *ci = curcpu();
 
 	if (ci->ci_ipi_reason == IPI_DDB) {
 		ci->ci_ipi_reason = IPI_NOP;
