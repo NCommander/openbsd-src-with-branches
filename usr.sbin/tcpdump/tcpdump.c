@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpdump.c,v 1.92 2020/01/24 22:46:37 procter Exp $	*/
+/*	$OpenBSD: tcpdump.c,v 1.93 2020/06/21 05:00:18 dlg Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -365,6 +365,8 @@ main(int argc, char **argv)
 				packettype = PT_GRE;
 			else if (strcasecmp(optarg, "vxlan") == 0)
 				packettype = PT_VXLAN;
+			else if (strcasecmp(optarg, "geneve") == 0)
+				packettype = PT_GENEVE;
 			else if (strcasecmp(optarg, "erspan") == 0)
 				packettype = PT_ERSPAN;
 			else if (strcasecmp(optarg, "mpls") == 0)
