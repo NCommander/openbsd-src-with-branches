@@ -1,4 +1,4 @@
-/*	$OpenBSD: su.c,v 1.80 2020/07/08 10:35:06 jca Exp $	*/
+/*	$OpenBSD: su.c,v 1.81 2020/07/08 15:36:35 jca Exp $	*/
 
 /*
  * Copyright (c) 1988 The Regents of the University of California.
@@ -169,6 +169,8 @@ main(int argc, char **argv)
 	if (unveil(_PATH_SHELLS, "r") == -1)
 		err(1, "unveil");
 	if (unveil(_PATH_DEVDB, "r") == -1)
+		err(1, "unveil");
+	if (unveil(_PATH_NOLOGIN, "r") == -1)
 		err(1, "unveil");
 
 	for (;;) {
