@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls.h,v 1.42 2019/01/30 01:01:01 dlg Exp $	*/
+/*	$OpenBSD: mpls.h,v 1.43 2019/11/05 08:26:38 claudio Exp $	*/
 
 /*
  * Copyright (C) 1999, 2000 and 2001 AYAME Project, WIDE Project.
@@ -122,16 +122,6 @@ struct rt_mpls {
 	{ NULL, 0 }, \
 	{ "mapttl_ip", CTLTYPE_INT }, \
 	{ "mapttl_ip6", CTLTYPE_INT } \
-}
-
-#define MPLSCTL_VARS { \
-	NULL, \
-	NULL, \
-	&mpls_defttl, \
-	NULL, \
-	NULL, \
-	&mpls_mapttl_ip, \
-	&mpls_mapttl_ip6 \
 }
 
 #define IMR_TYPE_NONE			0
