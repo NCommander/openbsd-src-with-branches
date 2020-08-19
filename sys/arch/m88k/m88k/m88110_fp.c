@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88110_fp.c,v 1.10 2014/06/09 16:26:32 miod Exp $	*/
+/*	$OpenBSD: m88110_fp.c,v 1.11 2017/09/08 05:36:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007, Miodrag Vallat.
@@ -166,9 +166,7 @@ m88110_fpu_exception(struct trapframe *frame)
 
 deliver:
 		sv.sival_ptr = (void *)fault_addr;
-		KERNEL_LOCK();
 		trapsignal(p, sig, 0, fault_type, sv);
-		KERNEL_UNLOCK();
 	}
 }
 

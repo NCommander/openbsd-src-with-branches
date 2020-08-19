@@ -1,4 +1,4 @@
-/*	$OpenBSD: m88100_fp.c,v 1.3 2014/07/02 20:28:08 miod Exp $	*/
+/*	$OpenBSD: m88100_fp.c,v 1.4 2017/09/08 05:36:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007, 2014, Miodrag Vallat.
@@ -464,8 +464,6 @@ m88100_fpu_checksig(struct trapframe *frame, int sig, int fault_type)
 		}
 
 		sv.sival_ptr = (void *)(frame->tf_sxip & XIP_ADDR);
-		KERNEL_LOCK();
 		trapsignal(p, sig, 0, fault_type, sv);
-		KERNEL_UNLOCK();
 	}
 }

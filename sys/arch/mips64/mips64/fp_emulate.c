@@ -1,4 +1,4 @@
-/*	$OpenBSD: fp_emulate.c,v 1.21 2018/12/31 12:42:07 visa Exp $	*/
+/*	$OpenBSD: fp_emulate.c,v 1.22 2019/01/14 15:02:57 visa Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -431,9 +431,7 @@ deliver:
 	if (sig != 0) {
 		if (sig != SIGBUS && sig != SIGSEGV)
 			sv.sival_ptr = (void *)pc;
-		KERNEL_LOCK();
 		trapsignal(p, sig, 0, fault_type, sv);
-		KERNEL_UNLOCK();
 	}
 }
 
