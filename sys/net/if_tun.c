@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.224 2020/07/10 13:26:42 patrick Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.225 2020/07/22 02:16:02 dlg Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -235,7 +235,6 @@ tun_create(struct if_clone *ifc, int unit, int flags)
 	ifp->if_start = tun_start;
 	ifp->if_hardmtu = TUNMRU;
 	ifp->if_link_state = LINK_STATE_DOWN;
-	ifq_set_maxlen(&ifp->if_snd, IFQ_MAXLEN);
 
 	if_counters_alloc(ifp);
 
