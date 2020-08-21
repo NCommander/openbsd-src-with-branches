@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_lsdb.c,v 1.43 2020/02/17 08:12:22 denis Exp $ */
+/*	$OpenBSD: rde_lsdb.c,v 1.44 2020/08/21 08:32:23 jan Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -787,6 +787,7 @@ lsa_dump(struct lsa_tree *tree, int imsg_type, pid_t pid)
 		case IMSG_CTL_SHOW_DB_INTRA:
 			if (v->type == LSA_TYPE_INTRA_A_PREFIX)
 				break;
+			continue;
 		case IMSG_CTL_SHOW_DB_SUM:
 			if (v->type == LSA_TYPE_INTER_A_PREFIX)
 				break;
