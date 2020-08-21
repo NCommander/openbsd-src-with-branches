@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.c,v 1.42 2020/04/03 09:11:23 tobhe Exp $	*/
+/*	$OpenBSD: iked.c,v 1.43 2020/04/09 19:55:19 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -392,7 +392,7 @@ parent_dispatch_ca(int fd, struct privsep_proc *p, struct imsg *imsg)
 
 	switch (imsg->hdr.type) {
 	case IMSG_OCSP_FD:
-		ocsp_connect(env);
+		ocsp_connect(env, imsg);
 		break;
 	default:
 		return (-1);
