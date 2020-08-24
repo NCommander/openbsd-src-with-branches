@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_boot.c,v 1.44 2017/11/14 16:01:55 tb Exp $ */
+/*	$OpenBSD: nfs_boot.c,v 1.45 2018/07/30 12:22:14 mpi Exp $ */
 /*	$NetBSD: nfs_boot.c,v 1.26 1996/05/07 02:51:25 thorpej Exp $	*/
 
 /*
@@ -136,17 +136,9 @@ nfs_boot_init(struct nfs_diskless *nd, struct proc *procp)
 	/*
 	 * Find a network interface.
 	 */
-	if (nfsbootdevname)
-		ifp = ifunit(nfsbootdevname);
-	else {
-		TAILQ_FOREACH(ifp, &ifnet, if_list) {
-			if ((ifp->if_flags &
-			     (IFF_LOOPBACK|IFF_POINTOPOINT)) == 0)
-				break;
-		}
-	}
-	if (ifp == NULL)
+	if (nfsbootdevname == NULL || (ifp = ifunit(nfsbootdevname)) == NULL)
 		panic("nfs_boot: no suitable interface");
+
 	bcopy(ifp->if_xname, ireq.ifr_name, IFNAMSIZ);
 	printf("nfs_boot: using interface %s, with revarp & bootparams\n",
 	    ireq.ifr_name);
