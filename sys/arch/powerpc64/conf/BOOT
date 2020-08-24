@@ -1,4 +1,4 @@
-# $OpenBSD: BOOT,v 1.5 2020/08/03 19:05:46 deraadt Exp $
+# $OpenBSD: BOOT,v 1.6 2020/08/24 13:20:34 kettenis Exp $
 
 machine		powerpc64
 maxusers	4
@@ -32,6 +32,7 @@ opalcons*	at fdt?
 phb*		at fdt?
 pci*		at phb?
 xics*		at fdt?
+xicp*		at fdt?
 xive*		at fdt?
 
 ppb*		at pci?
