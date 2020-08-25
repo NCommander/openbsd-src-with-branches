@@ -1,4 +1,4 @@
-/*	$OpenBSD: utpms.c,v 1.7 2016/06/05 20:02:36 bru Exp $	*/
+/*	$OpenBSD: utpms.c,v 1.8 2020/08/23 11:08:02 mglocker Exp $	*/
 
 /*
  * Copyright (c) 2005, Johan Wallén
@@ -114,6 +114,7 @@
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>
+#include <dev/usb/usbdi_util.h>
 #include <dev/usb/usbdevs.h>
 #include <dev/usb/uhidev.h>
 
