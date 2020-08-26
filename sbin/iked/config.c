@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.63 2020/08/24 21:00:21 tobhe Exp $	*/
+/*	$OpenBSD: config.c,v 1.64 2020/08/25 15:08:07 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -1022,6 +1022,8 @@ config_getkey(struct iked *env, struct imsg *imsg)
 
 	explicit_bzero(imsg->data, len);
 	ca_getkey(&env->sc_ps, &id, imsg->hdr.type);
+
+	ikev2_reset_alive_timer(env);
 
 	return (0);
 }
