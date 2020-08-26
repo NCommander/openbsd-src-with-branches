@@ -1,4 +1,4 @@
-/* $OpenBSD: dsdt.c,v 1.252 2020/07/21 03:48:06 deraadt Exp $ */
+/* $OpenBSD: dsdt.c,v 1.253 2020/08/26 03:29:06 visa Exp $ */
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
  *
@@ -993,6 +993,8 @@ aml_copyvalue(struct aml_value *lhs, struct aml_value *rhs)
 	case AML_OBJTYPE_OBJREF:
 		lhs->v_objref = rhs->v_objref;
 		aml_addref(lhs->v_objref.ref, "");
+		break;
+	case AML_OBJTYPE_DEVICE:
 		break;
 	default:
 		printf("copyvalue: %x", rhs->type);
