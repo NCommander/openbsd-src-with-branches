@@ -1,4 +1,4 @@
-/*	$OpenBSD: asmc.c,v 1.31 2017/02/14 15:47:12 jcs Exp $	*/
+/*	$OpenBSD: asmc.c,v 1.32 2017/08/22 11:00:39 jsg Exp $	*/
 /*
  * Copyright (c) 2015 Joerg Jung <jung@openbsd.org>
  *
@@ -225,8 +225,6 @@ static const char *asmc_fan_loc[] = {
 static const char *asmc_light_desc[ASMC_MAXLIGHT] = {
 	"left", "right"
 };
-
-extern char *hw_vendor, *hw_prod;
 
 int
 asmc_match(struct device *parent, void *match, void *aux)

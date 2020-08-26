@@ -1,4 +1,4 @@
-/* $OpenBSD: mainbus.c,v 1.17 2020/06/17 08:00:22 kettenis Exp $ */
+/* $OpenBSD: mainbus.c,v 1.18 2020/07/04 13:01:16 kettenis Exp $ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
@@ -94,8 +94,6 @@ mainbus_match(struct device *parent, void *cfdata, void *aux)
 	return (1);
 }
 
-extern char *hw_prod;
-extern char *hw_serial;
 void agtimer_init(void);
 
 void

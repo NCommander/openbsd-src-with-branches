@@ -1,4 +1,4 @@
-/* $OpenBSD: acpials.c,v 1.2 2016/12/23 19:55:02 kettenis Exp $ */
+/* $OpenBSD: acpials.c,v 1.3 2017/03/13 14:44:37 jcs Exp $ */
 /*
  * Ambient Light Sensor device driver
  * ACPI 5.0 spec section 9.2
@@ -73,8 +73,6 @@ const char *acpials_hids[] = {
 	"ACPI0008",
 	NULL
 };
-
-extern char *hw_vendor;
 
 int
 acpials_match(struct device *parent, void *match, void *aux)

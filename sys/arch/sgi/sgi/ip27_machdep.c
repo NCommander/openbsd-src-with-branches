@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip27_machdep.c,v 1.80 2019/12/20 13:29:23 visa Exp $	*/
+/*	$OpenBSD: ip27_machdep.c,v 1.81 2020/07/06 13:33:08 pirofti Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009 Miodrag Vallat.
@@ -55,8 +55,6 @@
 #include <dev/ic/comvar.h>
 
 #include <dev/cons.h>
-
-extern char *hw_prod;
 
 extern void (*md_halt)(int);
 

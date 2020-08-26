@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.45 2020/07/12 20:32:20 naddy Exp $	*/
+/*	$OpenBSD: clock.c,v 1.46 2020/07/17 20:15:43 gkoehler Exp $	*/
 /*	$NetBSD: clock.c,v 1.1 1996/09/30 16:34:40 ws Exp $	*/
 
 /*
@@ -64,7 +64,6 @@ static struct timecounter tb_timecounter = {
 static const char *calibrate_tc_models[] = {
 	"PowerMac10,1"
 };
-extern char *hw_prod;
 
 time_read_t  *time_read;
 time_write_t *time_write;

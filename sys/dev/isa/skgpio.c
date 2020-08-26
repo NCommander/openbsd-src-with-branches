@@ -1,4 +1,4 @@
-/*	$OpenBSD: skgpio.c,v 1.2 2014/12/11 20:24:48 miod Exp $ */
+/*	$OpenBSD: skgpio.c,v 1.3 2015/03/14 03:38:47 jsg Exp $ */
 
 /*
  * Copyright (c) 2014 Matt Dainty <matt@bodgit-n-scarper.com>
@@ -44,8 +44,6 @@
 #define	SKGPIO_NLEDS		2	/* Number of LEDs */
 #define	SKGPIO_LED_ERROR	0x01c	/* Offset to error LED */
 #define	SKGPIO_LED_READY	0x01d	/* Offset to ready LED */
-
-extern char *hw_vendor, *hw_prod;
 
 const u_int skgpio_led_offset[SKGPIO_NLEDS] = {
 	SKGPIO_LED_ERROR, SKGPIO_LED_READY

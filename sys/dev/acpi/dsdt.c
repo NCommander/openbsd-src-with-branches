@@ -1,4 +1,4 @@
-/* $OpenBSD: dsdt.c,v 1.251 2020/05/09 10:34:25 jca Exp $ */
+/* $OpenBSD: dsdt.c,v 1.252 2020/07/21 03:48:06 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
  *
@@ -107,8 +107,6 @@ __dead void		_aml_die(const char *fn, int line, const char *fmt, ...);
 
 void aml_notify_task(void *, int);
 void acpi_poll_notify_task(void *, int);
-
-extern char		*hw_vendor;
 
 /*
  * @@@: Global variables

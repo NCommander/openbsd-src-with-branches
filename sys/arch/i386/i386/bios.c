@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.124 2019/10/23 10:14:46 jsg Exp $	*/
+/*	$OpenBSD: bios.c,v 1.125 2020/05/29 04:42:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -126,10 +126,6 @@ void		smbios_info(char*);
 
 bios_diskinfo_t *bios_getdiskinfo(dev_t);
 
-/*
- * used by hw_sysctl
- */
-extern char *hw_vendor, *hw_prod, *hw_uuid, *hw_serial, *hw_ver;
 const char *smbios_uninfo[] = {
 	"System",
 	"Not ",

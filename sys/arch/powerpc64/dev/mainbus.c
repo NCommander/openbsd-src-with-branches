@@ -1,4 +1,4 @@
-/* $OpenBSD: mainbus.c,v 1.3 2020/06/08 18:44:32 kettenis Exp $ */
+/* $OpenBSD: mainbus.c,v 1.4 2020/07/21 20:23:35 kettenis Exp $ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
@@ -109,9 +109,6 @@ mainbus_match(struct device *parent, void *cfdata, void *aux)
 {
 	return (1);
 }
-
-extern char *hw_prod;
-extern char *hw_serial;
 
 void
 mainbus_attach(struct device *parent, struct device *self, void *aux)

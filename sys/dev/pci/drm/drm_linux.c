@@ -1,4 +1,4 @@
-/*	$OpenBSD: drm_linux.c,v 1.61 2020/07/02 11:01:21 jsg Exp $	*/
+/*	$OpenBSD: drm_linux.c,v 1.62 2020/08/03 07:02:08 jsg Exp $	*/
 /*
  * Copyright (c) 2013 Jonathan Gray <jsg@openbsd.org>
  * Copyright (c) 2015, 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -17,6 +17,7 @@
  */
 
 #include <sys/types.h>
+#include <sys/systm.h>
 #include <sys/param.h>
 #include <sys/event.h>
 #include <sys/filedesc.h>
@@ -302,8 +303,6 @@ kthread_stop(struct proc *p)
 	LIST_REMOVE(thread, next);
 	free(thread, M_DRM, sizeof(*thread));
 }
-
-extern char *hw_vendor, *hw_prod, *hw_ver;
 
 #if NBIOS > 0
 extern char smbios_board_vendor[];

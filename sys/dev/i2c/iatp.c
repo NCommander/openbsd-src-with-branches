@@ -1,4 +1,4 @@
-/* $OpenBSD: iatp.c,v 1.6 2018/07/30 15:56:30 jcs Exp $ */
+/* $OpenBSD: iatp.c,v 1.7 2020/01/09 14:35:19 mpi Exp $ */
 /*
  * Atmel maXTouch i2c touchscreen/touchpad driver
  * Copyright (c) 2016 joshua stein <jcs@openbsd.org>
@@ -211,9 +211,6 @@ int	iatp_t7_set_power_mode(struct iatp_softc *, int);
 void	iatp_t19_proc_msg(struct iatp_softc *, uint8_t *);
 int	iatp_t44_read_count(struct iatp_softc *);
 void	iatp_t100_proc_msg(struct iatp_softc *, uint8_t *);
-
-/* for gpio pin mapping */
-extern char *hw_vendor, *hw_prod;
 
 const struct wsmouse_accessops iatp_accessops = {
 	iatp_enable,
