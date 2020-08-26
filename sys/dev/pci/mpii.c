@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpii.c,v 1.137 2020/07/20 14:41:13 krw Exp $	*/
+/*	$OpenBSD: mpii.c,v 1.138 2020/07/22 13:16:04 krw Exp $	*/
 /*
  * Copyright (c) 2010, 2012 Mike Belopuhov
  * Copyright (c) 2009 James Giannoules
@@ -954,7 +954,6 @@ mpii_scsi_probe(struct scsi_link *link)
 	if (ISSET(lemtoh32(&pg0.device_info),
 	    MPII_CFG_SAS_DEV_0_DEVINFO_ATAPI_DEVICE)) {
 		link->flags |= SDEV_ATAPI;
-		link->quirks |= SDEV_ONLYBIG;
 	}
 
 	return (0);
