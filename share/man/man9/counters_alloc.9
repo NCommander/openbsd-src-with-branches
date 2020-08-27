@@ -1,4 +1,4 @@
-.\"	$OpenBSD: counters_alloc.9,v 1.9 2016/11/14 06:57:39 jmc Exp $
+.\"	$OpenBSD: counters_alloc.9,v 1.10 2017/02/06 07:09:19 jca Exp $
 .\"
 .\" Copyright (c) 2016 David Gwynne <dlg@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: November 14 2016 $
+.Dd $Mdocdate: February 6 2017 $
 .Dt COUNTERS_ALLOC 9
 .Os
 .Sh NAME
@@ -77,7 +77,7 @@ state.
 Updates to counters should be limited to addition or subtraction
 of uint64_t values.
 .Pp
-An alternate implemention of the API is provided on uni-processor
+An alternate implementation of the API is provided on uni-processor
 (i.e. when the kernel is not built with
 .Dv MULTIPROCESSOR
 defined)
