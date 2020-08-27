@@ -1,4 +1,4 @@
-.\"	$OpenBSD: bridge.4,v 1.78 2019/08/16 01:55:21 dlg Exp $
+.\"	$OpenBSD: bridge.4,v 1.79 2019/08/16 05:33:50 jmc Exp $
 .\"
 .\" Copyright (c) 1999-2001 Jason L. Wright (jason@thought.net)
 .\" All rights reserved.
@@ -148,6 +148,8 @@ Some
 .Xr ioctl 2
 calls are used by
 .Xr switch 4
+and
+.Xr tpmr 4
 as well.
 .Bl -tag -width Ds
 .It Dv SIOCBRDGIFS Fa "struct ifbifconf *"
@@ -668,6 +670,7 @@ and certificates, to impersonate the protected host(s)).
 .Xr netintro 4 ,
 .Xr pf 4 ,
 .Xr switch 4 ,
+.Xr tpmr 4 ,
 .Xr vether 4 ,
 .Xr hostname.if 5 ,
 .Xr ifconfig 8 ,
