@@ -1,4 +1,4 @@
-/*	$OpenBSD: who.c,v 1.27 2015/10/21 16:06:57 millert Exp $	*/
+/*	$OpenBSD: who.c,v 1.28 2018/08/08 22:55:14 deraadt Exp $	*/
 /*	$NetBSD: who.c,v 1.4 1994/12/07 04:28:49 jtc Exp $	*/
 
 /*
@@ -124,6 +124,10 @@ main(int argc, char *argv[])
 
 	if (unveil(_PATH_UTMP, "r") == -1)
 		err(1, "unveil");
+	if (show_term || show_idle) {
+		if (unveil(_PATH_DEV, "r") == -1)
+			err(1, "unveil");
+	}
 	switch (argc) {
 	case 0:					/* who */
 		if (pledge("stdio rpath getpw", NULL) == -1)
