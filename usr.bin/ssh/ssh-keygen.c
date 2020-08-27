@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.415 2020/08/03 02:53:51 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.416 2020/08/27 01:06:18 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -3607,6 +3607,11 @@ main(int argc, char **argv)
 				fatal("Too many incorrect PINs");
 			passphrase = read_passphrase("Enter PIN for "
 			    "authenticator: ", RP_ALLOW_STDIN);
+			if (!quiet) {
+				printf("You may need to touch your "
+				    "authenticator (again) to authorize "
+				    "key generation.\n");
+			}
 		}
 		if (passphrase != NULL) {
 			freezero(passphrase, strlen(passphrase));
