@@ -1,4 +1,4 @@
-/*	$OpenBSD: kcov.c,v 1.22 2020/08/01 08:40:20 anton Exp $	*/
+/*	$OpenBSD: kcov.c,v 1.23 2020/08/14 11:51:07 anton Exp $	*/
 
 /*
  * Copyright (c) 2018 Anton Lindqvist <anton@openbsd.org>
@@ -593,7 +593,7 @@ kcov_remote_register_locked(int subsystem, void *id)
 		if (tmp == NULL)
 			break;
 		if (tmp->kr_state != KCOV_STATE_DYING) {
-			pool_put(&kr_pool, tmp);
+			pool_put(&kr_pool, kr);
 			return (NULL);
 		}
 		/*
