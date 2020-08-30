@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.125 2020/08/27 10:47:52 yasuoka Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.126 2020/08/30 19:45:20 mvs Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -48,7 +48,6 @@
 
 #include <net/radix.h>
 #include <net/route.h>
-#include <net/netisr.h>
 #include <net/ppp_defs.h>
 #include <net/ppp-comp.h>
 
