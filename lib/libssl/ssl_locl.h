@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.284 2020/08/30 15:40:20 jsing Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.285 2020/08/31 14:04:51 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1396,6 +1396,13 @@ int ssl_parse_serverhello_tlsext(SSL *s, unsigned char **data,
 int ssl_check_clienthello_tlsext_early(SSL *s);
 int ssl_check_clienthello_tlsext_late(SSL *s);
 int ssl_check_serverhello_tlsext(SSL *s);
+
+#define TLS1_TICKET_FATAL_ERROR		-1
+#define TLS1_TICKET_NONE		 0
+#define TLS1_TICKET_EMPTY		 1
+#define TLS1_TICKET_NOT_DECRYPTED	 2
+#define TLS1_TICKET_DECRYPTED		 3
+#define TLS1_TICKET_DECRYPTED_RENEW	 4
 
 int tls1_process_ticket(SSL *s, CBS *session_id, CBS *ext_block,
     int *alert, SSL_SESSION **ret);
