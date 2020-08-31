@@ -97,3 +97,4 @@ the reserved field if it is not empty.
 The data is concatenated and passed to the SSH signing
 function.
 
+$OpenBSD$

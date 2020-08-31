@@ -368,3 +368,4 @@ In OpenSSH, the middleware will be invoked by using a similar mechanism to
 ssh-pkcs11-helper to provide address-space containment of the
 middleware from ssh-agent.
 
+$OpenBSD$
