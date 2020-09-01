@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.57 2020/08/23 10:07:51 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.58 2020/08/25 17:49:58 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -872,6 +872,17 @@ sys_sigreturn(struct proc *p, void *v, register_t *retval)
 	p->p_sigmask = ksc.sc_mask & ~sigcantmask;
 
 	return EJUSTRETURN;
+}
+
+/*
+ * Notify the current process (p) that it has a signal pending,
+ * process as soon as possible.
+ */
+void
+signotify(struct proc *p)
+{
+	aston(p);
+	cpu_kick(p->p_cpu);
 }
 
 void	cpu_switchto_asm(struct proc *, struct proc *);
