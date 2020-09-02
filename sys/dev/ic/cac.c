@@ -1,4 +1,4 @@
-/*	$OpenBSD: cac.c,v 1.67 2020/07/28 22:26:32 krw Exp $	*/
+/*	$OpenBSD: cac.c,v 1.68 2020/09/01 12:17:53 krw Exp $	*/
 /*	$NetBSD: cac.c,v 1.15 2000/11/08 19:20:35 ad Exp $	*/
 
 /*
@@ -630,7 +630,7 @@ cac_scsi_cmd(xs)
 		bzero(&inq, sizeof inq);
 		inq.device = T_DIRECT;
 		inq.dev_qual2 = 0;
-		inq.version = 2;
+		inq.version = SCSI_REV_2;
 		inq.response_format = 2;
 		inq.additional_length = 32;
 		inq.flags |= SID_CmdQue;
