@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmctl.c,v 1.73 2019/12/15 14:36:59 kn Exp $	*/
+/*	$OpenBSD: vmctl.c,v 1.74 2020/03/11 12:47:49 jasper Exp $	*/
 
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
@@ -789,7 +789,7 @@ print_vm_info(struct vmop_info_result *list, size_t ct)
 					tty = "-";
 				/* get tty - skip /dev/ path */
 				else if ((tty = strrchr(vmi->vir_ttyname,
-				    '/')) == NULL || ++tty == '\0')
+				    '/')) == NULL || *++tty == '\0')
 					tty = list[i].vir_ttyname;
 
 				(void)fmt_scaled(vir->vir_used_size, curmem);
