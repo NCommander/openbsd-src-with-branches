@@ -1,4 +1,4 @@
-/*	$OpenBSD: octboot.c,v 1.2 2020/05/26 13:21:58 visa Exp $	*/
+/*	$OpenBSD: octboot.c,v 1.3 2020/06/13 14:00:50 visa Exp $	*/
 
 /*
  * Copyright (c) 2019-2020 Visa Hankala
@@ -21,6 +21,7 @@
 #include <sys/exec_elf.h>
 #include <sys/malloc.h>
 #include <sys/proc.h>
+#include <sys/mount.h>
 
 #include <uvm/uvm_extern.h>
 
@@ -294,6 +295,8 @@ octboot_kexec(struct octboot_kexec_args *kargs, struct proc *p)
 		octeon_boot_desc->argc = argc;
 		maxp += size;
 	}
+
+	vfs_shutdown(p);
 
 	printf("launching kernel\n");
 
