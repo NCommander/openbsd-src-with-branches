@@ -1,4 +1,4 @@
-/* $OpenBSD: ampintc.c,v 1.18 2020/07/14 15:52:20 patrick Exp $ */
+/* $OpenBSD: ampintc.c,v 1.19 2020/07/17 08:07:33 patrick Exp $ */
 /*
  * Copyright (c) 2007,2009,2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -958,7 +958,9 @@ int
 ampintc_ipi_ddb(void *v)
 {
 	/* XXX */
+#ifdef DDB
 	db_enter();
+#endif
 	return 1;
 }
 
