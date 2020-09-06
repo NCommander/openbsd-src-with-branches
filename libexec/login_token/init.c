@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.4 2013/01/13 21:21:17 fgsch Exp $	*/
+/*	$OpenBSD: init.c,v 1.5 2013/12/03 01:29:00 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1996 Berkeley Software Design, Inc. All rights reserved.
@@ -61,6 +61,8 @@ static struct token_types types[] = {
 	    TOKEN_DECMODE | TOKEN_HEXMODE | TOKEN_RIM,		/* avail */
 	    TOKEN_HEXMODE },					/* default */
 };
+
+struct token_types *tt;
 
 static struct {
 	char	*name;
