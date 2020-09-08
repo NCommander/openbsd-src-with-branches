@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rkpwm.c,v 1.1 2019/12/03 09:08:48 patrick Exp $	*/
 /*
  * Copyright (c) 2019 Krystian Lewandowski
  * Copyright (c) 2019 Patrick Wildt <patrick@blueri.se>
@@ -78,7 +78,8 @@ rkpwm_match(struct device *parent, void *match, void *aux)
 {
 	struct fdt_attach_args *faa = aux;
 
-	return OF_is_compatible(faa->fa_node, "rockchip,rk3288-pwm");
+	return (OF_is_compatible(faa->fa_node, "rockchip,rk3288-pwm") ||
+	    OF_is_compatible(faa->fa_node, "rockchip,rk3328-pwm"));
 }
 
 void
