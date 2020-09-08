@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.68 2020/08/18 21:02:49 tobhe Exp $	*/
+/*	$OpenBSD: ca.c,v 1.69 2020/08/21 14:30:17 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -575,11 +575,15 @@ ca_getreq(struct iked *env, struct imsg *imsg)
 		 * was found and this was the last CERTREQ, try to find one with
 		 * subjectAltName matching the ID
 		 */
-		if (more)
+		if (cert == NULL && more)
 			return (0);
 
 		if (cert == NULL)
 			cert = ca_by_subjectaltname(store->ca_certs, &id);
+
+		/* Set type if coming from fallback */
+		if (cert != NULL)
+			type = IKEV2_CERT_X509_CERT;
 
 		/* If there is no matching certificate use local raw pubkey */
 		if (cert == NULL) {
