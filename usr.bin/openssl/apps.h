@@ -1,4 +1,4 @@
-/* $OpenBSD: apps.h,v 1.22 2019/02/09 06:27:37 inoguchi Exp $ */
+/* $OpenBSD: apps.h,v 1.23 2019/07/14 03:30:45 guenther Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -303,6 +303,7 @@ struct option {
 		OPTION_VALUE,
 		OPTION_VALUE_AND,
 		OPTION_VALUE_OR,
+		OPTION_UL_VALUE_OR,
 	} type;
 	union {
 		char **arg;
@@ -312,9 +313,11 @@ struct option {
 		int (*func)(void);
 		long *lvalue;
 		int *value;
+		unsigned long *ulvalue;
 		time_t *tvalue;
 	} opt;
 	const int value;
+	const unsigned long ulvalue;
 };
 
 void options_usage(const struct option *opts);
