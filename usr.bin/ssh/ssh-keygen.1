@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ssh-keygen.1,v 1.207 2020/08/27 01:08:45 djm Exp $
+.\"	$OpenBSD: ssh-keygen.1,v 1.208 2020/08/27 06:15:22 jmc Exp $
 .\"
 .\" Author: Tatu Ylonen <ylo@cs.hut.fi>
 .\" Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -520,9 +520,10 @@ Not all FIDO tokens support this option.
 Currently PIN authentication is the only supported verification method,
 but other methods may be supported in the future.
 .It Cm write-attestation Ns = Ns Ar path
-May be used at key generation time to record the attestation certificate
+May be used at key generation time to record the attestation data
 returned from FIDO tokens during key generation.
-By default this information is discarded.
+Please note that this information is potentially sensitive.
+By default, this information is discarded.
 .El
 .Pp
 The
