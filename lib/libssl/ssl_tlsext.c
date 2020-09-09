@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_tlsext.c,v 1.80 2020/08/03 19:43:16 tb Exp $ */
+/* $OpenBSD: ssl_tlsext.c,v 1.81 2020/08/03 19:46:55 tb Exp $ */
 /*
  * Copyright (c) 2016, 2017, 2019 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2017 Doug Hogan <doug@openbsd.org>
@@ -91,6 +91,7 @@ tlsext_alpn_server_parse(SSL *s, uint16_t msg_types, CBS *cbs, int *alert)
 	if (r == SSL_TLSEXT_ERR_OK) {
 		free(S3I(s)->alpn_selected);
 		if ((S3I(s)->alpn_selected = malloc(selected_len)) == NULL) {
+			S3I(s)->alpn_selected_len = 0;
 			*alert = SSL_AD_INTERNAL_ERROR;
 			return 0;
 		}
@@ -2193,6 +2194,7 @@ tlsext_server_reset_state(SSL *s)
 	S3I(s)->renegotiate_seen = 0;
 	free(S3I(s)->alpn_selected);
 	S3I(s)->alpn_selected = NULL;
+	S3I(s)->alpn_selected_len = 0;
 	s->internal->srtp_profile = NULL;
 }
 
@@ -2218,6 +2220,7 @@ tlsext_client_reset_state(SSL *s)
 	S3I(s)->renegotiate_seen = 0;
 	free(S3I(s)->alpn_selected);
 	S3I(s)->alpn_selected = NULL;
+	S3I(s)->alpn_selected_len = 0;
 }
 
 int
