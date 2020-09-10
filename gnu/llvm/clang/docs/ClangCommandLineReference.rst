@@ -818,6 +818,10 @@ Enables the experimental global instruction selector
 
 Enables an experimental new pass manager in LLVM.
 
+.. option:: -fexperimental-strict-floating-point
+
+Enables the use of non-default rounding modes and non-default exception handling on targets that are not currently ready.
+
 .. option:: -ffine-grained-bitfield-accesses, -fno-fine-grained-bitfield-accesses
 
 Use separate accesses for consecutive bitfield runs with legal widths and alignments.
@@ -2576,6 +2580,10 @@ Use Intel MCU ABI
 .. option:: -mlong-calls, -mno-long-calls
 
 Generate branches with extended addressability, usually via indirect jumps.
+
+.. option:: -mlvi-cfi, -mno-lvi-cfi
+
+Enable only control-flow mitigations for Load Value Injection (LVI)
 
 .. option:: -mmacosx-version-min=<arg>, -mmacos-version-min=<arg>
 
