@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.22 2019/11/06 07:34:35 mpi Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.23 2019/11/07 14:44:53 mpi Exp $	*/
 /*	$NetBSD: db_disasm.c,v 1.11 1996/05/03 19:41:58 christos Exp $	*/
 
 /*
@@ -33,6 +33,7 @@
  * Instruction disassembler.
  */
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <machine/db_machdep.h>
 
 #include <ddb/db_access.h>

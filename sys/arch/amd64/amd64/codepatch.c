@@ -1,4 +1,4 @@
-/*      $OpenBSD: codepatch.c,v 1.7 2018/07/13 08:30:34 sf Exp $    */
+/*      $OpenBSD: codepatch.c,v 1.8 2019/08/07 18:53:12 guenther Exp $    */
 /*
  * Copyright (c) 2014-2015 Stefan Fritsch <sf@sfritsch.de>
  *
@@ -16,7 +16,7 @@
  */
 
 #include <sys/param.h>
-#include <uvm/uvm_extern.h>
+#include <sys/systm.h>
 #include <machine/codepatch.h>
 #include <uvm/uvm_extern.h> /* round_page */
 

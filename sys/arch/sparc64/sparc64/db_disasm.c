@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_disasm.c,v 1.7 2019/11/06 07:32:10 mpi Exp $	*/
+/*	$OpenBSD: db_disasm.c,v 1.8 2019/11/07 14:44:53 mpi Exp $	*/
 /*	$NetBSD: db_disasm.c,v 1.9 2000/08/16 11:29:42 pk Exp $ */
 
 /*
@@ -33,6 +33,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <machine/db_machdep.h>
 #include <machine/instr.h>
 #include <ddb/db_sym.h>

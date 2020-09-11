@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.52 2020/05/31 06:23:57 dlg Exp $ */
+/* $OpenBSD: machdep.c,v 1.53 2020/06/05 23:16:24 naddy Exp $ */
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -16,6 +16,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/sched.h>
 #include <sys/proc.h>
 #include <sys/sysctl.h>

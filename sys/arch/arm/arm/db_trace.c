@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.13 2019/11/07 14:44:52 mpi Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.14 2019/11/07 21:54:49 patrick Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.8 2003/01/17 22:28:48 thorpej Exp $	*/
 
 /*
@@ -31,7 +31,7 @@
  */
 
 #include <sys/param.h>
-
+#include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/user.h>
 #include <arm/armreg.h>

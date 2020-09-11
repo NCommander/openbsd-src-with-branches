@@ -1,4 +1,4 @@
-/*	$OpenBSD: softintr.c,v 1.8 2015/09/06 17:43:42 deraadt Exp $	*/
+/*	$OpenBSD: softintr.c,v 1.9 2017/07/25 03:46:59 visa Exp $	*/
 /*	$NetBSD: softintr.c,v 1.2 2003/07/15 00:24:39 lukem Exp $	*/
 
 /*
@@ -37,6 +37,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/malloc.h>
 #include <sys/mutex.h>
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_trace.c,v 1.10 2020/03/29 15:14:28 visa Exp $	*/
+/*	$OpenBSD: db_trace.c,v 1.11 2020/04/18 04:45:20 visa Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.8 2003/01/17 22:28:48 thorpej Exp $	*/
 
 /*
@@ -31,6 +31,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 
 #include <sys/proc.h>
 #include <sys/stacktrace.h>
