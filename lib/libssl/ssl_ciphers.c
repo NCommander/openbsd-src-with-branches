@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssl_ciphers.c,v 1.4 2020/05/31 18:03:32 jsing Exp $ */
+/*	$OpenBSD: ssl_ciphers.c,v 1.5 2020/09/11 15:28:07 jsing Exp $ */
 /*
  * Copyright (c) 2015-2017 Doug Hogan <doug@openbsd.org>
  * Copyright (c) 2015-2018 Joel Sing <jsing@openbsd.org>
@@ -21,6 +21,19 @@
 
 #include "bytestring.h"
 #include "ssl_locl.h"
+
+int
+ssl_cipher_in_list(STACK_OF(SSL_CIPHER) *ciphers, const SSL_CIPHER *cipher)
+{
+	int i;
+
+	for (i = 0; i < sk_SSL_CIPHER_num(ciphers); i++) {
+		if (sk_SSL_CIPHER_value(ciphers, i)->id == cipher->id)
+			return 1;
+	}
+
+	return 0;
+}
 
 int
 ssl_cipher_allowed_in_version_range(const SSL_CIPHER *cipher, uint16_t min_ver,

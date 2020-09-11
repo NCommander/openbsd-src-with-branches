@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_srvr.c,v 1.80 2020/07/03 04:12:50 tb Exp $ */
+/* $OpenBSD: ssl_srvr.c,v 1.81 2020/08/31 14:04:51 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1096,11 +1096,7 @@ ssl3_get_client_hello(SSL *s)
 			s->session->cipher = pref_cipher;
 
 			sk_SSL_CIPHER_free(s->cipher_list);
-			sk_SSL_CIPHER_free(s->internal->cipher_list_by_id);
-
 			s->cipher_list = sk_SSL_CIPHER_dup(s->session->ciphers);
-			s->internal->cipher_list_by_id =
-			    sk_SSL_CIPHER_dup(s->session->ciphers);
 		}
 	}
 
