@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.287 2020/09/01 05:32:11 tb Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.288 2020/09/01 12:40:53 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1127,8 +1127,8 @@ int ssl_version_set_min(const SSL_METHOD *meth, uint16_t ver, uint16_t max_ver,
 int ssl_version_set_max(const SSL_METHOD *meth, uint16_t ver, uint16_t min_ver,
     uint16_t *out_ver);
 int ssl_downgrade_max_version(SSL *s, uint16_t *max_ver);
-int ssl_cipher_is_permitted(const SSL_CIPHER *cipher, uint16_t min_ver,
-    uint16_t max_ver);
+int ssl_cipher_allowed_in_version_range(const SSL_CIPHER *cipher,
+    uint16_t min_ver, uint16_t max_ver);
 
 const SSL_METHOD *tls_legacy_method(void);
 const SSL_METHOD *tls_legacy_client_method(void);
