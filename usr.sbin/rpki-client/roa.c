@@ -1,4 +1,4 @@
-/*	$OpenBSD: roa.c,v 1.7 2019/11/18 08:38:27 claudio Exp $ */
+/*	$OpenBSD: roa.c,v 1.8 2019/11/29 05:14:11 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -22,8 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include <openssl/ssl.h>
 
 #include "extern.h"
 

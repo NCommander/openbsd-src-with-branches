@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip.c,v 1.11 2020/04/16 11:27:49 claudio Exp $ */
+/*	$OpenBSD: ip.c,v 1.12 2020/04/16 14:39:44 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include <openssl/ssl.h>
 
 #include "extern.h"
 

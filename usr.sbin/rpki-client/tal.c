@@ -1,4 +1,4 @@
-/*	$OpenBSD: tal.c,v 1.17 2020/03/27 12:46:00 claudio Exp $ */
+/*	$OpenBSD: tal.c,v 1.18 2020/04/11 15:52:24 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -24,8 +24,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <openssl/x509.h>
 
 #include "extern.h"
 

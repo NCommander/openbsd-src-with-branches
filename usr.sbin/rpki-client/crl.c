@@ -1,4 +1,4 @@
-/*	$OpenBSD: crl.c,v 1.7 2019/11/29 04:40:04 claudio Exp $ */
+/*	$OpenBSD: crl.c,v 1.8 2020/04/02 09:16:43 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -25,8 +25,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include <openssl/ssl.h>
 
 #include "extern.h"
 

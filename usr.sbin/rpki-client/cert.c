@@ -1,4 +1,4 @@
-/*	$OpenBSD: cert.c,v 1.16 2020/07/27 14:29:45 tobhe Exp $ */
+/*	$OpenBSD: cert.c,v 1.17 2020/07/28 07:35:04 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -26,7 +26,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <openssl/ssl.h>
 #include <openssl/x509v3.h> /* DIST_POINT */
 
 #include "extern.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: output-bgpd.c,v 1.16 2019/12/04 23:03:05 benno Exp $ */
+/*	$OpenBSD: output-bgpd.c,v 1.17 2020/04/28 13:41:35 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -16,7 +16,6 @@
  */
 
 #include <stdlib.h>
-#include <openssl/ssl.h>
 
 #include "extern.h"
 

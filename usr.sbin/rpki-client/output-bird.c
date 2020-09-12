@@ -1,4 +1,4 @@
-/*	$OpenBSD: output-bird.c,v 1.8 2020/04/28 13:41:35 deraadt Exp $ */
+/*	$OpenBSD: output-bird.c,v 1.9 2020/04/28 15:03:39 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2020 Robert Scheck <robert@fedoraproject.org>
@@ -17,7 +17,6 @@
  */
 
 #include <stdlib.h>
-#include <openssl/ssl.h>
 
 #include "extern.h"
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.32 2020/07/28 07:35:04 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.33 2020/09/12 10:02:01 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -19,6 +19,8 @@
 
 #include <sys/tree.h>
 #include <sys/time.h>
+
+#include <openssl/x509.h>
 
 enum cert_as_type {
 	CERT_AS_ID, /* single identifier */

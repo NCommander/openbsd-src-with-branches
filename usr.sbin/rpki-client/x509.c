@@ -1,4 +1,4 @@
-/*	$OpenBSD: x509.c,v 1.12 2019/11/29 04:40:04 claudio Exp $ */
+/*	$OpenBSD: x509.c,v 1.13 2019/11/29 05:00:24 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -25,7 +25,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <openssl/ssl.h>
 #include <openssl/x509v3.h>
 
 #include "extern.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: output-csv.c,v 1.6 2019/12/04 23:03:05 benno Exp $ */
+/*	$OpenBSD: output-csv.c,v 1.7 2020/04/28 13:41:35 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  *
@@ -16,7 +16,6 @@
  */
 
 #include <stdlib.h>
-#include <openssl/ssl.h>
 
 #include "extern.h"
 
