@@ -1,4 +1,4 @@
-/*	$OpenBSD: unwind.c,v 1.47 2020/05/25 16:52:15 florian Exp $	*/
+/*	$OpenBSD: unwind.c,v 1.48 2020/08/29 22:29:27 jca Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -266,7 +266,8 @@ main(int argc, char *argv[])
 	    AF_INET)) == -1)
 		fatal("route socket");
 
-	rtfilter = ROUTE_FILTER(RTM_IFINFO) | ROUTE_FILTER(RTM_PROPOSAL);
+	rtfilter = ROUTE_FILTER(RTM_IFINFO) | ROUTE_FILTER(RTM_PROPOSAL)
+	    | ROUTE_FILTER(RTM_IFANNOUNCE);
 	if (setsockopt(frontend_routesock, AF_ROUTE, ROUTE_MSGFILTER,
 	    &rtfilter, sizeof(rtfilter)) == -1)
 		fatal("setsockopt(ROUTE_MSGFILTER)");
