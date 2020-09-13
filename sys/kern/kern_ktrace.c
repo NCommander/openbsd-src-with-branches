@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_ktrace.c,v 1.102 2020/03/23 15:45:39 visa Exp $	*/
+/*	$OpenBSD: kern_ktrace.c,v 1.103 2020/04/03 03:20:12 visa Exp $	*/
 /*	$NetBSD: kern_ktrace.c,v 1.23 1996/02/09 18:59:36 christos Exp $	*/
 
 /*
@@ -291,7 +291,9 @@ ktrpsig(struct proc *p, int sig, sig_t action, int mask, int code,
 	kp.code = code;
 	kp.si = *si;
 
+	KERNEL_LOCK();
 	ktrwrite(p, &kth, &kp, sizeof(kp));
+	KERNEL_UNLOCK();
 	atomic_clearbits_int(&p->p_flag, P_INKTR);
 }
 
