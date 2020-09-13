@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.260 2020/08/26 03:16:53 visa Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.261 2020/09/09 16:29:14 mpi Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -398,9 +398,8 @@ setsigvec(struct proc *p, int signum, struct sigaction *sa)
  * set to ignore signals that are ignored by default.
  */
 void
-siginit(struct process *pr)
+siginit(struct sigacts *ps)
 {
-	struct sigacts *ps = pr->ps_sigacts;
 	int i;
 
 	for (i = 0; i < NSIG; i++)
