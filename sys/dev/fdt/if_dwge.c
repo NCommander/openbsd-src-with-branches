@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dwge.c,v 1.3 2020/06/22 02:23:21 dlg Exp $	*/
+/*	$OpenBSD: if_dwge.c,v 1.4 2020/07/10 13:26:36 patrick Exp $	*/
 /*
  * Copyright (c) 2008, 2019 Mark Kettenis <kettenis@openbsd.org>
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
@@ -476,7 +476,7 @@ dwge_reset_phy(struct dwge_softc *sc)
 	if (OF_getproplen(sc->sc_node, "snps-reset-active-low") == 0)
 		active = 0;
 	delays[0] = delays[1] = delays[2] = 0;
-	OF_getpropintarray(sc->sc_node, "snps,reset-delay-us", delays,
+	OF_getpropintarray(sc->sc_node, "snps,reset-delays-us", delays,
 	    sizeof(delays));
 
 	/* Perform reset sequence. */
