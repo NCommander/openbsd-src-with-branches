@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_addr.c,v 1.26 2018/04/17 15:50:05 otto Exp $	*/
+/*	$OpenBSD: uvm_addr.c,v 1.27 2018/05/16 09:02:11 otto Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -19,6 +19,7 @@
 /* #define DEBUG */
 
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <uvm/uvm.h>
 #include <uvm/uvm_addr.h>
 #include <sys/pool.h>
