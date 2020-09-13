@@ -1,4 +1,4 @@
-/*	$OpenBSD: asmc.c,v 1.33 2020/08/26 03:29:06 visa Exp $	*/
+/*	$OpenBSD: asmc.c,v 1.1 2020/09/12 07:47:26 mglocker Exp $	*/
 /*
  * Copyright (c) 2015 Joerg Jung <jung@openbsd.org>
  *
@@ -35,9 +35,6 @@
 #include <dev/acpi/dsdt.h>
 
 #include <dev/wscons/wsconsio.h>
-
-#define ASMC_BASE	0x300	/* SMC base address */
-#define ASMC_IOSIZE	32	/* I/O region size 0x300-0x31f */
 
 #define ASMC_DATA	0x00	/* SMC data port offset */
 #define ASMC_COMMAND	0x04	/* SMC command port offset */
