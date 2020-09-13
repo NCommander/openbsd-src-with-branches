@@ -1,4 +1,4 @@
-/* $OpenBSD: wscons_features.h,v 1.2 2013/10/18 14:17:23 miod Exp $ */
+/* $OpenBSD: wscons_features.h,v 1.3 2013/10/18 22:06:40 miod Exp $ */
 /* public domain */
 
 /*
@@ -8,7 +8,7 @@
  * HAVE_WSMOUSED_SUPPORT
  *	defined to enable support for wsmoused(8)
  * HAVE_BURNER_SUPPORT
- *	defined to enable screen blanking functionnality, controlled by
+ *	defined to enable screen blanking functionality, controlled by
  *	wsconsctl(8)
  * HAVE_SCROLLBACK_SUPPORT
  *	defined to enable xterm-like shift-PgUp scrollback if the underlying
