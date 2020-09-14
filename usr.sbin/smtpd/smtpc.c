@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpc.c,v 1.9 2019/09/18 11:26:30 eric Exp $	*/
+/*	$OpenBSD: smtpc.c,v 1.10 2019/09/21 09:04:08 semarie Exp $	*/
 
 /*
  * Copyright (c) 2018 Eric Faurot <eric@openbsd.org>
@@ -185,7 +185,7 @@ parse_server(char *server)
 		*p = '\0';
 		p += 3;
 		/* check for credentials */
-		c = strchr(p, '@');
+		c = strrchr(p, '@');
 		if (c) {
 			creds = p;
 			*c = '\0';
