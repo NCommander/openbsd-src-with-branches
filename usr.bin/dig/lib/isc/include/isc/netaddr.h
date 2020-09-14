@@ -14,18 +14,20 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: netaddr.h,v 1.3 2020/02/13 13:53:01 jsg Exp $ */
+/* $Id: netaddr.h,v 1.4 2020/02/17 18:58:39 jung Exp $ */
 
 #ifndef ISC_NETADDR_H
 #define ISC_NETADDR_H 1
 
 /*! \file isc/netaddr.h */
 
-#include <isc/net.h>
 #include <isc/types.h>
 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/un.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 struct isc_netaddr {
 	unsigned int family;

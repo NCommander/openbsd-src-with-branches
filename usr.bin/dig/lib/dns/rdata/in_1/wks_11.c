@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: wks_11.c,v 1.12 2020/02/26 18:47:25 florian Exp $ */
+/* $Id: wks_11.c,v 1.13 2020/02/26 18:47:59 florian Exp $ */
 
 /* Reviewed: Fri Mar 17 15:01:49 PST 2000 by explorer */
 
@@ -24,8 +24,6 @@
 #include <netdb.h>
 #include <limits.h>
 #include <stdlib.h>
-
-#include <isc/net.h>
 
 static inline isc_result_t
 totext_in_wks(ARGS_TOTEXT) {
