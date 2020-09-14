@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.h,v 1.3 2019/11/05 15:38:05 florian Exp $	*/
+/*	$OpenBSD: engine.h,v 1.4 2019/11/07 08:45:31 florian Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -28,6 +28,7 @@ struct imsg_configure_address {
 
 struct imsg_configure_dfr {
 	uint32_t		 if_index;
+	int			 rdomain;
 	struct sockaddr_in6	 addr;
 	uint32_t		 router_lifetime;
 };
