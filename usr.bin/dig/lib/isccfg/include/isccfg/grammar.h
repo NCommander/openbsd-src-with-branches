@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: grammar.h,v 1.3 2020/02/25 05:00:43 jsg Exp $ */
+/* $Id: grammar.h,v 1.4 2020/09/13 09:31:07 florian Exp $ */
 
 #ifndef ISCCFG_GRAMMAR_H
 #define ISCCFG_GRAMMAR_H 1
@@ -112,10 +112,10 @@ struct cfg_parser {
 	isc_token_t     token;
 
 	/*% We are at the end of all input. */
-	isc_boolean_t	seen_eof;
+	int	seen_eof;
 
 	/*% The current token has been pushed back. */
-	isc_boolean_t	ungotten;
+	int	ungotten;
 
 	/*%
 	 * The stack of currently active files, represented

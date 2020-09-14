@@ -14,18 +14,18 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: serial.c,v 1.2 2020/02/17 18:58:39 jung Exp $ */
+/* $Id: serial.c,v 1.3 2020/02/25 05:00:43 jsg Exp $ */
 
 /*! \file */
 
 #include <isc/serial.h>
 
-isc_boolean_t
+int
 isc_serial_gt(uint32_t a, uint32_t b) {
-	return (((int32_t)(a - b) > 0) ? ISC_TRUE : ISC_FALSE);
+	return (((int32_t)(a - b) > 0) ? 1 : 0);
 }
 
-isc_boolean_t
+int
 isc_serial_ge(uint32_t a, uint32_t b) {
-	return ((a == b) ? ISC_TRUE : isc_serial_gt(a, b));
+	return ((a == b) ? 1 : isc_serial_gt(a, b));
 }

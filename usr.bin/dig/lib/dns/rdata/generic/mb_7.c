@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: mb_7.c,v 1.9 2020/02/25 05:00:43 jsg Exp $ */
+/* $Id: mb_7.c,v 1.10 2020/02/26 18:38:15 florian Exp $ */
 
 /* Reviewed: Wed Mar 15 17:31:26 PST 2000 by bwelling */
 
@@ -26,7 +26,7 @@ totext_mb(ARGS_TOTEXT) {
 	isc_region_t region;
 	dns_name_t name;
 	dns_name_t prefix;
-	isc_boolean_t sub;
+	int sub;
 
 	REQUIRE(rdata->type == dns_rdatatype_mb);
 	REQUIRE(rdata->length != 0);
