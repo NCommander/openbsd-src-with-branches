@@ -1,6 +1,7 @@
-# $OpenBSD: Makefile,v 1.5 2018/11/11 00:15:04 bluhm Exp $
+# $OpenBSD: Makefile,v 1.6 2020/05/11 18:20:24 jsing Exp $
 
 PROGS =			client server
+CFLAGS =		-DLIBRESSL_HAS_TLS1_3
 CPPFLAGS =
 LDFLAGS =
 LDADD =			-lssl -lcrypto
