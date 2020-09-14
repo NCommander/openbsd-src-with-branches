@@ -1,4 +1,4 @@
-/*	$Id: json.c,v 1.19 2020/06/07 13:29:52 florian Exp $ */
+/*	$Id: json.c,v 1.20 2020/09/14 13:49:13 florian Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -618,14 +618,24 @@ json_fmt_chkacc(void)
  * Format the "newAccount" resource request.
  */
 char *
-json_fmt_newacc(void)
+json_fmt_newacc(const char *contact)
 {
 	int	 c;
-	char	*p;
+	char	*p, *cnt = NULL;
+
+	if (contact != NULL) {
+		c = asprintf(&cnt, "\"contact\": [ \"%s\" ], ", contact);
+		if (c == -1) {
+			warn("asprintf");
+			return NULL;
+		}
+	}
 
 	c = asprintf(&p, "{"
+	    "%s"
 	    "\"termsOfServiceAgreed\": true"
-	    "}");
+	    "}", cnt == NULL ? "" : cnt);
+	free(cnt);
 	if (c == -1) {
 		warn("asprintf");
 		p = NULL;
