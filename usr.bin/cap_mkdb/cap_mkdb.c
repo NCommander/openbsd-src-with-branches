@@ -1,4 +1,4 @@
-/*	$OpenBSD: cap_mkdb.c,v 1.23 2019/06/28 05:33:35 deraadt Exp $	*/
+/*	$OpenBSD: cap_mkdb.c,v 1.24 2019/06/28 14:20:40 schwarze Exp $	*/
 /*	$NetBSD: cap_mkdb.c,v 1.5 1995/09/02 05:47:12 jtc Exp $	*/
 
 /*-
@@ -49,8 +49,6 @@
 void	 db_build(char **);
 void	 dounlink(void);
 void	 usage(void);
-int	 igetnext(char **, char **);
-int	 main(int, char *[]);
 
 DB *capdbp;
 int verbose;
