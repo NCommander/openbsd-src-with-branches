@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_verify.c,v 1.5 2020/09/14 12:00:55 tb Exp $ */
+/* $OpenBSD: x509_verify.c,v 1.6 2020/09/14 12:33:51 beck Exp $ */
 /*
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
  *
@@ -484,7 +484,7 @@ x509_verify_set_check_time(struct x509_verify_ctx *ctx) {
 	return 1;
 }
 
-static int
+int
 x509_verify_asn1_time_to_tm(const ASN1_TIME *atime, struct tm *tm, int notafter)
 {
 	int type;
