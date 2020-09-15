@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.25 2020/09/01 20:06:49 gkoehler Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.26 2020/09/05 19:21:10 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -114,8 +114,13 @@ struct cpu_info {
 extern struct cpu_info cpu_info[];
 extern struct cpu_info *cpu_info_primary;
 
-register struct cpu_info *__curcpu asm("r13");
-#define curcpu()	__curcpu
+static __inline struct cpu_info *
+curcpu(void)
+{
+	struct cpu_info *ci;
+	__asm volatile ("mfsprg0 %0" : "=r"(ci));
+	return ci;
+}
 
 #define CPU_INFO_ITERATOR	int
 
