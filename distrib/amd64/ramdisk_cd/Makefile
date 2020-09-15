@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.21 2020/05/17 17:04:27 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.22 2020/05/18 06:20:43 otto Exp $
 
 FS=		miniroot${OSrev}.img
-FSSIZE=		9600
+FSSIZE=		9920
 FSDISKTYPE=	mini34
 CDROM=		cd${OSrev}.iso
 MOUNT_POINT=	/mnt
