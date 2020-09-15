@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.10 2020/09/11 22:48:00 bluhm Exp $
+# $OpenBSD: Makefile,v 1.11 2020/09/14 00:51:04 bluhm Exp $
 
 SUBDIR =	libressl openssl openssl11
 
@@ -8,5 +8,6 @@ SUBDIR +=	cipher
 SUBDIR +=	version
 SUBDIR +=	netcat
 SUBDIR +=	session
+SUBDIR +=	botan
 
 .include <bsd.subdir.mk>
