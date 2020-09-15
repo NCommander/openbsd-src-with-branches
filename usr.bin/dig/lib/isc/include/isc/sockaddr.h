@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: sockaddr.h,v 1.4 2020/09/14 08:39:12 florian Exp $ */
+/* $Id: sockaddr.h,v 1.5 2020/09/14 08:40:44 florian Exp $ */
 
 #ifndef ISC_SOCKADDR_H
 #define ISC_SOCKADDR_H 1
@@ -36,7 +36,6 @@ struct isc_sockaddr {
 		struct sockaddr_storage ss;
 		struct sockaddr_un	sunix;
 	}				type;
-	unsigned int			length;		/* XXXRTH beginning? */
 };
 
 #define ISC_SOCKADDR_CMPADDR	  0x0001	/*%< compare the address
