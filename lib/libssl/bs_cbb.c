@@ -1,4 +1,4 @@
-/*	$OpenBSD: bs_cbb.c,v 1.21 2020/03/12 17:17:12 jsing Exp $	*/
+/*	$OpenBSD: bs_cbb.c,v 1.22 2020/03/13 15:54:34 jsing Exp $	*/
 /*
  * Copyright (c) 2014, Google Inc.
  *
@@ -361,7 +361,7 @@ CBB_add_bytes(CBB *cbb, const uint8_t *data, size_t len)
 {
 	uint8_t *dest;
 
-	if (!CBB_add_space(cbb, &dest, len))
+	if (!CBB_flush(cbb) || !cbb_buffer_add(cbb->base, &dest, len))
 		return 0;
 
 	memcpy(dest, data, len);
