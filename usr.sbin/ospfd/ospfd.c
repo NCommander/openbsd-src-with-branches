@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.c,v 1.112 2020/03/29 12:36:01 denis Exp $ */
+/*	$OpenBSD: ospfd.c,v 1.113 2020/06/26 19:04:38 bket Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -282,8 +282,6 @@ main(int argc, char *argv[])
 
 	if (unveil("/", "r") == -1)
 		fatal("unveil");
-	if (unveil(ospfd_conf->csock, "c") == -1)
-		fatal("unveil");
 	if (unveil(NULL, NULL) == -1)
 		fatal("unveil");
 
@@ -318,7 +316,7 @@ ospfd_shutdown(void)
 	msgbuf_clear(&iev_rde->ibuf.w);
 	close(iev_rde->ibuf.fd);
 
-	control_cleanup(ospfd_conf->csock);
+	control_cleanup();
 	while ((r = SIMPLEQ_FIRST(&ospfd_conf->redist_list)) != NULL) {
 		SIMPLEQ_REMOVE_HEAD(&ospfd_conf->redist_list, entry);
 		free(r);

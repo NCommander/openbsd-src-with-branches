@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.44 2017/01/24 04:24:25 benno Exp $ */
+/*	$OpenBSD: control.c,v 1.45 2018/08/29 08:43:16 remi Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -125,13 +125,10 @@ control_listen(void)
 }
 
 void
-control_cleanup(char *path)
+control_cleanup(void)
 {
-	if (path == NULL)
-		return;
 	event_del(&control_state.ev);
 	event_del(&control_state.evt);
-	unlink(path);
 }
 
 /* ARGSUSED */
