@@ -775,9 +775,7 @@ x509_verify_ctx_set_max_chains(struct x509_verify_ctx *ctx, size_t max)
 int
 x509_verify_ctx_set_max_signatures(struct x509_verify_ctx *ctx, size_t max)
 {
-	if (max < 1)
-		return 0;
-	if (max > 100000)
+	if (max < 1 || max > 100000)
 		return 0;
 	ctx->max_sigs = max;
 	return 1;
