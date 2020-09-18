@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.110 2020/09/05 19:14:32 tobhe Exp $	*/
+/*	$OpenBSD: parse.y,v 1.111 2020/09/16 21:21:23 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -2247,6 +2247,7 @@ ifa_lookup(const char *ifa_name)
 				/* for now we can not handle link local,
 				 * therefore bail for now
 				 */
+				free(n->name);
 				free(n);
 				continue;
 
