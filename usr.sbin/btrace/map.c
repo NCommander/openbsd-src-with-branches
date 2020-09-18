@@ -1,4 +1,4 @@
-/*	$OpenBSD: map.c,v 1.9 2020/08/07 14:04:59 mpi Exp $ */
+/*	$OpenBSD: map.c,v 1.10 2020/08/13 11:31:47 mpi Exp $ */
 
 /*
  * Copyright (c) 2020 Martin Pieuchot <mpi@openbsd.org>
@@ -223,7 +223,7 @@ map_zero(struct map *map)
 }
 
 /*
- * Histogram implemmented with map.
+ * Histogram implemented with map.
  */
 
 struct hist {
