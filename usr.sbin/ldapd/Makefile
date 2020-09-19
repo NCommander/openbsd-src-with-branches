@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.15 2017/01/20 11:55:08 benno Exp $
+#	$OpenBSD: Makefile,v 1.16 2019/05/11 17:46:02 rob Exp $
 
 PROG=		ldapd
 MAN=		ldapd.8 ldapd.conf.5
@@ -17,7 +17,8 @@ CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+=	-Wsign-compare
 CLEANFILES+=	y.tab.h parse.c
 
-SCHEMA_FILES=	core.schema \
+SCHEMA_FILES=	bsd.schema \
+		core.schema \
 		inetorgperson.schema \
 		nis.schema
 
