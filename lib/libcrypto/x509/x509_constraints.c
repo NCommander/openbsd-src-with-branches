@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_constraints.c,v 1.5 2020/09/20 03:19:52 tb Exp $ */
+/* $OpenBSD: x509_constraints.c,v 1.6 2020/09/20 18:22:31 beck Exp $ */
 /*
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
  *
@@ -448,7 +448,7 @@ x509_constraints_valid_domain_constraint(uint8_t *constraint, size_t len)
  * with end of URI, '/', '?', "#', or ':'.
  */
 int
-x509_constraints_uri_host(uint8_t *uri, size_t len,  char**hostpart)
+x509_constraints_uri_host(uint8_t *uri, size_t len, char **hostpart)
 {
 	size_t i, hostlen = 0;
 	uint8_t *authority = NULL;
