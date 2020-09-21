@@ -1,4 +1,4 @@
-/*	$OpenBSD: openprom.c,v 1.3 2014/07/12 18:44:42 tedu Exp $	*/
+/*	$OpenBSD: openprom.c,v 1.4 2015/09/19 21:07:04 semarie Exp $	*/
 /*	$NetBSD: openprom.c,v 1.4 2002/01/10 06:21:53 briggs Exp $ */
 
 /*
@@ -186,7 +186,11 @@ openpromioctl(dev_t dev, u_long cmd, caddr_t data, int flags, struct proc *p)
 		strlcpy(buf, name, 32);	/* XXX */
 		len = OF_setprop(node, buf, value, op->op_buflen + 1);
 		splx(s);
-		if (len != op->op_buflen)
+		/*
+		 * For string properties, the Apple OpenFirmware implementation
+		 * returns the buffer length including the trailing NUL.
+		 */
+		if (len != op->op_buflen && len != op->op_buflen + 1)
 			error = EINVAL;
 		break;
 
