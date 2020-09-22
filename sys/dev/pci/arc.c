@@ -1,4 +1,4 @@
-/*	$OpenBSD: arc.c,v 1.118 2020/07/22 13:16:04 krw Exp $ */
+/*	$OpenBSD: arc.c,v 1.119 2020/07/24 12:43:31 krw Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -1165,7 +1165,7 @@ arc_scsi_cmd(struct scsi_xfer *xs)
 
 	cmd->data_len = htole32(xs->datalen);
 
-	bcopy(xs->cmd, cmd->cdb, xs->cmdlen);
+	bcopy(&xs->cmd, cmd->cdb, xs->cmdlen);
 
 	/* we've built the command, let's put it on the hw */
 	bus_dmamap_sync(sc->sc_dmat, ARC_DMA_MAP(sc->sc_requests),

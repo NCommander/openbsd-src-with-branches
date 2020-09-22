@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioscsi.c,v 1.24 2020/07/20 14:41:14 krw Exp $	*/
+/*	$OpenBSD: vioscsi.c,v 1.25 2020/07/22 13:16:05 krw Exp $	*/
 /*
  * Copyright (c) 2013 Google Inc.
  *
@@ -212,7 +212,7 @@ vioscsi_scsi_cmd(struct scsi_xfer *xs)
 	if ((size_t)xs->cmdlen > sizeof(req->cdb))
 		goto stuffup;
 	memset(req->cdb, 0, sizeof(req->cdb));
-	memcpy(req->cdb, xs->cmd, xs->cmdlen);
+	memcpy(req->cdb, &xs->cmd, xs->cmdlen);
 
 	int isread = !!(xs->flags & SCSI_DATA_IN);
 

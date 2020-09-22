@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmwpvs.c,v 1.22 2020/07/20 14:41:14 krw Exp $ */
+/*	$OpenBSD: vmwpvs.c,v 1.23 2020/07/22 13:16:05 krw Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -930,7 +930,7 @@ vmwpvs_scsi_cmd(struct scsi_xfer *xs)
 		break;
 	}
 
-	memcpy(r->cdb, xs->cmd, xs->cmdlen);
+	memcpy(r->cdb, &xs->cmd, xs->cmdlen);
 	r->cdblen = xs->cmdlen;
 	r->lun[1] = link->lun; /* ugly :( */
 	r->tag = MSG_SIMPLE_Q_TAG;
