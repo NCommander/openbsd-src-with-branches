@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.76 2020/04/23 19:38:09 tobhe Exp $ */
+/*	$OpenBSD: ipsec_output.c,v 1.77 2020/06/24 22:03:43 cheloha Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -360,8 +360,8 @@ ipsp_process_packet(struct mbuf *m, struct tdb *tdb, int af, int tunalready)
 		goto drop;
 	}
 
-        ipsecstat_add(ipsec_ouncompbytes, m->m_pkthdr.len);
-        tdb->tdb_ouncompbytes += m->m_pkthdr.len;
+	ipsecstat_add(ipsec_ouncompbytes, m->m_pkthdr.len);
+	tdb->tdb_ouncompbytes += m->m_pkthdr.len;
 
 	/* Non expansion policy for IPCOMP */
 	if (tdb->tdb_sproto == IPPROTO_IPCOMP) {
