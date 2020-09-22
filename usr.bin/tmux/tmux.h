@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.1076 2020/08/25 11:35:32 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.1077 2020/09/02 13:46:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -496,6 +496,7 @@ enum msgtype {
 	MSG_IDENTIFY_CWD,
 	MSG_IDENTIFY_FEATURES,
 	MSG_IDENTIFY_STDOUT,
+	MSG_IDENTIFY_LONGFLAGS,
 
 	MSG_COMMAND = 200,
 	MSG_DETACH,
@@ -2331,7 +2332,7 @@ void printflike(2, 3) cmdq_error(struct cmdq_item *, const char *, ...);
 void	cmd_wait_for_flush(void);
 
 /* client.c */
-int	client_main(struct event_base *, int, char **, int, int);
+int	client_main(struct event_base *, int, char **, uint64_t, int);
 
 /* key-bindings.c */
 struct key_table *key_bindings_get_table(const char *, int);
