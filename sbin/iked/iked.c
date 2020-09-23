@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.c,v 1.46 2020/08/23 19:16:07 tobhe Exp $	*/
+/*	$OpenBSD: iked.c,v 1.47 2020/08/24 21:00:21 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -266,6 +266,7 @@ parent_configure(struct iked *env)
 	config_setstatic(env);
 	config_setcoupled(env, env->sc_decoupled ? 0 : 1);
 	config_setocsp(env);
+	config_setcertpartialchain(env);
 	/* Must be last */
 	config_setmode(env, env->sc_passive ? 1 : 0);
 
@@ -298,6 +299,7 @@ parent_reload(struct iked *env, int reset, const char *filename)
 		config_setstatic(env);
 		config_setcoupled(env, env->sc_decoupled ? 0 : 1);
 		config_setocsp(env);
+		config_setcertpartialchain(env);
  		/* Must be last */
 		config_setmode(env, env->sc_passive ? 1 : 0);
 	} else {
