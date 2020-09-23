@@ -1,4 +1,4 @@
-/*	$OpenBSD: opal.c,v 1.8 2020/07/10 23:22:48 gkoehler Exp $	*/
+/*	$OpenBSD: opal.c,v 1.9 2020/09/21 11:14:28 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -22,6 +22,7 @@
 #include <sys/systm.h>
 
 #include <machine/bus.h>
+#include <machine/cpu.h>
 #include <machine/fdt.h>
 #include <machine/opal.h>
 
@@ -345,7 +346,12 @@ opalpm_init(struct opal_softc *sc, int node)
 	if ((i = opalpm_find_index(sc)) != -1)
 		perflevel = (sc->sc_npstate - 1 - i) * 100 / sc->sc_npstate;
 	cpu_cpuspeed = opalpm_cpuspeed;
+#ifndef MULTIPROCESSOR
 	cpu_setperf = opalpm_setperf;
+#else
+	ul_setperf = opalpm_setperf;
+	cpu_setperf = mp_setperf;
+#endif
 }
 
 int
