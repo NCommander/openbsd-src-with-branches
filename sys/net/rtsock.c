@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.300 2020/08/13 04:58:22 jmatthew Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.301 2020/09/22 19:25:27 mvs Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -2248,7 +2248,7 @@ rtm_validate_proposal(struct rt_addrinfo *info)
  * Definitions of protocols supported in the ROUTE domain.
  */
 
-extern	struct domain routedomain;		/* or at least forward */
+struct domain routedomain;
 
 struct protosw routesw[] = {
 {
