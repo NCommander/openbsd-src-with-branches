@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm-proto.h,v 1.8 2006/03/15 20:30:28 sturm Exp $	*/
+/*	$OpenBSD: apm-proto.h,v 1.9 2012/03/26 20:17:45 deraadt Exp $	*/
 
 /*
  *  Copyright (c) 1996 John T. Kohl
@@ -38,7 +38,6 @@ enum apm_action {
 	SETPERF_LOW,
 	SETPERF_HIGH,
 	SETPERF_AUTO,
-	SETPERF_COOL
 };
 
 enum apm_state {
@@ -52,7 +51,6 @@ enum apm_perfmode {
 	PERF_NONE = -1,
 	PERF_MANUAL,
 	PERF_AUTO,
-	PERF_COOL
 };
 
 struct apm_command {
