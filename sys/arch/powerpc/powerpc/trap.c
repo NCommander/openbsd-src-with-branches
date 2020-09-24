@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.114 2019/09/06 13:45:04 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.115 2020/08/19 10:10:58 mpi Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1996/10/13 03:31:37 christos Exp $	*/
 
 /*
@@ -245,10 +245,6 @@ trap(struct trapframe *frame)
 	if (frame->srr1 & PSL_PR) {
 		type |= EXC_USER;
 		refreshcreds(p);
-		if (!uvm_map_inentry(p, &p->p_spinentry, PROC_STACK(p),
-		    "[%s]%d/%d sp=%lx inside %lx-%lx: not MAP_STACK\n",
-		    uvm_map_inentry_sp, p->p_vmspace->vm_map.sserial))
-			goto out;
 	}
 
 	switch (type) {
@@ -309,6 +305,11 @@ trap(struct trapframe *frame)
 		if (pte_spill_v(p->p_vmspace->vm_map.pmap,
 		    frame->dar, frame->dsisr, 0))
 			break;
+
+		if (!uvm_map_inentry(p, &p->p_spinentry, PROC_STACK(p),
+		    "[%s]%d/%d sp=%lx inside %lx-%lx: not MAP_STACK\n",
+		    uvm_map_inentry_sp, p->p_vmspace->vm_map.sserial))
+			goto out;
 
 		KERNEL_LOCK();
 		if (frame->dsisr & DSISR_STORE) {
