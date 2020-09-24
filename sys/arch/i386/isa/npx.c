@@ -1,4 +1,4 @@
-/*	$OpenBSD: npx.c,v 1.70 2018/07/30 14:19:12 kettenis Exp $	*/
+/*	$OpenBSD: npx.c,v 1.71 2020/08/19 10:10:58 mpi Exp $	*/
 /*	$NetBSD: npx.c,v 1.57 1996/05/12 23:12:24 mycroft Exp $	*/
 
 #if 0
@@ -578,7 +578,7 @@ npxtrap(struct trapframe *frame)
 	ldmxcsr(&mxcsr);
 	addr->sv_xmm.sv_ex_sw = addr->sv_xmm.sv_env.en_sw;
 	addr->sv_xmm.sv_ex_tw = addr->sv_xmm.sv_env.en_tw;
-	code = x86fpflags_to_siginfo (statbits);
+	code = x86fpflags_to_siginfo(statbits);
 	sv.sival_int = frame->tf_eip;
 	trapsignal(p, SIGFPE, frame->tf_err, code, sv);
 }
