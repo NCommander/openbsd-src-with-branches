@@ -1,4 +1,4 @@
-/* $OpenBSD: ui_lib.c,v 1.34 2018/06/02 04:45:21 tb Exp $ */
+/* $OpenBSD: ui_lib.c,v 1.35 2020/09/24 19:22:18 tb Exp $ */
 /* Written by Richard Levitte (richard@levitte.org) for the OpenSSL
  * project 2001.
  */
@@ -130,8 +130,8 @@ static int
 allocate_string_stack(UI *ui)
 {
 	if (ui->strings == NULL) {
-		ui->strings = sk_UI_STRING_new_null();
-		if (ui->strings == NULL) {
+		if ((ui->strings = sk_UI_STRING_new_null()) == NULL) {
+			UIerror(ERR_R_MALLOC_FAILURE);
 			return -1;
 		}
 	}
