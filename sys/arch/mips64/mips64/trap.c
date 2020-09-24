@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.146 2020/08/19 10:10:58 mpi Exp $	*/
+/*	$OpenBSD: trap.c,v 1.147 2020/09/24 17:54:30 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988 University of Utah.
@@ -147,8 +147,7 @@ int	process_sstep(struct proc *, int);
 void
 ast(void)
 {
-	struct cpu_info *ci = curcpu();
-	struct proc *p = ci->ci_curproc;
+	struct proc *p = curproc;
 
 	p->p_md.md_astpending = 0;
 
@@ -161,7 +160,7 @@ ast(void)
 
 	refreshcreds(p);
 	atomic_inc_int(&uvmexp.softs);
-	mi_ast(p, ci->ci_want_resched);
+	mi_ast(p, curcpu()->ci_want_resched);
 	userret(p);
 }
 
