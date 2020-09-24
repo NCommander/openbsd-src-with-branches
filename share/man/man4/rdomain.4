@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rdomain.4,v 1.15 2020/09/22 20:47:57 kn Exp $
+.\"	$OpenBSD: rdomain.4,v 1.16 2020/09/22 22:10:47 kn Exp $
 .\"
 .\" Copyright (c) 2015 Peter Hessler <phessler@openbsd.org>
 .\"
@@ -151,3 +151,6 @@ and IPv6 support first appeared in
 .Sh CAVEATS
 No tool is available to assign more than one rtable to an rdomain
 other than to the default one (0).
+.Pp
+An rtable cannot be deleted.
+Deleting an rdomain will move its rtable into the default rdomain.
