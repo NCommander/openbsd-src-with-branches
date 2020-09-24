@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_clnt.c,v 1.71 2020/09/11 17:36:27 jsing Exp $ */
+/* $OpenBSD: ssl_clnt.c,v 1.72 2020/09/17 15:23:29 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -588,10 +588,8 @@ ssl3_connect(SSL *s)
 				goto end;
 			}
 
-			if (!SSL_IS_DTLS(s)) {
-				BUF_MEM_free(s->internal->init_buf);
-				s->internal->init_buf = NULL;
-			}
+			if (!SSL_IS_DTLS(s))
+				ssl3_release_init_buffer(s);
 
 			ssl_free_wbio_buffer(s);
 
