@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.7 2020/09/21 11:14:28 kettenis Exp $	*/
+/*	$OpenBSD: intr.c,v 1.8 2020/09/23 03:03:12 gkoehler Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -61,9 +61,6 @@ void *
 intr_establish(uint32_t girq, int type, int level, struct cpu_info *ci,
     int (*func)(void *), void *arg, const char *name)
 {
-	if (ci == NULL)
-		ci = cpu_info_primary;
-
 	return (*_intr_establish)(girq, type, level, ci, func, arg, name);
 }
 
