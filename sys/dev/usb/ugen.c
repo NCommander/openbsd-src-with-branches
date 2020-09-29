@@ -1,4 +1,4 @@
-/*	$OpenBSD: ugen.c,v 1.106 2020/05/13 08:13:42 mpi Exp $ */
+/*	$OpenBSD: ugen.c,v 1.107 2020/09/02 12:36:12 mglocker Exp $ */
 /*	$NetBSD: ugen.c,v 1.63 2002/11/26 18:49:48 christos Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/ugen.c,v 1.26 1999/11/17 22:33:41 n_hibma Exp $	*/
 
@@ -1123,6 +1123,7 @@ ugen_do_ioctl(struct ugen_softc *sc, int endpt, u_long cmd, caddr_t addr,
 		    &cdesc_len);
 		if (cdesc == NULL)
 			return (EINVAL);
+		len = cdesc_len;
 		if (len > fd->ufd_size)
 			len = fd->ufd_size;
 		iov.iov_base = (caddr_t)fd->ufd_data;
