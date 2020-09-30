@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.15 2015/07/14 17:18:48 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.16 2017/12/08 17:04:15 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -151,7 +151,7 @@ show_path(int signo)
 
 	if (entry != NULL) {
 		dprintf(STDERR_FILENO, "find path: %*s\n",
-		    entry->fts_pathlen, entry->fts_path);
+		    (int)entry->fts_pathlen, entry->fts_path);
 		errno = save_errno;
 	}
 }
