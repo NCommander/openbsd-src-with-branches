@@ -1,4 +1,4 @@
-/*	$OpenBSD: xicp.c,v 1.2 2020/09/21 11:14:28 kettenis Exp $	*/
+/*	$OpenBSD: xicp.c,v 1.3 2020/09/26 17:56:54 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -203,7 +203,7 @@ xicp_intr_establish(uint32_t girq, int type, int level, struct cpu_info *ci,
 		if (name)
 			evcount_detach(&ih->ih_count);
 		LIST_REMOVE(ih, ih_hash);
-		free(ih, M_DEVBUF, sizeof(ih));
+		free(ih, M_DEVBUF, sizeof(*ih));
 		return NULL;
 	}
 
