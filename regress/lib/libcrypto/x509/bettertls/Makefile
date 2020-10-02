@@ -1,10 +1,10 @@
-#	$OpenBSD: Makefile,v 1.2 2020/06/04 21:21:03 schwarze Exp $
+#	$OpenBSD: Makefile,v 1.1 2020/07/15 03:12:42 beck Exp $
 
-PROGS = verify 
-LDADD=	-Wl,-Bstatic -lcrypto -Wl,-Bdynamic
+PROGS= verify 
+LDADD=	-lcrypto
 DPADD=	${LIBCRYPTO}
 WARNINGS=	Yes
-CFLAGS+=	-g -DLIBRESSL_INTERNAL -Wundef -Werror -I$(BSDSRCDIR)/lib/libcrypto/x509
+CFLAGS+=	-g -DLIBRESSL_INTERNAL -Wundef -Werror
 
 REGRESS_TARGETS=  bettertls-test
 CLEANFILES+=	test.out
