@@ -1,13 +1,13 @@
-#	$OpenBSD: Makefile,v 1.1 2020/07/15 03:12:42 beck Exp $
+#	$OpenBSD: Makefile,v 1.2 2020/10/02 08:07:33 tb Exp $
 
-PROGS= verify 
-LDADD=	-lcrypto
-DPADD=	${LIBCRYPTO}
-WARNINGS=	Yes
-CFLAGS+=	-g -DLIBRESSL_INTERNAL -Wundef -Werror
+PROGS =		verify 
+LDADD +=	-lcrypto
+DPADD +=	${LIBCRYPTO}
+WARNINGS ?=	Yes
+CFLAGS +=	-g -DLIBRESSL_INTERNAL -Wundef -Werror
 
-REGRESS_TARGETS=  bettertls-test
-CLEANFILES+=	test.out
+REGRESS_TARGETS =  bettertls-test
+CLEANFILES +=	test.out
 
 bettertls-test: bettertls-verify
 	${.CURDIR}/check.perl ${.CURDIR}/expected ${.CURDIR}/known ${.OBJDIR}/test.out
