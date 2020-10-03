@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.66 2020/06/09 16:53:53 deraadt Exp $
+# $OpenBSD: Makefile,v 1.67 2020/08/30 15:40:19 jsing Exp $
 
 .include <bsd.own.mk>
 .ifndef NOMAN
@@ -36,11 +36,9 @@ SRCS= \
 	bs_cbb.c \
 	bs_cbs.c \
 	d1_both.c \
-	d1_clnt.c \
 	d1_lib.c \
 	d1_pkt.c \
 	d1_srtp.c \
-	d1_srvr.c \
 	pqueue.c \
 	s3_cbc.c \
 	s3_lib.c \
