@@ -1,4 +1,4 @@
-/*	$OpenBSD: md5.c,v 1.94 2019/01/25 00:19:25 millert Exp $	*/
+/*	$OpenBSD: md5.c,v 1.95 2019/05/18 16:53:39 otto Exp $	*/
 
 /*
  * Copyright (c) 2001,2003,2005-2007,2010,2013,2014
@@ -505,7 +505,8 @@ digest_file(const char *file, struct hash_list *hl, int echo)
 	while ((nread = fread(data, 1UL, sizeof(data), fp)) != 0) {
 		if (echo) {
 			(void)fwrite(data, nread, 1UL, stdout);
-			if (fflush(stdout) != 0)
+			(void)fflush(stdout);
+			if (ferror(stdout))
 				err(1, "stdout: write error");
 		}
 		TAILQ_FOREACH(hf, hl, tailq)
