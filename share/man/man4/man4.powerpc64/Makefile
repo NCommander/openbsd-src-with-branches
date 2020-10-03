@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.9 2019/08/05 07:08:57 jsg Exp $
+#	$OpenBSD: Makefile,v 1.1 2020/10/02 22:17:28 kettenis Exp $
 
-MAN=	astfb.4 intro.4
+MAN=	astfb.4 intro.4 xicp.4 xics.4 xive.4
 
 MANSUBDIR=powerpc64
 
