@@ -1,4 +1,4 @@
-/* $OpenBSD: d1_lib.c,v 1.49 2020/09/26 09:01:05 jsing Exp $ */
+/* $OpenBSD: d1_lib.c,v 1.50 2020/09/26 14:43:17 jsing Exp $ */
 /*
  * DTLS implementation written by Nagendra Modadugu
  * (nagendra@cs.stanford.edu) for the OpenSSL project 2005.
@@ -73,10 +73,6 @@
 void dtls1_hm_fragment_free(hm_fragment *frag);
 
 static int dtls1_listen(SSL *s, struct sockaddr *client);
-
-SSL3_ENC_METHOD DTLSv1_enc_data = {
-	.enc_flags = SSL_ENC_FLAG_EXPLICIT_IV,
-};
 
 int
 dtls1_new(SSL *s)
