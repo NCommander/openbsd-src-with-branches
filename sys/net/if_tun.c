@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.225 2020/07/22 02:16:02 dlg Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.226 2020/08/21 22:59:27 kn Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -297,7 +297,7 @@ tun_clone_destroy(struct ifnet *ifp)
 		struct vnode *vp;
 
 		if (vfinddev(dev, VCHR, &vp))
-                        VOP_REVOKE(vp, REVOKEALL);
+			VOP_REVOKE(vp, REVOKEALL);
 
 		KASSERT(sc->sc_dev == 0);
 	}
