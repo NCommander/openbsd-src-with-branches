@@ -1,4 +1,4 @@
-/* $OpenBSD: sk-usbhid.c,v 1.26 2020/09/09 03:08:01 djm Exp $ */
+/* $OpenBSD: sk-usbhid.c,v 1.25 2020/08/31 00:17:41 djm Exp $ */
 /*
  * Copyright (c) 2019 Markus Friedl
  * Copyright (c) 2020 Pedro Martelletto
@@ -23,7 +23,6 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <sha2.h>
-#include <time.h>
 
 #ifdef WITH_OPENSSL
 #include <openssl/opensslv.h>

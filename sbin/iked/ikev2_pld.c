@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_pld.c,v 1.100 2020/10/01 18:38:49 tobhe Exp $	*/
+/*	$OpenBSD: ikev2_pld.c,v 1.95 2020/09/16 21:37:35 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -692,12 +692,6 @@ ikev2_validate_id(struct iked_message *msg, size_t offset, size_t left,
 	}
 	memcpy(id, msgbuf + offset, sizeof(*id));
 
-	if (id->id_type == IKEV2_ID_NONE) {
-		log_debug("%s: malformed payload: invalid ID type.",
-		    __func__);
-		return (-1);
-	}
-
 	return (0);
 }
 
@@ -899,12 +893,6 @@ ikev2_validate_auth(struct iked_message *msg, size_t offset, size_t left,
 		return (-1);
 	}
 	memcpy(auth, msgbuf + offset, sizeof(*auth));
-
-	if (auth->auth_method == 0) {
-		log_info("%s: malformed payload: invalid auth method",
-		    __func__);
-		return (-1);
-	}
 
 	return (0);
 }
@@ -1337,11 +1325,6 @@ ikev2_validate_delete(struct iked_message *msg, size_t offset, size_t left,
 	}
 	memcpy(del, msgbuf + offset, sizeof(*del));
 
-	if (del->del_protoid == 0) {
-		log_info("%s: malformed payload: invalid protoid", __func__);
-		return (-1);
-	}
-
 	return (0);
 }
 
@@ -1349,50 +1332,182 @@ int
 ikev2_pld_delete(struct iked *env, struct ikev2_payload *pld,
     struct iked_message *msg, size_t offset, size_t left)
 {
-	struct ikev2_delete	 del;
+	struct iked_childsa	**peersas = NULL;
+	struct iked_sa		*sa = msg->msg_sa;
+	struct ikev2_delete	 del, *localdel;
+	struct ibuf		*resp = NULL;
+	struct ibuf		*spibuf = NULL;
+	uint64_t		*localspi = NULL;
+	uint64_t		 spi64, spi = 0;
+	uint32_t		 spi32;
 	uint8_t			*buf, *msgbuf = ibuf_data(msg->msg_data);
-	size_t			 cnt, sz, len;
-
-	if (ikev2_validate_delete(msg, offset, left, &del))
-		return (-1);
+	size_t			 found = 0, failed = 0;
+	int			 cnt, i, len, sz, ret = -1;
 
 	/* Skip if it's a response, then we don't have to deal with it */
 	if (ikev2_msg_frompeer(msg) &&
 	    msg->msg_parent->msg_response)
 		return (0);
 
+	if (ikev2_validate_delete(msg, offset, left, &del))
+		return (-1);
 	cnt = betoh16(del.del_nspi);
 	sz = del.del_spisize;
 
-	log_debug("%s: proto %s spisize %zu nspi %zu",
+	log_debug("%s: proto %s spisize %d nspi %d",
 	    __func__, print_map(del.del_protoid, ikev2_saproto_map),
 	    sz, cnt);
 
-	if (msg->msg_parent->msg_del_protoid) {
-		log_debug("%s: duplicate delete payload", __func__);
-		return (0);
-	}
-
-	msg->msg_parent->msg_del_protoid = del.del_protoid;
-	msg->msg_parent->msg_del_cnt = cnt;
-	msg->msg_parent->msg_del_spisize = sz;
-
 	buf = msgbuf + offset + sizeof(del);
 	len = left - sizeof(del);
-	if (len == 0 || sz == 0 || cnt == 0)
-		return (0);
+
+	print_hex(buf, 0, len);
+
+	switch (sz) {
+	case 4:
+	case 8:
+		break;
+	default:
+		if (del.del_protoid != IKEV2_SAPROTO_IKE) {
+			log_debug("%s: invalid SPI size", __func__);
+			return (-1);
+		}
+		if (ikev2_msg_frompeer(msg)) {
+			/* Send an empty informational response */
+			if ((resp = ibuf_static()) == NULL)
+				goto done;
+			ret = ikev2_send_ike_e(env, sa, resp,
+			    IKEV2_PAYLOAD_NONE,
+			    IKEV2_EXCHANGE_INFORMATIONAL, 1);
+			msg->msg_parent->msg_responded = 1;
+			ibuf_release(resp);
+			ikev2_ikesa_recv_delete(env, sa);
+		} else {
+			/*
+			 * We're sending a delete message. Upper layer
+			 * must deal with deletion of the IKE SA.
+			 */
+			ret = 0;
+		}
+		return (ret);
+	}
 
 	if ((len / sz) != cnt) {
-		log_debug("%s: invalid payload length %zu/%zu != %zu",
+		log_debug("%s: invalid payload length %d/%d != %d",
 		    __func__, len, sz, cnt);
 		return (-1);
 	}
 
-	print_hex(buf, 0, len);
+	if (ikev2_msg_frompeer(msg) &&
+	    ((peersas = calloc(cnt, sizeof(struct iked_childsa *))) == NULL ||
+	     (localspi = calloc(cnt, sizeof(uint64_t))) == NULL)) {
+		log_warn("%s", __func__);
+		goto done;
+	}
 
-	msg->msg_parent->msg_del_buf = ibuf_new(buf, len);
+	for (i = 0; i < cnt; i++) {
+		switch (sz) {
+		case 4:
+			memcpy(&spi32, buf + (i * sz), sizeof(spi32));
+			spi = betoh32(spi32);
+			break;
+		case 8:
+			memcpy(&spi64, buf + (i * sz), sizeof(spi64));
+			spi = betoh64(spi64);
+			break;
+		}
 
-	return (0);
+		log_debug("%s: spi %s", __func__, print_spi(spi, sz));
+
+		if (peersas == NULL || sa == NULL)
+			continue;
+
+		if ((peersas[i] = childsa_lookup(sa, spi,
+		    del.del_protoid)) == NULL) {
+			log_warnx("%s: CHILD SA doesn't exist for spi %s",
+			    SPI_SA(sa, __func__),
+			    print_spi(spi, del.del_spisize));
+			continue;
+		}
+
+		if (ikev2_childsa_delete(env, sa, del.del_protoid, spi,
+		    &localspi[i], 0) == -1)
+			failed++;
+		else {
+			found++;
+
+			/* append SPI to log buffer */
+			if (ibuf_strlen(spibuf))
+				ibuf_strcat(&spibuf, ", ");
+			ibuf_strcat(&spibuf, print_spi(spi, sz));
+		}
+
+		/*
+		 * Flows are left in the require mode so that it would be
+		 * possible to quickly negotiate a new Child SA
+		 */
+	}
+
+	/* Parsed outgoing message? */
+	if (!ikev2_msg_frompeer(msg))
+		goto done;
+
+	if (msg->msg_parent->msg_response) {
+		ret = 0;
+		goto done;
+	}
+
+	/* Response to the INFORMATIONAL with Delete payload */
+
+	if ((resp = ibuf_static()) == NULL)
+		goto done;
+
+	if (found) {
+		if ((localdel = ibuf_advance(resp, sizeof(*localdel))) == NULL)
+			goto done;
+
+		localdel->del_protoid = del.del_protoid;
+		localdel->del_spisize = del.del_spisize;
+		localdel->del_nspi = htobe16(found);
+
+		for (i = 0; i < cnt; i++) {
+			if (localspi[i] == 0)	/* happens if found < cnt */
+				continue;
+			switch (sz) {
+			case 4:
+				spi32 = htobe32(localspi[i]);
+				if (ibuf_add(resp, &spi32, sizeof(spi32)) != 0)
+					goto done;
+				break;
+			case 8:
+				spi64 = htobe64(localspi[i]);
+				if (ibuf_add(resp, &spi64, sizeof(spi64)) != 0)
+					goto done;
+				break;
+			}
+		}
+		log_debug("%sdeleted %zu SPI%s: %.*s",
+		    SPI_SA(sa, NULL), found,
+		    found == 1 ? "" : "s",
+		    spibuf ? ibuf_strlen(spibuf) : 0,
+		    spibuf ? (char *)ibuf_data(spibuf) : "");
+	}
+
+	if (found) {
+		ret = ikev2_send_ike_e(env, sa, resp, IKEV2_PAYLOAD_DELETE,
+		    IKEV2_EXCHANGE_INFORMATIONAL, 1);
+		msg->msg_parent->msg_responded = 1;
+	} else {
+		/* XXX should we send an INVALID_SPI notification? */
+		ret = 0;
+	}
+
+ done:
+	free(localspi);
+	free(peersas);
+	ibuf_release(spibuf);
+	ibuf_release(resp);
+	return (ret);
 }
 
 int
@@ -1678,7 +1793,6 @@ ikev2_frags_reassemble(struct iked *env, struct ikev2_payload *pld,
 	struct iked_frag		*sa_frag = &msg->msg_sa->sa_fragments;
 	struct ibuf			*e = NULL;
 	struct iked_frag_entry		*el;
-	uint8_t				*ptr;
 	size_t				 offset;
 	size_t				 i;
 	struct iked_message		 emsg;
@@ -1695,12 +1809,7 @@ ikev2_frags_reassemble(struct iked *env, struct ikev2_payload *pld,
 	for (i = 0; i < sa_frag->frag_total; i++) {
 		if ((el = sa_frag->frag_arr[i]) == NULL)
 			fatalx("Tried to reassemble shallow frag_arr");
-		ptr = ibuf_seek(e, offset, el->frag_size);
-		if (ptr == NULL) {
-			log_info("%s: failed to reassemble fragments", __func__);
-			goto done;
-		}
-		memcpy(ptr, el->frag_data, el->frag_size);
+		memcpy(ibuf_seek(e, offset, 0), el->frag_data, el->frag_size);
 		offset += el->frag_size;
 	}
 

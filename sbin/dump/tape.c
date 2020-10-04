@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.45 2019/06/28 13:32:43 deraadt Exp $	*/
+/*	$OpenBSD: tape.c,v 1.44 2017/12/08 17:04:15 deraadt Exp $	*/
 /*	$NetBSD: tape.c,v 1.11 1997/06/05 11:13:26 lukem Exp $	*/
 
 /*-
@@ -330,10 +330,7 @@ flushtape(void)
 	}
 
 	blks = 0;
-	if (spcl.c_type != TS_END && spcl.c_type != TS_CLRI &&
-	    spcl.c_type != TS_BITS) {
-		if (spcl.c_count > TP_NINDIR)
-			quit("c_count too large\n");
+	if (spcl.c_type != TS_END) {
 		for (i = 0; i < spcl.c_count; i++)
 			if (spcl.c_addr[i] != 0)
 				blks++;

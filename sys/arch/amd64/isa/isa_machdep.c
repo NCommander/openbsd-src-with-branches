@@ -1,4 +1,4 @@
-/*	$OpenBSD: isa_machdep.c,v 1.30 2020/06/17 06:14:52 dlg Exp $	*/
+/*	$OpenBSD: isa_machdep.c,v 1.29 2017/10/14 04:44:43 jsg Exp $	*/
 /*	$NetBSD: isa_machdep.c,v 1.22 1997/06/12 23:57:32 thorpej Exp $	*/
 
 #define ISA_DMA_STATS
@@ -93,6 +93,13 @@
 
 extern	paddr_t avail_end;
 
+#define	IDTVEC(name)	__CONCAT(X,name)
+/* default interrupt vector table entries */
+typedef int (*vector)(void);
+extern vector IDTVEC(intr)[];
+void isa_strayintr(int);
+int fakeintr(void *);
+
 #if NISADMA > 0
 int	_isa_bus_dmamap_create(bus_dma_tag_t, bus_size_t, int,
 	    bus_size_t, bus_size_t, int, bus_dmamap_t *);
@@ -142,8 +149,36 @@ struct bus_dma_tag isa_bus_dma_tag = {
 };
 #endif /* NISADMA > 0 */
 
-int intrtype[ICU_LEN], intrlevel[ICU_LEN];
+#define GICODE_SEL	10
+
+u_long  intrstray[ICU_LEN];
+
+/*
+ * Caught a stray interrupt, notify
+ */
+void
+isa_strayintr(int irq)
+{
+        /*
+         * Stray interrupts on irq 7 occur when an interrupt line is raised
+         * and then lowered before the CPU acknowledges it.  This generally
+         * means either the device is screwed or something is cli'ing too
+         * long and it's timing out.
+         */
+	if (++intrstray[irq] <= 5)
+		log(LOG_ERR, "stray interrupt %d%s\n", irq,
+		    intrstray[irq] >= 5 ? "; stopped logging" : "");
+}
+
+int intrtype[ICU_LEN], intrmask[ICU_LEN], intrlevel[ICU_LEN];
+int iminlevel[ICU_LEN], imaxlevel[ICU_LEN];
 struct intrhand *intrhand[ICU_LEN];
+
+int
+fakeintr(void *arg)
+{
+	return 0;
+}
 
 #define	LEGAL_IRQ(x)	((x) >= 0 && (x) < ICU_LEN && (x) != 2)
 

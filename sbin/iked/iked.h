@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.166 2020/09/23 14:25:55 tobhe Exp $	*/
+/*	$OpenBSD: iked.h,v 1.165 2020/09/16 21:37:35 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -598,10 +598,6 @@ struct iked_message {
 	uint8_t			 msg_transform;
 	uint16_t		 msg_flags;
 	struct eap_msg		 msg_eap;
-	size_t			 msg_del_spisize;
-	size_t			 msg_del_cnt;
-	struct ibuf		*msg_del_buf;
-	int			 msg_del_protoid;
 
 	/* MOBIKE */
 	int			 msg_update_sa_addresses;

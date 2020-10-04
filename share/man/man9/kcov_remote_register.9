@@ -1,4 +1,4 @@
-.\"	$OpenBSD: kcov_remote_register.9,v 1.2 2020/08/01 15:45:19 jmc Exp $
+.\"	$OpenBSD: kcov_remote_register.9,v 1.1 2020/08/01 08:40:20 anton Exp $
 .\"
 .\" Copyright (c) 2020 Anton Lindqvist <anton@openbsd.org>
 .\"
@@ -75,14 +75,12 @@ Remote sections may not be nested.
 .Fn kcov_remote_leave
 leaves a remote section.
 .Sh CONTEXT
-.Fn kcov_remote_register
-and
-.Fn kcov_remote_unregister
-can be called from process context.
+.Fn kcov_remote_register ,
+.Fn kcov_remote_unregister ,
 .Fn kcov_remote_enter
 and
 .Fn kcov_remote_leave
-can be called from interrupt and process context.
+can be called from process context.
 .Sh CODE REFERENCES
 These functions are implemented in
 .Pa sys/dev/kcov.c .

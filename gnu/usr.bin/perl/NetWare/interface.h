@@ -1,6 +1,6 @@
 
 /*
- * Copyright © 2001 Novell, Inc. All Rights Reserved.
+ * Copyright Â© 2001 Novell, Inc. All Rights Reserved.
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Artistic License, as specified in the README file.
@@ -35,7 +35,7 @@ public:
 	int PerlCreate(PerlInterpreter *my_perl);
 	int PerlParse(PerlInterpreter *my_perl, int argc, char** argv, char** env);
 	int PerlRun(PerlInterpreter *my_perl);
-	void PerlDestroy(PerlInterpreter *my_perl);
+	int PerlDestroy(PerlInterpreter *my_perl);
 	void PerlFree(PerlInterpreter *my_perl);
 
 	//bool RegisterWithThreadTable(void);

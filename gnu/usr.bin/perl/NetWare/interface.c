@@ -1,6 +1,6 @@
 
 /*
- * Copyright © 2001 Novell, Inc. All Rights Reserved.
+ * Copyright Â© 2001 Novell, Inc. All Rights Reserved.
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Artistic License, as specified in the README file.
@@ -78,10 +78,10 @@ ClsPerlHost::PerlRun(PerlInterpreter *my_perl)
 	return(perl_run(my_perl));	// Run Perl.
 }
 
-void
+int
 ClsPerlHost::PerlDestroy(PerlInterpreter *my_perl)
 {
-	perl_destruct(my_perl);		// Destructor for Perl.
+	return(perl_destruct(my_perl));		// Destructor for Perl.
 }
 
 void
@@ -126,10 +126,10 @@ int RunPerl(int argc, char **argv, char **env)
 	PerlInterpreter *new_perl = NULL;		// defined in Perl.h
 
 	#ifdef PERL_GLOBAL_STRUCT
-		#define PERLVAR(var,type)
-		#define PERLVARA(var,type)
-		#define PERLVARI(var,type,init) PL_Vars.var = init;
-		#define PERLVARIC(var,type,init) PL_Vars.var = init;
+		#define PERLVAR(prefix,var,type)
+		#define PERLVARA(prefix,var,type)
+		#define PERLVARI(prefix,var,type,init) PL_Vars.prefix##var = init;
+		#define PERLVARIC(prefix,var,type,init) PL_Vars.prefix##var = init;
 
 		#include "perlvars.h"
 
@@ -148,19 +148,18 @@ int RunPerl(int argc, char **argv, char **env)
 	{
 		PL_perl_destruct_level = 0;
 
-		exitstatus = nlm.PerlParse(my_perl, argc, argv, env);
-		if(exitstatus == 0)
+		if(!nlm.PerlParse(my_perl, argc, argv, env))
 		{
 			#if defined(TOP_CLONE) && defined(USE_ITHREADS)		// XXXXXX testing
 				new_perl = perl_clone(my_perl, 1);
 
-				exitstatus = perl_run(new_perl);	// Run Perl.
+				(void) perl_run(new_perl);	// Run Perl.
 				PERL_SET_THX(my_perl);
 			#else
-				exitstatus = nlm.PerlRun(my_perl);
+				(void) nlm.PerlRun(my_perl);
 			#endif
 		}
-		nlm.PerlDestroy(my_perl);
+		exitstatus = nlm.PerlDestroy(my_perl);
 	}
 	if(my_perl)
 		nlm.PerlFree(my_perl);
@@ -169,7 +168,7 @@ int RunPerl(int argc, char **argv, char **env)
 		if (new_perl)
 		{
 			PERL_SET_THX(new_perl);
-			nlm.PerlDestroy(new_perl);
+			exitstatus = nlm.PerlDestroy(new_perl);
 			nlm.PerlFree(my_perl);
 		}
 	#endif

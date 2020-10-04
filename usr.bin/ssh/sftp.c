@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.201 2020/08/03 02:43:41 djm Exp $ */
+/* $OpenBSD: sftp.c,v 1.200 2020/04/03 05:53:52 jmc Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -1302,7 +1302,7 @@ parse_args(const char **cpp, int *ignore_errors, int *disable_echo, int *aflag,
 	const char *cmd, *cp = *cpp;
 	char *cp2, **argv;
 	int base = 0;
-	long long ll;
+	long l;
 	int path1_mandatory = 0, i, cmdnum, optidx, argc;
 
 	/* Skip leading whitespace */
@@ -1460,16 +1460,16 @@ parse_args(const char **cpp, int *ignore_errors, int *disable_echo, int *aflag,
 		if (argc - optidx < 1)
 			goto need_num_arg;
 		errno = 0;
-		ll = strtoll(argv[optidx], &cp2, base);
+		l = strtol(argv[optidx], &cp2, base);
 		if (cp2 == argv[optidx] || *cp2 != '\0' ||
-		    ((ll == LLONG_MIN || ll == LLONG_MAX) && errno == ERANGE) ||
-		    ll < 0 || ll > UINT32_MAX) {
+		    ((l == LONG_MIN || l == LONG_MAX) && errno == ERANGE) ||
+		    l < 0) {
  need_num_arg:
 			error("You must supply a numeric argument "
 			    "to the %s command.", cmd);
 			return -1;
 		}
-		*n_arg = ll;
+		*n_arg = l;
 		if (cmdnum == I_LUMASK)
 			break;
 		/* Get pathname (mandatory) */

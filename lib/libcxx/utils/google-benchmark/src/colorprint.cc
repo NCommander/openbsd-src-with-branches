@@ -25,7 +25,7 @@
 #include "internal_macros.h"
 
 #ifdef BENCHMARK_OS_WINDOWS
-#include <Windows.h>
+#include <windows.h>
 #include <io.h>
 #else
 #include <unistd.h>
@@ -89,7 +89,7 @@ std::string FormatString(const char* msg, va_list args) {
 
   std::size_t size = 256;
   char local_buff[256];
-  auto ret = std::vsnprintf(local_buff, size, msg, args_cp);
+  auto ret = vsnprintf(local_buff, size, msg, args_cp);
 
   va_end(args_cp);
 
@@ -104,7 +104,7 @@ std::string FormatString(const char* msg, va_list args) {
     // we did not provide a long enough buffer on our first attempt.
     size = (size_t)ret + 1;  // + 1 for the null byte
     std::unique_ptr<char[]> buff(new char[size]);
-    ret = std::vsnprintf(buff.get(), size, msg, args);
+    ret = vsnprintf(buff.get(), size, msg, args);
     CHECK(ret > 0 && ((size_t)ret) < size);
     return buff.get();
   }

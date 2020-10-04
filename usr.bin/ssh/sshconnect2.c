@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.327 2020/10/03 08:11:28 djm Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.325 2020/08/27 01:06:18 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -92,13 +92,8 @@ struct sockaddr *xxx_hostaddr;
 static int
 verify_host_key_callback(struct sshkey *hostkey, struct ssh *ssh)
 {
-	int cert_downgraded = 0;
-
-	if (verify_host_key(xxx_host, xxx_hostaddr, hostkey,
-	    &cert_downgraded) == -1)
+	if (verify_host_key(xxx_host, xxx_hostaddr, hostkey) == -1)
 		fatal("Host key verification failed.");
-	if (cert_downgraded)
-		ssh->kex->flags |= KEX_HOSTCERT_CONVERT;
 	return 0;
 }
 
@@ -141,8 +136,7 @@ order_hostkeyalgs(char *host, struct sockaddr *hostaddr, u_short port)
 	 */
 	best = first_alg(options.hostkeyalgorithms);
 	if (lookup_key_in_hostkeys_by_type(hostkeys,
-	    sshkey_type_plain(sshkey_type_from_name(best)),
-	    sshkey_ecdsa_nid_from_name(best), NULL)) {
+	    sshkey_type_plain(sshkey_type_from_name(best)), NULL)) {
 		debug3("%s: have matching best-preference key type %s, "
 		    "using HostkeyAlgorithms verbatim", __func__, best);
 		ret = xstrdup(options.hostkeyalgorithms);
@@ -180,8 +174,7 @@ order_hostkeyalgs(char *host, struct sockaddr *hostaddr, u_short port)
 		}
 		/* If the key appears in known_hosts then prefer it */
 		if (lookup_key_in_hostkeys_by_type(hostkeys,
-		    sshkey_type_plain(ktype),
-		    sshkey_ecdsa_nid_from_name(alg), NULL)) {
+		    sshkey_type_plain(ktype), NULL)) {
 			ALG_APPEND(first, alg);
 			continue;
 		}

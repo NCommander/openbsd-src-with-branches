@@ -28,9 +28,7 @@ to_dma_fence_chain(struct dma_fence *fence)
 	return NULL;
 }
 
-/* XXX walk chain */
-#define dma_fence_chain_for_each(f, h) \
-	for (f = dma_fence_get(h); f != NULL; dma_fence_put(f), f = NULL)
+#define dma_fence_chain_for_each(a, b)
 
 static inline void
 dma_fence_chain_init(struct dma_fence_chain *chain, struct dma_fence *prev,

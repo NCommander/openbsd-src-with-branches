@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.536 2020/09/21 07:29:09 djm Exp $ */
+/* $OpenBSD: ssh.c,v 1.535 2020/09/20 23:31:46 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1677,6 +1677,7 @@ static void
 control_persist_detach(void)
 {
 	pid_t pid;
+	int devnull, keep_stderr;
 
 	debug("%s: backgrounding master process", __func__);
 
@@ -1703,8 +1704,18 @@ control_persist_detach(void)
 		/* muxclient() doesn't return on success. */
 		fatal("Failed to connect to new control master");
 	}
-	if (stdfd_devnull(1, 1, !(log_is_on_stderr() && debug_flag)) == -1)
-		error("%s: stdfd_devnull failed", __func__);
+	if ((devnull = open(_PATH_DEVNULL, O_RDWR)) == -1) {
+		error("%s: open(\"/dev/null\"): %s", __func__,
+		    strerror(errno));
+	} else {
+		keep_stderr = log_is_on_stderr() && debug_flag;
+		if (dup2(devnull, STDIN_FILENO) == -1 ||
+		    dup2(devnull, STDOUT_FILENO) == -1 ||
+		    (!keep_stderr && dup2(devnull, STDERR_FILENO) == -1))
+			error("%s: dup2: %s", __func__, strerror(errno));
+		if (devnull > STDERR_FILENO)
+			close(devnull);
+	}
 	daemon(1, 1);
 	setproctitle("%s [mux]", options.control_path);
 }
@@ -1713,14 +1724,26 @@ control_persist_detach(void)
 static void
 fork_postauth(void)
 {
+	int devnull, keep_stderr;
+
 	if (need_controlpersist_detach)
 		control_persist_detach();
 	debug("forking to background");
 	fork_after_authentication_flag = 0;
 	if (daemon(1, 1) == -1)
 		fatal("daemon() failed: %.200s", strerror(errno));
-	if (stdfd_devnull(1, 1, !(log_is_on_stderr() && debug_flag)) == -1)
-		error("%s: stdfd_devnull failed", __func__);
+	if ((devnull = open(_PATH_DEVNULL, O_WRONLY)) == -1)
+		error("%s: open %s: %s", __func__,
+		    _PATH_DEVNULL, strerror(errno));
+	else {
+		keep_stderr = log_is_on_stderr() && debug_flag;
+		if (dup2(devnull, STDIN_FILENO) == -1 ||
+		    dup2(devnull, STDOUT_FILENO) == -1 ||
+		    (!keep_stderr && dup2(devnull, STDOUT_FILENO) == -1))
+			fatal("%s: dup2() stdio failed", __func__);
+		if (devnull > STDERR_FILENO)
+			close(devnull);
+	}
 }
 
 static void
@@ -2031,7 +2054,7 @@ ssh_session2_open(struct ssh *ssh)
 static int
 ssh_session2(struct ssh *ssh, struct passwd *pw)
 {
-	int r, id = -1;
+	int r, devnull, id = -1;
 	char *cp, *tun_fwd_ifname = NULL;
 
 	/* XXX should be pre-session */
@@ -2118,8 +2141,17 @@ ssh_session2(struct ssh *ssh, struct passwd *pw)
 	 * NB. this can only happen after LocalCommand has completed,
 	 * as it may want to write to stdout.
 	 */
-	if (!need_controlpersist_detach && stdfd_devnull(0, 1, 0) == -1)
-		error("%s: stdfd_devnull failed", __func__);
+	if (!need_controlpersist_detach) {
+		if ((devnull = open(_PATH_DEVNULL, O_WRONLY)) == -1) {
+			error("%s: open %s: %s", __func__,
+			    _PATH_DEVNULL, strerror(errno));
+		} else {
+			if (dup2(devnull, STDOUT_FILENO) == -1)
+				fatal("%s: dup2() stdout failed", __func__);
+			if (devnull > STDERR_FILENO)
+				close(devnull);
+		}
+	}
 
 	/*
 	 * If requested and we are not interested in replies to remote

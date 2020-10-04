@@ -1,4 +1,4 @@
-/*	$OpenBSD: tal.c,v 1.20 2020/09/30 14:42:14 claudio Exp $ */
+/*	$OpenBSD: tal.c,v 1.18 2020/04/11 15:52:24 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -19,48 +19,13 @@
 #include <assert.h>
 #include <ctype.h>
 #include <err.h>
-#include <limits.h>
 #include <libgen.h>
+#include <resolv.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "extern.h"
-
-static int
-base64_decode(const unsigned char *in, size_t inlen, unsigned char **out,
-   size_t *outlen)
-{
-	static EVP_ENCODE_CTX *ctx;
-	unsigned char *to;
-	int tolen;
-
-	if (ctx == NULL && (ctx = EVP_ENCODE_CTX_new()) == NULL)
-		err(1, "EVP_ENCODE_CTX_new");
-
-	*out = NULL;
-	*outlen = 0;
-
-	if (inlen >= INT_MAX - 3)
-		return -1;
-	tolen = ((inlen + 3) / 4) * 3 + 1;
-	if ((to = malloc(tolen)) == NULL)
-		return -1;
-
-	EVP_DecodeInit(ctx);
-	if (EVP_DecodeUpdate(ctx, to, &tolen, in, inlen) == -1)
-		goto fail;
-	*outlen = tolen;
-	if (EVP_DecodeFinal(ctx, to + tolen, &tolen) == -1)
-		goto fail;
-	*outlen += tolen;
-	*out = to;
-	return 0;
-
-fail:
-	free(to);
-	return -1;
-}
 
 /*
  * Inner function for parsing RFC 7730 from a buffer.
@@ -71,9 +36,9 @@ static struct tal *
 tal_parse_buffer(const char *fn, char *buf)
 {
 	char		*nl, *line;
-	unsigned char	*der;
-	size_t		 sz, dersz;
-	int		 rc = 0;
+	unsigned char	*b64 = NULL;
+	size_t		 sz;
+	int		 rc = 0, b64sz;
 	struct tal	*tal = NULL;
 	enum rtype	 rp;
 	EVP_PKEY	*pkey = NULL;
@@ -140,14 +105,17 @@ tal_parse_buffer(const char *fn, char *buf)
 	}
 
 	/* Now the BASE64-encoded public key. */
-	if ((base64_decode(buf, sz, &der, &dersz)) == -1)
-		errx(1, "base64 decode");
+	sz = ((sz + 3) / 4) * 3 + 1;
+	if ((b64 = malloc(sz)) == NULL)
+		err(1, NULL);
+	if ((b64sz = b64_pton(buf, b64, sz)) < 0)
+		errx(1, "b64_pton");
 
-	tal->pkey = der;
-	tal->pkeysz = dersz;
+	tal->pkey = b64;
+	tal->pkeysz = b64sz;
 
 	/* Make sure it's a valid public key. */
-	pkey = d2i_PUBKEY(NULL, (const unsigned char **)&der, dersz);
+	pkey = d2i_PUBKEY(NULL, (const unsigned char **)&b64, b64sz);
 	if (pkey == NULL) {
 		cryptowarnx("%s: RFC 7730 section 2.1: subjectPublicKeyInfo: "
 		    "failed public key parse", fn);
