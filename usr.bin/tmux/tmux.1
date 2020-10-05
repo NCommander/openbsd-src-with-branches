@@ -1,4 +1,4 @@
-.\" $OpenBSD: tmux.1,v 1.796 2020/09/22 15:45:20 nicm Exp $
+.\" $OpenBSD: tmux.1,v 1.797 2020/10/05 09:53:01 nicm Exp $
 .\"
 .\" Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
 .\"
@@ -14,7 +14,7 @@
 .\" IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
 .\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 22 2020 $
+.Dd $Mdocdate: October 5 2020 $
 .Dt TMUX 1
 .Os
 .Sh NAME
@@ -1858,7 +1858,7 @@ The
 .Fl P
 option prints information about the new window after it has been created.
 By default, it uses the format
-.Ql #{session_name}:#{window_index}
+.Ql #{session_name}:#{window_index}.#{pane_index}
 but a different format may be specified with
 .Fl F .
 .It Xo Ic capture-pane
