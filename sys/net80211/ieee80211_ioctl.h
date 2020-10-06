@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_ioctl.h,v 1.39 2019/09/02 12:54:21 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_ioctl.h,v 1.40 2020/04/29 13:13:30 stsp Exp $	*/
 /*	$NetBSD: ieee80211_ioctl.h,v 1.7 2004/04/30 22:51:04 dyoung Exp $	*/
 
 /*-
@@ -277,7 +277,7 @@ struct ieee80211_keyrun {
 
 #define	SIOCG80211JOINALL	_IOWR('i', 218, struct ieee80211_joinreq_all)
 #define	SIOCS80211JOIN		_IOWR('i', 255, struct ifreq)
-#define	SIOCG80211JOIN		_IOWR('i', 256, struct ifreq)
+#define	SIOCG80211JOIN		_IOWR('i', 0, struct ifreq)
 
 /* join is pointed at by ifr.ifr_data */
 struct ieee80211_join {
