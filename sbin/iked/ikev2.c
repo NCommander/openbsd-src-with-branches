@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2.c,v 1.264 2020/10/05 19:21:16 tobhe Exp $	*/
+/*	$OpenBSD: ikev2.c,v 1.265 2020/10/06 19:06:06 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -20,7 +20,6 @@
 #include <sys/param.h>	/* roundup */
 #include <sys/queue.h>
 #include <sys/socket.h>
-#include <sys/wait.h>
 #include <sys/uio.h>
 
 #include <netinet/in.h>
