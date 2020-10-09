@@ -103,7 +103,6 @@ dladdr(const void *addr, struct dl_info *info)
 	printf("Wrong dl symbols!\n");
 	return -1;
 }
-DEF_WEAK(dladdr);
 
 #if 0
 /* Thread Local Storage argument structure */

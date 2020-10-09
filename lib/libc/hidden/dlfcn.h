@@ -20,7 +20,7 @@
 
 #include_next <dlfcn.h>
 
-PROTO_NORMAL(dladdr);
+PROTO_DEPRECATED(dladdr);
 PROTO_DEPRECATED(dlclose);
 PROTO_DEPRECATED(dlerror);
 PROTO_DEPRECATED(dlopen);
