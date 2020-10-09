@@ -1,4 +1,4 @@
-/*	$OpenBSD: athnvar.h,v 1.38 2019/01/31 11:38:52 stsp Exp $	*/
+/*	$OpenBSD: athnvar.h,v 1.39 2019/02/01 16:15:07 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -69,8 +69,7 @@ struct athn_tx_radiotap_header {
 #define ATHN_TX_RADIOTAP_PRESENT						\
 	(1 << IEEE80211_RADIOTAP_FLAGS |				\
 	 1 << IEEE80211_RADIOTAP_RATE |					\
-	 1 << IEEE80211_RADIOTAP_CHANNEL |				\
-	 1 << IEEE80211_RADIOTAP_HWQUEUE)
+	 1 << IEEE80211_RADIOTAP_CHANNEL)
 
 struct athn_tx_buf {
 	SIMPLEQ_ENTRY(athn_tx_buf)	bf_list;

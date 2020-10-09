@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpivar.h,v 1.26 2016/09/05 08:18:40 tedu Exp $	*/
+/*	$OpenBSD: if_wpivar.h,v 1.27 2017/04/08 02:57:25 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2006-2008
@@ -50,8 +50,7 @@ struct wpi_tx_radiotap_header {
 #define WPI_TX_RADIOTAP_PRESENT						\
 	((1 << IEEE80211_RADIOTAP_FLAGS) |				\
 	 (1 << IEEE80211_RADIOTAP_RATE) |				\
-	 (1 << IEEE80211_RADIOTAP_CHANNEL) |				\
-	 (1 << IEEE80211_RADIOTAP_HWQUEUE))
+	 (1 << IEEE80211_RADIOTAP_CHANNEL))
 
 struct wpi_dma_info {
 	bus_dma_tag_t		tag;
