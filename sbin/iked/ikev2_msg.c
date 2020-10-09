@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_msg.c,v 1.74 2020/10/06 19:06:06 tobhe Exp $	*/
+/*	$OpenBSD: ikev2_msg.c,v 1.75 2020/10/09 08:54:24 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -33,7 +33,6 @@
 #include <signal.h>
 #include <errno.h>
 #include <err.h>
-#include <pwd.h>
 #include <event.h>
 
 #include <openssl/sha.h>
