@@ -1,4 +1,4 @@
-/* $OpenBSD: parse.y,v 1.26 2017/01/02 01:40:20 tedu Exp $ */
+/* $OpenBSD: parse.y,v 1.27 2018/07/11 07:39:22 krw Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -70,7 +70,7 @@ arraylen(const char **arr)
 %}
 
 %token TPERMIT TDENY TAS TCMD TARGS
-%token TNOPASS TPERSIST TKEEPENV TSETENV
+%token TNOPASS TNOLOG TPERSIST TKEEPENV TSETENV
 %token TSTRING
 
 %%
@@ -135,6 +135,9 @@ options:	/* none */ {
 		} ;
 option:		TNOPASS {
 			$$.options = NOPASS;
+			$$.envlist = NULL;
+		} | TNOLOG {
+			$$.options = NOLOG;
 			$$.envlist = NULL;
 		} | TPERSIST {
 			$$.options = PERSIST;
@@ -209,6 +212,7 @@ static struct keyword {
 	{ "cmd", TCMD },
 	{ "args", TARGS },
 	{ "nopass", TNOPASS },
+	{ "nolog", TNOLOG },
 	{ "persist", TPERSIST },
 	{ "keepenv", TKEEPENV },
 	{ "setenv", TSETENV },
