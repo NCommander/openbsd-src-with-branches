@@ -1,4 +1,4 @@
-/* $OpenBSD: verify.c,v 1.6 2020/10/03 15:19:47 tb Exp $ */
+/* $OpenBSD: verify.c,v 1.7 2020/10/08 14:38:09 tb Exp $ */
 /*
  * Copyright (c) 2020 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
@@ -219,6 +219,8 @@ bettertls_cert_test(const char *certs_path)
 		free(bundle_file);
 		free(cert_file);
 	}
+	free(bundle_file);
+	free(cert_file);
 	free(roots_file);
 	X509_STORE_free(store);
 }
