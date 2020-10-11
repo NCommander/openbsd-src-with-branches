@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwnvar.h,v 1.37 2020/04/27 08:02:24 stsp Exp $	*/
+/*	$OpenBSD: if_iwnvar.h,v 1.38 2020/10/09 08:53:16 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2007, 2008
@@ -42,7 +42,6 @@ struct iwn_tx_radiotap_header {
 	uint8_t		wt_rate;
 	uint16_t	wt_chan_freq;
 	uint16_t	wt_chan_flags;
-	uint8_t		wt_hwqueue;
 } __packed;
 
 #define IWN_TX_RADIOTAP_PRESENT						\

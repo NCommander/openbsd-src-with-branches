@@ -1,4 +1,4 @@
-/*      $OpenBSD: athvar.h,v 1.33 2020/06/26 19:53:30 cheloha Exp $  */
+/*      $OpenBSD: athvar.h,v 1.34 2020/10/09 08:53:16 mpi Exp $  */
 /*	$NetBSD: athvar.h,v 1.10 2004/08/10 01:03:53 dyoung Exp $	*/
 
 /*-
@@ -159,7 +159,6 @@ struct ath_tx_radiotap_header {
 	u_int16_t	wt_chan_flags;
 	u_int8_t	wt_txpower;
 	u_int8_t	wt_antenna;
-	u_int8_t	wt_hwqueue;
 } __packed;
 
 /* 

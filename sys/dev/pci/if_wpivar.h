@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wpivar.h,v 1.27 2017/04/08 02:57:25 deraadt Exp $	*/
+/*	$OpenBSD: if_wpivar.h,v 1.28 2020/10/09 08:53:16 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2006-2008
@@ -44,7 +44,6 @@ struct wpi_tx_radiotap_header {
 	uint8_t		wt_rate;
 	uint16_t	wt_chan_freq;
 	uint16_t	wt_chan_flags;
-	uint8_t		wt_hwqueue;
 } __packed;
 
 #define WPI_TX_RADIOTAP_PRESENT						\
