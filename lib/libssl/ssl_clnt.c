@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_clnt.c,v 1.73 2020/09/24 18:12:00 jsing Exp $ */
+/* $OpenBSD: ssl_clnt.c,v 1.74 2020/10/03 18:01:55 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -911,7 +911,7 @@ ssl3_get_server_hello(SSL *s)
 	}
 	s->version = server_version;
 
-	if ((method = ssl_get_client_method(server_version)) == NULL) {
+	if ((method = ssl_get_method(server_version)) == NULL) {
 		SSLerror(s, ERR_R_INTERNAL_ERROR);
 		goto err;
 	}

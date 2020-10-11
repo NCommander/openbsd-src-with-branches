@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.233 2020/09/19 10:17:56 tb Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.234 2020/09/24 18:12:00 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -345,7 +345,7 @@ SSL_new(SSL_CTX *ctx)
 		goto err;
 
 	s->references = 1;
-	s->server = (ctx->method->internal->ssl_accept == ssl_undefined_function) ? 0 : 1;
+	s->server = 0;
 
 	SSL_clear(s);
 
