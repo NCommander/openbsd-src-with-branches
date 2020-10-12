@@ -1,4 +1,4 @@
-/*	$OpenBSD: getloadavg.c,v 1.7 2015/01/16 16:48:51 deraadt Exp $ */
+/*	$OpenBSD: getloadavg.c,v 1.8 2019/06/28 13:32:41 deraadt Exp $ */
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -46,11 +46,10 @@ int
 getloadavg(double loadavg[], int nelem)
 {
 	struct loadavg loadinfo;
-	int i, mib[2];
+	const int mib[2] = { CTL_VM, VM_LOADAVG };
+	int i;
 	size_t size;
 
-	mib[0] = CTL_VM;
-	mib[1] = VM_LOADAVG;
 	size = sizeof(loadinfo);
 	if (sysctl(mib, 2, &loadinfo, &size, NULL, 0) == -1)
 		return (-1);

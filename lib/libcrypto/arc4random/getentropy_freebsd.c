@@ -1,4 +1,4 @@
-/*	$OpenBSD: getentropy_freebsd.c,v 1.2 2015/08/25 17:22:56 deraadt Exp $	*/
+/*	$OpenBSD: getentropy_freebsd.c,v 1.3 2016/08/07 03:27:21 tb Exp $	*/
 
 /*
  * Copyright (c) 2014 Pawel Jakub Dawidek <pjd@FreeBSD.org>
@@ -32,11 +32,9 @@
 static size_t
 getentropy_sysctl(u_char *buf, size_t size)
 {
-	int mib[2];
+	const int mib[2] = { CTL_KERN, KERN_ARND };
 	size_t len, done;
 
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_ARND;
 	done = 0;
 
 	do {
