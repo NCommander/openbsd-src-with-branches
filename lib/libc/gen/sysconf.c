@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysconf.c,v 1.25 2017/09/10 18:20:00 guenther Exp $ */
+/*	$OpenBSD: sysconf.c,v 1.27 2020/10/12 19:48:09 deraadt Exp $ */
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -62,7 +62,7 @@ sysconf(int name)
 {
 	struct rlimit rl;
 	size_t len;
-	int mib[3], value, namelen, sverrno;
+	int mib[2], value, namelen, sverrno;
 
 	len = sizeof(value);
 	namelen = 2;
