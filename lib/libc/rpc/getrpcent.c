@@ -1,4 +1,4 @@
-/*	$OpenBSD: getrpcent.c,v 1.20 2015/09/11 11:33:03 deraadt Exp $ */
+/*	$OpenBSD: getrpcent.c,v 1.21 2015/09/13 15:36:56 guenther Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -52,7 +52,7 @@ static struct rpcdata {
 
 static	struct rpcent *interpret(char *val, int len);
 
-static char RPCDB[] = "/etc/rpc";
+static const char RPCDB[] = "/etc/rpc";
 
 static struct rpcdata *
 _rpcdata(void)

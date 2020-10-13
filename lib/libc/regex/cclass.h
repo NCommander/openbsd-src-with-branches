@@ -1,4 +1,4 @@
-/*	$OpenBSD: cclass.h,v 1.4 1997/08/24 22:15:12 millert Exp $	*/
+/*	$OpenBSD: cclass.h,v 1.5 2003/06/02 20:18:36 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994 Henry Spencer.
@@ -36,10 +36,10 @@
  */
 
 /* character-class table */
-static struct cclass {
-	char *name;
-	char *chars;
-	char *multis;
+static const struct cclass {
+	const char *name;
+	const char *chars;
+	const char *multis;
 } cclasses[] = {
 	{ "alnum",	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\
 0123456789",				""} ,
