@@ -1,4 +1,4 @@
-/* $OpenBSD: key-bindings.c,v 1.130 2020/06/16 08:18:34 nicm Exp $ */
+/* $OpenBSD: key-bindings.c,v 1.131 2020/09/08 10:19:19 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -380,7 +380,7 @@ key_bindings_init(void)
 		"bind -N 'Select the next window' n next-window",
 		"bind -N 'Select the next pane' o select-pane -t:.+",
 		"bind -N 'Customize options' C customize-mode -Z",
-		"bind -N 'Select the previous pane' p previous-window",
+		"bind -N 'Select the previous window' p previous-window",
 		"bind -N 'Display pane numbers' q display-panes",
 		"bind -N 'Redraw the current client' r refresh-client",
 		"bind -N 'Choose a session from a list' s choose-tree -Zs",
