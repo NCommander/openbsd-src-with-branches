@@ -1,10 +1,11 @@
-#	$OpenBSD: Makefile,v 1.40 2020/09/21 15:13:24 beck Exp $
+#	$OpenBSD: Makefile,v 1.41 2020/10/07 09:35:03 jsing Exp $
 
 SUBDIR += asn1
 SUBDIR += buffer
 SUBDIR += bytestring
 SUBDIR += ciphers
 SUBDIR += client
+SUBDIR += dtls
 SUBDIR += handshake
 SUBDIR += pqueue
 SUBDIR += record
