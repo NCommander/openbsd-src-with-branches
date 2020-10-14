@@ -1,4 +1,4 @@
-/* $OpenBSD: md_init.h,v 1.8 2016/08/07 02:30:55 guenther Exp $ */
+/* $OpenBSD: md_init.h,v 1.9 2017/08/11 20:13:31 guenther Exp $ */
 
 /*-
  * Copyright (c) 2001 Ross Harvey
@@ -122,7 +122,7 @@
 	"	.globl	_dl_exit		\n" \
 	"	.type	_dl_exit,@function	\n" \
 	"_dl_exit:				\n" \
-	"	mov	$1, %eax		\n" \
+	"	mov	$" STR(SYS_exit) ", %eax\n" \
 	"	int	$0x80			\n" \
 	"	ret				\n" \
 	"	.previous")
