@@ -1,4 +1,4 @@
-/* $OpenBSD: apps.c,v 1.54 2019/07/14 03:30:45 guenther Exp $ */
+/* $OpenBSD: apps.c,v 1.55 2020/09/09 12:47:46 inoguchi Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -216,7 +216,6 @@ chopup_args(ARGS *arg, char *buf, int *argc, char **argv[])
 	*argc = 0;
 	*argv = NULL;
 
-	i = 0;
 	if (arg->count == 0) {
 		arg->count = 20;
 		arg->data = reallocarray(NULL, arg->count, sizeof(char *));
