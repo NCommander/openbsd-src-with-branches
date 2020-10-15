@@ -1,4 +1,4 @@
-/* $OpenBSD: md_init.h,v 1.2 2020/06/26 19:57:02 drahn Exp $ */
+/* $OpenBSD: md_init.h,v 1.3 2020/10/14 22:11:19 deraadt Exp $ */
 
 /*
  * Copyright (c) 2020 Dale Rahn <drahn@openbsd.org>
@@ -116,5 +116,5 @@ __asm(									\
 "_dl_exit:								\n" \
 "	li	%r0, " STR(SYS_exit) "					\n" \
 "	sc								\n" \
-"	blr								\n" \
+"	.long 0 # illegal						\n" \
 )

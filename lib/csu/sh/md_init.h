@@ -1,4 +1,4 @@
-/*	$OpenBSD: md_init.h,v 1.8 2017/08/11 20:13:31 guenther Exp $	*/
+/*	$OpenBSD: md_init.h,v 1.9 2020/10/14 22:11:19 deraadt Exp $	*/
 /*	$NetBSD: dot_init.h,v 1.3 2005/12/24 22:02:10 perry Exp $	*/
 
 /*-
@@ -136,4 +136,5 @@ __asm(".section " #section "\n"		\
 	"_dl_exit:							\n" \
 	"	mov	#" STR(SYS_exit) ", r0				\n" \
 	"	.word	0xc380	/* trapa #0x80 */			\n" \
+	"	sleep	/* illegal */					\n" \
 	".previous")
