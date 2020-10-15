@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched_bsd.c,v 1.62 2020/01/30 08:51:27 mpi Exp $	*/
+/*	$OpenBSD: sched_bsd.c,v 1.63 2020/05/30 14:42:59 solene Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -300,8 +300,6 @@ yield(void)
 {
 	struct proc *p = curproc;
 	int s;
-
-	NET_ASSERT_UNLOCKED();
 
 	SCHED_LOCK(s);
 	setrunqueue(p->p_cpu, p, p->p_usrpri);
