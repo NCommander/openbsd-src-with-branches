@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.46 2019/05/08 22:15:48 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.47 2020/03/27 22:17:47 matthieu Exp $	*/
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -107,6 +107,7 @@ u_int32_t
 _dl_arc4random(void)
 {
 	u_int32_t rnd;
+
 	_dl_arc4randombuf(&rnd, sizeof(rnd));
 	return (rnd);
 }
