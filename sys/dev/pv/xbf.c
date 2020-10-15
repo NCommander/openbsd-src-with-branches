@@ -1,4 +1,4 @@
-/*	$OpenBSD: xbf.c,v 1.48 2020/09/05 13:05:07 krw Exp $	*/
+/*	$OpenBSD: xbf.c,v 1.49 2020/09/22 19:32:53 krw Exp $	*/
 
 /*
  * Copyright (c) 2016, 2017 Mike Belopuhov
@@ -822,7 +822,6 @@ xbf_scsi_inquiry(struct scsi_xfer *xs)
 {
 	struct xbf_softc *sc = xs->sc_link->bus->sb_adapter_softc;
 	struct scsi_inquiry_data inq;
-	/* char buf[5]; */
 
 	bzero(&inq, sizeof(inq));
 
