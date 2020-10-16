@@ -1,5 +1,6 @@
+# $OpenBSD$
 
-LIB=  gadgetsyscall
-SRCS= gadgetsyscall.c
+LIB=	gadgetsyscall
+SRCS=	gadgetsyscall.c
 
 .include <bsd.lib.mk>
