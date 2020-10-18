@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-common.c,v 1.30 2017/06/10 06:36:46 djm Exp $ */
+/* $OpenBSD: sftp-common.c,v 1.31 2018/09/13 15:23:32 millert Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 2001 Damien Miller.  All rights reserved.
@@ -131,7 +131,7 @@ decode_attrib(struct sshbuf *b, Attrib *a)
 		u_int i, count;
 
 		if ((r = sshbuf_get_u32(b, &count)) != 0)
-			fatal("%s: buffer error: %s", __func__, ssh_err(r));
+			return r;
 		for (i = 0; i < count; i++) {
 			if ((r = sshbuf_get_cstring(b, &type, NULL)) != 0 ||
 			    (r = sshbuf_get_string(b, &data, &dlen)) != 0)

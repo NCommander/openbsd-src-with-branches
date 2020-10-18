@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-ed25519.c,v 1.7 2016/04/21 06:08:02 djm Exp $ */
+/* $OpenBSD: ssh-ed25519.c,v 1.8 2020/02/26 13:40:09 jsg Exp $ */
 /*
  * Copyright (c) 2013 Markus Friedl <markus@openbsd.org>
  *
@@ -137,8 +137,7 @@ ssh_ed25519_verify(const struct sshkey *key,
 	memcpy(sm+len, data, datalen);
 	if ((ret = crypto_sign_ed25519_open(m, &mlen, sm, smlen,
 	    key->ed25519_pk)) != 0) {
-		debug2("%s: crypto_sign_ed25519_open failed: %d",
-		    __func__, ret);
+		debug2_f("crypto_sign_ed25519_open failed: %d", ret);
 	}
 	if (ret != 0 || mlen != datalen) {
 		r = SSH_ERR_SIGNATURE_INVALID;

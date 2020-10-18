@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-xmss.c,v 1.1 2018/02/23 15:58:38 markus Exp $*/
+/* $OpenBSD: ssh-xmss.c,v 1.2 2020/02/26 13:40:09 jsg Exp $*/
 /*
  * Copyright (c) 2017 Stefan-Lukas Gazdag.
  * Copyright (c) 2017 Markus Friedl.
@@ -161,8 +161,7 @@ ssh_xmss_verify(const struct sshkey *key,
 	memcpy(sm+len, data, datalen);
 	if ((ret = xmss_sign_open(m, &mlen, sm, smlen,
 	    key->xmss_pk, sshkey_xmss_params(key))) != 0) {
-		debug2("%s: crypto_sign_xmss_open failed: %d",
-		    __func__, ret);
+		debug2_f("xmss_sign_open failed: %d", ret);
 	}
 	if (ret != 0 || mlen != datalen) {
 		r = SSH_ERR_SIGNATURE_INVALID;

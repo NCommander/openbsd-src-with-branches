@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.201 2020/08/03 02:43:41 djm Exp $ */
+/* $OpenBSD: sftp.c,v 1.202 2020/10/04 03:04:02 dtucker Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -2072,7 +2072,7 @@ complete(EditLine *el, int ch)
 
 	lf = el_line(el);
 	if (el_get(el, EL_CLIENTDATA, (void**)&complete_ctx) != 0)
-		fatal("%s: el_get failed", __func__);
+		fatal_f("el_get failed");
 
 	/* Figure out which argument the cursor points to */
 	cursor = lf->cursor - lf->buffer;

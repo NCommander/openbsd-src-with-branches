@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-kbdint.c,v 1.10 2019/09/06 04:53:27 djm Exp $ */
+/* $OpenBSD: auth2-kbdint.c,v 1.11 2019/11/13 04:47:52 deraadt Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -50,7 +50,7 @@ userauth_kbdint(struct ssh *ssh)
 	if ((r = sshpkt_get_cstring(ssh, &lang, NULL)) != 0 ||
 	    (r = sshpkt_get_cstring(ssh, &devs, NULL)) != 0 ||
 	    (r = sshpkt_get_end(ssh)) != 0)
-		fatal("%s: %s", __func__, ssh_err(r));
+		fatal_fr(r, "parse packet");
 
 	debug("keyboard-interactive devs %s", devs);
 
