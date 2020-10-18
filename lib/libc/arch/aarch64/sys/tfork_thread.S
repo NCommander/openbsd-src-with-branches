@@ -1,4 +1,4 @@
-/* $OpenBSD: tfork_thread.S,v 1.3 2018/08/12 17:15:10 mortimer Exp $ */
+/* $OpenBSD: tfork_thread.S,v 1.4 2020/10/01 01:05:40 guenther Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@openbsd.org>
  *
@@ -43,5 +43,6 @@ ENTRY(__tfork_thread)
 	mov	x0, x3
 	blr	x2
 	SYSTRAP(__threxit)
+	.word	0xa000f7f0	/* illegal on all cpus? */
 	.cfi_endproc
 END(__tfork_thread)
