@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.40 2020/10/16 17:28:59 kettenis Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.41 2020/10/18 12:03:50 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
@@ -374,7 +374,7 @@ cpu_identify(struct cpu_info *ci)
 	 * ID_AA64MMFR1
 	 *
 	 * We omit printing virtualization related fields like XNX, VH
-	 * and VMIDBits as they are not reakky relevant for us.
+	 * and VMIDBits as they are not really relevant for us.
 	 */
 	id = READ_SPECIALREG(id_aa64mmfr1_el1);
 
