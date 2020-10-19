@@ -19,7 +19,8 @@
 #include "SYS.h"
 
 ENTRY(__tfork_thread)
-	/* call __tfork */
+	RETGUARD_SETUP(__tfork_thread, %r11)
+
 	li	%r0, SYS___tfork
 	sc
 	cmpwi	%r0, 0
@@ -43,5 +44,6 @@ ENTRY(__tfork_thread)
 1:
 	stw	%r0, R13_OFFSET_ERRNO(%r13)
 	li	%r3, -1
+	RETGUARD_CHECK(__tfork_thread, %r11)
 	blr
 END(__tfork_thread)
