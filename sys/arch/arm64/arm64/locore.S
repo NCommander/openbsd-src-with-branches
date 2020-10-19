@@ -1,4 +1,4 @@
-/* $OpenBSD: locore.S,v 1.30 2020/03/11 13:41:53 deraadt Exp $ */
+/* $OpenBSD: locore.S,v 1.31 2020/03/13 00:14:38 kettenis Exp $ */
 /*-
  * Copyright (c) 2012-2014 Andrew Turner
  * All rights reserved.
@@ -366,7 +366,7 @@ _C_LABEL(esigcode):
 
 	.globl	sigfill
 sigfill:
-	.word	0xa000f7f0		/* FIXME: illegal on all cpus? */
+	udf	#0
 esigfill:
 
 	.data
