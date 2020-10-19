@@ -1,4 +1,4 @@
-/*	$OpenBSD: fault.c,v 1.41 2020/09/14 18:23:32 deraadt Exp $	*/
+/*	$OpenBSD: fault.c,v 1.42 2020/09/25 14:31:48 phessler Exp $	*/
 /*	$NetBSD: fault.c,v 1.46 2004/01/21 15:39:21 skrll Exp $	*/
 
 /*
@@ -349,7 +349,7 @@ data_abort_handler(trapframe_t *tf)
 
 	if (user == 0) {
 		if (pcb->pcb_onfault) {
-			tf->tf_r0 = error;
+			tf->tf_r0 = EFAULT;
 			tf->tf_pc = (register_t) pcb->pcb_onfault;
 			return;
 		}
