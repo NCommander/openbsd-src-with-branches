@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.9 2016/03/05 17:16:33 tobiasu Exp $	*/
+/*	$OpenBSD: clock.c,v 1.10 2020/05/11 13:27:38 kettenis Exp $	*/
 /*	$NetBSD: clock.c,v 1.32 2006/09/05 11:09:36 uwe Exp $	*/
 
 /*-
@@ -259,6 +259,7 @@ cpu_initclocks(void)
 	/* Set global variables. */
 	hz = HZ;
 	tick = 1000000 / hz;
+	tick_nsec = 1000000000 / hz;
 
 	/*
 	 * Use TMU channel 0 as hard clock
