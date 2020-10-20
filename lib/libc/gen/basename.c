@@ -1,4 +1,4 @@
-/*	$OpenBSD: basename.c,v 1.15 2013/09/30 12:02:32 millert Exp $	*/
+/*	$OpenBSD: basename.c,v 1.16 2019/01/25 00:19:25 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 2004 Todd C. Miller <millert@openbsd.org>
@@ -22,7 +22,7 @@
 #include <string.h>
 
 char *
-basename(const char *path)
+basename(char *path)
 {
 	static char bname[PATH_MAX];
 	size_t len;
