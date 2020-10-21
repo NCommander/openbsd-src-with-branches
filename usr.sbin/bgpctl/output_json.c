@@ -1,4 +1,4 @@
-/*	$OpenBSD: output_json.c,v 1.2 2020/05/03 18:34:34 claudio Exp $ */
+/*	$OpenBSD: output_json.c,v 1.3 2020/05/10 13:38:46 deraadt Exp $ */
 
 /*
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
@@ -16,6 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <endian.h>
 #include <err.h>
 #include <math.h>
 #include <stdio.h>
