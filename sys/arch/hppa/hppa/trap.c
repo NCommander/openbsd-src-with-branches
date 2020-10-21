@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.149 2020/09/24 17:54:29 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.150 2020/10/08 19:41:04 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -498,8 +498,7 @@ datacc:
 		 * the current limit and we need to reflect that as an access
 		 * error.
 		 */
-		if (ret == 0 && space != HPPA_SID_KERNEL &&
-		    va < (vaddr_t)vm->vm_minsaddr)
+		if (ret == 0 && space != HPPA_SID_KERNEL)
 			uvm_grow(p, va);
 
 		KERNEL_UNLOCK();
