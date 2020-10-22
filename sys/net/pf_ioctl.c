@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.358 2020/10/02 09:14:33 claudio Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.359 2020/10/21 08:08:04 sashan Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1788,6 +1788,7 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 				if (error) {
 					free(pstore, M_TEMP, sizeof(*pstore));
 					PF_STATE_EXIT_READ();
+					NET_UNLOCK();
 					goto fail;
 				}
 				p++;
