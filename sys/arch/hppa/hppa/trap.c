@@ -488,8 +488,8 @@ datacc:
 		}
 
 		KERNEL_LOCK();
-
 		ret = uvm_fault(map, trunc_page(va), 0, access_type);
+		KERNEL_UNLOCK();
 
 		/*
 		 * If this was a stack access we keep track of the maximum
@@ -500,8 +500,6 @@ datacc:
 		 */
 		if (ret == 0 && space != HPPA_SID_KERNEL)
 			uvm_grow(p, va);
-
-		KERNEL_UNLOCK();
 
 		if (ret != 0) {
 			if (type & T_USER) {
