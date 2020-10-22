@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: sysupgrade.sh,v 1.42 2020/10/08 14:35:20 kn Exp $
+# $OpenBSD: sysupgrade.sh,v 1.43 2020/10/21 10:28:49 kn Exp $
 #
 # Copyright (c) 1997-2015 Todd Miller, Theo de Raadt, Ken Westerback
 # Copyright (c) 2015 Robert Peichaer <rpe@openbsd.org>
@@ -109,7 +109,7 @@ case $# in
 *)	usage
 esac
 [[ $MIRROR == @(file|ftp|http|https)://* ]] ||
-	ug_err "invalid installurl: $MIRROR"
+	err "invalid installurl: $MIRROR"
 
 if ! $RELEASE && [[ ${#_KERNV[*]} == 2 ]]; then
 	SNAP=true
