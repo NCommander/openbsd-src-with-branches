@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.210 2020/04/03 20:11:47 patrick Exp $ */
+/*	$OpenBSD: ehci.c,v 1.211 2020/08/06 14:06:12 mglocker Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -2407,10 +2407,6 @@ ehci_alloc_sqtd_chain(struct ehci_softc *sc, u_int alen, struct usbd_xfer *xfer,
 			curlen -= curlen % mps;
 			DPRINTFN(1,("ehci_alloc_sqtd_chain: multiple QTDs, "
 			    "curlen=%u\n", curlen));
-#ifdef DIAGNOSTIC
-			if (curlen == 0)
-				panic("ehci_alloc_std: curlen == 0");
-#endif
 		}
 
 		DPRINTFN(4,("ehci_alloc_sqtd_chain: dataphys=0x%08x "
