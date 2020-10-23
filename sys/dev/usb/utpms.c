@@ -1,4 +1,4 @@
-/*	$OpenBSD: utpms.c,v 1.9 2020/08/25 14:01:58 deraadt Exp $	*/
+/*	$OpenBSD: utpms.c,v 1.10 2020/09/11 19:18:01 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2005, Johan Wallén
@@ -638,8 +638,8 @@ detect_pos(int *sensors, int n_sensors, int threshold, int fact,
 		if (sensors[i] >= threshold) {
 			if (i == 0 || sensors[i - 1] < threshold)
 				*fingers_ret += 1;
-			s += sensors[i];
-			w += sensors[i] * i;
+			s += sensors[i] - threshold;
+			w += (sensors[i] - threshold) * i;
 		}
 	}
 
