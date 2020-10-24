@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.11 2020/09/21 11:14:28 kettenis Exp $	*/
+/*	$OpenBSD: intr.h,v 1.12 2020/09/23 03:03:12 gkoehler Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -20,6 +20,7 @@
 #define _MACHINE_INTR_H_
 
 struct cpu_info;
+struct trapframe;
 
 #define IPL_NONE	0
 #define IPL_SOFT	1
