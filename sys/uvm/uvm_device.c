@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_device.c,v 1.57 2019/12/08 12:37:45 mpi Exp $	*/
+/*	$OpenBSD: uvm_device.c,v 1.58 2020/10/21 09:08:14 mpi Exp $	*/
 /*	$NetBSD: uvm_device.c,v 1.30 2000/11/25 06:27:59 chs Exp $	*/
 
 /*
@@ -43,7 +43,8 @@
 
 #if defined(__amd64__) || defined(__arm64__) || \
     defined(__i386__) || defined(__loongson__) || \
-    defined(__macppc__) || defined(__sparc64__)
+    defined(__macppc__) || defined(__powerpc64__) || \
+    defined(__sparc64__)
 #include "drm.h"
 #endif
 
