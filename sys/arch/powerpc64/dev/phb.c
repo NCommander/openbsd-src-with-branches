@@ -1,4 +1,4 @@
-/*	$OpenBSD: phb.c,v 1.15 2020/09/01 19:12:11 kettenis Exp $	*/
+/*	$OpenBSD: phb.c,v 1.16 2020/09/21 11:14:28 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -541,11 +541,16 @@ phb_intr_establish(void *v, pci_intr_handle_t ih, int level,
 		if (error != OPAL_SUCCESS)
 			return NULL;
 
-		if (ih.ih_type == PCI_MSI32) {
-			error = opal_get_msi_32(sc->sc_phb_id, 0, xive,
-			    1, opal_phys(&addr32), opal_phys(&data));
+		/*
+		 * Use a 32-bit MSI address whenever possible.  Some
+		 * older Radeon graphics cards advertise 64-bit MSI
+		 * but only implement 40 bits.
+		 */
+		error = opal_get_msi_32(sc->sc_phb_id, 0, xive,
+		    1, opal_phys(&addr32), opal_phys(&data));
+		if (error == OPAL_SUCCESS)
 			addr = addr32;
-		} else {
+		if (error != OPAL_SUCCESS && ih.ih_type != PCI_MSI32) {
 			error = opal_get_msi_64(sc->sc_phb_id, 0, xive,
 			    1, opal_phys(&addr), opal_phys(&data));
 		}
