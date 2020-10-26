@@ -1,4 +1,4 @@
-/* $OpenBSD: sigpending.S,v 1.5 2012/07/01 17:47:12 kettenis Exp $ */
+/* $OpenBSD: sigpending.S,v 1.6 2015/09/05 06:22:47 guenther Exp $ */
 /*
  * Copyright (c) 2012 Mark Kettenis
  *
@@ -20,10 +20,13 @@
 #include "SYS.h"
 
 	.text
-PREFIX(sigpending)
+SYSENTRY(sigpending)
+	RETGUARD_SETUP(sigpending)
 	mr	%r5, %r3
+	li	%r0, SYS_sigpending
 	sc
 	stw	%r3, 0(%r5)
 	li	%r3, 0
+	RETGUARD_CHECK(sigpending)
 	blr
 SYSCALL_END(sigpending)
