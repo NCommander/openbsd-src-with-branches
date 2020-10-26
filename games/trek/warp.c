@@ -1,3 +1,4 @@
+/*	$OpenBSD: warp.c,v 1.7 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: warp.c,v 1.3 1995/04/22 10:59:40 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)warp.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: warp.c,v 1.3 1995/04/22 10:59:40 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
-# include	"trek.h"
+#include "getpar.h"
+#include "trek.h"
 
 /*
 **  MOVE UNDER WARP POWER
@@ -59,34 +53,37 @@ static char rcsid[] = "$NetBSD: warp.c,v 1.3 1995/04/22 10:59:40 cgd Exp $";
 **	case, there is code to handle time warps, etc.
 */
 
-warp(fl, c, d)
-int	fl, c;
-double	d;
+void
+dowarp(int fl)
 {
-	int			course;
-	double			power;
-	double			dist;
-	double			time;
-	double			speed;
-	double			frac;
-	register int		percent;
-	register int		i;
-	extern double		move();
+	int	c;
+	double	d;
+
+	if (getcodi(&c, &d))
+		return;
+	warp(fl, c, d);
+}
+
+void
+warp(int fl, int c, double d)
+{
+	char	*p;
+	double	power, dist, time, speed, frac;
+	int	course, percent, i;
 
 	if (Ship.cond == DOCKED)
-		return (printf("%s is docked\n", Ship.shipname));
+	{
+		printf("%s is docked\n", Ship.shipname);
+		return;
+	}
 	if (damaged(WARP))
 	{
-		return (out(WARP));
+		out(WARP);
+		return;
 	}
-	if (fl < 0)
-	{
-		course = c;
-		dist = d;
-	}
-	else
-		if (getcodi(&course, &dist))
-			return;
+
+	course = c;
+	dist = d;
 
 	/* check to see that we are not using an absurd amount of power */
 	power = (dist + 0.05) * Ship.warp3;
@@ -140,10 +137,11 @@ double	d;
 	sleep(4);
 	if (ranf(100) >= 100 * dist)
 	{
-		return (printf("Equilibrium restored -- all systems normal\n"));
+		printf("Equilibrium restored -- all systems normal\n");
+		return;
 	}
 
-	/* select a bizzare thing to happen to us */
+	/* select a bizarre thing to happen to us */
 	percent = ranf(100);
 	if (percent < 70)
 	{
@@ -166,10 +164,12 @@ double	d;
 
 		/* s/he got lucky: a negative time portal */
 		time = Now.date;
-		i = (int) Etc.snapshot;
-		bmove(i, Quad, sizeof Quad);
-		bmove(i += sizeof Quad, Event, sizeof Event);
-		bmove(i += sizeof Event, &Now, sizeof Now);
+		p = (char *) Etc.snapshot;
+		memcpy(p, Quad, sizeof Quad);
+		p += sizeof Quad;
+		memcpy(p, Event, sizeof Event);
+		p += sizeof Event;
+		memcpy(p, &Now, sizeof Now);
 		printf("Negative time portal entered -- it is now Stardate %.2f\n",
 			Now.date);
 		for (i = 0; i < MAXEVENTS; i++)
@@ -181,7 +181,7 @@ double	d;
 	/* test for just a lot of damage */
 	if (percent < 80)
 		lose(L_TOOFAST);
-	printf("Equilibrium restored -- extreme damage occured to ship systems\n");
+	printf("Equilibrium restored -- extreme damage occurred to ship systems\n");
 	for (i = 0; i < NDEV; i++)
 		damage(i, (3.0 * (franf() + franf()) + 1.0) * Param.damfac[i]);
 	Ship.shldup = 0;

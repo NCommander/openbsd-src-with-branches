@@ -1,3 +1,4 @@
+/*	$OpenBSD: profile.h,v 1.11 2010/07/09 18:44:10 kettenis Exp $	*/
 /*	$NetBSD: profile.h,v 1.6 1995/03/28 18:17:08 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,33 +32,45 @@
  *	@(#)profile.h	8.1 (Berkeley) 6/11/93
  */
 
-#define	_MCOUNT_DECL static inline void _mcount
+#define	_MCOUNT_DECL static __inline void _mcount
 
 #define	MCOUNT \
-extern void mcount() asm("mcount");					\
+extern void mcount(void) __asm("__mcount");				\
+__weak_alias(mcount,__mcount);						\
 void									\
-mcount()								\
+mcount(void)								\
 {									\
 	int selfpc, frompcindex;					\
+	int eax, ecx, edx;						\
+									\
+	__asm volatile("movl %%eax,%0" : "=g" (eax));			\
+	__asm volatile("movl %%ecx,%0" : "=g" (ecx));			\
+	__asm volatile("movl %%edx,%0" : "=g" (edx));			\
 	/*								\
 	 * find the return address for mcount,				\
 	 * and the return address for mcount's caller.			\
 	 *								\
 	 * selfpc = pc pushed by mcount call				\
 	 */								\
-	asm("movl 4(%%ebp),%0" : "=r" (selfpc));			\
+	__asm volatile ("movl 4(%%ebp),%0" : "=r" (selfpc));		\
 	/*								\
 	 * frompcindex = pc pushed by call into self.			\
 	 */								\
-	asm("movl (%%ebp),%0;movl 4(%0),%0" : "=r" (frompcindex));	\
+	__asm volatile ("movl (%%ebp),%0;movl 4(%0),%0" :		\
+	    "+r" (frompcindex));					\
 	_mcount(frompcindex, selfpc);					\
+									\
+	__asm volatile("movl %0,%%edx" : : "g" (edx));			\
+	__asm volatile("movl %0,%%ecx" : : "g" (ecx));			\
+	__asm volatile("movl %0,%%eax" : : "g" (eax));			\
 }
 
 #ifdef _KERNEL
 /*
- * Note that we assume splhigh() and splx() cannot call mcount()
- * recursively.
+ * We inline the code that splhigh and splx would do here as otherwise we would
+ * call recursively into mcount() as machdep.c is compiled with -pg on a 
+ * profiling build.
  */
-#define	MCOUNT_ENTER	s = splhigh()
-#define	MCOUNT_EXIT	splx(s)
+#define	MCOUNT_ENTER	_SPLRAISE(s, IPL_HIGH); __splbarrier()
+#define	MCOUNT_EXIT	__splbarrier(); _SPLX(s)
 #endif /* _KERNEL */

@@ -1,4 +1,10 @@
-# $OpenBSD $
+# $OpenBSD: Makefile,v 1.4 2017/11/20 12:49:56 bluhm Exp $
+
+# This table lists pledge(2), socket(2), getsockopt(2), and setsockopt(2)
+# calls with their expected outcome.  The constants are compiled into
+# the sockopt.c program using the C preprocessor.  For each line the
+# program is built and run.  The test checks the ktrace output and
+# core file.
 
 #	promises	domain		type		protocol	call	level		optname			optval	errno		abort
 TESTS =	inet		AF_INET		SOCK_STREAM	IPPROTO_TCP	get	SOL_SOCKET	SO_ERROR		0	0		0	\
@@ -21,7 +27,8 @@ TESTS =	inet		AF_INET		SOCK_STREAM	IPPROTO_TCP	get	SOL_SOCKET	SO_ERROR		0	0		0	\
 	inet		AF_INET		SOCK_DGRAM	IPPROTO_UDP	get	IPPROTO_ICMP	0			0	1		inet	\
 	inet		AF_INET6	SOCK_DGRAM	IPPROTO_UDP	set	IPPROTO_ICMPV6	0			0	1		inet	\
 	inet		AF_INET6	SOCK_DGRAM	IPPROTO_UDP	get	IPPROTO_IPV6	IPV6_TCLASS		0	0		0	\
-	inet		AF_INET6	SOCK_DGRAM	IPPROTO_UDP	get	IPPROTO_IPV6	IPV6_V6ONLY		0	1		inet	\
+	inet		AF_INET6	SOCK_DGRAM	IPPROTO_UDP	get	IPPROTO_IPV6	IPV6_V6ONLY		1	0		0	\
+	inet		AF_INET6	SOCK_DGRAM	IPPROTO_UDP	set	IPPROTO_IPV6	IPV6_V6ONLY		0	EINVAL		0	\
 	inet		AF_INET6	SOCK_DGRAM	IPPROTO_UDP	set	IPPROTO_IPV6	IPV6_MULTICAST_LOOP	1	1		inet	\
 	inet+mcast	AF_INET6	SOCK_DGRAM	IPPROTO_UDP	set	IPPROTO_IPV6	IPV6_MULTICAST_LOOP	1	0		0	\
 	inet		AF_INET6	SOCK_DGRAM	IPPROTO_UDP	set	IPPROTO_IPV6	IPV6_JOIN_GROUP		0	1		inet	\
@@ -36,15 +43,16 @@ REGRESS_TARGETS +=	run-regress-${promises}-${domain}-${type}-${protocol}-${call}
 run-regress-${promises}-${domain}-${type}-${protocol}-${call}-${level}-${optname}-${optval}-${errno}-${abort}:
 	@echo "\n$@"
 	rm -f sockopt sockopt.core
-	COPTS='-DPROMISES=\"${promises}\" -DDOMAIN=${domain} -DTYPE=${type} \
-	    -DPROTOCOL=${protocol} -DCALL=\"${call}\" \
+	cd ${.CURDIR} && \
+	    COPTS='-DPROMISES=\"${promises}\" -DDOMAIN=${domain} \
+	    -DTYPE=${type} -DPROTOCOL=${protocol} -DCALL=\"${call}\" \
 	    -DLEVEL=${level} -DOPTNAME=${optname} -DOPTVAL=${optval} \
 	    -DERRNO=${errno}' ${.MAKE} sockopt
 .if "${abort}" == 0
-	ktrace ./sockopt
+	ulimit -c unlimited && ktrace ./sockopt
 	! [ -f sockopt.core ]
 .else
-	sh -c 'ktrace ./sockopt ; [ $$? = 134 ]'
+	ulimit -c unlimited && sh -c 'ktrace ./sockopt ; [ $$? = 134 ]'
 	[ -f sockopt.core ]
 	kdump | fgrep -q 'PLDG  ${call}sockopt, "${abort}", errno ${errno} '
 .endif

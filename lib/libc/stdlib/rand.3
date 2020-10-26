@@ -13,11 +13,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,53 +29,104 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)rand.3	6.7 (Berkeley) 6/29/91
-.\"	$Id: rand.3,v 1.2 1993/08/01 07:44:20 mycroft Exp $
+.\"	$OpenBSD: rand.3,v 1.18 2014/12/08 21:45:20 deraadt Exp $
 .\"
-.Dd June 29, 1991
+.Dd $Mdocdate: December 8 2014 $
 .Dt RAND 3
 .Os
 .Sh NAME
 .Nm rand ,
-.Nm srand
-.Nd bad random number generator
+.Nm rand_r ,
+.Nm srand ,
+.Nm srand_deterministic
+.Nd bad pseudo-random number generator
 .Sh SYNOPSIS
-.Fd #include <stdlib.h>
+.In stdlib.h
 .Ft void
-.Fn srand "unsigned seed"
+.Fn srand "unsigned int seed"
+.Ft void
+.Fn srand_deterministic "unsigned int seed"
 .Ft int
 .Fn rand void
+.Ft int
+.Fn rand_r "unsigned int *seed"
 .Sh DESCRIPTION
 .Bf -symbolic
-These interfaces are obsoleted by random(3).
+Standards insist that this interface return deterministic results.
+Unsafe usage is very common, so
+.Ox
+changed the subsystem to return non-deterministic results by default.
 .Ef
+.Pp
+To satisfy portable code,
+.Fn srand
+may be called to initialize the subsystem.
+In
+.Ox
+the
+.Ar seed
+variable is ignored, and strong random number results will be provided from
+.Xr arc4random 3 .
+In other systems, the
+.Ar seed
+variable primes a simplistic deterministic algorithm.
+.Pp
+If the standardized behavior is required
+.Fn srand_deterministic
+can be substituted for
+.Fn srand ,
+then subsequent
+.Fn rand
+calls will return results using the deterministic algorithm.
 .Pp
 The
 .Fn rand
-function computes a sequence of pseudo-random integers in the range
-of 0 to
-.Dv RAND_MAX
-(as defined by the header file
-.Aq Pa stdlib.h ) .
+function returns a result in the range of 0 to
+.Dv RAND_MAX .
+By default, this result comes from
+.Xr arc4random 3 .
+If
+.Fn srand_deterministic
+was called, the result will be computed using the deterministic algorithm.
 .Pp
 The
-.Fn srand
-function sets its argument as the seed for a new sequence of
-pseudo-random numbers to be returned by
+.Fn rand_r
+is a thread-safe version of
 .Fn rand .
-These sequences are repeatable by calling
-.Fn srand
-with the same seed value.
-.Pp
-If no seed value is provided, the functions are automatically
-seeded with a value of 1.
+Storage for the seed must be provided through the
+.Fa seed
+argument, and needs to have been initialized by the caller.
+It always operates using the deterministic algorithm.
 .Sh SEE ALSO
+.Xr arc4random 3 ,
+.Xr rand48 3 ,
 .Xr random 3
 .Sh STANDARDS
 The
 .Fn rand
+function conforms to
+.St -ansiC .
+.Pp
+The
+.Fn rand_r
+function conforms to
+.St -p1003.1-2008 .
+.Pp
+The
+.Fn srand
+function does not conform to
+.St -ansiC ,
+intentionally.
+.Pp
+The
+.Fn srand_deterministic
+function is an
+.Ox
+extension.
+.Sh HISTORY
+The functions
+.Fn rand
 and
 .Fn srand
-functions
-conform to
-.St -ansiC .
+first appeared in
+.At v3 .

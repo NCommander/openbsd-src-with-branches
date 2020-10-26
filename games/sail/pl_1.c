@@ -1,3 +1,4 @@
+/*	$OpenBSD: pl_1.c,v 1.12 2016/01/08 20:26:33 mestre Exp $	*/
 /*	$NetBSD: pl_1.c,v 1.3 1995/04/22 10:37:07 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,17 +30,19 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pl_1.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: pl_1.c,v 1.3 1995/04/22 10:37:07 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include "player.h"
-#include <sys/types.h>
 #include <sys/wait.h>
+
+#include <errno.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include "extern.h"
+#include "player.h"
+
+#ifndef __GNUC__
+#define __attribute__(x)
+#endif
 
 /*
  * If we get here before a ship is chosen, then ms == 0 and
@@ -53,38 +52,34 @@ static char rcsid[] = "$NetBSD: pl_1.c,v 1.3 1995/04/22 10:37:07 cgd Exp $";
  * Of course, we don't do any more Sync()'s if we got here
  * because of a Sync() failure.
  */
-leave(conditions)
-int conditions;
+void
+leave(int conditions)
 {
 	(void) signal(SIGHUP, SIG_IGN);
 	(void) signal(SIGINT, SIG_IGN);
 	(void) signal(SIGQUIT, SIG_IGN);
 	(void) signal(SIGALRM, SIG_IGN);
-	(void) signal(SIGCHLD, SIG_IGN);
+	(void) signal(SIGCHLD, SIG_DFL);
 
 	if (done_curses) {
-		Signal("It looks like you've had it!",
-			(struct ship *)0);
+		Msg("It looks like you've had it!");
 		switch (conditions) {
 		case LEAVE_QUIT:
 			break;
 		case LEAVE_CAPTURED:
-			Signal("Your ship was captured.",
-				(struct ship *)0);
+			Msg("Your ship was captured.");
 			break;
 		case LEAVE_HURRICAN:
-			Signal("Hurricane!  All ships destroyed.",
-				(struct ship *)0);
+			Msg("Hurricane!  All ships destroyed.");
 			break;
 		case LEAVE_DRIVER:
-			Signal("The driver died.", (struct ship *)0);
+			Msg("The driver died.");
 			break;
 		case LEAVE_SYNC:
-			Signal("Synchronization error.", (struct ship *)0);
+			Msg("Synchronization error.");
 			break;
 		default:
-			Signal("A funny thing happened (%d).",
-				(struct ship *)0, conditions);
+			Msg("A funny thing happened (%d).", conditions);
 		}
 	} else {
 		switch (conditions) {
@@ -106,36 +101,39 @@ int conditions;
 	}
 
 	if (ms != 0) {
-		log(ms);
+		logger(ms);
 		if (conditions != LEAVE_SYNC) {
-			makesignal(ms, "Captain %s relinquishing.",
-				(struct ship *)0, mf->captain);
-			Write(W_END, ms, 0, 0, 0, 0, 0);
+			makemsg(ms, "Captain %s relinquishing.",
+				mf->captain);
+			Write(W_END, ms, 0, 0, 0, 0);
 			(void) Sync();
 		}
 	}
 	sync_close(!hasdriver);
+	sleep(5);
 	cleanupscreen();
 	exit(0);
 }
 
 void
-choke()
+choke(int n __attribute__((unused)))
 {
 	leave(LEAVE_QUIT);
 }
 
 void
-child()
+child(int n __attribute__((unused)))
 {
-	union wait status;
+	int status;
 	int pid;
-
-	(void) signal(SIGCHLD, SIG_IGN);
+	int save_errno = errno;
+	
+	(void) signal(SIGCHLD, SIG_DFL);
 	do {
-		pid = wait3((int *)&status, WNOHANG, (struct rusage *)0);
-		if (pid < 0 || pid > 0 && !WIFSTOPPED(status))
+		pid = waitpid((pid_t)-1, &status, WNOHANG);
+		if (pid == -1 || (pid > 0 && !WIFSTOPPED(status)))
 			hasdriver = 0;
 	} while (pid > 0);
 	(void) signal(SIGCHLD, child);
+	errno = save_errno;
 }

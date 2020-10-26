@@ -1,5 +1,4 @@
-#	$OpenBSD$
-#	$NOWHERE: Makefile,v 2.1 1998/06/22 19:34:45 mickey Exp $
+#	$OpenBSD: Makefile,v 1.22 2019/10/29 02:55:51 deraadt Exp $
 
 .include "${.CURDIR}/../Makefile.inc"
 
@@ -12,31 +11,24 @@ DIR_SA=	$S/lib/libsa
 NOPROFILE=noprofile
 NOPIC=nopic
 
-#AS=cat ; 
+#AS=cat ;
 #AS+=	-R
 #AS+=	-a
 
 # hppa stuff
-SRCS=	machdep.c pdc.c itecons.c dk.c dev_hppa.c exec_hppa.c time.c \
-	ct.c dk.c cache_s.s cache_c.c
+SRCS=	machdep.c pdc.c itecons.c dev_hppa.c time.c \
+	ct.c dk.c lf.c lif.c cmd_hppa.c loadfile.c arc4.c elf32.c elf64.c
 
 # stand routines
-SRCS+=	alloc.c exit.c exec.c getfile.c gets.c globals.c strcmp.c strlen.c \
-	strncmp.c memcmp.c memcpy.c memset.c printf.c strerror.c strncpy.c \
-	strtol.c ctime.c
+SRCS+=	alloc.c exit.c getfile.c getln.c getchar.c globals.c \
+	printf.c putchar.c strerror.c strtol.c strchr.c ctime.c snprintf.c
 
 # io routines
-SRCS+=	close.c closeall.c dev.c disklabel.c dkcksum.c fstat.c ioctl.c lseek.c \
-	open.c read.c stat.c write.c cread.c readdir.c cons.c
-
-# network routines
-SRCS+=	arp.c ether.c in_cksum.c net.c netif.c rpc.c
-
-# network info services
-SRCS+=	bootp.c bootparam.c rarp.c
+SRCS+=	close.c closeall.c dev.c disklabel.c dkcksum.c fchmod.c fstat.c \
+	ioctl.c lseek.c open.c read.c stat.c write.c cread.c readdir.c cons.c
 
 # boot filesystems
-SRCS+=	ufs.c nfs.c cd9660.c
+SRCS+=	ufs.c ufs2.c cd9660.c
 
 .PATH:  ${DIR_SA}
 
@@ -46,6 +38,7 @@ install:
 
 .include <bsd.lib.mk>
 
-CPPFLAGS+=-DHEAP_LIMIT=${HEAP_LIMIT} ${DEBUGFLAGS}
+CPPFLAGS+=-DHEAP_LIMIT=${HEAP_LIMIT} ${DEBUGFLAGS} -DNO_NET
 CPPFLAGS+=-I${S}/stand/boot
-CFLAGS+=${SACFLAGS} -D__INTERNAL_LIBSA_CREAD
+CFLAGS+=${SACFLAGS} -D__INTERNAL_LIBSA_CREAD -DCOMPAT_UFS -fno-pie
+CFLAGS+=-DCONSPEED=9600

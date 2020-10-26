@@ -1,3 +1,4 @@
+.\"	$OpenBSD: le.4,v 1.13 2006/08/30 22:56:05 jmc Exp $
 .\"
 .\" Copyright (c) 1994 James A. Jegers
 .\" All rights reserved.
@@ -9,7 +10,7 @@
 .\"    notice, this list of conditions and the following disclaimer.
 .\" 2. The name of the author may not be used to endorse or promote products
 .\"    derived from this software without specific prior written permission
-.\" 
+.\"
 .\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
 .\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 .\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -21,31 +22,37 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd July 10, 1995
+.Dd $Mdocdate$
 .Dt LE 4 i386
 .Os
 .Sh NAME
-.Nm le 
-.Nd Ethernet driver for Lance based Ethernet boards
+.Nm le
+.Nd AMD LANCE Ethernet device
 .Sh SYNOPSIS
-.Cd "le0 at isa? port 0x320 irq 10 drq 7"
+.Cd "le0 at isa? port 0x360 irq 15 drq 6"
+.Cd "le* at isapnp?"
 .Sh DESCRIPTION
 The
 .Nm
 interface provides access to a 10 Mb/s Ethernet network via the
-Lance Ethernet chips.  The Ethernet cards supported by the
-.Nm
-interface are:
+AMD LANCE Ethernet chips.
+This includes the following models:
 .Pp
-.Bl -tag -width -offset indet -compact
-.It BICC Isolan 
-.It Novell NE2100
+.Bl -tag -width Ds -offset indent -compact
+.It AT&T StarLAN 10, EN100, and StarLAN Fiber
+.It BICC Isolan
+.It BOCALANcard
 .It Digital DEPCA
+.It Kingston 21xx
+.It Novell NE1500T
+.It Novell NE2100
 .El
 .Sh SEE ALSO
-.Xr ifconfig 8 ,
+.Xr arp 4 ,
+.Xr ifmedia 4 ,
 .Xr intro 4 ,
-.Xr ed 4 ,
-.Xr eg 4 ,
-.Xr ep 4 ,
-.Xr ie 4
+.Xr isa 4 ,
+.Xr isapnp 4 ,
+.Xr netintro 4 ,
+.Xr hostname.if 5 ,
+.Xr ifconfig 8

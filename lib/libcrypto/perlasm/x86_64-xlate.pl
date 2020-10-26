@@ -121,7 +121,7 @@ my %globals;
 		$self->{sz} = "";
 	    } elsif ($self->{op} =~ /^v/) { # VEX
 		$self->{sz} = "";
-	    } elsif ($self->{op} =~ /movq/ && $line =~ /%xmm/) {
+	    } elsif ($self->{op} =~ /mov[dq]/ && $line =~ /%xmm/) {
 		$self->{sz} = "";
 	    } elsif ($self->{op} =~ /([a-z]{3,})([qlwb])$/) {
 		$self->{op} = $1;
@@ -149,7 +149,7 @@ my %globals;
 		    $epilogue = "movq	8(%rsp),%rdi\n\t" .
 				"movq	16(%rsp),%rsi\n\t";
 		}
-	    	$epilogue . ".byte	0xf3,0xc3";
+	    	$epilogue . "retq";
 	    } elsif ($self->{op} eq "call" && !$elf && $current_segment eq ".init") {
 		".p2align\t3\n\t.quad";
 	    } else {
@@ -393,7 +393,7 @@ my %globals;
 	}
     }
 }
-{ package expr;		# pick up expressioins
+{ package expr;		# pick up expressions
     sub re {
 	my	$self = shift;	# single instance is enough...
 	local	*line = shift;
@@ -662,7 +662,9 @@ sub rex {
 my %regrm = (	"%eax"=>0, "%ecx"=>1, "%edx"=>2, "%ebx"=>3,
 		"%esp"=>4, "%ebp"=>5, "%esi"=>6, "%edi"=>7	);
 
-my $movq = sub {	# elderly gas can't handle inter-register movq
+if ($flavour ne "openbsd") {
+
+$movq = sub {	# elderly gas can't handle inter-register movq
   my $arg = shift;
   my @opcode=(0x66);
     if ($arg =~ /%xmm([0-9]+),\s*%r(\w+)/) {
@@ -683,6 +685,8 @@ my $movq = sub {	# elderly gas can't handle inter-register movq
 	();
     }
 };
+
+}
 
 my $pextrd = sub {
     if (shift =~ /\$([0-9]+),\s*%xmm([0-9]+),\s*(%\w+)/) {
@@ -720,7 +724,9 @@ my $pinsrd = sub {
     }
 };
 
-my $pshufb = sub {
+if ($flavour ne "openbsd") {
+
+$pshufb = sub {
     if (shift =~ /%xmm([0-9]+),\s*%xmm([0-9]+)/) {
       my @opcode=(0x66);
 	rex(\@opcode,$2,$1);
@@ -732,7 +738,7 @@ my $pshufb = sub {
     }
 };
 
-my $palignr = sub {
+$palignr = sub {
     if (shift =~ /\$([0-9]+),\s*%xmm([0-9]+),\s*%xmm([0-9]+)/) {
       my @opcode=(0x66);
 	rex(\@opcode,$3,$2);
@@ -745,7 +751,7 @@ my $palignr = sub {
     }
 };
 
-my $pclmulqdq = sub {
+$pclmulqdq = sub {
     if (shift =~ /\$([x0-9a-f]+),\s*%xmm([0-9]+),\s*%xmm([0-9]+)/) {
       my @opcode=(0x66);
 	rex(\@opcode,$3,$2);
@@ -759,18 +765,7 @@ my $pclmulqdq = sub {
     }
 };
 
-my $rdrand = sub {
-    if (shift =~ /%[er](\w+)/) {
-      my @opcode=();
-      my $dst=$1;
-	if ($dst !~ /[0-9]+/) { $dst = $regrm{"%e$dst"}; }
-	rex(\@opcode,0,$1,8);
-	push @opcode,0x0f,0xc7,0xf0|($dst&7);
-	@opcode;
-    } else {
-	();
-    }
-};
+}
 
 if ($nasm) {
     print <<___;
@@ -782,6 +777,8 @@ ___
 OPTION	DOTNAME
 ___
 }
+print "#include \"x86_arch.h\"\n";
+
 while($line=<>) {
 
     chomp($line);

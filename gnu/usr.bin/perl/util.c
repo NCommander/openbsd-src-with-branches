@@ -2248,7 +2248,7 @@ Perl_my_setenv(pTHX_ const char *nam, const char *val)
     envstr = S_env_alloc(NULL, nlen, vlen, 2, 1);
     my_setenv_format(envstr, nam, nlen, val, vlen);
     (void)PerlEnv_putenv(envstr);
-    Safefree(envstr);
+    safesysfree(envstr);
 }
 
 #  endif /* WIN32 || NETWARE */
@@ -4449,6 +4449,9 @@ Perl_parse_unicode_opts(pTHX_ const char **popt)
 U32
 Perl_seed(pTHX)
 {
+#if defined(__OpenBSD__)
+	return arc4random();
+#else
     /*
      * This is really just a quick hack which grabs various garbage
      * values.  It really should be a real hash algorithm which
@@ -4517,6 +4520,7 @@ Perl_seed(pTHX)
     u += SEED_C5 * (U32)PTR2UV(&when);
 #endif
     return u;
+#endif
 }
 
 void

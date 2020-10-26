@@ -980,6 +980,8 @@ static const template i386_optab[] =
 {"fcompi",  0, 0xdff1, X, Cpu686, FP|ShortForm,		{ 0, 0, 0} },
 {"fcompi",  1, 0xdff0, X, Cpu686, FP|ShortForm,		{ FloatReg, 0, 0} },
 {"fucomip", 2, 0xdfe8, X, Cpu686, FP|ShortForm,		{ FloatReg, FloatAcc, 0} },
+{"fucomip", 0, 0xdfe9, X, Cpu686, FP|ShortForm,		{ 0, 0, 0} },
+{"fucomip", 1, 0xdfe8, X, Cpu686, FP|ShortForm,		{ FloatReg, 0, 0} },
 {"fucompi", 2, 0xdfe8, X, Cpu686, FP|ShortForm,		{ FloatReg, FloatAcc, 0} },
 {"fucompi", 0, 0xdfe9, X, Cpu686, FP|ShortForm,		{ 0, 0, 0} },
 {"fucompi", 1, 0xdfe8, X, Cpu686, FP|ShortForm,		{ FloatReg, 0, 0} },
@@ -990,6 +992,10 @@ static const template i386_optab[] =
 {"clflush",  1, 0x0fae,    7, CpuP4, NoSuf|Modrm|IgnoreSize,	{ ByteMem, 0, 0 } },
 {"lfence",   0, 0x0fae, 0xe8, CpuP4, NoSuf|ImmExt,		{ 0, 0, 0 } },
 {"mfence",   0, 0x0fae, 0xf0, CpuP4, NoSuf|ImmExt,		{ 0, 0, 0 } },
+{"rdfsbase", 1, 0xf30fae,  0, CpuNEW, FP|Modrm,		{ Reg32|Reg64, 0, 0 } },
+{"rdgsbase", 1, 0xf30fae,  1, CpuNEW, FP|Modrm,		{ Reg32|Reg64, 0, 0 } },
+{"wrfsbase", 1, 0xf30fae,  2, CpuNEW, FP|Modrm,		{ Reg32|Reg64, 0, 0 } },
+{"wrgsbase", 1, 0xf30fae,  3, CpuNEW, FP|Modrm,		{ Reg32|Reg64, 0, 0 } },
 {"pause",    0, 0xf390,    X, CpuP4, NoSuf,		{ 0, 0, 0 } },
 
 /* MMX/SSE2 instructions.  */
@@ -1366,6 +1372,10 @@ static const template i386_optab[] =
 {"mwait",     2, 0x0f01, 0xc9, CpuPNI|Cpu64, NoSuf|ImmExt|NoRex64,	{ Reg64, Reg64, 0} },
 
 /* VMX instructions.  */
+{"invept", 2, 0x660f3880, X, CpuVMX|CpuNo64, Modrm|IgnoreSize|No_bSuf|No_wSuf|No_sSuf|No_qSuf|No_xSuf|NoRex64, { BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg32 } },
+{"invept", 2, 0x660f3880, X, CpuVMX|Cpu64, Modrm|IgnoreSize|No_bSuf|No_wSuf|No_sSuf|No_qSuf|No_xSuf|NoRex64, { BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg64 } },
+{"invvpid", 2, 0x660f3881, X, CpuVMX|CpuNo64, Modrm|IgnoreSize|No_bSuf|No_wSuf|No_sSuf|No_qSuf|No_xSuf|NoRex64, { BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg32 } },
+{"invvpid", 2, 0x660f3881, X, CpuVMX|Cpu64, Modrm|IgnoreSize|No_bSuf|No_wSuf|No_sSuf|No_qSuf|No_xSuf|NoRex64, { BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg64 } },
 {"vmcall",    0, 0x0f01, 0xc1, CpuVMX, NoSuf|ImmExt,	{ 0, 0, 0} },
 {"vmclear",   1, 0x660fc7,  6, CpuVMX, NoSuf|IgnoreSize|Modrm|NoRex64,	{ LLongMem, 0, 0} },
 {"vmlaunch",  0, 0x0f01, 0xc2, CpuVMX, NoSuf|ImmExt,	{ 0, 0, 0} },
@@ -1454,17 +1464,21 @@ static const template i386_optab[] =
 {"clgi",     0, 0x0f01, 0xdd, CpuSVME,	NoSuf|ImmExt,		{ 0, 0, 0 } },
 {"invlpga",  0, 0x0f01, 0xdf, CpuSVME,	NoSuf|ImmExt,		{ 0, 0, 0 } },
 /* Need to ensure only "invlpga ...,%ecx" is accepted.  */
-{"invlpga",  2, 0x0f01, 0xdf, CpuSVME,	NoSuf|ImmExt,		{ AnyMem, Reg32, 0 } },
+{"invlpga",  2, 0x0f01, 0xdf, CpuSVME|CpuNo64, NoSuf|ImmExt,	{ Reg32, Reg32, 0 } },
+{"invlpga",  2, 0x0f01, 0xdf, CpuSVME|Cpu64, NoSuf|ImmExt|NoRex64, { Reg64, Reg32, 0 } },
 {"skinit",   0, 0x0f01, 0xde, CpuSVME,	NoSuf|ImmExt,		{ 0, 0, 0 } },
-{"skinit",   1, 0x0f01, 0xde, CpuSVME,	NoSuf|ImmExt,		{ AnyMem, 0, 0 } },
+{"skinit",   1, 0x0f01, 0xde, CpuSVME,	NoSuf|ImmExt,		{ Reg32, 0, 0 } },
 {"stgi",     0, 0x0f01, 0xdc, CpuSVME,	NoSuf|ImmExt,		{ 0, 0, 0 } },
 {"vmload",   0, 0x0f01, 0xda, CpuSVME,	NoSuf|ImmExt,		{ 0, 0, 0 } },
-{"vmload",   1, 0x0f01, 0xda, CpuSVME,	NoSuf|ImmExt,		{ AnyMem, 0, 0 } },
+{"vmload",   1, 0x0f01, 0xda, CpuSVME|CpuNo64, NoSuf|ImmExt,	{ Reg32, 0, 0 } },
+{"vmload",   1, 0x0f01, 0xda, CpuSVME|Cpu64, NoSuf|ImmExt|NoRex64, { Reg64, 0, 0 } },
 {"vmmcall",  0, 0x0f01, 0xd9, CpuSVME,	NoSuf|ImmExt,		{ 0, 0, 0 } },
 {"vmrun",    0, 0x0f01, 0xd8, CpuSVME,	NoSuf|ImmExt,		{ 0, 0, 0 } },
-{"vmrun",    1, 0x0f01, 0xd8, CpuSVME,	NoSuf|ImmExt,		{ AnyMem, 0, 0 } },
+{"vmrun",    1, 0x0f01, 0xd8, CpuSVME|CpuNo64, NoSuf|ImmExt,	{ Reg32, 0, 0 } },
+{"vmrun",    1, 0x0f01, 0xd8, CpuSVME|Cpu64, NoSuf|ImmExt|NoRex64, { Reg64, 0, 0 } },
 {"vmsave",   0, 0x0f01, 0xdb, CpuSVME,	NoSuf|ImmExt,		{ 0, 0, 0 } },
-{"vmsave",   1, 0x0f01, 0xdb, CpuSVME,	NoSuf|ImmExt,		{ AnyMem, 0, 0 } },
+{"vmsave",   1, 0x0f01, 0xdb, CpuSVME|CpuNo64, NoSuf|ImmExt,	{ Reg32, 0, 0 } },
+{"vmsave",   1, 0x0f01, 0xdb, CpuSVME|Cpu64, NoSuf|ImmExt|NoRex64, { Reg64, 0, 0 } },
 
 /* VIA PadLock extensions.  */
 {"xstore-rng",0, 0x000fa7, 0xc0, Cpu686|CpuPadLock, NoSuf|IsString|ImmExt, { 0, 0, 0} },
@@ -1485,6 +1499,40 @@ static const template i386_optab[] =
 {"xcryptofb", 0, 0xf30fa7, 0xe8, Cpu686|CpuPadLock, NoSuf|IsString|ImmExt, { 0, 0, 0} },
 /* Alias for xstore-rng.  */
 {"xstore",    0, 0x000fa7, 0xc0, Cpu686|CpuPadLock, NoSuf|IsString|ImmExt, { 0, 0, 0} },
+
+/* Intel AES extensions */
+{"aesdec", 2, 0x660f38de, X, CpuAES, FP|Modrm|IgnoreSize|NoSuf, { RegXMM|LLongMem, RegXMM } },
+{"aesdeclast", 2, 0x660f38df, X, CpuAES, FP|Modrm|IgnoreSize|NoSuf, { RegXMM|LLongMem, RegXMM } },
+{"aesenc", 2, 0x660f38dc, X, CpuAES, FP|Modrm|IgnoreSize|NoSuf, { RegXMM|LLongMem, RegXMM } },
+{"aesenclast", 2, 0x660f38dd, X, CpuAES, FP|Modrm|IgnoreSize|NoSuf, { RegXMM|LLongMem, RegXMM } },
+{"aesimc", 2, 0x660f38db, X, CpuAES, FP|Modrm|IgnoreSize|NoSuf, { RegXMM|LLongMem, RegXMM } },
+{"aeskeygenassist", 3, 0x660f3adf, X, CpuAES, FP|Modrm|IgnoreSize|NoSuf, { Imm8, RegXMM|LLongMem, RegXMM } },
+
+/* Intel Carry-less Multiplication extensions */
+{"pclmulqdq", 3, 0x660f3a44, X, CpuPCLMUL, FP|Modrm|IgnoreSize|NoSuf, { Imm8, RegXMM|LLongMem, RegXMM } },
+{"pclmullqlqdq", 2, 0x660f3a44, 0x0, CpuPCLMUL, FP|Modrm|IgnoreSize|NoSuf|ImmExt, { RegXMM|LLongMem, RegXMM } },
+{"pclmulhqlqdq", 2, 0x660f3a44, 0x1, CpuPCLMUL, FP|Modrm|IgnoreSize|NoSuf|ImmExt, { RegXMM|LLongMem, RegXMM } },
+{"pclmullqhqdq", 2, 0x660f3a44, 0x10, CpuPCLMUL, FP|Modrm|IgnoreSize|NoSuf|ImmExt, { RegXMM|LLongMem, RegXMM } },
+{"pclmulhqhqdq", 2, 0x660f3a44, 0x11, CpuPCLMUL, FP|Modrm|IgnoreSize|NoSuf|ImmExt, { RegXMM|LLongMem, RegXMM } },
+
+/* Intel Random Number Generator extensions */
+{"rdrand", 1, 0x0fc7, 0x6, CpuNEW, Modrm|NoSuf, { Reg16|Reg32|Reg64 } },
+{"rdseed", 1, 0x0fc7, 0x7, CpuNEW, Modrm|NoSuf, { Reg16|Reg32|Reg64 } },
+
+/* Intel Supervisor Mode Access Prevention extensions */
+{"clac", 0, 0x0f01, 0xca, CpuSMAP, NoSuf|ImmExt, { 0, 0, 0 } },
+{"stac", 0, 0x0f01, 0xcb, CpuSMAP, NoSuf|ImmExt, { 0, 0, 0 } },
+
+/* Intel XSAVE extensions */
+{"xgetbv", 0, 0x0f01, 0xd0, CpuXSAVE, NoSuf|ImmExt, { 0, 0, 0 } },
+{"xsetbv", 0, 0x0f01, 0xd1, CpuXSAVE, NoSuf|ImmExt, { 0, 0, 0 } },
+{"xsave", 1, 0x0fae, 4, CpuXSAVE, q_Suf|Modrm, { LLongMem, 0, 0 } },
+{"xrstor", 1, 0x0fae, 5, CpuXSAVE, q_Suf|Modrm, { LLongMem, 0, 0 } },
+{"xsaveopt", 1, 0x0fae, 6, CpuXSAVE, q_Suf|Modrm, { LLongMem, 0, 0 } },
+
+/* Intel PCID extension */
+{"invpcid", 2, 0x660f3882, X, CpuNEW|CpuNo64, Modrm|IgnoreSize|No_bSuf|No_wSuf|No_sSuf|No_qSuf|No_xSuf|NoRex64, { BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg32 } },
+{"invpcid", 2, 0x660f3882, X, CpuNEW|Cpu64, Modrm|IgnoreSize|No_bSuf|No_wSuf|No_sSuf|No_qSuf|No_xSuf|NoRex64, { BaseIndex|Disp8|Disp16|Disp32|Disp32S, Reg64 } },
 
 /* sentinel */
 {NULL, 0, 0, 0, 0, 0, { 0, 0, 0} }

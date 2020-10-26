@@ -1878,7 +1878,7 @@ _bfd_ecoff_sizeof_headers (bfd *abfd, bfd_boolean reloc ATTRIBUTE_UNUSED)
   ret = (bfd_coff_filhsz (abfd)
 	 + bfd_coff_aoutsz (abfd)
 	 + c * bfd_coff_scnhsz (abfd));
-  return BFD_ALIGN (ret, 16);
+  return (int) BFD_ALIGN (ret, 16);
 }
 
 /* Get the contents of a section.  */
@@ -3050,7 +3050,7 @@ _bfd_ecoff_write_armap (bfd *abfd,
      linker just checks the archive name; the GNU linker may check the
      date.  */
   stat (abfd->filename, &statbuf);
-  sprintf (hdr.ar_date, "%ld", (long) (statbuf.st_mtime + 60));
+  sprintf (hdr.ar_date, "%lld", (long long) (statbuf.st_mtime + 60));
 
   /* The DECstation uses zeroes for the uid, gid and mode of the
      armap.  */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: sigprocmask.S,v 1.11 2015/10/23 04:39:24 guenther Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,19 +29,11 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)sigprocmask.s	5.2 (Berkeley) 12/17/90
- *	$Id: sigprocmask.S,v 1.8 1994/10/26 19:49:50 mycroft Exp $
  */
-
-#if defined(SYSLIBC_SCCS) && !defined(lint)
-	.text
-	.asciz "$Id: sigprocmask.S,v 1.8 1994/10/26 19:49:50 mycroft Exp $"
-#endif /* SYSLIBC_SCCS and not lint */
 
 #include "SYS.h"
 
-ENTRY(sigprocmask)
+SYSENTRY_HIDDEN(sigprocmask)
 	movl	8(%esp),%ecx		# fetch new sigset pointer
 	testl	%ecx,%ecx		# check new sigset pointer
 	jnz	1f			# if not null, indirect
@@ -55,7 +44,7 @@ ENTRY(sigprocmask)
 	movl	%ecx,8(%esp)		# to new mask arg
 2:	movl	$(SYS_sigprocmask),%eax
 	int	$0x80
-	jc	err
+	jc	1f
 	movl	12(%esp),%ecx		# fetch old mask requested
 	testl	%ecx,%ecx		# test if old mask requested
 	jz	out
@@ -63,9 +52,7 @@ ENTRY(sigprocmask)
 out:
 	xorl	%eax,%eax
 	ret
-err:
-#ifdef PIC
-	jmp	PIC_PLT(cerror)
-#else
-	jmp	cerror
-#endif
+1:
+	SET_ERRNO()
+	ret
+SYSCALL_END_HIDDEN(sigprocmask)

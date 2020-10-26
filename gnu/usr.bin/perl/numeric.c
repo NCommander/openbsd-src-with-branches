@@ -34,8 +34,8 @@ values, including such things as replacements for the OS's atof() function
 PERL_STATIC_INLINE NV
 S_strtod(pTHX_ const char * const s, char ** e)
 {
-    DECLARATION_FOR_LC_NUMERIC_MANIPULATION;
     NV result;
+    DECLARATION_FOR_LC_NUMERIC_MANIPULATION;
 
     STORE_LC_NUMERIC_SET_TO_NEEDED();
 
@@ -765,6 +765,9 @@ Perl_grok_infnan(pTHX_ const char** sp, const char* send)
             s++;
 
             flags |= IS_NUMBER_NAN | IS_NUMBER_NOT_INT;
+            if (s == send) {
+                return flags;
+            }
 
             /* NaN can be followed by various stuff (NaNQ, NaNS), but
              * there are also multiple different NaN values, and some
@@ -776,6 +779,9 @@ Perl_grok_infnan(pTHX_ const char** sp, const char* send)
                 /* "nanq" or "nans" are ok, though generating
                  * these portably is tricky. */
                 s++;
+                if (s == send) {
+                    return flags;
+                }
             }
             if (*s == '(') {
                 /* C99 style "nan(123)" or Perlish equivalent "nan($uv)". */

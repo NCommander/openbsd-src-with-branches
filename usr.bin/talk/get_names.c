@@ -1,3 +1,4 @@
+/*	$OpenBSD: get_names.c,v 1.20 2015/01/16 06:40:13 deraadt Exp $	*/
 /*	$NetBSD: get_names.c,v 1.4 1994/12/09 02:14:16 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,61 +30,68 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)get_names.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: get_names.c,v 1.4 1994/12/09 02:14:16 jtc Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/socket.h>
-#include <protocols/talkd.h>
+
+#include <err.h>
+#include <limits.h>
 #include <pwd.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "talk.h"
 
-char	*getlogin();
-char	*ttyname();
-char	*rindex();
 extern	CTL_MSG msg;
 
 /*
  * Determine the local and remote user, tty, and machines
  */
-get_names(argc, argv)
-	int argc;
-	char *argv[];
+void
+get_names(int argc, char *argv[])
 {
-	char hostname[MAXHOSTNAMELEN];
+	char hostname[HOST_NAME_MAX+1];
 	char *his_name, *my_name;
 	char *my_machine_name, *his_machine_name;
-	char *my_tty, *his_tty;
-	register char *cp;
+	char *his_tty;
+	char *cp;
 	char *names;
 
-	if (argc < 2 ) {
-		printf("Usage: talk user [ttyname]\n");
-		exit(-1);
+	if (argc > 1 && !strcmp(argv[1], "-H")) {
+		argv[1] = argv[0];
+		++argv;
+		--argc;
+		high_print = 1;
 	}
-	if (!isatty(0)) {
-		printf("Standard input must be a tty, not a pipe or a file\n");
-		exit(-1);
+
+	if (argc > 1 && !strcmp(argv[1], "-s")) {
+		argv[1] = argv[0];
+		++argv;
+		--argc;
+		smooth_scroll = TRUE;
 	}
+
+	if ((argc < 2 ) || ('@' == argv[1][0])) {
+		extern char *__progname;
+		fprintf(stderr, "usage: %s [-Hs] person [ttyname]\n", __progname);
+		exit(1);
+	}
+	if (!isatty(STDIN_FILENO))
+		errx(1, "standard input must be a tty, not a pipe or a file");
+
 	if ((my_name = getlogin()) == NULL) {
 		struct passwd *pw;
 
-		if ((pw = getpwuid(getuid())) == NULL) {
-			printf("You don't exist. Go away.\n");
-			exit(-1);
-		}
+		if ((pw = getpwuid(getuid())) == NULL)
+			errx(1, "you don't exist in the passwd file.");
 		my_name = pw->pw_name;
 	}
 	gethostname(hostname, sizeof (hostname));
 	my_machine_name = hostname;
 	/* check for, and strip out, the machine name of the target */
 	names = strdup(argv[1]);
-	for (cp = names; *cp && !index("@:!.", *cp); cp++)
+	if (names == NULL)
+		errx(1, "out of memory");
+	for (cp = names; *cp && !strchr("@:!.", *cp); cp++)
 		;
 	if (*cp == '\0') {
 		/* this is a local to local talk */
@@ -123,4 +127,5 @@ get_names(argc, argv)
 	msg.r_name[NAME_SIZE - 1] = '\0';
 	strncpy(msg.r_tty, his_tty, TTY_SIZE);
 	msg.r_tty[TTY_SIZE - 1] = '\0';
+	free(names);
 }

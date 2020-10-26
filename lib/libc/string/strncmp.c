@@ -1,3 +1,5 @@
+/*	$OpenBSD: strncmp.c,v 1.8 2014/06/10 04:17:37 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1989 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,17 +29,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)strncmp.c	5.6 (Berkeley) 1/26/91";*/
-static char *rcsid = "$Id: strncmp.c,v 1.4 1995/06/15 00:08:14 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <string.h>
 
 int
-strncmp(s1, s2, n)
-	register const char *s1, *s2;
-	register size_t n;
+strncmp(const char *s1, const char *s2, size_t n)
 {
 
 	if (n == 0)
@@ -54,3 +45,4 @@ strncmp(s1, s2, n)
 	} while (--n != 0);
 	return (0);
 }
+DEF_STRONG(strncmp);

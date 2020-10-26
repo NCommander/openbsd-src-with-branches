@@ -1615,7 +1615,7 @@ elf32_hppa_hide_symbol (struct bfd_link_info *info,
   if (! ((struct elf32_hppa_link_hash_entry *) h)->plabel)
     {
       h->elf_link_hash_flags &= ~ELF_LINK_HASH_NEEDS_PLT;
-      h->plt.offset = (bfd_vma) -1;
+      h->plt = elf_hash_table (info)->init_refcount;
     }
 }
 
@@ -2036,7 +2036,7 @@ elf32_hppa_size_dynamic_sections (bfd *output_bfd ATTRIBUTE_UNUSED,
   if (htab->elf.dynamic_sections_created)
     {
       /* Set the contents of the .interp section to the interpreter.  */
-      if (info->executable)
+      if (info->executable && !info->static_link)
 	{
 	  s = bfd_get_section_by_name (dynobj, ".interp");
 	  if (s == NULL)
@@ -2238,7 +2238,7 @@ elf32_hppa_size_dynamic_sections (bfd *output_bfd ATTRIBUTE_UNUSED,
 	 must add the entries now so that we get the correct size for
 	 the .dynamic section.  The DT_DEBUG entry is filled in by the
 	 dynamic linker and used by the debugger.  */
-      if (!info->shared)
+      if (info->executable)
 	{
 	  if (!add_dynamic_entry (DT_DEBUG, 0))
 	    return FALSE;

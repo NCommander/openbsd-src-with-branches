@@ -1,3 +1,4 @@
+/*	$OpenBSD: sysv_ipc.c,v 1.7 2014/09/14 14:17:25 jsg Exp $	*/
 /*	$NetBSD: sysv_ipc.c,v 1.10 1995/06/03 05:53:28 mycroft Exp $	*/
 
 /*
@@ -30,8 +31,6 @@
  */
 
 #include <sys/param.h>
-#include <sys/kernel.h>
-#include <sys/proc.h>
 #include <sys/ipc.h>
 #include <sys/systm.h>
 #include <sys/mount.h>
@@ -42,10 +41,7 @@
  */
 
 int
-ipcperm(cred, perm, mode)
-	struct ucred *cred;
-	struct ipc_perm *perm;
-	int mode;
+ipcperm(struct ucred *cred, struct ipc_perm *perm, int mode)
 {
 
 	if (mode == IPC_M) {
@@ -56,8 +52,8 @@ ipcperm(cred, perm, mode)
 		return (EPERM);
 	}
 
-	if (vaccess(perm->mode, perm->uid, perm->gid, mode, cred) == 0 ||
-	    vaccess(perm->mode, perm->cuid, perm->cgid, mode, cred) == 0)
+	if (vaccess(VNON, perm->mode, perm->uid, perm->gid, mode, cred) == 0 ||
+	    vaccess(VNON, perm->mode, perm->cuid, perm->cgid, mode, cred) == 0)
 		return (0);
 	return (EACCES);
 }

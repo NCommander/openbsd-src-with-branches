@@ -16,7 +16,7 @@
 
 my $interactive = ( @ARGV && $ARGV[0] =~ /interactive/ );
 
-BEGIN { print "1 .. 8\n"; }
+BEGIN { print "1..8\n"; }
 END { print "not ok 1\n" unless $loaded }
 use Term::ReadKey;
 
@@ -59,7 +59,8 @@ else
 *IN = *IN;    # Make single-use warning go away
 $|  = 1;
 
-my $size1 = join( ",", GetTerminalSize( \IN ) );
+# Bad filehandle: IN at ../lib/Term/ReadKey.pm line 377 with \IN and harness
+my $size1 = join( ",", GetTerminalSize( -t \IN ? \IN : "IN" ) );
 my $size2 = join( ",", GetTerminalSize("IN") );
 my $size3 = join( ",", GetTerminalSize(*IN) );
 my $size4 = join( ",", GetTerminalSize( \*IN ) );

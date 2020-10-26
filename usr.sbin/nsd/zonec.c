@@ -647,7 +647,7 @@ zparser_conv_b64(region_type *region, const char *b64)
 		/* single 0 represents empty buffer */
 		return alloc_rdata(region, 0);
 	}
-	i = b64_pton(b64, buffer, B64BUFSIZE);
+	i = __b64_pton(b64, buffer, B64BUFSIZE);
 	if (i == -1) {
 		zc_error_prev_line("invalid base64 data");
 	} else {

@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD: crl.c,v 1.8 2020/04/02 09:16:43 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,7 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include "config.h"
 
 #include <sys/socket.h>
 
@@ -27,21 +26,26 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <openssl/ssl.h>
-
 #include "extern.h"
 
 X509_CRL *
 crl_parse(const char *fn, const unsigned char *dgst)
 {
-	int	 	 rc = 0, sz;
+	int		 rc = 0, sz;
 	X509_CRL	*x = NULL;
 	BIO		*bio = NULL, *shamd;
+	FILE		*f;
 	EVP_MD		*md;
 	char		 mdbuf[EVP_MAX_MD_SIZE];
 
-	if ((bio = BIO_new_file(fn, "rb")) == NULL) {
-		cryptowarnx("%s: BIO_new_file", fn);
+	if ((f = fopen(fn, "rb")) == NULL) {
+		warn("%s", fn);
+		return NULL;
+	}
+
+	if ((bio = BIO_new_fp(f, BIO_CLOSE)) == NULL) {
+		if (verbose > 0)
+			cryptowarnx("%s: BIO_new_file", fn);
 		return NULL;
 	}
 
@@ -63,7 +67,7 @@ crl_parse(const char *fn, const unsigned char *dgst)
 		cryptowarnx("%s: d2i_X509_CRL_bio", fn);
 		goto out;
 	}
-	
+
 	/*
 	 * If we have a digest, find it in the chain (we'll already have
 	 * made it, so assert otherwise) and verify it.
@@ -82,7 +86,8 @@ crl_parse(const char *fn, const unsigned char *dgst)
 		assert(sz == SHA256_DIGEST_LENGTH);
 
 		if (memcmp(mdbuf, dgst, SHA256_DIGEST_LENGTH)) {
-			warnx("%s: bad message digest", fn);
+			if (verbose > 0)
+				warnx("%s: bad message digest", fn);
 			goto out;
 		}
 	}
@@ -97,3 +102,18 @@ out:
 	return x;
 }
 
+static inline int
+crlcmp(struct crl *a, struct crl *b)
+{
+	return strcmp(a->aki, b->aki);
+}
+
+RB_GENERATE(crl_tree, crl, entry, crlcmp);
+
+void
+free_crl(struct crl *crl)
+{
+	free(crl->aki);
+	X509_CRL_free(crl->x509_crl);
+	free(crl);
+}

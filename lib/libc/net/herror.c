@@ -1,9 +1,11 @@
-/*	$NetBSD: herror.c,v 1.5 1995/02/25 06:20:39 cgd Exp $	*/
+/*	$OpenBSD: herror.c,v 1.9 2015/01/16 16:48:51 deraadt Exp $	*/
 
-/*-
+/*
+ * ++Copyright++ 1987, 1993
+ * -
  * Copyright (c) 1987, 1993
- *	The Regents of the University of California.  All rights reserved.
- *
+ *    The Regents of the University of California.  All rights reserved.
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -12,14 +14,10 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -53,29 +51,20 @@
  * --Copyright--
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)herror.c	8.1 (Berkeley) 6/4/93";
-static char rcsid[] = "$Id: herror.c,v 4.9.1.1 1993/05/02 23:14:35 vixie Rel ";
-#else
-static char rcsid[] = "$NetBSD: herror.c,v 1.5 1995/02/25 06:20:39 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <string.h>
 
-char	*h_errlist[] = {
-	"Error 0",
+const char * const h_errlist[] = {
+	"Resolver Error 0 (no error)",
 	"Unknown host",				/* 1 HOST_NOT_FOUND */
 	"Host name lookup failure",		/* 2 TRY_AGAIN */
 	"Unknown server error",			/* 3 NO_RECOVERY */
 	"No address associated with name",	/* 4 NO_ADDRESS */
 };
-int	h_nerr = { sizeof(h_errlist)/sizeof(h_errlist[0]) };
+const int	h_nerr = { sizeof h_errlist / sizeof h_errlist[0] };
 
 extern int	h_errno;
 
@@ -84,11 +73,10 @@ extern int	h_errno;
  *	print the error indicated by the h_errno value.
  */
 void
-herror(s)
-	const char *s;
+herror(const char *s)
 {
 	struct iovec iov[4];
-	register struct iovec *v = iov;
+	struct iovec *v = iov;
 
 	if (s && *s) {
 		v->iov_base = (char *)s;
@@ -98,8 +86,7 @@ herror(s)
 		v->iov_len = 2;
 		v++;
 	}
-	v->iov_base = (u_int)h_errno < h_nerr ?
-	    h_errlist[h_errno] : "Unknown error";
+	v->iov_base = (char *)hstrerror(h_errno);
 	v->iov_len = strlen(v->iov_base);
 	v++;
 	v->iov_base = "\n";
@@ -107,9 +94,13 @@ herror(s)
 	writev(STDERR_FILENO, iov, (v - iov) + 1);
 }
 
-char *
-hstrerror(err)
-	int err;
+const char *
+hstrerror(int err)
 {
-	return (u_int)err < h_nerr ? h_errlist[err] : "Unknown resolver error";
+	if (err < 0)
+		return ("Resolver internal error");
+	else if (err < h_nerr)
+		return (h_errlist[err]);
+	return ("Unknown resolver error");
 }
+DEF_WEAK(hstrerror);

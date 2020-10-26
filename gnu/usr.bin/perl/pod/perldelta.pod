@@ -2,20 +2,61 @@
 
 =head1 NAME
 
-perldelta - what is new for perl v5.30.1
+perldelta - what is new for perl v5.30.3
 
 =head1 DESCRIPTION
 
-This document describes differences between the 5.30.0 release and the 5.30.1
+This document describes differences between the 5.30.2 release and the 5.30.3
 release.
 
-If you are upgrading from an earlier release such as 5.29.0, first read
-L<perl5300delta>, which describes differences between 5.29.0 and 5.30.0.
+If you are upgrading from an earlier release such as 5.30.1, first read
+L<perl5302delta>, which describes differences between 5.30.1 and 5.30.2.
+
+=head1 Security
+
+=head2 [CVE-2020-10543] Buffer overflow caused by a crafted regular expression
+
+A signed C<size_t> integer overflow in the storage space calculations for
+nested regular expression quantifiers could cause a heap buffer overflow in
+Perl's regular expression compiler that overwrites memory allocated after the
+regular expression storage space with attacker supplied data.
+
+The target system needs a sufficient amount of memory to allocate partial
+expansions of the nested quantifiers prior to the overflow occurring.  This
+requirement is unlikely to be met on 64-bit systems.
+
+Discovered by: ManhND of The Tarantula Team, VinCSS (a member of Vingroup).
+
+=head2 [CVE-2020-10878] Integer overflow via malformed bytecode produced by a crafted regular expression
+
+Integer overflows in the calculation of offsets between instructions for the
+regular expression engine could cause corruption of the intermediate language
+state of a compiled regular expression.  An attacker could abuse this behaviour
+to insert instructions into the compiled form of a Perl regular expression.
+
+Discovered by: Hugo van der Sanden and Slaven Rezic.
+
+=head2 [CVE-2020-12723] Buffer overflow caused by a crafted regular expression
+
+Recursive calls to C<S_study_chunk()> by Perl's regular expression compiler to
+optimize the intermediate language representation of a regular expression could
+cause corruption of the intermediate language state of a compiled regular
+expression.
+
+Discovered by: Sergey Aleynikov.
+
+=head2 Additional Note
+
+An application written in Perl would only be vulnerable to any of the above
+flaws if it evaluates regular expressions supplied by the attacker.  Evaluating
+regular expressions in this fashion is known to be dangerous since the regular
+expression engine does not protect against denial of service attacks in this
+usage scenario.
 
 =head1 Incompatible Changes
 
-There are no changes intentionally incompatible with 5.30.1.  If any exist,
-they are bugs, and we request that you submit a report.  See
+There are no changes intentionally incompatible with Perl 5.30.2.  If any
+exist, they are bugs, and we request that you submit a report.  See
 L</Reporting Bugs> below.
 
 =head1 Modules and Pragmata
@@ -26,31 +67,7 @@ L</Reporting Bugs> below.
 
 =item *
 
-L<Module::CoreList> has been upgraded from version 5.20190522 to 5.20191110.
-
-=back
-
-=head1 Documentation
-
-=head2 Changes to Existing Documentation
-
-We have attempted to update the documentation to reflect the changes listed in
-this document.  If you find any we have missed, send email to
-L<perlbug@perl.org|mailto:perlbug@perl.org>.
-
-Additionally, documentation has been updated to reference GitHub as the new
-canonical repository and to describe the new GitHub pull request workflow.
-
-=head1 Configuration and Compilation
-
-=over 4
-
-=item *
-
-The C<ECHO> macro is now defined.  This is used in a C<dtrace> rule that was
-originally changed for FreeBSD, and the FreeBSD make apparently predefines it.
-The Solaris make does not predefine C<ECHO> which broke this rule on Solaris.
-L<[perl #17057]|https://github.com/perl/perl5/issues/17057>
+L<Module::CoreList> has been upgraded from version 5.20200314 to 5.20200601_30.
 
 =back
 
@@ -59,83 +76,21 @@ L<[perl #17057]|https://github.com/perl/perl5/issues/17057>
 Tests were added and changed to reflect the other additions and changes in this
 release.
 
-=head1 Platform Support
-
-=head2 Platform-Specific Notes
-
-=over 4
-
-=item Win32
-
-The locale tests could crash on Win32 due to a Windows bug, and separately due
-to the CRT throwing an exception if the locale name wasn't validly encoded in
-the current code page.
-
-For the second we now decode the locale name ourselves, and always decode it as
-UTF-8.
-
-L<[perl #16922]|https://github.com/perl/perl5/issues/16922>
-
-=back
-
-=head1 Selected Bug Fixes
-
-=over 4
-
-=item *
-
-Setting C<$)> now properly sets supplementary group ids, if you have the
-necessary privileges.
-L<[perl #17031]|https://github.com/perl/perl5/issues/17031>
-
-=item *
-
-C<readline @foo> now evaluates C<@foo> in scalar context.  Previously, it would
-be evaluated in list context, and since readline() pops only one argument from
-the stack, the stack could underflow, or be left with unexpected values on it.
-L<[perl #16929]|https://github.com/perl/perl5/issues/16929>
-
-=item *
-
-sv_gets() now recovers better if the target SV is modified by a signal handler.
-L<[perl #16960]|https://github.com/perl/perl5/issues/16960>
-
-=item *
-
-Matching a non-C<SVf_UTF8> string against a regular expression containing
-Unicode literals could leak an SV on each match attempt.
-L<[perl #17140]|https://github.com/perl/perl5/issues/17140>
-
-=item *
-
-C<< sprintf("%.*a", -10000, $x) >> would cause a buffer overflow due to
-mishandling of the negative precision value.
-L<[perl #16942]|https://github.com/perl/perl5/issues/16942>
-
-=item *
-
-C<scalar()> on a reference could cause an erroneous assertion failure during
-compilation.
-L<[perl #16969]|https://github.com/perl/perl5/issues/16969>
-
-=back
-
 =head1 Acknowledgements
 
-Perl 5.30.1 represents approximately 6 months of development since Perl 5.30.0
-and contains approximately 4,700 lines of changes across 67 files from 14
+Perl 5.30.3 represents approximately 3 months of development since Perl 5.30.2
+and contains approximately 1,100 lines of changes across 42 files from 7
 authors.
 
 Excluding auto-generated files, documentation and release tools, there were
-approximately 910 lines of changes to 20 .pm, .t, .c and .h files.
+approximately 350 lines of changes to 8 .pm, .t, .c and .h files.
 
 Perl continues to flourish into its fourth decade thanks to a vibrant community
 of users and developers.  The following people are known to have contributed
-the improvements that became Perl 5.30.1:
+the improvements that became Perl 5.30.3:
 
-Chris 'BinGOs' Williams, Dan Book, David Mitchell, Hugo van der Sanden, James E
-Keenan, Karen Etheridge, Karl Williamson, Manuel Mausz, Max Maischein, Nicolas
-R., Sawyer X, Steve Hay, Tom Hukins, Tony Cook.
+Chris 'BinGOs' Williams, Hugo van der Sanden, John Lightsey, Karl Williamson,
+Nicolas R., Sawyer X, Steve Hay.
 
 The list above is almost certainly incomplete as it is automatically generated
 from version control history.  In particular, it does not include the names of
@@ -152,16 +107,15 @@ the F<AUTHORS> file in the Perl source distribution.
 =head1 Reporting Bugs
 
 If you find what you think is a bug, you might check the perl bug database at
-L<https://rt.perl.org/>.  There may also be information at
-L<http://www.perl.org/>, the Perl Home Page.
+L<https://github.com/Perl/perl5/issues>.  There may also be information at
+L<https://www.perl.org/>, the Perl Home Page.
 
-If you believe you have an unreported bug, please run the L<perlbug> program
-included with your release.  Be sure to trim your bug down to a tiny but
-sufficient test case.  Your bug report, along with the output of C<perl -V>,
-will be sent off to perlbug@perl.org to be analysed by the Perl porting team.
+If you believe you have an unreported bug, please open an issue at
+L<https://github.com/Perl/perl5/issues>.  Be sure to trim your bug down to a
+tiny but sufficient test case.
 
 If the bug you are reporting has security implications which make it
-inappropriate to send to a publicly archived mailing list, then see
+inappropriate to send to a public issue tracker, then see
 L<perlsec/SECURITY VULNERABILITY CONTACT INFORMATION> for details of how to
 report the issue.
 

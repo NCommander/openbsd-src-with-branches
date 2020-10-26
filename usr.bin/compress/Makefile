@@ -1,14 +1,23 @@
-#	$NetBSD: Makefile,v 1.6 1995/03/26 09:44:29 glass Exp $
-#	@(#)Makefile	8.2 (Berkeley) 4/17/94
+#	$OpenBSD: Makefile,v 1.21 2007/05/20 00:27:27 jsg Exp $
 
 PROG=	compress
-SRCS=	compress.c zopen.c
-LINKS=	${BINDIR}/compress ${BINDIR}/uncompress
-MLINKS= compress.1 uncompress.1
-#MLINKS+=compress.1 zcat.1
+SRCS=	main.c zopen.c gzopen.c nullopen.c
+MAN=	compress.1 gzexe.1 gzip.1 zdiff.1 zforce.1 zmore.1 znew.1
+LINKS=	${BINDIR}/compress ${BINDIR}/uncompress \
+	${BINDIR}/compress ${BINDIR}/zcat \
+	${BINDIR}/compress ${BINDIR}/gzip \
+	${BINDIR}/compress ${BINDIR}/gunzip \
+	${BINDIR}/compress ${BINDIR}/gzcat \
+	${BINDIR}/zdiff ${BINDIR}/zcmp \
+	${BINDIR}/zmore ${BINDIR}/zless
 
-#afterinstall:
-#	install -c -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
-#	    ${.CURDIR}/zcat.sh ${DESTDIR}/usr/bin/zcat
+LDADD=-lz
+DPADD=${LIBZ}
+
+afterinstall:
+	install -c -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
+	    ${.CURDIR}/zmore ${.CURDIR}/zdiff \
+	    ${.CURDIR}/zforce ${.CURDIR}/gzexe ${.CURDIR}/znew \
+	    ${DESTDIR}${BINDIR}
 
 .include <bsd.prog.mk>

@@ -1,0 +1,20 @@
+dnl	$OpenBSD$
+TopPart
+
+OpenBSDminiroot
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDrd
+
+DistributionDescription(eight)
+
+OpenBSDbase(92997156,284219392)
+
+OpenBSDcomp(57727901,212260864)
+
+OpenBSDgame(2768356,9330688)
+
+OpenBSDman(7322823,31395840)

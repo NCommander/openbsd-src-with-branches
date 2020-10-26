@@ -1,0 +1,13 @@
+.\" $OpenBSD$
+.Dd $Mdocdate: July 4 2017 $
+.Dt VT-NOARG 1
+.Os
+.Sh NAME
+.Nm Vt-noarg
+.Nd variable type macro without arguments
+.Sh DESCRIPTION
+with arguments
+.Vt signed int.
+no arguments
+.Vt
+end of test document

@@ -1,3 +1,6 @@
+/*	$OpenBSD$	*/
+/*	$NetBSD: tokenizer.h,v 1.6 2003/08/07 16:44:34 agc Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,14 +39,13 @@
  * tokenizer.h: Header file for tokenizer routines
  */
 #ifndef _h_tokenizer
-#define _h_tokenizer
+#define	_h_tokenizer
 
 typedef struct tokenizer Tokenizer;
 
-Tokenizer 	*tok_init	__P((const char *));
-void		 tok_reset	__P((Tokenizer *));
-void		 tok_end	__P((Tokenizer *));
-int		 tok_line	__P((Tokenizer *, const char *, 
-				     int *, char ***));
+Tokenizer	*tok_init(const char *);
+void		 tok_reset(Tokenizer *);
+void		 tok_end(Tokenizer *);
+int		 tok_line(Tokenizer *, const char *, int *, const char ***);
 
 #endif /* _h_tokenizer */

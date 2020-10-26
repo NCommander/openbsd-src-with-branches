@@ -109,6 +109,7 @@ Software Foundation, 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, US
 #define N5	(INSN_5400 | INSN_5500)
 #define N54	INSN_5400
 #define N55	INSN_5500
+#define IOCT	INSN_OCTEON
 
 #define G1      (T3             \
                  )
@@ -647,8 +648,10 @@ const struct mips_opcode mips_builtin_opcodes[] =
 {"flushid", "",		0xbc030000, 0xffffffff, 0, 			0,		L1	},
 {"hibernate","",        0x42000023, 0xffffffff,	0, 			0,		V1	},
 {"ins",     "t,r,+A,+B", 0x7c000004, 0xfc00003f, WR_t|RD_s,    		0,		I33	},
+{"jr",      "s",	0,	(int) M_JR_S,	INSN_MACRO,		0,		I1	},
 {"jr",      "s",	0x00000008, 0xfc1fffff,	UBD|RD_s,		0,		I1	},
 {"jr.hb",   "s",	0x00000408, 0xfc1fffff,	UBD|RD_s,		0,		I33	},
+{"j",       "s",	0,	(int) M_J_S,	INSN_MACRO,		0,		I1	},
 {"j",       "s",	0x00000008, 0xfc1fffff,	UBD|RD_s,		0,		I1	}, /* jr */
 /* SVR4 PIC code requires special handling for j, so it must be a
    macro.  */
@@ -657,7 +660,9 @@ const struct mips_opcode mips_builtin_opcodes[] =
    assembler, but will never match user input (because the line above
    will match first).  */
 {"j",       "a",	0x08000000, 0xfc000000,	UBD,			0,		I1	},
+{"jalr",    "s",	0,	(int) M_JALR_S,	INSN_MACRO,		0,		I1	},
 {"jalr",    "s",	0x0000f809, 0xfc1fffff,	UBD|RD_s|WR_d,		0,		I1	},
+{"jalr",    "d,s",	0,	(int) M_JALR_DS, INSN_MACRO,		0,		I1	},
 {"jalr",    "d,s",	0x00000009, 0xfc1f07ff,	UBD|RD_s|WR_d,		0,		I1	},
 {"jalr.hb", "s",	0x0000fc09, 0xfc1fffff,	UBD|RD_s|WR_d,		0,		I33	},
 {"jalr.hb", "d,s",	0x00000409, 0xfc1f07ff,	UBD|RD_s|WR_d,		0,		I33	},
@@ -1178,6 +1183,10 @@ const struct mips_opcode mips_builtin_opcodes[] =
 {"invalidate", "t,o(b)",0xb8000000, 0xfc000000,	RD_t|RD_b,		0,		I2	}, /* same */
 {"invalidate", "t,A(b)",0,    (int) M_SWR_AB,	INSN_MACRO,		0,		I2	}, /* as swr */
 {"swxc1",   "S,t(b)",   0x4c000008, 0xfc0007ff, SM|RD_S|RD_t|RD_b|FP_S,	0,		I4|I33	},
+{"synciobdma",	"",	0x0000008f, 0xffffffff,	INSN_SYNC,		0,		IOCT	},
+{"syncs",	"",	0x0000018f, 0xffffffff,	INSN_SYNC,		0,		IOCT	},
+{"syncw",	"",	0x0000010f, 0xffffffff,	INSN_SYNC,		0,		IOCT	},
+{"syncws",	"",	0x0000014f, 0xffffffff,	INSN_SYNC,		0,		IOCT	},
 {"sync",    "",		0x0000000f, 0xffffffff,	INSN_SYNC,		0,		I2|G1	},
 {"sync.p",  "",		0x0000040f, 0xffffffff,	INSN_SYNC,		0,		I2	},
 {"sync.l",  "",		0x0000000f, 0xffffffff,	INSN_SYNC,		0,		I2	},
@@ -1273,8 +1282,10 @@ const struct mips_opcode mips_builtin_opcodes[] =
 {"ctc2",    "t,G",	0x48c00000, 0xffe007ff,	COD|RD_t|WR_CC,		0,		I1	},
 {"dmfc2",   "t,G",	0x48200000, 0xffe007ff,	LCD|WR_t|RD_C2,		0,		I3	},
 {"dmfc2",   "t,G,H",	0x48200000, 0xffe007f8,	LCD|WR_t|RD_C2,		0,		I64	},
+{"dmfc2",   "t,i",	0x48200000, 0xffe00000,	LCD|WR_t|RD_C2,		0,		IOCT	},
 {"dmtc2",   "t,G",	0x48a00000, 0xffe007ff,	COD|RD_t|WR_C2|WR_CC,	0,		I3	},
 {"dmtc2",   "t,G,H",	0x48a00000, 0xffe007f8,	COD|RD_t|WR_C2|WR_CC,	0,		I64	},
+{"dmtc2",   "t,i",	0x48a00000, 0xffe00000,	COD|RD_t|WR_C2|WR_CC,	0,		IOCT	},
 {"mfc2",    "t,G",	0x48000000, 0xffe007ff,	LCD|WR_t|RD_C2,		0,		I1	},
 {"mfc2",    "t,G,H",	0x48000000, 0xffe007f8,	LCD|WR_t|RD_C2,		0,		I32	},
 {"mfhc2",   "t,i",	0x48600000, 0xffe00000,	LCD|WR_t|RD_C2,		0,		I33	},

@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.c,v 1.7 2015/01/19 00:47:01 deraadt Exp $	*/
 /*	$NetBSD: extern.c,v 1.4 1995/03/24 05:01:36 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)extern.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: extern.c,v 1.4 1995/03/24 05:01:36 cgd Exp $";
-#endif
-#endif /* not lint */
-
-# include	"mille.h"
+#include "mille.h"
 
 /*
  * @(#)extern.c	1.1 (Berkeley) 4/1/82
@@ -54,10 +43,10 @@ bool	Debug,			/* set if debugging code on		*/
 	Order,			/* set if hand should be sorted		*/
 	Saved;			/* set if game just saved		*/
 
-char	*C_fmt = "%-18.18s",	/* format for printing cards		*/
-	*Fromfile = NULL,	/* startup file for game		*/
-	Initstr[100],		/* initial string for error field	*/
-	*_cn[NUM_CARDS] = {	/* Card name buffer			*/
+char	Initstr[100],		/* initial string for error field	*/
+	*C_fmt = "%-18.18s";	/* format for printing cards	*/
+const char	*Fromfile = NULL,	/* startup file for game		*/
+	*const _cn[NUM_CARDS] = {	/* Card name buffer		*/
 		"",
 		"25",
 		"50",
@@ -68,7 +57,7 @@ char	*C_fmt = "%-18.18s",	/* format for printing cards		*/
 		"Flat Tire",
 		"Accident",
 		"Stop",
-		"Speed Limit", 
+		"Speed Limit",
 		"Gasoline",
 		"Spare Tire",
 		"Repairs",
@@ -79,7 +68,7 @@ char	*C_fmt = "%-18.18s",	/* format for printing cards		*/
 		"Driving Ace",
 		"Right of Way"
 	},
-	**C_name = &_cn[1];	/* Card names				*/
+	*const *C_name = &_cn[1];	/* Card names			*/
 
 int	Card_no,		/* Card number for current move		*/
 	End,			/* End value for current hand		*/
@@ -88,8 +77,9 @@ int	Card_no,		/* Card number for current move		*/
 	Play,			/* Current player			*/
 	Numgos,			/* Number of Go cards used by computer	*/
 	Window = W_SMALL,	/* Current window wanted		*/
-	Numseen[NUM_CARDS],	/* Number of cards seen in current hand	*/
-	Value[NUM_MILES] = {	/* Value of mileage cards		*/
+	Numseen[NUM_CARDS];	/* Number of cards seen in current hand	*/
+
+const int	Value[NUM_MILES] = {	/* Value of mileage cards	*/
 		25, 50, 75, 100, 200
 	},
 	Numcards[NUM_CARDS] = {	/* Number of cards in deck		*/
@@ -113,8 +103,8 @@ int	Card_no,		/* Card number for current move		*/
 		1,	/* C_DRIVE_SAFE */
 		1,	/* C_RIGHT_WAY */
 		0	/* C_INIT */
-	},
-	Numneed[NUM_CARDS] = {	/* number of cards needed per hand	*/
+	};
+int	Numneed[NUM_CARDS] = {	/* number of cards needed per hand	*/
 		0,	/* C_25 */
 		0,	/* C_50 */
 		0,	/* C_75 */
@@ -137,14 +127,14 @@ int	Card_no,		/* Card number for current move		*/
 		0	/* C_INIT */
 	};
 
-CARD	Discard,		/* Top of discard pile			*/
-	Sh_discard,		/* Last discard card shown		*/
-	*Topcard,		/* Pointer to next card to be picked	*/
-	Opposite[NUM_CARDS] = {	/* Opposites of each card		*/
+const CARD	Opposite[NUM_CARDS] = {	/* Opposites of each card	*/
 		C_25, C_50, C_75, C_100, C_200, C_GAS, C_SPARE,
 		C_REPAIRS, C_GO, C_END_LIMIT, C_EMPTY, C_FLAT, C_CRASH,
 		C_STOP, C_LIMIT, C_EMPTY, C_FLAT, C_CRASH, C_STOP, C_INIT
-	},
+	};
+CARD	Discard,		/* Top of discard pile			*/
+	Sh_discard,		/* Last discard card shown		*/
+	*Topcard,		/* Pointer to next card to be picked	*/
 	Deck[DECK_SZ] = {	/* Current deck				*/
 		C_25, C_25, C_25, C_25, C_25, C_25, C_25, C_25, C_25, C_25,
 		C_50, C_50, C_50, C_50, C_50, C_50, C_50, C_50, C_50, C_50,

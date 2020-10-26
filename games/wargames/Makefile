@@ -1,11 +1,10 @@
-#	$NetBSD: Makefile,v 1.4 1995/04/22 07:53:41 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 5/31/93
+#	$OpenBSD: Makefile,v 1.5 2017/06/12 18:49:33 espie Exp $
 
 NOOBJ=	noobj
-all wargames clean cleandir depend lint tags:
+all wargames clean cleandir tags:
 
 install:
-	install -c -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
 	    ${.CURDIR}/wargames.sh ${DESTDIR}/usr/games/wargames
 
 .include <bsd.prog.mk>

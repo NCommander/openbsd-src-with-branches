@@ -1,16 +1,18 @@
-#	from: @(#)Makefile	8.2 (Berkeley) 4/19/94
-#	$Id: Makefile,v 1.10 1995/04/28 06:54:58 cgd Exp $
+#	$OpenBSD: Makefile,v 1.16 2013/10/13 20:17:51 deraadt Exp $
+
+.include <bsd.own.mk>
 
 PROG=	config
-BINDIR=	/usr/sbin
 SRCS=	files.c gram.y hash.c main.c mkheaders.c mkioconf.c mkmakefile.c \
-	mkswap.c pack.c scan.l sem.c util.c
+	mkswap.c pack.c scan.l sem.c util.c \
+	ukc.c misc.c ukcutil.c cmd.c
+SRCS+=  exec_elf.c
+
 CFLAGS+=-I${.CURDIR} -I.
-LDADD+=	-ll
-DPADD+=	${LIBL}
-CLEANFILES=gram.c scan.c y.tab.h
+
+LDADD=	-lkvm
+DPADD=	${LIBKVM}
+
 MAN=	config.8
 
 .include <bsd.prog.mk>
-
-.depend: gram.c scan.c

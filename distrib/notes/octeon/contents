@@ -1,0 +1,33 @@
+dnl	$OpenBSD: contents,v 1.7 2015/12/30 23:49:00 rpe Exp $
+TopPart
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDrd
+
+OpenBSDminiroot
+
+dnl not yet...
+dnl OpenBSDcd
+dnl
+dnl	boot		The OpenBSD/MACHINE bootloader.
+
+DistributionDescription(eight)
+
+OpenBSDbase(87906598,236605440)
+
+OpenBSDcomp(50902411,199677952)
+
+OpenBSDgame(2789438,7450624)
+
+OpenBSDman(7329479,31414272)
+
+OpenBSDxbase(16897661,65677312)
+
+OpenBSDxfont(40294650,59377664)
+
+OpenBSDxserv(5164889,15851520)
+
+OpenBSDxshare(4524731,30216192)

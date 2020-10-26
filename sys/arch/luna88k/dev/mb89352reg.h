@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mb89352reg.h,v 1.3 2004/07/26 16:36:29 miod Exp $	*/
 /*	$NetBSD: mb89352reg.h,v 1.3 2003/08/07 16:31:02 agc Exp $	*/
 /*	NecBSD: mb89352reg.h,v 1.3 1998/03/14 07:04:34 kmatsuda Exp 	*/
 
@@ -57,13 +57,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -88,7 +81,7 @@
  */
 
 /*
- * FUJITSU MB89352A SCSI Protocol Controler Hardware Description.
+ * FUJITSU MB89352A SCSI Protocol Controller Hardware Description.
  */
 
 /* Definitions, most of them has turned out to be unneccesary, but here they
@@ -100,7 +93,7 @@
 #define SCMD		0x02	/* Command Register (R/W) */
 #define TMOD		0x03	/* Transmit Mode Register (synch models) */
 #define INTS		0x04	/* Interrupt sense (R); Interrupt Reset (W) */
-#define PSNS		0x05	/* Phase Sence (R); SPC Diagnostic Control (W) */
+#define PSNS		0x05	/* Phase Sense (R); SPC Diagnostic Control (W) */
 #define SSTS		0x06	/* SPC status (R/O) */
 #define SERR		0x07	/* SPC error status (R/O) */
 #define PCTL		0x08	/* Phase Control (R/W) */

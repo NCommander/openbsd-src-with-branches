@@ -1,8 +1,8 @@
-/*	$NetBSD: dir.h,v 1.8 1996/03/09 19:42:41 scottr Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: ext2fs_dir.h,v 1.10 2014/05/27 14:31:24 krw Exp $	*/
+/*	$NetBSD: ext2fs_dir.h,v 1.4 2000/01/28 16:00:23 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1982, 1986, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -19,11 +19,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,6 +36,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)dir.h	8.4 (Berkeley) 8/10/94
+ * Modified for ext2fs by Manuel Bouyer.
  */
 
 #ifndef _EXT2FS_DIR_H_
@@ -49,7 +46,7 @@
  * Theoretically, directories can be more than 2Gb in length, however, in
  * practice this seems unlikely. So, we define the type doff_t as a 32-bit
  * quantity to keep down the cost of doing lookup on a 32-bit machine.
-*/
+ */
 #define	doff_t		int32_t
 #define	EXT2FS_MAXDIRSIZE	(0x7fffffff)
 
@@ -75,6 +72,9 @@
  * a directory block is free, then its dp->e2d_ino is set to 0.
  * Entries other than the first in a directory do not normally have
  * dp->e2d_ino set to 0.
+ * Ext2 rev 0 has a 16 bits e2d_namlen. For Ext2 rev 1 this has been split
+ * into a 8 bits e2d_namlen and 8 bits e2d_type (looks like ffs, isnt't it ? :)
+ * It's safe to use this for rev 0 as well because all ext2 are little-endian.
  */
 
 #define	EXT2FS_MAXNAMLEN	255
@@ -82,9 +82,63 @@
 struct	ext2fs_direct {
 	u_int32_t e2d_ino;		/* inode number of entry */
 	u_int16_t e2d_reclen;		/* length of this record */
-	u_int16_t e2d_namlen;		/* length of string in d_name */
+	u_int8_t e2d_namlen;		/* length of string in d_name */
+	u_int8_t e2d_type;		/* file type */
 	char	  e2d_name[EXT2FS_MAXNAMLEN];/* name with length <= EXT2FS_MAXNAMLEN */
 };
+
+enum slotstatus {
+	NONE,
+	COMPACT,
+	FOUND
+};
+
+struct ext2fs_searchslot {
+	enum slotstatus	slotstatus;
+	doff_t		slotoffset;	/* offset of area with free space */
+	int		slotsize;	/* size of area at slotoffset */
+	int		slotfreespace;	/* amount of space free in slot */
+	int		slotneeded;	/* sizeof the entry we are seeking */
+};
+
+/* Ext2 directory file types (not the same as FFS. Sigh. */
+#define EXT2_FT_UNKNOWN         0
+#define EXT2_FT_REG_FILE        1
+#define EXT2_FT_DIR             2
+#define EXT2_FT_CHRDEV          3
+#define EXT2_FT_BLKDEV          4
+#define EXT2_FT_FIFO            5
+#define EXT2_FT_SOCK            6
+#define EXT2_FT_SYMLINK         7
+
+#define EXT2_FT_MAX             8
+
+#define E2IFTODT(mode)    (((mode) & 0170000) >> 12)
+
+static __inline__ u_int8_t inot2ext2dt(u_int16_t)
+    __attribute__((__unused__));
+static __inline__ u_int8_t
+inot2ext2dt(u_int16_t type)
+{
+	switch(type) {
+	case E2IFTODT(EXT2_IFIFO):
+		return EXT2_FT_FIFO;
+	case E2IFTODT(EXT2_IFCHR):
+		return EXT2_FT_CHRDEV;
+	case E2IFTODT(EXT2_IFDIR):
+		return EXT2_FT_DIR;
+	case E2IFTODT(EXT2_IFBLK):
+		return EXT2_FT_BLKDEV;
+	case E2IFTODT(EXT2_IFREG):
+		return EXT2_FT_REG_FILE;
+	case E2IFTODT(EXT2_IFLNK):
+		return EXT2_FT_SYMLINK;
+	case E2IFTODT(EXT2_IFSOCK):
+		return EXT2_FT_SOCK;
+	default:
+		return 0;
+	}
+}
 
 /*
  * The EXT2FS_DIRSIZ macro gives the minimum record length which will hold
@@ -94,7 +148,7 @@ struct	ext2fs_direct {
  * terminating null byte, rounded up to a 4 byte boundary.
  */
 #define EXT2FS_DIRSIZ(len) \
-    (( 8 + len + 3) &~ 3)
+   (( 8 + len + 3) &~ 3)
 
 /*
  * Template for manipulating directories.  Should use struct direct's,
@@ -103,11 +157,13 @@ struct	ext2fs_direct {
 struct ext2fs_dirtemplate {
 	u_int32_t	dot_ino;
 	int16_t		dot_reclen;
-	u_int16_t	dot_namlen;
+	u_int8_t	dot_namlen;
+	u_int8_t	dot_type;
 	char		dot_name[4];	/* must be multiple of 4 */
 	u_int32_t	dotdot_ino;
 	int16_t		dotdot_reclen;
-	u_int16_t	dotdot_namlen;
+	u_int8_t	dotdot_namlen;
+	u_int8_t	dotdot_type;
 	char		dotdot_name[4];	/* ditto */
 };
 

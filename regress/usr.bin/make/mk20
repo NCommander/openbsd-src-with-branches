@@ -1,0 +1,7 @@
+# $OpenBSD$
+
+# Posix compliance shell: variable SHELL is not placed into the environment
+
+SHELL=/bin/zsh
+a:
+	@echo ${SHELL} $$SHELL

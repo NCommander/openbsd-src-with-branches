@@ -51,7 +51,7 @@ depcomp =
 am__depfiles_maybe =
 SOURCES =
 DIST_SOURCES =
-INFO_DEPS = $(srcdir)/as.info
+INFO_DEPS = as.info
 TEXINFO_TEX = $(top_srcdir)/../texinfo/texinfo.tex
 am__TEXINFO_TEX_DIR = $(top_srcdir)/../texinfo
 DVIS = as.dvi
@@ -301,7 +301,7 @@ distclean-libtool:
 .texinfo.info:
 	restore=: && \
 	backupdir="$(am__leading_dot)am$$$$" && \
-	am__cwd=`pwd` && cd $(srcdir) && \
+	am__cwd=`pwd` && \
 	rm -rf $$backupdir && mkdir $$backupdir && \
 	for f in $@ $@-[0-9] $@-[0-9][0-9] $(@:.info=).i[0-9] $(@:.info=).i[0-9][0-9]; do \
 	  if test -f $$f; then \
@@ -314,10 +314,8 @@ distclean-libtool:
 	 -o $@ $<; \
 	then \
 	  rc=0; \
-	  cd $(srcdir); \
 	else \
 	  rc=$$?; \
-	  cd $(srcdir) && \
 	  $$restore $$backupdir/* `echo "./$@" | sed 's|[^/]*$$||'`; \
 	fi; \
 	rm -rf $$backupdir; \
@@ -338,7 +336,7 @@ distclean-libtool:
 	 -o $@ $<
 	if test ! -d $@ && test -d $(@:.html=); then \
 	  mv $(@:.html=) $@; else :; fi
-$(srcdir)/as.info: as.texinfo 
+as.info: as.texinfo 
 as.pdf: as.texinfo 
 as.html: as.texinfo 
 .dvi.ps:
@@ -395,49 +393,49 @@ maintainer-clean-aminfo:
 clean-info: mostlyclean-aminfo
 install-man1: $(man1_MANS) $(man_MANS)
 	@$(NORMAL_INSTALL)
-	test -z "$(man1dir)" || $(mkdir_p) "$(DESTDIR)$(man1dir)"
-	@list='$(man1_MANS) $(dist_man1_MANS) $(nodist_man1_MANS)'; \
-	l2='$(man_MANS) $(dist_man_MANS) $(nodist_man_MANS)'; \
-	for i in $$l2; do \
-	  case "$$i" in \
-	    *.1*) list="$$list $$i" ;; \
-	  esac; \
-	done; \
-	for i in $$list; do \
-	  if test -f $(srcdir)/$$i; then file=$(srcdir)/$$i; \
-	  else file=$$i; fi; \
-	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
-	  case "$$ext" in \
-	    1*) ;; \
-	    *) ext='1' ;; \
-	  esac; \
-	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
-	  inst=`echo $$inst | sed -e 's/^.*\///'`; \
-	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
-	  echo " $(INSTALL_DATA) '$$file' '$(DESTDIR)$(man1dir)/$$inst'"; \
-	  $(INSTALL_DATA) "$$file" "$(DESTDIR)$(man1dir)/$$inst"; \
-	done
+#	test -z "$(man1dir)" || $(mkdir_p) "$(DESTDIR)$(man1dir)"
+#	@list='$(man1_MANS) $(dist_man1_MANS) $(nodist_man1_MANS)'; \
+#	l2='$(man_MANS) $(dist_man_MANS) $(nodist_man_MANS)'; \
+#	for i in $$l2; do \
+#	  case "$$i" in \
+#	    *.1*) list="$$list $$i" ;; \
+#	  esac; \
+#	done; \
+#	for i in $$list; do \
+#	  if test -f $(srcdir)/$$i; then file=$(srcdir)/$$i; \
+#	  else file=$$i; fi; \
+#	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
+#	  case "$$ext" in \
+#	    1*) ;; \
+#	    *) ext='1' ;; \
+#	  esac; \
+#	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
+#	  inst=`echo $$inst | sed -e 's/^.*\///'`; \
+#	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
+#	  echo " $(INSTALL_DATA) '$$file' '$(DESTDIR)$(man1dir)/$$inst'"; \
+#	  $(INSTALL_DATA) "$$file" "$(DESTDIR)$(man1dir)/$$inst"; \
+#	done
 uninstall-man1:
 	@$(NORMAL_UNINSTALL)
-	@list='$(man1_MANS) $(dist_man1_MANS) $(nodist_man1_MANS)'; \
-	l2='$(man_MANS) $(dist_man_MANS) $(nodist_man_MANS)'; \
-	for i in $$l2; do \
-	  case "$$i" in \
-	    *.1*) list="$$list $$i" ;; \
-	  esac; \
-	done; \
-	for i in $$list; do \
-	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
-	  case "$$ext" in \
-	    1*) ;; \
-	    *) ext='1' ;; \
-	  esac; \
-	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
-	  inst=`echo $$inst | sed -e 's/^.*\///'`; \
-	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
-	  echo " rm -f '$(DESTDIR)$(man1dir)/$$inst'"; \
-	  rm -f "$(DESTDIR)$(man1dir)/$$inst"; \
-	done
+#	@list='$(man1_MANS) $(dist_man1_MANS) $(nodist_man1_MANS)'; \
+#	l2='$(man_MANS) $(dist_man_MANS) $(nodist_man_MANS)'; \
+#	for i in $$l2; do \
+#	  case "$$i" in \
+#	    *.1*) list="$$list $$i" ;; \
+#	  esac; \
+#	done; \
+#	for i in $$list; do \
+#	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
+#	  case "$$ext" in \
+#	    1*) ;; \
+#	    *) ext='1' ;; \
+#	  esac; \
+#	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
+#	  inst=`echo $$inst | sed -e 's/^.*\///'`; \
+#	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
+#	  echo " rm -f '$(DESTDIR)$(man1dir)/$$inst'"; \
+#	  rm -f "$(DESTDIR)$(man1dir)/$$inst"; \
+#	done
 tags: TAGS
 TAGS:
 
@@ -590,7 +588,7 @@ install-data-local: install-info
 # Maintenance
 
 # We need it for the taz target in ../../Makefile.in.
-info: $(MANS)
+info: $(MANS) $(INFO_DEPS)
 
 # Build the man page from the texinfo file
 # The sed command removes the no-adjust Nroff command so that

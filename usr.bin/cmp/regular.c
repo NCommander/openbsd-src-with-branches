@@ -1,3 +1,4 @@
+/*      $OpenBSD: regular.c,v 1.11 2015/01/16 06:40:06 deraadt Exp $      */
 /*      $NetBSD: regular.c,v 1.2 1995/09/08 03:22:59 tls Exp $      */
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,31 +30,22 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)regular.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: regular.c,v 1.2 1995/09/08 03:22:59 tls Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 
 #include <err.h>
-#include <limits.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "extern.h"
 
+#define	MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
+
 void
-c_regular(fd1, file1, skip1, len1, fd2, file2, skip2, len2)
-	int fd1, fd2;
-	char *file1, *file2;
-	off_t skip1, len1, skip2, len2;
+c_regular(int fd1, char *file1, off_t skip1, off_t len1,
+    int fd2, char *file2, off_t skip2, off_t len2)
 {
 	u_char ch, *p1, *p2;
 	off_t byte, length, line;
@@ -73,26 +61,37 @@ c_regular(fd1, file1, skip1, len1, fd2, file2, skip2, len2)
 		eofmsg(file2);
 	len2 -= skip2;
 
-	length = MIN(len1, len2);
-	if (length > SIZE_T_MAX)
-		return (c_special(fd1, file1, skip1, fd2, file2, skip2));
+	length = MINIMUM(len1, len2);
+	if (length > SIZE_MAX) {
+	mmap_failed:
+		c_special(fd1, file1, skip1, fd2, file2, skip2);
+		return;
+	}
 
-	if ((p1 = (u_char *)mmap(NULL,
-	    (size_t)length, PROT_READ, 0, fd1, skip1)) == (u_char *)-1)
-		err(ERR_EXIT, "%s", file1);
-	if ((p2 = (u_char *)mmap(NULL,
-	    (size_t)length, PROT_READ, 0, fd2, skip2)) == (u_char *)-1)
-		err(ERR_EXIT, "%s", file2);
+	if ((p1 = mmap(NULL, (size_t)length, PROT_READ,
+	    MAP_PRIVATE, fd1, skip1)) == MAP_FAILED)
+		goto mmap_failed;
+	if ((p2 = mmap(NULL, (size_t)length, PROT_READ,
+	    MAP_PRIVATE, fd2, skip2)) == MAP_FAILED) {
+		munmap(p1, (size_t)length);
+		goto mmap_failed;
+	}
+	if (length) {
+		madvise(p1, length, MADV_SEQUENTIAL);
+		madvise(p2, length, MADV_SEQUENTIAL);
+	}
 
 	dfound = 0;
 	for (byte = line = 1; length--; ++p1, ++p2, ++byte) {
-		if ((ch = *p1) != *p2)
+		if ((ch = *p1) != *p2) {
 			if (lflag) {
 				dfound = 1;
-				(void)printf("%6qd %3o %3o\n", byte, ch, *p2);
+				(void)printf("%6lld %3o %3o\n", (long long)byte,
+				    ch, *p2);
 			} else
 				diffmsg(file1, file2, byte, line);
 				/* NOTREACHED */
+		}
 		if (ch == '\n')
 			++line;
 	}

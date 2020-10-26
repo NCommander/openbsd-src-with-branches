@@ -1,28 +1,42 @@
-#	$Id: Makefile,v 1.6 1994/12/22 12:29:47 cgd Exp $
+# $OpenBSD: Makefile,v 1.17 2017/06/28 13:37:56 brynet Exp $
+
+PROG=   file
+SRCS=   file.c magic-dump.c magic-load.c magic-test.c magic-common.c \
+	text.c xmalloc.c
+MAN=	file.1 magic.5
+
+LDADD=	-lutil
+DPADD=	${LIBUTIL}
+
+CDIAGFLAGS+= -Wno-long-long -Wall -W -Wnested-externs -Wformat=2
+CDIAGFLAGS+= -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations
+CDIAGFLAGS+= -Wwrite-strings -Wshadow -Wpointer-arith -Wsign-compare
+CDIAGFLAGS+= -Wundef -Wbad-function-cast -Winline -Wcast-align
 
 MAGIC=		/etc/magic
-MAGICOWN=	bin
+MAGICOWN=	root
 MAGICGRP=	bin
 MAGICMODE=	444
 
-PROG=		file
-SRCS=		file.c apprentice.c fsmagic.c softmagic.c ascmagic.c is_tar.c \
-		print.c compress.c
-CFLAGS+=	-DMAGIC='"$(MAGIC)"'
-MAN=		file.1 magic.5
+CLEANFILES+=	magic post-magic
 
-CLEANFILES+=	magic
-all:		file magic
+MAG1=		$(.CURDIR)/magdir/Header \
+		$(.CURDIR)/magdir/Localstuff \
+		$(.CURDIR)/magdir/OpenBSD
+MAGFILES=	$(.CURDIR)/magdir/[0-9a-z]*
 
-MAGFILES=	$(.CURDIR)/magdir/Header\
-		$(.CURDIR)/magdir/Localstuff\
-		$(.CURDIR)/magdir/NetBSD\
-		$(.CURDIR)/magdir/[a-z]*
-magic:		$(MAGFILES)
-	cat $(MAGFILES) > $(.TARGET)
+post-magic: $(MAGFILES)
+	for i in ${.ALLSRC:N*.orig}; do \
+		echo $$i; \
+	done|sort|xargs -n 1024 cat >$(.TARGET)
+
+magic: $(MAG1) post-magic
+	cat ${MAG1} post-magic >$(.TARGET)
 
 afterinstall:
-	install ${COPY} -o $(MAGICOWN) -g $(MAGICGRP) -m $(MAGICMODE) magic \
-		$(DESTDIR)$(MAGIC)
+	${INSTALL} ${INSTALL_COPY} -o $(MAGICOWN) -g $(MAGICGRP) \
+		-m $(MAGICMODE) magic $(DESTDIR)$(MAGIC)
+
+all: file magic
 
 .include <bsd.prog.mk>

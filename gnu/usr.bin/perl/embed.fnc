@@ -2425,7 +2425,7 @@ Es	|void	|reginsert	|NN RExC_state_t *pRExC_state \
 				|const U8 op				    \
 				|const regnode_offset operand		    \
 				|const U32 depth
-Es	|bool	|regtail	|NN RExC_state_t * pRExC_state		    \
+EsR	|bool	|regtail	|NN RExC_state_t * pRExC_state		    \
 				|NN const regnode_offset p		    \
 				|NN const regnode_offset val		    \
 				|const U32 depth
@@ -2480,7 +2480,8 @@ Es	|SSize_t|study_chunk	|NN RExC_state_t *pRExC_state \
 				|NULLOK struct scan_data_t *data \
                                 |I32 stopparen|U32 recursed_depth \
 				|NULLOK regnode_ssc *and_withp \
-				|U32 flags|U32 depth
+				|U32 flags|U32 depth|bool was_mutate_ok
+Es	|void	|rck_elide_nothing|NN regnode *node
 EsR	|SV *	|get_ANYOFM_contents|NN const regnode * n
 EsRn	|U32	|add_data	|NN RExC_state_t* const pRExC_state \
 				|NN const char* const s|const U32 n
@@ -2559,7 +2560,7 @@ Es	|void	|dump_trie_interim_list|NN const struct _reg_trie_data *trie\
 Es	|void	|dump_trie_interim_table|NN const struct _reg_trie_data *trie\
 				|NULLOK HV* widecharmap|NN AV *revcharmap\
 				|U32 next_alloc|U32 depth
-Es	|bool	|regtail_study	|NN RExC_state_t *pRExC_state \
+EsR	|bool	|regtail_study	|NN RExC_state_t *pRExC_state \
 				|NN regnode_offset p|NN const regnode_offset val|U32 depth
 #  endif
 #endif

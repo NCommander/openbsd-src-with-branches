@@ -1,4 +1,4 @@
-/* conf_sap.c */
+/* $OpenBSD: conf_sap.c,v 1.13 2018/03/19 03:35:38 beck Exp $ */
 /* Written by Stephen Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -56,13 +56,17 @@
  *
  */
 
+#include <pthread.h>
 #include <stdio.h>
-#include <openssl/crypto.h>
-#include "cryptlib.h"
-#include <openssl/conf.h>
-#include <openssl/dso.h>
-#include <openssl/x509.h>
+
+#include <openssl/opensslconf.h>
+
 #include <openssl/asn1.h>
+#include <openssl/conf.h>
+#include <openssl/crypto.h>
+#include <openssl/err.h>
+#include <openssl/x509.h>
+
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #endif
@@ -72,13 +76,13 @@
  * unless this is overridden by calling OPENSSL_no_config()
  */
 
-static int openssl_configured = 0;
+static pthread_once_t openssl_configured = PTHREAD_ONCE_INIT;
 
-void OPENSSL_config(const char *config_name)
-	{
-	if (openssl_configured)
-		return;
+static const char *openssl_config_name;
 
+static void
+OPENSSL_config_internal(void)
+{
 	OPENSSL_load_builtin_modules();
 #ifndef OPENSSL_NO_ENGINE
 	/* Need to load ENGINEs */
@@ -86,26 +90,65 @@ void OPENSSL_config(const char *config_name)
 #endif
 	/* Add others here? */
 
-
 	ERR_clear_error();
-	if (CONF_modules_load_file(NULL, config_name,
-	CONF_MFLAGS_DEFAULT_SECTION|CONF_MFLAGS_IGNORE_MISSING_FILE) <= 0)
-		{
+	if (CONF_modules_load_file(NULL, openssl_config_name,
+	    CONF_MFLAGS_DEFAULT_SECTION|CONF_MFLAGS_IGNORE_MISSING_FILE) <= 0) {
 		BIO *bio_err;
 		ERR_load_crypto_strings();
-		if ((bio_err=BIO_new_fp(stderr, BIO_NOCLOSE)) != NULL)
-			{
-			BIO_printf(bio_err,"Auto configuration failed\n");
+		if ((bio_err = BIO_new_fp(stderr, BIO_NOCLOSE)) != NULL) {
+			BIO_printf(bio_err, "Auto configuration failed\n");
 			ERR_print_errors(bio_err);
 			BIO_free(bio_err);
-			}
-		exit(1);
 		}
+		exit(1);
+	}
 
 	return;
-	}
+}
 
-void OPENSSL_no_config()
-	{
-	openssl_configured = 1;
-	}
+int
+OpenSSL_config(const char *config_name)
+{
+	/* Don't override if NULL */
+	/*
+	 * Note - multiple threads calling this with *different* config names
+	 * is probably not advisable.  One thread will win, but you don't know
+	 * if it will be the same thread as wins the pthread_once.
+	 */
+	if (config_name != NULL)
+		openssl_config_name = config_name;
+
+	if (OPENSSL_init_crypto(0, NULL) == 0)
+		return 0;
+
+	if (pthread_once(&openssl_configured, OPENSSL_config_internal) != 0)
+		return 0;
+
+	return 1;
+}
+
+void
+OPENSSL_config(const char *config_name)
+{
+	(void) OpenSSL_config(config_name);
+}
+
+static void
+OPENSSL_no_config_internal(void)
+{
+}
+
+int
+OpenSSL_no_config(void)
+{
+	if (pthread_once(&openssl_configured, OPENSSL_no_config_internal) != 0)
+		return 0;
+
+	return 1;
+}
+
+void
+OPENSSL_no_config(void)
+{
+	(void) OpenSSL_no_config();
+}

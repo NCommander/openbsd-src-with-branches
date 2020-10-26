@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: clock.c,v 1.14 2020/05/12 15:13:18 kettenis Exp $ */
 /* $NetBSD: clock.c,v 1.2 2000/01/11 10:29:35 nisimura Exp $ */
 
 /*
@@ -49,25 +49,47 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 #include <sys/kernel.h>
+#include <sys/evcount.h>
+#include <sys/timetc.h>
 
+#include <machine/board.h>
 #include <machine/cpu.h>
 
 #include <dev/clock_subr.h>
 #include <luna88k/luna88k/clockvar.h>
 
-#if 0 /* aoyama */
-#define CLOCK_LEVEL 5
-#include <luna68k/luna68k/isr.h>
-#endif /* aoyama */
-
 struct device *clockdev;
 const struct clockfns *clockfns;
+struct evcount *clockevc;
 int clockinitted;
 
+extern todr_chip_handle_t todr_handle;
+struct todr_chip_handle rtc_todr;
+
+int
+rtc_gettime(struct todr_chip_handle *handle, struct timeval *tv)
+{
+	struct clock_ymdhms dt;
+
+	(*clockfns->cf_get)(clockdev, tv->tv_sec, &dt);
+	tv->tv_sec = clock_ymdhms_to_secs(&dt);
+	tv->tv_usec = 0;
+	return 0;
+}
+
+int
+rtc_settime(struct todr_chip_handle *handle, struct timeval *tv)
+{
+	struct clock_ymdhms dt;
+
+	clock_secs_to_ymdhms(tv->tv_sec, &dt);
+	(*clockfns->cf_set)(clockdev, &dt);
+	return 0;
+}
+
 void
-clockattach(dev, fns)
-	struct device *dev;
-	const struct clockfns *fns;
+clockattach(struct device *dev, const struct clockfns *fns,
+	struct evcount *evc)
 {
 	/*
 	 * Just bookkeeping.
@@ -76,22 +98,24 @@ clockattach(dev, fns)
 		panic("clockattach: multiple clocks");
 	clockdev = dev;
 	clockfns = fns;
+	clockevc = evc;
 }
 
 /*
  * Machine-dependent clock routines.
- *
- * Startrtclock restarts the real-time clock, which provides
- * hardclock interrupts to kern_clock.c.
- *
- * Inittodr initializes the time of day hardware which provides
- * date functions.  Its primary function is to use some file
- * system information in case the hardare clock lost state.
- *
- * Resettodr restores the time of day hardware after a time change.
  */
 
-int clock_enable;		/* XXX to be removed XXX */
+u_int	clock_get_tc(struct timecounter *);
+
+struct timecounter clock_tc = {
+	.tc_get_timecount = clock_get_tc,
+	.tc_counter_mask = 0xffffffff,
+	.tc_frequency = 0, /* will be filled in */
+	.tc_name = "clock",
+	.tc_quality = 0,
+	.tc_priv = NULL,
+	.tc_user = 0,
+};
 
 /*
  * Start the real-time and statistics clocks. Leave stathz 0 since there
@@ -100,32 +124,20 @@ int clock_enable;		/* XXX to be removed XXX */
 void
 cpu_initclocks()
 {
-	int s;
 
+#ifdef DIAGNOSTIC
 	if (clockfns == NULL)
 		panic("cpu_initclocks: no clock attached");
+#endif
 
 	tick = 1000000 / hz;	/* number of microseconds between interrupts */
-	tickfix = 1000000 - (hz * tick);
-	if (tickfix) {
-		int ftp;
+	clock_tc.tc_frequency = hz;
+	tc_init(&clock_tc);
+	clockinitted = 1;
 
-		ftp = min(ffs(tickfix), ffs(hz));
-		tickfix >>= (ftp - 1);
-		tickfixinterval = hz >> (ftp - 1);
-        }
-	/*
-	 * Get the clock started.
-	 */
-	s = splhigh();
-	/*
-	 * XXX 
-	 * I guess it's necessary to program clock source with 
-	 * approprivate mode/value.
-	 * XXX
-	 */
-	clock_enable = 1;
-	splx(s);
+	rtc_todr.todr_gettime = rtc_gettime;
+	rtc_todr.todr_settime = rtc_settime;
+	todr_handle = &rtc_todr;
 }
 
 /*
@@ -134,85 +146,32 @@ cpu_initclocks()
  * but that would be a drag.
  */
 void
-setstatclockrate(newhz)
-	int newhz;
+setstatclockrate(int newhz)
 {
 	/* nothing we can do */
 }
 
 /*
- * Initialze the time of day register, based on the time base which is, e.g.
- * from a filesystem.  Base provides the time to within six months,
- * and the time of year clock (if any) provides the rest.
+ * Clock interrupt routine
  */
-void
-inittodr(base)
-	time_t base;
+int
+clockintr(void *eframe)
 {
-	struct clock_ymdhms dt;
-	time_t deltat;
-	int badbase;
+	struct cpu_info *ci = curcpu();
 
-	if (base < 5*SECYR) {
-		printf("WARNING: preposterous time in file system");
-		/* read the system clock anyway */
-		base = 6*SECYR + 186*SECDAY + SECDAY/2;
-		badbase = 1;
-	} else
-		badbase = 0;
+#ifdef MULTIPROCESSOR
+	if (CPU_IS_PRIMARY(ci))
+#endif
+		clockevc->ec_count++;
 
-	(*clockfns->cf_get)(clockdev, base, &dt);
-	clockinitted = 1;
-	/* simple sanity checks */
-	if (dt.dt_year < 1970 || dt.dt_mon < 1 || dt.dt_mon > 12
-		|| dt.dt_day < 1 || dt.dt_day > 31
-		|| dt.dt_hour > 23 || dt.dt_min > 59 || dt.dt_sec > 59) {
-		/*
-		 * Believe the time in the file system for lack of
-		 * anything better, resetting the TODR.
-		 */
-		time.tv_sec = base;
-		if (!badbase) {
-			printf("WARNING: preposterous clock chip time");
-			resettodr();
-		}
-		goto bad;
-	}
-	/* now have days since Jan 1, 1970; the rest is easy... */
-	time.tv_sec = clock_ymdhms_to_secs(&dt);
-
-	if (!badbase) {
-		/*
-		 * See if we gained/lost two or more days;
-		 * if so, assume something is amiss.
-		 */
-		deltat = time.tv_sec - base;
-		if (deltat < 0)
-			deltat = -deltat;
-		if (deltat < 2 * SECDAY)
-			return;
-		printf("WARNING: clock %s %d days",
-		    time.tv_sec < base ? "lost" : "gained",
-		       (int) (deltat / SECDAY));
-	}
-bad:
-	printf(" -- CHECK AND RESET THE DATE!\n");
+	*(volatile uint32_t *)(ci->ci_clock_ack) = ~0;
+	if (clockinitted)
+		hardclock(eframe);
+	return 1;
 }
 
-/*
- * Reset the TODR based on the time value; used when the TODR
- * has a preposterous value and also when the time is reset
- * by the stime system call.  Also called when the TODR goes past
- * TODRZERO + 100*(SECYEAR+2*SECDAY) (e.g. on Jan 2 just after midnight)
- * to wrap the TODR around.
- */
-void
-resettodr()
+u_int
+clock_get_tc(struct timecounter *tc)
 {
-	struct clock_ymdhms dt;
-
-	if (!clockinitted)
-		return;
-	clock_secs_to_ymdhms(time.tv_sec, &dt);
-	(*clockfns->cf_set)(clockdev, &dt);
+	return (u_int)clockevc->ec_count;
 }

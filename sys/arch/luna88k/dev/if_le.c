@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le.c,v 1.12 2000/08/28 22:03:01 miod Exp $	*/
+/*	$OpenBSD: if_le.c,v 1.11 2017/03/20 19:37:54 miod Exp $	*/
 /*	$NetBSD: if_le.c,v 1.33 1996/11/20 18:56:52 gwr Exp $	*/
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -39,8 +32,6 @@
 
 /* based on OpenBSD: sys/arch/sun3/dev/if_le.c */
 
-#include "bpfilter.h"
-
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>
@@ -50,16 +41,17 @@
 
 #include <net/if.h>
 
-#ifdef INET
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#endif
 
 #include <net/if_media.h>
 
 #include <machine/autoconf.h>
+#include <machine/board.h>
 #include <machine/cpu.h>
 
+#include <dev/ic/lancereg.h>
+#include <dev/ic/lancevar.h>
 #include <dev/ic/am7990reg.h>
 #include <dev/ic/am7990var.h>
 
@@ -70,9 +62,9 @@
  * The real stuff is in dev/ic/am7990reg.h
  */
 struct lereg1 {
-	volatile u_int16_t	ler1_rdp;	/* data port */
-	volatile unsigned	: 16 ;		/* LUNA-88K2 has a 16 bit gap */
-	volatile u_int16_t	ler1_rap;	/* register select port */
+	volatile uint16_t	ler1_rdp;	/* data port */
+	volatile unsigned	:16 ;		/* 16bit gap */
+	volatile uint16_t	ler1_rap;	/* register select port */
 };
 
 /*
@@ -85,21 +77,19 @@ struct	le_softc {
 	struct	lereg1 *sc_r1;		/* LANCE registers */
 };
 
-static int	le_match(struct device *, void *, void *);
-static void	le_attach(struct device *, struct device *, void *);
+int	le_match(struct device *, void *, void *);
+void	le_attach(struct device *, struct device *, void *);
 
-struct cfattach le_ca = {
+const struct cfattach le_ca = {
 	sizeof(struct le_softc), le_match, le_attach
 };
 
-hide void lewrcsr(struct am7990_softc *, u_int16_t, u_int16_t);
-hide u_int16_t lerdcsr(struct am7990_softc *, u_int16_t);
-hide void myetheraddr(u_int8_t *);
+void lewrcsr(struct lance_softc *, uint16_t, uint16_t);
+uint16_t lerdcsr(struct lance_softc *, uint16_t);
+void myetheraddr(uint8_t *);
 
-hide void
-lewrcsr(sc, port, val)
-	struct am7990_softc *sc;
-	u_int16_t port, val;
+void
+lewrcsr(struct lance_softc *sc, uint16_t port, uint16_t val)
 {
 	register struct lereg1 *ler1 = ((struct le_softc *)sc)->sc_r1;
 
@@ -107,98 +97,123 @@ lewrcsr(sc, port, val)
 	ler1->ler1_rdp = val;
 }
 
-hide u_int16_t
-lerdcsr(sc, port)
-	struct am7990_softc *sc;
-	u_int16_t port;
+uint16_t
+lerdcsr(struct lance_softc *sc, uint16_t port)
 {
 	register struct lereg1 *ler1 = ((struct le_softc *)sc)->sc_r1;
-	u_int16_t val;
+	uint16_t val;
 
 	ler1->ler1_rap = port;
 	val = ler1->ler1_rdp;
 	return (val);
 }
 
-static int
-le_match(parent, cf, aux)
-        struct device *parent;
-        void *cf, *aux;
+int
+le_match(struct device *parent, void *cf, void *aux)
 {
-        struct mainbus_attach_args *ma = aux;
+	struct mainbus_attach_args *ma = aux;
 
-        if (strcmp(ma->ma_name, le_cd.cd_name))
-                return (0);
+	if (strcmp(ma->ma_name, le_cd.cd_name))
+		return (0);
 
-        return (1);
+	return (1);
 }
 
 void
-le_attach(parent, self, aux)
-        struct device *parent, *self;
-        void *aux;
+le_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct le_softc *lesc = (struct le_softc *)self;
-	struct am7990_softc *sc = &lesc->sc_am7990;
-        struct mainbus_attach_args *ma = aux;
+	struct lance_softc *sc = &lesc->sc_am7990.lsc;
+	struct mainbus_attach_args *ma = aux;
 
-        lesc->sc_r1 = (struct lereg1 *)ma->ma_addr;     /* LANCE */
+	lesc->sc_r1 = (struct lereg1 *)ma->ma_addr;	/* LANCE */
 
-        sc->sc_mem = (void *)0x71000000;                /* SRAM */
-        sc->sc_conf3 = LE_C3_BSWP;
-        sc->sc_addr = (u_long)sc->sc_mem & 0xffffff;
-        sc->sc_memsize = 64 * 1024;                     /* 64KB */
+	sc->sc_mem = (void *)(TRI_PORT_RAM + 0x10000);	/* SRAM */
+	sc->sc_conf3 = LE_C3_BSWP;
+	sc->sc_addr = (u_long)sc->sc_mem & 0xffffff;
+	sc->sc_memsize = 64 * 1024;			/* 64KB */
 
-        myetheraddr(sc->sc_arpcom.ac_enaddr);
+	myetheraddr(sc->sc_arpcom.ac_enaddr);
 
-	sc->sc_copytodesc = am7990_copytobuf_contig;
-	sc->sc_copyfromdesc = am7990_copyfrombuf_contig;
-	sc->sc_copytobuf = am7990_copytobuf_contig;
-	sc->sc_copyfrombuf = am7990_copyfrombuf_contig;
-	sc->sc_zerobuf = am7990_zerobuf_contig;
+	sc->sc_copytodesc = lance_copytobuf_contig;
+	sc->sc_copyfromdesc = lance_copyfrombuf_contig;
+	sc->sc_copytobuf = lance_copytobuf_contig;
+	sc->sc_copyfrombuf = lance_copyfrombuf_contig;
+	sc->sc_zerobuf = lance_zerobuf_contig;
 
 	sc->sc_rdcsr = lerdcsr;
 	sc->sc_wrcsr = lewrcsr;
 	sc->sc_hwreset = NULL;
 	sc->sc_hwinit = NULL;
 
-	am7990_config(sc);
+	am7990_config(&lesc->sc_am7990);
 
-        isrlink_autovec(am7990_intr, (void *)sc, ma->ma_ilvl, ISRPRI_NET);
+	isrlink_autovec(am7990_intr, (void *)sc, ma->ma_ilvl, ISRPRI_NET,
+	    self->dv_xname);
 }
 
 /*
- * Taken from NetBSD/luna68k
+ * Partially taken from NetBSD/luna68k
  * 
- * LUNA-88K2 (and LUNA-88K?) has 16Kbit NVSRAM on its ethercard, whose
- * contents are accessible 4bit-wise by ctl register operation.  The
- * register is mapped at 0xF1000008.
+ * LUNA-88K has FUSE ROM, which contains MAC address.  The FUSE ROM
+ * contents are stored in fuse_rom_data[] during cpu_startup(). 
+ * 
+ * LUNA-88K2 has 16Kbit NVSRAM on its ethercard, whose contents are
+ * accessible 4bit-wise by ctl register operation.  The register is
+ * mapped at 0xF1000008.
  */
 
-hide void
-myetheraddr(ether)
-        u_int8_t *ether;
+extern int machtype;
+extern char fuse_rom_data[];
+
+void
+myetheraddr(uint8_t *ether)
 {
-        unsigned i, loc;
-	volatile struct { u_int32_t ctl; } *ds1220;
+	unsigned i, loc;
+	volatile struct { uint32_t ctl; } *ds1220;
 
-	ds1220 = (void *)0xF1000008;
-	loc = 12;
-	for (i = 0; i < 6; i++) {
-		unsigned u, l, hex;
+	switch (machtype) {
+	case LUNA_88K:
+		/*
+		 * fuse_rom_data[] begins with "ENADDR=00000Axxxxxx"
+		 */
+		loc = 7;
+		for (i = 0; i < 6; i++) {
+			int u, l;
 
-		ds1220->ctl = (loc) << 16;
-		u = 0xf0 & (ds1220->ctl >> 12);
-		ds1220->ctl = (loc + 1) << 16;
-		l = 0x0f & (ds1220->ctl >> 16);
-		hex = (u < '9') ? l : l + 9;
+			u = fuse_rom_data[loc];
+			u = (u < 'A') ? u & 0xf : u - 'A' + 10;
+			l = fuse_rom_data[loc + 1];
+			l = (l < 'A') ? l & 0xf : l - 'A' + 10;
 
-		ds1220->ctl = (loc + 2) << 16;
-		u = 0xf0 & (ds1220->ctl >> 12);
-		ds1220->ctl = (loc + 3) << 16;
-		l = 0x0f & (ds1220->ctl >> 16);
+			ether[i] = l | (u << 4);
+			loc += 2;
+		}
+		break;
+	case LUNA_88K2: 
+		ds1220 = (void *)(LANCE_ADDR + 8);
+		loc = 12;
+		for (i = 0; i < 6; i++) {
+			unsigned u, l, hex;
 
-		ether[i] = ((u < '9') ? l : l + 9) | (hex << 4);
-		loc += 4;
+			ds1220->ctl = (loc) << 16;
+			u = 0xf0 & (ds1220->ctl >> 12);
+			ds1220->ctl = (loc + 1) << 16;
+			l = 0x0f & (ds1220->ctl >> 16);
+			hex = (u < '9') ? l : l + 9;
+
+			ds1220->ctl = (loc + 2) << 16;
+			u = 0xf0 & (ds1220->ctl >> 12);
+			ds1220->ctl = (loc + 3) << 16;
+			l = 0x0f & (ds1220->ctl >> 16);
+
+			ether[i] = ((u < '9') ? l : l + 9) | (hex << 4);
+			loc += 4;
+		}
+		break;
+	default:
+		ether[0] = 0x00; ether[1] = 0x00; ether[2] = 0x0a;
+		ether[3] = 0xDE; ether[4] = 0xAD; ether[5] = 0x00;
+		break;
 	}
 }

@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD: cms.c,v 1.6 2019/11/29 05:14:11 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,7 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include "config.h"
 
 #include <assert.h>
 #include <err.h>
@@ -37,17 +36,18 @@
  */
 unsigned char *
 cms_parse_validate(X509 **xp, const char *fn,
-	const char *oid, const unsigned char *dgst, size_t *rsz)
+    const char *oid, const unsigned char *dgst, size_t *rsz)
 {
-	const ASN1_OBJECT  *obj;
-	ASN1_OCTET_STRING **os = NULL;
-	BIO 		   *bio = NULL, *shamd;
-	CMS_ContentInfo    *cms;
-	char 		    buf[128], mdbuf[EVP_MAX_MD_SIZE];
-	int		    rc = 0, sz;
-	STACK_OF(X509)	   *certs = NULL;
-	EVP_MD		   *md;
-	unsigned char	   *res = NULL;
+	const ASN1_OBJECT	*obj;
+	ASN1_OCTET_STRING	**os = NULL;
+	BIO			*bio = NULL, *shamd;
+	CMS_ContentInfo		*cms;
+	FILE			*f;
+	char			 buf[128], mdbuf[EVP_MAX_MD_SIZE];
+	int			 rc = 0, sz;
+	STACK_OF(X509)		*certs = NULL;
+	EVP_MD			*md;
+	unsigned char		*res = NULL;
 
 	*rsz = 0;
 	*xp = NULL;
@@ -56,9 +56,13 @@ cms_parse_validate(X509 **xp, const char *fn,
 	 * This is usually fopen() failure, so let it pass through to
 	 * the handler, which will in turn ignore the entity.
 	 */
+	if ((f = fopen(fn, "rb")) == NULL) {
+		warn("%s", fn);
+		return NULL;
+	}
 
-	if ((bio = BIO_new_file(fn, "rb")) == NULL) {
-		cryptowarnx("%s: BIO_new_file", fn);
+	if ((bio = BIO_new_fp(f, BIO_CLOSE)) == NULL) {
+		cryptowarnx("%s: BIO_new_fp", fn);
 		return NULL;
 	}
 
@@ -123,11 +127,11 @@ cms_parse_validate(X509 **xp, const char *fn,
 
 	if ((size_t)sz >= sizeof(buf)) {
 		warnx("%s: RFC 6488 section 2.1.3.1: "
-			"eContentType: OID too long", fn);
+		    "eContentType: OID too long", fn);
 		goto out;
 	} else if (strcmp(buf, oid)) {
 		warnx("%s: RFC 6488 section 2.1.3.1: eContentType: "
-			"unknown OID: %s, want %s", fn, buf, oid);
+		    "unknown OID: %s, want %s", fn, buf, oid);
 		goto out;
 	}
 
@@ -139,8 +143,8 @@ cms_parse_validate(X509 **xp, const char *fn,
 
 	certs = CMS_get0_signers(cms);
 	if (certs == NULL || sk_X509_num(certs) != 1) {
-		warnx("%s: RFC 6488 section 2.1.4: eContent: want "
-			"1 signer, have %d", fn, sk_X509_num(certs));
+		warnx("%s: RFC 6488 section 2.1.4: eContent: "
+		    "want 1 signer, have %d", fn, sk_X509_num(certs));
 		goto out;
 	}
 	*xp = X509_dup(sk_X509_value(certs, 0));
@@ -149,7 +153,7 @@ cms_parse_validate(X509 **xp, const char *fn,
 
 	if ((os = CMS_get0_content(cms)) == NULL || *os == NULL) {
 		warnx("%s: RFC 6488 section 2.1.4: "
-			"eContent: zero-length content", fn);
+		    "eContent: zero-length content", fn);
 		goto out;
 	}
 
@@ -161,7 +165,7 @@ cms_parse_validate(X509 **xp, const char *fn,
 	 */
 
 	if ((res = malloc((*os)->length)) == NULL)
-		err(EXIT_FAILURE, NULL);
+		err(1, NULL);
 	memcpy(res, (*os)->data, (*os)->length);
 	*rsz = (*os)->length;
 

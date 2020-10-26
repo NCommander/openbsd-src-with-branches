@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_sock_1.c,v 1.4 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: socket1.c,v 1.5 2015/11/19 18:37:49 deraadt Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -60,9 +60,8 @@ pthread_attr_t attr;
 
 static int counter = 0;
 
-void *
-sock_connect(arg)
-	void *arg;
+static void *
+sock_connect(void *arg)
 {
 	char buf[1024];
 	int fd;
@@ -79,10 +78,10 @@ sock_connect(arg)
 	CHECKe(connect(fd, (struct sockaddr *) &a_sout, sizeof(a_sout)));
 	CHECKe(close(fd));
 
-	CHECKr(pthread_mutex_unlock(&mutex));
-
 	CHECKe(fd = socket(AF_INET, SOCK_STREAM, 0));
 	ASSERT(++counter == 3);
+
+	CHECKr(pthread_mutex_unlock(&mutex));
 	CHECKe(connect(fd, (struct sockaddr *) &a_sout, sizeof(a_sout)));
 
 	/* Ensure sock_read runs again */
@@ -90,11 +89,12 @@ sock_connect(arg)
 	sleep(1);
 
 	CHECKr(pthread_mutex_lock(&mutex));
+	memset(buf, 0, sizeof(buf));
 	CHECKe(read(fd, buf, 1024));
 
+	ASSERT(++counter == atoi(buf));
 	write(fd, "6", 1);
 
-	ASSERT(++counter == atoi(buf));
 	CHECKe(close(fd));
 	success++;
 	CHECKr(pthread_mutex_unlock(&mutex));
@@ -102,9 +102,8 @@ sock_connect(arg)
 	return(NULL);
 }
 
-void *
-sock_write(arg)
-	void *arg;
+static void *
+sock_write(void *arg)
 {
 	int fd = *(int *)arg;
 
@@ -112,9 +111,8 @@ sock_write(arg)
 	return(NULL);
 }
 
-void *
-sock_accept(arg)
-	void *arg;
+static void *
+sock_accept(void *arg)
 {
 	pthread_t thread;
 	struct sockaddr a_sin;
@@ -158,6 +156,7 @@ sock_accept(arg)
 
 	/* Setup a write thread */
 	CHECKr(pthread_create(&thread, &attr, sock_write, &fd));
+	memset(buf, 0, sizeof(buf));
 	CHECKe(read(fd, buf, 1024));
 
 	ASSERT(++counter == atoi(buf));
@@ -173,12 +172,12 @@ sock_accept(arg)
 }
 
 int
-main()
+main(int argc, char *argv[])
 {
 	pthread_t thread;
 
-	setbuf(stdout, NULL);
-	setbuf(stderr, NULL);
+	setvbuf(stdout, NULL, _IONBF, 0);
+	setvbuf(stderr, NULL, _IONBF, 0);
 
 	CHECKr(pthread_attr_init(&attr));
 #if 0

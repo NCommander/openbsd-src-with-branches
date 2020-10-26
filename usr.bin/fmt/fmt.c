@@ -1,473 +1,729 @@
-/*	$NetBSD: fmt.c,v 1.4 1995/09/01 01:29:41 jtc Exp $	*/
-
+/*	$OpenBSD: fmt.c,v 1.38 2017/02/20 15:48:00 schwarze Exp $	*/
 /*
- * Copyright (c) 1980, 1993
- *	The Regents of the University of California.  All rights reserved.
+ * This file is a derived work.
+ * The changes are covered by the following Copyright and license:
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * Copyright (c) 2015, 2016 Ingo Schwarze <schwarze@openbsd.org>
+ * Copyright (c) 2000 Paul Janzen <pjanzen@foatdi.net>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *
+ * The unchanged parts are covered by the following Copyright and license:
+ *
+ * Copyright (c) 1997 Gareth McCaughan. All rights reserved.
+ *
+ * Redistribution and use of this code, in source or binary forms,
+ * with or without modification, are permitted subject to the following
+ * conditions:
+ *
+ *  - Redistribution of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ *  - If you distribute modified source code it must also include
+ *    a notice saying that it has been modified, and giving a brief
+ *    description of what changes have been made.
+ *
+ * Disclaimer: I am not responsible for the results of using this code.
+ *             If it formats your hard disc, sends obscene messages to
+ *             your boss and kills your children then that's your problem
+ *             not mine. I give absolutely no warranty of any sort as to
+ *             what the program will do, and absolutely refuse to be held
+ *             liable for any consequences of your using it.
+ *             Thank you. Have a nice day.
+ *
+ *
+ * Brief overview of the changes made by OpenBSD:
+ * Added UTF-8 support (2016).
+ * Added pledge(2) support (2015).
+ * ANSI function syntax and KNF (2004).
+ * Added -w option (2000).
+ * Some minor changes can be seen in the public OpenBSD CVS repository.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
+/* Sensible version of fmt
+ *
+ * Syntax: fmt [ options ] [ goal [ max ] ] [ filename ... ]
+ *
+ * Since the documentation for the original fmt is so poor, here
+ * is an accurate description of what this one does. It's usually
+ * the same. The *mechanism* used may differ from that suggested
+ * here. Note that we are *not* entirely compatible with fmt,
+ * because fmt gets so many things wrong.
+ *
+ * 1. Tabs are expanded, assuming 8-space tab stops.
+ *    If the `-t <n>' option is given, we assume <n>-space
+ *    tab stops instead.
+ *    Trailing blanks are removed from all lines.
+ *    x\b == nothing, for any x other than \b.
+ *    Other control characters are simply stripped. This
+ *    includes \r.
+ * 2. Each line is split into leading whitespace and
+ *    everything else. Maximal consecutive sequences of
+ *    lines with the same leading whitespace are considered
+ *    to form paragraphs, except that a blank line is always
+ *    a paragraph to itself.
+ *    If the `-p' option is given then the first line of a
+ *    paragraph is permitted to have indentation different
+ *    from that of the other lines.
+ *    If the `-m' option is given then a line that looks
+ *    like a mail message header, if it is not immediately
+ *    preceded by a non-blank non-message-header line, is
+ *    taken to start a new paragraph, which also contains
+ *    any subsequent lines with non-empty leading whitespace.
+ *    Unless the `-n' option is given, lines beginning with
+ *    a . (dot) are not formatted.
+ * 3. The "everything else" is split into words; a word
+ *    includes its trailing whitespace, and a word at the
+ *    end of a line is deemed to be followed by a single
+ *    space, or two spaces if it ends with a sentence-end
+ *    character. (See the `-d' option for how to change that.)
+ *    If the `-s' option has been given, then a word's trailing
+ *    whitespace is replaced by what it would have had if it
+ *    had occurred at end of line.
+ * 4. Each paragraph is sent to standard output as follows.
+ *    We output the leading whitespace, and then enough words
+ *    to make the line length as near as possible to the goal
+ *    without exceeding the maximum. (If a single word would
+ *    exceed the maximum, we output that anyway.) Of course
+ *    the trailing whitespace of the last word is ignored.
+ *    We then emit a newline and start again if there are any
+ *    words left.
+ *    Note that for a blank line this translates as "We emit
+ *    a newline".
+ *    If the `-l <n>' option is given, then leading whitespace
+ *    is modified slightly: <n> spaces are replaced by a tab.
+ *    Indented paragraphs (see above under `-p') make matters
+ *    more complicated than this suggests. Actually every paragraph
+ *    has two `leading whitespace' values; the value for the first
+ *    line, and the value for the most recent line. (While processing
+ *    the first line, the two are equal. When `-p' has not been
+ *    given, they are always equal.) The leading whitespace
+ *    actually output is that of the first line (for the first
+ *    line of *output*) or that of the most recent line (for
+ *    all other lines of output).
+ *    When `-m' has been given, message header paragraphs are
+ *    taken as having first-leading-whitespace empty and
+ *    subsequent-leading-whitespace two spaces.
+ *
+ * Multiple input files are formatted one at a time, so that a file
+ * never ends in the middle of a line.
+ *
+ * There's an alternative mode of operation, invoked by giving
+ * the `-c' option. In that case we just center every line,
+ * and most of the other options are ignored. This should
+ * really be in a separate program, but we must stay compatible
+ * with old `fmt'.
+ *
+ * QUERY: Should `-m' also try to do the right thing with quoted text?
+ * QUERY: `-b' to treat backslashed whitespace as old `fmt' does?
+ * QUERY: Option meaning `never join lines'?
+ * QUERY: Option meaning `split in mid-word to avoid overlong lines'?
+ * (Those last two might not be useful, since we have `fold'.)
+ *
+ * Differences from old `fmt':
+ *
+ *   - We have many more options. Options that aren't understood
+ *     generate a lengthy usage message, rather than being
+ *     treated as filenames.
+ *   - Even with `-m', our handling of message headers is
+ *     significantly different. (And much better.)
+ *   - We don't treat `\ ' as non-word-breaking.
+ *   - Downward changes of indentation start new paragraphs
+ *     for us, as well as upward. (I think old `fmt' behaves
+ *     in the way it does in order to allow indented paragraphs,
+ *     but this is a broken way of making indented paragraphs
+ *     behave right.)
+ *   - Given the choice of going over or under |goal_length|
+ *     by the same amount, we go over; old `fmt' goes under.
+ *   - We treat `?' as ending a sentence, and not `:'. Old `fmt'
+ *     does the reverse.
+ *   - We return approved return codes. Old `fmt' returns
+ *     1 for some errors, and *the number of unopenable files*
+ *     when that was all that went wrong.
+ *   - We have fewer crashes and more helpful error messages.
+ *   - We don't turn spaces into tabs at starts of lines unless
+ *     specifically requested.
+ *   - New `fmt' is somewhat smaller and slightly faster than
+ *     old `fmt'.
+ *
+ * Bugs:
+ *
+ *   None known. There probably are some, though.
+ *
+ * Portability:
+ *
+ *   I believe this code to be pretty portable. It does require
+ *   that you have `getopt'. If you need to include "getopt.h"
+ *   for this (e.g., if your system didn't come with `getopt'
+ *   and you installed it yourself) then you should arrange for
+ *   NEED_getopt_h to be #defined.
+ *
+ *   Everything here should work OK even on nasty 16-bit
+ *   machines and nice 64-bit ones. However, it's only really
+ *   been tested on my FreeBSD machine. Your mileage may vary.
+ */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)fmt.c	8.1 (Berkeley) 7/20/93";
-#endif
-static char rcsid[] = "$NetBSD: fmt.c,v 1.4 1995/09/01 01:29:41 jtc Exp $";
-#endif /* not lint */
-
+#include <ctype.h>
+#include <err.h>
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <unistd.h>
+#include <wchar.h>
+#include <wctype.h>
 
-/*
- * fmt -- format the concatenation of input files or standard input
- * onto standard output.  Designed for use with Mail ~|
- *
- * Syntax : fmt [ goal [ max ] ] [ name ... ]
- * Authors: Kurt Shoens (UCB) 12/7/78;
- *          Liz Allen (UMCP) 2/24/83 [Addition of goal length concept].
+/* Something that, we hope, will never be a genuine line length,
+ * indentation etc.
  */
+#define SILLY ((size_t)-1)
 
-/* LIZ@UOM 6/18/85 -- Don't need LENGTH any more.
- * #define	LENGTH	72		Max line length in output
+/* I used to use |strtoul| for this, but (1) not all systems have it
+ * and (2) it's probably better to use |strtol| to detect negative
+ * numbers better.
+ * If |fussyp==0| then we don't complain about non-numbers
+ * (returning 0 instead), but we do complain about bad numbers.
  */
-#define	NOSTR	((char *) 0)	/* Null string pointer for lint */
-
-/* LIZ@UOM 6/18/85 --New variables goal_length and max_length */
-#define GOAL_LENGTH 65
-#define MAX_LENGTH 75
-int	goal_length;		/* Target or goal line length in output */
-int	max_length;		/* Max line length in output */
-int	pfx;			/* Current leading blank count */
-int	lineno;			/* Current input line */
-int	mark;			/* Last place we saw a head line */
-
-char	*headnames[] = {"To", "Subject", "Cc", 0};
-
-/*
- * Drive the whole formatter by managing input files.  Also,
- * cause initialization of the output stuff and flush it out
- * at the end.
- */
-
-main(argc, argv)
-	int argc;
-	char **argv;
+static size_t
+get_positive(const char *s, const char *err_mess, int fussyP)
 {
-	register FILE *fi;
-	register int errs = 0;
-	int number;		/* LIZ@UOM 6/18/85 */
+	char *t;
+	long result = strtol(s, &t, 0);
 
-	goal_length = GOAL_LENGTH;
-	max_length = MAX_LENGTH;
-	setout();
-	lineno = 1;
-	mark = -10;
-	/*
-	 * LIZ@UOM 6/18/85 -- Check for goal and max length arguments 
-	 */
-	if (argc > 1 && (1 == (sscanf(argv[1], "%d", &number)))) {
-		argv++;
-		argc--;
-		goal_length = number;
-		if (argc > 1 && (1 == (sscanf(argv[1], "%d", &number)))) {
-			argv++;
-			argc--;
-			max_length = number;
+	if (*t) {
+		if (fussyP)
+			goto Lose;
+		else
+			return 0;
+	}
+	if (result <= 0) {
+Lose:
+		errx(1, "%s", err_mess);
+	}
+
+	return (size_t) result;
+}
+
+/* Global variables */
+
+static int centerP = 0;				/* Try to center lines? */
+static size_t goal_length = 0;			/* Target length for output lines */
+static size_t max_length = 0;			/* Maximum length for output lines */
+static int coalesce_spaces_P = 0;		/* Coalesce multiple whitespace -> ' ' ? */
+static int allow_indented_paragraphs = 0;	/* Can first line have diff. ind.? */
+static int tab_width = 8;			/* Number of spaces per tab stop */
+static size_t output_tab_width = 0;		/* Ditto, when squashing leading spaces */
+static const char *sentence_enders = ".?!";	/* Double-space after these */
+static int grok_mail_headers = 0;		/* treat embedded mail headers magically? */
+static int format_troff = 0;			/* Format troff? */
+
+static int n_errors = 0;			/* Number of failed files. */
+static size_t x;				/* Horizontal position in output line */
+static size_t x0;				/* Ditto, ignoring leading whitespace */
+static size_t pending_spaces;			/* Spaces to add before next word */
+static int output_in_paragraph = 0;		/* Any of current para written out yet? */
+
+/* Prototypes */
+
+static void	process_named_file(const char *);
+static void	process_stream(FILE *, const char *);
+static size_t	indent_length(const char *);
+static int	might_be_header(const char *);
+static void	new_paragraph(size_t);
+static void	output_word(size_t, size_t, const char *, int, int, int);
+static void	output_indent(size_t);
+static void	center_stream(FILE *, const char *);
+static char	*get_line(FILE *);
+static void	*xreallocarray(void *, size_t, size_t);
+void		usage(void);
+
+#define ERRS(x) (x >= 127 ? 127 : ++x)
+
+/* Here is perhaps the right place to mention that this code is
+ * all in top-down order. Hence, |main| comes first.
+ */
+int
+main(int argc, char *argv[])
+{
+	int ch;			/* used for |getopt| processing */
+
+	(void)setlocale(LC_CTYPE, "");
+
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
+
+	/* 1. Grok parameters. */
+	while ((ch = getopt(argc, argv, "0123456789cd:hl:mnpst:w:")) != -1) {
+		switch (ch) {
+		case 'c':
+			centerP = 1;
+			break;
+		case 'd':
+			sentence_enders = optarg;
+			break;
+		case 'l':
+			output_tab_width
+				= get_positive(optarg, "output tab width must be positive", 1);
+			break;
+		case 'm':
+			grok_mail_headers = 1;
+			break;
+		case 'n':
+			format_troff = 1;
+			break;
+		case 'p':
+			allow_indented_paragraphs = 1;
+			break;
+		case 's':
+			coalesce_spaces_P = 1;
+			break;
+		case 't':
+			tab_width = get_positive(optarg, "tab width must be positive", 1);
+			break;
+		case 'w':
+			goal_length = get_positive(optarg, "width must be positive", 1);
+			max_length = goal_length;
+			break;
+		case '0': case '1': case '2': case '3': case '4': case '5':
+		case '6': case '7': case '8': case '9':
+			/* XXX  this is not a stylistically approved use of getopt() */
+			if (goal_length == 0) {
+				char *p;
+
+				p = argv[optind - 1];
+				if (p[0] == '-' && p[1] == ch && !p[2])
+					goal_length = get_positive(++p, "width must be nonzero", 1);
+				else
+					goal_length = get_positive(argv[optind]+1,
+							"width must be nonzero", 1);
+				max_length = goal_length;
+			}
+			break;
+		case 'h':
+		default:
+			usage();
+			/* NOT REACHED */
 		}
 	}
-	if (max_length <= goal_length) {
-		fprintf(stderr, "Max length must be greater than %s\n",
-			"goal length");
-		exit(1);
+
+	argc -= optind;
+	argv += optind;
+
+	/* [ goal [ maximum ] ] */
+	if (argc > 0 && goal_length == 0 &&
+	    (goal_length = get_positive(*argv,"goal length must be positive", 0)) != 0) {
+		--argc;
+		++argv;
+		if (argc > 0 && (max_length = get_positive(*argv,"max length must be positive", 0)) != 0) {
+			--argc;
+			++argv;
+			if (max_length < goal_length)
+				errx(1, "max length must be >= goal length");
+		}
 	}
-	if (argc < 2) {
-		fmt(stdin);
-		oflush();
-		exit(0);
+
+	if (goal_length == 0)
+		goal_length = 65;
+	if (max_length == 0)
+		max_length = goal_length+10;
+
+	/* 2. Process files. */
+
+	if (argc > 0) {
+		while (argc-- > 0)
+			process_named_file(*argv++);
+	} else {
+		if (pledge("stdio", NULL) == -1)
+			err(1, "pledge");
+		process_stream(stdin, "standard input");
 	}
-	while (--argc) {
-		if ((fi = fopen(*++argv, "r")) == NULL) {
-			perror(*argv);
-			errs++;
+
+	/* We're done. */
+	return n_errors;
+
+}
+
+/* Process a single file, given its name.
+ */
+static void
+process_named_file(const char *name)
+{
+	FILE *f;
+
+	if ((f = fopen(name, "r")) == NULL) {
+		warn("%s", name);
+		ERRS(n_errors);
+	} else {
+		process_stream(f, name);
+		fclose(f);
+	}
+}
+
+/* Types of mail header continuation lines:
+ */
+typedef enum {
+	hdr_ParagraphStart	= -1,
+	hdr_NonHeader		= 0,
+	hdr_Header		= 1,
+	hdr_Continuation	= 2
+} HdrType;
+
+/* Process a stream. This is where the real work happens,
+ * except that centering is handled separately.
+ */
+static void
+process_stream(FILE *stream, const char *name)
+{
+	const char *wordp, *cp;
+	wchar_t wc;
+	size_t np;
+	size_t last_indent = SILLY;	/* how many spaces in last indent? */
+	size_t para_line_number = 0;	/* how many lines already read in this para? */
+	size_t first_indent = SILLY;	/* indentation of line 0 of paragraph */
+	int wcl;			/* number of bytes in wide character */
+	int wcw;			/* display width of wide character */
+	int word_length;		/* number of bytes in word */
+	int word_width;			/* display width of word */
+	int space_width;		/* display width of space after word */
+	int line_width;			/* display width of line */
+	HdrType prev_header_type = hdr_ParagraphStart;
+	HdrType header_type;
+
+	/* ^-- header_type of previous line; -1 at para start */
+	const char *line;
+
+	if (centerP) {
+		center_stream(stream, name);
+		return;
+	}
+
+	while ((line = get_line(stream)) != NULL) {
+		np = indent_length(line);
+		header_type = hdr_NonHeader;
+		if (grok_mail_headers && prev_header_type != hdr_NonHeader) {
+			if (np == 0 && might_be_header(line))
+				header_type = hdr_Header;
+			else if (np > 0 && prev_header_type>hdr_NonHeader)
+				header_type = hdr_Continuation;
+		}
+
+		/* We need a new paragraph if and only if:
+		 *   this line is blank,
+		 *   OR it's a troff request,
+		 *   OR it's a mail header,
+		 *   OR it's not a mail header AND the last line was one,
+		 *   OR the indentation has changed
+		 *      AND the line isn't a mail header continuation line
+		 *      AND this isn't the second line of an indented paragraph.
+		 */
+		if (*line == '\0' || (*line == '.' && !format_troff) ||
+		    header_type == hdr_Header ||
+		    (header_type == hdr_NonHeader && prev_header_type > hdr_NonHeader) ||
+		    (np != last_indent && header_type != hdr_Continuation &&
+		    (!allow_indented_paragraphs || para_line_number != 1)) ) {
+			new_paragraph(np);
+			para_line_number = 0;
+			first_indent = np;
+			last_indent = np;
+
+			/* nroff compatibility */
+			if (*line == '.' && !format_troff) {
+				puts(line);
+				continue;
+			}
+			if (header_type == hdr_Header)
+				last_indent = 2;	/* for cont. lines */
+			if (*line == '\0') {
+				putchar('\n');
+				prev_header_type = hdr_ParagraphStart;
+				continue;
+			} else {
+				/* If this is an indented paragraph other than a mail header
+				 * continuation, set |last_indent|.
+				 */
+				if (np != last_indent && header_type != hdr_Continuation)
+					last_indent = np;
+			}
+			prev_header_type = header_type;
+		}
+
+		line_width = np;
+		for (wordp = line; *wordp != '\0'; wordp = cp) {
+			word_length = 0;
+			word_width = space_width = 0;
+			for (cp = wordp; *cp != '\0'; cp += wcl) {
+				wcl = mbtowc(&wc, cp, MB_CUR_MAX);
+				if (wcl == -1) {
+					(void)mbtowc(NULL, NULL, MB_CUR_MAX);
+					wc = L'?';
+					wcl = 1;
+					wcw = 1;
+				} else if (wc == L'\t')
+					wcw = (line_width / tab_width + 1) *
+					    tab_width - line_width;
+				else if ((wcw = wcwidth(wc)) == -1)
+					wcw = 1;
+				if (iswblank(wc) && wc != 0xa0) {
+					/* Skip whitespace at start of line. */
+					if (word_length == 0) {
+						wordp += wcl;
+						continue;
+					}
+					/* Count whitespace after word. */
+					space_width += wcw;
+				} else {
+					/* Detect end of word. */
+					if (space_width > 0)
+						break;
+					/* Measure word. */
+					word_length += wcl;
+					word_width += wcw;
+				}
+				line_width += wcw;
+			}
+
+			/* Send the word to the output machinery. */
+			output_word(first_indent, last_indent, wordp,
+			    word_length, word_width, space_width);
+		}
+		++para_line_number;
+	}
+
+	new_paragraph(0);
+	if (ferror(stream)) {
+		warn("%s", name);
+		ERRS(n_errors);
+	}
+}
+
+/* How long is the indent on this line?
+ */
+static size_t
+indent_length(const char *line)
+{
+	size_t n = 0;
+
+	for (;;) {
+		switch(*line++) {
+		case ' ':
+			++n;
 			continue;
+		case '\t':
+			n = (n / tab_width + 1) * tab_width;
+			continue;
+		default:
+			break;
 		}
-		fmt(fi);
-		fclose(fi);
+		break;
 	}
-	oflush();
-	exit(errs);
+	return n;
 }
 
-/*
- * Read up characters from the passed input file, forming lines,
- * doing ^H processing, expanding tabs, stripping trailing blanks,
- * and sending each line down for analysis.
+/* Might this line be a mail header?
+ * We deem a line to be a possible header if it matches the
+ * Perl regexp /^[A-Z][-A-Za-z0-9]*:\s/. This is *not* the same
+ * as in RFC whatever-number-it-is; we want to be gratuitously
+ * conservative to avoid mangling ordinary civilised text.
  */
-fmt(fi)
-	FILE *fi;
+static int
+might_be_header(const char *line)
 {
-	char linebuf[BUFSIZ], canonb[BUFSIZ];
-	register char *cp, *cp2;
-	register int c, col;
 
-	c = getc(fi);
-	while (c != EOF) {
-		/*
-		 * Collect a line, doing ^H processing.
-		 * Leave tabs for now.
-		 */
-		cp = linebuf;
-		while (c != '\n' && c != EOF && cp-linebuf < BUFSIZ-1) {
-			if (c == '\b') {
-				if (cp > linebuf)
-					cp--;
-				c = getc(fi);
-				continue;
-			}
-			if ((c < ' ' || c >= 0177) && c != '\t') {
-				c = getc(fi);
-				continue;
-			}
-			*cp++ = c;
-			c = getc(fi);
-		}
-		*cp = '\0';
-
-		/*
-		 * Toss anything remaining on the input line.
-		 */
-		while (c != '\n' && c != EOF)
-			c = getc(fi);
-		
-		/*
-		 * Expand tabs on the way to canonb.
-		 */
-		col = 0;
-		cp = linebuf;
-		cp2 = canonb;
-		while (c = *cp++) {
-			if (c != '\t') {
-				col++;
-				if (cp2-canonb < BUFSIZ-1)
-					*cp2++ = c;
-				continue;
-			}
-			do {
-				if (cp2-canonb < BUFSIZ-1)
-					*cp2++ = ' ';
-				col++;
-			} while ((col & 07) != 0);
-		}
-
-		/*
-		 * Swipe trailing blanks from the line.
-		 */
-		for (cp2--; cp2 >= canonb && *cp2 == ' '; cp2--)
-			;
-		*++cp2 = '\0';
-		prefix(canonb);
-		if (c != EOF)
-			c = getc(fi);
-	}
+	if (!isupper((unsigned char)*line++))
+		return 0;
+	while (isalnum((unsigned char)*line) || *line == '-')
+		++line;
+	return (*line == ':' && isspace((unsigned char)line[1]));
 }
 
-/*
- * Take a line devoid of tabs and other garbage and determine its
- * blank prefix.  If the indent changes, call for a linebreak.
- * If the input line is blank, echo the blank line on the output.
- * Finally, if the line minus the prefix is a mail header, try to keep
- * it on a line by itself.
+/* Begin a new paragraph with an indent of |indent| spaces.
  */
-prefix(line)
-	char line[];
+static void
+new_paragraph(size_t indent)
 {
-	register char *cp, **hp;
-	register int np, h;
 
-	if (strlen(line) == 0) {
-		oflush();
+	if (x0 > 0)
 		putchar('\n');
-		return;
-	}
-	for (cp = line; *cp == ' '; cp++)
-		;
-	np = cp - line;
+	x = indent;
+	x0 = 0;
+	pending_spaces = 0;
+	output_in_paragraph = 0;
+}
 
-	/*
-	 * The following horrible expression attempts to avoid linebreaks
-	 * when the indent changes due to a paragraph.
+/* Output spaces or tabs for leading indentation.
+ */
+static void
+output_indent(size_t n_spaces)
+{
+
+	if (n_spaces == 0)
+		return;
+	if (output_tab_width) {
+		while (n_spaces >= output_tab_width) {
+			putchar('\t');
+			n_spaces -= output_tab_width;
+		}
+	}
+	while (n_spaces-- > 0)
+		putchar(' ');
+}
+
+/* Output a single word.
+ * indent0 and indent1 are the indents to use on the first and subsequent
+ * lines of a paragraph. They'll often be the same, of course.
+ */
+static void
+output_word(size_t indent0, size_t indent1, const char *word,
+    int length, int width, int spaces)
+{
+	size_t new_x = x + pending_spaces + width;
+
+	/* If either |spaces==0| (at end of line) or |coalesce_spaces_P|
+	 * (squashing internal whitespace), then add just one space;
+	 * except that if the last character was a sentence-ender we
+	 * actually add two spaces.
 	 */
-	if (np != pfx && (np > pfx || abs(pfx-np) > 8))
-		oflush();
-	if (h = ishead(cp))
-		oflush(), mark = lineno;
-	if (lineno - mark < 3 && lineno - mark > 0)
-		for (hp = &headnames[0]; *hp != (char *) 0; hp++)
-			if (ispref(*hp, cp)) {
-				h = 1;
-				oflush();
-				break;
+	if (coalesce_spaces_P || spaces == 0)
+		spaces = strchr(sentence_enders, word[length-1]) ? 2 : 1;
+
+	if (x0 == 0)
+		output_indent(output_in_paragraph ? indent1 : indent0);
+	else if (new_x > max_length || x >= goal_length ||
+	    (new_x > goal_length && new_x-goal_length > goal_length-x)) {
+		putchar('\n');
+		output_indent(indent1);
+		x0 = 0;
+		x = indent1;
+	} else {
+		x0 += pending_spaces;
+		x += pending_spaces;
+		while (pending_spaces--)
+			putchar(' ');
+	}
+	x0 += width;
+	x += width;
+	while(length--)
+		putchar(*word++);
+	pending_spaces = spaces;
+	output_in_paragraph = 1;
+}
+
+/* Process a stream, but just center its lines rather than trying to
+ * format them neatly.
+ */
+static void
+center_stream(FILE *stream, const char *name)
+{
+	char *line, *cp;
+	wchar_t wc;
+	size_t l;	/* Display width of the line. */
+	int wcw;	/* Display width of one character. */
+	int wcl;	/* Length in bytes of one character. */
+
+	while ((line = get_line(stream)) != NULL) {
+		l = 0;
+		for (cp = line; *cp != '\0'; cp += wcl) {
+			if (*cp == '\t')
+				*cp = ' ';
+			if ((wcl = mbtowc(&wc, cp, MB_CUR_MAX)) == -1) {
+				(void)mbtowc(NULL, NULL, MB_CUR_MAX);
+				*cp = '?';
+				wcl = 1;
+				wcw = 1;
+			} else if ((wcw = wcwidth(wc)) == -1)
+				wcw = 1;
+			if (l == 0 && iswspace(wc))
+				line += wcl;
+			else
+				l += wcw;
+		}
+		while (l < goal_length) {
+			putchar(' ');
+			l += 2;
+		}
+		puts(line);
+	}
+
+	if (ferror(stream)) {
+		warn("%s", name);
+		ERRS(n_errors);
+	}
+}
+
+/* Get a single line from a stream.  Strip control
+ * characters and trailing whitespace, and handle backspaces.
+ * Return the address of the buffer containing the line.
+ * This can cope with arbitrarily long lines, and with lines
+ * without terminating \n.
+ * If there are no characters left or an error happens, we
+ * return NULL.
+ */
+static char *
+get_line(FILE *stream)
+{
+	int ch;
+	int troff = 0;
+	static char *buf = NULL;
+	static size_t length = 0;
+	size_t len = 0;
+
+	if (buf == NULL) {
+		length = 100;
+		buf = xreallocarray(NULL, length, 1);
+	}
+
+	while ((ch = getc(stream)) != '\n' && ch != EOF) {
+		if ((len == 0) && (ch == '.' && !format_troff))
+			troff = 1;
+		if (troff || ch == '\t' || !iscntrl(ch)) {
+			if (len >= length - 1) {
+				buf = xreallocarray(buf, length, 2);
+				length *= 2;
 			}
-	if (!h && (h = (*cp == '.')))
-		oflush();
-	pfx = np;
-	if (h)
-		pack(cp, strlen(cp));
-	else	split(cp);
-	if (h)
-		oflush();
-	lineno++;
-}
-
-/*
- * Split up the passed line into output "words" which are
- * maximal strings of non-blanks with the blank separation
- * attached at the end.  Pass these words along to the output
- * line packer.
- */
-split(line)
-	char line[];
-{
-	register char *cp, *cp2;
-	char word[BUFSIZ];
-	int wordl;		/* LIZ@UOM 6/18/85 */
-
-	cp = line;
-	while (*cp) {
-		cp2 = word;
-		wordl = 0;	/* LIZ@UOM 6/18/85 */
-
-		/*
-		 * Collect a 'word,' allowing it to contain escaped white
-		 * space. 
-		 */
-		while (*cp && *cp != ' ') {
-			if (*cp == '\\' && isspace(cp[1]))
-				*cp2++ = *cp++;
-			*cp2++ = *cp++;
-			wordl++;/* LIZ@UOM 6/18/85 */
+			buf[len++] = ch;
+		} else if (ch == '\b') {
+			if (len)
+				--len;
 		}
-
-		/*
-		 * Guarantee a space at end of line. Two spaces after end of
-		 * sentence punctuation. 
-		 */
-		if (*cp == '\0') {
-			*cp2++ = ' ';
-			if (index(".:!", cp[-1]))
-				*cp2++ = ' ';
-		}
-		while (*cp == ' ')
-			*cp2++ = *cp++;
-		*cp2 = '\0';
-		/*
-		 * LIZ@UOM 6/18/85 pack(word); 
-		 */
-		pack(word, wordl);
 	}
+	while (len > 0 && isspace((unsigned char)buf[len-1]))
+		--len;
+	buf[len] = '\0';
+	return (len > 0 || ch != EOF) ? buf : NULL;
 }
 
-/*
- * Output section.
- * Build up line images from the words passed in.  Prefix
- * each line with correct number of blanks.  The buffer "outbuf"
- * contains the current partial line image, including prefixed blanks.
- * "outp" points to the next available space therein.  When outp is NOSTR,
- * there ain't nothing in there yet.  At the bottom of this whole mess,
- * leading tabs are reinserted.
+/* (Re)allocate some memory, exiting with an error if we can't.
  */
-char	outbuf[BUFSIZ];			/* Sandbagged output line image */
-char	*outp;				/* Pointer in above */
-
-/*
- * Initialize the output section.
- */
-setout()
+static void *
+xreallocarray(void *ptr, size_t nmemb, size_t size)
 {
-	outp = NOSTR;
+	void *p;
+
+	p  = reallocarray(ptr, nmemb, size);
+	if (p == NULL)
+		errx(1, "out of memory");
+	return p;
 }
 
-/*
- * Pack a word onto the output line.  If this is the beginning of
- * the line, push on the appropriately-sized string of blanks first.
- * If the word won't fit on the current line, flush and begin a new
- * line.  If the word is too long to fit all by itself on a line,
- * just give it its own and hope for the best.
- *
- * LIZ@UOM 6/18/85 -- If the new word will fit in at less than the
- *	goal length, take it.  If not, then check to see if the line
- *	will be over the max length; if so put the word on the next
- *	line.  If not, check to see if the line will be closer to the
- *	goal length with or without the word and take it or put it on
- *	the next line accordingly.
- */
-
-/*
- * LIZ@UOM 6/18/85 -- pass in the length of the word as well
- * pack(word)
- *	char word[];
- */
-pack(word,wl)
-	char word[];
-	int wl;
+void
+usage(void)
 {
-	register char *cp;
-	register int s, t;
+	extern char *__progname;
 
-	if (outp == NOSTR)
-		leadin();
-	/*
-	 * LIZ@UOM 6/18/85 -- change condition to check goal_length; s is the
-	 * length of the line before the word is added; t is now the length
-	 * of the line after the word is added
-	 *	t = strlen(word);
-	 *	if (t+s <= LENGTH) 
-	 */
-	s = outp - outbuf;
-	t = wl + s;
-	if ((t <= goal_length) ||
-	    ((t <= max_length) && (t - goal_length <= goal_length - s))) {
-		/*
-		 * In like flint! 
-		 */
-		for (cp = word; *cp; *outp++ = *cp++);
-		return;
-	}
-	if (s > pfx) {
-		oflush();
-		leadin();
-	}
-	for (cp = word; *cp; *outp++ = *cp++);
-}
-
-/*
- * If there is anything on the current output line, send it on
- * its way.  Set outp to NOSTR to indicate the absence of the current
- * line prefix.
- */
-oflush()
-{
-	if (outp == NOSTR)
-		return;
-	*outp = '\0';
-	tabulate(outbuf);
-	outp = NOSTR;
-}
-
-/*
- * Take the passed line buffer, insert leading tabs where possible, and
- * output on standard output (finally).
- */
-tabulate(line)
-	char line[];
-{
-	register char *cp;
-	register int b, t;
-
-	/*
-	 * Toss trailing blanks in the output line.
-	 */
-	cp = line + strlen(line) - 1;
-	while (cp >= line && *cp == ' ')
-		cp--;
-	*++cp = '\0';
-	
-	/*
-	 * Count the leading blank space and tabulate.
-	 */
-	for (cp = line; *cp == ' '; cp++)
-		;
-	b = cp-line;
-	t = b >> 3;
-	b &= 07;
-	if (t > 0)
-		do
-			putc('\t', stdout);
-		while (--t);
-	if (b > 0)
-		do
-			putc(' ', stdout);
-		while (--b);
-	while (*cp)
-		putc(*cp++, stdout);
-	putc('\n', stdout);
-}
-
-/*
- * Initialize the output line with the appropriate number of
- * leading blanks.
- */
-leadin()
-{
-	register int b;
-	register char *cp;
-
-	for (b = 0, cp = outbuf; b < pfx; b++)
-		*cp++ = ' ';
-	outp = cp;
-}
-
-/*
- * Save a string in dynamic space.
- * This little goodie is needed for
- * a headline detector in head.c
- */
-char *
-savestr(str)
-	char str[];
-{
-	register char *top;
-
-	top = malloc(strlen(str) + 1);
-	if (top == NOSTR) {
-		fprintf(stderr, "fmt:  Ran out of memory\n");
-		exit(1);
-	}
-	strcpy(top, str);
-	return (top);
-}
-
-/*
- * Is s1 a prefix of s2??
- */
-ispref(s1, s2)
-	register char *s1, *s2;
-{
-
-	while (*s1++ == *s2)
-		;
-	return (*s1 == '\0');
+	fprintf(stderr,
+		"usage: %s [-cmnps] [-d chars] [-l number] [-t number]\n"
+		"\t[goal [maximum] | -width | -w width] [file ...]\n",
+			__progname);
+	exit (1);
 }

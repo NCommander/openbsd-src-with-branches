@@ -1,5 +1,4 @@
-/*	$NetBSD: wait3.c,v 1.4 1995/02/25 15:40:14 cgd Exp $	*/
-
+/*	$OpenBSD: wait3.c,v 1.5 2005/08/08 08:05:34 espie Exp $ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,24 +28,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)wait3.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: wait3.c,v 1.4 1995/02/25 15:40:14 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/types.h>
-#include <sys/time.h>
 #include <sys/wait.h>
-#include <sys/resource.h>
 
 pid_t
-wait3(istat, options, rup)
-	int *istat;
-	int options;
-	struct rusage *rup;
+wait3(int *istat, int options, struct rusage *rup)
 {
 	return (wait4(WAIT_ANY, istat, options, rup));
 }

@@ -13,18 +13,10 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_asinf.c,v 1.5 1995/05/12 04:57:25 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const float 
-#else
-static float 
-#endif
 one =  1.0000000000e+00, /* 0x3F800000 */
 huge =  1.000e+30,
 pio2_hi =  1.5707962513e+00, /* 0x3fc90fda */
@@ -42,12 +34,8 @@ qS2 =  2.0209457874e+00, /* 0x4001572d */
 qS3 = -6.8828397989e-01, /* 0xbf303361 */
 qS4 =  7.7038154006e-02; /* 0x3d9dc62e */
 
-#ifdef __STDC__
-	float __ieee754_asinf(float x)
-#else
-	float __ieee754_asinf(x)
-	float x;
-#endif
+float
+asinf(float x)
 {
 	float t,w,p,q,c,r,s;
 	int32_t hx,ix;
@@ -61,19 +49,19 @@ qS4 =  7.7038154006e-02; /* 0x3d9dc62e */
 	} else if (ix<0x3f000000) {	/* |x|<0.5 */
 	    if(ix<0x32000000) {		/* if |x| < 2**-27 */
 		if(huge+x>one) return x;/* return x with inexact if x!=0*/
-	    } else 
-		t = x*x;
-		p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
-		q = one+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
-		w = p/q;
-		return x+x*w;
+	    }
+	    t = x*x;
+	    p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
+	    q = one+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
+	    w = p/q;
+	    return x+x*w;
 	}
 	/* 1> |x|>= 0.5 */
 	w = one-fabsf(x);
 	t = w*(float)0.5;
 	p = t*(pS0+t*(pS1+t*(pS2+t*(pS3+t*(pS4+t*pS5)))));
 	q = one+t*(qS1+t*(qS2+t*(qS3+t*qS4)));
-	s = __ieee754_sqrtf(t);
+	s = sqrtf(t);
 	if(ix>=0x3F79999A) { 	/* if |x| > 0.975 */
 	    w = p/q;
 	    t = pio2_hi-((float)2.0*(s+s*w)-pio2_lo);
@@ -90,3 +78,4 @@ qS4 =  7.7038154006e-02; /* 0x3d9dc62e */
 	}    
 	if(hx>0) return t; else return -t;    
 }
+DEF_STD(asinf);

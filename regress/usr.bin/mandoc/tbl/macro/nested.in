@@ -1,3 +1,4 @@
+.\" $OpenBSD$
 .TH TBL-MACRO-NESTED 1 "December 16, 2014"
 .SH NAME
 tbl-macro-nested \- nested table

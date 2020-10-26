@@ -253,6 +253,15 @@
 #  define _LIBCPP_HAS_QUICK_EXIT
 #endif  // __NetBSD__
 
+#ifdef __OpenBSD__
+# include <sys/_endian.h>
+#  if _BYTE_ORDER == _LITTLE_ENDIAN
+#   define _LIBCPP_LITTLE_ENDIAN
+# else  // _BYTE_ORDER == _LITTLE_ENDIAN
+#   define _LIBCPP_BIG_ENDIAN
+# endif  // _BYTE_ORDER == _LITTLE_ENDIAN
+#endif  // __OpenBSD__
+
 #if defined(_WIN32)
 #  define _LIBCPP_WIN32API
 #  define _LIBCPP_LITTLE_ENDIAN
@@ -292,7 +301,7 @@
 #  endif
 #endif // __sun__
 
-#if defined(__CloudABI__)
+#if defined(__CloudABI__) || defined(__OpenBSD__)
    // Certain architectures provide arc4random(). Prefer using
    // arc4random() over /dev/{u,}random to make it possible to obtain
    // random data even when using sandboxing mechanisms such as chroots,
@@ -331,6 +340,9 @@
 #if __ISO_C_VISIBLE >= 2011 || __cplusplus >= 201103L
 #  if defined(__FreeBSD__)
 #    define _LIBCPP_HAS_QUICK_EXIT
+#    define _LIBCPP_HAS_C11_FEATURES
+#  elif defined(__OpenBSD__)
+#    define _LIBCPP_HAS_TIMESPEC_GET
 #    define _LIBCPP_HAS_C11_FEATURES
 #  elif defined(__Fuchsia__)
 #    define _LIBCPP_HAS_QUICK_EXIT
@@ -1164,7 +1176,8 @@ _LIBCPP_FUNC_VIS extern "C" void __sanitizer_annotate_contiguous_container(
       defined(__APPLE__) || \
       defined(__CloudABI__) || \
       defined(__sun__) || \
-      (defined(__MINGW32__) && __has_include(<pthread.h>))
+      (defined(__MINGW32__) && __has_include(<pthread.h>)) || \
+      defined(__OpenBSD__)
 #    define _LIBCPP_HAS_THREAD_API_PTHREAD
 #  elif defined(_LIBCPP_WIN32API)
 #    define _LIBCPP_HAS_THREAD_API_WIN32
@@ -1204,7 +1217,8 @@ _LIBCPP_FUNC_VIS extern "C" void __sanitizer_annotate_contiguous_container(
 #endif
 
 #if defined(__BIONIC__) || defined(__CloudABI__) ||                            \
-    defined(__Fuchsia__) || defined(_LIBCPP_HAS_MUSL_LIBC)
+    defined(__Fuchsia__) || defined(_LIBCPP_HAS_MUSL_LIBC) ||                  \
+    defined(__OpenBSD__)
 #define _LIBCPP_PROVIDES_DEFAULT_RUNE_TABLE
 #endif
 

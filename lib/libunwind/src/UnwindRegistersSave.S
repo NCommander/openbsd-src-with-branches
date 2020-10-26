@@ -557,146 +557,162 @@ DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
 
 #elif defined(__ppc__)
 
-;
-; extern int unw_getcontext(unw_context_t* thread_state)
-;
-; On entry:
-;  thread_state pointer is in r3
-;
+//
+// extern int unw_getcontext(unw_context_t* thread_state)
+//
+// On entry:
+//  thread_state pointer is in r3
+//
 DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
-  stw    r0,  8(r3)
-  mflr  r0
-  stw    r0,  0(r3)  ; store lr as ssr0
-  stw    r1, 12(r3)
-  stw    r2, 16(r3)
-  stw    r3, 20(r3)
-  stw    r4, 24(r3)
-  stw    r5, 28(r3)
-  stw    r6, 32(r3)
-  stw    r7, 36(r3)
-  stw    r8, 40(r3)
-  stw    r9, 44(r3)
-  stw     r10, 48(r3)
-  stw     r11, 52(r3)
-  stw     r12, 56(r3)
-  stw     r13, 60(r3)
-  stw     r14, 64(r3)
-  stw     r15, 68(r3)
-  stw     r16, 72(r3)
-  stw     r17, 76(r3)
-  stw     r18, 80(r3)
-  stw     r19, 84(r3)
-  stw     r20, 88(r3)
-  stw     r21, 92(r3)
-  stw     r22, 96(r3)
-  stw     r23,100(r3)
-  stw     r24,104(r3)
-  stw     r25,108(r3)
-  stw     r26,112(r3)
-  stw     r27,116(r3)
-  stw     r28,120(r3)
-  stw     r29,124(r3)
-  stw     r30,128(r3)
-  stw     r31,132(r3)
+  stw    %r0,  8(%r3)
+  mflr  %r0
+  stw    %r0,  0(%r3)  // store lr as ssr0
+  stw    %r1, 12(%r3)
+  stw    %r2, 16(%r3)
+  stw    %r3, 20(%r3)
+  stw    %r4, 24(%r3)
+  stw    %r5, 28(%r3)
+  stw    %r6, 32(%r3)
+  stw    %r7, 36(%r3)
+  stw    %r8, 40(%r3)
+  stw    %r9, 44(%r3)
+  stw     %r10, 48(%r3)
+  stw     %r11, 52(%r3)
+  stw     %r12, 56(%r3)
+  stw     %r13, 60(%r3)
+  stw     %r14, 64(%r3)
+  stw     %r15, 68(%r3)
+  stw     %r16, 72(%r3)
+  stw     %r17, 76(%r3)
+  stw     %r18, 80(%r3)
+  stw     %r19, 84(%r3)
+  stw     %r20, 88(%r3)
+  stw     %r21, 92(%r3)
+  stw     %r22, 96(%r3)
+  stw     %r23,100(%r3)
+  stw     %r24,104(%r3)
+  stw     %r25,108(%r3)
+  stw     %r26,112(%r3)
+  stw     %r27,116(%r3)
+  stw     %r28,120(%r3)
+  stw     %r29,124(%r3)
+  stw     %r30,128(%r3)
+  stw     %r31,132(%r3)
 
-  ; save VRSave register
-  mfspr  r0,256
-  stw    r0,156(r3)
-  ; save CR registers
-  mfcr  r0
-  stw    r0,136(r3)
-  ; save CTR register
-  mfctr  r0
-  stw    r0,148(r3)
+  // zero VRSave register; saveVectorRegisters() will save it
+  li     %r0,0
+  stw    %r0,156(%r3)
+  // save CR registers
+  mfcr  %r0
+  stw    %r0,136(%r3)
+  // save CTR register
+  mfctr  %r0
+  stw    %r0,148(%r3)
 
-  ; save float registers
-  stfd    f0, 160(r3)
-  stfd    f1, 168(r3)
-  stfd    f2, 176(r3)
-  stfd    f3, 184(r3)
-  stfd    f4, 192(r3)
-  stfd    f5, 200(r3)
-  stfd    f6, 208(r3)
-  stfd    f7, 216(r3)
-  stfd    f8, 224(r3)
-  stfd    f9, 232(r3)
-  stfd    f10,240(r3)
-  stfd    f11,248(r3)
-  stfd    f12,256(r3)
-  stfd    f13,264(r3)
-  stfd    f14,272(r3)
-  stfd    f15,280(r3)
-  stfd    f16,288(r3)
-  stfd    f17,296(r3)
-  stfd    f18,304(r3)
-  stfd    f19,312(r3)
-  stfd    f20,320(r3)
-  stfd    f21,328(r3)
-  stfd    f22,336(r3)
-  stfd    f23,344(r3)
-  stfd    f24,352(r3)
-  stfd    f25,360(r3)
-  stfd    f26,368(r3)
-  stfd    f27,376(r3)
-  stfd    f28,384(r3)
-  stfd    f29,392(r3)
-  stfd    f30,400(r3)
-  stfd    f31,408(r3)
+  // save float registers
+  stfd    %f0, 160(%r3)
+  stfd    %f1, 168(%r3)
+  stfd    %f2, 176(%r3)
+  stfd    %f3, 184(%r3)
+  stfd    %f4, 192(%r3)
+  stfd    %f5, 200(%r3)
+  stfd    %f6, 208(%r3)
+  stfd    %f7, 216(%r3)
+  stfd    %f8, 224(%r3)
+  stfd    %f9, 232(%r3)
+  stfd    %f10,240(%r3)
+  stfd    %f11,248(%r3)
+  stfd    %f12,256(%r3)
+  stfd    %f13,264(%r3)
+  stfd    %f14,272(%r3)
+  stfd    %f15,280(%r3)
+  stfd    %f16,288(%r3)
+  stfd    %f17,296(%r3)
+  stfd    %f18,304(%r3)
+  stfd    %f19,312(%r3)
+  stfd    %f20,320(%r3)
+  stfd    %f21,328(%r3)
+  stfd    %f22,336(%r3)
+  stfd    %f23,344(%r3)
+  stfd    %f24,352(%r3)
+  stfd    %f25,360(%r3)
+  stfd    %f26,368(%r3)
+  stfd    %f27,376(%r3)
+  stfd    %f28,384(%r3)
+  stfd    %f29,392(%r3)
+  stfd    %f30,400(%r3)
+  stfd    %f31,408(%r3)
 
-
-  ; save vector registers
-
-  subi  r4,r1,16
-  rlwinm  r4,r4,0,0,27  ; mask low 4-bits
-  ; r4 is now a 16-byte aligned pointer into the red zone
-
-#define SAVE_VECTOR_UNALIGNED(_vec, _offset) \
-  stvx  _vec,0,r4           @\
-  lwz    r5, 0(r4)          @\
-  stw    r5, _offset(r3)    @\
-  lwz    r5, 4(r4)          @\
-  stw    r5, _offset+4(r3)  @\
-  lwz    r5, 8(r4)          @\
-  stw    r5, _offset+8(r3)  @\
-  lwz    r5, 12(r4)         @\
-  stw    r5, _offset+12(r3)
-
-  SAVE_VECTOR_UNALIGNED( v0, 424+0x000)
-  SAVE_VECTOR_UNALIGNED( v1, 424+0x010)
-  SAVE_VECTOR_UNALIGNED( v2, 424+0x020)
-  SAVE_VECTOR_UNALIGNED( v3, 424+0x030)
-  SAVE_VECTOR_UNALIGNED( v4, 424+0x040)
-  SAVE_VECTOR_UNALIGNED( v5, 424+0x050)
-  SAVE_VECTOR_UNALIGNED( v6, 424+0x060)
-  SAVE_VECTOR_UNALIGNED( v7, 424+0x070)
-  SAVE_VECTOR_UNALIGNED( v8, 424+0x080)
-  SAVE_VECTOR_UNALIGNED( v9, 424+0x090)
-  SAVE_VECTOR_UNALIGNED(v10, 424+0x0A0)
-  SAVE_VECTOR_UNALIGNED(v11, 424+0x0B0)
-  SAVE_VECTOR_UNALIGNED(v12, 424+0x0C0)
-  SAVE_VECTOR_UNALIGNED(v13, 424+0x0D0)
-  SAVE_VECTOR_UNALIGNED(v14, 424+0x0E0)
-  SAVE_VECTOR_UNALIGNED(v15, 424+0x0F0)
-  SAVE_VECTOR_UNALIGNED(v16, 424+0x100)
-  SAVE_VECTOR_UNALIGNED(v17, 424+0x110)
-  SAVE_VECTOR_UNALIGNED(v18, 424+0x120)
-  SAVE_VECTOR_UNALIGNED(v19, 424+0x130)
-  SAVE_VECTOR_UNALIGNED(v20, 424+0x140)
-  SAVE_VECTOR_UNALIGNED(v21, 424+0x150)
-  SAVE_VECTOR_UNALIGNED(v22, 424+0x160)
-  SAVE_VECTOR_UNALIGNED(v23, 424+0x170)
-  SAVE_VECTOR_UNALIGNED(v24, 424+0x180)
-  SAVE_VECTOR_UNALIGNED(v25, 424+0x190)
-  SAVE_VECTOR_UNALIGNED(v26, 424+0x1A0)
-  SAVE_VECTOR_UNALIGNED(v27, 424+0x1B0)
-  SAVE_VECTOR_UNALIGNED(v28, 424+0x1C0)
-  SAVE_VECTOR_UNALIGNED(v29, 424+0x1D0)
-  SAVE_VECTOR_UNALIGNED(v30, 424+0x1E0)
-  SAVE_VECTOR_UNALIGNED(v31, 424+0x1F0)
-
-  li  r3, 0    ; return UNW_ESUCCESS
+  li  %r3, 0    // return UNW_ESUCCESS
   blr
 
+//
+// void libunwind::Registers_ppc::saveVectorRegisters() const
+//
+// On entry:
+//  thread_state pointer is in r3
+//
+DEFINE_LIBUNWIND_PRIVATE_FUNCTION(_ZNK9libunwind13Registers_ppc19saveVectorRegistersEv)
+  // return if we have already saved VRsave
+  lwz    %r0,156(%r3)
+  cmpwi  %r0,0
+  bnelr
+
+  stwu   %r1,-32(%r1)  // allocate a stack frame
+  addi   %r4,%r1,16
+  clrrwi %r4,%r4,4
+  // r4 is now a 16-byte aligned pointer
+
+  // save VRsave register
+  mfvrsave %r0
+  stw      %r0,156(%r3)
+
+#define SAVE_VECTOR_UNALIGNED(_vec, _offset) \
+  stvx  _vec,0,%r4           ;\
+  lwz    %r5, 0(%r4)          ;\
+  stw    %r5, _offset(%r3)    ;\
+  lwz    %r5, 4(%r4)          ;\
+  stw    %r5, _offset+4(%r3)  ;\
+  lwz    %r5, 8(%r4)          ;\
+  stw    %r5, _offset+8(%r3)  ;\
+  lwz    %r5, 12(%r4)         ;\
+  stw    %r5, _offset+12(%r3)
+
+  SAVE_VECTOR_UNALIGNED( %v0, 424+0x000)
+  SAVE_VECTOR_UNALIGNED( %v1, 424+0x010)
+  SAVE_VECTOR_UNALIGNED( %v2, 424+0x020)
+  SAVE_VECTOR_UNALIGNED( %v3, 424+0x030)
+  SAVE_VECTOR_UNALIGNED( %v4, 424+0x040)
+  SAVE_VECTOR_UNALIGNED( %v5, 424+0x050)
+  SAVE_VECTOR_UNALIGNED( %v6, 424+0x060)
+  SAVE_VECTOR_UNALIGNED( %v7, 424+0x070)
+  SAVE_VECTOR_UNALIGNED( %v8, 424+0x080)
+  SAVE_VECTOR_UNALIGNED( %v9, 424+0x090)
+  SAVE_VECTOR_UNALIGNED(%v10, 424+0x0A0)
+  SAVE_VECTOR_UNALIGNED(%v11, 424+0x0B0)
+  SAVE_VECTOR_UNALIGNED(%v12, 424+0x0C0)
+  SAVE_VECTOR_UNALIGNED(%v13, 424+0x0D0)
+  SAVE_VECTOR_UNALIGNED(%v14, 424+0x0E0)
+  SAVE_VECTOR_UNALIGNED(%v15, 424+0x0F0)
+  SAVE_VECTOR_UNALIGNED(%v16, 424+0x100)
+  SAVE_VECTOR_UNALIGNED(%v17, 424+0x110)
+  SAVE_VECTOR_UNALIGNED(%v18, 424+0x120)
+  SAVE_VECTOR_UNALIGNED(%v19, 424+0x130)
+  SAVE_VECTOR_UNALIGNED(%v20, 424+0x140)
+  SAVE_VECTOR_UNALIGNED(%v21, 424+0x150)
+  SAVE_VECTOR_UNALIGNED(%v22, 424+0x160)
+  SAVE_VECTOR_UNALIGNED(%v23, 424+0x170)
+  SAVE_VECTOR_UNALIGNED(%v24, 424+0x180)
+  SAVE_VECTOR_UNALIGNED(%v25, 424+0x190)
+  SAVE_VECTOR_UNALIGNED(%v26, 424+0x1A0)
+  SAVE_VECTOR_UNALIGNED(%v27, 424+0x1B0)
+  SAVE_VECTOR_UNALIGNED(%v28, 424+0x1C0)
+  SAVE_VECTOR_UNALIGNED(%v29, 424+0x1D0)
+  SAVE_VECTOR_UNALIGNED(%v30, 424+0x1E0)
+  SAVE_VECTOR_UNALIGNED(%v31, 424+0x1F0)
+
+  addi   %r1,%r1,32  // drop the stack frame
+  blr
 
 #elif defined(__arm64__) || defined(__aarch64__)
 
@@ -942,6 +958,58 @@ DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
   l.sw     128(r3), r9
   # zero epcr
   l.sw     132(r3), r0
+
+#elif defined(__sparc__) && defined(__arch64__)
+
+#
+# extern int unw_getcontext(unw_context_t* thread_state)
+#
+# On entry:
+#  thread_state pointer is in %o0
+#
+DEFINE_LIBUNWIND_FUNCTION(unw_getcontext)
+  stx  %g1, [%o0 + 0x08]
+  stx  %g2, [%o0 + 0x10]
+  stx  %g3, [%o0 + 0x18]
+  stx  %g4, [%o0 + 0x20]
+  stx  %g5, [%o0 + 0x28]
+  stx  %g6, [%o0 + 0x30]
+  stx  %g7, [%o0 + 0x38]
+  stx  %o0, [%o0 + 0x40]
+  stx  %o1, [%o0 + 0x48]
+  stx  %o2, [%o0 + 0x50]
+  stx  %o3, [%o0 + 0x58]
+  stx  %o4, [%o0 + 0x60]
+  stx  %o5, [%o0 + 0x68]
+  stx  %o6, [%o0 + 0x70]
+  stx  %o7, [%o0 + 0x78]
+  stx  %l0, [%o0 + 0x80]
+  stx  %l1, [%o0 + 0x88]
+  stx  %l2, [%o0 + 0x90]
+  stx  %l3, [%o0 + 0x98]
+  stx  %l4, [%o0 + 0xa0]
+  stx  %l5, [%o0 + 0xa8]
+  stx  %l6, [%o0 + 0xb0]
+  stx  %l7, [%o0 + 0xb8]
+  stx  %i0, [%o0 + 0xc0]
+  stx  %i1, [%o0 + 0xc8]
+  stx  %i2, [%o0 + 0xd0]
+  stx  %i3, [%o0 + 0xd8]
+  stx  %i4, [%o0 + 0xe0]
+  stx  %i5, [%o0 + 0xe8]
+  stx  %i6, [%o0 + 0xf0]
+  stx  %i7, [%o0 + 0xf8]
+
+  # save StackGhost cookie
+  add  %i7, %g0, %g4
+  save %sp, -176, %sp
+  # register window flush necessary even without StackGhost
+  flushw
+  restore
+  ldx  [%sp + 2047 + 0x78], %g5
+  xor  %g4, %g5, %g4
+  retl
+   stx %g4, [%o0 + 0x100]
 
 #elif defined(__sparc__)
 

@@ -1,3 +1,5 @@
+/*	$OpenBSD: unvis.c,v 1.13 2015/10/06 22:58:24 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,39 +29,28 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1989, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)unvis.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$Id: unvis.c,v 1.4 1994/12/20 15:54:03 jtc Exp $";
-#endif /* not lint */
-
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <err.h>
+#include <unistd.h>
 #include <vis.h>
 
-void process __P((FILE *fp, const char *filename));
+void process(FILE *fp, const char *filename);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	FILE *fp;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
-		switch((char)ch) {
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
+
+	while ((ch = getopt(argc, argv, "")) != -1)
+		switch(ch) {
 		case '?':
 		default:
-			(void) fprintf(stderr, "usage: unvis [file...]\n");
+			(void) fprintf(stderr, "usage: unvis [file ...]\n");
 			exit(1);
 		}
 	argc -= optind;
@@ -71,23 +58,26 @@ main(argc, argv)
 
 	if (*argv)
 		while (*argv) {
-			if ((fp=fopen(*argv, "r")) != NULL)
+			if ((fp=fopen(*argv, "r")) != NULL) {
 				process(fp, *argv);
-			else
+				fclose(fp);
+			} else
 				warn("%s", *argv);
 			argv++;
 		}
-	else
+	else {
+		if (pledge("stdio", NULL) == -1)
+			err(1, "pledge");
+
 		process(stdin, "<stdin>");
+	}
 	exit(0);
 }
 
 void
-process(fp, filename)
-	FILE *fp;
-	const char *filename;
+process(FILE *fp, const char *filename)
 {
-	register int offset = 0, c, ret;
+	int offset = 0, c, ret;
 	int state = 0;
 	char outc;
 

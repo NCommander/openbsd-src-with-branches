@@ -1,3 +1,4 @@
+/*	$OpenBSD: ctype.h,v 1.24 2014/05/26 01:49:36 guenther Exp $	*/
 /*	$NetBSD: ctype.h,v 1.14 1994/10/26 00:55:47 cgd Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,6 +39,7 @@
 
 #ifndef _CTYPE_H_
 #define _CTYPE_H_
+
 #include <sys/cdefs.h>
 
 #define	_U	0x01
@@ -53,56 +51,254 @@
 #define	_X	0x40
 #define	_B	0x80
 
+#if __POSIX_VISIBLE >= 200809
+#ifndef	_LOCALE_T_DEFINED_
+#define	_LOCALE_T_DEFINED_
+typedef void	*locale_t;
+#endif
+#endif
+
+__BEGIN_DECLS
+
 extern const char	*_ctype_;
 extern const short	*_tolower_tab_;
 extern const short	*_toupper_tab_;
 
-__BEGIN_DECLS
-extern int	isalnum __P ((int));
-extern int	isalpha __P ((int));
-extern int	iscntrl __P ((int));
-extern int	isdigit __P ((int));
-extern int	isgraph __P ((int));
-extern int	islower __P ((int));
-extern int	isprint __P ((int));
-extern int	ispunct __P ((int));
-extern int	isspace __P ((int));
-extern int	isupper __P ((int));
-extern int	isxdigit __P ((int));
-extern int	tolower __P ((int));
-extern int	toupper __P ((int));
+#if defined(__GNUC__) || defined(_ANSI_LIBRARY)
+int	isalnum(int);
+int	isalpha(int);
+int	iscntrl(int);
+int	isdigit(int);
+int	isgraph(int);
+int	islower(int);
+int	isprint(int);
+int	ispunct(int);
+int	isspace(int);
+int	isupper(int);
+int	isxdigit(int);
+int	tolower(int);
+int	toupper(int);
 
-#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
-extern int	isblank __P ((int));
-extern int	isascii __P ((int));
-extern int	toascii __P ((int));
-extern int	_tolower __P ((int));
-extern int	_toupper __P ((int));
+#if __BSD_VISIBLE || __ISO_C_VISIBLE >= 1999 || __POSIX_VISIBLE > 200112 \
+    || __XPG_VISIBLE > 600
+int	isblank(int);
 #endif
+
+#if __BSD_VISIBLE || __XPG_VISIBLE
+int	isascii(int);
+int	toascii(int);
+int	_tolower(int);
+int	_toupper(int);
+#endif /* __BSD_VISIBLE || __XPG_VISIBLE */
+
+#if __POSIX_VISIBLE >= 200809
+int	isalnum_l(int, locale_t);
+int	isalpha_l(int, locale_t);
+int	isblank_l(int, locale_t);
+int	iscntrl_l(int, locale_t);
+int	isdigit_l(int, locale_t);
+int	isgraph_l(int, locale_t);
+int	islower_l(int, locale_t);
+int	isprint_l(int, locale_t);
+int	ispunct_l(int, locale_t);
+int	isspace_l(int, locale_t);
+int	isupper_l(int, locale_t);
+int	isxdigit_l(int, locale_t);
+int	tolower_l(int, locale_t);
+int	toupper_l(int, locale_t);
+#endif
+
+#endif /* __GNUC__ || _ANSI_LIBRARY */
+
+#if !defined(_ANSI_LIBRARY) && !defined(__cplusplus)
+
+__only_inline int isalnum(int _c)
+{
+	return (_c == -1 ? 0 : ((_ctype_ + 1)[(unsigned char)_c] & (_U|_L|_N)));
+}
+
+__only_inline int isalpha(int _c)
+{
+	return (_c == -1 ? 0 : ((_ctype_ + 1)[(unsigned char)_c] & (_U|_L)));
+}
+
+__only_inline int iscntrl(int _c)
+{
+	return (_c == -1 ? 0 : ((_ctype_ + 1)[(unsigned char)_c] & _C));
+}
+
+__only_inline int isdigit(int _c)
+{
+	return (_c == -1 ? 0 : ((_ctype_ + 1)[(unsigned char)_c] & _N));
+}
+
+__only_inline int isgraph(int _c)
+{
+	return (_c == -1 ? 0 : ((_ctype_ + 1)[(unsigned char)_c] & (_P|_U|_L|_N)));
+}
+
+__only_inline int islower(int _c)
+{
+	return (_c == -1 ? 0 : ((_ctype_ + 1)[(unsigned char)_c] & _L));
+}
+
+__only_inline int isprint(int _c)
+{
+	return (_c == -1 ? 0 : ((_ctype_ + 1)[(unsigned char)_c] & (_P|_U|_L|_N|_B)));
+}
+
+__only_inline int ispunct(int _c)
+{
+	return (_c == -1 ? 0 : ((_ctype_ + 1)[(unsigned char)_c] & _P));
+}
+
+__only_inline int isspace(int _c)
+{
+	return (_c == -1 ? 0 : ((_ctype_ + 1)[(unsigned char)_c] & _S));
+}
+
+__only_inline int isupper(int _c)
+{
+	return (_c == -1 ? 0 : ((_ctype_ + 1)[(unsigned char)_c] & _U));
+}
+
+__only_inline int isxdigit(int _c)
+{
+	return (_c == -1 ? 0 : ((_ctype_ + 1)[(unsigned char)_c] & (_N|_X)));
+}
+
+__only_inline int tolower(int _c)
+{
+	if ((unsigned int)_c > 255)
+		return (_c);
+	return ((_tolower_tab_ + 1)[_c]);
+}
+
+__only_inline int toupper(int _c)
+{
+	if ((unsigned int)_c > 255)
+		return (_c);
+	return ((_toupper_tab_ + 1)[_c]);
+}
+
+#if __BSD_VISIBLE || __ISO_C_VISIBLE >= 1999 || __POSIX_VISIBLE > 200112 \
+    || __XPG_VISIBLE > 600
+__only_inline int isblank(int _c)
+{
+	return (_c == ' ' || _c == '\t');
+}
+#endif
+
+#if __BSD_VISIBLE || __XPG_VISIBLE
+__only_inline int isascii(int _c)
+{
+	return ((unsigned int)_c <= 0177);
+}
+
+__only_inline int toascii(int _c)
+{
+	return (_c & 0177);
+}
+
+__only_inline int _tolower(int _c)
+{
+	return (_c - 'A' + 'a');
+}
+
+__only_inline int _toupper(int _c)
+{
+	return (_c - 'a' + 'A');
+}
+#endif /* __BSD_VISIBLE || __XPG_VISIBLE */
+
+#if __POSIX_VISIBLE >= 200809
+__only_inline int
+isalnum_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return isalnum(_c);
+}
+
+__only_inline int
+isalpha_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return isalpha(_c);
+}
+
+__only_inline int
+isblank_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return isblank(_c);
+}
+
+__only_inline int
+iscntrl_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return iscntrl(_c);
+}
+
+__only_inline int
+isdigit_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return isdigit(_c);
+}
+
+__only_inline int
+isgraph_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return isgraph(_c);
+}
+
+__only_inline int
+islower_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return islower(_c);
+}
+
+__only_inline int
+isprint_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return isprint(_c);
+}
+
+__only_inline int
+ispunct_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return ispunct(_c);
+}
+
+__only_inline int
+isspace_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return isspace(_c);
+}
+
+__only_inline int
+isupper_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return isupper(_c);
+}
+
+__only_inline int
+isxdigit_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return isxdigit(_c);
+}
+
+__only_inline int
+tolower_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return tolower(_c);
+}
+
+__only_inline int
+toupper_l(int _c, locale_t _l __attribute__((__unused__)))
+{
+	return toupper(_c);
+}
+#endif /* __POSIX_VISIBLE >= 200809 */
+
+#endif /* !_ANSI_LIBRARY */
+
 __END_DECLS
-
-#define	isdigit(c)	((_ctype_ + 1)[c] & _N)
-#define	islower(c)	((_ctype_ + 1)[c] & _L)
-#define	isspace(c)	((_ctype_ + 1)[c] & _S)
-#define	ispunct(c)	((_ctype_ + 1)[c] & _P)
-#define	isupper(c)	((_ctype_ + 1)[c] & _U)
-#define	isalpha(c)	((_ctype_ + 1)[c] & (_U|_L))
-#define	isxdigit(c)	((_ctype_ + 1)[c] & (_N|_X))
-#define	isalnum(c)	((_ctype_ + 1)[c] & (_U|_L|_N))
-#define	isprint(c)	((_ctype_ + 1)[c] & (_P|_U|_L|_N|_B))
-#define	isgraph(c)	((_ctype_ + 1)[c] & (_P|_U|_L|_N))
-#define	iscntrl(c)	((_ctype_ + 1)[c] & _C)
-#define tolower(c)	((_tolower_tab_ + 1)[c])
-#define toupper(c)	((_toupper_tab_ + 1)[c])
-
-#if !defined(_ANSI_SOURCE) && !defined (_POSIX_SOURCE)
-#if notyet
-#define isblank(c)	((_ctype_ + 1)[c] & _B)
-#endif
-#define	isascii(c)	((unsigned)(c) <= 0177)
-#define	toascii(c)	((c) & 0177)
-#define _tolower(c)	((c) - 'A' + 'a')
-#define _toupper(c)	((c) - 'a' + 'A')
-#endif
 
 #endif /* !_CTYPE_H_ */

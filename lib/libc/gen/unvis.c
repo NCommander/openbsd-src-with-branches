@@ -1,5 +1,4 @@
-/*	$NetBSD: unvis.c,v 1.5 1995/02/25 17:18:31 cgd Exp $	*/
-
+/*	$OpenBSD: unvis.c,v 1.16 2015/07/20 01:52:28 millert Exp $ */
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,14 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)unvis.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: unvis.c,v 1.5 1995/02/25 17:18:31 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <ctype.h>
@@ -62,10 +49,7 @@ static char rcsid[] = "$NetBSD: unvis.c,v 1.5 1995/02/25 17:18:31 cgd Exp $";
  * unvis - decode characters previously encoded by vis
  */
 int
-unvis(cp, c, astate, flag)
-	char *cp;
-	char c;
-	int *astate, flag;
+unvis(char *cp, char c, int *astate, int flag)
 {
 
 	if (flag & UNVIS_END) {
@@ -89,7 +73,12 @@ unvis(cp, c, astate, flag)
 
 	case S_START:
 		switch(c) {
+		case '-':
+			*cp = 0;
+			*astate = S_GROUND;
+			return (0);
 		case '\\':
+		case '"':
 			*cp = c;
 			*astate = S_GROUND;
 			return (UNVIS_VALID);
@@ -99,7 +88,7 @@ unvis(cp, c, astate, flag)
 			*astate = S_OCTAL2;
 			return (0);
 		case 'M':
-			*cp = 0200;
+			*cp = (char) 0200;
 			*astate = S_META;
 			return (0);
 		case '^':
@@ -206,7 +195,7 @@ unvis(cp, c, astate, flag)
 		 * we were done, push back passed char
 		 */
 		return (UNVIS_VALIDPUSH);
-			
+
 	default:	
 		/* 
 		 * decoder in unknown state - (probably uninitialized) 
@@ -215,6 +204,7 @@ unvis(cp, c, astate, flag)
 		return (UNVIS_SYNBAD);
 	}
 }
+DEF_WEAK(unvis);
 
 /*
  * strunvis - decode src into dst 
@@ -224,15 +214,13 @@ unvis(cp, c, astate, flag)
  */
 
 int
-strunvis(dst, src)
-	register char *dst;
-	register const char *src;
+strunvis(char *dst, const char *src)
 {
-	register char c;
+	char c;
 	char *start = dst;
 	int state = 0;
 
-	while (c = *src++) {
+	while ((c = *src++)) {
 	again:
 		switch (unvis(dst, c, &state, 0)) {
 		case UNVIS_VALID:
@@ -245,6 +233,7 @@ strunvis(dst, src)
 		case UNVIS_NOCHAR:
 			break;
 		default:
+			*dst = '\0';
 			return (-1);
 		}
 	}
@@ -253,3 +242,45 @@ strunvis(dst, src)
 	*dst = '\0';
 	return (dst - start);
 }
+
+ssize_t
+strnunvis(char *dst, const char *src, size_t sz)
+{
+	char c, p;
+	char *start = dst, *end = dst + sz - 1;
+	int state = 0;
+
+	if (sz > 0)
+		*end = '\0';
+	while ((c = *src++)) {
+	again:
+		switch (unvis(&p, c, &state, 0)) {
+		case UNVIS_VALID:
+			if (dst < end)
+				*dst = p;
+			dst++;
+			break;
+		case UNVIS_VALIDPUSH:
+			if (dst < end)
+				*dst = p;
+			dst++;
+			goto again;
+		case 0:
+		case UNVIS_NOCHAR:
+			break;
+		default:
+			if (dst <= end)
+				*dst = '\0';
+			return (-1);
+		}
+	}
+	if (unvis(&p, c, &state, UNVIS_END) == UNVIS_VALID) {
+		if (dst < end)
+			*dst = p;
+		dst++;
+	}
+	if (dst <= end)
+		*dst = '\0';
+	return (dst - start);
+}
+

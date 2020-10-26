@@ -1,3 +1,4 @@
+/*	$OpenBSD: unix.c,v 1.31 2018/01/05 10:41:24 mpi Exp $	*/
 /*	$NetBSD: unix.c,v 1.13 1995/10/03 21:42:48 thorpej Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,108 +30,92 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "from: @(#)unix.c	8.1 (Berkeley) 6/6/93";
-#else
-static char *rcsid = "$NetBSD: unix.c,v 1.13 1995/10/03 21:42:48 thorpej Exp $";
-#endif
-#endif /* not lint */
-
 /*
  * Display protocol blocks in the unix domain.
  */
-#include <sys/param.h>
-#include <sys/protosw.h>
 #include <sys/socket.h>
-#include <sys/socketvar.h>
+#include <sys/protosw.h>
 #include <sys/mbuf.h>
 #include <sys/sysctl.h>
+#include <sys/time.h>
 #include <sys/un.h>
 #include <sys/unpcb.h>
-#define _KERNEL
-struct uio;
-struct proc;
-#include <sys/file.h>
+#include <sys/ucred.h>
 
 #include <netinet/in.h>
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <kvm.h>
 #include "netstat.h"
 
-static	void unixdomainpr __P((struct socket *, caddr_t));
-
-static struct	file *file, *fileNFILE;
-static int	nfiles;
-extern	kvm_t *kvmd;
-
-void
-unixpr(off)
-	u_long	off;
-{
-	register struct file *fp;
-	struct socket sock, *so = &sock;
-	char *filebuf;
-	struct protosw *unixsw = (struct protosw *)off;
-
-	filebuf = (char *)kvm_getfiles(kvmd, KERN_FILE, 0, &nfiles);
-	if (filebuf == 0) {
-		printf("Out of memory (file table).\n");
-		return;
-	}
-	file = (struct file *)(filebuf + sizeof(fp));
-	fileNFILE = file + nfiles;
-	for (fp = file; fp < fileNFILE; fp++) {
-		if (fp->f_count == 0 || fp->f_type != DTYPE_SOCKET)
-			continue;
-		if (kread((u_long)fp->f_data, (char *)so, sizeof (*so)))
-			continue;
-		/* kludge */
-		if (so->so_proto >= unixsw && so->so_proto <= unixsw + 2)
-			if (so->so_pcb)
-				unixdomainpr(so, fp->f_data);
-	}
-}
-
-static	char *socktype[] =
+static	const char *socktype[] =
     { "#0", "stream", "dgram", "raw", "rdm", "seqpacket" };
 
-static void
-unixdomainpr(so, soaddr)
-	register struct socket *so;
-	caddr_t soaddr;
+void
+unixdomainpr(struct kinfo_file *kf)
 {
-	struct unpcb unpcb, *unp = &unpcb;
-	struct mbuf mbuf, *m;
-	struct sockaddr_un *sa;
 	static int first = 1;
 
-	if (kread((u_long)so->so_pcb, (char *)unp, sizeof (*unp)))
-		return;
-	if (unp->unp_addr) {
-		m = &mbuf;
-		if (kread((u_long)unp->unp_addr, (char *)m, sizeof (*m)))
-			m = (struct mbuf *)0;
-		sa = (struct sockaddr_un *)(m->m_dat);
-	} else
-		m = (struct mbuf *)0;
+	/* XXX should fix kinfo_file instead but not now */
+	if (kf->so_pcb == -1)
+		kf->so_pcb = 0;
+
 	if (first) {
 		printf("Active UNIX domain sockets\n");
-		printf(
-"%-8.8s %-6.6s %-6.6s %-6.6s %8.8s %8.8s %8.8s %8.8s Addr\n",
-		    "Address", "Type", "Recv-Q", "Send-Q",
-		    "Inode", "Conn", "Refs", "Nextref");
+		printf("%-*.*s %-6.6s %-6.6s %-6.6s %*.*s %*.*s %*.*s %*.*s Addr\n",
+		    PLEN, PLEN, "Address", "Type", "Recv-Q", "Send-Q",
+		    PLEN, PLEN, "Inode", PLEN, PLEN, "Conn",
+		    PLEN, PLEN, "Refs", PLEN, PLEN, "Nextref");
 		first = 0;
 	}
-	printf("%8x %-6.6s %6d %6d %8x %8x %8x %8x",
-	    soaddr, socktype[so->so_type], so->so_rcv.sb_cc, so->so_snd.sb_cc,
-	    unp->unp_vnode, unp->unp_conn,
-	    unp->unp_refs, unp->unp_nextref);
-	if (m)
-		printf(" %.*s",
-		    m->m_len - (int)(sizeof(*sa) - sizeof(sa->sun_path)),
-		    sa->sun_path);
+
+	printf("%#*llx%s %-6.6s %6llu %6llu %#*llx%s %#*llx%s %#*llx%s %#*llx%s",
+	    FAKE_PTR(kf->so_pcb), socktype[kf->so_type],
+	    kf->so_rcv_cc, kf->so_snd_cc,
+	    FAKE_PTR(kf->v_un),
+	    FAKE_PTR(kf->unp_conn),
+	    FAKE_PTR(kf->unp_refs),
+	    FAKE_PTR(kf->unp_nextref));
+	if (kf->unp_path[0] != '\0')
+		printf(" %.*s", KI_UNPPATHLEN, kf->unp_path);
 	putchar('\n');
+}
+
+/*
+ * Dump the contents of a UNIX PCB
+ */
+void
+unpcb_dump(u_long off)
+{
+	struct unpcb unp;
+
+	if (off == 0)
+		return;
+	kread(off, &unp, sizeof(unp));
+
+	if (vflag)
+		socket_dump((u_long)unp.unp_socket);
+
+#define	p(fmt, v, sep) printf(#v " " fmt sep, unp.v);
+#define	pll(fmt, v, sep) printf(#v " " fmt sep, (long long) unp.v);
+#define	pull(fmt, v, sep) printf(#v " " fmt sep, (unsigned long long) unp.v);
+#define	pp(fmt, v, sep) printf(#v " " fmt sep, unp.v);
+	printf("unpcb %#lx\n ", off);
+	pp("%p", unp_socket, "\n ");
+	pp("%p", unp_vnode, ", ");
+	pull("%llu", unp_ino, "\n ");
+	pp("%p", unp_conn, ", ");
+	printf("unp_refs %p, ", SLIST_FIRST(&unp.unp_refs));
+	printf("unp_nextref %p\n ", SLIST_NEXT(&unp, unp_nextref));
+	pp("%p", unp_addr, "\n ");
+	p("%#.8x", unp_flags, "\n ");
+	p("%u", unp_connid.uid, ", ");
+	p("%u", unp_connid.gid, ", ");
+	p("%d", unp_connid.pid, "\n ");
+	pll("%lld", unp_ctime.tv_sec, ", ");
+	p("%ld", unp_ctime.tv_nsec, "\n");
+#undef p
+#undef pp
 }

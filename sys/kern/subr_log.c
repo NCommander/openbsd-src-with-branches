@@ -1,4 +1,5 @@
-/*	$NetBSD: subr_log.c,v 1.8 1994/10/30 21:47:47 cgd Exp $	*/
+/*	$OpenBSD: subr_log.c,v 1.67 2020/08/18 13:38:24 visa Exp $	*/
+/*	$NetBSD: subr_log.c,v 1.11 1996/03/30 22:24:44 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,8 +43,28 @@
 #include <sys/ioctl.h>
 #include <sys/msgbuf.h>
 #include <sys/file.h>
+#include <sys/tty.h>
+#include <sys/signalvar.h>
+#include <sys/syslog.h>
+#include <sys/poll.h>
+#include <sys/malloc.h>
+#include <sys/filedesc.h>
+#include <sys/socket.h>
+#include <sys/socketvar.h>
+#include <sys/fcntl.h>
+#include <sys/timeout.h>
+
+#ifdef KTRACE
+#include <sys/ktrace.h>
+#endif
+
+#include <sys/mount.h>
+#include <sys/syscallargs.h>
+
+#include <dev/cons.h>
 
 #define LOG_RDPRI	(PZERO + 1)
+#define LOG_TICK	50		/* log tick interval in msec */
 
 #define LOG_ASYNC	0x04
 #define LOG_RDWAIT	0x08
@@ -55,162 +72,308 @@
 struct logsoftc {
 	int	sc_state;		/* see above for possibilities */
 	struct	selinfo sc_selp;	/* process waiting on select call */
-	int	sc_pgid;		/* process/group for async I/O */
+	struct	sigio_ref sc_sigio;	/* async I/O registration */
+	int	sc_need_wakeup;		/* if set, wake up waiters */
+	struct timeout sc_tick;		/* wakeup poll timeout */
 } logsoftc;
 
 int	log_open;			/* also used in log() */
+int	msgbufmapped;			/* is the message buffer mapped */
+struct	msgbuf *msgbufp;		/* the mapped buffer, itself. */
+struct	msgbuf *consbufp;		/* console message buffer. */
+struct	file *syslogf;
 
-/*ARGSUSED*/
-int
-logopen(dev, flags, mode, p)
-	dev_t dev;
-	int flags, mode;
-	struct proc *p;
+void filt_logrdetach(struct knote *kn);
+int filt_logread(struct knote *kn, long hint);
+
+const struct filterops logread_filtops = {
+	.f_flags	= FILTEROP_ISFD,
+	.f_attach	= NULL,
+	.f_detach	= filt_logrdetach,
+	.f_event	= filt_logread,
+};
+
+int dosendsyslog(struct proc *, const char *, size_t, int, enum uio_seg);
+void logtick(void *);
+size_t msgbuf_getlen(struct msgbuf *);
+
+void
+initmsgbuf(caddr_t buf, size_t bufsize)
 {
-	register struct msgbuf *mbp = msgbufp;
+	struct msgbuf *mbp;
+	long new_bufs;
 
+	/* Sanity-check the given size. */
+	if (bufsize < sizeof(struct msgbuf))
+		return;
+
+	mbp = msgbufp = (struct msgbuf *)buf;
+
+	new_bufs = bufsize - offsetof(struct msgbuf, msg_bufc);
+	if ((mbp->msg_magic != MSG_MAGIC) || (mbp->msg_bufs != new_bufs) ||
+	    (mbp->msg_bufr < 0) || (mbp->msg_bufr >= mbp->msg_bufs) ||
+	    (mbp->msg_bufx < 0) || (mbp->msg_bufx >= mbp->msg_bufs)) {
+		/*
+		 * If the buffer magic number is wrong, has changed
+		 * size (which shouldn't happen often), or is
+		 * internally inconsistent, initialize it.
+		 */
+
+		memset(buf, 0, bufsize);
+		mbp->msg_magic = MSG_MAGIC;
+		mbp->msg_bufs = new_bufs;
+	}
+
+	/* Always start new buffer data on a new line. */
+	if (mbp->msg_bufx > 0 && mbp->msg_bufc[mbp->msg_bufx - 1] != '\n')
+		msgbuf_putchar(msgbufp, '\n');
+
+	/* mark it as ready for use. */
+	msgbufmapped = 1;
+}
+
+void
+initconsbuf(void)
+{
+	/* Set up a buffer to collect /dev/console output */
+	consbufp = malloc(CONSBUFSIZE, M_TTYS, M_WAITOK | M_ZERO);
+	consbufp->msg_magic = MSG_MAGIC;
+	consbufp->msg_bufs = CONSBUFSIZE - offsetof(struct msgbuf, msg_bufc);
+}
+
+void
+msgbuf_putchar(struct msgbuf *mbp, const char c)
+{
+	int s;
+
+	if (mbp->msg_magic != MSG_MAGIC)
+		/* Nothing we can do */
+		return;
+
+	s = splhigh();
+	mbp->msg_bufc[mbp->msg_bufx++] = c;
+	if (mbp->msg_bufx < 0 || mbp->msg_bufx >= mbp->msg_bufs)
+		mbp->msg_bufx = 0;
+	/* If the buffer is full, keep the most recent data. */
+	if (mbp->msg_bufr == mbp->msg_bufx) {
+		if (++mbp->msg_bufr >= mbp->msg_bufs)
+			mbp->msg_bufr = 0;
+		mbp->msg_bufd++;
+	}
+	splx(s);
+}
+
+size_t
+msgbuf_getlen(struct msgbuf *mbp)
+{
+	long len;
+	int s;
+
+	s = splhigh();
+	len = mbp->msg_bufx - mbp->msg_bufr;
+	if (len < 0)
+		len += mbp->msg_bufs;
+	splx(s);
+	return (len);
+}
+
+int
+logopen(dev_t dev, int flags, int mode, struct proc *p)
+{
 	if (log_open)
 		return (EBUSY);
 	log_open = 1;
-	logsoftc.sc_pgid = p->p_pid;		/* signal process only */
-	/*
-	 * Potential race here with putchar() but since putchar should be
-	 * called by autoconf, msg_magic should be initialized by the time
-	 * we get here.
-	 */
-	if (mbp->msg_magic != MSG_MAGIC) {
-		register int i;
-
-		mbp->msg_magic = MSG_MAGIC;
-		mbp->msg_bufx = mbp->msg_bufr = 0;
-		for (i=0; i < MSG_BSIZE; i++)
-			mbp->msg_bufc[i] = 0;
-	}
+	sigio_init(&logsoftc.sc_sigio);
+	timeout_set(&logsoftc.sc_tick, logtick, NULL);
+	timeout_add_msec(&logsoftc.sc_tick, LOG_TICK);
 	return (0);
 }
 
-/*ARGSUSED*/
 int
-logclose(dev, flag, mode, p)
-	dev_t dev;
-	int flag;
+logclose(dev_t dev, int flag, int mode, struct proc *p)
 {
+	struct file *fp;
 
+	fp = syslogf;
+	syslogf = NULL;
+	if (fp)
+		FRELE(fp, p);
 	log_open = 0;
+	timeout_del(&logsoftc.sc_tick);
 	logsoftc.sc_state = 0;
+	sigio_free(&logsoftc.sc_sigio);
 	return (0);
 }
 
-/*ARGSUSED*/
 int
-logread(dev, uio, flag)
-	dev_t dev;
-	struct uio *uio;
-	int flag;
+logread(dev_t dev, struct uio *uio, int flag)
 {
-	register struct msgbuf *mbp = msgbufp;
-	register long l;
-	register int s;
-	int error = 0;
+	struct msgbuf *mbp = msgbufp;
+	size_t l;
+	int s, error = 0;
 
 	s = splhigh();
 	while (mbp->msg_bufr == mbp->msg_bufx) {
 		if (flag & IO_NDELAY) {
-			splx(s);
-			return (EWOULDBLOCK);
+			error = EWOULDBLOCK;
+			goto out;
 		}
 		logsoftc.sc_state |= LOG_RDWAIT;
-		if (error = tsleep((caddr_t)mbp, LOG_RDPRI | PCATCH,
-		    "klog", 0)) {
-			splx(s);
-			return (error);
-		}
+		error = tsleep_nsec(mbp, LOG_RDPRI | PCATCH, "klog", INFSLP);
+		if (error)
+			goto out;
 	}
-	splx(s);
 	logsoftc.sc_state &= ~LOG_RDWAIT;
 
+	if (mbp->msg_bufd > 0) {
+		char buf[64];
+
+		l = snprintf(buf, sizeof(buf),
+		    "<%d>klog: dropped %ld byte%s, message buffer full\n",
+		    LOG_KERN|LOG_WARNING, mbp->msg_bufd,
+                    mbp->msg_bufd == 1 ? "" : "s");
+		error = uiomove(buf, ulmin(l, sizeof(buf) - 1), uio);
+		if (error)
+			goto out;
+		mbp->msg_bufd = 0;
+	}
+
 	while (uio->uio_resid > 0) {
-		l = mbp->msg_bufx - mbp->msg_bufr;
-		if (l < 0)
-			l = MSG_BSIZE - mbp->msg_bufr;
-		l = min(l, uio->uio_resid);
+		if (mbp->msg_bufx >= mbp->msg_bufr)
+			l = mbp->msg_bufx - mbp->msg_bufr;
+		else
+			l = mbp->msg_bufs - mbp->msg_bufr;
+		l = ulmin(l, uio->uio_resid);
 		if (l == 0)
 			break;
-		error = uiomove((caddr_t)&mbp->msg_bufc[mbp->msg_bufr],
-			(int)l, uio);
+		error = uiomove(&mbp->msg_bufc[mbp->msg_bufr], l, uio);
 		if (error)
 			break;
 		mbp->msg_bufr += l;
-		if (mbp->msg_bufr < 0 || mbp->msg_bufr >= MSG_BSIZE)
+		if (mbp->msg_bufr < 0 || mbp->msg_bufr >= mbp->msg_bufs)
 			mbp->msg_bufr = 0;
 	}
+ out:
+	splx(s);
 	return (error);
 }
 
-/*ARGSUSED*/
 int
-logselect(dev, rw, p)
-	dev_t dev;
-	int rw;
-	struct proc *p;
+logpoll(dev_t dev, int events, struct proc *p)
 {
-	int s = splhigh();
+	int s, revents = 0;
 
-	switch (rw) {
-
-	case FREAD:
-		if (msgbufp->msg_bufr != msgbufp->msg_bufx) {
-			splx(s);
-			return (1);
-		}
-		selrecord(p, &logsoftc.sc_selp);
-		break;
+	s = splhigh();
+	if (events & (POLLIN | POLLRDNORM)) {
+		if (msgbufp->msg_bufr != msgbufp->msg_bufx)
+			revents |= events & (POLLIN | POLLRDNORM);
+		else
+			selrecord(p, &logsoftc.sc_selp);
 	}
 	splx(s);
+	return (revents);
+}
+
+int
+logkqfilter(dev_t dev, struct knote *kn)
+{
+	struct klist *klist;
+	int s;
+
+	switch (kn->kn_filter) {
+	case EVFILT_READ:
+		klist = &logsoftc.sc_selp.si_note;
+		kn->kn_fop = &logread_filtops;
+		break;
+	default:
+		return (EINVAL);
+	}
+
+	kn->kn_hook = (void *)msgbufp;
+
+	s = splhigh();
+	klist_insert(klist, kn);
+	splx(s);
+
 	return (0);
 }
 
 void
-logwakeup()
+filt_logrdetach(struct knote *kn)
 {
-	struct proc *p;
+	int s;
 
-	if (!log_open)
-		return;
-	selwakeup(&logsoftc.sc_selp);
-	if (logsoftc.sc_state & LOG_ASYNC) {
-		if (logsoftc.sc_pgid < 0)
-			gsignal(-logsoftc.sc_pgid, SIGIO); 
-		else if (p = pfind(logsoftc.sc_pgid))
-			psignal(p, SIGIO);
-	}
-	if (logsoftc.sc_state & LOG_RDWAIT) {
-		wakeup((caddr_t)msgbufp);
-		logsoftc.sc_state &= ~LOG_RDWAIT;
-	}
+	s = splhigh();
+	klist_remove(&logsoftc.sc_selp.si_note, kn);
+	splx(s);
 }
 
-/*ARGSUSED*/
 int
-logioctl(dev, com, data, flag)
-	dev_t dev;
-	u_long com;
-	caddr_t data;
-	int flag;
+filt_logread(struct knote *kn, long hint)
 {
-	long l;
-	int s;
+	struct msgbuf *mbp = kn->kn_hook;
+
+	kn->kn_data = msgbuf_getlen(mbp);
+	return (kn->kn_data != 0);
+}
+
+void
+logwakeup(void)
+{
+	/*
+	 * The actual wakeup has to be deferred because logwakeup() can be
+	 * called in very varied contexts.
+	 * Keep the print routines usable in as many situations as possible
+	 * by not using locking here.
+	 */
+
+	/*
+	 * Ensure that preceding stores become visible to other CPUs
+	 * before the flag.
+	 */
+	membar_producer();
+
+	logsoftc.sc_need_wakeup = 1;
+}
+
+void
+logtick(void *arg)
+{
+	if (!log_open)
+		return;
+
+	if (!logsoftc.sc_need_wakeup)
+		goto out;
+	logsoftc.sc_need_wakeup = 0;
+
+	/*
+	 * sc_need_wakeup has to be cleared before handling the wakeup.
+	 * This ensures that no wakeup is lost.
+	 */
+	membar_enter();
+
+	selwakeup(&logsoftc.sc_selp);
+	if (logsoftc.sc_state & LOG_ASYNC)
+		pgsigio(&logsoftc.sc_sigio, SIGIO, 0);
+	if (logsoftc.sc_state & LOG_RDWAIT) {
+		wakeup(msgbufp);
+		logsoftc.sc_state &= ~LOG_RDWAIT;
+	}
+out:
+	timeout_add_msec(&logsoftc.sc_tick, LOG_TICK);
+}
+
+int
+logioctl(dev_t dev, u_long com, caddr_t data, int flag, struct proc *p)
+{
+	struct file *fp;
+	int error;
 
 	switch (com) {
 
 	/* return number of characters immediately available */
 	case FIONREAD:
-		s = splhigh();
-		l = msgbufp->msg_bufx - msgbufp->msg_bufr;
-		splx(s);
-		if (l < 0)
-			l += MSG_BSIZE;
-		*(int *)data = l;
+		*(int *)data = (int)msgbuf_getlen(msgbufp);
 		break;
 
 	case FIONBIO:
@@ -223,16 +386,185 @@ logioctl(dev, com, data, flag)
 			logsoftc.sc_state &= ~LOG_ASYNC;
 		break;
 
+	case FIOSETOWN:
 	case TIOCSPGRP:
-		logsoftc.sc_pgid = *(int *)data;
+		return (sigio_setown(&logsoftc.sc_sigio, com, data));
+
+	case FIOGETOWN:
+	case TIOCGPGRP:
+		sigio_getown(&logsoftc.sc_sigio, com, data);
 		break;
 
-	case TIOCGPGRP:
-		*(int *)data = logsoftc.sc_pgid;
+	case LIOCSFD:
+		if ((error = suser(p)) != 0)
+			return (error);
+		fp = syslogf;
+		if ((error = getsock(p, *(int *)data, &syslogf)) != 0)
+			return (error);
+		if (fp)
+			FRELE(fp, p);
 		break;
 
 	default:
-		return (-1);
+		return (ENOTTY);
 	}
 	return (0);
+}
+
+int
+sys_sendsyslog(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_sendsyslog_args /* {
+		syscallarg(const char *) buf;
+		syscallarg(size_t) nbyte;
+		syscallarg(int) flags;
+	} */ *uap = v;
+	int error;
+	static int dropped_count, orig_error, orig_pid;
+
+	if (dropped_count) {
+		size_t l;
+		char buf[80];
+
+		l = snprintf(buf, sizeof(buf),
+		    "<%d>sendsyslog: dropped %d message%s, error %d, pid %d",
+		    LOG_KERN|LOG_WARNING, dropped_count,
+		    dropped_count == 1 ? "" : "s", orig_error, orig_pid);
+		error = dosendsyslog(p, buf, ulmin(l, sizeof(buf) - 1),
+		    0, UIO_SYSSPACE);
+		if (error == 0) {
+			dropped_count = 0;
+			orig_error = 0;
+			orig_pid = 0;
+		}
+	}
+	error = dosendsyslog(p, SCARG(uap, buf), SCARG(uap, nbyte),
+	    SCARG(uap, flags), UIO_USERSPACE);
+	if (error) {
+		dropped_count++;
+		orig_error = error;
+		orig_pid = p->p_p->ps_pid;
+	}
+	return (error);
+}
+
+int
+dosendsyslog(struct proc *p, const char *buf, size_t nbyte, int flags,
+    enum uio_seg sflg)
+{
+#ifdef KTRACE
+	struct iovec ktriov;
+#endif
+	struct file *fp;
+	char pri[6], *kbuf;
+	struct iovec aiov;
+	struct uio auio;
+	size_t i, len;
+	int error;
+
+	if (nbyte > LOG_MAXLINE)
+		nbyte = LOG_MAXLINE;
+
+	/* Global variable syslogf may change during sleep, use local copy. */
+	fp = syslogf;
+	if (fp)
+		FREF(fp);
+	else if (!ISSET(flags, LOG_CONS))
+		return (ENOTCONN);
+	else {
+		/*
+		 * Strip off syslog priority when logging to console.
+		 * LOG_PRIMASK | LOG_FACMASK is 0x03ff, so at most 4
+		 * decimal digits may appear in priority as <1023>.
+		 */
+		len = MIN(nbyte, sizeof(pri));
+		if (sflg == UIO_USERSPACE) {
+			if ((error = copyin(buf, pri, len)))
+				return (error);
+		} else
+			memcpy(pri, buf, len);
+		if (0 < len && pri[0] == '<') {
+			for (i = 1; i < len; i++) {
+				if (pri[i] < '0' || pri[i] > '9')
+					break;
+			}
+			if (i < len && pri[i] == '>') {
+				i++;
+				/* There must be at least one digit <0>. */
+				if (i >= 3) {
+					buf += i;
+					nbyte -= i;
+				}
+			}
+		}
+	}
+
+	aiov.iov_base = (char *)buf;
+	aiov.iov_len = nbyte;
+	auio.uio_iov = &aiov;
+	auio.uio_iovcnt = 1;
+	auio.uio_segflg = sflg;
+	auio.uio_rw = UIO_WRITE;
+	auio.uio_procp = p;
+	auio.uio_offset = 0;
+	auio.uio_resid = aiov.iov_len;
+#ifdef KTRACE
+	if (sflg == UIO_USERSPACE && KTRPOINT(p, KTR_GENIO))
+		ktriov = aiov;
+	else
+		ktriov.iov_len = 0;
+#endif
+
+	len = auio.uio_resid;
+	if (fp) {
+		int flags = (fp->f_flag & FNONBLOCK) ? MSG_DONTWAIT : 0;
+		error = sosend(fp->f_data, NULL, &auio, NULL, NULL, flags);
+		if (error == 0)
+			len -= auio.uio_resid;
+	} else if (constty || cn_devvp) {
+		error = cnwrite(0, &auio, 0);
+		if (error == 0)
+			len -= auio.uio_resid;
+		aiov.iov_base = "\r\n";
+		aiov.iov_len = 2;
+		auio.uio_iov = &aiov;
+		auio.uio_iovcnt = 1;
+		auio.uio_segflg = UIO_SYSSPACE;
+		auio.uio_rw = UIO_WRITE;
+		auio.uio_procp = p;
+		auio.uio_offset = 0;
+		auio.uio_resid = aiov.iov_len;
+		cnwrite(0, &auio, 0);
+	} else {
+		/* XXX console redirection breaks down... */
+		if (sflg == UIO_USERSPACE) {
+			kbuf = malloc(len, M_TEMP, M_WAITOK);
+			error = copyin(aiov.iov_base, kbuf, len);
+		} else {
+			kbuf = aiov.iov_base;
+			error = 0;
+		}
+		if (error == 0)
+			for (i = 0; i < len; i++) {
+				if (kbuf[i] == '\0')
+					break;
+				cnputc(kbuf[i]);
+				auio.uio_resid--;
+			}
+		if (sflg == UIO_USERSPACE)
+			free(kbuf, M_TEMP, len);
+		if (error == 0)
+			len -= auio.uio_resid;
+		cnputc('\n');
+	}
+
+#ifdef KTRACE
+	if (error == 0 && ktriov.iov_len != 0)
+		ktrgenio(p, -1, UIO_WRITE, &ktriov, len);
+#endif
+	if (fp)
+		FRELE(fp, p);
+	else
+		error = ENOTCONN;
+	return (error);
 }

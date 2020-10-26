@@ -1,6 +1,8 @@
+/*	$OpenBSD: strdup.c,v 1.6 2005/08/08 08:05:37 espie Exp $	*/
+
 /*
- * Copyright (c) 1988 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1988, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,24 +29,22 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)strdup.c	5.4 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: strdup.c,v 1.6 1995/06/15 00:07:53 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
+#include <sys/types.h>
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
 char *
-strdup(str)
-	const char *str;
+strdup(const char *str)
 {
-	size_t len;
+	size_t siz;
 	char *copy;
 
-	len = strlen(str) + 1;
-	if (!(copy = malloc(len)))
-		return((char *)NULL);
-	memcpy(copy, str, len);
+	siz = strlen(str) + 1;
+	if ((copy = malloc(siz)) == NULL)
+		return(NULL);
+	(void)memcpy(copy, str, siz);
 	return(copy);
 }
+DEF_WEAK(strdup);

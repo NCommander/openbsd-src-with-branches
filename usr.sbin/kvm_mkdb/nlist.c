@@ -1,3 +1,5 @@
+/*	$OpenBSD: nlist.c,v 1.52 2018/04/26 12:42:51 guenther Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,20 +29,18 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)nlist.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: nlist.c,v 1.10 1994/06/11 07:57:41 mycroft Exp $";
-#endif /* not lint */
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <sys/sysctl.h>
 
-#include <sys/param.h>
-
-#include <a.out.h>
 #include <db.h>
+#include <elf.h>
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <kvm.h>
 #include <limits.h>
+#include <paths.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,108 +52,223 @@ typedef struct nlist NLIST;
 #define	_strx	n_un.n_strx
 #define	_name	n_un.n_name
 
-#define	badfmt(str)	errx(1, "%s: %s: %s", kfile, str, strerror(EFTYPE))
-
-static void badread __P((int, char *));
-
 static char *kfile;
+static char *fmterr;
 
-void
-create_knlist(name, db)
-	char *name;
-	DB *db;
+int	__elf_knlist(int fd, DB *db, int ksyms);
+
+int
+__elf_knlist(int fd, DB *db, int ksyms)
 {
-	register int nsyms;
-	struct exec ebuf;
-	FILE *fp;
-	NLIST nbuf;
+	caddr_t strtab = NULL;
+	off_t symstroff, symoff;
+	u_long symsize, symstrsize;
+	u_long kernvma, kernoffs;
+	int i, error = 0;
+	Elf32_Word j;
+	Elf_Sym sbuf;
+	char buf[1024];
+	Elf_Ehdr eh;
+	Elf_Shdr *sh = NULL;
 	DBT data, key;
-	int fd, nr, strsize;
-	char *strtab, buf[1024];
+	NLIST nbuf;
+	FILE *fp;
+	int usemalloc = 0;
 
-	kfile = name;
-	if ((fd = open(name, O_RDONLY, 0)) < 0)
-		err(1, "%s", name);
+	if ((fp = fdopen(fd, "r")) == NULL)
+		err(1, "%s", kfile);
 
-	/* Read in exec structure. */
-	nr = read(fd, &ebuf, sizeof(struct exec));
-	if (nr != sizeof(struct exec))
-		badfmt("no exec header");
+	if (fseek(fp, (off_t)0, SEEK_SET) == -1 ||
+	    fread(&eh, sizeof(eh), 1, fp) != 1 ||
+	    !IS_ELF(eh)) {
+		fclose(fp);
+		return (1);
+	}
 
-	/* Check magic number and symbol count. */
-	if (N_BADMAG(ebuf))
-		badfmt("bad magic number");
-	if (!ebuf.a_syms)
-		badfmt("stripped");
+	sh = calloc(sizeof(Elf_Shdr), eh.e_shnum);
+	if (sh == NULL)
+		errx(1, "cannot allocate %zu bytes for symbol header",
+		    sizeof(Elf_Shdr) * eh.e_shnum);
 
-	/* Seek to string table. */
-	if (lseek(fd, N_STROFF(ebuf), SEEK_SET) == -1)
-		badfmt("corrupted string table");
+	if (fseek(fp, eh.e_shoff, SEEK_SET) == -1) {
+		fmterr = "no exec header";
+		error = -1;
+		goto done;
+	}
 
-	/* Read in the size of the symbol table. */
-	nr = read(fd, (char *)&strsize, sizeof(strsize));
-	if (nr != sizeof(strsize))
-		badread(nr, "no symbol table");
+	if (fread(sh, sizeof(Elf_Shdr) * eh.e_shnum, 1, fp) != 1) {
+		fmterr = "no exec header";
+		error = -1;
+		goto done;
+	}
 
-	/* Read in the string table. */
-	strsize -= sizeof(strsize);
-	if (!(strtab = malloc(strsize)))
-		err(1, NULL);
-	if ((nr = read(fd, strtab, strsize)) != strsize)
-		badread(nr, "corrupted symbol table");
+	symstrsize = symsize = 0;
+	kernvma = (u_long)-1;	/* 0 is a valid value (at least on hp300) */
+	for (i = 0; i < eh.e_shnum; i++) {
+		if (sh[i].sh_type == SHT_STRTAB) {
+			for (j = 0; j < eh.e_shnum; j++)
+				if (sh[j].sh_type == SHT_SYMTAB &&
+				    sh[j].sh_link == (unsigned)i) {
+					symstroff = sh[i].sh_offset;
+					symstrsize = sh[i].sh_size;
+			}
+		} else if (sh[i].sh_type == SHT_SYMTAB) {
+			symoff = sh[i].sh_offset;
+			symsize = sh[i].sh_size;
+		} else if (sh[i].sh_type == SHT_PROGBITS &&
+		    (sh[i].sh_flags & SHF_EXECINSTR)) {
+			kernvma = sh[i].sh_addr;
+			kernoffs = sh[i].sh_offset;
+		}
+	}
 
-	/* Seek to symbol table. */
-	if (!(fp = fdopen(fd, "r")))
-		err(1, "%s", name);
-	if (fseek(fp, N_SYMOFF(ebuf), SEEK_SET) == -1)
-		err(1, "%s", name);
-	
+	if (symstrsize == 0 || symsize == 0 || kernvma == (u_long)-1) {
+		fmterr = "corrupt file";
+		error = -1;
+		goto done;
+	}
+
+	/*
+	 * Map string table into our address space.  This gives us
+	 * an easy way to randomly access all the strings, without
+	 * making the memory allocation permanent as with malloc/free
+	 * (i.e., munmap will return it to the system).
+	 *
+	 * XXX - we really want to check if this is a regular file.
+	 *	 then we probably want a MAP_PRIVATE here.
+	 */
+	strtab = mmap(NULL, (size_t)symstrsize, PROT_READ,
+	    MAP_SHARED|MAP_FILE, fileno(fp), symstroff);
+	if (strtab == MAP_FAILED) {
+		usemalloc = 1;
+		if ((strtab = malloc(symstrsize)) == NULL) {
+			fmterr = "out of memory";
+			error = -1;
+			goto done;
+		}
+		if (fseek(fp, symstroff, SEEK_SET) == -1) {
+			fmterr = "corrupt file";
+			error = -1;
+			goto done;
+		}
+		if (fread(strtab, symstrsize, 1, fp) != 1) {
+			fmterr = "corrupt file";
+			error = -1;
+			goto done;
+		}
+	}
+
+	if (fseek(fp, symoff, SEEK_SET) == -1) {
+		fmterr = "corrupt file";
+		error = -1;
+		goto done;
+	}
+
 	data.data = (u_char *)&nbuf;
 	data.size = sizeof(NLIST);
 
 	/* Read each symbol and enter it into the database. */
-	nsyms = ebuf.a_syms / sizeof(struct nlist);
-	while (nsyms--) {
-		if (fread((char *)&nbuf, sizeof (NLIST), 1, fp) != 1) {
+	while (symsize > 0) {
+		symsize -= sizeof(Elf_Sym);
+		if (fread((char *)&sbuf, sizeof(sbuf), 1, fp) != 1) {
 			if (feof(fp))
-				badfmt("corrupted symbol table");
-			err(1, "%s", name);
+				fmterr = "corrupted symbol table";
+			else
+				warn("%s", kfile);
+			error = -1;
+			goto done;
 		}
-		if (!nbuf._strx || nbuf.n_type&N_STAB)
+		if (!sbuf.st_name)
 			continue;
 
-		key.data = (u_char *)strtab + nbuf._strx - sizeof(long);
+		nbuf.n_value = sbuf.st_value;
+
+		/* XXX type conversion is pretty rude... */
+		switch(ELF_ST_TYPE(sbuf.st_info)) {
+		case STT_NOTYPE:
+			switch (sbuf.st_shndx) {
+			case SHN_UNDEF:
+				nbuf.n_type = N_UNDF;
+				break;
+			case SHN_ABS:
+				nbuf.n_type = N_ABS;
+				break;
+			case SHN_COMMON:
+				nbuf.n_type = N_COMM;
+				break;
+			default:
+				nbuf.n_type = N_COMM | N_EXT;
+				break;
+			}
+			break;
+		case STT_FUNC:
+			nbuf.n_type = N_TEXT;
+			break;
+		case STT_OBJECT:
+			nbuf.n_type = N_DATA;
+			break;
+		case STT_FILE:
+			nbuf.n_type = N_FN;
+			break;
+		}
+		if (ELF_ST_BIND(sbuf.st_info) == STB_LOCAL)
+			nbuf.n_type = N_EXT;
+
+		*buf = '_';
+		strlcpy(buf + 1, strtab + sbuf.st_name, sizeof buf - 1);
+		key.data = (u_char *)buf;
 		key.size = strlen((char *)key.data);
 		if (db->put(db, &key, &data, 0))
 			err(1, "record enter");
 
 		if (strcmp((char *)key.data, VRS_SYM) == 0) {
-			long cur_off, voff;
-#ifndef KERNTEXTOFF
-#define KERNTEXTOFF KERNBASE
-#endif
-			/*
-			 * Calculate offset relative to a normal (non-kernel)
-			 * a.out.  KERNTEXTOFF is where the kernel is really
-			 * loaded; N_TXTADDR is where a normal file is loaded.
-			 * From there, locate file offset in text or data.
-			 */
-			voff = nbuf.n_value - KERNTEXTOFF + N_TXTADDR(ebuf);
-			if ((nbuf.n_type & N_TYPE) == N_TEXT)
-				voff += N_TXTOFF(ebuf) - N_TXTADDR(ebuf);
-			else
-				voff += N_DATOFF(ebuf) - N_DATADDR(ebuf);
-			cur_off = ftell(fp);
-			if (fseek(fp, voff, SEEK_SET) == -1)
-				badfmt("corrupted string table");
+			long cur_off;
+			if (!ksyms) {
+				/*
+				 * Calculate offset to the version string in
+				 * the file. kernvma is where the kernel is
+				 * really loaded; kernoffs is where in the
+				 * file it starts.
+				 */
+				long voff;
+				voff = nbuf.n_value - kernvma + kernoffs;
+				cur_off = ftell(fp);
+				if (fseek(fp, voff, SEEK_SET) == -1) {
+					fmterr = "corrupted string table";
+					error = -1;
+					goto done;
+				}
 
-			/*
-			 * Read version string up to, and including newline.
-			 * This code assumes that a newline terminates the
-			 * version line.
-			 */
-			if (fgets(buf, sizeof(buf), fp) == NULL)
-				badfmt("corrupted string table");
+				/*
+				 * Read version string up to, and including
+				 * newline. This code assumes that a newline
+				 * terminates the version line.
+				 */
+				if (fgets(buf, sizeof(buf), fp) == NULL) {
+					fmterr = "corrupted string table";
+					error = -1;
+					goto done;
+				}
+			} else {
+				/*
+				 * This is /dev/ksyms or a look alike.
+				 * Use sysctl() to get version since we
+				 * don't have real text or data.
+				 */
+				int mib[2];
+				size_t len;
+				char *p;
+
+				mib[0] = CTL_KERN;
+				mib[1] = KERN_VERSION;
+				len = sizeof(buf);
+				if (sysctl(mib, 2, buf, &len, NULL, 0) == -1) {
+					err(1, "sysctl can't find kernel "
+					    "version string");
+				}
+				if ((p = strchr(buf, '\n')) != NULL)
+					*(p+1) = '\0';
+			}
 
 			key.data = (u_char *)VRS_KEY;
 			key.size = sizeof(VRS_KEY) - 1;
@@ -169,19 +280,43 @@ create_knlist(name, db)
 			/* Restore to original values. */
 			data.data = (u_char *)&nbuf;
 			data.size = sizeof(NLIST);
-			if (fseek(fp, cur_off, SEEK_SET) == -1)
-				badfmt("corrupted string table");
+			if (!ksyms && fseek(fp, cur_off, SEEK_SET) == -1) {
+				fmterr = "corrupted string table";
+				error = -1;
+				goto done;
+			}
 		}
 	}
+done:
+	if (strtab) {
+		if (usemalloc)
+			free(strtab);
+		else
+			munmap(strtab, symstrsize);
+	}
 	(void)fclose(fp);
+	free(sh);
+	return (error);
 }
 
-static void
-badread(nr, p)
-	int nr;
-	char *p;
+int
+create_knlist(char *name, int fd, DB *db)
 {
-	if (nr < 0)
-		err(1, "%s", kfile);
-	badfmt(p);
+	int error, ksyms;
+
+	if (strcmp(name, _PATH_KSYMS) == 0) {
+		ksyms = 1;
+	} else {
+		ksyms = 0;
+	}
+
+	fmterr = NULL;
+	kfile = name;
+	/* rval of 1 means wrong executable type */
+	error = __elf_knlist(fd, db, ksyms);
+
+	if (fmterr != NULL)
+		warnc(EFTYPE, "%s: %s", kfile, fmterr);
+
+	return(error);
 }

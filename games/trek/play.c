@@ -1,3 +1,4 @@
+/*	$OpenBSD: play.c,v 1.7 2016/01/07 14:37:51 mestre Exp $	*/
 /*	$NetBSD: play.c,v 1.3 1995/04/22 10:59:18 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,17 +30,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)play.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: play.c,v 1.3 1995/04/22 10:59:18 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <setjmp.h>
+#include <stdio.h>
 
-# include	"trek.h"
-# include	"getpar.h"
-# include	<setjmp.h>
+#include "getpar.h"
+#include "trek.h"
 
 /*
 **  INSTRUCTION READ AND MAIN PLAY LOOP
@@ -55,49 +46,46 @@ static char rcsid[] = "$NetBSD: play.c,v 1.3 1995/04/22 10:59:18 cgd Exp $";
 **	attack if the move was not free, and checkcond() to check up
 **	on how we are doing after the move.
 */
-extern int	abandon(), capture(), shield(), computer(), dcrept(),
-		destruct(), dock(), help(), impulse(), lrscan(),
-		warp(), dumpgame(), rest(), srscan(),
-		myreset(), torped(), visual(), setwarp(), undock(), phaser();
 
-struct cvntab	Comtab[] =
+const struct cvntab	Comtab[] =
 {
-	"abandon",		"",			abandon,	0,
-	"ca",			"pture",		capture,	0,
-	"cl",			"oak",			shield,	-1,
-	"c",			"omputer",		computer,	0,
-	"da",			"mages",		dcrept,	0,
-	"destruct",		"",			destruct,	0,
-	"do",			"ck",			dock,		0,
-	"help",			"",			help,		0,
-	"i",			"mpulse",		impulse,	0,
-	"l",			"rscan",		lrscan,	0,
-	"m",			"ove",			warp,		0,
-	"p",			"hasers",		phaser,	0,
-	"ram",			"",			warp,		1,
-	"dump",			"",			dumpgame,	0,
-	"r",			"est",			rest,		0,
-	"sh",			"ield",			shield,	0,
-	"s",			"rscan",		srscan,	0,
-	"st",			"atus",			srscan,	-1,
-	"terminate",		"",			myreset,	0,
-	"t",			"orpedo",		torped,	0,
-	"u",			"ndock",		undock,	0,
-	"v",			"isual",		visual,	0,
-	"w",			"arp",			setwarp,	0,
-	0
+	{ "abandon",		"",		abandon,	0 },
+	{ "ca",			"pture",	capture,	0 },
+	{ "cl",			"oak",		shield,		-1 },
+	{ "c",			"omputer",	computer,	0 },
+	{ "da",			"mages",	dcrept,		0 },
+	{ "destruct",		"",		destruct,	0 },
+	{ "do",			"ck",		dock,		0 },
+	{ "help",		"",		help,		0 },
+	{ "i",			"mpulse",	impulse,	0 },
+	{ "l",			"rscan",	lrscan,		0 },
+	{ "m",			"ove",		dowarp,		0 },
+	{ "p",			"hasers",	phaser,		0 },
+	{ "ram",		"",		dowarp,		1 },
+	{ "r",			"est",		rest,		0 },
+	{ "sh",			"ield",		shield,		0 },
+	{ "s",			"rscan",	srscan,		0 },
+	{ "st",			"atus",		srscan,		-1 },
+	{ "terminate",		"",		myreset,	0 },
+	{ "t",			"orpedo",	torped,		0 },
+	{ "u",			"ndock",	undock,		0 },
+	{ "v",			"isual",	visual,		0 },
+	{ "w",			"arp",		setwarp,	0 },
+	{ NULL,			NULL,		NULL,		0 }
 };
 
-myreset()
+void
+myreset(int v)
 {
 	extern jmp_buf env;
 
 	longjmp(env, 1);
 }
 
-play()
+void
+play(void)
 {
-	struct cvntab		*r;
+	const struct cvntab	*r;
 
 	while (1)
 	{
