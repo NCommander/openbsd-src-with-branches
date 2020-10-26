@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2020 Martijn van Duren <martijn@openbsd.org>
  *
