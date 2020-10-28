@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukbd.c,v 1.78 2017/05/12 09:16:55 mpi Exp $	*/
+/*	$OpenBSD: ukbd.c,v 1.79 2020/08/23 11:08:02 mglocker Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -257,6 +257,7 @@ ukbd_attach(struct device *parent, struct device *self, void *aux)
 				switch (uha->uaa->product) {
 				case USB_PRODUCT_APPLE_FOUNTAIN_ISO:
 				case USB_PRODUCT_APPLE_GEYSER_ISO:
+				case USB_PRODUCT_APPLE_GEYSER3_ISO:
 				case USB_PRODUCT_APPLE_WELLSPRING6_ISO:
 				case USB_PRODUCT_APPLE_WELLSPRING8_ISO:
 					sc->sc_munge = ukbd_apple_iso_munge;
