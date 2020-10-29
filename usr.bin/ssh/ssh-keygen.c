@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.421 2020/10/18 11:32:02 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.422 2020/10/29 02:52:43 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -178,7 +178,7 @@ type_bits_valid(int type, const char *name, u_int32_t *bitsp)
 		fatal("unknown key type %s", key_type_name);
 	if (*bitsp == 0) {
 #ifdef WITH_OPENSSL
-		u_int nid;
+		int nid;
 
 		switch(type) {
 		case KEY_DSA:
