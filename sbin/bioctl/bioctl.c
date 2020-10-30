@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.143 2019/06/28 13:32:43 deraadt Exp $ */
+/* $OpenBSD: bioctl.c,v 1.144 2020/04/25 14:37:43 krw Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
@@ -280,7 +280,7 @@ usage(void)
 		"usage: %s [-hiqv] [-a alarm-function] "
 		"[-b channel:target[.lun]]\n"
 		"\t[-H channel:target[.lun]] "
-		"[-R device | channel:target[.lun]]\n"
+		"[-R chunk | channel:target[.lun]]\n"
 		"\t[-t patrol-function] "
 		"[-u channel:target[.lun]] "
 		"device\n"
@@ -288,7 +288,7 @@ usage(void)
 		"[-C flag[,flag,...]] [-c raidlevel] [-k keydisk]\n"
 		"\t[-l special[,special,...]] "
 		"[-O device | channel:target[.lun]]\n"
-		"\t[-p passfile] [-R device | channel:target[.lun]]\n"
+		"\t[-p passfile] [-R chunk | channel:target[.lun]]\n"
 		"\t[-r rounds] "
 		"device\n", __progname, __progname);
 
