@@ -1,4 +1,4 @@
-.\"	$OpenBSD: relayd.conf.5,v 1.200 2020/10/22 07:48:50 benno Exp $
+.\"	$OpenBSD: relayd.conf.5,v 1.201 2020/10/22 08:00:24 benno Exp $
 .\"
 .\" Copyright (c) 2006 - 2016 Reyk Floeter <reyk@openbsd.org>
 .\" Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -121,10 +121,12 @@ Here are the settings that can be set globally:
 .It Ic agentx Oo Ic context Ar context Oc Oo Ic path Ar path Oc
 Export
 .Xr relayd 8
-statistics via an agentx compatible
+metrics via an agentx compatible
 .Pq snmp
 daemon by connecting to
 .Ar path .
+Metrics can be found under the relaydMIBObjects subtree
+.Pq enterprises.30155.3 .
 If
 .Ar path
 is omitted it will default to
