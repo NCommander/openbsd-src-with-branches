@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.5 2020/06/14 15:36:51 kettenis Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.6 2020/07/04 16:49:20 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -21,6 +21,13 @@
 #include <sys/reboot.h>
 #include <sys/systm.h>
 
+#if defined(NFSCLIENT)
+#include <net/if.h>
+#include <net/if_types.h>
+#include <netinet/in.h>
+#include <netinet/if_ether.h>
+#endif
+
 void
 cpu_configure(void)
 {
@@ -36,9 +43,30 @@ cpu_configure(void)
 void
 diskconf(void)
 {
+#if defined(NFSCLIENT)
+	extern uint8_t *bootmac;
+	dev_t tmpdev = NODEV;
+#endif
+	struct device *bootdv = NULL;
 	int part = 0;
 
-	setroot(NULL, part, RB_USERREQ);
+#if defined(NFSCLIENT)
+	if (bootmac) {
+		struct ifnet *ifp;
+
+		TAILQ_FOREACH(ifp, &ifnet, if_list) {
+			if (ifp->if_type == IFT_ETHER &&
+			    memcmp(bootmac, ((struct arpcom *)ifp)->ac_enaddr,
+			    ETHER_ADDR_LEN) == 0)
+				break;
+		}
+		if (ifp)
+			bootdv = parsedisk(ifp->if_xname, strlen(ifp->if_xname),
+			    0, &tmpdev);
+	}
+#endif
+
+	setroot(bootdv, part, RB_USERREQ);
 }
 
 void
