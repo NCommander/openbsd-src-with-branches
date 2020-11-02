@@ -1,4 +1,4 @@
-/*	$Id: test-mft.c,v 1.5 2020/07/05 18:31:28 tb Exp $ */
+/*	$Id: test-mft.c,v 1.6 2020/11/01 22:28:24 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -82,7 +82,7 @@ mft_print(const struct mft *p)
 int
 main(int argc, char *argv[])
 {
-	int		 c, i, ppem, verb = 0;
+	int		 c, i, ppem = 0, verb = 0;
 	struct mft	*p;
 	X509		*xp = NULL;
 

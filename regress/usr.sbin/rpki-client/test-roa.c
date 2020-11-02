@@ -1,4 +1,4 @@
-/*	$Id: test-roa.c,v 1.3 2019/08/22 21:31:48 bluhm Exp $ */
+/*	$Id: test-roa.c,v 1.4 2020/11/01 22:28:24 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -78,7 +78,7 @@ roa_print(const struct roa *p)
 int
 main(int argc, char *argv[])
 {
-	int		 c, i, ppem, verb = 0;
+	int		 c, i, ppem = 0, verb = 0;
 	X509		*xp = NULL;
 	struct roa	*p;
 
