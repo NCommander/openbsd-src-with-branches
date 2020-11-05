@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 PROG=		vnode
 WARNINGS=	yes
 
