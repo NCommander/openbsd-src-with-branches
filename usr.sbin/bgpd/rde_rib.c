@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.214 2020/01/10 14:52:57 claudio Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.215 2020/01/25 23:54:21 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -1001,7 +1001,7 @@ prefix_update(struct rib *rib, struct rde_peer *peer, struct filterstate *state,
 		comm = communities_link(ncomm);
 	}
 
-	/* If the prefix was found move it else add it to the aspath. */
+	/* If the prefix was found move it else add it to the RIB. */
 	if (p != NULL)
 		return (prefix_move(p, peer, asp, comm, state->nexthop,
 		    state->nhflags, vstate));
