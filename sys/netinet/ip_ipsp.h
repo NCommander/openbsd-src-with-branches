@@ -303,6 +303,7 @@ struct ipsec_policy {
 #define	IPSP_IDENTITY_PREFIX		1
 #define	IPSP_IDENTITY_FQDN		2
 #define	IPSP_IDENTITY_USERFQDN		3
+#define	IPSP_IDENTITY_ASN1_DN		4
 
 struct tdb {				/* tunnel descriptor block */
 	/*

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkeyv2_convert.c,v 1.67 2020/04/23 19:38:08 tobhe Exp $	*/
+/*	$OpenBSD: pfkeyv2_convert.c,v 1.68 2020/07/18 15:10:03 kn Exp $	*/
 /*
  * The author of this code is Angelos D. Keromytis (angelos@keromytis.org)
  *
@@ -721,6 +721,9 @@ import_identity(struct ipsec_id **id, struct sadb_ident *sadb_ident,
 	case SADB_IDENTTYPE_USERFQDN:
 		(*id)->type = IPSP_IDENTITY_USERFQDN;
 		break;
+	case SADB_IDENTTYPE_ASN1_DN:
+		(*id)->type = IPSP_IDENTITY_ASN1_DN;
+		break;
 	default:
 		free(*id, M_CREDENTIALS, *id_sz);
 		*id = NULL;
@@ -768,6 +771,9 @@ export_identity(void **p, struct ipsec_id *id)
 		break;
 	case IPSP_IDENTITY_USERFQDN:
 		sadb_ident->sadb_ident_type = SADB_IDENTTYPE_USERFQDN;
+		break;
+	case IPSP_IDENTITY_ASN1_DN:
+		sadb_ident->sadb_ident_type = SADB_IDENTTYPE_ASN1_DN;
 		break;
 	}
 	*p += sizeof(struct sadb_ident);

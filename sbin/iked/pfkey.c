@@ -1524,6 +1524,8 @@ pfkey_id2ident(struct iked_id *id, unsigned int exttype)
 		type = SADB_IDENTTYPE_PREFIX;
 		break;
 	case IKEV2_ID_ASN1_DN:
+		type = SADB_IDENTTYPE_ASN1_DN;
+		break;
 	case IKEV2_ID_ASN1_GN:
 	case IKEV2_ID_KEY_ID:
 	case IKEV2_ID_NONE:
