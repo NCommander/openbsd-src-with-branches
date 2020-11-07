@@ -1,8 +1,9 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1.1.1 2019/02/21 16:14:03 bluhm Exp $
 
 TESTS =
 TESTS +=	conj_test
 TESTS +=	fenv_test
+TESTS +=	ilogb_test
 TESTS +=	lrint_test
 
 PROGS=	${TESTS}
