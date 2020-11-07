@@ -1,4 +1,4 @@
-#	$OpenBSD: Client.pm,v 1.11 2015/07/18 22:11:34 benno Exp $
+#	$OpenBSD: Client.pm,v 1.12 2016/09/22 01:16:29 bluhm Exp $
 
 # Copyright (c) 2010-2015 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -20,7 +20,7 @@ use warnings;
 package Client;
 use parent 'Proc';
 use Carp;
-use Socket;
+use Socket qw(:DEFAULT IPPROTO_TCP TCP_NODELAY);
 use Socket6;
 use IO::Socket;
 use IO::Socket::INET6;
@@ -78,6 +78,8 @@ sub child {
 		    pack('l!l!', $self->{rcvtimeo}, 0))
 		    or die ref($self), " set SO_RCVTIMEO failed: $!";
 	}
+	setsockopt($cs, IPPROTO_TCP, TCP_NODELAY, pack('i', 1))
+	    or die ref($self), " set TCP_NODELAY failed: $!";
 
 	print STDERR "connect sock: ",$cs->sockhost()," ",$cs->sockport(),"\n";
 	print STDERR "connect peer: ",$cs->peerhost()," ",$cs->peerport(),"\n";
