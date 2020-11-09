@@ -1,4 +1,4 @@
-/*	$OpenBSD: unwind.h,v 1.46 2019/12/08 12:31:07 otto Exp $	*/
+/*	$OpenBSD: unwind.h,v 1.47.6.1 2020/11/09 16:52:55 theo Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -173,6 +173,15 @@ struct query_imsg {
 	int		 err;
 	int		 bogus;
 	struct timespec	 tp;
+};
+
+struct answer_imsg {
+#define	MAX_ANSWER_SIZE	MAX_IMSGSIZE - IMSG_HEADER_SIZE - sizeof(uint64_t) - \
+			    2 * sizeof(int)
+	uint64_t	 id;
+	int		 truncated;
+	int		 len;
+	uint8_t		 answer[MAX_ANSWER_SIZE];
 };
 
 extern uint32_t	 cmd_opts;
