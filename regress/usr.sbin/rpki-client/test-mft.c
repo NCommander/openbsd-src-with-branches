@@ -1,4 +1,4 @@
-/*	$Id: test-mft.c,v 1.8 2020/11/03 21:16:32 tb Exp $ */
+/*	$Id: test-mft.c,v 1.9 2020/11/09 15:43:46 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -114,7 +114,6 @@ main(int argc, char *argv[])
 	BIO_free(bio_out);
 	EVP_cleanup();
 	CRYPTO_cleanup_all_ex_data();
-	ERR_remove_state(0);
 	ERR_free_strings();
 
 	if (i < argc)

@@ -1,4 +1,4 @@
-/*	$Id: test-cert.c,v 1.3 2019/08/22 21:31:48 bluhm Exp $ */
+/*	$Id: test-cert.c,v 1.4 2020/08/21 15:05:51 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -155,7 +155,6 @@ main(int argc, char *argv[])
 
 	EVP_cleanup();
 	CRYPTO_cleanup_all_ex_data();
-	ERR_remove_state(0);
 	ERR_free_strings();
 
 	if (i < argc)
