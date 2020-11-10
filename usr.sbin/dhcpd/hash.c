@@ -1,4 +1,4 @@
-/*	$OpenBSD: hash.c,v 1.7 2016/02/06 23:50:10 krw Exp $	*/
+/*	$OpenBSD: hash.c,v 1.8 2017/02/13 19:13:14 krw Exp $	*/
 
 /* Routines for manipulating hash tables... */
 
@@ -89,7 +89,8 @@ do_hash(unsigned char *name, int len, int size)
 	return (accum % size);
 }
 
-void add_hash(struct hash_table *table, unsigned char *name, int len,
+void
+add_hash(struct hash_table *table, unsigned char *name, int len,
     unsigned char *pointer)
 {
 	int hashno;
