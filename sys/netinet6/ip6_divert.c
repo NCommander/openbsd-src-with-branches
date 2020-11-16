@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip6_divert.c,v 1.61 2020/08/01 23:41:56 gnezdo Exp $ */
+/*      $OpenBSD: ip6_divert.c,v 1.62 2020/08/24 16:00:31 gnezdo Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -385,18 +385,6 @@ divert6_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 		return (ENOTDIR);
 
 	switch (name[0]) {
-	case DIVERT6CTL_SENDSPACE:
-		NET_LOCK();
-		error = sysctl_int(oldp, oldlenp, newp, newlen,
-		    &divert6_sendspace);
-		NET_UNLOCK();
-		return (error);
-	case DIVERT6CTL_RECVSPACE:
-		NET_LOCK();
-		error = sysctl_int(oldp, oldlenp, newp, newlen,
-		    &divert6_recvspace);
-		NET_UNLOCK();
-		return (error);
 	case DIVERT6CTL_STATS:
 		return (divert6_sysctl_div6stat(oldp, oldlenp, newp));
 	default:
