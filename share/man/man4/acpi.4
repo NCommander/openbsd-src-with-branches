@@ -1,4 +1,4 @@
-.\"	$OpenBSD: acpi.4,v 1.63 2020/09/15 21:06:20 jmc Exp $
+.\"	$OpenBSD: acpi.4,v 1.64 2020/11/16 17:53:13 jmc Exp $
 .\"
 .\" Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 15 2020 $
+.Dd $Mdocdate: November 16 2020 $
 .Dt ACPI 4
 .Os
 .Sh NAME
@@ -112,6 +112,8 @@ Intel Cherry View GPIO controller
 Synopsys DesignWare I2C controller
 .It Xr glkgpio 4
 Intel Gemini Lake GPIO controller
+.It Xr imxiic 4
+i.MX onboard I2C controller
 .It Xr pchgpio 4
 Intel PCH GPIO controller
 .It Xr tpm 4
