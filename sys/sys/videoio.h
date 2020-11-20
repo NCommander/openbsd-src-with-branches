@@ -1,4 +1,4 @@
-/*	$OpenBSD: videoio.h,v 1.15 2017/02/02 18:04:41 feinerer Exp $	*/
+/*	$OpenBSD: videoio.h,v 1.16 2017/02/17 06:48:33 feinerer Exp $	*/
 /*
  *  Video for Linux Two header file
  *
@@ -3369,4 +3369,4 @@ struct v4l2_create_buffers {
 
 #define BASE_VIDIOC_PRIVATE	192		/* 192-255 are private */
 
-#endif /* _SYS_VIDEOIO_H */
+#endif /* _SYS_VIDEOIO_H_ */
