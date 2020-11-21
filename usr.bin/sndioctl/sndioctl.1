@@ -1,4 +1,4 @@
-.\" $OpenBSD: sndioctl.1,v 1.13 2020/05/27 17:15:00 espie Exp $
+.\" $OpenBSD: sndioctl.1,v 1.14 2020/05/27 17:34:45 schwarze Exp $
 .\"
 .\" Copyright (c) 2014-2020 Alexandre Ratchov <alex@caoua.org>
 .\"
@@ -72,8 +72,8 @@ The set of available controls depends on the audio device.
 Commands use the following two formats to display and change
 controls respectively:
 .Pp
-.Dl group/stream[channel].function
-.Dl group/stream[channel].function=value
+.Dl [group/]stream[channel].function
+.Dl [group/]stream[channel].function=value
 .Pp
 On the left-hand side are specified the control group (if any),
 the affected stream name, and the optional channel number.
