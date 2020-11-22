@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_pld.c,v 1.110 2020/11/19 15:00:43 tobhe Exp $	*/
+/*	$OpenBSD: ikev2_pld.c,v 1.111 2020/11/21 19:23:53 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -167,7 +167,7 @@ ikev2_validate_pld(struct iked_message *msg, size_t offset, size_t left,
 	}
 	/*
 	 * Sanity check the specified payload size, it must
-	 * be at last the size of the generic payload header.
+	 * be at least the size of the generic payload header.
 	 */
 	if (pld_length < sizeof(*pld)) {
 		log_debug("%s: malformed payload: shorter than minimum "
