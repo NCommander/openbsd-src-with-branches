@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.342 2020/11/12 22:56:00 djm Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.343 2020/11/20 02:14:16 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1144,8 +1144,8 @@ check_host_key(char *hostname, struct sockaddr *hostaddr, u_short port,
 		 */
 		if (options.strict_host_key_checking !=
 		    SSH_STRICT_HOSTKEY_OFF) {
-			error("%s host key for %.200s has changed and you have "
-			    "requested strict checking.", type, host);
+			error("Host key for %.200s has changed and you have "
+			    "requested strict checking.", host);
 			goto fail;
 		}
 
