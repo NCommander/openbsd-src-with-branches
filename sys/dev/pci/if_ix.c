@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.173 2020/10/27 23:32:02 bluhm Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.174 2020/11/09 15:09:09 bluhm Exp $	*/
 
 /******************************************************************************
 
@@ -1621,6 +1621,8 @@ ixgbe_stop(void *arg)
 	/* Should we really clear all structures on stop? */
 	ixgbe_free_transmit_structures(sc);
 	ixgbe_free_receive_structures(sc);
+
+	ixgbe_update_link_status(sc);
 }
 
 
