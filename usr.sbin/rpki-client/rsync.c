@@ -1,4 +1,4 @@
-/*	$OpenBSD: rsync.c,v 1.8 2020/09/12 10:02:01 claudio Exp $ */
+/*	$OpenBSD: rsync.c,v 1.9 2020/09/12 15:46:48 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -320,6 +320,8 @@ proc_rsync(char *prog, char *bind_addr, int fd)
 			i = 0;
 			args[i++] = (char *)prog;
 			args[i++] = "-rt";
+			args[i++] = "--timeout";
+			args[i++] = "180";
 			if (bind_addr != NULL) {
 				args[i++] = "--address";
 				args[i++] = (char *)bind_addr;
