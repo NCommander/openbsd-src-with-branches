@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_constraints.c,v 1.10 2020/09/21 05:41:43 tb Exp $ */
+/* $OpenBSD: x509_constraints.c,v 1.12 2020/11/25 21:16:12 theo Exp $ */
 /*
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
  *
@@ -69,9 +69,11 @@ x509_constraints_name_dup(struct x509_constraints_name *name)
 	new->type = name->type;
 	new->af = name->af;
 	new->der_len = name->der_len;
-	if (name->der_len > 0 && (new->der = malloc(name->der_len)) == NULL)
-		goto err;
-	memcpy(new->der, name->der, name->der_len);
+	if (name->der_len > 0) {
+		if ((new->der = malloc(name->der_len)) == NULL)
+			goto err;
+		memcpy(new->der, name->der, name->der_len);
+	}
 	if (name->name != NULL && (new->name = strdup(name->name)) == NULL)
 		goto err;
 	if (name->local != NULL && (new->local = strdup(name->local)) == NULL)
