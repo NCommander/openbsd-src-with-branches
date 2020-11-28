@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.104 2020/05/29 04:42:23 deraadt Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.105 2020/09/13 11:53:16 jsg Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -926,6 +926,7 @@ int
 wbinvd_on_all_cpus(void)
 {
 	i386_broadcast_ipi(I386_IPI_WBINVD);
+	wbinvd();
 	return 0;
 }
 #endif
