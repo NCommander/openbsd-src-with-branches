@@ -1,4 +1,4 @@
-/* $OpenBSD: sigsuspend.S,v 1.5 2016/05/07 19:05:22 guenther Exp $ */
+/* $OpenBSD: sigsuspend.S,v 1.6 2020/10/26 22:07:06 gkoehler Exp $ */
 
 /*
  * Copyright (c) 1996 Dale Rahn
@@ -31,7 +31,7 @@
 
 	.text
 SYSENTRY_HIDDEN(sigsuspend)
-	RETGUARD_SETUP(sigsuspend)
+	RETGUARD_SETUP(sigsuspend, %r11, %r12)
 	li	%r0, SYS_sigsuspend
 
 	lwz	%r3, 0(%r3)		/* load the mask */
@@ -42,6 +42,6 @@ SYSENTRY_HIDDEN(sigsuspend)
 	stw	%r0, R2_OFFSET_ERRNO(2)
 	li	%r3, -1
 .L_ret:
-	RETGUARD_CHECK(sigsuspend)
+	RETGUARD_CHECK(sigsuspend, %r11, %r12)
 	blr
 SYSCALL_END_HIDDEN(sigsuspend)
