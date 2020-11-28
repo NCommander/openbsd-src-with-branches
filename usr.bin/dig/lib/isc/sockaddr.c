@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: sockaddr.c,v 1.12 2020/09/15 11:46:19 florian Exp $ */
+/* $Id: sockaddr.c,v 1.13 2020/09/15 11:47:42 florian Exp $ */
 
 /*! \file */
 #include <sys/types.h>
@@ -272,7 +272,7 @@ isc_sockaddr_ismulticast(const struct sockaddr_storage *sockaddr) {
 	switch (sockaddr->ss_family) {
 	case AF_INET:
 		sin = (struct sockaddr_in *)sockaddr;
-		return (IN_MULTICAST(&sin->sin_addr.s_addr));
+		return (IN_MULTICAST(sin->sin_addr.s_addr));
 	case AF_INET6:
 		sin6 = (struct sockaddr_in6 *)sockaddr;
 		return (IN6_IS_ADDR_MULTICAST(&sin6->sin6_addr));
