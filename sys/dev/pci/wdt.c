@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdt.c,v 1.23 2017/09/08 05:36:52 deraadt Exp $	*/
+/*	$OpenBSD: wdt.c,v 1.24 2020/01/05 01:07:59 jsg Exp $	*/
 
 /*-
  * Copyright (c) 1998,1999 Alex Nash
@@ -110,7 +110,7 @@ void
 wdt_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct wdt_softc *wdt = (struct wdt_softc *)self;
-	struct pci_attach_args *const pa = (struct pci_attach_args *)aux;
+	struct pci_attach_args *pa = (struct pci_attach_args *)aux;
 	bus_size_t iosize;
 
 	/* retrieve the I/O region (BAR2) */
