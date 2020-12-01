@@ -1,4 +1,4 @@
-/*	$OpenBSD: rad.h,v 1.17 2019/03/02 03:40:45 pamela Exp $	*/
+/*	$OpenBSD: rad.h,v 1.18 2020/03/30 17:47:48 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -67,10 +67,10 @@ enum imsg_type {
 	IMSG_RECONF_RA_DNSSL,
 	IMSG_RECONF_END,
 	IMSG_ICMP6SOCK,
+	IMSG_OPEN_ICMP6SOCK,
 	IMSG_ROUTESOCK,
 	IMSG_CONTROLFD,
 	IMSG_STARTUP,
-	IMSG_STARTUP_DONE,
 	IMSG_RA_RS,
 	IMSG_SEND_RA,
 	IMSG_UPDATE_IF,
@@ -145,9 +145,7 @@ struct imsg_send_ra {
 extern uint32_t	 cmd_opts;
 
 /* rad.c */
-void	main_imsg_compose_frontend(int, pid_t, void *, uint16_t);
-void	main_imsg_compose_frontend_fd(int, pid_t, int);
-
+int	main_imsg_compose_frontend(int, int, void *, uint16_t);
 void	main_imsg_compose_engine(int, pid_t, void *, uint16_t);
 void	merge_config(struct rad_conf *, struct rad_conf *);
 void	imsg_event_add(struct imsgev *);
