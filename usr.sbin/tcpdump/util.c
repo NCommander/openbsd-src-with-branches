@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.29 2019/06/28 13:32:51 deraadt Exp $	*/
+/*	$OpenBSD: util.c,v 1.30 2020/01/24 22:46:37 procter Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -303,13 +303,11 @@ safeputs(const char *s)
 void
 safeputchar(int c)
 {
-	unsigned char ch;
-
-	ch = (unsigned char)(c & 0xff);
+	c &= 0xff;
 	if (c < 0x80 && isprint(c))
-		printf("%c", c & 0xff);
+		putchar(c);
 	else
-		printf("\\%03o", c & 0xff);
+		printf("\\%03o", c);
 }
 
 /*
