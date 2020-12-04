@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh_api.c,v 1.21 2020/08/27 01:06:18 djm Exp $ */
+/* $OpenBSD: ssh_api.c,v 1.22 2020/10/18 11:32:02 djm Exp $ */
 /*
  * Copyright (c) 2012 Markus Friedl.  All rights reserved.
  *
@@ -145,6 +145,9 @@ void
 ssh_free(struct ssh *ssh)
 {
 	struct key_entry *k;
+
+	if (ssh == NULL)
+		return;
 
 	/*
 	 * we've only created the public keys variants in case we
