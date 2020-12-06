@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_srp.c,v 1.11 2016/09/15 02:00:16 dlg Exp $ */
+/*	$OpenBSD: kern_srp.c,v 1.12 2017/09/08 05:36:53 deraadt Exp $ */
 
 /*
  * Copyright (c) 2014 Jonathan Matthew <jmatthew@openbsd.org>
@@ -274,7 +274,7 @@ void
 srp_finalize(void *v, const char *wmesg)
 {
 	while (srp_referenced(v))
-		tsleep(v, PWAIT, wmesg, 1);
+		tsleep_nsec(v, PWAIT, wmesg, MSEC_TO_NSEC(1));
 }
 
 #else /* MULTIPROCESSOR */
