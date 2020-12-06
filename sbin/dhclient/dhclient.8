@@ -1,4 +1,4 @@
-.\" $OpenBSD: dhclient.8,v 1.43 2020/11/06 21:15:41 krw Exp $
+.\" $OpenBSD: dhclient.8,v 1.44 2020/11/06 21:53:55 krw Exp $
 .\"
 .\" Copyright (c) 1997 The Internet Software Consortium.
 .\" All rights reserved.
@@ -81,6 +81,9 @@ The options are as follows:
 Specify an alternate location to
 .Pa /etc/dhclient.conf
 for the configuration file.
+If
+.Ar file
+is the empty string then no configuration file is read.
 .It Fl d
 Do not daemonize.
 If this option is specified,
