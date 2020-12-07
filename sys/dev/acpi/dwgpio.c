@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdgpio.c,v 1.4 2020/06/20 18:06:22 krw Exp $	*/
+/*	$OpenBSD: dwgpio.c,v 1.1 2020/12/06 20:39:07 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis
  *
@@ -269,7 +269,7 @@ dwgpio_intr(void *arg)
 {
 	struct dwgpio_softc *sc = arg;
 	uint32_t status;
-	int pin, handled;
+	int pin, handled = 0;
 
 	status = HREAD4(sc, GPIO_INT_STATUS);
 	HWRITE4(sc, GPIO_PORTS_EOI, status);
