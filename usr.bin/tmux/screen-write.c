@@ -1,4 +1,4 @@
-/* $OpenBSD: screen-write.c,v 1.187 2020/07/21 05:24:33 nicm Exp $ */
+/* $OpenBSD: screen-write.c,v 1.188 2020/11/09 08:42:43 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1240,8 +1240,6 @@ screen_write_linefeed(struct screen_write_ctx *ctx, int wrapped, u_int bg)
 	gl = grid_get_line(gd, gd->hsize + s->cy);
 	if (wrapped)
 		gl->flags |= GRID_LINE_WRAPPED;
-	else
-		gl->flags &= ~GRID_LINE_WRAPPED;
 
 	log_debug("%s: at %u,%u (region %u-%u)", __func__, s->cx, s->cy,
 	    s->rupper, s->rlower);
