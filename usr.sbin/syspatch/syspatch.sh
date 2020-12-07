@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: syspatch.sh,v 1.165 2020/10/08 14:26:34 kn Exp $
+# $OpenBSD: syspatch.sh,v 1.166 2020/10/27 17:42:05 tb Exp $
 #
 # Copyright (c) 2016, 2017 Antoine Jacoutot <ajacoutot@openbsd.org>
 #
@@ -320,6 +320,7 @@ if ((OPTIND == 1)); then
 			[[ -f ${_D}/rollback.tgz ]] || rm -r ${_D}
 	done
 	_PATCHES=$(ls_missing) # can't use errexit in a for loop
+	[[ -n ${_PATCHES} ]] || exit 2
 	for _PATCH in ${_PATCHES}; do
 		apply_patch ${_OSrev}-${_PATCH}
 		_PATCH_APPLIED=true
