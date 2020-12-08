@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1.h,v 1.52 2018/11/09 03:42:30 tb Exp $ */
+/* $OpenBSD: asn1.h,v 1.53 2018/11/30 04:51:19 jeremy Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1137,6 +1137,7 @@ void ERR_load_ASN1_strings(void);
 #define ASN1_R_BAD_OBJECT_HEADER			 102
 #define ASN1_R_BAD_PASSWORD_READ			 103
 #define ASN1_R_BAD_TAG					 104
+#define ASN1_R_BAD_TEMPLATE				 230
 #define ASN1_R_BMPSTRING_IS_WRONG_LENGTH		 214
 #define ASN1_R_BN_LIB					 105
 #define ASN1_R_BOOLEAN_IS_WRONG_LENGTH			 106
