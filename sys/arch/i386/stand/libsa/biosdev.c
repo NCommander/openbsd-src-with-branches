@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosdev.c,v 1.98 2018/09/06 11:50:54 jsg Exp $	*/
+/*	$OpenBSD: biosdev.c,v 1.99 2018/12/16 08:33:16 otto Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -727,7 +727,7 @@ biosdisk_errno(u_int error)
 }
 
 int
-biosstrategy(void *devdata, int rw, daddr32_t blk, size_t size, void *buf,
+biosstrategy(void *devdata, int rw, daddr_t blk, size_t size, void *buf,
     size_t *rsize)
 {
 	struct diskinfo *dip = (struct diskinfo *)devdata;

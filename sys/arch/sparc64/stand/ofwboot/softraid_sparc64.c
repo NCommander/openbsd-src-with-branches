@@ -1,4 +1,4 @@
-/*	$OpenBSD: softraid_sparc64.c,v 1.3 2018/03/29 08:12:58 stsp Exp $	*/
+/*	$OpenBSD: softraid_sparc64.c,v 1.4 2018/12/31 11:44:57 claudio Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Sing <jsing@openbsd.org>
@@ -324,7 +324,7 @@ sr_vol_boot_chunk(struct sr_boot_volume *bv)
 
 
 int
-sr_strategy(struct sr_boot_volume *bv, int sr_handle, int rw, daddr32_t blk,
+sr_strategy(struct sr_boot_volume *bv, int sr_handle, int rw, daddr_t blk,
     size_t size, void *buf, size_t *rsize)
 {
 	struct diskinfo *sr_dip, *dip;

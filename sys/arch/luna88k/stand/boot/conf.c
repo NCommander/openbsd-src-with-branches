@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.2 2013/10/29 22:13:28 miod Exp $	*/
+/*	$OpenBSD: conf.c,v 1.3 2014/08/21 14:24:08 mpi Exp $	*/
 /*	$NetBSD: conf.c,v 1.3 2013/01/16 15:46:20 tsutsui Exp $	*/
 
 /*
@@ -46,7 +46,7 @@
 #include "dev_net.h"
 
 #define xxstrategy	\
-	(int (*)(void *, int, daddr32_t, size_t, void *, size_t *))nullsys
+	(int (*)(void *, int, daddr_t, size_t, void *, size_t *))nullsys
 #define xxopen		(int (*)(struct open_file *, ...))nodev
 #define xxclose		(int (*)(struct open_file *))nullsys
 

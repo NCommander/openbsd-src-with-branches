@@ -1,4 +1,4 @@
-/*	$OpenBSD: netfs.c,v 1.1 2012/03/19 17:38:31 miod Exp $	*/
+/*	$OpenBSD: netfs.c,v 1.2 2016/03/14 23:08:05 krw Exp $	*/
 
 /*-
  * Copyright (c) 2001 Steve Murphree, Jr.
@@ -160,7 +160,7 @@ netfs_open(path, f)
 {
 	struct tftp_file *fp;
 	int rc = 0;
-extern int netstrategy(void *, int, daddr32_t, size_t, void *, size_t *);
+extern int netstrategy(void *, int, daddr_t, size_t, void *, size_t *);
 	
 	if (f->f_dev->dv_strategy != netstrategy)
 		return EINVAL;

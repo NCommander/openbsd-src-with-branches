@@ -1,4 +1,4 @@
-/*	$OpenBSD: devs.c,v 1.10 2014/07/17 13:14:06 miod Exp $	*/
+/*	$OpenBSD: devs.c,v 1.11 2019/04/10 04:17:35 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Michael Shalayeff
@@ -89,7 +89,7 @@ blkdevopen(struct open_file *f, ...)
 }
 
 int
-blkdevstrategy(void *v, int flag, daddr32_t dblk, size_t size, void *buf, size_t *rsize)
+blkdevstrategy(void *v, int flag, daddr_t dblk, size_t size, void *buf, size_t *rsize)
 {
 
 	if (flag != F_READ)

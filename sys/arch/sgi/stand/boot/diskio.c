@@ -1,4 +1,4 @@
-/*	$OpenBSD: diskio.c,v 1.12 2018/03/02 15:36:39 visa Exp $ */
+/*	$OpenBSD: diskio.c,v 1.13 2020/06/06 10:54:41 visa Exp $ */
 
 /*
  * Copyright (c) 2016 Miodrag Vallat.
@@ -64,7 +64,7 @@ struct	dio_softc {
 };
 
 int
-diostrategy(void *devdata, int rw, daddr32_t bn, size_t reqcnt, void *addr,
+diostrategy(void *devdata, int rw, daddr_t bn, size_t reqcnt, void *addr,
     size_t *cnt)
 {
 	struct dio_softc *sc = (struct dio_softc *)devdata;
