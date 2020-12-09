@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_input.c,v 1.223 2020/12/08 14:40:55 tobhe Exp $	*/
+/*	$OpenBSD: ieee80211_input.c,v 1.224 2020/12/08 20:17:32 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2001 Atsushi Onoe
@@ -959,6 +959,11 @@ ieee80211_input_ba_gap_timeout(void *arg)
 
 	skipped = ieee80211_input_ba_gap_skip(ba);
 	ic->ic_stats.is_ht_rx_ba_frame_lost += skipped;
+	if (skipped) {
+		struct mbuf_list ml = MBUF_LIST_INITIALIZER();
+		ieee80211_input_ba_flush(ic, ni, ba, &ml);
+		if_input(&ic->ic_if, &ml);
+	}
 
 	splx(s);	
 }
