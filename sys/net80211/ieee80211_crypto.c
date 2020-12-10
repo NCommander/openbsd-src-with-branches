@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_crypto.c,v 1.75 2019/08/16 19:53:32 procter Exp $	*/
+/*	$OpenBSD: ieee80211_crypto.c,v 1.76 2020/05/15 14:21:09 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2008 Damien Bergamini <damien.bergamini@free.fr>
@@ -290,7 +290,7 @@ ieee80211_decrypt(struct ieee80211com *ic, struct mbuf *m0,
 	/* find key for decryption */
 	k = ieee80211_get_rxkey(ic, m0, ni);
 	if (k == NULL || (k->k_flags & IEEE80211_KEY_SWCRYPTO) == 0) {
-		m_free(m0);
+		m_freem(m0);
 		return NULL;
 	}
 
