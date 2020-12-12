@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tpmr.c,v 1.19 2020/07/29 12:07:58 kn Exp $ */
+/*	$OpenBSD: if_tpmr.c,v 1.20 2020/08/21 22:59:27 kn Exp $ */
 
 /*
  * Copyright (c) 2019 The University of Queensland
@@ -362,7 +362,7 @@ tpmr_input(struct ifnet *ifp0, struct mbuf *m, void *brport)
 			;
 		else
 #endif
-		if ((*ifpn->if_enqueue)(ifpn, m))
+		if (if_enqueue(ifpn, m))
 			counters_inc(ifp->if_counters, ifc_oerrors);
 		else {
 			counters_pkt(ifp->if_counters,
