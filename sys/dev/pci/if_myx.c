@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_myx.c,v 1.111 2020/07/17 03:37:36 dlg Exp $	*/
+/*	$OpenBSD: if_myx.c,v 1.112 2020/11/27 00:13:15 kevlo Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -1969,7 +1969,7 @@ myx_mcl_small(void)
 {
 	struct mbuf *m;
 
-	m = MCLGETI(NULL, M_DONTWAIT, NULL, MYX_RXSMALL_SIZE);
+	m = MCLGETL(NULL, M_DONTWAIT, MYX_RXSMALL_SIZE);
 	if (m == NULL)
 		return (NULL);
 

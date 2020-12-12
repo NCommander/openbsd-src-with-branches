@@ -1,4 +1,4 @@
-/* $OpenBSD: bcmgenet.c,v 1.2 2020/06/22 02:27:04 dlg Exp $ */
+/* $OpenBSD: bcmgenet.c,v 1.3 2020/07/10 13:26:37 patrick Exp $ */
 /* $NetBSD: bcmgenet.c,v 1.3 2020/02/27 17:30:07 jmcneill Exp $ */
 
 /*-
@@ -300,7 +300,7 @@ genet_alloc_mbufcl(struct genet_softc *sc)
 {
 	struct mbuf *m;
 
-	m = MCLGETI(NULL, M_DONTWAIT, NULL, MCLBYTES);
+	m = MCLGETL(NULL, M_DONTWAIT, MCLBYTES);
 	if (m != NULL)
 		m->m_pkthdr.len = m->m_len = m->m_ext.ext_size;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: gem.c,v 1.124 2020/06/22 02:27:04 dlg Exp $	*/
+/*	$OpenBSD: gem.c,v 1.125 2020/07/10 13:26:37 patrick Exp $	*/
 /*	$NetBSD: gem.c,v 1.1 2001/09/16 00:11:43 eeh Exp $ */
 
 /*
@@ -1057,7 +1057,7 @@ gem_add_rxbuf(struct gem_softc *sc, int idx)
 	struct mbuf *m;
 	int error;
 
-	m = MCLGETI(NULL, M_DONTWAIT, NULL, MCLBYTES);
+	m = MCLGETL(NULL, M_DONTWAIT, MCLBYTES);
 	if (!m)
 		return (ENOBUFS);
 	m->m_len = m->m_pkthdr.len = MCLBYTES;

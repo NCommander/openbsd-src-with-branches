@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gre.c,v 1.161 2020/11/03 04:47:01 dlg Exp $ */
+/*	$OpenBSD: if_gre.c,v 1.162 2020/12/10 04:27:07 gnezdo Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -3198,7 +3198,7 @@ gre_keepalive_send(void *arg)
 		return;
 
 	if (len > MHLEN) {
-		MCLGETI(m, M_DONTWAIT, NULL, len);
+		MCLGETL(m, M_DONTWAIT, len);
 		if (!ISSET(m->m_flags, M_EXT)) {
 			m_freem(m);
 			return;
@@ -4099,7 +4099,7 @@ eoip_keepalive_send(void *arg)
 		return;
 
 	if (linkhdr > MHLEN) {
-		MCLGETI(m, M_DONTWAIT, NULL, linkhdr);
+		MCLGETL(m, M_DONTWAIT, linkhdr);
 		if (!ISSET(m->m_flags, M_EXT)) {
 			m_freem(m);
 			return;

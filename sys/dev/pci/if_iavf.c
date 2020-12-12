@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iavf.c,v 1.8 2020/06/25 04:25:55 dlg Exp $	*/
+/*	$OpenBSD: if_iavf.c,v 1.9 2020/07/10 13:26:38 patrick Exp $	*/
 
 /*
  * Copyright (c) 2013-2015, Intel Corporation
@@ -2067,7 +2067,7 @@ iavf_rxfill(struct iavf_softc *sc, struct iavf_rx_ring *rxr)
 	do {
 		rxm = &rxr->rxr_maps[prod];
 
-		m = MCLGETI(NULL, M_DONTWAIT, NULL, MCLBYTES + ETHER_ALIGN);
+		m = MCLGETL(NULL, M_DONTWAIT, MCLBYTES + ETHER_ALIGN);
 		if (m == NULL)
 			break;
 		m->m_data += (m->m_ext.ext_size - (MCLBYTES + ETHER_ALIGN));

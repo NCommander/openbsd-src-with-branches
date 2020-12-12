@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.175 2020/11/24 13:54:58 gerhard Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.176 2020/12/09 05:39:42 dlg Exp $	*/
 
 /******************************************************************************
 
@@ -2666,7 +2666,7 @@ ixgbe_get_buf(struct rx_ring *rxr, int i)
 	}
 
 	/* needed in any case so prealocate since this one will fail for sure */
-	mp = MCLGETI(NULL, M_DONTWAIT, NULL, sc->rx_mbuf_sz);
+	mp = MCLGETL(NULL, M_DONTWAIT, sc->rx_mbuf_sz);
 	if (!mp)
 		return (ENOBUFS);
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dwxe.c,v 1.16 2020/06/22 02:23:21 dlg Exp $	*/
+/*	$OpenBSD: if_dwxe.c,v 1.17 2020/07/10 13:26:36 patrick Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
@@ -1342,7 +1342,7 @@ dwxe_alloc_mbuf(struct dwxe_softc *sc, bus_dmamap_t map)
 {
 	struct mbuf *m = NULL;
 
-	m = MCLGETI(NULL, M_DONTWAIT, NULL, MCLBYTES);
+	m = MCLGETL(NULL, M_DONTWAIT, MCLBYTES);
 	if (!m)
 		return (NULL);
 	m->m_len = m->m_pkthdr.len = MCLBYTES;

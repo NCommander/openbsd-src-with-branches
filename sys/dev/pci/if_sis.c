@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sis.c,v 1.137 2020/07/10 13:26:38 patrick Exp $ */
+/*	$OpenBSD: if_sis.c,v 1.138 2020/07/16 00:52:33 kevlo Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -1323,7 +1323,7 @@ sis_newbuf(struct sis_softc *sc, struct sis_desc *c)
 	if (c == NULL)
 		return (EINVAL);
 
-	m_new = MCLGETI(NULL, M_DONTWAIT, NULL, MCLBYTES);
+	m_new = MCLGETL(NULL, M_DONTWAIT, MCLBYTES);
 	if (!m_new)
 		return (ENOBUFS);
 

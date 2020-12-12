@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-/* $OpenBSD: if_em.c,v 1.355 2020/07/10 13:26:37 patrick Exp $ */
+/* $OpenBSD: if_em.c,v 1.356 2020/07/12 05:21:34 dlg Exp $ */
 /* $FreeBSD: if_em.c,v 1.46 2004/09/29 18:28:28 mlaier Exp $ */
 
 #include <dev/pci/if_em.h>
@@ -2515,7 +2515,7 @@ em_get_buf(struct em_queue *que, int i)
 
 	KASSERT(pkt->pkt_m == NULL);
 
-	m = MCLGETI(NULL, M_DONTWAIT, NULL, EM_MCLBYTES);
+	m = MCLGETL(NULL, M_DONTWAIT, EM_MCLBYTES);
 	if (m == NULL) {
 		sc->mbuf_cluster_failed++;
 		return (ENOBUFS);
