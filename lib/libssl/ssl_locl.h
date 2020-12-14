@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.307 2020/11/11 18:14:12 jsing Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.308 2020/12/01 07:46:02 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -897,9 +897,9 @@ typedef struct ssl3_state_internal_st {
 
 		/* actually only need to be 16+20 for SSLv3 and 12 for TLS */
 		unsigned char finish_md[EVP_MAX_MD_SIZE*2];
-		int finish_md_len;
+		size_t finish_md_len;
 		unsigned char peer_finish_md[EVP_MAX_MD_SIZE*2];
-		int peer_finish_md_len;
+		size_t peer_finish_md_len;
 
 		unsigned long message_size;
 		int message_type;
