@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2019/09/23 08:34:07 bluhm Exp $
+# $OpenBSD: Makefile,v 1.7 2020/07/27 13:40:02 rob Exp $
 
 # Start with a clean /var/account/acct accounting file and turn on
 # process accounting with accton(8).  Each test executes a command
@@ -15,7 +15,7 @@ REGRESS_SKIP_TARGETS +=	run-syscallwx
 
 .endif
 
-.if ${MACHINE} == amd64 || ${MACHINE} == armv7
+.if ${MACHINE} == amd64
 # calling trapsignal() from syscall path does not work on amd64
 REGRESS_EXPECTED_FAILURES +=	run-callstack run-syscallwx
 .endif
