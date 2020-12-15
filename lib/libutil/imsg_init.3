@@ -1,4 +1,4 @@
-.\" $OpenBSD: imsg_init.3,v 1.22 2018/09/26 09:22:52 jmc Exp $
+.\" $OpenBSD: imsg_init.3,v 1.23 2019/01/20 02:50:03 bcook Exp $
 .\"
 .\" Copyright (c) 2010 Nicholas Marriott <nicm@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
 .\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 26 2018 $
+.Dd $Mdocdate: January 20 2019 $
 .Dt IMSG_INIT 3
 .Os
 .Sh NAME
@@ -186,7 +186,7 @@ appends to
 bytes of ancillary data pointed to by
 .Fa data .
 It returns
-.Fa len
+.Fa datalen
 if it succeeds, \-1 otherwise.
 .Pp
 .Fn imsg_close
