@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mcx.c,v 1.75 2020/11/06 02:50:02 jmatthew Exp $ */
+/*	$OpenBSD: if_mcx.c,v 1.76 2020/12/12 11:48:53 jan Exp $ */
 
 /*
  * Copyright (c) 2017 David Gwynne <dlg@openbsd.org>
@@ -6597,7 +6597,7 @@ mcx_process_rx(struct mcx_softc *sc, struct mcx_rx *rx,
 	}
 #endif
 
-	if (c->c_tdiff) {
+	if (ISSET(sc->sc_ac.ac_if.if_flags, IFF_LINK0) && c->c_tdiff) {
 		uint64_t t = bemtoh64(&cqe->cq_timestamp) - c->c_timestamp;
 		t *= c->c_udiff;
 		t /= c->c_tdiff;
