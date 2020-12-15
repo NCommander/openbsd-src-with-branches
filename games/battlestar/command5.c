@@ -1,4 +1,4 @@
-/*	$OpenBSD: com5.c,v 1.13 2015/12/31 17:51:19 mestre Exp $	*/
+/*	$OpenBSD: com5.c,v 1.14 2018/02/07 20:22:23 tedu Exp $	*/
 /*	$NetBSD: com5.c,v 1.3 1995/03/21 15:07:07 cgd Exp $	*/
 
 /*
