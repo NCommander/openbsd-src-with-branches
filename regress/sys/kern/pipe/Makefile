@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2019/12/24 09:37:53 anton Exp $
+#	$OpenBSD: Makefile,v 1.3 2020/06/29 18:25:37 anton Exp $
 
 PROG=		pipe
 
@@ -27,14 +27,12 @@ TESTS+=	thundering-herd-read-wakeup
 TESTS+=	thundering-herd-write-signal
 TESTS+=	thundering-herd-write-wakeup
 
-REGRESS_SETUP_ONCE=	setup
-setup: ${PROG}
+REGRESS_SETUP=		${PROG}
 
 .for t in ${TESTS}
-${t}:
-	@echo "\n======== ${@} ========"
-	./${PROG} ${t}
-REGRESS_TARGETS+=	${t}
+run-$t:
+	./${PROG} $t
+REGRESS_TARGETS+=	run-$t
 .endfor
 
 .include <bsd.regress.mk>
