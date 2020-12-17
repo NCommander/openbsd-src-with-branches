@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1.1.1 2019/02/21 16:14:03 bluhm Exp $
+# $OpenBSD: Makefile,v 1.2 2020/11/07 08:58:28 kettenis Exp $
 
 TESTS =
 TESTS +=	conj_test
@@ -13,7 +13,6 @@ DPADD=	${LIBM}
 .for t in ${TESTS}
 REGRESS_TARGETS+=	run-$t
 run-$t: $t
-	@echo "\n======== $@ ========"
 	./$t
 .endfor
 

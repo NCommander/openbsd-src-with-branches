@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2020/10/29 06:05:12 tb Exp $
+# $OpenBSD: Makefile,v 1.3 2020/10/30 03:12:40 tb Exp $
 
 .include <bsd.own.mk>
 
@@ -37,7 +37,6 @@ DPADD =		/usr/local/lib/libbotan-2.a
 REGRESS_TARGETS += run-client-botan-server-${lib}
 
 run-client-botan-server-${lib}: client server.crt
-	@echo '\n======== $@ ========'
 	LD_LIBRARY_PATH=/usr/local/lib/e${lib} \
 	    ../${lib}/server >server-${lib}.out \
 	    -c server.crt -k server.key \
