@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.1 2015/10/14 12:47:07 vgross Exp $
+#	$OpenBSD: Makefile,v 1.2 2015/10/14 13:17:33 vgross Exp $
 
 DIR=	${.CURDIR}/../../netinet6/autoport
 
 REGRESS_TARGETS=	run-regress-autoport
-REGRESS_ROOT_TARGETS=	$(REGRESS_TARGETS)
+REGRESS_ROOT_TARGETS=	${REGRESS_TARGETS}
 
 run-regress-autoport:
-	/usr/bin/perl $(DIR)/autoport.pl 4 30000 31000 64
+	${SUDO} /usr/bin/perl ${DIR}/autoport.pl 4 30000 31000 64
 
 .include <bsd.regress.mk>
