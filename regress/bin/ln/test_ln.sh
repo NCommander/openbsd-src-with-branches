@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#	$OpenBSD$
+#	$OpenBSD: test_ln.sh,v 1.1 2013/03/12 06:00:05 guenther Exp $
 
 set -f
 
@@ -66,4 +66,3 @@ case $err in
  *"are identical"*"nothing done"*) ;;
  *) exit 1;;
 esac
- 
