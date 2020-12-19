@@ -1919,6 +1919,22 @@ imxccm_set_parent(void *cookie, uint32_t *cells, uint32_t *pcells)
 			mux |= (0x1 << sc->sc_muxs[idx].shift);
 			HWRITE4(sc, sc->sc_muxs[idx].reg, mux);
 			return 0;
+		case IMX8MP_CLK_PCIE_PHY:
+			if (pidx != IMX8MP_CLK_24M)
+				break;
+			mux = HREAD4(sc, sc->sc_muxs[idx].reg);
+			mux &= ~(sc->sc_muxs[idx].mask << sc->sc_muxs[idx].shift);
+			mux |= (0x0 << sc->sc_muxs[idx].shift);
+			HWRITE4(sc, sc->sc_muxs[idx].reg, mux);
+			return 0;
+		case IMX8MP_CLK_PCIE_AUX:
+			if (pidx != IMX8MP_SYS_PLL2_50M)
+				break;
+			mux = HREAD4(sc, sc->sc_muxs[idx].reg);
+			mux &= ~(sc->sc_muxs[idx].mask << sc->sc_muxs[idx].shift);
+			mux |= (0x2 << sc->sc_muxs[idx].shift);
+			HWRITE4(sc, sc->sc_muxs[idx].reg, mux);
+			return 0;
 		case IMX8MP_CLK_ENET_QOS:
 			if (pidx != IMX8MP_SYS_PLL2_125M)
 				break;
