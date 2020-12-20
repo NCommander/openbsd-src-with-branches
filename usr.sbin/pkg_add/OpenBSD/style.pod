@@ -1,4 +1,4 @@
-$OpenBSD: OpenBSD::style.pod,v 1.2 2020/01/04 17:13:35 schwarze Exp $
+$OpenBSD: OpenBSD::style.pod,v 1.3 2020/01/05 14:18:40 schwarze Exp $
 
 =head1 NAME
 

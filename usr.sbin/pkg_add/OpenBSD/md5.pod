@@ -1,4 +1,4 @@
-$OpenBSD: OpenBSD::md5.pod,v 1.1 2012/01/15 14:16:16 espie Exp $
+$OpenBSD: OpenBSD::md5.pod,v 1.2 2019/05/26 15:55:11 espie Exp $
 
 =head1 NAME
 
