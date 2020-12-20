@@ -1,4 +1,4 @@
-/*	$OpenBSD: mproc.c,v 1.35 2019/10/03 05:50:28 gilles Exp $	*/
+/*	$OpenBSD: mproc.c,v 1.36 2020/03/17 09:01:53 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2012 Eric Faurot <eric@faurot.net>
@@ -90,7 +90,8 @@ mproc_clear(struct mproc *p)
 {
 	log_debug("debug: clearing p=%s, fd=%d, pid=%d", p->name, p->imsgbuf.fd, p->pid);
 
-	event_del(&p->ev);
+	if (p->events)
+		event_del(&p->ev);
 	close(p->imsgbuf.fd);
 	imsg_clear(&p->imsgbuf);
 }
