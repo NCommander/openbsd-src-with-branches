@@ -1,4 +1,4 @@
-/*	$OpenBSD: phb.c,v 1.19 2020/11/15 23:14:04 kettenis Exp $	*/
+/*	$OpenBSD: phb.c,v 1.20 2020/12/20 13:02:10 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -444,7 +444,7 @@ phb_setup_tce_table(struct phb_softc *sc)
 		tce_page_shift = MAX(tce_page_shift, tce_sizes[i]);
 	free(tce_sizes, M_TEMP, len);
 
-	/* Bail out if we don't support 2G pages. */
+	/* Bail out if we don't support 1G pages. */
 	if (tce_page_shift < 30)
 		return;
 
