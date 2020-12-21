@@ -1,4 +1,4 @@
-#	$OpenBSD: dhgex.sh,v 1.5 2019/09/27 05:25:12 dtucker Exp $
+#	$OpenBSD: dhgex.sh,v 1.6 2019/10/06 11:49:50 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="dhgex"
@@ -58,4 +58,4 @@ check 3072 3des-cbc  # 112 bits.
 check 3072 `${SSH} -Q cipher | grep 128`
 check 7680 `${SSH} -Q cipher | grep 192`
 check 8192 `${SSH} -Q cipher | grep 256`
-check 8192 rijndael-cbc@lysator.liu.se chacha20-poly1305@openssh.com
+check 8192 chacha20-poly1305@openssh.com
