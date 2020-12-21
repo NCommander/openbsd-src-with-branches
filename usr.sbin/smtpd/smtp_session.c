@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.426 2020/04/24 11:34:07 eric Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.427 2020/11/20 20:37:56 jung Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -637,8 +637,8 @@ smtp_session(struct listener *listener, int sock,
 		s->fcrdns = 1;
 		smtp_lookup_servername(s);
 	} else {
-		resolver_getnameinfo((struct sockaddr *)&s->ss, NI_NAMEREQD,
-		    smtp_getnameinfo_cb, s);
+		resolver_getnameinfo((struct sockaddr *)&s->ss,
+		    NI_NAMEREQD | NI_NUMERICSERV, smtp_getnameinfo_cb, s);
 	}
 
 	/* session may have been freed by now */
