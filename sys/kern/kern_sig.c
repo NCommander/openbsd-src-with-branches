@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.267 2020/12/04 15:16:45 mpi Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.268 2020/12/07 16:55:28 mpi Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -523,7 +523,7 @@ sys_sigsuspend(struct proc *p, void *v, register_t *retval)
 	struct sigacts *ps = pr->ps_sigacts;
 
 	dosigsuspend(p, SCARG(uap, mask) &~ sigcantmask);
-	while (tsleep_nsec(ps, PPAUSE|PCATCH, "pause", INFSLP) == 0)
+	while (tsleep_nsec(ps, PPAUSE|PCATCH, "sigsusp", INFSLP) == 0)
 		/* void */;
 	/* always return EINTR rather than ERESTART... */
 	return (EINTR);
