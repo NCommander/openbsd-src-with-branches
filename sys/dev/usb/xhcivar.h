@@ -1,4 +1,4 @@
-/* $OpenBSD: xhcivar.h,v 1.10 2018/09/05 14:03:28 mpi Exp $ */
+/* $OpenBSD: xhcivar.h,v 1.11 2019/10/06 17:30:00 mpi Exp $ */
 
 /*
  * Copyright (c) 2014 Martin Pieuchot
@@ -40,6 +40,7 @@ struct xhci_xfer {
 	struct usbd_xfer	 xfer;
 	int			 index;		/* Index of the last TRB */
 	size_t			 ntrb;		/* Number of associated TRBs */
+	size_t			 zerotd;	/* Is zero len TD required? */
 };
 
 struct xhci_ring {
