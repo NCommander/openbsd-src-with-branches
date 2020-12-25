@@ -1,11 +1,11 @@
-# $OpenBSD: Makefile,v 1.7 2020/09/14 00:51:04 bluhm Exp $
+# $OpenBSD: Makefile,v 1.8 2020/12/17 00:51:11 bluhm Exp $
 
 PROGS =			client server
-CFLAGS =		-DLIBRESSL_HAS_TLS1_3
-CPPFLAGS =
-LDFLAGS =
-LDADD =			-lssl -lcrypto
-DPADD =			${LIBSSL} ${LIBCRYPTO}
+CFLAGS +=		-DLIBRESSL_HAS_TLS1_3
+CPPFLAGS +=
+LDFLAGS +=
+LDADD +=		-lssl -lcrypto
+DPADD +=		${LIBSSL} ${LIBCRYPTO}
 LD_LIBRARY_PATH =
 REGRESS_TARGETS =	run-self-client-server
 .for p in ${PROGS}
