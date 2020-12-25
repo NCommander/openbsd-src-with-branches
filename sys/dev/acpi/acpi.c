@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.392 2020/12/05 16:14:30 kettenis Exp $ */
+/* $OpenBSD: acpi.c,v 1.393 2020/12/17 17:57:19 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -3672,7 +3672,7 @@ acpi_filtdetach(struct knote *kn)
 	int s;
 
 	s = splbio();
-	klist_remove(sc->sc_note, kn);
+	klist_remove_locked(sc->sc_note, kn);
 	splx(s);
 }
 
@@ -3706,7 +3706,7 @@ acpikqfilter(dev_t dev, struct knote *kn)
 	kn->kn_hook = sc;
 
 	s = splbio();
-	klist_insert(sc->sc_note, kn);
+	klist_insert_locked(sc->sc_note, kn);
 	splx(s);
 
 	return (0);

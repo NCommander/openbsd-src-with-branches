@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhid.c,v 1.79 2020/04/07 13:27:51 visa Exp $ */
+/*	$OpenBSD: uhid.c,v 1.80 2020/05/13 08:13:42 mpi Exp $ */
 /*	$NetBSD: uhid.c,v 1.57 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -447,7 +447,7 @@ filt_uhidrdetach(struct knote *kn)
 	int s;
 
 	s = splusb();
-	klist_remove(&sc->sc_rsel.si_note, kn);
+	klist_remove_locked(&sc->sc_rsel.si_note, kn);
 	splx(s);
 }
 
@@ -496,7 +496,7 @@ uhidkqfilter(dev_t dev, struct knote *kn)
 	kn->kn_hook = (void *)sc;
 
 	s = splusb();
-	klist_insert(klist, kn);
+	klist_insert_locked(klist, kn);
 	splx(s);
 
 	return (0);

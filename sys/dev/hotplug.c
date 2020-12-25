@@ -1,4 +1,4 @@
-/*	$OpenBSD: hotplug.c,v 1.19 2020/02/20 16:56:52 visa Exp $	*/
+/*	$OpenBSD: hotplug.c,v 1.20 2020/04/07 13:27:51 visa Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -211,7 +211,7 @@ hotplugkqfilter(dev_t dev, struct knote *kn)
 	}
 
 	s = splbio();
-	klist_insert(klist, kn);
+	klist_insert_locked(klist, kn);
 	splx(s);
 	return (0);
 }
@@ -222,7 +222,7 @@ filt_hotplugrdetach(struct knote *kn)
 	int s;
 
 	s = splbio();
-	klist_remove(&hotplug_sel.si_note, kn);
+	klist_remove_locked(&hotplug_sel.si_note, kn);
 	splx(s);
 }
 
