@@ -6890,7 +6890,7 @@ mcx_arm_eq(struct mcx_softc *sc, struct mcx_eq *eq, int uar)
 	val = (eq->eq_n << 24) | (eq->eq_cons & 0xffffff);
 
 	mcx_wr(sc, offset, val);
-	/* barrier? */
+	mcx_bar(sc, offset, sizeof(val), BUS_SPACE_BARRIER_WRITE);
 }
 
 static struct mcx_eq_entry *
