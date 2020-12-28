@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.301 2020/09/13 09:42:31 claudio Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.302 2020/12/07 16:55:28 mpi Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -432,6 +432,7 @@ main(void *framep)
 #endif
 
 	mbcpuinit();	/* enable per cpu mbuf data */
+	uvm_init_percpu();
 
 	/* init exec and emul */
 	init_exec();
