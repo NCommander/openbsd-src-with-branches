@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypbind.c,v 1.72 2018/04/26 15:55:14 guenther Exp $ */
+/*	$OpenBSD: ypbind.c,v 1.73 2019/06/28 13:32:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 1992, 1993, 1996, 1997, 1998 Theo de Raadt <deraadt@openbsd.org>
@@ -757,7 +757,8 @@ broadcast(struct _dom_binding *ypdb, char *buf, int outlen)
 		return -1;
 	}
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-		if (ifa->ifa_addr->sa_family != AF_INET)
+		if (ifa->ifa_addr == NULL ||
+		    ifa->ifa_addr->sa_family != AF_INET)
 			continue;
 		if ((ifa->ifa_flags & IFF_UP) == 0)
 			continue;
