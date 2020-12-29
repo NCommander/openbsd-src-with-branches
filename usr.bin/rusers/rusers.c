@@ -1,4 +1,4 @@
-/*	$OpenBSD: rusers.c,v 1.41 2019/01/25 00:19:26 millert Exp $	*/
+/*	$OpenBSD: rusers.c,v 1.42 2019/06/28 13:35:03 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001, 2003 Todd C. Miller <millert@openbsd.org>
@@ -558,7 +558,8 @@ allhosts(void)
 	 */
 	for (i = 0; i < 6; i++) {
 		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-			if (ifa->ifa_addr->sa_family != AF_INET ||
+			if (ifa->ifa_addr == NULL ||
+			    ifa->ifa_addr->sa_family != AF_INET ||
 			    !(ifa->ifa_flags & IFF_BROADCAST) ||
 			    !(ifa->ifa_flags & IFF_UP) ||
 			    ifa->ifa_broadaddr == NULL ||
