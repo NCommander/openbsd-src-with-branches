@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 2020/01/26 00:09:50 djm Exp $
+#	$OpenBSD: Makefile,v 1.10 2020/04/06 09:43:56 dtucker Exp $
 
 PROG=test_kex
 SRCS=tests.c test_kex.c
@@ -23,8 +23,8 @@ SRCS+=	kexgexs.c
 SRCS+=	kexc25519.c
 SRCS+=	smult_curve25519_ref.c
 SRCS+=	kexgen.c
-SRCS+=	kexsntrup4591761x25519.c
-SRCS+=	sntrup4591761.c
+SRCS+=	kexsntrup761x25519.c
+SRCS+=	sntrup761.c
 SRCS+=	utf8.c
 
 SRCS+=digest-openssl.c
