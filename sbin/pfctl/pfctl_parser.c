@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.c,v 1.342 2019/10/17 21:54:28 millert Exp $ */
+/*	$OpenBSD: pfctl_parser.c,v 1.343 2020/05/15 00:56:03 cheloha Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1352,7 +1352,8 @@ ifa_load(void)
 		err(1, "getifaddrs");
 
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-		if (!(ifa->ifa_addr->sa_family == AF_INET ||
+		if (ifa->ifa_addr == NULL ||
+		    !(ifa->ifa_addr->sa_family == AF_INET ||
 		    ifa->ifa_addr->sa_family == AF_INET6 ||
 		    ifa->ifa_addr->sa_family == AF_LINK))
 				continue;
