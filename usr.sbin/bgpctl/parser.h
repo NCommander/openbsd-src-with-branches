@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.37 2019/06/25 07:44:20 claudio Exp $ */
+/*	$OpenBSD: parser.h,v 1.38 2020/05/10 13:38:46 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -32,6 +32,7 @@ enum actions {
 	SHOW_FIB_TABLES,
 	SHOW_RIB,
 	SHOW_MRT,
+	SHOW_SET,
 	SHOW_RIB_MEM,
 	SHOW_NEXTHOP,
 	SHOW_INTERFACE,
