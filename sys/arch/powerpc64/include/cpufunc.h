@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.8 2020/08/23 10:07:51 kettenis Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.9 2020/12/22 11:55:44 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -165,6 +165,7 @@ mtlpcr(uint64_t value)
 	__asm volatile ("mtspr 318, %0" :: "r"(value));
 }
 
+#define LPCR_PECE	0x000040000001f000UL
 #define LPCR_LPES	0x0000000000000008UL
 #define LPCR_HVICE	0x0000000000000002UL
 
