@@ -1,4 +1,4 @@
-/*	$OpenBSD: logger.c,v 1.21 2018/02/07 03:28:05 florian Exp $	*/
+/*	$OpenBSD: logger.c,v 1.22 2019/05/02 22:32:34 kn Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -89,6 +89,7 @@ logger_close(void)
 			log->log_fd = -1;
 		}
 		TAILQ_REMOVE(&log_files, log, log_entry);
+		free(log);
 	}
 }
 
