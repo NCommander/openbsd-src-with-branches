@@ -1,4 +1,4 @@
-/*	$OpenBSD: cz.c,v 1.23 2020/03/11 15:51:15 cheloha Exp $ */
+/*	$OpenBSD: cz.c,v 1.24 2020/05/21 09:31:59 mpi Exp $ */
 /*	$NetBSD: cz.c,v 1.15 2001/01/20 19:10:36 thorpej Exp $	*/
 
 /*-
@@ -835,7 +835,6 @@ cz_wait_pci_doorbell(struct cz_softc *cz, char *wstring)
 
 #define CZTTYDIALOUT_MASK	0x80
 
-#define	CZTTY_DIALOUT(dev)	(minor((dev)) & CZTTYDIALOUT_MASK)
 #define	CZTTY_CZ(sc)		((sc)->sc_parent)
 
 #define	CZTTY_SOFTC(dev)	cztty_getttysoftc(dev)
@@ -1033,10 +1032,6 @@ czttyopen(dev_t dev, int flags, int mode, struct proc *p)
 	}
 
 	splx(s);
-
-	error = ttyopen(CZTTY_DIALOUT(dev), tp, p);
-	if (error)
-		goto bad;
 
 	error = (*linesw[tp->t_line].l_open)(dev, tp, p);
 	if (error)
