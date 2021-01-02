@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_token.c,v 1.15 2015/12/22 08:54:16 mmcc Exp $	*/
+/*	$OpenBSD: login_token.c,v 1.16 2019/06/28 13:32:53 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995, 1996 Berkeley Software Design, Inc. All rights reserved.
@@ -152,8 +152,14 @@ main(int argc, char *argv[])
 		    tt->proper);
 		(void)sigprocmask(SIG_UNBLOCK, &blockset, NULL);
 		if (mode == 1) {
-			fprintf(back, BI_VALUE " challenge %s\n",
-			    auth_mkvalue(challenge));
+			char *val = auth_mkvalue(challenge);
+			if (val == NULL) {
+				(void)fprintf(back, BI_VALUE " errormsg %s\n",
+				    "unable to allocate memory");
+				(void)fprintf(back, BI_REJECT "\n");
+				exit(1);
+			}
+			fprintf(back, BI_VALUE " challenge %s\n", val);
 			fprintf(back, BI_CHALLENGE "\n");
 			exit(0);
 		}
