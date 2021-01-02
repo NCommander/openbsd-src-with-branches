@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.13 2019/05/07 05:20:04 patrick Exp $
+# $OpenBSD: Makefile,v 1.14 2019/06/17 22:28:47 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -12,7 +12,7 @@ CXX=		clang++
 HDRDIR=		${.CURDIR}/include
 SRCDIR=		${.CURDIR}/src
 AHDRDIR=	${.CURDIR}/../libcxxabi/include
-UHDRDIR=	${.CURDIR}/../libunwind/include
+UHDRDIR=	${.CURDIR}/../../gnu/llvm/libunwind/include
 CXXINCLUDEDIR=	/usr/include/c++/v1
 
 .PATH:	${SRCDIR} ${SRCDIR}/filesystem
