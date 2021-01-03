@@ -1,4 +1,4 @@
-/*	$Id: fileproc.c,v 1.15 2018/07/29 20:15:23 benno Exp $ */
+/*	$Id: fileproc.c,v 1.16 2019/06/16 19:49:13 florian Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -33,6 +33,19 @@ serialise(const char *real, const char *v, size_t vsz, const char *v2, size_t v2
 {
 	int	  fd;
 	char	 *tmp;
+
+	/* create backup hardlink */
+	if (asprintf(&tmp, "%s.1", real) == -1) {
+		warn("asprintf");
+		return 0;
+	}
+	(void) unlink(tmp);
+	if (link(real, tmp) == -1 && errno != ENOENT) {
+		warn("link");
+		free(tmp);
+		return 0;
+	}
+	free(tmp);
 
 	/*
 	 * Write into backup location, overwriting.
