@@ -1,4 +1,4 @@
-/*	$OpenBSD: fortune.c,v 1.61 2020/12/15 14:06:32 zhuk Exp $	*/
+/*	$OpenBSD: fortune.c,v 1.62 2021/01/02 21:35:11 schwarze Exp $	*/
 /*	$NetBSD: fortune.c,v 1.8 1995/03/23 08:28:40 cgd Exp $	*/
 
 /*-
@@ -165,7 +165,7 @@ main(int ac, char *av[])
 	init_prob();
 	if ((Short_only && minlen_in_list(File_list) > SLEN) ||
 	    (Long_only && maxlen_in_list(File_list) <= SLEN))
-		return 0;
+		return 1;
 
 	do {
 		get_fort();
