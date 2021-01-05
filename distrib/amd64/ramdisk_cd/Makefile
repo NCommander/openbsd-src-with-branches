@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.22 2020/05/18 06:20:43 otto Exp $
+#	$OpenBSD: Makefile,v 1.23 2020/09/15 11:44:51 deraadt Exp $
 
 FS=		miniroot${OSrev}.img
 FSSIZE=		9920
@@ -99,7 +99,7 @@ unconfig:
 
 .ifdef RELEASEDIR
 install:
-	cp bsd.rd ${RELEASEDIR}/bsd.rd
+	cp bsd.gz ${RELEASEDIR}/bsd.rd
 	chmod a+r ${RELEASEDIR}/bsd.rd
 	cp ${FS} ${RELEASEDIR}
 	cp ${CDROM} ${RELEASEDIR}
