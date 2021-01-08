@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.204 2020/10/29 02:52:43 djm Exp $ */
+/* $OpenBSD: sftp.c,v 1.205 2020/12/04 02:41:10 djm Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -867,9 +867,12 @@ sglob_comp(const void *aa, const void *bb)
 #define NCMP(a,b) (a == b ? 0 : (a < b ? 1 : -1))
 	if (sort_flag & LS_NAME_SORT)
 		return (rmul * strcmp(ap, bp));
-	else if (sort_flag & LS_TIME_SORT)
-		return (rmul * timespeccmp(&as->st_mtim, &bs->st_mtim, <));
-	else if (sort_flag & LS_SIZE_SORT)
+	else if (sort_flag & LS_TIME_SORT) {
+		if (timespeccmp(&as->st_mtim, &bs->st_mtim, ==))
+			return 0;
+		return timespeccmp(&as->st_mtim, &bs->st_mtim, <) ?
+		    rmul : -rmul;
+	} else if (sort_flag & LS_SIZE_SORT)
 		return (rmul * NCMP(as->st_size, bs->st_size));
 
 	fatal("Unknown ls sort type");
