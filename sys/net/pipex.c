@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.127 2020/08/30 19:48:16 mvs Exp $	*/
+/*	$OpenBSD: pipex.c,v 1.128 2021/01/02 13:15:15 mvs Exp $	*/
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -2771,8 +2771,8 @@ pipex_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 	case PIPEXCTL_ENABLE:
 		if (namelen != 1)
 			return (ENOTDIR);
-		return (sysctl_int(oldp, oldlenp, newp, newlen,
-		    &pipex_enable));
+		return (sysctl_int_bounded(oldp, oldlenp, newp, newlen,
+		    &pipex_enable, 0, 1));
 	default:
 		return (ENOPROTOOPT);
 	}
