@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.88 2018/08/28 15:15:02 mpi Exp $ */
+/*	$OpenBSD: ip_ipip.c,v 1.89 2018/11/14 23:55:04 dlg Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -596,7 +596,8 @@ ipip_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 	switch (name[0]) {
 	case IPIPCTL_ALLOW:
 		NET_LOCK();
-		error = sysctl_int(oldp, oldlenp, newp, newlen, &ipip_allow);
+		error = sysctl_int_bounded(oldp, oldlenp, newp, newlen,
+		    &ipip_allow, 0, 2);
 		NET_UNLOCK();
 		return (error);
 	case IPIPCTL_STATS:
