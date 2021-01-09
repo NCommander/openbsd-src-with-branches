@@ -762,7 +762,7 @@ wsmux_detach_sc_locked(struct wsmux_softc *sc, struct wsevsrc *me)
 			(void)wsevsrc_set_display(me, NULL);
 	} else
 #endif
-	if (me->me_evp != NULL) {
+		if (me->me_evp != NULL) {
 		DPRINTF(("%s: close\n", __func__));
 		/* mux device is open, so close multiplexee */
 		(void)wsevsrc_close(me);
