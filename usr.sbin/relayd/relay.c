@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.250 2019/07/13 06:53:00 chrisz Exp $	*/
+/*	$OpenBSD: relay.c,v 1.251 2020/05/14 17:27:38 pvk Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -214,6 +214,9 @@ relay_ruledebug(struct relay_rule *rule)
 		case KEY_OPTION_LOG:
 			fprintf(stderr, "log ");
 			break;
+		case KEY_OPTION_STRIP:
+			fprintf(stderr, "strip ");
+			break;
 		case KEY_OPTION_NONE:
 			break;
 		}
@@ -227,13 +230,15 @@ relay_ruledebug(struct relay_rule *rule)
 			break;
 		}
 
+		int kvv = (kv->kv_option == KEY_OPTION_STRIP ||
+		     kv->kv_value == NULL);
 		fprintf(stderr, "%s%s%s%s%s%s ",
 		    kv->kv_key == NULL ? "" : "\"",
 		    kv->kv_key == NULL ? "" : kv->kv_key,
 		    kv->kv_key == NULL ? "" : "\"",
-		    kv->kv_value == NULL ? "" : " value \"",
+		    kvv ? "" : " value \"",
 		    kv->kv_value == NULL ? "" : kv->kv_value,
-		    kv->kv_value == NULL ? "" : "\"");
+		    kvv ? "" : "\"");
 	}
 
 	if (rule->rule_tablename[0])
