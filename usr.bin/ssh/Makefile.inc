@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.85 2020/10/16 13:24:45 djm Exp $
+#	$OpenBSD: Makefile.inc,v 1.86 2020/12/29 00:59:15 djm Exp $
 
 .include <bsd.own.mk>
 
@@ -55,6 +55,7 @@ SRCS_BASE+=	ssherr.c
 SRCS_BASE+=	log.c
 SRCS_BASE+=	xmalloc.c
 SRCS_BASE+=	misc.c
+SRCS_BASE+=	addr.c
 SRCS_BASE+=	addrmatch.c
 SRCS_BASE+=	match.c
 
