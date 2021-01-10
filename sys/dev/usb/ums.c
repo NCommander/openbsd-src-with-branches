@@ -1,4 +1,4 @@
-/*	$OpenBSD: ums.c,v 1.44 2020/06/17 23:43:08 bru Exp $ */
+/*	$OpenBSD: ums.c,v 1.45 2020/08/23 11:08:02 mglocker Exp $ */
 /*	$NetBSD: ums.c,v 1.60 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -150,6 +150,8 @@ ums_attach(struct device *parent, struct device *self, void *aux)
 		qflags |= HIDMS_MS_BAD_CLASS;
 	if (quirks & UQ_MS_LEADING_BYTE)
 		qflags |= HIDMS_LEADINGBYTE;
+	if (quirks & UQ_MS_VENDOR_BUTTONS)
+		qflags |= HIDMS_VENDOR_BUTTONS;
 
 	if (hidms_setup(self, ms, qflags, uha->reportid, desc, size) != 0)
 		return;
