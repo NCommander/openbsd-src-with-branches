@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_parse.y,v 1.19 2020/12/07 20:14:35 anton Exp $	*/
+/*	$OpenBSD: bt_parse.y,v 1.20 2020/12/11 07:27:55 anton Exp $	*/
 
 /*
  * Copyright (c) 2019 - 2020 Martin Pieuchot <mpi@openbsd.org>
@@ -792,10 +792,14 @@ again:
 			/*
 			 * Probe lexer backdoor, interpret the token as a string
 			 * rather than a keyword. Otherwise, reserved keywords
-			 * would conflict with syscall names.
+			 * would conflict with syscall names. The exception to
+			 * this is 'hz', which hopefully will never be a
+			 * syscall.
 			 */
-			yylval.v.string = kwp->word;
-			return STRING;
+			if (kwp->token != HZ) {
+				yylval.v.string = kwp->word;
+				return STRING;
+			}
 		}
 		yylval.v.i = kwp->type;
 		return kwp->token;
