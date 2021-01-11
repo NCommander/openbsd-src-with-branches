@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_var.h,v 1.85 2019/08/26 18:47:53 bluhm Exp $	*/
+/*	$OpenBSD: ip6_var.h,v 1.86 2019/12/08 11:08:22 sashan Exp $	*/
 /*	$KAME: ip6_var.h,v 1.33 2000/06/11 14:59:20 jinmei Exp $	*/
 
 /*
@@ -368,7 +368,8 @@ u_int32_t ip6_randomflowlabel(void);
 struct tdb;
 struct tdb *
 	ip6_output_ipsec_lookup(struct mbuf *, int *, struct inpcb *);
-int	ip6_output_ipsec_send(struct tdb *, struct mbuf *, int, int);
+int	ip6_output_ipsec_send(struct tdb *, struct mbuf *, struct route_in6 *,
+	    int, int);
 #endif /* IPSEC */
 
 #endif /* _KERNEL */
