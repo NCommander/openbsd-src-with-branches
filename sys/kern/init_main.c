@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.303 2020/12/28 14:01:23 mpi Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.304 2021/01/01 07:00:33 jsg Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -232,6 +232,7 @@ main(void *framep)
 	KERNEL_LOCK_INIT();
 	SCHED_LOCK_INIT();
 
+	rw_obj_init();
 	uvm_init();
 	disk_init();		/* must come before autoconfiguration */
 	tty_init();		/* initialise tty's */
