@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.230 2020/04/22 07:45:31 mpi Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.231 2020/04/22 07:51:38 mpi Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -690,8 +690,10 @@ void
 nd6_invalidate(struct rtentry *rt)
 {
 	struct llinfo_nd6 *ln = (struct llinfo_nd6 *)rt->rt_llinfo;
+	struct sockaddr_dl *sdl = satosdl(rt->rt_gateway);
 
 	m_freem(ln->ln_hold);
+	sdl->sdl_alen = 0;
 	ln->ln_hold = NULL;
 	ln->ln_state = ND6_LLINFO_INCOMPLETE;
 	ln->ln_asked = 0;
