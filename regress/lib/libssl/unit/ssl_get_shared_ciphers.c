@@ -16,7 +16,13 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <openssl/bio.h>
 #include <openssl/err.h>
+#include <openssl/crypto.h>
 #include <openssl/ssl.h>
 
 struct peer_config {
