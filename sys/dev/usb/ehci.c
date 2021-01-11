@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.212 2020/10/23 20:25:35 mglocker Exp $ */
+/*	$OpenBSD: ehci.c,v 1.213 2020/11/27 20:41:21 mglocker Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -1159,7 +1159,7 @@ ehci_device_clear_toggle(struct usbd_pipe *pipe)
 
 #ifdef DIAGNOSTIC
 	if ((epipe->sqh->qh.qh_qtd.qtd_status & htole32(EHCI_QTD_ACTIVE)) != 0)
-		panic("ehci_device_clear_toggle: queue active");
+		printf("%s: queue active\n", __func__);
 #endif
 	epipe->sqh->qh.qh_qtd.qtd_status &= htole32(~EHCI_QTD_TOGGLE_MASK);
 }
