@@ -347,7 +347,12 @@ handshake(SSL *client_ssl, SSL *server_ssl, const char *description)
 			return 0;
 	}
 
-	return client_ret == 1 && server_ret == 1;
+	if (client_ret != 1 || server_ret != 1) {
+		fprintf(stderr, "%s: failed\n", __func__);
+		return 0;
+	}
+
+	return 1;
 }
 
 static int
@@ -365,7 +370,12 @@ shutdown(SSL *client_ssl, SSL *server_ssl, const char *description)
 			return 0;
 	}
 
-	return client_ret == 1 && server_ret == 1;
+	if (client_ret != 1 || server_ret != 1) {
+		fprintf(stderr, "%s: failed\n", __func__);
+		return 0;
+	}
+
+	return 1;
 }
 
 /* from ssl_ciph.c */
