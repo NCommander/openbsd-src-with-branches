@@ -16,6 +16,7 @@ PAIR1IP=10.12.57.1
 PAIR2IP=10.12.57.2
 PAIR2IP2=10.12.57.3
 PAIR2IP3=10.12.57.4
+PAIR2IP4=10.12.57.5
 
 error_notify() {
 	echo cleanup
@@ -47,6 +48,11 @@ run_exabgp() {
 		exabgp.api.cli=false \
 		exabgp.daemon.user=build \
 	    route -T ${RDOMAIN2} exec exabgp -1 ${1+"$@"} > ./exabgp.$_t.log
+}
+
+exacmd() {
+	echo "${1+"$@"}" > med.fifo
+	sleep .1	# give exabgp a bit of time
 }
 
 if [ ! -x /usr/local/bin/exabgp ]; then 
@@ -82,26 +88,63 @@ ifconfig ${PAIR1} rdomain ${RDOMAIN1} ${PAIR1IP}/29 up
 ifconfig ${PAIR2} rdomain ${RDOMAIN2} ${PAIR2IP}/29 up
 ifconfig ${PAIR2} alias ${PAIR2IP2}/32
 ifconfig ${PAIR2} alias ${PAIR2IP3}/32
+ifconfig ${PAIR2} alias ${PAIR2IP4}/32
 ifconfig ${PAIR1} patch ${PAIR2}
 ifconfig lo${RDOMAIN1} inet 127.0.0.1/8
 ifconfig lo${RDOMAIN2} inet 127.0.0.1/8
-[ -p as0.fifo ] || mkfifo as0.fifo
+
+[ -p med.fifo ] || mkfifo med.fifo
 
 echo run bgpd
 route -T ${RDOMAIN1} exec ${BGPD} \
-	-v -f ${BGPDCONFIGDIR}/bgpd.as0.conf
+	-v -f ${BGPDCONFIGDIR}/bgpd.med.conf
 
 sleep 1
 
-echo test1
-run_exabgp as0.test1 exabgp.as0.test1.conf > as0.test1.out 2>&1
-grep -q 'error[OPEN message error / Bad Peer AS]' as0.test1.out
+echo run exabgp
+run_exabgp med exabgp.med.conf &
+sleep 2
+
+echo test 1
+
+exacmd 'neighbor 10.12.57.1 router-id 10.12.57.2 announce route 10.12.1.0/24 next-hop self as-path [ 64501 64510 ] med 100'
+exacmd 'neighbor 10.12.57.1 router-id 10.12.57.3 announce route 10.12.1.0/24 next-hop self as-path [ 64502 64510 ] med 100'
+exacmd 'neighbor 10.12.57.1 router-id 10.12.57.4 announce route 10.12.1.0/24 next-hop self as-path [ 64501 64510 ] med 50'
+
+sleep 5
+route -T ${RDOMAIN1} exec bgpctl sh rib | tee med.out
+sleep .2
+diff -u ${BGPDCONFIGDIR}/exabgp.med.ok med.out
 echo OK
 
-echo test2
-run_exabgp as0.test2 exabgp.as0.test2*.conf > as0.test2.out 2>&1
-grep 'receive update announced' as0.test2.out | sort | \
-    diff -u ${BGPDCONFIGDIR}/exabgp.as0.test2.ok /dev/stdin
+exacmd 'clear adj-rib out all peers'
+
+echo test 2
+
+exacmd 'neighbor 10.12.57.1 router-id 10.12.57.4 announce route 10.12.1.0/24 next-hop self as-path [ 64501 64510 ] med 50'
+exacmd 'neighbor 10.12.57.1 router-id 10.12.57.3 announce route 10.12.1.0/24 next-hop self as-path [ 64502 64510 ] med 100'
+exacmd 'neighbor 10.12.57.1 router-id 10.12.57.2 announce route 10.12.1.0/24 next-hop self as-path [ 64501 64510 ] med 100'
+
+sleep 5
+route -T ${RDOMAIN1} exec bgpctl sh rib | tee med.out
+sleep .2
+diff -u ${BGPDCONFIGDIR}/exabgp.med.ok med.out
 echo OK
+
+exacmd 'clear adj-rib out all peers'
+
+echo test 3
+
+exacmd 'neighbor 10.12.57.1 router-id 10.12.57.2 announce route 10.12.1.0/24 next-hop self as-path [ 64501 64510 ] med 100'
+exacmd 'neighbor 10.12.57.1 router-id 10.12.57.4 announce route 10.12.1.0/24 next-hop self as-path [ 64501 64510 ] med 50'
+exacmd 'neighbor 10.12.57.1 router-id 10.12.57.3 announce route 10.12.1.0/24 next-hop self as-path [ 64502 64510 ] med 100'
+
+sleep 5
+route -T ${RDOMAIN1} exec bgpctl sh rib | tee med.out
+sleep .2
+diff -u ${BGPDCONFIGDIR}/exabgp.med.ok med.out
+echo OK
+
+exacmd 'shutdown'
 
 exit 0
