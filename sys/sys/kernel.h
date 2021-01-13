@@ -1,4 +1,4 @@
-/*	$OpenBSD: kernel.h,v 1.23 2020/05/20 17:24:17 cheloha Exp $	*/
+/*	$OpenBSD: kernel.h,v 1.24 2020/10/15 15:36:31 cheloha Exp $	*/
 /*	$NetBSD: kernel.h,v 1.11 1995/03/03 01:24:16 cgd Exp $	*/
 
 /*-
@@ -51,7 +51,6 @@ extern int utc_offset;		/* seconds east of UTC */
 
 extern int tick;		/* usec per tick (1000000 / hz) */
 extern int tick_nsec;		/* nsec per tick */
-extern int tickadj;		/* "standard" clock skew, us./tick */
 extern int ticks;		/* # of hardclock ticks */
 extern int hz;			/* system clock's frequency */
 extern int stathz;		/* statistics clock's frequency */
