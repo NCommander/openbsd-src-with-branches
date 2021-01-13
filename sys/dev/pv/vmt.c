@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmt.c,v 1.18 2020/05/29 04:42:25 deraadt Exp $ */
+/*	$OpenBSD: vmt.c,v 1.19 2020/06/24 22:03:40 cheloha Exp $ */
 
 /*
  * Copyright (c) 2007 David Crawshaw <david@zentus.com>
@@ -418,7 +418,7 @@ vmt_kvop(void *arg, int op, char *key, char *value, size_t valuelen)
 	int error = 0;
 
 	bufsz = VMT_RPC_BUFLEN;
-	buf = malloc(bufsz, M_TEMP|M_ZERO, M_WAITOK);
+	buf = malloc(bufsz, M_TEMP, M_WAITOK | M_ZERO);
 
 	switch (op) {
 	case PVBUS_KVWRITE:
