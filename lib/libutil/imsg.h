@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.h,v 1.4 2017/03/24 09:34:12 nicm Exp $	*/
+/*	$OpenBSD: imsg.h,v 1.5 2019/01/20 02:50:03 bcook Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -78,6 +78,7 @@ struct imsg {
 	void		*data;
 };
 
+struct iovec;
 
 /* buffer.c */
 struct ibuf	*ibuf_open(size_t);
