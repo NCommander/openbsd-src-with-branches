@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpireg.h,v 1.46 2020/09/15 13:43:40 jordan Exp $	*/
+/*	$OpenBSD: acpireg.h,v 1.47 2021/01/15 20:43:02 patrick Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
@@ -699,6 +699,7 @@ struct acpi_iort_node {
 #define ACPI_IORT_ITS		0
 #define ACPI_IORT_ROOT_COMPLEX	2
 #define ACPI_IORT_SMMU		3
+#define ACPI_IORT_SMMU_V3	4
 	uint16_t	length;
 	uint8_t		revision;
 	uint32_t	reserved1;
