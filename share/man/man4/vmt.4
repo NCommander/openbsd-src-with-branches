@@ -1,4 +1,4 @@
-.\"	$OpenBSD: vmt.4,v 1.8 2015/07/21 03:40:01 reyk Exp $
+.\"	$OpenBSD: vmt.4,v 1.9 2015/07/21 07:01:04 schwarze Exp $
 .\"
 .\" Copyright (c) 2008 Marco Peereboom <marco@openbsd.org>
 .\" Text was heavily borrowed from the IPMI spec V1.5
@@ -43,7 +43,7 @@ host.
 It also provides access to the host machine's clock as a timedelta sensor.
 .Pp
 .Nm
-reports the guest's hostname and first non-loopback IP address to the host.
+reports the guest's hostname and all non-loopback IP addresses to the host.
 .Sh SEE ALSO
 .Xr pvbus 4 ,
 .Xr init 8 ,
