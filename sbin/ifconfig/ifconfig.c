@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.430 2020/11/06 21:24:47 kn Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.431 2020/12/30 18:57:28 benno Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -3587,7 +3587,8 @@ void
 in6_fillscopeid(struct sockaddr_in6 *sin6)
 {
 #ifdef __KAME__
-	if (IN6_IS_ADDR_LINKLOCAL(&sin6->sin6_addr)) {
+	if (IN6_IS_ADDR_LINKLOCAL(&sin6->sin6_addr) &&
+	    sin6->sin6_scope_id == 0) {
 		sin6->sin6_scope_id =
 			ntohs(*(u_int16_t *)&sin6->sin6_addr.s6_addr[2]);
 		sin6->sin6_addr.s6_addr[2] = sin6->sin6_addr.s6_addr[3] = 0;
