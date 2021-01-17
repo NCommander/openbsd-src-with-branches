@@ -1,4 +1,4 @@
-/* $OpenBSD: client.c,v 1.149 2020/09/22 05:23:34 nicm Exp $ */
+/* $OpenBSD: client.c,v 1.150 2020/10/30 18:54:23 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -126,6 +126,8 @@ retry:
 	if (connect(fd, (struct sockaddr *)&sa, sizeof sa) == -1) {
 		log_debug("connect failed: %s", strerror(errno));
 		if (errno != ECONNREFUSED && errno != ENOENT)
+			goto failed;
+		if (flags & CLIENT_NOSTARTSERVER)
 			goto failed;
 		if (~flags & CLIENT_STARTSERVER)
 			goto failed;
