@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.192 2020/12/07 16:55:28 mpi Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.193 2020/12/09 18:58:19 mpi Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -694,6 +694,7 @@ process_reparent(struct process *child, struct process *parent)
 	}
 
 	child->ps_pptr = parent;
+	child->ps_ppid = parent->ps_pid;
 }
 
 void
