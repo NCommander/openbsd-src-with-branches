@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencode.c,v 1.55 2020/08/03 03:40:02 dlg Exp $	*/
+/*	$OpenBSD: gencode.c,v 1.56 2020/09/12 09:27:22 kn Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
@@ -3103,6 +3103,13 @@ gen_broadcast(proto)
 		break;
 
 	case Q_IP:
+		/*
+		 * We treat a netmask of PCAP_NETMASK_UNKNOWN (0xffffffff)
+		 * as an indication that we don't know the netmask, and fail
+		 * in that case.
+		 */
+		if (netmask == PCAP_NETMASK_UNKNOWN)
+			bpf_error("netmask not known, so 'ip broadcast' not supported");
 		b0 = gen_linktype(ETHERTYPE_IP);
 		hostmask = ~netmask;
 		b1 = gen_mcmp_nl(16, BPF_W, (bpf_int32)0, hostmask);
