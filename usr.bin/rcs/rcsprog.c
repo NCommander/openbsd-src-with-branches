@@ -1,4 +1,4 @@
-/*	$OpenBSD: rcsprog.c,v 1.161 2016/07/04 01:39:12 millert Exp $	*/
+/*	$OpenBSD: rcsprog.c,v 1.162 2020/06/09 20:05:40 joris Exp $	*/
 /*
  * Copyright (c) 2005 Jean-Francois Brousseau <jfb@openbsd.org>
  * All rights reserved.
@@ -60,6 +60,7 @@ struct rcs_prog {
 	{ "ident",	ident_main,	ident_usage	},
 	{ "merge",	merge_main,	merge_usage	},
 };
+void   (*usage)(void);
 
 struct wklhead temp_files;
 
