@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.24 2019/03/04 21:27:35 dlg Exp $ */
+/*	$OpenBSD: if.c,v 1.25 2019/07/04 01:39:44 dlg Exp $ */
 /*
  * Copyright (c) 2004 Markus Friedl <markus@openbsd.org>
  *
@@ -41,6 +41,8 @@ struct ifstat {
 	struct ifcount	ifs_now;
 	char		ifs_flag;
 } *ifstats;
+
+struct ifcount sum;
 
 static	int nifs = 0;
 static int num_ifs = 0;
