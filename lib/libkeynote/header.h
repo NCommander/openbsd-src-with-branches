@@ -1,4 +1,4 @@
-/* $OpenBSD: header.h,v 1.9 2004/06/25 05:06:49 msf Exp $ */
+/* $OpenBSD: header.h,v 1.10 2004/06/29 11:35:56 msf Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -33,7 +33,7 @@ extern int kvparse(void), kvlex(void);
 extern void kverror(char *);
 
 /* Variables */
-int sessid;
+extern int sessid;
 
 /* Defines */
 #define SEED_LEN        40
