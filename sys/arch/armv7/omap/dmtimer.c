@@ -1,4 +1,4 @@
-/*	$OpenBSD: dmtimer.c,v 1.7 2017/09/08 05:36:51 deraadt Exp $	*/
+/*	$OpenBSD: dmtimer.c,v 1.8 2019/05/06 03:45:58 mlarkin Exp $	*/
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2013 Raphael Graf <r@undefined.ch>
@@ -286,7 +286,7 @@ dmtimer_intr(void *frame)
 
 /*
  * would be interesting to play with trigger mode while having one timer
- * in 32KHz mode, and the other timer running in sysclk mode and use
+ * in 32kHz mode, and the other timer running in sysclk mode and use
  * the high resolution speeds (matters more for delay than tick timer
  */
 
