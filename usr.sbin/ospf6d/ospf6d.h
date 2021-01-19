@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.h,v 1.48 2020/05/16 15:54:12 denis Exp $ */
+/*	$OpenBSD: ospf6d.h,v 1.49 2020/05/17 18:29:25 denis Exp $ */
 
 /*
  * Copyright (c) 2004, 2007 Esben Norby <norby@openbsd.org>
@@ -340,11 +340,12 @@ struct ifaddrchange {
 };
 
 /* ospf_conf */
-enum {
+enum ospfd_process {
 	PROC_MAIN,
 	PROC_OSPF_ENGINE,
 	PROC_RDE_ENGINE
-} ospfd_process;
+};
+extern enum ospfd_process ospfd_process;
 
 #define	REDIST_CONNECTED	0x01
 #define	REDIST_STATIC		0x02
