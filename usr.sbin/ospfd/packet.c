@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.32 2019/07/15 18:26:39 remi Exp $ */
+/*	$OpenBSD: packet.c,v 1.33 2019/08/12 20:32:39 remi Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -107,6 +107,7 @@ send_packet(struct iface *iface, struct ibuf *buf, struct sockaddr_in *dst)
 void
 recv_packet(int fd, short event, void *bula)
 {
+	static char pkt_ptr[READ_BUF_SIZE];
 	union {
 		struct cmsghdr hdr;
 		char	buf[CMSG_SPACE(sizeof(struct sockaddr_dl))];

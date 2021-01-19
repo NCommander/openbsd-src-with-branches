@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.c,v 1.106 2019/04/23 06:18:02 remi Exp $ */
+/*	$OpenBSD: ospfe.c,v 1.107 2020/11/02 00:29:58 dlg Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -185,9 +185,6 @@ ospfe(struct ospfd_conf *xconf, int pipe_parent2ospfe[2], int pipe_ospfe2rde[2],
 		}
 	}
 
-	if ((pkt_ptr = calloc(1, READ_BUF_SIZE)) == NULL)
-		fatal("ospfe");
-
 	/* start interfaces */
 	LIST_FOREACH(area, &oeconf->area_list, entry) {
 		ospfe_demote_area(area, 0);
@@ -240,7 +237,6 @@ ospfe_shutdown(void)
 	free(iev_rde);
 	free(iev_main);
 	free(oeconf);
-	free(pkt_ptr);
 
 	log_info("ospf engine exiting");
 	_exit(0);
