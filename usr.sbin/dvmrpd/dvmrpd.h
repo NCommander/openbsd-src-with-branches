@@ -1,4 +1,4 @@
-/*	$OpenBSD: dvmrpd.h,v 1.22 2016/09/02 16:20:34 benno Exp $ */
+/*	$OpenBSD: dvmrpd.h,v 1.23 2021/01/19 11:46:10 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -52,12 +52,6 @@
 #define	F_LONGER		0x0040
 
 #define MAXVIFS			32	/* XXX */
-
-static const char * const log_procnames[] = {
-	"parent",
-	"dvmrpe",
-	"rde"
-};
 
 struct imsgev {
 	struct imsgbuf		 ibuf;
@@ -235,12 +229,6 @@ struct iface {
 };
 
 /* dvmrp_conf */
-enum {
-	PROC_MAIN,
-	PROC_DVMRP_ENGINE,
-	PROC_RDE_ENGINE
-} dvmrpd_process;
-
 struct dvmrpd_conf {
 	struct event		 ev;
 	struct event		 report_timer;
