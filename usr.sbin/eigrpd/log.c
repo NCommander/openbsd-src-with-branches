@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.7 2016/09/02 17:59:58 benno Exp $ */
+/*	$OpenBSD: log.c,v 1.8 2017/03/21 12:06:55 bluhm Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -146,15 +146,15 @@ void
 fatal(const char *emsg)
 {
 	if (emsg == NULL)
-		logit(LOG_CRIT, "fatal in %s: %s", log_procnames[eigrpd_process],
+		logit(LOG_CRIT, "fatal in %s: %s", log_procname,
 		    strerror(errno));
 	else
 		if (errno)
 			logit(LOG_CRIT, "fatal in %s: %s: %s",
-			    log_procnames[eigrpd_process], emsg, strerror(errno));
+			    log_procname, emsg, strerror(errno));
 		else
 			logit(LOG_CRIT, "fatal in %s: %s",
-			    log_procnames[eigrpd_process], emsg);
+			    log_procname, emsg);
 
 	exit(1);
 }
