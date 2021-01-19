@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfd.h,v 1.106 2020/01/21 20:38:52 remi Exp $ */
+/*	$OpenBSD: ospfd.h,v 1.107 2020/11/02 00:30:56 dlg Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -374,11 +374,12 @@ struct ifaddrchange {
 };
 
 /* ospf_conf */
-enum {
+enum ospfd_process {
 	PROC_MAIN,
 	PROC_OSPF_ENGINE,
 	PROC_RDE_ENGINE
-} ospfd_process;
+};
+extern enum ospfd_process ospfd_process;
 
 struct ospfd_conf {
 	struct event		ev;
