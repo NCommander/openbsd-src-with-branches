@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.17 2016/09/02 16:36:33 renato Exp $ */
+/*	$OpenBSD: packet.c,v 1.18 2016/09/02 16:44:33 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -467,6 +467,7 @@ error:
 void
 recv_packet(int fd, short event, void *bula)
 {
+	static char pkt_ptr[READ_BUF_SIZE];
 	union {
 		struct	cmsghdr hdr;
 		char	buf[CMSG_SPACE(CMSG_MAXLEN)];

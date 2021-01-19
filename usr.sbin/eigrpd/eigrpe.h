@@ -1,4 +1,4 @@
-/*	$OpenBSD: eigrpe.h,v 1.15 2016/09/02 16:46:29 renato Exp $ */
+/*	$OpenBSD: eigrpe.h,v 1.16 2017/02/22 14:24:50 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -179,7 +179,5 @@ void	 recv_query(struct nbr *, struct rinfo_head *, int);
 /* reply.c */
 void	 send_reply(struct nbr *, struct rinfo_head *, int);
 void	 recv_reply(struct nbr *, struct rinfo_head *, int);
-
-char	*pkt_ptr;	/* packet buffer */
 
 #endif	/* _EIGRPE_H_ */
