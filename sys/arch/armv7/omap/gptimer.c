@@ -1,4 +1,4 @@
-/* $OpenBSD: gptimer.c,v 1.8 2020/07/06 13:33:07 pirofti Exp $ */
+/* $OpenBSD: gptimer.c,v 1.9 2020/07/12 20:36:37 naddy Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -98,10 +98,6 @@
 
 static struct evcount clk_count;
 static struct evcount stat_count;
-#define GPT1_IRQ  38
-#define GPTIMER0_IRQ	38
-
-//static int clk_irq = GPT1_IRQ; /* XXX 37 */
 
 void gptimer_attach(struct device *parent, struct device *self, void *args);
 int gptimer_intr(void *frame);
@@ -281,7 +277,6 @@ gptimer_intr(void *frame)
 void
 gptimer_cpu_initclocks()
 {
-//	u_int32_t now;
 	stathz = 128;
 	profhz = 1024;
 
