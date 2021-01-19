@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospfe.c,v 1.65 2021/01/19 09:43:40 claudio Exp $ */
+/*	$OpenBSD: ospfe.c,v 1.66 2021/01/19 09:48:34 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -48,8 +48,8 @@ void		 orig_rtr_lsa_all(struct area *);
 struct iface	*find_vlink(struct abr_rtr *);
 
 struct ospfd_conf	*oeconf = NULL, *noeconf;
-struct imsgev		*iev_main;
-struct imsgev		*iev_rde;
+static struct imsgev	*iev_main;
+static struct imsgev	*iev_rde;
 int			 oe_nofib;
 
 /* ARGSUSED */
