@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpe.h,v 1.77 2019/12/12 00:10:29 yasuoka Exp $ */
+/*	$OpenBSD: ldpe.h,v 1.78 2021/01/19 15:14:35 claudio Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -270,8 +270,6 @@ void			 session_close(struct nbr *);
 struct tcp_conn		*tcp_new(int, struct nbr *);
 void			 pending_conn_del(struct pending_conn *);
 struct pending_conn	*pending_conn_find(int, union ldpd_addr *);
-
-char	*pkt_ptr;	/* packet buffer */
 
 /* pfkey.c */
 int	pfkey_read(int, struct sadb_msg *);
