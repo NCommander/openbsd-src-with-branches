@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripe.h,v 1.11 2014/10/25 03:23:49 lteo Exp $ */
+/*	$OpenBSD: ripe.h,v 1.12 2017/01/17 16:30:54 jca Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -25,7 +25,6 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 
-TAILQ_HEAD(ctl_conns, ctl_conn) ctl_conns;
 u_int8_t	*pkt_ptr;
 
 /* neighbor events */
@@ -71,6 +70,8 @@ struct nbr {
 	int			 state;
 	int			 flags;
 };
+
+struct ctl_conn;
 
 /* packet.c */
 int	 send_packet(struct iface *, void *, size_t, struct sockaddr_in *);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ripe.c,v 1.24 2019/12/09 20:37:54 remi Exp $ */
+/*	$OpenBSD: ripe.c,v 1.25 2019/12/11 21:04:59 remi Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -182,7 +182,6 @@ ripe(struct ripd_conf *xconf, int pipe_parent2ripe[2], int pipe_ripe2rde[2],
 	}
 
 	/* listen on ripd control socket */
-	TAILQ_INIT(&ctl_conns);
 	control_listen();
 
 	if ((pkt_ptr = calloc(1, IBUF_READ_SIZE)) == NULL)
