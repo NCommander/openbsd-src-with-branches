@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.h,v 1.5 2019/11/19 14:47:46 florian Exp $	*/
+/*	$OpenBSD: frontend.h,v 1.6 2019/11/27 17:09:12 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -16,8 +16,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-TAILQ_HEAD(ctl_conns, ctl_conn)	ctl_conns;
 
 struct trust_anchor {
 	TAILQ_ENTRY(trust_anchor)	 entry;
