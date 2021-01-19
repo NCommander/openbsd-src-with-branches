@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.c,v 1.64 2019/03/31 03:36:18 yasuoka Exp $ */
+/*	$OpenBSD: ldpd.c,v 1.65 2019/08/10 01:30:53 mestre Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -63,6 +63,7 @@ static void		 merge_l2vpn(struct ldpd_conf *, struct l2vpn *,
 			    struct l2vpn *);
 static void		 merge_auths(struct ldpd_conf *, struct ldpd_conf *);
 
+enum ldpd_process	 ldpd_process;
 struct ldpd_global	 global;
 struct ldpd_conf	*ldpd_conf;
 
@@ -117,7 +118,7 @@ main(int argc, char *argv[])
 
 	conffile = CONF_FILE;
 	ldpd_process = PROC_MAIN;
-	log_procname = log_procnames[ldpd_process];
+	log_procname = "parent";
 	sockname = LDPD_SOCKET;
 
 	log_init(1);	/* log to stderr until daemonized */
