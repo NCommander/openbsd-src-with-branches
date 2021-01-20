@@ -1,4 +1,4 @@
-/* $OpenBSD: tls12_record_layer.c,v 1.12 2021/01/19 18:57:09 jsing Exp $ */
+/* $OpenBSD: tls12_record_layer.c,v 1.13 2021/01/19 19:07:39 jsing Exp $ */
 /*
  * Copyright (c) 2020 Joel Sing <jsing@openbsd.org>
  *
@@ -1041,7 +1041,7 @@ tls12_record_layer_seal_record_protected_cipher(struct tls12_record_layer *rl,
 			goto err;
 	}
 
-	plain_len = (size_t)eiv_len + content_len + mac_len;
+	plain_len = eiv_len + content_len + mac_len;
 
 	/* Add padding to block size, if necessary. */
 	if (!tls12_record_protection_block_size(rl->write, &block_size))
