@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_config.c,v 1.61 2020/12/22 13:07:54 bcook Exp $ */
+/* $OpenBSD: tls_config.c,v 1.62 2021/01/21 19:09:10 eric Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -811,6 +811,7 @@ void
 tls_config_use_fake_private_key(struct tls_config *config)
 {
 	config->use_fake_private_key = 1;
+	config->skip_private_key_check = 1;
 }
 
 int
