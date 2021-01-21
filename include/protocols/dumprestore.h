@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumprestore.h,v 1.9 2009/12/15 13:11:42 halex Exp $	*/
+/*	$OpenBSD: dumprestore.h,v 1.10 2014/07/11 16:01:40 halex Exp $	*/
 /*	$NetBSD: dumprestore.h,v 1.14 2005/12/26 19:01:47 perry Exp $	*/
 
 /*
@@ -66,7 +66,7 @@
 #endif
 #define CHECKSUM	(int)84446
 
-union u_spcl {
+extern union u_spcl {
 	char dummy[TP_BSIZE];
 	struct	s_spcl {
 		int32_t	c_type;		    /* record type (see below) */

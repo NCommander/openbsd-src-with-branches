@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumprmt.c,v 1.29 2015/01/16 06:39:57 deraadt Exp $	*/
+/*	$OpenBSD: dumprmt.c,v 1.30 2019/06/28 13:32:43 deraadt Exp $	*/
 /*	$NetBSD: dumprmt.c,v 1.17 1997/06/05 16:10:47 mrg Exp $	*/
 
 /*-
@@ -80,7 +80,6 @@ int	rmtseek(int offset, int pos);
 int	rmtioctl(int cmd, int count);
 void	rmtclose(void);
 
-extern	int ntrec;		/* blocking factor on tape */
 
 int
 rmthost(char *host)

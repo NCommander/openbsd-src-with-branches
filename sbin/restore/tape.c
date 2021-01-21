@@ -1,4 +1,4 @@
-/*	$OpenBSD: tape.c,v 1.50 2018/04/27 06:46:04 guenther Exp $	*/
+/*	$OpenBSD: tape.c,v 1.51 2019/06/28 13:32:46 deraadt Exp $	*/
 /*	$NetBSD: tape.c,v 1.26 1997/04/15 07:12:25 lukem Exp $	*/
 
 /*
@@ -78,6 +78,8 @@ static char	*map;
 static char	lnkbuf[PATH_MAX + 1];
 static size_t	pathlen;
 
+struct context	curfile;	/* describes next file available on the tape */
+union u_spcl 	u_spcl;		/* mapping of variables in a control block */
 int		oldinofmt;	/* old inode format conversion required */
 int		Bcvt;		/* Swap Bytes (for CCI or sun) */
 
