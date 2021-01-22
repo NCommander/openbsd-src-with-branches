@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2-pubkey.c,v 1.102 2020/12/17 23:28:50 djm Exp $ */
+/* $OpenBSD: auth2-pubkey.c,v 1.103 2020/12/22 00:12:22 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -147,8 +147,8 @@ userauth_pubkey(struct ssh *ssh)
 		logit("refusing previously-used %s key", sshkey_type(key));
 		goto done;
 	}
-	if (match_pattern_list(pkalg, options.pubkey_key_types, 0) != 1) {
-		logit_f("key type %s not in PubkeyAcceptedKeyTypes",
+	if (match_pattern_list(pkalg, options.pubkey_accepted_algos, 0) != 1) {
+		logit_f("key type %s not in PubkeyAcceptedAlgorithms",
 		    sshkey_ssh_name(key));
 		goto done;
 	}
