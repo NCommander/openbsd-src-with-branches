@@ -1,4 +1,4 @@
-/* $OpenBSD: ims.c,v 1.1 2016/01/12 01:11:15 jcs Exp $ */
+/* $OpenBSD: ims.c,v 1.2 2018/09/01 20:50:16 jcs Exp $ */
 /*
  * HID-over-i2c mouse/trackpad driver
  *
@@ -180,8 +180,7 @@ ims_ioctl(void *v, u_long cmd, caddr_t data, int flag, struct proc *p)
 
 	switch (cmd) {
 	case WSMOUSEIO_GTYPE:
-		/* XXX: should we set something else? */
-		*(u_int *)data = WSMOUSE_TYPE_USB;
+		*(u_int *)data = WSMOUSE_TYPE_TOUCHPAD;
 		return 0;
 	default:
 		return -1;
