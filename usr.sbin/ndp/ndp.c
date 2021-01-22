@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.99 2019/12/19 18:36:37 bluhm Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.100 2021/01/21 19:12:13 florian Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -204,7 +204,7 @@ main(int argc, char *argv[])
 		if (argc != 0) {
 			usage();
 		}
-		dump(0, mode == 'c');
+		dump(NULL, mode == 'c');
 		break;
 	case 'd':
 		if (argc != 0) {
