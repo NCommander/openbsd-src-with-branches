@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.c,v 1.130 2021/01/19 16:50:23 florian Exp $	*/
+/*	$OpenBSD: resolver.c,v 1.131 2021/01/19 16:52:40 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -1008,8 +1008,8 @@ resolve_done(struct uw_resolver *res, void *arg, int rcode,
 	if (result->rcode == LDNS_RCODE_SERVFAIL)
 		goto servfail;
 
-	if (sec == SECURE)
-		res->state = VALIDATING;
+	if (sec == SECURE && res->state != VALIDATING && res->stop != -1)
+		check_resolver(res);
 
 	if (res->state == VALIDATING && sec == BOGUS) {
 		answer_header->bogus = !force_acceptbogus;
