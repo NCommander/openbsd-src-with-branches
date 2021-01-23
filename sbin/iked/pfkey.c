@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.73 2020/12/01 22:43:30 tobhe Exp $	*/
+/*	$OpenBSD: pfkey.c,v 1.74 2020/12/04 16:18:14 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -1050,7 +1050,7 @@ pfkey_sa_getspi(int sd, uint8_t satype, struct iked_childsa *sa,
 		goto done;
 	}
 	if ((sa_ext = pfkey_find_ext(data, n, SADB_EXT_SA)) == NULL) {
-		log_debug("%s: erronous reply", __func__);
+		log_debug("%s: erroneous reply", __func__);
 		goto done;
 	}
 
