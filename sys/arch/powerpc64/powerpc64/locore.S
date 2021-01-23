@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.41 2020/10/22 23:35:43 mortimer Exp $	*/
+/*	$OpenBSD: locore.S,v 1.42 2020/12/30 06:06:30 gkoehler Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -440,6 +440,8 @@ OPAL_CALL(OPAL_PCI_RESET, opal_pci_reset)
 OPAL_CALL(OPAL_REINIT_CPUS, opal_reinit_cpus)
 OPAL_CALL(OPAL_CHECK_TOKEN, opal_check_token)
 OPAL_CALL(OPAL_SENSOR_READ, opal_sensor_read)
+OPAL_CALL(OPAL_IPMI_SEND, opal_ipmi_send)
+OPAL_CALL(OPAL_IPMI_RECV, opal_ipmi_recv)
 OPAL_CALL(OPAL_CONSOLE_FLUSH, opal_console_flush)
 OPAL_CALL(OPAL_XIVE_RESET, opal_xive_reset)
 OPAL_CALL(OPAL_XIVE_GET_IRQ_INFO, opal_xive_get_irq_info)
