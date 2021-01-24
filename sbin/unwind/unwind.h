@@ -1,4 +1,4 @@
-/*	$OpenBSD: unwind.h,v 1.50 2021/01/12 16:40:33 florian Exp $	*/
+/*	$OpenBSD: unwind.h,v 1.51 2021/01/19 16:50:23 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -119,6 +119,9 @@ enum imsg_type {
 	IMSG_NETWORK_CHANGED,
 	IMSG_BLFD,
 	IMSG_REPLACE_DNS,
+	IMSG_NEW_DNS64_PREFIXES_START,
+	IMSG_NEW_DNS64_PREFIX,
+	IMSG_NEW_DNS64_PREFIXES_DONE,
 };
 
 struct uw_forwarder {
