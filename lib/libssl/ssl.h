@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl.h,v 1.178 2020/09/20 09:42:00 tb Exp $ */
+/* $OpenBSD: ssl.h,v 1.179 2020/10/14 16:49:57 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1444,6 +1444,7 @@ int SSL_CTX_set_trust(SSL_CTX *s, int trust);
 int SSL_set_trust(SSL *s, int trust);
 int SSL_set1_host(SSL *s, const char *hostname);
 #if defined(LIBRESSL_HAS_TLS1_3) || defined(LIBRESSL_INTERNAL)
+void SSL_set_hostflags(SSL *s, unsigned int flags);
 const char *SSL_get0_peername(SSL *s);
 #endif
 
