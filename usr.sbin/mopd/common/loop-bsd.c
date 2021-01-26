@@ -1,4 +1,4 @@
-/*	$OpenBSD: loop-bsd.c,v 1.12 2006/10/11 20:56:59 deraadt Exp $ */
+/*	$OpenBSD: loop-bsd.c,v 1.13 2009/10/27 23:59:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -72,7 +72,7 @@ mopReadDL(void)
  * The list of all interfaces that are being listened to.  loop()
  * "selects" on the descriptors in this list.
  */
-struct if_info *iflist;
+extern struct if_info *iflist;
 
 void   mopProcess(struct if_info *, u_char *);
 

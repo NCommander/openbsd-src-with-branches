@@ -1,4 +1,4 @@
-/*	$OpenBSD: device.c,v 1.16 2013/11/24 21:32:31 deraadt Exp $ */
+/*	$OpenBSD: device.c,v 1.17 2017/01/21 08:33:51 krw Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -30,7 +30,7 @@
 #include "mopdef.h"
 #include "pf.h"
 
-struct if_info	*iflist;		/* Interface List		*/
+extern struct if_info	*iflist;		/* Interface List		*/
 
 #ifdef	DEV_NEW_CONF
 /*
