@@ -1,4 +1,4 @@
-/*	$OpenBSD: common.h,v 1.8 2015/11/19 07:53:31 bentley Exp $	*/
+/*	$OpenBSD: common.h,v 1.9 2016/08/27 04:07:42 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -66,7 +66,7 @@ typedef enum { LOCK_FAILED, LOCK_SUCCESS, LOCK_UNAVAIL } lockr_t;
 typedef enum { SEQ_ABBREV, SEQ_COMMAND, SEQ_INPUT } seq_t;
 
 /* Program modes. */
-enum { MODE_EX, MODE_VI, MODE_VIEW } pmode;
+extern enum pmode { MODE_EX, MODE_VI, MODE_VIEW } pmode;
 
 /*
  * Local includes.
