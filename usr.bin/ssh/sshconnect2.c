@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.342 2021/01/22 02:44:58 dtucker Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.343 2021/01/25 06:00:17 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -2093,12 +2093,12 @@ userauth_hostbased(struct ssh *ssh)
 	int i, r, success = 0;
 
 	if (authctxt->ktypes == NULL) {
-		authctxt->oktypes = xstrdup(options.hostbased_key_types);
+		authctxt->oktypes = xstrdup(options.hostbased_accepted_algos);
 		authctxt->ktypes = authctxt->oktypes;
 	}
 
 	/*
-	 * Work through each listed type pattern in HostbasedKeyTypes,
+	 * Work through each listed type pattern in HostbasedAcceptedAlgorithms,
 	 * trying each hostkey that matches the type in turn.
 	 */
 	for (;;) {
