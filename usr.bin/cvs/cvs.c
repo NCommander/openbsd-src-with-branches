@@ -1,4 +1,4 @@
-/*	$OpenBSD: cvs.c,v 1.158 2016/09/04 16:39:50 tb Exp $	*/
+/*	$OpenBSD: cvs.c,v 1.159 2017/06/01 08:08:24 joris Exp $	*/
 /*
  * Copyright (c) 2006, 2007 Joris Vink <joris@openbsd.org>
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
@@ -72,6 +72,8 @@ struct cvs_cmd *cmdp;			/* struct of command we are running */
 int		cvs_getopt(int, char **);
 __dead void	usage(void);
 static void	cvs_read_rcfile(void);
+
+struct cvs_varhead cvs_variables;
 
 struct wklhead temp_files;
 
