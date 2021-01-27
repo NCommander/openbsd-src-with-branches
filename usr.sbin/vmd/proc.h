@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.15 2018/08/05 08:20:54 mestre Exp $	*/
+/*	$OpenBSD: proc.h,v 1.16 2018/09/10 10:36:01 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2010-2015 Reyk Floeter <reyk@openbsd.org>
@@ -88,7 +88,8 @@ enum privsep_procid {
 	PROC_VMM,
 	PROC_PRIV,
 	PROC_MAX,
-} privsep_process;
+};
+extern enum privsep_procid privsep_process;
 
 #define CONFIG_RELOAD		0x00
 #define CONFIG_VMS		0x01

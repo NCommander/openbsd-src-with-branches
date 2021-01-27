@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.c,v 1.184 2020/09/14 11:30:25 martijn Exp $	*/
+/*	$OpenBSD: relayd.c,v 1.185 2021/01/11 10:24:08 mestre Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -74,6 +74,8 @@ static struct privsep_proc procs[] = {
 	{ "relay",	PROC_RELAY, parent_dispatch_relay, relay },
 	{ "ca",		PROC_CA, parent_dispatch_ca, ca }
 };
+
+enum privsep_procid privsep_process;
 
 void
 parent_sig_handler(int sig, short event, void *arg)

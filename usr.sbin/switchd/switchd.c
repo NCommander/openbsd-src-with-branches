@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchd.c,v 1.17 2019/07/22 09:19:52 mestre Exp $	*/
+/*	$OpenBSD: switchd.c,v 1.18 2019/07/23 00:31:31 schwarze Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -57,6 +57,8 @@ static struct privsep_proc procs[] = {
 	{ "control",	PROC_CONTROL,	parent_dispatch_control, control },
 	{ "ofcconn",	PROC_OFCCONN,	NULL, ofcconn }
 };
+
+enum privsep_procid privsep_process;
 
 __dead void
 usage(void)

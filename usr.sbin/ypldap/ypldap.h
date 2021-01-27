@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypldap.h,v 1.19 2017/05/30 09:33:31 jmatthew Exp $ */
+/*	$OpenBSD: ypldap.h,v 1.20 2018/11/06 20:42:03 jsing Exp $ */
 
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -47,10 +47,11 @@ struct ypldap_addr {
 };
 TAILQ_HEAD(ypldap_addr_list, ypldap_addr);
 
-enum {
+enum privsep_procid {
 	PROC_MAIN,
 	PROC_CLIENT
-} ypldap_process;
+};
+extern enum privsep_procid ypldap_process;
 
 static const char * const log_procnames[] = {
 	"parent",

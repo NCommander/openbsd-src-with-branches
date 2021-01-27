@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldapd.h,v 1.32 2020/06/24 07:20:47 tb Exp $ */
+/*	$OpenBSD: ldapd.h,v 1.33 2021/01/09 14:51:45 rob Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -229,7 +229,7 @@ struct conn {
 	struct buffertls	 buftls;
 	unsigned int		 s_flags;
 };
-TAILQ_HEAD(conn_list, conn)	 conn_list;
+extern TAILQ_HEAD(conn_list, conn)	 conn_list;
 
 struct ssl {
 	SPLAY_ENTRY(ssl)	 ssl_nodes;
