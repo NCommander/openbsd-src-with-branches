@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb.h,v 1.60 2018/07/10 09:17:03 mpi Exp $ */
+/*	$OpenBSD: usb.h,v 1.61 2018/07/19 12:35:14 mpi Exp $ */
 /*	$NetBSD: usb.h,v 1.69 2002/09/22 23:20:50 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb.h,v 1.14 1999/11/17 22:33:46 n_hibma Exp $	*/
 
@@ -199,7 +199,7 @@ struct usb_config_descriptor {
 	uByte		bLength;
 	uByte		bDescriptorType;
 	uWord		wTotalLength;
-	uByte		bNumInterface;
+	uByte		bNumInterfaces;
 	uByte		bConfigurationValue;
 	uByte		iConfiguration;
 	uByte		bmAttributes;
