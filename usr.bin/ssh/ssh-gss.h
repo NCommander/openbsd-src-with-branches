@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-gss.h,v 1.13 2018/07/10 06:43:52 djm Exp $ */
+/* $OpenBSD: ssh-gss.h,v 1.14 2018/07/10 09:13:30 djm Exp $ */
 /*
  * Copyright (c) 2001-2003 Simon Wilkinson. All rights reserved.
  *
@@ -101,7 +101,7 @@ void ssh_gssapi_build_ctx(Gssctxt **);
 void ssh_gssapi_delete_ctx(Gssctxt **);
 OM_uint32 ssh_gssapi_sign(Gssctxt *, gss_buffer_t, gss_buffer_t);
 void ssh_gssapi_buildmic(struct sshbuf *, const char *,
-    const char *, const char *);
+    const char *, const char *, const struct sshbuf *);
 int ssh_gssapi_check_mechanism(Gssctxt **, gss_OID, const char *);
 
 /* In the server */
