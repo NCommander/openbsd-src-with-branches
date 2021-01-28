@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.32 2020/04/08 20:04:19 tobhe Exp $	*/
+/*	$OpenBSD: proc.c,v 1.33 2020/11/11 18:24:55 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2010 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -33,6 +33,8 @@
 #include <imsg.h>
 
 #include "iked.h"
+
+enum privsep_procid privsep_process;
 
 void	 proc_open(struct privsep *, struct privsep_proc *,
 	    struct privsep_proc *, size_t);
