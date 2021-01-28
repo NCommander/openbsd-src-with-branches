@@ -1,4 +1,4 @@
-/*	$OpenBSD: ber.c,v 1.18 2021/01/22 03:20:56 rob Exp $ */
+/*	$OpenBSD: ber.c,v 1.19 2021/01/22 18:27:52 rob Exp $ */
 
 /*
  * Copyright (c) 2007, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -684,9 +684,14 @@ ober_scanf_elements(struct ber_element *ber, char *fmt, ...)
 
 	va_start(ap, fmt);
 	while (*fmt) {
-		if (ber == NULL && *fmt != '}' && *fmt != ')')
+		if (ber == NULL && *fmt != '$' && *fmt != '}' && *fmt != ')')
 			goto fail;
 		switch (*fmt++) {
+		case '$':
+			if (ber != NULL)
+				goto fail;
+			ret++;
+			continue;
 		case 'B':
 			ptr = va_arg(ap, void **);
 			len = va_arg(ap, size_t *);
