@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cdce.c,v 1.78 2020/07/10 13:26:40 patrick Exp $ */
+/*	$OpenBSD: if_cdce.c,v 1.79 2020/07/31 10:49:32 mglocker Exp $ */
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000-2003 Bill Paul <wpaul@windriver.com>
@@ -36,7 +36,7 @@
 
 /*
  * USB Communication Device Class (Ethernet Networking Control Model)
- * http://www.usb.org/developers/devclass_docs/usbcdc11.pdf
+ * https://www.usb.org/sites/default/files/CDC1.2_WMC1.1_012011.zip
  *
  */
 
