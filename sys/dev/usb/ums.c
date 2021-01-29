@@ -1,4 +1,4 @@
-/*	$OpenBSD: ums.c,v 1.45 2020/08/23 11:08:02 mglocker Exp $ */
+/*	$OpenBSD: ums.c,v 1.46 2021/01/10 16:32:48 thfr Exp $ */
 /*	$NetBSD: ums.c,v 1.60 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -32,7 +32,7 @@
  */
 
 /*
- * HID spec: http://www.usb.org/developers/devclass_docs/HID1_11.pdf
+ * HID spec: https://www.usb.org/sites/default/files/hid1_11.pdf
  */
 
 #include <sys/param.h>

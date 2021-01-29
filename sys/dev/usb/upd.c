@@ -1,4 +1,4 @@
-/*	$OpenBSD: upd.c,v 1.26 2017/04/08 02:57:25 deraadt Exp $ */
+/*	$OpenBSD: upd.c,v 1.27 2020/02/28 12:13:55 mpi Exp $ */
 
 /*
  * Copyright (c) 2015 David Higgs <higgsd@gmail.com>
@@ -17,7 +17,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* Driver for USB Power Devices sensors */
+/*
+ * Driver for USB Power Devices sensors
+ * https://usb.org/sites/default/files/pdcv10.pdf
+ */
 
 #include <sys/param.h>
 #include <sys/systm.h>
