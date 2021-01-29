@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.h,v 1.33 2021/01/29 10:55:19 ratchov Exp $	*/
+/*	$OpenBSD: dev.h,v 1.34 2021/01/29 11:21:00 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -149,7 +149,7 @@ struct ctlslot {
 	struct ctlops *ops;
 	void *arg;
 	struct dev *dev;
-	unsigned int mask;
+	unsigned int self;		/* equal to (1 << index) */
 	unsigned int mode;
 };
 
