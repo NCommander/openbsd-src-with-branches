@@ -1,4 +1,4 @@
-/*	$OpenBSD: sndiod.c,v 1.41 2020/06/18 05:11:13 ratchov Exp $	*/
+/*	$OpenBSD: sndiod.c,v 1.42 2021/01/29 10:51:24 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -700,6 +700,8 @@ main(int argc, char **argv)
 		; /* nothing */
 	midi_done();
 
+	while (opt_list)
+		opt_del(opt_list);
 	while (dev_list)
 		dev_del(dev_list);
 	while (port_list)
