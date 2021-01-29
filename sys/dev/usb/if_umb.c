@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_umb.c,v 1.35 2020/07/10 13:26:41 patrick Exp $ */
+/*	$OpenBSD: if_umb.c,v 1.36 2020/07/22 02:16:02 dlg Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -19,9 +19,9 @@
 
 /*
  * Mobile Broadband Interface Model specification:
- * http://www.usb.org/developers/docs/devclass_docs/MBIM10Errata1_073013.zip
+ * https://www.usb.org/sites/default/files/MBIM10Errata1_073013.zip
  * Compliance testing guide
- * http://www.usb.org/developers/docs/devclass_docs/MBIM-Compliance-1.0.pdf
+ * https://www.usb.org/sites/default/files/MBIM-Compliance-1.0.pdf
  */
 #include "bpfilter.h"
 
