@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.5 2002/03/14 01:26:27 millert Exp $	*/
+/*	$OpenBSD: conf.c,v 1.6 2003/06/02 23:27:44 millert Exp $	*/
 /*	$NetBSD: conf.c,v 1.3 1995/11/23 02:39:31 cgd Exp $	*/
 
 /*
@@ -41,8 +41,6 @@
 #include "disk.h"
 
 int	diskopen(struct open_file *, ...);	/* XXX */
-
-int	errno;
 
 struct devsw devsw[] = {
 	{ "disk", diskstrategy,	diskopen, diskclose, diskioctl }, /*0*/
