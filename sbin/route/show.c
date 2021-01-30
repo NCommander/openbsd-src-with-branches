@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.117 2021/01/16 17:41:20 claudio Exp $	*/
+/*	$OpenBSD: show.c,v 1.118 2021/01/24 08:58:50 florian Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -176,7 +176,6 @@ printsource(int af, u_int tableid)
 		}
 	}
 	free(buf);
-	printf("\n");
 
 	exit(0);
 }
