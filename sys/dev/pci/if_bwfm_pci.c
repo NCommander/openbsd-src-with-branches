@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bwfm_pci.c,v 1.37 2020/06/22 02:31:32 dlg Exp $	*/
+/*	$OpenBSD: if_bwfm_pci.c,v 1.38 2020/12/12 11:48:53 jan Exp $	*/
 /*
  * Copyright (c) 2010-2016 Broadcom Corporation
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
@@ -431,6 +431,9 @@ bwfm_pci_preinit(struct bwfm_softc *bwfm)
 		break;
 	case BRCM_CC_4371_CHIP_ID:
 		chip = "4371";
+		break;
+	case BRCM_CC_4378_CHIP_ID:
+		chip = "4378";
 		break;
 	default:
 		printf("%s: unknown firmware for chip %s\n",
