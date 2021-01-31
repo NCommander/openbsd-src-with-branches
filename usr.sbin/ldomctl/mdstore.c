@@ -1,4 +1,4 @@
-/*	$OpenBSD: mdstore.c,v 1.11 2019/07/07 14:45:15 kettenis Exp $	*/
+/*	$OpenBSD: mdstore.c,v 1.12 2019/11/28 18:40:42 kn Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -542,9 +542,9 @@ struct frag {
 	uint64_t base;
 };
 
-TAILQ_HEAD(frag_head, frag) free_frags;
+extern TAILQ_HEAD(frag_head, frag) free_frags;
 
-uint64_t fragsize;
+extern uint64_t fragsize;
 
 void
 frag_init(void)
