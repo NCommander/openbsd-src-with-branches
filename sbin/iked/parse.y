@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.123 2020/12/27 21:07:32 tobhe Exp $	*/
+/*	$OpenBSD: parse.y,v 1.124 2020/12/29 19:49:38 benno Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -3251,7 +3251,7 @@ expand_keyword(struct ipsec_addr_wrap *ip)
 			return (host("0.0.0.0"));
 		}
 		break;
-	case AF_INET6:	
+	case AF_INET6:
 		switch(ip->type) {
 		case IPSEC_ADDR_ANY:
 			return (host("::/0"));
