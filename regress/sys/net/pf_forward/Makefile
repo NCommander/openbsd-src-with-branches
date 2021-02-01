@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile,v 1.33 2020/12/24 22:39:57 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.34 2020/12/30 21:40:32 kn Exp $
 
-# Copyright (c) 2012-2020 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2012-2021 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
