@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.268 2021/01/19 17:41:51 deraadt Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.269 2021/01/20 16:36:09 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -1298,6 +1298,8 @@ pledge_ioctl(struct proc *p, long com, struct file *fp)
 
 	if ((pl & PLEDGE_WROUTE)) {
 		switch (com) {
+		case SIOCAIFADDR:
+		case SIOCDIFADDR:
 		case SIOCAIFADDR_IN6:
 		case SIOCDIFADDR_IN6:
 			if (fp->f_type == DTYPE_SOCKET)
