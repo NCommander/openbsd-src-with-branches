@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.92 2021/02/02 18:35:38 claudio Exp $ */
+/*	$OpenBSD: parser.c,v 1.1 2021/02/04 08:10:25 claudio Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -30,9 +30,9 @@
 #include <unistd.h>
 #include <imsg.h>
 
+#include <openssl/asn1.h>
 #include <openssl/err.h>
-#include <openssl/evp.h>
-#include <openssl/x509v3.h>
+#include <openssl/x509.h>
 
 #include "extern.h"
 
