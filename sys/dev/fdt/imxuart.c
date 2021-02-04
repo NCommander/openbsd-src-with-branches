@@ -1,4 +1,4 @@
-/* $OpenBSD: imxuart.c,v 1.7 2019/06/15 14:15:12 kettenis Exp $ */
+/* $OpenBSD: imxuart.c,v 1.8 2019/07/19 00:17:15 cheloha Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@motorola.com>
  *
@@ -39,7 +39,6 @@
 #endif
 
 #include <dev/fdt/imxuartreg.h>
-#include <dev/fdt/imxuartvar.h>
 
 #include <dev/ofw/openfirm.h>
 #include <dev/ofw/ofw_clock.h>
