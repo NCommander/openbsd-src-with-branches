@@ -1,4 +1,4 @@
-/*	$OpenBSD: mft.c,v 1.23 2021/01/08 08:09:07 claudio Exp $ */
+/*	$OpenBSD: mft.c,v 1.24 2021/01/29 10:13:16 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -25,7 +25,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <openssl/asn1.h>
 #include <openssl/sha.h>
+#include <openssl/x509.h>
 
 #include "extern.h"
 

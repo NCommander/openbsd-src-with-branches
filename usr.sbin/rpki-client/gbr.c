@@ -1,4 +1,4 @@
-/*	$OpenBSD: gbr.c,v 1.2 2020/12/29 14:51:11 job Exp $ */
+/*	$OpenBSD: gbr.c,v 1.3 2021/01/29 10:13:16 claudio Exp $ */
 /*
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
  *
@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <openssl/x509.h>
 
 #include "extern.h"
 
