@@ -5,8 +5,8 @@ tid="percent expansions"
 
 USER=`id -u -n`
 USERID=`id -u`
-HOST=`uname -n | cut -f1 -d.`
-HOSTNAME=`uname -n`
+HOST=`hostname | cut -f1 -d.`
+HOSTNAME=`hostname`
 
 # Localcommand is evaluated after connection because %T is not available
 # until then.  Because of this we use a different method of exercising it,
