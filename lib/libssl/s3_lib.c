@@ -1,4 +1,4 @@
-/* $OpenBSD: s3_lib.c,v 1.202 2021/01/26 18:47:08 tb Exp $ */
+/* $OpenBSD: s3_lib.c,v 1.203 2021/02/07 15:12:52 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -2721,18 +2721,4 @@ ssl3_renegotiate_check(SSL *s)
 		}
 	}
 	return (ret);
-}
-/*
- * If we are using default SHA1+MD5 algorithms switch to new SHA256 PRF
- * and handshake macs if required.
- */
-long
-ssl_get_algorithm2(SSL *s)
-{
-	long	alg2 = S3I(s)->hs.new_cipher->algorithm2;
-
-	if (SSL_USE_SHA256_PRF(s) &&
-	    alg2 == (SSL_HANDSHAKE_MAC_DEFAULT|TLS1_PRF))
-		return SSL_HANDSHAKE_MAC_SHA256 | TLS1_PRF_SHA256;
-	return alg2;
 }
