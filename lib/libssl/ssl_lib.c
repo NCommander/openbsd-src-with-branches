@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.243 2021/01/26 18:45:32 tb Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.244 2021/01/28 17:00:38 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1368,8 +1368,6 @@ ssl_has_ecc_ciphers(SSL *s)
 	SSL_CIPHER *cipher;
 	int i;
 
-	if (s->version == DTLS1_VERSION)
-		return 0;
 	if ((ciphers = SSL_get_ciphers(s)) == NULL)
 		return 0;
 
