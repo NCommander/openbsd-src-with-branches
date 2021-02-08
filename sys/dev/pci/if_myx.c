@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_myx.c,v 1.113 2020/12/12 11:48:53 jan Exp $	*/
+/*	$OpenBSD: if_myx.c,v 1.114 2021/01/17 02:52:21 dlg Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -1397,7 +1397,7 @@ myx_down(struct myx_softc *sc)
 	(void)myx_cmd(sc, MYXCMD_SET_IFDOWN, &mc, NULL);
 
 	while (sc->sc_state != MYX_S_OFF) {
-		sleep_setup(&sls, sts, PWAIT, "myxdown");
+		sleep_setup(&sls, sts, PWAIT, "myxdown", 0);
 		membar_consumer();
 		sleep_finish(&sls, sc->sc_state != MYX_S_OFF);
 	}
