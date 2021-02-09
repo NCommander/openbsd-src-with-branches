@@ -1,8 +1,8 @@
-# $OpenBSD: Makefile,v 1.1 2019/11/09 16:45:48 mortimer Exp $
+# $OpenBSD: Makefile,v 1.2 2020/08/03 14:45:31 patrick Exp $
 
 .include <bsd.own.mk>
 
-NOPROG=	lldb-server
+PROG=	lldb-server
 BINDIR=	/usr/bin
 NOMAN=
 

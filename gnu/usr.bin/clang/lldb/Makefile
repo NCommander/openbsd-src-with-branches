@@ -1,8 +1,8 @@
-# $OpenBSD: Makefile,v 1.6 2019/06/23 22:07:45 patrick Exp $
+# $OpenBSD: Makefile,v 1.7 2020/08/03 14:45:31 patrick Exp $
 
 .include <bsd.own.mk>
 
-NOPROG=	lldb
+PROG=	lldb
 BINDIR=	/usr/bin
 LIBEXECDIR=/usr/libexec
 
