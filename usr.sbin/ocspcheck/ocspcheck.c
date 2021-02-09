@@ -1,4 +1,4 @@
-/* $OpenBSD: ocspcheck.c,v 1.27 2020/09/04 04:17:46 tb Exp $ */
+/* $OpenBSD: ocspcheck.c,v 1.28 2020/10/16 01:16:55 beck Exp $ */
 
 /*
  * Copyright (c) 2017,2020 Bob Beck <beck@openbsd.org>
@@ -113,7 +113,6 @@ host_dns(const char *s, struct addr vec[MAX_SERVERS_DNS])
 
 		dspew("DNS returns %s for %s\n", vec[vecsz].ip, s);
 		vecsz++;
-		break;
 	}
 
 	freeaddrinfo(res0);
