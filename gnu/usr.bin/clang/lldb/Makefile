@@ -1,8 +1,13 @@
-# $OpenBSD: Makefile,v 1.7 2020/08/03 14:45:31 patrick Exp $
+# $OpenBSD: Makefile,v 1.8 2021/02/09 21:57:25 patrick Exp $
 
 .include <bsd.own.mk>
 
+.if (${MACHINE} == "arm64") || (${MACHINE} == "amd64")
 PROG=	lldb
+.else
+NOPROG=	lldb
+.endif
+
 BINDIR=	/usr/bin
 LIBEXECDIR=/usr/libexec
 
