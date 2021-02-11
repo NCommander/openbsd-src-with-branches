@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.184 2021/01/23 05:08:34 thfr Exp $
+# $OpenBSD: GENERIC,v 1.185 2021/02/04 16:25:38 anton Exp $
 #
 # GENERIC machine description file
 #
@@ -125,6 +125,9 @@ wsdisplay*	at radeondrm?
 amdgpu*		at pci?
 drm*		at amdgpu?
 wsdisplay*	at amdgpu?
+
+# Apple
+exuart*		at fdt?
 
 # iMX
 imxccm*		at fdt? early 1
