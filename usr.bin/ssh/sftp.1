@@ -1,4 +1,4 @@
-.\" $OpenBSD: sftp.1,v 1.135 2021/01/26 05:32:21 dtucker Exp $
+.\" $OpenBSD: sftp.1,v 1.136 2021/01/26 15:40:17 naddy Exp $
 .\"
 .\" Copyright (c) 2001 Damien Miller.  All rights reserved.
 .\"
@@ -349,15 +349,18 @@ Change group of file
 .Ar path
 to
 .Ar grp .
-If the
-.Fl h
-flag is specified, then symlinks will not be followed.
 .Ar path
 may contain
 .Xr glob 7
 characters and may match multiple files.
 .Ar grp
 must be a numeric GID.
+.Pp
+If the
+.Fl h
+flag is specified, then symlinks will not be followed.
+Note that this is only supported by servers that implement
+the "lsetstat@openssh.com" extension.
 .It Xo Ic chmod
 .Op Fl h
 .Ar mode
@@ -367,13 +370,16 @@ Change permissions of file
 .Ar path
 to
 .Ar mode .
-If the
-.Fl h
-flag is specified, then symlinks will not be followed.
 .Ar path
 may contain
 .Xr glob 7
 characters and may match multiple files.
+.Pp
+If the
+.Fl h
+flag is specified, then symlinks will not be followed.
+Note that this is only supported by servers that implement
+the "lsetstat@openssh.com" extension.
 .It Xo Ic chown
 .Op Fl h
 .Ar own
@@ -383,15 +389,18 @@ Change owner of file
 .Ar path
 to
 .Ar own .
-If the
-.Fl h
-flag is specified, then symlinks will not be followed.
 .Ar path
 may contain
 .Xr glob 7
 characters and may match multiple files.
 .Ar own
 must be a numeric UID.
+.Pp
+If the
+.Fl h
+flag is specified, then symlinks will not be followed.
+Note that this is only supported by servers that implement
+the "lsetstat@openssh.com" extension.
 .It Xo Ic df
 .Op Fl hi
 .Op Ar path
