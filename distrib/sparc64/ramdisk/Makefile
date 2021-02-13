@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.50 2020/05/17 17:04:28 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.51 2020/05/18 06:20:44 otto Exp $
 
 FS=		floppy${OSrev}.img
 FSSIZE=		2880
@@ -32,8 +32,7 @@ ${FS}: bsd.gz
 	rm -f vnd
 
 bsd.gz: bsd.rd
-	cp bsd.rd bsd.strip
-	strip -R .SUNW_ctf bsd.strip
+	objcopy -S -R .SUNW_ctf bsd.rd bsd.strip
 	gzip -9cn bsd.strip > bsd.gz
 
 bsd.rd: mr.fs bsd
