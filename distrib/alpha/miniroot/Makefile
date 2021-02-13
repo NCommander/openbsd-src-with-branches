@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.17 2020/05/18 06:20:43 otto Exp $
+#	$OpenBSD: Makefile,v 1.18 2021/01/05 15:10:40 deraadt Exp $
 
 FS=		miniroot${OSrev}.img
 FSSIZE=		5760
@@ -10,8 +10,6 @@ RAMDISK=	RAMDISKBIG
 
 LISTS=		${.CURDIR}/list
 UTILS=		${.CURDIR}/../../miniroot
-
-STRIPOPTS=	-R .eh_frame -R .SUNW_ctf -R .shstrtab
 
 MRDISKTYPE=	rdroot
 MRMAKEFSARGS=	-o disklabel=${MRDISKTYPE},minfree=0,density=8192
@@ -65,7 +63,7 @@ ${CDROM}: bsd.gz
 
 bsd.gz: bsd.rd
 	objcopy -Sg -R .comment bsd.rd bsd.strip
-	strip ${STRIPOPTS} bsd.strip
+	strip -R .eh_frame -R .SUNW_ctf -R .shstrtab bsd.strip
 	gzip -9cn bsd.strip > bsd.gz
 
 bsd.rd: mr.fs bsd
@@ -93,7 +91,7 @@ instbin.mk instbin.cache instbin.c: instbin.conf
 
 instbin: instbin.mk instbin.cache instbin.c
 	${MAKE} -f instbin.mk SRCLIBDIR=${.CURDIR}/../../../lib all
-	strip ${STRIPOPTS} instbin
+	strip -R .eh_frame -R .SUNW_ctf -R .shstrtab instbin
 
 instbin.conf: ${LISTS}
 	awk -f ${UTILS}/makeconf.awk  ${LISTS} > instbin.conf
