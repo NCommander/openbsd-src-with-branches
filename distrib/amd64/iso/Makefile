@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.39 2020/08/05 04:23:30 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.40 2021/01/05 15:10:42 deraadt Exp $
 
 FS=		install${OSrev}.img
 FSSIZE=		1359872
@@ -42,7 +42,6 @@ ${FS}: ${BASE} ${XBASE} bsd.rd
 	newfs -O 1 -m 0 -o space -i 524288 -c ${FSSIZE} /dev/r`cat vnd`a
 	mount /dev/`cat vnd`a ${MOUNT_POINT}
 	cp ${DESTDIR}/usr/mdec/boot ${MOUNT_POINT}/boot
-	strip ${MOUNT_POINT}/boot
 	strip -R .comment -R .SUNW_ctf ${MOUNT_POINT}/boot
 	installboot -v -r ${MOUNT_POINT} `cat vnd` \
 	    ${DESTDIR}/usr/mdec/biosboot ${MOUNT_POINT}/boot
