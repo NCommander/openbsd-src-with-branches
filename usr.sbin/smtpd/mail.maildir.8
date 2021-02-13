@@ -1,4 +1,4 @@
-.\"	$OpenBSD: mail.maildir.8,v 1.4 2018/05/30 09:31:57 gilles Exp $
+.\"	$OpenBSD: mail.maildir.8,v 1.5 2018/05/30 12:37:57 jmc Exp $
 .\"
 .\" Copyright (c) 2017 Gilles Chehade <gilles@poolp.org>
 .\"
@@ -36,7 +36,8 @@ located in the user's home directory.
 The options are as follows:
 .Bl -tag -width Ds
 .It Fl j
-Scan message for X-Spam and move to Junk folder if result is positive.
+Scan the message for an X-Spam header and move to the Junk folder
+if the result is positive.
 .El
 .Sh EXIT STATUS
 .Ex -std mail.maildir
