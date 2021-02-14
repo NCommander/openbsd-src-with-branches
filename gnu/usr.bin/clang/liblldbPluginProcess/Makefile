@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2019/12/21 13:16:25 mortimer Exp $
+# $OpenBSD: Makefile,v 1.7 2020/08/03 14:45:30 patrick Exp $
 
 LIB=	lldbPluginProcess
 NOPIC=
@@ -30,8 +30,7 @@ SRCS=	AuxVector.cpp \
 	MipsLinuxSignals.cpp \
 	NativeProcessOpenBSD.cpp \
 	NativeRegisterContextOpenBSD.cpp \
-	NativeRegisterContextOpenBSD_x86_64.cpp \
-	NativeRegisterContextOpenBSD_arm64.cpp \
+	NativeRegisterContextOpenBSD_arch.cpp \
 	NativeRegisterContextRegisterInfo.cpp \
 	NativeThreadOpenBSD.cpp \
 	NetBSDSignals.cpp \
