@@ -33,7 +33,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" $OpenBSD: ssh_config.5,v 1.344 2021/01/26 05:32:22 dtucker Exp $
+.\" $OpenBSD: ssh_config.5,v 1.345 2021/01/26 15:40:17 naddy Exp $
 .Dd $Mdocdate: January 26 2021 $
 .Dt SSH_CONFIG 5
 .Os
@@ -1371,6 +1371,9 @@ connection to the specified
 .Cm ProxyJump
 host and then establishing a
 TCP forwarding to the ultimate target from there.
+Setting the host to
+.Cm none
+disables this option entirely.
 .Pp
 Note that this option will compete with the
 .Cm ProxyCommand
