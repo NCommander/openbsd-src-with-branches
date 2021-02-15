@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhclient.c,v 1.691 2021/02/02 15:46:16 cheloha Exp $	*/
+/*	$OpenBSD: dhclient.c,v 1.692 2021/02/15 14:20:11 krw Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -2772,7 +2772,6 @@ tick_msg(const char *preamble, int action)
 		break;
 	default:
 		break;
-
 	}
 
 	fflush(stderr);
