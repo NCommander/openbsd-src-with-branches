@@ -1,12 +1,12 @@
-# $OpenBSD: Makefile.inc,v 1.5 2021/01/12 18:00:45 tb Exp $
+# $OpenBSD: Makefile.inc,v 1.6 2021/02/03 10:45:12 claudio Exp $
 
 .PATH:		${.CURDIR}/../../../../usr.sbin/rpki-client
 
 PROGS += test-ip
 PROGS += test-cert
+PROGS += test-gbr
 PROGS += test-mft
 PROGS += test-roa
-PROGS += test-gbr
 PROGS += test-tal
 
 .for p in ${PROGS}

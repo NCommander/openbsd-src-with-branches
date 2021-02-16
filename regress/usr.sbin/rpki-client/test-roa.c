@@ -1,4 +1,4 @@
-/*	$Id: test-roa.c,v 1.7 2020/11/09 16:13:02 tb Exp $ */
+/*	$Id: test-roa.c,v 1.8 2021/01/29 10:15:42 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -42,6 +42,7 @@ roa_print(const struct roa *p)
 
 	printf("Subject key identifier: %s\n", p->ski);
 	printf("Authority key identifier: %s\n", p->aki);
+	printf("Authority info access: %s\n", p->aia);
 	printf("asID: %" PRIu32 "\n", p->asid);
 	for (i = 0; i < p->ipsz; i++) {
 		ip_addr_print(&p->ips[i].addr,
