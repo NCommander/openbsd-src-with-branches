@@ -1,4 +1,4 @@
-/* $OpenBSD: tty.c,v 1.387 2020/12/03 07:12:12 nicm Exp $ */
+/* $OpenBSD: tty.c,v 1.388 2021/01/18 10:27:54 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -249,8 +249,8 @@ tty_open(struct tty *tty, char **cause)
 {
 	struct client	*c = tty->client;
 
-	tty->term = tty_term_create(tty, c->term_name, &c->term_features,
-	    c->fd, cause);
+	tty->term = tty_term_create(tty, c->term_name, c->term_caps,
+	    c->term_ncaps, &c->term_features, cause);
 	if (tty->term == NULL) {
 		tty_close(tty);
 		return (-1);
