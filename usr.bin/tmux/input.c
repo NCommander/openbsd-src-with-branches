@@ -1,4 +1,4 @@
-/* $OpenBSD: input.c,v 1.186 2021/02/15 09:39:38 nicm Exp $ */
+/* $OpenBSD: input.c,v 1.187 2021/02/15 14:22:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -2460,8 +2460,10 @@ input_osc_parse_colour(const char *p)
 		    (1 - m) * (1 - k) * 255,
 		    (1 - y) * (1 - k) * 255);
 	} else {
-		while (*p == ' ')
+		while (len != 0 && *p == ' ') {
 			p++;
+			len--;
+		}
 		while (len != 0 && p[len - 1] == ' ')
 			len--;
 		copy = xstrndup(p, len);
