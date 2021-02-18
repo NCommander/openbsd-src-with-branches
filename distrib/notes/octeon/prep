@@ -1,4 +1,4 @@
-dnl	$OpenBSD: prep,v 1.10 2020/05/17 17:04:28 deraadt Exp $
+dnl	$OpenBSD: prep,v 1.11 2020/07/05 22:27:48 tj Exp $
 By default MACHINE systems are shipped with a Linux (or proprietary) system
 installed on the CompactFlash card or USB drive.
 
@@ -10,6 +10,12 @@ power to the device and start it.
 Unless you have removed or changed the Linux installation it will be booted
 automatically. If you are quick you can interrupt booting (while still in
 U-Boot) with ^C.
+
+OpenBSD/MACHINE uses serial speed 115200. If this speed is not the default
+on the device, you should adjust it by setting the baudrate U-Boot environment
+variable (you also need to reconnect to the serial port using the new speed):
+
+	# setenv baudrate 115200
 
 There are several ways to load an OpenBSD/MACHINE kernel (or ramdisk),
 over TFTP, from the internal CompactFlash or USB storage.
