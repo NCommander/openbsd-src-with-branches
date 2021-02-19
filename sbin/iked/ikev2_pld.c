@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_pld.c,v 1.115 2021/02/16 21:07:43 tobhe Exp $	*/
+/*	$OpenBSD: ikev2_pld.c,v 1.116 2021/02/18 21:39:36 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -988,7 +988,10 @@ ikev2_pld_nonce(struct iked *env, struct ikev2_payload *pld,
 	print_hex(buf, 0, len);
 
 	if (ikev2_msg_frompeer(msg)) {
-		ibuf_release(msg->msg_nonce);
+		if (ibuf_length(msg->msg_parent->msg_nonce)) {
+			log_info("%s: duplicate NONCE payload", __func__);
+			return (-1);
+		}
 		if ((msg->msg_nonce = ibuf_new(buf, len)) == NULL) {
 			log_debug("%s: failed to get peer nonce", __func__);
 			return (-1);
