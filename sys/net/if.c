@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.628 2021/02/10 14:41:53 bluhm Exp $	*/
+/*	$OpenBSD: if.c,v 1.629 2021/02/11 20:28:01 mvs Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -859,7 +859,8 @@ if_vinput(struct ifnet *ifp, struct mbuf *m)
 	}
 #endif
 
-	(*ifp->if_input)(ifp, m);
+	if (__predict_true(!ISSET(ifp->if_xflags, IFXF_MONITOR)))
+		(*ifp->if_input)(ifp, m);
 }
 
 void
