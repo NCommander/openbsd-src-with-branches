@@ -569,7 +569,7 @@ pseudo-device tpmr: ifnet, ether, ifmedia
 pseudo-device mpe: ifnet, mpls
 pseudo-device mpw: ifnet, mpls, ether
 pseudo-device mpip: ifnet, mpls
-pseudo-device bpe: ifnet, ether, ifmedia
+pseudo-device bpe: ifnet, ether, ifmedia, etherbridge
 pseudo-device vether: ifnet, ether
 pseudo-device pppx: ifnet
 pseudo-device vxlan: ifnet, ether, ifmedia
