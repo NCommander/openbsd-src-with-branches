@@ -561,7 +561,7 @@ pseudo-device vlan: ifnet, ether
 pseudo-device carp: ifnet, ether
 pseudo-device sppp: ifnet
 pseudo-device gif: ifnet
-pseudo-device gre: ifnet
+pseudo-device gre: ifnet, ether, etherbridge
 pseudo-device crypto: ifnet
 pseudo-device trunk: ifnet, ether, ifmedia
 pseudo-device aggr: ifnet, ether, ifmedia
