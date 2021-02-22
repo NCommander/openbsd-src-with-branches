@@ -1,4 +1,4 @@
-/*	$OpenBSD: usm.c,v 1.16 2019/06/11 05:36:32 martijn Exp $	*/
+/*	$OpenBSD: usm.c,v 1.17 2019/10/24 12:39:27 tb Exp $	*/
 
 /*
  * Copyright (c) 2012 GeNUA mbH
@@ -302,7 +302,7 @@ usm_decode(struct snmp_message *msg, struct ber_element *elm, const char **errp)
 	smi_debug_elements(usm);
 #endif
 
-	if (ober_scanf_elements(usm, "{xiixpxx", &engineid, &enginelen,
+	if (ober_scanf_elements(usm, "{xiixpxx$", &engineid, &enginelen,
 	    &engine_boots, &engine_time, &user, &userlen, &offs2,
 	    &digest, &digestlen, &salt, &saltlen) != 0) {
 		*errp = "cannot decode USM params";
