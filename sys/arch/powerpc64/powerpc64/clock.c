@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.1 2020/06/10 19:06:53 kettenis Exp $	*/
+/*	$OpenBSD: clock.c,v 1.2 2020/07/12 20:32:20 naddy Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -37,7 +37,13 @@ struct evcount stat_count;
 u_int	tb_get_timecount(struct timecounter *);
 
 static struct timecounter tb_timecounter = {
-	tb_get_timecount, NULL, 0xffffffff, 0, "tb", 0, NULL
+	.tc_get_timecount = tb_get_timecount,
+	.tc_poll_pps = NULL,
+	.tc_counter_mask = 0xffffffff,
+	.tc_frequency = 0,
+	.tc_name = "tb",
+	.tc_quality = 0,
+	.tc_priv = NULL,
 };
 
 void	cpu_startclock(void);
