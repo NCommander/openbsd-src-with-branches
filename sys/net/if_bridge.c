@@ -1555,7 +1555,7 @@ bridge_ipsec(struct ifnet *ifp, struct ether_header *eh, int hassnap,
 		case IPPROTO_IPCOMP:
 			m_copydata(m, hlen + sizeof(u_int16_t),
 			    sizeof(u_int16_t), (caddr_t)&cpi);
-			spi = ntohl(htons(cpi));
+			spi = htonl(ntohs(cpi));
 			break;
 		}
 
