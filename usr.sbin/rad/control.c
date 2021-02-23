@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.5 2019/03/02 03:40:45 pamela Exp $	*/
+/*	$OpenBSD: control.c,v 1.6 2021/01/19 16:54:00 florian Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -106,7 +106,7 @@ control_listen(int fd)
 	if (control_state.fd != -1)
 		fatalx("%s: received unexpected controlsock", __func__);
 
-	control_state.fd = -1;
+	control_state.fd = fd;
 	if (listen(control_state.fd, CONTROL_BACKLOG) == -1) {
 		log_warn("%s: listen", __func__);
 		return (-1);
