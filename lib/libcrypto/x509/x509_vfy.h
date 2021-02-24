@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_vfy.h,v 1.30 2018/08/24 19:21:09 tb Exp $ */
+/* $OpenBSD: x509_vfy.h,v 1.31 2020/09/13 15:06:17 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -247,7 +247,7 @@ struct x509_store_ctx_st      /* X509_STORE_CTX */
 
 	/* The following is built up */
 	int valid;		/* if 0, rebuild chain */
-	int last_untrusted;	/* index of last untrusted cert */
+	int last_untrusted;	/* XXX: number of untrusted certs in chain!!! */
 	STACK_OF(X509) *chain; 		/* chain of X509s - built up and trusted */
 	X509_POLICY_TREE *tree;	/* Valid policy tree */
 
