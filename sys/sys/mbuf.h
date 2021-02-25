@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbuf.h,v 1.250 2020/08/08 19:53:02 florian Exp $	*/
+/*	$OpenBSD: mbuf.h,v 1.251 2020/12/12 11:49:02 jan Exp $	*/
 /*	$NetBSD: mbuf.h,v 1.19 1996/02/09 18:25:14 christos Exp $	*/
 
 /*
@@ -435,7 +435,7 @@ int	m_copyback(struct mbuf *, int, int, const void *, int);
 struct mbuf *m_freem(struct mbuf *);
 void	m_purge(struct mbuf *);
 void	m_reclaim(void *, int);
-void	m_copydata(struct mbuf *, int, int, caddr_t);
+void	m_copydata(struct mbuf *, int, int, void *);
 void	m_cat(struct mbuf *, struct mbuf *);
 struct mbuf *m_devget(char *, int, int);
 int	m_apply(struct mbuf *, int, int,
