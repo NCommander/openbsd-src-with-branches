@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsec.c,v 1.165 2020/01/10 23:09:23 cheloha Exp $	*/
+/*	$OpenBSD: ubsec.c,v 1.166 2020/05/29 04:42:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -927,7 +927,7 @@ ubsec_process(struct cryptop *crp)
 				bcopy(enccrd->crd_iv, key.ses_iv, ivlen);
 			else if (crp->crp_flags & CRYPTO_F_IMBUF)
 				m_copydata(q->q_src_m, enccrd->crd_inject,
-				    ivlen, (caddr_t)key.ses_iv);
+				    ivlen, key.ses_iv);
 			else if (crp->crp_flags & CRYPTO_F_IOV)
 				cuio_copydata(q->q_src_io,
 				    enccrd->crd_inject, ivlen,

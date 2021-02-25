@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.174 2018/10/04 17:33:41 bluhm Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.175 2020/07/24 20:39:03 cheloha Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -654,7 +654,7 @@ tcp6_ctlinput(int cmd, struct sockaddr *sa, u_int rdomain, void *d)
 			return;
 
 		bzero(&th, sizeof(th));
-		m_copydata(m, off, sizeof(*thp), (caddr_t)&th);
+		m_copydata(m, off, sizeof(*thp), &th);
 
 		/*
 		 * Check to see if we have a valid TCP connection

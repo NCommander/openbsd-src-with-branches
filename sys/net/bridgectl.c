@@ -669,7 +669,7 @@ bridge_arpfilter(struct brl_node *n, struct ether_header *eh, struct mbuf *m)
 		return (0);
 	if (m->m_pkthdr.len < ETHER_HDR_LEN + sizeof(ea))
 		return (0);	/* log error? */
-	m_copydata(m, ETHER_HDR_LEN, sizeof(ea), (caddr_t)&ea);
+	m_copydata(m, ETHER_HDR_LEN, sizeof(ea), &ea);
 
 	if (ntohs(ea.arp_hrd) != ARPHRD_ETHER ||
 	    ntohs(ea.arp_pro) != ETHERTYPE_IP ||
