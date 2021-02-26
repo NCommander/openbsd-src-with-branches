@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_veb.c,v 1.7 2021/02/23 23:42:17 dlg Exp $ */
+/*	$OpenBSD: if_veb.c,v 1.8 2021/02/24 01:20:03 dlg Exp $ */
 
 /*
  * Copyright (c) 2021 David Gwynne <dlg@openbsd.org>
@@ -78,10 +78,10 @@ union veb_addr {
 };
 
 static const union veb_addr veb_8021_group = {
-	.ea = { 0x01, 0x80, 0xc2, 0x00, 0x00, 0x00 }
+	.ea = { { 0x01, 0x80, 0xc2, 0x00, 0x00, 0x00 } }
 };
 static const union veb_addr veb_8021_group_mask = {
-	.ea = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xf0 }
+	.ea = { { 0xff, 0xff, 0xff, 0xff, 0xff, 0xf0 } }
 };
 
 /* SIOCBRDGIFFLGS, SIOCBRDGIFFLGS */
