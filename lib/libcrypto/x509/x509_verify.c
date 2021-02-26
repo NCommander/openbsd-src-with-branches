@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_verify.c,v 1.31 2021/02/24 17:59:05 tb Exp $ */
+/* $OpenBSD: x509_verify.c,v 1.33 2021/02/25 16:58:59 jsing Exp $ */
 /*
  * Copyright (c) 2020-2021 Bob Beck <beck@openbsd.org>
  *
@@ -269,7 +269,7 @@ x509_verify_ctx_add_chain(struct x509_verify_ctx *ctx,
 		ctx->xsc->error = X509_V_OK;
 		ctx->xsc->error_depth = 0;
 
-		if (!x509_verify_ctx_set_xsc_chain(ctx, chain, 0, 0))
+		if (!x509_verify_ctx_set_xsc_chain(ctx, chain, 0, 1))
 			return 0;
 
 		/*
