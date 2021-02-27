@@ -1,4 +1,4 @@
-/*	$OpenBSD: unwindctl.c,v 1.25 2019/12/08 12:31:07 otto Exp $	*/
+/*	$OpenBSD: unwindctl.c,v 1.26 2019/12/18 09:18:28 florian Exp $	*/
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -77,7 +77,7 @@ main(int argc, char *argv[])
 	int				 ch, column_offset;
 	char				*sockname;
 
-	sockname = UNWIND_SOCKET;
+	sockname = _PATH_UNWIND_SOCKET;
 	while ((ch = getopt(argc, argv, "s:")) != -1) {
 		switch (ch) {
 		case 's':
