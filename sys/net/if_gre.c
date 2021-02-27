@@ -3590,9 +3590,6 @@ nvgre_add_addr(struct nvgre_softc *sc, const struct ifbareq *ifba)
 
 		endpoint.in4 = sin->sin_addr;
 		break;
-		memset(sin6, 0, sizeof(*sin6));
-		sin6->sin6_family = AF_INET6;
-		sin6->sin6_len = sizeof(*sin6);
 
 #ifdef INET6
 	case AF_INET6:
