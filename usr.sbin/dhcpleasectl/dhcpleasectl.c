@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: dhcpleasectl.c,v 1.1 2021/02/26 16:16:37 florian Exp $	*/
 
 /*
  * Copyright (c) 2021 Florian Obser <florian@openbsd.org>
@@ -74,7 +74,7 @@ main(int argc, char *argv[])
 	int			 ch;
 	char			*sockname;
 
-	sockname = DHCPLEASED_SOCKET;
+	sockname = _PATH_DHCPLEASED_SOCKET;
 	while ((ch = getopt(argc, argv, "s:")) != -1) {
 		switch (ch) {
 		case 's':
