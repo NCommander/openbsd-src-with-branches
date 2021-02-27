@@ -1,4 +1,4 @@
-/*	$OpenBSD: clparse.c,v 1.201 2020/12/10 18:35:31 krw Exp $	*/
+/*	$OpenBSD: clparse.c,v 1.202 2021/02/21 18:16:59 krw Exp $	*/
 
 /* Parser for dhclient config and lease files. */
 
@@ -234,6 +234,8 @@ read_lease_db(struct client_lease_tq *lease_db)
 			free_client_lease(lp);
 		}
 
+		if (lease->epoch == 0)
+			time(&lease->epoch);
 		TAILQ_INSERT_TAIL(lease_db, lease, next);
 	}
 
