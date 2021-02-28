@@ -1,4 +1,4 @@
-/*	$OpenBSD: priv.c,v 1.14 2018/11/21 12:31:47 reyk Exp $	*/
+/*	$OpenBSD: priv.c,v 1.15 2019/06/28 13:32:51 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2016 Reyk Floeter <reyk@openbsd.org>
@@ -81,7 +81,8 @@ priv_run(struct privsep *ps, struct privsep_proc *p, void *arg)
 int
 priv_dispatch_parent(int fd, struct privsep_proc *p, struct imsg *imsg)
 {
-	const char		*desct[] = { "tap", "switch", "bridge", NULL };
+	const char		*desct[] = { "tap", "switch", "bridge",
+				     "veb", NULL };
 	struct privsep		*ps = p->p_ps;
 	struct vmop_ifreq	 vfr;
 	struct vmd		*env = ps->ps_env;
