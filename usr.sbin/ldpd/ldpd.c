@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.c,v 1.65 2019/08/10 01:30:53 mestre Exp $ */
+/*	$OpenBSD: ldpd.c,v 1.66 2021/01/19 15:23:25 claudio Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -323,7 +323,7 @@ static pid_t
 start_child(enum ldpd_process p, char *argv0, int fd, int debug, int verbose,
     char *sockname)
 {
-	char	*argv[5];
+	char	*argv[7];
 	int	 argc = 0;
 	pid_t	 pid;
 
