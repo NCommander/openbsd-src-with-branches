@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd.c,v 1.33 2019/07/03 18:11:07 lum Exp $	*/
+/*	$OpenBSD: kbd.c,v 1.34 2020/02/09 10:13:13 florian Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -371,7 +371,7 @@ selfinsert(int f, int n)
 		}
 		thisflag |= CFINS;
 	}
-	if (c == '\n') {
+	if (c == *curbp->b_nlchr) {
 		do {
 			count = lnewline();
 		} while (--n && count == TRUE);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttyio.c,v 1.37 2015/03/23 12:31:19 bcallah Exp $	*/
+/*	$OpenBSD: ttyio.c,v 1.38 2019/06/28 13:35:02 deraadt Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -206,7 +206,7 @@ panic(char *s)
 	ttclose();
 	(void) fputs("panic: ", stderr);
 	(void) fputs(s, stderr);
-	(void) fputc('\n', stderr);
+	(void) fputc('\n', stderr);	/* Use '\n' as no buffers now. */
 	exit(1);
 }
 
