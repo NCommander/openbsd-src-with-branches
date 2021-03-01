@@ -21,7 +21,7 @@ For more information on these options, you can run C<perldoc perlrun>.
 
 The F<perldoc> program gives you access to all the documentation that comes
 with Perl.  You can get more documentation, tutorials and community support
-online at L<http://www.perl.org/>.
+online at L<https://www.perl.org/>.
 
 If you're new to Perl, you should start by running C<perldoc perlintro>,
 which is a general intro for beginners and provides some background to help
@@ -129,6 +129,7 @@ aux h2ph h2xs perlbug pl2pm pod2html pod2man splain xsubpp
     perlebcdic		Considerations for running Perl on EBCDIC platforms
 
     perlsec		Perl security
+    perlsecpolicy	Perl security report handling policy
 
     perlmod		Perl modules: how they work
     perlmodlib		Perl modules: how to write and use
@@ -170,6 +171,7 @@ aux h2ph h2xs perlbug pl2pm pod2html pod2man splain xsubpp
     perlhacktut 	Walk through the creation of a simple C code patch
     perlhacktips	Tips for Perl core C code hacking
     perlpolicy		Perl development policies
+    perlgov		Perl Rules of Governance
     perlgit		Using git with the Perl repository
 
 =head2 Miscellaneous
@@ -181,7 +183,12 @@ aux h2ph h2xs perlbug pl2pm pod2html pod2man splain xsubpp
 
     perlhist		Perl history records
     perldelta		Perl changes since previous version
+    perl5320delta	Perl changes in version 5.32.0
+    perl5303delta	Perl changes in version 5.30.3
+    perl5302delta	Perl changes in version 5.30.2
+    perl5301delta	Perl changes in version 5.30.1
     perl5300delta	Perl changes in version 5.30.0
+    perl5283delta	Perl changes in version 5.28.3
     perl5282delta	Perl changes in version 5.28.2
     perl5281delta	Perl changes in version 5.28.1
     perl5280delta	Perl changes in version 5.28.0
@@ -259,7 +266,6 @@ aux h2ph h2xs perlbug pl2pm pod2html pod2man splain xsubpp
     perlamiga		Perl notes for AmigaOS
     perlandroid		Perl notes for Android
     perlbs2000		Perl notes for POSIX-BC BS2000
-    perlce		Perl notes for WinCE
     perlcygwin		Perl notes for Cygwin
     perldos		Perl notes for DOS
     perlfreebsd 	Perl notes for FreeBSD
@@ -351,7 +357,7 @@ for a listing.
 
 =head1 ENVIRONMENT
 
-See L<perlrun>.
+See L<perlrun/ENVIRONMENT>.
 
 =head1 AUTHOR
 
@@ -371,10 +377,10 @@ see L<perlvar> for more information.
 
 =head1 SEE ALSO
 
- http://www.perl.org/       the Perl homepage
- http://www.perl.com/       Perl articles (O'Reilly)
- http://www.cpan.org/       the Comprehensive Perl Archive
- http://www.pm.org/         the Perl Mongers
+ https://www.perl.org/       the Perl homepage
+ https://www.perl.com/       Perl articles
+ https://www.cpan.org/       the Comprehensive Perl Archive
+ https://www.pm.org/         the Perl Mongers
 
 =head1 DIAGNOSTICS
 
@@ -420,11 +426,9 @@ displayed by diagnostics are internally stored as short integers,
 so they are limited to a maximum of 65535 (higher numbers usually being
 affected by wraparound).
 
-You may mail your bug reports (be sure to include full configuration
+You may submit your bug reports (be sure to include full configuration
 information as output by the myconfig program in the perl source
-tree, or by C<perl -V>) to perlbug@perl.org .  If you've succeeded
-in compiling perl, the L<perlbug> script in the F<utils/> subdirectory
-can be used to help mail in a bug report.
+tree, or by C<perl -V>) to L<https://github.com/Perl/perl5/issues>.
 
 Perl actually stands for Pathologically Eclectic Rubbish Lister, but
 don't tell anyone I said that.

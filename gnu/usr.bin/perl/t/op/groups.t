@@ -234,7 +234,7 @@ sub _system_groups {
 #
 # If these tests fail, report the particular incantation you use
 # on this platform to find *all* the groups that an arbitrary
-# user may belong to, using the 'perlbug' program.
+# user may belong to, using the issue tracker.
 EOM
         }
         return ( $cmd, $str );
@@ -313,7 +313,7 @@ sub perl_groups {
 
         # Why does this test prefer to not test groups which we don't have
         # a name for? One possible answer is that my primary group comes
-        # from from my entry in the user database but isn't mentioned in
+        # from my entry in the user database but isn't mentioned in
         # the group database.  Are there more reasons?
         next if ! defined $group;
 

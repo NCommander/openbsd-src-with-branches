@@ -2,20 +2,20 @@
 
 =head1 NAME
 
-perldelta - what is new for perl v5.30.1
+perldelta - what is new for perl v5.32.1
 
 =head1 DESCRIPTION
 
-This document describes differences between the 5.30.0 release and the 5.30.1
+This document describes differences between the 5.32.0 release and the 5.32.1
 release.
 
-If you are upgrading from an earlier release such as 5.29.0, first read
-L<perl5300delta>, which describes differences between 5.29.0 and 5.30.0.
+If you are upgrading from an earlier release such as 5.31.0, first read
+L<perl5320delta>, which describes differences between 5.31.0 and 5.32.0.
 
 =head1 Incompatible Changes
 
-There are no changes intentionally incompatible with 5.30.1.  If any exist,
-they are bugs, and we request that you submit a report.  See
+There are no changes intentionally incompatible with Perl 5.32.0.  If any
+exist, they are bugs, and we request that you submit a report.  See
 L</Reporting Bugs> below.
 
 =head1 Modules and Pragmata
@@ -26,20 +26,85 @@ L</Reporting Bugs> below.
 
 =item *
 
-L<Module::CoreList> has been upgraded from version 5.20190522 to 5.20191110.
+L<Data::Dumper> has been upgraded from version 2.174 to 2.174_01.
+
+A number of memory leaks have been fixed.
+
+=item *
+
+L<DynaLoader> has been upgraded from version 1.47 to 1.47_01.
+
+=item *
+
+L<Module::CoreList> has been upgraded from version 5.20200620 to 5.20210123.
+
+=item *
+
+L<Opcode> has been upgraded from version 1.47 to 1.48.
+
+A warning has been added about evaluating untrusted code with the perl
+interpreter.
+
+=item *
+
+L<Safe> has been upgraded from version 2.41 to 2.41_01.
+
+A warning has been added about evaluating untrusted code with the perl
+interpreter.
 
 =back
 
 =head1 Documentation
 
+=head2 New Documentation
+
+=head3 L<perlgov>
+
+Documentation of the newly formed rules of governance for Perl.
+
+=head3 L<perlsecpolicy>
+
+Documentation of how the Perl security team operates and how the team evaluates
+new security reports.
+
 =head2 Changes to Existing Documentation
 
 We have attempted to update the documentation to reflect the changes listed in
-this document.  If you find any we have missed, send email to
-L<perlbug@perl.org|mailto:perlbug@perl.org>.
+this document.  If you find any we have missed, open an issue at
+L<https://github.com/Perl/perl5/issues>.
 
-Additionally, documentation has been updated to reference GitHub as the new
-canonical repository and to describe the new GitHub pull request workflow.
+Additionally, the following selected changes have been made:
+
+=head3 L<perlop>
+
+=over 4
+
+=item *
+
+Document range op behaviour change.
+
+=back
+
+=head1 Diagnostics
+
+The following additions or changes have been made to diagnostic output,
+including warnings and fatal error messages.  For the complete list of
+diagnostic messages, see L<perldiag>.
+
+=head2 Changes to Existing Diagnostics
+
+=over 4
+
+=item *
+
+L<\K not permitted in lookahead/lookbehind in regex; marked by <-- HERE in mE<sol>%sE<sol>|perldiag/"\K not permitted in lookahead/lookbehind in regex; marked by <-- HERE in m/%s/">
+
+This error was incorrectly produced in some cases involving nested lookarounds.
+This has been fixed.
+
+[L<GH #18123|https://github.com/Perl/perl5/issues/18123>]
+
+=back
 
 =head1 Configuration and Compilation
 
@@ -47,10 +112,18 @@ canonical repository and to describe the new GitHub pull request workflow.
 
 =item *
 
-The C<ECHO> macro is now defined.  This is used in a C<dtrace> rule that was
-originally changed for FreeBSD, and the FreeBSD make apparently predefines it.
-The Solaris make does not predefine C<ECHO> which broke this rule on Solaris.
-L<[perl #17057]|https://github.com/perl/perl5/issues/17057>
+Newer 64-bit versions of the Intel C/C++ compiler are now recognized and have
+the correct flags set.
+
+=item *
+
+We now trap SIGBUS when F<Configure> checks for C<va_copy>.
+
+On several systems the attempt to determine if we need C<va_copy> or similar
+results in a SIGBUS instead of the expected SIGSEGV, which previously caused a
+core dump.
+
+[L<GH #18148|https://github.com/Perl/perl5/issues/18148>]
 
 =back
 
@@ -65,16 +138,19 @@ release.
 
 =over 4
 
-=item Win32
+=item MacOS (Darwin)
 
-The locale tests could crash on Win32 due to a Windows bug, and separately due
-to the CRT throwing an exception if the locale name wasn't validly encoded in
-the current code page.
+The hints file for darwin has been updated to handle future macOS versions
+beyond 10.  Perl can now be built on macOS Big Sur.
 
-For the second we now decode the locale name ourselves, and always decode it as
-UTF-8.
+[L<GH #17946|https://github.com/Perl/perl5/issues/17946>,
+L<GH #18406|https://github.com/Perl/perl5/issues/18406>]
 
-L<[perl #16922]|https://github.com/perl/perl5/issues/16922>
+=item Minix
+
+Build errors on Minix have been fixed.
+
+[L<GH #17908|https://github.com/Perl/perl5/issues/17908>]
 
 =back
 
@@ -84,58 +160,61 @@ L<[perl #16922]|https://github.com/perl/perl5/issues/16922>
 
 =item *
 
-Setting C<$)> now properly sets supplementary group ids, if you have the
-necessary privileges.
-L<[perl #17031]|https://github.com/perl/perl5/issues/17031>
+Some list assignments involving C<undef> on the left-hand side were
+over-optimized and produced incorrect results.
+
+[L<GH #16685|https://github.com/Perl/perl5/issues/16685>,
+L<GH #17816|https://github.com/Perl/perl5/issues/17816>]
 
 =item *
 
-C<readline @foo> now evaluates C<@foo> in scalar context.  Previously, it would
-be evaluated in list context, and since readline() pops only one argument from
-the stack, the stack could underflow, or be left with unexpected values on it.
-L<[perl #16929]|https://github.com/perl/perl5/issues/16929>
+Fixed a bug in which some regexps with recursive subpatterns matched
+incorrectly.
+
+[L<GH #18096|https://github.com/Perl/perl5/issues/18096>]
 
 =item *
 
-sv_gets() now recovers better if the target SV is modified by a signal handler.
-L<[perl #16960]|https://github.com/perl/perl5/issues/16960>
+Fixed a deadlock that hung the build when Perl is compiled for debugging memory
+problems and has PERL_MEM_LOG enabled.
+
+[L<GH #18341|https://github.com/Perl/perl5/issues/18341>]
 
 =item *
 
-Matching a non-C<SVf_UTF8> string against a regular expression containing
-Unicode literals could leak an SV on each match attempt.
-L<[perl #17140]|https://github.com/perl/perl5/issues/17140>
+Fixed a crash in the use of chained comparison operators when run under "no
+warnings 'uninitialized'".
+
+[L<GH #17917|https://github.com/Perl/perl5/issues/17917>,
+L<GH #18380|https://github.com/Perl/perl5/issues/18380>]
 
 =item *
 
-C<< sprintf("%.*a", -10000, $x) >> would cause a buffer overflow due to
-mishandling of the negative precision value.
-L<[perl #16942]|https://github.com/perl/perl5/issues/16942>
+Exceptions thrown from destructors during global destruction are no longer
+swallowed.
 
-=item *
-
-C<scalar()> on a reference could cause an erroneous assertion failure during
-compilation.
-L<[perl #16969]|https://github.com/perl/perl5/issues/16969>
+[L<GH #18063|https://github.com/Perl/perl5/issues/18063>]
 
 =back
 
 =head1 Acknowledgements
 
-Perl 5.30.1 represents approximately 6 months of development since Perl 5.30.0
-and contains approximately 4,700 lines of changes across 67 files from 14
+Perl 5.32.1 represents approximately 7 months of development since Perl 5.32.0
+and contains approximately 7,000 lines of changes across 80 files from 23
 authors.
 
 Excluding auto-generated files, documentation and release tools, there were
-approximately 910 lines of changes to 20 .pm, .t, .c and .h files.
+approximately 1,300 lines of changes to 23 .pm, .t, .c and .h files.
 
 Perl continues to flourish into its fourth decade thanks to a vibrant community
 of users and developers.  The following people are known to have contributed
-the improvements that became Perl 5.30.1:
+the improvements that became Perl 5.32.1:
 
-Chris 'BinGOs' Williams, Dan Book, David Mitchell, Hugo van der Sanden, James E
-Keenan, Karen Etheridge, Karl Williamson, Manuel Mausz, Max Maischein, Nicolas
-R., Sawyer X, Steve Hay, Tom Hukins, Tony Cook.
+Adam Hartley, Andy Dougherty, Dagfinn Ilmari Mannsåker, Dan Book, David
+Mitchell, Graham Knop, Graham Ollis, Hauke D, H.Merijn Brand, Hugo van der
+Sanden, John Lightsey, Karen Etheridge, Karl Williamson, Leon Timmermans, Max
+Maischein, Nicolas R., Ricardo Signes, Richard Leach, Sawyer X, Sevan Janiyan,
+Steve Hay, Tom Hukins, Tony Cook.
 
 The list above is almost certainly incomplete as it is automatically generated
 from version control history.  In particular, it does not include the names of
@@ -152,16 +231,15 @@ the F<AUTHORS> file in the Perl source distribution.
 =head1 Reporting Bugs
 
 If you find what you think is a bug, you might check the perl bug database at
-L<https://rt.perl.org/>.  There may also be information at
+L<https://github.com/Perl/perl5/issues>.  There may also be information at
 L<http://www.perl.org/>, the Perl Home Page.
 
-If you believe you have an unreported bug, please run the L<perlbug> program
-included with your release.  Be sure to trim your bug down to a tiny but
-sufficient test case.  Your bug report, along with the output of C<perl -V>,
-will be sent off to perlbug@perl.org to be analysed by the Perl porting team.
+If you believe you have an unreported bug, please open an issue at
+L<https://github.com/Perl/perl5/issues>.  Be sure to trim your bug down to a
+tiny but sufficient test case.
 
 If the bug you are reporting has security implications which make it
-inappropriate to send to a publicly archived mailing list, then see
+inappropriate to send to a public issue tracker, then see
 L<perlsec/SECURITY VULNERABILITY CONTACT INFORMATION> for details of how to
 report the issue.
 
