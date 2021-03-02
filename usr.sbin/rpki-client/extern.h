@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.46 2021/02/19 08:14:49 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.47 2021/02/22 09:46:05 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -435,7 +435,6 @@ extern int	 outformats;
 #define FORMAT_BIRD	0x02
 #define FORMAT_CSV	0x04
 #define FORMAT_JSON	0x08
-extern char*	 outputdir;
 
 int		 outputfiles(struct vrp_tree *v, struct stats *);
 int		 outputheader(FILE *, struct stats *);
