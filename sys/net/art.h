@@ -1,4 +1,4 @@
-/* $OpenBSD: art.h,v 1.19 2020/10/29 21:15:27 denis Exp $ */
+/* $OpenBSD: art.h,v 1.20 2020/11/12 15:25:28 mpi Exp $ */
 
 /*
  * Copyright (c) 2015 Martin Pieuchot
@@ -21,7 +21,6 @@
 
 #include <sys/rwlock.h>
 #include <sys/srp.h>
-#include <netinet/in.h>
 
 #define ART_MAXLVL	32	/* We currently use 32 levels for IPv6. */
 
