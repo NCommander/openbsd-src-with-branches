@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.249 2021/02/25 17:06:05 jsing Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.250 2021/02/27 14:20:50 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -2387,7 +2387,7 @@ SSL_get_error(const SSL *s, int i)
 	if (i == 0) {
 		if ((s->internal->shutdown & SSL_RECEIVED_SHUTDOWN) &&
 		    (S3I(s)->warn_alert == SSL_AD_CLOSE_NOTIFY))
-		return (SSL_ERROR_ZERO_RETURN);
+			return (SSL_ERROR_ZERO_RETURN);
 	}
 	return (SSL_ERROR_SYSCALL);
 }
