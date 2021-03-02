@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.c,v 1.28 2019/09/03 07:55:07 florian Exp $	*/
+/*	$OpenBSD: frontend.c,v 1.1 2021/02/26 16:16:37 florian Exp $	*/
 
 /*
  * Copyright (c) 2017, 2021 Florian Obser <florian@openbsd.org>
@@ -31,13 +31,12 @@
 #include <net/if_types.h>
 #include <net/route.h>
 
+#include <netinet/in.h>
+#include <netinet/if_ether.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 
 #include <arpa/inet.h>
-
-#include <netinet/in.h>
-#include <netinet/if_ether.h>
 
 #include <errno.h>
 #include <event.h>
