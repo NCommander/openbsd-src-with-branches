@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpc.c,v 1.30 2020/09/14 15:12:27 martijn Exp $	*/
+/*	$OpenBSD: snmpc.c,v 1.31 2020/12/02 15:45:51 martijn Exp $	*/
 
 /*
  * Copyright (c) 2019 Martijn van Duren <martijn@openbsd.org>
@@ -456,8 +456,6 @@ main(int argc, char *argv[])
 			if (boots < 0 || strtolp == optarg || strtolp[0] != ',')
 				usage();
 			strtolp++;
-			while (strtolp[0] == ' ' && strtolp[0] == '\t')
-				strtolp++;
 			time = strtoll(strtolp, &strtolp, 10);
 			if (boots < 0 || strtolp == optarg)
 				usage();
