@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.92 2021/01/11 02:12:57 dtucker Exp $ */
+/* $OpenBSD: misc.h,v 1.93 2021/02/15 20:36:35 markus Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -18,6 +18,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <stdio.h>
 
 /* Data structure for representing a forwarding request. */
 struct Forward {
