@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.17 2017/07/19 12:50:32 espie Exp $
+# $OpenBSD: Makefile,v 1.18 2021/02/13 16:14:12 tobhe Exp $
 
 PROG=		iked
 SRCS=		ca.c chap_ms.c config.c control.c crypto.c dh.c \
@@ -12,7 +12,7 @@ MAN=		iked.conf.5 iked.8
 
 LDADD=		-lutil -levent -lcrypto
 DPADD=		${LIBUTIL} ${LIBEVENT} ${LIBCRYPTO}
-CFLAGS+=	-Wall -I${.CURDIR}
+CFLAGS+=	-Wall -I${.CURDIR} -g
 CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
