@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.112 2021/03/04 14:24:17 claudio Exp $ */
+/*	$OpenBSD: main.c,v 1.113 2021/03/04 15:35:39 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -590,9 +590,10 @@ queue_add_tal(struct entityq *q, const char *file)
 	buf = tal_read_file(file);
 
 	/* Record tal for later reporting */
-	if (stats.talnames == NULL)
-		stats.talnames = strdup(file);
-	else {
+	if (stats.talnames == NULL) {
+		if ((stats.talnames = strdup(file)) == NULL)
+			err(1, NULL);
+	} else {
 		char *tmp;
 		if (asprintf(&tmp, "%s %s", stats.talnames, file) == -1)
 			err(1, NULL);
