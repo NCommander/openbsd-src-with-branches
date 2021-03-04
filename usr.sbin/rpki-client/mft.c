@@ -1,4 +1,4 @@
-/*	$OpenBSD: mft.c,v 1.26 2021/02/16 07:58:30 job Exp $ */
+/*	$OpenBSD: mft.c,v 1.27 2021/02/19 12:18:23 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -452,7 +452,7 @@ mft_validfilehash(const char *fn, const struct mftfile *m)
 	assert(cp != NULL);
 	assert(cp - fn < INT_MAX);
 	if (asprintf(&path, "%.*s/%s", (int)(cp - fn), fn, m->file) == -1)
-		err(1, "asprintf");
+		err(1, NULL);
 
 	if ((fd = open(path, O_RDONLY)) == -1) {
 		warn("%s: referenced file %s", fn, m->file);
