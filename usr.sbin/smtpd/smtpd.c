@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.c,v 1.335 2020/09/23 19:11:50 martijn Exp $	*/
+/*	$OpenBSD: smtpd.c,v 1.336 2020/12/31 08:27:15 martijn Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -49,6 +49,7 @@
 #include <string.h>
 #include <sysexits.h>
 #include <time.h>
+#include <tls.h>
 #include <unistd.h>
 
 #include <openssl/ssl.h>
@@ -609,7 +610,7 @@ main(int argc, char *argv[])
 
 	env->sc_opts |= opts;
 
-	ssl_init();
+	tls_init();
 
 	if (parse_config(conf, conffile, opts))
 		exit(1);
