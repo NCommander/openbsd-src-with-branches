@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.352 2021/02/25 02:48:21 dlg Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.353 2021/03/01 11:05:42 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -110,7 +110,7 @@ void	bridge_spandetach(void *);
 int	bridge_ifremove(struct bridge_iflist *);
 void	bridge_spanremove(struct bridge_iflist *);
 struct mbuf *
-	bridge_input(struct ifnet *, struct mbuf *, void *);
+	bridge_input(struct ifnet *, struct mbuf *, uint64_t, void *);
 void	bridge_process(struct ifnet *, struct mbuf *);
 void	bridgeintr_frame(struct ifnet *, struct ifnet *, struct mbuf *);
 void	bridge_bifgetstp(struct bridge_softc *, struct bridge_iflist *,
@@ -1119,7 +1119,7 @@ bridge_ourether(struct ifnet *ifp, uint8_t *ena)
  * not for us, and schedule an interrupt.
  */
 struct mbuf *
-bridge_input(struct ifnet *ifp, struct mbuf *m, void *null)
+bridge_input(struct ifnet *ifp, struct mbuf *m, uint64_t dst, void *null)
 {
 	KASSERT(m->m_flags & M_PKTHDR);
 
