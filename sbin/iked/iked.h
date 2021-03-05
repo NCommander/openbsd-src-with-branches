@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.187 2021/02/25 20:13:24 tobhe Exp $	*/
+/*	$OpenBSD: iked.h,v 1.188 2021/03/05 22:03:51 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -197,6 +197,8 @@ struct iked_childsa {
 	struct iked_childsa		*csa_peersa;	/* peer */
 
 	struct iked_childsa		*csa_bundled;	/* IPCOMP */
+
+	uint16_t			 csa_pfsgrpid;	/* pfs group id */
 
 	RB_ENTRY(iked_childsa)		 csa_node;
 	TAILQ_ENTRY(iked_childsa)	 csa_entry;
