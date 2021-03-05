@@ -1,4 +1,4 @@
-/*	$OpenBSD: pccbb.c,v 1.99 2020/01/05 01:07:58 jsg Exp $	*/
+/*	$OpenBSD: pccbb.c,v 1.100 2020/03/20 19:32:41 cheloha Exp $	*/
 /*	$NetBSD: pccbb.c,v 1.96 2004/03/28 09:49:31 nakayama Exp $	*/
 
 /*
@@ -223,10 +223,7 @@ delay_ms(int millis, void *param)
 }
 
 int
-pcicbbmatch(parent, match, aux)
-	struct device *parent;
-	void *match;
-	void *aux;
+pcicbbmatch(struct device *parent, void *match, void *aux)
 {
 	struct pci_attach_args *pa = (struct pci_attach_args *)aux;
 
@@ -326,9 +323,7 @@ struct yenta_chipinfo {
 };
 
 int
-cb_chipset(pci_id, flagp)
-	u_int32_t pci_id;
-	int *flagp;
+cb_chipset(u_int32_t pci_id, int *flagp)
 {
 	struct yenta_chipinfo *yc;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cy_pci.c,v 1.13 2004/06/13 17:30:27 pvalchev Exp $	*/
+/*	$OpenBSD: cy_pci.c,v 1.14 2011/04/03 15:36:02 jasper Exp $	*/
 /*
  * Copyright (c) 1996 Timo Rossi.
  * All rights reserved.
@@ -80,18 +80,14 @@ const struct pci_matchid cy_pci_devices[] = {
 };
 
 int
-cy_pci_match(parent, match, aux)
-	struct device *parent;
-	void *match, *aux;
+cy_pci_match(struct device *parent, void *match, void *aux)
 {
 	return (pci_matchbyid((struct pci_attach_args *)aux, cy_pci_devices,
 	    nitems(cy_pci_devices)));
 }
 
 void
-cy_pci_attach(parent, self, aux)
-	struct device *parent, *self;
-	void *aux;
+cy_pci_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct cy_pci_softc *psc = (struct cy_pci_softc *)self;
 	struct cy_softc *sc = (struct cy_softc *)self;
