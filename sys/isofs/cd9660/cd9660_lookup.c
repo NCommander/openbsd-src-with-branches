@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_lookup.c,v 1.26 2018/04/28 03:13:04 visa Exp $	*/
+/*	$OpenBSD: cd9660_lookup.c,v 1.27 2018/05/02 02:24:55 visa Exp $	*/
 /*	$NetBSD: cd9660_lookup.c,v 1.18 1997/05/08 16:19:59 mycroft Exp $	*/
 
 /*-
@@ -91,8 +91,7 @@ struct	nchstats iso_nchstats;
  * NOTE: (LOOKUP | LOCKPARENT) currently returns the parent inode unlocked.
  */
 int
-cd9660_lookup(v)
-	void *v;
+cd9660_lookup(void *v)
 {
 	struct vop_lookup_args *ap = v;
 	register struct vnode *vdp;	/* vnode for directory being searched */
