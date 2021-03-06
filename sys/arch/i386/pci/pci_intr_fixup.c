@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_intr_fixup.c,v 1.61 2008/06/26 05:42:11 ray Exp $	*/
+/*	$OpenBSD: pci_intr_fixup.c,v 1.62 2008/12/07 14:33:26 kettenis Exp $	*/
 /*	$NetBSD: pci_intr_fixup.c,v 1.10 2000/08/10 21:18:27 soda Exp $	*/
 
 /*
@@ -242,8 +242,7 @@ const struct pciintr_icu_table {
 const struct pciintr_icu_table *pciintr_icu_lookup(pcireg_t);
 
 const struct pciintr_icu_table *
-pciintr_icu_lookup(id)
-	pcireg_t id;
+pciintr_icu_lookup(pcireg_t id)
 {
 	const struct pciintr_icu_table *piit;
 
