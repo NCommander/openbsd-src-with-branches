@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcmcia_cis_quirks.c,v 1.13 2017/08/24 04:06:05 jsg Exp $	*/
+/*	$OpenBSD: pcmcia_cis_quirks.c,v 1.14 2017/09/08 05:36:52 deraadt Exp $	*/
 /*	$NetBSD: pcmcia_cis_quirks.c,v 1.3 1998/12/29 09:00:28 marc Exp $	*/
 
 /*
@@ -206,8 +206,8 @@ static struct pcmcia_cis_quirk pcmcia_cis_quirks[] = {
 	  &pcmcia_sveclancard_func0, &pcmcia_sveclancard_func0_cfe0 },
 };
 
-void pcmcia_check_cis_quirks(sc)
-	struct pcmcia_softc *sc;
+void
+pcmcia_check_cis_quirks(struct pcmcia_softc *sc)
 {
 	int wiped = 0;
 	int i, j;
