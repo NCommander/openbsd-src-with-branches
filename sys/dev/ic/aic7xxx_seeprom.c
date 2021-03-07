@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic7xxx_seeprom.c,v 1.7 2015/07/17 21:42:49 krw Exp $	*/
+/*	$OpenBSD: aic7xxx_seeprom.c,v 1.8 2019/05/14 15:19:06 jan Exp $	*/
 /*	$NetBSD: aic7xxx_seeprom.c,v 1.8 2003/05/02 19:12:19 dyoung Exp $	*/
 
 /*
@@ -47,7 +47,7 @@
  * from the FreeBSD source file aic7xxx_pci.c by Frank van der Linden
  * <fvdl@netbsd.org>
  *
- * $Id: aic7xxx_seeprom.c,v 1.7 2015/07/17 21:42:49 krw Exp $
+ * $Id: aic7xxx_seeprom.c,v 1.8 2019/05/14 15:19:06 jan Exp $
  *
  * $FreeBSD: src/sys/dev/aic7xxx/aic7xxx_pci.c,v 1.22 2003/01/20 20:44:55 gibbs Exp $
  */
@@ -728,8 +728,7 @@ write_brdctl(struct ahc_softc *ahc, uint8_t value)
 }
 
 static uint8_t
-read_brdctl(ahc)
-	struct	ahc_softc *ahc;
+read_brdctl(struct ahc_softc *ahc)
 {
 	uint8_t brdctl;
 	uint8_t value;
