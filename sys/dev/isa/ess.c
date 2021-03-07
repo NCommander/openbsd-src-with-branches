@@ -1,4 +1,4 @@
-/*	$OpenBSD: ess.c,v 1.23 2016/09/14 06:12:19 ratchov Exp $	*/
+/*	$OpenBSD: ess.c,v 1.24 2016/09/19 06:46:44 ratchov Exp $	*/
 /*	$NetBSD: ess.c,v 1.44.4.1 1999/06/21 01:18:00 thorpej Exp $	*/
 
 /*
@@ -2114,10 +2114,7 @@ ess_reset(struct ess_softc *sc)
 }
 
 void
-ess_set_gain(sc, port, on)
-	struct ess_softc *sc;
-	int port;
-	int on;
+ess_set_gain(struct ess_softc *sc, int port, int on)
 {
 	int gain, left, right;
 	int mix;
