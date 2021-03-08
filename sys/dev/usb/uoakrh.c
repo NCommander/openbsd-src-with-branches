@@ -1,4 +1,4 @@
-/*	$OpenBSD: uoakrh.c,v 1.14 2016/03/11 18:41:33 mmcc Exp $   */
+/*	$OpenBSD: uoakrh.c,v 1.15 2017/04/08 02:57:25 deraadt Exp $   */
 
 /*
  * Copyright (c) 2012 Yojiro UO <yuo@nui.org>
@@ -110,7 +110,7 @@ uoakrh_match(struct device *parent, void *match, void *aux)
 {
 	struct uhidev_attach_arg *uha = aux;
 
-	if (uha->reportid == UHIDEV_CLAIM_ALLREPORTID)
+	if (uha->reportid == UHIDEV_CLAIM_MULTIPLE_REPORTID)
 		return (UMATCH_NONE);
 
 	if (uoakrh_lookup(uha->uaa->vendor, uha->uaa->product) == NULL)

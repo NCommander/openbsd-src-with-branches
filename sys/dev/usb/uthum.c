@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthum.c,v 1.33 2020/01/13 10:01:24 mpi Exp $   */
+/*	$OpenBSD: uthum.c,v 1.34 2020/02/14 14:55:30 mpi Exp $   */
 
 /*
  * Copyright (c) 2009, 2010 Yojiro UO <yuo@nui.org>
@@ -167,7 +167,7 @@ uthum_match(struct device *parent, void *match, void *aux)
 {
 	struct uhidev_attach_arg *uha = aux;
 
-	if (uha->reportid == UHIDEV_CLAIM_ALLREPORTID)
+	if (uha->reportid == UHIDEV_CLAIM_MULTIPLE_REPORTID)
 		return (UMATCH_NONE);
 
 	if (uthum_lookup(uha->uaa->vendor, uha->uaa->product) == NULL)

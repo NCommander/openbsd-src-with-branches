@@ -1,4 +1,4 @@
-/*	$OpenBSD: uslhcom.c,v 1.5 2017/04/06 04:48:54 deraadt Exp $	*/
+/*	$OpenBSD: uslhcom.c,v 1.6 2017/04/08 02:57:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 SASANO Takayoshi <uaa@openbsd.org>
@@ -115,7 +115,7 @@ uslhcom_match(struct device *parent, void *match, void *aux)
 	struct uhidev_attach_arg *uha = aux;
 
 	/* use all report IDs */
-	if (uha->reportid != UHIDEV_CLAIM_ALLREPORTID)
+	if (uha->reportid != UHIDEV_CLAIM_MULTIPLE_REPORTID)
 		return UMATCH_NONE;
 
 	return (usb_lookup(uslhcom_devs,

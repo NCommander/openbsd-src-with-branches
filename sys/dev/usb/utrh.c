@@ -1,4 +1,4 @@
-/*	$OpenBSD: utrh.c,v 1.22 2019/11/12 07:47:30 mpi Exp $   */
+/*	$OpenBSD: utrh.c,v 1.23 2020/02/25 10:03:39 mpi Exp $   */
 
 /*
  * Copyright (c) 2009 Yojiro UO <yuo@nui.org>
@@ -93,7 +93,7 @@ utrh_match(struct device *parent, void *match, void *aux)
 {
 	struct uhidev_attach_arg *uha = aux;
 
-	if (uha->reportid == UHIDEV_CLAIM_ALLREPORTID)
+	if (uha->reportid == UHIDEV_CLAIM_MULTIPLE_REPORTID)
 		return (UMATCH_NONE);
 
 	return (usb_lookup(utrh_devs, uha->uaa->vendor, uha->uaa->product) != NULL ?

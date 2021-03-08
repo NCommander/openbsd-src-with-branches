@@ -1,4 +1,4 @@
-/*	$OpenBSD: uoaklux.c,v 1.12 2016/01/09 04:14:42 jcs Exp $   */
+/*	$OpenBSD: uoaklux.c,v 1.13 2017/04/08 02:57:25 deraadt Exp $   */
 
 /*
  * Copyright (c) 2012 Yojiro UO <yuo@nui.org>
@@ -107,7 +107,7 @@ uoaklux_match(struct device *parent, void *match, void *aux)
 {
 	struct uhidev_attach_arg *uha = aux;
 
-	if (uha->reportid == UHIDEV_CLAIM_ALLREPORTID)
+	if (uha->reportid == UHIDEV_CLAIM_MULTIPLE_REPORTID)
 		return (UMATCH_NONE);
 
 	if (uoaklux_lookup(uha->uaa->vendor, uha->uaa->product) == NULL)
