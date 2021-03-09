@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ifconfig.8,v 1.363 2021/03/08 17:39:16 deraadt Exp $
+.\"	$OpenBSD: ifconfig.8,v 1.364 2021/03/09 19:05:30 kn Exp $
 .\"	$NetBSD: ifconfig.8,v 1.11 1996/01/04 21:27:29 pk Exp $
 .\"     $FreeBSD: ifconfig.8,v 1.16 1998/02/01 07:03:29 steve Exp $
 .\"
@@ -31,7 +31,7 @@
 .\"
 .\"     @(#)ifconfig.8	8.4 (Berkeley) 6/1/94
 .\"
-.Dd $Mdocdate: March 8 2021 $
+.Dd $Mdocdate: March 9 2021 $
 .Dt IFCONFIG 8
 .Os
 .Sh NAME
@@ -1809,7 +1809,6 @@ This is the default.
 Disable the filtering of 802.1Q VLAN and QinQ SVLAN packets.
 .It Cm -link2
 Enable the filtering of 802.1Q VLAN and QinQ SVLAN packets.
-.Xr pf 4 .
 Packets will appear to enter or leave the member port interfaces.
 This is the default.
 .El
