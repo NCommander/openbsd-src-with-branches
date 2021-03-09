@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.44 2018/10/15 08:08:46 otto Exp $
+#	$OpenBSD: Makefile,v 1.45 2020/01/06 23:01:16 bluhm Exp $
 
 SUBDIR+= apply
 SUBDIR+= basename bc
@@ -12,7 +12,7 @@ SUBDIR+= m4 mail mandoc
 SUBDIR+= nc
 SUBDIR+= openssl
 SUBDIR+= rev
-SUBDIR+= sdiff sed signify sort
+SUBDIR+= sdiff sed signify snmp sort
 SUBDIR+= tsort
 SUBDIR+= ul
 SUBDIR+= wc
