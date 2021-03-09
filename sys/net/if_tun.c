@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tun.c,v 1.229 2021/01/19 19:39:58 mvs Exp $	*/
+/*	$OpenBSD: if_tun.c,v 1.230 2021/02/20 04:39:16 dlg Exp $	*/
 /*	$NetBSD: if_tun.c,v 1.24 1996/05/07 02:40:48 thorpej Exp $	*/
 
 /*
@@ -716,7 +716,8 @@ tun_dev_ioctl(dev_t dev, u_long cmd, void *data)
 		break;
 	case FIOSETOWN:
 	case TIOCSPGRP:
-		return (sigio_setown(&sc->sc_sigio, cmd, data));
+		error = sigio_setown(&sc->sc_sigio, cmd, data);
+		break;
 	case FIOGETOWN:
 	case TIOCGPGRP:
 		sigio_getown(&sc->sc_sigio, cmd, data);
