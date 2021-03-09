@@ -1,4 +1,4 @@
-/*	$OpenBSD: syslogd.c,v 1.263 2020/05/25 10:38:32 bluhm Exp $	*/
+/*	$OpenBSD: syslogd.c,v 1.264 2020/09/14 20:36:01 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2014-2017 Alexander Bluhm <bluhm@genua.de>
@@ -890,6 +890,10 @@ main(int argc, char *argv[])
 	sigemptyset(&sigmask);
 	if (sigprocmask(SIG_SETMASK, &sigmask, NULL) == -1)
 		err(1, "sigprocmask unblock");
+
+	/* Send message via libc, flushes log stash in kernel. */
+	openlog("syslogd", LOG_PID, LOG_SYSLOG);
+	syslog(LOG_DEBUG, "running");
 
 	event_dispatch();
 	/* NOTREACHED */
