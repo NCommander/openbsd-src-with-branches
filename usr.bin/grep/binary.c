@@ -1,4 +1,4 @@
-/*	$OpenBSD: binary.c,v 1.17 2011/06/20 18:14:01 stsp Exp $	*/
+/*	$OpenBSD: binary.c,v 1.18 2013/11/12 22:50:42 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -62,7 +62,7 @@ bin_file(FILE *f)
 
 #ifndef NOZ
 int
-gzbin_file(gzFile *f)
+gzbin_file(gzFile f)
 {
 	char		buf[BUFSIZ];
 	int		m;

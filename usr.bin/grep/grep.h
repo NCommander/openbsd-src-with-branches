@@ -1,4 +1,4 @@
-/*	$OpenBSD: grep.h,v 1.26 2019/01/23 23:00:54 tedu Exp $	*/
+/*	$OpenBSD: grep.h,v 1.27 2019/10/07 17:47:32 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -124,6 +124,6 @@ void		 grep_close(file_t *f);
 
 /* binary.c */
 int		 bin_file(FILE * f);
-int		 gzbin_file(gzFile * f);
+int		 gzbin_file(gzFile f);
 int		 mmbin_file(mmf_t *f);
 
