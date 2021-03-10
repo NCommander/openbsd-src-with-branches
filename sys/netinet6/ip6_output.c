@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.254 2021/02/23 11:43:41 mvs Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.255 2021/03/01 11:05:43 bluhm Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -560,7 +560,7 @@ reroute:
 	}
 
 	/*
-	 * If this packet is going trough a loopback interface we wont
+	 * If this packet is going through a loopback interface we won't
 	 * be able to restore its scope ID using the interface index.
 	 */
 	if (IN6_IS_SCOPE_EMBED(&ip6->ip6_src)) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: in.c,v 1.169 2020/03/15 05:34:13 visa Exp $	*/
+/*	$OpenBSD: in.c,v 1.170 2020/05/27 11:19:28 mpi Exp $	*/
 /*	$NetBSD: in.c,v 1.26 1996/02/13 23:41:39 christos Exp $	*/
 
 /*
@@ -682,7 +682,7 @@ in_ifinit(struct ifnet *ifp, struct in_ifaddr *ia, struct sockaddr_in *sin,
 
 	/*
 	 * Add the address to the local list and the global tree.  If an
-	 * error occured, put back the original address.
+	 * error occurred, put back the original address.
 	 */
 	ifa_add(ifp, &ia->ia_ifa);
 	rterror = rt_ifa_addlocal(&ia->ia_ifa);

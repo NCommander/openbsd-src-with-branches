@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_id.c,v 1.23 2011/03/31 10:36:42 jasper Exp $ */
+/*	$OpenBSD: ip_id.c,v 1.24 2014/11/18 02:37:31 tedu Exp $ */
 
 /*
  * Copyright (c) 2008 Theo de Raadt, Ryan McBride
@@ -36,7 +36,7 @@ u_int16_t ip_randomid(void);
 /*
  * Return a random IP id.  Shuffle the new value we get into the previous half
  * of the ip_shuffle ring (-32767 or swap with ourself), to avoid duplicates
- * occuring too quickly but also still be random.
+ * occurring too quickly but also still be random.
  *
  * 0 is a special IP ID -- don't return it.
  */

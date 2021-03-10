@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.353 2021/01/11 13:28:53 bluhm Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.354 2021/01/15 15:18:12 bluhm Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -580,7 +580,7 @@ ip_ours(struct mbuf **mp, int *offp, int nxt, int af)
 
 	*offp = hlen;
 	nxt = ip->ip_p;
-	/* Check wheter we are already in a IPv4/IPv6 local deliver loop. */
+	/* Check whether we are already in a IPv4/IPv6 local deliver loop. */
 	if (af == AF_UNSPEC)
 		nxt = ip_deliver(mp, offp, nxt, AF_INET);
 	return nxt;

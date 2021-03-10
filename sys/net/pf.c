@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1112 2021/02/23 11:43:40 mvs Exp $ */
+/*	$OpenBSD: pf.c,v 1.1113 2021/03/01 11:05:42 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -3151,7 +3151,7 @@ pf_step_into_anchor(struct pf_test_ctx *ctx, struct pf_rule *r)
 	} else {
 		rv = pf_match_rule(ctx, &r->anchor->ruleset);
 		/*
-		 * Unless errors occured, stop iff any rule matched
+		 * Unless errors occurred, stop iff any rule matched
 		 * within quick anchors.
 		 */
 		if (rv != PF_TEST_FAIL && r->quick == PF_TEST_QUICK &&

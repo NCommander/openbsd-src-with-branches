@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee80211_node.c,v 1.181 2020/05/05 18:14:42 stsp Exp $	*/
+/*	$OpenBSD: ieee80211_node.c,v 1.182 2020/05/31 09:08:33 stsp Exp $	*/
 /*	$NetBSD: ieee80211_node.c,v 1.14 2004/05/09 09:18:47 dyoung Exp $	*/
 
 /*-
@@ -752,7 +752,7 @@ ieee80211_node_lateattach(struct ifnet *ifp)
 
 	ni = ieee80211_alloc_node_helper(ic);
 	if (ni == NULL)
-		panic("unable to setup inital BSS node");
+		panic("unable to setup initial BSS node");
 	ni->ni_chan = IEEE80211_CHAN_ANYC;
 	ic->ic_bss = ieee80211_ref_node(ni);
 	ic->ic_txpower = IEEE80211_TXPOWER_MAX;

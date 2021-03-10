@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sppp.h,v 1.26 2017/01/24 10:08:30 krw Exp $	*/
+/*	$OpenBSD: if_sppp.h,v 1.27 2019/06/24 21:36:53 kn Exp $	*/
 /*	$NetBSD: if_sppp.h,v 1.2.2.1 1999/04/04 06:57:39 explorer Exp $	*/
 
 /*
@@ -45,7 +45,7 @@
 
 /*
  * Don't change the order of this.  Ordering the phases this way allows
- * for a comparision of ``pp_phase >= PHASE_AUTHENTICATE'' in order to
+ * for a comparison of ``pp_phase >= PHASE_AUTHENTICATE'' in order to
  * know whether LCP is up.
  */
 enum ppp_phase {

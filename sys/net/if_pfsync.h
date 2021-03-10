@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.h,v 1.54 2018/09/11 07:53:38 sashan Exp $	*/
+/*	$OpenBSD: if_pfsync.h,v 1.55 2021/02/04 00:55:41 sashan Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -50,7 +50,7 @@
 
 #define PFSYNC_ACT_CLR		0	/* clear all states */
 #define PFSYNC_ACT_OINS		1	/* old insert state */
-#define PFSYNC_ACT_INS_ACK	2	/* ack of insterted state */
+#define PFSYNC_ACT_INS_ACK	2	/* ack of inserted state */
 #define PFSYNC_ACT_OUPD		3	/* old update state */
 #define PFSYNC_ACT_UPD_C	4	/* "compressed" update state */
 #define PFSYNC_ACT_UPD_REQ	5	/* request "uncompressed" state */

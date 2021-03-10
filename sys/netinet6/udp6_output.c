@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp6_output.c,v 1.55 2017/08/11 19:53:02 bluhm Exp $	*/
+/*	$OpenBSD: udp6_output.c,v 1.56 2018/09/13 19:53:58 bluhm Exp $	*/
 /*	$KAME: udp6_output.c,v 1.21 2001/02/07 11:51:54 itojun Exp $	*/
 
 /*
@@ -91,7 +91,7 @@
 #include <netinet6/ip6protosw.h>
 
 /*
- * UDP protocol inplementation.
+ * UDP protocol implementation.
  * Per RFC 768, August, 1980.
  */
 int

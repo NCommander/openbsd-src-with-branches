@@ -1,4 +1,4 @@
-/*	$OpenBSD: bridgestp.c,v 1.75 2020/07/30 11:32:06 mvs Exp $	*/
+/*	$OpenBSD: bridgestp.c,v 1.76 2021/01/25 19:47:16 mvs Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -2198,7 +2198,7 @@ bstp_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 		/* convert seconds to ticks */
 		val *=  BSTP_TICK_VAL;
 
-		/* value can only be changed in leagacy stp mode */
+		/* value can only be changed in legacy stp mode */
 		if (bs->bs_protover != BSTP_PROTO_STP) {
 			err = EPERM;
 			break;

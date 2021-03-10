@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsec_output.c,v 1.77 2020/06/24 22:03:43 cheloha Exp $ */
+/*	$OpenBSD: ipsec_output.c,v 1.78 2020/09/22 19:20:21 tobhe Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -323,7 +323,7 @@ ipsp_process_packet(struct mbuf *m, struct tdb *tdb, int af, int tunalready)
 					dstopt = 1;
 				} else if (nxt == IPPROTO_ROUTING) {
 					/*
-					 * if we see destionation option next
+					 * if we see destination option next
 					 * time, it must be dest2.
 					 */
 					dstopt = 2;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.352 2021/02/08 12:30:10 bluhm Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.353 2021/03/07 06:02:32 dlg Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -2294,7 +2294,7 @@ carp_transmit(struct carp_softc *sc, struct ifnet *ifp0, struct mbuf *m)
 
 	/*
 	 * Do not leak the multicast address when sending
-	 * advertisements in 'ip' and 'ip-stealth' balacing
+	 * advertisements in 'ip' and 'ip-stealth' balancing
 	 * modes.
 	 */
 	if (sc->sc_balancing == CARP_BAL_IP ||

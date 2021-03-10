@@ -1,4 +1,4 @@
-/*	$OpenBSD: ktrace.h,v 1.38 2019/02/26 22:24:41 deraadt Exp $	*/
+/*	$OpenBSD: ktrace.h,v 1.39 2020/09/14 07:15:25 mpi Exp $	*/
 /*	$NetBSD: ktrace.h,v 1.12 1996/02/04 02:12:29 christos Exp $	*/
 
 /*
@@ -147,7 +147,7 @@ struct ktr_user {
 };
 
 /*
- * KTR_EXECARGS and KTR_EXECENV - args and evironment records
+ * KTR_EXECARGS and KTR_EXECENV - args and environment records
  */
 #define KTR_EXECARGS	10
 #define KTR_EXECENV	11
