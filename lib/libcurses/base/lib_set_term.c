@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: lib_set_term.c,v 1.13 2010/01/12 23:22:06 nicm Exp $ */
 
 /****************************************************************************
  * Copyright (c) 1998-2007,2008 Free Software Foundation, Inc.              *
@@ -46,7 +46,7 @@
 #include <term.h>		/* cur_term */
 #include <tic.h>
 
-MODULE_ID("$Id: lib_set_term.c,v 1.117 2008/08/04 18:11:12 tom Exp $")
+MODULE_ID("$Id: lib_set_term.c,v 1.13 2010/01/12 23:22:06 nicm Exp $")
 
 NCURSES_EXPORT(SCREEN *)
 set_term(SCREEN *screenp)
@@ -549,6 +549,7 @@ _nc_setupscreen(int slines GCC_UNUSED,
 #endif
 #if USE_SIZECHANGE
     SP->_resize = resizeterm;
+    SP->_ungetch = _nc_ungetch;
 #endif
 
     newscr->_clear = TRUE;

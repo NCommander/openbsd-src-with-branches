@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: lib_setup.c,v 1.12 2010/01/12 23:22:06 nicm Exp $ */
 
 /****************************************************************************
  * Copyright (c) 1998-2007,2008 Free Software Foundation, Inc.              *
@@ -55,7 +55,7 @@
 
 #include <term.h>		/* lines, columns, cur_term */
 
-MODULE_ID("$Id: lib_setup.c,v 1.111 2008/08/03 22:42:33 tom Exp $")
+MODULE_ID("$Id: lib_setup.c,v 1.12 2010/01/12 23:22:06 nicm Exp $")
 
 /****************************************************************************
  *
@@ -321,8 +321,11 @@ _nc_update_screensize(SCREEN *sp)
      */
     if (sp != 0
 	&& sp->_resize != 0) {
-	if ((new_lines != old_lines) || (new_cols != old_cols))
+	if ((new_lines != old_lines) || (new_cols != old_cols)) {
 	    sp->_resize(new_lines, new_cols);
+	} else if (sp->_sig_winch && (sp->_ungetch != 0)) {
+	    sp->_ungetch(SP, KEY_RESIZE);	/* so application can know this */
+	}
 	sp->_sig_winch = FALSE;
     }
 }
