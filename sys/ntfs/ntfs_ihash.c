@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_ihash.c,v 1.19 2015/03/14 03:38:52 jsg Exp $	*/
+/*	$OpenBSD: ntfs_ihash.c,v 1.20 2016/09/24 18:38:23 tedu Exp $	*/
 /*	$NetBSD: ntfs_ihash.c,v 1.1 2002/12/23 17:38:32 jdolecek Exp $	*/
 
 /*
@@ -47,7 +47,7 @@
 #include <ntfs/ntfs_ihash.h>
 
 /*
- * Structures associated with inode cacheing.
+ * Structures associated with inode caching.
  */
 u_int ntfs_hash(dev_t, ntfsino_t);
 static LIST_HEAD(nthashhead, ntnode) *ntfs_nthashtbl;

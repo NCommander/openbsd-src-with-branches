@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_inode.h,v 1.6 2013/01/18 05:09:21 jsing Exp $	*/
+/*	$OpenBSD: ntfs_inode.h,v 1.7 2013/05/30 20:11:06 guenther Exp $	*/
 /*	$NetBSD: ntfs_inode.h,v 1.1 2002/12/23 17:38:33 jdolecek Exp $	*/
 
 /*-
@@ -64,7 +64,7 @@ struct ntnode {
 #define	FN_AATTRNAME	0x0004	/* space allocated for f_attrname */
 struct fnode {
 	LIST_ENTRY(fnode) f_fnlist;
-	struct vnode   *f_vp;		/* Associatied vnode */
+	struct vnode   *f_vp;		/* Associated vnode */
 	struct ntnode  *f_ip;		/* Associated ntnode */
 	u_long		f_flag;
 

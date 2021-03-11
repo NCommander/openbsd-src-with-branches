@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_serv.c,v 1.118 2019/01/18 13:56:38 bluhm Exp $	*/
+/*	$OpenBSD: nfs_serv.c,v 1.119 2019/01/19 01:53:44 cheloha Exp $	*/
 /*     $NetBSD: nfs_serv.c,v 1.34 1997/05/12 23:37:12 fvdl Exp $       */
 
 /*
@@ -302,7 +302,7 @@ nfsrv_setattr(struct nfsrv_descript *nfsd, struct nfssvc_sock *slp,
 	}
 
 	/*
-	 * If the size is being changed write acces is required, otherwise
+	 * If the size is being changed write access is required, otherwise
 	 * just check for a read only file system.
 	 */
 	if (va.va_size == ((u_quad_t)((quad_t) -1))) {
