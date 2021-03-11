@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.138 2021/01/20 07:16:54 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.139 2021/02/01 08:01:14 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -46,7 +46,7 @@ static const char *options_table_status_keys_list[] = {
 	"emacs", "vi", NULL
 };
 static const char *options_table_status_justify_list[] = {
-	"left", "centre", "right", NULL
+	"left", "centre", "right", "absolute-centre", NULL
 };
 static const char *options_table_status_position_list[] = {
 	"top", "bottom", NULL
