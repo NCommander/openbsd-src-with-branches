@@ -1,4 +1,4 @@
-/*	$OpenBSD: gscpm.c,v 1.10 2020/07/06 13:33:07 pirofti Exp $	*/
+/*	$OpenBSD: gscpm.c,v 1.11 2021/02/23 04:44:30 cheloha Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -145,7 +145,7 @@ gscpm_setperf(int level)
 	pctl = bus_space_read_4(sc->sc_iot, sc->sc_acpi_ioh, GSCPM_P_CNT);
 
 	if (level == 100) {
-		/* 100 is a maximum perfomance, disable throttling */
+		/* 100 is a maximum performance, disable throttling */
 		pctl &= ~GSCPM_P_CNT_THTEN;
 	} else {
 		for (i = 0; i < GSCPM_THT_LEVELS; i++)

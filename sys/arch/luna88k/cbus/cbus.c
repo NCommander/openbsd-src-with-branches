@@ -1,4 +1,4 @@
-/*	$OpenBSD: cbus.c,v 1.7 2019/06/29 04:33:11 aoyama Exp $	*/
+/*	$OpenBSD: cbus.c,v 1.8 2019/12/30 12:16:12 aoyama Exp $	*/
 
 /*
  * Copyright (c) 2014 Kenji Aoyama.
@@ -343,7 +343,7 @@ cbus_intr(void *arg)
 	printf("cbus_intr: called, *cbus_isreg=0x%02x, registered = 0x%02x\n",
 	    *cbus_isreg, sc->registered);
 #endif
-	/* Make the bit pattern that we should proces */
+	/* Make the bit pattern that we should process */
 	intr_status = intr_status ^ sc->registered;
 #ifdef CBUS_DEBUG
 	printf("cbus_intr: processing 0x%02x\n", intr_status);

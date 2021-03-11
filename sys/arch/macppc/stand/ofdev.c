@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofdev.c,v 1.24 2020/03/16 07:02:10 otto Exp $	*/
+/*	$OpenBSD: ofdev.c,v 1.25 2020/12/09 18:10:19 krw Exp $	*/
 /*	$NetBSD: ofdev.c,v 1.1 1997/04/16 20:29:20 thorpej Exp $	*/
 
 /*
@@ -221,7 +221,7 @@ read_mac_label(struct of_dev *devp, char *buf, struct disklabel *lp)
 					return 0;
 
 				/* If we have an OpenBSD region
-				 * but no valid parition table,
+				 * but no valid partition table,
 				 * we cannot load a kernel from
 				 * it, punt.
 				 * should not have more than one

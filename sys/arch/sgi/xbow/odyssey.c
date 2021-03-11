@@ -1,4 +1,4 @@
-/*	$OpenBSD: odyssey.c,v 1.13 2020/05/25 06:45:25 jsg Exp $ */
+/*	$OpenBSD: odyssey.c,v 1.14 2020/05/25 09:55:48 jsg Exp $ */
 /*
  * Copyright (c) 2009, 2010 Joel Sing <jsing@openbsd.org>
  *
@@ -449,7 +449,7 @@ odyssey_setup(struct odyssey_softc *sc)
 	odyssey_cmd_flush(sc, 0);
 
 	/*
-	 * Initalise Pixel Blaster & Jammer.
+	 * Initialise Pixel Blaster & Jammer.
 	 */
 	for (i = 0; i < 32; i++) {
 		if ((i & 0xf) == 0)

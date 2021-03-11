@@ -1,4 +1,4 @@
-/*	$OpenBSD: adb.c,v 1.41 2016/03/14 23:08:05 krw Exp $	*/
+/*	$OpenBSD: adb.c,v 1.42 2019/09/03 17:51:52 deraadt Exp $	*/
 /*	$NetBSD: adb.c,v 1.6 1999/08/16 06:28:09 tsubai Exp $	*/
 /*	$NetBSD: adb_direct.c,v 1.14 2000/06/08 22:10:45 tsubai Exp $	*/
 
@@ -816,7 +816,7 @@ adb_soft_intr(void)
                  * the completion routine, so that the completion
                  * routine can reentrantly process the queue.  For
                  * example, this happens when polling is turned on
-                 * by entering the debuger by keystroke.
+                 * by entering the debugger by keystroke.
                  */
 		s = splhigh();
 		adbInCount--;

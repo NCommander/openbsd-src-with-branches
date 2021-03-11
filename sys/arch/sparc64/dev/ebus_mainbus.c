@@ -1,4 +1,4 @@
-/*	$OpenBSD: ebus_mainbus.c,v 1.9 2015/09/27 11:29:20 kettenis Exp $	*/
+/*	$OpenBSD: ebus_mainbus.c,v 1.10 2016/08/23 03:28:01 guenther Exp $	*/
 
 /*
  * Copyright (c) 2007 Mark Kettenis
@@ -126,8 +126,8 @@ ebus_mainbus_attach(struct device *parent, struct device *self, void *aux)
 	/*
 	 * Ebus interrupts may be connected to any of the PCI Express
 	 * leafs.  Here we add the appropriate IGN to the interrupt
-	 * mappings such that we can use it to distingish between
-	 * intterupts connected to PCIE-A and PCIE-B.
+	 * mappings such that we can use it to distinguish between
+	 * interrupts connected to PCIE-A and PCIE-B.
 	 */
 	for (i = 0; i < sc->sc_nintmap; i++) {
 		for (j = 0; j < pyro_cd.cd_ndevs; j++) {

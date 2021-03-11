@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.87 2019/12/19 17:46:32 mpi Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.88 2020/09/24 11:18:37 kettenis Exp $	*/
 /*	$NetBSD: pmap.h,v 1.44 2000/04/24 17:18:18 thorpej Exp $	*/
 
 /*
@@ -426,7 +426,7 @@ pmap_protect(struct pmap *pmap, vaddr_t sva, vaddr_t eva, vm_prot_t prot)
 }
 
 /*
- * pmap_growkernel, pmap_enter, and pmap_extract get picked up in variuos
+ * pmap_growkernel, pmap_enter, and pmap_extract get picked up in various
  * modules from both uvm_pmap.h and pmap.h. Since uvm_pmap.h defines these
  * as functions, inline them here to suppress linker warnings.
  */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_net.c,v 1.3 2014/07/13 15:31:20 mpi Exp $	*/
+/*	$OpenBSD: dev_net.c,v 1.4 2020/12/09 18:10:19 krw Exp $	*/
 /*	$NetBSD: dev_net.c,v 1.26 2011/07/17 20:54:52 joerg Exp $	*/
 
 /*-
@@ -192,7 +192,7 @@ net_strategy(void *devdata, int rw, daddr_t blk, size_t size, void *buf,
  *
  * The default is to use the Sun bootparams RPC
  * (because that is what the kernel will do).
- * MD code can make try_bootp initialied data,
+ * MD code can make try_bootp initialized data,
  * which will override this common definition.
  */
 #ifdef	SUPPORT_BOOTP

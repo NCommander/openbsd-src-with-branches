@@ -1,4 +1,4 @@
-/*	$OpenBSD: gio.c,v 1.17 2014/03/27 21:24:22 miod Exp $	*/
+/*	$OpenBSD: gio.c,v 1.18 2014/05/19 21:18:42 miod Exp $	*/
 /*	$NetBSD: gio.c,v 1.32 2011/07/01 18:53:46 dyoung Exp $	*/
 
 /*
@@ -745,7 +745,7 @@ gio_arb_config(int slot, uint32_t flags)
  * buffer!) in the specified slot.
  *
  * Indy and Challenge S have a single GIO interrupt per GIO slot, but
- * distinct slot interrups. Indigo and Indigo2 have three GIO interrupts per
+ * distinct slot interrupts. Indigo and Indigo2 have three GIO interrupts per
  * slot, but at a given GIO interrupt level, all slots share the same
  * interrupt on the interrupt controller.
  *

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.c,v 1.75 2020/06/17 06:14:52 dlg Exp $	*/
+/*	$OpenBSD: pci_machdep.c,v 1.76 2020/10/27 02:39:07 jordan Exp $	*/
 /*	$NetBSD: pci_machdep.c,v 1.3 2003/05/07 21:33:58 fvdl Exp $	*/
 
 /*-
@@ -100,7 +100,7 @@
  * Memory Mapped Configuration space access.
  *
  * Since mapping the whole configuration space will cost us up to
- * 256MB of kernel virtual memory, we use seperate mappings per bus.
+ * 256MB of kernel virtual memory, we use separate mappings per bus.
  * The mappings are created on-demand, such that we only use kernel
  * virtual memory for busses that are actually present.
  */

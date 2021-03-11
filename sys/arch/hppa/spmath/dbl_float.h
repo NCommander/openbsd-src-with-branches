@@ -1,4 +1,4 @@
-/*	$OpenBSD: dbl_float.h,v 1.11 2006/11/29 10:40:44 mickey Exp $	*/
+/*	$OpenBSD: dbl_float.h,v 1.12 2013/11/26 20:33:12 deraadt Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -18,7 +18,7 @@
  * Declare double precision functions *
  **************************************/
 
-/* 32-bit word grabing functions */
+/* 32-bit word grabbing functions */
 #define Dbl_firstword(value) Dallp1(value)
 #define Dbl_secondword(value) Dallp2(value)
 #define Dbl_thirdword(value) dummy_location

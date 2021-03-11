@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahc_isa.c,v 1.17 2007/11/25 16:40:04 jmc Exp $	*/
+/*	$OpenBSD: ahc_isa.c,v 1.18 2009/03/29 21:53:52 sthen Exp $	*/
 /*	$NetBSD: ahc_isa.c,v 1.5 1996/10/21 22:27:39 thorpej Exp $	*/
 
 /*
@@ -151,7 +151,7 @@ ahc_isa_irq(bus_space_tag_t iot, bus_space_handle_t ioh)
 	u_char intdef;
 	u_char hcntrl;
 	
-	/* Pause the card preseving the IRQ type */
+	/* Pause the card preserving the IRQ type */
 	hcntrl = bus_space_read_1(iot, ioh, HCNTRL) & IRQMS;
 	bus_space_write_1(iot, ioh, HCNTRL, hcntrl | PAUSE);
 

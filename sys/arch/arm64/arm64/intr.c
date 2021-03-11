@@ -1,4 +1,4 @@
-/* $OpenBSD: intr.c,v 1.19 2020/07/17 08:07:33 patrick Exp $ */
+/* $OpenBSD: intr.c,v 1.20 2021/02/17 12:11:44 kettenis Exp $ */
 /*
  * Copyright (c) 2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -849,7 +849,7 @@ void
 setstatclockrate(int new)
 {
 	if (arm_clock_func.setstatclockrate == NULL) {
-		panic("arm_clock_func.setstatclockrate not intialized");
+		panic("arm_clock_func.setstatclockrate not initialized");
 	}
 	arm_clock_func.setstatclockrate(new);
 }

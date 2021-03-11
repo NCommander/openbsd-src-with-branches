@@ -1,4 +1,4 @@
-/* $OpenBSD: armreg.h,v 1.12 2020/08/17 08:12:18 kettenis Exp $ */
+/* $OpenBSD: armreg.h,v 1.13 2020/10/18 12:03:51 kettenis Exp $ */
 /*-
  * Copyright (c) 2013, 2014 Andrew Turner
  * Copyright (c) 2015 The FreeBSD Foundation
@@ -583,7 +583,7 @@
 #define	DBG_MDSCR_KDE	(0x1 << 13)
 #define	DBG_MDSCR_MDE	(0x1 << 15)
 
-/* Perfomance Monitoring Counters */
+/* Performance Monitoring Counters */
 #define	PMCR_E		(1 << 0) /* Enable all counters */
 #define	PMCR_P		(1 << 1) /* Reset all counters */
 #define	PMCR_C		(1 << 2) /* Clock counter reset */

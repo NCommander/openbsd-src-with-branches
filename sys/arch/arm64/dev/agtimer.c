@@ -1,4 +1,4 @@
-/* $OpenBSD: agtimer.c,v 1.16 2021/01/19 18:07:15 kettenis Exp $ */
+/* $OpenBSD: agtimer.c,v 1.17 2021/02/23 04:44:30 cheloha Exp $ */
 /*
  * Copyright (c) 2011 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
@@ -315,7 +315,7 @@ agtimer_cpu_initclocks(void)
 	sc->sc_ticks_err_cnt = sc->sc_ticks_per_second % hz;
 	pc->pc_ticks_err_sum = 0;
 
-	/* configure virtual timer interupt */
+	/* configure virtual timer interrupt */
 	sc->sc_ih = arm_intr_establish_fdt_idx(sc->sc_node, 2,
 	    IPL_CLOCK|IPL_MPSAFE, agtimer_intr, NULL, "tick");
 

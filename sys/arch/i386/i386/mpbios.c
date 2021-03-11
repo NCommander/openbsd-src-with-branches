@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpbios.c,v 1.41 2018/02/07 06:19:54 krw Exp $	*/
+/*	$OpenBSD: mpbios.c,v 1.42 2020/12/20 09:49:53 jmatthew Exp $	*/
 /*	$NetBSD: mpbios.c,v 1.2 2002/10/01 12:56:57 fvdl Exp $	*/
 
 /*-
@@ -298,7 +298,7 @@ mpbios_probe(struct device *self)
 	/*
 	 * If we have acpi but chose to use apm, then we really should
 	 * not go use mpbios.  Systems with usable acpi typically have
-	 * unuseable mpbios
+	 * unusable mpbios
 	 */
 	if (haveacpibutusingapm)
 		return (0);

@@ -1,4 +1,4 @@
-/* $OpenBSD: amdisplay.c,v 1.12 2020/05/25 09:55:48 jsg Exp $ */
+/* $OpenBSD: amdisplay.c,v 1.13 2021/01/19 18:04:43 kettenis Exp $ */
 /*
  * Copyright (c) 2016 Ian Sutton <ians@openbsd.org>
  *
@@ -290,7 +290,7 @@ amdisplay_attach(struct device *parent, struct device *self, void *args)
 	reg |= LCD_CTRL_MODESEL;
 	HWRITE4(sc, LCD_CTRL, reg);
 
-	/* set stn565 + active matrix + pallete loading only mode, delay */
+	/* set stn565 + active matrix + palette loading only mode, delay */
 	reg = HREAD4(sc, LCD_RASTER_CTRL);
 	reg &= 0xF8000C7C;
 	reg |= (LCD_RASTER_CTRL_LCDTFT)

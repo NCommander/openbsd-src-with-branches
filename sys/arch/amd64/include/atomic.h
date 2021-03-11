@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.19 2017/05/12 08:47:03 mpi Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.20 2017/05/27 20:12:12 kettenis Exp $	*/
 /*	$NetBSD: atomic.h,v 1.1 2003/04/26 18:39:37 fvdl Exp $	*/
 
 /*
@@ -252,7 +252,7 @@ _atomic_sub_long_nv(volatile unsigned long *p, unsigned long v)
 
 /*
  * The AMD64 architecture is rather strongly ordered.  When accessing
- * normal write-back cachable memory, only reads may be reordered with
+ * normal write-back cacheable memory, only reads may be reordered with
  * older writes to different locations.  There are a few instructions
  * (clfush, non-temporal move instructions) that obey weaker ordering
  * rules, but those instructions will only be used in (inline)

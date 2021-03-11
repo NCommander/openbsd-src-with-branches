@@ -1,4 +1,4 @@
-/*	$OpenBSD: xbow.c,v 1.34 2012/09/29 18:54:39 miod Exp $	*/
+/*	$OpenBSD: xbow.c,v 1.35 2014/09/30 06:51:58 jmatthew Exp $	*/
 
 /*
  * Copyright (c) 2008, 2009, 2011 Miodrag Vallat.
@@ -145,7 +145,7 @@ static const bus_space_t xbowbus_tag = {
 };
 
 /*
- * Function pointers to hide widget discovery and mapping differences accross
+ * Function pointers to hide widget discovery and mapping differences across
  * systems.
  */
 paddr_t	(*xbow_widget_base)(int16_t, u_int);

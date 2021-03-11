@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxie.c,v 1.29 2020/07/10 13:26:36 patrick Exp $	*/
+/*	$OpenBSD: sxie.c,v 1.30 2021/02/25 02:48:19 dlg Exp $	*/
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2013 Artturi Alm
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* TODO this should use dedicated dma for RX, atleast */
+/* TODO this should use dedicated dma for RX, at least */
 
 #include <sys/param.h>
 #include <sys/systm.h>

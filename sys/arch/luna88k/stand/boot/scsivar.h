@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsivar.h,v 1.1 2013/10/28 22:13:13 miod Exp $	*/
+/*	$OpenBSD: scsivar.h,v 1.2 2013/10/29 21:49:07 miod Exp $	*/
 /*	$NetBSD: scsivar.h,v 1.1 2013/01/05 17:44:24 tsutsui Exp $	*/
 
 /*
@@ -78,7 +78,7 @@ struct	scsi_softc {
 	int	sc_unit;
 	u_char	*sc_buf;				/* Data Buffer Pointor*/
 	u_char	*sc_cdb;				/* CDB Buffer Pointor */
-	volatile int *sc_lock;				/* Lock Flag addres   */
+	volatile int *sc_lock;				/* Lock Flag address  */
 	int	sc_flags;				/* SPC Status Flags   */
 	int	sc_phase;				/* Current SCSI Phase */
 	int	sc_target;				/* Current Target ID  */

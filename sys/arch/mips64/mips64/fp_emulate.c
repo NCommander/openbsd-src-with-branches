@@ -1,4 +1,4 @@
-/*	$OpenBSD: fp_emulate.c,v 1.22 2019/01/14 15:02:57 visa Exp $	*/
+/*	$OpenBSD: fp_emulate.c,v 1.23 2020/08/19 10:10:58 mpi Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -954,7 +954,7 @@ fpu_c(struct proc *p, struct trapframe *tf, uint fmt, uint ft, uint fs,
 	if (uo && (op & 0x08)) {
 		float_set_invalid();
 		if (tf->fsr & FPCSR_E_V) {
-			/* comparison result intentionaly not written */
+			/* comparison result intentionally not written */
 			goto skip;
 		}
 	}

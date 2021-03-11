@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.24 2017/06/29 17:36:16 deraadt Exp $ */
+/*	$OpenBSD: asm.h,v 1.25 2017/08/27 04:32:29 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -182,7 +182,7 @@
  * The following macros are here to benefit the R8000 processor:
  * - all coprocessor 0 control registers are 64-bit
  * - the regular nop (sll zero, zero, 0) has the drawback of using the
- *   shifter, potentially breaking instruction dispatch if occuring after
+ *   shifter, potentially breaking instruction dispatch if occurring after
  *   another instruction using the shifter.
  */
 #ifdef CPU_R8000

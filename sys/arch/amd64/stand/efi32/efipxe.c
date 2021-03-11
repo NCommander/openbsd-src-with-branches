@@ -1,4 +1,4 @@
-/*	$OpenBSD: efipxe.c,v 1.4 2019/11/26 19:08:01 bluhm Exp $	*/
+/*	$OpenBSD: efipxe.c,v 1.5 2020/12/09 18:10:18 krw Exp $	*/
 /*
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
  *
@@ -44,7 +44,7 @@ extern int	 efi_device_path_ncmp(EFI_DEVICE_PATH *, EFI_DEVICE_PATH *, int);
 
 /*
  * TFTP initial probe.  This function discovers PXE handles and tries
- * to figure out if there has already been a successfull PXE handshake.
+ * to figure out if there has already been a successful PXE handshake.
  * If so, set the PXE variable.
  */
 void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sq.c,v 1.29 2017/03/08 15:07:10 mpi Exp $	*/
+/*	$OpenBSD: if_sq.c,v 1.30 2020/07/10 13:26:36 patrick Exp $	*/
 /*	$NetBSD: if_sq.c,v 1.42 2011/07/01 18:53:47 dyoung Exp $	*/
 
 /*
@@ -677,7 +677,7 @@ sq_start(struct ifnet *ifp)
 
 		/*
 		 * Load the DMA map.  If this fails, the packet either
-		 * didn't fit in the alloted number of segments, or we were
+		 * didn't fit in the allotted number of segments, or we were
 		 * short on resources.  In this case, we'll copy and try
 		 * again.
 		 * Also copy it if we need to pad, so that we are sure there

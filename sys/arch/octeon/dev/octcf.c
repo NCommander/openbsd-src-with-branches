@@ -1,4 +1,4 @@
-/*	$OpenBSD: octcf.c,v 1.31 2017/12/30 23:08:29 guenther Exp $ */
+/*	$OpenBSD: octcf.c,v 1.32 2018/05/30 14:53:56 fcambus Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -780,7 +780,7 @@ octcf_get_params(struct octcf_softc *wd, struct ataparams *params)
 			uint16_t temp;
 			temp = OCTCF_REG_READ(wd, 0x0);
 
-			/* endianess will be swapped below */
+			/* endianness will be swapped below */
 			tb[count]   = (temp & 0xff);
 			tb[count+1] = (temp & 0xff00)>>8;
 		}

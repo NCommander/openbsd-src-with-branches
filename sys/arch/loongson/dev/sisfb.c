@@ -1,4 +1,4 @@
-/*	$OpenBSD: sisfb.c,v 1.7 2020/05/25 09:55:48 jsg Exp $	*/
+/*	$OpenBSD: sisfb.c,v 1.8 2020/07/18 08:59:28 visa Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -19,7 +19,7 @@
 /*
  * Minimalistic driver for the SIS315 Pro frame buffer found on the
  * Lemote Fuloong 2F systems.
- * Does not support accelaration, mode change, secondary output, or
+ * Does not support acceleration, mode change, secondary output, or
  * anything fancy.
  */
 
