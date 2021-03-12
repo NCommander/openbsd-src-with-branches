@@ -1,4 +1,4 @@
-/*	$OpenBSD: vi.c,v 1.58 2021/03/10 20:06:04 millert Exp $	*/
+/*	$OpenBSD: vi.c,v 1.59 2021/03/10 20:17:33 millert Exp $	*/
 
 /*
  *	vi command editing
@@ -21,6 +21,9 @@
 
 #include "sh.h"
 #include "edit.h"
+
+#undef CTRL
+#define	CTRL(x)		((x) & 0x1F)	/* ASCII */
 
 struct edstate {
 	char	*cbuf;		/* main buffer to build the command line */
