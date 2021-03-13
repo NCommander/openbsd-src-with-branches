@@ -518,8 +518,6 @@ const struct	cmd {
 	{ "tunnel",	NEXTARG2,	0,		NULL, settunnel },
 	{ "tunneladdr",	NEXTARG,	0,		settunneladdr },
 	{ "-tunnel",	0,		0,		deletetunnel },
-	/* deletetunnel is for backward compat, remove during 6.4-current */
-	{ "deletetunnel",  0,		0,		deletetunnel },
 	{ "tunneldomain", NEXTARG,	0,		settunnelinst },
 	{ "-tunneldomain", 0,		0,		unsettunnelinst },
 	{ "tunnelttl",	NEXTARG,	0,		settunnelttl },
