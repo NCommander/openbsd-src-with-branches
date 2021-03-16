@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.50 2021/03/09 19:43:04 kettenis Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.51 2021/03/11 11:16:55 jsg Exp $	*/
 
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
@@ -721,11 +721,14 @@ cpu_start_secondary(struct cpu_info *ci)
 	while ((ci->ci_flags & CPUF_GO) == 0)
 		__asm volatile("wfe");
 
+	WRITE_SPECIALREG(ttbr0_el1, pmap_kernel()->pm_pt0pa);
+	__asm volatile("isb");
 	tcr = READ_SPECIALREG(tcr_el1);
 	tcr &= ~TCR_T0SZ(0x3f);
 	tcr |= TCR_T0SZ(64 - USER_SPACE_BITS);
 	tcr |= TCR_A1;
 	WRITE_SPECIALREG(tcr_el1, tcr);
+	cpu_tlb_flush();
 
 	/* Enable PAN. */
 	id_aa64mmfr1 = READ_SPECIALREG(id_aa64mmfr1_el1);
