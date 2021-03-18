@@ -1,4 +1,4 @@
-/*	$OpenBSD: constraint.c,v 1.49 2020/02/12 19:14:56 otto Exp $	*/
+/*	$OpenBSD: constraint.c,v 1.50 2020/02/20 14:41:01 otto Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -58,7 +58,6 @@ struct constraint *
 	 constraint_bypid(pid_t);
 int	 constraint_close(u_int32_t);
 void	 constraint_update(void);
-void	 constraint_reset(void);
 int	 constraint_cmp(const void *, const void *);
 
 void	 priv_constraint_close(int, int);
