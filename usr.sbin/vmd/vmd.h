@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.h,v 1.99 2020/06/28 16:52:45 pd Exp $	*/
+/*	$OpenBSD: vmd.h,v 1.101 2020/09/23 19:18:18 martijn Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -228,8 +228,6 @@ struct vmboot_params {
 	off_t			 vbp_partoff;
 	char			 vbp_device[PATH_MAX];
 	char			 vbp_image[PATH_MAX];
-	uint32_t		 vbp_bootdev;
-	uint32_t		 vbp_howto;
 	unsigned int		 vbp_type;
 	void			*vbp_arg;
 	char			*vbp_buf;
