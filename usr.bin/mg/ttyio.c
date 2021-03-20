@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttyio.c,v 1.38 2019/06/28 13:35:02 deraadt Exp $	*/
+/*	$OpenBSD: ttyio.c,v 1.39 2021/03/01 10:51:14 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -140,7 +140,7 @@ ttflush(void)
 	ssize_t	 written;
 	char	*buf = obuf;
 
-	if (nobuf == 0)
+	if (nobuf == 0 || batch == 1)
 		return;
 
 	while ((written = write(fileno(stdout), buf, nobuf)) != nobuf) {
