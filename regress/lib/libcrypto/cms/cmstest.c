@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmstest.c,v 1.2 2019/11/04 12:31:59 jsing Exp $	*/
+/*	$OpenBSD: cmstest.c,v 1.3 2020/09/18 14:38:04 tb Exp $	*/
 /*
  * Copyright (c) 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -295,6 +295,7 @@ test_cms_sign_verify(void)
 	sk_X509_free(certs);
 	X509_free(cert);
 	X509_STORE_free(store);
+	X509_free(ca);
 
 	return failed;
 }
