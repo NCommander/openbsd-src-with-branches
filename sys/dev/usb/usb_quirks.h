@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_quirks.h,v 1.16 2010/07/19 05:08:37 jakemsr Exp $ */
+/*	$OpenBSD: usb_quirks.h,v 1.17 2021/01/10 16:32:48 thfr Exp $ */
 /*	$NetBSD: usb_quirks.h,v 1.20 2001/04/15 09:38:01 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_quirks.h,v 1.9 1999/11/12 23:31:03 n_hibma Exp $	*/
 
@@ -51,6 +51,7 @@ struct usbd_quirks {
 						if attached to EHCI */
 #define UQ_MS_VENDOR_BUTTONS	0x00040000 /* mouse reports extra buttons in
 						vendor page */
+#define UQ_ALWAYS_OPEN		0x00080000 /* always keep data pipe open */
 };
 
 extern const struct usbd_quirks usbd_no_quirk;

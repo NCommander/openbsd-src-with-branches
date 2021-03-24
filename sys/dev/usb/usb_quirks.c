@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb_quirks.c,v 1.76 2020/01/05 00:54:13 jsg Exp $ */
+/*	$OpenBSD: usb_quirks.c,v 1.77 2021/01/10 16:32:48 thfr Exp $ */
 /*	$NetBSD: usb_quirks.c,v 1.45 2003/05/10 17:47:14 hamajima Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usb_quirks.c,v 1.30 2003/01/02 04:15:55 imp Exp $	*/
 
@@ -152,6 +152,14 @@ const struct usbd_quirk_entry {
 
  { USB_VENDOR_KENSINGTON, USB_PRODUCT_KENSINGTON_SLIMBLADE,
 	ANY, { UQ_MS_VENDOR_BUTTONS }},
+
+/* Devices that need their data pipe held open */
+ { USB_VENDOR_HAILUCK, USB_PRODUCT_HAILUCK_KEYBOARD,
+	ANY,	{ UQ_ALWAYS_OPEN }},
+ { USB_VENDOR_MICROSOFT, USB_PRODUCT_MICROSOFT_TYPECOVER,
+ 	ANY,	{ UQ_ALWAYS_OPEN }},
+ { USB_VENDOR_MICROSOFT, USB_PRODUCT_MICROSOFT_TYPECOVER2,
+ 	ANY,	{ UQ_ALWAYS_OPEN }},
 
  { 0, 0, 0, { 0 } }
 };
