@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.252 2021/01/09 08:53:58 denis Exp $	*/
+/*	$OpenBSD: relay.c,v 1.253 2021/01/27 20:33:05 eric Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -800,7 +800,7 @@ relay_input(struct rsession *con)
 
 	switch (rlay->rl_proto->type) {
 	case RELAY_PROTO_HTTP:
-		if (relay_httpdesc_init(&con->se_in) == -1) {
+		if (relay_http_priv_init(con) == -1) {
 			relay_close(con,
 			    "failed to allocate http descriptor", 1);
 			return;
