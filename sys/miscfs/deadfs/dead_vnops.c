@@ -1,4 +1,4 @@
-/*	$OpenBSD: dead_vnops.c,v 1.32 2020/01/20 23:21:56 claudio Exp $	*/
+/*	$OpenBSD: dead_vnops.c,v 1.33 2020/06/15 15:42:11 mpi Exp $	*/
 /*	$NetBSD: dead_vnops.c,v 1.16 1996/02/13 13:12:48 mycroft Exp $	*/
 
 /*
@@ -76,6 +76,7 @@ const struct vops dead_vops = {
 	.vop_ioctl	= dead_ioctl,
 	.vop_poll	= dead_poll,
 	.vop_kqfilter	= dead_kqfilter,
+	.vop_revoke	= NULL,
 	.vop_fsync	= nullop,
 	.vop_remove	= dead_badop,
 	.vop_link	= dead_badop,
