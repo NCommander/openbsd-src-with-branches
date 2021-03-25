@@ -1,4 +1,4 @@
-/* $OpenBSD: mvxhci.c,v 1.1 2017/03/24 20:27:27 patrick Exp $ */
+/* $OpenBSD: mvxhci.c,v 1.2 2018/05/08 13:41:52 mpi Exp $ */
 /*
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
  *
@@ -31,7 +31,6 @@
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>
 #include <dev/usb/usbdivar.h>
-#include <dev/usb/usb_mem.h>
 
 #include <dev/usb/xhcireg.h>
 #include <dev/usb/xhcivar.h>

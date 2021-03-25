@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxitimer.c,v 1.15 2021/01/19 18:04:43 kettenis Exp $	*/
+/*	$OpenBSD: sxitimer.c,v 1.16 2021/02/23 04:44:30 cheloha Exp $	*/
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2013 Raphael Graf <r@undefined.ch>
@@ -20,13 +20,8 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/time.h>
-#include <sys/evcount.h>
 #include <sys/device.h>
 #include <sys/timetc.h>
-#include <dev/clock_subr.h>
-
-#include <arm/cpufunc.h>
 
 #include <machine/bus.h>
 #include <machine/fdt.h>

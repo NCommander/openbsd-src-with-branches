@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.4 2013/05/10 22:06:10 patrick Exp $	*/
+/*	$OpenBSD: db_machdep.c,v 1.5 2014/05/08 21:17:00 miod Exp $	*/
 /*	$NetBSD: db_machdep.c,v 1.8 2003/07/15 00:24:41 lukem Exp $	*/
 
 /* 
@@ -36,8 +36,6 @@
 
 #include <arm/db_machdep.h>
 
-#include <ddb/db_access.h>
-#include <ddb/db_sym.h>
 #include <ddb/db_output.h>
 
 void

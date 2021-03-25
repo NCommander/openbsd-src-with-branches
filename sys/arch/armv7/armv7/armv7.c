@@ -1,4 +1,4 @@
-/* $OpenBSD: armv7.c,v 1.16 2020/04/07 09:32:44 kettenis Exp $ */
+/* $OpenBSD: armv7.c,v 1.17 2020/04/29 15:25:07 kettenis Exp $ */
 /*
  * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
@@ -18,7 +18,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/malloc.h>
 
 #define _ARM32_BUS_DMA_PRIVATE
 #include <machine/bus.h>

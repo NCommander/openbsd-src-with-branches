@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxiahci.c,v 1.14 2018/06/04 09:19:52 kettenis Exp $	*/
+/*	$OpenBSD: sxiahci.c,v 1.15 2019/08/19 07:27:11 jsg Exp $	*/
 /*
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2013,2014 Artturi Alm
@@ -18,11 +18,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/buf.h>
-#include <sys/kernel.h>
-#include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/queue.h>
 
 #include <machine/bus.h>
 #include <machine/fdt.h>

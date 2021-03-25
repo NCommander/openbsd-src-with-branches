@@ -1,4 +1,4 @@
-/* $OpenBSD: ampintc.c,v 1.27 2019/09/29 10:36:52 kettenis Exp $ */
+/* $OpenBSD: ampintc.c,v 1.28 2020/07/14 15:34:14 patrick Exp $ */
 /*
  * Copyright (c) 2007,2009,2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -33,7 +33,6 @@
 #include <machine/fdt.h>
 
 #include <arm/cpufunc.h>
-#include <arm/cortex/cortex.h>
 
 #include <dev/ofw/fdt.h>
 #include <dev/ofw/openfirm.h>

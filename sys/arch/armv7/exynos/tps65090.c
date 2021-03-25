@@ -1,4 +1,4 @@
-/* $OpenBSD: tps65090.c,v 1.2 2015/07/19 02:41:39 bmercer Exp $ */
+/* $OpenBSD: tps65090.c,v 1.3 2017/03/06 06:50:47 kettenis Exp $ */
 /*
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -18,8 +18,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
-#include <sys/sensors.h>
-#include <sys/malloc.h>
 
 #include <dev/i2c/i2cvar.h>
 

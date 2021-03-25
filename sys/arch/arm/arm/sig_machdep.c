@@ -1,4 +1,4 @@
-/*	$OpenBSD: sig_machdep.c,v 1.18 2018/07/10 04:19:59 guenther Exp $	*/
+/*	$OpenBSD: sig_machdep.c,v 1.19 2020/11/08 20:37:22 mpi Exp $	*/
 /*	$NetBSD: sig_machdep.c,v 1.22 2003/10/08 00:28:41 thorpej Exp $	*/
 
 /*
@@ -56,7 +56,6 @@
 #include <machine/pcb.h>
 
 #include <arm/armreg.h>
-#include <arm/cpufunc.h>
 
 #include <uvm/uvm_extern.h>
 

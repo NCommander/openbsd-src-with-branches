@@ -1,4 +1,4 @@
-/* $OpenBSD: expower.c,v 1.7 2017/03/10 21:26:19 kettenis Exp $ */
+/* $OpenBSD: expower.c,v 1.8 2021/02/14 10:57:40 kettenis Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -19,7 +19,6 @@
 #include <sys/systm.h>
 #include <sys/device.h>
 
-#include <machine/intr.h>
 #include <machine/bus.h>
 #include <machine/fdt.h>
 

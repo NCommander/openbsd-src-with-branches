@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxie.c,v 1.30 2021/02/25 02:48:19 dlg Exp $	*/
+/*	$OpenBSD: sxie.c,v 1.31 2021/03/11 11:16:56 jsg Exp $	*/
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2013 Artturi Alm
@@ -22,11 +22,7 @@
 #include <sys/systm.h>
 #include <sys/sockio.h>
 #include <sys/queue.h>
-#include <sys/malloc.h>
 #include <sys/device.h>
-#include <sys/evcount.h>
-#include <sys/socket.h>
-#include <sys/timeout.h>
 #include <sys/mbuf.h>
 #include <machine/intr.h>
 #include <machine/bus.h>
@@ -43,7 +39,6 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
-#include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
 
 #include <dev/fdt/sunxireg.h>

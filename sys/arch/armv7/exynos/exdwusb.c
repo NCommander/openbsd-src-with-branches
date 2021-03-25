@@ -1,4 +1,4 @@
-/*	$OpenBSD: exdwusb.c,v 1.2 2019/08/29 14:19:27 kettenis Exp $	*/
+/*	$OpenBSD: exdwusb.c,v 1.3 2021/02/14 19:23:58 kettenis Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -16,10 +16,8 @@
  */
 
 #include <sys/param.h>
-#include <sys/systm.h>
 #include <sys/device.h>
 
-#include <machine/bus.h>
 #include <machine/fdt.h>
 
 #include <arm/simplebus/simplebusvar.h>

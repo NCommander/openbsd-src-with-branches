@@ -1,4 +1,4 @@
-/*	$OpenBSD: dmtimer.c,v 1.9 2021/01/19 18:04:43 kettenis Exp $	*/
+/*	$OpenBSD: dmtimer.c,v 1.10 2021/02/23 04:44:30 cheloha Exp $	*/
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2013 Raphael Graf <r@undefined.ch>
@@ -25,17 +25,14 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/time.h>
 #include <sys/evcount.h>
 #include <sys/device.h>
 #include <sys/timetc.h>
-#include <dev/clock_subr.h>
 #include <machine/bus.h>
 #include <armv7/armv7/armv7var.h>
 #include <armv7/omap/prcmvar.h>
 
 #include <machine/intr.h>
-#include <arm/cpufunc.h>
 
 /* registers */
 #define	DM_TIDR		0x000
