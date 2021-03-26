@@ -1,4 +1,4 @@
-.\"     $OpenBSD: rtable_add.9,v 1.7 2015/12/11 16:08:30 mpi Exp $
+.\"     $OpenBSD: rtable_add.9,v 1.8 2016/11/14 10:32:46 mpi Exp $
 .\"
 .\" Copyright (c) 2011 Bret S. Lambert <blambert@openbsd.org>
 .\" All rights reserved.
@@ -15,7 +15,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: December 11 2015 $
+.Dd $Mdocdate: November 14 2016 $
 .Dt RTABLE_ADD 9
 .Os
 .Sh NAME
@@ -83,10 +83,6 @@ can be called during autoconf, from process context, or from interrupt context.
 may fail with:
 .Pp
 .Bl -tag -width Er -compact
-.It Bq Er EEXIST
-A routing table with ID of
-.Fa id
-already exists.
 .It Bq Er ENOMEM
 Memory could not be allocated to extend the list of routing domains.
 .El
