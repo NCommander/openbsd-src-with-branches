@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pager.c,v 1.74 2021/01/19 13:21:36 mpi Exp $	*/
+/*	$OpenBSD: uvm_pager.c,v 1.75 2021/03/12 14:15:49 jsg Exp $	*/
 /*	$NetBSD: uvm_pager.c,v 1.36 2000/11/27 18:26:41 chs Exp $	*/
 
 /*
@@ -326,7 +326,7 @@ uvm_mk_pcluster(struct uvm_object *uobj, struct vm_page **pps, int *npages,
 	if ((hi - lo) >> PAGE_SHIFT > *npages) { /* pps too small, bail out! */
 		pps[0] = center;
 		*npages = 1;
-		return(pps);
+		return pps;
 	}
 
 	/* now determine the center and attempt to cluster around the edges */
@@ -410,7 +410,7 @@ uvm_mk_pcluster(struct uvm_object *uobj, struct vm_page **pps, int *npages,
 	/*
 	 * done!  return the cluster array to the caller!!!
 	 */
-	return(ppsp);
+	return ppsp;
 }
 
 /*
@@ -586,7 +586,7 @@ ReTry:
 	 * to worry about.
 	 */
 	
-	return(result);
+	return result;
 }
 
 /*

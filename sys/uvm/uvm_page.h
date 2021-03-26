@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.h,v 1.64 2019/11/29 18:32:40 kettenis Exp $	*/
+/*	$OpenBSD: uvm_page.h,v 1.65 2020/09/22 14:31:08 mpi Exp $	*/
 /*	$NetBSD: uvm_page.h,v 1.19 2000/12/28 08:24:55 chs Exp $	*/
 
 /* 
@@ -256,9 +256,9 @@ vm_physseg_find(paddr_t pframe, int *offp)
 	if (pframe >= vm_physmem[0].start && pframe < vm_physmem[0].end) {
 		if (offp)
 			*offp = pframe - vm_physmem[0].start;
-		return(0);
+		return 0;
 	}
-	return(-1);
+	return -1;
 }
 
 /*
