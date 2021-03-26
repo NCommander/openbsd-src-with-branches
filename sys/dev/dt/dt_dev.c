@@ -1,4 +1,4 @@
-/*	$OpenBSD: dt_dev.c,v 1.10 2020/09/28 13:16:58 kettenis Exp $ */
+/*	$OpenBSD: dt_dev.c,v 1.11 2021/02/08 08:18:45 mpi Exp $ */
 
 /*
  * Copyright (c) 2019 Martin Pieuchot <mpi@openbsd.org>
@@ -213,7 +213,7 @@ dtread(dev_t dev, struct uio *uio, int flags)
 	struct dt_softc *sc;
 	struct dt_evt *estq;
 	struct dt_pcb *dp;
-	int error, unit = minor(dev);
+	int error = 0, unit = minor(dev);
 	size_t qlen, count, read = 0;
 	uint64_t dropped = 0;
 
