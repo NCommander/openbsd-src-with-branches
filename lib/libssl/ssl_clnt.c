@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_clnt.c,v 1.87 2021/03/24 18:40:03 jsing Exp $ */
+/* $OpenBSD: ssl_clnt.c,v 1.88 2021/03/24 18:44:00 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -225,8 +225,6 @@ ssl3_connect(SSL *s)
 				ret = -1;
 				goto end;
 			}
-
-			s->internal->type = SSL_ST_CONNECT;
 
 			if (!ssl3_setup_init_buffer(s)) {
 				ret = -1;
