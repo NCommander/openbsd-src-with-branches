@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.195 2021/02/24 16:18:59 krw Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.196 2021/03/04 10:56:47 claudio Exp $	*/
 
 /*
  * Copyright 2012 Kenneth R Westerback <krw@openbsd.org>
@@ -585,7 +585,7 @@ default_route_index(int rdomain, int routefd)
 	iov[2].iov_len = sizeof(sin);
 
 	pid = getpid();
-	clock_gettime(CLOCK_REALTIME, &now);
+	clock_gettime(CLOCK_MONOTONIC, &now);
 	timespecclear(&timeout);
 	timeout.tv_sec = 3;
 	timespecadd(&now, &timeout, &stop);
@@ -600,7 +600,7 @@ default_route_index(int rdomain, int routefd)
 	}
 
 	for (;;) {
-		clock_gettime(CLOCK_REALTIME, &now);
+		clock_gettime(CLOCK_MONOTONIC, &now);
 		if (timespeccmp(&stop, &now, <=))
 			break;
 		timespecsub(&stop, &now, &timeout);
