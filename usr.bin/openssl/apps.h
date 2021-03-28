@@ -1,4 +1,4 @@
-/* $OpenBSD: apps.h,v 1.24 2020/09/09 12:47:46 inoguchi Exp $ */
+/* $OpenBSD: apps.h,v 1.25 2021/03/24 12:07:39 inoguchi Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -328,5 +328,7 @@ int options_parse(int argc, char **argv, const struct option *opts,
     char **unnamed, int *argsused);
 
 void show_cipher(const OBJ_NAME *name, void *arg);
+
+#define SSL_is_dtls _SSL_is_dtls
 
 #endif
