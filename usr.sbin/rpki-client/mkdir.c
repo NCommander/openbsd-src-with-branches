@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkdir.c,v 1.4 2021/03/02 09:23:59 claudio Exp $	*/
+/*	$OpenBSD: mkdir.c,v 1.5 2021/03/29 03:45:35 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983, 1992, 1993
@@ -32,8 +32,8 @@
 #include <sys/stat.h>
 
 #include <errno.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "extern.h"
 
