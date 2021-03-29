@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_asn1.c,v 1.56 2018/03/20 16:10:57 jsing Exp $ */
+/* $OpenBSD: ssl_asn1.c,v 1.57 2018/08/27 16:42:48 jsing Exp $ */
 /*
  * Copyright (c) 2016 Joel Sing <jsing@openbsd.org>
  *
@@ -331,7 +331,7 @@ d2i_SSL_SESSION(SSL_SESSION **a, const unsigned char **pp, long length)
 		goto err;
 	if (timeout != 0)
 		s->timeout = (long)timeout;
-	
+
 	/* Peer certificate [3]. */
 	X509_free(s->peer);
 	s->peer = NULL;
@@ -383,7 +383,7 @@ d2i_SSL_SESSION(SSL_SESSION **a, const unsigned char **pp, long length)
 		if (!CBS_strdup(&hostname, &s->tlsext_hostname))
 			goto err;
 	}
-	
+
 	/* PSK identity hint [7]. */
 	/* PSK identity [8]. */
 
@@ -421,7 +421,7 @@ d2i_SSL_SESSION(SSL_SESSION **a, const unsigned char **pp, long length)
 
 	return (s);
 
-err:
+ err:
 	ERR_asprintf_error_data("offset=%d", (int)(CBS_data(&cbs) - *pp));
 
 	if (s != NULL && (a == NULL || *a != s))
