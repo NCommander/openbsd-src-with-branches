@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.56 2021/03/25 12:18:45 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.57 2021/03/28 16:22:17 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -436,8 +436,6 @@ int		 io_recvfd(int, void *, size_t);
 char		*x509_get_aia(X509 *, const char *);
 char		*x509_get_aki(X509 *, int, const char *);
 char		*x509_get_ski(X509 *, const char *);
-int		 x509_get_extensions(X509 *, const char *, char **, char **,
-			char **);
 char		*x509_get_crl(X509 *, const char *);
 char		*x509_crl_get_aki(X509_CRL *, const char *);
 

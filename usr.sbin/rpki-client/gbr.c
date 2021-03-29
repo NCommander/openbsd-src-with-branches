@@ -64,8 +64,12 @@ gbr_parse(X509 **x509, const char *fn)
 		err(1, NULL);
 	free(cms);
 
-	if (!x509_get_extensions(*x509, fn, &p.res->aia, &p.res->aki,
-	    &p.res->ski)) {
+	p.res->aia = x509_get_aia(*x509, fn);
+	p.res->aki = x509_get_aki(*x509, 0, fn);
+	p.res->ski = x509_get_ski(*x509, fn);
+	if (p.res->aia == NULL || p.res->aki == NULL || p.res->ski == NULL) {
+		warnx("%s: RFC 6487 section 4.8: "
+		    "missing AIA, AKI or SKI X509 extension", fn);
 		gbr_free(p.res);
 		X509_free(*x509);
 		*x509 = NULL;
