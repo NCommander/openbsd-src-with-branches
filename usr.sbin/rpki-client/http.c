@@ -1,4 +1,4 @@
-/*      $OpenBSD: http.c,v 1.8 2021/03/18 16:15:19 tb Exp $  */
+/*      $OpenBSD: http.c,v 1.9 2021/03/25 12:18:45 claudio Exp $  */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.com>
@@ -168,7 +168,7 @@ unsafe_char(const char *c0)
 	     * hexadecimal digits.
 	     */
 	    strchr(unsafe_chars, *c) != NULL ||
-	    (*c == '%' && (!isxdigit(*++c) || !isxdigit(*++c))));
+	    (*c == '%' && (!isxdigit(c[1]) || !isxdigit(c[2]))));
 }
 
 /*
