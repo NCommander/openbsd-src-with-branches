@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.h,v 1.101 2020/09/23 19:18:18 martijn Exp $	*/
+/*	$OpenBSD: vmd.h,v 1.102 2021/03/19 09:29:33 kn Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -120,6 +120,8 @@ enum imsg_type {
 	IMSG_VMDOP_PRIV_IFADDR,
 	IMSG_VMDOP_PRIV_IFADDR6,
 	IMSG_VMDOP_PRIV_IFRDOMAIN,
+	IMSG_VMDOP_PRIV_GET_ADDR,
+	IMSG_VMDOP_PRIV_GET_ADDR_RESPONSE,
 	IMSG_VMDOP_VM_SHUTDOWN,
 	IMSG_VMDOP_VM_REBOOT,
 	IMSG_VMDOP_CONFIG,
@@ -156,6 +158,17 @@ struct vmop_ifreq {
 	char				 vfr_value[VM_NAME_MAX];
 	struct sockaddr_storage		 vfr_addr;
 	struct sockaddr_storage		 vfr_mask;
+};
+
+struct vmop_addr_req {
+	uint32_t		 var_vmid;
+	unsigned int		 var_nic_idx;
+};
+
+struct vmop_addr_result {
+	uint32_t		 var_vmid;
+	unsigned int		 var_nic_idx;
+	uint8_t			 var_addr[ETHER_ADDR_LEN];
 };
 
 struct vmop_owner {
