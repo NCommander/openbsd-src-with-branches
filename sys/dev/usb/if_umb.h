@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_umb.h,v 1.6 2020/02/18 08:09:37 gerhard Exp $ */
+/*	$OpenBSD: if_umb.h,v 1.7 2021/01/29 17:06:19 sthen Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -347,6 +347,7 @@ struct umb_softc {
 
 #define UMBFLG_FCC_AUTH_REQUIRED	0x0001
 #define UMBFLG_NO_INET6			0x0002
+#define UMBFLG_NDP_AT_END		0x0004
 	uint32_t		 sc_flags;
 	int			 sc_cid;
 
