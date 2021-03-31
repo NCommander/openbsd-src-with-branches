@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rsync.1,v 1.22 2020/11/24 16:54:44 claudio Exp $
+.\"	$OpenBSD: rsync.1,v 1.23 2021/03/31 19:45:16 job Exp $
 .\"
 .\" Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: November 24 2020 $
+.Dd $Mdocdate: March 31 2021 $
 .Dt OPENRSYNC 1
 .Os
 .Sh NAME
@@ -26,6 +26,7 @@
 .Op Fl e Ar program
 .Op Fl -address Ns = Ns Ar sourceaddr
 .Op Fl -del
+.Op Fl -no-motd
 .Op Fl -numeric-ids
 .Op Fl -port Ns = Ns Ar service
 .Op Fl -rsync-path Ns = Ns Ar program
