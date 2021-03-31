@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rsync.1,v 1.21 2020/02/11 18:41:39 deraadt Exp $
+.\"	$OpenBSD: rsync.1,v 1.22 2020/11/24 16:54:44 claudio Exp $
 .\"
 .\" Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: February 11 2020 $
+.Dd $Mdocdate: November 24 2020 $
 .Dt OPENRSYNC 1
 .Os
 .Sh NAME
@@ -93,6 +93,8 @@ not exist, it will be broken.
 Do not actually modify the destination.
 Mainly useful in combination with
 .Fl v .
+.It Fl -no-motd
+Do not display the Message of the Day.
 .It Fl -numeric-ids
 Ignore user and group names, use numeric user and group IDs only.
 Has no effect unless
