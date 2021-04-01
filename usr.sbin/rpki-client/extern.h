@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.58 2021/03/29 06:50:44 tb Exp $ */
+/*	$OpenBSD: extern.h,v 1.59 2021/03/29 12:41:34 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -418,6 +418,13 @@ void		 cryptowarnx(const char *, ...)
 void		 cryptoerrx(const char *, ...)
 			__attribute__((format(printf, 1, 2)))
 			__attribute__((noreturn));
+
+/* Encoding functions for hex and base64. */
+
+int		 base64_decode(const unsigned char *, unsigned char **,
+		    size_t *);
+char		*hex_encode(const unsigned char *, size_t);
+
 
 /* Functions for moving data between processes. */
 
