@@ -1,6 +1,6 @@
-/* $OpenBSD: armv7var.h,v 1.16 2019/10/25 10:17:06 kettenis Exp $ */
+/* $OpenBSD: armv7var.h,v 1.17 2020/04/07 10:11:01 kettenis Exp $ */
 /*
- * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>
+ * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
  * Permission to use, copy, modify, and distribute this software for any
