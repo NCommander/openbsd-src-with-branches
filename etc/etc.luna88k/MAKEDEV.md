@@ -1,6 +1,6 @@
 define(MACHINE,luna88k)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.34 2020/01/23 02:47:28 dlg Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.35 2020/07/06 06:11:27 dlg Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2006 Todd T. Fries <todd@OpenBSD.org>
@@ -65,7 +65,6 @@ dnl
 dnl ramdisk)
 dnl
 twrget(ramd, sio, tty, a)dnl
-target(ramd, pty, 0)dnl
 target(ramd, bio)dnl
 target(ramd, diskmap)dnl
 target(ramd, random)dnl
