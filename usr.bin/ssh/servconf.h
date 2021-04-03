@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.h,v 1.151 2021/01/26 05:32:21 dtucker Exp $ */
+/* $OpenBSD: servconf.h,v 1.152 2021/03/12 04:08:19 dtucker Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -234,7 +234,7 @@ typedef struct {
 struct connection_info {
 	const char *user;
 	const char *host;	/* possibly resolved hostname */
-	const char *address; 	/* remote address */
+	const char *address;	/* remote address */
 	const char *laddress;	/* local address */
 	int lport;		/* local port */
 	const char *rdomain;	/* routing domain if available */
