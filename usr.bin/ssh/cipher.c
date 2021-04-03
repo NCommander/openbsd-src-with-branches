@@ -1,4 +1,4 @@
-/* $OpenBSD: cipher.c,v 1.117 2020/04/03 04:27:03 djm Exp $ */
+/* $OpenBSD: cipher.c,v 1.118 2020/12/21 11:09:32 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -480,11 +480,10 @@ cipher_get_keyiv(struct sshcipher_ctx *cc, u_char *iv, size_t len)
 	if ((size_t)evplen != len)
 		return SSH_ERR_INVALID_ARGUMENT;
 	if (cipher_authlen(c)) {
-		if (!EVP_CIPHER_CTX_ctrl(cc->evp, EVP_CTRL_GCM_IV_GEN,
-		   len, iv))
-		       return SSH_ERR_LIBCRYPTO_ERROR;
+		if (!EVP_CIPHER_CTX_ctrl(cc->evp, EVP_CTRL_GCM_IV_GEN, len, iv))
+			return SSH_ERR_LIBCRYPTO_ERROR;
 	} else if (!EVP_CIPHER_CTX_get_iv(cc->evp, iv, len))
-	       return SSH_ERR_LIBCRYPTO_ERROR;
+		return SSH_ERR_LIBCRYPTO_ERROR;
 #endif
 	return 0;
 }

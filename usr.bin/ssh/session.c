@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.326 2020/11/28 03:27:59 djm Exp $ */
+/* $OpenBSD: session.c,v 1.327 2020/12/14 03:13:12 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -1128,7 +1128,7 @@ do_setusercontext(struct passwd *pw)
 
 		if (!in_chroot && options.chroot_directory != NULL &&
 		    strcasecmp(options.chroot_directory, "none") != 0) {
-                        tmp = tilde_expand_filename(options.chroot_directory,
+			tmp = tilde_expand_filename(options.chroot_directory,
 			    pw->pw_uid);
 			snprintf(uidstr, sizeof(uidstr), "%llu",
 			    (unsigned long long)pw->pw_uid);
