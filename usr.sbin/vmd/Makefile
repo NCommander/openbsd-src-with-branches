@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.24 2020/09/23 19:18:18 martijn Exp $
+#	$OpenBSD: Makefile,v 1.25 2021/03/19 09:29:33 kn Exp $
 
 .if ${MACHINE} == "amd64"
 
@@ -14,8 +14,8 @@ CFLAGS+=	-Wmissing-declarations
 CFLAGS+=	-Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+=	-Wsign-compare
 
-LDADD+=		-lutil -lpthread -levent
-DPADD+=		${LIBUTIL} ${LIBPTHREAD} ${LIBEVENT}
+LDADD+=		-lutil -lpthread -levent -lz
+DPADD+=		${LIBUTIL} ${LIBPTHREAD} ${LIBEVENT} ${LIBZ}
 
 YFLAGS=
 
