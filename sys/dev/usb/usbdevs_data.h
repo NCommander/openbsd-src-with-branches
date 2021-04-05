@@ -8606,6 +8606,10 @@ const struct usb_known_product usb_known_products[] = {
 	    "RT3070",
 	},
 	{
+	    USB_VENDOR_PCSENSORS, USB_PRODUCT_PCSENSORS_TEMPER,
+	    "TEMPer",
+	},
+	{
 	    USB_VENDOR_PEGATRON, USB_PRODUCT_PEGATRON_RT2870,
 	    "RT2870",
 	},
@@ -14500,6 +14504,10 @@ const struct usb_known_vendor usb_known_vendors[] = {
 	{
 	    USB_VENDOR_DELL,
 	    "Dell",
+	},
+	{
+	    USB_VENDOR_PCSENSORS,
+	    "PC Sensors",
 	},
 	{
 	    USB_VENDOR_WCH,
