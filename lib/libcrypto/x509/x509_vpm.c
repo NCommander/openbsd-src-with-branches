@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_vpm.c,v 1.22 2020/09/14 08:10:04 beck Exp $ */
+/* $OpenBSD: x509_vpm.c,v 1.23 2020/12/16 13:44:17 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2004.
  */
@@ -172,6 +172,7 @@ x509_verify_param_zero(X509_VERIFY_PARAM *param)
 	X509_VERIFY_PARAM_ID *paramid;
 	if (!param)
 		return;
+	free(param->name);
 	param->name = NULL;
 	param->purpose = 0;
 	param->trust = 0;
