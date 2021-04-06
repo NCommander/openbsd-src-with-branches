@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmsubr.c,v 1.9 2020/09/23 05:50:26 jca Exp $	*/
+/*	$OpenBSD: apmsubr.c,v 1.10 2021/04/06 20:30:32 kn Exp $	*/
 
 /*
  *  Copyright (c) 1995,1996 John T. Kohl
@@ -98,5 +98,5 @@ apm_state(int apm_state)
 		return "hibenate";
 	default:
 		return "unknown";
-}
+	}
 }
