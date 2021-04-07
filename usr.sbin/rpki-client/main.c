@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.129 2021/04/01 16:04:48 claudio Exp $ */
+/*	$OpenBSD: main.c,v 1.130 2021/04/01 16:40:05 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -572,7 +572,7 @@ tal_load_default(const char *tals[], size_t max)
 			err(1, NULL);
 		tals[s++] = path;
 	}
-	closedir (dirp);
+	closedir(dirp);
 	return s;
 }
 
