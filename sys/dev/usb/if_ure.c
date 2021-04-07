@@ -1896,17 +1896,10 @@ ure_rxeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 			ifp->if_ierrors++;
 			goto done;
 		}
-		if (pktlen < ETHER_MIN_LEN) {
-			DPRINTF(("Ethernet frame is too short\n"));
-			ifp->if_ierrors++;
-			goto done;
-		}
 
 		total_len -= roundup(pktlen, URE_RX_BUF_ALIGN);
 		buf += sizeof(rxhdr);
 
-		/* trim fcs */
-		pktlen -= ETHER_CRC_LEN;
 		m = m_devget(buf, pktlen, ETHER_ALIGN);
 		if (m == NULL) {
 			DPRINTF(("unable to allocate mbuf for next packet\n"));
