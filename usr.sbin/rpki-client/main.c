@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.132 2021/04/08 15:31:14 claudio Exp $ */
+/*	$OpenBSD: main.c,v 1.133 2021/04/08 16:32:42 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -1044,9 +1044,9 @@ main(int argc, char *argv[])
 		if (pid == -1) {
 			if (errno == EINTR)
 				continue;
-			if (errno != ECHILD)
-				err(1, "wait");
-			break;
+			if (errno == ECHILD)
+				break;
+			err(1, "wait");
 		}
 
 		if (pid == procpid)
