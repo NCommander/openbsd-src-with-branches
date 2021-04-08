@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rpki-client.8,v 1.41 2021/04/06 15:22:30 tb Exp $
+.\"	$OpenBSD: rpki-client.8,v 1.42 2021/04/06 18:29:43 jmc Exp $
 .\"
 .\" Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
@@ -92,7 +92,10 @@ Create output in the file
 in the output directory as JSON object.
 This format is similar to that produced by other RPKI validators.
 .It Fl n
-Assume that all requested repositories exist: don't update.
+Offline mode.
+Validate the contents of
+.Ar cachedir
+without synchronizing via RRDP or RSYNC.
 .It Fl o
 Create output in the file
 .Pa openbgpd
