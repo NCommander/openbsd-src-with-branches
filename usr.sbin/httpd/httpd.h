@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.153 2020/10/29 12:30:52 denis Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.154 2021/01/27 07:21:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -622,7 +622,7 @@ int	 cmdline_symset(char *);
 
 /* server.c */
 void	 server(struct privsep *, struct privsep_proc *);
-int	 server_tls_cmp(struct server *, struct server *, int);
+int	 server_tls_cmp(struct server *, struct server *);
 int	 server_tls_load_ca(struct server *);
 int	 server_tls_load_crl(struct server *);
 int	 server_tls_load_keypair(struct server *);
