@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.3 2016/11/15 10:43:41 mpi Exp $ */
+/*	$OpenBSD: main.c,v 1.4 2019/06/24 12:33:36 visa Exp $ */
 
 /*
  * Copyright (c) 2015 Martin Pieuchot
@@ -20,6 +20,7 @@
 
 #include <sys/socket.h>
 #include <net/route.h>
+#include <net/rtable.h>
 
 #include <err.h>
 #include <stdio.h>

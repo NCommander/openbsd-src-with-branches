@@ -1,13 +1,8 @@
-#	$OpenBSD: Makefile.inc,v 1.6 2020/11/06 15:26:38 bluhm Exp $
+#	$OpenBSD: Makefile.inc,v 1.7 2020/11/07 09:53:21 denis Exp $
 
 TOPDIR=		${.CURDIR}/..
 
-.ifdef RADIX
-SRCS+=		radix.c
-.else
 SRCS+=		art.c
-CFLAGS+=	-DART
-.endif
 
 CPPFLAGS+=	-I${TOPDIR} -Wall
 
