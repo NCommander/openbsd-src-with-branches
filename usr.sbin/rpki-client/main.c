@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.134 2021/04/08 17:07:55 claudio Exp $ */
+/*	$OpenBSD: main.c,v 1.135 2021/04/11 01:20:03 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -40,6 +40,7 @@
 #include <imsg.h>
 
 #include "extern.h"
+#include "version.h"
 
 /*
  * Maximum number of TAL files we'll load.
