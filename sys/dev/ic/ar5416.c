@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5416.c,v 1.20 2017/01/12 16:32:28 stsp Exp $	*/
+/*	$OpenBSD: ar5416.c,v 1.21 2019/02/01 16:15:07 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -51,7 +51,7 @@
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_amrr.h>
-#include <net80211/ieee80211_mira.h>
+#include <net80211/ieee80211_ra.h>
 #include <net80211/ieee80211_radiotap.h>
 
 #include <dev/ic/athnreg.h>
