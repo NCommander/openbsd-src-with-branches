@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.136 2021/04/14 18:05:47 benno Exp $ */
+/*	$OpenBSD: main.c,v 1.137 2021/04/15 13:33:17 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -687,6 +687,8 @@ main(int argc, char *argv[])
 		outputdir = argv[0];
 	else if (argc > 1)
 		goto usage;
+
+	signal(SIGPIPE, SIG_IGN);
 
 	if (timeout) {
 		signal(SIGALRM, suicide);
