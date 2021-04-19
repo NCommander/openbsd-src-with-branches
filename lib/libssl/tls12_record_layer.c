@@ -1,4 +1,4 @@
-/* $OpenBSD: tls12_record_layer.c,v 1.24 2021/03/21 19:08:22 tb Exp $ */
+/* $OpenBSD: tls12_record_layer.c,v 1.25 2021/03/29 16:19:15 jsing Exp $ */
 /*
  * Copyright (c) 2020 Joel Sing <jsing@openbsd.org>
  *
@@ -252,6 +252,18 @@ int
 tls12_record_layer_write_protected(struct tls12_record_layer *rl)
 {
 	return tls12_record_protection_engaged(rl->write);
+}
+
+const EVP_AEAD *
+tls12_record_layer_aead(struct tls12_record_layer *rl)
+{
+	return rl->aead;
+}
+
+const EVP_CIPHER *
+tls12_record_layer_cipher(struct tls12_record_layer *rl)
+{
+	return rl->cipher;
 }
 
 void
