@@ -25,6 +25,14 @@ sub like_eval
     like $@, @_ ;
 }
 
+BEGIN {
+    eval { 
+       require File::Temp;
+     } ;
+
+}
+
+
 {
     package LexFile ;
 
@@ -36,8 +44,9 @@ sub like_eval
         my $self = shift ;
         foreach (@_)
         {
-            # autogenerate the name unless if none supplied
-            $_ = "tst" . $index ++ . ".tmp"
+            Carp::croak "NO!!!!" if defined $_;
+            # autogenerate the name if none supplied
+            $_ = "tst" . $$ . "X" . $index ++ . ".tmp"
                 unless defined $_;
         }
         chmod 0777, @_;
@@ -58,19 +67,79 @@ sub like_eval
     package LexDir ;
 
     use File::Path;
+
+    our ($index);
+    $index = '00000';
+    our ($useTempFile);
+    our ($useTempDir);
+    
     sub new
     {
         my $self = shift ;
-        foreach (@_) { rmtree $_ }
-        bless [ @_ ], $self ;
+
+        if ( $useTempDir)
+        {
+            foreach (@_)
+            {
+                Carp::croak "NO!!!!" if defined $_;
+                $_ = File::Temp->newdir(DIR => '.');
+                # Subsequent manipulations assume Unix syntax, metacharacters, etc.
+                if ($^O eq 'VMS')
+                {
+                    $_->{DIRNAME} = VMS::Filespec::unixify($_->{DIRNAME});
+                    $_->{DIRNAME} =~ s/\/$//;
+                }
+            }
+            bless [ @_ ], $self ;
+        }
+        elsif ( $useTempFile)
+        {
+            foreach (@_)
+            {
+                Carp::croak "NO!!!!" if defined $_;
+                $_ = File::Temp::tempdir(DIR => '.', CLEANUP => 1);
+                # Subsequent manipulations assume Unix syntax, metacharacters, etc.
+                if ($^O eq 'VMS')
+                {
+                    $_ = VMS::Filespec::unixify($_);
+                    $_ =~ s/\/$//;
+                }
+            }
+            bless [ @_ ], $self ;
+        }
+        else
+        {
+            foreach (@_)
+            {
+                Carp::croak "NO!!!!" if defined $_;
+                # autogenerate the name if none supplied
+                $_ = "tmpdir" . $$ . "X" . $index ++ . ".tmp" ;
+            }
+            foreach (@_) 
+            { 
+                rmtree $_, {verbose => 0, safe => 1}
+                    if -d $_; 
+                mkdir $_, 0777 
+            }
+            bless [ @_ ], $self ;
+        }
+
     }
 
     sub DESTROY
     {
-        my $self = shift ;
-        foreach (@$self) { rmtree $_ }
+        if (! $useTempFile)
+        {
+            my $self = shift ;
+            foreach (@$self) 
+            { 
+                rmtree $_, {verbose => 0, safe => 1}
+                    if -d $_ ; 
+            }
+        }
     }
 }
+
 sub readFile
 {
     my $f = shift ;
@@ -326,6 +395,17 @@ my %TOP = (
                                 Raw      => 0,
                               },
 
+    'IO::Compress::Lzip' => { Inverse  => 'IO::Uncompress::UnLzip',
+                            Error    => 'LzipError',
+                            TopLevel => 'lzip',
+                            Raw      => 0,
+                          },
+    'IO::Uncompress::UnLzip' => { Inverse  => 'IO::Compress::Lzip',
+                                Error    => 'UnLzipError',
+                                TopLevel => 'unlzip',
+                                Raw      => 0,
+                              },
+
     'IO::Compress::PPMd' => { Inverse  => 'IO::Uncompress::UnPPMd',
                               Error    => 'PPMdError',
                               TopLevel => 'ppmd',
@@ -334,6 +414,16 @@ my %TOP = (
     'IO::Uncompress::UnPPMd' => { Inverse  => 'IO::Compress::PPMd',
                                   Error    => 'UnPPMdError',
                                   TopLevel => 'unppmd',
+                                  Raw      => 0,
+                                },
+    'IO::Compress::Zstd' => { Inverse  => 'IO::Uncompress::UnZstd',
+                              Error    => 'ZstdError',
+                              TopLevel => 'zstd',
+                              Raw      => 0,
+                            },
+    'IO::Uncompress::UnZstd' => { Inverse  => 'IO::Compress::Zstd',
+                                  Error    => 'UnZstdError',
+                                  TopLevel => 'unzstd',
                                   Raw      => 0,
                                 },
 
@@ -425,7 +515,7 @@ sub compressBuffer
 our ($AnyUncompressError);
 BEGIN
 {
-    eval ' use IO::Uncompress::AnyUncompress qw($AnyUncompressError); ';
+    eval ' use IO::Uncompress::AnyUncompress qw(anyuncompress $AnyUncompressError); ';
 }
 
 sub anyUncompress
@@ -486,7 +576,6 @@ sub anyUncompress
         if $o->error() ;
 
     return $out ;
-
 }
 
 sub getHeaders
@@ -649,7 +738,7 @@ sub getMultiValues
 {
     my $class = shift ;
 
-    return (0,0) if $class =~ /lzf|lzma/i;
+    return (0,0) if $class =~ /lzf|lzma|zstd/i;
     return (1,0);
 }
 

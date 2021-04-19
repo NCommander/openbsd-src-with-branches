@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib.c,v 1.44 2020/12/18 21:36:24 millert Exp $	*/
+/*	$OpenBSD: lib.c,v 1.42 2020/12/09 20:00:11 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -174,7 +174,6 @@ int getrec(char **pbuf, int *pbufsize, bool isrecord)	/* get next input record *
 				infile = stdin;
 			else if ((infile = fopen(file, "r")) == NULL)
 				FATAL("can't open file %s", file);
-			innew = true;
 			setfval(fnrloc, 0.0);
 		}
 		c = readrec(&buf, &bufsize, infile, innew);

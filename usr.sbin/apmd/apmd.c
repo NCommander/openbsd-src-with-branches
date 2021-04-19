@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmd.c,v 1.104 2021/04/06 22:12:48 jca Exp $	*/
+/*	$OpenBSD: apmd.c,v 1.103 2021/04/06 20:30:32 kn Exp $	*/
 
 /*
  *  Copyright (c) 1995, 1996 John T. Kohl
@@ -271,15 +271,18 @@ handle_client(int sock_fd, int ctl_fd)
 	switch (cmd.action) {
 	case SUSPEND:
 		reply.newstate = SUSPENDING;
-		reply.error = suspend(ctl_fd);
+		if (suspend(ctl_fd) == -1)
+			reply.error = errno;
 		break;
 	case STANDBY:
 		reply.newstate = STANDING_BY;
-		reply.error = stand_by(ctl_fd);
+		if (stand_by(ctl_fd) == -1)
+			reply.error = errno;
 		break;
 	case HIBERNATE:
 		reply.newstate = HIBERNATING;
-		reply.error = hibernate(ctl_fd);
+		if (hibernate(ctl_fd) == -1)
+			reply.error = errno;
 		break;
 	case SETPERF_LOW:
 		reply.newstate = NORMAL;
@@ -326,58 +329,46 @@ handle_client(int sock_fd, int ctl_fd)
 int
 suspend(int ctl_fd)
 {
-	int error = 0;
+	int ret;
 
 	logmsg(LOG_NOTICE, "system suspending");
 	power_status(ctl_fd, 1, NULL);
 	do_etc_file(_PATH_APM_ETC_SUSPEND);
 	sync();
 	sleep(1);
-
-	if (ioctl(ctl_fd, APM_IOC_SUSPEND, 0) == -1) {
-		error = errno;
+	if ((ret = ioctl(ctl_fd, APM_IOC_SUSPEND, 0)) == -1)
 		logmsg(LOG_WARNING, "%s: %s", __func__, strerror(errno));
-	}
-
-	return error;
+	return (ret);
 }
 
 int
 stand_by(int ctl_fd)
 {
-	int error = 0;
+	int ret;
 
 	logmsg(LOG_NOTICE, "system entering standby");
 	power_status(ctl_fd, 1, NULL);
 	do_etc_file(_PATH_APM_ETC_STANDBY);
 	sync();
 	sleep(1);
-
-	if (ioctl(ctl_fd, APM_IOC_STANDBY, 0) == -1) {
-		error = errno;
+	if ((ret = ioctl(ctl_fd, APM_IOC_STANDBY, 0)) == -1)
 		logmsg(LOG_WARNING, "%s: %s", __func__, strerror(errno));
-	}
-
-	return error;
+	return (ret);
 }
 
 int
 hibernate(int ctl_fd)
 {
-	int error = 0;
+	int ret;
 
 	logmsg(LOG_NOTICE, "system hibernating");
 	power_status(ctl_fd, 1, NULL);
 	do_etc_file(_PATH_APM_ETC_HIBERNATE);
 	sync();
 	sleep(1);
-
-	if (ioctl(ctl_fd, APM_IOC_HIBERNATE, 0) == -1) {
-		error = errno;
+	if ((ret = ioctl(ctl_fd, APM_IOC_HIBERNATE, 0)) == -1)
 		logmsg(LOG_WARNING, "%s: %s", __func__, strerror(errno));
-	}
-
-	return error;
+	return (ret);
 }
 
 void
