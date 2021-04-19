@@ -1,4 +1,4 @@
-/*      $OpenBSD$  */
+/*	$OpenBSD: encoding.c,v 1.1 2021/04/01 06:43:23 claudio Exp $  */
 /*
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
  *

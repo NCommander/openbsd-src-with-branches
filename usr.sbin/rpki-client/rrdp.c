@@ -1,4 +1,4 @@
-/*      $OpenBSD: rrdp.c,v 1.4 2021/04/12 17:23:30 claudio Exp $ */
+/*	$OpenBSD: rrdp.c,v 1.5 2021/04/15 13:31:30 claudio Exp $ */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
