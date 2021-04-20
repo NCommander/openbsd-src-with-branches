@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_curve.c,v 1.19 2018/07/15 16:27:39 tb Exp $ */
+/* $OpenBSD: ec_curve.c,v 1.20 2020/06/05 17:12:09 jsing Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project.
  */
@@ -3373,7 +3373,7 @@ ec_group_new_from_data(const ec_list_element curve)
 		ECerror(ERR_R_BN_LIB);
 		goto err;
 	}
-	if (!EC_POINT_set_affine_coordinates_GFp(group, P, x, y, ctx)) {
+	if (!EC_POINT_set_affine_coordinates(group, P, x, y, ctx)) {
 		ECerror(ERR_R_EC_LIB);
 		goto err;
 	}

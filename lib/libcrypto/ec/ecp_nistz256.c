@@ -1,4 +1,4 @@
-/*	$OpenBSD: ecp_nistz256.c,v 1.6 2018/07/15 16:27:39 tb Exp $	*/
+/*	$OpenBSD: ecp_nistz256.c,v 1.7 2018/11/05 20:18:21 tb Exp $	*/
 /* Copyright (c) 2014, Intel Corporation.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
@@ -744,7 +744,7 @@ ecp_nistz256_set_from_affine(EC_POINT *out, const EC_GROUP *group,
 	y.neg = 0;
 	y.flags = BN_FLG_STATIC_DATA;
 
-	ret = EC_POINT_set_affine_coordinates_GFp(group, out, &x, &y, ctx);
+	ret = EC_POINT_set_affine_coordinates(group, out, &x, &y, ctx);
 
 	return ret;
 }
