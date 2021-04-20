@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.57 2015/09/26 21:51:58 jasper Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.58 2015/12/29 19:44:32 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -129,7 +129,9 @@ static PF cXcB[] = {
 	ctrlg			/* ^G */
 };
 
-static PF cXcL[] = {
+static PF cXcJ[] = {
+	dired_jump,		/* ^J */
+	rescan,			/* ^K */
 	lowerregion,		/* ^L */
 	rescan,			/* ^M */
 	rescan,			/* ^N */
@@ -198,7 +200,7 @@ struct KEYMAPE (6) cXmap = {
 			CCHR('B'), CCHR('G'), cXcB, NULL
 		},
 		{
-			CCHR('L'), CCHR('X'), cXcL, NULL
+			CCHR('J'), CCHR('X'), cXcJ, NULL
 		},
 		{
 			'(', ')', cXlp, NULL
