@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.265 2021/01/27 20:33:05 eric Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.266 2021/03/23 16:34:31 claudio Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -1156,8 +1156,6 @@ void	 control_dispatch_imsg(int, short, void *);
 void	 control_imsg_forward(struct privsep *ps, struct imsg *);
 struct ctl_conn	*
 	 control_connbyfd(int);
-
-extern  struct ctl_connlist ctl_conns;
 
 /* parse.y */
 int	 parse_config(const char *, struct relayd *);

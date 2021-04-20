@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.c,v 1.38 2018/09/09 21:06:51 bluhm Exp $	*/
+/*	$OpenBSD: proc.c,v 1.39 2020/08/03 10:57:21 benno Exp $	*/
 
 /*
  * Copyright (c) 2010 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -588,7 +588,6 @@ proc_run(struct privsep *ps, struct privsep_proc *p,
 	proc_setup(ps, procs, nproc);
 	proc_accept(ps, PROC_PARENT_SOCK_FILENO, PROC_PARENT, 0);
 	if (p->p_id == PROC_CONTROL && ps->ps_instance == 0) {
-		TAILQ_INIT(&ctl_conns);
 		if (control_listen(&ps->ps_csock) == -1)
 			fatalx("%s: control_listen", __func__);
 		TAILQ_FOREACH(rcs, &ps->ps_rcsocks, cs_entry)

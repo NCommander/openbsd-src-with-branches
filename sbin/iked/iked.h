@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.188 2021/03/05 22:03:51 tobhe Exp $	*/
+/*	$OpenBSD: iked.h,v 1.189 2021/03/05 22:26:04 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -97,7 +97,6 @@ struct ctl_conn {
 	struct imsgev		 iev;
 };
 TAILQ_HEAD(ctl_connlist, ctl_conn);
-extern  struct ctl_connlist ctl_conns;
 
 extern enum privsep_procid privsep_process;
 
