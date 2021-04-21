@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_parse.y,v 1.25 2021/04/21 10:26:18 mpi Exp $	*/
+/*	$OpenBSD: bt_parse.y,v 1.26 2021/04/21 10:28:54 mpi Exp $	*/
 
 /*
  * Copyright (c) 2019-2021 Martin Pieuchot <mpi@openbsd.org>
@@ -22,7 +22,7 @@
  * B tracing language parser.
  *
  * The dialect of the language understood by this parser aims to be
- * compatible with the one understood bpftrace(8), see:
+ * compatible with the one understood by bpftrace(8), see:
  *
  * https://github.com/iovisor/bpftrace/blob/master/docs/reference_guide.md
  *
