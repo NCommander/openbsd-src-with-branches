@@ -1,4 +1,4 @@
-/*	$OpenBSD: funmap.c,v 1.61 2021/04/20 10:02:50 lum Exp $	*/
+/*	$OpenBSD: funmap.c,v 1.62 2021/04/20 16:34:20 lum Exp $	*/
 
 /* This file is in the public domain */
 
@@ -181,6 +181,7 @@ static struct funmap functnames[] = {
 	{reposition, "recenter", 0},
 	{redraw, "redraw-display", 0},
 #ifdef REGEX
+	{re_repl, "replace-regexp", 2},
 	{replstr, "replace-string", 2},
 #endif /* REGEX */
 	{revertbuffer, "revert-buffer", 0},
