@@ -1,4 +1,4 @@
-#   $OpenBSD: tlsfuzzer.py,v 1.36 2021/04/14 14:19:51 tb Exp $
+#   $OpenBSD: tlsfuzzer.py,v 1.38 2021/04/14 14:54:30 tb Exp $
 #
 # Copyright (c) 2020 Theo Buehler <tb@openbsd.org>
 #
@@ -388,6 +388,12 @@ tls12_tests = TestGroup("TLSv1.2 tests", [
         "-X", substitute_alert("illegal_parameter", "decode_error"),
         "-x", "only deflate compression method",
         "-X", substitute_alert("illegal_parameter", "decode_error"),
+    ]),
+
+    # Skip extended_master_secret test. Since we don't support this
+    # extension, we don't notice that it was dropped.
+    Test("test-renegotiation-changed-clienthello.py", [
+        "-e", "drop extended_master_secret in renegotiation",
     ]),
 
     # Without --sig-algs-drop-ok, two tests fail since we do not currently
