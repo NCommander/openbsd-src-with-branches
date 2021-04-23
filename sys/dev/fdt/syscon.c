@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscon.c,v 1.4 2018/03/17 18:04:15 kettenis Exp $	*/
+/*	$OpenBSD: syscon.c,v 1.5 2021/04/23 12:38:00 kettenis Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis
  *
@@ -28,6 +28,8 @@
 
 #ifdef __armv7__
 #include <arm/simplebus/simplebusvar.h>
+#elif defined(__riscv64__)
+#include <riscv64/dev/simplebusvar.h>
 #else
 #include <arm64/dev/simplebusvar.h>
 #endif
