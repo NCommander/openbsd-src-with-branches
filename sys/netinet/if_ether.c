@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.242 2019/11/07 11:23:23 krw Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.243 2020/06/24 22:03:43 cheloha Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -60,6 +60,7 @@
 #include <netinet/in.h>
 #include <netinet/in_var.h>
 #include <netinet/if_ether.h>
+#include <netinet/ip_var.h>
 #if NCARP > 0
 #include <netinet/ip_carp.h>
 #endif
