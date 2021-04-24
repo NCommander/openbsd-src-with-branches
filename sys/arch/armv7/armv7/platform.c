@@ -1,4 +1,4 @@
-/*	$OpenBSD: platform.c,v 1.24 2019/10/25 10:17:06 kettenis Exp $	*/
+/*	$OpenBSD: platform.c,v 1.25 2021/03/25 04:12:01 jsg Exp $	*/
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -30,6 +30,7 @@ static struct armv7_platform *platform;
 
 void	agtimer_init(void);
 
+extern void	cduart_init_cons(void);
 extern void	exuart_init_cons(void);
 extern void	imxuart_init_cons(void);
 extern void	com_fdt_init_cons(void);
@@ -87,6 +88,7 @@ platform_init_cons(void)
 		platform->init_cons();
 		return;
 	}
+	cduart_init_cons();
 	exuart_init_cons();
 	imxuart_init_cons();
 	com_fdt_init_cons();
