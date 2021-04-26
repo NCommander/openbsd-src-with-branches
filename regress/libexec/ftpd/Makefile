@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.6 2020/01/20 00:49:55 jan Exp $
+#	$OpenBSD: Makefile,v 1.7 2020/12/17 00:51:12 bluhm Exp $
 
 .PHONY: setup-ftpd
 
@@ -48,7 +48,7 @@ setup-ftpd:
 	dd if=/dev/random of="ftpd.regress.local" count=1 bs=1m
 
 run-ftpd-get:
-	ftp -a ftp://127.0.0.1/ftpd.regress
+	ftp_proxy= ftp -a ftp://127.0.0.1/ftpd.regress
 	cmp ${FTPDIR}/ftpd.regress ftpd.regress
 	rm ftpd.regress
 
