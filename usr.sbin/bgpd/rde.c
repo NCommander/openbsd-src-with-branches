@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.517 2021/04/16 06:20:29 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.518 2021/04/24 17:04:24 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1710,7 +1710,7 @@ bad_flags:
 		 */
 		tmp32 = ntohl(nexthop.v4.s_addr);
 		if (IN_MULTICAST(tmp32) || IN_BADCLASS(tmp32)) {
-			rde_update_err(peer, ERR_UPDATE, ERR_UPD_NETWORK,
+			rde_update_err(peer, ERR_UPDATE, ERR_UPD_NEXTHOP,
 			    op, len);
 			return (-1);
 		}
