@@ -23,9 +23,9 @@
 # endif
 #endif // defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 
-#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__)) || defined(__CloudABI__) || defined(__Fuchsia__) || defined(__wasi__)
-# include <unistd.h>
-#endif // defined(__unix__) || (defined(__APPLE__) && defined(__MACH__)) || defined(__CloudABI__) || defined(__Fuchsia__) || defined(__wasi__)
+#if __has_include(<unistd.h>)
+#include <unistd.h>
+#endif
 
 #if defined(__NetBSD__)
 #pragma weak pthread_create // Do not create libpthread dependency
@@ -80,9 +80,9 @@ thread::detach()
 unsigned
 thread::hardware_concurrency() _NOEXCEPT
 {
-#if defined(CTL_HW) && defined(HW_NCPUONLINE)
+#if defined(CTL_HW) && defined(HW_NCPU)
     unsigned n;
-    int mib[2] = {CTL_HW, HW_NCPUONLINE};
+    int mib[2] = {CTL_HW, HW_NCPU};
     std::size_t s = sizeof(n);
     sysctl(mib, 2, &n, &s, 0, 0);
     return n;
