@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
+# $OpenBSD: Makefile,v 1.2 2020/08/03 14:45:31 patrick Exp $
 
 LIB=	lldbPluginSystemRuntime
 NOPIC=
@@ -9,7 +9,7 @@ SRCS=	AppleGetItemInfoHandler.cpp \
 	AppleGetPendingItemsHandler.cpp \
 	AppleGetQueuesHandler.cpp \
 	AppleGetThreadItemInfoHandler.cpp \
-	SystemRuntimeMacOSX.cpp \
+	SystemRuntimeMacOSX.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/SystemRuntime/MacOSX
 

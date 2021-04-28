@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.4 2019/03/05 09:44:41 jsg Exp $
+# $OpenBSD: Makefile,v 1.5 2020/08/03 14:45:26 patrick Exp $
 
 LIB=	LLVMMCDisassembler
 NOPROFILE=
@@ -7,6 +7,6 @@ SRCS+=	Disassembler.cpp \
 	MCDisassembler.cpp \
 	MCExternalSymbolizer.cpp \
 	MCRelocationInfo.cpp \
-	MCSymbolizer.cpp \
+	MCSymbolizer.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/llvm/lib/MC/MCDisassembler

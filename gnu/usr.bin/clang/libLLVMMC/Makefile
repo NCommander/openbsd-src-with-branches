@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2019/03/05 09:44:40 jsg Exp $
+# $OpenBSD: Makefile,v 1.8 2020/08/03 14:45:26 patrick Exp $
 
 LIB=	LLVMMC
 NOPROFILE=
@@ -29,6 +29,7 @@ SRCS+=	ConstantPools.cpp \
 	MCInstPrinter.cpp \
 	MCInstrAnalysis.cpp \
 	MCInstrDesc.cpp \
+	MCInstrInfo.cpp \
 	MCLabel.cpp \
 	MCLinkerOptimizationHint.cpp \
 	MCMachOStreamer.cpp \
@@ -49,8 +50,11 @@ SRCS+=	ConstantPools.cpp \
 	MCSubtargetInfo.cpp \
 	MCSymbol.cpp \
 	MCSymbolELF.cpp \
+	MCSymbolXCOFF.cpp \
 	MCTargetOptions.cpp \
+	MCTargetOptionsCommandFlags.cpp \
 	MCValue.cpp \
+	MCWasmObjectTargetWriter.cpp \
 	MCWasmStreamer.cpp \
 	MCWin64EH.cpp \
 	MCWinCOFFStreamer.cpp \

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.15 2019/05/16 15:38:56 schwarze Exp $
+# $OpenBSD: Makefile,v 1.16 2020/08/03 14:45:22 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -33,7 +33,6 @@ LLVM_LIBDEPS=	LLVM \
 		clangFrontendTool \
 		clangFrontend \
 		clangDriver \
-		clangDriverArch \
 		clangSerialization \
 		clangCodeGen \
 		clangParse \
@@ -44,7 +43,6 @@ LLVM_LIBDEPS=	LLVM \
 		clangEdit \
 		clangAST \
 		clangLex \
-		clangBasic \
-		clangBasicTargets
+		clangBasic
 
 .include <bsd.prog.mk>

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.8 2021/02/09 21:57:25 patrick Exp $
+# $OpenBSD: Makefile,v 1.9 2021/02/10 02:53:45 deraadt Exp $
 
 .include <bsd.own.mk>
 
@@ -27,10 +27,8 @@ CPPFLAGS+=	${CLANG_INCLUDES}
 LLVM_LIBDEPS=	clangAST \
 		clangAnalysis \
 		clangBasic \
-		clangBasicTargets \
 		clangCodeGen \
 		clangDriver \
-		clangDriverArch \
 		clangEdit \
 		clangFrontend \
 		clangLex \
@@ -63,7 +61,6 @@ LLVM_LIBDEPS=	clangAST \
 		lldbPluginMemoryHistory \
 		lldbPluginObjectContainer \
 		lldbPluginObjectFile \
-		lldbPluginOperatingSystem \
 		lldbPluginPlatform \
 		lldbPluginProcess \
 		lldbPluginScriptInterpreter \
@@ -71,6 +68,7 @@ LLVM_LIBDEPS=	clangAST \
 		lldbPluginSymbolFile \
 		lldbPluginSymbolVendor \
 		lldbPluginSystemRuntime \
+		lldbPluginTypeSystem \
 		lldbPluginUnwindAssembly \
 		lldbSymbol \
 		lldbTarget \

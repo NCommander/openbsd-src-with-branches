@@ -1,14 +1,14 @@
-# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
+# $OpenBSD: Makefile,v 1.2 2020/08/03 14:45:30 patrick Exp $
 
 LIB=	lldbPluginInstrumentationRuntime
 NOPIC=
 NOPROFILE=
 
 .include <bsd.own.mk>
-SRCS=	ASanRuntime.cpp \
-	MainThreadCheckerRuntime.cpp \
-	TSanRuntime.cpp \
-	UBSanRuntime.cpp \
+SRCS=	InstrumentationRuntimeASan.cpp \
+	InstrumentationRuntimeMainThreadChecker.cpp \
+	InstrumentationRuntimeTSan.cpp \
+	InstrumentationRuntimeUBSan.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/InstrumentationRuntime/ASan
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/InstrumentationRuntime/MainThreadChecker

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2019/06/23 22:07:43 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2020/08/03 14:45:29 patrick Exp $
 
 LIB=	lldbCore
 NOPIC=
@@ -49,7 +49,7 @@ SRCS=	Address.cpp \
 	ValueObjectMemory.cpp \
 	ValueObjectRegister.cpp \
 	ValueObjectSyntheticFilter.cpp \
-	ValueObjectVariable.cpp \
+	ValueObjectVariable.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Core
 

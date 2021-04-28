@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.9 2019/06/23 22:07:40 patrick Exp $
+# $OpenBSD: Makefile,v 1.10 2020/08/03 14:45:25 patrick Exp $
 
 LIB=	LLVMDebugInfoCodeView
 NOPROFILE=
@@ -23,7 +23,7 @@ SRCS+=	AppendingTypeTableBuilder.cpp \
 	DebugSubsectionVisitor.cpp \
 	DebugSymbolRVASubsection.cpp \
 	DebugSymbolsSubsection.cpp \
-	DebugInfoCodeViewEnumTables.cpp \
+	EnumTables.cpp \
 	Formatters.cpp \
 	GlobalTypeTableBuilder.cpp \
 	LazyRandomTypeCollection.cpp \

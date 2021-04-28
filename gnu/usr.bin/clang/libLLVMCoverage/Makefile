@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2019/03/05 09:44:40 jsg Exp $
+# $OpenBSD: Makefile,v 1.4 2020/08/03 14:45:25 patrick Exp $
 
 LIB=	LLVMCoverage
 NOPROFILE=
@@ -6,7 +6,7 @@ NOPROFILE=
 CPPFLAGS+=	-I${LLVM_SRCS}/include/llvm/ProfileData/Coverage
 
 SRCS+=	CoverageMapping.cpp \
-	CoverageMappingReader.cpp \
-	CoverageMappingWriter.cpp
+	CoverageMappingWriter.cpp \
+	CoverageMappingReader.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/llvm/lib/ProfileData/Coverage

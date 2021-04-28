@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2018/10/04 11:43:29 patrick Exp $
+# $OpenBSD: Makefile,v 1.2 2020/08/03 14:45:29 patrick Exp $
 
 LIB=	lldbDataFormatters
 NOPIC=
@@ -20,7 +20,7 @@ SRCS=	CXXFunctionPointer.cpp \
 	TypeSummary.cpp \
 	TypeSynthetic.cpp \
 	ValueObjectPrinter.cpp \
-	VectorType.cpp \
+	VectorType.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/DataFormatters
 

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2019/06/23 22:07:43 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2020/08/03 14:45:29 patrick Exp $
 
 LIB=	lldbCommands
 NOPIC=
@@ -34,7 +34,7 @@ SRCS=	CommandCompletions.cpp \
 	CommandObjectVersion.cpp \
 	CommandObjectWatchpoint.cpp \
 	CommandObjectWatchpointCommand.cpp \
-	CommandObjectLanguage.cpp \
+	CommandObjectLanguage.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Commands
 

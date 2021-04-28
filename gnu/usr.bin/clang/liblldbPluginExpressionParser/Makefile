@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2019/06/23 22:07:43 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2020/08/03 14:45:30 patrick Exp $
 
 LIB=	lldbPluginExpressionParser
 NOPIC=
@@ -8,21 +8,27 @@ NOPROFILE=
 SRCS=	ASTResultSynthesizer.cpp \
 	ASTStructExtractor.cpp \
 	ASTUtils.cpp \
+	ClangASTImporter.cpp \
+	ClangASTMetadata.cpp \
 	ClangASTSource.cpp \
 	ClangDeclVendor.cpp \
 	ClangExpressionDeclMap.cpp \
 	ClangExpressionParser.cpp \
 	ClangExpressionSourceCode.cpp \
 	ClangExpressionVariable.cpp \
+	ClangExternalASTSourceCallbacks.cpp \
 	ClangFunctionCaller.cpp \
 	ClangHost.cpp \
 	ClangModulesDeclVendor.cpp \
 	ClangPersistentVariables.cpp \
 	ClangUserExpression.cpp \
+	ClangUtil.cpp \
 	ClangUtilityFunction.cpp \
 	CppModuleConfiguration.cpp \
+	CxxModuleHandler.cpp \
 	IRForTarget.cpp \
 	IRDynamicChecks.cpp \
+	NameSearchContext.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/ExpressionParser/Clang
 
