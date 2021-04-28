@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.24 2021/01/23 12:10:08 kettenis Exp $
+#	$OpenBSD: GENERIC,v 1.25 2021/02/04 16:25:39 anton Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -186,4 +186,5 @@ brgphy*		at mii?			# Broadcom Gigabit PHYs
 
 # Pseudo-Devices
 pseudo-device	openprom
+pseudo-device	dt
 pseudo-device	wsmux 2
