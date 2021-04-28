@@ -1,5 +1,0 @@
-anchor "one" all {
-  anchor "two" all {
-    pass from <foo> to any flags S/SA
-  }
-}
