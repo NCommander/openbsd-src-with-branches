@@ -83,10 +83,6 @@ typename A::pint_t DwarfInstructions<A, R>::getSavedRegister(
   case CFI_Parser<A>::kRegisterInCFA:
     return (pint_t)addressSpace.getRegister(cfa + (pint_t)savedReg.value);
 
-  case CFI_Parser<A>::kRegisterInCFADecrypt:
-    return addressSpace.getP(
-       cfa + (pint_t)savedReg.value) ^ registers.getWCookie();
-
   case CFI_Parser<A>::kRegisterAtExpression:
     return (pint_t)addressSpace.getRegister(evaluateExpression(
         (pint_t)savedReg.value, addressSpace, registers, cfa));
@@ -123,7 +119,6 @@ double DwarfInstructions<A, R>::getSavedFloatRegister(
   case CFI_Parser<A>::kRegisterUnused:
   case CFI_Parser<A>::kRegisterOffsetFromCFA:
   case CFI_Parser<A>::kRegisterInRegister:
-  case CFI_Parser<A>::kRegisterInCFADecrypt:
     // FIX ME
     break;
   }
@@ -147,7 +142,6 @@ v128 DwarfInstructions<A, R>::getSavedVectorRegister(
   case CFI_Parser<A>::kRegisterUnused:
   case CFI_Parser<A>::kRegisterOffsetFromCFA:
   case CFI_Parser<A>::kRegisterInRegister:
-  case CFI_Parser<A>::kRegisterInCFADecrypt:
     // FIX ME
     break;
   }
