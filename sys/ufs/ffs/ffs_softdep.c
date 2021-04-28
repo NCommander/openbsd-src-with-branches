@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.148 2020/02/04 04:09:11 bket Exp $	*/
+/*	$OpenBSD: ffs_softdep.c,v 1.149 2020/03/09 16:49:12 millert Exp $	*/
 
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
@@ -4563,8 +4563,12 @@ softdep_fsync(struct vnode *vp)
 		 * not now, but then the user was not asking to have it
 		 * written, so we are not breaking any promises.
 		 */
-		if (vp->v_flag & VXLOCK)
+		mtx_enter(&vnode_mtx);
+		if (vp->v_lflag & VXLOCK) {
+			mtx_leave(&vnode_mtx);
 			break;
+		}
+		mtx_leave(&vnode_mtx);
 		/*
 		 * We prevent deadlock by always fetching inodes from the
 		 * root, moving down the directory tree. Thus, when fetching
