@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_file.c,v 1.68 2020/05/22 07:18:17 bentley Exp $	*/
+/*	$OpenBSD: server_file.c,v 1.69 2021/03/16 06:44:14 otto Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2017 Reyk Floeter <reyk@openbsd.org>
@@ -85,9 +85,7 @@ server_file_access(struct httpd *env, struct client *clt,
 		if (path[strlen(path) - 1] != '/') {
 			if ((encodedpath = url_encode(desc->http_path)) == NULL)
 				return (500);
-			if (asprintf(&newpath, "http%s://%s%s/",
-			    srv_conf->flags & SRVFLAG_TLS ? "s" : "",
-			    desc->http_host, encodedpath) == -1) {
+			if (asprintf(&newpath, "%s/", encodedpath) == -1) {
 				free(encodedpath);
 				return (500);
 			}
