@@ -1,4 +1,4 @@
-/*	$OpenBSD: frame.h,v 1.6 2014/07/09 12:58:08 miod Exp $ */
+/*	$OpenBSD: frame.h,v 1.7 2016/03/06 19:42:27 mpi Exp $ */
 
 /*
  * Copyright (c) 1998-2003 Opsycon AB (www.opsycon.se)
@@ -71,7 +71,7 @@ struct trapframe {
 	register_t	badvaddr;
 	register_t	cause;
 	register_t	pc;
-	register_t	ic;
+	register_t	ic; /* unused, was RM7000 ICR */
 	register_t	ipl;
 
 /* From here and on, only saved user processes. */
