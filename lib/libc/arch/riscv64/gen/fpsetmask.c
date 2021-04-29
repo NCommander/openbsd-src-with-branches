@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpsetmask.c,v 1.2 2018/03/16 10:22:52 kettenis Exp $	*/
+/*	$OpenBSD: fpsetmask.c,v 1.1 2021/04/28 08:22:56 kettenis Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -17,10 +17,9 @@
 
 #include <ieeefp.h>
 
-__weak_alias(_fpsetmask,fpsetmask);
-
 fp_except
 fpsetmask(fp_except mask)
 {
 	return 0;
 }
+DEF_WEAK(fpsetmask);

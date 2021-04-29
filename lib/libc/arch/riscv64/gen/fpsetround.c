@@ -1,6 +1,6 @@
-/*	$OpenBSD: fpgetmask.c,v 1.1 2021/04/28 08:22:56 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 /*
- * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
+ * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,11 +15,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/types.h>
 #include <ieeefp.h>
 
-fp_except
-fpgetmask(void)
+fp_rnd
+fpsetround(fp_rnd rnd_dir)
 {
-	return 0;
+	uint32_t frm;
+
+	__asm volatile ("fsrm %0, %1" : "=r"(frm) : "r"(rnd_dir));
+
+	/* Truncating to 2 bits means both RNE and RMM become FP_RN. */
+	return frm & 0x3;
 }
-DEF_WEAK(fpgetmask);
+DEF_WEAK(fpsetround);
