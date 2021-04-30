@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: fpgetsticky.c,v 1.1 2021/04/29 17:19:18 kettenis Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -26,4 +26,3 @@ fpgetsticky(void)
 	__asm volatile ("frflags %0" : "=r"(fflags));
 	return fflags;
 }
-DEF_WEAK(fpgetsticky);
