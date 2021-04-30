@@ -90,3 +90,26 @@ tls12_derive_peer_finished(SSL *s)
 		    &S3I(s)->hs.peer_finished_len);
 	}
 }
+
+int
+tls12_derive_master_secret(SSL *s, uint8_t *premaster_secret,
+    size_t premaster_secret_len)
+{
+	s->session->master_key_length = 0;
+
+	if (premaster_secret_len == 0)
+		return 0;
+
+	CTASSERT(sizeof(s->session->master_key) == SSL_MAX_MASTER_KEY_LENGTH);
+
+	if (!tls1_PRF(s, premaster_secret, premaster_secret_len,
+	    TLS_MD_MASTER_SECRET_CONST, TLS_MD_MASTER_SECRET_CONST_SIZE,
+	    s->s3->client_random, SSL3_RANDOM_SIZE, NULL, 0,
+	    s->s3->server_random, SSL3_RANDOM_SIZE, NULL, 0,
+	    s->session->master_key, sizeof(s->session->master_key)))
+		return 0;
+
+	s->session->master_key_length = SSL_MAX_MASTER_KEY_LENGTH;
+
+	return 1;
+}
