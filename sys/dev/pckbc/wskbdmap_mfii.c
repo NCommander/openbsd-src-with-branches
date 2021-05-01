@@ -1,10 +1,9 @@
-/*	$OpenBSD: wskbdmap_mfii.c,v 1.45 2016/08/31 15:25:27 jca Exp $ */
+/*	$OpenBSD: wskbdmap_mfii.c,v 1.46 2019/05/11 14:19:16 abieber Exp $ */
 /*	$NetBSD: wskbdmap_mfii.c,v 1.15 2000/05/19 16:40:04 drochner Exp $	*/
 
 /*
  * PLEASE DO NOT FORGET TO REGEN
  *	sys/dev/usb/ukbdmap.c
- *	sys/arch/sgi/hpc/wskbdmap_sgi.c
  * AFTER ANY CHANGES TO THIS FILE!
  */
 
