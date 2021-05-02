@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.102 2016/12/27 15:01:03 krw Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.103 2018/04/26 15:55:14 guenther Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -214,6 +214,7 @@ main(int argc, char *argv[])
 			GPT_init();
 			query = "Do you wish to write new GPT?";
 		} else {
+			memset(&gh, 0, sizeof(gh));
 			MBR_init(&initial_mbr);
 			query = "Do you wish to write new MBR and "
 			    "partition table?";
