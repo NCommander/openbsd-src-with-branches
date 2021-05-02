@@ -1,3 +1,4 @@
+/*	$OpenBSD: player.h,v 1.7 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: player.h,v 1.4 1995/04/22 10:37:22 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,11 +29,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)player.h	8.1 (Berkeley) 5/31/93
+ *	@(#)player.h	8.2 (Berkeley) 5/3/95
  */
 
 #include <curses.h>
-#include "externs.h"
 
 /* sizes and coordinates for the screen */
 
@@ -68,8 +64,8 @@
 #define STAT_Y		(STAT_B-STAT_T+1)
 #define STAT_R		(STAT_L+STAT_X-1)
 #define STAT_1		0
-#define STAT_2          (STAT_1+4)
-#define STAT_3          (STAT_2+7)
+#define STAT_2		(STAT_1+4)
+#define STAT_3		(STAT_2+7)
 
 #define SCROLL_T	(BOX_B+1)
 #define SCROLL_L	0
@@ -93,27 +89,27 @@
 #define SLOT_R		(SLOT_L+SLOT_X-1)
 
 #ifdef SIGTSTP
-#define SCREENTEST()	(initscr() != ERR && signal(SIGTSTP, SIG_DFL) != SIG_ERR && STAT_R < COLS && SCROLL_Y > 0)
+#define SCREENTEST()	(initscr() != NULL && signal(SIGTSTP, SIG_DFL) != SIG_ERR && STAT_R < COLS && SCROLL_Y > 0)
 #else
-#define SCREENTEST()	(initscr() != ERR && STAT_R < COLS && SCROLL_Y > 0)
+#define SCREENTEST()	(initscr() != NULL && STAT_R < COLS && SCROLL_Y > 0)
 #endif
 
-WINDOW *view_w;
-WINDOW *slot_w;
-WINDOW *scroll_w;
-WINDOW *stat_w;
-WINDOW *turn_w;
+extern WINDOW *view_w;
+extern WINDOW *slot_w;
+extern WINDOW *scroll_w;
+extern WINDOW *stat_w;
+extern WINDOW *turn_w;
 
-char done_curses;
-char loaded, fired, changed, repaired;
-char dont_adjust;
-int viewrow, viewcol;
-char movebuf[sizeof SHIP(0)->file->movebuf];
-char version[];
-int player;
-struct ship *ms;		/* memorial structure, &cc->ship[player] */
-struct File *mf;		/* ms->file */
-struct shipspecs *mc;		/* ms->specs */
+extern char done_curses;
+extern char loaded, fired, changed, repaired;
+extern char dont_adjust;
+extern int viewrow, viewcol;
+extern char movebuf[sizeof SHIP(0)->file->movebuf];
+extern char version[];
+extern int player;
+extern struct ship *ms;		/* memorial structure, &cc->ship[player] */
+extern struct File *mf;		/* ms->file */
+extern struct shipspecs *mc;		/* ms->specs */
 
 /* condition codes for leave() */
 #define LEAVE_QUIT	0

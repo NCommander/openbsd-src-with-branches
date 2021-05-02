@@ -1,6 +1,9 @@
+/*	$OpenBSD: hexdump.c,v 1.19 2015/10/09 01:37:07 deraadt Exp $	*/
+/*	$NetBSD: hexdump.c,v 1.7 1997/10/19 02:34:06 lukem Exp $	*/
+
 /*
- * Copyright (c) 1989 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1989, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,35 +30,32 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1989 The Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)hexdump.c	5.5 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: hexdump.c,v 1.2 1993/08/01 18:14:48 mycroft Exp $";
-#endif /* not lint */
-
-#include <sys/types.h>
+#include <err.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include "hexdump.h"
+
+#define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
 
 FS *fshead;				/* head of format strings */
 int blocksize;				/* data block size */
 int exitval;				/* final exit value */
-int length = -1;			/* max bytes to read */
+long length = -1;			/* max bytes to read */
+char *iobuf;				/* stdio I/O buffer */
+size_t iobufsiz;			/* size of stdio I/O buffer */
 
-main(argc, argv)
-	int argc;
-	char **argv;
+int
+main(int argc, char *argv[])
 {
-	extern int errno;
-	register FS *tfs;
-	char *p, *rindex();
+	FS *tfs;
+	char *p;
 
-	if (!(p = rindex(argv[0], 'o')) || strcmp(p, "od"))
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
+
+	if (!(p = strrchr(argv[0], 'o')) || strcmp(p, "od"))
 		newsyntax(argc, &argv);
 	else
 		oldsyntax(argc, &argv);
@@ -69,6 +65,11 @@ main(argc, argv)
 		tfs->bcnt = size(tfs);
 		if (blocksize < tfs->bcnt)
 			blocksize = tfs->bcnt;
+	}
+	if (length != -1) {
+		iobufsiz = MINIMUM(length, blocksize);
+		if ((iobuf = malloc(iobufsiz)) == NULL)
+			err(1, NULL);
 	}
 	/* rewrite the rules, do syntax checking */
 	for (tfs = fshead; tfs; tfs = tfs->nextfs)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.9 2009/05/22 20:37:54 miod Exp $ */
+/*	$OpenBSD: locore.S,v 1.8 2017/06/08 11:44:00 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -31,6 +31,7 @@
 #include <machine/param.h>
 #include <machine/asm.h>
 #include <machine/cpu.h>
+#include <mips64/mips_cpu.h>
 #include <machine/regnum.h>
 #include <machine/cpustate.h>
 
@@ -38,10 +39,9 @@
 
 	.set	noreorder		# Noreorder is default style!
 
-	.globl	start
-	.globl	kernel_text
-kernel_text = start
-start:
+	.globl	locore_start
+	.ent	locore_start, 0
+locore_start:
 	mfc0    v0, COP_0_STATUS_REG
 	li	v1, ~SR_INT_ENAB
 	and	v0, v1
@@ -53,12 +53,11 @@ start:
 	 * Initialize stack and call machine startup.
 	 */
 	LA	t0, start - FRAMESZ(CF_SZ)
-	LA	gp, _gp
 	PTR_S	ra, CF_RA_OFFS(t0)		# save pmon return address
 	PTR_S	sp, 0(t0)			# and stack
 	move	sp, t0
-	jal	mips_init			# mips_init(argc, argv, envp, callvec)
-	nop
+	jal	mips_init			# mips_init(argc, argv, envp,
+	nop					#    callvec, esym)
 
 	beqz	v0, 1f				# upon failure, return to pmon
 	nop
@@ -73,3 +72,57 @@ start:
 	PTR_L	sp, 0(sp)
 	jr	ra
 	nop
+	.end	locore_start
+
+#ifdef HIBERNATE
+
+	/* Switch to hibernate resume pagetable */
+LEAF(hibernate_activate_resume_pt_machdep, 0)				/* { */
+	/* XXX TBD */
+	j	ra
+END(hibernate_activate_resume_pt_machdep)				/* } */
+
+LEAF(hibernate_switch_stack_machdep, 0)					/* { */
+	/* XXX TBD */
+	j	ra
+END(hibernate_switch_stack_machdep)					/* } */
+
+LEAF(hibernate_resume_machdep, 0)					/* { */
+	j	ra
+END(hibernate_resume_machdep)					/* } */
+
+#endif /* HIBERNATE */
+
+#ifdef MULTIPROCESSOR
+
+LEAF(hw_cpu_spinup_trampoline, 0)
+	/* Disable interrupts. */
+	mfc0    v0, COP_0_STATUS_REG
+	li	v1, ~SR_INT_ENAB
+	and	v0, v1
+	mtc0    v0, COP_0_STATUS_REG
+
+	/* Clear any pending soft interrupts. */
+	mtc0	zero, COP_0_CAUSE_REG
+
+	LA	t0, cpu_spinup_a0
+	ld	a0, 0(t0)
+	LA	t0, cpu_spinup_sp
+	ld	sp, 0(t0)
+	jal	hw_cpu_hatch
+	nop
+END(hw_cpu_spinup_trampoline)
+
+LEAF(hw_getcurcpu, 0)
+	GET_CPU_INFO(v0, v1)
+	jr	ra
+	nop
+END(hw_getcurcpu)
+
+LEAF(hw_setcurcpu, 0)
+	dmtc0	a0, COP_0_ERROR_PC
+	jr	ra
+	nop
+END(hw_setcurcpu)
+
+#endif /* MULTIPROCESSOR */

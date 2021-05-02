@@ -1,3 +1,4 @@
+/*	$OpenBSD: support.c,v 1.12 2010/11/03 12:51:10 dcoppa Exp $	*/
 /*	$NetBSD: support.c,v 1.3 1995/03/21 15:08:59 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,18 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)support.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: support.c,v 1.3 1995/03/21 15:08:59 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <curses.h>
+#include <err.h>
 #include <string.h>
 
-#include "deck.h"
 #include "cribbage.h"
 #include "cribcur.h"
 
@@ -58,11 +46,9 @@ int tv[NTV] = {8, 7, 9, 6, 11, 12, 13, 14, 10, 5};
  * only called if no playable card will score points
  */
 int
-cchose(h, n, s)
-	CARD h[];
-	int n, s;
+cchose(CARD h[], int n, int s)
 {
-	register int i, j, l;
+	int i, j, l;
 
 	if (n <= 1)
 		return (0);
@@ -119,6 +105,8 @@ cchose(h, n, s)
 			break;
 		}
 	}
+	if (j < 0)
+		errx(1, "cchose internal error %d %d", j, n);
 	return (j);
 }
 
@@ -127,31 +115,35 @@ cchose(h, n, s)
  *	Evaluate and score a player hand or crib
  */
 int
-plyrhand(hand, s)
-	CARD    hand[];
-	char   *s;
+plyrhand(CARD hand[], char *s)
 {
 	static char prompt[BUFSIZ];
-	register int i, j;
-	register BOOLEAN win;
+	int i, j;
+	bool win;
 
 	prhand(hand, CINHAND, Playwin, FALSE);
-	(void) sprintf(prompt, "Your %s scores ", s);
+	(void) snprintf(prompt, sizeof prompt, "Your %s scores ", s);
 	i = scorehand(hand, turnover, CINHAND, strcmp(s, "crib") == 0, explain);
 	if ((j = number(0, 29, prompt)) == 19)
 		j = 0;
 	if (i != j) {
 		if (i < j) {
 			win = chkscr(&pscore, i);
-			msg("It's really only %d points; I get %d", i, 2);
-			if (!win)
+			if (!win) {
+				msg("It's really only %d points; I get %d", i, 2);
 				win = chkscr(&cscore, 2);
+			} else
+				msg("It's really only %d points.", i);
 		} else {
 			win = chkscr(&pscore, j);
 			msg("You should have taken %d, not %d!", i, j);
+			if (!win && muggins) {
+				msg("Muggins!  I score %d", i - j);
+				win = chkscr(&cscore, i - j);
+			}
 		}
 		if (explain)
-			msg("Explanation: %s", expl);
+			msg("Explanation: %s", expl_string);
 		do_wait();
 	} else
 		win = chkscr(&pscore, i);
@@ -163,11 +155,9 @@ plyrhand(hand, s)
  *	Handle scoring and displaying the computers hand
  */
 int
-comphand(h, s)
-	CARD h[];
-	char *s;
+comphand(CARD h[], char *s)
 {
-	register int j;
+	int j;
 
 	j = scorehand(h, turnover, CINHAND, strcmp(s, "crib") == 0, FALSE);
 	prhand(h, CINHAND, Compwin, FALSE);
@@ -183,15 +173,14 @@ comphand(h, s)
 int Lastscore[2] = {-1, -1};
 
 int
-chkscr(scr, inc)
-	int    *scr, inc;
+chkscr(int *scr, int inc)
 {
-	BOOLEAN myturn;
+	bool myturn;
 
 	myturn = (scr == &cscore);
 	if (inc != 0) {
-		prpeg(Lastscore[myturn], '.', myturn);
-		Lastscore[myturn] = *scr;
+		prpeg(Lastscore[(int)myturn], '.', myturn);
+		Lastscore[(int)myturn] = *scr;
 		*scr += inc;
 		prpeg(*scr, PEG, myturn);
 		refresh();
@@ -205,12 +194,9 @@ chkscr(scr, inc)
  *	score up on the board.
  */
 void
-prpeg(score, peg, myturn)
-	register int score;
-	int peg;
-	BOOLEAN myturn;
+prpeg(int score, int peg, bool myturn)
 {
-	register int y, x;
+	int y, x;
 
 	if (!myturn)
 		y = SCORE_Y + 2;
@@ -244,11 +230,10 @@ prpeg(score, peg, myturn)
  * the crib and puts the best two cards at the end
  */
 void
-cdiscard(mycrib)
-	BOOLEAN mycrib;
+cdiscard(bool mycrib)
 {
 	CARD    d[CARDS], h[FULLHAND], cb[2];
-	register int i, j, k;
+	int i, j, k;
 	int     nc, ns;
 	long    sums[15];
 	static int undo1[15] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4};
@@ -297,11 +282,9 @@ cdiscard(mycrib)
  * returns true if some card in hand can be played without exceeding 31
  */
 int
-anymove(hand, n, sum)
-	CARD hand[];
-	int n, sum;
+anymove(CARD hand[], int n, int sum)
 {
-	register int i, j;
+	int i, j;
 
 	if (n < 1)
 		return (FALSE);
@@ -318,11 +301,9 @@ anymove(hand, n, sum)
  * the s up to t, or -1 if there is none
  */
 int
-anysumto(hand, n, s, t)
-	CARD hand[];
-	int n, s, t;
+anysumto(CARD hand[], int n, int s, int t)
 {
-	register int i;
+	int i;
 
 	for (i = 0; i < n; i++) {
 		if (s + VAL(hand[i].rank) == t)
@@ -335,11 +316,9 @@ anysumto(hand, n, s, t)
  * return the number of cards in h having the given rank value
  */
 int
-numofval(h, n, v)
-	CARD h[];
-	int n, v;
+numofval(CARD h[], int n, int v)
 {
-	register int i, j;
+	int i, j;
 
 	j = 0;
 	for (i = 0; i < n; i++) {
@@ -353,11 +332,9 @@ numofval(h, n, v)
  * makeknown remembers all n cards in h for future recall
  */
 void
-makeknown(h, n)
-	CARD h[];
-	int n;
+makeknown(CARD h[], int n)
 {
-	register int i;
+	int i;
 
 	for (i = 0; i < n; i++)
 		known[knownum++] = h[i];

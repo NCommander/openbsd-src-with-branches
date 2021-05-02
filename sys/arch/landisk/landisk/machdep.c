@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: machdep.c,v 1.47 2019/04/01 07:00:52 tedu Exp $	*/
 /*	$NetBSD: machdep.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*-
@@ -17,13 +17,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -77,10 +70,15 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/user.h>
+#include <sys/proc.h>
 #include <sys/mount.h>
 #include <sys/reboot.h>
 #include <sys/sysctl.h>
+#include <sys/exec.h>
+#include <sys/core.h>
+#include <sys/kcore.h>
+
+#include <net/if.h>
 
 #include <uvm/uvm_extern.h>
 
@@ -94,8 +92,9 @@
 #include <sh/cache_sh4.h>
 #include <sh/mmu_sh4.h>
 
-#include <machine/bootinfo.h>
 #include <machine/cpu.h>
+#include <machine/kcore.h>
+#include <machine/pcb.h>
 
 #include <landisk/landisk/landiskreg.h>
 
@@ -108,41 +107,49 @@
 /* the following is used externally (sysctl_hw) */
 char machine[] = MACHINE;		/* landisk */
 
-struct bootinfo _bootinfo;
-struct bootinfo *bootinfo;
-
-__dead void landisk_startup(int, void *);
+__dead void landisk_startup(int, char *);
 __dead void main(void);
+void	cpu_init_kcore_hdr(void);
+void	blink_led(void *);
+
+int	led_blink;
+
+extern u_int32_t getramsize(void);
+
+struct uvm_constraint_range  dma_constraint = { 0x0, (paddr_t)-1 };
+struct uvm_constraint_range *uvm_md_constraints[] = { NULL };
+
+/*
+ * safepri is a safe priority for sleep to set for a spin-wait
+ * during autoconfiguration or after a panic.
+ */
+int   safepri = 0;
 
 void
 cpu_startup(void)
 {
 	extern char cpu_model[120];
 
-	/* XXX: show model (LANDISK/USL-5P) */
-	strlcpy(cpu_model, "I-O DATA USL-5P\n", sizeof cpu_model);
+	strlcpy(cpu_model, "SH4 SH7751R", sizeof cpu_model);
 
         sh_startup();
 }
 
 vaddr_t kernend;	/* used by /dev/mem too */
+char *esym;
 
-void
-landisk_startup(int howto, void *bi)
+__dead void
+landisk_startup(int howto, char *_esym)
 {
-	extern char edata[], end[];
+	u_int32_t ramsize;
 
-	/* Clear bss */
-	memset(edata, 0, end - edata);
-
-/* XXX symbols */
 	/* Start to determine heap area */
-	kernend = (vaddr_t)round_page((vaddr_t)end);
+	esym = _esym;
+	kernend = (vaddr_t)round_page((vaddr_t)esym);
 
-	/* Copy bootinfo */
-	bootinfo = &_bootinfo;
-	memcpy(bootinfo, bi, sizeof(struct bootinfo));
 	boothowto = howto;
+
+	ramsize = getramsize();
 
 	/* Initialize CPU ops. */
 	sh_cpu_init(CPU_ARCH_SH4, CPU_PRODUCT_7751R);	
@@ -151,11 +158,14 @@ landisk_startup(int howto, void *bi)
 	consinit();
 
 	/* Load memory to UVM */
-	physmem = atop(IOM_RAM_SIZE);
+	if (ramsize == 0 || ramsize > 512 * 1024 * 1024)
+		ramsize = IOM_RAM_SIZE;
+	physmem = atop(ramsize);
 	kernend = atop(round_page(SH3_P1SEG_TO_PHYS(kernend)));
 	uvm_page_physload(atop(IOM_RAM_BEGIN),
-	    atop(IOM_RAM_BEGIN + IOM_RAM_SIZE), kernend,
-	    atop(IOM_RAM_BEGIN + IOM_RAM_SIZE), VM_FREELIST_DEFAULT);
+	    atop(IOM_RAM_BEGIN + ramsize), kernend,
+	    atop(IOM_RAM_BEGIN + ramsize), 0);
+	cpu_init_kcore_hdr();	/* need to be done before pmap_bootstrap */
 
 	/* Initialize proc0 u-area */
 	sh_proc0_init();
@@ -167,87 +177,77 @@ landisk_startup(int howto, void *bi)
 	db_machine_init();
 	ddb_init();
 	if (boothowto & RB_KDB) {
-		Debugger();
+		db_enter();
 	}
 #endif
 
 	/* Jump to main */
 	__asm volatile(
-		"jmp	@%0;"
-		"mov	%1, sp"
+		"jmp	@%0\n\t"
+		" mov	%1, sp"
 		:: "r" (main), "r" (proc0.p_md.md_pcb->pcb_sf.sf_r7_bank));
+	for (;;)
+		continue;
 	/* NOTREACHED */
-	for (;;) ;
 }
 
-void *
-lookup_bootinfo(int type)
-{
-	struct btinfo_common *help;
-	int n = bootinfo->nentries;
-
-	help = (struct btinfo_common *)(bootinfo->info);
-	while (n--) {
-		if (help->type == type)
-			return (help);
-		help = (struct btinfo_common *)((char *)help + help->len);
-	}
-	return (NULL);
-}
-
-void
+__dead void
 boot(int howto)
 {
+	if ((howto & RB_RESET) != 0)
+		goto doreset;
 
 	if (cold) {
-		howto |= RB_HALT;
+		if ((howto & RB_USERREQ) == 0)
+			howto |= RB_HALT;
 		goto haltsys;
 	}
 
 	boothowto = howto;
 	if ((howto & RB_NOSYNC) == 0) {
-		vfs_shutdown();
-		/*
-		 * If we've been adjusting the clock, the todr
-		 * will be out of synch; adjust it now.
-		 */
-		resettodr();
+		vfs_shutdown(curproc);
+
+		if ((howto & RB_TIMEBAD) == 0) {
+			resettodr();
+		} else {
+			printf("WARNING: not updating battery clock\n");
+		}
 	}
+	if_downall();
 
-	/* wait 1s */
-	delay(1 * 1000 * 1000);
-
-	/* Disable interrupts. */
+	uvm_shutdown();
 	splhigh();
+	cold = 1;
 
-	/* Do a dump if requested. */
-	if ((howto & (RB_DUMP | RB_HALT)) == RB_DUMP) {
+	if ((howto & RB_DUMP) != 0)
 		dumpsys();
-	}
 
 haltsys:
-	doshutdownhooks();
+	config_suspend_all(DVACT_POWERDOWN);
 
-	if ((howto & RB_POWERDOWN) == RB_POWERDOWN) {
+	if ((howto & RB_POWERDOWN) != 0) {
 		_reg_write_1(LANDISK_PWRMNG, PWRMNG_POWEROFF);
 		delay(1 * 1000 * 1000);
 		printf("POWEROFF FAILED!\n");
+		howto |= RB_HALT;
 	}
 
-	if (howto & RB_HALT) {
+	if ((howto & RB_HALT) != 0) {
 		printf("\n");
 		printf("The operating system has halted.\n");
 		printf("Please press any key to reboot.\n\n");
+		cnpollc(1);
 		cngetc();
+		cnpollc(0);
 	}
 
+doreset:
 	printf("rebooting...\n");
 	machine_reset();
 
-	/*NOTREACHED*/
-	for (;;) {
+	for (;;)
 		continue;
-	}
+	/* NOTREACHED */
 }
 
 void
@@ -383,3 +383,138 @@ InitializeBsc(void)
 	_reg_write_2(SH4_FRQCR, FRQCR_VAL);
 }
 #endif /* !DONT_INIT_BSC */
+
+/*
+ * Dump the machine-dependent dump header.
+ */
+u_int
+cpu_dump(int (*dump)(dev_t, daddr_t, caddr_t, size_t), daddr_t *blknop)
+{
+	extern cpu_kcore_hdr_t cpu_kcore_hdr;
+	char buf[dbtob(1)];
+	cpu_kcore_hdr_t *h;
+	kcore_seg_t *kseg;
+	int rc;
+
+#ifdef DIAGNOSTIC
+	if (cpu_dumpsize() > btodb(sizeof buf)) {
+		printf("buffer too small in cpu_dump, ");
+		return (EINVAL);	/* "aborted" */
+	}
+#endif
+
+	bzero(buf, sizeof buf);
+	kseg = (kcore_seg_t *)buf;
+	h = (cpu_kcore_hdr_t *)(buf + ALIGN(sizeof(kcore_seg_t)));
+
+	/* Create the segment header */
+	CORE_SETMAGIC(*kseg, KCORE_MAGIC, MID_MACHINE, CORE_CPU);
+	kseg->c_size = dbtob(1) - ALIGN(sizeof(kcore_seg_t));
+
+	bcopy(&cpu_kcore_hdr, h, sizeof(*h));
+	/* We can now fill kptp in the header... */
+	h->kcore_kptp = SH3_P1SEG_TO_PHYS((vaddr_t)pmap_kernel()->pm_ptp);
+
+	rc = (*dump)(dumpdev, *blknop, buf, sizeof buf);
+	*blknop += btodb(sizeof buf);
+	return (rc);
+}
+
+/*
+ * Return the size of the machine-dependent dump header, in disk blocks.
+ */
+u_int
+cpu_dumpsize(void)
+{
+	u_int size;
+
+	size = ALIGN(sizeof(kcore_seg_t)) + ALIGN(sizeof(cpu_kcore_hdr_t));
+	return (btodb(roundup(size, dbtob(1))));
+}
+
+/*
+ * Fill the machine-dependent dump header.
+ */
+void
+cpu_init_kcore_hdr(void)
+{
+	extern cpu_kcore_hdr_t cpu_kcore_hdr;
+	cpu_kcore_hdr_t *h = &cpu_kcore_hdr;
+	phys_ram_seg_t *seg = cpu_kcore_hdr.kcore_segs;
+	struct vm_physseg *physseg = vm_physmem;
+	u_int i;
+
+	bzero(h, sizeof(*h));
+
+	h->kcore_nsegs = min(NPHYS_RAM_SEGS, (u_int)vm_nphysseg);
+	for (i = h->kcore_nsegs; i != 0; i--) {
+		seg->start = ptoa(physseg->start);
+		seg->size = (psize_t)ptoa(physseg->end - physseg->start);
+		seg++;
+		physseg++;
+	}
+}
+
+int
+cpu_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
+    size_t newlen, struct proc *p)
+{
+	int oldval, ret;
+
+	/* all sysctl names at this level are terminal */
+	if (namelen != 1)
+		return (ENOTDIR);		/* overloaded */
+
+	switch (name[0]) {
+	case CPU_CONSDEV: {
+		dev_t consdev;
+		if (cn_tab != NULL)
+			consdev = cn_tab->cn_dev;
+		else
+			consdev = NODEV;
+		return (sysctl_rdstruct(oldp, oldlenp, newp, &consdev,
+		    sizeof consdev));
+	}
+
+	case CPU_LED_BLINK:
+		oldval = led_blink;
+		ret = sysctl_int(oldp, oldlenp, newp, newlen, &led_blink);
+		if (oldval != led_blink)
+			blink_led(NULL);
+		return (ret);
+
+	default:
+		return (EOPNOTSUPP);
+	}
+	/* NOTREACHED */
+}
+
+void
+blink_led(void *whatever)
+{
+	static struct timeout blink_tmo;
+	u_int8_t ledctrl;
+
+	if (led_blink == 0) {
+		_reg_write_1(LANDISK_LEDCTRL,
+		    LED_POWER_CHANGE | LED_POWER_VALUE);
+		return;
+	}
+
+	ledctrl = (u_int8_t)_reg_read_1(LANDISK_LEDCTRL) & LED_POWER_VALUE;
+	ledctrl ^= (LED_POWER_CHANGE | LED_POWER_VALUE);
+	_reg_write_1(LANDISK_LEDCTRL, ledctrl);
+
+	timeout_set(&blink_tmo, blink_led, NULL);
+	timeout_add(&blink_tmo,
+	    ((averunnable.ldavg[0] + FSCALE) * hz) >> FSHIFT);
+}
+
+unsigned int
+cpu_rnd_messybits(void)
+{
+	struct timespec ts;
+
+	nanotime(&ts);
+	return (ts.tv_nsec ^ (ts.tv_sec << 20));
+}

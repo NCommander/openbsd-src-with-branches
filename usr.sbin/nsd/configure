@@ -692,6 +692,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -815,6 +816,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1067,6 +1069,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1204,7 +1215,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1357,6 +1368,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -8667,34 +8679,6 @@ esac
 fi
 
 
-ac_fn_c_check_func "$LINENO" "b64_pton" "ac_cv_func_b64_pton"
-if test "x$ac_cv_func_b64_pton" = xyes; then :
-  $as_echo "#define HAVE_B64_PTON 1" >>confdefs.h
-
-else
-  case " $LIBOBJS " in
-  *" b64_pton.$ac_objext "* ) ;;
-  *) LIBOBJS="$LIBOBJS b64_pton.$ac_objext"
- ;;
-esac
-
-fi
-
-
-ac_fn_c_check_func "$LINENO" "b64_ntop" "ac_cv_func_b64_ntop"
-if test "x$ac_cv_func_b64_ntop" = xyes; then :
-  $as_echo "#define HAVE_B64_NTOP 1" >>confdefs.h
-
-else
-  case " $LIBOBJS " in
-  *" b64_ntop.$ac_objext "* ) ;;
-  *) LIBOBJS="$LIBOBJS b64_ntop.$ac_objext"
- ;;
-esac
-
-fi
-
-
 ac_fn_c_check_func "$LINENO" "pselect" "ac_cv_func_pselect"
 if test "x$ac_cv_func_pselect" = xyes; then :
   $as_echo "#define HAVE_PSELECT 1" >>confdefs.h
@@ -8801,6 +8785,88 @@ esac
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+
+#
+# Check for b64_ntop (and assume result applies to b64_pton as well).
+# The functions are actually prefixed with __ and resolv.h defines
+# macros for the unprefixed versions, however including this header
+# causes conflicts with our T_xx defines.
+#
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __b64_ntop" >&5
+$as_echo_n "checking for __b64_ntop... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stddef.h>
+int
+main ()
+{
+__b64_ntop(NULL, 0, NULL, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  found_b64_ntop=yes
+else
+  found_b64_ntop=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+if test "x$found_b64_ntop" = xno; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __b64_ntop with -lresolv" >&5
+$as_echo_n "checking for __b64_ntop with -lresolv... " >&6; }
+	LIBS="$LIBS -lresolv"
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stddef.h>
+int
+main ()
+{
+__b64_ntop(NULL, 0, NULL, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  found_b64_ntop=yes
+else
+  found_b64_ntop=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	if test "x$found_b64_ntop" = xno; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	fi
+fi
+if test "x$found_b64_ntop" = xyes; then
+
+$as_echo "#define HAVE_B64_NTOP 1" >>confdefs.h
+
+
+$as_echo "#define HAVE_B64_PTON 1" >>confdefs.h
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+	case " $LIBOBJS " in
+  *" b64_ntop.$ac_objext "* ) ;;
+  *) LIBOBJS="$LIBOBJS b64_ntop.$ac_objext"
+ ;;
+esac
+
+	case " $LIBOBJS " in
+  *" b64_pton.$ac_objext "* ) ;;
+  *) LIBOBJS="$LIBOBJS b64_pton.$ac_objext"
+ ;;
+esac
+
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pselect prototype in sys/select.h" >&5
 $as_echo_n "checking for pselect prototype in sys/select.h... " >&6; }
@@ -10384,6 +10450,7 @@ case " $LIBOBJS " in
 esac
 
 fi
+
 
 
 

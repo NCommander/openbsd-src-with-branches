@@ -1,5 +1,4 @@
-/*	$NetBSD: times.c,v 1.4 1995/02/27 05:54:09 cgd Exp $	*/
-
+/*	$OpenBSD: times.c,v 1.9 2019/06/28 13:32:41 deraadt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,18 +28,9 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)times.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: times.c,v 1.4 1995/02/27 05:54:09 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
-#include <sys/time.h>
 #include <sys/times.h>
 #include <sys/resource.h>
+#include <time.h>
 
 /*
  * Convert usec to clock ticks; could do (usec * CLK_TCK) / 1000000,
@@ -53,21 +39,20 @@ static char rcsid[] = "$NetBSD: times.c,v 1.4 1995/02/27 05:54:09 cgd Exp $";
 #define	CONVTCK(r)	(r.tv_sec * CLK_TCK + r.tv_usec / (1000000 / CLK_TCK))
 
 clock_t
-times(tp)
-	register struct tms *tp;
+times(struct tms *tp)
 {
 	struct rusage ru;
-	struct timeval t;
+	struct timespec ts;
 
-	if (getrusage(RUSAGE_SELF, &ru) < 0)
+	if (getrusage(RUSAGE_SELF, &ru) == -1)
 		return ((clock_t)-1);
 	tp->tms_utime = CONVTCK(ru.ru_utime);
 	tp->tms_stime = CONVTCK(ru.ru_stime);
-	if (getrusage(RUSAGE_CHILDREN, &ru) < 0)
+	if (getrusage(RUSAGE_CHILDREN, &ru) == -1)
 		return ((clock_t)-1);
 	tp->tms_cutime = CONVTCK(ru.ru_utime);
 	tp->tms_cstime = CONVTCK(ru.ru_stime);
-	if (gettimeofday(&t, (struct timezone *)0))
+	if (WRAP(clock_gettime)(CLOCK_MONOTONIC, &ts) == -1)
 		return ((clock_t)-1);
-	return ((clock_t)(CONVTCK(t)));
+	return (ts.tv_sec * CLK_TCK + ts.tv_nsec / (1000000000 / CLK_TCK));
 }

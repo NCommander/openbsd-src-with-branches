@@ -1,5 +1,4 @@
-/*	$NetBSD: snprintf.c,v 1.4 1995/02/02 02:10:35 jtc Exp $	*/
-
+/*	$OpenBSD: snprintf.c,v 1.18 2011/05/30 18:48:33 martynas Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,46 +31,38 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)snprintf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: snprintf.c,v 1.4 1995/02/02 02:10:35 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
+#include <limits.h>
 #include <stdio.h>
-#if __STDC__
+#include <string.h>
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
+#include "local.h"
 
-#if __STDC__
-snprintf(char *str, size_t n, char const *fmt, ...)
-#else
-snprintf(str, n, fmt, va_alist)
-	char *str;
-	size_t n;
-	char *fmt;
-	va_dcl
-#endif
+int
+snprintf(char *str, size_t n, const char *fmt, ...)
 {
-	int ret;
 	va_list ap;
+	int ret;
+	char dummy;
 	FILE f;
+	struct __sfileext fext;
 
-	if ((int)n < 1)
-		return (EOF);
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
+	/* While snprintf(3) specifies size_t stdio uses an int internally */
+	if (n > INT_MAX)
+		n = INT_MAX;
+	/* Stdio internals do not deal correctly with zero length buffer */
+	if (n == 0) {
+		str = &dummy;
+		n = 1;
+	}
+	_FILEEXT_SETUP(&f, &fext);
+	f._file = -1;
 	f._flags = __SWR | __SSTR;
 	f._bf._base = f._p = (unsigned char *)str;
 	f._bf._size = f._w = n - 1;
-	ret = vfprintf(&f, fmt, ap);
-	*f._p = 0;
+	va_start(ap, fmt);
+	ret = __vfprintf(&f, fmt, ap);
 	va_end(ap);
+	*f._p = '\0';
 	return (ret);
 }
+DEF_STRONG(snprintf);

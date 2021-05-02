@@ -1,0 +1,46 @@
+#	$OpenBSD: disktab,v 1.26 2020/08/03 18:19:12 deraadt Exp $
+
+mini34|gzip bsd.rd disk image 4.4.6875MB:\
+	:dt=rdroot:se#512:nt#1:ns#64:nc#155:\
+	:pa#9856:oa#64:ba#8192:fa#1024:ta=4.2BSD: \
+	:pc#9920:oc#0:
+
+install360|install.img disk image 360MB:\
+	:dt=rdroot:se#512:nt#1:ns#64:nc#21248:\
+	:pa#1359808:oa#64:ba#8192:fa#1024:ta=4.2BSD: \
+	:pc#1359872:oc#0:
+
+install280|install.img disk image 280MB:\
+	:dt=rdroot:se#512:nt#1:ns#64:nc#8960:\
+	:pa#573376:oa#64:ba#8192:fa#1024:ta=4.2BSD: \
+	:pc#573440:oc#0:
+
+floppy576|3in|3.5in High Density Floppy, 5.76MB:\
+	:dt=floppy:se#512:nt#2:ns#36:nc#160:\
+	:pa#11520:oa#0:ba#4096:fa#512:ta=4.2BSD: \
+	:pb#11520:ob#0:\
+	:pc#11520:oc#0:
+
+floppy288|3in|3.5in High Density Floppy, 2.88MB:\
+	:dt=floppy:se#512:nt#2:ns#36:nc#80:\
+	:pa#5760:oa#0:ba#4096:fa#512:ta=4.2BSD: \
+	:pb#5760:ob#0:\
+	:pc#5760:oc#0:
+
+floppy|floppy3|3in|3.5in High Density Floppy:\
+	:dt=floppy:se#512:nt#2:ns#18:nc#80:\
+	:pa#2880:oa#0:ba#4096:fa#512:ta=4.2BSD: \
+	:pb#2880:ob#0:\
+	:pc#2880:oc#0:
+
+rdroot|ramdiskroot|RAM-disk root FS image:\
+	:dt=rdroot:se#512:nt#2:ns#140:nc#16:\
+	:pa#4480:oa#0:ta=4.2BSD:ba#4096:fa#512:\
+	:pb#0:ob#0:tb=swap:\
+	:pc#4480:oc#0:
+
+rdrootb|ramdiskroot|RAM-disk root FS image:\
+	:dt=rdroot:se#512:nt#2:ns#230:nc#16:\
+	:pa#7360:oa#0:ta=4.2BSD:ba#4096:fa#512:\
+	:pb#0:ob#0:tb=swap:\
+	:pc#7360:oc#0:

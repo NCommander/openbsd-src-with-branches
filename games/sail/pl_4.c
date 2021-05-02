@@ -1,3 +1,4 @@
+/*	$OpenBSD: pl_4.c,v 1.6 2015/12/31 16:44:22 mestre Exp $	*/
 /*	$NetBSD: pl_4.c,v 1.4 1995/04/24 12:25:17 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,46 +30,43 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pl_4.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: pl_4.c,v 1.4 1995/04/24 12:25:17 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <ctype.h>
 
+#include "extern.h"
 #include "player.h"
 
-changesail()
+void
+changesail(void)
 {
 	int rig, full;
 
 	rig = mc->rig1;
 	full = mf->FS;
-	if (windspeed == 6 || windspeed == 5 && mc->class > 4)
+	if (windspeed == 6 || (windspeed == 5 && mc->class > 4))
 		rig = 0;
 	if (mc->crew3 && rig) {
 		if (!full) {
 			if (sgetch("Increase to Full sails? ",
 				(struct ship *)0, 1) == 'y') {
 				changed = 1;
-				Write(W_FS, ms, 0, 1, 0, 0, 0);
+				Write(W_FS, ms, 1, 0, 0, 0);
 			}
 		} else {
 			if (sgetch("Reduce to Battle sails? ",
 				(struct ship *)0, 1) == 'y') {
-				Write(W_FS, ms, 0, 0, 0, 0, 0);
+				Write(W_FS, ms, 0, 0, 0, 0);
 				changed = 1;
 			}
 		}
 	} else if (!rig)
-		Signal("Sails rent to pieces", (struct ship *)0);
+		Msg("Sails rent to pieces");
 }
 
-acceptsignal()
+void
+acceptsignal(void)
 {
 	char buf[60];
-	register char *p = buf;
+	char *p = buf;
 
 	*p++ = '"';
 	sgetstr("Message? ", p, sizeof buf - 2);
@@ -80,19 +74,20 @@ acceptsignal()
 		;
 	p[-1] = '"';
 	*p = 0;
-	Write(W_SIGNAL, ms, 1, (long)buf, 0, 0, 0);
+	Writestr(W_SIGNAL, ms, buf);
 }
 
-lookout()
+void
+lookout(void)
 {
-	register struct ship *sp;
+	struct ship *sp;
 	char buf[3];
-	register char c;
+	char c;
 
 	sgetstr("What ship? ", buf, sizeof buf);
 	foreachship(sp) {
 		c = *countryname[sp->nationality];
-		if ((c == *buf || tolower(c) == *buf || colours(sp) == *buf)
+		if ((c == *buf || tolower((unsigned char)c) == *buf || colours(sp) == *buf)
 		    && (sp->file->stern == buf[1] || sterncolour(sp) == buf[1]
 			|| buf[1] == '?')) {
 			eyeball(sp);
@@ -100,10 +95,8 @@ lookout()
 	}
 }
 
-char *
-saywhat(sp, flag)
-register struct ship *sp;
-char flag;
+const char *
+saywhat(struct ship *sp, int flag)
 {
 	if (sp->file->captain[0])
 		return sp->file->captain;
@@ -117,18 +110,18 @@ char flag;
 		return "(computer)";
 }
 
-eyeball(ship)
-register struct ship *ship;
+void
+eyeball(struct ship *ship)
 {
 	int i;
 
 	if (ship->file->dir != 0) {
-		Signal("Sail ho! (range %d, %s)",
-			(struct ship *)0, range(ms, ship), saywhat(ship, 0));
+		Msg("Sail ho! (range %d, %s)",
+		    range(ms, ship), saywhat(ship, 0));
 		i = portside(ms, ship, 1) - mf->dir;
 		if (i <= 0)
 			i += 8;
-		Signal("%s (%c%c) %s %s %s.",
+		Signal("$$ %s %s %s.",
 			ship, countryname[ship->nationality],
 			classname[ship->specs->class], directionname[i]);
 	}

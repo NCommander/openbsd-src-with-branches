@@ -1,3 +1,4 @@
+/*	$OpenBSD: getinp.c,v 1.11 2016/01/08 18:19:47 mestre Exp $	*/
 /*	$NetBSD: getinp.c,v 1.4 1995/04/24 12:24:20 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,44 +30,36 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)getinp.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: getinp.c,v 1.4 1995/04/24 12:24:20 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-# include	<stdio.h>
-# include	<string.h>
-# include	<ctype.h>
+#include "monop.ext"
 
-# define	reg	register
-
-# define	LINE	70
+#define	LINE	70
 
 static char	buf[257];
 
-getinp(prompt, list)
-char	*prompt, *list[]; {
+static int	comp(char *);
 
-	reg int	i, n_match, match;
+int
+getinp(char *prompt, char *list[])
+{
+	int	i, n_match, match;
 	char	*sp;
-	int	plen;
-	static int comp();
 
 	for (;;) {
-inter:
-		printf(prompt);
-		for (sp = buf; (*sp=getchar()) != '\n'; )
-			if (*sp == -1)	/* check for interupted system call */
-				goto inter;
-			else if (sp != buf || *sp != ' ')
-				sp++;
-		if (buf[0] == '?' && buf[1] == '\n') {
+		printf("%s", prompt);
+		fgets(buf, sizeof(buf), stdin);
+		if ((feof(stdin))) {
+			printf("user closed input stream, quitting...\n");
+			exit(0);
+		}
+		if (buf[0] == '?' /* && buf[1] == '\n' */ ) {
 			printf("Valid inputs are: ");
 			for (i = 0, match = 18; list[i]; i++) {
-				if ((match+=(n_match=strlen(list[i]))) > LINE) {
+				if ((match += (n_match = strlen(list[i]))) > LINE) {
 					printf("\n\t");
 					match = n_match + 8;
 				}
@@ -79,7 +68,7 @@ inter:
 					printf("<RETURN>");
 				}
 				else
-					printf(list[i]);
+					printf("%s", list[i]);
 				if (list[i+1])
 					printf(", ");
 				else
@@ -88,10 +77,11 @@ inter:
 			}
 			continue;
 		}
-		*sp = '\0';
+		if ((sp = strchr(buf, '\n')) != NULL)
+			*sp = '\0';
 		for (sp = buf; *sp; sp++)
-			if (isupper(*sp))
-				*sp = tolower(*sp);
+			if (isupper((unsigned char)*sp))
+				*sp = tolower((unsigned char)*sp);
 		for (i = n_match = 0; list[i]; i++)
 			if (comp(list[i])) {
 				n_match++;
@@ -102,17 +92,18 @@ inter:
 		else if (buf[0] != '\0')
 			printf("Illegal response: \"%s\".  Use '?' to get list of valid answers\n", buf);
 	}
+	return 0;
 }
 
-static
-comp(s1)
-char	*s1; {
-
-	reg char	*sp, *tsp, c;
+static int
+comp(char *s1)
+{
+	char	*sp, *tsp, c;
 
 	if (buf[0] != '\0')
 		for (sp = buf, tsp = s1; *sp; ) {
-			c = isupper(*tsp) ? tolower(*tsp) : *tsp;
+			c = isupper((unsigned char)*tsp) ?
+			    tolower((unsigned char)*tsp) : *tsp;
 			tsp++;
 			if (c != *sp++)
 				return 0;

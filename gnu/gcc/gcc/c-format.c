@@ -58,6 +58,7 @@ set_Wformat (int setting)
    format_type_error.  Target-specific format types do not have
    matching enum values.  */
 enum format_type { printf_format_type, asm_fprintf_format_type,
+		   kprintf_format_type, syslog_format_type,
 		   gcc_diag_format_type, gcc_tdiag_format_type,
 		   gcc_cdiag_format_type,
 		   gcc_cxxdiag_format_type, gcc_gfc_format_type,
@@ -264,6 +265,10 @@ typedef struct format_wanted_type
   /* Whether the argument, dereferenced once, is written into and so the
      argument must not be a pointer to a const-qualified type.  */
   int writing_in_flag;
+  /* If the argument is to be written into and is an array, should the
+     width specifier be equal to the size of the array, or one less
+     (to accommodate a NULL being placed at the end) */
+  int size_equals_width;
   /* Whether the argument, dereferenced once, is read from and so
      must not be a NULL pointer.  */
   int reading_from_flag;
@@ -276,6 +281,8 @@ typedef struct format_wanted_type
   tree param;
   /* The argument number of that parameter.  */
   int arg_num;
+  /* Field width of type */
+  int field_width;
   /* The next type to check for this format conversion, or NULL if none.  */
   struct format_wanted_type *next;
 } format_wanted_type;
@@ -309,6 +316,16 @@ static const format_length_info gcc_diag_length_specs[] =
 {
   { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89 },
   { "w", FMT_LEN_none, STD_C89, NULL, 0, 0 },
+  { NULL, 0, 0, NULL, 0, 0 }
+};
+
+static const format_length_info kprintf_length_specs[] =
+{
+  { "h", FMT_LEN_h, STD_C89, NULL, 0, 0 },
+  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C9L },
+  { "q", FMT_LEN_ll, STD_EXT, NULL, 0, 0 },
+  { "z", FMT_LEN_z, STD_C99, NULL, 0, 0 },
+  { "t", FMT_LEN_t, STD_C99, NULL, 0, 0 },
   { NULL, 0, 0, NULL, 0, 0 }
 };
 
@@ -533,6 +550,44 @@ static const format_char_info asm_fprintf_char_table[] =
   { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
 };
 
+static const format_char_info kprint_char_table[] = 
+{ 
+  /* C89 conversion specifiers.  */ 
+  { "di",  0, STD_C89, { T89_I,   BADLEN, T89_S,   T89_L,   T9L_LL,  BADLEN,  T99_SST, T99_PD,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp0 +'I", "i", NULL }, 
+  { "oxX", 0, STD_C89, { T89_UI,  BADLEN, T89_US,  T89_UL,  T9L_ULL, BADLEN,  T99_ST,  T99_UPD,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp0#",    "i", NULL }, 
+  { "u",   0, STD_C89, { T89_UI,  BADLEN, T89_US,  T89_UL,  T9L_ULL, BADLEN,  T99_ST,  T99_UPD,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp0'I",   "i", NULL }, 
+  { "c",   0, STD_C89, { T89_I,   BADLEN, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-w",       "", NULL }, 
+  { "s",   1, STD_C89, { T89_C,   BADLEN, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp",      "cR", NULL }, 
+  { "p",   1, STD_C89, { T89_V,   BADLEN, BADLEN,  T89_UL,  T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "-wp0",     "c", NULL }, 
+/* Kernel bitmap formatting */ 
+  { "b",   0, STD_C89, { T89_I,   BADLEN, T89_S,   T89_L,   T9L_LL,  BADLEN,  T99_SST, BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "",	 "",  kprint_char_table + 8 },
+  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL },
+/* Kernel bitmap formatting, second part - similar to "s" except for types[] */ 
+  { "b",   1, STD_C89, { T89_C,   BADLEN, T89_C,   T89_C,   T89_C,   BADLEN,  T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, NULL,       "cR", NULL }
+};
+
+static const format_char_info syslog_char_table[] =
+{
+  /* C89 conversion specifiers.  */
+  { "di",  0, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "-wp0 +'I", "i", NULL },
+  { "oxX", 0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0#",    "i", NULL },
+  { "u",   0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0'I",   "i", NULL },
+  { "fgG", 0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'", "", NULL },
+  { "eE",  0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#",  "", NULL },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T94_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       "", NULL },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      "cR", NULL },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       "c", NULL },
+  { "n",   1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "",         "W", NULL },
+  /* C99 conversion specifiers.  */
+  { "F",   0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'", "", NULL },
+  { "aA",  0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#",  "", NULL },
+  /* X/Open conversion specifiers.  */
+  { "C",   0, STD_EXT, { TEX_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       "", NULL },
+  { "S",   1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      "R", NULL },
+  { "m",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      "", NULL },
+  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
+};
+
 static const format_char_info gcc_diag_char_table[] =
 {
   /* C89 conversion specifiers.  */
@@ -714,6 +769,18 @@ static const format_kind_info format_types_orig[] =
     'w', 0, 'p', 0, 'L',
     NULL, NULL
   },
+  { "kprintf",   kprintf_length_specs,  kprint_char_table, " +#0-'I", NULL,  
+    printf_flag_specs, printf_flag_pairs, 
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_EMPTY_PREC_OK, 
+    'w', 0, 'p', 0, 'L', 
+    &integer_type_node, &integer_type_node 
+  }, 
+  { "syslog",   printf_length_specs,  syslog_char_table, " +#0-'I", NULL,
+    printf_flag_specs, printf_flag_pairs,
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_DOLLAR_MULTIPLE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_EMPTY_PREC_OK,
+    'w', 0, 'p', 0, 'L',
+    &integer_type_node, &integer_type_node
+  },
   { "gcc_diag",   gcc_diag_length_specs,  gcc_diag_char_table, "q+", NULL,
     gcc_diag_flag_specs, gcc_diag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
@@ -822,7 +889,7 @@ static void finish_dollar_format_checking (format_check_results *, int);
 static const format_flag_spec *get_flag_spec (const format_flag_spec *,
 					      int, const char *);
 
-static void check_format_types (format_wanted_type *, const char *, int);
+static void check_format_types (format_wanted_type *, const char *, int, bool);
 static void format_type_warning (const char *, const char *, int, tree,
 				 int, const char *, tree, int);
 
@@ -1467,6 +1534,7 @@ check_format_info_main (format_check_results *res,
       const format_length_info *fli = NULL;
       const format_char_info *fci = NULL;
       char flag_chars[256];
+      int field_width = 0;
       int aflag = 0;
       const char *format_start = format_chars;
       if (*format_chars == 0)
@@ -1619,19 +1687,27 @@ check_format_info_main (format_check_results *res,
 	      /* Possibly read a numeric width.  If the width is zero,
 		 we complain if appropriate.  */
 	      int non_zero_width_char = FALSE;
-	      int found_width = FALSE;
+	      unsigned int found_width = 0;
+	      char format_num_str[32];
+
+	      format_num_str[0] = '\0';
 	      while (ISDIGIT (*format_chars))
 		{
-		  found_width = TRUE;
+		  if (found_width < (sizeof(format_num_str)-2))
+		    {
+		      format_num_str[found_width++] = *format_chars;
+                      format_num_str[found_width] = '\0';
+		    }
 		  if (*format_chars != '0')
 		    non_zero_width_char = TRUE;
 		  ++format_chars;
 		}
-	      if (found_width && !non_zero_width_char &&
+	      if (found_width > 0 && !non_zero_width_char &&
 		  (fki->flags & (int) FMT_FLAG_ZERO_WIDTH_BAD))
 		warning (OPT_Wformat, "zero width in %s format", fki->name);
-	      if (found_width)
+	      if (found_width > 0)
 		{
+		  field_width = atoi(format_num_str);
 		  i = strlen (flag_chars);
 		  flag_chars[i++] = fki->width_char;
 		  flag_chars[i] = 0;
@@ -2051,10 +2127,15 @@ check_format_info_main (format_check_results *res,
 	      wanted_type_ptr->wanted_type_name = wanted_type_name;
 	      wanted_type_ptr->pointer_count = fci->pointer_count + aflag;
 	      wanted_type_ptr->char_lenient_flag = 0;
+	      wanted_type_ptr->field_width = field_width;
 	      if (strchr (fci->flags2, 'c') != 0)
 		wanted_type_ptr->char_lenient_flag = 1;
 	      wanted_type_ptr->writing_in_flag = 0;
 	      wanted_type_ptr->reading_from_flag = 0;
+	      if (strchr (fci->format_chars, 'c') != 0)
+		 wanted_type_ptr->size_equals_width = 1;
+	      else
+		 wanted_type_ptr->size_equals_width = 0;
 	      if (aflag)
 		wanted_type_ptr->writing_in_flag = 1;
 	      else
@@ -2086,8 +2167,13 @@ check_format_info_main (format_check_results *res,
 	}
 
       if (first_wanted_type != 0)
-	check_format_types (first_wanted_type, format_start,
-			    format_chars - format_start);
+	{
+	  bool apply_bounded = format_chars > format_start
+	    && (format_chars[-1] == 'c' || format_chars[-1] == 's');
+
+	  check_format_types (first_wanted_type, format_start,
+			      format_chars - format_start, apply_bounded);
+	}
 
       if (main_wanted_type.next != NULL)
 	{
@@ -2107,7 +2193,7 @@ check_format_info_main (format_check_results *res,
    including width and precision arguments).  */
 static void
 check_format_types (format_wanted_type *types, const char *format_start,
-		    int format_length)
+		    int format_length, bool apply_bounded)
 {
   for (; types != 0; types = types->next)
     {
@@ -2168,6 +2254,28 @@ check_format_types (format_wanted_type *types, const char *format_start,
 		cur_param = TREE_OPERAND (cur_param, 0);
 	      else
 		cur_param = 0;
+
+	      /* Test static string bounds for sscan if -Wbounded is on as well */
+	      if (warn_bounded && apply_bounded
+		  && types->writing_in_flag
+		  && i == 0
+		  && cur_param != 0
+		  && COMPLETE_TYPE_P (TREE_TYPE (cur_param))
+		  && TREE_CODE (TREE_TYPE (cur_param)) == ARRAY_TYPE
+		  && TREE_CODE (TREE_TYPE (TREE_TYPE (cur_param))) == INTEGER_TYPE)
+		{
+		  tree array_size_expr = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (cur_param)));
+		  if (array_size_expr != 0 && types->field_width > 0)
+		    {
+		      int f = types->size_equals_width ? 0 : 1;
+		      int array_size = TREE_INT_CST_LOW (array_size_expr) + 1;
+		      if (array_size < (types->field_width + f))
+			warning (OPT_Wbounded,
+			         "Array size (%d) smaller than format "
+			         "string size (%d) (arg %d)", array_size,
+			         types->field_width + f, arg_num);
+		    }
+		}
 
 	      /* See if this is an attempt to write into a const type with
 		 scanf or with printf "%n".  Note: the writing in happens

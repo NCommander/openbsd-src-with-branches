@@ -1,5 +1,7 @@
-.\" Copyright (c) 1990 The Regents of the University of California.
-.\" All rights reserved.
+.\"	$OpenBSD: join.1,v 1.22 2010/09/03 11:09:29 jmc Exp $
+.\"
+.\" Copyright (c) 1990, 1993
+.\"	The Regents of the University of California.  All rights reserved.
 .\"
 .\" This code is derived from software contributed to Berkeley by
 .\" the Institute of Electrical and Electronics Engineers, Inc.
@@ -12,11 +14,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -32,10 +30,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	from: @(#)join.1	6.8 (Berkeley) 11/18/91
-.\"	$Id: join.1,v 1.2 1993/08/01 07:32:01 mycroft Exp $
+.\"	@(#)join.1	8.3 (Berkeley) 4/28/95
 .\"
-.Dd November 18, 1991
+.Dd $Mdocdate: September 3 2010 $
 .Dt JOIN 1
 .Os
 .Sh NAME
@@ -43,23 +40,26 @@
 .Nd relational database operator
 .Sh SYNOPSIS
 .Nm join
+.Op Fl 1 Ar field
+.Op Fl 2 Ar field
 .Oo
 .Fl a Ar file_number | Fl v Ar file_number
 .Oc
 .Op Fl e Ar string
-.Op Fl j Ar file_number field
 .Op Fl o Ar list
-.Bk -words
-.Ek
 .Op Fl t Ar char
-.Op Fl \&1 Ar field
-.Op Fl \&2 Ar field
 .Ar file1
 .Ar file2
 .Sh DESCRIPTION
-The join utility performs an ``equality join'' on the specified files
+The
+.Nm
+utility performs an
+.Dq equality join
+on the specified files
 and writes the result to the standard output.
-The ``join field'' is the field in each file by which the files are compared.
+The
+.Dq join field
+is the field in each file by which the files are compared.
 The first field in each line is used by default.
 There is one line in the output for each pair of lines in
 .Ar file1
@@ -77,10 +77,45 @@ and leading tabs and spaces are ignored.
 The default output field separator is a single space character.
 .Pp
 Many of the options use file and field numbers.
-Both file numbers and field numbers are 1 based, i.e. the first file on
+Both file numbers and field numbers are 1 based, i.e., the first file on
 the command line is file number 1 and the first field is field number 1.
-The following options are available:
-.Bl -tag -width Fl
+.Pp
+When the default field delimiter characters are used, the files to be joined
+should be ordered in the collating sequence of
+.Xr sort 1 ,
+using the
+.Fl b
+option, on the fields on which they are to be joined, otherwise
+.Nm
+may not report all field matches.
+When the field delimiter characters are specified by the
+.Fl t
+option, the collating sequence should be the same as
+.Xr sort 1
+without the
+.Fl b
+option.
+.Pp
+If one of the arguments
+.Ar file1
+or
+.Ar file2
+is
+.Sq - ,
+the standard input is used.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl 1 Ar field
+Join on the
+.Ar field Ns 'th
+field of
+.Ar file1 .
+.It Fl 2 Ar field
+Join on the
+.Ar field Ns 'th
+field of
+.Ar file2 .
 .It Fl a Ar file_number
 In addition to the default output, produce a line for each unpairable
 line in file
@@ -89,21 +124,25 @@ line in file
 Replace empty output fields with
 .Ar string .
 .It Fl o Ar list
-The
-.Fl o
-option specifies the fields that will be output from each file for
+Specifies the fields that will be output from each file for
 each line with matching join fields.
 Each element of
 .Ar list
 has the form
-.Ql file_number.field ,
+.Dq file_number.field ,
 where
 .Ar file_number
 is a file number and
 .Ar field
-is a field number.
-The elements of list must be either comma (``,'') or whitespace separated.
-(This will require quoting to protect it from the shell, or, a simpler
+is a field number,
+or the form
+.Dq 0
+(zero),
+representing the join field.
+The elements of list must be either comma
+.Pq Ql \&,
+or whitespace separated.
+(The latter requires quoting to protect it from the shell, or a simpler
 approach is to use multiple
 .Fl o
 options.)
@@ -119,89 +158,82 @@ Do not display the default output, but display a line for each unpairable
 line in file
 .Ar file_number .
 The options
-.Fl v Ar 1
+.Fl v Cm 1
 and
-.Fl v Ar 2
+.Fl v Cm 2
 may be specified at the same time.
-.It Fl 1 Ar field
-Join on the
-.Ar field Ns 'th
-field of file 1.
-.It Fl 2 Ar field
-Join on the
-.Ar field Ns 'th
-field of file 2.
 .El
-.Pp
-When the default field delimiter characters are used, the files to be joined
-should be ordered in the collating sequence of
+.Sh EXIT STATUS
+.Ex -std join
+.Sh SEE ALSO
+.Xr awk 1 ,
+.Xr comm 1 ,
+.Xr lam 1 ,
+.Xr paste 1 ,
 .Xr sort 1 ,
-using the
-.Fl b
-option, on the fields on which they are to be joined, otherwise
-.Nm join
-may not report all field matches.
-When the field delimiter characters are specified by the
-.Fl t
-option, the collating sequence should be the same as
-.Xr sort
-without the
-.Fl b
-option.
-.Pp
-If one of the arguments
-.Ar file1
-or
-.Ar file2
-is ``-'', the standard input is used.
-.Pp
+.Xr uniq 1
+.Sh STANDARDS
 The
-.Nm join
-utility exits 0 on success, and >0 if an error occurs.
-.Sh COMPATIBILITY
-For compatibility with historic versions of
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
+.Pp
+In the absence of the
+.Fl o
+option,
+historical versions of
+.Nm
+wrote non-matching lines without reordering the fields.
+The current version writes the join field first, followed by the
+remaining fields.
+.Pp
+For compatibility with historical versions of
 .Nm join ,
 the following options are available:
 .Bl -tag -width Fl
 .It Fl a
 In addition to the default output, produce a line for each unpairable line
-in both file 1 and file 2.
-.It Fl j1 Ar field
-Join on the
-.Ar field Ns 'th
-field of file 1.
-.It Fl j2 Ar field
-Join on the
-.Ar field Ns 'th
-field of file 2.
+in both
+.Ar file1
+and
+.Ar file2 .
 .It Fl j Ar field
 Join on the
 .Ar field Ns 'th
-field of both file 1 and file 2.
+field of both
+.Ar file1
+and
+.Ar file2 .
+.It Fl j1 Ar field
+Join on the
+.Ar field Ns 'th
+field of
+.Ar file1 .
+.It Fl j2 Ar field
+Join on the
+.Ar field Ns 'th
+field of
+.Ar file2 .
 .It Fl o Ar list ...
 Historical implementations of
-.Nm join
+.Nm
 permitted multiple arguments to the
 .Fl o
 option.
-These arguments were of the form ``file_number.field_number'' as described
-for the current
+These arguments were of the form
+.Dq file_number.field_number
+as described for the current
 .Fl o
 option.
-This has obvious difficulties in the presence of files named ``1.2''.
+This has obvious difficulties in the presence of files named
+.Dq 1.2 .
 .El
 .Pp
-These options are available only so historic shellscripts don't require
+These options are available only so historical shell scripts don't require
 modification and should not be used.
-.Sh STANDARDS
-The
-.Nm join
-command is expected to be
-.St -p1003.2
-compatible.
-.Sh SEE ALSO
-.Xr awk 1 ,
-.Xr comm 1 ,
-.Xr paste 1 ,
-.Xr sort 1 ,
-.Xr uniq 1
+.Sh HISTORY
+A
+.Nm
+utility appeared in
+.At v7 .

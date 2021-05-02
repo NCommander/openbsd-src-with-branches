@@ -13,19 +13,11 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_nextafterf.c,v 1.4 1995/05/10 20:48:01 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
-	float nextafterf(float x, float y)
-#else
-	float nextafterf(x,y)
-	float x,y;
-#endif
+float
+nextafterf(float x, float y)
 {
 	int32_t hx,hy,ix,iy;
 
@@ -37,7 +29,7 @@ static char rcsid[] = "$NetBSD: s_nextafterf.c,v 1.4 1995/05/10 20:48:01 jtc Exp
 	if((ix>0x7f800000) ||   /* x is nan */ 
 	   (iy>0x7f800000))     /* y is nan */ 
 	   return x+y;				
-	if(x==y) return x;		/* x=y, return x */
+	if(x==y) return y;		/* x=y, return y */
 	if(ix==0) {				/* x == 0 */
 	    SET_FLOAT_WORD(x,(hy&0x80000000)|1);/* return +-minsubnormal */
 	    y = x*x;

@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.14 2019/11/07 16:25:05 sthen Exp $
 #	$NetBSD: Makefile,v 1.14 1995/04/22 12:10:17 cgd Exp $
 
 # Change the line below for your time zone (after finding the zone you want in
@@ -37,33 +38,30 @@ TZDIR=	${DESTDIR}/usr/share/zoneinfo
 
 REDO=		posix_only
 
-# Since "." may not be in PATH...
-YEARISTYPE=	${.CURDIR}/datfiles/yearistype.sh
-
-YDATA=		africa antarctica asia australasia \
-		europe northamerica southamerica pacificnew etcetera factory \
+TDATA=		africa antarctica asia australasia \
+		europe northamerica southamerica etcetera factory \
 		backward
-NDATA=		systemv
-SDATA=		solar87 solar88 solar89
-TDATA=		$(YDATA) $(NDATA) $(SDATA)
-DATA=		$(YDATA) $(NDATA) $(SDATA) leapseconds # yearistype.sh
-USNO=		usno1988 usno1989
+TABDATA=	iso3166.tab zone.tab zone1970.tab
+DATA=		$(TDATA) $(TABDATA) leapseconds
+USNO=		usno1988 usno1989 usno1989a usno1995 usno1997
 
-ZIC=zic
+ZIC=		zic
+
+all:
 
 posix_only: ${TDATA}
 	(cd ${.CURDIR}/datfiles; \
-	    ${ZIC} -y ${YEARISTYPE} -d ${TZDIR} -L /dev/null ${TDATA})
+	    ${ZIC} -d ${TZDIR} -L /dev/null ${TDATA})
 
 right_only: leapseconds ${TDATA}
 	(cd ${.CURDIR}/datfiles; \
-	    ${ZIC} -y ${YEARISTYPE} -d ${TZDIR} -L leapseconds ${TDATA})
+	    ${ZIC} -d ${TZDIR} -L leapseconds ${TDATA})
 
 other_two: leapseconds ${TDATA}
 	(cd ${.CURDIR}/datfiles; \
-	    ${ZIC} -y ${YEARISTYPE} -d ${TZDIR}/posix -L /dev/null ${TDATA})
+	    ${ZIC} -d ${TZDIR}/posix -L /dev/null ${TDATA})
 	(cd ${.CURDIR}/datfiles; \
-	    ${ZIC} -y ${YEARISTYPE} -d ${TZDIR}/right -L leapseconds ${TDATA})
+	    ${ZIC} -d ${TZDIR}/right -L leapseconds ${TDATA})
 
 posix_right: posix_only other_two
 
@@ -71,9 +69,18 @@ right_posix: right_only other_two
 
 realinstall: ${DATA} ${REDO}
 	(cd ${.CURDIR}/datfiles; \
-	    ${ZIC} -y ${YEARISTYPE} -d ${TZDIR} -p ${POSIXRULES})
+	    ${ZIC} -d ${TZDIR} -p ${POSIXRULES})
 	chown -R ${BINOWN}:${BINGRP} ${TZDIR}
-	find ${TZDIR} -type f | xargs chmod a=r
+	find ${TZDIR} \
+		-type f -exec chmod a=r {} + -o \
+		-type d -exec chmod a=rx,u+w {} +
+	${INSTALL} -c -o root -g bin -m 644 ${.CURDIR}/datfiles/iso3166.tab \
+	    ${DESTDIR}/usr/share/misc
+	${INSTALL} -c -o root -g bin -m 644 ${.CURDIR}/datfiles/zone.tab \
+	    ${DESTDIR}/usr/share/zoneinfo
+	${INSTALL} -c -o root -g bin -m 644 ${.CURDIR}/datfiles/zone1970.tab \
+	    ${DESTDIR}/usr/share/zoneinfo
+
 
 .PATH:	${.CURDIR}/datfiles
 .include <bsd.prog.mk>

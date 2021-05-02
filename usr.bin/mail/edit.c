@@ -1,3 +1,6 @@
+/*	$OpenBSD: edit.c,v 1.20 2017/03/28 09:14:43 natano Exp $	*/
+/*	$NetBSD: edit.c,v 1.5 1996/06/08 19:48:20 christos Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,14 +30,15 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "from: @(#)edit.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: edit.c,v 1.4 1994/11/28 20:03:32 jtc Exp $";
-#endif /* not lint */
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include "rcv.h"
+#include <errno.h>
 #include <fcntl.h>
 #include "extern.h"
+
+int editit(const char *, const char *);
 
 /*
  * Mail -- a mail program
@@ -50,22 +50,22 @@ static char rcsid[] = "$Id: edit.c,v 1.4 1994/11/28 20:03:32 jtc Exp $";
  * Edit a message list.
  */
 int
-editor(msgvec)
-	int *msgvec;
+editor(void *v)
 {
+	int *msgvec = v;
 
-	return edit1(msgvec, 'e');
+	return(edit1(msgvec, 'e'));
 }
 
 /*
  * Invoke the visual editor on a message list.
  */
 int
-visual(msgvec)
-	int *msgvec;
+visual(void *v)
 {
+	int *msgvec = v;
 
-	return edit1(msgvec, 'v');
+	return(edit1(msgvec, 'v'));
 }
 
 /*
@@ -74,28 +74,25 @@ visual(msgvec)
  * We get the editor from the stuff above.
  */
 int
-edit1(msgvec, type)
-	int *msgvec;
-	int type;
+edit1(int *msgvec, int type)
 {
-	register int c;
-	int i;
+	int nl = 0, c, i;
 	FILE *fp;
-	register struct message *mp;
+	struct sigaction oact;
+	sigset_t oset;
+	struct message *mp;
 	off_t size;
 
 	/*
 	 * Deal with each message to be edited . . .
 	 */
 	for (i = 0; msgvec[i] && i < msgCount; i++) {
-		sig_t sigint;
-
 		if (i > 0) {
 			char buf[100];
 			char *p;
 
 			printf("Edit message %d [ynq]? ", msgvec[i]);
-			if (fgets(buf, sizeof buf, stdin) == 0)
+			if (fgets(buf, sizeof(buf), stdin) == NULL)
 				break;
 			for (p = buf; *p == ' ' || *p == '\t'; p++)
 				;
@@ -106,10 +103,10 @@ edit1(msgvec, type)
 		}
 		dot = mp = &message[msgvec[i] - 1];
 		touch(mp);
-		sigint = signal(SIGINT, SIG_IGN);
-		fp = run_editor(setinput(mp), mp->m_size, type, readonly);
+		(void)ignoresig(SIGINT, &oact, &oset);
+		fp = run_editor(setinput(mp), (off_t)mp->m_size, type, readonly);
 		if (fp != NULL) {
-			(void) fseek(otf, 0L, 2);
+			(void)fseek(otf, 0L, SEEK_END);
 			size = ftell(otf);
 			mp->m_block = blockof(size);
 			mp->m_offset = offsetof(size);
@@ -118,18 +115,27 @@ edit1(msgvec, type)
 			mp->m_flag |= MODIFY;
 			rewind(fp);
 			while ((c = getc(fp)) != EOF) {
-				if (c == '\n')
+				if (c == '\n') {
 					mp->m_lines++;
+					nl++;
+				} else
+					nl = 0;
 				if (putc(c, otf) == EOF)
 					break;
 			}
+			for (; nl < 2; nl++) {
+				mp->m_lines++;
+				mp->m_size++;
+				putc('\n', otf);
+			}
 			if (ferror(otf))
-				perror("/tmp");
-			(void) Fclose(fp);
+				warn("%s", tmpdir);
+			(void)Fclose(fp);
 		}
-		(void) signal(SIGINT, sigint);
+		(void)sigprocmask(SIG_SETMASK, &oset, NULL);
+		(void)sigaction(SIGINT, &oact, NULL);
 	}
-	return 0;
+	return(0);
 }
 
 /*
@@ -139,56 +145,62 @@ edit1(msgvec, type)
  * "Type" is 'e' for _PATH_EX, 'v' for _PATH_VI.
  */
 FILE *
-run_editor(fp, size, type, readonly)
-	register FILE *fp;
-	off_t size;
-	int type, readonly;
+run_editor(FILE *fp, off_t size, int type, int readonly)
 {
-	register FILE *nf = NULL;
-	register int t;
+	FILE *nf = NULL;
+	int t;
 	time_t modtime;
-	char *edit;
+	char *edit, tempname[PATHSIZE];
 	struct stat statb;
-	extern char *tempEdit;
 
-	if ((t = creat(tempEdit, readonly ? 0400 : 0600)) < 0) {
-		perror(tempEdit);
+	(void)snprintf(tempname, sizeof(tempname),
+	    "%s/mail.ReXXXXXXXXXX", tmpdir);
+	if ((t = mkstemp(tempname)) == -1 ||
+	    (nf = Fdopen(t, "w")) == NULL) {
+		warn("%s", tempname);
 		goto out;
 	}
-	if ((nf = Fdopen(t, "w")) == NULL) {
-		perror(tempEdit);
-		(void) unlink(tempEdit);
+	if (readonly && fchmod(t, 0400) == -1) {
+		warn("%s", tempname);
+		(void)rm(tempname);
 		goto out;
 	}
 	if (size >= 0)
 		while (--size >= 0 && (t = getc(fp)) != EOF)
-			(void) putc(t, nf);
+			(void)putc(t, nf);
 	else
 		while ((t = getc(fp)) != EOF)
-			(void) putc(t, nf);
-	(void) fflush(nf);
-	if (fstat(fileno(nf), &statb) < 0)
+			(void)putc(t, nf);
+	(void)fflush(nf);
+	if (fstat(fileno(nf), &statb) == -1)
 		modtime = 0;
 	else
 		modtime = statb.st_mtime;
 	if (ferror(nf)) {
-		(void) Fclose(nf);
-		perror(tempEdit);
-		(void) unlink(tempEdit);
+		(void)Fclose(nf);
+		warn("%s", tempname);
+		(void)rm(tempname);
 		nf = NULL;
 		goto out;
 	}
 	if (Fclose(nf) < 0) {
-		perror(tempEdit);
-		(void) unlink(tempEdit);
+		warn("%s", tempname);
+		(void)rm(tempname);
 		nf = NULL;
 		goto out;
 	}
 	nf = NULL;
-	if ((edit = value(type == 'e' ? "EDITOR" : "VISUAL")) == NOSTR)
-		edit = type == 'e' ? _PATH_EX : _PATH_VI;
-	if (run_command(edit, 0, -1, -1, tempEdit, NOSTR, NOSTR) < 0) {
-		(void) unlink(tempEdit);
+	if (type == 'e') {
+		edit = value("EDITOR");
+		if (edit == NULL || edit[0] == '\0')
+			edit = _PATH_EX;
+	} else {
+		edit = value("VISUAL");
+		if (edit == NULL || edit[0] == '\0')
+			edit = _PATH_VI;
+	}
+	if (editit(edit, tempname) == -1) {
+		(void)rm(tempname);
 		goto out;
 	}
 	/*
@@ -196,26 +208,79 @@ run_editor(fp, size, type, readonly)
 	 * temporary and return.
 	 */
 	if (readonly) {
-		(void) unlink(tempEdit);
+		(void)rm(tempname);
 		goto out;
 	}
-	if (stat(tempEdit, &statb) < 0) {
-		perror(tempEdit);
+	if (stat(tempname, &statb) == -1) {
+		warn("%s", tempname);
 		goto out;
 	}
 	if (modtime == statb.st_mtime) {
-		(void) unlink(tempEdit);
+		(void)rm(tempname);
 		goto out;
 	}
 	/*
 	 * Now switch to new file.
 	 */
-	if ((nf = Fopen(tempEdit, "a+")) == NULL) {
-		perror(tempEdit);
-		(void) unlink(tempEdit);
+	if ((nf = Fopen(tempname, "a+")) == NULL) {
+		warn("%s", tempname);
+		(void)rm(tempname);
 		goto out;
 	}
-	(void) unlink(tempEdit);
+	(void)rm(tempname);
 out:
-	return nf;
+	return(nf);
+}
+
+/*
+ * Execute an editor on the specified pathname, which is interpreted
+ * from the shell.  This means flags may be included.
+ *
+ * Returns -1 on error, or the exit value on success.
+ */
+int
+editit(const char *ed, const char *pathname)
+{
+	char *argp[] = {"sh", "-c", NULL, NULL}, *p;
+	sig_t sighup, sigint, sigquit, sigchld;
+	pid_t pid;
+	int saved_errno, st, ret = -1;
+
+	if (ed == NULL)
+		ed = getenv("VISUAL");
+	if (ed == NULL || ed[0] == '\0')
+		ed = getenv("EDITOR");
+	if (ed == NULL || ed[0] == '\0')
+		ed = _PATH_VI;
+	if (asprintf(&p, "%s %s", ed, pathname) == -1)
+		return (-1);
+	argp[2] = p;
+
+	sighup = signal(SIGHUP, SIG_IGN);
+	sigint = signal(SIGINT, SIG_IGN);
+	sigquit = signal(SIGQUIT, SIG_IGN);
+	sigchld = signal(SIGCHLD, SIG_DFL);
+	if ((pid = fork()) == -1)
+		goto fail;
+	if (pid == 0) {
+		execv(_PATH_BSHELL, argp);
+		_exit(127);
+	}
+	while (waitpid(pid, &st, 0) == -1)
+		if (errno != EINTR)
+			goto fail;
+	if (!WIFEXITED(st))
+		errno = EINTR;
+	else
+		ret = WEXITSTATUS(st);
+
+ fail:
+	saved_errno = errno;
+	(void)signal(SIGHUP, sighup);
+	(void)signal(SIGINT, sigint);
+	(void)signal(SIGQUIT, sigquit);
+	(void)signal(SIGCHLD, sigchld);
+	free(p);
+	errno = saved_errno;
+	return (ret);
 }

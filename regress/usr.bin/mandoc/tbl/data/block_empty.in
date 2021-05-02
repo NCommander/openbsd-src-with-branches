@@ -1,0 +1,19 @@
+.\" $OpenBSD$
+.TH TBL-DATA-BLOCK_EMPTY 1 "July 17, 2019"
+.SH NAME
+tbl-data-block_empty \- empty text block
+.SH DESCRIPTION
+normal text
+.TS
+|l|l|.
+_
+A	test
+_
+table	T{
+T}
+_
+.TE
+.SH AUTHORS
+.MT rea@FreeBSD.org
+Eygene Ryabinkin
+.ME

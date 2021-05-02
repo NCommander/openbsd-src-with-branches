@@ -72,9 +72,9 @@ nsd_options_create(region_type* region)
 	opt->log_only_syslog = 0;
 	opt->log_time_ascii = 1;
 	opt->round_robin = 0; /* also packet.h::round_robin */
-	opt->minimal_responses = 0; /* also packet.h::minimal_responses */
+	opt->minimal_responses = 1; /* also packet.h::minimal_responses */
 	opt->confine_to_zone = 0;
-	opt->refuse_any = 0;
+	opt->refuse_any = 1;
 	opt->server_count = 1;
 	opt->cpu_affinity = NULL;
 	opt->service_cpu_affinity = NULL;
@@ -1351,7 +1351,7 @@ key_options_setup(region_type* region, struct key_options* key)
 		key->tsig_key->size = 0;
 		key->tsig_key->data = NULL;
 	}
-	size = b64_pton(key->secret, data, sizeof(data));
+	size = __b64_pton(key->secret, data, sizeof(data));
 	if(size == -1) {
 		log_msg(LOG_ERR, "Failed to parse tsig key data %s",
 			key->name);

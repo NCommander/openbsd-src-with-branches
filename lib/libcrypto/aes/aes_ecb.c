@@ -1,4 +1,4 @@
-/* crypto/aes/aes_ecb.c -*- mode:C; c-file-style: "eay" -*- */
+/* $OpenBSD: aes_ecb.c,v 1.5 2014/06/12 15:49:27 deraadt Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -54,20 +54,16 @@
 #  define NDEBUG
 # endif
 #endif
-#include <assert.h>
 
 #include <openssl/aes.h>
 #include "aes_locl.h"
 
-void AES_ecb_encrypt(const unsigned char *in, unsigned char *out,
-		     const AES_KEY *key, const int enc) {
-
-        assert(in && out && key);
-	assert((AES_ENCRYPT == enc)||(AES_DECRYPT == enc));
-
+void
+AES_ecb_encrypt(const unsigned char *in, unsigned char *out,
+    const AES_KEY *key, const int enc)
+{
 	if (AES_ENCRYPT == enc)
 		AES_encrypt(in, out, key);
 	else
 		AES_decrypt(in, out, key);
 }
-

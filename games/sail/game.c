@@ -1,3 +1,4 @@
+/*	$OpenBSD: game.c,v 1.4 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: game.c,v 1.3 1995/04/22 10:36:56 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,24 +30,15 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)game.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: game.c,v 1.3 1995/04/22 10:36:56 cgd Exp $";
-#endif
-#endif /* not lint */
+#include "extern.h"
 
-#include "externs.h"
-
-maxturns(ship, af)
-register struct ship *ship;
-char *af;
+int
+maxturns(struct ship *ship, char *af)
 {
-	register int turns;
+	int turns;
 
 	turns = ship->specs->ta;
-	if (*af = (ship->file->drift > 1 && turns)) {
+	if ((*af = (ship->file->drift > 1 && turns)) != 0) {
 		turns--;
 		if (ship->file->FS == 1)
 			turns = 0;
@@ -58,11 +46,10 @@ char *af;
 	return turns;
 }
 
-maxmove(ship, dir, fs)
-register struct ship *ship;
-int dir, fs;
+int
+maxmove(struct ship *ship, int dir, int fs)
 {
-	register int riggone = 0, Move, flank = 0;
+	int riggone = 0, Move, flank = 0;
 
 	Move = ship->specs->bs;
 	if (!ship->specs->rig1)

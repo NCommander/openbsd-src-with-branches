@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.9 2020/12/06 18:46:07 bluhm Exp $
 
 # Copyright (c) 2019 Moritz Buhl <openbsd@moritzbuhl.de>
 # Copyright (c) 2019 Alexander Bluhm <bluhm@openbsd.org>
@@ -20,35 +20,44 @@
 # For each PROG define new regression subtests based on the test number.
 
 .if defined(NUMBERS)
-REGRESS_TARGETS =	${NUMBERS:S/^/run-${PROG}-/}
+REGRESS_TARGETS =	${NUMBERS:C/(.*)/run-${PROG}-\1 cleanup-${PROG}-\1/}
 .else
 REGRESS_TARGETS =	${PROGS:S/^/run-/}
 .endif
 
 PROGS =
-PROGS +=	t_access t_bind t_chroot t_clock_gettime t_dup t_fsync
+PROGS +=	t_access
+PROGS +=	t_bind
+PROGS +=	t_chroot t_clock_gettime
+PROGS +=	t_dup
+PROGS +=	t_fsync
 PROGS +=	t_getgroups t_getitimer t_getlogin t_getpid t_getrusage
-PROGS +=	t_getsid t_getsockname t_gettimeofday t_kill t_link t_listen
-PROGS +=	t_mkdir t_mknod t_msgctl t_msgget t_msgsnd t_msync t_pipe
-PROGS +=	t_poll t_revoke t_select t_sendrecv t_setuid t_socketpair
-PROGS +=	t_sigaction t_truncate t_umask t_write
+PROGS +=	t_getsid t_getsockname t_gettimeofday
+PROGS +=	t_kill
+PROGS +=	t_link t_listen
+PROGS +=	t_mkdir t_mkfifo t_mknod t_mlock t_mmap
+PROGS +=	t_msgctl t_msgget t_msgrcv t_msgsnd t_msync
+PROGS +=	t_pipe t_pipe2 t_poll t_ptrace
+PROGS +=	t_revoke
+PROGS +=	t_select t_sendrecv t_setuid t_socketpair t_sigaction t_stat
+PROGS +=	t_syscall
+PROGS +=	t_truncate
+PROGS +=	t_umask t_unlink
+PROGS +=	t_write
 
 # failing tests
-.if 0
-PROGS +=	t_mkfifo
-PROGS +=	t_mlock
-PROGS +=	t_mmap
-PROGS +=	t_msgrcv
-PROGS +=	t_pipe2
-PROGS +=	t_ptrace
-PROGS +=	t_stat
-PROGS +=	t_syscall
-PROGS +=	t_unlink
-.endif
+REGRESS_EXPECTED_FAILURES =
+REGRESS_EXPECTED_FAILURES +=	run-t_mlock-4
+REGRESS_EXPECTED_FAILURES +=	run-t_msgrcv-3
+REGRESS_EXPECTED_FAILURES +=	run-t_pipe2-2
+REGRESS_EXPECTED_FAILURES +=	run-t_stat-5
+REGRESS_EXPECTED_FAILURES +=	run-t_unlink-2
 
 . for p in ${PROGS}
 SRCS_$p =		$p.c atf-c.c
 . endfor
+
+CFLAGS += -std=gnu99
 
 LDADD_t_getpid =	-lpthread
 
@@ -57,15 +66,15 @@ setup-t_truncate:
 	${SUDO} touch truncate_test.root_owned
 	${SUDO} chown root:wheel truncate_test.root_owned
 
-run-t_chroot: cleanup-t_chroot
-cleanup-t_chroot:
+run-t_chroot: clean-dir
+run-t_ptrace: clean-dir
+clean-dir:
 	${SUDO} rm -rf dir
 
 CLEANFILES =	access dummy mmap truncate_test.root_owned
 
 .for p in ${PROGS}
 run-$p: $p
-	@echo "\n======== $@ ========"
 	ntests="`./$p -n`" && \
 	echo "1..$$ntests" && \
 	tnumbers="`jot -ns' ' - 1 $$ntests`" && \
@@ -96,9 +105,10 @@ run-${PROG}-$n:
 	false
 .  endif
 
+cleanup-${PROG}-$n:
+	-./${PROG} -c $n
+
 . endfor
 .endif
 
 .include <bsd.regress.mk>
-
-clean: cleanup-t_chroot

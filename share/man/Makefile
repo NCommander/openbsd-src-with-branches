@@ -1,15 +1,15 @@
+#	$OpenBSD: Makefile,v 1.12 2016/11/08 19:33:58 tb Exp $
 #	from: @(#)Makefile	5.9 (Berkeley) 7/1/91
-#	$Id: Makefile,v 1.6 1994/02/09 08:00:16 cgd Exp $
 
-SUBDIR=	man1 man3 man4 man5 man7 man8
+SUBDIR=	man1 man3 man4 man5 man6 man7 man8 man9
 
 afterinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m 444 makewhatis.sed \
-	    ${DESTDIR}/usr/share/man/makewhatis.sed
-	install -c -o ${BINOWN} -g ${BINGRP} -m 444 man0/COPYRIGHT \
-	    ${DESTDIR}/usr/share/man/COPYRIGHT
+	${INSTALL} ${INSTALL_COPY} -o ${MANOWN} -g ${MANGRP} -m ${MANMODE} \
+	    man0/COPYRIGHT ${DESTDIR}/usr/share/man/COPYRIGHT
 
 makedb:
-	/usr/libexec/makewhatis ${DESTDIR}/usr/share/man
+	/usr/sbin/makewhatis ${DESTDIR}/usr/share/man
+	chown root:wheel ${DESTDIR}/usr/share/man/mandoc.db
+	chmod 644 ${DESTDIR}/usr/share/man/mandoc.db
 
 .include <bsd.subdir.mk>

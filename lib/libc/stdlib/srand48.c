@@ -1,3 +1,4 @@
+/*	$OpenBSD: srand48.c,v 1.5 2015/08/27 04:33:31 guenther Exp $ */
 /*
  * Copyright (c) 1993 Martin Birgmeier
  * All rights reserved.
@@ -13,13 +14,19 @@
 
 #include "rand48.h"
 
-extern unsigned short __rand48_seed[3];
-extern unsigned short __rand48_mult[3];
-extern unsigned short __rand48_add;
+int     __rand48_deterministic;
 
 void
 srand48(long seed)
 {
+	srand48_deterministic(seed);
+	__rand48_deterministic = 0;
+}
+
+void
+srand48_deterministic(long seed)
+{
+	__rand48_deterministic = 1;
 	__rand48_seed[0] = RAND48_SEED_0;
 	__rand48_seed[1] = (unsigned short) seed;
 	__rand48_seed[2] = (unsigned short) (seed >> 16);
@@ -28,3 +35,4 @@ srand48(long seed)
 	__rand48_mult[2] = RAND48_MULT_2;
 	__rand48_add = RAND48_ADD;
 }
+DEF_WEAK(srand48_deterministic);

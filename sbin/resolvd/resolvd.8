@@ -1,0 +1,83 @@
+.\"	$OpenBSD: resolvd.8,v 1.4 2021/02/27 15:20:54 florian Exp $
+.\"
+.\" Copyright (c) 2021 Florian Obser <florian@openbsd.org>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd $Mdocdate: February 27 2021 $
+.Dt RESOLVD 8
+.Os
+.Sh NAME
+.Nm resolvd
+.Nd a daemon to handle nameserver configuration
+.Sh SYNOPSIS
+.Nm
+.Op Fl dv
+.Sh DESCRIPTION
+.Nm
+handles the contents of
+.Pa /etc/resolv.conf ,
+which contains details of the system's DNS nameservers, and is
+read by the resolver routines in the C library.
+.Pp
+.Nm
+checks whether
+.Xr unwind 8
+is running and
+monitors the routing socket for proposals sent by
+.Xr dhclient 8 ,
+.Xr slaacd 8 ,
+or network devices which learn DNS information such as
+.Xr umb 4 .
+.Pp
+If
+.Xr unwind 8
+is running it prepends the following to
+.Pa /etc/resolv.conf :
+.Pp
+.Dl nameserver 127.0.0.1
+.Pp
+It also adds any other DNS proposals,
+but commented out.
+If
+.Xr unwind 8
+is not running it simply adds any other DNS proposals.
+After that, it appends user-edited lines to the file.
+.Pp
+.Nm
+keeps track of which parts it managed in the past and will only change those.
+It will also create
+.Pa /etc/resolv.conf
+if it does not exist or if it is empty.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl d
+Do not daemonize.
+If this option is specified,
+.Nm
+will run in the foreground and log to
+.Em stderr .
+.It Fl v
+Produce more verbose output.
+.El
+.Sh SEE ALSO
+.Xr resolv.conf 5 ,
+.Xr dhclient 8 ,
+.Xr slaacd 8 ,
+.Xr unwind 8
+.Sh HISTORY
+The
+.Nm
+program first appeared in
+.Ox 6.9 .

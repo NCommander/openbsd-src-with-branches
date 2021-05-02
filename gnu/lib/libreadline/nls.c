@@ -50,7 +50,7 @@
 #include "rlshell.h"
 #include "rlprivate.h"
 
-#if !defined (HAVE_SETLOCALE)    
+#if !defined (HAVE_SETLOCALE)
 /* A list of legal values for the LANG or LC_CTYPE environment variables.
    If a locale name in this list is the value for the LC_ALL, LC_CTYPE,
    or LANG environment variable (using the first of those with a value),
@@ -106,9 +106,9 @@ _rl_init_eightbit ()
      appropriate variables and set eight-bit mode if they have the right
      values. */
   lspec = sh_get_env_value ("LC_ALL");
-  if (lspec == 0) lspec = sh_get_env_value ("LC_CTYPE");
-  if (lspec == 0) lspec = sh_get_env_value ("LANG");
-  if (lspec == 0 || (t = normalize_codeset (lspec)) == 0)
+  if (lspec == 0 || *lspec == '\0') lspec = sh_get_env_value ("LC_CTYPE");
+  if (lspec == 0 || *lspec == '\0') lspec = sh_get_env_value ("LANG");
+  if (lspec == 0 || *lspec == '\0' || (t = normalize_codeset (lspec)) == 0)
     return (0);
   for (i = 0; t && legal_lang_values[i]; i++)
     if (STREQ (t, legal_lang_values[i]))

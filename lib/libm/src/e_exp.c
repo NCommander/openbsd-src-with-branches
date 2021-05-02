@@ -10,11 +10,7 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_exp.c,v 1.8 1995/05/10 20:45:03 jtc Exp $";
-#endif
-
-/* __ieee754_exp(x)
+/* exp(x)
  * Returns the exponential of x.
  *
  * Method
@@ -31,7 +27,7 @@ static char rcsid[] = "$NetBSD: e_exp.c,v 1.8 1995/05/10 20:45:03 jtc Exp $";
  *	the interval [0,0.34658]:
  *	Write
  *	    R(r**2) = r*(exp(r)+1)/(exp(r)-1) = 2 + r*r/6 - r**4/360 + ...
- *      We use a special Reme algorithm on [0,0.34658] to generate 
+ *      We use a special Remes algorithm on [0,0.34658] to generate 
  * 	a polynomial of degree 5 to approximate R. The maximum error 
  *	of this polynomial approximation is bounded by 2**-59. In
  *	other words,
@@ -77,14 +73,12 @@ static char rcsid[] = "$NetBSD: e_exp.c,v 1.8 1995/05/10 20:45:03 jtc Exp $";
  * to produce the hexadecimal values shown.
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
 static const double
-#else
-static double
-#endif
 one	= 1.0,
 halF[2]	= {0.5,-0.5,},
 huge	= 1.0e+300,
@@ -103,12 +97,8 @@ P4   = -1.65339022054652515390e-06, /* 0xBEBBBD41, 0xC5D26BF1 */
 P5   =  4.13813679705723846039e-08; /* 0x3E663769, 0x72BEA4D0 */
 
 
-#ifdef __STDC__
-	double __ieee754_exp(double x)	/* default IEEE double exp */
-#else
-	double __ieee754_exp(x)	/* default IEEE double exp */
-	double x;
-#endif
+double
+exp(double x)	/* default IEEE double exp */
 {
 	double y,hi,lo,c,t;
 	int32_t k,xsb;
@@ -165,3 +155,5 @@ P5   =  4.13813679705723846039e-08; /* 0x3E663769, 0x72BEA4D0 */
 	    return y*twom1000;
 	}
 }
+DEF_STD(exp);
+LDBL_MAYBE_CLONE(exp);

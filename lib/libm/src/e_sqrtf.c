@@ -13,25 +13,13 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_sqrtf.c,v 1.4 1995/05/10 20:46:19 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static	const float	one	= 1.0, tiny=1.0e-30;
-#else
-static	float	one	= 1.0, tiny=1.0e-30;
-#endif
 
-#ifdef __STDC__
-	float __ieee754_sqrtf(float x)
-#else
-	float __ieee754_sqrtf(x)
-	float x;
-#endif
+float
+sqrtf(float x)
 {
 	float z;
 	int32_t sign = (int)0x80000000; 
@@ -95,3 +83,4 @@ static	float	one	= 1.0, tiny=1.0e-30;
 	SET_FLOAT_WORD(z,ix);
 	return z;
 }
+DEF_STD(sqrtf);

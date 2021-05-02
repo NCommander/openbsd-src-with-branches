@@ -3188,24 +3188,6 @@ record_constant_rtx (mode, x)
   return ptr;
 }
 
-/* Given a constant rtx X, return a MEM for the location in memory at which
-   this constant has been placed.  Return 0 if it not has been placed yet.  */
-
-rtx
-mem_for_const_double (x)
-     rtx x;
-{
-  enum machine_mode mode = GET_MODE (x);
-  struct constant_descriptor_rtx *desc;
-
-  for (desc = const_rtx_hash_table[const_hash_rtx (mode, x)]; desc;
-       desc = desc->next)
-    if (compare_constant_rtx (mode, x, desc))
-      return desc->rtl;
-
-  return 0;
-}
-
 /* Given a constant rtx X, make (or find) a memory constant for its value
    and return a MEM rtx to refer to it in memory.  */
 
@@ -4843,6 +4825,7 @@ enum symbol_visibility
 decl_visibility (decl)
      tree decl;
 {
+#ifdef HAVE_GAS_HIDDEN
   tree attr = lookup_attribute ("visibility", DECL_ATTRIBUTES (decl));
 
   if (attr)
@@ -4860,6 +4843,7 @@ decl_visibility (decl)
 
       abort ();
     }
+#endif
 
   return VISIBILITY_DEFAULT;
 }
@@ -5458,7 +5442,7 @@ bool
 default_binds_local_p (exp)
      tree exp;
 {
-  return default_binds_local_p_1 (exp, flag_pic);
+  return default_binds_local_p_1 (exp, flag_shlib);
 }
 
 bool

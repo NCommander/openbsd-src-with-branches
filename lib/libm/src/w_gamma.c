@@ -10,10 +10,6 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: w_gamma.c,v 1.6 1995/05/10 20:49:00 jtc Exp $";
-#endif
-
 /* double gamma(double x)
  * Return the logarithm of the Gamma function of x.
  *
@@ -25,25 +21,8 @@ static char rcsid[] = "$NetBSD: w_gamma.c,v 1.6 1995/05/10 20:49:00 jtc Exp $";
 
 extern int signgam;
 
-#ifdef __STDC__
-	double gamma(double x)
-#else
-	double gamma(x)
-	double x;
-#endif
+double
+gamma(double x)
 {
-#ifdef _IEEE_LIBM
-	return __ieee754_gamma_r(x,&signgam);
-#else
-        double y;
-        y = __ieee754_gamma_r(x,&signgam);
-        if(_LIB_VERSION == _IEEE_) return y;
-        if(!finite(y)&&finite(x)) {
-            if(floor(x)==x&&x<=0.0)
-                return __kernel_standard(x,x,41); /* gamma pole */
-            else
-                return __kernel_standard(x,x,40); /* gamma overflow */
-        } else
-            return y;
-#endif
+	return lgamma_r(x,&signgam);
 }             

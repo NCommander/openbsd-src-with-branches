@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.12 2015/11/19 17:50:04 tedu Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1994/11/23 07:42:00 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,17 +36,22 @@
 	if (write(STDOUT_FILENO, p, size) != size) \
 		oerr();
 
+struct tailfile {
+	char		*fname;
+	FILE		*fp;
+	struct stat	 sb;
+};
+
 enum STYLE { NOTSET = 0, FBYTES, FLINES, RBYTES, RLINES, REVERSE };
 
-void forward __P((FILE *, enum STYLE, long, struct stat *));
-void reverse __P((FILE *, enum STYLE, long, struct stat *));
+void forward(struct tailfile *, int, enum STYLE, off_t);
+void reverse(struct tailfile *, int, enum STYLE, off_t);
 
-void bytes __P((FILE *, off_t));
-void lines __P((FILE *, off_t));
+int bytes(struct tailfile *, off_t);
+int lines(struct tailfile *, off_t);
 
-void err __P((int fatal, const char *fmt, ...));
-void ierr __P((void));
-void oerr __P((void));
+void ierr(const char *);
+void oerr(void);
+void printfname(const char *);
 
 extern int fflag, rflag, rval;
-extern char *fname;

@@ -1,3 +1,4 @@
+#	$OpenBSD: Makefile,v 1.33 2014/07/20 05:29:39 guenther Exp $
 #
 # Copyright (c) 1990 The Regents of the University of California.
 # All rights reserved.
@@ -10,11 +11,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the University of
-#	California, Berkeley and its contributors.
-# 4. Neither the name of the University nor the names of its contributors
+# 3. Neither the name of the University nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
 #
@@ -31,27 +28,16 @@
 # SUCH DAMAGE.
 #
 #	from: @(#)Makefile	8.1 (Berkeley) 6/6/93
-#	$Id: Makefile,v 1.4 1995/04/24 07:39:57 cgd Exp $
 #
 
 PROG=	telnet
 
-CFLAGS+=-DTERMCAP -DKLUDGELINEMODE -DUSE_TERMIO -Dunix
-CFLAGS+=-DENV_HACK
-CFLAGS+=-I${.CURDIR}/../../lib
+CFLAGS+=-DKLUDGELINEMODE
+CFLAGS+= -Wall
+LDADD+=	-lcurses
+DPADD=	${LIBCURSES}
 
-LDADD=	-ltermcap -ltelnet
-DPADD=	${LIBTERMCAP}
-
-SRCS=	authenc.c commands.c main.c network.c ring.c sys_bsd.c telnet.c \
-	terminal.c tn3270.c utilities.c
-
-# These are the sources that have encryption stuff in them.
-CRYPT_SRC= authenc.c commands.c externs.h main.c network.c
-CRYPT_SRC+= ring.c ring.h telnet.c terminal.c utilities.c Makefile
-NOCRYPT_DIR=${.CURDIR}/Nocrypt
+SRCS=	commands.c main.c network.c ring.c sys_bsd.c telnet.c \
+	terminal.c utilities.c genget.c
 
 .include <bsd.prog.mk>
-
-nocrypt:
-	@echo "Encryption code already removed."

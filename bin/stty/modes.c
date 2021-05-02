@@ -1,4 +1,5 @@
-/*	$NetBSD: modes.c,v 1.8 1995/03/21 09:11:23 cgd Exp $	*/
+/*	$OpenBSD: modes.c,v 1.10 2009/10/27 23:59:22 deraadt Exp $	*/
+/*	$NetBSD: modes.c,v 1.9 1996/05/07 18:20:09 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,30 +30,26 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)modes.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: modes.c,v 1.8 1995/03/21 09:11:23 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
+
 #include <stddef.h>
 #include <string.h>
+#include <termios.h>
+
 #include "stty.h"
+#include "extern.h"
 
 struct modes {
-	char *name;
-	long set;
-	long unset;
+	const char *name;
+	unsigned int set;
+	unsigned int unset;
 };
 
 /*
  * The code in optlist() depends on minus options following regular
  * options, i.e. "foo" must immediately precede "-foo".
  */
-struct modes cmodes[] = {
+const struct modes cmodes[] = {
 	{ "cs5",	CS5, CSIZE },
 	{ "cs6",	CS6, CSIZE },
 	{ "cs7",	CS7, CSIZE },
@@ -90,7 +83,7 @@ struct modes cmodes[] = {
 	{ NULL },
 };
 
-struct modes imodes[] = {
+const struct modes imodes[] = {
 	{ "ignbrk",	IGNBRK, 0 },
 	{ "-ignbrk",	0, IGNBRK },
 	{ "brkint",	BRKINT, 0 },
@@ -109,6 +102,8 @@ struct modes imodes[] = {
 	{ "-igncr",	0, IGNCR },
 	{ "icrnl",	ICRNL, 0 },
 	{ "-icrnl",	0, ICRNL },
+	{ "iuclc",	IUCLC, 0 },
+	{ "-iuclc",	0, IUCLC },
 	{ "ixon",	IXON, 0 },
 	{ "-ixon",	0, IXON },
 	{ "flow",	IXON, 0 },
@@ -126,7 +121,7 @@ struct modes imodes[] = {
 	{ NULL },
 };
 
-struct modes lmodes[] = {
+const struct modes lmodes[] = {
 	{ "echo",	ECHO, 0 },
 	{ "-echo",	0, ECHO },
 	{ "echoe",	ECHOE, 0 },
@@ -175,31 +170,41 @@ struct modes lmodes[] = {
 	{ "-nokerninfo",0, NOKERNINFO },
 	{ "kerninfo",	0, NOKERNINFO },
 	{ "-kerninfo",	NOKERNINFO, 0 },
+	{ "xcase",	XCASE, 0 },
+	{ "-xcase",	0, XCASE },
 	{ NULL },
 };
 
-struct modes omodes[] = {
+const struct modes omodes[] = {
 	{ "opost",	OPOST, 0 },
 	{ "-opost",	0, OPOST },
 	{ "litout",	0, OPOST },
 	{ "-litout",	OPOST, 0 },
+	{ "ocrnl",	OCRNL, 0 },
+	{ "-ocrnl",	0, OCRNL },
+	{ "olcuc",	OLCUC, 0 },
+	{ "-olcuc",	0, OLCUC },
 	{ "onlcr",	ONLCR, 0 },
 	{ "-onlcr",	0, ONLCR },
+	{ "onlret",	ONLRET, 0 },
+	{ "-onlret",	0, ONLRET },
+	{ "onocr",	ONOCR, 0 },
+	{ "-onocr",	0, ONOCR },
 	{ "tabs",	0, OXTABS },		/* "preserve" tabs */
 	{ "-tabs",	OXTABS, 0 },
 	{ "oxtabs",	OXTABS, 0 },
 	{ "-oxtabs",	0, OXTABS },
+	{ "onoeot",	ONOEOT, 0 },
+	{ "-onoeot",	0, ONOEOT },
 	{ NULL },
 };
 
-#define	CHK(s)	(*name == s[0] && !strcmp(name, s))
+#define	CHK(s)	(!strcmp(name, s))
 
 int
-msearch(argvp, ip)
-	char ***argvp;
-	struct info *ip;
+msearch(char ***argvp, struct info *ip)
 {
-	struct modes *mp;
+	const struct modes *mp;
 	char *name;
 
 	name = **argvp;

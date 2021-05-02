@@ -1404,20 +1404,6 @@ static bool isSignedCharDefault(const llvm::Triple &Triple) {
   }
 }
 
-static bool isNoCommonDefault(const llvm::Triple &Triple) {
-  switch (Triple.getArch()) {
-  default:
-    if (Triple.isOSFuchsia())
-      return true;
-    return false;
-
-  case llvm::Triple::xcore:
-  case llvm::Triple::wasm32:
-  case llvm::Triple::wasm64:
-    return true;
-  }
-}
-
 static bool hasMultipleInvocations(const llvm::Triple &Triple,
                                    const ArgList &Args) {
   // Supported only on Darwin where we invoke the compiler multiple times
@@ -2364,6 +2350,11 @@ static void CollectArgsForIntegratedAssembler(Compilation &C,
         if (Value.startswith("-mhard-float")) {
           CmdArgs.push_back("-target-feature");
           CmdArgs.push_back("-soft-float");
+          continue;
+        }
+        if (Value.startswith("-mfix-loongson2f-btb")) {
+          CmdArgs.push_back("-mllvm");
+          CmdArgs.push_back("-fix-loongson2f-btb");
           continue;
         }
 
@@ -5213,10 +5204,14 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     else if (A->getOption().matches(options::OPT_fret_protector))
       RetProtector = 1;
   }
+
   if (RetProtector &&
       ((getToolChain().getArch() == llvm::Triple::x86_64) ||
        (getToolChain().getArch() == llvm::Triple::mips64) ||
        (getToolChain().getArch() == llvm::Triple::mips64el) ||
+       (getToolChain().getArch() == llvm::Triple::ppc) ||
+       (getToolChain().getArch() == llvm::Triple::ppc64) ||
+       (getToolChain().getArch() == llvm::Triple::ppc64le) ||
        (getToolChain().getArch() == llvm::Triple::aarch64)) &&
       !Args.hasArg(options::OPT_fno_stack_protector) &&
       !Args.hasArg(options::OPT_pg)) {
@@ -5629,11 +5624,9 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   if (!Args.hasFlag(options::OPT_Qy, options::OPT_Qn, true))
     CmdArgs.push_back("-Qn");
 
-  // -fcommon is the default unless compiling kernel code or the target says so
-  bool NoCommonDefault = KernelOrKext || isNoCommonDefault(RawTriple);
-  if (!Args.hasFlag(options::OPT_fcommon, options::OPT_fno_common,
-                    !NoCommonDefault))
-    CmdArgs.push_back("-fno-common");
+  // -fno-common is the default, set -fcommon only when that flag is set.
+  if (Args.hasFlag(options::OPT_fcommon, options::OPT_fno_common, false))
+    CmdArgs.push_back("-fcommon");
 
   // -fsigned-bitfields is default, and clang doesn't yet support
   // -funsigned-bitfields.

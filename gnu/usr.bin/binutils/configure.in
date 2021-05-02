@@ -145,8 +145,7 @@ libgcj="target-libffi \
 # these libraries are built for the target environment, and are built after
 # the host libraries and the host tools (which may be a cross compiler)
 #
-target_libraries="target-libiberty \
-		target-libgloss \
+target_libraries="target-libgloss \
 		target-newlib \
 		target-libstdc++-v3 \
 		target-libf2c \
@@ -329,6 +328,13 @@ no)
   # Make sure we get it printed in the list of not supported target libs.
   noconfigdirs="$noconfigdirs ${libgcj}"
   ;;
+esac
+
+case "${target}" in
+  *-*-openbsd.*)
+    noconfigdirs="$noconfigdirs target-libiberty"
+    noconfigdirs="$noconfigdirs gdb"
+   ;;
 esac
 
 case "${target}" in
@@ -655,6 +661,9 @@ case "${target}" in
   mips*-dec-bsd*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
+  mips*-*-openbsd*)
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
+    ;;
   mips*-*-bsd*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
@@ -712,6 +721,9 @@ case "${target}" in
     ;;
   v850ea-*-*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
+    ;;
+  vax-*-openbsd*)
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   vax-*-vms)
     noconfigdirs="$noconfigdirs bfd binutils gdb ld target-newlib opcodes target-libgloss ${libgcj}"
@@ -1767,6 +1779,8 @@ for item in ${target_configdirs} ; do
   olditem=${item}
 done
 serialization_dependencies=serdep.tmp
+# override on OpenBSD
+serialization_dependencies=/dev/null
 AC_SUBST_FILE(serialization_dependencies)
 
 # Base args.  Strip norecursion, cache-file, srcdir, host, build,

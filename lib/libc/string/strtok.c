@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,25 +27,25 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)strtok.c	5.8 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: strtok.c,v 1.4 1994/06/11 16:49:17 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <string.h>
 
 char *
-strtok(s, delim)
-	register char *s;
-	register const char *delim;
+strtok(char *s, const char *delim)
 {
-	register char *spanp;
-	register int c, sc;
-	char *tok;
 	static char *last;
 
+	return strtok_r(s, delim, &last);
+}
+DEF_STRONG(strtok);
 
-	if (s == NULL && (s = last) == NULL)
+char *
+strtok_r(char *s, const char *delim, char **last)
+{
+	const char *spanp;
+	int c, sc;
+	char *tok;
+
+	if (s == NULL && (s = *last) == NULL)
 		return (NULL);
 
 	/*
@@ -57,13 +53,13 @@ strtok(s, delim)
 	 */
 cont:
 	c = *s++;
-	for (spanp = (char *)delim; (sc = *spanp++) != 0;) {
+	for (spanp = delim; (sc = *spanp++) != 0;) {
 		if (c == sc)
 			goto cont;
 	}
 
 	if (c == 0) {		/* no non-delimiter characters */
-		last = NULL;
+		*last = NULL;
 		return (NULL);
 	}
 	tok = s - 1;
@@ -74,17 +70,18 @@ cont:
 	 */
 	for (;;) {
 		c = *s++;
-		spanp = (char *)delim;
+		spanp = delim;
 		do {
 			if ((sc = *spanp++) == c) {
 				if (c == 0)
 					s = NULL;
 				else
-					s[-1] = 0;
-				last = s;
+					s[-1] = '\0';
+				*last = s;
 				return (tok);
 			}
 		} while (sc != 0);
 	}
 	/* NOTREACHED */
 }
+DEF_WEAK(strtok_r);

@@ -1,4 +1,5 @@
-/*	$NetBSD: signalvar.h,v 1.14 1995/08/13 22:48:47 mycroft Exp $	*/
+/*	$OpenBSD: signalvar.h,v 1.45 2020/11/08 20:37:24 mpi Exp $	*/
+/*	$NetBSD: signalvar.h,v 1.17 1996/04/22 01:23:31 christos Exp $	*/
 
 /*
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -53,42 +50,35 @@ struct	sigacts {
 	sigset_t ps_sigonstack;		/* signals to take on sigstack */
 	sigset_t ps_sigintr;		/* signals that interrupt syscalls */
 	sigset_t ps_sigreset;		/* signals that reset when caught */
-	sigset_t ps_oldmask;		/* saved mask from before sigpause */
-	int	ps_flags;		/* signal flags, below */
-	struct	sigaltstack ps_sigstk;	/* sp & on stack state variable */
-	int	ps_sig;			/* for core dump/debugger XXX */
-	long	ps_code;		/* for core dump/debugger XXX */
-	sigset_t ps_usertramp;		/* SunOS compat; libc sigtramp XXX */
+	sigset_t ps_siginfo;		/* signals that provide siginfo */
+	sigset_t ps_sigignore;		/* signals being ignored */
+	sigset_t ps_sigcatch;		/* signals being caught by user */
+	int	ps_sigflags;		/* signal flags, below */
 };
 
 /* signal flags */
-#define	SAS_OLDMASK	0x01		/* need to restore mask before pause */
-#define	SAS_ALTSTACK	0x02		/* have alternate signal stack */
+#define	SAS_NOCLDSTOP	0x01	/* No SIGCHLD when children stop. */
+#define	SAS_NOCLDWAIT	0x02	/* No zombies if child dies */
 
 /* additional signal action values, used only temporarily/internally */
-#define	SIG_CATCH	(void (*)())2
-#define	SIG_HOLD	(void (*)())3
+#define	SIG_CATCH	(void (*)(int))2
+#define	SIG_HOLD	(void (*)(int))3
 
 /*
- * get signal action for process and signal; currently only for current process
+ * Check if process p has an unmasked signal pending.
+ * Return mask of pending signals.
  */
-#define SIGACTION(p, sig)	(p->p_sigacts->ps_sigact[(sig)])
-
-/*
- * Determine signal that should be delivered to process p, the current
- * process, 0 if none.  If there is a pending stop signal with default
- * action, the process stops in issignal().
- */
-#define	CURSIG(p)							\
-	(((p)->p_siglist == 0 ||					\
-	    ((p)->p_flag & P_TRACED) == 0 &&				\
-	    ((p)->p_siglist & ~(p)->p_sigmask) == 0) ?			\
-	    0 : issignal(p))
+#define SIGPENDING(p)							\
+	(((p)->p_siglist | (p)->p_p->ps_siglist) & ~(p)->p_sigmask)
 
 /*
  * Clear a pending signal from a process.
  */
-#define	CLRSIG(p, sig)	{ (p)->p_siglist &= ~sigmask(sig); }
+#define CLRSIG(p, sig)	do {						\
+	int __mask = sigmask(sig);					\
+	atomic_clearbits_int(&(p)->p_siglist, __mask);			\
+	atomic_clearbits_int(&(p)->p_p->ps_siglist, __mask);		\
+} while (0)
 
 /*
  * Signal properties and actions.
@@ -103,67 +93,42 @@ struct	sigacts {
 #define	SA_CONT		0x20		/* continue if suspended */
 #define	SA_CANTMASK	0x40		/* non-maskable, catchable */
 
-#ifdef	SIGPROP
-int sigprop[NSIG + 1] = {
-	0,			/* unused */
-	SA_KILL,		/* SIGHUP */
-	SA_KILL,		/* SIGINT */
-	SA_KILL|SA_CORE,	/* SIGQUIT */
-	SA_KILL|SA_CORE,	/* SIGILL */
-	SA_KILL|SA_CORE,	/* SIGTRAP */
-	SA_KILL|SA_CORE,	/* SIGABRT */
-	SA_KILL|SA_CORE,	/* SIGEMT */
-	SA_KILL|SA_CORE,	/* SIGFPE */
-	SA_KILL,		/* SIGKILL */
-	SA_KILL|SA_CORE,	/* SIGBUS */
-	SA_KILL|SA_CORE,	/* SIGSEGV */
-	SA_KILL|SA_CORE,	/* SIGSYS */
-	SA_KILL,		/* SIGPIPE */
-	SA_KILL,		/* SIGALRM */
-	SA_KILL,		/* SIGTERM */
-	SA_IGNORE,		/* SIGURG */
-	SA_STOP,		/* SIGSTOP */
-	SA_STOP|SA_TTYSTOP,	/* SIGTSTP */
-	SA_IGNORE|SA_CONT,	/* SIGCONT */
-	SA_IGNORE,		/* SIGCHLD */
-	SA_STOP|SA_TTYSTOP,	/* SIGTTIN */
-	SA_STOP|SA_TTYSTOP,	/* SIGTTOU */
-	SA_IGNORE,		/* SIGIO */
-	SA_KILL,		/* SIGXCPU */
-	SA_KILL,		/* SIGXFSZ */
-	SA_KILL,		/* SIGVTALRM */
-	SA_KILL,		/* SIGPROF */
-	SA_IGNORE,		/* SIGWINCH  */
-	SA_IGNORE,		/* SIGINFO */
-	SA_KILL,		/* SIGUSR1 */
-	SA_KILL,		/* SIGUSR2 */
-};
-
-#define	contsigmask	(sigmask(SIGCONT))
-#define	stopsigmask	(sigmask(SIGSTOP) | sigmask(SIGTSTP) | \
-			    sigmask(SIGTTIN) | sigmask(SIGTTOU))
-
-#endif /* SIGPROP */
-
 #define	sigcantmask	(sigmask(SIGKILL) | sigmask(SIGSTOP))
 
 #ifdef _KERNEL
+enum signal_type { SPROCESS, STHREAD, SPROPAGATED };
+
+struct sigio_ref;
+
 /*
  * Machine-independent functions:
  */
-int	coredump __P((struct proc *p));
-void	execsigs __P((struct proc *p));
-void	gsignal __P((int pgid, int sig));
-int	issignal __P((struct proc *p));
-void	pgsignal __P((struct pgrp *pgrp, int sig, int checkctty));
-void	postsig __P((int sig));
-void	psignal __P((struct proc *p, int sig));
-void	siginit __P((struct proc *p));
-void	trapsignal __P((struct proc *p, int sig, u_long code));
+int	coredump(struct proc *p);
+void	execsigs(struct proc *p);
+int	cursig(struct proc *p);
+void	pgsigio(struct sigio_ref *sir, int sig, int checkctty);
+void	pgsignal(struct pgrp *pgrp, int sig, int checkctty);
+void	psignal(struct proc *p, int sig);
+void	ptsignal(struct proc *p, int sig, enum signal_type type);
+#define prsignal(pr,sig)	ptsignal((pr)->ps_mainproc, (sig), SPROCESS)
+void	siginit(struct sigacts *);
+void	trapsignal(struct proc *p, int sig, u_long code, int type,
+	    union sigval val);
+void	sigexit(struct proc *, int);
+void	sigabort(struct proc *);
+int	sigismasked(struct proc *, int);
+int	sigonstack(size_t);
+int	killpg1(struct proc *, int, int, int);
+
+void	signal_init(void);
+
+struct sigacts *sigactsinit(struct process *);
+void	sigstkinit(struct sigaltstack *);
+void	sigactsfree(struct process *);
 
 /*
  * Machine-dependent functions:
  */
-void	sendsig __P((sig_t action, int sig, int returnmask, u_long code));
+int	sendsig(sig_t _catcher, int _sig, sigset_t _mask, const siginfo_t *_si);
 #endif	/* _KERNEL */
 #endif	/* !_SYS_SIGNALVAR_H_ */

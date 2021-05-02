@@ -1,3 +1,4 @@
+/*	$OpenBSD: expand.c,v 1.13 2015/10/05 13:24:39 deraadt Exp $	*/
 /*	$NetBSD: expand.c,v 1.5 1995/09/02 06:19:46 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,23 +30,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)expand.c	8.1 (Berkeley) 6/9/93";
-#endif
-static char rcsid[] = "$NetBSD: expand.c,v 1.5 1995/09/02 06:19:46 jtc Exp $";
-#endif /* not lint */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <err.h>
 
 /*
  * expand - expand tabs to equivalent spaces
@@ -57,19 +42,21 @@ static char rcsid[] = "$NetBSD: expand.c,v 1.5 1995/09/02 06:19:46 jtc Exp $";
 int	nstops;
 int	tabstops[100];
 
-static void getstops();
-static void usage();
+static void getstops(char *);
+static void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register int c, column;
-	register int n;
+	int c, column;
+	int n;
+
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
 
 	/* handle obsolete syntax */
-	while (argc > 1 && argv[1][0] && isdigit(argv[1][1])) {
+	while (argc > 1 && argv[1][0] == '-' &&
+	    isdigit((unsigned char)argv[1][1])) {
 		getstops(&argv[1][1]);
 		argc--; argv++;
 	}
@@ -90,10 +77,8 @@ main(argc, argv)
 
 	do {
 		if (argc > 0) {
-			if (freopen(argv[0], "r", stdin) == NULL) {
-				perror(argv[0]);
-				exit(1);
-			}
+			if (freopen(argv[0], "r", stdin) == NULL)
+				err(1, "%s", argv[0]);
 			argc--, argv++;
 		}
 		column = 0;
@@ -111,7 +96,8 @@ main(argc, argv)
 					do {
 						putchar(' ');
 						column++;
-					} while (((column - 1) % tabstops[0]) != (tabstops[0] - 1));
+					} while (((column - 1) %
+					    tabstops[0]) != (tabstops[0] - 1));
 					continue;
 				}
 				for (n = 0; n < nstops; n++)
@@ -150,10 +136,9 @@ main(argc, argv)
 }
 
 static void
-getstops(cp)
-	register char *cp;
+getstops(char *cp)
 {
-	register int i;
+	int i;
 
 	nstops = 0;
 	for (;;) {
@@ -162,11 +147,12 @@ getstops(cp)
 			i = i * 10 + *cp++ - '0';
 		if (i <= 0 || i > 256) {
 bad:
-			fprintf(stderr, "Bad tab stop spec\n");
-			exit(1);
+			errx(1, "Bad tab stop spec");
 		}
 		if (nstops > 0 && i <= tabstops[nstops-1])
 			goto bad;
+		if (nstops >= sizeof(tabstops) / sizeof(tabstops[0]))
+			errx(1, "Too many tab stops");
 		tabstops[nstops++] = i;
 		if (*cp == 0)
 			break;
@@ -177,8 +163,9 @@ bad:
 }
 
 static void
-usage()
+usage(void)
 {
-	(void)fprintf (stderr, "usage: expand [-t tablist] [file ...]\n");
+	extern char *__progname;
+	fprintf (stderr, "usage: %s [-t tablist] [file ...]\n", __progname);
 	exit(1);
 }

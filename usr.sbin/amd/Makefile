@@ -1,6 +1,5 @@
-#       from: @(#)Makefile	8.1 (Berkeley) 6/6/93
-#	$Id: Makefile,v 1.3 1994/06/13 20:46:42 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.4 2001/01/03 04:53:52 millert Exp $
 
-SUBDIR= amd amq fsinfo mk-amd-map
+SUBDIR= amd amq doc
 
 .include <bsd.subdir.mk>

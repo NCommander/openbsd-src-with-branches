@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: isr.h,v 1.3 2007/05/25 21:27:15 krw Exp $	*/
 /*	$NetBSD: isr.h,v 1.1 2000/01/05 08:49:04 nisimura Exp $	*/
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -37,6 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <sys/evcount.h>
 #include <sys/queue.h>
 
 /*
@@ -45,7 +39,7 @@
 #define NISRAUTOVEC	8
 
 /*
- * Autovectored interupt handler cookie.
+ * Autovectored interrupt handler cookie.
  */
 struct isr_autovec {
 	LIST_ENTRY(isr_autovec) isr_link;
@@ -53,6 +47,7 @@ struct isr_autovec {
 	void		*isr_arg;
 	int		isr_ipl;
 	int		isr_priority;
+	struct evcount	isr_count;
 };
 
 typedef LIST_HEAD(, isr_autovec) isr_autovec_list_t;
@@ -66,5 +61,5 @@ typedef LIST_HEAD(, isr_autovec) isr_autovec_list_t;
 #define ISRPRI_TTYNOBUF		3
 
 void	isrinit(void);
-void	isrlink_autovec(int (*)(void *), void *, int, int);
+void	isrlink_autovec(int (*)(void *), void *, int, int, const char *);
 void	isrdispatch_autovec(int);

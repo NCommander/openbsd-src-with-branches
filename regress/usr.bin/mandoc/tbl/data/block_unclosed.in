@@ -1,4 +1,5 @@
-.TH TBL-DATA-BLOCK_UNCLOSED 1 "January 28, 2015" OpenBSD
+.\" $OpenBSD$
+.TH TBL-DATA-BLOCK_UNCLOSED 1 "January 28, 2015"
 .SH NAME
 tbl-data-block_unclosed \- unclosed text block
 .SH DESCRIPTION
@@ -9,6 +10,11 @@ lll.
 begin:T{
 middle
 T}:end
+T{
+begin
+T}:middle:T{
+end
+T}
 incomplete:T{
 block
 .TE

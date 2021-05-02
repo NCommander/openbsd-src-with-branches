@@ -1,3 +1,4 @@
+/*	$OpenBSD: usrdb.c,v 1.9 2010/08/30 16:14:36 matthew Exp $	*/
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
  * All rights reserved.
@@ -28,25 +29,23 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LINT
-static char rcsid[] = "$Id: usrdb.c,v 1.4 1995/04/24 13:26:26 cgd Exp $";
-#endif
-
 #include <sys/types.h>
 #include <sys/acct.h>
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <pwd.h>
+#include <stdio.h>
 #include <string.h>
 #include "extern.h"
 #include "pathnames.h"
 
-static int uid_compare __P((const DBT *, const DBT *));
+static int uid_compare(const DBT *, const DBT *);
 
 static DB	*usracct_db;
 
 int
-usracct_init()
+usracct_init(void)
 {
 	DB *saved_usracct_db;
 	BTREEINFO bti;
@@ -85,7 +84,7 @@ usracct_init()
 				warn("initializing user accounting stats");
 				error = -1;
 				break;
-			} 
+			}
 
 			serr = DB_SEQ(saved_usracct_db, &key, &data, R_NEXT);
 			if (serr < 0) {
@@ -109,19 +108,18 @@ out:
 }
 
 void
-usracct_destroy()
+usracct_destroy(void)
 {
 	if (DB_CLOSE(usracct_db) < 0)
 		warn("destroying user accounting stats");
 }
 
 int
-usracct_add(ci)
-	const struct cmdinfo *ci;
+usracct_add(const struct cmdinfo *ci)
 {
 	DBT key, data;
 	struct userinfo newui;
-	u_long uid;
+	uid_t uid;
 	int rv;
 
 	uid = ci->ci_uid;
@@ -130,13 +128,13 @@ usracct_add(ci)
 
 	rv = DB_GET(usracct_db, &key, &data, 0);
 	if (rv < 0) {
-		warn("get key %d from user accounting stats", uid);
+		warn("get key %u from user accounting stats", uid);
 		return (-1);
 	} else if (rv == 0) {	/* it's there; copy whole thing */
 		/* add the old data to the new data */
 		memcpy(&newui, data.data, data.size);
 		if (newui.ui_uid != uid) {
-			warnx("key %d != expected record number %d",
+			warnx("key %u != expected record number %u",
 			    newui.ui_uid, uid);
 			warnx("inconsistent user accounting stats");
 			return (-1);
@@ -152,11 +150,11 @@ usracct_add(ci)
 	newui.ui_mem += ci->ci_mem;
 	newui.ui_io += ci->ci_io;
 
-	data.data = &newui; 
+	data.data = &newui;
 	data.size = sizeof(newui);
 	rv = DB_PUT(usracct_db, &key, &data, 0);
 	if (rv < 0) {
-		warn("add key %d to user accounting stats", uid);
+		warn("add key %u to user accounting stats", uid);
 		return (-1);
 	} else if (rv != 0) {
 		warnx("DB_PUT returned 1");
@@ -167,12 +165,11 @@ usracct_add(ci)
 }
 
 int
-usracct_update()
+usracct_update(void)
 {
 	DB *saved_usracct_db;
 	DBT key, data;
 	BTREEINFO bti;
-	u_long uid;
 	int error, serr, nerr;
 
 	memset(&bti, 0, sizeof(bti));
@@ -212,7 +209,6 @@ usracct_update()
 		warn("syncing process accounting summary");
 		error = -1;
 	}
-out:
 	if (DB_CLOSE(saved_usracct_db) < 0) {
 		warn("closing process accounting summary");
 		error = -1;
@@ -221,7 +217,7 @@ out:
 }
 
 void
-usracct_print()
+usracct_print(void)
 {
 	DBT key, data;
 	struct userinfo uistore, *ui = &uistore;
@@ -235,7 +231,7 @@ usracct_print()
 	while (rv == 0) {
 		memcpy(ui, data.data, sizeof(struct userinfo));
 
-		printf("%-8s %9qu ",
+		printf("%-8s %9llu ",
 		    user_from_uid(ui->ui_uid, 0), ui->ui_calls);
 
 		t = (double) (ui->ui_utime + ui->ui_stime) /
@@ -243,19 +239,19 @@ usracct_print()
 		if (t < 0.0001)		/* kill divide by zero */
 			t = 0.0001;
 
-		printf("%12.2lf%s ", t / 60.0, "cpu");
+		printf("%12.2f%s ", t / 60.0, "cpu");
 
 		/* ui->ui_calls is always != 0 */
 		if (dflag)
-			printf("%12qu%s", ui->ui_io / ui->ui_calls, "avio");
+			printf("%12llu%s", ui->ui_io / ui->ui_calls, "avio");
 		else
-			printf("%12qu%s", ui->ui_io, "tio");
+			printf("%12llu%s", ui->ui_io, "tio");
 
 		/* t is always >= 0.0001; see above */
 		if (kflag)
-			printf("%12qu%s", ui->ui_mem / t, "k");
+			printf("%12.0f%s", ui->ui_mem / t, "k");
 		else
-			printf("%12qu%s", ui->ui_mem, "k*sec");
+			printf("%12llu%s", ui->ui_mem, "k*sec");
 
 		printf("\n");
 
@@ -266,14 +262,13 @@ usracct_print()
 }
 
 static int
-uid_compare(k1, k2)
-	const DBT *k1, *k2;
+uid_compare(const DBT *k1, const DBT *k2)
 {
-	u_long d1, d2;
+	uid_t d1, d2;
 
 	memcpy(&d1, k1->data, sizeof(d1));
 	memcpy(&d2, k2->data, sizeof(d2));
-	
+
 	if (d1 < d2)
 		return -1;
 	else if (d1 == d2)

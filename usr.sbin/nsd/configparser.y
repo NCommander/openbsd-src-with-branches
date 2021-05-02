@@ -669,7 +669,7 @@ key_option:
       int size;
 
       cfg_parser->key->secret = region_strdup(cfg_parser->opt->region, $2);
-      size = b64_pton($2, data, sizeof(data));
+      size = __b64_pton($2, data, sizeof(data));
       if(size == -1) {
         yyerror("cannot base64 decode tsig secret %s",
           cfg_parser->key->name?

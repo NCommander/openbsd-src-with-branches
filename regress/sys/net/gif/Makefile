@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.4 2020/01/08 21:28:00 bluhm Exp $
 
-# Copyright (c) 2018 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2018-2020 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -52,82 +52,94 @@ DST_TUNNEL6_${N2} =		${SRC_TUNNEL6_${N1}}
 .include <bsd.own.mk>
 
 .if ! (make(clean) || make(cleandir) || make(obj))
-SYSCTL_FORWARDING !=	sysctl net.inet.ip.forwarding
 
+SYSCTL_FORWARDING !=	sysctl net.inet.ip.forwarding
 .if ${SYSCTL_FORWARDING:C/.*=//} != 1
 regress:
-	@echo "${SYSCTL_FORWARDING}"
-	@echo set this sysctl to 1 for additional tests
+	@echo sysctl: "${SYSCTL_FORWARDING}"
+	@echo Set sysctl to 1 to run this regress.
 	@echo SKIPPED
 .endif
 
-PF_SKIP_IFACE !=	${SUDO} /sbin/pfctl -sI -v | sed -n 's/ (skip)//p'
-
-.if ! empty(PF_SKIP_IFACE:Mlo*:Nlo0)
+PF_STATUS !=	${SUDO} pfctl -si | sed -n 's/^Status: \([^ ]*\) .*/\1/p'
+.if empty(PF_STATUS:MEnabled)
 regress:
-	@echo "${PF_SKIP_IFACE}"
+	@echo pf status: "${PF_STATUS}"
+	@echo Enable pf to run this regress.
+	@echo SKIPPED
+.endif
+PF_SKIP !=	${SUDO} pfctl -sI -v | sed -n 's/ (skip)//p'
+.if ! empty(PF_SKIP:Mlo*:Nlo0)
+regress:
+	@echo pf skip: "${PF_SKIP}"
 	@echo Do not set skip on interface lo, lo${N1}, or lo${N2}.
 	@echo SKIPPED
 .endif
+
+PF_ANCHOR !=	${SUDO} pfctl -sr | sed -n 's/^anchor "\([^"]*\)" all$$/\1/p'
+.if empty(PF_ANCHOR:Mregress)
+regress:
+	@echo pf anchor: "${PF_ANCHOR}"
+	@echo Need anchor '"regress"' in pf.conf to load additional rules.
+	@echo SKIPPED
 .endif
 
-.PHONY: check-rdomains ifconfig unconfig
+.endif
 
-check-rdomains:
-	# check if rdomains are busy
+.PHONY: busy-rdomains ifconfig unconfig pfctl
+
+REGRESS_SETUP_ONCE +=	busy-rdomains
+busy-rdomains:
+	# Check if rdomains are busy.
 .for n in ${NUMS}
-	@if /sbin/ifconfig | grep -v '^lo${n}:' | grep ' rdomain ${n} '; then\
-	    echo routing domain ${n} is already used >&2; exit 1; fi
+	@if /sbin/ifconfig | grep -v '^lo$n:' | grep ' rdomain $n '; then\
+	    echo routing domain $n is already used >&2; exit 1; fi
 .endfor
 
-ifconfig: check-rdomains unconfig
-	# create and configure loopback interfaces
+REGRESS_SETUP_ONCE +=	ifconfig
+ifconfig: unconfig
+	# Create and configure loopback interfaces.
 .for n in ${NUMS}
-	${SUDO} /sbin/ifconfig lo${n} rdomain ${n}
-	${SUDO} /sbin/ifconfig lo${n} inet 127.0.0.1/8
-	${SUDO} /sbin/ifconfig lo${n} inet6 ::1/128
-	${SUDO} /sbin/ifconfig lo${n} inet ${SRC_TUNNEL4_${n}} alias
-	${SUDO} /sbin/ifconfig lo${n} inet6 ${SRC_TUNNEL6_${n}} alias
-	${SUDO} /sbin/route -n -T ${n} add -inet -host ${DST_TUNNEL4_${n}}\
-	    127.0.0.1
-	${SUDO} /sbin/route -n -T ${n} add -inet6 -host ${DST_TUNNEL6_${n}}\
-	    ::1
-	${SUDO} /sbin/ifconfig gif${n}4 create rdomain ${n}
-	${SUDO} /sbin/ifconfig gif${n}4 tunnel ${SRC_TUNNEL4_${n}}\
-	    ${DST_TUNNEL4_${n}} tunneldomain ${n}
-	${SUDO} /sbin/ifconfig gif${n}4 inet ${TUNNEL4_SRC_ADDR4_${n}}/32\
-	    ${TUNNEL4_DST_ADDR4_${n}}
-	${SUDO} /sbin/ifconfig gif${n}4 inet6 ${TUNNEL4_SRC_ADDR6_${n}}\
-	    ${TUNNEL4_DST_ADDR6_${n}}
-	${SUDO} /sbin/ifconfig gif${n}6 create rdomain ${n}
-	${SUDO} /sbin/ifconfig gif${n}6 tunnel ${SRC_TUNNEL6_${n}}\
-	    ${DST_TUNNEL6_${n}} tunneldomain ${n}
-	${SUDO} /sbin/ifconfig gif${n}6 inet ${TUNNEL6_SRC_ADDR4_${n}}/32\
-	    ${TUNNEL6_DST_ADDR4_${n}}
-	${SUDO} /sbin/ifconfig gif${n}6 inet6 ${TUNNEL6_SRC_ADDR6_${n}}\
-	    ${TUNNEL6_DST_ADDR6_${n}}
+	${SUDO} ifconfig lo$n rdomain $n
+	${SUDO} ifconfig lo$n inet 127.0.0.1/8
+	${SUDO} ifconfig lo$n inet6 ::1/128
+	${SUDO} ifconfig lo$n inet ${SRC_TUNNEL4_$n} alias
+	${SUDO} ifconfig lo$n inet6 ${SRC_TUNNEL6_$n} alias
+	${SUDO} route -n -T $n add -inet -host ${DST_TUNNEL4_$n} 127.0.0.1
+	${SUDO} route -n -T $n add -inet6 -host ${DST_TUNNEL6_$n} ::1
+	${SUDO} ifconfig gif$n4 create rdomain $n tunneldomain $n
+	${SUDO} ifconfig gif$n4 tunnel ${SRC_TUNNEL4_$n} ${DST_TUNNEL4_$n}
+	${SUDO} ifconfig gif$n4 inet ${TUNNEL4_SRC_ADDR4_$n}/32\
+	    ${TUNNEL4_DST_ADDR4_$n}
+	${SUDO} ifconfig gif$n4 inet6 ${TUNNEL4_SRC_ADDR6_$n}\
+	    ${TUNNEL4_DST_ADDR6_$n}
+	${SUDO} ifconfig gif$n6 create rdomain $n tunneldomain $n
+	${SUDO} ifconfig gif$n6 tunnel ${SRC_TUNNEL6_$n}\
+	    ${DST_TUNNEL6_$n}
+	${SUDO} ifconfig gif$n6 inet ${TUNNEL6_SRC_ADDR4_$n}/32\
+	    ${TUNNEL6_DST_ADDR4_$n}
+	${SUDO} ifconfig gif$n6 inet6 ${TUNNEL6_SRC_ADDR6_$n}\
+	    ${TUNNEL6_DST_ADDR6_$n}
 .endfor
+	# Wait until DAD for inet6 tunnel addresses has finished.
+	sleep 1
 
+REGRESS_CLEANUP +=	unconfig
 unconfig:
-	# destroy interfaces
+	# Destroy interfaces, keep lo as routing domain cannot be destroyed.
 .for n in ${NUMS}
-	-${SUDO} /sbin/ifconfig lo${n} inet 127.0.0.1 delete
-	-${SUDO} /sbin/ifconfig lo${n} inet6 ::1 delete
-	-${SUDO} /sbin/ifconfig lo${n} inet ${SRC_TUNNEL4_${n}} delete
-	-${SUDO} /sbin/ifconfig lo${n} inet6 ${SRC_TUNNEL6_${n}} delete
-	-${SUDO} /sbin/ifconfig gif${n}4 destroy
-	-${SUDO} /sbin/ifconfig gif${n}6 destroy
+	-${SUDO} ifconfig lo$n rdomain $n
+	-${SUDO} ifconfig lo$n inet 127.0.0.1 delete
+	-${SUDO} ifconfig lo$n inet6 ::1 delete
+	-${SUDO} ifconfig lo$n inet ${SRC_TUNNEL4_$n} delete
+	-${SUDO} ifconfig lo$n inet6 ${SRC_TUNNEL6_$n} delete
+	-${SUDO} ifconfig gif$n4 destroy
+	-${SUDO} ifconfig gif$n6 destroy
 .endfor
-	rm -f stamp-setup
+	rm -f stamp-ifconfig
 
-stamp-setup: Makefile
-	@echo '\n======== $@ ========'
-	${.MAKE} -C ${.CURDIR} ifconfig
-	sleep 1  # XXX test is unreliable without sleep
-	date >$@
-
-# Create python include file containing the addresses.
 addr.py: Makefile
+	# Create python include file containing the addresses.
 	rm -f $@ $@.tmp
 .for N in N1 N2
 	echo '${N}="${${N}}"' >>$@.tmp
@@ -137,82 +149,68 @@ addr.py: Makefile
 .endfor
 	mv $@.tmp $@
 
-# Load the pf rules into the kernel.
-stamp-pfctl: addr.py pf.conf stamp-setup
-	@echo '\n======== $@ ========'
+REGRESS_SETUP_ONCE +=	pfctl
+pfctl: addr.py pf.conf
+	# Load the pf rules into the kernel.
 	cat addr.py ${.CURDIR}/pf.conf | /sbin/pfctl -n -f -
-	cat addr.py ${.CURDIR}/pf.conf | ${SUDO} /sbin/pfctl -a regress -f -
-	@date >$@
+	cat addr.py ${.CURDIR}/pf.conf | ${SUDO} pfctl -a regress -f -
+	# ifconfig gif inet6 DAD created tunnel states based on old pf rules
+	${SUDO} /sbin/pfctl -Fs
 
 .for n in ${N1} ${N2}
 
-REGRESS_TARGETS +=	run-regress-ping-local-${n}
-run-regress-ping-local-${n}: stamp-setup stamp-pfctl
-	@echo '\n======== $@ ========'
-	# Ping localhost in routing domain ${n}.
-	/sbin/ping -n -w 1 -c 1 -V ${n} 127.0.0.1
+REGRESS_TARGETS +=	run-ping-local-$n
+run-ping-local-$n:
+	# Ping localhost in routing domain $n.
+	/sbin/ping -n -w 1 -c 1 -V $n 127.0.0.1
 
-REGRESS_TARGETS +=	run-regress-ping-src-${n}
-run-regress-ping-src-${n}: stamp-setup stamp-pfctl
-	@echo '\n======== $@ ========'
-	# Ping source address in local routing domain.
-	/sbin/ping -n -w 1 -c 1 -V ${n} ${SRC_TUNNEL4_${n}}
+REGRESS_TARGETS +=	run-ping-src-$n
+run-ping-src-$n:
+	# Ping source address in local routing domain.  SRC_TUNNEL4_$n
+	/sbin/ping -n -w 1 -c 1 -V $n ${SRC_TUNNEL4_$n}
 
-REGRESS_TARGETS +=	run-regress-ping-dst-${n}
-run-regress-ping-dst-${n}: stamp-setup stamp-pfctl
-	@echo '\n======== $@ ========'
-	# Ping destination address in other routing domain.
-	/sbin/ping -n -w 1 -c 1 -V ${n} ${DST_TUNNEL4_${n}}
+REGRESS_TARGETS +=	run-ping-dst-$n
+run-ping-dst-$n:
+	# Ping destination address in other routing domain.  DST_TUNNEL4_$n
+	/sbin/ping -n -w 1 -c 1 -V $n ${DST_TUNNEL4_$n}
 
-REGRESS_TARGETS +=	run-regress-ping-tunnel4-${n}
-run-regress-ping-tunnel4-${n}: stamp-setup stamp-pfctl
-	@echo '\n======== $@ ========'
-	# Ping IPv4 address through IPv4 tunnel.
-	/sbin/ping -n -w 1 -c 1 -V ${n} ${TUNNEL4_DST_ADDR4_${n}}
+REGRESS_TARGETS +=	run-ping-tunnel4-$n
+run-ping-tunnel4-$n:
+	# Ping IPv4 address through IPv4 tunnel.  TUNNEL4_DST_ADDR4_$n
+	/sbin/ping -n -w 1 -c 1 -V $n ${TUNNEL4_DST_ADDR4_$n}
 
-REGRESS_TARGETS +=	run-regress-ping-tunnel6-${n}
-run-regress-ping-tunnel6-${n}: stamp-setup stamp-pfctl
-	@echo '\n======== $@ ========'
-	# Ping IPv4 address through IPv6 tunnel.
-	/sbin/ping -n -w 1 -c 1 -V ${n} ${TUNNEL6_DST_ADDR4_${n}}
+REGRESS_TARGETS +=	run-ping-tunnel6-$n
+run-ping-tunnel6-$n:
+	# Ping IPv4 address through IPv6 tunnel.  TUNNEL6_DST_ADDR4_$n
+	/sbin/ping -n -w 1 -c 1 -V $n ${TUNNEL6_DST_ADDR4_$n}
 
-REGRESS_TARGETS +=	run-regress-ping6-local-${n}
-run-regress-ping6-local-${n}: stamp-setup stamp-pfctl
-	@echo '\n======== $@ ========'
-	# Ping localhost in routing domain ${n}.
-	/sbin/ping6 -n -w 1 -c 1 -V ${n} ::1
+REGRESS_TARGETS +=	run-ping6-local-$n
+run-ping6-local-$n:
+	# Ping localhost in routing domain $n.
+	/sbin/ping6 -n -w 1 -c 1 -V $n ::1
 
-REGRESS_TARGETS +=	run-regress-ping6-src-${n}
-run-regress-ping6-src-${n}: stamp-setup stamp-pfctl
-	@echo '\n======== $@ ========'
-	# Ping source address in local routing domain.
-	/sbin/ping6 -n -w 1 -c 1 -V ${n} ${SRC_TUNNEL6_${n}}
+REGRESS_TARGETS +=	run-ping6-src-$n
+run-ping6-src-$n:
+	# Ping source address in local routing domain.  SRC_TUNNEL6_$n
+	/sbin/ping6 -n -w 1 -c 1 -V $n ${SRC_TUNNEL6_$n}
 
-REGRESS_TARGETS +=	run-regress-ping6-dst-${n}
-run-regress-ping6-dst-${n}: stamp-setup stamp-pfctl
-	@echo '\n======== $@ ========'
-	# Ping destination address in other routing domain.
-	/sbin/ping6 -n -w 1 -c 1 -V ${n} ${DST_TUNNEL6_${n}}
+REGRESS_TARGETS +=	run-ping6-dst-$n
+run-ping6-dst-$n:
+	# Ping destination address in other routing domain.  DST_TUNNEL6_$n
+	/sbin/ping6 -n -w 1 -c 1 -V $n ${DST_TUNNEL6_$n}
 
-REGRESS_TARGETS +=	run-regress-ping6-tunnel4-${n}
-run-regress-ping6-tunnel4-${n}: stamp-setup stamp-pfctl
-	@echo '\n======== $@ ========'
-	# Ping IPv6 address through IPv4 tunnel.
-	/sbin/ping6 -n -w 1 -c 1 -V ${n} ${TUNNEL4_DST_ADDR6_${n}}
+REGRESS_TARGETS +=	run-ping6-tunnel4-$n
+run-ping6-tunnel4-$n:
+	# Ping IPv6 address through IPv4 tunnel.  TUNNEL4_DST_ADDR6_$n
+	/sbin/ping6 -n -w 1 -c 1 -V $n ${TUNNEL4_DST_ADDR6_$n}
 
-REGRESS_TARGETS +=	run-regress-ping6-tunnel6-${n}
-run-regress-ping6-tunnel6-${n}: stamp-setup stamp-pfctl
-	@echo '\n======== $@ ========'
-	# Ping IPv6 address through IPv6 tunnel.
-	/sbin/ping6 -n -w 1 -c 1 -V ${n} ${TUNNEL6_DST_ADDR6_${n}}
+REGRESS_TARGETS +=	run-ping6-tunnel6-$n
+run-ping6-tunnel6-$n:
+	# Ping IPv6 address through IPv6 tunnel.  TUNNEL6_DST_ADDR6_$n
+	/sbin/ping6 -n -w 1 -c 1 -V $n ${TUNNEL6_DST_ADDR6_$n}
 
 .endfor
 
-REGRESS_TARGETS +=	run-regress-cleanup
-run-regress-cleanup:
-	@echo '\n======== $@ ========'
-	${.MAKE} -C ${.CURDIR} unconfig
-
-CLEANFILES +=	addr.py *.pyc *.log stamp-*
+CLEANFILES +=	addr.py *.pyc *.log
 
 .include <bsd.regress.mk>

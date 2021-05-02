@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Proc.pm,v 1.8 2016/05/03 19:13:04 bluhm Exp $
 
-# Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2010-2020 Alexander Bluhm <bluhm@openbsd.org>
 # Copyright (c) 2014 Florian Riehm <mail@friehm.de>
 #
 # Permission to use, copy, modify, and distribute this software for any
@@ -19,6 +19,7 @@ use strict;
 use warnings;
 
 package Proc;
+use BSD::Resource qw(getrlimit setrlimit get_rlimits);
 use Carp;
 use Errno;
 use IO::File;
@@ -64,7 +65,9 @@ sub new {
 	$self->{down} ||= "Shutdown";
 	$self->{func} && ref($self->{func}) eq 'CODE'
 	    or croak "$class func not given";
-	!$self->{ktrace} || $self->{ktracefile}
+	$self->{ktracepid} && $self->{ktraceexec}
+	    and croak "$class ktrace both pid and exec given";
+	!($self->{ktracepid} || $self->{ktraceexec}) || $self->{ktracefile}
 	    or croak "$class ktrace file not given";
 	$self->{logfile}
 	    or croak "$class log file not given";
@@ -72,6 +75,7 @@ sub new {
 	    or die "$class log file $self->{logfile} create failed: $!";
 	$fh->autoflush;
 	$self->{log} = $fh;
+	$self->{ppid} = $$;
 	return bless $self, $class;
 }
 
@@ -106,14 +110,29 @@ sub run {
 	    or die ref($self), " dup STDIN failed: $!";
 	close($reader);
 
-	if ($self->{ktrace}) {
-		my @cmd = ("ktrace", "-f", $self->{ktracefile}, "-p", $$);
+	if ($self->{rlimit}) {
+		my $rlimits = get_rlimits()
+		    or die ref($self), " get_rlimits failed: $!";
+		while (my($name, $newsoft) = each %{$self->{rlimit}}) {
+			defined(my $resource = $rlimits->{$name})
+			    or die ref($self), " rlimit $name does not exists";
+			my ($soft, $hard) = getrlimit($resource)
+			    or die ref($self), " getrlimit $name failed: $!";
+			setrlimit($resource, $newsoft, $hard) or die ref($self),
+			    " setrlimit $name to $newsoft failed: $!";
+		}
+	}
+	if ($self->{ktracepid}) {
+		my @cmd = ($self->{ktracepid}, "-i", "-f", $self->{ktracefile},
+		    "-p", $$);
 		system(@cmd)
 		    and die ref($self), " system '@cmd' failed: $?";
 	}
-	$self->child();
-	print STDERR $self->{up}, "\n";
-	$self->{func}->($self);
+	do {
+		$self->child();
+		print STDERR $self->{up}, "\n";
+		$self->{func}->($self);
+	} while ($self->{redo});
 	print STDERR "Shutdown", "\n";
 
 	IO::Handle::flush(\*STDOUT);
@@ -124,6 +143,9 @@ sub run {
 sub wait {
 	my $self = shift;
 	my $flags = shift;
+
+	# if we a not the parent process, assume the child is still running
+	return 0 unless $self->{ppid} == $$;
 
 	my $pid = $self->{pid}
 	    or croak ref($self), " no child pid";
@@ -142,20 +164,23 @@ sub wait {
 
 sub loggrep {
 	my $self = shift;
-	my($regex, $timeout) = @_;
+	my($regex, $timeout, $count) = @_;
+	my $exit = ($self->{exit} // 0) << 8;
 
-	my $end = time() + $timeout if $timeout;
+	my $end;
+	$end = time() + $timeout if $timeout;
 
 	do {
 		my($kid, $status, $code) = $self->wait(WNOHANG);
-		if ($kid > 0 && $status != 0) {
+		if ($kid > 0 && $status != $exit) {
 			# child terminated with failure
 			die ref($self), " child status: $status $code";
 		}
 		open(my $fh, '<', $self->{logfile})
 		    or die ref($self), " log file open failed: $!";
 		my @match = grep { /$regex/ } <$fh>;
-		return wantarray ? @match : $match[0] if @match;
+		return wantarray ? @match : $match[0]
+		    if !$count && @match or $count && @match >= $count;
 		close($fh);
 		# pattern not found
 		if ($kid == 0) {
@@ -181,7 +206,7 @@ sub up {
 
 sub down {
 	my $self = shift;
-	my $timeout = shift || 30;
+	my $timeout = shift || 60;
 	$self->loggrep(qr/$self->{down}/, $timeout)
 	    or croak ref($self), " no '$self->{down}' in $self->{logfile} ".
 		"after $timeout seconds";
@@ -191,6 +216,22 @@ sub down {
 sub kill_child {
 	my $self = shift;
 	kill_children($self->{pid});
+	return $self;
+}
+
+sub kill {
+	my $self = shift;
+	my $sig = shift // 'TERM';
+	my $pid = shift // $self->{pid};
+
+	if (kill($sig => $pid) != 1) {
+		my $sudo = $ENV{SUDO};
+		$sudo && $!{EPERM}
+		    or die ref($self), " kill $pid failed: $!";
+		my @cmd = ($sudo, '/bin/kill', "-$sig", $pid);
+		system(@cmd)
+		    and die ref($self), " sudo kill $pid failed: $?";
+	}
 	return $self;
 }
 
