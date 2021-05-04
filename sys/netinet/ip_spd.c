@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_spd.c,v 1.101 2019/12/10 17:58:54 tobhe Exp $ */
+/* $OpenBSD: ip_spd.c,v 1.102 2020/06/24 22:03:43 cheloha Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
  *
@@ -50,7 +50,6 @@ void	ipsp_delete_acquire(struct ipsec_acquire *);
 
 struct pool ipsec_policy_pool;
 struct pool ipsec_acquire_pool;
-int ipsec_policy_pool_initialized = 0;
 
 /* Protected by the NET_LOCK(). */
 int ipsec_acquire_pool_initialized = 0;
