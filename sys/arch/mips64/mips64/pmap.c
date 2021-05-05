@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.116 2021/03/11 11:16:59 jsg Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.117 2021/05/01 16:11:11 visa Exp $	*/
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -403,8 +403,6 @@ pmap_bootstrap(void)
 	 */
 	for (i = Sysmapsize, spte = Sysmap; i != 0; i--, spte++)
 		*spte = PG_G;
-
-	tlb_set_gbase((vaddr_t)Sysmap, Sysmapsize);
 
 	for (i = 0; i < MAXCPUS; i++) {
 		pmap_asid_info[i].pma_asidgen = 1;

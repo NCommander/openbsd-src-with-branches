@@ -1,4 +1,4 @@
-/*	$OpenBSD: tlbhandler.S,v 1.50 2019/01/05 12:18:13 visa Exp $ */
+/*	$OpenBSD: tlbhandler.S,v 1.51 2021/05/01 16:11:11 visa Exp $ */
 
 /*
  * Copyright (c) 1995-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -621,12 +621,3 @@ LEAF(tlb_set_page_mask, 0)
 	j	ra
 	nop
 END(tlb_set_page_mask)
-
-/*
- *	Initialize the kernel page table pointer.
- *	This is a no-op on non-R8000 processors.
- */
-LEAF(tlb_set_gbase, 0)
-	j	ra
-	 nop
-END(tlb_set_gbase)
