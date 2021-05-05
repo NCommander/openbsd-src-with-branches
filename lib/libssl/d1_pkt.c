@@ -1,4 +1,4 @@
-/* $OpenBSD: d1_pkt.c,v 1.93 2021/02/20 14:14:16 tb Exp $ */
+/* $OpenBSD: d1_pkt.c,v 1.94 2021/05/02 17:18:10 jsing Exp $ */
 /*
  * DTLS implementation written by Nagendra Modadugu
  * (nagendra@cs.stanford.edu) for the OpenSSL project 2005.
@@ -1221,11 +1221,4 @@ dtls1_reset_read_seq_numbers(SSL *s)
 	D1I(s)->r_epoch++;
 	memcpy(&(D1I(s)->bitmap), &(D1I(s)->next_bitmap), sizeof(DTLS1_BITMAP));
 	memset(&(D1I(s)->next_bitmap), 0, sizeof(DTLS1_BITMAP));
-}
-
-void
-dtls1_reset_write_seq_numbers(SSL *s)
-{
-	D1I(s)->w_epoch++;
-	tls12_record_layer_set_write_epoch(s->internal->rl, D1I(s)->w_epoch);
 }
