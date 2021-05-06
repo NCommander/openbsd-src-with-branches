@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkeyv2_parsemessage.c,v 1.54 2019/02/01 13:32:00 mpi Exp $	*/
+/*	$OpenBSD: pfkeyv2_parsemessage.c,v 1.55 2020/04/23 19:38:08 tobhe Exp $	*/
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -272,10 +272,6 @@ uint64_t sadb_exts_required_out[SADB_MAX+1] =
 	/* X_REPPOLICY */
 	BITMAP_X_SRC_FLOW | BITMAP_X_DST_FLOW | BITMAP_X_SRC_MASK | BITMAP_X_DST_MASK | BITMAP_X_FLOW_TYPE,
 };
-
-int pfkeyv2_parsemessage(void *, int, void **);
-
-#define RETURN_EINVAL(line) goto einval;
 
 int
 pfkeyv2_parsemessage(void *p, int len, void **headers)
