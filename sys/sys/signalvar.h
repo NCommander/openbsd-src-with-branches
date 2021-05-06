@@ -1,4 +1,4 @@
-/*	$OpenBSD: signalvar.h,v 1.45 2020/11/08 20:37:24 mpi Exp $	*/
+/*	$OpenBSD: signalvar.h,v 1.46 2021/03/04 09:02:38 mpi Exp $	*/
 /*	$NetBSD: signalvar.h,v 1.17 1996/04/22 01:23:31 christos Exp $	*/
 
 /*
@@ -103,6 +103,7 @@ struct sigio_ref;
 /*
  * Machine-independent functions:
  */
+void	proc_unstop(struct proc *, int);
 int	coredump(struct proc *p);
 void	execsigs(struct proc *p);
 int	cursig(struct proc *p);

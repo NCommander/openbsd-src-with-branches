@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched_bsd.c,v 1.64 2020/10/15 07:49:55 mpi Exp $	*/
+/*	$OpenBSD: sched_bsd.c,v 1.65 2020/12/10 04:26:50 gnezdo Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -456,12 +456,6 @@ setrunnable(struct proc *p)
 	default:
 		panic("setrunnable");
 	case SSTOP:
-		/*
-		 * If we're being traced (possibly because someone attached us
-		 * while we were stopped), check for a signal from the debugger.
-		 */
-		if ((pr->ps_flags & PS_TRACED) != 0 && pr->ps_xsig != 0)
-			atomic_setbits_int(&p->p_siglist, sigmask(pr->ps_xsig));
 		prio = p->p_usrpri;
 		unsleep(p);
 		break;
