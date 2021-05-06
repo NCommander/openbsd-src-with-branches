@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdt.c,v 1.25 2020/07/18 09:44:59 kettenis Exp $	*/
+/*	$OpenBSD: fdt.c,v 1.26 2020/12/30 06:06:31 gkoehler Exp $	*/
 
 /*
  * Copyright (c) 2009 Dariusz Swiderski <sfires@sfires.net>
@@ -960,6 +960,15 @@ OF_getprop(int handle, char *prop, void *buf, int buflen)
 	if (len > 0)
 		memcpy(buf, data, min(len, buflen));
 	return len;
+}
+
+int
+OF_getpropbool(int handle, char *prop)
+{
+	void *node = (char *)tree.header + handle;
+	char *data;
+	
+	return (fdt_node_property(node, prop, &data) >= 0);
 }
 
 uint32_t
