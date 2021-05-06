@@ -1,4 +1,4 @@
-/*	$OpenBSD: gpt.h,v 1.6 2016/01/09 18:10:57 krw Exp $	*/
+/*	$OpenBSD: gpt.h,v 1.7 2021/01/30 18:16:36 krw Exp $	*/
 /*
  * Copyright (c) 2015 Markus Muller <mmu@grummel.net>
  * Copyright (c) 2015 Kenneth R Westerback <krw@openbsd.org>
@@ -17,7 +17,7 @@
  */
 
 void		GPT_get_gpt(int);
-int		GPT_get_hdr(off_t);
+int		GPT_get_header(off_t);
 int		GPT_get_partition_table(off_t);
 int		GPT_get_lba_start(unsigned int);
 int		GPT_get_lba_end(unsigned int);
