@@ -1,4 +1,4 @@
-/*	$OpenBSD: bell.c,v 1.4 2016/01/03 19:37:08 lum Exp $	*/
+/*	$OpenBSD: bell.c,v 1.5 2019/07/17 18:18:37 lum Exp $	*/
 
 /*
  * This file is in the public domain.
@@ -24,6 +24,14 @@ bellinit(void)
 {
 	doaudiblebell = 1;
 	dovisiblebell = 0;
+}
+
+int
+dobeep_num(const char *msg, int n)
+{
+	ewprintf("%s %d", msg, n);
+	dobeep();
+	return (FALSE);
 }
 
 int
