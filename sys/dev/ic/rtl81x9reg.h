@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9reg.h,v 1.100 2016/11/16 01:27:45 dlg Exp $	*/
+/*	$OpenBSD: rtl81x9reg.h,v 1.101 2018/04/11 08:02:18 patrick Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -210,6 +210,7 @@
 #define RL_HWREV_8168EP		0x50000000
 #define RL_HWREV_8168GU		0x50800000
 #define RL_HWREV_8168H		0x54000000
+#define RL_HWREV_8168FP		0x54800000
 #define RL_HWREV_8411B		0x5c800000	
 #define RL_HWREV_8139		0x60000000
 #define RL_HWREV_8139A		0x70000000
