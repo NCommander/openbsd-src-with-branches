@@ -1,4 +1,4 @@
-/*      $OpenBSD: interpreter.c,v 1.28 2021/05/07 07:42:20 lum Exp $	*/
+/*      $OpenBSD: interpreter.c,v 1.29 2021/05/07 08:29:30 lum Exp $	*/
 /*
  * This file is in the public domain.
  *
@@ -54,6 +54,7 @@
  */
 #include <sys/queue.h>
 
+#include <ctype.h>
 #include <limits.h>
 #include <regex.h>
 #include <signal.h>
@@ -226,7 +227,7 @@ foundparen(char *funstr, int llen, int lnum)
 		} else if (*p != ' ' && *p != '\t') {
 			if (begp == NULL) {
 				begp = p;
-				if (*begp == '"')
+				if (*begp == '"' || isdigit(*begp))
 					return(dobeep_num("First char of "\
 					    "expression error line:", lnm));
 			}
