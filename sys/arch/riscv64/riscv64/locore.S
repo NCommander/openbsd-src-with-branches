@@ -1,4 +1,4 @@
-/* $OpenBSD: locore.S,v 1.1 2021/04/23 02:42:17 drahn Exp $ */
+/* $OpenBSD: locore.S,v 1.2 2021/05/10 05:58:19 jsg Exp $ */
 /*-
  * Copyright (c) 2012-2014 Andrew Turner
  * All rights reserved.
@@ -296,7 +296,7 @@ esigfill:
 	.globl	sigfillsiz
 sigfillsiz:
 	.data
-	.quad	esigfill - sigfill
+	.word	esigfill - sigfill
 
 	.text
 ENTRY(sigcode)
