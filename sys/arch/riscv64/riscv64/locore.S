@@ -1,4 +1,4 @@
-/* $OpenBSD: locore.S, 2019/10/31 mengshi.li.mars@gmail.com$ */
+/* $OpenBSD: locore.S,v 1.1 2021/04/23 02:42:17 drahn Exp $ */
 /*-
  * Copyright (c) 2012-2014 Andrew Turner
  * All rights reserved.
@@ -233,7 +233,7 @@ va:
 
 
 	/* Setup supervisor trap vector */
-	la	t0, cpu_trap_handler
+	la	t0, cpu_exception_handler
 	csrw	stvec, t0
 
 	/* Ensure sscratch is zero */
@@ -413,7 +413,7 @@ mpva:
 .option pop
 
 	/* Setup supervisor trap vector */
-	la	t0, cpu_trap_handler
+	la	t0, cpu_exception_handler
 	csrw	stvec, t0
 
 	/* Ensure sscratch is zero */
