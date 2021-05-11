@@ -1,4 +1,4 @@
-/*	$OpenBSD: ieee.h,v 1.3 2017/04/16 16:14:37 kettenis Exp $ */
+/*	$OpenBSD: ieee.h,v 1.1 2021/04/23 02:42:16 drahn Exp $ */
 /*	$NetBSD: ieee.h,v 1.1 1996/09/30 16:34:25 ws Exp $ */
 
 /*
@@ -97,7 +97,7 @@
 	(a)[1] = (uint32_t)(p)->ext_fraclm;	\
 	(a)[2] = (uint32_t)(p)->ext_frachm;	\
 	(a)[3] = (uint32_t)(p)->ext_frach;	\
-} while(0)
+} while (0)
 
 struct ieee_single {
 	u_int	sng_frac:23;
