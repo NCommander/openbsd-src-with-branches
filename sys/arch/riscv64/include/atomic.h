@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /* Public Domain */
 
 #ifndef _MACHINE_ATOMIC_H_

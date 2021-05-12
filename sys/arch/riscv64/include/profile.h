@@ -1,4 +1,5 @@
-/* $OpenBSD: profile.h,v 1.1 2021/04/23 02:42:16 drahn Exp $ */
+/*	$OpenBSD: profile.h,v 1.2 2021/05/11 14:58:08 deraadt Exp $	*/
+
 /*
  * Copyright (c) 2015 Dale Rahn <drahn@dalerahn.com>
  *

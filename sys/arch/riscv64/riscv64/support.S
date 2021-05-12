@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 2015-2020 Ruslan Bukin <br@bsdpad.com>
  * All rights reserved.

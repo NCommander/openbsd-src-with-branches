@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2020, Mars Li <mengshi.li.mars@gmail.com>
  *

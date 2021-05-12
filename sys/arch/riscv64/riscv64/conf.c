@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 1994, 1995 Charles M. Hannum.  All rights reserved.
  *

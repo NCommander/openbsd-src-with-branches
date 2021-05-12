@@ -1,4 +1,5 @@
-/* $OpenBSD: bus.h,v 1.2 2021/04/24 21:37:41 kettenis Exp $ */
+/*	$OpenBSD: bus.h,v 1.3 2021/05/05 13:28:56 jsg Exp $	*/
+
 /*
  * Copyright (c) 2003-2004 Opsycon AB Sweden.  All rights reserved.
  *

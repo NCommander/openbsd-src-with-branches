@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 2015-2018 Ruslan Bukin <br@bsdpad.com>
  * Copyright (c) 2019 Mitchell Horne

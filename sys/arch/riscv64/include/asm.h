@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2020 Brian Bamsch <bbamsch@google.com>
  * Copyright (c) 1990 The Regents of the University of California.

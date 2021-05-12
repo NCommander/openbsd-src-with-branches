@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # Standard stanzas config(8) can't run without
 maxpartitions 16
 maxusers 2 8 64

@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2019-2020 Brian Bamsch <bbamsch@google.com>
  * Copyright (c) 2008-2009,2014-2016 Dale Rahn <drahn@dalerahn.com>

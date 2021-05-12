@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2020 Mengshi Li <mengshi.li.mars@gmail.com>
  * Copyright (c) 2005,2008 Dale Rahn <drahn@openbsd.com>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.2 2021/05/05 13:12:26 kettenis Exp $ */
+/*	$OpenBSD: bus_dma.c,v 1.3 2021/05/05 19:26:51 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)

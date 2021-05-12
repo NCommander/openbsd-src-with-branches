@@ -1,4 +1,5 @@
-/*	$OpenBSD: timetc.h,v 1.2 2020/07/15 22:58:33 kettenis Exp $ */
+/*	$OpenBSD: timetc.h,v 1.1 2021/04/23 02:42:16 drahn Exp $	*/
+
 /*
  * Copyright (c) 2020 Paul Irofti <paul@irofti.net>
  *

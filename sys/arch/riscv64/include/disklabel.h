@@ -1,4 +1,5 @@
-/* $OpenBSD: disklabel.h,v 1.1 2016/12/17 23:38:33 patrick Exp $ */
+/*	$OpenBSD: disklabel.h,v 1.1 2021/04/23 02:42:16 drahn Exp $	*/
+
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *

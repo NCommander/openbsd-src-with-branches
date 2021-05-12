@@ -1,4 +1,5 @@
-/* $OpenBSD: mainbus.c,v 1.4 2021/05/04 12:46:28 kettenis Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.5 2021/05/04 16:38:06 kettenis Exp	$ */
+
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>

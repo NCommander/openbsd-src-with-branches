@@ -1,5 +1,5 @@
-/*	$OpenBSD: ieee.h,v 1.1 2021/04/23 02:42:16 drahn Exp $ */
-/*	$NetBSD: ieee.h,v 1.1 1996/09/30 16:34:25 ws Exp $ */
+/*	$OpenBSD: ieee.h,v 1.2 2021/05/11 14:58:25 deraadt Exp $	*/
+/*	$NetBSD: ieee.h,v 1.1 1996/09/30 16:34:25 ws Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993

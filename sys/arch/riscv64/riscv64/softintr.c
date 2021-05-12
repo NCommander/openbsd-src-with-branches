@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*-
  * Copyright (c) 2000, 2001 The NetBSD Foundation, Inc.
  * All rights reserved.

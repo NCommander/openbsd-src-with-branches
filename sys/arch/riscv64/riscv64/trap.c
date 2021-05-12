@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2020 Shivam Waghela <shivamwaghela@gmail.com>
  * Copyright (c) 2020 Brian Bamsch <bbamsch@google.com>

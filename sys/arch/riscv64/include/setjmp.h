@@ -1,4 +1,4 @@
-/* $OpenBSD: setjmp.h,v 1.1 2021/04/23 02:42:16 drahn Exp $ */
+/*	$OpenBSD: setjmp.h,v 1.2 2021/05/09 21:26:06 drahn Exp $	*/
 
 /*
  * machine/setjmp.h: machine dependent setjmp-related information.

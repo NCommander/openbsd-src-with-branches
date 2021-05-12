@@ -1,4 +1,4 @@
-/* $OpenBSD: endian.h,v 1.3 2018/10/01 17:42:16 naddy Exp $ */
+/*	$OpenBSD: endian.h,v 1.1 2021/04/23 02:42:16 drahn Exp $	*/
 
 /*
  * Copyright (c) 2015 David Gwynne <dlg@openbsd.org>

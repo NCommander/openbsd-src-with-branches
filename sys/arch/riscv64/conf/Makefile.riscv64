@@ -1,3 +1,5 @@
+#	$OpenBSD$
+
 # For instructions on building kernels consult the config(8) and options(4)
 # manual pages.
 #

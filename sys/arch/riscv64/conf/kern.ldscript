@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 OUTPUT_ARCH(riscv64)
 
 /* Define how we want our ELF binary to look like. */

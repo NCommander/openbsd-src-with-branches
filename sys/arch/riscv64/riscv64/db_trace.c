@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * Copyright (c) 2000, 2001 Ben Harris
  * Copyright (c) 1996 Scott K. Stevens
