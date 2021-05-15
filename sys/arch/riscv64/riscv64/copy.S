@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: copy.S,v 1.2 2021/05/12 01:20:52 jsg Exp $	*/
 
 /*
  * Copyright (c) 2020 Brian Bamsch <bbamsch@google.com>
@@ -94,7 +94,7 @@ ENTRY(copyout)
 	li	a4, VM_MAXUSER_ADDRESS
 	bgt	a3, a4, .Lcopyiofault_nopcb
 
-	la	a4, .Lcopyiofault_user
+	la	a3, .Lcopyiofault_user
 	SWAP_FAULT_HANDLER(a3, a4, a5)
 	ENTER_USER_ACCESS(a4)
 
