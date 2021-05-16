@@ -1,4 +1,4 @@
-/*	$OpenBSD: aplgpio.c,v 1.1 2019/06/17 18:28:18 patrick Exp $	*/
+/*	$OpenBSD: aplgpio.c,v 1.2 2020/05/22 10:16:37 kettenis Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  * Copyright (c) 2019 James Hastings
@@ -75,7 +75,7 @@ const char *aplgpio_hids[] = {
 
 int	aplgpio_read_pin(void *, int);
 void	aplgpio_write_pin(void *, int, int);
-void	aplgpio_intr_establish(void *, int, int, int (*)(), void *);
+void	aplgpio_intr_establish(void *, int, int, int (*)(void *), void *);
 int	aplgpio_intr(void *);
 
 int
