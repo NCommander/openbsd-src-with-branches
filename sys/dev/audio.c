@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio.c,v 1.191 2020/05/19 06:32:24 mpi Exp $	*/
+/*	$OpenBSD: audio.c,v 1.192 2020/12/25 12:59:51 visa Exp $	*/
 /*
  * Copyright (c) 2015 Alexandre Ratchov <alex@caoua.org>
  *
@@ -362,7 +362,7 @@ audio_buf_rdiscard(struct audio_buf *buf, size_t count)
 #ifdef AUDIO_DEBUG
 	if (count > buf->used) {
 		panic("audio_buf_rdiscard: bad count = %zu, "
-		    "start = %zu, used = %zu\n", count, buf->start, buf->used);
+		    "start = %zu, used = %zu", count, buf->start, buf->used);
 	}
 #endif
 	buf->used -= count;
@@ -380,7 +380,7 @@ audio_buf_wcommit(struct audio_buf *buf, size_t count)
 #ifdef AUDIO_DEBUG
 	if (count > (buf->len - buf->used)) {
 		panic("audio_buf_wcommit: bad count = %zu, "
-		    "start = %zu, used = %zu\n", count, buf->start, buf->used);
+		    "start = %zu, used = %zu", count, buf->start, buf->used);
 	}
 #endif
 	buf->used += count;
