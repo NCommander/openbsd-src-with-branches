@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.311 2021/04/26 08:21:36 claudio Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.312 2021/05/01 16:13:13 mvs Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -346,9 +346,7 @@ route_detach(struct socket *so)
 
 	rw_enter(&rtptable.rtp_lk, RW_WRITE);
 
-	timeout_del(&rop->rop_timeout);
 	rtptable.rtp_count--;
-
 	SRPL_REMOVE_LOCKED(&rtptable.rtp_rc, &rtptable.rtp_list, rop, rtpcb,
 	    rop_list);
 	rw_exit(&rtptable.rtp_lk);
@@ -357,6 +355,7 @@ route_detach(struct socket *so)
 
 	/* wait for all references to drop */
 	refcnt_finalize(&rop->rop_refcnt, "rtsockrefs");
+	timeout_del_barrier(&rop->rop_timeout);
 
 	solock(so);
 
