@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_sess.c,v 1.102 2021/02/20 08:30:52 jsing Exp $ */
+/* $OpenBSD: ssl_sess.c,v 1.103 2021/05/10 17:07:24 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -136,6 +136,7 @@
  */
 
 #include <openssl/lhash.h>
+#include <openssl/opensslconf.h>
 
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>

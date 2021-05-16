@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.342 2021/05/05 10:05:27 jsing Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.343 2021/05/05 19:52:00 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -152,6 +152,7 @@
 #include <unistd.h>
 
 #include <openssl/opensslconf.h>
+
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <openssl/dsa.h>
