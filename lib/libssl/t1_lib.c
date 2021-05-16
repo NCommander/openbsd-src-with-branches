@@ -1,4 +1,4 @@
-/* $OpenBSD: t1_lib.c,v 1.178 2020/10/11 12:45:52 guenther Exp $ */
+/* $OpenBSD: t1_lib.c,v 1.179 2020/12/05 19:33:38 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -116,9 +116,8 @@
 #include <openssl/objects.h>
 #include <openssl/ocsp.h>
 
-#include "ssl_locl.h"
-
 #include "bytestring.h"
+#include "ssl_locl.h"
 #include "ssl_sigalgs.h"
 #include "ssl_tlsext.h"
 

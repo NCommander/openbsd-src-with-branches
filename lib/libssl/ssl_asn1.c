@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_asn1.c,v 1.57 2018/08/27 16:42:48 jsing Exp $ */
+/* $OpenBSD: ssl_asn1.c,v 1.58 2021/03/29 18:24:04 tb Exp $ */
 /*
  * Copyright (c) 2016 Joel Sing <jsing@openbsd.org>
  *
@@ -20,9 +20,8 @@
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 
-#include "ssl_locl.h"
-
 #include "bytestring.h"
+#include "ssl_locl.h"
 
 #define SSLASN1_TAG	(CBS_ASN1_CONSTRUCTED | CBS_ASN1_CONTEXT_SPECIFIC)
 #define SSLASN1_TIME_TAG		(SSLASN1_TAG | 1)
