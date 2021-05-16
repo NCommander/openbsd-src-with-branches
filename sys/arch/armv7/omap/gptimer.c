@@ -1,4 +1,4 @@
-/* $OpenBSD: gptimer.c,v 1.12 2021/02/23 04:44:30 cheloha Exp $ */
+/* $OpenBSD: gptimer.c,v 1.13 2021/03/25 04:12:01 jsg Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -279,7 +279,7 @@ gptimer_intr(void *frame)
  */
 
 void
-gptimer_cpu_initclocks()
+gptimer_cpu_initclocks(void)
 {
 	stathz = 128;
 	profhz = 1024;

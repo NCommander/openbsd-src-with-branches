@@ -1,4 +1,4 @@
-/*	$OpenBSD: stubs.c,v 1.11 2018/06/30 15:23:35 deraadt Exp $	*/
+/*	$OpenBSD: stubs.c,v 1.12 2021/03/25 04:12:00 jsg Exp $	*/
 /*	$NetBSD: stubs.c,v 1.14 2003/07/15 00:24:42 lukem Exp $	*/
 
 /*
@@ -118,7 +118,7 @@ extern char *memhook;		/* XXX */
  */
 
 void
-dumpsys()
+dumpsys(void)
 {
 	const struct bdevsw *bdev;
 	daddr_t blkno;

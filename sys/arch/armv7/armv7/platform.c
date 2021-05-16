@@ -1,4 +1,4 @@
-/*	$OpenBSD: platform.c,v 1.25 2021/03/25 04:12:01 jsg Exp $	*/
+/*	$OpenBSD: platform.c,v 1.26 2021/04/24 07:49:11 visa Exp $	*/
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  *
@@ -120,7 +120,7 @@ platform_powerdown(void)
 }
 
 struct board_dev *
-platform_board_devs()
+platform_board_devs(void)
 {
 	if (platform && platform->devs)
 		return (platform->devs);
