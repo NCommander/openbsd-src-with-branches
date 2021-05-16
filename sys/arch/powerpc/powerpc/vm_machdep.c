@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.50 2020/09/11 09:27:10 mpi Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.51 2021/03/11 11:16:59 jsg Exp $	*/
 /*	$NetBSD: vm_machdep.c,v 1.1 1996/09/30 16:34:57 ws Exp $	*/
 
 /*
@@ -210,5 +210,5 @@ vunmapbuf(struct buf *bp, vsize_t len)
 	pmap_update(vm_map_pmap(phys_map));
 	uvm_km_free_wakeup(phys_map, addr, len);
 	bp->b_data = bp->b_saveaddr;
-	bp->b_saveaddr = 0;
+	bp->b_saveaddr = NULL;
 }
