@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.166 2020/12/25 12:59:52 visa Exp $	*/
+/*	$OpenBSD: tty.c,v 1.167 2021/02/08 10:51:02 mpi Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -1953,8 +1953,8 @@ ttyrub(int c, struct tty *tp)
 					(void)ttyoutput('\b', tp);
 				break;
 			default:			/* XXX */
-#define	PANICSTR	"ttyrub: would panic c = %d, val = %d\n"
-				(void)printf(PANICSTR, c, CCLASS(c));
+#define	PANICSTR	"ttyrub: would panic c = %d, val = %d"
+				(void)printf(PANICSTR "\n", c, CCLASS(c));
 #ifdef notdef
 				panic(PANICSTR, c, CCLASS(c));
 #endif

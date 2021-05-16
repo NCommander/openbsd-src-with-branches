@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.c,v 1.18 2019/04/17 21:44:32 sf Exp $	*/
+/*	$OpenBSD: virtio.c,v 1.19 2019/05/26 15:20:04 sf Exp $	*/
 /*	$NetBSD: virtio.c,v 1.3 2011/11/02 23:05:52 njoly Exp $	*/
 
 /*
@@ -152,7 +152,7 @@ virtio_reinit_start(struct virtio_softc *sc)
 		if (n == 0)	/* vq disappeared */
 			continue;
 		if (n != vq->vq_num) {
-			panic("%s: virtqueue size changed, vq index %d\n",
+			panic("%s: virtqueue size changed, vq index %d",
 			    sc->sc_dev.dv_xname, vq->vq_index);
 		}
 		virtio_init_vq(sc, vq);
@@ -608,7 +608,7 @@ virtio_enqueue(struct virtqueue *vq, int slot, bus_dmamap_t dmamap, int write)
 			    dmamap->dm_segs[i].ds_len);
 		}
 #endif
-		panic("dmamap->dm_nseg %d > vq->vq_maxnsegs %d\n",
+		panic("dmamap->dm_nseg %d > vq->vq_maxnsegs %d",
 		    dmamap->dm_nsegs, vq->vq_maxnsegs);
 	}
 
