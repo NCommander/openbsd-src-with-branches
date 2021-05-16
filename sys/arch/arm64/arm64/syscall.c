@@ -1,4 +1,4 @@
-/* $OpenBSD: syscall.c,v 1.6 2020/03/13 05:20:07 deraadt Exp $ */
+/* $OpenBSD: syscall.c,v 1.7 2021/05/15 11:30:27 kettenis Exp $ */
 /*
  * Copyright (c) 2015 Dale Rahn <drahn@dalerahn.com>
  *
@@ -121,8 +121,7 @@ svc_handler(trapframe_t *frame)
 }
 
 void
-child_return(arg)
-	void *arg;
+child_return(void *arg)
 {
 	struct proc *p = arg;
 	struct trapframe *frame = p->p_addr->u_pcb.pcb_tf;

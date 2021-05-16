@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.h,v 1.16 2021/02/16 12:33:22 kettenis Exp $ */
+/* $OpenBSD: pmap.h,v 1.17 2021/03/08 11:16:26 kettenis Exp $ */
 /*
  * Copyright (c) 2008,2009,2014 Dale Rahn <drahn@dalerahn.com>
  *
@@ -99,8 +99,8 @@ void pmap_kenter_cache(vaddr_t va, paddr_t pa, vm_prot_t prot, int cacheable);
 void pmap_page_ro(pmap_t pm, vaddr_t va, vm_prot_t prot);
 
 paddr_t pmap_steal_avail(size_t size, int align, void **kva);
-void pmap_avail_fixup();
-void pmap_physload_avail();
+void pmap_avail_fixup(void);
+void pmap_physload_avail(void);
 
 #define PMAP_GROWKERNEL
 
