@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_sigalgs.h,v 1.14 2019/03/25 17:33:26 jsing Exp $ */
+/* $OpenBSD: ssl_sigalgs.h,v 1.15 2020/10/11 01:13:04 guenther Exp $ */
 /*
  * Copyright (c) 2018-2019 Bob Beck <beck@openbsd.org>
  *
@@ -60,7 +60,7 @@ __BEGIN_HIDDEN_DECLS
 
 #define SIGALG_FLAG_RSA_PSS	0x00000001
 
-struct ssl_sigalg{
+struct ssl_sigalg {
 	uint16_t value;
 	const EVP_MD *(*md)(void);
 	int key_type;
