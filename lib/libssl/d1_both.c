@@ -1,4 +1,4 @@
-/* $OpenBSD: d1_both.c,v 1.69 2021/04/19 16:51:56 jsing Exp $ */
+/* $OpenBSD: d1_both.c,v 1.70 2021/05/05 19:52:00 jsing Exp $ */
 /*
  * DTLS implementation written by Nagendra Modadugu
  * (nagendra@cs.stanford.edu) for the OpenSSL project 2005.
@@ -124,8 +124,9 @@
 #include <openssl/objects.h>
 #include <openssl/x509.h>
 
-#include "pqueue.h"
 #include "bytestring.h"
+#include "dtls_locl.h"
+#include "pqueue.h"
 
 #define RSMBLY_BITMASK_SIZE(msg_len) (((msg_len) + 7) / 8)
 
