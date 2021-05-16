@@ -1,4 +1,4 @@
-/*	$OpenBSD: memcpy.c,v 1.3 2013/06/12 16:44:22 deraadt Exp $	*/
+/*	$OpenBSD: memcpy.c,v 1.4 2017/01/24 08:09:05 kettenis Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -40,8 +40,8 @@
 void *
 memcpy(void *s1, const void *s2, size_t n)
 {
-	register const char *f = s2;
-	register char *t = s1;
+	const char *f = s2;
+	char *t = s1;
 
 	while (n-- > 0)
 		*t++ = *f++;
