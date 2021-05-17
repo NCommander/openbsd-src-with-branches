@@ -1,4 +1,4 @@
-/*	$OpenBSD: mvkpcie.c,v 1.8 2021/01/19 19:46:40 kettenis Exp $	*/
+/*	$OpenBSD: mvkpcie.c,v 1.9 2021/02/25 23:07:49 patrick Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  * Copyright (c) 2020 Patrick Wildt <patrick@blueri.se>
@@ -184,7 +184,7 @@ struct mvkpcie_softc {
 	struct bus_space	sc_bus_iot;
 	struct bus_space	sc_bus_memt;
 
-	struct arm64_pci_chipset sc_pc;
+	struct machine_pci_chipset sc_pc;
 	int			sc_bus;
 
 	uint32_t		sc_bridge_command;

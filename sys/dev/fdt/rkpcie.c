@@ -1,4 +1,4 @@
-/*	$OpenBSD: rkpcie.c,v 1.12 2021/02/25 23:07:49 patrick Exp $	*/
+/*	$OpenBSD: rkpcie.c,v 1.13 2021/03/01 20:49:20 patrick Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -103,7 +103,7 @@ struct rkpcie_softc {
 	int			sc_node;
 	int			sc_phy_node;
 
-	struct arm64_pci_chipset sc_pc;
+	struct machine_pci_chipset sc_pc;
 	struct extent		*sc_busex;
 	struct extent		*sc_memex;
 	struct extent		*sc_ioex;
