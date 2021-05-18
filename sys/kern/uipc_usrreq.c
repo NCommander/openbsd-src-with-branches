@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.145 2021/04/29 20:13:25 mvs Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.146 2021/05/17 17:06:51 claudio Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -530,6 +530,16 @@ unp_bind(struct unpcb *unp, struct mbuf *nam, struct proc *p)
 	if ((error = unp_nam2sun(nam, &soun, &pathlen)))
 		return (error);
 
+	unp->unp_flags |= UNP_BINDING;
+
+	/*
+	 * Enforce `i_lock' -> `unplock' because fifo subsystem
+	 * requires it. The socket can't be closed concurrently
+	 * because the file descriptor reference is still held.
+	 */
+
+	sounlock(unp->unp_socket, SL_LOCKED);
+
 	nam2 = m_getclr(M_WAITOK, MT_SONAME);
 	nam2->m_len = sizeof(struct sockaddr_un);
 	memcpy(mtod(nam2, struct sockaddr_un *), soun,
@@ -544,16 +554,6 @@ unp_bind(struct unpcb *unp, struct mbuf *nam, struct proc *p)
 	NDINIT(&nd, CREATE, NOFOLLOW | LOCKPARENT, UIO_SYSSPACE,
 	    soun->sun_path, p);
 	nd.ni_pledge = PLEDGE_UNIX;
-
-	unp->unp_flags |= UNP_BINDING;
-
-	/*
-	 * Enforce `i_lock' -> `unplock' because fifo subsystem
-	 * requires it. The socket can't be closed concurrently
-	 * because the file descriptor reference is still held.
-	 */
-
-	sounlock(unp->unp_socket, SL_LOCKED);
 
 	KERNEL_LOCK();
 /* SHOULD BE ABLE TO ADOPT EXISTING AND wakeup() ALA FIFO's */
