@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.428 2020/12/21 11:44:07 martijn Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.429 2021/03/05 12:37:32 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -1067,7 +1067,12 @@ static void
 smtp_tls_init(struct smtp_session *s)
 {
 	io_set_read(s->io);
-	io_accept_tls(s->io, s->listener->tls);
+	if (io_accept_tls(s->io, s->listener->tls) == -1) {
+		log_info("%016"PRIx64" smtp disconnected "
+		    "reason=tls-accept-failed",
+		    s->id);
+		smtp_free(s, "accept failed");
+	}
 }
 
 static void
