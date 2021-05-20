@@ -1,4 +1,4 @@
-/*	$OpenBSD: monitor.c,v 1.26 2019/06/28 13:32:53 deraadt Exp $	*/
+/*	$OpenBSD: monitor.c,v 1.27 2021/05/15 13:37:43 jan Exp $	*/
 
 /*
  * Copyright (c) 2004 Moritz Jodeit <moritz@openbsd.org>
@@ -296,7 +296,7 @@ handle_cmds(void)
 				break;
 			case AUTH_SLAVE:
 				if (pledge("stdio rpath wpath cpath inet recvfd"
-				   " sendfd proc tty getpw", NULL) == -1)
+				    " sendfd proc tty getpw", NULL) == -1)
 					fatalx("pledge");
 				/* User-privileged slave */
 				debugmsg("user-privileged slave started");
