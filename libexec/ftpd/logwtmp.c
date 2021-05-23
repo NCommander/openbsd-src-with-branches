@@ -1,4 +1,4 @@
-/*	$OpenBSD: logwtmp.c,v 1.11 2009/10/27 23:59:31 deraadt Exp $	*/
+/*	$OpenBSD: logwtmp.c,v 1.12 2019/06/28 13:32:53 deraadt Exp $	*/
 /*	$NetBSD: logwtmp.c,v 1.4 1995/04/11 02:44:58 cgd Exp $	*/
 
 /*
@@ -54,7 +54,7 @@ static int fd = -1;
  * after login, but before logout).
  */
 void
-ftpdlogwtmp(char *line, char *name, char *host)
+ftpdlogwtmp(const char *line, const char *name, const char *host)
 {
 	struct timeval tv;
 	struct stat buf;
