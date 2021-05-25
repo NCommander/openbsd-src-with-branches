@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.146 2021/05/17 17:06:51 claudio Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.147 2021/05/18 11:15:14 mvs Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -791,8 +791,6 @@ unp_drain(void)
 
 }
 #endif
-
-extern	struct domain unixdomain;
 
 static struct unpcb *
 fptounp(struct file *fp)
