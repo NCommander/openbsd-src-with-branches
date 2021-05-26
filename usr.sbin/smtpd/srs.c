@@ -1,4 +1,4 @@
-/*	$OpenBSD: srs.c,v 1.2 2019/09/21 06:40:48 semarie Exp $	*/
+/*	$OpenBSD: srs.c,v 1.3 2019/09/29 10:03:49 gilles Exp $	*/
 
 /*
  * Copyright (c) 2019 Gilles Chehade <gilles@poolp.org>
@@ -22,7 +22,6 @@
 #include <sys/socket.h>
 
 #include <ctype.h>
-#include <err.h>
 #include <errno.h>
 #include <event.h>
 #include <imsg.h>

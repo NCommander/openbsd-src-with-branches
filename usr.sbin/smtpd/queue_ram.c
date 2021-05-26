@@ -1,4 +1,4 @@
-/*	$OpenBSD: queue_ram.c,v 1.8 2018/05/14 15:23:05 gilles Exp $	*/
+/*	$OpenBSD: queue_ram.c,v 1.9 2018/12/30 23:09:58 guenther Exp $	*/
 
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
@@ -23,7 +23,6 @@
 #include <sys/stat.h>
 
 #include <ctype.h>
-#include <err.h>
 #include <errno.h>
 #include <event.h>
 #include <fcntl.h>

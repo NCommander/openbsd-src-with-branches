@@ -1,4 +1,4 @@
-/*	$OpenBSD: scheduler_backend.c,v 1.15 2015/01/20 17:37:54 deraadt Exp $	*/
+/*	$OpenBSD: scheduler_backend.c,v 1.16 2018/05/24 11:38:24 gilles Exp $	*/
 
 /*
  * Copyright (c) 2012 Gilles Chehade <gilles@poolp.org>
@@ -22,7 +22,6 @@
 #include <sys/socket.h>
 
 #include <ctype.h>
-#include <err.h>
 #include <event.h>
 #include <fcntl.h>
 #include <imsg.h>
