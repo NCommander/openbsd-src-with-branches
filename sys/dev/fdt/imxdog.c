@@ -1,4 +1,4 @@
-/* $OpenBSD: imxdog.c,v 1.5 2016/10/05 22:06:48 kettenis Exp $ */
+/* $OpenBSD: imxdog.c,v 1.6 2021/03/25 04:12:01 jsg Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
