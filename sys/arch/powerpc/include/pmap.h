@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.58 2015/09/11 22:02:18 kettenis Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.59 2015/10/08 10:20:14 kettenis Exp $	*/
 /*	$NetBSD: pmap.h,v 1.1 1996/09/30 16:34:29 ws Exp $	*/
 
 /*-
@@ -76,6 +76,9 @@ typedef u_int sr_t;
 #define PMAP_CACHE_CI		1 	/* cache inhibit */
 #define PMAP_CACHE_WT		2 	/* writethru */
 #define PMAP_CACHE_WB		3	/* writeback */
+
+#include <sys/mutex.h>
+#include <sys/queue.h>
 
 #ifdef	_KERNEL
 
@@ -163,8 +166,6 @@ int reserve_dumppages(caddr_t p);
 #define PMAP_WT		0x2		/* map write-through */
 
 #endif	/* _KERNEL */
-
-#include <sys/mutex.h>
 
 struct vm_page_md {
 	struct mutex pv_mtx;
