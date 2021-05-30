@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.213 2021/05/25 22:45:09 bluhm Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.214 2021/05/26 08:28:34 mvs Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -200,7 +200,7 @@ pfdatatopacket(void *data, int len, struct mbuf **packet)
 	return (0);
 }
 
-static struct protosw pfkeysw[] = {
+const struct protosw pfkeysw[] = {
 {
   .pr_type      = SOCK_RAW,
   .pr_domain    = &pfkeydomain,
