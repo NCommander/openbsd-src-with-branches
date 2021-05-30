@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.8 2019/11/07 14:44:52 mpi Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.9 2021/03/11 11:16:55 jsg Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.34 2003/10/26 23:11:15 chris Exp $	*/
 
 /*
@@ -39,6 +39,7 @@
 #include <sys/reboot.h>
 #include <sys/systm.h>	/* just for boothowto */
 #include <sys/exec.h>
+#include <sys/mutex.h>
 
 #include <uvm/uvm_extern.h>
 
