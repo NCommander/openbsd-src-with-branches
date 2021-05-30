@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.366 2021/02/03 14:41:40 naddy Exp $	*/
+/*	$OpenBSD: editor.c,v 1.367 2021/03/09 07:03:19 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <millert@openbsd.org>
@@ -571,8 +571,8 @@ editor_allocspace(struct disklabel *lp_org)
 		pstart = DL_GETPOFFSET(pp);
 		pend = pstart + psz;
 		if (i != RAW_PART && psz != 0 &&
-		    ((pstart >= starting_sector && pstart <= ending_sector) ||
-		    (pend > starting_sector && pend < ending_sector))) {
+		    ((pstart >= starting_sector && pstart < ending_sector) ||
+		    (pend > starting_sector && pend <= ending_sector))) {
 			overlap = 1;
 			break;
 		}
