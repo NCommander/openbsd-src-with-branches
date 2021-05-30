@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.12 2020/09/23 03:03:12 gkoehler Exp $	*/
+/*	$OpenBSD: intr.h,v 1.13 2020/10/24 21:42:10 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -18,6 +18,8 @@
 
 #ifndef _MACHINE_INTR_H_
 #define _MACHINE_INTR_H_
+
+#include <sys/queue.h>
 
 struct cpu_info;
 struct trapframe;
