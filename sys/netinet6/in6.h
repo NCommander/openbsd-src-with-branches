@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.h,v 1.107 2020/08/24 16:40:07 gnezdo Exp $	*/
+/*	$OpenBSD: in6.h,v 1.108 2021/03/10 10:21:49 jsg Exp $	*/
 /*	$KAME: in6.h,v 1.83 2001/03/29 02:55:07 jinmei Exp $	*/
 
 /*
@@ -415,6 +415,8 @@ struct in6_ifaddr;
 struct ifnet;
 
 void	ipv6_input(struct ifnet *, struct mbuf *);
+struct mbuf *
+	ipv6_check(struct ifnet *, struct mbuf *);
 
 int	in6_cksum(struct mbuf *, uint8_t, uint32_t, uint32_t);
 void	in6_proto_cksum_out(struct mbuf *, struct ifnet *);
