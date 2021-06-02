@@ -1,4 +1,4 @@
-/*	$OpenBSD: systm.h,v 1.152 2021/02/08 08:18:45 mpi Exp $	*/
+/*	$OpenBSD: systm.h,v 1.153 2021/04/28 09:42:04 sashan Exp $	*/
 /*	$NetBSD: systm.h,v 1.50 1996/06/09 04:55:09 briggs Exp $	*/
 
 /*-
@@ -72,7 +72,6 @@
  */
 extern int securelevel;		/* system security level */
 extern const char *panicstr;	/* panic message */
-extern const char *faultstr;	/* fault message */
 extern const char version[];		/* system version */
 extern const char copyright[];	/* system copyright */
 extern const char ostype[];

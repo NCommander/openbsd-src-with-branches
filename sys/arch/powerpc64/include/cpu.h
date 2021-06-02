@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.28 2020/09/23 03:03:12 gkoehler Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.29 2020/12/30 06:06:30 gkoehler Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -102,6 +102,7 @@ struct cpu_info {
 #define	CI_DDB_ENTERDDB		3
 #define	CI_DDB_INDDB		4
 #endif
+	char		ci_panicbuf[512];
 };
 
 #define CPUF_PRIMARY 		(1 << 0)

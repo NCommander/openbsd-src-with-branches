@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.19 2021/02/17 12:11:45 kettenis Exp $ */
+/* $OpenBSD: cpu.h,v 1.20 2021/05/15 11:30:27 kettenis Exp $ */
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
  *
@@ -135,6 +135,8 @@ struct cpu_info {
 #ifdef GPROF
 	struct gmonparam	*ci_gmon;
 #endif
+
+	char			ci_panicbuf[512];
 };
 
 #define CPUF_PRIMARY 		(1<<0)

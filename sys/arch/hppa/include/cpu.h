@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.92 2020/05/31 06:23:57 dlg Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.93 2020/06/14 20:29:13 naddy Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -114,6 +114,8 @@ struct cpu_info {
 #ifdef GPROF
 	struct gmonparam *ci_gmon;
 #endif
+
+	char		ci_panicbuf[512];
 } __attribute__((__aligned__(64)));
 
 #define		CPUF_RUNNING	0x0001		/* CPU is running. */
