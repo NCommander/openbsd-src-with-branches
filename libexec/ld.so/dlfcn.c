@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.105 2019/10/03 06:10:53 guenther Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.106 2019/10/04 17:42:16 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -54,7 +54,7 @@ dlopen(const char *libname, int flags)
 	int failed = 0;
 	int obj_flags;
 
-	if (flags & ~(RTLD_TRACE|RTLD_LAZY|RTLD_NOW|RTLD_GLOBAL)) {
+	if (flags & ~(RTLD_TRACE|RTLD_LAZY|RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE)) {
 		_dl_errno = DL_INVALID_MODE;
 		return NULL;
 	}
@@ -87,9 +87,14 @@ dlopen(const char *libname, int flags)
 		goto loaded;
 	}
 
+	if (flags & RTLD_NODELETE)
+		object->obj_flags |= DF_1_NODELETE;
+	
 	_dl_link_dlopen(object);
 
 	if (OBJECT_REF_CNT(object) > 1) {
+		_dl_handle_nodelete(object);
+
 		/* if opened but grpsym_vec has not been filled in */
 		if (object->grpsym_vec.len == 0)
 			_dl_cache_grpsym_list_setup(object);

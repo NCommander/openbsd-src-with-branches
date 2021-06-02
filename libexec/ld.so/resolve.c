@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.c,v 1.93 2019/10/03 06:10:54 guenther Exp $ */
+/*	$OpenBSD: resolve.c,v 1.94 2019/10/04 17:42:16 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -57,11 +57,8 @@ int object_count;
 static elf_object_t *_dl_last_object;
 elf_object_t *_dl_loading_object;
 
-/*
- * Add a new dynamic object to the object list.
- */
 void
-_dl_add_object(elf_object_t *object)
+_dl_handle_nodelete(elf_object_t *object)
 {
 	/*
 	 * If a .so is marked nodelete, then the entire load group that it's
@@ -76,6 +73,15 @@ _dl_add_object(elf_object_t *object)
 		object->load_object->opencount++;
 		object->load_object->status |= STAT_NODELETE;
 	}
+}
+
+/*
+ * Add a new dynamic object to the object list.
+ */
+void
+_dl_add_object(elf_object_t *object)
+{
+	_dl_handle_nodelete(object);
 
 	/*
 	 * if this is a new object, prev will be NULL

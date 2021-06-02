@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.h,v 1.96 2019/10/04 17:42:16 guenther Exp $ */
+/*	$OpenBSD: resolve.h,v 1.97 2021/03/16 18:03:06 kurt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -244,6 +244,7 @@ void	_dl_debug_state(void);
 extern char *__progname;
 
 __BEGIN_HIDDEN_DECLS
+void _dl_handle_nodelete(elf_object_t *_object);
 void _dl_add_object(elf_object_t *object);
 elf_object_t *_dl_finalize_object(const char *objname, Elf_Dyn *dynp,
     Elf_Phdr *phdrp, int phdrc, const int objtype, const long lbase,
