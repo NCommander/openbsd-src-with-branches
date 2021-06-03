@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_input.c,v 1.235 2021/06/02 00:20:50 dlg Exp $	*/
+/*	$OpenBSD: ip6_input.c,v 1.236 2021/06/02 00:27:03 dlg Exp $	*/
 /*	$KAME: ip6_input.c,v 1.188 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
@@ -284,6 +284,8 @@ ip6_input_if(struct mbuf **mp, int *offp, int nxt, int af, struct ifnet *ifp)
 	m = *mp = ipv6_check(ifp, *mp);
 	if (m == NULL)
 		goto bad;
+
+	ip6 = mtod(m, struct ip6_hdr *);
 
 #if NCARP > 0
 	if (carp_lsdrop(ifp, m, AF_INET6, ip6->ip6_src.s6_addr32,
