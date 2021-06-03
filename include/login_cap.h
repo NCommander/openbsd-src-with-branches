@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_cap.h,v 1.15 2014/11/21 05:13:44 tedu Exp $	*/
+/*	$OpenBSD: login_cap.h,v 1.16 2018/07/29 19:40:41 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1995,1997 Berkeley Software Design, Inc. All rights reserved.
@@ -101,7 +101,6 @@ char	*login_getcapstr(login_cap_t *, char *, char *, char *);
 quad_t	 login_getcaptime(login_cap_t *, char *, quad_t, quad_t);
 char	*login_getstyle(login_cap_t *, char *, char *);
 
-int	secure_path(char *);
 int	setclasscontext(char *, unsigned int);
 int	setusercontext(login_cap_t *, struct passwd *, uid_t, unsigned int);
 
