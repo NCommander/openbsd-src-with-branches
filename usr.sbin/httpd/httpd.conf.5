@@ -1,4 +1,4 @@
-.\"	$OpenBSD: httpd.conf.5,v 1.115 2021/04/06 06:28:38 jmc Exp $
+.\"	$OpenBSD: httpd.conf.5,v 1.116 2021/06/06 21:59:20 tb Exp $
 .\"
 .\" Copyright (c) 2014, 2015 Reyk Floeter <reyk@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: April 6 2021 $
+.Dd $Mdocdate: June 6 2021 $
 .Dt HTTPD.CONF 5
 .Os
 .Sh NAME
@@ -195,7 +195,7 @@ response.
 The optional
 .Ar uri
 argument can be used with return codes in the 3xx range to send a
-.Sq Location:
+.Sq Location :
 header for redirection to a specified URI.
 .Pp
 It is possible to rewrite the request to redirect it to a different
