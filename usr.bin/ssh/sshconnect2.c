@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect2.c,v 1.347 2021/04/03 06:18:41 djm Exp $ */
+/* $OpenBSD: sshconnect2.c,v 1.348 2021/06/06 03:40:39 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Damien Miller.  All rights reserved.
@@ -1375,8 +1375,8 @@ sign_and_send_pubkey(struct ssh *ssh, Identity *id)
 		}
 		if (sign_id != NULL) {
 			debug2_f("using private key \"%s\"%s for "
-			    "certificate", id->filename,
-			    id->agent_fd != -1 ? " from agent" : "");
+			    "certificate", sign_id->filename,
+			    sign_id->agent_fd != -1 ? " from agent" : "");
 		} else {
 			debug_f("no separate private key for certificate "
 			    "\"%s\"", id->filename);
