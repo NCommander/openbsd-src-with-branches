@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $OpenBSD: generate_pkgconfig.sh,v 1.1 2014/04/11 22:51:53 miod Exp $
+# $OpenBSD: generate_pkgconfig.sh,v 1.2 2016/09/03 12:42:46 beck Exp $
 #
 # Copyright (c) 2010,2011 Jasper Lievisse Adriaanse <jasper@openbsd.org>
 #
@@ -69,7 +69,7 @@ includedir=\${prefix}/include
 Name: OpenSSL-libcrypto
 Description: OpenSSL cryptography library
 Version: ${lib_version}
-Requires: 
 Libs: -L\${libdir} -lcrypto
+Libs.private:
 Cflags: -I\${includedir}
 __EOF__
