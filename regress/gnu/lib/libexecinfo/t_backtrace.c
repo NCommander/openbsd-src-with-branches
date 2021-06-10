@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: t_backtrace.c,v 1.1 2021/06/09 19:39:15 mortimer Exp $	*/
 
 /*-
  * Copyright (c) 2012 The NetBSD Foundation, Inc.
