@@ -1,4 +1,4 @@
-/* $OpenBSD: status.c,v 1.221 2021/04/12 09:36:12 nicm Exp $ */
+/* $OpenBSD: status.c,v 1.222 2021/06/10 07:24:45 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1300,7 +1300,7 @@ process_key:
 	return (0);
 
 append_key:
-	if (key <= 0x1f || key >= KEYC_BASE)
+	if (key <= 0x1f || (key >= KEYC_BASE && key < KEYC_BASE_END))
 		return (0);
 	if (key <= 0x7f)
 		utf8_set(&tmp, key);
