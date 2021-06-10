@@ -1,4 +1,4 @@
-/* $OpenBSD: tty-term.c,v 1.88 2021/03/01 10:50:14 nicm Exp $ */
+/* $OpenBSD: tty-term.c,v 1.89 2021/06/10 07:28:45 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -688,7 +688,7 @@ tty_term_read_list(const char *name, int fd, char ***caps, u_int *ncaps,
 		ent = &tty_term_codes[i];
 		switch (ent->type) {
 		case TTYCODE_NONE:
-			break;
+			continue;
 		case TTYCODE_STRING:
 			s = tigetstr((char *)ent->name);
 			if (s == NULL || s == (char *)-1)
