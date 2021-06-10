@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.106 2020/05/16 16:30:59 nicm Exp $
+# $OpenBSD: Makefile,v 1.107 2020/12/22 09:22:14 nicm Exp $
 
 PROG=	tmux
 SRCS=	alerts.c \
@@ -61,6 +61,7 @@ SRCS=	alerts.c \
 	cmd-show-environment.c \
 	cmd-show-messages.c \
 	cmd-show-options.c \
+	cmd-show-prompt-history.c \
 	cmd-source-file.c \
 	cmd-split-window.c \
 	cmd-swap-pane.c \

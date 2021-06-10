@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-confirm-before.c,v 1.41 2020/04/13 20:51:57 nicm Exp $ */
+/* $OpenBSD: cmd-confirm-before.c,v 1.42 2020/05/16 16:16:07 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -74,7 +74,7 @@ cmd_confirm_before_exec(struct cmd *self, struct cmdq_item *item)
 
 	status_prompt_set(tc, target, new_prompt, NULL,
 	    cmd_confirm_before_callback, cmd_confirm_before_free, cdata,
-	    PROMPT_SINGLE);
+	    PROMPT_SINGLE, PROMPT_TYPE_COMMAND);
 
 	free(new_prompt);
 	return (CMD_RETURN_NORMAL);
