@@ -1,4 +1,4 @@
-/* $OpenBSD: format.c,v 1.283 2021/04/12 06:50:25 nicm Exp $ */
+/* $OpenBSD: format.c,v 1.284 2021/06/10 07:45:43 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -3991,7 +3991,7 @@ format_replace_expression(struct format_modifier *mexp,
 		result = (mleft < mright);
 		break;
 	case LESS_THAN_EQUAL:
-		result = (mleft > mright);
+		result = (mleft >= mright);
 		break;
 	}
 	if (use_fp)
