@@ -1,4 +1,4 @@
-/* $OpenBSD: tty.c,v 1.391 2021/06/10 07:36:47 nicm Exp $ */
+/* $OpenBSD: tty.c,v 1.392 2021/06/10 07:43:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1005,13 +1005,8 @@ tty_redraw_region(struct tty *tty, const struct tty_ctx *ctx)
 		return;
 	}
 
-	if (ctx->ocy < ctx->orupper || ctx->ocy > ctx->orlower) {
-		for (i = ctx->ocy; i < ctx->sy; i++)
-			tty_draw_pane(tty, ctx, i);
-	} else {
-		for (i = ctx->orupper; i <= ctx->orlower; i++)
-			tty_draw_pane(tty, ctx, i);
-	}
+	for (i = ctx->orupper; i <= ctx->orlower; i++)
+		tty_draw_pane(tty, ctx, i);
 }
 
 /* Is this position visible in the pane? */
