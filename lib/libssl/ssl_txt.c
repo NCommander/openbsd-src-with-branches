@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_txt.c,v 1.27 2017/01/26 10:40:21 beck Exp $ */
+/* $OpenBSD: ssl_txt.c,v 1.28 2017/02/07 02:08:38 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -181,7 +181,7 @@ SSL_SESSION_print(BIO *bp, const SSL_SESSION *x)
 		goto err;
 
 	return (1);
-err:
+ err:
 	return (0);
 }
 

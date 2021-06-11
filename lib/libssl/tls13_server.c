@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_server.c,v 1.76 2021/05/16 14:10:43 jsing Exp $ */
+/* $OpenBSD: tls13_server.c,v 1.77 2021/06/08 17:41:52 tb Exp $ */
 /*
  * Copyright (c) 2019, 2020 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
@@ -343,7 +343,7 @@ tls13_server_hello_build(struct tls13_ctx *ctx, CBB *cbb, int hrr)
 		goto err;
 
 	return 1;
-err:
+ err:
 	return 0;
 }
 
