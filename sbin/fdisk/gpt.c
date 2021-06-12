@@ -1,4 +1,4 @@
-/*	$OpenBSD: gpt.c,v 1.24 2021/06/12 17:19:13 krw Exp $	*/
+/*	$OpenBSD: gpt.c,v 1.25 2021/06/12 17:49:00 krw Exp $	*/
 /*
  * Copyright (c) 2015 Markus Muller <mmu@grummel.net>
  * Copyright (c) 2015 Kenneth R Westerback <krw@openbsd.org>
@@ -379,7 +379,7 @@ init_gh(void)
 
 	memcpy(&oldgh, &gh, sizeof(oldgh));
 
-	needed = sizeof(gh) / secsize + 2;
+	needed = sizeof(gp) / secsize + 2;
 
 	/* Start usable LBA area on 64 sector boundary. */
 	if (needed % 64)
