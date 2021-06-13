@@ -1,4 +1,4 @@
-/*	$OpenBSD: gpt.c,v 1.25 2021/06/12 17:49:00 krw Exp $	*/
+/*	$OpenBSD: gpt.c,v 1.26 2021/06/12 20:16:26 krw Exp $	*/
 /*
  * Copyright (c) 2015 Markus Muller <mmu@grummel.net>
  * Copyright (c) 2015 Kenneth R Westerback <krw@openbsd.org>
@@ -120,7 +120,7 @@ get_header(off_t where)
 
 	if (letoh64(gh.gh_lba_start) >= letoh64(gh.gh_lba_end)) {
 		DPRINTF("gpt first usable LBA: expected < %llu, got %llu\n",
-		    letoh64(gh.gh_lba_start), letoh64(gh.gh_lba_start));
+		    letoh64(gh.gh_lba_end), letoh64(gh.gh_lba_start));
 		return (1);
 	}
 
