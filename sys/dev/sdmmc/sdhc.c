@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdhc.c,v 1.68 2020/06/14 18:37:16 patrick Exp $	*/
+/*	$OpenBSD: sdhc.c,v 1.69 2020/08/14 14:49:04 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -18,7 +18,7 @@
 
 /*
  * SD Host Controller driver based on the SD Host Controller Standard
- * Simplified Specification Version 1.00 (www.sdcard.com).
+ * Simplified Specification Version 1.00 (www.sdcard.org).
  */
 
 #include <sys/param.h>
