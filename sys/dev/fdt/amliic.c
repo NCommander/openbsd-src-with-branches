@@ -1,4 +1,4 @@
-/*	$OpenBSD: amliic.c,v 1.2 2020/12/18 22:13:06 kettenis Exp $	*/
+/*	$OpenBSD: amliic.c,v 1.3 2021/03/11 09:15:25 patrick Exp $	*/
 /*
  * Copyright (c) 2019 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -86,8 +86,6 @@ struct cfdriver amliic_cd = {
 
 int	amliic_acquire_bus(void *, int);
 void	amliic_release_bus(void *, int);
-int	amliic_send_start(void *, int);
-int	amliic_send_stop(void *, int);
 int	amliic_exec(void *, i2c_op_t, i2c_addr_t, const void *, size_t,
 	    void *, size_t, int);
 
