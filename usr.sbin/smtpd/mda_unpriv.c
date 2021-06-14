@@ -1,4 +1,4 @@
-/*	$OpenBSD: mda_unpriv.c,v 1.6 2020/02/02 22:13:48 gilles Exp $	*/
+/*	$OpenBSD: mda_unpriv.c,v 1.7 2020/06/01 05:21:30 chrisz Exp $	*/
 
 /*
  * Copyright (c) 2018 Gilles Chehade <gilles@poolp.org>
@@ -16,24 +16,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-#include <sys/queue.h>
-#include <sys/tree.h>
-#include <sys/socket.h>
-
 #include <err.h>
-#include <errno.h>
-#include <event.h>
-#include <imsg.h>
 #include <paths.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <limits.h>
 
 #include "smtpd.h"
-
 
 void
 mda_unpriv(struct dispatcher *dsp, struct deliver *deliver,

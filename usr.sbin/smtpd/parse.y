@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.287 2021/04/09 16:43:43 eric Exp $	*/
+/*	$OpenBSD: parse.y,v 1.288 2021/05/26 18:08:55 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -22,35 +22,21 @@
  */
 
 %{
-#include <sys/types.h>
-#include <sys/queue.h>
-#include <sys/tree.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 
 #include <net/if.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
 
+#include <arpa/inet.h>
 #include <ctype.h>
 #include <errno.h>
-#include <event.h>
 #include <ifaddrs.h>
-#include <imsg.h>
 #include <inttypes.h>
-#include <limits.h>
-#include <netdb.h>
-#include <pwd.h>
 #include <resolv.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <syslog.h>
 #include <unistd.h>
 #include <util.h>
-
-#include <openssl/ssl.h>
 
 #include "smtpd.h"
 #include "ssl.h"

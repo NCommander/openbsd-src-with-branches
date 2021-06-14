@@ -1,4 +1,4 @@
-/*	$OpenBSD: makemap.c,v 1.73 2020/02/24 16:16:07 millert Exp $	*/
+/*	$OpenBSD: makemap.c,v 1.74 2021/01/27 07:20:27 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -17,25 +17,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/tree.h>
-#include <sys/queue.h>
-#include <sys/socket.h>
 
 #include <ctype.h>
 #include <db.h>
 #include <err.h>
 #include <errno.h>
-#include <event.h>
 #include <fcntl.h>
-#include <imsg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
-#include <limits.h>
 #include <util.h>
 
 #include "smtpd.h"

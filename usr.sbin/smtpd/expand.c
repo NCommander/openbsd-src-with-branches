@@ -1,4 +1,4 @@
-/*	$OpenBSD: expand.c,v 1.30 2018/05/24 11:38:24 gilles Exp $	*/
+/*	$OpenBSD: expand.c,v 1.31 2018/05/31 21:06:12 gilles Exp $	*/
 
 /*
  * Copyright (c) 2009 Gilles Chehade <gilles@poolp.org>
@@ -17,21 +17,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-#include <sys/queue.h>
-#include <sys/tree.h>
-#include <sys/socket.h>
-
-#include <ctype.h>
-#include <event.h>
-#include <imsg.h>
-#include <stdio.h>
-#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "smtpd.h"
-#include "log.h"
 
 static const char *expandnode_info(struct expandnode *);
 

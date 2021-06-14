@@ -1,4 +1,4 @@
-/*	$OpenBSD: scheduler_proc.c,v 1.7 2015/01/20 17:37:54 deraadt Exp $	*/
+/*	$OpenBSD: scheduler_proc.c,v 1.8 2015/12/05 13:14:21 claudio Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot <eric@openbsd.org>
@@ -16,21 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-#include <sys/queue.h>
-#include <sys/tree.h>
-#include <sys/socket.h>
-
-#include <ctype.h>
 #include <errno.h>
-#include <event.h>
-#include <fcntl.h>
-#include <imsg.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <limits.h>
 
 #include "smtpd.h"
 #include "log.h"

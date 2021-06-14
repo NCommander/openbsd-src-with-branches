@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: unpack_dns.c,v 1.1 2018/01/06 07:57:53 sunil Exp $	*/
 
 /*
  * Copyright (c) 2011-2014 Eric Faurot <eric@faurot.net>
@@ -15,8 +15,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
-#include <arpa/inet.h>
 
 #include <string.h>
 

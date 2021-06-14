@@ -1,4 +1,4 @@
-/*	$OpenBSD: compress_backend.c,v 1.8 2013/05/24 17:03:14 eric Exp $	*/
+/*	$OpenBSD: compress_backend.c,v 1.9 2015/01/20 17:37:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2012 Charles Longeau <chl@openbsd.org>
@@ -17,18 +17,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-#include <sys/queue.h>
-#include <sys/tree.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-
-#include <imsg.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <limits.h>
 
 #include "smtpd.h"
 

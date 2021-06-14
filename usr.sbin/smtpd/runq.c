@@ -1,4 +1,4 @@
-/*	$OpenBSD: runq.c,v 1.2 2015/01/20 17:37:54 deraadt Exp $	*/
+/*	$OpenBSD: runq.c,v 1.3 2019/06/14 19:55:25 eric Exp $	*/
 
 /*
  * Copyright (c) 2013,2019 Eric Faurot <eric@openbsd.org>
@@ -16,17 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/queue.h>
-#include <sys/tree.h>
-#include <sys/uio.h>
-
-#include <imsg.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
-#include <time.h>
 
 #include "smtpd.h"
 

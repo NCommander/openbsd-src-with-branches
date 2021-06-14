@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.c,v 1.5 2019/06/13 11:45:35 eric Exp $	*/
+/*	$OpenBSD: resolver.c,v 1.6 2020/12/23 15:42:03 eric Exp $	*/
 
 /*
  * Copyright (c) 2017-2018 Eric Faurot <eric@openbsd.org>
@@ -16,22 +16,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/tree.h>
-#include <sys/queue.h>
+
 #include <netinet/in.h>
 
 #include <asr.h>
-#include <ctype.h>
 #include <errno.h>
-#include <imsg.h>
-#include <limits.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "smtpd.h"
 #include "log.h"

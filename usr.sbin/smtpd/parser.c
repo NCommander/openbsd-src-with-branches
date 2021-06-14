@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.41 2017/07/31 16:38:33 gilles Exp $	*/
+/*	$OpenBSD: parser.c,v 1.42 2020/01/06 11:02:38 gilles Exp $	*/
 
 /*
  * Copyright (c) 2013 Eric Faurot	<eric@openbsd.org>
@@ -16,14 +16,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
 
 #include <netinet/in.h>
 #include <net/if.h>
-#include <arpa/inet.h>
 
+#include <arpa/inet.h>
 #include <err.h>
 #include <inttypes.h>
 #include <limits.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ioev.c,v 1.46 2021/05/20 07:33:32 eric Exp $	*/
+/*	$OpenBSD: ioev.c,v 1.47 2021/05/26 18:08:55 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -15,8 +15,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-#include <sys/queue.h>
 #include <sys/socket.h>
 
 #include <errno.h>

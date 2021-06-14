@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: unpack_dns.h,v 1.1 2018/01/06 07:57:53 sunil Exp $	*/
 
 /*
  * Copyright (c) 2011-2014 Eric Faurot <eric@faurot.net>
@@ -20,7 +20,6 @@
 
 #include <netinet/in.h>
 
-#include <arpa/inet.h>
 #include <arpa/nameser.h>
 
 struct unpack {

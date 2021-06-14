@@ -1,4 +1,4 @@
-/*	$OpenBSD: mda.c,v 1.141 2019/10/03 08:50:08 gilles Exp $	*/
+/*	$OpenBSD: mda.c,v 1.142 2021/05/26 18:08:55 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -19,25 +19,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-#include <sys/queue.h>
-#include <sys/tree.h>
-#include <sys/socket.h>
-
 #include <ctype.h>
-#include <errno.h>
-#include <event.h>
-#include <imsg.h>
 #include <inttypes.h>
-#include <pwd.h>
-#include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
-#include <time.h>
 #include <unistd.h>
-#include <limits.h>
 #include <vis.h>
 
 #include "smtpd.h"

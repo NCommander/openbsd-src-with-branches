@@ -1,4 +1,4 @@
-/*	$OpenBSD: lka_filter.c,v 1.66 2020/12/31 08:27:15 martijn Exp $	*/
+/*	$OpenBSD: lka_filter.c,v 1.67 2021/01/23 16:11:11 rob Exp $	*/
 
 /*
  * Copyright (c) 2018 Gilles Chehade <gilles@poolp.org>
@@ -16,19 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-#include <sys/queue.h>
-#include <sys/tree.h>
-#include <sys/socket.h>
-
-#include <netinet/in.h>
-
 #include <errno.h>
-#include <event.h>
-#include <imsg.h>
 #include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
