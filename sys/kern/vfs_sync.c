@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.64 2020/06/24 22:03:41 cheloha Exp $  */
+/*       $OpenBSD: vfs_sync.c,v 1.65 2021/01/14 03:32:01 cheloha Exp $  */
 
 /*
  *  Portions of this code are:
@@ -129,19 +129,6 @@ vn_syncer_add_to_worklist(struct vnode *vp, int delay)
 	vp->v_bioflag |= VBIOONSYNCLIST;
 	LIST_INSERT_HEAD(&syncer_workitem_pending[slot], vp, v_synclist);
 	splx(s);
-}
-
-/*
- * TODO Move getnsecuptime() to kern_tc.c and document it when we have
- * more users in the kernel.
- */
-static uint64_t
-getnsecuptime(void)
-{
-	struct timespec now;
-
-	getnanouptime(&now);
-	return TIMESPEC_TO_NSEC(&now);
 }
 
 /*
