@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_km.c,v 1.143 2021/03/26 13:40:05 mpi Exp $	*/
+/*	$OpenBSD: uvm_km.c,v 1.144 2021/05/16 15:10:20 deraadt Exp $	*/
 /*	$NetBSD: uvm_km.c,v 1.42 2001/01/14 02:10:01 thorpej Exp $	*/
 
 /* 
@@ -246,7 +246,7 @@ uvm_km_pgremove(struct uvm_object *uobj, vaddr_t start, vaddr_t end)
 	int slot;
 	int swpgonlydelta = 0;
 
-	KASSERT(uobj->pgops == &aobj_pager);
+	KASSERT(UVM_OBJ_IS_AOBJ(uobj));
 
 	for (curoff = start ; curoff < end ; curoff += PAGE_SIZE) {
 		pp = uvm_pagelookup(uobj, curoff);
