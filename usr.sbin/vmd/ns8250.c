@@ -1,4 +1,4 @@
-/* $OpenBSD: ns8250.c,v 1.29 2020/06/28 16:52:45 pd Exp $ */
+/* $OpenBSD: ns8250.c,v 1.30 2021/03/29 13:09:41 dv Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -28,11 +28,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "atomicio.h"
 #include "ns8250.h"
-#include "proc.h"
 #include "vmd.h"
 #include "vmm.h"
-#include "atomicio.h"
 
 extern char *__progname;
 struct ns8250_dev com1_dev;

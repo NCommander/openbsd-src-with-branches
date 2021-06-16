@@ -1,4 +1,4 @@
-/* $OpenBSD: i8259.c,v 1.18 2018/06/19 17:12:34 reyk Exp $ */
+/* $OpenBSD: i8259.c,v 1.19 2018/07/12 10:15:44 mlarkin Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -25,11 +25,11 @@
 
 #include <unistd.h>
 #include <pthread.h>
-#include "proc.h"
-#include "i8259.h"
-#include "vmm.h"
+
 #include "atomicio.h"
+#include "i8259.h"
 #include "vmd.h"
+#include "vmm.h"
 
 struct i8259 {
 	uint8_t irr;

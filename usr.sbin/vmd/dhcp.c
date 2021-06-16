@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcp.c,v 1.9 2021/03/29 23:37:01 dv Exp $	*/
+/*	$OpenBSD: dhcp.c,v 1.10 2021/06/08 14:37:48 dv Exp $	*/
 
 /*
  * Copyright (c) 2017 Reyk Floeter <reyk@openbsd.org>
@@ -31,10 +31,9 @@
 #include <string.h>
 #include <stddef.h>
 
-#include "proc.h"
-#include "vmd.h"
 #include "dhcp.h"
 #include "virtio.h"
+#include "vmd.h"
 
 #define OPTIONS_OFFSET	offsetof(struct dhcp_packet, options)
 #define OPTIONS_MAX_LEN	\

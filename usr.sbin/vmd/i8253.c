@@ -1,4 +1,4 @@
-/* $OpenBSD: i8253.c,v 1.32 2020/06/28 16:52:45 pd Exp $ */
+/* $OpenBSD: i8253.c,v 1.33 2021/03/29 13:09:41 dv Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -29,7 +29,6 @@
 #include <unistd.h>
 
 #include "i8253.h"
-#include "proc.h"
 #include "vmd.h"
 #include "vmm.h"
 #include "atomicio.h"

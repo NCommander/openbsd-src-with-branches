@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioscsi.c,v 1.17 2021/04/22 18:40:21 dv Exp $  */
+/*	$OpenBSD: vioscsi.c,v 1.18 2021/05/18 11:06:43 dv Exp $  */
 
 /*
  * Copyright (c) 2017 Carlos Cardenas <ccardenas@openbsd.org>
@@ -17,6 +17,7 @@
  */
 
 #include <sys/types.h>
+
 #include <dev/pci/virtio_pcireg.h>
 #include <dev/pv/vioscsireg.h>
 #include <scsi/scsi_all.h>

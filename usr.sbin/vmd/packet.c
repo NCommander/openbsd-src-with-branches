@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.2 2021/05/23 22:43:36 dv Exp $	*/
+/*	$OpenBSD: packet.c,v 1.3 2021/06/15 10:38:53 claudio Exp $	*/
 
 /* Packet assembly code, originally contributed by Archie Cobbs. */
 
@@ -57,7 +57,6 @@
 
 #include "dhcp.h"
 #include "vmd.h"
-#include "proc.h"
 
 u_int32_t	checksum(unsigned char *, u_int32_t, u_int32_t);
 u_int32_t	wrapsum(u_int32_t);
