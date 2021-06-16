@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_aobj.c,v 1.96 2021/05/20 08:03:35 mpi Exp $	*/
+/*	$OpenBSD: uvm_aobj.c,v 1.97 2021/06/15 16:38:09 mpi Exp $	*/
 /*	$NetBSD: uvm_aobj.c,v 1.39 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -741,7 +741,7 @@ uao_create(vsize_t size, int flags)
 	/*
 	 * Initialise UVM object.
 	 */
-	uvm_objinit(&aobj->u_obj, &aobj_pager, refs);
+	uvm_obj_init(&aobj->u_obj, &aobj_pager, refs);
 
 	/*
  	 * now that aobj is ready, add it to the global list

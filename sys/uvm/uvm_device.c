@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_device.c,v 1.60 2020/11/06 11:52:39 mpi Exp $	*/
+/*	$OpenBSD: uvm_device.c,v 1.61 2021/03/20 10:24:21 mpi Exp $	*/
 /*	$NetBSD: uvm_device.c,v 1.30 2000/11/25 06:27:59 chs Exp $	*/
 
 /*
@@ -212,7 +212,7 @@ udv_attach(dev_t device, vm_prot_t accessprot, voff_t off, vsize_t size)
 		 * we have it!   init the data structures, add to list
 		 * and return.
 		 */
-		uvm_objinit(&udv->u_obj, &uvm_deviceops, 1);
+		uvm_obj_init(&udv->u_obj, &uvm_deviceops, 1);
 		udv->u_flags = 0;
 		udv->u_device = device;
 		LIST_INSERT_HEAD(&udv_list, udv, u_list);
