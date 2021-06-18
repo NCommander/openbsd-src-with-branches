@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.1 2021/05/19 17:16:51 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 2021/05/19 17:22:57 deraadt Exp $
 
 PROG=	resolvd
+COPTS+=	-DSMALL
 .PATH:  ${.CURDIR}/../../../sbin/resolvd
 SRCS=   resolvd.c
 
