@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.12 2021/05/15 20:20:35 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.13 2021/05/20 04:22:33 drahn Exp $	*/
 
 /*
  * Copyright (c) 2020 Shivam Waghela <shivamwaghela@gmail.com>
@@ -76,6 +76,8 @@ do_trap_supervisor(struct trapframe *frame)
 		riscv_cpu_intr(frame);
 		return;
 	}
+
+	intr_enable();
 
 	exception = (frame->tf_scause & EXCP_MASK);
 	switch (exception) {
