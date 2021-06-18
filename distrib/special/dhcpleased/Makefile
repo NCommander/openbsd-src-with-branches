@@ -1,8 +1,9 @@
-#	$OpenBSD: Makefile,v 1.3 2021/03/20 16:36:52 kn Exp $
+#	$OpenBSD: Makefile,v 1.1 2021/05/19 17:16:51 deraadt Exp $
 
 PROG=	dhcpleased
+COPTS+=	-DSMALL
 .PATH:  ${.CURDIR}/../../../sbin/dhcpleased
-SRCS=	bpf.c checksum.c control.c dhcpleased.c engine.c frontend.c log.c
+SRCS=	bpf.c checksum.c dhcpleased.c engine.c frontend.c
 
 MAN=
 
