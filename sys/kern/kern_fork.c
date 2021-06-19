@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.234 2021/02/15 09:35:59 mpi Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.235 2021/03/23 10:30:40 mpi Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -201,8 +201,8 @@ process_initialize(struct process *pr, struct proc *p)
 	rw_init(&pr->ps_lock, "pslock");
 	mtx_init(&pr->ps_mtx, IPL_MPFLOOR);
 
-	timeout_set_kclock(&pr->ps_realit_to, realitexpire, pr, 0,
-	    KCLOCK_UPTIME);
+	timeout_set_kclock(&pr->ps_realit_to, realitexpire, pr,
+	    KCLOCK_UPTIME, 0);
 	timeout_set(&pr->ps_rucheck_to, rucheck, pr);
 }
 
