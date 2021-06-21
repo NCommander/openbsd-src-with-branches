@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: clock.c,v 1.1 2021/05/04 16:38:06 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -28,7 +28,7 @@
 
 #include <riscv64/dev/riscv_cpu_intc.h>
 
-extern uint32_t tb_freq;	/* machdep.c */
+extern uint64_t tb_freq;	/* machdep.c */
 
 uint64_t tick_increment;
 uint64_t statmin;
