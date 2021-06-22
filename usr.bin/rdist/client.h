@@ -1,4 +1,4 @@
-/*	$OpenBSD: client.h,v 1.2 2015/12/22 08:48:39 mmcc Exp $	*/
+/*	$OpenBSD: client.h,v 1.3 2017/08/30 07:42:52 otto Exp $	*/
 
 #ifndef __CLIENT_H__
 #define __CLIENT_H__
@@ -161,7 +161,6 @@ int install(char *, char *, int, int , opt_t);
 
 /* distopt.c */
 int parsedistopts(char *, opt_t *, int);
-char *getdistoptlist(void);
 char *getondistoptlist(opt_t);
 
 /* docmd.c */

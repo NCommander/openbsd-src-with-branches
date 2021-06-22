@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.37 2018/09/09 13:53:11 millert Exp $	*/
+/*	$OpenBSD: defs.h,v 1.38 2018/09/21 19:00:45 millert Exp $	*/
 
 #ifndef __DEFS_H__
 #define __DEFS_H__
@@ -206,7 +206,6 @@ char *xbasename(char *);
 char *searchpath(char *);
 
 /* message.c */
-void msgprusage(void);
 void msgprconfig(void);
 char *msgparseopts(char *, int);
 void checkhostname(void);
