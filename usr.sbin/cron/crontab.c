@@ -1,4 +1,4 @@
-/*	$OpenBSD: crontab.c,v 1.93 2019/06/28 13:32:47 deraadt Exp $	*/
+/*	$OpenBSD: crontab.c,v 1.94 2020/02/11 12:42:02 schwarze Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -70,11 +70,7 @@ usage(const char *msg)
 		warnx("usage error: %s", msg);
 	fprintf(stderr, "usage: %s [-u user] file\n", __progname);
 	fprintf(stderr, "       %s [-e | -l | -r] [-u user]\n", __progname);
-	fprintf(stderr,
-	    "\t\t(default operation is replace, per 1003.2)\n"
-	    "\t-e\t(edit user's crontab)\n"
-	    "\t-l\t(list user's crontab)\n"
-	    "\t-r\t(delete user's crontab)\n");
+
 	exit(EXIT_FAILURE);
 }
 
