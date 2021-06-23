@@ -1,4 +1,4 @@
-/* $OpenBSD: smmu.c,v 1.13 2021/04/03 15:59:08 patrick Exp $ */
+/* $OpenBSD: smmu.c,v 1.14 2021/05/16 15:10:19 deraadt Exp $ */
 /*
  * Copyright (c) 2008-2009,2014-2016 Dale Rahn <drahn@dalerahn.com>
  * Copyright (c) 2021 Patrick Wildt <patrick@blueri.se>
@@ -750,9 +750,12 @@ smmu_domain_create(struct smmu_softc *sc, uint32_t sid)
 
 	snprintf(dom->sd_exname, sizeof(dom->sd_exname), "%s:%x",
 	    sc->sc_dev.dv_xname, sid);
-	dom->sd_iovamap = extent_create(dom->sd_exname, PAGE_SIZE,
+	dom->sd_iovamap = extent_create(dom->sd_exname, 0,
 	    (1LL << iovabits) - 1, M_DEVBUF, NULL, 0, EX_WAITOK |
 	    EX_NOCOALESCE);
+
+	/* Reserve first page (to catch NULL access) */
+	extent_alloc_region(dom->sd_iovamap, 0, PAGE_SIZE, EX_WAITOK);
 
 #if 0
 	/* FIXME PCIe address space */
