@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.21 2021/06/17 16:10:50 kettenis Exp $
+#	$OpenBSD: GENERIC,v 1.22 2021/06/18 22:44:21 mlarkin Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -74,6 +74,7 @@ pci*		at pciecam?
 ociic*		at fdt?
 iic*		at ociic?
 dapmic*		at iic?
+titmp*		at iic?
 
 # PCI
 ppb*		at pci?		# PCI-PCI bridges
