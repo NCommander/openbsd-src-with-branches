@@ -1,4 +1,4 @@
-.\"	$OpenBSD: fdisk.8,v 1.102 2021/06/22 14:01:58 krw Exp $
+.\"	$OpenBSD: fdisk.8,v 1.103 2021/06/22 15:01:55 jmc Exp $
 .\"
 .\"
 .\" Copyright (c) 1997 Tobias Weingartner
@@ -144,8 +144,7 @@ MBR partition containing all available space not allocated by a
 .Fl b
 specification.
 .It Fl l Ar blocks
-Specify the number of blocks in the disk, and force the MBR to be in LBA
-mode only.
+Treat the disk as if it has the specified number of blocks.
 .It Fl u
 Update MBR bootcode, preserving existing MBR partition table.
 The MBR bootcode extends from offset 0x000 to the start of the MBR partition
