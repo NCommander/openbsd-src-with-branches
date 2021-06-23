@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.317 2021/05/30 21:01:27 bluhm Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.318 2021/06/01 14:23:34 mvs Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -312,8 +312,7 @@ route_attach(struct socket *so, int proto)
 	rop = pool_get(&rtpcb_pool, PR_WAITOK|PR_ZERO);
 	so->so_pcb = rop;
 	/* Init the timeout structure */
-	timeout_set_flags(&rop->rop_timeout, rtm_senddesync_timer, so,
-	    TIMEOUT_PROC);
+	timeout_set_proc(&rop->rop_timeout, rtm_senddesync_timer, so);
 	refcnt_init(&rop->rop_refcnt);
 
 	rop->rop_socket = so;
