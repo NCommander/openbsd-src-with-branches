@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.79 2019/11/29 19:30:56 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.80 2019/12/02 17:19:25 deraadt Exp $
 
 SUBDIR=ldconfig ldd
 MAN=	ld.so.1
@@ -36,8 +36,9 @@ GEN_PREFIX=\t.file "${@:R}.c"\n\#include "SYS.h"
 OBJS+=dl_${_i}.o
 dl_${_i}.o: SYS.h
 	printf '${GEN_PREFIX}\nDL_SYSCALL(${_i})\n' | \
-	    ${CC} ${DEBUG} -c -fPIC ${CFLAGS:M-[ID]*} ${CFLAGS:M-pipe} ${AINC} -P \
-	    -x assembler-with-cpp - ${DFLAGS} -MF ${.TARGET:R}.d -o ${.TARGET}
+	    ${CC} ${DEBUG} -c -fPIC ${CFLAGS:M-[ID]*} ${CFLAGS:M-pipe} \
+	    ${AFLAGS} -P -x assembler-with-cpp - ${DFLAGS} -MF \
+	    ${.TARGET:R}.d -o ${.TARGET}
 .endfor
 
 .if (${MACHINE_ARCH} == "i386")
