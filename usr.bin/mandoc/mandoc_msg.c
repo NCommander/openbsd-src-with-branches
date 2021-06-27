@@ -1,4 +1,4 @@
-/* $OpenBSD: mandoc_msg.c,v 1.10 2020/09/01 18:24:10 schwarze Exp $ */
+/* $OpenBSD: mandoc_msg.c,v 1.11 2021/06/02 18:27:37 schwarze Exp $ */
 /*
  * Copyright (c) 2014-2020 Ingo Schwarze <schwarze@openbsd.org>
  * Copyright (c) 2010, 2011 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -71,6 +71,7 @@ static	const char *const type_message[MANDOCERR_MAX] = {
 	"no blank before trailing delimiter",
 	"fill mode already enabled, skipping",
 	"fill mode already disabled, skipping",
+	"input text line longer than 80 bytes",
 	"verbatim \"--\", maybe consider using \\(em",
 	"function name without markup",
 	"whitespace at end of input line",
