@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_client.c,v 1.79 2021/05/16 14:10:43 jsing Exp $ */
+/* $OpenBSD: tls13_client.c,v 1.80 2021/06/08 18:13:50 tb Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -671,8 +671,8 @@ tls13_server_certificate_verify_recv(struct tls13_ctx *ctx, CBS *cbs)
 	if (!CBS_get_u16_length_prefixed(cbs, &signature))
 		goto err;
 
-	if ((sigalg = ssl_sigalg(signature_scheme, tls13_sigalgs,
-	    tls13_sigalgs_len)) == NULL)
+	if ((sigalg = ssl_sigalg_from_value(signature_scheme,
+	    tls13_sigalgs, tls13_sigalgs_len)) == NULL)
 		goto err;
 
 	if (!CBB_init(&cbb, 0))
