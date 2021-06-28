@@ -1,4 +1,4 @@
-/* $OpenBSD: locore.S,v 1.36 2021/03/16 10:57:47 kettenis Exp $ */
+/* $OpenBSD: locore.S,v 1.37 2021/03/27 20:03:15 kettenis Exp $ */
 /*-
  * Copyright (c) 2012-2014 Andrew Turner
  * All rights reserved.
@@ -378,8 +378,6 @@ _C_LABEL(sigcoderet):
 	dsb	nsh
 	isb
 END(sigcode)
-	/* This may be copied to the stack, keep it 16-byte aligned */
-	.align  3
 	.global _C_LABEL(esigcode)
 _C_LABEL(esigcode):
 
