@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_extern.h,v 1.156 2020/12/28 14:01:23 mpi Exp $	*/
+/*	$OpenBSD: uvm_extern.h,v 1.157 2021/03/12 14:15:49 jsg Exp $	*/
 /*	$NetBSD: uvm_extern.h,v 1.57 2001/03/09 01:02:12 chs Exp $	*/
 
 /*
@@ -269,9 +269,7 @@ void			vmapbuf(struct buf *, vsize_t);
 void			vunmapbuf(struct buf *, vsize_t);
 struct uvm_object	*uao_create(vsize_t, int);
 void			uao_detach(struct uvm_object *);
-void			uao_detach_locked(struct uvm_object *);
 void			uao_reference(struct uvm_object *);
-void			uao_reference_locked(struct uvm_object *);
 int			uvm_fault(vm_map_t, vaddr_t, vm_fault_t, vm_prot_t);
 
 vaddr_t			uvm_uarea_alloc(void);
