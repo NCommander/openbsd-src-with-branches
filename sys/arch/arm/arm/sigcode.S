@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigcode.S,v 1.9 2020/03/13 08:46:50 deraadt Exp $	*/
+/*	$OpenBSD: sigcode.S,v 1.10 2020/10/19 17:57:40 naddy Exp $	*/
 /*	$NetBSD: sigcode.S,v 1.6 2003/10/05 19:44:58 matt Exp $	*/
 
 /*
@@ -56,17 +56,16 @@ sigcode:
 /*	mov	r0, sp */
 	add	r0, sp, #SIGF_SC
 	mov	r12, #SYS_sigreturn
-	swi	SYS_sigreturn
-	nop
-	nop
+	swi	0
+	dsb	nsh
+	isb
 	.globl  _C_LABEL(sigcoderet)
 _C_LABEL(sigcoderet):
 	/* Well if that failed we better exit quick ! */
-	swi	SYS_exit
-	nop
-	nop
-
-	.align	2
+	mov	r12, #SYS_exit
+	swi	0
+	dsb	nsh
+	isb
         .global _C_LABEL(esigcode)
 _C_LABEL(esigcode):
 
