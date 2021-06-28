@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgAdd.pm,v 1.118 2019/12/08 10:35:17 espie Exp $
+# $OpenBSD: PkgAdd.pm,v 1.119 2021/06/28 11:25:14 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -765,6 +765,9 @@ sub really_add
 		$replacing = 1;
 	}
 	$state->{replacing} = $replacing;
+	# XXX placeholder for optimization
+	$state->{simple_update} = 0;
+	#$state->{simple_update} = $set->{simple_update};
 
 	my $handler = sub {
 		$state->{received} = shift;
