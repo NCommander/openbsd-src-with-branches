@@ -1,4 +1,4 @@
-/*	$OpenBSD: riscv_cpu_intc.c,v 1.7 2021/05/13 19:26:25 kettenis Exp $	*/
+/*	$OpenBSD: riscv_cpu_intc.c,v 1.8 2021/05/14 06:48:52 jsg Exp $	*/
 
 /*
  * Copyright (c) 2020, Mars Li <mengshi.li.mars@gmail.com>
@@ -87,6 +87,12 @@ riscv_intc_attach(struct device *parent, struct device *self, void *aux)
 	intc_ic.ic_disestablish = NULL;
 
 	riscv_intr_register_fdt(&intc_ic);
+
+#ifdef MULTIPROCESSOR
+	extern int ipi_intr(void *);
+	riscv_intc_intr_establish(IRQ_SOFTWARE_SUPERVISOR, 0,
+	    ipi_intr, NULL, NULL);
+#endif
 
 	/*
 	 * XXX right time to enable interrupts ??
