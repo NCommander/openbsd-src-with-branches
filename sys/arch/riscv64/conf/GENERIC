@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.23 2021/06/23 15:26:10 kettenis Exp $
+#	$OpenBSD: GENERIC,v 1.24 2021/06/25 19:27:40 matthieu Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -11,7 +11,7 @@
 
 machine		riscv64
 include		"../../../conf/GENERIC"
-maxusers	32
+maxusers	80
 
 option		PCIVERBOSE
 option		USER_PCICONF
