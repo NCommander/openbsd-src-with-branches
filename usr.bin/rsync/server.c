@@ -1,4 +1,4 @@
-/*	$Id: server.c,v 1.12 2019/05/08 21:30:11 benno Exp $ */
+/*	$OpenBSD: server.c,v 1.13 2021/05/17 11:59:09 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *

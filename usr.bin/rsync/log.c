@@ -1,4 +1,4 @@
-/*	$Id: log.c,v 1.8 2019/06/27 18:03:37 deraadt Exp $ */
+/*	$OpenBSD: log.c,v 1.9 2020/05/17 19:54:41 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *

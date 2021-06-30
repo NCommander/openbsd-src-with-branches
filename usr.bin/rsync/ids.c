@@ -1,4 +1,4 @@
-/*	$Id: ids.c,v 1.13 2019/05/08 21:30:11 benno Exp $ */
+/*	$OpenBSD: ids.c,v 1.14 2021/03/22 11:25:29 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *

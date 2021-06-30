@@ -1,4 +1,4 @@
-/*	$Id: main.c,v 1.53 2021/03/31 19:45:16 job Exp $ */
+/*	$OpenBSD: main.c,v 1.54 2021/05/17 12:04:38 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *

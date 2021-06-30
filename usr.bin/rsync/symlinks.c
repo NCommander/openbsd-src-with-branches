@@ -1,4 +1,4 @@
-/*	$Id: symlinks.c,v 1.4 2019/05/08 20:00:25 benno Exp $ */
+/*	$OpenBSD: symlinks.c,v 1.5 2019/05/08 21:30:11 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *

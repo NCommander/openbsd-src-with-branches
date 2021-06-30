@@ -1,4 +1,4 @@
-/*	$Id: sender.c,v 1.27 2021/03/22 11:49:15 claudio Exp $ */
+/*	$OpenBSD: sender.c,v 1.28 2021/04/05 18:17:37 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *

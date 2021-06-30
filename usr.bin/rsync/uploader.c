@@ -1,4 +1,4 @@
-/*	$Id: uploader.c,v 1.27 2021/05/17 12:11:05 claudio Exp $ */
+/*	$OpenBSD: uploader.c,v 1.28 2021/05/17 12:15:48 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2019 Florian Obser <florian@openbsd.org>
