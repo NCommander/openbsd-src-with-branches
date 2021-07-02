@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.3 2021/05/12 01:20:52 jsg Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.4 2021/06/15 09:52:04 matthieu Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -184,7 +184,6 @@ extern paddr_t dmap_phys_base;
 extern paddr_t dmap_phys_max;
 extern vaddr_t dmap_virt_max;
 extern vaddr_t vm_max_kernel_address;
-extern vaddr_t init_pt_va;
 #endif
 
 /* virtual sizes (bytes) for various kernel submaps */
