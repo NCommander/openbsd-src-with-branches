@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.353 2021/06/08 06:54:40 djm Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.354 2021/06/25 06:20:39 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1260,13 +1260,6 @@ check_host_key(char *hostname, const struct ssh_conn_info *cinfo,
 			error("Keyboard-interactive authentication is disabled"
 			    " to avoid man-in-the-middle attacks.");
 			options.kbd_interactive_authentication = 0;
-			options.challenge_response_authentication = 0;
-			cancelled_forwarding = 1;
-		}
-		if (options.challenge_response_authentication) {
-			error("Challenge/response authentication is disabled"
-			    " to avoid man-in-the-middle attacks.");
-			options.challenge_response_authentication = 0;
 			cancelled_forwarding = 1;
 		}
 		if (options.forward_agent) {
