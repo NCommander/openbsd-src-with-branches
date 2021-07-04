@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_umb.c,v 1.44 2021/04/22 14:06:59 patrick Exp $ */
+/*	$OpenBSD: if_umb.c,v 1.45 2021/05/18 14:23:03 kevlo Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -1490,9 +1490,10 @@ umb_decode_register_state(struct umb_softc *sc, void *data, int len)
 	sc->sc_info.regmode = letoh32(rs->regmode);
 	sc->sc_info.cellclass = letoh32(rs->curcellclass);
 
-	/* XXX should we remember the provider_id? */
 	umb_getinfobuf(data, len, rs->provname_offs, rs->provname_size,
 	    sc->sc_info.provider, sizeof (sc->sc_info.provider));
+	umb_getinfobuf(data, len, rs->provid_offs, rs->provid_size,
+	    sc->sc_info.providerid, sizeof (sc->sc_info.providerid));
 	umb_getinfobuf(data, len, rs->roamingtxt_offs, rs->roamingtxt_size,
 	    sc->sc_info.roamingtxt, sizeof (sc->sc_info.roamingtxt));
 
