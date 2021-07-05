@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.428 2021/03/12 03:43:40 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.429 2021/04/03 06:18:41 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -26,10 +26,10 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <pwd.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include <unistd.h>
 #include <limits.h>
 #include <locale.h>

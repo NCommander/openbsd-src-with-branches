@@ -1,4 +1,4 @@
-/* $OpenBSD: dns.c,v 1.38 2018/02/23 15:58:37 markus Exp $ */
+/* $OpenBSD: dns.c,v 1.39 2020/10/18 11:32:01 djm Exp $ */
 
 /*
  * Copyright (c) 2003 Wesley Griffin. All rights reserved.
@@ -29,9 +29,9 @@
 #include <sys/socket.h>
 
 #include <netdb.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
 #include <stdlib.h>
 
 #include "xmalloc.h"

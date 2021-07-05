@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keysign.c,v 1.65 2020/10/18 11:32:02 djm Exp $ */
+/* $OpenBSD: ssh-keysign.c,v 1.66 2020/12/17 23:10:27 djm Exp $ */
 /*
  * Copyright (c) 2002 Markus Friedl.  All rights reserved.
  *
@@ -32,10 +32,10 @@
 #include <fcntl.h>
 #include <paths.h>
 #include <pwd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <errno.h>
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: hostfile.c,v 1.89 2021/01/26 00:51:30 djm Exp $ */
+/* $OpenBSD: hostfile.c,v 1.90 2021/04/03 06:58:30 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -43,10 +43,10 @@
 
 #include <errno.h>
 #include <resolv.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include <unistd.h>
 
 #include "xmalloc.h"
