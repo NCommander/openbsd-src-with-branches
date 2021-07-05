@@ -1,4 +1,4 @@
-/*	$OpenBSD: syn.c,v 1.38 2015/12/30 09:07:00 tedu Exp $	*/
+/*	$OpenBSD: syn.c,v 1.39 2018/04/24 08:25:16 kn Exp $	*/
 
 /*
  * shell parser (C version)
@@ -331,6 +331,8 @@ get_command(int cf)
 		nesting_push(&old_nesting, c);
 		t = newtp((c == WHILE) ? TWHILE : TUNTIL);
 		t->left = c_list(true);
+		if (t->left == NULL)
+			syntaxerr(NULL);
 		t->right = dogroup();
 		nesting_pop(&old_nesting);
 		break;
