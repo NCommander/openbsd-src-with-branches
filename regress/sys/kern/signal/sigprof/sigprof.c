@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigprof.c,v 1.1 2013/10/07 15:52:18 jsing Exp $ */
+/*	$OpenBSD: sigprof.c,v 1.1 2020/09/16 14:02:24 mpi Exp $ */
 /*
  * Copyright (c) 2013 Joel Sing <jsing@openbsd.org>
  *
@@ -30,7 +30,7 @@
 #define NTHREADS	4
 #define NSIGNALS	100
 #define NSIGTOTAL	(NTHREADS * NSIGNALS)
-#define NMINSIG		((NSIGNALS * 75) / 100)
+#define NMINSIG		((NSIGNALS * 50) / 100)
 
 void handler(int);
 void *spinloop(void *);
