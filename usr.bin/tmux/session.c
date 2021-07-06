@@ -1,4 +1,4 @@
-/* $OpenBSD: session.c,v 1.86 2019/12/26 11:04:58 nicm Exp $ */
+/* $OpenBSD: session.c,v 1.87 2020/05/16 14:49:50 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -237,6 +237,8 @@ session_check_name(const char *name)
 {
 	char	*copy, *cp, *new_name;
 
+	if (*name == '\0')
+		return (NULL);
 	copy = xstrdup(name);
 	for (cp = copy; *cp != '\0'; cp++) {
 		if (*cp == ':' || *cp == '.')
