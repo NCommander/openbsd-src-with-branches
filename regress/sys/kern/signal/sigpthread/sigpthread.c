@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigpthread.c,v 1.1.1.1 2019/05/13 19:40:22 bluhm Exp $	*/
+/*	$OpenBSD: sigpthread.c,v 1.1 2020/09/16 14:02:24 mpi Exp $	*/
 /*
  * Copyright (c) 2019 Alexander Bluhm <bluhm@openbsd.org>
  *
@@ -126,9 +126,7 @@ main(int argc, char *argv[])
 		errx(1, "do not sleep before unblock and wait together");
 
 	/* Make sure that we do not hang forever. */
-	ret = alarm(10);
-	if (ret == -1)
-		err(1, "alarm");
+	alarm(10);
 
 	if (sigemptyset(&set) == -1)
 		err(1, "sigemptyset");
