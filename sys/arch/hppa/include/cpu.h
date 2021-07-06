@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.93 2020/06/14 20:29:13 naddy Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.94 2021/06/02 00:39:26 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -144,6 +144,7 @@ curcpu(void)
 
 #define CPU_INFO_UNIT(ci)	((ci)->ci_dev ? (ci)->ci_dev->dv_unit : 0)
 #define CPU_IS_PRIMARY(ci)	((ci)->ci_cpuid == 0)
+#define CPU_IS_RUNNING(ci)	((ci)->ci_flags & CPUF_RUNNING)
 #define	CPU_INFO_ITERATOR	int
 #define CPU_INFO_FOREACH(cii, ci) \
 	for (cii = 0, ci = &cpu_info[0]; cii < ncpus; cii++, ci++)
