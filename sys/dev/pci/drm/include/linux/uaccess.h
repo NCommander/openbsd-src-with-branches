@@ -78,6 +78,9 @@ access_ok(const void *addr, unsigned long size)
 #define user_access_begin(addr, size)	access_ok(addr, size)
 #define user_access_end()
 
+#define user_write_access_begin(addr, size)	access_ok(addr, size)
+#define user_write_access_end()
+
 #if defined(__i386__) || defined(__amd64__)
 
 static inline void
