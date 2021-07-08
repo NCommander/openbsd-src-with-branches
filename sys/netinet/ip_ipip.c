@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.91 2021/07/07 18:03:46 bluhm Exp $ */
+/*	$OpenBSD: ip_ipip.c,v 1.92 2021/07/08 15:13:14 bluhm Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -554,7 +554,7 @@ ipe4_attach(void)
 }
 
 int
-ipe4_init(struct tdb *tdbp, struct xformsw *xsp, struct ipsecinit *ii)
+ipe4_init(struct tdb *tdbp, const struct xformsw *xsp, struct ipsecinit *ii)
 {
 	tdbp->tdb_xform = xsp;
 	return 0;
