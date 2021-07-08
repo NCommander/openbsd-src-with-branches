@@ -1,4 +1,4 @@
-/*	$OpenBSD: apmsubr.c,v 1.10 2021/04/06 20:30:32 kn Exp $	*/
+/*	$OpenBSD: apmsubr.c,v 1.11 2021/04/06 22:10:12 jca Exp $	*/
 
 /*
  *  Copyright (c) 1995,1996 John T. Kohl
@@ -95,7 +95,7 @@ apm_state(int apm_state)
 	case STANDING_BY:
 		return "standby";
 	case HIBERNATING:
-		return "hibenate";
+		return "hibernate";
 	default:
 		return "unknown";
 	}
