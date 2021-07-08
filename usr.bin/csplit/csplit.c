@@ -1,4 +1,4 @@
-/*	$OpenBSD: csplit.c,v 1.8 2015/10/11 17:43:03 semarie Exp $	*/
+/*	$OpenBSD: csplit.c,v 1.9 2016/10/28 07:22:59 schwarze Exp $	*/
 /*	$FreeBSD: src/usr.bin/csplit/csplit.c,v 1.9 2004/03/22 11:15:03 tjr Exp $	*/
 
 /*-
@@ -398,8 +398,10 @@ do_rexp(const char *expr)
 		first = 0;
 	}
 
-	if (p == NULL)
+	if (p == NULL) {
+		toomuch(NULL, 0);
 		errx(1, "%s: no match", re);
+	}
 
 	if (ofs <= 0) {
 		/*
