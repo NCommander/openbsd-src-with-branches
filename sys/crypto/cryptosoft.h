@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptosoft.h,v 1.13 2010/09/22 11:54:23 mikeb Exp $	*/
+/*	$OpenBSD: cryptosoft.h,v 1.14 2012/12/07 17:03:22 mikeb Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -32,15 +32,15 @@ struct swcr_data {
 			u_int8_t	 *SW_ictx;
 			u_int8_t	 *SW_octx;
 			u_int32_t	 SW_klen;
-			struct auth_hash *SW_axf;
+			const struct auth_hash *SW_axf;
 		} SWCR_AUTH;
 		struct {
 			u_int8_t	 *SW_kschedule;
-			struct enc_xform *SW_exf;
+			const struct enc_xform *SW_exf;
 		} SWCR_ENC;
 		struct {
 			u_int32_t	 SW_size;
-			struct comp_algo *SW_cxf;
+			const struct comp_algo *SW_cxf;
 		} SWCR_COMP;
 	} SWCR_UN;
 
