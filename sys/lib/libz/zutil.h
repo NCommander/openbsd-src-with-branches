@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: zutil.h,v 1.20 2021/07/04 17:41:23 tb Exp $ */
 
 /* zutil.h -- internal interface and configuration of the compression library
  * Copyright (C) 1995-2016 Jean-loup Gailly, Mark Adler
@@ -25,7 +25,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 
-#define BUILDFIXED
 #define MY_ZCALLOC
 #define NOBYFOUR
 
