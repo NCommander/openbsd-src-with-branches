@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptosoft.h,v 1.14 2012/12/07 17:03:22 mikeb Exp $	*/
+/*	$OpenBSD: cryptosoft.h,v 1.15 2021/07/08 09:22:30 bluhm Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -23,6 +23,8 @@
 
 #ifndef _CRYPTO_CRYPTOSOFT_H_
 #define _CRYPTO_CRYPTOSOFT_H_
+
+#include <sys/queue.h>
 
 /* Software session entry */
 struct swcr_data {
@@ -53,8 +55,9 @@ struct swcr_data {
 #define sw_size		SWCR_UN.SWCR_COMP.SW_size
 #define sw_cxf		SWCR_UN.SWCR_COMP.SW_cxf
 
-	struct swcr_data *sw_next;
+	SLIST_ENTRY(swcr_data)	sw_next;
 };
+SLIST_HEAD(swcr_list, swcr_data);
 
 #ifdef _KERNEL
 extern const u_int8_t hmac_ipad_buffer[HMAC_MAX_BLOCK_LEN];
