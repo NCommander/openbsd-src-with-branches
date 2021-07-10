@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_internal.h,v 1.6 2021/01/05 16:45:59 jsing Exp $ */
+/* $OpenBSD: x509_internal.h,v 1.7 2021/03/12 15:53:38 tb Exp $ */
 /*
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
  *
@@ -65,6 +65,9 @@ struct x509_verify_chain {
 struct x509_verify_ctx {
 	X509_STORE_CTX *xsc;
 	struct x509_verify_chain **chains;	/* Validated chains */
+	STACK_OF(X509) *saved_error_chain;
+	int saved_error;
+	int saved_error_depth;
 	size_t chains_count;
 	int dump_chain;			/* Dump current chain without erroring */
 	STACK_OF(X509) *roots;		/* Trusted roots for this validation */
