@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.175 2021/07/09 12:07:27 schwarze Exp $
+# $OpenBSD: Makefile,v 1.176 2021/07/10 15:56:18 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -14,6 +14,7 @@ MAN=	\
 	ASN1_TIME_set.3 \
 	ASN1_TYPE_get.3 \
 	ASN1_generate_nconf.3 \
+	ASN1_get_object.3 \
 	ASN1_item_d2i.3 \
 	ASN1_item_new.3 \
 	ASN1_put_object.3 \
