@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.95 2021/03/11 11:16:58 jsg Exp $ */
+/*	$OpenBSD: machdep.c,v 1.96 2021/05/16 15:10:19 deraadt Exp $ */
 
 /*
  * Copyright (c) 2009, 2010, 2014 Miodrag Vallat.
@@ -1271,13 +1271,13 @@ hw_cpu_hatch(struct cpu_info *ci)
 	 */
 	setcurcpu(ci);
 
-	tlb_init(ci->ci_hw.tlbsize);
-	tlb_set_pid(0);
-
 	/*
 	 * Make sure we can access the extended address space.
 	 */
 	setsr(getsr() | SR_KX | SR_UX);
+
+	tlb_init(ci->ci_hw.tlbsize);
+	tlb_set_pid(0);
 
 	/*
 	 * Turn off bootstrap exception vectors.
