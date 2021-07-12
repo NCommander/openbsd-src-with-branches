@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rge.c,v 1.12 2021/02/11 16:22:06 stsp Exp $	*/
+/*	$OpenBSD: if_rge.c,v 1.13 2021/03/30 00:55:08 kevlo Exp $	*/
 
 /*
  * Copyright (c) 2019, 2020 Kevin Lo <kevlo@openbsd.org>
@@ -1242,7 +1242,7 @@ rge_rxeof(struct rge_queues *q)
 			 */
 			 if (q->q_rx.rge_head != NULL) {
 				m_freem(q->q_rx.rge_head);
-				q->q_rx.rge_head = q->q_rx.rge_head = NULL;
+				q->q_rx.rge_head = q->q_rx.rge_tail = NULL;
 			}
 			rge_discard_rxbuf(q, i);
 			continue;
