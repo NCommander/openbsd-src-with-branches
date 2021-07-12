@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.h,v 1.20 2021/06/14 17:34:06 krw Exp $	*/
+/*	$OpenBSD: cmd.h,v 1.21 2021/07/11 13:23:18 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -26,10 +26,10 @@
 #define CMD_DIRTY	0x0004
 
 struct cmd {
-	char	*cmd;
-	int	 gpt;
-	int	(*fcn)(char *, struct mbr *);
-	char	*help;
+	char	*cmd_name;
+	int	 cmd_gpt;
+	int	(*cmd_fcn)(char *, struct mbr *);
+	char	*cmd_help;
 };
 extern struct cmd	cmd_table[];
 
