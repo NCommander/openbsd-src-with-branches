@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660.c,v 1.20 2017/04/06 19:09:45 natano Exp $	*/
+/*	$OpenBSD: cd9660.c,v 1.21 2018/11/20 01:13:14 yasuoka Exp $	*/
 /*	$NetBSD: cd9660.c,v 1.53 2016/11/25 23:02:44 christos Exp $	*/
 
 /*
@@ -1975,7 +1975,7 @@ cd9660_add_generic_bootimage(iso9660_disk *diskStructure, const char *bootimage)
 	diskStructure->generic_bootimage = estrdup(bootimage);
 
 	if (unveil(diskStructure->generic_bootimage, "r") == -1)
-		err(1, "unveil");
+		err(1, "unveil %s", diskStructure->generic_bootimage);
 	/* Get information about the file */
 	if (lstat(diskStructure->generic_bootimage, &stbuf) == -1)
 		err(1, "%s: lstat(\"%s\")", __func__,

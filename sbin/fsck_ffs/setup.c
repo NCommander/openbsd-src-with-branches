@@ -1,4 +1,4 @@
-/*	$OpenBSD: setup.c,v 1.66 2019/06/28 13:32:43 deraadt Exp $	*/
+/*	$OpenBSD: setup.c,v 1.67 2020/06/20 07:49:04 otto Exp $	*/
 /*	$NetBSD: setup.c,v 1.27 1996/09/27 22:45:19 christos Exp $	*/
 
 /*
@@ -105,7 +105,7 @@ setup(char *dev, int isfsdb)
 
 		if (isfsdb || !hotroot()) {
 			if (unveil("/dev", "rw") == -1)
-				err(1, "unveil");
+				err(1, "unveil /dev");
 			if (pledge("stdio rpath wpath getpw tty disklabel",
 			    NULL) == -1)
 				err(1, "pledge");

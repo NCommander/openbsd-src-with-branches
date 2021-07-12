@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.c,v 1.142 2021/02/06 18:01:02 florian Exp $	*/
+/*	$OpenBSD: resolver.c,v 1.143 2021/02/07 13:35:41 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -377,7 +377,7 @@ resolver(int debug, int verbose)
 		fatal("can't drop privileges");
 
 	if (unveil(TLS_DEFAULT_CA_CERT_FILE, "r") == -1)
-		fatal("unveil");
+		fatal("unveil %s", TLS_DEFAULT_CA_CERT_FILE);
 
 	if (pledge("stdio inet dns rpath recvfd", NULL) == -1)
 		fatal("pledge");

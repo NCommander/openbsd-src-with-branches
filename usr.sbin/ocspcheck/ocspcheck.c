@@ -1,4 +1,4 @@
-/* $OpenBSD: ocspcheck.c,v 1.28 2020/10/16 01:16:55 beck Exp $ */
+/* $OpenBSD: ocspcheck.c,v 1.29 2021/02/09 16:55:51 claudio Exp $ */
 
 /*
  * Copyright (c) 2017,2020 Bob Beck <beck@openbsd.org>
@@ -617,14 +617,14 @@ main(int argc, char **argv)
 
 	if (cafile != NULL) {
 		if (unveil(cafile, "r") == -1)
-			err(1, "unveil");
+			err(1, "unveil %s", cafile);
 	}
 	if (cadir != NULL) {
 		if (unveil(cadir, "r") == -1)
-			err(1, "unveil");
+			err(1, "unveil %s", cadir);
 	}
 	if (unveil(certfile, "r") == -1)
-		err(1, "unveil");
+		err(1, "unveil %s", certfile);
 
 	if (pledge("stdio inet rpath dns", NULL) == -1)
 		err(1, "pledge");

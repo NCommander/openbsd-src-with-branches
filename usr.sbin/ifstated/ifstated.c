@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifstated.c,v 1.64 2019/06/28 13:32:47 deraadt Exp $	*/
+/*	$OpenBSD: ifstated.c,v 1.65 2020/12/30 18:40:44 benno Exp $	*/
 
 /*
  * Copyright (c) 2004 Marco Pfatschbacher <mpf@openbsd.org>
@@ -162,9 +162,9 @@ main(int argc, char *argv[])
 		log_warn("%s: setsockopt tablefilter", __func__);
 
 	if (unveil(configfile, "r") == -1)
-		fatal("unveil");
+		fatal("unveil %s", configfile);
 	if (unveil(_PATH_BSHELL, "x") == -1)
-		fatal("unveil");
+		fatal("unveil %s", _PATH_BSHELL);
 	if (pledge("stdio rpath route proc exec", NULL) == -1)
 		fatal("pledge");
 

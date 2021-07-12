@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcidump.c,v 1.63 2021/03/05 20:06:39 jan Exp $	*/
+/*	$OpenBSD: pcidump.c,v 1.64 2021/05/30 02:24:43 jsg Exp $	*/
 
 /*
  * Copyright (c) 2006, 2007 David Gwynne <loki@animata.net>
@@ -191,7 +191,7 @@ main(int argc, char *argv[])
 	}
 
 	if (unveil("/dev", "r") == -1)
-		err(1, "unveil");
+		err(1, "unveil /dev");
 	if (unveil(NULL, NULL) == -1)
 		err(1, "unveil");
 

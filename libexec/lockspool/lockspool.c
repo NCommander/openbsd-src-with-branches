@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockspool.c,v 1.20 2019/01/25 00:19:26 millert Exp $	*/
+/*	$OpenBSD: lockspool.c,v 1.21 2020/02/09 14:59:20 millert Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt <deraadt@theos.com>
@@ -54,7 +54,7 @@ main(int argc, char *argv[])
 	int holdfd;
 
 	if (unveil(_PATH_MAILDIR, "rwc") == -1)
-		err(1, "unveil");
+		err(1, "unveil %s", _PATH_MAILDIR);
 	if (pledge("stdio rpath wpath getpw cpath fattr", NULL) == -1)
 		err(1, "pledge");
 

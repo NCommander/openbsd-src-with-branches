@@ -1,4 +1,4 @@
-/*	$OpenBSD: check.c,v 1.19 2018/09/24 21:26:02 deraadt Exp $	*/
+/*	$OpenBSD: check.c,v 1.20 2019/06/28 13:32:43 deraadt Exp $	*/
 /*	$NetBSD: check.c,v 1.8 1997/10/17 11:19:29 ws Exp $	*/
 
 /*
@@ -55,7 +55,7 @@ checkfilesys(const char *fname)
 	int mod = 0;
 
 	if (unveil("/dev", "rw") == -1)
-		err(1, "unveil");
+		err(1, "unveil /dev");
 
 	rdonly = alwaysno;
 

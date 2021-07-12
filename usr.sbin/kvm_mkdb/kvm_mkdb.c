@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_mkdb.c,v 1.30 2018/10/26 17:11:33 mestre Exp $	*/
+/*	$OpenBSD: kvm_mkdb.c,v 1.31 2019/06/28 13:32:48 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -117,15 +117,15 @@ main(int argc, char *argv[])
 
 	if (argc > 0) {
 		if (unveil(argv[0], "r") == -1)
-			err(1, "unveil");
+			err(1, "unveil %s", argv[0]);
 	} else {
 		if (unveil(_PATH_UNIX, "r") == -1)
-			err(1, "unveil");
+			err(1, "unveil %s", _PATH_UNIX);
 		if (unveil(_PATH_KSYMS, "r") == -1)
-			err(1, "unveil");
+			err(1, "unveil %s", _PATH_KSYMS);
 	}
 	if (unveil(dbdir, "rwc") == -1)
-		err(1, "unveil");
+		err(1, "unveil %s", dbdir);
 	if (pledge("stdio rpath wpath cpath fattr flock", NULL) == -1)
 		err(1, "pledge");
 

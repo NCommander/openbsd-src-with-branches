@@ -1,4 +1,4 @@
-/*	$OpenBSD: iostat.c,v 1.42 2019/10/14 19:22:17 deraadt Exp $	*/
+/*	$OpenBSD: iostat.c,v 1.43 2020/08/21 01:10:07 kn Exp $	*/
 /*	$NetBSD: iostat.c,v 1.10 1996/10/25 18:21:58 scottr Exp $	*/
 
 /*
@@ -163,7 +163,7 @@ main(int argc, char *argv[])
 	dkinit(0);
 
 	if (unveil("/", "") == -1)
-		err(1, "unveil");
+		err(1, "unveil /");
 	if (unveil(NULL, NULL) == -1)
 		err(1, "unveil");
 

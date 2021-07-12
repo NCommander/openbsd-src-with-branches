@@ -1,4 +1,4 @@
-/* $OpenBSD: tcpdrop.c,v 1.18 2018/11/08 07:14:37 mestre Exp $ */
+/* $OpenBSD: tcpdrop.c,v 1.19 2019/11/27 17:49:09 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Markus Friedl <markus@openbsd.org>
@@ -65,9 +65,9 @@ main(int argc, char **argv)
 	int gaierr, rval = 0;
 
 	if (unveil(_PATH_HOSTS, "r") == -1)
-		err(1, "unveil");
+		err(1, "unveil %s", _PATH_HOSTS);
 	if (unveil(_PATH_RESCONF, "r") == -1)
-		err(1, "unveil");
+		err(1, "unveil %s", _PATH_RESCONF);
 	if (unveil(NULL, NULL) == -1)
 		err(1, "unveil");
 

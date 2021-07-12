@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.71 2021/03/21 18:25:24 florian Exp $	*/
+/*	$OpenBSD: engine.c,v 1.72 2021/05/01 11:53:06 florian Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -368,9 +368,9 @@ engine(int debug, int verbose)
 		fatal("chdir(\"/\")");
 
 	if (unveil("/", "") == -1)
-		fatal("unveil(\"/\", \"\")");
+		fatal("unveil /");
 	if (unveil(NULL, NULL) == -1)
-		fatal("unveil(NULL, NULL)");
+		fatal("unveil");
 
 	setproctitle("%s", "engine");
 	log_procinit("engine");

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fsck.c,v 1.39 2018/09/24 21:26:00 deraadt Exp $	*/
+/*	$OpenBSD: fsck.c,v 1.40 2019/06/28 13:32:43 deraadt Exp $	*/
 /*	$NetBSD: fsck.c,v 1.7 1996/10/03 20:06:30 christos Exp $	*/
 
 /*
@@ -110,11 +110,11 @@ main(int argc, char *argv[])
 	checkroot();
 
 	if (unveil("/dev", "rw") == -1)
-		err(1, "unveil");
+		err(1, "unveil /dev");
 	if (unveil(_PATH_FSTAB, "r") == -1)
-		err(1, "unveil");
+		err(1, "unveil %s", _PATH_FSTAB);
 	if (unveil("/sbin", "x") == -1)
-		err(1, "unveil");
+		err(1, "unveil /sbin");
 	if (pledge("stdio rpath wpath disklabel proc exec", NULL) == -1)
 		err(1, "pledge");
 
