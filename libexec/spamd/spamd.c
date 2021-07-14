@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.156 2019/08/06 13:34:36 mestre Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.157 2021/07/07 07:28:56 mestre Exp $	*/
 
 /*
  * Copyright (c) 2015 Henning Brauer <henning@openbsd.org>
@@ -446,8 +446,6 @@ spamd_tls_init()
 	if (tlskeyfile == NULL || tlscertfile == NULL)
 		errx(1, "need key and certificate for TLS");
 
-	if (tls_init() != 0)
-		errx(1, "failed to initialise tls");
 	if ((tlscfg = tls_config_new()) == NULL)
 		errx(1, "failed to get tls config");
 	if ((tlsctx = tls_server()) == NULL)
