@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.126 2021/07/12 22:18:54 krw Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.127 2021/07/13 15:03:34 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -27,9 +27,9 @@
 #include <string.h>
 #include <uuid.h>
 
+#include "part.h"
 #include "disk.h"
 #include "misc.h"
-#include "part.h"
 #include "mbr.h"
 #include "gpt.h"
 #include "user.h"
@@ -70,7 +70,7 @@ Xreinit(char *args, struct mbr *mbr)
 
 	if (dogpt) {
 		MBR_init_GPT(mbr);
-		GPT_init(GHANDGP, 0);
+		GPT_init(GHANDGP);
 		GPT_print("s", TERSE);
 	} else {
 		memset(&gh, 0, sizeof(gh));

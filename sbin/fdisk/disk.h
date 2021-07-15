@@ -1,4 +1,4 @@
-/*	$OpenBSD: disk.h,v 1.27 2021/07/13 15:03:34 krw Exp $	*/
+/*	$OpenBSD: disk.h,v 1.28 2021/07/15 21:23:54 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -20,6 +20,7 @@
 #define _DISK_H
 
 struct disk {
+	struct prt	 dk_bootprt;
 	char		*dk_name;
 	int		 dk_fd;
 	uint32_t	 dk_cylinders;
