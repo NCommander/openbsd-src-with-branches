@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.9 2021/04/01 06:47:18 claudio Exp $
+# $OpenBSD: Makefile.inc,v 1.10 2021/05/06 17:03:57 job Exp $
 
 .PATH:		${.CURDIR}/../../../../usr.sbin/rpki-client
 
@@ -25,7 +25,7 @@ TALARGS += ta/AfriNIC.cer			tal/afrinic.tal
 TALARGS += ta/apnic-rpki-root-iana-origin.cer	tal/apnic.tal
 TALARGS += ta/ripe-ncc-ta.cer			tal/ripe.tal
 
-SRCS_test-cert=	test-cert.c cert.c x509.c ip.c as.c io.c log.c tal.c \
+SRCS_test-cert=	test-cert.c cert.c cms.c x509.c ip.c as.c io.c log.c tal.c \
 		validate.c encoding.c
 run-regress-test-cert: test-cert
 	./test-cert -v ${.CURDIR}/../cer/*.cer
