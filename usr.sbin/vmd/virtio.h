@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.h,v 1.39 2021/06/16 16:55:02 dv Exp $	*/
+/*	$OpenBSD: virtio.h,v 1.40 2021/06/21 02:38:18 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -217,8 +217,7 @@ struct vionet_dev {
 
 	struct virtio_vq_info vq[VIRTIO_MAX_QUEUES];
 
-	int fd, rx_added;
-	int rx_pending;
+	int fd;
 	uint32_t vm_id;
 	uint32_t vm_vmid;
 	int irq;

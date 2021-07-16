@@ -1,4 +1,4 @@
-/* $OpenBSD: ns8250.h,v 1.8 2019/05/28 07:36:37 mlarkin Exp $ */
+/* $OpenBSD: ns8250.h,v 1.9 2019/12/11 06:45:16 pd Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -69,7 +69,6 @@ struct ns8250_dev {
 	enum ns8250_portid portid;
 	int fd;
 	int irq;
-	int rcv_pending;
 	uint32_t vmid;
 	uint64_t byte_out;
 	uint32_t baudrate;
