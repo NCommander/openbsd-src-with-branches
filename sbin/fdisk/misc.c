@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.76 2021/07/15 21:58:02 krw Exp $	*/
+/*	$OpenBSD: misc.c,v 1.77 2021/07/16 13:26:04 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -55,7 +55,6 @@ unit_lookup(const char *units)
 			break;
 		i++;
 	}
-	/* default */
 	if (unit_types[i].ut_abbr == NULL)
 		return SECTORS;
 
