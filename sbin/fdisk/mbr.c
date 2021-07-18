@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbr.c,v 1.86 2021/07/15 21:58:02 krw Exp $	*/
+/*	$OpenBSD: mbr.c,v 1.87 2021/07/17 14:16:34 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -202,16 +202,19 @@ MBR_print(const struct mbr *mbr, const char *units)
 }
 
 int
-MBR_read(const uint64_t sector, struct dos_mbr *dos_mbr)
+MBR_read(const uint64_t lba_self, const uint64_t lba_firstembr, struct mbr *mbr)
 {
+	struct dos_mbr		 dos_mbr;
 	char			*secbuf;
 
-	secbuf = DISK_readsector(sector);
+	secbuf = DISK_readsector(lba_self);
 	if (secbuf == NULL)
 		return -1;
 
-	memcpy(dos_mbr, secbuf, sizeof(*dos_mbr));
+	memcpy(&dos_mbr, secbuf, sizeof(dos_mbr));
 	free(secbuf);
+
+	MBR_parse(&dos_mbr, lba_self, lba_firstembr, mbr);
 
 	return 0;
 }
