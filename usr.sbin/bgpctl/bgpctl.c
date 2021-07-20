@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpctl.c,v 1.268 2021/05/27 08:29:06 claudio Exp $ */
+/*	$OpenBSD: bgpctl.c,v 1.269 2021/06/16 16:24:11 job Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -70,7 +70,7 @@ usage(void)
 {
 	extern char	*__progname;
 
-	fprintf(stderr, "usage: %s [-jn] [-s socket] command [argument ...]\n",
+	fprintf(stderr, "usage: %s [-jnV] [-s socket] command [argument ...]\n",
 	    __progname);
 	exit(1);
 }
