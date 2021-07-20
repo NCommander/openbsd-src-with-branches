@@ -1,4 +1,4 @@
-/*	$OpenBSD: sparc64_installboot.c,v 1.7 2015/12/28 23:00:29 krw Exp $	*/
+/*	$OpenBSD: sparc64_installboot.c,v 1.8 2019/06/28 13:32:48 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2012, 2013 Joel Sing <jsing@openbsd.org>
@@ -87,6 +87,11 @@ md_loadboot(void)
         if (read(fd, ldrstore, ldrsize) != (ssize_t)sb.st_size)
                 err(1, "read");
         close(fd);
+}
+
+void
+md_prepareboot(int devfd, char *dev)
+{
 }
 
 void
