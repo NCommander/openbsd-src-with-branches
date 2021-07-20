@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pppx.c,v 1.109 2021/02/10 13:38:46 mvs Exp $ */
+/*	$OpenBSD: if_pppx.c,v 1.110 2021/02/25 02:48:21 dlg Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -746,8 +746,7 @@ pppx_del_session(struct pppx_dev *pxd, struct pipex_session_close_req *req)
 	if (pxi == NULL)
 		return (EINVAL);
 
-	req->pcr_stat = pxi->pxi_session->stat;
-
+	pipex_export_session_stats(pxi->pxi_session, &req->pcr_stat);
 	pppx_if_destroy(pxd, pxi);
 	return (0);
 }
