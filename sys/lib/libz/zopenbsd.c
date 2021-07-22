@@ -1,4 +1,4 @@
-/*	$OpenBSD: zopenbsd.c,v 1.8 2021/07/04 17:41:23 tb Exp $ */
+/*	$OpenBSD: zopenbsd.c,v 1.9 2021/07/04 17:51:20 deraadt Exp $ */
 
 /*
  * Copyright (c) 2011 Theo de Raadt <deraadt@openbsd.org>
@@ -29,7 +29,7 @@ zcalloc(void *notused, u_int items, u_int size)
 }
 
 void
-zcfree(void *notused, void *ptr)
+zcfree(void *notused, void *ptr, u_int size)
 {
-    free(ptr, M_DEVBUF, 0);
+    free(ptr, M_DEVBUF, size);
 }
