@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpleased.c,v 1.14 2021/07/12 15:09:18 beck Exp $	*/
+/*	$OpenBSD: dhcpleased.c,v 1.15 2021/07/21 03:53:50 kn Exp $	*/
 
 /*
  * Copyright (c) 2017, 2021 Florian Obser <florian@openbsd.org>
@@ -693,10 +693,10 @@ configure_interface(struct imsg_configure_interface *imsg)
 		req_sin_mask->sin_addr.s_addr = imsg->mask.s_addr;
 		if (ioctl(ioctl_sock, SIOCAIFADDR, &ifaliasreq) == -1)
 			fatal("SIOCAIFADDR");
-
-		if (imsg->routes_len > 0)
-			configure_routes(RTM_ADD, imsg);
 	}
+	if (imsg->routes_len > 0)
+		configure_routes(RTM_ADD, imsg);
+
 	req_sin_addr->sin_port = ntohs(CLIENT_PORT);
 	if ((udpsock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
 		log_warn("socket");
