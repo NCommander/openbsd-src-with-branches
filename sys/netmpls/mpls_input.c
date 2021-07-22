@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.76 2020/01/24 05:14:52 jsg Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.77 2021/03/10 10:21:49 jsg Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -171,7 +171,7 @@ do_v6:
 		printf("MPLS_DEBUG: label not found\n");
 #endif
 		m_freem(m);
-		return;
+		goto done;
 	}
 
 	rt_mpls = (struct rt_mpls *)rt->rt_llinfo;
