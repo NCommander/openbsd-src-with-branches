@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.127 2021/07/19 19:46:20 krw Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.128 2021/07/21 12:22:54 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -64,9 +64,9 @@ main(int argc, char *argv[])
 {
 	struct mbr		 mbr;
 #ifdef HAS_MBR
-	char			*mbrfile = _PATH_MBR;
+	const char		*mbrfile = _PATH_MBR;
 #else
-	char			*mbrfile = NULL;
+	const char		*mbrfile = NULL;
 #endif
 	int			 ch, error;
 	int			 e_flag = 0, g_flag = 0, i_flag = 0, u_flag = 0;
