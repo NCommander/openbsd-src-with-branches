@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.h,v 1.141 2021/07/02 05:11:21 dtucker Exp $ */
+/* $OpenBSD: readconf.h,v 1.142 2021/07/13 23:48:36 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -147,6 +147,7 @@ typedef struct {
 
 	int	request_tty;
 	int	session_type;
+	int	stdin_null;
 
 	int	proxy_use_fdpass;
 
