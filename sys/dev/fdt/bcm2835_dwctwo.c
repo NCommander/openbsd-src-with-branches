@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcm2835_dwctwo.c,v 1.1 2020/05/14 15:44:07 kettenis Exp $	*/
+/*	$OpenBSD: bcm2835_dwctwo.c,v 1.2 2021/02/05 00:42:25 patrick Exp $	*/
 /*
  * Copyright (c) 2015 Masao Uebayashi <uebayasi@tombiinc.com>
  *
@@ -82,6 +82,8 @@ static struct dwc2_core_params bcm_dwctwo_params = {
 	.reload_ctl			= 0,
 	.ahbcfg				= 0x10,
 	.uframe_sched			= 1,
+	.external_id_pin_ctl		= -1,
+	.hibernation			= -1,
 };
 
 int
