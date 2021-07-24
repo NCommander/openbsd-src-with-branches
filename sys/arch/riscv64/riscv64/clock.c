@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.1 2021/05/04 16:38:06 kettenis Exp $	*/
+/*	$OpenBSD: clock.c,v 1.2 2021/06/21 15:19:39 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -47,6 +47,7 @@ static struct timecounter tb_timecounter = {
 	.tc_name = "tb",
 	.tc_quality = 0,
 	.tc_priv = NULL,
+	.tc_user = TC_TB,
 };
 
 void	cpu_startclock(void);

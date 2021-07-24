@@ -1,4 +1,4 @@
-/*	$OpenBSD: timetc.h,v 1.1 2021/04/23 02:42:16 drahn Exp $	*/
+/*	$OpenBSD: timetc.h,v 1.2 2021/05/12 01:20:52 jsg Exp $	*/
 
 /*
  * Copyright (c) 2020 Paul Irofti <paul@irofti.net>
@@ -19,5 +19,6 @@
 #ifndef _MACHINE_TIMETC_H_
 #define _MACHINE_TIMETC_H_
 
+#define TC_TB	1
 
 #endif	/* _MACHINE_TIMETC_H_ */
