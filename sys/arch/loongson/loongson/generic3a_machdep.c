@@ -1,4 +1,4 @@
-/*	$OpenBSD: generic3a_machdep.c,v 1.9 2020/07/06 13:33:07 pirofti Exp $	*/
+/*	$OpenBSD: generic3a_machdep.c,v 1.10 2020/07/21 05:56:02 visa Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010, 2012 Miodrag Vallat.
@@ -317,8 +317,8 @@ generic3a_boot_secondary_cpu(struct cpu_info *ci)
 	REGVAL64(ls3_ipi_base[ci->ci_cpuid] + LS3_IPI_MBOX0) =
 	    (uint64_t)hw_cpu_spinup_trampoline;  /* pc */
 
-	while (!cpuset_isset(&cpus_running, ci))
-		continue;
+	while (!CPU_IS_RUNNING(ci))
+		membar_sync();
 }
 
 int
