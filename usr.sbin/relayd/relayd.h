@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.265 2021/01/27 20:33:05 eric Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.266 2021/03/23 16:34:31 claudio Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -1355,8 +1355,10 @@ u_int32_t	 prefixlen2mask(u_int8_t);
 int		 accept_reserve(int, struct sockaddr *, socklen_t *, int,
 		     volatile int *);
 struct kv	*kv_add(struct kvtree *, char *, char *, int);
-int		 kv_set(struct kv *, char *, ...);
-int		 kv_setkey(struct kv *, char *, ...);
+int		 kv_set(struct kv *, char *, ...)
+				__attribute__((__format__ (printf, 2, 3)));
+int		 kv_setkey(struct kv *, char *, ...)
+				__attribute__((__format__ (printf, 2, 3)));
 void		 kv_delete(struct kvtree *, struct kv *);
 struct kv	*kv_extend(struct kvtree *, struct kv *, char *);
 void		 kv_purge(struct kvtree *);
