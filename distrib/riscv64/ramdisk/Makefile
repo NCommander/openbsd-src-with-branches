@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2021/05/14 01:18:52 drahn Exp $
+#	$OpenBSD: Makefile,v 1.3 2021/05/19 23:15:21 drahn Exp $
 
 FS=		miniroot${OSrev}.img
 FSSIZE=		67584
@@ -49,7 +49,7 @@ bsd.rd: mr.fs bsd
 
 bsd:
 	cd ${.CURDIR}/../../../sys/arch/${MACHINE}/compile/${RAMDISK} && \
-	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && exec ${MAKE}'
+	    su ${BUILDUSER} -c '${MAKE} config && ${MAKE} clean && exec ${MAKE} ${MFLAGS}'
 	cp -p ${.CURDIR}/../../../sys/arch/${MACHINE}/compile/${RAMDISK}/obj/bsd bsd
 
 mr.fs: instbin
@@ -70,7 +70,7 @@ instbin.mk instbin.cache instbin.c: instbin.conf
 	    -c instbin.c -e instbin -m instbin.mk instbin.conf
 
 instbin: instbin.mk instbin.cache instbin.c
-	${MAKE} -f instbin.mk SRCLIBDIR=${.CURDIR}/../../../lib all
+	${MAKE} ${MFLAGS} -f instbin.mk SRCLIBDIR=${.CURDIR}/../../../lib all
 
 instbin.conf: ${LISTS}
 	awk -f ${UTILS}/makeconf.awk  ${LISTS} > instbin.conf
