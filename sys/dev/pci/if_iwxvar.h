@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwxvar.h,v 1.18 2021/07/29 11:50:37 stsp Exp $	*/
+/*	$OpenBSD: if_iwxvar.h,v 1.19 2021/07/29 11:52:58 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -503,6 +503,7 @@ struct iwx_softc {
 	struct iwx_tx_ring txq[IWX_MAX_QUEUES];
 	struct iwx_rx_ring rxq;
 	int qfullmsk;
+	int first_data_qid;
 
 	int sc_sf_state;
 
