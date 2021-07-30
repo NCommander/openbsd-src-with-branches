@@ -1,11 +1,11 @@
-#	$OpenBSD: Makefile,v 1.12 2017/06/20 20:24:07 akfaew Exp $
+#	$OpenBSD: Makefile,v 1.13 2019/01/17 06:15:44 tedu Exp $
 #
 #	@(#)Makefile	8.1 (Berkeley) 6/6/93
 
 PROG=	locate
 SRCS=	util.c locate.c
 CFLAGS+= -I${.CURDIR}
-MAN=	locate.1	locate.updatedb.8
+MAN=	locate.1	locate.updatedb.8	locate.mklocatedb.8
 SCRIPTS= updatedb mklocatedb
 
 
