@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.187 2021/07/26 14:03:43 schwarze Exp $
+# $OpenBSD: Makefile,v 1.188 2021/07/27 13:27:46 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -284,6 +284,7 @@ MAN=	\
 	X509_EXTENSION_set_object.3 \
 	X509_INFO_new.3 \
 	X509_LOOKUP_hash_dir.3 \
+	X509_LOOKUP_new.3 \
 	X509_NAME_ENTRY_get_object.3 \
 	X509_NAME_add_entry_by_txt.3 \
 	X509_NAME_get_index_by_NID.3 \
