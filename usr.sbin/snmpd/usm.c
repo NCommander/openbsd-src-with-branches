@@ -1,4 +1,4 @@
-/*	$OpenBSD: usm.c,v 1.19 2021/05/20 08:53:12 martijn Exp $	*/
+/*	$OpenBSD: usm.c,v 1.20 2021/06/20 19:55:48 martijn Exp $	*/
 
 /*
  * Copyright (c) 2012 GeNUA mbH
@@ -630,6 +630,7 @@ usm_decrypt(struct snmp_message *msg, struct ber_element *encr)
 		return NULL;
 
 	bzero(&ber, sizeof(ber));
+	ober_set_application(&ber, smi_application);
 	ober_set_readbuf(&ber, buf, scoped_pdu_len);
 	scoped_pdu = ober_read_elements(&ber, NULL);
 
