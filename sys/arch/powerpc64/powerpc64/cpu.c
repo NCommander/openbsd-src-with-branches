@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.21 2020/12/22 11:55:44 kettenis Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.22 2020/12/30 06:06:30 gkoehler Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -408,7 +408,8 @@ cpu_unidle(struct cpu_info *ci)
  * Run ul_setperf(level) on every core.
  */
 void
-mp_setperf(int level) {
+mp_setperf(int level)
+{
 	int i;
 
 	mp_perflevel = level;
