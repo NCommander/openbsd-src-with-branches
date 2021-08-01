@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.88 2020/08/27 01:08:55 jmatthew Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.89 2020/09/27 16:03:55 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
@@ -1140,7 +1140,7 @@ acpicpu_setperf(int level)
 	dnprintf(20, "2 status: %d\n", status);
 
 	/* Did the transition succeed? */
-	 if (status == pss->pss_status) {
+	if (status == pss->pss_status) {
 		cpuspeed = pss->pss_core_freq;
 		sc->sc_level = level;
 	} else
