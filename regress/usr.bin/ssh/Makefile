@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.114 2021/07/23 04:56:21 dtucker Exp $
+#	$OpenBSD: Makefile,v 1.115 2021/07/25 12:27:37 dtucker Exp $
 
 OPENSSL?=	yes
 
@@ -50,6 +50,7 @@ LTESTS= 	connect \
 		keygen-sshfp \
 		key-options \
 		scp \
+		scp3 \
 		scp-uri \
 		sftp \
 		sftp-chroot \
