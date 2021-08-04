@@ -45,6 +45,7 @@ enum {
 	K_MPLS,
 	K_MPLSLABEL,
 	K_MTU,
+	K_NAMESERVER,
 	K_NET,
 	K_NETMASK,
 	K_NOBFD,
@@ -109,6 +110,7 @@ struct keytab keywords[] = {
 	{ "mpls",	K_MPLS },
 	{ "mplslabel",	K_MPLSLABEL },
 	{ "mtu",	K_MTU },
+	{ "nameserver",	K_NAMESERVER },
 	{ "net",	K_NET },
 	{ "netmask",	K_NETMASK },
 	{ "nobfd",	K_NOBFD },
@@ -135,4 +137,3 @@ struct keytab keywords[] = {
 	{ "static",	K_STATIC },
 	{ "swap",	K_SWAP },
 };
-
