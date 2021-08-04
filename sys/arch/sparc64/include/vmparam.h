@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.31 2015/02/10 10:02:55 tedu Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.32 2015/11/01 20:10:00 miod Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.18 2001/05/01 02:19:19 thorpej Exp $ */
 
 /*
@@ -102,7 +102,7 @@
  */
 #define VM_MIN_ADDRESS		((vaddr_t)PAGE_SIZE)
 #define VM_MAX_ADDRESS		((vaddr_t)-1)
-#define VM_MAXUSER_ADDRESS	((vaddr_t)-1)
+#define VM_MAXUSER_ADDRESS	((vaddr_t)-PAGE_SIZE)
 
 /* map PIE into the first quarter of the address space before hole */
 #define VM_PIE_MIN_ADDR		PAGE_SIZE
