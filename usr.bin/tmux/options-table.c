@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.145 2021/07/14 08:56:00 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.146 2021/07/28 07:06:54 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1145,6 +1145,7 @@ const struct options_table_entry options_table[] = {
 	OPTIONS_TABLE_HOOK("alert-activity", ""),
 	OPTIONS_TABLE_HOOK("alert-bell", ""),
 	OPTIONS_TABLE_HOOK("alert-silence", ""),
+	OPTIONS_TABLE_HOOK("client-active", ""),
 	OPTIONS_TABLE_HOOK("client-attached", ""),
 	OPTIONS_TABLE_HOOK("client-detached", ""),
 	OPTIONS_TABLE_HOOK("client-resized", ""),
