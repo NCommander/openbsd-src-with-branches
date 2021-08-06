@@ -1,6 +1,6 @@
-#	$OpenBSD: locate.rc,v 1.6 2003/09/18 09:20:13 jmc Exp $
+#	$OpenBSD: locate.rc,v 1.7 2015/08/14 03:02:07 rzalamena Exp $
 #
-# /etc/locate.rc -  command script for updatedb(8)
+# /etc/locate.rc -  command script for locate.updatedb(8)
 #
 
 # temp directory
