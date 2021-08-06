@@ -1,4 +1,4 @@
-/*	$OpenBSD: upd.c,v 1.28 2021/01/29 16:59:41 sthen Exp $ */
+/*	$OpenBSD: upd.c,v 1.29 2021/03/08 14:35:57 jcs Exp $ */
 
 /*
  * Copyright (c) 2015 David Higgs <higgsd@gmail.com>
@@ -167,7 +167,7 @@ upd_match(struct device *parent, void *match, void *aux)
 		if (upd_lookup_usage_entry(desc, size,
 		    upd_usage_roots + i, &item)) {
 			ret = UMATCH_VENDOR_PRODUCT;
-			break;
+			uha->claimed[item.report_ID] = 1;
 		}
 
 	return (ret);
