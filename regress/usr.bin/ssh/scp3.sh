@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: scp3.sh,v 1.1 2021/08/04 21:28:00 djm Exp $
 #	Placed in the Public Domain.
 
 tid="scp3"
@@ -44,7 +44,8 @@ for mode in scp ; do
 	rm -rf ${DIR2}
 	cp ${DATA} ${DIR}/copy
 	$SCP $scpopts -3r hostA:${DIR} hostB:${DIR2} || fail "copy failed"
-	diff -rN ${DIR} ${DIR2} || fail "corrupted copy"
+	diff -r ${DIR} ${DIR2} || fail "corrupted copy"
+	diff -r ${DIR2} ${DIR} || fail "corrupted copy"
 
 	verbose "$tag: detect non-directory target"
 	scpclean
