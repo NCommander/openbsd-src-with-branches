@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.77 2021/07/16 13:26:04 krw Exp $	*/
+/*	$OpenBSD: misc.c,v 1.78 2021/07/17 14:16:34 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -22,11 +22,9 @@
 #include <ctype.h>
 #include <err.h>
 #include <errno.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <uuid.h>
 
 #include "part.h"
 #include "disk.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdisk.c,v 1.130 2021/08/06 10:41:31 krw Exp $	*/
+/*	$OpenBSD: fdisk.c,v 1.131 2021/08/07 12:57:48 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>	/* DEV_BSIZE */
+#include <sys/types.h>
 #include <sys/disklabel.h>
 
 #include <ctype.h>
@@ -33,7 +33,6 @@
 #include "disk.h"
 #include "mbr.h"
 #include "misc.h"
-#include "cmd.h"
 #include "user.h"
 #include "gpt.h"
 
