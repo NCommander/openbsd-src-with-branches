@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpc.c,v 1.33 2021/03/23 22:07:36 martijn Exp $	*/
+/*	$OpenBSD: snmpc.c,v 1.34 2021/06/20 20:02:14 martijn Exp $	*/
 
 /*
  * Copyright (c) 2019 Martijn van Duren <martijn@openbsd.org>
@@ -476,7 +476,7 @@ main(int argc, char *argv[])
 			err(1, "usm_init");
 		if (seclevel & SNMP_MSGFLAG_AUTH) {
 			if (md == NULL)
-				md = EVP_sha256();
+				md = EVP_sha1();
 			if (authkey == NULL)
 				errx(1, "No authKey or authPassword specified");
 			if (usm_setauth(sec, md, authkey, authkeylen,
