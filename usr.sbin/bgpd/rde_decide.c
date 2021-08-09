@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_decide.c,v 1.84 2021/04/20 08:03:12 claudio Exp $ */
+/*	$OpenBSD: rde_decide.c,v 1.85 2021/05/04 09:21:05 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -279,6 +279,13 @@ prefix_cmp(struct prefix *p1, struct prefix *p2, int *testall)
 	if (i < 0)
 		return 1;
 	if (i > 0)
+		return -1;
+
+	/* XXX RFC7911 does not specify this but it is needed. */
+	/* 13. lowest path identifier wins */
+	if (p1->path_id < p2->path_id)
+		return 1;
+	if (p1->path_id > p2->path_id)
 		return -1;
 
 	fatalx("Uh, oh a politician in the decision process");
