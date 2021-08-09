@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpe.c,v 1.72 2021/06/20 19:55:48 martijn Exp $	*/
+/*	$OpenBSD: snmpe.c,v 1.73 2021/08/01 11:36:48 martijn Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -121,6 +121,9 @@ snmpe_init(struct privsep *ps, struct privsep_proc *p, void *arg)
 		fatal("unveil");
 	if (unveil(NULL, NULL) == -1)
 		fatal("unveil");
+
+	log_info("snmpe %s: ready",
+	    tohexstr(env->sc_engineid, env->sc_engineid_len));
 }
 
 void
