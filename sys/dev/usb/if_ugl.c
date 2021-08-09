@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ugl.c,v 1.25 2020/07/10 13:26:41 patrick Exp $	*/
+/*	$OpenBSD: if_ugl.c,v 1.26 2020/07/31 10:49:32 mglocker Exp $	*/
 /*	$NetBSD: if_upl.c,v 1.19 2002/07/11 21:14:26 augustss Exp $	*/
 /*
  * Copyright (c) 2013 SASANO Takayoshi <uaa@uaa.org.uk>
@@ -681,7 +681,7 @@ ugl_openpipes(struct ugl_softc *sc)
 		return (EIO);
 	}
 	err = usbd_open_pipe_intr(sc->sc_iface, sc->sc_ed[UGL_ENDPT_INTR],
-	    USBD_EXCLUSIVE_USE, &sc->sc_ep[UGL_ENDPT_INTR], sc,
+	    0, &sc->sc_ep[UGL_ENDPT_INTR], sc,
 	    sc->sc_ibuf, UGL_INTR_PKTLEN, ugl_intr,
 	    UGL_INTR_INTERVAL);
 	if (err) {
