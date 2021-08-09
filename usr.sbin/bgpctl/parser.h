@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.h,v 1.39 2020/12/30 07:31:19 claudio Exp $ */
+/*	$OpenBSD: parser.h,v 1.40 2021/02/16 08:30:21 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -71,9 +71,10 @@ struct parse_result {
 	u_int64_t		 rd;
 	int			 flags;
 	int			 is_group;
-	u_int8_t		 validation_state;
 	u_int			 rtableid;
+	u_int32_t		 pathid;
 	enum actions		 action;
+	u_int8_t		 validation_state;
 	u_int8_t		 prefixlen;
 	u_int8_t		 aid;
 	int			 mrtfd;
