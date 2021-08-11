@@ -1,4 +1,4 @@
-/*	$OpenBSD: sshbuf-misc.c,v 1.15 2020/06/05 03:24:36 djm Exp $	*/
+/*	$OpenBSD: sshbuf-misc.c,v 1.16 2020/06/22 05:54:10 djm Exp $	*/
 /*
  * Copyright (c) 2011 Damien Miller
  *
@@ -61,7 +61,7 @@ sshbuf_dump_data(const void *s, size_t len, FILE *f)
 void
 sshbuf_dump(const struct sshbuf *buf, FILE *f)
 {
-	fprintf(f, "buffer %p len = %zu\n", buf, sshbuf_len(buf));
+	fprintf(f, "buffer len = %zu\n", sshbuf_len(buf));
 	sshbuf_dump_data(sshbuf_ptr(buf), sshbuf_len(buf), f);
 }
 
