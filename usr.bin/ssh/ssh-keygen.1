@@ -1,4 +1,4 @@
-.\"	$OpenBSD: ssh-keygen.1,v 1.214 2021/07/23 03:37:52 djm Exp $
+.\"	$OpenBSD: ssh-keygen.1,v 1.215 2021/07/23 06:01:17 jmc Exp $
 .\"
 .\" Author: Tatu Ylonen <ylo@cs.hut.fi>
 .\" Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -537,6 +537,8 @@ When performing signature-related options using the
 .Fl Y
 flag, the following options are accepted:
 .Bl -tag -width Ds
+.It Cm print-pubkey
+Print the full public key to standard output after signature verification.
 .It Cm verify-time Ns = Ns Ar timestamp
 Specifies a time to use when validating signatures instead of the current
 time.
