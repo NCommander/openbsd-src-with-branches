@@ -49,7 +49,7 @@ irq_work_queue(struct irq_work *work)
 static inline void
 irq_work_sync(struct irq_work *work)
 {
-	taskq_del_barrier(work->tq, &work->task);
+	taskq_barrier(work->tq);
 }
 
 #endif
