@@ -1,4 +1,4 @@
-/*	$OpenBSD: k1x-pstate.c,v 1.11 2018/03/22 19:30:18 bluhm Exp $ */
+/*	$OpenBSD: k1x-pstate.c,v 1.11 2021/08/11 18:31:48 tb Exp $ */
 /*
  * Copyright (c) 2011 Bryan Steele <brynet@gmail.com>
  *
@@ -98,21 +98,13 @@ k1x_transition(struct k1x_cpu_state *cstate, int level)
 	u_int64_t msr;
 	int i, cfid, fid = cstate->state_table[level].fid;
 
-	msr = rdmsr(MSR_K1X_STATUS);
-	cfid = K1X_FID(msr);
-
-	if (fid == cfid)
-		return;
-
-	if (cfid != fid) {
-		wrmsr(MSR_K1X_CONTROL, fid);
-		for (i = 0; i < 100; i++) {
-			msr = rdmsr(MSR_K1X_STATUS);
-			if (K1X_FID(msr) == fid)
-				break;
-			DELAY(100);
-		}
+	wrmsr(MSR_K1X_CONTROL, fid);
+	for (i = 0; i < 100; i++) {
+		msr = rdmsr(MSR_K1X_STATUS);
 		cfid = K1X_FID(msr);
+		if (cfid == fid)
+			break;
+		DELAY(100);
 	}
 	if (cfid == fid) {
 		cpuspeed = cstate->state_table[level].freq;
