@@ -1,4 +1,4 @@
-.\" $OpenBSD: tmux.1,v 1.847 2021/08/09 13:08:08 nicm Exp $
+.\" $OpenBSD: tmux.1,v 1.848 2021/08/11 08:40:58 nicm Exp $
 .\"
 .\" Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
 .\"
@@ -14,7 +14,7 @@
 .\" IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
 .\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: August 9 2021 $
+.Dd $Mdocdate: August 11 2021 $
 .Dt TMUX 1
 .Os
 .Sh NAME
@@ -1677,9 +1677,13 @@ The following commands are supported in copy mode:
 .It Li "cancel" Ta "q" Ta "Escape"
 .It Li "clear-selection" Ta "Escape" Ta "C-g"
 .It Li "copy-end-of-line [<prefix>]" Ta "" Ta ""
-.It Li "copy-end-of-line-and-cancel [<prefix>]" Ta "D" Ta "C-k"
+.It Li "copy-end-of-line-and-cancel [<prefix>]" Ta "" Ta ""
+.It Li "copy-pipe-end-of-line [<command>] [<prefix>]" Ta "" Ta ""
+.It Li "copy-pipe-end-of-line-and-cancel [<command>] [<prefix>]" Ta "D" Ta "C-k"
 .It Li "copy-line [<prefix>]" Ta "" Ta ""
 .It Li "copy-line-and-cancel [<prefix>]" Ta "" Ta ""
+.It Li "copy-pipe-line [<command>] [<prefix>]" Ta "" Ta ""
+.It Li "copy-pipe-line-and-cancel [<command>] [<prefix>]" Ta "" Ta ""
 .It Li "copy-pipe [<command>] [<prefix>]" Ta "" Ta ""
 .It Li "copy-pipe-no-clear [<command>] [<prefix>]" Ta "" Ta ""
 .It Li "copy-pipe-and-cancel [<command>] [<prefix>]" Ta "" Ta ""
