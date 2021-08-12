@@ -1,4 +1,4 @@
-/* $OpenBSD: style.c,v 1.28 2020/05/16 16:02:24 nicm Exp $ */
+/* $OpenBSD: style.c,v 1.29 2021/03/11 06:41:04 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -51,7 +51,7 @@ int
 style_parse(struct style *sy, const struct grid_cell *base, const char *in)
 {
 	struct style	saved;
-	const char	delimiters[] = " ,", *cp;
+	const char	delimiters[] = " ,\n", *cp;
 	char		tmp[256], *found;
 	int		value;
 	size_t		end;
