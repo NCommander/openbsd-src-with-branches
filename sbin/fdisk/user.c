@@ -1,4 +1,4 @@
-/*	$OpenBSD: user.c,v 1.70 2021/08/10 13:48:34 krw Exp $	*/
+/*	$OpenBSD: user.c,v 1.71 2021/08/12 12:31:16 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -100,7 +100,7 @@ again:
 		if (!strcmp(cmd, "?"))
 			i = 0;
 
-		if ((cmd_table[i].cmd_name == NULL) || (letoh64(gh.gh_sig) ==
+		if (i >= nitems(cmd_table) || (letoh64(gh.gh_sig) ==
 		    GPTSIGNATURE && cmd_table[i].cmd_gpt == 0)) {
 			printf("Invalid command '%s'.  Try 'help'.\n", cmd);
 			continue;
