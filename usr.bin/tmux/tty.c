@@ -1,4 +1,4 @@
-/* $OpenBSD: tty.c,v 1.399 2021/08/11 20:49:55 nicm Exp $ */
+/* $OpenBSD: tty.c,v 1.400 2021/08/12 19:47:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1318,7 +1318,7 @@ tty_check_overlay(struct tty *tty, u_int px, u_int py)
 
 	if (c->overlay_check == NULL)
 		return (1);
-	return (c->overlay_check(c, px, py));
+	return (c->overlay_check(c, c->overlay_data, px, py));
 }
 
 void
