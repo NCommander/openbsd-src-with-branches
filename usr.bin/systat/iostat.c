@@ -1,4 +1,4 @@
-/*	$OpenBSD: iostat.c,v 1.48 2019/05/08 23:54:13 tedu Exp $	*/
+/*	$OpenBSD: iostat.c,v 1.49 2019/06/28 13:35:04 deraadt Exp $	*/
 /*	$NetBSD: iostat.c,v 1.5 1996/05/10 23:16:35 thorpej Exp $	*/
 
 /*
@@ -167,9 +167,12 @@ void
 print_io(void)
 {
 	int n, count = 0;
-
 	int curr;
-	etime = naptime;
+
+	if (state == BOOT)
+		etime = 1.0;
+	else
+		etime = naptime;
 
 	/* XXX engine internals: save and restore curr_line for bcache */
 	curr = curr_line;
