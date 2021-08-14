@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.c,v 1.145 2021/07/25 08:34:43 florian Exp $	*/
+/*	$OpenBSD: resolver.c,v 1.146 2021/07/25 08:36:06 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -1184,7 +1184,8 @@ static const struct {
 	{ "fast-server-permil:", "950" },
 	{ "edns-buffer-size:", "1232" },
 	{ "target-fetch-policy:", "0 0 0 0 0" },
-	{ "outgoing-range:", "64" }
+	{ "outgoing-range:", "64" },
+	{ "val-max-restart:", "0" },
 };
 
 struct uw_resolver *
