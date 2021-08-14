@@ -1,4 +1,4 @@
-/* $OpenBSD: main.c,v 1.256 2021/02/19 19:49:49 kn Exp $ */
+/* $OpenBSD: main.c,v 1.257 2021/06/02 18:27:36 schwarze Exp $ */
 /*
  * Copyright (c) 2010-2012, 2014-2021 Ingo Schwarze <schwarze@openbsd.org>
  * Copyright (c) 2008-2012 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -943,6 +943,9 @@ parse(struct mparse *mp, int fd, const char *file,
 		case OUTT_LOCALE:
 		case OUTT_PS:
 			terminal_man(outst->outdata, meta);
+			break;
+		case OUTT_MARKDOWN:
+			mandoc_msg(MANDOCERR_MAN_TMARKDOWN, 0, 0, NULL);
 			break;
 		default:
 			break;
