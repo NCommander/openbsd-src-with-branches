@@ -1,4 +1,4 @@
-/*	$OpenBSD: validate.c,v 1.13 2021/03/05 17:15:19 claudio Exp $ */
+/*	$OpenBSD: validate.c,v 1.14 2021/04/19 17:04:35 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -195,6 +195,7 @@ valid_cert(const char *fn, struct auth_tree *auths, const struct cert *cert)
 			    cert->ips[i].afi, buf1, sizeof(buf1));
 			warnx("%s: RFC 6487: uncovered IP: "
 			    "%s", fn, buf1);
+			break;
 		case CERT_IP_INHERIT:
 			warnx("%s: RFC 6487: uncovered IP: "
 			    "(inherit)", fn);
