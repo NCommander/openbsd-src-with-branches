@@ -1,6 +1,0 @@
-.\" $OpenBSD$
-.TH TH-ONEARG
-.SH NAME
-TH-onearg \- only one argument to the TH macro
-.SH DESCRIPTION
-some text
