@@ -1,4 +1,4 @@
-/* $OpenBSD: mandocdb.c,v 1.215 2020/01/26 21:24:58 schwarze Exp $ */
+/* $OpenBSD: mandocdb.c,v 1.216 2020/04/03 11:34:19 schwarze Exp $ */
 /*
  * Copyright (c) 2011-2020 Ingo Schwarze <schwarze@openbsd.org>
  * Copyright (c) 2011, 2012 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -592,6 +592,8 @@ treescan(void)
 					say(path, "&stat");
 				continue;
 			}
+			if ((ff->fts_statp->st_mode & S_IFMT) != S_IFREG)
+				continue;
 			/* FALLTHROUGH */
 
 		/*
