@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-load-buffer.c,v 1.61 2020/09/02 13:46:35 nicm Exp $ */
+/* $OpenBSD: cmd-load-buffer.c,v 1.62 2020/09/04 12:24:25 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Tiago Cunha <me@tiagocunha.org>
@@ -105,7 +105,7 @@ cmd_load_buffer_exec(struct cmd *self, struct cmdq_item *item)
 		cdata->client->references++;
 	}
 
-	path = format_single_from_target(item, args->argv[0]);
+	path = format_single_from_target(item, args_string(args, 0));
 	file_read(cmdq_get_client(item), path, cmd_load_buffer_done, cdata);
 	free(path);
 
