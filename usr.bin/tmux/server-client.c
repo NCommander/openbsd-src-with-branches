@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.380 2021/08/13 18:54:54 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.381 2021/08/20 17:50:42 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -308,7 +308,6 @@ server_client_attached_lost(struct client *c)
 			server_client_update_latest(found);
 	}
 }
-
 
 /* Set client session. */
 void
@@ -1553,7 +1552,6 @@ server_client_check_pane_resize(struct window_pane *wp)
 	}
 	evtimer_add(&wp->resize_timer, &tv);
 }
-
 
 /* Check pane buffer size. */
 static void
