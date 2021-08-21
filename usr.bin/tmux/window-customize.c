@@ -1,4 +1,4 @@
-/* $OpenBSD: window-customize.c,v 1.10 2021/04/12 09:36:12 nicm Exp $ */
+/* $OpenBSD: window-customize.c,v 1.11 2021/06/10 07:50:04 nicm Exp $ */
 
 /*
  * Copyright (c) 2020 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1185,9 +1185,6 @@ window_customize_set_command_callback(struct client *c, void *itemdata,
 
 	pr = cmd_parse_from_string(s, NULL);
 	switch (pr->status) {
-	case CMD_PARSE_EMPTY:
-		error = xstrdup("empty command");
-		goto fail;
 	case CMD_PARSE_ERROR:
 		error = pr->error;
 		goto fail;
