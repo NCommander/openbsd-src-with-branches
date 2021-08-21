@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-attach-session.c,v 1.85 2020/09/03 12:47:33 nicm Exp $ */
+/* $OpenBSD: cmd-attach-session.c,v 1.86 2021/08/13 06:52:51 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -37,7 +37,7 @@ const struct cmd_entry cmd_attach_session_entry = {
 	.name = "attach-session",
 	.alias = "attach",
 
-	.args = { "c:dEf:rt:x", 0, 0 },
+	.args = { "c:dEf:rt:x", 0, 0, NULL },
 	.usage = "[-dErx] [-c working-directory] [-f flags] "
 	         CMD_TARGET_SESSION_USAGE,
 

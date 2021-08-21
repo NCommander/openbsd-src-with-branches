@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-swap-pane.c,v 1.38 2020/05/16 16:20:59 nicm Exp $ */
+/* $OpenBSD: cmd-swap-pane.c,v 1.39 2021/03/11 06:31:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -32,7 +32,7 @@ const struct cmd_entry cmd_swap_pane_entry = {
 	.name = "swap-pane",
 	.alias = "swapp",
 
-	.args = { "dDs:t:UZ", 0, 0 },
+	.args = { "dDs:t:UZ", 0, 0, NULL },
 	.usage = "[-dDUZ] " CMD_SRCDST_PANE_USAGE,
 
 	.source = { 's', CMD_FIND_PANE, CMD_FIND_DEFAULT_MARKED },

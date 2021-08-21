@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-resize-pane.c,v 1.48 2020/05/25 18:17:14 nicm Exp $ */
+/* $OpenBSD: cmd-resize-pane.c,v 1.49 2021/08/20 19:50:16 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -36,7 +36,7 @@ const struct cmd_entry cmd_resize_pane_entry = {
 	.name = "resize-pane",
 	.alias = "resizep",
 
-	.args = { "DLMRTt:Ux:y:Z", 0, 1 },
+	.args = { "DLMRTt:Ux:y:Z", 0, 1, NULL },
 	.usage = "[-DLMRTUZ] [-x width] [-y height] " CMD_TARGET_PANE_USAGE " "
 		 "[adjustment]",
 

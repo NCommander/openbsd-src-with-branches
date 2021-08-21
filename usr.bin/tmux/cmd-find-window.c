@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-find-window.c,v 1.51 2021/08/20 17:53:54 nicm Exp $ */
+/* $OpenBSD: cmd-find-window.c,v 1.52 2021/08/20 19:50:16 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -32,7 +32,7 @@ const struct cmd_entry cmd_find_window_entry = {
 	.name = "find-window",
 	.alias = "findw",
 
-	.args = { "CiNrt:TZ", 1, 1 },
+	.args = { "CiNrt:TZ", 1, 1, NULL },
 	.usage = "[-CiNrTZ] " CMD_TARGET_PANE_USAGE " match-string",
 
 	.target = { 't', CMD_FIND_PANE, 0 },

@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-kill-pane.c,v 1.29 2020/04/13 10:59:58 nicm Exp $ */
+/* $OpenBSD: cmd-kill-pane.c,v 1.30 2020/05/16 16:20:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -32,7 +32,7 @@ const struct cmd_entry cmd_kill_pane_entry = {
 	.name = "kill-pane",
 	.alias = "killp",
 
-	.args = { "at:", 0, 0 },
+	.args = { "at:", 0, 0, NULL },
 	.usage = "[-a] " CMD_TARGET_PANE_USAGE,
 
 	.target = { 't', CMD_FIND_PANE, 0 },
