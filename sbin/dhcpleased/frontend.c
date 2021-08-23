@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.c,v 1.18 2021/08/12 12:41:08 florian Exp $	*/
+/*	$OpenBSD: frontend.c,v 1.19 2021/08/23 18:21:48 florian Exp $	*/
 
 /*
  * Copyright (c) 2017, 2021 Florian Obser <florian@openbsd.org>
@@ -832,7 +832,7 @@ bpf_receive(int fd, short events, void *arg)
 	iface = (struct iface *)arg;
 
 	if ((len = read(fd, iface->bpfev.buf, BPFLEN)) == -1) {
-		log_warn("read");
+		log_warn("%s: read", __func__);
 		return;
 	}
 
