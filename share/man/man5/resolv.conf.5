@@ -1,4 +1,4 @@
-.\"	$OpenBSD: resolv.conf.5,v 1.60 2020/04/25 14:22:04 jca Exp $
+.\"	$OpenBSD: resolv.conf.5,v 1.61 2021/07/17 17:14:29 deraadt Exp $
 .\"	$NetBSD: resolv.conf.5,v 1.7 1996/03/06 18:22:16 scottr Exp $
 .\"
 .\" Copyright (c) 1986, 1991 The Regents of the University of California.
@@ -30,7 +30,7 @@
 .\"
 .\"     @(#)resolver.5	5.12 (Berkeley) 5/10/91
 .\"
-.Dd $Mdocdate: April 25 2020 $
+.Dd $Mdocdate: July 17 2021 $
 .Dt RESOLV.CONF 5
 .Os
 .Sh NAME
@@ -71,7 +71,7 @@ in the file indicates the beginning of a comment;
 subsequent characters up to the end of the line are not interpreted by
 the routines that read the file.
 .Pp
-The configuration options (which may be placed in either file) are:
+The configuration options are:
 .Bl -tag -width nameserver
 .It Ic nameserver
 IPv4 address (in dot notation)
