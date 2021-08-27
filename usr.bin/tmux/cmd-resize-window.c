@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-resize-window.c,v 1.7 2021/08/21 10:22:39 nicm Exp $ */
+/* $OpenBSD: cmd-resize-window.c,v 1.8 2021/08/21 10:28:05 nicm Exp $ */
 
 /*
  * Copyright (c) 2018 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -108,7 +108,9 @@ cmd_resize_window_exec(struct cmd *self, struct cmdq_item *item)
 	}
 
 	options_set_number(w->options, "window-size", WINDOW_SIZE_MANUAL);
-	resize_window(w, sx, sy, xpixel, ypixel);
+	w->manual_sx = sx;
+	w->manual_sy = sy;
+	recalculate_size(w, 1);
 
 	return (CMD_RETURN_NORMAL);
 }
