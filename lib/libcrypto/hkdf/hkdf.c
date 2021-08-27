@@ -1,4 +1,4 @@
-/* $OpenBSD: hkdf.c,v 1.2 2018/04/03 13:33:53 tb Exp $ */
+/* $OpenBSD: hkdf.c,v 1.4 2019/11/21 20:02:20 tim Exp $ */
 /* Copyright (c) 2014, Google Inc.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
@@ -16,7 +16,6 @@
 
 #include <openssl/hkdf.h>
 
-#include <assert.h>
 #include <string.h>
 
 #include <openssl/err.h>
