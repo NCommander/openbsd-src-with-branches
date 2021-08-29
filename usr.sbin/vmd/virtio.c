@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.c,v 1.92 2021/07/16 16:21:22 dv Exp $	*/
+/*	$OpenBSD: virtio.c,v 1.93 2021/08/29 11:09:05 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -679,7 +679,7 @@ vioblk_notifyq(struct vioblk_dev *dev)
 			    ds_desc_idx);
 			goto out;
 		}
-		if (write_mem(ds_desc->addr, &ds, ds_desc->len)) {
+		if (write_mem(ds_desc->addr, &ds, sizeof(ds))) {
 			log_warnx("%s: can't write device status data @ 0x%llx",
 			    __func__, ds_desc->addr);
 			goto out;
