@@ -1,4 +1,4 @@
-/*	$OpenBSD: local_passwd.c,v 1.59 2021/07/12 15:09:20 beck Exp $	*/
+/*	$OpenBSD: local_passwd.c,v 1.60 2021/08/28 06:46:49 robert Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -159,6 +159,8 @@ local_passwd(char *uname, int authenticated)
 	free(opw);
 	if (pw_mkdb(uname, pwflags) == -1)
 		pw_error(NULL, 0, 1);
+
+	fprintf(stderr, "passwd: password updated successfully\n");
 
 	return(0);
 }
