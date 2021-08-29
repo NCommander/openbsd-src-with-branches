@@ -1,4 +1,4 @@
-/*	$OpenBSD: fnmatch.c,v 1.15 2011/02/10 21:31:59 stsp Exp $	*/
+/*	$OpenBSD: rmatch.c,v 1.1 2021/08/29 13:43:46 claudio Exp $	*/
 
 /*
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
@@ -54,6 +54,7 @@
 #include <limits.h>
 
 #include "charclass.h"
+#include "extern.h"
 
 #define	RANGE_MATCH	1
 #define	RANGE_NOMATCH	0
