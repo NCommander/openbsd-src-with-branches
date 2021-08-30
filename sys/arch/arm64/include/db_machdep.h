@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.3 2018/06/28 22:47:20 kettenis Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.4 2019/11/07 14:44:52 mpi Exp $	*/
 /*	$NetBSD: db_machdep.h,v 1.5 2001/11/22 18:00:00 thorpej Exp $	*/
 
 /*
@@ -44,7 +44,6 @@
 
 /* end of mangling */
 
-typedef	vaddr_t		db_addr_t;	/* address - unsigned */
 typedef	long		db_expr_t;	/* expression - signed */
 
 typedef trapframe_t db_regs_t;
