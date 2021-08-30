@@ -1,4 +1,4 @@
-/*	$OpenBSD: tls13_legacy.c,v 1.25 2021/06/28 15:36:51 tb Exp $ */
+/*	$OpenBSD: tls13_legacy.c,v 1.26 2021/07/01 17:53:39 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -515,8 +515,12 @@ tls13_legacy_servername_process(struct tls13_ctx *ctx, uint8_t *alert)
 	ret = ssl_ctx->internal->tlsext_servername_callback(s, &legacy_alert,
 	    ssl_ctx->internal->tlsext_servername_arg);
 
-	if (ret == SSL_TLSEXT_ERR_ALERT_FATAL ||
-	    ret == SSL_TLSEXT_ERR_ALERT_WARNING) {
+	/*
+	 * Ignore SSL_TLSEXT_ERR_ALERT_WARNING returns to match OpenSSL's
+	 * behavior: the only warning alerts in TLSv1.3 are close_notify and
+	 * user_canceled, neither of which should be returned by the callback.
+	 */
+	if (ret == SSL_TLSEXT_ERR_ALERT_FATAL) {
 		if (legacy_alert >= 0 && legacy_alert <= 255)
 			*alert = legacy_alert;
 		return 0;
