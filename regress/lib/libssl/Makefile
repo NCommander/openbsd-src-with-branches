@@ -16,7 +16,6 @@ SUBDIR += tlsext
 SUBDIR += tlslegacy
 SUBDIR += key_schedule
 SUBDIR += unit
-SUBDIR += verify
 
 # Things that take a long time should go below here. 
 SUBDIR += openssl-ruby

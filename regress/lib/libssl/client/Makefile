@@ -4,6 +4,6 @@ PROG=	clienttest
 LDADD=	-lssl -lcrypto
 DPADD=	${LIBSSL} ${LIBCRYPTO}
 WARNINGS=	Yes
-CFLAGS+=	-g -DLIBRESSL_INTERNAL -Werror
+CFLAGS+=	-DLIBRESSL_INTERNAL -Werror
 
 .include <bsd.regress.mk>

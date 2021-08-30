@@ -18,7 +18,7 @@ CLEANFILES	+= localhost.key localhost.crt
 
 PORT		?= 4433
 SLOW		= -s
-TIMING		= -t
+TIMING		= # -t
 VERBOSE		= # -v
 
 regress-tlsfuzzer: certs

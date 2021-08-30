@@ -720,7 +720,7 @@ client_hello_test(int testno, const struct client_hello_test *cht)
 	BIO_free(rbio);
 	BIO_free(wbio);
 
-	// free(client_hello);
+	free(client_hello);
 
 	return (ret);
 }

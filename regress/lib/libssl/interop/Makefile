@@ -14,6 +14,6 @@ SUBDIR +=	botan
 SUBDIR +=	version
 SUBDIR +=	cipher
 # This takes a really long time. 
-#SUBDIR +=	cert
+SUBDIR +=	cert
 
 .include <bsd.subdir.mk>
