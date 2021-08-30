@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.207 2021/06/09 03:24:54 dlg Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.208 2021/08/19 10:22:00 dlg Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -100,7 +100,6 @@ struct vlan_softc {
 	struct refcnt		 sc_refcnt;
 	struct task		 sc_ltask;
 	struct task		 sc_dtask;
-	struct ifih		*sc_ifih;
 };
 
 SMR_SLIST_HEAD(vlan_list, vlan_softc);
