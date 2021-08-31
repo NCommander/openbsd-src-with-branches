@@ -1,4 +1,4 @@
-/*	$OpenBSD: pluart.c,v 1.4 2019/08/11 10:03:32 kettenis Exp $	*/
+/*	$OpenBSD: pluart.c,v 1.5 2020/01/10 04:10:15 cheloha Exp $	*/
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2005 Dale Rahn <drahn@dalerahn.com>
@@ -538,7 +538,7 @@ pluartopen(dev_t dev, int flag, int mode, struct proc *p)
 		SET(tp->t_state, TS_CARR_ON); /* XXX */
 
 
-	} else if (ISSET(tp->t_state, TS_XCLUDE) && p->p_ucred->cr_uid != 0)
+	} else if (ISSET(tp->t_state, TS_XCLUDE) && suser(p) != 0)
 		return EBUSY;
 	else
 		s = spltty();
