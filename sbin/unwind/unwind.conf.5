@@ -1,4 +1,4 @@
-.\"	$OpenBSD: unwind.conf.5,v 1.28 2021/07/24 14:15:34 kn Exp $
+.\"	$OpenBSD: unwind.conf.5,v 1.29 2021/08/31 20:18:03 kn Exp $
 .\"
 .\" Copyright (c) 2018 Florian Obser <florian@openbsd.org>
 .\" Copyright (c) 2005 Esben Norby <norby@openbsd.org>
@@ -18,7 +18,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: July 24 2021 $
+.Dd $Mdocdate: August 31 2021 $
 .Dt UNWIND.CONF 5
 .Os
 .Sh NAME
@@ -92,7 +92,7 @@ Additionally, the first mentioned type gets a time bonus.
 Validating name servers are always picked over non-validating name servers.
 DNS name server types are:
 .Pp
-.Bl -tag -width "forwarder" -compact
+.Bl -tag -width "oDoT-forwarder" -compact
 .It Ic stub
 Name servers learned via DHCP or SLAAC, queried using the libc functions.
 See
