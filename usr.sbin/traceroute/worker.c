@@ -1,4 +1,4 @@
-/*	$OpenBSD: worker.c,v 1.5 2017/08/03 17:36:06 florian Exp $	*/
+/*	$OpenBSD: worker.c,v 1.6 2019/06/28 13:32:51 deraadt Exp $	*/
 /*	$NetBSD: traceroute.c,v 1.10 1995/05/21 15:50:45 mycroft Exp $	*/
 
 /*
@@ -62,25 +62,27 @@
  * SUCH DAMAGE.
  */
 
-#include <arpa/inet.h>
-#include <arpa/nameser.h>
-#include <endian.h>
-#include <err.h>
-#include <limits.h>
-#include <netdb.h>
-#include <netinet/icmp6.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/uio.h>
+
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip6.h>
 #include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
 #include <netinet/udp.h>
+
+#include <arpa/inet.h>
+#include <arpa/nameser.h>
+
+#include <err.h>
+#include <limits.h>
+#include <netdb.h>
 #include <poll.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/uio.h>
 #include <time.h>
 #include <unistd.h>
 
