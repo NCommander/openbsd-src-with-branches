@@ -1,10 +1,16 @@
-#	$OpenBSD: putty-ciphers.sh,v 1.6 2017/05/08 01:52:49 djm Exp $
+#	$OpenBSD: putty-ciphers.sh,v 1.7 2020/01/23 03:35:07 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="putty ciphers"
 
 if test "x$REGRESS_INTEROP_PUTTY" != "xyes" ; then
 	fatal "putty interop tests not enabled"
+fi
+
+# Re-enable ssh-rsa on older PuTTY versions.
+oldver="`${PLINK} --version | awk '/plink: Release/{if ($3<0.76)print "yes"}'`"
+if [ "x$oldver" = "xyes" ]; then
+	echo "HostKeyalgorithms +ssh-rsa" >> sshd_config
 fi
 
 for c in aes 3des aes128-ctr aes192-ctr aes256-ctr chacha20 ; do
