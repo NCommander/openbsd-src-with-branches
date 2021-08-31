@@ -1,4 +1,4 @@
-/*	$OpenBSD: map.c,v 1.11 2020/09/18 19:19:38 jasper Exp $ */
+/*	$OpenBSD: map.c,v 1.12 2021/01/21 13:19:25 mpi Exp $ */
 
 /*
  * Copyright (c) 2020 Martin Pieuchot <mpi@openbsd.org>
@@ -178,9 +178,6 @@ map_insert(struct map *map, const char *key, struct bt_arg *bval,
 	return map;
 }
 
-static struct bt_arg nullba = BA_INITIALIZER(0, B_AT_LONG);
-static struct bt_arg maxba = BA_INITIALIZER(LONG_MAX, B_AT_LONG);
-
 /* Print at most `top' entries of the map ordered by value. */
 void
 map_print(struct map *map, size_t top, const char *name)
@@ -192,10 +189,10 @@ map_print(struct map *map, size_t top, const char *name)
 	if (map == NULL)
 		return;
 
-	bprev = &maxba;
+	bprev = &g_maxba;
 	for (i = 0; i < top; i++) {
 		mcur = NULL;
-		bhigh = &nullba;
+		bhigh = &g_nullba;
 		RB_FOREACH(mep, map, map) {
 			if (bacmp(mep->mval, bhigh) >= 0 &&
 			    bacmp(mep->mval, bprev) < 0 &&
