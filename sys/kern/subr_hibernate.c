@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_hibernate.c,v 1.127 2021/07/08 23:19:51 mlarkin Exp $	*/
+/*	$OpenBSD: subr_hibernate.c,v 1.128 2021/08/30 09:45:29 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -1732,9 +1732,9 @@ hibernate_read_image(union hibernate_info *hib)
 
 	disk_size = compressed_size;
 
-	printf("unhibernating @ block %lld length %lu bytes\n",
+	printf("unhibernating @ block %lld length %luMB\n",
 	    hib->sig_offset - chunktable_size,
-	    compressed_size);
+	    compressed_size / (1024 * 1024));
 
 	/* Allocate the pig area */
 	pig_sz = compressed_size + HIBERNATE_CHUNK_SIZE;
