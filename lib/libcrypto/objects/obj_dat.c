@@ -1,4 +1,4 @@
-/* $OpenBSD: obj_dat.c,v 1.41 2018/09/08 13:49:26 tb Exp $ */
+/* $OpenBSD: obj_dat.c,v 1.42 2019/07/03 03:24:04 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -628,7 +628,6 @@ OBJ_obj2txt(char *buf, int buf_len, const ASN1_OBJECT *a, int no_name)
 				buf_len -= i;
 			}
 			ret += i;
-			l = 0;
 		}
 	}
 
