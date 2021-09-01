@@ -1,4 +1,4 @@
-/*	$OpenBSD: smr.h,v 1.8 2020/09/29 16:40:33 mvs Exp $	*/
+/*	$OpenBSD: strchrtest.c,v 1.1 2021/07/24 05:45:49 visa Exp $	*/
 
 /*
  * Copyright (c) 2021 Visa Hankala
@@ -27,9 +27,6 @@ main(void)
 {
 	char *buf;
 	size_t bufsize;
-
-	/* Enable malloc security options. */
-	setenv("MALLOC_OPTIONS", "S", 0);
 
 	/* Allocate buffer with guard pages. */
 	bufsize = getpagesize();

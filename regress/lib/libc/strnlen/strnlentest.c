@@ -1,4 +1,4 @@
-/*	$OpenBSD: strnlentest.c,v 1.1 2010/06/02 12:20:47 millert Exp $ */
+/*	$OpenBSD: strnlentest.c,v 1.2 2019/01/25 00:19:26 millert Exp $ */
 
 /*
  * Copyright (c) 2010 Todd C. Miller <millert@openbsd.org>
@@ -28,9 +28,6 @@ int main(int argc, char *argv[])
 	char *buf;
 	int failures = 0;
 	size_t len, bufsize;
-
-	/* Enable malloc security options. */
-	setenv("MALLOC_OPTIONS", "S", 0);
 
 	bufsize = getpagesize(); /* trigger guard pages easily */
 	buf = malloc(bufsize);
