@@ -1,7 +1,7 @@
-/*	$OpenBSD: btrace.c,v 1.41 2021/08/31 11:30:21 mpi Exp $ */
+/*	$OpenBSD: btrace.c,v 1.42 2021/08/31 12:51:24 mpi Exp $ */
 
 /*
- * Copyright (c) 2019 - 2020 Martin Pieuchot <mpi@openbsd.org>
+ * Copyright (c) 2019 - 2021 Martin Pieuchot <mpi@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
