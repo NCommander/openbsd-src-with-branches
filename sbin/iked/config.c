@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.78 2021/02/22 21:58:12 tobhe Exp $	*/
+/*	$OpenBSD: config.c,v 1.79 2021/05/13 15:20:48 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -174,6 +174,7 @@ config_free_sa(struct iked *env, struct iked_sa *sa)
 
 	free(sa->sa_cp_addr);
 	free(sa->sa_cp_addr6);
+	free(sa->sa_cp_dns);
 
 	free(sa->sa_tag);
 	free(sa);

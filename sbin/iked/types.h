@@ -1,4 +1,4 @@
-/*	$OpenBSD: types.h,v 1.43 2021/05/13 15:20:48 tobhe Exp $	*/
+/*	$OpenBSD: types.h,v 1.44 2021/08/03 12:46:30 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -119,6 +119,8 @@ enum imsg_type {
 	IMSG_VROUTE_ADD,
 	IMSG_VROUTE_DEL,
 	IMSG_VROUTE_CLONE,
+	IMSG_VDNS_ADD,
+	IMSG_VDNS_DEL,
 	IMSG_OCSP_FD,
 	IMSG_OCSP_CFG,
 	IMSG_AUTH,
