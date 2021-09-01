@@ -1,10 +1,10 @@
-#	$OpenBSD: putty-transfer.sh,v 1.8 2021/08/31 06:13:23 dtucker Exp $
+#	$OpenBSD: putty-transfer.sh,v 1.9 2021/08/31 07:13:59 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="putty transfer data"
 
 if test "x$REGRESS_INTEROP_PUTTY" != "xyes" ; then
-	fatal "putty interop tests not enabled"
+	skip "putty interop tests not enabled"
 fi
 
 # Re-enable ssh-rsa on older PuTTY versions.
