@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.146 2021/02/16 08:29:16 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.147 2021/03/02 09:45:07 claudio Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -576,6 +576,8 @@ print_roa(struct roa_tree *r)
 		if (roa->prefixlen != roa->maxlen)
 			printf(" maxlen %u", roa->maxlen);
 		printf(" source-as %u", roa->asnum);
+		if (roa->expires != 0)
+			printf(" expires %lld", (long long)roa->expires);
 	}
 	printf("\n}\n\n");
 }
