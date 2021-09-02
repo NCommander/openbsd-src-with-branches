@@ -1,4 +1,4 @@
-/*	$OpenBSD: realpath.c,v 1.20 2015/10/13 20:55:37 millert Exp $ */
+/*	$OpenBSD: sftp-realpath.c,v 1.1 2019/07/05 04:55:40 djm Exp $ */
 /*
  * Copyright (c) 2003 Constantin S. Svintsoff <kostik@iclub.nsu.ru>
  *
@@ -28,7 +28,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <errno.h>
