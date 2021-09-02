@@ -1,4 +1,4 @@
-/*	$OpenBSD: dt_prov_static.c,v 1.7 2021/01/06 07:51:40 claudio Exp $ */
+/*	$OpenBSD: dt_prov_static.c,v 1.8 2021/06/07 13:55:54 dv Exp $ */
 
 /*
  * Copyright (c) 2019 Martin Pieuchot <mpi@openbsd.org>
@@ -163,11 +163,11 @@ dt_prov_static_hook(struct dt_provider *dtpv, ...)
 		if (dtev == NULL)
 			continue;
 
-		dtev->dtev_sysargs[0] = args[0];
-		dtev->dtev_sysargs[1] = args[1];
-		dtev->dtev_sysargs[2] = args[2];
-		dtev->dtev_sysargs[3] = args[3];
-		dtev->dtev_sysargs[4] = args[4];
+		dtev->dtev_args[0] = args[0];
+		dtev->dtev_args[1] = args[1];
+		dtev->dtev_args[2] = args[2];
+		dtev->dtev_args[3] = args[3];
+		dtev->dtev_args[4] = args[4];
 
 		dt_pcb_ring_consume(dp, dtev);
 	}
