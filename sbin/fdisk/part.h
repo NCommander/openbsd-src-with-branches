@@ -1,4 +1,4 @@
-/*	$OpenBSD: part.h,v 1.28 2021/07/13 15:03:34 krw Exp $	*/
+/*	$OpenBSD: part.h,v 1.29 2021/07/18 21:40:13 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -28,7 +28,8 @@ struct prt {
 	unsigned char	prt_id;
 };
 
-void		 PRT_printall(void);
+void		 PRT_print_mbrtypes(void);
+void		 PRT_print_gpttypes(void);
 void		 PRT_parse(const struct dos_partition *, const uint64_t,
     const uint64_t, struct prt *);
 void		 PRT_make(const struct prt *,const uint64_t, const uint64_t,
