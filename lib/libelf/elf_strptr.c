@@ -24,14 +24,12 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
-
 #include <assert.h>
 #include <gelf.h>
 
 #include "_libelf.h"
 
-ELFTC_VCSID("$Id: elf_strptr.c 2990 2014-03-17 09:56:58Z jkoshy $");
+ELFTC_VCSID("$Id: elf_strptr.c,v 1.1 2019/02/01 05:27:37 jsg Exp $");
 
 /*
  * Convert an ELF section#,offset pair to a string pointer.

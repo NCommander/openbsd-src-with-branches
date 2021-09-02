@@ -24,7 +24,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <assert.h>
@@ -41,7 +40,7 @@
 #include <sys/mman.h>
 #endif
 
-ELFTC_VCSID("$Id: elf_update.c,v 1.2 2019/03/19 02:31:35 jsg Exp $");
+ELFTC_VCSID("$Id: elf_update.c,v 1.3 2020/05/18 06:46:23 jsg Exp $");
 
 /*
  * Layout strategy:
