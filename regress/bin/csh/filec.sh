@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $OpenBSD: filec.sh,v 1.5 2017/07/22 13:50:54 anton Exp $
+# $OpenBSD: filec.sh,v 1.6 2017/11/16 19:05:44 anton Exp $
 #
 # Copyright (c) 2017 Anton Lindqvist <anton@openbsd.org>
 #
@@ -50,8 +50,7 @@ cd ~
 !
 
 HOME=$tmp
-MALLOC_OPTIONS=S
-export HOME MALLOC_OPTIONS
+export HOME
 
 # NL: Execute command.
 testseq "echo a\n" "? echo a\r\na\r\n? "

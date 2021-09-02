@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $OpenBSD$
+# $OpenBSD: send.sh,v 1.4 2017/07/22 13:50:54 anton Exp $
 #
 # Copyright (c) 2017 Anton Lindqvist <anton@openbsd.org>
 #
@@ -43,8 +43,7 @@ set ask
 !
 
 HOME=$tmp
-MALLOC_OPTIONS=S
-export HOME MALLOC_OPTIONS
+export HOME
 
 # VERASE: Delete character.
 testseq "\0177" "Subject: "
