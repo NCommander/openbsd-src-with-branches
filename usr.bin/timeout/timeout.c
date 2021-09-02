@@ -1,5 +1,4 @@
-/* $OpenBSD: timeout.c,v 1.12 2021/09/01 21:45:10 job Exp $ */
-/* $NetBSD: timeout.c,v 1.4 2014/08/05 08:20:02 christos Exp $ */
+/* $OpenBSD: timeout.c,v 1.13 2021/09/02 06:23:32 deraadt Exp $ */
 
 /*
  * Copyright (c) 2021 Job Snijders <job@openbsd.org>
