@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucc.c,v 1.22 2021/09/01 10:40:19 anton Exp $	*/
+/*	$OpenBSD: ucc.c,v 1.23 2021/09/01 10:41:39 anton Exp $	*/
 
 /*
  * Copyright (c) 2021 Anton Lindqvist <anton@openbsd.org>
@@ -82,6 +82,10 @@ struct ucc_softc {
 		u_char	sc_last_raw;
 	};
 
+	/*
+	 * Only the first element is populated whereas the second remains zeroed
+	 * out since such trailing sentinel is required by wskbd_load_keymap().
+	 */
 	struct wscons_keydesc	  sc_keydesc[2];
 	struct wskbd_mapdata	  sc_keymap;
 };
