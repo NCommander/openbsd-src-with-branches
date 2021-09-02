@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $Id: _elftc.h 3446 2016-05-03 01:31:17Z emaste $
+ * $Id: _elftc.h,v 1.1 2019/02/01 05:27:37 jsg Exp $
  */
 
 /**
@@ -466,7 +466,7 @@ extern const char *__progname;
 
 #if defined(__OpenBSD__)
 
-#include <sys/param.h>
+#include <sys/param.h>	/* roundup roundup2 */
 #include <sys/endian.h>
 
 #define	ELFTC_BYTE_ORDER			_BYTE_ORDER
