@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_clnt.c,v 1.109 2021/09/02 08:51:56 beck Exp $ */
+/* $OpenBSD: ssl_clnt.c,v 1.110 2021/09/02 14:41:03 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1064,6 +1064,9 @@ ssl3_get_server_hello(SSL *s)
 		SSLerror(s, SSL_R_PARSE_TLSEXT);
 		goto fatal_err;
 	}
+
+	if (CBS_len(&cbs) != 0)
+		goto decode_err;
 
 	/*
 	 * Determine if we need to see RI. Strictly speaking if we want to
