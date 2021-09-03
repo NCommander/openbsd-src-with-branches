@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_srvr.c,v 1.117 2021/06/29 19:43:15 jsing Exp $ */
+/* $OpenBSD: ssl_srvr.c,v 1.118 2021/08/30 19:25:43 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1016,6 +1016,9 @@ ssl3_get_client_hello(SSL *s)
 		SSLerror(s, SSL_R_PARSE_TLSEXT);
 		goto fatal_err;
 	}
+
+	if (CBS_len(&cbs) != 0)
+		goto decode_err;
 
 	if (!S3I(s)->renegotiate_seen && s->internal->renegotiate) {
 		al = SSL_AD_HANDSHAKE_FAILURE;
