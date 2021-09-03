@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_prof.c,v 1.29 2015/12/05 10:11:53 tedu Exp $	*/
+/*	$OpenBSD: subr_prof.c,v 1.30 2016/09/04 09:22:29 mpi Exp $	*/
 /*	$NetBSD: subr_prof.c,v 1.12 1996/04/22 01:38:50 christos Exp $	*/
 
 /*-
@@ -69,10 +69,6 @@ prof_init(void)
 	long tolimit;
 	char *cp;
 	int size;
-
-#if !defined(GPROF) && defined(DDBPROF)
-	db_prof_init();
-#endif
 
 	/*
 	 * Round lowpc and highpc to multiples of the density we're using
