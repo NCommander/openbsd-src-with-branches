@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.84 2020/11/13 05:32:08 guenther Exp $	*/
+/*	$OpenBSD: vector.S,v 1.85 2021/09/03 16:45:44 jasper Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -537,6 +537,7 @@ KUENTRY(x2apic_eoi)
 	popq    %rcx
 	popq    %rax
 	ret
+	lfence
 END(x2apic_eoi)
 
 #if NLAPIC > 0
