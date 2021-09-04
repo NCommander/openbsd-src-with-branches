@@ -1,4 +1,4 @@
-/*	$OpenBSD: tls13_legacy.c,v 1.27 2021/08/30 16:50:23 tb Exp $ */
+/*	$OpenBSD: tls13_legacy.c,v 1.28 2021/09/03 13:16:54 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -304,7 +304,7 @@ tls13_use_legacy_stack(struct tls13_ctx *ctx)
 		goto err;
 
 	/* Stash any unprocessed data from the last record. */
-	tls13_record_layer_rbuf(ctx->rl, &cbs);
+	tls13_record_layer_rcontent(ctx->rl, &cbs);
 	if (CBS_len(&cbs) > 0) {
 		if (!CBB_init_fixed(&cbb, S3I(s)->rbuf.buf,
 		    S3I(s)->rbuf.len))
