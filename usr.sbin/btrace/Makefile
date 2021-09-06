@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2020/01/21 16:24:55 mpi Exp $
 
 PROG=		btrace
 MAN=		bt.5 btrace.8
@@ -17,6 +17,6 @@ CFLAGS+=	-I${.CURDIR}
 LDADD+=		-lelf
 DPADD+=		${LIBELF}
 
-DEBUG?=		-g
+#DEBUG?=		-g
 
 .include <bsd.prog.mk>
