@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldpd.c,v 1.66 2021/01/19 15:23:25 claudio Exp $ */
+/*	$OpenBSD: ldpd.c,v 1.67 2021/03/01 09:50:40 jsg Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -224,7 +224,7 @@ main(int argc, char *argv[])
 	    sockname);
 
 	if (unveil("/", "r") == -1)
-		fatal("unveil");
+		fatal("unveil /");
 	if (unveil(NULL, NULL) == -1)
 		fatal("unveil");
 

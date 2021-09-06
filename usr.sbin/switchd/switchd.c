@@ -1,4 +1,4 @@
-/*	$OpenBSD: switchd.c,v 1.18 2019/07/23 00:31:31 schwarze Exp $	*/
+/*	$OpenBSD: switchd.c,v 1.19 2021/01/27 07:21:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -194,7 +194,7 @@ main(int argc, char *argv[])
 	log_procinit("parent");
 
 	if (unveil("/", "r") == -1)
-		fatal("unveil");
+		fatal("unveil /");
 	if (unveil("/dev", "rw") == -1)
 		fatal("unveil");
 	/*
