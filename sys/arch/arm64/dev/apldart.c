@@ -1,4 +1,4 @@
-/*	$OpenBSD: apldart.c,v 1.4 2021/05/30 15:05:32 visa Exp $	*/
+/*	$OpenBSD: apldart.c,v 1.5 2021/06/25 17:41:22 patrick Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -60,14 +60,14 @@
 #define DART_L2_INVAL		0x0
 #define DART_L2_PAGE		0x3
 
-inline paddr_t
+static inline paddr_t
 apldart_round_page(paddr_t pa)
 {
 	return ((pa + DART_PAGE_MASK) & ~DART_PAGE_MASK);
 }
 
 inline paddr_t
-apldart_trunc_page(paddr_t pa)
+static apldart_trunc_page(paddr_t pa)
 {
 	return (pa & ~DART_PAGE_MASK);
 }
