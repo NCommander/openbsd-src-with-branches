@@ -1,5 +1,5 @@
 
-/* $OpenBSD: servconf.c,v 1.380 2021/06/08 07:09:42 djm Exp $ */
+/* $OpenBSD: servconf.c,v 1.381 2021/07/02 05:11:21 dtucker Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -462,9 +462,8 @@ typedef enum {
 	sPort, sHostKeyFile, sLoginGraceTime,
 	sPermitRootLogin, sLogFacility, sLogLevel, sLogVerbose,
 	sKerberosAuthentication, sKerberosOrLocalPasswd, sKerberosTicketCleanup,
-	sKerberosGetAFSToken, sChallengeResponseAuthentication,
-	sPasswordAuthentication, sKbdInteractiveAuthentication,
-	sListenAddress, sAddressFamily,
+	sKerberosGetAFSToken, sPasswordAuthentication,
+	sKbdInteractiveAuthentication, sListenAddress, sAddressFamily,
 	sPrintMotd, sPrintLastLog, sIgnoreRhosts,
 	sX11Forwarding, sX11DisplayOffset, sX11UseLocalhost,
 	sPermitTTY, sStrictModes, sEmptyPasswd, sTCPKeepAlive,
