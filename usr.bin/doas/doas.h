@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.h,v 1.16 2020/10/09 07:43:38 kn Exp $ */
+/* $OpenBSD: doas.h,v 1.17 2021/01/27 17:02:50 millert Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -43,3 +43,7 @@ char **prepenv(const struct rule *, const struct passwd *,
 #define KEEPENV		0x2
 #define PERSIST		0x4
 #define NOLOG		0x8
+
+#define AUTH_FAILED	-1
+#define AUTH_OK		0
+#define AUTH_RETRIES	3
