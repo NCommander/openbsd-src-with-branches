@@ -1,4 +1,4 @@
-/* $OpenBSD: ecp_nistp256.c,v 1.24 2021/04/20 17:28:18 tb Exp $ */
+/* $OpenBSD: ecp_nistp256.c,v 1.25 2021/04/20 17:38:02 tb Exp $ */
 /*
  * Written by Adam Langley (Google) for the OpenSSL project
  */
@@ -1697,6 +1697,7 @@ EC_GFp_nistp256_method(void)
 		.group_set_curve = ec_GFp_nistp256_group_set_curve,
 		.group_get_curve = ec_GFp_simple_group_get_curve,
 		.group_get_degree = ec_GFp_simple_group_get_degree,
+		.group_order_bits = ec_group_simple_order_bits,
 		.group_check_discriminant =
 		    ec_GFp_simple_group_check_discriminant,
 		.point_init = ec_GFp_simple_point_init,
