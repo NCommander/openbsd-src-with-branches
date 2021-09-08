@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_parse.y,v 1.39 2021/09/07 19:29:12 mpi Exp $	*/
+/*	$OpenBSD: bt_parse.y,v 1.40 2021/09/08 13:29:51 dv Exp $	*/
 
 /*
  * Copyright (c) 2019-2021 Martin Pieuchot <mpi@openbsd.org>
@@ -251,7 +251,6 @@ stmtlist: stmtlist stmtblck		{ $$ = bs_append($1, $2); }
 	| stmtlist stmt			{ $$ = bs_append($1, $2); }
 	| stmtblck
 	| stmt
-	| /* empty */
 	;
 
 block	: '{' stmt ';' '}'			{ $$ = $2; }
