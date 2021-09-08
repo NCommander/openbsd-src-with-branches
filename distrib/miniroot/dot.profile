@@ -43,27 +43,22 @@ umask 022
 # emacs-style command line editing.
 set -o emacs
 
-# Leave installer prompt without user interaction.
-TIMEOUT_ACTION='kill $$'
 TIMEOUT_PERIOD_SEC=5
 
+# Stop the background timer.
+stop_timeout() {
+	kill -KILL $WDPID 2>/dev/null
+}
+
+# Start a co-process to XXX.
 start_timeout() {
 	(
-		sleep $TIMEOUT_PERIOD_SEC && eval $TIMEOUT_ACTION
+		sleep $TIMEOUT_PERIOD_SEC && kill $$
 	) |&
 	WDPID=$!
 
 	# Close standard input of the co-process.
 	exec 3>&p; exec 3>&-
-}
-
-stop_timeout() {
-	kill -KILL $WDPID 2>/dev/null
-}
-
-reset_watchdog() {
-	stop_timeout
-	start_timeout
 }
 
 if [[ -z $DONEPROFILE ]]; then
