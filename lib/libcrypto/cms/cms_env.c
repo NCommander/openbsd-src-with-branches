@@ -1,4 +1,4 @@
-/* $OpenBSD: cms_env.c,v 1.22 2019/08/11 11:07:40 jsing Exp $ */
+/* $OpenBSD: cms_env.c,v 1.23 2019/10/04 18:03:56 tb Exp $ */
 /*
  * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
@@ -792,6 +792,7 @@ cms_RecipientInfo_kekri_decrypt(CMS_ContentInfo *cms, CMS_RecipientInfo *ri)
 		goto err;
 	}
 
+	freezero(ec->key, ec->keylen);
 	ec->key = ukey;
 	ec->keylen = ukeylen;
 
