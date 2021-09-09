@@ -1,4 +1,4 @@
-/* $OpenBSD: menu.c,v 1.34 2021/07/21 08:06:36 nicm Exp $ */
+/* $OpenBSD: menu.c,v 1.35 2021/08/13 18:54:54 nicm Exp $ */
 
 /*
  * Copyright (c) 2019 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -381,7 +381,7 @@ menu_prepare(struct menu *menu, int flags, struct cmdq_item *item, u_int px,
 		cmd_find_copy_state(&md->fs, fs);
 	screen_init(&md->s, menu->width + 4, menu->count + 2, 0);
 	if (~md->flags & MENU_NOMOUSE)
-		md->s.mode |= MODE_MOUSE_ALL;
+		md->s.mode |= MODE_MOUSE_BUTTON;
 	md->s.mode &= ~MODE_CURSOR;
 
 	md->px = px;
