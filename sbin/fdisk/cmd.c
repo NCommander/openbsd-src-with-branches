@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.143 2021/09/01 20:08:32 krw Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.144 2021/09/02 18:07:45 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -462,7 +462,7 @@ Xwrite(char *args, struct mbr *mbr)
 int
 Xquit(char *args, struct mbr *mbr)
 {
-	return CMD_SAVE;
+	return CMD_QUIT;
 }
 
 int
