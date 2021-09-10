@@ -1,4 +1,4 @@
-/*	$OpenBSD: user.c,v 1.76 2021/08/25 23:47:36 krw Exp $	*/
+/*	$OpenBSD: user.c,v 1.77 2021/09/09 15:21:39 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -146,7 +146,7 @@ USER_print_disk(const int verbosity)
 				printf("\nMBR:\n");
 		}
 
-		MBR_print(&mbr, NULL);
+		MBR_print(&mbr, "s");
 
 		for (lba_self = i = 0; i < 4; i++)
 			if (mbr.mbr_prt[i].prt_id == DOSPTYP_EXTEND ||

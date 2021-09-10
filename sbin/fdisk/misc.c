@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.82 2021/08/28 11:55:17 krw Exp $	*/
+/*	$OpenBSD: misc.c,v 1.83 2021/09/09 12:36:45 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -44,11 +44,9 @@ unit_lookup(const char *units)
 {
 	unsigned int		i;
 
-	if (units != NULL) {
-		for (i = 0; i < nitems(unit_types); i++) {
-			if (strncasecmp(unit_types[i].ut_abbr, units, 1) == 0)
-				return i;
-		}
+	for (i = 0; i < nitems(unit_types); i++) {
+		if (strncasecmp(unit_types[i].ut_abbr, units, 1) == 0)
+			return i;
 	}
 
 	return SECTORS;

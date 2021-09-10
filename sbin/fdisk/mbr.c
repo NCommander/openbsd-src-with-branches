@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbr.c,v 1.97 2021/08/07 12:51:30 krw Exp $	*/
+/*	$OpenBSD: mbr.c,v 1.98 2021/08/07 13:33:12 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -169,7 +169,7 @@ MBR_print(const struct mbr *mbr, const char *units)
 {
 	int			i;
 
-	DISK_printgeometry(NULL);
+	DISK_printgeometry("s");
 
 	printf("Offset: %lld\t", (long long)mbr->mbr_lba_self);
 	printf("Signature: 0x%X\n", (int)mbr->mbr_signature);
