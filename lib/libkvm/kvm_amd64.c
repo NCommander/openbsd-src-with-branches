@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_amd64.c,v 1.12 2015/01/16 16:48:51 deraadt Exp $	*/
+/*	$OpenBSD: kvm_amd64.c,v 1.13 2015/12/19 18:40:30 mmcc Exp $	*/
 /*	$NetBSD: kvm_x86_64.c,v 1.3 2002/06/05 22:01:55 fvdl Exp $	*/
 
 /*-
@@ -38,7 +38,9 @@
  * x86-64 machine dependent routines for kvm.
  */
 
-#include <sys/param.h>	/* MAXCOMLEN */
+#include <sys/param.h>	/* MAXCOMLEN ALIGN */
+#include <sys/types.h>
+#include <sys/signal.h>
 #include <sys/proc.h>
 #include <sys/stat.h>
 #include <sys/kcore.h>

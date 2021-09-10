@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_udf.c,v 1.9 2014/12/16 03:21:10 tedu Exp $	*/
+/*	$OpenBSD: kvm_udf.c,v 1.10 2016/10/02 23:11:55 guenther Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002 Scott Long <scottl@freebsd.org>
@@ -26,7 +26,8 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/time.h>
 #include <sys/ucred.h>
 #define _KERNEL
 #include <sys/mount.h>
