@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcap-bpf.c,v 1.36 2018/04/05 03:47:27 lteo Exp $	*/
+/*	$OpenBSD: pcap-bpf.c,v 1.37 2019/06/28 13:32:42 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994, 1995, 1996, 1998
@@ -21,7 +21,6 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#include <sys/param.h>			/* optionally get BSD define */
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -114,20 +113,6 @@ pcap_read(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 				    "The interface went down");
 				return (PCAP_ERROR);
 
-#if defined(sun) && !defined(BSD)
-			/*
-			 * Due to a SunOS bug, after 2^31 bytes, the kernel
-			 * file offset overflows and read fails with EINVAL.
-			 * The lseek() to 0 will fix things.
-			 */
-			case EINVAL:
-				if (lseek(p->fd, 0L, SEEK_CUR) +
-				    p->bufsize < 0) {
-					(void)lseek(p->fd, 0L, SEEK_SET);
-					goto again;
-				}
-				/* FALLTHROUGH */
-#endif
 			}
 			snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "read: %s",
 			    pcap_strerror(errno));
