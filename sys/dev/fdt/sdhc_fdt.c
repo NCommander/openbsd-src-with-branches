@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdhc_fdt.c,v 1.15 2021/04/05 09:31:45 patrick Exp $	*/
+/*	$OpenBSD: sdhc_fdt.c,v 1.16 2021/05/03 13:11:40 visa Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis
  *
@@ -249,6 +249,7 @@ sdhc_fdt_attach(struct device *parent, struct device *self, void *aux)
 		sc->sc.sc_clkbase = freq / 1000;
 
 		sc->sc.sc_flags |= SDHC_F_32BIT_ACCESS;
+		sc->sc.sc_flags |= SDHC_F_NO_HS_BIT;
 	}
 
 	if (OF_is_compatible(faa->fa_node, "marvell,armada-3700-sdhci") ||
