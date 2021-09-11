@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwx.c,v 1.106 2021/09/08 13:06:53 stsp Exp $	*/
+/*	$OpenBSD: if_iwx.c,v 1.107 2021/09/10 16:38:35 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014, 2016 genua gmbh <info@genua.de>
@@ -4442,7 +4442,7 @@ iwx_rx_tx_cmd(struct iwx_softc *sc, struct iwx_rx_packet *pkt,
 		txd = &ring->data[ring->tail];
 		if (txd->m != NULL) {
 			iwx_txd_done(sc, txd);
-			iwx_tx_update_byte_tbl(ring, idx, 0, 0);
+			iwx_tx_update_byte_tbl(ring, ring->tail, 0, 0);
 			ring->queued--;
 		}
 		ring->tail = (ring->tail + 1) % IWX_TX_RING_COUNT;
