@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.c,v 1.406 2021/04/03 06:18:40 djm Exp $ */
+/* $OpenBSD: channels.c,v 1.407 2021/05/19 01:24:05 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -619,9 +619,11 @@ channel_free(struct ssh *ssh, Channel *c)
 	debug("channel %d: free: %s, nchannels %u", c->self,
 	    c->remote_name ? c->remote_name : "???", n);
 
-	if (c->type == SSH_CHANNEL_MUX_CLIENT)
+	if (c->type == SSH_CHANNEL_MUX_CLIENT) {
 		mux_remove_remote_forwardings(ssh, c);
-	else if (c->type == SSH_CHANNEL_MUX_LISTENER) {
+		free(c->mux_ctx);
+		c->mux_ctx = NULL;
+	} else if (c->type == SSH_CHANNEL_MUX_LISTENER) {
 		free(c->mux_ctx);
 		c->mux_ctx = NULL;
 	}
