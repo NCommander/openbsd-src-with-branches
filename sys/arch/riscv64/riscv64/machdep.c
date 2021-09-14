@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.24 2021/07/02 10:42:22 kettenis Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.25 2021/07/02 14:50:18 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
@@ -44,6 +44,7 @@
 #include <machine/bus.h>
 #include <machine/riscv64var.h>
 #include <machine/sbi.h>
+#include <machine/sysarch.h>
 
 #include <machine/db_machdep.h>
 #include <ddb/db_extern.h>
@@ -514,9 +515,20 @@ sys_sysarch(struct proc *p, void *v, register_t *retval)
 		syscallarg(int) op;
 		syscallarg(void *) parms;
 	} */ *uap = v;
+	struct riscv_sync_icache_args args;
 	int error = 0;
 
 	switch (SCARG(uap, op)) {
+	case RISCV_SYNC_ICACHE:
+		if (SCARG(uap, parms) != NULL)
+			error = copyin(SCARG(uap, parms), &args, sizeof(args));
+		if (error)
+			break;
+		/*
+		 * XXX Validate args.addr and args.len before using them.
+		 */
+		pmap_proc_iflush(p->p_p, (vaddr_t)args.addr, args.len);
+		break;
 	default:
 		error = EINVAL;
 		break;
