@@ -33,7 +33,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" $OpenBSD: ssh_config.5,v 1.363 2021/09/03 05:25:50 dtucker Exp $
+.\" $OpenBSD: ssh_config.5,v 1.364 2021/09/03 07:43:23 dtucker Exp $
 .Dd $Mdocdate: September 3 2021 $
 .Dt SSH_CONFIG 5
 .Os
@@ -372,6 +372,11 @@ to be canonicalized to names in the
 or
 .Qq *.c.example.com
 domains.
+.Pp
+A single argument of
+.Qq none
+causes no CNAMEs to be considered for canonicalization.
+This is the default behaviour.
 .It Cm CASignatureAlgorithms
 Specifies which algorithms are allowed for signing of certificates
 by certificate authorities (CAs).
