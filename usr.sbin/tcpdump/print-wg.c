@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-wg.c,v 1.5 2020/07/20 02:24:24 kn Exp $ */
+/*	$OpenBSD: print-wg.c,v 1.6 2021/04/14 19:34:56 bluhm Exp $ */
 
 /*
  * Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
@@ -142,8 +142,9 @@ wg_print(const u_char *bp, u_int length)
 			printf("[wg] keepalive ");
 		if (caplen < offsetof(struct wg_data, mac))
 			goto trunc;
+		/* data->nonce may be unaligned. */
 		printf("to 0x%08x nonce %llu",
-		    letoh32(data->receiver), letoh64(data->nonce));
+		    letoh32(data->receiver), EXTRACT_LE_64BITS(&data->nonce));
 		break;
 	}
 	return;
