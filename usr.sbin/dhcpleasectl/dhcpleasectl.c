@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpleasectl.c,v 1.5 2021/07/26 09:26:36 florian Exp $	*/
+/*	$OpenBSD: dhcpleasectl.c,v 1.6 2021/09/15 15:18:23 florian Exp $	*/
 
 /*
  * Copyright (c) 2021 Florian Obser <florian@openbsd.org>
@@ -56,7 +56,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "usage: %s [-l] [-s socket] [-w seconds] interface\n",
+	fprintf(stderr, "usage: %s [-l] [-s socket] [-w maxwait] interface\n",
 	    __progname);
 	exit(1);
 }
