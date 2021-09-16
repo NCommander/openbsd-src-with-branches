@@ -1,4 +1,4 @@
-/*	$OpenBSD: extract.h,v 1.8 2004/02/02 09:43:27 otto Exp $	*/
+/*	$OpenBSD: extract.h,v 1.9 2007/10/07 16:41:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994, 1995, 1996
@@ -20,7 +20,7 @@
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
- * @(#) $Id$ (LBL)
+ * @(#) $Id: extract.h,v 1.9 2007/10/07 16:41:05 deraadt Exp $ (LBL)
  */
 
 /* Network to host order macros */
@@ -51,3 +51,12 @@
 	(u_int32_t)*((const u_int8_t *)(p) + 2) << 16 | \
 	(u_int32_t)*((const u_int8_t *)(p) + 1) << 8 | \
 	(u_int32_t)*((const u_int8_t *)(p) + 0))
+#define EXTRACT_LE_64BITS(p) \
+	((u_int64_t)*((const u_int8_t *)(p) + 7) << 56 | \
+	(u_int64_t)*((const u_int8_t *)(p) + 6) << 48 | \
+	(u_int64_t)*((const u_int8_t *)(p) + 5) << 40 | \
+	(u_int64_t)*((const u_int8_t *)(p) + 4) << 32 | \
+	(u_int64_t)*((const u_int8_t *)(p) + 3) << 24 | \
+	(u_int64_t)*((const u_int8_t *)(p) + 2) << 16 | \
+	(u_int64_t)*((const u_int8_t *)(p) + 1) << 8 | \
+	(u_int64_t)*((const u_int8_t *)(p) + 0))
