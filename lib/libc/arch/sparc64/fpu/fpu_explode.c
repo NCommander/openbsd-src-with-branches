@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_explode.c,v 1.9 2019/03/15 05:42:38 kevlo Exp $	*/
+/*	$OpenBSD: fpu_explode.c,v 1.10 2019/06/21 17:00:58 jca Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -50,7 +50,7 @@
  * into our internal format.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 
 #include <machine/frame.h>
 #include <machine/fsr.h>

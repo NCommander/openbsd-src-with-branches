@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_implode.c,v 1.5 2015/11/15 22:41:43 guenther Exp $	*/
+/*	$OpenBSD: fpu_implode.c,v 1.6 2019/03/15 05:42:38 kevlo Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -50,7 +50,7 @@
  * `packed binary' format.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 
 #include <machine/frame.h>
 #include <machine/fsr.h>
