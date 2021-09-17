@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.230 2017/11/29 13:37:08 bluhm Exp $
+# $OpenBSD: Makefile,v 1.231 2017/12/12 19:49:19 bluhm Exp $
 
 # TARGETS
 # pf: feed pfNN.in through pfctl and check whether the output matches pfNN.ok
@@ -67,7 +67,7 @@ PFAIL_TARGETS+=pfail${n}
 PFAIL_UPDATES+=pfail${n}-update
 
 pfail${n}:
-	${PFCTL} -o none -nv -f - < ${.CURDIR}/pfail${n}.in 2>&1 | \
+	${SUDO} ${PFCTL} -o none -nv -f - < ${.CURDIR}/pfail${n}.in 2>&1 | \
 	    diff -u ${.CURDIR}/pfail${n}.ok /dev/stdin
 
 pfail${n}-update:
