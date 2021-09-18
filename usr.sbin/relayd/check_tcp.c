@@ -1,4 +1,4 @@
-/*	$OpenBSD: check_tcp.c,v 1.56 2018/04/14 20:42:41 benno Exp $	*/
+/*	$OpenBSD: check_tcp.c,v 1.57 2019/09/15 19:23:29 rob Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -321,23 +321,20 @@ check_send_expect(struct ctl_tcp_event *cte)
 		/*
 		 * ensure string is nul-terminated.
 		 */
-		b = ibuf_reserve(cte->buf, 1);
+		b = strndup(cte->buf->buf, ibuf_size(cte->buf));
 		if (b == NULL)
 			fatal("out of memory");
-		*b = '\0';
-		if (fnmatch(cte->table->conf.exbuf, cte->buf->buf, 0) == 0) {
+		if (fnmatch(cte->table->conf.exbuf, b, 0) == 0) {
 			cte->host->he = HCE_SEND_EXPECT_OK;
 			cte->host->up = HOST_UP;
+			free(b);
 			return (0);
 		}
+		free(b);
 	}
+
 	cte->host->he = HCE_SEND_EXPECT_FAIL;
 	cte->host->up = HOST_UNKNOWN;
-
-	/*
-	 * go back to original position.
-	 */
-	cte->buf->wpos--;
 	return (1);
 }
 
