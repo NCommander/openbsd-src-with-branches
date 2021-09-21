@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 2020/07/21 13:56:09 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.12 2021/06/24 21:11:40 jmc Exp $
 
 PROG=	disklabel
 SRCS=	disklabel.c dkcksum.c editor.c manual.c
@@ -23,6 +23,10 @@ manual.c:	disklabel.cat8
 	(echo 'const unsigned char manpage[] = {'; \
 	cat disklabel.cat8 | gzip -9c | hexdump -ve '"0x" 1/1 "%02x,"'; \
 	echo '};'; echo 'const int manpage_sz = sizeof(manpage);') > manual.c
+.endif
+
+.if ${MACHINE} == "sparc64"
+CFLAGS+= -DSUN_CYLCHECK -DSUN_AAT0
 .endif
 
 .ifdef NOPIC
