@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnconfig.c,v 1.4 2019/04/28 16:28:00 jmc Exp $	*/
+/*	$OpenBSD: vnconfig.c,v 1.5 2019/06/28 13:32:46 deraadt Exp $	*/
 /*
  * Copyright (c) 1993 University of Utah.
  * Copyright (c) 1990, 1993
@@ -324,6 +324,7 @@ config(char *file, char *dev, struct disklabel *dp, char *key, size_t keylen)
  out:
 	if (key)
 		explicit_bzero(key, keylen);
+	explicit_bzero(&vndio.vnd_keylen, sizeof vndio.vnd_keylen);
 	return (rv == -1);
 }
 
