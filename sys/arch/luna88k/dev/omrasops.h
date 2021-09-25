@@ -1,3 +1,5 @@
+/* $OpenBSD$ */
+
 /*
  * Copyright (c) 2013 Kenji Aoyama
  *
@@ -32,7 +34,7 @@
 /*
  * ROP function
  *
- * LUNA's frame buffer uses Hitach HM53462 video RAM, which has raster
+ * LUNA's frame buffer uses Hitachi HM53462 video RAM, which has raster
  * (logic) operation, or ROP, function.  To use ROP function on LUNA, write
  * a 32bit `mask' value to the specified address corresponding to each ROP
  * logic.
