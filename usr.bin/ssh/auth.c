@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.c,v 1.146 2020/01/31 22:42:45 djm Exp $ */
+/* $OpenBSD: auth.c,v 1.147 2020/08/27 01:07:09 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -825,6 +825,12 @@ subprocess(const char *tag, struct passwd *pw, const char *command,
 		}
 		closefrom(STDERR_FILENO + 1);
 
+		if (geteuid() == 0 &&
+		    initgroups(pw->pw_name, pw->pw_gid) == -1) {
+			error("%s: initgroups(%s, %u): %s", tag,
+			    pw->pw_name, (u_int)pw->pw_gid, strerror(errno));
+			_exit(1);
+		}
 		/* Don't use permanently_set_uid() here to avoid fatal() */
 		if (setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) == -1) {
 			error("%s: setresgid %u: %s", tag, (u_int)pw->pw_gid,
