@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.c,v 1.163 2021/04/03 05:21:46 djm Exp $ */
+/* $OpenBSD: misc.c,v 1.164 2021/04/03 06:18:40 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  * Copyright (c) 2005-2020 Damien Miller.  All rights reserved.
@@ -2525,6 +2525,12 @@ subprocess(const char *tag, const char *command,
 		}
 		closefrom(STDERR_FILENO + 1);
 
+		if (geteuid() == 0 &&
+		    initgroups(pw->pw_name, pw->pw_gid) == -1) {
+			error("%s: initgroups(%s, %u): %s", tag,
+			    pw->pw_name, (u_int)pw->pw_gid, strerror(errno));
+			_exit(1);
+		}
 		if (setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) == -1) {
 			error("%s: setresgid %u: %s", tag, (u_int)pw->pw_gid,
 			    strerror(errno));
