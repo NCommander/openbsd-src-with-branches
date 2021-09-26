@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.54 2017/01/22 23:43:54 rpe Exp $
+#	$OpenBSD: install.md,v 1.55 2017/07/28 18:15:44 rpe Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
 # All rights reserved.
@@ -81,7 +81,7 @@ md_prep_fdisk() {
 			fi
 
 			echo -n "Setting OpenBSD GPT partition to whole $_disk..."
-			fdisk -iy -g -b 960 $_disk >/dev/null
+			fdisk -gy -b 960 $_disk >/dev/null
 			echo "done."
 			return ;;
 		[eE]*)
