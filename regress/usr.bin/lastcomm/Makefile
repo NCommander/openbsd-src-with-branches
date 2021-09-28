@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.8 2020/12/14 11:10:02 bluhm Exp $
+# $OpenBSD: Makefile,v 1.9 2020/12/16 23:10:48 bluhm Exp $
 
 # Start with a clean /var/account/acct accounting file and turn on
 # process accounting with accton(8).  Each test executes a command
@@ -22,7 +22,7 @@ REGRESS_EXPECTED_FAILURES +=	run-callstack run-syscallwx
 
 PROGS=			crash trapstack callstack syscallwx unveil
 WARNINGS=		Yes
-LDADD_syscallwx=	-z wxneeded
+LDADD_syscallwx=	-Wl,-z,wxneeded
 CLEANFILES=		regress-*
 
 REGRESS_SETUP =		${PROGS}

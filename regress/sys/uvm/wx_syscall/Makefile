@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.1 2019/05/30 18:11:06 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 2019/09/20 12:45:43 bluhm Exp $
 
 # The regression test binary must be run on a wxallowed filesystem
 # to verify correct behaviour (it should crash)
@@ -17,7 +17,7 @@ regress:
 .endif
 
 PROG=		wx_syscall
-LDFLAGS=	-z wxneeded
+LDFLAGS=	-Wl,-z,wxneeded
 
 run-regress-wx_syscall: wx_syscall
 	! ./wx_syscall
