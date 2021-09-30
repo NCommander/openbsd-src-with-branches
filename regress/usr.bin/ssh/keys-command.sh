@@ -1,10 +1,10 @@
-#	$OpenBSD: keys-command.sh,v 1.6 2019/07/25 08:48:11 dtucker Exp $
+#	$OpenBSD: keys-command.sh,v 1.7 2021/09/01 00:50:27 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="authorized keys from command"
 
 if [ -z "$SUDO" -a ! -w /var/run ]; then
-	fatal "need SUDO to create file in /var/run, test won't work without"
+	skip "need SUDO to create file in /var/run, test won't work without"
 fi
 
 rm -f $OBJ/keys-command-args
