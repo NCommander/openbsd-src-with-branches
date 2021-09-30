@@ -1417,10 +1417,8 @@
 ./usr/share/man/man4/glenv.4
 ./usr/share/man/man4/glkgpio.4
 ./usr/share/man/man4/gpio.4
-./usr/share/man/man4/gpiocharger.4
 ./usr/share/man/man4/gpiodcf.4
 ./usr/share/man/man4/gpioiic.4
-./usr/share/man/man4/gpioleds.4
 ./usr/share/man/man4/gpioow.4
 ./usr/share/man/man4/graphaudio.4
 ./usr/share/man/man4/gre.4

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rijndael.h,v 1.14 2014/04/29 15:42:07 markus Exp $ */
+/*	$OpenBSD: rijndael.h,v 1.13 2008/06/09 07:49:45 djm Exp $ */
 
 /**
  * rijndael-alg-fst.h
@@ -38,6 +38,7 @@ typedef unsigned short	u16;
 typedef unsigned int	u32;
 
 int	rijndaelKeySetupEnc(unsigned int [], const unsigned char [], int);
-void	rijndaelEncrypt(const unsigned int [], int, const u8 [16], u8 [16]);
+void	rijndaelEncrypt(const unsigned int [], int, const unsigned char [],
+	    unsigned char []);
 
 #endif /* _PRIVATE_RIJNDAEL_H */

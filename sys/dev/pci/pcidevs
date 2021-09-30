@@ -1,4 +1,4 @@
-$OpenBSD: pcidevs,v 1.1976 2021/09/29 10:27:21 jsg Exp $
+$OpenBSD: pcidevs,v 1.1974 2021/07/16 13:08:24 jsg Exp $
 /*	$NetBSD: pcidevs,v 1.30 1997/06/24 06:20:24 thorpej Exp $	*/
 
 /*
@@ -1206,20 +1206,16 @@ product ATI KAVERI_19		0x1318	Kaveri Radeon R5
 product ATI KAVERI_20		0x131b	Kaveri Radeon R4
 product ATI KAVERI_21		0x131c	Kaveri Radeon R7
 product ATI KAVERI_22		0x131d	Kaveri Radeon R6
-product ATI CYAN_SKILLFISH_1	0x13fe	Cyan Skillfish
 product ATI PPB_1		0x1478	PCIE
 product ATI PPB_2		0x1479	PCIE
 product ATI PICASSO		0x15d8	Picasso
 product ATI RAVEN_VEGA		0x15dd	Radeon Vega
 product ATI RAVEN_VEGA_HDA	0x15de	Radeon Vega HD Audio
-product ATI RENOIR_2		0x15e7	Renoir
 product ATI RENOIR		0x1636	Renoir
 product ATI RENOIR_HDA		0x1637	Renoir HD Audio
 product ATI CEZANNE		0x1638	Cezanne
 product ATI VANGOGH		0x163f	Van Gogh
 product ATI LUCIENNE		0x164c	Lucienne
-product ATI YELLOW_CARP_1	0x164d	Yellow Carp
-product ATI YELLOW_CARP_2	0x1681	Yellow Carp
 product ATI RADEON_HD6500D_HDA	0x1714	Radeon HD 6500D HD Audio
 product ATI RADEON_M241P	0x3150	Mobility Radeon X600
 product ATI FIREMV_2400_1	0x3151	FireMV 2400
@@ -1388,7 +1384,7 @@ product ATI RADEON9500_PRO	0x4e45	Radeon 9500 Pro
 product ATI RADEON9600TX	0x4e46	Radeon 9600 TX
 product ATI FIREGL_X1		0x4e47	FireGL X1
 product ATI R350		0x4e48	Radeon 9800 Pro
-product ATI RADEON9800		0x4e49	Radeon 9800
+product ATI RADEON9800		0x4e49	RAdeon 9800
 product ATI RADEON_9800XT	0x4e4a	Radeon 9800 XT
 product ATI FIREGL_X2		0x4e4b	FireGL X2
 product ATI RV350		0x4e50	Radeon Mobility M10
@@ -1877,7 +1873,7 @@ product ATI RADEON_X1550	0x7143	Radeon X1550
 product ATI M54_GL		0x7144	M54-GL
 product ATI RADEON_X1400	0x7145	Radeon Mobility X1400
 product ATI RADEON_X1550_X1300	0x7146	Radeon X1300/X1550
-product ATI RADEON_X1550_64	0x7147	Radeon X1550 64-bit
+product ATI RADEON_X1550_64	0x7147	RADEON X1550 64-bit
 product ATI RADEON_X1300_M52	0x7149	Radeon Mobility X1300 M52-64
 product ATI MOBILITY_X1300_4A	0x714a	Radeon Mobility X1300
 product ATI MOBILITY_X1300_4B	0x714b	Radeon Mobility X1300
@@ -1954,7 +1950,7 @@ product ATI RADEON_X1950GT	0x7288	Radeon X1950 GT
 product ATI RV570		0x7289	RV570
 product ATI RV570_2		0x728b	RV570
 product ATI FIREGL_V7400	0x728c	FireGL V7400
-product ATI RV560_3		0x7290	RV560
+product ATI RV560_3		0x7290	Rv560
 product ATI RADEON_RX1650_XT	0x7291	Radeon RX1650 XT
 product ATI RADEON_X1650_1	0x7293	Radeon X1650
 product ATI RV560_4		0x7297	RV560
@@ -1984,41 +1980,19 @@ product ATI SIENNA_CICHLID_1	0x73a0	Navi 21
 product ATI SIENNA_CICHLID_2	0x73a1	Navi 21
 product ATI SIENNA_CICHLID_3	0x73a2	Navi 21
 product ATI SIENNA_CICHLID_4	0x73a3	Navi 21
-product ATI SIENNA_CICHLID_5	0x73a5	Navi 21
-product ATI SIENNA_CICHLID_6	0x73a8	Navi 21
-product ATI SIENNA_CICHLID_7	0x73a9	Navi 21
-product ATI SIENNA_CICHLID_8	0x73ab	Navi 21
-product ATI SIENNA_CICHLID_9	0x73ac	Navi 21
-product ATI SIENNA_CICHLID_10	0x73ad	Navi 21
-product ATI SIENNA_CICHLID_11	0x73ae	Navi 21
-product ATI SIENNA_CICHLID_12	0x73af	Navi 21
-product ATI SIENNA_CICHLID_13	0x73bf	Navi 21
+product ATI SIENNA_CICHLID_5	0x73ab	Navi 21
+product ATI SIENNA_CICHLID_6	0x73ae	Navi 21
+product ATI SIENNA_CICHLID_7	0x73af	Navi 21
+product ATI SIENNA_CICHLID_8	0x73bf	Navi 21
 product ATI NAVY_FLOUNDER_1	0x73c0	Navi 22
 product ATI NAVY_FLOUNDER_2	0x73c1	Navi 22
 product ATI NAVY_FLOUNDER_3	0x73c3	Navi 22
-product ATI NAVY_FLOUNDER_4	0x73da	Navi 22
-product ATI NAVY_FLOUNDER_5	0x73db	Navi 22
-product ATI NAVY_FLOUNDER_6	0x73dc	Navi 22
-product ATI NAVY_FLOUNDER_7	0x73dd	Navi 22
-product ATI NAVY_FLOUNDER_8	0x73de	Navi 22
-product ATI NAVY_FLOUNDER_9	0x73df	Navi 22
+product ATI NAVY_FLOUNDER_4	0x73df	Navi 22
 product ATI DIMGREY_CAVEFISH_1	0x73e0	Navi 23
 product ATI DIMGREY_CAVEFISH_2	0x73e1	Navi 23
 product ATI DIMGREY_CAVEFISH_3	0x73e2	Navi 23
 product ATI DIMGREY_CAVEFISH_4	0x73e3	Navi 23
-product ATI DIMGREY_CAVEFISH_5	0x73e8	Navi 23
-product ATI DIMGREY_CAVEFISH_6	0x73e9	Navi 23
-product ATI DIMGREY_CAVEFISH_7	0x73ea	Navi 23
-product ATI DIMGREY_CAVEFISH_8	0x73eb	Navi 23
-product ATI DIMGREY_CAVEFISH_9	0x73ec	Navi 23
-product ATI DIMGREY_CAVEFISH_10	0x73ed	Navi 23
-product ATI DIMGREY_CAVEFISH_11	0x73ef	Navi 23
-product ATI DIMGREY_CAVEFISH_12	0x73ff	Navi 23
-product ATI BEIGE_GOBY_1	0x7420	Navi 24
-product ATI BEIGE_GOBY_2	0x7421	Navi 24
-product ATI BEIGE_GOBY_3	0x7422	Navi 24
-product ATI BEIGE_GOBY_4	0x7423	Navi 24
-product ATI BEIGE_GOBY_5	0x743f	Navi 24
+product ATI DIMGREY_CAVEFISH_5	0x73ff	Navi 23
 product ATI RADEON_9000IGP	0x7834	Radeon 9000/9100 IGP
 product ATI RADEON_RS350IGP	0x7835	Radeon RS350IGP
 product ATI RS690_HB		0x7910	RS690 Host
@@ -3706,7 +3680,6 @@ product INTEL BAYTRAIL_SATA_1	0x0f20	Bay Trail SATA
 product INTEL BAYTRAIL_SATA_2	0x0f21	Bay Trail SATA
 product INTEL BAYTRAIL_AHCI	0x0f23	Bay Trail AHCI
 product INTEL BAYTRAIL_LPA	0x0f28	Bay Trail Low Power Audio
-product INTEL BAYTRAIL_IGD_4	0x0f30	Bay Trail Video
 product INTEL BAYTRAIL_IGD_1	0x0f31	Bay Trail Video
 product INTEL BAYTRAIL_IGD_2	0x0f32	Bay Trail Video
 product INTEL BAYTRAIL_IGD_3	0x0f33	Bay Trail Video
@@ -4069,12 +4042,6 @@ product INTEL CORE5G_D_GT3_1	0x162a	Iris Pro P6300
 product INTEL CORE5G_M_GT3_28W	0x162b	Iris 6100
 product INTEL CORE5G_D_GT3_2	0x162d	HD Graphics
 product INTEL CORE5G_M_GT3_4	0x162e	HD Graphics
-product INTEL BDW_RSVD_1	0x1632	HD Graphics
-product INTEL BDW_ULT_RSVD_1	0x1636	HD Graphics
-product INTEL BDW_RSVD_2	0x163a	HD Graphics
-product INTEL BDW_ULT_RSVD_2	0x163b	HD Graphics
-product INTEL BDW_RSVD_3	0x163d	HD Graphics
-product INTEL BDW_ULX_RSVD_1	0x163e	HD Graphics
 product INTEL ADAPTIVE_VF	0x1889	Adaptive VF
 product INTEL CORE6G_H_HB_D	0x1900	Core 6G Host
 product INTEL CORE6G_H_PCIE_X16	0x1901	Core 6G PCIE
@@ -4092,10 +4059,7 @@ product INTEL CORE6G_S_HB_DUAL	0x190f	Core 6G Host
 product INTEL CORE6G_H_HB_Q	0x1910	Core 6G Host
 product INTEL CORE_GMM_1	0x1911	Core GMM
 product INTEL CORE6G_S_GT2_1	0x1912	HD Graphics 530
-product INTEL SKL_ULT_GT	0x1913	HD Graphics
-product INTEL SKL_ULX_GT	0x1915	HD Graphics
 product INTEL CORE6G_U_GT2	0x1916	HD Graphics 520
-product INTEL SKL_GT1		0x1917	HD Graphics
 product INTEL XEONE3_1200V5_HB	0x1918	Xeon E3-1200 v5 Host
 product INTEL CORE6G_S_GT2_2	0x191a	HD Graphics
 product INTEL CORE6G_H_GT2	0x191b	HD Graphics 530
@@ -5459,22 +5423,6 @@ product INTEL 500SERIES_GSPI_2	0x43fb	500 Series GSPI
 product INTEL 500SERIES_ISH	0x43fc	500 Series ISH
 product INTEL 500SERIES_GSPI_3	0x43fd	500 Series GSPI
 product INTEL TURBO_MEMORY	0x444e	Turbo Memory
-product INTEL EHL_GT_1		0x4541	UHD Graphics
-product INTEL EHL_GT_2		0x4551	UHD Graphics
-product INTEL EHL_GT_3		0x4555	UHD Graphics
-product INTEL EHL_GT_4		0x4557	UHD Graphics
-product INTEL EHL_GT_5		0x4571	UHD Graphics
-product INTEL RKL_GT_1		0x4c80	UHD Graphics
-product INTEL RKL_GT_2		0x4c8a	UHD Graphics
-product INTEL RKL_GT_3		0x4c8b	UHD Graphics
-product INTEL RKL_GT_4		0x4c8c	UHD Graphics
-product INTEL RKL_GT_5		0x4c90	UHD Graphics
-product INTEL RKL_GT_6		0x4c9a	UHD Graphics
-product INTEL JSL_GT_1		0x4e51	UHD Graphics
-product INTEL JSL_GT_2		0x4e55	UHD Graphics
-product INTEL JSL_GT_3		0x4e57	UHD Graphics
-product INTEL JSL_GT_4		0x4e61	UHD Graphics
-product INTEL JSL_GT_5		0x4e71	UHD Graphics
 product INTEL EP80579_HB	0x5020	EP80579 Host
 product INTEL EP80579_MEM	0x5021	EP80579 Memory
 product INTEL EP80579_EDMA	0x5023	EP80579 EDMA
@@ -5510,34 +5458,34 @@ product INTEL I219_V18		0x550b	I219-V
 product INTEL I219_LM19		0x550c	I219-LM
 product INTEL I219_V19		0x550d	I219-V
 product INTEL QEMU_NVME		0x5845	QEMU NVM Express Controller
-product INTEL KBL_D_GT1		0x5902	HD Graphics 610
+product INTEL CORE7G_D_GT1	0x5902	HD Graphics 610
 product INTEL CORE7G_U_HB	0x5904	Core 7G Host
-product INTEL KBL_U_GT1		0x5906	HD Graphics 610
-product INTEL KBL_H_GT1_1	0x5908	HD Graphics
-product INTEL KBL_S_GT1		0x590a	HD Graphics
-product INTEL KBL_H_GT1_2	0x590b	HD Graphics
+product INTEL CORE7G_U_GT1	0x5906	HD Graphics 610
+product INTEL CORE7G_H_GT1_1	0x5908	HD Graphics
+product INTEL CORE7G_S_GT1	0x590a	HD Graphics
+product INTEL CORE7G_H_GT1_2	0x590b	HD Graphics
 product INTEL CORE7G_Y_HB	0x590c	Core 7G Host
-product INTEL KBL_Y_GT1		0x590e	HD Graphics
+product INTEL CORE7G_Y_GT1	0x590e	HD Graphics
 product INTEL CORE7G_S_HB_2C	0x590f	Core 7G Host
 product INTEL XEONE3_1200V6_HB2	0x5910	Xeon E3-1200 v6/7 Host
 product INTEL CORE_GMM_2	0x5911	Core GMM
 product INTEL KBL_S_GT2		0x5912	HD Graphics 630
 product INTEL KBL_U_GT15	0x5913	HD Graphics
 product INTEL CORE8G_U_HB	0x5914	Core 8G Host
-product INTEL KBL_U_GT15_2	0x5915	HD Graphics
-product INTEL KBL_U_GT2_1	0x5916	HD Graphics 620
+product INTEL CORE7G_IMGU	0x5915	Core 7G Imaging Unit
+product INTEL CORE7G_U_GT2_1	0x5916	HD Graphics 620
 product INTEL KBL_U_GT2		0x5917	UHD Graphics 620
 product INTEL XEONE3_1200V6_HB	0x5918	Xeon E3-1200 v6/7 Host
-product INTEL KBL_SRV_GT2	0x591a	HD Graphics P630
-product INTEL KBL_H_GT2		0x591b	HD Graphics 630
+product INTEL CORE7G_SRV_GT2	0x591a	HD Graphics P630
+product INTEL CORE7G_H_GT2	0x591b	HD Graphics 630
 product INTEL AML_KBL_Y_GT2	0x591c	UHD Graphics 615
-product INTEL KBL_U_GT2_2	0x591d	HD Graphics P630
-product INTEL KBL_Y_GT2		0x591e	HD Graphics 615
+product INTEL CORE7G_U_GT2_2	0x591d	HD Graphics P630
+product INTEL CORE7G_Y_GT2	0x591e	HD Graphics 615
 product INTEL CORE7G_S_HB_4C	0x591f	Core 7G Host
 product INTEL KBL_U_GT2F	0x5921	HD Graphics 620
 product INTEL KBL_U_GT3		0x5923	HD Graphics 635
-product INTEL KBL_U_GT3_15W	0x5926	Iris Plus 640
-product INTEL KBL_U_GT3_28W	0x5927	Iris Plus 650
+product INTEL CORE7G_U_GT3_15W	0x5926	Iris Plus 640
+product INTEL CORE7G_U_GT3_28W	0x5927	Iris Plus 650
 product INTEL KBL_H_GT4		0x593b	HD Graphics
 product INTEL APOLLOLAKE_IGD_1	0x5a84	HD Graphics 505
 product INTEL APOLLOLAKE_IGD_2	0x5a85	HD Graphics 500

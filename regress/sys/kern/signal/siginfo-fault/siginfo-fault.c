@@ -1,4 +1,4 @@
-/*	$OpenBSD: siginfo-fault.c,v 1.1 2020/09/16 14:02:23 mpi Exp $	*/
+/*	$OpenBSD: siginfo-fault.c,v 1.6 2017/07/22 16:12:27 kettenis Exp $	*/
 /*
  * Copyright (c) 2014 Google Inc.
  *
@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 /*
- * Some architectures may deliver an imprecise fault address.
+ * Some architectures deliver an imprecise fault address.
  */
 #ifdef __sparc64__
 #define EXPADDR_MASK	~(3UL)
@@ -109,7 +109,7 @@ checksig(const char *name, int expsigno, int expcode, volatile char *expaddr)
 		    gotsi.si_code, strsigcode(gotsigno, gotsi.si_code));
 		++fail;
 	}
-	if (expaddr != (char *)((uintptr_t)gotsi.si_addr & EXPADDR_MASK)) {
+	if (expaddr != gotsi.si_addr) {
 		fprintf(stderr, "%s si_addr: expect %p, actual %p\n",
 		    name, expaddr, gotsi.si_addr);
 		++fail;

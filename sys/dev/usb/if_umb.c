@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_umb.c,v 1.46 2021/07/04 19:22:31 sthen Exp $ */
+/*	$OpenBSD: if_umb.c,v 1.45 2021/05/18 14:23:03 kevlo Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -255,12 +255,6 @@ const struct umb_quirk umb_quirks[] = {
 	  UMBFLG_FCC_AUTH_REQUIRED,
 	  0,
 	  0
-	},
-
-	{ { USB_VENDOR_SIMCOM, USB_PRODUCT_SIMCOM_SIM7600 },
-	  0,
-	  1,
-	  UMATCH_VENDOR_PRODUCT
 	},
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwm.c,v 1.368 2021/09/24 19:02:16 stsp Exp $	*/
+/*	$OpenBSD: if_iwm.c,v 1.366 2021/09/08 11:35:08 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014, 2016 genua gmbh <info@genua.de>
@@ -5720,8 +5720,6 @@ iwm_rx_compressed_ba(struct iwm_softc *sc, struct iwm_rx_packet *pkt,
 	if (qid != IWM_FIRST_AGG_TX_QUEUE + ban->tid)
 		return;
 
-	sc->sc_tx_timer = 0;
-
 	ba = &ni->ni_tx_ba[ban->tid];
 	if (ba->ba_state != IEEE80211_BA_AGREED)
 		return;
@@ -9003,14 +9001,6 @@ iwm_newstate(struct ieee80211com *ic, enum ieee80211_state nstate, int arg)
 	struct ifnet *ifp = IC2IFP(ic);
 	struct iwm_softc *sc = ifp->if_softc;
 	int i;
-
-	/*
-	 * Prevent attemps to transition towards the same state, unless
-	 * we are scanning in which case a SCAN -> SCAN transition
-	 * triggers another scan iteration.
-	 */
-	if (sc->ns_nstate == nstate && nstate != IEEE80211_S_SCAN)
-		return 0;
 
 	if (ic->ic_state == IEEE80211_S_RUN) {
 		timeout_del(&sc->sc_calib_to);

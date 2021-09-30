@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.23 2016/03/13 18:34:20 guenther Exp $ */
+/*	$OpenBSD: exec.c,v 1.22 2015/09/12 14:56:50 guenther Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -30,7 +30,6 @@
 
 #include <sys/types.h>
 #include <sys/uio.h>
-#include <sys/mman.h>
 
 #include <errno.h>
 #include <limits.h>
@@ -46,33 +45,25 @@ execl(const char *name, const char *arg, ...)
 {
 	va_list ap;
 	char **argv;
-	size_t maplen;
-	int save_errno, n, error;
+	int n;
 
 	va_start(ap, arg);
 	n = 1;
 	while (va_arg(ap, char *) != NULL)
 		n++;
 	va_end(ap);
-
-	maplen = (n + 1) * sizeof(*argv);
-	argv = mmap(NULL, maplen, PROT_WRITE|PROT_READ,
-	    MAP_ANON|MAP_PRIVATE, -1, 0);
-	if (argv == MAP_FAILED)
+	argv = alloca((n + 1) * sizeof(*argv));
+	if (argv == NULL) {
+		errno = ENOMEM;
 		return (-1);
-
+	}
 	va_start(ap, arg);
 	n = 1;
 	argv[0] = (char *)arg;
 	while ((argv[n] = va_arg(ap, char *)) != NULL)
 		n++;
 	va_end(ap);
-
-	error = execve(name, argv, environ);
-	save_errno = errno;
-	munmap(argv, maplen);
-	errno = save_errno;
-	return (error);
+	return (execve(name, argv, environ));
 }
 DEF_WEAK(execl);
 
@@ -81,21 +72,18 @@ execle(const char *name, const char *arg, ...)
 {
 	va_list ap;
 	char **argv, **envp;
-	size_t maplen;
-	int save_errno, n, error;
+	int n;
 
 	va_start(ap, arg);
 	n = 1;
 	while (va_arg(ap, char *) != NULL)
 		n++;
 	va_end(ap);
-
-	maplen = (n + 1) * sizeof(*argv);
-	argv = mmap(NULL, maplen, PROT_WRITE|PROT_READ,
-	    MAP_ANON|MAP_PRIVATE, -1, 0);
-	if (argv == MAP_FAILED)
+	argv = alloca((n + 1) * sizeof(*argv));
+	if (argv == NULL) {
+		errno = ENOMEM;
 		return (-1);
-
+	}
 	va_start(ap, arg);
 	n = 1;
 	argv[0] = (char *)arg;
@@ -103,12 +91,7 @@ execle(const char *name, const char *arg, ...)
 		n++;
 	envp = va_arg(ap, char **);
 	va_end(ap);
-
-	error = execve(name, argv, envp);
-	save_errno = errno;
-	munmap(argv, maplen);
-	errno = save_errno;
-	return error;
+	return (execve(name, argv, envp));
 }
 
 int
@@ -116,32 +99,25 @@ execlp(const char *name, const char *arg, ...)
 {
 	va_list ap;
 	char **argv;
-	size_t maplen;
-	int save_errno, n, error;
+	int n;
 
 	va_start(ap, arg);
 	n = 1;
 	while (va_arg(ap, char *) != NULL)
 		n++;
 	va_end(ap);
-
-	maplen = (n + 1) * sizeof(*argv);
-	argv = mmap(NULL, maplen, PROT_WRITE|PROT_READ,
-	    MAP_ANON|MAP_PRIVATE, -1, 0);
-	if (argv == MAP_FAILED)
+	argv = alloca((n + 1) * sizeof(*argv));
+	if (argv == NULL) {
+		errno = ENOMEM;
 		return (-1);
-
+	}
 	va_start(ap, arg);
 	n = 1;
 	argv[0] = (char *)arg;
 	while ((argv[n] = va_arg(ap, char *)) != NULL)
 		n++;
 	va_end(ap);
-	error = execvp(name, argv);
-	save_errno = errno;
-	munmap(argv, maplen);
-	errno = save_errno;
-	return error;
+	return (execvp(name, argv));
 }
 
 int
@@ -156,12 +132,10 @@ execvpe(const char *name, char *const *argv, char *const *envp)
 {
 	char **memp;
 	int cnt;
-	size_t lp, ln, curlen;
+	size_t lp, ln, len;
 	char *p;
 	int eacces = 0;
 	char *bp, *cur, *path, buf[PATH_MAX];
-	size_t maplen;
-	int save_errno, n;
 
 	/*
 	 * Do not allow null name
@@ -182,14 +156,13 @@ execvpe(const char *name, char *const *argv, char *const *envp)
 	/* Get the path we're searching. */
 	if (!(path = getenv("PATH")))
 		path = _PATH_DEFPATH;
-
-	curlen = strlen(path) + 1;
-	cur = mmap(NULL, curlen, PROT_WRITE|PROT_READ,
-	    MAP_ANON|MAP_PRIVATE, -1, 0);
-	if (cur == MAP_FAILED)
+	len = strlen(path) + 1;
+	cur = alloca(len);
+	if (cur == NULL) {
+		errno = ENOMEM;
 		return (-1);
-
-	strlcpy(cur, path, curlen);
+	}
+	strlcpy(cur, path, len);
 	path = cur;
 	while ((p = strsep(&cur, ":"))) {
 		/*
@@ -237,20 +210,13 @@ retry:		(void)execve(bp, argv, envp);
 		case ENOEXEC:
 			for (cnt = 0; argv[cnt]; ++cnt)
 				;
-
-			maplen = (cnt + 2) * sizeof(char *);
-			memp = mmap(NULL, maplen, PROT_WRITE|PROT_READ,
-			    MAP_ANON|MAP_PRIVATE, -1, 0);
-			if (memp == MAP_FAILED)
+			memp = alloca((cnt + 2) * sizeof(char *));
+			if (memp == NULL)
 				goto done;
-
 			memp[0] = "sh";
 			memp[1] = bp;
 			bcopy(argv + 1, memp + 2, cnt * sizeof(char *));
 			(void)execve(_PATH_BSHELL, memp, envp);
-			save_errno = errno;
-			munmap(memp, maplen);
-			errno = save_errno;
 			goto done;
 		case ENOMEM:
 			goto done;
@@ -273,11 +239,6 @@ retry:		(void)execve(bp, argv, envp);
 	else if (!errno)
 		errno = ENOENT;
 done:
-	if (cur) {
-		save_errno = errno;
-		munmap(cur, curlen);
-		errno = save_errno;
-	}
 	return (-1);
 }
 DEF_WEAK(execvpe);
