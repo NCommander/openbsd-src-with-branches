@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.116 2021/08/04 21:28:00 djm Exp $
+#	$OpenBSD: Makefile,v 1.117 2021/09/03 04:11:13 dtucker Exp $
 
 OPENSSL?=	yes
 
@@ -96,6 +96,7 @@ LTESTS= 	connect \
 		allow-deny-users \
 		authinfo \
 		sshsig \
+		knownhosts \
 		knownhosts-command
 
 INTEROP_TESTS=	putty-transfer putty-ciphers putty-kex conch-ciphers
