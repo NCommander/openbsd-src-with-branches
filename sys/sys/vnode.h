@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnode.h,v 1.156 2020/04/08 08:07:52 mpi Exp $	*/
+/*	$OpenBSD: vnode.h,v 1.157 2021/04/28 09:53:53 claudio Exp $	*/
 /*	$NetBSD: vnode.h,v 1.38 1996/02/29 20:59:05 cgd Exp $	*/
 
 /*
@@ -628,6 +628,7 @@ int vfs_getcwd_getcache(struct vnode **, struct vnode **, char **, char *);
 
 /* vfs_default.c */
 int	vop_generic_abortop(void *);
+int	vop_generic_badop(void *);
 int	vop_generic_bmap(void *);
 int	vop_generic_bwrite(void *);
 int	vop_generic_islocked(void *);

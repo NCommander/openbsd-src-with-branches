@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_default.c,v 1.47 2020/02/20 16:56:52 visa Exp $  */
+/*	$OpenBSD: vfs_default.c,v 1.48 2021/04/28 09:53:53 claudio Exp $  */
 
 /*
  * Portions of this code are:
@@ -125,6 +125,12 @@ vop_generic_revoke(void *v)
 	vgonel(vp, p);
 
 	return (0);
+}
+
+int
+vop_generic_badop(void *v)
+{
+	panic("%s", __func__);
 }
 
 int
