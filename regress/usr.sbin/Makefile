@@ -1,8 +1,9 @@
-#	$OpenBSD: Makefile,v 1.23 2020/01/24 06:15:36 tedu Exp $
+#	$OpenBSD: Makefile,v 1.24 2020/10/16 01:16:55 beck Exp $
 
 SUBDIR += acme-client
 SUBDIR += arp
 SUBDIR += bgpd
+SUBDIR += btrace
 SUBDIR += httpd
 SUBDIR += ifstated
 SUBDIR += ldapd
