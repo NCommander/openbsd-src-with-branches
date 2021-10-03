@@ -1,6 +1,6 @@
-# $OpenBSD: Makefile,v 1.6 2017/01/11 00:02:48 bluhm Exp $
+# $OpenBSD: Makefile,v 1.7 2017/01/13 01:19:13 bluhm Exp $
 
-SUBDIR=		ffs nfs
+SUBDIR=		ffs nfs mfs
 PROG=		fstest
 NOMAN=		yes
 
