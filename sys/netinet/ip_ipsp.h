@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.207 2021/09/29 22:08:13 bluhm Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.208 2021/10/05 11:34:34 bluhm Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -189,6 +189,12 @@ static inline void
 ipsecstat_add(enum ipsec_counters c, uint64_t v)
 {
 	counters_add(ipseccounters, c, v);
+}
+
+static inline void
+ipsecstat_pkt(enum ipsec_counters p, enum ipsec_counters b, uint64_t v)
+{
+	counters_pkt(ipseccounters, p, b, v);
 }
 
 struct m_tag;
