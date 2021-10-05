@@ -1,4 +1,4 @@
-/* $OpenBSD: job.c,v 1.61 2021/08/13 19:27:25 nicm Exp $ */
+/* $OpenBSD: job.c,v 1.62 2021/08/13 19:55:11 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -339,6 +339,7 @@ job_check_died(pid_t pid, int status)
 	log_debug("job died %p: %s, pid %ld", job, job->cmd, (long) job->pid);
 
 	job->status = status;
+	log_debug("job %p status %d", job, job->status);
 
 	if (job->state == JOB_CLOSED) {
 		if (job->completecb != NULL)
