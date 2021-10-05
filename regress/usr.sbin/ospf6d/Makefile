@@ -1,6 +1,7 @@
-# $OpenBSD: Makefile,v 1.1 2019/12/23 17:32:53 denis Exp $
+# $OpenBSD: Makefile,v 1.2 2020/06/12 13:27:43 denis Exp $
 
-REGRESS_TARGETS	= 	network_statement
+REGRESS_TARGETS= 	network_statement
+REGRESS_ROOT_TARGETS=	${REGRESS_TARGETS}
 
 OSPF6D ?=		/usr/sbin/ospf6d
 
