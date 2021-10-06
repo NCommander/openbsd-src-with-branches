@@ -1,7 +1,9 @@
-#	$OpenBSD: Makefile,v 1.1 2021/02/20 19:05:28 otto Exp $
+#	$OpenBSD: Makefile,v 1.2 2021/02/21 19:21:15 tb Exp $
 
 PROG=	exceptions
 SRCS=	exceptions.cc
+LDADD=	-lpthread
+DPADD=	${LIBPTHREAD}
 
 REGRESS_TARGETS=runs
 
