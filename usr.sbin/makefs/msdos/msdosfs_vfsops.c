@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vfsops.c,v 1.11 2016/12/17 16:43:30 krw Exp $	*/
+/*	$OpenBSD: msdosfs_vfsops.c,v 1.12 2019/09/04 14:40:22 cheloha Exp $	*/
 
 /*-
  * Copyright (C) 1994, 1995, 1997 Wolfgang Solfrank.
@@ -47,7 +47,9 @@
  * October 1992
  */
 
-#include <sys/param.h>
+
+#include <sys/param.h>	/* MAXBSIZE */
+#include <sys/types.h>
 
 #include "ffs/buf.h"
 

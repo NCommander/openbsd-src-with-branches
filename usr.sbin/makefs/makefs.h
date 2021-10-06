@@ -1,4 +1,4 @@
-/*	$OpenBSD: makefs.h,v 1.11 2016/10/26 07:53:47 natano Exp $	*/
+/*	$OpenBSD: makefs.h,v 1.12 2016/12/17 16:12:15 krw Exp $	*/
 /*	$NetBSD: makefs.h,v 1.36 2015/11/25 00:48:49 christos Exp $	*/
 
 /*
@@ -184,6 +184,8 @@ extern	struct timespec	start_time;
 #define	DEFAULT_FSTYPE	"ffs"
 #endif
 
+#define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
+#define MAXIMUM(a, b)	(((a) > (b)) ? (a) : (b))
 
 /* xmalloc.c */
 void	*emalloc(size_t);
