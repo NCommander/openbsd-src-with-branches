@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwmvar.h,v 1.68 2021/07/08 00:12:49 stsp Exp $	*/
+/*	$OpenBSD: if_iwmvar.h,v 1.69 2021/07/08 17:14:08 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -654,6 +654,7 @@ struct iwm_softc {
 struct iwm_node {
 	struct ieee80211_node in_ni;
 	struct iwm_phy_ctxt *in_phyctxt;
+	uint8_t in_macaddr[ETHER_ADDR_LEN];
 
 	uint16_t in_id;
 	uint16_t in_color;
