@@ -1,4 +1,4 @@
-/*	$Id: test-mft.c,v 1.12 2021/03/28 16:22:17 job Exp $ */
+/*	$Id: test-mft.c,v 1.13 2021/03/29 15:47:34 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -35,14 +35,6 @@
 #include "extern.h"
 
 #include "test-common.c"
-
-#ifndef ASN1error
-void
-ASN1error(int err)
-{
-	ASN1err(0, err);
-}
-#endif
 
 int verbose;
 
