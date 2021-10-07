@@ -1,4 +1,4 @@
-/*	$OpenBSD: cert.c,v 1.32 2021/09/09 14:15:49 claudio Exp $ */
+/*	$OpenBSD: cert.c,v 1.33 2021/10/05 11:20:46 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -1061,6 +1061,7 @@ cert_parse_inner(X509 **xp, const char *fn, int ta)
 		p.res->aia = x509_get_aia(x, p.fn);
 		p.res->crl = x509_get_crl(x, p.fn);
 	}
+	p.res->expires = x509_get_expire(x, p.fn);
 	p.res->purpose = x509_get_purpose(x, p.fn);
 
 	/* Validation on required fields. */
