@@ -1,4 +1,4 @@
-/*	$OpenBSD: emacs.c,v 1.87 2020/05/08 14:30:42 jca Exp $	*/
+/*	$OpenBSD: emacs.c,v 1.88 2021/06/27 15:53:33 schwarze Exp $	*/
 
 /*
  *  Emacs-like command line editing and history
@@ -897,7 +897,7 @@ x_search_hist(int c)
 		if ((c = x_e_getc()) < 0)
 			return KSTD;
 		f = kb_find_hist_func(c);
-		if (c == CTRL('[')) {
+		if (c == CTRL('[') || c == CTRL('@')) {
 			x_e_ungetc(c);
 			break;
 		} else if (f == x_search_hist)
