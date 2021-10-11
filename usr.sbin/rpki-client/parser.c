@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.11 2021/09/15 15:51:05 claudio Exp $ */
+/*	$OpenBSD: parser.c,v 1.12 2021/10/07 08:36:17 claudio Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -194,7 +194,6 @@ proc_parser_cert(const struct entity *entp, X509_STORE_CTX *ctx,
 	X509			*x509;
 	int			 c;
 	struct auth		*a = NULL, *na;
-	char			*tal;
 	STACK_OF(X509)		*chain;
 	STACK_OF(X509_CRL)	*crls;
 
@@ -252,11 +251,13 @@ proc_parser_cert(const struct entity *entp, X509_STORE_CTX *ctx,
 	if (na == NULL)
 		err(1, NULL);
 
-	tal = a->tal;
+	cert->tal = strdup(a->tal);
+	if (cert->tal == NULL)
+		err(1, NULL);
 
 	na->parent = a;
 	na->cert = cert;
-	na->tal = tal;
+	na->tal = a->tal;
 	na->fn = strdup(entp->file);
 	if (na->fn == NULL)
 		err(1, NULL);
