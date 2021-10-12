@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.131 2021/05/28 18:01:39 tobhe Exp $	*/
+/*	$OpenBSD: parse.y,v 1.132 2021/09/18 16:45:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -551,7 +551,7 @@ user		: USER STRING STRING		{
 			if (create_user($2, $3) == -1)
 				YYERROR;
 			free($2);
-			free($3);
+			freezero($3, strlen($3));
 		}
 		;
 
@@ -3078,6 +3078,8 @@ create_user(const char *user, const char *pass)
 	config_setuser(env, &usr, PROC_IKEV2);
 
 	rules++;
+
+	explicit_bzero(&usr, sizeof usr);
 	return (0);
 }
 
