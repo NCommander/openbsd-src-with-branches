@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsec.c,v 1.166 2020/05/29 04:42:25 deraadt Exp $	*/
+/*	$OpenBSD: ubsec.c,v 1.167 2021/02/25 02:48:20 dlg Exp $	*/
 
 /*
  * Copyright (c) 2000 Jason L. Wright (jason@thought.net)
@@ -781,10 +781,6 @@ ubsec_process(struct cryptop *crp)
 	u_int16_t flags = 0;
 	int ivlen = 0, keylen = 0;
 
-	if (crp == NULL || crp->crp_callback == NULL) {
-		ubsecstats.hst_invalid++;
-		return (EINVAL);
-	}
 	card = UBSEC_CARD(crp->crp_sid);
 	if (card >= ubsec_cd.cd_ndevs || ubsec_cd.cd_devs[card] == NULL) {
 		ubsecstats.hst_invalid++;
