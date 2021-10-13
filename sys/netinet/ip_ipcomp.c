@@ -1,4 +1,4 @@
-/* $OpenBSD: ip_ipcomp.c,v 1.73 2021/07/26 23:17:06 mvs Exp $ */
+/* $OpenBSD: ip_ipcomp.c,v 1.74 2021/07/27 17:13:03 mvs Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Jacques Bernard-Gundol (jj@wabbitt.org)
@@ -320,8 +320,7 @@ ipcomp_input_cb(struct tdb *tdb, struct tdb_crypto *tc, struct mbuf *m, int clen
  * IPComp output routine, called by ipsp_process_packet()
  */
 int
-ipcomp_output(struct mbuf *m, struct tdb *tdb, struct mbuf **mp, int skip,
-    int protoff)
+ipcomp_output(struct mbuf *m, struct tdb *tdb, int skip, int protoff)
 {
 	const struct comp_algo *ipcompx = tdb->tdb_compalgxform;
 	int error, hlen;

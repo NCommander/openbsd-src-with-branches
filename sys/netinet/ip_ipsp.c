@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.244 2021/07/27 17:13:03 mvs Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.245 2021/09/29 22:08:13 bluhm Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -135,7 +135,7 @@ const struct xformsw xformsw[] = {
   .xf_init	= ipe4_init,
   .xf_zeroize	= ipe4_zeroize,
   .xf_input	= ipe4_input,
-  .xf_output	= ipip_output,
+  .xf_output	= NULL,
 },
 {
   .xf_type	= XF_AH,
