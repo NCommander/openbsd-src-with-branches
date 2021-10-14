@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket.c,v 1.263 2021/05/28 16:24:53 visa Exp $	*/
+/*	$OpenBSD: uipc_socket.c,v 1.264 2021/07/26 05:51:13 mpi Exp $	*/
 /*	$NetBSD: uipc_socket.c,v 1.21 1996/02/04 02:17:52 christos Exp $	*/
 
 /*
@@ -892,9 +892,11 @@ dontblock:
 			sbsync(&so->so_rcv, nextrecord);
 			if (controlp) {
 				if (pr->pr_domain->dom_externalize) {
+					sounlock(so, s);
 					error =
 					    (*pr->pr_domain->dom_externalize)
 					    (cm, controllen, flags);
+					s = solock(so);
 				}
 				*controlp = cm;
 			} else {
