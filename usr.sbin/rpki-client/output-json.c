@@ -1,4 +1,4 @@
-/*	$OpenBSD: output-json.c,v 1.18 2021/10/11 16:50:03 job Exp $ */
+/*	$OpenBSD: output-json.c,v 1.19 2021/10/12 15:16:45 job Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  *
@@ -46,8 +46,8 @@ outputheader_json(FILE *out, struct stats *st)
 	    "\t\t\"roas\": %zu,\n"
 	    "\t\t\"failedroas\": %zu,\n"
 	    "\t\t\"invalidroas\": %zu,\n"
-	    "\t\t\"bgpsec_router_keys\": %zu,\n"
-	    "\t\t\"invalidbgpsec_router_keys\": %zu,\n"
+	    "\t\t\"bgpsec_pubkeys\": %zu,\n"
+	    "\t\t\"invalidbgpsec_pubkeys\": %zu,\n"
 	    "\t\t\"certificates\": %zu,\n"
 	    "\t\t\"failcertificates\": %zu,\n"
 	    "\t\t\"invalidcertificates\": %zu,\n"
