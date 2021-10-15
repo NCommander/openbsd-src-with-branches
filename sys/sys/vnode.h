@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnode.h,v 1.158 2021/10/02 08:51:41 semarie Exp $	*/
+/*	$OpenBSD: vnode.h,v 1.159 2021/10/04 08:11:02 claudio Exp $	*/
 /*	$NetBSD: vnode.h,v 1.38 1996/02/29 20:59:05 cgd Exp $	*/
 
 /*
@@ -630,9 +630,6 @@ int	vop_generic_abortop(void *);
 int	vop_generic_badop(void *);
 int	vop_generic_bmap(void *);
 int	vop_generic_bwrite(void *);
-int	vop_generic_islocked(void *);
-int	vop_generic_lock(void *);
-int	vop_generic_unlock(void *);
 int	vop_generic_revoke(void *);
 int	vop_generic_kqfilter(void *);
 int	vop_generic_lookup(void *);
