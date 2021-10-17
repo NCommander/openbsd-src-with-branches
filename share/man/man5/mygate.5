@@ -1,4 +1,4 @@
-.\"	$OpenBSD: myname.5,v 1.9 2017/07/13 19:16:33 jmc Exp $
+.\"	$OpenBSD: mygate.5,v 1.1 2020/11/29 20:14:06 deraadt Exp $
 .\"
 .\" Copyright (c) 2003 Jason McIntyre <jmc@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: July 13 2017 $
+.Dd $Mdocdate: November 29 2020 $
 .Dt MYGATE 5
 .Os
 .Sh NAME
@@ -50,13 +50,13 @@ is processed after all interfaces have been configured.
 If any
 .Xr hostname.if 5
 files contain
-.Dq dhcp
+.Dq inet autoconf
 directives,
 IPv4 entries in
 .Pa /etc/mygate
 will be ignored.
 If they contain
-.Dq autoconf
+.Dq inet6 autoconf
 directives,
 IPv6 entries will be ignored.
 .Pp
