@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_node.c,v 1.70 2018/05/27 06:02:15 visa Exp $	*/
+/*	$OpenBSD: nfs_node.c,v 1.71 2020/01/20 23:21:56 claudio Exp $	*/
 /*	$NetBSD: nfs_node.c,v 1.16 1996/02/18 11:53:42 fvdl Exp $	*/
 
 /*
@@ -146,7 +146,7 @@ loop:
 	bcopy(fh, np->n_fhp, fhsize);
 	np->n_fhsize = fhsize;
 	/* lock the nfsnode, then put it on the rbtree */
-	rrw_enter(&np->n_lock, RW_WRITE);
+	VOP_LOCK(vp, LK_EXCLUSIVE);
 	np2 = RBT_INSERT(nfs_nodetree, &nmp->nm_ntree, np);
 	KASSERT(np2 == NULL);
 	np->n_accstamp = -1;
