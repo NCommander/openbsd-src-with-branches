@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.189 2021/05/01 16:18:29 gnezdo Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.190 2021/10/04 08:11:02 claudio Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -1324,9 +1324,6 @@ retry:
 		return (error);
 	}
 
-#ifdef VFSLCKDEBUG
-	vp->v_flag |= VLOCKSWORK;
-#endif
 	ip = pool_get(&ffs_ino_pool, PR_WAITOK|PR_ZERO);
 	rrw_init_flags(&ip->i_lock, "inode", RWL_DUPOK | RWL_IS_VNODE);
 	ip->i_ump = ump;
