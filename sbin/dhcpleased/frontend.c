@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.c,v 1.21 2021/08/24 14:54:02 florian Exp $	*/
+/*	$OpenBSD: frontend.c,v 1.22 2021/09/14 07:51:51 florian Exp $	*/
 
 /*
  * Copyright (c) 2017, 2021 Florian Obser <florian@openbsd.org>
@@ -601,8 +601,8 @@ update_iface(struct if_msghdr *ifm, struct sockaddr_dl *sdl)
 	ifinfo.running = (flags & (IFF_UP | IFF_RUNNING)) ==
 	    (IFF_UP | IFF_RUNNING);
 
-	if (sdl != NULL && sdl->sdl_type == IFT_ETHER &&
-	    sdl->sdl_alen == ETHER_ADDR_LEN)
+	if (sdl != NULL && (sdl->sdl_type == IFT_ETHER ||
+	    sdl->sdl_type == IFT_CARP) && sdl->sdl_alen == ETHER_ADDR_LEN)
 		memcpy(ifinfo.hw_address.ether_addr_octet, LLADDR(sdl),
 		    ETHER_ADDR_LEN);
 	else if (iface == NULL) {
@@ -691,7 +691,8 @@ init_ifaces(void)
 				struct sockaddr_dl	*sdl;
 
 				sdl = (struct sockaddr_dl *)ifa->ifa_addr;
-				if (sdl->sdl_type != IFT_ETHER ||
+				if ((sdl->sdl_type != IFT_ETHER &&
+				    sdl->sdl_type != IFT_CARP) ||
 				    sdl->sdl_alen != ETHER_ADDR_LEN)
 					continue;
 				memcpy(ifinfo.hw_address.ether_addr_octet,
