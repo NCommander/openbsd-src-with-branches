@@ -1328,7 +1328,7 @@ uvm_vnp_uncache(struct vnode *vp)
 	 * carry over sanity check from old vnode pager: the vnode should
 	 * be VOP_LOCK'd, and we confirm it here.
 	 */
-	if ((vp->v_op->vop_islocked != nullop) && !VOP_ISLOCKED(vp))
+	if ((vp->v_flag & VLOCKSWORK) && !VOP_ISLOCKED(vp))
 		panic("uvm_vnp_uncache: vnode not locked!");
 #endif
 

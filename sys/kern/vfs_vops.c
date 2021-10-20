@@ -48,15 +48,11 @@
 #include <sys/systm.h>
 
 #ifdef VFSLCKDEBUG
-#define ASSERT_VP_ISLOCKED(vp) do {					\
-	struct vnode *_vp = (vp);					\
-	int r;								\
-	if (_vp->v_op->vop_islocked == nullop)				\
-		break;							\
-	if ((r = VOP_ISLOCKED(_vp)) != LK_EXCLUSIVE) {			\
-		VOP_PRINT(_vp);						\
-		panic("%s: vp not locked, vp %p, %d", __func__, _vp, r);\
-	}								\
+#define ASSERT_VP_ISLOCKED(vp) do {				\
+	if (((vp)->v_flag & VLOCKSWORK) && !VOP_ISLOCKED(vp)) {	\
+		VOP_PRINT(vp);					\
+		panic("vp not locked");				\
+	}							\
 } while (0)
 #else
 #define ASSERT_VP_ISLOCKED(vp)  /* nothing */

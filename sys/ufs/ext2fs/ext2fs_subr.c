@@ -170,6 +170,9 @@ ext2fs_vinit(struct mount *mp, struct vnode **vpp)
 			nvp->v_data = vp->v_data;
 			vp->v_data = NULL;
 			vp->v_op = &spec_vops;
+#ifdef VFSLCKDEBUG
+			vp->v_flag &= ~VLOCKSWORK;
+#endif
 			vrele(vp);
 			vgone(vp);
 			/* Reinitialize aliased vnode. */

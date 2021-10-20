@@ -499,6 +499,8 @@ vnode_print(struct vnode *avnode, struct vnode *vp)
 		*fp++ = 'A';
 	if (vp->v_bioflag & VBIOONFREELIST)
 		*fp++ = 'F';
+	if (flag & VLOCKSWORK)
+		*fp++ = 'l';
 	if (vp->v_bioflag & VBIOONSYNCLIST)
 		*fp++ = 's';
 	if (fp == flags)

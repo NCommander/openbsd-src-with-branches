@@ -133,6 +133,9 @@ loop:
 	}
 
 	vp = nvp;
+#ifdef VFSLCKDEBUG
+	vp->v_flag |= VLOCKSWORK;
+#endif
 	rrw_init_flags(&np->n_lock, "nfsnode", RWL_DUPOK | RWL_IS_VNODE);
 	vp->v_data = np;
 	/* we now have an nfsnode on this vnode */
