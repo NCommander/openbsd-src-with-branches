@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.69 2021/10/09 18:43:50 deraadt Exp $	*/
+/*	$OpenBSD: parse.y,v 1.70 2021/10/15 15:01:29 naddy Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -350,6 +350,7 @@ listen_udptcp	: listenproto STRING port listenflags	{
 			free($2);
 			free($3);
 		}
+		;
 
 port		: /* empty */			{
 			$$ = NULL;
