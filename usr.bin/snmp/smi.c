@@ -1,4 +1,4 @@
-/*	$OpenBSD: smi.c,v 1.13 2020/12/14 07:44:26 martijn Exp $	*/
+/*	$OpenBSD: smi.c,v 1.14 2021/01/04 08:00:29 martijn Exp $	*/
 
 /*
  * Copyright (c) 2019 Martijn van Duren <martijn@openbsd.org>
@@ -506,7 +506,7 @@ smi_string2oid(const char *oidstr, struct ber_oid *o)
 			*p++ = '\0';
 		if ((oid = smi_findkey(sp)) != NULL) {
 			bcopy(&oid->o_id, &ko, sizeof(ko));
-			if (o->bo_n && ober_oid_cmp(o, &ko) != 2)
+			if (o->bo_n && ober_oid_cmp(&ko, o) != 2)
 				return (-1);
 			bcopy(&ko, o, sizeof(*o));
 			errstr = NULL;
