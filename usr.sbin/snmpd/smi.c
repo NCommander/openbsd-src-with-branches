@@ -1,4 +1,4 @@
-/*	$OpenBSD: smi.c,v 1.27 2019/10/24 12:39:27 tb Exp $	*/
+/*	$OpenBSD: smi.c,v 1.28 2021/01/04 07:59:54 martijn Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -377,7 +377,7 @@ smi_debug_elements(struct ber_element *root)
 		case SNMP_C_GETNEXTREQ:
 			fprintf(stderr, "nextreq");
 			break;
-		case SNMP_C_GETRESP:
+		case SNMP_C_RESPONSE:
 			fprintf(stderr, "getresp");
 			break;
 		case SNMP_C_SETREQ:
