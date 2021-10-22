@@ -1,4 +1,4 @@
-/* $OpenBSD: ca.c,v 1.48 2021/09/05 01:55:54 inoguchi Exp $ */
+/* $OpenBSD: ca.c,v 1.49 2021/09/05 04:05:14 inoguchi Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1764,7 +1764,6 @@ do_body(X509 **xret, EVP_PKEY *pkey, X509 *x509, const EVP_MD *dgst,
 			X509_NAME_free(n);
 			goto err;
 		}
-		req->req_info->enc.modified = 1;
 		X509_NAME_free(n);
 	}
 	if (default_op)
