@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipe.c,v 1.3 2019/12/24 09:37:53 anton Exp $	*/
+/*	$OpenBSD: pipe.c,v 1.4 2020/06/29 18:25:37 anton Exp $	*/
 
 /*
  * Copyright (c) 2019 Anton Lindqvist <anton@openbsd.org>
@@ -48,6 +48,7 @@ main(int argc, char *argv[])
 		{ "ping-pong",				test_ping_pong },
 		{ "run-down-write-big",			test_run_down_write_big },
 		{ "run-down-write-small",		test_run_down_write_small },
+		{ "select-hup",				test_select_hup },
 		{ "thundering-herd-read-signal",	test_thundering_herd_read_signal },
 		{ "thundering-herd-read-wakeup",	test_thundering_herd_read_wakeup },
 		{ "thundering-herd-write-signal",	test_thundering_herd_write_signal },
