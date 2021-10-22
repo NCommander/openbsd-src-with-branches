@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rsync.1,v 1.25 2021/08/30 20:25:24 job Exp $
+.\"	$OpenBSD: rsync.1,v 1.26 2021/10/22 11:10:34 claudio Exp $
 .\"
 .\" Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: August 30 2021 $
+.Dd $Mdocdate: October 22 2021 $
 .Dt OPENRSYNC 1
 .Os
 .Sh NAME
@@ -68,7 +68,7 @@ Use directory as an alternate base directory to compare files against on the
 destination machine.
 If file in
 .Ar directory
-is found and identical to the senders file the file will not be transferred.
+is found and identical to the sender's file, the file will not be transferred.
 Multiple
 .Fl -compare-dest
 directories may be provided.
