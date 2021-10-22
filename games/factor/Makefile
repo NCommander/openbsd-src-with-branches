@@ -1,11 +1,9 @@
-#	$NetBSD: Makefile,v 1.4 1995/03/23 08:28:00 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 5/31/93
+#	$OpenBSD: Makefile,v 1.5 2016/03/30 06:38:40 jmc Exp $
 
 PROG=	factor
-SRCS=	factor.c pr_tbl.c
+SRCS=	factor.c pattern.c pr_tbl.c
 CFLAGS+=-I${.CURDIR}/../primes
 MAN=	factor.6
-MLINKS+=factor.6 primes.6
 .PATH:	${.CURDIR}/../primes
 
 .include <bsd.prog.mk>

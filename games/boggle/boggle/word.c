@@ -1,3 +1,4 @@
+/*	$OpenBSD: word.c,v 1.7 2009/10/27 23:59:24 deraadt Exp $	*/
 /*	$NetBSD: word.c,v 1.2 1995/03/21 12:14:45 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,23 +33,14 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)word.c	8.1 (Berkeley) 6/11/93";
-#else
-static char rcsid[] = "$NetBSD: word.c,v 1.2 1995/03/21 12:14:45 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/types.h>
 #include <sys/stat.h>
 
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "bog.h"
-#include "extern.h"
 
 static char *dictspace, *dictend;
 static char *sp;
@@ -64,12 +52,11 @@ static int first = 1, lastch = 0;
  * NULL on end-of-file
  */
 char *
-nextword(fp)
-	FILE *fp;
+nextword(FILE *fp)
 {
 	extern int wordlen;
-	register int ch, pcount;
-	register char *p;
+	int ch, pcount;
+	char *p;
 	static char buf[MAXWORDLEN + 1];
 
 	if (fp == NULL) {
@@ -108,10 +95,7 @@ nextword(fp)
  * Reset the state of nextword() and do the fseek()
  */
 long
-dictseek(fp, offset, ptrname)
-	FILE *fp;
-	long offset;
-	int ptrname;
+dictseek(FILE *fp, long offset, int ptrname)
 {
 	if (fp == NULL) {
 		if ((sp = dictspace + offset) >= dictend)
@@ -124,8 +108,7 @@ dictseek(fp, offset, ptrname)
 }
 
 FILE *
-opendict(dict)
-	char *dict;
+opendict(char *dict)
 {
 	FILE *fp;
 
@@ -138,8 +121,7 @@ opendict(dict)
  * Load the given dictionary and initialize the pointers
  */
 int
-loaddict(fp)
-	FILE *fp;
+loaddict(FILE *fp)
 {
 	struct stat statb;
 	long n;
@@ -171,7 +153,7 @@ loaddict(fp)
 	}
 	if (st < 0) {
 		(void)fclose(fp);
-		(void)fprintf(stderr, "Error reading dictionary\n");
+		warnx("Error reading dictionary");
 		return (-1);
 	}
 	*p = '\0';
@@ -185,36 +167,37 @@ loaddict(fp)
  * is made for lines that are too long
  */
 int
-loadindex(indexfile)
-	char *indexfile;
+loadindex(char *indexfile)
 {
-	register int i, j;
+	int i, j;
 	char buf[BUFSIZ];
 	FILE *fp;
 	extern struct dictindex dictindex[];
  
 	if ((fp = fopen(indexfile, "r")) == NULL) {
-		(void) fprintf(stderr, "Can't open '%s'\n", indexfile);
+		warnx("Can't open '%s'", indexfile);
 		return (-1);
 	}
 	i = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		if (strchr(buf, '\n') == NULL) {
-			(void)fprintf(stderr,
-				"A line in the index file is too long\n");
+			warnx("A line in the index file is too long");
+			fclose(fp);
 			return(-1);
 		}
 		j = *buf - 'a';
 		if (i != j) {
-		    (void) fprintf(stderr, "Bad index order\n");
-		    return(-1);
+			warnx("Bad index order");
+			fclose(fp);
+			return(-1);
 		}
 		dictindex[j].start = atol(buf + 1);
 		dictindex[j].length = atol(buf + 9) - dictindex[j].start;
 		i++;
 	}
 	if (i != 26) {
-		(void) fprintf(stderr, "Bad index length\n");
+		warnx("Bad index length");
+		fclose(fp);
 		return(-1);
 	}
 	(void) fclose(fp);

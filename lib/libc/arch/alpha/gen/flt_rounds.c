@@ -1,3 +1,4 @@
+/*	$OpenBSD: flt_rounds.c,v 1.6 2012/06/25 17:01:09 deraadt Exp $	*/
 /*	$NetBSD: flt_rounds.c,v 1.1 1995/04/29 05:09:53 cgd Exp $	*/
 
 /*
@@ -32,6 +33,7 @@
  */
 
 #include <sys/types.h>
+#include <float.h>
 
 static const int map[] = {
 	0,	/* round to zero */
@@ -53,3 +55,4 @@ __flt_rounds()
 
 	return map[(old >> 58) & 0x3];
 }
+DEF_STRONG(__flt_rounds);

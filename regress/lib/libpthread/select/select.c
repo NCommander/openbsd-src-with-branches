@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_select.c,v 1.4 1999/11/28 12:31:42 d Exp $	*/
+/*	$OpenBSD: select.c,v 1.3 2003/07/31 21:48:06 deraadt Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -36,13 +36,14 @@
  * Rudimentary test of select().
  */
 
-#include <pthread.h>
-#include <pthread_np.h>
-#include <stdio.h>
-#include <sys/fcntl.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <pthread.h>
+#include <pthread_np.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "test.h"
 
@@ -50,9 +51,8 @@
 
 int ntouts = 0;
 
-void *
-bg_routine(arg)
-	void *arg;
+static void *
+bg_routine(void *arg)
 {
 	char dot = '.';
 	int n;
@@ -70,9 +70,8 @@ bg_routine(arg)
 	}
 }
 
-void *
-fg_routine(arg)
-	void *arg;
+static void *
+fg_routine(void *arg)
 {
 	int	flags;
 	int	n;
@@ -126,9 +125,7 @@ fg_routine(arg)
 }
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	pthread_t	bg_thread, fg_thread;
 	FILE *		slpr;

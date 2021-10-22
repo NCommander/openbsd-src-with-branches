@@ -1,3 +1,4 @@
+.\"	$OpenBSD: kvm_mkdb.8,v 1.10 2003/11/21 09:11:25 djm Exp $
 .\" Copyright (c) 1989, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +10,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -30,9 +27,8 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)kvm_mkdb.8	8.1 (Berkeley) 6/9/93
-.\"	$Id: kvm_mkdb.8,v 1.6 1994/06/11 07:57:39 mycroft Exp $
 .\"
-.Dd June 9, 1993
+.Dd $Mdocdate$
 .Dt KVM_MKDB 8
 .Os
 .Sh NAME
@@ -40,31 +36,50 @@
 .Nd create kernel database
 .Sh SYNOPSIS
 .Nm kvm_mkdb
-.Op file
+.Op Fl v
+.Op Fl o Ar directory
+.Op Ar file
 .Sh DESCRIPTION
-.Nm Kvm_mkdb
+.Nm kvm_mkdb
 creates a database in
 .Pa /var/db
 containing information about the specified file.
 If no file is specified,
-.Pa /netbsd
+.Pa /bsd
 is used by default.
-The file is named ``kvm_filename.db'', where ``filename'' is the
-name of the file read.
+The file is named
+.Pa kvm_filename.db ,
+where
+.Ar filename
+is the name of the file read.
 Various library routines consult this database.
 The only information currently stored is the kernel namelist, which is
 used by the
 .Xr kvm_nlist 3
-function, however, in the future the database may contain other static
+function.
+However, in the future the database may contain other static
 information about the current system.
+.Pp
+The options are as follows:
+.Bl -tag -width "-o directory"
+.It Fl o Ar directory
+Allows the specification of a
+.Ar directory
+other than
+.Pa /var/db
+for the database to be created in.
+.It Fl v
+Yields slightly more verbose operation.
+.El
 .Sh FILES
-.Bl -tag -width /var/db/kvm_netbsd.db -compact
-.It Pa /netbsd
-.It Pa /var/db/kvm_netbsd.db
+.Bl -tag -width /var/db/kvm_bsd.db -compact
+.It Pa /bsd
+.It Pa /var/db/kvm_bsd.db
 .El
 .Sh SEE ALSO
 .Xr kvm_nlist 3
 .Sh HISTORY
 The
 .Nm kvm_mkdb
-utility first appeared in 4.4BSD.
+utility first appeared in
+.Bx 4.4 .

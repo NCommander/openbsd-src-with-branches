@@ -1,5 +1,4 @@
-/*	$NetBSD: flags.c,v 1.5 1995/02/02 02:09:19 jtc Exp $	*/
-
+/*	$OpenBSD: flags.c,v 1.7 2013/11/12 07:04:35 deraadt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,17 +31,11 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)flags.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: flags.c,v 1.5 1995/02/02 02:09:19 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/file.h>
 #include <stdio.h>
 #include <errno.h>
+#include "local.h"
 
 /*
  * Return the (stdio) flags for a given mode.  Store the flags
@@ -54,11 +43,9 @@ static char rcsid[] = "$NetBSD: flags.c,v 1.5 1995/02/02 02:09:19 jtc Exp $";
  * Return 0 on error.
  */
 int
-__sflags(mode, optr)
-	register char *mode;
-	int *optr;
+__sflags(const char *mode, int *optr)
 {
-	register int ret, m, o;
+	int ret, m, o;
 
 	switch (*mode++) {
 
@@ -85,11 +72,34 @@ __sflags(mode, optr)
 		return (0);
 	}
 
-	/* [rwa]\+ or [rwa]b\+ means read and write */
-	if (*mode == '+' || (*mode == 'b' && mode[1] == '+')) {
-		ret = __SRW;
-		m = O_RDWR;
-	}
+	while (*mode != '\0') 
+		switch (*mode++) {
+		case 'b':
+			break;
+		case '+':
+			ret = __SRW;
+			m = O_RDWR;
+			break;
+		case 'e':
+			o |= O_CLOEXEC;
+			break;
+		case 'x':
+			if (o & O_CREAT)
+				o |= O_EXCL;
+			break;
+		default:
+			/*
+			 * Lots of software passes other extension mode
+			 * letters, like Window's 't'
+			 */
+#if 0
+			errno = EINVAL;
+			return (0);
+#else
+			break;
+#endif
+		}
+
 	*optr = m | o;
 	return (ret);
 }

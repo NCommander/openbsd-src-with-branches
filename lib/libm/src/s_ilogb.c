@@ -10,25 +10,20 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_ilogb.c,v 1.9 1995/05/10 20:47:28 jtc Exp $";
-#endif
-
 /* ilogb(double x)
  * return the binary exponent of non-zero x
- * ilogb(0) = 0x80000001
- * ilogb(inf/NaN) = 0x7fffffff (no signal is raised)
+ * ilogb(0) = FP_ILOGB0
+ * ilogb(NaN) = FP_ILOGBNAN (no signal is raised)
+ * ilogb(inf) = INT_MAX (no signal is raised)
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
-	int ilogb(double x)
-#else
-	int ilogb(x)
-	double x;
-#endif
+int
+ilogb(double x)
 {
 	int32_t hx,lx,ix;
 
@@ -37,7 +32,7 @@ static char rcsid[] = "$NetBSD: s_ilogb.c,v 1.9 1995/05/10 20:47:28 jtc Exp $";
 	if(hx<0x00100000) {
 	    GET_LOW_WORD(lx,x);
 	    if((hx|lx)==0) 
-		return 0x80000001;	/* ilogb(0) = 0x80000001 */
+		return FP_ILOGB0;	/* ilogb(0) = FP_ILOGB0 */
 	    else			/* subnormal x */
 		if(hx==0) {
 		    for (ix = -1043; lx>0; lx<<=1) ix -=1;
@@ -47,5 +42,8 @@ static char rcsid[] = "$NetBSD: s_ilogb.c,v 1.9 1995/05/10 20:47:28 jtc Exp $";
 	    return ix;
 	}
 	else if (hx<0x7ff00000) return (hx>>20)-1023;
-	else return 0x7fffffff;
+	else if (hx>0x7ff00000 || lx!=0) return FP_ILOGBNAN;
+	else return INT_MAX;
 }
+DEF_STD(ilogb);
+LDBL_MAYBE_CLONE(ilogb);

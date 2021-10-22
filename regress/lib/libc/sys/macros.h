@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: macros.h,v 1.3 2021/09/02 12:40:44 mbuhl Exp $	*/
 /* Public domain - Moritz Buhl */
 
 #include <sys/param.h>
@@ -9,6 +9,7 @@
 
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 
 #define __RCSID(str)
 #define __COPYRIGHT(str)
@@ -26,18 +27,36 @@ int sysctlbyname(char *, void *, size_t *, void *, size_t);
 int
 sysctlbyname(char* s, void *oldp, size_t *oldlenp, void *newp, size_t newlen)
 {
-	int ktc;
-	if (strcmp(s, "kern.timecounter.hardware") == 0)
-		ktc = KERN_TIMECOUNTER_HARDWARE;
-	else if (strcmp(s, "kern.timecounter.choice") == 0)
-		ktc = KERN_TIMECOUNTER_CHOICE;
+        int mib[3], miblen;
 
-        int mib[3];
 	mib[0] = CTL_KERN;
-	mib[1] = KERN_TIMECOUNTER;
-	mib[2] = ktc;
-        return sysctl(mib, 3, oldp, oldlenp, newp, newlen);
+	if (strcmp(s, "kern.timecounter.hardware") == 0) {
+		mib[1] = KERN_TIMECOUNTER;
+		mib[2] = KERN_TIMECOUNTER_HARDWARE;
+		miblen = 3;
+	} else if (strcmp(s, "kern.timecounter.choice") == 0) {
+		mib[1] = KERN_TIMECOUNTER;
+		mib[2] = KERN_TIMECOUNTER_CHOICE;
+		miblen = 3;
+	} else if (strcmp(s, "kern.securelevel") == 0) {
+		mib[1] = KERN_SECURELVL;
+		miblen = 2;
+	} else {
+		fprintf(stderr, "%s(): mib '%s' not supported\n", __func__, s);
+		return -42;
+	}
+
+        return sysctl(mib, miblen, oldp, oldlenp, newp, newlen);
 }
+
+/* t_connect.c */
+#define IPPORT_RESERVEDMAX	1023
+
+/* t_fork.c */
+#define kinfo_proc2	kinfo_proc
+#define KERN_PROC2	KERN_PROC
+#define reallocarr(pp, n, s)	((*pp = reallocarray(*pp, n, s)), *pp == NULL)
+#define LSSTOP		SSTOP
 
 /* t_mlock.c */
 #define MAP_WIRED	__MAP_NOREPLACE
@@ -53,3 +72,7 @@ sysctlbyname(char* s, void *oldp, size_t *oldlenp, void *newp, size_t newlen)
 
 /* t_write.c */
 #define _PATH_DEVZERO	"/dev/zero"
+
+/* t_wait_noproc.c */
+#define ___STRING(x)	#x
+#define __BIT(n)	(1 << (n))

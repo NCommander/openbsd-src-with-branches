@@ -1,4 +1,4 @@
-/*	$NetBSD: locate.h,v 1.3 1994/12/22 06:17:48 jtc Exp $	*/
+/*	$OpenBSD: locate.h,v 1.10 2003/09/29 16:03:16 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,4 +36,10 @@
 #define	NBG		128		/* number of bigrams considered */
 #define	OFFSET		14		/* abs value of max likely diff */
 #define	PARITY		0200		/* parity bit */
+
 #define	SWITCH		30		/* switch code */
+#define	UMLAUT		31		/* a byte < 32 or > 127 follows */
+#define	ASCII_MIN	32		/* printable ASCII characters */
+#define	ASCII_MAX	127
+
+#define LOCATE_REG "*?[]\\"  /* fnmatch(3) meta characters */

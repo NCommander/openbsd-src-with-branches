@@ -10281,6 +10281,9 @@ rs6000_emit_prologue ()
   int saving_FPRs_inline;
   int using_store_multiple;
   HOST_WIDE_INT sp_offset = 0;
+
+  if (warn_stack_larger_than && info->vars_size > stack_larger_than_size)
+    warning ("stack usage is %d bytes", info->vars_size);
   
    if (TARGET_SPE_ABI)
      {
@@ -12510,6 +12513,13 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 			 ctx_reg, pmode);
       break;
     }
+
+  /* Call __enable_execute_stack after writing onto the stack to make sure
+     the stack address is accessible.  */
+#ifdef TRANSFER_FROM_TRAMPOLINE
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
+                     LCT_NORMAL, VOIDmode, 1, addr, Pmode);
+#endif
 
   return;
 }

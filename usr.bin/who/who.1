@@ -1,3 +1,4 @@
+.\"	$OpenBSD: who.1,v 1.26 2014/06/04 06:06:33 jmc Exp $
 .\"	$NetBSD: who.1,v 1.5 1994/12/07 04:28:47 jtc Exp $
 .\"
 .\" Copyright (c) 1986, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,7 +30,7 @@
 .\"
 .\"     @(#)who.1	8.2 (Berkeley) 12/30/93
 .\"
-.Dd December 6, 1994
+.Dd $Mdocdate: June 4 2014 $
 .Dt WHO 1
 .Os
 .Sh NAME
@@ -41,43 +38,49 @@
 .Nd display who is logged in
 .Sh SYNOPSIS
 .Nm who
-.Op Fl mTu
-.Op Ar file 
+.Op Fl HmqTu
+.Op Ar file
 .Nm who
-.Ar am i
+.Cm am i
 .Sh DESCRIPTION
-The 
-.Nm who
+The
+.Nm
 utility displays a list of all users currently logged on, showing for
 each user the login name, tty name, the date and time of login, and
 hostname if not local.
 .Pp
-Available options:
-.Pp
-.Bl -tag -width file
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl H
+Write column headings above the regular output.
 .It Fl m
-Only print information about the current terminal.  This is the
-.Tn POSIX
+Only print information about the current terminal.
+This is the
+POSIX
 way of saying
-.Nm who 
-.Ar am i .
+.Nm
+.Cm am i .
+.It Fl q
+(Quick.)
+List only the names and the number of users currently logged on.
+When this option is used, all other options are ignored.
 .It Fl T
 Print a character after the user name indicating the state of the
 terminal line:
-.Sq + 
+.Sq +
 if the terminal is writable;
-.Sq - 
+.Sq \-
 if it is not;
 and
-.Sq ?
+.Sq \&?
 if a bad line is encountered.
 .It Fl u
 Print the idle time for each user.
-.It Ar \&am I
-Returns the invoker's real user name. 
+.It Cm am i
+Returns the invoker's real user name.
 .It Ar file
 By default,
-.Nm who
+.Nm
 gathers information from the file
 .Pa /var/run/utmp .
 An alternate
@@ -104,9 +107,13 @@ created.
 If
 .Pa /var/log/wtmp
 is being used as the file, the user name may be empty
-or one of the special characters '|', '}' and '~'.  Logouts produce
-an output line without any user name.  For more information on the
-special characters, see
+or one of the special characters
+.Ql | ,
+.Ql } ,
+and
+.Ql \&~ .
+Logouts produce an output line without any user name.
+For more information on the special characters, see
 .Xr utmp 5 .
 .Sh FILES
 .Bl -tag -width /var/log/wtmp.[0-6] -compact
@@ -114,19 +121,33 @@ special characters, see
 .It Pa /var/log/wtmp
 .It Pa /var/log/wtmp.[0-6]
 .El
+.Sh EXIT STATUS
+.Ex -std who
 .Sh SEE ALSO
 .Xr last 1 ,
 .Xr mesg 1 ,
 .Xr users 1 ,
+.Xr w 1 ,
 .Xr getuid 2 ,
 .Xr utmp 5
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
+.Pp
+The flags
+.Op Fl abdHlpqrst
+are marked by
+.St -p1003.1-2008
+as being an X/Open System Interfaces option.
+Of these,
+.Op Fl abdlprst
+are not supported by this implementation of
+.Nm .
 .Sh HISTORY
 A
 .Nm
 utility appeared in
-.At v6 .
-.Sh STANDARDS
-The
-.Nm
-utility is expected to conform to
-.St -p1003.2-92 .
+.At v1 .

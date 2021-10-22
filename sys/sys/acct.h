@@ -1,3 +1,4 @@
+/*	$OpenBSD: acct.h,v 1.9 2019/09/09 20:02:26 bluhm Exp $	*/
 /*	$NetBSD: acct.h,v 1.16 1995/03/26 20:23:52 jtc Exp $	*/
 
 /*-
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -60,10 +57,12 @@ struct acct {
 	dev_t	  ac_tty;	/* controlling tty */
 
 #define	AFORK	0x01		/* fork'd but not exec'd */
-#define	ASU	0x02		/* used super-user permissions */
-#define	ACOMPAT	0x04		/* used compatibility mode */
+#define	AMAP	0x04		/* system call or stack mapping violation */
 #define	ACORE	0x08		/* dumped core */
 #define	AXSIG	0x10		/* killed by a signal */
+#define	APLEDGE	0x20		/* killed due to pledge violation */
+#define	ATRAP	0x40		/* memory access violation */
+#define	AUNVEIL	0x80		/* unveil access violation */
 	u_int8_t  ac_flag;	/* accounting flags */
 };
 
@@ -74,7 +73,6 @@ struct acct {
 #define	AHZ	64
 
 #ifdef _KERNEL
-struct vnode	*acctp;
-
-int	acct_process __P((struct proc *p));
+int	acct_process(struct proc *p);
+void	acct_shutdown(void);
 #endif

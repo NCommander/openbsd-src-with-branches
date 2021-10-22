@@ -1,4 +1,5 @@
-/*	$NetBSD: file.c,v 1.10 1995/03/21 18:35:39 mycroft Exp $	*/
+/*	$OpenBSD: file.c,v 1.39 2019/11/29 05:28:32 nayden Exp $	*/
+/*	$NetBSD: file.c,v 1.11 1996/11/08 19:34:37 christos Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,32 +30,18 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)file.c	8.2 (Berkeley) 3/19/94";
-#else
-static char rcsid[] = "$NetBSD: file.c,v 1.10 1995/03/21 18:35:39 mycroft Exp $";
-#endif
-#endif /* not lint */
-
-#ifdef FILEC
-
-#include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
-#include <termios.h>
+#include <sys/types.h>
+
 #include <dirent.h>
+#include <errno.h>
+#include <limits.h>
 #include <pwd.h>
 #include <stdlib.h>
-#include <unistd.h>
-#ifndef SHORT_STRINGS
 #include <string.h>
-#endif /* SHORT_STRINGS */
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <termios.h>
+#include <unistd.h>
 
 #include "csh.h"
 #include "extern.h"
@@ -70,8 +53,6 @@ static char rcsid[] = "$NetBSD: file.c,v 1.10 1995/03/21 18:35:39 mycroft Exp $"
  *	Finally got around to adding to the Cshell., Ken Greer, Dec. 1981.
  */
 
-#define ON	1
-#define OFF	0
 #ifndef TRUE
 #define TRUE 1
 #endif
@@ -79,31 +60,62 @@ static char rcsid[] = "$NetBSD: file.c,v 1.10 1995/03/21 18:35:39 mycroft Exp $"
 #define FALSE 0
 #endif
 
-#define ESC	'\033'
+#define	ESC		'\033'
+#define	TABWIDTH	8
 
 typedef enum {
-    LIST, RECOGNIZE
-}       COMMAND;
+	LIST,
+	RECOGNIZE
+} COMMAND;
 
-static void	 setup_tty __P((int));
-static void	 back_to_col_1 __P((void));
-static void	 pushback __P((Char *));
-static void	 catn __P((Char *, Char *, int));
-static void	 copyn __P((Char *, Char *, int));
-static Char	 filetype __P((Char *, Char *));
-static void	 print_by_column __P((Char *, Char *[], int));
-static Char	*tilde __P((Char *, Char *));
-static void	 retype __P((void));
-static void	 beep __P((void));
-static void	 print_recognized_stuff __P((Char *));
-static void	 extract_dir_and_name __P((Char *, Char *, Char *));
-static Char	*getentry __P((DIR *, int));
-static void	 free_items __P((Char **));
-static int	 tsearch __P((Char *, COMMAND, int));
-static int	 recognize __P((Char *, Char *, int, int));
-static int	 is_prefix __P((Char *, Char *));
-static int	 is_suffix __P((Char *, Char *));
-static int	 ignored __P((Char *));
+struct cmdline {
+	int	 fdin;
+	int	 fdout;
+	int	 istty;
+	int	 flags;
+#define	CL_ALTWERASE	0x1
+#define	CL_PROMPT	0x2
+	char	*buf;
+	size_t	 len;
+	size_t	 size;
+	size_t	 cursor;
+};
+
+/* Command line auxiliary functions. */
+static void	 cl_beep(struct cmdline *);
+static void	 cl_flush(struct cmdline *);
+static int	 cl_getc(struct cmdline *);
+static Char	*cl_lastw(struct cmdline *);
+static void	 cl_putc(struct cmdline *, int);
+static void	 cl_visc(struct cmdline *, int);
+
+/* Command line editing functions. */
+static int	cl_abort(struct cmdline *, int);
+static int	cl_erasec(struct cmdline *, int);
+static int	cl_erasew(struct cmdline *, int);
+static int	cl_insert(struct cmdline *, int);
+static int	cl_kill(struct cmdline *, int);
+static int	cl_list(struct cmdline *, int);
+static int	cl_literal(struct cmdline *, int);
+static int	cl_recognize(struct cmdline *, int);
+static int	cl_reprint(struct cmdline *, int);
+static int	cl_status(struct cmdline *, int);
+
+static const struct termios	*setup_tty(int);
+
+static void	 catn(Char *, Char *, int);
+static void	 copyn(Char *, Char *, int);
+static Char	 filetype(Char *, Char *);
+static void	 print_by_column(Char *, Char *[], int);
+static Char	*tilde(Char *, Char *);
+static void	 extract_dir_and_name(Char *, Char *, Char *);
+static Char	*getentry(DIR *, int);
+static void	 free_items(Char **, int);
+static int	 tsearch(Char *, COMMAND, int);
+static int	 recognize(Char *, Char *, int, int);
+static int	 is_prefix(Char *, Char *);
+static int	 is_suffix(Char *, Char *);
+static int	 ignored(Char *);
 
 /*
  * Put this here so the binary can be patched with adb to enable file
@@ -113,76 +125,286 @@ static int	 ignored __P((Char *));
 bool    filec = 0;
 
 static void
-setup_tty(on)
-    int     on;
+cl_flush(struct cmdline *cl)
 {
-    struct termios tchars;
+	size_t	i, len;
+	int	c;
 
-    (void) tcgetattr(SHIN, &tchars);
-
-    if (on) {
-	tchars.c_cc[VEOL] = ESC;
-	if (tchars.c_lflag & ICANON)
-	    on = TCSADRAIN;
-	else {
-	    tchars.c_lflag |= ICANON;
-	    on = TCSAFLUSH;
+	if (cl->flags & CL_PROMPT) {
+		cl->flags &= ~CL_PROMPT;
+		printprompt();
 	}
-    }
-    else {
-	tchars.c_cc[VEOL] = _POSIX_VDISABLE;
-	on = TCSADRAIN;
-    }
 
-    (void) tcsetattr(SHIN, on, &tchars);
+	if (cl->cursor < cl->len) {
+		for (; cl->cursor < cl->len; cl->cursor++)
+			cl_visc(cl, cl->buf[cl->cursor]);
+	} else if (cl->cursor > cl->len) {
+		len = cl->cursor - cl->len;
+		for (i = len; i > 0; i--) {
+			c = cl->buf[--cl->cursor];
+			if (c == '\t')
+				len += TABWIDTH - 1;
+			else if (iscntrl(c))
+				len++;	/* account for leading ^ */
+		}
+		for (i = 0; i < len; i++)
+			cl_putc(cl, '\b');
+		for (i = 0; i < len; i++)
+			cl_putc(cl, ' ');
+		for (i = 0; i < len; i++)
+			cl_putc(cl, '\b');
+		cl->cursor = cl->len;
+	}
 }
 
-/*
- * Move back to beginning of current line
- */
-static void
-back_to_col_1()
+static int
+cl_getc(struct cmdline *cl)
 {
-    struct termios tty, tty_normal;
-    sigset_t sigset, osigset;
+	ssize_t		n;
+	unsigned char	c;
 
-    sigemptyset(&sigset);
-    sigaddset(&sigset, SIGINT);
-    sigprocmask(SIG_BLOCK, &sigset, &osigset);
-    (void) tcgetattr(SHOUT, &tty);
-    tty_normal = tty;
-    tty.c_iflag &= ~INLCR;
-    tty.c_oflag &= ~ONLCR;
-    (void) tcsetattr(SHOUT, TCSANOW, &tty);
-    (void) write(SHOUT, "\r", 1);
-    (void) tcsetattr(SHOUT, TCSANOW, &tty_normal);
-    sigprocmask(SIG_SETMASK, &osigset, NULL);
+	for (;;) {
+		n = read(cl->fdin, &c, 1);
+		switch (n) {
+		case -1:
+			if (errno == EINTR)
+				continue;
+			/* FALLTHROUGH */
+		case 0:
+			return 0;
+		default:
+			return c & 0x7F;
+		}
+	}
 }
 
-/*
- * Push string contents back into tty queue
- */
-static void
-pushback(string)
-    Char   *string;
+static Char *
+cl_lastw(struct cmdline *cl)
 {
-    register Char *p;
-    struct termios tty, tty_normal;
-    sigset_t sigset, osigset;
-    char    c;
+	static Char		 word[BUFSIZ];
+	const unsigned char	*delimiters = " '\"\t;&<>()|^%";
+	Char			*cp;
+	size_t			 i;
 
-    sigemptyset(&sigset);
-    sigaddset(&sigset, SIGINT);
-    sigprocmask(SIG_BLOCK, &sigset, &osigset);
-    (void) tcgetattr(SHOUT, &tty);
-    tty_normal = tty;
-    tty.c_lflag &= ~(ECHOKE | ECHO | ECHOE | ECHOK | ECHONL | ECHOPRT | ECHOCTL);
-    (void) tcsetattr(SHOUT, TCSANOW, &tty);
+	for (i = cl->len; i > 0; i--)
+		if (strchr(delimiters, cl->buf[i - 1]) != NULL)
+			break;
 
-    for (p = string; (c = *p) != '\0'; p++)
-	(void) ioctl(SHOUT, TIOCSTI, (ioctl_t) & c);
-    (void) tcsetattr(SHOUT, TCSANOW, &tty_normal);
-    sigprocmask(SIG_SETMASK, &osigset, NULL);
+	cp = word;
+	for (; i < cl->len; i++)
+		*cp++ = cl->buf[i];
+	*cp = '\0';
+
+	return word;
+}
+
+static void
+cl_putc(struct cmdline *cl, int c)
+{
+	unsigned char	cc = c;
+
+	write(cl->fdout, &cc, 1);
+}
+
+static void
+cl_visc(struct cmdline *cl, int c)
+{
+#define	UNCNTRL(x)	((x) == 0x7F ? '?' : ((x) | 0x40))
+	int	i;
+
+	if (c == '\t') {
+		for (i = 0; i < TABWIDTH; i++)
+			cl_putc(cl, ' ');
+	} else if (c != '\n' && iscntrl(c)) {
+		cl_putc(cl, '^');
+		cl_putc(cl, UNCNTRL(c));
+	} else {
+		cl_putc(cl, c);
+	}
+}
+
+static int
+cl_abort(struct cmdline *cl, int c)
+{
+	cl_visc(cl, c);
+
+	/* Abort while/foreach loop prematurely. */
+	if (whyles) {
+		if (cl->istty)
+			setup_tty(0);
+		kill(getpid(), SIGINT);
+	}
+
+	cl_putc(cl, '\n');
+	cl->len = cl->cursor = 0;
+	cl->flags |= CL_PROMPT;
+
+	return 0;
+}
+
+static int
+cl_erasec(struct cmdline *cl, int c)
+{
+	if (cl->len > 0)
+		cl->len--;
+
+	return 0;
+}
+
+static int
+cl_erasew(struct cmdline *cl, int c)
+{
+	const unsigned char	*ws = " \t";
+
+	for (; cl->len > 0; cl->len--)
+		if (strchr(ws, cl->buf[cl->len - 1]) == NULL &&
+		    ((cl->flags & CL_ALTWERASE) == 0 ||
+		     isalpha(cl->buf[cl->len - 1])))
+			break;
+	for (; cl->len > 0; cl->len--)
+		if (strchr(ws, cl->buf[cl->len - 1]) != NULL ||
+		    ((cl->flags & CL_ALTWERASE) &&
+		     !isalpha(cl->buf[cl->len - 1])))
+			break;
+
+	return 0;
+}
+
+static void
+cl_beep(struct cmdline *cl)
+{
+	if (adrof(STRnobeep) == 0)
+		cl_putc(cl, '\007');
+}
+
+static int
+cl_insert(struct cmdline *cl, int c)
+{
+	if (cl->len == cl->size)
+		return 1;
+
+	cl->buf[cl->len++] = c;
+
+	if (c == '\n')
+		return 1;
+
+	return 0;
+}
+
+static int
+cl_kill(struct cmdline *cl, int c)
+{
+	cl->len = 0;
+
+	return 0;
+}
+
+static int
+cl_list(struct cmdline *cl, int c)
+{
+	Char	*word;
+	size_t	 len;
+
+	if (adrof(STRignoreeof) || cl->len > 0)
+		cl_visc(cl, c);
+
+	if (cl->len == 0)
+		return 1;
+
+	cl_putc(cl, '\n');
+	cl->cursor = 0;
+	cl->flags |= CL_PROMPT;
+
+	word = cl_lastw(cl);
+	len = Strlen(word);
+	tsearch(word, LIST, BUFSIZ - len - 1);	/* NUL */
+
+	return 0;
+}
+
+static int
+cl_literal(struct cmdline *cl, int c)
+{
+	int	literal;
+
+	literal = cl_getc(cl);
+	if (literal == '\n')
+		literal = '\r';
+	cl_insert(cl, literal);
+
+	return 0;
+}
+
+static int
+cl_recognize(struct cmdline *cl, int c)
+{
+	Char	*word;
+	size_t	 len;
+	int	 nitems;
+
+	if (cl->len == 0) {
+		cl_beep(cl);
+		return 0;
+	}
+
+	word = cl_lastw(cl);
+	len = Strlen(word);
+	nitems = tsearch(word, RECOGNIZE, BUFSIZ - len - 1);	/* NUL */
+	for (word += len; *word != '\0'; word++)
+		cl_insert(cl, *word);
+	if (nitems != 1)
+		cl_beep(cl);
+
+	return 0;
+}
+
+static int
+cl_reprint(struct cmdline *cl, int c)
+{
+	cl_visc(cl, c);
+	cl_putc(cl, '\n');
+	cl->cursor = 0;
+
+	return 0;
+}
+
+static int
+cl_status(struct cmdline *cl, int c)
+{
+	cl->cursor = 0;
+	if (cl->istty)
+		ioctl(cl->fdin, TIOCSTAT);
+
+	return 0;
+}
+
+const struct termios *
+setup_tty(int on)
+{
+	static struct termios	newtio, oldtio;
+
+	if (on) {
+		tcgetattr(SHIN, &oldtio);
+
+		newtio = oldtio;
+		newtio.c_lflag &= ~(ECHO | ICANON | ISIG);
+		newtio.c_cc[VEOL] = ESC;
+		newtio.c_cc[VLNEXT] = _POSIX_VDISABLE;
+		newtio.c_cc[VMIN] = 1;
+		newtio.c_cc[VTIME] = 0;
+	} else {
+		newtio = oldtio;
+	}
+
+	tcsetattr(SHIN, TCSADRAIN, &newtio);
+
+	/*
+	 * Since VLNEXT is disabled, restore its previous value in order to make
+	 * the key detectable.
+	 */
+	newtio.c_cc[VLNEXT] = oldtio.c_cc[VLNEXT];
+
+	return &newtio;
 }
 
 /*
@@ -191,9 +413,7 @@ pushback(string)
  * Always null terminate.
  */
 static void
-catn(des, src, count)
-    register Char *des, *src;
-    register int count;
+catn(Char *des, Char *src, int count)
 {
     while (--count >= 0 && *des)
 	des++;
@@ -204,13 +424,10 @@ catn(des, src, count)
 }
 
 /*
- * Like strncpy but always leave room for trailing \0
- * and always null terminate.
+ * Places Char's like strlcpy, but no special return value.
  */
 static void
-copyn(des, src, count)
-    register Char *des, *src;
-    register int count;
+copyn(Char *des, Char *src, int count)
 {
     while (--count >= 0)
 	if ((*des++ = *src++) == 0)
@@ -219,13 +436,13 @@ copyn(des, src, count)
 }
 
 static  Char
-filetype(dir, file)
-    Char   *dir, *file;
+filetype(Char *dir, Char *file)
 {
-    Char    path[MAXPATHLEN];
+    Char    path[PATH_MAX];
     struct stat statb;
 
-    catn(Strcpy(path, dir), file, sizeof(path) / sizeof(Char));
+    Strlcpy(path, dir, sizeof path/sizeof(Char));
+    catn(path, file, sizeof(path) / sizeof(Char));
     if (lstat(short2str(path), &statb) == 0) {
 	switch (statb.st_mode & S_IFMT) {
 	case S_IFDIR:
@@ -249,19 +466,16 @@ filetype(dir, file)
     return (' ');
 }
 
-static struct winsize win;
-
 /*
  * Print sorted down columns
  */
 static void
-print_by_column(dir, items, count)
-    Char   *dir, *items[];
-    int     count;
+print_by_column(Char *dir, Char *items[], int count)
 {
-    register int i, rows, r, c, maxwidth = 0, columns;
+    struct winsize win;
+    int i, rows, r, c, maxwidth = 0, columns;
 
-    if (ioctl(SHOUT, TIOCGWINSZ, (ioctl_t) & win) < 0 || win.ws_col == 0)
+    if (ioctl(SHOUT, TIOCGWINSZ, (ioctl_t) & win) == -1 || win.ws_col == 0)
 	win.ws_col = 80;
     for (i = 0; i < count; i++)
 	maxwidth = maxwidth > (r = Strlen(items[i])) ? maxwidth : r;
@@ -274,7 +488,7 @@ print_by_column(dir, items, count)
 	for (c = 0; c < columns; c++) {
 	    i = c * rows + r;
 	    if (i < count) {
-		register int w;
+		int w;
 
 		(void) fprintf(cshout, "%s", vis_str(items[i]));
 		(void) fputc(dir ? filetype(dir, items[i]) : ' ', cshout);
@@ -297,82 +511,30 @@ print_by_column(dir, items, count)
  *	home_directory_of_person/mumble
  */
 static Char *
-tilde(new, old)
-    Char   *new, *old;
+tilde(Char *new, Char *old)
 {
-    register Char *o, *p;
-    register struct passwd *pw;
+    Char *o, *p;
+    struct passwd *pw;
     static Char person[40];
 
-    if (old[0] != '~')
-	return (Strcpy(new, old));
+    if (old[0] != '~') {
+	Strlcpy(new, old, PATH_MAX);
+	return new;
+    }
 
     for (p = person, o = &old[1]; *o && *o != '/'; *p++ = *o++)
 	continue;
     *p = '\0';
     if (person[0] == '\0')
-	(void) Strcpy(new, value(STRhome));
+	(void) Strlcpy(new, value(STRhome), PATH_MAX);
     else {
 	pw = getpwnam(short2str(person));
 	if (pw == NULL)
 	    return (NULL);
-	(void) Strcpy(new, str2short(pw->pw_dir));
+	(void) Strlcpy(new, str2short(pw->pw_dir), PATH_MAX);
     }
-    (void) Strcat(new, o);
+    (void) Strlcat(new, o, PATH_MAX);
     return (new);
-}
-
-/*
- * Cause pending line to be printed
- */
-static void
-retype()
-{
-    struct termios tty;
-
-    (void) tcgetattr(SHOUT, &tty);
-    tty.c_lflag |= PENDIN;
-    (void) tcsetattr(SHOUT, TCSANOW, &tty);
-}
-
-static void
-beep()
-{
-    if (adrof(STRnobeep) == 0)
-	(void) write(SHOUT, "\007", 1);
-}
-
-/*
- * Erase that silly ^[ and
- * print the recognized part of the string
- */
-static void
-print_recognized_stuff(recognized_part)
-    Char   *recognized_part;
-{
-    /* An optimized erasing of that silly ^[ */
-    (void) fputc('\b', cshout);
-    (void) fputc('\b', cshout);
-    switch (Strlen(recognized_part)) {
-
-    case 0:			/* erase two Characters: ^[ */
-	(void) fputc(' ', cshout);
-	(void) fputc(' ', cshout);
-	(void) fputc('\b', cshout);
-	(void) fputc('\b', cshout);
-	break;
-
-    case 1:			/* overstrike the ^, erase the [ */
-	(void) fprintf(cshout, "%s", vis_str(recognized_part));
-	(void) fputc(' ', cshout);
-	(void) fputc('\b', cshout);
-	break;
-
-    default:			/* overstrike both Characters ^[ */
-	(void) fprintf(cshout, "%s", vis_str(recognized_part));
-	break;
-    }
-    (void) fflush(cshout);
 }
 
 /*
@@ -380,10 +542,9 @@ print_recognized_stuff(recognized_part)
  * Should leave final slash (/) at end of dir.
  */
 static void
-extract_dir_and_name(path, dir, name)
-    Char   *path, *dir, *name;
+extract_dir_and_name(Char *path, Char *dir, Char *name)
 {
-    register Char *p;
+    Char *p;
 
     p = Strrchr(path, '/');
     if (p == NULL) {
@@ -397,12 +558,10 @@ extract_dir_and_name(path, dir, name)
 }
 
 static Char *
-getentry(dir_fd, looking_for_lognames)
-    DIR    *dir_fd;
-    int     looking_for_lognames;
+getentry(DIR *dir_fd, int looking_for_lognames)
 {
-    register struct passwd *pw;
-    register struct dirent *dirp;
+    struct passwd *pw;
+    struct dirent *dirp;
 
     if (looking_for_lognames) {
 	if ((pw = getpwent()) == NULL)
@@ -415,14 +574,13 @@ getentry(dir_fd, looking_for_lognames)
 }
 
 static void
-free_items(items)
-    register Char **items;
+free_items(Char **items, int numitems)
 {
-    register int i;
+    int i;
 
-    for (i = 0; items[i]; i++)
-	xfree((ptr_t) items[i]);
-    xfree((ptr_t) items);
+    for (i = 0; i < numitems; i++)
+	free(items[i]);
+    free(items);
 }
 
 #define FREE_ITEMS(items) { \
@@ -431,8 +589,7 @@ free_items(items)
 	sigemptyset(&sigset);\
 	sigaddset(&sigset, SIGINT);\
 	sigprocmask(SIG_BLOCK, &sigset, &osigset);\
-	free_items(items);\
-	items = NULL;\
+	free_items(items, numitems);\
 	sigprocmask(SIG_SETMASK, &osigset, NULL);\
 }
 
@@ -440,23 +597,16 @@ free_items(items)
  * Perform a RECOGNIZE or LIST command on string "word".
  */
 static int
-tsearch(word, command, max_word_length)
-    Char   *word;
-    COMMAND command;
-    int     max_word_length;
+tsearch(Char *word, COMMAND command, int max_word_length)
 {
-    static Char **items = NULL;
-    register DIR *dir_fd;
-    register numitems = 0, ignoring = TRUE, nignored = 0;
-    register name_length, looking_for_lognames;
-    Char    tilded_dir[MAXPATHLEN + 1], dir[MAXPATHLEN + 1];
+    DIR *dir_fd;
+    int numitems = 0, ignoring = TRUE, nignored = 0;
+    int name_length, looking_for_lognames;
+    Char    tilded_dir[PATH_MAX], dir[PATH_MAX];
     Char    name[MAXNAMLEN + 1], extended_name[MAXNAMLEN + 1];
     Char   *entry;
-
-#define MAXITEMS 1024
-
-    if (items != NULL)
-	FREE_ITEMS(items);
+    Char   **items = NULL;
+    size_t  maxitems = 0;
 
     looking_for_lognames = (*word == '~') && (Strchr(word, '/') == NULL);
     if (looking_for_lognames) {
@@ -483,16 +633,11 @@ again:				/* search for matches */
 	    !looking_for_lognames)
 	    continue;
 	if (command == LIST) {
-	    if (numitems >= MAXITEMS) {
-		(void) fprintf(csherr, "\nYikes!! Too many %s!!\n",
-			       looking_for_lognames ?
-			       "names in password file" : "files");
-		break;
+	    if (numitems >= maxitems) {
+		maxitems += 1024;
+		items = xreallocarray(items, maxitems, sizeof(*items));
 	    }
-	    if (items == NULL)
-		items = (Char **) xcalloc(sizeof(items[0]), MAXITEMS);
-	    items[numitems] = (Char *) xmalloc((size_t) (Strlen(entry) + 1) *
-					       sizeof(Char));
+	    items[numitems] = xreallocarray(NULL, (Strlen(entry) + 1), sizeof(Char));
 	    copyn(items[numitems], entry, MAXNAMLEN);
 	    numitems++;
 	}
@@ -531,8 +676,7 @@ again:				/* search for matches */
 	return (numitems);
     }
     else {			/* LIST */
-	qsort((ptr_t) items, numitems, sizeof(items[0]), 
-		(int (*) __P((const void *, const void *))) sortscmp);
+	qsort(items, numitems, sizeof(*items), sortscmp);
 	print_by_column(looking_for_lognames ? NULL : tilded_dir,
 			items, numitems);
 	if (items != NULL)
@@ -550,15 +694,13 @@ again:				/* search for matches */
  * If we shorten it back to the prefix length, stop searching.
  */
 static int
-recognize(extended_name, entry, name_length, numitems)
-    Char   *extended_name, *entry;
-    int     name_length, numitems;
+recognize(Char *extended_name, Char *entry, int name_length, int numitems)
 {
     if (numitems == 1)		/* 1st match */
 	copyn(extended_name, entry, MAXNAMLEN);
     else {			/* 2nd & subsequent matches */
-	register Char *x, *ent;
-	register int len = 0;
+	Char *x, *ent;
+	int len = 0;
 
 	x = extended_name;
 	for (ent = entry; *x && *x == *ent++; x++, len++)
@@ -576,8 +718,7 @@ recognize(extended_name, entry, name_length, numitems)
  * it matches anything.
  */
 static int
-is_prefix(check, template)
-    register Char *check, *template;
+is_prefix(Char *check, Char *template)
 {
     do
 	if (*check == 0)
@@ -588,13 +729,12 @@ is_prefix(check, template)
 
 /*
  *  Return true if the Chars in template appear at the
- *  end of check, I.e., are it's suffix.
+ *  end of check, I.e., are its suffix.
  */
 static int
-is_suffix(check, template)
-    Char   *check, *template;
+is_suffix(Char *check, Char *template)
 {
-    register Char *c, *t;
+    Char *c, *t;
 
     for (c = check; *c++;)
 	continue;
@@ -609,82 +749,84 @@ is_suffix(check, template)
 }
 
 int
-tenex(inputline, inputline_size)
-    Char   *inputline;
-    int     inputline_size;
+tenex(Char *inputline, int inputline_size)
 {
-    register int numitems, num_read;
-    char    tinputline[BUFSIZ];
+	static struct {
+		int	(*fn)(struct cmdline *, int);
+		int	idx;
+	}			 keys[] = {
+		{ cl_abort,	VINTR },
+		{ cl_erasec,	VERASE },
+		{ cl_erasew,	VWERASE },
+		{ cl_kill,	VKILL },
+		{ cl_list,	VEOF },
+		{ cl_literal,	VLNEXT },
+		{ cl_recognize,	VEOL },
+		{ cl_reprint,	VREPRINT },
+		{ cl_status,	VSTATUS },
+		{ cl_insert,	-1 }
+	};
+	unsigned char		 buf[BUFSIZ];
+	const struct termios	*tio;
+	struct cmdline		 cl;
+	size_t			 i;
+	int			 c, ret;
 
+	memset(&cl, 0, sizeof(cl));
+	cl.fdin = SHIN;
+	cl.fdout = SHOUT;
+	cl.istty = isatty(SHIN);
 
-    setup_tty(ON);
+	if (cl.istty)
+		tio = setup_tty(1);
 
-    while ((num_read = read(SHIN, tinputline, BUFSIZ)) > 0) {
-	int     i;
-	static Char delims[] = {' ', '\'', '"', '\t', ';', '&', '<',
-	'>', '(', ')', '|', '^', '%', '\0'};
-	register Char *str_end, *word_start, last_Char, should_retype;
-	register int space_left;
-	COMMAND command;
-
-	for (i = 0; i < num_read; i++)
-	    inputline[i] = (unsigned char) tinputline[i];
-	last_Char = inputline[num_read - 1] & ASCII;
-
-	if (last_Char == '\n' || num_read == inputline_size)
-	    break;
-	command = (last_Char == ESC) ? RECOGNIZE : LIST;
-	if (command == LIST)
-	    (void) fputc('\n', cshout);
-	str_end = &inputline[num_read];
-	if (last_Char == ESC)
-	    --str_end;		/* wipeout trailing cmd Char */
-	*str_end = '\0';
-	/*
-	 * Find LAST occurence of a delimiter in the inputline. The word start
-	 * is one Character past it.
-	 */
-	for (word_start = str_end; word_start > inputline; --word_start)
-	    if (Strchr(delims, word_start[-1]))
-		break;
-	space_left = inputline_size - (word_start - inputline) - 1;
-	numitems = tsearch(word_start, command, space_left);
-
-	if (command == RECOGNIZE) {
-	    /* print from str_end on */
-	    print_recognized_stuff(str_end);
-	    if (numitems != 1)	/* Beep = No match/ambiguous */
-		beep();
+	cl.buf = buf;
+	cl.size = sizeof(buf);
+	if (inputline_size < cl.size)
+		cl.size = inputline_size;
+	if (cl.istty && tio->c_lflag & ALTWERASE)
+		cl.flags |= CL_ALTWERASE;
+	if (needprompt) {
+		needprompt = 0;
+		cl.flags |= CL_PROMPT;
+		cl_flush(&cl);
 	}
 
-	/*
-	 * Tabs in the input line cause trouble after a pushback. tty driver
-	 * won't backspace over them because column positions are now
-	 * incorrect. This is solved by retyping over current line.
-	 */
-	should_retype = FALSE;
-	if (Strchr(inputline, '\t')) {	/* tab Char in input line? */
-	    back_to_col_1();
-	    should_retype = TRUE;
+	for (;;) {
+		if ((c = cl_getc(&cl)) == 0)
+			break;
+
+		for (i = 0; keys[i].idx >= 0; i++)
+			if (cl.istty && CCEQ(tio->c_cc[keys[i].idx], c))
+				break;
+		ret = keys[i].fn(&cl, c);
+		cl_flush(&cl);
+		if (ret)
+			break;
 	}
-	if (command == LIST)	/* Always retype after a LIST */
-	    should_retype = TRUE;
-	if (should_retype)
-	    printprompt();
-	pushback(inputline);
-	if (should_retype)
-	    retype();
-    }
-    setup_tty(OFF);
-    return (num_read);
+
+	if (cl.istty)
+		setup_tty(0);
+
+	for (i = 0; i < cl.len; i++)
+		inputline[i] = cl.buf[i];
+	/*
+	 * NUL-terminating the buffer implies that it contains a complete
+	 * command ready to be executed. Therefore, don't terminate if the
+	 * buffer is full since more characters must be read in order to form a
+	 * complete command.
+	 */
+	if (i < cl.size)
+		inputline[i] = '\0';
+
+	return cl.len;
 }
 
 static int
-ignored(entry)
-    register Char *entry;
+ignored(Char *entry)
 {
     struct varent *vp;
-    register Char **cp;
+    Char **cp;
 
     if ((vp = adrof(STRfignore)) == NULL || (cp = vp->vec) == NULL)
 	return (FALSE);
@@ -693,4 +835,3 @@ ignored(entry)
 	    return (TRUE);
     return (FALSE);
 }
-#endif				/* FILEC */

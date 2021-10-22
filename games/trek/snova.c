@@ -1,3 +1,4 @@
+/*	$OpenBSD: snova.c,v 1.7 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: snova.c,v 1.3 1995/04/22 10:59:29 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)snova.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: snova.c,v 1.3 1995/04/22 10:59:29 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdio.h>
+#include <unistd.h>
 
-# include	"trek.h"
+#include "trek.h"
 
 /*
 **  CAUSE SUPERNOVA TO OCCUR
@@ -64,15 +56,14 @@ static char rcsid[] = "$NetBSD: snova.c,v 1.3 1995/04/22 10:59:29 cgd Exp $";
 **	override mode.
 */
 
-snova(x, y)
-int	x, y;
+void
+snova(int x, int y)
 {
-	int			qx, qy;
-	register int		ix, iy;
-	int			f;
-	int			dx, dy;
-	int			n;
-	register struct quad	*q;
+	int		qx, qy;
+	int		ix, iy = 0;
+	int		f, n;
+	int		dx, dy;
+	struct quad	*q;
 
 	f = 0;
 	ix = x;
@@ -115,7 +106,7 @@ int	x, y;
 	if (f)
 	{
 		/* supernova is in same quadrant as Enterprise */
-		printf("\nRED ALERT: supernova occuring at %d,%d\n", ix, iy);
+		printf("\a\nRED ALERT: supernova occuring at %d,%d\n", ix, iy);
 		dx = ix - Ship.sectx;
 		dy = iy - Ship.secty;
 		if (dx * dx + dy * dy <= 2)
@@ -146,12 +137,12 @@ int	x, y;
 		/* Enterprise caused supernova */
 		Game.kills += dy;
 		if (q->bases)
-			killb(qx, qy, -1);
+			killb(qx, qy);
 		Game.killk += dx;
 	}
 	else
 		if (q->bases)
-			killb(qx, qy, 0);
+			killb(qx, qy);
 	killd(qx, qy, (x >= 0));
 	q->stars = -1;
 	q->klings = 0;
@@ -160,5 +151,4 @@ int	x, y;
 		printf("Lucky devil, that supernova destroyed the last klingon\n");
 		win();
 	}
-	return;
 }

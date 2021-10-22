@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD: cms.c,v 1.9 2021/07/13 18:39:39 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,7 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include "config.h"
 
 #include <assert.h>
 #include <err.h>
@@ -36,18 +35,17 @@
  * Return the eContent as a string and set "rsz" to be its length.
  */
 unsigned char *
-cms_parse_validate(X509 **xp, const char *fn,
-	const char *oid, const unsigned char *dgst, size_t *rsz)
+cms_parse_validate(X509 **xp, const char *fn, const ASN1_OBJECT *oid,
+    size_t *rsz)
 {
-	const ASN1_OBJECT  *obj;
-	ASN1_OCTET_STRING **os = NULL;
-	BIO 		   *bio = NULL, *shamd;
-	CMS_ContentInfo    *cms;
-	char 		    buf[128], mdbuf[EVP_MAX_MD_SIZE];
-	int		    rc = 0, sz;
-	STACK_OF(X509)	   *certs = NULL;
-	EVP_MD		   *md;
-	unsigned char	   *res = NULL;
+	const ASN1_OBJECT	*obj;
+	ASN1_OCTET_STRING	**os = NULL;
+	BIO			*bio = NULL;
+	CMS_ContentInfo		*cms;
+	FILE			*f;
+	int			 rc = 0;
+	STACK_OF(X509)		*certs = NULL;
+	unsigned char		*res = NULL;
 
 	*rsz = 0;
 	*xp = NULL;
@@ -56,52 +54,19 @@ cms_parse_validate(X509 **xp, const char *fn,
 	 * This is usually fopen() failure, so let it pass through to
 	 * the handler, which will in turn ignore the entity.
 	 */
-
-	if ((bio = BIO_new_file(fn, "rb")) == NULL) {
-		cryptowarnx("%s: BIO_new_file", fn);
+	if ((f = fopen(fn, "rb")) == NULL) {
+		warn("%s", fn);
 		return NULL;
 	}
 
-	/*
-	 * If we have a digest specified, create an MD chain that will
-	 * automatically compute a digest during the CMS creation.
-	 */
-
-	if (dgst != NULL) {
-		if ((shamd = BIO_new(BIO_f_md())) == NULL)
-			cryptoerrx("BIO_new");
-		if (!BIO_set_md(shamd, EVP_sha256()))
-			cryptoerrx("BIO_set_md");
-		if ((bio = BIO_push(shamd, bio)) == NULL)
-			cryptoerrx("BIO_push");
+	if ((bio = BIO_new_fp(f, BIO_CLOSE)) == NULL) {
+		cryptowarnx("%s: BIO_new_fp", fn);
+		return NULL;
 	}
 
 	if ((cms = d2i_CMS_bio(bio, NULL)) == NULL) {
 		cryptowarnx("%s: RFC 6488: failed CMS parse", fn);
 		goto out;
-	}
-
-	/*
-	 * If we have a digest, find it in the chain (we'll already have
-	 * made it, so assert otherwise) and verify it.
-	 */
-
-	if (dgst != NULL) {
-		shamd = BIO_find_type(bio, BIO_TYPE_MD);
-		assert(shamd != NULL);
-
-		if (!BIO_get_md(shamd, &md))
-			cryptoerrx("BIO_get_md");
-		assert(EVP_MD_type(md) == NID_sha256);
-
-		if ((sz = BIO_gets(shamd, mdbuf, EVP_MAX_MD_SIZE)) < 0)
-			cryptoerrx("BIO_gets");
-		assert(sz == SHA256_DIGEST_LENGTH);
-
-		if (memcmp(mdbuf, dgst, SHA256_DIGEST_LENGTH)) {
-			warnx("%s: RFC 6488: bad message digest", fn);
-			goto out;
-		}
 	}
 
 	/*
@@ -118,16 +83,18 @@ cms_parse_validate(X509 **xp, const char *fn,
 	/* RFC 6488 section 2.1.3.1: check the object's eContentType. */
 
 	obj = CMS_get0_eContentType(cms);
-	if ((sz = OBJ_obj2txt(buf, sizeof(buf), obj, 1)) < 0)
-		cryptoerrx("OBJ_obj2txt");
-
-	if ((size_t)sz >= sizeof(buf)) {
-		warnx("%s: RFC 6488 section 2.1.3.1: "
-			"eContentType: OID too long", fn);
-		goto out;
-	} else if (strcmp(buf, oid)) {
+	if (obj == NULL) {
 		warnx("%s: RFC 6488 section 2.1.3.1: eContentType: "
-			"unknown OID: %s, want %s", fn, buf, oid);
+		    "OID object is NULL", fn);
+		goto out;
+	}
+	if (OBJ_cmp(obj, oid) != 0) {
+		char buf[128], obuf[128];
+
+		OBJ_obj2txt(buf, sizeof(buf), obj, 1);
+		OBJ_obj2txt(obuf, sizeof(obuf), oid, 1);
+		warnx("%s: RFC 6488 section 2.1.3.1: eContentType: "
+		    "unknown OID: %s, want %s", fn, buf, obuf);
 		goto out;
 	}
 
@@ -139,8 +106,8 @@ cms_parse_validate(X509 **xp, const char *fn,
 
 	certs = CMS_get0_signers(cms);
 	if (certs == NULL || sk_X509_num(certs) != 1) {
-		warnx("%s: RFC 6488 section 2.1.4: eContent: want "
-			"1 signer, have %d", fn, sk_X509_num(certs));
+		warnx("%s: RFC 6488 section 2.1.4: eContent: "
+		    "want 1 signer, have %d", fn, sk_X509_num(certs));
 		goto out;
 	}
 	*xp = X509_dup(sk_X509_value(certs, 0));
@@ -149,7 +116,7 @@ cms_parse_validate(X509 **xp, const char *fn,
 
 	if ((os = CMS_get0_content(cms)) == NULL || *os == NULL) {
 		warnx("%s: RFC 6488 section 2.1.4: "
-			"eContent: zero-length content", fn);
+		    "eContent: zero-length content", fn);
 		goto out;
 	}
 
@@ -161,7 +128,7 @@ cms_parse_validate(X509 **xp, const char *fn,
 	 */
 
 	if ((res = malloc((*os)->length)) == NULL)
-		err(EXIT_FAILURE, NULL);
+		err(1, NULL);
 	memcpy(res, (*os)->data, (*os)->length);
 	*rsz = (*os)->length;
 
@@ -177,4 +144,62 @@ out:
 	}
 
 	return res;
+}
+
+/*
+ * Wrapper around ASN1_get_object() that preserves the current start
+ * state and returns a more meaningful value.
+ * Return zero on failure, non-zero on success.
+ */
+int
+ASN1_frame(const char *fn, size_t sz,
+	const unsigned char **cnt, long *cntsz, int *tag)
+{
+	int	 ret, pcls;
+
+	ret = ASN1_get_object(cnt, cntsz, tag, &pcls, sz);
+	if ((ret & 0x80)) {
+		cryptowarnx("%s: ASN1_get_object", fn);
+		return 0;
+	}
+	return ASN1_object_size((ret & 0x01) ? 2 : 0, *cntsz, *tag);
+}
+
+/*
+ * Check the version field in eContent.
+ * Returns -1 on failure, zero on success.
+ */
+int
+cms_econtent_version(const char *fn, const unsigned char **d, size_t dsz,
+	long *version)
+{
+	ASN1_INTEGER	*aint = NULL;
+	long		 plen;
+	int		 ptag, rc = -1;
+
+	if (!ASN1_frame(fn, dsz, d, &plen, &ptag))
+		goto out;
+	if (ptag != 0) {
+		warnx("%s: eContent version: expected explicit tag [0]", fn);
+		goto out;
+	}
+
+	aint = d2i_ASN1_INTEGER(NULL, d, plen);
+	if (aint == NULL) {
+		cryptowarnx("%s: eContent version: failed d2i_ASN1_INTEGER",
+		    fn);
+		goto out;
+	}
+
+	*version = ASN1_INTEGER_get(aint);
+	if (*version < 0) {
+		warnx("%s: eContent version: expected positive integer, got:"
+		    " %ld", fn, *version);
+		goto out;
+	}
+
+	rc = 0;
+out:
+	ASN1_INTEGER_free(aint);
+	return rc;
 }

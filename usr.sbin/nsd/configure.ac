@@ -5,7 +5,7 @@ dnl
 sinclude(acx_nlnetlabs.m4)
 sinclude(dnstap/dnstap.m4)
 
-AC_INIT([NSD],[4.3.6],[nsd-bugs@nlnetlabs.nl])
+AC_INIT([NSD],[4.3.7],[nsd-bugs@nlnetlabs.nl])
 AC_CONFIG_HEADERS([config.h])
 
 #
@@ -251,6 +251,25 @@ if test $ac_cv_c_unused_attribute = yes; then
 fi
 ])dnl
 
+AC_DEFUN([CHECK_WEAK_ATTRIBUTE],
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether the C compiler (${CC-cc}) accepts the "weak" attribute)
+AC_CACHE_VAL(ac_cv_c_weak_attribute,
+[ac_cv_c_weak_attribute=no
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[ #include <stdio.h>
+__attribute__((weak)) void f(int x) { printf("%d", x); }
+]], [[
+   f(1);
+]])],[ac_cv_c_weak_attribute="yes"],[ac_cv_c_weak_attribute="no"])
+])
+
+AC_MSG_RESULT($ac_cv_c_weak_attribute)
+if test $ac_cv_c_weak_attribute = yes; then
+  AC_DEFINE(HAVE_ATTR_WEAK, 1, [Whether the C compiler accepts the "weak" attribute])
+  AC_DEFINE(ATTR_WEAK, [__attribute__((weak))], [apply the weak attribute to a symbol])
+fi
+])dnl End of CHECK_WEAK_ATTRIBUTE
+
 AC_DEFUN([CHECK_NORETURN_ATTRIBUTE],
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING(whether the C compiler (${CC-cc}) accepts the "noreturn" attribute)
@@ -332,6 +351,7 @@ AC_TYPE_OFF_T
 
 AC_CHECK_FORMAT_ATTRIBUTE
 AC_CHECK_UNUSED_ATTRIBUTE
+CHECK_WEAK_ATTRIBUTE
 CHECK_NORETURN_ATTRIBUTE
 ACX_CHECK_MEMCMP_SIGNED
 AC_CHECK_CTIME_R
@@ -791,11 +811,10 @@ AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcat)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(strptime)
-AC_REPLACE_FUNCS(b64_pton)
-AC_REPLACE_FUNCS(b64_ntop)
 AC_REPLACE_FUNCS(pselect)
 AC_REPLACE_FUNCS(memmove)
 AC_REPLACE_FUNCS(setproctitle)
+AC_REPLACE_FUNCS(explicit_bzero)
 AC_MSG_CHECKING([for reallocarray])
 AC_LINK_IFELSE([AC_LANG_SOURCE(
 [[
@@ -823,6 +842,41 @@ AC_INCLUDES_DEFAULT
 	AC_MSG_RESULT(no)
 	AC_LIBOBJ(reallocarray)
 ])
+
+#
+# Check for b64_ntop (and assume result applies to b64_pton as well).
+# The functions are actually prefixed with __ and resolv.h defines
+# macros for the unprefixed versions, however including this header
+# causes conflicts with our T_xx defines.
+#
+AC_MSG_CHECKING(for __b64_ntop)
+AC_TRY_LINK([#include <stddef.h>],
+	[__b64_ntop(NULL, 0, NULL, 0);],
+	found_b64_ntop=yes,
+	found_b64_ntop=no
+)
+if test "x$found_b64_ntop" = xno; then
+	AC_MSG_RESULT(no)
+
+	AC_MSG_CHECKING(for __b64_ntop with -lresolv)
+	LIBS="$LIBS -lresolv"
+	AC_TRY_LINK([#include <stddef.h>],
+		[__b64_ntop(NULL, 0, NULL, 0);],
+		found_b64_ntop=yes,
+		found_b64_ntop=no
+	)
+	if test "x$found_b64_ntop" = xno; then
+		AC_MSG_RESULT(no)
+	fi
+fi
+if test "x$found_b64_ntop" = xyes; then
+	AC_DEFINE(HAVE_B64_NTOP, 1, [Define to 1 if you have the `b64_ntop' function.])
+	AC_DEFINE(HAVE_B64_PTON, 1, [Define to 1 if you have the `b64_pton' function.])
+	AC_MSG_RESULT(yes)
+else
+	AC_LIBOBJ([b64_ntop])
+	AC_LIBOBJ([b64_pton])
+fi
 
 AC_MSG_CHECKING(for pselect prototype in sys/select.h)
 AC_EGREP_HEADER([[^a-zA-Z_]*pselect[^a-zA-Z_]], sys/select.h, AC_DEFINE(HAVE_PSELECT_PROTO, 1,
@@ -1016,7 +1070,9 @@ AC_INCLUDES_DEFAULT
 #include <openssl/ssl.h>
 #include <openssl/evp.h>
 ])
-
+	AC_CHECK_DECL([TLS1_3_VERSION], 
+		[AC_DEFINE([HAVE_TLS_1_3], [1], [Define if TLS 1.3 is supported by OpenSSL])],
+		[AC_MSG_WARN([No TLS 1.3, therefore XFR-over-TLS is disabled])], [[#include <openssl/ssl.h>]])
 
 	BAKLIBS="$LIBS"
 	LIBS="-lssl $LIBS"
@@ -1232,13 +1288,11 @@ AH_BOTTOM([
 ])
 
 AH_BOTTOM([
-#ifndef HAVE_B64_NTOP
-int b64_ntop(uint8_t const *src, size_t srclength,
+int __b64_ntop(uint8_t const *src, size_t srclength,
 	     char *target, size_t targsize);
-#endif /* !HAVE_B64_NTOP */
-#ifndef HAVE_B64_PTON
-int b64_pton(char const *src, uint8_t *target, size_t targsize);
-#endif /* !HAVE_B64_PTON */
+int __b64_pton(char const *src, uint8_t *target, size_t targsize);
+])
+AH_BOTTOM([
 #ifndef HAVE_FSEEKO
 #define fseeko fseek
 #define ftello ftell
@@ -1259,6 +1313,10 @@ int inet_aton(const char *cp, struct in_addr *addr);
 #endif
 #ifndef HAVE_MEMMOVE
 void *memmove(void *dest, const void *src, size_t n);
+#endif
+#ifndef HAVE_EXPLICIT_BZERO
+#define explicit_bzero nsd_explicit_bzero
+void explicit_bzero(void* buf, size_t len);
 #endif
 #ifndef HAVE_STRLCAT
 size_t strlcat(char *dst, const char *src, size_t siz);

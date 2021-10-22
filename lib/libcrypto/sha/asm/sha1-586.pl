@@ -112,10 +112,6 @@ $ymm=1 if ($xmm &&
 			=~ /GNU assembler version ([2-9]\.[0-9]+)/ &&
 		$1>=2.19);	# first version supporting AVX
 
-$ymm=1 if ($xmm && !$ymm && $ARGV[0] eq "win32n" && 
-		`nasm -v 2>&1` =~ /NASM version ([2-9]\.[0-9]+)/ &&
-		$1>=2.03);	# first version supporting AVX
-
 &external_label("OPENSSL_ia32cap_P") if ($xmm);
 
 
@@ -307,15 +303,15 @@ if ($xmm) {
 
 	&mov	($A,&DWP(0,$T));
 	&mov	($D,&DWP(4,$T));
-	&test	($D,1<<9);		# check SSSE3 bit
+	&test	($D,"\$IA32CAP_MASK1_SSSE3");	# check SSSE3 bit
 	&jz	(&label("x86"));
-	&test	($A,1<<24);		# check FXSR bit
+	&test	($A,"\$IA32CAP_MASK0_FXSR");	# check FXSR bit
 	&jz	(&label("x86"));
 	if ($ymm) {
-		&and	($D,1<<28);		# mask AVX bit
-		&and	($A,1<<30);		# mask "Intel CPU" bit
+		&and	($D,"\$IA32CAP_MASK1_AVX");	# mask AVX bit
+		&and	($A,"\$IA32CAP_MASK0_INTEL");	# mask "Intel CPU" bit
 		&or	($A,$D);
-		&cmp	($A,1<<28|1<<30);
+		&cmp	($A,"\$(IA32CAP_MASK1_AVX | IA32CAP_MASK0_INTEL)");
 		&je	(&label("avx_shortcut"));
 	}
 	&jmp	(&label("ssse3_shortcut"));
@@ -506,7 +502,7 @@ my $_ror=sub { &ror(@_) };
 	&jmp	(&label("loop"));
 
 ######################################################################
-# SSE instruction sequence is first broken to groups of indepentent
+# SSE instruction sequence is first broken to groups of independent
 # instructions, independent in respect to their inputs and shifter
 # (not all architectures have more than one). Then IALU instructions
 # are "knitted in" between the SSE groups. Distance is maintained for

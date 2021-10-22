@@ -1,3 +1,4 @@
+/*	$OpenBSD: jot.c,v 1.55 2021/08/13 11:27:33 martijn Exp $	*/
 /*	$NetBSD: jot.c,v 1.3 1994/12/02 20:29:43 pk Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,19 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)jot.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: jot.c,v 1.3 1994/12/02 20:29:43 pk Exp $";
-#endif /* not lint */
-
 /*
  * jot - print sequential or random data
  *
@@ -53,346 +37,419 @@ static char rcsid[] = "$NetBSD: jot.c,v 1.3 1994/12/02 20:29:43 pk Exp $";
  */
 
 #include <ctype.h>
+#include <err.h>
 #include <limits.h>
+#include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <unistd.h>
 
-#define	REPS_DEF	100
-#define	BEGIN_DEF	1
-#define	ENDER_DEF	100
-#define	STEP_DEF	1
+#define	REPS	1
+#define	BEGIN	2
+#define	ENDER	4
+#define	STEP	8
 
-#define	isdefault(s)	(strcmp((s), "-") == 0)
+#define	is_default(s)	(strcmp((s), "-") == 0)
 
-double	begin;
-double	ender;
-double	s;
-long	reps;
-int	randomize;
-int	infinity;
-int	boring;
-int	prec;
-int	dox;
-int	chardata;
-int	nofinalnl;
-char	sepstring[BUFSIZ] = "\n";
-char	format[BUFSIZ];
+static long	reps	= 100;
+static double	begin	= 1;
+static double	ender	= 100;
+static double	step	= 1;
 
-void	error __P((char *, char *));
-void	getargs __P((int, char *[]));
-void	getformat __P((void));
-int	getprec __P((char *));
-void	putdata __P((double, long));
+static char	*format = "";
+static char	*sepstring = "\n";
+static int	prec = -1;
+static bool	boring;
+static bool	chardata;
+static bool	finalnl = true;
+static bool	infinity;
+static bool	intdata;
+static bool	longdata;
+static bool	nosign;
+static bool	randomize;
+static bool	word;
+
+static void	getformat(void);
+static int	getprec(char *);
+static int	putdata(double, bool);
+static void __dead	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	double	xd, yd;
-	long	id;
-	register double	*x = &xd;
-	register double	*y = &yd;
-	register long	*i = &id;
+	double		x;
+	double		y;
+	long		i;
+	unsigned int	mask = 0;
+	int		n = 0;
+	int		ch;
+	const char	*errstr;
 
-	getargs(argc, argv);
-	if (randomize) {
-		*x = (ender - begin) * (ender > begin ? 1 : -1);
-		srandom((int) s);
-		for (*i = 1; *i <= reps || infinity; (*i)++) {
-			*y = (double) random() / INT_MAX;
-			putdata(*y * *x + begin, reps - *i);
-		}
-	}
-	else
-		for (*i = 1, *x = begin; *i <= reps || infinity; (*i)++, *x += s)
-			putdata(*x, reps - *i);
-	if (!nofinalnl)
-		putchar('\n');
-	exit(0);
-}
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
-void
-getargs(ac, av)
-	int ac;
-	char *av[];
-{
-	register unsigned int	mask = 0;
-	register int		n = 0;
-
-	while (--ac && **++av == '-' && !isdefault(*av))
-		switch ((*av)[1]) {
-		case 'r':
-			randomize = 1;
+	while ((ch = getopt(argc, argv, "b:cnp:rs:w:")) != -1) {
+		switch (ch) {
+		case 'b':
+			boring = true;
+			chardata = word = false;
+			format = optarg;
 			break;
 		case 'c':
-			chardata = 1;
+			chardata = true;
+			boring = word = false;
+			format = "";
 			break;
 		case 'n':
-			nofinalnl = 1;
-			break;
-		case 'b':
-			boring = 1;
-		case 'w':
-			if ((*av)[2])
-				strcpy(format, *av + 2);
-			else if (!--ac)
-				error("Need context word after -w or -b", "");
-			else
-				strcpy(format, *++av);
-			break;
-		case 's':
-			if ((*av)[2])
-				strcpy(sepstring, *av + 2);
-			else if (!--ac)
-				error("Need string after -s", "");
-			else
-				strcpy(sepstring, *++av);
+			finalnl = false;
 			break;
 		case 'p':
-			if ((*av)[2])
-				prec = atoi(*av + 2);
-			else if (!--ac)
-				error("Need number after -p", "");
-			else
-				prec = atoi(*++av);
-			if (prec <= 0)
-				error("Bad precision value", "");
+			prec = strtonum(optarg, 0, INT_MAX, &errstr);
+			if (errstr != NULL)
+				errx(1, "bad precision value, %s: %s", errstr,
+					optarg);
+			break;
+		case 'r':
+			randomize = true;
+			break;
+		case 's':
+			sepstring = optarg;
+			break;
+		case 'w':
+			word = true;
+			boring = chardata = false;
+			format = optarg;
 			break;
 		default:
-			error("Unknown option %s", *av);
+			usage();
 		}
+	}
+	argc -= optind;
+	argv += optind;
 
-	switch (ac) {	/* examine args right to left, falling thru cases */
+	switch (argc) {	/* examine args right to left, falling thru cases */
 	case 4:
-		if (!isdefault(av[3])) {
-			if (!sscanf(av[3], "%lf", &s))
-				error("Bad s value:  %s", av[3]);
-			mask |= 01;
+		if (!is_default(argv[3])) {
+			if (!sscanf(argv[3], "%lf", &step))
+				errx(1, "Bad s value: %s", argv[3]);
+			mask |= STEP;
+			if (randomize)
+				warnx("random seeding not supported");
 		}
 	case 3:
-		if (!isdefault(av[2])) {
-			if (!sscanf(av[2], "%lf", &ender))
-				ender = av[2][strlen(av[2])-1];
-			mask |= 02;
-			if (!prec)
-				n = getprec(av[2]);
+		if (!is_default(argv[2])) {
+			if (!sscanf(argv[2], "%lf", &ender))
+				ender = argv[2][strlen(argv[2])-1];
+			mask |= ENDER;
+			if (prec == -1)
+				n = getprec(argv[2]);
 		}
 	case 2:
-		if (!isdefault(av[1])) {
-			if (!sscanf(av[1], "%lf", &begin))
-				begin = av[1][strlen(av[1])-1];
-			mask |= 04;
-			if (!prec)
-				prec = getprec(av[1]);
+		if (!is_default(argv[1])) {
+			if (!sscanf(argv[1], "%lf", &begin))
+				begin = argv[1][strlen(argv[1])-1];
+			mask |= BEGIN;
+			if (prec == -1)
+				prec = getprec(argv[1]);
 			if (n > prec)		/* maximum precision */
 				prec = n;
 		}
 	case 1:
-		if (!isdefault(av[0])) {
-			if (!sscanf(av[0], "%ld", &reps))
-				error("Bad reps value:  %s", av[0]);
-			mask |= 010;
+		if (!is_default(argv[0])) {
+			reps = strtonum(argv[0], 0, LONG_MAX, &errstr);
+			if (errstr != NULL)
+				errx(1, "Bad reps value, %s: %s", errstr,
+				    argv[0]);
+			mask |= REPS;
+			if (reps == 0)
+				infinity = true;
 		}
-		break;
 	case 0:
-		error("jot - print sequential or random data", "");
+		if (prec == -1)
+			prec = 0;
+		break;
 	default:
-		error("Too many arguments.  What do you mean by %s?", av[4]);
+		errx(1, "Too many arguments.  What do you mean by %s?",
+		    argv[4]);
 	}
-	getformat();
-	while (mask)	/* 4 bit mask has 1's where last 4 args were given */
-		switch (mask) {	/* fill in the 0's by default or computation */
-		case 001:
-			reps = REPS_DEF;
-			mask = 011;
-			break;
-		case 002:
-			reps = REPS_DEF;
-			mask = 012;
-			break;
-		case 003:
-			reps = REPS_DEF;
-			mask = 013;
-			break;
-		case 004:
-			reps = REPS_DEF;
-			mask = 014;
-			break;
-		case 005:
-			reps = REPS_DEF;
-			mask = 015;
-			break;
-		case 006:
-			reps = REPS_DEF;
-			mask = 016;
-			break;
-		case 007:
-			if (randomize) {
-				reps = REPS_DEF;
-				mask = 0;
-				break;
-			}
-			if (s == 0.0) {
-				reps = 0;
-				mask = 0;
-				break;
-			}
-			reps = (ender - begin + s) / s;
-			if (reps <= 0)
-				error("Impossible stepsize", "");
-			mask = 0;
-			break;
-		case 010:
-			begin = BEGIN_DEF;
-			mask = 014;
-			break;
-		case 011:
-			begin = BEGIN_DEF;
-			mask = 015;
-			break;
-		case 012:
-			s = (randomize ? time(0) : STEP_DEF);
-			mask = 013;
-			break;
-		case 013:
-			if (randomize)
-				begin = BEGIN_DEF;
-			else if (reps == 0)
-				error("Must specify begin if reps == 0", "");
-			begin = ender - reps * s + s;
-			mask = 0;
-			break;
-		case 014:
-			s = (randomize ? time(0) : STEP_DEF);
-			mask = 015;
-			break;
-		case 015:
-			if (randomize)
-				ender = ENDER_DEF;
-			else
-				ender = begin + reps * s - s;
-			mask = 0;
-			break;
-		case 016:
-			if (randomize)
-				s = time(0);
-			else if (reps == 0)
-				error("Infinite sequences cannot be bounded",
-				    "");
-			else if (reps == 1)
-				s = 0.0;
-			else
-				s = (ender - begin) / (reps - 1);
-			mask = 0;
-			break;
-		case 017:		/* if reps given and implied, */
-			if (!randomize && s != 0.0) {
-				long t = (ender - begin + s) / s;
+
+	if (!boring)
+		getformat();
+
+	if (!randomize) {
+		/*
+		 * Consolidate the values of reps, begin, ender, step:
+		 * The formula ender - begin == (reps - 1) * step shows that any
+		 * three determine the fourth (unless reps == 1 or step == 0).
+		 * The manual states the following rules:
+		 * 1. If four are specified, compare the given and the computed
+		 *    value of reps and take the smaller of the two.
+		 * 2. If steps was omitted, it takes the default, unless both
+		 *    begin and ender were specified.
+		 * 3. Assign defaults to omitted values for reps, begin, ender,
+		 *    from left to right.
+		 */
+		switch (mask) { /* Four cases involve both begin and ender. */
+		case REPS | BEGIN | ENDER | STEP:
+			if (infinity)
+				errx(1,
+				    "Can't specify end of infinite sequence");
+			if (step != 0.0) {
+				long t = (ender - begin + step) / step;
 				if (t <= 0)
-					error("Impossible stepsize", "");
-				if (t < reps)		/* take lesser */
+					errx(1, "Impossible stepsize");
+				if (t < reps)
 					reps = t;
 			}
-			mask = 0;
+			break;
+		case REPS | BEGIN | ENDER:
+			if (infinity)
+				errx(1,
+				    "Can't specify end of infinite sequence");
+			if (reps == 1)
+				step = 0.0;
+			else
+				step = (ender - begin) / (reps - 1);
+			break;
+		case BEGIN | ENDER:
+			step = ender > begin ? 1 : -1; /* FreeBSD's behavior. */
+			/* FALLTHROUGH */
+		case BEGIN | ENDER | STEP:
+			if (step == 0.0) {
+				reps = 0;
+				infinity = true;
+				break;
+			}
+			reps = (ender - begin + step) / step;
+			if (reps <= 0)
+				errx(1, "Impossible stepsize");
+			break;
+		case ENDER:		/* Four cases involve only ender. */
+		case ENDER | STEP:
+		case REPS | ENDER:
+		case REPS | ENDER | STEP:
+			if (infinity)
+				errx(1,
+				    "Must specify start of infinite sequence");
+			begin = ender - reps * step + step;
 			break;
 		default:
-			error("Bad mask", "");
+			/*
+			 * The remaining eight cases omit ender.  We don't need
+			 * to compute anything because only reps, begin, step
+			 * are used for producing output below.  Rules 2. and 3.
+			 * together imply that ender will be set last.
+			 */
+			break;
 		}
-	if (reps == 0)
-		infinity = 1;
+
+		for (i = 1, x = begin; i <= reps || infinity; i++, x += step)
+			if (putdata(x, reps == i && !infinity))
+				errx(1, "range error in conversion: %f", x);
+	} else { /* Random output: use defaults for omitted values. */
+		bool		use_unif = 0;
+		uint32_t	pow10 = 1;
+		uint32_t	uintx = 0; /* Initialized to make gcc happy. */
+
+		if (prec > 9)	/* pow(10, prec) > UINT32_MAX */
+			errx(1, "requested precision too large");
+
+		if (ender < begin) {
+			x = begin;
+			begin = ender;
+			ender = x;
+		}
+		x = ender - begin;
+
+		if (prec > 0 || (fmod(ender, 1) == 0 && fmod(begin, 1) == 0)) {
+			double range;
+
+			while (prec-- > 0)
+				pow10 *= 10;
+
+			range = pow10 * (ender - begin);
+
+			/* If range is an integer, use arc4random_uniform(). */
+			if (fmod(range, 1) == 0) {
+				if (range >= UINT32_MAX)
+					errx(1, "requested range too large");
+				use_unif = 1;
+				uintx = range + 1;
+			}
+		}
+
+		for (i = 1; i <= reps || infinity; i++) {
+			double v;
+
+			if (use_unif) {
+				y = arc4random_uniform(uintx) / (double)pow10;
+				v = y + begin;
+			} else {
+				y = arc4random() / ((double)0xffffffff + 1);
+				v = y * x + begin;
+			}
+			if (putdata(v, reps == i && !infinity))
+				errx(1, "range error in conversion: %f", v);
+		}
+	}
+
+	if (finalnl)
+		putchar('\n');
+
+	return 0;
 }
 
-void
-putdata(x, notlast)
-	double x;
-	long notlast;
+static int
+putdata(double x, bool last)
 {
-	long		d = x;
-	register long	*dp = &d;
-
-	if (boring)				/* repeated word */
+	if (boring)
 		printf("%s", format);
-	else if (dox)				/* scalar */
-		printf(format, *dp);
-	else					/* real */
+	else if (longdata && nosign) {
+		if (x < 0.0 || x > (double)ULONG_MAX)
+			return 1;
+		printf(format, (unsigned long)x);
+	} else if (longdata) {
+		if (x < (double)LONG_MIN || x > (double)LONG_MAX)
+			return 1;
+		printf(format, (long)x);
+	} else if (chardata || (intdata && !nosign)) {
+		if (x < (double)INT_MIN || x > (double)INT_MAX)
+			return 1;
+		printf(format, (int)x);
+	} else if (intdata) {
+		if (x < 0.0 || x > (double)UINT_MAX)
+			return 1;
+		printf(format, (unsigned int)x);
+	} else
 		printf(format, x);
-	if (notlast != 0)
+	if (!last)
 		fputs(sepstring, stdout);
+
+	return 0;
 }
 
-void
-error(msg, s)
-	char *msg, *s;
+static void __dead
+usage(void)
 {
-	fprintf(stderr, "jot: ");
-	fprintf(stderr, msg, s);
-	fprintf(stderr,
-	    "\nusage:  jot [ options ] [ reps [ begin [ end [ s ] ] ] ]\n");
-	if (strncmp("jot - ", msg, 6) == 0)
-		fprintf(stderr, "Options:\n\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
-			"-r		random data\n",
-			"-c		character data\n",
-			"-n		no final newline\n",
-			"-b word		repeated word\n",
-			"-w word		context word\n",
-			"-s string	data separator\n",
-			"-p precision	number of characters\n");
+	(void)fprintf(stderr, "usage: jot [-cnr] [-b word] [-p precision] "
+	    "[-s string] [-w word]\n"
+	    "	   [reps [begin [end [step]]]]\n");
 	exit(1);
 }
 
-int
-getprec(s)
-	char *s;
+static int
+getprec(char *s)
 {
-	register char	*p;
-	register char	*q;
-
-	for (p = s; *p; p++)
-		if (*p == '.')
-			break;
-	if (!*p)
-		return (0);
-	for (q = ++p; *p; p++)
-		if (!isdigit(*p))
-			break;
-	return (p - q);
+	if ((s = strchr(s, '.')) == NULL)
+		return 0;
+	return strspn(s + 1, "0123456789");
 }
 
-void
-getformat()
+static void
+getformat(void)
 {
-	register char	*p;
+	char	*p;
 
-	if (boring)				/* no need to bother */
-		return;
-	for (p = format; *p; p++)		/* look for '%' */
-		if (*p == '%' && *(p+1) != '%')	/* leave %% alone */
-			break;
-	if (!*p && !chardata)
-		sprintf(p, "%%.%df", prec);
-	else if (!*p && chardata) {
-		strcpy(p, "%c");
-		dox = 1;
-	}
-	else if (!*(p+1))
-		strcat(format, "%");		/* cannot end in single '%' */
-	else {
-		while (!isalpha(*p))
-			p++;
+	p = format;
+	while ((p = strchr(p, '%')) != NULL && p[1] == '%')
+		p += 2;
+
+	if (p == NULL && !chardata) {
+		if (asprintf(&format, "%s%%.%df", format, prec) == -1)
+			err(1, NULL);
+	} else if (p == NULL && chardata) {
+		if (asprintf(&format, "%s%%c", format) == -1)
+			err(1, NULL);
+	} else if (p[1] == '\0') {
+		/* cannot end in single '%' */
+		if (asprintf(&format, "%s%%", format) == -1)
+			err(1, NULL);
+	} else {
+		/*
+		 * Allow conversion format specifiers of the form
+		 * %[#][ ][{+,-}][0-9]*[.[0-9]*]? where ? must be one of
+		 * [l]{d,i,o,u,x} or {f,e,g,F,E,G,d,o,x,D,O,U,X,c,u}
+		 */
+		char	*fmt;
+		int	dot, hash, space, sign, numbers;
+
+		fmt = p++;
+		dot = hash = space = sign = numbers = 0;
+		while (!isalpha((unsigned char)*p)) {
+			if (isdigit((unsigned char)*p)) {
+				numbers++;
+				p++;
+			} else if ((*p == '#' && !(numbers|dot|sign|space|
+			    hash++)) ||
+			    (*p == ' ' && !(numbers|dot|space++)) ||
+			    ((*p == '+' || *p == '-') && !(numbers|dot|sign++))
+			    || (*p == '.' && !(dot++)))
+				p++;
+			else
+				goto fmt_broken;
+		}
+		if (*p == 'l') {
+			longdata = true;
+			if (*++p == 'l') {
+				p++;
+				goto fmt_broken;
+			}
+		}
 		switch (*p) {
-		case 'f': case 'e': case 'g': case '%':
+		case 'd':
+		case 'i':
+			intdata = true;
 			break;
-		case 's':
-			error("Cannot convert numeric data to strings", "");
+		case 'o':
+		case 'u':
+		case 'x':
+		case 'X':
+			intdata = nosign = true;
 			break;
-		/* case 'd': case 'o': case 'x': case 'D': case 'O': case 'X':
-		case 'c': case 'u': */
+		case 'D':
+			if (longdata)
+				goto fmt_broken;
+			longdata = intdata = true; /* same as %ld */
+			break;
+		case 'O':
+		case 'U':
+			if (longdata)
+				goto fmt_broken;
+			longdata = intdata = nosign = true; /* same as %l[ou] */
+			break;
+		case 'c':
+			if (longdata)
+				goto fmt_broken;
+			chardata = true;
+			break;
+		case 'e':
+		case 'E':
+		case 'f':
+		case 'F':
+		case 'g':
+		case 'G':
+			if (longdata)
+				goto fmt_broken;
+			/* No cast needed for printing in putdata() */
+			break;
 		default:
-			dox = 1;
-			break;
+fmt_broken:
+			errx(1, "illegal or unsupported format '%.*s'",
+			    (int)(p + 1 - fmt), fmt);
+		}
+
+		while ((p = strchr(p, '%')) != NULL && p[1] == '%')
+			p += 2;
+
+		if (p != NULL) {
+			if (p[1] != '\0')
+				errx(1, "too many conversions");
+			/* cannot end in single '%' */
+			if (asprintf(&format, "%s%%", format) == -1)
+				err(1, NULL);
 		}
 	}
 }

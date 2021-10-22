@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Proc.pm,v 1.5 2017/08/15 04:11:20 bluhm Exp $
 
-# Copyright (c) 2010-2013 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2010-2017 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -43,9 +43,11 @@ END {
 sub new {
 	my $class = shift;
 	my $self = { @_ };
-	$self->{down} ||= $self->{alarm} ? "Alarm" : "Shutdown";
+	$self->{down} ||= $self->{alarm} ? "Alarm $class" : "Shutdown $class";
 	$self->{func} && ref($self->{func}) eq 'CODE'
 	    or croak "$class func not given";
+	!$self->{ktrace} || $self->{ktracefile}
+	    or croak "$class ktrace file not given";
 	$self->{logfile}
 	    or croak "$class log file not given";
 	open(my $fh, '>', $self->{logfile})
@@ -59,7 +61,7 @@ sub run {
 	my $self = shift;
 
 	defined(my $pid = fork())
-	    or die ref($self), " fork child failed";
+	    or die ref($self), " fork child failed: $!";
 	if ($pid) {
 		$CHILDREN{$pid} = 1;
 		$self->{pid} = $pid;
@@ -76,14 +78,24 @@ sub run {
 	open(STDERR, '>&', $self->{log})
 	    or die ref($self), " dup STDERR failed: $!";
 
+	if ($self->{ktrace}) {
+		my @cmd = ("ktrace", "-af", $self->{ktracefile}, "-p", $$);
+		do { local $> = 0; system(@cmd) }
+		    and die ref($self), " system '@cmd' failed: $?";
+		my $uid = $>;
+		do { local $> = 0; chown $uid, -1, $self->{ktracefile} }
+		    or die ref($self),
+		    " chown $uid '$self->{ktracefile}' failed: $?";
+	}
+
 	$self->child();
 	print STDERR $self->{up}, "\n";
 	alarm($self->{alarm}) if $self->{alarm};
 	$self->{func}->($self);
-	print STDERR "Shutdown", "\n";
+	print STDERR "Shutdown ", ref($self), "\n";
+
 	IO::Handle::flush(\*STDOUT);
 	IO::Handle::flush(\*STDERR);
-
 	POSIX::_exit(0);
 }
 
@@ -109,14 +121,15 @@ sub loggrep {
 	my $self = shift;
 	my($regex, $timeout) = @_;
 
-	my $end = time() + $timeout if $timeout;
+	my $end;
+	$end = time() + $timeout if $timeout;
 
 	do {
 		my($kid, $status, $code) = $self->wait(WNOHANG);
 		if ($self->{alarm} && $kid > 0 &&
 		    WIFSIGNALED($status) && WTERMSIG($status) == 14 ) {
 			# child killed by SIGALRM as expected
-			print {$self->{log}} "Alarm", "\n";
+			print {$self->{log}} "Alarm ", ref($self), "\n";
 		} elsif ($kid > 0 && $status != 0) {
 			# child terminated with failure
 			die ref($self), " child status: $status $code";
@@ -143,16 +156,16 @@ sub up {
 	my $self = shift;
 	my $timeout = shift || 10;
 	$self->loggrep(qr/$self->{up}/, $timeout)
-	    or croak ref($self), " no $self->{up} in $self->{logfile} ".
+	    or croak ref($self), " no '$self->{up}' in $self->{logfile} ".
 		"after $timeout seconds";
 	return $self;
 }
 
 sub down {
 	my $self = shift;
-	my $timeout = shift || 30;
+	my $timeout = shift || 20;
 	$self->loggrep(qr/$self->{down}/, $timeout)
-	    or croak ref($self), " no $self->{down} in $self->{logfile} ".
+	    or croak ref($self), " no '$self->{down}' in $self->{logfile} ".
 		"after $timeout seconds";
 	return $self;
 }

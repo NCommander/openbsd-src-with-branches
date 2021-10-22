@@ -1,0 +1,16 @@
+.\" $OpenBSD$
+.Dd $Mdocdate: December 21 2018 $
+.Dt FD-ARG 2
+.Os
+.Sh NAME
+.Nm Fd-arg
+.Nd escape sequences in the arguments of in-line EOL macros
+.Sh DESCRIPTION
+.ds s \(sh
+.Fd \*sunquoted unescaped
+.Pp
+.Fd "\*squoted" unescaped
+.Pp
+.Fd \\*sunquoted escaped
+.Pp
+.Fd "\\*squoted" escaped

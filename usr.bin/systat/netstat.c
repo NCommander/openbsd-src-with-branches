@@ -1,3 +1,4 @@
+/*	$OpenBSD: netstat.c,v 1.44 2015/01/20 18:26:57 deraadt Exp $	*/
 /*	$NetBSD: netstat.c,v 1.3 1995/06/18 23:53:07 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,344 +30,390 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)netstat.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: netstat.c,v 1.3 1995/06/18 23:53:07 cgd Exp $";
-#endif /* not lint */
-
 /*
  * netstat
  */
-#include <sys/param.h>
+
+#include <kvm.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
 #include <sys/socket.h>
-#include <sys/socketvar.h>
-#include <sys/mbuf.h>
-#include <sys/protosw.h>
+#define _KERNEL
+#include <sys/file.h>
+#undef _KERNEL
 
 #include <netinet/in.h>
-#include <net/route.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
-#include <netinet/in_pcb.h>
-#include <netinet/ip_icmp.h>
-#include <netinet/icmp_var.h>
-#include <netinet/ip_var.h>
 #include <netinet/tcp.h>
-#include <netinet/tcpip.h>
 #include <netinet/tcp_seq.h>
 #define TCPSTATES
 #include <netinet/tcp_fsm.h>
-#include <netinet/tcp_timer.h>
-#include <netinet/tcp_var.h>
-#include <netinet/tcp_debug.h>
-#include <netinet/udp.h>
-#include <netinet/udp_var.h>
+#include <arpa/inet.h>
 
 #include <netdb.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <err.h>
 #include <nlist.h>
 #include <paths.h>
 #include "systat.h"
-#include "extern.h"
+#include "engine.h"
 
-static void enter __P((struct inpcb *, struct socket *, int, char *));
-static char *inetname __P((struct in_addr));
-static void inetprint __P((struct in_addr *, int, char *));
-
-#define	streq(a,b)	(strcmp(a,b)==0)
-#define	YMAX(w)		((w)->maxy-1)
-
-WINDOW *
-opennetstat()
-{
-	sethostent(1);
-	setnetent(1);
-	return (subwin(stdscr, LINES-5-1, 0, 5, 0));
-}
+#define	TCP	0x1
+#define	UDP	0x2
+#define	OTHER	0x4
 
 struct netinfo {
-	struct	netinfo *ni_forw, *ni_prev;
-	short	ni_line;		/* line on screen */
-	short	ni_seen;		/* 0 when not present in list */
-	short	ni_flags;
-#define	NIF_LACHG	0x1		/* local address changed */
-#define	NIF_FACHG	0x2		/* foreign address changed */
-	short	ni_state;		/* tcp state */
-	char	*ni_proto;		/* protocol */
-	struct	in_addr ni_laddr;	/* local address */
-	long	ni_lport;		/* local port */
-	struct	in_addr	ni_faddr;	/* foreign address */
-	long	ni_fport;		/* foreign port */
-	long	ni_rcvcc;		/* rcv buffer character count */
-	long	ni_sndcc;		/* snd buffer character count */
+	union {
+		struct	in_addr nif_laddr;	/* local address */
+		struct	in6_addr nif_laddr6;	/* local address */
+	} l;
+	union {
+		struct	in_addr	nif_faddr;	/* foreign address */
+		struct	in6_addr nif_faddr6;	/* foreign address */
+	} f;
+	long	nif_rcvcc;		/* rcv buffer character count */
+	long	nif_sndcc;		/* snd buffer character count */
+	short	nif_lport;		/* local port */
+	short	nif_fport;		/* foreign port */
+	short	nif_state;		/* tcp state */
+	short	nif_family;
+	short	nif_proto;		/* protocol */
+	short	nif_ipproto;
 };
 
-static struct {
-	struct	netinfo *ni_forw, *ni_prev;
-} netcb;
+#define nif_laddr  l.nif_laddr
+#define nif_laddr6 l.nif_laddr6
+#define nif_faddr  f.nif_faddr
+#define nif_faddr6 f.nif_faddr6
+
+static void enter(struct kinfo_file *);
+static int kf_comp(const void *, const void *);
+static void inetprint(struct in_addr *, int, char *, field_def *);
+static void inet6print(struct in6_addr *, int, char *, field_def *);
+static void shownetstat(struct netinfo *p);
+
+void print_ns(void);
+int read_ns(void);
+int select_ns(void);
+int ns_keyboard_callback(int);
+
+#define	streq(a,b)	(strcmp(a,b)==0)
 
 static	int aflag = 0;
-static	int nflag = 0;
-static	int lastrow = 1;
-static	void enter(), inetprint();
-static	char *inetname();
 
-void
-closenetstat(w)
-        WINDOW *w;
-{
-	register struct netinfo *p;
+#define ADD_ALLOC  1000
 
-	endhostent();
-	endnetent();
-	p = (struct netinfo *)netcb.ni_forw;
-	while (p != (struct netinfo *)&netcb) {
-		if (p->ni_line != -1)
-			lastrow--;
-		p->ni_line = -1;
-		p = p->ni_forw;
-	}
-        if (w != NULL) {
-		wclear(w);
-		wrefresh(w);
-		delwin(w);
-	}
-}
+int protos;
 
-static struct nlist namelist[] = {
-#define	X_TCBTABLE	0
-	{ "_tcbtable" },
-#define	X_UDBTABLE	1
-	{ "_udbtable" },
-	{ "" },
+struct netinfo *netinfos = NULL;
+size_t num_ns = 0;
+static size_t num_alloc = 0;
+
+
+field_def fields_ns[] = {
+	{"LOCAL ADDRESS", 20, 45, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0},
+	{"FOREIGN ADDRESS", 20, 45, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0},
+	{"PROTO", 4, 9, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0},
+	{"RECV-Q", 5, 8, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"SEND-Q", 5, 8, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"STATE", 5, 11, 6, FLD_ALIGN_LEFT, -1, 0, 0, 0},
 };
 
-int
-initnetstat()
+#define FLD_NS_LOCAL	FIELD_ADDR(fields_ns,0)
+#define FLD_NS_FOREIGN	FIELD_ADDR(fields_ns,1)
+#define FLD_NS_PROTO	FIELD_ADDR(fields_ns,2)
+#define FLD_NS_RECV_Q	FIELD_ADDR(fields_ns,3)
+#define FLD_NS_SEND_Q	FIELD_ADDR(fields_ns,4)
+#define FLD_NS_STATE	FIELD_ADDR(fields_ns,5)
+
+/* Define views */
+field_def *view_ns_0[] = {
+	FLD_NS_LOCAL, FLD_NS_FOREIGN, FLD_NS_PROTO,
+	FLD_NS_RECV_Q, FLD_NS_SEND_Q, FLD_NS_STATE, NULL
+};
+
+/* Define view managers */
+struct view_manager netstat_mgr = {
+	"Netstat", select_ns, read_ns, NULL, print_header,
+	print_ns, ns_keyboard_callback, NULL, NULL
+};
+
+field_view views_ns[] = {
+	{view_ns_0, "netstat", '0', &netstat_mgr},
+	{NULL, NULL, 0, NULL}
+};
+
+
+
+
+struct netinfo *
+next_ns(void)
 {
-	if (kvm_nlist(kd, namelist)) {
-		nlisterr(namelist);
-		return(0);
+	if (num_alloc <= num_ns) {
+		struct netinfo *ni;
+		size_t a = num_alloc + ADD_ALLOC;
+		if (a < num_alloc)
+			return NULL;
+		ni = reallocarray(netinfos, a, sizeof(*ni));
+		if (ni == NULL)
+			return NULL;
+		netinfos = ni;
+		num_alloc = a;
 	}
-	if (namelist[X_TCBTABLE].n_value == 0) {
-		error("No symbols in namelist");
-		return(0);
-	}
-	netcb.ni_forw = netcb.ni_prev = (struct netinfo *)&netcb;
-	protos = TCP|UDP;
-	return(1);
-}
 
-void
-fetchnetstat()
-{
-	struct inpcbtable pcbtable;
-	register struct inpcb *head, *prev, *next;
-	register struct netinfo *p;
-	struct inpcb inpcb;
-	struct socket sockb;
-	struct tcpcb tcpcb;
-	void *off;
-	int istcp;
-
-	if (namelist[X_TCBTABLE].n_value == 0)
-		return;
-	for (p = netcb.ni_forw; p != (struct netinfo *)&netcb; p = p->ni_forw)
-		p->ni_seen = 0;
-	if (protos&TCP) {
-		off = NPTR(X_TCBTABLE); 
-		istcp = 1;
-	}
-	else if (protos&UDP) {
-		off = NPTR(X_UDBTABLE); 
-		istcp = 0;
-	}
-	else {
-		error("No protocols to display");
-		return;
-	}
-again:
-	KREAD(off, &pcbtable, sizeof (struct inpcbtable));
-	prev = head = (struct inpcb *)&((struct inpcbtable *)off)->inpt_queue;
-	next = pcbtable.inpt_queue.cqh_first;
-	while (next != head) {
-		KREAD(next, &inpcb, sizeof (inpcb));
-		if (inpcb.inp_queue.cqe_prev != prev) {
-printf("prev = %x, head = %x, next = %x, inpcb...prev = %x\n", prev, head, next, inpcb.inp_queue.cqe_prev);
-			p = netcb.ni_forw;
-			for (; p != (struct netinfo *)&netcb; p = p->ni_forw)
-				p->ni_seen = 1;
-			error("Kernel state in transition");
-			return;
-		}
-		prev = next;
-		next = inpcb.inp_queue.cqe_next;
-
-		if (!aflag && inet_lnaof(inpcb.inp_laddr) == INADDR_ANY)
-			continue;
-		if (nhosts && !checkhost(&inpcb))
-			continue;
-		if (nports && !checkport(&inpcb))
-			continue;
-		KREAD(inpcb.inp_socket, &sockb, sizeof (sockb));
-		if (istcp) {
-			KREAD(inpcb.inp_ppcb, &tcpcb, sizeof (tcpcb));
-			enter(&inpcb, &sockb, tcpcb.t_state, "tcp");
-		} else
-			enter(&inpcb, &sockb, 0, "udp");
-	}
-	if (istcp && (protos&UDP)) {
-		istcp = 0;
-		off = NPTR(X_UDBTABLE);
-		goto again;
-	}
+	return &netinfos[num_ns++];
 }
 
 static void
-enter(inp, so, state, proto)
-	register struct inpcb *inp;
-	register struct socket *so;
-	int state;
-	char *proto;
+enter(struct kinfo_file *kf)
 {
-	register struct netinfo *p;
+#define s6_addr32 __u6_addr.__u6_addr32
+	struct netinfo *p;
 
-	/*
-	 * Only take exact matches, any sockets with
-	 * previously unbound addresses will be deleted
-	 * below in the display routine because they
-	 * will appear as ``not seen'' in the kernel
-	 * data structures.
-	 */
-	for (p = netcb.ni_forw; p != (struct netinfo *)&netcb; p = p->ni_forw) {
-		if (!streq(proto, p->ni_proto))
-			continue;
-		if (p->ni_lport != inp->inp_lport ||
-		    p->ni_laddr.s_addr != inp->inp_laddr.s_addr)
-			continue;
-		if (p->ni_faddr.s_addr == inp->inp_faddr.s_addr &&
-		    p->ni_fport == inp->inp_fport)
+	/* first filter out unwanted sockets */
+	if (kf->so_family != AF_INET && kf->so_family != AF_INET6)
+		return;
+
+	switch (kf->so_protocol) {
+	case IPPROTO_TCP:
+		if ((protos & TCP) == 0)
+			return;
+		break;
+	case IPPROTO_UDP:
+		if ((protos & UDP) == 0)
+			return;
+		break;
+	default:
+		if ((protos & OTHER) == 0)
+			return;
+		break;
+	}
+
+	if (!aflag) {
+		struct in6_addr faddr6;
+
+		switch (kf->so_family) {
+		case AF_INET:
+			if (kf->inp_faddru[0] == INADDR_ANY)
+				return;
+			break;
+		case AF_INET6:
+			faddr6.s6_addr32[0] = kf->inp_faddru[0];
+			faddr6.s6_addr32[1] = kf->inp_faddru[1];
+			faddr6.s6_addr32[2] = kf->inp_faddru[2];
+			faddr6.s6_addr32[3] = kf->inp_faddru[3];
+			if (IN6_IS_ADDR_UNSPECIFIED(&faddr6))
+				return;
+			break;
+		}
+	}
+
+	/* finally enter the socket to the table */
+	p = next_ns();
+	if (p == NULL) {
+		error("Out of Memory!");
+		return;
+	}
+
+	p->nif_lport = kf->inp_lport;
+	p->nif_fport = kf->inp_fport;
+	p->nif_proto = kf->so_protocol;
+	p->nif_ipproto = kf->inp_proto;
+
+	switch (kf->so_family) {
+	case AF_INET:
+		p->nif_family = AF_INET;
+		p->nif_laddr.s_addr = kf->inp_laddru[0];
+		p->nif_faddr.s_addr = kf->inp_faddru[0];
+		break;
+	case AF_INET6:
+		p->nif_family = AF_INET6;
+		p->nif_laddr6.s6_addr32[0] = kf->inp_laddru[0];
+		p->nif_laddr6.s6_addr32[1] = kf->inp_laddru[1];
+		p->nif_laddr6.s6_addr32[2] = kf->inp_laddru[2];
+		p->nif_laddr6.s6_addr32[3] = kf->inp_laddru[3];
+		p->nif_faddr6.s6_addr32[0] = kf->inp_faddru[0];
+		p->nif_faddr6.s6_addr32[1] = kf->inp_faddru[1];
+		p->nif_faddr6.s6_addr32[2] = kf->inp_faddru[2];
+		p->nif_faddr6.s6_addr32[3] = kf->inp_faddru[3];
+		break;
+	}
+
+	p->nif_rcvcc = kf->so_rcv_cc;
+	p->nif_sndcc = kf->so_snd_cc;
+	p->nif_state = kf->t_state;
+#undef s6_addr32
+}
+
+
+/* netstat callback functions */
+
+int
+select_ns(void)
+{
+	num_disp = num_ns;
+	return (0);
+}
+
+static int type_map[] = { -1, 2, 3, 1, 4, 5 };
+
+static int
+kf_comp(const void *a, const void *b)
+{
+	const struct kinfo_file *ka = a, *kb = b;
+
+	if (ka->so_family != kb->so_family) {
+		/* AF_INET < AF_INET6 < AF_LOCAL */
+		if (ka->so_family == AF_INET)
+			return (-1);
+		if (ka->so_family == AF_LOCAL)
+			return (1);
+		if (kb->so_family == AF_LOCAL)
+			return (-1);
+		return (1);
+	}
+	if (ka->so_family == AF_LOCAL) {
+		if (type_map[ka->so_type] < type_map[kb->so_type])
+			return (-1);
+		if (type_map[ka->so_type] > type_map[kb->so_type])
+			return (1);
+	} else if (ka->so_family == AF_INET || ka->so_family == AF_INET6) {
+		if (ka->so_protocol < kb->so_protocol)
+			return (-1);
+		if (ka->so_protocol > kb->so_protocol)
+			return (1);
+		if (ka->so_type == SOCK_DGRAM || ka->so_type == SOCK_STREAM) {
+			/* order sockets by remote port desc */
+			if (ka->inp_fport > kb->inp_fport)
+				return (-1);
+			if (ka->inp_fport < kb->inp_fport)
+				return (1);
+		} else if (ka->so_type == SOCK_RAW) {
+			if (ka->inp_proto > kb->inp_proto)
+				return (-1);
+			if (ka->inp_proto < kb->inp_proto)
+				return (1);
+		}
+	}
+	return (0);
+}
+
+
+int
+read_ns(void)
+{
+	struct kinfo_file *kf;
+	int i, fcnt;
+
+	if (kd == NULL) {
+		error("Failed to initialize KVM!");
+		return (0);
+	}
+	kf = kvm_getfiles(kd, KERN_FILE_BYFILE, DTYPE_SOCKET,
+	    sizeof(*kf), &fcnt);
+	if (kf == NULL) {
+		error("Out of Memory!");
+		return (0);
+	}
+
+	/* sort sockets by AF, proto and type */
+	qsort(kf, fcnt, sizeof(*kf), kf_comp);
+
+	num_ns = 0;
+
+	for (i = 0; i < fcnt; i++)
+		enter(&kf[i]);
+
+	num_disp = num_ns;
+	return 0;
+}
+
+void
+print_ns(void)
+{
+	int n, count = 0;
+
+	for (n = dispstart; n < num_disp; n++) {
+		shownetstat(netinfos + n);
+		count++;
+		if (maxprint > 0 && count >= maxprint)
 			break;
 	}
-	if (p == (struct netinfo *)&netcb) {
-		if ((p = malloc(sizeof(*p))) == NULL) {
-			error("Out of memory");
-			return;
-		}
-		p->ni_prev = (struct netinfo *)&netcb;
-		p->ni_forw = netcb.ni_forw;
-		netcb.ni_forw->ni_prev = p;
-		netcb.ni_forw = p;
-		p->ni_line = -1;
-		p->ni_laddr = inp->inp_laddr;
-		p->ni_lport = inp->inp_lport;
-		p->ni_faddr = inp->inp_faddr;
-		p->ni_fport = inp->inp_fport;
-		p->ni_proto = proto;
-		p->ni_flags = NIF_LACHG|NIF_FACHG;
-	}
-	p->ni_rcvcc = so->so_rcv.sb_cc;
-	p->ni_sndcc = so->so_snd.sb_cc;
-	p->ni_state = state;
-	p->ni_seen = 1;
 }
 
-/* column locations */
-#define	LADDR	0
-#define	FADDR	LADDR+23
-#define	PROTO	FADDR+23
-#define	RCVCC	PROTO+6
-#define	SNDCC	RCVCC+7
-#define	STATE	SNDCC+7
 
-
-void
-labelnetstat()
+int
+initnetstat(void)
 {
-	if (namelist[X_TCBTABLE].n_type == 0)
-		return;
-	wmove(wnd, 0, 0); wclrtobot(wnd);
-	mvwaddstr(wnd, 0, LADDR, "Local Address");
-	mvwaddstr(wnd, 0, FADDR, "Foreign Address");
-	mvwaddstr(wnd, 0, PROTO, "Proto");
-	mvwaddstr(wnd, 0, RCVCC, "Recv-Q");
-	mvwaddstr(wnd, 0, SNDCC, "Send-Q");
-	mvwaddstr(wnd, 0, STATE, "(state)"); 
+	field_view *v;
+
+	protos = TCP|UDP|OTHER;
+	for (v = views_ns; v->name != NULL; v++)
+		add_view(v);
+
+	return(1);
 }
 
-void
-shownetstat()
+static void
+shownetstat(struct netinfo *p)
 {
-	register struct netinfo *p, *q;
+	char *proto = NULL;
 
-	/*
-	 * First, delete any connections that have gone
-	 * away and adjust the position of connections
-	 * below to reflect the deleted line.
-	 */
-	p = netcb.ni_forw;
-	while (p != (struct netinfo *)&netcb) {
-		if (p->ni_line == -1 || p->ni_seen) {
-			p = p->ni_forw;
-			continue;
-		}
-		wmove(wnd, p->ni_line, 0); wdeleteln(wnd);
-		q = netcb.ni_forw;
-		for (; q != (struct netinfo *)&netcb; q = q->ni_forw)
-			if (q != p && q->ni_line > p->ni_line) {
-				q->ni_line--;
-				/* this shouldn't be necessary */
-				q->ni_flags |= NIF_LACHG|NIF_FACHG;
-			}
-		lastrow--;
-		q = p->ni_forw;
-		p->ni_prev->ni_forw = p->ni_forw;
-		p->ni_forw->ni_prev = p->ni_prev;
-		free(p);
-		p = q;
+	switch (p->nif_proto) {
+	case IPPROTO_TCP:
+		proto = "tcp";
+		break;
+	case IPPROTO_UDP:
+		proto = "udp";
+		break;
 	}
-	/*
-	 * Update existing connections and add new ones.
-	 */
-	for (p = netcb.ni_forw; p != (struct netinfo *)&netcb; p = p->ni_forw) {
-		if (p->ni_line == -1) {
-			/*
-			 * Add a new entry if possible.
-			 */
-			if (lastrow > YMAX(wnd))
-				continue;
-			p->ni_line = lastrow++;
-			p->ni_flags |= NIF_LACHG|NIF_FACHG;
-		}
-		if (p->ni_flags & NIF_LACHG) {
-			wmove(wnd, p->ni_line, LADDR);
-			inetprint(&p->ni_laddr, p->ni_lport, p->ni_proto);
-			p->ni_flags &= ~NIF_LACHG;
-		}
-		if (p->ni_flags & NIF_FACHG) {
-			wmove(wnd, p->ni_line, FADDR);
-			inetprint(&p->ni_faddr, p->ni_fport, p->ni_proto);
-			p->ni_flags &= ~NIF_FACHG;
-		}
-		mvwaddstr(wnd, p->ni_line, PROTO, p->ni_proto);
-		mvwprintw(wnd, p->ni_line, RCVCC, "%6d", p->ni_rcvcc);
-		mvwprintw(wnd, p->ni_line, SNDCC, "%6d", p->ni_sndcc);
-		if (streq(p->ni_proto, "tcp"))
-			if (p->ni_state < 0 || p->ni_state >= TCP_NSTATES)
-				mvwprintw(wnd, p->ni_line, STATE, "%d",
-				    p->ni_state);
-			else
-				mvwaddstr(wnd, p->ni_line, STATE,
-				    tcpstates[p->ni_state]);
-		wclrtoeol(wnd);
+
+	switch (p->nif_family) {
+	case AF_INET:
+		inetprint(&p->nif_laddr, p->nif_lport,
+			  proto, FLD_NS_LOCAL);
+		inetprint(&p->nif_faddr, p->nif_fport,
+			  proto, FLD_NS_FOREIGN);
+		break;
+	case AF_INET6:
+		inet6print(&p->nif_laddr6, p->nif_lport,
+			   proto, FLD_NS_LOCAL);
+		inet6print(&p->nif_faddr6, p->nif_fport,
+			   proto, FLD_NS_FOREIGN);
+		break;
 	}
-	if (lastrow < YMAX(wnd)) {
-		wmove(wnd, lastrow, 0); wclrtobot(wnd);
-		wmove(wnd, YMAX(wnd), 0); wdeleteln(wnd);	/* XXX */
+ 
+	tb_start();
+	switch (p->nif_proto) {
+	case IPPROTO_TCP:
+	case IPPROTO_UDP:
+		tbprintf(proto);
+		if (p->nif_family == AF_INET6)
+			tbprintf("6");
+		break;
+	case IPPROTO_DIVERT:
+		tbprintf("divert");
+		if (p->nif_family == AF_INET6)
+			tbprintf("6");
+		break;
+	default:
+		tbprintf("%d", p->nif_ipproto);
+		break;
 	}
+
+	print_fld_tb(FLD_NS_PROTO);
+
+	print_fld_size(FLD_NS_RECV_Q, p->nif_rcvcc);
+	print_fld_size(FLD_NS_SEND_Q, p->nif_sndcc);
+
+	if (p->nif_proto == IPPROTO_TCP) {
+		if (p->nif_state < 0 || p->nif_state >= TCP_NSTATES)
+			print_fld_uint(FLD_NS_STATE, p->nif_state);
+		else
+			print_fld_str(FLD_NS_STATE, tcpstates[p->nif_state]);
+	}
+	end_line();
 }
 
 /*
@@ -378,103 +421,75 @@ shownetstat()
  * If the nflag was specified, use numbers instead of names.
  */
 static void
-inetprint(in, port, proto)
-	register struct in_addr *in;
-	int port;
-	char *proto;
+inetprint(struct in_addr *in, int port, char *proto, field_def *fld)
 {
 	struct servent *sp = 0;
-	char line[80], *cp, *index();
 
-	sprintf(line, "%.*s.", 16, inetname(*in));
-	cp = index(line, '\0');
+	tb_start();
+	tbprintf("%s", inetname(*in));
+
 	if (!nflag && port)
 		sp = getservbyport(port, proto);
 	if (sp || port == 0)
-		sprintf(cp, "%.8s", sp ? sp->s_name : "*");
+		tbprintf(":%s", sp ? sp->s_name : "*");
 	else
-		sprintf(cp, "%d", ntohs((u_short)port));
-	/* pad to full column to clear any garbage */
-	cp = index(line, '\0');
-	while (cp - line < 22)
-		*cp++ = ' ';
-	*cp = '\0';
-	waddstr(wnd, line);
+		tbprintf(":%d", ntohs((u_short)port));
+
+	print_fld_tb(fld);
 }
 
-/*
- * Construct an Internet address representation.
- * If the nflag has been supplied, give 
- * numeric value, otherwise try for symbolic name.
- */
-static char *
-inetname(in)
-	struct in_addr in;
+static void
+inet6print(struct in6_addr *in6, int port, char *proto, field_def *fld)
 {
-	char *cp = 0;
-	static char line[50];
-	struct hostent *hp;
-	struct netent *np;
+	struct servent *sp = 0;
 
-	if (!nflag && in.s_addr != INADDR_ANY) {
-		int net = inet_netof(in);
-		int lna = inet_lnaof(in);
+	tb_start();
 
-		if (lna == INADDR_ANY) {
-			np = getnetbyaddr(net, AF_INET);
-			if (np)
-				cp = np->n_name;
-		}
-		if (cp == 0) {
-			hp = gethostbyaddr((char *)&in, sizeof (in), AF_INET);
-			if (hp)
-				cp = hp->h_name;
-		}
-	}
-	if (in.s_addr == INADDR_ANY)
-		strcpy(line, "*");
-	else if (cp)
-		strcpy(line, cp);
-	else {
-		in.s_addr = ntohl(in.s_addr);
-#define C(x)	((x) & 0xff)
-		sprintf(line, "%u.%u.%u.%u", C(in.s_addr >> 24),
-			C(in.s_addr >> 16), C(in.s_addr >> 8), C(in.s_addr));
-	}
-	return (line);
+	tbprintf("%s", inet6name(in6));
+	if (!nflag && port)
+		sp = getservbyport(port, proto);
+	if (sp || port == 0)
+		tbprintf(":%s", sp ? sp->s_name : "*");
+	else
+		tbprintf(":%d", ntohs((u_short)port));
+
+	print_fld_tb(fld);
 }
 
 int
-cmdnetstat(cmd, args)
-	char *cmd, *args;
+ns_keyboard_callback(int ch)
 {
-	register struct netinfo *p;
-
-	if (prefix(cmd, "all")) {
+	switch (ch) {
+	case 'a':
 		aflag = !aflag;
-		goto fixup;
-	}
-	if  (prefix(cmd, "numbers") || prefix(cmd, "names")) {
-		int new;
+		gotsig_alarm = 1;
+		break;
+	case 'n':
+		nflag = !nflag;
+		gotsig_alarm = 1;
+		break;
+	case 'o':
+		protos ^= OTHER;
+		gotsig_alarm = 1;
+		break;
+	case 'r':
+		aflag = 0;
+		nflag = 1;
+		protos = TCP|UDP;
+		gotsig_alarm = 1;
+		break;
+	case 't':
+		protos ^= TCP;
+		gotsig_alarm = 1;
+		break;
+	case 'u':
+		protos ^= UDP;
+		gotsig_alarm = 1;
+		break;
+	default:
+		return keyboard_callback(ch);
+	};
 
-		new = prefix(cmd, "numbers");
-		if (new == nflag)
-			return (1);
-		p = netcb.ni_forw;
-		for (; p != (struct netinfo *)&netcb; p = p->ni_forw) {
-			if (p->ni_line == -1)
-				continue;
-			p->ni_flags |= NIF_LACHG|NIF_FACHG;
-		}
-		nflag = new;
-		goto redisplay;
-	}
-	if (!netcmd(cmd, args))
-		return (0);
-fixup:
-	fetchnetstat();
-redisplay:
-	shownetstat();
-	refresh();
-	return (1);
+	return 1;
 }
+

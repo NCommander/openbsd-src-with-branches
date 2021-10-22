@@ -1,3 +1,4 @@
+/*	$OpenBSD: pattern.c,v 1.5 2009/10/27 23:59:26 deraadt Exp $	*/
 /*	$NetBSD: pattern.c,v 1.3 1995/03/23 08:35:47 cgd Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,27 +33,19 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pattern.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: pattern.c,v 1.3 1995/03/23 08:35:47 cgd Exp $";
-#endif
-#endif /* not lint */
-
 /*
  * pattern - the Eratosthenes sieve on odd numbers for 3,5,7,11 and 13
  *
- * By: Landon Curt Noll                             chongo@toad.com
+ * By: Landon Curt Noll				    chongo@toad.com
  *
  *   chongo <for a good prime call: 391581 * 2^216193 - 1> /\oo/\
  *
  * To avoid excessive sieves for small factors, we use the table below to 
  * setup our sieve blocks.  Each element represents a odd number starting 
- * with 1.  All non-zero elements are factors of 3, 5, 7, 11 and 13.
+ * with 1.  All non-zero elements are coprime to 3, 5, 7, 11 and 13.
  */
 
-char pattern[] = {
+const char pattern[] = {
 1,0,0,0,0,0,0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,1,0,0,1,0,0,1,1,0,0,1,0,1,1,0,0,
 1,0,1,0,0,1,0,0,0,1,0,1,1,0,1,1,0,1,0,0,0,0,0,0,1,0,1,0,0,1,1,0,0,0,0,1,1,0,0,
 1,0,0,1,0,1,0,0,1,0,0,1,1,0,0,0,0,1,1,0,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,0,1,
@@ -443,4 +432,4 @@ char pattern[] = {
 0,0,1,1,0,0,0,0,1,1,0,0,1,0,1,0,0,0,0,0,0,1,0,1,1,0,1,1,0,1,0,0,0,1,0,0,1,0,1,
 0,0,1,1,0,1,0,0,1,1,0,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0,0,0,0,0,0,0,1
 };
-int pattern_size = (sizeof(pattern)/sizeof(pattern[0]));
+const int pattern_size = (sizeof(pattern)/sizeof(pattern[0]));

@@ -1,4 +1,5 @@
-/*	$NetBSD: interactive.c,v 1.9 1995/03/18 14:59:44 cgd Exp $	*/
+/*	$OpenBSD: interactive.c,v 1.29 2015/01/16 06:40:00 deraadt Exp $	*/
+/*	$NetBSD: interactive.c,v 1.10 1997/03/19 08:42:52 lukem Exp $	*/
 
 /*
  * Copyright (c) 1985, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)interactive.c	8.3 (Berkeley) 9/13/94";
-#else
-static char rcsid[] = "$NetBSD: interactive.c,v 1.9 1995/03/18 14:59:44 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 
@@ -53,8 +41,11 @@ static char rcsid[] = "$NetBSD: interactive.c,v 1.9 1995/03/18 14:59:44 cgd Exp 
 #include <setjmp.h>
 #include <glob.h>
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <limits.h>
 
 #include "restore.h"
 #include "extern.h"
@@ -85,26 +76,26 @@ struct arglist {
 	char	*cmd;		/* the current command */
 };
 
-static char	*copynext __P((char *, char *));
-static int	 fcmp __P((const void *, const void *));
-static void	 formatf __P((struct afile *, int));
-static void	 getcmd __P((char *, char *, char *, struct arglist *));
-struct dirent	*glob_readdir __P((RST_DIR *dirp));
-static int	 glob_stat __P((const char *, struct stat *));
-static void	 mkentry __P((char *, struct direct *, struct afile *));
-static void	 printlist __P((char *, char *));
+static char	*copynext(char *, char *);
+static int	 fcmp(const void *, const void *);
+static void	 formatf(struct afile *, int);
+static void	 getcmd(char *, char *, size_t, char *, size_t, struct arglist *);
+struct dirent	*glob_readdir(RST_DIR *dirp);
+static int	 glob_stat(const char *, struct stat *);
+static void	 mkentry(char *, struct direct *, struct afile *);
+static void	 printlist(char *, char *);
 
 /*
  * Read and execute commands from the terminal.
  */
 void
-runcmdshell()
+runcmdshell(void)
 {
-	register struct entry *np;
+	struct entry *np;
 	ino_t ino;
 	struct arglist arglist;
-	char curdir[MAXPATHLEN];
-	char name[MAXPATHLEN];
+	char curdir[PATH_MAX];
+	char name[PATH_MAX];
 	char cmd[BUFSIZ];
 
 	arglist.freeglob = 0;
@@ -115,7 +106,7 @@ runcmdshell()
 	arglist.glob.gl_closedir = (void *)rst_closedir;
 	arglist.glob.gl_lstat = glob_stat;
 	arglist.glob.gl_stat = glob_stat;
-	canon("/", curdir);
+	canon("/", curdir, sizeof curdir);
 loop:
 	if (setjmp(reset) != 0) {
 		if (arglist.freeglob != 0) {
@@ -127,7 +118,7 @@ loop:
 		volno = 0;
 	}
 	runshell = 1;
-	getcmd(curdir, cmd, name, &arglist);
+	getcmd(curdir, cmd, sizeof cmd, name, sizeof name, &arglist);
 	switch (cmd[0]) {
 	/*
 	 * Add elements to the extraction list.
@@ -155,7 +146,7 @@ loop:
 			fprintf(stderr, "%s: not a directory\n", name);
 			break;
 		}
-		(void) strcpy(curdir, name);
+		(void)strlcpy(curdir, name, sizeof curdir);
 		break;
 	/*
 	 * Delete elements from the extraction list.
@@ -306,14 +297,14 @@ loop:
  * eliminate any embedded ".." components.
  */
 static void
-getcmd(curdir, cmd, name, ap)
-	char *curdir, *cmd, *name;
-	struct arglist *ap;
+getcmd(char *curdir, char *cmd, size_t cmdlen, char *name, size_t namelen,
+       struct arglist *ap)
 {
-	register char *cp;
+	char *cp;
 	static char input[BUFSIZ];
 	char output[BUFSIZ];
 #	define rawname input	/* save space by reusing input buffer */
+	int globretval;
 
 	/*
 	 * Check to see if still processing arguments.
@@ -325,16 +316,16 @@ getcmd(curdir, cmd, name, ap)
 	/*
 	 * Read a command line and trim off trailing white space.
 	 */
-	do	{
-		fprintf(stderr, "restore > ");
-		(void) fflush(stderr);
-		(void) fgets(input, BUFSIZ, terminal);
-	} while (!feof(terminal) && input[0] == '\n');
-	if (feof(terminal)) {
-		(void) strcpy(cmd, "quit");
-		return;
-	}
-	for (cp = &input[strlen(input) - 2]; *cp == ' ' || *cp == '\t'; cp--)
+	do {
+		(void)fprintf(stderr, "%s > ", __progname);
+		(void)fflush(stderr);
+		if (fgets(input, sizeof input, terminal) == NULL) {
+			(void)strlcpy(cmd, "quit", cmdlen);
+			return;
+		}
+	} while (input[0] == '\n' || input[0] == '\0');
+	for (cp = &input[strlen(input) - 1];
+	     cp >= input && (*cp == ' ' || *cp == '\t' || *cp == '\n'); cp--)
 		/* trim off trailing white space and newline */;
 	*++cp = '\0';
 	/*
@@ -346,7 +337,7 @@ getcmd(curdir, cmd, name, ap)
 	 * If no argument, use curdir as the default.
 	 */
 	if (*cp == '\0') {
-		(void) strcpy(name, curdir);
+		(void)strlcpy(name, curdir, PATH_MAX);
 		return;
 	}
 	nextarg = cp;
@@ -363,26 +354,42 @@ getnext:
 	 * If it is an absolute pathname, canonicalize it and return it.
 	 */
 	if (rawname[0] == '/') {
-		canon(rawname, name);
+		canon(rawname, name, namelen);
 	} else {
 		/*
 		 * For relative pathnames, prepend the current directory to
 		 * it then canonicalize and return it.
 		 */
-		(void) strcpy(output, curdir);
-		(void) strcat(output, "/");
-		(void) strcat(output, rawname);
-		canon(output, name);
+		snprintf(output, sizeof(output), "%s/%s", curdir, rawname);
+		canon(output, name, namelen);
 	}
-	if (glob(name, GLOB_ALTDIRFUNC, NULL, &ap->glob) < 0)
-		fprintf(stderr, "%s: out of memory\n", ap->cmd);
+	if ((globretval = glob(name, GLOB_ALTDIRFUNC | GLOB_NOESCAPE,
+	    NULL, &ap->glob)) < 0) {
+		fprintf(stderr, "%s: %s: ", ap->cmd, name);
+		switch (globretval) {
+		case GLOB_NOSPACE:
+			fprintf(stderr, "out of memory\n");
+			break;
+		case GLOB_NOMATCH:
+			fprintf(stderr, "no filename match.\n");
+			break;
+		case GLOB_ABORTED:
+			fprintf(stderr, "glob() aborted.\n");
+			break;
+		default:
+			fprintf(stderr, "unknown error!\n");
+			break;
+		}
+	}
+
 	if (ap->glob.gl_pathc == 0)
 		return;
 	ap->freeglob = 1;
 	ap->argcnt = ap->glob.gl_pathc;
 
 retnext:
-	strcpy(name, ap->glob.gl_pathv[ap->glob.gl_pathc - ap->argcnt]);
+	strlcpy(name, ap->glob.gl_pathv[ap->glob.gl_pathc - ap->argcnt],
+	    PATH_MAX);
 	if (--ap->argcnt == 0) {
 		ap->freeglob = 0;
 		globfree(&ap->glob);
@@ -394,10 +401,9 @@ retnext:
  * Strip off the next token of the input.
  */
 static char *
-copynext(input, output)
-	char *input, *output;
+copynext(char *input, char *output)
 {
-	register char *cp, *bp;
+	char *cp, *bp;
 	char quote;
 
 	for (cp = input; *cp == ' ' || *cp == '\t'; cp++)
@@ -428,7 +434,7 @@ copynext(input, output)
 		 */
 		quote = *cp++;
 		while (*cp != quote && *cp != '\0')
-			*bp++ = *cp++ | 0200;
+			*bp++ = *cp++;
 		if (*cp++ == '\0') {
 			fprintf(stderr, "missing %c\n", quote);
 			cp--;
@@ -444,18 +450,17 @@ copynext(input, output)
  * remove any imbedded "." and ".." components.
  */
 void
-canon(rawname, canonname)
-	char *rawname, *canonname;
+canon(char *rawname, char *canonname, size_t canonnamelen)
 {
-	register char *cp, *np;
+	char *cp, *np;
 
 	if (strcmp(rawname, ".") == 0 || strncmp(rawname, "./", 2) == 0)
-		(void) strcpy(canonname, "");
+		(void)strlcpy(canonname, "", canonnamelen);
 	else if (rawname[0] == '/')
-		(void) strcpy(canonname, ".");
+		(void)strlcpy(canonname, ".", canonnamelen);
 	else
-		(void) strcpy(canonname, "./");
-	(void) strcat(canonname, rawname);
+		(void)strlcpy(canonname, "./", canonnamelen);
+	(void)strlcat(canonname, rawname, canonnamelen);
 	/*
 	 * Eliminate multiple and trailing '/'s
 	 */
@@ -477,14 +482,14 @@ canon(rawname, canonname)
 			np++;
 		if (np - cp == 1 && *cp == '.') {
 			cp--;
-			(void) strcpy(cp, np);
+			(void)strlcpy(cp, np, canonname + canonnamelen - cp);
 			np = cp;
 		}
 		if (np - cp == 2 && strncmp(cp, "..", 2) == 0) {
 			cp--;
 			while (cp > &canonname[1] && *--cp != '/')
 				/* find beginning of name */;
-			(void) strcpy(cp, np);
+			(void)strlcpy(cp, np, canonname + canonnamelen - cp);
 			np = cp;
 		}
 	}
@@ -494,20 +499,18 @@ canon(rawname, canonname)
  * Do an "ls" style listing of a directory
  */
 static void
-printlist(name, basename)
-	char *name;
-	char *basename;
+printlist(char *name, char *basename)
 {
-	register struct afile *fp, *list, *listp;
-	register struct direct *dp;
+	struct afile *fp, *list, *listp = NULL;
+	struct direct *dp;
 	struct afile single;
 	RST_DIR *dirp;
-	int entries, len, namelen;
-	char locname[MAXPATHLEN + 1];
+	size_t namelen;
+	int entries, len;
+	char locname[PATH_MAX];
 
 	dp = pathsearch(name);
-	if (dp == NULL || (!dflag && TSTINO(dp->d_ino, dumpmap) == 0) ||
-	    (!vflag && dp->d_ino == WINO))
+	if (dp == NULL || (!dflag && TSTINO(dp->d_ino, dumpmap) == 0))
 		return;
 	if ((dirp = rst_opendir(name)) == NULL) {
 		entries = 1;
@@ -521,10 +524,10 @@ printlist(name, basename)
 		}
 	} else {
 		entries = 0;
-		while (dp = rst_readdir(dirp))
+		while ((dp = rst_readdir(dirp)))
 			entries++;
 		rst_closedir(dirp);
-		list = (struct afile *)malloc(entries * sizeof(struct afile));
+		list = calloc(entries, sizeof(struct afile));
 		if (list == NULL) {
 			fprintf(stderr, "ls: out of memory\n");
 			return;
@@ -534,24 +537,25 @@ printlist(name, basename)
 		fprintf(stderr, "%s:\n", name);
 		entries = 0;
 		listp = list;
-		(void) strncpy(locname, name, MAXPATHLEN);
-		(void) strncat(locname, "/", MAXPATHLEN);
-		namelen = strlen(locname);
-		while (dp = rst_readdir(dirp)) {
+		namelen = strlcpy(locname, name, sizeof(locname));
+		if (namelen >= sizeof(locname) - 1)
+			namelen = sizeof(locname) - 2;
+		locname[namelen++] = '/';
+		locname[namelen] = '\0';
+		while ((dp = rst_readdir(dirp))) {
 			if (dp == NULL)
 				break;
 			if (!dflag && TSTINO(dp->d_ino, dumpmap) == 0)
 				continue;
-			if (!vflag && (dp->d_ino == WINO ||
-			     strcmp(dp->d_name, ".") == 0 ||
+			if (!vflag && (strcmp(dp->d_name, ".") == 0 ||
 			     strcmp(dp->d_name, "..") == 0))
 				continue;
 			locname[namelen] = '\0';
-			if (namelen + dp->d_namlen >= MAXPATHLEN) {
+			if (namelen + dp->d_namlen >= PATH_MAX) {
 				fprintf(stderr, "%s%s: name exceeds %d char\n",
-					locname, dp->d_name, MAXPATHLEN);
+					locname, dp->d_name, PATH_MAX);
 			} else {
-				(void) strncat(locname, dp->d_name,
+				(void)strncat(locname, dp->d_name,
 				    (int)dp->d_namlen);
 				mkentry(locname, dp, listp++);
 				entries++;
@@ -578,10 +582,7 @@ printlist(name, basename)
  * Read the contents of a directory.
  */
 static void
-mkentry(name, dp, fp)
-	char *name;
-	struct direct *dp;
-	register struct afile *fp;
+mkentry(char *name, struct direct *dp, struct afile *fp)
 {
 	char *cp;
 	struct entry *np;
@@ -622,10 +623,6 @@ mkentry(name, dp, fp)
 		fp->postfix = '#';
 		break;
 
-	case DT_WHT:
-		fp->postfix = '%';
-		break;
-
 	case DT_UNKNOWN:
 	case DT_DIR:
 		if (inodetype(dp->d_ino) == NODE)
@@ -641,13 +638,11 @@ mkentry(name, dp, fp)
  * Print out a pretty listing of a directory
  */
 static void
-formatf(list, nentry)
-	register struct afile *list;
-	int nentry;
+formatf(struct afile *list, int nentry)
 {
-	register struct afile *fp, *endlist;
+	struct afile *fp, *endlist;
 	int width, bigino, haveprefix, havepostfix;
-	int i, j, w, precision, columns, lines;
+	int i, j, w, precision = 0, columns, lines;
 
 	width = 0;
 	haveprefix = 0;
@@ -682,7 +677,8 @@ formatf(list, nentry)
 		for (j = 0; j < columns; j++) {
 			fp = &list[j * lines + i];
 			if (vflag) {
-				fprintf(stderr, "%*d ", precision, fp->fnum);
+				fprintf(stderr, "%*llu ", precision,
+				(unsigned long long)fp->fnum);
 				fp->len += precision + 1;
 			}
 			if (haveprefix) {
@@ -714,15 +710,12 @@ formatf(list, nentry)
 #undef d_ino
 
 struct dirent *
-glob_readdir(dirp)
-	RST_DIR *dirp;
+glob_readdir(RST_DIR *dirp)
 {
 	struct direct *dp;
 	static struct dirent adirent;
 
 	while ((dp = rst_readdir(dirp)) != NULL) {
-		if (!vflag && dp->d_ino == WINO)
-			continue;
 		if (dflag || TSTINO(dp->d_ino, dumpmap))
 			break;
 	}
@@ -738,15 +731,12 @@ glob_readdir(dirp)
  * Return st_mode information in response to stat or lstat calls
  */
 static int
-glob_stat(name, stp)
-	const char *name;
-	struct stat *stp;
+glob_stat(const char *name, struct stat *stp)
 {
-	register struct direct *dp;
+	struct direct *dp;
 
 	dp = pathsearch(name);
-	if (dp == NULL || (!dflag && TSTINO(dp->d_ino, dumpmap) == 0) ||
-	    (!vflag && dp->d_ino == WINO))
+	if (dp == NULL || (!dflag && TSTINO(dp->d_ino, dumpmap) == 0))
 		return (-1);
 	if (inodetype(dp->d_ino) == NODE)
 		stp->st_mode = S_IFDIR;
@@ -759,8 +749,7 @@ glob_stat(name, stp)
  * Comparison routine for qsort.
  */
 static int
-fcmp(f1, f2)
-	register const void *f1, *f2;
+fcmp(const void *f1, const void *f2)
 {
 	return (strcmp(((struct afile *)f1)->fname,
 	    ((struct afile *)f2)->fname));
@@ -770,11 +759,13 @@ fcmp(f1, f2)
  * respond to interrupts
  */
 void
-onintr(signo)
-	int signo;
+onintr(int signo)
 {
+	int save_errno = errno;
+
 	if (command == 'i' && runshell)
-		longjmp(reset, 1);
-	if (reply("restore interrupted, continue") == FAIL)
-		exit(1);
+		longjmp(reset, 1);	/* XXX signal/longjmp reentrancy */
+	if (reply("restore interrupted, continue") == FAIL)	/* XXX signal race */
+		_exit(1);
+	errno = save_errno;
 }

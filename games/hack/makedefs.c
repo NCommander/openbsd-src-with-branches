@@ -1,13 +1,73 @@
+/*	$OpenBSD: makedefs.c,v 1.11 2018/08/24 11:14:49 mestre Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: makedefs.c,v 1.4 1995/04/24 12:23:39 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
+#include <ctype.h>
+#include <err.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 /* construct definitions of object constants */
 #define	LINSZ	1000
@@ -16,21 +76,31 @@ static char rcsid[] = "$NetBSD: makedefs.c,v 1.4 1995/04/24 12:23:39 cgd Exp $";
 int fd;
 char string[STRSZ];
 
-main(argc, argv)
-	int argc;
-	char **argv;
+void capitalize(char *sp);
+int  getentry(void);
+int  skipuntil(char *s);
+char nextchar(void);
+void readline(void);
+
+int
+main(int argc, char **argv)
 {
-register int index = 0;
-register int propct = 0;
-register char *sp;
+	int index = 0;
+	int propct = 0;
+	char *sp;
+
 	if (argc != 2) {
 		(void)fprintf(stderr, "usage: makedefs file\n");
-		exit(1);
+		return 1;
 	}
-	if ((fd = open(argv[1], 0)) < 0) {
+	if ((fd = open(argv[1], O_RDONLY)) == -1) {
 		perror(argv[1]);
-		exit(1);
+		return 1;
 	}
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
 	skipuntil("objects[] = {");
 	while(getentry()) {
 		if(!*string){
@@ -57,15 +127,18 @@ register char *sp;
 	printf("#define	LAST_GEM	(JADE+1)\n");
 	printf("#define	LAST_RING	%d\n", propct);
 	printf("#define	NROFOBJECTS	%d\n", index-1);
-	exit(0);
+	return 0;
 }
 
 char line[LINSZ], *lp = line, *lp0 = line, *lpe = line;
 int eof;
 
-readline(){
-register int n = read(fd, lp0, (line+LINSZ)-lp0);
-	if(n < 0){
+void
+readline(void)
+{
+	int n = read(fd, lp0, (line+LINSZ)-lp0);
+
+	if(n == -1){
 		printf("Input error.\n");
 		exit(1);
 	}
@@ -74,7 +147,8 @@ register int n = read(fd, lp0, (line+LINSZ)-lp0);
 }
 
 char
-nextchar(){
+nextchar(void)
+{
 	if(lp == lpe){
 		readline();
 		lp = lp0;
@@ -82,8 +156,11 @@ nextchar(){
 	return((lp == lpe) ? 0 : *lp++);
 }
 
-skipuntil(s) char *s; {
-register char *sp0, *sp1;
+int
+skipuntil(char *s)
+{
+	char *sp0, *sp1;
+
 loop:
 	while(*s != nextchar())
 		if(eof) {
@@ -91,7 +168,7 @@ loop:
 			exit(1);
 		}
 	if(strlen(s) > lpe-lp+1){
-		register char *lp1, *lp2;
+		char *lp1, *lp2;
 		lp2 = lp;
 		lp1 = lp = lp0;
 		while(lp2 != lpe) *lp1++ = *lp2++;
@@ -114,12 +191,15 @@ loop:
 	goto loop;
 }
 
-getentry(){
-int inbraces = 0, inparens = 0, stringseen = 0, commaseen = 0;
-int prefix = 0;
-char ch;
+int
+getentry(void)
+{
+	int inbraces = 0, inparens = 0, stringseen = 0, commaseen = 0;
+	int prefix = 0;
+	char ch;
 #define	NSZ	10
-char identif[NSZ], *ip;
+	char identif[NSZ], *ip;
+
 	string[0] = string[4] = 0;
 	/* read until {...} or XXX(...) followed by ,
 	   skip comment and #define lines
@@ -128,12 +208,12 @@ char identif[NSZ], *ip;
 	while(1) {
 		ch = nextchar();
 	swi:
-		if(letter(ch)){
+		if(isalpha((unsigned char)ch)){
 			ip = identif;
 			do {
 				if(ip < identif+NSZ-1) *ip++ = ch;
 				ch = nextchar();
-			} while(letter(ch) || digit(ch));
+			} while(isalpha((unsigned char)ch) || isdigit((unsigned char)ch));
 			*ip = 0;
 			while(ch == ' ' || ch == '\t') ch = nextchar();
 			if(ch == '(' && !inparens && !stringseen)
@@ -171,7 +251,7 @@ char identif[NSZ], *ip;
 		case '\n':
 			/* watch for #define at begin of line */
 			if((ch = nextchar()) == '#'){
-				register char pch;
+				char pch;
 				/* skip until '\n' not preceded by '\\' */
 				do {
 					pch = ch;
@@ -199,9 +279,9 @@ char identif[NSZ], *ip;
 			continue;
 		case '"':
 			{
-				register char *sp = string + prefix;
-				register char pch;
-				register int store = (inbraces || inparens)
+				char *sp = string + prefix;
+				char pch;
+				int store = (inbraces || inparens)
 					&& !stringseen++ && !commaseen;
 				do {
 					pch = ch;
@@ -216,15 +296,8 @@ char identif[NSZ], *ip;
 	}
 }
 
-capitalize(sp) register char *sp; {
-	if('a' <= *sp && *sp <= 'z') *sp += 'A'-'a';
-}
-
-letter(ch) register char ch; {
-	return( ('a' <= ch && ch <= 'z') ||
-		('A' <= ch && ch <= 'Z') );
-}
-
-digit(ch) register char ch; {
-	return( '0' <= ch && ch <= '9' );
+void
+capitalize(char *sp)
+{
+	*sp = (char)toupper((unsigned char)*sp);
 }

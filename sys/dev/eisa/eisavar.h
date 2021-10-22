@@ -1,7 +1,8 @@
-/*	$NetBSD: eisavar.h,v 1.1 1995/04/17 12:08:23 cgd Exp $	*/
+/*	$OpenBSD: eisavar.h,v 1.13 2010/05/23 14:50:31 deraadt Exp $	*/
+/*	$NetBSD: eisavar.h,v 1.11 1997/06/06 23:30:07 thorpej Exp $	*/
 
 /*
- * Copyright (c) 1995 Christopher G. Demetriou
+ * Copyright (c) 1995, 1996 Christopher G. Demetriou
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,33 +32,68 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * XXX
- * XXX EISA AUTOCONFIG SHOULD BE SEPERATED FROM ISA AUTOCONFIG!!!
- * XXX
- */
+#ifndef _DEV_EISA_EISAVAR_H_
+#define	_DEV_EISA_EISAVAR_H_
 
 /*
- * pull in the ISA definitions
+ * Definitions for EISA autoconfiguration.
+ *
+ * This file describes types and functions which are used for EISA
+ * configuration.  Some of this information is machine-specific, and is
+ * separated into eisa_machdep.h.
  */
-#include <dev/isa/isavar.h>
+
+#include <machine/bus.h>
+#include <dev/eisa/eisareg.h>		/* For ID register & string info. */
+
+/* 
+ * Structures and definitions needed by the machine-dependent header.
+ */
+struct eisabus_attach_args;
 
 /*
- * and bend them to our twisted ways:
- * map the functions, etc. that are used
+ * Machine-dependent definitions.
  */
+#if defined(__alpha__)
+#include <alpha/eisa/eisa_machdep.h>
+#elif defined(__i386__)
+#include <i386/eisa/eisa_machdep.h>
+#else
+#include <machine/eisa_machdep.h>
+#endif
 
-#define eisa_attach_args	isa_attach_args			/* XXX */
-#define eisadev			isadev				/* XXX */
-#define	eisa_intr_establish	isa_intr_establish		/* XXX */
-#define	eisa_intr_disestablish	isa_intr_disestablish		/* XXX */
+typedef int	eisa_slot_t;		/* really only needs to be 4 bits */
 
-#define	EISA_IPL_NONE	ISA_IPL_NONE				/* XXX */
-#define	EISA_IPL_BIO	ISA_IPL_BIO				/* XXX */
-#define	EISA_IPL_NET	ISA_IPL_NET				/* XXX */
-#define	EISA_IPL_TTY	ISA_IPL_TTY				/* XXX */
-#define	EISA_IPL_CLOCK	ISA_IPL_CLOCK				/* XXX */
+/*
+ * EISA bus attach arguments.
+ */
+struct eisabus_attach_args {
+	char	*eba_busname;		/* XXX should be common */
+	bus_space_tag_t eba_iot;	/* eisa i/o space tag */
+	bus_space_tag_t eba_memt;	/* eisa mem space tag */
+	bus_dma_tag_t eba_dmat;		/* DMA tag */
+	eisa_chipset_tag_t eba_ec;
+};
 
-#define	EISA_IST_PULSE	ISA_IST_PULSE				/* XXX */
-#define	EISA_IST_EDGE	ISA_IST_EDGE				/* XXX */
-#define	EISA_IST_LEVEL	ISA_IST_LEVEL				/* XXX */
+/*
+ * EISA device attach arguments.
+ */
+struct eisa_attach_args {
+	bus_space_tag_t ea_iot;		/* eisa i/o space tag */
+	bus_space_tag_t ea_memt;	/* eisa mem space tag */
+	bus_dma_tag_t ea_dmat;		/* DMA tag */
+	eisa_chipset_tag_t ea_ec;
+
+	eisa_slot_t	ea_slot;
+	u_int8_t	ea_vid[EISA_NVIDREGS];
+	u_int8_t	ea_pid[EISA_NPIDREGS];
+	char		ea_idstring[EISA_IDSTRINGLEN];
+};
+
+/*
+ * Locators for EISA devices, as specified to config.
+ */
+#define	eisacf_slot		cf_loc[0]
+#define	EISA_UNKNOWN_SLOT	-1		/* wildcarded 'slot' */
+
+#endif /* _DEV_EISA_EISAVAR_H_ */

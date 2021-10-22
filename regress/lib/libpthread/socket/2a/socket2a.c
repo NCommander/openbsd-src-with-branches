@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_sock_2a.c,v 1.4 2000/01/06 06:58:34 d Exp $	*/
+/*	$OpenBSD: socket2a.c,v 1.4 2003/07/31 21:48:06 deraadt Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -49,6 +49,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 #include "test.h"
 
 struct sockaddr_in a_sout;
@@ -56,15 +57,14 @@ struct sockaddr_in a_sout;
 #define MESSAGE5 "This should be message #5"
 #define MESSAGE6 "This should be message #6"
 
-void * 
-sock_connect(arg)
-	void *arg;
+static void * 
+sock_connect(void *arg)
 {
 	char buf[1024];
 	int fd;
 	short port;
 
-	port = 3276;
+	port = atoi(arg);
  	a_sout.sin_family = AF_INET;
  	a_sout.sin_port = htons(port);
 	a_sout.sin_addr.s_addr = htonl(INADDR_LOOPBACK); /* loopback */
@@ -94,19 +94,17 @@ sock_connect(arg)
 }
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	pthread_t thread;
 
-	if (argv[1] && (!strcmp(argv[1], "fork okay"))) {
+	if (argc == 3 && (!strcmp(argv[1], "fork okay"))) {
 		sleep(1);
-		setbuf(stdout, NULL);
-		setbuf(stderr, NULL);
+		setvbuf(stdout, NULL, _IONBF, 0);
+		setvbuf(stderr, NULL, _IONBF, 0);
 
 		CHECKr(pthread_create(&thread, NULL, sock_connect, 
-		    (void *)0xdeadbeaf));
+		    (void *)argv[2]));
 		CHECKr(pthread_join(thread, NULL));
 		SUCCEED;
 	} else {

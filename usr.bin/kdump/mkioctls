@@ -1,4 +1,6 @@
 #!/bin/sh -
+#	$OpenBSD: mkioctls,v 1.42 2020/06/22 01:02:30 dlg Exp $
+
 #
 # Copyright (c) 1994
 #	The Regents of the University of California.  All rights reserved.
@@ -11,11 +13,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the University of
-#	California, Berkeley and its contributors.
-# 4. Neither the name of the University nor the names of its contributors
+# 3. Neither the name of the University nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
 #
@@ -33,39 +31,88 @@
 #
 #	@(#)mkioctls	8.2 (Berkeley) 4/28/95
 #
-cpp -dM ${1+"$@"} | awk '
+${CC:-cc} -E -dM ${1+"$@"} | awk '
 BEGIN {
-	print "#include <sys/param.h>"
+	print "#include <sys/types.h>"
+	print "#include <sys/signal.h>"
 	print "#include <sys/socket.h>"
 	print "#include <sys/socketvar.h>"
+	print "#include <miscfs/fuse/fusefs.h>"
 	print "#include <net/route.h>"
 	print "#include <net/if.h>"
+	print "#include <net/bpf.h>"
 	print "#include <netinet/in.h>"
 	print "#include <netinet/ip_mroute.h>"
+	print "#include <netinet/if_ether.h>"
+	print "#include <netinet6/in6_var.h>"
+	print "#include <netinet6/nd6.h>"
+	print "#include <netinet6/ip6_mroute.h>"
+	print "#include <net/if_bridge.h>"
 	print "#include <sys/termios.h>"
-	print "#define COMPAT_43"
+	print "#include <netinet/ip_ipsp.h>"
+	print "#include <net/if_enc.h>"
+	print "#include <net80211/ieee80211.h>"
+	print "#include <net80211/ieee80211_ioctl.h>"
+	print "#include <net/ppp_defs.h>"
+	print "#include <net/if_ppp.h>"
+	print "#include <net/if_pppoe.h>"
+	print "#include <net/if_trunk.h>"
+	print "#include <net/if_tun.h>"
+	print "#include <net/if_wg.h>"
+	print "#include <net/pfvar.h>"
+	print "#include <net/pipex.h>"
+	print "#include <sys/disklabel.h>"
+	print "#include <sys/ataio.h>"
+	print "#include <sys/audioio.h>"
+	print "#include <sys/cdio.h>"
+	print "#include <sys/chio.h>"
+	print "#include <sys/disk.h>"
+	print "#include <sys/dkio.h>"
+	print "#include <sys/filio.h>"
+	print "#include <sys/gpio.h>"
+	print "#include <sys/kcov.h>"
+	print "#include <sys/memrange.h>"
+	print "#include <sys/mtio.h>"
+	print "#include <sys/pciio.h>"
+	print "#include <sys/radioio.h>"
+	print "#include <sys/scsiio.h>"
+	print "#include <sys/tty.h>"
+	print "#include <sys/syslog.h>"
+	print "#include <sys/videoio.h>"
+	print "#include <dev/biovar.h>"
+	print "#include <dev/ipmi.h>"
+	print "#include <dev/wscons/wsconsio.h>"
+	print "#include <dev/vndioctl.h>"
+	print "#include <scsi/scsi_all.h>"
+	print "#include <dev/vscsivar.h>"
+	print "#include <dev/pci/drm/include/uapi/drm/i915_drm.h>"
+	print "#include <dev/pv/pvvar.h>"
+	print "#include <dev/usb/udlio.h>"
+	print "#include <dev/usb/usb.h>"
 	print "#include <sys/ioctl.h>"
+	print "#include \"kdump.h\""
 	print ""
-	print "char *"
-	print "ioctlname(val)"
-	print "\tlong val;"
+	print "const char *"
+	print "ioctlname(unsigned long val)"
 	print "{"
+	print "\tswitch (val) {"
 	print ""
 }
 
-/^#[ 	]*define[ 	]*(TIO|FIO|SIO|OSIO)[A-Z]*[ 	]*_IO/ {
-	
+/^[ 	]*#[ 	]*define[ 	]+(ATAIO|AUDIO_|BIOC|CDIO|CHIO|DIOC|DRM|GPIO|IPMICTL|TIO|FIO|KIO|MEMRANGE|MTIOC|LIOC|SIO|OSIO|SESIOC_|SIOC|PCIOC|PIPEX|PPPIOC|PPPOE|PVBUSIOC|RIOC|RND|STRIOC|SCIOC|OSCIOC|TUN|UDLIO|USB|VIDIOC|VNDIOC|VSCSI|WSKBD|WSMOUSE|WSDISPLAY|WSMUX|PTM)[A-Z_0-9]*[ 	]+(DRM)?_IO/ {
+
 	# find where the name starts
 	for (i = 1; i <= NF; i++)
 		if ($i ~ /define/)
 			break;
 	++i;
-	# 
-	printf("\tif (val == %s)\n\t\treturn (\"%s\");\n", $i, $i);
-
+	ioc[$i] = 0;
 }
+
 END {
-	print "\n\treturn (NULL);"
+	for(i in ioc)
+		printf("\tcase %s:\t\treturn (\"%s\");\n", i, i);
+	print "\tdefault:\t\treturn (NULL);\n\t}"
 	print "}"
 }
 '

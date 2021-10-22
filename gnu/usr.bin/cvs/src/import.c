@@ -896,16 +896,19 @@ static const struct compair comtable[] =
     {"r", "# "},			/* ratfor	 */
     {"rc", " * "},			/* Microsoft Windows resource file */
     {"red", "% "},			/* psl/rlisp	 */
-#ifdef sparc
+#ifdef __sparc__
     {"s", "! "},			/* assembler	 */
 #endif
-#ifdef mc68000
+#ifdef __sparc64__
+    {"s", "! "},			/* assembler	 */
+#endif
+#ifdef __mc68000__
     {"s", "| "},			/* assembler	 */
 #endif
-#ifdef pdp11
+#ifdef __pdp11__
     {"s", "/ "},			/* assembler	 */
 #endif
-#ifdef vax
+#ifdef __vax__
     {"s", "# "},			/* assembler	 */
 #endif
 #ifdef __ksr__
@@ -1195,6 +1198,9 @@ add_rcs_file (message, rcs, user, add_vhead, key_opt,
 	if (fprintf (fprcs, "next     ;\012") < 0)
 	    goto write_error;
 
+	if (fprintf (fprcs, "commitid        %s;\012", global_session_id) < 0)
+	    goto write_error;
+
 #ifdef PRESERVE_PERMISSIONS_SUPPORT
 	/* Store initial permissions if necessary. */
 	if (preserve_perms)
@@ -1250,7 +1256,9 @@ userfile);
 		fprintf (fprcs, "date     %s;  author %s;  state Exp;\012",
 			 altdate1, author) < 0 ||
 		fprintf (fprcs, "branches ;\012") < 0 ||
-		fprintf (fprcs, "next     ;\012") < 0)
+		fprintf (fprcs, "next     ;\012") < 0 ||
+		fprintf (fprcs, "commitid        %s;\012", global_session_id) < 0
+		)
 		goto write_error;
 
 #ifdef PRESERVE_PERMISSIONS_SUPPORT

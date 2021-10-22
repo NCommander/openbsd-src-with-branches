@@ -67,6 +67,7 @@
 
 #define RELOC_MACROS_GEN_FUNC
 
+#include "elf/aarch64.h"
 #include "elf/alpha.h"
 #include "elf/arc.h"
 #include "elf/arm.h"
@@ -90,6 +91,7 @@
 #include "elf/m32r.h"
 #include "elf/m68k.h"
 #include "elf/m68hc11.h"
+#include "elf/m88k.h"
 #include "elf/mcore.h"
 #include "elf/mips.h"
 #include "elf/mmix.h"
@@ -101,6 +103,7 @@
 #include "elf/pj.h"
 #include "elf/ppc.h"
 #include "elf/ppc64.h"
+#include "elf/riscv.h"
 #include "elf/s390.h"
 #include "elf/sh.h"
 #include "elf/sparc.h"
@@ -134,7 +137,8 @@ static Elf_Internal_Syminfo *dynamic_syminfo;
 static unsigned long dynamic_syminfo_offset;
 static unsigned int dynamic_syminfo_nent;
 static char program_interpreter[64];
-static bfd_vma dynamic_info[DT_JMPREL + 1];
+static bfd_vma dynamic_info[DT_RUNPATH + 1];
+static bfd_vma dynamic_info_DT_GNU_HASH;
 static bfd_vma version_info[16];
 static Elf_Internal_Ehdr elf_header;
 static Elf_Internal_Shdr *section_headers;
@@ -613,6 +617,9 @@ guess_is_rela (unsigned long e_machine)
     case EM_BLACKFIN:
     case EM_NIOS32:
     case EM_ALTERA_NIOS2:
+    case EM_88K:
+    case EM_AARCH64:
+    case EM_RISCV:
       return TRUE;
 
     case EM_MMA:
@@ -1133,6 +1140,17 @@ dump_relocations (FILE *file,
 	  rtype = elf_bfin_reloc_type (type);
 	  break;
 
+	case EM_88K:
+	  rtype = elf_m88k_reloc_type (type);
+	  break;
+
+	case EM_AARCH64:
+	  rtype = elf_aarch64_reloc_type (type);
+	  break;
+
+	case EM_RISCV:
+	  rtype = elf_riscv_reloc_type (type);
+	  break;
 	}
 
       if (rtype == NULL)
@@ -1420,6 +1438,20 @@ get_alpha_dynamic_type (unsigned long type)
 }
 
 static const char *
+get_m88k_dynamic_type (unsigned long type)
+{
+  switch (type)
+    {
+    case DT_88K_ADDRBASE: return "88K_ADDRBASE";
+    case DT_88K_PLTSTART: return "88K_PLTSTART";
+    case DT_88K_PLTEND: return "88K_PLTEND";
+    case DT_88K_TDESC: return "88K_TDESC";
+    default:
+      return NULL;
+    }
+}
+
+static const char *
 get_dynamic_type (unsigned long type)
 {
   static char buff[64];
@@ -1499,6 +1531,7 @@ get_dynamic_type (unsigned long type)
     case DT_GNU_CONFLICTSZ: return "GNU_CONFLICTSZ";
     case DT_GNU_LIBLIST: return "GNU_LIBLIST";
     case DT_GNU_LIBLISTSZ: return "GNU_LIBLISTSZ";
+    case DT_GNU_HASH:	return "GNU_HASH";
 
     default:
       if ((type >= DT_LOPROC) && (type <= DT_HIPROC))
@@ -1525,6 +1558,9 @@ get_dynamic_type (unsigned long type)
 	      break;
 	    case EM_ALPHA:
 	      result = get_alpha_dynamic_type (type);
+	      break;
+	    case EM_88K:
+	      result = get_m88k_dynamic_type (type);
 	      break;
 	    default:
 	      result = NULL;
@@ -1696,6 +1732,8 @@ get_machine_name (unsigned e_machine)
     case EM_NIOS32:		return "Altera Nios";
     case EM_ALTERA_NIOS2:	return "Altera Nios II";
     case EM_XC16X:		return "Infineon Technologies xc16x";
+    case EM_AARCH64:		return "AArch64";
+    case EM_RISCV:		return "RISC-V";
     default:
       snprintf (buff, sizeof (buff), _("<unknown>: %x"), e_machine);
       return buff;
@@ -2074,6 +2112,7 @@ get_machine_flags (unsigned e_flags, unsigned e_machine)
 	    case E_MIPS_MACH_5500: strcat (buf, ", 5500"); break;
 	    case E_MIPS_MACH_SB1:  strcat (buf, ", sb1");  break;
 	    case E_MIPS_MACH_9000: strcat (buf, ", 9000"); break;
+	    case E_MIPS_MACH_OCTEON: strcat (buf, ", octeon"); break;
 	    case 0:
 	    /* We simply ignore the field in this case to avoid confusion:
 	       MIPS ELF does not specify EF_MIPS_MACH, it is a GNU
@@ -2235,6 +2274,13 @@ get_machine_flags (unsigned e_flags, unsigned e_machine)
 	  if ((e_flags & EF_VAX_GFLOAT))
 	    strcat (buf, ", G-Float");
 	  break;
+
+	case EM_88K:
+	  if ((e_flags & EF_NABI))
+	    strcat (buf, ", not 88Open ABI compliant");
+	  if ((e_flags & EF_M88110))
+	    strcat (buf, ", m88110");
+	  break;
 	}
     }
 
@@ -2372,6 +2418,12 @@ get_segment_type (unsigned long p_type)
 			return "GNU_EH_FRAME";
     case PT_GNU_STACK:	return "GNU_STACK";
     case PT_GNU_RELRO:  return "GNU_RELRO";
+    case PT_OPENBSD_RANDOMIZE:
+			return "OPENBSD_RANDOMIZE";
+    case PT_OPENBSD_WXNEEDED:
+			return "OPENBSD_WXNEEDED";
+    case PT_OPENBSD_BOOTDATA:
+			return "OPENBSD_BOOTDATA";
 
     default:
       if ((p_type >= PT_LOPROC) && (p_type <= PT_HIPROC))
@@ -2569,6 +2621,7 @@ get_section_type_name (unsigned int sh_type)
     case SHT_INIT_ARRAY:	return "INIT_ARRAY";
     case SHT_FINI_ARRAY:	return "FINI_ARRAY";
     case SHT_PREINIT_ARRAY:	return "PREINIT_ARRAY";
+    case SHT_GNU_HASH:		return "GNU_HASH";
     case SHT_GROUP:		return "GROUP";
     case SHT_SYMTAB_SHNDX:	return "SYMTAB SECTION INDICIES";
     case SHT_GNU_verdef:	return "VERDEF";
@@ -2579,6 +2632,8 @@ get_section_type_name (unsigned int sh_type)
     case 0x7ffffffd:		return "AUXILIARY";
     case 0x7fffffff:		return "FILTER";
     case SHT_GNU_LIBLIST:	return "GNU_LIBLIST";
+    case SHT_LLVM_LINKER_OPTIONS: return "LLVM_LINKER_OPTIONS";
+    case SHT_LLVM_ADDRSIG:	return "LLVM_ADDRSIG";
 
     default:
       if ((sh_type >= SHT_LOPROC) && (sh_type <= SHT_HIPROC))
@@ -3129,8 +3184,11 @@ process_file_header (void)
 	      (long) elf_header.e_ehsize);
       printf (_("  Size of program headers:           %ld (bytes)\n"),
 	      (long) elf_header.e_phentsize);
-      printf (_("  Number of program headers:         %ld\n"),
+      printf (_("  Number of program headers:         %ld"),
 	      (long) elf_header.e_phnum);
+      if (section_headers != NULL && elf_header.e_phnum == PN_XNUM)
+	printf (" (%ld)", (long) section_headers[0].sh_info);
+      putc ('\n', stdout);
       printf (_("  Size of section headers:           %ld (bytes)\n"),
 	      (long) elf_header.e_shentsize);
       printf (_("  Number of section headers:         %ld"),
@@ -3147,6 +3205,8 @@ process_file_header (void)
 
   if (section_headers != NULL)
     {
+      if (elf_header.e_phnum == PN_XNUM)
+        elf_header.e_phnum = section_headers[0].sh_info;
       if (elf_header.e_shnum == 0)
 	elf_header.e_shnum = section_headers[0].sh_size;
       if (elf_header.e_shstrndx == SHN_XINDEX)
@@ -3792,7 +3852,12 @@ get_elf_section_flags (bfd_vma sh_flags)
 		}
 
 	      size -= flags [index].len;
+#if 0
 	      p = stpcpy (p, flags [index].str);
+#else
+	      strcpy (p, flags [index].str);
+	      p += strlen(p);
+#endif
 	    }
 	  else if (flag & SHF_MASKOS)
 	    os_flags |= flag;
@@ -6215,6 +6280,15 @@ process_dynamic_section (FILE *file)
 	    }
 	  break;
 
+	case DT_GNU_HASH:
+	  dynamic_info_DT_GNU_HASH = entry->d_un.d_val;
+	  if (do_dynamic)
+	    {
+	      print_vma (entry->d_un.d_val, PREFIX_HEX);
+	      putchar ('\n');
+	    }
+	  break;
+
 	default:
 	  if ((entry->d_tag >= DT_VERSYM) && (entry->d_tag <= DT_VERNEEDNUM))
 	    version_info[DT_VERSIONTAGIDX (entry->d_tag)] =
@@ -6890,6 +6964,9 @@ process_symbol_table (FILE *file)
   bfd_vma nchains = 0;
   bfd_vma *buckets = NULL;
   bfd_vma *chains = NULL;
+  bfd_vma ngnubuckets = 0;
+  bfd_vma *gnubuckets = NULL;
+  bfd_vma *gnuchains = NULL;
 
   if (! do_syms && !do_histogram)
     return 1;
@@ -6965,7 +7042,7 @@ process_symbol_table (FILE *file)
 
 	      n = print_vma (si, DEC_5);
 	      if (n < 5)
-		fputs ("     " + n, stdout);
+		fputs (&"     "[n], stdout);
 	      printf (" %3lu: ", hn);
 	      print_vma (psym->st_value, LONG_HEX);
 	      putchar (' ');
@@ -6973,7 +7050,7 @@ process_symbol_table (FILE *file)
 
 	      printf ("  %6s", get_symbol_type (ELF_ST_TYPE (psym->st_info)));
 	      printf (" %6s",  get_symbol_binding (ELF_ST_BIND (psym->st_info)));
-	      printf (" %3s",  get_symbol_visibility (ELF_ST_VISIBILITY (psym->st_other)));
+	      printf (" %7s",  get_symbol_visibility (ELF_ST_VISIBILITY (psym->st_other)));
 	      /* Check to see if any other bits in the st_other field are set.
 	         Note - displaying this information disrupts the layout of the
 	         table being generated, but for the moment this case is very rare.  */
@@ -7045,7 +7122,7 @@ process_symbol_table (FILE *file)
 	      print_vma (psym->st_size, DEC_5);
 	      printf (" %-7s", get_symbol_type (ELF_ST_TYPE (psym->st_info)));
 	      printf (" %-6s", get_symbol_binding (ELF_ST_BIND (psym->st_info)));
-	      printf (" %-3s", get_symbol_visibility (ELF_ST_VISIBILITY (psym->st_other)));
+	      printf (" %-7s", get_symbol_visibility (ELF_ST_VISIBILITY (psym->st_other)));
 	      /* Check to see if any other bits in the st_other field are set.
 	         Note - displaying this information disrupts the layout of the
 	         table being generated, but for the moment this case is very rare.  */
@@ -7267,6 +7344,166 @@ process_symbol_table (FILE *file)
     {
       free (buckets);
       free (chains);
+    }
+
+  if (do_histogram && dynamic_info_DT_GNU_HASH)
+    {
+      unsigned char nb[16];
+      bfd_vma i, maxchain = 0xffffffff, symidx, bitmaskwords;
+      unsigned long *lengths;
+      unsigned long *counts;
+      unsigned long hn;
+      unsigned long maxlength = 0;
+      unsigned long nzero_counts = 0;
+      unsigned long nsyms = 0;
+      bfd_vma buckets_vma;
+
+      if (fseek (file,
+		 (archive_file_offset
+		  + offset_from_vma (file, dynamic_info_DT_GNU_HASH,
+				     sizeof nb)),
+		 SEEK_SET))
+	{
+	  error (_("Unable to seek to start of dynamic information"));
+	  return 0;
+	}
+
+      if (fread (nb, 16, 1, file) != 1)
+	{
+	  error (_("Failed to read in number of buckets\n"));
+	  return 0;
+	}
+
+      ngnubuckets = byte_get (nb, 4);
+      symidx = byte_get (nb + 4, 4);
+      bitmaskwords = byte_get (nb + 8, 4);
+      buckets_vma = dynamic_info_DT_GNU_HASH + 16;
+      if (is_32bit_elf)
+	buckets_vma += bitmaskwords * 4;
+      else
+	buckets_vma += bitmaskwords * 8;
+
+      if (fseek (file,
+		 (archive_file_offset
+		  + offset_from_vma (file, buckets_vma, 4)),
+		 SEEK_SET))
+	{
+	  error (_("Unable to seek to start of dynamic information"));
+	  return 0;
+	}
+
+      gnubuckets = get_dynamic_data (file, ngnubuckets, 4);
+
+      if (gnubuckets == NULL)
+	return 0;
+
+      for (i = 0; i < ngnubuckets; i++)
+	if (gnubuckets[i] != 0)
+	  {
+	    if (gnubuckets[i] < symidx)
+	      return 0;
+
+	    if (maxchain == 0xffffffff || gnubuckets[i] > maxchain)
+	      maxchain = gnubuckets[i];
+	  }
+
+      if (maxchain == 0xffffffff)
+	return 0;
+
+      maxchain -= symidx;
+
+      if (fseek (file,
+		 (archive_file_offset
+		  + offset_from_vma (file, buckets_vma
+					   + 4 * (ngnubuckets + maxchain), 4)),
+		 SEEK_SET))
+	{
+	  error (_("Unable to seek to start of dynamic information"));
+	  return 0;
+	}
+
+      do
+	{
+	  if (fread (nb, 4, 1, file) != 1)
+	    {
+	      error (_("Failed to determine last chain length\n"));
+	      return 0;
+	    }
+
+	  if (maxchain + 1 == 0)
+	    return 0;
+
+	  ++maxchain;
+	}
+      while ((byte_get (nb, 4) & 1) == 0);
+
+      if (fseek (file,
+		 (archive_file_offset
+		  + offset_from_vma (file, buckets_vma + 4 * ngnubuckets, 4)),
+		 SEEK_SET))
+	{
+	  error (_("Unable to seek to start of dynamic information"));
+	  return 0;
+	}
+
+      gnuchains = get_dynamic_data (file, maxchain, 4);
+
+      if (gnuchains == NULL)
+	return 0;
+
+      lengths = calloc (ngnubuckets, sizeof (*lengths));
+      if (lengths == NULL)
+	{
+	  error (_("Out of memory"));
+	  return 0;
+	}
+
+      printf (_("\nHistogram for `.gnu.hash' bucket list length (total of %lu buckets):\n"),
+	      (unsigned long) ngnubuckets);
+      printf (_(" Length  Number     %% of total  Coverage\n"));
+
+      for (hn = 0; hn < ngnubuckets; ++hn)
+	if (gnubuckets[hn] != 0)
+	  {
+	    bfd_vma off, length = 1;
+
+	    for (off = gnubuckets[hn] - symidx;
+		 (gnuchains[off] & 1) == 0; ++off)
+	      ++length;
+	    lengths[hn] = length;
+	    if (length > maxlength)
+	      maxlength = length;
+	    nsyms += length;
+	  }
+
+      counts = calloc (maxlength + 1, sizeof (*counts));
+      if (counts == NULL)
+	{
+	  error (_("Out of memory"));
+	  return 0;
+	}
+
+      for (hn = 0; hn < ngnubuckets; ++hn)
+	++counts[lengths[hn]];
+
+      if (ngnubuckets > 0)
+	{
+	  unsigned long j;
+	  printf ("      0  %-10lu (%5.1f%%)\n",
+		  counts[0], (counts[0] * 100.0) / ngnubuckets);
+	  for (j = 1; j <= maxlength; ++j)
+	    {
+	      nzero_counts += counts[j] * j;
+	      printf ("%7lu  %-10lu (%5.1f%%)    %5.1f%%\n",
+		      j, counts[j], (counts[j] * 100.0) / ngnubuckets,
+		      (nzero_counts * 100.0) / nsyms);
+	    }
+	}
+
+      free (counts);
+      free (lengths);
+      free (gnubuckets);
+      free (gnuchains);
     }
 
   return 1;
@@ -8856,8 +9093,10 @@ get_file_header (FILE *file)
   if (is_32bit_elf)
     {
       Elf32_External_Ehdr ehdr32;
+      /* Temporary var to prevent the GCC -Wbounded checker from firing. */
+      void *tmp = &ehdr32.e_type[0];
 
-      if (fread (ehdr32.e_type, sizeof (ehdr32) - EI_NIDENT, 1, file) != 1)
+      if (fread (tmp, sizeof (ehdr32) - EI_NIDENT, 1, file) != 1)
 	return 0;
 
       elf_header.e_type      = BYTE_GET (ehdr32.e_type);
@@ -8877,6 +9116,8 @@ get_file_header (FILE *file)
   else
     {
       Elf64_External_Ehdr ehdr64;
+      /* Temporary var to prevent the GCC -Wbounded checker from firing. */
+      void *tmp = &ehdr64.e_type[0];
 
       /* If we have been compiled with sizeof (bfd_vma) == 4, then
 	 we will not be able to cope with the 64bit data found in
@@ -8889,7 +9130,7 @@ get_file_header (FILE *file)
 	  return 0;
 	}
 
-      if (fread (ehdr64.e_type, sizeof (ehdr64) - EI_NIDENT, 1, file) != 1)
+      if (fread (tmp, sizeof (ehdr64) - EI_NIDENT, 1, file) != 1)
 	return 0;
 
       elf_header.e_type      = BYTE_GET (ehdr64.e_type);
@@ -9098,7 +9339,8 @@ process_archive (char *file_name, FILE *file)
       return 1;
     }
 
-  if (memcmp (arhdr.ar_name, "/               ", 16) == 0)
+  if (memcmp (arhdr.ar_name, "/               ", 16) == 0
+      || memcmp (arhdr.ar_name, "/SYM64/         ", 16) == 0)
     {
       /* This is the archive symbol table.  Skip it.
 	 FIXME: We should have an option to dump it.  */
@@ -9332,6 +9574,11 @@ main (int argc, char **argv)
   expandargv (&argc, &argv);
 
   parse_args (argc, argv);
+
+  if (pledge ("stdio rpath", NULL) == -1) {
+    error (_("Failed to pledge\n"));
+    return 1;
+  }
 
   if (num_dump_sects > 0)
     {

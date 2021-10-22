@@ -1,3 +1,4 @@
+/*	$OpenBSD: swapctl.h,v 1.4 2007/07/16 21:05:46 millert Exp $	*/
 /*	$NetBSD: swapctl.h,v 1.2 1997/10/10 05:39:54 mrg Exp $	*/
 
 /*
@@ -12,8 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -28,5 +27,5 @@
  * SUCH DAMAGE.
  */
 
-/* pri, kflag, pflag, tflag, dolong (1 for long, 0 for short) */
-void list_swap __P((int, int, int, int, int));
+/* pri, kflag, pflag, dolong (1 for long, 0 for short) */
+void list_swap(int, int, int, int);

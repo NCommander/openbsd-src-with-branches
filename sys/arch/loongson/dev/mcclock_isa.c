@@ -1,4 +1,4 @@
-/*	$OpenBSD: mcclock_isa.c,v 1.8 2006/01/02 05:21:24 brad Exp $	*/
+/*	$OpenBSD: mcclock_isa.c,v 1.1.1.1 2009/12/25 21:04:32 miod Exp $	*/
 /*	$NetBSD: mcclock_isa.c,v 1.5 1996/12/05 01:39:29 cgd Exp $	*/
 
 /*
@@ -35,10 +35,11 @@
 
 #include <machine/bus.h>
 
-#include <mips64/dev/clockvar.h>
-#include <loongson/dev/mcclockvar.h>
+#include <dev/clock_subr.h>
 #include <dev/ic/mc146818reg.h>
 #include <dev/isa/isavar.h>
+
+#include <loongson/dev/mcclockvar.h>
 
 struct mcclock_isa_softc {
 	struct mcclock_softc	sc_mcclock;

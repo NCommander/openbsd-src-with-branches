@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.15 2011/05/01 12:57:11 eric Exp $	*/
+/*	$OpenBSD: common.c,v 1.3 2014/08/10 07:31:58 guenther Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -56,36 +56,38 @@ struct kv kv_family[] = {
 	{ AF_UNIX,	"unix" },
 	{ AF_INET,	"inet" },
 	{ AF_INET6,	"inet6" },
-	{ AF_IMPLINK,	"implink" },
-	{ AF_BLUETOOTH,	"bluetooth" },
 	{ 0,	NULL, }
 };
 struct kv kv_socktype[] = {
-	{ SOCK_STREAM,	"stream" },
-	{ SOCK_DGRAM,	"dgram" },
-	{ SOCK_RAW,	"raw" },
+	{ SOCK_STREAM,		"stream" },
+	{ SOCK_DGRAM,		"dgram" },
+	{ SOCK_RAW,		"raw" },
+	{ SOCK_SEQPACKET,	"seqpacket" },
 	{ 0,	NULL, }
 };
 struct kv kv_protocol[] = {
 	{ IPPROTO_UDP, "udp" },
 	{ IPPROTO_TCP, "tcp" },
+	{ IPPROTO_ICMP, "icmp" },
+	{ IPPROTO_ICMPV6, "icmpv6" },
 	{ 0,	NULL, }
 };
 
 static const char *
-kv_lookup_name(struct kv *kv, int code)
+kv_lookup_name(struct kv *kv, int code, char *buf, size_t sz)
 {
 	while (kv->name) {
 		if (kv->code == code)
 			return (kv->name);
 		kv++;
 	}
-	return "???";
+	snprintf(buf, sz, "%i", code);
+	return (buf);
 }
 
 struct keyval {
-        const char      *key;
-        uint16_t         value;   
+        const char *key;
+        int	    value;   
 };
 
 static struct keyval kv_class[] = {
@@ -133,6 +135,24 @@ static struct keyval kv_rcode[] = {
 	{ NULL, 	0 },
 };
 
+static struct keyval kv_resopt[] = {
+	{ "DEBUG",	RES_DEBUG },
+	{ "AAONLY",	RES_AAONLY },
+	{ "USEVC",	RES_USEVC },
+	{ "PRIMARY",	RES_PRIMARY },
+	{ "IGNTC",	RES_IGNTC },
+	{ "RECURSE",	RES_RECURSE },
+	{ "DEFNAMES",	RES_DEFNAMES },
+	{ "STAYOPEN",	RES_STAYOPEN },
+	{ "DNSRCH",	RES_DNSRCH },
+	{ "INSECURE1",	RES_INSECURE1 },
+	{ "INSECURE2",	RES_INSECURE2 },
+	{ "NOALIASES",	RES_NOALIASES },
+	{ "USE_INET6",	RES_USE_INET6 },
+	{ "USE_EDNS0",	RES_USE_EDNS0 },
+	{ "USE_DNSSEC",	RES_USE_DNSSEC },
+	{ NULL, 	0 },
+};
 
 const char *
 rcodetostr(uint16_t v)
@@ -185,7 +205,7 @@ strtotype(const char *name)
 	size_t	i;
 
 	for(i = 0; kv_type[i].key; i++)
-		if (!strcmp(kv_type[i].key, name))
+		if (!strcasecmp(kv_type[i].key, name))
 			return (kv_type[i].value);
 
 	return (0);
@@ -197,10 +217,50 @@ strtoclass(const char *name)
 	size_t	i;
 
 	for(i = 0; kv_class[i].key; i++)
-		if (!strcmp(kv_class[i].key, name))
+		if (!strcasecmp(kv_class[i].key, name))
 			return (kv_class[i].value);
 
 	return (0);
+}
+
+int
+strtoresopt(const char *name)
+{
+	size_t	i;
+
+	for(i = 0; kv_resopt[i].key; i++)
+		if (!strcasecmp(kv_resopt[i].key, name))
+			return (kv_resopt[i].value);
+
+	return (0);
+}
+
+void
+parseresopt(const char *name)
+{
+	static int init = 0;
+	int flag, neg = 0;
+
+	if (init == 0) {
+		res_init();
+		init = 1;
+	}
+
+	if (name[0] == '-') {
+		neg = 1;
+		name++;
+	}
+	else if (name[0] == '+')
+		name++;
+
+	flag = strtoresopt(name);
+	if (flag == 0)
+		errx(1, "unknown reslover option %s", name);
+	
+	if (neg)
+		_res.options &= ~flag;
+	else
+		_res.options |= flag;
 }
 
 void
@@ -243,12 +303,12 @@ print_netent(struct netent *e)
 void
 print_addrinfo(struct addrinfo *ai)
 {
-	char	buf[256];
+	char	buf[256], bf[64], bt[64], bp[64];
 
 	printf("family=%s socktype=%s protocol=%s addr=%s canonname=%s\n",
-		kv_lookup_name(kv_family, ai->ai_family),
-		kv_lookup_name(kv_socktype, ai->ai_socktype),
-		kv_lookup_name(kv_protocol, ai->ai_protocol),
+		kv_lookup_name(kv_family, ai->ai_family, bf, sizeof bf),
+		kv_lookup_name(kv_socktype, ai->ai_socktype, bt, sizeof bt),
+		kv_lookup_name(kv_protocol, ai->ai_protocol, bp, sizeof bp),
 		print_addr(ai->ai_addr, buf, sizeof buf),
 		ai->ai_canonname);
 }

@@ -1,5 +1,7 @@
 /*
  * Copyright (C) 1984-2012  Mark Nudelman
+ * Modified for use with illumos by Garrett D'Amore.
+ * Copyright 2014 Garrett D'Amore <garrett@damore.org>
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
@@ -7,289 +9,118 @@
  * For more information, see the README file.
  */
 
-
 /*
  * Functions to define the character set
  * and do things specific to the character set.
  */
 
-#include "less.h"
-#if HAVE_LOCALE
-#include <locale.h>
 #include <ctype.h>
 #include <langinfo.h>
-#endif
+#include <locale.h>
 
 #include "charset.h"
+#include "less.h"
 
-public int utf_mode = 0;
+int utf_mode = 0;
 
-#if !SMALL
-/*
- * Predefined character sets,
- * selected by the LESSCHARSET environment variable.
- */
-struct charset {
-	char *name;
-	int *p_flag;
-	char *desc;
-} charsets[] = {
-	{ "ascii",		NULL,       "8bcccbcc18b95.b" },
-	{ "utf-8",		&utf_mode,  "8bcccbcc18b95.b126.bb" },
-	{ "iso8859",		NULL,       "8bcccbcc18b95.33b." },
-	{ "latin3",		NULL,       "8bcccbcc18b95.33b5.b8.b15.b4.b12.b18.b12.b." },
-	{ "arabic",		NULL,       "8bcccbcc18b95.33b.3b.7b2.13b.3b.b26.5b19.b" },
-	{ "greek",		NULL,       "8bcccbcc18b95.33b4.2b4.b3.b35.b44.b" },
-	{ "greek2005",		NULL,       "8bcccbcc18b95.33b14.b35.b44.b" },
-	{ "hebrew",		NULL,       "8bcccbcc18b95.33b.b29.32b28.2b2.b" },
-	{ "koi8-r",		NULL,       "8bcccbcc18b95.b." },
-	{ "KOI8-T",		NULL,       "8bcccbcc18b95.b8.b6.b8.b.b.5b7.3b4.b4.b3.b.b.3b." },
-	{ "georgianps",		NULL,       "8bcccbcc18b95.3b11.4b12.2b." },
-	{ "tcvn",		NULL,       "b..b...bcccbccbbb7.8b95.b48.5b." },
-	{ "TIS-620",		NULL,       "8bcccbcc18b95.b.4b.11b7.8b." },
-	{ "next",		NULL,       "8bcccbcc18b95.bb125.bb" },
-	{ "dos",		NULL,       "8bcccbcc12bc5b95.b." },
-	{ "windows-1251",	NULL,       "8bcccbcc12bc5b95.b24.b." },
-	{ "windows-1252",	NULL,       "8bcccbcc12bc5b95.b.b11.b.2b12.b." },
-	{ "windows-1255",	NULL,       "8bcccbcc12bc5b95.b.b8.b.5b9.b.4b." },
-	{ "ebcdic",		NULL,       "5bc6bcc7bcc41b.9b7.9b5.b..8b6.10b6.b9.7b9.8b8.17b3.3b9.7b9.8b8.6b10.b.b.b." },
-	{ "IBM-1047",		NULL,       "4cbcbc3b9cbccbccbb4c6bcc5b3cbbc4bc4bccbc191.b" },
-	{ NULL, NULL, NULL }
-};
+static const char *binfmt = NULL;
+static const char *utfbinfmt = NULL;
+int binattr = AT_STANDOUT;
 
-/*
- * Support "locale charmap"/nl_langinfo(CODESET) values, as well as others.
- */
-struct cs_alias {
-	char *name;
-	char *oname;
-} cs_aliases[] = {
-	{ "UTF-8",		"utf-8" },
-	{ "ANSI_X3.4-1968",	"ascii" },
-	{ "US-ASCII",		"ascii" },
-	{ "latin1",		"iso8859" },
-	{ "ISO-8859-1",		"iso8859" },
-	{ "latin9",		"iso8859" },
-	{ "ISO-8859-15",	"iso8859" },
-	{ "latin2",		"iso8859" },
-	{ "ISO-8859-2",		"iso8859" },
-	{ "ISO-8859-3",		"latin3" },
-	{ "latin4",		"iso8859" },
-	{ "ISO-8859-4",		"iso8859" },
-	{ "cyrillic",		"iso8859" },
-	{ "ISO-8859-5",		"iso8859" },
-	{ "ISO-8859-6",		"arabic" },
-	{ "ISO-8859-7",		"greek" },
-	{ "IBM9005",		"greek2005" },
-	{ "ISO-8859-8",		"hebrew" },
-	{ "latin5",		"iso8859" },
-	{ "ISO-8859-9",		"iso8859" },
-	{ "latin6",		"iso8859" },
-	{ "ISO-8859-10",	"iso8859" },
-	{ "latin7",		"iso8859" },
-	{ "ISO-8859-13",	"iso8859" },
-	{ "latin8",		"iso8859" },
-	{ "ISO-8859-14",	"iso8859" },
-	{ "latin10",		"iso8859" },
-	{ "ISO-8859-16",	"iso8859" },
-	{ "IBM437",		"dos" },
-	{ "EBCDIC-US",		"ebcdic" },
-	{ "IBM1047",		"IBM-1047" },
-	{ "KOI8-R",		"koi8-r" },
-	{ "KOI8-U",		"koi8-r" },
-	{ "GEORGIAN-PS",	"georgianps" },
-	{ "TCVN5712-1", 	"tcvn" },
-	{ "NEXTSTEP",		"next" },
-	{ "windows",		"windows-1252" }, /* backward compatibility */
-	{ "CP1251",		"windows-1251" },
-	{ "CP1252",		"windows-1252" },
-	{ "CP1255",		"windows-1255" },
-	{ NULL, NULL }
-};
-
-#define	IS_BINARY_CHAR	01
-#define	IS_CONTROL_CHAR	02
-
-static char chardef[256];
-static char *binfmt = NULL;
-static char *utfbinfmt = NULL;
-public int binattr = AT_STANDOUT;
-
-
-/*
- * Define a charset, given a description string.
- * The string consists of 256 letters,
- * one for each character in the charset.
- * If the string is shorter than 256 letters, missing letters
- * are taken to be identical to the last one.
- * A decimal number followed by a letter is taken to be a 
- * repetition of the letter.
- *
- * Each letter is one of:
- *	. normal character
- *	b binary character
- *	c control character
- */
-	static void
-ichardef(s)
-	char *s;
+static int
+checkfmt(const char *s)
 {
-	register char *cp;
-	register int n;
-	register char v;
+	char c;
+	int seen = 0;
 
-	n = 0;
-	v = 0;
-	cp = chardef;
-	while (*s != '\0')
-	{
-		switch (*s++)
-		{
-		case '.':
-			v = 0;
-			break;
-		case 'c':
-			v = IS_CONTROL_CHAR;
-			break;
-		case 'b':
-			v = IS_BINARY_CHAR|IS_CONTROL_CHAR;
-			break;
+	/* %[<flags>][<width>][.<prec>][<type>]<fmt> */
 
-		case '0': case '1': case '2': case '3': case '4':
-		case '5': case '6': case '7': case '8': case '9':
-			n = (10 * n) + (s[-1] - '0');
+	if (*s == '*') {		/* skip leading attribute if there */
+		s++;
+		if (*s == '\0' || strchr("dksu", *s) == NULL) {
+			return (-1);
+		}
+		s++;
+	}
+
+	while ((c = *s++) != 0) {
+		if (!isascii(c) || !isprint(c)) {
+			return (-1);
+		}
+		if (c != '%') {
 			continue;
-
-		default:
-			error("invalid chardef", NULL_PARG);
-			quit(QUIT_ERROR);
-			/*NOTREACHED*/
 		}
-
-		do
-		{
-			if (cp >= chardef + sizeof(chardef))
-			{
-				error("chardef longer than 256", NULL_PARG);
-				quit(QUIT_ERROR);
-				/*NOTREACHED*/
+		if (*s == '%') {	/* % escaped with second % */
+			s++;
+			continue;
+		}
+		if (seen) {
+			return (-1);	/* 2nd % format item! */
+		}
+		/* skip flags */
+		while (*s != '\0' && strchr(" '+-0#", *s) != NULL) {
+			s++;
+		}
+		while (isdigit(*s)) {			/* skip width */
+			s++;
+		}
+		if (*s == '.') {		/* skip precision */
+			s++;
+			while (isdigit(*s)) {
+				s++;
 			}
-			*cp++ = v;
-		} while (--n > 0);
-		n = 0;
-	}
-
-	while (cp < chardef + sizeof(chardef))
-		*cp++ = v;
-}
-
-/*
- * Define a charset, given a charset name.
- * The valid charset names are listed in the "charsets" array.
- */
-	static int
-icharset(name, no_error)
-	register char *name;
-	int no_error;
-{
-	register struct charset *p;
-	register struct cs_alias *a;
-
-	if (name == NULL || *name == '\0')
-		return (0);
-
-	/* First see if the name is an alias. */
-	for (a = cs_aliases;  a->name != NULL;  a++)
-	{
-		if (strcmp(name, a->name) == 0)
-		{
-			name = a->oname;
-			break;
 		}
-	}
-
-	for (p = charsets;  p->name != NULL;  p++)
-	{
-		if (strcmp(name, p->name) == 0)
-		{
-			ichardef(p->desc);
-			if (p->p_flag != NULL)
-				*(p->p_flag) = 1;
-			return (1);
+		/* type width specifications, only "l", "h", and "hh" valid */
+		if (*s == 'l') {
+			s++;
+		} else if (*s == 'h') {
+			s++;
+			if (*s == 'h')
+				s++;
 		}
+
+		if (*s == '\0' || strchr("cCdiouxX", *s) == NULL) {
+			/* bad or evil format character (%s, %n, etc.) */
+			return (-1);
+		}
+
+		seen = 1;
 	}
 
-	if (!no_error) {
-		error("invalid charset name", NULL_PARG);
-		quit(QUIT_ERROR);
-	}
 	return (0);
 }
-
-#if HAVE_LOCALE
-/*
- * Define a charset, given a locale name.
- */
-	static void
-ilocale()
-{
-	register int c;
-
-	for (c = 0;  c < (int) sizeof(chardef);  c++)
-	{
-		if (isprint(c))
-			chardef[c] = 0;
-		else if (iscntrl(c))
-			chardef[c] = IS_CONTROL_CHAR;
-		else
-			chardef[c] = IS_BINARY_CHAR|IS_CONTROL_CHAR;
-	}
-}
-#endif
 
 /*
  * Define the printing format for control (or binary utf) chars.
  */
-   	static void
-setbinfmt(s, fmtvarptr, default_fmt)
-	char *s;
-	char **fmtvarptr;
-	char *default_fmt;
+static void
+setbinfmt(char *e, const char **fmtvarptr, const char *default_fmt)
 {
-	if (s && utf_mode)
-	{
-		/* It would be too hard to account for width otherwise.  */
-		char *t = s;
-		while (*t)
-		{
-			if (*t < ' ' || *t > '~')
-			{
-				s = default_fmt;
-				goto attr;
-			}
-			t++;
-		}
+	const char *s;
+
+	if (((s = lgetenv(e)) == NULL) || (*s == 0)) {
+		s = default_fmt;
+		goto attr;
 	}
 
-	/* %n is evil */
-	if (s == NULL || *s == '\0' ||
-	    (*s == '*' && (s[1] == '\0' || s[2] == '\0' || strchr(s + 2, 'n'))) ||
-	    (*s != '*' && strchr(s, 'n')))
-		s = default_fmt;
+	if (s != NULL && *s != 0) {
+		if (checkfmt(s) < 0) {
+			s = default_fmt;
+			goto attr;
+		}
+	}
 
 	/*
 	 * Select the attributes if it starts with "*".
 	 */
- attr:
-	if (*s == '*')
-	{
-		switch (s[1])
-		{
-		case 'd':  binattr = AT_BOLD;      break;
-		case 'k':  binattr = AT_BLINK;     break;
-		case 's':  binattr = AT_STANDOUT;  break;
+attr:
+	if (*s == '*') {
+		switch (s[1]) {
+		case 'd':  binattr = AT_BOLD; break;
+		case 'k':  binattr = AT_BLINK; break;
+		case 's':  binattr = AT_STANDOUT; break;
 		case 'u':  binattr = AT_UNDERLINE; break;
-		default:   binattr = AT_NORMAL;    break;
+		default:   binattr = AT_NORMAL; break;
 		}
 		s += 2;
 	}
@@ -297,202 +128,116 @@ setbinfmt(s, fmtvarptr, default_fmt)
 }
 
 /*
- *
- */
-	static void
-set_charset()
-{
-	char *s;
-
-	/*
-	 * See if environment variable LESSCHARSET is defined.
-	 */
-	s = lgetenv("LESSCHARSET");
-	if (icharset(s, 0))
-		return;
-
-	/*
-	 * LESSCHARSET is not defined: try LESSCHARDEF.
-	 */
-	s = lgetenv("LESSCHARDEF");
-	if (s != NULL && *s != '\0')
-	{
-		ichardef(s);
-		return;
-	}
-
-#if HAVE_LOCALE
-#ifdef CODESET
-	/*
-	 * Try using the codeset name as the charset name.
-	 */
-	s = nl_langinfo(CODESET);
-	if (icharset(s, 1))
-		return;
-#endif
-#endif
-
-#if HAVE_STRSTR
-	/*
-	 * Check whether LC_ALL, LC_CTYPE or LANG look like UTF-8 is used.
-	 */
-	if ((s = lgetenv("LC_ALL")) != NULL ||
-	    (s = lgetenv("LC_CTYPE")) != NULL ||
-	    (s = lgetenv("LANG")) != NULL)
-	{
-		if (   strstr(s, "UTF-8") != NULL || strstr(s, "utf-8") != NULL
-		    || strstr(s, "UTF8")  != NULL || strstr(s, "utf8")  != NULL)
-			if (icharset("utf-8", 1))
-				return;
-	}
-#endif
-
-#if HAVE_LOCALE
-	/*
-	 * Get character definitions from locale functions,
-	 * rather than from predefined charset entry.
-	 */
-	ilocale();
-#if MSDOS_COMPILER
-	/*
-	 * Default to "dos".
-	 */
-	(void) icharset("dos", 1);
-#else
-	/*
-	 * Default to "latin1".
-	 */
-	(void) icharset("latin1", 1);
-#endif
-#endif
-}
-
-/*
  * Initialize charset data structures.
  */
-	public void
-init_charset()
+void
+init_charset(void)
 {
 	char *s;
 
-#if HAVE_LOCALE
 	setlocale(LC_ALL, "");
-#endif
 
-	set_charset();
+	s = nl_langinfo(CODESET);
+	if (s && strcasecmp(s, "utf-8") == 0)
+		utf_mode = 1;
 
-	s = lgetenv("LESSBINFMT");
-	setbinfmt(s, &binfmt, "*s<%02X>");
-	
-	s = lgetenv("LESSUTFBINFMT");
-	setbinfmt(s, &utfbinfmt, "<U+%04lX>");
+	setbinfmt("LESSBINFMT", &binfmt, "*s<%02X>");
+	setbinfmt("LESSUTFBINFMT", &utfbinfmt, "<U+%04lX>");
 }
 
 /*
- * Is a given character a "binary" character?
+ * Like mbtowc(3), except that it converts the multibyte character
+ * preceding ps rather than the one starting at ps.
  */
-	public int
-binary_char(c)
-	LWCHAR c;
+int
+mbtowc_left(wchar_t *pwc, const char *ps, size_t psz)
 {
-	if (utf_mode)
-		return (is_ubin_char(c));
-	c &= 0377;
-	return (chardef[c] & IS_BINARY_CHAR);
+	size_t sz = 0;
+	int len;
+
+	do {
+		if (++sz > psz)
+			return -1;
+	} while (utf_mode && IS_UTF8_TRAIL(ps[-sz]));
+	if ((len = mbtowc(pwc, ps - sz, sz)) == -1) {
+		(void)mbtowc(NULL, NULL, 0);
+		return -1;
+	}
+	return len == sz || (len == 0 && sz == 1) ? len : -1;
 }
 
 /*
  * Is a given character a "control" character?
  */
-	public int
-control_char(c)
-	LWCHAR c;
+static int
+control_char(LWCHAR c)
 {
 	c &= 0377;
-	return (chardef[c] & IS_CONTROL_CHAR);
+	if (utf_mode)
+		return (iscntrl((unsigned char)c));
+	return (iscntrl((unsigned char)c) || !isprint((unsigned char)c));
 }
 
 /*
  * Return the printable form of a character.
  * For example, in the "ascii" charset '\3' is printed as "^C".
  */
-	public char *
-prchar(c)
-	LWCHAR c;
+char *
+prchar(LWCHAR c)
 {
 	/* {{ This buffer can be overrun if LESSBINFMT is a long string. }} */
 	static char buf[32];
 
 	c &= 0377;
 	if ((c < 128 || !utf_mode) && !control_char(c))
-		SNPRINTF1(buf, sizeof(buf), "%c", (int) c);
+		(void) snprintf(buf, sizeof (buf), "%c", (int)c);
 	else if (c == ESC)
-		strlcpy(buf, "ESC", sizeof(buf));
-#if IS_EBCDIC_HOST
-	else if (!binary_char(c) && c < 64)
-		SNPRINTF1(buf, sizeof(buf), "^%c",
-		/*
-		 * This array roughly inverts CONTROL() #defined in less.h,
-	 	 * and should be kept in sync with CONTROL() and IBM-1047.
- 	 	 */
-		"@ABC.I.?...KLMNO"
-		"PQRS.JH.XY.."
-		"\\]^_"
-		"......W[.....EFG"
-		"..V....D....TU.Z"[c]);
-#else
-  	else if (c < 128 && !control_char(c ^ 0100))
-  		SNPRINTF1(buf, sizeof(buf), "^%c", (int) (c ^ 0100));
-#endif
+		(void) strlcpy(buf, "ESC", sizeof (buf));
+	else if (c < 128 && !control_char(c ^ 0100))
+		(void) snprintf(buf, sizeof (buf), "^%c", (int)(c ^ 0100));
 	else
-		SNPRINTF1(buf, sizeof(buf), binfmt, c);
+		(void) snprintf(buf, sizeof (buf), binfmt, c);
 	return (buf);
 }
 
 /*
  * Return the printable form of a UTF-8 character.
  */
-	public char *
-prutfchar(ch)
-	LWCHAR ch;
+char *
+prutfchar(LWCHAR ch)
 {
 	static char buf[32];
 
-	if (ch == ESC)
-		strlcpy(buf, "ESC", sizeof(buf));
-  	else if (ch < 128 && control_char(ch))
-	{
+	if (ch == ESC) {
+		(void) strlcpy(buf, "ESC", sizeof (buf));
+	} else if (ch < 128 && control_char(ch)) {
 		if (!control_char(ch ^ 0100))
-			SNPRINTF1(buf, sizeof(buf), "^%c", ((char) ch) ^ 0100);
+			(void) snprintf(buf, sizeof (buf), "^%c",
+			    ((char)ch) ^ 0100);
 		else
-			SNPRINTF1(buf, sizeof(buf), binfmt, (char) ch);
-	} else if (is_ubin_char(ch))
-		SNPRINTF1(buf, sizeof(buf), utfbinfmt, ch);
-	else
-	{
+			(void) snprintf(buf, sizeof (buf), binfmt, (char)ch);
+	} else if (is_ubin_char(ch)) {
+		(void) snprintf(buf, sizeof (buf), utfbinfmt, ch);
+	} else {
 		int len;
-		if (ch >= 0x80000000)
-		{
+		if (ch >= 0x80000000) {
 			len = 3;
 			ch = 0xFFFD;
-		} else
-		{
-			len =   (ch < 0x80) ? 1
-			      : (ch < 0x800) ? 2
-			      : (ch < 0x10000) ? 3
-			      : (ch < 0x200000) ? 4
-			      : (ch < 0x4000000) ? 5
-			      : 6;
+		} else {
+			len =	(ch < 0x80) ? 1
+			    : (ch < 0x800) ? 2
+			    : (ch < 0x10000) ? 3
+			    : (ch < 0x200000) ? 4
+			    : (ch < 0x4000000) ? 5
+			    : 6;
 		}
 		buf[len] = '\0';
-		if (len == 1)
-			*buf = (char) ch;
-		else
-		{
+		if (len == 1) {
+			*buf = (char)ch;
+		} else {
 			*buf = ((1 << len) - 1) << (8 - len);
-			while (--len > 0)
-			{
-				buf[len] = (char) (0x80 | (ch & 0x3F));
+			while (--len > 0) {
+				buf[len] = (char)(0x80 | (ch & 0x3F));
 				ch >>= 6;
 			}
 			*buf |= ch;
@@ -504,32 +249,30 @@ prutfchar(ch)
 /*
  * Get the length of a UTF-8 character in bytes.
  */
-	public int
-utf_len(ch)
-	char ch;
+int
+utf_len(char ch)
 {
 	if ((ch & 0x80) == 0)
-		return 1;
+		return (1);
 	if ((ch & 0xE0) == 0xC0)
-		return 2;
+		return (2);
 	if ((ch & 0xF0) == 0xE0)
-		return 3;
+		return (3);
 	if ((ch & 0xF8) == 0xF0)
-		return 4;
+		return (4);
 	if ((ch & 0xFC) == 0xF8)
-		return 5;
+		return (5);
 	if ((ch & 0xFE) == 0xFC)
-		return 6;
+		return (6);
 	/* Invalid UTF-8 encoding. */
-	return 1;
+	return (1);
 }
 
 /*
  * Is a UTF-8 character well-formed?
  */
-	public int
-is_utf8_well_formed(s)
-	unsigned char *s;
+int
+is_utf8_well_formed(const char *s)
 {
 	int i;
 	int len;
@@ -537,22 +280,20 @@ is_utf8_well_formed(s)
 	if (IS_UTF8_INVALID(s[0]))
 		return (0);
 
-	len = utf_len((char) s[0]);
+	len = utf_len((char)s[0]);
 	if (len == 1)
 		return (1);
-	if (len == 2)
-	{
-		if (s[0] < 0xC2)
-		    return (0);
-	} else
-	{
+	if (len == 2) {
+		if ((unsigned char)(s[0]) < 0xC2)
+			return (0);
+	} else {
 		unsigned char mask;
 		mask = (~((1 << (8-len)) - 1)) & 0xFF;
 		if (s[0] == mask && (s[1] & mask) == 0x80)
 			return (0);
 	}
 
-	for (i = 1;  i < len;  i++)
+	for (i = 1; i < len; i++)
 		if (!IS_UTF8_TRAIL(s[i]))
 			return (0);
 	return (1);
@@ -561,139 +302,79 @@ is_utf8_well_formed(s)
 /*
  * Get the value of a UTF-8 character.
  */
-	public LWCHAR
-get_wchar(p)
-	char *p;
+static LWCHAR
+get_wchar(const char *p)
 {
-	switch (utf_len(p[0]))
-	{
+	switch (utf_len(p[0])) {
 	case 1:
 	default:
 		/* 0xxxxxxx */
 		return (LWCHAR)
-			(p[0] & 0xFF);
+		    (p[0] & 0xFF);
 	case 2:
 		/* 110xxxxx 10xxxxxx */
 		return (LWCHAR) (
-			((p[0] & 0x1F) << 6) |
-			(p[1] & 0x3F));
+		    ((p[0] & 0x1F) << 6) |
+		    (p[1] & 0x3F));
 	case 3:
 		/* 1110xxxx 10xxxxxx 10xxxxxx */
 		return (LWCHAR) (
-			((p[0] & 0x0F) << 12) |
-			((p[1] & 0x3F) << 6) |
-			(p[2] & 0x3F));
+		    ((p[0] & 0x0F) << 12) |
+		    ((p[1] & 0x3F) << 6) |
+		    (p[2] & 0x3F));
 	case 4:
 		/* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */
 		return (LWCHAR) (
-			((p[0] & 0x07) << 18) |
-			((p[1] & 0x3F) << 12) | 
-			((p[2] & 0x3F) << 6) | 
-			(p[3] & 0x3F));
+		    ((p[0] & 0x07) << 18) |
+		    ((p[1] & 0x3F) << 12) |
+		    ((p[2] & 0x3F) << 6) |
+		    (p[3] & 0x3F));
 	case 5:
 		/* 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx */
 		return (LWCHAR) (
-			((p[0] & 0x03) << 24) |
-			((p[1] & 0x3F) << 18) | 
-			((p[2] & 0x3F) << 12) | 
-			((p[3] & 0x3F) << 6) | 
-			(p[4] & 0x3F));
+		    ((p[0] & 0x03) << 24) |
+		    ((p[1] & 0x3F) << 18) |
+		    ((p[2] & 0x3F) << 12) |
+		    ((p[3] & 0x3F) << 6) |
+		    (p[4] & 0x3F));
 	case 6:
 		/* 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx */
 		return (LWCHAR) (
-			((p[0] & 0x01) << 30) |
-			((p[1] & 0x3F) << 24) | 
-			((p[2] & 0x3F) << 18) | 
-			((p[3] & 0x3F) << 12) | 
-			((p[4] & 0x3F) << 6) | 
-			(p[5] & 0x3F));
-	}
-}
-
-/*
- * Store a character into a UTF-8 string.
- */
-	public void
-put_wchar(pp, ch)
-	char **pp;
-	LWCHAR ch;
-{
-	if (!utf_mode || ch < 0x80) 
-	{
-		/* 0xxxxxxx */
-		*(*pp)++ = (char) ch;
-	} else if (ch < 0x800)
-	{
-		/* 110xxxxx 10xxxxxx */
-		*(*pp)++ = (char) (0xC0 | ((ch >> 6) & 0x1F));
-		*(*pp)++ = (char) (0x80 | (ch & 0x3F));
-	} else if (ch < 0x10000)
-	{
-		/* 1110xxxx 10xxxxxx 10xxxxxx */
-		*(*pp)++ = (char) (0xE0 | ((ch >> 12) & 0x0F));
-		*(*pp)++ = (char) (0x80 | ((ch >> 6) & 0x3F));
-		*(*pp)++ = (char) (0x80 | (ch & 0x3F));
-	} else if (ch < 0x200000)
-	{
-		/* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */
-		*(*pp)++ = (char) (0xF0 | ((ch >> 18) & 0x07));
-		*(*pp)++ = (char) (0x80 | ((ch >> 12) & 0x3F));
-		*(*pp)++ = (char) (0x80 | ((ch >> 6) & 0x3F));
-		*(*pp)++ = (char) (0x80 | (ch & 0x3F));
-	} else if (ch < 0x4000000)
-	{
-		/* 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx */
-		*(*pp)++ = (char) (0xF0 | ((ch >> 24) & 0x03));
-		*(*pp)++ = (char) (0x80 | ((ch >> 18) & 0x3F));
-		*(*pp)++ = (char) (0x80 | ((ch >> 12) & 0x3F));
-		*(*pp)++ = (char) (0x80 | ((ch >> 6) & 0x3F));
-		*(*pp)++ = (char) (0x80 | (ch & 0x3F));
-	} else 
-	{
-		/* 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx */
-		*(*pp)++ = (char) (0xF0 | ((ch >> 30) & 0x01));
-		*(*pp)++ = (char) (0x80 | ((ch >> 24) & 0x3F));
-		*(*pp)++ = (char) (0x80 | ((ch >> 18) & 0x3F));
-		*(*pp)++ = (char) (0x80 | ((ch >> 12) & 0x3F));
-		*(*pp)++ = (char) (0x80 | ((ch >> 6) & 0x3F));
-		*(*pp)++ = (char) (0x80 | (ch & 0x3F));
+		    ((p[0] & 0x01) << 30) |
+		    ((p[1] & 0x3F) << 24) |
+		    ((p[2] & 0x3F) << 18) |
+		    ((p[3] & 0x3F) << 12) |
+		    ((p[4] & 0x3F) << 6) |
+		    (p[5] & 0x3F));
 	}
 }
 
 /*
  * Step forward or backward one character in a string.
  */
-	public LWCHAR
-step_char(pp, dir, limit)
-	char **pp;
-	signed int dir;
-	char *limit;
+LWCHAR
+step_char(char **pp, int dir, char *limit)
 {
 	LWCHAR ch;
 	int len;
 	char *p = *pp;
 
-	if (!utf_mode)
-	{
+	if (!utf_mode) {
 		/* It's easy if chars are one byte. */
 		if (dir > 0)
 			ch = (LWCHAR) ((p < limit) ? *p++ : 0);
 		else
 			ch = (LWCHAR) ((p > limit) ? *--p : 0);
-	} else if (dir > 0)
-	{
+	} else if (dir > 0) {
 		len = utf_len(*p);
-		if (p + len > limit)
-		{
+		if (p + len > limit) {
 			ch = 0;
 			p = limit;
-		} else
-		{
+		} else {
 			ch = get_wchar(p);
 			p += len;
 		}
-	} else
-	{
+	} else {
 		while (p > limit && IS_UTF8_TRAIL(p[-1]))
 			p--;
 		if (p > limit)
@@ -702,7 +383,7 @@ step_char(pp, dir, limit)
 			ch = 0;
 	}
 	*pp = p;
-	return ch;
+	return (ch);
 }
 
 /*
@@ -793,13 +474,6 @@ static struct wchar_range comp_table[] = {
 };
 
 /*
- * Special pairs, not ranges.
- */
-static struct wchar_range comb_table[] = {
-	{0x0644,0x0622}, {0x0644,0x0623}, {0x0644,0x0625}, {0x0644,0x0627},
-};
-
-/*
  * Characters with general category values
  *	Cc: Other, Control
  *	Cf: Other, Format
@@ -813,10 +487,10 @@ static struct wchar_range comb_table[] = {
  *	dated 2005-11-30T00:58:48Z
  */
 static struct wchar_range ubin_table[] = {
-	{  0x0000,  0x0007} /* Cc */, 
-	{  0x000B,  0x000C} /* Cc */, 
-	{  0x000E,  0x001A} /* Cc */, 
-	{  0x001C,  0x001F} /* Cc */, 
+	{  0x0000,  0x0007} /* Cc */,
+	{  0x000B,  0x000C} /* Cc */,
+	{  0x000E,  0x001A} /* Cc */,
+	{  0x001C,  0x001F} /* Cc */,
 	{  0x007F,  0x009F} /* Cc */,
 #if 0
 	{  0x00AD,  0x00AD} /* Cf */,
@@ -1066,9 +740,9 @@ static struct wchar_range ubin_table[] = {
 	{ 0xE0080, 0xE00FF} /* Cn */, { 0xE01F0, 0xEFFFF} /* Cn */,
 	{ 0xF0000, 0xFFFFD} /* Co */,
 	{ 0xFFFFE, 0xFFFFF} /* Cn */,
-	{0x100000,0x10FFFD} /* Co */,
-	{0x10FFFE,0x10FFFF} /* Cn */,
-	{0x110000,0x7FFFFFFF} /* ISO 10646?? */
+	{ 0x100000, 0x10FFFD} /* Co */,
+	{ 0x10FFFE, 0x10FFFF} /* Cn */,
+	{ 0x110000, 0x7FFFFFFF} /* ISO 10646?? */
 };
 
 /*
@@ -1092,158 +766,56 @@ static struct wchar_range wide_table[] = {
 	{ 0x20000, 0x2FFFD} /* W */, { 0x30000, 0x3FFFD} /* W */,
 };
 
-	static int
-is_in_table(ch, table, tsize)
-	LWCHAR ch;
-	struct wchar_range table[];
-	int tsize;
+static int
+is_in_table(LWCHAR ch, struct wchar_range table[], int tsize)
 {
 	int hi;
 	int lo;
 
 	/* Binary search in the table. */
 	if (ch < table[0].first)
-		return 0;
+		return (0);
 	lo = 0;
 	hi = tsize - 1;
-	while (lo <= hi)
-	{
+	while (lo <= hi) {
 		int mid = (lo + hi) / 2;
 		if (ch > table[mid].last)
 			lo = mid + 1;
 		else if (ch < table[mid].first)
 			hi = mid - 1;
 		else
-			return 1;
+			return (1);
 	}
-	return 0;
+	return (0);
 }
 
 /*
  * Is a character a UTF-8 composing character?
  * If a composing character follows any char, the two combine into one glyph.
  */
-	public int
-is_composing_char(ch)
-	LWCHAR ch;
+int
+is_composing_char(LWCHAR ch)
 {
-	return is_in_table(ch, comp_table, (sizeof(comp_table) / sizeof(*comp_table)));
+	return (is_in_table(ch, comp_table,
+	    (sizeof (comp_table) / sizeof (*comp_table))));
 }
 
 /*
  * Should this UTF-8 character be treated as binary?
  */
-	public int
-is_ubin_char(ch)
-	LWCHAR ch;
+int
+is_ubin_char(LWCHAR ch)
 {
-	return is_in_table(ch, ubin_table, (sizeof(ubin_table) / sizeof(*ubin_table)));
+	return (is_in_table(ch, ubin_table,
+	    (sizeof (ubin_table) / sizeof (*ubin_table))));
 }
 
 /*
  * Is this a double width UTF-8 character?
  */
-	public int
-is_wide_char(ch)
-	LWCHAR ch;
+int
+is_wide_char(LWCHAR ch)
 {
-	return is_in_table(ch, wide_table, (sizeof(wide_table) / sizeof(*wide_table)));
+	return (is_in_table(ch, wide_table,
+	    (sizeof (wide_table) / sizeof (*wide_table))));
 }
-
-/*
- * Is a character a UTF-8 combining character?
- * A combining char acts like an ordinary char, but if it follows
- * a specific char (not any char), the two combine into one glyph.
- */
-	public int
-is_combining_char(ch1, ch2)
-	LWCHAR ch1;
-	LWCHAR ch2;
-{
-	/* The table is small; use linear search. */
-	int i;
-	for (i = 0;  i < sizeof(comb_table)/sizeof(*comb_table);  i++)
-	{
-		if (ch1 == comb_table[i].first &&
-		    ch2 == comb_table[i].last)
-			return 1;
-	}
-	return 0;
-}
-
-#else /* !SMALL */
-
-public int binattr = AT_STANDOUT;
-
-	public void
-init_charset()
-{
-	return;
-}
-
-/*
- * Is a given character a "binary" character?
- */
-	public int
-binary_char(c)
-	LWCHAR c;
-{
-	return (!isprint(c) && !isspace(c));
-}
-
-/*
- * Is a given character a "control" character?
- */
-	public int
-control_char(c)
-	LWCHAR c;
-{
-	return (iscntrl(c));
-}
-
-/*
- * Return the printable form of a character.
- * For example, in the "ascii" charset '\3' is printed as "^C".
- */
-	public char *
-prchar(c)
-	LWCHAR c;
-{
-	static char buf[8];
-
-	c &= 0377;
-	if (!iscntrl(c))
-		snprintf(buf, sizeof(buf), "%c", c);
-	else if (c == ESC)
-		strlcpy(buf, "ESC", sizeof(buf));
-	else if (c < 128 && !iscntrl(c ^ 0100))
-		snprintf(buf, sizeof(buf), "^%c", c ^ 0100);
-	else
-		snprintf(buf, sizeof(buf), "*s<%X>", c);
-	return (buf);
-}
-
-/*
- * Step forward or backward one character in a string.
- */
-	public LWCHAR
-step_char(pp, dir, limit)
-	char **pp;
-	signed int dir;
-	char *limit;
-{
-	LWCHAR ch;
-	int len;
-	char *p = *pp;
-
-	/* It's easy if chars are one byte. */
-	if (dir > 0)
-		ch = (LWCHAR) ((p < limit) ? *p++ : 0);
-	else
-		ch = (LWCHAR) ((p > limit) ? *--p : 0);
-
-	*pp = p;
-	return ch;
-}
-
-#endif /* !SMALL */

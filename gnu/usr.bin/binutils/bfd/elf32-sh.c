@@ -4449,7 +4449,7 @@ sh_elf_size_dynamic_sections (bfd *output_bfd ATTRIBUTE_UNUSED,
   if (htab->root.dynamic_sections_created)
     {
       /* Set the contents of the .interp section to the interpreter.  */
-      if (info->executable)
+      if (info->executable && !info->static_link)
 	{
 	  s = bfd_get_section_by_name (dynobj, ".interp");
 	  BFD_ASSERT (s != NULL);
@@ -6849,6 +6849,7 @@ sh_elf_set_mach_from_flags (bfd *abfd)
       break;
     case EF_SH_UNKNOWN:
     case EF_SH4:
+    case 23: /* EF_SH2A_SH4 */
       bfd_default_set_arch_mach (abfd, bfd_arch_sh, bfd_mach_sh4);
       break;
     case EF_SH4_NOFPU:
@@ -7573,5 +7574,24 @@ elf32_shlin_grok_psinfo (bfd *abfd, Elf_Internal_Note *note)
 #define	elf32_bed			elf32_sh_lin_bed
 
 #include "elf32-target.h"
+
+/* OpenBSD support.  */
+#undef	TARGET_BIG_SYM
+#define	TARGET_BIG_SYM			bfd_elf32_shobsd_vec
+#undef	TARGET_BIG_NAME
+#define	TARGET_BIG_NAME			"elf32-sh-obsd"
+#undef	TARGET_LITTLE_SYM
+#define	TARGET_LITTLE_SYM		bfd_elf32_shlobsd_vec
+#undef	TARGET_LITTLE_NAME
+#define	TARGET_LITTLE_NAME		"elf32-shl-obsd"
+#undef	ELF_MAXPAGESIZE
+#define	ELF_MAXPAGESIZE			0x10000
+#undef	elf_symbol_leading_char
+#define	elf_symbol_leading_char		0
+#undef	elf32_bed
+#define	elf32_bed			elf32_sh_obsd_bed
+
+#include "elf32-target.h"
+
 
 #endif /* INCLUDE_SHMEDIA */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: srt0.s,v 1.5 2004/01/10 22:47:54 pvalchev Exp $	*/
 /*	$NetBSD: srt0.s,v 1.1 2000/08/20 14:58:42 mrg Exp $	*/
 
 /*
@@ -44,6 +45,8 @@
 _esym:	.word	0			/* end of symbol table */
 	.globl	_C_LABEL(romp)
 	.align	8
+	.register %g2,	#scratch
+	.register %g3,	#scratch
 _C_LABEL(romp):	.xword	0		/* openfirmware entry point */
 
 /*
@@ -66,7 +69,6 @@ _start:
 	/*
 	 * Start by creating a stack for ourselves.
 	 */
-#ifdef _LP64
 	/* 64-bit stack */
 	btst	1, %sp
 	set	CC64FSZ, %g1	! Frame Size (negative)
@@ -77,20 +79,8 @@ _start:
 1:
 	sub	%sp, %g1, %g1
 	save	%g1, %g0, %sp
-#else
-	/* 32-bit stack */
-	btst	1, %sp
-	set	CC64FSZ, %g1	! Frame Size (negative)
-	bz	1f
-	 set	BIAS, %g2
-	sub	%g1, %g2, %g1
-1:
-	sub	%sp, %g1, %g1	! This is so we properly sign-extend things
-	andn	%g1, 0x7, %g1
-	save	%g1, %g0, %sp
-#endif
 	
-!	mov	%i0, %i4		! Apparenty we get our CIF in i0
+!	mov	%i0, %i4		! Apparently we get our CIF in i0
 	
 	/*
 	 * Set the psr into a known state:
@@ -117,7 +107,7 @@ _start:
 	 nop
 
 /*
- * void syncicache(void* start, int size)
+ * void syncicache(void *start, int size)
  *
  * I$ flush.  Really simple.  Just flush over the whole range.
  */

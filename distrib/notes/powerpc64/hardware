@@ -1,0 +1,4 @@
+dnl	$OpenBSD$
+OpenBSD/MACHINE OSREV should work on all non-virtualized POWER9
+machines with OPAL firmware.  This includes the Talos II and Blackbird
+systems available from Raptor Computng Systems

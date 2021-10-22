@@ -1,4 +1,4 @@
-/* crypto/des/spr.h */
+/* $OpenBSD: spr.h,v 1.5 2014/06/12 15:49:28 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,7 +56,9 @@
  * [including the GNU Public Licence.]
  */
 
-OPENSSL_GLOBAL const DES_LONG DES_SPtrans[8][64]={
+__BEGIN_HIDDEN_DECLS
+
+const DES_LONG DES_SPtrans[8][64]={
 {
 /* nibble 0 */
 0x02080800L, 0x00080000L, 0x02000002L, 0x02080802L,
@@ -202,3 +204,5 @@ OPENSSL_GLOBAL const DES_LONG DES_SPtrans[8][64]={
 0x00000080L, 0x20820000L, 0x00820080L, 0x00000000L,
 0x20000000L, 0x20800080L, 0x00020000L, 0x00820080L,
 }};
+
+__END_HIDDEN_DECLS

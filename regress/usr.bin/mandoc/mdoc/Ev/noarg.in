@@ -1,0 +1,13 @@
+.\" $OpenBSD$
+.Dd $Mdocdate: July 4 2017 $
+.Dt EV-NOARG 1
+.Os
+.Sh NAME
+.Nm Ev-noarg
+.Nd environment variable macro without an argument
+.Sh DESCRIPTION
+with variable:
+.Ev HOME.
+no variable:
+.Ev
+end of test document

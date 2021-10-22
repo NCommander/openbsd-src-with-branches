@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.15 2011/05/01 12:57:11 eric Exp $	*/
+/*	$OpenBSD: res_query.c,v 1.2 2017/03/09 07:56:38 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -17,6 +17,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 
 #include <netinet/in.h>
 #include <arpa/nameser.h>
@@ -71,8 +72,11 @@ main(int argc, char *argv[])
 	dflag = 0;
 	qflag = 0;
 
-	while((ch = getopt(argc, argv, "deqt:")) !=  -1) {
+	while((ch = getopt(argc, argv, "R:deqt:")) !=  -1) {
 		switch(ch) {
+		case 'R':
+			parseresopt(optarg);
+			break;
 		case 'd':
 			dflag = 1;
 			break;

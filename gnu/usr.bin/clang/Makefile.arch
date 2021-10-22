@@ -1,0 +1,48 @@
+# $OpenBSD: Makefile.arch,v 1.8 2020/08/03 14:45:22 patrick Exp $
+
+LLVM_ARCHS=AArch64 AMDGPU ARM Mips PowerPC RISCV Sparc X86
+
+LLVM_ARCH?=
+.if ${MACHINE_ARCH} == "amd64" || ${MACHINE_ARCH} == "i386"
+LLVM_ARCH=	X86
+.elif ${MACHINE_ARCH} == "powerpc" || ${MACHINE_ARCH} == "powerpc64"
+LLVM_ARCH=	PowerPC
+.elif ${MACHINE_ARCH} == "riscv64"
+LLVM_ARCH=	RISCV
+.elif ${MACHINE_ARCH} == "sparc64"
+LLVM_ARCH=	Sparc
+.elif ${MACHINE_ARCH} == "aarch64"
+LLVM_ARCH=	AArch64
+.elif ${MACHINE_ARCH} == "arm"
+LLVM_ARCH=	ARM
+.elif ${MACHINE_ARCH} == "mips64" || ${MACHINE_ARCH} == "mips64el"
+LLVM_ARCH=	Mips
+.endif
+
+BACKEND_ASMPARSER?=
+BACKEND_CODEGEN?=
+BACKEND_DESC?=
+BACKEND_DISASSEMBLER?=
+BACKEND_INFO?=
+BACKEND_UTILS?=
+
+.for arch in ${LLVM_ARCHS}
+.if "${arch}" == ${LLVM_ARCH} || "${arch}" == "AMDGPU" || make(obj)
+BACKEND_ASMPARSER+=	LLVM${arch}AsmParser
+BACKEND_CODEGEN+=	LLVM${arch}CodeGen
+BACKEND_DESC+=		LLVM${arch}Desc
+BACKEND_DISASSEMBLER+=	LLVM${arch}Disassembler
+BACKEND_INFO+=		LLVM${arch}Info
+.if "${arch}" == "X86" || "${arch}" == "AArch64" || "${arch}" == "ARM" \
+ || "${arch}" == "AMDGPU" || "${arch}" == "RISCV"
+BACKEND_UTILS+=		LLVM${arch}Utils
+.endif
+.endif
+.endfor
+
+BACKEND_LIBS+=		${BACKEND_ASMPARSER}
+BACKEND_LIBS+=		${BACKEND_CODEGEN}
+BACKEND_LIBS+=		${BACKEND_DESC}
+BACKEND_LIBS+=		${BACKEND_DISASSEMBLER}
+BACKEND_LIBS+=		${BACKEND_INFO}
+BACKEND_LIBS+=		${BACKEND_UTILS}

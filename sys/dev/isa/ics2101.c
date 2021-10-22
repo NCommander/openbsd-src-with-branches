@@ -1,11 +1,12 @@
-/* $NetBSD: ics2101.c,v 1.1 1995/07/19 19:58:49 brezak Exp $ */
+/* $OpenBSD: ics2101.c,v 1.9 2014/09/14 14:17:25 jsg Exp $ */
+/* $NetBSD: ics2101.c,v 1.6 1997/10/09 07:57:23 jtc Exp $ */
+
 /*-
- * Copyright (c) 1995 John T. Kohl.  All Rights Reserved.
- * Copyright (c) 1994 The Regents of the University of California.
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
  *
- * This code is derived from software contributed to Berkeley by
- * Ken Hornstein.
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Ken Hornstein and John Kohl.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -15,27 +16,18 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- * 
- *	$Id: ics2101.c,v 1.1 1995/07/19 19:58:49 brezak Exp $
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <sys/param.h>
@@ -44,11 +36,9 @@
 #include <sys/ioctl.h>
 #include <sys/syslog.h>
 #include <sys/device.h>
-#include <sys/proc.h>
 #include <sys/buf.h>
 
 #include <machine/cpu.h>
-#include <machine/pio.h>
 
 #include <sys/audioio.h>
 #include <dev/audio_if.h>
@@ -69,22 +59,23 @@
 
 #define cvt_value(val) ((val) >> 1)
 
+static void ics2101_mix_doit(struct ics2101_softc *, u_int, u_int, u_int,
+    u_int);
 /*
  * Program one channel of the ICS mixer
  */
 
 
 static void
-ics2101_mix_doit(sc, chan, side, value, flags)
-	struct ics2101_softc *sc;
-	unsigned int chan, side, value, flags;
+ics2101_mix_doit(struct ics2101_softc *sc, u_int chan, u_int side, u_int value,
+    u_int flags)
 {
+	bus_space_tag_t iot = sc->sc_iot;
 	unsigned char flip_left[6] = {0x01, 0x01, 0x01, 0x02, 0x01, 0x02};
 	unsigned char flip_right[6] = {0x02, 0x02, 0x02, 0x01, 0x02, 0x01};
 	register unsigned char ctrl_addr;
 	register unsigned char attn_addr;
 	register unsigned char normal;
-	int s;
 
 	if (chan < ICSMIX_CHAN_0 || chan > ICSMIX_CHAN_5)
 		return;
@@ -125,30 +116,28 @@ ics2101_mix_doit(sc, chan, side, value, flags)
 			normal = 0x02;
 	}
 
-	s = splaudio();
+	mtx_enter(&audio_lock);
 
-	outb(sc->sc_selio, ctrl_addr);
-	outb(sc->sc_dataio, normal);
+	bus_space_write_1(iot, sc->sc_selio_ioh, sc->sc_selio, ctrl_addr);
+	bus_space_write_1(iot, sc->sc_dataio_ioh, sc->sc_dataio, normal);
 
-	outb(sc->sc_selio, attn_addr);
-	outb(sc->sc_dataio, (unsigned char) value);
+	bus_space_write_1(iot, sc->sc_selio_ioh, sc->sc_selio, attn_addr);
+	bus_space_write_1(iot, sc->sc_dataio_ioh, sc->sc_dataio, (unsigned char) value);
 
-	splx(s);
+	mtx_leave(&audio_lock);
 }
 
 void
-ics2101_mix_mute(sc, chan, side, domute)
-	struct ics2101_softc *sc;
-	unsigned int chan, side, domute;
+ics2101_mix_mute(struct ics2101_softc *sc, unsigned int chan, unsigned int side,
+    unsigned int domute)
 {
     ics2101_mix_doit(sc, chan, side, 0,
 		     domute ? ICS_MUTE|ICS_MUTE_MUTED : ICS_MUTE);
 }
 
 void
-ics2101_mix_attenuate(sc, chan, side, value)
-	struct ics2101_softc *sc;
-	unsigned int chan, side, value;
+ics2101_mix_attenuate(struct ics2101_softc *sc, unsigned int chan,
+    unsigned int side, unsigned int value)
 {
     ics2101_mix_doit(sc, chan, side, value, ICS_VALUE);
 }

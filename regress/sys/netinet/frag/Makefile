@@ -1,23 +1,14 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.10 2020/12/30 21:40:33 kn Exp $
 
 # The following ports must be installed:
 #
-# python-2.7          interpreted object-oriented programming language
-# py-libdnet          python interface to libdnet
 # scapy               powerful interactive packet manipulation in python
 
-.if ! (make(clean) || make(cleandir) || make(obj))
-# Check wether all required python packages are installed.  If some
-# are missing print a warning and skip the tests, but do not fail.
-PYTHON_IMPORT !!= python2.7 -c 'from scapy.all import *' 2>&1 || true
-.endif
-
-.if ! empty(PYTHON_IMPORT)
+.if ! exists(/usr/local/bin/scapy)
 .BEGIN:
 	@true
 regress:
-	@echo '${PYTHON_IMPORT}'
-	@echo Install python and the scapy module for additional tests.
+	@echo Install scapy package to run this regress.
 	@echo SKIPPED
 .endif
 
@@ -54,11 +45,11 @@ regress:
 .MAIN: all
 
 .if make (regress) || make (all)
-.BEGIN: addr.py
-	@echo
+.BEGIN:
 	${SUDO} true
 	ssh -t ${REMOTE_SSH} ${SUDO} true
 	rm -f stamp-stack stamp-pf
+	@echo
 .endif
 
 # Create python include file containing the addresses.
@@ -75,9 +66,9 @@ addr.py: Makefile
 # Set variables so that make runs with and without obj directory.
 # Only do that if necessary to keep visible output short.
 .if ${.CURDIR} == ${.OBJDIR}
-PYTHON =	python2.7 ./
+PYTHON =	python3 -u ./
 .else
-PYTHON =	PYTHONPATH=${.OBJDIR} python2.7 ${.CURDIR}/
+PYTHON =	PYTHONPATH=${.OBJDIR} python3 -u ${.CURDIR}/
 .endif
 
 stamp-stack:
@@ -88,34 +79,42 @@ stamp-stack:
 
 stamp-pf: addr.py pf.conf
 	rm -f stamp-stack stamp-pf
-	cat addr.py ${.CURDIR}/pf.conf | pfctl -n -f -
+	cat addr.py ${.CURDIR}/pf.conf | /sbin/pfctl -n -f -
 	cat addr.py ${.CURDIR}/pf.conf | \
-	    ssh ${IPS_SSH} ${SUDO} pfctl -a regress -f -
+	    ssh ${REMOTE_SSH} ${SUDO} pfctl -a regress -f -
 	-ssh ${REMOTE_SSH} ${SUDO} pfctl -e
 	date >$@
 
 REGRESS_TARGETS =
 FRAG_SCRIPTS !!=	cd ${.CURDIR} && ls -1 frag*.py
 
-run-regress-stack-frag_mf0long.py:
+run-stack-frag_maxpacket0.py:
+	# the stack allows fragments with data behind maximum packt length
+	@echo DISABLED
+
+run-stack-frag_mf0long.py:
 	# the stack allows fragments with data behind a fragment without MF
 	@echo DISABLED
 
-run-regress-stack-frag_mf0short.py:
+run-stack-frag_mf0short.py:
 	# the stack allows fragments without MF ending before other fragments
 	@echo DISABLED
 
-run-regress-stack-frag_mf1end.py:
+run-stack-frag_mf1end.py:
 	# the stack allows fragments with MF together with fragments without MF
+	@echo DISABLED
+
+run-stack-frag_queuelimit.py run-stack-frag_overlimit.py:
+	# the stack does not limit the amount of fragments during reassembly
 	@echo DISABLED
 
 .for sp in stack pf
 
 # Ping all addresses.  This ensures that the ip addresses are configured
 # and all routing table are set up to allow bidirectional packet flow.
-${sp}: run-regress-${sp}-ping
-run-regress-${sp}-ping: stamp-${sp}
-	@echo '\n======== $@ ========'
+${sp}: run-${sp}-ping
+REGRESS_TARGETS +=	run-${sp}-ping
+run-${sp}-ping: stamp-${sp}
 .for ip in LOCAL_ADDR REMOTE_ADDR
 	@echo Check ping ${ip}:
 	ping -n -c 1 ${${ip}}
@@ -123,29 +122,30 @@ run-regress-${sp}-ping: stamp-${sp}
 
 # Ping all addresses again but with 5000 bytes payload.  These large
 # packets get fragmented by LOCAL and must be handled by REMOTE.
-${sp}: run-regress-${sp}-fragping
-run-regress-${sp}-fragping: stamp-${sp}
-	@echo '\n======== $@ ========'
+${sp}: run-${sp}-fragping
+REGRESS_TARGETS +=	run-${sp}-fragping
+run-${sp}-fragping: stamp-${sp}
 .for ip in LOCAL_ADDR REMOTE_ADDR
 	@echo Check ping ${ip}:
 	ping -n -c 1 -s 5000 ${${ip}}
 .endfor
 
 .for s in ${FRAG_SCRIPTS}
-${sp}: run-regress-${sp}-${s}
-run-regress-${sp}-${s}: addr.py stamp-${sp}
-	@echo '\n======== $@ ========'
+${sp}: run-${sp}-${s}
+REGRESS_TARGETS +=	run-${sp}-${s}
+run-${sp}-${s}: addr.py stamp-${sp}
 	${SUDO} ${PYTHON}${s}
 .endfor
-
-REGRESS_TARGETS +=	run-regress-${sp}-ping run-regress-${sp}-fragping \
-			${FRAG_SCRIPTS:S/^/run-regress-${sp}-/}
 
 .endfor
 
 # After running the tests, turn on pf on remote machine.
 # This is the expected default configuration.
-REGRESS_TARGETS +=	stamp-pf
+REGRESS_CLEANUP +=	cleanup-pf
+cleanup-pf:
+	rm -f stamp-stack stamp-pf
+	ssh ${REMOTE_SSH} ${SUDO} pfctl -a regress -Fa
+	-ssh ${REMOTE_SSH} ${SUDO} pfctl -e || true
 
 CLEANFILES +=		addr.py *.pyc *.log stamp-*
 

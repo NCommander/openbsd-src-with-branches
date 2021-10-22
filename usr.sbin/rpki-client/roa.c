@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD: roa.c,v 1.24 2021/09/08 16:37:20 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,7 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include "config.h"
 
 #include <assert.h>
 #include <err.h>
@@ -24,7 +23,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <openssl/ssl.h>
+#include <openssl/asn1.h>
+#include <openssl/x509.h>
 
 #include "extern.h"
 
@@ -36,26 +36,28 @@ struct	parse {
 	struct roa	 *res; /* results */
 };
 
+static ASN1_OBJECT	*roa_oid;
+
 /*
  * Parse IP address (ROAIPAddress), RFC 6482, section 3.3.
  * Returns zero on failure, non-zero on success.
  */
 static int
-roa_parse_addr(const ASN1_OCTET_STRING *os,
-	enum afi afi, struct parse *p)
+roa_parse_addr(const ASN1_OCTET_STRING *os, enum afi afi, struct parse *p)
 {
-	ASN1_SEQUENCE_ANY 	*seq;
-	const unsigned char     *d = os->data;
-	size_t		         dsz = os->length;
+	ASN1_SEQUENCE_ANY	*seq;
+	const unsigned char	*d = os->data;
+	size_t			 dsz = os->length;
 	int			 rc = 0;
 	const ASN1_TYPE		*t;
 	const ASN1_INTEGER	*maxlength = NULL;
-	struct ip_addr	 	 addr;
+	long			 maxlen;
+	struct ip_addr		 addr;
 	struct roa_ip		*res;
 
 	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
 		cryptowarnx("%s: RFC 6482 section 3.3: address: "
-			"failed ASN.1 sequence parse", p->fn);
+		    "failed ASN.1 sequence parse", p->fn);
 		goto out;
 	}
 
@@ -64,65 +66,56 @@ roa_parse_addr(const ASN1_OCTET_STRING *os,
 	if (sk_ASN1_TYPE_num(seq) != 1 &&
 	    sk_ASN1_TYPE_num(seq) != 2) {
 		warnx("%s: RFC 6482 section 3.3: adddress: "
-			"want 1 or 2 elements, have %d",
-			p->fn, sk_ASN1_TYPE_num(seq));
+		    "want 1 or 2 elements, have %d",
+		    p->fn, sk_ASN1_TYPE_num(seq));
 		goto out;
 	}
 
 	t = sk_ASN1_TYPE_value(seq, 0);
 	if (t->type != V_ASN1_BIT_STRING) {
 		warnx("%s: RFC 6482 section 3.3: address: "
-			"want ASN.1 bit string, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
+		    "want ASN.1 bit string, have %s (NID %d)",
+		    p->fn, ASN1_tag2str(t->type), t->type);
 		goto out;
 	}
 	if (!ip_addr_parse(t->value.bit_string, afi, p->fn, &addr)) {
 		warnx("%s: RFC 6482 section 3.3: address: "
-			"invalid IP address", p->fn);
+		    "invalid IP address", p->fn);
 		goto out;
 	}
-
-	/*
-	 * RFC 6482, section 3.3 doesn't ever actually state that the
-	 * maximum length can't be negative, but it needs to be >=0.
-	 */
 
 	if (sk_ASN1_TYPE_num(seq) == 2) {
 		t = sk_ASN1_TYPE_value(seq, 1);
 		if (t->type != V_ASN1_INTEGER) {
 			warnx("%s: RFC 6482 section 3.1: maxLength: "
-				"want ASN.1 integer, have %s (NID %d)",
-				p->fn, ASN1_tag2str(t->type), t->type);
+			    "want ASN.1 integer, have %s (NID %d)",
+			    p->fn, ASN1_tag2str(t->type), t->type);
 			goto out;
 		}
+
 		maxlength = t->value.integer;
-
-		/*
-		 * It's safe to use ASN1_INTEGER_get() here
-		 * because we're not going to have more than signed 32
-		 * bit maximum of length.
-		 */
-
-		if (ASN1_INTEGER_get(maxlength) < 0) {
+		maxlen = ASN1_INTEGER_get(maxlength);
+		if (maxlen < 0) {
 			warnx("%s: RFC 6482 section 3.2: maxLength: "
-				"want positive integer, have %ld",
-				p->fn, ASN1_INTEGER_get(maxlength));
+			    "want positive integer, have %ld", p->fn, maxlen);
 			goto out;
 		}
-		/* FIXME: maximum check. */
+		if (addr.prefixlen > maxlen) {
+			warnx("%s: prefixlen (%d) larger than maxLength (%ld)",
+			    p->fn, addr.prefixlen, maxlen);
+			goto out;
+		}
+		if (maxlen > ((afi == AFI_IPV4) ? 32 : 128)) {
+			warnx("%s: maxLength (%ld) too large", p->fn, maxlen);
+			goto out;
+		}
 	}
 
-	p->res->ips = reallocarray(p->res->ips,
-		p->res->ipsz + 1, sizeof(struct roa_ip));
-	if (p->res->ips == NULL)
-		err(EXIT_FAILURE, NULL);
 	res = &p->res->ips[p->res->ipsz++];
-	memset(res, 0, sizeof(struct roa_ip));
 
 	res->addr = addr;
 	res->afi = afi;
-	res->maxlength = (maxlength == NULL) ?
-		0: ASN1_INTEGER_get(maxlength);
+	res->maxlength = (maxlength == NULL) ? addr.prefixlen : maxlen;
 	ip_roa_compose_ranges(res);
 
 	rc = 1;
@@ -138,45 +131,42 @@ out:
 static int
 roa_parse_ipfam(const ASN1_OCTET_STRING *os, struct parse *p)
 {
-	ASN1_SEQUENCE_ANY 	*seq, *sseq = NULL;
-	const unsigned char     *d = os->data;
-	size_t		         dsz = os->length;
+	ASN1_SEQUENCE_ANY	*seq, *sseq = NULL;
+	const unsigned char	*d = os->data;
+	size_t			 dsz = os->length;
 	int			 i, rc = 0;
 	const ASN1_TYPE		*t;
 	enum afi		 afi;
 
 	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 6482 section 3.3: "
-			"ROAIPAddressFamily: failed ASN.1 "
-			"sequence parse", p->fn);
+		cryptowarnx("%s: RFC 6482 section 3.3: ROAIPAddressFamily: "
+		    "failed ASN.1 sequence parse", p->fn);
 		goto out;
 	} else if (sk_ASN1_TYPE_num(seq) != 2) {
-		warnx("%s: RFC 6482 section 3.3: "
-			"ROAIPAddressFamily: "
-			"want 2 elements, have %d",
-			p->fn, sk_ASN1_TYPE_num(seq));
+		warnx("%s: RFC 6482 section 3.3: ROAIPAddressFamily: "
+		    "want 2 elements, have %d",
+		    p->fn, sk_ASN1_TYPE_num(seq));
 		goto out;
 	}
 
 	t = sk_ASN1_TYPE_value(seq, 0);
 	if (t->type != V_ASN1_OCTET_STRING) {
-		warnx("%s: RFC 6482 section 3.3: "
-			"addressFamily: want ASN.1 "
-			"octet string, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
+		warnx("%s: RFC 6482 section 3.3: addressFamily: "
+		    "want ASN.1 octet string, have %s (NID %d)",
+		    p->fn, ASN1_tag2str(t->type), t->type);
 		goto out;
 	}
 	if (!ip_addr_afi_parse(p->fn, t->value.octet_string, &afi)) {
-		warnx("%s: RFC 6482 section 3.3: "
-			"addressFamily: invalid", p->fn);
+		warnx("%s: RFC 6482 section 3.3: addressFamily: "
+		    "invalid", p->fn);
 		goto out;
 	}
-	
+
 	t = sk_ASN1_TYPE_value(seq, 1);
 	if (t->type != V_ASN1_SEQUENCE) {
 		warnx("%s: RFC 6482 section 3.3: addresses: "
-			"want ASN.1 sequence, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
+		    "want ASN.1 sequence, have %s (NID %d)",
+		    p->fn, ASN1_tag2str(t->type), t->type);
 		goto out;
 	}
 
@@ -185,16 +175,22 @@ roa_parse_ipfam(const ASN1_OCTET_STRING *os, struct parse *p)
 
 	if ((sseq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
 		cryptowarnx("%s: RFC 6482 section 3.3: addresses: "
-			"failed ASN.1 sequence parse", p->fn);
+		    "failed ASN.1 sequence parse", p->fn);
 		goto out;
 	}
+
+	/* will be called multiple times so use recallocarray */
+	p->res->ips = recallocarray(p->res->ips, p->res->ipsz,
+	    p->res->ipsz + sk_ASN1_TYPE_num(sseq), sizeof(struct roa_ip));
+	if (p->res->ips == NULL)
+		err(1, NULL);
 
 	for (i = 0; i < sk_ASN1_TYPE_num(sseq); i++) {
 		t = sk_ASN1_TYPE_value(sseq, i);
 		if (t->type != V_ASN1_SEQUENCE) {
 			warnx("%s: RFC 6482 section 3.3: ROAIPAddress: "
-				"want ASN.1 sequence, have %s (NID %d)",
-				p->fn, ASN1_tag2str(t->type), t->type);
+			    "want ASN.1 sequence, have %s (NID %d)",
+			    p->fn, ASN1_tag2str(t->type), t->type);
 			goto out;
 		}
 		if (!roa_parse_addr(t->value.octet_string, afi, p))
@@ -215,25 +211,24 @@ out:
 static int
 roa_parse_ipblocks(const ASN1_OCTET_STRING *os, struct parse *p)
 {
-	ASN1_SEQUENCE_ANY 	*seq;
-	const unsigned char     *d = os->data;
-	size_t		         dsz = os->length;
+	ASN1_SEQUENCE_ANY	*seq;
+	const unsigned char	*d = os->data;
+	size_t			 dsz = os->length;
 	int			 i, rc = 0;
 	const ASN1_TYPE		*t;
 
 	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
 		cryptowarnx("%s: RFC 6482 section 3.3: ipAddrBlocks: "
-			"failed ASN.1 sequence parse", p->fn);
+		    "failed ASN.1 sequence parse", p->fn);
 		goto out;
 	}
 
 	for (i = 0; i < sk_ASN1_TYPE_num(seq); i++) {
 		t = sk_ASN1_TYPE_value(seq, i);
 		if (t->type != V_ASN1_SEQUENCE) {
-			warnx("%s: RFC 6482 section 3.3: "
-				"ROAIPAddressFamily: want ASN.1 "
-				"sequence, have %s (NID %d)",
-				p->fn, ASN1_tag2str(t->type), t->type);
+			warnx("%s: RFC 6482 section 3.3: ROAIPAddressFamily: "
+			    "want ASN.1 sequence, have %s (NID %d)",
+			    p->fn, ASN1_tag2str(t->type), t->type);
 			goto out;
 		} else if (!roa_parse_ipfam(t->value.octet_string, p))
 			goto out;
@@ -252,47 +247,42 @@ out:
 static int
 roa_parse_econtent(const unsigned char *d, size_t dsz, struct parse *p)
 {
-	ASN1_SEQUENCE_ANY 	*seq;
-	int		         i = 0, rc = 0, sz;
+	ASN1_SEQUENCE_ANY	*seq;
+	int			 i = 0, rc = 0, sz;
 	const ASN1_TYPE		*t;
+	long			 roa_version;
 
 	/* RFC 6482, section 3. */
 
 	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 6482 section 3: "
-			"RouteOriginAttestation: "
-			"failed ASN.1 sequence parse", p->fn);
+		cryptowarnx("%s: RFC 6482 section 3: RouteOriginAttestation: "
+		    "failed ASN.1 sequence parse", p->fn);
 		goto out;
 	}
 
 	if ((sz = sk_ASN1_TYPE_num(seq)) != 2 && sz != 3) {
-		warnx("%s: RFC 6482 section 3: "
-			"RouteOriginAttestation: "
-			"want 2 or 3 elements, have %d",
-			p->fn, sk_ASN1_TYPE_num(seq));
+		warnx("%s: RFC 6482 section 3: RouteOriginAttestation: "
+		    "want 2 or 3 elements, have %d",
+		    p->fn, sk_ASN1_TYPE_num(seq));
 		goto out;
 	}
 
-	/* RFC 6482, section 3.1. */
-
+	/* Parse the optional version field */
 	if (sz == 3) {
 		t = sk_ASN1_TYPE_value(seq, i++);
+		d = t->value.asn1_string->data;
+		dsz = t->value.asn1_string->length;
 
-		/*
-		 * This check with ASN1_INTEGER_get() is fine since
-		 * we're looking for a value of zero anyway, so any
-		 * overflowing number will be definition be wrong.
-		 */
-
-		if (t->type != V_ASN1_INTEGER) {
-			warnx("%s: RFC 6482 section 3.1: version: "
-				"want ASN.1 integer, have %s (NID %d)",
-				p->fn, ASN1_tag2str(t->type), t->type);
+		if (cms_econtent_version(p->fn, &d, dsz, &roa_version) == -1)
 			goto out;
-		} else if (ASN1_INTEGER_get(t->value.integer) != 0) {
-			warnx("%s: RFC 6482 section 3.1: version: "
-				"want version 0, have %ld",
-				p->fn, ASN1_INTEGER_get(t->value.integer));
+
+		switch (roa_version) {
+		case 0:
+			warnx("%s: incorrect encoding for version 0", p->fn);
+			goto out;
+		default:
+			warnx("%s: version %ld not supported (yet)", p->fn,
+			    roa_version);
 			goto out;
 		}
 	}
@@ -306,12 +296,12 @@ roa_parse_econtent(const unsigned char *d, size_t dsz, struct parse *p)
 	t = sk_ASN1_TYPE_value(seq, i++);
 	if (t->type != V_ASN1_INTEGER) {
 		warnx("%s: RFC 6482 section 3.2: asID: "
-			"want ASN.1 integer, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
+		    "want ASN.1 integer, have %s (NID %d)",
+		    p->fn, ASN1_tag2str(t->type), t->type);
 		goto out;
 	} else if (!as_id_parse(t->value.integer, &p->res->asid)) {
 		warnx("%s: RFC 6482 section 3.2: asID: "
-			"malformed AS identifier", p->fn);
+		    "malformed AS identifier", p->fn);
 		goto out;
 	}
 
@@ -320,8 +310,8 @@ roa_parse_econtent(const unsigned char *d, size_t dsz, struct parse *p)
 	t = sk_ASN1_TYPE_value(seq, i++);
 	if (t->type != V_ASN1_SEQUENCE) {
 		warnx("%s: RFC 6482 section 3.3: ipAddrBlocks: "
-			"want ASN.1 sequence, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
+		    "want ASN.1 sequence, have %s (NID %d)",
+		    p->fn, ASN1_tag2str(t->type), t->type);
 		goto out;
 	} else if (!roa_parse_ipblocks(t->value.octet_string, p))
 		goto out;
@@ -333,33 +323,63 @@ out:
 }
 
 /*
- * Parse a full RFC 6482 file with a SHA256 digest "dgst" and signed by
- * the certificate "cacert" (the latter two are optional and may be
- * passed as NULL to disable).
+ * Parse a full RFC 6482 file.
  * Returns the ROA or NULL if the document was malformed.
  */
 struct roa *
-roa_parse(X509 **x509, const char *fn, const unsigned char *dgst)
+roa_parse(X509 **x509, const char *fn)
 {
 	struct parse	 p;
 	size_t		 cmsz;
 	unsigned char	*cms;
 	int		 rc = 0;
+	const ASN1_TIME	*at;
+	struct tm	 expires_tm;
+	time_t		 expires;
 
 	memset(&p, 0, sizeof(struct parse));
 	p.fn = fn;
 
 	/* OID from section 2, RFC 6482. */
+	if (roa_oid == NULL) {
+		roa_oid = OBJ_txt2obj("1.2.840.113549.1.9.16.1.24", 1);
+		if (roa_oid == NULL)
+			errx(1, "OBJ_txt2obj for %s failed",
+			    "1.2.840.113549.1.9.16.1.24");
+	}
 
-	cms = cms_parse_validate(x509, fn,
-		"1.2.840.113549.1.9.16.1.24", dgst, &cmsz);
+	cms = cms_parse_validate(x509, fn, roa_oid, &cmsz);
 	if (cms == NULL)
 		return NULL;
 
 	if ((p.res = calloc(1, sizeof(struct roa))) == NULL)
-		err(EXIT_FAILURE, NULL);
-	if (!x509_get_ski_aki(*x509, fn, &p.res->ski, &p.res->aki))
+		err(1, NULL);
+
+	p.res->aia = x509_get_aia(*x509, fn);
+	p.res->aki = x509_get_aki(*x509, 0, fn);
+	p.res->ski = x509_get_ski(*x509, fn);
+	if (p.res->aia == NULL || p.res->aki == NULL || p.res->ski == NULL) {
+		warnx("%s: RFC 6487 section 4.8: "
+		    "missing AIA, AKI or SKI X509 extension", fn);
 		goto out;
+	}
+
+	at = X509_get0_notAfter(*x509);
+	if (at == NULL) {
+		warnx("%s: X509_get0_notAfter failed", fn);
+		goto out;
+	}
+	memset(&expires_tm, 0, sizeof(expires_tm));
+	if (ASN1_time_parse(at->data, at->length, &expires_tm, 0) == -1) {
+		warnx("%s: ASN1_time_parse failed", fn);
+		goto out;
+	}
+	if ((expires = mktime(&expires_tm)) == -1) {
+		err(1, "mktime failed");
+		goto out;
+	}
+	p.res->expires = expires;
+	
 	if (!roa_parse_econtent(cms, cmsz, &p))
 		goto out;
 
@@ -386,9 +406,11 @@ roa_free(struct roa *p)
 
 	if (p == NULL)
 		return;
+	free(p->aia);
 	free(p->aki);
 	free(p->ski);
 	free(p->ips);
+	free(p->tal);
 	free(p);
 }
 
@@ -397,28 +419,27 @@ roa_free(struct roa *p)
  * See roa_read() for reader.
  */
 void
-roa_buffer(char **b, size_t *bsz, size_t *bmax, const struct roa *p)
+roa_buffer(struct ibuf *b, const struct roa *p)
 {
 	size_t	 i;
 
-	io_simple_buffer(b, bsz, bmax, &p->valid, sizeof(int));
-	io_simple_buffer(b, bsz, bmax, &p->asid, sizeof(uint32_t));
-	io_simple_buffer(b, bsz, bmax, &p->ipsz, sizeof(size_t));
+	io_simple_buffer(b, &p->valid, sizeof(int));
+	io_simple_buffer(b, &p->asid, sizeof(uint32_t));
+	io_simple_buffer(b, &p->ipsz, sizeof(size_t));
+	io_simple_buffer(b, &p->expires, sizeof(time_t));
 
 	for (i = 0; i < p->ipsz; i++) {
-		io_simple_buffer(b, bsz, bmax,
-			&p->ips[i].afi, sizeof(enum afi));
-		io_simple_buffer(b, bsz, bmax,
-			&p->ips[i].maxlength, sizeof(size_t));
-		io_simple_buffer(b, bsz, bmax,
-			p->ips[i].min, sizeof(p->ips[i].min));
-		io_simple_buffer(b, bsz, bmax,
-			p->ips[i].max, sizeof(p->ips[i].max));
-		ip_addr_buffer(b, bsz, bmax, &p->ips[i].addr);
+		io_simple_buffer(b, &p->ips[i].afi, sizeof(enum afi));
+		io_simple_buffer(b, &p->ips[i].maxlength, sizeof(size_t));
+		io_simple_buffer(b, p->ips[i].min, sizeof(p->ips[i].min));
+		io_simple_buffer(b, p->ips[i].max, sizeof(p->ips[i].max));
+		ip_addr_buffer(b, &p->ips[i].addr);
 	}
-	
-	io_str_buffer(b, bsz, bmax, p->aki);
-	io_str_buffer(b, bsz, bmax, p->ski);
+
+	io_str_buffer(b, p->aia);
+	io_str_buffer(b, p->aki);
+	io_str_buffer(b, p->ski);
+	io_str_buffer(b, p->tal);
 }
 
 /*
@@ -429,18 +450,19 @@ roa_buffer(char **b, size_t *bsz, size_t *bmax, const struct roa *p)
 struct roa *
 roa_read(int fd)
 {
-	struct roa 	*p;
+	struct roa	*p;
 	size_t		 i;
 
 	if ((p = calloc(1, sizeof(struct roa))) == NULL)
-		err(EXIT_FAILURE, NULL);
+		err(1, NULL);
 
 	io_simple_read(fd, &p->valid, sizeof(int));
 	io_simple_read(fd, &p->asid, sizeof(uint32_t));
 	io_simple_read(fd, &p->ipsz, sizeof(size_t));
+	io_simple_read(fd, &p->expires, sizeof(time_t));
 
 	if ((p->ips = calloc(p->ipsz, sizeof(struct roa_ip))) == NULL)
-		err(EXIT_FAILURE, NULL);
+		err(1, NULL);
 
 	for (i = 0; i < p->ipsz; i++) {
 		io_simple_read(fd, &p->ips[i].afi, sizeof(enum afi));
@@ -450,7 +472,98 @@ roa_read(int fd)
 		ip_addr_read(fd, &p->ips[i].addr);
 	}
 
+	io_str_read(fd, &p->aia);
 	io_str_read(fd, &p->aki);
 	io_str_read(fd, &p->ski);
+	io_str_read(fd, &p->tal);
+	assert(p->aia && p->aki && p->ski && p->tal);
+
 	return p;
 }
+
+/*
+ * Add each IP address in the ROA into the VRP tree.
+ * Updates "vrps" to be the number of VRPs and "uniqs" to be the unique
+ * number of addresses.
+ */
+void
+roa_insert_vrps(struct vrp_tree *tree, struct roa *roa, size_t *vrps,
+    size_t *uniqs)
+{
+	struct vrp	*v, *found;
+	size_t		 i;
+
+	for (i = 0; i < roa->ipsz; i++) {
+		if ((v = malloc(sizeof(*v))) == NULL)
+			err(1, NULL);
+		v->afi = roa->ips[i].afi;
+		v->addr = roa->ips[i].addr;
+		v->maxlength = roa->ips[i].maxlength;
+		v->asid = roa->asid;
+		if ((v->tal = strdup(roa->tal)) == NULL)
+			err(1, NULL);
+		v->expires = roa->expires;
+
+		/*
+		 * Check if a similar VRP already exists in the tree.
+		 * If the found VRP expires sooner, update it to this
+		 * ROAs later expiry moment.
+		 */
+		if ((found = RB_INSERT(vrp_tree, tree, v)) != NULL) {
+			/* already exists */
+			if (found->expires < v->expires) {
+				/* update found with preferred data */
+				found->expires = roa->expires;
+				free(found->tal);
+				found->tal = v->tal;
+				v->tal = NULL;
+			}
+			free(v->tal);
+			free(v);
+		} else
+			(*uniqs)++;
+
+		(*vrps)++;
+	}
+}
+
+static inline int
+vrpcmp(struct vrp *a, struct vrp *b)
+{
+	int rv;
+
+	if (a->afi > b->afi)
+		return 1;
+	if (a->afi < b->afi)
+		return -1;
+	switch (a->afi) {
+	case AFI_IPV4:
+		rv = memcmp(&a->addr.addr, &b->addr.addr, 4);
+		if (rv)
+			return rv;
+		break;
+	case AFI_IPV6:
+		rv = memcmp(&a->addr.addr, &b->addr.addr, 16);
+		if (rv)
+			return rv;
+		break;
+	}
+	/* a smaller prefixlen is considered bigger, e.g. /8 vs /10 */
+	if (a->addr.prefixlen < b->addr.prefixlen)
+		return 1;
+	if (a->addr.prefixlen > b->addr.prefixlen)
+		return -1;
+	if (a->maxlength < b->maxlength)
+		return 1;
+	if (a->maxlength > b->maxlength)
+		return -1;
+
+	if (a->asid > b->asid)
+		return 1;
+	if (a->asid < b->asid)
+		return -1;
+
+	return 0;
+}
+
+RB_GENERATE(vrp_tree, vrp, entry, vrpcmp);

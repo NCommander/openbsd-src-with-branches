@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mcroute.c,v 1.2 2019/09/05 02:44:36 bluhm Exp $	*/
 /*
  * Copyright (c) 2019 Alexander Bluhm <bluhm@openbsd.org>
  *
@@ -101,7 +101,7 @@ main(int argc, char *argv[])
 	background = 0;
 	log = stdout;
 	file = NULL;
-	group = "224.0.0.123";
+	group = "224.0.1.123";
 	ifaddr = NULL;
 	norecv = 0;
 	outaddr = NULL;
@@ -181,7 +181,7 @@ main(int argc, char *argv[])
 	mfc.mfcc_ttls[1] = 1;
 
 	if (setsockopt(s, IPPROTO_IP, MRT_ADD_MFC, &mfc, sizeof(mfc)) == -1)
-		err(1, "setsockopt MRT_ADD_MFC %s", ifaddr);
+		err(1, "setsockopt MRT_ADD_MFC %s", group);
 
 	if (background) {
 		pid = fork();
@@ -209,8 +209,7 @@ main(int argc, char *argv[])
 			if (signal(SIGALRM, sigexit) == SIG_ERR)
 				err(1, "signal SIGALRM");
 		}
-		if (alarm(timeout) == (unsigned  int)-1)
-			err(1, "alarm %u", timeout);
+		alarm(timeout);
 	}
 
 	buf = NULL;

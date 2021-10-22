@@ -1,4 +1,4 @@
-/* crypto/cast/cast.h */
+/* $OpenBSD: cast.h,v 1.11 2014/06/12 15:49:28 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -59,11 +59,11 @@
 #ifndef HEADER_CAST_H
 #define HEADER_CAST_H
 
+#include <openssl/opensslconf.h>
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
-
-#include <openssl/opensslconf.h>
 
 #ifdef OPENSSL_NO_CAST
 #error CAST is disabled.
@@ -83,9 +83,6 @@ typedef struct cast_key_st
 	int short_key;	/* Use reduced rounds for short key */
 	} CAST_KEY;
 
-#ifdef OPENSSL_FIPS 
-void private_CAST_set_key(CAST_KEY *key, int len, const unsigned char *data);
-#endif
 void CAST_set_key(CAST_KEY *key, int len, const unsigned char *data);
 void CAST_ecb_encrypt(const unsigned char *in, unsigned char *out, const CAST_KEY *key,
 		      int enc);

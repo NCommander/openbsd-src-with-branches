@@ -1,3 +1,4 @@
+/*	$OpenBSD: semctl.c,v 1.8 2014/11/15 22:38:47 guenther Exp $ */
 /*
  * Copyright (c) 1994, 1995 Christopher G. Demetriou
  * All rights reserved.
@@ -29,22 +30,24 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: semctl.c,v 1.3 1995/02/27 11:23:09 cgd Exp $";
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/types.h>
-#include <sys/ipc.h>
 #include <sys/sem.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
-#if __STDC__
-int semctl(int semid, int semnum, int cmd, union semun semun)
-#else
-int semctl(semid, int semnum, cmd, semun)
-	int semid, semnum;
-	int cmd;
-	union semun semun;
-#endif
+int
+semctl(int semid, int semnum, int cmd, ...)
 {
-	return (__semctl(semid, semnum, cmd, &semun));
+	va_list ap;
+	union semun semun;
+	union semun *semun_ptr = NULL;
+
+	va_start(ap, cmd);
+	if (cmd == IPC_SET || cmd == IPC_STAT || cmd == GETALL ||
+	    cmd == SETVAL || cmd == SETALL) {
+		semun = va_arg(ap, union semun);
+		semun_ptr = &semun;
+	}
+	va_end(ap);
+
+	return (__semctl(semid, semnum, cmd, semun_ptr));
 }

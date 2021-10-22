@@ -1,0 +1,9 @@
+#	$OpenBSD$
+
+device zqclock
+attach zqclock at fdt
+file	arch/armv7/xilinx/zqclock.c		zqclock
+
+device zqreset
+attach zqreset at fdt
+file	arch/armv7/xilinx/zqreset.c		zqreset

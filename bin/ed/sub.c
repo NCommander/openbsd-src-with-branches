@@ -1,6 +1,7 @@
+/*	$OpenBSD: sub.c,v 1.17 2016/10/10 17:36:03 martijn Exp $	*/
 /*	$NetBSD: sub.c,v 1.4 1995/03/21 09:04:50 cgd Exp $	*/
 
-/* sub.c: This file contains the substitution routines for the ed 
+/* sub.c: This file contains the substitution routines for the ed
    line editor */
 /*-
  * Copyright (c) 1993 Andrew Moore, Talke Studio.
@@ -28,26 +29,26 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char *rcsid = "@(#)sub.c,v 1.1 1994/02/01 00:34:44 alm Exp";
-#else
-static char rcsid[] = "$NetBSD: sub.c,v 1.4 1995/03/21 09:04:50 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <limits.h>
+#include <regex.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "ed.h"
 
+static char *extract_subst_template(void);
+static int substitute_matching_text(regex_t *, line_t *, int, int);
+static int apply_subst_template(char *, regmatch_t *, int, int);
 
-char *rhbuf;			/* rhs substitution buffer */
-int rhbufsz;			/* rhs substitution buffer size */
-int rhbufi;			/* rhs substitution buffer index */
+static char *rhbuf;		/* rhs substitution buffer */
+static int rhbufsz;		/* rhs substitution buffer size */
+static int rhbufi;		/* rhs substitution buffer index */
 
 /* extract_subst_tail: extract substitution tail from the command buffer */
 int
-extract_subst_tail(flagp, np)
-	int *flagp;
-	long *np;
+extract_subst_tail(int *flagp, int *np)
 {
 	char delimiter;
 
@@ -64,7 +65,7 @@ extract_subst_tail(flagp, np)
 	} else if (*ibufp == delimiter)
 		ibufp++;
 	if ('1' <= *ibufp && *ibufp <= '9') {
-		STRTOL(*np, ibufp);
+		STRTOI(*np, ibufp);
 		return 0;
 	} else if (*ibufp == 'g') {
 		ibufp++;
@@ -77,8 +78,8 @@ extract_subst_tail(flagp, np)
 
 /* extract_subst_template: return pointer to copy of substitution template
    in the command buffer */
-char *
-extract_subst_template()
+static char *
+extract_subst_template(void)
 {
 	int n = 0;
 	int i = 0;
@@ -87,7 +88,8 @@ extract_subst_template()
 
 	if (*ibufp == '%' && *(ibufp + 1) == delimiter) {
 		ibufp++;
-		if (!rhbuf) sprintf(errmsg, "no previous substitution");
+		if (!rhbuf)
+			seterrmsg("no previous substitution");
 		return rhbuf;
 	}
 	while (*ibufp != delimiter) {
@@ -101,7 +103,7 @@ extract_subst_template()
 			;
 		else if (!isglobal) {
 			while ((n = get_tty_line()) == 0 ||
-			    n > 0 && ibuf[n - 1] != '\n')
+			    (n > 0 && ibuf[n - 1] != '\n'))
 				clearerr(stdin);
 			if (n < 0)
 				return NULL;
@@ -113,22 +115,19 @@ extract_subst_template()
 }
 
 
-char *rbuf;			/* substitute_matching_text buffer */
-int rbufsz;			/* substitute_matching_text buffer size */
+static char *rbuf;		/* substitute_matching_text buffer */
+static int rbufsz;		/* substitute_matching_text buffer size */
 
 /* search_and_replace: for each line in a range, change text matching a pattern
    according to a substitution template; return status  */
 int
-search_and_replace(pat, gflag, kth)
-	pattern_t *pat;
-	int gflag;
-	int kth;
+search_and_replace(regex_t *pat, int gflag, int kth)
 {
 	undo_t *up;
 	char *txt;
 	char *eot;
-	long lc;
-	long xa = current_addr;
+	int lc;
+	int xa = current_addr;
 	int nsubs = 0;
 	line_t *lp;
 	int len;
@@ -164,7 +163,7 @@ search_and_replace(pat, gflag, kth)
 	}
 	current_addr = xa;
 	if  (nsubs == 0 && !(gflag & GLB)) {
-		sprintf(errmsg, "no match");
+		seterrmsg("no match");
 		return ERR;
 	} else if ((gflag & (GPR | GLS | GNP)) &&
 	    display_lines(current_addr, current_addr, gflag) < 0)
@@ -174,60 +173,61 @@ search_and_replace(pat, gflag, kth)
 
 
 /* substitute_matching_text: replace text matched by a pattern according to
-   a substitution template; return pointer to the modified text */
-int
-substitute_matching_text(pat, lp, gflag, kth)
-	pattern_t *pat;
-	line_t *lp;
-	int gflag;
-	int kth;
+   a substitution template; return length of rbuf if changed, 0 if unchanged, or
+   ERR on error */
+static int
+substitute_matching_text(regex_t *pat, line_t *lp, int gflag, int kth)
 {
 	int off = 0;
 	int changed = 0;
 	int matchno = 0;
 	int i = 0;
+	int nempty = -1;
 	regmatch_t rm[SE_MAX];
 	char *txt;
-	char *eot;
+	char *eot, *eom;
 
-	if ((txt = get_sbuf_line(lp)) == NULL)
+	if ((eom = txt = get_sbuf_line(lp)) == NULL)
 		return ERR;
-	if (isbinary) 
+	if (isbinary)
 		NUL_TO_NEWLINE(txt, lp->len);
 	eot = txt + lp->len;
 	if (!regexec(pat, txt, SE_MAX, rm, 0)) {
 		do {
+/* Don't do a 0-length match directly after a non-0-length */
+			if (rm[0].rm_eo == nempty) {
+				rm[0].rm_so++;
+				rm[0].rm_eo = lp->len;
+				continue;
+			}
 			if (!kth || kth == ++matchno) {
-				changed++;
-				i = rm[0].rm_so;
+				changed = 1;
+				i = rm[0].rm_so - (eom - txt);
 				REALLOC(rbuf, rbufsz, off + i, ERR);
 				if (isbinary)
-					NEWLINE_TO_NUL(txt, rm[0].rm_eo);
-				memcpy(rbuf + off, txt, i);
+					NEWLINE_TO_NUL(eom,
+					    rm[0].rm_eo - (eom - txt));
+				memcpy(rbuf + off, eom, i);
 				off += i;
 				if ((off = apply_subst_template(txt, rm, off,
 				    pat->re_nsub)) < 0)
 					return ERR;
-			} else {
-				i = rm[0].rm_eo;
-				REALLOC(rbuf, rbufsz, off + i, ERR);
-				if (isbinary)
-					NEWLINE_TO_NUL(txt, i);
-				memcpy(rbuf + off, txt, i);
-				off += i;
+				eom = txt + rm[0].rm_eo;
+				if (kth)
+					break;
 			}
-			txt += rm[0].rm_eo;
-		} while (*txt && (!changed || (gflag & GSG) && rm[0].rm_eo) &&
-		    !regexec(pat, txt, SE_MAX, rm, REG_NOTBOL));
-		i = eot - txt;
+			if (rm[0].rm_so == rm[0].rm_eo)
+				rm[0].rm_so = rm[0].rm_eo + 1;
+			else
+				nempty = rm[0].rm_so = rm[0].rm_eo;
+			rm[0].rm_eo = lp->len;
+		} while (rm[0].rm_so < lp->len && (gflag & GSG || kth) &&
+		    !regexec(pat, txt, SE_MAX, rm, REG_STARTEND | REG_NOTBOL));
+		i = eot - eom;
 		REALLOC(rbuf, rbufsz, off + i + 2, ERR);
-		if (i > 0 && !rm[0].rm_eo && (gflag & GSG)) {
-			sprintf(errmsg, "infinite substitution loop");
-			return  ERR;
-		}
 		if (isbinary)
-			NEWLINE_TO_NUL(txt, i);
-		memcpy(rbuf + off, txt, i);
+			NEWLINE_TO_NUL(eom, i);
+		memcpy(rbuf + off, eom, i);
 		memcpy(rbuf + off + i, "\n", 2);
 	}
 	return changed ? off + i + 1 : 0;
@@ -236,12 +236,8 @@ substitute_matching_text(pat, lp, gflag, kth)
 
 /* apply_subst_template: modify text according to a substitution template;
    return offset to end of modified text */
-int
-apply_subst_template(boln, rm, off, re_nsub)
-	char *boln;
-	regmatch_t *rm;
-	int off;
-	int re_nsub;
+static int
+apply_subst_template(char *boln, regmatch_t *rm, int off, int re_nsub)
 {
 	int j = 0;
 	int k = 0;
