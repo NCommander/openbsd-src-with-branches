@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_purp.c,v 1.8 2021/10/21 13:51:52 tb Exp $ */
+/* $OpenBSD: x509_purp.c,v 1.9 2021/10/22 18:37:15 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -941,6 +941,16 @@ X509_check_akid(X509 *issuer, AUTHORITY_KEYID *akid)
 			return X509_V_ERR_AKID_ISSUER_SERIAL_MISMATCH;
 	}
 	return X509_V_OK;
+}
+
+uint32_t
+X509_get_extension_flags(X509 *x)
+{
+	/* Call for side-effect of computing hash and caching extensions */
+	if (X509_check_purpose(x, -1, -1) != 1)
+		return 0;
+
+	return x->ex_flags;
 }
 
 uint32_t
