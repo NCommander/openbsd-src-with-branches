@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-snmp.c,v 1.24 2019/01/03 08:22:33 martijn Exp $	*/
+/*	$OpenBSD: print-snmp.c,v 1.25 2020/01/24 22:46:37 procter Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -106,7 +106,7 @@ char *Application[] = {
 #define NSAPADDR 5
 	"Counter64",
 #define COUNTER64 6
-	"UInteger32"
+	"UInteger32" /* Defined in RFC1442, removed since RFC1902 */
 #define UINTEGER32 7
 };
 
