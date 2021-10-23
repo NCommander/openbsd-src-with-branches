@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.45 2021/08/30 17:34:01 tb Exp $
+#	$OpenBSD: Makefile,v 1.46 2021/08/30 17:34:32 tb Exp $
 
 SUBDIR += asn1
 SUBDIR += buffer
@@ -12,6 +12,7 @@ SUBDIR += record
 SUBDIR += record_layer
 SUBDIR += server
 SUBDIR += ssl
+SUBDIR += tls
 SUBDIR += tlsext
 SUBDIR += tlslegacy
 SUBDIR += key_schedule
