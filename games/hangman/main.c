@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.18 2016/02/26 21:27:07 mestre Exp $	*/
+/*	$OpenBSD: main.c,v 1.19 2016/02/28 06:24:06 tb Exp $	*/
 /*	$NetBSD: main.c,v 1.3 1995/03/23 08:32:50 cgd Exp $	*/
 
 /*
@@ -48,9 +48,6 @@ int
 main(int argc, char *argv[])
 {
 	int ch;
-
-	if (pledge("stdio rpath tty", NULL) == -1)
-		err(1, "pledge");
 
 	while ((ch = getopt(argc, argv, "d:hk")) != -1) {
 		switch (ch) {

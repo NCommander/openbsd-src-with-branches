@@ -1,4 +1,4 @@
-/*	$OpenBSD: rain.c,v 1.20 2016/01/04 17:33:24 mestre Exp $	*/
+/*	$OpenBSD: rain.c,v 1.21 2016/01/07 16:00:33 tb Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -58,9 +58,6 @@ main(int argc, char *argv[])
 	time_t delay = 0;
 	int ch;
 	int xpos[5], ypos[5];
-
-	if (pledge("stdio rpath tty", NULL) == -1)
-		err(1, "pledge");
 
 	/* set default delay based on terminal baud rate */
 	if (tcgetattr(STDOUT_FILENO, &term) == 0 &&
