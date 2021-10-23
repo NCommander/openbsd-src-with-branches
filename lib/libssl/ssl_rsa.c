@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_rsa.c,v 1.33 2021/05/16 14:10:43 jsing Exp $ */
+/* $OpenBSD: ssl_rsa.c,v 1.34 2021/06/11 11:13:53 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -392,7 +392,7 @@ ssl_set_cert(CERT *c, X509 *x)
 	EVP_PKEY_free(pkey);
 
 	X509_free(c->pkeys[i].x509);
-	CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
+	X509_up_ref(x);
 	c->pkeys[i].x509 = x;
 	c->key = &(c->pkeys[i]);
 
