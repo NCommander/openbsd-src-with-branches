@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.209 2021/10/05 11:45:26 bluhm Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.210 2021/10/13 14:36:31 bluhm Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -648,8 +648,6 @@ void	ipsp_init(void);
 void	ipsec_init(void);
 int	ipsec_sysctl(int *, u_int, void *, size_t *, void *, size_t);
 int	ipsec_common_input(struct mbuf *, int, int, int, int, int);
-void	ipsec_input_cb(struct cryptop *);
-void	ipsec_output_cb(struct cryptop *);
 int	ipsec_common_input_cb(struct mbuf *, struct tdb *, int, int);
 int	ipsec_delete_policy(struct ipsec_policy *);
 ssize_t	ipsec_hdrsz(struct tdb *);

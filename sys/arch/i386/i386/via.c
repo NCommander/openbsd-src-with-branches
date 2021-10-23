@@ -1,4 +1,4 @@
-/*	$OpenBSD: via.c,v 1.47 2021/07/08 09:22:30 bluhm Exp $	*/
+/*	$OpenBSD: via.c,v 1.48 2021/10/13 13:08:58 bluhm Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -468,7 +468,6 @@ viac3_crypto_process(struct cryptop *crp)
 	}
 out:
 	crp->crp_etype = err;
-	crypto_done(crp);
 	return (err);
 }
 
