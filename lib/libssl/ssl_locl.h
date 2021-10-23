@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.364 2021/10/23 15:02:27 jsing Exp $ */
+/* $OpenBSD: ssl_locl.h,v 1.365 2021/10/23 16:29:15 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1031,6 +1031,7 @@ typedef struct ssl_internal_st {
 	int empty_record_count;
 
 	size_t num_tickets; /* Unused, for OpenSSL compatibility */
+	STACK_OF(X509) *verified_chain;
 } SSL_INTERNAL;
 
 struct ssl_st {
