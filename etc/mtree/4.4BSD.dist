@@ -1,4 +1,4 @@
-#	$OpenBSD: 4.4BSD.dist,v 1.317 2021/04/28 14:25:15 jsg Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.318 2021/05/01 16:11:07 visa Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
 
@@ -412,6 +412,11 @@ usr
 
     # ./usr/share
     share
+        # ./usr/share/btrace
+	btrace
+	..
+
+        # ./usr/share/calendar
         calendar
         ..
 
