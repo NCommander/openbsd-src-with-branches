@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: agentx_internal.h,v 1.2 2020/10/26 16:02:16 tb Exp $ */
 /*
  * Copyright (c) 2020 Martijn van Duren <martijn@openbsd.org>
  *
@@ -38,6 +38,7 @@ struct agentx {
 	int ax_fd;
 	enum agentx_cstate ax_cstate;
 	enum agentx_dstate ax_dstate;
+	int ax_free;		/* Freeing already planned */
 	struct ax *ax_ax;
 	TAILQ_HEAD(, agentx_session) ax_sessions;
 	TAILQ_HEAD(, agentx_get) ax_getreqs;
