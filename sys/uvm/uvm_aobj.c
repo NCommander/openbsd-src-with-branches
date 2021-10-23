@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_aobj.c,v 1.98 2021/06/16 09:02:21 mpi Exp $	*/
+/*	$OpenBSD: uvm_aobj.c,v 1.99 2021/06/28 11:19:01 mpi Exp $	*/
 /*	$NetBSD: uvm_aobj.c,v 1.39 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -372,6 +372,7 @@ uao_free(struct uvm_aobj *aobj)
 	/*
 	 * finally free the aobj itself
 	 */
+	uvm_obj_destroy(uobj);
 	pool_put(&uvm_aobj_pool, aobj);
 }
 
