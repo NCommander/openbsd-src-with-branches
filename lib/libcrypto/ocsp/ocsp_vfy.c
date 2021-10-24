@@ -1,4 +1,4 @@
-/* $OpenBSD: ocsp_vfy.c,v 1.14 2016/11/05 13:27:53 miod Exp $ */
+/* $OpenBSD: ocsp_vfy.c,v 1.15 2017/01/29 17:49:23 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -177,6 +177,13 @@ end:
 	if (bs->certs && certs)
 		sk_X509_free(untrusted);
 	return ret;
+}
+
+int
+OCSP_resp_get0_signer(OCSP_BASICRESP *bs, X509 **signer,
+    STACK_OF(X509) *extra_certs)
+{
+	return ocsp_find_signer(signer, bs, extra_certs, NULL, 0) > 0;
 }
 
 static int
