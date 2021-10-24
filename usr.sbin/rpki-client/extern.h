@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.75 2021/10/23 20:01:16 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.76 2021/10/24 12:06:16 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -557,6 +557,13 @@ char		*x509_get_crl(X509 *, const char *);
 char		*x509_crl_get_aki(X509_CRL *, const char *);
 char		*x509_get_pubkey(X509 *, const char *);
 enum cert_purpose	 x509_get_purpose(X509 *, const char *);
+
+/* printers */
+void		tal_print(const struct tal *);
+void		cert_print(const struct cert *);
+void		mft_print(const struct mft *);
+void		roa_print(const struct roa *);
+void		gbr_print(const struct gbr *);
 
 /* Output! */
 
