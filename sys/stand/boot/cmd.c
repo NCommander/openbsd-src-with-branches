@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.66 2019/11/28 00:17:13 bluhm Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.67 2019/12/02 01:38:06 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -110,7 +110,7 @@ read_conf(void)
 	}
 #endif
 
-	if ((fd = open(qualify(cmd.conf), 0)) < 0) {
+	if ((fd = open(qualify(cmd.conf), O_RDONLY)) < 0) {
 		if (errno != ENOENT && errno != ENXIO) {
 			printf("open(%s): %s\n", cmd.path, strerror(errno));
 			return 0;

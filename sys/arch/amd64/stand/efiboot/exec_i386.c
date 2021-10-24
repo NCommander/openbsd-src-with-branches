@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_i386.c,v 1.5 2020/09/01 18:03:09 patrick Exp $	*/
+/*	$OpenBSD: exec_i386.c,v 1.6 2021/06/07 00:04:20 krw Exp $	*/
 
 /*
  * Copyright (c) 1997-1998 Michael Shalayeff
@@ -203,7 +203,7 @@ ucode_load(void)
 	snprintf(path, sizeof(path), "%s:/etc/firmware/intel/%02x-%02x-%02x",
 	    cmd.bootdev, family, model, stepping);
 
-	fd = open(path, 0);
+	fd = open(path, O_RDONLY);
 	if (fd == -1)
 		return;
 
