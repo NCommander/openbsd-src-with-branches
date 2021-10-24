@@ -1,5 +1,6 @@
-/*	$OpenBSD: x509.c,v 1.25 2021/10/12 15:16:45 job Exp $ */
+/*	$OpenBSD: x509.c,v 1.26 2021/10/24 13:45:19 job Exp $ */
 /*
+ * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
  * Permission to use, copy, modify, and distribute this software for any

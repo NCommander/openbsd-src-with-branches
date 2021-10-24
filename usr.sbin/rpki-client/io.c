@@ -1,5 +1,6 @@
-/*	$OpenBSD: io.c,v 1.15 2021/10/23 16:06:04 claudio Exp $ */
+/*	$OpenBSD: io.c,v 1.16 2021/10/23 20:01:16 claudio Exp $ */
 /*
+ * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
  * Permission to use, copy, modify, and distribute this software for any
