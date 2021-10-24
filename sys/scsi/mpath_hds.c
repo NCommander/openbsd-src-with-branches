@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_hds.c,v 1.23 2020/06/30 18:43:37 krw Exp $ */
+/*	$OpenBSD: mpath_hds.c,v 1.24 2020/09/05 14:21:52 krw Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -71,7 +71,7 @@ void		hds_attach(struct device *, struct device *, void *);
 int		hds_detach(struct device *, int);
 int		hds_activate(struct device *, int);
 
-struct cfattach hds_ca = {
+const struct cfattach hds_ca = {
 	sizeof(struct hds_softc),
 	hds_match,
 	hds_attach,

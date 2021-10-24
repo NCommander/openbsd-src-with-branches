@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_emc.c,v 1.22 2019/08/17 15:31:41 krw Exp $ */
+/*	$OpenBSD: mpath_emc.c,v 1.23 2020/06/30 18:43:37 krw Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -70,7 +70,7 @@ void		emc_attach(struct device *, struct device *, void *);
 int		emc_detach(struct device *, int);
 int		emc_activate(struct device *, int);
 
-struct cfattach emc_ca = {
+const struct cfattach emc_ca = {
 	sizeof(struct emc_softc),
 	emc_match,
 	emc_attach,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: safte.c,v 1.65 2020/09/12 17:03:51 krw Exp $ */
+/*	$OpenBSD: safte.c,v 1.66 2020/09/22 19:32:53 krw Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -85,7 +85,7 @@ struct safte_softc {
 #endif /* NBIO > 0 */
 };
 
-struct cfattach safte_ca = {
+const struct cfattach safte_ca = {
 	sizeof(struct safte_softc), safte_match, safte_attach, safte_detach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_rdac.c,v 1.24 2019/08/17 15:31:41 krw Exp $ */
+/*	$OpenBSD: mpath_rdac.c,v 1.25 2020/06/30 18:43:37 krw Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -129,7 +129,7 @@ void		rdac_attach(struct device *, struct device *, void *);
 int		rdac_detach(struct device *, int);
 int		rdac_activate(struct device *, int);
 
-struct cfattach rdac_ca = {
+const struct cfattach rdac_ca = {
 	sizeof(struct rdac_softc),
 	rdac_match,
 	rdac_attach,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uk.c,v 1.24 2019/12/07 15:16:24 krw Exp $	*/
+/*	$OpenBSD: uk.c,v 1.25 2020/08/11 15:23:57 krw Exp $	*/
 /*	$NetBSD: uk.c,v 1.15 1996/03/17 00:59:57 thorpej Exp $	*/
 
 /*
@@ -58,7 +58,7 @@ int	ukmatch(struct device *, void *, void *);
 void	ukattach(struct device *, struct device *, void *);
 int	ukdetach(struct device *, int);
 
-struct cfattach uk_ca = {
+const struct cfattach uk_ca = {
 	sizeof(struct uk_softc), ukmatch, ukattach, ukdetach
 };
 
