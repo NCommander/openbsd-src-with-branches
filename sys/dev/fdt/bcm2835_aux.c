@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcm2835_aux.c,v 1.5 2020/07/14 15:34:15 patrick Exp $	*/
+/*	$OpenBSD: bcm2835_aux.c,v 1.6 2020/07/17 08:07:34 patrick Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -48,7 +48,7 @@ struct bcmaux_softc {
 int	bcmaux_match(struct device *, void *, void *);
 void	bcmaux_attach(struct device *, struct device *, void *);
 
-struct cfattach bcmaux_ca = {
+const struct cfattach bcmaux_ca = {
 	sizeof(struct bcmaux_softc), bcmaux_match, bcmaux_attach
 };
 

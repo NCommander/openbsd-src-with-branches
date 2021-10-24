@@ -1,4 +1,4 @@
-/* $OpenBSD: exdog.c,v 1.6 2017/03/09 20:07:35 kettenis Exp $ */
+/* $OpenBSD: exdog.c,v 1.7 2021/03/25 04:12:01 jsg Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -56,7 +56,7 @@ void exdog_attach(struct device *parent, struct device *self, void *args);
 void exdog_stop(void);
 void exdog_reset(void);
 
-struct cfattach	exdog_ca = {
+const struct cfattach	exdog_ca = {
 	sizeof (struct exdog_softc), exdog_match, exdog_attach
 };
 

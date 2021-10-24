@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci_fdt.c,v 1.5 2019/05/10 18:20:41 patrick Exp $ */
+/*	$OpenBSD: ehci_fdt.c,v 1.6 2019/08/11 11:16:05 kettenis Exp $ */
 
 /*
  * Copyright (c) 2005 David Gwynne <dlg@openbsd.org>
@@ -50,7 +50,7 @@ int	ehci_fdt_match(struct device *, void *, void *);
 void	ehci_fdt_attach(struct device *, struct device *, void *);
 int	ehci_fdt_detach(struct device *, int);
 
-struct cfattach ehci_fdt_ca = {
+const struct cfattach ehci_fdt_ca = {
 	sizeof(struct ehci_fdt_softc), ehci_fdt_match, ehci_fdt_attach,
 	ehci_fdt_detach, ehci_activate
 };

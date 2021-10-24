@@ -1,4 +1,4 @@
-/*	$OpenBSD: exrtc.c,v 1.2 2017/03/11 00:18:43 kettenis Exp $	*/
+/*	$OpenBSD: exrtc.c,v 1.3 2019/08/29 11:51:48 kettenis Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -55,7 +55,7 @@ struct exrtc_softc {
 int	exrtc_match(struct device *, void *, void *);
 void	exrtc_attach(struct device *, struct device *, void *);
 
-struct cfattach exrtc_ca = {
+const struct cfattach exrtc_ca = {
 	sizeof(struct exrtc_softc), exrtc_match, exrtc_attach
 };
 

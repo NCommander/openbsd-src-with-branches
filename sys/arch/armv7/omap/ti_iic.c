@@ -1,4 +1,4 @@
-/*	$OpenBSD: ti_iic.c,v 1.13 2020/04/10 22:02:45 kettenis Exp $	*/
+/*	$OpenBSD: ti_iic.c,v 1.14 2021/03/25 04:12:01 jsg Exp $	*/
 /* $NetBSD: ti_iic.c,v 1.4 2013/04/25 13:04:27 rkujawa Exp $ */
 
 /*
@@ -139,7 +139,7 @@ int	ti_iic_wait(struct ti_iic_softc *, uint16_t, uint16_t, int);
 uint32_t	ti_iic_stat(struct ti_iic_softc *, uint32_t);
 int	ti_iic_flush(struct ti_iic_softc *);
 
-struct cfattach tiiic_ca = {
+const struct cfattach tiiic_ca = {
 	sizeof (struct ti_iic_softc), ti_iic_match, ti_iic_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dwxe.c,v 1.17 2020/07/10 13:26:36 patrick Exp $	*/
+/*	$OpenBSD: if_dwxe.c,v 1.18 2020/12/12 11:48:52 jan Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
@@ -310,7 +310,7 @@ void	dwxe_attach(struct device *, struct device *, void *);
 void	dwxe_phy_setup_emac(struct dwxe_softc *);
 void	dwxe_phy_setup_gmac(struct dwxe_softc *);
 
-struct cfattach dwxe_ca = {
+const struct cfattach dwxe_ca = {
 	sizeof(struct dwxe_softc), dwxe_match, dwxe_attach
 };
 

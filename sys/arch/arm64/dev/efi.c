@@ -1,4 +1,4 @@
-/*	$OpenBSD: efi.c,v 1.9 2021/03/11 11:16:56 jsg Exp $	*/
+/*	$OpenBSD: efi.c,v 1.10 2021/05/15 11:30:27 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
@@ -57,7 +57,7 @@ struct efi_softc {
 int	efi_match(struct device *, void *, void *);
 void	efi_attach(struct device *, struct device *, void *);
 
-struct cfattach efi_ca = {
+const struct cfattach efi_ca = {
 	sizeof(struct efi_softc), efi_match, efi_attach
 };
 

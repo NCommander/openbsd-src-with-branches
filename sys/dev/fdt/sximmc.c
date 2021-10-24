@@ -1,4 +1,4 @@
-/* $OpenBSD: sximmc.c,v 1.10 2020/01/09 14:35:20 mpi Exp $ */
+/* $OpenBSD: sximmc.c,v 1.11 2020/01/11 01:18:29 cheloha Exp $ */
 /* $NetBSD: awin_mmc.c,v 1.23 2015/11/14 10:32:40 bouyer Exp $ */
 
 /*-
@@ -277,7 +277,7 @@ struct cfdriver sximmc_cd = {
 	NULL, "sximmc", DV_DULL
 };
 
-struct cfattach sximmc_ca = {
+const struct cfattach sximmc_ca = {
 	sizeof(struct sximmc_softc), sximmc_match, sximmc_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mvtemp.c,v 1.1 2018/03/31 16:35:15 kettenis Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -50,7 +50,7 @@ struct mvtemp_softc {
 int	mvtemp_match(struct device *, void *, void *);
 void	mvtemp_attach(struct device *, struct device *, void *);
 
-struct cfattach	mvtemp_ca = {
+const struct cfattach	mvtemp_ca = {
 	sizeof (struct mvtemp_softc), mvtemp_match, mvtemp_attach
 };
 

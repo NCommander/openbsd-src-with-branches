@@ -1,4 +1,4 @@
-/* $OpenBSD: exmct.c,v 1.4 2016/07/26 22:10:10 patrick Exp $ */
+/* $OpenBSD: exmct.c,v 1.5 2017/03/04 18:17:24 kettenis Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -48,7 +48,7 @@ void exmct_attach(struct device *, struct device *, void *);
 void exmct_stop(void);
 void exmct_reset(void);
 
-struct cfattach	exmct_ca = {
+const struct cfattach	exmct_ca = {
 	sizeof (struct exmct_softc), exmct_match, exmct_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mvgpio.c,v 1.1 2018/03/20 21:23:38 kettenis Exp $	*/
+/*	$OpenBSD: mvgpio.c,v 1.2 2021/05/07 01:54:17 jsg Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -54,7 +54,7 @@ struct mvgpio_softc {
 int mvgpio_match(struct device *, void *, void *);
 void mvgpio_attach(struct device *, struct device *, void *);
 
-struct cfattach	mvgpio_ca = {
+const struct cfattach	mvgpio_ca = {
 	sizeof (struct mvgpio_softc), mvgpio_match, mvgpio_attach
 };
 

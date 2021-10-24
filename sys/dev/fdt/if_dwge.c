@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dwge.c,v 1.10 2021/07/28 13:43:11 patrick Exp $	*/
+/*	$OpenBSD: if_dwge.c,v 1.11 2021/10/22 14:28:54 kettenis Exp $	*/
 /*
  * Copyright (c) 2008, 2019 Mark Kettenis <kettenis@openbsd.org>
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
@@ -275,7 +275,7 @@ void	dwge_attach(struct device *, struct device *, void *);
 void	dwge_setup_allwinner(struct dwge_softc *);
 void	dwge_setup_rockchip(struct dwge_softc *);
 
-struct cfattach dwge_ca = {
+const struct cfattach dwge_ca = {
 	sizeof(struct dwge_softc), dwge_match, dwge_attach
 };
 

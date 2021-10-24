@@ -1,4 +1,4 @@
-/*	$OpenBSD: exehci.c,v 1.9 2021/02/14 19:24:38 kettenis Exp $ */
+/*	$OpenBSD: exehci.c,v 1.10 2021/03/25 04:12:01 jsg Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -88,7 +88,7 @@ struct exehci_softc {
 	bus_space_handle_t	ph_ioh;
 };
 
-struct cfattach exehci_ca = {
+const struct cfattach exehci_ca = {
 	sizeof (struct exehci_softc), exehci_match, exehci_attach,
 	exehci_detach
 };

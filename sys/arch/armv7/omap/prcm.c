@@ -1,4 +1,4 @@
-/* $OpenBSD: prcm.c,v 1.16 2021/03/25 04:12:01 jsg Exp $ */
+/* $OpenBSD: prcm.c,v 1.17 2021/05/16 15:10:19 deraadt Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -105,7 +105,7 @@ void prcm_v4_enablemodule(struct prcm_softc *, int);
 int prcm_v4_hsusbhost_activate(int);
 int prcm_v4_hsusbhost_set_source(int, int);
 
-struct cfattach	prcm_ca = {
+const struct cfattach	prcm_ca = {
 	sizeof (struct prcm_softc), NULL, prcm_attach
 };
 

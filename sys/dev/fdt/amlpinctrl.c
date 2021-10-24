@@ -1,4 +1,4 @@
-/*	$OpenBSD: amlpinctrl.c,v 1.9 2020/12/29 15:57:29 kettenis Exp $	*/
+/*	$OpenBSD: amlpinctrl.c,v 1.10 2021/05/21 15:37:54 kettenis Exp $	*/
 /*
  * Copyright (c) 2019 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -356,7 +356,7 @@ struct amlpinctrl_softc {
 int	amlpinctrl_match(struct device *, void *, void *);
 void	amlpinctrl_attach(struct device *, struct device *, void *);
 
-struct cfattach amlpinctrl_ca = {
+const struct cfattach amlpinctrl_ca = {
 	sizeof(struct amlpinctrl_softc), amlpinctrl_match, amlpinctrl_attach
 };
 

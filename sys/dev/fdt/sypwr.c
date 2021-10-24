@@ -1,4 +1,4 @@
-/*	$OpenBSD: sypwr.c,v 1.3 2019/09/29 13:27:48 kettenis Exp $	*/
+/*	$OpenBSD: sypwr.c,v 1.4 2020/11/12 10:47:07 patrick Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -44,7 +44,7 @@ int	sypwr_match(struct device *, void *, void *);
 void	sypwr_attach(struct device *, struct device *, void *);
 int	sypwr_activate(struct device *, int);
 
-struct cfattach sypwr_ca = {
+const struct cfattach sypwr_ca = {
 	sizeof(struct sypwr_softc), sypwr_match, sypwr_attach,
 	NULL, sypwr_activate
 };

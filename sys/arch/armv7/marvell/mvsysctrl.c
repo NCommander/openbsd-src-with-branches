@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: mvsysctrl.c,v 1.1 2016/10/07 14:43:50 patrick Exp $ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *
@@ -52,7 +52,7 @@ void	 mvsysctrl_reset(void);
 
 struct mvsysctrl_softc *mvsysctrl_sc;
 
-struct cfattach	mvsysctrl_ca = {
+const struct cfattach	mvsysctrl_ca = {
 	sizeof (struct mvsysctrl_softc), mvsysctrl_match, mvsysctrl_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rkiic.c,v 1.5 2020/03/01 10:18:19 kettenis Exp $	*/
+/*	$OpenBSD: rkiic.c,v 1.6 2021/03/11 08:55:59 patrick Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -88,7 +88,7 @@ struct rkiic_softc {
 int rkiic_match(struct device *, void *, void *);
 void rkiic_attach(struct device *, struct device *, void *);
 
-struct cfattach	rkiic_ca = {
+const struct cfattach	rkiic_ca = {
 	sizeof (struct rkiic_softc), rkiic_match, rkiic_attach
 };
 

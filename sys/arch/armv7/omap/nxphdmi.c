@@ -1,4 +1,4 @@
-/* $OpenBSD: nxphdmi.c,v 1.6 2019/05/06 03:45:58 mlarkin Exp $ */
+/* $OpenBSD: nxphdmi.c,v 1.7 2021/03/25 04:12:01 jsg Exp $ */
 /*
  * Copyright (c) 2016 Ian Sutton <ians@openbsd.org>
  * All rights reserved.
@@ -285,7 +285,7 @@ int	nxphdmi_init_encoder(struct nxphdmi_softc *, struct videomode *);
 int	nxphdmi_get_edid(uint8_t *, int);
 int	nxphdmi_set_videomode(struct videomode *);
 
-struct cfattach nxphdmi_ca = {
+const struct cfattach nxphdmi_ca = {
 	sizeof(struct nxphdmi_softc), nxphdmi_match, nxphdmi_attach
 };
 

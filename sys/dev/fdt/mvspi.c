@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: mvspi.c,v 1.1 2019/10/07 19:30:12 patrick Exp $ */
 /*
  * Copyright (c) 2019 Patrick Wildt <patrick@blueri.se>
  *
@@ -86,7 +86,7 @@ void	 mvspi_scan(struct mvspi_softc *);
 #define HCLR4(sc, reg, bits)						\
 	HWRITE4((sc), (reg), HREAD4((sc), (reg)) & ~(bits))
 
-struct cfattach mvspi_ca = {
+const struct cfattach mvspi_ca = {
 	sizeof(struct mvspi_softc), mvspi_match, mvspi_attach, mvspi_detach
 };
 

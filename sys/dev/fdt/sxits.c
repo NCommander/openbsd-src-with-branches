@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxits.c,v 1.1 2018/01/06 13:04:47 kettenis Exp $	*/
+/*	$OpenBSD: sxits.c,v 1.2 2019/09/21 15:55:29 kettenis Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -65,7 +65,7 @@ struct sxits_softc {
 int	sxits_match(struct device *, void *, void *);
 void	sxits_attach(struct device *, struct device *, void *);
 
-struct cfattach	sxits_ca = {
+const struct cfattach	sxits_ca = {
 	sizeof (struct sxits_softc), sxits_match, sxits_attach
 };
 

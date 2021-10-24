@@ -1,4 +1,4 @@
-/*	$OpenBSD: rkpcie.c,v 1.13 2021/03/01 20:49:20 patrick Exp $	*/
+/*	$OpenBSD: rkpcie.c,v 1.14 2021/05/17 17:25:13 kettenis Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -113,7 +113,7 @@ struct rkpcie_softc {
 int rkpcie_match(struct device *, void *, void *);
 void rkpcie_attach(struct device *, struct device *, void *);
 
-struct cfattach	rkpcie_ca = {
+const struct cfattach	rkpcie_ca = {
 	sizeof (struct rkpcie_softc), rkpcie_match, rkpcie_attach
 };
 

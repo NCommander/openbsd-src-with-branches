@@ -1,4 +1,4 @@
-/*	$OpenBSD: mvicu.c,v 1.6 2020/07/17 08:07:34 patrick Exp $	*/
+/*	$OpenBSD: mvicu.c,v 1.7 2021/05/17 17:25:13 kettenis Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -84,7 +84,7 @@ struct mvicu_softc {
 int mvicu_match(struct device *, void *, void *);
 void mvicu_attach(struct device *, struct device *, void *);
 
-struct cfattach	mvicu_ca = {
+const struct cfattach	mvicu_ca = {
 	sizeof (struct mvicu_softc), mvicu_match, mvicu_attach
 };
 

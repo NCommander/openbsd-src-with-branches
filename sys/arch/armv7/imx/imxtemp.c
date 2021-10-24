@@ -1,4 +1,4 @@
-/*	$OpenBSD: imxtemp.c,v 1.5 2018/03/30 20:31:01 patrick Exp $	*/
+/*	$OpenBSD: imxtemp.c,v 1.6 2021/03/25 04:12:01 jsg Exp $	*/
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -84,7 +84,7 @@ struct imxtemp_softc {
 int	imxtemp_match(struct device *, void *, void *);
 void	imxtemp_attach(struct device *, struct device *, void *);
 
-struct cfattach imxtemp_ca = {
+const struct cfattach imxtemp_ca = {
 	sizeof(struct imxtemp_softc), imxtemp_match, imxtemp_attach
 };
 

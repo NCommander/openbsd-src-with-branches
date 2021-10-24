@@ -1,4 +1,4 @@
-/*	$OpenBSD: omdog.c,v 1.8 2017/11/27 06:29:41 jsg Exp $	*/
+/*	$OpenBSD: omdog.c,v 1.9 2021/03/25 04:12:01 jsg Exp $	*/
 /*
  * Copyright (c) 2013 Federico G. Schwindt <fgsch@openbsd.org>
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
@@ -63,7 +63,7 @@ void	omdog_sync(struct omdog_softc *);
 int	omdog_cb(void *, int);
 void	omdog_reset(void);
 
-struct cfattach	omdog_ca = {
+const struct cfattach	omdog_ca = {
 	sizeof (struct omdog_softc), omdog_match, omdog_attach, NULL,
 	omdog_activate
 };

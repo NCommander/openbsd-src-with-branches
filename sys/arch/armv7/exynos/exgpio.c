@@ -1,4 +1,4 @@
-/* $OpenBSD: exgpio.c,v 1.6 2017/03/11 17:06:27 kettenis Exp $ */
+/* $OpenBSD: exgpio.c,v 1.7 2021/03/25 04:12:01 jsg Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
@@ -67,7 +67,7 @@ struct exgpio_softc {
 int exgpio_match(struct device *, void *, void *);
 void exgpio_attach(struct device *, struct device *, void *);
 
-struct cfattach	exgpio_ca = {
+const struct cfattach	exgpio_ca = {
 	sizeof (struct exgpio_softc), exgpio_match, exgpio_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rkpinctrl.c,v 1.5 2018/02/25 13:26:44 kettenis Exp $	*/
+/*	$OpenBSD: rkpinctrl.c,v 1.6 2020/09/04 01:11:16 jmatthew Exp $	*/
 /*
  * Copyright (c) 2017, 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -59,7 +59,7 @@ struct rkpinctrl_softc {
 int	rkpinctrl_match(struct device *, void *, void *);
 void	rkpinctrl_attach(struct device *, struct device *, void *);
 
-struct cfattach	rkpinctrl_ca = {
+const struct cfattach	rkpinctrl_ca = {
 	sizeof (struct rkpinctrl_softc), rkpinctrl_match, rkpinctrl_attach
 };
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: bcm2836_intr.c,v 1.5 2020/07/14 15:34:15 patrick Exp $ */
+/* $OpenBSD: bcm2836_intr.c,v 1.6 2021/05/16 15:10:19 deraadt Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2015 Patrick Wildt <patrick@blueri.se>
@@ -120,7 +120,7 @@ void	 bcm_intc_intr_disestablish(void *);
 const char *bcm_intc_intr_string(void *);
 void	 bcm_intc_irq_handler(void *);
 
-struct cfattach	bcmintc_ca = {
+const struct cfattach	bcmintc_ca = {
 	sizeof (struct bcm_intc_softc), bcm_intc_match, bcm_intc_attach
 };
 

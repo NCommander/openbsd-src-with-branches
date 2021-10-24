@@ -1,4 +1,4 @@
-/*	$OpenBSD: amlrng.c,v 1.1 2019/08/27 22:21:52 kettenis Exp $	*/
+/*	$OpenBSD: amlrng.c,v 1.2 2020/05/29 04:42:24 deraadt Exp $	*/
 /*
  * Copyright (c) 2019 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -43,7 +43,7 @@ struct amlrng_softc {
 int	amlrng_match(struct device *, void *, void *);
 void	amlrng_attach(struct device *, struct device *, void *);
 
-struct cfattach	amlrng_ca = {
+const struct cfattach	amlrng_ca = {
 	sizeof (struct amlrng_softc), amlrng_match, amlrng_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: simplepanel.c,v 1.3 2020/06/08 04:47:58 jsg Exp $	*/
+/*	$OpenBSD: simplepanel.c,v 1.4 2021/07/07 02:38:21 jsg Exp $	*/
 /*
  * Copyright (c) 2020 Patrick Wildt <patrick@blueri.se>
  *
@@ -58,7 +58,7 @@ struct cfattach	simplepanel_ca = {
 	simplepanel_match, simplepanel_attach
 };
 
-struct cfdriver simplepanel_cd = {
+const struct cfdriver simplepanel_cd = {
 	NULL, "simplepanel", DV_DULL
 };
 

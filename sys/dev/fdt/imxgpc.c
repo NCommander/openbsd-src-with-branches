@@ -1,4 +1,4 @@
-/*	$OpenBSD: imxgpc.c,v 1.8 2020/07/17 08:07:34 patrick Exp $	*/
+/*	$OpenBSD: imxgpc.c,v 1.9 2020/12/18 16:26:21 patrick Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -43,7 +43,7 @@ int	imxgpc_match(struct device *, void *, void *);
 void	imxgpc_attach(struct device *, struct device *, void *);
 void	imxgpc_enable(void *, uint32_t *, int);
 
-struct cfattach imxgpc_ca = {
+const struct cfattach imxgpc_ca = {
 	sizeof(struct imxgpc_softc), imxgpc_match, imxgpc_attach
 };
 

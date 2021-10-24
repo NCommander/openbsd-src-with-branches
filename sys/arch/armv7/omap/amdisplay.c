@@ -1,4 +1,4 @@
-/* $OpenBSD: amdisplay.c,v 1.14 2021/03/11 11:16:56 jsg Exp $ */
+/* $OpenBSD: amdisplay.c,v 1.15 2021/03/25 04:12:01 jsg Exp $ */
 /*
  * Copyright (c) 2016 Ian Sutton <ians@openbsd.org>
  *
@@ -114,7 +114,7 @@ struct wsdisplay_accessops amdisplay_accessops = {
 	.list_font = rasops_list_font,
 };
 
-struct cfattach amdisplay_ca = {
+const struct cfattach amdisplay_ca = {
 	sizeof(struct amdisplay_softc), amdisplay_match, amdisplay_attach,
 	amdisplay_detach
 };

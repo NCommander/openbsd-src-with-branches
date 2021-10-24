@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: imxrtc.c,v 1.1 2018/06/16 14:11:35 kettenis Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -53,7 +53,7 @@ struct imxrtc_softc {
 int imxrtc_match(struct device *, void *, void *);
 void imxrtc_attach(struct device *, struct device *, void *);
 
-struct cfattach	imxrtc_ca = {
+const struct cfattach	imxrtc_ca = {
 	sizeof (struct imxrtc_softc), imxrtc_match, imxrtc_attach
 };
 

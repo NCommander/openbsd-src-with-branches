@@ -1,4 +1,4 @@
-/*	$OpenBSD: hidwusb.c,v 1.1 2018/08/27 13:56:11 kettenis Exp $	*/
+/*	$OpenBSD: hidwusb.c,v 1.2 2019/08/29 11:51:48 kettenis Exp $	*/
 /*
  * Copyright (c) 2017, 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -43,7 +43,7 @@ struct hidwusb_softc {
 int	hidwusb_match(struct device *, void *, void *);
 void	hidwusb_attach(struct device *, struct device *, void *);
 
-struct cfattach hidwusb_ca = {
+const struct cfattach hidwusb_ca = {
 	sizeof(struct hidwusb_softc), hidwusb_match, hidwusb_attach
 };
 

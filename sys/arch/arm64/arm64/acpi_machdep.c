@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.14 2021/03/16 18:31:16 patrick Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.15 2021/05/17 17:25:13 kettenis Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis
  *
@@ -40,7 +40,7 @@ int	acpi_fdt_match(struct device *, void *, void *);
 void	acpi_fdt_attach(struct device *, struct device *, void *);
 void	acpi_attach(struct device *, struct device *, void *);
 
-struct cfattach acpi_fdt_ca = {
+const struct cfattach acpi_fdt_ca = {
 	sizeof(struct acpi_softc), acpi_fdt_match, acpi_fdt_attach
 };
 

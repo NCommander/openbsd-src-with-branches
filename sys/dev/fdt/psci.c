@@ -1,4 +1,4 @@
-/*	$OpenBSD: psci.c,v 1.8 2018/05/23 09:12:34 kettenis Exp $	*/
+/*	$OpenBSD: psci.c,v 1.9 2021/10/10 16:20:37 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2016 Jonathan Gray <jsg@openbsd.org>
@@ -73,7 +73,7 @@ int32_t smccc_arch_features(uint32_t);
 uint32_t psci_version(void);
 int32_t psci_features(uint32_t);
 
-struct cfattach psci_ca = {
+const struct cfattach psci_ca = {
 	sizeof(struct psci_softc), psci_match, psci_attach
 };
 

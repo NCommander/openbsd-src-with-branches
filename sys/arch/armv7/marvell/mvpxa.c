@@ -1,4 +1,4 @@
-/*	$OpenBSD: mvpxa.c,v 1.1 2017/08/27 21:27:14 patrick Exp $	*/
+/*	$OpenBSD: mvpxa.c,v 1.2 2021/03/25 04:12:01 jsg Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis
  * Copyright (c) 2017 Patrick Wildt <patrick@blueri.se>
@@ -66,7 +66,7 @@ struct cfdriver mvpxa_cd = {
 	NULL, "mvpxa", DV_DULL
 };
 
-struct cfattach mvpxa_ca = {
+const struct cfattach mvpxa_ca = {
 	sizeof(struct mvpxa_softc), mvpxa_match, mvpxa_attach
 };
 

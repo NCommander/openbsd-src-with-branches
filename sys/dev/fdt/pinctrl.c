@@ -1,4 +1,4 @@
-/*	$OpenBSD: pinctrl.c,v 1.3 2019/04/23 18:32:26 kettenis Exp $	*/
+/*	$OpenBSD: pinctrl.c,v 1.4 2021/02/01 14:30:01 jsg Exp $	*/
 /*
  * Copyright (c) 2018, 2019 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -51,7 +51,7 @@ struct pinctrl_softc {
 int	pinctrl_match(struct device *, void *, void *);
 void	pinctrl_attach(struct device *, struct device *, void *);
 
-struct cfattach	pinctrl_ca = {
+const struct cfattach	pinctrl_ca = {
 	sizeof (struct pinctrl_softc), pinctrl_match, pinctrl_attach
 };
 

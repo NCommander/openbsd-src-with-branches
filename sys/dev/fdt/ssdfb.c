@@ -1,4 +1,4 @@
-/* $OpenBSD: ssdfb.c,v 1.10 2019/02/22 09:39:33 patrick Exp $ */
+/* $OpenBSD: ssdfb.c,v 1.11 2020/05/25 09:55:48 jsg Exp $ */
 /*
  * Copyright (c) 2018 Patrick Wildt <patrick@blueri.se>
  *
@@ -143,14 +143,14 @@ int	 ssdfb_copyrows(void *, int, int, int);
 int	 ssdfb_eraserows(void *, int, int, uint32_t);
 int	 ssdfb_do_cursor(struct rasops_info *);
 
-struct cfattach ssdfb_i2c_ca = {
+const struct cfattach ssdfb_i2c_ca = {
 	sizeof(struct ssdfb_softc),
 	ssdfb_i2c_match,
 	ssdfb_i2c_attach,
 	ssdfb_i2c_detach,
 };
 
-struct cfattach ssdfb_spi_ca = {
+const struct cfattach ssdfb_spi_ca = {
 	sizeof(struct ssdfb_softc),
 	ssdfb_spi_match,
 	ssdfb_spi_attach,

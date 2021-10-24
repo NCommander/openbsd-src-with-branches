@@ -1,4 +1,4 @@
-/*	$OpenBSD: amlpciephy.c,v 1.3 2020/12/27 19:32:29 kettenis Exp $	*/
+/*	$OpenBSD: amlpciephy.c,v 1.4 2020/12/27 20:37:58 kettenis Exp $	*/
 /*
  * Copyright (c) 2019 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -62,7 +62,7 @@ struct amlpciephy_softc {
 int amlpciephy_match(struct device *, void *, void *);
 void amlpciephy_attach(struct device *, struct device *, void *);
 
-struct cfattach	amlpciephy_ca = {
+const struct cfattach	amlpciephy_ca = {
 	sizeof (struct amlpciephy_softc), amlpciephy_match, amlpciephy_attach
 };
 

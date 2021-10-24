@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxisid.c,v 1.2 2020/01/23 03:27:56 kettenis Exp $	*/
+/*	$OpenBSD: sxisid.c,v 1.3 2020/05/29 04:42:25 deraadt Exp $	*/
 /*
  * Copyright (c) 2019 Krystian Lewandowski
  * Copyright (c) 2019 Mark Kettenis <kettenis@openbsd.org>
@@ -53,7 +53,7 @@ struct sxisid_softc {
 int sxisid_match(struct device *, void *, void *);
 void sxisid_attach(struct device *, struct device *, void *);
 
-struct cfattach sxisid_ca = {
+const struct cfattach sxisid_ca = {
 	sizeof(struct sxisid_softc), sxisid_match, sxisid_attach
 };
 

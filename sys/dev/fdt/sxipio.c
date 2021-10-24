@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxipio.c,v 1.12 2020/03/29 09:35:10 kettenis Exp $	*/
+/*	$OpenBSD: sxipio.c,v 1.13 2021/05/07 01:54:17 jsg Exp $	*/
 /*
  * Copyright (c) 2010 Miodrag Vallat.
  * Copyright (c) 2013 Artturi Alm
@@ -106,7 +106,7 @@ struct sxipio_softc {
 int	sxipio_match(struct device *, void *, void *);
 void	sxipio_attach(struct device *, struct device *, void *);
 
-struct cfattach sxipio_ca = {
+const struct cfattach sxipio_ca = {
 	sizeof (struct sxipio_softc), sxipio_match, sxipio_attach
 };
 

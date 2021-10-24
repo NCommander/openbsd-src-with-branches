@@ -1,4 +1,4 @@
-/* $OpenBSD: omgpio.c,v 1.12 2020/04/10 22:02:45 kettenis Exp $ */
+/* $OpenBSD: omgpio.c,v 1.13 2021/03/25 04:12:01 jsg Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -202,7 +202,7 @@ void	omgpio_config_pin(void *, uint32_t *, int);
 int	omgpio_get_pin(void *, uint32_t *);
 void	omgpio_set_pin(void *, uint32_t *, int);
 
-struct cfattach omgpio_ca = {
+const struct cfattach omgpio_ca = {
 	sizeof (struct omgpio_softc), omgpio_match, omgpio_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mvgicp.c,v 1.3 2020/07/17 08:07:34 patrick Exp $	*/
+/*	$OpenBSD: mvgicp.c,v 1.4 2021/05/17 17:25:13 kettenis Exp $	*/
 /*
  * Copyright (c) 2019 Patrick Wildt <patrick@blueri.se>
  *
@@ -52,7 +52,7 @@ void *	mvgicp_intr_establish(void *, uint64_t *, uint64_t *,
 void	mvgicp_intr_disestablish(void *);
 void	mvgicp_intr_barrier(void *);
 
-struct cfattach mvgicp_ca = {
+const struct cfattach mvgicp_ca = {
 	sizeof(struct mvgicp_softc), mvgicp_match, mvgicp_attach
 };
 

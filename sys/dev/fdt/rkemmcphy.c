@@ -1,4 +1,4 @@
-/*	$OpenBSD: rkemmcphy.c,v 1.2 2020/01/11 10:32:16 kettenis Exp $	*/
+/*	$OpenBSD: rkemmcphy.c,v 1.3 2020/04/03 22:03:45 kettenis Exp $	*/
 /*
  * Copyright (c) 2019 Patrick Wildt <patrick@blueri.se>
  *
@@ -75,7 +75,7 @@ struct rkemmcphy_softc {
 int rkemmcphy_match(struct device *, void *, void *);
 void rkemmcphy_attach(struct device *, struct device *, void *);
 
-struct cfattach	rkemmcphy_ca = {
+const struct cfattach	rkemmcphy_ca = {
 	sizeof (struct rkemmcphy_softc), rkemmcphy_match, rkemmcphy_attach
 };
 
