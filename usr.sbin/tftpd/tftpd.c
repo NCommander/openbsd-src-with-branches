@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftpd.c,v 1.45 2020/12/17 02:06:23 krw Exp $	*/
+/*	$OpenBSD: tftpd.c,v 1.46 2021/01/17 13:38:30 claudio Exp $	*/
 
 /*
  * Copyright (c) 2012 David Gwynne <dlg@uq.edu.au>
@@ -367,7 +367,7 @@ main(int argc, char *argv[])
 		openlog(__progname, LOG_PID|LOG_NDELAY, LOG_DAEMON);
 		tzset();
 		logger = &syslogger;
-		devnull = open(_PATH_DEVNULL, O_RDWR, 0);
+		devnull = open(_PATH_DEVNULL, O_RDWR);
 		if (devnull == -1)
 			err(1, "open %s", _PATH_DEVNULL);
 	}

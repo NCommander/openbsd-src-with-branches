@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.30 2014/05/18 08:10:00 espie Exp $	*/
+/*	$OpenBSD: main.c,v 1.31 2017/01/03 21:31:16 tedu Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -126,7 +126,7 @@ main(int argc, char *argv[])
 		err(1, NULL);
 	paths = paths2;
 
-	dotfd = open(".", O_RDONLY, 0);
+	dotfd = open(".", O_RDONLY);
 
 	exit(find_execute(find_formplan(argv), paths));
 }

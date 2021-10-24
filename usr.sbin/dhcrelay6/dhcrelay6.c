@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcrelay6.c,v 1.2 2017/03/17 16:45:27 jmc Exp $	*/
+/*	$OpenBSD: dhcrelay6.c,v 1.3 2019/08/06 11:07:37 krw Exp $	*/
 
 /*
  * Copyright (c) 2017 Rafael Zalamena <rzalamena@openbsd.org>
@@ -236,7 +236,7 @@ main(int argc, char *argv[])
 	}
 
 	if (daemonize) {
-		devnull = open(_PATH_DEVNULL, O_RDWR, 0);
+		devnull = open(_PATH_DEVNULL, O_RDWR);
 		if (devnull == -1)
 			fatal("open(%s)", _PATH_DEVNULL);
 	}

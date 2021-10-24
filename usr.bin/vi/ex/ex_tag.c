@@ -1,4 +1,4 @@
-/*	$OpenBSD: ex_tag.c,v 1.24 2016/01/06 22:28:52 millert Exp $	*/
+/*	$OpenBSD: ex_tag.c,v 1.25 2017/04/18 01:45:35 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -991,7 +991,7 @@ ctag_sfile(SCR *sp, TAGF *tfp, TAGQ *tqp, char *tname)
 	int fd, i, nf1, nf2;
 	char *back, *cname, *dname, *front, *map, *name, *p, *search, *t;
 
-	if ((fd = open(tfp->name, O_RDONLY, 0)) < 0) {
+	if ((fd = open(tfp->name, O_RDONLY)) < 0) {
 		tfp->errnum = errno;
 		return (1);
 	}

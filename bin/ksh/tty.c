@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.17 2018/03/15 16:51:29 anton Exp $	*/
+/*	$OpenBSD: tty.c,v 1.18 2019/06/28 13:34:59 deraadt Exp $	*/
 
 #include <errno.h>
 #include <fcntl.h>
@@ -33,7 +33,7 @@ tty_init(int init_ttystate)
 	tty_close();
 	tty_devtty = 1;
 
-	tfd = open("/dev/tty", O_RDWR, 0);
+	tfd = open("/dev/tty", O_RDWR);
 	if (tfd == -1) {
 		tty_devtty = 0;
 		warningf(false, "No controlling tty (open /dev/tty: %s)",

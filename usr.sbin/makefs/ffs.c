@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs.c,v 1.33 2021/09/01 15:19:00 deraadt Exp $	*/
+/*	$OpenBSD: ffs.c,v 1.34 2021/10/06 00:40:39 deraadt Exp $	*/
 /*	$NetBSD: ffs.c,v 1.66 2015/12/21 00:58:08 christos Exp $	*/
 
 /*
@@ -751,7 +751,7 @@ ffs_write_file(union dinode *din, uint32_t ino, void *buf, fsinfo_t *fsopts)
 
 	if (isfile) {
 		fbuf = emalloc(ffs_opts->bsize);
-		if ((ffd = open((char *)buf, O_RDONLY, 0444)) == -1) {
+		if ((ffd = open((char *)buf, O_RDONLY)) == -1) {
 			warn("Can't open `%s' for reading", (char *)buf);
 			goto leave_ffs_write_file;
 		}

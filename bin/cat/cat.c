@@ -1,4 +1,4 @@
-/*	$OpenBSD: cat.c,v 1.30 2020/12/04 02:25:56 cheloha Exp $	*/
+/*	$OpenBSD: cat.c,v 1.31 2020/12/11 05:48:22 cheloha Exp $	*/
 /*	$NetBSD: cat.c,v 1.11 1995/09/07 06:12:54 jtc Exp $	*/
 
 /*
@@ -208,7 +208,7 @@ raw_args(char **argv)
 			raw_cat(fileno(stdin), "stdin");
 			continue;
 		}
-		if ((fd = open(*argv, O_RDONLY, 0)) == -1) {
+		if ((fd = open(*argv, O_RDONLY)) == -1) {
 			warn("%s", *argv);
 			rval = 1;
 			continue;

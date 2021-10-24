@@ -1,4 +1,4 @@
-/*	$OpenBSD: diff.c,v 1.162 2016/10/13 20:51:25 fcambus Exp $	*/
+/*	$OpenBSD: diff.c,v 1.163 2017/06/01 08:08:24 joris Exp $	*/
 /*
  * Copyright (c) 2008 Tobias Stoeckmann <tobias@openbsd.org>
  * Copyright (c) 2006 Joris Vink <joris@openbsd.org>
@@ -586,11 +586,11 @@ cvs_diff_local(struct cvs_file *cf)
 	}
 
 	if (fd1 == -1) {
-		if ((fd1 = open(CVS_PATH_DEVNULL, O_RDONLY, 0)) == -1)
+		if ((fd1 = open(CVS_PATH_DEVNULL, O_RDONLY)) == -1)
 			fatal("cannot open %s", CVS_PATH_DEVNULL);
 	}
 	if (fd2 == -1) {
-		if ((fd2 = open(CVS_PATH_DEVNULL, O_RDONLY, 0)) == -1)
+		if ((fd2 = open(CVS_PATH_DEVNULL, O_RDONLY)) == -1)
 			fatal("cannot open %s", CVS_PATH_DEVNULL);
 	}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mmap0.c,v 1.1 2011/10/07 19:43:07 ariane Exp $	*/
+/*	$OpenBSD: mmap0.c,v 1.2 2016/08/27 04:35:19 guenther Exp $	*/
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
  *
@@ -37,7 +37,7 @@ main()
 	int	 errors = 0;
 	int	 fd;
 
-	fd = open("/dev/zero", O_RDWR, 0);
+	fd = open("/dev/zero", O_RDWR);
 	if (fd == -1)
 		err(EX_OSERR, "open");
 

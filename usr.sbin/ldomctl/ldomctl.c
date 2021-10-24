@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldomctl.c,v 1.38 2020/02/02 00:49:06 kn Exp $	*/
+/*	$OpenBSD: ldomctl.c,v 1.39 2021/01/30 19:34:13 kn Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -698,7 +698,7 @@ hv_open(void)
 	ssize_t nbytes;
 	uint64_t code;
 
-	hvctl_fd = open("/dev/hvctl", O_RDWR, 0);
+	hvctl_fd = open("/dev/hvctl", O_RDWR);
 	if (hvctl_fd == -1)
 		err(1, "cannot open /dev/hvctl");
 

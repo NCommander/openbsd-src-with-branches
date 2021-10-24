@@ -1,4 +1,4 @@
-/*	$OpenBSD: last.c,v 1.52 2019/06/28 13:35:01 deraadt Exp $	*/
+/*	$OpenBSD: last.c,v 1.53 2021/07/12 15:09:19 beck Exp $	*/
 /*	$NetBSD: last.c,v 1.6 1994/12/24 16:49:02 cgd Exp $	*/
 
 /*
@@ -254,7 +254,7 @@ wtmp(void)
 	off_t	bl;
 	struct ttytab	*T;
 
-	if ((wfd = open(file, O_RDONLY, 0)) == -1 || fstat(wfd, &stb) == -1)
+	if ((wfd = open(file, O_RDONLY)) == -1 || fstat(wfd, &stb) == -1)
 		err(1, "%s", file);
 	bl = (stb.st_size + sizeof(buf) - 1) / sizeof(buf);
 

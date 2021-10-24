@@ -1,4 +1,4 @@
-/*	$OpenBSD: exf.c,v 1.45 2017/04/18 01:45:35 deraadt Exp $	*/
+/*	$OpenBSD: exf.c,v 1.46 2017/04/26 13:14:28 millert Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -977,7 +977,7 @@ file_backup(SCR *sp, char *name, char *bname)
 	 * up.
 	 */
 	errno = 0;
-	if ((rfd = open(name, O_RDONLY, 0)) < 0) {
+	if ((rfd = open(name, O_RDONLY)) < 0) {
 		if (errno == ENOENT)
 			return (0);
 		estr = name;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: mmap_4g.c,v 1.3 2010/06/20 17:56:07 phessler Exp $	*/
+/*	$OpenBSD: mmap_4g.c,v 1.4 2019/09/20 12:52:30 bluhm Exp $	*/
 
 /*
  * Public domain. 2005, Otto Moerbeek <otto@drijf.net>
@@ -40,7 +40,7 @@ main()
 		err(1, "write");
 	close(fd);
 
-	fd = open(file, O_RDWR, 0);
+	fd = open(file, O_RDWR);
 	if (fd == -1)
 		err(1, "open");
 	p = mmap(NULL, 100, PROT_READ | PROT_WRITE, MAP_FILE | MAP_SHARED,
@@ -53,7 +53,7 @@ main()
 		err(1, "munmap");
 	close(fd);
 
-	fd = open(file, O_RDONLY, 0);
+	fd = open(file, O_RDONLY);
 	if (fd == -1)
 		err(1, "open");
 	if (read(fd, buf, sz) != sz)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ptmget.c,v 1.2 2004/12/22 00:54:39 david Exp $ */
+/*	$OpenBSD: ptmget.c,v 1.3 2016/08/27 04:34:28 guenther Exp $ */
 /*
  *	Written by Bob Beck <beck@openbsd.org> 2004 Public Domain.
  *	Basic test to ensure /dev/ptm works, and what it returns
@@ -31,7 +31,7 @@ main(int argc, char *argv[])
 		ttygid = gr->gr_gid;
 	else
 		ttygid = 4;
-	fd = open("/dev/ptm", O_RDWR, 0);
+	fd = open("/dev/ptm", O_RDWR);
 	if (fd == -1)
 		err(1, "Can't open /dev/ptm");
 	if ((ioctl(fd, PTMGET, &ptm) == -1))

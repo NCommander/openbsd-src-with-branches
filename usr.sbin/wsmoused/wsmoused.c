@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmoused.c,v 1.36 2015/10/26 09:58:18 deraadt Exp $ */
+/* $OpenBSD: wsmoused.c,v 1.37 2017/10/24 09:36:13 jsg Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Baptiste Marchand, Julien Montagne and Jerome Verdon
@@ -514,12 +514,12 @@ main(int argc, char **argv)
 		mouse.ttyname = DEFAULT_TTY;
 
 	if (identify == FALSE) {
-		if ((mouse.cfd = open(mouse.ttyname, O_RDWR, 0)) == -1)
+		if ((mouse.cfd = open(mouse.ttyname, O_RDWR)) == -1)
 			logerr(1, "cannot open %s", mouse.ttyname);
 	}
 
 	if ((mouse.mfd = open(mouse.portname,
-	    O_RDONLY | O_NONBLOCK, 0)) == -1)
+	    O_RDONLY | O_NONBLOCK)) == -1)
 		logerr(1, "unable to open %s", mouse.portname);
 
 	/*
