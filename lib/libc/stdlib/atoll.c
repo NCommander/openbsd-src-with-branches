@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: atoll.c,v 1.3 2005/08/08 08:05:36 espie Exp $ */
 /*
  * Copyright (c) 1988 Regents of the University of California.
  * All rights reserved.
@@ -31,8 +31,7 @@
 #include <stdlib.h>
 
 long long
-atoll(str)
-	const char *str;
+atoll(const char *str)
 {
 	return(strtoll(str, (char **)NULL, 10));
 }
