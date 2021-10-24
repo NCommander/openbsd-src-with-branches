@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcons.c,v 1.24 2018/02/19 08:59:52 mpi Exp $	*/
+/*	$OpenBSD: pcons.c,v 1.25 2020/05/25 09:55:48 jsg Exp $	*/
 /*	$NetBSD: pcons.c,v 1.7 2001/05/02 10:32:20 scw Exp $	*/
 
 /*-
@@ -130,7 +130,7 @@ int cn_get_magic(char *magic, int len);
 int pconsmatch(struct device *, void *, void *);
 void pconsattach(struct device *, struct device *, void *);
 
-struct cfattach pcons_ca = {
+const struct cfattach pcons_ca = {
 	sizeof(struct pconssoftc), pconsmatch, pconsattach
 };
 

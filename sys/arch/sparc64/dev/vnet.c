@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnet.c,v 1.62 2020/07/10 13:26:36 patrick Exp $	*/
+/*	$OpenBSD: vnet.c,v 1.63 2020/12/12 11:48:52 jan Exp $	*/
 /*
  * Copyright (c) 2009, 2015 Mark Kettenis
  *
@@ -184,7 +184,7 @@ struct vnet_softc {
 int	vnet_match(struct device *, void *, void *);
 void	vnet_attach(struct device *, struct device *, void *);
 
-struct cfattach vnet_ca = {
+const struct cfattach vnet_ca = {
 	sizeof(struct vnet_softc), vnet_match, vnet_attach
 };
 

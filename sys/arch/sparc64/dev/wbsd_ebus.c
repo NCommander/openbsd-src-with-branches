@@ -1,4 +1,4 @@
-/*	$OpenBSD: lom.c,v 1.15 2009/09/27 18:08:42 kettenis Exp $	*/
+/*	$OpenBSD: wbsd_ebus.c,v 1.1 2009/10/03 19:56:14 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -34,7 +34,7 @@
 int	wbsd_ebus_match(struct device *, void *, void *);
 void	wbsd_ebus_attach(struct device *, struct device *, void *);
 
-struct cfattach wbsd_ebus_ca = {
+const struct cfattach wbsd_ebus_ca = {
 	sizeof(struct wb_softc), wbsd_ebus_match, wbsd_ebus_attach
 };
 

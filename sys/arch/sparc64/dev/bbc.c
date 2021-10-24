@@ -1,4 +1,4 @@
-/*	$OpenBSD: bbc.c,v 1.2 2007/08/21 19:01:38 kettenis Exp $	*/
+/*	$OpenBSD: bbc.c,v 1.3 2008/12/14 17:10:44 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2007 Mark Kettenis
@@ -55,7 +55,7 @@ struct bbc_softc {
 int	bbc_match(struct device *, void *, void *);
 void	bbc_attach(struct device *, struct device *, void *);
 
-struct cfattach bbc_ca = {
+const struct cfattach bbc_ca = {
 	sizeof(struct bbc_softc), bbc_match, bbc_attach
 };
 

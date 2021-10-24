@@ -1,4 +1,4 @@
-/*	$OpenBSD: cbus.c,v 1.15 2015/09/27 11:29:20 kettenis Exp $	*/
+/*	$OpenBSD: cbus.c,v 1.16 2016/12/20 13:40:50 jsg Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -43,7 +43,7 @@ int	cbus_match(struct device *, void *, void *);
 void	cbus_attach(struct device *, struct device *, void *);
 int	cbus_print(void *, const char *);
 
-struct cfattach cbus_ca = {
+const struct cfattach cbus_ca = {
 	sizeof(struct cbus_softc), cbus_match, cbus_attach
 };
 

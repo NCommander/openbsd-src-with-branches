@@ -1,4 +1,4 @@
-/*	$OpenBSD: fhc_mainbus.c,v 1.4 2004/09/27 18:32:35 jason Exp $	*/
+/*	$OpenBSD: fhc_mainbus.c,v 1.5 2017/09/08 05:36:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Jason L. Wright (jason@thought.net).
@@ -42,7 +42,7 @@
 int	fhc_mainbus_match(struct device *, void *, void *);
 void	fhc_mainbus_attach(struct device *, struct device *, void *);
 
-struct cfattach fhc_mainbus_ca = {
+const struct cfattach fhc_mainbus_ca = {
 	sizeof(struct fhc_softc), fhc_mainbus_match, fhc_mainbus_attach
 };
 

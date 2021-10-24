@@ -1,4 +1,4 @@
-/*	$OpenBSD: pckbc_ebus.c,v 1.13 2015/05/24 10:57:47 miod Exp $	*/
+/*	$OpenBSD: pckbc_ebus.c,v 1.14 2017/09/08 05:36:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -65,7 +65,7 @@ struct pckbc_ebus_softc {
 int pckbc_ebus_match(struct device *, void *, void *);
 void pckbc_ebus_attach(struct device *, struct device *, void *);
 
-struct cfattach pckbc_ebus_ca = {
+const struct cfattach pckbc_ebus_ca = {
 	sizeof(struct pckbc_ebus_softc), pckbc_ebus_match, pckbc_ebus_attach
 };
 

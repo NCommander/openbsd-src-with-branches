@@ -1,4 +1,4 @@
-/*	$OpenBSD: vcc.c,v 1.1 2009/05/10 12:24:04 kettenis Exp $	*/
+/*	$OpenBSD: vsw.c,v 1.1 2009/05/16 10:53:06 kettenis Exp $	*/
 /*
  * Copyright (c) 2009 Mark Kettenis
  *
@@ -42,7 +42,7 @@ struct vsw_softc {
 int	vsw_match(struct device *, void *, void *);
 void	vsw_attach(struct device *, struct device *, void *);
 
-struct cfattach vsw_ca = {
+const struct cfattach vsw_ca = {
 	sizeof(struct vsw_softc), vsw_match, vsw_attach
 };
 

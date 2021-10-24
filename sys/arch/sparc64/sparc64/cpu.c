@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.71 2020/07/31 11:19:12 kettenis Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.72 2021/01/02 05:36:49 jmatthew Exp $	*/
 /*	$NetBSD: cpu.c,v 1.13 2001/05/26 21:27:15 chs Exp $ */
 
 /*
@@ -93,7 +93,7 @@ char	cpu_model[100];
 int cpu_match(struct device *, void *, void *);
 void cpu_attach(struct device *, struct device *, void *);
 
-struct cfattach cpu_ca = {
+const struct cfattach cpu_ca = {
 	sizeof(struct device), cpu_match, cpu_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: stp_sbus.c,v 1.10 2008/06/26 05:42:13 ray Exp $	*/
+/*	$OpenBSD: stp_sbus.c,v 1.11 2020/02/18 12:13:39 mpi Exp $	*/
 /*	$NetBSD: stp4020.c,v 1.23 2002/06/01 23:51:03 lukem Exp $	*/
 
 /*-
@@ -63,7 +63,7 @@ struct stp4020_sbus_softc {
 int	stpmatch(struct device *, void *, void *);
 void	stpattach(struct device *, struct device *, void *);
 
-struct cfattach stp_sbus_ca = {
+const struct cfattach stp_sbus_ca = {
 	sizeof(struct stp4020_sbus_softc), stpmatch, stpattach
 };
 

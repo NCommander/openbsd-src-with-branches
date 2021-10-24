@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.65 2017/08/07 22:19:10 kettenis Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.66 2018/12/27 11:06:38 claudio Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -91,7 +91,7 @@ struct wsdisplay_accessops vgafb_accessops = {
 int	vgafbmatch(struct device *, void *, void *);
 void	vgafbattach(struct device *, struct device *, void *);
 
-struct cfattach vgafb_ca = {
+const struct cfattach vgafb_ca = {
 	sizeof (struct vgafb_softc), vgafbmatch, vgafbattach
 };
 

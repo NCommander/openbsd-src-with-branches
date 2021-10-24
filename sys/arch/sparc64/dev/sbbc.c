@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbbc.c,v 1.12 2017/04/30 16:45:45 mpi Exp $	*/
+/*	$OpenBSD: sbbc.c,v 1.13 2018/02/19 08:59:52 mpi Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -143,7 +143,7 @@ struct sbbc_softc *sbbc_cons_output;
 int	sbbc_match(struct device *, void *, void *);
 void	sbbc_attach(struct device *, struct device *, void *);
 
-struct cfattach sbbc_ca = {
+const struct cfattach sbbc_ca = {
 	sizeof(struct sbbc_softc), sbbc_match, sbbc_attach
 };
 

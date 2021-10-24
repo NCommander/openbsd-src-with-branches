@@ -1,4 +1,4 @@
-/*	$OpenBSD: fhc_central.c,v 1.5 2004/09/27 18:32:35 jason Exp $	*/
+/*	$OpenBSD: fhc_central.c,v 1.6 2017/09/08 05:36:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Jason L. Wright (jason@thought.net).
@@ -44,7 +44,7 @@
 int	fhc_central_match(struct device *, void *, void *);
 void	fhc_central_attach(struct device *, struct device *, void *);
 
-struct cfattach fhc_central_ca = {
+const struct cfattach fhc_central_ca = {
 	sizeof(struct fhc_softc), fhc_central_match, fhc_central_attach
 };
 

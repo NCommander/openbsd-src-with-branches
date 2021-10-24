@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppm.c,v 1.1 2006/06/02 04:46:01 jason Exp $	*/
+/*	$OpenBSD: ppm.c,v 1.2 2017/09/08 05:36:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Jason L. Wright (jason@thought.net)
@@ -58,7 +58,7 @@ struct ppm_softc {
 int	ppm_match(struct device *, void *, void *);
 void	ppm_attach(struct device *, struct device *, void *);
 
-struct cfattach ppm_ca = {
+const struct cfattach ppm_ca = {
 	sizeof(struct ppm_softc), ppm_match, ppm_attach
 };
 

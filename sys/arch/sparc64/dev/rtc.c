@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtc.c,v 1.10 2014/07/11 08:18:31 guenther Exp $	*/
+/*	$OpenBSD: rtc.c,v 1.11 2021/04/24 10:15:14 mpi Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -102,7 +102,7 @@ struct rtc_softc {
 int	rtc_match(struct device *, void *, void *);
 void	rtc_attach(struct device *, struct device *, void *);
 
-struct cfattach rtc_ca = {
+const struct cfattach rtc_ca = {
 	sizeof(struct rtc_softc), rtc_match, rtc_attach
 };
 

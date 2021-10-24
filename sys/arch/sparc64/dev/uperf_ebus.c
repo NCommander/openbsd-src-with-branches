@@ -1,4 +1,4 @@
-/*	$OpenBSD: uperf_ebus.c,v 1.6 2017/09/08 05:36:52 deraadt Exp $	*/
+/*	$OpenBSD: uperf_ebus.c,v 1.7 2021/03/11 11:17:00 jsg Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -63,7 +63,7 @@ struct uperf_ebus_softc {
 int	uperf_ebus_match(struct device *, void *, void *);
 void	uperf_ebus_attach(struct device *, struct device *, void *);
 
-struct cfattach uperf_ebus_ca = {
+const struct cfattach uperf_ebus_ca = {
 	sizeof(struct uperf_ebus_softc), uperf_ebus_match, uperf_ebus_attach
 };
 

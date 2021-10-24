@@ -1,4 +1,4 @@
-/*	$OpenBSD: central.c,v 1.9 2015/12/29 04:46:28 mmcc Exp $	*/
+/*	$OpenBSD: central.c,v 1.10 2017/09/08 05:36:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Jason L. Wright (jason@thought.net)
@@ -198,7 +198,7 @@ _central_bus_map(bus_space_tag_t t, bus_space_tag_t t0, bus_addr_t addr,
 	return (EINVAL);
 }
 
-struct cfattach central_ca = {
+const struct cfattach central_ca = {
 	sizeof(struct central_softc), central_match, central_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssm.c,v 1.1 2008/07/06 08:51:44 kettenis Exp $	*/
+/*	$OpenBSD: ssm.c,v 1.2 2014/07/12 18:44:43 tedu Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -26,7 +26,7 @@
 int	ssm_match(struct device *, void *, void *);
 void	ssm_attach(struct device *, struct device *, void *);
 
-struct cfattach ssm_ca = {
+const struct cfattach ssm_ca = {
 	sizeof(struct device), ssm_match, ssm_attach
 };
 

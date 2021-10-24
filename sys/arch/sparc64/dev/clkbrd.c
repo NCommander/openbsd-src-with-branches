@@ -1,4 +1,4 @@
-/*	$OpenBSD: clkbrd.c,v 1.5 2004/10/01 18:18:49 jason Exp $	*/
+/*	$OpenBSD: clkbrd.c,v 1.6 2008/01/20 16:41:17 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2004 Jason L. Wright (jason@thought.net)
@@ -48,7 +48,7 @@ void clkbrd_attach(struct device *, struct device *, void *);
 void clkbrd_led_blink(void *, int);
 void clkbrd_refresh(void *);
 
-struct cfattach clkbrd_ca = {
+const struct cfattach clkbrd_ca = {
 	sizeof(struct clkbrd_softc), clkbrd_match, clkbrd_attach
 };
 

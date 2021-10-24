@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcf8591_envctrl.c,v 1.5 2007/10/24 20:12:07 kettenis Exp $ */
+/*	$OpenBSD: pcf8591_envctrl.c,v 1.6 2007/10/25 21:17:20 kettenis Exp $ */
 
 /*
  * Copyright (c) 2006 Damien Miller <djm@openbsd.org>
@@ -59,7 +59,7 @@ int	ecadc_match(struct device *, void *, void *);
 void	ecadc_attach(struct device *, struct device *, void *);
 void	ecadc_refresh(void *);
 
-struct cfattach ecadc_ca = {
+const struct cfattach ecadc_ca = {
 	sizeof(struct ecadc_softc), ecadc_match, ecadc_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vldcp.c,v 1.20 2020/05/23 11:29:37 mpi Exp $	*/
+/*	$OpenBSD: vldcp.c,v 1.21 2020/12/25 12:59:51 visa Exp $	*/
 /*
  * Copyright (c) 2009, 2012 Mark Kettenis
  *
@@ -76,7 +76,7 @@ int	filt_vldcpread(struct knote *, long);
 int	filt_vldcpwrite(struct knote *, long);
 int	vldcpkqfilter(dev_t, struct knote *);
 
-struct cfattach vldcp_ca = {
+const struct cfattach vldcp_ca = {
 	sizeof(struct vldcp_softc), vldcp_match, vldcp_attach
 };
 

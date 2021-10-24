@@ -1,4 +1,4 @@
-/*	$OpenBSD: vdsp.c,v 1.46 2019/10/06 16:24:14 beck Exp $	*/
+/*	$OpenBSD: vdsp.c,v 1.47 2020/01/16 13:03:28 mpi Exp $	*/
 /*
  * Copyright (c) 2009, 2011, 2014 Mark Kettenis
  *
@@ -267,7 +267,7 @@ struct vdsp_softc {
 int	vdsp_match(struct device *, void *, void *);
 void	vdsp_attach(struct device *, struct device *, void *);
 
-struct cfattach vdsp_ca = {
+const struct cfattach vdsp_ca = {
 	sizeof(struct vdsp_softc), vdsp_match, vdsp_attach
 };
 

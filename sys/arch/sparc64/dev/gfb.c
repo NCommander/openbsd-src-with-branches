@@ -1,4 +1,4 @@
-/*	$OpenBSD: gfb.c,v 1.1 2009/03/09 22:36:43 kettenis Exp $	*/
+/*	$OpenBSD: gfb.c,v 1.2 2013/10/20 20:07:27 miod Exp $	*/
 
 /*
  * Copyright (c) 2009 Mark Kettenis.
@@ -50,7 +50,7 @@ struct cfdriver gfb_cd = {
 	NULL, "gfb", DV_DULL
 };
 
-struct cfattach gfb_ca = {
+const struct cfattach gfb_ca = {
 	sizeof(struct gfb_softc), gfb_match, gfb_attach
 };
 
