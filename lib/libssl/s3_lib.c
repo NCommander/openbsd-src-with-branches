@@ -1,4 +1,4 @@
-/* $OpenBSD: s3_lib.c,v 1.215 2021/09/08 12:56:14 tb Exp $ */
+/* $OpenBSD: s3_lib.c,v 1.216 2021/10/24 09:15:00 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1668,10 +1668,10 @@ _SSL_get_peer_tmp_key(SSL *s, EVP_PKEY **key)
 
 	*key = NULL;
 
-	if (s->session == NULL || SSI(s)->sess_cert == NULL)
+	if (s->session == NULL || s->session->sess_cert == NULL)
 		return 0;
 
-	sc = SSI(s)->sess_cert;
+	sc = s->session->sess_cert;
 
 	if ((pkey = EVP_PKEY_new()) == NULL)
 		return 0;
