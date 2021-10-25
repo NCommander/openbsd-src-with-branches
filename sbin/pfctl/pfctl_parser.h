@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_parser.h,v 1.115 2019/03/07 08:01:52 kn Exp $ */
+/*	$OpenBSD: pfctl_parser.h,v 1.117 2020/07/21 14:10:51 henning Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -248,6 +248,7 @@ void	print_queuespec(struct pf_queuespec *);
 
 int	pfctl_define_table(char *, int, int, const char *, struct pfr_buffer *,
 	    u_int32_t);
+void	pfctl_expand_label_nr(struct pf_rule *, unsigned int);
 
 void		 pfctl_clear_fingerprints(int, int);
 int		 pfctl_file_fingerprints(int, int, const char *);
