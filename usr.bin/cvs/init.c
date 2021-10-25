@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.40 2017/06/01 08:08:24 joris Exp $	*/
+/*	$OpenBSD: init.c,v 1.41 2017/08/28 19:33:20 otto Exp $	*/
 /*
  * Copyright (c) 2004 Jean-Francois Brousseau <jfb@openbsd.org>
  * Copyright (c) 2006 Xavier Santolaria <xsa@openbsd.org>
@@ -143,15 +143,14 @@ init_mkfile(char *path, char **content)
 {
 	BUF *b;
 	size_t len;
-	int fd, openflags, rcsflags;
+	int fd, rcsflags;
 	char rpath[PATH_MAX];
 	char **p;
 	RCSFILE *file;
 
-	openflags = O_WRONLY | O_CREAT | O_EXCL;
 	rcsflags = RCS_WRITE | RCS_CREATE;
 
-	if ((fd = open(path, openflags, 0444)) == -1)
+	if ((fd = open(path, O_WRONLY | O_CREAT | O_EXCL, 0444)) == -1)
 		fatal("init_mkfile: open: `%s': %s", path, strerror(errno));
 
 	if (content != NULL) {
