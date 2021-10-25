@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbrk.S,v 1.9 2016/08/06 19:16:09 guenther Exp $	*/
+/*	$OpenBSD: sbrk.S,v 1.10 2017/11/21 19:08:36 kettenis Exp $	*/
 /*	$NetBSD: sbrk.S,v 1.7 2003/08/07 16:42:05 agc Exp $	*/
 
 /*-
@@ -45,7 +45,6 @@ __curbrk:
 	.word	_C_LABEL(_end)
 	END(__curbrk)
 
-	.weak	sbrk
 /*
  * Change the data segment size
  */
@@ -85,3 +84,4 @@ ENTRY(sbrk)
 .Lcurbrk:
 	.word	PIC_SYM(__curbrk, GOT)
 END(sbrk)
+	.weak	sbrk

@@ -1,4 +1,4 @@
-/*	$OpenBSD: base64.c,v 1.12 2021/10/22 10:22:15 tb Exp $	*/
+/*	$OpenBSD: base64.c,v 1.13 2021/10/24 10:05:22 jsg Exp $	*/
 
 /*
  * Copyright (c) 1996 by Internet Software Consortium.
@@ -42,7 +42,6 @@
  * IF IBM IS APPRISED OF THE POSSIBILITY OF SUCH DAMAGES.
  */
 
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
