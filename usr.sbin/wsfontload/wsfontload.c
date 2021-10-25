@@ -1,4 +1,4 @@
-/* $OpenBSD: wsfontload.c,v 1.23 2020/08/05 13:56:06 fcambus Exp $ */
+/* $OpenBSD: wsfontload.c,v 1.24 2021/10/24 21:24:19 deraadt Exp $ */
 /* $NetBSD: wsfontload.c,v 1.2 2000/01/05 18:46:43 ad Exp $ */
 
 /*
@@ -77,7 +77,7 @@ main(int argc, char *argv[])
 	char *wsdev, *infile, *p;
 	struct wsdisplay_font f;
 	struct wsdisplay_screentype screens;
-	int c, res, wsfd, ffd, type, list, i;
+	int c, res, wsfd, ffd, list, i;
 	int defwidth, defheight;
 	struct stat stat;
 	size_t len;
