@@ -1,4 +1,4 @@
-/*	$OpenBSD: uthum.c,v 1.34 2020/02/14 14:55:30 mpi Exp $   */
+/*	$OpenBSD: uthum.c,v 1.35 2021/03/08 14:35:57 jcs Exp $   */
 
 /*
  * Copyright (c) 2009, 2010 Yojiro UO <yuo@nui.org>
@@ -44,6 +44,7 @@
 #define UTHUM_TYPE_TEMPER1	0x5758 /* TEMPer1 and HID TEMPer */
 #define UTHUM_TYPE_TEMPER2	0x5759
 #define UTHUM_TYPE_TEMPERNTC	0x575b
+#define UTHUM_TYPE_TEMPERHUM_3	0x5f5a
 #define UTHUM_TYPE_UNKNOWN	0xffff
 
 /* Common */
@@ -385,8 +386,9 @@ uthum_check_device_info(struct uthum_softc *sc)
 		return EIO;
 
 	dev_type = betoh16(dinfo.dev_type);
-	/* TEMPerHUM has 2 different device identifiers, unify them */
-	if (dev_type == UTHUM_TYPE_TEMPERHUM_2)
+	/* TEMPerHUM has 3 different device identifiers, unify them */
+	if (dev_type == UTHUM_TYPE_TEMPERHUM_2 ||
+	    dev_type == UTHUM_TYPE_TEMPERHUM_3)
 		dev_type = UTHUM_TYPE_TEMPERHUM;
 
 	/* check device type and calibration offset*/
