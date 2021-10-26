@@ -1,4 +1,4 @@
-/*	$OpenBSD: efiboot.c,v 1.33 2021/06/06 23:56:55 krw Exp $	*/
+/*	$OpenBSD: efiboot.c,v 1.34 2021/07/09 20:19:46 patrick Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -1015,8 +1015,6 @@ Xdtb_efi(void)
 	char path[MAXPATHLEN];
 	struct stat sb;
 	int fd;
-
-#define O_RDONLY	0
 
 	if (cmd.argc != 2) {
 		printf("dtb file\n");
