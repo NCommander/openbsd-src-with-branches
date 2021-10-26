@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhci.c,v 1.151 2020/03/21 12:08:31 patrick Exp $	*/
+/*	$OpenBSD: uhci.c,v 1.152 2020/04/03 20:11:47 patrick Exp $	*/
 /*	$NetBSD: uhci.c,v 1.172 2003/02/23 04:19:26 simonb Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/uhci.c,v 1.33 1999/11/17 22:33:41 n_hibma Exp $	*/
 
@@ -55,7 +55,7 @@
 /*#define UHCI_CTL_LOOP */
 
 struct cfdriver uhci_cd = {
-	NULL, "uhci", DV_DULL
+	NULL, "uhci", DV_DULL, CD_SKIPHIBERNATE
 };
 
 #ifdef UHCI_DEBUG

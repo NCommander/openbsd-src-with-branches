@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.54 2020/06/15 14:43:57 naddy Exp $	*/
+/*	$OpenBSD: boot.c,v 1.55 2021/10/24 17:49:19 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003 Dale Rahn
@@ -92,6 +92,7 @@ boot(dev_t bootdev)
 	if (bootdev_has_hibernate()) {
 		strlcpy(cmd.image, "/bsd.booted", sizeof(cmd.image));
 		printf("unhibernate detected: switching to %s\n", cmd.image);
+		cmd.boothowto |= RB_UNHIBERNATE;
 	}
 #endif
 
