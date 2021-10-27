@@ -1,4 +1,4 @@
-/*	$OpenBSD: encoding.c,v 1.5 2021/10/26 16:12:54 claudio Exp $  */
+/*	$OpenBSD: encoding.c,v 1.6 2021/10/26 16:59:19 claudio Exp $  */
 /*
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
  *
@@ -45,7 +45,7 @@ load_file(const char *name, size_t *len)
 		return NULL;
 	if (fstat(fd, &st) != 0)
 		goto err;
-	if (st.st_size < 0)
+	if (st.st_size < 0 || st.st_size > MAX_FILE_SIZE)
 		goto err;
 	size = (size_t)st.st_size;
 	if ((buf = malloc(size)) == NULL)
