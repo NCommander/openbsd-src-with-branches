@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.113 2021/07/26 05:51:13 mpi Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.114 2021/10/24 07:02:47 visa Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -216,10 +216,7 @@ soqinsque(struct socket *head, struct socket *so, int q)
 {
 	soassertlocked(head);
 
-#ifdef DIAGNOSTIC
-	if (so->so_onq != NULL)
-		panic("soqinsque");
-#endif
+	KASSERT(so->so_onq == NULL);
 
 	so->so_head = head;
 	if (q == 0) {
