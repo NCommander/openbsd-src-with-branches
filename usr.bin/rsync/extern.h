@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.41 2021/09/01 09:48:08 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.42 2021/10/22 11:10:34 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -141,6 +141,8 @@ struct	opts {
 	int		 numeric_ids;		/* --numeric-ids */
 	int		 one_file_system;	/* -x */
 	int		 alt_base_mode;
+	off_t		 max_size;		/* --max-size */
+	off_t		 min_size;		/* --min-size */
 	char		*rsync_path;		/* --rsync-path */
 	char		*ssh_prog;		/* --rsh or -e */
 	char		*port;			/* --port */
