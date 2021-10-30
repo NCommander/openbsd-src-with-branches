@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Search.pm,v 1.30 2018/04/25 09:45:30 espie Exp $
+# $OpenBSD: Search.pm,v 1.31 2020/02/19 14:22:29 espie Exp $
 #
 # Copyright (c) 2007 Marc Espie <espie@openbsd.org>
 #
@@ -98,6 +98,9 @@ our @ISA=(qw(OpenBSD::Search));
 sub new
 {
 	my ($class, $stem) = @_;
+	# TODO this is where we currently handle "branch" matches
+	# but it's likely the stem/ % mechanisms should be seen as more
+	# generic cases of PackageSpecs eventually to better results
 	if ($stem =~ m/^(.*)\%(.*)/) {
 		return ($class->_new($1), 
 		    OpenBSD::Search::FilterLocation->match_partialpath($2));
