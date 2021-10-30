@@ -80,9 +80,9 @@ struct uhidev {
 struct uhidev_attach_arg {
 	struct usb_attach_arg	*uaa;
 	struct uhidev_softc	*parent;
-	u_int			 reportid;
-#define	UHIDEV_CLAIM_MULTIPLE_REPORTID	256
-	u_int			 nreports;
+	uint8_t			 reportid;
+#define	UHIDEV_CLAIM_MULTIPLE_REPORTID	255
+	uint8_t			 nreports;
 	uint8_t			*claimed;
 };
 
