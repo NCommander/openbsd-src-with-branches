@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: x509attribute.c,v 1.1 2020/06/04 21:21:03 schwarze Exp $ */
 /*
  * Copyright (c) 2020 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -14,6 +14,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#define LIBRESSL_CRYPTO_INTERNAL
 
 #include <errno.h>
 #include <stdio.h>
