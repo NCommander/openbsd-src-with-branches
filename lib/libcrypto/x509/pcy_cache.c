@@ -1,4 +1,4 @@
-/* $OpenBSD: pcy_cache.c,v 1.5 2014/07/11 08:44:49 jsing Exp $ */
+/* $OpenBSD: pcy_cache.c,v 1.1 2020/06/04 15:19:31 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2004.
  */
@@ -60,6 +60,7 @@
 #include <openssl/x509v3.h>
 
 #include "pcy_int.h"
+#include "x509_lcl.h"
 
 static int policy_data_cmp(const X509_POLICY_DATA * const *a,
     const X509_POLICY_DATA * const *b);

@@ -1,4 +1,4 @@
-/* $OpenBSD: t_req.c,v 1.18 2015/07/29 14:58:34 jsing Exp $ */
+/* $OpenBSD: t_req.c,v 1.19 2017/01/29 17:49:22 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -73,6 +73,8 @@
 #ifndef OPENSSL_NO_RSA
 #include <openssl/rsa.h>
 #endif
+
+#include "x509_lcl.h"
 
 int
 X509_REQ_print_fp(FILE *fp, X509_REQ *x)

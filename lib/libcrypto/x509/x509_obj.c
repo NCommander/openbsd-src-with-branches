@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_obj.c,v 1.17 2017/01/29 17:49:23 beck Exp $ */
+/* $OpenBSD: x509_obj.c,v 1.18 2018/05/18 18:19:31 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -64,6 +64,8 @@
 #include <openssl/lhash.h>
 #include <openssl/objects.h>
 #include <openssl/x509.h>
+
+#include "x509_lcl.h"
 
 char *
 X509_NAME_oneline(const X509_NAME *a, char *buf, int len)

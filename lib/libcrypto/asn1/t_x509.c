@@ -1,4 +1,4 @@
-/* $OpenBSD: t_x509.c,v 1.33 2021/07/06 11:26:25 schwarze Exp $ */
+/* $OpenBSD: t_x509.c,v 1.34 2021/07/26 16:54:20 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -78,6 +78,7 @@
 #endif
 
 #include "asn1_locl.h"
+#include "x509_lcl.h"
 
 int
 X509_print_fp(FILE *fp, X509 *x)

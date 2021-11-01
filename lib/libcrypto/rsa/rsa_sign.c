@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_sign.c,v 1.31 2018/09/05 00:55:33 djm Exp $ */
+/* $OpenBSD: rsa_sign.c,v 1.32 2021/05/14 18:03:42 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -66,6 +66,7 @@
 #include <openssl/x509.h>
 
 #include "rsa_locl.h"
+#include "x509_lcl.h"
 
 /* Size of an SSL signature: MD5+SHA1 */
 #define SSL_SIG_LENGTH	36

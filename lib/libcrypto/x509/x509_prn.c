@@ -1,4 +1,4 @@
-/* $OpenBSD: v3_prn.c,v 1.20 2018/05/19 10:41:53 tb Exp $ */
+/* $OpenBSD: x509_prn.c,v 1.1 2020/06/04 15:19:32 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -61,6 +61,8 @@
 
 #include <openssl/conf.h>
 #include <openssl/x509v3.h>
+
+#include "x509_lcl.h"
 
 /* Extension printing routines */
 

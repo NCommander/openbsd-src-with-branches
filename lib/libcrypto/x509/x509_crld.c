@@ -1,4 +1,4 @@
-/* $OpenBSD: v3_crld.c,v 1.23 2019/04/21 16:25:40 tb Exp $ */
+/* $OpenBSD: x509_crld.c,v 1.1 2020/06/04 15:19:31 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -64,6 +64,8 @@
 #include <openssl/conf.h>
 #include <openssl/err.h>
 #include <openssl/x509v3.h>
+
+#include "x509_lcl.h"
 
 static void *v2i_crld(const X509V3_EXT_METHOD *method,
     X509V3_CTX *ctx, STACK_OF(CONF_VALUE) *nval);

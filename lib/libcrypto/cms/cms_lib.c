@@ -1,4 +1,4 @@
-/* $OpenBSD: cms_lib.c,v 1.13 2019/08/11 11:04:18 jsing Exp $ */
+/* $OpenBSD: cms_lib.c,v 1.14 2019/08/12 18:13:13 jsing Exp $ */
 /*
  * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
@@ -59,8 +59,9 @@
 #include <openssl/bio.h>
 #include <openssl/asn1.h>
 #include <openssl/cms.h>
-#include "cms_lcl.h"
 
+#include "cms_lcl.h"
+#include "x509_lcl.h"
 
 CMS_ContentInfo *
 d2i_CMS_ContentInfo(CMS_ContentInfo **a, const unsigned char **in, long len)

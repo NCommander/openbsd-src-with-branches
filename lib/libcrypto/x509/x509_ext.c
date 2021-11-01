@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_ext.c,v 1.11 2018/05/18 18:37:23 tb Exp $ */
+/* $OpenBSD: x509_ext.c,v 1.12 2018/05/18 19:28:27 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -64,6 +64,8 @@
 #include <openssl/stack.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+
+#include "x509_lcl.h"
 
 int
 X509_CRL_get_ext_count(const X509_CRL *x)
