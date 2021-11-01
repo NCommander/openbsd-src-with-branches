@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.85 2021/10/28 13:51:42 job Exp $ */
+/*	$OpenBSD: extern.h,v 1.86 2021/10/29 09:27:36 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -270,8 +270,6 @@ struct auth {
 	RB_ENTRY(auth)	 entry;
 	struct cert	*cert; /* owner information */
 	struct auth	*parent; /* pointer to parent or NULL for TA cert */
-	char		*tal; /* basename of TAL for this cert */
-	char		*fn; /* FIXME: debugging */
 };
 /*
  * Tree of auth sorted by ski
