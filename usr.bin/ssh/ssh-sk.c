@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-sk.c,v 1.35 2021/02/26 00:16:58 djm Exp $ */
+/* $OpenBSD: ssh-sk.c,v 1.36 2021/10/28 02:54:18 djm Exp $ */
 /*
  * Copyright (c) 2019 Google LLC
  *
@@ -515,7 +515,7 @@ sshsk_enroll(int type, const char *provider_path, const char *device,
 		goto out;
 	}
 
-	if ((r = sshsk_key_from_response(alg, application, flags,
+	if ((r = sshsk_key_from_response(alg, application, resp->flags,
 	    resp, &key)) != 0)
 		goto out;
 
