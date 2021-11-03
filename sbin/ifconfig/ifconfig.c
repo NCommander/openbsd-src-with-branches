@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.446 2021/11/02 23:36:43 kn Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.447 2021/11/02 23:39:27 kn Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -411,11 +411,6 @@ const struct	cmd {
 	{ "alias",	IFF_UP,		0,		notealias },
 	{ "-alias",	-IFF_UP,	0,		notealias },
 	{ "delete",	-IFF_UP,	0,		notealias },
-#ifdef notdef
-#define	EN_SWABIPS	0x1000
-	{ "swabips",	EN_SWABIPS,	0,		setifflags },
-	{ "-swabips",	-EN_SWABIPS,	0,		setifflags },
-#endif /* notdef */
 	{ "netmask",	NEXTARG,	0,		setifnetmask },
 	{ "mtu",	NEXTARG,	0,		setifmtu },
 	{ "nwid",	NEXTARG,	0,		setifnwid },
