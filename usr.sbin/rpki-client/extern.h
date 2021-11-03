@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.88 2021/11/01 17:00:34 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.89 2021/11/03 10:50:18 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -617,5 +617,8 @@ int	mkpath(const char *);
 
 /* Maximum depth of the RPKI tree. */
 #define	MAX_CERT_DEPTH	12
+
+/* Maximum number of concurrent rsync processes. */
+#define MAX_RSYNC_PROCESSES 16
 
 #endif /* ! EXTERN_H */
