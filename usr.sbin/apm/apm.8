@@ -1,4 +1,4 @@
-.\"	$OpenBSD: apm.8,v 1.42 2015/08/04 07:24:31 mlarkin Exp $
+.\"	$OpenBSD: apm.8,v 1.43 2015/08/04 09:22:19 jmc Exp $
 .\"
 .\" Copyright (c) 1996 John T. Kohl
 .\" All rights reserved.
@@ -57,7 +57,7 @@ displays the current power management state in verbose form.
 The options are as follows:
 .Bl -tag -width Ds
 .It Fl A
-Switch to automatic performance adjustment mode.
+Switch to automatic performance adjustment mode (the default).
 .It Fl a
 Display the external charger (A/C status).
 0 means disconnected, 1
@@ -72,11 +72,13 @@ Set the name of the socket via which to contact
 to
 .Ar sockname .
 .It Fl H
-Set
+Switch to manual performance adjustment mode,
+setting
 .Va hw.setperf
 to 100.
 .It Fl L
-Set
+Switch to manual performance adjustment mode,
+setting
 .Va hw.setperf
 to 0.
 .It Fl l
