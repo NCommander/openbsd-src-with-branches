@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.64 2020/05/17 18:29:25 denis Exp $ */
+/*	$OpenBSD: kroute.c,v 1.65 2020/09/10 05:18:16 jmatthew Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -1107,7 +1107,7 @@ send_rtmsg(int fd, int action, struct kroute *kroute)
 		/*
 		 * We don't have an interface address in that network,
 		 * so we install a cloning route.  The kernel will then
-		 * do neigbor discovery.
+		 * do neighbor discovery.
 		 */
 		bzero(&ifp, sizeof(ifp));
 		ifp.addr.sdl_len = sizeof(struct sockaddr_dl);
