@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr.c,v 1.64 2020/07/06 13:33:05 pirofti Exp $	*/
+/*	$OpenBSD: asr.c,v 1.65 2021/01/06 19:54:17 otto Exp $	*/
 /*
  * Copyright (c) 2010-2012 Eric Faurot <eric@openbsd.org>
  *
@@ -131,8 +131,6 @@ _asr_resolver_done(void *arg)
 static void
 _asr_resolver_done_tp(void *arg)
 {
-	char buf[100];
-	int len;
 	struct asr **priv = arg;
 	struct asr *asr;
 
