@@ -1,4 +1,4 @@
-/*	$OpenBSD: imxehci.c,v 1.1 2020/04/23 22:14:49 patrick Exp $ */
+/*	$OpenBSD: imxehci.c,v 1.4 2020/04/27 20:15:41 patrick Exp $ */
 /*
  * Copyright (c) 2012-2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -130,9 +130,12 @@ imxehci_attach(struct device *parent, struct device *self, void *aux)
 	if (faa->fa_nreg < 1)
 		return;
 
-	if (OF_getpropintarray(faa->fa_node, "fsl,usbphy",
-	    phy, sizeof(phy)) != sizeof(phy))
-		return;
+	if (OF_getpropintarray(faa->fa_node, "phys",
+	    phy, sizeof(phy)) != sizeof(phy)) {
+		if (OF_getpropintarray(faa->fa_node, "fsl,usbphy",
+		    phy, sizeof(phy)) != sizeof(phy))
+			return;
+	}
 
 	if (OF_getpropintarray(faa->fa_node, "fsl,usbmisc",
 	    misc, sizeof(misc)) != sizeof(misc))
