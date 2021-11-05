@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmci.c,v 1.7 2020/05/29 04:42:25 deraadt Exp $	*/
+/*	$OpenBSD: vmmci.c,v 1.8 2020/06/24 22:03:40 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2017 Reyk Floeter <reyk@openbsd.org>
@@ -58,7 +58,7 @@ int	vmmci_config_change(struct virtio_softc *);
 void	vmmci_tick(void *);
 void	vmmci_tick_hook(struct device *);
 
-struct cfattach vmmci_ca = {
+const struct cfattach vmmci_ca = {
 	sizeof(struct vmmci_softc),
 	vmmci_match,
 	vmmci_attach,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vio.c,v 1.18 2020/07/10 13:26:40 patrick Exp $	*/
+/*	$OpenBSD: if_vio.c,v 1.19 2020/12/12 11:48:53 jan Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch, Alexander Fiveg.
@@ -315,7 +315,7 @@ vio_match(struct device *parent, void *match, void *aux)
 	return 0;
 }
 
-struct cfattach vio_ca = {
+const struct cfattach vio_ca = {
 	sizeof(struct vio_softc), vio_match, vio_attach, NULL
 };
 
