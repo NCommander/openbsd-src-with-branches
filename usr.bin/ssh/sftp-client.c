@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-client.c,v 1.155 2021/09/03 05:12:25 dtucker Exp $ */
+/* $OpenBSD: sftp-client.c,v 1.156 2021/10/24 21:24:17 deraadt Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -2170,6 +2170,7 @@ handle_dest_replies(struct sftp_conn *to, const char *to_path, int synchronous,
 		(*nreqsp)--;
 	}
 	debug3_f("done: %u outstanding replies", *nreqsp);
+	sshbuf_free(msg);
 }
 
 int
