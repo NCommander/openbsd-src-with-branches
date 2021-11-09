@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rsync.1,v 1.24 2021/03/31 20:36:05 jmc Exp $
+.\"	$OpenBSD: rsync.1,v 1.25 2021/08/30 20:25:24 job Exp $
 .\"
 .\" Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: March 31 2021 $
+.Dd $Mdocdate: October 29 2021 $
 .Dt OPENRSYNC 1
 .Os
 .Sh NAME
@@ -25,11 +25,14 @@
 .Op Fl aDglnoprtvx
 .Op Fl e Ar program
 .Op Fl -address Ns = Ns Ar sourceaddr
+.Op Fl -compare-dest Ns = Ns Ar directory
 .Op Fl -del
 .Op Fl -exclude Ar pattern
 .Op Fl -exclude-from Ns = Ns Ar file
 .Op Fl -include Ar pattern
 .Op Fl -include-from Ns = Ns Ar file
+.Op Fl -max-size Ns = Ns size
+.Op Fl -min-size Ns = Ns size
 .Op Fl -no-motd
 .Op Fl -numeric-ids
 .Op Fl -port Ns = Ns Ar service
@@ -62,6 +65,18 @@ When connecting to an rsync daemon, use
 .Ar sourceaddr
 as the source address for connections, which is useful on machines with
 multiple interfaces.
+.It Fl -compare-dest Ns = Ns Ar directory
+Use directory as an alternate base directory to compare files against on the
+destination machine.
+If file in
+.Ar directory
+is found and identical to the sender's file, the file will not be transferred.
+Multiple
+.Fl -compare-dest
+directories may be provided.
+If
+.Ar directory
+is a relative path, it is relative to the destination directory.
 .It Fl D
 Also transfer device and special files.
 Shorthand for
@@ -114,6 +129,22 @@ set the numeric group ID to match the source instead.
 Also transfer symbolic links.
 The link is transferred as a standalone file: if the destination does
 not exist, it will be broken.
+.It Fl -max-size Ar size
+Don't transfer any file that is larger than
+.Ar size
+bytes.
+Alternatively
+.Ar size
+may instead use a multiplier, as documented in
+.Xr scan_scaled 3 ,
+to specify the size.
+.It Fl -min-size Ar size
+Don't transfer any file that is smaller than
+.Ar size
+bytes.
+See
+.Fl -max-size
+on the definiton of size.
 .It Fl n , -dry-run
 Do not actually modify the destination.
 Mainly useful in combination with

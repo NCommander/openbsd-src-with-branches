@@ -1,4 +1,4 @@
-/*	$OpenBSD: downloader.c,v 1.21 2019/05/08 21:30:11 benno Exp $ */
+/*	$OpenBSD: downloader.c,v 1.22 2021/06/30 13:10:04 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -350,7 +350,7 @@ rsync_downloader(struct download *p, struct sess *sess, int *ofd)
 
 		p->state = DOWNLOAD_READ_LOCAL;
 		f = &p->fl[idx];
-		p->ofd = openat(p->rootfd, f->path, O_RDONLY | O_NONBLOCK, 0);
+		p->ofd = openat(p->rootfd, f->path, O_RDONLY | O_NONBLOCK);
 
 		if (p->ofd == -1 && errno != ENOENT) {
 			ERR("%s: openat", f->path);
