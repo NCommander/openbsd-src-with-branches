@@ -1,4 +1,4 @@
-/* $OpenBSD: streebog.c,v 1.5 2015/09/10 15:56:25 jsing Exp $ */
+/* $OpenBSD: streebog.c,v 1.6 2019/05/09 22:54:28 tb Exp $ */
 /*
  * Copyright (c) 2014 Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
  * Copyright (c) 2005-2006 Cryptocom LTD
@@ -49,8 +49,7 @@
  * ====================================================================
  */
 
-#include <machine/endian.h>
-
+#include <endian.h>
 #include <stdlib.h>
 #include <string.h>
 

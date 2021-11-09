@@ -1,4 +1,4 @@
-/* $OpenBSD: sha_locl.h,v 1.22 2016/12/21 15:49:29 jsing Exp $ */
+/* $OpenBSD: sha_locl.h,v 1.23 2016/12/23 23:22:25 patrick Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -186,7 +186,7 @@ int SHA1_Init(SHA_CTX *c)
 #endif
 
 #if !defined(SHA1_ASM)
-#include <machine/endian.h>
+#include <endian.h>
 static void HASH_BLOCK_DATA_ORDER (SHA_CTX *c, const void *p, size_t num)
 	{
 	const unsigned char *data=p;

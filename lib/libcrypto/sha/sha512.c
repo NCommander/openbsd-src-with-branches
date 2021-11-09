@@ -1,12 +1,11 @@
-/* $OpenBSD: sha512.c,v 1.14 2015/09/10 15:56:26 jsing Exp $ */
+/* $OpenBSD: sha512.c,v 1.15 2016/11/04 13:56:05 miod Exp $ */
 /* ====================================================================
  * Copyright (c) 2004 The OpenSSL Project.  All rights reserved
  * according to the OpenSSL license [found in ../../LICENSE].
  * ====================================================================
  */
 
-#include <machine/endian.h>
-
+#include <endian.h>
 #include <stdlib.h>
 #include <string.h>
 
