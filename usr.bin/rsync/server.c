@@ -1,4 +1,4 @@
-/*	$Id: server.c,v 1.11 2019/05/08 20:00:25 benno Exp $ */
+/*	$Id: server.c,v 1.12 2019/05/08 21:30:11 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -57,7 +57,7 @@ rsync_server(const struct opts *opts, size_t argc, char *argv[])
 
 	if (pledge("stdio unix rpath wpath cpath dpath fattr chown getpw unveil",
 	    NULL) == -1)
-		err(1, "pledge");
+		err(ERR_IPC, "pledge");
 
 	memset(&sess, 0, sizeof(struct sess));
 	sess.opts = opts;
@@ -65,7 +65,7 @@ rsync_server(const struct opts *opts, size_t argc, char *argv[])
 	/* Begin by making descriptors non-blocking. */
 
 	if (!fcntl_nonblock(fdin) ||
-	     !fcntl_nonblock(fdout)) {
+	    !fcntl_nonblock(fdout)) {
 		ERRX1("fcntl_nonblock");
 		goto out;
 	}

@@ -1,4 +1,4 @@
-/*	$Id: flist.c,v 1.30 2021/03/22 11:26:44 claudio Exp $ */
+/*	$Id: flist.c,v 1.31 2021/03/22 11:49:15 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2019 Florian Obser <florian@openbsd.org>
@@ -15,13 +15,13 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <fts.h>
+#include <limits.h>
 #include <inttypes.h>
 #include <search.h>
 #include <stdio.h>
@@ -283,7 +283,7 @@ flist_send(struct sess *sess, int fdin, int fdout, const struct flist *fl,
 
 		if (sess->mplex_reads &&
 		    io_read_check(fdin) &&
-		     !io_read_flush(sess, fdin)) {
+		    !io_read_flush(sess, fdin)) {
 			ERRX1("io_read_flush");
 			goto out;
 		}
@@ -356,7 +356,7 @@ flist_send(struct sess *sess, int fdin, int fdout, const struct flist *fl,
 		/* Conditional part: devices & special files. */
 
 		if ((sess->opts->devices && (S_ISBLK(f->st.mode) ||
-		     S_ISCHR(f->st.mode))) ||
+		    S_ISCHR(f->st.mode))) ||
 		    (sess->opts->specials && (S_ISFIFO(f->st.mode) ||
 		    S_ISSOCK(f->st.mode)))) {
 			if (!io_write_int(sess, fdout, f->st.rdev)) {
@@ -428,7 +428,7 @@ out:
  */
 static int
 flist_recv_name(struct sess *sess, int fd, struct flist *f, uint8_t flags,
-    char last[MAXPATHLEN])
+    char last[PATH_MAX])
 {
 	uint8_t		 bval;
 	size_t		 partial = 0;
@@ -504,7 +504,7 @@ flist_recv_name(struct sess *sess, int fd, struct flist *f, uint8_t flags,
 
 	/* Record our last path and construct our filename. */
 
-	strlcpy(last, f->path, MAXPATHLEN);
+	strlcpy(last, f->path, PATH_MAX);
 	f->wpath = f->path;
 	return 1;
 }
@@ -593,7 +593,7 @@ flist_recv(struct sess *sess, int fd, struct flist **flp, size_t *sz)
 	const struct flist *fflast = NULL;
 	size_t		 flsz = 0, flmax = 0, lsz, gidsz = 0, uidsz = 0;
 	uint8_t		 flag;
-	char		 last[MAXPATHLEN];
+	char		 last[PATH_MAX];
 	int64_t		 lval; /* temporary values... */
 	int32_t		 ival;
 	uint32_t	 uival;
@@ -694,7 +694,7 @@ flist_recv(struct sess *sess, int fd, struct flist **flp, size_t *sz)
 		/* Conditional part: devices & special files. */
 
 		if ((sess->opts->devices && (S_ISBLK(ff->st.mode) ||
-		     S_ISCHR(ff->st.mode))) ||
+		    S_ISCHR(ff->st.mode))) ||
 		    (sess->opts->specials && (S_ISFIFO(ff->st.mode) ||
 		    S_ISSOCK(ff->st.mode)))) {
 			if (!(FLIST_RDEV_SAME & flag)) {
@@ -823,6 +823,11 @@ flist_gen_dirent(struct sess *sess, char *root, struct flist **fl, size_t *sz,
 		ERR("%s: lstat", root);
 		return 0;
 	} else if (S_ISREG(st.st_mode)) {
+		/* filter files */
+		if (rules_match(root, 0) == -1) {
+			WARNX("%s: skipping excluded file", root);
+			return 1;
+		}
 		if (!flist_realloc(fl, sz, max)) {
 			ERRX1("flist_realloc");
 			return 0;
@@ -839,7 +844,13 @@ flist_gen_dirent(struct sess *sess, char *root, struct flist **fl, size_t *sz,
 		if (!sess->opts->preserve_links) {
 			WARNX("%s: skipping symlink", root);
 			return 1;
-		} else if (!flist_realloc(fl, sz, max)) {
+		}
+		/* filter files */
+		if (rules_match(root, 0) == -1) {
+			WARNX("%s: skipping excluded symlink", root);
+			return 1;
+		}
+		if (!flist_realloc(fl, sz, max)) {
 			ERRX1("flist_realloc");
 			return 0;
 		}
@@ -942,6 +953,15 @@ flist_gen_dirent(struct sess *sess, char *root, struct flist **fl, size_t *sz,
 			nxdev++;
 		}
 
+		/* filter files */
+		if (rules_match(ent->fts_path + stripdir,
+		    (ent->fts_info == FTS_D)) == -1) {
+			WARNX("%s: skipping excluded file",
+			    ent->fts_path + stripdir);
+			fts_set(fts, ent, FTS_SKIP);
+			continue;
+		}
+
 		/* Allocate a new file entry. */
 
 		if (!flist_realloc(fl, sz, max)) {
@@ -972,7 +992,7 @@ flist_gen_dirent(struct sess *sess, char *root, struct flist **fl, size_t *sz,
 		/* Optionally copy link information. */
 
 		if (S_ISLNK(ent->fts_statp->st_mode)) {
-			f->link = symlink_read(f->path);
+			f->link = symlink_read(ent->fts_accpath);
 			if (f->link == NULL) {
 				ERRX1("symlink_read");
 				goto out;
@@ -1073,6 +1093,11 @@ flist_gen_files(struct sess *sess, size_t argc, char **argv,
 			continue;
 		}
 
+		/* filter files */
+		if (rules_match(argv[i], S_ISDIR(st.st_mode)) == -1) {
+			WARNX("%s: skipping excluded file", argv[i]);
+			continue;
+		}
 
 		f = &fl[flsz++];
 		assert(f != NULL);
@@ -1295,6 +1320,16 @@ flist_gen_dels(struct sess *sess, const char *root, struct flist **fl,
 			}
 			if (!flag)
 				continue;
+		}
+
+		/* filter files on delete */
+		/* TODO handle --delete-excluded */
+		if (rules_match(ent->fts_path + stripdir,
+		    (ent->fts_info == FTS_D)) == -1) {
+			WARNX("skip excluded file %s",
+			    ent->fts_path + stripdir);
+			fts_set(fts, ent, FTS_SKIP);
+			continue;
 		}
 
 		/* Look up in hashtable. */
