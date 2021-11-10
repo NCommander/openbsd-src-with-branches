@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.62 2021/05/12 02:24:56 mlarkin Exp $	*/
+/*	$OpenBSD: config.c,v 1.63 2021/07/18 11:55:45 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -40,7 +40,7 @@
 #include "vmd.h"
 
 /* Supported bridge types */
-const char *vmd_descsw[] = { "switch", "bridge", "veb", NULL };
+const char *vmd_descsw[] = { "bridge", "veb", NULL };
 
 static int	 config_init_localprefix(struct vmd_config *);
 
