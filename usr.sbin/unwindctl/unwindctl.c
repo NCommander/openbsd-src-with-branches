@@ -1,4 +1,4 @@
-/*	$OpenBSD: unwindctl.c,v 1.27 2021/02/27 10:32:29 florian Exp $	*/
+/*	$OpenBSD: unwindctl.c,v 1.28 2021/09/08 11:38:39 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -67,6 +67,8 @@ prio2str(int prio)
 		return "STATIC";
 	case RTP_PROPOSAL_UMB:
 		return "UMB";
+	case RTP_PROPOSAL_PPP:
+		return "PPP";
 	}
 	return "OTHER";
 }
