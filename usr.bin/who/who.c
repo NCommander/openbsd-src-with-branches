@@ -1,4 +1,4 @@
-/*	$OpenBSD: who.c,v 1.29 2020/08/27 15:20:31 semarie Exp $	*/
+/*	$OpenBSD: who.c,v 1.30 2021/07/12 15:09:20 beck Exp $	*/
 /*	$NetBSD: who.c,v 1.4 1994/12/07 04:28:49 jtc Exp $	*/
 
 /*
@@ -44,7 +44,6 @@
 #include <unistd.h>
 #include <time.h>
 #include <err.h>
-#include <locale.h>
 
 void  output(struct utmp *);
 void  output_labels(void);
@@ -71,8 +70,6 @@ main(int argc, char *argv[])
 	FILE *ufp;
 	char *t;
 	int c;
-
-	setlocale(LC_ALL, "");
 
 	if (pledge("stdio unveil rpath getpw", NULL) == -1)
 		err(1, "pledge");
