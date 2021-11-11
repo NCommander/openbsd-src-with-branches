@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.154 2021/11/06 17:35:14 mvs Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.155 2021/11/11 17:20:02 mvs Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -54,6 +54,7 @@
 #include <sys/rwlock.h>
 #include <sys/mutex.h>
 #include <sys/sysctl.h>
+#include <sys/lock.h>
 
 /*
  * Locks used to protect global data and struct members:
