@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.483 2021/04/28 15:11:27 jsg Exp $
+#	$OpenBSD: Makefile,v 1.484 2021/05/01 16:11:07 visa Exp $
 
 .include <bsd.own.mk>
 
@@ -64,7 +64,7 @@ RCDAEMONS=amd apmd bgpd bootparamd cron dhcpd dhcpleased dhcrelay dhcrelay6 \
 	lpd mopd mountd mrouted nfsd npppd nsd ntpd ospf6d ospfd \
 	pflogd portmap rad radiusd rarpd rbootd relayd resolvd ripd route6d \
 	sasyncd sensorsd slowcgi slaacd smtpd sndiod snmpd spamd \
-	spamlogd sshd statd switchd syslogd tftpd tftpproxy unbound \
+	spamlogd sshd statd syslogd tftpd tftpproxy unbound \
 	unwind vmd watchdogd wsmoused xenodm ypbind ypldap ypserv
 
 MISETS=	base${OSrev}.tgz comp${OSrev}.tgz man${OSrev}.tgz game${OSrev}.tgz
