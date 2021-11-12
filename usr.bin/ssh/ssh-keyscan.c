@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keyscan.c,v 1.140 2021/10/02 03:17:01 dtucker Exp $ */
+/* $OpenBSD: ssh-keyscan.c,v 1.141 2021/11/11 15:32:32 deraadt Exp $ */
 /*
  * Copyright 1995, 1996 by David Mazieres <dm@lcs.mit.edu>.
  *
@@ -753,6 +753,8 @@ main(int argc, char **argv)
 		fdlim_set(maxfd);
 	fdcon = xcalloc(maxfd, sizeof(con));
 	read_wait = xcalloc(maxfd, sizeof(struct pollfd));
+	for (j = 0; j < maxfd; j++)
+		read_wait[j].fd = -1;
 
 	for (j = 0; j < fopt_count; j++) {
 		if (argv[j] == NULL)
