@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_parse.y,v 1.43 2021/09/09 12:09:11 mpi Exp $	*/
+/*	$OpenBSD: bt_parse.y,v 1.44 2021/10/03 22:01:48 dv Exp $	*/
 
 /*
  * Copyright (c) 2019-2021 Martin Pieuchot <mpi@openbsd.org>
@@ -717,6 +717,7 @@ lookup(char *s)
 		{ "pid",	BUILTIN,	B_AT_BI_PID },
 		{ "print",	F_PRINT,	B_AC_PRINT },
 		{ "printf",	FUNCN,		B_AC_PRINTF },
+		{ "probe",	BUILTIN,	B_AT_BI_PROBE },
 		{ "retval",	BUILTIN,	B_AT_BI_RETVAL },
 		{ "str",	STR,		B_AT_FN_STR },
 		{ "sum",	MOP1,		B_AT_MF_SUM },
