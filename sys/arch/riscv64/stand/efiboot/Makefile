@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.12 2020/02/29 11:58:57 otto Exp $
+#	$OpenBSD: Makefile,v 1.1 2021/04/28 19:01:00 drahn Exp $
 
 NOMAN=		#
 
@@ -19,6 +19,7 @@ OBJCOPY?=	objcopy
 OBJDUMP?=	objdump
 
 LDFLAGS+=-nostdlib -T ${.CURDIR}/ldscript.riscv64 -Bsymbolic -shared
+LDFLAGS+=--pack-dyn-relocs=none
 
 .PATH:	${S}/stand/boot
 SRCS+=	boot.c cmd.c vars.c
