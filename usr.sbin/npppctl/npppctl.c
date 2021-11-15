@@ -1,4 +1,4 @@
-/*	$OpenBSD: npppctl.c,v 1.8 2017/08/11 16:25:59 goda Exp $	*/
+/*	$OpenBSD: npppctl.c,v 1.9 2019/06/28 13:32:49 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2012 Internet Initiative Japan Inc.
@@ -80,8 +80,6 @@ main(int argc, char *argv[])
 	struct parse_result	*result;
 	struct sockaddr_un	 sun;
 	const char		*npppd_ctlpath = NPPPD_SOCKET;
-	extern int		 optind;
-	extern char		*optarg;
 
 	while ((ch = getopt(argc, argv, "ns:")) != -1)
 		switch (ch) {

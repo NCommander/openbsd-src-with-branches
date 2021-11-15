@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)get_args.c	8.1 (Berkeley) 6/6/93
- *	$Id: get_args.c,v 1.14 2014/10/20 02:33:42 guenther Exp $
+ *	$Id: get_args.c,v 1.15 2021/10/21 10:55:56 deraadt Exp $
  */
 
 /*
@@ -43,9 +43,6 @@
 #include <syslog.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-extern int optind;
-extern char *optarg;
 
 #if defined(DEBUG) && defined(PARANOID)
 char **gargv;

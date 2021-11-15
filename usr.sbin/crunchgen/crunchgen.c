@@ -1,4 +1,4 @@
-/* $OpenBSD: crunchgen.c,v 1.23 2021/03/10 22:52:28 jsg Exp $	 */
+/* $OpenBSD: crunchgen.c,v 1.24 2021/10/24 21:24:18 deraadt Exp $	 */
 
 /*
  * Copyright (c) 1994 University of Maryland
@@ -117,8 +117,6 @@ main(int argc, char *argv[])
 {
 	char           *p;
 	int             optc;
-	extern int      optind;
-	extern char    *optarg;
 
 	if (pledge("stdio rpath wpath cpath proc exec", NULL) == -1) {
 		perror("pledge");

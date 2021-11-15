@@ -1,4 +1,4 @@
-/*	$OpenBSD: bootparamd.c,v 1.20 2015/11/26 19:00:40 deraadt Exp $	*/
+/*	$OpenBSD: bootparamd.c,v 1.21 2016/10/16 10:40:58 jca Exp $	*/
 
 /*
  * This code is not copyright, and is placed in the public domain.
@@ -50,8 +50,6 @@ struct sockaddr_in my_addr;
 extern char *__progname;
 char   *bootpfile = _PATH_BOOTPARAMS;
 
-extern char *optarg;
-extern int optind;
 
 static void
 usage(void)

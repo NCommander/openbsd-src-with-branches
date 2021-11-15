@@ -1,4 +1,4 @@
-/* $OpenBSD: syslogc.c,v 1.17 2014/11/26 18:34:52 millert Exp $ */
+/* $OpenBSD: syslogc.c,v 1.18 2015/10/13 16:30:55 deraadt Exp $ */
 
 /*
  * Copyright (c) 2004 Damien Miller
@@ -77,8 +77,6 @@ main(int argc, char **argv)
 	struct sockaddr_un ctl;
 	int ctlsock, ch, oflag, rval;
 	FILE *ctlf;
-	extern char *optarg;
-	extern int optind;
 	struct ctl_cmd cc;
 	struct ctl_reply_hdr rr;
 	const char *errstr;

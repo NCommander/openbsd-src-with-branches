@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)amq.c	8.1 (Berkeley) 6/7/93
- *	$Id: amq.c,v 1.20 2016/12/20 22:19:08 krw Exp $
+ *	$Id: amq.c,v 1.21 2017/01/21 08:33:51 krw Exp $
  */
 
 /*
@@ -58,9 +58,6 @@ static char *logfile;
 static char *xlog_optstr;
 static char localhost[] = "localhost";
 static char *def_server = localhost;
-
-extern int optind;
-extern char *optarg;
 
 static struct timeval tmo = { 10, 0 };
 #define	TIMEOUT tmo
