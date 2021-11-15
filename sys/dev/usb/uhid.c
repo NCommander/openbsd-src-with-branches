@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhid.c,v 1.86 2021/09/12 06:58:08 anton Exp $ */
+/*	$OpenBSD: uhid.c,v 1.87 2021/09/15 04:57:47 anton Exp $ */
 /*	$NetBSD: uhid.c,v 1.57 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -115,7 +115,7 @@ uhid_match(struct device *parent, void *match, void *aux)
 {
 	struct uhidev_attach_arg *uha = aux;
 
-	if (uha->reportid == UHIDEV_CLAIM_MULTIPLE_REPORTID)
+	if (UHIDEV_CLAIM_MULTIPLE_REPORTID(uha))
 		return (UMATCH_NONE);
 
 	return (UMATCH_IFACECLASS_GENERIC);
