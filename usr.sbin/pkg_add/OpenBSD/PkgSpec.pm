@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgSpec.pm,v 1.45 2014/03/07 09:45:53 espie Exp $
+# $OpenBSD: PkgSpec.pm,v 1.46 2019/10/13 16:22:30 espie Exp $
 #
 # Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
 #
@@ -196,7 +196,7 @@ sub parse
 	my $r = {};
 
 	# let's try really hard to find the stem and the flavors
-	unless ($p =~ m/^(.*?)\-((?:(?:\>|\>\=|\<\=|\<|\=)?\d|\*)[^-]*)(.*)$/) {
+	unless ($p =~ m/^(.*?)\-((?:\>|\>\=|\<\=|\<|\=)?\d[^-]*|\*)(.*)$/) {
 		return undef;
 	}
 	($r->{stemspec}, $r->{vspec}, $r->{flavorspec}) = ($1, $2, $3);
