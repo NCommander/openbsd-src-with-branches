@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwm.c,v 1.376 2021/10/11 09:03:22 stsp Exp $	*/
+/*	$OpenBSD: if_iwm.c,v 1.377 2021/10/12 11:20:32 landry Exp $	*/
 
 /*
  * Copyright (c) 2014, 2016 genua gmbh <info@genua.de>
@@ -8356,7 +8356,7 @@ iwm_phy_ctxt_update(struct iwm_softc *sc, struct iwm_phy_ctxt *phyctxt,
 		err = iwm_phy_ctxt_cmd(sc, phyctxt, chains_static,
 		    chains_dynamic, IWM_FW_CTXT_ACTION_ADD, apply_time, sco);
 		if (err) {
-			printf("%s: could not remove PHY context "
+			printf("%s: could not add PHY context "
 			    "(error %d)\n", DEVNAME(sc), err);
 			return err;
 		}
