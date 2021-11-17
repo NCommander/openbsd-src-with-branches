@@ -1,4 +1,4 @@
-.\" $OpenBSD: packages-specs.7,v 1.26 2020/03/26 14:58:35 paco Exp $
+.\" $OpenBSD: packages-specs.7,v 1.27 2020/03/26 19:31:39 jca Exp $
 .\"
 .\" Copyright (c) 2001 Marc Espie
 .\"
@@ -177,6 +177,14 @@ Note that, to uniquely identify the version part, no flavor shall ever
 start with a digit.
 Usually, flavored packages are slightly different versions of the same
 package that offer very similar functionalities.
+.Pp
+Also note that user commands have short-hands for installing new packages
+that are substantially different from formal
+.Nm
+(branch specifications and explicit flavoring).
+The special character
+.Sq %
+is explicitly forbidden in formal package names and specs.
 .Sh CONFLICTS
 Most conflicts between packages are handled on a package name basis.
 Unless the packages have been specially prepared, it is
