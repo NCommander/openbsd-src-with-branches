@@ -1,4 +1,4 @@
-.\" $OpenBSD: X509_STORE_CTX_set_flags.3,v 1.4 2021/10/18 14:46:37 schwarze Exp $
+.\" $OpenBSD: X509_STORE_CTX_set_flags.3,v 1.5 2021/10/18 18:20:39 schwarze Exp $
 .\" full merge up to: OpenSSL aae41f8c Jun 25 09:47:15 2015 +0100
 .\" selective merge up to: OpenSSL 24a535ea Sep 22 13:14:20 2020 +0100
 .\"
@@ -392,8 +392,11 @@ The other functions provide no diagnostics.
 .Sh SEE ALSO
 .Xr X509_STORE_CTX_get_error 3 ,
 .Xr X509_STORE_CTX_new 3 ,
+.Xr X509_STORE_CTX_set_verify 3 ,
+.Xr X509_STORE_CTX_set_verify_cb 3 ,
 .Xr X509_STORE_new 3 ,
 .Xr X509_STORE_set1_param 3 ,
+.Xr X509_STORE_set_verify_cb 3 ,
 .Xr X509_verify_cert 3 ,
 .Xr X509_VERIFY_PARAM_new 3 ,
 .Xr X509_VERIFY_PARAM_set_flags 3
