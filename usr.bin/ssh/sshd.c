@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.578 2021/07/19 02:21:50 dtucker Exp $ */
+/* $OpenBSD: sshd.c,v 1.579 2021/11/14 18:47:43 deraadt Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -251,7 +251,7 @@ close_listen_socks(void)
 
 	for (i = 0; i < num_listen_socks; i++)
 		close(listen_socks[i]);
-	num_listen_socks = -1;
+	num_listen_socks = 0;
 }
 
 static void
