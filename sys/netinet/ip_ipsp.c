@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.249 2021/10/27 16:58:44 bluhm Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.250 2021/11/16 13:53:14 bluhm Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -591,8 +591,8 @@ tdb_printit(void *addr, int full, int (*pr)(const char *, ...))
 		DUMP(ids_swapped, "%d");
 		DUMP(mtu, "%d");
 		DUMP(mtutimeout, "%lld");
-		pr("%18s: %08x\n", "udpencap_port",
-		    ntohl(tdb->tdb_udpencap_port));
+		pr("%18s: %d\n", "udpencap_port",
+		    ntohs(tdb->tdb_udpencap_port));
 		DUMP(tag, "%d");
 		DUMP(tap, "%d");
 		DUMP(rdomain, "%d");
