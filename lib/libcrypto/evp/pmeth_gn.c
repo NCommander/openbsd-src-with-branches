@@ -1,4 +1,4 @@
-/* $OpenBSD: pmeth_gn.c,v 1.5 2014/07/12 16:03:37 miod Exp $ */
+/* $OpenBSD: pmeth_gn.c,v 1.6 2017/01/29 17:49:23 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -187,7 +187,7 @@ trans_cb(int a, int b, BN_GENCB *gcb)
 void
 evp_pkey_set_cb_translate(BN_GENCB *cb, EVP_PKEY_CTX *ctx)
 {
-	BN_GENCB_set(cb, trans_cb, ctx)
+	BN_GENCB_set(cb, trans_cb, ctx);
 }
 
 int
