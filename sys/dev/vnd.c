@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.171 2019/11/27 16:12:13 beck Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.172 2021/10/09 14:47:02 deraadt Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -677,6 +677,8 @@ vndsetcred(struct proc *p, struct vnode *vp, struct vnd_ioctl *vio,
 	free(buf, M_TEMP, DEV_BSIZE);
 	if (error == 0)
 		*newcredp = new;
+	else
+		crfree(new);
 	return (error);
 }
 
