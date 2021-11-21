@@ -1,4 +1,4 @@
-/* $OpenBSD: ca.c,v 1.50 2021/10/22 09:44:30 tb Exp $ */
+/* $OpenBSD: ca.c,v 1.52 2021/11/21 22:33:08 theo Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1082,7 +1082,7 @@ ca_main(int argc, char **argv)
 		}
 		if (ca_config.verbose)
 			BIO_printf(bio_err, "message digest is %s\n",
-			    OBJ_nid2ln(dgst->type));
+			    OBJ_nid2ln(EVP_MD_type(dgst)));
 		if ((ca_config.policy == NULL) &&
 		    ((ca_config.policy = NCONF_get_string(conf,
 		    ca_config.section, ENV_POLICY)) == NULL)) {
