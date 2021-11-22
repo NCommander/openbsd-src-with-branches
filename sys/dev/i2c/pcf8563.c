@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcf8563.c,v 1.3 2021/01/13 11:01:19 kettenis Exp $	*/
+/*	$OpenBSD: pcf8563.c,v 1.4 2021/04/24 10:15:15 mpi Exp $	*/
 
 /*
  * Copyright (c) 2005 Kimihiro Nonaka
@@ -30,11 +30,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
-#include <sys/kernel.h>
-#include <sys/fcntl.h>
-#include <sys/uio.h>
-#include <sys/conf.h>
-#include <sys/event.h>
 
 #include <dev/clock_subr.h>
 
