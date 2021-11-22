@@ -1,4 +1,4 @@
-/* $OpenBSD: xhci.c,v 1.121 2021/02/24 03:08:47 jsg Exp $ */
+/* $OpenBSD: xhci.c,v 1.122 2021/10/26 16:29:49 deraadt Exp $ */
 
 /*
  * Copyright (c) 2014-2015 Martin Pieuchot
@@ -317,7 +317,7 @@ xhci_init(struct xhci_softc *sc)
 		return (error);
 
 	if (xhcixfer == NULL) {
-		xhcixfer = malloc(sizeof(struct pool), M_DEVBUF, M_NOWAIT);
+		xhcixfer = malloc(sizeof(struct pool), M_USBHC, M_NOWAIT);
 		if (xhcixfer == NULL) {
 			printf("%s: unable to allocate pool descriptor\n",
 			    DEVNAME(sc));

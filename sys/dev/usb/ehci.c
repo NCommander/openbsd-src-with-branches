@@ -1,4 +1,4 @@
-/*	$OpenBSD: ehci.c,v 1.214 2021/01/11 14:41:12 mglocker Exp $ */
+/*	$OpenBSD: ehci.c,v 1.215 2021/10/26 16:29:49 deraadt Exp $ */
 /*	$NetBSD: ehci.c,v 1.66 2004/06/30 03:11:56 mycroft Exp $	*/
 
 /*
@@ -331,7 +331,7 @@ ehci_init(struct ehci_softc *sc)
 		return (err);
 
 	if (ehcixfer == NULL) {
-		ehcixfer = malloc(sizeof(struct pool), M_DEVBUF, M_NOWAIT);
+		ehcixfer = malloc(sizeof(struct pool), M_USBHC, M_NOWAIT);
 		if (ehcixfer == NULL) {
 			printf("%s: unable to allocate pool descriptor\n",
 			    sc->sc_bus.bdev.dv_xname);

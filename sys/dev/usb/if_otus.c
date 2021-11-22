@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_otus.c,v 1.68 2020/11/30 16:09:33 krw Exp $	*/
+/*	$OpenBSD: if_otus.c,v 1.69 2021/02/25 02:48:20 dlg Exp $	*/
 
 /*-
  * Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>
@@ -884,7 +884,7 @@ otus_write_barrier(struct otus_softc *sc)
 struct ieee80211_node *
 otus_node_alloc(struct ieee80211com *ic)
 {
-	return malloc(sizeof (struct otus_node), M_DEVBUF, M_NOWAIT | M_ZERO);
+	return malloc(sizeof (struct otus_node), M_USBDEV, M_NOWAIT | M_ZERO);
 }
 
 int
