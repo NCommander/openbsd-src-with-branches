@@ -1,4 +1,4 @@
-/*	$OpenBSD: asr_debug.c,v 1.26 2019/07/03 03:24:03 deraadt Exp $	*/
+/*	$OpenBSD: asr_debug.c,v 1.27 2021/04/02 07:00:30 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -286,6 +286,7 @@ _asr_dump_config(FILE *f, struct asr *a)
 	PRINTOPT(RES_USE_EDNS0, "USE_EDNS0");
 	PRINTOPT(RES_USE_DNSSEC, "USE_DNSSEC");
 	PRINTOPT(RES_USE_CD, "USE_CD");
+	PRINTOPT(RES_TRUSTAD, "TRUSTAD");
 	if (o)
 		fprintf(f, " 0x%08x", o);
 	fprintf(f, "\n");
