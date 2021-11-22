@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukbd.c,v 1.83 2021/09/10 05:47:38 anton Exp $	*/
+/*	$OpenBSD: ukbd.c,v 1.84 2021/09/12 06:58:08 anton Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -200,6 +200,9 @@ ukbd_match(struct device *parent, void *match, void *aux)
 	struct uhidev_attach_arg *uha = (struct uhidev_attach_arg *)aux;
 	int size;
 	void *desc;
+
+	if (UHIDEV_CLAIM_MULTIPLE_REPORTID(uha))
+		return (UMATCH_NONE);
 
 	uhidev_get_report_desc(uha->parent, &desc, &size);
 	if (!hid_is_collection(desc, size, uha->reportid,
