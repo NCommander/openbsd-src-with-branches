@@ -1,4 +1,4 @@
-/*	$OpenBSD: tea5757.c,v 1.2 2001/12/06 16:28:18 mickey Exp $	*/
+/*	$OpenBSD: tea5757.c,v 1.3 2002/01/07 18:32:19 mickey Exp $	*/
 
 /*
  * Copyright (c) 2001 Vladimir Popov <jumbo@narod.ru>
@@ -159,7 +159,7 @@ tea5757_encode_lock(u_int8_t lock)
 		ret = TEA5757_S010;
 	else if (lock > 14 && lock < 51)
 		ret = TEA5757_S030;
-	else if (lock > 50)
+	else
 		ret = TEA5757_S150;
 
 	return ret;
