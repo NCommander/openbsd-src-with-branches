@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_smr.c,v 1.13 2021/11/24 09:47:49 claudio Exp $	*/
+/*	$OpenBSD: kern_smr.c,v 1.14 2021/11/24 13:16:00 visa Exp $	*/
 
 /*
  * Copyright (c) 2019-2020 Visa Hankala
@@ -85,7 +85,7 @@ smr_thread(void *arg)
 	struct timeval elapsed, end, loglast, start;
 	struct smr_entry_list deferred;
 	struct smr_entry *smr;
-	size_t count;
+	unsigned long count;
 
 	KERNEL_ASSERT_LOCKED();
 	KERNEL_UNLOCK();
