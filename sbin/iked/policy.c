@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.84 2021/10/12 10:01:59 tobhe Exp $	*/
+/*	$OpenBSD: policy.c,v 1.85 2021/10/26 17:31:22 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2020-2021 Tobias Heider <tobhe@openbsd.org>
@@ -644,7 +644,7 @@ sa_free_flows(struct iked *env, struct iked_saflows *head)
 		if (flow->flow_loaded)
 			RB_REMOVE(iked_flows, &env->sc_activeflows, flow);
 		TAILQ_REMOVE(head, flow, flow_entry);
-		(void)pfkey_flow_delete(env->sc_pfkey, flow);
+		(void)pfkey_flow_delete(env, flow);
 		flow_free(flow);
 	}
 }
