@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_kthread.c,v 1.43 2019/12/11 07:30:09 guenther Exp $	*/
+/*	$OpenBSD: kern_kthread.c,v 1.44 2020/02/21 11:10:23 claudio Exp $	*/
 /*	$NetBSD: kern_kthread.c,v 1.3 1998/12/22 21:21:36 kleink Exp $	*/
 
 /*-
@@ -37,14 +37,6 @@
 #include <sys/proc.h>
 #include <sys/malloc.h>
 #include <sys/queue.h>
-
-
-/*
- * note that stdarg.h and the ansi style va_start macro is used for both
- * ansi and traditional c compilers.
- * XXX: this requires that stdarg.h define: va_alist and va_dcl
- */
-#include <sys/stdarg.h>
 
 int	kthread_create_now;
 
