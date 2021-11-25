@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.129 2021/01/25 03:40:46 dlg Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.130 2021/02/08 19:37:15 jan Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -879,8 +879,10 @@ send:
 		if (tcp_signature(tdb, tp->pf, m, th, iphlen, 0,
 		    mtod(m, caddr_t) + hdrlen - optlen + sigoff) < 0) {
 			m_freem(m);
+			tdb_unref(tdb);
 			return (EINVAL);
 		}
+		tdb_unref(tdb);
 	}
 #endif /* TCP_SIGNATURE */
 
