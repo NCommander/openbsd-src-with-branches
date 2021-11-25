@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.148 2021/05/25 22:45:09 bluhm Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.148.2.1 2021/10/30 18:11:56 benno Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -689,6 +689,13 @@ unlock:
 	KERNEL_UNLOCK();
 	solock(so);
 	unp->unp_flags &= ~UNP_CONNECTING;
+
+	/*
+	 * The peer socket could be closed by concurrent thread
+	 * when `so' and `vp' are unlocked.
+	 */
+	if (error == 0 && unp->unp_conn == NULL)
+		error = ECONNREFUSED;
 
 	return (error);
 }
