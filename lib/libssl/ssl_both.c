@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_both.c,v 1.37 2021/10/23 13:12:55 tb Exp $ */
+/* $OpenBSD: ssl_both.c,v 1.38 2021/10/23 13:36:03 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -534,7 +534,7 @@ ssl_cert_type(X509 *x, EVP_PKEY *pkey)
 	if (pk == NULL)
 		goto err;
 
-	i = pk->type;
+	i = EVP_PKEY_id(pk);
 	if (i == EVP_PKEY_RSA) {
 		ret = SSL_PKEY_RSA;
 	} else if (i == EVP_PKEY_EC) {
