@@ -1,4 +1,4 @@
-.\"	$OpenBSD: vmm.4,v 1.6 2021/04/02 01:56:20 dv Exp $
+.\"	$OpenBSD: vmm.4,v 1.7 2021/04/02 06:09:44 jmc Exp $
 .\"
 .\"Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
 .\"
@@ -104,7 +104,7 @@ version) for a VM.
 .It Dv VMM_IOC_WRITEVMPARAMS Fa "struct vm_rwvmparams_params *"
 Write paravirtualized hardware parameters (such as
 .Xr pvclock 4
-guest physical addresss) for a VM.
+guest physical address) for a VM.
 .It Dv VMM_IOC_MPROTECT_EPT Fa "struct vm_mprotect_ept_params *"
 Set access protections on guest page table entries
 (only supported on hosts providing EPT or RVI).
