@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.197 2021/11/24 21:06:21 tobhe Exp $	*/
+/*	$OpenBSD: iked.h,v 1.198 2021/11/26 16:22:44 patrick Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -597,7 +597,7 @@ struct iked_message {
 	uint16_t		 msg_dhgroup;	/* dh group */
 	struct ibuf		*msg_ke;	/* dh key exchange */
 	struct iked_id		 msg_auth;	/* AUTH payload */
-	struct iked_id		 msg_id;
+	struct iked_id		 msg_peerid;
 	struct iked_id		 msg_localid;
 	struct iked_id		 msg_cert;
 	struct ibuf		*msg_cookie;
