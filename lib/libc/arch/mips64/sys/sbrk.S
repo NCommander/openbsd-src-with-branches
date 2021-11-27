@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbrk.S,v 1.7 2015/09/05 06:22:47 guenther Exp $ */
+/*	$OpenBSD: sbrk.S,v 1.8 2016/05/30 05:18:52 guenther Exp $ */
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -45,8 +45,6 @@ __curbrk:	PTR_VAL	_C_LABEL(_end)
 FRAMESZ= MKFSIZ(1,1)
 GPOFF= FRAMESZ-2*REGSZ
 
-	.weak	sbrk
-
 LEAF(sbrk, FRAMESZ)
 	PTR_SUBU sp, FRAMESZ
 	SETUP_GP64(GPOFF, sbrk)
@@ -68,3 +66,4 @@ LEAF(sbrk, FRAMESZ)
 	PTR_ADDU sp, FRAMESZ
 	jr	t9
 END(sbrk)
+	.weak	sbrk
