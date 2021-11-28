@@ -1,4 +1,4 @@
-/*	$OpenBSD: utvfu.c,v 1.12 2021/11/22 10:17:14 mglocker Exp $ */
+/*	$OpenBSD: utvfu.c,v 1.13 2021/11/24 21:57:56 mglocker Exp $ */
 /*
  * Copyright (c) 2013 Lubomir Rintel
  * Copyright (c) 2013 Federico Simoncelli
@@ -535,6 +535,10 @@ utvfu_enum_fsizes(void *v, struct v4l2_frmsizeenum *fsizes)
 	struct utvfu_softc *sc = v;
 
 	if (fsizes->pixel_format != V4L2_PIX_FMT_YUYV)
+		return (EINVAL);
+
+	/* The device only supports one frame size. */
+	if (fsizes->index >= 1)
 		return (EINVAL);
 
 	fsizes->type = V4L2_FRMSIZE_TYPE_DISCRETE;
