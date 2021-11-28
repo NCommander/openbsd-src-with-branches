@@ -1,4 +1,4 @@
-/*	$OpenBSD: xinstall.c,v 1.74 2020/04/07 09:40:09 espie Exp $	*/
+/*	$OpenBSD: xinstall.c,v 1.75 2021/10/24 21:24:18 deraadt Exp $	*/
 /*	$NetBSD: xinstall.c,v 1.9 1995/12/20 10:25:17 jonathan Exp $	*/
 
 /*
@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>	/* MAXBSIZE */
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -50,6 +50,8 @@
 #include <libgen.h>
 
 #include "pathnames.h"
+
+#define _MAXBSIZE (64 * 1024)
 
 #define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
 
@@ -403,7 +405,7 @@ copy(int from_fd, char *from_name, int to_fd, char *to_name, off_t size,
 {
 	ssize_t nr, nw;
 	int serrno;
-	char *p, buf[MAXBSIZE];
+	char *p, buf[_MAXBSIZE];
 
 	if (size == 0)
 		return;
