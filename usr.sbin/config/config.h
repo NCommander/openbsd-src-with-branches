@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.h,v 1.30 2017/06/22 15:57:16 deraadt Exp $	*/
+/*	$OpenBSD: config.h,v 1.31 2021/01/26 18:23:49 deraadt Exp $	*/
 /*	$NetBSD: config.h,v 1.30 1997/02/02 21:12:30 thorpej Exp $	*/
 
 /*
@@ -353,6 +353,7 @@ int	mkioconf(void);
 int	mkmakefile(void);
 
 /* mkswap.c */
+extern dev_t nodev;
 int	mkswap(void);
 
 /* pack.c */

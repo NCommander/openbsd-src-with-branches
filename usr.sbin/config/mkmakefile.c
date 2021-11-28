@@ -1,4 +1,4 @@
-/*	$OpenBSD: mkmakefile.c,v 1.46 2019/04/01 07:04:38 deraadt Exp $	*/
+/*	$OpenBSD: mkmakefile.c,v 1.47 2019/06/28 13:33:55 deraadt Exp $	*/
 /*	$NetBSD: mkmakefile.c,v 1.34 1997/02/02 21:12:36 thorpej Exp $	*/
 
 /*
@@ -211,7 +211,6 @@ srcpath(struct files *fi)
 		expand = expandname(nv->nv_name);
 		source = sourcepath(expand ? expand : nv->nv_name);
 		if (access(source, R_OK) == 0) {
-			/* XXX poolalloc() prevents freeing old nv_name */
 			if (expand)
 				nv->nv_name = intern(expand);
 			break;
