@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.198 2021/11/26 16:22:44 patrick Exp $	*/
+/*	$OpenBSD: iked.h,v 1.199 2021/11/27 21:50:05 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -28,6 +28,10 @@
 
 #include "types.h"
 #include "dh.h"
+
+#define MAXIMUM(a,b) (((a)>(b))?(a):(b))
+#define MINIMUM(a,b) (((a)<(b))?(a):(b))
+#define roundup(x, y)   ((((x)+((y)-1))/(y))*(y))
 
 #ifndef IKED_H
 #define IKED_H
