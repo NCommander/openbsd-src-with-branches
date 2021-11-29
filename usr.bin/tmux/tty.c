@@ -1,4 +1,4 @@
-/* $OpenBSD: tty.c,v 1.410 2021/11/01 09:34:49 nicm Exp $ */
+/* $OpenBSD: tty.c,v 1.411 2021/11/03 13:37:17 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -302,7 +302,7 @@ tty_start_tty(struct tty *tty)
 {
 	struct client	*c = tty->client;
 	struct termios	 tio;
-	struct timeval	 tv = { .tv_sec = 1 };
+	struct timeval	 tv = { .tv_sec = 3 };
 
 	setblocking(c->fd, 0);
 	event_add(&tty->event_in, NULL);
