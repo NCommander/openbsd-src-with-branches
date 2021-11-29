@@ -1,4 +1,4 @@
-/*	$OpenBSD: fts.c,v 1.59 2019/06/28 13:32:41 deraadt Exp $	*/
+/*	$OpenBSD: fts.c,v 1.60 2021/01/08 16:06:30 tb Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -29,7 +29,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>	/* ALIGN */
+#include <sys/param.h>	/* ALIGN ALIGNBYTES */
 #include <sys/stat.h>
 
 #include <dirent.h>
