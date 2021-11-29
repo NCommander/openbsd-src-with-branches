@@ -1,4 +1,4 @@
-/*	$OpenBSD: priv.c,v 1.17 2021/03/29 23:37:01 dv Exp $	*/
+/*	$OpenBSD: priv.c,v 1.18 2021/11/10 20:49:04 sthen Exp $	*/
 
 /*
  * Copyright (c) 2016 Reyk Floeter <reyk@openbsd.org>
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>	/* nitems */
+#include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
