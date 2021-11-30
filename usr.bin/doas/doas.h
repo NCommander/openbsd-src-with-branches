@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.h,v 1.17 2021/01/27 17:02:50 millert Exp $ */
+/* $OpenBSD: doas.h,v 1.18 2021/09/07 13:46:07 jcs Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -27,7 +27,7 @@ struct rule {
 
 extern struct rule **rules;
 extern size_t nrules;
-extern int parse_errors;
+extern int parse_error;
 
 extern const char *formerpath;
 
