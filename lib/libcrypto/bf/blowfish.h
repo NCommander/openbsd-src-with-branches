@@ -1,4 +1,4 @@
-/* $OpenBSD: blowfish.h,v 1.13 2014/06/12 15:49:28 deraadt Exp $ */
+/* $OpenBSD: blowfish.h,v 1.14 2014/07/10 09:01:04 miod Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -84,11 +84,10 @@ extern "C" {
 #define BF_ROUNDS	16
 #define BF_BLOCK	8
 
-typedef struct bf_key_st
-	{
+typedef struct bf_key_st {
 	BF_LONG P[BF_ROUNDS+2];
 	BF_LONG S[4*256];
-	} BF_KEY;
+} BF_KEY;
 
 void BF_set_key(BF_KEY *key, int len, const unsigned char *data);
 
