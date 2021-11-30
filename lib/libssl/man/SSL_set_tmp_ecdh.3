@@ -1,4 +1,4 @@
-.\"	$OpenBSD: SSL_set_tmp_ecdh.3,v 1.4 2018/03/23 00:10:28 schwarze Exp $
+.\"	$OpenBSD: SSL_set_tmp_ecdh.3,v 1.5 2018/03/23 14:28:16 schwarze Exp $
 .\"
 .\" Copyright (c) 2017 Ingo Schwarze <schwarze@openbsd.org>
 .\"
@@ -60,7 +60,7 @@
 .Sh DESCRIPTION
 Automatic EC curve selection and generation is always enabled in
 LibreSSL, and applications cannot manually provide EC keys for use
-with ECDHE key exchange.
+with ECDH key exchange.
 .Pp
 The only remaining effect of
 .Fn SSL_set_tmp_ecdh
