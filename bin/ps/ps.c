@@ -1,4 +1,4 @@
-/*	$OpenBSD: ps.c,v 1.76 2019/12/16 19:21:16 guenther Exp $	*/
+/*	$OpenBSD: ps.c,v 1.77 2021/07/12 15:09:18 beck Exp $	*/
 /*	$NetBSD: ps.c,v 1.15 1995/05/18 20:33:25 mycroft Exp $	*/
 
 /*-
@@ -30,8 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>	/* MAXCOMLEN NODEV */
+#include <sys/param.h>	/* NODEV */
 #include <sys/types.h>
+#include <sys/signal.h>
 #include <sys/sysctl.h>
 #include <sys/time.h>
 #include <sys/resource.h>
