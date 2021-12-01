@@ -1,4 +1,4 @@
-/* $OpenBSD: unconacc.c,v 1.2 2021/11/29 21:21:26 mvs Exp $ */
+/* $OpenBSD: unconacc.c,v 1.3 2021/11/29 21:25:09 mvs Exp $ */
 
 /*
  * Copyright (c) 2021 Vitaliy Makkoveev <mvs@openbsd.org>
@@ -119,6 +119,8 @@ thr_conn(void *arg)
 	return NULL;
 }
 
+static struct sockaddr_un sun;
+
 int
 main(int argc, char *argv[])
 {
@@ -127,7 +129,6 @@ main(int argc, char *argv[])
 		.tv_nsec = 0,
 	};
 
-	struct sockaddr_un sun;
 	int s;
 
 	int mib[2], ncpu;
