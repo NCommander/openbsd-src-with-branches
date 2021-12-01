@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_arm.c,v 1.9 2015/12/19 18:40:30 mmcc Exp $	*/
+/*	$OpenBSD: kvm_arm64.c,v 1.1 2017/01/11 14:32:36 patrick Exp $	*/
 /*
  * Copyright (c) 2006 Miodrag Vallat.
  *
@@ -50,10 +50,10 @@
  * ARM64 machine dependent routines for kvm.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXCOMLEN for sys/core.h */
+#include <sys/types.h>
 #include <sys/core.h>
 #include <sys/kcore.h>
-#include <sys/vnode.h>
 
 #include <unistd.h>
 #include <stdlib.h>

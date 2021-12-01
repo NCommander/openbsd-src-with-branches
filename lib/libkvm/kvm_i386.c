@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_i386.c,v 1.26 2015/04/07 05:50:40 guenther Exp $ */
+/*	$OpenBSD: kvm_i386.c,v 1.27 2015/12/19 18:40:30 mmcc Exp $ */
 /*	$NetBSD: kvm_i386.c,v 1.9 1996/03/18 22:33:38 thorpej Exp $	*/
 
 /*-
@@ -39,7 +39,8 @@
  * vm code will one day obsolete this module.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/signal.h>
 #include <sys/proc.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -48,6 +49,7 @@
 #include <kvm.h>
 
 #include <uvm/uvm_extern.h>
+#include <machine/param.h>
 #include <machine/vmparam.h>
 #include <machine/pmap.h>
 

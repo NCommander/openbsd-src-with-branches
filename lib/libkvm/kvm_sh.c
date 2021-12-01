@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_sh.c,v 1.6 2013/03/28 16:27:31 deraadt Exp $	*/
+/*	$OpenBSD: kvm_sh.c,v 1.7 2020/06/28 09:45:12 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2007 Miodrag Vallat.
@@ -17,10 +17,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXCOMLEN */
+#include <sys/types.h>
 #include <sys/core.h>
 #include <sys/kcore.h>
-#include <sys/vnode.h>
 
 #include <unistd.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kvm_mips64.c,v 1.15 2015/02/09 22:23:47 miod Exp $ */
+/*	$OpenBSD: kvm_mips64.c,v 1.16 2018/05/03 16:42:07 zhuk Exp $ */
 /*	$NetBSD: kvm_mips.c,v 1.3 1996/03/18 22:33:44 thorpej Exp $	*/
 
 /*-
@@ -39,7 +39,8 @@
  * vm code will one day obsolete this module.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/signal.h>
 #include <sys/proc.h>
 #include <sys/stat.h>
 #include <sys/sysctl.h>
