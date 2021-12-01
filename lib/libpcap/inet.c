@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet.c,v 1.24 2015/12/22 19:51:04 mmcc Exp $	*/
+/*	$OpenBSD: inet.c,v 1.25 2019/06/28 13:32:42 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995, 1996, 1997, 1998
@@ -41,9 +41,6 @@
 #include <sys/sockio.h>
 #endif
 #include <sys/time.h>				/* concession to AIX */
-
-struct mbuf;
-struct rtentry;
 
 #include <net/if.h>
 #include <netinet/in.h>

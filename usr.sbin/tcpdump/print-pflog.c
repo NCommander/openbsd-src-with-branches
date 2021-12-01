@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-pflog.c,v 1.32 2018/10/22 16:12:45 kn Exp $	*/
+/*	$OpenBSD: print-pflog.c,v 1.33 2021/01/20 13:40:15 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996
@@ -27,13 +27,10 @@
 #include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/queue.h>
-#include <sys/mbuf.h>
 
 #ifndef NO_PID
 #define NO_PID	(99999+1)
 #endif
-
-struct rtentry;
 
 #include <netinet/in.h>
 #include <netinet/ip.h>

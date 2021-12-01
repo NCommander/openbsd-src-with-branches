@@ -1,4 +1,4 @@
-/*	$OpenBSD: addrtoname.c,v 1.38 2018/10/22 16:12:45 kn Exp $	*/
+/*	$OpenBSD: addrtoname.c,v 1.39 2018/12/20 03:39:29 dlg Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -28,8 +28,6 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-struct mbuf;
-struct rtentry;
 #include <net/if.h>
 
 #include <netinet/in.h>

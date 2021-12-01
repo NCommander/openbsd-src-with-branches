@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencode.c,v 1.56 2020/09/12 09:27:22 kn Exp $	*/
+/*	$OpenBSD: gencode.c,v 1.57 2021/01/18 09:26:35 sthen Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
@@ -25,9 +25,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
-
-struct mbuf;
-struct rtentry;
 
 #include <net/if.h>
 

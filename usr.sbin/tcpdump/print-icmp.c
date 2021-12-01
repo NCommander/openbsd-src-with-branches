@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-icmp.c,v 1.25 2015/01/16 06:40:21 deraadt Exp $	*/
+/*	$OpenBSD: print-icmp.c,v 1.26 2020/01/24 22:46:36 procter Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1993, 1994, 1995, 1996
@@ -24,8 +24,6 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 
-struct mbuf;
-struct rtentry;
 #include <net/if.h>
 
 #include <netinet/in.h>

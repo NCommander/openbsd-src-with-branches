@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-atm.c,v 1.13 2018/10/22 16:12:45 kn Exp $	*/
+/*	$OpenBSD: print-atm.c,v 1.14 2020/01/24 22:46:36 procter Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995, 1996, 1997
@@ -24,8 +24,6 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 
-struct mbuf;
-struct rtentry;
 #include <net/if.h>
 
 #include <netinet/in.h>

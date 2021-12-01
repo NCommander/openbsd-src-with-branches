@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-isoclns.c,v 1.13 2015/11/16 00:16:39 mmcc Exp $	*/
+/*	$OpenBSD: print-isoclns.c,v 1.14 2020/01/24 22:46:37 procter Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993, 1994, 1995, 1996
@@ -27,8 +27,6 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 
-struct mbuf;
-struct rtentry;
 #include <net/if.h>
 
 #include <netinet/in.h>
