@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.22 2021/09/16 10:54:35 anton Exp $
+# $OpenBSD: Makefile,v 1.23 2021/10/03 22:01:48 dv Exp $
 
 BTRACE?=		 /usr/sbin/btrace
 ALLOWDT!=		sysctl -n kern.allowdt
@@ -39,6 +39,7 @@ run-$b:
 	${SUDO} ${BTRACE} ${.CURDIR}/$b.bt 2>&1 | \
 		diff -u ${.CURDIR}/$b.ok /dev/stdin
 .else
+	@echo 'Set "sysctl kern.allowdt=1" to enable $@ tests'
 	@echo SKIPPED
 .endif
 .endfor
