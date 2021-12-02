@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.13 2020/12/17 00:51:13 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.14 2021/10/05 17:40:08 anton Exp $
 
 # The following ports must be installed for the regression tests:
 # p5-IO-Socket-INET6	object interface for AF_INET and AF_INET6 domain sockets
@@ -16,7 +16,7 @@ PERL_REQUIRE !=	perl -Mstrict -Mwarnings -e ' \
 .if ! empty (PERL_REQUIRE)
 regress:
 	@echo "${PERL_REQUIRE}"
-	@echo install these perl packages for additional tests
+	@echo 'run "pkg_add p5-IO-Socket-INET6 p5-Socket6 p5-IO-Socket-SSL"'
 	@echo SKIPPED
 .endif
 

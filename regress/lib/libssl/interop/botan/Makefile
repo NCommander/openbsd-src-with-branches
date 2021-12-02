@@ -1,14 +1,16 @@
-# $OpenBSD: Makefile,v 1.3 2020/10/30 03:12:40 tb Exp $
+# $OpenBSD: Makefile,v 1.4 2020/12/17 00:51:11 bluhm Exp $
 
 .include <bsd.own.mk>
 
 .if ! exists(/usr/local/bin/botan)
 regress:
 	# install botan2 from ports for interop tests
+	@echo 'Run "pkg_add botan2" to run tests against Botan 2'
 	@echo SKIPPED
 .elif (${COMPILER_VERSION:L} != "clang" && ! exists(/usr/local/bin/eg++))
 regress:
 	# on gcc-archs install g++ from ports for botan2 interop tests
+	@echo 'Run "pkg_add g++" to run tests against Botan 2 on GCC architectures'
 	@echo SKIPPED
 .else
 
