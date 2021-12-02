@@ -1,4 +1,4 @@
-/*	$OpenBSD: lam.c,v 1.21 2018/07/11 11:42:17 schwarze Exp $	*/
+/*	$OpenBSD: lam.c,v 1.22 2018/07/29 11:27:14 schwarze Exp $	*/
 /*	$NetBSD: lam.c,v 1.2 1994/11/14 20:27:42 jtc Exp $	*/
 
 /*-
@@ -263,7 +263,7 @@ usage(void)
 	extern char *__progname;
 
 	fprintf(stderr,
-	    "usage: %s [-f min.max] [-p min.max] [-s sepstring] [-t c] file ...\n",
+	    "usage: %s [-F|f min.max] [-P|p min.max] [-S|s sepstring] [-T|t c] file ...\n",
 	    __progname);
 	exit(1);
 }
