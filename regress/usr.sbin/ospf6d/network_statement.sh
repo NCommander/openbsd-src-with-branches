@@ -1,5 +1,5 @@
 #!/bin/ksh
-#	$OpenBSD: network_statement.sh,v 1.3 2020/06/12 13:27:43 denis Exp $
+#	$OpenBSD: network_statement.sh,v 1.4 2021/10/07 15:20:35 anton Exp $
 set -e
 
 OSPF6D=$1
@@ -96,6 +96,7 @@ sleep 50
 
 echo tests
 route -T ${RDOMAIN1} exec ospf6ctl sh fib
+route -T ${RDOMAIN1} exec ospf6ctl sh rib
 route -T ${RDOMAIN1} exec ospf6ctl sh rib | \
     grep "2001:db8:aaaa::${RDOMAIN2}/128"
 route -T ${RDOMAIN1} exec ospf6ctl sh rib | \
