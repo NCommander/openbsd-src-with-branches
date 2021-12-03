@@ -383,19 +383,16 @@ ASN1_STRING_free(ASN1_STRING *a)
 int
 ASN1_STRING_cmp(const ASN1_STRING *a, const ASN1_STRING *b)
 {
-	int i;
+	int cmp;
 
 	if (a == NULL || b == NULL)
 		return -1;
-	i = (a->length - b->length);
-	if (i == 0) {
-		i = memcmp(a->data, b->data, a->length);
-		if (i == 0)
-			return (a->type - b->type);
-		else
-			return (i);
-	} else
-		return (i);
+	if ((cmp = (a->length - b->length)) != 0)
+		return cmp;
+	if ((cmp = memcmp(a->data, b->data, a->length)) != 0)
+		return cmp;
+
+	return (a->type - b->type);
 }
 
 void
