@@ -1,4 +1,4 @@
-/* $OpenBSD: ech_key.c,v 1.10 2021/04/20 17:16:38 tb Exp $ */
+/* $OpenBSD: ech_key.c,v 1.11 2021/04/20 17:23:37 tb Exp $ */
 /* ====================================================================
  * Copyright 2002 Sun Microsystems, Inc. ALL RIGHTS RESERVED.
  *
@@ -77,6 +77,7 @@
 #include <openssl/obj_mac.h>
 #include <openssl/sha.h>
 
+#include "bn_lcl.h"
 #include "ech_locl.h"
 #include "ec_lcl.h"
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: pmeth_gn.c,v 1.6 2017/01/29 17:49:23 beck Exp $ */
+/* $OpenBSD: pmeth_gn.c,v 1.7 2021/11/18 18:05:27 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -64,6 +64,7 @@
 #include <openssl/evp.h>
 #include <openssl/objects.h>
 
+#include "bn_lcl.h"
 #include "evp_locl.h"
 
 int

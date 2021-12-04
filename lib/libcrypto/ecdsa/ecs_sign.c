@@ -1,4 +1,4 @@
-/* $OpenBSD: ecs_sign.c,v 1.6 2015/02/08 13:35:07 jsing Exp $ */
+/* $OpenBSD: ecs_sign.c,v 1.7 2019/01/19 01:07:00 tb Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -59,6 +59,7 @@
 #include <openssl/engine.h>
 #endif
 
+#include "bn_lcl.h"
 #include "ecs_locl.h"
 #include "ec_lcl.h"
 

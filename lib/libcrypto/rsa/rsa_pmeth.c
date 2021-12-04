@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_pmeth.c,v 1.30 2019/10/31 13:10:40 jsing Exp $ */
+/* $OpenBSD: rsa_pmeth.c,v 1.32 2019/10/31 14:05:30 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -70,6 +70,7 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
+#include "bn_lcl.h"
 #include "evp_locl.h"
 #include "rsa_locl.h"
 
