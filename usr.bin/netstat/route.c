@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.106 2020/12/29 19:51:52 benno Exp $	*/
+/*	$OpenBSD: route.c,v 1.107 2021/03/17 09:03:51 claudio Exp $	*/
 /*	$NetBSD: route.c,v 1.15 1996/05/07 02:55:06 thorpej Exp $	*/
 
 /*
@@ -32,7 +32,6 @@
 
 #include <sys/types.h>
 #include <sys/protosw.h>
-#include <sys/select.h>
 #include <sys/socket.h>
 
 #include <net/if.h>
