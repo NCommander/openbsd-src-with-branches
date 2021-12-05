@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhidpp.c,v 1.18 2021/08/17 11:30:45 anton Exp $	*/
+/*	$OpenBSD: uhidpp.c,v 1.19 2021/11/17 06:22:14 anton Exp $	*/
 
 /*
  * Copyright (c) 2021 Anton Lindqvist <anton@openbsd.org>
@@ -366,12 +366,14 @@ uhidpp_attach(struct device *parent, struct device *self, void *aux)
 	error = uhidev_set_report_dev(sc->sc_hdev.sc_parent, &sc->sc_hdev,
 	    HIDPP_REPORT_ID_SHORT);
 	if (error) {
+		mtx_leave(&sc->sc_mtx);
 		printf(" short report error %d\n", error);
 		return;
 	}
 	error = uhidev_set_report_dev(sc->sc_hdev.sc_parent, &sc->sc_hdev,
 	    HIDPP_REPORT_ID_LONG);
 	if (error) {
+		mtx_leave(&sc->sc_mtx);
 		printf(" long report error %d\n", error);
 		return;
 	}
