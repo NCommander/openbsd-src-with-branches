@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.163 2020/10/07 12:26:20 mpi Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.164 2021/03/26 13:40:05 mpi Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -1073,8 +1073,6 @@ uvm_mmapfile(vm_map_t map, vaddr_t *addr, vsize_t size, vm_prot_t prot,
 	return error;
 }
 
-/* an address that can't be in userspace or kernelspace */
-#define	BOGO_PC	(u_long)-1
 int
 sys_kbind(struct proc *p, void *v, register_t *retval)
 {
