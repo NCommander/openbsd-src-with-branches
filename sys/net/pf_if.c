@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_if.c,v 1.100 2020/06/24 22:03:42 cheloha Exp $ */
+/*	$OpenBSD: pf_if.c,v 1.101 2021/11/11 12:35:01 sashan Exp $ */
 
 /*
  * Copyright 2005 Henning Brauer <henning@openbsd.org>
@@ -107,9 +107,8 @@ pfi_kif_free(struct pfi_kif *kif)
 	if (kif == NULL)
 		return;
 
-	if ((kif->pfik_rules != 0) || (kif->pfik_states != 0) ||
-	    (kif->pfik_states != 0) || (kif->pfik_states != 0) ||
-	    (kif->pfik_srcnodes != 0))
+	if (kif->pfik_rules || kif->pfik_states || kif->pfik_routes ||
+	    kif->pfik_srcnodes)
 		panic("kif is still alive");
 
 	free(kif, PFI_MTYPE, sizeof(*kif));
