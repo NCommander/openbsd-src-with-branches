@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.64 2021/05/13 16:08:16 kettenis Exp $ */
+/* $OpenBSD: machdep.c,v 1.65 2021/07/02 20:39:25 kettenis Exp $ */
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
@@ -476,7 +476,7 @@ cpu_dump(void)
 	cpuhdrp->kerneloffs = 0;
 	cpuhdrp->staticsize = 0;
 	cpuhdrp->pmap_kernel_l1 = 0;
-	cpuhdrp->pmap_kernel_l1 = 0;
+	cpuhdrp->pmap_kernel_l2 = 0;
 
 #if 0
 	/*
