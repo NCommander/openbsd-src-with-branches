@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.400 2021/10/30 23:24:46 deraadt Exp $ */
+/* $OpenBSD: acpi.c,v 1.401 2021/11/02 02:17:56 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -3272,7 +3272,7 @@ acpi_parse_resources(int crsidx, union acpi_resource *crs, void *arg)
 	case SR_IRQ:
 		aaa->aaa_irq[aaa->aaa_nirq] = ffs(crs->sr_irq.irq_mask) - 1;
 		/* Default is exclusive, active-high, edge triggered. */
-		if (AML_CRSLEN(crs) < 3)
+		if (AML_CRSLEN(crs) < 4)
 			flags = SR_IRQ_MODE;
 		else
 			flags = crs->sr_irq.irq_flags;
