@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_conf.c,v 1.36 2019/11/28 04:34:50 guenther Exp $	*/
+/*	$OpenBSD: exec_conf.c,v 1.37 2021/03/21 11:29:38 semarie Exp $	*/
 /*	$NetBSD: exec_conf.c,v 1.16 1995/12/09 05:34:47 cgd Exp $	*/
 
 /*
@@ -35,8 +35,6 @@
 #include <sys/exec.h>
 #include <sys/exec_script.h>
 #include <sys/exec_elf.h>
-
-extern struct emul emul_native;
 
 const struct execsw execsw[] = {
 	{	/* shell scripts */
