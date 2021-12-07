@@ -1,4 +1,4 @@
-/*	$OpenBSD: lsearch.c,v 1.4 2009/10/27 23:59:59 deraadt Exp $	*/
+/*	$OpenBSD: lsearch.c,v 1.5 2014/07/18 04:16:09 matthew Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -79,6 +79,11 @@ linear_base(const void *key, const void *base, size_t *nelp, size_t width,
 	 * manual.
 	 */
 	++*nelp;
-	memcpy((void *)end, key, width);
+
+	/*
+	 * Use memmove(3) to ensure the key is copied cleanly into the
+	 * array, even if the key overlaps with the end of the array.
+	 */
+	memmove((void *)end, key, width);
 	return((void *)end);
 }
