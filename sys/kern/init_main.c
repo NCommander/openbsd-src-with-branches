@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.308 2021/06/30 12:21:02 bluhm Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.309 2021/12/06 21:21:10 guenther Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -170,7 +170,6 @@ struct emul emul_native = {
 #else
 	NULL,
 #endif
-	0,
 	setregs,
 	NULL,		/* fixup */
 	NULL,		/* coredump */
