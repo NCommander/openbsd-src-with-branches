@@ -1,4 +1,4 @@
-/* $OpenBSD: bio_lib.c,v 1.29 2019/04/14 17:39:03 jsing Exp $ */
+/* $OpenBSD: bio_lib.c,v 1.30 2021/10/24 13:46:56 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -391,10 +391,10 @@ BIO_gets(BIO *b, char *in, int inl)
 int
 BIO_indent(BIO *b, int indent, int max)
 {
-	if (indent < 0)
-		indent = 0;
 	if (indent > max)
 		indent = max;
+	if (indent < 0)
+		indent = 0;
 	while (indent--)
 		if (BIO_puts(b, " ") != 1)
 			return 0;
