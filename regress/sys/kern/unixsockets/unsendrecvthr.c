@@ -1,4 +1,4 @@
-/* $OpenBSD: unsendrecvthr.c,v 1.1 2021/11/19 17:07:10 mvs Exp $ */
+/* $OpenBSD: unsendrecvthr.c,v 1.2 2021/11/29 21:25:09 mvs Exp $ */
 
 /*
  * Copyright (c) 2021 Vitaliy Makkoveev <mvs@openbsd.org>
