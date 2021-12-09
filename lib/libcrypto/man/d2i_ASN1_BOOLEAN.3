@@ -1,4 +1,4 @@
-.\" $OpenBSD: d2i_ASN1_BOOLEAN.3,v 1.1 2021/11/21 15:11:01 schwarze Exp $
+.\" $OpenBSD: d2i_ASN1_BOOLEAN.3,v 1.2 2021/11/21 15:16:45 schwarze Exp $
 .\"
 .\" Copyright (c) 2021 Ingo Schwarze <schwarze@openbsd.org>
 .\"
@@ -47,6 +47,8 @@ Instead,
 .Vt ASN1_BOOLEAN
 is simply an alias for the type
 .Vt int .
+This type is also represented by the type identifier constant
+.Dv V_ASN1_BOOLEAN .
 .Pp
 .Fn d2i_ASN1_BOOLEAN
 verifies that the BER-encoded value at
