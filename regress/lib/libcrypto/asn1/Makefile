@@ -2,6 +2,7 @@
 
 TESTS = \
 	asn1basic \
+	asn1complex \
 	asn1evp \
 	asn1string_copy \
 	asn1time \
