@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.6 2021/11/13 20:50:14 schwarze Exp $
+#	$OpenBSD: Makefile,v 1.7 2021/11/30 07:34:29 jsing Exp $
 
 TESTS = \
+	asn1basic \
 	asn1evp \
 	asn1string_copy \
 	asn1time \
