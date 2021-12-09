@@ -1,4 +1,4 @@
-.\" $OpenBSD: ASN1_NULL_new.3,v 1.1 2021/11/22 16:19:54 schwarze Exp $
+.\" $OpenBSD: ASN1_NULL_new.3,v 1.2 2021/11/22 19:32:32 job Exp $
 .\"
 .\" Copyright (c) 2021 Ingo Schwarze <schwarze@openbsd.org>
 .\"
@@ -47,6 +47,10 @@ obtained from
 .Fn ASN1_NULL_new
 to this function.
 But even if a valid pointer is passed, that pointer does not become invalid.
+.Pp
+The ASN.1 NULL type is also represented by the
+.Dv V_ASN1_NULL
+type identifier constant.
 .Sh SEE ALSO
 .Xr ASN1_item_new 3 ,
 .Xr d2i_ASN1_NULL 3
