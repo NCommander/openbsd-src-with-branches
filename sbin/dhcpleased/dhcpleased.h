@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpleased.h,v 1.10 2021/08/01 09:07:03 florian Exp $	*/
+/*	$OpenBSD: dhcpleased.h,v 1.11 2021/08/12 12:41:08 florian Exp $	*/
 
 /*
  * Copyright (c) 2017, 2021 Florian Obser <florian@openbsd.org>
@@ -287,15 +287,10 @@ struct imsg_dhcp {
 	uint8_t			packet[1500];
 };
 
-
-struct imsg_req_discover {
+struct imsg_req_dhcp {
 	uint32_t		if_index;
 	uint32_t		xid;
-};
-
-struct imsg_req_request {
-	uint32_t		if_index;
-	uint32_t		xid;
+	struct in_addr		ciaddr;
 	struct in_addr		requested_ip;
 	struct in_addr		server_identifier;
 	struct in_addr		dhcp_server;
