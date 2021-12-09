@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: unfdpassfail.c,v 1.1 2021/05/27 20:23:53 mvs Exp $ */
 
 /*
  * Copyright (c) 2021 Vitaliy Makkoveev <mvs@openbsd.org>
