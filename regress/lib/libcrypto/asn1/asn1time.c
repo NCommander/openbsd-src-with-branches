@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1time.c,v 1.7 2015/10/25 11:59:37 miod Exp $ */
+/* $OpenBSD: asn1time.c,v 1.8 2015/12/28 14:18:38 bcook Exp $ */
 /*
  * Copyright (c) 2015 Joel Sing <jsing@openbsd.org>
  *
@@ -163,6 +163,7 @@ asn1_compare_bytes(int test_no, const unsigned char *d1,
 		hexdump(d1, len1);
 		fprintf(stderr, "Want:\n");
 		hexdump(d2, len2);
+		return (1);
 	}
 	return (0);
 }
