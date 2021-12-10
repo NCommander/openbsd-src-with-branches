@@ -137,13 +137,6 @@ sys___tfork(struct proc *p, void *v, register_t *retval)
 		return EINVAL;
 #endif /* TCB_INVALID */
 
-	/*
-	 * kbind(2) can only be used if it is initialized before the
-	 * process goes multithreaded.
-	 */
-	if (p->p_p->ps_kbind_addr == 0)
-		p->p_p->ps_kbind_addr = BOGO_PC;
-
 	return thread_fork(p, param.tf_stack, param.tf_tcb, param.tf_tid,
 	    retval);
 }
