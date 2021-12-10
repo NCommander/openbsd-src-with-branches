@@ -1,4 +1,4 @@
-/* $OpenBSD: tty.c,v 1.412 2021/11/29 11:05:28 nicm Exp $ */
+/* $OpenBSD: tty.c,v 1.413 2021/12/06 10:08:42 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -205,6 +205,11 @@ tty_block_maybe(struct tty *tty)
 	struct client	*c = tty->client;
 	size_t		 size = EVBUFFER_LENGTH(tty->out);
 	struct timeval	 tv = { .tv_usec = TTY_BLOCK_INTERVAL };
+
+	if (size == 0)
+		tty->flags &= ~TTY_NOBLOCK;
+	else if (tty->flags & TTY_NOBLOCK)
+		return (0);
 
 	if (size < TTY_BLOCK_START(tty))
 		return (0);
@@ -2088,8 +2093,8 @@ tty_set_selection(struct tty *tty, const char *buf, size_t len)
 	encoded = xmalloc(size);
 
 	b64_ntop(buf, len, encoded, size);
+	tty->flags |= TTY_NOBLOCK;
 	tty_putcode_ptr2(tty, TTYC_MS, "", encoded);
-	tty->client->redraw = EVBUFFER_LENGTH(tty->out);
 
 	free(encoded);
 }
@@ -2097,6 +2102,7 @@ tty_set_selection(struct tty *tty, const char *buf, size_t len)
 void
 tty_cmd_rawstring(struct tty *tty, const struct tty_ctx *ctx)
 {
+	tty->flags |= TTY_NOBLOCK;
 	tty_add(tty, ctx->ptr, ctx->num);
 	tty_invalidate(tty);
 }
