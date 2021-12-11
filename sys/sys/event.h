@@ -1,4 +1,4 @@
-/*	$OpenBSD: event.h,v 1.59 2021/11/29 15:54:04 visa Exp $	*/
+/*	$OpenBSD: event.h,v 1.60 2021/12/08 13:03:53 visa Exp $	*/
 
 /*-
  * Copyright (c) 1999,2000,2001 Jonathan Lemon <jlemon@FreeBSD.org>
@@ -142,7 +142,7 @@ struct klist {
 
 /* kernel-only flags */
 #define __EV_SELECT	0x0800		/* match behavior of select */
-#define __EV_POLL	0x1000		/* match behavior of poll & select */
+#define __EV_POLL	0x1000		/* match behavior of poll */
 #define __EV_HUP	EV_FLAG1	/* device or socket disconnected */
 
 #define EVFILT_MARKER	0xf			/* placemarker for tailq */

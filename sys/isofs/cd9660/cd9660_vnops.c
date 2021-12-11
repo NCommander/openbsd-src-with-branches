@@ -1,4 +1,4 @@
-/*	$OpenBSD: cd9660_vnops.c,v 1.89 2021/03/24 16:17:05 semarie Exp $	*/
+/*	$OpenBSD: cd9660_vnops.c,v 1.90 2021/10/02 08:51:41 semarie Exp $	*/
 /*	$NetBSD: cd9660_vnops.c,v 1.42 1997/10/16 23:56:57 christos Exp $	*/
 
 /*-
@@ -1017,7 +1017,7 @@ filt_cd9660read(struct knote *kn, long hint)
 		return (1);
 	}
 
-	if (kn->kn_flags & __EV_POLL)
+	if (kn->kn_flags & (__EV_POLL | __EV_SELECT))
 		return (1);
 
 	return (kn->kn_data != 0);
