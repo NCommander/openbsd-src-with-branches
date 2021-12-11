@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2021/11/30 07:34:29 jsing Exp $
+#	$OpenBSD: Makefile,v 1.9 2021/12/09 16:30:57 jsing Exp $
 
 TESTS = \
 	asn1basic \
@@ -7,7 +7,8 @@ TESTS = \
 	asn1string_copy \
 	asn1time \
 	asn1x509 \
-	rfc5280time
+	rfc5280time \
+	string_table
 
 PROGS = ${TESTS}
 
