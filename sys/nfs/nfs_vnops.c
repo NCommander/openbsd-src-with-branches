@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_vnops.c,v 1.186 2021/03/11 13:31:35 jsg Exp $	*/
+/*	$OpenBSD: nfs_vnops.c,v 1.187 2021/10/02 08:51:41 semarie Exp $	*/
 /*	$NetBSD: nfs_vnops.c,v 1.62.4.1 1996/07/08 20:26:52 jtc Exp $	*/
 
 /*
@@ -3211,7 +3211,7 @@ nfs_writebp(struct buf *bp, int force)
 		buf_flip_dma(bp);
 		if (force)
 			bp->b_flags |= B_WRITEINPROG;
-		VOP_STRATEGY(bp);
+		VOP_STRATEGY(bp->b_vp, bp);
 	}
 
 	if( (oldflags & B_ASYNC) == 0) {

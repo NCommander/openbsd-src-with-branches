@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_bmap.c,v 1.26 2015/03/14 03:38:52 jsg Exp $	*/
+/*	$OpenBSD: ext2fs_bmap.c,v 1.27 2019/07/19 00:24:31 cheloha Exp $	*/
 /*	$NetBSD: ext2fs_bmap.c,v 1.5 2000/03/30 12:41:11 augustss Exp $	*/
 
 /*
@@ -226,7 +226,7 @@ ext2fs_bmaparray(struct vnode *vp, daddr_t bn, daddr_t *bnp,
 		else {
 			bp->b_blkno = blkptrtodb(ump, daddr);
 			bp->b_flags |= B_READ;
-			VOP_STRATEGY(bp);
+			VOP_STRATEGY(bp->b_vp, bp);
 			curproc->p_ru.ru_inblock++;		/* XXX */
 			bcstats.pendingreads++;
 			if ((error = biowait(bp)) != 0) {
