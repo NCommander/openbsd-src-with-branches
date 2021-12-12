@@ -1,4 +1,4 @@
-/* $OpenBSD: p5_crpt2.c,v 1.22 2016/11/08 20:01:06 miod Exp $ */
+/* $OpenBSD: p5_crpt2.c,v 1.23 2017/01/29 17:49:23 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -70,6 +70,7 @@
 #include <openssl/x509.h>
 
 #include "evp_locl.h"
+#include "hmac_local.h"
 
 /* This is an implementation of PKCS#5 v2.0 password based encryption key
  * derivation function PBKDF2.
