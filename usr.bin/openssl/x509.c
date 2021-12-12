@@ -1045,7 +1045,7 @@ x509_main(int argc, char **argv)
 			} else if (x509_config.modulus == i) {
 				EVP_PKEY *pkey;
 
-				pkey = X509_get_pubkey(x);
+				pkey = X509_get0_pubkey(x);
 				if (pkey == NULL) {
 					BIO_printf(bio_err,
 					    "Modulus=unavailable\n");
@@ -1070,11 +1070,10 @@ x509_main(int argc, char **argv)
 					BIO_printf(STDout,
 					    "Wrong Algorithm type");
 				BIO_printf(STDout, "\n");
-				EVP_PKEY_free(pkey);
 			} else if (x509_config.pubkey == i) {
 				EVP_PKEY *pkey;
 
-				pkey = X509_get_pubkey(x);
+				pkey = X509_get0_pubkey(x);
 				if (pkey == NULL) {
 					BIO_printf(bio_err,
 					    "Error getting public key\n");
@@ -1082,7 +1081,6 @@ x509_main(int argc, char **argv)
 					goto end;
 				}
 				PEM_write_bio_PUBKEY(STDout, pkey);
-				EVP_PKEY_free(pkey);
 			} else if (x509_config.C == i) {
 				unsigned char *d;
 				char *m;
