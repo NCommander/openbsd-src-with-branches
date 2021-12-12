@@ -1,4 +1,4 @@
-/* $OpenBSD: pem_lib.c,v 1.48 2018/08/24 19:48:39 tb Exp $ */
+/* $OpenBSD: pem_lib.c,v 1.49 2019/09/06 17:41:05 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -79,6 +79,7 @@
 #endif
 
 #include "asn1_locl.h"
+#include "evp_locl.h"
 
 #define MIN_LENGTH	4
 

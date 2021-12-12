@@ -1,4 +1,4 @@
-/* $OpenBSD: hkdf.c,v 1.5 2021/08/27 16:12:33 tb Exp $ */
+/* $OpenBSD: hkdf.c,v 1.6 2021/12/12 21:27:37 tb Exp $ */
 /* Copyright (c) 2014, Google Inc.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
@@ -21,6 +21,7 @@
 #include <openssl/err.h>
 #include <openssl/hmac.h>
 
+#include "evp_locl.h"
 #include "hmac_local.h"
 
 /* https://tools.ietf.org/html/rfc5869#section-2 */

@@ -1,4 +1,4 @@
-/* $OpenBSD: bio_enc.c,v 1.22 2018/08/24 19:30:24 tb Exp $ */
+/* $OpenBSD: bio_enc.c,v 1.23 2021/12/01 09:06:30 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -62,6 +62,8 @@
 
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
+
+#include "evp_locl.h"
 
 static int enc_write(BIO *h, const char *buf, int num);
 static int enc_read(BIO *h, char *buf, int size);

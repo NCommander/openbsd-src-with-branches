@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_oaep.c,v 1.32 2019/10/09 16:17:59 jsing Exp $ */
+/* $OpenBSD: rsa_oaep.c,v 1.33 2019/10/17 14:31:56 jsing Exp $ */
 /*
  * Copyright 1999-2018 The OpenSSL Project Authors. All Rights Reserved.
  *
@@ -80,6 +80,7 @@
 #include <openssl/sha.h>
 
 #include "constant_time_locl.h"
+#include "evp_locl.h"
 #include "rsa_locl.h"
 
 int

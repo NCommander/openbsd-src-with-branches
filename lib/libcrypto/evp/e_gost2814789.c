@@ -1,4 +1,4 @@
-/* $OpenBSD: e_gost2814789.c,v 1.3 2014/11/18 05:30:07 miod Exp $ */
+/* $OpenBSD: e_gost2814789.c,v 1.4 2017/01/29 17:49:23 beck Exp $ */
 /*
  * Copyright (c) 2014 Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
  * Copyright (c) 2005-2006 Cryptocom LTD
@@ -48,6 +48,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  * ====================================================================
  */
+
 #include <string.h>
 
 #include <openssl/opensslconf.h>
@@ -56,6 +57,7 @@
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/gost.h>
+
 #include "evp_locl.h"
 
 typedef struct {

@@ -1,4 +1,4 @@
-/* $OpenBSD: names.c,v 1.13 2017/04/29 21:48:44 jsing Exp $ */
+/* $OpenBSD: names.c,v 1.14 2018/03/17 16:20:01 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -61,6 +61,8 @@
 #include <openssl/evp.h>
 #include <openssl/objects.h>
 #include <openssl/x509.h>
+
+#include "evp_locl.h"
 
 int
 EVP_add_cipher(const EVP_CIPHER *c)

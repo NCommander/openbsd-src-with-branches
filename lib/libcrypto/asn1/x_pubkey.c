@@ -1,4 +1,4 @@
-/* $OpenBSD: x_pubkey.c,v 1.28 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: x_pubkey.c,v 1.29 2021/12/03 16:46:50 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -72,6 +72,7 @@
 #endif
 
 #include "asn1_locl.h"
+#include "evp_locl.h"
 #include "x509_lcl.h"
 
 /* Minor tweak to operation: free up EVP_PKEY */

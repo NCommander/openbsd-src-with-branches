@@ -1,4 +1,4 @@
-/* $OpenBSD: p12_key.c,v 1.26 2017/05/02 03:59:45 deraadt Exp $ */
+/* $OpenBSD: p12_key.c,v 1.27 2021/07/09 14:08:00 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -62,6 +62,8 @@
 #include <openssl/bn.h>
 #include <openssl/err.h>
 #include <openssl/pkcs12.h>
+
+#include "evp_locl.h"
 
 /* PKCS12 compatible key/IV generation */
 #ifndef min

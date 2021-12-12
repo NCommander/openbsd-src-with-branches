@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: m_md4.c,v 1.16 2015/09/14 01:45:03 doug Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -70,6 +70,8 @@
 #ifndef OPENSSL_NO_RSA
 #include <openssl/rsa.h>
 #endif
+
+#include "evp_locl.h"
 
 static int
 init(EVP_MD_CTX *ctx)

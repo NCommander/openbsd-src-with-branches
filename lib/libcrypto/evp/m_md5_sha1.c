@@ -1,4 +1,4 @@
-/* $OpenBSD: m_md5_sha1.c,v 1.1 2017/02/28 14:15:37 jsing Exp $ */
+/* $OpenBSD: m_md5_sha1.c,v 1.2 2018/08/10 17:30:29 jsing Exp $ */
 /*
  * Copyright (c) 2017 Joel Sing <jsing@openbsd.org>
  *
@@ -23,6 +23,8 @@
 #ifndef OPENSSL_NO_RSA
 #include <openssl/rsa.h>
 #endif
+
+#include "evp_locl.h"
 
 struct md5_sha1_ctx {
 	MD5_CTX md5;

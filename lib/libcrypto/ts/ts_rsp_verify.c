@@ -1,4 +1,4 @@
-/* $OpenBSD: ts_rsp_verify.c,v 1.22 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: ts_rsp_verify.c,v 1.23 2021/11/04 23:52:34 beck Exp $ */
 /* Written by Zoltan Glozik (zglozik@stones.com) for the OpenSSL
  * project 2002.
  */
@@ -64,6 +64,7 @@
 #include <openssl/pkcs7.h>
 #include <openssl/ts.h>
 
+#include "evp_locl.h"
 #include "x509_lcl.h"
 
 /* Private function declarations. */

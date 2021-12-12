@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa_ameth.c,v 1.27 2019/01/20 01:56:59 tb Exp $ */
+/* $OpenBSD: dsa_ameth.c,v 1.28 2019/11/01 15:15:35 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -69,6 +69,7 @@
 
 #include "asn1_locl.h"
 #include "bn_lcl.h"
+#include "evp_locl.h"
 
 static int
 dsa_pub_decode(EVP_PKEY *pkey, X509_PUBKEY *pubkey)

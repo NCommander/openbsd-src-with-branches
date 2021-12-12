@@ -1,4 +1,4 @@
-/* $OpenBSD: x509type.c,v 1.13 2018/05/30 15:59:33 tb Exp $ */
+/* $OpenBSD: x509type.c,v 1.14 2021/11/01 20:53:08 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -62,6 +62,7 @@
 #include <openssl/objects.h>
 #include <openssl/x509.h>
 
+#include "evp_locl.h"
 #include "x509_lcl.h"
 
 int
