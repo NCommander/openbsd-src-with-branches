@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: next_test.c,v 1.1 2021/10/22 18:00:23 mbuhl Exp $	*/
 /*-
  * Copyright (c) 2005 David Schultz <das@FreeBSD.org>
  * All rights reserved.
@@ -30,9 +30,6 @@
 /*
  * Test the correctness of nextafter{,f,l} and nexttoward{,f,l}.
  */
-
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
 
 #include <fenv.h>
 #include <float.h>

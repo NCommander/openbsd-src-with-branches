@@ -1,4 +1,4 @@
-/*	$OpenBSD: fenv_test.c,v 1.5 2021/06/17 12:55:38 kettenis Exp $	*/
+/*	$OpenBSD: fenv_test.c,v 1.6 2021/10/22 18:00:22 mbuhl Exp $	*/
 /*-
  * Copyright (c) 2004 David Schultz <das@FreeBSD.org>
  * All rights reserved.
@@ -30,9 +30,6 @@
 /*
  * Test the correctness and C99-compliance of various fenv.h features.
  */
-
-#include <sys/cdefs.h>
-/* $FreeBSD: head/lib/msun/tests/fenv_test.c 314650 2017-03-04 10:07:46Z ngie $ */
 
 #include <sys/types.h>
 #include <sys/wait.h>
