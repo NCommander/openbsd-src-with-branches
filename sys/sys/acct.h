@@ -1,4 +1,4 @@
-/*	$OpenBSD: acct.h,v 1.9 2019/09/09 20:02:26 bluhm Exp $	*/
+/*	$OpenBSD: acct.h,v 1.10 2021/02/04 02:03:53 rob Exp $	*/
 /*	$NetBSD: acct.h,v 1.16 1995/03/26 20:23:52 jtc Exp $	*/
 
 /*-
@@ -54,7 +54,7 @@ struct acct {
 	gid_t	  ac_gid;	/* group id */
 	u_int16_t ac_mem;	/* average memory usage */
 	comp_t	  ac_io;	/* count of IO blocks */
-	dev_t	  ac_tty;	/* controlling tty */
+	dev_t	  ac_tty;	/* controlling tty, or -1 */
 
 #define	AFORK	0x01		/* fork'd but not exec'd */
 #define	AMAP	0x04		/* system call or stack mapping violation */
