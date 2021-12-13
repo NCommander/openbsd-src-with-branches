@@ -1,4 +1,4 @@
-/* $OpenBSD: a_strnid.c,v 1.23 2021/12/11 22:58:48 schwarze Exp $ */
+/* $OpenBSD: a_strnid.c,v 1.24 2021/12/13 14:06:17 schwarze Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -58,7 +58,6 @@
 
 #include <errno.h>
 #include <limits.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
