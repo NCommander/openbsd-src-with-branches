@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.h,v 1.3 2014/11/03 16:55:59 bluhm Exp $ */
+/*	$OpenBSD: log.h,v 1.4 2016/09/02 16:20:34 benno Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -20,7 +20,6 @@
 #define LOG_H
 
 #include <stdarg.h>
-#include <sys/cdefs.h>
 
 extern const char	*log_procname;
 

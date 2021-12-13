@@ -1,9 +1,8 @@
-/*	$OpenBSD: log.h,v 1.1 2015/07/21 04:06:04 yasuoka Exp $	*/
+/*	$OpenBSD: log.h,v 1.2 2019/03/31 03:53:42 yasuoka Exp $	*/
 
 #ifndef _LOG_H
 #define	_LOG_H	1
 
-#include <sys/cdefs.h>
 #include <stdarg.h>	/* for va_list */
 
 extern int log_debug_use_syslog;

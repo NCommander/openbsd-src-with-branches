@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.h,v 1.2 2017/04/05 11:31:45 bluhm Exp $	*/
+/*	$OpenBSD: log.h,v 1.3 2017/04/28 14:52:13 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -19,8 +19,6 @@
 
 #ifndef LOG_H
 #define LOG_H
-
-#include <sys/cdefs.h>
 
 #include <stdarg.h>
 
