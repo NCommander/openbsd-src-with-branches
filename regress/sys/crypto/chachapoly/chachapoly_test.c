@@ -1,4 +1,4 @@
-/*      $OpenBSD: gmac_test.c,v 1.2 2011/04/04 16:46:22 deraadt Exp $  */
+/*      $OpenBSD: chachapoly_test.c,v 1.1 2015/11/03 01:46:08 mikeb Exp $  */
 
 /*
  * Copyright (c) 2010,2015 Mike Belopuhov <mikeb@openbsd.org>
@@ -17,7 +17,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <crypto/chachapoly.h>
 #include <err.h>
 #include <errno.h>

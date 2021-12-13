@@ -1,4 +1,4 @@
-/*      $OpenBSD: gmac_test.c,v 1.4 2017/03/07 16:11:34 inoguchi Exp $  */
+/*      $OpenBSD: gmac_test.c,v 1.5 2017/05/02 11:46:00 mikeb Exp $  */
 
 /*
  * Copyright (c) 2010 Mike Belopuhov <mikeb@openbsd.org>
@@ -17,7 +17,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <crypto/aes.h>
 #include <crypto/gmac.h>
 #include <err.h>

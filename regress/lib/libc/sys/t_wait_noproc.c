@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: t_wait_noproc.c,v 1.1 2021/09/02 12:40:44 mbuhl Exp $	*/
 /* $NetBSD: t_wait_noproc.c,v 1.5 2016/11/09 17:50:19 kamil Exp $ */
 
 /*-
@@ -28,9 +28,6 @@
  */
 
 #include "macros.h"
-
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_wait_noproc.c,v 1.5 2016/11/09 17:50:19 kamil Exp $");
 
 #include <sys/wait.h>
 #include <sys/resource.h>

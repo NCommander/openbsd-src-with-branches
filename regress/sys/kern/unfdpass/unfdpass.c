@@ -1,4 +1,4 @@
-/*	$OpenBSD: unfdpass.c,v 1.20 2018/11/28 08:06:22 claudio Exp $	*/
+/*	$OpenBSD: unfdpass.c,v 1.21 2021/10/24 21:24:20 deraadt Exp $	*/
 /*	$NetBSD: unfdpass.c,v 1.3 1998/06/24 23:51:30 thorpej Exp $	*/
 
 /*-
@@ -35,7 +35,6 @@
  * Test passing of file descriptors over Unix domain sockets and socketpairs.
  */
 
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/wait.h>

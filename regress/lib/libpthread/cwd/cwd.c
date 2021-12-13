@@ -1,4 +1,4 @@
-/*	$OpenBSD: cwd.c,v 1.1.1.1 2001/08/15 14:37:10 fgsch Exp $	*/
+/*	$OpenBSD: cwd.c,v 1.2 2001/09/20 16:43:15 todd Exp $	*/
 /*
  * Copyright (c) 1993, 1994, 1995, 1996 by Chris Provenzano and contributors, 
  * proven@mit.edu All rights reserved.
@@ -37,15 +37,15 @@
  */
 
 #include <stdio.h>
-#include <sys/param.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <limits.h>
 #include "test.h"
 
 int
 main(int argc, char **argv)
 {
-    char wd[MAXPATHLEN];
+    char wd[PATH_MAX];
     char *path;
 
     ASSERT(path = getcwd(wd, sizeof wd));

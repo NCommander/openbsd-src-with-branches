@@ -1,7 +1,7 @@
-/*	$OpenBSD: kqueue-random.c,v 1.10 2016/09/20 23:05:27 bluhm Exp $	*/
+/*	$OpenBSD: kqueue-random.c,v 1.11 2018/04/26 15:55:14 guenther Exp $	*/
 /*	Written by Michael Shalayeff, 2002, Public Domain	*/
 
-#include <sys/param.h>		/* MIN() */
+#include <sys/types.h>
 #include <sys/event.h>
 
 #include <err.h>
@@ -12,6 +12,8 @@
 #include <unistd.h>
 
 #include "main.h"
+
+#define MINIMUM(a, b)    (((a) < (b)) ? (a) : (b))
 
 int
 do_random(void)
@@ -41,7 +43,7 @@ do_random(void)
 	n = kevent(kq, NULL, 0, &ev, 1, &ts);
 	ASSX(n >= 0);
 
-	n = MIN((ev.data + 7) / 8, sizeof(buf));
+	n = MINIMUM((ev.data + 7) / 8, sizeof(buf));
 	ASSX(read(fd, buf, n) > 0);
 
 	close(kq);

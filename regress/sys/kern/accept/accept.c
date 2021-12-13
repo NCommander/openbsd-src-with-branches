@@ -1,8 +1,7 @@
-/*	$OpenBSD: accept.c,v 1.4 2004/02/28 03:29:15 deraadt Exp $	*/
+/*	$OpenBSD: accept.c,v 1.5 2015/01/19 00:22:30 guenther Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org>, 2002 Public Domain.
  */
-#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/wait.h>

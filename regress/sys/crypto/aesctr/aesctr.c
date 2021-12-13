@@ -1,4 +1,4 @@
-/*      $OpenBSD: aesctr.c,v 1.2 2014/08/15 14:39:04 mikeb Exp $  */
+/*      $OpenBSD: aesctr.c,v 1.3 2017/05/02 11:46:00 mikeb Exp $  */
 
 /*
  * Copyright (c) 2005 Markus Friedl <markus@openbsd.org>
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <crypto/aes.h>
 #include <err.h>
 #include <stdio.h>

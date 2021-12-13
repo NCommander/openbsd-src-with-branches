@@ -1,4 +1,4 @@
-/*	$OpenBSD: hmactest.c,v 1.5 2003/06/04 07:31:17 ho Exp $	*/
+/*	$OpenBSD: hmactest.c,v 1.1 2005/04/08 17:12:49 cloder Exp $	*/
 /*	$EOM: hmactest.c,v 1.3 1998/08/09 19:16:24 niklas Exp $	*/
 
 /*
@@ -29,7 +29,7 @@
  * This code was written under funding by Ericsson Radio Systems.
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

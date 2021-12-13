@@ -1,4 +1,4 @@
-/*	$OpenBSD: noexec.c,v 1.19 2019/01/31 19:14:12 bluhm Exp $	*/
+/*	$OpenBSD: noexec.c,v 1.20 2019/05/10 15:57:39 visa Exp $	*/
 
 /*
  * Copyright (c) 2002,2003 Michael Shalayeff
@@ -28,7 +28,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #include <stdio.h>

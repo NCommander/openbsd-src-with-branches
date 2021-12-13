@@ -1,4 +1,4 @@
-/*	$OpenBSD: t_mmap.c,v 1.2 2020/11/09 23:18:51 bluhm Exp $	*/
+/*	$OpenBSD: t_mmap.c,v 1.3 2020/12/06 18:46:07 bluhm Exp $	*/
 /* $NetBSD: t_mmap.c,v 1.14 2020/06/26 07:50:11 jruoho Exp $ */
 
 /*-
@@ -58,10 +58,6 @@
 
 #include "macros.h"
 
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_mmap.c,v 1.14 2020/06/26 07:50:11 jruoho Exp $");
-
-#include <sys/param.h>
 #include <sys/disklabel.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -75,6 +71,7 @@ __RCSID("$NetBSD: t_mmap.c,v 1.14 2020/06/26 07:50:11 jruoho Exp $");
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <string.h>
 #include <unistd.h>
 #include <paths.h>

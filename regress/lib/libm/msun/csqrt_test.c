@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: csqrt_test.c,v 1.1 2021/10/22 18:00:22 mbuhl Exp $	*/
 /*-
  * Copyright (c) 2007 David Schultz <das@FreeBSD.org>
  * All rights reserved.
@@ -30,7 +30,7 @@
 #include <sys/cdefs.h>
 __FBSDID("$FreeBSD$");
 
-#include <sys/param.h>
+#include <sys/types.h>
 
 #include <complex.h>
 #include <float.h>

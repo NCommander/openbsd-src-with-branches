@@ -1,4 +1,4 @@
-/*	$OpenBSD: t_pipe.c,v 1.1.1.1 2019/11/19 19:57:04 bluhm Exp $	*/
+/*	$OpenBSD: t_pipe.c,v 1.2 2020/11/09 23:18:51 bluhm Exp $	*/
 /* $NetBSD: t_pipe.c,v 1.7 2020/06/26 07:50:11 jruoho Exp $ */
 
 /*-
@@ -28,12 +28,6 @@
  */
 
 #include "macros.h"
-
-#include <sys/cdefs.h>
-#include <sys/cdefs.h>
-__COPYRIGHT("@(#) Copyright (c) 2008\
- The NetBSD Foundation, inc. All rights reserved.");
-__RCSID("$NetBSD: t_pipe.c,v 1.7 2020/06/26 07:50:11 jruoho Exp $");
 
 #include <sys/types.h>
 #include <sys/wait.h>

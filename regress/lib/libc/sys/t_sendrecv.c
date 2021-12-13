@@ -1,4 +1,4 @@
-/*	$OpenBSD: t_sendrecv.c,v 1.1.1.1 2019/11/19 19:57:04 bluhm Exp $	*/
+/*	$OpenBSD: t_sendrecv.c,v 1.2 2021/05/31 16:56:27 bluhm Exp $	*/
 /*	$NetBSD: t_sendrecv.c,v 1.8 2021/03/28 17:30:01 christos Exp $	*/
 
 /*-
@@ -31,9 +31,6 @@
  */
 
 #include "macros.h"
-
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_sendrecv.c,v 1.8 2021/03/28 17:30:01 christos Exp $");
 
 #include "atf-c.h"
 #include <sys/types.h>

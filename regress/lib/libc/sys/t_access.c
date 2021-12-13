@@ -1,4 +1,4 @@
-/*	$OpenBSD: t_access.c,v 1.1.1.1 2019/11/19 19:57:03 bluhm Exp $	*/
+/*	$OpenBSD: t_access.c,v 1.2 2019/11/22 15:59:53 bluhm Exp $	*/
 /* $NetBSD: t_access.c,v 1.3 2019/07/16 17:29:18 martin Exp $ */
 
 /*-
@@ -31,9 +31,6 @@
  */
 
 #include "macros.h"
-
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_access.c,v 1.3 2019/07/16 17:29:18 martin Exp $");
 
 #include "atf-c.h"
 

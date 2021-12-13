@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: nan_test.c,v 1.1 2021/10/22 18:00:23 mbuhl Exp $	*/
 /*-
  * Copyright (C) 2007 David Schultz <das@FreeBSD.org>
  * All rights reserved.
@@ -35,7 +35,7 @@
 #include <sys/cdefs.h>
 __FBSDID("$FreeBSD$");
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <fenv.h>
 #include <float.h>
 #include <locale.h>

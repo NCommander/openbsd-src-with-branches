@@ -1,4 +1,4 @@
-/*	$OpenBSD: t_stat.c,v 1.2 2019/11/22 15:59:53 bluhm Exp $	*/
+/*	$OpenBSD: t_stat.c,v 1.3 2020/11/09 23:18:51 bluhm Exp $	*/
 /* $NetBSD: t_stat.c,v 1.6 2019/07/16 17:29:18 martin Exp $ */
 
 /*-
@@ -31,9 +31,6 @@
  */
 
 #include "macros.h"
-
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_stat.c,v 1.6 2019/07/16 17:29:18 martin Exp $");
 
 #include <sys/stat.h>
 #include <sys/socket.h>

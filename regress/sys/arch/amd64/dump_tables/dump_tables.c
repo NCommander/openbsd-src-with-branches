@@ -1,4 +1,4 @@
-/*	$OpenBSD: dump_tables.c,v 1.5 2019/04/23 03:28:53 guenther Exp $	*/
+/*	$OpenBSD: dump_tables.c,v 1.6 2019/04/23 04:46:03 guenther Exp $	*/
 /*
  * Copyright (c) 2019 Philip Guenther <guenther@openbsd.org>
  *
@@ -20,7 +20,7 @@
  * Requires "kern.allowkmem=1" sysctl
  */
 
-#include <sys/param.h>
+#include <sys/param.h>	/* PAGE_SIZE and other things */
 #include <sys/sysctl.h>
 #include <sys/time.h>
 #include <uvm/uvm_extern.h>

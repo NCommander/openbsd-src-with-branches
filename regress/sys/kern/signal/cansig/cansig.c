@@ -1,7 +1,7 @@
-/*	$OpenBSD:$	*/
+/*	$OpenBSD: cansig.c,v 1.1 2008/06/10 18:04:31 hshoexer Exp $	*/
 /*	Written by Michael Shalayeff, 2008. Public Domain	*/
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>

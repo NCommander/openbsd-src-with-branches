@@ -1,4 +1,4 @@
-/*	$OpenBSD: fstest.c,v 1.5 2017/01/12 01:04:50 bluhm Exp $	*/
+/*	$OpenBSD: fstest.c,v 1.6 2017/01/12 01:12:56 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2006-2007 Pawel Jakub Dawidek <pjd@FreeBSD.org>
@@ -28,7 +28,7 @@
  * $FreeBSD: src/tools/regression/fstest/fstest.c,v 1.1 2007/01/17 01:42:07 pjd Exp $
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/sysctl.h>
 
