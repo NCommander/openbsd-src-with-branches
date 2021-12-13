@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.130 2021/12/07 14:06:16 visa Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.131 2021/12/08 13:03:52 visa Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -925,6 +925,11 @@ pipe_kqfilter(struct file *fp, struct knote *kn)
 		if (kn->kn_flags & __EV_SELECT) {
 			/* Prevent triggering exceptfds. */
 			error = EPERM;
+			break;
+		}
+		if ((kn->kn_flags & __EV_POLL) == 0) {
+			/* Disallow usage through kevent(2). */
+			error = EINVAL;
 			break;
 		}
 		kn->kn_fop = &pipe_efiltops;
