@@ -1,4 +1,4 @@
-/* $OpenBSD: unixsock_test.c,v 1.2 2011/07/06 06:22:59 guenther Exp $ */
+/* $OpenBSD: unixsock_test.c,v 1.3 2017/03/08 19:28:47 deraadt Exp $ */
 /* Written by Claudio Jeker in 2011 */
 /* Public domain */
 #include <sys/types.h>
