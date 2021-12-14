@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
 
 /* $FreeBSD: if_em.h,v 1.26 2004/09/01 23:22:41 pdeuskar Exp $ */
-/* $OpenBSD: if_em.h,v 1.77 2020/04/22 08:47:11 mpi Exp $ */
+/* $OpenBSD: if_em.h,v 1.78 2020/07/13 10:35:55 dlg Exp $ */
 
 #ifndef _EM_H_DEFINED_
 #define _EM_H_DEFINED_
@@ -405,6 +405,7 @@ struct em_softc {
 	u_int32_t	tx_abs_int_delay;
 	u_int32_t	rx_int_delay;
 	u_int32_t	rx_abs_int_delay;
+	struct rwlock	sfflock;
 
 	u_int			 sc_tx_slots;
 	u_int			 sc_rx_slots;
