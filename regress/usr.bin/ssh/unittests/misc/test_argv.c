@@ -1,4 +1,4 @@
-/* 	$OpenBSD: test_argv.c,v 1.2 2021/05/21 04:03:47 djm Exp $ */
+/* 	$OpenBSD: test_argv.c,v 1.3 2021/06/08 07:40:12 djm Exp $ */
 /*
  * Regress test for misc argv handling functions.
  *
@@ -6,7 +6,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

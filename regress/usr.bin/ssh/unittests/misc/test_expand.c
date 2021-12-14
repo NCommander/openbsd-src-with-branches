@@ -1,4 +1,4 @@
-/* 	$OpenBSD: test_expand.c,v 1.1 2021/03/19 03:25:01 djm Exp $ */
+/* 	$OpenBSD: test_expand.c,v 1.2 2021/04/06 09:07:33 dtucker Exp $ */
 /*
  * Regress test for misc string expansion functions.
  *
@@ -6,7 +6,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-/* 	$OpenBSD: tests.c,v 1.1 2020/06/19 04:32:09 djm Exp $ */
+/* 	$OpenBSD: tests.c,v 1.2 2020/06/22 06:00:06 djm Exp $ */
 /*
  * Regress test for sshbuf.h buffer API
  *
@@ -6,7 +6,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>

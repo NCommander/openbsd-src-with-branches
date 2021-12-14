@@ -1,4 +1,4 @@
-/* 	$OpenBSD: test_fuzz.c,v 1.11 2019/11/25 10:32:35 djm Exp $ */
+/* 	$OpenBSD: test_fuzz.c,v 1.12 2020/08/27 03:55:22 djm Exp $ */
 /*
  * Fuzz tests for key parsing
  *
@@ -6,7 +6,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>

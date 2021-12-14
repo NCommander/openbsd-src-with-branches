@@ -1,4 +1,4 @@
-/* 	$OpenBSD: test_sshkey.c,v 1.20 2019/11/25 10:32:35 djm Exp $ */
+/* 	$OpenBSD: test_sshkey.c,v 1.21 2020/08/27 03:55:22 djm Exp $ */
 /*
  * Regress test for sshkey.h key management API
  *
@@ -6,7 +6,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

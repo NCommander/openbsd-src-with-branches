@@ -1,4 +1,4 @@
-/* 	$OpenBSD$ */
+/* 	$OpenBSD: test_parse.c,v 1.1 2021/03/19 03:25:01 djm Exp $ */
 /*
  * Regress test for misc user/host/URI parsing functions.
  *
@@ -6,7 +6,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

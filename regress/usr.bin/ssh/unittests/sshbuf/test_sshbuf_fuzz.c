@@ -1,4 +1,4 @@
-/* 	$OpenBSD: test_sshbuf_fuzz.c,v 1.1 2014/04/30 05:32:00 djm Exp $ */
+/* 	$OpenBSD: test_sshbuf_fuzz.c,v 1.2 2018/10/17 23:28:05 djm Exp $ */
 /*
  * Regress test for sshbuf.h buffer API
  *
@@ -6,7 +6,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-/* 	$OpenBSD: tests.c,v 1.1 2018/03/03 03:16:17 djm Exp $ */
+/* 	$OpenBSD: tests.c,v 1.2 2021/07/24 01:54:23 djm Exp $ */
 
 /*
  * Regress test for keys options functions.
@@ -7,7 +7,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/param.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
