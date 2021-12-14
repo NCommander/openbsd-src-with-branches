@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.31 2018/12/21 01:51:07 jsg Exp $	*/
+/*	$OpenBSD: intr.h,v 1.32 2020/06/17 06:14:52 dlg Exp $	*/
 /*	$NetBSD: intr.h,v 1.2 2003/05/04 22:01:56 fvdl Exp $	*/
 
 /*-
@@ -117,8 +117,6 @@ void softintr(int);
 
 /*
  * compiler barrier: prevent reordering of instructions.
- * XXX something similar will move to <sys/cdefs.h>
- * or thereabouts.
  * This prevents the compiler from reordering code around
  * this "instruction", acting as a sequence point for code generation.
  */
