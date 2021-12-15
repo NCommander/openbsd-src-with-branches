@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1_lib.c,v 1.48 2021/12/03 17:03:54 jsing Exp $ */
+/* $OpenBSD: asn1_lib.c,v 1.49 2021/12/15 18:00:31 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
