@@ -1,4 +1,4 @@
-/*	$OpenBSD: binary.c,v 1.18 2013/11/12 22:50:42 deraadt Exp $	*/
+/*	$OpenBSD: binary.c,v 1.19 2021/03/10 21:55:22 millert Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -30,6 +30,7 @@
 #include <err.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <zlib.h>
 
 #include "grep.h"
