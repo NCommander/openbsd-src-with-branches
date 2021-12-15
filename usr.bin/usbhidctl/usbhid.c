@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbhid.c,v 1.16 2021/02/04 06:57:19 anton Exp $	*/
+/*	$OpenBSD: usbhid.c,v 1.17 2021/05/31 18:30:11 jcs Exp $	*/
 /*      $NetBSD: usbhid.c,v 1.22 2002/02/20 20:30:42 christos Exp $ */
 
 /*
@@ -940,6 +940,11 @@ main(int argc, char **argv)
 	hidfd = open(dev, wflag ? O_RDWR : O_RDONLY);
 	if (hidfd == -1)
 		err(1, "%s", dev);
+
+	if (unveil("/", "") == -1)
+		err(1, "unveil /");
+	if (unveil(NULL, NULL) == -1)
+		err(1, "unveil");
 
 	if (ioctl(hidfd, USB_GET_REPORT_ID, &reportid) == -1)
 		reportid = -1;
