@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.c,v 1.129 2020/03/15 05:34:13 visa Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.130 2020/05/27 11:19:29 mpi Exp $	*/
 /*	$NetBSD: ip_mroute.c,v 1.85 2004/04/26 01:31:57 matt Exp $	*/
 
 /*
@@ -353,6 +353,7 @@ mrt_sysctl_vif(void *oldp, size_t *oldlenp)
 
 	given = *oldlenp;
 	needed = 0;
+	memset(&vinfo, 0, sizeof vinfo);
 	TAILQ_FOREACH(ifp, &ifnet, if_list) {
 		if ((vifp = (struct vif *)ifp->if_mcast) == NULL)
 			continue;
