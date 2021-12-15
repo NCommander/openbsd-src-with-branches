@@ -1,4 +1,4 @@
-/* $OpenBSD: unfdpassfail.c,v 1.1 2021/05/27 20:23:53 mvs Exp $ */
+/* $OpenBSD: unfdpassfail.c,v 1.1 2021/12/09 23:26:48 mvs Exp $ */
 
 /*
  * Copyright (c) 2021 Vitaliy Makkoveev <mvs@openbsd.org>
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 			err(1, "socketpair");
 		if ((fd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0)
 			err(1, "open");
-	
+
 		iov_buf = 0;
 		iov.iov_base = &iov_buf;
 		iov.iov_len = sizeof(iov_buf);
