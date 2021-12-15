@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.75 2020/07/22 19:20:41 millert Exp $	*/
+/*	$OpenBSD: misc.c,v 1.76 2020/10/26 18:16:51 tb Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -1135,7 +1135,7 @@ ksh_get_wd(char *buf, int bsize)
 	/* Assume getcwd() available */
 	if (!buf) {
 		bsize = PATH_MAX;
-		b = alloc(PATH_MAX + 1, ATEMP);
+		b = alloc(bsize, ATEMP);
 	} else
 		b = buf;
 
