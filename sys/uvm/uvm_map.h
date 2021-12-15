@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.h,v 1.69 2021/03/12 14:15:49 jsg Exp $	*/
+/*	$OpenBSD: uvm_map.h,v 1.70 2021/05/22 08:38:29 mpi Exp $	*/
 /*	$NetBSD: uvm_map.h,v 1.24 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -441,6 +441,9 @@ void		vm_map_unbusy_ln(struct vm_map*, char*, int);
 #define vm_map_busy(map)	vm_map_busy_ln(map, NULL, 0)
 #define vm_map_unbusy(map)	vm_map_unbusy_ln(map, NULL, 0)
 #endif
+
+void		uvm_map_lock_entry(struct vm_map_entry *);
+void		uvm_map_unlock_entry(struct vm_map_entry *);
 
 #endif /* _KERNEL */
 
