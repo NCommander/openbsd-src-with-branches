@@ -134,6 +134,12 @@ int CBS_get_u24(CBS *cbs, uint32_t *out);
 int CBS_get_u32(CBS *cbs, uint32_t *out);
 
 /*
+ * CBS_get_u64 sets |*out| to the next, big-endian uint64_t value from |cbs|
+ * and advances |cbs|. It returns one on success and zero on error.
+ */
+int CBS_get_u64(CBS *cbs, uint64_t *out);
+
+/*
  * CBS_get_last_u8 sets |*out| to the last uint8_t from |cbs| and shortens
  * |cbs|. It returns one on success and zero on error.
  */

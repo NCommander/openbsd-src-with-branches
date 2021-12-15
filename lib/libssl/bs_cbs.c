@@ -191,6 +191,23 @@ CBS_get_u32(CBS *cbs, uint32_t *out)
 }
 
 int
+CBS_get_u64(CBS *cbs, uint64_t *out)
+{
+	uint32_t a, b;
+
+	if (cbs->len < 8)
+		return 0;
+
+	if (!CBS_get_u32(cbs, &a))
+		return 0;
+	if (!CBS_get_u32(cbs, &b))
+		return 0;
+
+	*out = (uint64_t)a << 32 | b;
+	return 1;
+}
+
+int
 CBS_get_last_u8(CBS *cbs, uint8_t *out)
 {
 	if (cbs->len == 0)
