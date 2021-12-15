@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.227 2021/12/14 14:30:50 schwarze Exp $
+# $OpenBSD: Makefile,v 1.228 2021/12/14 15:22:49 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -206,6 +206,7 @@ MAN=	\
 	HMAC.3 \
 	MD5.3 \
 	NAME_CONSTRAINTS_new.3 \
+	OBJ_create.3 \
 	OBJ_nid2obj.3 \
 	OCSP_CRLID_new.3 \
 	OCSP_REQUEST_new.3 \
