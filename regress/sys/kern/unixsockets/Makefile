@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.8 2021/12/14 16:12:48 mvs Exp $
+# $OpenBSD: Makefile,v 1.9 2021/12/15 20:56:56 bluhm Exp $
 
 # Copyright (c) 2021 Makkoveev Vitaliy <mvs@openbsd.org>
 #
@@ -37,5 +37,8 @@ CLEANFILES += *.socket
 
 run-regress-undgram_conclose:
 	ulimit -n 256; ./undgram_conclose
+
+run-regress-unsopassgc:
+	ulimit -n 256; ./unsopassgc
 
 .include <bsd.regress.mk>
