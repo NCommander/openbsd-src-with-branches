@@ -1,4 +1,4 @@
-/*	$OpenBSD: tls13_legacy.c,v 1.31 2021/09/16 19:25:30 jsing Exp $ */
+/*	$OpenBSD: tls13_legacy.c,v 1.32 2021/10/23 14:40:54 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -444,14 +444,6 @@ tls13_legacy_connect(SSL *ssl)
 {
 	struct tls13_ctx *ctx = ssl->internal->tls13;
 	int ret;
-
-#ifdef TLS13_USE_LEGACY_CLIENT_AUTH
-	/* XXX drop back to legacy for client auth for now */
-	if (ssl->cert->key->privatekey != NULL) {
-		ssl->method = tls_legacy_client_method();
-		return ssl->method->ssl_connect(ssl);
-	}
-#endif
 
 	if (ctx == NULL) {
 		if ((ctx = tls13_ctx_new(TLS13_HS_CLIENT)) == NULL) {
