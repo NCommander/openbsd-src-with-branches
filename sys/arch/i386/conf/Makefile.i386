@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.i386,v 1.140 2021/01/28 17:39:03 deraadt Exp $
+#	$OpenBSD: Makefile.i386,v 1.141 2021/11/27 00:49:21 jsg Exp $
 
 # For instructions on building kernels consult the config(8) and options(4)
 # manual pages.
@@ -44,7 +44,8 @@ CMACHFLAGS+=	-mretpoline
 .endif
 .if ${COMPILER_VERSION:Mclang}
 NO_INTEGR_AS=	-no-integrated-as
-CWARNFLAGS+=	-Wno-address-of-packed-member -Wno-constant-conversion
+CWARNFLAGS+=	-Wno-address-of-packed-member -Wno-constant-conversion \
+		-Wno-unused-but-set-variable -Wno-gnu-folding-constant
 .endif
 
 DEBUG?=		-g
