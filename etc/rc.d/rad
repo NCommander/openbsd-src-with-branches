@@ -1,9 +1,0 @@
-#!/bin/ksh
-#
-# $OpenBSD$
-
-daemon="/usr/sbin/rad"
-
-. /etc/rc.d/rc.subr
-
-rc_cmd $1

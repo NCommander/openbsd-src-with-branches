@@ -16,6 +16,15 @@
 
 #include <stdlib.h>
 
+// Define the __has_feature extension for compilers that do not support it so
+// that we can later check for the presence of ASan in a compiler-neutral way.
+#if !defined(__has_feature)
+#define __has_feature(feature) 0
+#endif
+
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+#include <sanitizer/asan_interface.h>
+#endif
 
 #if !defined(__USING_SJLJ_EXCEPTIONS__)
 #include "AddressSpace.hpp"
@@ -58,12 +67,12 @@ _LIBUNWIND_HIDDEN int __unw_init_local(unw_cursor_t *cursor,
 # define REGISTER_KIND Registers_mips_newabi
 #elif defined(__mips__)
 # warning The MIPS architecture is not supported with this ABI and environment!
-#elif defined(__sparc__) && defined(__arch64__)
-# define REGISTER_KIND Registers_sparc64
 #elif defined(__sparc__)
 # define REGISTER_KIND Registers_sparc
-#elif defined(__riscv) && __riscv_xlen == 64
+#elif defined(__riscv)
 # define REGISTER_KIND Registers_riscv
+#elif defined(__ve__)
+# define REGISTER_KIND Registers_ve
 #else
 # error Architecture not supported
 #endif
@@ -184,6 +193,10 @@ _LIBUNWIND_WEAK_ALIAS(__unw_get_proc_info, unw_get_proc_info)
 /// Resume execution at cursor position (aka longjump).
 _LIBUNWIND_HIDDEN int __unw_resume(unw_cursor_t *cursor) {
   _LIBUNWIND_TRACE_API("__unw_resume(cursor=%p)", static_cast<void *>(cursor));
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+  // Inform the ASan runtime that now might be a good time to clean stuff up.
+  __asan_handle_no_return();
+#endif
   AbstractUnwindCursor *co = (AbstractUnwindCursor *)cursor;
   co->jumpto();
   return UNW_EUNSPEC;
