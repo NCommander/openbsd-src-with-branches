@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.1 2021/06/09 19:37:43 mortimer Exp $
 
 .include <bsd.own.mk>
 
@@ -19,6 +19,7 @@ CFLAGS+=  -std=gnu99
 .PATH: ${SRCDIR} ${BSDSRCDIR}/gnu/llvm/libunwind/src
 .PATH: ${SRCDIR} ${BSDSRCDIR}/gnu/llvm/libcxx/src
 CXXFLAGS+= -I${BSDSRCDIR}/gnu/llvm/libunwind/include \
+           -I${BSDSRCDIR}/gnu/lib/libcxx/include/c++/v1/ \
            -I${BSDSRCDIR}/gnu/llvm/libcxx/include
 CFLAGS+= -I${BSDSRCDIR}/gnu/llvm/libunwind/include
 

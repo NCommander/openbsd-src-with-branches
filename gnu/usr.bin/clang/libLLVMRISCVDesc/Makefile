@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2020/08/03 14:45:24 patrick Exp $
+# $OpenBSD: Makefile,v 1.1 2021/04/29 05:32:01 drahn Exp $
 
 LIB=	LLVMRISCVDesc
 NOPROFILE=
@@ -7,6 +7,7 @@ CPPFLAGS+=	-I${.OBJDIR}/../include/llvm/RISCV \
 		-I${LLVM_SRCS}/lib/Target/RISCV
 
 SRCS+=	RISCVAsmBackend.cpp \
+	RISCVBaseInfo.cpp \
 	RISCVELFObjectWriter.cpp \
 	RISCVELFStreamer.cpp \
 	RISCVInstPrinter.cpp \
@@ -14,6 +15,7 @@ SRCS+=	RISCVAsmBackend.cpp \
 	RISCVMCCodeEmitter.cpp \
 	RISCVMCExpr.cpp \
 	RISCVMCTargetDesc.cpp \
+	RISCVMatInt.cpp \
 	RISCVTargetStreamer.cpp
 
 

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2020/08/03 14:45:25 patrick Exp $
+# $OpenBSD: Makefile,v 1.2 2021/04/28 12:55:39 patrick Exp $
 
 LIB=	LLVMFrontendOpenMP
 NOPROFILE=
@@ -11,8 +11,3 @@ SRCS+=	OMP.cpp \
 	OMPIRBuilder.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/llvm/lib/Frontend/OpenMP
-
-OMP.cpp:
-	ln -sf ${.OBJDIR}/../include/llvm/Frontend/OpenMP/OMP.cpp $@
-
-CLEANFILES+= OMP.cpp

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2020/08/03 14:45:22 patrick Exp $
+# $OpenBSD: Makefile,v 1.8 2021/04/28 12:55:37 patrick Exp $
 
 PROG=	clang-tblgen
 NOMAN=
@@ -17,9 +17,11 @@ SRCS=	ASTTableGen.cpp \
 	ClangOpenCLBuiltinEmitter.cpp \
 	ClangOptionDocEmitter.cpp \
 	ClangSACheckersEmitter.cpp \
+	ClangSyntaxEmitter.cpp \
 	ClangTypeNodesEmitter.cpp \
 	MveEmitter.cpp \
 	NeonEmitter.cpp \
+	RISCVVEmitter.cpp \
 	SveEmitter.cpp \
 	TableGen.cpp
 

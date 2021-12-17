@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2020/08/03 14:45:30 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2021/04/28 12:55:41 patrick Exp $
 
 LIB=	lldbInterpreter
 NOPIC=
@@ -9,8 +9,6 @@ SRCS=	CommandAlias.cpp \
 	CommandHistory.cpp \
 	CommandInterpreter.cpp \
 	CommandObject.cpp \
-	CommandObjectRegexCommand.cpp \
-	CommandObjectScript.cpp \
 	CommandOptionValidators.cpp \
 	CommandReturnObject.cpp \
 	OptionArgParser.cpp \
@@ -33,6 +31,7 @@ SRCS=	CommandAlias.cpp \
 	OptionValueChar.cpp \
 	OptionValueDictionary.cpp \
 	OptionValueEnumeration.cpp \
+	OptionValueFileColonLine.cpp \
 	OptionValueFileSpec.cpp \
 	OptionValueFileSpecList.cpp \
 	OptionValueFormat.cpp \

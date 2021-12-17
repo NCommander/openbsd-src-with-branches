@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.11 2020/08/03 14:45:31 patrick Exp $
+# $OpenBSD: Makefile,v 1.12 2021/04/28 12:55:42 patrick Exp $
 
 PROG=	llvm-tblgen
 NOMAN=
@@ -9,6 +9,7 @@ SRCS=	AsmMatcherEmitter.cpp \
 	AsmWriterInst.cpp \
 	Attributes.cpp \
 	CallingConvEmitter.cpp \
+	CodeBeadsGen.cpp \
 	CodeEmitterGen.cpp \
 	CodeGenDAGPatterns.cpp \
 	CodeGenHwModes.cpp \

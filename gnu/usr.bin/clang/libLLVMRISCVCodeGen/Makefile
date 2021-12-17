@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.10 2020/08/03 14:45:24 patrick Exp $
+# $OpenBSD: Makefile,v 1.1 2021/04/29 05:32:01 drahn Exp $
 
 LIB=	LLVMRISCVCodeGen
 NOPROFILE=
@@ -11,6 +11,7 @@ SRCS+=	RISCVAsmPrinter.cpp \
 	RISCVExpandAtomicPseudoInsts.cpp\
 	RISCVExpandPseudoInsts.cpp \
 	RISCVFrameLowering.cpp \
+	RISCVInsertVSETVLI.cpp \
 	RISCVInstrInfo.cpp \
 	RISCVInstructionSelector.cpp \
 	RISCVISelDAGToDAG.cpp \

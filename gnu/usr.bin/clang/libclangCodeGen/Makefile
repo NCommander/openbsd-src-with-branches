@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.6 2019/01/27 16:59:42 patrick Exp $
+# $OpenBSD: Makefile,v 1.7 2020/08/03 14:45:28 patrick Exp $
 
 LIB=	clangCodeGen
 NOPIC=
@@ -38,6 +38,8 @@ SRCS=	BackendUtil.cpp \
 	CGObjCRuntime.cpp \
 	CGOpenCLRuntime.cpp \
 	CGOpenMPRuntime.cpp \
+	CGOpenMPRuntimeAMDGCN.cpp \
+	CGOpenMPRuntimeGPU.cpp \
 	CGOpenMPRuntimeNVPTX.cpp \
 	CGRecordLayoutBuilder.cpp \
 	CGStmt.cpp \

@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2020/08/03 14:45:31 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2021/04/28 12:55:42 patrick Exp $
 
 LIB=	lldbSymbol
 NOPIC=
@@ -14,7 +14,6 @@ SRCS=	ArmUnwindInfo.cpp \
 	CompilerType.cpp \
 	DWARFCallFrameInfo.cpp \
 	DebugMacros.cpp \
-	Declaration.cpp \
 	DeclVendor.cpp \
 	FuncUnwinders.cpp \
 	Function.cpp \

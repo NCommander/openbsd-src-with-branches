@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.3 2020/08/03 14:45:30 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2021/04/28 12:55:42 patrick Exp $
 
 LIB=	lldbPluginObjectFile
 NOPIC=
@@ -11,6 +11,7 @@ SRCS=	BreakpadRecords.cpp \
 	ObjectFileELF.cpp \
 	ObjectFileJIT.cpp \
 	ObjectFileMachO.cpp \
+	ObjectFilePDB.cpp \
 	ObjectFilePECOFF.cpp \
 	PECallFrameInfo.cpp \
 	WindowsMiniDump.cpp \
@@ -19,6 +20,7 @@ SRCS=	BreakpadRecords.cpp \
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/ObjectFile/Breakpad
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/ObjectFile/ELF
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/ObjectFile/Mach-O
+.PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/ObjectFile/PDB
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/ObjectFile/PECOFF
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/ObjectFile/JIT
 .PATH:	${.CURDIR}/../../../llvm/lldb/source/Plugins/ObjectFile/wasm

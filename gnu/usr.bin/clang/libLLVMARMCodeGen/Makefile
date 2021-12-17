@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.8 2020/08/03 14:45:24 patrick Exp $
+# $OpenBSD: Makefile,v 1.9 2021/04/28 12:55:38 patrick Exp $
 
 LIB=	LLVMARMCodeGen
 NOPROFILE=
@@ -26,6 +26,7 @@ SRCS+=	A15SDOptimizer.cpp \
 	ARMParallelDSP.cpp \
 	ARMLoadStoreOptimizer.cpp \
 	ARMLowOverheadLoops.cpp \
+	ARMBlockPlacement.cpp \
 	ARMMCInstLower.cpp \
 	ARMMachineFunctionInfo.cpp \
 	ARMMacroFusion.cpp \
@@ -33,15 +34,17 @@ SRCS+=	A15SDOptimizer.cpp \
 	ARMOptimizeBarriersPass.cpp \
 	ARMRegisterBankInfo.cpp \
 	ARMSelectionDAGInfo.cpp \
+	ARMSLSHardening.cpp \
 	ARMSubtarget.cpp \
 	ARMTargetMachine.cpp \
 	ARMTargetObjectFile.cpp \
 	ARMTargetTransformInfo.cpp \
 	MLxExpansionPass.cpp \
 	MVEGatherScatterLowering.cpp \
+	MVELaneInterleavingPass.cpp \
 	MVETailPredication.cpp \
 	MVEVPTBlockPass.cpp \
-	MVEVPTOptimisationsPass.cpp \
+	MVETPAndVPTOptimisationsPass.cpp \
 	Thumb1FrameLowering.cpp \
 	Thumb1InstrInfo.cpp \
 	ThumbRegisterInfo.cpp \
