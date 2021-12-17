@@ -11,7 +11,7 @@
 #include "llvm/Support/Errno.h"
 #include "llvm/Support/FileSystem.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <sys/socket.h>
 #include <sys/un.h>
 
@@ -50,7 +50,7 @@ bool SetSockAddr(llvm::StringRef name, const size_t name_offset,
     saddr_un_len =
         offsetof(struct sockaddr_un, sun_path) + name_offset + name.size();
 
-#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__)
   saddr_un->sun_len = saddr_un_len;
 #endif
 

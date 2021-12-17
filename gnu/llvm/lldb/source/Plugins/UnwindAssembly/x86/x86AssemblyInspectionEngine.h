@@ -45,9 +45,9 @@ public:
   /// are called.  This one takes a vector of register name and lldb
   /// register numbers.
   struct lldb_reg_info {
-    const char *name;
-    uint32_t lldb_regnum;
-    lldb_reg_info() : name(nullptr), lldb_regnum(LLDB_INVALID_REGNUM) {}
+    const char *name = nullptr;
+    uint32_t lldb_regnum = LLDB_INVALID_REGNUM;
+    lldb_reg_info() = default;
   };
   void Initialize(std::vector<lldb_reg_info> &reg_info);
 
@@ -114,7 +114,6 @@ private:
   bool call_next_insn_pattern_p();
   bool mov_reg_to_local_stack_frame_p(int &regno, int &rbp_offset);
   bool ret_pattern_p();
-  bool retguard_prologue_p(size_t offset, int insn_len);
   bool jmp_to_reg_p();
   bool pc_rel_branch_or_jump_p (const int instruction_length, int &offset);
   bool non_local_branch_p (const lldb::addr_t current_func_text_offset, 
