@@ -113,9 +113,7 @@ void perror(const char* s);
 #undef clearerr
 #undef feof
 #undef ferror
-#undef putchar
-#undef getchar
 
 #endif
 
-#endif  // _LIBCPP_STDIO_H
+#endif // _LIBCPP_STDIO_H
