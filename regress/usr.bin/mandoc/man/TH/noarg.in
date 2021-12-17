@@ -1,6 +1,0 @@
-.\" $OpenBSD$
-.TH
-.SH NAME
-TH-noarg \- no arguments to the TH macro
-.SH DESCRIPTION
-some text
