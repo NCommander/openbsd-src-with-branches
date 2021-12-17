@@ -1,4 +1,4 @@
-/*	$OpenBSD: crtbeginS.c,v 1.19 2017/02/19 21:39:32 guenther Exp $	*/
+/*	$OpenBSD: crtbeginS.c,v 1.20 2019/01/09 16:42:38 visa Exp $	*/
 /*	$NetBSD: crtbegin.c,v 1.1 1996/09/12 16:59:03 cgd Exp $	*/
 
 /*
@@ -82,6 +82,8 @@ asm(".hidden atexit");
  * Ditto for pthread_atfork()
  */
 int	_thread_atfork(void (*)(void), void (*)(void), void (*)(void), void *)
+	    __attribute__((weak));
+int	pthread_atfork(void (*)(void), void (*)(void), void (*)(void))
 	    __attribute__((weak));
 
 int
