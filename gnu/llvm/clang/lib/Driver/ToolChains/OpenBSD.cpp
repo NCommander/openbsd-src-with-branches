@@ -82,8 +82,9 @@ void openbsd::Assembler::ConstructJob(Compilation &C, const JobAction &JA,
     CmdArgs.push_back(II.getFilename());
 
   const char *Exec = Args.MakeArgString(getToolChain().GetProgramPath("as"));
-  C.addCommand(std::make_unique<Command>(
-      JA, *this, ResponseFileSupport::AtFileCurCP(), Exec, CmdArgs, Inputs));
+  C.addCommand(std::make_unique<Command>(JA, *this,
+                                         ResponseFileSupport::AtFileCurCP(),
+                                         Exec, CmdArgs, Inputs, Output));
 }
 
 void openbsd::Linker::ConstructJob(Compilation &C, const JobAction &JA,
@@ -173,6 +174,11 @@ void openbsd::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   AddLinkerInputs(ToolChain, Inputs, Args, CmdArgs, JA);
 
   if (!Args.hasArg(options::OPT_nostdlib, options::OPT_nodefaultlibs)) {
+    // Use the static OpenMP runtime with -static-openmp
+    bool StaticOpenMP = Args.hasArg(options::OPT_static_openmp) &&
+                        !Args.hasArg(options::OPT_static);
+    addOpenMPRuntime(CmdArgs, ToolChain, Args, StaticOpenMP);
+
     if (D.CCCIsCXX()) {
       if (ToolChain.ShouldLinkCXXStdlib(Args))
         ToolChain.AddCXXStdlibLibArgs(Args, CmdArgs);
@@ -223,8 +229,9 @@ void openbsd::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   ToolChain.addProfileRTLibs(Args, CmdArgs);
 
   const char *Exec = Args.MakeArgString(ToolChain.GetLinkerPath());
-  C.addCommand(std::make_unique<Command>(
-      JA, *this, ResponseFileSupport::AtFileCurCP(), Exec, CmdArgs, Inputs));
+  C.addCommand(std::make_unique<Command>(JA, *this,
+                                         ResponseFileSupport::AtFileCurCP(),
+                                         Exec, CmdArgs, Inputs, Output));
 }
 
 SanitizerMask OpenBSD::getSupportedSanitizers() const {
@@ -302,17 +309,9 @@ void OpenBSD::AddCXXStdlibLibArgs(const ArgList &Args,
 std::string OpenBSD::getCompilerRT(const ArgList &Args,
                                    StringRef Component,
                                    FileType Type) const {
-  if (Component == "builtins") {
-    SmallString<128> Path(getDriver().SysRoot);
-    llvm::sys::path::append(Path, "/usr/lib/libcompiler_rt.a");
-    return std::string(Path.str());
-  } else {
-    SmallString<128> P(getDriver().ResourceDir);
-    std::string CRTBasename =
-        getCompilerRTBasename(Args, Component, Type, /*AddArch=*/false);
-    llvm::sys::path::append(P, "lib", CRTBasename);
-    return std::string(P.str());
-  }
+  SmallString<128> Path(getDriver().SysRoot);
+  llvm::sys::path::append(Path, "/usr/lib/libcompiler_rt.a");
+  return std::string(Path.str());
 }
 
 Tool *OpenBSD::buildAssembler() const {
