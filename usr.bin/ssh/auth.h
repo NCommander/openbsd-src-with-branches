@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.h,v 1.100 2019/09/06 05:23:55 djm Exp $ */
+/* $OpenBSD: auth.h,v 1.101 2020/12/22 00:12:22 djm Exp $ */
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -95,7 +95,8 @@ struct Authctxt {
 
 struct Authmethod {
 	char	*name;
-	int	(*userauth)(struct ssh *);
+	char	*synonym;
+	int	(*userauth)(struct ssh *, const char *);
 	int	*enabled;
 };
 
