@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ah.c,v 1.168 2021/12/02 12:39:15 bluhm Exp $ */
+/*	$OpenBSD: ip_ah.c,v 1.169 2021/12/11 16:33:46 bluhm Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -608,7 +608,7 @@ ah_input(struct mbuf **mp, struct tdb *tdb, int skip, int protoff)
 	/* Update the counters. */
 	ibytes = (m->m_pkthdr.len - skip - hl * sizeof(u_int32_t));
 	tdb->tdb_cur_bytes += ibytes;
-	tdb->tdb_ibytes += ibytes;
+	tdbstat_add(tdb, tdb_ibytes, ibytes);
 	ahstat_add(ahs_ibytes, ibytes);
 
 	/* Hard expiration. */
