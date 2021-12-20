@@ -1,4 +1,4 @@
-/*	$OpenBSD: modify.c,v 1.22 2019/05/18 18:45:53 rob Exp $ */
+/*	$OpenBSD: modify.c,v 1.23 2019/10/24 12:39:26 tb Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -334,7 +334,8 @@ ldap_modify(struct request *req)
 			 */
 			if (vals->be_sub &&
 			    vals->be_sub->be_type == BER_TYPE_OCTETSTRING) {
-				ldap_del_values(a, vals);
+				if (ldap_del_values(a, vals) == 1)
+					ldap_del_attribute(entry, attr);
 			} else {
 				ldap_del_attribute(entry, attr);
 			}
