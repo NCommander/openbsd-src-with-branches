@@ -1,4 +1,4 @@
-/*	$OpenBSD: dt_dev.c,v 1.15 2021/09/03 16:45:45 jasper Exp $ */
+/*	$OpenBSD: dt_dev.c,v 1.16 2021/10/25 19:51:12 millert Exp $ */
 
 /*
  * Copyright (c) 2019 Martin Pieuchot <mpi@openbsd.org>
@@ -428,8 +428,6 @@ dt_ioctl_record_stop(struct dt_softc *sc)
 {
 	struct dt_pcb *dp;
 
-	KASSERT(suser(curproc) == 0);
-
 	if (!sc->ds_recording)
 		return;
 
@@ -458,8 +456,6 @@ dt_ioctl_probe_enable(struct dt_softc *sc, struct dtioc_req *dtrq)
 	struct dt_pcb_list plist;
 	struct dt_probe *dtp;
 	int error;
-
-	KASSERT(suser(curproc) == 0);
 
 	if (!dtioc_req_isvalid(dtrq))
 		return EINVAL;
@@ -491,7 +487,6 @@ dt_ioctl_probe_disable(struct dt_softc *sc, struct dtioc_req *dtrq)
 	struct dt_probe *dtp;
 	int error;
 
-	KASSERT(suser(curproc) == 0);
 	if (!dtioc_req_isvalid(dtrq))
 		return EINVAL;
 
