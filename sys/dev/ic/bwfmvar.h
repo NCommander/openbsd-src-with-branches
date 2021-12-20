@@ -1,4 +1,4 @@
-/* $OpenBSD: bwfmvar.h,v 1.24 2021/08/31 23:05:11 patrick Exp $ */
+/* $OpenBSD: bwfmvar.h,v 1.25 2021/10/23 12:48:17 kettenis Exp $ */
 /*
  * Copyright (c) 2010-2016 Broadcom Corporation
  * Copyright (c) 2016,2017 Patrick Wildt <patrick@blueri.se>
@@ -128,6 +128,10 @@ struct bwfm_cmd_flowring_create {
 	struct mbuf		*m;
 	int			 flowid;
 	int			 prio;
+};
+
+struct bwfm_cmd_flowring_delete {
+	int			 flowid;
 };
 
 struct bwfm_host_cmd_ring {
