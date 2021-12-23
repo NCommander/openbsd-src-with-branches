@@ -1,4 +1,4 @@
-/*	$OpenBSD: tail.c,v 1.21 2016/02/03 12:23:57 halex Exp $	*/
+/*	$OpenBSD: tail.c,v 1.22 2019/01/04 15:04:28 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -84,7 +84,7 @@ main(int argc, char *argv[])
 	case '+':							\
 		if (off)						\
 			off -= (units);					\
-			style = (forward);				\
+		style = (forward);					\
 		break;							\
 	case '-':							\
 		off = -off;						\
