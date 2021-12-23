@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_esp.c,v 1.190 2021/12/20 15:59:09 mvs Exp $ */
+/*	$OpenBSD: ip_esp.c,v 1.191 2021/12/20 17:09:18 tobhe Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -502,13 +502,11 @@ esp_input(struct mbuf **mp, struct tdb *tdb, int skip, int protoff)
 			crde->crd_len = plen;
 	}
 
-	KERNEL_LOCK();
 	while ((error = crypto_invoke(crp)) == EAGAIN) {
 		/* Reset the session ID */
 		if (tdb->tdb_cryptoid != 0)
 			tdb->tdb_cryptoid = crp->crp_sid;
 	}
-	KERNEL_UNLOCK();
 	if (error) {
 		DPRINTF("crypto error %d", error);
 		ipsecstat_inc(ipsec_noxform);
@@ -948,13 +946,11 @@ esp_output(struct mbuf *m, struct tdb *tdb, int skip, int protoff)
 			crda->crd_len = m->m_pkthdr.len - (skip + alen);
 	}
 
-	KERNEL_LOCK();
 	while ((error = crypto_invoke(crp)) == EAGAIN) {
 		/* Reset the session ID */
 		if (tdb->tdb_cryptoid != 0)
 			tdb->tdb_cryptoid = crp->crp_sid;
 	}
-	KERNEL_UNLOCK();
 	if (error) {
 		DPRINTF("crypto error %d", error);
 		ipsecstat_inc(ipsec_noxform);
