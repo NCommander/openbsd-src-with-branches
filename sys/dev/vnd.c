@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.175 2021/12/21 06:11:16 anton Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.176 2021/12/21 06:12:03 anton Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -498,6 +498,7 @@ fail:
 		if ((error = disk_lock(&sc->sc_dk)) != 0)
 			goto fail;
 		if (sc->sc_flags & VNF_INITED) {
+			disk_unlock(&sc->sc_dk);
 			error = EBUSY;
 			goto fail;
 		}
