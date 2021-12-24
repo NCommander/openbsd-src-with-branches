@@ -1,4 +1,4 @@
-/*	$OpenBSD: ksyms.c,v 1.11 2017/10/27 16:47:08 mpi Exp $	*/
+/*	$OpenBSD: ksyms.c,v 1.12 2019/06/28 13:32:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Miodrag Vallat.
@@ -69,6 +69,9 @@ sym_getword(void)
 
 		/* ignore symbols containing dots or dollar signs */
 		if (strchr(sym, '.') != NULL || strchr(sym, '$') != NULL)
+			continue;
+		/* ignore all double unberbar symbols */
+		if (strncmp(sym, "__", 2) == 0)
 			continue;
 
 		break;
