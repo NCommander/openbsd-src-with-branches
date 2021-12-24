@@ -1,6 +1,5 @@
-#	$OpenBSD: Makefile,v 1.101 2021/12/10 00:50:18 mvs Exp $
+#	$OpenBSD: Makefile,v 1.102 2021/12/14 15:57:57 mvs Exp $
 
-SUBDIR+= __syscall
 SUBDIR+= accept access
 SUBDIR+= bind
 SUBDIR+= clock_gettime cmsgsize
