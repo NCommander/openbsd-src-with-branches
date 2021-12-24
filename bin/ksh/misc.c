@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.76 2020/10/26 18:16:51 tb Exp $	*/
+/*	$OpenBSD: misc.c,v 1.77 2021/12/15 04:01:52 deraadt Exp $	*/
 
 /*
  * Miscellaneous functions
@@ -905,7 +905,7 @@ ksh_getopt(char **argv, Getopt *go, const char *options)
 			go->buf[0] = c;
 			go->optarg = go->buf;
 		} else {
-			warningf(true, "%s%s-%c: unknown option",
+			warningf(false, "%s%s-%c: unknown option",
 			    (go->flags & GF_NONAME) ? "" : argv[0],
 			    (go->flags & GF_NONAME) ? "" : ": ", c);
 			if (go->flags & GF_ERROR)
@@ -931,7 +931,7 @@ ksh_getopt(char **argv, Getopt *go, const char *options)
 				go->optarg = go->buf;
 				return ':';
 			}
-			warningf(true, "%s%s-`%c' requires argument",
+			warningf(false, "%s%s-`%c' requires argument",
 			    (go->flags & GF_NONAME) ? "" : argv[0],
 			    (go->flags & GF_NONAME) ? "" : ": ", c);
 			if (go->flags & GF_ERROR)
