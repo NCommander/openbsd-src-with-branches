@@ -1,4 +1,4 @@
-/* $OpenBSD: bio_asn1.c,v 1.13 2018/05/01 13:29:09 tb Exp $ */
+/* $OpenBSD: bio_asn1.c,v 1.14 2021/11/27 13:10:33 schwarze Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
  */
@@ -271,7 +271,7 @@ asn1_bio_write(BIO *b, const char *in , int inl)
 
 	}
 
-done:
+ done:
 	BIO_clear_retry_flags(b);
 	BIO_copy_next_retry(b);
 

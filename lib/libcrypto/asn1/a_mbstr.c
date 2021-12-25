@@ -1,4 +1,4 @@
-/* $OpenBSD: a_mbstr.c,v 1.22 2015/07/16 02:18:58 miod Exp $ */
+/* $OpenBSD: a_mbstr.c,v 1.23 2017/01/29 17:49:22 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -248,7 +248,7 @@ ASN1_mbstring_ncopy(ASN1_STRING **out, const unsigned char *in, int len,
 	traverse_string(in, len, inform, cpyfunc, &p);
 	return str_type;
 
-err:
+ err:
 	if (free_out) {
 		ASN1_STRING_free(dest);
 		*out = NULL;
