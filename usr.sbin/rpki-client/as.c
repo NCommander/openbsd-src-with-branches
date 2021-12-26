@@ -1,4 +1,4 @@
-/*	$OpenBSD: as.c,v 1.5 2019/11/27 17:18:24 deraadt Exp $ */
+/*	$OpenBSD: as.c,v 1.6 2020/09/12 15:46:48 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -75,13 +75,13 @@ as_check_overlap(const struct cert_as *a, const char *fn,
 {
 	size_t	 i;
 
-	/* We can have only one inheritence statement. */
+	/* We can have only one inheritance statement. */
 
 	if (asz &&
 	    (a->type == CERT_AS_INHERIT || as[0].type == CERT_AS_INHERIT)) {
 		warnx("%s: RFC 3779 section 3.2.3.3: "
-		    "cannot have inheritence and multiple ASnum or "
-		    "multiple inheritence", fn);
+		    "cannot have inheritance and multiple ASnum or "
+		    "multiple inheritance", fn);
 		return 0;
 	}
 
