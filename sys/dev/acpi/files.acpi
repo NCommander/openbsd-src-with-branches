@@ -1,9 +1,9 @@
-#	$OpenBSD: files.acpi,v 1.61 2020/11/17 14:31:59 patrick Exp $
+#	$OpenBSD: files.acpi,v 1.62 2020/12/06 20:39:07 kettenis Exp $
 #
 # Config file and device description for machine-independent ACPI code.
 # Included by ports that need it.
 
-define	acpi {}
+define	acpi {[addr = -1]}
 device	acpi
 file	dev/acpi/acpi.c			acpi needs-flag
 file	dev/acpi/acpiutil.c		acpi

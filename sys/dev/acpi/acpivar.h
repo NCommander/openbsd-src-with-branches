@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.113 2020/12/06 21:19:55 kettenis Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.114 2021/03/15 22:44:57 patrick Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -55,6 +55,10 @@ struct acpivideo_softc {
 	struct acpi_softc *sc_acpi;
 	struct aml_node	*sc_devnode;
 };
+
+#define ACPIDEVCF_ADDR		0
+#define acpidevcf_addr		cf_loc[ACPIDEVCF_ADDR]
+#define ACPIDEVCF_ADDR_UNK	-1
 
 struct acpi_attach_args {
 	char		*aaa_name;
