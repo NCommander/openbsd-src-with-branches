@@ -1,4 +1,4 @@
-/* $OpenBSD: cms.c,v 1.16 2019/11/19 10:28:18 inoguchi Exp $ */
+/* $OpenBSD: cms.c,v 1.17 2020/01/04 14:17:55 inoguchi Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
  */
@@ -444,8 +444,10 @@ cms_main(int argc, char **argv)
 				if ((nparam = malloc(sizeof(struct cms_key_param))) == NULL)
 					goto end;
 				nparam->idx = keyidx;
-				if ((nparam->param = sk_OPENSSL_STRING_new_null()) == NULL)
+				if ((nparam->param = sk_OPENSSL_STRING_new_null()) == NULL) {
+					free(nparam);
 					goto end;
+				}
 				nparam->next = NULL;
 				if (key_first == NULL)
 					key_first = nparam;
