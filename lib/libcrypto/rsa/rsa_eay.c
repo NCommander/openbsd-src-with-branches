@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_eay.c,v 1.50 2017/08/28 17:41:59 jsing Exp $ */
+/* $OpenBSD: rsa_eay.c,v 1.51 2019/11/02 13:52:31 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -753,6 +753,7 @@ RSA_eay_mod_exp(BIGNUM *r0, const BIGNUM *I, RSA *rsa, BN_CTX *ctx)
 		goto err;
 
 	/* compute I mod p */
+	BN_init(&c);
 	BN_with_flags(&c, I, BN_FLG_CONSTTIME);
 
 	if (!BN_mod_ct(r1, &c, rsa->p, ctx))
