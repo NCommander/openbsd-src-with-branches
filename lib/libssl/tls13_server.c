@@ -1,4 +1,4 @@
-/* $OpenBSD: tls13_server.c,v 1.87 2021/10/25 10:01:46 jsing Exp $ */
+/* $OpenBSD: tls13_server.c,v 1.88 2021/10/31 16:37:25 tb Exp $ */
 /*
  * Copyright (c) 2019, 2020 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
@@ -908,8 +908,11 @@ tls13_client_certificate_recv(struct tls13_ctx *ctx, CBS *cbs)
 	}
 	ERR_clear_error();
 
-	cert = sk_X509_value(certs, 0);
-	X509_up_ref(cert);
+	/*
+	 * Achtung! Due to API inconsistency, a client includes the peer's leaf
+	 * certificate in the stored certificate chain, while a server does not.
+	 */
+	cert = sk_X509_shift(certs);
 
 	if ((pkey = X509_get0_pubkey(cert)) == NULL)
 		goto err;
