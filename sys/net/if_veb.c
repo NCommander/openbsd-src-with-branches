@@ -1297,6 +1297,11 @@ veb_add_port(struct veb_softc *sc, const struct ifbreq *req, unsigned int span)
 	if (span) {
 		port_list = &sc->sc_spans;
 
+		if (isvport) {
+			error = EPROTONOSUPPORT;
+			goto free;
+		}
+
 		p->p_brport.eb_input = veb_span_input;
 		p->p_bif_flags = IFBIF_SPAN;
 	} else {
