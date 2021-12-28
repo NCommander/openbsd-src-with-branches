@@ -354,6 +354,10 @@ X509v3_addr_get_afi(const IPAddressFamily *f)
 	if (!CBS_get_u16(&cbs, &afi))
 		return 0;
 
+	/* One byte for the optional SAFI, everything else is garbage. */
+	if (CBS_len(&cbs) > 1)
+		return 0;
+
 	return afi;
 }
 
