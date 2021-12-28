@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.62 2019/12/03 09:14:37 jca Exp $	*/
+/*	$OpenBSD: util.c,v 1.63 2020/07/23 20:19:27 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -258,8 +258,8 @@ print:
 
 	if ((tail > 0 || c) && !cflag && !qflag) {
 		if (c) {
-			if (first > 0 && tail == 0 && (Bflag < linesqueued) &&
-			    (Aflag || Bflag))
+			if (first > 0 && tail == 0 && (Aflag || (Bflag &&
+			    Bflag < linesqueued)))
 				printf("--\n");
 			first = 1;
 			tail = Aflag;
