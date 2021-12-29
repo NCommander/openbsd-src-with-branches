@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwgpio.c,v 1.3 2021/05/16 08:50:59 jsg Exp $	*/
+/*	$OpenBSD: dwgpio.c,v 1.4 2021/12/21 20:53:46 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis
  *
@@ -168,12 +168,10 @@ dwgpio_attach(struct device *parent, struct device *self, void *aux)
 	return;
 
 unmap:
-#ifdef notyet
 	for (i = 0; i < sc->sc_nirq; i++) {
 		if (sc->sc_ih[i])
 			acpi_intr_disestablish(sc->sc_ih[i]);
 	}
-#endif
 	free(sc->sc_ih, M_DEVBUF, sc->sc_nirq * sizeof(*sc->sc_ih));
 	free(sc->sc_pin_ih, M_DEVBUF, sc->sc_npins * sizeof(*sc->sc_pin_ih));
 	bus_space_unmap(sc->sc_memt, sc->sc_memh, aaa->aaa_size[0]);
