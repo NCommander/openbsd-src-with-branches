@@ -1,4 +1,4 @@
-# $OpenBSD: RAMDISK,v 1.164 2021/12/19 13:07:36 kettenis Exp $
+# $OpenBSD: RAMDISK,v 1.165 2021/12/24 00:01:39 patrick Exp $
 
 machine		arm64
 maxusers	4
@@ -44,6 +44,8 @@ pci*		at acpipci?
 ahci*		at acpi?
 ccp*		at acpi?		# AMD Cryptographic Co-processor
 com*		at acpi?
+ehci*		at acpi?
+ohci*		at acpi?
 pluart*		at acpi?
 sdhc*		at acpi?
 xhci*		at acpi?
