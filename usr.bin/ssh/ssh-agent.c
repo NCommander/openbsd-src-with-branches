@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.283 2021/12/19 22:13:55 djm Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.284 2022/01/01 01:55:30 jsg Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1548,6 +1548,7 @@ process_extension(SocketEntry *e)
 		success = process_ext_session_bind(e);
 	else
 		debug_f("unsupported extension \"%s\"", name);
+	free(name);
 send:
 	send_status(e, success);
 }
