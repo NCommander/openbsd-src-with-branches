@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.c,v 1.302 2021/11/13 21:14:13 deraadt Exp $ */
+/* $OpenBSD: packet.c,v 1.303 2021/11/25 23:02:24 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -973,7 +973,7 @@ ssh_packet_need_rekeying(struct ssh *ssh, u_int outbound_packet_len)
 	    state->p_read.packets > MAX_PACKETS)
 		return 1;
 
-	/* Rekey after (cipher-specific) maxiumum blocks */
+	/* Rekey after (cipher-specific) maximum blocks */
 	out_blocks = ROUNDUP(outbound_packet_len,
 	    state->newkeys[MODE_OUT]->enc.block_size);
 	return (state->max_blocks_out &&
