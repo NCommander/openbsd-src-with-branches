@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbrk.S,v 1.5 2015/09/05 06:22:47 guenther Exp $	*/
+/*	$OpenBSD: sbrk.S,v 1.6 2021/10/25 14:38:10 jca Exp $	*/
 /*	$NetBSD: sbrk.S,v 1.7 2000/07/25 15:14:46 mycroft Exp $	*/
 
 /*
@@ -50,7 +50,7 @@ __curbrk:
 	OTYPE(__curbrk)
 	.text
 
-ENTRY(sbrk)
+ENTRY_NB(sbrk)
 #ifdef __PIC__
 	PIC_PROLOGUE(%o5,%o4)
 	set	__curbrk, %o3

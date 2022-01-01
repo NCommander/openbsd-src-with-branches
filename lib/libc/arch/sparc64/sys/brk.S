@@ -1,4 +1,4 @@
-/*	$OpenBSD: brk.S,v 1.7 2015/09/05 06:22:47 guenther Exp $	*/
+/*	$OpenBSD: brk.S,v 1.8 2021/10/25 14:38:10 jca Exp $	*/
 /*	$NetBSD: brk.S,v 1.9 2000/07/25 20:15:40 mycroft Exp $	*/
 
 /*
@@ -49,7 +49,7 @@ __minbrk:
 	OTYPE(__minbrk)
 	.text
 
-ENTRY(brk)
+ENTRY_NB(brk)
 #ifdef __PIC__
 	PIC_PROLOGUE(%o5,%o4)
 	set	__minbrk, %o4
