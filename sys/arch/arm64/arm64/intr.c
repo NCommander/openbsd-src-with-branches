@@ -1,4 +1,4 @@
-/* $OpenBSD: intr.c,v 1.22 2021/05/15 11:30:27 kettenis Exp $ */
+/* $OpenBSD: intr.c,v 1.23 2021/05/17 17:25:13 kettenis Exp $ */
 /*
  * Copyright (c) 2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -182,7 +182,7 @@ out:
  * register a dummy interrupt controller that simply stashes away all
  * relevant details of the interrupt handler being established.
  * Later, when the real interrupt controller registers itself, we
- * establush those interrupt handlers based on that information.
+ * establish those interrupt handlers based on that information.
  */
 
 #define MAX_INTERRUPT_CELLS	4
