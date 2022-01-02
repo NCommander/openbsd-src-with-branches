@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: rtkit.c,v 1.1 2021/12/19 23:47:24 kettenis Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -183,7 +183,7 @@ rtkit_handle_mgmt(struct rtkit_state *state, struct aplmbox_msg *msg)
 		}
 		break;
 	default:
-		printf("unhandle management event 0x%016lld\n", msg->data0);
+		printf("unhandled management event 0x%016lld\n", msg->data0);
 		return EIO;
 	}
 
@@ -211,7 +211,7 @@ rtkit_handle_crashlog(struct rtkit_state *state, struct aplmbox_msg *msg)
 			return error;
 		break;
 	default:
-		printf("unhandle crashlog event 0x%016llx\n", msg->data0);
+		printf("unhandled crashlog event 0x%016llx\n", msg->data0);
 		return EIO;
 	}
 
@@ -239,7 +239,7 @@ rtkit_handle_ioreport(struct rtkit_state *state, struct aplmbox_msg *msg)
 			return error;
 		break;
 	default:
-		printf("unhandle ioreport event 0x%016llx\n", msg->data0);
+		printf("unhandled ioreport event 0x%016llx\n", msg->data0);
 		return EIO;
 	}
 
