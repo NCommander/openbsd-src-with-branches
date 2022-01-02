@@ -1,4 +1,4 @@
-/*	$OpenBSD: iommureg.h,v 1.17 2012/08/17 20:46:50 kettenis Exp $	*/
+/*	$OpenBSD: iommureg.h,v 1.18 2019/06/25 22:30:56 dlg Exp $	*/
 /*	$NetBSD: iommureg.h,v 1.6 2001/07/20 00:07:13 eeh Exp $	*/
 
 /*
@@ -76,7 +76,7 @@ struct iommu_strbuf {
 #define STRBUF_D		0x000000000000000002LL
 
 /* control register bits */
-#define IOMMUCR_TSB1K		0x000000000000000000LL	/* Nummber of entries in IOTSB */
+#define IOMMUCR_TSB1K		0x000000000000000000LL	/* Number of entries in IOTSB */
 #define IOMMUCR_TSB2K		0x000000000000010000LL
 #define IOMMUCR_TSB4K		0x000000000000020000LL
 #define IOMMUCR_TSB8K		0x000000000000030000LL
