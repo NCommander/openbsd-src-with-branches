@@ -1,4 +1,4 @@
-#	$OpenBSD: RAMDISK_CD,v 1.196 2021/12/20 14:54:37 hastings Exp $
+#	$OpenBSD: RAMDISK_CD,v 1.197 2021/12/26 13:55:36 kettenis Exp $
 
 machine		amd64
 maxusers	4
@@ -286,8 +286,8 @@ ral*		at cardbus?		# Ralink RT2500/RT2501/RT2600
 rtw*		at pci?			# Realtek 8180
 rtw*		at cardbus?		# Realtek 8180
 rtwn*		at pci?			# Realtek 8188CE/8192CE
-pgt*		at pci?			# Prism54 (only full-mac varients)
-pgt*		at cardbus?		# Prism54 (only full-mac varients)
+pgt*		at pci?			# Prism54 Full-MAC
+pgt*		at cardbus?		# Prism54 Full-MAC
 malo*		at pci?			# Marvell 88W8385
 malo*		at cardbus?		# Marvell Libertas
 malo*		at pcmcia?		# Marvell 88W8385
