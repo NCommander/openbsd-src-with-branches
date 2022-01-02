@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtable.c,v 1.74 2021/03/26 22:41:06 mvs Exp $ */
+/*	$OpenBSD: rtable.c,v 1.75 2021/05/25 22:45:09 bluhm Exp $ */
 
 /*
  * Copyright (c) 2014-2016 Martin Pieuchot
@@ -62,7 +62,7 @@ struct rtmap {
 /*
  * Array of rtableid -> rdomain mapping.
  *
- * Only used for the first index as describbed above.
+ * Only used for the first index as described above.
  */
 struct dommp {
 	unsigned int	   limit;

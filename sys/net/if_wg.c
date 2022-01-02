@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wg.c,v 1.18 2021/08/05 13:37:04 sthen Exp $ */
+/*	$OpenBSD: if_wg.c,v 1.19 2021/12/16 00:54:42 deraadt Exp $ */
 
 /*
  * Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
@@ -1621,7 +1621,7 @@ wg_decap(struct wg_softc *sc, struct mbuf *m)
 	 * IP header, we just worry about the sizeof and the version, so we can
 	 * read the source address in wg_aip_lookup.
 	 *
-	 * We also need to trim the packet, as it was likely paddded before
+	 * We also need to trim the packet, as it was likely padded before
 	 * encryption. While we could drop it here, it will be more helpful to
 	 * pass it to bpf_mtap and use the counters that people are expecting
 	 * in ipv4_input and ipv6_input. We can rely on ipv4_input and

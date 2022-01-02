@@ -1,4 +1,4 @@
-/* $OpenBSD: fq_codel.c,v 1.13 2020/06/18 23:29:59 dlg Exp $ */
+/* $OpenBSD: fq_codel.c,v 1.14 2020/12/10 06:53:38 dlg Exp $ */
 
 /*
  * Copyright (c) 2017 Mike Belopuhov
@@ -188,7 +188,7 @@ static const int64_t codel_target = 5000000;
 /* Grace period after last drop, 16 100ms intervals */
 static const int64_t codel_grace = 1600000000;
 
-/* First 399 "100 / sqrt(x)" intervarls, ns precision */
+/* First 399 "100 / sqrt(x)" intervals, ns precision */
 static const uint32_t codel_intervals[] = {
 	100000000, 70710678, 57735027, 50000000, 44721360, 40824829, 37796447,
 	35355339,  33333333, 31622777, 30151134, 28867513, 27735010, 26726124,

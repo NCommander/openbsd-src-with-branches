@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.242 2020/08/07 18:09:16 florian Exp $	*/
+/*	$OpenBSD: in6.c,v 1.243 2021/03/10 10:21:49 jsg Exp $	*/
 /*	$KAME: in6.c,v 1.372 2004/06/14 08:14:21 itojun Exp $	*/
 
 /*
@@ -959,7 +959,7 @@ in6_unlink_ifa(struct in6_ifaddr *ia6, struct ifnet *ifp)
 }
 
 /*
- * Initialize an interface's intetnet6 address
+ * Initialize an interface's inet6 address
  * and routing table entry.
  */
 int

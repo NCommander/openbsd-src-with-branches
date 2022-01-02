@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.264 2021/12/20 15:59:10 mvs Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.265 2021/12/23 12:21:48 bluhm Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -655,7 +655,7 @@ reroute:
 #endif
 
 	/*
-	 * If the packet is not going on the wire it can be destinated
+	 * If the packet is not going on the wire it can be destined
 	 * to any local address.  In this case do not clear its scopes
 	 * to let ip6_input() find a matching local route.
 	 */
