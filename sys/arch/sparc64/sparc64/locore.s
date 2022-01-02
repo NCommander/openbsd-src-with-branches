@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.189 2020/05/18 08:26:28 claudio Exp $	*/
+/*	$OpenBSD: locore.s,v 1.190 2020/07/31 11:19:12 kettenis Exp $	*/
 /*	$NetBSD: locore.s,v 1.137 2001/08/13 06:10:10 jdolecek Exp $	*/
 
 /*
@@ -7751,7 +7751,7 @@ END(longjmp)
 	END(savetstate)
 
 	/*
-	 * Debug stuff.  Resore trap registers from buffer.
+	 * Debug stuff.  Restore trap registers from buffer.
 	 *
 	 *  %o0 = %tl
 	 *  %o1 = *ts
