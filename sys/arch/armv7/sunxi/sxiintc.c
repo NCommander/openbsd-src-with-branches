@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxiintc.c,v 1.9 2021/05/16 15:10:19 deraadt Exp $	*/
+/*	$OpenBSD: sxiintc.c,v 1.10 2021/10/24 17:52:28 mpi Exp $	*/
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2013 Artturi Alm
@@ -359,7 +359,7 @@ sxiintc_irq_handler(void *frame)
 	    pr | (1 << IRQ2BIT32(irq)));
 
 	TAILQ_FOREACH(ih, &sxiintc_handler[irq].iq_list, ih_list) {
-		if (ih->ih_arg != 0)
+		if (ih->ih_arg)
 			arg = ih->ih_arg;
 		else
 			arg = frame;
