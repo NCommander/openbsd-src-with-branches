@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_hibernate.c,v 1.128 2021/08/30 09:45:29 deraadt Exp $	*/
+/*	$OpenBSD: subr_hibernate.c,v 1.129 2021/08/31 14:45:25 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -1173,6 +1173,7 @@ hibernate_resume(void)
 		splx(s);
 		return;
 	}
+	disk_hib.dev = hib.dev;
 
 #ifdef MULTIPROCESSOR
 	/* XXX - if we fail later, we may need to rehatch APs on some archs */
