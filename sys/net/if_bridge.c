@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bridge.c,v 1.361 2021/12/03 17:18:34 bluhm Exp $	*/
+/*	$OpenBSD: if_bridge.c,v 1.362 2021/12/23 12:21:48 bluhm Exp $	*/
 
 /*
  * Copyright (c) 1999, 2000 Jason L. Wright (jason@thought.net)
@@ -1595,7 +1595,7 @@ bridge_ipsec(struct ifnet *ifp, struct ether_header *eh, int hassnap,
 		}
 	} else { /* Outgoing from the bridge. */
 		error = ipsp_spd_lookup(m, af, hlen, IPSP_DIRECTION_OUT,
-		    NULL, NULL, &tdb, 0);
+		    NULL, NULL, &tdb, NULL);
 		if (error == 0 && tdb != NULL) {
 			/*
 			 * We don't need to do loop detection, the
