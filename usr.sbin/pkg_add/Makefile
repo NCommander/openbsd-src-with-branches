@@ -1,8 +1,8 @@
-# $OpenBSD: Makefile,v 1.90 2020/02/17 13:06:45 espie Exp $
+# $OpenBSD: Makefile,v 1.91 2020/12/20 15:30:58 daniel Exp $
 
 .include <bsd.own.mk>
 
-MAN1=fw_update.1 pkg_add.1 pkg_info.1 pkg_create.1 pkg_delete.1 \
+MAN1=pkg_add.1 pkg_info.1 pkg_create.1 pkg_delete.1 \
 	pkg_mklocatedb.1 pkg_sign.1
 MAN5=package.5
 MAN8=pkg_check.8
@@ -83,8 +83,7 @@ SCRIPTS_LNK = \
     pkg_add pkg_create \
     pkg_add pkg_delete \
     pkg_add pkg_info \
-    pkg_add pkg_sign \
-    pkg_add fw_update
+    pkg_add pkg_sign
 
 LIBBASE=/usr/libdata/perl5
 
