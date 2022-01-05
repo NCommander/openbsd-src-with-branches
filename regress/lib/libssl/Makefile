@@ -1,5 +1,6 @@
-#	$OpenBSD: Makefile,v 1.46 2021/08/30 17:34:32 tb Exp $
+#	$OpenBSD: Makefile,v 1.47 2021/10/23 14:34:10 jsing Exp $
 
+SUBDIR += api
 SUBDIR += asn1
 SUBDIR += buffer
 SUBDIR += bytestring
