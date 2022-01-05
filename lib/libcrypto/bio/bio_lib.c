@@ -1,4 +1,4 @@
-/* $OpenBSD: bio_lib.c,v 1.31 2021/12/09 15:28:58 schwarze Exp $ */
+/* $OpenBSD: bio_lib.c,v 1.32 2022/01/05 20:22:26 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -556,6 +556,12 @@ int
 BIO_get_retry_reason(BIO *bio)
 {
 	return (bio->retry_reason);
+}
+
+void
+BIO_set_retry_reason(BIO *bio, int reason)
+{
+	bio->retry_reason = reason;
 }
 
 BIO *
