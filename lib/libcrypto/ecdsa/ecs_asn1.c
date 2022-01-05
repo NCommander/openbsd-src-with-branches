@@ -1,4 +1,4 @@
-/* $OpenBSD: ecs_asn1.c,v 1.8 2015/10/16 15:15:39 jsing Exp $ */
+/* $OpenBSD: ecs_asn1.c,v 1.9 2018/03/17 15:24:44 tb Exp $ */
 /* ====================================================================
  * Copyright (c) 2000-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -121,6 +121,18 @@ ECDSA_SIG_get0(const ECDSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps)
 		*pr = sig->r;
 	if (ps != NULL)
 		*ps = sig->s;
+}
+
+const BIGNUM *
+ECDSA_SIG_get0_r(const ECDSA_SIG *sig)
+{
+	return sig->r;
+}
+
+const BIGNUM *
+ECDSA_SIG_get0_s(const ECDSA_SIG *sig)
+{
+	return sig->s;
 }
 
 int
