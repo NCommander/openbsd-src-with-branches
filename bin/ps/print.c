@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.77 2021/08/28 20:54:54 chrisz Exp $	*/
+/*	$OpenBSD: print.c,v 1.78 2021/12/01 18:21:23 deraadt Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -785,14 +785,4 @@ pvar(const struct kinfo_proc *kp, VARENT *ve)
 		(void)printf("%*s", v->width, "-");
 	else
 		printval((char *)kp + v->off, v);
-}
-
-void
-emulname(const struct kinfo_proc *kp, VARENT *ve)
-{
-	VAR *v;
-
-	v = ve->var;
-
-	(void)printf("%-*s", (int)v->width, kp->p_emul);
 }
