@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-rt6.c,v 1.7 2018/10/22 16:12:45 kn Exp $	*/
+/*	$OpenBSD: print-rt6.c,v 1.8 2020/01/24 22:46:37 procter Exp $	*/
 
 
 /*
@@ -49,12 +49,10 @@ rt6_print(const u_char *bp, const u_char *bp2)
 {
 	const struct ip6_rthdr *dp;
 	const struct ip6_rthdr0 *dp0;
-	const struct ip6_hdr *ip;
 	const u_char *ep;
 	int i, len;
 
 	dp = (struct ip6_rthdr *)bp;
-	ip = (struct ip6_hdr *)bp2;
 	len = dp->ip6r_len;
 
 	/* 'ep' points to the end of avaible data. */
