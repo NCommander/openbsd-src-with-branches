@@ -1,4 +1,4 @@
-/*	$OpenBSD: ethertypes.h,v 1.13 2019/10/29 03:19:16 dlg Exp $	*/
+/*	$OpenBSD: ethertypes.h,v 1.14 2021/03/10 10:21:47 jsg Exp $	*/
 /*	$NetBSD: ethertypes.h,v 1.13 2002/02/10 01:28:32 thorpej Exp $	*/
 
 /*
@@ -298,7 +298,7 @@
 #define	ETHERTYPE_PPPOEDISC	0x8863	/* PPP Over Ethernet Discovery Stage */
 #define	ETHERTYPE_PPPOE		0x8864	/* PPP Over Ethernet Session Stage */
 #define	ETHERTYPE_LANPROBE	0x8888	/* HP LanProbe test? */
-#define	ETHERTYPE_PAE		0x888E	/* 802.1X Port Access Entity */
+#define	ETHERTYPE_EAPOL		0x888E	/* 802.1X EAP over LAN */
 #define	ETHERTYPE_AOE		0x88A2	/* ATA over Ethernet */
 #define	ETHERTYPE_QINQ		0x88A8	/* 802.1ad VLAN stacking */
 #define	ETHERTYPE_LLDP		0x88CC	/* Link Layer Discovery Protocol */
