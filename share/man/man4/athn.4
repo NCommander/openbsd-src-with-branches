@@ -1,4 +1,4 @@
-.\" $OpenBSD: athn.4,v 1.41 2021/05/06 14:40:35 stsp Exp $
+.\" $OpenBSD: athn.4,v 1.42 2021/10/15 08:10:44 kn Exp $
 .\"
 .\" Copyright (c) 2009 Damien Bergamini <damien.bergamini@free.fr>.
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: May 6 2021 $
+.Dd $Mdocdate: October 15 2021 $
 .Dt ATHN 4
 .Os
 .Sh NAME
@@ -189,7 +189,7 @@ firmware files, which are loaded when an interface is attached:
 .El
 .Pp
 A prepackaged version of the firmware can be installed using
-.Xr fw_update 1 .
+.Xr fw_update 8 .
 Firmware source code is available under a mix of BSD and GPLv2 licences.
 A port which cross-compiles the firmware can be found in
 .Pa /usr/ports/devel/open-ath9k-htc-firmware .
