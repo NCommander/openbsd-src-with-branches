@@ -1,4 +1,4 @@
-/*	$OpenBSD: funopen.c,v 1.8 2005/08/08 08:05:36 espie Exp $ */
+/*	$OpenBSD: funopen.c,v 1.9 2015/08/31 02:53:57 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -38,7 +38,7 @@
 FILE *
 funopen(const void *cookie, int (*readfn)(void *, char *, int),
 	int (*writefn)(void *, const char *, int),
-	fpos_t (*seekfn)(void *, fpos_t, int), int (*closefn)(void *))
+	off_t (*seekfn)(void *, off_t, int), int (*closefn)(void *))
 {
 	FILE *fp;
 	int flags;
