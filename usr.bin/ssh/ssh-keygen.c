@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.444 2022/01/05 04:27:54 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.445 2022/01/05 04:50:11 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -3522,7 +3522,7 @@ main(int argc, char **argv)
 			if (cert_principals == NULL ||
 			    *cert_principals == '\0') {
 				error("Too few arguments for verify: "
-				    "missing namespace");
+				    "missing principal");
 				exit(1);
 			}
 			if (ca_key_path == NULL) {
