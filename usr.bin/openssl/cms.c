@@ -1,4 +1,4 @@
-/* $OpenBSD: cms.c,v 1.23 2022/01/05 12:51:49 inoguchi Exp $ */
+/* $OpenBSD: cms.c,v 1.24 2022/01/05 13:41:12 inoguchi Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
  */
@@ -1882,8 +1882,7 @@ receipt_request_print(BIO *out, CMS_ContentInfo *cms)
 			BIO_puts(out, "  Receipts To:\n");
 			gnames_stack_print(out, rto);
 		}
-		if (rr != NULL)
-			CMS_ReceiptRequest_free(rr);
+		CMS_ReceiptRequest_free(rr);
 	}
 }
 
