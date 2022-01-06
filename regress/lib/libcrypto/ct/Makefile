@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2017/07/16 18:18:10 jsing Exp $
+# $OpenBSD: Makefile,v 1.1 2021/12/05 13:01:08 jsing Exp $
 
 PROG=		cttest
 LDADD=		${CRYPTO_INT}
@@ -14,6 +14,6 @@ REGRESS_TARGETS= \
 
 regress-cttest: ${PROG}
 	./cttest \
-	    ${.CURDIR}/../../libcrypto/ct/libressl.org.crt
+	    ${.CURDIR}/../../libcrypto/ct/
 
 .include <bsd.regress.mk>
