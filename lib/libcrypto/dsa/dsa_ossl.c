@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa_ossl.c,v 1.41 2019/06/04 18:10:11 tb Exp $ */
+/* $OpenBSD: dsa_ossl.c,v 1.42 2019/06/04 18:12:26 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -67,6 +67,7 @@
 #include <openssl/sha.h>
 
 #include "bn_lcl.h"
+#include "dsa_locl.h"
 
 static DSA_SIG *dsa_do_sign(const unsigned char *dgst, int dlen, DSA *dsa);
 static int dsa_sign_setup(DSA *dsa, BN_CTX *ctx_in, BIGNUM **kinvp,

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: dsa_meth.c,v 1.1 2018/03/17 15:19:12 tb Exp $	*/
 /*
  * Copyright (c) 2018 Theo Buehler <tb@openbsd.org>
  *
@@ -20,6 +20,8 @@
 
 #include <openssl/dsa.h>
 #include <openssl/err.h>
+
+#include "dsa_locl.h"
 
 DSA_METHOD *
 DSA_meth_new(const char *name, int flags)
