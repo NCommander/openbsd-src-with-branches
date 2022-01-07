@@ -1,4 +1,4 @@
-/* $OpenBSD: bss_conn.c,v 1.34 2018/05/01 13:29:09 tb Exp $ */
+/* $OpenBSD: bss_conn.c,v 1.35 2018/05/12 18:51:59 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -69,6 +69,8 @@
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <openssl/err.h>
+
+#include "bio_local.h"
 
 #define SOCKET_PROTOCOL IPPROTO_TCP
 

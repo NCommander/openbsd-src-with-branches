@@ -1,4 +1,4 @@
-/* $OpenBSD: bf_null.c,v 1.11 2014/07/11 08:44:47 jsing Exp $ */
+/* $OpenBSD: bf_null.c,v 1.12 2018/05/01 13:29:09 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -60,6 +60,8 @@
 #include <stdio.h>
 
 #include <openssl/bio.h>
+
+#include "bio_local.h"
 
 /* BIO_put and BIO_get both add to the digest,
  * BIO_gets returns the digest */

@@ -1,4 +1,4 @@
-/* $OpenBSD: bf_nbio.c,v 1.19 2015/02/07 13:19:15 doug Exp $ */
+/* $OpenBSD: bf_nbio.c,v 1.20 2018/05/01 13:29:09 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -61,6 +61,8 @@
 #include <stdlib.h>
 
 #include <openssl/bio.h>
+
+#include "bio_local.h"
 
 /* BIO_put and BIO_get both add to the digest,
  * BIO_gets returns the digest */

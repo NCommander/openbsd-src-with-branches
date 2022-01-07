@@ -1,4 +1,4 @@
-/* $OpenBSD: bss_null.c,v 1.10 2014/07/11 08:44:47 jsing Exp $ */
+/* $OpenBSD: bss_null.c,v 1.11 2018/05/01 13:29:10 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -61,6 +61,8 @@
 #include <string.h>
 
 #include <openssl/bio.h>
+
+#include "bio_local.h"
 
 static int null_write(BIO *h, const char *buf, int num);
 static int null_read(BIO *h, char *buf, int size);

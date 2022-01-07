@@ -1,4 +1,4 @@
-/* $OpenBSD: err_prn.c,v 1.16 2014/07/11 08:44:48 jsing Exp $ */
+/* $OpenBSD: err_prn.c,v 1.18 2017/02/07 15:52:33 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -63,6 +63,8 @@
 #include <openssl/crypto.h>
 #include <openssl/err.h>
 #include <openssl/lhash.h>
+
+#include "bio_local.h"
 
 void
 ERR_print_errors_cb(int (*cb)(const char *str, size_t len, void *u), void *u)
