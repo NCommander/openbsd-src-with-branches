@@ -1,4 +1,4 @@
-/* $OpenBSD: ocsp_cl.c,v 1.19 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: ocsp_cl.c,v 1.20 2021/11/24 19:27:03 tb Exp $ */
 /* Written by Tom Titchener <Tom_Titchener@groove.net> for the OpenSSL
  * project. */
 
@@ -70,6 +70,8 @@
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+
+#include "ocsp_local.h"
 
 /* Utility functions related to sending OCSP requests and extracting
  * relevant information from the response.

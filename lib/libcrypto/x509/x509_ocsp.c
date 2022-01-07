@@ -1,4 +1,4 @@
-/* $OpenBSD: v3_ocsp.c,v 1.15 2017/01/29 17:49:23 beck Exp $ */
+/* $OpenBSD: x509_ocsp.c,v 1.1 2020/06/04 15:19:31 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -68,6 +68,8 @@
 #include <openssl/err.h>
 #include <openssl/ocsp.h>
 #include <openssl/x509v3.h>
+
+#include "ocsp_local.h"
 
 /* OCSP extensions and a couple of CRL entry extensions
  */

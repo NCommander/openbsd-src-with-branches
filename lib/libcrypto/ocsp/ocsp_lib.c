@@ -1,4 +1,4 @@
-/* $OpenBSD: ocsp_lib.c,v 1.22 2018/05/13 10:42:03 tb Exp $ */
+/* $OpenBSD: ocsp_lib.c,v 1.23 2018/08/24 20:03:21 tb Exp $ */
 /* Written by Tom Titchener <Tom_Titchener@groove.net> for the OpenSSL
  * project. */
 
@@ -73,6 +73,8 @@
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+
+#include "ocsp_local.h"
 
 /* Convert a certificate and its issuer to an OCSP_CERTID */
 
