@@ -1,4 +1,4 @@
-/* $OpenBSD: tasn_fre.c,v 1.16 2018/04/06 12:16:06 bluhm Exp $ */
+/* $OpenBSD: tasn_fre.c,v 1.17 2019/04/01 15:48:04 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -61,6 +61,8 @@
 #include <openssl/asn1.h>
 #include <openssl/asn1t.h>
 #include <openssl/objects.h>
+
+#include "asn1_locl.h"
 
 static void asn1_item_combine_free(ASN1_VALUE **pval, const ASN1_ITEM *it,
     int combine);
