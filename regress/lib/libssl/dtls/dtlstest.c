@@ -1,4 +1,4 @@
-/* $OpenBSD: dtlstest.c,v 1.13 2021/06/19 17:11:34 jsing Exp $ */
+/* $OpenBSD: dtlstest.c,v 1.14 2021/06/19 18:28:51 tb Exp $ */
 /*
  * Copyright (c) 2020, 2021 Joel Sing <jsing@openbsd.org>
  *
@@ -27,6 +27,7 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
+#include "bio_local.h"
 #include "ssl_locl.h"
 
 const char *server_ca_file;
