@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.70 2019/12/07 22:57:48 guenther Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.71 2022/01/08 06:49:42 guenther Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -37,6 +37,7 @@
 
 #include "util.h"
 #include "resolve.h"
+#include "archdep.h"
 
 #define	DT_PROC(n)	((n) - DT_LOPROC + DT_NUM)
 
