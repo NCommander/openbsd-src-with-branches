@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_both.c,v 1.38 2021/10/23 13:36:03 jsing Exp $ */
+/* $OpenBSD: ssl_both.c,v 1.39 2021/11/26 16:41:42 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -334,7 +334,7 @@ ssl3_add_cert(CBB *cbb, X509 *x)
 }
 
 int
-ssl3_output_cert_chain(SSL *s, CBB *cbb, CERT_PKEY *cpk)
+ssl3_output_cert_chain(SSL *s, CBB *cbb, SSL_CERT_PKEY *cpk)
 {
 	X509_STORE_CTX *xs_ctx = NULL;
 	STACK_OF(X509) *chain;
