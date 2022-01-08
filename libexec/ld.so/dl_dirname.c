@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl_dirname.c,v 1.2 2015/01/16 16:18:07 deraadt Exp $	*/
+/*	$OpenBSD: dl_dirname.c,v 1.3 2019/01/25 00:19:26 millert Exp $	*/
 
 /*
  * Copyright (c) 1997, 2004 Todd C. Miller <millert@openbsd.org>
@@ -18,7 +18,8 @@
 
 #include <sys/types.h>
 #include <limits.h>
-#include "archdep.h"
+
+#include "util.h"
 
 /*
  * This file was copied from libc/stdlib/realpath.c and modified for ld.so's

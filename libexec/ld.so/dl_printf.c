@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl_printf.c,v 1.20 2017/01/24 23:37:10 millert Exp $	*/
+/*	$OpenBSD: dl_printf.c,v 1.21 2017/08/29 15:25:51 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -230,7 +230,7 @@ static void
 kprintn(int fd, unsigned long ul, int base)
 {
 	/* hold a long in base 8 */
-	char *p, buf[(sizeof(long) * NBBY / 3) + 1];
+	char *p, buf[(sizeof(long) * 8 / 3) + 1];
 
 	p = buf;
 	do {

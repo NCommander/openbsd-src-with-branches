@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.5 2020/07/18 16:41:43 kettenis Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.6 2021/12/30 04:48:13 guenther Exp $ */
 
 /*
  * Copyright (c) 1999 Dale Rahn
@@ -29,15 +29,13 @@
 #define _DYN_LOADER
 
 #include <sys/types.h>
-#include <sys/mman.h>
+#include <sys/exec_elf.h>
 #include <sys/syscall.h>
 #include <sys/unistd.h>
 
-#include <nlist.h>
-#include <link.h>
+#include <machine/reloc.h>
 
-#include "syscall.h"
-#include "archdep.h"
+#include "util.h"
 #include "resolve.h"
 
 #define	DT_PROC(n)	((n) - DT_LOPROC + DT_NUM)

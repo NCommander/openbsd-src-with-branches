@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.17 2019/05/10 13:29:21 guenther Exp $ */
+/*	$OpenBSD: boot.c,v 1.18 2019/10/20 03:44:49 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -36,8 +36,8 @@
 
 #include <sys/exec_elf.h>
 
-#include "syscall.h"
-#include "archdep.h"
+#include "util.h"
+#include "archdep.h"		/* for RELOC_TAG */
 
 #include "../../lib/csu/os-note-elf.h"
 

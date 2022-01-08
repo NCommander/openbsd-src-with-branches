@@ -1,4 +1,4 @@
-/*	$OpenBSD: dir.c,v 1.23 2015/01/16 16:18:07 deraadt Exp $	*/
+/*	$OpenBSD: dir.c,v 1.24 2017/12/12 07:47:58 deraadt Exp $	*/
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -28,16 +28,12 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/stat.h>
 
 #include <dirent.h>
 #include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 #include "syscall.h"
-#include "archdep.h"
 #include "util.h"
 #include "dir.h"
 

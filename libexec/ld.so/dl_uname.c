@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl_uname.c,v 1.2 2015/01/16 16:18:07 deraadt Exp $ */
+/*	$OpenBSD: dl_uname.c,v 1.3 2020/10/15 04:12:43 deraadt Exp $ */
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -32,7 +32,8 @@
 #include <sys/sysctl.h>
 #include <sys/utsname.h>
 
-#include "archdep.h"
+#include "syscall.h"
+#include "util.h"
 
 /*
  * This file was copied from libc/gen/uname.c and modified for ld.so's

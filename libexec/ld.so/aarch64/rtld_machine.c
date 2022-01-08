@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtld_machine.c,v 1.19 2020/01/26 02:19:44 kettenis Exp $ */
+/*	$OpenBSD: rtld_machine.c,v 1.20 2020/02/18 12:19:11 kettenis Exp $ */
 
 /*
  * Copyright (c) 2004 Dale Rahn
@@ -29,15 +29,13 @@
 #define _DYN_LOADER
 
 #include <sys/types.h>
-#include <sys/mman.h>
+#include <sys/exec_elf.h>
 #include <sys/syscall.h>
 #include <sys/unistd.h>
 
-#include <nlist.h>
-#include <link.h>
+#include <machine/reloc.h>
 
-#include "syscall.h"
-#include "archdep.h"
+#include "util.h"
 #include "resolve.h"
 
 int64_t pcookie __attribute__((section(".openbsd.randomdata"))) __dso_hidden;
