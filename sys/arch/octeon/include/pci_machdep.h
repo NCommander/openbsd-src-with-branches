@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci_machdep.h,v 1.10 2018/06/18 13:54:03 visa Exp $ */
+/*	$OpenBSD: pci_machdep.h,v 1.11 2022/01/06 15:41:53 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -88,7 +88,7 @@ pci_conf_read_db(void *cookie, pcitag_t tag, int reg,
 	pcireg_t val;
 
 	val = (*(pc)->pc_conf_read)(pc->pc_conf_v, tag, reg);
-	printf("%s:%s:%d:pci_conf_read(%lx,%x) = %x\n", file, func, line,
+	printf("%s:%s:%d:pci_conf_read(%llx,%x) = %x\n", file, func, line,
 	    tag, reg, val);
 	return val;
 }
@@ -99,7 +99,7 @@ pci_conf_write_db(void *cookie, pcitag_t tag, int reg, pcireg_t val,
 {
 	struct mips_pci_chipset *pc = cookie;
 
-	printf("%s:%s:%d:pci_conf_write(%lx,%x,%x)\n", file, func, line,
+	printf("%s:%s:%d:pci_conf_write(%llx,%x,%x)\n", file, func, line,
 	    tag, reg, val);
 	(*(pc)->pc_conf_write)(pc->pc_conf_v, tag, reg, val);
 }
