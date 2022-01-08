@@ -1,4 +1,4 @@
-/* $OpenBSD: obj_dat.c,v 1.43 2021/09/01 09:42:28 beck Exp $ */
+/* $OpenBSD: obj_dat.c,v 1.44 2022/01/07 11:13:54 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -815,4 +815,25 @@ OBJ_create(const char *oid, const char *sn, const char *ln)
 	ASN1_OBJECT_free(op);
 	free(buf);
 	return (ok);
+}
+
+size_t
+OBJ_length(const ASN1_OBJECT *obj)
+{
+	if (obj == NULL)
+		return 0;
+
+	if (obj->length < 0)
+		return 0;
+
+	return obj->length;
+}
+
+const unsigned char *
+OBJ_get0_data(const ASN1_OBJECT *obj)
+{
+	if (obj == NULL)
+		return NULL;
+
+	return obj->data;
 }
