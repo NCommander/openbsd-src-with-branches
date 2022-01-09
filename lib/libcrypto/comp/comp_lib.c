@@ -1,9 +1,11 @@
-/* $OpenBSD: comp_lib.c,v 1.7 2014/06/12 15:49:28 deraadt Exp $ */
+/* $OpenBSD: comp_lib.c,v 1.8 2014/11/03 16:58:28 tedu Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <openssl/objects.h>
 #include <openssl/comp.h>
+
+#include "comp_local.h"
 
 COMP_CTX *
 COMP_CTX_new(COMP_METHOD *meth)

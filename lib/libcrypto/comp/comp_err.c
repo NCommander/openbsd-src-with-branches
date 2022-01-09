@@ -1,4 +1,4 @@
-/* $OpenBSD: comp_err.c,v 1.9 2014/11/03 16:58:28 tedu Exp $ */
+/* $OpenBSD: comp_err.c,v 1.10 2017/01/29 17:49:22 beck Exp $ */
 /* ====================================================================
  * Copyright (c) 1999-2007 The OpenSSL Project.  All rights reserved.
  *
@@ -59,6 +59,8 @@
 
 #include <openssl/comp.h>
 #include <openssl/err.h>
+
+#include "comp_local.h"
 
 /* BEGIN ERROR CODES */
 #ifndef OPENSSL_NO_ERR

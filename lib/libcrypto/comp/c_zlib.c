@@ -1,10 +1,12 @@
-/* $OpenBSD: c_zlib.c,v 1.19 2017/01/29 17:49:22 beck Exp $ */
+/* $OpenBSD: c_zlib.c,v 1.20 2018/03/17 16:20:01 beck Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <openssl/objects.h>
 #include <openssl/comp.h>
 #include <openssl/err.h>
+
+#include "comp_local.h"
 
 COMP_METHOD *COMP_zlib(void );
 

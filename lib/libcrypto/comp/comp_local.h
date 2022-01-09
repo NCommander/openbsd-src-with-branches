@@ -1,0 +1,10 @@
+/* $OpenBSD$ */
+
+#ifndef HEADER_COMP_LOCAL_H
+#define HEADER_COMP_LOCAL_H
+
+__BEGIN_HIDDEN_DECLS
+
+__END_HIDDEN_DECLS
+
+#endif /* !HEADER_COMP_LOCAL_H */
