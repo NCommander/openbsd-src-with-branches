@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscalls.c,v 1.30 2021/08/30 09:09:21 claudio Exp $	*/
+/*	$OpenBSD: syscalls.c,v 1.31 2021/12/13 16:56:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2017-2019 Bob Beck <beck@openbsd.org>
@@ -971,6 +971,41 @@ test_fork_locked(int do_uv)
 		return 1;
 }
 
+static int
+test_intermediate_node(int do_uv)
+{
+	struct stat st;
+
+	if (do_uv) {
+		printf("testing unveil on intermediate node\n");
+		UV_SHOULD_SUCCEED((unveil("/", "r") == -1), "unveil");
+		UV_SHOULD_SUCCEED((unveil("/usr/bin/id", "rx") == -1),
+		    "unveil");
+		UV_SHOULD_SUCCEED((unveil(NULL, NULL) == -1), "unveil");
+	}
+
+	UV_SHOULD_SUCCEED((stat("/usr/bin", &st) == -1), "stat");
+	return 0;
+}
+
+static int
+test_noaccess_node(int do_uv)
+{
+	struct stat st;
+
+	if (do_uv) {
+		printf("testing unveil on noaccess node\n");
+		UV_SHOULD_SUCCEED((unveil("/", "r") == -1), "unveil");
+		UV_SHOULD_SUCCEED((unveil("/usr/bin/id", "rx") == -1),
+		    "unveil");
+		UV_SHOULD_SUCCEED((unveil("/usr/bin", "") == -1), "unveil");
+		UV_SHOULD_SUCCEED((unveil(NULL, NULL) == -1), "unveil");
+	}
+
+	UV_SHOULD_ENOENT((stat("/usr/bin", &st) == -1), "stat");
+	return 0;
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -1021,5 +1056,7 @@ main (int argc, char *argv[])
 	failures += runcompare(test_pathdiscover);
 	failures += runcompare(test_fchdir);
 	failures += runcompare(test_fork_locked);
+	failures += runcompare(test_intermediate_node);
+	failures += runcompare(test_noaccess_node);
 	exit(failures);
 }
