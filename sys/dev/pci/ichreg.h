@@ -1,4 +1,4 @@
-/*	$OpenBSD: ichreg.h,v 1.6 2005/12/18 10:49:49 grange Exp $	*/
+/*	$OpenBSD: ichreg.h,v 1.7 2005/12/18 12:09:04 grange Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Alexander Yurchenko <grange@openbsd.org>
@@ -144,6 +144,6 @@
 #define ICH_WDT_GIS_ACTIVE	(1 << 0)	/* interrupt active */
 #define ICH_WDT_RELOAD	0x0c		/* reload register */
 #define ICH_WDT_RELOAD_RLD	(1 << 8)	/* safe reload */
-#define ICH_WDT_RELOAD_TIMEOUT	(1 << 9)	/* timeout occured */
+#define ICH_WDT_RELOAD_TIMEOUT	(1 << 9)	/* timeout occurred */
 
 #endif	/* !_DEV_PCI_ICHREG_H_ */

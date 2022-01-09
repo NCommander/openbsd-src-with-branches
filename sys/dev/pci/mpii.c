@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpii.c,v 1.139 2020/08/26 13:57:19 krw Exp $	*/
+/*	$OpenBSD: mpii.c,v 1.140 2020/09/22 19:32:53 krw Exp $	*/
 /*
  * Copyright (c) 2010, 2012 Mike Belopuhov
  * Copyright (c) 2009 James Giannoules
@@ -3554,7 +3554,7 @@ mpii_bio_hs(struct mpii_softc *sc, struct bioc_disk *bd, int nvdsk,
 			/*
 			 * diskid comparison is based on the idea that all
 			 * disks are counted by the bio(4) in sequence, thus
-			 * substracting the number of disks in the volume
+			 * subtracting the number of disks in the volume
 			 * from the diskid yields us a "relative" hotspare
 			 * number, which is good enough for us.
 			 */

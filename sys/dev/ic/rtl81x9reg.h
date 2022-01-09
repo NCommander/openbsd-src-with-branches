@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtl81x9reg.h,v 1.101 2018/04/11 08:02:18 patrick Exp $	*/
+/*	$OpenBSD: rtl81x9reg.h,v 1.102 2021/05/07 00:37:36 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -632,10 +632,10 @@ struct rl_desc {
 
 #define RL_TDESC_STAT_COLCNT	0x000F0000	/* collision count */
 #define RL_TDESC_STAT_EXCESSCOL	0x00100000	/* excessive collisions */
-#define RL_TDESC_STAT_LINKFAIL	0x00200000	/* link faulure */
+#define RL_TDESC_STAT_LINKFAIL	0x00200000	/* link failure */
 #define RL_TDESC_STAT_OWINCOL	0x00400000	/* out-of-window collision */
 #define RL_TDESC_STAT_TXERRSUM	0x00800000	/* transmit error summary */
-#define RL_TDESC_STAT_UNDERRUN	0x02000000	/* TX underrun occured */
+#define RL_TDESC_STAT_UNDERRUN	0x02000000	/* TX underrun occurred */
 #define RL_TDESC_STAT_OWN	0x80000000
 
 /*

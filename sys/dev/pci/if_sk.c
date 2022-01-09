@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sk.c,v 1.191 2020/07/10 13:26:38 patrick Exp $	*/
+/*	$OpenBSD: if_sk.c,v 1.192 2020/12/12 11:48:53 jan Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999, 2000
@@ -2223,7 +2223,7 @@ void sk_init_yukon(struct sk_if_softc *sc_if)
 	SK_IF_WRITE_1(sc_if, 0, SK_RXMF1_CTRL_TEST, SK_RFCTL_RESET_CLEAR);
 	SK_IF_WRITE_2(sc_if, 0, SK_RXMF1_CTRL_TEST, v);
 
-	/* Increase flush threshould to 64 bytes */
+	/* Increase flush threshold to 64 bytes */
 	SK_IF_WRITE_2(sc_if, 0, SK_RXMF1_FLUSH_THRESHOLD,
 	    SK_RFCTL_FIFO_THRESHOLD + 1);
 

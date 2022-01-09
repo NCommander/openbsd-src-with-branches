@@ -1,4 +1,4 @@
-/*	$OpenBSD: utrh.c,v 1.24 2021/03/08 14:35:57 jcs Exp $   */
+/*	$OpenBSD: utrh.c,v 1.25 2021/11/15 15:36:24 anton Exp $   */
 
 /*
  * Copyright (c) 2009 Yojiro UO <yuo@nui.org>
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* Driver for Strawberry linux USBRH Temerature/Humidity sensor */
+/* Driver for Strawberry linux USBRH Temperature/Humidity sensor */
 
 #include <sys/param.h>
 #include <sys/systm.h>

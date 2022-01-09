@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.h,v 1.42 2020/07/17 06:27:36 dlg Exp $	*/
+/*	$OpenBSD: if_ix.h,v 1.43 2020/07/18 07:18:22 dlg Exp $	*/
 
 /******************************************************************************
 
@@ -77,7 +77,7 @@
 #define IXGBE_TX_TIMEOUT                   5	/* set to 5 seconds */
 
 /*
- * Thise parameter controls the minimum number of available transmit
+ * This parameter controls the minimum number of available transmit
  * descriptors needed before we attempt transmission of a packet.
  */
 #define IXGBE_TX_OP_THRESHOLD	(sc->num_segs + 2)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioblk.c,v 1.32 2020/10/15 13:22:13 krw Exp $	*/
+/*	$OpenBSD: vioblk.c,v 1.33 2021/11/05 11:38:29 mpi Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch.
@@ -264,7 +264,7 @@ err:
  * resources necessary to start an I/O on the device.
  *
  * Since the size of the I/O is unknown at this time the
- * resouces allocated (a.k.a. reserved) must be sufficient
+ * resources allocated (a.k.a. reserved) must be sufficient
  * to allow the maximum possible I/O size.
  *
  * When the I/O is actually attempted via vioblk_scsi_cmd()

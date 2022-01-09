@@ -1,4 +1,4 @@
-/*	$OpenBSD: hil.c,v 1.27 2017/12/30 20:46:59 guenther Exp $	*/
+/*	$OpenBSD: hil.c,v 1.28 2019/12/31 10:05:32 mpi Exp $	*/
 /*
  * Copyright (c) 2003, 2004, Miodrag Vallat.
  * All rights reserved.
@@ -395,7 +395,7 @@ hil_process_poll(struct hil_softc *sc, u_int8_t stat, u_int8_t c)
 			case HIL_UNPLUGGED:
 				/*
 				 * Remember that an unplugged event
-				 * occured; it will be processed upon
+				 * occurred; it will be processed upon
 				 * leaving polled mode...
 				 */
 				sc->sc_pending = HIL_PENDING_UNPLUGGED;

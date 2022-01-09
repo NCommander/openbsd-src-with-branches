@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82802reg.h,v 1.3 2003/10/21 18:58:49 jmc Exp $	*/
+/*	$OpenBSD: i82802reg.h,v 1.4 2009/10/23 12:48:49 jsg Exp $	*/
 
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -72,7 +72,7 @@
 
 /*
  * Register Based Locking Value Definitions
- * (tabe 4-6)
+ * (table 4-6)
  */
 #define	I82802_LV_FULL		0x00
 #define	I82802_LV_WRITE		0x01

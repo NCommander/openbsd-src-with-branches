@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahc_pci.c,v 1.59 2020/07/05 21:54:44 krw Exp $	*/
+/*	$OpenBSD: ahc_pci.c,v 1.60 2021/03/05 12:40:13 jsg Exp $	*/
 /*	$NetBSD: ahc_pci.c,v 1.43 2003/08/18 09:16:22 taca Exp $	*/
 
 /*
@@ -42,7 +42,7 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGES.
  *
- * $Id: ahc_pci.c,v 1.59 2020/07/05 21:54:44 krw Exp $
+ * $Id: ahc_pci.c,v 1.60 2021/03/05 12:40:13 jsg Exp $
  *
  * //depot/aic7xxx/aic7xxx/aic7xxx_pci.c#57 $
  *
@@ -1097,7 +1097,7 @@ ahc_9005_subdevinfo_valid(uint16_t device, uint16_t vendor,
 
 
 /*
- * Test for the presense of external sram in an
+ * Test for the presence of external sram in an
  * "unshared" configuration.
  */
 static int

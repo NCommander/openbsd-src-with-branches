@@ -1,4 +1,4 @@
-/*	$OpenBSD: envyreg.h,v 1.18 2019/04/30 20:17:12 ratchov Exp $	*/
+/*	$OpenBSD: envyreg.h,v 1.19 2019/04/30 20:38:04 ratchov Exp $	*/
 /*
  * Copyright (c) 2007 Alexandre Ratchov <alex@caoua.org>
  *
@@ -64,7 +64,7 @@
 #define ENVY_CCI_DATA	0x4
 
 /*
- * CCS regisers to access iic bus
+ * CCS registers to access iic bus
  */
 #define ENVY_I2C_DEV		0x10
 #define   ENVY_I2C_DEV_SHIFT	0x01

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar9380.c,v 1.26 2017/08/18 11:00:38 jsg Exp $	*/
+/*	$OpenBSD: ar9380.c,v 1.27 2021/04/15 18:25:43 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2011 Damien Bergamini <damien.bergamini@free.fr>
@@ -742,7 +742,7 @@ ar9380_set_txpower(struct athn_softc *sc, struct ieee80211_channel *c,
 	}
 
 	memset(power, 0, sizeof(power));
-	/* Shuffle target powers accross transmit rates. */
+	/* Shuffle target powers across transmit rates. */
 	power[ATHN_POWER_OFDM6 ] =
 	power[ATHN_POWER_OFDM9 ] =
 	power[ATHN_POWER_OFDM12] =

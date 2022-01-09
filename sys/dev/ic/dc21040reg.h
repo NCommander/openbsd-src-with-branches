@@ -1,4 +1,4 @@
-/*	$OpenBSD: dc21040reg.h,v 1.14 2005/09/25 19:24:13 brad Exp $	*/
+/*	$OpenBSD: dc21040reg.h,v 1.15 2005/11/07 00:03:09 brad Exp $	*/
 /*	$NetBSD: dc21040reg.h,v 1.11 1997/06/08 18:44:02 thorpej Exp $	*/
 
 /*-
@@ -32,7 +32,7 @@
 
 /* XXX The following only works with 21x4x chips which have
  * the descriptor swap bit. 21040 chips need to have the
- * descriptor in LE order regardles.............
+ * descriptor in LE order regardless.............
  */
 #if defined(BYTE_ORDER) && BYTE_ORDER == BIG_ENDIAN
 #define	TULIP_BITFIELD2(a, b)		      b, a

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pcn.c,v 1.43 2017/01/22 10:17:38 dlg Exp $	*/
+/*	$OpenBSD: if_pcn.c,v 1.44 2020/07/10 13:26:38 patrick Exp $	*/
 /*	$NetBSD: if_pcn.c,v 1.26 2005/05/07 09:15:44 is Exp $	*/
 
 /*
@@ -848,7 +848,7 @@ pcn_start(struct ifnet *ifp)
 
 		/*
 		 * Load the DMA map.  If this fails, the packet either
-		 * didn't fit in the alloted number of segments, or we
+		 * didn't fit in the allotted number of segments, or we
 		 * were short on resources.  In this case, we'll copy
 		 * and try again.
 		 */

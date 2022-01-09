@@ -1,4 +1,4 @@
-/*	$OpenBSD: wd.c,v 1.126 2019/07/07 10:43:46 kn Exp $ */
+/*	$OpenBSD: wd.c,v 1.127 2020/01/23 05:46:44 tedu Exp $ */
 /*	$NetBSD: wd.c,v 1.193 1999/02/28 17:15:27 explorer Exp $ */
 
 /*
@@ -302,7 +302,7 @@ wdattach(struct device *parent, struct device *self, void *aux)
 	}
 
 	/*
-	 * FREEZE LOCK the drive so malicous users can't lock it on us.
+	 * FREEZE LOCK the drive so malicious users can't lock it on us.
 	 * As there is no harm in issuing this to drives that don't
 	 * support the security feature set we just send it, and don't
 	 * bother checking if the drive sends a command abort to tell us it

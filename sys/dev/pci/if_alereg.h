@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_alereg.h,v 1.2 2011/05/20 08:36:55 kevlo Exp $	*/
+/*	$OpenBSD: if_alereg.h,v 1.3 2014/11/27 14:52:04 brad Exp $	*/
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -776,7 +776,7 @@ struct tx_desc {
 /*
  * TODO : Should get real jumbo MTU size.
  * The hardware seems to have trouble in dealing with large
- * frame length. If you encounter unstability issue, use
+ * frame length. If you encounter instability issue, use
  * lower MTU size.
  */
 #define	ALE_JUMBO_FRAMELEN	8132

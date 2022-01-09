@@ -1,4 +1,4 @@
-/*	$OpenBSD: acx.c,v 1.124 2020/07/10 13:26:37 patrick Exp $ */
+/*	$OpenBSD: acx.c,v 1.125 2021/02/25 02:48:19 dlg Exp $ */
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -566,7 +566,7 @@ acx_stop(struct acx_softc *sc)
 
 	acx_disable_intr(sc);
 
-	/* Stop backgroud scanning */
+	/* Stop background scanning */
 	timeout_del(&sc->sc_chanscan_timer);
 
 	/* Turn off power led */
@@ -2389,7 +2389,7 @@ acx_beacon_locate(struct mbuf *m, u_int8_t type)
 	 * beacon frame format
 	 *	[8] time stamp
 	 *	[2] beacon interval
-	 *	[2] cabability information
+	 *	[2] capability information
 	 *	from here on [tlv] values
 	 */
 

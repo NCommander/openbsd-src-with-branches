@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcic2_isa.c,v 1.8 2017/09/08 05:36:52 deraadt Exp $	*/
+/*	$OpenBSD: tcic2_isa.c,v 1.9 2021/03/07 06:17:04 jsg Exp $	*/
 /*	$NetBSD: tcic2_isa.c,v 1.2 1999/04/08 16:14:29 bad Exp $	*/
 
 #undef	TCICISADEBUG
@@ -222,7 +222,7 @@ tcic_isa_attach(struct device *parent, struct device *self, void *aux)
 	sc->memh = memh;
 
 	/*
-	 * determine chip type and initialise some chip type dependend
+	 * determine chip type and initialise some chip type dependent
 	 * parameters in softc.
 	 */
 	sc->chipid = tcic_chipid(iot, ioh);

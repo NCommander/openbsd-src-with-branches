@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar5212var.h,v 1.14 2007/03/12 01:04:52 reyk Exp $	*/
+/*	$OpenBSD: ar5212var.h,v 1.15 2008/07/30 07:15:39 reyk Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005, 2006, 2007 Reyk Floeter <reyk@openbsd.org>
@@ -43,7 +43,7 @@
 
 /*
  * Internal RX/TX descriptor structures
- * (rX: reserved fields possibily used by future versions of the ar5k chipset)
+ * (rX: reserved fields possibly used by future versions of the ar5k chipset)
  */
 
 struct ar5k_ar5212_rx_desc {

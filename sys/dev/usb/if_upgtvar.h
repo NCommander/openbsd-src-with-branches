@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_upgtvar.h,v 1.16 2010/12/06 04:41:39 jakemsr Exp $ */
+/*	$OpenBSD: if_upgtvar.h,v 1.17 2013/04/15 09:23:01 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Marcus Glocker <mglocker@openbsd.org>
@@ -269,19 +269,19 @@ struct upgt_lmac_filter {
 	uint32_t			unknown4;
 } __packed;
 
-/* frequence 3 data */
+/* frequency 3 data */
 struct upgt_lmac_freq3 {
 	uint16_t			freq;
 	uint8_t				data[6];
 } __packed;
 
-/* frequence 4 data */
+/* frequency 4 data */
 struct upgt_lmac_freq4 {
 	struct upgt_eeprom_freq4_2	cmd;
 	uint8_t				pad;
 };
 
-/* frequence 6 data */
+/* frequency 6 data */
 struct upgt_lmac_freq6 {
 	uint16_t			freq;
 	uint8_t				data[8];

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tipmic.c,v 1.4 2019/04/04 06:33:10 kettenis Exp $	*/
+/*	$OpenBSD: tipmic.c,v 1.5 2020/01/09 14:35:19 mpi Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -418,7 +418,7 @@ tipmic_power_opreg_handler(void *cookie, int iodir, uint64_t address,
 }
 
 /* 
- * Allegdly the GPIOs are virtual and only there to deal with a
+ * Allegedly the GPIOs are virtual and only there to deal with a
  * limitation of Microsoft Windows.
  */
 

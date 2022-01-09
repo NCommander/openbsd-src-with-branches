@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcscpreg.h,v 1.2 2001/02/14 05:11:21 fgsch Exp $	*/
+/*	$OpenBSD: pcscpreg.h,v 1.3 2008/06/26 05:42:17 ray Exp $	*/
 /*	$NetBSD$	*/
 
 /*-
@@ -61,6 +61,6 @@
 #define	 DMASTAT_ERR	0x00000002	/* DMA Transfer Error */
 #define	 DMASTAT_PWDN	0x00000001	/* Power Down Indicator */
 
-#define	DMA_SMDLA	0x58	/* Starting Memory Descpritor List Address */
+#define	DMA_SMDLA	0x58	/* Starting Memory Descriptor List Address */
 #define	DMA_WMAC	0x5C	/* Working MDL Counter */
 #define	DMA_SBAC	0x70	/* SCSI Bus and Control */

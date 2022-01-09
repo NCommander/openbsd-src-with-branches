@@ -1,4 +1,4 @@
-/*	$OpenBSD: atk0110.c,v 1.16 2020/12/17 17:57:19 kettenis Exp $	*/
+/*	$OpenBSD: atk0110.c,v 1.17 2021/03/10 21:49:55 patrick Exp $	*/
 
 /*
  * Copyright (c) 2009 Constantine A. Murenin <cnst+openbsd@bugmail.mojo.ru>
@@ -90,7 +90,7 @@ struct aibs_cmd_buffer {
 	uint32_t	param2;
 };
 
-/* Return buffer used by the GITM and SITM mehtods */
+/* Return buffer used by the GITM and SITM methods */
 struct aibs_ret_buffer {
 	uint32_t	flags;
 	uint32_t	value;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_athn_usb.h,v 1.11 2020/04/27 08:21:35 stsp Exp $	*/
+/*	$OpenBSD: if_athn_usb.h,v 1.12 2020/11/30 16:09:33 krw Exp $	*/
 
 /*-
  * Copyright (c) 2011 Damien Bergamini <damien.bergamini@free.fr>
@@ -218,7 +218,7 @@ struct ar_htc_frame_hdr {
 	uint8_t		control[4];
 } __packed;
 
-/* Structure for HTC enpoint id 0. */
+/* Structure for HTC endpoint id 0. */
 struct ar_htc_msg_hdr {
 	uint16_t	msg_id;
 #define AR_HTC_MSG_READY		0x0001

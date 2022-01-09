@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic7xxx_cam.h,v 1.8 2019/09/01 15:03:32 krw Exp $	*/
+/*	$OpenBSD: aic7xxx_cam.h,v 1.9 2020/02/06 17:24:18 krw Exp $	*/
 /*	$NetBSD: aic7xxx_cam.h,v 1.3 2003/04/20 11:17:20 fvdl Exp $	*/
 
 /*
@@ -101,7 +101,7 @@ typedef enum {
 	CAM_REQ_ABORTED,	/* CCB request aborted by the host */
 	CAM_UA_ABORT,		/* Unable to abort CCB request */
 	CAM_REQ_CMP_ERR,	/* CCB request completed with an error */
-	CAM_BUSY,		/* CAM subsytem is busy */
+	CAM_BUSY,		/* CAM subsystem is busy */
 	CAM_REQ_INVALID,	/* CCB request was invalid */
 	CAM_PATH_INVALID,	/* Supplied Path ID is invalid */
 	CAM_SEL_TIMEOUT,	/* Target Selection Timeout */

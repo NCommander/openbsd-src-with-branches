@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lge.c,v 1.75 2020/07/10 13:26:38 patrick Exp $	*/
+/*	$OpenBSD: if_lge.c,v 1.76 2020/12/12 11:48:53 jan Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -1086,7 +1086,7 @@ lge_init(void *xsc)
 
 	/*
 	 * Enable the delivery of PHY interrupts based on
-	 * link/speed/duplex status chalges.
+	 * link/speed/duplex status changes.
 	 */
 	CSR_WRITE_4(sc, LGE_MODE1, LGE_MODE1_SETRST_CTL0|LGE_MODE1_GMIIPOLL);
 

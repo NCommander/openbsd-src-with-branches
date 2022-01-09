@@ -1,4 +1,4 @@
-/*	$OpenBSD: rktemp.c,v 1.7 2021/10/24 17:52:27 mpi Exp $	*/
+/*	$OpenBSD: rktemp.c,v 1.8 2021/12/19 12:45:14 kettenis Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -384,7 +384,7 @@ rktemp_calc_temp(struct rktemp_softc *sc, int32_t code)
 	int32_t temp0, delta_temp;
 	int i;
 
-	/* Handle both negative and postive temperature coefficients. */
+	/* Handle both negative and positive temperature coefficients. */
 	if (sc->sc_temps[0].code > sc->sc_temps[1].code) {
 		if (code >= sc->sc_temps[0].code)
 			return sc->sc_temps[0].code;

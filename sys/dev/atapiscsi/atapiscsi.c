@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.116 2020/07/22 13:16:04 krw Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.117 2020/09/22 19:32:52 krw Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -160,7 +160,7 @@ static struct scsi_adapter atapiscsi_switch = {
 	wdc_atapi_send_cmd, NULL, NULL, NULL, wdc_atapi_ioctl
 };
 
-/* Inital version shares bus_link structure so it can easily
+/* Initial version shares bus_link structure so it can easily
    be "attached to current" wdc driver */
 
 struct cfattach atapiscsi_ca = {

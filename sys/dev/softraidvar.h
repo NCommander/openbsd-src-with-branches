@@ -1,4 +1,4 @@
-/* $OpenBSD: softraidvar.h,v 1.172 2021/02/08 11:20:04 stsp Exp $ */
+/* $OpenBSD: softraidvar.h,v 1.173 2021/05/10 08:17:07 stsp Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -83,7 +83,7 @@ struct sr_crypto_kdfinfo {
 };
 
 #define SR_IOCTL_GET_KDFHINT		0x01	/* Get KDF hint. */
-#define SR_IOCTL_CHANGE_PASSPHRASE	0x02	/* Change passphase. */
+#define SR_IOCTL_CHANGE_PASSPHRASE	0x02	/* Change passphrase. */
 
 struct sr_crypto_kdfpair {
 	struct sr_crypto_kdfinfo *kdfinfo1;

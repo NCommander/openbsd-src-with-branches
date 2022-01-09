@@ -1,4 +1,4 @@
-/*	$OpenBSD: uonerng.c,v 1.4 2018/07/09 20:06:12 jasper Exp $ */
+/*	$OpenBSD: uonerng.c,v 1.5 2020/05/29 04:42:25 deraadt Exp $ */
 /*
  * Copyright (C) 2015 Devin Reade <gdr@gno.org>
  * Copyright (C) 2015 Sean Levy <attila@stalphonsos.com>
@@ -81,7 +81,7 @@
 #define ONERNG_OP_EXTRACT_FIRMWARE "cmdX\n"
 
 /*
- * Noise sources include an avalache circuit and an RF circuit.
+ * Noise sources include an avalanche circuit and an RF circuit.
  * There is also a whitener to provide a uniform distribution.
  * Different combinations are possible.
  */

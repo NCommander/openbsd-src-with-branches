@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic6915.c,v 1.22 2017/01/22 10:17:37 dlg Exp $	*/
+/*	$OpenBSD: aic6915.c,v 1.23 2020/07/10 13:26:37 patrick Exp $	*/
 /*	$NetBSD: aic6915.c,v 1.15 2005/12/24 20:27:29 perry Exp $	*/
 
 /*-
@@ -848,7 +848,7 @@ sf_tick(void *arg)
 /*
  * sf_stats_update:
  *
- *	Read the statitistics counters.
+ *	Read the statistics counters.
  */
 void
 sf_stats_update(struct sf_softc *sc)

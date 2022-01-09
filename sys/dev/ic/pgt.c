@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgt.c,v 1.100 2021/03/03 23:58:28 jsg Exp $  */
+/*	$OpenBSD: pgt.c,v 1.101 2022/01/03 12:01:32 jsg Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -2457,7 +2457,7 @@ pgt_watchdog(struct ifnet *ifp)
 	if (sc->sc_flags & (SC_DYING | SC_NEEDS_RESET))
 		return;
 	/*
-	 * If we're goign to kick the device out of power-save mode
+	 * If we're going to kick the device out of power-save mode
 	 * just to update the BSSID and such, we should not do it
 	 * very often; need to determine in what way to do that.
 	 */

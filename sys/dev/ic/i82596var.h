@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82596var.h,v 1.12 2008/06/26 05:42:15 ray Exp $	*/
+/*	$OpenBSD: i82596var.h,v 1.13 2015/09/18 09:54:08 miod Exp $	*/
 /*	$NetBSD: i82586var.h,v 1.10 1998/08/15 04:42:42 mycroft Exp $	*/
 
 /*-
@@ -145,7 +145,7 @@
  * driver in `sc_scb'.
  *
  * The following functions provide the glue necessary to deal with
- * host and bus idiosyncracies:
+ * host and bus idiosyncrasies:
  *
  *	hwreset		- board reset
  *	hwinit		- board initialization

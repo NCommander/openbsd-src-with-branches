@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_atureg.h,v 1.32 2010/12/06 04:41:39 jakemsr Exp $ */
+/*	$OpenBSD: if_atureg.h,v 1.33 2013/04/15 09:23:01 mglocker Exp $ */
 /*
  * Copyright (c) 2003
  *	Daan Vreeken <Danovitsch@Vitsch.net>.  All rights reserved.
@@ -408,7 +408,7 @@ struct atu_fw {
 } __packed;
         
 /*
- * The header the AT76c503 puts in front of RX packets (for both managment &
+ * The header the AT76c503 puts in front of RX packets (for both management &
  * data)
  */
 struct atu_rx_hdr {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hidms.c,v 1.6 2021/01/10 16:32:48 thfr Exp $ */
+/*	$OpenBSD: hidms.c,v 1.7 2021/06/10 13:34:37 jcs Exp $ */
 /*	$NetBSD: ums.c,v 1.60 2003/03/11 16:44:00 augustss Exp $	*/
 
 /*
@@ -229,7 +229,7 @@ hidms_setup(struct device *self, struct hidms *ms, uint32_t quirks,
 	 * The Microsoft Wireless Notebook Optical Mouse seems to be in worse
 	 * shape than the Wireless Intellimouse 2.0, as its X, Y, wheel, and
 	 * all of its other button positions are all off. It also reports that
-	 * it has two addional buttons and a tilt wheel.
+	 * it has two additional buttons and a tilt wheel.
 	 */
 	if (ms->sc_flags & HIDMS_MS_BAD_CLASS) {
 		/* HIDMS_LEADINGBYTE cleared on purpose */

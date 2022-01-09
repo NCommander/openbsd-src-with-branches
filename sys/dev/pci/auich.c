@@ -1,4 +1,4 @@
-/*	$OpenBSD: auich.c,v 1.111 2019/08/15 09:38:56 miko Exp $	*/
+/*	$OpenBSD: auich.c,v 1.112 2019/08/22 09:47:29 miko Exp $	*/
 
 /*
  * Copyright (c) 2000,2001 Michael Shalayeff
@@ -1405,7 +1405,7 @@ auich_calibrate(struct auich_softc *sc)
 	bus_space_write_1(sc->iot, sc->aud_ioh, AUICH_PCMI + AUICH_LVI,
 	    civ & AUICH_LVI_MASK);
 
-	/* start, but don't request any interupts */
+	/* start, but don't request any interrupts */
 	microuptime(&t1);
 	bus_space_write_1(sc->iot, sc->aud_ioh, AUICH_PCMI + AUICH_CTRL,
 	    AUICH_RPBM);

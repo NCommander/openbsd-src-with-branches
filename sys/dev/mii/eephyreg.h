@@ -1,4 +1,4 @@
-/*	$OpenBSD: eephyreg.h,v 1.7 2009/06/04 05:19:38 kettenis Exp $	*/
+/*	$OpenBSD: eephyreg.h,v 1.8 2020/11/03 21:49:42 patrick Exp $	*/
 /*
  * Principal Author: Parag Patel
  * Copyright (c) 2001
@@ -26,7 +26,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Additonal Copyright (c) 2001 by Traakan Software under same licence.
+ * Additional Copyright (c) 2001 by Traakan Software under same licence.
  * Secondary Author: Matthew Jacob
  */
 

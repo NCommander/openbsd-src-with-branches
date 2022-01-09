@@ -1,4 +1,4 @@
-/*	$OpenBSD: smc91cxxreg.h,v 1.2 2001/06/27 05:44:52 nate Exp $	*/
+/*	$OpenBSD: smc91cxxreg.h,v 1.3 2006/01/23 14:42:55 martin Exp $	*/
 /*	$NetBSD: smc91cxxreg.h,v 1.2 1997/09/02 00:10:58 thorpej Exp $	*/
 
 /*
@@ -117,7 +117,7 @@
  * the Ethernet Protocol Handler jumbled together.  In auto-release
  * mode this information is simply discarded after each TX.  This info
  * is copied to the status word of in-memory packets after transmit
- * where relevent statuses can be checked.
+ * where relevant statuses can be checked.
  */
 #define	EPH_STATUS_REG_W 0x02
 
@@ -211,7 +211,7 @@
 
 /*
  * The contents of this port are used by the adapter
- * to decode its I/O address.  We use it as a varification
+ * to decode its I/O address.  We use it as a verification
  * that the adapter is detected properly when probing.
  */
 #define	BASE_ADDR_REG_W	0x02	/* The selected I/O Base addr. */

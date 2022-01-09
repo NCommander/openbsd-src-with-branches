@@ -1,4 +1,4 @@
-/*	$OpenBSD: axppmic.c,v 1.11 2021/10/24 17:52:26 mpi Exp $	*/
+/*	$OpenBSD: axppmic.c,v 1.12 2021/12/03 19:17:27 uaa Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -504,7 +504,7 @@ axppmic_attach_common(struct axppmic_softc *sc, const char *name, int node)
 		}
 	}
 
-	/* Enable data collecton on AXP209. */
+	/* Enable data collection on AXP209. */
 	if (strcmp(name, "x-powers,axp209") == 0) {
 		uint8_t reg;
 

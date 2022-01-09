@@ -1,4 +1,4 @@
-/*	$OpenBSD: uaudio.c,v 1.162 2021/11/22 10:17:14 mglocker Exp $	*/
+/*	$OpenBSD: uaudio.c,v 1.163 2021/12/31 23:19:50 jsg Exp $	*/
 /*
  * Copyright (c) 2018 Alexandre Ratchov <alex@caoua.org>
  *
@@ -772,7 +772,7 @@ uaudio_ranges_init(struct uaudio_ranges *r)
 }
 
 /*
- * Add the given range to the the uaudio_ranges structures. Ranges are
+ * Add the given range to the uaudio_ranges structures. Ranges are
  * not supposed to overlap (required by USB spec). If they do we just
  * return.
  */

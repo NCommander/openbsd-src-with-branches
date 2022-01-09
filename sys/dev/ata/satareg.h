@@ -1,4 +1,4 @@
-/*	$OpenBSD: satareg.h,v 1.1 2004/10/17 17:18:06 grange Exp $	*/
+/*	$OpenBSD: satareg.h,v 1.2 2008/06/26 05:42:14 ray Exp $	*/
 /*	$NetBSD: satareg.h,v 1.3 2004/05/23 23:07:59 wiz Exp $	*/
 
 /*-
@@ -69,7 +69,7 @@
 #define	SStatus_SPD_mask	(0xf << 4)
 #define	SStatus_SPD_shift	4
 	/*
-	 * The IPM value indicates the current interface power managemnt
+	 * The IPM value indicates the current interface power management
 	 * state.
 	 */
 #define	SStatus_IPM_NODEV	(0x0 << 8)	/* no device connected */

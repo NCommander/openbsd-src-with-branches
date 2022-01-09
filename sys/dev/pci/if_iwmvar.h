@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwmvar.h,v 1.73 2021/12/03 12:43:17 stsp Exp $	*/
+/*	$OpenBSD: if_iwmvar.h,v 1.74 2021/12/20 15:08:10 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -563,12 +563,12 @@ struct iwm_softc {
 
 	/*
 	 * So why do we need a separate stopped flag and a generation?
-	 * the former protects the device from issueing commands when it's
+	 * the former protects the device from issuing commands when it's
 	 * stopped (duh).  The latter protects against race from a very
 	 * fast stop/unstop cycle where threads waiting for responses do
 	 * not have a chance to run in between.  Notably: we want to stop
 	 * the device from interrupt context when it craps out, so we
-	 * don't have the luxury of waiting for quiescense.
+	 * don't have the luxury of waiting for quiescence.
 	 */
 	int sc_generation;
 

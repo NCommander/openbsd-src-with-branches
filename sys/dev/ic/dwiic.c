@@ -1,4 +1,4 @@
-/* $OpenBSD: dwiic.c,v 1.12 2021/07/13 22:08:50 patrick Exp $ */
+/* $OpenBSD: dwiic.c,v 1.13 2021/11/07 14:07:43 stsp Exp $ */
 /*
  * Synopsys DesignWare I2C controller
  *
@@ -330,7 +330,7 @@ dwiic_i2c_exec(void *cookie, i2c_op_t op, i2c_addr_t addr, const void *cmdbuf,
 		if (x == 0 && cmdlen > 0 && I2C_OP_READ_P(op))
 			cmd |= DW_IC_DATA_CMD_RESTART;
 		/*
-		 * Generate STOP conditon on the last byte of the
+		 * Generate STOP condition on the last byte of the
 		 * transfer.
 		 */
 		if (x == (len - 1) && I2C_OP_STOP_P(op))

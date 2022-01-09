@@ -1,4 +1,4 @@
-/*      $OpenBSD: neo.c,v 1.32 2016/09/19 06:46:44 ratchov Exp $       */
+/*      $OpenBSD: neo.c,v 1.33 2018/04/11 04:48:31 ratchov Exp $       */
 
 /*
  * Copyright (c) 1999 Cameron Grant <gandalf@vilnya.demon.co.uk>
@@ -97,7 +97,7 @@
  * are generated more often than that, so 20-40 interrupts per second
  * should not be unexpected. Increasing BUFFSIZE should help minimize
  * the glitches due to drivers that spend too much time looping at high
- * privelege levels as well as the impact of badly written audio
+ * privilege levels as well as the impact of badly written audio
  * interface clients.
  *
  * TO-DO list:

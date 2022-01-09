@@ -1,4 +1,4 @@
-/* $OpenBSD: mfireg.h,v 1.49 2018/05/18 05:17:40 jmatthew Exp $ */
+/* $OpenBSD: mfireg.h,v 1.50 2020/02/13 15:11:32 krw Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -673,7 +673,7 @@ struct mfi_info_pci {
 	uint8_t			mip_reserved[24];
 } __packed;
 
-/* host interface infor */
+/* host interface info */
 struct mfi_info_host {
 	uint8_t			mih_type;
 #define MFI_INFO_HOST_PCIX	0x01

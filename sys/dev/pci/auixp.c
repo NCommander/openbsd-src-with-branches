@@ -1,4 +1,4 @@
-/* $OpenBSD: auixp.c,v 1.42 2020/01/24 03:29:55 tedu Exp $ */
+/* $OpenBSD: auixp.c,v 1.43 2020/06/27 00:33:59 jsg Exp $ */
 /* $NetBSD: auixp.c,v 1.9 2005/06/27 21:13:09 thorpej Exp $ */
 
 /*
@@ -37,7 +37,7 @@
  *   codec support problem.
  * - 32 bit recording works but can't try out playing: see above.
  * - no suspend/resume support yet.
- * - multiple codecs are `supported' but not tested; the implemetation needs
+ * - multiple codecs are `supported' but not tested; the implementation needs
  *   some cleaning up.
  */
 

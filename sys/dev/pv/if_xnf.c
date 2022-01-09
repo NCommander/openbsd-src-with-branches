@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xnf.c,v 1.65 2020/12/12 11:48:53 jan Exp $	*/
+/*	$OpenBSD: if_xnf.c,v 1.66 2021/07/26 11:06:36 jsg Exp $	*/
 
 /*
  * Copyright (c) 2015, 2016 Mike Belopuhov
@@ -1140,7 +1140,7 @@ xnf_capabilities(struct xnf_softc *sc)
 		sc->sc_caps |= XNF_CAP_CSUM6;
 #endif
 
-	/* Query multicast traffic contol capability */
+	/* Query multicast traffic control capability */
 	prop = "feature-multicast-control";
 	if ((error = xs_getnum(sc->sc_parent, sc->sc_backend, prop, &res)) != 0
 	    && error != ENOENT)

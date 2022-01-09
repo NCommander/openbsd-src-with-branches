@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vio.c,v 1.19 2020/12/12 11:48:53 jan Exp $	*/
+/*	$OpenBSD: if_vio.c,v 1.20 2021/11/05 11:38:29 mpi Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch, Alexander Fiveg.
@@ -895,7 +895,7 @@ vio_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 }
 
 /*
- * Recieve implementation
+ * Receive implementation
  */
 /* allocate and initialize a mbuf for receive */
 int
@@ -1095,7 +1095,7 @@ vio_rx_drain(struct vio_softc *sc)
 }
 
 /*
- * Transmition implementation
+ * Transmission implementation
  */
 /* actual transmission is done in if_start */
 /* tx interrupt; dequeue and free mbufs */

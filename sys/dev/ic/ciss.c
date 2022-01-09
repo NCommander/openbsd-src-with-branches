@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciss.c,v 1.88 2020/07/24 12:43:31 krw Exp $	*/
+/*	$OpenBSD: ciss.c,v 1.89 2020/09/22 19:32:52 krw Exp $	*/
 
 /*
  * Copyright (c) 2005,2006 Michael Shalayeff
@@ -423,7 +423,7 @@ ciss_shutdown(void *v)
 }
 
 /*
- * submit a command and optionally wait for completition.
+ * submit a command and optionally wait for completion.
  * wait arg abuses SCSI_POLL|SCSI_NOSLEEP flags to request
  * to wait (SCSI_POLL) and to allow tsleep() (!SCSI_NOSLEEP)
  * instead of busy loop waiting

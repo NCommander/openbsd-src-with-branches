@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tht.c,v 1.142 2020/07/10 13:26:38 patrick Exp $ */
+/*	$OpenBSD: if_tht.c,v 1.143 2020/12/17 23:36:47 cheloha Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -327,7 +327,7 @@ struct tht_rx_desc {
 } __packed;
 #define THT_RXD_TYPE		2
 
-/* rx decriptor type 3: data chain instruction */
+/* rx descriptor type 3: data chain instruction */
 struct tht_rx_desc_dc {
 	/* preceded by tht_rx_desc */
 

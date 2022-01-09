@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami.c,v 1.259 2020/09/22 19:32:52 krw Exp $	*/
+/*	$OpenBSD: ami.c,v 1.260 2020/10/15 00:01:24 krw Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -42,7 +42,7 @@
  * - 467 and 475 model cards, docs
  *	American Megatrends Inc.;
  *
- * - uninterruptable electric power for cvs
+ * - uninterruptible electric power for cvs
  *	Theo de Raadt.
  */
 
@@ -1898,7 +1898,7 @@ ami_ioctl_inq(struct ami_softc *sc, struct bioc_inq *bi)
 				}
 			}
 
-	/* count unsued disks */
+	/* count unused disks */
 	for(i = 0; i < sc->sc_channels * 16; i++) {
 	    	if (sc->sc_plist[i])
 			continue; /* skip claimed drives */

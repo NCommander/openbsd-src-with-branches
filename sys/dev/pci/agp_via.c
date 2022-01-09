@@ -1,4 +1,4 @@
-/*	$OpenBSD: agp_via.c,v 1.19 2014/03/26 14:41:41 mpi Exp $	*/
+/*	$OpenBSD: agp_via.c,v 1.20 2014/05/27 12:40:00 kettenis Exp $	*/
 /*	$NetBSD: agp_via.c,v 1.2 2001/09/15 00:25:00 thorpej Exp $	*/
 
 /*-
@@ -153,7 +153,7 @@ agp_via_attach(struct device *parent, struct device *self, void *aux)
 			break;
 
 		/*
-		 * Probably failed to alloc congigious memory. Try reducing the
+		 * Probably failed to alloc contiguous memory. Try reducing the
 		 * aperture so that the gatt size reduces.
 		 */
 		vsc->vsc_apsize /= 2;

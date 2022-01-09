@@ -1,4 +1,4 @@
-/*	$OpenBSD: amlmmc.c,v 1.10 2021/04/20 19:33:03 kettenis Exp $	*/
+/*	$OpenBSD: amlmmc.c,v 1.11 2021/10/24 17:52:26 mpi Exp $	*/
 /*
  * Copyright (c) 2019 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -227,7 +227,7 @@ amlmmc_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_dmat = faa->fa_dmat;
 	error = amlmmc_alloc_descriptors(sc);
 	if (error) {
-		printf(": can't allocate desctiptors\n");
+		printf(": can't allocate descriptors\n");
 		goto unmap;
 	}
 	error = bus_dmamap_create(sc->sc_dmat, MAXPHYS, AMLMMC_NDESC,

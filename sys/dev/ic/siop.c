@@ -1,4 +1,4 @@
-/*	$OpenBSD: siop.c,v 1.86 2020/09/22 19:32:52 krw Exp $ */
+/*	$OpenBSD: siop.c,v 1.87 2021/03/07 06:21:38 jsg Exp $ */
 /*	$NetBSD: siop.c,v 1.79 2005/11/18 23:10:32 bouyer Exp $	*/
 
 /*
@@ -600,7 +600,7 @@ siop_intr(void *v)
 				goto scintr;
 			}
 			/*
-			 * else we have to restart it ourselve, at the
+			 * else we have to restart it ourselves, at the
 			 * interrupted instruction.
 			 */
 			bus_space_write_4(sc->sc_c.sc_rt, sc->sc_c.sc_rh,

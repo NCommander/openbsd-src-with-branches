@@ -1,4 +1,4 @@
-/* $OpenBSD: ihidev.c,v 1.23 2020/07/09 21:01:55 jcs Exp $ */
+/* $OpenBSD: ihidev.c,v 1.24 2021/08/26 21:05:01 jcs Exp $ */
 /*
  * HID-over-i2c driver
  *
@@ -237,7 +237,7 @@ ihidev_activate(struct device *self, int act)
 	case DVACT_QUIESCE:
 		sc->sc_dying = 1;
 		if (sc->sc_poll && timeout_initialized(&sc->sc_timer)) {
-			DPRINTF(("%s: canceling polling\n",
+			DPRINTF(("%s: cancelling polling\n",
 			    sc->sc_dev.dv_xname));
 			timeout_del_barrier(&sc->sc_timer);
 		}

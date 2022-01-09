@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xge.c,v 1.79 2020/07/10 13:26:40 patrick Exp $	*/
+/*	$OpenBSD: if_xge.c,v 1.80 2020/12/12 11:48:53 jan Exp $	*/
 /*	$NetBSD: if_xge.c,v 1.1 2005/09/09 10:30:27 ragge Exp $	*/
 
 /*
@@ -137,7 +137,7 @@ static const uint64_t xge_fix_mac[] = {
 
 /*
  * Constants to be programmed into Hercules's registers, to configure
- * the XGXS transciever.
+ * the XGXS transceiver.
  */
 static const uint64_t xge_herc_dtx_cfg[] = {
 	0x8000051536750000ULL, 0x80000515367500E0ULL,
