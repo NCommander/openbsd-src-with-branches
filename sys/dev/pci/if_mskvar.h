@@ -157,6 +157,7 @@ do {									\
 
 /* Forward decl. */
 struct sk_if_softc;
+struct msk_kstat;
 
 /* Softc for the Yukon-II controller. */
 struct sk_softc {
@@ -206,6 +207,8 @@ struct sk_if_softc {
 	struct sk_softc		*sk_softc;	/* parent controller */
 	int			sk_tx_bmu;	/* TX BMU register */
 	SIMPLEQ_HEAD(__sk_txmaphead, sk_txmap_entry)	sk_txmap_head;
+
+	struct msk_kstat	*sk_kstat;
 };
 
 struct skc_attach_args {
