@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: kstat.4,v 1.1 2022/01/10 04:59:19 jsg Exp $
 .\"
 .\" Copyright (c) 2022 Jonathan Gray <jsg@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: January 10 2022 $
 .Dt KSTAT 4
 .Os
 .Sh NAME
@@ -30,13 +30,13 @@ device exposes kernel statistics to userland.
 See
 .In sys/kstat.h .
 .Bl -tag -width Ds
-.It KSTATIOC_VERSION Fa "unsigned int"
-.It KSTATIOC_FIND_ID Fa "struct kstat_req"
-.It KSTATIOC_NFIND_ID Fa "struct kstat_req"
-.It KSTATIOC_FIND_PROVIDER Fa "struct kstat_req"
-.It KSTATIOC_NFIND_PROVIDER Fa "struct kstat_req"
-.It KSTATIOC_FIND_NAME Fa "struct kstat_req"
-.It KSTATIOC_NFIND_NAME Fa "struct kstat_req"
+.It Dv KSTATIOC_VERSION Fa "unsigned int"
+.It Dv KSTATIOC_FIND_ID Fa "struct kstat_req"
+.It Dv KSTATIOC_NFIND_ID Fa "struct kstat_req"
+.It Dv KSTATIOC_FIND_PROVIDER Fa "struct kstat_req"
+.It Dv KSTATIOC_NFIND_PROVIDER Fa "struct kstat_req"
+.It Dv KSTATIOC_FIND_NAME Fa "struct kstat_req"
+.It Dv KSTATIOC_NFIND_NAME Fa "struct kstat_req"
 .El
 .Sh FILES
 .Bl -tag -width Pa -compact
