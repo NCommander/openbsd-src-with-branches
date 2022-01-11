@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_changer.h,v 1.8 2019/11/29 14:06:21 krw Exp $	*/
+/*	$OpenBSD: scsi_changer.h,v 1.9 2021/03/12 10:22:46 jsg Exp $	*/
 /*	$NetBSD: scsi_changer.h,v 1.7 1996/04/03 00:25:48 thorpej Exp $	*/
 
 /*
@@ -386,7 +386,7 @@ struct page_element_address_assignment {
 	/* First data transfer element address */
 	u_int8_t	fdtea[2];
 
-	/* Number of data trafer elements */
+	/* Number of data transfer elements */
 	u_int8_t	ndte[2];
 
 	u_int8_t	reserved[2];
