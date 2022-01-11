@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_subr.c,v 1.4 2016/10/22 19:43:50 natano Exp $	*/
+/*	$OpenBSD: ffs_subr.c,v 1.5 2021/10/06 00:40:41 deraadt Exp $	*/
 /*	$NetBSD: ffs_subr.c,v 1.49 2016/05/07 11:59:08 maxv Exp $	*/
 
 /*
@@ -47,7 +47,7 @@
  * block operations
  *
  * check if a block is available
- *  returns true if all the correponding bits in the free map are 1
+ *  returns true if all the corresponding bits in the free map are 1
  *  returns false if any corresponding bit in the free map is 0
  */
 int

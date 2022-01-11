@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs.c,v 1.34 2021/10/06 00:40:39 deraadt Exp $	*/
+/*	$OpenBSD: ffs.c,v 1.35 2021/10/24 21:24:19 deraadt Exp $	*/
 /*	$NetBSD: ffs.c,v 1.66 2015/12/21 00:58:08 christos Exp $	*/
 
 /*
@@ -126,7 +126,7 @@ static  void	*ffs_build_dinode2(struct ufs2_dinode *, dirbuf_t *, fsnode *,
 
 
 
-	/* publically visible functions */
+	/* publicly visible functions */
 void
 ffs_prep_opts(fsinfo_t *fsopts)
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: walk.c,v 1.9 2016/12/17 16:12:15 krw Exp $	*/
+/*	$OpenBSD: walk.c,v 1.10 2021/09/01 15:19:00 deraadt Exp $	*/
 /*	$NetBSD: walk.c,v 1.29 2015/11/25 00:48:49 christos Exp $	*/
 
 /*
@@ -218,7 +218,7 @@ create_fsnode(const char *root, const char *path, const char *name,
 /*
  * free_fsnodes --
  *	Removes node from tree and frees it and all of
- *   its decendents.
+ *   its descendants.
  */
 void
 free_fsnodes(fsnode *node)
