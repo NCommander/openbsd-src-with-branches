@@ -1,4 +1,4 @@
-/*	$OpenBSD: gmon.h,v 1.7 2013/03/12 09:37:16 mpi Exp $	*/
+/*	$OpenBSD: gmon.h,v 1.8 2016/05/07 19:30:52 guenther Exp $	*/
 /*	$NetBSD: gmon.h,v 1.5 1996/04/09 20:55:30 cgd Exp $	*/
 
 /*-
@@ -156,7 +156,7 @@ struct gmonparam {
 #define	GPROF_GMONPARAM	4	/* struct: profiling parameters (see above) */
 
 #ifdef _KERNEL
-extern int gmoninit;		/* Is the kernel ready for beeing profiled? */
+extern int gmoninit;		/* Is the kernel ready for being profiled? */
 
 #else /* !_KERNEL */
 
