@@ -1,4 +1,4 @@
-/*	$OpenBSD: ntfs_vfsops.c,v 1.63 2019/12/26 13:28:49 bluhm Exp $	*/
+/*	$OpenBSD: ntfs_vfsops.c,v 1.64 2020/02/27 09:10:31 mpi Exp $	*/
 /*	$NetBSD: ntfs_vfsops.c,v 1.7 2003/04/24 07:50:19 christos Exp $	*/
 
 /*-
@@ -496,7 +496,7 @@ ntfs_unmount(struct mount *mp, int mntflags, struct proc *p)
 
 	/* Check if the type of device node isn't VBAD before
 	 * touching v_specinfo.  If the device vnode is revoked, the
-	 * field is NULL and touching it causes null pointer derefercence.
+	 * field is NULL and touching it causes null pointer dereference.
 	 */
 	if (ntmp->ntm_devvp->v_type != VBAD)
 		ntmp->ntm_devvp->v_specmountpoint = NULL;

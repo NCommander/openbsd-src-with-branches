@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_aiod.c,v 1.7 2015/08/28 00:03:54 deraadt Exp $	*/
+/*	$OpenBSD: nfs_aiod.c,v 1.8 2019/12/05 10:41:57 mpi Exp $	*/
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -150,7 +150,7 @@ out1:
 	free(aiod, M_TEMP, sizeof(*aiod));
 	nfs_numaiods--;
 	KASSERT(nfs_numaiods >= 0);
-	/* Rejust the limit of bufs to queue. See comment above. */
+	/* Readjust the limit of bufs to queue. See comment above. */
 	if (nfs_numaiods > 0)
 		nfs_aiodbufqmax = max((bcstats.numbufs / 4) / nfs_numaiods, 64);
 	else
