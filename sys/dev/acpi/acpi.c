@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.403 2021/12/16 08:03:17 anton Exp $ */
+/* $OpenBSD: acpi.c,v 1.404 2022/01/04 13:40:58 patrick Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -3015,8 +3015,8 @@ acpi_getprop(struct aml_node *node, const char *prop, void *buf, int buflen)
 	return -1;
 }
 
-uint32_t
-acpi_getpropint(struct aml_node *node, const char *prop, uint32_t defval)
+uint64_t
+acpi_getpropint(struct aml_node *node, const char *prop, uint64_t defval)
 {
 	struct aml_value dsd;
 	int i;
