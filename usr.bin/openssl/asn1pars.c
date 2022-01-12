@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1pars.c,v 1.9 2018/02/07 05:47:55 jsing Exp $ */
+/* $OpenBSD: asn1pars.c,v 1.10 2019/07/14 03:30:45 guenther Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -424,7 +424,7 @@ asn1parse_main(int argc, char **argv)
 }
 
 static int
-do_generate(BIO * bio, char *genstr, char *genconf, BUF_MEM * buf)
+do_generate(BIO *bio, char *genstr, char *genconf, BUF_MEM *buf)
 {
 	CONF *cnf = NULL;
 	int len;
