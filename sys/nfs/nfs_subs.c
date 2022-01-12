@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_subs.c,v 1.144 2020/06/24 22:03:44 cheloha Exp $	*/
+/*	$OpenBSD: nfs_subs.c,v 1.145 2022/01/11 03:13:59 jsg Exp $	*/
 /*	$NetBSD: nfs_subs.c,v 1.27.4.3 1996/07/08 20:34:24 jtc Exp $	*/
 
 /*
@@ -1841,6 +1841,7 @@ nfsm_srvsattr(struct mbuf **mp, struct vattr *va, struct mbuf *mrep,
 
 	info.nmi_md = *mp;
 	info.nmi_dpos = *dposp;
+	info.nmi_mrep = mrep;
 
 	nfsm_dissect(tl, u_int32_t *, NFSX_UNSIGNED);
 	if (*tl == nfs_true) {
