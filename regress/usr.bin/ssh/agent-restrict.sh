@@ -1,4 +1,4 @@
-#	$OpenBSD: agent-restrict.sh,v 1.2 2022/01/04 07:20:33 djm Exp $
+#	$OpenBSD: agent-restrict.sh,v 1.3 2022/01/12 07:18:37 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="agent restrictions"
@@ -86,7 +86,7 @@ reset_keys() {
 	trace "reset keys"
 	>$OBJ/authorized_keys_$USER
 	for h in e d c b a; do
-		(printf "restrict,agent-forwarding,command=\"$_command\" ";
+		(printf "%s" "restrict,agent-forwarding,command=\"$_command\" ";
 		 cat $OBJ/user_$h.pub) >> $OBJ/authorized_keys_$USER
 	done
 }
