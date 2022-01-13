@@ -1,4 +1,4 @@
-/*	$OpenBSD: apldog.c,v 1.1 2021/02/22 21:30:54 kettenis Exp $	*/
+/*	$OpenBSD: apldog.c,v 1.2 2021/11/13 23:24:24 kettenis Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -100,7 +100,8 @@ apldog_attach(struct device *parent, struct device *self, void *aux)
 	HWRITE4(sc, WDT_SYS_CTL, 0);
 
 	apldog_sc = sc;
-	cpuresetfn = apldog_reset;
+	if (cpuresetfn == NULL)
+		cpuresetfn = apldog_reset;
 }
 
 void
