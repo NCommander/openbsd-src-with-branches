@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_cpols.c,v 1.2 2021/08/24 15:23:03 tb Exp $ */
+/* $OpenBSD: x509_cpols.c,v 1.3 2022/01/08 07:25:52 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -233,7 +233,6 @@ static const ASN1_ADB_TABLE POLICYQUALINFO_adbtbl[] = {
 static const ASN1_ADB POLICYQUALINFO_adb = {
 	.flags = 0,
 	.offset = offsetof(POLICYQUALINFO, pqualid),
-	.app_items = 0,
 	.tbl = POLICYQUALINFO_adbtbl,
 	.tblcount = sizeof(POLICYQUALINFO_adbtbl) / sizeof(ASN1_ADB_TABLE),
 	.default_tt = &policydefault_tt,
