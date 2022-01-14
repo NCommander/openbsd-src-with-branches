@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-sk-client.c,v 1.10 2021/10/28 02:54:18 djm Exp $ */
+/* $OpenBSD: ssh-sk-client.c,v 1.11 2022/01/14 03:32:52 djm Exp $ */
 /*
  * Copyright (c) 2019 Google LLC
  *
@@ -397,8 +397,7 @@ sshsk_load_resident(const char *provider_path, const char *device,
 	*srksp = NULL;
 	*nsrksp = 0;
 
-	if ((resp = sshbuf_new()) == NULL ||
-	    (kbuf = sshbuf_new()) == NULL ||
+	if ((kbuf = sshbuf_new()) == NULL ||
 	    (req = sshbuf_new()) == NULL) {
 		r = SSH_ERR_ALLOC_FAIL;
 		goto out;
