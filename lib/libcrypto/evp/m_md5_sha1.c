@@ -1,4 +1,4 @@
-/* $OpenBSD: m_md5_sha1.c,v 1.2 2018/08/10 17:30:29 jsing Exp $ */
+/* $OpenBSD: m_md5_sha1.c,v 1.3 2021/12/12 21:30:13 tb Exp $ */
 /*
  * Copyright (c) 2017 Joel Sing <jsing@openbsd.org>
  *
@@ -80,13 +80,6 @@ static const EVP_MD md5_sha1_md = {
         .final = md5_sha1_final,
         .block_size = MD5_CBLOCK, /* MD5_CBLOCK == SHA_CBLOCK */
         .ctx_size = sizeof(EVP_MD *) + sizeof(struct md5_sha1_ctx),
-#ifndef OPENSSL_NO_RSA
-	.sign = (evp_sign_method *)RSA_sign,
-	.verify = (evp_verify_method *)RSA_verify,
-	.required_pkey_type = {
-		EVP_PKEY_RSA, EVP_PKEY_RSA2, 0, 0,
-	},
-#endif
 };
 
 const EVP_MD *

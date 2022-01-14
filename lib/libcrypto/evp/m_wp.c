@@ -1,4 +1,4 @@
-/* $OpenBSD: m_wp.c,v 1.8 2014/07/13 09:30:02 miod Exp $ */
+/* $OpenBSD: m_wp.c,v 1.9 2021/12/12 21:30:13 tb Exp $ */
 
 #include <stdio.h>
 
@@ -41,11 +41,6 @@ static const EVP_MD whirlpool_md = {
 	.final = final,
 	.copy = NULL,
 	.cleanup = NULL,
-	.sign = NULL,
-	.verify = NULL,
-	.required_pkey_type = {
-		0, 0, 0, 0,
-	},
 	.block_size = WHIRLPOOL_BBLOCK / 8,
 	.ctx_size = sizeof(EVP_MD *) + sizeof(WHIRLPOOL_CTX),
 };
