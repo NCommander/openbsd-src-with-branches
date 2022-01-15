@@ -1,4 +1,4 @@
-/* $OpenBSD: mc146818.c,v 1.23 2021/03/29 13:09:41 dv Exp $ */
+/* $OpenBSD: mc146818.c,v 1.24 2021/06/16 16:55:02 dv Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -34,7 +34,6 @@
 #include "vmd.h"
 #include "vmm.h"
 
-#define MC_DIVIDER_MASK 0xe0
 #define MC_RATE_MASK 0xf
 
 #define NVRAM_CENTURY 0x32
@@ -236,10 +235,6 @@ rtc_reschedule_per(void)
 static void
 rtc_update_rega(uint32_t data)
 {
-	if ((data & MC_DIVIDER_MASK) != MC_BASE_32_KHz)
-		log_warnx("%s: set non-32KHz timebase not supported",
-		    __func__);
-
 	rtc.regs[MC_REGA] = data;
 	if ((rtc.regs[MC_REGA] ^ data) & 0x0f)
 		vm_pipe_send(&dev_pipe, MC146818_RESCHEDULE_PER);
