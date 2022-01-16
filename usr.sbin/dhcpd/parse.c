@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.c,v 1.26 2017/02/16 00:24:43 krw Exp $	*/
+/*	$OpenBSD: parse.c,v 1.27 2020/04/16 23:23:21 dtucker Exp $	*/
 
 /* Common parser code for dhcpd and dhclient. */
 
@@ -293,9 +293,8 @@ parse_lease_time(FILE *cfile, time_t *timep)
 	const char *errstr;
 	char *val;
 	uint32_t value;
-	int token;
 
-	token = next_token(&val, cfile);
+	next_token(&val, cfile);
 
 	value = strtonum(val, 0, UINT32_MAX, &errstr);
 	if (errstr) {
