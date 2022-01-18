@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cdsdhc.c,v 1.1 2022/01/18 07:53:39 visa Exp $	*/
 
 /*
  * Copyright (c) 2022 Visa Hankala
@@ -97,7 +97,7 @@ cdsdhc_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct fdt_attach_args *faa = aux;
 	struct cdsdhc_softc *sc = (struct cdsdhc_softc *)self;
-	uint32_t caps = 0;
+	uint64_t capmask = 0, capset = 0;
 	uint32_t ver;
 
 	sc->sc_iot = faa->fa_iot;
@@ -131,7 +131,7 @@ cdsdhc_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_sdhc.sc_dmat = faa->fa_dmat;
 	sc->sc_sdhc.sc_bus_clock_pre = cdsdhc_bus_clock_pre;
 	sdhc_host_found(&sc->sc_sdhc, sc->sc_iot, sc->sc_srs_ioh, SRS_SIZE,
-	    1, caps);
+	    1, capmask, capset);
 	return;
 
 disable:
