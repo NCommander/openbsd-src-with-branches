@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.108 2022/01/18 16:36:49 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.109 2022/01/19 15:50:31 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -419,7 +419,6 @@ void		 mft_buffer(struct ibuf *, const struct mft *);
 void		 mft_free(struct mft *);
 struct mft	*mft_parse(X509 **, const char *, const unsigned char *,
 		    size_t);
-int		 mft_check(const char *, struct mft *);
 struct mft	*mft_read(struct ibuf *);
 
 void		 roa_buffer(struct ibuf *, const struct roa *);
