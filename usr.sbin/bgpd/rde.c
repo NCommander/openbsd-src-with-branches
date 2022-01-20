@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.531 2021/07/27 07:50:01 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.532 2021/08/09 08:15:34 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -260,9 +260,9 @@ rde_main(int debug, int verbose)
 			timeout = 0;
 
 		if (poll(pfd, i, timeout) == -1) {
-			if (errno != EINTR)
-				fatal("poll error");
-			continue;
+			if (errno == EINTR)
+				continue;
+			fatal("poll error");
 		}
 
 		if (handle_pollfd(&pfd[PFD_PIPE_MAIN], ibuf_main) == -1)
