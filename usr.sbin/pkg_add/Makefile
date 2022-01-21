@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.91 2020/12/20 15:30:58 daniel Exp $
+# $OpenBSD: Makefile,v 1.92 2022/01/05 16:35:35 deraadt Exp $
 
 .include <bsd.own.mk>
 
@@ -15,6 +15,7 @@ PACKAGES= \
     OpenBSD/AddCreateDelete.pm \
     OpenBSD/AddDelete.pm \
     OpenBSD/ArcCheck.pm \
+    OpenBSD/BaseState.pm \
     OpenBSD/CollisionReport.pm \
     OpenBSD/Delete.pm \
     OpenBSD/Dependencies/SolverBase.pm \
@@ -90,6 +91,7 @@ LIBBASE=/usr/libdata/perl5
 PODS= \
     OpenBSD::md5 \
     OpenBSD::style \
+    OpenBSD::BaseState \
     OpenBSD::Getopt \
     OpenBSD::IdCache \
     OpenBSD::Intro \
