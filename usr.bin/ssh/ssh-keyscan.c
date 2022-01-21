@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keyscan.c,v 1.143 2021/11/18 03:31:44 djm Exp $ */
+/* $OpenBSD: ssh-keyscan.c,v 1.144 2021/12/02 23:45:36 djm Exp $ */
 /*
  * Copyright 1995, 1996 by David Mazieres <dm@lcs.mit.edu>.
  *
@@ -572,9 +572,11 @@ conloop(void)
 	else
 		timespecclear(&seltime);
 
-	while (ppoll(read_wait, maxfd, &seltime, NULL) == -1 &&
-	    (errno == EAGAIN || errno == EINTR))
-		;
+	while (ppoll(read_wait, maxfd, &seltime, NULL) == -1) {
+		if (errno == EAGAIN || errno == EINTR)
+			continue;
+		error("poll error");
+	}
 
 	for (i = 0; i < maxfd; i++) {
 		if (read_wait[i].revents & (POLLHUP|POLLERR|POLLNVAL))
