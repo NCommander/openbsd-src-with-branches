@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.549 2021/11/22 11:07:50 espie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.550 2021/11/22 11:17:39 espie Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -735,6 +735,13 @@ or ${name} if the variable
 is not
 .Ev SUBPACKAGE
 dependent.
+.It Cm show-list
+Similar to
+.Cm show .
+Shows "list-like" variables, one entry per line.
+Mostly useful as a debugging target, since some internal variables may now
+exceed
+.Dv ARG_MAX .
 .It Cm show-prepare-results
 Print the list of actual installed packages found out by
 .Cm prepare .
