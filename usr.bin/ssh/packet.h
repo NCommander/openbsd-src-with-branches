@@ -1,4 +1,4 @@
-/* $OpenBSD: packet.h,v 1.92 2020/03/06 18:11:10 markus Exp $ */
+/* $OpenBSD: packet.h,v 1.93 2021/07/16 09:00:23 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -122,6 +122,7 @@ int	 ssh_packet_read_expect(struct ssh *, u_int type);
 int      ssh_packet_read_poll(struct ssh *);
 int ssh_packet_read_poll2(struct ssh *, u_char *, u_int32_t *seqnr_p);
 int	 ssh_packet_process_incoming(struct ssh *, const char *buf, u_int len);
+int	 ssh_packet_process_read(struct ssh *, int);
 int      ssh_packet_read_seqnr(struct ssh *, u_char *, u_int32_t *seqnr_p);
 int      ssh_packet_read_poll_seqnr(struct ssh *, u_char *, u_int32_t *seqnr_p);
 
