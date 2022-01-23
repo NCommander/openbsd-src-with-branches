@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.112 2022/01/22 09:18:48 tb Exp $ */
+/*	$OpenBSD: extern.h,v 1.113 2022/01/23 05:59:35 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -528,9 +528,7 @@ void		 http_fetch(unsigned int, const char *, const char *, int);
 void		 rrdp_fetch(unsigned int, const char *, const char *,
 		    struct rrdp_session *);
 void		 rrdp_http_done(unsigned int, enum http_result, const char *);
-
-int		 repo_next_timeout(int);
-void		 repo_check_timeout(void);
+int		 repo_check_timeout(int);
 
 /* Logging (though really used for OpenSSL errors). */
 
