@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.183 2022/01/23 12:09:24 claudio Exp $ */
+/*	$OpenBSD: main.c,v 1.184 2022/01/23 18:40:55 jmc Exp $ */
 /*
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -376,7 +376,7 @@ queue_add_from_mft_set(const struct mft *mft, const char *name, struct repo *rp)
 		case RTYPE_CRL:
 			continue;
 		default:
-			logx("%s: unsupported file type: %s", name, f->file);
+			warnx("%s: unsupported file: %s", name, f->file);
 		}
 	}
 }
