@@ -1,4 +1,4 @@
-/*	$OpenBSD: part.h,v 1.31 2021/10/25 13:51:25 krw Exp $	*/
+/*	$OpenBSD: part.h,v 1.32 2022/01/21 17:29:24 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -37,9 +37,6 @@ char		*PRT_uuid_to_typename(const struct uuid *);
 int		 PRT_uuid_to_type(const struct uuid *);
 struct uuid	*PRT_type_to_uuid(const int);
 int		 PRT_protected_guid(const struct uuid *);
-
-/* This does CHS -> bs/ns */
-void PRT_fix_BN(struct prt *, const int);
 
 /* This does bs/ns -> CHS */
 void PRT_fix_CHS(struct prt *);
