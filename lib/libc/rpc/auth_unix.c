@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_unix.c,v 1.27 2019/06/28 13:32:42 deraadt Exp $ */
+/*	$OpenBSD: auth_unix.c,v 1.28 2020/07/06 13:33:06 pirofti Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -34,7 +34,7 @@
 /*
  * auth_unix.c, Implements UNIX style authentication parameters. 
  *  
- * The system is very weak.  The client uses no encryption for it's
+ * The system is very weak.  The client uses no encryption for its
  * credentials and only sends null verifiers.  The server sends backs
  * null verifiers or optionally a verifier that suggests a new short hand
  * for the credentials.
