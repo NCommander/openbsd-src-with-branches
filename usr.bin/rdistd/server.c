@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.46 2019/06/28 05:35:35 deraadt Exp $	*/
+/*	$OpenBSD: server.c,v 1.47 2019/06/28 13:35:03 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1983 Regents of the University of California.
@@ -1674,7 +1674,7 @@ server(void)
 	}
 
 	/* 
-	 * Let client know we want it to send it's version number
+	 * Let client know we want it to send its version number
 	 */
 	(void) sendcmd(S_VERSION, NULL);
 

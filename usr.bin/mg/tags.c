@@ -1,4 +1,4 @@
-/*	$OpenBSD: tags.c,v 1.15 2017/05/30 07:05:22 florian Exp $	*/
+/*	$OpenBSD: tags.c,v 1.16 2017/08/06 04:39:45 bcallah Exp $	*/
 
 /*
  * This file is in the public domain.
@@ -453,7 +453,7 @@ curtoken(int f, int n, char *token)
 	
 	/* Underscore character is to be treated as "inword" while
 	 * processing tokens unlike mg's default word traversal. Save
-	 * and restore it's cinfo value so that tag matching works for
+	 * and restore its cinfo value so that tag matching works for
 	 * identifier with underscore.
 	 */
 	c = cinfo['_'];
