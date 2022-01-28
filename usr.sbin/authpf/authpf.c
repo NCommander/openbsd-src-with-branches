@@ -1,4 +1,4 @@
-/*	$OpenBSD: authpf.c,v 1.127 2018/04/26 12:42:51 guenther Exp $	*/
+/*	$OpenBSD: authpf.c,v 1.128 2019/06/28 13:32:47 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1998 - 2007 Bob Beck (beck@openbsd.org).
@@ -267,7 +267,7 @@ main(int argc, char *argv[])
 
 		/* re-open, and try again. The previous authpf process
 		 * we killed above should unlink the file and release
-		 * it's lock, giving us a chance to get it now
+		 * its lock, giving us a chance to get it now
 		 */
 		fclose(pidfp);
 		pidfp = NULL;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: process.c,v 1.22 2017/07/29 07:18:03 florian Exp $ */
+/*	$OpenBSD: process.c,v 1.23 2021/10/24 21:24:19 deraadt Exp $ */
 
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
@@ -163,7 +163,7 @@ mopStartLoad(u_char *dst, u_char *src, struct dllist *dl_rpr, int trans)
 
 	slot = -1;
 
-	/* Look if we have a non terminated load, if so, use it's slot */
+	/* Look if we have a non terminated load, if so, use its slot */
 	for (i = 0; i < MAXDL && slot == -1; i++)
 		if (dllist[i].status != DL_STATUS_FREE)
 			if (mopCmpEAddr(dllist[i].eaddr, dst) == 0)

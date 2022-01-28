@@ -1,4 +1,4 @@
-/*	$OpenBSD: net.c,v 1.22 2015/08/20 22:39:29 deraadt Exp $	*/
+/*	$OpenBSD: net.c,v 1.23 2015/12/12 20:04:23 mmcc Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -179,7 +179,7 @@ net_setup_listeners(void)
 
 	/*
 	 * If net_set_sa() failed, cfgstate.listen_on is probably an
-	 * interface name, so we should listen on all it's addresses.
+	 * interface name, so we should listen on all its addresses.
 	 */
 
 	if (getifaddrs(&ifap) != 0) {
