@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_util.c,v 1.14 2019/04/13 18:47:58 tb Exp $ */
+/* $OpenBSD: tls_signer.c,v 1.1 2022/01/25 21:51:24 eric Exp $ */
 /*
  * Copyright (c) 2021 Eric Faurot <eric@openbsd.org>
  *
@@ -14,6 +14,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#include <limits.h>
 
 #include <openssl/err.h>
 
