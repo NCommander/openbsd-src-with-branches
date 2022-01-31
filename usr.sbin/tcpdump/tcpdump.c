@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpdump.c,v 1.94 2020/08/17 06:29:29 dlg Exp $	*/
+/*	$OpenBSD: tcpdump.c,v 1.95 2020/12/04 11:36:13 mvs Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -208,7 +208,7 @@ main(int argc, char **argv)
 {
 	int cnt = -1, op, i;
 	bpf_u_int32 localnet, netmask;
-	char *cp, *infile = NULL, *RFileName = NULL;
+	char *cp, *RFileName = NULL;
 	char ebuf[PCAP_ERRBUF_SIZE], *WFileName = NULL;
 	pcap_handler printer;
 	struct bpf_program *fcode;
@@ -285,7 +285,6 @@ main(int argc, char **argv)
 			break;
 
 		case 'F':
-			infile = optarg;
 			break;
 
 		case 'i':
