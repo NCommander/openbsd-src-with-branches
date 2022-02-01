@@ -3,6 +3,19 @@ NOTE: We are looking for help with a few things:
       If you can help, please get in touch.  Thanks!
 
         Security fixes:
+            #550  CVE-2022-23852 -- Fix signed integer overflow
+                    (undefined behavior) in function XML_GetBuffer
+                    (that is also called by function XML_Parse internally)
+                    for when XML_CONTEXT_BYTES is defined to >0 (which is both
+                    common and default).
+                    Impact is denial of service or more.
+            #551  CVE-2022-23990 -- Fix unsigned integer overflow in function
+                    doProlog triggered by large content in element type
+                    declarations when there is an element declaration handler
+                    present (from a prior call to XML_SetElementDeclHandler).
+                    Impact is denial of service or more.
+
+        Security fixes:
        #531 #534  CVE-2021-45960 -- Fix issues with left shifts by >=29 places
                     resulting in
                       a) realloc acting as free
