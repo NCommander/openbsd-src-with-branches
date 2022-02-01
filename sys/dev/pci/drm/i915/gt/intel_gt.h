@@ -57,6 +57,8 @@ static inline u32 intel_gt_scratch_offset(const struct intel_gt *gt,
 {
 	return i915_ggtt_offset(gt->scratch) + field;
 }
+void intel_gt_invalidate_tlbs(struct intel_gt *gt);
+
 
 static inline bool intel_gt_is_wedged(const struct intel_gt *gt)
 {
