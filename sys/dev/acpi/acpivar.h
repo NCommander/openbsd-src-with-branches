@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpivar.h,v 1.115 2021/12/26 13:55:36 kettenis Exp $	*/
+/*	$OpenBSD: acpivar.h,v 1.116 2022/01/12 11:18:30 patrick Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -295,7 +295,6 @@ extern struct acpi_softc *acpi_softc;
 #define GPE_NONE	0x00
 #define GPE_LEVEL	0x01
 #define GPE_EDGE	0x02
-#define GPE_DIRECT	0x04
 
 struct acpi_table {
 	int	offset;
