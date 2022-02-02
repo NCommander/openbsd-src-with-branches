@@ -1,4 +1,4 @@
-/*      $OpenBSD: sv.c,v 1.35 2019/05/13 21:29:28 mpi Exp $ */
+/*      $OpenBSD: sv.c,v 1.36 2022/01/09 05:42:58 jsg Exp $ */
 
 /*
  * Copyright (c) 1998 Constantine Paul Sapuntzakis
@@ -55,11 +55,9 @@
 
 #include <machine/bus.h>
 
-#ifdef __OpenBSD__
-struct        cfdriver sv_cd = {
-      NULL, "sv", DV_DULL
+struct cfdriver sv_cd = {
+	NULL, "sv", DV_DULL
 };
-#endif
 
 #ifdef AUDIO_DEBUG
 #define DPRINTF(x)	if (svdebug) printf x
