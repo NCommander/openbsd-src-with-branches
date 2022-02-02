@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.13 2018/11/07 04:51:56 miko Exp $	*/
+/*	$OpenBSD: util.c,v 1.14 2019/07/03 03:24:03 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
@@ -52,7 +52,7 @@ filecopy(const char *srcfile, const char *dstfile)
 	}
 	sz = sb.st_size;
 
-	dfd = open(dstfile, O_WRONLY|O_CREAT);
+	dfd = open(dstfile, O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 	if (dfd == -1) {
 		warn("open %s", dstfile);
 		return (-1);
