@@ -1,4 +1,4 @@
-/* $OpenBSD: window.c,v 1.276 2021/08/27 17:15:57 nicm Exp $ */
+/* $OpenBSD: window.c,v 1.277 2021/10/07 07:52:13 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -754,6 +754,7 @@ window_lost_pane(struct window *w, struct window_pane *wp)
 		if (w->active != NULL) {
 			w->active->flags |= PANE_CHANGED;
 			notify_window("window-pane-changed", w);
+			window_update_focus(w);
 		}
 	} else if (wp == w->last)
 		w->last = NULL;
