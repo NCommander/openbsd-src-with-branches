@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_clnt.c,v 1.138 2022/01/24 13:51:48 tb Exp $ */
+/* $OpenBSD: ssl_clnt.c,v 1.139 2022/01/24 13:53:29 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1166,7 +1166,7 @@ ssl3_get_server_certificate(SSL *s)
 		SSLerror(s, SSL_R_UNABLE_TO_FIND_PUBLIC_KEY_PARAMETERS);
 		goto fatal_err;
 	}
-	if ((cert_type = ssl_cert_type(x, pkey)) < 0) {
+	if ((cert_type = ssl_cert_type(pkey)) < 0) {
 		x = NULL;
 		al = SSL3_AL_FATAL;
 		SSLerror(s, SSL_R_UNKNOWN_CERTIFICATE_TYPE);
