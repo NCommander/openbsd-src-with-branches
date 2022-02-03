@@ -1,4 +1,4 @@
-/*	$OpenBSD: armv7_installboot.c,v 1.10 2021/06/27 04:52:01 jsg Exp $	*/
+/*	$OpenBSD: armv7_installboot.c,v 1.11 2021/07/20 14:51:56 kettenis Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
