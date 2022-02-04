@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofw_clock.h,v 1.5 2016/08/23 21:30:18 kettenis Exp $	*/
+/*	$OpenBSD: ofw_clock.h,v 1.6 2018/05/03 10:56:14 patrick Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -36,6 +36,7 @@ void	clock_register(struct clock_device *);
 uint32_t clock_get_frequency(int, const char *);
 uint32_t clock_get_frequency_idx(int, int);
 int	clock_set_frequency(int, const char *, uint32_t);
+int	clock_set_frequency_idx(int, int idx, uint32_t);
 void	clock_set_assigned(int);
 void	clock_enable(int, const char *);
 void	clock_enable_idx(int, int);
