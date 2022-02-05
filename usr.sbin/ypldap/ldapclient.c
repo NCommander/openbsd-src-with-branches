@@ -1,4 +1,4 @@
-/* $OpenBSD: ldapclient.c,v 1.42 2018/11/27 12:06:39 martijn Exp $ */
+/* $OpenBSD: ldapclient.c,v 1.43 2019/06/28 13:32:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 2008 Alexander Schrijver <aschrijver@openbsd.org>
@@ -357,7 +357,7 @@ client_shutdown(void)
 pid_t
 ldapclient(int pipe_main2client[2])
 {
-	pid_t            pid, dns_pid;
+	pid_t            pid;
 	int              pipe_dns[2];
 	struct passwd	*pw;
 	struct event	 ev_sigint;
@@ -382,7 +382,7 @@ ldapclient(int pipe_main2client[2])
 
 	if (socketpair(AF_UNIX, SOCK_STREAM, PF_UNSPEC, pipe_dns) == -1)
 		fatal("socketpair");
-	dns_pid = ypldap_dns(pipe_dns, pw);
+	ypldap_dns(pipe_dns, pw);
 	close(pipe_dns[1]);
 
 #ifndef DEBUG
