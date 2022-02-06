@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.17 2020/05/17 17:04:28 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2021/04/13 21:13:20 deraadt Exp $
 
 FS=		install${OSrev}.img
 FSSIZE=		832192
@@ -24,8 +24,7 @@ all: ${FS}
 ${FS}: ${BASE} ${XBASE}
 	dd if=/dev/zero of=${FS} bs=512 count=${TOTALSIZE}
 	vnconfig -v ${FS} > vnd
-	echo 'u\ne 0\nc\nn\n${MSDOSSTART}\n${MSDOSSIZE}\ne 3\nA6\nn\n${FFSSTART}\n*\nf 0\nw\nq\n' \
-	    | fdisk -e `cat vnd` >/dev/null
+	fdisk -iy -b "${MSDOSSIZE}@${MSDOSSTART}:c" `cat vnd` >/dev/null
 	echo 'a a\n\n\n\nw\nq\n' | disklabel -E `cat vnd` >/dev/null
 	newfs -t msdos /dev/r`cat vnd`i
 	mount /dev/`cat vnd`i ${MOUNT_POINT}
