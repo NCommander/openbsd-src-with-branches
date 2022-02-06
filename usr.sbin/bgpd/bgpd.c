@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.240 2022/01/20 18:06:20 claudio Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.241 2022/01/23 11:59:40 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -68,7 +68,7 @@ char			*rcname;
 
 struct connect_elm {
 	TAILQ_ENTRY(connect_elm)	entry;
-	u_int32_t			id;
+	uint32_t			id;
 	int				fd;
 };
 
@@ -702,7 +702,7 @@ send_config(struct bgpd_config *conf)
 	/* as-sets for filters in the RDE */
 	while ((aset = SIMPLEQ_FIRST(&conf->as_sets)) != NULL) {
 		struct ibuf *wbuf;
-		u_int32_t *as;
+		uint32_t *as;
 		size_t i, l, n;
 
 		SIMPLEQ_REMOVE_HEAD(&conf->as_sets, entry);
@@ -1090,7 +1090,7 @@ send_nexthop_update(struct kroute_nexthop *msg)
 }
 
 void
-send_imsg_session(int type, pid_t pid, void *data, u_int16_t datalen)
+send_imsg_session(int type, pid_t pid, void *data, uint16_t datalen)
 {
 	imsg_compose(ibuf_se, type, 0, pid, -1, data, datalen);
 }
