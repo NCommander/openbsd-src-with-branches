@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_mont.c,v 1.26 2017/01/21 11:00:46 beck Exp $ */
+/* $OpenBSD: bn_mont.c,v 1.27 2021/12/04 16:05:46 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -368,6 +368,9 @@ BN_MONT_CTX_set(BN_MONT_CTX *mont, const BIGNUM *mod, BN_CTX *ctx)
 {
 	int ret = 0;
 	BIGNUM *Ri, *R;
+
+	if (BN_is_zero(mod))
+		return 0;
 
 	BN_CTX_start(ctx);
 	if ((Ri = BN_CTX_get(ctx)) == NULL)
