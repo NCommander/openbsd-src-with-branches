@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_versions.c,v 1.15 2021/06/27 16:54:55 jsing Exp $ */
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2016, 2017 Joel Sing <jsing@openbsd.org>
  *
@@ -526,6 +526,10 @@ test_ssl_max_shared_version(void)
 				    i, svt->peerver);
 				failed++;
 			}
+			SSL_CTX_free(ssl_ctx);
+			SSL_free(ssl);
+			ssl_ctx = NULL;
+			ssl = NULL;
 			continue;
 		}
 		if (maxver != svt->want_maxver) {
