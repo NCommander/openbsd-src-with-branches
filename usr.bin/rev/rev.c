@@ -1,4 +1,4 @@
-/*	$OpenBSD: rev.c,v 1.14 2022/01/13 05:10:46 schwarze Exp $	*/
+/*	$OpenBSD: rev.c,v 1.15 2022/01/29 00:11:54 cheloha Exp $	*/
 /*	$NetBSD: rev.c,v 1.5 1995/09/28 08:49:40 tls Exp $	*/
 
 /*-
@@ -68,6 +68,9 @@ main(int argc, char *argv[])
 
 	rval = 0;
 	if (argc == 0) {
+		if (pledge("stdio", NULL) == -1)
+			err(1, "pledge");
+
 		rval = rev_file(NULL);
 	} else {
 		for (; *argv != NULL; argv++)
