@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.116 2022/01/28 15:30:23 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.117 2022/02/08 11:51:51 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -280,7 +280,8 @@ struct crl {
 	RB_ENTRY(crl)	 entry;
 	char		*aki;
 	X509_CRL	*x509_crl;
-	time_t		 expires; /* do not use after */
+	time_t		 issued;	/* do not use before */
+	time_t		 expires;	/* do not use after */
 };
 /*
  * Tree of CRLs sorted by uri
