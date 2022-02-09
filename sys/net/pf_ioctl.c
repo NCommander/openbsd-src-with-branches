@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.370 2022/01/11 09:00:17 sashan Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.371 2022/01/24 22:49:48 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -250,6 +250,8 @@ pfattach(int num)
 
 	/* XXX do our best to avoid a conflict */
 	pf_status.hostid = arc4random();
+
+	pf_default_rule_new = pf_default_rule;
 }
 
 int
