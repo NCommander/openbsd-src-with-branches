@@ -1,7 +1,10 @@
 #!/usr/bin/perl -w
 ################################################################################
 #
-#  apicheck.pl -- generate C source for automated API check
+#  apicheck.pl -- generate apicheck.c: C source for automated API check
+#
+#  WARNING:  This script will be run on very old perls.  You need to not use
+#            modern constructs.  See HACKERS file for examples.
 #
 ################################################################################
 #
@@ -25,92 +28,127 @@ else {
   *OUT = \*STDOUT;
 }
 
+# Arguments passed to us in this variable are of the form
+# '--a=foo --b=bar', so split first on space, then the =, and then the hash is
+# of the form { a => foo, b => bar }
+my %script_args = map { split /=/ } split(/\s+/, $ENV{'DPPP_ARGUMENTS'});
+
+# Get list of functions/macros to test
 my @f = parse_embed(qw( parts/embed.fnc parts/apidoc.fnc parts/ppport.fnc ));
 
-my %todo = %{&parse_todo};
+# Read in what we've decided in previous calls should be #ifdef'd out for this
+# call.  The keys are the symbols to test; each value is a subhash, like so:
+#     'utf8_hop_forward' => {
+#                               'version' => '5.025007'
+#                           },
+# We don't care here about other subkeys
+my %todo = %{&parse_todo($script_args{'--todo-dir'})};
 
+# We convert these types into these other types
 my %tmap = (
   void => 'int',
 );
 
+# These are for special marker argument names, as mentioned in embed.fnc
 my %amap = (
   SP   => 'SP',
   type => 'int',
   cast => 'int',
+  block => '{1;}',
+  number => '1',
 );
 
+# Certain return types are instead considered void
 my %void = (
   void     => 1,
   Free_t   => 1,
   Signal_t => 1,
 );
 
+# khw doesn't know why these exist.  These have an explicit (void) cast added.
+# Undef'ing this hash made no difference.  Maybe it's for older compilers?
 my %castvoid = (
   map { ($_ => 1) } qw(
-    Nullav
-    Nullcv
-    Nullhv
-    Nullch
-    Nullsv
-    HEf_SVKEY
-    SP
-    MARK
-    SVt_PV
-    SVt_IV
-    SVt_NV
-    SVt_PVMG
-    SVt_PVAV
-    SVt_PVHV
-    SVt_PVCV
-    SvUOK
-    G_SCALAR
     G_ARRAY
-    G_VOID
     G_DISCARD
     G_EVAL
     G_NOARGS
+    G_SCALAR
+    G_VOID
+    HEf_SVKEY
+    MARK
+    Nullav
+    Nullch
+    Nullcv
+    Nullhv
+    Nullsv
+    SP
+    SVt_IV
+    SVt_NV
+    SVt_PV
+    SVt_PVAV
+    SVt_PVCV
+    SVt_PVHV
+    SVt_PVMG
+    SvUOK
     XS_VERSION
   ),
 );
 
+# Ignore the return value of these
 my %ignorerv = (
   map { ($_ => 1) } qw(
     newCONSTSUB
   ),
 );
 
+my @simple_my_cxt_prereqs = ( 'typedef struct { int count; } my_cxt_t;', 'START_MY_CXT;' );
+my @my_cxt_prereqs = ( @simple_my_cxt_prereqs, 'MY_CXT_INIT;' );
+
+# The value of each key is a list of things that need to be declared in order
+# for the key to compile.
 my %stack = (
+  MULTICALL      => ['dMULTICALL;'],
   ORIGMARK       => ['dORIGMARK;'],
-  POPpx          => ['STRLEN n_a;'],
+  POP_MULTICALL  => ['dMULTICALL;', 'U8 gimme;' ],
+  PUSH_MULTICALL => ['dMULTICALL;', 'U8 gimme;' ],
   POPpbytex      => ['STRLEN n_a;'],
-  PUSHp          => ['dTARG;'],
-  PUSHn          => ['dTARG;'],
+  POPpx          => ['STRLEN n_a;'],
   PUSHi          => ['dTARG;'],
+  PUSHn          => ['dTARG;'],
+  PUSHp          => ['dTARG;'],
   PUSHu          => ['dTARG;'],
-  XPUSHp         => ['dTARG;'],
-  XPUSHn         => ['dTARG;'],
-  XPUSHi         => ['dTARG;'],
-  XPUSHu         => ['dTARG;'],
+  RESTORE_LC_NUMERIC => ['DECLARATION_FOR_LC_NUMERIC_MANIPULATION;'],
+  STORE_LC_NUMERIC_FORCE_TO_UNDERLYING => ['DECLARATION_FOR_LC_NUMERIC_MANIPULATION;'],
+  STORE_LC_NUMERIC_SET_TO_NEEDED => ['DECLARATION_FOR_LC_NUMERIC_MANIPULATION;'],
+  STORE_LC_NUMERIC_SET_TO_NEEDED_IN => ['DECLARATION_FOR_LC_NUMERIC_MANIPULATION;'],
+  TARG           => ['dTARG;'],
   UNDERBAR       => ['dUNDERBAR;'],
-  XCPT_TRY_START => ['dXCPT;'],
-  XCPT_TRY_END   => ['dXCPT;'],
   XCPT_CATCH     => ['dXCPT;'],
   XCPT_RETHROW   => ['dXCPT;'],
+  XCPT_TRY_END   => ['dXCPT;'],
+  XCPT_TRY_START => ['dXCPT;'],
+  XPUSHi         => ['dTARG;'],
+  XPUSHn         => ['dTARG;'],
+  XPUSHp         => ['dTARG;'],
+  XPUSHu         => ['dTARG;'],
+  XS_APIVERSION_BOOTCHECK => ['CV * cv;'],
+  XS_VERSION_BOOTCHECK => ['CV * cv;'],
+  MY_CXT_INIT  => [ @simple_my_cxt_prereqs ],
+  MY_CXT_CLONE => [ @simple_my_cxt_prereqs ],
+  dMY_CXT      => [ @simple_my_cxt_prereqs ],
+  MY_CXT       => [ @my_cxt_prereqs ],
+  _aMY_CXT     => [ @my_cxt_prereqs ],
+   aMY_CXT     => [ @my_cxt_prereqs ],
+   aMY_CXT_    => [ @my_cxt_prereqs ],
+   pMY_CXT     => [ @my_cxt_prereqs ],
 );
 
-my %ignore = (
-  map { ($_ => 1) } qw(
-    svtype
-    items
-    ix
-    dXSI32
-    XS
-    CLASS
-    THIS
-    RETVAL
-    StructCopy
-  ),
-);
+# The entries in %ignore have two components, separated by this.
+my $sep = '~';
+
+# Things to not try to check.  (The component after $sep is empty.)
+my %ignore = map { ("$_$sep" => 1) } keys %{&known_but_hard_to_test_for()};
 
 print OUT <<HEAD;
 /*
@@ -121,6 +159,21 @@ print OUT <<HEAD;
 
 #include "EXTERN.h"
 #include "perl.h"
+HEAD
+
+# These may not have gotten #included, and don't exist in all versions
+my $hdr;
+for $hdr (qw(time64 perliol malloc_ctl perl_inc_macro patchlevel)) {
+    my $dir;
+    for $dir (@INC) {
+        if (-e "$dir/CORE/$hdr.h") {
+            print OUT "#include \"$hdr.h\"\n";
+            last;
+        }
+    }
+}
+
+print OUT <<HEAD;
 
 #define NO_XSLOCKS
 #include "XSUB.h"
@@ -135,42 +188,7 @@ print OUT <<HEAD;
 
 #else
 
-#define NEED_PL_signals
-#define NEED_PL_parser
-#define NEED_caller_cx
-#define NEED_eval_pv
-#define NEED_grok_bin
-#define NEED_grok_hex
-#define NEED_grok_number
-#define NEED_grok_numeric_radix
-#define NEED_grok_oct
-#define NEED_gv_fetchpvn_flags
-#define NEED_load_module
-#define NEED_mg_findext
-#define NEED_my_snprintf
-#define NEED_my_sprintf
-#define NEED_my_strlcat
-#define NEED_my_strlcpy
-#define NEED_newCONSTSUB
-#define NEED_newRV_noinc
-#define NEED_newSV_type
-#define NEED_newSVpvn_flags
-#define NEED_newSVpvn_share
-#define NEED_pv_display
-#define NEED_pv_escape
-#define NEED_pv_pretty
-#define NEED_sv_2pv_flags
-#define NEED_sv_2pvbyte
-#define NEED_sv_catpvf_mg
-#define NEED_sv_catpvf_mg_nocontext
-#define NEED_sv_pvn_force_flags
-#define NEED_sv_setpvf_mg
-#define NEED_sv_setpvf_mg_nocontext
-#define NEED_sv_unmagicext
-#define NEED_SvRX
-#define NEED_vload_module
-#define NEED_vnewSVpvf
-#define NEED_warner
+$ENV{'DPPP_NEED'}    /* All the requisite NEED_foo #defines */
 
 #include "ppport.h"
 
@@ -185,141 +203,271 @@ static double VARarg3;
 typedef void yy_parser;
 #endif
 
+/* Handle both 5.x.y and 7.x.y and up */
+#ifndef PERL_VERSION_MAJOR
+#  define PERL_VERSION_MAJOR PERL_REVISION
+#endif
+#ifndef PERL_VERSION_MINOR
+#  define PERL_VERSION_MINOR PERL_VERSION
+#endif
+#ifndef PERL_VERSION_PATCH
+#  define PERL_VERSION_PATCH PERL_SUBVERSION
+#endif
+
+/* This causes some functions to compile that otherwise wouldn't, so we can
+ * get their info; and doesn't seem to harm anything */
+#define PERL_IMPLICIT_CONTEXT
+
 HEAD
 
+# Caller can restrict what functions tests are generated for
 if (@ARGV) {
   my %want = map { ($_ => 0) } @ARGV;
-  @f = grep { exists $want{$_->{name}} } @f;
-  for (@f) { $want{$_->{name}}++ }
+  @f = grep { exists $want{$_->{'name'}} } @f;
+  for (@f) { $want{$_->{'name'}}++ }
   for (keys %want) {
     die "nothing found for '$_'\n" unless $want{$_};
   }
 }
 
 my $f;
-for $f (@f) {
-  $ignore{$f->{name}} and next;
-  $f->{flags}{A} or next;  # only public API members
+my %name_counts;
 
-  $ignore{$f->{name}} = 1; # ignore duplicates
+# Loop through all the tests to add
+for $f (sort { dictionary_order($a->{'name'}, $b->{'name'}) } @f) {
 
-  my $Perl_ = $f->{flags}{p} ? 'Perl_' : '';
+    my $short_form = $f->{'name'};
+
+    # Ignore duplicates; just the name isn't unique;  We also need the #if or
+    # #else condition
+    my $cond = $f->{'cond'};
+    $ignore{"$short_form$sep$cond"}++ and next;
+
+  # only public API members, except those in ppport.fnc are there because we
+  # want them to be tested even if non-public.  X,M functions are supposed to
+  # be considered to have just the macro form public.
+      $f->{'flags'}{'A'}
+  or  $f->{'ppport_fnc'}
+  or ($f->{'flags'}{'X'} and $f->{'flags'}{'M'})
+  or next;
+
+  # Don't test unorthodox things that we aren't set up to do
+  $f->{'flags'}{'u'} and next;
+  $f->{'flags'}{'y'} and next;
+
+    my $nflag = $f->{'flags'}{'n'};
+    $nflag = 0 unless defined $nflag;
+    my $pflag = $f->{'flags'}{'p'};
+    $pflag = 0 unless defined $pflag;
+    my $Tflag = $f->{'flags'}{'T'};
+    $Tflag = 0 unless defined $Tflag;
+
+    die 'M flag without p makes no sense' if $f->{'flags'}{'M'} && ! $pflag;
+
+    my $long_form_required = $f->{'flags'}{'o'} || $f->{'flags'}{'f'};
 
   my $stack = '';
   my @arg;
   my $aTHX = '';
 
-  my $i = 1;
+    my $i = 1;  # Argument number
   my $ca;
   my $varargs = 0;
-  for $ca (@{$f->{args}}) {
-    my $a = $ca->[0];
+
+    # Loop through the function's args, building up the declarations
+    for $ca (@{$f->{'args'}}) {
+    my $a = $ca->[0];           # 1th is the name, 0th is its type
     if ($a eq '...') {
       $varargs = 1;
       push @arg, qw(VARarg1 VARarg2 VARarg3);
       last;
     }
-    my($n, $p, $d) = $a =~ /^ (\w+(?:\s+\w+)*)\s*  # type name  => $n
-                              (\**)                # pointer    => $p
-                              (?:\s*const\s*)?     # const
-                              ((?:\[[^\]]*\])*)    # dimension  => $d
+
+        # Split this argument into its components.  The formal parameter name is
+        # discarded; we're just interested in the type and its modifiers
+    my($t, $p, $d) = $a =~ /^ (  (?: " [^"]* " )      # literal string type => $t
+                               | (?: \w+ (?: \s+ \w+ )* )    # name of type => $t
+                              )
+                              \s*
+                              ( \** )                 # optional pointer(s) => $p
+                              (?: \s* \b const \b \s* )? # opt. const
+                              ( (?: \[ [^\]]* \] )* )    # opt. dimension(s)=> $d
                             $/x
-                     or die "$0 - cannot parse argument: [$a]\n";
-    if (exists $amap{$n}) {
-      push @arg, $amap{$n};
+                     or die "$0 - cannot parse argument: [$a] in $short_form\n";
+
+        # Replace a special argument type by something that will compile.
+    if (exists $amap{$t}) {
+            if ($p or $d) {
+                die "$short_form had type '$t', which should have been the"
+                  . " whole type.  Instead '$p' or '$d' was non-empty";
+            }
+      push @arg, $amap{$t};
       next;
     }
-    $n = $tmap{$n} || $n;
-    if ($n eq 'const char' and $p eq '*' and !$f->{flags}{f}) {
-      push @arg, '"foo"';
+
+    # Certain types, like 'void', get remapped.
+    $t = $tmap{$t} || $t;
+
+    if ($t =~ / ^ " [^"]* " $/x) {  # Use the literal string, literally
+      push @arg, $t;
     }
     else {
-      my $v = 'arg' . $i++;
+      my $v = 'arg' . $i++;     # Argument number
       push @arg, $v;
-      $stack .= "  static $n $p$v$d;\n";
+      my $no_const_n = $t;      # Get rid of any remaining 'const's
+      $no_const_n =~ s/\bconst\b//g unless $p;
+
+      # Declare this argument
+      $stack .= "  static $no_const_n $p$v$d;\n";
     }
   }
 
-  unless ($f->{flags}{n} || $f->{flags}{'m'}) {
-    $stack = "  dTHX;\n$stack";
+  # Declare thread context for functions and macros that might need it.
+  # (Macros often fail to say they don't need it.)
+  unless ($Tflag) {
+    $stack = "  dTHX;\n$stack";     # Harmless to declare even if not needed
     $aTHX = @arg ? 'aTHX_ ' : 'aTHX';
   }
 
-  if ($stack{$f->{name}}) {
+    # If this function is on the list of things that need extra declarations,
+    # add them.
+  if ($stack{$short_form}) {
     my $s = '';
-    for (@{$stack{$f->{name}}}) {
+    for (@{$stack{$short_form}}) {
       $s .= "  $_\n";
     }
     $stack = "$s$stack";
   }
 
   my $args = join ', ', @arg;
-  my $rvt = $f->{ret} || 'void';
+  my $prefix = "";
+
+  my $rvt = $f->{'ret'};  # Type of return value
+
+  # Replace generic 'type'
+  $rvt = 'int' if defined $rvt && $rvt eq 'type';
+
+  # Failure to specify a return type in the apidoc line means void
+  $rvt = 'void' unless $rvt;
+
+  # Remove const, as otherwise could declare something that is impossible to
+  # set.
+  $rvt =~ s/\bconst\b//g;
+
   my $ret;
-  if ($void{$rvt}) {
-    $ret = $castvoid{$f->{name}} ? '(void) ' : '';
+  if ($void{$rvt}) {    # Certain return types are instead considered void
+    $ret = $castvoid{$short_form} ? '(void) ' : '';
   }
   else {
     $stack .= "  $rvt rval;\n";
-    $ret = $ignorerv{$f->{name}} ? '(void) ' : "rval = ";
+    $ret = $ignorerv{$short_form} ? '(void) ' : "rval = ";
   }
-  my $aTHX_args = "$aTHX$args";
 
-  if (!$f->{flags}{'m'} or $f->{flags}{'b'} or @arg > 0) {
+  my $THX_prefix = "";
+  my $THX_suffix = "";
+
+  # Add parens to functions that take an argument list, even if empty
+  unless ($nflag) {
+    $THX_suffix = "($aTHX$args)";
     $args = "($args)";
-    $aTHX_args = "($aTHX_args)";
   }
+
+  # Single trailing underscore in name means is a comma operator
+  if ($short_form =~ /[^_]_$/) {
+    $THX_suffix .= ' 1';
+    $args .= ' 1';
+  }
+
+  # Single leading underscore in a few names means is a comma operator
+  if ($short_form =~ /^ _[ adp] (?: THX | MY_CXT ) /x) {
+    $THX_prefix = '1 ';
+    $prefix = '1 ';
+  }
+
+    my $tested_fcn = "";
+    $tested_fcn .= 'Perl_' if $pflag && $long_form_required;
+    $tested_fcn .= $short_form;
 
   print OUT <<HEAD;
 /******************************************************************************
 *
-*  $f->{name}
+
+ *  $tested_fcn  $script_args{'--todo-dir'} for testing $script_args{'--todo'}
 *
 ******************************************************************************/
 
 HEAD
 
-  if ($todo{$f->{name}}) {
-    my($ver,$sub) = $todo{$f->{name}} =~ /^5\.(\d{3})(\d{3})$/ or die;
-    for ($ver, $sub) {
-      s/^0+(\d)/$1/
-    }
-    if ($ver < 6 && $sub > 0) {
-      $sub =~ s/0$// or die;
-    }
-    print OUT "#if PERL_VERSION > $ver || (PERL_VERSION == $ver && PERL_SUBVERSION >= $sub) /* TODO */\n";
+    my($rev, $ver,$sub);
+
+  # #ifdef out if marked as todo (not known in) this version
+    if (exists $todo{$tested_fcn}) {
+        ($rev, $ver,$sub) = parse_version($todo{$tested_fcn}{'version'});
+    print OUT <<EOT;
+#if       PERL_VERSION_MAJOR > $rev                         \\
+   || (   PERL_VERSION_MAJOR == $rev                        \\
+       && (   PERL_VERSION_MINOR > $ver                     \\
+           || (   PERL_VERSION_MINOR == $ver                \\
+               && PERL_VERSION_PATCH >= $sub))) /* TODO */
+EOT
   }
 
   my $final = $varargs
-              ? "$Perl_$f->{name}$aTHX_args"
-              : "$f->{name}$args";
+              ? "$THX_prefix$tested_fcn$THX_suffix"
+              : "$prefix$short_form$args";
 
-  $f->{cond} and print OUT "#if $f->{cond}\n";
+    # If there is an '#if' associated with this, add that
+  $cond and print OUT "#if $cond\n";
 
+  # If only to be tested when ppport.h is enabled
+  $f->{'ppport_fnc'} and print OUT "#ifndef DPPP_APICHECK_NO_PPPORT_H\n";
+
+    my $test_name = "DPPP_test_";
+    $test_name .= $name_counts{$tested_fcn}++ . "_" if $cond;
+    $test_name .= $tested_fcn;
   print OUT <<END;
-void _DPPP_test_$f->{name} (void)
+void $test_name (void)
 {
   dXSARGS;
 $stack
   {
-#ifdef $f->{name}
-    $ret$f->{name}$args;
+END
+
+  # If M is a flag here, it means the 'Perl_' form is not for general use, but
+  # the macro (tested above) is.
+  if ($f->{'flags'}{'M'}) {
+      print OUT <<END;
+
+    $ret$prefix$short_form$args;
+  }
+}
+END
+
+  }
+  else {
+    print OUT <<END;
+
+#ifdef $short_form
+    $ret$prefix$short_form$args;
 #endif
   }
 
   {
-#ifdef $f->{name}
+#ifdef $short_form
     $ret$final;
 #else
-    $ret$Perl_$f->{name}$aTHX_args;
+    $ret$THX_prefix$tested_fcn$THX_suffix;
 #endif
   }
 }
 END
 
-  $f->{cond} and print OUT "#endif\n";
-  $todo{$f->{name}} and print OUT "#endif\n";
+  }
 
+    $f->{'ppport_fnc'} and print OUT "#endif  /* for ppport_fnc */\n";
+    $cond and print OUT "#endif  /* for conditional compile */\n";
+    print OUT "#endif  /* disabled testing of $tested_fcn before $rev.$ver.$sub */\n"
+                                                    if exists $todo{$tested_fcn};
   print OUT "\n";
 }
 

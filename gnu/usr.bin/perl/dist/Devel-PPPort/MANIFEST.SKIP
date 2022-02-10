@@ -1,5 +1,6 @@
 ^\.git
 ^MYMETA.*$
+^META_new.*
 ^Makefile$
 ~$
 \.old(?:\..*)?$
@@ -17,9 +18,9 @@
 ^parts/base-
 ^ppport\.h$
 ^PPPort\.c$
-^PPPort.pm$
 ^RealPPPort\.
 ^testing
 Devel-PPPort.*
 Devel-PPPort.*\.tar\.gz$
 .travis.yml
+.appveyor.yml

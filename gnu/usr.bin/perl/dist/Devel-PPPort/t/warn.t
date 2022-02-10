@@ -10,41 +10,45 @@
 #
 ################################################################################
 
+use FindBin ();
+
 BEGIN {
   if ($ENV{'PERL_CORE'}) {
     chdir 't' if -d 't';
-    @INC = ('../lib', '../ext/Devel-PPPort/t') if -d '../lib' && -d '../ext';
-    require Config; import Config;
+    unshift @INC, '../lib' if -d '../lib' && -d '../ext';
+    require Config; Config->import;
     use vars '%Config';
     if (" $Config{'extensions'} " !~ m[ Devel/PPPort ]) {
       print "1..0 # Skip -- Perl configured without Devel::PPPort module\n";
       exit 0;
     }
   }
-  else {
-    unshift @INC, 't';
-  }
+
+  use lib "$FindBin::Bin";
+  use lib "$FindBin::Bin/../parts/inc";
+
+  die qq[Cannot find "$FindBin::Bin/../parts/inc"] unless -d "$FindBin::Bin/../parts/inc";
 
   sub load {
-    eval "use Test";
-    require 'testutil.pl' if $@;
+    require 'testutil.pl';
+    require 'inctools';
   }
 
-  if (5) {
+  if (11) {
     load();
-    plan(tests => 5);
+    plan(tests => 11);
   }
 }
 
 use Devel::PPPort;
 use strict;
-$^W = 1;
+BEGIN { $^W = 1; }
 
 package Devel::PPPort;
 use vars '@ISA';
 require DynaLoader;
 @ISA = qw(DynaLoader);
-bootstrap Devel::PPPort;
+Devel::PPPort->bootstrap;
 
 package main;
 
@@ -56,23 +60,47 @@ $SIG{'__WARN__'} = sub { $warning = $_[0] };
 
 $warning = '';
 Devel::PPPort::warner();
-ok($] >= 5.004 ? $warning =~ /^warner bar:42/ : $warning eq '');
+ok(ivers($]) >= ivers("5.004") ? $warning =~ /^warner bar:42/ : $warning eq '');
 
 $warning = '';
 Devel::PPPort::Perl_warner();
-ok($] >= 5.004 ? $warning =~ /^Perl_warner bar:42/ : $warning eq '');
+ok(ivers($]) >= ivers("5.004") ? $warning =~ /^Perl_warner bar:42/ : $warning eq '');
 
 $warning = '';
 Devel::PPPort::Perl_warner_nocontext();
-ok($] >= 5.004 ? $warning =~ /^Perl_warner_nocontext bar:42/ : $warning eq '');
+ok(ivers($]) >= ivers("5.004") ? $warning =~ /^Perl_warner_nocontext bar:42/ : $warning eq '');
 
 $warning = '';
 Devel::PPPort::ckWARN();
-ok($warning, '');
+is($warning, '');
+
+$warning = '';
+Devel::PPPort::ckWARN_d();
+ok(ivers($]) >= ivers("5.004") ? $warning =~ /^ckWARN_d bar:42/ : $warning eq '');
+
+$warning = '';
+Devel::PPPort::Perl_ck_warner();
+ok($warning eq '');
+
+$warning = '';
+Devel::PPPort::Perl_ck_warner_d();
+ok(ivers($]) >= ivers("5.004") ? $warning =~ /^Perl_ck_warner_d bar:42/ : $warning eq '');
 
 $^W = 1;
 
 $warning = '';
 Devel::PPPort::ckWARN();
-ok($] >= 5.004 ? $warning =~ /^ckWARN bar:42/ : $warning eq '');
+ok(ivers($]) >= ivers("5.004") ? $warning =~ /^ckWARN bar:42/ : $warning eq '');
+
+$warning = '';
+Devel::PPPort::ckWARN_d();
+ok(ivers($]) >= ivers("5.004") ? $warning =~ /^ckWARN_d bar:42/ : $warning eq '');
+
+$warning = '';
+Devel::PPPort::Perl_ck_warner();
+ok(ivers($]) >= ivers("5.004") ? $warning =~ /^Perl_ck_warner bar:42/ : $warning eq '');
+
+$warning = '';
+Devel::PPPort::Perl_ck_warner_d();
+ok(ivers($]) >= ivers("5.004") ? $warning =~ /^Perl_ck_warner_d bar:42/ : $warning eq '');
 

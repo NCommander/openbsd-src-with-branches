@@ -1,6 +1,8 @@
 5.019001
-re_intuit_start                # A
 toFOLD                         # U
-toFOLD_utf8                    # U
+toFOLD_A                       # U
+toLOWER_A                      # U
 toLOWER_L1                     # U
 toTITLE                        # U
+toTITLE_A                      # U
+toUPPER_A                      # U

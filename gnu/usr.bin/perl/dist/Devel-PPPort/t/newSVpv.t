@@ -10,24 +10,28 @@
 #
 ################################################################################
 
+use FindBin ();
+
 BEGIN {
   if ($ENV{'PERL_CORE'}) {
     chdir 't' if -d 't';
-    @INC = ('../lib', '../ext/Devel-PPPort/t') if -d '../lib' && -d '../ext';
-    require Config; import Config;
+    unshift @INC, '../lib' if -d '../lib' && -d '../ext';
+    require Config; Config->import;
     use vars '%Config';
     if (" $Config{'extensions'} " !~ m[ Devel/PPPort ]) {
       print "1..0 # Skip -- Perl configured without Devel::PPPort module\n";
       exit 0;
     }
   }
-  else {
-    unshift @INC, 't';
-  }
+
+  use lib "$FindBin::Bin";
+  use lib "$FindBin::Bin/../parts/inc";
+
+  die qq[Cannot find "$FindBin::Bin/../parts/inc"] unless -d "$FindBin::Bin/../parts/inc";
 
   sub load {
-    eval "use Test";
-    require 'testutil.pl' if $@;
+    require 'testutil.pl';
+    require 'inctools';
   }
 
   if (15) {
@@ -38,41 +42,41 @@ BEGIN {
 
 use Devel::PPPort;
 use strict;
-$^W = 1;
+BEGIN { $^W = 1; }
 
 package Devel::PPPort;
 use vars '@ISA';
 require DynaLoader;
 @ISA = qw(DynaLoader);
-bootstrap Devel::PPPort;
+Devel::PPPort->bootstrap;
 
 package main;
 
 my @s = &Devel::PPPort::newSVpvn();
 ok(@s == 5);
-ok($s[0], "test");
-ok($s[1], "te");
-ok($s[2], "");
+is($s[0], "test");
+is($s[1], "te");
+is($s[2], "");
 ok(!defined($s[3]));
 ok(!defined($s[4]));
 
 @s = &Devel::PPPort::newSVpvn_flags();
 ok(@s == 5);
-ok($s[0], "test");
-ok($s[1], "te");
-ok($s[2], "");
+is($s[0], "test");
+is($s[1], "te");
+is($s[2], "");
 ok(!defined($s[3]));
 ok(!defined($s[4]));
 
 @s = &Devel::PPPort::newSVpvn_utf8();
 ok(@s == 1);
-ok($s[0], "test");
+is($s[0], "test");
 
-if ($] >= 5.008001) {
+if (ivers($]) >= ivers("5.008001")) {
   require utf8;
   ok(utf8::is_utf8($s[0]));
 }
 else {
-  skip("skip: no is_utf8()", 0);
+  skip("skip: no is_utf8()", 1);
 }
 

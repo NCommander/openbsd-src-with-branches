@@ -10,24 +10,28 @@
 #
 ################################################################################
 
+use FindBin ();
+
 BEGIN {
   if ($ENV{'PERL_CORE'}) {
     chdir 't' if -d 't';
-    @INC = ('../lib', '../ext/Devel-PPPort/t') if -d '../lib' && -d '../ext';
-    require Config; import Config;
+    unshift @INC, '../lib' if -d '../lib' && -d '../ext';
+    require Config; Config->import;
     use vars '%Config';
     if (" $Config{'extensions'} " !~ m[ Devel/PPPort ]) {
       print "1..0 # Skip -- Perl configured without Devel::PPPort module\n";
       exit 0;
     }
   }
-  else {
-    unshift @INC, 't';
-  }
+
+  use lib "$FindBin::Bin";
+  use lib "$FindBin::Bin/../parts/inc";
+
+  die qq[Cannot find "$FindBin::Bin/../parts/inc"] unless -d "$FindBin::Bin/../parts/inc";
 
   sub load {
-    eval "use Test";
-    require 'testutil.pl' if $@;
+    require 'testutil.pl';
+    require 'inctools';
   }
 
   if (0) {
@@ -38,13 +42,13 @@ BEGIN {
 
 use Devel::PPPort;
 use strict;
-$^W = 1;
+BEGIN { $^W = 1; }
 
 package Devel::PPPort;
 use vars '@ISA';
 require DynaLoader;
 @ISA = qw(DynaLoader);
-bootstrap Devel::PPPort;
+Devel::PPPort->bootstrap;
 
 package main;
 
@@ -59,11 +63,11 @@ else {
   # Try loading Test::Pod
   eval q{
     use Test::Pod;
-    $Test::Pod::VERSION >= 0.95
+    $Test::Pod::VERSION >= 1.41
         or die "Test::Pod version only $Test::Pod::VERSION";
     import Test::Pod tests => scalar @pods;
   };
-  $reason = 'Test::Pod >= 0.95 required' if $@;
+  $reason = 'Test::Pod >= 1.41 required' if $@;
 }
 
 if ($reason) {
@@ -74,7 +78,7 @@ if ($reason) {
 for (@pods) {
   print "# checking $_\n";
   if ($reason) {
-    skip("skip: $reason", 0);
+    skip("skip: $reason", 1);
   }
   else {
     pod_file_ok($_);

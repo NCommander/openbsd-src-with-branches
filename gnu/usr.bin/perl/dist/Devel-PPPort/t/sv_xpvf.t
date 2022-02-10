@@ -10,24 +10,28 @@
 #
 ################################################################################
 
+use FindBin ();
+
 BEGIN {
   if ($ENV{'PERL_CORE'}) {
     chdir 't' if -d 't';
-    @INC = ('../lib', '../ext/Devel-PPPort/t') if -d '../lib' && -d '../ext';
-    require Config; import Config;
+    unshift @INC, '../lib' if -d '../lib' && -d '../ext';
+    require Config; Config->import;
     use vars '%Config';
     if (" $Config{'extensions'} " !~ m[ Devel/PPPort ]) {
       print "1..0 # Skip -- Perl configured without Devel::PPPort module\n";
       exit 0;
     }
   }
-  else {
-    unshift @INC, 't';
-  }
+
+  use lib "$FindBin::Bin";
+  use lib "$FindBin::Bin/../parts/inc";
+
+  die qq[Cannot find "$FindBin::Bin/../parts/inc"] unless -d "$FindBin::Bin/../parts/inc";
 
   sub load {
-    eval "use Test";
-    require 'testutil.pl' if $@;
+    require 'testutil.pl';
+    require 'inctools';
   }
 
   if (9) {
@@ -38,13 +42,13 @@ BEGIN {
 
 use Devel::PPPort;
 use strict;
-$^W = 1;
+BEGIN { $^W = 1; }
 
 package Devel::PPPort;
 use vars '@ISA';
 require DynaLoader;
 @ISA = qw(DynaLoader);
-bootstrap Devel::PPPort;
+Devel::PPPort->bootstrap;
 
 package main;
 
@@ -54,25 +58,25 @@ tie %h, 'Tie::StdHash';
 $h{foo} = 'foo-';
 $h{bar} = '';
 
-ok(&Devel::PPPort::vnewSVpvf(), $] >= 5.004 ? 'Perl-42' : '%s-%d');
-ok(&Devel::PPPort::sv_vcatpvf('1-2-3-'), $] >= 5.004 ? '1-2-3-Perl-42' : '1-2-3-%s-%d');
-ok(&Devel::PPPort::sv_vsetpvf('1-2-3-'), $] >= 5.004 ? 'Perl-42' : '%s-%d');
+is(&Devel::PPPort::vnewSVpvf(), ivers($]) >= ivers("5.004") ? 'Perl-42' : '%s-%d');
+is(&Devel::PPPort::sv_vcatpvf('1-2-3-'), ivers($]) >= ivers("5.004") ? '1-2-3-Perl-42' : '1-2-3-%s-%d');
+is(&Devel::PPPort::sv_vsetpvf('1-2-3-'), ivers($]) >= ivers("5.004") ? 'Perl-42' : '%s-%d');
 
 &Devel::PPPort::sv_catpvf_mg($h{foo});
-ok($h{foo}, $] >= 5.004 ? 'foo-Perl-42' : 'foo-');
+is($h{foo}, ivers($]) >= ivers("5.004") ? 'foo-Perl-42' : 'foo-');
 
 &Devel::PPPort::Perl_sv_catpvf_mg($h{foo});
-ok($h{foo}, $] >= 5.004 ? 'foo-Perl-42-Perl-43' : 'foo-');
+is($h{foo}, ivers($]) >= ivers("5.004") ? 'foo-Perl-42-Perl-43' : 'foo-');
 
 &Devel::PPPort::sv_catpvf_mg_nocontext($h{foo});
-ok($h{foo}, $] >= 5.004 ? 'foo-Perl-42-Perl-43-Perl-44' : 'foo-');
+is($h{foo}, ivers($]) >= ivers("5.004") ? 'foo-Perl-42-Perl-43-Perl-44' : 'foo-');
 
 &Devel::PPPort::sv_setpvf_mg($h{bar});
-ok($h{bar}, $] >= 5.004 ? 'mhx-42' : '');
+is($h{bar}, ivers($]) >= ivers("5.004") ? 'mhx-42' : '');
 
 &Devel::PPPort::Perl_sv_setpvf_mg($h{bar});
-ok($h{bar}, $] >= 5.004 ? 'foo-43' : '');
+is($h{bar}, ivers($]) >= ivers("5.004") ? 'foo-43' : '');
 
 &Devel::PPPort::sv_setpvf_mg_nocontext($h{bar});
-ok($h{bar}, $] >= 5.004 ? 'bar-44' : '');
+is($h{bar}, ivers($]) >= ivers("5.004") ? 'bar-44' : '');
 

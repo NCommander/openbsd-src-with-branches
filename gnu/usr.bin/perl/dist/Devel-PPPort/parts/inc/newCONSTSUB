@@ -13,24 +13,29 @@
 
 newCONSTSUB
 
-=implementation
+=dontwarn
 
-/* Hint: newCONSTSUB
- * Returns a CV* as of perl-5.7.1. This return value is not supported
- * by Devel::PPPort.
- */
+NEED_newCONSTSUB    /* Because we define this weirdly */
+
+=implementation
 
 /* newCONSTSUB from IO.xs is in the core starting with 5.004_63 */
 #if { VERSION < 5.004_63 } && { VERSION != 5.004_05 }
+
+/* And before that, we need to make sure this gets compiled for the functions
+ * that rely on it */
+#define NEED_newCONSTSUB
+
 #if { NEED newCONSTSUB }
 
 /* This is just a trick to avoid a dependency of newCONSTSUB on PL_parser */
 /* (There's no PL_parser in perl < 5.005, so this is completely safe)     */
 #define D_PPP_PL_copline PL_copline
 
-void
+CV *
 newCONSTSUB(HV *stash, const char *name, SV *sv)
 {
+        CV *cv;
         U32 oldhints = PL_hints;
         HV *old_cop_stash = PL_curcop->cop_stash;
         HV *old_curstash = PL_curstash;
@@ -41,15 +46,9 @@ newCONSTSUB(HV *stash, const char *name, SV *sv)
         if (stash)
                 PL_curstash = PL_curcop->cop_stash = stash;
 
-        newSUB(
+        cv = newSUB(
 
-#if   { VERSION <  5.003_22 }
-                start_subparse(),
-#elif { VERSION == 5.003_22 }
-                start_subparse(0),
-#else  /* 5.003_23  onwards */
                 start_subparse(FALSE, 0),
-#endif
 
                 newSVOP(OP_CONST, 0, newSVpv((char *) name, 0)),
                 newSVOP(OP_CONST, 0, &PL_sv_no),   /* SvPV(&PL_sv_no) == "" -- GMB */
@@ -60,6 +59,8 @@ newCONSTSUB(HV *stash, const char *name, SV *sv)
         PL_curcop->cop_stash = old_cop_stash;
         PL_curstash = old_curstash;
         PL_curcop->cop_line = oldline;
+
+        return cv;
 }
 #endif
 #endif
@@ -95,10 +96,10 @@ call_newCONSTSUB_3()
 =tests plan => 3
 
 &Devel::PPPort::call_newCONSTSUB_1();
-ok(&Devel::PPPort::test_value_1(), 1);
+is(&Devel::PPPort::test_value_1(), 1);
 
 &Devel::PPPort::call_newCONSTSUB_2();
-ok(&Devel::PPPort::test_value_2(), 2);
+is(&Devel::PPPort::test_value_2(), 2);
 
 &Devel::PPPort::call_newCONSTSUB_3();
-ok(&Devel::PPPort::test_value_3(), 3);
+is(&Devel::PPPort::test_value_3(), 3);
