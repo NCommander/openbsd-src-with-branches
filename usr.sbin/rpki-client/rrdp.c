@@ -1,4 +1,4 @@
-/*	$OpenBSD: rrdp.c,v 1.20 2022/01/13 13:18:41 claudio Exp $ */
+/*	$OpenBSD: rrdp.c,v 1.21 2022/01/23 12:09:24 claudio Exp $ */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
@@ -429,6 +429,7 @@ rrdp_input_handler(int fd)
 			errx(1, "%s: bad internal state", s->local);
 
 		s->res = res;
+		free(s->last_mod);
 		s->last_mod = last_mod;
 		s->state |= RRDP_STATE_HTTP_DONE;
 		rrdp_finished(s);
