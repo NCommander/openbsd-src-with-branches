@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.69 2021/06/02 00:39:26 cheloha Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.70 2021/07/06 09:34:06 kettenis Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -421,6 +421,12 @@ ppc_intr_disable(void)
 	dmsr = emsr & ~PSL_EE;
 	ppc_mtmsr(dmsr);
 	return (emsr & PSL_EE);
+}
+
+static inline void
+intr_enable(void)
+{
+	ppc_mtmsr(ppc_mfmsr() | PSL_EE);
 }
 
 static __inline u_long
