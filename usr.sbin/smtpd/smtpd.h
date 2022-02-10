@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtpd.h,v 1.670 2021/07/28 19:39:51 benno Exp $	*/
+/*	$OpenBSD: smtpd.h,v 1.671 2021/09/22 17:12:34 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -99,7 +99,6 @@
 
 #define RELAY_AUTH		0x08
 #define RELAY_LMTP		0x80
-#define	RELAY_TLS_VERIFY	0x200
 
 #define MTA_EXT_DSN		0x400
 
@@ -1189,7 +1188,7 @@ struct dispatcher_remote {
 
 	char	*auth;
 	int	 tls_required;
-	int	 tls_noverify;
+	int	 tls_verify;
 	char	*tls_protocols;
 	char	*tls_ciphers;
 

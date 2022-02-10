@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.289 2021/06/14 17:58:15 eric Exp $	*/
+/*	$OpenBSD: parse.y,v 1.290 2021/10/15 15:01:29 naddy Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -868,6 +868,7 @@ HELO STRING {
 	}
 
 	dsp->u.remote.tls_required = 1;
+	dsp->u.remote.tls_verify = 1;
 }
 | TLS NO_VERIFY {
 	if (dsp->u.remote.tls_required == 1) {
@@ -876,7 +877,6 @@ HELO STRING {
 	}
 
 	dsp->u.remote.tls_required = 1;
-	dsp->u.remote.tls_noverify = 1;
 }
 | AUTH tables {
 	struct table   *t = $2;
