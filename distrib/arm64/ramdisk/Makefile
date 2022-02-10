@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.22 2021/04/17 21:19:40 sthen Exp $
+#	$OpenBSD: Makefile,v 1.23 2021/07/26 12:47:45 kn Exp $
 
 FS=		miniroot${OSrev}.img
 FSSIZE=		88064
@@ -9,7 +9,6 @@ RAMDISK=	RAMDISK
 # this offset is required by Rockchip
 MSDOSSTART=	32768
 MSDOSSIZE=	16384
-FFSSTART!=	expr ${MSDOSSTART} + ${MSDOSSIZE}
 
 NEWFS_ARGS_msdos=-L boot -c1 -F16
 MOUNT_ARGS_msdos=-o-l
@@ -46,8 +45,7 @@ all: ${FS}
 ${FS}: bsd.rd
 	dd if=/dev/zero of=${FS} bs=512 count=${FSSIZE}
 	vnconfig -v ${FS} > vnd
-	echo 'u\ne 0\nc\nn\n${MSDOSSTART}\n${MSDOSSIZE}\ne 3\nA6\nn\n${FFSSTART}\n*\nf 0\nw\nq\n' \
-	    | fdisk -e `cat vnd` >/dev/null
+	fdisk -iy -b "${MSDOSSIZE}@${MSDOSSTART}:c" `cat vnd` >/dev/null
 	echo 'a a\n\n\n\nw\nq\n' | disklabel -E `cat vnd` >/dev/null
 	newfs -t msdos ${NEWFS_ARGS_msdos} /dev/r`cat vnd`i
 	mount ${MOUNT_ARGS_msdos} /dev/`cat vnd`i ${MOUNT_POINT}
