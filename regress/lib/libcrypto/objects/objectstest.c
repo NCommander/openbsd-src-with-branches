@@ -211,7 +211,7 @@ obj_nid_test(struct obj_test *ot)
 	int nid;
 	int failed = 1;
 
-	if (ot->nid == NID_undef)
+	if (ot->nid == NID_undef && ot->oid != NULL)
 		return 0;
 
 	if ((obj = OBJ_nid2obj(ot->nid)) == NULL) {
