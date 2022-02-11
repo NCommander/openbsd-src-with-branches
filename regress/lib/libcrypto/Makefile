@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.41 2020/12/26 00:48:56 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.42 2021/12/05 13:01:08 jsing Exp $
 
 SUBDIR += aead
 SUBDIR += aeswrap
@@ -34,6 +34,7 @@ SUBDIR += ige
 SUBDIR += init
 SUBDIR += md4
 SUBDIR += md5
+SUBDIR += objects
 SUBDIR += pbkdf2
 SUBDIR += pem
 SUBDIR += pkcs7
