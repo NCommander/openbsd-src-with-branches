@@ -1616,7 +1616,6 @@ uvm_fault_unwire_locked(vm_map_t map, vaddr_t start, vaddr_t end)
 	struct vm_page *pg;
 
 	KASSERT((map->flags & VM_MAP_INTRSAFE) == 0);
-	vm_map_assert_anylock(map);
 
 	/*
 	 * we assume that the area we are unwiring has actually been wired
