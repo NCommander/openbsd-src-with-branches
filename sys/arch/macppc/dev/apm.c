@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.24 2021/03/26 23:34:50 kn Exp $	*/
+/*	$OpenBSD: apm.c,v 1.25 2022/02/10 05:48:02 gkoehler Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -336,11 +336,6 @@ apmkqfilter(dev_t dev, struct knote *kn)
 }
 
 #ifdef SUSPEND
-void
-sleep_clocks(void *v)
-{
-}
-
 int
 sleep_showstate(void *v, int sleepmode)
 {
