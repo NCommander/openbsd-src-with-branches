@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatcher.c,v 1.4 2021/05/26 18:08:55 eric Exp $	*/
+/*	$OpenBSD: dispatcher.c,v 1.5 2021/06/14 17:58:15 eric Exp $	*/
 
 /*
  * Copyright (c) 2014 Gilles Chehade <gilles@poolp.org>
@@ -131,8 +131,6 @@ int
 dispatcher(void)
 {
 	struct passwd	*pw;
-
-	ca_engine_init();
 
 	mda_postfork();
 	mta_postfork();
