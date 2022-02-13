@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.34 2020/07/06 13:33:06 pirofti Exp $	*/
+/*	$OpenBSD: clock.c,v 1.35 2021/02/23 04:44:30 cheloha Exp $	*/
 /*	$NetBSD: clock.c,v 1.1 2003/04/26 18:39:50 fvdl Exp $	*/
 
 /*-
@@ -433,7 +433,7 @@ rtcgettime(struct todr_chip_handle *handle, struct timeval *tv)
 	mc_todregs rtclk;
 	struct clock_ymdhms dt;
 	int s;
-	
+
 	s = splclock();
 	if (rtcget(&rtclk)) {
 		splx(s);
