@@ -1,4 +1,4 @@
-/*	$OpenBSD: gencode.c,v 1.58 2021/12/01 18:28:45 deraadt Exp $	*/
+/*	$OpenBSD: gencode.c,v 1.59 2021/12/05 16:40:24 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
@@ -205,6 +205,8 @@ freechunks(void)
 	int i, j;
 
 	for (i = 0; i <= cur_membag; i++) {
+		if (membag[i].ptrs == NULL)
+			continue;
 		for (j = 0; j <= membag[i].slot; j++)
 			free(membag[i].ptrs[j]);
 		free(membag[i].ptrs);
