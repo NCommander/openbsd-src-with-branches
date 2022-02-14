@@ -1,4 +1,4 @@
-/*	$OpenBSD: rrdp_notification.c,v 1.12 2021/11/24 15:24:16 claudio Exp $ */
+/*	$OpenBSD: rrdp_notification.c,v 1.13 2022/02/03 18:19:32 claudio Exp $ */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
@@ -390,7 +390,7 @@ notification_done(struct notification_xml *nxml, char *last_mod)
 	}
 
 	/* it makes no sense to process too many deltas */
-	if (nxml->serial - nxml->repository->serial > 300)
+	if (nxml->serial - nxml->repository->serial > MAX_RRDP_DELTAS)
 		goto snapshot;
 
 	/* check that all needed deltas are available */
