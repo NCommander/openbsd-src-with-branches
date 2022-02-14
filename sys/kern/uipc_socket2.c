@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.115 2021/10/27 13:41:09 mvs Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.116 2021/11/06 05:26:33 visa Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -155,7 +155,7 @@ sonewconn(struct socket *head, int connstatus)
 	 */
 	soassertlocked(head);
 
-	if (mclpools[0].pr_nout > mclpools[0].pr_hardlimit * 95 / 100)
+	if (m_pool_used() > 95)
 		return (NULL);
 	if (head->so_qlen + head->so_q0len > head->so_qlimit * 3)
 		return (NULL);
@@ -517,13 +517,13 @@ int
 sbchecklowmem(void)
 {
 	static int sblowmem;
+	unsigned int used = m_pool_used();
 
-	if (mclpools[0].pr_nout < mclpools[0].pr_hardlimit * 60 / 100 ||
-	    mbpool.pr_nout < mbpool.pr_hardlimit * 60 / 100)
+	if (used < 60)
 		sblowmem = 0;
-	if (mclpools[0].pr_nout > mclpools[0].pr_hardlimit * 80 / 100 ||
-	    mbpool.pr_nout > mbpool.pr_hardlimit * 80 / 100)
+	else if (used > 80)
 		sblowmem = 1;
+
 	return (sblowmem);
 }
 
