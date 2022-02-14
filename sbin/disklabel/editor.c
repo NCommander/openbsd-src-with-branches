@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.369 2021/11/09 16:53:18 otto Exp $	*/
+/*	$OpenBSD: editor.c,v 1.370 2021/12/19 19:26:18 krw Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <millert@openbsd.org>
@@ -588,7 +588,7 @@ again:
 	if (index >= alloc_table_nitems)
 		return 1;
 	lp = &label;
-	for (i=0; i<MAXPARTITIONS; i++) {
+	for (i = 0; i < MAXPARTITIONS; i++) {
 		free(mountpoints[i]);
 		mountpoints[i] = NULL;
 	}
