@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: tascodec.c,v 1.1 2022/01/30 21:40:50 kettenis Exp $	*/
 /*
  * Copyright (c) 2022 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -98,7 +98,7 @@ tascodec_match(struct device *parent, void *match, void *aux)
 {
 	struct i2c_attach_args *ia = aux;
 
-	return (strcmp(ia->ia_name, "ti,tas5770l") == 0);
+	return iic_is_compatible(ia, "ti,tas2770");
 }
 
 void
