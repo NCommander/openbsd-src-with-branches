@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth_unix.c,v 1.28 2020/07/06 13:33:06 pirofti Exp $ */
+/*	$OpenBSD: auth_unix.c,v 1.29 2022/01/28 05:54:02 guenther Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -61,7 +61,7 @@ static bool_t	authunix_validate(struct __rpc_auth *, struct opaque_auth *);
 static bool_t	authunix_refresh(struct __rpc_auth *);
 static void	authunix_destroy(struct __rpc_auth *);
 
-static struct auth_ops auth_unix_ops = {
+static const struct auth_ops auth_unix_ops = {
 	authunix_nextverf,
 	authunix_marshal,
 	authunix_validate,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: xdr.h,v 1.11 2008/12/09 19:40:10 otto Exp $	*/
+/*	$OpenBSD: xdr.h,v 1.12 2010/09/01 14:43:34 millert Exp $	*/
 /*	$NetBSD: xdr.h,v 1.7 1995/04/29 05:28:06 cgd Exp $	*/
 
 /*
@@ -99,7 +99,7 @@ enum xdr_op {
  */
 typedef struct __rpc_xdr {
 	enum xdr_op	x_op;		/* operation; fast additional param */
-	struct xdr_ops {
+	const struct xdr_ops {
 		/* get a long from underlying stream */
 		bool_t	(*x_getlong)(struct __rpc_xdr *, long *);
 		/* put a long to " */

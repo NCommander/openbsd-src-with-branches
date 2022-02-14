@@ -1,4 +1,4 @@
-/*	$OpenBSD: clnt_udp.c,v 1.36 2019/06/28 13:32:42 deraadt Exp $ */
+/*	$OpenBSD: clnt_udp.c,v 1.37 2020/07/06 13:33:06 pirofti Exp $ */
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -57,7 +57,7 @@ static bool_t		clntudp_freeres(CLIENT *, xdrproc_t, caddr_t);
 static bool_t           clntudp_control(CLIENT *, u_int, void *);
 static void		clntudp_destroy(CLIENT *);
 
-static struct clnt_ops udp_ops = {
+static const struct clnt_ops udp_ops = {
 	clntudp_call,
 	clntudp_abort,
 	clntudp_geterr,
