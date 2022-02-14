@@ -1,4 +1,4 @@
-/*	$OpenBSD: mongoose.c,v 1.20 2010/04/27 18:29:39 kettenis Exp $	*/
+/*	$OpenBSD: mongoose.c,v 1.21 2010/05/24 15:04:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -196,12 +196,13 @@ mg_intr_disestablish(void *v, void *cookie)
 {
 	struct hppa_isa_iv *iv = cookie;
 	struct mongoose_softc *sc = v;
- 	int irq = iv - sc->sc_iv;
+ 	int irq;
  	volatile u_int8_t *imr;
 
 	if (!sc || !cookie)
 		return;
 
+ 	irq = iv - sc->sc_iv;
 	if (irq < 8)
 		imr = &sc->sc_ctrl->imr0;
 	else
