@@ -1,4 +1,4 @@
-/*	$OpenBSD: aplhidev.c,v 1.3 2021/12/09 20:47:27 kettenis Exp $	*/
+/*	$OpenBSD: aplhidev.c,v 1.4 2021/12/11 20:36:26 kettenis Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  * Copyright (c) 2013-2014 joshua stein <jcs@openbsd.org>
@@ -117,7 +117,7 @@ struct aplhidev_softc {
 	uint8_t			sc_msgid;
 
 	uint32_t		*sc_gpio;
-	size_t			sc_gpiolen;
+	int			sc_gpiolen;
 
 	struct device 		*sc_kbd;
 	uint8_t			sc_kbddesc[APLHIDEV_DESC_MAX];
