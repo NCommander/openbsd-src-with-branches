@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.h,v 1.21 2019/11/07 14:44:53 mpi Exp $	*/
+/*	$OpenBSD: db_machdep.h,v 1.22 2021/08/30 08:11:12 jasper Exp $	*/
 
 /*
  * Copyright (c) 1998-2005 Michael Shalayeff
@@ -63,7 +63,8 @@ static __inline int inst_return(u_int ins) {
 	       (ins & 0xfc000000) == 0xe0000000;
 }
 static __inline int inst_trap_return(u_int ins)	{
-	return (ins & 0xfc001fc0) == 0x00000ca0;
+	return (ins & 0xfc001fff) == 0x00000c00 ||	/* rfi */
+	       (ins & 0xfc001fff) == 0x00000ca0;	/* rfir */
 }
 
 #if 0
