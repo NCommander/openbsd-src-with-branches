@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_syscalls.c,v 1.353 2021/10/02 14:05:10 semarie Exp $	*/
+/*	$OpenBSD: vfs_syscalls.c,v 1.354 2021/12/23 18:50:31 guenther Exp $	*/
 /*	$NetBSD: vfs_syscalls.c,v 1.71 1996/04/23 10:29:02 mycroft Exp $	*/
 
 /*
@@ -829,6 +829,7 @@ sys_chroot(struct proc *p, void *v, register_t *retval)
 		vrele(old_cdir);
 	} else
 		fdp->fd_rdir = nd.ni_vp;
+	p->p_p->ps_flags |= PS_CHROOT;
 	return (0);
 }
 
