@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_acpi.c,v 1.5 2021/12/21 06:10:29 anton Exp $	*/
+/*	$OpenBSD: com_acpi.c,v 1.6 2021/12/26 13:55:36 kettenis Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis
  *
@@ -44,7 +44,8 @@ int	com_acpi_match(struct device *, void *, void *);
 void	com_acpi_attach(struct device *, struct device *, void *);
 
 struct cfattach com_acpi_ca = {
-	sizeof(struct com_acpi_softc), com_acpi_match, com_acpi_attach
+	sizeof(struct com_acpi_softc), com_acpi_match, com_acpi_attach,
+	NULL, com_activate
 };
 
 const char *com_hids[] = {
