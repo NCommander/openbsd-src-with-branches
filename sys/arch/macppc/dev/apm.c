@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.28 2022/02/12 16:22:40 deraadt Exp $	*/
+/*	$OpenBSD: apm.c,v 1.29 2022/02/15 02:38:17 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -367,6 +367,11 @@ sleep_setstate(void *v)
 {
 	printf("TODO sleep_setstate\n");
 	return 0;
+}
+
+void
+sleep_abort(void *v)
+{
 }
 
 int
