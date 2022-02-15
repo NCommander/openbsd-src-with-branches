@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.11 2022/02/11 00:43:27 deraadt Exp $	*/
+/*	$OpenBSD: apm.c,v 1.12 2022/02/11 01:55:12 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -435,11 +435,6 @@ suspend_finish(void *v)
 	if (acpibtn_numopenlids() == 0 && lid_action != 0)
 		acpi_addtask(sc, acpi_sleep_task, sc, sc->sc_state);
 #endif
-}
-
-void
-disable_lid_wakeups(void *v)
-{
 }
 
 #endif /* SUSPEND */
