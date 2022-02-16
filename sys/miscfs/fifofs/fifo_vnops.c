@@ -129,7 +129,7 @@ const struct filterops fifowrite_filtops = {
 };
 
 const struct filterops fifoexcept_filtops = {
-	.f_flags	= FILTEROP_ISFD,
+	.f_flags	= FILTEROP_ISFD | FILTEROP_MPSAFE,
 	.f_attach	= NULL,
 	.f_detach	= filt_fifordetach,
 	.f_event	= filt_fifoexcept,
