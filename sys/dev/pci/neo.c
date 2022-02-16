@@ -1,4 +1,4 @@
-/*      $OpenBSD: neo.c,v 1.33 2018/04/11 04:48:31 ratchov Exp $       */
+/*      $OpenBSD: neo.c,v 1.34 2022/01/09 05:42:58 jsg Exp $       */
 
 /*
  * Copyright (c) 1999 Cameron Grant <gandalf@vilnya.demon.co.uk>
@@ -597,7 +597,7 @@ neo_attach(struct device *parent, struct device *self, void *aux)
 	if ((error = ac97_attach(&sc->host_if)) != 0)
 		return;
 
-	audio_attach_mi(&neo_hw_if, sc, &sc->dev);
+	audio_attach_mi(&neo_hw_if, sc, NULL, &sc->dev);
 
 	return;
 }

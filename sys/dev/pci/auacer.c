@@ -1,4 +1,4 @@
-/*	$OpenBSD: auacer.c,v 1.21 2016/12/12 06:43:01 ratchov Exp $	*/
+/*	$OpenBSD: auacer.c,v 1.22 2019/12/14 12:35:19 fcambus Exp $	*/
 /*	$NetBSD: auacer.c,v 1.3 2004/11/10 04:20:26 kent Exp $	*/
 
 /*-
@@ -274,7 +274,7 @@ auacer_attach(struct device *parent, struct device *self, void *aux)
 	if (ac97_attach(&sc->host_if) != 0)
 		return;
 
-	audio_attach_mi(&auacer_hw_if, sc, &sc->sc_dev);
+	audio_attach_mi(&auacer_hw_if, sc, NULL, &sc->sc_dev);
 
 	auacer_reset(sc);
 }

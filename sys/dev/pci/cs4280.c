@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4280.c,v 1.53 2020/01/24 03:29:55 tedu Exp $	*/
+/*	$OpenBSD: cs4280.c,v 1.54 2022/01/09 05:42:45 jsg Exp $	*/
 /*	$NetBSD: cs4280.c,v 1.5 2000/06/26 04:56:23 simonb Exp $	*/
 
 /*
@@ -548,7 +548,7 @@ cs4280_attachhook(struct device *self)
 					     AudioNcd, AudioNmute);
 	cs4280_mixer_set_port(sc, &ctl);
 
-	audio_attach_mi(&cs4280_hw_if, sc, &sc->sc_dev);
+	audio_attach_mi(&cs4280_hw_if, sc, NULL, &sc->sc_dev);
 
 #if NMIDI > 0
 	midi_attach_mi(&cs4280_midi_hw_if, sc, &sc->sc_dev);

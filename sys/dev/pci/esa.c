@@ -1,4 +1,4 @@
-/*	$OpenBSD: esa.c,v 1.34 2018/04/11 04:48:31 ratchov Exp $	*/
+/*	$OpenBSD: esa.c,v 1.35 2018/09/14 08:37:34 miko Exp $	*/
 /* $NetBSD: esa.c,v 1.12 2002/03/24 14:17:35 jmcneill Exp $ */
 
 /*
@@ -1048,7 +1048,7 @@ esa_attach(struct device *parent, struct device *self, void *aux)
 		sc->voice[i].parent = (struct device *)sc;
 		sc->voice[i].index = i;
 		sc->sc_audiodev[i] =
-		    audio_attach_mi(&esa_hw_if, &sc->voice[i], &sc->sc_dev);
+		    audio_attach_mi(&esa_hw_if, &sc->voice[i], NULL, &sc->sc_dev);
 	}
 }
 

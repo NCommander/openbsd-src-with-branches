@@ -1,4 +1,4 @@
-/*	$OpenBSD: awacs.c,v 1.33 2016/09/14 06:12:19 ratchov Exp $	*/
+/*	$OpenBSD: awacs.c,v 1.34 2016/09/19 06:46:43 ratchov Exp $	*/
 /*	$NetBSD: awacs.c,v 1.4 2001/02/26 21:07:51 wiz Exp $	*/
 
 /*-
@@ -340,7 +340,7 @@ awacs_attach(struct device *parent, struct device *self, void *aux)
 	awacs_halt_input(sc);
 	printf("\n");
 
-	audio_attach_mi(&awacs_hw_if, sc, &sc->sc_dev);
+	audio_attach_mi(&awacs_hw_if, sc, NULL, &sc->sc_dev);
 }
 
 u_int

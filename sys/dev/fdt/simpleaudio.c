@@ -1,4 +1,4 @@
-/*	$OpenBSD: simpleaudio.c,v 1.1 2020/06/10 23:55:19 patrick Exp $	*/
+/*	$OpenBSD: simpleaudio.c,v 1.2 2021/04/05 14:36:18 kn Exp $	*/
 /*
  * Copyright (c) 2020 Patrick Wildt <patrick@blueri.se>
  *
@@ -206,7 +206,7 @@ simpleaudio_attach_deferred(struct device *self)
 
 	simpleaudio_set_format(sc, fmt, pol, clk);
 
-	audio_attach_mi(&simpleaudio_hw_if, sc, &sc->sc_dev);
+	audio_attach_mi(&simpleaudio_hw_if, sc, NULL, &sc->sc_dev);
 }
 
 void

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cs4281.c,v 1.38 2021/03/05 12:40:13 jsg Exp $ */
+/*	$OpenBSD: cs4281.c,v 1.39 2022/01/09 05:42:45 jsg Exp $ */
 /*	$Tera: cs4281.c,v 1.18 2000/12/27 14:24:45 tacha Exp $	*/
 
 /*
@@ -327,7 +327,7 @@ cs4281_attach(struct device *parent, struct device *self, void *aux)
 		printf("%s: ac97_attach failed\n", sc->sc_dev.dv_xname);
 		return;
 	}
-	audio_attach_mi(&cs4281_hw_if, sc, &sc->sc_dev);
+	audio_attach_mi(&cs4281_hw_if, sc, NULL, &sc->sc_dev);
 
 #if NMIDI > 0
 	midi_attach_mi(&cs4281_midi_hw_if, sc, &sc->sc_dev);

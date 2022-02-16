@@ -1,4 +1,4 @@
-/*	$OpenBSD: ce4231.c,v 1.36 2018/12/27 11:06:38 claudio Exp $	*/
+/*	$OpenBSD: ce4231.c,v 1.37 2021/10/24 17:05:03 mpi Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -268,7 +268,7 @@ ce4231_attach(struct device *parent, struct device *self, void *aux)
 
 	printf(": nvaddrs %d\n", ea->ea_nvaddrs);
 
-	audio_attach_mi(&ce4231_sa_hw_if, sc, &sc->sc_dev);
+	audio_attach_mi(&ce4231_sa_hw_if, sc, NULL, &sc->sc_dev);
 
 	/* Enable mode 2. */
 	ce4231_write(sc, SP_MISC_INFO, ce4231_read(sc, SP_MISC_INFO) | MODE2);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tumbler.c,v 1.8 2016/09/14 06:12:19 ratchov Exp $	*/
+/*	$OpenBSD: tumbler.c,v 1.9 2016/09/19 06:46:43 ratchov Exp $	*/
 
 /*-
  * Copyright (c) 2001,2003 Tsubai Masanari.  All rights reserved.
@@ -299,7 +299,7 @@ tumbler_defer(struct device *dev)
 
 	/* XXX If i2c has failed to attach, what should we do? */
 
-	audio_attach_mi(&tumbler_hw_if, sc, &sc->sc_dev);
+	audio_attach_mi(&tumbler_hw_if, sc, NULL, &sc->sc_dev);
 
 	tumbler_init(sc);
 }
