@@ -1,4 +1,4 @@
-/*	$OpenBSD: usbdi.h,v 1.70 2018/05/01 18:14:46 landry Exp $ */
+/*	$OpenBSD: usbdi.h,v 1.71 2021/02/01 09:21:51 mglocker Exp $ */
 /*	$NetBSD: usbdi.h,v 1.62 2002/07/11 21:14:35 augustss Exp $	*/
 /*	$FreeBSD: src/sys/dev/usb/usbdi.h,v 1.18 1999/11/17 22:33:49 n_hibma Exp $	*/
 
@@ -227,6 +227,7 @@ struct usb_attach_arg {
 	int			usegeneric;
 	struct usbd_interface	**ifaces;/* all interfaces */
 	int			nifaces; /* number of interfaces */
+	void			*cookie;
 };
 
 /* Match codes. */
