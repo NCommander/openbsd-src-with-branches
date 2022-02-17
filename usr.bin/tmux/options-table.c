@@ -1,4 +1,4 @@
-/* $OpenBSD: options-table.c,v 1.156 2022/02/01 14:46:41 nicm Exp $ */
+/* $OpenBSD: options-table.c,v 1.157 2022/02/15 13:11:29 nicm Exp $ */
 
 /*
  * Copyright (c) 2011 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1246,6 +1246,7 @@ const struct options_table_entry options_table[] = {
 	OPTIONS_TABLE_HOOK("window-linked", ""),
 	OPTIONS_TABLE_WINDOW_HOOK("window-pane-changed", ""),
 	OPTIONS_TABLE_WINDOW_HOOK("window-renamed", ""),
+	OPTIONS_TABLE_WINDOW_HOOK("window-resized", ""),
 	OPTIONS_TABLE_HOOK("window-unlinked", ""),
 
 	{ .name = NULL }
