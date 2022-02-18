@@ -1,8 +1,8 @@
-# $OpenBSD: Makefile,v 1.8 2017/01/23 03:12:25 jsg Exp $
+# $OpenBSD: Makefile,v 1.9 2020/05/16 16:37:50 martin Exp $
 
 .if ${MACHINE} == "amd64" || ${MACHINE} == "arm64" || \
     ${MACHINE} == "armv7" || ${MACHINE} == "i386" || \
-    ${MACHINE} == "macppc"
+    ${MACHINE} == "macppc" || ${MACHINE} == "riscv64"
 
 PROG=	gpioctl
 SRCS=	gpioctl.c
@@ -19,6 +19,6 @@ NOPROG=	yes
 .endif
 
 MAN=	gpioctl.8
-MANSUBDIR=i386 macppc amd64 armv7 arm64
+MANSUBDIR=amd64 arm64 armv7 i386 macppc riscv64
 
 .include <bsd.prog.mk>
