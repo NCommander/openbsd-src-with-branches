@@ -132,6 +132,8 @@ dispatcher(void)
 {
 	struct passwd	*pw;
 
+	ca_engine_init();
+
 	mda_postfork();
 	mta_postfork();
 	smtp_postfork();

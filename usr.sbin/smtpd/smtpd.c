@@ -2100,7 +2100,9 @@ imsg_to_str(int type)
 	CASE(IMSG_FILTER_SMTP_DATA_BEGIN);
 	CASE(IMSG_FILTER_SMTP_DATA_END);
 
-	CASE(IMSG_CA_SIGN);
+	CASE(IMSG_CA_RSA_PRIVENC);
+	CASE(IMSG_CA_RSA_PRIVDEC);
+	CASE(IMSG_CA_ECDSA_SIGN);
 	default:
 		(void)snprintf(buf, sizeof(buf), "IMSG_??? (%d)", type);
 
