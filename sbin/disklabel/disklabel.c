@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.236 2020/11/14 20:53:31 guenther Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.237 2021/06/24 21:11:40 jmc Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -89,6 +89,9 @@ int	quiet;
 int	donothing;
 
 void	makedisktab(FILE *, struct disklabel *);
+int	checklabel(struct disklabel *);
+void	readlabel(int);
+int	parselabel(void);
 void	makelabel(char *, char *, struct disklabel *);
 int	writelabel(int, struct disklabel *);
 int	edit(struct disklabel *, int);
