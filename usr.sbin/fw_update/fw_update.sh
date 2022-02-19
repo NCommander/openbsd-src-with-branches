@@ -1,5 +1,5 @@
 #!/bin/ksh
-#	$OpenBSD: fw_update.sh,v 1.37 2022/02/11 00:46:58 afresh1 Exp $
+#	$OpenBSD: fw_update.sh,v 1.38 2022/02/15 08:02:03 espie Exp $
 #
 # Copyright (c) 2021 Andrew Hewus Fresh <afresh1@openbsd.org>
 #
@@ -206,12 +206,12 @@ lock_db() {
 	perl <<'EOL' |&
 		use v5.16;
 		use warnings;
+		no lib ('/usr/local/libdata/perl5/site_perl');
 		use OpenBSD::PackageInfo qw< lock_db >;
 
 		$|=1;
 
 		lock_db(0);
-		$SIG{TERM} = sub { exit };
 	
 		say $$;
 		sleep;
