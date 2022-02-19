@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_hibernate.c,v 1.132 2022/01/07 02:47:07 guenther Exp $	*/
+/*	$OpenBSD: subr_hibernate.c,v 1.133 2022/01/17 02:54:28 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -1184,7 +1184,7 @@ hibernate_resume(void)
 
 	(void) splhigh();
 	hibernate_disable_intr_machdep();
-	cold = 1;
+	cold = 2;
 
 	DPRINTF("hibernate: suspending devices\n");
 	if (config_suspend_all(DVACT_SUSPEND) != 0) {
