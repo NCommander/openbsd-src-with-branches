@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmstat.c,v 1.90 2019/01/20 03:53:03 tedu Exp $	*/
+/*	$OpenBSD: vmstat.c,v 1.91 2019/06/28 13:35:04 deraadt Exp $	*/
 /*	$NetBSD: vmstat.c,v 1.5 1996/05/10 23:16:40 thorpej Exp $	*/
 
 /*-
@@ -37,6 +37,7 @@
 #include <sys/param.h>	/* MAXCOMLEN */
 #include <sys/types.h>
 #include <sys/namei.h>
+#include <sys/signal.h>
 #include <sys/proc.h>
 #include <sys/sched.h>
 #include <sys/stat.h>
