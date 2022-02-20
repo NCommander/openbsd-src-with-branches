@@ -1,4 +1,4 @@
-/*	$OpenBSD: exf.h,v 1.4 2001/01/29 01:58:29 niklas Exp $	*/
+/*	$OpenBSD: exf.h,v 1.5 2015/04/24 21:48:31 brynet Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -58,7 +58,8 @@ struct _exf {
 #define	F_RCV_NORM	0x020		/* Don't delete recovery files. */
 #define	F_RCV_ON	0x040		/* Recovery is possible. */
 #define	F_UNDO		0x080		/* No change since last undo. */
-	u_int8_t flags;
+#define	F_RCV_SYNC	0x100		/* Recovery file sync needed. */
+	u_int16_t flags;
 };
 
 /* Flags to db_get(). */
