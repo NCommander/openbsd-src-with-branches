@@ -1,4 +1,4 @@
-/*	$OpenBSD: voyager.c,v 1.5 2017/05/17 11:52:25 visa Exp $	*/
+/*	$OpenBSD: voyager.c,v 1.6 2021/03/11 11:16:58 jsg Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -201,7 +201,7 @@ voyager_search(struct device *parent, void *vcf, void *args)
 }
 
 /*
- * Interrupt disatcher
+ * Interrupt dispatcher
  */
 
 int
