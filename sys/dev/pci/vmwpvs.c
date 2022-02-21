@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmwpvs.c,v 1.23 2020/07/22 13:16:05 krw Exp $ */
+/*	$OpenBSD: vmwpvs.c,v 1.24 2020/09/22 19:32:53 krw Exp $ */
 
 /*
  * Copyright (c) 2013 David Gwynne <dlg@openbsd.org>
@@ -809,7 +809,7 @@ vmwpvs_msg_task(void *xsc)
 		case VMWPVS_MSG_T_REMOVED:
 			dvmsg = (struct vmwpvs_ring_msg_dev *)msg;
 			if (letoh32(dvmsg->bus) != 0) {
-				printf("%s: ignorint request to remove device"
+				printf("%s: ignoring request to remove device"
 				    " on bus %d\n", DEVNAME(sc),
 				    letoh32(msg->type));
 				break;
