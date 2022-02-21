@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.73 2021/07/12 15:09:19 beck Exp $	*/
+/*	$OpenBSD: engine.c,v 1.74 2021/07/22 15:32:51 kn Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -2238,7 +2238,7 @@ gen_rdns_proposal(struct slaacd_iface *iface, struct radv *ra)
 	rdns_proposal->rdns_lifetime = ra->rdns_lifetime;
 	LIST_FOREACH(rdns, &ra->rdns_servers, entries) {
 		memcpy(&rdns_proposal->rdns[rdns_proposal->rdns_count++],
-		    &rdns->rdns, sizeof(struct sockaddr_in6));
+		    &rdns->rdns, sizeof(struct in6_addr));
 		if (rdns_proposal->rdns_count == MAX_RDNS_COUNT)
 			break;
 	}
