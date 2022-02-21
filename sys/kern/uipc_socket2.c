@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.116 2021/11/06 05:26:33 visa Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.117 2022/02/14 04:33:18 dlg Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -150,7 +150,7 @@ sonewconn(struct socket *head, int connstatus)
 
 	/*
 	 * XXXSMP as long as `so' and `head' share the same lock, we
-	 * can call soreserve() and pr_attach() below w/o expliclitly
+	 * can call soreserve() and pr_attach() below w/o explicitly
 	 * locking `so'.
 	 */
 	soassertlocked(head);
