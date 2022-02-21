@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vxlan.c,v 1.87 2022/02/18 01:27:39 dlg Exp $ */
+/*	$OpenBSD: if_vxlan.c,v 1.88 2022/02/18 03:22:27 dlg Exp $ */
 
 /*
  * Copyright (c) 2021 David Gwynne <dlg@openbsd.org>
@@ -633,6 +633,7 @@ vxlan_input(void *arg, struct mbuf *m, struct ip *ip, struct ip6_hdr *ip6,
 	port = uh->uh_sport;
 
 	if (ip != NULL) {
+		memset(&addr, 0, sizeof(addr));
 		addr.in4 = ip->ip_src;
 		tos = ip->ip_tos;
 	}
