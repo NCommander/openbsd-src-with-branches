@@ -1,4 +1,4 @@
-/*	$OpenBSD: specialreg.h,v 1.77 2021/03/11 11:16:57 jsg Exp $	*/
+/*	$OpenBSD: specialreg.h,v 1.78 2021/11/19 04:00:53 guenther Exp $	*/
 /*	$NetBSD: specialreg.h,v 1.7 1994/10/27 04:16:26 cgd Exp $	*/
 
 /*-
@@ -609,7 +609,7 @@
  *	686-class: `rdpmc' instruction
  *	586-class: `rdmsr' instruction, CESR MSR
  *
- * The descriptions of these events are too lenghy to include here.
+ * The descriptions of these events are too lengthy to include here.
  * See Appendix A of "Intel Architecture Software Developer's
  * Manual, Volume 3: System Programming" for more information.
  */
