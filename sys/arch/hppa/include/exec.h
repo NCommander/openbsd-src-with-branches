@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.13 2015/08/29 01:58:39 guenther Exp $	*/
+/*	$OpenBSD: exec.h,v 1.14 2017/02/08 05:09:25 guenther Exp $	*/
 
 /* 
  * Copyright (c) 1994, The University of Utah and
@@ -74,7 +74,7 @@
 /* sh_type */
 #define	SHT_PARISC_EXT		0x70000000	/* contains product-specific
 						   extension bits */
-#define	SHT_PARISC_UNWIND	0x70000001	/* contains unwind table enries
+#define	SHT_PARISC_UNWIND	0x70000001	/* contains unwind table entries
 						   sh_info contains index of
 						   the code section to which
 						   unwind entries apply */
