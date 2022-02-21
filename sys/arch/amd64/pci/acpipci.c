@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpipci.c,v 1.5 2020/09/26 15:16:12 kettenis Exp $	*/
+/*	$OpenBSD: acpipci.c,v 1.6 2021/03/11 11:16:55 jsg Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis
  *
@@ -71,7 +71,7 @@ struct acpipci_softc {
 int	acpipci_match(struct device *, void *, void *);
 void	acpipci_attach(struct device *, struct device *, void *);
 
-struct cfattach acpipci_ca = {
+const struct cfattach acpipci_ca = {
 	sizeof(struct acpipci_softc), acpipci_match, acpipci_attach
 };
 

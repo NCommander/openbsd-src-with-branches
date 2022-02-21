@@ -1,4 +1,4 @@
-/*	$OpenBSD: pchb.c,v 1.44 2020/01/04 01:34:24 jsg Exp $	*/
+/*	$OpenBSD: pchb.c,v 1.45 2020/05/29 04:42:23 deraadt Exp $	*/
 /*	$NetBSD: pchb.c,v 1.1 2003/04/26 18:39:50 fvdl Exp $	*/
 /*
  * Copyright (c) 2000 Michael Shalayeff
@@ -116,7 +116,7 @@ int	pchbmatch(struct device *, void *, void *);
 void	pchbattach(struct device *, struct device *, void *);
 int	pchbactivate(struct device *, int);
 
-struct cfattach pchb_ca = {
+const struct cfattach pchb_ca = {
 	sizeof(struct pchb_softc), pchbmatch, pchbattach, NULL,
 	pchbactivate
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcib.c,v 1.5 2010/07/08 20:17:54 deraadt Exp $	*/
+/*	$OpenBSD: pcib.c,v 1.6 2013/05/30 16:15:01 deraadt Exp $	*/
 /*	$NetBSD: pcib.c,v 1.6 1997/06/06 23:29:16 thorpej Exp $	*/
 
 /*-
@@ -49,7 +49,7 @@ void	pcibattach(struct device *, struct device *, void *);
 void	pcib_callback(struct device *);
 int	pcib_print(void *, const char *);
 
-struct cfattach pcib_ca = {
+const struct cfattach pcib_ca = {
 	sizeof(struct device), pcibmatch, pcibattach
 };
 

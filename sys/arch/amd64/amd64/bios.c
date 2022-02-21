@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.43 2020/08/26 03:29:05 visa Exp $	*/
+/*	$OpenBSD: bios.c,v 1.44 2021/03/11 11:16:54 jsg Exp $	*/
 /*
  * Copyright (c) 2006 Gordon Willem Klok <gklok@cogeco.ca>
  *
@@ -44,7 +44,7 @@ void bios_attach(struct device *, struct device *, void *);
 int bios_print(void *, const char *);
 char *fixstring(char *);
 
-struct cfattach bios_ca = {
+const struct cfattach bios_ca = {
 	sizeof(struct bios_softc), bios_match, bios_attach
 };
 
