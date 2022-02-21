@@ -1,4 +1,4 @@
-/*	$OpenBSD: imxtemp.c,v 1.6 2021/03/25 04:12:01 jsg Exp $	*/
+/*	$OpenBSD: imxtemp.c,v 1.7 2021/10/24 17:52:27 mpi Exp $	*/
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2016 Mark Kettenis <kettenis@openbsd.org>
@@ -162,7 +162,7 @@ imxtemp_calc_temp(struct imxtemp_softc *sc, uint32_t temp_cnt)
 	int32_t value;
 
 	/*
-	 * Calculate the calibrated tempterature based on the equation
+	 * Calculate the calibrated temperature based on the equation
 	 * provided in the i.MX6 reference manual:
 	 *
 	 * Tmeas = HOT_TEMP - (Nmeas - HOT_COUNT) * ((HOT_TEMP - 25.0) /
