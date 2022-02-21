@@ -1,4 +1,4 @@
-/*	$OpenBSD: bios.c,v 1.125 2020/05/29 04:42:23 deraadt Exp $	*/
+/*	$OpenBSD: bios.c,v 1.126 2020/08/26 03:29:05 visa Exp $	*/
 
 /*
  * Copyright (c) 1997-2001 Michael Shalayeff
@@ -90,7 +90,7 @@ void biosattach(struct device *, struct device *, void *);
 int bios_print(void *, const char *);
 char *fixstring(char *);
 
-struct cfattach bios_ca = {
+const struct cfattach bios_ca = {
 	sizeof(struct bios_softc), biosprobe, biosattach, NULL,
 	config_activate_children
 };

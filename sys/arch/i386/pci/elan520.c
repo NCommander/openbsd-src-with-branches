@@ -1,4 +1,4 @@
-/*	$OpenBSD: elan520.c,v 1.21 2014/12/10 12:27:56 mikeb Exp $	*/
+/*	$OpenBSD: elan520.c,v 1.22 2018/07/30 14:19:12 kettenis Exp $	*/
 /*	$NetBSD: elan520.c,v 1.4 2002/10/02 05:47:15 thorpej Exp $	*/
 
 /*-
@@ -86,7 +86,7 @@ void	elansc_gpio_pin_ctl(void *, int, int);
 
 u_int	elansc_tc_read(struct timecounter *);
 
-struct cfattach elansc_ca = {
+const struct cfattach elansc_ca = {
 	sizeof(struct elansc_softc), elansc_match, elansc_attach,
 	NULL, elansc_activate
 };

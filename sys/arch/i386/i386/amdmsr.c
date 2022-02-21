@@ -1,4 +1,4 @@
-/*      $OpenBSD: amdmsr.c,v 1.9 2010/04/20 22:05:41 tedu Exp $	*/
+/*      $OpenBSD: amdmsr.c,v 1.10 2018/02/19 08:59:52 mpi Exp $	*/
 
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -57,7 +57,7 @@ struct cfdriver amdmsr_cd = {
 int	amdmsr_match(struct device *, void *, void *);
 void	amdmsr_attach(struct device *, struct device *, void *);
 
-struct cfattach amdmsr_ca = {
+const struct cfattach amdmsr_ca = {
 	sizeof(struct amdmsr_softc), amdmsr_match, amdmsr_attach
 };
 

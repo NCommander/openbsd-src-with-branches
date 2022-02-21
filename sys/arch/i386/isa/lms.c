@@ -1,4 +1,4 @@
-/*	$OpenBSD: lms.c,v 1.20 2007/04/10 22:37:17 miod Exp $	*/
+/*	$OpenBSD: lms.c,v 1.21 2016/06/05 20:02:36 bru Exp $	*/
 /*	$NetBSD: lms.c,v 1.38 2000/01/08 02:57:25 takemura Exp $	*/
 
 /*-
@@ -61,7 +61,7 @@ int lmsprobe(struct device *, void *, void *);
 void lmsattach(struct device *, struct device *, void *);
 int lmsintr(void *);
 
-struct cfattach lms_ca = {
+const struct cfattach lms_ca = {
 	sizeof(struct lms_softc), lmsprobe, lmsattach
 };
 

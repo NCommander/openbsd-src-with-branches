@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.58 2018/07/02 04:26:58 mlarkin Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.59 2019/01/18 01:34:50 pd Exp $	*/
 /*	$NetBSD: mainbus.c,v 1.21 1997/06/06 23:14:20 thorpej Exp $	*/
 
 /*
@@ -84,7 +84,7 @@
 int	mainbus_match(struct device *, void *, void *);
 void	mainbus_attach(struct device *, struct device *, void *);
 
-struct cfattach mainbus_ca = {
+const struct cfattach mainbus_ca = {
 	sizeof(struct device), mainbus_match, mainbus_attach, NULL,
 	config_activate_children
 };
