@@ -1,4 +1,4 @@
-/*	$OpenBSD: ping.c,v 1.244 2021/02/21 10:38:42 sthen Exp $	*/
+/*	$OpenBSD: ping.c,v 1.245 2021/07/12 15:09:19 beck Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -1302,7 +1302,10 @@ pr_pack(u_char *buf, int cc, struct msghdr *mhdr)
 
 			if (timingsafe_memcmp(mac, &payload.mac,
 			    sizeof(mac)) != 0) {
-				printf("signature mismatch!\n");
+				printf("signature mismatch from %s: "
+				    "icmp_seq=%u\n", pr_addr(from, fromlen),
+				    ntohs(seq));
+				--nreceived;
 				return;
 			}
 			timinginfo=1;
