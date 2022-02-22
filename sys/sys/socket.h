@@ -1,4 +1,4 @@
-/*	$OpenBSD: socket.h,v 1.100 2021/05/17 17:54:31 claudio Exp $	*/
+/*	$OpenBSD: socket.h,v 1.101 2021/11/07 12:05:28 claudio Exp $	*/
 /*	$NetBSD: socket.h,v 1.14 1996/02/09 18:25:36 christos Exp $	*/
 
 /*
@@ -588,8 +588,6 @@ int	setrtable(int);
 __END_DECLS
 
 #else
-
-void	pfctlinput(int, struct sockaddr *);
 
 static inline struct sockaddr *
 sstosa(struct sockaddr_storage *ss)
