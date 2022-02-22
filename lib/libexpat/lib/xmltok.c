@@ -8,6 +8,7 @@
 
    Copyright (c) 1997-2000 Thai Open Source Software Center Ltd
    Copyright (c) 2000-2017 Expat development team
+   Copyright (c) 2016-2022 Sebastian Pipping <sebastian@pipping.org>
    Licensed under the MIT license:
 
    Permission is  hereby granted,  free of charge,  to any  person obtaining
@@ -94,11 +95,6 @@
          << 3)                                                                 \
         + ((((byte)[1]) & 3) << 1) + ((((byte)[2]) >> 5) & 1)]                 \
    & (1u << (((byte)[2]) & 0x1F)))
-
-#define UTF8_GET_NAMING(pages, p, n)                                           \
-  ((n) == 2                                                                    \
-       ? UTF8_GET_NAMING2(pages, (const unsigned char *)(p))                   \
-       : ((n) == 3 ? UTF8_GET_NAMING3(pages, (const unsigned char *)(p)) : 0))
 
 /* Detection of invalid UTF-8 sequences is based on Table 3.1B
    of Unicode 3.2: http://www.unicode.org/unicode/reports/tr28/
