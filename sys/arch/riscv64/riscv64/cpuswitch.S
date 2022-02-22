@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpuswitch.S,v 1.4 2021/06/28 18:38:17 kettenis Exp $	*/
+/*	$OpenBSD: cpuswitch.S,v 1.5 2021/07/02 14:58:33 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2015 Dale Rahn <drahn@dalerahn.com>
@@ -100,8 +100,8 @@ ENTRY(proc_trampoline)
 	li	a0, IPL_NONE
 	la	t0, spllower
 	jalr	t0
-	mv	a0, s1
-	jalr	s0
+	mv	a0, s2
+	jalr	s1
 	la	t0, syscall_return
 	jr	t0
 END(cpu_switch)
