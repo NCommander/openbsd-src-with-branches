@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.145 2021/12/23 18:50:32 guenther Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.146 2022/02/22 03:31:50 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -29,7 +29,7 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>	/* MAXCOMLEN nitems */
+#include <sys/param.h>	/* MAXCOMLEN */
 #include <sys/time.h>
 #include <sys/signal.h>
 #include <sys/uio.h>
