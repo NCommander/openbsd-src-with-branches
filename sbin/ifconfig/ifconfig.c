@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.450 2021/11/17 18:00:24 bket Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.451 2021/11/23 19:13:45 kn Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -1027,11 +1027,7 @@ getinfo(struct ifreq *ifr, int create)
 		metric = 0;
 	else
 		metric = ifr->ifr_metric;
-#ifdef SMALL
 	if (ioctl(sock, SIOCGIFMTU, (caddr_t)ifr) == -1)
-#else
-	if (is_bridge() || ioctl(sock, SIOCGIFMTU, (caddr_t)ifr) == -1)
-#endif
 		mtu = 0;
 	else
 		mtu = ifr->ifr_mtu;
