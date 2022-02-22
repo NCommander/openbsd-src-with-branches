@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp6_output.c,v 1.56 2018/09/13 19:53:58 bluhm Exp $	*/
+/*	$OpenBSD: udp6_output.c,v 1.57 2021/03/10 10:21:49 jsg Exp $	*/
 /*	$KAME: udp6_output.c,v 1.21 2001/02/07 11:51:54 itojun Exp $	*/
 
 /*
@@ -63,7 +63,6 @@
 
 #include <sys/param.h>
 #include <sys/mbuf.h>
-#include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/errno.h>

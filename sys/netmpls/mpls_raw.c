@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_raw.c,v 1.17 2020/08/01 23:41:56 gnezdo Exp $	*/
+/*	$OpenBSD: mpls_raw.c,v 1.18 2020/08/19 19:22:53 gnezdo Exp $	*/
 
 /*
  * Copyright (C) 1999, 2000 and 2001 AYAME Project, WIDE Project.
@@ -33,7 +33,6 @@
 #include <sys/param.h>
 #include <sys/mbuf.h>
 #include <sys/errno.h>
-#include <sys/protosw.h>
 #include <sys/sockio.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>

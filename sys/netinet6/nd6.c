@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.236 2021/11/07 19:38:25 sthen Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.237 2022/02/07 15:23:43 bluhm Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -40,7 +40,6 @@
 #include <sys/time.h>
 #include <sys/kernel.h>
 #include <sys/pool.h>
-#include <sys/protosw.h>
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/syslog.h>

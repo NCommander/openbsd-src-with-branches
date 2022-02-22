@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ie.c,v 1.56 2020/07/10 13:22:20 patrick Exp $	*/
+/*	$OpenBSD: if_ie.c,v 1.57 2021/03/07 06:17:03 jsg Exp $	*/
 /*	$NetBSD: if_ie.c,v 1.51 1996/05/12 23:52:48 mycroft Exp $	*/
 
 /*-
@@ -112,7 +112,6 @@ iomem, and to make 16-pointers, we subtract sc_maddr and and with 0xffff.
 #include <sys/systm.h>
 #include <sys/mbuf.h>
 #include <sys/buf.h>
-#include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/errno.h>

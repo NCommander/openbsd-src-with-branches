@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ste.c,v 1.66 2020/07/10 13:22:21 patrick Exp $ */
+/*	$OpenBSD: if_ste.c,v 1.67 2020/07/10 13:26:38 patrick Exp $ */
 /*
  * Copyright (c) 1997, 1998, 1999
  *	Bill Paul <wpaul@ctr.columbia.edu>.  All rights reserved.
@@ -38,7 +38,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>
-#include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/errno.h>

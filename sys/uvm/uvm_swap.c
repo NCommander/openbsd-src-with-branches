@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_swap.c,v 1.151 2021/11/11 09:34:27 tb Exp $	*/
+/*	$OpenBSD: uvm_swap.c,v 1.152 2021/12/12 09:14:59 visa Exp $	*/
 /*	$NetBSD: uvm_swap.c,v 1.40 2000/11/17 11:39:39 mrg Exp $	*/
 
 /*
@@ -52,7 +52,6 @@
 #include <sys/pledge.h>
 #if defined(NFSCLIENT)
 #include <sys/socket.h>
-#include <sys/domain.h>
 #include <netinet/in.h>
 #include <nfs/nfsproto.h>
 #include <nfs/nfsdiskless.h>

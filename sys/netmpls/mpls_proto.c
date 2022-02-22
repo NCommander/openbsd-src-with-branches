@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_proto.c,v 1.18 2019/06/13 08:12:11 claudio Exp $	*/
+/*	$OpenBSD: mpls_proto.c,v 1.19 2021/05/25 22:45:10 bluhm Exp $	*/
 
 /*
  * Copyright (C) 1999, 2000 and 2001 AYAME Project, WIDE Project.
@@ -32,7 +32,6 @@
 
 #include <sys/param.h>
 #include <sys/socket.h>
-#include <sys/protosw.h>
 #include <sys/domain.h>
 #include <sys/mbuf.h>
 

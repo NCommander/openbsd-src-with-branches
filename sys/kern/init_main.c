@@ -1,4 +1,4 @@
-/*	$OpenBSD: init_main.c,v 1.313 2021/12/09 00:26:10 guenther Exp $	*/
+/*	$OpenBSD: init_main.c,v 1.314 2022/01/01 07:00:57 jsg Exp $	*/
 /*	$NetBSD: init_main.c,v 1.84.4.1 1996/06/02 09:08:06 mrg Exp $	*/
 
 /*
@@ -58,7 +58,6 @@
 #include <sys/device.h>
 #include <sys/socketvar.h>
 #include <sys/lockf.h>
-#include <sys/protosw.h>
 #include <sys/reboot.h>
 #include <sys/user.h>
 #ifdef SYSVSHM

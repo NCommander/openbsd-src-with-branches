@@ -1,4 +1,4 @@
-/*	$OpenBSD: xl.c,v 1.136 2020/12/12 11:48:52 jan Exp $	*/
+/*	$OpenBSD: xl.c,v 1.137 2022/01/09 05:42:42 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -105,7 +105,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>
-#include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/errno.h>

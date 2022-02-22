@@ -1,4 +1,4 @@
-/* $OpenBSD: lemac.c,v 1.29 2016/04/13 10:49:26 mpi Exp $ */
+/* $OpenBSD: lemac.c,v 1.30 2017/01/22 10:17:38 dlg Exp $ */
 /* $NetBSD: lemac.c,v 1.20 2001/06/13 10:46:02 wiz Exp $ */
 
 /*-
@@ -37,7 +37,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/mbuf.h>
-#include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <sys/errno.h>
