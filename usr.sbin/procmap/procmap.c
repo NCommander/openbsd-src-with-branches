@@ -1,4 +1,4 @@
-/*	$OpenBSD: procmap.c,v 1.67 2019/11/29 19:56:40 deraadt Exp $ */
+/*	$OpenBSD: procmap.c,v 1.68 2022/02/20 00:09:29 deraadt Exp $ */
 /*	$NetBSD: pmap.c,v 1.1 2002/09/01 20:32:44 atatat Exp $ */
 
 /*
@@ -34,7 +34,6 @@
 #include <sys/tree.h>
 #undef _KERNEL
 
-#include <sys/param.h>	/* MAXCOMLEN */
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/exec.h>
