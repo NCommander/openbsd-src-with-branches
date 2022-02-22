@@ -1,4 +1,4 @@
-/*	$OpenBSD: protosw.h,v 1.31 2018/01/23 20:49:58 bluhm Exp $	*/
+/*	$OpenBSD: protosw.h,v 1.32 2021/05/25 22:45:10 bluhm Exp $	*/
 /*	$NetBSD: protosw.h,v 1.10 1996/04/09 20:55:32 cgd Exp $	*/
 
 /*-
@@ -234,4 +234,10 @@ void pfctlinput(int, struct sockaddr *);
 
 extern u_char ip_protox[];
 extern const struct protosw inetsw[];
+
+#ifdef INET6
+extern u_char ip6_protox[];
+extern const struct protosw inet6sw[];
+#endif /* INET6 */
+
 #endif
