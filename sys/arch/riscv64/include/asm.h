@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.2 2021/05/12 01:20:52 jsg Exp $	*/
+/*	$OpenBSD: asm.h,v 1.3 2022/02/23 07:16:26 jsg Exp $	*/
 
 /*
  * Copyright (c) 2020 Brian Bamsch <bbamsch@google.com>
@@ -92,11 +92,7 @@
 #define EEND(sym)
 
 #ifdef __PIC__
-#ifdef __STDC__
-#define	PIC_SYM(x,y)	x ## ( ## y ## )
-#else
-#define	PIC_SYM(x,y)	x/**/(/**/y/**/)
-#endif
+#define	PIC_SYM(x,y)	x(y)
 #else
 #define	PIC_SYM(x,y)	x
 #endif
