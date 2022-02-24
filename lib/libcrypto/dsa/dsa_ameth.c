@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa_ameth.c,v 1.31 2022/01/14 08:29:06 tb Exp $ */
+/* $OpenBSD: dsa_ameth.c,v 1.32 2022/01/15 04:02:37 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -480,10 +480,24 @@ old_dsa_priv_decode(EVP_PKEY *pkey, const unsigned char **pder, int derlen)
 	DSA *dsa;
 	BN_CTX *ctx = NULL;
 	BIGNUM *j, *p1, *newp1;
+	int qbits;
 
 	if (!(dsa = d2i_DSAPrivateKey(NULL, pder, derlen))) {
 		DSAerror(ERR_R_DSA_LIB);
 		return 0;
+	}
+
+	DSA_print_fp(stdout, dsa, 0);
+
+	/* FIPS 186-3 allows only three different sizes for q. */
+	qbits = BN_num_bits(dsa->q);
+	if (qbits != 160 && qbits != 224 && qbits != 256) {
+		DSAerror(DSA_R_BAD_Q_VALUE);
+		goto err;
+	}
+	if (BN_num_bits(dsa->p) > OPENSSL_DSA_MAX_MODULUS_BITS) {
+		DSAerror(DSA_R_MODULUS_TOO_LARGE);
+		goto err;
 	}
 
 	ctx = BN_CTX_new();
