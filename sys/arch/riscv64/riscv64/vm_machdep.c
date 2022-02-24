@@ -1,4 +1,4 @@
-/*	$OpenBSD: vm_machdep.c,v 1.7 2021/06/30 22:20:56 kettenis Exp $	*/
+/*	$OpenBSD: vm_machdep.c,v 1.8 2022/02/22 07:47:46 visa Exp $	*/
 
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -74,6 +74,7 @@ cpu_fork(struct proc *p1, struct proc *p2, void *stack, void *tcb,
 	tf = (struct trapframe *)((u_long)p2->p_addr
 	    + USPACE
 	    - sizeof(struct trapframe)
+	    - sizeof(register_t)	/* for holding curcpu */
 	    - 0x10);
 
 	tf = (struct trapframe *)STACKALIGN(tf);
