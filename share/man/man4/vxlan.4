@@ -1,4 +1,4 @@
-.\"	$OpenBSD: vxlan.4,v 1.12 2022/02/16 06:54:08 dlg Exp $
+.\"	$OpenBSD: vxlan.4,v 1.13 2022/02/16 07:17:41 jmc Exp $
 .\"
 .\" Copyright (c) 2013 Reyk Floeter <reyk@openbsd.org>
 .\"
@@ -72,7 +72,7 @@ When configured without a tunnel destination address,
 .Nm
 operates as a bridge, but with learning disabled.
 Endpoints for Ethernet addresses must be added explicitly before
-packets will be sent for those addresses.
+packets will be encapsulated for those addresses.
 All valid VXLAN packets sent to the local address will be accepted.
 .El
 .Sh EXAMPLES
