@@ -1,4 +1,4 @@
-/*	$OpenBSD: keyword.c,v 1.50 2022/02/22 17:30:07 deraadt Exp $	*/
+/*	$OpenBSD: keyword.c,v 1.51 2022/02/22 17:42:52 millert Exp $	*/
 /*	$NetBSD: keyword.c,v 1.12.6.1 1996/05/30 21:25:13 cgd Exp $	*/
 
 /*-
@@ -89,7 +89,7 @@ int	utime(), stime(), ixrss(), idrss(), isrss();
 VAR var[] = {
 	{"%cpu", "%CPU", NULL, NLIST, pcpu, 4},
 	{"%mem", "%MEM", NULL, NLIST, pmem, 4},
-	{"acflag", "ACFLG", NULL, 0, pvar, 3, 0, POFF(p_acflag), UINT16, "x"},
+	{"acflag", "ACFLG", NULL, 0, pvar, 3, 0, POFF(p_acflag), UINT32, "x"},
 	{"acflg", "", "acflag"},
 	{"args", "", "command"},
 	{"blocked", "", "sigmask"},

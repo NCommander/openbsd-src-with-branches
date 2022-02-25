@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.326 2022/02/15 23:16:00 rob Exp $	*/
+/*	$OpenBSD: proc.h,v 1.327 2022/02/22 17:14:14 deraadt Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -229,7 +229,7 @@ struct process {
 		u_int   pr_scale;	/* pc scaling */
 	} ps_prof;
 
-	u_short	ps_acflag;		/* Accounting flags. */
+	u_int32_t	ps_acflag;	/* Accounting flags. */
 
 	uint64_t ps_pledge;
 	uint64_t ps_execpledge;
