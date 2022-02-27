@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.157 2021/05/17 09:26:52 florian Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.158 2021/10/24 16:01:04 ian Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -396,6 +396,7 @@ SPLAY_HEAD(client_tree, client);
 #define SRVFLAG_DEFAULT_TYPE	0x00800000
 #define SRVFLAG_PATH_REWRITE	0x01000000
 #define SRVFLAG_NO_PATH_REWRITE	0x02000000
+#define SRVFLAG_GZIP_STATIC	0x04000000
 #define SRVFLAG_LOCATION_FOUND	0x40000000
 #define SRVFLAG_LOCATION_NOT_FOUND 0x80000000
 
