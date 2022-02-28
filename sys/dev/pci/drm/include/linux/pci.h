@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci.h,v 1.7 2021/07/07 02:38:36 jsg Exp $	*/
+/*	$OpenBSD: pci.h,v 1.8 2022/01/14 06:53:14 jsg Exp $	*/
 /*
  * Copyright (c) 2015 Mark Kettenis
  *
@@ -231,6 +231,8 @@ pci_pcie_cap(struct pci_dev *pdev)
 		return -EINVAL;
 	return pos;
 }
+
+bool pcie_aspm_enabled(struct pci_dev *);
 
 static inline bool
 pci_is_pcie(struct pci_dev *pdev)
