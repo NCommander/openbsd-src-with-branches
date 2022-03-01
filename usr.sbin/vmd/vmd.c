@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.c,v 1.128 2021/12/13 18:28:40 deraadt Exp $	*/
+/*	$OpenBSD: vmd.c,v 1.129 2022/01/04 15:18:44 claudio Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -399,9 +399,9 @@ vmd_dispatch_vmm(int fd, struct privsep_proc *p, struct imsg *imsg)
 		}
 
 		if (vmr.vmr_result) {
-			errno = vmr.vmr_result;
-			log_warn("%s: failed to start vm", vcp->vcp_name);
+			log_warnx("%s: failed to start vm", vcp->vcp_name);
 			vm_remove(vm, __func__);
+			errno = vmr.vmr_result;
 			break;
 		}
 
