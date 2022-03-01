@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.228 2022/02/28 14:32:01 claudio Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.229 2022/03/01 09:38:06 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -1548,7 +1548,6 @@ prefix_link(struct prefix *p, struct rib_entry *re, struct pt_entry *pt,
     struct rde_community *comm, struct nexthop *nexthop, uint8_t nhflags,
     uint8_t vstate)
 {
-
 	if (re)
 		p->entry.list.re = re;
 	p->aspath = path_ref(asp);
