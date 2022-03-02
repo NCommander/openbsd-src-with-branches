@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip6.c,v 1.140 2022/02/25 08:36:01 guenther Exp $	*/
+/*	$OpenBSD: raw_ip6.c,v 1.141 2022/02/25 23:51:04 guenther Exp $	*/
 /*	$KAME: raw_ip6.c,v 1.69 2001/03/04 15:55:44 itojun Exp $	*/
 
 /*
@@ -336,7 +336,7 @@ rip6_ctlinput(int cmd, struct sockaddr *sa, u_int rdomain, void *d)
 		 */
 	}
 
-	(void) in6_pcbnotify(&rawin6pcbtable, sa6, 0,
+	in6_pcbnotify(&rawin6pcbtable, sa6, 0,
 	    sa6_src, 0, rdomain, cmd, cmdarg, notify);
 }
 
