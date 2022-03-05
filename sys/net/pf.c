@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1123 2022/01/02 22:36:04 jsg Exp $ */
+/*	$OpenBSD: pf.c,v 1.1124 2022/02/08 18:08:33 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -2380,7 +2380,7 @@ pf_translate_a(struct pf_pdesc *pd, struct pf_addr *a, struct pf_addr *an)
 	return (rewrite);
 }
 
-#if INET6
+#ifdef INET6
 /* pf_translate_af() may change pd->m, adjust local copies after calling */
 int
 pf_translate_af(struct pf_pdesc *pd)
