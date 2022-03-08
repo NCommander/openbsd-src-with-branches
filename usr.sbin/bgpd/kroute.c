@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.242 2022/02/06 09:51:19 claudio Exp $ */
+/*	$OpenBSD: kroute.c,v 1.243 2022/03/03 11:19:41 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -3233,7 +3233,7 @@ fetchtable(struct ktable *kt, uint8_t fib_prio)
 	}
 	if (len > 0) {
 		if ((buf = malloc(len)) == NULL) {
-			log_warn("%s: fetchtable", __func__);
+			log_warn("%s", __func__);
 			return (-1);
 		}
 		if (sysctl(mib, 7, buf, &len, NULL, 0) == -1) {
