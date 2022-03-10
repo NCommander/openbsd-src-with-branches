@@ -1,4 +1,4 @@
-/*	$OpenBSD: patterns.c,v 1.1 2022/01/05 16:24:29 deraadt Exp $	*/
+/*	$OpenBSD: patterns.c,v 1.2 2022/01/29 22:33:43 afresh1 Exp $	*/
 
 /*
  * Copyright (c) 1995, 1996 Christopher G. Demetriou.  All rights reserved.
@@ -103,6 +103,7 @@ main(void)
 	printf("%s\n", "iwn");
 	printf("%s\n", "iwx");
 	printf("%s\n", "malo");
+	printf("%s\n", "mtw");
 	printf("%s\n", "ogx");
 	printf("%s\n", "otus");
 	printf("%s\n", "pgt");
