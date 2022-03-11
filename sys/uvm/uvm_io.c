@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_io.c,v 1.26 2016/01/09 11:34:27 kettenis Exp $	*/
+/*	$OpenBSD: uvm_io.c,v 1.27 2021/03/20 10:24:21 mpi Exp $	*/
 /*	$NetBSD: uvm_io.c,v 1.12 2000/06/27 17:29:23 mrg Exp $	*/
 
 /*
@@ -86,6 +86,8 @@ uvm_io(vm_map_t map, struct uio *uio, int flags)
 	extractflags = 0;
 	if (flags & UVM_IO_FIXPROT)
 		extractflags |= UVM_EXTRACT_FIXPROT;
+	if (flags & UVM_IO_RDLOCKED)
+		extractflags |= UVM_EXTRACT_RDLOCKED;
 
 	/*
 	 * step 1: main loop...  while we've got data to move
