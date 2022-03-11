@@ -185,8 +185,7 @@ scan_scaled(char *scaled, long long *result)
 			/* truncate fpart so it does't overflow.
 			 * then scale fractional part.
 			 */
-			while (fpart >= LLONG_MAX / scale_fact ||
-			    fpart <= LLONG_MIN / scale_fact) {
+			while (fpart >= LLONG_MAX / scale_fact) {
 				fpart /= 10;
 				fract_digits--;
 			}
