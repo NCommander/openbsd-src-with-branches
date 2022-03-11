@@ -1,4 +1,4 @@
-/*	$OpenBSD: cac_pci.c,v 1.16 2019/12/31 00:16:03 jsg Exp $	*/
+/*	$OpenBSD: cac_pci.c,v 1.17 2021/03/05 12:40:13 jsg Exp $	*/
 /*	$NetBSD: cac_pci.c,v 1.10 2001/01/10 16:48:04 ad Exp $	*/
 
 /*-
@@ -65,7 +65,7 @@ void	cac_pci_l0_intr_enable(struct cac_softc *, int);
 int	cac_pci_l0_intr_pending(struct cac_softc *);
 void	cac_pci_l0_submit(struct cac_softc *, struct cac_ccb *);
 
-struct cfattach cac_pci_ca = {
+const struct cfattach cac_pci_ca = {
 	sizeof(struct cac_softc), cac_pci_match, cac_pci_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_epic_pci.c,v 1.15 2015/11/24 13:33:17 mpi Exp $	*/
+/*	$OpenBSD: if_epic_pci.c,v 1.16 2015/11/24 17:11:39 mpi Exp $	*/
 /*	$NetBSD: if_epic_pci.c,v 1.28 2005/02/27 00:27:32 perry Exp $	*/
 
 /*-
@@ -80,7 +80,7 @@ struct epic_pci_softc {
 int	epic_pci_match(struct device *, void *, void *);
 void	epic_pci_attach(struct device *, struct device *, void *);
 
-struct cfattach epic_pci_ca = {
+const struct cfattach epic_pci_ca = {
 	sizeof(struct epic_pci_softc), epic_pci_match, epic_pci_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wi_pci.c,v 1.54 2019/12/31 10:05:32 mpi Exp $	*/
+/*	$OpenBSD: if_wi_pci.c,v 1.55 2022/01/09 05:42:56 jsg Exp $	*/
 
 /*
  * Copyright (c) 2001-2003 Todd C. Miller <millert@openbsd.org>
@@ -86,7 +86,7 @@ struct wi_pci_softc {
 	struct wi_softc		 sc_wi;		/* real softc */
 };
 
-struct cfattach wi_pci_ca = {
+const struct cfattach wi_pci_ca = {
 	sizeof (struct wi_pci_softc), wi_pci_match, wi_pci_attach, NULL,
 	wi_pci_activate
 };

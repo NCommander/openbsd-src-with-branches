@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_txp.c,v 1.127 2017/08/23 10:10:56 mikeb Exp $	*/
+/*	$OpenBSD: if_txp.c,v 1.128 2020/07/10 13:26:38 patrick Exp $	*/
 
 /*
  * Copyright (c) 2001
@@ -114,7 +114,7 @@ void txp_rxbuf_reclaim(struct txp_softc *);
 void txp_rx_reclaim(struct txp_softc *, struct txp_rx_ring *,
     struct txp_dma_alloc *);
 
-struct cfattach txp_ca = {
+const struct cfattach txp_ca = {
 	sizeof(struct txp_softc), txp_probe, txp_attach,
 };
 

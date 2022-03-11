@@ -1,4 +1,4 @@
-/*	$OpenBSD: piixpm.c,v 1.41 2020/01/09 14:35:19 mpi Exp $	*/
+/*	$OpenBSD: piixpm.c,v 1.42 2020/01/21 06:37:24 claudio Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -83,7 +83,7 @@ int	piixpm_i2c_exec(void *, i2c_op_t, i2c_addr_t, const void *, size_t,
 
 int	piixpm_intr(void *);
 
-struct cfattach piixpm_ca = {
+const struct cfattach piixpm_ca = {
 	sizeof(struct piixpm_softc),
 	piixpm_match,
 	piixpm_attach

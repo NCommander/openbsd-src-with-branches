@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_jme.c,v 1.54 2020/07/10 13:26:38 patrick Exp $	*/
+/*	$OpenBSD: if_jme.c,v 1.55 2022/01/09 05:42:54 jsg Exp $	*/
 /*-
  * Copyright (c) 2008, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -124,7 +124,7 @@ const struct pci_matchid jme_devices[] = {
 	{ PCI_VENDOR_JMICRON, PCI_PRODUCT_JMICRON_JMC260 }
 };
 
-struct cfattach jme_ca = {
+const struct cfattach jme_ca = {
 	sizeof (struct jme_softc), jme_match, jme_attach
 };
 

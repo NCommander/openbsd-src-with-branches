@@ -1,4 +1,4 @@
-/* $OpenBSD: tga.c,v 1.40 2020/05/25 09:55:48 jsg Exp $ */
+/* $OpenBSD: tga.c,v 1.41 2022/01/09 05:42:58 jsg Exp $ */
 /* $NetBSD: tga.c,v 1.40 2002/03/13 15:05:18 ad Exp $ */
 
 /*
@@ -74,7 +74,7 @@ struct cfdriver tga_cd = {
 	NULL, "tga", DV_DULL
 };
 
-struct cfattach tga_ca = {
+const struct cfattach tga_ca = {
 	sizeof(struct tga_softc), (cfmatch_t)tgamatch, tgaattach,
 };
 

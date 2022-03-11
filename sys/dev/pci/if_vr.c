@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.157 2020/12/12 11:48:53 jan Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.158 2022/01/09 05:42:56 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -99,7 +99,7 @@ int vr_quirks(struct pci_attach_args *);
 void vr_attach(struct device *, struct device *, void *);
 int vr_activate(struct device *, int);
 
-struct cfattach vr_ca = {
+const struct cfattach vr_ca = {
 	sizeof(struct vr_softc), vr_probe, vr_attach, NULL,
 	vr_activate
 };

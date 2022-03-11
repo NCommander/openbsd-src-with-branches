@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nfe.c,v 1.122 2020/07/10 13:26:38 patrick Exp $	*/
+/*	$OpenBSD: if_nfe.c,v 1.123 2020/12/12 11:48:53 jan Exp $	*/
 
 /*-
  * Copyright (c) 2006, 2007 Damien Bergamini <damien.bergamini@free.fr>
@@ -91,7 +91,7 @@ void	nfe_tick(void *);
 int	nfe_wol(struct ifnet*, int);
 #endif
 
-struct cfattach nfe_ca = {
+const struct cfattach nfe_ca = {
 	sizeof (struct nfe_softc), nfe_match, nfe_attach, NULL,
 	nfe_activate
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcscp.c,v 1.19 2014/01/18 22:33:59 dlg Exp $	*/
+/*	$OpenBSD: pcscp.c,v 1.20 2015/03/14 03:38:48 jsg Exp $	*/
 /*	$NetBSD: pcscp.c,v 1.26 2003/10/19 10:25:42 tsutsui Exp $	*/
 
 /*-
@@ -95,7 +95,7 @@ struct pcscp_softc {
 int	pcscp_match(struct device *, void *, void *); 
 void	pcscp_attach(struct device *, struct device *, void *);  
 
-struct cfattach pcscp_ca = {
+const struct cfattach pcscp_ca = {
 	sizeof(struct pcscp_softc), pcscp_match, pcscp_attach
 };
 

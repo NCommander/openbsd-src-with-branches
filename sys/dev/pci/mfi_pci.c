@@ -1,4 +1,4 @@
-/* $OpenBSD: mfi_pci.c,v 1.29 2014/09/09 03:08:30 dlg Exp $ */
+/* $OpenBSD: mfi_pci.c,v 1.30 2019/12/31 00:00:09 deraadt Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -44,7 +44,7 @@
 int	mfi_pci_match(struct device *, void *, void *);
 void	mfi_pci_attach(struct device *, struct device *, void *);
 
-struct cfattach mfi_pci_ca = {
+const struct cfattach mfi_pci_ca = {
 	sizeof(struct mfi_softc), mfi_pci_match, mfi_pci_attach
 };
 

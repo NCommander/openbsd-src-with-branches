@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhci_pci.c,v 1.33 2014/05/16 18:17:03 mpi Exp $	*/
+/*	$OpenBSD: uhci_pci.c,v 1.34 2019/09/05 17:59:12 bluhm Exp $	*/
 /*	$NetBSD: uhci_pci.c,v 1.24 2002/10/02 16:51:58 thorpej Exp $	*/
 
 /*
@@ -63,7 +63,7 @@ struct uhci_pci_softc {
 	void 			*sc_ih;		/* interrupt vectoring */
 };
 
-struct cfattach uhci_pci_ca = {
+const struct cfattach uhci_pci_ca = {
 	sizeof(struct uhci_pci_softc), uhci_pci_match, uhci_pci_attach,
 	uhci_pci_detach, uhci_pci_activate
 };

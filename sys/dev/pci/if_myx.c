@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_myx.c,v 1.114 2021/01/17 02:52:21 dlg Exp $	*/
+/*	$OpenBSD: if_myx.c,v 1.115 2021/02/08 08:18:45 mpi Exp $	*/
 
 /*
  * Copyright (c) 2007 Reyk Floeter <reyk@openbsd.org>
@@ -247,7 +247,7 @@ void			myx_kstat_stop(struct myx_softc *);
 struct cfdriver myx_cd = {
 	NULL, "myx", DV_IFNET
 };
-struct cfattach myx_ca = {
+const struct cfattach myx_ca = {
 	sizeof(struct myx_softc), myx_match, myx_attach
 };
 

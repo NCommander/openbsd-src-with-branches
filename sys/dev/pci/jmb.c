@@ -1,4 +1,4 @@
-/*	$OpenBSD: jmb.c,v 1.8 2010/04/08 00:23:53 tedu Exp $ */
+/*	$OpenBSD: jmb.c,v 1.9 2015/03/14 03:38:48 jsg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -70,7 +70,7 @@ struct jmb_softc {
 	struct device		sc_dev;
 };
 
-struct cfattach jmb_ca = {
+const struct cfattach jmb_ca = {
 	sizeof(struct jmb_softc),
 	jmb_match,
 	jmb_attach,

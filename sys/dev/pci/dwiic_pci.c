@@ -1,4 +1,4 @@
-/* $OpenBSD: dwiic_pci.c,v 1.18 2021/10/30 03:27:35 jsg Exp $ */
+/* $OpenBSD: dwiic_pci.c,v 1.19 2022/01/11 00:37:23 jsg Exp $ */
 /*
  * Synopsys DesignWare I2C controller
  * PCI attachment
@@ -50,7 +50,7 @@ void		dwiic_pci_bus_scan(struct device *,
 struct aml_node *acpi_pci_match(struct device *dev, struct pci_attach_args *pa);
 #endif
 
-struct cfattach dwiic_pci_ca = {
+const struct cfattach dwiic_pci_ca = {
 	sizeof(struct dwiic_softc),
 	dwiic_pci_match,
 	dwiic_pci_attach,

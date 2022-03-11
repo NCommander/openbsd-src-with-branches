@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdiic.c,v 1.11 2013/10/01 20:06:00 sf Exp $	*/
+/*	$OpenBSD: amdiic.c,v 1.12 2020/01/09 14:35:19 mpi Exp $	*/
 
 /*
  * Copyright (c) 2005 Alexander Yurchenko <grange@openbsd.org>
@@ -110,7 +110,7 @@ int	amdiic_i2c_exec(void *, i2c_op_t, i2c_addr_t, const void *, size_t,
 
 int	amdiic_intr(void *);
 
-struct cfattach amdiic_ca = {
+const struct cfattach amdiic_ca = {
 	sizeof(struct amdiic_softc),
 	amdiic_match,
 	amdiic_attach

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rge.c,v 1.15 2021/08/16 01:30:27 kevlo Exp $	*/
+/*	$OpenBSD: if_rge.c,v 1.16 2021/11/23 01:44:44 kevlo Exp $	*/
 
 /*
  * Copyright (c) 2019, 2020 Kevin Lo <kevlo@openbsd.org>
@@ -134,7 +134,7 @@ struct cfattach rge_ca = {
 	sizeof(struct rge_softc), rge_match, rge_attach, NULL, rge_activate
 };
 
-struct cfdriver rge_cd = {
+const struct cfdriver rge_cd = {
 	NULL, "rge", DV_IFNET
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nxe.c,v 1.77 2020/07/10 13:26:38 patrick Exp $ */
+/*	$OpenBSD: if_nxe.c,v 1.78 2022/01/09 05:42:54 jsg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -729,7 +729,7 @@ int			nxe_match(struct device *, void *, void *);
 void			nxe_attach(struct device *, struct device *, void *);
 int			nxe_intr(void *);
 
-struct cfattach nxe_ca = {
+const struct cfattach nxe_ca = {
 	sizeof(struct nxe_softc),
 	nxe_match,
 	nxe_attach

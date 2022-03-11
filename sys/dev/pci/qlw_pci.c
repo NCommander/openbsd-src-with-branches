@@ -1,4 +1,4 @@
-/*	$OpenBSD: qlw_pci.c,v 1.10 2017/08/17 12:21:31 jsg Exp $ */
+/*	$OpenBSD: qlw_pci.c,v 1.11 2021/05/01 16:11:16 visa Exp $ */
 
 /*
  * Copyright (c) 2011 David Gwynne <dlg@openbsd.org>
@@ -66,7 +66,7 @@ struct qlw_pci_softc {
 	void			*psc_ih;
 };
 
-struct cfattach qlw_pci_ca = {
+const struct cfattach qlw_pci_ca = {
 	sizeof(struct qlw_pci_softc),
 	qlw_pci_match,
 	qlw_pci_attach

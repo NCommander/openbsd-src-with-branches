@@ -1,4 +1,4 @@
-/*	$OpenBSD: envy.c,v 1.81 2020/01/05 01:07:58 jsg Exp $	*/
+/*	$OpenBSD: envy.c,v 1.82 2022/02/16 06:21:19 anton Exp $	*/
 /*
  * Copyright (c) 2007 Alexandre Ratchov <alex@caoua.org>
  *
@@ -170,7 +170,7 @@ void ak5365_adc_devinfo(struct envy_softc *, struct mixer_devinfo *, int);
 void ak5365_adc_get(struct envy_softc *, struct mixer_ctrl *, int);
 int ak5365_adc_set(struct envy_softc *, struct mixer_ctrl *, int);
 
-struct cfattach envy_ca = {
+const struct cfattach envy_ca = {
 	sizeof(struct envy_softc), envymatch, envyattach, envydetach,
 	envyactivate
 };

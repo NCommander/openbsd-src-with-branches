@@ -1,4 +1,4 @@
-/*	$OpenBSD: berkwdt.c,v 1.9 2017/09/08 05:36:52 deraadt Exp $ */
+/*	$OpenBSD: berkwdt.c,v 1.10 2020/11/29 03:17:27 kevlo Exp $ */
 
 /*
  * Copyright (c) 2009 Wim Van Sebroeck <wim@iguana.be>
@@ -54,7 +54,7 @@ int berkwdt_send_command(struct berkwdt_softc *sc, u_int8_t cmd, int *val);
 
 int berkwdt_set_timeout(void *, int);
 
-struct cfattach berkwdt_ca = {
+const struct cfattach berkwdt_ca = {
 	sizeof(struct berkwdt_softc), berkwdt_match, berkwdt_attach,
 	NULL, berkwdt_activate
 };

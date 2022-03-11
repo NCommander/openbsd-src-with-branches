@@ -1,4 +1,4 @@
-/*	$OpenBSD: ahc_pci.c,v 1.60 2021/03/05 12:40:13 jsg Exp $	*/
+/*	$OpenBSD: ahc_pci.c,v 1.61 2022/01/09 05:42:45 jsg Exp $	*/
 /*	$NetBSD: ahc_pci.c,v 1.43 2003/08/18 09:16:22 taca Exp $	*/
 
 /*
@@ -42,7 +42,7 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGES.
  *
- * $Id: ahc_pci.c,v 1.60 2021/03/05 12:40:13 jsg Exp $
+ * $Id: ahc_pci.c,v 1.61 2022/01/09 05:42:45 jsg Exp $
  *
  * //depot/aic7xxx/aic7xxx/aic7xxx_pci.c#57 $
  *
@@ -643,7 +643,7 @@ int ahc_pci_probe(struct device *, void *, void *);
 void ahc_pci_attach(struct device *, struct device *, void *);
 
 
-struct cfattach ahc_pci_ca = {
+const struct cfattach ahc_pci_ca = {
 	sizeof(struct ahc_softc), ahc_pci_probe, ahc_pci_attach
 };
 

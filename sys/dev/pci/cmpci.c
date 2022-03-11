@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmpci.c,v 1.46 2022/01/09 05:42:45 jsg Exp $	*/
+/*	$OpenBSD: cmpci.c,v 1.47 2022/02/16 06:21:18 anton Exp $	*/
 /*	$NetBSD: cmpci.c,v 1.25 2004/10/26 06:32:20 xtraeme Exp $	*/
 
 /*
@@ -105,7 +105,7 @@ struct cfdriver cmpci_cd = {
 	NULL, "cmpci", DV_DULL
 };
 
-struct cfattach cmpci_ca = {
+const struct cfattach cmpci_ca = {
 	sizeof (struct cmpci_softc), cmpci_match, cmpci_attach, NULL,
 	cmpci_activate
 };

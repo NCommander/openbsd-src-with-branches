@@ -1,4 +1,4 @@
-/* $OpenBSD: agp.c,v 1.48 2015/12/19 16:07:20 kettenis Exp $ */
+/* $OpenBSD: agp.c,v 1.49 2015/12/22 21:05:37 kettenis Exp $ */
 /*-
  * Copyright (c) 2000 Doug Rabson
  * All rights reserved.
@@ -161,7 +161,7 @@ agp_attach(struct device *parent, struct device *self, void *aux)
 	    (u_long)sc->sc_apsize);
 }
 
-struct cfattach agp_ca = {
+const struct cfattach agp_ca = {
 	sizeof(struct agp_softc), agp_probe, agp_attach,
 	NULL, NULL
 };

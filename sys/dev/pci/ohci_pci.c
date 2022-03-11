@@ -1,4 +1,4 @@
-/*	$OpenBSD: ohci_pci.c,v 1.40 2014/05/16 18:17:03 mpi Exp $	*/
+/*	$OpenBSD: ohci_pci.c,v 1.41 2019/01/07 03:41:06 dlg Exp $	*/
 /*	$NetBSD: ohci_pci.c,v 1.23 2002/10/02 16:51:47 thorpej Exp $	*/
 
 /*
@@ -68,7 +68,7 @@ struct ohci_pci_softc {
 	void 			*sc_ih;		/* interrupt vectoring */
 };
 
-struct cfattach ohci_pci_ca = {
+const struct cfattach ohci_pci_ca = {
 	sizeof(struct ohci_pci_softc), ohci_pci_match, ohci_pci_attach,
 	ohci_pci_detach, ohci_activate
 };

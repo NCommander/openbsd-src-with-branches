@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpcib.c,v 1.7 2013/12/06 21:03:04 deraadt Exp $	*/
+/*	$OpenBSD: tcpcib.c,v 1.8 2014/12/10 12:27:57 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2012 Matt Dainty <matt@bodgit-n-scarper.com>
@@ -106,7 +106,7 @@ void	 tcpcib_wdt_stop(struct tcpcib_softc *);
 
 u_int	 tcpcib_hpet_get_timecount(struct timecounter *tc);
 
-struct cfattach tcpcib_ca = {
+const struct cfattach tcpcib_ca = {
 	sizeof(struct tcpcib_softc), tcpcib_match, tcpcib_attach,
 	NULL, tcpcib_activate
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ami_pci.c,v 1.43 2008/10/28 11:43:10 marco Exp $	*/
+/*	$OpenBSD: ami_pci.c,v 1.44 2022/01/09 05:42:45 jsg Exp $	*/
 
 /*
  * Copyright (c) 2001 Michael Shalayeff
@@ -65,7 +65,7 @@ int	ami_pci_find_device(void *);
 int	ami_pci_match(struct device *, void *, void *);
 void	ami_pci_attach(struct device *, struct device *, void *);
 
-struct cfattach ami_pci_ca = {
+const struct cfattach ami_pci_ca = {
 	sizeof(struct ami_softc), ami_pci_match, ami_pci_attach
 };
 

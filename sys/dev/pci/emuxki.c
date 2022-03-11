@@ -1,4 +1,4 @@
-/*	$OpenBSD: emuxki.c,v 1.55 2022/01/09 05:42:45 jsg Exp $	*/
+/*	$OpenBSD: emuxki.c,v 1.56 2022/02/16 06:21:19 anton Exp $	*/
 /*	$NetBSD: emuxki.c,v 1.1 2001/10/17 18:39:41 jdolecek Exp $	*/
 
 /*-
@@ -203,7 +203,7 @@ struct cfdriver emu_cd = {
 	NULL, "emu", DV_DULL
 };
 
-struct cfattach emu_ca = {
+const struct cfattach emu_ca = {
         sizeof(struct emuxki_softc),
         emuxki_match,
         emuxki_attach,

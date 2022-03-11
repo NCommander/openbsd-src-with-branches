@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_pci.c,v 1.34 2015/11/24 17:11:39 mpi Exp $	*/
+/*	$OpenBSD: if_ep_pci.c,v 1.35 2021/03/05 12:40:13 jsg Exp $	*/
 /*	$NetBSD: if_ep_pci.c,v 1.13 1996/10/21 22:56:38 thorpej Exp $	*/
 
 /*
@@ -77,7 +77,7 @@
 int ep_pci_match(struct device *, void *, void *);
 void ep_pci_attach(struct device *, struct device *, void *);
 
-struct cfattach ep_pci_ca = {
+const struct cfattach ep_pci_ca = {
 	sizeof(struct ep_softc), ep_pci_match, ep_pci_attach
 };
 

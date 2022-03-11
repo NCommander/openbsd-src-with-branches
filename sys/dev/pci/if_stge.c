@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_stge.c,v 1.70 2020/07/10 13:26:38 patrick Exp $	*/
+/*	$OpenBSD: if_stge.c,v 1.71 2022/01/09 05:42:56 jsg Exp $	*/
 /*	$NetBSD: if_stge.c,v 1.27 2005/05/16 21:35:32 bouyer Exp $	*/
 
 /*-
@@ -105,7 +105,7 @@ void	stge_attach(struct device *, struct device *, void *);
 
 int	stge_copy_small = 0;
 
-struct cfattach stge_ca = {
+const struct cfattach stge_ca = {
 	sizeof(struct stge_softc), stge_match, stge_attach,
 };
 

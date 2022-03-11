@@ -1,4 +1,4 @@
-/*	$OpenBSD: cz.c,v 1.25 2021/01/01 10:21:26 jan Exp $ */
+/*	$OpenBSD: cz.c,v 1.26 2022/01/09 05:42:45 jsg Exp $ */
 /*	$NetBSD: cz.c,v 1.15 2001/01/20 19:10:36 thorpej Exp $	*/
 
 /*-
@@ -165,7 +165,7 @@ int	cz_match(struct device *, void *, void *);
 void	cz_attach(struct device *, struct device *, void *);
 int	cz_wait_pci_doorbell(struct cz_softc *, char *);
 
-struct cfattach cz_ca = {
+const struct cfattach cz_ca = {
 	sizeof(struct cz_softc), cz_match, cz_attach
 };
 

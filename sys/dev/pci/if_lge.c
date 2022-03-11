@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lge.c,v 1.76 2020/12/12 11:48:53 jan Exp $	*/
+/*	$OpenBSD: if_lge.c,v 1.77 2022/01/09 05:42:54 jsg Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -112,7 +112,7 @@
 int lge_probe(struct device *, void *, void *);
 void lge_attach(struct device *, struct device *, void *);
 
-struct cfattach lge_ca = {
+const struct cfattach lge_ca = {
 	sizeof(struct lge_softc), lge_probe, lge_attach
 };
 

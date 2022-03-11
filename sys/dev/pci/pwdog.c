@@ -1,4 +1,4 @@
-/*	$OpenBSD: pwdog.c,v 1.10 2017/09/08 05:36:52 deraadt Exp $ */
+/*	$OpenBSD: pwdog.c,v 1.11 2020/11/29 03:17:27 kevlo Exp $ */
 
 /*
  * Copyright (c) 2006 Marc Balmer <mbalmer@openbsd.org>
@@ -42,7 +42,7 @@ void pwdog_attach(struct device *, struct device *, void *);
 int pwdog_activate(struct device *, int);
 int pwdog_set_timeout(void *, int);
 
-struct cfattach pwdog_ca = {
+const struct cfattach pwdog_ca = {
 	sizeof(struct pwdog_softc), pwdog_probe, pwdog_attach,
 	NULL, pwdog_activate
 };

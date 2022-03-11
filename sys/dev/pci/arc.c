@@ -1,4 +1,4 @@
-/*	$OpenBSD: arc.c,v 1.120 2020/09/22 19:32:53 krw Exp $ */
+/*	$OpenBSD: arc.c,v 1.121 2022/01/09 05:42:45 jsg Exp $ */
 
 /*
  * Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
@@ -677,7 +677,7 @@ void			arc_refresh_sensors(void *);
 #endif /* SMALL_KERNEL */
 #endif
 
-struct cfattach arc_ca = {
+const struct cfattach arc_ca = {
 	sizeof(struct arc_softc), arc_match, arc_attach, arc_detach,
 	arc_activate
 };

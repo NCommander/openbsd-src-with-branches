@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ti_pci.c,v 1.5 2015/11/24 17:11:39 mpi Exp $	*/
+/*	$OpenBSD: if_ti_pci.c,v 1.6 2022/01/09 05:42:56 jsg Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -92,7 +92,7 @@
 int	ti_pci_match(struct device *, void *, void *);
 void	ti_pci_attach(struct device *, struct device *, void *);
 
-struct cfattach ti_pci_ca = {
+const struct cfattach ti_pci_ca = {
 	sizeof(struct ti_softc), ti_pci_match, ti_pci_attach
 };
 

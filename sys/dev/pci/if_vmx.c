@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.67 2021/08/09 18:13:09 jan Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.68 2022/01/09 05:42:56 jsg Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -205,7 +205,7 @@ const struct pci_matchid vmx_devices[] = {
 	{ PCI_VENDOR_VMWARE, PCI_PRODUCT_VMWARE_NET_3 }
 };
 
-struct cfattach vmx_ca = {
+const struct cfattach vmx_ca = {
 	sizeof(struct vmxnet3_softc), vmxnet3_match, vmxnet3_attach
 };
 

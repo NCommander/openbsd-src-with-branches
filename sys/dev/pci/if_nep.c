@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nep.c,v 1.32 2020/06/22 02:31:32 dlg Exp $	*/
+/*	$OpenBSD: if_nep.c,v 1.33 2020/07/10 13:26:38 patrick Exp $	*/
 /*
  * Copyright (c) 2014, 2015 Mark Kettenis
  *
@@ -457,7 +457,7 @@ struct nep_softc {
 int	nep_match(struct device *, void *, void *);
 void	nep_attach(struct device *, struct device *, void *);
 
-struct cfattach nep_ca = {
+const struct cfattach nep_ca = {
 	sizeof(struct nep_softc), nep_match, nep_attach
 };
 
