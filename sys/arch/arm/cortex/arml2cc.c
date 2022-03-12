@@ -1,4 +1,4 @@
-/* $OpenBSD: arml2cc.c,v 1.6 2021/03/25 04:12:01 jsg Exp $ */
+/* $OpenBSD: arml2cc.c,v 1.7 2021/05/16 15:10:19 deraadt Exp $ */
 /*
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
  *
@@ -111,7 +111,7 @@ void arml2cc_cache_op(struct arml2cc_softc *, bus_size_t, uint32_t);
 void arml2cc_cache_sync(struct arml2cc_softc *);
 void arml2cc_sdcache_drain_writebuf(void);
 
-struct cfattach armliicc_ca = {
+const struct cfattach armliicc_ca = {
 	sizeof (struct arml2cc_softc), arml2cc_match, arml2cc_attach
 };
 

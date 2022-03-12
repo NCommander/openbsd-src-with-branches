@@ -1,4 +1,4 @@
-/*	$OpenBSD: cortex.c,v 1.5 2016/05/02 08:15:55 patrick Exp $	*/
+/*	$OpenBSD: cortex.c,v 1.6 2020/04/29 15:25:07 kettenis Exp $	*/
 /* $NetBSD: mainbus.c,v 1.3 2001/06/13 17:52:43 nathanw Exp $ */
 
 /*
@@ -80,7 +80,7 @@ int cortexsearch(struct device *,  void *, void *);
 
 /* attach and device structures for the device */
 
-struct cfattach cortex_ca = {
+const struct cfattach cortex_ca = {
 	sizeof(struct device), cortexmatch, cortexattach, NULL,
 	config_activate_children
 };

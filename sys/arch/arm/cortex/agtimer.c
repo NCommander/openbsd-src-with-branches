@@ -1,4 +1,4 @@
-/* $OpenBSD: agtimer.c,v 1.13 2021/03/25 04:12:00 jsg Exp $ */
+/* $OpenBSD: agtimer.c,v 1.14 2021/05/16 03:39:27 jsg Exp $ */
 /*
  * Copyright (c) 2011 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
@@ -85,7 +85,7 @@ void		agtimer_setstatclockrate(int stathz);
 void		agtimer_set_clockrate(int32_t new_frequency);
 void		agtimer_startclock(void);
 
-struct cfattach agtimer_ca = {
+const struct cfattach agtimer_ca = {
 	sizeof (struct agtimer_softc), agtimer_match, agtimer_attach
 };
 
