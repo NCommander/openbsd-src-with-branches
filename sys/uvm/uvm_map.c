@@ -4522,12 +4522,7 @@ uvm_map_extract(struct vm_map *srcmap, vaddr_t start, vsize_t len,
 		return 0;
 
 	/* Acquire lock on srcmap. */
-	if (flags & UVM_EXTRACT_RDLOCKED) {
-		vm_map_busy(srcmap);
-		vm_map_upgrade(srcmap);
-		vm_map_unbusy(srcmap);
-	} else
-		vm_map_lock(srcmap);
+	vm_map_lock(srcmap);
 
 	/* Lock srcmap, lookup first and last entry in <start,len>. */
 	first = uvm_map_entrybyaddr(&srcmap->addr, start);
@@ -4629,10 +4624,7 @@ fail2:
 	vm_map_unlock(kernel_map);
 
 fail:
-	if (flags & UVM_EXTRACT_RDLOCKED)
-		vm_map_downgrade(srcmap);
-	else
-		vm_map_unlock(srcmap);
+	vm_map_unlock(srcmap);
 
 	uvm_unmap_detach(&dead, 0);
 
@@ -5589,9 +5581,7 @@ uvm_map_fill_vmmap(struct vm_map *map, struct kinfo_vmentry *kve,
 	 */
 	start = (vaddr_t)kve[0].kve_start;
 
-	vm_map_busy(map);
-	vm_map_upgrade(map);
-	vm_map_unbusy(map);
+	vm_map_lock(map);
 	RBT_FOREACH(entry, uvm_map_addr, &map->addr) {
 		if (cnt == maxcnt) {
 			error = ENOMEM;
@@ -5615,7 +5605,7 @@ uvm_map_fill_vmmap(struct vm_map *map, struct kinfo_vmentry *kve,
 		kve++;
 		cnt++;
 	}
-	vm_map_downgrade(map);
+	vm_map_unlock(map);
 
 	KASSERT(cnt <= maxcnt);
 

@@ -86,8 +86,6 @@ uvm_io(vm_map_t map, struct uio *uio, int flags)
 	extractflags = 0;
 	if (flags & UVM_IO_FIXPROT)
 		extractflags |= UVM_EXTRACT_FIXPROT;
-	if (flags & UVM_IO_RDLOCKED)
-		extractflags |= UVM_EXTRACT_RDLOCKED;
 
 	/*
 	 * step 1: main loop...  while we've got data to move

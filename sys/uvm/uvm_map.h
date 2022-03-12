@@ -116,8 +116,7 @@
 /*
  * extract flags
  */
-#define UVM_EXTRACT_FIXPROT	0x1	/* set prot to maxprot as we go */
-#define UVM_EXTRACT_RDLOCKED	0x2	/* map is already read-locked */
+#define UVM_EXTRACT_FIXPROT	0x8	/* set prot to maxprot as we go */
 
 #endif /* _KERNEL */
 
