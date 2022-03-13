@@ -1,4 +1,4 @@
-/* $OpenBSD: mcmem.c,v 1.1 2007/03/16 21:22:27 robert Exp $ */
+/* $OpenBSD: mcmem.c,v 1.2 2012/12/05 23:20:10 deraadt Exp $ */
 /* $NetBSD: mcmem.c,v 1.4 2002/10/02 04:06:38 thorpej Exp $ */
 
 /*
@@ -52,7 +52,7 @@
 int	mcmemmatch (struct device *, void *, void *);
 void	mcmemattach (struct device *, struct device *, void *);
 
-struct cfattach mcmem_ca = {
+const struct cfattach mcmem_ca = {
         sizeof(struct device), mcmemmatch, mcmemattach
 };
 

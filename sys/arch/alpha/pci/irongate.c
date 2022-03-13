@@ -1,4 +1,4 @@
-/*	$OpenBSD: irongate.c,v 1.10 2008/06/26 05:42:08 ray Exp $	*/
+/*	$OpenBSD: irongate.c,v 1.11 2009/03/30 21:43:13 kettenis Exp $	*/
 /* $NetBSD: irongate.c,v 1.3 2000/11/29 06:29:10 thorpej Exp $ */
 
 /*-
@@ -53,7 +53,7 @@
 int	irongate_match(struct device *, void *, void *);
 void	irongate_attach(struct device *, struct device *, void *);
 
-struct cfattach irongate_ca = {
+const struct cfattach irongate_ca = {
 	sizeof(struct device), irongate_match, irongate_attach,
 };
 

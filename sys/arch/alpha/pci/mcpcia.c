@@ -1,4 +1,4 @@
-/* $OpenBSD: mcpcia.c,v 1.5 2010/02/18 20:48:15 sobrado Exp $ */
+/* $OpenBSD: mcpcia.c,v 1.6 2012/12/05 23:20:10 deraadt Exp $ */
 /* $NetBSD: mcpcia.c,v 1.20 2007/03/04 05:59:11 christos Exp $ */
 
 /*-
@@ -99,7 +99,7 @@ void	mcpcia_config_cleanup (void);
 
 int	mcpciaprint (void *, const char *);
 
-struct cfattach mcpcia_ca = {
+const struct cfattach mcpcia_ca = {
 	sizeof(struct mcpcia_softc), mcpciamatch, mcpciaattach
 };
 

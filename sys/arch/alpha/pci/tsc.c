@@ -1,4 +1,4 @@
-/* $OpenBSD: tsc.c,v 1.15 2009/10/02 18:01:47 miod Exp $ */
+/* $OpenBSD: tsc.c,v 1.16 2014/12/24 18:46:14 miod Exp $ */
 /* $NetBSD: tsc.c,v 1.3 2000/06/25 19:17:40 thorpej Exp $ */
 
 /*-
@@ -56,7 +56,7 @@
 int	tscmatch(struct device *, void *, void *);
 void	tscattach(struct device *, struct device *, void *);
 
-struct cfattach tsc_ca = {
+const struct cfattach tsc_ca = {
 	sizeof(struct device), tscmatch, tscattach,
 };
 
@@ -71,7 +71,7 @@ static int tscprint(void *, const char *pnp);
 int	tspmatch(struct device *, void *, void *);
 void	tspattach(struct device *, struct device *, void *);
 
-struct cfattach tsp_ca = {
+const struct cfattach tsp_ca = {
 	sizeof(struct tsp_softc), tspmatch, tspattach,
 };
 
