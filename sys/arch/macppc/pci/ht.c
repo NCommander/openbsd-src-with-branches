@@ -1,4 +1,4 @@
-/*	$OpenBSD: ht.c,v 1.17 2015/06/25 18:08:53 miod Exp $	*/
+/*	$OpenBSD: ht.c,v 1.18 2015/08/30 09:48:39 mpi Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -50,7 +50,7 @@ struct ht_softc {
 	bus_space_handle_t sc_config0_ioh;
 };
 
-struct cfattach ht_ca = {
+const struct cfattach ht_ca = {
 	sizeof(struct ht_softc), ht_match, ht_attach
 };
 

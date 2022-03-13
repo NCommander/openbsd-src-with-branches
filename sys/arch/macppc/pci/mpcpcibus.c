@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpcpcibus.c,v 1.47 2015/06/03 08:41:43 mpi Exp $ */
+/*	$OpenBSD: mpcpcibus.c,v 1.48 2022/02/02 17:11:36 miod Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -69,7 +69,7 @@ struct pcibr_softc {
 	char			sc_memex_name[32];
 };
 
-struct cfattach mpcpcibr_ca = {
+const struct cfattach mpcpcibr_ca = {
         sizeof(struct pcibr_softc), mpcpcibrmatch, mpcpcibrattach,
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: smu.c,v 1.33 2016/05/29 11:00:37 mglocker Exp $	*/
+/*	$OpenBSD: smu.c,v 1.34 2019/10/08 13:21:38 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -103,7 +103,7 @@ struct smu_softc {
 	struct i2c_controller sc_i2c_tag;
 };
 
-struct cfattach smu_ca = {
+const struct cfattach smu_ca = {
         sizeof(struct smu_softc), smu_match, smu_attach
 };
 

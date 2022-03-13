@@ -1,4 +1,4 @@
-/*	$OpenBSD: pchb.c,v 1.14 2014/03/26 14:41:41 mpi Exp $	*/
+/*	$OpenBSD: pchb.c,v 1.15 2017/09/08 05:36:52 deraadt Exp $	*/
 /*	$NetBSD: pchb.c,v 1.4 2000/01/25 07:19:11 tsubai Exp $	*/
 
 /*-
@@ -48,7 +48,7 @@
 int	pchbmatch(struct device *, void *, void *);
 void	pchbattach(struct device *, struct device *, void *);
 
-struct cfattach pchb_ca = {
+const struct cfattach pchb_ca = {
 	sizeof(struct device), pchbmatch, pchbattach
 };
 

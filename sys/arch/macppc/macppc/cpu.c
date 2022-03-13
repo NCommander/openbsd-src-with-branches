@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.83 2020/05/29 04:42:24 deraadt Exp $ */
+/*	$OpenBSD: cpu.c,v 1.84 2021/06/14 06:10:44 matthieu Exp $ */
 
 /*
  * Copyright (c) 1997 Per Fogelstrom
@@ -74,7 +74,7 @@ char machine[] = MACHINE;	/* cpu architecture */
 int	cpumatch(struct device *, void *, void *);
 void	cpuattach(struct device *, struct device *, void *);
 
-struct cfattach cpu_ca = {
+const struct cfattach cpu_ca = {
 	sizeof(struct device), cpumatch, cpuattach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dfs.c,v 1.2 2013/10/31 08:26:12 mpi Exp $	*/
+/*	$OpenBSD: dfs.c,v 1.3 2014/07/08 13:06:58 deraadt Exp $	*/
 /*
  * Copyright (c) 2011 Martin Pieuchot <mpi@openbsd.org>
  *
@@ -39,7 +39,7 @@ void	dfs_attach(struct device *, struct device *, void *);
 void	dfs_setperf(int);
 void	dfs_scale_frequency(u_int);
 
-struct cfattach dfs_ca = {
+const struct cfattach dfs_ca = {
 	sizeof(struct dfs_softc), dfs_match, dfs_attach
 };
 

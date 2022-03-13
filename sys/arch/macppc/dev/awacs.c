@@ -1,4 +1,4 @@
-/*	$OpenBSD: awacs.c,v 1.34 2016/09/19 06:46:43 ratchov Exp $	*/
+/*	$OpenBSD: awacs.c,v 1.35 2022/02/16 06:21:18 anton Exp $	*/
 /*	$NetBSD: awacs.c,v 1.4 2001/02/26 21:07:51 wiz Exp $	*/
 
 /*-
@@ -118,7 +118,7 @@ void awacs_set_speaker_volume(struct awacs_softc *, int, int);
 void awacs_set_ext_volume(struct awacs_softc *, int, int);
 void awacs_set_rate(struct awacs_softc *, struct audio_params *);
 
-struct cfattach awacs_ca = {
+const struct cfattach awacs_ca = {
 	sizeof(struct awacs_softc), awacs_match, awacs_attach
 };
 
