@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.26 2022/03/06 19:09:29 kettenis Exp $
+#	$OpenBSD: install.md,v 1.27 2022/03/06 19:35:22 kettenis Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -111,14 +111,15 @@ md_prep_fdisk() {
 			elif disk_has $_disk gpt; then
 				if [[ $_disk == $ROOTDISK ]]; then
 					fdisk -gy -b "${bootsectorsize}" ${_disk} >/dev/null
+					installboot -p $_disk
 				else
 					fdisk -gy ${_disk} >/dev/null
 				fi
 			else
 				fdisk -iy -b "${bootsectorsize}@${bootsectorstart}:${bootparttype}" ${_disk} >/dev/null
+				installboot -p $_disk
 			fi
 			echo "done."
-			installboot -p $_disk
 			return ;;
 		[eE]*)
 			if disk_has $_disk gpt; then
