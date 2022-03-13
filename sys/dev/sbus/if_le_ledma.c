@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_ledma.c,v 1.18 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: if_le_ledma.c,v 1.19 2015/09/11 13:02:28 stsp Exp $	*/
 /*	$NetBSD: if_le_ledma.c,v 1.14 2001/05/30 11:46:35 mrg Exp $	*/
 
 /*-
@@ -97,7 +97,7 @@ void	le_ledma_setaui(struct lance_softc *);
 int	lemediachange(struct lance_softc *);
 void	lemediastatus(struct lance_softc *, struct ifmediareq *);
 
-struct cfattach le_ledma_ca = {
+const struct cfattach le_ledma_ca = {
 	sizeof(struct le_softc), lematch_ledma, leattach_ledma
 };
 

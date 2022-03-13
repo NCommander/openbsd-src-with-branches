@@ -1,4 +1,4 @@
-/*	$OpenBSD: xbox.c,v 1.2 2006/03/04 12:38:59 miod Exp $	*/
+/*	$OpenBSD: xbox.c,v 1.3 2006/06/02 20:00:56 miod Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -52,7 +52,7 @@ void	xboxattach(struct device *, struct device *, void *);
 int	xboxprint(void *, const char *);
 int	xbox_fix_range(struct xbox_softc *sc, struct sbus_softc *sbp);
 
-struct cfattach xbox_ca = {
+const struct cfattach xbox_ca = {
 	sizeof (struct xbox_softc), xboxmatch, xboxattach
 };
 

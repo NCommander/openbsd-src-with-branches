@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_hme_sbus.c,v 1.15 2014/08/11 12:45:45 mpi Exp $	*/
+/*	$OpenBSD: if_hme_sbus.c,v 1.16 2015/11/24 17:11:40 mpi Exp $	*/
 /*	$NetBSD: if_hme_sbus.c,v 1.6 2001/02/28 14:52:48 mrg Exp $	*/
 
 /*-
@@ -65,7 +65,7 @@ struct hmesbus_softc {
 int	hmematch_sbus(struct device *, void *, void *);
 void	hmeattach_sbus(struct device *, struct device *, void *);
 
-struct cfattach hme_sbus_ca = {
+const struct cfattach hme_sbus_ca = {
 	sizeof(struct hmesbus_softc), hmematch_sbus, hmeattach_sbus
 };
 

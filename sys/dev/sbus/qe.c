@@ -1,4 +1,4 @@
-/*	$OpenBSD: qe.c,v 1.40 2017/01/22 10:17:39 dlg Exp $	*/
+/*	$OpenBSD: qe.c,v 1.41 2020/07/10 13:22:21 patrick Exp $	*/
 /*	$NetBSD: qe.c,v 1.16 2001/03/30 17:30:18 christos Exp $	*/
 
 /*-
@@ -148,7 +148,7 @@ struct mbuf	*qe_get(struct qe_softc *, int, int);
 void	qe_ifmedia_sts(struct ifnet *, struct ifmediareq *);
 int	qe_ifmedia_upd(struct ifnet *);
 
-struct cfattach qe_ca = {
+const struct cfattach qe_ca = {
 	sizeof(struct qe_softc), qematch, qeattach
 };
 

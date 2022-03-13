@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_lebuffer.c,v 1.12 2014/12/22 02:28:52 tedu Exp $	*/
+/*	$OpenBSD: if_le_lebuffer.c,v 1.13 2015/09/11 13:02:28 stsp Exp $	*/
 /*	$NetBSD: if_le_lebuffer.c,v 1.10 2002/03/11 16:00:56 pk Exp $	*/
 
 /*-
@@ -83,7 +83,7 @@ static uint64_t lemedia[] = {
 	IFM_ETHER | IFM_10_T
 };
 
-struct cfattach le_lebuffer_ca = {
+const struct cfattach le_lebuffer_ca = {
 	sizeof(struct le_softc), lematch_lebuffer, leattach_lebuffer
 };
 

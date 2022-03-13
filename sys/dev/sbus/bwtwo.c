@@ -1,4 +1,4 @@
-/*	$OpenBSD: bwtwo.c,v 1.18 2008/12/27 17:23:03 miod Exp $	*/
+/*	$OpenBSD: bwtwo.c,v 1.19 2013/10/20 20:07:30 miod Exp $	*/
 
 /*
  * Copyright (c) 2002 Jason L. Wright (jason@thought.net)
@@ -117,7 +117,7 @@ struct wsdisplay_accessops bwtwo_accessops = {
 int	bwtwomatch(struct device *, void *, void *);
 void	bwtwoattach(struct device *, struct device *, void *);
 
-struct cfattach bwtwo_ca = {
+const struct cfattach bwtwo_ca = {
 	sizeof (struct bwtwo_softc), bwtwomatch, bwtwoattach
 };
 

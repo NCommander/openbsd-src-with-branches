@@ -1,4 +1,4 @@
-/*	$OpenBSD: rfx.c,v 1.12 2014/01/22 03:03:09 jsg Exp $	*/
+/*	$OpenBSD: rfx.c,v 1.13 2022/02/15 10:36:59 jsg Exp $	*/
 
 /*
  * Copyright (c) 2004, Miodrag Vallat.
@@ -141,7 +141,7 @@ struct wsdisplay_accessops rfx_accessops = {
 int	rfxmatch(struct device *, void *, void *);
 void	rfxattach(struct device *, struct device *, void *);
 
-struct cfattach rfx_ca = {
+const struct cfattach rfx_ca = {
 	sizeof (struct rfx_softc), rfxmatch, rfxattach
 };
 

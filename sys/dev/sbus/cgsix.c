@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgsix.c,v 1.59 2013/10/20 20:07:30 miod Exp $	*/
+/*	$OpenBSD: cgsix.c,v 1.60 2020/05/25 09:55:49 jsg Exp $	*/
 
 /*
  * Copyright (c) 2001 Jason L. Wright (jason@thought.net)
@@ -82,7 +82,7 @@ struct wsdisplay_accessops cgsix_accessops = {
 int	cgsixmatch(struct device *, void *, void *);
 void	cgsixattach(struct device *, struct device *, void *);
 
-struct cfattach cgsix_ca = {
+const struct cfattach cgsix_ca = {
 	sizeof (struct cgsix_softc), cgsixmatch, cgsixattach
 };
 

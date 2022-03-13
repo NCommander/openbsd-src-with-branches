@@ -1,4 +1,4 @@
-/*	$OpenBSD: cgtwelve.c,v 1.9 2018/10/22 17:31:25 krw Exp $	*/
+/*	$OpenBSD: cgtwelve.c,v 1.10 2022/01/09 05:42:58 jsg Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003 Miodrag Vallat.  All rights reserved.
@@ -106,7 +106,7 @@ int	cgtwelvematch(struct device *, void *, void *);
 void	cgtwelveattach(struct device *, struct device *, void *);
 int	cgtwelveactivate(struct device *, int);
 
-struct cfattach cgtwelve_ca = {
+const struct cfattach cgtwelve_ca = {
 	sizeof(struct cgtwelve_softc), cgtwelvematch, cgtwelveattach,
 	NULL, cgtwelveactivate
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: qec.c,v 1.14 2017/09/08 05:36:52 deraadt Exp $	*/
+/*	$OpenBSD: qec.c,v 1.15 2022/01/09 05:42:58 jsg Exp $	*/
 /*	$NetBSD: qec.c,v 1.12 2000/12/04 20:12:55 fvdl Exp $ */
 
 /*-
@@ -67,7 +67,7 @@ void *	qec_intr_establish(
 		void *,			/*arg*/
 		const char *);		/*what*/
 
-struct cfattach qec_ca = {
+const struct cfattach qec_ca = {
 	sizeof(struct qec_softc), qecmatch, qecattach
 };
 

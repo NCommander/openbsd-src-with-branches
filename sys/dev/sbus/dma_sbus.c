@@ -1,4 +1,4 @@
-/*	$OpenBSD: dma_sbus.c,v 1.16 2008/06/26 05:42:18 ray Exp $	*/
+/*	$OpenBSD: dma_sbus.c,v 1.17 2017/09/08 05:36:52 deraadt Exp $	*/
 /*	$NetBSD: dma_sbus.c,v 1.5 2000/07/09 20:57:42 pk Exp $ */
 
 /*-
@@ -97,11 +97,11 @@ void	*dmabus_intr_establish(
 
 static	bus_space_tag_t dma_alloc_bustag(struct dma_softc *sc);
 
-struct cfattach dma_sbus_ca = {
+const struct cfattach dma_sbus_ca = {
 	sizeof(struct dma_softc), dmamatch_sbus, dmaattach_sbus
 };
 
-struct cfattach ledma_ca = {
+const struct cfattach ledma_ca = {
 	sizeof(struct dma_softc), dmamatch_sbus, dmaattach_sbus
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: magma.c,v 1.32 2020/05/23 09:44:20 mpi Exp $	*/
+/*	$OpenBSD: magma.c,v 1.33 2021/09/01 16:10:39 jan Exp $	*/
 
 /*-
  * Copyright (c) 1998 Iain Hibbert
@@ -157,7 +157,7 @@ static const struct magma_board_info supported_cards[] = {
  *  Autoconfig Stuff
  */
 
-struct cfattach magma_ca = {
+const struct cfattach magma_ca = {
 	sizeof(struct magma_softc), magma_match, magma_attach
 };
 
@@ -165,7 +165,7 @@ struct cfdriver magma_cd = {
 	NULL, "magma", DV_DULL
 };
 
-struct cfattach mtty_ca = {
+const struct cfattach mtty_ca = {
 	sizeof(struct mtty_softc), mtty_match, mtty_attach
 };
 
@@ -173,7 +173,7 @@ struct cfdriver mtty_cd = {
 	NULL, "mtty", DV_TTY
 };
 
-struct cfattach mbpp_ca = {
+const struct cfattach mbpp_ca = {
 	sizeof(struct mbpp_softc), mbpp_match, mbpp_attach
 };
 
