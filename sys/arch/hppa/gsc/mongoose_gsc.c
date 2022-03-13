@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mongoose_gsc.c,v 1.1 2004/10/30 10:26:32 miod Exp $	*/
 
 /*
  * Copyright (c) 2004, Miodrag Vallat.
@@ -45,7 +45,7 @@
 void	mgattach_gsc(struct device *, struct device *, void *);
 int	mgmatch_gsc(struct device *, void *, void *);
 
-struct cfattach mg_gsc_ca = {
+const struct cfattach mg_gsc_ca = {
 	sizeof(struct mongoose_softc), mgmatch_gsc, mgattach_gsc
 };
 

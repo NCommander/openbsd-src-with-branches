@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_ssio.c,v 1.1 2007/06/19 22:51:26 kettenis Exp $	*/
+/*	$OpenBSD: com_ssio.c,v 1.2 2007/06/24 16:28:39 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2007 Mark Kettenis
@@ -34,7 +34,7 @@
 int com_ssio_match(struct device *, void *, void *);
 void com_ssio_attach(struct device *, struct device *, void *);
 
-struct cfattach com_ssio_ca = {
+const struct cfattach com_ssio_ca = {
 	sizeof(struct com_softc), com_ssio_match, com_ssio_attach
 };
 

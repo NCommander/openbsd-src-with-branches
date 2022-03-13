@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.41 2014/01/19 12:45:35 deraadt Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.42 2020/05/29 04:42:23 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -54,7 +54,7 @@ static volatile int start_secondary_cpu;
 int	cpumatch(struct device *, void *, void *);
 void	cpuattach(struct device *, struct device *, void *);
 
-struct cfattach cpu_ca = {
+const struct cfattach cpu_ca = {
 	sizeof(struct cpu_softc), cpumatch, cpuattach
 };
 

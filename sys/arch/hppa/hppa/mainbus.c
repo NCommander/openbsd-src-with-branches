@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.88 2018/05/14 13:54:39 kettenis Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.89 2021/03/11 11:16:56 jsg Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -57,7 +57,7 @@ struct mainbus_softc {
 int	mbmatch(struct device *, void *, void *);
 void	mbattach(struct device *, struct device *, void *);
 
-struct cfattach mainbus_ca = {
+const struct cfattach mainbus_ca = {
 	sizeof(struct mainbus_softc), mbmatch, mbattach
 };
 

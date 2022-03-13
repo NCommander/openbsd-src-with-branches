@@ -1,4 +1,4 @@
-/*	$OpenBSD: gsckbc.c,v 1.19 2015/05/24 10:57:47 miod Exp $	*/
+/*	$OpenBSD: gsckbc.c,v 1.20 2019/10/12 15:53:24 cheloha Exp $	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  * All rights reserved.
@@ -102,7 +102,7 @@ struct	gsckbc_softc {
 	int sc_type;
 };
 
-struct cfattach gsckbc_ca = {
+const struct cfattach gsckbc_ca = {
 	sizeof(struct gsckbc_softc), gsckbc_match, gsckbc_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: gecko.c,v 1.1 2008/04/27 14:39:51 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2007 Mark Kettenis
@@ -39,7 +39,7 @@ struct gecko_softc {
 int	gecko_match(struct device *, void *, void *);
 void	gecko_attach(struct device *, struct device *, void *);
 
-struct cfattach gecko_ca = {
+const struct cfattach gecko_ca = {
 	sizeof(struct gecko_softc), gecko_match, gecko_attach
 };
 

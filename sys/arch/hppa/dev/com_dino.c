@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_dino.c,v 1.3 2004/10/25 00:08:44 mickey Exp $	*/
+/*	$OpenBSD: com_dino.c,v 1.4 2007/07/15 19:25:49 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2004 Michael Shalayeff
@@ -61,7 +61,7 @@ struct com_dino_regs {
 int	com_dino_match(struct device *, void *, void *);
 void	com_dino_attach(struct device *, struct device *, void *);
 
-struct cfattach com_dino_ca = {
+const struct cfattach com_dino_ca = {
 	sizeof(struct com_softc), com_dino_match, com_dino_attach
 };
 

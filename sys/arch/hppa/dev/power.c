@@ -1,4 +1,4 @@
-/*	$OpenBSD: power.c,v 1.9 2014/07/13 09:09:16 miod Exp $	*/
+/*	$OpenBSD: power.c,v 1.10 2019/10/12 15:53:24 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2003 Michael Shalayeff
@@ -55,7 +55,7 @@ struct power_softc {
 int	powermatch(struct device *, void *, void *);
 void	powerattach(struct device *, struct device *, void *);
 
-struct cfattach power_ca = {
+const struct cfattach power_ca = {
 	sizeof(struct power_softc), powermatch, powerattach
 };
 

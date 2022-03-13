@@ -1,4 +1,4 @@
-/*	$OpenBSD: mongoose.c,v 1.21 2010/05/24 15:04:53 deraadt Exp $	*/
+/*	$OpenBSD: mongoose.c,v 1.22 2022/02/14 23:20:46 jsg Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -50,7 +50,7 @@
 void	mgattach_gedoens(struct device *, struct device *, void *);
 int	mgmatch_gedoens(struct device *, void *, void *);
 
-struct cfattach mg_gedoens_ca = {
+const struct cfattach mg_gedoens_ca = {
 	sizeof(struct mongoose_softc), mgmatch_gedoens, mgattach_gedoens
 };
 
