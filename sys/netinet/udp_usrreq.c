@@ -365,7 +365,6 @@ udp_input(struct mbuf **mp, int *offp, int proto, int af)
 		 */
 		last = NULL;
 		NET_ASSERT_LOCKED();
-		mtx_enter(&udbtable.inpt_mtx);
 		TAILQ_FOREACH(inp, &udbtable.inpt_queue, inp_queue) {
 			if (inp->inp_socket->so_state & SS_CANTRCVMORE)
 				continue;
@@ -441,7 +440,6 @@ udp_input(struct mbuf **mp, int *offp, int proto, int af)
 			    SO_REUSEADDR)) == 0)
 				break;
 		}
-		mtx_leave(&udbtable.inpt_mtx);
 
 		if (last == NULL) {
 			/*
