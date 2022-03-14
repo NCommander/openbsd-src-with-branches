@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwxvar.h,v 1.28 2021/11/25 14:51:26 stsp Exp $	*/
+/*	$OpenBSD: if_iwxvar.h,v 1.29 2021/12/03 12:42:39 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -321,6 +321,7 @@ struct iwx_phy_ctxt {
 	uint32_t ref;
 	struct ieee80211_channel *channel;
 	uint8_t sco; /* 40 MHz secondary channel offset */
+	uint8_t vht_chan_width;
 };
 
 struct iwx_bf_data {
