@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_rtwn.c,v 1.37 2020/12/12 11:48:53 jan Exp $	*/
+/*	$OpenBSD: if_rtwn.c,v 1.38 2021/10/04 01:33:42 kevlo Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -1095,7 +1095,7 @@ rtwn_tx(void *cookie, struct mbuf *m, struct ieee80211_node *ni)
 		if (ic->ic_curmode == IEEE80211_MODE_11B)
 			txd->txdw4 |= htole32(SM(R92C_TXDW4_RTSRATE, 0));
 		else
-			txd->txdw4 |= htole32(SM(R92C_TXDW4_RTSRATE, 3));
+			txd->txdw4 |= htole32(SM(R92C_TXDW4_RTSRATE, 8));
 		txd->txdw5 |= htole32(SM(R92C_TXDW5_RTSRATE_FBLIMIT, 0xf));
 
 		/* Use AMMR rate for data. */
