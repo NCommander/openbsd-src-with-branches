@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd.c,v 1.151 2022/02/04 14:07:56 krw Exp $	*/
+/*	$OpenBSD: cmd.c,v 1.152 2022/02/04 18:21:33 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -500,7 +500,7 @@ Xflag(char *args, struct mbr *mbr)
 		printf("Partition %d flag value set to 0x%llx.\n", pn, val);
 	} else {
 		if (letoh64(gh.gh_sig) == GPTSIGNATURE) {
-			for (i = 0; i < NGPTPARTITIONS; i++) {
+			for (i = 0; i < letoh32(gh.gh_part_num); i++) {
 				if (i == pn)
 					gp[i].gp_attrs = htole64(GPTDOSACTIVE);
 				else
