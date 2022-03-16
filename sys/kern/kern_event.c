@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_event.c,v 1.183 2022/02/22 01:15:01 guenther Exp $	*/
+/*	$OpenBSD: kern_event.c,v 1.184 2022/03/16 14:38:43 visa Exp $	*/
 
 /*-
  * Copyright (c) 1999,2000,2001 Jonathan Lemon <jlemon@FreeBSD.org>
@@ -30,7 +30,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/atomic.h>
 #include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/pledge.h>
