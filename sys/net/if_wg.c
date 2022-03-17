@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wg.c,v 1.22 2022/02/22 01:15:02 guenther Exp $ */
+/*	$OpenBSD: if_wg.c,v 1.23 2022/03/17 18:27:56 sthen Exp $ */
 
 /*
  * Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
@@ -325,7 +325,7 @@ void	wg_peer_send_buf(struct wg_peer *, uint8_t *, size_t);
 void	wg_send_initiation(void *);
 void	wg_send_response(struct wg_peer *);
 void	wg_send_cookie(struct wg_softc *, struct cookie_macs *, uint32_t,
-	    struct wg_endpoint *e);
+	    struct wg_endpoint *);
 void	wg_send_keepalive(void *);
 void	wg_peer_clear_secrets(void *);
 void	wg_handshake(struct wg_softc *, struct mbuf *);
