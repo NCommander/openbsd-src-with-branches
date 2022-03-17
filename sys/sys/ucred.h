@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucred.h,v 1.12 2018/02/19 08:59:53 mpi Exp $	*/
+/*	$OpenBSD: ucred.h,v 1.13 2018/06/21 13:58:21 visa Exp $	*/
 /*	$NetBSD: ucred.h,v 1.12 1995/06/01 22:44:50 jtc Exp $	*/
 
 /*
@@ -35,13 +35,14 @@
 #ifndef _SYS_UCRED_H_
 #define	_SYS_UCRED_H_
 
+#include <sys/refcnt.h>
 #include <sys/syslimits.h>
 
 /*
  * Credentials.
  */
 struct ucred {
-	u_int	cr_ref;			/* reference count */
+	struct refcnt	cr_refcnt;	/* reference count */
 
 /* The following fields are all copied by crset() */
 #define	cr_startcopy	cr_uid

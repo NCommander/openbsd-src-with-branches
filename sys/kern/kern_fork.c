@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.236 2021/06/19 02:05:33 cheloha Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.238 2021/12/10 05:34:42 guenther Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -190,7 +190,8 @@ process_initialize(struct process *pr, struct proc *p)
 	/* give the process the same creds as the initial thread */
 	pr->ps_ucred = p->p_ucred;
 	crhold(pr->ps_ucred);
-	KASSERT(p->p_ucred->cr_ref >= 2);	/* new thread and new process */
+	/* new thread and new process */
+	KASSERT(p->p_ucred->cr_refcnt.r_refs >= 2);
 
 	LIST_INIT(&pr->ps_children);
 	LIST_INIT(&pr->ps_orphans);
