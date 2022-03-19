@@ -355,8 +355,6 @@ main(int argc, char **argv)
 			flags &= ~LOGIN_SETLOGIN;
 	} else {
 		flags = LOGIN_SETRESOURCES|LOGIN_SETGROUP|LOGIN_SETUSER;
-		if (!asme)
-			flags |= LOGIN_SETRTABLE;
 		if (asthem)
 			flags |= LOGIN_SETENV|LOGIN_SETPRIORITY|LOGIN_SETUMASK;
 	}
