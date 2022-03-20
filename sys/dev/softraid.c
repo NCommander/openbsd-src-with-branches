@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.420 2021/12/12 09:14:58 visa Exp $ */
+/* $OpenBSD: softraid.c,v 1.421 2022/01/09 05:42:37 jsg Exp $ */
 /*
  * Copyright (c) 2007, 2008, 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -1508,10 +1508,10 @@ sr_map_root(void)
 	u_char			duid[8];
 	int			i;
 
-	DNPRINTF(SR_D_MISC, "%s: sr_map_root\n", DEVNAME(sc));
-
 	if (sc == NULL)
 		return;
+
+	DNPRINTF(SR_D_MISC, "%s: sr_map_root\n", DEVNAME(sc));
 
 	bzero(duid, sizeof(duid));
 	if (bcmp(rootduid, duid, sizeof(duid)) == 0) {
@@ -4538,6 +4538,9 @@ sr_quiesce(void)
 	struct sr_softc		*sc = softraid0;
 	struct sr_discipline	*sd, *nsd;
 
+	if (sc == NULL)
+		return;
+
 	/* Shutdown disciplines in reverse attach order. */
 	TAILQ_FOREACH_REVERSE_SAFE(sd, &sc->sc_dis_list,
 	    sr_discipline_list, sd_link, nsd)
@@ -4549,6 +4552,9 @@ sr_shutdown(int dying)
 {
 	struct sr_softc		*sc = softraid0;
 	struct sr_discipline	*sd;
+
+	if (sc == NULL)
+		return;
 
 	DNPRINTF(SR_D_MISC, "%s: sr_shutdown\n", DEVNAME(sc));
 
