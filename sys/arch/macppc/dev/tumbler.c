@@ -1,4 +1,4 @@
-/*	$OpenBSD: tumbler.c,v 1.10 2022/02/16 06:21:18 anton Exp $	*/
+/*	$OpenBSD: tumbler.c,v 1.11 2022/03/13 12:33:01 mpi Exp $	*/
 
 /*-
  * Copyright (c) 2001,2003 Tsubai Masanari.  All rights reserved.
@@ -75,7 +75,7 @@ struct cfdriver tumbler_cd = {
 	NULL, "tumbler", DV_DULL
 };
 
-struct audio_hw_if tumbler_hw_if = {
+const struct audio_hw_if tumbler_hw_if = {
 	i2s_open,
 	i2s_close,
 	i2s_set_params,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: awacs.c,v 1.35 2022/02/16 06:21:18 anton Exp $	*/
+/*	$OpenBSD: awacs.c,v 1.36 2022/03/13 12:33:01 mpi Exp $	*/
 /*	$NetBSD: awacs.c,v 1.4 2001/02/26 21:07:51 wiz Exp $	*/
 
 /*-
@@ -126,7 +126,7 @@ struct cfdriver awacs_cd = {
 	NULL, "awacs", DV_DULL
 };
 
-struct audio_hw_if awacs_hw_if = {
+const struct audio_hw_if awacs_hw_if = {
 	awacs_open,
 	awacs_close,
 	awacs_set_params,

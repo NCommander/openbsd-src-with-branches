@@ -1,4 +1,4 @@
-/*	$OpenBSD: auvia.c,v 1.61 2022/02/16 06:21:18 anton Exp $ */
+/*	$OpenBSD: auvia.c,v 1.62 2022/03/11 18:00:45 mpi Exp $ */
 /*	$NetBSD: auvia.c,v 1.28 2002/11/04 16:38:49 kent Exp $	*/
 
 /*-
@@ -178,7 +178,7 @@ const struct cfattach auvia_ca = {
 
 #define TIMEOUT	50
 
-struct audio_hw_if auvia_hw_if = {
+const struct audio_hw_if auvia_hw_if = {
 	auvia_open,
 	auvia_close,
 	auvia_set_params,

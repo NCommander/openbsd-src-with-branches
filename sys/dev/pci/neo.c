@@ -1,4 +1,4 @@
-/*      $OpenBSD: neo.c,v 1.35 2022/02/16 06:21:19 anton Exp $       */
+/*      $OpenBSD: neo.c,v 1.36 2022/03/11 18:00:51 mpi Exp $       */
 
 /*
  * Copyright (c) 1999 Cameron Grant <gandalf@vilnya.demon.co.uk>
@@ -237,7 +237,7 @@ static int samplerates[9] = {
 
 /* -------------------------------------------------------------------- */
 
-struct audio_hw_if neo_hw_if = {
+const struct audio_hw_if neo_hw_if = {
 	neo_open,
 	neo_close,
 	neo_set_params,

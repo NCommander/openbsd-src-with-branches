@@ -1,4 +1,4 @@
-/*	$OpenBSD: midivar.h,v 1.11 2020/01/10 20:17:45 ratchov Exp $	*/
+/*	$OpenBSD: midivar.h,v 1.12 2021/10/30 12:26:26 ratchov Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Alexandre Ratchov
@@ -72,7 +72,7 @@ struct midi_buffer {
 
 struct midi_softc {
 	struct device	    dev;
-	struct midi_hw_if  *hw_if;
+	const struct midi_hw_if *hw_if;
 	void		   *hw_hdl;
 	int		    isbusy;		/* concerns only the output */
 	int		    flags;		/* open flags */

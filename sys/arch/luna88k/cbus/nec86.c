@@ -1,4 +1,4 @@
-/*	$OpenBSD: nec86.c,v 1.3 2016/09/19 06:46:43 ratchov Exp $	*/
+/*	$OpenBSD: nec86.c,v 1.4 2022/02/16 06:21:18 anton Exp $	*/
 /*	$NecBSD: nec86.c,v 1.11 1999/07/23 11:04:39 honda Exp $	*/
 /*	$NetBSD$	*/
 
@@ -67,7 +67,7 @@
  * Define our interface to the higher level audio driver.
  */
 
-struct audio_hw_if nec86_hw_if = {
+const struct audio_hw_if nec86_hw_if = {
 	.open		= nec86hw_open,
 	.close		= nec86hw_close,
 	.set_params	= nec86hw_set_params,

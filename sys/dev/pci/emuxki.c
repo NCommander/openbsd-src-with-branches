@@ -1,4 +1,4 @@
-/*	$OpenBSD: emuxki.c,v 1.56 2022/02/16 06:21:19 anton Exp $	*/
+/*	$OpenBSD: emuxki.c,v 1.57 2022/03/11 18:00:45 mpi Exp $	*/
 /*	$NetBSD: emuxki.c,v 1.1 2001/10/17 18:39:41 jdolecek Exp $	*/
 
 /*-
@@ -211,7 +211,7 @@ const struct cfattach emu_ca = {
 	emuxki_activate
 };
 
-struct audio_hw_if emuxki_hw_if = {
+const struct audio_hw_if emuxki_hw_if = {
 	emuxki_open,
 	emuxki_close,
 	emuxki_set_params,

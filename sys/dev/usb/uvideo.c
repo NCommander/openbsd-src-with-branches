@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.c,v 1.214 2021/11/22 10:17:14 mglocker Exp $ */
+/*	$OpenBSD: uvideo.c,v 1.215 2022/01/09 05:43:02 jsg Exp $ */
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -271,7 +271,7 @@ const struct cfattach uvideo_ca = {
 	sizeof(struct uvideo_softc), uvideo_match, uvideo_attach, uvideo_detach
 };
 
-struct video_hw_if uvideo_hw_if = {
+const struct video_hw_if uvideo_hw_if = {
 	uvideo_open,		/* open */
 	uvideo_close,		/* close */
 	uvideo_querycap,	/* VIDIOC_QUERYCAP */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: fmsradio.c,v 1.6 2002/06/06 16:29:37 mickey Exp $	*/
+/*	$OpenBSD: fmsradio.c,v 1.7 2021/11/23 00:17:59 jsg Exp $	*/
 
 /*
  * Copyright (c) 2002 Vladimir Popov <jumbo@narod.ru>
@@ -136,7 +136,7 @@ int	fmsradio_get_info(void *, struct radio_info *);
 int	fmsradio_set_info(void *, struct radio_info *);
 int	fmsradio_search(void *, int);
 
-struct radio_hw_if fmsradio_hw_if = {
+const struct radio_hw_if fmsradio_hw_if = {
 	NULL,   /* open */
 	NULL,   /* close */
 	fmsradio_get_info,

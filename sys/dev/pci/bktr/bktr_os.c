@@ -1,4 +1,4 @@
-/*	$OpenBSD: bktr_os.c,v 1.34 2021/03/05 12:40:14 jsg Exp $	*/
+/*	$OpenBSD: bktr_os.c,v 1.35 2022/03/11 18:00:53 mpi Exp $	*/
 /* $FreeBSD: src/sys/dev/bktr/bktr_os.c,v 1.20 2000/10/20 08:16:53 roger Exp $ */
 
 /*
@@ -123,7 +123,7 @@ struct cfdriver bktr_cd = {
 int	bktr_get_info(void *, struct radio_info *);
 int	bktr_set_info(void *, struct radio_info *);
 
-struct radio_hw_if bktr_hw_if = {
+const struct radio_hw_if bktr_hw_if = {
 	NULL,	/* open */
 	NULL,	/* close */
 	bktr_get_info,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bba.c,v 1.7 2016/09/19 06:46:44 ratchov Exp $	*/
+/*	$OpenBSD: bba.c,v 1.8 2022/02/16 06:21:19 anton Exp $	*/
 /* $NetBSD: bba.c,v 1.38 2011/06/04 01:27:57 tsutsui Exp $ */
 /*
  * Copyright (c) 2011 Miodrag Vallat.
@@ -152,7 +152,7 @@ int	bba_trigger_output(void *, void *, void *, int,
 int	bba_trigger_input(void *, void *, void *, int,
 	    void (*)(void *), void *, struct audio_params *);
 
-struct audio_hw_if bba_hw_if = {
+const struct audio_hw_if bba_hw_if = {
 	am7930_open,
 	am7930_close,
 	am7930_set_params,

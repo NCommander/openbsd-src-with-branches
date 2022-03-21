@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpu401.c,v 1.15 2015/03/14 03:38:47 jsg Exp $	*/
+/*	$OpenBSD: mpu401.c,v 1.16 2021/03/07 06:17:04 jsg Exp $	*/
 /*	$NetBSD: mpu401.c,v 1.3 1998/11/25 22:17:06 augustss Exp $	*/
 
 /*
@@ -68,7 +68,7 @@ struct cfdriver mpu_cd = {
 	NULL, "mpu", DV_DULL
 };
 
-struct midi_hw_if mpu_midi_hw_if = {
+const struct midi_hw_if mpu_midi_hw_if = {
 	mpu_open,
 	mpu_close,
 	mpu_output,

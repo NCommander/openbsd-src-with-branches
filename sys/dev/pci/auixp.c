@@ -1,4 +1,4 @@
-/* $OpenBSD: auixp.c,v 1.46 2022/02/21 08:50:18 jsg Exp $ */
+/* $OpenBSD: auixp.c,v 1.47 2022/03/11 18:00:45 mpi Exp $ */
 /* $NetBSD: auixp.c,v 1.9 2005/06/27 21:13:09 thorpej Exp $ */
 
 /*
@@ -154,7 +154,7 @@ void	auixp_update_busbusy(struct auixp_softc *);
 #define DPRINTF(x)
 #endif
 
-struct audio_hw_if auixp_hw_if = {
+const struct audio_hw_if auixp_hw_if = {
 	auixp_open,
 	auixp_close,
 	auixp_set_params,

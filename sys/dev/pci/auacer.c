@@ -1,4 +1,4 @@
-/*	$OpenBSD: auacer.c,v 1.23 2022/02/16 06:21:18 anton Exp $	*/
+/*	$OpenBSD: auacer.c,v 1.24 2022/03/11 18:00:45 mpi Exp $	*/
 /*	$NetBSD: auacer.c,v 1.3 2004/11/10 04:20:26 kent Exp $	*/
 
 /*-
@@ -179,7 +179,7 @@ void	auacer_finish_attach(struct device *);
 
 static	void auacer_reset(struct auacer_softc *sc);
 
-struct audio_hw_if auacer_hw_if = {
+const struct audio_hw_if auacer_hw_if = {
 	auacer_open,
 	auacer_close,
 	auacer_set_params,

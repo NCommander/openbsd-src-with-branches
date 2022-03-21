@@ -1,4 +1,4 @@
-/*	$OpenBSD: simpleamp.c,v 1.1 2020/06/10 23:59:07 patrick Exp $	*/
+/*	$OpenBSD: simpleamp.c,v 1.2 2022/02/14 00:53:40 jsg Exp $	*/
 /*
  * Copyright (c) 2020 Patrick Wildt <patrick@blueri.se>
  *
@@ -46,7 +46,7 @@ struct simpleamp_softc {
 	uint32_t		sc_vcc;
 };
 
-struct audio_hw_if simpleamp_hw_if = {
+const struct audio_hw_if simpleamp_hw_if = {
 	.open = simpleamp_open,
 	.close = simpleamp_close,
 };
