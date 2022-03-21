@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.247 2022/03/02 16:51:43 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.248 2022/03/15 16:50:29 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org> and
@@ -548,7 +548,7 @@ pt_unref(struct pt_entry *pt)
 extern uint16_t	rib_size;
 
 struct rib	*rib_new(char *, u_int, uint16_t);
-void		 rib_update(struct rib *);
+int		 rib_update(struct rib *);
 struct rib	*rib_byid(uint16_t);
 uint16_t	 rib_find(char *);
 void		 rib_free(struct rib *);
