@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.c,v 1.57 2021/07/12 15:09:19 beck Exp $	*/
+/*	$OpenBSD: frontend.c,v 1.58 2021/08/24 14:56:06 florian Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -418,7 +418,6 @@ frontend_dispatch_engine(int fd, short event, void *bula)
 		case IMSG_CTL_SHOW_INTERFACE_INFO_RA:
 		case IMSG_CTL_SHOW_INTERFACE_INFO_RA_PREFIX:
 		case IMSG_CTL_SHOW_INTERFACE_INFO_RA_RDNS:
-		case IMSG_CTL_SHOW_INTERFACE_INFO_RA_DNSSL:
 		case IMSG_CTL_SHOW_INTERFACE_INFO_ADDR_PROPOSALS:
 		case IMSG_CTL_SHOW_INTERFACE_INFO_ADDR_PROPOSAL:
 		case IMSG_CTL_SHOW_INTERFACE_INFO_DFR_PROPOSALS:
