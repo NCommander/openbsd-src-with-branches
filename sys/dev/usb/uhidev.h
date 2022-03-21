@@ -1,4 +1,4 @@
-/*	$OpenBSD: uhidev.h,v 1.39 2021/11/15 15:38:08 anton Exp $	*/
+/*	$OpenBSD: uhidev.h,v 1.40 2021/11/22 11:30:16 anton Exp $	*/
 /*	$NetBSD: uhidev.h,v 1.3 2002/10/08 09:56:17 dan Exp $	*/
 
 /*
@@ -55,6 +55,9 @@ struct uhidev_softc {
 	struct uhidev **sc_subdevs;
 
 	int sc_refcnt;
+
+	u_int sc_flags;
+#define UHIDEV_F_XB1	0x0001		/* Xbox One controller */
 };
 
 struct uhidev {
