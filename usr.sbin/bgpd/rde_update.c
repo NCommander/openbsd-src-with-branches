@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_update.c,v 1.136 2022/03/02 16:51:43 claudio Exp $ */
+/*	$OpenBSD: rde_update.c,v 1.137 2022/03/15 16:50:29 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -154,7 +154,7 @@ again:
 		    prefixlen, prefix_vstate(new), &state) == ACTION_DENY) {
 			rde_filterstate_clean(&state);
 			if (peer->flags & PEERFLAG_EVALUATE_ALL)
-				new = LIST_NEXT(new, entry.list.rib);
+				new = TAILQ_NEXT(new, entry.list.rib);
 			else
 				new = NULL;
 			if (new != NULL && !prefix_eligible(new))
