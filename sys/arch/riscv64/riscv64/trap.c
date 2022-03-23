@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.16 2021/07/26 22:13:19 kettenis Exp $	*/
+/*	$OpenBSD: trap.c,v 1.17 2021/09/03 14:58:25 jca Exp $	*/
 
 /*
  * Copyright (c) 2020 Shivam Waghela <shivamwaghela@gmail.com>
@@ -153,8 +153,6 @@ do_trap_user(struct trapframe *frame)
 			fpu_load(p);
 			break;
 		}
-		printf("ILL at %lx scause %lx stval %lx\n", frame->tf_sepc,
-		    frame->tf_scause, frame->tf_stval);
 		sv.sival_ptr = (void *)frame->tf_stval;
 		trapsignal(p, SIGILL, 0, ILL_ILLTRP, sv);
 		break;
