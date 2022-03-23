@@ -1,4 +1,4 @@
-/* $OpenBSD: armcap.c,v 1.7 2018/11/11 03:27:56 bcook Exp $ */
+/* $OpenBSD: armcap.c,v 1.8 2019/03/13 10:18:30 patrick Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: arm_arch.h,v 1.9 2019/03/13 10:18:30 patrick Exp $ */
+/* $OpenBSD: arm_arch.h,v 1.10 2019/07/02 19:31:28 patrick Exp $ */
 #ifndef __ARM_ARCH_H__
 #define __ARM_ARCH_H__
 
