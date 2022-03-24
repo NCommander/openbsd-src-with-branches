@@ -1,3 +1,7 @@
+/*	$OpenBSD$	*/
+
+/* public domain */
+
 #ifndef _MACHINE_FPU_H
 #define _MACHINE_FPU_H
 
