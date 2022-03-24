@@ -1,4 +1,4 @@
-/* $OpenBSD: colour.c,v 1.23 2021/10/25 21:21:16 nicm Exp $ */
+/* $OpenBSD: colour.c,v 1.24 2021/11/01 07:48:04 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -128,7 +128,7 @@ colour_tostring(int c)
 	u_char		r, g, b;
 
 	if (c == -1)
-		return ("invalid");
+		return ("none");
 
 	if (c & COLOUR_FLAG_RGB) {
 		colour_split_rgb(c, &r, &g, &b);
