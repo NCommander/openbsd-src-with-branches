@@ -1,4 +1,4 @@
-/*	$OpenBSD: traceroute.c,v 1.167 2021/08/31 18:12:47 florian Exp $	*/
+/*	$OpenBSD: traceroute.c,v 1.168 2021/09/03 09:13:00 florian Exp $	*/
 /*	$NetBSD: traceroute.c,v 1.10 1995/05/21 15:50:45 mycroft Exp $	*/
 
 /*
@@ -707,7 +707,7 @@ main(int argc, char *argv[])
 		ip->ip_tos = conf->tos;
 
 		if (setsockopt(sndsock, IPPROTO_IP, IP_HDRINCL,
-		     &on, sizeof(on)) == -1)
+		    &on, sizeof(on)) == -1)
 			err(6, "IP_HDRINCL");
 
 		if (conf->source) {
