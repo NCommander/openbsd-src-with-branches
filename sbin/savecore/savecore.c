@@ -1,4 +1,4 @@
-/*	$OpenBSD: savecore.c,v 1.62 2019/06/28 13:32:46 deraadt Exp $	*/
+/*	$OpenBSD: savecore.c,v 1.63 2021/10/24 21:24:22 deraadt Exp $	*/
 /*	$NetBSD: savecore.c,v 1.26 1996/03/18 21:16:05 leo Exp $	*/
 
 /*-
@@ -47,7 +47,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
-#include <zlib.h>
 #include <kvm.h>
 #include <vis.h>
 
