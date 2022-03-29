@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucc.c,v 1.31 2022/03/08 12:47:33 anton Exp $	*/
+/*	$OpenBSD: ucc.c,v 1.32 2022/03/08 19:32:41 anton Exp $	*/
 
 /*
  * Copyright (c) 2021 Anton Lindqvist <anton@openbsd.org>
@@ -787,7 +787,7 @@ ucc_attach_wskbd(struct ucc_softc *sc, void *cookie)
 		.keymap		= &sc->sc_keymap,
 		.accessops	= &accessops,
 		.accesscookie	= sc,
-		.audiocookie	= cookie,
+		.audiocookie	= NULL,	/* XXX cookie */
 	};
 
 	sc->sc_keydesc[0].name = KB_US;
