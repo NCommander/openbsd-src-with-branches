@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp-client.h,v 1.34 2021/08/09 23:47:44 djm Exp $ */
+/* $OpenBSD: sftp-client.h,v 1.35 2022/01/01 01:55:30 jsg Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
@@ -118,6 +118,9 @@ int do_statvfs(struct sftp_conn *, const char *, struct sftp_statvfs *, int);
 
 /* Rename 'oldpath' to 'newpath' */
 int do_rename(struct sftp_conn *, const char *, const char *, int);
+
+/* Copy 'oldpath' to 'newpath' */
+int do_copy(struct sftp_conn *, const char *, const char *);
 
 /* Link 'oldpath' to 'newpath' */
 int do_hardlink(struct sftp_conn *, const char *, const char *);
