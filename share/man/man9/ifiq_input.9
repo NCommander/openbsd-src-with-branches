@@ -1,4 +1,4 @@
-.\" $OpenBSD: ifiq_input.9,v 1.2 2020/06/05 02:26:50 dlg Exp $
+.\" $OpenBSD: ifiq_input.9,v 1.3 2020/06/05 05:33:58 jmc Exp $
 .\"
 .\" Copyright (c) 2020 David Gwynne <dlg@openbsd.org>
 .\"
@@ -38,7 +38,7 @@ Enqueue the list of mbufs in
 on the
 .Fa ifiq
 interface input queue and notify the network stack to process them.
-If the queue rejects the packets they will be freed
+If the queue rejects the packets, they will be freed
 and counted as drops.
 .It Fn ifiq_enqueue "struct ifiqueue *ifq" "struct mbuf *m"
 Enqueue the mbuf

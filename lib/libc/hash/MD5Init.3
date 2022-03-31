@@ -16,9 +16,9 @@
 .\" If we meet some day, and you think this stuff is worth it, you
 .\" can buy me a beer in return. Poul-Henning Kamp
 .\"
-.\" 	$OpenBSD: MD5Init.3,v 1.1 2019/08/30 22:20:43 deraadt Exp $
+.\" 	$OpenBSD: MD5Init.3,v 1.2 2019/12/05 21:45:05 jmc Exp $
 .\"
-.Dd $Mdocdate: August 30 2019 $
+.Dd $Mdocdate: December 5 2019 $
 .Dt MD5INIT 3
 .Os
 .Sh NAME
@@ -157,7 +157,7 @@ and subsequently must be explicitly deallocated using
 after use.
 If the
 .Ar buf
-argument is non-null it must point to at least MD5_DIGEST_STRING_LENGTH
+argument is non-null, it must point to at least MD5_DIGEST_STRING_LENGTH
 characters of buffer space.
 .Sh SEE ALSO
 .Xr cksum 1 ,

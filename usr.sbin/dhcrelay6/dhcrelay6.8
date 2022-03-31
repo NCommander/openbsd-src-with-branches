@@ -1,4 +1,4 @@
-.\"	$OpenBSD: dhcrelay6.8,v 1.1 2017/03/17 14:45:16 rzalamena Exp $
+.\"	$OpenBSD: dhcrelay6.8,v 1.2 2017/03/17 16:45:27 jmc Exp $
 .\"
 .\" Copyright (c) 1997 The Internet Software Consortium.
 .\" All rights reserved.
@@ -70,7 +70,7 @@ The
 .Ar destination
 might be an address followed by a `%' and an interface name,
 or just an interface name (e.g. "2001:db8::1%em0" or "em1").
-When no address is specified
+When no address is specified,
 .Nm
 will use multicast on the specified interface.
 .Pp
@@ -93,7 +93,7 @@ The
 relay agent information option value that
 .Nm
 should use on relayed packets.
-If this option is not specified it will use the interface name by
+If this option is not specified, it will use the interface name by
 default.
 .Pp
 Avoid using this option when using Lightweight DHCPv6 Relay Mode
