@@ -1,4 +1,4 @@
-/*	$Id: test-cert.c,v 1.16 2022/01/18 16:41:00 claudio Exp $ */
+/*	$Id: test-cert.c,v 1.17 2022/01/19 08:24:43 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -81,9 +81,11 @@ main(int argc, char *argv[])
 				break;
 
 			buf = load_file(cert_path, &len);
-			p = ta_parse(cert_path, buf, len,
-			    tal->pkey, tal->pkeysz);
+			p = cert_parse_pre(cert_path, buf, len);
 			free(buf);
+			if (p == NULL)
+				break;
+			p = ta_parse(cert_path, p, tal->pkey, tal->pkeysz);
 			tal_free(tal);
 			if (p == NULL)
 				break;
@@ -98,12 +100,15 @@ main(int argc, char *argv[])
 			size_t		 len;
 
 			buf = load_file(argv[i], &len);
-			p = cert_parse(argv[i], buf, len);
+			p = cert_parse_pre(argv[i], buf, len);
+			free(buf);
+			if (p == NULL)
+				break;
+			p = cert_parse(argv[i], p);
 			if (p == NULL)
 				break;
 			if (verb)
 				cert_print(p);
-			free(buf);
 			cert_free(p);
 		}
 	}
