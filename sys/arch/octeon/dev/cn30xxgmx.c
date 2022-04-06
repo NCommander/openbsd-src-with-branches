@@ -1,4 +1,4 @@
-/*	$OpenBSD: cn30xxgmx.c,v 1.50 2021/02/13 17:12:38 visa Exp $	*/
+/*	$OpenBSD: cn30xxgmx.c,v 1.51 2021/03/11 11:16:59 jsg Exp $	*/
 
 /*
  * Copyright (c) 2007 Internet Initiative Japan, Inc.
@@ -153,7 +153,7 @@ struct cn30xxgmx_port_ops *cn30xxgmx_port_ops[] = {
 	[GMX_AGL_PORT] = &cn30xxgmx_port_ops_agl,
 };
 
-struct cfattach octgmx_ca = {sizeof(struct cn30xxgmx_softc),
+const struct cfattach octgmx_ca = {sizeof(struct cn30xxgmx_softc),
     cn30xxgmx_match, cn30xxgmx_attach, NULL, NULL};
 
 struct cfdriver octgmx_cd = {NULL, "octgmx", DV_DULL};

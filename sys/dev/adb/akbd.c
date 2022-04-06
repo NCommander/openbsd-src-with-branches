@@ -1,4 +1,4 @@
-/*	$OpenBSD: akbd.c,v 1.13 2013/08/22 11:46:38 mpi Exp $	*/
+/*	$OpenBSD: akbd.c,v 1.14 2014/01/26 17:48:08 miod Exp $	*/
 /*	$NetBSD: akbd.c,v 1.17 2005/01/15 16:00:59 chs Exp $	*/
 
 /*
@@ -57,7 +57,7 @@ int	akbdmatch(struct device *, void *, void *);
 void	akbdattach(struct device *, struct device *, void *);
 
 /* Driver definition. */
-struct cfattach akbd_ca = {
+const struct cfattach akbd_ca = {
 	sizeof(struct akbd_softc), akbdmatch, akbdattach
 };
 struct cfdriver akbd_cd = {

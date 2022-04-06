@@ -1,4 +1,4 @@
-/* $OpenBSD: acpiprt.c,v 1.50 2020/12/17 17:57:19 kettenis Exp $ */
+/* $OpenBSD: acpiprt.c,v 1.51 2021/03/10 21:49:55 patrick Exp $ */
 /*
  * Copyright (c) 2006 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -72,7 +72,7 @@ struct acpiprt_softc {
 	int			sc_bus;
 };
 
-struct cfattach acpiprt_ca = {
+const struct cfattach acpiprt_ca = {
 	sizeof(struct acpiprt_softc), acpiprt_match, acpiprt_attach
 };
 

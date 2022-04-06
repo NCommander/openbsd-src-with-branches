@@ -1,4 +1,4 @@
-/*	$OpenBSD: shb.c,v 1.1.1.1 2006/10/06 21:02:55 miod Exp $	*/
+/*	$OpenBSD: shb.c,v 1.2 2008/06/26 05:42:12 ray Exp $	*/
 /*	$NetBSD: shb.c,v 1.10 2005/12/11 12:18:58 christos Exp $	*/
 
 /*-
@@ -38,7 +38,7 @@ void shb_attach(struct device *, struct device *, void *);
 int shb_print(void *, const char *);
 int shb_search(struct device *, void *, void *);
 
-struct cfattach shb_ca = {
+const struct cfattach shb_ca = {
 	sizeof(struct device), shb_match, shb_attach
 };
 

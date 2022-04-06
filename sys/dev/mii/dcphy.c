@@ -1,4 +1,4 @@
-/*	$OpenBSD: dcphy.c,v 1.24 2013/05/28 09:46:06 mikeb Exp $	*/
+/*	$OpenBSD: dcphy.c,v 1.25 2013/12/28 03:30:41 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998, 1999
@@ -84,7 +84,7 @@
 int	dcphy_match(struct device *, void *, void *);
 void	dcphy_attach(struct device *, struct device *, void *);
 
-struct cfattach dcphy_ca = {
+const struct cfattach dcphy_ca = {
 	sizeof(struct mii_softc), dcphy_match, dcphy_attach, mii_phy_detach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uguru.c,v 1.4 2010/06/03 17:48:24 deraadt Exp $	*/
+/*	$OpenBSD: uguru.c,v 1.5 2015/03/14 03:38:47 jsg Exp $	*/
 
 /*
  * Copyright (c) 2010 Mikko Tolmunen <oskari@sefirosu.org>
@@ -648,7 +648,7 @@ struct cfdriver uguru_cd = {
 	NULL, "uguru", DV_DULL
 };
 
-struct cfattach uguru_ca = {
+const struct cfattach uguru_ca = {
 	sizeof(struct uguru_softc), uguru_match, uguru_attach
 };
 

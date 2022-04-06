@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.142 2020/08/05 13:50:25 fcambus Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.143 2021/02/09 14:37:13 jcs Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.82 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -207,7 +207,7 @@ struct cfdriver wsdisplay_cd = {
 	NULL, "wsdisplay", DV_TTY
 };
 
-struct cfattach wsdisplay_emul_ca = {
+const struct cfattach wsdisplay_emul_ca = {
 	sizeof(struct wsdisplay_softc), wsdisplay_emul_match,
 	wsdisplay_emul_attach, wsdisplay_emul_detach, wsdisplay_activate
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: riscv_cpu_intc.c,v 1.8 2021/05/14 06:48:52 jsg Exp $	*/
+/*	$OpenBSD: riscv_cpu_intc.c,v 1.9 2021/06/29 21:27:52 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020, Mars Li <mengshi.li.mars@gmail.com>
@@ -47,7 +47,7 @@ void	*riscv_intc_intr_establish(int, int, int (*)(void *),
 void	riscv_intc_intr_disestablish(void *);
 
 
-struct cfattach intc_ca = {
+const struct cfattach intc_ca = {
 	sizeof (struct device), riscv_intc_match, riscv_intc_attach
 };
 

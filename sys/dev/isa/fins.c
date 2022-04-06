@@ -1,4 +1,4 @@
-/*	$OpenBSD: fins.c,v 1.3 2012/10/17 22:32:01 deraadt Exp $	*/
+/*	$OpenBSD: fins.c,v 1.4 2014/12/10 12:27:57 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006 Mark Kettenis
@@ -148,7 +148,7 @@ void fins_get_volt(struct fins_softc *, int);
 
 int fins_wdog_cb(void *, int);
 
-struct cfattach fins_ca = {
+const struct cfattach fins_ca = {
 	sizeof(struct fins_softc),
 	fins_match,
 	fins_attach,

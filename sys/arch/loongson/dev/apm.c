@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.38 2020/06/24 22:03:40 cheloha Exp $	*/
+/*	$OpenBSD: apm.c,v 1.39 2020/12/25 12:59:51 visa Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -72,7 +72,7 @@ struct apm_softc {
 int apmmatch(struct device *, void *, void *);
 void apmattach(struct device *, struct device *, void *);
 
-struct cfattach apm_ca = {
+const struct cfattach apm_ca = {
 	sizeof(struct apm_softc), apmmatch, apmattach
 };
 

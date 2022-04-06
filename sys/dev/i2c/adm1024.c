@@ -1,4 +1,4 @@
-/*	$OpenBSD: adm1024.c,v 1.13 2007/03/22 16:55:31 deraadt Exp $	*/
+/*	$OpenBSD: adm1024.c,v 1.14 2007/06/24 05:34:35 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt
@@ -71,7 +71,7 @@ int	admlc_match(struct device *, void *, void *);
 void	admlc_attach(struct device *, struct device *, void *);
 void	admlc_refresh(void *);
 
-struct cfattach admlc_ca = {
+const struct cfattach admlc_ca = {
 	sizeof(struct admlc_softc), admlc_match, admlc_attach
 };
 

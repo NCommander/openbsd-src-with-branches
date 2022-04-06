@@ -1,4 +1,4 @@
-/*	$OpenBSD: eephy.c,v 1.58 2020/11/03 21:49:41 patrick Exp $	*/
+/*	$OpenBSD: eephy.c,v 1.59 2022/01/09 05:42:44 jsg Exp $	*/
 /*
  * Principal Author: Parag Patel
  * Copyright (c) 2001
@@ -58,7 +58,7 @@
 int	eephy_match(struct device *, void *, void *);
 void	eephy_attach(struct device *, struct device *, void *);
 
-struct cfattach eephy_ca = {
+const struct cfattach eephy_ca = {
 	sizeof (struct mii_softc), eephy_match, eephy_attach, mii_phy_detach
 };
 

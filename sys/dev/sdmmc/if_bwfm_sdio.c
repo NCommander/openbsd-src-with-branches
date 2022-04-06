@@ -1,4 +1,4 @@
-/* $OpenBSD: if_bwfm_sdio.c,v 1.42 2021/11/02 14:49:53 patrick Exp $ */
+/* $OpenBSD: if_bwfm_sdio.c,v 1.43 2022/03/18 11:09:39 miod Exp $ */
 /*
  * Copyright (c) 2010-2016 Broadcom Corporation
  * Copyright (c) 2016,2017 Patrick Wildt <patrick@blueri.se>
@@ -188,7 +188,7 @@ struct bwfm_buscore_ops bwfm_sdio_buscore_ops = {
 	.bc_activate = bwfm_sdio_buscore_activate,
 };
 
-struct cfattach bwfm_sdio_ca = {
+const struct cfattach bwfm_sdio_ca = {
 	sizeof(struct bwfm_sdio_softc),
 	bwfm_sdio_match,
 	bwfm_sdio_attach,

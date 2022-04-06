@@ -1,4 +1,4 @@
-/*	$OpenBSD: w83793g.c,v 1.4 2007/10/18 19:21:52 cnst Exp $	*/
+/*	$OpenBSD: w83793g.c,v 1.5 2009/01/26 15:07:49 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2007 Constantine A. Murenin <cnst+openbsd@bugmail.mojo.ru>
@@ -85,7 +85,7 @@ uint8_t	wbng_readreg(struct wbng_softc *, uint8_t);
 void	wbng_writereg(struct wbng_softc *, uint8_t, uint8_t);
 
 
-struct cfattach wbng_ca = {
+const struct cfattach wbng_ca = {
 	sizeof(struct wbng_softc), wbng_match, wbng_attach
 };
 

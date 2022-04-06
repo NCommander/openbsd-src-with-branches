@@ -1,4 +1,4 @@
-/*	$OpenBSD: xive.c,v 1.15 2020/10/10 17:05:55 kettenis Exp $	*/
+/*	$OpenBSD: xive.c,v 1.16 2021/06/02 19:38:14 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -140,7 +140,7 @@ int	xive_match(struct device *, void *, void *);
 void	xive_attach(struct device *, struct device *, void *);
 int	xive_activate(struct device *, int);
 
-struct cfattach	xive_ca = {
+const struct cfattach xive_ca = {
 	sizeof (struct xive_softc), xive_match, xive_attach, NULL,
 	xive_activate
 };

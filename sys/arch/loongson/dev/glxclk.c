@@ -1,4 +1,4 @@
-/*	$OpenBSD: glxclk.c,v 1.4 2013/01/15 23:30:36 pirofti Exp $	*/
+/*	$OpenBSD: glxclk.c,v 1.5 2015/07/19 21:11:47 jasper Exp $	*/
 
 /*
  * Copyright (c) 2013 Paul Irofti.
@@ -50,7 +50,7 @@ int	glxclk_intr(void *);
 int	glxclk_stat_intr(void *arg);
 void	glxclk_startclock(struct cpu_info *);
 
-struct cfattach glxclk_ca = {
+const struct cfattach glxclk_ca = {
 	sizeof(struct glxclk_softc), glxclk_match, glxclk_attach,
 };
 

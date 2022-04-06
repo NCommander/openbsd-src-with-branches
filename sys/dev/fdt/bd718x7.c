@@ -1,4 +1,4 @@
-/*	$OpenBSD: bd718x7.c,v 1.2 2020/03/27 12:23:52 patrick Exp $	*/
+/*	$OpenBSD: bd718x7.c,v 1.3 2020/11/12 10:47:07 patrick Exp $	*/
 /*
  * Copyright (c) 2019 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
@@ -62,7 +62,7 @@ void	bdpmic_attach_regulator(struct bdpmic_softc *, int);
 uint8_t	bdpmic_reg_read(struct bdpmic_softc *, int);
 void	bdpmic_reg_write(struct bdpmic_softc *, int, uint8_t);
 
-struct cfattach bdpmic_ca = {
+const struct cfattach bdpmic_ca = {
 	sizeof(struct bdpmic_softc), bdpmic_match, bdpmic_attach
 };
 

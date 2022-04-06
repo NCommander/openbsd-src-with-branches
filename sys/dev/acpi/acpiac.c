@@ -1,4 +1,4 @@
-/* $OpenBSD: acpiac.c,v 1.34 2021/10/30 23:24:47 deraadt Exp $ */
+/* $OpenBSD: acpiac.c,v 1.35 2022/03/21 13:38:34 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -39,7 +39,7 @@ int  acpiac_notify(struct aml_node *, int, void *);
 void acpiac_refresh(void *);
 int acpiac_getpsr(struct acpiac_softc *);
 
-struct cfattach acpiac_ca = {
+const struct cfattach acpiac_ca = {
 	sizeof(struct acpiac_softc),
 	acpiac_match,
 	acpiac_attach,

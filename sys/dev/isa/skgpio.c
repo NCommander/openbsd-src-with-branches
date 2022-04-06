@@ -1,4 +1,4 @@
-/*	$OpenBSD: skgpio.c,v 1.3 2015/03/14 03:38:47 jsg Exp $ */
+/*	$OpenBSD: skgpio.c,v 1.4 2020/08/26 03:29:06 visa Exp $ */
 
 /*
  * Copyright (c) 2014 Matt Dainty <matt@bodgit-n-scarper.com>
@@ -72,7 +72,7 @@ int	 skgpio_led_read(void *, int);
 void	 skgpio_led_write(void *, int, int);
 void	 skgpio_led_ctl(void *, int, int);
 
-struct cfattach skgpio_ca = {
+const struct cfattach skgpio_ca = {
 	sizeof(struct skgpio_softc), skgpio_match, skgpio_attach
 };
 

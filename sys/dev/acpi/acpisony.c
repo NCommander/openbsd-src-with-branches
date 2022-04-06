@@ -1,4 +1,4 @@
-/* $OpenBSD: acpisony.c,v 1.8 2020/04/06 00:01:08 pirofti Exp $ */
+/* $OpenBSD: acpisony.c,v 1.9 2022/02/08 17:25:12 deraadt Exp $ */
 /*
  * Copyright (c) 2010 Paul Irofti <paul@irofti.net>
  *
@@ -67,7 +67,7 @@ struct acpisony_softc {
 	struct aml_node		*sc_devnode;
 };
 
-struct cfattach acpisony_ca = {
+const struct cfattach acpisony_ca = {
 	sizeof(struct acpisony_softc), acpisony_match, acpisony_attach,
 	NULL, acpisony_activate
 };

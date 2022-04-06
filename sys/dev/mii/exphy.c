@@ -1,4 +1,4 @@
-/*	$OpenBSD: exphy.c,v 1.22 2014/12/05 15:50:04 mpi Exp $	*/
+/*	$OpenBSD: exphy.c,v 1.23 2015/03/14 03:38:48 jsg Exp $	*/
 /*	$NetBSD: exphy.c,v 1.23 2000/02/02 23:34:56 thorpej Exp $	*/
 
 /*-
@@ -75,7 +75,7 @@
 int	exphymatch(struct device *, void *, void *);
 void	exphyattach(struct device *, struct device *, void *);
 
-struct cfattach exphy_ca = {
+const struct cfattach exphy_ca = {
 	sizeof(struct mii_softc), exphymatch, exphyattach, mii_phy_detach
 };
 

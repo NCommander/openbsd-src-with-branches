@@ -1,4 +1,4 @@
-/*	$OpenBSD: sfuart.c,v 1.3 2021/06/20 17:55:37 kettenis Exp $	*/
+/*	$OpenBSD: sfuart.c,v 1.4 2021/08/31 12:24:15 jan Exp $	*/
 /*
  * Copyright (c) 2019 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -101,7 +101,7 @@ struct cfdriver sfuart_cd = {
 	NULL, "sfuart", DV_TTY
 };
 
-struct cfattach sfuart_ca = {
+const struct cfattach sfuart_ca = {
 	sizeof(struct sfuart_softc), sfuart_match, sfuart_attach
 };
 

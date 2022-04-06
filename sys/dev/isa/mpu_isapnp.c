@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpu_isapnp.c,v 1.8 2014/09/14 14:17:25 jsg Exp $	*/
+/*	$OpenBSD: mpu_isapnp.c,v 1.9 2021/03/07 06:17:04 jsg Exp $	*/
 
 #include "midi.h"
 
@@ -31,7 +31,7 @@ struct mpu_isapnp_softc {
 	struct mpu_softc sc_mpu;
 };
 
-struct cfattach mpu_isapnp_ca = {
+const struct cfattach mpu_isapnp_ca = {
 	sizeof(struct mpu_isapnp_softc), mpu_isapnp_match, mpu_isapnp_attach
 };
 

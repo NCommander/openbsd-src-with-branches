@@ -1,4 +1,4 @@
-/*	$OpenBSD: octrtc.c,v 1.12 2020/06/30 14:47:16 visa Exp $	*/
+/*	$OpenBSD: octrtc.c,v 1.13 2021/01/30 14:59:13 visa Exp $	*/
 
 /*
  * Copyright (c) 2013, 2014 Paul Irofti.
@@ -56,7 +56,7 @@ int	octrtc_settime(struct todr_chip_handle *, struct timeval *);
 int	octrtc_write(uint8_t);
 
 
-struct cfattach octrtc_ca = {
+const struct cfattach octrtc_ca = {
 	sizeof(struct octrtc_softc), octrtc_match, octrtc_attach,
 };
 

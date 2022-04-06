@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: aplspmi.c,v 1.1 2021/05/26 20:52:21 kettenis Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -61,7 +61,7 @@ struct aplspmi_softc {
 int	aplspmi_match(struct device *, void *, void *);
 void	aplspmi_attach(struct device *, struct device *, void *);
 
-struct cfattach	aplspmi_ca = {
+const struct cfattach	aplspmi_ca = {
 	sizeof (struct aplspmi_softc), aplspmi_match, aplspmi_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cfxga.c,v 1.30 2020/05/25 06:45:26 jsg Exp $	*/
+/*	$OpenBSD: cfxga.c,v 1.31 2020/05/25 09:55:49 jsg Exp $	*/
 
 /*
  * Copyright (c) 2005, 2006, Matthieu Herrb and Miodrag Vallat
@@ -99,7 +99,7 @@ void	cfxga_attach(struct device *, struct device *, void *);
 int	cfxga_detach(struct device *, int);
 int	cfxga_activate(struct device *, int);
 
-struct cfattach cfxga_ca = {
+const struct cfattach cfxga_ca = {
 	sizeof(struct cfxga_softc), cfxga_match, cfxga_attach,
 	cfxga_detach, cfxga_activate
 };

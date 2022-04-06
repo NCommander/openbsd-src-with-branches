@@ -1,4 +1,4 @@
-/*	$OpenBSD: wdc_isapnp.c,v 1.11 2017/09/08 05:36:52 deraadt Exp $	*/
+/*	$OpenBSD: wdc_isapnp.c,v 1.12 2021/03/07 06:17:04 jsg Exp $	*/
 /*	$NetBSD: wdc_isapnp.c,v 1.13 1999/03/22 10:00:12 mycroft Exp $	*/
 
 /*-
@@ -57,7 +57,7 @@ struct wdc_isapnp_softc {
 int	wdc_isapnp_match(struct device *, void *, void *);
 void	wdc_isapnp_attach(struct device *, struct device *, void *);
 
-struct cfattach wdc_isapnp_ca = {
+const struct cfattach wdc_isapnp_ca = {
 	sizeof(struct wdc_isapnp_softc), wdc_isapnp_match, wdc_isapnp_attach
 };
 

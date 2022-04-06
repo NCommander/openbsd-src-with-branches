@@ -1,4 +1,4 @@
-/*	$OpenBSD: tipmic.c,v 1.5 2020/01/09 14:35:19 mpi Exp $	*/
+/*	$OpenBSD: tipmic.c,v 1.6 2022/01/09 05:42:37 jsg Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -88,7 +88,7 @@ struct tipmic_softc {
 int	tipmic_match(struct device *, void *, void *);
 void	tipmic_attach(struct device *, struct device *, void *);
 
-struct cfattach tipmic_ca = {
+const struct cfattach tipmic_ca = {
 	sizeof(struct tipmic_softc), tipmic_match, tipmic_attach
 };
 

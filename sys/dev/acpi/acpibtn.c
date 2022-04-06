@@ -1,4 +1,4 @@
-/* $OpenBSD: acpibtn.c,v 1.47 2019/01/20 02:45:44 tedu Exp $ */
+/* $OpenBSD: acpibtn.c,v 1.48 2022/02/08 17:25:12 deraadt Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  *
@@ -65,7 +65,7 @@ struct acpi_lid {
 SLIST_HEAD(acpi_lid_head, acpi_lid) acpibtn_lids =
     SLIST_HEAD_INITIALIZER(acpibtn_lids);
 
-struct cfattach acpibtn_ca = {
+const struct cfattach acpibtn_ca = {
 	sizeof(struct acpibtn_softc), acpibtn_match, acpibtn_attach, NULL,
 	acpibtn_activate
 };

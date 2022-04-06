@@ -1,4 +1,4 @@
-/*	$OpenBSD: puc_cardbus.c,v 1.7 2010/03/27 23:36:36 jsg Exp $	*/
+/*	$OpenBSD: puc_cardbus.c,v 1.8 2011/11/15 22:27:53 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Michael Shalayeff
@@ -47,7 +47,7 @@ const char *puc_cardbus_intr_string(struct puc_attach_args *);
 void *puc_cardbus_intr_establish(struct puc_attach_args *, int,
     int (*)(void *), void *, char *);
 
-struct cfattach puc_cardbus_ca = {
+const struct cfattach puc_cardbus_ca = {
 	sizeof(struct puc_cardbus_softc), puc_cardbus_match,
 	puc_cardbus_attach, puc_cardbus_detach
 };

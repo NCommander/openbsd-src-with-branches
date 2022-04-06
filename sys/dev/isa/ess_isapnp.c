@@ -1,4 +1,4 @@
-/*	$OpenBSD: ess_isapnp.c,v 1.6 2008/06/26 05:42:16 ray Exp $	*/
+/*	$OpenBSD: ess_isapnp.c,v 1.7 2013/11/15 16:46:27 brad Exp $	*/
 /*	$NetBSD: ess_isa.c,v 1.4 1999/03/18 20:57:11 mycroft Exp $	*/
 
 /*-
@@ -53,7 +53,7 @@
 int ess_isapnp_probe(struct device *, void *, void *);
 void ess_isapnp_attach(struct device *, struct device *, void *);
 
-struct cfattach ess_isapnp_ca = {
+const struct cfattach ess_isapnp_ca = {
 	sizeof(struct ess_softc), ess_isapnp_probe, ess_isapnp_attach
 };
 

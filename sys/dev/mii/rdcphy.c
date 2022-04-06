@@ -1,4 +1,4 @@
-/*	$OpenBSD: rdcphy.c,v 1.2 2013/12/28 03:30:41 deraadt Exp $	*/
+/*	$OpenBSD: rdcphy.c,v 1.3 2014/12/05 15:50:04 mpi Exp $	*/
 /*-
  * Copyright (c) 2010, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -106,7 +106,7 @@ static const struct mii_phydesc rdcphys[] = {
 	  NULL },
 };
 
-struct cfattach rdcphy_ca = {
+const struct cfattach rdcphy_ca = {
 	sizeof(struct rdcphy_softc), rdcphy_match, rdcphy_attach,
 	mii_phy_detach
 };

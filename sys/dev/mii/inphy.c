@@ -1,4 +1,4 @@
-/*	$OpenBSD: inphy.c,v 1.21 2015/03/14 03:38:48 jsg Exp $	*/
+/*	$OpenBSD: inphy.c,v 1.22 2021/03/05 09:37:20 jsg Exp $	*/
 /*	$NetBSD: inphy.c,v 1.18 2000/02/02 23:34:56 thorpej Exp $	*/
 
 /*-
@@ -79,7 +79,7 @@
 int	inphymatch(struct device *, void *, void *);
 void	inphyattach(struct device *, struct device *, void *);
 
-struct cfattach inphy_ca = {
+const struct cfattach inphy_ca = {
 	sizeof(struct mii_softc), inphymatch, inphyattach, mii_phy_detach
 };
 

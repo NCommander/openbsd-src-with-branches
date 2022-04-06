@@ -1,4 +1,4 @@
-/* $OpenBSD: ihidev.c,v 1.24 2021/08/26 21:05:01 jcs Exp $ */
+/* $OpenBSD: ihidev.c,v 1.25 2022/01/09 05:42:37 jsg Exp $ */
 /*
  * HID-over-i2c driver
  *
@@ -74,7 +74,7 @@ int	ihidev_maxrepid(void *buf, int len);
 int	ihidev_print(void *aux, const char *pnp);
 int	ihidev_submatch(struct device *parent, void *cf, void *aux);
 
-struct cfattach ihidev_ca = {
+const struct cfattach ihidev_ca = {
 	sizeof(struct ihidev_softc),
 	ihidev_match,
 	ihidev_attach,

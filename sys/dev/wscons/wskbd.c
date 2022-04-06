@@ -1,4 +1,4 @@
-/* $OpenBSD: wskbd.c,v 1.110 2021/12/30 06:55:11 anton Exp $ */
+/* $OpenBSD: wskbd.c,v 1.111 2022/02/16 06:23:42 anton Exp $ */
 /* $NetBSD: wskbd.c,v 1.80 2005/05/04 01:52:16 augustss Exp $ */
 
 /*
@@ -246,7 +246,7 @@ struct cfdriver wskbd_cd = {
 	NULL, "wskbd", DV_TTY
 };
 
-struct cfattach wskbd_ca = {
+const struct cfattach wskbd_ca = {
 	sizeof (struct wskbd_softc), wskbd_match, wskbd_attach,
 	wskbd_detach, wskbd_activate
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: sb_isa.c,v 1.10 2015/05/12 16:35:23 ratchov Exp $	*/
+/*	$OpenBSD: sb_isa.c,v 1.11 2021/03/07 06:17:04 jsg Exp $	*/
 /*	$NetBSD: sb_isa.c,v 1.15 1997/11/30 15:32:25 drochner Exp $	*/
 
 /*
@@ -61,7 +61,7 @@ static	int sbfind(struct device *, struct sbdsp_softc *, struct isa_attach_args 
 int	sb_isa_match(struct device *, void *, void *);
 void	sb_isa_attach(struct device *, struct device *, void *);
 
-struct cfattach sb_isa_ca = {
+const struct cfattach sb_isa_ca = {
 	sizeof(struct sbdsp_softc), sb_isa_match, sb_isa_attach
 };
 

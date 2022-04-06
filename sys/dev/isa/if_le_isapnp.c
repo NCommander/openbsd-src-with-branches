@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_le_isapnp.c,v 1.13 2013/09/24 20:11:01 miod Exp $	*/
+/*	$OpenBSD: if_le_isapnp.c,v 1.14 2014/12/22 02:28:51 tedu Exp $	*/
 /*	$NetBSD: if_le_isa.c,v 1.2 1996/05/12 23:52:56 mycroft Exp $	*/
 
 /*-
@@ -69,7 +69,7 @@
 int	le_isapnp_match(struct device *, void *, void *);
 void	le_isapnp_attach(struct device *, struct device *, void *);
 
-struct cfattach le_isapnp_ca = {
+const struct cfattach le_isapnp_ca = {
 	sizeof(struct le_softc), le_isapnp_match, le_isapnp_attach
 };
 

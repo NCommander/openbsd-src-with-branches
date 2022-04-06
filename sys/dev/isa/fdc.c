@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdc.c,v 1.22 2017/09/08 08:37:52 sf Exp $	*/
+/*	$OpenBSD: fdc.c,v 1.23 2017/12/30 20:46:59 guenther Exp $	*/
 /*	$NetBSD: fd.c,v 1.90 1996/05/12 23:12:03 mycroft Exp $	*/
 
 /*-
@@ -82,7 +82,7 @@ void fdcattach(struct device *, struct device *, void *);
 void fdcattach_deferred(void *);
 void fdc_create_kthread(void *);
 
-struct cfattach fdc_ca = {
+const struct cfattach fdc_ca = {
 	sizeof(struct fdc_softc), fdcprobe, fdcattach
 };
 

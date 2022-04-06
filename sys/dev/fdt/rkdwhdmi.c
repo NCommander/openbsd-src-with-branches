@@ -1,4 +1,4 @@
-/* $OpenBSD: rkdwhdmi.c,v 1.4 2020/06/08 04:47:58 jsg Exp $ */
+/* $OpenBSD: rkdwhdmi.c,v 1.5 2020/06/30 02:19:11 deraadt Exp $ */
 /* $NetBSD: rk_dwhdmi.c,v 1.4 2019/12/17 18:26:36 jakllsch Exp $ */
 
 /*-
@@ -100,7 +100,7 @@ void rkdwhdmi_mode_set(struct dwhdmi_softc *, const struct drm_display_mode *,
 enum drm_mode_status rkdwhdmi_mode_valid(struct dwhdmi_softc *,
     const struct drm_display_mode *);
 
-struct cfattach	rkdwhdmi_ca = {
+const struct cfattach rkdwhdmi_ca = {
 	sizeof (struct rkdwhdmi_softc), rkdwhdmi_match, rkdwhdmi_attach
 };
 

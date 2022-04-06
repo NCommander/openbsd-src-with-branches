@@ -1,4 +1,4 @@
-/*	$OpenBSD: hsq.c,v 1.5 2008/11/22 10:33:33 deraadt Exp $	*/
+/*	$OpenBSD: hsq.c,v 1.6 2022/01/09 05:42:42 jsg Exp $	*/
 
 /*-
  * Copyright (c) 1999 Denis A. Doroshenko. All rights reserved.
@@ -111,7 +111,7 @@ void hsqattach(struct device *, struct device *, void *);
 int hsqintr(void *);
 int hsqprint(void *, const char *);
 
-struct cfattach hsq_ca = {
+const struct cfattach hsq_ca = {
 	sizeof(struct hsq_softc), hsqprobe, hsqattach
 };
 

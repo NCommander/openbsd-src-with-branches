@@ -1,4 +1,4 @@
-/*	$OpenBSD: i2c.c,v 1.17 2021/10/26 16:29:49 deraadt Exp $	*/
+/*	$OpenBSD: i2c.c,v 1.18 2022/02/09 07:58:24 visa Exp $	*/
 /*	$NetBSD: i2c.c,v 1.1 2003/09/30 00:35:31 thorpej Exp $	*/
 
 /*
@@ -56,7 +56,7 @@ int	iic_match(struct device *, void *, void *);
 void	iic_attach(struct device *, struct device *, void *);
 int	iic_search(struct device *, void *, void *);
 
-struct cfattach iic_ca = {
+const struct cfattach iic_ca = {
 	sizeof (struct iic_softc),
 	iic_match,
 	iic_attach

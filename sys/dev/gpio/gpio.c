@@ -1,4 +1,4 @@
-/*	$OpenBSD: gpio.c,v 1.14 2015/08/27 05:48:40 deraadt Exp $	*/
+/*	$OpenBSD: gpio.c,v 1.15 2017/08/18 12:15:35 jsg Exp $	*/
 
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -54,7 +54,7 @@ int	gpio_search(struct device *, void *, void *);
 int	gpio_print(void *, const char *);
 int	gpio_pinbyname(struct gpio_softc *, char *gp_name);
 
-struct cfattach gpio_ca = {
+const struct cfattach gpio_ca = {
 	sizeof (struct gpio_softc),
 	gpio_match,
 	gpio_attach,

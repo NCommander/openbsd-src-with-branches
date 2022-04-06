@@ -1,4 +1,4 @@
-/*	$OpenBSD: ast.c,v 1.18 2002/03/14 01:26:56 millert Exp $	*/
+/*	$OpenBSD: ast.c,v 1.19 2021/03/07 06:17:03 jsg Exp $	*/
 /*	$NetBSD: ast.c,v 1.28 1996/05/12 23:51:45 mycroft Exp $	*/
 
 /*
@@ -65,7 +65,7 @@ void astattach(struct device *, struct device *, void *);
 int astintr(void *);
 int astprint(void *, const char *);
 
-struct cfattach ast_ca = {
+const struct cfattach ast_ca = {
 	sizeof(struct ast_softc), astprobe, astattach
 };
 

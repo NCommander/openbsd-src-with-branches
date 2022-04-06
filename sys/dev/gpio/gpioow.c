@@ -1,4 +1,4 @@
-/*	$OpenBSD: gpioow.c,v 1.4 2009/10/13 19:33:16 pirofti Exp $	*/
+/*	$OpenBSD: gpioow.c,v 1.5 2011/07/03 15:47:16 matthew Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -59,7 +59,7 @@ void	gpioow_bb_tx(void *);
 int	gpioow_bb_get(void *);
 void	gpioow_bb_set(void *, int);
 
-struct cfattach gpioow_ca = {
+const struct cfattach gpioow_ca = {
 	sizeof(struct gpioow_softc),
 	gpioow_match,
 	gpioow_attach,
