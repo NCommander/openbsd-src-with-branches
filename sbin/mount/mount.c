@@ -1,4 +1,4 @@
-/*	$OpenBSD: mount.c,v 1.73 2019/07/19 15:13:17 millert Exp $	*/
+/*	$OpenBSD: mount.c,v 1.74 2020/12/11 06:29:43 robert Exp $	*/
 /*	$NetBSD: mount.c,v 1.24 1995/11/18 03:34:29 cgd Exp $	*/
 
 /*
@@ -283,7 +283,7 @@ main(int argc, char * const argv[])
 	}
 
 	/*
-	 * If the mount was successfully, and done by root, tell mountd the
+	 * If the mount was successful and done by root, tell mountd the
 	 * good news.  Pid checks are probably unnecessary, but don't hurt.
 	 * XXX This should be done from kernel.
 	 */
