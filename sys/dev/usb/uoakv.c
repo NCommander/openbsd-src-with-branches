@@ -1,4 +1,4 @@
-/*	$OpenBSD: uoakv.c,v 1.15 2021/11/15 15:36:24 anton Exp $   */
+/*	$OpenBSD: uoakv.c,v 1.16 2022/01/09 05:43:02 jsg Exp $   */
 
 /*
  * Copyright (c) 2012 Yojiro UO <yuo@nui.org>
@@ -100,7 +100,7 @@ const struct cfattach uoakv_ca = {
 
 };
 
-struct uoak_methods uoakv_methods = {
+const struct uoak_methods uoakv_methods = {
 	uoakv_dev_print,
 	uoakv_dev_setting
 };

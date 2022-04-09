@@ -1,4 +1,4 @@
-/*	$OpenBSD: uoak.h,v 1.3 2013/04/15 09:23:02 mglocker Exp $   */
+/*	$OpenBSD: uoak.h,v 1.4 2022/01/09 05:43:01 jsg Exp $   */
 
 /*
  * Copyright (c) 2012 Yojiro UO <yuo@nui.org>
@@ -133,7 +133,7 @@ struct uoak_softc {
 	struct uoak_config	 sc_config[OAK_TARGET_MAXTYPES];
 
 	/* device specific methods */
-	struct uoak_methods	 *sc_methods;
+	const struct uoak_methods *sc_methods;
 };
 
 

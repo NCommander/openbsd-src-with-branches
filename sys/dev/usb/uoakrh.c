@@ -1,4 +1,4 @@
-/*	$OpenBSD: uoakrh.c,v 1.17 2021/11/15 15:36:24 anton Exp $   */
+/*	$OpenBSD: uoakrh.c,v 1.18 2022/01/09 05:43:01 jsg Exp $   */
 
 /*
  * Copyright (c) 2012 Yojiro UO <yuo@nui.org>
@@ -99,7 +99,7 @@ const struct cfattach uoakrh_ca = {
 	uoakrh_detach,
 };
 
-struct uoak_methods uoakrh_methods = {
+const struct uoak_methods uoakrh_methods = {
 	uoakrh_dev_print,
 	uoakrh_dev_setting
 };
