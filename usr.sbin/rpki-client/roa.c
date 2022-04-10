@@ -1,4 +1,4 @@
-/*	$OpenBSD: roa.c,v 1.17 2021/03/29 06:50:44 tb Exp $ */
+/*	$OpenBSD: roa.c,v 1.17.2.1 2021/11/09 13:41:19 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -374,8 +374,8 @@ roa_parse(X509 **x509, const char *fn, const unsigned char *der, size_t len)
 		warnx("%s: ASN1_time_parse failed", fn);
 		goto out;
 	}
-	if ((expires = mktime(&expires_tm)) == -1)
-		errx(1, "mktime failed");
+	if ((expires = timegm(&expires_tm)) == -1)
+		errx(1, "timegm failed");
 
 	p.res->expires = expires;
 
