@@ -1,4 +1,4 @@
-/* $OpenBSD: a_object.c,v 1.43 2022/03/19 17:49:32 jsing Exp $ */
+/* $OpenBSD: a_object.c,v 1.45 2022/03/26 14:54:58 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -482,6 +482,7 @@ t2i_ASN1_OBJECT_internal(const char *oid)
 
 	aobj->data = data;
 	aobj->length = (int)data_len;
+	aobj->flags |= ASN1_OBJECT_FLAG_DYNAMIC_DATA;
 	data = NULL;
 
  err:
