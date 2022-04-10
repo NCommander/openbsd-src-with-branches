@@ -1,4 +1,4 @@
-/*	$OpenBSD: aplintc.c,v 1.9 2022/03/31 18:47:04 kettenis Exp $	*/
+/*	$OpenBSD: aplintc.c,v 1.10 2022/04/06 18:59:26 naddy Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis
  *
@@ -34,7 +34,7 @@
 #define APL_IRQ_CR_EL1		s3_4_c15_c10_4
 #define  APL_IRQ_CR_EL1_DISABLE	(3 << 0)
 
-#define APL_IPI_LOCAL_RR_EL1	s3_5_c15_c0_1
+#define APL_IPI_LOCAL_RR_EL1	s3_5_c15_c0_0
 #define APL_IPI_GLOBAL_RR_EL1	s3_5_c15_c0_1
 #define APL_IPI_SR_EL1		s3_5_c15_c1_1
 #define  APL_IPI_SR_EL1_PENDING	(1 << 0)
