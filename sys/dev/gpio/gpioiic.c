@@ -1,4 +1,4 @@
-/*	$OpenBSD: gpioiic.c,v 1.10 2013/04/19 23:44:34 miod Exp $	*/
+/*	$OpenBSD: gpioiic.c,v 1.9 2011/10/03 20:24:51 matthieu Exp $	*/
 
 /*
  * Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
@@ -74,7 +74,7 @@ void		gpioiic_bb_set_bits(void *, u_int32_t);
 void		gpioiic_bb_set_dir(void *, u_int32_t);
 u_int32_t	gpioiic_bb_read_bits(void *);
 
-const struct cfattach gpioiic_ca = {
+struct cfattach gpioiic_ca = {
 	sizeof(struct gpioiic_softc),
 	gpioiic_match,
 	gpioiic_attach,

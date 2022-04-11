@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipmi_fdt.c,v 1.1 2020/03/29 09:31:11 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -30,7 +30,7 @@
 int	ipmi_fdt_match(struct device *, void *, void *);
 void	ipmi_fdt_attach(struct device *, struct device *, void *);
 
-const struct cfattach ipmi_fdt_ca = {
+struct cfattach ipmi_fdt_ca = {
 	sizeof (struct ipmi_softc), ipmi_fdt_match, ipmi_fdt_attach
 };
 

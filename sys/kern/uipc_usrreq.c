@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.163 2022/02/25 23:51:03 guenther Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.162 2022/02/25 08:36:01 guenther Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -953,13 +953,7 @@ restart:
 
 		rp++;
 	}
-
-	/*
-	 * Keep `fdp' locked to prevent concurrent close() of just
-	 * inserted descriptors. Such descriptors could have the only
-	 * `f_count' reference which is now shared between control
-	 * message and `fdp'. 
-	 */
+	fdpunlock(fdp);
 
 	/*
 	 * Now that adding them has succeeded, update all of the
@@ -978,7 +972,6 @@ restart:
 			rw_exit_write(&unp_gc_lock);
 		}
 	}
-	fdpunlock(fdp);
 
 	mtx_enter(&unp_rights_mtx);
 	unp_rights -= nfds;

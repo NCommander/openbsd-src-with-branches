@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcm2835_gpio.c,v 1.4 2020/06/12 13:21:55 kettenis Exp $	*/
+/*	$OpenBSD: bcm2835_gpio.c,v 1.3 2020/04/27 12:15:30 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -80,7 +80,7 @@ struct bcmgpio_softc {
 int	bcmgpio_match(struct device *, void *, void *);
 void	bcmgpio_attach(struct device *, struct device *, void *);
 
-const struct cfattach bcmgpio_ca = {
+struct cfattach	bcmgpio_ca = {
 	sizeof (struct bcmgpio_softc), bcmgpio_match, bcmgpio_attach
 };
 

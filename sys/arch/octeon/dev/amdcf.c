@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdcf.c,v 1.7 2021/01/30 14:59:13 visa Exp $	*/
+/*	$OpenBSD: amdcf.c,v 1.6 2018/05/30 14:53:56 fcambus Exp $	*/
 
 /*
  * Copyright (c) 2007, Juniper Networks, Inc.
@@ -173,7 +173,7 @@ int	amdcf_match(struct device *, void *, void *);
 void	amdcf_attach(struct device *, struct device *, void *);
 int	amdcf_detach(struct device *, int);
 
-const struct cfattach amdcf_ca = {
+struct cfattach amdcf_ca = {
 	sizeof(struct amdcf_softc), amdcf_match, amdcf_attach, amdcf_detach
 };
 

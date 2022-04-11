@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpithinkpad.c,v 1.69 2022/02/08 17:25:12 deraadt Exp $	*/
+/*	$OpenBSD: acpithinkpad.c,v 1.68 2019/12/31 01:38:33 jsg Exp $	*/
 /*
  * Copyright (c) 2008 joshua stein <jcs@openbsd.org>
  *
@@ -189,7 +189,7 @@ extern int wskbd_set_mixermute(long, long);
 extern int wskbd_set_mixervolume(long, long);
 #endif
 
-const struct cfattach acpithinkpad_ca = {
+struct cfattach acpithinkpad_ca = {
 	sizeof(struct acpithinkpad_softc), thinkpad_match, thinkpad_attach,
 	NULL, thinkpad_activate
 };

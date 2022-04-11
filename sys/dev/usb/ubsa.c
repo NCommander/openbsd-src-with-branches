@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsa.c,v 1.67 2020/07/31 10:49:33 mglocker Exp $ 	*/
+/*	$OpenBSD: ubsa.c,v 1.66 2018/04/27 08:08:06 guenther Exp $ 	*/
 /*	$NetBSD: ubsa.c,v 1.5 2002/11/25 00:51:33 fvdl Exp $	*/
 /*-
  * Copyright (c) 2002, Alexander Kabaev <kan.FreeBSD.org>.
@@ -178,7 +178,7 @@ void ubsa_databits(struct ubsa_softc *, tcflag_t);
 void ubsa_stopbits(struct ubsa_softc *, tcflag_t);
 void ubsa_flow(struct ubsa_softc *, tcflag_t, tcflag_t);
 
-const struct ucom_methods ubsa_methods = {
+struct	ucom_methods ubsa_methods = {
 	ubsa_get_status,
 	ubsa_set,
 	ubsa_param,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: bytgpio.c,v 1.16 2021/12/21 20:53:46 kettenis Exp $	*/
+/*	$OpenBSD: bytgpio.c,v 1.15 2021/05/16 08:50:59 jsg Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -61,7 +61,7 @@ struct bytgpio_softc {
 int	bytgpio_match(struct device *, void *, void *);
 void	bytgpio_attach(struct device *, struct device *, void *);
 
-const struct cfattach bytgpio_ca = {
+struct cfattach bytgpio_ca = {
 	sizeof(struct bytgpio_softc), bytgpio_match, bytgpio_attach
 };
 

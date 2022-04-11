@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_ioctl.c,v 1.378 2022/04/07 19:27:24 mbuhl Exp $ */
+/*	$OpenBSD: pf_ioctl.c,v 1.375 2022/03/23 17:36:09 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -93,7 +93,7 @@ int			 pfopen(dev_t, int, int, struct proc *);
 int			 pfclose(dev_t, int, int, struct proc *);
 int			 pfioctl(dev_t, u_long, caddr_t, int, struct proc *);
 int			 pf_begin_rules(u_int32_t *, const char *);
-void			 pf_rollback_rules(u_int32_t, char *);
+int			 pf_rollback_rules(u_int32_t, char *);
 void			 pf_remove_queues(void);
 int			 pf_commit_queues(void);
 void			 pf_free_queues(struct pf_queuehead *);
@@ -537,7 +537,7 @@ pf_begin_rules(u_int32_t *ticket, const char *anchor)
 	return (0);
 }
 
-void
+int
 pf_rollback_rules(u_int32_t ticket, char *anchor)
 {
 	struct pf_ruleset	*rs;
@@ -546,7 +546,7 @@ pf_rollback_rules(u_int32_t ticket, char *anchor)
 	rs = pf_find_ruleset(anchor);
 	if (rs == NULL || !rs->rules.inactive.open ||
 	    rs->rules.inactive.ticket != ticket)
-		return;
+		return (0);
 	while ((rule = TAILQ_FIRST(rs->rules.inactive.ptr)) != NULL) {
 		pf_rm_rule(rs->rules.inactive.ptr, rule);
 		rs->rules.inactive.rcount--;
@@ -555,9 +555,11 @@ pf_rollback_rules(u_int32_t ticket, char *anchor)
 
 	/* queue defs only in the main ruleset */
 	if (anchor[0])
-		return;
+		return (0);
 
 	pf_free_queues(pf_queues_inactive);
+
+	return (0);
 }
 
 void
@@ -2481,11 +2483,11 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 		NET_LOCK();
 		PF_LOCK();
 		pf_default_rule_new = pf_default_rule;
-		PF_UNLOCK();
-		NET_UNLOCK();
 		memset(&pf_trans_set, 0, sizeof(pf_trans_set));
 		for (i = 0; i < io->size; i++) {
 			if (copyin(io->array+i, ioe, sizeof(*ioe))) {
+				PF_UNLOCK();
+				NET_UNLOCK();
 				free(table, M_TEMP, sizeof(*table));
 				free(ioe, M_TEMP, sizeof(*ioe));
 				error = EFAULT;
@@ -2493,13 +2495,13 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 			}
 			if (strnlen(ioe->anchor, sizeof(ioe->anchor)) ==
 			    sizeof(ioe->anchor)) {
+				PF_UNLOCK();
+				NET_UNLOCK();
 				free(table, M_TEMP, sizeof(*table));
 				free(ioe, M_TEMP, sizeof(*ioe));
 				error = ENAMETOOLONG;
 				goto fail;
 			}
-			NET_LOCK();
-			PF_LOCK();
 			switch (ioe->type) {
 			case PF_TRANS_TABLE:
 				memset(table, 0, sizeof(*table));
@@ -2532,15 +2534,17 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 				error = EINVAL;
 				goto fail;
 			}
-			PF_UNLOCK();
-			NET_UNLOCK();
 			if (copyout(ioe, io->array+i, sizeof(io->array[i]))) {
+				PF_UNLOCK();
+				NET_UNLOCK();
 				free(table, M_TEMP, sizeof(*table));
 				free(ioe, M_TEMP, sizeof(*ioe));
 				error = EFAULT;
 				goto fail;
 			}
 		}
+		PF_UNLOCK();
+		NET_UNLOCK();
 		free(table, M_TEMP, sizeof(*table));
 		free(ioe, M_TEMP, sizeof(*ioe));
 		break;
@@ -2558,8 +2562,12 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 		}
 		ioe = malloc(sizeof(*ioe), M_TEMP, M_WAITOK);
 		table = malloc(sizeof(*table), M_TEMP, M_WAITOK);
+		NET_LOCK();
+		PF_LOCK();
 		for (i = 0; i < io->size; i++) {
 			if (copyin(io->array+i, ioe, sizeof(*ioe))) {
+				PF_UNLOCK();
+				NET_UNLOCK();
 				free(table, M_TEMP, sizeof(*table));
 				free(ioe, M_TEMP, sizeof(*ioe));
 				error = EFAULT;
@@ -2567,13 +2575,13 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 			}
 			if (strnlen(ioe->anchor, sizeof(ioe->anchor)) ==
 			    sizeof(ioe->anchor)) {
+				PF_UNLOCK();
+				NET_UNLOCK();
 				free(table, M_TEMP, sizeof(*table));
 				free(ioe, M_TEMP, sizeof(*ioe));
 				error = ENAMETOOLONG;
 				goto fail;
 			}
-			NET_LOCK();
-			PF_LOCK();
 			switch (ioe->type) {
 			case PF_TRANS_TABLE:
 				memset(table, 0, sizeof(*table));
@@ -2589,7 +2597,14 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 				}
 				break;
 			case PF_TRANS_RULESET:
-				pf_rollback_rules(ioe->ticket, ioe->anchor);
+				if ((error = pf_rollback_rules(ioe->ticket,
+				    ioe->anchor))) {
+					PF_UNLOCK();
+					NET_UNLOCK();
+					free(table, M_TEMP, sizeof(*table));
+					free(ioe, M_TEMP, sizeof(*ioe));
+					goto fail; /* really bad */
+				}
 				break;
 			default:
 				PF_UNLOCK();
@@ -2599,9 +2614,9 @@ pfioctl(dev_t dev, u_long cmd, caddr_t addr, int flags, struct proc *p)
 				error = EINVAL;
 				goto fail; /* really bad */
 			}
-			PF_UNLOCK();
-			NET_UNLOCK();
 		}
+		PF_UNLOCK();
+		NET_UNLOCK();
 		free(table, M_TEMP, sizeof(*table));
 		free(ioe, M_TEMP, sizeof(*ioe));
 		break;

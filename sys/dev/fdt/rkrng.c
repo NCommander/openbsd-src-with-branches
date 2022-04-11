@@ -1,4 +1,4 @@
-/*	$OpenBSD: rkrng.c,v 1.3 2020/05/29 04:42:25 deraadt Exp $	*/
+/*	$OpenBSD: rkrng.c,v 1.2 2020/04/09 09:25:50 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -52,7 +52,7 @@ struct rkrng_softc {
 int	rkrng_match(struct device *, void *, void *);
 void	rkrng_attach(struct device *, struct device *, void *);
 
-const struct cfattach rkrng_ca = {
+struct cfattach	rkrng_ca = {
 	sizeof (struct rkrng_softc), rkrng_match, rkrng_attach
 };
 

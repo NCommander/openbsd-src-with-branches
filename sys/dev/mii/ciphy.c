@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciphy.c,v 1.27 2015/07/19 06:28:12 yuo Exp $	*/
+/*	$OpenBSD: ciphy.c,v 1.26 2015/03/14 03:38:47 jsg Exp $	*/
 /*	$FreeBSD: ciphy.c,v 1.1 2004/09/10 20:57:45 wpaul Exp $	*/
 /*
  * Copyright (c) 2004
@@ -56,7 +56,7 @@
 int	ciphymatch(struct device *, void *, void *);
 void	ciphyattach(struct device *, struct device *, void *);
 
-const struct cfattach ciphy_ca = {
+struct cfattach ciphy_ca = {
 	sizeof(struct mii_softc), ciphymatch, ciphyattach, mii_phy_detach
 };
 

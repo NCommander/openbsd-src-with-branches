@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcm2835_clock.c,v 1.2 2020/04/19 16:48:39 kettenis Exp $	*/
+/*	$OpenBSD: bcm2835_clock.c,v 1.1 2020/04/19 14:58:20 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2020 Tobias Heider <tobhe@openbsd.org>
@@ -84,7 +84,7 @@ struct bcmclock_softc {
 int bcmclock_match(struct device *, void *, void *);
 void bcmclock_attach(struct device *, struct device *, void *);
 
-const struct cfattach bcmclock_ca = {
+struct cfattach bcmclock_ca = {
 	sizeof(struct bcmclock_softc),
 	bcmclock_match,
 	bcmclock_attach,

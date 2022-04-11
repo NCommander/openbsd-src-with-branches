@@ -1,4 +1,4 @@
-/*	$OpenBSD: lis331dl.c,v 1.1 2009/08/12 14:51:20 cnst Exp $	*/
+/*	$OpenBSD: asc7611.c,v 1.2 2009/01/26 15:07:49 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2009 Constantine A. Murenin <cnst+openbsd@bugmail.mojo.ru>
@@ -59,7 +59,7 @@ uint8_t	lisa_readreg(struct lisa_softc *, uint8_t);
 void	lisa_writereg(struct lisa_softc *, uint8_t, uint8_t);
 
 
-const struct cfattach lisa_ca = {
+struct cfattach lisa_ca = {
 	sizeof(struct lisa_softc), lisa_match, lisa_attach
 };
 

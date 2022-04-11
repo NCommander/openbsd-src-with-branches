@@ -1,4 +1,4 @@
-/*	$OpenBSD: uark.c,v 1.24 2016/09/02 09:14:59 mpi Exp $	*/
+/*	$OpenBSD: uark.c,v 1.23 2016/01/07 12:53:37 mpi Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -72,7 +72,7 @@ int	uark_param(void *, int, struct termios *);
 void	uark_break(void *, int, int);
 int	uark_cmd(struct uark_softc *, uint16_t, uint16_t);
 
-const struct ucom_methods uark_methods = {
+struct ucom_methods uark_methods = {
 	uark_get_status,
 	uark_set,
 	uark_param,

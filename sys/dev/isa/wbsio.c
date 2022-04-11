@@ -1,4 +1,4 @@
-/*	$OpenBSD: wbsio.c,v 1.11 2019/12/17 01:34:59 mortimer Exp $	*/
+/*	$OpenBSD: wbsio.c,v 1.10 2015/03/14 03:38:47 jsg Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -46,7 +46,7 @@ int	wbsio_probe(struct device *, void *, void *);
 void	wbsio_attach(struct device *, struct device *, void *);
 int	wbsio_print(void *, const char *);
 
-const struct cfattach wbsio_ca = {
+struct cfattach wbsio_ca = {
 	sizeof(struct wbsio_softc),
 	wbsio_probe,
 	wbsio_attach

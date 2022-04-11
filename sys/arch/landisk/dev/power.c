@@ -1,4 +1,4 @@
-/*	$OpenBSD: power.c,v 1.8 2017/09/08 05:36:52 deraadt Exp $	*/
+/*	$OpenBSD: power.c,v 1.7 2017/04/30 16:45:45 mpi Exp $	*/
 
 /*
  * Copyright (c) 2007 Martin Reindl.
@@ -41,7 +41,7 @@ int	power_match(struct device *, void *, void *);
 void	power_attach(struct device *, struct device *, void *);
 int	power_intr(void *aux);
 
-const struct cfattach power_ca = {
+struct cfattach power_ca = {
 	sizeof(struct power_softc),
 	power_match,
 	power_attach

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpt_isa.c,v 1.16 2021/03/07 06:17:04 jsg Exp $	*/
+/*	$OpenBSD: lpt_isa.c,v 1.15 2015/03/14 03:38:47 jsg Exp $	*/
 
 /*
  * Copyright (c) 1993, 1994 Charles Hannum.
@@ -66,7 +66,7 @@
 int	lpt_isa_probe(struct device *, void *, void *);
 void	lpt_isa_attach(struct device *, struct device *, void *);
 
-const struct cfattach lpt_isa_ca = {
+struct cfattach lpt_isa_ca = {
 	sizeof(struct lpt_softc), lpt_isa_probe, lpt_isa_attach, NULL,
 	lpt_activate
 };

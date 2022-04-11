@@ -1,4 +1,4 @@
-/*	$OpenBSD: thmc50.c,v 1.4 2007/10/17 17:14:54 deraadt Exp $	*/
+/*	$OpenBSD: thmc50.c,v 1.3 2007/10/14 14:01:22 cnst Exp $	*/
 
 /*
  * Copyright (c) 2007 Theo de Raadt
@@ -47,7 +47,7 @@ int	thmc_match(struct device *, void *, void *);
 void	thmc_attach(struct device *, struct device *, void *);
 void	thmc_refresh(void *);
 
-const struct cfattach thmc_ca = {
+struct cfattach thmc_ca = {
 	sizeof(struct thmc_softc), thmc_match, thmc_attach
 };
 

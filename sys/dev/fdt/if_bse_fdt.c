@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bse_fdt.c,v 1.1 2020/04/18 07:55:06 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -36,7 +36,7 @@
 int	bse_fdt_match(struct device *, void *, void *);
 void	bse_fdt_attach(struct device *, struct device *, void *);
 
-const struct cfattach bse_fdt_ca = {
+struct cfattach bse_fdt_ca = {
 	sizeof (struct genet_softc), bse_fdt_match, bse_fdt_attach
 };
 

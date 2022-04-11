@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ex.c,v 1.47 2020/07/10 13:26:37 patrick Exp $	*/
+/*	$OpenBSD: if_ex.c,v 1.46 2017/06/04 20:28:05 naddy Exp $	*/
 /*
  * Copyright (c) 1997, Donald A. Schmidt
  * Copyright (c) 1996, Javier Martín Rueda (jmrueda@diatel.upm.es)
@@ -121,7 +121,7 @@ int ex_intr(void *);
 void ex_tx_intr(struct ex_softc *);
 void ex_rx_intr(struct ex_softc *);
 
-const struct cfattach ex_ca = {
+struct cfattach ex_ca = {
 	sizeof(struct ex_softc), ex_probe, ex_attach
 };
 

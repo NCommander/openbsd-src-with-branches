@@ -55,6 +55,19 @@ CPerlBase::~CPerlBase()
     Destruct();
 }
 
+EXPORT_C CPerlBase* CPerlBase::NewInterpreter(TBool aCloseStdlib,
+                                               void (*aStdioInitFunc)(void*),
+                                               void *aStdioInitCookie)
+{
+   CPerlBase* self = new (ELeave) CPerlBase;
+   self->iCloseStdlib     = aCloseStdlib;
+   self->iStdioInitFunc   = aStdioInitFunc;
+   self->iStdioInitCookie = aStdioInitCookie;
+   self->ConstructL();
+   PERL_APPCTX_SET(self);
+   return self;
+}
+
 EXPORT_C CPerlBase* CPerlBase::NewInterpreterL(TBool aCloseStdlib,
                                                void (*aStdioInitFunc)(void*),
                                                void *aStdioInitCookie)
@@ -351,7 +364,9 @@ int CPerlBase::ConsoleRead(const int fd, char* buf, int n)
 #else
     dTHX;
     for (i = 0; i < nUtf8; i+= UTF8SKIP(pUtf8 + i)) {
-        unsigned long u = utf8_to_uvchr((U8*)(pUtf8 + i), 0);
+        unsigned long u = utf8_to_uvchr_buf((U8*)(pUtf8 + i),
+                                            (U8*)(pUtf8 + nUtf8),
+                                            0);
         if (u > 0xFF) {
             iConsole->Printf(_L("(keycode > 0xFF)\n"));
             buf[i] = 0;
@@ -388,7 +403,7 @@ int CPerlBase::ConsoleWrite(const int fd, const char* buf, int n)
     dTHX;
     if (is_utf8_string((U8*)buf, n)) {
         for (int i = 0; i < n; i += UTF8SKIP(buf + i)) {
-            TChar u = utf8_to_uvchr((U8*)(buf + i), 0);
+            TChar u = valid_utf8_to_uvchr((U8*)(buf + i), 0);
             iConsole->Printf(_L("%c"), u);
             wrote++;
         }

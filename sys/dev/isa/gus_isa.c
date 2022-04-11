@@ -1,4 +1,4 @@
-/*	$OpenBSD: gus_isa.c,v 1.8 2021/03/07 06:17:03 jsg Exp $	*/
+/*	$OpenBSD: gus_isa.c,v 1.7 2015/05/12 16:35:23 ratchov Exp $	*/
 /*	$NetBSD: gus.c,v 1.51 1998/01/25 23:48:06 mycroft Exp $	*/
 
 /*-
@@ -126,7 +126,7 @@
 int	gus_isa_match(struct device *, void *, void *);
 void	gus_isa_attach(struct device *, struct device *, void *);
 
-const struct cfattach gus_isa_ca = {
+struct cfattach gus_isa_ca = {
 	sizeof(struct gus_softc), gus_isa_match, gus_isa_attach,
 };
 

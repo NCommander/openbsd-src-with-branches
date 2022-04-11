@@ -1,4 +1,4 @@
-/*	$OpenBSD: adt7462.c,v 1.6 2008/04/23 11:11:14 deraadt Exp $	*/
+/*	$OpenBSD: adt7462.c,v 1.5 2008/04/22 03:05:03 cnst Exp $	*/
 
 /*
  * Copyright (c) 2008 Theo de Raadt
@@ -77,7 +77,7 @@ int	adtfsm_match(struct device *, void *, void *);
 void	adtfsm_attach(struct device *, struct device *, void *);
 void	adtfsm_refresh(void *);
 
-const struct cfattach adtfsm_ca = {
+struct cfattach adtfsm_ca = {
 	sizeof(struct adtfsm_softc), adtfsm_match, adtfsm_attach
 };
 

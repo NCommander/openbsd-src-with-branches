@@ -1,4 +1,4 @@
-/*	$OpenBSD: isadma.c,v 1.36 2021/10/26 16:29:49 deraadt Exp $	*/
+/*	$OpenBSD: isadma.c,v 1.35 2021/03/07 06:17:03 jsg Exp $	*/
 /*	$NetBSD: isadma.c,v 1.32 1997/09/05 01:48:33 thorpej Exp $	*/
 
 /*-
@@ -84,7 +84,7 @@ static u_int8_t dmamode[4] = {
 int isadmamatch(struct device *, void *, void *);
 void isadmaattach(struct device *, struct device *, void *);
 
-const struct cfattach isadma_ca = {
+struct cfattach isadma_ca = {
 	sizeof(struct device), isadmamatch, isadmaattach
 };
 

@@ -1,4 +1,4 @@
-/*     $OpenBSD: bcm2835_sdhost.c,v 1.1 2020/04/22 09:48:44 kettenis Exp $ */
+/*     $OpenBSD$ */
 
 /*
  * Copyright (c) 2020 Tobias Heider <tobhe@openbsd.org>
@@ -146,7 +146,7 @@ struct bcmsdhost_softc {
 int bcmsdhost_match(struct device *, void *, void *);
 void bcmsdhost_attach(struct device *, struct device *, void *);
 
-const struct cfattach bcmsdhost_ca = {
+struct cfattach bcmsdhost_ca = {
 	sizeof(struct bcmsdhost_softc),
 	bcmsdhost_match,
 	bcmsdhost_attach

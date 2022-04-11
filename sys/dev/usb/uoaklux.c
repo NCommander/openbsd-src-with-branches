@@ -1,4 +1,4 @@
-/*	$OpenBSD: uoaklux.c,v 1.16 2022/01/09 05:43:01 jsg Exp $   */
+/*	$OpenBSD: uoaklux.c,v 1.15 2021/11/15 15:36:24 anton Exp $   */
 
 /*
  * Copyright (c) 2012 Yojiro UO <yuo@nui.org>
@@ -96,7 +96,7 @@ const struct cfattach uoaklux_ca = {
 	uoaklux_detach,
 };
 
-const struct uoak_methods uoaklux_methods = {
+struct uoak_methods uoaklux_methods = {
 	uoaklux_dev_print,
 	uoaklux_dev_setting
 };

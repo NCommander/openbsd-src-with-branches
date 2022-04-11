@@ -1,4 +1,4 @@
-/*	$OpenBSD: spkr.c,v 1.26 2021/03/07 06:17:04 jsg Exp $	*/
+/*	$OpenBSD: spkr.c,v 1.25 2020/04/06 17:54:50 cheloha Exp $	*/
 /*	$NetBSD: spkr.c,v 1.1 1998/04/15 20:26:18 drochner Exp $	*/
 
 /*
@@ -63,7 +63,7 @@ cdev_decl(spkr);
 int spkrprobe(struct device *, void *, void *);
 void spkrattach(struct device *, struct device *, void *);
 
-const struct cfattach spkr_ca = {
+struct cfattach spkr_ca = {
 	sizeof(struct device), spkrprobe, spkrattach
 };
 

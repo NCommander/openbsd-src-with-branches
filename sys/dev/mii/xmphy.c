@@ -1,4 +1,4 @@
-/*	$OpenBSD: xmphy.c,v 1.23 2015/07/19 06:28:12 yuo Exp $	*/
+/*	$OpenBSD: xmphy.c,v 1.22 2015/03/14 03:38:48 jsg Exp $	*/
 
 /*
  * Copyright (c) 2000
@@ -59,7 +59,7 @@
 int xmphy_probe(struct device *, void *, void *);
 void xmphy_attach(struct device *, struct device *, void *);
 
-const struct cfattach xmphy_ca = {
+struct cfattach xmphy_ca = {
 	sizeof(struct mii_softc), xmphy_probe, xmphy_attach, mii_phy_detach
 };
 

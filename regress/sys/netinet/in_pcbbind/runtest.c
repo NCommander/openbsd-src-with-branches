@@ -1,4 +1,4 @@
-/* $OpenBSD: runtest.c,v 1.6 2020/12/30 18:56:56 benno Exp $ */
+/* $OpenBSD: runtest.c,v 1.5 2017/07/06 13:20:54 bluhm Exp $ */
 /*
  * Copyright (c) 2015 Vincent Gross <vincent.gross@kilob.yt>
  *
@@ -99,7 +99,7 @@ runtest(int *sockp, struct addrinfo *ai, int reuseaddr, int reuseport,
 	if (error == 0 && expected != 0) {
 		warnx("bind(%s,%s,%s) succeeded, expected : %s", ai->ai_canonname,
 		    reuseaddr ? "REUSEADDR" : "", reuseport ? "REUSEPORT" : "",
-		    strerror(expected));
+		    strerror(errno));
 		return (1);
 	}
 

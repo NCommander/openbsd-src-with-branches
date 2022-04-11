@@ -1,4 +1,4 @@
-/*	$OpenBSD: adt7460.c,v 1.21 2007/12/12 16:56:59 deraadt Exp $	*/
+/*	$OpenBSD: adt7460.c,v 1.20 2007/12/06 17:23:19 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -130,7 +130,7 @@ void	adt_attach(struct device *, struct device *, void *);
 
 void	adt_refresh(void *);
 
-const struct cfattach adt_ca = {
+struct cfattach adt_ca = {
 	sizeof(struct adt_softc), adt_match, adt_attach
 };
 

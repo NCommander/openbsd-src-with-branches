@@ -1,4 +1,4 @@
-/*	$OpenBSD: xicp.c,v 1.4 2020/10/01 10:05:09 jsg Exp $	*/
+/*	$OpenBSD: xicp.c,v 1.3 2020/09/26 17:56:54 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -88,7 +88,7 @@ xicp_write_4(struct xicp_softc *sc, bus_size_t off, uint32_t val)
 int	xicp_match(struct device *, void *, void *);
 void	xicp_attach(struct device *, struct device *, void *);
 
-const struct cfattach xicp_ca = {
+struct cfattach	xicp_ca = {
 	sizeof (struct xicp_softc), xicp_match, xicp_attach
 };
 

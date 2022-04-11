@@ -1,4 +1,4 @@
-/*	$OpenBSD: fcu.c,v 1.7 2007/06/24 05:34:35 dlg Exp $	*/
+/*	$OpenBSD: fcu.c,v 1.6 2007/03/22 16:55:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -59,7 +59,7 @@ void	fcu_attach(struct device *, struct device *, void *);
 
 void	fcu_refresh(void *);
 
-const struct cfattach fcu_ca = {
+struct cfattach fcu_ca = {
 	sizeof(struct fcu_softc), fcu_match, fcu_attach
 };
 

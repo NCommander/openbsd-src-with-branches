@@ -1,4 +1,4 @@
-/*	$OpenBSD: hilkbd.c,v 1.17 2017/03/11 11:55:03 mpi Exp $	*/
+/*	$OpenBSD: hilkbd.c,v 1.16 2014/01/26 17:48:08 miod Exp $	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  * All rights reserved.
@@ -75,7 +75,7 @@ struct cfdriver hilkbd_cd = {
 	NULL, "hilkbd", DV_DULL
 };
 
-const struct cfattach hilkbd_ca = {
+struct cfattach hilkbd_ca = {
 	sizeof(struct hilkbd_softc), hilkbdprobe, hilkbdattach, hilkbddetach,
 };
 

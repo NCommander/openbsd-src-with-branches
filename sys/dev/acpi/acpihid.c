@@ -1,4 +1,4 @@
-/* $OpenBSD: acpihid.c,v 1.2 2020/06/02 19:26:36 jcs Exp $ */
+/* $OpenBSD: acpihid.c,v 1.1 2020/06/02 16:24:24 jcs Exp $ */
 /*
  * ACPI HID event and 5-button array driver
  *
@@ -127,7 +127,7 @@ extern int wskbd_set_mixervolume(long, long);
 
 extern int pwr_action;
 
-const struct cfattach acpihid_ca = {
+struct cfattach acpihid_ca = {
 	sizeof(struct acpihid_softc),
 	acpihid_match,
 	acpihid_attach,

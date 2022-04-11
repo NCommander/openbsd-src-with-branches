@@ -1,4 +1,4 @@
-/* $OpenBSD: nsclpcsio_isa.c,v 1.14 2018/06/04 05:24:11 kevlo Exp $ */
+/* $OpenBSD: nsclpcsio_isa.c,v 1.13 2008/10/15 19:12:18 blambert Exp $ */
 /* $NetBSD: nsclpcsio_isa.c,v 1.5 2002/10/22 16:18:26 drochner Exp $ */
 
 /*
@@ -202,7 +202,7 @@ struct nsclpcsio_softc {
 int	 nsclpcsio_isa_match(struct device *, void *, void *);
 void	 nsclpcsio_isa_attach(struct device *, struct device *, void *);
 
-const struct cfattach nsclpcsio_isa_ca = {
+struct cfattach nsclpcsio_isa_ca = {
 	sizeof(struct nsclpcsio_softc),
 	nsclpcsio_isa_match,
 	nsclpcsio_isa_attach

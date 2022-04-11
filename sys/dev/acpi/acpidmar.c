@@ -260,7 +260,7 @@ int		acpidmar_match(struct device *, void *, void *);
 void		acpidmar_attach(struct device *, struct device *, void *);
 struct domain	*acpidmar_pci_attach(struct acpidmar_softc *, int, int, int);
 
-const struct cfattach acpidmar_ca = {
+struct cfattach acpidmar_ca = {
 	sizeof(struct acpidmar_softc), acpidmar_match, acpidmar_attach, NULL,
 	acpidmar_activate
 };

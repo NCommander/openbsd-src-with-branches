@@ -1,4 +1,4 @@
-/* $OpenBSD: tpm.c,v 1.16 2022/04/04 15:46:45 deraadt Exp $ */
+/* $OpenBSD: tpm.c,v 1.15 2021/12/21 20:53:46 kettenis Exp $ */
 
 /*
  * Minimal interface to Trusted Platform Module chips implementing the
@@ -224,7 +224,7 @@ uint8_t	tpm_status(struct tpm_softc *);
 
 uint32_t tpm2_start_method(struct acpi_softc *);
 
-const struct cfattach tpm_ca = {
+struct cfattach tpm_ca = {
 	sizeof(struct tpm_softc),
 	tpm_match,
 	tpm_attach,

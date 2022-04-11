@@ -1,4 +1,4 @@
-/*	$OpenBSD: cert.c,v 1.65 2022/04/11 08:28:54 tb Exp $ */
+/*	$OpenBSD: cert.c,v 1.61 2022/04/04 13:15:11 tb Exp $ */
 /*
  * Copyright (c) 2021 Job Snijders <job@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -125,81 +125,184 @@ sbgp_addr(struct parse *p,
 }
 
 /*
- * Extract and validate a SIA accessLocation, RFC 6487, 4.8.8 and RFC 8192, 3.2.
- * Returns 0 on failure and 1 on success.
+ * Parse the SIA notify URL, 4.8.8.1.
+ * Returns zero on failure, non-zero on success.
  */
 static int
-sbgp_sia_location(const char *fn, const char *descr, const char *proto,
-    GENERAL_NAME *location, char **out)
+sbgp_sia_resource_notify(struct parse *p, const char *d, size_t dsz)
 {
-	ASN1_IA5STRING	*uri;
-
-	if (*out != NULL) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: %s already specified",
-		    fn, descr);
+	if (p->res->notify != NULL) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "Notify location already specified", p->fn);
 		return 0;
 	}
 
-	if (location->type != GEN_URI) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: %s not URI", fn, descr);
+	/* Make sure it's a https:// address. */
+	if (!valid_uri(d, dsz, "https://")) {
+		warnx("%s: RFC 8182 section 3.2: bad Notify URI", p->fn);
 		return 0;
 	}
 
-	uri = location->d.uniformResourceIdentifier;
-
-	if (!valid_uri(uri->data, uri->length, proto)) {
-		warnx("%s: RFC 6487 section 4.8.8: bad %s location", fn, descr);
-		return 0;
-	}
-
-	if ((*out = strndup(uri->data, uri->length)) == NULL)
+	if ((p->res->notify = strndup(d, dsz)) == NULL)
 		err(1, NULL);
 
 	return 1;
 }
 
 /*
- * Parse "Subject Information Access" extension, RFC 6487 4.8.8.
+ * Parse the SIA manifest, 4.8.8.1.
  * Returns zero on failure, non-zero on success.
  */
 static int
-sbgp_sia(struct parse *p, X509_EXTENSION *ext)
+sbgp_sia_resource_mft(struct parse *p, const char *d, size_t dsz)
 {
-	AUTHORITY_INFO_ACCESS	*sia = NULL;
-	ACCESS_DESCRIPTION	*ad;
-	ASN1_OBJECT		*oid;
-	int			 i, rc = 0;
-
-	if (X509_EXTENSION_get_critical(ext)) {
+	if (p->res->mft != NULL) {
 		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-		    "extension not non-critical", p->fn);
-		goto out;
+		    "MFT location already specified", p->fn);
+		return 0;
 	}
 
-	if ((sia = X509V3_EXT_d2i(ext)) == NULL) {
+	/* Make sure it's an MFT rsync address. */
+	if (!valid_uri(d, dsz, "rsync://")) {
+		warnx("%s: RFC 6487 section 4.8.8: bad MFT location", p->fn);
+		return 0;
+	}
+
+	if (dsz < 4 || strcasecmp(d + dsz - 4, ".mft") != 0) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "not an MFT file", p->fn);
+		return 0;
+	}
+
+	if ((p->res->mft = strndup(d, dsz)) == NULL)
+		err(1, NULL);
+
+	return 1;
+}
+
+/*
+ * Parse the SIA manifest, 4.8.8.1.
+ * Returns zero on failure, non-zero on success.
+ */
+static int
+sbgp_sia_resource_carepo(struct parse *p, const char *d, size_t dsz)
+{
+	if (p->res->repo != NULL) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "CA repository already specified", p->fn);
+		return 0;
+	}
+
+	/* Make sure it's an rsync:// address. */
+	if (!valid_uri(d, dsz, "rsync://")) {
+		warnx("%s: RFC 6487 section 4.8.8: bad CA repository URI",
+		    p->fn);
+		return 0;
+	}
+
+	if ((p->res->repo = strndup(d, dsz)) == NULL)
+		err(1, NULL);
+
+	return 1;
+}
+
+/*
+ * Parse the SIA entries, 4.8.8.1.
+ * There may be multiple different resources at this location, so throw
+ * out all but the matching resource type. Currently only two entries
+ * are of interest: rpkiManifest and rpkiNotify.
+ * Returns zero on failure, non-zero on success.
+ */
+static int
+sbgp_sia_resource_entry(struct parse *p,
+	const unsigned char *d, size_t dsz)
+{
+	ASN1_SEQUENCE_ANY	*seq;
+	ASN1_OBJECT		*oid;
+	const ASN1_TYPE		*t;
+	int			 rc = 0, ptag;
+	long			 plen;
+
+	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
 		cryptowarnx("%s: RFC 6487 section 4.8.8: SIA: "
-		    "failed extension parse", p->fn);
+		    "failed ASN.1 sequence parse", p->fn);
+		goto out;
+	}
+	if (sk_ASN1_TYPE_num(seq) != 2) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "want 2 elements, have %d",
+		    p->fn, sk_ASN1_TYPE_num(seq));
 		goto out;
 	}
 
-	for (i = 0; i < sk_ACCESS_DESCRIPTION_num(sia); i++) {
-		ad = sk_ACCESS_DESCRIPTION_value(sia, i);
+	/* Composed of an OID and its continuation. */
 
-		oid = ad->method;
+	t = sk_ASN1_TYPE_value(seq, 0);
+	if (t->type != V_ASN1_OBJECT) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "want ASN.1 object, have %s (NID %d)",
+		    p->fn, ASN1_tag2str(t->type), t->type);
+		goto out;
+	}
+	oid = t->value.object;
 
-		if (OBJ_cmp(oid, carepo_oid) == 0) {
-			if (!sbgp_sia_location(p->fn, "caRepository",
-			    "rsync://", ad->location, &p->res->repo))
-				goto out;
-		} else if (OBJ_cmp(oid, manifest_oid) == 0) {
-			if (!sbgp_sia_location(p->fn, "rpkiManifest",
-			    "rsync://", ad->location, &p->res->mft))
-				goto out;
-		} else if (OBJ_cmp(oid, notify_oid) == 0) {
-			if (!sbgp_sia_location(p->fn, "rpkiNotify",
-			    "https://", ad->location, &p->res->notify))
-				goto out;
+	t = sk_ASN1_TYPE_value(seq, 1);
+	if (t->type != V_ASN1_OTHER) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "want ASN.1 external, have %s (NID %d)",
+		    p->fn, ASN1_tag2str(t->type), t->type);
+		goto out;
+	}
+
+	/* FIXME: there must be a way to do this without ASN1_frame. */
+
+	d = t->value.asn1_string->data;
+	dsz = t->value.asn1_string->length;
+	if (!ASN1_frame(p->fn, dsz, &d, &plen, &ptag))
+		goto out;
+
+	if (OBJ_cmp(oid, carepo_oid) == 0)
+		rc = sbgp_sia_resource_carepo(p, d, plen);
+	else if (OBJ_cmp(oid, manifest_oid) == 0)
+		rc = sbgp_sia_resource_mft(p, d, plen);
+	else if (OBJ_cmp(oid, notify_oid) == 0)
+		rc = sbgp_sia_resource_notify(p, d, plen);
+	else
+		rc = 1;	/* silently ignore */
+out:
+	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
+	return rc;
+}
+
+/*
+ * Multiple locations as defined in RFC 6487, 4.8.8.1.
+ * Returns zero on failure, non-zero on success.
+ */
+static int
+sbgp_sia_resource(struct parse *p, const unsigned char *d, size_t dsz)
+{
+	ASN1_SEQUENCE_ANY	*seq;
+	const ASN1_TYPE		*t;
+	int			 rc = 0, i;
+
+	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
+		cryptowarnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "failed ASN.1 sequence parse", p->fn);
+		goto out;
+	}
+
+	for (i = 0; i < sk_ASN1_TYPE_num(seq); i++) {
+		t = sk_ASN1_TYPE_value(seq, i);
+		if (t->type != V_ASN1_SEQUENCE) {
+			warnx("%s: RFC 6487 section 4.8.8: SIA: "
+			    "want ASN.1 sequence, have %s (NID %d)",
+			    p->fn, ASN1_tag2str(t->type), t->type);
+			goto out;
 		}
+		d = t->value.asn1_string->data;
+		dsz = t->value.asn1_string->length;
+		if (!sbgp_sia_resource_entry(p, d, dsz))
+			goto out;
 	}
 
 	if (p->res->mft == NULL || p->res->repo == NULL) {
@@ -214,16 +317,82 @@ sbgp_sia(struct parse *p, X509_EXTENSION *ext)
 		    p->fn);
 		goto out;
 	}
+	rc = 1;
+out:
+	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
+	return rc;
+}
 
-	if (rtype_from_file_extension(p->res->mft) != RTYPE_MFT) {
+/*
+ * Parse "Subject Information Access" extension, RFC 6487 4.8.8.
+ * Returns zero on failure, non-zero on success.
+ */
+static int
+sbgp_sia(struct parse *p, X509_EXTENSION *ext)
+{
+	unsigned char		*sv = NULL;
+	const unsigned char	*d;
+	ASN1_SEQUENCE_ANY	*seq = NULL;
+	const ASN1_TYPE		*t;
+	int			 dsz, rc = 0;
+
+	if (X509_EXTENSION_get_critical(ext)) {
 		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-		    "not an MFT file", p->fn);
+		    "extension not non-critical", p->fn);
 		goto out;
 	}
 
+	if ((dsz = i2d_X509_EXTENSION(ext, &sv)) < 0) {
+		cryptowarnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "failed extension parse", p->fn);
+		goto out;
+	}
+	d = sv;
+
+	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
+		cryptowarnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "failed ASN.1 sequence parse", p->fn);
+		goto out;
+	}
+	if (sk_ASN1_TYPE_num(seq) != 2) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "want 2 elements, have %d", p->fn,
+		    sk_ASN1_TYPE_num(seq));
+		goto out;
+	}
+
+	t = sk_ASN1_TYPE_value(seq, 0);
+	if (t->type != V_ASN1_OBJECT) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "want ASN.1 object, have %s (NID %d)",
+		    p->fn, ASN1_tag2str(t->type), t->type);
+		goto out;
+	}
+	if (OBJ_obj2nid(t->value.object) != NID_sinfo_access) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "incorrect OID, have %s (NID %d)", p->fn,
+		    ASN1_tag2str(OBJ_obj2nid(t->value.object)),
+		    OBJ_obj2nid(t->value.object));
+		goto out;
+	}
+
+	t = sk_ASN1_TYPE_value(seq, 1);
+	if (t->type != V_ASN1_OCTET_STRING) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "want ASN.1 octet string, have %s (NID %d)",
+		    p->fn, ASN1_tag2str(t->type), t->type);
+		goto out;
+	}
+
+	d = t->value.octet_string->data;
+	dsz = t->value.octet_string->length;
+	if (!sbgp_sia_resource(p, d, dsz))
+		goto out;
+
 	rc = 1;
- out:
-	AUTHORITY_INFO_ACCESS_free(sia);
+out:
+	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
+	free(sv);
 	return rc;
 }
 
@@ -896,7 +1065,7 @@ certificate_policies(struct parse *p, X509_EXTENSION *ext)
 struct cert *
 cert_parse_pre(const char *fn, const unsigned char *der, size_t len)
 {
-	int		 extsz;
+	int		 rc = 0, extsz, c;
 	int		 sia_present = 0;
 	size_t		 i;
 	X509		*x = NULL;
@@ -928,24 +1097,21 @@ cert_parse_pre(const char *fn, const unsigned char *der, size_t len)
 		assert(ext != NULL);
 		obj = X509_EXTENSION_get_object(ext);
 		assert(obj != NULL);
+		c = 1;
 
 		switch (OBJ_obj2nid(obj)) {
 		case NID_sbgp_ipAddrBlock:
-			if (!sbgp_ipaddrblk(&p, ext))
-				goto out;
+			c = sbgp_ipaddrblk(&p, ext);
 			break;
 		case NID_sbgp_autonomousSysNum:
-			if (!sbgp_assysnum(&p, ext))
-				goto out;
+			c = sbgp_assysnum(&p, ext);
 			break;
 		case NID_sinfo_access:
 			sia_present = 1;
-			if (!sbgp_sia(&p, ext))
-				goto out;
+			c = sbgp_sia(&p, ext);
 			break;
 		case NID_certificate_policies:
-			if (!certificate_policies(&p, ext))
-				goto out;
+			c = certificate_policies(&p, ext);
 			break;
 		case NID_crl_distribution_points:
 			/* ignored here, handled later */
@@ -967,6 +1133,8 @@ cert_parse_pre(const char *fn, const unsigned char *der, size_t len)
 			} */
 			break;
 		}
+		if (c == 0)
+			goto out;
 	}
 
 	if (!x509_get_aki(x, p.fn, &p.res->aki))
@@ -1022,12 +1190,14 @@ cert_parse_pre(const char *fn, const unsigned char *der, size_t len)
 	}
 
 	p.res->x509 = x;
-	return p.res;
 
+	rc = 1;
 out:
-	cert_free(p.res);
-	X509_free(x);
-	return NULL;
+	if (rc == 0) {
+		cert_free(p.res);
+		X509_free(x);
+	}
+	return (rc == 0) ? NULL : p.res;
 }
 
 struct cert *

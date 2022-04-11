@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwgpio.c,v 1.6 2022/02/14 02:57:21 jsg Exp $	*/
+/*	$OpenBSD: dwgpio.c,v 1.5 2021/12/29 17:52:22 patrick Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis
  *
@@ -74,7 +74,7 @@ struct dwgpio_softc {
 int	dwgpio_match(struct device *, void *, void *);
 void	dwgpio_attach(struct device *, struct device *, void *);
 
-const struct cfattach dwgpio_ca = {
+struct cfattach dwgpio_ca = {
 	sizeof(struct dwgpio_softc), dwgpio_match, dwgpio_attach
 };
 

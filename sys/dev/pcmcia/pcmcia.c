@@ -1,4 +1,4 @@
-/*	$OpenBSD: pcmcia.c,v 1.49 2021/03/07 06:20:09 jsg Exp $	*/
+/*	$OpenBSD: pcmcia.c,v 1.48 2017/09/08 05:36:52 deraadt Exp $	*/
 /*	$NetBSD: pcmcia.c,v 1.9 1998/08/13 02:10:55 eeh Exp $	*/
 
 /*
@@ -63,7 +63,7 @@ struct cfdriver pcmcia_cd = {
 	NULL, "pcmcia", DV_DULL
 };
 
-const struct cfattach pcmcia_ca = {
+struct cfattach pcmcia_ca = {
 	sizeof(struct pcmcia_softc), pcmcia_match, pcmcia_attach, NULL,
 	pcmcia_activate
 };

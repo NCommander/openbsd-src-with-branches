@@ -1,4 +1,4 @@
-/*	$OpenBSD: ams.c,v 1.7 2016/06/05 20:02:36 bru Exp $	*/
+/*	$OpenBSD: ams.c,v 1.6 2011/06/15 21:32:05 miod Exp $	*/
 /*	$NetBSD: ams.c,v 1.11 2000/12/19 03:13:40 tsubai Exp $	*/
 
 /*
@@ -50,7 +50,7 @@ int	amsmatch(struct device *, void *, void *);
 void	amsattach(struct device *, struct device *, void *);
 
 /* Driver definition. */
-const struct cfattach ams_ca = {
+struct cfattach ams_ca = {
 	sizeof(struct ams_softc), amsmatch, amsattach
 };
 /* Driver definition. */

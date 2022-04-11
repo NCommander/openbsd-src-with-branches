@@ -1,4 +1,4 @@
-/*	$OpenBSD: imxpwm.c,v 1.1 2020/03/27 16:53:06 patrick Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2018-2020 Patrick Wildt <patrick@blueri.se>
  *
@@ -72,7 +72,7 @@ struct imxpwm_softc {
 int	imxpwm_match(struct device *, void *, void *);
 void	imxpwm_attach(struct device *, struct device *, void *);
 
-const struct cfattach imxpwm_ca = {
+struct cfattach imxpwm_ca = {
 	sizeof(struct imxpwm_softc), imxpwm_match, imxpwm_attach
 };
 

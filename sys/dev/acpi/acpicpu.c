@@ -1,4 +1,4 @@
-/* $OpenBSD: acpicpu.c,v 1.91 2022/01/09 05:42:37 jsg Exp $ */
+/* $OpenBSD: acpicpu.c,v 1.90 2021/08/01 19:04:37 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Marco Peereboom <marco@openbsd.org>
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
@@ -178,7 +178,7 @@ void    acpicpu_set_throttle(struct acpicpu_softc *, int);
 struct acpi_cstate *acpicpu_find_cstate(struct acpicpu_softc *, int);
 #endif
 
-const struct cfattach acpicpu_ca = {
+struct cfattach acpicpu_ca = {
 	sizeof(struct acpicpu_softc), acpicpu_match, acpicpu_attach
 };
 

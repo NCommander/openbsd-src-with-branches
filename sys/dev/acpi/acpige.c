@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpige.c,v 1.1 2020/11/15 18:04:10 patrick Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2020 Patrick Wildt <patrick@blueri.se>
  *
@@ -46,7 +46,7 @@ void	acpige_attach(struct device *, struct device *, void *);
 int	acpige_intr(void *);
 void	acpige_event_task(void *, int);
 
-const struct cfattach acpige_ca = {
+struct cfattach acpige_ca = {
 	sizeof(struct acpige_softc), acpige_match, acpige_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uslhcom.c,v 1.8 2021/11/15 15:36:24 anton Exp $	*/
+/*	$OpenBSD: uslhcom.c,v 1.7 2021/03/08 14:35:57 jcs Exp $	*/
 
 /*
  * Copyright (c) 2015 SASANO Takayoshi <uaa@openbsd.org>
@@ -81,7 +81,7 @@ void		uslhcom_set_baud_rate(struct uslhcom_uart_config *, u_int32_t);
 int		uslhcom_create_config(struct uslhcom_uart_config *, struct termios *);
 int		uslhcom_setup(struct uslhcom_softc *, struct uslhcom_uart_config *);
 
-const struct ucom_methods uslhcom_methods = {
+struct ucom_methods uslhcom_methods = {
 	uslhcom_get_status,
 	uslhcom_set,
 	uslhcom_param,

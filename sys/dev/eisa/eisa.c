@@ -1,4 +1,4 @@
-/*	$OpenBSD: eisa.c,v 1.14 2021/03/07 06:18:48 jsg Exp $	*/
+/*	$OpenBSD: eisa.c,v 1.13 2009/03/29 21:53:52 sthen Exp $	*/
 /*	$NetBSD: eisa.c,v 1.15 1996/10/21 22:31:01 thorpej Exp $	*/
 
 /*
@@ -52,7 +52,7 @@
 int	eisamatch(struct device *, void *, void *);
 void	eisaattach(struct device *, struct device *, void *);
 
-const struct cfattach eisa_ca = {
+struct cfattach eisa_ca = {
 	sizeof(struct device), eisamatch, eisaattach
 };
 

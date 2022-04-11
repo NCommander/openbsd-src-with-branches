@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipmi_i2c.c,v 1.3 2020/01/11 20:41:34 kettenis Exp $	*/
+/*	$OpenBSD: ipmi_i2c.c,v 1.2 2019/09/03 09:17:10 kettenis Exp $	*/
 /*
  * Copyright (c) 2019 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -57,7 +57,7 @@ extern void ipmi_attach(struct device *, struct device *, void *);
 int	ipmi_i2c_match(struct device *, void *, void *);
 void	ipmi_i2c_attach(struct device *, struct device *, void *);
 
-const struct cfattach ipmi_i2c_ca = {
+struct cfattach ipmi_i2c_ca = {
 	sizeof(struct ipmi_i2c_softc), ipmi_i2c_match, ipmi_i2c_attach
 };
 

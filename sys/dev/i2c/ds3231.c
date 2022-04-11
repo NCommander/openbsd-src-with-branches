@@ -1,4 +1,4 @@
-/*	$OpenBSD: ds3231.c,v 1.1 2020/04/25 15:10:52 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -52,7 +52,7 @@ struct dsxrtc_softc {
 int	dsxrtc_match(struct device *, void *, void *);
 void	dsxrtc_attach(struct device *, struct device *, void *);
 
-const struct cfattach dsxrtc_ca = {
+struct cfattach dsxrtc_ca = {
 	sizeof(struct dsxrtc_softc), dsxrtc_match, dsxrtc_attach
 };
 

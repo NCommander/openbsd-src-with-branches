@@ -17,7 +17,7 @@ struct TypeNameVisitor : TestVisitor<TypeNameVisitor> {
 
   // ValueDecls are the least-derived decl with both a qualtype and a
   // name.
-  bool traverseDecl(Decl *D) {
+  bool TraverseDecl(Decl *D) {
     return true;  // Always continue
   }
 
@@ -93,12 +93,14 @@ TEST(QualTypeNameTest, getFullyQualifiedName) {
       "Foo<X>::non_dependent_type";
   Visitor.ExpectedQualTypeNames["AnEnumVar"] = "EnumScopeClass::AnEnum";
   Visitor.ExpectedQualTypeNames["AliasTypeVal"] = "A::B::C::InnerAlias<int>";
+  Visitor.ExpectedQualTypeNames["AliasInnerTypeVal"] =
+      "OuterTemplateClass<A::B::Class0>::Inner";
   Visitor.ExpectedQualTypeNames["CheckM"] = "const A::B::Class0 *";
   Visitor.ExpectedQualTypeNames["CheckN"] = "const X *";
   Visitor.runOver(
       "int CheckInt;\n"
       "template <typename T>\n"
-      "class OuterTemplateClass { };\n"
+      "class OuterTemplateClass { public: struct Inner {}; };\n"
       "namespace A {\n"
       " namespace B {\n"
       "   class Class0 { };\n"
@@ -107,6 +109,7 @@ TEST(QualTypeNameTest, getFullyQualifiedName) {
       "     template <typename T>\n"
       "     using InnerAlias = OuterTemplateClass<T>;\n"
       "     InnerAlias<int> AliasTypeVal;\n"
+      "     InnerAlias<Class0>::Inner AliasInnerTypeVal;\n"
       "   }\n"
       "   template<class X, class Y> class Template0;"
       "   template<class X, class Y> class Template1;"
@@ -165,8 +168,7 @@ TEST(QualTypeNameTest, getFullyQualifiedName) {
       "  enum AnEnum { ZERO, ONE };\n"
       "};\n"
       "EnumScopeClass::AnEnum AnEnumVar;\n",
-      TypeNameVisitor::Lang_CXX11
-);
+      TypeNameVisitor::Lang_CXX11);
 
   TypeNameVisitor Complex;
   Complex.ExpectedQualTypeNames["CheckTX"] = "B::TX";

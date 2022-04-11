@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_lc_isa.c,v 1.13 2021/03/07 06:17:03 jsg Exp $ */
+/*	$OpenBSD: if_lc_isa.c,v 1.12 2015/11/24 17:11:39 mpi Exp $ */
 /*	$NetBSD: if_lc_isa.c,v 1.10 2001/06/13 10:46:03 wiz Exp $ */
 
 /*-
@@ -72,7 +72,7 @@ int	lemac_isa_find(struct lemac_softc *, struct isa_attach_args *,
 int	lemac_isa_probe(struct device *, void *, void *);
 void	lemac_isa_attach(struct device *, struct device *, void *);
 
-const struct cfattach lc_isa_ca = {
+struct cfattach lc_isa_ca = {
 	sizeof(struct lemac_softc), lemac_isa_probe, lemac_isa_attach
 };
 

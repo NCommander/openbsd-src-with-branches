@@ -1,4 +1,4 @@
-/*	$OpenBSD: amdgpio.c,v 1.6 2021/12/21 20:53:46 kettenis Exp $	*/
+/*	$OpenBSD: amdgpio.c,v 1.5 2021/05/16 08:50:59 jsg Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  * Copyright (c) 2019 James Hastings
@@ -67,7 +67,7 @@ struct amdgpio_softc {
 int	amdgpio_match(struct device *, void *, void *);
 void	amdgpio_attach(struct device *, struct device *, void *);
 
-const struct cfattach amdgpio_ca = {
+struct cfattach amdgpio_ca = {
 	sizeof(struct amdgpio_softc), amdgpio_match, amdgpio_attach
 };
 

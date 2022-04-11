@@ -1,4 +1,4 @@
-/* $OpenBSD: dwiic_acpi.c,v 1.18 2021/12/21 20:53:46 kettenis Exp $ */
+/* $OpenBSD: dwiic_acpi.c,v 1.17 2021/12/07 10:16:50 kettenis Exp $ */
 /*
  * Synopsys DesignWare I2C controller
  *
@@ -53,7 +53,7 @@ void		dwiic_acpi_power(struct dwiic_softc *, int);
 void		dwiic_acpi_bus_scan(struct device *,
 		    struct i2cbus_attach_args *, void *);
 
-const struct cfattach dwiic_acpi_ca = {
+struct cfattach dwiic_acpi_ca = {
 	sizeof(struct dwiic_softc),
 	dwiic_acpi_match,
 	dwiic_acpi_attach,

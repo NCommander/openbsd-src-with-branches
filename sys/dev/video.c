@@ -1,4 +1,4 @@
-/*	$OpenBSD: video.c,v 1.55 2022/03/21 19:22:40 miod Exp $	*/
+/*	$OpenBSD: video.c,v 1.54 2021/02/17 17:21:58 mglocker Exp $	*/
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -74,7 +74,7 @@ void	video_intr(void *);
 int	video_stop(struct video_softc *);
 int	video_claim(struct video_softc *, struct process *);
 
-const struct cfattach video_ca = {
+struct cfattach video_ca = {
 	sizeof(struct video_softc), videoprobe, videoattach,
 	videodetach, videoactivate
 };

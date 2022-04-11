@@ -1,4 +1,4 @@
-/*	$OpenBSD: mvsw.c,v 1.4 2021/09/06 19:55:27 patrick Exp $	*/
+/*	$OpenBSD: mvsw.c,v 1.3 2021/04/05 12:13:07 dtucker Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -80,7 +80,7 @@ struct mvsw_softc {
 int	mvsw_match(struct device *, void *, void *);
 void	mvsw_attach(struct device *, struct device *, void *);
 
-const struct cfattach mvsw_ca = {
+struct cfattach	mvsw_ca = {
 	sizeof (struct mvsw_softc), mvsw_match, mvsw_attach
 };
 

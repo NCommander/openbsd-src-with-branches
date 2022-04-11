@@ -6,6 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Analysis/LoopUnrollAnalyzer.h"
 #include "llvm/AsmParser/Parser.h"
 #include "llvm/IR/Dominators.h"
@@ -18,7 +19,7 @@ using namespace llvm;
 namespace llvm {
 void initializeUnrollAnalyzerTestPass(PassRegistry &);
 
-static SmallVector<DenseMap<Value *, Constant *>, 16> SimplifiedValuesVector;
+static SmallVector<DenseMap<Value *, Value *>, 16> SimplifiedValuesVector;
 static unsigned TripCount = 0;
 
 namespace {
@@ -37,7 +38,7 @@ struct UnrollAnalyzerTest : public FunctionPass {
     SimplifiedValuesVector.clear();
     TripCount = SE->getSmallConstantTripCount(L, Exiting);
     for (unsigned Iteration = 0; Iteration < TripCount; Iteration++) {
-      DenseMap<Value *, Constant *> SimplifiedValues;
+      DenseMap<Value *, Value *> SimplifiedValues;
       UnrolledInstAnalyzer Analyzer(Iteration, SimplifiedValues, *SE, L);
       for (auto *BB : L->getBlocks())
         for (Instruction &I : *BB)

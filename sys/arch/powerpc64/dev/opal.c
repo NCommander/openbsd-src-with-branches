@@ -1,4 +1,4 @@
-/*	$OpenBSD: opal.c,v 1.12 2021/01/23 12:10:08 kettenis Exp $	*/
+/*	$OpenBSD: opal.c,v 1.11 2020/12/30 06:06:30 gkoehler Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -64,7 +64,7 @@ struct opal_softc *opal_sc;
 int	opal_match(struct device *, void *, void *);
 void	opal_attach(struct device *, struct device *, void *);
 
-const struct cfattach opal_ca = {
+struct cfattach	opal_ca = {
 	sizeof (struct opal_softc), opal_match, opal_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: simpleamp.c,v 1.3 2022/03/21 19:22:40 miod Exp $	*/
+/*	$OpenBSD: simpleamp.c,v 1.2 2022/02/14 00:53:40 jsg Exp $	*/
 /*
  * Copyright (c) 2020 Patrick Wildt <patrick@blueri.se>
  *
@@ -51,7 +51,7 @@ const struct audio_hw_if simpleamp_hw_if = {
 	.close = simpleamp_close,
 };
 
-const struct cfattach simpleamp_ca = {
+struct cfattach simpleamp_ca = {
 	sizeof(struct simpleamp_softc), simpleamp_match, simpleamp_attach
 };
 

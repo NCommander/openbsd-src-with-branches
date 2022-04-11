@@ -1,4 +1,4 @@
-/*	$OpenBSD: lm75.c,v 1.20 2015/05/30 08:39:05 kettenis Exp $	*/
+/*	$OpenBSD: lm75.c,v 1.19 2015/03/14 03:38:47 jsg Exp $	*/
 /*	$NetBSD: lm75.c,v 1.1 2003/09/30 00:35:31 thorpej Exp $	*/
 /*
  * Copyright (c) 2006 Theo de Raadt <deraadt@openbsd.org>
@@ -69,7 +69,7 @@ struct lmtemp_softc {
 int  lmtemp_match(struct device *, void *, void *);
 void lmtemp_attach(struct device *, struct device *, void *);
 
-const struct cfattach lmtemp_ca = {
+struct cfattach lmtemp_ca = {
 	sizeof(struct lmtemp_softc),
 	lmtemp_match,
 	lmtemp_attach

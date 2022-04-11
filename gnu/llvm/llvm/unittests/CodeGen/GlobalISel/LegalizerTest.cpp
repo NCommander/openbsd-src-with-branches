@@ -6,8 +6,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "GISelMITest.h"
 #include "llvm/CodeGen/GlobalISel/Legalizer.h"
+#include "GISelMITest.h"
+#include "llvm/CodeGen/GlobalISel/LostDebugLocObserver.h"
+
+#define DEBUG_TYPE "legalizer-test"
 
 using namespace LegalizeActions;
 using namespace LegalizeMutations;
@@ -28,10 +31,11 @@ namespace {
 
 DefineLegalizerInfo(ALegalizer, {
   auto p0 = LLT::pointer(0, 64);
-  auto v2s8 = LLT::vector(2, 8);
-  auto v2s16 = LLT::vector(2, 16);
+  auto s8 = LLT::scalar(8);
+  auto v2s8 = LLT::fixed_vector(2, 8);
+  auto v2s16 = LLT::fixed_vector(2, 16);
   getActionDefinitionsBuilder(G_LOAD)
-      .legalForTypesWithMemDesc({{s16, p0, 8, 8}})
+      .legalForTypesWithMemDesc({{s16, p0, s8, 8}})
       .scalarize(0)
       .clampScalar(0, s16, s16);
   getActionDefinitionsBuilder(G_PTR_ADD).legalFor({{p0, s64}});
@@ -49,10 +53,10 @@ DefineLegalizerInfo(ALegalizer, {
   getActionDefinitionsBuilder(G_SHL).legalFor({{s32, s32}});
 })
 
-TEST_F(GISelMITest, BasicLegalizerTest) {
+TEST_F(AArch64GISelMITest, BasicLegalizerTest) {
   StringRef MIRString = R"(
     %vptr:_(p0) = COPY $x4
-    %v:_(<2 x s8>) = G_LOAD %vptr:_(p0) :: (load 2, align 1)
+    %v:_(<2 x s8>) = G_LOAD %vptr:_(p0) :: (load (<2 x s8>), align 1)
     $h4 = COPY %v:_(<2 x s8>)
   )";
   setUp(MIRString.rtrim(' '));
@@ -60,19 +64,20 @@ TEST_F(GISelMITest, BasicLegalizerTest) {
     return;
 
   ALegalizerInfo LI(MF->getSubtarget());
+  LostDebugLocObserver LocObserver(DEBUG_TYPE);
 
-  Legalizer::MFResult Result =
-      Legalizer::legalizeMachineFunction(*MF, LI, {}, B);
+  Legalizer::MFResult Result = Legalizer::legalizeMachineFunction(
+      *MF, LI, {&LocObserver}, LocObserver, B);
 
   EXPECT_TRUE(isNullMIPtr(Result.FailedOn));
   EXPECT_TRUE(Result.Changed);
 
   StringRef CheckString = R"(
     CHECK:      %vptr:_(p0) = COPY $x4
-    CHECK-NEXT: [[LOAD_0:%[0-9]+]]:_(s16) = G_LOAD %vptr:_(p0) :: (load 1)
+    CHECK-NEXT: [[LOAD_0:%[0-9]+]]:_(s16) = G_LOAD %vptr:_(p0) :: (load (s8))
     CHECK-NEXT: [[OFFSET_1:%[0-9]+]]:_(s64) = G_CONSTANT i64 1
     CHECK-NEXT: [[VPTR_1:%[0-9]+]]:_(p0) = G_PTR_ADD %vptr:_, [[OFFSET_1]]:_(s64)
-    CHECK-NEXT: [[LOAD_1:%[0-9]+]]:_(s16) = G_LOAD [[VPTR_1]]:_(p0) :: (load 1)
+    CHECK-NEXT: [[LOAD_1:%[0-9]+]]:_(s16) = G_LOAD [[VPTR_1]]:_(p0) :: (load (s8) from unknown-address + 1)
     CHECK-NEXT: [[V0:%[0-9]+]]:_(s16) = COPY [[LOAD_0]]:_(s16)
     CHECK-NEXT: [[V1:%[0-9]+]]:_(s16) = COPY [[LOAD_1]]:_(s16)
     CHECK-NEXT: %v:_(<2 x s8>) = G_BUILD_VECTOR_TRUNC [[V0]]:_(s16), [[V1]]:_(s16)
@@ -85,10 +90,10 @@ TEST_F(GISelMITest, BasicLegalizerTest) {
 // Making sure the legalization finishes successfully w/o failure to combine
 // away all the legalization artifacts regardless of the order of their
 // creation.
-TEST_F(GISelMITest, UnorderedArtifactCombiningTest) {
+TEST_F(AArch64GISelMITest, UnorderedArtifactCombiningTest) {
   StringRef MIRString = R"(
     %vptr:_(p0) = COPY $x4
-    %v:_(<2 x s8>) = G_LOAD %vptr:_(p0) :: (load 2, align 1)
+    %v:_(<2 x s8>) = G_LOAD %vptr:_(p0) :: (load (<2 x s8>), align 1)
     %v0:_(s8), %v1:_(s8) = G_UNMERGE_VALUES %v:_(<2 x s8>)
     %v0_ext:_(s16) = G_ANYEXT %v0:_(s8)
     $h4 = COPY %v0_ext:_(s16)
@@ -98,6 +103,7 @@ TEST_F(GISelMITest, UnorderedArtifactCombiningTest) {
     return;
 
   ALegalizerInfo LI(MF->getSubtarget());
+  LostDebugLocObserver LocObserver(DEBUG_TYPE);
 
   // The events here unfold as follows:
   // 1. First, the function is scanned pre-forming the worklist of artifacts:
@@ -153,15 +159,15 @@ TEST_F(GISelMITest, UnorderedArtifactCombiningTest) {
   //  pair(s) of artifacts that could be immediately combined out. After that
   //  the process follows def-use chains, making them shorter at each step, thus
   //  combining everything that can be combined in O(n) time.
-  Legalizer::MFResult Result =
-      Legalizer::legalizeMachineFunction(*MF, LI, {}, B);
+  Legalizer::MFResult Result = Legalizer::legalizeMachineFunction(
+      *MF, LI, {&LocObserver}, LocObserver, B);
 
   EXPECT_TRUE(isNullMIPtr(Result.FailedOn));
   EXPECT_TRUE(Result.Changed);
 
   StringRef CheckString = R"(
     CHECK:      %vptr:_(p0) = COPY $x4
-    CHECK-NEXT: [[LOAD_0:%[0-9]+]]:_(s16) = G_LOAD %vptr:_(p0) :: (load 1)
+    CHECK-NEXT: [[LOAD_0:%[0-9]+]]:_(s16) = G_LOAD %vptr:_(p0) :: (load (s8))
     CHECK:      %v0_ext:_(s16) = COPY [[LOAD_0]]:_(s16)
     CHECK-NEXT: $h4 = COPY %v0_ext:_(s16)
   )";
@@ -169,10 +175,10 @@ TEST_F(GISelMITest, UnorderedArtifactCombiningTest) {
   EXPECT_TRUE(CheckMachineFunction(*MF, CheckString)) << *MF;
 }
 
-TEST_F(GISelMITest, UnorderedArtifactCombiningManyCopiesTest) {
+TEST_F(AArch64GISelMITest, UnorderedArtifactCombiningManyCopiesTest) {
   StringRef MIRString = R"(
     %vptr:_(p0) = COPY $x4
-    %v:_(<2 x s8>) = G_LOAD %vptr:_(p0) :: (load 2, align 1)
+    %v:_(<2 x s8>) = G_LOAD %vptr:_(p0) :: (load (<2 x s8>), align 1)
     %vc0:_(<2 x s8>) = COPY %v:_(<2 x s8>)
     %vc1:_(<2 x s8>) = COPY %v:_(<2 x s8>)
     %vc00:_(s8), %vc01:_(s8) = G_UNMERGE_VALUES %vc0:_(<2 x s8>)
@@ -191,19 +197,20 @@ TEST_F(GISelMITest, UnorderedArtifactCombiningManyCopiesTest) {
     return;
 
   ALegalizerInfo LI(MF->getSubtarget());
+  LostDebugLocObserver LocObserver(DEBUG_TYPE);
 
-  Legalizer::MFResult Result =
-      Legalizer::legalizeMachineFunction(*MF, LI, {}, B);
+  Legalizer::MFResult Result = Legalizer::legalizeMachineFunction(
+      *MF, LI, {&LocObserver}, LocObserver, B);
 
   EXPECT_TRUE(isNullMIPtr(Result.FailedOn));
   EXPECT_TRUE(Result.Changed);
 
   StringRef CheckString = R"(
     CHECK:      %vptr:_(p0) = COPY $x4
-    CHECK-NEXT: [[LOAD_0:%[0-9]+]]:_(s16) = G_LOAD %vptr:_(p0) :: (load 1)
+    CHECK-NEXT: [[LOAD_0:%[0-9]+]]:_(s16) = G_LOAD %vptr:_(p0) :: (load (s8))
     CHECK-NEXT: [[OFFSET_1:%[0-9]+]]:_(s64) = G_CONSTANT i64 1
     CHECK-NEXT: [[VPTR_1:%[0-9]+]]:_(p0) = G_PTR_ADD %vptr:_, [[OFFSET_1]]:_(s64)
-    CHECK-NEXT: [[LOAD_1:%[0-9]+]]:_(s16) = G_LOAD [[VPTR_1]]:_(p0) :: (load 1)
+    CHECK-NEXT: [[LOAD_1:%[0-9]+]]:_(s16) = G_LOAD [[VPTR_1]]:_(p0) :: (load (s8) from unknown-address + 1)
     CHECK-NEXT: [[FF_MASK:%[0-9]+]]:_(s32) = G_CONSTANT i32 255
     CHECK-NEXT: [[V0_EXT:%[0-9]+]]:_(s32) = G_ANYEXT [[LOAD_0]]:_(s16)
     CHECK-NEXT: %v0_zext:_(s32) = G_AND [[V0_EXT]]:_, [[FF_MASK]]:_

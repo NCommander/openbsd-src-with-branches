@@ -1,4 +1,4 @@
-/*	$OpenBSD: uscom.c,v 1.7 2019/02/24 17:36:28 patrick Exp $	*/
+/*	$OpenBSD: uscom.c,v 1.6 2018/08/22 15:32:49 mpi Exp $	*/
 
 /*
  * Copyright (c) 2006 Jonathan Gray <jsg@openbsd.org>
@@ -40,7 +40,7 @@ struct uscom_softc {
 	struct device		*sc_subdev;
 };
 
-const struct ucom_methods uscom_methods = {
+struct ucom_methods uscom_methods = {
 	NULL,
 	NULL,
 	NULL,

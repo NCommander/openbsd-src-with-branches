@@ -1,4 +1,4 @@
-/* $OpenBSD: wsmouse.c,v 1.67 2021/03/21 16:20:49 bru Exp $ */
+/* $OpenBSD: wsmouse.c,v 1.66 2020/07/29 05:53:52 anton Exp $ */
 /* $NetBSD: wsmouse.c,v 1.35 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -158,7 +158,7 @@ struct cfdriver wsmouse_cd = {
 	NULL, "wsmouse", DV_TTY
 };
 
-const struct cfattach wsmouse_ca = {
+struct cfattach wsmouse_ca = {
 	sizeof (struct wsmouse_softc), wsmouse_match, wsmouse_attach,
 	wsmouse_detach, wsmouse_activate
 };

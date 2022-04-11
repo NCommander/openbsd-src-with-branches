@@ -1,4 +1,4 @@
-/*	$OpenBSD: adm1021.c,v 1.28 2011/03/10 23:14:30 deraadt Exp $	*/
+/*	$OpenBSD: adm1021.c,v 1.27 2007/06/24 05:34:35 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005 Theo de Raadt
@@ -54,7 +54,7 @@ int	admtemp_match(struct device *, void *, void *);
 void	admtemp_attach(struct device *, struct device *, void *);
 void	admtemp_refresh(void *);
 
-const struct cfattach admtemp_ca = {
+struct cfattach admtemp_ca = {
 	sizeof(struct admtemp_softc), admtemp_match, admtemp_attach
 };
 

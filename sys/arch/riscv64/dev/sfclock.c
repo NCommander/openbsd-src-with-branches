@@ -1,4 +1,4 @@
-/*	$OpenBSD: sfclock.c,v 1.1 2021/06/17 16:10:50 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -69,7 +69,7 @@ struct sfclock_softc {
 int	sfclock_match(struct device *, void *, void *);
 void	sfclock_attach(struct device *, struct device *, void *);
 
-const struct cfattach sfclock_ca = {
+struct cfattach	sfclock_ca = {
 	sizeof (struct sfclock_softc), sfclock_match, sfclock_attach
 };
 

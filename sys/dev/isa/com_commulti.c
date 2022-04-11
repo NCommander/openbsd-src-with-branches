@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_commulti.c,v 1.5 2017/04/30 13:04:49 mpi Exp $	*/
+/*	$OpenBSD: com_commulti.c,v 1.4 2008/04/27 09:25:26 kettenis Exp $	*/
 /*
  * Copyright (c) 1997 - 1999, Jason Downs.  All rights reserved.
  *
@@ -75,7 +75,7 @@
 int com_commulti_probe(struct device *, void *, void *);
 void com_commulti_attach(struct device *, struct device *, void *);
 
-const struct cfattach com_commulti_ca = {
+struct cfattach com_commulti_ca = {
         sizeof(struct com_softc), com_commulti_probe, com_commulti_attach
 };
 

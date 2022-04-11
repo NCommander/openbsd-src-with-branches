@@ -1,4 +1,4 @@
-/*	$OpenBSD: dapmic.c,v 1.1 2021/06/16 12:37:24 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -66,7 +66,7 @@ struct dapmic_softc {
 int	dapmic_match(struct device *, void *, void *);
 void	dapmic_attach(struct device *, struct device *, void *);
 
-const struct cfattach dapmic_ca = {
+struct cfattach dapmic_ca = {
 	sizeof(struct dapmic_softc), dapmic_match, dapmic_attach
 };
 

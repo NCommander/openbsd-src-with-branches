@@ -1,4 +1,4 @@
-/*	$OpenBSD: graphaudio.c,v 1.3 2022/03/21 19:22:40 miod Exp $	*/
+/*	$OpenBSD: graphaudio.c,v 1.2 2022/02/16 06:21:18 anton Exp $	*/
 /*
  * Copyright (c) 2020 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
@@ -83,7 +83,7 @@ const struct audio_hw_if graphaudio_hw_if = {
 	.halt_input = graphaudio_halt_input,
 };
 
-const struct cfattach graphaudio_ca = {
+struct cfattach graphaudio_ca = {
 	sizeof(struct graphaudio_softc), graphaudio_match, graphaudio_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cardbus.c,v 1.52 2019/11/30 18:19:51 cheloha Exp $	*/
+/*	$OpenBSD: cardbus.c,v 1.51 2015/08/28 00:03:53 deraadt Exp $	*/
 /*	$NetBSD: cardbus.c,v 1.24 2000/04/02 19:11:37 mycroft Exp $	*/
 
 /*
@@ -80,7 +80,7 @@ STATIC void enable_function(struct cardbus_softc *, int, int);
 STATIC void disable_function(struct cardbus_softc *, int);
 
 
-const struct cfattach cardbus_ca = {
+struct cfattach cardbus_ca = {
 	sizeof(struct cardbus_softc), cardbusmatch, cardbusattach
 };
 

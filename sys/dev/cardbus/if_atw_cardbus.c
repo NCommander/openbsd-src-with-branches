@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_atw_cardbus.c,v 1.24 2015/11/24 17:11:39 mpi Exp $	*/
+/*	$OpenBSD: if_atw_cardbus.c,v 1.23 2015/03/14 03:38:47 jsg Exp $	*/
 /*	$NetBSD: if_atw_cardbus.c,v 1.9 2004/07/23 07:07:55 dyoung Exp $	*/
 
 /*-
@@ -104,7 +104,7 @@ int	atw_cardbus_match(struct device *, void *, void *);
 void	atw_cardbus_attach(struct device *, struct device *, void *);
 int	atw_cardbus_detach(struct device *, int);
 
-const struct cfattach atw_cardbus_ca = {
+struct cfattach atw_cardbus_ca = {
 	sizeof(struct atw_cardbus_softc), atw_cardbus_match, atw_cardbus_attach,
 	    atw_cardbus_detach
 };

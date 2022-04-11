@@ -1,4 +1,4 @@
-/* $OpenBSD: spc.c,v 1.11 2020/02/05 16:29:29 krw Exp $ */
+/* $OpenBSD: spc.c,v 1.10 2020/01/23 07:52:59 krw Exp $ */
 /* $NetBSD: spc.c,v 1.4 2003/07/05 19:00:17 tsutsui Exp $ */
 
 /*-
@@ -51,7 +51,7 @@
 int  spc_mainbus_match(struct device *, void *, void *);
 void spc_mainbus_attach(struct device *, struct device *, void *);
 
-const struct cfattach spc_ca = {
+struct cfattach spc_ca = {
 	sizeof(struct spc_softc), spc_mainbus_match, spc_mainbus_attach
 };
 

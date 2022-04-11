@@ -1,4 +1,4 @@
-/*	$OpenBSD: ds1307.c,v 1.4 2022/01/09 05:42:37 jsg Exp $ */
+/*	$OpenBSD: ds1307.c,v 1.3 2021/04/24 10:15:15 mpi Exp $ */
 
 /*
  * Copyright (c) 2016 Marcus Glocker <mglocker@openbsd.org>
@@ -76,7 +76,7 @@ int	maxrtc_settime(struct todr_chip_handle *, struct timeval *);
 /*
  * Driver glue structures.
  */
-const struct cfattach maxrtc_ca = {
+struct cfattach maxrtc_ca = {
 	sizeof(struct maxrtc_softc), maxrtc_match, maxrtc_attach
 };
 

@@ -1,4 +1,4 @@
-/*      $OpenBSD: atapiscsi.c,v 1.118 2022/01/09 05:42:37 jsg Exp $     */
+/*      $OpenBSD: atapiscsi.c,v 1.117 2020/09/22 19:32:52 krw Exp $     */
 
 /*
  * This code is derived from code with the copyright below.
@@ -163,7 +163,7 @@ static struct scsi_adapter atapiscsi_switch = {
 /* Initial version shares bus_link structure so it can easily
    be "attached to current" wdc driver */
 
-const struct cfattach atapiscsi_ca = {
+struct cfattach atapiscsi_ca = {
 	sizeof(struct atapiscsi_softc), atapiscsi_match, atapiscsi_attach,
 	    atapiscsi_detach, atapiscsi_activate
 };

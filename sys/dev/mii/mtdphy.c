@@ -1,4 +1,4 @@
-/*	$OpenBSD: mtdphy.c,v 1.15 2015/03/14 03:38:48 jsg Exp $	*/
+/*	$OpenBSD: mtdphy.c,v 1.14 2014/12/05 15:50:04 mpi Exp $	*/
 
 /*
  * Copyright (c) 1998, 1999 Jason L. Wright (jason@thought.net)
@@ -48,7 +48,7 @@
 int	mtdphymatch(struct device *, void *, void *);
 void	mtdphyattach(struct device *, struct device *, void *);
 
-const struct cfattach mtdphy_ca = {
+struct cfattach mtdphy_ca = {
 	sizeof(struct mii_softc), mtdphymatch, mtdphyattach, mii_phy_detach
 };
 

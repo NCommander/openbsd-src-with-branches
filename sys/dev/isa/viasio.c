@@ -1,4 +1,4 @@
-/*	$OpenBSD: viasio.c,v 1.14 2014/12/10 12:27:57 mikeb Exp $	*/
+/*	$OpenBSD: viasio.c,v 1.13 2012/10/17 22:32:01 deraadt Exp $	*/
 /*
  * Copyright (c) 2005 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -70,7 +70,7 @@ void	viasio_hm_refresh(void *);
 void	viasio_wdg_init(struct viasio_softc *);
 int	viasio_wdg_cb(void *, int);
 
-const struct cfattach viasio_ca = {
+struct cfattach viasio_ca = {
 	sizeof(struct viasio_softc),
 	viasio_probe,
 	viasio_attach,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucycom.c,v 1.40 2021/11/15 15:36:24 anton Exp $	*/
+/*	$OpenBSD: ucycom.c,v 1.39 2021/03/08 14:35:57 jcs Exp $	*/
 /*	$NetBSD: ucycom.c,v 1.3 2005/08/05 07:27:47 skrll Exp $	*/
 
 /*
@@ -129,7 +129,7 @@ void	ucycom_close(void *, int);
 void	ucycom_write(void *, int, u_char *, u_char *, u_int32_t *);
 void	ucycom_read(void *, int, u_char **, u_int32_t *);
 
-const struct ucom_methods ucycom_methods = {
+struct ucom_methods ucycom_methods = {
 	NULL, /* ucycom_get_status, */
 	ucycom_set,
 	ucycom_param,

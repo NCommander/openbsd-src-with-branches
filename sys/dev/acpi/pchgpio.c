@@ -1,4 +1,4 @@
-/*	$OpenBSD: pchgpio.c,v 1.11 2022/03/10 10:30:10 hastings Exp $	*/
+/*	$OpenBSD: pchgpio.c,v 1.10 2021/12/21 20:53:46 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis
  * Copyright (c) 2020 James Hastings
@@ -97,7 +97,7 @@ int	pchgpio_match(struct device *, void *, void *);
 void	pchgpio_attach(struct device *, struct device *, void *);
 int	pchgpio_activate(struct device *, int);
 
-const struct cfattach pchgpio_ca = {
+struct cfattach pchgpio_ca = {
 	sizeof(struct pchgpio_softc), pchgpio_match, pchgpio_attach,
 	NULL, pchgpio_activate
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_eisa.c,v 1.27 2021/03/07 06:18:48 jsg Exp $	*/
+/*	$OpenBSD: if_ep_eisa.c,v 1.26 2015/11/24 17:11:39 mpi Exp $	*/
 /*	$NetBSD: if_ep_eisa.c,v 1.13 1997/04/18 00:50:33 cgd Exp $	*/
 
 /*
@@ -72,7 +72,7 @@
 int ep_eisa_match(struct device *, void *, void *);
 void ep_eisa_attach(struct device *, struct device *, void *);
 
-const struct cfattach ep_eisa_ca = {
+struct cfattach ep_eisa_ca = {
 	sizeof(struct ep_softc), ep_eisa_match, ep_eisa_attach
 };
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: softraid.c,v 1.422 2022/03/20 13:14:02 krw Exp $ */
+/* $OpenBSD: softraid.c,v 1.421 2022/01/09 05:42:37 jsg Exp $ */
 /*
  * Copyright (c) 2007, 2008, 2009 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -83,7 +83,7 @@ void		sr_attach(struct device *, struct device *, void *);
 int		sr_detach(struct device *, int);
 void		sr_map_root(void);
 
-const struct cfattach softraid_ca = {
+struct cfattach softraid_ca = {
 	sizeof(struct sr_softc), sr_match, sr_attach, sr_detach,
 };
 

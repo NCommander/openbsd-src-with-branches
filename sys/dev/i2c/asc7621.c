@@ -1,4 +1,4 @@
-/*	$OpenBSD: asc7621.c,v 1.4 2007/10/31 20:46:17 cnst Exp $	*/
+/*	$OpenBSD: asc7621.c,v 1.3 2007/10/24 19:00:59 mikeb Exp $	*/
 
 /*
  * Copyright (c) 2007 Mike Belopuhov
@@ -123,7 +123,7 @@ void	adl_attach(struct device *, struct device *, void *);
 
 void	adl_refresh(void *);
 
-const struct cfattach adl_ca = {
+struct cfattach adl_ca = {
 	sizeof(struct adl_softc), adl_match, adl_attach
 };
 

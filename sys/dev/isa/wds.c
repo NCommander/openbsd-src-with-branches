@@ -1,4 +1,4 @@
-/*	$OpenBSD: wds.c,v 1.57 2020/09/22 19:32:53 krw Exp $	*/
+/*	$OpenBSD: wds.c,v 1.56 2020/07/29 12:13:05 krw Exp $	*/
 /*	$NetBSD: wds.c,v 1.13 1996/11/03 16:20:31 mycroft Exp $	*/
 
 #undef	WDSDIAG
@@ -173,7 +173,7 @@ struct scsi_adapter wds_switch = {
 int	wdsprobe(struct device *, void *, void *);
 void	wdsattach(struct device *, struct device *, void *);
 
-const struct cfattach wds_ca = {
+struct cfattach wds_ca = {
 	sizeof(struct wds_softc), wdsprobe, wdsattach
 };
 

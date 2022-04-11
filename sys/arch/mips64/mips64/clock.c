@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.44 2021/05/01 16:11:11 visa Exp $ */
+/*	$OpenBSD: clock.c,v 1.43 2021/03/04 15:38:06 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -55,7 +55,7 @@ struct cfdriver clock_cd = {
 	NULL, "clock", DV_DULL
 };
 
-const struct cfattach clock_ca = {
+struct cfattach clock_ca = {
 	sizeof(struct device), clockmatch, clockattach
 };
 

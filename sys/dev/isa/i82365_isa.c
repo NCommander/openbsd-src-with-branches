@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82365_isa.c,v 1.24 2021/03/07 06:17:03 jsg Exp $	*/
+/*	$OpenBSD: i82365_isa.c,v 1.23 2017/09/08 05:36:52 deraadt Exp $	*/
 /*	$NetBSD: i82365_isa.c,v 1.11 1998/06/09 07:25:00 thorpej Exp $	*/
 
 /*
@@ -60,7 +60,7 @@
 int	pcic_isa_probe(struct device *, void *, void *);
 void	pcic_isa_attach(struct device *, struct device *, void *);
 
-const struct cfattach pcic_isa_ca = {
+struct cfattach pcic_isa_ca = {
 	sizeof(struct pcic_softc), pcic_isa_probe, pcic_isa_attach
 };
 

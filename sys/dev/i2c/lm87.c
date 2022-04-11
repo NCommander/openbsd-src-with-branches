@@ -1,4 +1,4 @@
-/*	$OpenBSD: lm87.c,v 1.20 2008/11/10 05:19:48 cnst Exp $	*/
+/*	$OpenBSD: lm87.c,v 1.19 2007/06/24 05:34:35 dlg Exp $	*/
 
 /*
  * Copyright (c) 2005 Mark Kettenis
@@ -72,7 +72,7 @@ void	lmenv_attach(struct device *, struct device *, void *);
 
 void	lmenv_refresh(void *);
 
-const struct cfattach lmenv_ca = {
+struct cfattach lmenv_ca = {
 	sizeof(struct lmenv_softc), lmenv_match, lmenv_attach
 };
 

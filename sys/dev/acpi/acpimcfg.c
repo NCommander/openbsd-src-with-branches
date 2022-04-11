@@ -1,4 +1,4 @@
-/* $OpenBSD: acpimcfg.c,v 1.4 2018/08/19 08:23:47 kettenis Exp $ */
+/* $OpenBSD: acpimcfg.c,v 1.3 2018/07/04 20:46:22 kettenis Exp $ */
 /*
  * Copyright (c) 2010 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -26,7 +26,7 @@
 int acpimcfg_match(struct device *, void *, void *);
 void acpimcfg_attach(struct device *, struct device *, void *);
 
-const struct cfattach acpimcfg_ca = {
+struct cfattach acpimcfg_ca = {
 	sizeof(struct device), acpimcfg_match, acpimcfg_attach
 };
 

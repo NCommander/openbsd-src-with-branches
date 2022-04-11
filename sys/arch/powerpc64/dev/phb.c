@@ -1,4 +1,4 @@
-/*	$OpenBSD: phb.c,v 1.22 2022/02/21 11:15:09 jsg Exp $	*/
+/*	$OpenBSD: phb.c,v 1.21 2020/12/20 21:03:53 kettenis Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -100,7 +100,7 @@ void	phb_dmamem_free(bus_dma_tag_t, struct phb_dmamem *);
 int	phb_match(struct device *, void *, void *);
 void	phb_attach(struct device *, struct device *, void *);
 
-const struct cfattach phb_ca = {
+struct cfattach	phb_ca = {
 	sizeof (struct phb_softc), phb_match, phb_attach
 };
 

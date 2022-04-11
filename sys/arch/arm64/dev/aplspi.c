@@ -1,4 +1,4 @@
-/*	$OpenBSD: aplspi.c,v 1.3 2021/12/11 20:04:37 kettenis Exp $	*/
+/*	$OpenBSD: aplspi.c,v 1.2 2021/11/12 17:04:32 kettenis Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -101,7 +101,7 @@ void	 aplspi_scan(struct aplspi_softc *);
 #define HCLR4(sc, reg, bits)						\
 	HWRITE4((sc), (reg), HREAD4((sc), (reg)) & ~(bits))
 
-const struct cfattach aplspi_ca = {
+struct cfattach aplspi_ca = {
 	sizeof(struct aplspi_softc), aplspi_match, aplspi_attach
 };
 

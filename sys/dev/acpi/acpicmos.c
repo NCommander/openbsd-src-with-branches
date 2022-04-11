@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpicmos.c,v 1.1 2018/03/27 21:11:16 kettenis Exp $	*/
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2018 Mark Kettenis
  *
@@ -32,7 +32,7 @@ struct acpicmos_softc {
 int	acpicmos_match(struct device *, void *, void *);
 void	acpicmos_attach(struct device *, struct device *, void *);
 
-const struct cfattach acpicmos_ca = {
+struct cfattach acpicmos_ca = {
 	sizeof(struct acpicmos_softc), acpicmos_match, acpicmos_attach
 };
 

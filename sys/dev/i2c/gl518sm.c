@@ -1,4 +1,4 @@
-/*	$OpenBSD: gl518sm.c,v 1.6 2007/06/24 05:34:35 dlg Exp $	*/
+/*	$OpenBSD: gl518sm.c,v 1.5 2007/03/22 16:55:31 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2006 Mark Kettenis
@@ -69,7 +69,7 @@ void	glenv_attach(struct device *, struct device *, void *);
 
 void	glenv_refresh(void *);
 
-const struct cfattach glenv_ca = {
+struct cfattach glenv_ca = {
 	sizeof(struct glenv_softc), glenv_match, glenv_attach
 };
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcic2_isa.c,v 1.10 2022/01/09 05:42:44 jsg Exp $	*/
+/*	$OpenBSD: tcic2_isa.c,v 1.9 2021/03/07 06:17:04 jsg Exp $	*/
 /*	$NetBSD: tcic2_isa.c,v 1.2 1999/04/08 16:14:29 bad Exp $	*/
 
 #undef	TCICISADEBUG
@@ -113,7 +113,7 @@ void	*tcic_isa_chip_intr_establish(pcmcia_chipset_handle_t,
 void	tcic_isa_chip_intr_disestablish(pcmcia_chipset_handle_t, void *);
 const char *tcic_isa_chip_intr_string(pcmcia_chipset_handle_t, void *);
 
-const struct cfattach tcic_isa_ca = {
+struct cfattach tcic_isa_ca = {
 	sizeof(struct tcic_softc), tcic_isa_probe, tcic_isa_attach
 };
 
