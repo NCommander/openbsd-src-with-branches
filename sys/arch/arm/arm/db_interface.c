@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.16 2019/11/07 14:44:52 mpi Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.17 2021/03/25 04:12:00 jsg Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.34 2003/10/26 23:11:15 chris Exp $	*/
 
 /* 
@@ -378,8 +378,6 @@ db_machine_init(void)
 	 */
 	db_uh.uh_handler = db_trapper;
 	install_coproc_handler_static(0, &db_uh);
-
-	db_machine_commands_install(db_machine_command_table);
 }
 
 u_int

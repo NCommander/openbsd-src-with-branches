@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.12 2019/11/07 15:58:39 mpi Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.13 2019/11/07 16:08:08 mpi Exp $	*/
 /*	$NetBSD: db_interface.c,v 1.37 2006/09/06 00:11:49 uwe Exp $	*/
 
 /*-
@@ -86,8 +86,6 @@ struct db_command db_machine_command_table[] = {
 void
 db_machine_init(void)
 {
-
-	db_machine_commands_install(db_machine_command_table);
 }
 
 void
