@@ -1,4 +1,4 @@
-/*	$OpenBSD: param.c,v 1.45 2019/09/07 01:23:23 cheloha Exp $	*/
+/*	$OpenBSD: param.c,v 1.46 2021/01/13 16:28:50 cheloha Exp $	*/
 /*	$NetBSD: param.c,v 1.16 1996/03/12 03:08:40 mrg Exp $	*/
 
 /*
@@ -81,7 +81,7 @@ int	utc_offset = 0;
 #define	NVNODE (NPROCESS * 2 + NTEXT + 100)
 int	initialvnodes = NVNODE;
 int	maxprocess = NPROCESS;
-int	maxthread = NPROCESS + 8 * MAXUSERS;
+int	maxthread = 2 * NPROCESS;
 int	maxfiles = 5 * (NPROCESS + MAXUSERS) + 80;
 long	nmbclust = NMBCLUSTERS;
 
