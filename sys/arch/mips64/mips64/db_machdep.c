@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_machdep.c,v 1.57 2021/05/30 15:05:32 visa Exp $ */
+/*	$OpenBSD: db_machdep.c,v 1.58 2022/04/12 19:44:32 naddy Exp $ */
 
 /*
  * Copyright (c) 1998-2003 Opsycon AB (www.opsycon.se)
@@ -492,7 +492,7 @@ db_dump_tlb_cmd(db_expr_t addr, int have_addr, db_expr_t count, char *m)
 }
 
 
-struct db_command db_machine_command_table[] = {
+const struct db_command db_machine_command_table[] = {
 	{ "tlb",	db_dump_tlb_cmd,	0,	NULL },
 	{ "trap",	db_trap_trace_cmd,	0,	NULL },
 #ifdef MULTIPROCESSOR
