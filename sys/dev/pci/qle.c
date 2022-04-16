@@ -1,4 +1,4 @@
-/*	$OpenBSD: qle.c,v 1.61 2020/09/22 19:32:53 krw Exp $ */
+/*	$OpenBSD: qle.c,v 1.62 2022/03/11 18:00:51 mpi Exp $ */
 
 /*
  * Copyright (c) 2013, 2014 Jonathan Matthew <jmatthew@openbsd.org>
@@ -252,7 +252,7 @@ void		qle_scsi_cmd(struct scsi_xfer *);
 int		qle_scsi_probe(struct scsi_link *);
 
 
-struct scsi_adapter qle_switch = {
+const struct scsi_adapter qle_switch = {
 	qle_scsi_cmd, NULL, qle_scsi_probe, NULL, NULL
 };
 

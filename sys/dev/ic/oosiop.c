@@ -1,4 +1,4 @@
-/*	$OpenBSD: oosiop.c,v 1.34 2020/09/22 19:32:52 krw Exp $	*/
+/*	$OpenBSD: oosiop.c,v 1.35 2022/01/09 05:42:38 jsg Exp $	*/
 /*	$NetBSD: oosiop.c,v 1.4 2003/10/29 17:45:55 tsutsui Exp $	*/
 
 /*
@@ -128,7 +128,7 @@ struct cfdriver oosiop_cd = {
 	NULL, "oosiop", DV_DULL
 };
 
-struct scsi_adapter oosiop_switch = {
+const struct scsi_adapter oosiop_switch = {
 	oosiop_scsicmd, NULL, NULL, NULL, NULL
 };
 

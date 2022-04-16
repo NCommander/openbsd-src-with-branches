@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioscsi.c,v 1.28 2021/11/05 11:38:29 mpi Exp $	*/
+/*	$OpenBSD: vioscsi.c,v 1.29 2022/01/09 05:42:58 jsg Exp $	*/
 /*
  * Copyright (c) 2013 Google Inc.
  *
@@ -80,7 +80,7 @@ struct cfdriver vioscsi_cd = {
 	NULL, "vioscsi", DV_DULL,
 };
 
-struct scsi_adapter vioscsi_switch = {
+const struct scsi_adapter vioscsi_switch = {
 	vioscsi_scsi_cmd, NULL, NULL, NULL, NULL
 };
 

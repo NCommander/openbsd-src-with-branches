@@ -1,4 +1,4 @@
-/*	$OpenBSD: mb89352.c,v 1.31 2021/03/11 11:16:58 jsg Exp $	*/
+/*	$OpenBSD: mb89352.c,v 1.32 2021/09/25 23:53:35 aoyama Exp $	*/
 /*	$NetBSD: mb89352.c,v 1.5 2000/03/23 07:01:31 thorpej Exp $	*/
 /*	NecBSD: mb89352.c,v 1.4 1998/03/14 07:31:20 kmatsuda Exp	*/
 
@@ -190,7 +190,7 @@ do { \
 
 void
 /* spc_attach(sc) */
-spc_attach(struct spc_softc *sc, struct scsi_adapter *adapter)
+spc_attach(struct spc_softc *sc, const struct scsi_adapter *adapter)
 {
 	struct scsibus_attach_args saa;
 	SPC_TRACE(("spc_attach  "));

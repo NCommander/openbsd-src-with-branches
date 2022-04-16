@@ -1,4 +1,4 @@
-/*	$OpenBSD: ciss.c,v 1.89 2020/09/22 19:32:52 krw Exp $	*/
+/*	$OpenBSD: ciss.c,v 1.90 2022/01/09 05:42:38 jsg Exp $	*/
 
 /*
  * Copyright (c) 2005,2006 Michael Shalayeff
@@ -69,7 +69,7 @@ struct cfdriver ciss_cd = {
 void	ciss_scsi_cmd(struct scsi_xfer *xs);
 int	ciss_scsi_ioctl(struct scsi_link *, u_long, caddr_t, int);
 
-struct scsi_adapter ciss_switch = {
+const struct scsi_adapter ciss_switch = {
 	ciss_scsi_cmd, NULL, NULL, NULL, ciss_scsi_ioctl
 };
 

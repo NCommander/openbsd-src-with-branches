@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr53c9x.c,v 1.78 2021/03/07 06:21:38 jsg Exp $	*/
+/*	$OpenBSD: ncr53c9x.c,v 1.79 2022/01/09 05:42:38 jsg Exp $	*/
 /*     $NetBSD: ncr53c9x.c,v 1.56 2000/11/30 14:41:46 thorpej Exp $    */
 
 /*
@@ -149,7 +149,7 @@ void	ncr53c9x_scsi_cmd(struct scsi_xfer *);
 int	ncr53c9x_scsi_probe(struct scsi_link *);
 void	ncr53c9x_scsi_free(struct scsi_link *);
 
-struct scsi_adapter ncr53c9x_switch = {
+const struct scsi_adapter ncr53c9x_switch = {
 	ncr53c9x_scsi_cmd, NULL, ncr53c9x_scsi_probe,
 	ncr53c9x_scsi_free, NULL
 };

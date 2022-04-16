@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioblk.c,v 1.33 2021/11/05 11:38:29 mpi Exp $	*/
+/*	$OpenBSD: vioblk.c,v 1.34 2022/01/09 05:42:58 jsg Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch.
@@ -149,7 +149,7 @@ struct cfdriver vioblk_cd = {
 	NULL, "vioblk", DV_DULL
 };
 
-struct scsi_adapter vioblk_switch = {
+const struct scsi_adapter vioblk_switch = {
 	vioblk_scsi_cmd, NULL, NULL, NULL, NULL
 };
 
