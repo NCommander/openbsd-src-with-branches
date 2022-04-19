@@ -1,4 +1,4 @@
-/*	$OpenBSD: rdcphy.c,v 1.3 2014/12/05 15:50:04 mpi Exp $	*/
+/*	$OpenBSD: rdcphy.c,v 1.4 2022/04/06 18:59:29 naddy Exp $	*/
 /*-
  * Copyright (c) 2010, Pyun YongHyeon <yongari@FreeBSD.org>
  * All rights reserved.
@@ -102,6 +102,8 @@ const struct mii_phy_funcs rdcphy_funcs = {
 static const struct mii_phydesc rdcphys[] = {
 	{ MII_OUI_RDC,		MII_MODEL_RDC_R6040,
 	  MII_STR_RDC_R6040 },
+	{ MII_OUI_RDC,		MII_MODEL_RDC_R6040_2,
+	  MII_STR_RDC_R6040_2 },
 	{ 0,			0,
 	  NULL },
 };
