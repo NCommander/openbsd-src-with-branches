@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.8 2018/12/03 18:39:42 bluhm Exp $ */
+/*	$OpenBSD: util.c,v 1.9 2021/04/13 08:21:12 claudio Exp $ */
 
 /*
  * Copyright (c) 2015 Martin Pieuchot
@@ -525,4 +525,9 @@ rt_hash(struct rtentry *rt, struct sockaddr *dst, uint32_t *src)
 	}
 
 	return (c & 0xffff);
+}
+
+void
+rt_timer_init(void)
+{
 }
