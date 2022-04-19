@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.67 2022/04/11 18:59:23 claudio Exp $ */
+/*	$OpenBSD: parser.c,v 1.68 2022/04/19 09:52:29 claudio Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -108,7 +108,7 @@ parse_filepath(unsigned int repoid, const char *path, const char *file,
 	/* build file path based on repoid, entity path and filename */
 	rp = repo_get(repoid);
 	if (rp == NULL)
-		return NULL;
+		errx(1, "build file path: repository %u missing", repoid);
 
 	if (loc == DIR_VALID)
 		repopath = rp->validpath;
