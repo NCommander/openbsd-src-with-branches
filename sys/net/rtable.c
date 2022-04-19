@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtable.c,v 1.75 2021/05/25 22:45:09 bluhm Exp $ */
+/*	$OpenBSD: rtable.c,v 1.76 2022/01/02 22:36:04 jsg Exp $ */
 
 /*
  * Copyright (c) 2014-2016 Martin Pieuchot
@@ -184,6 +184,8 @@ rtable_init(void)
 
 	if (rtable_add(0) != 0)
 		panic("unable to create default routing table");
+
+	rt_timer_init();
 }
 
 int
