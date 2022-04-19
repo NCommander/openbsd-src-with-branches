@@ -393,11 +393,11 @@ GPT_print_parthdr(const int verbosity)
 }
 
 void
-GPT_print_part(const int n, const char *units, const int verbosity)
+GPT_print_part(const unsigned int pn, const char *units, const int verbosity)
 {
 	const struct unit_type	*ut;
 	struct uuid		 guid;
-	struct gpt_partition	*partn = &gp[n];
+	struct gpt_partition	*partn = &gp[pn];
 	char			*guidstr = NULL;
 	double			 size;
 	uint64_t		 sectors;
@@ -406,8 +406,8 @@ GPT_print_part(const int n, const char *units, const int verbosity)
 	uuid_dec_le(&partn->gp_type, &guid);
 	sectors = letoh64(partn->gp_lba_end) - letoh64(partn->gp_lba_start) + 1;
 	size = units_size(units, sectors, &ut);
-	printf("%c%3d: %-36s [%12lld: %12.0f%s]\n",
-	    (letoh64(partn->gp_attrs) & GPTDOSACTIVE)?'*':' ', n,
+	printf("%c%3u: %-36s [%12lld: %12.0f%s]\n",
+	    (letoh64(partn->gp_attrs) & GPTDOSACTIVE)?'*':' ', pn,
 	    PRT_uuid_to_typename(&guid), letoh64(partn->gp_lba_start),
 	    size, ut->ut_abbr);
 
