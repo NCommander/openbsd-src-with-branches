@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.h,v 1.47 2021/10/25 13:51:25 krw Exp $	*/
+/*	$OpenBSD: misc.h,v 1.48 2022/04/20 15:49:56 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -35,4 +35,5 @@ double		 units_size(const char *, const uint64_t,
 void		 string_from_line(char *, const size_t, const int);
 int		 ask_yn(const char *);
 int		 hex_octet(char *);
-uint64_t	 getuint64(const char *, uint64_t, const uint64_t, const uint64_t);
+uint64_t	 getuint64(const char *, uint64_t, const uint64_t,
+    const uint64_t);
