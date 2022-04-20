@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-xmss.c,v 1.3 2020/10/18 11:32:02 djm Exp $*/
+/* $OpenBSD: ssh-xmss.c,v 1.4 2020/10/19 22:49:23 dtucker Exp $*/
 /*
  * Copyright (c) 2017 Stefan-Lukas Gazdag.
  * Copyright (c) 2017 Markus Friedl.
@@ -19,8 +19,10 @@
 #include <sys/types.h>
 #include <limits.h>
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include "log.h"
