@@ -1,4 +1,4 @@
-/*	$Id: test-roa.c,v 1.14 2021/10/26 16:59:54 claudio Exp $ */
+/*	$Id: test-roa.c,v 1.15 2022/01/19 08:24:43 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -30,6 +30,7 @@
 
 #include "extern.h"
 
+int outformats;
 int verbose;
 
 int
@@ -76,7 +77,7 @@ main(int argc, char *argv[])
 			continue;
 		}
 		if (verb)
-			roa_print(p);
+			roa_print(xp, p);
 		if (ppem) {
 			if (!PEM_write_bio_X509(bio_out, xp))
 				errx(1,

@@ -1,4 +1,4 @@
-/*	$Id: test-tal.c,v 1.7 2021/10/24 17:54:28 claudio Exp $ */
+/*	$Id: test-tal.c,v 1.8 2021/10/26 16:59:54 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -29,6 +29,7 @@
 
 #include "extern.h"
 
+int outformats;
 int verbose;
 
 int
