@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rpki-client.8,v 1.58 2022/04/12 11:05:50 job Exp $
+.\"	$OpenBSD: rpki-client.8,v 1.59 2022/04/12 12:54:09 jmc Exp $
 .\"
 .\" Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
@@ -112,7 +112,11 @@ If
 .Ar file
 is an rsync:// URI, the corresponding file from the cache will be used.
 This option implies
-.Fl n .
+.Fl n ,
+and can be combined with
+.Fl j 
+to emit a stream of
+.Em Concatenated JSON .
 .It Fl j
 Create output in the file
 .Pa json
