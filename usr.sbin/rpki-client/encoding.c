@@ -1,4 +1,4 @@
-/*	$OpenBSD: encoding.c,v 1.10 2021/11/24 15:24:16 claudio Exp $  */
+/*	$OpenBSD: encoding.c,v 1.11 2022/04/19 19:01:19 claudio Exp $  */
 /*
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
  *
@@ -226,4 +226,3 @@ hex_decode(const char *hexstr, char *buf, size_t len)
 	}
 	return 0;
 }
-

@@ -1,4 +1,4 @@
-/*	$OpenBSD: io.c,v 1.17 2021/10/24 16:59:14 claudio Exp $ */
+/*	$OpenBSD: io.c,v 1.18 2021/12/05 12:26:27 jsg Exp $ */
 /*
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -247,7 +247,7 @@ io_buf_recvfd(int fd, struct ibuf **ib)
 	if ((b = ibuf_dynamic(sizeof(sz), INT32_MAX)) == NULL)
 		err(1, NULL);
 	*ib = b;
-	
+
 	memset(&msg, 0, sizeof(msg));
 	memset(&cmsgbuf, 0, sizeof(cmsgbuf));
 
