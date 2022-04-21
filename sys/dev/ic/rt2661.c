@@ -1,4 +1,4 @@
-/*	$OpenBSD: rt2661.c,v 1.97 2020/07/10 13:22:20 patrick Exp $	*/
+/*	$OpenBSD: rt2661.c,v 1.98 2020/07/20 07:45:44 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2006
@@ -1271,9 +1271,8 @@ rt2661_rx_intr(struct rt2661_softc *sc)
 		ni = ieee80211_find_rxnode(ic, wh);
 
 		/* send the frame to the 802.11 layer */
-		rxi.rxi_flags = 0;
+		memset(&rxi, 0, sizeof(rxi));
 		rxi.rxi_rssi = desc->rssi;
-		rxi.rxi_tstamp = 0;	/* unused */
 		ieee80211_inputm(ifp, m, ni, &rxi, &ml);
 
 		/*-
