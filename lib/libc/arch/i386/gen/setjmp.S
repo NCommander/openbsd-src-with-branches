@@ -1,3 +1,4 @@
+/* $OpenBSD: setjmp.S,v 1.13 2020/12/06 18:13:15 bluhm Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,18 +29,23 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	from: @(#)setjmp.s	5.1 (Berkeley) 4/23/90
- *	$Id: setjmp.S,v 1.6 1994/12/24 01:16:44 jtc Exp $
  */
 
-#if defined(LIBC_SCCS)
-	.text
-	.asciz "$Id: setjmp.S,v 1.6 1994/12/24 01:16:44 jtc Exp $"
-#endif
+#include "SYS.h"
+#include <machine/setjmp.h>
+
+	.section	.openbsd.randomdata,"aw",@progbits
+	.balign	4
+	.globl	__jmpxor
+	.hidden	__jmpxor
+__jmpxor:
+	.zero	4*3		# (eip, esp, ebp)
+	END(__jmpxor)
+	.type	__jmpxor,@object
+
 
 /*
- * C library -- _setjmp, _longjmp
+ * C library -- setjmp, longjmp
  *
  *	longjmp(a,v)
  * will generate a "return(v)" from the last call to
@@ -52,48 +54,63 @@
  * The previous signal state is restored.
  */
 
-#include "DEFS.h"
-#include "SYS.h"
-
 ENTRY(setjmp)
-	pushl	$0
-#ifdef PIC
-	call	PIC_PLT(_sigblock)
-#else
-	call	_sigblock
-#endif
-	addl	$4,%esp
-	movl	4(%esp),%ecx
-	movl	0(%esp),%edx
-	movl	%edx, 0(%ecx)
-	movl	%ebx, 4(%ecx)
-	movl	%esp, 8(%ecx)
-	movl	%ebp,12(%ecx)
-	movl	%esi,16(%ecx)
-	movl	%edi,20(%ecx)
-	movl	%eax,24(%ecx)
+	pushl	$0			/* mask = empty */
+	pushl	$1			/* how = SIG_BLOCK */
+	call	1f
+1:	movl	$(SYS_sigprocmask),%eax
+	int	$0x80			/* leave oset in %eax */
+	popl	%edx
+	addl	$8,%esp
+	addl	$__jmpxor-1b,%edx	# load cookie address
+
+	movl	4(%esp),%ecx		# parameter, pointer to env
+	movl	%eax,(_JB_SIGMASK * 4)(%ecx)
+	movl	%ebx,(_JB_EBX * 4)(%ecx)
+	movl	%esp,%eax
+	xorl	0(%edx),%eax		# use esp cookie
+	movl	%eax,(_JB_ESP * 4)(%ecx)
+	movl	%ebp,%eax
+	xorl	4(%edx),%eax		# use ebp cookie
+	movl	%eax,(_JB_EBP * 4)(%ecx)
+	movl	%esi,(_JB_ESI * 4)(%ecx)
+	movl	%edi,(_JB_EDI * 4)(%ecx)
+	movl	8(%edx),%edx		# load eip cookie over cookie address
+	xorl	0(%esp),%edx		# caller address
+	movl	%edx,(_JB_EIP * 4)(%ecx)
+	fnstcw	(_JB_FCW * 4)(%ecx)
 	xorl	%eax,%eax
 	ret
+END(setjmp)
 
 ENTRY(longjmp)
-	movl	4(%esp),%edx
-	pushl	24(%edx)
-#ifdef PIC
-	call	PIC_PLT(_sigsetmask)
-#else
-	call	_sigsetmask
-#endif
-	addl	$4,%esp
-	movl	4(%esp),%edx
-	movl	8(%esp),%eax
-	movl	0(%edx),%ecx
-	movl	4(%edx),%ebx
-	movl	8(%edx),%esp
-	movl	12(%edx),%ebp
-	movl	16(%edx),%esi
-	movl	20(%edx),%edi
+	movl	4(%esp),%edx		# parameter, pointer to env
+	pushl	(_JB_SIGMASK * 4)(%edx)	/* mask from sc_mask */
+	pushl	$3			/* how = SIG_SETMASK */
+	call	1f			/* get our eip */
+1:	movl	$(SYS_sigprocmask),%eax
+	int	$0x80
+	popl	%ecx
+	addl	$8,%esp
+	addl	$__jmpxor-1b,%ecx	# load cookie address
+
+	movl	4(%esp),%edx		# parameter, pointer to env
+	movl	8(%esp),%eax		# parameter, val
+	fldcw	(_JB_FCW * 4)(%edx)
+	movl	(_JB_EBX * 4)(%edx),%ebx
+	movl	(_JB_ESP * 4)(%edx),%esi
+	xorl	0(%ecx),%esi		# use esp cookie
+	movl	%esi,%esp		# un-xor'ed esp is safe to use
+	movl	(_JB_EBP * 4)(%edx),%ebp
+	xorl	4(%ecx),%ebp		# use ebp cookie
+	movl	(_JB_ESI * 4)(%edx),%esi
+	movl	(_JB_EDI * 4)(%edx),%edi
+
+	movl	8(%ecx),%ecx		# load eip cookie over cookie address
+	xorl	(_JB_EIP * 4)(%edx),%ecx
 	testl	%eax,%eax
 	jnz	1f
 	incl	%eax
 1:	movl	%ecx,0(%esp)
 	ret
+END(longjmp)

@@ -1,4 +1,4 @@
-/* crypto/ecdh/ech_locl.h */
+/* $OpenBSD: ech_locl.h,v 1.5 2016/12/21 15:49:29 jsing Exp $ */
 /* ====================================================================
  * Copyright (c) 2000-2005 The OpenSSL Project.  All rights reserved.
  *
@@ -7,7 +7,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -58,22 +58,15 @@
 
 #include <openssl/ecdh.h>
 
-#ifdef  __cplusplus
-extern "C" {
-#endif
+__BEGIN_HIDDEN_DECLS
 
-struct ecdh_method 
-	{
+struct ecdh_method {
 	const char *name;
 	int (*compute_key)(void *key, size_t outlen, const EC_POINT *pub_key, EC_KEY *ecdh,
-	                   void *(*KDF)(const void *in, size_t inlen, void *out, size_t *outlen));
-#if 0
-	int (*init)(EC_KEY *eckey);
-	int (*finish)(EC_KEY *eckey);
-#endif
+	    void *(*KDF)(const void *in, size_t inlen, void *out, size_t *outlen));
 	int flags;
 	char *app_data;
-	};
+};
 
 /* If this flag is set the ECDH method is FIPS compliant and can be used
  * in FIPS mode. This is set in the validated module method. If an
@@ -95,8 +88,12 @@ typedef struct ecdh_data_st {
 
 ECDH_DATA *ecdh_check(EC_KEY *);
 
-#ifdef  __cplusplus
-}
-#endif
+/*
+ * ECDH Key Derivation Function as defined in ANSI X9.63.
+ */
+int ecdh_KDF_X9_63(unsigned char *out, size_t outlen, const unsigned char *Z,
+    size_t Zlen, const unsigned char *sinfo, size_t sinfolen, const EVP_MD *md);
+
+__END_HIDDEN_DECLS
 
 #endif /* HEADER_ECH_LOCL_H */

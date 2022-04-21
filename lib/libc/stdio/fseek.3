@@ -1,4 +1,4 @@
-.\"	$NetBSD: fseek.3,v 1.6 1995/02/02 01:15:43 jtc Exp $
+.\"	$OpenBSD: fseek.3,v 1.17 2016/03/15 19:45:57 espie Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,41 +31,44 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)fseek.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: March 15 2016 $
 .Dt FSEEK 3
 .Os
 .Sh NAME
 .Nm fgetpos ,
 .Nm fseek ,
+.Nm fseeko ,
 .Nm fsetpos ,
 .Nm ftell ,
+.Nm ftello ,
 .Nm rewind
 .Nd reposition a stream
 .Sh SYNOPSIS
-.Fd #include <stdio.h>
-.Ft int
-.Fn fseek "FILE *stream" "long offset" "int whence"
-.Ft long
-.Fn ftell "FILE *stream"
-.Ft void
-.Fn rewind "FILE *stream"
+.In stdio.h
 .Ft int
 .Fn fgetpos "FILE *stream" "fpos_t *pos"
 .Ft int
-.Fn fsetpos "FILE *stream" "fpos_t *pos"
+.Fn fseek "FILE *stream" "long offset" "int whence"
+.Ft int
+.Fn fseeko "FILE *stream" "off_t offset" "int whence"
+.Ft int
+.Fn fsetpos "FILE *stream" "const fpos_t *pos"
+.Ft long
+.Fn ftell "FILE *stream"
+.Ft off_t
+.Fn ftello "FILE *stream"
+.Ft void
+.Fn rewind "FILE *stream"
 .Sh DESCRIPTION
 The
 .Fn fseek
-function sets the file position indicator for the stream pointed
-to by
+function sets the file position indicator for the stream pointed to by
 .Fa stream .
 The new position, measured in bytes, is obtained by adding
 .Fa offset
 bytes to the position specified by
 .Fa whence .
-If 
+If
 .Fa whence
 is set to
 .Dv SEEK_SET ,
@@ -87,11 +86,26 @@ any effects of the
 function on the same stream.
 .Pp
 The
+.Fn fseeko
+function is identical to
+.Fn fseek
+except that it takes an
+.Li off_t
+as its
+.Fa offset .
+.Pp
+The
 .Fn ftell
-function
-obtains the current value of the file position indicator for the
+function obtains the current value of the file position indicator for the
 stream pointed to by
 .Fa stream .
+.Pp
+The
+.Fn ftello
+function is identical to
+.Fn ftell
+except that its return value is of type
+.Li off_t .
 .Pp
 The
 .Fn rewind
@@ -111,74 +125,108 @@ The
 .Fn fgetpos
 and
 .Fn fsetpos
-functions
-are alternate interfaces equivalent to
+functions are alternate interfaces equivalent to
 .Fn ftell
 and
 .Fn fseek
 (with whence set to
-.Dv SEEK_SET
-), setting and storing the current value of
-the file offset into or from the object referenced by 
+.Dv SEEK_SET ) ,
+setting and storing the current value of
+the file offset into or from the object referenced by
 .Fa pos .
-On some
-.Pq non- Ns Tn UNIX
-systems an
+On some systems an
 .Dq Fa fpos_t
 object may be a complex object
 and these routines may be the only way to portably reposition a text stream.
 .Sh RETURN VALUES
 The
 .Fn rewind
-function
-returns no value.
+function returns no value.
+Prefer
+.Fn fseek ,
+which is just as portable, and does not hide errors.
 Upon successful completion,
 .Fn fgetpos ,
 .Fn fseek ,
-.Fn fsetpos
-return 0,
+.Fn fseeko ,
 and
+.Fn fsetpos
+return 0 and
 .Fn ftell
-returns the current offset.
-Otherwise, 
-.Fn fseek
-returns \-1 and 
-the others
-return a nonzero value and the global variable 
+and
+.Fn ftello
+return the current offset.
+Otherwise,
+.Fn fseek ,
+.Fn fseeko ,
+.Fn ftell ,
+and
+.Fn ftello
+return \-1 and
+.Fn fgetpos
+and
+.Fn fsetpos
+return a non-zero value and the global variable
 .Va errno
 is set to indicate the error.
 .Sh ERRORS
+The
+.Fn fgetpos ,
+.Fn fseek ,
+.Fn fseeko ,
+.Fn fsetpos ,
+.Fn ftell ,
+.Fn ftello ,
+and
+.Fn rewind
+functions will fail if:
 .Bl -tag -width Er
 .It Bq Er EBADF
 The
 .Fa stream
-specified
-is not a seekable stream.
+specified is not a seekable stream.
+.El
+.Pp
+Additionally, the
+.Fn fseek
+and
+.Fn fseeko
+functions will fail if:
+.Bl -tag -width Er
 .It Bq Er EINVAL
 The
 .Fa whence
-argument to 
-.Fn fseek
-was not
+argument was not
 .Dv SEEK_SET ,
 .Dv SEEK_END ,
 or
 .Dv SEEK_CUR .
 .El
 .Pp
-The function
+Additionally, the
+.Fn ftell
+function will fail if:
+.Bl -tag -width Er
+.It Bq Er EOVERFLOW
+The value of the file position indicator is too large to be represented by a
+.Vt long .
+.El
+.Pp
+Finally, the functions
 .Fn fgetpos ,
 .Fn fseek ,
+.Fn fseeko ,
 .Fn fsetpos ,
-and 
-.Fn ftell
+.Fn ftell ,
+and
+.Fn ftello
 may also fail and set
 .Va errno
 for any of the errors specified for the routines
 .Xr fflush 3 ,
 .Xr fstat 2 ,
 .Xr lseek 2 ,
-and 
+and
 .Xr malloc 3 .
 .Sh SEE ALSO
 .Xr lseek 2
@@ -190,6 +238,22 @@ The
 .Fn ftell ,
 and
 .Fn rewind
-functions
-conform to
-.St -ansiC .
+functions conform to
+.St -ansiC
+and
+.St -xpg4 .
+.Pp
+The
+.Fn fseeko
+and
+.Fn ftello
+functions conform to
+.St -xpg4 .
+.Sh HISTORY
+The functions
+.Fn fseek ,
+.Fn ftell ,
+and
+.Fn rewind
+first appeared in
+.At v7 .

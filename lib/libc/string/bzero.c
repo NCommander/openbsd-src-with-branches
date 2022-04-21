@@ -1,3 +1,5 @@
+/*	$OpenBSD: bzero.c,v 1.8 2014/06/10 04:17:37 deraadt Exp $	*/
+
 /*
  * Copyright (c) 1987 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,23 +29,17 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)bzero.c	5.7 (Berkeley) 2/24/91";*/
-static char *rcsid = "$Id: bzero.c,v 1.3 1993/08/26 00:51:37 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <string.h>
 
 /*
  * bzero -- vax movc5 instruction
  */
 void
-bzero(b, length)
-	void *b;
-	register size_t length;
+bzero(void *b, size_t length)
 {
-	register char *p;
+	char *p;
 
 	for (p = b; length--;)
 		*p++ = '\0';
 }
+DEF_WEAK(bzero);

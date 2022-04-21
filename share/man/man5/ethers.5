@@ -1,40 +1,50 @@
+.\"	$OpenBSD: ethers.5,v 1.19 2018/11/09 17:49:32 brynet Exp $
 .\"	$NetBSD: ethers.5,v 1.2 1994/11/30 19:31:16 jtc Exp $
 .\"
 .\"     Written by Roland McGrath <roland@frob.com>.  Public domain.
 .\"
-.Dd December 16, 1993
+.Dd $Mdocdate: November 9 2018 $
 .Dt ETHERS 5
-.Os NetBSD
+.Os
 .Sh NAME
 .Nm ethers
-.Nd Ethernet host name data base
+.Nd Ethernet host name database
 .Sh DESCRIPTION
 The
-.Xr ethers
+.Nm
 file maps Ethernet addresses to host names.
-Lines consist of an address and a host name, separated by any number of blanks and/or tab characters.
-A ``#'' indicates the beginning of a comment; characters up to the end of
+Lines consist of an address and a host name, separated by any number
+of blanks and/or tab characters.
+A
+.Ql #
+indicates the beginning of a comment; characters up to the end of
 the line are not interpreted by routines which search the file.
 .Pp
-Ethernet addresses are expressed as six hexadecimal numbers separated by colons.  The functions described in 
-.Xr ethers 3
-and
+Ethernet addresses are expressed as six hexadecimal numbers separated by
+colons.
+The functions described in
 .Xr ether_aton 3
 can read and produce this format.
 .Sh FILES
 .Bl -tag -width /etc/ethers -compact
 .It Pa /etc/ethers
-The
-.Nm ethers
-file resides in
-.Pa /etc .
 .El
 .Sh SEE ALSO
-.Xr ethers 3
-.Sh BUGS
-A name server should be used instead of a static file.
+.Xr ether_aton 3 ,
+.Xr diskless 8
 .Sh HISTORY
 The
-.Nm ethers
+.Nm
 file format was adopted from SunOS and appeared in
-NetBSD 0.9b.
+.Nx
+0.9b.
+.Sh BUGS
+A name server should be used instead of a static file.
+.Pp
+Lines in
+.Pa /etc/ethers
+are limited to
+.Dv BUFSIZ
+characters
+.Pq currently 1024 .
+Longer lines will be ignored.

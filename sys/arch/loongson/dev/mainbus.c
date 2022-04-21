@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.1 2009/06/13 21:48:03 miod Exp $ */
+/*	$OpenBSD: mainbus.c,v 1.9 2016/11/17 14:41:21 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -58,18 +58,36 @@ mainbus_match(struct device *parent, void *cfdata, void *aux)
 void
 mainbus_attach(struct device *parent, struct device *self, void *aux)
 {
-	struct mainbus_attach_args maa;
+	struct cpu_attach_args caa;
 
-	printf("\n");
+	printf(": %s %s\n", sys_platform->vendor, sys_platform->product);
 
-	bzero(&maa, sizeof maa);
-	maa.maa_name = "cpu";
-	config_found(self, &maa, mainbus_print);
-	maa.maa_name = "clock";
-	config_found(self, &maa, mainbus_print);
+	bzero(&caa, sizeof caa);
+	caa.caa_maa.maa_name = "cpu";
+	caa.caa_hw = &bootcpu_hwinfo;
+	config_found(self, &caa, mainbus_print);
 
-	maa.maa_name = "bonito";
-	config_found(self, &maa, mainbus_print);
+#ifdef MULTIPROCESSOR
+	if (sys_platform->config_secondary_cpus != NULL)
+		sys_platform->config_secondary_cpus(self, mainbus_print);
+#endif
+
+	caa.caa_maa.maa_name = "bonito";
+	config_found(self, &caa.caa_maa, mainbus_print);
+
+	caa.caa_maa.maa_name = "htb";
+	config_found(self, &caa.caa_maa, mainbus_print);
+
+	caa.caa_maa.maa_name = "leioc";
+	config_found(self, &caa.caa_maa, mainbus_print);
+
+	if (md_startclock == NULL) {
+		caa.caa_maa.maa_name = "clock";
+		config_found(self, &caa.caa_maa, mainbus_print);
+	}
+
+	caa.caa_maa.maa_name = "apm";
+	config_found(self, &caa.caa_maa, mainbus_print);
 }
 
 int

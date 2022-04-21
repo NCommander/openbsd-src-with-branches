@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: t_revoke.c,v 1.2 2020/11/09 23:18:51 bluhm Exp $	*/
 /* $NetBSD: t_revoke.c,v 1.2 2017/01/13 21:15:57 christos Exp $ */
 
 /*-
@@ -31,9 +31,6 @@
  */
 
 #include "macros.h"
-
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_revoke.c,v 1.2 2017/01/13 21:15:57 christos Exp $");
 
 #include <sys/resource.h>
 #include <sys/wait.h>
@@ -118,8 +115,11 @@ ATF_TC_BODY(revoke_err, tc)
 	ATF_REQUIRE_ERRNO(ENAMETOOLONG, revoke(buf) == -1);
 
 	errno = 0;
-	/* Adjusted for OpenBSD, initially EPERM */
+#ifdef __OpenBSD__
 	ATF_REQUIRE_ERRNO(ENOTTY, revoke("/etc/passwd") == -1);
+#else
+	ATF_REQUIRE_ERRNO(EPERM, revoke("/etc/passwd") == -1);
+#endif
 
 	errno = 0;
 	ATF_REQUIRE_ERRNO(ENOENT, revoke("/etc/xxx/yyy") == -1);
@@ -184,15 +184,15 @@ ATF_TC_CLEANUP(revoke_perm, tc)
 ATF_TP_ADD_TCS(tp)
 {
 
-	/*
-	 * Adjusted for OpenBSD, revoke only on ttys supported
-	 * ATF_TP_ADD_TC(tp, revoke_basic);
-	 */
+#ifndef __OpenBSD__
+	/* OpenBSD supports revoke only on ttys */
+	ATF_TP_ADD_TC(tp, revoke_basic);
+#endif
 	ATF_TP_ADD_TC(tp, revoke_err);
-	/*
-	 * Adjusted for OpenBSD, revoke only on ttys supported
-	 * ATF_TP_ADD_TC(tp, revoke_perm);
-	 */
+#ifndef __OpenBSD__
+	/* OpenBSD supports revoke only on ttys */
+	ATF_TP_ADD_TC(tp, revoke_perm);
+#endif
 
 	return atf_no_error();
 }

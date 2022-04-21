@@ -1,5 +1,4 @@
-/*	$NetBSD: getloadavg.c,v 1.5 1995/02/25 08:51:15 cgd Exp $	*/
-
+/*	$OpenBSD: getloadavg.c,v 1.8 2019/06/28 13:32:41 deraadt Exp $ */
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,21 +28,13 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getloadavg.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getloadavg.c,v 1.5 1995/02/25 08:51:15 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/sysctl.h>
-#include <vm/vm_param.h>
 
 #include <stdlib.h>
+
+#define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
 
 /*
  * getloadavg() -- Get system load averages.
@@ -56,21 +43,18 @@ static char rcsid[] = "$NetBSD: getloadavg.c,v 1.5 1995/02/25 08:51:15 cgd Exp $
  * Return number of samples retrieved, or -1 on error.
  */
 int
-getloadavg(loadavg, nelem)
-	double loadavg[];
-	int nelem;
+getloadavg(double loadavg[], int nelem)
 {
 	struct loadavg loadinfo;
-	int i, mib[2];
+	const int mib[2] = { CTL_VM, VM_LOADAVG };
+	int i;
 	size_t size;
 
-	mib[0] = CTL_VM;
-	mib[1] = VM_LOADAVG;
 	size = sizeof(loadinfo);
-	if (sysctl(mib, 2, &loadinfo, &size, NULL, 0) < 0)
+	if (sysctl(mib, 2, &loadinfo, &size, NULL, 0) == -1)
 		return (-1);
 
-	nelem = MIN(nelem, sizeof(loadinfo.ldavg) / sizeof(fixpt_t));
+	nelem = MINIMUM(nelem, sizeof(loadinfo.ldavg) / sizeof(fixpt_t));
 	for (i = 0; i < nelem; i++)
 		loadavg[i] = (double) loadinfo.ldavg[i] / loadinfo.fscale;
 	return (nelem);

@@ -1,4 +1,5 @@
-/*	$NetBSD: gprof.h,v 1.12 1995/04/19 07:22:59 cgd Exp $	*/
+/*	$OpenBSD: gprof.h,v 1.16 2015/12/06 23:22:51 guenther Exp $	*/
+/*	$NetBSD: gprof.h,v 1.13 1996/04/01 21:54:06 mark Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,40 +39,10 @@
 #include <a.out.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
+#include <unistd.h>
 
-#if alpha
-#   include "alpha.h"
-#endif
-#if i386
-#   include "i386.h"
-#endif
-#if m68k
-#   include "m68k.h"
-#endif
-#if mips
-#   include "mips.h"
-#endif
-#if ns32k
-#   include "ns32k.h"
-#endif
-#if pmax
-#   include "pmax.h"
-#endif
-#if sparc
-#   include "sparc.h"
-#endif
-#if tahoe
-#   include "tahoe.h"
-#endif
-#if vax
-#   include "vax.h"
-#endif
-
-
-    /*
-     *	who am i, for error messages.
-     */
-char	*whoami;
+#include MD_INCLUDE
 
     /*
      * booleans
@@ -87,13 +54,13 @@ typedef int	bool;
     /*
      *	ticks per second
      */
-long	hz;
+extern long	hz;
 
 typedef	u_short UNIT;		/* unit of profiling */
-char	*a_outname;
+extern char	*a_outname;
 #define	A_OUTNAME		"a.out"
 
-char	*gmonname;
+extern char	*gmonname;
 #define	GMONNAME		"gmon.out"
 #define	GMONSUM			"gmon.sum"
 
@@ -130,7 +97,7 @@ typedef struct arcstruct	arctype;
      * its address, the number of calls and compute its share of cpu time.
      */
 struct nl {
-    char		*name;		/* the name */
+    const char		*name;		/* the name */
     unsigned long	value;		/* the pc entry point */
     unsigned long	svalue;		/* entry point aligned to histograms */
     double		time;		/* ticks in this routine */
@@ -154,9 +121,9 @@ struct nl {
 };
 typedef struct nl	nltype;
 
-nltype	*nl;			/* the whole namelist */
-nltype	*npe;			/* the virtual end of the namelist */
-int	nname;			/* the number of function names */
+extern nltype	*nl;			/* the whole namelist */
+extern nltype	*npe;			/* the virtual end of the namelist */
+extern int	nname;			/* the number of function names */
 
 #define	HASCYCLEXIT	0x08	/* node has arc exiting from cycle */
 #define	CYCLEHEAD	0x10	/* node marked as head of a cycle */
@@ -175,9 +142,9 @@ struct cl {
 };
 typedef struct cl cltype;
 
-arctype	*archead;		/* the head of arcs in current cycle list */
-cltype	*cyclehead;		/* the head of the list */
-int	cyclecnt;		/* the number of cycles found */
+extern arctype	*archead;		/* the head of arcs in current cycle list */
+extern cltype	*cyclehead;		/* the head of the list */
+extern int	cyclecnt;		/* the number of cycles found */
 #define	CYCLEMAX	100	/* maximum cycles before cutting one of them */
 
     /*
@@ -191,8 +158,8 @@ int	cyclecnt;		/* the number of cycles found */
      *	namelist entries for cycle headers.
      *	the number of discovered cycles.
      */
-nltype	*cyclenl;		/* cycle header namelist */
-int	ncycle;			/* number of cycles discovered */
+extern nltype	*cyclenl;		/* cycle header namelist */
+extern int	ncycle;			/* number of cycles discovered */
 
     /*
      * The header on the gmon.out file.
@@ -208,45 +175,42 @@ struct ophdr {
     int		ncnt;
 };
 
-int	debug;
+extern int	debug;
 
     /*
      * Each discretized pc sample has
      * a count of the number of samples in its range
      */
-UNIT	*samples;
+extern UNIT	*samples;
 
-unsigned long	s_lowpc;	/* lowpc from the profile file */
-unsigned long	s_highpc;	/* highpc from the profile file */
-unsigned lowpc, highpc;		/* range profiled, in UNIT's */
-unsigned sampbytes;		/* number of bytes of samples */
-int	nsamples;		/* number of samples */
-double	actime;			/* accumulated time thus far for putprofline */
-double	totime;			/* total time for all routines */
-double	printtime;		/* total of time being printed */
-double	scale;			/* scale factor converting samples to pc
+extern unsigned long	s_lowpc;	/* lowpc from the profile file */
+extern unsigned long	s_highpc;	/* highpc from the profile file */
+extern unsigned long	lowpc, highpc;	/* range profiled, in UNIT's */
+extern unsigned sampbytes;		/* number of bytes of samples */
+extern int	nsamples;		/* number of samples */
+extern double	actime;			/* accumulated time thus far for putprofline */
+extern double	totime;			/* total time for all routines */
+extern double	printtime;		/* total of time being printed */
+extern double	scale;			/* scale factor converting samples to pc
 				   values: each sample covers scale bytes */
-char	*strtab;		/* string table in core */
-long	ssiz;			/* size of the string table */
-struct	exec xbuf;		/* exec header of a.out */
-unsigned char	*textspace;	/* text space of a.out in core */
-int	cyclethreshold;		/* with -C, minimum cycle size to ignore */
+extern unsigned char	*textspace;	/* text space of a.out in core */
+extern int	cyclethreshold;		/* with -C, minimum cycle size to ignore */
 
     /*
      *	option flags, from a to z.
      */
-bool	aflag;				/* suppress static functions */
-bool	bflag;				/* blurbs, too */
-bool	cflag;				/* discovered call graph, too */
-bool	Cflag;				/* find cut-set to eliminate cycles */
-bool	dflag;				/* debugging options */
-bool	eflag;				/* specific functions excluded */
-bool	Eflag;				/* functions excluded with time */
-bool	fflag;				/* specific functions requested */
-bool	Fflag;				/* functions requested with time */
-bool	kflag;				/* arcs to be deleted */
-bool	sflag;				/* sum multiple gmon.out files */
-bool	zflag;				/* zero time/called functions, too */
+extern bool	aflag;				/* suppress static functions */
+extern bool	bflag;				/* blurbs, too */
+extern bool	cflag;				/* discovered call graph, too */
+extern bool	Cflag;				/* find cut-set to eliminate cycles */
+extern bool	dflag;				/* debugging options */
+extern bool	eflag;				/* specific functions excluded */
+extern bool	Eflag;				/* functions excluded with time */
+extern bool	fflag;				/* specific functions requested */
+extern bool	Fflag;				/* functions requested with time */
+extern bool	kflag;				/* arcs to be deleted */
+extern bool	sflag;				/* sum multiple gmon.out files */
+extern bool	zflag;				/* zero time/called functions, too */
 
     /*
      *	structure for various string lists
@@ -255,86 +219,73 @@ struct stringlist {
     struct stringlist	*next;
     char		*string;
 };
-struct stringlist	*elist;
-struct stringlist	*Elist;
-struct stringlist	*flist;
-struct stringlist	*Flist;
-struct stringlist	*kfromlist;
-struct stringlist	*ktolist;
+extern struct stringlist	*elist;
+extern struct stringlist	*Elist;
+extern struct stringlist	*flist;
+extern struct stringlist	*Flist;
+extern struct stringlist	*kfromlist;
+extern struct stringlist	*ktolist;
 
     /*
      *	function declarations
      */
-/*
-		addarc();
-*/
-int		arccmp();
-arctype		*arclookup();
-/*
-		asgnsamples();
-		printblurb();
-		cyclelink();
-		dfn();
-*/
-bool		dfn_busy();
-/*
-		dfn_findcycle();
-*/
-bool		dfn_numbered();
-/*
-		dfn_post_visit();
-		dfn_pre_visit();
-		dfn_self_cycle();
-*/
-nltype		**doarcs();
-/*
-		done();
-		findcalls();
-		flatprofheader();
-		flatprofline();
-*/
-bool		funcsymbol();
-/*
-		getnfile();
-		getpfile();
-		getstrtab();
-		getsymtab();
-		gettextspace();
-		gprofheader();
-		gprofline();
-		main();
-*/
-unsigned long	max();
-int		membercmp();
-unsigned long	min();
-nltype		*nllookup();
-FILE		*openpfile();
-long		operandlength();
-operandenum	operandmode();
-char		*operandname();
-/*
-		printchildren();
-		printcycle();
-		printgprof();
-		printmembers();
-		printname();
-		printparents();
-		printprof();
-		readsamples();
-*/
-unsigned long	reladdr();
-/*
-		sortchildren();
-		sortmembers();
-		sortparents();
-		tally();
-		timecmp();
-		topcmp();
-*/
-int		totalcmp();
-/*
-		valcmp();
-*/
+void		addarc(nltype *, nltype *, long);
+int		addcycle(arctype **, arctype **);
+void		addlist(struct stringlist *, char *);
+int		arccmp(arctype *, arctype *);
+arctype		*arclookup(nltype *, nltype *);
+void		asgnsamples(void);
+void		alignentries(void);
+void		printblurb(const char *);
+int		cycleanalyze(void);
+void		cyclelink(void);
+void		cycletime(void);
+void		compresslist(void);
+int		descend(nltype *, arctype **, arctype **);
+void		dfn(nltype *);
+bool		dfn_busy(nltype *);
+void		dfn_findcycle(nltype *);
+void		dfn_init(void);
+bool		dfn_numbered(nltype *);
+void		dfn_post_visit(nltype *);
+void		dfn_pre_visit(nltype *);
+void		dfn_self_cycle(nltype *);
+nltype		**doarcs(void);
+void		doflags(void);
+void		dotime(void);
+void		dumpsum(const char *);
+void		findcall(nltype *, unsigned long, unsigned long);
+void		flatprofheader(void);
+void		flatprofline(nltype *);
+int		getnfile(const char *, char ***);
+void		getpfile(const char *);
+void		gprofheader(void);
+void		gprofline(nltype *);
+int		hertz(void);
+void		inheritflags(nltype *);
+unsigned long	max(unsigned long, unsigned long);
+int		membercmp(nltype *, nltype *);
+unsigned long	min(unsigned long, unsigned long);
+nltype		*nllookup(unsigned long);
+bool		onlist(struct stringlist *, const char *);
+FILE		*openpfile(const char *);
+void		printchildren(nltype *);
+void		printcycle(nltype *);
+void		printgprof(nltype **);
+void		printindex(void);
+void		printmembers(nltype *);
+void		printname(nltype *);
+void		printparents(nltype *);
+void		printprof(void);
+void		readsamples(FILE *);
+void		sortchildren(nltype *);
+void		sortmembers(nltype *);
+void		sortparents(nltype *);
+void		tally(struct rawarc *);
+int		timecmp(const void *, const void *);
+void		timepropagate(nltype *);
+int		topcmp(const void *, const void *);
+int		totalcmp(const void *, const void *);
 
 #define	LESSTHAN	-1
 #define	EQUALTO		0
@@ -346,7 +297,7 @@ int		totalcmp();
 #define	TALLYDEBUG	8
 #define	TIMEDEBUG	16
 #define	SAMPLEDEBUG	32
-#define	AOUTDEBUG	64
+#define	ELFDEBUG	64
 #define	CALLDEBUG	128
 #define	LOOKUPDEBUG	256
 #define	PROPDEBUG	512

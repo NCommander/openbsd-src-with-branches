@@ -1,5 +1,4 @@
-/*	$NetBSD: fflush.c,v 1.7 1995/02/02 02:09:08 jtc Exp $	*/
-
+/*	$OpenBSD: fflush.c,v 1.8 2009/11/09 00:18:27 kurt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,38 +31,34 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fflush.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: fflush.c,v 1.7 1995/02/02 02:09:08 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <errno.h>
 #include <stdio.h>
 #include "local.h"
 
 /* Flush a single file, or (if fp is NULL) all files.  */
 int
-fflush(fp)
-	register FILE *fp;
+fflush(FILE *fp)
 {
+	int	r;
 
 	if (fp == NULL)
-		return (_fwalk(__sflush));
+		return (_fwalk(__sflush_locked));
+	FLOCKFILE(fp);
 	if ((fp->_flags & (__SWR | __SRW)) == 0) {
 		errno = EBADF;
-		return (EOF);
-	}
-	return (__sflush(fp));
+		r = EOF;
+	} else
+		r = __sflush(fp);
+	FUNLOCKFILE(fp);
+	return (r);
 }
+DEF_STRONG(fflush);
 
 int
-__sflush(fp)
-	register FILE *fp;
+__sflush(FILE *fp)
 {
-	register unsigned char *p;
-	register int n, t;
+	unsigned char *p;
+	int n, t;
 
 	t = fp->_flags;
 	if ((t & __SWR) == 0)
@@ -93,4 +84,15 @@ __sflush(fp)
 		}
 	}
 	return (0);
+}
+
+int
+__sflush_locked(FILE *fp)
+{
+	int	r;
+
+	FLOCKFILE(fp);
+	r = __sflush(fp);
+	FUNLOCKFILE(fp);
+	return (r);
 }

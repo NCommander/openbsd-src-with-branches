@@ -1,11 +1,15 @@
-# test relay maximum data length then copy with delay before relay
+# test maximum data length then copy stream,
+# relay sleeps before processing
 
 use strict;
 use warnings;
 
 our %args = (
     relay => {
-	func => sub { sleep 3; relay(@_, 61); relay_copy(@_); },
+	func => sub { sleep 3; relay(@_); relay_copy(@_); },
+	max => 197,
+	big => 1,
+	end => 1,
 	nocheck => 1,
     },
     len => 251,

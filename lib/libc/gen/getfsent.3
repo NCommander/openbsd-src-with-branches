@@ -1,4 +1,4 @@
-.\"	$NetBSD: getfsent.3,v 1.4 1995/02/27 04:12:33 cgd Exp $
+.\"	$OpenBSD: getfsent.3,v 1.12 2013/06/05 03:39:22 tedu Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,11 +27,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)getfsent.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: June 5 2013 $
 .Dt GETFSENT 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm getfsent ,
 .Nm getfsspec ,
@@ -44,7 +38,7 @@
 .Nm endfsent
 .Nd get file system descriptor file entry
 .Sh SYNOPSIS
-.Fd #include <fstab.h>
+.In fstab.h
 .Ft struct fstab *
 .Fn getfsent void
 .Ft struct fstab *
@@ -61,11 +55,10 @@ The
 .Fn getfsspec ,
 and
 .Fn getfsfile
-functions
-each return a pointer to an object with the following structure
+functions each return a pointer to an object with the following structure
 containing the broken-out fields of a line in the file system
 description file,
-.Aq Pa fstab.h .
+.In fstab.h .
 .Bd -literal -offset indent
 struct fstab {
 	char	*fs_spec;	/* block special device name */
@@ -74,31 +67,26 @@ struct fstab {
 	char	*fs_mntops;	/* comma separated mount options */
 	char	*fs_type;	/* rw, ro, sw, or xx */
 	int	fs_freq;	/* dump frequency, in days */
-	int	fs_passno;	/* pass number on parallel dump */
+	int	fs_passno;	/* pass number on parallel fsck */
 };
 .Ed
 .Pp
 The fields have meanings described in
 .Xr fstab 5 .
 .Pp
-The
 .Fn setfsent
-function
 opens the file (closing any previously opened file) or rewinds it
 if it is already open.
 .Pp
-The
 .Fn endfsent
-function
 closes the file.
 .Pp
 The
 .Fn getfsspec
 and
 .Fn getfsfile
-functions
-search the entire file (opening it if necessary) for a matching special
-file name or file system file name.
+functions search the entire file (opening it if necessary) for a matching
+special file name or file system file name.
 .Pp
 For programs wishing to read the entire database,
 .Fn getfsent
@@ -107,44 +95,42 @@ reads the next entry (opening the file if necessary).
 All entries in the file with a type field equivalent to
 .Dv FSTAB_XX
 are ignored.
+Lines which are formatted incorrectly are silently ignored.
 .Sh RETURN VALUES
 The
 .Fn getfsent ,
 .Fn getfsspec ,
 and
 .Fn getfsfile
-functions
-return a null pointer (0) on
+functions return a null pointer on
 .Dv EOF
 or error.
 The
 .Fn setfsent
-function
-returns 0 on failure, 1 on success.
+function returns 0 on failure or 1 on success.
 The
 .Fn endfsent
-function
-returns nothing.
+function returns nothing.
 .Sh FILES
 .Bl -tag -width /etc/fstab -compact
 .It Pa /etc/fstab
+file system table
 .El
 .Sh SEE ALSO
 .Xr fstab 5
 .Sh HISTORY
 The
 .Fn getfsent
-function appeared in 
+function appeared in
 .Bx 4.0 ;
 the
 .Fn endfsent ,
 .Fn getfsfile ,
 .Fn getfsspec ,
-and 
+and
 .Fn setfsent
 functions appeared in
 .Bx 4.3 .
 .Sh BUGS
-These functions use static data storage;
-if the data is needed for future use, it should be
-copied before any subsequent calls overwrite it.
+These functions use static data storage; if the data is needed for future use,
+it should be copied before any subsequent calls overwrite it.

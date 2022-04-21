@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: tree.h,v 1.11 2015/10/06 21:19:06 nicm Exp $	*/
 
 /*
  * command trees for compile/execute
@@ -6,24 +6,25 @@
 
 /* $From: tree.h,v 1.3 1994/05/31 13:34:34 michael Exp $ */
 
-#define	NOBLOCK	((struct op *)NULL)
-#define	NOWORD	((char *)NULL)
-#define	NOWORDS	((char **)NULL)
-
 /*
  * Description of a command or an operation on commands.
  */
 struct op {
 	short	type;			/* operation type, see below */
-	short	evalflags;		/* eval() flags for arg expansion */
+	union { /* WARNING: newtp(), tcopy() use evalflags = 0 to clear union */
+		short	evalflags;	/* TCOM: arg expansion eval() flags */
+		short	ksh_func;	/* TFUNC: function x (vs x()) */
+	} u;
 	char  **args;			/* arguments to a command */
 	char  **vars;			/* variable assignments */
 	struct ioword	**ioact;	/* IO actions (eg, < > >>) */
-	struct op *left, *right; 	/* descendents */
+	struct op *left, *right;	/* descendents */
 	char   *str;			/* word for case; identifier for for,
 					 * select, and functions;
-					 * path to execute for TEXEC
+					 * path to execute for TEXEC;
+					 * time hook for TCOM.
 					 */
+	int	lineno;			/* TCOM/TFUNC: LINENO for this */
 };
 
 /* Tree.type values */
@@ -31,7 +32,7 @@ struct op {
 #define	TCOM		1	/* command */
 #define	TPAREN		2	/* (c-list) */
 #define	TPIPE		3	/* a | b */
-#define	TLIST		4	/* a [&;] b */
+#define	TLIST		4	/* a ; b */
 #define	TOR		5	/* || */
 #define	TAND		6	/* && */
 #define TBANG		7	/* ! */
@@ -61,10 +62,10 @@ struct op {
 #define EXPRSUB	4		/* $(()) substitution (0 terminated) */
 #define	OQUOTE	5		/* opening " or ' */
 #define	CQUOTE	6		/* closing " or ' */
-#define	OSUBST	7		/* opening ${ substitution */
-#define	CSUBST	8		/* closing } of above */
+#define	OSUBST	7		/* opening ${ subst (followed by { or X) */
+#define	CSUBST	8		/* closing } of above (followed by } or X) */
 #define OPAT	9		/* open pattern: *(, @(, etc. */
-#define SPAT	10		/* seperate pattern: | */
+#define SPAT	10		/* separate pattern: | */
 #define CPAT	11		/* close pattern: ) */
 
 /*
@@ -73,8 +74,9 @@ struct op {
 struct ioword {
 	int	unit;	/* unit affected */
 	int	flag;	/* action (below) */
-	char	*name;	/* file name */
+	char	*name;	/* file name (unused if heredoc) */
 	char	*delim;	/* delimiter for <<,<<- */
+	char	*heredoc;/* content of heredoc */
 };
 
 /* ioword.flag - type of redirection */
@@ -103,6 +105,7 @@ struct ioword {
 #define	XCCLOSE	BIT(7)		/* exchild: close close_fd in child */
 #define XERROK	BIT(8)		/* non-zero exit ok (for set -e) */
 #define XCOPROC BIT(9)		/* starting a co-process */
+#define XTIME	BIT(10)		/* timing TCOM command */
 
 /*
  * flags to control expansion of words (assumed by t->evalflags to fit
@@ -132,3 +135,11 @@ struct ioword {
 #define DB_AND	3		/* && -> -a conversion */
 #define DB_BE	4		/* an inserted -BE */
 #define DB_PAT	5		/* a pattern argument */
+
+void	fptreef(struct shf *, int, const char *, ...);
+char *	snptreef(char *, int, const char *, ...);
+struct op *	tcopy(struct op *, Area *);
+char *	wdcopy(const char *, Area *);
+char *	wdscan(const char *, int);
+char *	wdstrip(const char *);
+void	tfree(struct op *, Area *);

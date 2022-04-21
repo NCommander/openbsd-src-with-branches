@@ -1,7 +1,8 @@
+/*	$OpenBSD: ypclnt.h,v 1.9 2004/01/22 21:48:02 espie Exp $	*/
 /*	$NetBSD: ypclnt.h,v 1.7 1995/07/14 21:11:10 christos Exp $	*/
 
 /*
- * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@fsa.ca>
+ * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@openbsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,11 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Theo de Raadt.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -57,32 +53,30 @@
 #define YPOP_CHANGE	1		/* change, do not add */
 #define YPOP_INSERT	2		/* add, do not change */
 #define YPOP_DELETE	3		/* delete this entry */
-#define YPOP_STORE 	4		/* add, or change */
- 
+#define YPOP_STORE	4		/* add, or change */
+
 struct ypall_callback {
 	/* return non-0 to stop getting called */
-	int (*foreach) __P((u_long, char *, int, char *, int, void *));
+	int (*foreach)(unsigned long, char *, int, char *, int, void *);
 	char *data;		/* opaque pointer for use of callback fn */
 };
 
 __BEGIN_DECLS
-int	yp_bind		__P((const char *));
-struct dom_binding;
-int	_yp_dobind	__P((const char *, struct dom_binding **));
-void	yp_unbind	__P((const char *));
-int	yp_get_default_domain __P((char **));
-int	yp_match 	__P((const char *, const char *, const char *,
-			     int , char **, int *));
-int	yp_first 	__P((const char *, const char *, char **, int *,
-			     char **, int *));
-int	yp_next		__P((const char *, const char *, const char *,
-			     int, char **, int *, char **, int *));
-int	yp_master	__P((const char *, const char *, char **));
-int	yp_order	__P((const char *, const char *, int *));
-int	yp_all		__P((const char *, const char *,
-			     struct ypall_callback *));
-char *	yperr_string	__P((int));
-int	ypprot_err	__P((unsigned int));
+int	yp_bind(const char *);
+void	yp_unbind(const char *);
+int	yp_get_default_domain(char **);
+int	yp_match(const char *, const char *, const char *, int , char **,
+	    int *);
+int	yp_first(const char *, const char *, char **, int *, char **, int *);
+int	yp_next(const char *, const char *, const char *, int, char **, int *,
+	    char **, int *);
+int	yp_master(const char *, const char *, char **);
+int	yp_order(const char *, const char *, int *);
+int	yp_all(const char *, const char *, struct ypall_callback *);
+char *	yperr_string(int);
+int	ypprot_err(unsigned int);
+struct ypmaplist;
+int	yp_maplist(const char *, struct ypmaplist **);
 __END_DECLS
 
 #endif /* _RPCSVC_YPCLNT_H_ */

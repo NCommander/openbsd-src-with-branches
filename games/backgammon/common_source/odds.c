@@ -1,4 +1,4 @@
-/*	$NetBSD: odds.c,v 1.3 1995/03/21 15:05:47 cgd Exp $	*/
+/*	$OpenBSD: odds.c,v 1.6 2015/11/30 08:19:25 tb Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,87 +29,77 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)odds.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: odds.c,v 1.3 1995/03/21 15:05:47 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include "back.h"
 
-odds (r1,r2,val)
-register int	r1;
-int		r2, val;
+void
+odds(int r1, int r2, int val)
 {
-	register int	i, j;
+	int     i, j;
 
-	if (r1 == 0)  {
-		for (i = 0; i < 6; i++)  
+	if (r1 == 0) {
+		for (i = 0; i < 6; i++)
 			for (j = 0; j < 6; j++)
 				table[i][j] = 0;
 		return;
-	} else  {
+	} else {
 		r1--;
-		if (r2-- == 0)
-			for (i = 0; i < 6; i++)  {
+		if (r2-- == 0) {
+			for (i = 0; i < 6; i++) {
 				table[i][r1] += val;
 				table[r1][i] += val;
 			}
-		else  {
+		} else {
 			table[r2][r1] += val;
 			table[r1][r2] += val;
 		}
 	}
 }
 
-count ()  {
-	register int	i;
-	register int	j;
-	register int	total;
+int
+count(void)
+{
+	int     i, j, total;
 
 	total = 0;
 	for (i = 0; i < 6; i++)
 		for (j = 0; j < 6; j++)
 			total += table[i][j];
-	return (total);
+	return(total);
 }
-
-canhit (i,c)
-int	i, c;
 
+int
+canhit(int i, int c)
 {
-	register int	j, k, b;
-	int		a, d, diff, place, addon, menstuck;
+	int     j, k, b;
+	int     a, diff, place, addon, menstuck;
 
 	if (c == 0)
-		odds (0,0,0);
-	if (board[i] > 0)  {
+		odds(0, 0, 0);
+	if (board[i] > 0) {
 		a = -1;
 		b = 25;
-	} else  {
+	} else {
 		a = 1;
 		b = 0;
 	}
-	place = abs (25-b-i);
-	menstuck = abs (board[b]);
-	for (j = b; j != i; j += a)  {
-		if (board[j]*a > 0)  {
-			diff = abs(j-i);
-			addon = place+((board[j]*a > 2 || j == b)? 5: 0);
-			if ((j == b && menstuck == 1) &&
+	place = abs(25 - b - i);
+	menstuck = abs(board[b]);
+	for (j = b; j != i; j += a) {
+		if (board[j] * a > 0) {
+			diff = abs(j - i);
+			addon = place + ((board[j] * a > 2 || j == b) ? 5 : 0);
+			if ((j == b && menstuck == 1) ||
 			    (j != b && menstuck == 0))
 				for (k = 1; k < diff; k++)
-					if (k < 7 && diff-k < 7 &&
-					    (board[i+a*k]*a >= 0 ||
-					    board[i+a*(diff-k)] >= 0))
-						odds (k,diff-k,addon);
+					if (k < 7 && diff - k < 7 &&
+					    (board[i + a * k] * a >= 0 ||
+					     board[i + a * (diff - k)] >= 0))
+						odds(k, diff - k, addon);
 			if ((j == b || menstuck < 2) && diff < 7)
-				odds (diff,0,addon);
+				odds(diff, 0, addon);
 		}
 		if (j == b && menstuck > 1)
 			break;
 	}
-	return (count());
+	return(count());
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: score.c,v 1.15 2017/05/28 20:34:33 tedu Exp $	*/
 /*	$NetBSD: score.c,v 1.3 1995/04/22 10:09:12 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,28 +30,18 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)score.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: score.c,v 1.3 1995/04/22 10:09:12 cgd Exp $";
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "robots.h"
+
+char	Scorefile[PATH_MAX];
+
+#ifndef MAX_PER_UID
+#define MAX_PER_UID	5
 #endif
-#endif /* not lint */
-
-# include	"robots.h"
-# include	<sys/types.h>
-# include	<pwd.h>
-# include	"pathnames.h"
-
-typedef struct {
-	int	s_uid;
-	int	s_score;
-	char	s_name[MAXNAME];
-} SCORE;
-
-typedef struct passwd	PASSWD;
-
-char	*Scorefile = _PATH_SCORE;
 
 int	Max_per_uid = MAX_PER_UID;
 
@@ -65,19 +52,18 @@ static SCORE	Top[MAXSCORES];
  *	Post the player's score, if reasonable, and then print out the
  *	top list.
  */
-score()
+void
+score(int score_wfd)
 {
-	register int	inf;
-	register SCORE	*scp;
-	register int	uid;
-	register bool	done_show = FALSE;
+	int	inf = score_wfd;
+	SCORE	*scp;
+	uid_t	uid;
+	bool	done_show = FALSE;
 	static int	numscores, max_uid;
 
 	Newscore = FALSE;
-	if ((inf = open(Scorefile, 2)) < 0) {
-		perror(Scorefile);
+	if (inf < 0)
 		return;
-	}
 
 	if (read(inf, &max_uid, sizeof max_uid) == sizeof max_uid)
 		read(inf, Top, sizeof Top);
@@ -113,7 +99,8 @@ score()
 
 	if (!Newscore) {
 		Full_clear = FALSE;
-		close(inf);
+		fsync(inf);
+		lseek(inf, 0, SEEK_SET);
 		return;
 	}
 	else
@@ -122,10 +109,11 @@ score()
 	for (scp = Top; scp < &Top[MAXSCORES]; scp++) {
 		if (scp->s_score < 0)
 			break;
-		move((scp - Top) + 1, 15);
+		move((scp - Top) + 1, 6);
 		if (!done_show && scp->s_uid == uid && scp->s_score == Score)
 			standout();
-		printw(" %d\t%d\t%-8.8s ", (scp - Top) + 1, scp->s_score, scp->s_name);
+		printw(" %d\t%d\t%-*s ", (scp - Top) + 1, scp->s_score,
+			(int)(sizeof scp->s_name), scp->s_name);
 		if (!done_show && scp->s_uid == uid && scp->s_score == Score) {
 			standend();
 			done_show = TRUE;
@@ -135,44 +123,52 @@ score()
 	refresh();
 
 	if (Newscore) {
-		lseek(inf, 0L, 0);
+		lseek(inf, 0L, SEEK_SET);
 		write(inf, &max_uid, sizeof max_uid);
 		write(inf, Top, sizeof Top);
 	}
-	close(inf);
+	fsync(inf);
+	lseek(inf, 0, SEEK_SET);
 }
 
-set_name(scp)
-register SCORE	*scp;
+void
+set_name(SCORE *scp)
 {
-	register PASSWD	*pp;
+	const char	*name;
 
-	if ((pp = getpwuid(scp->s_uid)) == NULL)
-		pp->pw_name = "???";
-	strncpy(scp->s_name, pp->pw_name, MAXNAME);
+	name = getenv("LOGNAME");
+	if (name == NULL || *name == '\0')
+		name = getenv("USER");
+	if (name == NULL || *name == '\0')
+		name = getlogin();
+	if (name == NULL || *name == '\0')
+		name = "  ???";
+
+	strlcpy(scp->s_name, name, LOGIN_NAME_MAX);
 }
 
 /*
  * cmp_sc:
  *	Compare two scores.
  */
-cmp_sc(s1, s2)
-register SCORE	*s1, *s2;
+int
+cmp_sc(const void *s1, const void *s2)
 {
-	return s2->s_score - s1->s_score;
+	return ((SCORE *)s2)->s_score - ((SCORE *)s1)->s_score;
 }
 
 /*
  * show_score:
  *	Show the score list for the '-s' option.
  */
-show_score()
+void
+show_score(void)
 {
-	register SCORE	*scp;
-	register int	inf;
+	SCORE	*scp;
+	int	inf;
 	static int	max_score;
 
-	if ((inf = open(Scorefile, 0)) < 0) {
+	if ((inf = open(Scorefile, O_RDONLY)) == -1) {
 		perror(Scorefile);
 		return;
 	}
@@ -186,5 +182,6 @@ show_score()
 	inf = 1;
 	for (scp = Top; scp < &Top[MAXSCORES]; scp++)
 		if (scp->s_score >= 0)
-			printf("%d\t%d\t%.*s\n", inf++, scp->s_score, sizeof scp->s_name, scp->s_name);
+			printf("%d\t%d\t%.*s\n", inf++, scp->s_score,
+				(int)(sizeof scp->s_name), scp->s_name);
 }

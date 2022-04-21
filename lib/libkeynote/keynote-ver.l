@@ -1,6 +1,5 @@
 %{
-/* $OpenBSD$ */
-
+/* $OpenBSD: keynote-ver.l,v 1.19 2015/12/23 23:55:30 mmcc Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -9,7 +8,7 @@
  *
  * Copyright (C) 1998, 1999 by Angelos D. Keromytis.
  *	
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
@@ -21,52 +20,50 @@
  * PURPOSE.
  */
 
+#include <sys/time.h>
 #include <sys/types.h>
-#include <unistd.h>
+
 #include <ctype.h>
-#include <time.h>
+#include <regex.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
+
 #include "z.tab.h"
+#include "header.h"
 #include "keynote.h"
 
 static void mystrncpy(char *, char *, int);
-
-extern int kvparse();
 %}
-string          ([a-zA-Z])([a-zA-Z0-9_-])*
 vstring		[a-zA-Z0-9][a-zA-Z0-9_]*
-litstring	\"(([^\"\n])|(\\[\"\n\f\r\t.]))*\"
+litstring       \"(((\\\n)|(\\.)|(\\\\)|([^\\\n\"]))*)\"
 comment         "#"[^\n]*
 %s FIRSTPART MIDDLEPART SECONDPART KEYSTATE
 %pointer
-%option noyywrap yylineno never-interactive
+%option noinput noyywrap yylineno never-interactive
 %%
 
 <MIDDLEPART>"="               {
 				BEGIN(SECONDPART);
 			        return EQ;
 			      }
-<FIRSTPART>{vstring}          { kvlval.s.string = calloc(strlen(kvtext) + 1,
-							 sizeof(char));
-                                if (kvlval.s.string == (char *) NULL)
-				  return ERROR_MEMORY;
-				strcpy(kvlval.s.string, kvtext);
+<FIRSTPART>{vstring}          {
+				int len = strlen(kvtext) + 1;
+				kvlval.s.string = calloc(len, sizeof(char));
+                                if (kvlval.s.string == NULL) {
+				    keynote_errno = ERROR_MEMORY;
+				    return -1;
+				}
+				strlcpy(kvlval.s.string, kvtext, len);
 				BEGIN(MIDDLEPART);
                                 return VSTRING;
                               }
-<KEYSTATE,SECONDPART>{string} { kvlval.s.string = calloc(strlen(kvtext) + 1,
-							 sizeof(char));
-                                if (kvlval.s.string == (char *) NULL)
-				  return ERROR_MEMORY;
-				strncpy(kvlval.s.string, kvtext,
-					strlen(kvtext));
-				BEGIN(FIRSTPART);
-                                return STRING;
-                              }
 <KEYSTATE,SECONDPART>{litstring} { kvlval.s.string = calloc(strlen(kvtext) - 1,
 				  		         sizeof(char));
-                                   if (kvlval.s.string == (char *) NULL)
-				     return ERROR_MEMORY;
+                                   if (kvlval.s.string == NULL) {
+				       keynote_errno = ERROR_MEMORY;
+				       return -1;
+				   }
 				   mystrncpy(kvlval.s.string, kvtext + 1,
 					     strlen(kvtext) - 2);
 				   BEGIN(FIRSTPART);
@@ -74,7 +71,7 @@ comment         "#"[^\n]*
                                  }
 <FIRSTPART,KEYSTATE>{comment} ;
 [ \t\n]		              ;
-.                             return ERROR_SYNTAX;
+.                           { keynote_errno = ERROR_SYNTAX; return -1; REJECT; }
 
 %%
 
@@ -142,7 +139,7 @@ get_octal(char *s, int len, int *adv)
  * care of escaped characters in the process. String s1 is assumed
  * to have enough space, and be zero'ed.
  */
-static void
+void
 mystrncpy(char *s1, char *s2, int len)
 {
     unsigned char c;
@@ -162,7 +159,7 @@ mystrncpy(char *s1, char *s2, int len)
 
 	    if (*s2 == '\n')
 	    {
-		while (isspace(*(++s2)) && (len-- > 0))
+		while (isspace((unsigned char)*(++s2)) && (len-- > 0))
 		  ;
 	    }
 	    else
@@ -219,9 +216,7 @@ read_environment(char *filename)
     FILE *fp;
     int i;
 
-    fp = fopen(filename, "r");
-    if (fp == (FILE *) NULL)
-    {
+    if ((fp = fopen(filename, "r")) == NULL) {
 	perror(filename);
 	return -1;
     }
@@ -237,19 +232,22 @@ read_environment(char *filename)
 	case 0:
 	    return 0;
 	    
-	case ERROR_MEMORY:
-	    fprintf(stderr,
-		    "Memory error while processing environment file <%s>\n",
-		    filename);
-	    return -1;
-	    break;
-	    
-	case 1:
-	case ERROR_SYNTAX:
 	default:
-	    fprintf(stderr, "Syntax error in environment file <%s>, line %d\n",
-		    filename, kvlineno);
+	    if (keynote_errno == ERROR_MEMORY)
+	      fprintf(stderr,
+		      "Memory error while processing environment file <%s>\n",
+		      filename);
+	    else
+	      fprintf(stderr,
+		     "Syntax error in environment file <%s>, line %d\n",
+		     filename, kvlineno);
 	    return -1;
+    }
+
+    /* Used to avoid compiler (-Wall) warnings. Never reached */
+    if (0)
+    {
+	yyunput(0, NULL);
     }
 }
 

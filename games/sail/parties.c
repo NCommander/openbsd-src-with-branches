@@ -1,3 +1,4 @@
+/*	$OpenBSD: parties.c,v 1.4 2009/10/27 23:59:27 deraadt Exp $	*/
 /*	$NetBSD: parties.c,v 1.3 1995/04/22 10:37:04 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,22 +30,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)parties.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: parties.c,v 1.3 1995/04/22 10:37:04 cgd Exp $";
-#endif
-#endif /* not lint */
+#include "extern.h"
 
-#include "externs.h"
-
-meleeing(from, to)
-struct ship *from;
-register struct ship *to;
+int
+meleeing(struct ship *from, struct ship *to)
 {
-	register struct BP *p = from->file->OBP;
-	register struct BP *q = p + NBP;
+	struct BP *p = from->file->OBP;
+	struct BP *q = p + NBP;
 
 	for (; p < q; p++)
 		if (p->turnsent && p->toship == to)
@@ -56,12 +44,11 @@ register struct ship *to;
 	return 0;
 }
 
-boarding(from, isdefense)
-register struct ship *from;
-char isdefense;
+int
+boarding(struct ship *from, int isdefense)
 {
-	register struct BP *p = isdefense ? from->file->DBP : from->file->OBP;
-	register struct BP *q = p + NBP;
+	struct BP *p = isdefense ? from->file->DBP : from->file->OBP;
+	struct BP *q = p + NBP;
 
 	for (; p < q; p++)
 		if (p->turnsent)
@@ -69,14 +56,13 @@ char isdefense;
 	return 0;
 }
 
-unboard(ship, to, isdefense)
-register struct ship *ship, *to;
-register char isdefense;
+void
+unboard(struct ship *ship, struct ship *to, int isdefense)
 {
-	register struct BP *p = isdefense ? ship->file->DBP : ship->file->OBP;
-	register n;
+	struct BP *p = isdefense ? ship->file->DBP : ship->file->OBP;
+	int n;
 
 	for (n = 0; n < NBP; p++, n++)
 		if (p->turnsent && (p->toship == to || isdefense || ship == to))
-			Write(isdefense ? W_DBP : W_OBP, ship, 0, n, 0, 0, 0);
+			Write(isdefense ? W_DBP : W_OBP, ship, n, 0, 0, 0);
 }

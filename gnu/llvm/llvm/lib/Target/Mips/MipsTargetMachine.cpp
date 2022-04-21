@@ -45,6 +45,8 @@ using namespace llvm;
 
 #define DEBUG_TYPE "mips"
 
+extern cl::opt<bool> FixLoongson2FBTB;
+
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeMipsTarget() {
   // Register the target.
   RegisterTargetMachine<MipsebTargetMachine> X(getTheMipsTarget());
@@ -268,6 +270,9 @@ bool MipsPassConfig::addInstSelector() {
 
 void MipsPassConfig::addPreRegAlloc() {
   addPass(createMipsOptimizePICCallPass());
+
+  if (FixLoongson2FBTB)
+    addPass(createMipsLoongson2FBTBFix());
 }
 
 TargetTransformInfo

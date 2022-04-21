@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: db_machdep.h,v 1.10 2019/11/07 16:08:07 mpi Exp $	*/
 /*	$NetBSD: db_machdep.h,v 1.12 2006/05/10 06:24:03 skrll Exp $	*/
 
 /*
@@ -38,14 +38,12 @@
 #include <uvm/uvm_extern.h>
 #include <sh/trap.h>
 
-typedef	vaddr_t		db_addr_t;	/* address - unsigned */
 typedef	long		db_expr_t;	/* expression - signed */
 
 typedef struct trapframe db_regs_t;
 extern db_regs_t	ddb_regs;	/* register state */
-#define	DDB_REGS	(&ddb_regs)
 
-#define	PC_REGS(regs)	((db_addr_t)(regs)->tf_spc)
+#define	PC_REGS(regs)	((vaddr_t)(regs)->tf_spc)
 #define PC_ADVANCE(regs) ((regs)->tf_spc += BKPT_SIZE)
 
 #define	BKPT_INST	0xc3c3		/* breakpoint instruction */
@@ -54,26 +52,14 @@ extern db_regs_t	ddb_regs;	/* register state */
 
 #define	FIXUP_PC_AFTER_BREAK(regs)	((regs)->tf_spc -= BKPT_SIZE)
 
-#define	IS_BREAKPOINT_TRAP(type, code)	((type) == EXPEVT_BREAK)
+#define	IS_BREAKPOINT_TRAP(type, code)	((type) == EXPEVT_TRAPA)
 #define	IS_WATCHPOINT_TRAP(type, code)	(0) /* XXX (msaitoh) */
 
-#define	inst_load(ins)		0
-#define	inst_store(ins)		0
-
-/* macro for checking if a thread has used floating-point */
-#define	db_thread_fp_used(thread)	((thread)->pcb->ims.ifps != 0)
-
-int kdb_trap(int, int, db_regs_t *);
-boolean_t inst_call(int);
-boolean_t inst_return(int);
-boolean_t inst_trap_return(int);
-
-/*
- * We use ELF symbols in DDB.
- *
- */
-#define	DB_ELF_SYMBOLS
-#define	DB_ELFSIZE	32
+int db_ktrap(int, int, db_regs_t *);
+void db_machine_init (void);
+int inst_call(int);
+int inst_return(int);
+int inst_trap_return(int);
 
 /*
  * We have machine-dependent commands.

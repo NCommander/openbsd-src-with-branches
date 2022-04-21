@@ -1,4 +1,5 @@
-/*	$NetBSD: ufs.h,v 1.3 1995/09/17 00:49:50 pk Exp $	*/
+/*	$OpenBSD: ufs.h,v 1.6 2003/06/02 23:28:10 millert Exp $	*/
+/*	$NetBSD: ufs.h,v 1.5 1995/10/20 01:35:25 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,11 +32,14 @@
  *	@(#)ufs.h	8.1 (Berkeley) 6/11/93
  */
 
-int	ufs_open __P((char *path, struct open_file *f));
-int	ufs_close __P((struct open_file *f));
-int	ufs_read __P((struct open_file *f, void *buf,
-		u_int size, u_int *resid));
-int	ufs_write __P((struct open_file *f, void *buf,
-		u_int size, u_int *resid));
-off_t	ufs_seek __P((struct open_file *f, off_t offset, int where));
-int	ufs_stat __P((struct open_file *f, struct stat *sb));
+int	ufs_open(char *path, struct open_file *f);
+int	ufs_close(struct open_file *f);
+int	ufs_read(struct open_file *f, void *buf,
+		size_t size, size_t *resid);
+int	ufs_write(struct open_file *f, void *buf,
+		size_t size, size_t *resid);
+off_t	ufs_seek(struct open_file *f, off_t offset, int where);
+int	ufs_stat(struct open_file *f, struct stat *sb);
+int	ufs_readdir(struct open_file *f, char *name);
+int	ufs_fchmod(struct open_file *f, mode_t mode);
+

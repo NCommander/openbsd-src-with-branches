@@ -1,8 +1,8 @@
-/*	$NetBSD: pass2.c,v 1.17 1996/09/27 22:45:15 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: pass2.c,v 1.15 2016/04/28 12:17:15 krw Exp $	*/
+/*	$NetBSD: pass2.c,v 1.6 2000/01/28 16:01:46 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,15 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pass2.c	8.6 (Berkeley) 10/27/94";
-#else
-static char rcsid[] = "$NetBSD: pass2.c,v 1.17 1996/09/27 22:45:15 christos Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
+#include <sys/param.h>	/* roundup */
 #include <sys/time.h>
 #include <ufs/ext2fs/ext2fs_dinode.h>
 #include <ufs/ext2fs/ext2fs_dir.h>
@@ -54,6 +42,7 @@ static char rcsid[] = "$NetBSD: pass2.c,v 1.17 1996/09/27 22:45:15 christos Exp 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "fsck.h"
 #include "fsutil.h"
@@ -61,18 +50,18 @@ static char rcsid[] = "$NetBSD: pass2.c,v 1.17 1996/09/27 22:45:15 christos Exp 
 
 #define MINDIRSIZE	(sizeof (struct ext2fs_dirtemplate))
 
-static int pass2check __P((struct inodesc *));
-static int blksort __P((const void *, const void *));
+static int pass2check(struct inodesc *);
+static int blksort(const void *, const void *);
 
 void
-pass2()
+pass2(void)
 {
-	register struct ext2fs_dinode *dp;
-	register struct inoinfo **inpp, *inp;
+	struct ext2fs_dinode *dp;
+	struct inoinfo **inpp, *inp;
 	struct inoinfo **inpend;
 	struct inodesc curino;
 	struct ext2fs_dinode dino;
-	char pathbuf[MAXPATHLEN + 1];
+	char pathbuf[PATH_MAX + 1];
 
 	switch (statemap[EXT2_ROOTINO]) {
 
@@ -108,8 +97,7 @@ pass2()
 		if (reply("FIX") == 0)
 			errexit("%s\n", "");
 		dp = ginode(EXT2_ROOTINO);
-		dp->e2di_mode &= ~IFMT;
-		dp->e2di_mode |= IFDIR;
+		dp->e2di_mode = htole16((letoh16(dp->e2di_mode) & ~IFMT) | IFDIR);
 		inodirty();
 		break;
 
@@ -140,25 +128,26 @@ pass2()
 			inp->i_isize = roundup(MINDIRSIZE, sblock.e2fs_bsize);
 			if (reply("FIX") == 1) {
 				dp = ginode(inp->i_number);
-				dp->e2di_size = inp->i_isize;
+				inossize(dp, inp->i_isize);
 				inodirty();
 			}
 		} else if ((inp->i_isize & (sblock.e2fs_bsize - 1)) != 0) {
-			getpathname(pathbuf, inp->i_number, inp->i_number);
-			pwarn("DIRECTORY %s: LENGTH %d NOT MULTIPLE OF %d",
-				pathbuf, inp->i_isize, sblock.e2fs_bsize);
+			getpathname(pathbuf, sizeof pathbuf, inp->i_number,
+			    inp->i_number);
+			pwarn("DIRECTORY %s: LENGTH %lu NOT MULTIPLE OF %d",
+			    pathbuf, (u_long)inp->i_isize, sblock.e2fs_bsize);
 			if (preen)
 				printf(" (ADJUSTED)\n");
 			inp->i_isize = roundup(inp->i_isize, sblock.e2fs_bsize);
 			if (preen || reply("ADJUST") == 1) {
 				dp = ginode(inp->i_number);
-				dp->e2di_size = inp->i_isize;
+				inossize(dp, inp->i_isize);
 				inodirty();
 			}
 		}
-		memset(&dino, 0, sizeof(struct ext2fs_dinode));
-		dino.e2di_mode = IFDIR;
-		dino.e2di_size = inp->i_isize;
+		memset(&dino, 0, sizeof(dino));
+		dino.e2di_mode = htole16(IFDIR);
+		inossize(&dino, inp->i_isize);
 		memcpy(&dino.e2di_blocks[0], &inp->i_blks[0], (size_t)inp->i_numblks);
 		curino.id_number = inp->i_number;
 		curino.id_parent = inp->i_parent;
@@ -200,57 +189,69 @@ pass2()
 }
 
 static int
-pass2check(idesc)
-	struct inodesc *idesc;
+pass2check(struct inodesc *idesc)
 {
-	register struct ext2fs_direct *dirp = idesc->id_dirp;
-	register struct inoinfo *inp;
+	struct ext2fs_direct *dirp = idesc->id_dirp;
+	struct inoinfo *inp;
 	int n, entrysize, ret = 0;
 	struct ext2fs_dinode *dp;
 	char *errmsg;
 	struct ext2fs_direct proto;
-	char namebuf[MAXPATHLEN + 1];
-	char pathbuf[MAXPATHLEN + 1];
+	char namebuf[PATH_MAX + 1];
+	char pathbuf[PATH_MAX + 1];
 
-	/* 
+	/*
 	 * check for "."
 	 */
 	if (idesc->id_entryno != 0)
 		goto chk1;
-	if (dirp->e2d_ino != 0 && dirp->e2d_namlen == 1 &&
+	if (letoh32(dirp->e2d_ino) != 0 && dirp->e2d_namlen == 1 &&
 		dirp->e2d_name[0] == '.') {
-		if (dirp->e2d_ino != idesc->id_number) {
+		if (letoh32(dirp->e2d_ino) != idesc->id_number) {
 			direrror(idesc->id_number, "BAD INODE NUMBER FOR '.'");
-			dirp->e2d_ino = idesc->id_number;
+			dirp->e2d_ino = htole32(idesc->id_number);
+			if (reply("FIX") == 1)
+				ret |= ALTERED;
+		}
+		if (sblock.e2fs.e2fs_rev > E2FS_REV0 &&
+		    (sblock.e2fs.e2fs_features_incompat & EXT2F_INCOMPAT_FTYPE)
+		    && (dirp->e2d_type != EXT2_FT_DIR)) {
+			direrror(idesc->id_number, "BAD TYPE VALUE FOR '.'");
+			dirp->e2d_type = EXT2_FT_DIR;
 			if (reply("FIX") == 1)
 				ret |= ALTERED;
 		}
 		goto chk1;
 	}
 	direrror(idesc->id_number, "MISSING '.'");
-	proto.e2d_ino = idesc->id_number;
+	proto.e2d_ino = htole32(idesc->id_number);
 	proto.e2d_namlen = 1;
-	(void)strcpy(proto.e2d_name, ".");
+	if (sblock.e2fs.e2fs_rev > E2FS_REV0 &&
+	    (sblock.e2fs.e2fs_features_incompat & EXT2F_INCOMPAT_FTYPE))
+		proto.e2d_type = EXT2_FT_DIR;
+	else
+		proto.e2d_type = 0;
+	(void)strlcpy(proto.e2d_name, ".", sizeof proto.e2d_name);
 	entrysize = EXT2FS_DIRSIZ(proto.e2d_namlen);
-	if (dirp->e2d_ino != 0 && strcmp(dirp->e2d_name, "..") != 0) {
+	if (letoh32(dirp->e2d_ino) != 0 && strcmp(dirp->e2d_name, "..") != 0) {
 		pfatal("CANNOT FIX, FIRST ENTRY IN DIRECTORY CONTAINS %s\n",
 			dirp->e2d_name);
-	} else if (dirp->e2d_reclen < entrysize) {
+	} else if (letoh16(dirp->e2d_reclen) < entrysize) {
 		pfatal("CANNOT FIX, INSUFFICIENT SPACE TO ADD '.'\n");
-	} else if (dirp->e2d_reclen < 2 * entrysize) {
+	} else if (letoh16(dirp->e2d_reclen) < 2 * entrysize) {
 		proto.e2d_reclen = dirp->e2d_reclen;
 		memcpy(dirp, &proto, (size_t)entrysize);
 		if (reply("FIX") == 1)
 			ret |= ALTERED;
 	} else {
-		n = dirp->e2d_reclen - entrysize;
-		proto.e2d_reclen = entrysize;
+		n = letoh16(dirp->e2d_reclen) - entrysize;
+		proto.e2d_reclen = htole16(entrysize);
 		memcpy(dirp, &proto, (size_t)entrysize);
 		idesc->id_entryno++;
-		lncntp[dirp->e2d_ino]--;
+		lncntp[letoh32(dirp->e2d_ino)]--;
 		dirp = (struct ext2fs_direct *)((char *)(dirp) + entrysize);
 		memset(dirp, 0, (size_t)n);
-		dirp->e2d_reclen = n;
+		dirp->e2d_reclen = htole16(n);
 		if (reply("FIX") == 1)
 			ret |= ALTERED;
 	}
@@ -258,36 +259,49 @@ chk1:
 	if (idesc->id_entryno > 1)
 		goto chk2;
 	inp = getinoinfo(idesc->id_number);
-	proto.e2d_ino = inp->i_parent;
+	proto.e2d_ino = htole32(inp->i_parent);
 	proto.e2d_namlen = 2;
-	(void)strcpy(proto.e2d_name, "..");
-	entrysize = EXT2FS_DIRSIZ(proto.e2d_namlen);
+	if (sblock.e2fs.e2fs_rev > E2FS_REV0 &&
+	    (sblock.e2fs.e2fs_features_incompat & EXT2F_INCOMPAT_FTYPE))
+		proto.e2d_type = EXT2_FT_DIR;
+	else
+		proto.e2d_type = 0;
+	(void)strlcpy(proto.e2d_name, "..", sizeof proto.e2d_name);
+	entrysize = EXT2FS_DIRSIZ(2);
 	if (idesc->id_entryno == 0) {
 		n = EXT2FS_DIRSIZ(dirp->e2d_namlen);
-		if (dirp->e2d_reclen < n + entrysize)
+		if (letoh16(dirp->e2d_reclen) < n + entrysize)
 			goto chk2;
-		proto.e2d_reclen = dirp->e2d_reclen - n;
-		dirp->e2d_reclen = n;
+		proto.e2d_reclen = htole16(letoh16(dirp->e2d_reclen) - n);
+		dirp->e2d_reclen = htole16(n);
 		idesc->id_entryno++;
-		lncntp[dirp->e2d_ino]--;
+		lncntp[letoh32(dirp->e2d_ino)]--;
 		dirp = (struct ext2fs_direct *)((char *)(dirp) + n);
-		memset(dirp, 0, (size_t)proto.e2d_reclen);
+		memset(dirp, 0, (size_t)letoh16(proto.e2d_reclen));
 		dirp->e2d_reclen = proto.e2d_reclen;
 	}
-	if (dirp->e2d_ino != 0 &&
-		dirp->e2d_namlen == 2 && 
-		strncmp(dirp->e2d_name, "..", dirp->e2d_namlen) == 0) {
-		inp->i_dotdot = dirp->e2d_ino;
+	if (letoh32(dirp->e2d_ino) != 0 &&
+	    dirp->e2d_namlen == 2 &&
+	    strncmp(dirp->e2d_name, "..", 2) == 0) {
+		inp->i_dotdot = letoh32(dirp->e2d_ino);
+		if (sblock.e2fs.e2fs_rev > E2FS_REV0 &&
+		    (sblock.e2fs.e2fs_features_incompat & EXT2F_INCOMPAT_FTYPE)
+		    && dirp->e2d_type != EXT2_FT_DIR) {
+			direrror(idesc->id_number, "BAD TYPE VALUE FOR '..'");
+			dirp->e2d_type = EXT2_FT_DIR;
+			if (reply("FIX") == 1)
+				ret |= ALTERED;
+		}
 		goto chk2;
 	}
-	if (dirp->e2d_ino != 0 &&
+	if (letoh32(dirp->e2d_ino) != 0 &&
 		dirp->e2d_namlen == 1 &&
-		strncmp(dirp->e2d_name, ".", dirp->e2d_namlen) != 0) {
+		strncmp(dirp->e2d_name, ".", 1) != 0) {
 		fileerror(inp->i_parent, idesc->id_number, "MISSING '..'");
 		pfatal("CANNOT FIX, SECOND ENTRY IN DIRECTORY CONTAINS %s\n",
 			dirp->e2d_name);
 		inp->i_dotdot = (ino_t)-1;
-	} else if (dirp->e2d_reclen < entrysize) {
+	} else if (letoh16(dirp->e2d_reclen) < entrysize) {
 		fileerror(inp->i_parent, idesc->id_number, "MISSING '..'");
 		pfatal("CANNOT FIX, INSUFFICIENT SPACE TO ADD '..'\n");
 		inp->i_dotdot = (ino_t)-1;
@@ -303,11 +317,11 @@ chk1:
 			ret |= ALTERED;
 	}
 	idesc->id_entryno++;
-	if (dirp->e2d_ino != 0)
-		lncntp[dirp->e2d_ino]--;
+	if (letoh32(dirp->e2d_ino) != 0)
+		lncntp[letoh32(dirp->e2d_ino)]--;
 	return (ret|KEEPON);
 chk2:
-	if (dirp->e2d_ino == 0)
+	if (letoh32(dirp->e2d_ino) == 0)
 		return (ret|KEEPON);
 	if (dirp->e2d_namlen <= 2 &&
 	    dirp->e2d_name[0] == '.' &&
@@ -329,17 +343,18 @@ chk2:
 	}
 	idesc->id_entryno++;
 	n = 0;
-	if (dirp->e2d_ino > maxino ||
-		(dirp->e2d_ino < EXT2_FIRSTINO && dirp->e2d_ino != EXT2_ROOTINO)) {
-		fileerror(idesc->id_number, dirp->e2d_ino, "I OUT OF RANGE");
+	if (letoh32(dirp->e2d_ino) > maxino ||
+		(letoh32(dirp->e2d_ino) < EXT2_FIRSTINO &&
+		 letoh32(dirp->e2d_ino) != EXT2_ROOTINO)) {
+		fileerror(idesc->id_number, letoh32(dirp->e2d_ino), "I OUT OF RANGE");
 		n = reply("REMOVE");
 	} else {
 again:
-		switch (statemap[dirp->e2d_ino]) {
+		switch (statemap[letoh32(dirp->e2d_ino)]) {
 		case USTATE:
 			if (idesc->id_entryno <= 2)
 				break;
-			fileerror(idesc->id_number, dirp->e2d_ino, "UNALLOCATED");
+			fileerror(idesc->id_number, letoh32(dirp->e2d_ino), "UNALLOCATED");
 			n = reply("REMOVE");
 			break;
 
@@ -347,7 +362,7 @@ again:
 		case FCLEAR:
 			if (idesc->id_entryno <= 2)
 				break;
-			if (statemap[dirp->e2d_ino] == FCLEAR)
+			if (statemap[letoh32(dirp->e2d_ino)] == FCLEAR)
 				errmsg = "DUP/BAD";
 			else if (!preen)
 				errmsg = "ZERO LENGTH DIRECTORY";
@@ -355,22 +370,23 @@ again:
 				n = 1;
 				break;
 			}
-			fileerror(idesc->id_number, dirp->e2d_ino, errmsg);
+			fileerror(idesc->id_number, letoh32(dirp->e2d_ino), errmsg);
 			if ((n = reply("REMOVE")) == 1)
 				break;
-			dp = ginode(dirp->e2d_ino);
-			statemap[dirp->e2d_ino] =
-			    (dp->e2di_mode & IFMT) == IFDIR ? DSTATE : FSTATE;
-			lncntp[dirp->e2d_ino] = dp->e2di_nlink;
+			dp = ginode(letoh32(dirp->e2d_ino));
+			statemap[letoh32(dirp->e2d_ino)] =
+			    (letoh16(dp->e2di_mode) & IFMT) == IFDIR ? DSTATE : FSTATE;
+			lncntp[letoh32(dirp->e2d_ino)] = letoh16(dp->e2di_nlink);
 			goto again;
 
 		case DSTATE:
 		case DFOUND:
-			inp = getinoinfo(dirp->e2d_ino);
+			inp = getinoinfo(letoh32(dirp->e2d_ino));
 			if (inp->i_parent != 0 && idesc->id_entryno > 2) {
-				getpathname(pathbuf, idesc->id_number,
-				    idesc->id_number);
-				getpathname(namebuf, dirp->e2d_ino, dirp->e2d_ino);
+				getpathname(pathbuf, sizeof pathbuf,
+				    idesc->id_number, idesc->id_number);
+				getpathname(namebuf, sizeof namebuf,
+				    letoh32(dirp->e2d_ino), letoh32(dirp->e2d_ino));
 				pwarn("%s %s %s\n", pathbuf,
 				    "IS AN EXTRANEOUS HARD LINK TO DIRECTORY",
 				    namebuf);
@@ -384,12 +400,26 @@ again:
 			/* fall through */
 
 		case FSTATE:
-			lncntp[dirp->e2d_ino]--;
+			if (sblock.e2fs.e2fs_rev > E2FS_REV0 &&
+			    (sblock.e2fs.e2fs_features_incompat &
+				EXT2F_INCOMPAT_FTYPE) &&
+			    dirp->e2d_type !=
+				inot2ext2dt(typemap[letoh32(dirp->e2d_ino)])) {
+				dirp->e2d_type =
+				    inot2ext2dt(typemap[letoh32(dirp->e2d_ino)]);
+				fileerror(idesc->id_number,
+				    letoh32(dirp->e2d_ino),
+				    "BAD TYPE VALUE");
+				if (reply("FIX") == 1)
+					ret |= ALTERED;
+			}
+			lncntp[letoh32(dirp->e2d_ino)]--;
 			break;
 
 		default:
-			errexit("BAD STATE %d FOR INODE I=%d\n",
-			    statemap[dirp->e2d_ino], dirp->e2d_ino);
+			errexit("BAD STATE %d FOR INODE I=%llu\n",
+			    statemap[letoh32(dirp->e2d_ino)],
+			    (unsigned long long)letoh32(dirp->e2d_ino));
 		}
 	}
 	if (n == 0)
@@ -402,8 +432,7 @@ again:
  * Routine to sort disk blocks.
  */
 static int
-blksort(inpp1, inpp2)
-	const void *inpp1, *inpp2;
+blksort(const void *inpp1, const void *inpp2)
 {
 	return ((* (struct inoinfo **) inpp1)->i_blks[0] -
 		(* (struct inoinfo **) inpp2)->i_blks[0]);

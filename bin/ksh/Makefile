@@ -1,24 +1,20 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.38 2018/01/06 16:28:58 millert Exp $
 
 PROG=	ksh
-SRCS=	alloc.c c_ksh.c c_sh.c c_test.c c_ulimit.c edit.c emacs.c \
-	eval.c exec.c expr.c history.c io.c jobs.c lex.c mail.c \
-	main.c misc.c missing.c path.c shf.c sigact.c syn.c table.c trap.c \
-	tree.c tty.c var.c version.c vi.c
+DPADD+=	${LIBCURSES}
+LDADD+=	-lcurses
 
-DEFS=	-DHAVE_CONFIG_H
-CFLAGS+=${DEFS} -I. -I${.CURDIR}
+SRCS=	alloc.c c_ksh.c c_sh.c c_test.c c_ulimit.c edit.c emacs.c eval.c \
+	exec.c expr.c history.c io.c jobs.c lex.c mail.c main.c \
+	misc.c path.c shf.c syn.c table.c trap.c tree.c tty.c var.c \
+	version.c vi.c
 
-CLEANFILES+=	siglist.out emacs.out
+WARNINGS=yes
+DEFS=	-DEMACS -DVI
+CFLAGS+=${DEFS} -I. -I${.CURDIR} -I${.CURDIR}/../../lib/libc/gen
+MAN=	ksh.1 sh.1
 
-.depend trap.o: siglist.out
-.depend emacs.o: emacs.out
-
-siglist.out: config.h sh.h siglist.in siglist.sh
-	${.CURDIR}/siglist.sh "${CPP} ${CPPFLAGS} ${DEFS} -I${.CURDIR}" \
-		< ${.CURDIR}/siglist.in > siglist.out
-
-emacs.out:
-	${.CURDIR}/emacs-gen.sh ${.CURDIR}/emacs.c > emacs.out
+LINKS=	${BINDIR}/ksh ${BINDIR}/rksh
+LINKS+=	${BINDIR}/ksh ${BINDIR}/sh
 
 .include <bsd.prog.mk>

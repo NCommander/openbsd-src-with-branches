@@ -70,7 +70,7 @@ Parse_Info (infofile, repository, callproc, all)
 
     /* search the info file for lines that match */
     callback_done = line_number = 0;
-    while (getline (&line, &line_allocated, fp_info) >= 0)
+    while (get_line (&line, &line_allocated, fp_info) >= 0)
     {
 	line_number++;
 
@@ -259,7 +259,7 @@ parse_config (cvsroot)
 	return 0;
     }
 
-    while (getline (&line, &line_allocated, fp_info) >= 0)
+    while (get_line (&line, &line_allocated, fp_info) >= 0)
     {
 	/* Skip comments.  */
 	if (line[0] == '#')
@@ -332,6 +332,64 @@ parse_config (cvsroot)
 	    else
 	    {
 		error (0, 0, "unrecognized value '%s' for SystemAuth", p);
+		goto error_return;
+	    }
+	}
+	else if (strcmp (line, "tag") == 0) {
+	    RCS_citag = strdup(p);
+	    if (RCS_citag == NULL) {
+		error (0, 0, "%s: no memory for local tag '%s'",
+		       infopath, p);
+		goto error_return;
+	    }
+	}
+	else if (strcmp (line, "umask") == 0) {
+	    cvsumask = (mode_t)(strtol(p, NULL, 8) & 0777);
+	}
+	else if (strcmp (line, "DisableMdocdate") == 0) {
+	    if (strcmp (p, "no") == 0)
+		disable_mdocdate = 0;
+	    else if (strcmp (p, "yes") == 0)
+		disable_mdocdate = 1;
+	    else 
+	    {
+		error (0, 0, "unrecognized value '%s' for DisableMdocdate", p);
+		goto error_return;
+	    }
+	}
+	else if (strcmp (line, "dlimit") == 0) {
+#ifdef BSD
+#include <sys/resource.h>
+	    struct rlimit rl;
+
+	    if (getrlimit(RLIMIT_DATA, &rl) != -1) {
+		rl.rlim_cur = atoi(p);
+		rl.rlim_cur *= 1024;
+
+		(void) setrlimit(RLIMIT_DATA, &rl);
+	    }
+#endif /* BSD */
+	}
+	else if (strcmp (line, "DisableXProg") == 0)
+	{
+	    if (strcmp (p, "no") == 0)
+#ifdef AUTH_SERVER_SUPPORT
+		disable_x_prog = 0;
+#else
+		/* Still parse the syntax but ignore the
+		   option.  That way the same config file can
+		   be used for local and server.  */
+		;
+#endif
+	    else if (strcmp (p, "yes") == 0)
+#ifdef AUTH_SERVER_SUPPORT
+		disable_x_prog = 1;
+#else
+		;
+#endif
+	    else
+	    {
+		error (0, 0, "unrecognized value '%s' for DisableXProg", p);
 		goto error_return;
 	    }
 	}

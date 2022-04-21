@@ -1,52 +1,52 @@
-#	$OpenBSD: Makefile,v 1.117 2011/09/17 16:59:53 pirofti Exp $
+#	$OpenBSD: Makefile,v 1.3 2013/04/01 10:18:28 eric Exp $
 
 #
-# Note on building and running the regress tests:
+# Notes on building and running the regression tests
 #
-# The regress suite builds two sets of static executables: one linked
-# against the current libc, and one linked against a libc with the resolver
-# replaced. The idea is to compare the output of all programs in both cases.
+# The regress suite builds two sets of static executables: the former linked
+# against the system libc, and the latter against the libc found in /usr/obj
+# The idea is to compare the output of all programs with internal changes in
+# the libc (more specifically the resolver).  They will be run in a chrooted
+# environment to test various /etc configurations without touching the local
+# machine config files.
 #
-# So before building the regression test programs, you need to have the two
-# libc.a ready.  By default, it is assumed that the asr-enabled libc was just
-# built from src but not installed, so the current libc.a is expected to be
-# found in /usr/lib, and the new one in /usr/obj/lib/libc. If your setting
-# is different, just set LIBCDIRSTD and LIBCDIRASR accordingly.
-# 
-# When done, run "make && make install". This builds and installs the two sets
-# of programs in REGRESSDIR. They will run chrooted there to allow testing with
-# various /etc environment without messing up the local machine config files.
+# First, build a libc that needs testing, then:
 #
-# When you are sure everything is in place, run "make regress". This will
-# create two files: $REGRESSDIR/output.log with the output of all run tests,
-# and $REGRESSDIR/regress.log with the diffs for those that "failed".
+# $ make
+# $ doas make install
+# $ doas make regress
 #
-# Note that "install" and "regress" targets need to be run as root.
+# Tests output goes into a $REGRESSDIR/tmp.XXXXXXXXXX directory, and a digest
+# is displayed at the end.
 #
 
-LIBCDIRSTD?=	/usr/lib
-LIBCDIRASR?=	/usr/obj/lib/libc
+REGRESSDIR?=	/tmp/regress-asr
+REGRESS?=	regress.sh
 
-REGRESSDIR?=	/tmp/regress
+A?=	.a
+B?=	.b
+
+DIRA?=	/usr/lib
+DIRB?=	/usr/obj/lib/libc
+
 
 all: build
 
 build:
-	cd bin && EXT=.asr LDFLAGS=-L${LIBCDIRASR} make
-	cd bin && EXT=.std LDFLAGS=-L${LIBCDIRSTD} make
+	cd bin && EXT=${A} LDFLAGS=-L${DIRA} make
+	cd bin && EXT=${B} LDFLAGS=-L${DIRB} make
 
 clean:
-	cd bin && EXT=.std make clean
-	cd bin && EXT=.asr make clean
+	cd bin && EXT=${A} make clean
+	cd bin && EXT=${B} make clean
 
 install:
-	mkdir -p ${REGRESSDIR}/etc
 	mkdir -p ${REGRESSDIR}/bin
-	cd bin && BINDIR=${REGRESSDIR}/bin EXT=.std make install
-	cd bin && BINDIR=${REGRESSDIR}/bin EXT=.asr make install
+	cd bin && BINDIR=${REGRESSDIR}/bin EXT=${A} make install
+	cd bin && BINDIR=${REGRESSDIR}/bin EXT=${B} make install
 
 uninstall:
 	rm -rf ${REGRESSDIR}
 
 regress:
-	RUNDIR=${REGRESSDIR} sh ${.CURDIR}/regress.sh
+	RUNDIR=${REGRESSDIR} A=${A} B=${B} sh ${.CURDIR}/${REGRESS}

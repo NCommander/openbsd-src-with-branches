@@ -1,0 +1,17 @@
+.\" $OpenBSD: badfont.in,v 1.2 2017/07/04 14:53:27 schwarze Exp $
+.TH TBL-MOD-BADFONT 1 "August 9, 2021"
+.SH NAME
+tbl-mod-badfont \- invalid font modifiers in table layouts
+.SH DESCRIPTION
+normal text
+.TS
+box tab(:);
+lfI lfX
+lfB lfIB
+lfI lf.
+lfB lfI.
+italic:one char
+bold:two chars
+italic:dot
+bold:italic
+.TE

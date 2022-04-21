@@ -91,7 +91,7 @@ static int rl_gather_tyi PARAMS((void));
 
 /* **************************************************************** */
 /*								    */
-/*			Character Input Buffering       	    */
+/*			Character Input Buffering		    */
 /*								    */
 /* **************************************************************** */
 
@@ -152,6 +152,12 @@ _rl_unget_char (key)
       return (1);
     }
   return (0);
+}
+
+int
+_rl_pushed_input_available ()
+{
+  return (push_index != pop_index);
 }
 
 /* If a character is available to be read, then read it and stuff it into
@@ -302,8 +308,8 @@ _rl_input_queued (t)
 
 void
 _rl_insert_typein (c)
-     int c;     
-{    	
+     int c;
+{
   int key, t, i;
   char *string;
 
@@ -387,7 +393,7 @@ rl_read_key ()
   else
     {
       /* If input is coming from a macro, then use that. */
-      if (c = _rl_next_macro_key ())
+      if ((c = _rl_next_macro_key ()))
 	return (c);
 
       /* If the user has an event function, then call it periodically. */
@@ -483,7 +489,7 @@ _rl_read_mbchar (mbchar, size)
 
   memset(&ps, 0, sizeof (mbstate_t));
   memset(&ps_back, 0, sizeof (mbstate_t));
-  
+
   while (mb_len < size)
     {
       RL_SETSTATE(RL_STATE_MOREINPUT);
@@ -498,7 +504,7 @@ _rl_read_mbchar (mbchar, size)
 	  /* shorted bytes */
 	  ps = ps_back;
 	  continue;
-	} 
+	}
       else if (mbchar_bytes_length > (size_t)(0))
 	break;
     }

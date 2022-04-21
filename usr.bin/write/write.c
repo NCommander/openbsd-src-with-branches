@@ -1,3 +1,4 @@
+/*	$OpenBSD: write.c,v 1.35 2019/06/28 13:35:05 deraadt Exp $	*/
 /*	$NetBSD: write.c,v 1.5 1995/08/31 21:48:32 jtc Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,50 +33,37 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1989, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)write.c	8.2 (Berkeley) 4/27/95";
-#endif
-static char *rcsid = "$NetBSD: write.c,v 1.5 1995/08/31 21:48:32 jtc Exp $";
-#endif /* not lint */
-
-#include <sys/types.h>
-#include <sys/param.h>
 #include <sys/stat.h>
+
 #include <ctype.h>
-#include <stdio.h>
-#include <string.h>
-#include <signal.h>
-#include <time.h>
+#include <err.h>
 #include <fcntl.h>
+#include <limits.h>
+#include <paths.h>
 #include <pwd.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <utmp.h>
-#include <err.h>
 
-void done(); 
-void do_write __P((char *, char *, uid_t));
-void wr_fputs __P((char *));
-void search_utmp __P((char *, char *, char *, uid_t));
-int term_chk __P((char *, int *, time_t *, int));
-int utmp_chk __P((char *, char *));
+void done(int sig);
+void do_write(char *, char *, uid_t);
+void wr_fputs(char *);
+void search_utmp(char *, char *, int, char *, uid_t);
+int term_chk(char *, int *, time_t *, int);
+int utmp_chk(char *, char *);
+static int isu8cont(unsigned char c);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
-	register char *cp;
+	char tty[PATH_MAX], *mytty, *cp;
+	int msgsok, myttyfd;
 	time_t atime;
 	uid_t myuid;
-	int msgsok, myttyfd;
-	char tty[MAXPATHLEN], *mytty;
 
 	/* check that sender has write enabled */
 	if (isatty(fileno(stdin)))
@@ -92,24 +76,24 @@ main(argc, argv)
 		errx(1, "can't find your tty");
 	if (!(mytty = ttyname(myttyfd)))
 		errx(1, "can't find your tty's name");
-	if (cp = strrchr(mytty, '/'))
+	if ((cp = strrchr(mytty, '/')))
 		mytty = cp + 1;
 	if (term_chk(mytty, &msgsok, &atime, 1))
 		exit(1);
 	if (!msgsok)
-		errx(1, "you have write permission turned off");
+		warnx("you have write permission turned off");
 
 	myuid = getuid();
 
 	/* check args */
 	switch (argc) {
 	case 2:
-		search_utmp(argv[1], tty, mytty, myuid);
+		search_utmp(argv[1], tty, sizeof tty, mytty, myuid);
 		do_write(tty, mytty, myuid);
 		break;
 	case 3:
-		if (!strncmp(argv[2], "/dev/", 5))
-			argv[2] += 5;
+		if (!strncmp(argv[2], _PATH_DEV, sizeof(_PATH_DEV) - 1))
+			argv[2] += sizeof(_PATH_DEV) - 1;
 		if (utmp_chk(argv[1], argv[2]))
 			errx(1, "%s is not logged in on %s",
 			    argv[1], argv[2]);
@@ -121,11 +105,13 @@ main(argc, argv)
 		do_write(argv[2], mytty, myuid);
 		break;
 	default:
-		(void)fprintf(stderr, "usage: write user [tty]\n");
+		(void)fprintf(stderr, "usage: write user [ttyname]\n");
 		exit(1);
 	}
-	done();
+	done(0);
+
 	/* NOTREACHED */
+	return (0);
 }
 
 /*
@@ -133,14 +119,13 @@ main(argc, argv)
  *     the given tty
  */
 int
-utmp_chk(user, tty)
-	char *user, *tty;
+utmp_chk(char *user, char *tty)
 {
 	struct utmp u;
 	int ufd;
 
-	if ((ufd = open(_PATH_UTMP, O_RDONLY)) < 0)
-		return(0);	/* ignore error, shouldn't happen anyway */
+	if ((ufd = open(_PATH_UTMP, O_RDONLY)) == -1)
+		return(1);	/* no utmp, cannot talk to users */
 
 	while (read(ufd, (char *) &u, sizeof(u)) == sizeof(u))
 		if (strncmp(user, u.ut_name, sizeof(u.ut_name)) == 0 &&
@@ -165,16 +150,14 @@ utmp_chk(user, tty)
  * writing from, unless that's the only terminal with messages enabled.
  */
 void
-search_utmp(user, tty, mytty, myuid)
-	char *user, *tty, *mytty;
-	uid_t myuid;
+search_utmp(char *user, char *tty, int ttyl, char *mytty, uid_t myuid)
 {
 	struct utmp u;
 	time_t bestatime, atime;
 	int ufd, nloggedttys, nttys, msgsok, user_is_me;
 	char atty[UT_LINESIZE + 1];
 
-	if ((ufd = open(_PATH_UTMP, O_RDONLY)) < 0)
+	if ((ufd = open(_PATH_UTMP, O_RDONLY)) == -1)
 		err(1, "%s", _PATH_UTMP);
 
 	nloggedttys = nttys = 0;
@@ -196,7 +179,7 @@ search_utmp(user, tty, mytty, myuid)
 			++nttys;
 			if (atime > bestatime) {
 				bestatime = atime;
-				(void)strcpy(tty, atty);
+				(void)strlcpy(tty, atty, ttyl);
 			}
 		}
 
@@ -205,7 +188,7 @@ search_utmp(user, tty, mytty, myuid)
 		errx(1, "%s is not logged in", user);
 	if (nttys == 0) {
 		if (user_is_me) {		/* ok, so write to yourself! */
-			(void)strcpy(tty, mytty);
+			(void)strlcpy(tty, mytty, ttyl);
 			return;
 		}
 		errx(1, "%s has messages disabled", user);
@@ -219,21 +202,18 @@ search_utmp(user, tty, mytty, myuid)
  *     and the access time
  */
 int
-term_chk(tty, msgsokP, atimeP, showerror)
-	char *tty;
-	int *msgsokP, showerror;
-	time_t *atimeP;
+term_chk(char *tty, int *msgsokP, time_t *atimeP, int showerror)
 {
 	struct stat s;
-	char path[MAXPATHLEN];
+	char path[PATH_MAX];
 
-	(void)sprintf(path, "/dev/%s", tty);
-	if (stat(path, &s) < 0) {
+	(void)snprintf(path, sizeof(path), "%s%s", _PATH_DEV, tty);
+	if (stat(path, &s) == -1) {
 		if (showerror)
 			warn("%s", path);
 		return(1);
 	}
-	*msgsokP = (s.st_mode & (S_IWRITE >> 3)) != 0;	/* group write bit */
+	*msgsokP = (s.st_mode & S_IWGRP) != 0;	/* group write bit */
 	*atimeP = s.st_atime;
 	return(0);
 }
@@ -242,33 +222,48 @@ term_chk(tty, msgsokP, atimeP, showerror)
  * do_write - actually make the connection
  */
 void
-do_write(tty, mytty, myuid)
-	char *tty, *mytty;
-	uid_t myuid;
+do_write(char *tty, char *mytty, uid_t myuid)
 {
-	register char *login, *nows;
-	register struct passwd *pwd;
+	const char *login;
+	char *nows;
 	time_t now;
-	char path[MAXPATHLEN], host[MAXHOSTNAMELEN], line[512];
+	char path[PATH_MAX], host[HOST_NAME_MAX+1], line[512];
+	gid_t gid;
+	int fd;
 
 	/* Determine our login name before the we reopen() stdout */
 	if ((login = getlogin()) == NULL)
-		if (pwd = getpwuid(myuid))
-			login = pwd->pw_name;
-		else
-			login = "???";
+		login = user_from_uid(myuid, 0);
 
-	(void)sprintf(path, "/dev/%s", tty);
-	if ((freopen(path, "w", stdout)) == NULL)
-		err(1, "%s", path);
+	(void)snprintf(path, sizeof(path), "%s%s", _PATH_DEV, tty);
+	fd = open(path, O_WRONLY);
+	if (fd == -1)
+		err(1, "open %s", path);
+	fflush(stdout);
+	if (dup2(fd, STDOUT_FILENO) == -1)
+		err(1, "dup2 %s", path);
+	if (fd != STDOUT_FILENO)
+		close(fd);
+
+	/* revoke privs, now that we have opened the tty */
+	gid = getgid();
+	if (setresgid(gid, gid, gid) == -1)
+		err(1, "setresgid");
+
+	/*
+	 * Unfortunately this is rather late - well after utmp
+	 * parsing, then pinned by the tty open and setresgid
+	 */
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
 	(void)signal(SIGINT, done);
 	(void)signal(SIGHUP, done);
 
 	/* print greeting */
-	if (gethostname(host, sizeof(host)) < 0)
-		(void)strcpy(host, "???");
-	now = time((time_t *)NULL);
+	if (gethostname(host, sizeof(host)) == -1)
+		(void)strlcpy(host, "???", sizeof host);
+	now = time(NULL);
 	nows = ctime(&now);
 	nows[16] = '\0';
 	(void)printf("\r\n\007\007\007Message from %s@%s on %s at %s ...\r\n",
@@ -282,10 +277,13 @@ do_write(tty, mytty, myuid)
  * done - cleanup and exit
  */
 void
-done()
+done(int sig)
 {
-	(void)printf("EOF\r\n");
-	exit(0);
+	(void)write(STDOUT_FILENO, "EOF\r\n", 5);
+	if (sig)
+		_exit(0);
+	else
+		exit(0);
 }
 
 /*
@@ -293,26 +291,34 @@ done()
  *     turns \n into \r\n
  */
 void
-wr_fputs(s)
-	register char *s;
+wr_fputs(char *s)
 {
-	register char c;
 
 #define	PUTC(c)	if (putchar(c) == EOF) goto err;
 
 	for (; *s != '\0'; ++s) {
-		c = toascii(*s);
-		if (c == '\n') {
+		if (*s == '\n') {
 			PUTC('\r');
 			PUTC('\n');
-		} else if (!isprint(c) && !isspace(c) && c != '\007') {
-			PUTC('^');
-			PUTC(c^0x40);	/* DEL to ?, others to alpha */
-		} else
-			PUTC(c);
+			continue;
+		}
+		if (isu8cont(*s))
+			continue;
+		if (isprint(*s) || isspace(*s) || *s == '\a') {
+			PUTC(*s);
+		} else {
+			PUTC('?');
+		}
+
 	}
 	return;
 
 err:	err(1, NULL);
 #undef PUTC
+}
+
+static int
+isu8cont(unsigned char c)
+{
+	return (c & (0x80 | 0x40)) == 0x80;
 }

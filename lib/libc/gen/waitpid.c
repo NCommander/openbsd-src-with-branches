@@ -1,5 +1,4 @@
-/*	$NetBSD: waitpid.c,v 1.4 1995/02/25 15:40:17 cgd Exp $	*/
-
+/*	$OpenBSD: waitpid.c,v 1.6 2005/08/08 08:05:34 espie Exp $ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,28 +28,12 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)waitpid.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: waitpid.c,v 1.4 1995/02/25 15:40:17 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/types.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#include <sys/resource.h>
 
 pid_t
-#if __STDC__
 waitpid(pid_t pid, int *istat, int options)
-#else
-waitpid(pid, istat, options)
-	pid_t pid;
-	int *istat;
-	int options;
-#endif
 {
-	return (wait4(pid, istat, options, (struct rusage *)0));
+	return (wait4(pid, istat, options, NULL));
 }
+DEF_WEAK(waitpid);

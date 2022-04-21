@@ -47,8 +47,9 @@ Boston, MA 02110-1301, USA.  */
 /* As an elf system, we need crtbegin/crtend stuff.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "\
-	%{!shared: %{pg:gcrt0%O%s} %{!pg:%{p:gcrt0%O%s} %{!p:crt0%O%s}} \
-	crtbegin%O%s} %{shared:crtbeginS%O%s}"
+	%{!shared: %{pg:gcrt0%O%s} %{!pg:%{p:gcrt0%O%s} \
+	%{!p:%{!static:crt0%O%s} %{static:%{nopie:crt0%O%s} \
+	%{!nopie:rcrt0%O%s}}}} crtbegin%O%s} %{shared:crtbeginS%O%s}"
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC "%{!shared:crtend%O%s} %{shared:crtendS%O%s}"
 
@@ -56,10 +57,10 @@ Boston, MA 02110-1301, USA.  */
 
 /* This must agree with <machine/ansi.h> */
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE "long unsigned int"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE "long int"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
@@ -111,9 +112,6 @@ Boston, MA 02110-1301, USA.  */
 
 /* Assembler format: exception region output.  */
 
-/* our configuration still doesn't handle dwarf2 correctly */
-#define DWARF2_UNWIND_INFO 0
-
 /* Assembler format: alignment output.  */
 
 /* Note that we pick up ASM_OUTPUT_MAX_SKIP_ALIGN from i386/gas.h */
@@ -126,7 +124,9 @@ Boston, MA 02110-1301, USA.  */
    %{shared:-shared} %{R*} \
    %{static:-Bstatic} \
    %{!static:-Bdynamic} \
+   %{rdynamic:-export-dynamic} \
    %{assert*} \
-   %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.so}"
+   %{!static:%{!dynamic-linker:-dynamic-linker /usr/libexec/ld.so}} \
+   %{!nostdlib:-L/usr/lib}"
 
 #define OBSD_HAS_CORRECT_SPECS

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dwc2var.h,v 1.21 2021/07/30 12:33:27 mglocker Exp $	*/
 /*	$NetBSD: dwc2var.h,v 1.3 2013/10/22 12:57:40 skrll Exp $	*/
 
 /*-
@@ -33,19 +34,18 @@
 #define	_DWC2VAR_H_
 
 #include <sys/pool.h>
+#include <sys/task.h>
 
-#define DWC2_MAXISOCPACKETS	16
 struct dwc2_hsotg;
 struct dwc2_qtd;
 
 struct dwc2_xfer {
 	struct usbd_xfer xfer;			/* Needs to be first */
-	struct usb_task	abort_task;
 
 	struct dwc2_hcd_urb *urb;
-	int packet_count;
 
 	TAILQ_ENTRY(dwc2_xfer) xnext;		/* list of complete xfers */
+	usbd_status intr_status;
 };
 
 struct dwc2_pipe {
@@ -55,11 +55,11 @@ struct dwc2_pipe {
 	void *priv;			/* QH */
 
 	 /* DMA buffer for control endpoint requests */
-	usb_dma_t req_dma;
+	struct usb_dma req_dma;
 };
 
 
-#define	DWC2_BUS2SC(bus)	((bus)->hci_private)
+#define	DWC2_BUS2SC(bus)	((void *)(bus))
 #define	DWC2_PIPE2SC(pipe)	DWC2_BUS2SC((pipe)->device->bus)
 #define	DWC2_XFER2SC(xfer)	DWC2_PIPE2SC((xfer)->pipe)
 #define	DWC2_DPIPE2SC(d)	DWC2_BUS2SC((d)->pipe.device->bus)
@@ -71,55 +71,46 @@ struct dwc2_pipe {
 
 
 typedef struct dwc2_softc {
-	device_t sc_dev;
+	struct usbd_bus		sc_bus;
 
  	bus_space_tag_t		sc_iot;
  	bus_space_handle_t	sc_ioh;
- 	bus_dma_tag_t		sc_dmat;
 	struct dwc2_core_params *sc_params;
+	int			(*sc_set_dma_addr)(struct device *, bus_addr_t, int);
 
 	/*
 	 * Private
 	 */
 
-	struct usbd_bus sc_bus;
 	struct dwc2_hsotg *sc_hsotg;
 
-	kmutex_t sc_lock;
+	struct mutex sc_lock;
 
 	bool sc_hcdenabled;
 	void *sc_rhc_si;
 
-	usbd_xfer_handle sc_intrxfer;
+	struct usbd_xfer *sc_intrxfer;
 
-	device_t sc_child;		/* /dev/usb# device */
-	char sc_dying;
-	struct usb_dma_reserve sc_dma_reserve;
+	struct device *sc_child;	/* /dev/usb# device */
 
 	char sc_vendor[32];		/* vendor string for root hub */
-	int sc_id_vendor;		/* vendor ID for root hub */
 
 	TAILQ_HEAD(, dwc2_xfer) sc_complete;	/* complete transfers */
 
+	struct pool sc_xferpool;
+	struct pool sc_qhpool;
+	struct pool sc_qtdpool;
+
 	uint8_t sc_addr;		/* device address */
 	uint8_t sc_conf;		/* device configuration */
-
-	pool_cache_t sc_xferpool;
-	pool_cache_t sc_qhpool;
-	pool_cache_t sc_qtdpool;
 
 } dwc2_softc_t;
 
 int		dwc2_init(struct dwc2_softc *);
 int		dwc2_intr(void *);
 int		dwc2_detach(dwc2_softc_t *, int);
-bool		dwc2_shutdown(device_t, int);
-void		dwc2_childdet(device_t, device_t);
-int		dwc2_activate(device_t, enum devact);
-bool		dwc2_resume(device_t, const pmf_qual_t *);
-bool		dwc2_suspend(device_t, const pmf_qual_t *);
 
-void		dwc2_worker(struct work *, void *);
+void		dwc2_worker(struct task *, void *);
 
 void		dwc2_host_complete(struct dwc2_hsotg *, struct dwc2_qtd *,
 				   int);
@@ -128,7 +119,21 @@ static inline void
 dwc2_root_intr(dwc2_softc_t *sc)
 {
 
-	softint_schedule(sc->sc_rhc_si);
+	softintr_schedule(sc->sc_rhc_si);
 }
+
+/*
+ * XXX Compat
+ */
+#define DWC2_MAXISOCPACKETS	40	/* XXX: Fix nframes handling */
+#define ENOSR			90
+#define device_xname(d)		((d)->dv_xname)
+#define jiffies			hardclock_ticks
+#define mstohz(ms) \
+	(__predict_false((ms) >= 0x20000) ? \
+	    ((ms +0u) / 1000u) * hz : \
+	    ((ms +0u) * hz) / 1000u)
+#define msecs_to_jiffies	mstohz
+#define IS_ENABLED(option)	(option)
 
 #endif	/* _DWC_OTGVAR_H_ */

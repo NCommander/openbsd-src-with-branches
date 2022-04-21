@@ -56,6 +56,7 @@ arm*-*-linux*)		gdb_target=linux
 			;;
 arm*-*-netbsd* | arm*-*-knetbsd*-gnu)
 			gdb_target=nbsd ;;
+arm*-*-openbsd*)	gdb_target=nbsd ;;
 arm-*-nto*)		gdb_target=nto ;;
 arm*-*-* | thumb*-*-* | strongarm*-*-*)
 			gdb_target=embed
@@ -139,6 +140,7 @@ mips*-*-linux*)		gdb_target=linux
 			;;
 mips*-*-netbsd* | mips*-*-knetbsd*-gnu)
 			gdb_target=nbsd ;;
+mips64*-*-openbsd*)	gdb_target=obsd64 ;;
 mips*-*-vxworks*)       gdb_target=vxmips ;;
 mips*-*-*)		gdb_target=embed ;;
 
@@ -149,6 +151,7 @@ ns32k-*-netbsd*)	gdb_target=nbsdaout ;;
 powerpc-*-netbsd* | powerpc-*-knetbsd*-gnu)
 			gdb_target=nbsd ;;
 powerpc-*-openbsd*)	gdb_target=obsd ;;
+powerpc64-*-openbsd*)	gdb_target=obsd64 ;;
 powerpc-*-aix*)		gdb_target=aix ;;
 powerpc-*-linux*)	gdb_target=linux
 			build_gdbserver=yes
@@ -179,6 +182,7 @@ sh-*-linux*)		gdb_target=linux
 sh*-*-netbsdelf* | sh*-*-knetbsd*-gnu)
 			gdb_target=nbsd ;;
 sh-*-nto*)		gdb_target=nto ;;
+sh*-*-openbsd*)		gdb_target=obsd ;;
 sh*)			gdb_target=embed ;;
 
 sparc-*-linux*)		gdb_target=linux ;;
@@ -228,7 +232,6 @@ esac
 case "${target}" in
 *-*-linux*)	gdb_osabi=GDB_OSABI_LINUX ;;
 *-*-nto*)	gdb_osabi=GDB_OSABI_QNXNTO ;;
-m68*-*-openbsd* | m88*-*-openbsd* | vax-*-openbsd*) ;;
 *-*-openbsd*)	gdb_osabi=GDB_OSABI_OPENBSD_ELF ;;
 *-*-solaris*)	gdb_osabi=GDB_OSABI_SOLARIS ;;
 *-*-*-gnu*)	;; # prevent non-GNU kernels to match the Hurd rule below

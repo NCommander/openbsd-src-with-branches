@@ -1,11 +1,13 @@
-#	$Id: Makefile,v 1.8 1995/04/12 00:47:43 jtc Exp $
+#	$OpenBSD: Makefile,v 1.8 2002/06/29 08:14:07 deraadt Exp $
 
 PROG =	rpc.rstatd
-SRCS =	rstatd.c rstat_proc.c
-MAN =	rpc.rstatd.8
-MLINKS=	rpc.rstatd.8 rstatd.8
+.PATH: ${.CURDIR}/../../usr.bin/vmstat
 
-DPADD=	${LIBRPCSVC} ${LIBKVM}
-LDADD=	-lrpcsvc -lkvm
+CFLAGS+=-I${.CURDIR}/../../usr.bin/vmstat -DNOKVM
+SRCS =	dkstats.c rstatd.c rstat_proc.c
+MAN =	rpc.rstatd.8
+
+DPADD=	${LIBRPCSVC}
+LDADD=	-lrpcsvc
 
 .include <bsd.prog.mk>

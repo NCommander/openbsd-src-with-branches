@@ -1,3 +1,4 @@
+/*	$OpenBSD: initquad.c,v 1.6 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: initquad.c,v 1.3 1995/04/22 10:59:04 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)initquad.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: initquad.c,v 1.3 1995/04/22 10:59:04 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdio.h>
 
-# include	"trek.h"
+#include "trek.h"
 
 /*
 **  Paramize Quadrant Upon Entering
@@ -60,14 +51,14 @@ static char rcsid[] = "$NetBSD: initquad.c,v 1.3 1995/04/22 10:59:04 cgd Exp $";
 **	to be docked, i.e., abandon() and help().
 */
 
-initquad(f)
-int	f;
+void
+initquad(int f)
 {
-	register int		i, j;
-	int			rx, ry;
-	int			nbases, nstars;
-	register struct quad	*q;
-	int			nholes;
+	int		i, j;
+	int		rx, ry;
+	int		nbases, nstars;
+	struct quad	*q;
+	int		nholes;
 
 	q = &Quad[Ship.quadx][Ship.quady];
 
@@ -141,11 +132,10 @@ int	f;
 	Move.newquad = 1;
 }
 
-
-sector(x, y)
-int	*x, *y;
+void
+sector(int *x, int *y)
 {
-	register int		i, j;
+	int		i, j;
 
 	do
 	{
@@ -154,5 +144,4 @@ int	*x, *y;
 	} while (Sect[i][j] != EMPTY);
 	*x = i;
 	*y = j;
-	return;
 }

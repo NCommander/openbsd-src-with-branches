@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: t_msgctl.c,v 1.1.1.1 2019/11/19 19:57:04 bluhm Exp $	*/
 /* $NetBSD: t_msgctl.c,v 1.7 2017/10/07 17:15:44 kre Exp $ */
 
 /*-
@@ -31,9 +31,6 @@
  */
 
 #include "macros.h"
-
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_msgctl.c,v 1.7 2017/10/07 17:15:44 kre Exp $");
 
 #include <sys/msg.h>
 #include <sys/stat.h>

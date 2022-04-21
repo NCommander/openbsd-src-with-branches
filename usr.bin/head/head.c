@@ -1,3 +1,5 @@
+/*	$OpenBSD: head.c,v 1.23 2022/01/29 00:19:04 cheloha Exp $	*/
+
 /*
  * Copyright (c) 1980, 1987 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,23 +29,16 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1980, 1987 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)head.c	5.5 (Berkeley) 6/1/90";*/
-static char rcsid[] = "$Id: head.c,v 1.5 1993/10/13 18:34:17 jtc Exp $";
-#endif /* not lint */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <limits.h>
+#include <err.h>
+#include <errno.h>
 #include <unistd.h>
 
-static void usage ();
+int head_file(const char *, long, int);
+static void usage(void);
 
 /*
  * head - give the first few lines of a stream or of each of a set of files
@@ -56,64 +47,98 @@ static void usage ();
  */
 
 int
-main(argc, argv)
-	int	argc;
-	char	**argv;
+main(int argc, char *argv[])
 {
-	register int	ch, cnt;
-	int	firsttime, linecnt = 10;
+	const char *errstr;
+	int	ch;
+	long	linecnt = 10;
+	int	status = 0;
+
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
 
 	/* handle obsolete -number syntax */
-	if (argc > 1 && argv[1][0] == '-' && isdigit(argv[1][1])) {
-		if ((linecnt = atoi(argv[1] + 1)) < 0) {
-			usage ();
-		}
-		argc--; argv++;
+	if (argc > 1 && argv[1][0] == '-' &&
+	    isdigit((unsigned char)argv[1][1])) {
+		linecnt = strtonum(argv[1] + 1, 1, LONG_MAX, &errstr);
+		if (errstr != NULL)
+			errx(1, "count is %s: %s", errstr, argv[1] + 1);
+		argc--;
+		argv++;
 	}
 
-	while ((ch = getopt (argc, argv, "n:")) != EOF)
+	while ((ch = getopt(argc, argv, "n:")) != -1) {
 		switch (ch) {
 		case 'n':
-			if ((linecnt = atoi(optarg)) < 0)
-				usage ();
+			linecnt = strtonum(optarg, 1, LONG_MAX, &errstr);
+			if (errstr != NULL)
+				errx(1, "count is %s: %s", errstr, optarg);
 			break;
-
 		default:
-			usage();	
+			usage();
 		}
+	}
 	argc -= optind, argv += optind;
 
-	/* setlinebuf(stdout); */
-	for (firsttime = 1; ; firsttime = 0) {
-		if (!*argv) {
-			if (!firsttime)
-				exit(0);
-		}
-		else {
-			if (!freopen(*argv, "r", stdin)) {
-				fprintf(stderr, "head: can't read %s.\n", *argv);
-				exit(1);
-			}
-			if (argc > 1) {
-				if (!firsttime)
-					putchar('\n');
-				printf("==> %s <==\n", *argv);
-			}
-			++argv;
-		}
-		for (cnt = linecnt; cnt; --cnt)
-			while ((ch = getchar()) != EOF)
-				if (putchar(ch) == '\n')
-					break;
+	if (argc == 0) {
+		if (pledge("stdio", NULL) == -1)
+			err(1, "pledge");
+
+		status = head_file(NULL, linecnt, 0);
+	} else {
+		for (; *argv != NULL; argv++)
+			status |= head_file(*argv, linecnt, argc > 1);
 	}
-	/*NOTREACHED*/
+
+	return status;
+}
+
+int
+head_file(const char *path, long count, int need_header)
+{
+	const char *name;
+	FILE *fp;
+	int ch, status = 0;
+	static int first = 1;
+
+	if (path != NULL) {
+		name = path;
+		fp = fopen(name, "r");
+		if (fp == NULL) {
+			warn("%s", name);
+			return 1;
+		}
+		if (need_header) {
+			printf("%s==> %s <==\n", first ? "" : "\n", name);
+			if (ferror(stdout))
+				err(1, "stdout");
+			first = 0;
+		}
+	} else {
+		name = "stdin";
+		fp = stdin;
+	}
+
+	while ((ch = getc(fp)) != EOF) {
+		if (putchar(ch) == EOF)
+			err(1, "stdout");
+		if (ch == '\n' && --count == 0)
+			break;
+	}
+	if (ferror(fp)) {
+		warn("%s", name);
+		status = 1;
+	}
+
+	fclose(fp);
+
+	return status;
 }
 
 
 static void
-usage ()
+usage(void)
 {
-	fputs("usage: head [-n line_count] [file ...]\n", stderr);
+	fputs("usage: head [-count | -n count] [file ...]\n", stderr);
 	exit(1);
 }
-

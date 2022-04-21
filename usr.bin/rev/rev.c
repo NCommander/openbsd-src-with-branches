@@ -1,3 +1,4 @@
+/*	$OpenBSD: rev.c,v 1.15 2022/01/29 00:11:54 cheloha Exp $	*/
 /*	$NetBSD: rev.c,v 1.5 1995/09/28 08:49:40 tls Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,44 +30,35 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1987, 1992, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)rev.c	8.3 (Berkeley) 5/4/95";
-#else
-static char rcsid[] = "$NetBSD: rev.c,v 1.5 1995/09/28 08:49:40 tls Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
 
 #include <err.h>
 #include <errno.h>
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-void usage __P((void));
+int multibyte;
+
+int isu8cont(unsigned char);
+int rev_file(const char *);
+void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register char *filename, *p, *t;
-	FILE *fp;
-	size_t len;
 	int ch, rval;
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	setlocale(LC_CTYPE, "");
+	multibyte = MB_CUR_MAX > 1;
+
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
+
+	while ((ch = getopt(argc, argv, "")) != -1)
 		switch(ch) {
-		case '?':
 		default:
 			usage();
 		}
@@ -78,39 +66,78 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-	fp = stdin;
-	filename = "stdin";
 	rval = 0;
-	do {
-		if (*argv) {
-			if ((fp = fopen(*argv, "r")) == NULL) {
-				warn("%s", *argv);
-				rval = 1;
-				++argv;
-				continue;
-			}
-			filename = *argv++;
+	if (argc == 0) {
+		if (pledge("stdio", NULL) == -1)
+			err(1, "pledge");
+
+		rval = rev_file(NULL);
+	} else {
+		for (; *argv != NULL; argv++)
+			rval |= rev_file(*argv);
+	}
+	return rval;
+}
+
+int
+isu8cont(unsigned char c)
+{
+	return (c & (0x80 | 0x40)) == 0x80;
+}
+
+int
+rev_file(const char *path)
+{
+	char *p = NULL, *t, *te, *u;
+	const char *filename;
+	FILE *fp;
+	size_t ps = 0;
+	ssize_t len;
+	int rval = 0;
+
+	if (path != NULL) {
+		fp = fopen(path, "r");
+		if (fp == NULL) {
+			warn("%s", path);
+			return 1;
 		}
-		while ((p = fgetln(fp, &len)) != NULL) {
-			if (p[len - 1] == '\n')
-				--len;
-			t = p + len - 1;
-			for (t = p + len - 1; t >= p; --t)
-				putchar(*t);
-			putchar('\n');
+		filename = path;
+	} else {
+		fp = stdin;
+		filename = "stdin";
+	}
+
+	while ((len = getline(&p, &ps, fp)) != -1) {
+		if (p[len - 1] == '\n')
+			--len;
+		for (t = p + len - 1; t >= p; --t) {
+			te = t;
+			if (multibyte)
+				while (t > p && isu8cont(*t))
+					--t;
+			for (u = t; u <= te; ++u)
+				if (putchar(*u) == EOF)
+					err(1, "stdout");
 		}
-		if (ferror(fp)) {
-			warn("%s", filename);
-			rval = 1;
-		}
-		(void)fclose(fp);
-	} while(*argv);
-	exit(rval);
+		if (putchar('\n') == EOF)
+			err(1, "stdout");
+	}
+	free(p);
+	if (ferror(fp)) {
+		warn("%s", filename);
+		rval = 1;
+	}
+
+	(void)fclose(fp);
+
+	return rval;
 }
 
 void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr, "usage: rev [file ...]\n");
+	extern char *__progname;
+
+	(void)fprintf(stderr, "usage: %s [file ...]\n", __progname);
 	exit(1);
 }

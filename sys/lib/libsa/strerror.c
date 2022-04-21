@@ -1,4 +1,5 @@
-/*	$NetBSD: strerror.c,v 1.8 1995/09/17 00:49:47 pk Exp $	*/
+/*	$OpenBSD: strerror.c,v 1.9 2011/09/20 22:26:05 miod Exp $	*/
+/*	$NetBSD: strerror.c,v 1.11 1996/10/13 02:29:08 christos Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,14 +34,10 @@
 #include "saerrno.h"
 #include "stand.h"
 
-size_t	strlen __P((const char *));				/* XXX */
-char	*strcpy __P((char *, const char *));			/* XXX */
-
-char *
-strerror(err)
-	int err;
+const char *
+strerror(int err)
 {
-static	char ebuf[64];
+	static	char ebuf[64];
 
 	switch (err) {
 	case EADAPT:
@@ -57,8 +50,6 @@ static	char ebuf[64];
 		return "bad partition";
 	case ERDLAB:
 		return "can't read disk label";
-	case EUNLAB:
-		return "unlabeled";
 	case ENXIO:
 		return "Device not configured";
 	case EPERM:
@@ -73,9 +64,10 @@ static	char ebuf[64];
 		return "Exec format error";
 	case EIO:
 		return "Input/output error";
-
+	case EINVAL:
+		return "Invalid argument";
 	default:
-		sprintf(ebuf, "Unknown error: code %d", err);
+		snprintf(ebuf, sizeof ebuf, "Unknown error: code %d", err);
 		return ebuf;
 	}
 }

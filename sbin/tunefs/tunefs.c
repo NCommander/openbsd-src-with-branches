@@ -1,4 +1,5 @@
-/*	$NetBSD: tunefs.c,v 1.10 1995/03/18 15:01:31 cgd Exp $	*/
+/*	$OpenBSD: tunefs.c,v 1.40 2015/12/09 01:08:31 jsg Exp $	*/
+/*	$NetBSD: tunefs.c,v 1.33 2005/01/19 20:46:16 xtraeme Exp $	*/
 
 /*
  * Copyright (c) 1983, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,36 +30,26 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1983, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)tunefs.c	8.2 (Berkeley) 4/19/94";
-#else
-static char rcsid[] = "$NetBSD: tunefs.c,v 1.10 1995/03/18 15:01:31 cgd Exp $";
-#endif
-#endif /* not lint */
-
 /*
  * tunefs: change layout parameters to an existing file system.
  */
-#include <sys/param.h>
-#include <sys/stat.h>
+#include <sys/param.h>	/* DEV_BSIZE MAXBSIZE */
 
+#include <ufs/ufs/dinode.h>
 #include <ufs/ffs/fs.h>
+#include <ufs/ffs/ffs_extern.h>
 
-#include <errno.h>
 #include <err.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <fstab.h>
-#include <stdio.h>
 #include <paths.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include <limits.h>
+#include <util.h>
 
 /* the optimization warning string template */
 #define	OPTWARN	"should optimize for %s with minfree %s %d%%"
@@ -72,218 +59,275 @@ union {
 	char pad[MAXBSIZE];
 } sbun;
 #define	sblock sbun.sb
+char buf[MAXBSIZE];
 
-int fi;
-long dev_bsize = 1;
+int	fi;
+int	is_ufs2 = 0;
+off_t	sblockloc;
 
-void bwrite(daddr_t, char *, int);
-int bread(daddr_t, char *, int);
-void getsb(struct fs *, char *);
-void usage __P((void));
+static off_t sblock_try[] = SBLOCKSEARCH;
+
+static	void	bwrite(daddr_t, char *, int, const char *);
+static	void	bread(daddr_t, char *, int, const char *);
+static	int	getnum(const char *, const char *, int, int);
+static	void	getsb(struct fs *, const char *);
+static	int	openpartition(char *, int, char **);
+static	void	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	char *cp, *special, *name;
-	struct stat st;
-	int i;
-	int Aflag = 0;
-	struct fstab *fs;
-	char *chg[2], device[MAXPATHLEN];
+#define	OPTSTRING	"AFNe:g:h:m:o:"
+	int		i, ch, Aflag, Fflag, Nflag, openflags;
+	char		*special;
+	const char	*chg[2];
+	int		maxbpg, minfree, optim;
+	int		avgfilesize, avgfpdir;
 
-	argc--, argv++; 
-	if (argc < 2)
-		usage();
-	special = argv[argc - 1];
-	fs = getfsfile(special);
-	if (fs)
-		special = fs->fs_spec;
-again:
-	if (stat(special, &st) < 0) {
-		if (*special != '/') {
-			if (*special == 'r')
-				special++;
-			(void)sprintf(device, "%s/%s", _PATH_DEV, special);
-			special = device;
-			goto again;
+	Aflag = Fflag = Nflag = 0;
+	maxbpg = minfree = optim = -1;
+	avgfilesize = avgfpdir = -1;
+	chg[FS_OPTSPACE] = "space";
+	chg[FS_OPTTIME] = "time";
+
+	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
+		switch (ch) {
+
+		case 'A':
+			Aflag = 1;
+			break;
+
+		case 'F':
+			Fflag = 1;
+			break;
+
+		case 'N':
+			Nflag = 1;
+			break;
+
+		case 'e':
+			maxbpg = getnum(optarg,
+			    "maximum blocks per file in a cylinder group",
+			    1, INT_MAX);
+			break;
+
+		case 'g':
+			avgfilesize = getnum(optarg,
+			    "average file size", 1, INT_MAX);
+			break;
+
+		case 'h':
+			avgfpdir = getnum(optarg,
+			    "expected number of files per directory",
+			    1, INT_MAX);
+			break;
+
+		case 'm':
+			minfree = getnum(optarg,
+			    "minimum percentage of free space", 0, 99);
+			break;
+
+		case 'o':
+			if (strcmp(optarg, chg[FS_OPTSPACE]) == 0)
+				optim = FS_OPTSPACE;
+			else if (strcmp(optarg, chg[FS_OPTTIME]) == 0)
+				optim = FS_OPTTIME;
+			else
+				errx(10,
+				    "bad %s (options are `space' or `time')",
+				    "optimization preference");
+			break;
+
+		default:
+			usage();
 		}
-		err(1, "%s", special);
 	}
-	if (!S_ISBLK(st.st_mode) && !S_ISCHR(st.st_mode))
-		errx(10, "%s: not a block or character device", special);
-	getsb(&sblock, special);
-	for (; argc > 0 && argv[0][0] == '-'; argc--, argv++) {
-		for (cp = &argv[0][1]; *cp; cp++)
-			switch (*cp) {
-
-			case 'A':
-				Aflag++;
-				continue;
-
-			case 'a':
-				name = "maximum contiguous block count";
-				if (argc < 1)
-					errx(10, "-a: missing %s", name);
-				argc--, argv++;
-				i = atoi(*argv);
-				if (i < 1)
-					errx(10, "%s must be >= 1 (was %s)",
-					    name, *argv);
-				warnx("%s changes from %d to %d",
-				    name, sblock.fs_maxcontig, i);
-				sblock.fs_maxcontig = i;
-				continue;
-
-			case 'd':
-				name =
-				   "rotational delay between contiguous blocks";
-				if (argc < 1)
-					errx(10, "-d: missing %s", name);
-				argc--, argv++;
-				i = atoi(*argv);
-				warnx("%s changes from %dms to %dms",
-				    name, sblock.fs_rotdelay, i);
-				sblock.fs_rotdelay = i;
-				continue;
-
-			case 'e':
-				name =
-				  "maximum blocks per file in a cylinder group";
-				if (argc < 1)
-					errx(10, "-e: missing %s", name);
-				argc--, argv++;
-				i = atoi(*argv);
-				if (i < 1)
-					errx(10, "%s must be >= 1 (was %s)",
-					    name, *argv);
-				warnx("%s changes from %d to %d",
-				    name, sblock.fs_maxbpg, i);
-				sblock.fs_maxbpg = i;
-				continue;
-
-			case 'm':
-				name = "minimum percentage of free space";
-				if (argc < 1)
-					errx(10, "-m: missing %s", name);
-				argc--, argv++;
-				i = atoi(*argv);
-				if (i < 0 || i > 99)
-					errx(10, "bad %s (%s)", name, *argv);
-				warnx("%s changes from %d%% to %d%%",
-				    name, sblock.fs_minfree, i);
-				sblock.fs_minfree = i;
-				if (i >= MINFREE &&
-				    sblock.fs_optim == FS_OPTSPACE)
-					warnx(OPTWARN, "time", ">=", MINFREE);
-				if (i < MINFREE &&
-				    sblock.fs_optim == FS_OPTTIME)
-					warnx(OPTWARN, "space", "<", MINFREE);
-				continue;
-
-			case 'o':
-				name = "optimization preference";
-				if (argc < 1)
-					errx(10, "-o: missing %s", name);
-				argc--, argv++;
-				chg[FS_OPTSPACE] = "space";
-				chg[FS_OPTTIME] = "time";
-				if (strcmp(*argv, chg[FS_OPTSPACE]) == 0)
-					i = FS_OPTSPACE;
-				else if (strcmp(*argv, chg[FS_OPTTIME]) == 0)
-					i = FS_OPTTIME;
-				else
-					errx(10, "bad %s (options are `space' or `time')",
-					    name);
-				if (sblock.fs_optim == i) {
-					warnx("%s remains unchanged as %s",
-					    name, chg[i]);
-					continue;
-				}
-				warnx("%s changes from %s to %s",
-				    name, chg[sblock.fs_optim], chg[i]);
-				sblock.fs_optim = i;
-				if (sblock.fs_minfree >= MINFREE &&
-				    i == FS_OPTSPACE)
-					warnx(OPTWARN, "time", ">=", MINFREE);
-				if (sblock.fs_minfree < MINFREE &&
-				    i == FS_OPTTIME)
-					warnx(OPTWARN, "space", "<", MINFREE);
-				continue;
-
-			default:
-				usage();
-			}
-	}
+	argc -= optind;
+	argv += optind; 
 	if (argc != 1)
 		usage();
-	bwrite((daddr_t)SBOFF / dev_bsize, (char *)&sblock, SBSIZE);
+
+	special = argv[0];
+	openflags = Nflag ? O_RDONLY : O_RDWR;
+	if (Fflag)
+		fi = open(special, openflags);
+	else
+		fi = openpartition(special, openflags, &special);
+	if (fi == -1)
+		err(1, "%s", special);
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
+	getsb(&sblock, special);
+
+#define CHANGEVAL(old, new, type, suffix) do				\
+	if ((new) != -1) {						\
+		if ((new) == (old))					\
+			warnx("%s remains unchanged at %d%s",		\
+			    (type), (old), (suffix));			\
+		else {							\
+			warnx("%s changes from %d%s to %d%s",		\
+			    (type), (old), (suffix), (new), (suffix));	\
+			(old) = (new);					\
+		}							\
+	} while (/* CONSTCOND */0)
+
+	warnx("tuning %s", special);
+	CHANGEVAL(sblock.fs_maxbpg, maxbpg,
+	    "maximum blocks per file in a cylinder group", "");
+	CHANGEVAL(sblock.fs_minfree, minfree,
+	    "minimum percentage of free space", "%");
+	if (minfree != -1) {
+		if (minfree >= MINFREE &&
+		    sblock.fs_optim == FS_OPTSPACE)
+			warnx(OPTWARN, "time", ">=", MINFREE);
+		if (minfree < MINFREE &&
+		    sblock.fs_optim == FS_OPTTIME)
+			warnx(OPTWARN, "space", "<", MINFREE);
+	}
+	if (optim != -1) {
+		if (sblock.fs_optim == optim) {
+			warnx("%s remains unchanged as %s",
+			    "optimization preference",
+			    chg[optim]);
+		} else {
+			warnx("%s changes from %s to %s",
+			    "optimization preference",
+			    chg[sblock.fs_optim], chg[optim]);
+			sblock.fs_optim = optim;
+			if (sblock.fs_minfree >= MINFREE &&
+			    optim == FS_OPTSPACE)
+				warnx(OPTWARN, "time", ">=", MINFREE);
+			if (sblock.fs_minfree < MINFREE &&
+			    optim == FS_OPTTIME)
+				warnx(OPTWARN, "space", "<", MINFREE);
+		}
+	}
+	CHANGEVAL(sblock.fs_avgfilesize, avgfilesize,
+	    "average file size", "");
+	CHANGEVAL(sblock.fs_avgfpdir, avgfpdir,
+	    "expected number of files per directory", "");
+
+	if (Nflag) {
+		fprintf(stdout, "tunefs: current settings of %s\n", special);
+		fprintf(stdout, "\tmaximum contiguous block count %d\n",
+		    sblock.fs_maxcontig);
+		fprintf(stdout,
+		    "\tmaximum blocks per file in a cylinder group %d\n",
+		    sblock.fs_maxbpg);
+		fprintf(stdout, "\tminimum percentage of free space %d%%\n",
+		    sblock.fs_minfree);
+		fprintf(stdout, "\toptimization preference: %s\n",
+		    chg[sblock.fs_optim]);
+		fprintf(stdout, "\taverage file size: %d\n",
+		    sblock.fs_avgfilesize);
+		fprintf(stdout,
+		    "\texpected number of files per directory: %d\n",
+		    sblock.fs_avgfpdir);
+		fprintf(stdout, "tunefs: no changes made\n");
+		exit(0);
+	}
+
+	memcpy(buf, (char *)&sblock, SBLOCKSIZE);
+	bwrite(sblockloc, buf, SBLOCKSIZE, special);
 	if (Aflag)
 		for (i = 0; i < sblock.fs_ncg; i++)
 			bwrite(fsbtodb(&sblock, cgsblock(&sblock, i)),
-			    (char *)&sblock, SBSIZE);
+			    buf, SBLOCKSIZE, special);
 	close(fi);
 	exit(0);
 }
 
-void
-usage()
+static int
+getnum(const char *num, const char *desc, int min, int max)
 {
+	int		n;
+	const char	*errstr;
 
-	fprintf(stderr, "Usage: tunefs tuneup-options special-device\n");
-	fprintf(stderr, "where tuneup-options are:\n");
-	fprintf(stderr, "\t-a maximum contiguous blocks\n");
-	fprintf(stderr, "\t-d rotational delay between contiguous blocks\n");
-	fprintf(stderr, "\t-e maximum blocks per file in a cylinder group\n");
-	fprintf(stderr, "\t-m minimum percentage of free space\n");
-	fprintf(stderr, "\t-o optimization preference (`space' or `time')\n");
+	n = strtonum(num, min, max, &errstr);
+	if (errstr != NULL)
+		errx(1, "Invalid number `%s' for %s: %s", num, desc, errstr);
+	return (n);
+}
+
+static void
+usage(void)
+{
+	extern char *__progname;
+
+	fprintf(stderr,
+	    "usage: %s [-AFN] [-e maxbpg] [-g avgfilesize] "
+	    "[-h avgfpdir] [-m minfree]\n"
+	    "\t[-o optimize_preference] special | filesys\n",
+	    __progname);
+
 	exit(2);
 }
 
-void
-getsb(fs, file)
-	register struct fs *fs;
-	char *file;
-{
-
-	fi = open(file, 2);
-	if (fi < 0)
-		err(3, "cannot open %s", file);
-	if (bread((daddr_t)SBOFF, (char *)fs, SBSIZE))
-		err(4, "%s: bad super block", file);
-	if (fs->fs_magic != FS_MAGIC)
-		err(5, "%s: bad magic number", file);
-	dev_bsize = fs->fs_fsize / fsbtodb(fs, 1);
-}
-
-void
-bwrite(blk, buf, size)
-	daddr_t blk;
-	char *buf;
-	int size;
-{
-
-	if (lseek(fi, (off_t)blk * dev_bsize, SEEK_SET) < 0)
-		err(6, "FS SEEK");
-	if (write(fi, buf, size) != size)
-		err(7, "FS WRITE");
-}
-
-int
-bread(bno, buf, cnt)
-	daddr_t bno;
-	char *buf;
-	int cnt;
+static void
+getsb(struct fs *fs, const char *file)
 {
 	int i;
 
-	if (lseek(fi, (off_t)bno * dev_bsize, SEEK_SET) < 0)
-		return(1);
-	if ((i = read(fi, buf, cnt)) != cnt) {
-		for(i=0; i<sblock.fs_bsize; i++)
-			buf[i] = 0;
-		return (1);
+	for (i = 0; ; i++) {
+		if (sblock_try[i] == -1)
+			errx(5, "cannot find filesystem superblock");
+		bread(sblock_try[i] / DEV_BSIZE, (char *)fs, SBLOCKSIZE, file);
+		switch(fs->fs_magic) {
+		case FS_UFS2_MAGIC:
+			is_ufs2 = 1;
+			/*FALLTHROUGH*/
+		case FS_UFS1_MAGIC:
+			break;
+		default:
+			continue;
+		}
+		if (!is_ufs2 && sblock_try[i] == SBLOCK_UFS2)
+			continue;
+		if ((is_ufs2 || fs->fs_flags & FS_FLAGS_UPDATED)
+		    && fs->fs_sblockloc != sblock_try[i])
+			continue;
+		break;
 	}
-	return (0);
+
+	sblockloc = sblock_try[i] / DEV_BSIZE;
+}
+
+static void
+bwrite(daddr_t blk, char *buffer, int size, const char *file)
+{
+	if (pwrite(fi, buffer, size, blk * DEV_BSIZE) != size)
+		err(7, "%s: writing %d bytes @ %lld", file, size,
+		    (long long)(blk * DEV_BSIZE));
+}
+
+static void
+bread(daddr_t blk, char *buffer, int cnt, const char *file)
+{
+	if ((pread(fi, buffer, cnt, (off_t)blk * DEV_BSIZE)) != cnt)
+		errx(5, "%s: reading %d bytes @ %lld", file, cnt,
+		    (long long)(blk * DEV_BSIZE));
+}
+
+static int
+openpartition(char *name, int flags, char **devicep)
+{
+	char		rawspec[PATH_MAX], *p;
+	struct fstab	*fs;
+	int		fd;
+
+	fs = getfsfile(name);
+	if (fs) {
+		if ((p = strrchr(fs->fs_spec, '/')) != NULL) {
+			snprintf(rawspec, sizeof(rawspec), "%.*s/r%s",
+			    (int)(p - fs->fs_spec), fs->fs_spec, p + 1);
+			name = rawspec;
+		} else
+			name = fs->fs_spec;
+	}
+	fd = opendev(name, flags, 0, devicep);
+	if (fd == -1 && errno == ENOENT)
+		devicep = &name;
+	return (fd);
 }

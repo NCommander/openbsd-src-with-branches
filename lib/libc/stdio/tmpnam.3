@@ -1,4 +1,4 @@
-.\"	$NetBSD: tmpnam.3,v 1.3 1995/02/02 01:15:57 jtc Exp $
+.\"	$OpenBSD: tmpnam.3,v 1.22 2019/04/26 06:33:29 martijn Exp $
 .\"
 .\" Copyright (c) 1988, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,10 +31,8 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)tmpnam.3	8.2 (Berkeley) 11/17/93
-.\"
-.Dd November 17, 1993
-.Dt TMPFILE 3
+.Dd $Mdocdate: April 26 2019 $
+.Dt TMPNAM 3
 .Os
 .Sh NAME
 .Nm tempnam ,
@@ -46,7 +40,7 @@
 .Nm tmpnam
 .Nd temporary file routines
 .Sh SYNOPSIS
-.Fd #include <stdio.h>
+.In stdio.h
 .Ft FILE *
 .Fn tmpfile void
 .Ft char *
@@ -56,9 +50,8 @@
 .Sh DESCRIPTION
 The
 .Fn tmpfile
-function
-returns a pointer to a stream associated with a file descriptor returned
-by the routine
+function returns a pointer to a stream associated with a file descriptor
+returned by the routine
 .Xr mkstemp 3 .
 The created file is unlinked before
 .Fn tmpfile
@@ -69,38 +62,33 @@ The file is opened with the access value
 .Pp
 The
 .Fn tmpnam
-function
-returns a pointer to a file name, in the
+function returns a pointer to a file name, in the
 .Dv P_tmpdir
-directory, which
-did not reference an existing file at some indeterminate point in the
-past.
+directory, which did not reference an existing file at some
+indeterminate point in the past.
 .Dv P_tmpdir
 is defined in the include file
-.Aq Pa stdio.h .
+.In stdio.h .
 If the argument
-.Fa s
-is
-.Pf non- Dv NULL ,
-the file name is copied to the buffer it references.
+.Fa str
+is non-null, the file name is copied to the buffer it references.
 Otherwise, the file name is copied to a static buffer.
 In either case,
 .Fn tmpnam
 returns a pointer to the file name.
 .Pp
-The buffer referenced by 
-.Fa s
+The buffer referenced by
+.Fa str
 is expected to be at least
 .Dv L_tmpnam
 bytes in length.
 .Dv L_tmpnam
 is defined in the include file
-.Aq Pa stdio.h .
+.In stdio.h .
 .Pp
 The
 .Fn tempnam
-function
-is similar to
+function is similar to
 .Fn tmpnam ,
 but provides the ability to specify the directory which will
 contain the temporary file and the file name prefix.
@@ -109,8 +97,7 @@ The environment variable
 .Ev TMPDIR
 (if set), the argument
 .Fa tmpdir
-(if
-.Pf non- Dv NULL ) ,
+(if non-null),
 the directory
 .Dv P_tmpdir ,
 and the directory
@@ -120,37 +107,41 @@ temporary file.
 .Pp
 The argument
 .Fa prefix ,
-if
-.Pf non- Dv NULL ,
-is used to specify a file name prefix, which will be the
+if non-null, is used to specify a file name prefix, which will be the
 first part of the created file name.
-.Fn Tempnam
+.Fn tempnam
 allocates memory in which to store the file name; the returned pointer
 may be used as a subsequent argument to
 .Xr free 3 .
 .Sh RETURN VALUES
 The
 .Fn tmpfile
-function
-returns a pointer to an open file stream on success, and a
-.Dv NULL
-pointer
-on error.
+function returns a pointer to an open file stream on success, and a null
+pointer on error.
 .Pp
 The
 .Fn tmpnam
 and
-.Fn tempfile
-functions
-return a pointer to a file name on success, and a
-.Dv NULL
-pointer
+.Fn tempnam
+functions return a pointer to a file name on success, and a null pointer
 on error.
+.Sh ENVIRONMENT
+.Bl -tag -width Ds
+.It Ev TMPDIR
+.Pf [ Fn tempnam
+only]
+If set,
+the directory in which the temporary file is stored.
+.Ev TMPDIR
+is ignored for processes
+for which
+.Xr issetugid 2
+is true.
+.El
 .Sh ERRORS
 The
 .Fn tmpfile
-function
-may fail and set the global variable
+function may fail and set the global variable
 .Va errno
 for any of the errors specified for the library functions
 .Xr fdopen 3
@@ -159,22 +150,21 @@ or
 .Pp
 The
 .Fn tmpnam
-function
-may fail and set
+function may fail and set
 .Va errno
 for any of the errors specified for the library function
 .Xr mktemp 3 .
 .Pp
 The
 .Fn tempnam
-function
-may fail and set
+function may fail and set
 .Va errno
 for any of the errors specified for the library functions
 .Xr malloc 3
 or
 .Xr mktemp 3 .
 .Sh SEE ALSO
+.Xr issetugid 2 ,
 .Xr mkstemp 3 ,
 .Xr mktemp 3
 .Sh STANDARDS
@@ -182,13 +172,14 @@ The
 .Fn tmpfile
 and
 .Fn tmpnam
-functions
-conform to
+functions conform to
 .St -ansiC .
 .Sh BUGS
-These interfaces are provided for System V and
-.Tn ANSI
-compatibility only.
+.Fn tmpnam
+and
+.Fn tempnam
+are provided for System V and ANSI compatibility only.
+These interfaces are typically not used in safe ways.
 The
 .Xr mkstemp 3
 interface is strongly preferred.
@@ -198,24 +189,40 @@ with the historic
 .Xr mktemp 3
 interface).
 First, there is an obvious race between file name selection and file
-creation and deletion.
+creation and deletion: the program is typically written to call
+.Fn tmpnam ,
+.Fn tempnam ,
+or
+.Xr mktemp 3 .
+Subsequently, the program calls
+.Xr open 2
+or
+.Xr fopen 3
+and erroneously opens a file (or symbolic link, or FIFO or other
+device) that the attacker has placed in the expected file location.
+Hence
+.Xr mkstemp 3
+is recommended, since it atomically creates the file.
+.Pp
 Second, most historic implementations provide only a limited number
 of possible temporary file names (usually 26) before file names will
 start being recycled.
 Third, the System V implementations of these functions (and of
-.Xr mktemp )
+.Xr mktemp 3 )
 use the
 .Xr access 2
 function to determine whether or not the temporary file may be created.
-This has obvious ramifications for setuid or setgid programs, complicating
-the portable use of these interfaces in such programs.
+This has obvious ramifications for daemons or setuid/setgid programs,
+complicating the portable use of these interfaces in such programs.
 Finally, there is no specification of the permissions with which the
 temporary files are created.
 .Pp
 This implementation does not have these flaws, but portable software
 cannot depend on that.
-In particular, the
-.Fn tmpfile
-interface should not be used in software expected to be used on other systems
-if there is any possibility that the user does not wish the temporary file to
-be publicly readable and writable.
+.Pp
+For these reasons,
+.Xr ld 1
+will output a warning message whenever it links code that uses the functions
+.Fn tmpnam
+or
+.Fn tempnam .

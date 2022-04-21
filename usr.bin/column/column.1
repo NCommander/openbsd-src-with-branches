@@ -1,3 +1,4 @@
+.\"	$OpenBSD: column.1,v 1.17 2016/10/21 07:42:17 schwarze Exp $
 .\"	$NetBSD: column.1,v 1.3 1995/03/26 09:08:28 glass Exp $
 .\"
 .\" Copyright (c) 1989, 1990, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,9 +30,9 @@
 .\"
 .\"     @(#)column.1	8.1 (Berkeley) 6/6/93
 .\"
-.Dd June 6, 1993
-.Os
+.Dd $Mdocdate: October 21 2016 $
 .Dt COLUMN 1
+.Os
 .Sh NAME
 .Nm column
 .Nd columnate lists
@@ -47,55 +44,73 @@
 .Op Ar
 .Sh DESCRIPTION
 The
-.Nm column
+.Nm
 utility formats its input into multiple columns.
-Rows are filled before columns.
+Each input line provides the text for one output cell.
+Columns are filled before rows.
+.Pp
+The column width is determined by the longest input line rounded
+up to the nearest tabstop; tabstops are assumed to be at multiples
+of eight.
+Output uses tab characters to advance to the next column.
+The number of columns is chosen to fill the terminal width.
+.Pp
 Input is taken from
 .Ar file
-operands, or, by default, from the standard input.
-Empty lines are ignored.
+operands or, by default, from the standard input.
+Empty lines and lines containing only whitespace are ignored.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl c
+.It Fl c Ar columns
 Output is formatted for a display
 .Ar columns
 wide.
-.It Fl s
-Specify a set of characters to be used to delimit columns for the
+.It Fl s Ar sep
+Specify a set of characters to delimit columns for the
 .Fl t
 option.
+It defaults to space and tab.
 .It Fl t
-Determine the number of columns the input contains and create a table.
-Columns are delimited with whitespace, by default, or with the characters
-supplied using the
+Table mode.
+Each input line provides the text for one output row.
+It is split into cells using the
 .Fl s
 option.
-Useful for pretty-printing displays.
+Leading, trailing, and multiple adjacent delimiters are ignored.
+Each column is as wide as the widest cell in it.
+Columns are separated by two spaces.
 .It Fl x
-Fill columns before filling rows.
+Fill rows before filling columns.
 .El
-.Pp
-.Nm Column
-exits 0 on success, >0 if an error occurred.
 .Sh ENVIRONMENT
-.Bl -tag -width COLUMNS
+.Bl -tag -width LC_CTYPE
 .It Ev COLUMNS
-The environment variable
-.Ev COLUMNS
-is used to determine the size of
-the screen if no other information is available.
+If set to a positive integer,
+output is formatted to the given width in display columns.
+Otherwise,
+.Nm
+defaults to the terminal width, or 80 columns if the output is not a terminal.
+.It Ev LC_CTYPE
+The character encoding
+.Xr locale 1 .
+It decides which byte sequences form characters, what their display
+width is, and which characters are whitespace.
+If unset or set to
+.Qq C ,
+.Qq POSIX ,
+or an unsupported value, each byte except the tab is treated as a
+character of display width 1.
 .El
-.Sh EXAMPLES
-.Dl (printf \&"PERM LINKS OWNER SIZE MONTH DAY HH:MM/YEAR NAME\en\&"\ \&;\ \&\e
-.Dl ls -l \&| sed 1d) \&| column -t
+.Sh EXIT STATUS
+.Ex -std column
 .Sh SEE ALSO
 .Xr colrm 1 ,
-.Xr ls 1 ,
+.Xr fmt 1 ,
 .Xr paste 1 ,
-.Xr sort 1
+.Xr rs 1
 .Sh HISTORY
 The
 .Nm
-command appeared in 
+command appeared in
 .Bx 4.3 Reno .

@@ -70,6 +70,7 @@ static Flavor getFlavor(StringRef s) {
       .Default(Invalid);
 }
 
+#ifndef __OpenBSD__
 static cl::TokenizerCallback getDefaultQuotingStyle() {
   if (Triple(sys::getProcessTriple()).getOS() == Triple::Win32)
     return cl::TokenizeWindowsCommandLine;
@@ -102,6 +103,7 @@ static bool isPETarget(std::vector<const char *> &v) {
   return false;
 #endif
 }
+#endif
 
 static Flavor parseProgname(StringRef progname) {
   // Use GNU driver for "ld" by default.
@@ -143,9 +145,12 @@ static int lldMain(int argc, const char **argv, llvm::raw_ostream &stdoutOS,
   std::vector<const char *> args(argv, argv + argc);
   switch (parseFlavor(args)) {
   case Gnu:
+#ifndef __OpenBSD__
     if (isPETarget(args))
       return !mingw::link(args, exitEarly, stdoutOS, stderrOS);
+#endif
     return !elf::link(args, exitEarly, stdoutOS, stderrOS);
+#ifndef __OpenBSD__
   case WinLink:
     return !coff::link(args, exitEarly, stdoutOS, stderrOS);
   case Darwin:
@@ -154,6 +159,7 @@ static int lldMain(int argc, const char **argv, llvm::raw_ostream &stdoutOS,
     return !mach_o::link(args, exitEarly, stdoutOS, stderrOS);
   case Wasm:
     return !lld::wasm::link(args, exitEarly, stdoutOS, stderrOS);
+#endif
   default:
     die("lld is a generic driver.\n"
         "Invoke ld.lld (Unix), ld64.lld (macOS), lld-link (Windows), wasm-ld"

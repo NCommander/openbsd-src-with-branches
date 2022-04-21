@@ -1,3 +1,4 @@
+/*	$OpenBSD: jail.c,v 1.6 2016/01/08 18:19:47 mestre Exp $	*/
 /*	$NetBSD: jail.c,v 1.3 1995/03/23 08:34:44 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,22 +30,17 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)jail.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: jail.c,v 1.3 1995/03/23 08:34:44 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdio.h>
 
-# include	"monop.ext"
+#include "monop.ext"
 
 /*
  *	This routine uses a get-out-of-jail-free card to get the
  * player out of jail.
  */
-card() {
-
+void
+card(void)
+{
 	if (cur_p->loc != JAIL) {
 		printf("But you're not IN Jail\n");
 		return;
@@ -62,23 +54,11 @@ card() {
 	cur_p->in_jail = 0;
 }
 /*
- *	This routine returns the players get-out-of-jail-free card
- * to a deck.
- */
-ret_card(plr)
-reg PLAY	*plr; {
-
-	plr->num_gojf--;
-	if (CC_D.gojf_used)
-		CC_D.gojf_used = FALSE;
-	else
-		CH_D.gojf_used = FALSE;
-}
-/*
  *	This routine deals with paying your way out of jail.
  */
-pay() {
-
+void
+pay(void)
+{
 	if (cur_p->loc != JAIL) {
 		printf("But you're not IN Jail\n");
 		return;
@@ -91,9 +71,9 @@ pay() {
 /*
  *	This routine deals with a move in jail
  */
-move_jail(r1, r2)
-reg int	r1, r2; {
-
+int
+move_jail(int r1, int r2)
+{
 	if (r1 != r2) {
 		printf("Sorry, that doesn't get you out\n");
 		if (++(cur_p->in_jail) == 3) {
@@ -107,14 +87,15 @@ moveit:
 			return TRUE;
 		}
 		return FALSE;
-	}
-	else {
+	} else {
 		printf("Double roll gets you out.\n");
 		goto moveit;
 	}
 }
-printturn() {
 
+void
+printturn(void)
+{
 	if (cur_p->loc != JAIL)
 		return;
 	printf("(This is your ");

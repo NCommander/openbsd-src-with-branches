@@ -1,4 +1,4 @@
-/*	$Id$ */
+/*	$OpenBSD: log.c,v 1.5 2019/11/29 05:14:11 benno Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -14,7 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include "config.h"
 
 #include <err.h>
 #include <stdarg.h>
@@ -22,7 +21,6 @@
 #include <stdint.h>
 
 #include <openssl/err.h>
-#include <openssl/ssl.h>
 
 #include "extern.h"
 
@@ -37,7 +35,7 @@ cryptoerrx(const char *fmt, ...)
 {
 	unsigned long	 er;
 	char		 buf[BUFSIZ];
-	va_list	  	 ap;
+	va_list		 ap;
 
 	while ((er = ERR_get_error()) > 0) {
 		ERR_error_string_n(er, buf, sizeof(buf));
@@ -50,7 +48,7 @@ cryptoerrx(const char *fmt, ...)
 		va_end(ap);
 	}
 
-	exit(EXIT_FAILURE);
+	exit(1);
 }
 
 /*
@@ -61,7 +59,7 @@ cryptowarnx(const char *fmt, ...)
 {
 	unsigned long	 er;
 	char		 buf[BUFSIZ];
-	va_list	  	 ap;
+	va_list		 ap;
 
 	while ((er = ERR_get_error()) > 0) {
 		ERR_error_string_n(er, buf, sizeof(buf));

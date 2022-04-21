@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: printer.c,v 1.2 2019/07/03 03:24:03 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2017 Eric Faurot <eric@openbsd.org>
@@ -144,7 +144,7 @@ printer(int debug, int verbose, const char *name)
 	 * This must be done before dropping priviledges.
 	 */
 	if (!debug) {
-		fd = open(LP_LF(lp), O_WRONLY|O_APPEND, 0664);
+		fd = open(LP_LF(lp), O_WRONLY|O_APPEND);
 		if (fd == -1)
 			fatal("%s: open: %s", __func__, LP_LF(lp));
 		if (fd != STDERR_FILENO) {
@@ -848,7 +848,7 @@ sendcmd(const char *fmt, ...)
 	len = vsnprintf(line, sizeof(line), fmt, ap);
 	va_end(ap);
 
-	if (len == -1) {
+	if (len < 0) {
 		log_warn("%s: vsnprintf", __func__);
 		return -1;
 	}

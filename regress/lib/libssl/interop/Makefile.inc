@@ -1,62 +1,90 @@
-# $OpenBSD$
+# $OpenBSD: Makefile.inc,v 1.7 2020/09/15 01:45:16 bluhm Exp $
 
 .PATH:			${.CURDIR}/..
 
-SRCS_client =		client.c util.c
-SRCS_server =		server.c util.c
+SRCS_client ?=		client.c util.c
+SRCS_server ?=		server.c util.c
 WARNINGS =		yes
-REGRESS_TARGETS	=
-
-# check that program is linked with correct libraries
+CLEANFILES +=		*.out *.fstat
 
 .for p in ${PROGS}
-CLEANFILES +=		ldd-$p.out
-REGRESS_TARGETS +=	run-ldd-$p
 ldd-$p.out: $p
+	# programs must be linked with correct libraries
 	LD_LIBRARY_PATH=${LD_LIBRARY_PATH} ldd $p >$@
 .endfor
 
-# run netcat server and connect with test client
+client-self.out server-self.out: run-self-client-server
 
-CLEANFILES +=		client.out netcat-l.out netcat-l.fstat
-REGRESS_TARGETS +=	run-client
-run-client: client 127.0.0.1.crt
-	@echo '\n======== $@ ========'
-	echo "greeting" | nc -l -c -C 127.0.0.1.crt -K 127.0.0.1.key \
-	    127.0.0.1 0 >netcat-l.out & \
-	    sleep 1; fstat -p $$! >netcat-l.fstat
-	LD_LIBRARY_PATH=${LD_LIBRARY_PATH} ./client \
-	    `sed -n 's/.* stream tcp .*:/127.0.0.1 /p' netcat-l.fstat` \
-	    >client.out
+run-self-client-server: client server 127.0.0.1.crt
+	# check that tls client and server work together
+	LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
+	    ./server >server-self.out \
+	    127.0.0.1 0
+	LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
+	    ./client >client-self.out \
+	    `sed -n 's/listen sock: //p' server-self.out`
 	# check that the client run successfully to the end
-	grep -q '^success$$' client.out
+	grep -q '^success$$' client-self.out
 	# client must have read server greeting
-	grep -q '^<<< greeting$$' client.out
-	# netstat server must have read client hello
-	grep -q '^hello$$' netcat-l.out
-
-# run test server and connect with netcat client
-
-CLEANFILES +=		server.out netcat.out
-REGRESS_TARGETS +=	run-server
-run-server: server 127.0.0.1.crt
-	@echo '\n======== $@ ========'
-	LD_LIBRARY_PATH=${LD_LIBRARY_PATH} ./server 127.0.0.1 0 >server.out
-	echo "hello" | nc -c -T noverify \
-	    `sed -n 's/listen sock: //p' server.out` \
-	    >netcat.out
+	grep -q '^<<< greeting$$' client-self.out
 	# check that the server child run successfully to the end
-	grep -q '^success$$' server.out
+	grep -q '^success$$' server-self.out
 	# server must have read client hello
-	grep -q '^<<< hello$$' server.out
-	# client must have read server greeting
-	grep -q '^greeting$$' netcat.out
+	grep -q '^<<< hello$$' server-self.out
 
 # create certificates for TLS
 
-CLEANFILES +=		127.0.0.1.crt 127.0.0.1.key
+CLEANFILES +=		127.0.0.1.{crt,key} \
+			ca.{crt,key,srl} fake-ca.{crt,key} \
+			{client,server}.{req,crt,key} \
+			{dsa,ec,gost,rsa}.{key,req,crt} \
+			dh.param
 
 127.0.0.1.crt:
 	openssl req -batch -new \
-	    -subj /L=OpenBSD/O=tls-regress/OU=server/CN=127.0.0.1/ \
-	    -nodes -newkey rsa -keyout 127.0.0.1.key -x509 -out $@
+	    -subj /L=OpenBSD/O=tls-regress/OU=server/CN=${@:R}/ \
+	    -nodes -newkey rsa -keyout ${@:R}.key -x509 -out $@
+
+ca.crt fake-ca.crt:
+	openssl req -batch -new \
+	    -subj /L=OpenBSD/O=tls-regress/OU=ca/CN=root/ \
+	    -nodes -newkey rsa -keyout ${@:R}.key -x509 -out $@
+
+client.req server.req:
+	openssl req -batch -new \
+	    -subj /L=OpenBSD/O=tls-regress/OU=${@:R}/CN=localhost/ \
+	    -nodes -newkey rsa -keyout ${@:R}.key -out $@
+
+client.crt server.crt: ca.crt ${@:R}.req
+	openssl x509 -CAcreateserial -CAkey ca.key -CA ca.crt \
+	    -req -in ${@:R}.req -out $@
+
+dh.param:
+	openssl dhparam -out $@ 1024
+
+dsa.key:
+	openssl dsaparam -genkey -out $@ 2048
+
+ec.key:
+	openssl ecparam -genkey -name secp256r1 -out $@
+
+gost.key:
+	openssl genpkey -algorithm gost2001 \
+	    -pkeyopt paramset:A -pkeyopt dgst:md_gost94 -out $@
+
+rsa.key:
+	openssl genrsa -out $@ 2048
+
+dsa.req ec.req rsa.req: ${@:R}.key
+	openssl req -batch -new \
+	    -subj /L=OpenBSD/O=tls-regress/OU=${@:R}/CN=localhost/ \
+	    -nodes -key ${@:R}.key -out $@
+
+gost.req: ${@:R}.key
+	openssl req -batch -new -md_gost94 \
+	    -subj /L=OpenBSD/O=tls-regress/OU=${@:R}/CN=localhost/ \
+	    -nodes -key ${@:R}.key -out $@
+
+dsa.crt ec.crt gost.crt rsa.crt: ca.crt ${@:R}.req
+	openssl x509 -CAcreateserial -CAkey ca.key -CA ca.crt \
+	    -req -in ${@:R}.req -out $@

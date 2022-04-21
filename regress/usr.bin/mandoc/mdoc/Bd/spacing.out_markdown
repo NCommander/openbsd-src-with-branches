@@ -1,0 +1,25 @@
+BD-SPACING(1) - General Commands Manual
+
+# NAME
+
+**Bd-spacing** - vertical spacing around display blocks
+
+# DESCRIPTION
+
+preceding text
+
+> display block
+
+text between displays
+
+> compact display block
+
+following text
+
+# EXAMPLES
+
+	text
+
+end of file
+
+OpenBSD - February 27, 2020

@@ -13,27 +13,15 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_acoshf.c,v 1.5 1995/05/12 04:57:20 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const float 
-#else
-static float 
-#endif
 one	= 1.0,
 ln2	= 6.9314718246e-01;  /* 0x3f317218 */
 
-#ifdef __STDC__
-	float __ieee754_acoshf(float x)
-#else
-	float __ieee754_acoshf(x)
-	float x;
-#endif
+float
+acoshf(float x)
 {	
 	float t;
 	int32_t hx;
@@ -44,12 +32,12 @@ ln2	= 6.9314718246e-01;  /* 0x3f317218 */
 	    if(hx >=0x7f800000) {	/* x is inf of NaN */
 	        return x+x;
 	    } else 
-		return __ieee754_logf(x)+ln2;	/* acosh(huge)=log(2x) */
+		return logf(x)+ln2;	/* acosh(huge)=log(2x) */
 	} else if (hx==0x3f800000) {
 	    return 0.0;			/* acosh(1) = 0 */
 	} else if (hx > 0x40000000) {	/* 2**28 > x > 2 */
 	    t=x*x;
-	    return __ieee754_logf((float)2.0*x-one/(x+__ieee754_sqrtf(t-one)));
+	    return logf((float)2.0*x-one/(x+sqrtf(t-one)));
 	} else {			/* 1<x<2 */
 	    t = x-one;
 	    return log1pf(t+sqrtf((float)2.0*t+t*t));

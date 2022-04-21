@@ -1,4 +1,4 @@
-/* crypto/dsa/dsa.h */
+/* $OpenBSD: dsa.h,v 1.34 2022/01/14 07:49:49 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -65,7 +65,7 @@
 #ifndef HEADER_DSA_H
 #define HEADER_DSA_H
 
-#include <openssl/e_os2.h>
+#include <openssl/opensslconf.h>
 
 #ifdef OPENSSL_NO_DSA
 #error DSA is disabled.
@@ -89,13 +89,6 @@
 #endif
 
 #define DSA_FLAG_CACHE_MONT_P	0x01
-#define DSA_FLAG_NO_EXP_CONSTTIME       0x02 /* new with 0.9.7h; the built-in DSA
-                                              * implementation now uses constant time
-                                              * modular exponentiation for secret exponents
-                                              * by default. This flag causes the
-                                              * faster variable sliding window method to
-                                              * be used for all exponents.
-                                              */
 
 /* If this flag is set the DSA method is FIPS compliant and can be used
  * in FIPS mode. This is set in the validated module method. If an
@@ -116,83 +109,20 @@
 extern "C" {
 #endif
 
-/* Already defined in ossl_typ.h */
-/* typedef struct dsa_st DSA; */
-/* typedef struct dsa_method DSA_METHOD; */
+typedef struct DSA_SIG_st DSA_SIG;
 
-typedef struct DSA_SIG_st
-	{
-	BIGNUM *r;
-	BIGNUM *s;
-	} DSA_SIG;
-
-struct dsa_method
-	{
-	const char *name;
-	DSA_SIG * (*dsa_do_sign)(const unsigned char *dgst, int dlen, DSA *dsa);
-	int (*dsa_sign_setup)(DSA *dsa, BN_CTX *ctx_in, BIGNUM **kinvp,
-								BIGNUM **rp);
-	int (*dsa_do_verify)(const unsigned char *dgst, int dgst_len,
-			     DSA_SIG *sig, DSA *dsa);
-	int (*dsa_mod_exp)(DSA *dsa, BIGNUM *rr, BIGNUM *a1, BIGNUM *p1,
-			BIGNUM *a2, BIGNUM *p2, BIGNUM *m, BN_CTX *ctx,
-			BN_MONT_CTX *in_mont);
-	int (*bn_mod_exp)(DSA *dsa, BIGNUM *r, BIGNUM *a, const BIGNUM *p,
-				const BIGNUM *m, BN_CTX *ctx,
-				BN_MONT_CTX *m_ctx); /* Can be null */
-	int (*init)(DSA *dsa);
-	int (*finish)(DSA *dsa);
-	int flags;
-	char *app_data;
-	/* If this is non-NULL, it is used to generate DSA parameters */
-	int (*dsa_paramgen)(DSA *dsa, int bits,
-			const unsigned char *seed, int seed_len,
-			int *counter_ret, unsigned long *h_ret,
-			BN_GENCB *cb);
-	/* If this is non-NULL, it is used to generate DSA keys */
-	int (*dsa_keygen)(DSA *dsa);
-	};
-
-struct dsa_st
-	{
-	/* This first variable is used to pick up errors where
-	 * a DSA is passed instead of of a EVP_PKEY */
-	int pad;
-	long version;
-	int write_params;
-	BIGNUM *p;
-	BIGNUM *q;	/* == 20 */
-	BIGNUM *g;
-
-	BIGNUM *pub_key;  /* y public key */
-	BIGNUM *priv_key; /* x private key */
-
-	BIGNUM *kinv;	/* Signing pre-calc */
-	BIGNUM *r;	/* Signing pre-calc */
-
-	int flags;
-	/* Normally used to cache montgomery values */
-	BN_MONT_CTX *method_mont_p;
-	int references;
-	CRYPTO_EX_DATA ex_data;
-	const DSA_METHOD *meth;
-	/* functional reference if 'meth' is ENGINE-provided */
-	ENGINE *engine;
-	};
-
-#define d2i_DSAparams_fp(fp,x) (DSA *)ASN1_d2i_fp((char *(*)())DSA_new, \
-		(char *(*)())d2i_DSAparams,(fp),(unsigned char **)(x))
-#define i2d_DSAparams_fp(fp,x) ASN1_i2d_fp(i2d_DSAparams,(fp), \
-		(unsigned char *)(x))
-#define d2i_DSAparams_bio(bp,x) ASN1_d2i_bio_of(DSA,DSA_new,d2i_DSAparams,bp,x)
-#define i2d_DSAparams_bio(bp,x) ASN1_i2d_bio_of_const(DSA,i2d_DSAparams,bp,x)
-
+DSA *d2i_DSAparams_bio(BIO *bp, DSA **a);
+int i2d_DSAparams_bio(BIO *bp, DSA *a);
+DSA *d2i_DSAparams_fp(FILE *fp, DSA **a);
+int i2d_DSAparams_fp(FILE *fp, DSA *a);
 
 DSA *DSAparams_dup(DSA *x);
 DSA_SIG * DSA_SIG_new(void);
 void	DSA_SIG_free(DSA_SIG *a);
 int	i2d_DSA_SIG(const DSA_SIG *a, unsigned char **pp);
 DSA_SIG * d2i_DSA_SIG(DSA_SIG **v, const unsigned char **pp, long length);
+void	DSA_SIG_get0(const DSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps);
+int	DSA_SIG_set0(DSA_SIG *sig, BIGNUM *r, BIGNUM *s);
 
 DSA_SIG * DSA_do_sign(const unsigned char *dgst,int dlen,DSA *dsa);
 int	DSA_do_verify(const unsigned char *dgst,int dgst_len,
@@ -206,10 +136,11 @@ int	DSA_set_method(DSA *dsa, const DSA_METHOD *);
 
 DSA *	DSA_new(void);
 DSA *	DSA_new_method(ENGINE *engine);
-void	DSA_free (DSA *r);
+void	DSA_free(DSA *r);
 /* "up" the DSA object's reference count */
 int	DSA_up_ref(DSA *r);
 int	DSA_size(const DSA *);
+int	DSA_bits(const DSA *d);
 	/* next 4 return -1 on error */
 int	DSA_sign_setup( DSA *dsa,BN_CTX *ctx_in,BIGNUM **kinvp,BIGNUM **rp);
 int	DSA_sign(int type,const unsigned char *dgst,int dlen,
@@ -221,9 +152,17 @@ int DSA_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func,
 int DSA_set_ex_data(DSA *d, int idx, void *arg);
 void *DSA_get_ex_data(DSA *d, int idx);
 
-DSA *	d2i_DSAPublicKey(DSA **a, const unsigned char **pp, long length);
-DSA *	d2i_DSAPrivateKey(DSA **a, const unsigned char **pp, long length);
-DSA * 	d2i_DSAparams(DSA **a, const unsigned char **pp, long length);
+DSA *d2i_DSAPublicKey(DSA **a, const unsigned char **pp, long length);
+int i2d_DSAPublicKey(const DSA *a, unsigned char **pp);
+extern const ASN1_ITEM DSAPublicKey_it;
+
+DSA *d2i_DSAPrivateKey(DSA **a, const unsigned char **pp, long length);
+int i2d_DSAPrivateKey(const DSA *a, unsigned char **pp);
+extern const ASN1_ITEM DSAPrivateKey_it;
+
+DSA *d2i_DSAparams(DSA **a, const unsigned char **pp, long length);
+int i2d_DSAparams(const DSA *a,unsigned char **pp);
+extern const ASN1_ITEM DSAparams_it;
 
 /* Deprecated version */
 #ifndef OPENSSL_NO_DEPRECATED
@@ -239,22 +178,20 @@ int	DSA_generate_parameters_ex(DSA *dsa, int bits,
 		int *counter_ret, unsigned long *h_ret, BN_GENCB *cb);
 
 int	DSA_generate_key(DSA *a);
-int	i2d_DSAPublicKey(const DSA *a, unsigned char **pp);
-int 	i2d_DSAPrivateKey(const DSA *a, unsigned char **pp);
-int	i2d_DSAparams(const DSA *a,unsigned char **pp);
 
 #ifndef OPENSSL_NO_BIO
 int	DSAparams_print(BIO *bp, const DSA *x);
 int	DSA_print(BIO *bp, const DSA *x, int off);
 #endif
-#ifndef OPENSSL_NO_FP_API
 int	DSAparams_print_fp(FILE *fp, const DSA *x);
 int	DSA_print_fp(FILE *bp, const DSA *x, int off);
-#endif
 
-#define DSS_prime_checks 50
-/* Primality test according to FIPS PUB 186[-1], Appendix 2.1:
- * 50 rounds of Rabin-Miller */
+/*
+ * Primality test according to FIPS PUB 186-4, Appendix C.3. Set the number
+ * to 64 rounds of Miller-Rabin, which corresponds to 128 bits of security.
+ * This is necessary for keys of size >= 3072.
+ */
+#define DSS_prime_checks 64
 #define DSA_is_prime(n, callback, cb_arg) \
 	BN_is_prime(n, DSS_prime_checks, callback, NULL, cb_arg)
 
@@ -263,6 +200,28 @@ int	DSA_print_fp(FILE *bp, const DSA *x, int off);
  * (be careful to avoid small subgroup attacks when using this!) */
 DH *DSA_dup_DH(const DSA *r);
 #endif
+
+void DSA_get0_pqg(const DSA *d, const BIGNUM **p, const BIGNUM **q,
+    const BIGNUM **g);
+int DSA_set0_pqg(DSA *d, BIGNUM *p, BIGNUM *q, BIGNUM *g);
+void DSA_get0_key(const DSA *d, const BIGNUM **pub_key, const BIGNUM **priv_key);
+int DSA_set0_key(DSA *d, BIGNUM *pub_key, BIGNUM *priv_key);
+const BIGNUM *DSA_get0_p(const DSA *d);
+const BIGNUM *DSA_get0_q(const DSA *d);
+const BIGNUM *DSA_get0_g(const DSA *d);
+const BIGNUM *DSA_get0_pub_key(const DSA *d);
+const BIGNUM *DSA_get0_priv_key(const DSA *d);
+void DSA_clear_flags(DSA *d, int flags);
+int DSA_test_flags(const DSA *d, int flags);
+void DSA_set_flags(DSA *d, int flags);
+ENGINE *DSA_get0_engine(DSA *d);
+
+DSA_METHOD *DSA_meth_new(const char *name, int flags);
+void DSA_meth_free(DSA_METHOD *meth);
+DSA_METHOD *DSA_meth_dup(const DSA_METHOD *meth);
+int DSA_meth_set_sign(DSA_METHOD *meth,
+    DSA_SIG *(*sign)(const unsigned char *, int, DSA *));
+int DSA_meth_set_finish(DSA_METHOD *meth, int (*finish)(DSA *));
 
 #define EVP_PKEY_CTX_set_dsa_paramgen_bits(ctx, nbits) \
 	EVP_PKEY_CTX_ctrl(ctx, EVP_PKEY_DSA, EVP_PKEY_OP_PARAMGEN, \

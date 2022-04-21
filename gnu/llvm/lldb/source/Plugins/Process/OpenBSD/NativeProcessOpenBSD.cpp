@@ -102,7 +102,7 @@ NativeProcessOpenBSD::Factory::Launch(ProcessLaunchInfo &launch_info,
            Info.GetArchitecture().GetArchitectureName());
 
   std::unique_ptr<NativeProcessOpenBSD> process_up(new NativeProcessOpenBSD(
-      pid, launch_info.GetPTY().ReleaseMasterFileDescriptor(), native_delegate,
+      pid, launch_info.GetPTY().ReleasePrimaryFileDescriptor(), native_delegate,
       Info.GetArchitecture(), mainloop));
 
   status = process_up->ReinitializeThreads();
@@ -140,6 +140,13 @@ NativeProcessOpenBSD::Factory::Attach(
 
   return std::move(process_up);
 }
+
+NativeProcessOpenBSD::Extension
+NativeProcessOpenBSD::Factory::GetSupportedExtensions() const {
+    return Extension::multiprocess | Extension::fork | Extension::vfork |
+           Extension::pass_signals | Extension::auxv | Extension::libraries_svr4;
+}
+
 
 // -----------------------------------------------------------------------------
 // Public Instance Methods
@@ -239,12 +246,13 @@ Status NativeProcessOpenBSD::Resume(const ResumeActionList &resume_actions) {
   }
 
   Status error;
+  int signal = action->signal != LLDB_INVALID_SIGNAL_NUMBER ? action->signal : 0;
 
   switch (action->state) {
   case eStateRunning: {
     // Run the thread, possibly feeding it the signal.
     error = NativeProcessOpenBSD::PtraceWrapper(PT_CONTINUE, GetID(), (void *)1,
-                                               action->signal);
+                                               signal);
     if (!error.Success())
       return error;
     for (const auto &thread : m_threads)
@@ -256,7 +264,7 @@ Status NativeProcessOpenBSD::Resume(const ResumeActionList &resume_actions) {
 #ifdef PT_STEP
     // Run the thread, possibly feeding it the signal.
     error = NativeProcessOpenBSD::PtraceWrapper(PT_STEP, GetID(), (void *)1,
-                                               action->signal);
+                                               signal);
     if (!error.Success())
       return error;
     for (const auto &thread : m_threads)
@@ -357,13 +365,13 @@ Status NativeProcessOpenBSD::PopulateMemoryRegionCache() {
   return Status("Unimplemented");
 }
 
-Status NativeProcessOpenBSD::AllocateMemory(size_t size, uint32_t permissions,
-                                           lldb::addr_t &addr) {
-  return Status("Unimplemented");
+llvm::Expected<lldb::addr_t> NativeProcessOpenBSD::AllocateMemory(size_t size,
+                                                                 uint32_t permissions) {
+  return llvm::make_error<UnimplementedError>();
 }
 
-Status NativeProcessOpenBSD::DeallocateMemory(lldb::addr_t addr) {
-  return Status("Unimplemented");
+llvm::Error NativeProcessOpenBSD::DeallocateMemory(lldb::addr_t addr) {
+  return llvm::make_error<UnimplementedError>();
 }
 
 lldb::addr_t NativeProcessOpenBSD::GetSharedLibraryInfoAddress() {

@@ -202,7 +202,8 @@ const char extra_symbol_chars[] = "*%-(["
 	 && !defined (TE_LINUX)				\
  	 && !defined (TE_NETWARE)			\
 	 && !defined (TE_FreeBSD)			\
-	 && !defined (TE_NetBSD)))
+	 && !defined (TE_NetBSD)			\
+	 && !defined (TE_OpenBSD)))
 /* This array holds the chars that always start a comment.  If the
    pre-processor is disabled, these aren't very useful.  The option
    --divide will remove '/' from this list.  */
@@ -504,41 +505,9 @@ i386_align_code (fragP, count)
     {0x90};					/* nop			*/
   static const char f32_2[] =
     {0x89,0xf6};				/* movl %esi,%esi	*/
-  static const char f32_3[] =
-    {0x8d,0x76,0x00};				/* leal 0(%esi),%esi	*/
-  static const char f32_4[] =
-    {0x8d,0x74,0x26,0x00};			/* leal 0(%esi,1),%esi	*/
-  static const char f32_5[] =
-    {0x90,					/* nop			*/
-     0x8d,0x74,0x26,0x00};			/* leal 0(%esi,1),%esi	*/
-  static const char f32_6[] =
-    {0x8d,0xb6,0x00,0x00,0x00,0x00};		/* leal 0L(%esi),%esi	*/
-  static const char f32_7[] =
-    {0x8d,0xb4,0x26,0x00,0x00,0x00,0x00};	/* leal 0L(%esi,1),%esi */
-  static const char f32_8[] =
-    {0x90,					/* nop			*/
-     0x8d,0xb4,0x26,0x00,0x00,0x00,0x00};	/* leal 0L(%esi,1),%esi */
-  static const char f32_9[] =
-    {0x89,0xf6,					/* movl %esi,%esi	*/
-     0x8d,0xbc,0x27,0x00,0x00,0x00,0x00};	/* leal 0L(%edi,1),%edi */
-  static const char f32_10[] =
-    {0x8d,0x76,0x00,				/* leal 0(%esi),%esi	*/
-     0x8d,0xbc,0x27,0x00,0x00,0x00,0x00};	/* leal 0L(%edi,1),%edi */
-  static const char f32_11[] =
-    {0x8d,0x74,0x26,0x00,			/* leal 0(%esi,1),%esi	*/
-     0x8d,0xbc,0x27,0x00,0x00,0x00,0x00};	/* leal 0L(%edi,1),%edi */
-  static const char f32_12[] =
-    {0x8d,0xb6,0x00,0x00,0x00,0x00,		/* leal 0L(%esi),%esi	*/
-     0x8d,0xbf,0x00,0x00,0x00,0x00};		/* leal 0L(%edi),%edi	*/
-  static const char f32_13[] =
-    {0x8d,0xb6,0x00,0x00,0x00,0x00,		/* leal 0L(%esi),%esi	*/
-     0x8d,0xbc,0x27,0x00,0x00,0x00,0x00};	/* leal 0L(%edi,1),%edi */
-  static const char f32_14[] =
-    {0x8d,0xb4,0x26,0x00,0x00,0x00,0x00,	/* leal 0L(%esi,1),%esi */
-     0x8d,0xbc,0x27,0x00,0x00,0x00,0x00};	/* leal 0L(%edi,1),%edi */
   static const char f32_15[] =
-    {0xeb,0x0d,0x90,0x90,0x90,0x90,0x90,	/* jmp .+15; lotsa nops	*/
-     0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90};
+    {0xeb,0x0d,0xCC,0xCC,0xCC,0xCC,0xCC,	/* jmp .+15; lotsa int3	*/
+     0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC};
   static const char f16_3[] =
     {0x8d,0x74,0x00};				/* lea 0(%esi),%esi	*/
   static const char f16_4[] =
@@ -555,40 +524,31 @@ i386_align_code (fragP, count)
   static const char f16_8[] =
     {0x8d,0xb4,0x00,0x00,			/* lea 0w(%si),%si	*/
      0x8d,0xbd,0x00,0x00};			/* lea 0w(%di),%di	*/
+  static const char f64_2[] =
+    {0x66,0x90};        /* data16, nop*/
   static const char *const f32_patt[] = {
-    f32_1, f32_2, f32_3, f32_4, f32_5, f32_6, f32_7, f32_8,
-    f32_9, f32_10, f32_11, f32_12, f32_13, f32_14, f32_15
+    f32_1, f32_2, f32_15, f32_15, f32_15, f32_15, f32_15, f32_15,
+    f32_15, f32_15, f32_15, f32_15, f32_15, f32_15, f32_15
   };
   static const char *const f16_patt[] = {
     f32_1, f32_2, f16_3, f16_4, f16_5, f16_6, f16_7, f16_8,
+    f32_15, f32_15, f32_15, f32_15, f32_15, f32_15, f32_15
+  };
+  static const char *const f64_patt[] = {
+    f32_1, f64_2, f32_15, f32_15, f32_15, f32_15, f32_15, f32_15,
     f32_15, f32_15, f32_15, f32_15, f32_15, f32_15, f32_15
   };
 
   if (count <= 0 || count > 15)
     return;
 
-  /* The recommended way to pad 64bit code is to use NOPs preceded by
-     maximally four 0x66 prefixes.  Balance the size of nops.  */
   if (flag_code == CODE_64BIT)
     {
-      int i;
-      int nnops = (count + 3) / 4;
-      int len = count / nnops;
-      int remains = count - nnops * len;
-      int pos = 0;
-
-      for (i = 0; i < remains; i++)
-	{
-	  memset (fragP->fr_literal + fragP->fr_fix + pos, 0x66, len);
-	  fragP->fr_literal[fragP->fr_fix + pos + len] = 0x90;
-	  pos += len + 1;
-	}
-      for (; i < nnops; i++)
-	{
-	  memset (fragP->fr_literal + fragP->fr_fix + pos, 0x66, len - 1);
-	  fragP->fr_literal[fragP->fr_fix + pos + len - 1] = 0x90;
-	  pos += len;
-	}
+      memcpy(fragP->fr_literal + fragP->fr_fix,
+             f64_patt[count -1], count);
+      if (count > 2)
+          /* Adjust jump offset */
+          fragP->fr_literal[fragP->fr_fix + 1] = count - 2;
     }
   else
     if (flag_code == CODE_16BIT)
@@ -600,8 +560,13 @@ i386_align_code (fragP, count)
 	  fragP->fr_literal[fragP->fr_fix + 1] = count - 2;
       }
     else
+     { 
       memcpy (fragP->fr_literal + fragP->fr_fix,
 	      f32_patt[count - 1], count);
+      if (count > 2)
+          /* Adjust jump offset */
+          fragP->fr_literal[fragP->fr_fix + 1] = count - 2;
+     }
   fragP->fr_var = count;
 }
 
@@ -646,8 +611,8 @@ fits_in_signed_long (num)
 #ifndef BFD64
   return 1;
 #else
-  return (!(((offsetT) -1 << 31) & num)
-	  || (((offsetT) -1 << 31) & num) == ((offsetT) -1 << 31));
+  return (!(-((offsetT) 1 << 31) & num)
+	  || (-((offsetT) 1 << 31) & num) == -((offsetT) 1 << 31));
 #endif
 }				/* fits_in_signed_long() */
 static INLINE int
@@ -1556,7 +1521,7 @@ md_assemble (line)
     {
       expressionS *exp;
 
-      if ((i.tm.cpu_flags & CpuPNI) && i.operands > 0)
+      if ((i.tm.cpu_flags & (CpuPNI|CpuXSAVE|CpuSMAP)) && i.operands > 0)
 	{
 	  /* These Intel Prescott New Instructions have the fixed
 	     operands with an opcode suffix which is coded in the same
@@ -2103,7 +2068,7 @@ optimize_imm ()
 		  (((i.op[op].imms->X_add_number & 0xffff) ^ 0x8000) - 0x8000);
 	      }
 	    if ((i.types[op] & Imm32)
-		&& ((i.op[op].imms->X_add_number & ~(((offsetT) 2 << 31) - 1))
+		&& ((i.op[op].imms->X_add_number & ~(offsetT) 0xffffffffL)
 		    == 0))
 	      {
 		i.op[op].imms->X_add_number = ((i.op[op].imms->X_add_number
@@ -2182,12 +2147,12 @@ optimize_disp ()
 		i.types[op] &= ~Disp64;
 	      }
 	    if ((i.types[op] & Disp32)
-		&& (disp & ~(((offsetT) 2 << 31) - 1)) == 0)
+		&& (disp & ~(offsetT) 0xffffffffL) == 0)
 	      {
 		/* If this operand is at most 32 bits, convert
 		   to a signed 32 bit number and don't use 64bit
 		   displacement.  */
-		disp &= (((offsetT) 2 << 31) - 1);
+		disp &= (offsetT) 0xffffffffL;
 		disp = (disp ^ ((offsetT) 1 << 31)) - ((addressT) 1 << 31);
 		i.types[op] &= ~Disp64;
 	      }
@@ -3491,7 +3456,7 @@ output_insn ()
       /* All opcodes on i386 have either 1 or 2 bytes.  Merom New
 	 Instructions have 3 bytes.  We may use one more higher byte
 	 to specify a prefix the instruction requires.  */
-      if ((i.tm.cpu_flags & CpuMNI) != 0)
+      if ((i.tm.cpu_flags & (CpuMNI|CpuAES|CpuPCLMUL)) != 0)
 	{
 	  if (i.tm.base_opcode & 0xff000000)
 	    {
@@ -3499,6 +3464,12 @@ output_insn ()
 	      goto check_prefix;
 	    }
 	}
+      else if ((i.tm.base_opcode & ~3) == 0x660f3880) {
+        /* INVEPT, INVVPID, and INVPCID are 3 byte instructions with a
+           mandatory prefix. */
+        prefix = (i.tm.base_opcode >> 24) & 0xff;
+        add_prefix (prefix);
+      }
       else if ((i.tm.base_opcode & 0xff0000) != 0)
 	{
 	  prefix = (i.tm.base_opcode >> 16) & 0xff;
@@ -3532,7 +3503,12 @@ check_prefix:
 	}
       else
 	{
-	  if ((i.tm.cpu_flags & CpuMNI) != 0)
+	  if ((i.tm.cpu_flags & (CpuMNI|CpuAES|CpuPCLMUL)) != 0)
+	    {
+	      p = frag_more (3);
+	      *p++ = (i.tm.base_opcode >> 16) & 0xff;
+	    }
+          else if ((i.tm.base_opcode & ~3) == 0x660f3880)
 	    {
 	      p = frag_more (3);
 	      *p++ = (i.tm.base_opcode >> 16) & 0xff;

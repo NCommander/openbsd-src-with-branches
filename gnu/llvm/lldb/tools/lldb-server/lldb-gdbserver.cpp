@@ -43,6 +43,8 @@
 #include "Plugins/Process/FreeBSD/NativeProcessFreeBSD.h"
 #elif defined(__NetBSD__)
 #include "Plugins/Process/NetBSD/NativeProcessNetBSD.h"
+#elif defined(__OpenBSD__)
+#include "Plugins/Process/OpenBSD/NativeProcessOpenBSD.h"
 #elif defined(_WIN32)
 #include "Plugins/Process/Windows/Common/NativeProcessWindows.h"
 #endif
@@ -68,6 +70,8 @@ typedef process_linux::NativeProcessLinux::Factory NativeProcessFactory;
 typedef process_freebsd::NativeProcessFreeBSD::Factory NativeProcessFactory;
 #elif defined(__NetBSD__)
 typedef process_netbsd::NativeProcessNetBSD::Factory NativeProcessFactory;
+#elif defined(__OpenBSD__)
+typedef process_openbsd::NativeProcessOpenBSD::Factory NativeProcessFactory;
 #elif defined(_WIN32)
 typedef NativeProcessWindows::Factory NativeProcessFactory;
 #else

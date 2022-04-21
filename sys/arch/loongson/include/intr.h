@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.h,v 1.35 2009/10/26 20:14:14 miod Exp $ */
+/*	$OpenBSD: intr.h,v 1.17 2019/09/05 05:06:33 visa Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -48,14 +48,26 @@
 /* Interrupt priority `levels'; not mutually exclusive. */
 #define	IPL_NONE	0	/* nothing */
 #define	IPL_SOFTINT	1	/* soft interrupts */
-#define	IPL_BIO		2	/* block I/O */
-#define IPL_AUDIO	IPL_BIO
-#define	IPL_NET		3	/* network */
-#define	IPL_TTY		4	/* terminal */
-#define	IPL_VM		5	/* memory allocation */
-#define	IPL_CLOCK	6	/* clock */
-#define	IPL_HIGH	7	/* everything */
-#define	NIPLS		8	/* Number of levels */
+#define	IPL_SOFTCLOCK	1	/* soft clock interrupts */
+#define	IPL_SOFTNET	2	/* soft network interrupts */
+#define	IPL_SOFTTTY	3	/* soft terminal interrupts */
+#define	IPL_SOFTHIGH	IPL_SOFTTTY	/* highest level of soft interrupts */
+#define	IPL_BIO		4	/* block I/O */
+#define	IPL_AUDIO	IPL_BIO
+#define	IPL_NET		5	/* network */
+#define	IPL_TTY		6	/* terminal */
+#define	IPL_VM		7	/* memory allocation */
+#define	IPL_CLOCK	8	/* clock */
+#define	IPL_STATCLOCK	IPL_CLOCK
+#define	IPL_SCHED	9	/* everything */
+#define	IPL_HIGH	9	/* everything */
+#define	IPL_IPI		10	/* interprocessor interrupt */
+#define	NIPLS		11	/* number of levels */
+
+#define IPL_MPFLOOR	IPL_TTY
+
+/* Interrupt priority 'flags'. */
+#define	IPL_MPSAFE	0x100
 
 /* Interrupt sharing types. */
 #define	IST_NONE	0	/* none */
@@ -68,21 +80,15 @@
 
 /* Soft interrupt masks. */
 
-#define	IPL_SOFT	0
-#define	IPL_SOFTCLOCK	1
-#define	IPL_SOFTNET	2
-#define	IPL_SOFTTTY	3
+#define	SI_SOFTCLOCK	0	/* for IPL_SOFTCLOCK */
+#define	SI_SOFTNET	1	/* for IPL_SOFTNET */
+#define	SI_SOFTTTY	2	/* for IPL_SOFTTTY */
 
-#define	SI_SOFT		0	/* for IPL_SOFT */
-#define	SI_SOFTCLOCK	1	/* for IPL_SOFTCLOCK */
-#define	SI_SOFTNET	2	/* for IPL_SOFTNET */
-#define	SI_SOFTTTY	3	/* for IPL_SOFTTTY */
-
-#define	SI_NQUEUES	4
+#define	SI_NQUEUES	3
 
 #ifndef _LOCORE
 
-#include <machine/mutex.h>
+#include <sys/mutex.h>
 #include <sys/queue.h>
 
 struct soft_intrhand {
@@ -105,12 +111,6 @@ void	*softintr_establish(int, void (*)(void *), void *);
 void	 softintr_init(void);
 void	 softintr_schedule(void *);
 
-/* XXX For legacy software interrupts. */
-extern struct soft_intrhand *softnet_intrhand;
-
-#define	setsoftnet()	softintr_schedule(softnet_intrhand)
-
-#define	splsoft()	splraise(IPL_SOFTINT)
 #define splbio()	splraise(IPL_BIO)
 #define splnet()	splraise(IPL_NET)
 #define spltty()	splraise(IPL_TTY)
@@ -119,31 +119,35 @@ extern struct soft_intrhand *softnet_intrhand;
 #define splvm()		splraise(IPL_VM)
 #define splhigh()	splraise(IPL_HIGH)
 
-#define splsoftclock()	splsoft()
-#define splsoftnet()	splsoft()
+#define splsoftclock()	splraise(IPL_SOFTCLOCK)
+#define splsoftnet()	splraise(IPL_SOFTNET)
 #define splstatclock()	splhigh()
 
 #define splsched()	splhigh()
-#define spllock()	splhigh()
 #define spl0()		spllower(0)
 
 void	splinit(void);
 
+#ifdef DIAGNOSTIC
+/*
+ * Although this function is implemented in MI code, it must be in this MD
+ * header because we don't want this header to include MI includes.
+ */
+void splassert_fail(int, int, const char *);
+extern int splassert_ctl;
+void splassert_check(int, const char *);
+#define	splassert(__wantipl) do {				\
+	if (splassert_ctl > 0) {				\
+		splassert_check(__wantipl, __func__);		\
+	}							\
+} while (0)
+#define	splsoftassert(wantipl)	splassert(wantipl)
+#else
 #define	splassert(X)
 #define	splsoftassert(X)
+#endif
 
-/* Inlines */
-static __inline void register_splx_handler(void (*)(int));
-
-typedef void (int_f)(int);
-extern int_f *splx_hand;
-
-static __inline void
-register_splx_handler(void(*handler)(int))
-{
-	splx_hand = handler;
-}
-
+void	register_splx_handler(void (*)(int));
 int	splraise(int);
 void	splx(int);
 int	spllower(int);
@@ -161,26 +165,56 @@ struct intrhand {
 	void			*ih_arg;
 	int			 ih_level;
 	int			 ih_irq;
+	int			 ih_flags;
+#define	IH_MPSAFE		0x01
 	struct evcount		 ih_count;
 };
+
+void	intr_barrier(void *);
 
 /*
  * Low level interrupt dispatcher registration data.
  */
 
 /* Schedule priorities for base interrupts (CPU) */
-#define	INTPRI_CLOCK	0
+#define	INTPRI_IPI	0
+#define	INTPRI_CLOCK	1
 /* other values are system-specific */
 
 #define NLOWINT	4		/* Number of low level registrations possible */
 
 extern uint32_t idle_mask;
 
-struct trap_frame;
-void	set_intr(int, uint32_t, uint32_t(*)(uint32_t, struct trap_frame *));
+struct trapframe;
+void	set_intr(int, uint32_t, uint32_t(*)(uint32_t, struct trapframe *));
 
 uint32_t updateimask(uint32_t);
 void	dosoftint(void);
+
+#ifdef MULTIPROCESSOR
+extern uint32_t ipi_mask;
+#define ENABLEIPI() updateimask(~ipi_mask)
+#endif
+
+struct pic {
+	void	(*pic_eoi)(int);
+	void	(*pic_mask)(int);
+	void	(*pic_unmask)(int);
+};
+
+#ifdef CPU_LOONGSON3
+
+void	 loongson3_intr_init(void);
+void	*loongson3_intr_establish(int, int, int (*)(void *), void*,
+	    const char *);
+void	 loongson3_intr_disestablish(void *);
+void	*loongson3_ht_intr_establish(int, int, int (*)(void *), void*,
+	    const char *);
+void	 loongson3_ht_intr_disestablish(void *);
+
+void	 loongson3_register_ht_pic(const struct pic *);
+
+#endif /* CPU_LOONGSON3 */
 
 #endif /* _LOCORE */
 

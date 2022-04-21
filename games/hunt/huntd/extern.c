@@ -1,20 +1,41 @@
+/*	$OpenBSD: extern.c,v 1.6 2016/08/27 02:06:40 guenther Exp $	*/
 /*	$NetBSD: extern.c,v 1.2 1997/10/10 16:33:24 lukem Exp $	*/
 /*
- *  Hunt
- *  Copyright (c) 1985 Conrad C. Huang, Gregory S. Couch, Kenneth C.R.C. Arnold
- *  San Francisco, California
+ * Copyright (c) 1983-2003, Regents of the University of California.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * + Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * + Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ * + Neither the name of the University of California, San Francisco nor
+ *   the names of its contributors may be used to endorse or promote
+ *   products derived from this software without specific prior written
+ *   permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-#ifndef lint
-__RCSID("$NetBSD: extern.c,v 1.2 1997/10/10 16:33:24 lukem Exp $");
-#endif /* not lint */
+#include <sys/select.h>
+#include "hunt.h"
+#include "server.h"
 
-# include	"hunt.h"
-
-# ifdef MONITOR
 FLAG	Am_monitor = FALSE;		/* current process is a monitor */
-# endif
 
 char	Buf[BUFSIZ];			/* general scribbling buffer */
 char	Maze[HEIGHT][WIDTH2];		/* the maze */
@@ -37,18 +58,12 @@ EXPL	*Last_expl;			/* last explosion on Expl[0] */
 
 PLAYER	Player[MAXPL];			/* all the players */
 PLAYER	*End_player = Player;		/* last active player slot */
-# ifdef BOOTS
 PLAYER	Boot[NBOOTS];			/* all the boots */
-# endif
 IDENT	*Scores;			/* score cache */
-# ifdef MONITOR
 PLAYER	Monitor[MAXMON];		/* all the monitors */
 PLAYER	*End_monitor = Monitor;		/* last active monitor slot */
-# endif
 
-# ifdef VOLCANO
 int	volcano = 0;			/* Explosion size */
-# endif
 
 int	shot_req[MAXBOMB]	= {
 				BULREQ, GRENREQ, SATREQ,

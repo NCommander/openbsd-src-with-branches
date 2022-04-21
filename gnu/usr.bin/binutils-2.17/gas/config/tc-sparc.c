@@ -43,7 +43,6 @@ static struct sparc_arch *lookup_arch PARAMS ((char *));
 static void init_default_arch PARAMS ((void));
 static int sparc_ip PARAMS ((char *, const struct sparc_opcode **));
 static int in_signed_range PARAMS ((bfd_signed_vma, bfd_signed_vma));
-static int in_unsigned_range PARAMS ((bfd_vma, bfd_vma));
 static int in_bitfield_range PARAMS ((bfd_signed_vma, bfd_signed_vma));
 static int sparc_ffs PARAMS ((unsigned int));
 static void synthetize_setuw PARAMS ((const struct sparc_opcode *));
@@ -306,7 +305,7 @@ sparc_target_format ()
     init_default_arch ();
 
 #ifdef OBJ_AOUT
-#ifdef TE_NetBSD
+#if defined(TE_NetBSD) || defined(TE_OpenBSD)
   return "a.out-sparc-netbsd";
 #else
 #ifdef TE_SPARCAOUT
@@ -945,17 +944,6 @@ in_signed_range (val, max)
   if (val > max)
     return 0;
   if (val < ~max)
-    return 0;
-  return 1;
-}
-
-/* Return non-zero if VAL is in the range 0 to MAX.  */
-
-static INLINE int
-in_unsigned_range (val, max)
-     bfd_vma val, max;
-{
-  if (val > max)
     return 0;
   return 1;
 }
@@ -2197,12 +2185,14 @@ sparc_ip (str, pinsn)
 		      {
 			if (SPARC_OPCODE_ARCH_V9_P (max_architecture))
 			  {
+#if !defined(TE_OpenBSD)
 			    if (*args == 'e' || *args == 'f' || *args == 'g')
 			      {
 				error_message
 				  = _(": There are only 32 single precision f registers; [0-31]");
 				goto error;
 			      }
+#endif
 			    v9_arg_p = 1;
 			    mask -= 31;	/* wrap high bit */
 			  }

@@ -1,5 +1,4 @@
-/*	$NetBSD: getusershell.c,v 1.5 1995/02/27 04:13:27 cgd Exp $	*/
-
+/*	$OpenBSD: getusershell.c,v 1.17 2015/12/08 16:28:26 tedu Exp $ */
 /*
  * Copyright (c) 1985, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,37 +28,26 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getusershell.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getusershell.c,v 1.5 1995/02/27 04:13:27 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
-#include <sys/file.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <paths.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 /*
  * Local shells should NOT be added here.  They should be added in
  * /etc/shells.
  */
 
-static char *okshells[] = { _PATH_BSHELL, _PATH_CSHELL, NULL };
-static char **curshell, **shells, *strings;
-static char **initshells __P((void));
+static char *okshells[] = { _PATH_BSHELL, _PATH_CSHELL, _PATH_KSHELL, NULL };
+static char **curshell, **shells;
+static char **initshells(void);
 
 /*
  * Get a list of shells from _PATH_SHELLS, if it exists.
  */
 char *
-getusershell()
+getusershell(void)
 {
 	char *ret;
 
@@ -76,68 +60,73 @@ getusershell()
 }
 
 void
-endusershell()
+endusershell(void)
 {
-	
-	if (shells != NULL)
-		free(shells);
+	char **s;
+
+	if ((s = shells))
+		while (*s)
+			free(*s++);
+	free(shells);
 	shells = NULL;
-	if (strings != NULL)
-		free(strings);
-	strings = NULL;
+
 	curshell = NULL;
 }
 
 void
-setusershell()
+setusershell(void)
 {
 
 	curshell = initshells();
 }
 
 static char **
-initshells()
+initshells(void)
 {
-	register char **sp, *cp;
-	register FILE *fp;
-	struct stat statb;
+	size_t nshells, nalloc, linesize;
+	char *line;
+	FILE *fp;
 
-	if (shells != NULL)
-		free(shells);
+	free(shells);
 	shells = NULL;
-	if (strings != NULL)
-		free(strings);
-	strings = NULL;
-	if ((fp = fopen(_PATH_SHELLS, "r")) == NULL)
+
+	if ((fp = fopen(_PATH_SHELLS, "re")) == NULL)
 		return (okshells);
-	if (fstat(fileno(fp), &statb) == -1) {
-		(void)fclose(fp);
-		return (okshells);
-	}
-	if ((strings = malloc((u_int)statb.st_size)) == NULL) {
-		(void)fclose(fp);
-		return (okshells);
-	}
-	shells = calloc((unsigned)statb.st_size / 3, sizeof (char *));
-	if (shells == NULL) {
-		(void)fclose(fp);
-		free(strings);
-		strings = NULL;
-		return (okshells);
-	}
-	sp = shells;
-	cp = strings;
-	while (fgets(cp, MAXPATHLEN + 1, fp) != NULL) {
-		while (*cp != '#' && *cp != '/' && *cp != '\0')
-			cp++;
-		if (*cp == '#' || *cp == '\0')
+
+	line = NULL;
+	nalloc = 10; // just an initial guess
+	nshells = 0;
+	shells = reallocarray(NULL, nalloc, sizeof (char *));
+	if (shells == NULL)
+		goto fail;
+	linesize = 0;
+	while (getline(&line, &linesize, fp) != -1) {
+		if (*line != '/')
 			continue;
-		*sp++ = cp;
-		while (!isspace(*cp) && *cp != '#' && *cp != '\0')
-			cp++;
-		*cp++ = '\0';
+		line[strcspn(line, "#\n")] = '\0';
+		if (!(shells[nshells] = strdup(line)))
+			goto fail;
+
+		if (nshells + 1 == nalloc) {
+			char **new = reallocarray(shells, nalloc * 2, sizeof(char *));
+			if (!new)
+				goto fail;
+			shells = new;
+			nalloc *= 2;
+		}
+		nshells++;
 	}
-	*sp = NULL;
+	free(line);
+	shells[nshells] = NULL;
 	(void)fclose(fp);
 	return (shells);
+
+fail:
+	free(line);
+	while (nshells)
+		free(shells[nshells--]);
+	free(shells);
+	shells = NULL;
+	(void)fclose(fp);
+	return (okshells);
 }

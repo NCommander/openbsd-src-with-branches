@@ -1,30 +1,45 @@
+/* $OpenBSD$ */
+
+/****************************************************************************
+ * Copyright (c) 1998-2003,2004 Free Software Foundation, Inc.              *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
+
+/****************************************************************************
+ *   Author:  Juergen Pfeifer, 1995,1997                                    *
+ ****************************************************************************/
 
 /***************************************************************************
-*                            COPYRIGHT NOTICE                              *
-****************************************************************************
-*                ncurses is copyright (C) 1992-1995                        *
-*                          Zeyd M. Ben-Halim                               *
-*                          zmbenhal@netcom.com                             *
-*                          Eric S. Raymond                                 *
-*                          esr@snark.thyrsus.com                           *
-*                                                                          *
-*        Permission is hereby granted to reproduce and distribute ncurses  *
-*        by any means and for any fee, whether alone or as part of a       *
-*        larger distribution, in source or in binary form, PROVIDED        *
-*        this notice is included with any such distribution, and is not    *
-*        removed from any of its header files. Mention of ncurses in any   *
-*        applications linked with it is highly appreciated.                *
-*                                                                          *
-*        ncurses comes AS IS with no warranty, implied or expressed.       *
-*                                                                          *
-***************************************************************************/
-
-/***************************************************************************
-* Module menu_item_opt                                                    *
+* Module m_item_opt                                                        *
 * Menus item option routines                                               *
 ***************************************************************************/
 
 #include "menu.priv.h"
+
+MODULE_ID("$Id: m_item_opt.c,v 1.17 2004/12/25 21:32:54 tom Exp $")
 
 /*---------------------------------------------------------------------------
 |   Facility      :  libnmenu  
@@ -37,32 +52,37 @@
 |   Return Values :  E_OK            - success
 |                    E_BAD_ARGUMENT  - invalid item options
 +--------------------------------------------------------------------------*/
-int set_item_opts(ITEM *item, Item_Options opts)
-{ 
+NCURSES_EXPORT(int)
+set_item_opts(ITEM * item, Item_Options opts)
+{
+  T((T_CALLED("set_menu_opts(%p,%d)"), item, opts));
+
+  opts &= ALL_ITEM_OPTS;
+
   if (opts & ~ALL_ITEM_OPTS)
     RETURN(E_BAD_ARGUMENT);
-  
+
   if (item)
     {
       if (item->opt != opts)
-	{		
+	{
 	  MENU *menu = item->imenu;
-	  
+
 	  item->opt = opts;
-	  
+
 	  if ((!(opts & O_SELECTABLE)) && item->value)
 	    item->value = FALSE;
-	  
+
 	  if (menu && (menu->status & _POSTED))
 	    {
-	      Move_And_Post_Item( menu, item );
+	      Move_And_Post_Item(menu, item);
 	      _nc_Show_Menu(menu);
 	    }
 	}
     }
   else
     _nc_Default_Item.opt = opts;
-  
+
   RETURN(E_OK);
 }
 
@@ -75,18 +95,22 @@ int set_item_opts(ITEM *item, Item_Options opts)
 |   Return Values :  E_OK            - success
 |                    E_BAD_ARGUMENT  - invalid options
 +--------------------------------------------------------------------------*/
-int item_opts_off(ITEM *item, Item_Options  opts)
-{ 
-  ITEM *citem = item; /* use a copy because set_item_opts must detect
-                         NULL item itself to adjust its behaviour */
+NCURSES_EXPORT(int)
+item_opts_off(ITEM * item, Item_Options opts)
+{
+  ITEM *citem = item;		/* use a copy because set_item_opts must detect
+
+				   NULL item itself to adjust its behavior */
+
+  T((T_CALLED("item_opts_off(%p,%d)"), item, opts));
 
   if (opts & ~ALL_ITEM_OPTS)
     RETURN(E_BAD_ARGUMENT);
   else
     {
       Normalize_Item(citem);
-      opts = citem->opt & ~opts;
-      return set_item_opts( item, opts );
+      opts = citem->opt & ~(opts & ALL_ITEM_OPTS);
+      returnCode(set_item_opts(item, opts));
     }
 }
 
@@ -99,18 +123,23 @@ int item_opts_off(ITEM *item, Item_Options  opts)
 |   Return Values :  E_OK            - success
 |                    E_BAD_ARGUMENT  - invalid options
 +--------------------------------------------------------------------------*/
-int item_opts_on(ITEM *item, Item_Options opts)
+NCURSES_EXPORT(int)
+item_opts_on(ITEM * item, Item_Options opts)
 {
-  ITEM *citem = item; /* use a copy because set_item_opts must detect
-                         NULL item itself to adjust its behaviour */
-  
+  ITEM *citem = item;		/* use a copy because set_item_opts must detect
+
+				   NULL item itself to adjust its behavior */
+
+  T((T_CALLED("item_opts_on(%p,%d)"), item, opts));
+
+  opts &= ALL_ITEM_OPTS;
   if (opts & ~ALL_ITEM_OPTS)
     RETURN(E_BAD_ARGUMENT);
   else
     {
       Normalize_Item(citem);
       opts = citem->opt | opts;
-      return set_item_opts( item, opts );
+      returnCode(set_item_opts(item, opts));
     }
 }
 
@@ -122,9 +151,11 @@ int item_opts_on(ITEM *item, Item_Options opts)
 |
 |   Return Values :  Items options
 +--------------------------------------------------------------------------*/
-Item_Options item_opts(const ITEM * item)
+NCURSES_EXPORT(Item_Options)
+item_opts(const ITEM * item)
 {
-  return (ALL_ITEM_OPTS & Normalize_Item(item)->opt);
+  T((T_CALLED("item_opts(%p)"), item));
+  returnItemOpts(ALL_ITEM_OPTS & Normalize_Item(item)->opt);
 }
 
 /* m_item_opt.c ends here */

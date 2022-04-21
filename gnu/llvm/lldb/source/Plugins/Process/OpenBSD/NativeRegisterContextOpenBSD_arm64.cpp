@@ -108,10 +108,10 @@ static const RegisterSet g_reg_sets_arm64[k_num_register_sets] = {
     {"Floating Point Registers", "fpu", k_num_fpr_registers_arm64,
      g_fpu_regnums_arm64}};
 
-NativeRegisterContextOpenBSD *
+std::unique_ptr<NativeRegisterContextOpenBSD>
 NativeRegisterContextOpenBSD::CreateHostNativeRegisterContextOpenBSD(
     const ArchSpec &target_arch, NativeThreadProtocol &native_thread) {
-  return new NativeRegisterContextOpenBSD_arm64(target_arch, native_thread);
+  return std::make_unique<NativeRegisterContextOpenBSD_arm64>(target_arch, native_thread);
 }
 
 // ----------------------------------------------------------------------------
@@ -122,7 +122,7 @@ static RegisterInfoInterface *
 CreateRegisterInfoInterface(const ArchSpec &target_arch) {
   assert((HostInfo::GetArchitecture().GetAddressByteSize() == 8) &&
          "Register setting path assumes this is a 64-bit host");
-  return new RegisterInfoPOSIX_arm64(target_arch);
+  return new RegisterInfoPOSIX_arm64(target_arch, 0);
 }
 
 static llvm::APInt uint128ToAPInt(__uint128_t in) {
@@ -558,5 +558,4 @@ int NativeRegisterContextOpenBSD_arm64::WriteRegisterSet(uint32_t set) {
   }
   return -1;
 }
-
-#endif // defined(__arm64__) || defined(__aarch64__)
+#endif

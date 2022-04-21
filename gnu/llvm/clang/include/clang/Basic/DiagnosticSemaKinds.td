@@ -6768,7 +6768,7 @@ def warn_pointer_indirection_from_incompatible_type : Warning<
   InGroup<UndefinedReinterpretCast>, DefaultIgnore;
 def warn_taking_address_of_packed_member : Warning<
   "taking address of packed member %0 of class or structure %q1 may result in an unaligned pointer value">,
-  InGroup<DiagGroup<"address-of-packed-member">>;
+  InGroup<DiagGroup<"address-of-packed-member">>, DefaultIgnore;
 def warn_param_mismatched_alignment : Warning<
   "passing %0-byte aligned argument to %1-byte aligned parameter %2 of %3 may result in an unaligned pointer access">,
   InGroup<DiagGroup<"align-mismatch">>;
@@ -7980,7 +7980,7 @@ def ext_typecheck_convert_incompatible_pointer_sign : ExtWarn<
   "|%diff{casting $ to type $|casting between types}0,1}2"
   " converts between pointers to integer types %select{with different sign|"
   "where one is of the unique plain 'char' type and the other is not}3">,
-  InGroup<DiagGroup<"pointer-sign">>;
+  InGroup<DiagGroup<"pointer-sign">>, DefaultIgnore;
 def err_typecheck_convert_incompatible_pointer_sign :
   Error<ext_typecheck_convert_incompatible_pointer_sign.Text>;
 def ext_typecheck_convert_incompatible_pointer : ExtWarn<
@@ -9512,6 +9512,9 @@ def err_os_log_argument_too_big : Error<
   "os_log() argument %0 is too big (%1 bytes, max %2)">;
 def warn_os_log_format_narg : Error<
  "os_log() '%%n' format specifier is not allowed">, DefaultError;
+
+def warn_format_narg : Warning<
+  "'%%n' format specifier support is deactivated and will call abort(3)">;
 
 // Statements.
 def err_continue_not_in_loop : Error<

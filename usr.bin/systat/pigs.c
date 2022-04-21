@@ -1,3 +1,4 @@
+/*	$OpenBSD: pigs.c,v 1.32 2019/06/28 13:35:04 deraadt Exp $	*/
 /*	$NetBSD: pigs.c,v 1.3 1995/04/29 05:54:50 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,219 +30,267 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)pigs.c	8.2 (Berkeley) 9/23/93";
-#endif
-static char rcsid[] = "$NetBSD: pigs.c,v 1.3 1995/04/29 05:54:50 cgd Exp $";
-#endif /* not lint */
-
 /*
  * Pigs display from Bill Reeves at Lucasfilm
  */
 
-#include <sys/param.h>
-#include <sys/dkstat.h>
-#include <sys/dir.h>
-#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/signal.h>
 #include <sys/proc.h>
+#include <sys/resource.h>
+#include <sys/sched.h>
 #include <sys/sysctl.h>
+#include <sys/time.h>
 
 #include <curses.h>
 #include <math.h>
-#include <nlist.h>
 #include <pwd.h>
+#include <err.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "extern.h"
 #include "systat.h"
 
-int compar __P((const void *, const void *));
+int compar(const void *, const void *);
+void print_pg(void);
+int read_pg(void);
+int select_pg(void);
+void showpigs(int k);
 
-static int nproc;
-static struct p_times {
-	float pt_pctcpu;
-	struct kinfo_proc *pt_kp;
-} *pt;
+static struct kinfo_proc *procbase = NULL;
+static int nproc, pigs_cnt, *pb_indices = NULL;
+static int onproc = -1;
 
 static long stime[CPUSTATES];
-static int     fscale;
 static double  lccpu;
-
-WINDOW *
-openpigs()
-{
-	return (subwin(stdscr, LINES-5-1, 0, 5, 0));
-}
-
-void
-closepigs(w)
-	WINDOW *w;
-{
-	if (w == NULL)
-		return;
-	wclear(w);
-	wrefresh(w);
-	delwin(w);
-}
+struct loadavg sysload;
 
 
-void
-showpigs()
-{
-	register int i, j, y, k;
-	struct	eproc *ep;
-	float total;
-	int factor;
-	char *uname, *pname, pidname[30];
 
-	if (pt == NULL)
-		return;
-	/* Accumulate the percent of cpu per user. */
-	total = 0.0;
-	for (i = 0; i <= nproc; i++) {
-		/* Accumulate the percentage. */
-		total += pt[i].pt_pctcpu;
-	}
-
-	if (total < 1.0)
- 		total = 1.0;
-	factor = 50.0/total;
-
-        qsort(pt, nproc + 1, sizeof (struct p_times), compar);
-	y = 1;
-	i = nproc + 1;
-	if (i > wnd->maxy-1)
-		i = wnd->maxy-1;
-	for (k = 0; i > 0 && pt[k].pt_pctcpu > 0.01; i--, y++, k++) {
-		if (pt[k].pt_kp == NULL) {
-			uname = "";
-			pname = "<idle>";
-		}
-		else {
-			ep = &pt[k].pt_kp->kp_eproc;
-			uname = user_from_uid(ep->e_ucred.cr_uid, 0);
-			pname = pt[k].pt_kp->kp_proc.p_comm;
-		}
-		wmove(wnd, y, 0);
-		wclrtoeol(wnd);
-		mvwaddstr(wnd, y, 0, uname);
-		sprintf(pidname, "%10.10s", pname, 0);
-		mvwaddstr(wnd, y, 9, pidname);
-		wmove(wnd, y, 20);
-		for (j = pt[k].pt_pctcpu*factor + 0.5; j > 0; j--)
-			waddch(wnd, 'X');
-	}
-	wmove(wnd, y, 0); wclrtobot(wnd);
-}
-
-static struct nlist namelist[] = {
-#define X_FIRST		0
-#define X_CPTIME	0
-	{ "_cp_time" },
-#define X_CCPU          1
-	{ "_ccpu" },
-#define X_FSCALE        2
-	{ "_fscale" },
-
-	{ "" }
+field_def fields_pg[] = {
+	{"USER", 6, 16, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0},
+	{"NAME", 10, 24, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0},
+	{"PID", 5, 8, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"CPU", 5, 8, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"", 30, 60, 1, FLD_ALIGN_BAR, -1, 0, 0, 100},
 };
 
+#define FLD_PG_USER	FIELD_ADDR(fields_pg,0)
+#define FLD_PG_NAME	FIELD_ADDR(fields_pg,1)
+#define FLD_PG_PID	FIELD_ADDR(fields_pg,2)
+#define FLD_PG_VALUE	FIELD_ADDR(fields_pg,3)
+#define FLD_PG_BAR	FIELD_ADDR(fields_pg,4)
+
+/* Define views */
+field_def *view_pg_0[] = {
+	FLD_PG_PID, FLD_PG_USER, FLD_PG_NAME, FLD_PG_VALUE, FLD_PG_BAR, NULL
+};
+
+
+/* Define view managers */
+struct view_manager pigs_mgr = {
+	"Pigs", select_pg, read_pg, NULL, print_header,
+	print_pg, keyboard_callback, NULL, NULL
+};
+
+field_view views_pg[] = {
+	{view_pg_0, "pigs", '5', &pigs_mgr},
+	{NULL, NULL, 0, NULL}
+};
+
+int	fscale;
+
+#define pctdouble(p) ((double)(p) / fscale)
+
+typedef long pctcpu;
+
 int
-initpigs()
+select_pg(void)
 {
+	int mib[] = { CTL_KERN, KERN_FSCALE };
+	size_t size = sizeof(fscale);
+
+        if (sysctl(mib, sizeof(mib) / sizeof(mib[0]),
+            &fscale, &size, NULL, 0) == -1)
+                return (-1);
+	num_disp = pigs_cnt;
+	return (0);
+}
+
+
+int
+getprocs(void)
+{
+	size_t size;
+	int mib[6] = {CTL_KERN, KERN_PROC, KERN_PROC_KTHREAD, 0, sizeof(struct kinfo_proc), 0};
+	
+	int st;
+
+	free(procbase);
+	procbase = NULL;
+
+	st = sysctl(mib, 6, NULL, &size, NULL, 0);
+	if (st == -1)
+		return (1);
+
+	size = 5 * size / 4;		/* extra slop */
+	if ((procbase = malloc(size + 1)) == NULL)
+		return (1);
+
+	mib[5] = (int)(size / sizeof(struct kinfo_proc));
+	st = sysctl(mib, 6, procbase, &size, NULL, 0);
+	if (st == -1)
+		return (1);
+
+	nproc = (int)(size / sizeof(struct kinfo_proc));
+	return (0);
+}
+
+
+int
+read_pg(void)
+{
+	static int cp_time_mib[] = { CTL_KERN, KERN_CPTIME };
+	long ctimes[CPUSTATES];
+	double t;
+	int i, k;
+	size_t size;
+
+	num_disp = pigs_cnt = 0;
+
+	if (getprocs()) {
+		error("Failed to read process info!");
+		return 1;
+	}
+
+	if (nproc > onproc) {
+		int *p;
+		p = reallocarray(pb_indices, nproc + 1, sizeof(int));
+		if (p == NULL) {
+			error("Out of Memory!");
+			return 1;
+		}
+		pb_indices = p;
+		onproc = nproc;
+	}
+
+	memset(&procbase[nproc], 0, sizeof(*procbase));
+
+	for (i = 0; i <= nproc; i++)
+		pb_indices[i] = i;
+
+	/*
+	 * and for the imaginary "idle" process
+	 */
+	size = sizeof(ctimes);
+	sysctl(cp_time_mib, 2, &ctimes, &size, NULL, 0);
+
+	t = 0;
+	for (i = 0; i < CPUSTATES; i++)
+		t += ctimes[i] - stime[i];
+	if (t == 0.0)
+		t = 1.0;
+
+	procbase[nproc].p_pctcpu = (ctimes[CP_IDLE] - stime[CP_IDLE]) / t / pctdouble(1);
+	for (i = 0; i < CPUSTATES; i++)
+		stime[i] = ctimes[i];
+
+	qsort(pb_indices, nproc + 1, sizeof (int), compar);
+
+	pigs_cnt = 0;
+	for (k = 0; k < nproc + 1; k++) {
+		int j = pb_indices[k];
+		if (pctdouble(procbase[j].p_pctcpu) < 0.01)
+			break;
+		pigs_cnt++;
+	}
+
+	num_disp = pigs_cnt;
+	return 0;
+}
+
+
+void
+print_pg(void)
+{
+	int n, count = 0;
+
+	for (n = dispstart; n < num_disp; n++) {
+		showpigs(pb_indices[n]);
+		count++;
+		if (maxprint > 0 && count >= maxprint)
+			break;
+	}
+}
+
+int
+initpigs(void)
+{
+	static int sysload_mib[] = {CTL_VM, VM_LOADAVG};
+	static int cp_time_mib[] = { CTL_KERN, KERN_CPTIME };
+	static int ccpu_mib[] = { CTL_KERN, KERN_CCPU };
+	field_view *v;
+	size_t size;
 	fixpt_t ccpu;
 
-	if (namelist[X_FIRST].n_type == 0) {
-		if (kvm_nlist(kd, namelist)) {
-			nlisterr(namelist);
-		        return(0);
-		}
-		if (namelist[X_FIRST].n_type == 0) {
-			error("namelist failed");
-			return(0);
-		}
-	}
-	KREAD(NPTR(X_CPTIME), stime, sizeof (stime));
-	NREAD(X_CCPU, &ccpu, LONG);
-	NREAD(X_FSCALE,  &fscale, LONG);
-	lccpu = log((double) ccpu / fscale);
+	size = sizeof(stime);
+	sysctl(cp_time_mib, 2, &stime, &size, NULL, 0);
+
+	size = sizeof(sysload);
+	sysctl(sysload_mib, 2, &sysload, &size, NULL, 0);
+
+	size = sizeof(ccpu);
+	sysctl(ccpu_mib, 2, &ccpu, &size, NULL, 0);
+
+	lccpu = log((double) ccpu / sysload.fscale);
+
+	for (v = views_pg; v->name != NULL; v++)
+		add_view(v);
 
 	return(1);
 }
 
 void
-fetchpigs()
+showpigs(int k)
 {
-	register int i;
-	register float time;
-	register struct proc *pp;
-	register float *pctp;
-	struct kinfo_proc *kpp;
-	long ctime[CPUSTATES];
-	double t;
-	static int lastnproc = 0;
+	struct kinfo_proc *kp;
+	double value;
+	const char *uname, *pname;
 
-	if (namelist[X_FIRST].n_type == 0)
+	if (procbase == NULL)
 		return;
-	if ((kpp = kvm_getprocs(kd, KERN_PROC_ALL, 0, &nproc)) == NULL) {
-		error("%s", kvm_geterr(kd));
-		if (pt)
-			free(pt);
-		return;
+
+	value = pctdouble(procbase[k].p_pctcpu) * 100;
+
+	kp = &procbase[k];
+	if (kp->p_comm[0] == '\0') {
+		uname = "";
+		pname = "<idle>";
+	} else {
+		uname = user_from_uid(kp->p_uid, 0);
+		pname = kp->p_comm;
+		print_fld_uint(FLD_PG_PID, kp->p_pid);
 	}
-	if (nproc > lastnproc) {
-		free(pt);
-		if ((pt =
-		    malloc((nproc + 1) * sizeof(struct p_times))) == NULL) {
-			error("Out of memory");
-			die(0);
-		}
-	}
-	lastnproc = nproc;
-	/*
-	 * calculate %cpu for each proc
-	 */
-	for (i = 0; i < nproc; i++) {
-		pt[i].pt_kp = &kpp[i];
-		pp = &kpp[i].kp_proc;
-		pctp = &pt[i].pt_pctcpu;
-		time = pp->p_swtime;
-		if (time == 0 || (pp->p_flag & P_INMEM) == 0)
-			*pctp = 0;
-		else
-			*pctp = ((double) pp->p_pctcpu / 
-					fscale) / (1.0 - exp(time * lccpu));
-	}
-	/*
-	 * and for the imaginary "idle" process
-	 */
-	KREAD(NPTR(X_CPTIME), ctime, sizeof (ctime));
-	t = 0;
-	for (i = 0; i < CPUSTATES; i++)
-		t += ctime[i] - stime[i];
-	if (t == 0.0)
-		t = 1.0;
-	pt[nproc].pt_kp = NULL;
-	pt[nproc].pt_pctcpu = (ctime[CP_IDLE] - stime[CP_IDLE]) / t;
-	for (i = 0; i < CPUSTATES; i++)
-		stime[i] = ctime[i];
+
+	tb_start();
+	tbprintf("%.2f", value);
+	print_fld_tb(FLD_PG_VALUE);
+
+	print_fld_str(FLD_PG_NAME, pname);
+	print_fld_str(FLD_PG_USER, uname);
+	print_fld_bar(FLD_PG_BAR, value);
+
+	end_line();
 }
 
-void
-labelpigs()
-{
-	wmove(wnd, 0, 0);
-	wclrtoeol(wnd);
-	mvwaddstr(wnd, 0, 20,
-	    "/0   /10  /20  /30  /40  /50  /60  /70  /80  /90  /100");
-}
 
 int
-compar(a, b)
-	const void *a, *b;
+compar(const void *a, const void *b)
 {
-	return (((struct p_times *) a)->pt_pctcpu >
-		((struct p_times *) b)->pt_pctcpu)? -1: 1;
+	int i1 = *((int *)a);
+	int i2 = *((int *)b);
+
+	return procbase[i1].p_pctcpu > 
+		procbase[i2].p_pctcpu ? -1 : 1;
 }
+

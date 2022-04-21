@@ -1,4 +1,4 @@
-/* crypto/des/cfb64ede.c */
+/* $OpenBSD: cfb64ede.c,v 1.8 2014/10/28 07:35:58 jsg Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -57,7 +57,6 @@
  */
 
 #include "des_locl.h"
-#include "e_os.h"
 
 /* The input and output encrypted as though 64bit cfb mode is being
  * used.  The extra state information to record how much of the
@@ -69,9 +68,9 @@ void DES_ede3_cfb64_encrypt(const unsigned char *in, unsigned char *out,
 			    DES_key_schedule *ks2, DES_key_schedule *ks3,
 			    DES_cblock *ivec, int *num, int enc)
 	{
-	register DES_LONG v0,v1;
-	register long l=length;
-	register int n= *num;
+	DES_LONG v0,v1;
+	long l=length;
+	int n= *num;
 	DES_LONG ti[2];
 	unsigned char *iv,c,cc;
 
@@ -133,15 +132,6 @@ void DES_ede3_cfb64_encrypt(const unsigned char *in, unsigned char *out,
 	*num=n;
 	}
 
-#ifdef undef /* MACRO */
-void DES_ede2_cfb64_encrypt(unsigned char *in, unsigned char *out, long length,
-	     DES_key_schedule ks1, DES_key_schedule ks2, DES_cblock (*ivec),
-	     int *num, int enc)
-	{
-	DES_ede3_cfb64_encrypt(in,out,length,ks1,ks2,ks1,ivec,num,enc);
-	}
-#endif
-
 /* This is compatible with the single key CFB-r for DES, even thought that's
  * not what EVP needs.
  */
@@ -151,9 +141,9 @@ void DES_ede3_cfb_encrypt(const unsigned char *in,unsigned char *out,
 			  DES_key_schedule *ks2,DES_key_schedule *ks3,
 			  DES_cblock *ivec,int enc)
 	{
-	register DES_LONG d0,d1,v0,v1;
-	register unsigned long l=length,n=((unsigned int)numbits+7)/8;
-	register int num=numbits,i;
+	DES_LONG d0,d1,v0,v1;
+	unsigned long l=length,n=((unsigned int)numbits+7)/8;
+	int num=numbits,i;
 	DES_LONG ti[2];
 	unsigned char *iv;
 	unsigned char ovec[16];

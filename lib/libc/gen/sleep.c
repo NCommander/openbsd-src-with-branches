@@ -1,5 +1,4 @@
-/*	$NetBSD: sleep.c,v 1.10 1995/05/03 12:52:43 mycroft Exp $	*/
-
+/*	$OpenBSD: sleep.c,v 1.12 2009/12/14 05:10:13 guenther Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,87 +28,19 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)sleep.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: sleep.c,v 1.10 1995/05/03 12:52:43 mycroft Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/time.h>
-#include <signal.h>
 #include <unistd.h>
 
 unsigned int
-sleep(seconds)
-	unsigned int seconds;
+sleep(unsigned int seconds)
 {
-	struct itimerval itv, oitv;
-	struct sigaction act, oact;
-	struct timeval diff;
-	sigset_t set, oset;
-	static void sleephandler();
+	struct timespec rqt, rmt;
 
-	if (!seconds)
-		return 0;
+	rqt.tv_sec = seconds;
+	rqt.tv_nsec = 0;
 
-	sigemptyset(&set);
-	sigaddset(&set, SIGALRM);
-	sigprocmask(SIG_BLOCK, &set, &oset);
+	if (nanosleep(&rqt, &rmt) == 0)
+		rmt.tv_sec = 0;
 
-	act.sa_handler = sleephandler;
-	act.sa_flags = 0;
-	sigemptyset(&act.sa_mask);
-	sigaction(SIGALRM, &act, &oact);
-
-	timerclear(&itv.it_interval);
-	itv.it_value.tv_sec = seconds;
-	itv.it_value.tv_usec = 0;
-	timerclear(&diff);
-	setitimer(ITIMER_REAL, &itv, &oitv);
-
-	if (timerisset(&oitv.it_value)) {
-		if (timercmp(&oitv.it_value, &itv.it_value, >)) {
-			timersub(&oitv.it_value, &itv.it_value, &oitv.it_value);
-		} else {
-			/*
-			 * The existing timer was scheduled to fire 
-			 * before ours, so we compute the time diff
-			 * so we can add it back in the end.
-			 */
-			timersub(&itv.it_value, &oitv.it_value, &diff);
-			itv.it_value = oitv.it_value;
-			/*
-			 * This is a hack, but we must have time to return
-			 * from the setitimer after the alarm or else it'll
-			 * be restarted.  And, anyway, sleep never did
-			 * anything more than this before.
-			 */
-			oitv.it_value.tv_sec  = 1;
-			oitv.it_value.tv_usec = 0;
-
-			setitimer(ITIMER_REAL, &itv, NULL);
-		}
-	}
-
-	set = oset;
-	sigdelset(&set, SIGALRM);
- 	(void) sigsuspend(&set);
-
-	sigaction(SIGALRM, &oact, NULL);
-	sigprocmask(SIG_SETMASK, &oset, NULL);
-
-	(void) setitimer(ITIMER_REAL, &oitv, &itv);
-
-	if (timerisset(&diff))
-		timeradd(&itv.it_value, &diff, &itv.it_value);
-
-	return (itv.it_value.tv_sec);
-}
-
-static void
-sleephandler()
-{
-
+	return(rmt.tv_sec);
 }

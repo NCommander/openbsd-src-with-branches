@@ -41,6 +41,10 @@
 #include "popen.h"
 #endif
 
+/* Begin GNULIB headers.  */
+#include "xsize.h"
+/* End GNULIB headers.  */
+
 #ifdef STDC_HEADERS
 #include <stdlib.h>
 #else
@@ -256,6 +260,8 @@ extern int errno;
 #define	CVSREAD_ENV	"CVSREAD"	/* make files read-only */
 #define	CVSREAD_DFLT	0		/* writable files by default */
 
+#define	CVSREADONLYFS_ENV "CVSREADONLYFS" /* repository is read-only */
+
 #define	TMPDIR_ENV	"TMPDIR"	/* Temporary directory */
 /* #define	TMPDIR_DFLT		   Set by options.h */
 
@@ -363,6 +369,8 @@ extern int really_quiet, quiet;
 extern int use_editor;
 extern int cvswrite;
 extern mode_t cvsumask;
+extern int disable_mdocdate;
+extern char *RCS_citag;
 
 /* Access method specified in CVSroot. */
 typedef enum {
@@ -400,6 +408,7 @@ extern int safe_location PROTO ((void));
 
 extern int trace;		/* Show all commands */
 extern int noexec;		/* Don't modify disk anywhere */
+extern int readonlyfs;		/* fail on all write locks; succeed all read locks */
 extern int logoff;		/* Don't write history entry */
 
 extern int top_level_admin;
@@ -509,7 +518,7 @@ int update PROTO((int argc, char *argv[]));
 int xcmp PROTO((const char *file1, const char *file2));
 int yesno PROTO((void));
 void *valloc PROTO((size_t bytes));
-time_t get_date PROTO((char *date, struct timeb *now));
+time_t get_date PROTO((char *date));
 extern int Create_Admin PROTO ((char *dir, char *update_dir,
 				char *repository, char *tag, char *date,
 				int nonbranch, int warn, int dotemplate));
@@ -898,3 +907,5 @@ extern void cvs_outerr PROTO ((const char *, size_t));
 extern void cvs_flusherr PROTO ((void));
 extern void cvs_flushout PROTO ((void));
 extern void cvs_output_tagged PROTO ((char *, char *));
+
+extern char *global_session_id;

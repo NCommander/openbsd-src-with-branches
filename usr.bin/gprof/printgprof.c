@@ -1,3 +1,4 @@
+/*	$OpenBSD: printgprof.c,v 1.14 2015/12/06 23:22:51 guenther Exp $	*/
 /*	$NetBSD: printgprof.c,v 1.5 1995/04/19 07:16:21 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,22 +30,19 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)printgprof.c	8.1 (Berkeley) 6/6/93";
-#else
-static char rcsid[] = "$NetBSD: printgprof.c,v 1.5 1995/04/19 07:16:21 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <string.h>
 
 #include "gprof.h"
 #include "pathnames.h"
 
+int namecmp(const void *, const void *);
+
+void
 printprof()
 {
-    register nltype	*np;
+    nltype		*np;
     nltype		**sortednlp;
-    int			index, timecmp();
+    int			index;
 
     actime = 0.0;
     printf( "\f\n" );
@@ -56,10 +50,9 @@ printprof()
 	/*
 	 *	Sort the symbol table in by time
 	 */
-    sortednlp = (nltype **) calloc( nname , sizeof(nltype *) );
-    if ( sortednlp == (nltype **) 0 ) {
-	fprintf( stderr , "[printprof] ran out of memory for time sorting\n" );
-    }
+    sortednlp = calloc( nname , sizeof(nltype *) );
+    if ( sortednlp == (nltype **) 0 )
+	warnx("[printprof] ran out of memory for time sorting");
     for ( index = 0 ; index < nname ; index += 1 ) {
 	sortednlp[ index ] = &nl[ index ];
     }
@@ -72,55 +65,52 @@ printprof()
     free( sortednlp );
 }
 
-timecmp( npp1 , npp2 )
-    nltype **npp1, **npp2;
+int
+timecmp(const void *v1, const void *v2)
 {
-    double	timediff;
-    long	calldiff;
+    const nltype * const *npp1 = v1;
+    const nltype * const *npp2 = v2;
 
-    timediff = (*npp2) -> time - (*npp1) -> time;
-    if ( timediff > 0.0 )
+    if ((*npp2) -> time < (*npp1) -> time)
+	return -1;
+    if ((*npp2) -> time > (*npp1) -> time)
 	return 1 ;
-    if ( timediff < 0.0 )
+    if ((*npp2) -> ncall < (*npp1) -> ncall)
 	return -1;
-    calldiff = (*npp2) -> ncall - (*npp1) -> ncall;
-    if ( calldiff > 0 )
+    if ((*npp2) -> ncall > (*npp1) -> ncall)
 	return 1;
-    if ( calldiff < 0 )
-	return -1;
     return( strcmp( (*npp1) -> name , (*npp2) -> name ) );
 }
 
     /*
      *	header for flatprofline
      */
+void
 flatprofheader()
 {
     
-    if ( bflag ) {
+    if (bflag)
 	printblurb( _PATH_FLAT_BLURB );
-    }
-    printf( "\ngranularity: each sample hit covers %d byte(s)" ,
-	    (long) scale * sizeof(UNIT) );
-    if ( totime > 0.0 ) {
-	printf( " for %.2f%% of %.2f seconds\n\n" ,
-		100.0/totime , totime / hz );
-    } else {
+    printf("\ngranularity: each sample hit covers %ld byte(s)",
+	    (long) scale * sizeof(UNIT));
+    if (totime > 0.0)
+	printf(" for %.2f%% of %.2f seconds\n\n" , 100.0/totime, totime / hz);
+    else {
 	printf( " no time accumulated\n\n" );
 	    /*
 	     *	this doesn't hurt sinc eall the numerators will be zero.
 	     */
 	totime = 1.0;
     }
-    printf( "%5.5s %10.10s %8.8s %8.8s %8.8s %8.8s  %-8.8s\n" ,
-	    "%  " , "cumulative" , "self  " , "" , "self  " , "total " , "" );
-    printf( "%5.5s %10.10s %8.8s %8.8s %8.8s %8.8s  %-8.8s\n" ,
-	    "time" , "seconds " , "seconds" , "calls" ,
-	    "ms/call" , "ms/call" , "name" );
+    printf("%5.5s %10.10s %8.8s %8.8s %8.8s %8.8s  %-8.8s\n" ,
+	"%  " , "cumulative" , "self  " , "" , "self  " , "total " , "" );
+    printf("%5.5s %10.10s %8.8s %8.8s %8.8s %8.8s  %-8.8s\n" ,
+	"time" , "seconds " , "seconds" , "calls" ,
+	"ms/call" , "ms/call" , "name" );
 }
 
-flatprofline( np )
-    register nltype	*np;
+void
+flatprofline(nltype *np)
 {
 
     if ( zflag == 0 && np -> ncall == 0 && np -> time == 0 ) {
@@ -130,7 +120,7 @@ flatprofline( np )
     printf( "%5.1f %10.2f %8.2f" ,
 	100 * np -> time / totime , actime / hz , np -> time / hz );
     if ( np -> ncall != 0 ) {
-	printf( " %8d %8.2f %8.2f  " , np -> ncall ,
+	printf( " %8ld %8.2f %8.2f  " , np -> ncall ,
 	    1000 * np -> time / hz / np -> ncall ,
 	    1000 * ( np -> time + np -> childtime ) / hz / np -> ncall );
     } else {
@@ -140,13 +130,14 @@ flatprofline( np )
     printf( "\n" );
 }
 
+void
 gprofheader()
 {
 
     if ( bflag ) {
 	printblurb( _PATH_CALLG_BLURB );
     }
-    printf( "\ngranularity: each sample hit covers %d byte(s)" ,
+    printf( "\ngranularity: each sample hit covers %ld byte(s)" ,
 	    (long) scale * sizeof(UNIT) );
     if ( printtime > 0.0 ) {
 	printf( " for %.2f%% of %.2f seconds\n\n" ,
@@ -168,21 +159,19 @@ gprofheader()
     printf( "\n" );
 }
 
-gprofline( np )
-    register nltype	*np;
+void
+gprofline(nltype *np)
 {
     char	kirkbuffer[ BUFSIZ ];
 
-    sprintf( kirkbuffer , "[%d]" , np -> index );
-    printf( "%-6.6s %5.1f %7.2f %11.2f" ,
-	    kirkbuffer ,
+    snprintf(kirkbuffer, sizeof kirkbuffer, "[%d]" , np -> index );
+    printf( "%-6.6s %5.1f %7.2f %11.2f" , kirkbuffer ,
 	    100 * ( np -> propself + np -> propchild ) / printtime ,
-	    np -> propself / hz ,
-	    np -> propchild / hz );
+	    np -> propself / hz , np -> propchild / hz );
     if ( ( np -> ncall + np -> selfcalls ) != 0 ) {
-	printf( " %7d" , np -> npropcall );
+	printf( " %7ld" , np -> npropcall );
 	if ( np -> selfcalls != 0 ) {
-	    printf( "+%-7d " , np -> selfcalls );
+	    printf( "+%-7ld " , np -> selfcalls );
 	} else {
 	    printf( " %7.7s " , "" );
 	}
@@ -193,8 +182,8 @@ gprofline( np )
     printf( "\n" );
 }
 
-printgprof(timesortnlp)
-    nltype	**timesortnlp;
+void
+printgprof(nltype **timesortnlp)
 {
     int		index;
     nltype	*parentp;
@@ -242,28 +231,37 @@ printgprof(timesortnlp)
      *	all else being equal, sort by names.
      */
 int
-totalcmp( npp1 , npp2 )
-    nltype	**npp1;
-    nltype	**npp2;
+totalcmp(const void *v1, const void *v2)
 {
-    register nltype	*np1 = *npp1;
-    register nltype	*np2 = *npp2;
-    double		diff;
+    const nltype *np1 = *(const nltype **)v1;
+    const nltype *np2 = *(const nltype **)v2;
+    double t1, t2;
+    int np1noname, np2noname, np1cyclehdr, np2cyclehdr;
 
-    diff =    ( np1 -> propself + np1 -> propchild )
-	    - ( np2 -> propself + np2 -> propchild );
-    if ( diff < 0.0 )
+    t1 = np1 -> propself + np1 -> propchild;
+    t2 = np2 -> propself + np2 -> propchild;
+    if ( t2 > t1 )
 	    return 1;
-    if ( diff > 0.0 )
+    if ( t2 < t1 )
 	    return -1;
-    if ( np1 -> name == 0 && np1 -> cycleno != 0 ) 
+
+    np1noname = ( np1 -> name == 0 );
+    np2noname = ( np2 -> name == 0 );
+    np1cyclehdr = ( np1noname && np1 -> cycleno != 0 );
+    np2cyclehdr = ( np2noname && np2 -> cycleno != 0 );
+
+    if ( np1cyclehdr && !np2cyclehdr )
 	return -1;
-    if ( np2 -> name == 0 && np2 -> cycleno != 0 )
+    else if ( !np1cyclehdr && np2cyclehdr )
 	return 1;
-    if ( np1 -> name == 0 )
+
+    if ( np1noname && !np2noname )
 	return -1;
-    if ( np2 -> name == 0 )
+    else if ( !np1noname && np2noname )
 	return 1;
+    else if ( np1noname && np2noname )
+	return 0;
+
     if ( *(np1 -> name) != '_' && *(np2 -> name) == '_' )
 	return -1;
     if ( *(np1 -> name) == '_' && *(np2 -> name) != '_' )
@@ -275,8 +273,8 @@ totalcmp( npp1 , npp2 )
     return strcmp( np1 -> name , np2 -> name );
 }
 
-printparents( childp )
-    nltype	*childp;
+void
+printparents(nltype *childp)
 {
     nltype	*parentp;
     arctype	*arcp;
@@ -300,7 +298,7 @@ printparents( childp )
 		/*
 		 *	selfcall or call among siblings
 		 */
-	    printf( "%6.6s %5.5s %7.7s %11.11s %7d %7.7s     " ,
+	    printf( "%6.6s %5.5s %7.7s %11.11s %7ld %7.7s     " ,
 		    "" , "" , "" , "" ,
 		    arcp -> arc_count , "" );
 	    printname( parentp );
@@ -309,7 +307,7 @@ printparents( childp )
 		/*
 		 *	regular parent of child
 		 */
-	    printf( "%6.6s %5.5s %7.2f %11.2f %7d/%-7d     " ,
+	    printf( "%6.6s %5.5s %7.2f %11.2f %7ld/%-7ld     " ,
 		    "" , "" ,
 		    arcp -> arc_time / hz , arcp -> arc_childtime / hz ,
 		    arcp -> arc_count , cycleheadp -> npropcall );
@@ -319,8 +317,8 @@ printparents( childp )
     }
 }
 
-printchildren( parentp )
-    nltype	*parentp;
+void
+printchildren(nltype *parentp)
 {
     nltype	*childp;
     arctype	*arcp;
@@ -334,7 +332,7 @@ printchildren( parentp )
 		/*
 		 *	self call or call to sibling
 		 */
-	    printf( "%6.6s %5.5s %7.7s %11.11s %7d %7.7s     " ,
+	    printf( "%6.6s %5.5s %7.7s %11.11s %7ld %7.7s     " ,
 		    "" , "" , "" , "" , arcp -> arc_count , "" );
 	    printname( childp );
 	    printf( "\n" );
@@ -342,7 +340,7 @@ printchildren( parentp )
 		/*
 		 *	regular child of parent
 		 */
-	    printf( "%6.6s %5.5s %7.2f %11.2f %7d/%-7d     " ,
+	    printf( "%6.6s %5.5s %7.2f %11.2f %7ld/%-7ld     " ,
 		    "" , "" ,
 		    arcp -> arc_time / hz , arcp -> arc_childtime / hz ,
 		    arcp -> arc_count , childp -> cyclehead -> npropcall );
@@ -352,8 +350,8 @@ printchildren( parentp )
     }
 }
 
-printname( selfp )
-    nltype	*selfp;
+void
+printname(nltype *selfp)
 {
 
     if ( selfp -> name != 0 ) {
@@ -365,7 +363,7 @@ printname( selfp )
 	    if ( debug & PROPDEBUG ) {
 		printf( "%5.2f%% " , selfp -> propfraction );
 	    }
-#	endif DEBUG
+#	endif /* DEBUG */
     }
     if ( selfp -> cycleno != 0 ) {
 	printf( " <cycle %d>" , selfp -> cycleno );
@@ -379,8 +377,8 @@ printname( selfp )
     }
 }
 
-sortchildren( parentp )
-    nltype	*parentp;
+void
+sortchildren(nltype *parentp)
 {
     arctype	*arcp;
     arctype	*detachedp;
@@ -396,9 +394,8 @@ sortchildren( parentp )
 	 *	    *prevp	arc before the arc you are comparing.
 	 */
     sorted.arc_childlist = 0;
-    for (  (arcp = parentp -> children)&&(detachedp = arcp -> arc_childlist);
-	    arcp ;
-	   (arcp = detachedp)&&(detachedp = detachedp -> arc_childlist)) {
+    for (arcp = parentp -> children; arcp; arcp = detachedp) {
+	detachedp = arcp -> arc_childlist;
 	    /*
 	     *	consider *arcp as disconnected
 	     *	insert it into sorted
@@ -419,8 +416,8 @@ sortchildren( parentp )
     parentp -> children = sorted.arc_childlist;
 }
 
-sortparents( childp )
-    nltype	*childp;
+void
+sortparents(nltype *childp)
 {
     arctype	*arcp;
     arctype	*detachedp;
@@ -436,22 +433,18 @@ sortparents( childp )
 	 *	    *prevp	arc before the arc you are comparing.
 	 */
     sorted.arc_parentlist = 0;
-    for (  (arcp = childp -> parents)&&(detachedp = arcp -> arc_parentlist);
-	    arcp ;
-	   (arcp = detachedp)&&(detachedp = detachedp -> arc_parentlist)) {
+    for (arcp = childp->parents; arcp; arcp = detachedp) {
+	detachedp = arcp->arc_parentlist;
 	    /*
 	     *	consider *arcp as disconnected
 	     *	insert it into sorted
 	     */
-	for (   prevp = &sorted ;
-		prevp -> arc_parentlist ;
-		prevp = prevp -> arc_parentlist ) {
-	    if ( arccmp( arcp , prevp -> arc_parentlist ) != GREATERTHAN ) {
+	for (prevp = &sorted; prevp->arc_parentlist;
+	     prevp = prevp->arc_parentlist)
+	    if (arccmp(arcp , prevp->arc_parentlist) != GREATERTHAN)
 		break;
-	    }
-	}
-	arcp -> arc_parentlist = prevp -> arc_parentlist;
-	prevp -> arc_parentlist = arcp;
+	arcp->arc_parentlist = prevp->arc_parentlist;
+	prevp->arc_parentlist = arcp;
     }
 	/*
 	 *	reattach sorted arcs to child
@@ -462,56 +455,50 @@ sortparents( childp )
     /*
      *	print a cycle header
      */
-printcycle( cyclep )
-    nltype	*cyclep;
+void
+printcycle(nltype *cyclep)
 {
     char	kirkbuffer[ BUFSIZ ];
 
-    sprintf( kirkbuffer , "[%d]" , cyclep -> index );
-    printf( "%-6.6s %5.1f %7.2f %11.2f %7d" ,
-	    kirkbuffer ,
-	    100 * ( cyclep -> propself + cyclep -> propchild ) / printtime ,
-	    cyclep -> propself / hz ,
-	    cyclep -> propchild / hz ,
-	    cyclep -> npropcall );
-    if ( cyclep -> selfcalls != 0 ) {
-	printf( "+%-7d" , cyclep -> selfcalls );
-    } else {
-	printf( " %7.7s" , "" );
-    }
-    printf( " <cycle %d as a whole>\t[%d]\n" ,
-	    cyclep -> cycleno , cyclep -> index );
+    snprintf(kirkbuffer, sizeof kirkbuffer, "[%d]" , cyclep->index);
+    printf("%-6.6s %5.1f %7.2f %11.2f %7ld", kirkbuffer,
+	    100 * (cyclep->propself + cyclep->propchild) / printtime,
+	    cyclep->propself / hz, cyclep->propchild / hz, cyclep->npropcall);
+    if (cyclep -> selfcalls != 0)
+	printf("+%-7ld" , cyclep->selfcalls);
+    else
+	printf(" %7.7s" , "");
+    printf(" <cycle %d as a whole>\t[%d]\n" ,
+	    cyclep->cycleno , cyclep->index );
 }
 
     /*
      *	print the members of a cycle
      */
-printmembers( cyclep )
-    nltype	*cyclep;
+void
+printmembers(nltype *cyclep)
 {
     nltype	*memberp;
 
     sortmembers( cyclep );
     for ( memberp = cyclep -> cnext ; memberp ; memberp = memberp -> cnext ) {
-	printf( "%6.6s %5.5s %7.2f %11.2f %7d" , 
-		"" , "" , memberp -> propself / hz , memberp -> propchild / hz ,
-		memberp -> npropcall );
-	if ( memberp -> selfcalls != 0 ) {
-	    printf( "+%-7d" , memberp -> selfcalls );
-	} else {
-	    printf( " %7.7s" , "" );
-	}
-	printf( "     " );
-	printname( memberp );
-	printf( "\n" );
+	printf( "%6.6s %5.5s %7.2f %11.2f %7ld" , "", "",
+	  memberp->propself / hz, memberp->propchild / hz, memberp->npropcall );
+	if (memberp -> selfcalls != 0)
+	    printf("+%-7ld" , memberp -> selfcalls);
+	else
+	    printf(" %7.7s", "");
+	printf("     ");
+	printname(memberp);
+	printf("\n");
     }
 }
 
     /*
      *	sort members of a cycle
      */
-sortmembers( cyclep )
-    nltype	*cyclep;
+void
+sortmembers(nltype *cyclep)
 {
     nltype	*todo;
     nltype	*doing;
@@ -523,14 +510,11 @@ sortmembers( cyclep )
 	 */
     todo = cyclep -> cnext;
     cyclep -> cnext = 0;
-    for (  (doing = todo)&&(todo = doing -> cnext);
-	    doing ;
-	   (doing = todo )&&(todo = doing -> cnext )){
-	for ( prev = cyclep ; prev -> cnext ; prev = prev -> cnext ) {
-	    if ( membercmp( doing , prev -> cnext ) == GREATERTHAN ) {
+    for (doing = todo; doing; doing = todo) {
+	todo = doing -> cnext;
+	for (prev = cyclep; prev -> cnext; prev = prev -> cnext)
+	    if (membercmp(doing, prev->cnext ) == GREATERTHAN)
 		break;
-	    }
-	}
 	doing -> cnext = prev -> cnext;
 	prev -> cnext = doing;
     }
@@ -541,9 +525,7 @@ sortmembers( cyclep )
      *	next is sort on ncalls + selfcalls.
      */
 int
-membercmp( this , that )
-    nltype	*this;
-    nltype	*that;
+membercmp(nltype *this , nltype *that)
 {
     double	thistime = this -> propself + this -> propchild;
     double	thattime = that -> propself + that -> propchild;
@@ -574,9 +556,7 @@ membercmp( this , that )
      *		arc count as minor key
      */
 int
-arccmp( thisp , thatp )
-    arctype	*thisp;
-    arctype	*thatp;
+arccmp(arctype *thisp, arctype *thatp)
 {
     nltype	*thisparentp = thisp -> arc_parentp;
     nltype	*thischildp = thisp -> arc_childp;
@@ -591,19 +571,19 @@ arccmp( thisp , thatp )
 	    printname( thisparentp );
 	    printf( " calls " );
 	    printname ( thischildp );
-	    printf( " %f + %f %d/%d\n" ,
+	    printf( " %f + %f %ld/%ld\n" ,
 		    thisp -> arc_time , thisp -> arc_childtime ,
 		    thisp -> arc_count , thischildp -> ncall );
 	    printf( "[arccmp] " );
 	    printname( thatparentp );
 	    printf( " calls " );
 	    printname( thatchildp );
-	    printf( " %f + %f %d/%d\n" ,
+	    printf( " %f + %f %ld/%ld\n" ,
 		    thatp -> arc_time , thatp -> arc_childtime ,
 		    thatp -> arc_count , thatchildp -> ncall );
 	    printf( "\n" );
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
     if ( thisparentp == thischildp ) {
 	    /* this is a self call */
 	return LESSTHAN;
@@ -652,34 +632,37 @@ arccmp( thisp , thatp )
     }
 }
 
-printblurb( blurbname )
-    char	*blurbname;
+void
+printblurb(const char *blurbname)
 {
     FILE	*blurbfile;
     int		input;
 
     blurbfile = fopen( blurbname , "r" );
     if ( blurbfile == NULL ) {
-	perror( blurbname );
+	warn("fopen: %s", blurbname );
 	return;
     }
-    while ( ( input = getc( blurbfile ) ) != EOF ) {
+    while ( ( input = getc( blurbfile ) ) != EOF )
 	putchar( input );
-    }
+
     fclose( blurbfile );
 }
 
 int
-namecmp( npp1 , npp2 )
-    nltype **npp1, **npp2;
+namecmp(const void *v1, const void *v2)
 {
+    const nltype * const *npp1 = v1;
+    const nltype * const *npp2 = v2;
+
     return( strcmp( (*npp1) -> name , (*npp2) -> name ) );
 }
 
+void
 printindex()
 {
     nltype		**namesortnlp;
-    register nltype	*nlp;
+    nltype		*nlp;
     int			index, nnames, todo, i, j;
     char		peterbuffer[ BUFSIZ ];
 
@@ -687,10 +670,9 @@ printindex()
 	 *	Now, sort regular function name alphbetically
 	 *	to create an index.
 	 */
-    namesortnlp = (nltype **) calloc( nname + ncycle , sizeof(nltype *) );
-    if ( namesortnlp == (nltype **) 0 ) {
-	fprintf( stderr , "%s: ran out of memory for sorting\n" , whoami );
-    }
+    namesortnlp = calloc( nname + ncycle , sizeof(nltype *) );
+    if ( namesortnlp == (nltype **) 0 )
+	warnx("ran out of memory for sorting");
     for ( index = 0 , nnames = 0 ; index < nname ; index++ ) {
 	if ( zflag == 0 && nl[index].ncall == 0 && nl[index].time == 0 )
 		continue;
@@ -706,15 +688,16 @@ printindex()
 	for ( j = i; j < todo ; j += index ) {
 	    nlp = namesortnlp[ j ];
 	    if ( nlp -> printflag ) {
-		sprintf( peterbuffer , "[%d]" , nlp -> index );
+		snprintf(peterbuffer, sizeof peterbuffer, "[%d]" , nlp -> index );
 	    } else {
-		sprintf( peterbuffer , "(%d)" , nlp -> index );
+		snprintf(peterbuffer, sizeof peterbuffer, "(%d)" , nlp -> index );
 	    }
 	    if ( j < nnames ) {
 		printf( "%6.6s %-19.19s" , peterbuffer , nlp -> name );
 	    } else {
 		printf( "%6.6s " , peterbuffer );
-		sprintf( peterbuffer , "<cycle %d>" , nlp -> cycleno );
+		snprintf(peterbuffer, sizeof peterbuffer, "<cycle %d>"
+		    , nlp -> cycleno );
 		printf( "%-19.19s" , peterbuffer );
 	    }
 	}

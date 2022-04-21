@@ -1,3 +1,4 @@
+/*	$OpenBSD: dwc2_hcdqueue.c,v 1.11 2021/07/27 13:36:59 mglocker Exp $	*/
 /*	$NetBSD: dwc2_hcdqueue.c,v 1.11 2014/09/03 10:00:08 skrll Exp $	*/
 
 /*
@@ -41,29 +42,29 @@
  * Transfer Descriptors for Host mode
  */
 
-#include <sys/cdefs.h>
-__KERNEL_RCSID(0, "$NetBSD: dwc2_hcdqueue.c,v 1.11 2014/09/03 10:00:08 skrll Exp $");
-
-#include <sys/types.h>
-#include <sys/kmem.h>
+#include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/malloc.h>
 #include <sys/pool.h>
+
+#include <machine/bus.h>
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>
 #include <dev/usb/usbdivar.h>
 #include <dev/usb/usb_mem.h>
 
-#include <machine/param.h>
+#include <dev/usb/dwc2/dwc2.h>
+#include <dev/usb/dwc2/dwc2var.h>
 
-#include <linux/kernel.h>
+#include <dev/usb/dwc2/dwc2_core.h>
+#include <dev/usb/dwc2/dwc2_hcd.h>
 
-#include <dwc2/dwc2.h>
-#include <dwc2/dwc2var.h>
+STATIC u32 dwc2_calc_bus_time(struct dwc2_hsotg *, int, int, int, int);
+STATIC void dwc2_wait_timer_fn(void *);
 
-#include "dwc2_core.h"
-#include "dwc2_hcd.h"
-
-static u32 dwc2_calc_bus_time(struct dwc2_hsotg *, int, int, int, int);
+/* If we get a NAK, wait this long before retrying */
+#define DWC2_RETRY_WAIT_DELAY 1	/* msec */
 
 /**
  * dwc2_qh_init() - Initializes a QH structure
@@ -74,7 +75,7 @@ static u32 dwc2_calc_bus_time(struct dwc2_hsotg *, int, int, int, int);
  *         the QH
  */
 #define SCHEDULE_SLOP 10
-static void dwc2_qh_init(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
+STATIC void dwc2_qh_init(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
 			 struct dwc2_hcd_urb *urb)
 {
 	int dev_speed, hub_addr, hub_port;
@@ -82,6 +83,9 @@ static void dwc2_qh_init(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
 	dev_vdbg(hsotg->dev, "%s()\n", __func__);
 
 	/* Initialize QH */
+	qh->hsotg = hsotg;
+	/* XXX timer_setup(&qh->wait_timer, dwc2_wait_timer_fn, 0); */
+	timeout_set(&qh->wait_timer, dwc2_wait_timer_fn, qh);
 	qh->ep_type = dwc2_hcd_get_pipe_type(&urb->pipe_info);
 	qh->ep_is_in = dwc2_hcd_is_pipe_in(&urb->pipe_info) ? 1 : 0;
 
@@ -118,6 +122,9 @@ static void dwc2_qh_init(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
 				USB_SPEED_HIGH : dev_speed, qh->ep_is_in,
 				qh->ep_type == USB_ENDPOINT_XFER_ISOC,
 				bytecount);
+
+		/* Ensure frame_number corresponds to the reality */
+		hsotg->frame_number = dwc2_hcd_get_frame_number(hsotg);
 		/* Start in a slightly future (micro)frame */
 		qh->sched_frame = dwc2_frame_num_inc(hsotg->frame_number,
 						     SCHEDULE_SLOP);
@@ -206,7 +213,7 @@ static void dwc2_qh_init(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
  *
  * Return: Pointer to the newly allocated QH, or NULL on error
  */
-static struct dwc2_qh *dwc2_hcd_qh_create(struct dwc2_hsotg *hsotg,
+struct dwc2_qh *dwc2_hcd_qh_create(struct dwc2_hsotg *hsotg,
 					  struct dwc2_hcd_urb *urb,
 					  gfp_t mem_flags)
 {
@@ -217,7 +224,7 @@ static struct dwc2_qh *dwc2_hcd_qh_create(struct dwc2_hsotg *hsotg,
 		return NULL;
 
 	/* Allocate memory */
-	qh = pool_cache_get(sc->sc_qhpool, PR_NOWAIT);
+	qh = pool_get(&sc->sc_qhpool, PR_NOWAIT);
 	if (!qh)
 		return NULL;
 
@@ -248,14 +255,24 @@ void dwc2_hcd_qh_free(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 {
 	struct dwc2_softc *sc = hsotg->hsotg_sc;
 
-	if (hsotg->core_params->dma_desc_enable > 0) {
+	/*
+	 * We don't have the lock so we can safely wait until the wait timer
+	 * finishes.  Of course, at this point in time we'd better have set
+	 * wait_timer_active to false so if this timer was still pending it
+	 * won't do anything anyway, but we want it to finish before we free
+	 * memory.
+	 */
+	/* XXX del_timer_sync(&qh->wait_timer); */
+
+	timeout_del(&qh->wait_timer);
+	if (qh->desc_list) {
 		dwc2_hcd_qh_free_ddma(hsotg, qh);
 	} else if (qh->dw_align_buf) {
-		/* XXXNH */
-		usb_freemem(&hsotg->hsotg_sc->sc_bus, &qh->dw_align_buf_usbdma);
+		usb_freemem(&sc->sc_bus, &qh->dw_align_buf_usbdma);
+ 		qh->dw_align_buf_dma = (dma_addr_t)0;
 	}
 
-	pool_cache_put(sc->sc_qhpool, qh);
+	pool_put(&sc->sc_qhpool, qh);
 }
 
 /**
@@ -266,7 +283,7 @@ void dwc2_hcd_qh_free(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
  *
  * Return: 0 if successful, negative error code otherwise
  */
-static int dwc2_periodic_channel_available(struct dwc2_hsotg *hsotg)
+STATIC int dwc2_periodic_channel_available(struct dwc2_hsotg *hsotg)
 {
 	/*
 	 * Currently assuming that there is a dedicated host channel for
@@ -304,7 +321,7 @@ static int dwc2_periodic_channel_available(struct dwc2_hsotg *hsotg)
  * For simplicity, this calculation assumes that all the transfers in the
  * periodic schedule may occur in the same (micro)frame
  */
-static int dwc2_check_periodic_bandwidth(struct dwc2_hsotg *hsotg,
+STATIC int dwc2_check_periodic_bandwidth(struct dwc2_hsotg *hsotg,
 					 struct dwc2_qh *qh)
 {
 	int status;
@@ -342,7 +359,7 @@ static int dwc2_check_periodic_bandwidth(struct dwc2_hsotg *hsotg,
  * keep each qh use in qh->frame_usecs
  * when surrendering the qh then donate the time back
  */
-static const unsigned short max_uframe_usecs[] = {
+STATIC const unsigned short max_uframe_usecs[] = {
 	100, 100, 100, 100, 100, 100, 30, 0
 };
 
@@ -354,7 +371,7 @@ void dwc2_hcd_init_usecs(struct dwc2_hsotg *hsotg)
 		hsotg->frame_usecs[i] = max_uframe_usecs[i];
 }
 
-static int dwc2_find_single_uframe(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
+STATIC int dwc2_find_single_uframe(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 {
 	unsigned short utime = qh->usecs;
 	int i;
@@ -373,7 +390,7 @@ static int dwc2_find_single_uframe(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 /*
  * use this for FS apps that can span multiple uframes
  */
-static int dwc2_find_multi_uframe(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
+STATIC int dwc2_find_multi_uframe(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 {
 	unsigned short utime = qh->usecs;
 	unsigned short xtime;
@@ -429,7 +446,7 @@ static int dwc2_find_multi_uframe(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 	return -ENOSPC;
 }
 
-static int dwc2_find_uframe(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
+STATIC int dwc2_find_uframe(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 {
 	int ret;
 
@@ -456,7 +473,7 @@ static int dwc2_find_uframe(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
  *
  * Return: 0 if successful, negative error code otherwise
  */
-static int dwc2_check_max_xfer_size(struct dwc2_hsotg *hsotg,
+STATIC int dwc2_check_max_xfer_size(struct dwc2_hsotg *hsotg,
 				    struct dwc2_qh *qh)
 {
 	u32 max_xfer_size;
@@ -486,7 +503,7 @@ static int dwc2_check_max_xfer_size(struct dwc2_hsotg *hsotg,
  *
  * Return: 0 if successful, negative error code otherwise
  */
-static int dwc2_schedule_periodic(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
+STATIC int dwc2_schedule_periodic(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 {
 	int status;
 
@@ -559,7 +576,7 @@ static int dwc2_schedule_periodic(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
  * @hsotg: The HCD state structure for the DWC OTG controller
  * @qh:	   QH for the periodic transfer
  */
-static void dwc2_deschedule_periodic(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_deschedule_periodic(struct dwc2_hsotg *hsotg,
 				     struct dwc2_qh *qh)
 {
 	int i;
@@ -578,6 +595,55 @@ static void dwc2_deschedule_periodic(struct dwc2_hsotg *hsotg,
 		/* Release periodic channel reservation */
 		hsotg->periodic_channels--;
 	}
+}
+
+/**
+ * dwc2_wait_timer_fn() - Timer function to re-queue after waiting
+ *
+ * As per the spec, a NAK indicates that "a function is temporarily unable to
+ * transmit or receive data, but will eventually be able to do so without need
+ * of host intervention".
+ *
+ * That means that when we encounter a NAK we're supposed to retry.
+ *
+ * ...but if we retry right away (from the interrupt handler that saw the NAK)
+ * then we can end up with an interrupt storm (if the other side keeps NAKing
+ * us) because on slow enough CPUs it could take us longer to get out of the
+ * interrupt routine than it takes for the device to send another NAK.  That
+ * leads to a constant stream of NAK interrupts and the CPU locks.
+ *
+ * ...so instead of retrying right away in the case of a NAK we'll set a timer
+ * to retry some time later.  This function handles that timer and moves the
+ * qh back to the "inactive" list, then queues transactions.
+ *
+ * @t: Pointer to wait_timer in a qh.
+ */
+STATIC void dwc2_wait_timer_fn(void *arg)
+{
+	struct dwc2_qh *qh = arg;
+	struct dwc2_hsotg *hsotg = qh->hsotg;
+	unsigned long flags;
+
+	spin_lock_irqsave(&hsotg->lock, flags);
+
+	/*
+	 * We'll set wait_timer_cancel to true if we want to cancel this
+	 * operation in dwc2_hcd_qh_unlink().
+	 */
+	if (!qh->wait_timer_cancel) {
+		enum dwc2_transaction_type tr_type;
+
+		qh->want_wait = false;
+
+		list_move(&qh->qh_list_entry,
+			  &hsotg->non_periodic_sched_inactive);
+
+		tr_type = dwc2_hcd_select_transactions(hsotg);
+		if (tr_type != DWC2_TRANSACTION_NONE)
+			dwc2_hcd_queue_transactions(hsotg, tr_type);
+	}
+
+	spin_unlock_irqrestore(&hsotg->lock, flags);
 }
 
 /**
@@ -602,13 +668,31 @@ int dwc2_hcd_qh_add(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 		/* QH already in a schedule */
 		return 0;
 
+	if (!dwc2_frame_num_le(qh->sched_frame, hsotg->frame_number) &&
+			!hsotg->frame_number) {
+		dev_dbg(hsotg->dev,
+				"reset frame number counter\n");
+		qh->sched_frame = dwc2_frame_num_inc(hsotg->frame_number,
+				SCHEDULE_SLOP);
+	}
+
 	/* Add the new QH to the appropriate schedule */
 	if (dwc2_qh_is_non_per(qh)) {
-		/* Always start in inactive schedule */
-		list_add_tail(&qh->qh_list_entry,
-			      &hsotg->non_periodic_sched_inactive);
+		if (qh->want_wait) {
+			list_add_tail(&qh->qh_list_entry,
+				      &hsotg->non_periodic_sched_waiting);
+			qh->wait_timer_cancel = false;
+			/* XXX mod_timer(&qh->wait_timer,
+				  jiffies + DWC2_RETRY_WAIT_DELAY + 1); */
+			timeout_add_msec(&qh->wait_timer,
+			    DWC2_RETRY_WAIT_DELAY);
+		} else {
+			list_add_tail(&qh->qh_list_entry,
+				      &hsotg->non_periodic_sched_inactive);
+		}
 		return 0;
 	}
+
 	status = dwc2_schedule_periodic(hsotg, qh);
 	if (status)
 		return status;
@@ -635,6 +719,9 @@ void dwc2_hcd_qh_unlink(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 
 	dev_vdbg(hsotg->dev, "%s()\n", __func__);
 
+	/* If the wait_timer is pending, this will stop it from acting */
+	qh->wait_timer_cancel = true;
+
 	if (list_empty(&qh->qh_list_entry))
 		/* QH is not in a schedule */
 		return;
@@ -646,6 +733,7 @@ void dwc2_hcd_qh_unlink(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 		list_del_init(&qh->qh_list_entry);
 		return;
 	}
+
 	dwc2_deschedule_periodic(hsotg, qh);
 	hsotg->periodic_qh_count--;
 	if (!hsotg->periodic_qh_count) {
@@ -658,7 +746,7 @@ void dwc2_hcd_qh_unlink(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 /*
  * Schedule the next continuing periodic split transfer
  */
-static void dwc2_sched_periodic_split(struct dwc2_hsotg *hsotg,
+STATIC void dwc2_sched_periodic_split(struct dwc2_hsotg *hsotg,
 				      struct dwc2_qh *qh, u16 frame_number,
 				      int sched_next_periodic_split)
 {
@@ -714,7 +802,7 @@ void dwc2_hcd_qh_deactivate(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
 	if (dwc2_qh_is_non_per(qh)) {
 		dwc2_hcd_qh_unlink(hsotg, qh);
 		if (!list_empty(&qh->qtd_list))
-			/* Add back to inactive non-periodic schedule */
+			/* Add back to inactive/waiting non-periodic schedule */
 			dwc2_hcd_qh_add(hsotg, qh);
 		return;
 	}
@@ -780,63 +868,39 @@ void dwc2_hcd_qtd_init(struct dwc2_qtd *qtd, struct dwc2_hcd_urb *urb)
 
 /**
  * dwc2_hcd_qtd_add() - Adds a QTD to the QTD-list of a QH
+ *			Caller must hold driver lock.
  *
- * @hsotg:     The DWC HCD structure
- * @qtd:       The QTD to add
- * @qh:        Out parameter to return queue head
- * @mem_flags: Flag to do atomic alloc if needed
+ * @hsotg:        The DWC HCD structure
+ * @qtd:          The QTD to add
+ * @qh:           Queue head to add qtd to
  *
  * Return: 0 if successful, negative error code otherwise
  *
- * Finds the correct QH to place the QTD into. If it does not find a QH, it
- * will create a new QH. If the QH to which the QTD is added is not currently
- * scheduled, it is placed into the proper schedule based on its EP type.
- *
- * HCD lock must be held and interrupts must be disabled on entry
+ * If the QH to which the QTD is added is not currently scheduled, it is placed
+ * into the proper schedule based on its EP type.
  */
 int dwc2_hcd_qtd_add(struct dwc2_hsotg *hsotg, struct dwc2_qtd *qtd,
-		     struct dwc2_qh **qh, gfp_t mem_flags)
+		     struct dwc2_qh *qh)
 {
-	struct dwc2_hcd_urb *urb = qtd->urb;
-	int allocated = 0;
+
+	MUTEX_ASSERT_LOCKED(&hsotg->lock);
 	int retval;
 
-	/*
-	 * Get the QH which holds the QTD-list to insert to. Create QH if it
-	 * doesn't exist.
-	 */
-	if (*qh == NULL) {
-		*qh = dwc2_hcd_qh_create(hsotg, urb, mem_flags);
-		if (*qh == NULL)
-			return -ENOMEM;
-		allocated = 1;
+	if (!qh) {
+		dev_err(hsotg->dev, "%s: Invalid QH\n", __func__);
+		retval = -EINVAL;
+		goto fail;
 	}
 
-	retval = dwc2_hcd_qh_add(hsotg, *qh);
+	retval = dwc2_hcd_qh_add(hsotg, qh);
 	if (retval)
 		goto fail;
 
-	qtd->qh = *qh;
-	list_add_tail(&qtd->qtd_list_entry, &(*qh)->qtd_list);
+	qtd->qh = qh;
+	list_add_tail(&qtd->qtd_list_entry, &qh->qtd_list);
 
 	return 0;
-
 fail:
-	if (allocated) {
-		struct dwc2_qtd *qtd2, *qtd2_tmp;
-		struct dwc2_qh *qh_tmp = *qh;
-
-		*qh = NULL;
-		dwc2_hcd_qh_unlink(hsotg, qh_tmp);
-
-		/* Free each QTD in the QH's QTD list */
-		list_for_each_entry_safe(qtd2, qtd2_tmp, &qh_tmp->qtd_list,
-					 qtd_list_entry)
-			dwc2_hcd_qtd_unlink_and_free(hsotg, qtd2, qh_tmp);
-
-		dwc2_hcd_qh_free(hsotg, qh_tmp);
-	}
-
 	return retval;
 }
 
@@ -847,7 +911,7 @@ void dwc2_hcd_qtd_unlink_and_free(struct dwc2_hsotg *hsotg,
 	struct dwc2_softc *sc = hsotg->hsotg_sc;
 
 	list_del_init(&qtd->qtd_list_entry);
- 	pool_cache_put(sc->sc_qtdpool, qtd);
+ 	pool_put(&sc->sc_qtdpool, qtd);
 }
 
 #define BITSTUFFTIME(bytecount)	((8 * 7 * (bytecount)) / 6)
@@ -855,7 +919,7 @@ void dwc2_hcd_qtd_unlink_and_free(struct dwc2_hsotg *hsotg,
 #define FS_LS_HOST_DELAY	1000	/* nanoseconds */
 #define HUB_LS_SETUP		333	/* nanoseconds */
 
-static u32 dwc2_calc_bus_time(struct dwc2_hsotg *hsotg, int speed, int is_in,
+STATIC u32 dwc2_calc_bus_time(struct dwc2_hsotg *hsotg, int speed, int is_in,
 			      int is_isoc, int bytecount)
 {
 	unsigned long retval;

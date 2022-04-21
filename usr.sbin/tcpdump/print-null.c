@@ -1,7 +1,7 @@
-/*	$NetBSD: print-null.c,v 1.3 1995/03/06 19:11:24 mycroft Exp $	*/
+/*	$OpenBSD: print-null.c,v 1.24 2020/07/21 01:09:03 kn Exp $	*/
 
 /*
- * Copyright (c) 1991, 1993, 1994
+ * Copyright (c) 1991, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -21,12 +21,6 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#ifndef lint
-static char rcsid[] =
-    "@(#)Header: print-null.c,v 1.14 94/06/10 17:01:35 mccanne Exp (LBL)";
-#endif
-
-#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/file.h>
@@ -35,32 +29,39 @@ static char rcsid[] =
 #include <net/if.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
+#include <netinet/ip6.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip_var.h>
 #include <netinet/udp.h>
 #include <netinet/udp_var.h>
 #include <netinet/tcp.h>
-#include <netinet/tcpip.h>
 
-
+#include <pcap.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "interface.h"
 #include "addrtoname.h"
-#include "pcap.h"
 
+#ifndef AF_NS
+#define AF_NS		6		/* XEROX NS protocols */
+#endif
+
+/*
+ * The DLT_NULL packet header is 4 bytes long. It contains a host
+ * order 32 bit integer that specifies the family, e.g. AF_INET
+ */
 #define	NULL_HDRLEN 4
 
 static void
-null_print(const u_char *p, const struct ip *ip, int length)
+null_print(const u_char *p, const struct ip *ip, u_int length)
 {
 	u_int family;
 
-	bcopy(p, &family, sizeof(family));
+	memcpy((char *)&family, (char *)p, sizeof(family));
 
-	if (nflag) {
+	if (nflag && family != AF_LINK) {
 		/* XXX just dump the header */
 		return;
 	}
@@ -70,8 +71,21 @@ null_print(const u_char *p, const struct ip *ip, int length)
 		printf("ip: ");
 		break;
 
+	case AF_INET6:
+		printf("ip6: ");
+		break;
+
 	case AF_NS:
 		printf("ns: ");
+		break;
+
+#ifdef __OpenBSD__
+	case AF_LINK:
+		ether_print(p + NULL_HDRLEN, length);
+		break;
+#endif
+	case AF_MPLS:
+		printf("mpls: ");
 		break;
 
 	default:
@@ -81,13 +95,32 @@ null_print(const u_char *p, const struct ip *ip, int length)
 }
 
 void
+loop_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
+{
+	*(u_int *)p = ntohl(*(u_int *)p);
+
+	null_if_print(user, h, p);
+}
+
+void
 null_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 {
-	int length = h->len;
-	int caplen = h->caplen;
-	const struct ip *ip;
+	u_int length = h->len;
+	u_int caplen = h->caplen;
+	u_int family = *(u_int *)p;
+
+#ifdef __OpenBSD__
+	struct ether_header *ep;
+	u_short ether_type;
+	extern u_short extracted_ethertype;
+#endif
 
 	ts_print(&h->ts);
+
+	if (caplen < NULL_HDRLEN) {
+		printf("[|null]");
+		goto out;
+	}
 
 	/*
 	 * Some printers want to get back at the link level addresses,
@@ -99,15 +132,68 @@ null_if_print(u_char *user, const struct pcap_pkthdr *h, const u_char *p)
 
 	length -= NULL_HDRLEN;
 
-	ip = (struct ip *)(p + NULL_HDRLEN);
-
 	if (eflag)
-		null_print(p, ip, length);
+		null_print(p, (struct ip *)(p + NULL_HDRLEN), length);
 
-	ip_print((const u_char *)ip, length);
+	switch (family) {
+	case AF_INET:
+		ip_print(p + NULL_HDRLEN, length);
+		break;
+
+	case AF_INET6:
+		ip6_print(p + NULL_HDRLEN, length);
+		break;
+
+	case AF_MPLS:
+		mpls_print(p + NULL_HDRLEN, length);
+		break;
+
+#ifdef __OpenBSD__
+	case AF_LINK:
+		if (caplen < sizeof(struct ether_header) + NULL_HDRLEN) {
+			printf("[|ether]");
+			goto out;
+		}
+
+		length -= sizeof(struct ether_header);
+		caplen -= sizeof(struct ether_header);
+		ep = (struct ether_header *)(p + NULL_HDRLEN);
+		p += NULL_HDRLEN + sizeof(struct ether_header);
+		packetp += sizeof(struct ether_header);
+		ether_type = ntohs(ep->ether_type);
+
+		extracted_ethertype = 0;
+		if (ether_type <= ETHERMTU) {
+			/* Try to print the LLC-layer header & higher layers */
+			if (llc_print(p, length, caplen, ESRC(ep),
+			    EDST(ep)) == 0) {
+				/* ether_type not known, print raw packet */
+				if (!eflag)
+					ether_print((u_char *)ep, length);
+				if (extracted_ethertype) {
+					printf("(LLC %s) ",
+					       etherproto_string(htons(extracted_ethertype)));
+				}
+				if (!xflag && !qflag)
+					default_print(p, caplen - NULL_HDRLEN);
+			}
+		} else if (ether_encap_print(ether_type, p, length,
+		           caplen) == 0) {
+			/* ether_type not known, print raw packet */
+			if (!eflag)
+				ether_print((u_char *)ep, length +
+				    sizeof(*ep));
+			if (!xflag && !qflag)
+				default_print(p, caplen - NULL_HDRLEN);
+		}
+		break;
+#endif /* __OpenBSD__ */
+	}
 
 	if (xflag)
-		default_print((const u_char *)ip, caplen - NULL_HDRLEN);
+		default_print((const u_char *)(packetp + NULL_HDRLEN),
+		    caplen - NULL_HDRLEN);
+ out:
 	putchar('\n');
 }
 

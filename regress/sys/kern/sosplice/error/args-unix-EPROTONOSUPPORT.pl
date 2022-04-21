@@ -2,9 +2,8 @@
 
 use strict;
 use warnings;
-use IO::Socket;
-use BSD::Socket::Splice "SO_SPLICE";
 use IO::Socket::UNIX;
+use BSD::Socket::Splice "SO_SPLICE";
 
 our %args = (
     errno => 'EPROTONOSUPPORT',
@@ -18,6 +17,6 @@ our %args = (
 	) or die "socket splice failed: $!";
 
 	$s->setsockopt(SOL_SOCKET, SO_SPLICE, pack('i', $ss->fileno()))
-	    and die "splice udp sockets succeeded";
+	    and die "splice unix sockets succeeded";
     },
 );

@@ -10,12 +10,8 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_log.c,v 1.8 1995/05/10 20:45:49 jtc Exp $";
-#endif
-
-/* __ieee754_log(x)
- * Return the logrithm of x
+/* log(x)
+ * Return the logarithm of x
  *
  * Method :                  
  *   1. Argument Reduction: find k and f such that 
@@ -26,7 +22,7 @@ static char rcsid[] = "$NetBSD: e_log.c,v 1.8 1995/05/10 20:45:49 jtc Exp $";
  *	Let s = f/(2+f) ; based on log(1+f) = log(1+s) - log(1-s)
  *		 = 2s + 2/3 s**3 + 2/5 s**5 + .....,
  *	     	 = 2s + s*R
- *      We use a special Reme algorithm on [0,0.1716] to generate 
+ *      We use a special Remes algorithm on [0,0.1716] to generate 
  * 	a polynomial of degree 14 to approximate R The maximum error 
  *	of this polynomial approximation is bounded by 2**-58.45. In
  *	other words,
@@ -65,14 +61,12 @@ static char rcsid[] = "$NetBSD: e_log.c,v 1.8 1995/05/10 20:45:49 jtc Exp $";
  * to produce the hexadecimal values shown.
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
 static const double
-#else
-static double
-#endif
 ln2_hi  =  6.93147180369123816490e-01,	/* 3fe62e42 fee00000 */
 ln2_lo  =  1.90821492927058770002e-10,	/* 3dea39ef 35793c76 */
 two54   =  1.80143985094819840000e+16,  /* 43500000 00000000 */
@@ -84,18 +78,10 @@ Lg5 = 1.818357216161805012e-01,  /* 3FC74664 96CB03DE */
 Lg6 = 1.531383769920937332e-01,  /* 3FC39A09 D078C69F */
 Lg7 = 1.479819860511658591e-01;  /* 3FC2F112 DF3E5244 */
 
-#ifdef __STDC__
 static const double zero   =  0.0;
-#else
-static double zero   =  0.0;
-#endif
 
-#ifdef __STDC__
-	double __ieee754_log(double x)
-#else
-	double __ieee754_log(x)
-	double x;
-#endif
+double
+log(double x)
 {
 	double hfsq,f,s,z,R,w,t1,t2,dk;
 	int32_t k,hx,i,j;
@@ -144,3 +130,5 @@ static double zero   =  0.0;
 		     return dk*ln2_hi-((s*(f-R)-dk*ln2_lo)-f);
 	}
 }
+DEF_STD(log);
+LDBL_MAYBE_CLONE(log);

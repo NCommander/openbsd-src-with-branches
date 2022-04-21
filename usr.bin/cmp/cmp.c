@@ -1,3 +1,4 @@
+/*      $OpenBSD: cmp.c,v 1.18 2018/03/05 16:57:37 cheloha Exp $      */
 /*      $NetBSD: cmp.c,v 1.7 1995/09/08 03:22:56 tls Exp $      */
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,50 +30,37 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1987, 1990, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)cmp.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: cmp.c,v 1.7 1995/09/08 03:22:56 tls Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include <err.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <locale.h>
 
 #include "extern.h"
 
 int	lflag, sflag;
 
-static void usage __P((void));
+static off_t get_skip(const char *, const char *);
+static void __dead usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct stat sb1, sb2;
 	off_t skip1, skip2;
 	int ch, fd1, fd2, special;
 	char *file1, *file2;
 
-	setlocale(LC_ALL, "");
+	if (pledge("stdio rpath", NULL) == -1)
+		err(ERR_EXIT, "pledge");
 
-	while ((ch = getopt(argc, argv, "ls")) != EOF)
+	while ((ch = getopt(argc, argv, "ls")) != -1)
 		switch (ch) {
 		case 'l':		/* print all differences */
 			lflag = 1;
@@ -84,11 +68,10 @@ main(argc, argv)
 		case 's':		/* silent run */
 			sflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}
-endargs:
+
 	argv += optind;
 	argc -= optind;
 
@@ -104,31 +87,31 @@ endargs:
 		special = 1;
 		fd1 = 0;
 		file1 = "stdin";
-	}
-	else if ((fd1 = open(file1, O_RDONLY, 0)) < 0)
-		err(ERR_EXIT, "%s", file1);
+	} else if ((fd1 = open(file1, O_RDONLY)) == -1)
+		fatal("%s", file1);
 	if (strcmp(file2 = argv[1], "-") == 0) {
 		if (special)
-			errx(ERR_EXIT,
-				"standard input may only be specified once");
+			fatalx("standard input may only be specified once");
 		special = 1;
 		fd2 = 0;
 		file2 = "stdin";
-	}
-	else if ((fd2 = open(file2, O_RDONLY, 0)) < 0)
-		err(ERR_EXIT, "%s", file2);
+	} else if ((fd2 = open(file2, O_RDONLY)) == -1)
+		fatal("%s", file2);
 
-	skip1 = argc > 2 ? strtoq(argv[2], NULL, 10) : 0;
-	skip2 = argc == 4 ? strtoq(argv[3], NULL, 10) : 0;
+	if (pledge("stdio", NULL) == -1)
+		err(ERR_EXIT, "pledge");
+
+	skip1 = (argc > 2) ? get_skip(argv[2], "skip1") : 0;
+	skip2 = (argc == 4) ? get_skip(argv[3], "skip2") : 0;
 
 	if (!special) {
-		if (fstat(fd1, &sb1))
-			err(ERR_EXIT, "%s", file1);
+		if (fstat(fd1, &sb1) == -1)
+			fatal("%s", file1);
 		if (!S_ISREG(sb1.st_mode))
 			special = 1;
 		else {
-			if (fstat(fd2, &sb2))
-				err(ERR_EXIT, "%s", file2);
+			if (fstat(fd2, &sb2) == -1)
+				fatal("%s", file2);
 			if (!S_ISREG(sb2.st_mode))
 				special = 1;
 		}
@@ -139,14 +122,31 @@ endargs:
 	else
 		c_regular(fd1, file1, skip1, sb1.st_size,
 		    fd2, file2, skip2, sb2.st_size);
-	exit(0);
+	return 0;
 }
 
-static void
-usage()
+static off_t
+get_skip(const char *arg, const char *name)
+{
+	off_t skip;
+	char *ep;
+
+	errno = 0;
+	skip = strtoll(arg, &ep, 0);
+	if (arg[0] == '\0' || *ep != '\0')
+		fatalx("%s is invalid: %s", name, arg);
+	if (skip < 0)
+		fatalx("%s is too small: %s", name, arg);
+	if (skip == LLONG_MAX && errno == ERANGE)
+		fatalx("%s is too large: %s", name, arg);
+	return skip;
+}
+
+static void __dead
+usage(void)
 {
 
 	(void)fprintf(stderr,
-	    "usage: cmp [-l | s] file1 file2 [skip1 [skip2]]\n");
+	    "usage: cmp [-l | -s] file1 file2 [skip1 [skip2]]\n");
 	exit(ERR_EXIT);
 }

@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1.1.1 2018/04/24 21:12:13 bluhm Exp $
 
 # The following port must be installed:
 #
@@ -21,6 +21,7 @@ regress:
 	/usr/local/bin/os-test
 
 clean:
-	rm -rf io io.expect os-test.html udp udp.expect uname.out
+	rm -f uname.out os-test.html
+	rm -rf io io.expect udp udp.expect
 
 .include <bsd.regress.mk>

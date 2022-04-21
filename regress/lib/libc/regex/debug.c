@@ -1,3 +1,4 @@
+/*	$OpenBSD: debug.c,v 1.4 2003/07/31 21:48:03 deraadt Exp $	*/
 /*	$NetBSD: debug.c,v 1.2 1995/04/20 22:39:42 cgd Exp $	*/
 
 #include <stdio.h>
@@ -25,10 +26,8 @@ FILE *d;
 	register int i;
 	register int c;
 	register int last;
-	int nincat[NC];
 
-	fprintf(d, "%ld states, %d categories", (long)g->nstates,
-							g->ncategories);
+	fprintf(d, "%ld states", (long)g->nstates);
 	fprintf(d, ", first %ld last %ld", (long)g->firststate,
 						(long)g->laststate);
 	if (g->iflags&USEBOL)
@@ -48,41 +47,6 @@ FILE *d;
 		fprintf(d, ", nplus %ld", (long)g->nplus);
 	fprintf(d, "\n");
 	s_print(g, d);
-	for (i = 0; i < g->ncategories; i++) {
-		nincat[i] = 0;
-		for (c = CHAR_MIN; c <= CHAR_MAX; c++)
-			if (g->categories[c] == i)
-				nincat[i]++;
-	}
-	fprintf(d, "cc0#%d", nincat[0]);
-	for (i = 1; i < g->ncategories; i++)
-		if (nincat[i] == 1) {
-			for (c = CHAR_MIN; c <= CHAR_MAX; c++)
-				if (g->categories[c] == i)
-					break;
-			fprintf(d, ", %d=%s", i, regchar(c));
-		}
-	fprintf(d, "\n");
-	for (i = 1; i < g->ncategories; i++)
-		if (nincat[i] != 1) {
-			fprintf(d, "cc%d\t", i);
-			last = -1;
-			for (c = CHAR_MIN; c <= CHAR_MAX+1; c++)	/* +1 does flush */
-				if (c <= CHAR_MAX && g->categories[c] == i) {
-					if (last < 0) {
-						fprintf(d, "%s", regchar(c));
-						last = c;
-					}
-				} else {
-					if (last >= 0) {
-						if (last != c-1)
-							fprintf(d, "-%s",
-								regchar(c-1));
-						last = -1;
-					}
-				}
-			fprintf(d, "\n");
-		}
 }
 
 /*
@@ -218,7 +182,7 @@ FILE *d;
 			fprintf(d, ">");
 			break;
 		default:
-			fprintf(d, "!%d(%d)!", OP(*s), opnd);
+			fprintf(d, "!%ld(%ld)!", (long)OP(*s), (long)opnd);
 			break;
 		}
 		if (!done)
@@ -237,8 +201,8 @@ int ch;
 	static char buf[10];
 
 	if (isprint(ch) || ch == ' ')
-		sprintf(buf, "%c", ch);
+		snprintf(buf, sizeof buf, "%c", ch);
 	else
-		sprintf(buf, "\\%o", ch);
+		snprintf(buf, sizeof buf, "\\%o", ch);
 	return(buf);
 }

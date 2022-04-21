@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.15 2009/10/14 21:26:54 miod Exp $ */
+/*	$OpenBSD: bus_dma.c,v 1.20 2018/01/11 15:49:34 visa Exp $ */
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -60,11 +60,10 @@
 #include <sys/proc.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
-#include <sys/user.h>
 
 #include <uvm/uvm_extern.h>
 
-#include <mips64/archtype.h>
+#include <mips64/cache.h>
 #include <machine/cpu.h>
 #include <machine/autoconf.h>
 
@@ -118,7 +117,11 @@ _dmamap_create(bus_dma_tag_t t, bus_size_t size, int nsegments,
 void
 _dmamap_destroy(bus_dma_tag_t t, bus_dmamap_t map)
 {
-	free(map, M_DEVBUF);
+	size_t mapsize;
+
+	mapsize = sizeof(struct machine_bus_dmamap) +
+	    (sizeof(bus_dma_segment_t) * (map->_dm_segcnt - 1));
+	free(map, M_DEVBUF, mapsize);
 }
 
 /*
@@ -307,12 +310,10 @@ void
 _dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t addr,
     bus_size_t size, int op)
 {
-#define SYNC_R 0	/* WB invalidate, WT invalidate */
-#define SYNC_W 1	/* WB writeback, WT unaffected */
-#define SYNC_X 2	/* WB writeback + invalidate, WT invalidate */
 	int nsegs;
 	int curseg;
 	int cacheop;
+	struct cpu_info *ci = curcpu();
 
 	nsegs = map->dm_nsegs;
 	curseg = 0;
@@ -354,24 +355,20 @@ _dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t addr,
 			 */
 			if (op & BUS_DMASYNC_PREWRITE) {
 				if (op & BUS_DMASYNC_PREREAD)
-					cacheop = SYNC_X;
+					cacheop = CACHE_SYNC_X;
 				else
-					cacheop = SYNC_W;
-			} else
-#if 0
-			if (op & (BUS_DMASYNC_PREREAD | BUS_DMASYNC_POSTREAD))
-				cacheop = SYNC_R;
-#else
-			if (op & BUS_DMASYNC_PREREAD)
-				cacheop = SYNC_X;
-			else if (op & BUS_DMASYNC_POSTREAD)
-				cacheop = SYNC_R;
-#endif
-			else
-				cacheop = -1;
-			if (cacheop >= 0) {
-				Mips_IOSyncDCache(vaddr, paddr, ssize, cacheop);
+					cacheop = CACHE_SYNC_W;
+			} else {
+				if (op & BUS_DMASYNC_PREREAD)
+					cacheop = CACHE_SYNC_R;
+				else if (op & BUS_DMASYNC_POSTREAD)
+					cacheop = CACHE_SYNC_R;
+				else
+					cacheop = -1;
 			}
+
+			if (cacheop >= 0)
+				Mips_IOSyncDCache(ci, vaddr, ssize, cacheop);
 			size -= ssize;
 		}
 		curseg++;
@@ -395,7 +392,7 @@ _dmamem_alloc(bus_dma_tag_t t, bus_size_t size, bus_size_t alignment,
     int flags)
 {
 	return _dmamem_alloc_range(t, size, alignment, boundary,
-	    segs, nsegs, rsegs, flags, (vaddr_t)0, (vaddr_t)-1);
+	    segs, nsegs, rsegs, flags, (paddr_t)0, (paddr_t)-1);
 }
 
 /*
@@ -434,27 +431,43 @@ int
 _dmamem_map(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, size_t size,
     caddr_t *kvap, int flags)
 {
-	vaddr_t va;
+	vaddr_t va, sva;
+	size_t ssize;
 	paddr_t pa;
 	bus_addr_t addr;
-	int curseg;
+	int curseg, error, pmap_flags;
+	const struct kmem_dyn_mode *kd;
+
+#ifdef CPU_LOONGSON3
+	/*
+	 * Loongson 3 caches are coherent.
+	 */
+	if (loongson_ver >= 0x3a)
+		flags &= ~BUS_DMA_COHERENT;
+#endif
 
 	if (nsegs == 1) {
 		pa = (*t->_device_to_pa)(segs[0].ds_addr);
-		if (flags & BUS_DMA_COHERENT)
-			*kvap = (caddr_t)PHYS_TO_UNCACHED(pa);
+		if (flags & (BUS_DMA_COHERENT | BUS_DMA_NOCACHE))
+			*kvap = (caddr_t)PHYS_TO_XKPHYS(pa, CCA_NC);
 		else
 			*kvap = (caddr_t)PHYS_TO_XKPHYS(pa, CCA_CACHED);
 		return (0);
 	}
 
 	size = round_page(size);
-	va = uvm_km_valloc(kernel_map, size);
+	kd = flags & BUS_DMA_NOWAIT ? &kd_trylock : &kd_waitok;
+	va = (vaddr_t)km_alloc(size, &kv_any, &kp_none, kd);
 	if (va == 0)
 		return (ENOMEM);
 
 	*kvap = (caddr_t)va;
 
+	sva = va;
+	ssize = size;
+	pmap_flags = PMAP_WIRED | PMAP_CANFAIL;
+	if (flags & (BUS_DMA_COHERENT | BUS_DMA_NOCACHE))
+		pmap_flags |= PMAP_NOCACHE;
 	for (curseg = 0; curseg < nsegs; curseg++) {
 		for (addr = segs[curseg].ds_addr;
 		    addr < (segs[curseg].ds_addr + segs[curseg].ds_len);
@@ -462,13 +475,26 @@ _dmamem_map(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, size_t size,
 			if (size == 0)
 				panic("_dmamem_map: size botch");
 			pa = (*t->_device_to_pa)(addr);
-			pmap_enter(pmap_kernel(), va, pa,
-			    VM_PROT_READ | VM_PROT_WRITE,
-			    VM_PROT_READ | VM_PROT_WRITE | PMAP_WIRED);
+			error = pmap_enter(pmap_kernel(), va, pa,
+			    PROT_READ | PROT_WRITE,
+			    PROT_READ | PROT_WRITE | pmap_flags);
+			if (error) {
+				pmap_update(pmap_kernel());
+				km_free((void *)sva, ssize, &kv_any, &kp_none);
+				return (error);
+			}
 
-			if (flags & BUS_DMA_COHERENT)
+			/*
+			 * This is redundant with what pmap_enter() did 
+			 * above, but will take care of forcing other
+			 * mappings of the same page (if any) to be
+			 * uncached. 
+			 * If there are no multiple mappings of that 
+			 * page, this amounts to a noop.
+			 */
+			if (flags & (BUS_DMA_COHERENT | BUS_DMA_NOCACHE)) 
 				pmap_page_cache(PHYS_TO_VM_PAGE(pa),
-				    PV_UNCACHED);
+				    PGF_UNCACHED);
 		}
 		pmap_update(pmap_kernel());
 	}
@@ -486,10 +512,7 @@ _dmamem_unmap(bus_dma_tag_t t, caddr_t kva, size_t size)
 	if (IS_XKPHYS((vaddr_t)kva))
 		return;
 
-	size = round_page(size);
-	pmap_remove(pmap_kernel(), (vaddr_t)kva, (vaddr_t)kva + size);
-	pmap_update(pmap_kernel());
-	uvm_km_free(kernel_map, (vaddr_t)kva, size);
+	km_free(kva, round_page(size), &kv_any, &kp_none);
 }
 
 /*
@@ -517,7 +540,7 @@ _dmamem_mmap(bus_dma_tag_t t, bus_dma_segment_t *segs, int nsegs, off_t off,
 			continue;
 		}
 
-		return (atop((*t->_device_to_pa)(segs[i].ds_addr) + off));
+		return ((*t->_device_to_pa)(segs[i].ds_addr) + off);
 	}
 
 	/* Page not found. */
@@ -560,9 +583,9 @@ _dmamap_load_buffer(bus_dma_tag_t t, bus_dmamap_t map, void *buf,
 		/*
 		 * Get the physical address for this segment.
 		 */
-		if (pmap_extract(pmap, vaddr, &curaddr) == FALSE)
-			panic("_dmapmap_load_buffer: pmap_extract(%x, %x) failed!",
-			    pmap, vaddr);
+		if (pmap_extract(pmap, vaddr, &curaddr) == 0)
+			panic("_dmapmap_load_buffer: pmap_extract(%p, %lx) "
+			    "failed!", pmap, vaddr);
 
 		/*
 		 * Compute the segment size, and adjust counts.
@@ -635,9 +658,9 @@ _dmamap_load_buffer(bus_dma_tag_t t, bus_dmamap_t map, void *buf,
 int
 _dmamem_alloc_range(bus_dma_tag_t t, bus_size_t size, bus_size_t alignment,
     bus_size_t boundary, bus_dma_segment_t *segs, int nsegs, int *rsegs,
-    int flags, vaddr_t low, vaddr_t high)
+    int flags, paddr_t low, paddr_t high)
 {
-	vaddr_t curaddr, lastaddr;
+	paddr_t curaddr, lastaddr;
 	vm_page_t m;
 	struct pglist mlist;
 	int curseg, error, plaflag;
@@ -669,7 +692,7 @@ _dmamem_alloc_range(bus_dma_tag_t t, bus_size_t size, bus_size_t alignment,
 	segs[curseg].ds_len = PAGE_SIZE;
 	m = TAILQ_NEXT(m, pageq);
 
-	for (; m != TAILQ_END(&mlist); m = TAILQ_NEXT(m, pageq)) {
+	for (; m != NULL; m = TAILQ_NEXT(m, pageq)) {
 		curaddr = VM_PAGE_TO_PHYS(m);
 #ifdef DIAGNOSTIC
 		if (curaddr < low || curaddr >= high) {

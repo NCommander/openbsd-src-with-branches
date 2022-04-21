@@ -1,3 +1,4 @@
+.\"	$OpenBSD: mkdir.1,v 1.26 2009/02/08 17:15:09 jmc Exp $
 .\"	$NetBSD: mkdir.1,v 1.9 1995/07/25 19:37:13 jtc Exp $
 .\"
 .\" Copyright (c) 1989, 1990, 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,7 +33,7 @@
 .\"
 .\"	@(#)mkdir.1	8.2 (Berkeley) 1/25/94
 .\"
-.Dd January 25, 1994
+.Dd $Mdocdate: February 8 2009 $
 .Dt MKDIR 1
 .Os
 .Sh NAME
@@ -46,28 +43,28 @@
 .Nm mkdir
 .Op Fl p
 .Op Fl m Ar mode
-.Ar directory_name  ...
+.Ar directory ...
 .Sh DESCRIPTION
-.Nm Mkdir
-creates the directories named as operands, in the order specified,
+The
+.Nm
+utility creates the directories named as operands, in the order specified,
 using mode
 .Li rwxrwxrwx (\&0777)
 as modified by the current
-.Xr umask  2  .
+.Xr umask 2 .
 .Pp
 The options are as follows:
-.Pp
-.Bl -tag -width indent
-.It Fl m
-Set the file permission bits of the final created directory to
-the specified mode.
+.Bl -tag -width Ds
+.It Fl m Ar mode
+Set the file permission bits of the newly created directory to
+.Ar mode .
 The mode argument can be in any of the formats specified to the
 .Xr chmod 1
 utility.
-If a symbolic mode is specified, the operation characters
-.Dq +
+If a symbolic mode is specified, the operators
+.Ql +
 and
-.Dq -
+.Ql -
 are interpreted relative to an initial mode of
 .Dq a=rwx .
 .It Fl p
@@ -77,21 +74,48 @@ operand must already exist.
 Intermediate directories are created with permission bits of
 .Li rwxrwxrwx (\&0777)
 as modified by the current umask, plus write and search
-permission for the owner.  Do not consider it an error if the
+permission for the owner.
+Do not consider it an error if the
 argument directory already exists.
 .El
 .Pp
 The user must have write permission in the parent directory.
+For an explanation of the directory hierarchy,
+see
+.Xr hier 7 .
+.Sh EXIT STATUS
+.Ex -std mkdir
+.Sh EXAMPLES
+Create a directory named
+.Pa foobar :
 .Pp
-.Nm Mkdir
-exits 0 if successful, and >0 if an error occurred.
+.Dl $ mkdir foobar
+.Pp
+Create a directory named
+.Pa foobar
+and set its file mode to 700:
+.Pp
+.Dl $ mkdir -m 700 foobar
+.Pp
+Create a directory named
+.Pa cow/horse/monkey ,
+creating any non-existent intermediate directories as necessary:
+.Pp
+.Dl $ mkdir -p cow/horse/monkey
 .Sh SEE ALSO
 .Xr chmod 1 ,
 .Xr rmdir 1 ,
-.Xr umask 2
+.Xr mkdir 2 ,
+.Xr umask 2 ,
+.Xr hier 7
 .Sh STANDARDS
 The
-.Nm mkdir
-utility is expected to be
-.St -p1003.2
-compatible.
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
+.Sh HISTORY
+A
+.Nm
+command appeared in
+.At v1 .

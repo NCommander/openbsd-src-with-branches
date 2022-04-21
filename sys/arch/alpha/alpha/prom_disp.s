@@ -1,7 +1,8 @@
-/*	$NetBSD: prom_disp.s,v 1.1 1995/02/13 23:07:10 cgd Exp $	*/
+/* $OpenBSD: prom_disp.s,v 1.6 2000/11/08 19:16:59 ericj Exp $ */
+/* $NetBSD: prom_disp.s,v 1.8 1997/11/03 04:22:03 ross Exp $ */
 
 /*
- * Copyright (c) 1994, 1995 Carnegie-Mellon University.
+ * Copyright (c) 1994, 1995, 1996 Carnegie-Mellon University.
  * All rights reserved.
  *
  * Author: Chris G. Demetriou
@@ -27,14 +28,15 @@
  * rights to redistribute these changes.
  */
 
-#ifndef LOCORE
-#include "../include/asm.h"
-#include "../include/prom.h"
-#include "../include/rpb.h"
+.file	2 __FILE__
+.loc	2 __LINE__
+
+#ifndef _LOCORE
+#include <machine/asm.h>
 #endif
 
 	.globl	prom_dispatch_v
-	.comm	prom_dispatch_v	16
+	.comm	prom_dispatch_v,16
 
 	.text
 	.align	4

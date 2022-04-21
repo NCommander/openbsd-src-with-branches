@@ -1,7 +1,7 @@
-/*	$NetBSD: print-fddi.c,v 1.2 1995/03/06 19:11:12 mycroft Exp $	*/
+/*	$OpenBSD: print-fddi.c,v 1.18 2020/01/24 22:46:36 procter Exp $	*/
 
 /*
- * Copyright (c) 1991, 1992, 1993, 1994
+ * Copyright (c) 1991, 1992, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -21,13 +21,7 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#ifndef lint
-static  char rcsid[] =
-	"@(#)Header: print-fddi.c,v 1.21 94/06/10 17:01:29 mccanne Exp (LBL)";
-#endif
-
-#ifdef FDDI
-#include <sys/param.h>
+#ifdef HAVE_FDDI
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/file.h>
@@ -37,15 +31,13 @@ static  char rcsid[] =
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 
 #include <ctype.h>
-#include <errno.h>
 #include <netdb.h>
 #include <pcap.h>
-#include <signal.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "interface.h"
 #include "addrtoname.h"
@@ -53,12 +45,11 @@ static  char rcsid[] =
 
 #include "fddi.h"
 
-int	fddipad = FDDIPAD;	/* for proper alignment of header */
-
 /*
  * Some FDDI interfaces use bit-swapped addresses.
  */
-#if defined(ultrix) || defined(__alpha)
+#if defined(ultrix) || defined(__alpha) || defined(__bsdi) || \
+	defined(__NetBSD__) || defined(__OpenBSD__)
 int	fddi_bitswap = 0;
 #else
 int	fddi_bitswap = 1;
@@ -205,7 +196,7 @@ print_fddi_fc(u_char fc)
 static inline void
 extract_fddi_addrs(const struct fddi_header *fddip, char *fsrc, char *fdst)
 {
-	register int i;
+	int i;
 
 	if (fddi_bitswap) {
 		/*
@@ -218,8 +209,8 @@ extract_fddi_addrs(const struct fddi_header *fddip, char *fsrc, char *fdst)
 			fsrc[i] = fddi_bit_swap[fddip->fddi_shost[i]];
 	}
 	else {
-		bcopy(fddip->fddi_dhost, fdst, 6);
-		bcopy(fddip->fddi_shost, fsrc, 6);
+		memcpy(fdst, (char *)fddip->fddi_dhost, 6);
+		memcpy(fsrc, (char *)fddip->fddi_shost, 6);
 	}
 }
 
@@ -227,8 +218,8 @@ extract_fddi_addrs(const struct fddi_header *fddip, char *fsrc, char *fdst)
  * Print the FDDI MAC header
  */
 static inline void
-fddi_print(register const struct fddi_header *fddip, register int length,
-	   register const u_char *fsrc, register const u_char *fdst)
+fddi_print(const struct fddi_header *fddip, u_int length,
+	   const u_char *fsrc, const u_char *fdst)
 {
 	char *srcname, *dstname;
 
@@ -236,20 +227,20 @@ fddi_print(register const struct fddi_header *fddip, register int length,
 	dstname = etheraddr_string(fdst);
 
 	if (vflag)
-		(void) printf("%02x %s %s %d: ",
-		       fddip->fddi_fc,
-		       srcname, dstname,
-		       length);
+		printf("%02x %s %s %d: ",
+		    fddip->fddi_fc,
+		    srcname, dstname,
+		    length);
 	else if (qflag)
 		printf("%s %s %d: ", srcname, dstname, length);
 	else {
 		(void) print_fddi_fc(fddip->fddi_fc);
-		(void) printf("%s %s %d: ", srcname, dstname, length);
+		printf("%s %s %d: ", srcname, dstname, length);
 	}
 }
 
 static inline void
-fddi_smt_print(const u_char *p, int length)
+fddi_smt_print(const u_char *p, u_int length)
 {
 	printf("<SMT printer not yet implemented>");
 }
@@ -262,12 +253,12 @@ fddi_smt_print(const u_char *p, int length)
  */
 void
 fddi_if_print(u_char *pcap, const struct pcap_pkthdr *h,
-	      register const u_char *p)
+	      const u_char *p)
 {
-	int caplen = h->caplen;
-	int length = h->len;
+	u_int caplen = h->caplen;
+	u_int length = h->len;
+	u_short extracted_ethertype;
 	const struct fddi_header *fddip = (struct fddi_header *)p;
-	extern u_short extracted_ethertype;
 	struct ether_header ehdr;
 
 	ts_print(&h->ts);
@@ -279,7 +270,7 @@ fddi_if_print(u_char *pcap, const struct pcap_pkthdr *h,
 	/*
 	 * Get the FDDI addresses into a canonical form
 	 */
-	extract_fddi_addrs(fddip, (char*)ESRC(&ehdr), (char*)EDST(&ehdr));
+	extract_fddi_addrs(fddip, (char *)ESRC(&ehdr), (char *)EDST(&ehdr));
 	/*
 	 * Some printers want to get back at the link level addresses,
 	 * and/or check that they're not walking off the end of the packet.
@@ -344,7 +335,8 @@ out:
 
 #include "interface.h"
 void
-fddi_if_print(u_char *pcap, struct pcap_pkthdr *h, register u_char *p)
+fddi_if_print(u_char *pcap, const struct pcap_pkthdr *h,
+	      const u_char *p)
 {
 
 	error("not configured for fddi");

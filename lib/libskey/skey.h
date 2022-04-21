@@ -1,77 +1,93 @@
 /*
- * S/KEY v1.1b (skey.h)
+ * OpenBSD S/Key (skey.h)
  *
  * Authors:
  *          Neil M. Haller <nmh@thumper.bellcore.com>
  *          Philip R. Karn <karn@chicago.qualcomm.com>
  *          John S. Walden <jsw@thumper.bellcore.com>
- *
- * Modifications:
  *          Scott Chasin <chasin@crimelab.com>
+ *          Todd C. Miller <millert@openbsd.org>
  *
  * Main client header
  *
- * $Id: skey.h,v 1.2 1995/06/05 19:48:36 pk Exp $
+ * $OpenBSD: skey.h,v 1.21 2017/03/20 21:11:21 tb Exp $
  */
 
-#if	defined(__TURBOC__) || defined(__STDC__) || defined(LATTICE)
-#define	ANSIPROTO	1
-#endif
+#ifndef _SKEY_H_
+#define _SKEY_H_ 1
 
-#ifndef	__ARGS
-#ifdef	ANSIPROTO
-#define	__ARGS(x)	x
-#else
-#define	__ARGS(x)	()
-#endif
-#endif
-
-#ifdef SOLARIS
-#define setpriority(x,y,z)      z
-#endif
+#include <dirent.h>
 
 /* Server-side data structure for reading keys file during login */
-struct skey
-{
-  FILE *keyfile;
-  char buf[256];
-  char *logname;
-  int n;
-  char *seed;
-  char *val;
-  long recstart;		/* needed so reread of buffer is efficient */
-
-
+struct skey {
+	FILE *keyfile;
+	DIR  *keydir;
+	char *logname;
+	char *seed;
+	char *val;
+	unsigned int n;
+	char buf[256];
 };
 
 /* Client-side structure for scanning data stream for challenge */
-struct mc
-{
-  char buf[256];
-  int skip;
-  int cnt;
+struct mc {
+	int skip;
+	int cnt;
+	char buf[256];
 };
 
-void f __ARGS ((char *x));
-int keycrunch __ARGS ((char *result, char *seed, char *passwd));
-char *btoe __ARGS ((char *engout, char *c));
-char *put8 __ARGS ((char *out, char *s));
-int etob __ARGS ((char *out, char *e));
-void rip __ARGS ((char *buf));
-int skeychallenge __ARGS ((struct skey * mp, char *name, char *ss));
-int skeylookup __ARGS ((struct skey * mp, char *name));
-int skeyverify __ARGS ((struct skey * mp, char *response));
-void sevenbit __ARGS ((char *s));
-void backspace __ARGS ((char *s));
-char *skipspace __ARGS ((char *s));
-char *readpass __ARGS ((char *buf, int n));
-char *readskey __ARGS ((char *buf, int n));
-int skey_authenticate __ARGS ((char *));
-int skey_passcheck __ARGS ((char *, char *));
-char *skey_keyinfo __ARGS ((char *));
-int skey_haskey __ARGS ((char *));
-int getskeyprompt __ARGS ((struct skey *, char *, char *));
-int atob8 __ARGS((char *, char *));
-int btoa8 __ARGS((char *, char *));
-int htoi __ARGS((char));
+/* Maximum sequence number we allow */
+#define SKEY_MAX_SEQ		10000
 
+/* Minimum secret password length (rfc2289) */
+#define SKEY_MIN_PW_LEN		10
+
+/* Max secret password length (rfc2289 says 63 but allows more) */
+#define SKEY_MAX_PW_LEN		255
+
+/* Max length of an S/Key seed (rfc2289) */
+#define SKEY_MAX_SEED_LEN	16
+
+/* Max length of S/Key challenge (otp-???? 9999 seed) */
+#define SKEY_MAX_CHALLENGE	(11 + SKEY_MAX_HASHNAME_LEN + SKEY_MAX_SEED_LEN)
+
+/* Max length of hash algorithm name (md5/sha1/rmd160) */
+#define SKEY_MAX_HASHNAME_LEN	6
+
+/* Size of a binary key (not NULL-terminated) */
+#define SKEY_BINKEY_SIZE	8
+
+/* Directory for S/Key per-user files */
+#define _PATH_SKEYDIR		"/etc/skey"
+
+__BEGIN_DECLS
+void f(char *);
+int keycrunch(char *, char *, char *);
+char *btoe(char *, char *);
+char *put8(char *, char *);
+int etob(char *, char *);
+void rip(char *);
+int skeychallenge(struct skey *, char *, char *);
+int skeychallenge2(int, struct skey *, char *, char *);
+int skeylookup(struct skey *, char *);
+int skeyverify(struct skey *, char *);
+int skeyzero(struct skey *);
+void sevenbit(char *);
+void backspace(char *);
+char *skipspace(char *);
+char *readpass(char *, int);
+char *readskey(char *, int);
+int skey_authenticate(char *);
+int skey_passcheck(char *, char *);
+char *skey_keyinfo(char *);
+int skey_haskey(char *);
+int atob8(char *, char *);
+int btoa8(char *, char *);
+int htoi(int);
+const char *skey_get_algorithm(void);
+char *skey_set_algorithm(char *);
+int skeygetnext(struct skey *);
+int skey_unlock(struct skey *);
+__END_DECLS
+
+#endif /* _SKEY_H_ */
