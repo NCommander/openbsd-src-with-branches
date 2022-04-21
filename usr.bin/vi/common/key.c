@@ -1,4 +1,4 @@
-/*	$OpenBSD: key.c,v 1.18 2016/05/27 09:18:11 martijn Exp $	*/
+/*	$OpenBSD: key.c,v 1.19 2017/04/18 01:45:35 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -650,7 +650,10 @@ not_digit:	argp->e_c = CH_NOT_DIGIT;
 	}
 
 	/* Find out if the initial segments are identical. */
-	init_nomap = !e_memcmp(qp->output, &gp->i_event[gp->i_next], qp->ilen);
+	if (qp->output != NULL) {
+		init_nomap =
+		    !e_memcmp(qp->output, &gp->i_event[gp->i_next], qp->ilen);
+	}
 
 	/* Delete the mapped characters from the queue. */
 	QREM(qp->ilen);
