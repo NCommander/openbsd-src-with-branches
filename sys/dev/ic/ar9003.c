@@ -1,4 +1,4 @@
-/*	$OpenBSD: ar9003.c,v 1.53 2021/04/15 18:25:43 stsp Exp $	*/
+/*	$OpenBSD: ar9003.c,v 1.54 2022/01/09 05:42:38 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -1026,7 +1026,7 @@ ar9003_rx_process(struct athn_softc *sc, int qid, struct mbuf_list *ml)
 	m_adj(m, -IEEE80211_CRC_LEN);
 
 	/* Send the frame to the 802.11 layer. */
-	rxi.rxi_flags = 0;	/* XXX */
+	memset(&rxi, 0, sizeof(rxi));
 	rxi.rxi_rssi = MS(ds->ds_status5, AR_RXS5_RSSI_COMBINED);
 	rxi.rxi_tstamp = ds->ds_status3;
 	ieee80211_inputm(ifp, m, ni, &rxi, ml);

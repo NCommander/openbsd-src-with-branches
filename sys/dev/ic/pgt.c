@@ -1,4 +1,4 @@
-/*	$OpenBSD: pgt.c,v 1.101 2022/01/03 12:01:32 jsg Exp $  */
+/*	$OpenBSD: pgt.c,v 1.102 2022/01/09 05:42:38 jsg Exp $  */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -1019,7 +1019,7 @@ input:
 				bpf_mtap(sc->sc_drvbpf, &mb, BPF_DIRECTION_IN);
 			}
 #endif
-			rxi.rxi_flags = 0;
+			memset(&rxi, 0, sizeof(rxi));
 			ni->ni_rssi = rxi.rxi_rssi = rssi;
 			ni->ni_rstamp = rxi.rxi_tstamp = rstamp;
 			ieee80211_inputm(ifp, m, ni, &rxi, &ml);

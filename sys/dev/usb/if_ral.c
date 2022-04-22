@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ral.c,v 1.147 2020/07/10 13:22:21 patrick Exp $	*/
+/*	$OpenBSD: if_ral.c,v 1.148 2020/07/31 10:49:32 mglocker Exp $	*/
 
 /*-
  * Copyright (c) 2005, 2006
@@ -774,9 +774,8 @@ ural_rxeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 	ni = ieee80211_find_rxnode(ic, wh);
 
 	/* send the frame to the 802.11 layer */
-	rxi.rxi_flags = 0;
+	memset(&rxi, 0, sizeof(rxi));
 	rxi.rxi_rssi = desc->rssi;
-	rxi.rxi_tstamp = 0;	/* unused */
 	ieee80211_input(ifp, m, ni, &rxi);
 
 	/* node is no longer needed */
