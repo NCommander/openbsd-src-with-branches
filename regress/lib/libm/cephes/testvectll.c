@@ -1,4 +1,4 @@
-/*	$OpenBSD: testvectll.c,v 1.3 2013/08/02 20:23:28 kettenis Exp $	*/
+/*	$OpenBSD: testvectll.c,v 1.4 2013/08/02 22:19:33 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2008 Stephen L. Moshier <steve@moshier.net>
@@ -40,7 +40,8 @@ int __isfinitel (long double);
 /*
 extern long double INFINITYL, NANL, NEGZEROL;
 */
-long double INFINITYL, NANL, NEGZEROL;
+extern long double INFINITYL;
+long double NANL, NEGZEROL;
 long double MINFL;
 extern long double PIL, PIO2L, PIO4L, MACHEPL;
 long double MPIL;
