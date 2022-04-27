@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_lockf.c,v 1.44 2019/12/02 15:01:18 visa Exp $	*/
+/*	$OpenBSD: vfs_lockf.c,v 1.45 2019/12/02 15:02:32 visa Exp $	*/
 /*	$NetBSD: vfs_lockf.c,v 1.7 1996/02/04 02:18:21 christos Exp $	*/
 
 /*
@@ -449,6 +449,9 @@ lf_setlock(struct lockf *lock)
 			 * Check for common starting point and different types.
 			 */
 			if (overlap->lf_type == lock->lf_type) {
+				if (!needtolink)
+					TAILQ_REMOVE(&lock->lf_state->ls_locks,
+					    lock, lf_entry);
 				lf_free(lock);
 				lock = overlap; /* for debug output below */
 				break;
