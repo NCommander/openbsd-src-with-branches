@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1x509.c,v 1.1 2021/11/30 07:34:29 jsing Exp $ */
+/* $OpenBSD: asn1x509.c,v 1.2 2022/01/12 08:45:09 tb Exp $ */
 /*
  * Copyright (c) 2017 Joel Sing <jsing@openbsd.org>
  *
@@ -163,6 +163,8 @@ dsa_pubkey_test(void)
 	int failure = 1;
 	int len;
 
+	ERR_clear_error();
+
 	if ((bio_mem = BIO_new_mem_buf((void *)dsa_test_key, -1)) == NULL)
 		errx(1, "failed to create BIO");
 
@@ -287,6 +289,8 @@ ec_pubkey_test(void)
 	BIO *bio_mem = NULL;
 	int failure = 1;
 	int len;
+
+	ERR_clear_error();
 
 	if ((bio_mem = BIO_new_mem_buf((void *)ec_test_key, -1)) == NULL)
 		errx(1, "failed to create BIO");
@@ -436,6 +440,8 @@ rsa_pubkey_test(void)
 	BIO *bio_mem = NULL;
 	int failure = 1;
 	int len;
+
+	ERR_clear_error();
 
 	if ((bio_mem = BIO_new_mem_buf((void *)rsa_test_key, -1)) == NULL)
 		errx(1, "failed to create BIO");
