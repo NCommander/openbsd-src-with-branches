@@ -1,3 +1,0 @@
-# hostname translations
-pass add localhost
-fail add invalid$host
