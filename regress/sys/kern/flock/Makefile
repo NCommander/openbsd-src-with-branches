@@ -1,14 +1,15 @@
-#	$OpenBSD: Makefile,v 1.10 2020/03/11 17:27:55 anton Exp $
+#	$OpenBSD: Makefile,v 1.11 2020/12/16 22:59:55 bluhm Exp $
 
 PROGS+=		flock
 SRCS_flock=	flock.c util.c
+LDADD_flock=	-lutil
 
 PROGS+=		lockf
 SRCS_lockf=	lockf.c util.c
 
 WARNINGS=	yes
 
-TESTS_FLOCK!=	jot 24 1
+TESTS_FLOCK!=	jot 25 1
 .for t in ${TESTS_FLOCK}
 run-flock-$t: flock
 	./flock ${LOCKFLAGS} $t
