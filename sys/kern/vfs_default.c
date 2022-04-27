@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_default.c,v 1.49 2021/10/02 08:51:41 semarie Exp $  */
+/*	$OpenBSD: vfs_default.c,v 1.50 2021/10/15 06:30:06 semarie Exp $  */
 
 /*
  * Portions of this code are:
@@ -107,7 +107,7 @@ vop_generic_revoke(void *v)
 				if (vq->v_rdev != vp->v_rdev ||
 				    vq->v_type != vp->v_type || vp == vq)
 					continue;
-				vgone(vq);
+				vgonel(vq, p);
 				break;
 			}
 		}
