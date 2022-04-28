@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_page.c,v 1.162 2022/03/10 10:46:56 mpi Exp $	*/
+/*	$OpenBSD: uvm_page.c,v 1.163 2022/03/12 12:34:22 mpi Exp $	*/
 /*	$NetBSD: uvm_page.c,v 1.44 2000/11/27 08:40:04 chs Exp $	*/
 
 /*
@@ -1279,9 +1279,7 @@ uvm_pageunwire(struct vm_page *pg)
 
 	pg->wire_count--;
 	if (pg->wire_count == 0) {
-		TAILQ_INSERT_TAIL(&uvm.page_active, pg, pageq);
-		uvmexp.active++;
-		atomic_setbits_int(&pg->pg_flags, PQ_ACTIVE);
+		uvm_pageactivate(pg);
 		uvmexp.wired--;
 	}
 }
