@@ -1,4 +1,4 @@
-/*	$OpenBSD: amsg.h,v 1.13 2020/02/26 13:53:58 ratchov Exp $	*/
+/*	$OpenBSD: amsg.h,v 1.14 2021/11/01 14:43:24 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -96,6 +96,9 @@ struct amsg {
 #define AMSG_DATAMAX	0x1000
 			uint32_t size;
 		} data;
+		struct amsg_stop {
+			uint8_t drain;
+		} stop;
 		struct amsg_ts {
 			int32_t delta;
 		} ts;

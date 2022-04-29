@@ -1,4 +1,4 @@
-/*	$OpenBSD: sock.c,v 1.44 2021/03/03 10:19:06 ratchov Exp $	*/
+/*	$OpenBSD: sock.c,v 1.45 2021/11/01 14:43:25 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -1186,7 +1186,7 @@ sock_execmsg(struct sock *f)
 				f->ralign = s->round * s->mix.bpf;
 			}
 		}
-		slot_stop(s, 1);
+		slot_stop(s, AMSG_ISSET(m->u.stop.drain) ? m->u.stop.drain : 1);
 		break;
 	case AMSG_SETPAR:
 #ifdef DEBUG
