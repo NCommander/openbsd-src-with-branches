@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.505 2021/12/26 01:00:32 sashan Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.506 2022/04/21 15:22:49 sashan Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1879,7 +1879,7 @@ int		 pfi_dynaddr_setup(struct pf_addr_wrap *, sa_family_t);
 void		 pfi_dynaddr_remove(struct pf_addr_wrap *);
 void		 pfi_dynaddr_copyout(struct pf_addr_wrap *);
 void		 pfi_update_status(const char *, struct pf_status *);
-int		 pfi_get_ifaces(const char *, struct pfi_kif *, int *);
+void		 pfi_get_ifaces(const char *, struct pfi_kif *, int *);
 int		 pfi_set_flags(const char *, int);
 int		 pfi_clear_flags(const char *, int);
 void		 pfi_xcommit(void);
