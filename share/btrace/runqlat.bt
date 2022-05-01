@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * runqlat.bt	Measure run queue latency (aka scheduler latency). OpenBSD.
  *

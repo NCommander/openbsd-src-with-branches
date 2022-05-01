@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 /*
  * kprofile.bt	Kernel profiling (stack sampling) at 100Hz.
  *
