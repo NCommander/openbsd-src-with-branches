@@ -1,4 +1,4 @@
-/*	$OpenBSD: cryptodev.h,v 1.80 2021/10/23 15:42:35 tobhe Exp $	*/
+/*	$OpenBSD: cryptodev.h,v 1.81 2021/10/24 14:50:42 tobhe Exp $	*/
 
 /*
  * The author of this code is Angelos D. Keromytis (angelos@cis.upenn.edu)
@@ -158,7 +158,6 @@ struct cryptop {
 
 #define CRYPTO_F_IMBUF	0x0001	/* Input/output are mbuf chains, otherwise contig */
 #define CRYPTO_F_IOV	0x0002	/* Input/output are uio */
-#define CRYPTO_F_MPSAFE	0x0004	/* Do not use kernel lock for callback */
 
 	void 		*crp_buf;	/* Data to be processed */
 
