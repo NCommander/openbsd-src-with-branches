@@ -1,4 +1,4 @@
-/*	$OpenBSD: http.c,v 1.56 2022/04/20 15:31:48 tb Exp $  */
+/*	$OpenBSD: http.c,v 1.57 2022/04/20 15:38:24 deraadt Exp $  */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
@@ -1912,7 +1912,6 @@ proc_http(char *bind_addr, int fd)
 			if (conn->state == STATE_FREE)
 				http_free(conn);
 		}
-
 
 		TAILQ_FOREACH_SAFE(req, &queue, entry, nr)
 			if (!http_req_schedule(req))
