@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmctl.h,v 1.34 2021/01/27 07:21:12 deraadt Exp $	*/
+/*	$OpenBSD: vmctl.h,v 1.35 2022/05/03 21:39:18 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -77,7 +77,7 @@ extern struct imsgbuf	*ibuf;
 int	 vmmaction(struct parse_result *);
 int	 parse_ifs(struct parse_result *, char *, int);
 int	 parse_network(struct parse_result *, char *);
-int	 parse_size(struct parse_result *, char *);
+void	 parse_size(struct parse_result *, char *, const char *);
 int	 parse_disktype(const char *, const char **);
 int	 parse_disk(struct parse_result *, char *, int);
 int	 parse_vmid(struct parse_result *, char *, int);
