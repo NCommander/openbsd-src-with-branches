@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.c,v 1.417 2022/04/20 04:19:11 djm Exp $ */
+/* $OpenBSD: channels.c,v 1.418 2022/05/04 07:31:22 markus Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -349,12 +349,12 @@ channel_register_fds(struct ssh *ssh, Channel *c, int rfd, int wfd, int efd,
 }
 
 /*
- * Allocate a new channel object and set its type and socket. This will cause
- * remote_name to be freed.
+ * Allocate a new channel object and set its type and socket.
  */
 Channel *
 channel_new(struct ssh *ssh, char *ctype, int type, int rfd, int wfd, int efd,
-    u_int window, u_int maxpack, int extusage, char *remote_name, int nonblock)
+    u_int window, u_int maxpack, int extusage, const char *remote_name,
+    int nonblock)
 {
 	struct ssh_channels *sc = ssh->chanctxt;
 	u_int i, found;
