@@ -1,4 +1,4 @@
-.\" $OpenBSD$
+.\" $OpenBSD: EVP_PKEY_CTX_set_hkdf_md.3,v 1.1 2022/05/06 07:36:54 tb Exp $
 .\" full merge up to: OpenSSL 1cb7eff4 Sep 10 13:56:40 2019 +0100
 .\"
 .\" This file was written by Alessandro Ghedini <alessandro@ghedini.me>,
@@ -49,7 +49,7 @@
 .\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 .\" OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: May 6 2022 $
 .Dt EVP_PKEY_CTX_SET_HKDF_MD 3
 .Os
 .Sh NAME
@@ -217,7 +217,9 @@ This example derives 10 bytes using SHA-256 with the secret key
 EVP_PKEY_CTX *pctx;
 unsigned char out[10];
 size_t outlen = sizeof(out);
-pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_HKDF, NULL);
+
+if ((pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_HKDF, NULL)) == NULL)
+	/* Error */
 
 if (EVP_PKEY_derive_init(pctx) <= 0)
 	/* Error */
