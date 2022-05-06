@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.231 2021/12/18 17:47:44 schwarze Exp $
+# $OpenBSD: Makefile,v 1.232 2022/01/12 17:54:51 tb Exp $
 
 .include <bsd.own.mk>
 
@@ -174,6 +174,7 @@ MAN=	\
 	EVP_PKCS82PKEY.3 \
 	EVP_PKEY_CTX_ctrl.3 \
 	EVP_PKEY_CTX_new.3 \
+	EVP_PKEY_CTX_set_hkdf_md.3 \
 	EVP_PKEY_add1_attr.3 \
 	EVP_PKEY_asn1_get_count.3 \
 	EVP_PKEY_asn1_new.3 \
