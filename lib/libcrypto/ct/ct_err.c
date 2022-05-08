@@ -1,4 +1,4 @@
-/*	$OpenBSD: ct_err.c,v 1.4 2021/12/05 09:37:46 tb Exp $ */
+/*	$OpenBSD: ct_err.c,v 1.5 2021/12/18 16:50:40 tb Exp $ */
 /* ====================================================================
  * Copyright (c) 1999-2006 The OpenSSL Project.  All rights reserved.
  *
@@ -58,8 +58,8 @@
  * only reason strings will be preserved.
  */
 
+#include <openssl/ct.h>
 #include <openssl/err.h>
-#include <openssl/cterr.h>
 
 #ifndef OPENSSL_NO_ERR
 
