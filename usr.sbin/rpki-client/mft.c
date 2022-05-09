@@ -1,4 +1,4 @@
-/*	$OpenBSD: mft.c,v 1.59 2022/04/19 18:52:36 tb Exp $ */
+/*	$OpenBSD: mft.c,v 1.60 2022/04/20 10:46:20 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -120,6 +120,8 @@ rtype_from_file_extension(const char *fn)
 		return RTYPE_GBR;
 	if (strcasecmp(fn + sz - 4, ".asa") == 0)
 		return RTYPE_ASPA;
+	if (strcasecmp(fn + sz - 4, ".sig") == 0)
+		return RTYPE_RSC;
 
 	return RTYPE_INVALID;
 }
