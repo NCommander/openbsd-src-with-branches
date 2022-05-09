@@ -1,4 +1,4 @@
-#	$OpenBSD: dot.profile,v 1.47 2021/08/29 13:16:22 kn Exp $
+#	$OpenBSD: dot.profile,v 1.49 2021/09/08 13:16:53 kn Exp $
 #	$NetBSD: dot.profile,v 1.1 1995/12/18 22:54:43 pk Exp $
 #
 # Copyright (c) 2009 Kenneth R. Westerback
@@ -47,18 +47,23 @@ TIMEOUT_PERIOD_SEC=5
 
 # Stop the background timer.
 stop_timeout() {
-	kill -KILL $WDPID 2>/dev/null
+	local _pid;
+	if [ -f /tmp/dotpid ]; then
+		_pid=$(cat /tmp/dotpid)
+		kill -KILL -$_pid 2>/dev/null
+		wait $_pid 2>/dev/null
+		rm /tmp/dotpid
+	fi
 }
 
-# Start a co-process to XXX.
+# Start a timeout process, in case install gets hung somehow
 start_timeout() {
+	set -m
 	(
 		sleep $TIMEOUT_PERIOD_SEC && kill $$
-	) |&
-	WDPID=$!
-
-	# Close standard input of the co-process.
-	exec 3>&p; exec 3>&-
+	) &
+	echo $! > /tmp/dotpid
+	set +m
 }
 
 if [[ -z $DONEPROFILE ]]; then
