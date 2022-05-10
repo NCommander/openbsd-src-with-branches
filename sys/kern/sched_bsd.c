@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched_bsd.c,v 1.69 2021/09/09 18:41:39 mpi Exp $	*/
+/*	$OpenBSD: sched_bsd.c,v 1.70 2021/10/30 23:24:48 deraadt Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -579,8 +579,8 @@ setperf_auto(void *v)
 	}
 	if (allidle < alltotal / 2)
 		speedup = 1;
-	if (speedup)
-		downbeats = 5;
+	if (speedup && downbeats < 5)
+		downbeats++;
 
 	if (speedup && perflevel != 100) {
 faster:
