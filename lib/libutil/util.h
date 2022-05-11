@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.h,v 1.36 2019/08/30 03:57:56 deraadt Exp $	*/
+/*	$OpenBSD: util.h,v 1.37 2022/04/20 14:00:19 millert Exp $	*/
 /*	$NetBSD: util.h,v 1.2 1996/05/16 07:00:22 thorpej Exp $	*/
 
 /*-
@@ -97,7 +97,7 @@ void	pw_edit(int, const char *);
 void	pw_prompt(void);
 void	pw_copy(int, int, const struct passwd *, const struct passwd *);
 int	pw_scan(char *, struct passwd *, int *);
-void	pw_error(const char *, int, int);
+__dead void pw_error(const char *, int, int);
 int	getptmfd(void);
 int	openpty(int *, int *, char *, const struct termios *,
 	    const struct winsize *);
