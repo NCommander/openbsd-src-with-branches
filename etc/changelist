@@ -1,4 +1,4 @@
-#	$OpenBSD: changelist,v 1.129 2021/09/13 11:49:21 robert Exp $
+#	$OpenBSD: changelist,v 1.130 2021/11/11 09:38:14 claudio Exp $
 #
 # List of files which the security script backs up and checks
 # for modifications.
@@ -62,6 +62,7 @@
 /etc/ldpd.conf
 /etc/locate.rc
 /etc/login.conf
+/etc/login.conf.d/*
 /etc/login_ldap.conf
 /etc/mail.rc
 /etc/mail/aliases
