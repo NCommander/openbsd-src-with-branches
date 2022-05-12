@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgCreate.pm,v 1.174 2022/01/13 12:21:22 espie Exp $
+# $OpenBSD: PkgCreate.pm,v 1.175 2022/05/12 14:21:06 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -1569,7 +1569,7 @@ sub save_history
 
 		my $name = $plist->fullpkgpath;
 		$name =~ s,/,.,g;
-		my $fname = "$dir/$name";
+		$fname = "$dir/$name";
 		my $n = 0;
 
 		if (open(my $f, '<', $fname)) {
