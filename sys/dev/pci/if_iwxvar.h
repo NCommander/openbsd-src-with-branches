@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwxvar.h,v 1.33 2022/05/09 21:57:26 stsp Exp $	*/
+/*	$OpenBSD: if_iwxvar.h,v 1.34 2022/05/10 09:11:44 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014 genua mbh <info@genua.de>
@@ -123,7 +123,7 @@ struct iwx_tx_radiotap_header {
 	 (1 << IEEE80211_RADIOTAP_RATE) |				\
 	 (1 << IEEE80211_RADIOTAP_CHANNEL))
 
-#define IWX_UCODE_SECT_MAX 52
+#define IWX_UCODE_SECT_MAX 54
 
 /*
  * fw_status is used to determine if we've already parsed the firmware file
