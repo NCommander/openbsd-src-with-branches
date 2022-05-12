@@ -1,4 +1,4 @@
-/*	$OpenBSD: validate.c,v 1.32 2022/05/10 07:41:37 tb Exp $ */
+/*	$OpenBSD: validate.c,v 1.33 2022/05/11 14:42:01 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -524,7 +524,7 @@ valid_rsc(const char *fn, struct auth *a, struct rsc *rsc)
 		    : rsc->as[i].id;
 		max = rsc->as[i].type == CERT_AS_RANGE ? rsc->as[i].range.max
 		    : rsc->as[i].id;
-		
+
 		if (valid_as(a, min, max))
 			continue;
 
