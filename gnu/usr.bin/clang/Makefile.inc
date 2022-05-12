@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.24 2021/05/19 23:18:40 drahn Exp $
+# $OpenBSD: Makefile.inc,v 1.25 2021/08/21 03:00:02 gkoehler Exp $
 
 CLANG_SRCS?=	${.CURDIR}/../../../llvm/clang
 LLDB_SRCS?=	${.CURDIR}/../../../llvm/lldb
@@ -41,11 +41,6 @@ CXXFLAGS+=	-mno-retpoline
 CXXFLAGS+=	-fomit-frame-pointer
 .endif
 
-# Compiling with -fno-pie doesn't work on powerpc.
-.if ${MACHINE_ARCH} == "powerpc"
-NOPIE_FLAGS=	-fPIE
-.endif
-
 CPPFLAGS+=	-D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS \
 		-D__STDC_FORMAT_MACROS
 
@@ -58,11 +53,7 @@ CPPFLAGS+=	-DLLVM_PREFIX=\"/usr\"
 .include "Makefile.arch"
 
 # upstream defaults
-CFLAGS+=	-ffunction-sections
-.if ${MACHINE_ARCH} != "powerpc"
-# XXX
-CFLAGS+=	-fdata-sections
-.endif
+CFLAGS+=	-ffunction-sections -fdata-sections
 CXXFLAGS+=	-std=c++14
 CXXFLAGS+=	-fvisibility-inlines-hidden
 CXXFLAGS+=	-fno-exceptions -fno-rtti
