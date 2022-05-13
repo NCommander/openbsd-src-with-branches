@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.328 2022/02/25 18:05:49 rob Exp $	*/
+/*	$OpenBSD: proc.h,v 1.329 2022/03/10 15:21:08 bluhm Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -156,7 +156,7 @@ struct process {
 	LIST_HEAD(, process) ps_orphans;/* Pointer to list of orphans. */
 
 	struct	sigiolst ps_sigiolst;	/* List of sigio structures. */
-	struct	sigacts *ps_sigacts;	/* Signal actions, state */
+	struct	sigacts *ps_sigacts;	/* [I] Signal actions, state */
 	struct	vnode *ps_textvp;	/* Vnode of executable. */
 	struct	filedesc *ps_fd;	/* Ptr to open files structure */
 	struct	vmspace *ps_vmspace;	/* Address space */
@@ -584,7 +584,6 @@ int	proc_cansugid(struct proc *);
 struct sleep_state {
 	int sls_s;
 	int sls_catch;
-	int sls_locked;
 	int sls_timeout;
 };
 
