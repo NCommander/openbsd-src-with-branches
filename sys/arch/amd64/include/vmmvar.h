@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmvar.h,v 1.74 2021/09/13 22:16:27 dv Exp $	*/
+/*	$OpenBSD: vmmvar.h,v 1.75 2022/05/03 21:39:19 dv Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -324,7 +324,8 @@ enum {
 };
 
 enum {
-	VEE_FAULT_PROTECT
+	VEE_FAULT_HANDLED,
+	VEE_FAULT_PROTECT,
 };
 
 enum {
