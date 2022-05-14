@@ -1,4 +1,4 @@
-/*	$OpenBSD: getcap.c,v 1.34 2016/09/21 04:38:56 guenther Exp $	*/
+/*	$OpenBSD: getcap.c,v 1.35 2019/07/03 03:24:04 deraadt Exp $	*/
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -244,7 +244,7 @@ getent(char **cap, u_int *len, char **db_array, FILE *fp,
 		 * Open database if not already open.
 		 */
 		if (fp != NULL) {
-			(void)fseek(fp, 0L, SEEK_SET);
+			fseeko(fp, 0, SEEK_SET);
 			myfd = 0;
 			opened++;
 		} else {
