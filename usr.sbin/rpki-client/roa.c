@@ -1,4 +1,4 @@
-/*	$OpenBSD: roa.c,v 1.40 2022/04/25 10:52:09 job Exp $ */
+/*	$OpenBSD: roa.c,v 1.41 2022/05/10 07:28:43 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -390,7 +390,6 @@ out:
 	}
 	free(cms);
 	return p.res;
-
 }
 
 /*

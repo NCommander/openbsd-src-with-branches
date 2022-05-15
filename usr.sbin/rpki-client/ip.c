@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip.c,v 1.23 2022/05/13 06:18:21 tb Exp $ */
+/*	$OpenBSD: ip.c,v 1.24 2022/05/15 15:00:53 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -154,7 +154,7 @@ ip_addr_check_overlap(const struct cert_ip *ip, const char *fn,
 		    memcmp(ips[i].min, ip->max, sz) >= 0)
 			continue;
 		socktype = (ips[i].afi == AFI_IPV4) ? AF_INET : AF_INET6,
-		warnx("%s: RFC 3779 section 2.2.3.5: "
+		    warnx("%s: RFC 3779 section 2.2.3.5: "
 		    "cannot have overlapping IP addresses", fn);
 		ip_addr_print(&ip->ip, ip->afi, buf, sizeof(buf));
 		warnx("%s: certificate IP: %s", fn, buf);

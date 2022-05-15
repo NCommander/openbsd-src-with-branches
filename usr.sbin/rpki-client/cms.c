@@ -1,4 +1,4 @@
-/*	$OpenBSD: cms.c,v 1.17 2022/05/11 16:13:05 tb Exp $ */
+/*	$OpenBSD: cms.c,v 1.18 2022/05/15 15:00:53 deraadt Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -280,7 +280,7 @@ out:
  */
 int
 ASN1_frame(const char *fn, size_t sz,
-	const unsigned char **cnt, long *cntsz, int *tag)
+    const unsigned char **cnt, long *cntsz, int *tag)
 {
 	int	 ret, pcls;
 
@@ -298,7 +298,7 @@ ASN1_frame(const char *fn, size_t sz,
  */
 int
 cms_econtent_version(const char *fn, const unsigned char **d, size_t dsz,
-	long *version)
+    long *version)
 {
 	ASN1_INTEGER	*aint = NULL;
 	long		 plen;
