@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip.c,v 1.22 2022/05/11 18:48:35 tb Exp $ */
+/*	$OpenBSD: ip.c,v 1.23 2022/05/13 06:18:21 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -27,7 +27,7 @@
 
 #include "extern.h"
 
-#define   PREFIX_SIZE(x)  (((x) + 7) / 8)
+#define	PREFIX_SIZE(x)	(((x) + 7) / 8)
 
 /*
  * Parse an IP address family.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cms.c,v 1.16 2022/03/28 13:04:01 claudio Exp $ */
+/*	$OpenBSD: cms.c,v 1.17 2022/05/11 16:13:05 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -27,10 +27,10 @@
 
 #include "extern.h"
 
-extern ASN1_OBJECT     *cnt_type_oid;
-extern ASN1_OBJECT     *msg_dgst_oid;
-extern ASN1_OBJECT     *sign_time_oid;
-extern ASN1_OBJECT     *bin_sign_time_oid;
+extern ASN1_OBJECT	*cnt_type_oid;
+extern ASN1_OBJECT	*msg_dgst_oid;
+extern ASN1_OBJECT	*sign_time_oid;
+extern ASN1_OBJECT	*bin_sign_time_oid;
 
 /*
  * Parse and validate a self-signed CMS message, where the signing X509
