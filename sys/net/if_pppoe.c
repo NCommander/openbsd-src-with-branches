@@ -1,4 +1,4 @@
-/* $OpenBSD: if_pppoe.c,v 1.77 2021/01/19 19:38:29 mvs Exp $ */
+/* $OpenBSD: if_pppoe.c,v 1.78 2021/07/19 19:00:58 stsp Exp $ */
 /* $NetBSD: if_pppoe.c,v 1.51 2003/11/28 08:56:48 keihan Exp $ */
 
 /*
@@ -542,10 +542,16 @@ breakbreak:
 				    sc->sc_ac_cookie_len);
 			sc->sc_ac_cookie = malloc(ac_cookie_len, M_DEVBUF,
 			    M_DONTWAIT);
-			if (sc->sc_ac_cookie == NULL)
+			if (sc->sc_ac_cookie == NULL) {
+				sc->sc_ac_cookie_len = 0;
 				goto done;
+			}
 			sc->sc_ac_cookie_len = ac_cookie_len;
 			memcpy(sc->sc_ac_cookie, ac_cookie, ac_cookie_len);
+		} else if (sc->sc_ac_cookie) {
+			free(sc->sc_ac_cookie, M_DEVBUF, sc->sc_ac_cookie_len);
+			sc->sc_ac_cookie = NULL;
+			sc->sc_ac_cookie_len = 0;
 		}
 		if (relay_sid) {
 			if (sc->sc_relay_sid)
@@ -553,10 +559,16 @@ breakbreak:
 				    sc->sc_relay_sid_len);
 			sc->sc_relay_sid = malloc(relay_sid_len, M_DEVBUF,
 			    M_DONTWAIT);
-			if (sc->sc_relay_sid == NULL)
+			if (sc->sc_relay_sid == NULL) {
+				sc->sc_relay_sid_len = 0;
 				goto done;
+			}
 			sc->sc_relay_sid_len = relay_sid_len;
 			memcpy(sc->sc_relay_sid, relay_sid, relay_sid_len);
+		} else if (sc->sc_relay_sid) {
+			free(sc->sc_relay_sid, M_DEVBUF, sc->sc_relay_sid_len);
+			sc->sc_relay_sid = NULL;
+			sc->sc_relay_sid_len = 0;
 		}
 		if (sc->sc_sppp.pp_if.if_mtu > PPPOE_MTU &&
 		    (!max_payloadtag ||
@@ -955,6 +967,9 @@ static struct mbuf *
 pppoe_get_mbuf(size_t len)
 {
 	struct mbuf *m;
+
+	if (len + sizeof(struct ether_header) > MCLBYTES)
+		return NULL;
 
 	MGETHDR(m, M_DONTWAIT, MT_DATA);
 	if (m == NULL)
