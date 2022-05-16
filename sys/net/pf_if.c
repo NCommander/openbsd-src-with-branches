@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_if.c,v 1.103 2021/12/26 01:00:32 sashan Exp $ */
+/*	$OpenBSD: pf_if.c,v 1.104 2022/04/29 09:55:43 mbuhl Exp $ */
 
 /*
  * Copyright 2005 Henning Brauer <henning@openbsd.org>
@@ -93,6 +93,8 @@ pfi_kif_alloc(const char *kif_name, int mflags)
 	struct pfi_kif *kif;
 
 	kif = malloc(sizeof(*pfi_all), PFI_MTYPE, mflags|M_ZERO);
+	if (kif == NULL)
+		return (NULL);
 	strlcpy(kif->pfik_name, kif_name, sizeof(kif->pfik_name));
 	kif->pfik_tzero = gettime();
 	TAILQ_INIT(&kif->pfik_dynaddrs);
