@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1128 2022/05/03 13:32:47 sashan Exp $ */
+/*	$OpenBSD: pf.c,v 1.1129 2022/05/05 16:44:22 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -102,11 +102,6 @@
 #else
 struct pfsync_deferral;
 #endif /* NPFSYNC > 0 */
-
-#ifdef DDB
-#include <machine/db_machdep.h>
-#include <ddb/db_interface.h>
-#endif
 
 /*
  * Global variables
