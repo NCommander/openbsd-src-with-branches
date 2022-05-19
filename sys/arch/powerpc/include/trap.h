@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.h,v 1.6 2003/04/26 08:01:42 jmc Exp $	*/
+/*	$OpenBSD: trap.h,v 1.7 2007/04/26 21:36:32 kettenis Exp $	*/
 /*	$NetBSD: trap.h,v 1.1 1996/09/30 16:34:35 ws Exp $	*/
 
 /*
@@ -58,7 +58,7 @@
 #define	EXC_DLMISS	0x1100		/* Data load translation miss */
 #define	EXC_DSMISS	0x1200		/* Data store translation miss */
 
-#define	EXC_LAST	0x2f00		/* Last possible exception vector */
+#define	EXC_END		0x3000		/* End of exception vectors */
 
 #define	EXC_AST		0x3000		/* Fake AST vector */
 
