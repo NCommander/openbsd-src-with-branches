@@ -1,4 +1,4 @@
-/* $OpenBSD: p12_kiss.c,v 1.20 2021/04/24 18:16:39 tb Exp $ */
+/* $OpenBSD: p12_kiss.c,v 1.21 2021/07/09 14:08:00 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -265,7 +265,7 @@ parse_bag(PKCS12_SAFEBAG *bag, const char *pass, int passlen, EVP_PKEY **pkey,
 		}
 		if (fname) {
 			int len, r;
-			unsigned char *data;
+			unsigned char *data = NULL;
 			len = ASN1_STRING_to_UTF8(&data, fname);
 			if (len >= 0) {
 				r = X509_alias_set1(x509, data, len);
