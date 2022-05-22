@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_socket.c,v 1.139 2022/02/22 01:15:02 guenther Exp $	*/
+/*	$OpenBSD: nfs_socket.c,v 1.140 2022/03/17 14:23:34 visa Exp $	*/
 /*	$NetBSD: nfs_socket.c,v 1.27 1996/04/15 20:20:00 thorpej Exp $	*/
 
 /*
@@ -1561,8 +1561,10 @@ nfsrv_rcv(struct socket *so, caddr_t arg, int waitflag)
 	struct uio auio;
 	int flags, error;
 
+	KERNEL_LOCK();
+
 	if ((slp->ns_flag & SLP_VALID) == 0)
-		return;
+		goto out;
 
 	/* Defer soreceive() to an nfsd. */
 	if (waitflag == M_DONTWAIT) {
@@ -1644,6 +1646,9 @@ dorecs:
 	if (waitflag == M_DONTWAIT &&
 		(slp->ns_rec || (slp->ns_flag & (SLP_NEEDQ | SLP_DISCONN))))
 		nfsrv_wakenfsd(slp);
+
+out:
+	KERNEL_UNLOCK();
 }
 
 /*
