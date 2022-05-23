@@ -1,4 +1,4 @@
-/*	$OpenBSD: mft.c,v 1.66 2022/05/19 06:37:51 tb Exp $ */
+/*	$OpenBSD: mft.c,v 1.67 2022/05/19 07:33:02 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -57,7 +57,7 @@ typedef struct {
 
 DECLARE_STACK_OF(FileAndHash);
 
-#if defined(LIBRESSL_VERSION_NUMBER)
+#ifndef DEFINE_STACK_OF
 #define sk_FileAndHash_num(sk)		SKM_sk_num(FileAndHash, (sk))
 #define sk_FileAndHash_value(sk, i)	SKM_sk_value(FileAndHash, (sk), (i))
 #endif
