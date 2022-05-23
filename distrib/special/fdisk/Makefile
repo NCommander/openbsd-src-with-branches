@@ -1,5 +1,5 @@
 #
-#	$OpenBSD: Makefile,v 1.4 2015/10/05 01:39:07 krw Exp $
+#	$OpenBSD: Makefile,v 1.5 2019/05/11 07:18:15 deraadt Exp $
 #
 # Copyright (c) 1997 Tobias Weingartner
 #
@@ -40,9 +40,7 @@ manual.c:	fdisk.cat8
 
 MAN=	fdisk.8
 
-.if ${MACHINE} == "amd64" || ${MACHINE} == "i386" || \
-    ${MACHINE} == "landisk" || ${MACHINE} == "loongson" || \
-    ${MACHINE} == "macppc"
+.if ${MACHINE} == "amd64" || ${MACHINE} == "i386" || ${MACHINE} == "landisk"
 CFLAGS += -DHAS_MBR
 .endif
 
