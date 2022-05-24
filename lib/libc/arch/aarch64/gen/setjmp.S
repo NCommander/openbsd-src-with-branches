@@ -1,4 +1,4 @@
-/*	$OpenBSD: setjmp.S,v 1.3 2018/10/01 22:49:50 mortimer Exp $	*/
+/*	$OpenBSD: setjmp.S,v 1.4 2020/10/19 08:47:28 kettenis Exp $	*/
 /*-
  * Copyright (c) 2014 Andrew Turner
  * Copyright (c) 2014 The FreeBSD Foundation
@@ -91,7 +91,7 @@ ENTRY(longjmp)
 	ldr	x8, [x0], #8
 	ldr	x9, .Lmagic
 	cmp	x8, x9
-	b.ne	botch
+	b.ne	.Lbotch
 
 	/* Restore the stack pointer */
 	ldr	x8, [x0], #8
@@ -120,6 +120,6 @@ ENTRY(longjmp)
 	RETGUARD_CHECK(longjmp, x15)
 	ret
 
-botch:
+.Lbotch:
 	bl	_HIDDEN(abort)
 END_STRONG(longjmp)
