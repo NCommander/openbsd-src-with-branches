@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor_wrap.c,v 1.122 2020/11/27 00:37:10 djm Exp $ */
+/* $OpenBSD: monitor_wrap.c,v 1.123 2021/04/15 16:24:31 markus Exp $ */
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * Copyright 2002 Markus Friedl <markus@openbsd.org>
@@ -411,8 +411,9 @@ mm_auth_password(struct ssh *ssh, char *password)
 }
 
 int
-mm_user_key_allowed(struct ssh *ssh, struct passwd *pw, struct sshkey *key,
-    int pubkey_auth_attempt, struct sshauthopt **authoptp)
+mm_user_key_allowed(struct passwd *pw, struct sshkey *key,
+    int pubkey_auth_attempt, const char *remote_ip, const char *remote_host,
+    struct sshauthopt **authoptp)
 {
 	return (mm_key_allowed(MM_USERKEY, NULL, NULL, key,
 	    pubkey_auth_attempt, authoptp));
