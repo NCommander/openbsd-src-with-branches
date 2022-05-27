@@ -1,4 +1,4 @@
-/* $OpenBSD: readpass.c,v 1.68 2020/11/10 07:46:20 claudio Exp $ */
+/* $OpenBSD: readpass.c,v 1.69 2021/07/23 05:56:47 djm Exp $ */
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
  *
@@ -283,7 +283,8 @@ notify_start(int force_askpass, const char *fmt, ...)
 	}
  out_ctx:
 	if ((ret = calloc(1, sizeof(*ret))) == NULL) {
-		kill(pid, SIGTERM);
+		if (pid != -1)
+			kill(pid, SIGTERM);
 		fatal_f("calloc failed");
 	}
 	ret->pid = pid;
