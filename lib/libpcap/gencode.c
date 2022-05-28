@@ -213,6 +213,7 @@ freechunks(void)
 		membag[i].ptrs = NULL;
 		membag[i].slot = membag[i].total = 0;
 	}
+	cur_membag = 0;
 }
 
 /*
