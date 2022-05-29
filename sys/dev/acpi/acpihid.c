@@ -1,4 +1,4 @@
-/* $OpenBSD: acpihid.c,v 1.2 2020/06/02 19:26:36 jcs Exp $ */
+/* $OpenBSD: acpihid.c,v 1.3 2022/04/06 18:59:27 naddy Exp $ */
 /*
  * ACPI HID event and 5-button array driver
  *
@@ -124,8 +124,6 @@ int	acpihid_notify(struct aml_node *, int, void *);
 #if NAUDIO > 0 && NWSKBD > 0
 extern int wskbd_set_mixervolume(long, long);
 #endif
-
-extern int pwr_action;
 
 const struct cfattach acpihid_ca = {
 	sizeof(struct acpihid_softc),
