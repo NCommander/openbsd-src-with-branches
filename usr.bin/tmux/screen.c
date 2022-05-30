@@ -1,4 +1,4 @@
-/* $OpenBSD: screen.c,v 1.78 2021/11/03 13:37:17 nicm Exp $ */
+/* $OpenBSD: screen.c,v 1.79 2022/04/01 10:11:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -662,9 +662,9 @@ screen_mode_to_string(int mode)
 	static char	tmp[1024];
 
 	if (mode == 0)
-		return "NONE";
+		return ("NONE");
 	if (mode == ALL_MODES)
-		return "ALL";
+		return ("ALL");
 
 	*tmp = '\0';
 	if (mode & MODE_CURSOR)

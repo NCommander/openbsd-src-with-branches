@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-command-prompt.c,v 1.63 2021/08/27 17:25:55 nicm Exp $ */
+/* $OpenBSD: cmd-command-prompt.c,v 1.64 2021/09/22 15:21:44 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -112,7 +112,7 @@ cmd_command_prompt_exec(struct cmd *self, struct cmdq_item *item)
 		}
 		next_prompt = prompts;
 	} else
-		next_prompt = prompts = xstrdup (s);
+		next_prompt = prompts = xstrdup(s);
 	if ((s = args_get(args, 'I')) != NULL)
 		next_input = inputs = xstrdup(s);
 	else

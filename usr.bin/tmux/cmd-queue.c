@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-queue.c,v 1.107 2021/08/21 17:25:32 nicm Exp $ */
+/* $OpenBSD: cmd-queue.c,v 1.108 2022/05/30 12:48:57 nicm Exp $ */
 
 /*
  * Copyright (c) 2013 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -126,7 +126,7 @@ cmdq_new(void)
 {
 	struct cmdq_list	*queue;
 
-	queue = xcalloc (1, sizeof *queue);
+	queue = xcalloc(1, sizeof *queue);
 	TAILQ_INIT (&queue->list);
 	return (queue);
 }

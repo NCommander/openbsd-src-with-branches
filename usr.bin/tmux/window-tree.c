@@ -1,4 +1,4 @@
-/* $OpenBSD: window-tree.c,v 1.58 2021/10/14 13:19:01 nicm Exp $ */
+/* $OpenBSD: window-tree.c,v 1.59 2021/10/20 09:50:40 nicm Exp $ */
 
 /*
  * Copyright (c) 2017 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -895,7 +895,7 @@ window_tree_get_key(void *modedata, void *itemdata, u_int line)
 	key = key_string_lookup_string(expanded);
 	free(expanded);
 	format_free(ft);
-	return key;
+	return (key);
 }
 
 static struct screen *
