@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-swap-pane.c,v 1.39 2021/03/11 06:31:05 nicm Exp $ */
+/* $OpenBSD: cmd-swap-pane.c,v 1.40 2021/08/21 10:22:39 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -135,6 +135,9 @@ cmd_swap_pane_exec(struct cmd *self, struct cmdq_item *item)
 	}
 	server_redraw_window(src_w);
 	server_redraw_window(dst_w);
+	notify_window("window-layout-changed", src_w);
+	if (src_w != dst_w)
+		notify_window("window-layout-changed", dst_w);
 
 out:
 	if (window_pop_zoom(src_w))
