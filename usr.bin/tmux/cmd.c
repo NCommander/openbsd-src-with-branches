@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd.c,v 1.172 2021/08/27 17:25:55 nicm Exp $ */
+/* $OpenBSD: cmd.c,v 1.173 2021/09/09 21:55:03 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -96,6 +96,7 @@ extern const struct cmd_entry cmd_select_pane_entry;
 extern const struct cmd_entry cmd_select_window_entry;
 extern const struct cmd_entry cmd_send_keys_entry;
 extern const struct cmd_entry cmd_send_prefix_entry;
+extern const struct cmd_entry cmd_server_access_entry;
 extern const struct cmd_entry cmd_set_buffer_entry;
 extern const struct cmd_entry cmd_set_environment_entry;
 extern const struct cmd_entry cmd_set_hook_entry;
@@ -188,6 +189,7 @@ const struct cmd_entry *cmd_table[] = {
 	&cmd_select_window_entry,
 	&cmd_send_keys_entry,
 	&cmd_send_prefix_entry,
+	&cmd_server_access_entry,
 	&cmd_set_buffer_entry,
 	&cmd_set_environment_entry,
 	&cmd_set_hook_entry,

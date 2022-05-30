@@ -1,4 +1,4 @@
-/* $OpenBSD: proc.c,v 1.20 2021/02/11 09:39:29 nicm Exp $ */
+/* $OpenBSD: proc.c,v 1.21 2022/03/08 11:28:40 nicm Exp $ */
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -335,6 +335,12 @@ void
 proc_kill_peer(struct tmuxpeer *peer)
 {
 	peer->flags |= PEER_BAD;
+}
+
+void
+proc_flush_peer(struct tmuxpeer *peer)
+{
+	imsg_flush(&peer->ibuf);
 }
 
 void
