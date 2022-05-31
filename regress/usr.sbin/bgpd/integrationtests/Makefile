@@ -1,8 +1,8 @@
-# $OpenBSD: Makefile,v 1.13 2021/02/10 16:37:29 claudio Exp $
+# $OpenBSD: Makefile,v 1.14 2021/04/13 07:39:17 claudio Exp $
 
 REGRESS_TARGETS	= 	network_statement md5 ovs mrt \
-			maxprefix maxprefixout as0 med \
-			eval_all
+			maxprefix maxprefixout maxcomm \
+			as0 med eval_all
 
 BGPD ?=			/usr/sbin/bgpd
 
@@ -28,12 +28,19 @@ maxprefix:
 maxprefixout:
 	${SUDO} ksh ${.CURDIR}/$@.sh ${BGPD} ${.CURDIR} 11 12 pair11 pair12
 
+maxcomm:
+	${SUDO} ksh ${.CURDIR}/$@.sh ${BGPD} ${.CURDIR} 11 12 pair11 pair12
+
 .if ! exists(/usr/local/bin/exabgp)
 as0:
 	# install exabgp from ports for additional tests
 	@echo SKIPPED
 
 med:
+	# install exabgp from ports for additional tests
+	@echo SKIPPED
+
+eval_all:
 	# install exabgp from ports for additional tests
 	@echo SKIPPED
 .else
