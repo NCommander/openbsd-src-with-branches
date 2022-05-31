@@ -1,5 +1,6 @@
-/*	$OpenBSD: x509.c,v 1.44 2022/05/11 21:19:06 job Exp $ */
+/*	$OpenBSD: x509.c,v 1.45 2022/05/15 16:43:35 tb Exp $ */
 /*
+ * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -357,7 +358,7 @@ x509_inherits(X509 *x)
 	STACK_OF(IPAddressFamily)	*addrblk = NULL;
 	ASIdentifiers			*asidentifiers = NULL;
 	const IPAddressFamily		*af;
-	int		 		 i, rc = 0;
+	int				 i, rc = 0;
 
 	addrblk = X509_get_ext_d2i(x, NID_sbgp_ipAddrBlock, NULL, NULL);
 	if (addrblk == NULL)

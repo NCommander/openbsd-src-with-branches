@@ -1,5 +1,6 @@
-/*	$OpenBSD: mft.c,v 1.67 2022/05/19 07:33:02 tb Exp $ */
+/*	$OpenBSD: mft.c,v 1.68 2022/05/23 14:10:18 tb Exp $ */
 /*
+ * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
  * Permission to use, copy, modify, and distribute this software for any
