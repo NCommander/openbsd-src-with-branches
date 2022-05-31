@@ -1,4 +1,4 @@
-/*	$Id: test-gbr.c,v 1.7 2022/04/20 17:26:53 tb Exp $ */
+/*	$Id: test-gbr.c,v 1.8 2022/05/31 19:37:02 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -75,7 +75,7 @@ main(int argc, char *argv[])
 		buf = load_file(argv[i], &len);
 		if ((p = gbr_parse(&xp, argv[i], buf, len)) == NULL) {
 			free(buf);
-			continue;
+			break;
 		}
 		if (verb)
 			gbr_print(xp, p);

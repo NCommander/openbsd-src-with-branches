@@ -1,4 +1,4 @@
-/*	$Id: test-rsc.c,v 1.18 2022/01/19 08:24:43 claudio Exp $ */
+/*	$Id: test-rsc.c,v 1.1 2022/05/09 17:20:25 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -77,7 +77,7 @@ main(int argc, char *argv[])
 		buf = load_file(argv[i], &len);
 		if ((p = rsc_parse(&xp, argv[i], buf, len)) == NULL) {
 			free(buf);
-			continue;
+			break;
 		}
 		if (verb)
 			rsc_print(xp, p);
