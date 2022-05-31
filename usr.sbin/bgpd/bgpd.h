@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.423 2022/05/23 13:40:11 deraadt Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.424 2022/05/25 16:03:34 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1053,6 +1053,9 @@ struct filter_match {
 	struct filter_prefixset		prefixset;
 	struct filter_originset		originset;
 	struct filter_ovs		ovs;
+	int				maxcomm;
+	int				maxextcomm;
+	int				maxlargecomm;
 };
 
 struct filter_rule {
