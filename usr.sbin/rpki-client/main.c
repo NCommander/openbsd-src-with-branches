@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.204 2022/05/15 16:43:34 tb Exp $ */
+/*	$OpenBSD: main.c,v 1.205 2022/05/23 13:39:14 claudio Exp $ */
 /*
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -501,12 +501,6 @@ entity_process(struct ibuf *b, struct stats *st, struct vrp_tree *tree,
 		cert = cert_read(b);
 		switch (cert->purpose) {
 		case CERT_PURPOSE_CA:
-			/*
-			 * Process the revocation list from the
-			 * certificate *first*, since it might mark that
-			 * we're revoked and then we don't want to
-			 * process the MFT.
-			 */
 			queue_add_from_cert(cert);
 			break;
 		case CERT_PURPOSE_BGPSEC_ROUTER:
