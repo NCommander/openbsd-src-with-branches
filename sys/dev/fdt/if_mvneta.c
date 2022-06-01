@@ -538,7 +538,7 @@ mvneta_attach(struct device *parent, struct device *self, void *aux)
 
 	sc->sc_sfp = OF_getpropint(faa->fa_node, "sfp", 0);
 
-	printf("%s: Ethernet address %s\n", self->dv_xname,
+	printf("%s: address %s\n", self->dv_xname,
 	    ether_sprintf(sc->sc_enaddr));
 
 	/* disable port */
