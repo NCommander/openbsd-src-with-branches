@@ -1860,7 +1860,6 @@ static const struct mvneta_counter mvneta_counters[] = {
 	    { "rx discard",	KSTAT_KV_U_PACKETS,	MVNETA_PXDFC },
 	[mvneta_stat_port_overrun] = 
 	    { "rx overrun",	KSTAT_KV_U_PACKETS,	MVNETA_POFC },
-	
 };
 
 CTASSERT(nitems(mvneta_counters) == mvnet_stat_count);
