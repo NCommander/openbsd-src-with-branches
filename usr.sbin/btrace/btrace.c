@@ -1,4 +1,4 @@
-/*	$OpenBSD: btrace.c,v 1.61 2021/12/07 22:17:03 guenther Exp $ */
+/*	$OpenBSD: btrace.c,v 1.62 2022/02/22 17:26:04 deraadt Exp $ */
 
 /*
  * Copyright (c) 2019 - 2021 Martin Pieuchot <mpi@openbsd.org>
@@ -384,6 +384,8 @@ rules_do(int fd)
 	sa.sa_flags = 0;
 	sa.sa_handler = signal_handler;
 	if (sigaction(SIGINT, &sa, NULL))
+		err(1, "sigaction");
+	if (sigaction(SIGTERM, &sa, NULL))
 		err(1, "sigaction");
 
 	rules_setup(fd);
