@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.61 2019/06/28 13:32:43 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.62 2021/01/21 00:16:36 mortimer Exp $	*/
 /*	$NetBSD: main.c,v 1.14 1997/06/05 11:13:24 lukem Exp $	*/
 
 /*-
@@ -718,9 +718,9 @@ obsolete(int *argcp, char **argvp[])
 	argv = *argvp;
 	argc = *argcp;
 
-	/* Return if no arguments or first argument has leading dash. */
+	/* Return if no args or first argument has leading dash or a slash. */
 	ap = argv[1];
-	if (argc == 1 || *ap == '-')
+	if (argc == 1 || *ap == '-' || strchr(ap, '/') != NULL)
 		return;
 
 	/* Allocate space for new arguments. */
