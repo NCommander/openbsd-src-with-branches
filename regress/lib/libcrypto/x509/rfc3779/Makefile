@@ -1,9 +1,9 @@
-#	$OpenBSD: Makefile,v 1.4 2022/01/06 14:55:52 tb Exp $
+#	$OpenBSD: Makefile,v 1.5 2022/01/07 17:17:02 tb Exp $
 
 .include "../../Makefile.inc"
 
 PROG=	rfc3779
-LDADD=	${CRYPTO_INT}
+LDADD=	-lcrypto
 DPADD=	${LIBCRYPTO}
 WARNINGS=	Yes
 CFLAGS+=	-DLIBRESSL_CRYPTO_INTERNAL -DLIBRESSL_INTERNAL -Werror
