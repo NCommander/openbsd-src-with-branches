@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.227 2022/03/26 14:25:14 stsp Exp $
+# $OpenBSD: GENERIC,v 1.228 2022/03/31 14:44:49 krw Exp $
 #
 # GENERIC machine description file
 #
@@ -314,6 +314,7 @@ ppb*		at pci?			# PCI-PCI bridges
 pci*		at ppb?
 
 # PCI Ethernet
+aq*		at pci?			# Aquantia aQtion Ethernet
 bnxt*		at pci?			# Broadcom BCM573xx, BCM574xx
 bge*		at pci?			# Broadcom BCM57xx
 em*		at pci?			# Intel Pro/1000 Ethernet

@@ -1,4 +1,4 @@
-# $OpenBSD: RAMDISK,v 1.170 2022/03/26 14:25:14 stsp Exp $
+# $OpenBSD: RAMDISK,v 1.171 2022/03/31 14:44:49 krw Exp $
 
 machine		arm64
 maxusers	4
@@ -248,6 +248,7 @@ ppb*		at pci?			# PCI-PCI bridges
 pci*		at ppb?
 
 # PCI Ethernet
+aq*		at pci?			# Aquantia aQtion Ethernet
 bnxt*		at pci?			# Broadcom BCM573xx, BCM574xx
 bge*		at pci?			# Broadcom BCM57xx
 em*		at pci?			# Intel Pro/1000 Ethernet
