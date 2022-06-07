@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_asn1.c,v 1.61 2022/01/11 18:39:28 jsing Exp $ */
+/* $OpenBSD: ssl_asn1.c,v 1.62 2022/06/06 16:12:30 tb Exp $ */
 /*
  * Copyright (c) 2016 Joel Sing <jsing@openbsd.org>
  *
@@ -305,11 +305,8 @@ d2i_SSL_SESSION(SSL_SESSION **a, const unsigned char **pp, long length)
 	if (!CBS_get_asn1(&session, &master_key, CBS_ASN1_OCTETSTRING))
 		goto err;
 	if (!CBS_write_bytes(&master_key, s->master_key, sizeof(s->master_key),
-	    &data_len))
+	    &s->master_key_length))
 		goto err;
-	if (data_len > INT_MAX)
-		goto err;
-	s->master_key_length = (int)data_len;
 
 	/* Time [1]. */
 	s->time = time(NULL);
