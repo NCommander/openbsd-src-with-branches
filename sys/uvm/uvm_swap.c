@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_swap.c,v 1.154 2022/03/17 10:15:13 mpi Exp $	*/
+/*	$OpenBSD: uvm_swap.c,v 1.155 2022/04/28 09:58:11 mpi Exp $	*/
 /*	$NetBSD: uvm_swap.c,v 1.40 2000/11/17 11:39:39 mrg Exp $	*/
 
 /*
@@ -328,17 +328,6 @@ uvm_swap_allocpages(struct vm_page **pps, int npages)
 {
 	struct pglist	pgl;
 	int i;
-	boolean_t fail;
-
-	/* Estimate if we will succeed */
-	uvm_lock_fpageq();
-
-	fail = uvmexp.free - npages < uvmexp.reserve_kernel;
-
-	uvm_unlock_fpageq();
-
-	if (fail)
-		return FALSE;
 
 	TAILQ_INIT(&pgl);
 	if (uvm_pglistalloc(npages * PAGE_SIZE, dma_constraint.ucr_low,
