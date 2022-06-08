@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingElement.pm,v 1.280 2022/05/26 06:53:38 espie Exp $
+# $OpenBSD: PackingElement.pm,v 1.281 2022/05/26 21:08:52 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -1816,6 +1816,13 @@ sub destate
 {
 	&OpenBSD::PackingElement::Extra::destate;
 }
+
+package OpenBSD::PackingElement::ExtraGlob;
+our @ISA=qw(OpenBSD::PackingElement::FileObject);
+
+sub keyword() { 'extraglob' }
+sub absolute_okay() { 1 }
+__PACKAGE__->register_with_factory;
 
 package OpenBSD::PackingElement::SpecialFile;
 our @ISA=qw(OpenBSD::PackingElement::Unique);
