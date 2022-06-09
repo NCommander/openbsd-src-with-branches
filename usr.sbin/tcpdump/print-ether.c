@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-ether.c,v 1.39 2021/12/01 18:28:46 deraadt Exp $	*/
+/*	$OpenBSD: print-ether.c,v 1.41 2022/01/05 05:53:03 dlg Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -301,6 +301,7 @@ recurse:
 		ether_pbb_print(p, length, caplen);
 		return (1);
 
+	case ETHERTYPE_NHRP:
 		nhrp_print(p, length);
 		return (1);
 
