@@ -1,4 +1,4 @@
-/* $OpenBSD: brk.S,v 1.15 2020/10/26 22:07:05 gkoehler Exp $ */
+/* $OpenBSD: brk.S,v 1.16 2021/10/25 14:38:10 jca Exp $ */
 
 /*
  * Copyright (c) 1996 Dale Rahn
@@ -30,7 +30,7 @@
 	.extern __curbrk
 	.extern _C_LABEL(_end)
 
-ENTRY(brk)
+ENTRY_NB(brk)
 	
 	/* check >= _end, if not make the call for _end */
 #ifndef __PIC__
