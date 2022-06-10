@@ -1,4 +1,4 @@
-/* $OpenBSD: servertest.c,v 1.5 2021/01/22 15:56:17 tb Exp $ */
+/* $OpenBSD: servertest.c,v 1.6 2021/11/20 16:36:55 tb Exp $ */
 /*
  * Copyright (c) 2015, 2016, 2017 Joel Sing <jsing@openbsd.org>
  *
@@ -116,7 +116,7 @@ server_hello_test(int testno, struct server_hello_test *sht)
 	SSL *ssl = NULL;
 	int ret = 1;
 
-	fprintf(stderr, "Test %i - %s\n", testno, sht->desc);
+	fprintf(stderr, "Test %d - %s\n", testno, sht->desc);
 
 	if ((rbio = BIO_new_mem_buf(sht->client_hello,
 	    sht->client_hello_len)) == NULL) {
