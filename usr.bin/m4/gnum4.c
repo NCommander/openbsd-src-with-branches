@@ -1,7 +1,7 @@
-/* $OpenBSD: gnum4.c,v 1.51 2017/06/15 13:48:42 bcallah Exp $ */
+/* $OpenBSD: gnum4.c,v 1.52 2017/08/21 21:41:13 deraadt Exp $ */
 
 /*
- * Copyright (c) 1999 Marc Espie
+ * Copyright (c) 1999 Marc Espie <espie@openbsd.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
