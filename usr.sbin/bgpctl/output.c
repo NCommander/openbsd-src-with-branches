@@ -1,4 +1,4 @@
-/*	$OpenBSD: output.c,v 1.19 2021/07/30 09:45:52 claudio Exp $ */
+/*	$OpenBSD: output.c,v 1.20 2022/02/06 09:52:32 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -46,7 +46,7 @@ show_head(struct parse_result *res)
 		break;
 	case SHOW_FIB:
 		printf("flags: * = valid, B = BGP, C = Connected, "
-		    "S = Static, D = Dynamic\n");
+		    "S = Static\n");
 		printf("       "
 		    "N = BGP Nexthop reachable via this route\n");
 		printf("       r = reject route, b = blackhole route\n\n");
