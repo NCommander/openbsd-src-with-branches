@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.c,v 1.244 2022/06/05 12:43:13 claudio Exp $ */
+/*	$OpenBSD: bgpd.c,v 1.245 2022/06/09 16:45:19 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1123,9 +1123,9 @@ bgpd_filternexthop(struct kroute *kr, struct kroute6 *kr6)
 		return (0);
 
 	if (cflags & BGPD_FLAG_NEXTHOP_BGP) {
-		if (kr && kr->flags & F_BGPD_INSERTED)
+		if (kr && kr->flags & F_BGPD)
 			return (0);
-		if (kr6 && kr6->flags & F_BGPD_INSERTED)
+		if (kr6 && kr6->flags & F_BGPD)
 			return (0);
 	}
 
