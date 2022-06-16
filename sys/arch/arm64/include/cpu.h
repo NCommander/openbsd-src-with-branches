@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.24 2022/01/01 18:52:37 kettenis Exp $ */
+/* $OpenBSD: cpu.h,v 1.25 2022/03/23 23:36:35 kettenis Exp $ */
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
  *
@@ -184,7 +184,7 @@ extern struct cpu_info *cpu_info_list;
 #define CPU_INFO_FOREACH(cii, ci)	for (cii = 0, ci = cpu_info_list; \
 					    ci != NULL; ci = ci->ci_next)
 #define CPU_INFO_UNIT(ci)	((ci)->ci_dev ? (ci)->ci_dev->dv_unit : 0)
-#define MAXCPUS	32
+#define MAXCPUS	256
 
 extern struct cpu_info *cpu_info[MAXCPUS];
 
