@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.327 2022/03/09 17:29:52 claudio Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.328 2022/06/06 14:45:41 claudio Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -1987,7 +1987,7 @@ sysctl_dumpentry(struct rtentry *rt, void *v, unsigned int id)
 		struct rt_msghdr *rtm = (struct rt_msghdr *)w->w_tmem;
 
 		rtm->rtm_pid = curproc->p_p->ps_pid;
-		rtm->rtm_flags = rt->rt_flags;
+		rtm->rtm_flags = RTF_DONE | rt->rt_flags;
 		rtm->rtm_priority = rt->rt_priority & RTP_MASK;
 		rtm_getmetrics(&rt->rt_rmx, &rtm->rtm_rmx);
 		/* Do not account the routing table's reference. */
