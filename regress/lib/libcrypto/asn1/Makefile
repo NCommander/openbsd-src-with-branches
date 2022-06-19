@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2022/02/26 16:45:31 jsing Exp $
+#	$OpenBSD: Makefile,v 1.17 2022/05/16 20:53:20 tb Exp $
 
 PROGS = \
 	asn1api \
@@ -13,7 +13,7 @@ PROGS = \
 	rfc5280time \
 	string_table
 
-DPADD+=		${LIBCRYPTO} ${LIBSSL}
+DPADD+=		${LIBCRYPTO}
 WARNINGS=	Yes
 LDFLAGS+=	-lcrypto
 CFLAGS+=	-DLIBRESSL_INTERNAL
