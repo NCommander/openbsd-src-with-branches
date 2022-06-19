@@ -1,4 +1,4 @@
-/*	$OpenBSD: show.c,v 1.118 2021/01/24 08:58:50 florian Exp $	*/
+/*	$OpenBSD: show.c,v 1.119 2021/01/30 22:00:06 danj Exp $	*/
 /*	$NetBSD: show.c,v 1.1 1996/11/15 18:01:41 gwr Exp $	*/
 
 /*
@@ -77,7 +77,6 @@ static const struct bits bits[] = {
 	{ RTF_REJECT,	'R' },
 	{ RTF_DYNAMIC,	'D' },
 	{ RTF_MODIFIED,	'M' },
-	{ RTF_DONE,	'd' }, /* Completed -- for routing messages only */
 	{ RTF_CLONING,	'C' },
 	{ RTF_MULTICAST,'m' },
 	{ RTF_LLINFO,	'L' },
