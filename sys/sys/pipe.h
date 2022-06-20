@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipe.h,v 1.26 2020/06/19 02:08:48 deraadt Exp $	*/
+/*	$OpenBSD: pipe.h,v 1.27 2020/06/29 18:23:18 anton Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -62,7 +62,6 @@ struct pipebuf {
 #define PIPE_WANTR	0x008	/* Reader wants some characters. */
 #define PIPE_WANTW	0x010	/* Writer wants space to put characters. */
 #define PIPE_WANTD	0x020	/* Pipe is wanted to be run-down. */
-#define PIPE_SEL	0x040	/* Pipe has a select active. */
 #define PIPE_EOF	0x080	/* Pipe is in EOF condition. */
 #define PIPE_LOCK	0x100	/* Thread has exclusive I/O access. */
 #define PIPE_LWANT	0x200	/* Thread wants exclusive I/O access. */
