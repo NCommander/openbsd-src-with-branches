@@ -1,4 +1,4 @@
-/* $OpenBSD: tlstest.c,v 1.12 2020/07/04 09:07:02 jsing Exp $ */
+/* $OpenBSD: tlstest.c,v 1.13 2021/04/04 16:19:47 tb Exp $ */
 /*
  * Copyright (c) 2017 Joel Sing <jsing@openbsd.org>
  *
@@ -16,6 +16,9 @@
  */
 
 #include <sys/socket.h>
+
+#include <fcntl.h>
+#include <unistd.h>
 
 #include <err.h>
 #include <fcntl.h>
