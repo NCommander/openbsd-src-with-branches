@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.111 2022/06/16 15:34:07 claudio Exp $ */
+/*	$OpenBSD: parser.c,v 1.112 2022/06/21 10:05:48 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -977,7 +977,7 @@ parse_prefix(const char *word, size_t wordlen, struct bgpd_addr *addr,
 		return (0);
 	}
 
-	applymask(&addr, &addr, mask);
+	applymask(addr, addr, mask);
 	*prefixlen = mask;
 	return (1);
 }
