@@ -1,4 +1,4 @@
-/*	$OpenBSD: ike.c,v 1.81 2015/12/09 21:41:50 naddy Exp $	*/
+/*	$OpenBSD: ike.c,v 1.82 2017/10/27 08:29:32 mpi Exp $	*/
 /*
  * Copyright (c) 2005 Hans-Joerg Hoexer <hshoexer@openbsd.org>
  *
@@ -646,7 +646,7 @@ ike_section_p2ids_net(struct ipsec_addr *iamask, sa_family_t af, char *name,
 		sa->sa_len = sizeof(struct sockaddr_in);
 		bcopy(&iamask->ipa,
 		    &((struct sockaddr_in *)(sa))->sin_addr,
-		    sizeof(struct in6_addr));
+		    sizeof(struct in_addr));
 		break;
 	case AF_INET6:
 		sa->sa_len = sizeof(struct sockaddr_in6);
