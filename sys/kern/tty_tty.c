@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty_tty.c,v 1.28 2021/03/10 10:21:47 jsg Exp $	*/
+/*	$OpenBSD: tty_tty.c,v 1.29 2021/12/11 09:28:26 visa Exp $	*/
 /*	$NetBSD: tty_tty.c,v 1.13 1996/03/30 22:24:46 christos Exp $	*/
 
 /*-
@@ -146,11 +146,8 @@ cttyioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 int
 cttypoll(dev_t dev, int events, struct proc *p)
 {
-	struct vnode *ttyvp = cttyvp(p);
-
-	if (ttyvp == NULL)	/* try operation to get EOF/failure */
-		return (seltrue(dev, events, p));
-	return (VOP_POLL(ttyvp, FREAD|FWRITE, events, p));
+	panic("not implemented");
+	return (0);
 }
 
 int

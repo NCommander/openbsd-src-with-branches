@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_specops.c,v 1.7 2021/06/29 16:15:37 claudio Exp $	*/
+/*	$OpenBSD: tmpfs_specops.c,v 1.8 2021/10/02 08:51:41 semarie Exp $	*/
 /*	$NetBSD: tmpfs_specops.c,v 1.10 2011/05/24 20:17:49 rmind Exp $	*/
 
 /*
@@ -71,7 +71,6 @@ const struct vops tmpfs_specvops = {
 	.vop_mknod	= vop_generic_badop,
 	.vop_open	= spec_open,
 	.vop_ioctl	= spec_ioctl,
-	.vop_poll	= spec_poll,
 	.vop_kqfilter	= spec_kqfilter,
 	.vop_revoke	= vop_generic_revoke,
 	.vop_remove	= vop_generic_badop,

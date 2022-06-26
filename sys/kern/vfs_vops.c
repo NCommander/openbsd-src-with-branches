@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_vops.c,v 1.33 2021/10/20 06:35:39 semarie Exp $	*/
+/*	$OpenBSD: vfs_vops.c,v 1.34 2021/12/12 09:14:59 visa Exp $	*/
 /*
  * Copyright (c) 2010 Thordur I. Bjornsson <thib@openbsd.org> 
  *
@@ -262,22 +262,6 @@ VOP_IOCTL(struct vnode *vp, u_long command, void *data, int fflag,
 		return (EOPNOTSUPP);
 
 	return ((vp->v_op->vop_ioctl)(&a));
-}
-
-int
-VOP_POLL(struct vnode *vp, int fflag, int events, struct proc *p)
-{
-	struct vop_poll_args a;
-	a.a_vp = vp;
-	a.a_fflag = fflag;
-	a.a_events = events;
-	a.a_p = p;
-
-	KASSERT(p == curproc);
-	if (vp->v_op->vop_poll == NULL)
-		return (EOPNOTSUPP);
-
-	return ((vp->v_op->vop_poll)(&a));
 }
 
 int

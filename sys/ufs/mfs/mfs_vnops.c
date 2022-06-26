@@ -1,4 +1,4 @@
-/*	$OpenBSD: mfs_vnops.c,v 1.58 2021/10/15 06:30:06 semarie Exp $	*/
+/*	$OpenBSD: mfs_vnops.c,v 1.59 2021/12/12 09:17:17 visa Exp $	*/
 /*	$NetBSD: mfs_vnops.c,v 1.8 1996/03/17 02:16:32 christos Exp $	*/
 
 /*
@@ -59,7 +59,6 @@ const struct vops mfs_vops = {
         .vop_read       = vop_generic_badop,
         .vop_write      = vop_generic_badop,
         .vop_ioctl      = mfs_ioctl,
-        .vop_poll       = vop_generic_badop,
         .vop_kqfilter   = vop_generic_badop,
         .vop_revoke     = vop_generic_revoke,
         .vop_fsync      = spec_fsync,

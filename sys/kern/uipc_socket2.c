@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.122 2022/05/09 14:49:55 visa Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.123 2022/06/06 14:45:41 claudio Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -409,7 +409,6 @@ sowakeup(struct socket *so, struct sockbuf *sb)
 {
 	soassertlocked(so);
 
-	sb->sb_flags &= ~SB_SEL;
 	if (sb->sb_flags & SB_WAIT) {
 		sb->sb_flags &= ~SB_WAIT;
 		wakeup(&sb->sb_cc);

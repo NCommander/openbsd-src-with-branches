@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_vnops.h,v 1.5 2013/12/25 14:04:50 espie Exp $	*/
+/*	$OpenBSD: tmpfs_vnops.h,v 1.6 2020/01/20 23:21:56 claudio Exp $	*/
 /*	$NetBSD: tmpfs_vnops.h,v 1.13 2011/05/24 20:17:49 rmind Exp $	*/
 
 /*
@@ -55,7 +55,6 @@ int	tmpfs_setattr		(void *);
 int	tmpfs_read		(void *);
 int	tmpfs_write		(void *);
 int	tmpfs_ioctl		(void *);
-int	tmpfs_poll		(void *);
 int	tmpfs_fsync		(void *);
 int	tmpfs_remove		(void *);
 int	tmpfs_link		(void *);
