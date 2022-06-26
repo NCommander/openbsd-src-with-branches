@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_urtwn.c,v 1.99 2022/03/15 09:23:01 stsp Exp $	*/
+/*	$OpenBSD: if_urtwn.c,v 1.100 2022/04/21 21:03:03 stsp Exp $	*/
 
 /*-
  * Copyright (c) 2010 Damien Bergamini <damien.bergamini@free.fr>
@@ -1280,6 +1280,7 @@ urtwn_rx_frame(struct urtwn_softc *sc, uint8_t *buf, int pktlen,
 			ifp->if_ierrors++;
 			m_freem(m);
 			ieee80211_release_node(ic, ni);
+			splx(s);
 			return;
 		}
 		rxi.rxi_flags |= IEEE80211_RXI_HWDEC;
