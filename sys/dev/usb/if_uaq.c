@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_uaq.c,v 1.2 2021/12/31 08:15:47 jmatthew Exp $	*/
+/*	$OpenBSD: if_uaq.c,v 1.3 2022/04/24 00:04:10 jmatthew Exp $	*/
 /*-
  * Copyright (c) 2021 Jonathan Matthew <jonathan@d14n.org>
  * All rights reserved.
@@ -780,6 +780,7 @@ uaq_init(void *xsc)
 	if (err) {
 		printf("%s: couldn't open interrupt pipe\n",
 		    sc->sc_dev.dv_xname);
+		splx(s);
 		return;
 	}
 
