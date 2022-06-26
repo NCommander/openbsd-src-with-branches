@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gre.c,v 1.170 2021/02/27 09:21:22 dlg Exp $ */
+/*	$OpenBSD: if_gre.c,v 1.171 2021/03/10 10:21:47 jsg Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -974,9 +974,15 @@ gre_input_1(struct gre_tunnel *key, struct mbuf *m,
 			struct pipex_session *session;
 
 			session = pipex_pptp_lookup_session(m);
-			if (session != NULL &&
-			    pipex_pptp_input(m, session) == NULL)
-				return (NULL);
+			if (session != NULL) {
+				struct mbuf *m0;
+
+				m0 = pipex_pptp_input(m, session);
+				pipex_rele_session(session);
+
+				if (m0 == NULL)
+					return (NULL);
+			}
 		}
 #endif
 		break;

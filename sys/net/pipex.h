@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.h,v 1.30 2021/01/04 12:21:38 mvs Exp $	*/
+/*	$OpenBSD: pipex.h,v 1.31 2022/01/02 22:36:04 jsg Exp $	*/
 
 /*
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -193,6 +193,7 @@ struct mbuf           *pipex_l2tp_input (struct mbuf *, int off, struct pipex_se
 struct pipex_session  *pipex_l2tp_userland_lookup_session_ipv4 (struct mbuf *, struct in_addr);
 struct pipex_session  *pipex_l2tp_userland_lookup_session_ipv6 (struct mbuf *, struct in6_addr);
 struct mbuf           *pipex_l2tp_userland_output (struct mbuf *, struct pipex_session *);
+void                  pipex_rele_session(struct pipex_session *);
 int                   pipex_ioctl (void *, u_long, caddr_t);
 void                  pipex_session_init_mppe_recv(struct pipex_session *, int,
 int, u_char *);
