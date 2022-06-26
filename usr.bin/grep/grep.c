@@ -1,4 +1,4 @@
-/*	$OpenBSD: grep.c,v 1.65 2020/07/23 20:19:27 martijn Exp $	*/
+/*	$OpenBSD: grep.c,v 1.66 2022/06/26 10:57:36 op Exp $	*/
 
 /*-
  * Copyright (c) 1999 James Howard and Dag-Erling Coïdan Smørgrav
@@ -118,7 +118,8 @@ usage(void)
 #endif
 	    " [-e pattern]\n"
 	    "\t[-f file] [-m num] [--binary-files=value] [--context[=num]]\n"
-	    "\t[--label=name] [--line-buffered] [pattern] [file ...]\n",
+	    "\t[--label=name] [--line-buffered] [--null] [pattern]"
+	    " [file ...]\n",
 	    __progname);
 	exit(2);
 }
