@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.h,v 1.43 2020/07/18 07:18:22 dlg Exp $	*/
+/*	$OpenBSD: if_ix.h,v 1.44 2022/01/09 05:42:52 jsg Exp $	*/
 
 /******************************************************************************
 
@@ -225,6 +225,7 @@ struct ix_softc {
 	struct ifmedia		media;
 	struct intrmap		*sc_intrmap;
 	int			if_flags;
+	int			vlan_stripping;
 
 	uint16_t		num_vlans;
 	uint16_t		num_queues;
