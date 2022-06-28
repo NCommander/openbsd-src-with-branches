@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.269 2022/03/10 15:21:08 bluhm Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.270 2022/04/30 13:28:53 mvs Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -1048,7 +1048,7 @@ tdb_alloc(u_int rdomain)
 
 	tdbp = pool_get(&tdb_pool, PR_WAITOK | PR_ZERO);
 
-	refcnt_init(&tdbp->tdb_refcnt);
+	refcnt_init_trace(&tdbp->tdb_refcnt, DT_REFCNT_IDX_TDB);
 	mtx_init(&tdbp->tdb_mtx, IPL_SOFTNET);
 	TAILQ_INIT(&tdbp->tdb_policy_head);
 
