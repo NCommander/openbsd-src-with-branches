@@ -1,4 +1,4 @@
-/* $OpenBSD: tls1.h,v 1.50 2021/10/15 16:48:47 jsing Exp $ */
+/* $OpenBSD: tls1.h,v 1.51 2022/02/05 18:18:18 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -157,6 +157,12 @@
 
 #ifdef  __cplusplus
 extern "C" {
+#endif
+
+#if defined(LIBRESSL_INTERNAL)
+#ifndef OPENSSL_TLS_SECURITY_LEVEL
+#define OPENSSL_TLS_SECURITY_LEVEL 1
+#endif
 #endif
 
 #define TLS1_ALLOW_EXPERIMENTAL_CIPHERSUITES	0
