@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_fault.c,v 1.128 2022/02/11 09:25:04 kn Exp $	*/
+/*	$OpenBSD: uvm_fault.c,v 1.129 2022/04/04 09:27:05 kettenis Exp $	*/
 /*	$NetBSD: uvm_fault.c,v 1.51 2000/08/06 00:22:53 thorpej Exp $	*/
 
 /*
@@ -734,6 +734,16 @@ uvm_fault_check(struct uvm_faultinfo *ufi, struct uvm_faultctx *flt,
 	if (amap == NULL && uobj == NULL) {
 		uvmfault_unlockmaps(ufi, FALSE);
 		return EFAULT;
+	}
+
+	/*
+	 * for a case 2B fault waste no time on adjacent pages because
+	 * they are likely already entered.
+	 */
+	if (uobj != NULL && amap != NULL &&
+	    (flt->access_type & PROT_WRITE) != 0) {
+		/* wide fault (!narrow) */
+		flt->narrow = TRUE;
 	}
 
 	/*
