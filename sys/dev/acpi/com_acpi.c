@@ -1,4 +1,4 @@
-/*	$OpenBSD: com_acpi.c,v 1.7 2022/02/15 12:24:55 claudio Exp $	*/
+/*	$OpenBSD: com_acpi.c,v 1.8 2022/04/06 18:59:27 naddy Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis
  *
@@ -159,9 +159,9 @@ com_acpi_is_designware(const char *hid)
 int
 com_acpi_intr_designware(void *cookie)
 {
-	struct com_softc *sc = cookie;
+	struct com_acpi_softc *sc = cookie;
 
-	com_read_reg(sc, com_usr);
+	com_read_reg(&sc->sc, com_usr);
 
-	return comintr(sc);
+	return comintr(&sc->sc);
 }
