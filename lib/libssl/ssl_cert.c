@@ -253,6 +253,10 @@ ssl_cert_dup(SSL_CERT *cert)
 		}
 	}
 
+	ret->security_cb = cert->security_cb;
+	ret->security_level = cert->security_level;
+	ret->security_ex_data = cert->security_ex_data;
+
 	/*
 	 * ret->extra_certs *should* exist, but currently the own certificate
 	 * chain is held inside SSL_CTX
