@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpipci.c,v 1.33 2021/10/24 17:52:28 mpi Exp $	*/
+/*	$OpenBSD: acpipci.c,v 1.34 2021/12/11 20:07:27 kettenis Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis
  *
@@ -258,6 +258,13 @@ acpipci_parse_resources(int crsidx, union acpi_resource *crs, void *arg)
 		min = crs->lr_qword._min;
 		len = crs->lr_qword._len;
 		tra = crs->lr_qword._tra;
+		break;
+	case LR_MEM32FIXED:
+		restype = LR_TYPE_MEMORY;
+		tflags = 0;
+		min = crs->lr_m32fixed._bas;
+		len = crs->lr_m32fixed._len;
+		tra = 0;
 		break;
 	}
 
