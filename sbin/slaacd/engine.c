@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.78 2022/06/26 16:01:39 florian Exp $	*/
+/*	$OpenBSD: engine.c,v 1.79 2022/06/28 09:21:58 florian Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -698,7 +698,6 @@ engine_dispatch_main(int fd, short event, void *bula)
 			addr_proposal->state = PROPOSAL_CONFIGURED;
 			addr_proposal->vltime = imsg_addrinfo.vltime;
 			addr_proposal->pltime = imsg_addrinfo.pltime;
-			addr_proposal->timeout_count = 0;
 
 			timeout_from_lifetime(addr_proposal);
 
