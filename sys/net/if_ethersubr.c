@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ethersubr.c,v 1.282 2022/06/27 20:47:10 bluhm Exp $	*/
+/*	$OpenBSD: if_ethersubr.c,v 1.283 2022/06/28 16:10:43 mvs Exp $	*/
 /*	$NetBSD: if_ethersubr.c,v 1.19 1996/05/07 02:40:30 thorpej Exp $	*/
 
 /*
@@ -545,12 +545,13 @@ ether_input(struct ifnet *ifp, struct mbuf *m)
 			}
 		}
 #endif
-		KERNEL_LOCK();
-		if (etype == ETHERTYPE_PPPOEDISC)
-			pppoe_disc_input(m);
-		else
-			pppoe_data_input(m);
-		KERNEL_UNLOCK();
+		if (etype == ETHERTYPE_PPPOEDISC) {
+			if (mq_enqueue(&pppoediscinq, m) == 0)
+				schednetisr(NETISR_PPPOE);
+		} else {
+			if (mq_enqueue(&pppoeinq, m) == 0)
+				schednetisr(NETISR_PPPOE);
+		}
 		return;
 #endif
 #ifdef MPLS
