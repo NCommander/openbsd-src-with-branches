@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: ts.1,v 1.1 2022/06/29 08:39:49 job Exp $
 .\"
 .\" Copyright (c) 2022 Job Snijders <job@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: June 28 2022 $
+.Dd $Mdocdate: June 29 2022 $
 .Dt TS 1
 .Os
 .Sh NAME
@@ -23,6 +23,7 @@
 .Sh SYNOPSIS
 .Nm ts
 .Op Fl i | s
+.Op Fl m
 .Op Ar format
 .Sh DESCRIPTION
 When invoked, the
@@ -33,6 +34,12 @@ The options are as follows:
 .Bl -tag -width Ds
 .It Fl i
 Display time elapsed since the last timestamp.
+.It Fl m
+Display timestamps derived from a strictly linearly increasing clock.
+Without
+.Fl m ,
+timestamps reflect the current date and time, including time jumps if the
+system time is changed.
 .It Fl s
 Display time elapsed since the start of the program.
 .El
