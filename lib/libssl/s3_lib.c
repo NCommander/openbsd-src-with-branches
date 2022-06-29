@@ -1,4 +1,4 @@
-/* $OpenBSD: s3_lib.c,v 1.231 2022/06/29 17:39:20 beck Exp $ */
+/* $OpenBSD: s3_lib.c,v 1.232 2022/06/29 21:17:22 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1879,13 +1879,13 @@ SSL_set1_chain(SSL *ssl, STACK_OF(X509) *chain)
 int
 SSL_add0_chain_cert(SSL *ssl, X509 *x509)
 {
-	return ssl_cert_add0_chain_cert(ssl->cert, x509);
+	return ssl_cert_add0_chain_cert(NULL, ssl, x509);
 }
 
 int
 SSL_add1_chain_cert(SSL *ssl, X509 *x509)
 {
-	return ssl_cert_add1_chain_cert(ssl->cert, x509);
+	return ssl_cert_add1_chain_cert(NULL, ssl, x509);
 }
 
 int
@@ -2267,13 +2267,13 @@ SSL_CTX_set1_chain(SSL_CTX *ctx, STACK_OF(X509) *chain)
 int
 SSL_CTX_add0_chain_cert(SSL_CTX *ctx, X509 *x509)
 {
-	return ssl_cert_add0_chain_cert(ctx->internal->cert, x509);
+	return ssl_cert_add0_chain_cert(ctx, NULL, x509);
 }
 
 int
 SSL_CTX_add1_chain_cert(SSL_CTX *ctx, X509 *x509)
 {
-	return ssl_cert_add1_chain_cert(ctx->internal->cert, x509);
+	return ssl_cert_add1_chain_cert(ctx, NULL, x509);
 }
 
 int
