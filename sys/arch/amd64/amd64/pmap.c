@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.150 2022/06/01 17:47:18 dv Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.151 2022/06/29 14:24:29 dv Exp $	*/
 /*	$NetBSD: pmap.c,v 1.3 2003/05/08 18:13:13 thorpej Exp $	*/
 
 /*
@@ -1314,6 +1314,7 @@ pmap_create(void)
 	pmap->pm_stats.wired_count = 0;
 	pmap->pm_stats.resident_count = 1;	/* count the PDP allocd below */
 	pmap->pm_type = PMAP_TYPE_NORMAL;
+	pmap->eptp = 0;
 
 	/* allocate PDP */
 
