@@ -1,4 +1,4 @@
-/* $OpenBSD: bwfm.c,v 1.103 2022/04/21 21:03:02 stsp Exp $ */
+/* $OpenBSD: bwfm.c,v 1.104 2022/06/27 09:16:56 stsp Exp $ */
 /*
  * Copyright (c) 2010-2016 Broadcom Corporation
  * Copyright (c) 2016,2017 Patrick Wildt <patrick@blueri.se>
@@ -356,9 +356,10 @@ bwfm_detach(struct bwfm_softc *sc, int flags)
 	struct ifnet *ifp = &ic->ic_if;
 
 	task_del(sc->sc_taskq, &sc->sc_task);
-	taskq_destroy(sc->sc_taskq);
 	ieee80211_ifdetach(ifp);
+	taskq_barrier(sc->sc_taskq);
 	if_detach(ifp);
+	taskq_destroy(sc->sc_taskq);
 
 	bwfm_cleanup(sc);
 	return 0;
