@@ -1,4 +1,4 @@
-/* $OpenBSD: ecs_ossl.c,v 1.23 2022/01/20 11:03:48 inoguchi Exp $ */
+/* $OpenBSD: ecs_ossl.c,v 1.24 2022/04/07 17:37:25 tb Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project
  */
@@ -60,9 +60,9 @@
 
 #include <openssl/opensslconf.h>
 
-#include <openssl/err.h>
-#include <openssl/obj_mac.h>
 #include <openssl/bn.h>
+#include <openssl/err.h>
+#include <openssl/objects.h>
 
 #include "bn_lcl.h"
 #include "ecs_locl.h"

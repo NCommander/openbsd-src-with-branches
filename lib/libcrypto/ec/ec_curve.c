@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_curve.c,v 1.20 2020/06/05 17:12:09 jsing Exp $ */
+/* $OpenBSD: ec_curve.c,v 1.21 2021/04/20 17:16:37 tb Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project.
  */
@@ -73,9 +73,10 @@
 
 #include <openssl/opensslconf.h>
 
-#include "ec_lcl.h"
 #include <openssl/err.h>
-#include <openssl/obj_mac.h>
+#include <openssl/objects.h>
+
+#include "ec_lcl.h"
 
 typedef struct {
 	int field_type,		/* either NID_X9_62_prime_field or
