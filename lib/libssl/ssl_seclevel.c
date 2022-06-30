@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssl_seclevel.c,v 1.9 2022/06/29 21:10:20 tb Exp $ */
+/*	$OpenBSD: ssl_seclevel.c,v 1.10 2022/06/29 21:19:21 tb Exp $ */
 /*
  * Copyright (c) 2020 Theo Buehler <tb@openbsd.org>
  *
@@ -20,7 +20,6 @@
 #include <openssl/asn1.h>
 #include <openssl/dh.h>
 #include <openssl/evp.h>
-#include <openssl/obj_mac.h>
 #include <openssl/objects.h>
 #include <openssl/ossl_typ.h>
 #include <openssl/ssl.h>
