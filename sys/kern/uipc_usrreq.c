@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_usrreq.c,v 1.165 2022/06/06 14:45:41 claudio Exp $	*/
+/*	$OpenBSD: uipc_usrreq.c,v 1.166 2022/07/01 09:56:17 mvs Exp $	*/
 /*	$NetBSD: uipc_usrreq.c,v 1.18 1996/02/09 19:00:50 christos Exp $	*/
 
 /*
@@ -362,6 +362,7 @@ uipc_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 				    control)) {
 					control = NULL;
 				} else {
+					sounlock(so2);
 					error = ENOBUFS;
 					break;
 				}
