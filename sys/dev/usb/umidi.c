@@ -1,4 +1,4 @@
-/*	$OpenBSD: umidi.c,v 1.54 2020/07/31 10:49:33 mglocker Exp $	*/
+/*	$OpenBSD: umidi.c,v 1.55 2022/03/21 19:22:42 miod Exp $	*/
 /*	$NetBSD: umidi.c,v 1.16 2002/07/11 21:14:32 augustss Exp $	*/
 /*
  * Copyright (c) 2001 The NetBSD Foundation, Inc.
@@ -37,8 +37,6 @@
 #include <sys/ioctl.h>
 #include <sys/conf.h>
 #include <sys/fcntl.h>
-#include <sys/selinfo.h>
-#include <sys/poll.h>
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>

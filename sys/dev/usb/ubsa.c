@@ -1,4 +1,4 @@
-/*	$OpenBSD: ubsa.c,v 1.67 2020/07/31 10:49:33 mglocker Exp $ 	*/
+/*	$OpenBSD: ubsa.c,v 1.68 2022/04/09 20:07:44 naddy Exp $ 	*/
 /*	$NetBSD: ubsa.c,v 1.5 2002/11/25 00:51:33 fvdl Exp $	*/
 /*-
  * Copyright (c) 2002, Alexander Kabaev <kan.FreeBSD.org>.
@@ -63,8 +63,6 @@
 #include <sys/fcntl.h>
 #include <sys/conf.h>
 #include <sys/tty.h>
-#include <sys/selinfo.h>
-#include <sys/poll.h>
 
 #include <dev/usb/usb.h>
 #include <dev/usb/usbcdc.h>

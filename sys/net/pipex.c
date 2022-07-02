@@ -1,4 +1,4 @@
-/*	$OpenBSD: pipex.c,v 1.141 2022/06/26 22:51:58 mvs Exp $ */
+/*	$OpenBSD: pipex.c,v 1.142 2022/06/28 08:01:40 mvs Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -31,7 +31,6 @@
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <sys/select.h>
 #include <sys/sysctl.h>
 #include <sys/syslog.h>
 #include <sys/conf.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: udcf.c,v 1.63 2019/08/10 23:29:59 cheloha Exp $ */
+/*	$OpenBSD: udcf.c,v 1.64 2020/06/24 22:03:41 cheloha Exp $ */
 
 /*
  * Copyright (c) 2006, 2007, 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -19,9 +19,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
-#include <sys/select.h>
 #include <sys/device.h>
-#include <sys/poll.h>
 #include <sys/time.h>
 #include <sys/sensors.h>
 #include <sys/timeout.h>

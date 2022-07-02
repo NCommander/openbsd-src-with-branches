@@ -1,4 +1,4 @@
-/*	$OpenBSD: ucom.c,v 1.72 2022/04/09 20:07:44 naddy Exp $ */
+/*	$OpenBSD: ucom.c,v 1.73 2022/06/27 13:14:49 jan Exp $ */
 /*	$NetBSD: ucom.c,v 1.49 2003/01/01 00:10:25 thorpej Exp $	*/
 
 /*
@@ -42,10 +42,8 @@
 #include <sys/conf.h>
 #include <sys/tty.h>
 #include <sys/fcntl.h>
-#include <sys/selinfo.h>
 #include <sys/vnode.h>
 #include <sys/device.h>
-#include <sys/poll.h>
 
 #include <dev/usb/usb.h>
 

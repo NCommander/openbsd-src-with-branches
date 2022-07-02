@@ -1,4 +1,4 @@
-/*	$OpenBSD: usb.c,v 1.128 2021/09/05 16:16:13 mglocker Exp $	*/
+/*	$OpenBSD: usb.c,v 1.129 2022/01/09 05:43:02 jsg Exp $	*/
 /*	$NetBSD: usb.c,v 1.77 2003/01/01 00:10:26 thorpej Exp $	*/
 
 /*
@@ -49,8 +49,6 @@
 #include <sys/kthread.h>
 #include <sys/conf.h>
 #include <sys/fcntl.h>
-#include <sys/poll.h>
-#include <sys/selinfo.h>
 #include <sys/signalvar.h>
 #include <sys/time.h>
 #include <sys/rwlock.h>

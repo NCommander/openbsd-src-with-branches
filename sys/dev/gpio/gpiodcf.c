@@ -1,4 +1,4 @@
-/*	$OpenBSD: gpiodcf.c,v 1.8 2020/04/15 04:41:39 cheloha Exp $ */
+/*	$OpenBSD: gpiodcf.c,v 1.9 2020/06/24 22:03:41 cheloha Exp $ */
 
 /*
  * Copyright (c) 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -20,11 +20,9 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 #include <sys/conf.h>
-#include <sys/select.h>
 #include <sys/proc.h>
 #include <sys/vnode.h>
 #include <sys/device.h>
-#include <sys/poll.h>
 #include <sys/time.h>
 #include <sys/sensors.h>
 #include <sys/gpio.h>

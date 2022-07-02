@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvideo.c,v 1.215 2022/01/09 05:43:02 jsg Exp $ */
+/*	$OpenBSD: uvideo.c,v 1.216 2022/03/21 19:22:42 miod Exp $ */
 
 /*
  * Copyright (c) 2008 Robert Nagy <robert@openbsd.org>
@@ -25,10 +25,8 @@
 #include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/fcntl.h>
-#include <sys/selinfo.h>
 #include <sys/lock.h>
 #include <sys/stat.h>
-#include <sys/poll.h>
 #include <sys/timeout.h>
 #include <sys/kthread.h>
 #include <sys/stdint.h>

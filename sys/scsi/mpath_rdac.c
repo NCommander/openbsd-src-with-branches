@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpath_rdac.c,v 1.25 2020/06/30 18:43:37 krw Exp $ */
+/*	$OpenBSD: mpath_rdac.c,v 1.26 2021/10/24 16:57:30 mpi Exp $ */
 
 /*
  * Copyright (c) 2010 David Gwynne <dlg@openbsd.org>
@@ -28,8 +28,6 @@
 #include <sys/rwlock.h>
 #include <sys/pool.h>
 #include <sys/ioctl.h>
-#include <sys/poll.h>
-#include <sys/selinfo.h>
 
 #include <scsi/scsi_all.h>
 #include <scsi/scsiconf.h>

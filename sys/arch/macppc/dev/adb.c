@@ -1,4 +1,4 @@
-/*	$OpenBSD: adb.c,v 1.44 2021/06/23 14:12:59 cheloha Exp $	*/
+/*	$OpenBSD: adb.c,v 1.45 2022/03/13 12:33:01 mpi Exp $	*/
 /*	$NetBSD: adb.c,v 1.6 1999/08/16 06:28:09 tsubai Exp $	*/
 /*	$NetBSD: adb_direct.c,v 1.14 2000/06/08 22:10:45 tsubai Exp $	*/
 
@@ -87,8 +87,6 @@
 #include <sys/param.h>
 #include <sys/device.h>
 #include <sys/fcntl.h>
-#include <sys/poll.h>
-#include <sys/selinfo.h>
 #include <sys/proc.h>
 #include <sys/signalvar.h>
 #include <sys/timeout.h>

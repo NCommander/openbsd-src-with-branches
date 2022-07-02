@@ -1,4 +1,4 @@
-/*	$OpenBSD: ujoy.c,v 1.2 2021/03/08 14:35:57 jcs Exp $ */
+/*	$OpenBSD: ujoy.c,v 1.3 2021/11/15 15:36:24 anton Exp $ */
 
 /*
  * Copyright (c) 2021 Thomas Frohwein	<thfr@openbsd.org>
@@ -26,10 +26,8 @@
 #include <sys/ioctl.h>
 #include <sys/conf.h>
 #include <sys/tty.h>
-#include <sys/selinfo.h>
 #include <sys/proc.h>
 #include <sys/vnode.h>
-#include <sys/poll.h>
 #include <sys/fcntl.h>
 
 #include <dev/usb/usb.h>

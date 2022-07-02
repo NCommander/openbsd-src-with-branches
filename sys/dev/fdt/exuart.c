@@ -1,4 +1,4 @@
-/* $OpenBSD: exuart.c,v 1.9 2021/09/01 09:29:31 jan Exp $ */
+/* $OpenBSD: exuart.c,v 1.10 2022/04/06 18:59:28 naddy Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@motorola.com>
  *
@@ -26,7 +26,6 @@
 #include <sys/syslog.h>
 #include <sys/conf.h>
 #include <sys/fcntl.h>
-#include <sys/select.h>
 #include <sys/kernel.h>
 
 #include <machine/bus.h>
