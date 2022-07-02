@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_sigalgs.h,v 1.24 2022/06/29 07:53:00 tb Exp $ */
+/* $OpenBSD: ssl_sigalgs.h,v 1.25 2022/06/29 07:53:58 tb Exp $ */
 /*
  * Copyright (c) 2018-2019 Bob Beck <beck@openbsd.org>
  *
@@ -65,7 +65,7 @@ struct ssl_sigalg {
 	int key_type;
 	const EVP_MD *(*md)(void);
 	int security_level;
-	int curve_nid;
+	int group_nid;
 	int flags;
 };
 
