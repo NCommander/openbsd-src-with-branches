@@ -15,7 +15,7 @@
  */
 
 /*
- * $Id: assertions.h,v 1.3 2020/02/13 08:15:31 florian Exp $
+ * $Id: assertions.h,v 1.4 2020/02/13 13:53:01 jsg Exp $
  */
 /*! \file isc/assertions.h
  */
@@ -23,7 +23,7 @@
 #ifndef ISC_ASSERTIONS_H
 #define ISC_ASSERTIONS_H 1
 
-#include <sys/cdefs.h>
+#include <sys/types.h>
 
 /*% isc assertion type */
 typedef enum {
