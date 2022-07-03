@@ -1,4 +1,4 @@
-/*	$OpenBSD: ts.c,v 1.3 2022/06/30 07:42:50 claudio Exp $	*/
+/*	$OpenBSD: ts.c,v 1.4 2022/06/30 07:55:48 job Exp $	*/
 /*
  * Copyright (c) 2022 Job Snijders <job@openbsd.org>
  * Copyright (c) 2022 Claudio Jeker <claudio@openbsd.org>
@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/cdefs.h>
+#include <sys/types.h>
 #include <sys/time.h>
 
 #include <err.h>
