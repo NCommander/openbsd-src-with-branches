@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_decide_test.c,v 1.8 2022/03/03 13:10:53 claudio Exp $ */
+/*	$OpenBSD: rde_decide_test.c,v 1.9 2022/03/22 10:57:08 claudio Exp $ */
 
 /*
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
@@ -364,7 +364,7 @@ rib_byid(uint16_t id)
 
 void
 rde_generate_updates(struct rib *rib, struct prefix *new, struct prefix *old,
-    int eval_all)
+    enum eval_mode mode)
 {
 	/* maybe we want to do something here */
 }
