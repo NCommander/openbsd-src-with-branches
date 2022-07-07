@@ -1,4 +1,4 @@
-/*	$OpenBSD: cron.c,v 1.79 2020/04/16 17:51:56 millert Exp $	*/
+/*	$OpenBSD: cron.c,v 1.80 2022/01/21 22:53:20 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -370,8 +370,10 @@ cron_sleep(time_t target, sigset_t *mask)
 		nfds = ppoll(pfd, 1, &timeout, mask);
 		switch (nfds) {
 		case -1:
-			if (errno != EINTR && errno != EAGAIN)
-				err(EXIT_FAILURE, "ppoll");
+			if (errno != EINTR && errno != EAGAIN) {
+				syslog(LOG_ERR, "(CRON) DEATH (ppoll failure: %m)");
+				exit(EXIT_FAILURE);
+			}
 			if (errno == EINTR) {
 				if (got_sigchld) {
 					got_sigchld = 0;
