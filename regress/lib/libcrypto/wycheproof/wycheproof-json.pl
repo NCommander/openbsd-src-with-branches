@@ -1,12 +1,12 @@
-# $OpenBSD$
+# $OpenBSD: wycheproof-json.pl,v 1.1 2022/07/07 20:01:20 tb Exp $
 
 # Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
 # Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
-# 
+#
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
 # copyright notice and this permission notice appear in all copies.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 # WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
 # MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
