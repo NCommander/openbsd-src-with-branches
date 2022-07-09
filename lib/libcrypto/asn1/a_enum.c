@@ -1,4 +1,4 @@
-/* $OpenBSD: a_enum.c,v 1.23 2021/12/25 13:17:48 jsing Exp $ */
+/* $OpenBSD: a_enum.c,v 1.24 2022/06/25 16:15:18 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -141,6 +141,8 @@ ASN1_ENUMERATED_get(const ASN1_ENUMERATED *aenum)
 {
 	int64_t val;
 
+	if (aenum == NULL)
+		return 0;
 	if (!ASN1_ENUMERATED_get_int64(&val, aenum))
 		return -1;
 	if (val < LONG_MIN || val > LONG_MAX) {
