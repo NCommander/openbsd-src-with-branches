@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpdump.c,v 1.95 2020/12/04 11:36:13 mvs Exp $	*/
+/*	$OpenBSD: tcpdump.c,v 1.96 2022/01/31 19:08:29 naddy Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
@@ -61,7 +61,7 @@
 
 int Aflag;			/* dump ascii */
 int aflag;			/* translate network and broadcast addresses */
-int Bflag;			/* BPF fildrop setting */
+int Bflag = BPF_FILDROP_PASS;	/* BPF fildrop setting */
 int dflag;			/* print filter code */
 int eflag;			/* print ethernet header */
 int fflag;			/* don't translate "foreign" IP address */
