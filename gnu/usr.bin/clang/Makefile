@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.17 2021/11/24 15:15:19 robert Exp $
+# $OpenBSD: Makefile,v 1.18 2021/12/17 14:55:44 patrick Exp $
 
 .include <bsd.own.mk>
 
@@ -102,6 +102,8 @@ SUBDIR+=include/llvm-objcopy
 SUBDIR+=llvm-objcopy
 SUBDIR+=include/llvm-objdump
 SUBDIR+=llvm-objdump
+SUBDIR+=include/llvm-readobj
+SUBDIR+=llvm-readobj
 
 .if ${AR_VERSION:L} == "llvm"
 SUBDIR+=libLLVMDlltoolDriver
