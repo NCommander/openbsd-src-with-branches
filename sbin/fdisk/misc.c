@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.c,v 1.86 2021/09/13 15:07:51 krw Exp $	*/
+/*	$OpenBSD: misc.c,v 1.87 2022/04/20 15:49:56 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -67,6 +67,7 @@ string_from_line(char *buf, const size_t buflen, const int trim)
 	static char		*line;
 	static size_t		 sz;
 	ssize_t			 len;
+	size_t			 n;
 	unsigned int		 i;
 
 	len = getline(&line, &sz, stdin);
@@ -76,7 +77,7 @@ string_from_line(char *buf, const size_t buflen, const int trim)
 	switch (trim) {
 	case UNTRIMMED:
 		line[strcspn(line, "\n")] = '\0';
-		strlcpy(buf, line, buflen);
+		n = strlcpy(buf, line, buflen);
 		break;
 	case TRIMMED:
 		for (i = strlen(line); i > 0; i--) {
@@ -84,8 +85,13 @@ string_from_line(char *buf, const size_t buflen, const int trim)
 				break;
 			line[i - 1] = '\0';
 		}
-		strlcpy(buf, line + strspn(line, WHITESPACE), buflen);
+		n = strlcpy(buf, line + strspn(line, WHITESPACE), buflen);
 		break;
+	}
+
+	if (n >= buflen) {
+		printf("input too long\n");
+		memset(buf, 0, buflen);
 	}
 }
 
