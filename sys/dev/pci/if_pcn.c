@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pcn.c,v 1.46 2022/01/16 11:34:05 dlg Exp $	*/
+/*	$OpenBSD: if_pcn.c,v 1.47 2022/03/11 18:00:48 mpi Exp $	*/
 /*	$NetBSD: if_pcn.c,v 1.26 2005/05/07 09:15:44 is Exp $	*/
 
 /*
@@ -1622,7 +1622,7 @@ pcn_init(struct ifnet *ifp)
 	}
 
 	/* Set the media. */
-	(void) (*sc->sc_mii.mii_media.ifm_change)(ifp);
+	(void) (*sc->sc_mii.mii_media.ifm_change_cb)(ifp);
 
 	/* Enable interrupts and external activity (and ACK IDON). */
 	pcn_csr_write(sc, LE_CSR0, LE_C0_INEA|LE_C0_STRT|LE_C0_IDON);
