@@ -1,4 +1,4 @@
-/*	$OpenBSD: efiboot.h,v 1.3 2017/10/11 04:07:50 yasuoka Exp $	*/
+/*	$OpenBSD: efiboot.h,v 1.4 2017/11/25 19:02:07 patrick Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -34,6 +34,7 @@ int	 Xvideo_efi(void);
 int	 Xgop_efi(void);
 int	 Xexit_efi(void);
 void	 efi_makebootargs(void);
+void	 efi_setconsdev(void);
 
 int	 Xpoweroff_efi(void);
 
