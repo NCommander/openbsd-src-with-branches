@@ -1,4 +1,4 @@
-/* $OpenBSD: mvacc.c,v 1.3 2017/03/24 15:22:45 patrick Exp $ */
+/* $OpenBSD: mvacc.c,v 1.4 2021/10/24 17:52:27 mpi Exp $ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *
@@ -115,7 +115,7 @@ mvacc_attach(struct device *parent, struct device *self, void *args)
 
 	printf("\n");
 
-	amptimer_set_clockrate(mvacc_get_frequency(sc, &idx) * 1000);
+	amptimer_set_clockrate(mvacc_get_frequency(sc, &idx));
 
 	sc->sc_cd.cd_node = sc->sc_node;
 	sc->sc_cd.cd_cookie = sc;
