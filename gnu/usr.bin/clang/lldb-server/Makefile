@@ -1,13 +1,8 @@
-# $OpenBSD: Makefile,v 1.5 2021/04/28 12:55:42 patrick Exp $
+# $OpenBSD: Makefile,v 1.6 2021/12/17 14:55:47 patrick Exp $
 
 .include <bsd.own.mk>
 
-.if (${MACHINE} == "arm64") || (${MACHINE} == "amd64")
 PROG=	lldb-server
-.else
-NOPROG=	lldb-server
-.endif
-
 BINDIR=	/usr/bin
 NOMAN=
 
