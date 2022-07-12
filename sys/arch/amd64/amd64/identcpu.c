@@ -1,4 +1,4 @@
-/*	$OpenBSD: identcpu.c,v 1.123 2022/04/26 08:35:30 claudio Exp $	*/
+/*	$OpenBSD: identcpu.c,v 1.124 2022/04/26 10:48:20 claudio Exp $	*/
 /*	$NetBSD: identcpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*
@@ -604,8 +604,6 @@ identifycpu(struct cpu_info *ci)
 	}
 
 	freq = cpu_freq(ci);
-
-	amd_cpu_cacheinfo(ci);
 
 	printf("%s: %s", ci->ci_dev->dv_xname, mycpu_model);
 
