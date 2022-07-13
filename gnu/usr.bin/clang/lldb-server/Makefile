@@ -2,7 +2,12 @@
 
 .include <bsd.own.mk>
 
+.if (${MACHINE} == "arm64") || (${MACHINE} == "amd64")
 PROG=	lldb-server
+.else
+NOPROG=	lldb-server
+.endif
+
 BINDIR=	/usr/bin
 NOMAN=
 

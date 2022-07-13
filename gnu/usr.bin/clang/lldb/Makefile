@@ -2,7 +2,12 @@
 
 .include <bsd.own.mk>
 
+.if (${MACHINE} == "arm64") || (${MACHINE} == "amd64")
 PROG=	lldb
+.else
+NOPROG=	lldb
+.endif
+
 BINDIR=	/usr/bin
 LIBEXECDIR=/usr/libexec
 
