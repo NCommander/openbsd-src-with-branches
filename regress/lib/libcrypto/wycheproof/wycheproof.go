@@ -1,4 +1,4 @@
-/* $OpenBSD: wycheproof.go,v 1.126 2022/05/05 18:34:27 tb Exp $ */
+/* $OpenBSD: wycheproof.go,v 1.127 2022/07/07 20:01:20 tb Exp $ */
 /*
  * Copyright (c) 2018 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2018,2019,2022 Theo Buehler <tb@openbsd.org>
@@ -2923,7 +2923,7 @@ func main() {
 		{"HKDF", "hkdf_sha*_test.json", Normal},
 		{"HMAC", "hmac_sha*_test.json", Normal},
 		{"KW", "kw_test.json", Normal},
-		{"Primality test", "primality_test.json", Skip}, // XXX
+		{"Primality test", "primality_test.json", Normal},
 		{"RSA", "rsa_*test.json", Normal},
 		{"X25519", "x25519_test.json", Normal},
 		{"X25519 ASN", "x25519_asn_test.json", Skip},
