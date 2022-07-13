@@ -659,5 +659,7 @@ int	BN_swap_ct(BN_ULONG swap, BIGNUM *a, BIGNUM *b, size_t nwords);
 int bn_isqrt(BIGNUM *out_sqrt, int *out_perfect, const BIGNUM *n, BN_CTX *ctx);
 int bn_is_perfect_square(int *is_perfect_square, const BIGNUM *n, BN_CTX *ctx);
 
+int bn_is_prime_bpsw(int *is_prime, const BIGNUM *n, BN_CTX *in_ctx);
+
 __END_HIDDEN_DECLS
 #endif
