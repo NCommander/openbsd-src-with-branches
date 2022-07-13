@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_lcl.h,v 1.31 2022/01/14 08:01:47 tb Exp $ */
+/* $OpenBSD: bn_lcl.h,v 1.32 2022/07/12 16:08:19 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -655,6 +655,9 @@ int	BN_gcd_ct(BIGNUM *r, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx);
 int	BN_gcd_nonct(BIGNUM *r, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx);
 
 int	BN_swap_ct(BN_ULONG swap, BIGNUM *a, BIGNUM *b, size_t nwords);
+
+int bn_isqrt(BIGNUM *out_sqrt, int *out_perfect, const BIGNUM *n, BN_CTX *ctx);
+int bn_is_perfect_square(int *is_perfect_square, const BIGNUM *n, BN_CTX *ctx);
 
 __END_HIDDEN_DECLS
 #endif
