@@ -1,4 +1,4 @@
-/* $OpenBSD: ciphers.c,v 1.10 2019/07/14 03:30:45 guenther Exp $ */
+/* $OpenBSD: ciphers.c,v 1.11 2022/07/14 08:07:54 tb Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -109,7 +109,7 @@ ciphers_main(int argc, char **argv)
 		return (1);
 	}
 
-	if ((ssl_ctx = SSL_CTX_new(TLSv1_client_method())) == NULL)
+	if ((ssl_ctx = SSL_CTX_new(TLS_client_method())) == NULL)
 		goto err;
 
 	if (cipherlist != NULL) {
