@@ -1,4 +1,4 @@
-/*	$OpenBSD: simplefb.c,v 1.14 2021/10/24 17:52:27 mpi Exp $	*/
+/*	$OpenBSD: simplefb.c,v 1.15 2022/01/09 05:42:37 jsg Exp $	*/
 /*
  * Copyright (c) 2016 Mark Kettenis
  *
@@ -234,6 +234,7 @@ int
 simplefb_wsioctl(void *v, u_long cmd, caddr_t data, int flag, struct proc *p)
 {
 	struct rasops_info *ri = v;
+	struct simplefb_softc *sc = ri->ri_hw;
 	struct wsdisplay_param *dp = (struct wsdisplay_param *)data;
 	struct wsdisplay_fbinfo	*wdf;
 
@@ -254,6 +255,8 @@ simplefb_wsioctl(void *v, u_long cmd, caddr_t data, int flag, struct proc *p)
 		wdf->width = ri->ri_width;
 		wdf->height = ri->ri_height;
 		wdf->depth = ri->ri_depth;
+		wdf->stride = ri->ri_stride;
+		wdf->offset = sc->sc_paddr & PAGE_MASK;
 		wdf->cmsize = 0;	/* color map is unavailable */
 		break;
 	case WSDISPLAYIO_LINEBYTES:

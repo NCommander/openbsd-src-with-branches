@@ -1,4 +1,4 @@
-/*	$OpenBSD: radeonfb.c,v 1.3 2020/05/25 06:45:25 jsg Exp $	*/
+/*	$OpenBSD: radeonfb.c,v 1.4 2020/05/25 09:55:48 jsg Exp $	*/
 
 /*
  * Copyright (c) 2009 Mark Kettenis.
@@ -306,6 +306,8 @@ radeonfb_ioctl(void *v, u_long cmd, caddr_t data, int flags, struct proc *p)
 		wdf->width = ri->ri_width;
 		wdf->height = ri->ri_height;
 		wdf->depth = ri->ri_depth;
+		wdf->stride = ri->ri_stride;
+		wdf->offset = 0;
 		wdf->cmsize = 0;
 		break;
 	case WSDISPLAYIO_LINEBYTES:

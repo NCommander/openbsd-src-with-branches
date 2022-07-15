@@ -1,4 +1,4 @@
-/*	$OpenBSD: sisfb.c,v 1.8 2020/07/18 08:59:28 visa Exp $	*/
+/*	$OpenBSD: sisfb.c,v 1.9 2021/03/11 11:16:58 jsg Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -300,6 +300,8 @@ sisfb_ioctl(void *v, u_long cmd, caddr_t data, int flags, struct proc *p)
 		wdf->width = ri->ri_width;
 		wdf->height = ri->ri_height;
 		wdf->depth = ri->ri_depth;
+		wdf->stride = ri->ri_stride;
+		wdf->offset = 0;
 		wdf->cmsize = 256;
 		break;
 	case WSDISPLAYIO_LINEBYTES:

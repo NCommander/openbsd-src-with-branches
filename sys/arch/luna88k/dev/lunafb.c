@@ -1,4 +1,4 @@
-/* $OpenBSD: lunafb.c,v 1.27 2020/05/25 09:55:48 jsg Exp $ */
+/* $OpenBSD: lunafb.c,v 1.28 2021/09/17 12:02:31 aoyama Exp $ */
 /* $NetBSD: lunafb.c,v 1.7.6.1 2002/08/07 01:48:34 lukem Exp $ */
 
 /*-
@@ -243,6 +243,8 @@ omfbioctl(void *v, u_long cmd, caddr_t data, int flag, struct proc *p)
 		wsd_fbip->height = dc->dc_ht;
 		wsd_fbip->width = dc->dc_wid;
 		wsd_fbip->depth = dc->dc_depth;
+		wsd_fbip->stride = dc->dc_rowbytes;
+		wsd_fbip->offset = 8;
 		wsd_fbip->cmsize = dc->dc_cmsize;
 #undef wsd_fbip
 		break;

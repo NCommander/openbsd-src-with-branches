@@ -1,4 +1,4 @@
-/*	$OpenBSD: vgafb.c,v 1.61 2020/05/25 06:45:25 jsg Exp $	*/
+/*	$OpenBSD: vgafb.c,v 1.62 2020/05/25 09:55:48 jsg Exp $	*/
 /*	$NetBSD: vga.c,v 1.3 1996/12/02 22:24:54 cgd Exp $	*/
 
 /*
@@ -228,6 +228,8 @@ vgafb_ioctl(void *v, u_long cmd, caddr_t data, int flag, struct proc *p)
 		wdf->width = ri->ri_width;
 		wdf->height = ri->ri_height;
 		wdf->depth = ri->ri_depth;
+		wdf->stride = ri->ri_stride;
+		wdf->offset = 0;
 		wdf->cmsize = 256;
 		break;
 	case WSDISPLAYIO_LINEBYTES:

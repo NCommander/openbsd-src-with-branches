@@ -1,4 +1,4 @@
-/*	$OpenBSD: radeonfb.c,v 1.6 2020/05/25 09:55:48 jsg Exp $	*/
+/*	$OpenBSD: radeonfb.c,v 1.7 2021/10/24 17:05:04 mpi Exp $	*/
 
 /*
  * Copyright (c) 2009 Mark Kettenis.
@@ -268,6 +268,8 @@ radeonfb_ioctl(void *v, u_long cmd, caddr_t data, int flags, struct proc *p)
 		wdf->height = sc->sc_sunfb.sf_height;
 		wdf->width  = sc->sc_sunfb.sf_width;
 		wdf->depth  = sc->sc_sunfb.sf_depth;
+		wdf->stride = sc->sc_sunfb.sf_linebytes;
+		wdf->offset = 0;
 		if (sc->sc_sunfb.sf_depth == 32)
 			wdf->cmsize = 0;
 		else
