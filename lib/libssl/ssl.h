@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl.h,v 1.219 2022/07/07 13:02:59 tb Exp $ */
+/* $OpenBSD: ssl.h,v 1.220 2022/07/12 14:42:48 kn Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1576,7 +1576,9 @@ int SSL_get_security_level(const SSL *ssl);
 void SSL_CTX_set_security_level(SSL_CTX *ctx, int level);
 int SSL_CTX_get_security_level(const SSL_CTX *ctx);
 
-#ifdef LIBRESSL_INTERNAL
+#if defined(LIBRESSL_HAS_QUIC) || defined(LIBRESSL_INTERNAL)
+int SSL_is_quic(const SSL *ssl);
+
 /*
  * SSL_set_quic_transport_params configures |ssl| to send |params| (of length
  * |params_len|) in the quic_transport_parameters extension in either the
