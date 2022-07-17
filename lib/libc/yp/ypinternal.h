@@ -42,7 +42,6 @@ struct dom_binding {
 };
 
 #define BINDINGDIR	"/var/yp/binding"
-#define YPBINDLOCK	"/var/run/ypbind.lock"
 
 __BEGIN_HIDDEN_DECLS
 extern struct dom_binding *_ypbindlist;
