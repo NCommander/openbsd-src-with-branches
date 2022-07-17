@@ -401,7 +401,8 @@ tls13_ctx_new(int mode, SSL *ssl)
 	ctx->info_cb = tls13_legacy_info_cb;
 	ctx->ocsp_status_recv_cb = tls13_legacy_ocsp_status_recv_cb;
 
-	ctx->middlebox_compat = 1;
+	if (!SSL_is_quic(ssl))
+		ctx->middlebox_compat = 1;
 
 	ssl->internal->tls13 = ctx;
 
