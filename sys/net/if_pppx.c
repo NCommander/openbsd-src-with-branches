@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pppx.c,v 1.118 2022/07/02 08:50:42 visa Exp $ */
+/*	$OpenBSD: if_pppx.c,v 1.119 2022/07/15 22:56:13 mvs Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -895,13 +895,6 @@ pppx_if_ioctl(struct ifnet *ifp, u_long cmd, caddr_t addr)
 }
 
 RBT_GENERATE(pppx_ifs, pppx_if, pxi_entry, pppx_if_cmp);
-
-/*
- * Locks used to protect struct members and global data
- *       I       immutable after creation
- *       K       kernel lock
- *       N       net lock
- */
 
 struct pppac_softc {
 	struct ifnet	sc_if;
