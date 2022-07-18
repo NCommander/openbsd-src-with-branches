@@ -1,4 +1,4 @@
-/*	$OpenBSD: pledge.h,v 1.44 2022/07/17 04:29:37 deraadt Exp $	*/
+/*	$OpenBSD: pledge.h,v 1.45 2022/07/18 17:45:46 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -136,7 +136,7 @@ int	pledge_ioctl_drm(struct proc *p, long com, dev_t device);
 int	pledge_ioctl_vmm(struct proc *p, long com);
 int	pledge_flock(struct proc *p);
 int	pledge_fcntl(struct proc *p, int cmd);
-int	pledge_swapctl(struct proc *p);
+int	pledge_swapctl(struct proc *p, int cmd);
 int	pledge_kill(struct proc *p, pid_t pid);
 int	pledge_protexec(struct proc *p, int prot);
 void	ppath_destroy(struct process *ps);
