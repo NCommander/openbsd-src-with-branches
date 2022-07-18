@@ -1,4 +1,4 @@
-/*	$OpenBSD: yp_bind.c,v 1.28 2016/05/30 02:53:29 guenther Exp $ */
+/*	$OpenBSD: yp_bind.c,v 1.29 2022/07/17 03:08:58 deraadt Exp $ */
 /*
  * Copyright (c) 1992, 1993, 1996 Theo de Raadt <deraadt@theos.com>
  * All rights reserved.
@@ -43,7 +43,7 @@
 #include <rpcsvc/ypclnt.h>
 #include "ypinternal.h"
 
-struct dom_binding *ypbinding;
+static struct dom_binding *ypbinding;
 char _yp_domain[HOST_NAME_MAX+1];
 int _yplib_timeout = 10;
 
