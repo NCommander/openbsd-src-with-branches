@@ -1,4 +1,4 @@
-/* $OpenBSD: server-client.c,v 1.395 2022/05/30 12:55:25 nicm Exp $ */
+/* $OpenBSD: server-client.c,v 1.396 2022/07/06 08:31:59 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -2221,7 +2221,8 @@ server_client_check_pane_buffer(struct window_pane *wp)
 		}
 		wpo = control_pane_offset(c, wp, &flag);
 		if (wpo == NULL) {
-			off = 0;
+			if (!flag)
+				off = 0;
 			continue;
 		}
 		if (!flag)
