@@ -190,8 +190,7 @@ tlsext_alpn_client_parse(SSL *s, uint16_t msg_type, CBS *cbs, int *alert)
 	if (CBS_len(&proto) == 0)
 		goto err;
 
-	if (!CBS_stow(&proto, &(s->s3->alpn_selected),
-	    &(s->s3->alpn_selected_len)))
+	if (!CBS_stow(&proto, &s->s3->alpn_selected, &s->s3->alpn_selected_len))
 		goto err;
 
 	return 1;
