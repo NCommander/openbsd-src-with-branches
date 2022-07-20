@@ -1,4 +1,4 @@
-/*	$OpenBSD: getconf.c,v 1.20 2018/10/26 17:11:32 mestre Exp $	*/
+/*	$OpenBSD: getconf.c,v 1.21 2021/07/12 15:09:19 beck Exp $	*/
 
 /*-
  * Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -499,7 +499,7 @@ main(int argc, char *argv[])
 		break;
 
 	case SYSCONF:
-		if (pledge("stdio inet ps vminfo", NULL) == -1)
+		if (pledge("stdio ps vminfo", NULL) == -1)
 			err(1, "pledge");
 		errno = 0;
 		if ((val = sysconf(cp->value)) == -1) {
