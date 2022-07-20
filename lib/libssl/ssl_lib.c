@@ -162,6 +162,7 @@
 #include "dtls_locl.h"
 #include "ssl_locl.h"
 #include "ssl_sigalgs.h"
+#include "ssl_tlsext.h"
 
 const char *SSL_version_str = OPENSSL_VERSION_TEXT;
 
@@ -1771,6 +1772,11 @@ SSL_CTX_set_alpn_protos(SSL_CTX *ctx, const unsigned char *protos,
 
 	CBS_init(&cbs, protos, protos_len);
 
+	if (protos_len > 0) {
+		if (!tlsext_alpn_check_format(&cbs))
+			goto err;
+	}
+
 	if (!CBS_stow(&cbs, &ctx->internal->alpn_client_proto_list,
 	    &ctx->internal->alpn_client_proto_list_len))
 		goto err;
@@ -1798,6 +1804,11 @@ SSL_set_alpn_protos(SSL *ssl, const unsigned char *protos,
 		protos_len = 0;
 
 	CBS_init(&cbs, protos, protos_len);
+
+	if (protos_len > 0) {
+		if (!tlsext_alpn_check_format(&cbs))
+			goto err;
+	}
 
 	if (!CBS_stow(&cbs, &ssl->internal->alpn_client_proto_list,
 	    &ssl->internal->alpn_client_proto_list_len))
