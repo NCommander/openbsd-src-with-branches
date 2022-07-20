@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnet.c,v 1.63 2020/12/12 11:48:52 jan Exp $	*/
+/*	$OpenBSD: vnet.c,v 1.64 2021/10/24 17:05:04 mpi Exp $	*/
 /*
  * Copyright (c) 2009, 2015 Mark Kettenis
  *
@@ -1535,5 +1535,5 @@ vnet_dring_free(bus_dma_tag_t t, struct vnet_dring *vd)
 	bus_dmamem_unmap(t, (caddr_t)vd->vd_desc, size);
 	bus_dmamem_free(t, &vd->vd_seg, 1);
 	bus_dmamap_destroy(t, vd->vd_map);
-	free(vd, M_DEVBUF, 0);
+	free(vd, M_DEVBUF, sizeof(*vd));
 }
