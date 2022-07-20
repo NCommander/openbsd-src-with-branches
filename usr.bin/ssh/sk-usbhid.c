@@ -1,4 +1,4 @@
-/* $OpenBSD: sk-usbhid.c,v 1.39 2022/04/29 03:16:48 dtucker Exp $ */
+/* $OpenBSD: sk-usbhid.c,v 1.40 2022/07/20 03:29:14 djm Exp $ */
 /*
  * Copyright (c) 2019 Markus Friedl
  * Copyright (c) 2020 Pedro Martelletto
@@ -763,7 +763,7 @@ sk_enroll(uint32_t alg, const uint8_t *challenge, size_t challenge_len,
 	    (r = key_lookup(sk->dev, application, user_id, sizeof(user_id),
 	    pin)) != FIDO_ERR_NO_CREDENTIALS) {
 		if (r != FIDO_OK) {
-			ret = SSH_SK_ERR_GENERAL;
+			ret = fidoerr_to_skerr(r);
 			skdebug(__func__, "key_lookup failed");
 		} else {
 			ret = SSH_SK_ERR_CREDENTIAL_EXISTS;
