@@ -1,8 +1,9 @@
-#	$OpenBSD: Makefile,v 1.11 2021/01/10 07:30:50 tb Exp $
+#	$OpenBSD: Makefile,v 1.12 2021/05/03 23:42:04 inoguchi Exp $
 
 TEST_CASES+= cipher_list
 TEST_CASES+= ssl_get_shared_ciphers
 TEST_CASES+= ssl_methods
+TEST_CASES+= ssl_set_alpn_protos
 TEST_CASES+= ssl_versions
 TEST_CASES+= tls_ext_alpn
 TEST_CASES+= tls_prf
