@@ -113,14 +113,15 @@ tlsext_alpn_server_parse(SSL *s, uint16_t msg_types, CBS *cbs, int *alert)
 	    s->ctx->internal->alpn_select_cb_arg);
 
 	if (r == SSL_TLSEXT_ERR_OK) {
-		free(s->s3->alpn_selected);
-		if ((s->s3->alpn_selected = malloc(selected_len)) == NULL) {
-			s->s3->alpn_selected_len = 0;
+		CBS cbs;
+
+		CBS_init(&cbs, selected, selected_len);
+
+		if (!CBS_stow(&cbs, &s->s3->alpn_selected,
+		    &s->s3->alpn_selected_len)) {
 			*alert = SSL_AD_INTERNAL_ERROR;
 			return 0;
 		}
-		memcpy(s->s3->alpn_selected, selected, selected_len);
-		s->s3->alpn_selected_len = selected_len;
 
 		return 1;
 	}
