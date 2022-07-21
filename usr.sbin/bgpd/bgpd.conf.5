@@ -1,4 +1,4 @@
-.\" $OpenBSD: bgpd.conf.5,v 1.224 2022/07/12 17:30:57 claudio Exp $
+.\" $OpenBSD: bgpd.conf.5,v 1.225 2022/07/12 17:49:33 tb Exp $
 .\"
 .\" Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
 .\" Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -893,6 +893,11 @@ and
 are equivalent.
 The default is
 .Ic no .
+If
+.Ic add-path Ic send
+is active then the setting of
+.Ic rde Ic evaluate
+is ignored.
 .Pp
 .It Xo
 .Ic announce as-4byte
