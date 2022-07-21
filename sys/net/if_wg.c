@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_wg.c,v 1.24 2022/03/17 18:51:56 tb Exp $ */
+/*	$OpenBSD: if_wg.c,v 1.25 2022/06/06 14:45:41 claudio Exp $ */
 
 /*
  * Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
@@ -370,7 +370,6 @@ int	wg_clone_destroy(struct ifnet *);
 void	wgattach(int);
 
 uint64_t	peer_counter = 0;
-uint64_t	keypair_counter = 0;
 struct pool	wg_aip_pool;
 struct pool	wg_peer_pool;
 struct pool	wg_ratelimit_pool;
