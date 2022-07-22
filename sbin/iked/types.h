@@ -1,4 +1,4 @@
-/*	$OpenBSD: types.h,v 1.48 2022/04/13 20:54:55 deraadt Exp $	*/
+/*	$OpenBSD: types.h,v 1.49 2022/07/08 19:51:11 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -40,6 +40,8 @@
 #define IKED_PUBKEY_DIR		"pubkeys/"
 #define IKED_PRIVKEY		IKED_CA "private/local.key"
 #define IKED_PUBKEY		"local.pub"
+
+#define IKED_VENDOR_ID		"OpenIKED-"
 
 #define IKED_OCSP_RESPCERT	"ocsp/responder.crt"
 
