@@ -1,4 +1,4 @@
-/*	$OpenBSD: yp_bind.c,v 1.29 2022/07/17 03:08:58 deraadt Exp $ */
+/*	$OpenBSD: yp_bind.c,v 1.30 2022/07/18 02:32:11 deraadt Exp $ */
 /*
  * Copyright (c) 1992, 1993, 1996 Theo de Raadt <deraadt@theos.com>
  * All rights reserved.
@@ -81,6 +81,7 @@ again:
 	if (ypbinding->dom_client == NULL) {
 		close(ypbinding->dom_socket);
 		free(ypbinding);
+		ypbinding = NULL;
 		clnt_pcreateerror("clntudp_create");
 		goto again;
 	}
