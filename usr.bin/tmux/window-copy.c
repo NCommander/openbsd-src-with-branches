@@ -1,4 +1,4 @@
-/* $OpenBSD: window-copy.c,v 1.335 2022/06/09 09:12:55 nicm Exp $ */
+/* $OpenBSD: window-copy.c,v 1.336 2022/06/21 09:30:01 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -3612,6 +3612,8 @@ window_copy_search(struct window_mode_entry *wme, int direction, int regex)
 		data->searchall = 0;
 	} else
 		visible_only = (strcmp(wp->searchstr, str) == 0);
+	if (visible_only == 0 && data->searchmark != NULL)
+		window_copy_clear_marks(wme);
 	free(wp->searchstr);
 	wp->searchstr = xstrdup(str);
 	wp->searchregex = regex;
