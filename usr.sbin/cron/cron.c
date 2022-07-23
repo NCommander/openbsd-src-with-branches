@@ -1,4 +1,4 @@
-/*	$OpenBSD: cron.c,v 1.78 2020/02/11 12:42:01 schwarze Exp $	*/
+/*	$OpenBSD: cron.c,v 1.79 2020/04/16 17:51:56 millert Exp $	*/
 
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
  * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
@@ -358,6 +358,8 @@ cron_sleep(time_t target, sigset_t *mask)
 	clock_gettime(CLOCK_REALTIME, &t1);
 	t1.tv_sec += GMToff;
 	timeout.tv_sec = (target * SECONDS_PER_MINUTE - t1.tv_sec) + 1;
+	if (timeout.tv_sec < 0)
+		timeout.tv_sec = 0;
 	timeout.tv_nsec = 0;
 
 	pfd[0].fd = cronSock;
@@ -411,9 +413,7 @@ cron_sleep(time_t target, sigset_t *mask)
 		timespecsub(&timeout, &t1, &timeout);
 		memcpy(&t1, &t2, sizeof(t1));
 		if (timeout.tv_sec < 0)
-			timeout.tv_sec = 0;
-		if (timeout.tv_nsec < 0)
-			timeout.tv_nsec = 0;
+			timespecclear(&timeout);
 	}
 }
 
