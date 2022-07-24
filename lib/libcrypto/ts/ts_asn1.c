@@ -1,4 +1,4 @@
-/* $OpenBSD: ts_asn1.c,v 1.11 2017/01/29 17:49:23 beck Exp $ */
+/* $OpenBSD: ts_asn1.c,v 1.12 2022/07/16 18:36:36 kn Exp $ */
 /* Written by Nils Larsch for the OpenSSL project 2004.
  */
 /* ====================================================================
@@ -60,6 +60,8 @@
 #include <openssl/ts.h>
 #include <openssl/err.h>
 #include <openssl/asn1t.h>
+
+#include "ts_local.h"
 
 static const ASN1_TEMPLATE TS_MSG_IMPRINT_seq_tt[] = {
 	{
