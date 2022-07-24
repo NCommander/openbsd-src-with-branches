@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.8 2015/01/04 13:01:42 mpi Exp $	*/
+/*	$OpenBSD: intr.c,v 1.9 2015/09/13 14:06:40 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1997 Per Fogelstrom, Opsycon AB and RTMX Inc, USA.
@@ -119,6 +119,11 @@ ppc_dflt_splx(int newcpl)
         struct cpu_info *ci = curcpu();
 
         ci->ci_cpl = newcpl;
+
+	if (ci->ci_dec_deferred && newcpl < IPL_CLOCK) {
+		ppc_mtdec(0);
+		ppc_mtdec(UINT32_MAX);	/* raise DEC exception */
+	}
 
         if (ci->ci_ipending & ppc_smask[newcpl])
 		dosoftint(newcpl);

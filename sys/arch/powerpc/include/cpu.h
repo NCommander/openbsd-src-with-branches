@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.70 2021/07/06 09:34:06 kettenis Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.71 2022/02/10 05:48:02 gkoehler Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 1996/09/30 16:34:21 ws Exp $	*/
 
 /*
@@ -55,6 +55,7 @@ struct cpu_info {
 	volatile int ci_want_resched;
 	volatile int ci_cpl;
 	volatile int ci_ipending;
+	volatile int ci_dec_deferred;
 
 	volatile int	ci_flags;
 #define	CI_FLAGS_SLEEPING		2
