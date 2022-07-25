@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.124 2022/06/26 05:20:42 visa Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.125 2022/07/01 09:56:17 mvs Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -501,7 +501,7 @@ sowakeup(struct socket *so, struct sockbuf *sb)
 	}
 	if (sb->sb_flags & SB_ASYNC)
 		pgsigio(&so->so_sigio, SIGIO, 0);
-	selwakeup(&sb->sb_sel);
+	KNOTE(&sb->sb_sel.si_note, 0);
 }
 
 /*
