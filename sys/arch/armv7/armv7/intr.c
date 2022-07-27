@@ -1,4 +1,4 @@
-/* $OpenBSD: intr.c,v 1.19 2021/03/11 11:16:56 jsg Exp $ */
+/* $OpenBSD: intr.c,v 1.20 2022/01/02 01:01:04 jsg Exp $ */
 /*
  * Copyright (c) 2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -365,6 +365,13 @@ arm_intr_establish_fdt_idx_cpu(int node, int idx, int level, struct cpu_info *ci
 	for (i = 0; i <= idx && ncells > 0; i++) {
 		if (extended) {
 			phandle = cell[0];
+
+			/* Handle "empty" phandle reference. */
+			if (phandle == 0) {
+				cell++;
+				ncells--;
+				continue;
+			}
 
 			LIST_FOREACH(ic, &interrupt_controllers, ic_list) {
 				if (ic->ic_phandle == phandle)

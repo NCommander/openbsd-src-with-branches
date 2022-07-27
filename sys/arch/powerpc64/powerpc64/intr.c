@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.8 2020/09/23 03:03:12 gkoehler Exp $	*/
+/*	$OpenBSD: intr.c,v 1.9 2020/09/26 17:56:54 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -280,6 +280,13 @@ fdt_intr_establish_idx_cpu(int node, int idx, int level, struct cpu_info *ci,
 	for (i = 0; i <= idx && ncells > 0; i++) {
 		if (extended) {
 			phandle = cell[0];
+
+			/* Handle "empty" phandle reference. */
+			if (phandle == 0) {
+				cell++;
+				ncells--;
+				continue;
+			}
 
 			LIST_FOREACH(ic, &interrupt_controllers, ic_list) {
 				if (ic->ic_phandle == phandle)
