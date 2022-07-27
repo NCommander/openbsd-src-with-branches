@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.649 2022/07/07 00:56:46 daniel Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.650 2022/07/12 05:45:49 jsg Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -779,41 +779,6 @@ const struct cpu_cpuid_nameclass i386_cpuid_cpus[] = {
 				"C3"		/* Default */
 			},
 			cyrix3_cpu_setup
-		} }
-	},
-	{
-		"RiseRiseRise",
-		CPUVENDOR_RISE,
-		"Rise",
-		/* Family 4, not available from Rise */
-		{ {
-			CPUCLASS_486,
-			{
-				0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 0, 0,
-				"486 class"		/* Default */
-			},
-			NULL
-		},
-		/* Family 5 */
-		{
-			CPUCLASS_586,
-			{
-				"mP6", 0, "mP6", 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 0, 0,
-				"mP6"			/* Default */
-			},
-			NULL
-		},
-		/* Family 6, not yet available from Rise */
-		{
-			CPUCLASS_686,
-			{
-				0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 0, 0,
-				"686 class"		/* Default */
-			},
-			NULL
 		} }
 	},
 	{
