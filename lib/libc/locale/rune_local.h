@@ -1,4 +1,4 @@
-/* 	$OpenBSD: rune_local.h,v 1.6 2017/08/05 15:16:32 schwarze Exp $ */
+/* 	$OpenBSD: rune_local.h,v 1.7 2017/09/05 03:16:13 schwarze Exp $ */
 /*	$NetBSD: rune_local.h,v 1.7 2003/03/02 22:18:15 tshiozak Exp $	*/
 
 /*-
@@ -34,9 +34,6 @@ __BEGIN_HIDDEN_DECLS
 
 /* rune.c */
 extern _RuneLocale *_Read_RuneMagi(FILE *fp);
-
-/* runeglue.c */
-extern int __make_ctype_tabs(_RuneLocale *);
 
 /* ___runetype_mb.c */
 extern _RuneType ___runetype_mb(wint_t, _RuneLocale *);
