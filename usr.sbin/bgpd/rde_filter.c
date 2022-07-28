@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.127 2022/02/06 09:51:19 claudio Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.128 2022/05/31 09:45:33 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -128,8 +128,8 @@ rde_apply_set(struct filter_set_head *sh, struct rde_peer *peer,
 		case ACTION_SET_AS_OVERRIDE:
 			if (from == NULL)
 				break;
-			 np = aspath_override(state->aspath.aspath,
-			     from->conf.remote_as, from->conf.local_as, &nl);
+			np = aspath_override(state->aspath.aspath,
+			    from->conf.remote_as, from->conf.local_as, &nl);
 			aspath_put(state->aspath.aspath);
 			state->aspath.aspath = aspath_get(np, nl);
 			free(np);
