@@ -1,4 +1,4 @@
-.\"	$OpenBSD: glob.7,v 1.5 2014/12/09 15:37:14 schwarze Exp $
+.\"	$OpenBSD: glob.7,v 1.6 2019/01/25 00:19:26 millert Exp $
 .\"
 .\" Copyright (c) 2009 Todd C. Miller <millert@openbsd.org>
 .\"
@@ -15,7 +15,7 @@
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
 .\"
-.Dd $Mdocdate: December 9 2014 $
+.Dd $Mdocdate: January 25 2019 $
 .Dt GLOB 7
 .Os
 .Sh NAME
@@ -142,13 +142,8 @@ but not
 .Xr glob 3 ,
 .Xr re_format 7
 .Sh HISTORY
-In early versions of
-.Ux ,
-the shell did not do pattern expansion itself.
-A dedicated program,
+A stand-alone program,
 .Pa /etc/glob ,
-was used to perform the expansion and pass the results to a command.
-In
-.At v7 ,
-with the introduction of the Bourne shell,
-this functionality was incorporated into the shell itself.
+first appeared in
+.At v1 .
+In PWB/UNIX 1.0 this functionality was incorporated into the shell itself.
