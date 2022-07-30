@@ -93,6 +93,8 @@ aead_from_name(const EVP_AEAD **aead, const EVP_CIPHER **cipher,
 	if (strcmp(name, "aes-128-gcm") == 0) {
 		*aead = EVP_aead_aes_128_gcm();
 		*cipher = EVP_aes_128_gcm();
+	} else if (strcmp(name, "aes-192-gcm") == 0) {
+		*cipher = EVP_aes_192_gcm();
 	} else if (strcmp(name, "aes-256-gcm") == 0) {
 		*aead = EVP_aead_aes_256_gcm();
 		*cipher = EVP_aes_256_gcm();
