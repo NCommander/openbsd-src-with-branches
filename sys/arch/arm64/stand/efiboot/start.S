@@ -1,4 +1,4 @@
-/* $OpenBSD: start.S,v 1.3 2017/01/22 01:38:25 kettenis Exp $ */
+/* $OpenBSD: start.S,v 1.4 2022/07/29 21:34:59 kettenis Exp $ */
 /*-
  * Copyright (c) 2014 Andrew Turner
  * All rights reserved.
@@ -170,3 +170,7 @@ _start:
 	bl	efi_main
 
 1:	b	1b
+
+	.data
+	.align 4
+#include "dt_blob.S"
