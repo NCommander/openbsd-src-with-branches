@@ -1,5 +1,6 @@
-/*	$OpenBSD: aeadtest.c,v 1.19 2022/07/30 16:17:22 jsing Exp $	*/
+/*	$OpenBSD: aeadtest.c,v 1.21 2022/07/30 16:31:41 jsing Exp $	*/
 /*
+ * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2014, Google Inc.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
