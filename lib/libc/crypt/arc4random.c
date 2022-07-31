@@ -1,4 +1,4 @@
-/*	$OpenBSD: arc4random.c,v 1.56 2022/02/28 21:56:29 dtucker Exp $	*/
+/*	$OpenBSD: arc4random.c,v 1.57 2022/07/31 05:10:36 djm Exp $	*/
 
 /*
  * Copyright (c) 1996, David Mazieres <dm@uun.org>
@@ -105,7 +105,7 @@ _rs_stir(void)
 
 	/* rekey interval should not be predictable */
 	chacha_encrypt_bytes(&rsx->rs_chacha, (uint8_t *)&rekey_fuzz,
-	     (uint8_t *)&rekey_fuzz, sizeof(rekey_fuzz));
+	    (uint8_t *)&rekey_fuzz, sizeof(rekey_fuzz));
 	rs->rs_count = REKEY_BASE + (rekey_fuzz % REKEY_BASE);
 }
 
