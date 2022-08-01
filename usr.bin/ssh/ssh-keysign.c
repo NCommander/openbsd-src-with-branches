@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keysign.c,v 1.69 2021/11/13 17:26:13 deraadt Exp $ */
+/* $OpenBSD: ssh-keysign.c,v 1.70 2022/01/06 22:00:18 djm Exp $ */
 /*
  * Copyright (c) 2002 Markus Friedl.  All rights reserved.
  *
@@ -150,9 +150,7 @@ valid_request(struct passwd *pw, char *host, struct sshkey **ret, char **pkalgp,
 
 	debug3_f("fail %d", fail);
 
-	if (fail)
-		sshkey_free(key);
-	else {
+	if (!fail) {
 		if (ret != NULL) {
 			*ret = key;
 			key = NULL;
