@@ -1,4 +1,4 @@
-/*	$OpenBSD: adwlib.c,v 1.26 2020/02/18 20:24:52 krw Exp $ */
+/*	$OpenBSD: adwlib.c,v 1.27 2020/08/08 12:40:55 krw Exp $ */
 /* $NetBSD: adwlib.c,v 1.20 2000/07/04 04:17:03 itojun Exp $        */
 
 /*
@@ -327,9 +327,9 @@ AdwInitFromEEPROM(ADW_SOFTC *sc)
 		 * from EEPROM is correct even if the EEPROM checksum
 		 * failed.
 		 */
-		for (i=2, j=1; i>=0; i--, j++) {
-		eep_config.serial_number[i] =
-			AdwReadEEPWord(iot, ioh, ADW_EEP_DVC_CFG_END - j);
+		for (i = 2, j = 1; i >= 0; i--, j++) {
+			eep_config.serial_number[i] =
+			    AdwReadEEPWord(iot, ioh, ADW_EEP_DVC_CFG_END - j);
 		}
 
 		AdwSetEEPROMConfig(iot, ioh, &eep_config);
