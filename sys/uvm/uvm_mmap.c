@@ -439,6 +439,38 @@ out:
 	return error;
 }
 
+#if 1
+int
+sys_pad_mquery(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_pad_mquery_args *uap = v;
+	struct sys_mquery_args unpad;
+
+	SCARG(&unpad, addr) = SCARG(uap, addr);
+	SCARG(&unpad, len) = SCARG(uap, len);
+	SCARG(&unpad, prot) = SCARG(uap, prot);
+	SCARG(&unpad, flags) = SCARG(uap, flags);
+	SCARG(&unpad, fd) = SCARG(uap, fd);
+	SCARG(&unpad, pos) = SCARG(uap, pos);
+	return sys_mquery(p, &unpad, retval);
+}
+
+int
+sys_pad_mmap(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_pad_mmap_args *uap = v;
+	struct sys_mmap_args unpad;
+
+	SCARG(&unpad, addr) = SCARG(uap, addr);
+	SCARG(&unpad, len) = SCARG(uap, len);
+	SCARG(&unpad, prot) = SCARG(uap, prot);
+	SCARG(&unpad, flags) = SCARG(uap, flags);
+	SCARG(&unpad, fd) = SCARG(uap, fd);
+	SCARG(&unpad, pos) = SCARG(uap, pos);
+	return sys_mmap(p, &unpad, retval);
+}
+#endif
+
 /*
  * sys_msync: the msync system call (a front-end for flush)
  */
