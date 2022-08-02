@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.63 2021/11/03 14:42:12 deraadt Exp $ */
+/*	$OpenBSD: main.c,v 1.64 2022/08/02 18:09:20 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -630,7 +630,7 @@ basedir:
 usage:
 	fprintf(stderr, "usage: %s"
 	    " [-aDglnoprtvx] [-e program] [--address=sourceaddr]\n"
-	    "\t[--contimeout=seconds [--compare-dest=dir] [--del] [--exclude]\n"
+	    "\t[--contimeout=seconds] [--compare-dest=dir] [--del] [--exclude]\n"
 	    "\t[--exclude-from=file] [--include] [--include-from=file]\n"
 	    "\t[--no-motd] [--numeric-ids] [--port=portnumber]\n"
 	    "\t[--rsync-path=program] [--timeout=seconds] [--version]\n"
