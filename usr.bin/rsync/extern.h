@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.42 2021/10/22 11:10:34 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.43 2021/10/29 08:00:59 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -68,6 +68,11 @@
  * All poll events will use it and catch time-outs.
  */
 extern int poll_timeout;
+
+/*
+ * Use this for --contimeout.
+ */
+extern int poll_contimeout;
 
 /*
  * Operating mode for a client or a server.
