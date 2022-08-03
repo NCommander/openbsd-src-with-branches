@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.260 2022/07/25 16:37:55 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.261 2022/07/28 13:11:51 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org> and
@@ -240,7 +240,7 @@ enum nexthop_state {
 	NEXTHOP_LOOKUP,
 	NEXTHOP_UNREACH,
 	NEXTHOP_REACH,
-	NEXTHOP_FLAPPED
+	NEXTHOP_FLAPPED		/* only used by oldstate */
 };
 
 struct nexthop {
