@@ -1,4 +1,4 @@
-/* $OpenBSD: p12_attr.c,v 1.14 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: p12_attr.c,v 1.15 2022/05/09 19:19:33 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -138,12 +138,18 @@ PKCS12_get_attr_gen(const STACK_OF(X509_ATTRIBUTE) *attrs, int attr_nid)
 char *
 PKCS12_get_friendlyname(PKCS12_SAFEBAG *bag)
 {
-	ASN1_TYPE *atype;
+	const ASN1_TYPE *atype;
 
-	if (!(atype = PKCS12_get_attr(bag, NID_friendlyName)))
+	if (!(atype = PKCS12_SAFEBAG_get0_attr(bag, NID_friendlyName)))
 		return NULL;
 	if (atype->type != V_ASN1_BMPSTRING)
 		return NULL;
 	return OPENSSL_uni2asc(atype->value.bmpstring->data,
 	    atype->value.bmpstring->length);
+}
+
+const STACK_OF(X509_ATTRIBUTE) *
+PKCS12_SAFEBAG_get0_attrs(const PKCS12_SAFEBAG *bag)
+{
+	return bag->attrib;
 }
