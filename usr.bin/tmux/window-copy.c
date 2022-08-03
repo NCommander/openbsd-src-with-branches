@@ -1,4 +1,4 @@
-/* $OpenBSD: window-copy.c,v 1.336 2022/06/21 09:30:01 nicm Exp $ */
+/* $OpenBSD: window-copy.c,v 1.337 2022/07/22 07:14:07 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -3673,6 +3673,7 @@ window_copy_search(struct window_mode_entry *wme, int direction, int regex)
 		if (direction &&
 		    window_copy_search_mark_at(data, fx, fy, &at) == 0 &&
 		    at > 0 &&
+		    data->searchmark != NULL &&
 		    data->searchmark[at] == data->searchmark[at - 1]) {
 			window_copy_move_after_search_mark(data, &fx, &fy,
 			    wrapflag);
@@ -3705,6 +3706,7 @@ window_copy_search(struct window_mode_entry *wme, int direction, int regex)
 			        &start) == 0) {
 				while (window_copy_search_mark_at(data, fx, fy,
 				           &at) == 0 &&
+				       data->searchmark != NULL &&
 				       data->searchmark[at] ==
 				           data->searchmark[start]) {
 					data->cx = fx;
