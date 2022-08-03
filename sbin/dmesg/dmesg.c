@@ -1,4 +1,4 @@
-/*	$OpenBSD: dmesg.c,v 1.30 2018/05/15 15:15:50 cheloha Exp $	*/
+/*	$OpenBSD: dmesg.c,v 1.31 2019/12/24 13:20:44 bluhm Exp $	*/
 /*	$NetBSD: dmesg.c,v 1.8 1995/03/18 14:54:49 cgd Exp $	*/
 
 /*-
@@ -88,6 +88,9 @@ main(int argc, char *argv[])
 		}
 	argc -= optind;
 	argv += optind;
+
+	if (argc != 0)
+		usage();
 
 	if (memf == NULL && nlistf == NULL) {
 		int mib[2], msgbufsize;
