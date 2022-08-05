@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.64 2022/07/12 03:55:34 jsg Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.65 2022/07/13 09:28:18 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
@@ -1012,7 +1012,9 @@ cpu_resume_secondary(struct cpu_info *ci)
 	ci->ci_idepth = 0;
 	ci->ci_flags &= ~CPUF_PRESENT;
 
+#ifdef DIAGNOSTIC
 	ci->ci_mutex_level = 0;
+#endif
 	ci->ci_ttbr1 = 0;
 
 	p = ci->ci_schedstate.spc_idleproc;
