@@ -1,4 +1,4 @@
-/* $OpenBSD: nm1.C,v 1.1 2013/07/06 23:06:36 espie Exp $ */
+/* $OpenBSD: nm1.C,v 1.2 2017/02/07 12:57:12 bluhm Exp $ */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -23,7 +23,6 @@ D(sa_family_t)
 D(segsz_t)
 D(socklen_t)
 D(suseconds_t)
-D(swblk_t)
 D(uid_t)
 D(uint64_t)
 D(uint32_t)
