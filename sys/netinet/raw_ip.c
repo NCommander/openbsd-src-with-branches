@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip.c,v 1.127 2022/03/23 17:22:28 bluhm Exp $	*/
+/*	$OpenBSD: raw_ip.c,v 1.128 2022/05/15 09:12:20 dlg Exp $	*/
 /*	$NetBSD: raw_ip.c,v 1.25 1996/02/18 18:58:33 christos Exp $	*/
 
 /*
@@ -152,7 +152,7 @@ rip_input(struct mbuf **mp, int *offp, int proto, int af)
 		}
 	}
 #endif
-	NET_ASSERT_WLOCKED();
+	NET_ASSERT_LOCKED_EXCLUSIVE();
 	SIMPLEQ_INIT(&inpcblist);
 	mtx_enter(&rawcbtable.inpt_mtx);
 	TAILQ_FOREACH(inp, &rawcbtable.inpt_queue, inp_queue) {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.c,v 1.271 2022/06/28 09:32:27 bluhm Exp $	*/
+/*	$OpenBSD: ip_ipsp.c,v 1.272 2022/07/14 13:52:10 mvs Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -644,7 +644,7 @@ tdb_walk(u_int rdomain, int (*walker)(struct tdb *, void *, int), void *arg)
 	 * traversing the tdb_hnext list.  Create a new tdb_walk list with
 	 * exclusive netlock protection.
 	 */
-	NET_ASSERT_WLOCKED();
+	NET_ASSERT_LOCKED_EXCLUSIVE();
 	SIMPLEQ_INIT(&tdblist);
 
 	mtx_enter(&tdb_sadb_mtx);
