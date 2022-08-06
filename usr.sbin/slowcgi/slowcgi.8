@@ -1,4 +1,4 @@
-.\"   $OpenBSD: slowcgi.8,v 1.15 2021/09/02 13:18:04 florian Exp $
+.\"   $OpenBSD: slowcgi.8,v 1.16 2021/09/02 14:14:44 jmc Exp $
 .\"
 .\" Copyright (c) 2013 Florian Obser <florian@openbsd.org>
 .\"
@@ -25,6 +25,7 @@
 .Op Fl dv
 .Op Fl p Ar path
 .Op Fl s Ar socket
+.Op Fl t Ar timeout
 .Op Fl U Ar user
 .Op Fl u Ar user
 .Sh DESCRIPTION
@@ -76,6 +77,12 @@ effectively disables the chroot.
 .It Fl s Ar socket
 Create and bind to alternative local socket at
 .Ar socket .
+.It Fl t Ar timeout
+Terminate the request after
+.Ar timeout
+seconds instead of the default 120 seconds.
+The CGI script is left to run but its standard input, output and error
+will be closed.
 .It Fl U Ar user
 Change the owner of
 .Pa /var/www/run/slowcgi.sock
