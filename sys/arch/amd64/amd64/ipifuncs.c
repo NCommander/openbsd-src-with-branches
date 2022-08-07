@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.35 2020/09/13 11:53:16 jsg Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.36 2021/08/31 17:40:59 dv Exp $	*/
 /*	$NetBSD: ipifuncs.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $ */
 
 /*-
@@ -124,7 +124,7 @@ x86_64_ipi_halt(struct cpu_info *ci)
 	intr_disable();
 	lapic_disable();
 	wbinvd();
-	ci->ci_flags &= ~CPUF_RUNNING;
+	atomic_clearbits_int(&ci->ci_flags, CPUF_RUNNING);
 	wbinvd();
 
 	for(;;) {
