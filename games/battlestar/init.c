@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.16 2015/12/31 17:51:19 mestre Exp $	*/
+/*	$OpenBSD: init.c,v 1.17 2019/05/09 20:19:23 tedu Exp $	*/
 /*	$NetBSD: init.c,v 1.4 1995/03/21 15:07:35 cgd Exp $	*/
 
 /*
@@ -66,7 +66,7 @@ initialize(const char *filename)
 		for (p = dayobjs; p->room != 0; p++)
 			SetBit(location[p->room].objects, p->obj);
 	} else {
-		savefile = save_file_name(filename, strlen(filename));
+		savefile = save_file_name(filename);
 		restore(savefile);
 		free(savefile);
 	}
