@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.268 2022/02/22 01:35:41 guenther Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.269 2022/06/29 22:45:24 bluhm Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -727,6 +727,12 @@ reroute:
 	hlen = unfragpartlen;
 	if (mtu > IPV6_MAXPACKET)
 		mtu = IPV6_MAXPACKET;
+
+	/*
+	 * If we are doing fragmentation, we can't defer TCP/UDP
+	 * checksumming; compute the checksum and clear the flag.
+	 */
+        in6_proto_cksum_out(m, NULL);
 
 	/*
 	 * Change the next header field of the last header in the
