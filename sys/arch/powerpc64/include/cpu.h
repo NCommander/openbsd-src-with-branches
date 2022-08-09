@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.30 2021/06/02 00:39:27 cheloha Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.31 2021/07/06 09:34:07 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -74,9 +74,9 @@ struct cpu_info {
 	uint64_t	ci_lasttb;
 	uint64_t	ci_nexttimerevent;
 	uint64_t	ci_nextstatevent;
-	int		ci_statspending;
 	
 	volatile int 	ci_cpl;
+	volatile int	ci_dec_deferred;
 	uint32_t	ci_ipending;
 	uint32_t	ci_idepth;
 #ifdef DIAGNOSTIC
