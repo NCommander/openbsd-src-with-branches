@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: inflate.c,v 1.11 2021/07/04 14:24:49 tb Exp $ */
 /* inflate.c -- zlib decompression
  * Copyright (C) 1995-2016 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -780,8 +780,9 @@ int flush;
                 if (copy > have) copy = have;
                 if (copy) {
                     if (state->head != Z_NULL &&
-                        state->head->extra != Z_NULL) {
-                        len = state->head->extra_len - state->length;
+                        state->head->extra != Z_NULL &&
+                        (len = state->head->extra_len - state->length) <
+			    state->head->extra_max) {
                         zmemcpy(state->head->extra + len, next,
                                 len + copy > state->head->extra_max ?
                                 state->head->extra_max - len : copy);
