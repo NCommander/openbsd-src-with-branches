@@ -1,4 +1,4 @@
-/*     $OpenBSD: bcm2835_dmac.c,v 1.2 2022/04/06 18:59:28 naddy Exp $ */
+/*     $OpenBSD: bcm2835_dmac.c,v 1.3 2022/06/28 16:29:03 anton Exp $ */
 
 /*
  * Copyright (c) 2020 Tobias Heider <tobhe@openbsd.org>
@@ -170,7 +170,7 @@ bcmdmac_attach(struct device *parent, struct device *self, void *aux)
 
 	mtx_init(&sc->sc_lock, IPL_SCHED);
 
-	sc->sc_nchannels = 31 - __builtin_clz(sc->sc_channelmask);
+	sc->sc_nchannels = 32 - __builtin_clz(sc->sc_channelmask);
 	sc->sc_channels = malloc(sizeof(*sc->sc_channels) * sc->sc_nchannels,
 	    M_DEVBUF, M_WAITOK);
 
