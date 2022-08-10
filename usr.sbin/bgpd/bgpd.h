@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.447 2022/07/28 10:41:18 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.448 2022/07/28 13:11:48 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -717,9 +717,9 @@ struct kroute_nexthop {
 	struct bgpd_addr	nexthop;
 	struct bgpd_addr	gateway;
 	struct bgpd_addr	net;
+	uint8_t			netlen;
 	uint8_t			valid;
 	uint8_t			connected;
-	uint8_t			netlen;
 };
 
 struct session_dependon {
