@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.c,v 1.3 2014/11/18 20:51:01 krw Exp $	*/
+/*	$OpenBSD: exec.c,v 1.4 2019/04/10 04:17:35 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -58,6 +58,8 @@ run_loadfile(uint64_t *marks, int howto)
 			*c++ = 'c';
 		if (howto & RB_KDB)
 			*c++ = 'd';
+		if (howto & RB_GOODRANDOM)
+			*c++ = 'g';
 		if (howto & RB_SINGLE)
 			*c++ = 's';
 		*c = '\0';

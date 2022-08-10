@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.98 2021/07/12 09:32:37 visa Exp $ */
+/*	$OpenBSD: machdep.c,v 1.99 2021/07/24 08:21:13 visa Exp $ */
 
 /*
  * Copyright (c) 2009, 2010, 2014 Miodrag Vallat.
@@ -943,6 +943,9 @@ dobootopts(int argc)
 				break;
 			case 's':
 				boothowto |= RB_SINGLE;
+				break;
+			case 'g':
+				boothowto |= RB_GOODRANDOM;
 				break;
 			default:
 				pmon_printf("unrecognized option `%c'", *cp);
