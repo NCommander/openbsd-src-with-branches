@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.264 2021/03/11 11:16:56 jsg Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.265 2021/10/06 15:46:03 claudio Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -607,7 +607,7 @@ cpu_startup(void)
 	 * fogging the air w/ humid cries --
 	 *	WELCOME TO SUMMER!
 	 */
-	printf(version);
+	printf("%s", version);
 
 	printf("%s\n", cpu_model);
 	printf("real mem = %lu (%luMB)\n", ptoa(physmem),

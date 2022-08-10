@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.195 2020/11/08 20:37:21 mpi Exp $ */
+/* $OpenBSD: machdep.c,v 1.196 2021/10/06 15:46:03 claudio Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -801,7 +801,7 @@ cpu_startup()
 	/*
 	 * Good {morning,afternoon,evening,night}.
 	 */
-	printf(version);
+	printf("%s", version);
 	identifycpu();
 	printf("real mem = %lu (%luMB)\n", ptoa((psize_t)totalphysmem),
 	    ptoa((psize_t)totalphysmem) / 1024 / 1024);

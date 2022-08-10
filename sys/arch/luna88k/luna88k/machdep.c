@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.136 2021/07/25 07:12:51 aoyama Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.137 2022/03/05 11:03:30 aoyama Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -311,7 +311,7 @@ cpu_startup()
 	/*
 	 * Good {morning,afternoon,evening,night}.
 	 */
-	printf(version);
+	printf("%s", version);
 	identifycpu();
 	printf("real mem = %lu (%luMB)\n", ptoa(physmem),
 	    ptoa(physmem) / 1024 / 1024);
