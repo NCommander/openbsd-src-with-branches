@@ -1,4 +1,4 @@
-/* $OpenBSD: a_enum.c,v 1.24 2022/06/25 16:15:18 jsing Exp $ */
+/* $OpenBSD: a_enum.c,v 1.25 2022/07/09 14:46:43 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -126,14 +126,18 @@ ASN1_ENUMERATED_get_int64(int64_t *out_val, const ASN1_ENUMERATED *aenum)
 int
 ASN1_ENUMERATED_set_int64(ASN1_ENUMERATED *aenum, int64_t val)
 {
+	uint64_t uval;
+
 	asn1_aenum_clear(aenum);
+
+	uval = (uint64_t)val;
 
 	if (val < 0) {
 		aenum->type = V_ASN1_NEG_ENUMERATED;
-		val = -val;
+		uval = -uval;
 	}
 
-	return asn1_aint_set_uint64((uint64_t)val, &aenum->data, &aenum->length);
+	return asn1_aint_set_uint64(uval, &aenum->data, &aenum->length);
 }
 
 long
