@@ -13,6 +13,7 @@ use bytes;
 use Test::More  ;
 use CompTestUtils;
 
+use constant ZLIB_1_2_12_0 => 0x12C0;
 
 BEGIN 
 { 
@@ -24,13 +25,13 @@ BEGIN
 
     my $count = 0 ;
     if ($] < 5.005) {
-        $count = 230 ;
+        $count = 237 ;
     }
     elsif ($] >= 5.006) {
-        $count = 300 ;
+        $count = 325 ;
     }
     else {
-        $count = 258 ;
+        $count = 280 ;
     }
 
     plan tests => $count + $extra;
@@ -38,6 +39,8 @@ BEGIN
     use_ok('Compress::Raw::Zlib', 2) ;
 }
 
+
+my $Zlib_ver = Compress::Raw::Zlib::zlib_version ;
 
 my $hello = <<EOM ;
 hello world
@@ -47,8 +50,12 @@ EOM
 my $len   = length $hello ;
 
 # Check zlib_version and ZLIB_VERSION are the same.
-is Compress::Raw::Zlib::zlib_version, ZLIB_VERSION, 
-    "ZLIB_VERSION matches Compress::Raw::Zlib::zlib_version" ;
+SKIP: {
+    skip "TEST_SKIP_VERSION_CHECK is set", 1 
+        if $ENV{TEST_SKIP_VERSION_CHECK};
+    is Compress::Raw::Zlib::zlib_version, ZLIB_VERSION,
+        "ZLIB_VERSION matches Compress::Raw::Zlib::zlib_version" ;
+}
 
 {
     title "Error Cases" ;
@@ -424,8 +431,12 @@ for my $consume ( 0 .. 1)
     
 }
 
+SKIP:
 {
     title 'inflateSync';
+
+    skip "inflateSync needs zlib 1.2.1 or better, you have $Zlib_ver", 22 
+        if ZLIB_VERNUM() < 0x1210 ;
 
     # create a deflate stream with flush points
 
@@ -479,10 +490,18 @@ for my $consume ( 0 .. 1)
         # print "x $status\n";
         last if $status == Z_STREAM_END or $status != Z_OK ;
     }
-     
-    cmp_ok $status, '==', Z_DATA_ERROR ;
-    is $GOT, $goodbye ;
 
+    # Z_STREAM_END returned by 1.12.2, Z_DATA_ERROR for older zlib
+    if (ZLIB_VERNUM >= ZLIB_1_2_12_0)
+    {
+        cmp_ok $status, '==', Z_STREAM_END ;
+    }
+    else
+    {
+        cmp_ok $status, '==', Z_DATA_ERROR ;
+    }
+
+    is $GOT, $goodbye ;
 
     # Check inflateSync leaves good data in buffer
     my $rest = $Answer ;
@@ -504,7 +523,17 @@ for my $consume ( 0 .. 1)
     is length($rest), $len2, "expected compressed output";
     
     $GOT = ''; 
-    cmp_ok $k->inflate($rest, $GOT), '==', Z_DATA_ERROR, "inflate returns Z_DATA_ERROR";
+    $status = $k->inflate($rest, $GOT);
+    # Z_STREAM_END returned by 1.12.2, Z_DATA_ERROR for older zlib
+    if (ZLIB_VERNUM >= ZLIB_1_2_12_0)
+    {
+        cmp_ok $status, '==', Z_STREAM_END ;
+    }
+    else
+    {
+        cmp_ok $status, '==', Z_DATA_ERROR ;
+    }
+
     is $GOT, $goodbye ;
 }
 
@@ -549,6 +578,13 @@ for my $consume ( 0 .. 1)
     is $x->get_Level(),    Z_BEST_SPEED;
     is $x->get_Strategy(), Z_HUFFMAN_ONLY;
      
+    # change both Level & Strategy again without any calls to deflate 
+    $status = $x->deflateParams(-Level => Z_DEFAULT_COMPRESSION, -Strategy => Z_DEFAULT_STRATEGY, -Bufsize => 1234) ;
+    cmp_ok $status, '==', Z_OK ;
+    
+    is $x->get_Level(),    Z_DEFAULT_COMPRESSION;
+    is $x->get_Strategy(), Z_DEFAULT_STRATEGY;
+     
     $status = $x->deflate($goodbye, $Answer) ;
     cmp_ok $status, '==', Z_OK ;
     $input .= $goodbye;
@@ -558,7 +594,7 @@ for my $consume ( 0 .. 1)
     cmp_ok $status, '==', Z_OK ;
     
     is $x->get_Level(),    Z_NO_COMPRESSION;
-    is $x->get_Strategy(), Z_HUFFMAN_ONLY;
+    is $x->get_Strategy(), Z_DEFAULT_STRATEGY;
      
     $status = $x->deflate($goodbye, $Answer) ;
     cmp_ok $status, '==', Z_OK ;
@@ -724,17 +760,25 @@ if ($] >= 5.005)
     
 }
 
+SKIP:
 {
+    skip "InflateScan needs zlib 1.2.1 or better, you have $Zlib_ver", 1 
+        if ZLIB_VERNUM() < 0x1210 ;
+
     # regression - check that resetLastBlockByte can cope with a NULL
     # pointer.
     Compress::Raw::Zlib::InflateScan->new->resetLastBlockByte(undef);
     ok 1, "resetLastBlockByte(undef) is ok" ;
 }
 
+SKIP:
 {
 
     title "gzip mode";
     # ================
+
+    skip "gzip mode needs zlib 1.2.1 or better, you have $Zlib_ver", 13 
+        if ZLIB_VERNUM() < 0x1210 ;
 
     my $hello = "I am a HAL 9000 computer" ;
     my @hello = split('', $hello) ;
@@ -776,6 +820,7 @@ if ($] >= 5.005)
     is $GOT, $hello, "uncompressed data matches ok" ;
 }
 
+SKIP:
 {
 
     title "gzip error mode";
@@ -783,6 +828,9 @@ if ($] >= 5.005)
     # read with no special windowbits setting - this will fail
     # then read with WANT_GZIP_OR_ZLIB - thi swill work
     # ================
+
+    skip "gzip mode needs zlib 1.2.1 or better, you have $Zlib_ver", 12 
+        if ZLIB_VERNUM() < 0x1210 ;
 
     my $hello = "I am a HAL 9000 computer" ;
     my ($err, $x, $X, $status); 
@@ -822,13 +870,16 @@ if ($] >= 5.005)
     is $GOT, $hello, "uncompressed data matches ok" ;
 }
 
+SKIP:
 {
-
     title "gzip/zlib error mode";
     # Create zlib -
     # read with no WANT_GZIP windowbits setting - this will fail
     # then read with WANT_GZIP_OR_ZLIB - thi swill work
     # ================
+
+    skip "gzip mode needs zlib 1.2.1 or better, you have $Zlib_ver", 12 
+        if ZLIB_VERNUM() < 0x1210 ;
 
     my $hello = "I am a HAL 9000 computer" ;
     my ($err, $x, $X, $status); 
@@ -865,6 +916,81 @@ if ($] >= 5.005)
     $status = $k->inflate($X, $GOT) ;
     cmp_ok $status, '==', Z_STREAM_END, "Got Z_STREAM_END" ;
     is $GOT, $hello, "uncompressed data matches ok" ;
+}
+
+{
+    title "zlibCompileFlags";
+
+    my $flags = Compress::Raw::Zlib::zlibCompileFlags;
+
+    if (ZLIB_VERNUM() < 0x1210)
+    {
+        is $flags, 0, "zlibCompileFlags == 0 if < 1.2.1";
+    }
+    else
+    {
+        ok $flags, "zlibCompileFlags != 0 if < 1.2.1";
+    }
+}
+
+{
+    title "repeated calls to flush after some compression";
+
+    my $hello = "I am a HAL 9000 computer" ;
+    my ($err, $x, $X, $status); 
+ 
+    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( ), "Create deflate object" );
+    isa_ok $x, "Compress::Raw::Zlib::deflateStream" ;
+    cmp_ok $err, '==', Z_OK, "status is Z_OK" ;
+ 
+    $status = $x->deflate($hello, $X) ;
+    cmp_ok $status, '==', Z_OK, "deflate returned Z_OK" ;
+    
+    cmp_ok  $x->flush($X, Z_SYNC_FLUSH), '==', Z_OK, "flush returned Z_OK" ;    
+    cmp_ok  $x->flush($X, Z_SYNC_FLUSH), '==', Z_OK, "second flush returned Z_OK" ; 
+    is $X, "", "no output from second flush";
+}
+
+{
+    title "repeated calls to flush - no compression";
+
+    my $hello = "I am a HAL 9000 computer" ;
+    my ($err, $x, $X, $status); 
+ 
+    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( ), "Create deflate object" );
+    isa_ok $x, "Compress::Raw::Zlib::deflateStream" ;
+    cmp_ok $err, '==', Z_OK, "status is Z_OK" ;
+    
+    cmp_ok  $x->flush($X, Z_SYNC_FLUSH), '==', Z_OK, "flush returned Z_OK" ;    
+    cmp_ok  $x->flush($X, Z_SYNC_FLUSH), '==', Z_OK, "second flush returned Z_OK" ; 
+    is $X, "", "no output from second flush";
+}
+
+{
+    title "crc32";
+
+    is eval('Compress::Raw::Zlib::crc32("A" x 0x100, 0, 0x100); 0x1234'), 0x1234;
+    is $@,  '';
+
+    is eval('Compress::Raw::Zlib::crc32("A" x 0x100, 0, 0x101); 0x1234'), undef;
+    like $@,  mkErr("^Offset out of range in Compress::Raw::Zlib::crc32") ;
+
+}
+
+if (0)
+{
+    title "RT #122695: sync flush appending extra empty uncompressed block";
+
+    my $hello = "I am a HAL 9000 computer" ;
+    my ($err, $x, $X, $status); 
+ 
+    ok( ($x, $err) = new Compress::Raw::Zlib::Deflate ( ), "Create deflate object" );
+    isa_ok $x, "Compress::Raw::Zlib::deflateStream" ;
+    cmp_ok $err, '==', Z_OK, "status is Z_OK" ;
+    
+    cmp_ok  $x->flush($X, Z_SYNC_FLUSH), '==', Z_OK, "flush returned Z_OK" ;    
+    cmp_ok  $x->flush($X, Z_SYNC_FLUSH), '==', Z_OK, "second flush returned Z_OK" ; 
+    is $X, "", "no output from second flush";
 }
 
 exit if $] < 5.006 ;
