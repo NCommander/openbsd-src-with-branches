@@ -102,6 +102,12 @@ smmu_acpi_attach(struct device *parent, struct device *self, void *aux)
 	/* Check for QCOM devices to enable quirk. */
 	aml_find_node(acpi_softc->sc_root, "_HID", smmu_acpi_foundqcom, sc);
 
+	/* FIXME: Don't configure on QCOM until its runtime use is fixed. */
+	if (sc->sc_is_qcom) {
+		printf(": disabled\n");
+		return;
+	}
+
 	if (smmu_attach(sc) != 0)
 		return;
 
