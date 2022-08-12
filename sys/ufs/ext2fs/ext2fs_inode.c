@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_inode.c,v 1.64 2021/03/11 13:31:35 jsg Exp $	*/
+/*	$OpenBSD: ext2fs_inode.c,v 1.65 2021/12/12 09:14:59 visa Exp $	*/
 /*	$NetBSD: ext2fs_inode.c,v 1.24 2001/06/19 12:59:18 wiz Exp $	*/
 
 /*
@@ -387,10 +387,15 @@ done:
 	for (i = 0; i < NDADDR; i++)
 		if (newblks[i] != oip->i_e2fs_blocks[i])
 			panic("ext2fs_truncate2");
-	if (length == 0 &&
-	    (!LIST_EMPTY(&ovp->v_cleanblkhd) ||
-	     !LIST_EMPTY(&ovp->v_dirtyblkhd)))
-		panic("ext2fs_truncate3");
+	if (length == 0) {
+		int s;
+
+		s = splbio();
+		if (!LIST_EMPTY(&ovp->v_cleanblkhd) ||
+		    !LIST_EMPTY(&ovp->v_dirtyblkhd))
+			panic("ext2fs_truncate3");
+		splx(s);
+	}
 #endif /* DIAGNOSTIC */
 	/*
 	 * Put back the real size.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_bio.c,v 1.207 2021/09/05 11:44:46 mpi Exp $	*/
+/*	$OpenBSD: vfs_bio.c,v 1.208 2021/12/12 09:14:59 visa Exp $	*/
 /*	$NetBSD: vfs_bio.c,v 1.44 1996/06/11 11:15:36 pk Exp $	*/
 
 /*
@@ -1554,7 +1554,10 @@ bufcache_getcleanbuf(int cachenum, int discard)
 
 
 void
-discard_buffer(struct buf *bp) {
+discard_buffer(struct buf *bp)
+{
+	splassert(IPL_BIO);
+
 	bufcache_take(bp);
 	if (bp->b_vp) {
 		RBT_REMOVE(buf_rb_bufs,
