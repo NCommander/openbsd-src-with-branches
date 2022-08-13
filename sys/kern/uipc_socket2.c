@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.125 2022/07/01 09:56:17 mvs Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.126 2022/07/25 07:28:22 visa Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -238,7 +238,7 @@ sonewconn(struct socket *head, int connstatus)
 		sounlock(head);
 	}
 
-	error = (*so->so_proto->pr_attach)(so, 0);
+	error = pru_attach(so, 0);
 
 	if (persocket) {
 		sounlock(so);
