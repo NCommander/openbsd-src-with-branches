@@ -1,4 +1,4 @@
-/*	$OpenBSD: vfs_lookup.c,v 1.85 2021/07/16 07:59:38 claudio Exp $	*/
+/*	$OpenBSD: vfs_lookup.c,v 1.86 2021/10/24 00:02:25 jsg Exp $	*/
 /*	$NetBSD: vfs_lookup.c,v 1.17 1996/02/09 19:00:59 christos Exp $	*/
 
 /*
@@ -40,7 +40,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/syslimits.h>
-#include <sys/time.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>
 #include <sys/lock.h>

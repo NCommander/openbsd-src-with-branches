@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.174 2022/02/15 03:53:58 jsg Exp $	*/
+/*	$OpenBSD: tty.c,v 1.175 2022/07/02 08:50:42 visa Exp $	*/
 /*	$NetBSD: tty.c,v 1.68.4.2 1996/06/06 16:04:52 thorpej Exp $	*/
 
 /*-
@@ -50,7 +50,6 @@
 #include <sys/kernel.h>
 #include <sys/vnode.h>
 #include <sys/lock.h>
-#include <sys/syslog.h>
 #include <sys/malloc.h>
 #include <sys/msgbuf.h>
 #include <sys/signalvar.h>

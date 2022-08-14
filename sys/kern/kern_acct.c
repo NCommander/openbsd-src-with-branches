@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_acct.c,v 1.45 2021/12/13 16:37:37 deraadt Exp $	*/
+/*	$OpenBSD: kern_acct.c,v 1.46 2022/02/22 17:22:29 deraadt Exp $	*/
 /*	$NetBSD: kern_acct.c,v 1.42 1996/02/04 02:15:12 christos Exp $	*/
 
 /*-
@@ -50,7 +50,6 @@
 #include <sys/errno.h>
 #include <sys/acct.h>
 #include <sys/resourcevar.h>
-#include <sys/ioctl.h>
 #include <sys/tty.h>
 #include <sys/kthread.h>
 #include <sys/rwlock.h>

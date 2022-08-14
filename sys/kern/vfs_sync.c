@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.66 2021/06/15 05:24:47 dlg Exp $  */
+/*       $OpenBSD: vfs_sync.c,v 1.67 2021/10/15 06:30:06 semarie Exp $  */
 
 /*
  *  Portions of this code are:
@@ -49,9 +49,6 @@
 #include <sys/lock.h>
 #include <sys/malloc.h>
 #include <sys/time.h>
-
-#include <sys/kernel.h>
-#include <sys/sched.h>
 
 #ifdef FFS_SOFTUPDATES
 int   softdep_process_worklist(struct mount *);

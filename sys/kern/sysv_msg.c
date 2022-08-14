@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_msg.c,v 1.37 2020/06/24 22:03:42 cheloha Exp $	*/
+/*	$OpenBSD: sysv_msg.c,v 1.38 2022/02/21 13:51:04 jsg Exp $	*/
 /*	$NetBSD: sysv_msg.c,v 1.19 1996/02/09 19:00:18 christos Exp $	*/
 /*
  * Copyright (c) 2009 Bret S. Lambert <blambert@openbsd.org>
@@ -45,7 +45,6 @@
 #include <sys/syscallargs.h>
 #include <sys/sysctl.h>
 #include <sys/systm.h>
-#include <sys/uio.h>
 
 struct que *que_create(key_t, struct ucred *, int);
 struct que *que_lookup(int);

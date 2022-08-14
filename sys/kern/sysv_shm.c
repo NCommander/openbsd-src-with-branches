@@ -1,4 +1,4 @@
-/*	$OpenBSD: sysv_shm.c,v 1.78 2020/11/19 04:08:46 gnezdo Exp $	*/
+/*	$OpenBSD: sysv_shm.c,v 1.79 2021/12/21 06:12:49 anton Exp $	*/
 /*	$NetBSD: sysv_shm.c,v 1.50 1998/10/21 22:24:29 tron Exp $	*/
 
 /*
@@ -53,7 +53,6 @@
 #include <sys/param.h>
 #include <sys/shm.h>
 #include <sys/proc.h>
-#include <sys/uio.h>
 #include <sys/time.h>
 #include <sys/malloc.h>
 #include <sys/mman.h>

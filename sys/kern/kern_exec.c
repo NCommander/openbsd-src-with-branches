@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.229 2022/02/07 19:30:48 guenther Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.230 2022/02/22 17:14:14 deraadt Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -36,7 +36,6 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/filedesc.h>
-#include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/mount.h>
 #include <sys/malloc.h>
@@ -50,7 +49,6 @@
 #include <sys/exec_elf.h>
 #include <sys/ktrace.h>
 #include <sys/resourcevar.h>
-#include <sys/wait.h>
 #include <sys/mman.h>
 #include <sys/signalvar.h>
 #include <sys/stat.h>
