@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_http.c,v 1.149 2021/11/11 15:52:33 claudio Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.150 2022/03/02 11:10:43 florian Exp $	*/
 
 /*
  * Copyright (c) 2020 Matthias Pressfreund <mpfr@fn.de>
@@ -1777,13 +1777,16 @@ read_errdoc(const char *root, const char *file)
 	free(path);
 	if (fstat(fd, &sb) < 0) {
 		log_warn("%s: stat", __func__);
+		close(fd);
 		return (NULL);
 	}
 
 	if ((ret = calloc(1, sb.st_size + 1)) == NULL)
 		fatal("calloc");
-	if (sb.st_size == 0)
+	if (sb.st_size == 0) {
+		close(fd);
 		return (ret);
+	}
 	if (read(fd, ret, sb.st_size) != sb.st_size) {
 		log_warn("%s: read", __func__);
 		close(fd);
