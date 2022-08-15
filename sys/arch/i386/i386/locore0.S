@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore0.S,v 1.5 2021/12/31 10:44:05 jsg Exp $	*/
+/*	$OpenBSD: locore0.S,v 1.6 2022/07/07 00:56:46 daniel Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -114,27 +114,6 @@ start:	movw	$0x1234,0x472			# warm boot
 	movw	%ax,%gs
 
 	/* Find out our CPU type. */
-
-.Ltry386:	/* Try to toggle alignment check flag; does not exist on 386. */
-	pushfl
-	popl	%eax
-	movl	%eax,%ecx
-	orl	$PSL_AC,%eax
-	pushl	%eax
-	popfl
-	pushfl
-	popl	%eax
-	xorl	%ecx,%eax
-	andl	$PSL_AC,%eax
-	pushl	%ecx
-	popfl
-
-	testl	%eax,%eax
-	jnz	.Ltry486
-
-.Lis386:
-	movl	$CPU_386,RELOC(_C_LABEL(cpu))
-	jmp	2f
 
 .Ltry486:	/* Try to toggle identification flag; does not exist on early 486s. */
 	pushfl
