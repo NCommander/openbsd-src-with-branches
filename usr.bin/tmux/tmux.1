@@ -1,4 +1,4 @@
-.\" $OpenBSD: tmux.1,v 1.897 2022/08/02 11:09:26 nicm Exp $
+.\" $OpenBSD: tmux.1,v 1.898 2022/08/15 08:54:03 nicm Exp $
 .\"
 .\" Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
 .\"
@@ -14,7 +14,7 @@
 .\" IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
 .\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: August 2 2022 $
+.Dd $Mdocdate: August 15 2022 $
 .Dt TMUX 1
 .Os
 .Sh NAME
@@ -6596,6 +6596,10 @@ escapes non-printable characters and backslash as octal \\xxx.
 The pane with ID
 .Ar pane-id
 has changed mode.
+.It Ic %paste-buffer-changed Ar name
+Paste buffer
+.Ar name
+has been changed.
 .It Ic %pause Ar pane-id
 The pane has been paused (if the
 .Ar pause-after
