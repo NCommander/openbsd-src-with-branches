@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pager.c,v 1.86 2022/08/02 14:04:06 mpi Exp $	*/
+/*	$OpenBSD: uvm_pager.c,v 1.87 2022/08/07 19:40:48 miod Exp $	*/
 /*	$NetBSD: uvm_pager.c,v 1.36 2000/11/27 18:26:41 chs Exp $	*/
 
 /*
@@ -40,8 +40,6 @@
 #include <sys/atomic.h>
 
 #include <uvm/uvm.h>
-
-struct pool *uvm_aiobuf_pool;
 
 const struct uvm_pagerops *uvmpagerops[] = {
 	&aobj_pager,

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_extern.h,v 1.161 2022/05/14 15:25:57 kettenis Exp $	*/
+/*	$OpenBSD: uvm_extern.h,v 1.162 2022/06/07 12:07:45 kettenis Exp $	*/
 /*	$NetBSD: uvm_extern.h,v 1.57 2001/03/09 01:02:12 chs Exp $	*/
 
 /*
@@ -243,8 +243,6 @@ extern struct uvm_constraint_range  isa_constraint;
 extern struct uvm_constraint_range  dma_constraint;
 extern struct uvm_constraint_range  no_constraint;
 extern struct uvm_constraint_range *uvm_md_constraints[];
-
-extern struct pool *uvm_aiobuf_pool;
 
 /*
  * the various kernel maps, owned by MD code
