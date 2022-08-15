@@ -1,4 +1,4 @@
-/*	$OpenBSD: httpd.h,v 1.159 2022/02/27 20:30:30 bluhm Exp $	*/
+/*	$OpenBSD: httpd.h,v 1.160 2022/03/02 11:10:43 florian Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -332,8 +332,8 @@ struct client {
 	struct bufferevent	*clt_bev;
 	struct evbuffer		*clt_output;
 	struct event		 clt_ev;
-	void			*clt_descreq;
-	void			*clt_descresp;
+	struct http_descriptor	*clt_descreq;
+	struct http_descriptor	*clt_descresp;
 	int			 clt_sndbufsiz;
 	uint64_t		 clt_boundary;
 
