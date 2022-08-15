@@ -1,4 +1,4 @@
-/*	$OpenBSD: unpcb.h,v 1.25 2022/02/25 23:51:04 guenther Exp $	*/
+/*	$OpenBSD: unpcb.h,v 1.26 2022/07/01 09:56:17 mvs Exp $	*/
 /*	$NetBSD: unpcb.h,v 1.6 1994/06/29 06:46:08 cgd Exp $	*/
 
 /*
@@ -106,6 +106,8 @@ struct fdpass {
 	struct file	*fp;
 	int		 flags;
 };
+
+extern const struct pr_usrreqs uipc_usrreqs;
 
 int	uipc_usrreq(struct socket *, int , struct mbuf *,
 			 struct mbuf *, struct mbuf *, struct proc *);
