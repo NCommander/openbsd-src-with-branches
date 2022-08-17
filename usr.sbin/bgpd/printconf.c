@@ -1,4 +1,4 @@
-/*	$OpenBSD: printconf.c,v 1.156 2022/07/11 17:08:21 claudio Exp $	*/
+/*	$OpenBSD: printconf.c,v 1.157 2022/07/28 13:11:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -782,6 +782,8 @@ print_addpath_mode(enum addpath_mode mode)
 		return "as-wide-best";
 	case ADDPATH_EVAL_ALL:
 		return "all";
+	default:
+		return "???";
 	}
 }
 
