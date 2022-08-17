@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.106 2022/02/04 12:01:12 claudio Exp $ */
+/*	$OpenBSD: control.c,v 1.107 2022/07/28 13:11:48 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -45,7 +45,7 @@ control_check(char *path)
 	struct sockaddr_un	 sa_un;
 	int			 fd;
 
-	bzero(&sa_un, sizeof(sa_un));
+	memset(&sa_un, 0, sizeof(sa_un));
 	sa_un.sun_family = AF_UNIX;
 	strlcpy(sa_un.sun_path, path, sizeof(sa_un.sun_path));
 
@@ -78,7 +78,7 @@ control_init(int restricted, char *path)
 		return (-1);
 	}
 
-	bzero(&sa_un, sizeof(sa_un));
+	memset(&sa_un, 0, sizeof(sa_un));
 	sa_un.sun_family = AF_UNIX;
 	if (strlcpy(sa_un.sun_path, path, sizeof(sa_un.sun_path)) >=
 	    sizeof(sa_un.sun_path)) {
