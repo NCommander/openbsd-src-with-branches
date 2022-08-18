@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.651 2022/07/27 01:44:25 daniel Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.652 2022/08/15 04:17:50 daniel Exp $	*/
 /*	$NetBSD: machdep.c,v 1.214 1996/11/10 03:16:17 thorpej Exp $	*/
 
 /*-
@@ -509,6 +509,7 @@ const struct cpu_nocpuid_nameclass i386_nocpuid_cpus[] = {
 };
 
 const char *classnames[] = {
+	"",
 	"486",
 	"586",
 	"686"
