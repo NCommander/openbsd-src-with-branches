@@ -1,4 +1,4 @@
-/* $OpenBSD: p12_init.c,v 1.13 2022/01/20 11:18:49 inoguchi Exp $ */
+/* $OpenBSD: pkcs12.h,v 1.26 2022/08/03 20:16:06 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -56,45 +56,11 @@
  *
  */
 
-#include <stdio.h>
+#ifndef HEADER_PKCS12_LOCAL_H
+#define HEADER_PKCS12_LOCAL_H
 
-#include <openssl/err.h>
-#include <openssl/pkcs12.h>
+__BEGIN_HIDDEN_DECLS
 
-#include "pkcs12_local.h"
+__END_HIDDEN_DECLS
 
-/* Initialise a PKCS12 structure to take data */
-
-PKCS12 *
-PKCS12_init(int mode)
-{
-	PKCS12 *pkcs12;
-
-	if (!(pkcs12 = PKCS12_new())) {
-		PKCS12error(ERR_R_MALLOC_FAILURE);
-		return NULL;
-	}
-	if (!ASN1_INTEGER_set(pkcs12->version, 3))
-		goto err;
-	if ((pkcs12->authsafes->type = OBJ_nid2obj(mode)) == NULL)
-		goto err;
-	switch (mode) {
-	case NID_pkcs7_data:
-		if (!(pkcs12->authsafes->d.data =
-		    ASN1_OCTET_STRING_new())) {
-			PKCS12error(ERR_R_MALLOC_FAILURE);
-			goto err;
-		}
-		break;
-	default:
-		PKCS12error(PKCS12_R_UNSUPPORTED_PKCS12_MODE);
-		goto err;
-	}
-
-	return pkcs12;
-
-err:
-	if (pkcs12 != NULL)
-		PKCS12_free(pkcs12);
-	return NULL;
-}
+#endif /* HEADER_PKCS12_LOCAL_H */
