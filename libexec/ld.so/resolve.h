@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.h,v 1.99 2021/11/12 22:28:13 guenther Exp $ */
+/*	$OpenBSD: resolve.h,v 1.100 2022/01/28 05:01:28 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -255,6 +255,7 @@ elf_object_t *_dl_finalize_object(const char *objname, Elf_Dyn *dynp,
 void	_dl_remove_object(elf_object_t *object);
 void	_dl_cleanup_objects(void);
 
+void _dl_handle_already_loaded(elf_object_t *_object, int _flags);
 elf_object_t *_dl_load_shlib(const char *, elf_object_t *, int, int);
 elf_object_t *_dl_tryload_shlib(const char *libname, int type, int flags);
 
