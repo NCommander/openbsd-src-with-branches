@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip.c,v 1.130 2022/08/15 09:11:39 mvs Exp $	*/
+/*	$OpenBSD: raw_ip.c,v 1.131 2022/08/20 23:48:58 mvs Exp $	*/
 /*	$NetBSD: raw_ip.c,v 1.25 1996/02/18 18:58:33 christos Exp $	*/
 
 /*
@@ -553,7 +553,6 @@ rip_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 	/*
 	 * Not supported.
 	 */
-	case PRU_LISTEN:
 	case PRU_ACCEPT:
 	case PRU_SENDOOB:
 	case PRU_RCVD:
