@@ -1,4 +1,4 @@
-/*	$OpenBSD: cputypes.h,v 1.13 2022/08/15 04:17:51 daniel Exp $	*/
+/*	$OpenBSD: cputypes.h,v 1.14 2022/08/20 23:33:53 daniel Exp $	*/
 /*	$NetBSD: cputypes.h,v 1.10 1997/10/18 04:51:03 mikel Exp $	*/
 
 /*
@@ -35,12 +35,6 @@
 #define	CPUCLASS_486	1
 #define	CPUCLASS_586	2
 #define	CPUCLASS_686	3
-
-/*
- *	Kind of Processor.
- */
-
-#define	CPU_486		0	/* Intel 80486DX */
 
 /*
  * CPU vendors
