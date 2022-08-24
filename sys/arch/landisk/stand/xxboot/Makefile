@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.11 2016/11/28 16:42:45 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.12 2022/08/24 17:36:19 miod Exp $
 
 MAN=	xxboot.8
 
@@ -22,6 +22,7 @@ AFLAGS+= -fno-pie
 OBJCOPY?=objcopy
 
 S=	${.CURDIR}/../../../..
+NO_NET=
 SAREL=
 .include "${S}/lib/libsa/Makefile.inc"
 DPADD+= $(SALIB)
