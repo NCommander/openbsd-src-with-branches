@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.26 2021/11/11 10:03:54 claudio Exp $
+#	$OpenBSD: Makefile,v 1.27 2022/08/20 11:10:50 kn Exp $
 
 SUBDIR += acme-client
 SUBDIR += arp
@@ -18,6 +18,10 @@ SUBDIR += syslogd
 
 .if ${MACHINE} == "amd64"
 SUBDIR += vmd
+.endif
+
+.if ${MACHINE} == "amd64"
+SUBDIR += installboot
 .endif
 
 .if defined(REGRESS_FULL) || make(clean) || make(cleandir) || make(obj)
