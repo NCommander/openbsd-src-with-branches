@@ -1,4 +1,4 @@
-/*	$OpenBSD: pbr.S,v 1.2 2006/10/10 05:26:54 miod Exp $	*/
+/*	$OpenBSD: pbr.S,v 1.1 2006/11/08 17:46:56 deraadt Exp $	*/
 /*	$NetBSD: pbr.S,v 1.1 2006/09/01 21:26:19 uwe Exp $	*/
 
 /*-
@@ -116,7 +116,7 @@ next_part:
 	 add	#16, r12
 
 ptn_error:
-	/* Not found NetBSD partition */
+	/* no OpenBSD partition found */
 	mova	ERR_PTN, r0
 error:
 	bsr	message_crlf

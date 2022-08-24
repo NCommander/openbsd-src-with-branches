@@ -1,12 +1,9 @@
+/*	$OpenBSD$	*/
 /*	$NetBSD: getsecs.c,v 1.2 2006/09/11 13:48:57 nonaka Exp $	*/
 
 #include <sys/param.h>
 
-#include <netinet/in.h>
-
-#include <lib/libsa/stand.h>
-#include <lib/libsa/net.h>
-#include <lib/libsa/netif.h>
+#include <libsa.h>
 
 #include <sh/devreg.h>
 #include <arch/sh/dev/scireg.h>
