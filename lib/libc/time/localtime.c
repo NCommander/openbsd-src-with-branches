@@ -1,4 +1,4 @@
-/*	$OpenBSD: localtime.c,v 1.60 2019/05/12 12:49:52 schwarze Exp $ */
+/*	$OpenBSD: localtime.c,v 1.61 2019/06/28 13:32:42 deraadt Exp $ */
 /*
 ** This file is in the public domain, so clarified as of
 ** 1996-06-05 by Arthur David Olson.
@@ -12,7 +12,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <float.h>	/* for FLT_MAX and DBL_MAX */
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
