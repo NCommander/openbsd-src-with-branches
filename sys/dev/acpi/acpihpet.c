@@ -1,4 +1,4 @@
-/* $OpenBSD: acpihpet.c,v 1.26 2022/04/06 18:59:27 naddy Exp $ */
+/* $OpenBSD: acpihpet.c,v 1.27 2022/08/25 17:54:33 cheloha Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -264,7 +264,7 @@ acpihpet_attach(struct device *parent, struct device *self, void *aux)
 	freq = 1000000000000000ull / period;
 	printf(": %lld Hz\n", freq);
 
-	hpet_timecounter.tc_frequency = (uint32_t)freq;
+	hpet_timecounter.tc_frequency = freq;
 	hpet_timecounter.tc_priv = sc;
 	hpet_timecounter.tc_name = sc->sc_dev.dv_xname;
 	tc_init(&hpet_timecounter);
