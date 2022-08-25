@@ -1,4 +1,4 @@
-/*	$OpenBSD: lapic.c,v 1.60 2022/08/15 04:17:50 daniel Exp $	*/
+/*	$OpenBSD: lapic.c,v 1.61 2022/08/25 17:38:16 cheloha Exp $	*/
 /* $NetBSD: lapic.c,v 1.2 2003/05/08 01:04:35 fvdl Exp $ */
 
 /*-
@@ -485,8 +485,6 @@ wait_next_cycle(void)
 		tlast = tick;
 	}
 }
-
-extern void tsc_delay(int);
 
 /*
  * Calibrate the local apic count-down timer (which is running at
