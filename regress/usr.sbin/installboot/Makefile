@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2022/08/24 20:31:06 kn Exp $
+#	$OpenBSD: Makefile,v 1.6 2022/08/24 20:38:03 kn Exp $
 
 INSTALLBOOT ?=		/usr/sbin/installboot
 DRY_RUN =		${INSTALLBOOT} -n
@@ -116,7 +116,7 @@ dry-toomany:
 	${DRY_RUN} -- disk stage1 stage2 too many
 
 
-CLEANFILES =		${CHUNKFILES} ${DEVFILES} ${SRFILE} ${MOUNTPOINT}
+CLEANFILES =		${CHUNKFILES} ${DEVFILES} ${SRFILE}
 REGRESS_CLEANUP =	cleanup
 
 # allow failure to always cleanup as much as possible
