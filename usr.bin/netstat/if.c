@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.77 2021/01/16 17:42:52 claudio Exp $	*/
+/*	$OpenBSD: if.c,v 1.78 2021/11/29 06:39:23 deraadt Exp $	*/
 /*	$NetBSD: if.c,v 1.16.4.2 1996/06/07 21:46:46 thorpej Exp $	*/
 
 /*
@@ -86,8 +86,6 @@ static const struct if_show_err *if_errs = if_show_errs;
 
 /*
  * Print a description of the network interfaces.
- * NOTE: ifnetaddr is the location of the kernel global "ifnet",
- * which is a TAILQ_HEAD.
  */
 void
 intpr(int interval, int repeatcount)
