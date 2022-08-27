@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_significand.S,v 1.4 2018/03/12 04:27:48 guenther Exp $ */
+/*	$OpenBSD: s_significand.S,v 1.5 2018/07/03 22:43:34 mortimer Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -8,7 +8,7 @@
 
 #include "abi.h"
 
-ENTRY(significand)
+ENTRY_NB(significand)
 	RETGUARD_SETUP(significand, r11)
 	XMM_ONE_ARG_DOUBLE_PROLOGUE
 	fldl	ARG_DOUBLE_ONE

@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_scalb.S,v 1.4 2016/09/12 19:47:01 guenther Exp $ */
+/*	$OpenBSD: e_scalb.S,v 1.5 2018/07/03 22:43:34 mortimer Exp $ */
 /*
  * Written by J.T. Conklin <jtc@NetBSD.org>.
  * Public domain.
@@ -8,7 +8,7 @@
 
 #include "abi.h"
 
-ENTRY(scalb)
+ENTRY_NB(scalb)
 	RETGUARD_SETUP(scalb, r11)
 	XMM_TWO_ARG_DOUBLE_PROLOGUE
 	fldl	ARG_DOUBLE_TWO
