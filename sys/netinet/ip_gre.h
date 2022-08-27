@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_gre.h,v 1.16 2022/02/25 23:51:03 guenther Exp $ */
+/*      $OpenBSD: ip_gre.h,v 1.17 2022/08/15 09:11:39 mvs Exp $ */
 /*	$NetBSD: ip_gre.h,v 1.3 1998/10/07 23:33:02 thorpej Exp $ */
 
 /*
@@ -56,6 +56,9 @@
 
 extern const struct pr_usrreqs gre_usrreqs;
 
-int     gre_usrreq(struct socket *, int, struct mbuf *, struct mbuf *, struct mbuf *, struct proc *);
+int     gre_usrreq(struct socket *, int, struct mbuf *, struct mbuf *,
+	    struct mbuf *, struct proc *);
+int     gre_send(struct socket *, struct mbuf *, struct mbuf *,
+	    struct mbuf *);
 #endif /* _KERNEL */
 #endif /* _NETINET_IP_GRE_H_ */
