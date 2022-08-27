@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.47 2021/10/23 14:34:10 jsing Exp $
+#	$OpenBSD: Makefile,v 1.48 2022/01/05 09:59:39 jsing Exp $
 
 SUBDIR += api
 SUBDIR += asn1
@@ -9,6 +9,7 @@ SUBDIR += client
 SUBDIR += dtls
 SUBDIR += handshake
 SUBDIR += pqueue
+SUBDIR += quic
 SUBDIR += record
 SUBDIR += record_layer
 SUBDIR += server
