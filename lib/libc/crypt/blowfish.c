@@ -1,4 +1,4 @@
-/* $OpenBSD: blowfish.c,v 1.19 2015/09/11 09:18:27 guenther Exp $ */
+/* $OpenBSD: blowfish.c,v 1.20 2021/11/29 01:04:45 djm Exp $ */
 /*
  * Blowfish block cipher for OpenBSD
  * Copyright 1997 Niels Provos <provos@physnet.uni-hamburg.de>
@@ -43,13 +43,6 @@
 
 #include <sys/types.h>
 #include <blf.h>
-
-#undef inline
-#ifdef __GNUC__
-#define inline __inline
-#else				/* !__GNUC__ */
-#define inline
-#endif				/* !__GNUC__ */
 
 /* Function for Feistel Networks */
 

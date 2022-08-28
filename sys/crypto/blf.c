@@ -1,4 +1,4 @@
-/*	$OpenBSD: blf.c,v 1.7 2007/11/26 09:28:34 martynas Exp $	*/
+/*	$OpenBSD: blf.c,v 1.8 2021/11/29 01:04:45 djm Exp $	*/
 
 /*
  * Blowfish block cipher for OpenBSD
@@ -41,13 +41,6 @@
 #include <sys/systm.h>
 
 #include <crypto/blf.h>
-
-#undef inline
-#ifdef __GNUC__
-#define inline __inline
-#else				/* !__GNUC__ */
-#define inline
-#endif				/* !__GNUC__ */
 
 /* Function for Feistel Networks */
 
