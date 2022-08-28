@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_divert.c,v 1.78 2022/08/27 20:28:01 mvs Exp $ */
+/*      $OpenBSD: ip_divert.c,v 1.79 2022/08/28 18:44:16 mvs Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -277,9 +277,6 @@ divert_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *addr,
 
 	case PRU_PEERADDR:
 		in_setpeeraddr(inp, addr);
-		break;
-
-	case PRU_SENSE:
 		break;
 
 	case PRU_CONNECT2:
