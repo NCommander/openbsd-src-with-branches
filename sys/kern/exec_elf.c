@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.166 2022/05/12 16:29:58 claudio Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.167 2022/08/14 01:58:27 jsg Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -738,6 +738,7 @@ exec_elf_fixup(struct proc *p, struct exec_package *epp)
 
 	if (interp &&
 	    (error = elf_load_file(p, interp, epp, ap)) != 0) {
+		uprintf("execve: cannot load %s\n", interp);
 		free(ap, M_TEMP, sizeof *ap);
 		pool_put(&namei_pool, interp);
 		kill_vmcmds(&epp->ep_vmcmds);
