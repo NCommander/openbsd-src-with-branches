@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: nfsd,v 1.7 2018/01/11 19:52:12 rpe Exp $
+# $OpenBSD: nfsd,v 1.8 2018/01/11 21:09:26 rpe Exp $
 
 daemon="/sbin/nfsd"
 daemon_flags="-tun 4"
@@ -8,7 +8,6 @@ daemon_flags="-tun 4"
 . /etc/rc.d/rc.subr
 
 pexp="(${daemon}( |$)|nfsd: (master|server)$)"
-
 rc_reload=NO
 
 rc_pre() {
