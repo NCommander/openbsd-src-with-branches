@@ -1,4 +1,4 @@
-/*	$OpenBSD: agentx.c,v 1.14 2021/10/24 18:03:27 martijn Exp $ */
+/*	$OpenBSD: agentx.c,v 1.15 2022/07/19 19:25:42 martijn Exp $ */
 /*
  * Copyright (c) 2019 Martijn van Duren <martijn@openbsd.org>
  *
@@ -2722,7 +2722,8 @@ agentx_varbind_start(struct agentx_varbind *axv)
 getnext:
 		while (axo != NULL && axo->axo_cstate != AX_CSTATE_OPEN)
 			axo = RB_NEXT(axc_objects, &(axc->axc_objects), axo);
-		if (axo == NULL) {
+		if (axo == NULL ||
+		    ax_oid_cmp(&(axo->axo_oid), &(axv->axv_end)) > 0) {
 			agentx_varbind_endofmibview(axv);
 			return;
 		}
