@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.17 2017/05/12 08:53:46 mpi Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.18 2017/07/31 11:52:49 kettenis Exp $	*/
 
 /* Public Domain */
 
@@ -234,7 +234,7 @@ _def_atomic_sub_nv(_atomic_sub_long_nv, unsigned long)
 #define atomic_sub_int_nv(_p, _v) _atomic_sub_int_nv((_p), (_v))
 #define atomic_sub_long_nv(_p, _v) _atomic_sub_long_nv((_p), (_v))
 
-#define __membar(_f) do { __asm __volatile(_f ::: "memory"); } while (0)
+#define __membar(_f) do { __asm volatile(_f ::: "memory"); } while (0)
 
 #define membar_enter()		__membar("dmb sy")
 #define membar_exit()		__membar("dmb sy")

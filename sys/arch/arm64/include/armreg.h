@@ -1,4 +1,4 @@
-/* $OpenBSD: armreg.h,v 1.19 2022/01/02 02:26:50 jsg Exp $ */
+/* $OpenBSD: armreg.h,v 1.20 2022/08/24 22:01:16 kettenis Exp $ */
 /*-
  * Copyright (c) 2013, 2014 Andrew Turner
  * Copyright (c) 2015 The FreeBSD Foundation
@@ -38,11 +38,11 @@
 
 #define	READ_SPECIALREG(reg)						\
 ({	uint64_t val;							\
-	__asm __volatile("mrs	%0, " __STRING(reg) : "=&r" (val));	\
+	__asm volatile("mrs	%0, " __STRING(reg) : "=&r" (val));	\
 	val;								\
 })
 #define	WRITE_SPECIALREG(reg, val)					\
-	__asm __volatile("msr	" __STRING(reg) ", %0" : : "r"((uint64_t)val))
+	__asm volatile("msr	" __STRING(reg) ", %0" : : "r"((uint64_t)val))
 
 /* CCSIDR_EL1 - Current Cache Size ID Register */
 #define	CCSIDR_SETS_MASK	0x0fffe000

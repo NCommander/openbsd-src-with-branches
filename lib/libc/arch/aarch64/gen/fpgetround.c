@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpgetround.c,v 1.2 2017/03/22 07:32:34 guenther Exp $	*/
+/*	$OpenBSD: fpgetround.c,v 1.3 2021/12/13 18:28:39 deraadt Exp $	*/
 /*
  * Copyright (C) 2014 Andrew Turner
  * All rights reserved.
@@ -34,7 +34,7 @@ fpgetround(void)
 {
 	uint32_t fpscr;
 
-	__asm __volatile("mrs %x0, fpcr" : "=&r"(fpscr));
+	__asm volatile("mrs %x0, fpcr" : "=&r"(fpscr));
 
 	return ((fpscr >> 22) & 3);
 }

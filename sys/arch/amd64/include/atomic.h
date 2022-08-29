@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.20 2017/05/27 20:12:12 kettenis Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.21 2021/03/11 11:16:55 jsg Exp $	*/
 /*	$NetBSD: atomic.h,v 1.1 2003/04/26 18:39:37 fvdl Exp $	*/
 
 /*
@@ -260,7 +260,7 @@ _atomic_sub_long_nv(volatile unsigned long *p, unsigned long v)
  * ourselves.
  */
 
-#define __membar(_f) do { __asm __volatile(_f ::: "memory"); } while (0)
+#define __membar(_f) do { __asm volatile(_f ::: "memory"); } while (0)
 
 #if defined(MULTIPROCESSOR) || !defined(_KERNEL)
 #define membar_enter()		__membar("mfence")
