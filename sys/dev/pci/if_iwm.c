@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwm.c,v 1.402 2022/07/07 07:48:45 stsp Exp $	*/
+/*	$OpenBSD: if_iwm.c,v 1.403 2022/07/11 11:28:37 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014, 2016 genua gmbh <info@genua.de>
@@ -1014,6 +1014,13 @@ iwm_read_firmware(struct iwm_softc *sc)
 			err = EINVAL;
 			goto parse_out;
 		}
+
+		/*
+		 * Check for size_t overflow and ignore missing padding at
+		 * end of firmware file.
+		 */
+		if (roundup(tlv_len, 4) > len)
+			break;
 
 		len -= roundup(tlv_len, 4);
 		data += roundup(tlv_len, 4);
