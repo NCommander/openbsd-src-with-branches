@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.h,v 1.156 2022/06/27 13:26:51 claudio Exp $ */
+/*	$OpenBSD: session.h,v 1.157 2022/07/28 13:11:51 deraadt Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -179,6 +179,8 @@ struct peer_stats {
 	time_t			 last_write;
 	uint32_t		 prefix_cnt;
 	uint32_t		 prefix_out_cnt;
+	uint32_t		 pending_update;
+	uint32_t		 pending_withdraw;
 	uint8_t			 last_sent_errcode;
 	uint8_t			 last_sent_suberr;
 	uint8_t			 last_rcvd_errcode;
