@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2009/11/16 16:56:50 otto Exp $
+#	$OpenBSD: Makefile,v 1.9 2013/06/19 03:51:30 lteo Exp $
 
 CFLAGS+=-Wall -Wmissing-prototypes -Wshadow
 
@@ -13,3 +13,6 @@ SRCS=	pflogd.c privsep.c privsep_fdpass.c
 MAN=	pflogd.8
 
 .include <bsd.prog.mk>
+
+# Don't compile pflogd as static binary by default
+LDSTATIC=       

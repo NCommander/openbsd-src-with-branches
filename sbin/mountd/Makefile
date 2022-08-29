@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:37:38 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.4 2015/12/23 21:16:17 tim Exp $
 
 PROG=	mountd
 MAN=	exports.5 mountd.8
@@ -7,3 +7,6 @@ LDADD=	-lutil
 DPADD=	${LIBUTIL}
 
 .include <bsd.prog.mk>
+
+# Don't compile mountd as static binary by default
+LDSTATIC=       

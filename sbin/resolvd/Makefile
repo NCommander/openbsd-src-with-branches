@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2021/02/24 18:10:41 florian Exp $
 
 PROG=	resolvd
 SRCS=	resolvd.c
@@ -14,3 +14,6 @@ CFLAGS+= -Wshadow -Wpointer-arith -Wcast-qual
 CFLAGS+= -Wsign-compare
 
 .include <bsd.prog.mk>
+
+# Don't compile resolvd as static binary by default
+LDSTATIC=       
