@@ -1,4 +1,4 @@
-/*	$OpenBSD: gus.c,v 1.49 2022/02/16 06:21:18 anton Exp $	*/
+/*	$OpenBSD: gus.c,v 1.50 2022/03/21 19:22:40 miod Exp $	*/
 /*	$NetBSD: gus.c,v 1.51 1998/01/25 23:48:06 mycroft Exp $	*/
 
 /*-
@@ -291,7 +291,7 @@ const struct audio_hw_if gus_hw_if = {
 	NULL
 };
 
-const static struct audio_hw_if gusmax_hw_if = {
+static const struct audio_hw_if gusmax_hw_if = {
 	gusmaxopen,
 	gusmax_close,
 	gusmax_set_params,
