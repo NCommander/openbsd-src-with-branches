@@ -1,4 +1,4 @@
-/*	$OpenBSD: application.h,v 1.2 2022/06/30 11:28:36 martijn Exp $	*/
+/*	$OpenBSD: application.h,v 1.3 2022/08/23 08:56:20 martijn Exp $	*/
 
 /*
  * Copyright (c) 2021 Martijn van Duren <martijn@openbsd.org>
@@ -109,6 +109,7 @@ struct appl_backend {
 	char *ab_name;
 	void *ab_cookie;
 	uint8_t ab_retries;
+	int ab_range; /* Supports searchrange */
 	struct appl_backend_functions *ab_fn;
 	/*
 	 * Only store downstream requests: they reference upstream and when
