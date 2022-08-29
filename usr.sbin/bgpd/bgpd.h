@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.449 2022/08/10 14:17:01 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.450 2022/08/26 14:10:52 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1193,7 +1193,6 @@ struct rde_memstats {
 	long long	nexthop_cnt;
 	long long	aspath_cnt;
 	long long	aspath_size;
-	long long	aspath_refs;
 	long long	comm_cnt;
 	long long	comm_nmemb;
 	long long	comm_size;
