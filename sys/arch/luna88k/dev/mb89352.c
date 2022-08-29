@@ -1,11 +1,11 @@
-/*	$OpenBSD: mb89352.c,v 1.32 2021/09/25 23:53:35 aoyama Exp $	*/
+/*	$OpenBSD: mb89352.c,v 1.33 2022/04/16 19:19:58 naddy Exp $	*/
 /*	$NetBSD: mb89352.c,v 1.5 2000/03/23 07:01:31 thorpej Exp $	*/
 /*	NecBSD: mb89352.c,v 1.4 1998/03/14 07:31:20 kmatsuda Exp	*/
 
 #ifdef DDB
 #define	integrate
 #else
-#define	integrate	__inline static
+#define	integrate	static __inline 
 #endif
 
 /*-
