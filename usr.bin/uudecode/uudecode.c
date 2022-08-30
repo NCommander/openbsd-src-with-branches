@@ -1,4 +1,4 @@
-/*	$OpenBSD: uudecode.c,v 1.26 2019/03/10 20:49:24 schwarze Exp $	*/
+/*	$OpenBSD: uudecode.c,v 1.27 2019/06/28 13:35:05 deraadt Exp $	*/
 /*	$FreeBSD: uudecode.c,v 1.49 2003/05/03 19:44:46 obrien Exp $	*/
 
 /*-
@@ -423,11 +423,13 @@ uu_decode(void)
 	}
 }
 
+#define	ROUNDDOWN(x,y)	(((x)/(y)) * (y))
+
 static int
 base64_decode(void)
 {
 	int n;
-	char inbuf[PATH_MAX];
+	char inbuf[ROUNDDOWN(PATH_MAX, 4) + 1];
 	unsigned char outbuf[PATH_MAX * 4];
 
 	for (;;) {
