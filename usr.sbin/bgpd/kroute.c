@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.296 2022/08/25 08:10:25 claudio Exp $ */
+/*	$OpenBSD: kroute.c,v 1.297 2022/08/30 12:49:13 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -18,6 +18,7 @@
  */
 
 #include <sys/types.h>
+#include <sys/queue.h>
 #include <sys/tree.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
