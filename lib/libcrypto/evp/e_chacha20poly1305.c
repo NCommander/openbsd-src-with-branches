@@ -1,4 +1,4 @@
-/* $OpenBSD: e_chacha20poly1305.c,v 1.23 2022/08/20 19:22:28 jsing Exp $ */
+/* $OpenBSD: e_chacha20poly1305.c,v 1.24 2022/08/21 10:47:09 tb Exp $ */
 
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
@@ -537,7 +537,7 @@ chacha20_poly1305_cleanup(EVP_CIPHER_CTX *ctx)
 
 	explicit_bzero(cpx, sizeof(*cpx));
 
-	return 0;
+	return 1;
 }
 
 static int
