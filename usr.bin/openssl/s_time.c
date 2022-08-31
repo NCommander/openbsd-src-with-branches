@@ -1,4 +1,4 @@
-/* $OpenBSD: s_time.c,v 1.33 2019/07/03 03:24:02 deraadt Exp $ */
+/* $OpenBSD: s_time.c,v 1.34 2019/07/14 03:30:46 guenther Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -458,9 +458,7 @@ benchmark(int reuse_session)
 	printf("\n\n%d connections in %.2fs; %.2f connections/user sec, bytes read %ld\n",
 	    nConn, totalTime, ((double) nConn / totalTime), bytes_read);
 	printf("%d connections in %.0f real seconds, %ld bytes read per connection\n",
-	    nConn,
-	    elapsed,
-	    bytes_read / nConn);
+	    nConn, elapsed, nConn > 0 ? bytes_read / nConn : 0);
 
 	ret = 0;
  end:
