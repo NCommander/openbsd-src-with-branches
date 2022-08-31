@@ -184,13 +184,9 @@ ssl_set_pkey(SSL_CTX *ctx, SSL *ssl, EVP_PKEY *pkey)
 
 	if (c->pkeys[i].x509 != NULL) {
 		EVP_PKEY *pktmp;
-
-		if ((pktmp = X509_get0_pubkey(c->pkeys[i].x509)) == NULL)
-			return 0;
-
-		if (!EVP_PKEY_copy_parameters(pktmp, pkey))
-			return 0;
-
+		pktmp = X509_get_pubkey(c->pkeys[i].x509);
+		EVP_PKEY_copy_parameters(pktmp, pkey);
+		EVP_PKEY_free(pktmp);
 		ERR_clear_error();
 
 		/*
@@ -213,7 +209,7 @@ ssl_set_pkey(SSL_CTX *ctx, SSL *ssl, EVP_PKEY *pkey)
 	c->key = &(c->pkeys[i]);
 
 	c->valid = 0;
-	return 1;
+	return (1);
 }
 
 int
