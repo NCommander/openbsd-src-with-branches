@@ -1,4 +1,4 @@
-/*	$OpenBSD: relayd.h,v 1.267 2021/04/20 21:11:56 dv Exp $	*/
+/*	$OpenBSD: relayd.h,v 1.268 2021/07/25 20:31:41 benno Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2016 Reyk Floeter <reyk@openbsd.org>
@@ -1398,7 +1398,7 @@ void		 tag_ref(u_int16_t);
 /* agentx_control.c */
 void	 agentx_init(struct relayd *);
 void	 agentx_setsock(struct relayd *, enum privsep_procid);
-int	 agentx_getsock(struct imsg *);
+void	 agentx_getsock(struct imsg *);
 void	 snmp_hosttrap(struct relayd *, struct table *, struct host *);
 
 /* shuffle.c */
