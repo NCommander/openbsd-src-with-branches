@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.9 2022/08/31 20:23:57 kn Exp $
+#	$OpenBSD: Makefile,v 1.10 2022/08/31 20:48:55 kn Exp $
 
 INSTALLBOOT ?=		/usr/sbin/installboot
 DRY_RUN =		${INSTALLBOOT} -n
@@ -60,8 +60,7 @@ copy-bootstrap-to-softraid: format-new-softraid
 	${SUDO} cp -r -- ${STAGEDIR} ${MOUNTPOINT}/usr/
 
 
-# most but not all usages rquire the EFI filesystem to be usable
-.if ${MACHINE} == "arm64"
+# must be first as some targets expect a working filesystem
 REGRESS_TARGETS = prepare
 
 # what the installer does, see /usr/src/distrib/$(machine)/ramdisk/install.md
@@ -72,9 +71,7 @@ prepare:
 .  for devfile in ${DISKDEVFILES}
 	${SUDO} ${REAL_RUN} -p -- "$$(<${devfile})"
 .  endfor
-.else
-REGRESS_TARGETS =	# empty
-.endif
+
 REGRESS_TARGETS +=	dry-prepare \
 			dry-default \
 			dry-root \
