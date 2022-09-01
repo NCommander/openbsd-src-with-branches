@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib.c,v 1.47 2021/11/02 15:29:41 millert Exp $	*/
+/*	$OpenBSD: lib.c,v 1.48 2022/06/03 19:42:27 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -311,6 +311,7 @@ void setclvar(char *s)	/* set var=value from s */
 		q->tval |= NUM;
 	}
 	DPRINTF("command line set %s to |%s|\n", s, p);
+	free(p);
 	*e = '=';
 }
 
