@@ -1,4 +1,4 @@
-/*	$OpenBSD: server_http.c,v 1.150 2022/03/02 11:10:43 florian Exp $	*/
+/*	$OpenBSD: server_http.c,v 1.151 2022/08/15 09:36:19 op Exp $	*/
 
 /*
  * Copyright (c) 2020 Matthias Pressfreund <mpfr@fn.de>
@@ -1764,8 +1764,8 @@ read_errdoc(const char *root, const char *file)
 {
 	struct stat	 sb;
 	char		*path;
-	int	 	 fd;
-	char	 	*ret = NULL;
+	int		 fd;
+	char		*ret = NULL;
 
 	if (asprintf(&path, "%s/%s.html", root, file) == -1)
 		fatal("asprintf");
