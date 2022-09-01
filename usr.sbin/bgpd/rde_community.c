@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_community.c,v 1.7 2022/07/28 13:11:51 deraadt Exp $ */
+/*	$OpenBSD: rde_community.c,v 1.8 2022/08/29 16:44:47 claudio Exp $ */
 
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
@@ -21,7 +21,6 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-#include <siphash.h>
 
 #include "bgpd.h"
 #include "rde.h"
