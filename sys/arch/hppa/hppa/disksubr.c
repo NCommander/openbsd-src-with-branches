@@ -1,4 +1,4 @@
-/*	$OpenBSD: disksubr.c,v 1.88 2016/02/24 18:25:50 krw Exp $	*/
+/*	$OpenBSD: disksubr.c,v 1.89 2017/02/28 10:49:37 natano Exp $	*/
 
 /*
  * Copyright (c) 1999 Michael Shalayeff
@@ -154,8 +154,6 @@ readliflabel(struct buf *bp, void (*strat)(struct buf *),
 			goto done;
 		}
 
-		lp->d_bbsize = 8192;
-		lp->d_sbsize = 8192;
 		for (i = 0; i < MAXPARTITIONS; i++) {
 			DL_SETPSIZE(&lp->d_partitions[i], 0);
 			DL_SETPOFFSET(&lp->d_partitions[i], 0);

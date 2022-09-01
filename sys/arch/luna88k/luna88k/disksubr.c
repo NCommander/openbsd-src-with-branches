@@ -1,4 +1,4 @@
-/* $OpenBSD: disksubr.c,v 1.58 2015/09/28 15:17:08 krw Exp $ */
+/* $OpenBSD: disksubr.c,v 1.59 2017/02/28 10:49:37 natano Exp $ */
 /* $NetBSD: disksubr.c,v 1.12 2002/02/19 17:09:44 wiz Exp $ */
 
 /*
@@ -278,9 +278,6 @@ disklabel_om_to_bsd(struct sun_disklabel *sl, struct disklabel *lp)
 	lp->d_acylinders = sl->sl_acylinders;
 
 	lp->d_npartitions = MAXPARTITIONS;
-	/* These are as defined in <ufs/ffs/fs.h> */
-	lp->d_bbsize = 8192;	/* XXX */
-	lp->d_sbsize = 8192;	/* XXX */
 
 	for (i = 0; i < 8; i++) {
 		spp = &sl->sl_part[i];
