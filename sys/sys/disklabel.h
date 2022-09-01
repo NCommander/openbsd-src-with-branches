@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.77 2020/11/14 20:53:31 guenther Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.78 2021/05/08 16:41:25 krw Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.41 1996/05/10 23:07:37 mark Exp $	*/
 
 /*
@@ -117,8 +117,8 @@ struct disklabel {
 
 			/* filesystem and partition information: */
 	u_int16_t d_npartitions;	/* number of partitions in following */
-	u_int32_t d_bbsize;		/* size of boot area at sn0, bytes */
-	u_int32_t d_sbsize;		/* max size of fs superblock, bytes */
+	u_int32_t d_spare2;
+	u_int32_t d_spare3;
 	struct	partition {		/* the partition table */
 		u_int32_t p_size;	/* number of sectors (low part) */
 		u_int32_t p_offset;	/* starting sector (low part) */
