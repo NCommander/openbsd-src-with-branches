@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.71 2022/05/13 00:17:20 yasuoka Exp $	*/
+/*	$OpenBSD: main.c,v 1.72 2022/07/30 14:17:42 kn Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -196,7 +196,7 @@ vmmaction(struct parse_result *res)
 	unsigned int		 flags;
 
 	if (ctl_sock == -1) {
-		if (unveil(SOCKET_NAME, "r") == -1)
+		if (unveil(SOCKET_NAME, "w") == -1)
 			err(1, "unveil %s", SOCKET_NAME);
 		if ((ctl_sock = socket(AF_UNIX,
 		    SOCK_STREAM|SOCK_CLOEXEC, 0)) == -1)
