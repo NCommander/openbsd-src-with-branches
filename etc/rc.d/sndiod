@@ -1,9 +1,0 @@
-#!/bin/ksh
-#
-# $OpenBSD: sndiod,v 1.5 2018/01/11 19:52:12 rpe Exp $
-
-daemon="/usr/bin/sndiod"
-
-. /etc/rc.d/rc.subr
-
-rc_cmd $1

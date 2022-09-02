@@ -1,6 +1,0 @@
-# $OpenBSD: dot.cvsrc,v 1.2 2015/03/31 18:34:40 naddy Exp $
-#
-diff -uNp
-update -Pd
-checkout -P
-rdiff -u

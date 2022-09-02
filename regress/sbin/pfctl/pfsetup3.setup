@@ -1,2 +1,0 @@
-ifconfig lo1000010 create
-ifconfig lo1000010 mtu 8000
