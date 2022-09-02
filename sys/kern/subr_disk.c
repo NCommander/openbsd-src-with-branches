@@ -460,7 +460,6 @@ gpt_get_hdr(struct buf *bp, void (*strat)(struct buf *), struct disklabel *lp,
 {
 	struct gpt_header	ngh;
 	int			error;
-	uint64_t		partlba;
 	uint64_t		lbaend, lbastart;
 	uint32_t		csum;
 	uint32_t		size, partsize;
@@ -474,7 +473,6 @@ gpt_get_hdr(struct buf *bp, void (*strat)(struct buf *), struct disklabel *lp,
 
 	size = letoh32(ngh.gh_size);
 	partsize = letoh32(ngh.gh_part_size);
-	partlba = letoh64(ngh.gh_part_lba);
 	lbaend = letoh64(ngh.gh_lba_end);
 	lbastart = letoh64(ngh.gh_lba_start);
 
