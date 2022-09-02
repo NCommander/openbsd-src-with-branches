@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.45 2022/09/01 14:03:29 tb Exp $
+#	$OpenBSD: Makefile,v 1.46 2022/09/02 11:16:03 tb Exp $
 
 SUBDIR += aead
 SUBDIR += aeswrap
@@ -32,6 +32,7 @@ SUBDIR += hmac
 SUBDIR += idea
 SUBDIR += ige
 SUBDIR += init
+SUBDIR += md
 SUBDIR += md4
 SUBDIR += md5
 SUBDIR += objects
