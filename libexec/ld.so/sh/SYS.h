@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.28 2017/01/24 07:48:37 guenther Exp $ */
+/*	$OpenBSD: SYS.h,v 1.1 2017/08/27 21:59:52 deraadt Exp $ */
 
 /*
  * Copyright (c) 2006 Dale Rahn
@@ -29,14 +29,30 @@
 #include <machine/asm.h>
 #include <sys/syscall.h>
 
-#define SYSTRAP(x)					\
-	mov.l	903f, r0;				\
-	.word	0xc380;	/* trapa #0x80; */		\
-	bra	904f;					\
-	 nop;						\
-	.align	2;					\
- 903:	.long	(SYS_ ## x);				\
+#ifdef __ASSEMBLER__
+/*
+ * If the system call number fits in a 8-bit signed value (i.e. fits in 7 bits),
+ * then we can use the #imm8 addressing mode.
+ */
+
+.macro systrap num
+.iflt \num - 128
+	mov	# \num, r0
+	trapa	#0x80
+.else
+	mov.l	903f, r0
+	trapa	#0x80
+	bra	904f
+	 nop
+	.align	2
+ 903:	.long	\num
  904:
+.endif
+.endm
+#endif
+
+#define SYSTRAP(x)					\
+		systrap	SYS_ ## x
 
 #define DL_SYSCALL(n)					\
 	.global		__CONCAT(_dl_,n)		;\
