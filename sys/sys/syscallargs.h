@@ -595,6 +595,14 @@ struct sys___realpath_args {
 	syscallarg(char *) resolved;
 };
 
+struct sys_recvmmsg_args {
+	syscallarg(int) s;
+	syscallarg(struct mmsghdr *) mmsg;
+	syscallarg(unsigned int) vlen;
+	syscallarg(unsigned int) flags;
+	syscallarg(struct timespec *) timeout;
+};
+
 struct sys_getsockopt_args {
 	syscallarg(int) s;
 	syscallarg(int) level;
@@ -1302,6 +1310,7 @@ int	sys_sigsuspend(struct proc *, void *, register_t *);
 int	sys_sendsyslog(struct proc *, void *, register_t *);
 int	sys_unveil(struct proc *, void *, register_t *);
 int	sys___realpath(struct proc *, void *, register_t *);
+int	sys_recvmmsg(struct proc *, void *, register_t *);
 int	sys_getsockopt(struct proc *, void *, register_t *);
 int	sys_thrkill(struct proc *, void *, register_t *);
 int	sys_readv(struct proc *, void *, register_t *);

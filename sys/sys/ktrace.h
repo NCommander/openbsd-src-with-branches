@@ -1,4 +1,4 @@
-/*	$OpenBSD: ktrace.h,v 1.40 2021/03/10 10:21:47 jsg Exp $	*/
+/*	$OpenBSD: ktrace.h,v 1.41 2022/02/22 17:14:14 deraadt Exp $	*/
 /*	$NetBSD: ktrace.h,v 1.12 1996/02/04 02:12:29 christos Exp $	*/
 
 /*
@@ -239,6 +239,8 @@ void    ktrstruct(struct proc *, const char *, const void *, size_t);
 	ktrstruct((p), "quota", (s), sizeof(struct dqblk))
 #define ktrmsghdr(p, s) \
 	ktrstruct(p, "msghdr", s, sizeof(struct msghdr))
+#define ktrmmsghdr(p, s) \
+	ktrstruct(p, "mmsghdr", s, sizeof(struct mmsghdr))
 #define ktriovec(p, s, count) \
 	ktrstruct(p, "iovec", s, (count) * sizeof(struct iovec))
 #define ktrcmsghdr(p, c, len) \

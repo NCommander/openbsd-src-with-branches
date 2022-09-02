@@ -264,10 +264,10 @@ const struct sysent sysent[] = {
 	    sys_unveil },			/* 114 = unveil */
 	{ 2, s(struct sys___realpath_args), 0,
 	    sys___realpath },			/* 115 = __realpath */
+	{ 5, s(struct sys_recvmmsg_args), SY_NOLOCK | 0,
+	    sys_recvmmsg },			/* 116 = recvmmsg */
 	{ 0, 0, 0,
-	    sys_nosys },			/* 116 = obsolete t32_gettimeofday */
-	{ 0, 0, 0,
-	    sys_nosys },			/* 117 = obsolete t32_getrusage */
+	    sys_nosys },			/* 117 = unimplemented sendmmsg */
 	{ 5, s(struct sys_getsockopt_args), 0,
 	    sys_getsockopt },			/* 118 = getsockopt */
 	{ 3, s(struct sys_thrkill_args), 0,

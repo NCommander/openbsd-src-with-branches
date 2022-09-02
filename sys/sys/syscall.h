@@ -352,8 +352,9 @@
 /* syscall: "__realpath" ret: "int" args: "const char *" "char *" */
 #define	SYS___realpath	115
 
-				/* 116 is obsolete t32_gettimeofday */
-				/* 117 is obsolete t32_getrusage */
+/* syscall: "recvmmsg" ret: "int" args: "int" "struct mmsghdr *" "unsigned int" "unsigned int" "struct timespec *" */
+#define	SYS_recvmmsg	116
+
 /* syscall: "getsockopt" ret: "int" args: "int" "int" "int" "void *" "socklen_t *" */
 #define	SYS_getsockopt	118
 
