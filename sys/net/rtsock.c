@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtsock.c,v 1.349 2022/08/31 21:23:02 mvs Exp $	*/
+/*	$OpenBSD: rtsock.c,v 1.350 2022/09/01 18:21:23 mvs Exp $	*/
 /*	$NetBSD: rtsock.c,v 1.18 1996/03/29 00:32:10 cgd Exp $	*/
 
 /*
@@ -219,9 +219,6 @@ route_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam,
 {
 	struct rtpcb	*rop;
 	int		 error = 0;
-
-	if (req == PRU_CONTROL)
-		return (EOPNOTSUPP);
 
 	soassertlocked(so);
 
