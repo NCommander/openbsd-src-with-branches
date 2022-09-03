@@ -352,10 +352,10 @@
 /* syscall: "__realpath" ret: "int" args: "const char *" "char *" */
 #define	SYS___realpath	115
 
-/* syscall: "recvmmsg" ret: "int" args: "int" "struct mmsghdr *" "unsigned int" "unsigned int" "struct timespec *" */
+/* syscall: "recvmmsg" ret: "int" args: "int" "struct mmsghdr *" "unsigned int" "int" "struct timespec *" */
 #define	SYS_recvmmsg	116
 
-/* syscall: "sendmmsg" ret: "int" args: "int" "struct mmsghdr *" "unsigned int" "unsigned int" */
+/* syscall: "sendmmsg" ret: "int" args: "int" "struct mmsghdr *" "unsigned int" "int" */
 #define	SYS_sendmmsg	117
 
 /* syscall: "getsockopt" ret: "int" args: "int" "int" "int" "void *" "socklen_t *" */

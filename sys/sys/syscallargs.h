@@ -599,7 +599,7 @@ struct sys_recvmmsg_args {
 	syscallarg(int) s;
 	syscallarg(struct mmsghdr *) mmsg;
 	syscallarg(unsigned int) vlen;
-	syscallarg(unsigned int) flags;
+	syscallarg(int) flags;
 	syscallarg(struct timespec *) timeout;
 };
 
@@ -607,7 +607,7 @@ struct sys_sendmmsg_args {
 	syscallarg(int) s;
 	syscallarg(struct mmsghdr *) mmsg;
 	syscallarg(unsigned int) vlen;
-	syscallarg(unsigned int) flags;
+	syscallarg(int) flags;
 };
 
 struct sys_getsockopt_args {
