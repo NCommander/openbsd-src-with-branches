@@ -603,6 +603,13 @@ struct sys_recvmmsg_args {
 	syscallarg(struct timespec *) timeout;
 };
 
+struct sys_sendmmsg_args {
+	syscallarg(int) s;
+	syscallarg(struct mmsghdr *) mmsg;
+	syscallarg(unsigned int) vlen;
+	syscallarg(unsigned int) flags;
+};
+
 struct sys_getsockopt_args {
 	syscallarg(int) s;
 	syscallarg(int) level;
@@ -1311,6 +1318,7 @@ int	sys_sendsyslog(struct proc *, void *, register_t *);
 int	sys_unveil(struct proc *, void *, register_t *);
 int	sys___realpath(struct proc *, void *, register_t *);
 int	sys_recvmmsg(struct proc *, void *, register_t *);
+int	sys_sendmmsg(struct proc *, void *, register_t *);
 int	sys_getsockopt(struct proc *, void *, register_t *);
 int	sys_thrkill(struct proc *, void *, register_t *);
 int	sys_readv(struct proc *, void *, register_t *);

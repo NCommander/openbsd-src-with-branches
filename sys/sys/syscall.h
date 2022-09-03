@@ -355,6 +355,9 @@
 /* syscall: "recvmmsg" ret: "int" args: "int" "struct mmsghdr *" "unsigned int" "unsigned int" "struct timespec *" */
 #define	SYS_recvmmsg	116
 
+/* syscall: "sendmmsg" ret: "int" args: "int" "struct mmsghdr *" "unsigned int" "unsigned int" */
+#define	SYS_sendmmsg	117
+
 /* syscall: "getsockopt" ret: "int" args: "int" "int" "int" "void *" "socklen_t *" */
 #define	SYS_getsockopt	118
 
