@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.32 2022/08/07 03:22:29 deraadt Exp $
+#	$OpenBSD: install.md,v 1.33 2022/09/03 08:37:36 kettenis Exp $
 #
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -196,7 +196,7 @@ md_congrats() {
 }
 
 md_consoleinfo() {
-	local _fw
+	local _fw _fw2
 
 	DEFCONS=y
 	case $(scan_dmesg '/^\([^ ]*\).*: console.*std.*$/s//\1/p') in
