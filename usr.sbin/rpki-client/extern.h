@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.153 2022/09/02 19:10:36 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.154 2022/09/03 13:30:27 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -711,6 +711,7 @@ char		*x509_convert_seqnum(const char *, const ASN1_INTEGER *);
 int		 x509_location(const char *, const char *, const char *,
 		    GENERAL_NAME *, char **);
 int		 x509_inherits(X509 *);
+int	 	 x509_any_inherits(X509 *);
 
 /* printers */
 char		*time2str(time_t);
