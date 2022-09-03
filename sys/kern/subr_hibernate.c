@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_hibernate.c,v 1.136 2022/09/01 21:50:19 mlarkin Exp $	*/
+/*	$OpenBSD: subr_hibernate.c,v 1.137 2022/09/02 09:02:37 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -1996,8 +1996,7 @@ hibernate_alloc(void)
 	hibernate_temp_page = (vaddr_t)km_alloc(PAGE_SIZE, &kv_any,
 	    &kp_none, &kd_nowait);
 	if (!hibernate_temp_page) {
-		uvm_pmr_free_piglet(global_piglet_va,
-		    4 * HIBERNATE_CHUNK_SIZE);
+		uvm_pmr_free_piglet(global_piglet_va, 4 * HIBERNATE_CHUNK_SIZE);
 		global_piglet_va = 0;
 		goto unmap;
 	}
