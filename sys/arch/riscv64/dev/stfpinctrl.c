@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: stfpinctrl.c,v 1.1 2022/06/08 08:40:53 kettenis Exp $	*/
 /*
  * Copyright (c) 2022 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -114,7 +114,7 @@ stfpinctrl_attach(struct device *parent, struct device *self, void *aux)
 	switch (sel) {
 	case 0:
 	default:
-		/* No GPIOs availavle. */
+		/* No GPIOs available. */
 		return;
 	case 1:
 		sc->sc_padctl_gpio = PAD_GPIO(0);
