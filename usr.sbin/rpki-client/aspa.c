@@ -1,4 +1,4 @@
-/*	$OpenBSD: aspa.c,v 1.1 2022/08/30 18:56:49 job Exp $ */
+/*	$OpenBSD: aspa.c,v 1.2 2022/09/03 14:40:09 job Exp $ */
 /*
  * Copyright (c) 2022 Job Snijders <job@fastly.com>
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
@@ -251,6 +251,7 @@ aspa_parse(X509 **x509, const char *fn, const unsigned char *der, size_t len)
 		X509_free(*x509);
 		*x509 = NULL;
 	}
+	cert_free(cert);
 	free(cms);
 	return p.res;
 }
