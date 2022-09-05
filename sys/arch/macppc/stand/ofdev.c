@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofdev.c,v 1.25 2020/12/09 18:10:19 krw Exp $	*/
+/*	$OpenBSD: ofdev.c,v 1.26 2021/03/11 11:16:59 jsg Exp $	*/
 /*	$NetBSD: ofdev.c,v 1.1 1997/04/16 20:29:20 thorpej Exp $	*/
 
 /*
@@ -55,7 +55,6 @@ char opened_name[256];
 
 /*
  * this function is passed [device specifier]:[kernel]
- * however a device specifier may contain a ':'
  */
 static int
 parsename(char *str, char **file)
