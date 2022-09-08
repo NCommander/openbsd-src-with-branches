@@ -1,4 +1,4 @@
-/*	$OpenBSD: mld6.c,v 1.59 2022/09/04 06:49:11 jsg Exp $	*/
+/*	$OpenBSD: mld6.c,v 1.60 2022/09/05 15:47:39 bluhm Exp $	*/
 /*	$KAME: mld6.c,v 1.26 2001/02/16 14:50:35 itojun Exp $	*/
 
 /*
@@ -345,7 +345,7 @@ mld6_fasttimeo(void)
 	NET_LOCK();
 
 	mld6_timers_are_running = 0;
-	TAILQ_FOREACH(ifp, &ifnet, if_list)
+	TAILQ_FOREACH(ifp, &ifnetlist, if_list)
 		mld6_checktimer(ifp);
 
 	NET_UNLOCK();

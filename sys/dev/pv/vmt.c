@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmt.c,v 1.24 2021/11/05 11:38:29 mpi Exp $ */
+/*	$OpenBSD: vmt.c,v 1.25 2022/01/09 05:42:58 jsg Exp $ */
 
 /*
  * Copyright (c) 2007 David Crawshaw <david@zentus.com>
@@ -869,7 +869,7 @@ vmt_tclo_broadcastip(struct vmt_softc *sc)
 
 	/* find first available ipv4 address */
 	guest_ip = NULL;
-	TAILQ_FOREACH(iface, &ifnet, if_list) {
+	TAILQ_FOREACH(iface, &ifnetlist, if_list) {
 		struct ifaddr *iface_addr;
 
 		/* skip loopback */
@@ -1301,7 +1301,7 @@ vmt_xdr_nic_info(char *data)
 	}
 
 	nics = 0;
-	TAILQ_FOREACH(iface, &ifnet, if_list) {
+	TAILQ_FOREACH(iface, &ifnetlist, if_list) {
 		nictotal = vmt_xdr_nic_entry(iface, data);
 		if (nictotal == 0)
 			continue;

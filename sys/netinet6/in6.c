@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.247 2022/08/06 15:57:59 bluhm Exp $	*/
+/*	$OpenBSD: in6.c,v 1.248 2022/08/29 07:51:45 bluhm Exp $	*/
 /*	$KAME: in6.c,v 1.372 2004/06/14 08:14:21 itojun Exp $	*/
 
 /*
@@ -1344,7 +1344,7 @@ in6_ifawithscope(struct ifnet *oifp, struct in6_addr *dst, u_int rdomain)
 	}
 
 	/* We search for all addresses on all interfaces from the beginning. */
-	TAILQ_FOREACH(ifp, &ifnet, if_list) {
+	TAILQ_FOREACH(ifp, &ifnetlist, if_list) {
 		if (ifp->if_rdomain != rdomain)
 			continue;
 #if NCARP > 0
