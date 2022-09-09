@@ -1,4 +1,4 @@
-/*	$OpenBSD: xhci_acpi.c,v 1.8 2022/07/04 20:03:15 kettenis Exp $	*/
+/*	$OpenBSD: xhci_acpi.c,v 1.9 2022/09/07 20:06:23 kettenis Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis
  *
@@ -59,6 +59,7 @@ const char *xhci_hids[] = {
 	"QCOM0498",
 	"QCOM068B",		/* SC8280 URS */
 	"QCOM068C",
+	"QCOM0826",		/* SC7180 USB */
 	"QCOM24B6",		/* SDM850 URS */
 	"QCOM24B7",
 	NULL
