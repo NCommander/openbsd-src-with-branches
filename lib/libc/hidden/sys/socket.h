@@ -1,4 +1,4 @@
-/*	$OpenBSD: socket.h,v 1.3 2015/10/04 07:17:27 guenther Exp $	*/
+/*	$OpenBSD: socket.h,v 1.4 2016/05/07 19:05:22 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -32,8 +32,10 @@ PROTO_NORMAL(getsockopt);
 PROTO_NORMAL(listen);
 PROTO_NORMAL(recv);
 PROTO_CANCEL(recvfrom);
+PROTO_CANCEL(recvmmsg);
 PROTO_CANCEL(recvmsg);
 PROTO_NORMAL(send);
+PROTO_CANCEL(sendmmsg);
 PROTO_CANCEL(sendmsg);
 PROTO_CANCEL(sendto);
 PROTO_NORMAL(setrtable);
