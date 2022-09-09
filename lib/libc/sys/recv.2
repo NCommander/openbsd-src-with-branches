@@ -1,4 +1,4 @@
-.\"	$OpenBSD: recv.2,v 1.48 2021/11/21 23:44:55 jan Exp $
+.\"	$OpenBSD: recv.2,v 1.49 2022/09/09 13:52:59 mbuhl Exp $
 .\"	$NetBSD: recv.2,v 1.6 1995/02/27 12:36:08 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1990, 1991, 1993
@@ -30,13 +30,14 @@
 .\"
 .\"     @(#)recv.2	8.3 (Berkeley) 2/21/94
 .\"
-.Dd $Mdocdate: November 21 2021 $
+.Dd $Mdocdate: September 9 2022 $
 .Dt RECV 2
 .Os
 .Sh NAME
 .Nm recv ,
 .Nm recvfrom ,
-.Nm recvmsg
+.Nm recvmsg ,
+.Nm recvmmsg
 .Nd receive a message from a socket
 .Sh SYNOPSIS
 .In sys/socket.h
