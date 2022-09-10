@@ -1,4 +1,4 @@
-/* $OpenBSD: e_aes.c,v 1.46 2022/08/04 08:06:48 jsing Exp $ */
+/* $OpenBSD: e_aes.c,v 1.47 2022/09/06 06:38:26 jsing Exp $ */
 /* ====================================================================
  * Copyright (c) 2001-2011 The OpenSSL Project.  All rights reserved.
  *
@@ -511,6 +511,8 @@ aes_cfb1_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
 		CRYPTO_cfb128_1_encrypt(in, out, MAXBITCHUNK*8, &dat->ks,
 		    ctx->iv, &ctx->num, ctx->encrypt, dat->block);
 		len -= MAXBITCHUNK;
+		in += MAXBITCHUNK;
+		out += MAXBITCHUNK;
 	}
 	if (len)
 		CRYPTO_cfb128_1_encrypt(in, out, len*8, &dat->ks,
