@@ -1,4 +1,4 @@
-/*	$OpenBSD: lapic.c,v 1.50 2022/08/25 17:38:16 cheloha Exp $	*/
+/*	$OpenBSD: lapic.c,v 1.51 2022/09/06 17:26:27 cheloha Exp $	*/
 /* $NetBSD: lapic.c,v 1.1.2.8 2000/02/23 06:10:50 sommerfeld Exp $ */
 
 /*-
@@ -298,9 +298,8 @@ lapic_startclock(void)
 void
 lapic_initclocks(void)
 {
-	lapic_startclock();
-
 	i8254_inittimecounter_simple();
+	lapic_startclock();
 }
 
 extern int gettick(void);	/* XXX put in header file */
