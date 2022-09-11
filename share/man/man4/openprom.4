@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: openprom.4,v 1.1 2019/04/25 16:47:56 denis Exp $
 .\" Copyright (c) 1992, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -56,20 +56,20 @@ as described below.
 .Pp
 The calls that take and/or return a node
 use a pointer to an
-.Li int
+.Vt int
 variable for this purpose;
 others use a pointer to a
-.Li struct opiocdesc
+.Vt struct opiocdesc
 descriptor,
 which contains a node and two counted strings.
 The first string is comprised of the fields
 .Li op_namelen
 (an
-.Li int )
+.Vt int )
 and
 .Li op_name
 (a
-.Li "char *" ) ,
+.Vt char * ) ,
 giving the name of a field.
 The second string is comprised of the fields
 .Li op_buflen
