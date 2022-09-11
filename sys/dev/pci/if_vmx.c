@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.68 2022/01/09 05:42:56 jsg Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.69 2022/03/11 18:00:50 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -299,9 +299,16 @@ vmxnet3_attach(struct device *parent, struct device *self, void *aux)
 		printf(": failed to map interrupt\n");
 		return;
 	}
+	intrstr = pci_intr_string(pa->pa_pc, ih);
 	sc->sc_ih = pci_intr_establish(pa->pa_pc, ih, IPL_NET | IPL_MPSAFE,
 	    isr, sc, self->dv_xname);
-	intrstr = pci_intr_string(pa->pa_pc, ih);
+	if (sc->sc_ih == NULL) {
+		printf(": unable to establish interrupt handler");
+		if (intrstr != NULL)
+			printf(" at %s", intrstr);
+		printf("\n");
+		return;
+	}
 	if (intrstr)
 		printf(": %s", intrstr);
 
@@ -325,6 +332,11 @@ vmxnet3_attach(struct device *parent, struct device *self, void *aux)
 			    IPL_NET | IPL_MPSAFE,
 			    intrmap_cpu(sc->sc_intrmap, i),
 			    vmxnet3_intr_queue, q, q->intrname);
+			if (q->ih == NULL) {
+				printf(": unable to establish interrupt %d\n",
+				    vec);
+				return;
+			}
 
 			q->intr = vec;
 			q->sc = sc;
