@@ -1,4 +1,4 @@
-.\"	$OpenBSD: acpi.4,v 1.66 2020/12/06 22:44:17 jmc Exp $
+.\"	$OpenBSD: acpi.4,v 1.67 2021/09/08 20:29:21 jmc Exp $
 .\"
 .\" Copyright (c) 2006 Alexander Yurchenko <grange@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: December 6 2020 $
+.Dd $Mdocdate: September 8 2021 $
 .Dt ACPI 4
 .Os
 .Sh NAME
@@ -118,6 +118,10 @@ Intel Gemini Lake GPIO controller
 i.MX onboard I2C controller
 .It Xr pchgpio 4
 Intel PCH GPIO controller
+.It Xr qcgpio 4
+Qualcomm Snapdragon GPIO controller
+.It Xr qciic(4)
+Qualcomm Snapdragon GENI I2C controller
 .It Xr tpm 4
 Trusted Platform Module device
 .El
