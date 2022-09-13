@@ -1,4 +1,4 @@
-/*	$OpenBSD: application.c,v 1.14 2022/08/30 17:37:03 martijn Exp $	*/
+/*	$OpenBSD: application.c,v 1.15 2022/08/31 09:19:22 martijn Exp $	*/
 
 /*
  * Copyright (c) 2021 Martijn van Duren <martijn@openbsd.org>
@@ -1170,8 +1170,11 @@ appl_varbind_valid(struct appl_varbind *varbind, struct appl_varbind *request,
 	int eomv = 0;
 
 	if (varbind->av_value == NULL) {
-		*errstr = "missing value";
-		return 0;
+		if (!null) {
+			*errstr = "missing value";
+			return 0;
+		}
+		return 1;
 	}
 	if (varbind->av_value->be_class == BER_CLASS_UNIVERSAL) {
 		switch (varbind->av_value->be_type) {
