@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.88 2021/11/27 21:50:05 tobhe Exp $	*/
+/*	$OpenBSD: policy.c,v 1.89 2021/12/01 16:42:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2020-2021 Tobias Heider <tobhe@openbsd.org>
@@ -1216,6 +1216,8 @@ flow_cmp(struct iked_flow *a, struct iked_flow *b)
 		diff = addr_cmp(&a->flow_dst, &b->flow_dst, 1);
 	if (!diff)
 		diff = addr_cmp(&a->flow_src, &b->flow_src, 1);
+	if (!diff)
+		diff = addr_cmp(&a->flow_prenat, &b->flow_prenat, 0);
 
 	return (diff);
 }
