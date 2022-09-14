@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.289 2022/09/09 03:31:42 djm Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.290 2022/09/14 00:02:03 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -832,6 +832,7 @@ process_sign_request2(SocketEntry *e)
 	/* Success */
 	ok = 0;
  send:
+	debug_f("good signature");
 	notify_complete(notifier, "User presence confirmed");
 
 	if (ok == 0) {
