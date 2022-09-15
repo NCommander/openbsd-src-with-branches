@@ -1,4 +1,4 @@
-/*	$OpenBSD: ftp.c,v 1.106 2019/10/15 01:24:07 guenther Exp $	*/
+/*	$OpenBSD: ftp.c,v 1.107 2019/11/18 04:37:35 deraadt Exp $	*/
 /*	$NetBSD: ftp.c,v 1.27 1997/08/18 10:20:23 lukem Exp $	*/
 
 /*
@@ -212,9 +212,8 @@ hookup(char *host, char *port)
 			}
 		}
 #endif /* !SMALL */
-		for (error = connect(s, res->ai_addr, res->ai_addrlen);
-		    error != 0 && errno == EINTR; error = connect_wait(s))
-			continue;
+		error = timed_connect(s, res->ai_addr, res->ai_addrlen,
+		    connect_timeout);
 		if (error != 0) {
 			/* this "if" clause is to prevent print warning twice */
 			if (verbose && res->ai_next) {
@@ -1509,10 +1508,8 @@ reinit:
 		} else
 			goto bad;
 
-		for (error = connect(data, &data_addr.sa, data_addr.sa.sa_len);
-		    error != 0 && errno == EINTR;
-		    error = connect_wait(data))
-			continue;
+		error = timed_connect(data, &data_addr.sa, data_addr.sa.sa_len,
+		    connect_timeout);
 		if (error != 0) {
 			if (activefallback) {
 				(void)close(data);
