@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.31 2022/09/14 10:09:48 kn Exp $
+#	$OpenBSD: Makefile,v 1.32 2022/09/14 13:37:03 kn Exp $
 
 INSTALLBOOT ?=		/usr/sbin/installboot
 DRY_RUN =		${INSTALLBOOT} -n
@@ -31,8 +31,11 @@ STAGENAMES =		BOOTRISCV64.EFI
 FORMAT_DISK =		true	# NOOP
 STAGENAMES =		bootblk ofwboot
 USE_SOFTRAID ?=		Yes
-.endif
+.else
 # missing: alpha, hppa, landisk, loongson, luna88k
+regress:
+	@echo SKIPPED
+.endif
 
 FORMAT_DISK ?=		fdisk -iy -b '32768@32768:C'
 STAGEDIR =		/usr/mdec
