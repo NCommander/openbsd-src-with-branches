@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.82 2022/02/15 23:16:00 rob Exp $	*/
+/*	$OpenBSD: print.c,v 1.83 2022/09/01 21:15:54 job Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -140,7 +140,7 @@ command(const struct pinfo *pi, VARENT *ve)
 
 	if (needcomm) {
 		if (pi->prefix)
-			mbswprint(pi->prefix, left, 0);
+			left -= mbswprint(pi->prefix, left, 0);
 		if (!commandonly) {
 			char **argv = NULL;
 
