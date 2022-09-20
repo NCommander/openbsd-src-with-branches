@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.149 2022/08/25 17:25:25 cheloha Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.150 2022/08/30 17:09:21 dv Exp $	*/
 /*	$NetBSD: cpu.h,v 1.1 2003/04/26 18:39:39 fvdl Exp $	*/
 
 /*-
@@ -428,6 +428,7 @@ void	i8254_inittimecounter_simple(void);
 void	i8259_default_setup(void);
 
 void cpu_init_msrs(struct cpu_info *);
+void cpu_fix_msrs(struct cpu_info *);
 void cpu_tsx_disable(struct cpu_info *);
 
 /* dkcsum.c */

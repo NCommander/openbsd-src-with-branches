@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.103 2022/02/21 11:03:39 mpi Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.104 2022/08/07 23:56:06 guenther Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -456,6 +456,7 @@ void
 acpi_resume_cpu(struct acpi_softc *sc, int state)
 {
 	cpu_init_msrs(&cpu_info_primary);
+	cpu_fix_msrs(&cpu_info_primary);
 
 #if NISA > 0
 	i8259_default_setup();
