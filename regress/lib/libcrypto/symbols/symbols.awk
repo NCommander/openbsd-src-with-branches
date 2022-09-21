@@ -1,4 +1,4 @@
-# $OpenBSD: symbols.awk,v 1.5 2021/12/14 20:37:24 tb Exp $
+# $OpenBSD: symbols.awk,v 1.6 2022/01/12 09:04:40 tb Exp $
 
 # Copyright (c) 2018,2020 Theo Buehler <tb@openbsd.org>
 #
@@ -114,6 +114,11 @@ BEGIN {
 
 {
 	symbols[$0] = $0
+
+	# Undefine aliases, so we don't accidentally leave them in Symbols.list.
+	# The _cfb ciphers are aliased to _cfb64, so skip them.
+	if ($0 !~ "^EVP_.*cfb$")
+		printf("#ifdef %s\n#undef %s\n#endif\n", $0, $0)
 }
 
 END {
