@@ -1,4 +1,4 @@
-/*	$OpenBSD: identcpu.c,v 1.127 2022/08/30 17:09:21 dv Exp $	*/
+/*	$OpenBSD: identcpu.c,v 1.128 2022/09/20 14:28:27 robert Exp $	*/
 /*	$NetBSD: identcpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*
@@ -752,9 +752,6 @@ identifycpu(struct cpu_info *ci)
 			amd64_has_aesni = 1;
 	}
 #endif
-
-	if (!strcmp(cpu_vendor, "AuthenticAMD"))
-		amd64_errata(ci);
 
 	if (CPU_IS_PRIMARY(ci) && !strcmp(cpu_vendor, "CentaurHauls")) {
 		ci->cpu_setup = via_nano_setup;
