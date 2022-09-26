@@ -1,4 +1,4 @@
-//===-- EditlineTest.cpp ----------------------------------------*- C++ -*-===//
+//===-- EditlineTest.cpp --------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -81,63 +81,56 @@ public:
   void ConsumeAllOutput();
 
 private:
-  static bool IsInputComplete(lldb_private::Editline *editline,
-                              lldb_private::StringList &lines, void *baton);
+  bool IsInputComplete(lldb_private::Editline *editline,
+                       lldb_private::StringList &lines);
 
   std::unique_ptr<lldb_private::Editline> _editline_sp;
 
   PseudoTerminal _pty;
   int _pty_master_fd;
-  int _pty_slave_fd;
+  int _pty_secondary_fd;
 
-  std::unique_ptr<FilePointer> _el_slave_file;
+  std::unique_ptr<FilePointer> _el_secondary_file;
 };
 
 EditlineAdapter::EditlineAdapter()
-    : _editline_sp(), _pty(), _pty_master_fd(-1), _pty_slave_fd(-1),
-      _el_slave_file() {
+    : _editline_sp(), _pty(), _pty_master_fd(-1), _pty_secondary_fd(-1),
+      _el_secondary_file() {
   lldb_private::Status error;
 
   // Open the first master pty available.
-  char error_string[256];
-  error_string[0] = '\0';
-  if (!_pty.OpenFirstAvailableMaster(O_RDWR, error_string,
-                                     sizeof(error_string))) {
-    fprintf(stderr, "failed to open first available master pty: '%s'\n",
-            error_string);
-    return;
-  }
+  EXPECT_THAT_ERROR(_pty.OpenFirstAvailablePrimary(O_RDWR), llvm::Succeeded());
 
   // Grab the master fd.  This is a file descriptor we will:
   // (1) write to when we want to send input to editline.
   // (2) read from when we want to see what editline sends back.
-  _pty_master_fd = _pty.GetMasterFileDescriptor();
+  _pty_master_fd = _pty.GetPrimaryFileDescriptor();
 
-  // Open the corresponding slave pty.
-  if (!_pty.OpenSlave(O_RDWR, error_string, sizeof(error_string))) {
-    fprintf(stderr, "failed to open slave pty: '%s'\n", error_string);
-    return;
-  }
-  _pty_slave_fd = _pty.GetSlaveFileDescriptor();
+  // Open the corresponding secondary pty.
+  EXPECT_THAT_ERROR(_pty.OpenSecondary(O_RDWR), llvm::Succeeded());
+  _pty_secondary_fd = _pty.GetSecondaryFileDescriptor();
 
-  _el_slave_file.reset(new FilePointer(fdopen(_pty_slave_fd, "rw")));
-  EXPECT_FALSE(nullptr == *_el_slave_file);
-  if (*_el_slave_file == nullptr)
+  _el_secondary_file.reset(new FilePointer(fdopen(_pty_secondary_fd, "rw")));
+  EXPECT_FALSE(nullptr == *_el_secondary_file);
+  if (*_el_secondary_file == nullptr)
     return;
 
   // Create an Editline instance.
-  _editline_sp.reset(new lldb_private::Editline("gtest editor", *_el_slave_file,
-                                                *_el_slave_file,
-                                                *_el_slave_file, false));
+  _editline_sp.reset(new lldb_private::Editline(
+      "gtest editor", *_el_secondary_file, *_el_secondary_file,
+      *_el_secondary_file, false));
   _editline_sp->SetPrompt("> ");
 
   // Hookup our input complete callback.
-  _editline_sp->SetIsInputCompleteCallback(IsInputComplete, this);
+  auto input_complete_cb = [this](Editline *editline, StringList &lines) {
+    return this->IsInputComplete(editline, lines);
+  };
+  _editline_sp->SetIsInputCompleteCallback(input_complete_cb);
 }
 
 void EditlineAdapter::CloseInput() {
-  if (_el_slave_file != nullptr)
-    _el_slave_file.reset(nullptr);
+  if (_el_secondary_file != nullptr)
+    _el_secondary_file.reset(nullptr);
 }
 
 bool EditlineAdapter::SendLine(const std::string &line) {
@@ -193,8 +186,7 @@ bool EditlineAdapter::GetLines(lldb_private::StringList &lines,
 }
 
 bool EditlineAdapter::IsInputComplete(lldb_private::Editline *editline,
-                                      lldb_private::StringList &lines,
-                                      void *baton) {
+                                      lldb_private::StringList &lines) {
   // We'll call ourselves complete if we've received a balanced set of braces.
   int start_block_count = 0;
   int brace_balance = 0;

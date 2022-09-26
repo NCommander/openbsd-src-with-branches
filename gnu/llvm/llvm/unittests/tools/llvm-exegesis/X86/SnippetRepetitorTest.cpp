@@ -7,12 +7,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "../Common/AssemblerUtils.h"
-#include "Latency.h"
 #include "LlvmState.h"
 #include "MCInstrDescView.h"
 #include "RegisterAliasing.h"
 #include "TestBase.h"
-#include "Uops.h"
 #include "X86InstrInfo.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
 
@@ -31,11 +29,10 @@ using testing::UnorderedElementsAre;
 
 class X86SnippetRepetitorTest : public X86TestBase {
 protected:
-  void SetUp() {
+  void SetUp() override {
     TM = State.createTargetMachine();
     Context = std::make_unique<LLVMContext>();
-    Mod =
-        std::make_unique<Module>("X86SnippetRepetitorTest", *Context);
+    Mod = std::make_unique<Module>("X86SnippetRepetitorTest", *Context);
     Mod->setDataLayout(TM->createDataLayout());
     MMI = std::make_unique<MachineModuleInfo>(TM.get());
     MF = &createVoidVoidPtrMachineFunction("TestFn", Mod.get(), MMI.get());
@@ -45,11 +42,13 @@ protected:
     const auto Repetitor = SnippetRepetitor::Create(RepetitionMode, State);
     const std::vector<MCInst> Instructions = {MCInstBuilder(X86::NOOP)};
     FunctionFiller Sink(*MF, {X86::EAX});
-    const auto Fill = Repetitor->Repeat(Instructions, kMinInstructions);
+    const auto Fill =
+        Repetitor->Repeat(Instructions, kMinInstructions, kLoopBodySize);
     Fill(Sink);
   }
 
   static constexpr const unsigned kMinInstructions = 3;
+  static constexpr const unsigned kLoopBodySize = 5;
 
   std::unique_ptr<LLVMTargetMachine> TM;
   std::unique_ptr<LLVMContext> Context;
@@ -81,7 +80,9 @@ TEST_F(X86SnippetRepetitorTest, Loop) {
   ASSERT_EQ(MF->getNumBlockIDs(), 3u);
   const auto &LoopBlock = *MF->getBlockNumbered(1);
   EXPECT_THAT(LoopBlock.instrs(),
-              ElementsAre(HasOpcode(X86::NOOP), HasOpcode(X86::ADD64ri8),
+              ElementsAre(HasOpcode(X86::NOOP), HasOpcode(X86::NOOP),
+                          HasOpcode(X86::NOOP), HasOpcode(X86::NOOP),
+                          HasOpcode(X86::NOOP), HasOpcode(X86::ADD64ri8),
                           HasOpcode(X86::JCC_1)));
   EXPECT_THAT(LoopBlock.liveins(),
               UnorderedElementsAre(
