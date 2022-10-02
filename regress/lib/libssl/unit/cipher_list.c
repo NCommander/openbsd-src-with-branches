@@ -1,4 +1,4 @@
-/*	$OpenBSD: cipher_list.c,v 1.10 2021/01/09 12:39:22 tb Exp $	*/
+/*	$OpenBSD: cipher_list.c,v 1.11 2022/07/07 13:11:45 tb Exp $	*/
 /*
  * Copyright (c) 2015 Doug Hogan <doug@openbsd.org>
  * Copyright (c) 2015 Joel Sing <jsing@openbsd.org>
@@ -129,7 +129,7 @@ ssl_list_to_bytes_no_scsv(SSL *s, STACK_OF(SSL_CIPHER) **ciphers)
 	buf[buflen - 1] = 0xab;
 
 	/* Set renegotiate so it doesn't add SCSV */
-	s->internal->renegotiate = 1;
+	s->renegotiate = 1;
 
 	CHECK(CBB_init_fixed(&cbb, buf, buflen));
 	CHECK(ssl_cipher_list_to_bytes(s, *ciphers, &cbb));
