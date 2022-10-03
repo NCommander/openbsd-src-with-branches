@@ -1,4 +1,4 @@
-/*	$OpenBSD: armv7_machdep.c,v 1.63 2021/03/25 04:12:01 jsg Exp $ */
+/*	$OpenBSD: armv7_machdep.c,v 1.64 2021/10/06 12:50:10 visa Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -121,9 +121,9 @@
 #include <armv7/armv7/armv7_machdep.h>
 
 #include <dev/cons.h>
+#include <dev/efi/efi.h>
 #include <dev/ofw/fdt.h>
 #include <dev/ofw/openfirm.h>
-#include <dev/acpi/efi.h>
 
 #include <net/if.h>
 
