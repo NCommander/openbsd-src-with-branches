@@ -1,4 +1,4 @@
-/*	$OpenBSD: rarpd.c,v 1.78 2021/09/06 13:32:18 deraadt Exp $ */
+/*	$OpenBSD: rarpd.c,v 1.79 2021/11/15 15:14:24 millert Exp $ */
 /*	$NetBSD: rarpd.c,v 1.25 1998/04/23 02:48:33 mrg Exp $	*/
 
 /*
@@ -339,8 +339,9 @@ rarp_loop(void)
 
 	arptab_init();
 
-	if (unveil(TFTP_DIR, "r") == -1)
-		error("unveil %s", TFTP_DIR);
+	if (tflag)
+		if (unveil(TFTP_DIR, "r") == -1)
+			error("unveil %s", TFTP_DIR);
 	if (unveil("/etc/ethers", "r") == -1)
 		error("unveil /etc/ethers");
 	if (pledge("stdio rpath dns", NULL) == -1)
