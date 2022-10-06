@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldomctl.h,v 1.14 2020/02/21 19:39:28 kn Exp $	*/
+/*	$OpenBSD: ldomctl.h,v 1.15 2021/01/30 19:32:44 kn Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -176,7 +176,7 @@ struct var {
 
 struct iodev {
 	SIMPLEQ_ENTRY(iodev)	entry;
-	const char		*path;
+	const char		*dev;
 };
 
 struct domain {
