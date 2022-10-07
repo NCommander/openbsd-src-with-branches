@@ -1,4 +1,4 @@
-/*	$OpenBSD: mman.h,v 1.3 2016/05/07 19:05:22 guenther Exp $	*/
+/*	$OpenBSD: mman.h,v 1.4 2019/01/11 18:46:30 deraadt Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -26,6 +26,7 @@ PROTO_NORMAL(mlock);
 PROTO_NORMAL(mlockall);
 PROTO_NORMAL(mmap);
 PROTO_NORMAL(mprotect);
+PROTO_NORMAL(mimmutable);
 PROTO_NORMAL(mquery);
 PROTO_CANCEL(msync);
 PROTO_NORMAL(munlock);
