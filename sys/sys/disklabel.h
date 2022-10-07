@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.h,v 1.81 2022/09/11 11:47:55 krw Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.82 2022/09/15 10:10:14 krw Exp $	*/
 /*	$NetBSD: disklabel.h,v 1.41 1996/05/10 23:07:37 mark Exp $	*/
 
 /*
@@ -348,7 +348,6 @@ struct partinfo {
 #define	GPTPARTATTR_MS_HIDDEN		(1ULL << 62)
 #define	GPTPARTATTR_MS_NOAUTOMOUNT	(1ULL << 63)
 
-#define	GPTDOSACTIVE		0x2
 #define	GPTMINHDRSIZE		92
 #define	GPTMINPARTSIZE		128
 #define	GPTPARTNAMESIZE		36
