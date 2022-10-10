@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.22 2020/12/17 00:51:12 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.23 2021/05/16 03:23:48 deraadt Exp $
 
 PROG=		noexec
 SRCS=		noexec.c testfly.S
@@ -12,6 +12,9 @@ REGRESS_TARGETS=	nxtext-mmap	nxtext-mprotect \
 		nxmmap			nxmmap-mprotect \
 		nxstack	nxstack-mmap	nxstack-mprotect
 .PHONY: ${REGRESS_TARGETS}
+
+REGRESS_EXPECTED_FAILURES+=	nxstack-mmap
+REGRESS_EXPECTED_FAILURES+=	nxstack-mprotect
 
 nxtext-mmap: ${PROG}
 	./${PROG} -T -m
