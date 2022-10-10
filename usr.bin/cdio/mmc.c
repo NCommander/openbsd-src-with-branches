@@ -1,4 +1,4 @@
-/*	$OpenBSD: mmc.c,v 1.32 2020/09/01 17:20:02 krw Exp $	*/
+/*	$OpenBSD: mmc.c,v 1.33 2021/11/28 19:28:42 deraadt Exp $	*/
 /*
  * Copyright (c) 2006 Michael Coulter <mjc@openbsd.org>
  *
@@ -412,7 +412,7 @@ writetao(struct track_head *thp)
 			modebuf[8+8+bdlen] = 0x00; /* turn off XA */
 			break;
 		default:
-			warn("impossible tracktype detected");
+			warnx("impossible tracktype detected");
 			break;
 		}
 		while (unit_ready() != SCCMD_OK)
