@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.86 2022/07/08 19:51:11 tobhe Exp $	*/
+/*	$OpenBSD: config.c,v 1.87 2022/09/19 20:54:02 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -217,10 +217,15 @@ config_free_policy(struct iked *env, struct iked_policy *pol)
 	if (pol->pol_flags & IKED_POLICY_REFCNT)
 		goto remove;
 
+	/*
+	 * Remove policy from the sc_policies list, but increment
+	 * refcount for every SA linked for the policy.
+	 */
+	pol->pol_flags |= IKED_POLICY_REFCNT;
+
 	TAILQ_REMOVE(&env->sc_policies, pol, pol_entry);
 
 	TAILQ_FOREACH(sa, &pol->pol_sapeers, sa_peer_entry) {
-		/* Remove from the policy list, but keep for existing SAs */
 		if (sa->sa_policy == pol)
 			policy_ref(env, pol);
 		else
