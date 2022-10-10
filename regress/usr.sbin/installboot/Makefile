@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.32 2022/09/14 13:37:03 kn Exp $
+#	$OpenBSD: Makefile,v 1.33 2022/09/17 09:30:18 kn Exp $
 
 INSTALLBOOT ?=		/usr/sbin/installboot
 DRY_RUN =		${INSTALLBOOT} -n
@@ -89,7 +89,7 @@ create-root: create-disks
 .endif
 	${SUDO} disklabel -Aw -- "$$(<${ROOTDEVFILE})"
 	${SUDO} newfs -q -- "$$(<${ROOTDEVFILE})"a 1>/dev/null
-	mkdir -- ${MOUNTPOINT}
+	mkdir -p -- ${MOUNTPOINT}
 	${SUDO} mount -- /dev/"$$(<${ROOTDEVFILE})"a ${MOUNTPOINT}
 	${SUDO} mkdir -- ${MOUNTPOINT}/usr
 	${SUDO} cp -r -- ${STAGEDIR} ${MOUNTPOINT}/usr/
