@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.509 2022/07/20 09:33:11 mbuhl Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.510 2022/09/03 14:57:54 yasuoka Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1745,6 +1745,8 @@ extern void			 pf_print_state(struct pf_state *);
 extern void			 pf_print_flags(u_int8_t);
 extern void			 pf_addrcpy(struct pf_addr *, struct pf_addr *,
 				    sa_family_t);
+extern void			 pf_cksum_fixup(u_int16_t *, u_int16_t,
+				    u_int16_t, u_int8_t);
 void				 pf_rm_rule(struct pf_rulequeue *,
 				    struct pf_rule *);
 void				 pf_purge_rule(struct pf_rule *);
