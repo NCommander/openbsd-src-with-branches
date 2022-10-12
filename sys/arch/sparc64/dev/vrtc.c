@@ -1,4 +1,4 @@
-/*	$OpenBSD: vrtc.c,v 1.1 2008/03/08 19:19:43 kettenis Exp $	*/
+/*	$OpenBSD: vrtc.c,v 1.2 2021/10/24 17:05:04 mpi Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -68,9 +68,9 @@ vrtc_attach(struct device *parent, struct device *self, void *aux)
 	handle->cookie = self;
 	handle->todr_gettime = vrtc_gettime;
 	handle->todr_settime = vrtc_settime;
-
 	handle->bus_cookie = NULL;
 	handle->todr_setwen = NULL;
+	handle->todr_quality = 0;
 	todr_handle = handle;
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: prtc.c,v 1.5 2018/08/29 02:03:12 dlg Exp $	*/
+/*	$OpenBSD: prtc.c,v 1.6 2021/10/24 17:05:04 mpi Exp $	*/
 
 /*
  * Copyright (c) 2008 Mark Kettenis
@@ -96,7 +96,7 @@ prtc_attach(struct device *parent, struct device *self, void *aux)
 
 	handle->bus_cookie = NULL;
 	handle->todr_setwen = NULL;
-
+	handle->todr_quality = 0;
 	todr_handle = handle;
 }
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: aplpmu.c,v 1.4 2022/03/02 12:35:14 kettenis Exp $	*/
+/*	$OpenBSD: aplpmu.c,v 1.5 2022/04/06 18:59:26 naddy Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -121,6 +121,7 @@ aplpmu_attach(struct device *parent, struct device *self, void *aux)
 		sc->sc_todr.cookie = sc;
 		sc->sc_todr.todr_gettime = aplpmu_gettime;
 		sc->sc_todr.todr_settime = aplpmu_settime;
+		sc->sc_todr.todr_quality = 0;
 		todr_attach(&sc->sc_todr);
 
 		aplpmu_sc = sc;

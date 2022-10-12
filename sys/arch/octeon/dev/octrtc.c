@@ -1,4 +1,4 @@
-/*	$OpenBSD: octrtc.c,v 1.13 2021/01/30 14:59:13 visa Exp $	*/
+/*	$OpenBSD: octrtc.c,v 1.14 2022/04/06 18:59:27 naddy Exp $	*/
 
 /*
  * Copyright (c) 2013, 2014 Paul Irofti.
@@ -113,6 +113,7 @@ octrtc_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_todr.cookie = sc;
 	sc->sc_todr.todr_gettime = octrtc_gettime;
 	sc->sc_todr.todr_settime = octrtc_settime;
+	sc->sc_todr.todr_quality = 0;
 	todr_attach(&sc->sc_todr);
 
 	printf(": DS1337\n");
