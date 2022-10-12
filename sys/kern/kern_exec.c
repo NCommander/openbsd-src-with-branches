@@ -476,9 +476,6 @@ sys_execve(struct proc *p, void *v, register_t *retval)
                 goto exec_abort;
 #endif
 
-	uvm_map_immutable(&p->p_vmspace->vm_map, (vaddr_t)vm->vm_maxsaddr,
-	    (vaddr_t)vm->vm_minsaddr, 1, "stack");
-
 	memset(&arginfo, 0, sizeof(arginfo));
 
 	/* remember information about the process */
