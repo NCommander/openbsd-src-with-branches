@@ -1,3 +1,5 @@
+# $OpenBSD$
+
 PROGS += test-http
 
 SRCS_test-http=   test-http.c http.c io.c encoding.c
