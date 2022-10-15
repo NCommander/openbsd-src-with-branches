@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.90 2021/11/11 10:03:08 claudio Exp $	*/
+/*	$OpenBSD: conf.c,v 1.91 2022/09/02 20:06:55 miod Exp $	*/
 /*	$NetBSD: conf.c,v 1.16 1996/10/18 21:26:57 cgd Exp $	*/
 
 /*-
@@ -228,8 +228,7 @@ dev_t	swapdev = makedev(1, 0);
  * Returns true if dev is /dev/mem or /dev/kmem.
  */
 int
-iskmemdev(dev)
-	dev_t dev;
+iskmemdev(dev_t dev)
 {
 
 	return (major(dev) == mem_no && minor(dev) < 2);
@@ -239,15 +238,14 @@ iskmemdev(dev)
  * Returns true if dev is /dev/zero.
  */
 int
-iszerodev(dev)
-	dev_t dev;
+iszerodev(dev_t dev)
 {
 
 	return (major(dev) == mem_no && minor(dev) == 12);
 }
 
 dev_t
-getnulldev()
+getnulldev(void)
 {
 	return makedev(mem_no, 2);
 }
