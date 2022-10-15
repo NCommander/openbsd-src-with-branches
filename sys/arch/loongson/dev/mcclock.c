@@ -1,4 +1,4 @@
-/*	$OpenBSD: mcclock.c,v 1.4 2020/05/25 13:16:06 visa Exp $	*/
+/*	$OpenBSD: mcclock.c,v 1.5 2022/10/12 13:39:50 kettenis Exp $	*/
 /*	$NetBSD: mcclock.c,v 1.4 1996/10/13 02:59:41 christos Exp $	*/
 
 /*
@@ -51,9 +51,7 @@ int	mcclock_settime(struct todr_chip_handle *, struct timeval *);
 	    (*(dev)->sc_busfns->mc_bf_read)(dev, reg)
 
 void
-mcclock_attach(sc, busfns)
-	struct mcclock_softc *sc;
-	const struct mcclock_busfns *busfns;
+mcclock_attach(struct mcclock_softc *sc, const struct mcclock_busfns *busfns)
 {
 
 	printf(": mc146818 or compatible\n");
