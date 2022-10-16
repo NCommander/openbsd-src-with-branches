@@ -575,7 +575,7 @@ sys_sigaltstack(struct proc *p, void *v, register_t *retval)
 	if (ss.ss_size < MINSIGSTKSZ)
 		return (ENOMEM);
 
-	error = uvm_map_make_stack(p, (vaddr_t)ss.ss_sp, (vsize_t)ss.ss_size);
+	error = uvm_map_remap_as_stack(p, (vaddr_t)ss.ss_sp, ss.ss_size);
 	if (error)
 		return (error);
 
