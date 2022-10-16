@@ -1,4 +1,4 @@
-/* $OpenBSD: hidmt.c,v 1.11 2020/02/10 14:35:08 patrick Exp $ */
+/* $OpenBSD: hidmt.c,v 1.12 2020/07/09 21:01:08 jcs Exp $ */
 /*
  * HID multitouch driver for devices conforming to Windows Precision Touchpad
  * standard
@@ -154,13 +154,14 @@ hidmt_setup(struct device *self, struct hidmt *mt, void *desc, int dlen)
 	    mt->sc_rep_cap, hid_feature, &cap, NULL)) {
 		d = hid_get_udata(rep, capsize, &cap);
 		mt->sc_clickpad = (d == 0);
-	} else {
-		/* if there's not a 2nd button, this is probably a clickpad */
-		if (!hid_locate(desc, dlen, HID_USAGE2(HUP_BUTTON, 2),
-		    mt->sc_rep_input, hid_input, &cap, NULL))
-			mt->sc_clickpad = 1;
+	} else if (hid_locate(desc, dlen, HID_USAGE2(HUP_BUTTON, 1),
+	    mt->sc_rep_input, hid_input, &cap, NULL) ||
+	    !hid_locate(desc, dlen, HID_USAGE2(HUP_BUTTON, 2),
+	    mt->sc_rep_input, hid_input, &cap, NULL) ||
+	    !hid_locate(desc, dlen, HID_USAGE2(HUP_BUTTON, 3),
+	    mt->sc_rep_input, hid_input, &cap, NULL)) {
+		mt->sc_clickpad = 1;
 	}
-
 	/*
 	 * Walk HID descriptor and store usages we care about to know what to
 	 * pluck out of input reports.
