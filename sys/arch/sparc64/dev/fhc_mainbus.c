@@ -1,4 +1,4 @@
-/*	$OpenBSD: fhc_mainbus.c,v 1.5 2017/09/08 05:36:52 deraadt Exp $	*/
+/*	$OpenBSD: fhc_mainbus.c,v 1.6 2021/10/24 17:05:03 mpi Exp $	*/
 
 /*
  * Copyright (c) 2004 Jason L. Wright (jason@thought.net).
@@ -47,9 +47,7 @@ const struct cfattach fhc_mainbus_ca = {
 };
 
 int
-fhc_mainbus_match(parent, match, aux)
-	struct device *parent;
-	void *match, *aux;
+fhc_mainbus_match(struct device *parent, void *match, void *aux)
 {
 	struct mainbus_attach_args *ma = aux;
 
@@ -59,9 +57,7 @@ fhc_mainbus_match(parent, match, aux)
 }
 
 void
-fhc_mainbus_attach(parent, self, aux)
-	struct device *parent, *self;
-	void *aux;
+fhc_mainbus_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct fhc_softc *sc = (struct fhc_softc *)self;
 	struct mainbus_attach_args *ma = aux;
