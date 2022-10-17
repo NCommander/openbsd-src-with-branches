@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_var.h,v 1.103 2022/09/13 09:05:02 mvs Exp $	*/
+/*	$OpenBSD: ip6_var.h,v 1.104 2022/10/03 16:43:52 bluhm Exp $	*/
 /*	$KAME: ip6_var.h,v 1.33 2000/06/11 14:59:20 jinmei Exp $	*/
 
 /*
@@ -361,7 +361,6 @@ int	rip6_disconnect(struct socket *);
 int	rip6_shutdown(struct socket *);
 int	rip6_send(struct socket *, struct mbuf *, struct mbuf *,
 	    struct mbuf *);
-int	rip6_abort(struct socket *);
 int	rip6_sysctl(int *, u_int, void *, size_t *, void *, size_t);
 
 int	dest6_input(struct mbuf **, int *, int, int);
