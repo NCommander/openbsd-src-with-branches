@@ -1,4 +1,4 @@
-/*	$OpenBSD: output.c,v 1.28 2022/08/29 18:19:21 claudio Exp $ */
+/*	$OpenBSD: output.c,v 1.29 2022/08/31 15:00:53 claudio Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -1120,5 +1120,5 @@ const struct output show_output = {
 	.set = show_rib_set,
 	.rtr = show_rtr,
 	.result = show_result,
-	.tail = show_tail
+	.tail = show_tail,
 };

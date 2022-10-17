@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.113 2022/06/22 12:27:46 claudio Exp $ */
+/*	$OpenBSD: parser.c,v 1.114 2022/08/17 15:16:12 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -141,6 +141,7 @@ static const struct token t_show[] = {
 	{ KEYWORD,	"sets",		SHOW_SET,	NULL},
 	{ KEYWORD,	"rtr",		SHOW_RTR,	NULL},
 	{ KEYWORD,	"mrt",		SHOW_MRT,	t_show_mrt},
+	{ KEYWORD,	"metric",	SHOW_METRIC,	NULL},
 	{ ENDTOKEN,	"",		NONE,		NULL}
 };
 
