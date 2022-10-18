@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmpci.c,v 1.48 2022/03/11 18:00:45 mpi Exp $	*/
+/*	$OpenBSD: cmpci.c,v 1.49 2022/03/21 19:22:41 miod Exp $	*/
 /*	$NetBSD: cmpci.c,v 1.25 2004/10/26 06:32:20 xtraeme Exp $	*/
 
 /*
@@ -1768,7 +1768,7 @@ cmpci_round_buffersize(void *handle, int direction, size_t bufsize)
 int
 cmpci_get_props(void *handle)
 {
-	return AUDIO_PROP_MMAP | AUDIO_PROP_INDEPENDENT | AUDIO_PROP_FULLDUPLEX;
+	return AUDIO_PROP_FULLDUPLEX;
 }
 
 int

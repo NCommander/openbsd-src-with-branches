@@ -1,4 +1,4 @@
-/*	$OpenBSD: audio_if.h,v 1.37 2022/02/16 06:21:18 anton Exp $	*/
+/*	$OpenBSD: audio_if.h,v 1.38 2022/03/21 19:22:40 miod Exp $	*/
 /*	$NetBSD: audio_if.h,v 1.24 1998/01/10 14:07:25 tv Exp $	*/
 
 /*
@@ -44,8 +44,6 @@
  * get_props
  */
 #define AUDIO_PROP_FULLDUPLEX	0x01
-#define AUDIO_PROP_MMAP		0x02
-#define AUDIO_PROP_INDEPENDENT	0x04
 
 #define AUDIO_BPS(bits)		(bits) <= 8 ? 1 : ((bits) <= 16 ? 2 : 4)
 

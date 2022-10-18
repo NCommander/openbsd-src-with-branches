@@ -1,4 +1,4 @@
-/*	$OpenBSD: eso.c,v 1.49 2022/03/11 18:00:45 mpi Exp $	*/
+/*	$OpenBSD: eso.c,v 1.50 2022/03/21 19:22:41 miod Exp $	*/
 /*	$NetBSD: eso.c,v 1.48 2006/12/18 23:13:39 kleink Exp $	*/
 
 /*
@@ -1571,8 +1571,7 @@ eso_round_buffersize(void *hdl, int direction, size_t bufsize)
 int
 eso_get_props(void *hdl)
 {
-	return (AUDIO_PROP_MMAP | AUDIO_PROP_INDEPENDENT |
-	    AUDIO_PROP_FULLDUPLEX);
+	return (AUDIO_PROP_FULLDUPLEX);
 }
 
 int

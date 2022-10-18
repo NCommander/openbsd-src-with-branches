@@ -1,4 +1,4 @@
-/*	$OpenBSD: awacs.c,v 1.36 2022/03/13 12:33:01 mpi Exp $	*/
+/*	$OpenBSD: awacs.c,v 1.37 2022/03/21 19:22:39 miod Exp $	*/
 /*	$NetBSD: awacs.c,v 1.4 2001/02/26 21:07:51 wiz Exp $	*/
 
 /*-
@@ -873,7 +873,7 @@ awacs_allocm(void *h, int dir, size_t size, int type, int flags)
 int
 awacs_get_props(void *h)
 {
-	return AUDIO_PROP_FULLDUPLEX /* | AUDIO_PROP_MMAP */;
+	return AUDIO_PROP_FULLDUPLEX;
 }
 
 int

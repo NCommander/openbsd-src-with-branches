@@ -1,4 +1,4 @@
-/*	$OpenBSD: maestro.c,v 1.45 2022/03/11 18:00:50 mpi Exp $	*/
+/*	$OpenBSD: maestro.c,v 1.46 2022/03/21 19:22:41 miod Exp $	*/
 /* $FreeBSD: /c/ncvs/src/sys/dev/sound/pci/maestro.c,v 1.3 2000/11/21 12:22:11 julian Exp $ */
 /*
  * FreeBSD's ESS Agogo/Maestro driver 
@@ -852,7 +852,7 @@ maestro_get_props(void *self)
 {
 	/* struct maestro_softc *sc = (struct maestro_softc *)self; */
 
-	return (AUDIO_PROP_MMAP | AUDIO_PROP_INDEPENDENT); /* XXX */
+	return (0); /* XXX */
 }
 
 int

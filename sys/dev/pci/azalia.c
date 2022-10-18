@@ -1,4 +1,4 @@
-/*	$OpenBSD: azalia.c,v 1.275 2022/08/24 11:21:12 jsg Exp $	*/
+/*	$OpenBSD: azalia.c,v 1.276 2022/09/08 01:28:46 jsg Exp $	*/
 /*	$NetBSD: azalia.c,v 1.20 2006/05/07 08:31:44 kent Exp $	*/
 
 /*-
@@ -4149,7 +4149,7 @@ azalia_round_buffersize(void *v, int dir, size_t size)
 int
 azalia_get_props(void *v)
 {
-	return AUDIO_PROP_INDEPENDENT | AUDIO_PROP_FULLDUPLEX;
+	return AUDIO_PROP_FULLDUPLEX;
 }
 
 int

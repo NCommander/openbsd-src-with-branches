@@ -1,4 +1,4 @@
-/*	$OpenBSD: ad1848.c,v 1.45 2016/09/14 06:12:19 ratchov Exp $	*/
+/*	$OpenBSD: ad1848.c,v 1.46 2022/01/09 05:42:42 jsg Exp $	*/
 /*	$NetBSD: ad1848.c,v 1.45 1998/01/30 02:02:38 augustss Exp $	*/
 
 /*
@@ -1464,6 +1464,5 @@ ad1848_get_props(void *addr)
 {
 	struct ad1848_softc *sc = addr;
 
-	return AUDIO_PROP_MMAP |
-	    (sc->mode == 2 ? AUDIO_PROP_FULLDUPLEX : 0);
+	return (sc->mode == 2 ? AUDIO_PROP_FULLDUPLEX : 0);
 }

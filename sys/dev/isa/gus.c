@@ -1,4 +1,4 @@
-/*	$OpenBSD: gus.c,v 1.50 2022/03/21 19:22:40 miod Exp $	*/
+/*	$OpenBSD: gus.c,v 1.51 2022/08/29 06:08:04 jsg Exp $	*/
 /*	$NetBSD: gus.c,v 1.51 1998/01/25 23:48:06 mycroft Exp $	*/
 
 /*-
@@ -2698,8 +2698,7 @@ int
 gus_get_props(void *addr)
 {
 	struct gus_softc *sc = addr;
-	return AUDIO_PROP_MMAP |
-		(sc->sc_recdrq == sc->sc_drq ? 0 : AUDIO_PROP_FULLDUPLEX);
+	return (sc->sc_recdrq == sc->sc_drq ? 0 : AUDIO_PROP_FULLDUPLEX);
 }
 
 int
