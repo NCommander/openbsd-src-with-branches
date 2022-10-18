@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpii.c,v 1.142 2022/03/11 18:00:50 mpi Exp $	*/
+/*	$OpenBSD: mpii.c,v 1.143 2022/04/16 19:19:59 naddy Exp $	*/
 /*
  * Copyright (c) 2010, 2012 Mike Belopuhov
  * Copyright (c) 2009 James Giannoules
@@ -3423,6 +3423,8 @@ mpii_ioctl_vol(struct mpii_softc *sc, struct bioc_vol *bv)
 		bv->bv_level = 1;
 		break;
 	case MPII_CFG_RAID_VOL_0_TYPE_RAID1E:
+		bv->bv_level = 0x1E;
+		break;
 	case MPII_CFG_RAID_VOL_0_TYPE_RAID10:
 		bv->bv_level = 10;
 		break;

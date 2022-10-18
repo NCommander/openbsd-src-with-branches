@@ -1,4 +1,4 @@
-/* $OpenBSD: bioctl.c,v 1.149 2022/08/26 09:14:00 kn Exp $ */
+/* $OpenBSD: bioctl.c,v 1.150 2022/10/18 06:56:42 kn Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Marco Peereboom
@@ -504,6 +504,7 @@ bio_inq(char *name)
 				    percent, seconds);
 				break;
 			case 0x1C:
+			case 0x1E:
 				printf("RAID%X%s%s %s\n",
 				    bv.bv_level, percent, seconds, cache);
 				break;
