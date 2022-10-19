@@ -1,4 +1,4 @@
-/*	$OpenBSD: nec86hw.c,v 1.5 2017/03/11 12:15:35 ratchov Exp $	*/
+/*	$OpenBSD: nec86hw.c,v 1.6 2021/03/11 11:16:58 jsg Exp $	*/
 /*	$NecBSD: nec86hw.c,v 1.13 1998/03/14 07:04:54 kmatsuda Exp $	*/
 /*	$NetBSD$	*/
 
@@ -326,15 +326,6 @@ nec86hw_commit_settings(void *addr)
 	sc->func_fifo_input =
 	    nec86hw_functable[i].func_fifo_input_direct;
 	return 0;
-}
-
-int
-nec86hw_setfd(void *addr, int flag)
-{
-	DPRINTF(("nec86hw_setfd:\n"));
-
-	/* Can't do full-duplex */
-	return ENOTTY;
 }
 
 int
