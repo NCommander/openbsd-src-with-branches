@@ -1,4 +1,4 @@
-/*	$OpenBSD: pas.c,v 1.32 2022/03/21 19:22:40 miod Exp $	*/
+/*	$OpenBSD: pas.c,v 1.33 2022/04/06 18:59:28 naddy Exp $	*/
 /*	$NetBSD: pas.c,v 1.37 1998/01/12 09:43:43 thorpej Exp $	*/
 
 /*
@@ -136,7 +136,7 @@ const struct audio_hw_if pas_hw_if = {
 /* The Address Translation code is used to convert I/O register addresses to
    be relative to the given base -register */
 
-static char *pasnames[] = {
+static const char *pasnames[] = {
 	"",
 	"Plus",
 	"CDPC",
