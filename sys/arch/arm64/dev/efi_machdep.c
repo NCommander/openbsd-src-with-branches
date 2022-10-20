@@ -1,4 +1,4 @@
-/*	$OpenBSD: efi_machdep.c,v 1.1 2022/10/03 19:32:22 kettenis Exp $	*/
+/*	$OpenBSD: efi_machdep.c,v 1.2 2022/10/12 13:39:50 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
@@ -117,6 +117,10 @@ efi_attach(struct device *parent, struct device *self, void *aux)
 	if (minor % 10)
 		printf(".%d", minor % 10);
 	printf("\n");
+
+	/* Early implementations can be buggy. */
+	if (major < 2 || (major == 2 && minor < 10))
+		return;
 
 	efi_map_runtime(sc);
 
