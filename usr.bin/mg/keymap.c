@@ -1,4 +1,4 @@
-/*	$OpenBSD: keymap.c,v 1.58 2015/12/29 19:44:32 lum Exp $	*/
+/*	$OpenBSD: keymap.c,v 1.59 2021/04/20 10:02:50 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -290,7 +290,7 @@ static PF metal[] = {
 	copyregion,		/* w */
 	extend,			/* x */
 	rescan,			/* y */
-	rescan,			/* z */
+	zaptochar,		/* z */
 	gotobop,		/* { */
 	piperegion,		/* | */
 	gotoeop			/* } */
