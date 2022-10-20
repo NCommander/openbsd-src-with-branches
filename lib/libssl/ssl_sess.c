@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_sess.c,v 1.117 2022/08/17 07:39:19 jsing Exp $ */
+/* $OpenBSD: ssl_sess.c,v 1.118 2022/10/02 16:36:41 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -771,6 +771,8 @@ SSL_SESSION_free(SSL_SESSION *ss)
 	free(ss->tlsext_tick);
 	free(ss->tlsext_ecpointformatlist);
 	free(ss->tlsext_supportedgroups);
+
+	tls13_secret_cleanup(&ss->resumption_master_secret);
 
 	freezero(ss, sizeof(*ss));
 }
