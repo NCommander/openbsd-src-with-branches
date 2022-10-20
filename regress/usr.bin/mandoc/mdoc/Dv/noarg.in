@@ -1,0 +1,13 @@
+.\" $OpenBSD$
+.Dd $Mdocdate: July 4 2017 $
+.Dt DV-NOARG 1
+.Os
+.Sh NAME
+.Nm Dv-noarg
+.Nd defined variable macro without an argument
+.Sh DESCRIPTION
+with variable:
+.Dv NULL.
+no variable:
+.Dv
+end of test document

@@ -1,0 +1,52 @@
+dnl	$OpenBSD: contents,v 1.14 2020/05/17 17:04:28 deraadt Exp $
+TopPart
+
+	miniroot-am335x-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; BeagleBone version.
+
+	miniroot-cubie-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; Cubieboard2 version.
+
+	miniroot-cubox-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; CuBox-i version.
+
+	miniroot-nitrogen-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; Nitrogen6x version.
+
+	miniroot-panda-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; PandaBoard (ES) version.
+
+	miniroot-wandboard-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; Wandboard version.
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDrd
+dnl not yet...
+dnl OpenBSDcd
+
+DistributionDescription(eight)
+
+OpenBSDbase(136862910,362610688)
+
+OpenBSDcomp(41828513,156442624)
+
+OpenBSDgame(2764737,6557696)
+
+OpenBSDman(7793692,32841728)
+
+OpenBSDxbase(44241736,120922112)
+
+OpenBSDxfont(23519673,38381568)
+
+OpenBSDxserv(8312280,21817344)
+
+OpenBSDxshare(4670382,30439424)

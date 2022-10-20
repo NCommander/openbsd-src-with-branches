@@ -10,11 +10,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,30 +27,47 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1988 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/* from: static char sccsid[] = "@(#)accton.c	4.3 (Berkeley) 6/1/90"; */
-static char *rcsid = "$Id: accton.c,v 1.4 1993/10/20 00:13:10 cgd Exp $";
-#endif /* not lint */
-
+#include <sys/types.h>
+#include <err.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
-main(argc, argv)
-	int argc;
-	char **argv;
+static void usage(void);
+
+void
+usage(void)
 {
-	if (argc > 2) {
-		fputs("usage: accton [file]\n", stderr);
-		exit(1);
-	}
-	if (acct(argc == 2 ? argv[1] : (char *)NULL)) {
-		perror("accton");
-		exit(1);
+	fputs("usage: accton [file]\n", stderr);
+	exit(1);
+}
+
+int
+main(int argc, char *argv[])
+{
+	int ch;
+
+	while ((ch = getopt(argc, argv, "")) != -1)
+		switch(ch) {
+		case '?':
+		default:
+			usage();
+		}
+	argc -= optind;
+	argv += optind;
+
+	switch(argc) {
+	case 0:
+		if (acct(NULL))
+			err(1, NULL);
+		break;
+	case 1:
+		if (acct(*argv))
+			err(1, "%s", *argv);
+		break;
+	default:
+		usage();
 	}
 	exit(0);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: dlfcn.h,v 1.15 2021/06/02 07:29:03 semarie Exp $	*/
 /*	$NetBSD: dlfcn.h,v 1.2 1995/06/05 19:38:00 pk Exp $	*/
 
 /*
@@ -16,7 +17,7 @@
  *    must display the following acknowledgement:
  *      This product includes software developed by Paul Kranenburg.
  * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software withough specific prior written permission
+ *    derived from this software without specific prior written permission
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -35,20 +36,33 @@
 
 #include <sys/cdefs.h>
 
-/*
- * User interface to the run-time linker.
- */
-__BEGIN_DECLS
-extern void	*dlopen __P((char *, int));
-extern int	dlclose __P((void *));
-extern void	*dlsym __P((void *, char *));
-extern int	dlctl __P((void *, int, void *));
-extern char	*dlerror __P((void));
-__END_DECLS
-
 /* Values for dlopen `mode'. */
-#define DL_LAZY		1
-#define RTLD_LAZY	DL_LAZY		/* SunOS Compat */
+#define RTLD_LAZY	1
+#define RTLD_NOW	2
+#define RTLD_GLOBAL	0x100
+#define RTLD_LOCAL	0x000
+#define RTLD_TRACE	0x200
+#define RTLD_NODELETE	0x400
+#define RTLD_NOLOAD	0x800
+
+/*
+ * Special handle arguments for dlsym().
+ */
+#define	RTLD_NEXT	((void *) -1)	/* Search subsequent objects. */
+#define	RTLD_DEFAULT	((void *) -2)	/* Use default search algorithm. */
+#define	RTLD_SELF	((void *) -3)	/* Search the caller itself. */
+
+#if __BSD_VISIBLE
+
+/*
+ * Structure filled in by dladdr().
+ */
+typedef	struct dl_info {
+	const char	*dli_fname;	/* Pathname of shared object. */
+	void		*dli_fbase;	/* Base address of shared object. */
+	const char	*dli_sname;	/* Name of nearest symbol. */
+	void		*dli_saddr;	/* Address of nearest symbol. */
+} Dl_info;
 
 /*
  * dlctl() commands
@@ -58,5 +72,29 @@ __END_DECLS
 #define DL_GETLIST	x
 #define DL_GETREFCNT	x
 #define DL_GETLOADADDR	x
+#define DL_SETTHREADLCK	2
+#define DL_SETBINDLCK	3
+#define DL_REFERENCE	4
+
+#define	DL_LAZY		RTLD_LAZY	/* Compat */
+
+#endif /* __BSD_VISIBLE */
+
+
+/*
+ * User interface to the run-time linker.
+ */
+__BEGIN_DECLS
+void	*dlopen(const char *, int);
+int	dlclose(void *);
+void	*dlsym(void *__restrict, const char *__restrict);
+char	*dlerror(void);
+
+#if __BSD_VISIBLE
+int	dladdr(const void *, Dl_info *);
+int	dlctl(void *, int, void *);
+#endif /* __BSD_VISIBLE */
+
+__END_DECLS
 
 #endif /* _DLFCN_H_ */

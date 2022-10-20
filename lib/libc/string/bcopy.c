@@ -1,3 +1,4 @@
+/*	$OpenBSD: bcopy.c,v 1.6 2014/11/30 19:43:56 deraadt Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,11 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)bcopy.c	5.11 (Berkeley) 6/21/91";*/
-static char *rcsid = "$Id: bcopy.c,v 1.5 1995/06/15 00:07:16 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <string.h>
 
 /*
@@ -52,28 +44,13 @@ typedef	long word;		/* "word" used for optimal copy speed */
 
 /*
  * Copy a block of memory, handling overlap.
- * This is the routine that actually implements
- * (the portable versions of) bcopy, memcpy, and memmove.
  */
-#ifdef MEMCOPY
-void *
-memcpy(dst0, src0, length)
-#else
-#ifdef MEMMOVE
-void *
-memmove(dst0, src0, length)
-#else
 void
-bcopy(src0, dst0, length)
-#endif
-#endif
-	void *dst0;
-	const void *src0;
-	register size_t length;
+bcopy(const void *src0, void *dst0, size_t length)
 {
-	register char *dst = dst0;
-	register const char *src = src0;
-	register size_t t;
+	char *dst = dst0;
+	const char *src = src0;
+	size_t t;
 
 	if (length == 0 || dst == src)		/* nothing to do */
 		goto done;
@@ -131,9 +108,6 @@ bcopy(src0, dst0, length)
 		TLOOP(*--dst = *--src);
 	}
 done:
-#if defined(MEMCOPY) || defined(MEMMOVE)
-	return (dst0);
-#else
 	return;
-#endif
 }
+DEF_WEAK(bcopy);

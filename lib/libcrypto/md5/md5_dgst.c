@@ -1,4 +1,4 @@
-/* crypto/md5/md5_dgst.c */
+/* $OpenBSD: md5_dgst.c,v 1.13 2014/07/09 11:10:51 bcook Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -61,8 +61,6 @@
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 
-const char MD5_version[]="MD5" OPENSSL_VERSION_PTEXT;
-
 /* Implemented from RFC1321 The MD5 Message-Digest Algorithm
  */
 
@@ -71,7 +69,7 @@ const char MD5_version[]="MD5" OPENSSL_VERSION_PTEXT;
 #define INIT_DATA_C (unsigned long)0x98badcfeL
 #define INIT_DATA_D (unsigned long)0x10325476L
 
-fips_md_init(MD5)
+int MD5_Init(MD5_CTX *c)
 	{
 	memset (c,0,sizeof(*c));
 	c->A=INIT_DATA_A;
@@ -88,7 +86,7 @@ fips_md_init(MD5)
 void md5_block_data_order (MD5_CTX *c, const void *data_, size_t num)
 	{
 	const unsigned char *data=data_;
-	register unsigned MD32_REG_T A,B,C,D,l;
+	unsigned MD32_REG_T A,B,C,D,l;
 #ifndef MD32_XARRAY
 	/* See comment in crypto/sha/sha_locl.h for details. */
 	unsigned MD32_REG_T	XX0, XX1, XX2, XX3, XX4, XX5, XX6, XX7,

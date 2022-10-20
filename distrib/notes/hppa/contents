@@ -1,0 +1,37 @@
+dnl	$OpenBSD: contents,v 1.35 2020/05/17 17:04:28 deraadt Exp $
+TopPart
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDbsdmp
+
+OpenBSDrd
+
+OpenBSDinstalliso
+
+OpenBSDcd
+
+	lif{:--:}OSrev.img	A LIF bootable bsd.rd image, suitable for
+			network boot.
+
+	xxboot		The OpenBSD/MACHINE LIF boot block.
+
+DistributionDescription(eight)
+
+OpenBSDbase(101778147,219666432)
+
+OpenBSDcomp(48708293,150892544)
+
+OpenBSDgame(2933657,7032832)
+
+OpenBSDman(7800052,32860160)
+
+OpenBSDxbase(11670468,32118784)
+
+OpenBSDxfont(23519059,38381568)
+
+OpenBSDxserv(3575302,8116224)
+
+OpenBSDxshare(4670407,30439424)

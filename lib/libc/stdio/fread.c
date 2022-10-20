@@ -1,5 +1,4 @@
-/*	$NetBSD: fread.c,v 1.6 1995/02/02 02:09:34 jtc Exp $	*/
-
+/*	$OpenBSD: fread.c,v 1.17 2018/12/14 20:55:17 millert Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,51 +31,89 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fread.c	8.2 (Berkeley) 12/11/93";
-#endif
-static char rcsid[] = "$NetBSD: fread.c,v 1.6 1995/02/02 02:09:34 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
+#include <errno.h>
+#include "local.h"
+
+#define MUL_NO_OVERFLOW	(1UL << (sizeof(size_t) * 4))
 
 size_t
-fread(buf, size, count, fp)
-	void *buf;
-	size_t size, count;
-	register FILE *fp;
+fread(void *buf, size_t size, size_t count, FILE *fp)
 {
-	register size_t resid;
-	register char *p;
-	register int r;
+	size_t resid;
+	char *p;
+	int r;
 	size_t total;
 
 	/*
-	 * The ANSI standard requires a return value of 0 for a count
-	 * or a size of 0.  Peculiarily, it imposes no such requirements
-	 * on fwrite; it only requires fread to be broken.
+	 * Extension:  Catch integer overflow
+	 */
+	if ((size >= MUL_NO_OVERFLOW || count >= MUL_NO_OVERFLOW) &&
+	    size > 0 && SIZE_MAX / size < count) {
+		errno = EOVERFLOW;
+		fp->_flags |= __SERR;
+		return (0);
+	}
+
+	/*
+	 * ANSI and SUSv2 require a return value of 0 if size or count are 0.
 	 */
 	if ((resid = count * size) == 0)
 		return (0);
+	FLOCKFILE(fp);
+	_SET_ORIENTATION(fp, -1);
 	if (fp->_r < 0)
 		fp->_r = 0;
 	total = resid;
 	p = buf;
+
+	/*
+	 * If we're unbuffered we know that the buffer in fp is empty so
+	 * we can read directly into buf.  This is much faster than a
+	 * series of one byte reads into fp->_nbuf.
+	 */
+	if ((fp->_flags & __SNBF) != 0 && buf != NULL) {
+		while (resid > 0) {
+			/* set up the buffer */
+			fp->_bf._base = fp->_p = p;
+			fp->_bf._size = resid;
+
+			if (__srefill(fp)) {
+				/* no more input: return partial result */
+				count = (total - resid) / size;
+				break;
+			}
+			p += fp->_r;
+			resid -= fp->_r;
+		}
+
+		/* restore the old buffer (see __smakebuf) */
+		fp->_bf._base = fp->_p = fp->_nbuf;
+		fp->_bf._size = 1;
+		fp->_r = 0;
+
+		FUNLOCKFILE(fp);
+		return (count);
+	}
+
 	while (resid > (r = fp->_r)) {
-		(void)memcpy((void *)p, (void *)fp->_p, (size_t)r);
+		(void)memcpy(p, fp->_p, r);
 		fp->_p += r;
 		/* fp->_r = 0 ... done in __srefill */
 		p += r;
 		resid -= r;
 		if (__srefill(fp)) {
 			/* no more input: return partial result */
+			FUNLOCKFILE(fp);
 			return ((total - resid) / size);
 		}
 	}
-	(void)memcpy((void *)p, (void *)fp->_p, resid);
+	(void)memcpy(p, fp->_p, resid);
 	fp->_r -= resid;
 	fp->_p += resid;
+	FUNLOCKFILE(fp);
 	return (count);
 }
+DEF_STRONG(fread);

@@ -1,5 +1,4 @@
-/*	$NetBSD: ucmpdi2.c,v 1.2 1995/02/27 17:31:06 cgd Exp $	*/
-
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -16,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,14 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)ucmpdi2.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: ucmpdi2.c,v 1.2 1995/02/27 17:31:06 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include "quad.h"
 
 /*
@@ -52,8 +39,7 @@ static char rcsid[] = "$NetBSD: ucmpdi2.c,v 1.2 1995/02/27 17:31:06 cgd Exp $";
  * Neither a nor b are considered signed.
  */
 int
-__ucmpdi2(a, b)
-	u_quad_t a, b;
+__ucmpdi2(u_quad_t a, u_quad_t b)
 {
 	union uu aa, bb;
 

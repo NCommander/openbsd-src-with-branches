@@ -1,3 +1,5 @@
+/*	$OpenBSD: subr.c,v 1.27 2017/05/27 07:37:36 tedu Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,20 +29,15 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)subr.c	8.1 (Berkeley) 6/4/93";*/
-static char rcsid[] = "$Id: subr.c,v 1.18 1995/10/05 08:51:31 mycroft Exp $";
-#endif /* not lint */
-
 /*
  * Melbourne getty.
  */
-#define COMPAT_43
+#include <sys/ioctl.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <poll.h>
 #include <termios.h>
-#include <sys/ioctl.h>
 
 #include "gettytab.h"
 #include "pathnames.h"
@@ -52,22 +45,19 @@ static char rcsid[] = "$Id: subr.c,v 1.18 1995/10/05 08:51:31 mycroft Exp $";
 
 extern	struct termios tmode, omode;
 
-static void	compatflags __P((long));
-
 /*
  * Get a table entry.
  */
 void
-gettable(name, buf)
-	char *name, *buf;
+gettable(char *name, char *buf)
 {
-	register struct gettystrs *sp;
-	register struct gettynums *np;
-	register struct gettyflags *fp;
+	struct gettystrs *sp;
+	struct gettynums *np;
+	struct gettyflags *fp;
 	long n;
 	char *dba[2];
 	dba[0] = _PATH_GETTYTAB;
-	dba[1] = 0;
+	dba[1] = NULL;
 
 	if (cgetent(&buf, dba, name) != 0)
 		return;
@@ -97,18 +87,18 @@ gettable(name, buf)
 	for (np = gettynums; np->field; np++)
 		printf("cgetnum: %s=%d\n", np->field, np->value);
 	for (fp = gettyflags; fp->field; fp++)
-		printf("cgetflags: %s='%c' set='%c'\n", fp->field, 
-		       fp->value + '0', fp->set + '0');
+		printf("cgetflags: %s='%c' set='%c'\n", fp->field,
+		    fp->value + '0', fp->set + '0');
 	exit(1);
 #endif /* DEBUG */
 }
 
 void
-gendefaults()
+gendefaults(void)
 {
-	register struct gettystrs *sp;
-	register struct gettynums *np;
-	register struct gettyflags *fp;
+	struct gettystrs *sp;
+	struct gettynums *np;
+	struct gettyflags *fp;
 
 	for (sp = gettystrs; sp->field; sp++)
 		if (sp->value)
@@ -124,11 +114,11 @@ gendefaults()
 }
 
 void
-setdefaults()
+setdefaults(void)
 {
-	register struct gettystrs *sp;
-	register struct gettynums *np;
-	register struct gettyflags *fp;
+	struct gettystrs *sp;
+	struct gettynums *np;
+	struct gettyflags *fp;
 
 	for (sp = gettystrs; sp->field; sp++)
 		if (!sp->value)
@@ -157,10 +147,10 @@ charvars[] = {
 };
 
 void
-setchars()
+setchars(void)
 {
-	register int i;
-	register char *p;
+	int i;
+	char *p;
 
 	for (i = 0; charnames[i]; i++) {
 		p = *charnames[i];
@@ -177,33 +167,9 @@ setchars()
 #define	ISSET(t, f)	((t) & (f))
 
 void
-setflags(n)
-	int n;
+setflags(int n)
 {
-	register tcflag_t iflag, oflag, cflag, lflag;
-
-#ifdef COMPAT_43
-	switch (n) {
-	case 0:
-		if (F0set) {
-			compatflags(F0);
-			return;
-		}
-		break;
-	case 1:
-		if (F1set) {
-			compatflags(F1);
-			return;
-		}
-		break;
-	default:
-		if (F2set) {
-			compatflags(F2);
-			return;
-		}
-		break;
-	}
-#endif
+	tcflag_t iflag, oflag, cflag, lflag;
 
 	switch (n) {
 	case 0:
@@ -258,16 +224,17 @@ setflags(n)
 			CLR(cflag, PARODD);
 			if (AP)
 				CLR(iflag, INPCK);
-		} else if (AP || EP && OP) {
+		} else if (AP || (EP && OP)) {
 			CLR(iflag, INPCK|IGNPAR);
 			CLR(cflag, PARODD);
 		}
 	} /* else, leave as is */
 
-#if 0
-	if (UC)
-		f |= LCASE;
-#endif
+	if (UC) {
+		SET(iflag, IUCLC);
+		SET(oflag, OLCUC);
+		SET(lflag, XCASE);
+	}
 
 	if (HC)
 		SET(cflag, HUPCL);
@@ -292,9 +259,6 @@ setflags(n)
 	else
 		CLR(oflag, OXTABS);
 
-#ifdef XXX_DELAY
-	SET(f, delaybits());
-#endif
 
 	if (n == 1) {		/* read mode flags */
 		if (RW) {
@@ -354,262 +318,22 @@ out:
 	tmode.c_lflag = lflag;
 }
 
-#ifdef COMPAT_43
-/*
- * Old TTY => termios, snatched from <sys/kern/tty_compat.c>
- */
-void
-compatflags(flags)
-register long flags;
-{
-	register tcflag_t iflag, oflag, cflag, lflag;
-
-	iflag = BRKINT|ICRNL|IMAXBEL|IXON|IXANY;
-	oflag = OPOST|ONLCR|OXTABS;
-	cflag = CREAD;
-	lflag = ICANON|ISIG|IEXTEN;
-
-	if (ISSET(flags, TANDEM))
-		SET(iflag, IXOFF);
-	else
-		CLR(iflag, IXOFF);
-	if (ISSET(flags, ECHO))
-		SET(lflag, ECHO);
-	else
-		CLR(lflag, ECHO);
-	if (ISSET(flags, CRMOD)) {
-		SET(iflag, ICRNL);
-		SET(oflag, ONLCR);
-	} else {
-		CLR(iflag, ICRNL);
-		CLR(oflag, ONLCR);
-	}
-	if (ISSET(flags, XTABS))
-		SET(oflag, OXTABS);
-	else
-		CLR(oflag, OXTABS);
-
-
-	if (ISSET(flags, RAW)) {
-		iflag &= IXOFF;
-		CLR(lflag, ISIG|ICANON|IEXTEN);
-		CLR(cflag, PARENB);
-	} else {
-		SET(iflag, BRKINT|IXON|IMAXBEL);
-		SET(lflag, ISIG|IEXTEN);
-		if (ISSET(flags, CBREAK))
-			CLR(lflag, ICANON);
-		else
-			SET(lflag, ICANON);
-		switch (ISSET(flags, ANYP)) {
-		case 0:
-			CLR(cflag, PARENB);
-			break;
-		case ANYP:
-			SET(cflag, PARENB);
-			CLR(iflag, INPCK);
-			break;
-		case EVENP:
-			SET(cflag, PARENB);
-			SET(iflag, INPCK);
-			CLR(cflag, PARODD);
-			break;
-		case ODDP:
-			SET(cflag, PARENB);
-			SET(iflag, INPCK);
-			SET(cflag, PARODD);
-			break;
-		}
-	}
-
-	/* Nothing we can do with CRTBS. */
-	if (ISSET(flags, PRTERA))
-		SET(lflag, ECHOPRT);
-	else
-		CLR(lflag, ECHOPRT);
-	if (ISSET(flags, CRTERA))
-		SET(lflag, ECHOE);
-	else
-		CLR(lflag, ECHOE);
-	/* Nothing we can do with TILDE. */
-	if (ISSET(flags, MDMBUF))
-		SET(cflag, MDMBUF);
-	else
-		CLR(cflag, MDMBUF);
-	if (ISSET(flags, NOHANG))
-		CLR(cflag, HUPCL);
-	else
-		SET(cflag, HUPCL);
-	if (ISSET(flags, CRTKIL))
-		SET(lflag, ECHOKE);
-	else
-		CLR(lflag, ECHOKE);
-	if (ISSET(flags, CTLECH))
-		SET(lflag, ECHOCTL);
-	else
-		CLR(lflag, ECHOCTL);
-	if (!ISSET(flags, DECCTQ))
-		SET(iflag, IXANY);
-	else
-		CLR(iflag, IXANY);
-	CLR(lflag, TOSTOP|FLUSHO|PENDIN|NOFLSH);
-	SET(lflag, ISSET(flags, TOSTOP|FLUSHO|PENDIN|NOFLSH));
-
-	if (ISSET(flags, RAW|LITOUT|PASS8)) {
-		CLR(cflag, CSIZE);
-		SET(cflag, CS8);
-		if (!ISSET(flags, RAW|PASS8))
-			SET(iflag, ISTRIP);
-		else
-			CLR(iflag, ISTRIP);
-		if (!ISSET(flags, RAW|LITOUT))
-			SET(oflag, OPOST);
-		else
-			CLR(oflag, OPOST);
-	} else {
-		CLR(cflag, CSIZE);
-		SET(cflag, CS7);
-		SET(iflag, ISTRIP);
-		SET(oflag, OPOST);
-	}
-
-	tmode.c_iflag = iflag;
-	tmode.c_oflag = oflag;
-	tmode.c_cflag = cflag;
-	tmode.c_lflag = lflag;
-}
-#endif
-
-#ifdef XXX_DELAY
-struct delayval {
-	unsigned	delay;		/* delay in ms */
-	int		bits;
-};
-
-/*
- * below are random guesses, I can't be bothered checking
- */
-
-struct delayval	crdelay[] = {
-	{ 1,		CR1 },
-	{ 2,		CR2 },
-	{ 3,		CR3 },
-	{ 83,		CR1 },
-	{ 166,		CR2 },
-	{ 0,		CR3 },
-};
-
-struct delayval nldelay[] = {
-	{ 1,		NL1 },		/* special, calculated */
-	{ 2,		NL2 },
-	{ 3,		NL3 },
-	{ 100,		NL2 },
-	{ 0,		NL3 },
-};
-
-struct delayval	bsdelay[] = {
-	{ 1,		BS1 },
-	{ 0,		0 },
-};
-
-struct delayval	ffdelay[] = {
-	{ 1,		FF1 },
-	{ 1750,		FF1 },
-	{ 0,		FF1 },
-};
-
-struct delayval	tbdelay[] = {
-	{ 1,		 TAB1 },
-	{ 2,		 TAB2 },
-	{ 3,		XTABS },	/* this is expand tabs */
-	{ 100,		 TAB1 },
-	{ 0,		 TAB2 },
-};
-
-int
-delaybits()
-{
-	register int f;
-
-	f  = adelay(CD, crdelay);
-	f |= adelay(ND, nldelay);
-	f |= adelay(FD, ffdelay);
-	f |= adelay(TD, tbdelay);
-	f |= adelay(BD, bsdelay);
-	return (f);
-}
-
-int
-adelay(ms, dp)
-	register ms;
-	register struct delayval *dp;
-{
-	if (ms == 0)
-		return (0);
-	while (dp->delay && ms > dp->delay)
-		dp++;
-	return (dp->bits);
-}
-#endif
-
-char	editedhost[32];
 
 void
-edithost(pat)
-	register char *pat;
-{
-	register char *host = HN;
-	register char *res = editedhost;
-
-	if (!pat)
-		pat = "";
-	while (*pat) {
-		switch (*pat) {
-
-		case '#':
-			if (*host)
-				host++;
-			break;
-
-		case '@':
-			if (*host)
-				*res++ = *host++;
-			break;
-
-		default:
-			*res++ = *pat;
-			break;
-
-		}
-		if (res == &editedhost[sizeof editedhost - 1]) {
-			*res = '\0';
-			return;
-		}
-		pat++;
-	}
-	if (*host)
-		strncpy(res, host, sizeof editedhost - (res - editedhost) - 1);
-	else
-		*res = '\0';
-	editedhost[sizeof editedhost - 1] = '\0';
-}
-
-void
-makeenv(env)
-	char *env[];
+makeenv(char *env[])
 {
 	static char termbuf[128] = "TERM=";
-	register char *p, *q;
-	register char **ep;
+	char *p, *q;
+	char **ep;
 
 	ep = env;
 	if (TT && *TT) {
-		strcat(termbuf, TT);
+		strlcat(termbuf, TT, sizeof(termbuf));
 		*ep++ = termbuf;
 	}
-	if (p = EV) {
+	if ((p = EV)) {
 		q = p;
-		while (q = strchr(q, ',')) {
+		while ((q = strchr(q, ','))) {
 			*q++ = '\0';
 			*ep++ = p;
 			p = q;
@@ -617,7 +341,7 @@ makeenv(env)
 		if (*p)
 			*ep++ = p;
 	}
-	*ep = (char *)0;
+	*ep = NULL;
 }
 
 /*
@@ -644,11 +368,11 @@ struct	portselect {
 };
 
 char *
-portselector()
+portselector(void)
 {
 	char c, baud[20], *type = "default";
-	register struct portselect *ps;
-	int len;
+	struct portselect *ps;
+	size_t len;
 
 	alarm(5*60);
 	for (len = 0; len < sizeof (baud) - 1; len++) {
@@ -679,25 +403,23 @@ portselector()
 #include <sys/time.h>
 
 char *
-autobaud()
+autobaud(void)
 {
-	int rfds;
-	struct timeval timeout;
+	struct pollfd pfd[1];
+	struct timespec ts;
 	char c, *type = "9600-baud";
 
 	(void)tcflush(0, TCIOFLUSH);
-	rfds = 1 << 0;
-	timeout.tv_sec = 5;
-	timeout.tv_usec = 0;
-	if (select(32, (fd_set *)&rfds, (fd_set *)NULL,
-	    (fd_set *)NULL, &timeout) <= 0)
+	pfd[0].fd = 0;
+	pfd[0].events = POLLIN;
+	if (poll(pfd, 1, 5 * 1000) <= 0)
 		return (type);
 	if (read(STDIN_FILENO, &c, sizeof(char)) != sizeof(char))
 		return (type);
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 20;
-	(void) select(32, (fd_set *)NULL, (fd_set *)NULL,
-	    (fd_set *)NULL, &timeout);
+
+	ts.tv_sec = 0;
+	ts.tv_nsec = 20 * 1000;
+	nanosleep(&ts, NULL);
 	(void)tcflush(0, TCIOFLUSH);
 	switch (c & 0377) {
 

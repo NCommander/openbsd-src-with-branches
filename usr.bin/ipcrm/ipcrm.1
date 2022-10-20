@@ -1,6 +1,8 @@
+.\" $OpenBSD: ipcrm.1,v 1.16 2014/03/22 08:02:03 jmc Exp $
+.\"
 .\" Copyright (c) 1994 Adam Glass
 .\" All rights reserved.
-.\" 
+.\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
 .\" are met:
@@ -8,7 +10,7 @@
 .\"    notice, this list of conditions and the following disclaimer.
 .\" 2. The name of the Author may not be used to endorse or promote products
 .\"    derived from this software without specific prior written permission.
-.\" 
+.\"
 .\" THIS SOFTWARE IS PROVIDED BY Adam Glass ``AS IS'' AND
 .\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 .\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,64 +22,74 @@
 .\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
-.\" 
-.\" $Id: ipcrm.1,v 1.1 1994/08/09 02:26:30 glass Exp $
+.\"
 .\""
-.Dd August 8th, 1994
-.Dt ipcrm 1
+.Dd $Mdocdate: March 22 2014 $
+.Dt IPCRM 1
 .Os
 .Sh NAME
 .Nm ipcrm
-.Nd remove the specified message queues, semaphore sets, and shared memory
-segments
+.Nd remove the specified message queues, semaphore sets, and shared \
+memory segments
 .Sh SYNOPSIS
 .Nm ipcrm
-.Op Fl q Ar msqid
-.Op Fl m Ar shmid
-.Op Fl s Ar semid
-.Op Fl Q Ar msgkey
+.Bk -words
 .Op Fl M Ar shmkey
+.Op Fl m Ar shmid
+.Op Fl Q Ar msgkey
+.Op Fl q Ar msqid
 .Op Fl S Ar semkey
+.Op Fl s Ar semid
 .Ar ...
+.Ek
 .Sh DESCRIPTION
-.Nm ipcrm
-removes the specified message queues, semaphores and shared memory
-segments.  These System V IPC objects can be specified by their
-creation id or any associated key.
+.Nm
+removes the specified message queues, semaphores, and shared memory
+segments.
+These System V IPC objects can be specified by their
+creation ID or any associated key.
 .Pp
-The following options are used to specify which IPC objects will be removed.  Any number and combination of these options can be used:
-.Bl -tag -width indent
-.It Fl q Ar msqid
-Remove the message queue associated with the id
-.Nm msqid
-from the system.
-.It Fl m Ar shmid
-Mark the shared memory segment associated with id 
-.Nm shmid
-for removal.
-This marked segment will be destroyed after the last detach.
-.It Fl s Ar semid
-Removes the semaphore set associated with id
-.Nm semid
-from the system.
-.It Fl Q Ar msgkey
-Remove the message queue associated with key 
-.Nm msgkey
-from the system.
+The options are as follows:
+.Bl -tag -width Ds
 .It Fl M Ar shmkey
-Mark the shared memory segment associated with key 
+Mark the shared memory segment associated with key
 .Nm shmkey
 for removal.
 This marked segment will be destroyed after the last detach.
+.It Fl m Ar shmid
+Mark the shared memory segment associated with ID
+.Nm shmid
+for removal.
+This marked segment will be destroyed after the last detach.
+.It Fl Q Ar msgkey
+Remove the message queue associated with key
+.Nm msgkey
+from the system.
+.It Fl q Ar msqid
+Remove the message queue associated with the ID
+.Nm msqid
+from the system.
 .It Fl S Ar semkey
 Remove the semaphore set associated with key
 .Nm semkey
+from the system.
+.It Fl s Ar semid
+Removes the semaphore set associated with ID
+.Nm semid
 from the system.
 .El
 .Pp
 The identifiers and keys associated with these System V IPC objects can be
 determined by using
-.Xr ipcs 1
-.
+.Xr ipcs 1 .
+.Sh EXIT STATUS
+.Ex -std ipcrm
 .Sh SEE ALSO
 .Xr ipcs 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+X/Open System Interfaces option of the
+.St -p1003.1-2008
+specification.

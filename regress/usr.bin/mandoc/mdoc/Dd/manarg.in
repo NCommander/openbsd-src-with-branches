@@ -1,0 +1,9 @@
+.\" $OpenBSD$
+.Dd 2014-08-07
+.Dt DD-MANARG 1
+.Os
+.Sh NAME
+.Nm Dd-manarg
+.Nd date in traditional man format
+.Sh DESCRIPTION
+some text

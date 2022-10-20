@@ -1,3 +1,4 @@
+.\"	$OpenBSD: amd.8,v 1.26 2022/03/31 17:27:28 naddy Exp $
 .\"
 .\" Copyright (c) 1989 Jan-Simon Pendry
 .\" Copyright (c) 1989 Imperial College of Science, Technology & Medicine
@@ -15,11 +16,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,9 +33,8 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     from: @(#)amd.8	5.10 (Berkeley) 4/19/94
-.\"	$Id: amd.8,v 1.4 1994/06/13 20:46:59 mycroft Exp $
 .\"
-.Dd "April 19, 1994"
+.Dd $Mdocdate: March 31 2022 $
 .Dt AMD 8
 .Os
 .Sh NAME
@@ -46,41 +42,32 @@
 .Nd automatically mount file systems
 .Sh SYNOPSIS
 .Nm amd
+.Bk -words
 .Op Fl nprv
 .Op Fl a Ar mount_point
+.Op Fl C Ar cluster
 .Op Fl c Ar duration
+.Op Fl D Ar option
 .Op Fl d Ar domain
-.Bk -words
 .Op Fl k Ar kernel-arch
-.Ek
 .Op Fl l Ar logfile
 .Op Fl t Ar interval.interval
-.Bk -words
 .Op Fl w Ar interval
-.Ek
 .Op Fl x Ar log-option
 .Op Fl y Ar YP-domain
-.Bk -words
-.Op Fl C Ar cluster-name
-.Ek
-.Op Fl D Ar option
-.Oo
-.Ar directory mapname
-.Op Fl map-options
-.Oc
+.Op Ar directory mapname Op Fl map-options
 .Ar ...
+.Ek
 .Sh DESCRIPTION
-.Nm Amd
+.Nm amd
 is a daemon that automatically mounts filesystems
 whenever a file or directory
 within that filesystem is accessed.
 Filesystems are automatically unmounted when they
 appear to be quiescent.
 .Pp
-.Nm Amd
-operates by attaching itself as an
-.Tn NFS
-server to each of the specified
+.Nm amd
+operates by attaching itself as an NFS server to each of the specified
 .Ar directories .
 Lookups within the specified directories
 are handled by
@@ -90,23 +77,48 @@ which uses the map defined by
 to determine how to resolve the lookup.
 Generally, this will be a host name, some filesystem information
 and some mount options for the given filesystem.
-.Sh OPTIONS
+.Pp
+The options are as follows:
 .Bl -tag -width Ds
-.It Fl a Ar temporary-directory
+.It Fl a Ar mount_point
 Specify an alternative location for the real mount points.
 The default is
-.Pa /a .
+.Pa /tmp_mnt .
+.It Fl C Ar cluster
+Specify an alternative
+.Ar cluster
+name.
+The default is the system domain name.
+This variable is available inside the configuration file as
+.Va ${cluster} .
 .It Fl c Ar duration
 Specify a
 .Ar duration ,
 in seconds, that a looked up name remains
-cached when not in use.  The default is 5 minutes.
+cached when not in use.
+The default is 5 minutes.
+.It Fl D Ar option
+Select from a variety of debug options.
+Prefixing an option with the string
+.Dq no
+reverses the effect of that option.
+Options are cumulative.
+The most useful option is
+.Ar all .
+.Pp
+Since
+.Fl D
+is only used for debugging, other options are not documented here:
+the current supported set of options is listed by the
+.Fl v
+option
+and a fuller description is available in the program source.
 .It Fl d Ar domain
-Specify the local domain name.  If this option is not
-given the domain name is determined from the hostname.
+Specify the local domain name.
+If this option is not given, the domain name is determined from the hostname.
 .It Fl k Ar kernel-arch
-Specifies the kernel architecture.  This is used solely
-to set the ${karch} selector.
+Specifies the kernel architecture.
+This is used solely to set the ${karch} selector.
 .It Fl l Ar logfile
 Specify a logfile in which to record mount and unmount events.
 If
@@ -118,114 +130,96 @@ the log messages will be sent to the system log daemon by
 .It Fl n
 Normalize hostnames.
 The name referred to by ${rhost} is normalized relative to the
-host database before being used.  The effect is to translate
-aliases into ``official'' names.
+host database before being used.
+The effect is to translate aliases into
+.Dq official
+names.
 .It Fl p
 Print
 .Em PID .
-Outputs the process-id of
+Outputs the process ID of
 .Nm amd
 to standard output where it can be saved into a file.
 .It Fl r
 Restart existing mounts.
-.Nm Amd
+.Nm amd
 will scan the mount file table to determine which filesystems
-are currently mounted.  Whenever one of these would have
-been auto-mounted,
+are currently mounted.
+Whenever one of these would have been auto-mounted,
 .Nm amd
 .Em inherits
 it.
 .It Fl t Ar interval.interval
 Specify the
 .Ar interval ,
-in tenths of a second, between
-.Tn NFS/RPC/UDP
-retries.
+in tenths of a second, between NFS/RPC/UDP retries.
 The default is 0.8 seconds.
-The second values alters the retransmit counter.
+The second value alters the retransmit counter.
 Useful defaults are supplied if either or both
 values are missing.
 .It Fl v
-Version.  Displays version and configuration information on standard error.
+Version.
+Displays version and configuration information on standard error.
 .It Fl w Ar interval
 Specify an
 .Ar interval ,
 in seconds, between attempts to dismount
 filesystems that have exceeded their cached times.
 The default is 2 minutes.
-.It Fl y Ar domain
-Specify an alternative
-.Tn NIS
-domain from which to fetch the
-.Tn NIS
-maps.
-The default is the system domain name.
-This option is ignored if
-.Tn NIS
-support is not available.
-.It Fl x Ar options
-Specify run-time logging options.  The options are a comma separated
+.It Fl x Ar log-option
+Specify run-time logging options.
+The options are a comma separated
 list chosen from: fatal, error, user, warn, info, map, stats, all.
-.It Fl D Ar option
-Select from a variety of debug options.  Prefixing an
-option with the string
-.Em no
-reverses the effect of that option.  Options are cumulative.
-The most useful option is
-.Ar all .
+.It Fl y Ar YP-domain
+Specify an alternative NIS domain from which to fetch the NIS maps.
+The default is the system domain name.
+This option is ignored if NIS support is not available.
+This variable is available inside the configuration file as
+.Va ${domain} .
 .El
-.Pp
-Since
-.Fl D
-is only used for debugging other options are not documented here:
-the current supported set of options is listed by the
-.Fl v
-option
-and a fuller description is available in the program source.
 .Sh FILES
-.Bl -tag -width /axx
-.It Pa /a
+.Bl -tag -width /tmp_mntxx
+.It Pa /tmp_mnt
 directory under which filesystems are dynamically mounted
 .El
+.Sh SEE ALSO
+.Xr hostname 1 ,
+.Xr amq 8 ,
+.\" .Xr fsinfo 8 ,
+.\".Xr mk-amd-map 8 ,
+.Xr mount 8 ,
+.Xr umount 8
+.Rs
+.\" 4.4BSD SMM:13
+.%A J-S. Pendry
+.%A N. Williams
+.%T Amd \(em The 4.4 BSD Automounter
+.%B 4.4BSD System Manager's Manual (SMM)
+.Re
+.Sh HISTORY
+The
+.Nm amd
+utility first appeared in
+.Bx 4.3 Reno .
+.Sh AUTHORS
+.An Jan-Simon Pendry Aq Mt jsp@doc.ic.ac.uk ,
+Department of Computing, Imperial College, London, UK.
 .Sh CAVEATS
 Some care may be required when creating a mount map.
 .Pp
-Symbolic links on an
-.Tn NFS
-filesystem can be incredibly inefficient.
-In most implementations of
-.Tn NFS ,
-their interpolations are not cached by
+Symbolic links on an NFS filesystem can be incredibly inefficient.
+In most implementations of NFS, their interpolations are not cached by
 the kernel and each time a symbolic link is
 encountered during a
 .Em lookuppn
-translation it costs an
-.Tn RPC
-call to the
-.Tn NFS
-server.
+translation it costs an RPC call to the NFS server.
 A large improvement in real-time
 performance could be gained by adding a cache somewhere.
 Replacing
-.Xr symlinks 2
+.Xr symlink 2
 with a suitable incarnation of the auto-mounter
 results in a large real-time speedup, but also causes a large
 number of process context switches.
 .Pp
 A weird imagination is most useful to gain full advantage of all
 the features.
-.Sh SEE ALSO
-.Xr amq 8 ,
-.Xr hostname 1 ,
-.Xr mount 8 ,
-.Xr umount 8 ,
-.Rs
-.%T Amd \- The 4.4 BSD Automounter
-.Re
-.Sh AUTHOR
-.An Jan-Simon Pendry
-<jsp@doc.ic.ac.uk>, Department of Computing, Imperial College, London, UK.
-.Sh HISTORY
-The
-.Nm amd
-utility first appeared in 4.4BSD.

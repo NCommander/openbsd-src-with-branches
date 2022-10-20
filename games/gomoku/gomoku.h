@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: gomoku.h,v 1.11 2015/12/26 00:26:39 mestre Exp $	*/
 /*
  * Copyright (c) 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,15 +33,21 @@
  *	@(#)gomoku.h	8.2 (Berkeley) 5/3/95
  */
 
-#include <sys/types.h>
+#include <stdio.h>
 
 /* board dimensions */
 #define BSZ	19
 #define BSZ1	(BSZ+1)
 #define BSZ2	(BSZ+2)
+#define BSZ3	(BSZ+3)
+#define BSZ4	(BSZ+4)
 #define BAREA	(BSZ2*BSZ1+1)
 
-/* frame dimentions (based on 5 in a row) */
+/* interactive curses stuff */
+#define FF		'\014'  /* used as redraw command */
+#define BGOTO(y,x)	move(BSZ - (y), 2 * (x) + 3)
+
+/* frame dimensions (based on 5 in a row) */
 #define FSZ1	BSZ
 #define FSZ2	(BSZ-4)
 #define FAREA	(FSZ1*FSZ2 + FSZ2*FSZ2 + FSZ1*FSZ2 + FSZ2*FSZ2)
@@ -247,7 +249,7 @@ struct	ovlp_info {
 };
 
 extern	char	*letters;
-extern	char	fmtbuf[];
+extern	char	fmtbuf[128];
 extern	char	pdir[];
 
 extern	int     dd[4];
@@ -260,8 +262,55 @@ extern	int	movelog[BSZ * BSZ];		/* history of moves */
 extern	int	movenum;
 extern	int	debug;
 
-extern	char    *copy();
-extern	char    *stoc();
-extern	char    *tail();
+void	addframes(int);
+void	appendcombo(struct combostr *);
+void	ask(char *);
+void	bdinit(struct spotstr *);
+void	bdisp(void);
+void	bdisp_init(void);
+#ifdef DEBUG
+void	bdump(FILE *);
+#endif
+void	bdwho(int);
+int	better(struct spotstr *, struct spotstr *, int);
+int	checkframes(struct combostr *, struct combostr *,
+	    struct spotstr *, int, struct ovlp_info *);
+#ifdef DEBUG
+void	clearcombo(struct combostr *, int);
+#endif
+int	ctos(char *);
+void	cursfini(void);
+void	cursinit(void);
+void	dislog(char *);
+void	dlog(char *);
+int	getcoord(void);
+int	get_line(char *, int);
+void	init_overlap(void);
+#ifdef DEBUG
+int	list_eq(struct combostr **, struct combostr **, int);
+#endif
+void	logit(char *);
+int	lton(int);
+void	makecombo(struct combostr *, struct spotstr *, int, int);
+void	makecombo2(struct combostr *, struct spotstr *, int, int);
+void	makeempty(struct combostr *);
+int	makemove(int, int);
+#ifdef DEBUG
+void	markcombo(struct combostr *);
+#endif
+void	panic(char *);
+int	pickmove(int);
+void	printcombo(struct combostr *, char *, size_t);
+void	qlog(char *);
+__dead void	quit(int);
+int	readinput(FILE *);
+void	scanframes(int);
+int	sortcombo(struct combostr **, struct combostr **, struct combostr *);
+char	*stoc(int);
+void	updatecombo(struct combostr *, int);
+void	update_overlap(struct spotstr *);
+#ifdef DEBUG
+void	whatsup(int);
+#endif
 
 #define ASSERT(x)

@@ -391,7 +391,7 @@ nsec3_chain_find_prev(struct zone* zone, struct domain* domain)
 			return (domain_type*)r->key;
 		}
 	}
-	if(zone->nsec3_last)
+	if(zone->nsec3_last && zone->nsec3_last != domain)
 		return zone->nsec3_last;
 	return NULL;
 }
@@ -677,7 +677,7 @@ nsec3_precompile_newparam(namedb_type* db, zone_type* zone)
 			s = time(NULL);
 			VERBOSITY(1, (LOG_INFO, "nsec3 %s %d %%",
 				zone->opts->name,
-				(int)(c*((unsigned long)100)/n)));
+				(n==0)?0:(int)(c*((unsigned long)100)/n)));
 		}
 	}
 	region_destroy(tmpregion);
@@ -1053,12 +1053,21 @@ nsec3_add_ds_proof(struct query *query, struct answer *answer,
 				!prev_par->nsec3->nsec3_is_exact);
 			nsec3_add_rrset(query, answer, AUTHORITY_SECTION,
 				prev_par->nsec3->nsec3_cover);
+		} else {
+			/* the exact case was handled earlier, so this is
+			 * with a closest-encloser proof, if in the part
+			 * before the else the closest encloser proof is done,
+			 * then we do not need to add a DS here because
+			 * the optout proof is already complete. If not,
+			 * we add the nsec3 here to complete the closest
+			 * encloser proof with a next closer */
+			/* add optout range from parent zone */
+			/* note: no check of optout bit, resolver checks it */
+			if(domain->nsec3) {
+				nsec3_add_rrset(query, answer, AUTHORITY_SECTION,
+					domain->nsec3->nsec3_ds_parent_cover);
+			}
 		}
-		/* add optout range from parent zone */
-		/* note: no check of optout bit, resolver checks it */
-		if(domain->nsec3)
-			nsec3_add_rrset(query, answer, AUTHORITY_SECTION,
-				domain->nsec3->nsec3_ds_parent_cover);
 	}
 }
 

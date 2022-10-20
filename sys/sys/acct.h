@@ -1,3 +1,4 @@
+/*	$OpenBSD: acct.h,v 1.11 2021/12/13 16:37:37 deraadt Exp $	*/
 /*	$NetBSD: acct.h,v 1.16 1995/03/26 20:23:52 jtc Exp $	*/
 
 /*-
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,6 +37,8 @@
  *	@(#)acct.h	8.3 (Berkeley) 7/10/94
  */
 
+#include <sys/syslimits.h>
+
 /*
  * Accounting structures; these use a comp_t type which is a 3 bits base 8
  * exponent, 13 bit fraction ``floating point'' number.  Units are 1/AHZ
@@ -48,23 +47,26 @@
 typedef u_int16_t comp_t;
 
 struct acct {
-	char	  ac_comm[10];	/* command name */
-	comp_t	  ac_utime;	/* user time */
-	comp_t	  ac_stime;	/* system time */
-	comp_t	  ac_etime;	/* elapsed time */
-	time_t	  ac_btime;	/* starting time */
-	uid_t	  ac_uid;	/* user id */
-	gid_t	  ac_gid;	/* group id */
-	u_int16_t ac_mem;	/* average memory usage */
-	comp_t	  ac_io;	/* count of IO blocks */
-	dev_t	  ac_tty;	/* controlling tty */
+	char	  ac_comm[_MAXCOMLEN];	/* command name, incl NUL */
+	comp_t	  ac_utime;		/* user time */
+	comp_t	  ac_stime;		/* system time */
+	comp_t	  ac_etime;		/* elapsed time */
+	comp_t	  ac_io;		/* count of IO blocks */
+	time_t	  ac_btime;		/* starting time */
+	uid_t	  ac_uid;		/* user id */
+	gid_t	  ac_gid;		/* group id */
+	u_int32_t ac_mem;		/* average memory usage */
+	dev_t	  ac_tty;		/* controlling tty, or -1 */
+	pid_t	  ac_pid;		/* process id */
 
-#define	AFORK	0x01		/* fork'd but not exec'd */
-#define	ASU	0x02		/* used super-user permissions */
-#define	ACOMPAT	0x04		/* used compatibility mode */
-#define	ACORE	0x08		/* dumped core */
-#define	AXSIG	0x10		/* killed by a signal */
-	u_int8_t  ac_flag;	/* accounting flags */
+#define	AFORK	0x01			/* fork'd but not exec'd */
+#define	AMAP	0x04			/* system call or stack mapping violation */
+#define	ACORE	0x08			/* dumped core */
+#define	AXSIG	0x10			/* killed by a signal */
+#define	APLEDGE	0x20			/* killed due to pledge violation */
+#define	ATRAP	0x40			/* memory access violation */
+#define	AUNVEIL	0x80			/* unveil access violation */
+	u_int32_t ac_flag;		/* accounting flags */
 };
 
 /*
@@ -74,7 +76,6 @@ struct acct {
 #define	AHZ	64
 
 #ifdef _KERNEL
-struct vnode	*acctp;
-
-int	acct_process __P((struct proc *p));
+int	acct_process(struct proc *p);
+void	acct_shutdown(void);
 #endif

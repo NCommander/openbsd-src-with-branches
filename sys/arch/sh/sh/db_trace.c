@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: db_trace.c,v 1.9 2019/11/07 15:58:39 mpi Exp $	*/
 /*	$NetBSD: db_trace.c,v 1.19 2006/01/21 22:10:59 uwe Exp $	*/
 
 /*-
@@ -45,7 +45,7 @@
 #endif
 
 extern char start[], etext[];
-void db_nextframe(db_addr_t, db_addr_t *, db_addr_t *);
+void db_nextframe(vaddr_t, vaddr_t *, vaddr_t *);
 
 struct db_variable db_regs[] = {
 	{ "r0",   (long *)&ddb_regs.tf_r0,   FCN_NULL },
@@ -71,20 +71,27 @@ struct db_variable db_regs[] = {
 	{ "macl", (long *)&ddb_regs.tf_macl, FCN_NULL },
 };
 
-struct db_variable *db_eregs =
-	db_regs + sizeof(db_regs)/sizeof(db_regs[0]);
+struct db_variable *db_eregs = db_regs + nitems(db_regs);
 
 void
 db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
     char *modif, int (*print)(const char *, ...))
 {
-	db_addr_t callpc, frame, lastframe;
+	vaddr_t callpc, frame, lastframe;
 	uint32_t vbr;
+
+	if (have_addr) {
+		(*print)("sh trace requires a trap frame... giving up\n");
+		return;
+	}
 
 	__asm volatile("stc vbr, %0" : "=r"(vbr));
 
 	frame = ddb_regs.tf_r14;
 	callpc = ddb_regs.tf_spc;
+
+	if (count == 0 || count == -1)
+		count = INT_MAX;
 
 	lastframe = 0;
 	while (count > 0 && frame != 0) {
@@ -95,7 +102,7 @@ db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
 			frame = tf->tf_r14;
 			callpc = tf->tf_spc;
 
-			(*print)("<EXPEVT %03x; SSR=%08x> at ",
+			(*print)("(EXPEVT %03x; SSR=%08x) at ",
 				 tf->tf_expevt, tf->tf_ssr);
 			db_printsym(callpc, DB_STGY_PROC, print);
 			(*print)("\n");
@@ -106,7 +113,7 @@ db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
 		} else {
 			char *name;
 			db_expr_t offset;
-			db_sym_t sym;
+			Elf_Sym *sym;
 
 
 			DPRINTF("    (1)newpc 0x%lx, newfp 0x%lx\n",
@@ -115,9 +122,17 @@ db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
 			sym = db_search_symbol(callpc, DB_STGY_ANY, &offset);
 			db_symbol_values(sym, &name, NULL);
 
-			if (lastframe == 0 && sym == 0) {
-				printf("symbol not found\n");
-				break;
+			if (name == NULL)
+				(*print)("%lx()", callpc);
+			else
+				(*print)("%s() at ", name);
+
+			db_printsym(callpc, DB_STGY_PROC, print);
+			(*print)("\n");
+
+			if (lastframe == 0 && offset == 0) {
+				callpc = ddb_regs.tf_pr;
+				continue;
 			}
 
 			db_nextframe(callpc - offset, &frame, &callpc);
@@ -125,13 +140,9 @@ db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
 				callpc, frame);
 
 			if (callpc == 0 && lastframe == 0)
-				callpc = (db_addr_t)ddb_regs.tf_pr;
+				callpc = (vaddr_t)ddb_regs.tf_pr;
 			DPRINTF("    (3)newpc 0x%lx, newfp 0x%lx\n",
 				callpc, frame);
-
-			(*print)("%s() at ", name ? name : "");
-			db_printsym(callpc, DB_STGY_PROC, print);
-			(*print)("\n");
 		}
 
 		count--;
@@ -141,9 +152,9 @@ db_stack_trace_print(db_expr_t addr, int have_addr, db_expr_t count,
 
 void
 db_nextframe(
-	db_addr_t pc,		/* in: entry address of current function */
-	db_addr_t *fp,		/* in: current fp, out: parent fp */
-	db_addr_t *pr)		/* out: parent pr */
+	vaddr_t pc,		/* in: entry address of current function */
+	vaddr_t *fp,		/* in: current fp, out: parent fp */
+	vaddr_t *pr)		/* out: parent pr */
 {
 	int *frame = (void *)*fp;
 	int i, inst;
@@ -152,11 +163,11 @@ db_nextframe(
 	depth = 0;
 	prdepth = fpdepth = -1;
 
-	if (pc < (db_addr_t)start || pc > (db_addr_t)etext)
+	if (pc < (vaddr_t)start || pc > (vaddr_t)etext)
 		goto out;
 
 	for (i = 0; i < 30; i++) {
-		inst = db_get_value(pc, 2, FALSE);
+		inst = db_get_value(pc, 2, 0);
 		pc += 2;
 
 		if (inst == 0x6ef3)	/* mov r15,r14 -- end of prologue */
@@ -188,13 +199,13 @@ db_nextframe(
 			continue;
 		}
 		if ((inst & 0xf000) == 0x9000) {
-			if (db_get_value(pc, 2, FALSE) == 0x3f38) {
+			if (db_get_value(pc, 2, 0) == 0x3f38) {
 				/* "mov #n,r3; sub r3,r15" */
 				unsigned int disp = (int)(inst & 0xff);
 				int r3;
 
-				r3 = (int)*(unsigned short *)(pc + (4 - 2)
-				    + (disp << 1));
+				r3 = db_get_value(pc + 4 - 2 + (disp << 1),
+				    2, 0);
 				if ((r3 & 0x00008000) == 0)
 					r3 &= 0x0000ffff;
 				else
@@ -213,6 +224,9 @@ db_nextframe(
 	}
 
  out:
+#ifdef TRACE_DEBUG
+	printf("depth=%x fpdepth=0x%x prdepth=0x%x\n", depth, fpdepth, prdepth);
+#endif
 	if (fpdepth != -1)
 		*fp = frame[depth - fpdepth - 1];
 	else

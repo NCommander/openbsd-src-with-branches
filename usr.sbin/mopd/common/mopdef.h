@@ -1,3 +1,5 @@
+/*	$OpenBSD: mopdef.h,v 1.5 2003/06/02 21:38:39 maja Exp $ */
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -26,7 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: mopdef.h,v 1.11 1995/10/12 20:22:21 moj Exp $
+ *	$OpenBSD: mopdef.h,v 1.5 2003/06/02 21:38:39 maja Exp $
  *
  */
 
@@ -51,7 +48,7 @@
 
 /* The following constants are defined in module MOPDEF.SDL in MOM */
 
-#define MOP_K_CODE_MIN          0 
+#define MOP_K_CODE_MIN          0
 #define MOP_K_CODE_MLT          0       /* Memory Load with transfer address */
 #define MOP_K_CODE_DCM          1       /* Dump Complete */
 #define MOP_K_CODE_MLD          2       /* Memory Load */
@@ -74,38 +71,38 @@
 #define MOP_K_CODE_PLT          20      /* Parameter load with transfer address*/
 #define MOP_K_CODE_ALD          24      /* Active loop data */
 #define MOP_K_CODE_PLD          26      /* Passive looped data */
-#define MOP_K_CODE_MAX          26 
+#define MOP_K_CODE_MAX          26
 
-#define MOP_K_PGTY_MIN          0 
+#define MOP_K_PGTY_MIN          0
 #define MOP_K_PGTY_SECLDR       0       /* Secondary Loader */
 #define MOP_K_PGTY_TERLDR       1       /* Tertiary Loader */
 #define MOP_K_PGTY_OPRSYS       2       /* Operating System */
 #define MOP_K_PGTY_MGNTFL       3       /* Management File */
-#define MOP_K_PGTY_MAX          3 
+#define MOP_K_PGTY_MAX          3
 
-#define MOP_K_BPTY_MIN          0 
+#define MOP_K_BPTY_MIN          0
 #define MOP_K_BPTY_SYS          0       /* System Processor */
 #define MOP_K_BPTY_COM          1       /* Communication Processor */
 #define MOP_K_BPTY_MAX          1
 
-#define MOP_K_RML_ERROR_MIN     0 
+#define MOP_K_RML_ERROR_MIN     0
 #define MOP_K_RML_ERROR_NONE    0       /* None */
 #define MOP_K_RML_ERROR_NO_LOAD 1       /* Image data not properly loaded */
-#define MOP_K_RML_ERROR_MAX     1 
+#define MOP_K_RML_ERROR_MAX     1
 
-#define MOP_K_PLTP_MIN          0 
+#define MOP_K_PLTP_MIN          0
 #define MOP_K_PLTP_END          0       /* End Mark */
 #define MOP_K_PLTP_TSN          1       /* Target System Name */
 #define MOP_K_PLTP_TSA          2       /* Target System Address */
 #define MOP_K_PLTP_HSN          3       /* Host System Name */
 #define MOP_K_PLTP_HSA          4       /* Host System Address */
 #define MOP_K_PLTP_HST          5       /* Host System Time */
-#define MOP_K_PLTP_MAX          5 
+#define MOP_K_PLTP_MAX          5
 
-#define MOP_K_BOT_CNTL_MIN      0 
+#define MOP_K_BOT_CNTL_MIN      0
 #define MOP_K_BOT_CNTL_SERVER   0       /* Boot-Server */
 #define MOP_K_BOT_CNTL_DEVICE   1       /* Boot-Device */
-#define MOP_K_BOT_CNTL_MAX      1 
+#define MOP_K_BOT_CNTL_MAX      1
 
 #define MOP_K_INFO_VER          1       /* Maintenance Version */
 #define MOP_K_INFO_MFCT         2       /* Maintenance Functions */
@@ -121,26 +118,26 @@
 #define MOP_K_INFO_DLTY         400     /* Data Link Type */
 #define MOP_K_INFO_DLBSZ        401     /* Data Link Buffer Size */
 
-#define MOP_K_DLTY_MIN          1 
+#define MOP_K_DLTY_MIN          1
 #define MOP_K_DLTY_NI           1       /* Ethernet */
 #define MOP_K_DLTY_DDCMP        2       /* DDCMP */
 #define MOP_K_DLTY_LAPB         3       /* LAPB (frame level of X.25) */
-#define MOP_K_DLTY_MAX          3 
+#define MOP_K_DLTY_MAX          3
 
-#define MOP_K_PRTY_MIN          0 
+#define MOP_K_PRTY_MIN          0
 #define MOP_K_PRTY_11           1       /* PDP-11 (UNIBUS) */
 #define MOP_K_PRTY_CMSV         2       /* Communication Server */
 #define MOP_K_PRTY_PRO          3       /* Professional */
 #define MOP_K_PRTY_SCO          4       /* Scorpio */
 #define MOP_K_PRTY_AMB          5       /* Amber */
 #define MOP_K_PRTY_BRI          6       /* XLII Bridge */
-#define MOP_K_PRTY_MAX          6 
+#define MOP_K_PRTY_MAX          6
 
-#define MOP_K_SFID_FORM_MIN     -2 
+#define MOP_K_SFID_FORM_MIN     -2
 #define MOP_K_SFID_FORM_MAINT   -2      /* Maintenance System */
 #define MOP_K_SFID_FORM_OPRSYS  -1      /* Standard Operating System */
 #define MOP_K_SFID_FORM_NONE    0       /* None */
-#define MOP_K_SFID_FORM_MAX     0 
+#define MOP_K_SFID_FORM_MAX     0
 
 #define MOP_K_SFID_CUST         'CP'    /* Customer product */
 #define MOP_K_SFID_DEC          'DP'    /* DEC product */
@@ -186,11 +183,11 @@
 #define L_BBLK			0xf0	/* RSX header block count */
 
 #ifndef MOPDEF_SUPRESS_EXTERN
-extern char dl_mcst[];
-extern char rc_mcst[];
-extern char dl_802_proto[];
-extern char rc_802_proto[];
-extern char lp_802_proto[];
-#endif	MOPDEF_SUPRESS_EXTERN
+extern u_char dl_mcst[];
+extern u_char rc_mcst[];
+extern u_char dl_802_proto[];
+extern u_char rc_802_proto[];
+extern u_char lp_802_proto[];
+#endif /* MOPDEF_SUPRESS_EXTERN */
 
-#endif _MOPDEF_H_
+#endif /* _MOPDEF_H_ */

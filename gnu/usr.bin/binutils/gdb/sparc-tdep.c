@@ -1,6 +1,6 @@
 /* Target-dependent code for SPARC.
 
-   Copyright 2003, 2004 Free Software Foundation, Inc.
+   Copyright 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -80,6 +80,8 @@ struct regset;
 #define X_OP2(i) (((i) >> 22) & 0x7)
 #define X_IMM22(i) ((i) & 0x3fffff)
 #define X_OP3(i) (((i) >> 19) & 0x3f)
+#define X_RS1(i) (((i) >> 14) & 0x1f)
+#define X_RS2(i) ((i) & 0x1f)
 #define X_I(i) (((i) >> 13) & 1)
 /* Sign extension macros.  */
 #define X_DISP22(i) ((X_IMM22 (i) ^ 0x200000) - 0x200000)
@@ -985,6 +987,23 @@ sparc_analyze_control_transfer (CORE_ADDR pc, CORE_ADDR *npc)
       branch_p = 1;
       offset = 4 * X_DISP19 (insn);
     }
+  else if (X_OP (insn) == 2 && X_OP3 (insn) == 0x3a)
+    {
+      if ((X_I (insn) == 0 && X_RS1 (insn) == 0 && X_RS2 (insn) == 0)
+	  || (X_I (insn) == 1 && X_RS1 (insn) == 0 && (insn & 0x7f) == 0))
+	{
+	  /* OpenBSD system call.  */
+	  ULONGEST number;
+
+	  regcache_cooked_read_unsigned (current_regcache,
+					 SPARC_G1_REGNUM, &number);
+
+	  if (number & 0x400)
+	    return sparc_address_from_register (SPARC_G2_REGNUM);
+	  if (number & 0x800)
+	    return sparc_address_from_register (SPARC_G7_REGNUM);
+	}
+    }
 
   /* FIXME: Handle DONE and RETRY instructions.  */
 
@@ -1026,10 +1045,10 @@ sparc_software_single_step (enum target_signal sig, int insert_breakpoints_p)
 
   if (insert_breakpoints_p)
     {
-      CORE_ADDR pc;
+      CORE_ADDR pc, orig_npc;
 
       pc = sparc_address_from_register (tdep->pc_regnum);
-      npc = sparc_address_from_register (tdep->npc_regnum);
+      orig_npc = npc = sparc_address_from_register (tdep->npc_regnum);
 
       /* Analyze the instruction at PC.  */
       nnpc = sparc_analyze_control_transfer (pc, &npc);
@@ -1039,9 +1058,10 @@ sparc_software_single_step (enum target_signal sig, int insert_breakpoints_p)
 	target_insert_breakpoint (nnpc, nnpc_save);
 
       /* Assert that we have set at least one breakpoint, and that
-         they're not set at the same spot.  */
-      gdb_assert (npc != 0 || nnpc != 0);
-      gdb_assert (nnpc != npc);
+	 they're not set at the same spot - unless we're going
+	 from here straight to NULL, i.e. a call or jump to 0.  */
+      gdb_assert (npc != 0 || nnpc != 0 || orig_npc == 0);
+      gdb_assert (nnpc != npc || orig_npc == 0);
     }
   else
     {
@@ -1211,6 +1231,16 @@ sparc_supply_rwindow (struct regcache *regcache, CORE_ADDR sp, int regnum)
 	  if (regnum == i || regnum == -1)
 	    {
 	      target_read_memory (sp + ((i - SPARC_L0_REGNUM) * 8), buf, 8);
+
+	      /* Handle StackGhost.  */
+	      if (i == SPARC_I7_REGNUM)
+		{
+		  ULONGEST wcookie = sparc_fetch_wcookie ();
+		  ULONGEST i7 = extract_unsigned_integer (buf + offset, 8);
+
+		  store_unsigned_integer (buf + offset, 8, i7 ^ wcookie);
+		}
+
 	      regcache_raw_supply (regcache, i, buf);
 	    }
 	}
@@ -1269,6 +1299,16 @@ sparc_collect_rwindow (const struct regcache *regcache,
 	  if (regnum == -1 || regnum == SPARC_SP_REGNUM || regnum == i)
 	    {
 	      regcache_raw_collect (regcache, i, buf);
+
+	      /* Handle StackGhost.  */
+	      if (i == SPARC_I7_REGNUM)
+		{
+		  ULONGEST wcookie = sparc_fetch_wcookie ();
+		  ULONGEST i7 = extract_unsigned_integer (buf + offset, 8);
+
+		  store_unsigned_integer (buf, 8, i7 ^ wcookie);
+		}
+
 	      target_write_memory (sp + ((i - SPARC_L0_REGNUM) * 8), buf, 8);
 	    }
 	}

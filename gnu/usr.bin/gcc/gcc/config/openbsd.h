@@ -36,6 +36,8 @@ Boston, MA 02111-1307, USA.  */
    OBSD_HAS_DECLARE_OBJECT: 
       PIC support, FUNCTION_NAME/FUNCTION_SIZE are independent, whereas
       the corresponding logic for OBJECTS is necessarily coupled.
+  OBSD_HAS_CORRECT_ASM_OPS:
+      another mechanism provides correct ASM_OP values already.
 
    There are also a few `default' defines such as ASM_WEAKEN_LABEL,
    intended as common ground for arch that don't provide 
@@ -50,22 +52,36 @@ Boston, MA 02111-1307, USA.  */
 /* This configuration method, namely Makefile.bsd-wrapper and
    OPENBSD_NATIVE is NOT recommended for building cross-compilers.  */
 
-#ifdef OPENBSD_NATIVE
+/* OPENBSD_CROSS is only recommended for building cross-compilers which
+   target a OpenBSD system (kernel/userland) */
 
-#undef GCC_INCLUDE_DIR
-#define GCC_INCLUDE_DIR "/usr/include"
+#if defined(OPENBSD_NATIVE) || defined(OPENBSD_CROSS)
 
 /* The compiler is configured with ONLY the gcc/g++ standard headers.  */
 #undef INCLUDE_DEFAULTS
+#ifdef CROSS_COMPILE
+#define INCLUDE_DEFAULTS                       \
+  {                                            \
+    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1, 0 },    \
+    { GPLUSPLUS_TOOL_INCLUDE_DIR, "G++", 1, 1, 0 },\
+    { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1, 0 }, \
+    { GPLUSPLUS_INCLUDE_DIR "/..", STANDARD_INCLUDE_COMPONENT, 0, 0, 0 }, \
+    { 0, 0, 0, 0, 0 }                             \
+  }
+#else
 #define INCLUDE_DEFAULTS			\
   {						\
-    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },	\
-    { GCC_INCLUDE_DIR, "GCC", 0, 0 },		\
-    { 0, 0, 0, 0 }				\
+    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1, 0 },	\
+    { GPLUSPLUS_TOOL_INCLUDE_DIR, "G++", 1, 1, 0 },\
+    { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1, 0 }, \
+    { STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT, 0, 0, 0 },	\
+    { 0, 0, 0, 0, 0 }				\
   }
+#endif
 
 /* Under OpenBSD, the normal location of the various *crt*.o files is the
    /usr/lib directory.  */
+#undef STANDARD_STARTFILE_PREFIX
 #define STANDARD_STARTFILE_PREFIX	"/usr/lib/"
 
 #endif
@@ -73,21 +89,47 @@ Boston, MA 02111-1307, USA.  */
 
 /* Controlling the compilation driver.  */
 
+/* TARGET_OS_CPP_BUILTINS() common to all OpenBSD targets.  */
+#define OPENBSD_OS_CPP_BUILTINS_COMMON()	\
+  do						\
+    {						\
+      builtin_define ("__OpenBSD__");		\
+      builtin_define ("__unix__");		\
+      builtin_define ("__ANSI_COMPAT");		\
+      builtin_assert ("system=unix");		\
+      builtin_assert ("system=bsd");		\
+      builtin_assert ("system=OpenBSD");	\
+    }						\
+  while (0)
+
+/* TARGET_OS_CPP_BUILTINS() common to all OpenBSD ELF targets.  */
+#define OPENBSD_OS_CPP_BUILTINS_ELF()		\
+  do						\
+    {						\
+      OPENBSD_OS_CPP_BUILTINS_COMMON();		\
+      builtin_define ("__ELF__");		\
+    }						\
+  while (0)
+
+/* TARGET_OS_CPP_BUILTINS() common to all LP64 OpenBSD targets.  */
+#define OPENBSD_OS_CPP_BUILTINS_LP64()		\
+  do						\
+    {						\
+      builtin_define ("_LP64");			\
+      builtin_define ("__LP64__");		\
+    }						\
+  while (0)
+
 /* CPP_SPEC appropriate for OpenBSD. We deal with -posix and -pthread.
-   XXX the way threads are handling currently is not very satisfying,
+   XXX the way threads are handled currently is not very satisfying,
    since all code must be compiled with -pthread to work. 
    This two-stage defines makes it easy to pick that for targets that
    have subspecs.  */
 #ifdef CPP_CPU_SPEC
-#define OBSD_CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} %{pthread:-D_POSIX_THREADS}"
+#define OBSD_CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 #else
-#define OBSD_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_POSIX_THREADS}"
+#define OBSD_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 #endif
-
-/* LIB_SPEC appropriate for OpenBSD.  Select the appropriate libc, 
-   depending on profiling and threads.  Basically, 
-   -lc(_r)?(_p)?, select _r for threads, and _p for p or pg.  */
-#define OBSD_LIB_SPEC "%{!shared:-lc%{pthread:_r}%{p:_p}%{!p:%{pg:_p}}}"
 
 #ifndef OBSD_HAS_CORRECT_SPECS
 
@@ -125,6 +167,10 @@ Boston, MA 02111-1307, USA.  */
 #else
 #define LINK_SPEC \
   "%{g:%{!nostdlib:-L/usr/lib/debug}} %{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}}} %{shared:-Bshareable -x} -dc -dp %{R*} %{static:-Bstatic} %{assert*}"
+#endif
+
+#if defined(HAVE_LD_EH_FRAME_HDR)
+#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif
 
 #undef LIB_SPEC
@@ -172,6 +218,8 @@ Boston, MA 02111-1307, USA.  */
    yet (look for GRACE_PERIOD_EXPIRED in gas/config/obj-aout.c).  
    SET_ASM_OP is needed for attribute alias to work.  */
 
+#ifndef	OBSD_HAS_CORRECT_ASM_OPS
+
 #undef TYPE_ASM_OP
 #undef SIZE_ASM_OP
 #undef SET_ASM_OP
@@ -181,6 +229,8 @@ Boston, MA 02111-1307, USA.  */
 #define SIZE_ASM_OP	"\t.size\t"
 #define SET_ASM_OP	"\t.set\t"
 #define GLOBAL_ASM_OP	"\t.globl\t"
+
+#endif
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  */
@@ -279,13 +329,17 @@ do {									 \
 /* Storage layout.  */
 
 
-/* Otherwise, since we support weak, gthr.h erroneously tries to use
-   #pragma weak.  */
-#define GTHREAD_USE_WEAK 0
-
 /* bug work around: we don't want to support #pragma weak, but the current
    code layout needs HANDLE_PRAGMA_WEAK asserted for __attribute((weak)) to
    work.  On the other hand, we don't define HANDLE_PRAGMA_WEAK directly,
    as this depends on a few other details as well...  */
 #define HANDLE_SYSV_PRAGMA 1
 
+/* Disable the use of unsafe builtin functions, (strcat, strcpy), making
+ * them easier to spot in the object files. 
+ */
+#define NO_UNSAFE_BUILTINS
+
+/* pick up defines for mprotect (used in TRANSFER_FROM_TRAMPOLINE) */
+#include <sys/types.h>
+#include <sys/mman.h>

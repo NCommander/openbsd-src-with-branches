@@ -1,0 +1,3 @@
+dnl	$OpenBSD: whatis,v 1.3 2020/04/15 11:41:08 kettenis Exp $
+
+OpenBSD/MACHINE is just starting to function, please port to more hardware.

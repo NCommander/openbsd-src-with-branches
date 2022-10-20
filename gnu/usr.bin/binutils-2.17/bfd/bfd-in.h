@@ -31,6 +31,7 @@ extern "C" {
 
 #include "ansidecl.h"
 #include "symcat.h"
+#include <time.h>	/* time_t */
 #if defined (__STDC__) || defined (ALMOST_STDC) || defined (HAVE_STRINGIZE)
 #ifndef SABER
 /* This hack is to avoid a problem with some strict ANSI C preprocessors.
@@ -238,6 +239,12 @@ bfd_format;
 /* This BFD has been created by the linker and doesn't correspond
    to any input file.  */
 #define BFD_LINKER_CREATED 0x2000
+
+/* This may be set before writing out a BFD to request that the output
+   be as deterministic as is supported by the format.  For example,
+   archive members may have their uid, gid, timestamp, and mode all set
+   to constant, 'reasonable' values.  */
+#define BFD_DETERMINISTIC 0x4000
 
 /* Symbols and relocation.  */
 

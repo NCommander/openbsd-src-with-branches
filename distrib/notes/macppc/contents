@@ -1,0 +1,36 @@
+dnl	$OpenBSD: contents,v 1.37 2017/09/25 10:47:46 jsg Exp $
+TopPart
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDbsdmp
+
+OpenBSDrd
+
+OpenBSDinstalliso
+
+OpenBSDcd
+
+	ofwboot		The OpenBSD/MACHINE secondary boot loader.
+dnl
+dnl	bsd.tbxi
+
+DistributionDescription(eight)
+
+OpenBSDbase(198475686,459145216)
+
+OpenBSDcomp(61217244,211439616)
+
+OpenBSDgame(2852570,6998016)
+
+OpenBSDman(7793817,32841728)
+
+OpenBSDxbase(45902915,133928960)
+
+OpenBSDxfont(23519082,38381568)
+
+OpenBSDxserv(11065364,33177600)
+
+OpenBSDxshare(4670463,30439424)

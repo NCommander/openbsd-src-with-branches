@@ -1,3 +1,4 @@
+/*	$OpenBSD: ns16550reg.h,v 1.5 2003/06/02 23:28:02 millert Exp $	*/
 /*	$NetBSD: ns16550reg.h,v 1.4 1994/10/27 04:18:43 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,7 +33,7 @@
  */
 
 /*
- * NS16550 UART registers
+ * NS16550 (and above) UART registers
  */
 
 #define	com_data	0	/* data register (R/W) */
@@ -45,9 +42,17 @@
 #define	com_ier		1	/* interrupt enable (W) */
 #define	com_iir		2	/* interrupt identification (R) */
 #define	com_fifo	2	/* FIFO control (W) */
+#define com_fctl	2	/* extended FIFO control (W) */
+#define com_efr		2	/* extended features register (W) */
 #define	com_lctl	3	/* line control register (R/W) */
 #define	com_cfcr	3	/* line control register (R/W) */
 #define	com_mcr		4	/* modem control register (R/W) */
 #define	com_lsr		5	/* line status register (R/W) */
 #define	com_msr		6	/* modem status register (R/W) */
 #define com_scratch	7	/* scratch register (R/W) */
+
+/*
+ * Synopsys DesignWare APB UART additional registers
+ */
+#define	com_usr		31	/* UART status register (R) */
+#define	com_cpr		61	/* component parameter register (R) */

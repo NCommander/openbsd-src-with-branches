@@ -3252,6 +3252,9 @@ hppa_expand_prologue ()
   fr_saved = 0;
   save_fregs = 0;
 
+  if (warn_stack_larger_than && size > stack_larger_than_size)
+    warning ("stack usage is %d bytes", size);
+
   /* Allocate space for frame pointer + filler. If any frame is allocated
      we need to add this in because of STARTING_FRAME_OFFSET.
 
@@ -8359,11 +8362,11 @@ pa_select_section (exp, reloc, align)
       && DECL_INITIAL (exp)
       && (DECL_INITIAL (exp) == error_mark_node
           || TREE_CONSTANT (DECL_INITIAL (exp)))
-      && !reloc)
+      && !(reloc && flag_pic))
     readonly_data_section ();
   else if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c'
 	   && !(TREE_CODE (exp) == STRING_CST && flag_writable_strings)
-	   && !reloc)
+	   && !(reloc && flag_pic))
     readonly_data_section ();
   else
     data_section ();

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: t_getgroups.c,v 1.2 2020/11/09 23:18:51 bluhm Exp $	*/
 /* $NetBSD: t_getgroups.c,v 1.1 2011/07/07 06:57:53 jruoho Exp $ */
 
 /*-
@@ -32,9 +32,6 @@
 
 #include "macros.h"
 
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_getgroups.c,v 1.1 2011/07/07 06:57:53 jruoho Exp $");
-
 #include <sys/wait.h>
 
 #include "atf-c.h"
@@ -56,7 +53,11 @@ ATF_TC_BODY(getgroups_err, tc)
 
 	errno = 0;
 
+#if __OpenBSD__
 	ATF_REQUIRE(getgroups(NGROUPS_MAX, (gid_t *)-1) == -1);
+#else
+	ATF_REQUIRE(getgroups(10, (gid_t *)-1) == -1);
+#endif
 	ATF_REQUIRE(errno == EFAULT);
 
 	errno = 0;

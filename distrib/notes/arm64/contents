@@ -1,0 +1,30 @@
+dnl	$OpenBSD: contents,v 1.5 2017/09/25 10:47:46 jsg Exp $
+TopPart
+
+OpenBSDminiroot
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDrd
+dnl not yet...
+dnl OpenBSDcd
+
+DistributionDescription(eight)
+
+OpenBSDbase(262676238,525578240)
+
+OpenBSDcomp(72199371,274327552)
+
+OpenBSDgame(2780919,6795264)
+
+OpenBSDman(7793289,32843776)
+
+OpenBSDxbase(48976190,163588096)
+
+OpenBSDxfont(23518955,38381568)
+
+OpenBSDxserv(10837173,30879744)
+
+OpenBSDxshare(4669520,30439424)

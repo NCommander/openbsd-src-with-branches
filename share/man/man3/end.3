@@ -1,4 +1,5 @@
-.\"	$NetBSD: end.3,v 1.4 1994/11/30 15:24:33 jtc Exp $
+.\"	$OpenBSD: end.3,v 1.10 2006/01/01 02:20:38 jmc Exp $
+.\"	$NetBSD: end.3,v 1.5 1996/03/01 00:17:49 jtc Exp $
 .\"
 .\" Copyright (c) 1986
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,7 +30,7 @@
 .\"
 .\"	@(#)end.3	6.4 (Berkeley) 1/24/94
 .\"
-.Dd January 24, 1994
+.Dd $Mdocdate$
 .Dt END 3
 .Os
 .Sh NAME
@@ -46,24 +43,19 @@
 .Vt extern etext;
 .Vt extern edata;
 .Sh DESCRIPTION
-The global variables
-.Va end , etext
+The addresses of the global symbols
+.Va etext ,
+.Va edata ,
 and
-.Va edata
-correspond to the
-the next address following the end
-of the text segment,
-the initialized data segment and the
-end of the data segment
+.Va end
+correspond to the next address following the end of the text segment,
+the end of the initialized data segment, and the end of the data segment
 .Pq Tn BSS .
-These values are initially set at execution time
-by
-.Xr brk 2 .
 .Sh SEE ALSO
 .Xr brk 2 ,
 .Xr malloc 3
 .Sh HISTORY
-A
-.Nm end
+An
+.Nm
 manual appeared in
 .At v6 .

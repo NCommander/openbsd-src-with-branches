@@ -1,4 +1,7 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: shf.h,v 1.7 2015/10/21 15:47:41 mmcc Exp $	*/
+
+#ifndef SHF_H
+# define SHF_H
 
 /*
  * Shell file I/O routines
@@ -6,15 +9,12 @@
 
 #define SHF_BSIZE	512
 
-#define shf_fileno(shf)	((shf)->fd)
-#define shf_setfileno(shf,nfd)	((shf)->fd = (nfd))
 #define shf_getc(shf) ((shf)->rnleft > 0 ? (shf)->rnleft--, *(shf)->rp++ : \
 			shf_getchar(shf))
-#define shf_putc(c, shf)	((shf)->wnleft == 0 ? shf_putchar((c), (shf)) \
-					: ((shf)->wnleft--, *(shf)->wp++ = (c)))
+#define shf_putc(c, shf)	((shf)->wnleft == 0 ? shf_putchar((c), (shf)) : \
+				    ((shf)->wnleft--, *(shf)->wp++ = (c)))
 #define shf_eof(shf)		((shf)->flags & SHF_EOF)
 #define shf_error(shf)		((shf)->flags & SHF_ERROR)
-#define shf_errno(shf)		((shf)->errno_)
 #define shf_clearerr(shf)	((shf)->flags &= ~(SHF_EOF | SHF_ERROR))
 
 /* Flags passed to shf_*open() */
@@ -56,26 +56,24 @@ struct shf {
 
 extern struct shf shf_iob[];
 
-struct shf *shf_open	ARGS((const char *name, int oflags, int mode,
-			      int sflags));
-struct shf *shf_fdopen	ARGS((int fd, int sflags, struct shf *shf));
-struct shf *shf_reopen  ARGS((int fd, int sflags, struct shf *shf));
-struct shf *shf_sopen	ARGS((char *buf, int bsize, int sflags,
-			      struct shf *shf));
-int	    shf_close	ARGS((struct shf *shf));
-int	    shf_fdclose	ARGS((struct shf *shf));
-char	   *shf_sclose	ARGS((struct shf *shf));
-int	    shf_finish	ARGS((struct shf *shf));
-int	    shf_flush	ARGS((struct shf *shf));
-int	    shf_seek	ARGS((struct shf *shf, off_t where, int from));
-int	    shf_read	ARGS((char *buf, int bsize, struct shf *shf));
-char	   *shf_getse	ARGS((char *buf, int bsize, struct shf *shf));
-int	    shf_getchar	ARGS((struct shf *shf));
-int	    shf_ungetc	ARGS((int c, struct shf *shf));
-int	    shf_putchar	ARGS((int c, struct shf *shf));
-int	    shf_puts	ARGS((const char *s, struct shf *shf));
-int	    shf_write	ARGS((const char *buf, int nbytes, struct shf *shf));
-int	    shf_fprintf ARGS((struct shf *shf, const char *fmt, ...));
-int	    shf_snprintf ARGS((char *buf, int bsize, const char *fmt, ...));
-char	    *shf_smprintf ARGS((const char *fmt, ...));
-int	    shf_vfprintf ARGS((struct shf *, const char *fmt, va_list args));
+struct shf *shf_open(const char *, int, int, int);
+struct shf *shf_fdopen(int, int, struct shf *);
+struct shf *shf_reopen(int, int, struct shf *);
+struct shf *shf_sopen(char *, int, int, struct shf *);
+int	    shf_close(struct shf *);
+int	    shf_fdclose(struct shf *);
+char	   *shf_sclose(struct shf *);
+int	    shf_flush(struct shf *);
+int	    shf_read(char *, int, struct shf *);
+char	   *shf_getse(char *, int, struct shf *);
+int	    shf_getchar(struct shf *s);
+int	    shf_ungetc(int, struct shf *);
+int	    shf_putchar(int, struct shf *);
+int	    shf_puts(const char *, struct shf *);
+int	    shf_write(const char *, int, struct shf *);
+int	    shf_fprintf(struct shf *, const char *, ...);
+int	    shf_snprintf(char *, int, const char *, ...);
+char	    *shf_smprintf(const char *, ...);
+int	    shf_vfprintf(struct shf *, const char *, va_list);
+
+#endif /* SHF_H */

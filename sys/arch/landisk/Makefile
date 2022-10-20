@@ -1,28 +1,50 @@
-#	$OpenBSD$
-#	$NetBSD: Makefile,v 1.1 2006/09/01 21:26:18 uwe Exp $
+#	$OpenBSD: Makefile,v 1.9 2016/10/14 18:42:58 deraadt Exp $
 
-# Makefile for landisk tags file and boot blocks
+.include <bsd.own.mk>    # for KEEPKERNELS
 
-TLANDISK=	../landisk/tags
-SLANDISK=	../landisk/landisk/*.[ch] ../landisk/include/*.h
-ALANDISK=	../landisk/landisk/*.[sS]
+S=	${.CURDIR}/../..
+KFILE=	GENERIC
+.if exists(conf/GENERIC.MP)
+KFILE=	GENERIC.MP
+.endif
+TDIRS=	${_arch} include
+TAGS=	${.CURDIR}/tags
 
-# Directories in which to place tags links
-DLANDISK=	landisk include
+NOPROG=
+NOMAN=
+NOOBJ=
+SUBDIR=	stand
+.if !defined(KEEPKERNELS) || !(make(clean) || make(cleandir))
+SUBDIR+=compile
+.endif
 
-.include "../../kern/Make.tags.inc"
-
-tags:
-	-ctags -wdtf ${TLANDISK} ${SLANDISK} ${COMM}
-	egrep "^ENTRY(.*)|^ALTENTRY(.*)" ${ALANDISK} | \
-	    sed "s;\([^:]*\):\([^(]*\)(\([^, )]*\)\(.*\);\3 \1 /^\2(\3\4$$/;" \
-		>> ${TLANDISK}
-	sort -o ${TLANDISK} ${TLANDISK}
+# config the fattest kernel we can find into a temporary dir
+# to create a Makefile.  Then use make to pull some variables
+# out and push them into the sub-shell to expand the paths,
+# and finally run ctags.
+tags::
+	TDIR=`mktemp -d /tmp/_tagXXXXXXXXXX` || exit 1; \
+	eval "S=${S}" && \
+	config -s ${S} -b $${TDIR} ${.CURDIR}/conf/${KFILE} && \
+	eval "_arch=\"`make -V _arch -f $${TDIR}/Makefile`\"" && \
+	eval "_mach=\"`make -V _mach -f $${TDIR}/Makefile`\"" && \
+	eval "_machdir=\$S/arch/$${_mach}" && \
+	eval "_archdir=\$S/arch/$${_arch}" && \
+	eval "HFILES=\"`find $S \( -path $S/arch -o -path $S/stand -o -path $S/lib/libsa -o -path $S/lib/libkern/arch \) -prune -o -name '*.h'; find $${_machdir} $${_archdir} $S/lib/libkern/arch/$${_arch} \( -name boot -o -name stand \) -prune -o -name '*.h'`\"" && \
+	eval "SFILES=\"`make -V SFILES -f $${TDIR}/Makefile`\"" && \
+	eval "CFILES=\"`make -V CFILES -f $${TDIR}/Makefile`\"" && \
+	eval "AFILES=\"`make -V AFILES -f $${TDIR}/Makefile`\"" && \
+	ctags -wd -f ${TAGS} $${CFILES} $${HFILES} && \
+	egrep "^[_A-Z]*ENTRY[_A-Z]*\(.*\)" $${SFILES} $${AFILES} | \
+	    sed "s;\\([^:]*\\):\\([^(]*\\)(\\([^, )]*\\)\\(.*\\);\\3	\\1	/^\\2(\\3\\4$$/;" \
+	    >> ${TAGS} && \
+	sort -o ${TAGS} ${TAGS} && \
+	rm -rf $${TDIR}
 
 links:
-	-for i in ${DLANDISK}; do \
-	    (cd $$i && rm -f tags; ln -s ../tags tags); done
+	-for i in conf ${TDIRS}; do \
+	    (cd $$i && rm -f tags; ln -s tags tags); done
 
-SUBDIR=	stand
+obj:	_SUBDIRUSE
 
-.include <bsd.subdir.mk>
+.include <bsd.prog.mk>

@@ -1,4 +1,4 @@
-.\"	$NetBSD: alarm.3,v 1.9 1995/02/25 15:39:01 cgd Exp $
+.\"	$OpenBSD: alarm.3,v 1.16 2021/06/18 22:21:29 cheloha Exp $
 .\"
 .\" Copyright (c) 1980, 1991, 1993, 1994
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,63 +27,82 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)alarm.3	8.2 (Berkeley) 4/19/94
-.\"
-.Dd April 19, 1994
+.Dd $Mdocdate: June 18 2021 $
 .Dt ALARM 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm alarm
-.Nd set signal timer alarm
+.Nd schedule SIGALRM delivery
 .Sh SYNOPSIS
-.Fd #include <unistd.h>
+.In unistd.h
 .Ft unsigned int
 .Fn alarm "unsigned int seconds"
 .Sh DESCRIPTION
 .Bf -symbolic
-This interface is made obsolete by setitimer(2).
+This is a simplified interface to
+.Xr setitimer 2 .
 .Ef
 .Pp
 The
 .Fn alarm
-function
-waits a count of
-.Ar seconds
-before asserting the terminating signal
-.Dv SIGALRM .
-When the signal has successfully been caught,
-.Fn alarm
-returns the amount of time left on the clock.
-The maximum number of
-.Ar seconds
-allowed
-is 2147483647.
+function schedules the
+.Dv SIGALRM
+signal for delivery to the calling process after the given number of
+.Fa seconds
+have elapsed.
 .Pp
-If an alarm has been set with
-.Fn alarm ,
+If an alarm is already pending,
 another call to
 .Fn alarm
 will supersede the prior call.
-The request
-.Fn alarm "0"
-voids the current
-alarm.
+.Pp
+If
+.Fa seconds
+is zero,
+any pending alarm is cancelled.
+.Sh RETURN VALUES
+.Fn alarm
+returns the number of seconds remaining until the pending alarm would have
+expired.
+If the alarm has already expired,
+the alarm was cancelled,
+or no alarm was ever scheduled,
+.Fn alarm
+returns zero.
 .Sh SEE ALSO
-.Xr sigaction 2 ,
 .Xr setitimer 2 ,
-.Xr sigpause 2 ,
-.Xr sigvec 3 ,
+.Xr sigaction 2 ,
+.Xr sigsuspend 2 ,
 .Xr signal 3 ,
 .Xr sleep 3 ,
-.Xr ualarm 3 ,
-.Xr usleep 3
+.Xr ualarm 3
 .Sh STANDARDS
 The
 .Fn alarm
-function conforms to 
-.St -p1003.1-90 .
+function conforms to
+.St -p1003.1-2008 .
 .Sh HISTORY
 An
 .Fn alarm
-function appeared in 
-.At v7 .
+system call first appeared outside of Bell Labs in the
+.Dq 50 changes
+tape for
+.At v6 .
+It was first officially released with PWB/UNIX 1.0.
+For
+.Bx 4.1c ,
+it was reimplemented as a wrapper around the
+.Xr setitimer 2
+system call.
+.Sh CAVEATS
+The
+.Fn alarm
+function is implemented with the per-process
+.Dv ITIMER_REAL
+timer described in
+.Xr setitimer 2 .
+Use of both
+.Fn alarm
+and
+.Xr setitimer 2
+in the same program may yield confusing behavior.

@@ -1,4 +1,5 @@
-/*	$NetBSD: signal.h,v 1.19 1995/08/13 22:51:24 mycroft Exp $	*/
+/*	$OpenBSD: signal.h,v 1.28 2018/03/14 16:36:24 deraadt Exp $	*/
+/*	$NetBSD: signal.h,v 1.21 1996/02/09 18:25:32 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1991, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,9 +42,9 @@
 
 #include <machine/signal.h>	/* sigcontext; codes for SIGILL, SIGFPE */
 
-#define _NSIG	32		/* counting 0; could be 33 (mask is 1-32) */
+#define _NSIG	33		/* counting 0 (mask is 1-32) */
 
-#if !defined(_ANSI_SOURCE) && !defined(_POSIX_SOURCE)
+#if __BSD_VISIBLE
 #define NSIG _NSIG
 #endif
 
@@ -55,82 +52,87 @@
 #define	SIGINT	2	/* interrupt */
 #define	SIGQUIT	3	/* quit */
 #define	SIGILL	4	/* illegal instruction (not reset when caught) */
-#ifndef _POSIX_SOURCE
 #define	SIGTRAP	5	/* trace trap (not reset when caught) */
-#endif
 #define	SIGABRT	6	/* abort() */
-#ifndef _POSIX_SOURCE
+#if __BSD_VISIBLE
 #define	SIGIOT	SIGABRT	/* compatibility */
 #define	SIGEMT	7	/* EMT instruction */
 #endif
 #define	SIGFPE	8	/* floating point exception */
 #define	SIGKILL	9	/* kill (cannot be caught or ignored) */
-#ifndef _POSIX_SOURCE
 #define	SIGBUS	10	/* bus error */
-#endif
 #define	SIGSEGV	11	/* segmentation violation */
-#ifndef _POSIX_SOURCE
 #define	SIGSYS	12	/* bad argument to system call */
-#endif
 #define	SIGPIPE	13	/* write on a pipe with no one to read it */
 #define	SIGALRM	14	/* alarm clock */
 #define	SIGTERM	15	/* software termination signal from kill */
-#ifndef _POSIX_SOURCE
 #define	SIGURG	16	/* urgent condition on IO channel */
-#endif
 #define	SIGSTOP	17	/* sendable stop signal not from tty */
 #define	SIGTSTP	18	/* stop signal from tty */
 #define	SIGCONT	19	/* continue a stopped process */
 #define	SIGCHLD	20	/* to parent on child stop or exit */
 #define	SIGTTIN	21	/* to readers pgrp upon background tty read */
 #define	SIGTTOU	22	/* like TTIN for output if (tp->t_local&LTOSTOP) */
-#ifndef _POSIX_SOURCE
+#if __BSD_VISIBLE
 #define	SIGIO	23	/* input/output possible signal */
+#endif
 #define	SIGXCPU	24	/* exceeded CPU time limit */
 #define	SIGXFSZ	25	/* exceeded file size limit */
 #define	SIGVTALRM 26	/* virtual time alarm */
 #define	SIGPROF	27	/* profiling time alarm */
+#if __BSD_VISIBLE
 #define SIGWINCH 28	/* window size changes */
 #define SIGINFO	29	/* information request */
 #endif
 #define SIGUSR1 30	/* user defined signal 1 */
 #define SIGUSR2 31	/* user defined signal 2 */
+#if __BSD_VISIBLE
+#define SIGTHR  32	/* thread library AST */
+#endif
 
-#if defined(_ANSI_SOURCE) || defined(__cplusplus)
 /*
- * Language spec sez we must list exactly one parameter, even though we
+ * Language spec says we must list exactly one parameter, even though we
  * actually supply three.  Ugh!
  */
 #define	SIG_DFL		(void (*)(int))0
 #define	SIG_IGN		(void (*)(int))1
 #define	SIG_ERR		(void (*)(int))-1
-#else
-#define	SIG_DFL		(void (*)())0
-#define	SIG_IGN		(void (*)())1
-#define	SIG_ERR		(void (*)())-1
+
+#if __POSIX_VISIBLE || __XPG_VISIBLE
+#ifndef _SIGSET_T_DEFINED_
+#define _SIGSET_T_DEFINED_
+typedef unsigned int sigset_t;
 #endif
 
-#ifndef _ANSI_SOURCE
-typedef unsigned int sigset_t;
+#include <sys/siginfo.h>
 
 /*
  * Signal vector "template" used in sigaction call.
  */
 struct	sigaction {
-	void	(*sa_handler)();	/* signal handler */
+	union {		/* signal handler */
+		void	(*__sa_handler)(int);
+		void	(*__sa_sigaction)(int, siginfo_t *, void *);
+	} __sigaction_u;
 	sigset_t sa_mask;		/* signal mask to apply */
 	int	sa_flags;		/* see signal options below */
 };
-#ifndef _POSIX_SOURCE
+
+/* if SA_SIGINFO is set, sa_sigaction is to be used instead of sa_handler. */
+#define sa_handler      __sigaction_u.__sa_handler
+#define sa_sigaction    __sigaction_u.__sa_sigaction
+
+#if __XPG_VISIBLE >= 500
 #define SA_ONSTACK	0x0001	/* take signal on signal stack */
 #define SA_RESTART	0x0002	/* restart system on signal return */
 #define SA_RESETHAND	0x0004	/* reset to SIG_DFL when taking signal */
 #define SA_NODEFER	0x0010	/* don't mask the signal we're delivering */
-#ifdef COMPAT_SUNOS
-#define	SA_USERTRAMP	0x0100	/* do not bounce off kernel's sigtramp */
-#endif
-#endif
+#define SA_NOCLDWAIT	0x0020	/* don't create zombies (assign to pid 1) */
+#endif /* __XPG_VISIBLE >= 500 */
 #define SA_NOCLDSTOP	0x0008	/* do not generate SIGCHLD on child stop */
+#if __POSIX_VISIBLE >= 199309 || __XPG_VISIBLE >= 500
+#define SA_SIGINFO	0x0040	/* generate siginfo_t */
+#endif
 
 /*
  * Flags for sigprocmask:
@@ -138,64 +140,63 @@ struct	sigaction {
 #define	SIG_BLOCK	1	/* block specified signal set */
 #define	SIG_UNBLOCK	2	/* unblock specified signal set */
 #define	SIG_SETMASK	3	/* set specified signal set */
+#endif	/* __POSIX_VISIBLE || __XPG_VISIBLE */
 
-#ifndef _POSIX_SOURCE
-#ifndef _KERNEL
-#include <sys/cdefs.h>
-#endif
-typedef	void (*sig_t) __P((int));	/* type of signal function */
-
-/*
- * Structure used in sigaltstack call.
- */
-struct	sigaltstack {
-	char	*ss_base;		/* signal stack base */
-	int	ss_size;		/* signal stack length */
-	int	ss_flags;		/* SS_DISABLE and/or SS_ONSTACK */
-};
-#define SS_ONSTACK	0x0001	/* take signals on alternate stack */
-#define SS_DISABLE	0x0004	/* disable taking signals on alternate stack */
-#define	MINSIGSTKSZ	8192			/* minimum allowable stack */
-#define	SIGSTKSZ	(MINSIGSTKSZ + 32768)	/* recommended stack size */
+#if __BSD_VISIBLE
+typedef	void (*sig_t)(int);	/* type of signal function */
 
 /*
  * 4.3 compatibility:
  * Signal vector "template" used in sigvec call.
  */
 struct	sigvec {
-	void	(*sv_handler)();	/* signal handler */
+	void	(*sv_handler)(int);	/* signal handler */
 	int	sv_mask;		/* signal mask to apply */
 	int	sv_flags;		/* see signal options below */
 };
 #define SV_ONSTACK	SA_ONSTACK
 #define SV_INTERRUPT	SA_RESTART	/* same bit, opposite sense */
 #define SV_RESETHAND	SA_RESETHAND
-#define sv_onstack sv_flags	/* isn't compatibility wonderful! */
-
-/*
- * Structure used in sigstack call.
- */
-struct	sigstack {
-	char	*ss_sp;			/* signal stack pointer */
-	int	ss_onstack;		/* current status */
-};
+#define sv_onstack	sv_flags	/* isn't compatibility wonderful! */
 
 /*
  * Macro for converting signal number to a mask suitable for
  * sigblock().
  */
-#define sigmask(m)	(1 << ((m)-1))
+#define sigmask(m)	(1U << ((m)-1))
 
 #define	BADSIG		SIG_ERR
 
-#endif	/* !_POSIX_SOURCE */
-#endif	/* !_ANSI_SOURCE */
+#endif	/* __BSD_VISIBLE */
 
+#if __BSD_VISIBLE || __XPG_VISIBLE >= 420
+/*
+ * Structure used in sigaltstack call.
+ */
+typedef struct sigaltstack {
+	void	*ss_sp;			/* signal stack base */
+	size_t	ss_size;		/* signal stack length */
+	int	ss_flags;		/* SS_DISABLE and/or SS_ONSTACK */
+} stack_t;
+#define SS_ONSTACK	0x0001	/* take signals on alternate stack */
+#define SS_DISABLE	0x0004	/* disable taking signals on alternate stack */
+#define	MINSIGSTKSZ	(3U << _MAX_PAGE_SHIFT) /* minimum allowable stack */
+#if _MAX_PAGE_SHIFT < 14			/* recommended stack size */
+#define	SIGSTKSZ	(MINSIGSTKSZ + (1U << _MAX_PAGE_SHIFT) * 4)
+#else
+#define	SIGSTKSZ	(MINSIGSTKSZ + (1U << _MAX_PAGE_SHIFT) * 2)
+#endif
+
+typedef struct sigcontext ucontext_t;
+#endif /* __BSD_VISIBLE || __XPG_VISIBLE >= 420 */
+
+#ifndef _KERNEL
 /*
  * For historical reasons; programs expect signal's return value to be
  * defined by <sys/signal.h>.
  */
 __BEGIN_DECLS
-void	(*signal __P((int, void (*) __P((int))))) __P((int));
+void	(*signal(int, void (*)(int)))(int);
 __END_DECLS
+#endif /* !_KERNEL */
 #endif	/* !_SYS_SIGNAL_H_ */

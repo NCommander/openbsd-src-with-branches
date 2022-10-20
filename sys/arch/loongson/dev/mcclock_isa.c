@@ -1,4 +1,4 @@
-/*	$OpenBSD: mcclock_isa.c,v 1.8 2006/01/02 05:21:24 brad Exp $	*/
+/*	$OpenBSD: mcclock_isa.c,v 1.2 2020/05/25 13:16:06 visa Exp $	*/
 /*	$NetBSD: mcclock_isa.c,v 1.5 1996/12/05 01:39:29 cgd Exp $	*/
 
 /*
@@ -35,10 +35,11 @@
 
 #include <machine/bus.h>
 
-#include <mips64/dev/clockvar.h>
-#include <loongson/dev/mcclockvar.h>
+#include <dev/clock_subr.h>
 #include <dev/ic/mc146818reg.h>
 #include <dev/isa/isavar.h>
+
+#include <loongson/dev/mcclockvar.h>
 
 struct mcclock_isa_softc {
 	struct mcclock_softc	sc_mcclock;
@@ -50,7 +51,7 @@ struct mcclock_isa_softc {
 int	mcclock_isa_match(struct device *, void *, void *);
 void	mcclock_isa_attach(struct device *, struct device *, void *);
 
-struct cfattach mcclock_isa_ca = {
+const struct cfattach mcclock_isa_ca = {
 	sizeof (struct mcclock_isa_softc), mcclock_isa_match,
 	    mcclock_isa_attach, 
 };

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: trap.h,v 1.3 2008/06/26 05:42:13 ray Exp $	*/
 /*	$NetBSD: exception.h,v 1.9 2006/07/22 21:58:29 uwe Exp $	*/
 
 /*-
@@ -13,13 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -34,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _SH_EXCEPTION_H_
-#define	_SH_EXCEPTION_H_
+#ifndef _SH_TRAP_H_
+#define	_SH_TRAP_H_
 /*
  * SH3/SH4 Exception handling.
  */
@@ -79,6 +72,7 @@
 #define	EXP_USER		0x001	/* exception from user-mode */
 
 #define	_SH_TRA_SYSCALL		0x80	/* syscall trapa number */
+#define	_SH_TRA_CACHECTL	0x81	/* cachectl trapa number */
 #define	_SH_TRA_BREAK		0xc3	/* magic number for debugger */
 
 /*
@@ -184,4 +178,4 @@ extern const int exp_types;
 #endif /* !_LOCORE */
 
 #endif /* _KERNEL */
-#endif /* !_SH_EXCEPTION_H_ */
+#endif /* !_SH_TRAP_H_ */

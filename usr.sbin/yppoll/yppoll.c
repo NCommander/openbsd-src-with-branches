@@ -1,5 +1,8 @@
+/*	$OpenBSD: yppoll.c,v 1.14 2013/04/16 19:24:55 deraadt Exp $ */
+/*	$NetBSD: yppoll.c,v 1.5 1996/05/13 02:46:36 thorpej Exp $	*/
+
 /*
- * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@fsa.ca>
+ * Copyright (c) 1992, 1993 Theo de Raadt <deraadt@openbsd.org>
  * Copyright (c) 1992, 1993 John Brezak
  * All rights reserved.
  *
@@ -11,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Theo de Raadt and
- *	John Brezak.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -32,14 +31,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$Id: yppoll.c,v 1.4 1994/08/23 17:03:15 deraadt Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #include <netdb.h>
 #include <unistd.h>
@@ -52,31 +47,26 @@ static char rcsid[] = "$Id: yppoll.c,v 1.4 1994/08/23 17:03:15 deraadt Exp $";
 #include <rpcsvc/yp_prot.h>
 #include <rpcsvc/ypclnt.h>
 
-void
-usage()
+static void
+usage(void)
 {
-	fprintf(stderr, "Usage:\n");
-	fprintf(stderr, "\typpoll [-h host] [-d domainname] mapname\n");
+	fprintf(stderr, "usage: yppoll [-d domain] [-h host] mapname\n");
 	exit(1);
 }
 
-int
-get_remote_info(indomain, inmap, server, outorder, outname)
-	char *indomain;
-	char *inmap;
-	char *server;
-	int *outorder;
-	char **outname;
+static int
+get_remote_info(char *indomain, char *inmap, char *server, int *outorder,
+    char **outname)
 {
 	struct ypresp_order ypro;
 	struct ypresp_master yprm;
 	struct ypreq_nokey yprnk;
 	struct timeval tv;
-	int r;
 	struct sockaddr_in rsrv_sin;
 	int rsrv_sock;
 	CLIENT *client;
 	struct hostent *h;
+	int r;
 
 	bzero((char *)&rsrv_sin, sizeof rsrv_sin);
 	rsrv_sin.sin_len = sizeof rsrv_sin;
@@ -89,9 +79,8 @@ get_remote_info(indomain, inmap, server, outorder, outname)
 			fprintf(stderr, "unknown host %s\n", server);
 			exit(1);
 		}
-	} else {
-		rsrv_sin.sin_addr.s_addr = *(u_long *)h->h_addr;
-	}
+	} else
+		rsrv_sin.sin_addr.s_addr = *(u_int32_t *)h->h_addr;
 
 	tv.tv_sec = 10;
 	tv.tv_usec = 0;
@@ -102,7 +91,7 @@ get_remote_info(indomain, inmap, server, outorder, outname)
 		    server);
 		exit(1);
 	}
-	
+
 	yprnk.domain = indomain;
 	yprnk.map = inmap;
 
@@ -134,21 +123,17 @@ get_remote_info(indomain, inmap, server, outorder, outname)
 }
 
 int
-main(argc, argv)
-	int  argc;
-	char **argv;
+main(int argc, char *argv[])
 {
-	char *domainname;
-	char *hostname = NULL;
-	char *inmap, *master;
-	int order;
+	char *domainname, *hostname = NULL, *inmap, *master;
 	extern char *optarg;
 	extern int optind;
-	int c, r;
+	int order, c, r;
+	time_t torder;
 
 	yp_get_default_domain(&domainname);
 
-	while ((c=getopt(argc, argv, "h:d:?")) != -1)
+	while ((c=getopt(argc, argv, "h:d:")) != -1)
 		switch (c) {
 		case 'd':
 			domainname = optarg;
@@ -180,8 +165,9 @@ main(argc, argv)
 		exit(1);
 	}
 
-	printf("Map %s has order number %d. %s", inmap, order,
-	    ctime((time_t *)&order));
+	torder = order;
+	printf("Map %s has order number %lld. %s", inmap,
+	    (long long)order, ctime(&torder));
 	printf("The master server is %s.\n", master);
 	exit(0);
 }

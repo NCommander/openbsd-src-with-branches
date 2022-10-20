@@ -1,3 +1,4 @@
+.\"	$OpenBSD: rename.2,v 1.21 2015/01/19 15:54:11 millert Exp $
 .\"	$NetBSD: rename.2,v 1.7 1995/02/27 12:36:15 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,34 +30,42 @@
 .\"
 .\"     @(#)rename.2	8.1 (Berkeley) 6/4/93
 .\"
-.Dd June 4, 1993
+.Dd $Mdocdate: January 19 2015 $
 .Dt RENAME 2
-.Os BSD 4.2
+.Os
 .Sh NAME
-.Nm rename
+.Nm rename ,
+.Nm renameat
 .Nd change the name of a file
 .Sh SYNOPSIS
-.Fd #include <stdio.h>
+.In stdio.h
 .Ft int
 .Fn rename "const char *from" "const char *to"
+.In fcntl.h
+.In stdio.h
+.Ft int
+.Fn renameat "int fromfd" "const char *from" "int tofd" "const char *to"
 .Sh DESCRIPTION
-.Fn Rename
-causes the link named
+The
+.Fn rename
+function causes the link named
 .Fa from
 to be renamed as
 .Fa to .
-If 
+If
 .Fa to
 exists, it is first removed.
-Both 
+Both
 .Fa from
 and
 .Fa to
 must be of the same type (that is, both directories or both
 non-directories), and must reside on the same file system.
 .Pp
-.Fn Rename
-guarantees that an instance of
+.Fn rename
+guarantees that if
+.Fa to
+already exists, an instance of
 .Fa to
 will always exist, even if the system should crash in
 the middle of the operation.
@@ -70,49 +75,54 @@ If the final component of
 is a symbolic link,
 the symbolic link is renamed,
 not the file or directory to which it points.
-.Sh CAVEAT
-The system can deadlock if a loop in the file system graph is present.
-This loop takes the form of an entry in directory
-.Ql Pa a ,
-say
-.Ql Pa a/foo ,
-being a hard link to directory
-.Ql Pa b ,
-and an entry in
-directory
-.Ql Pa b ,
-say
-.Ql Pa b/bar ,
-being a hard link
-to directory
-.Ql Pa a .
-When such a loop exists and two separate processes attempt to
-perform
-.Ql rename a/foo b/bar
-and
-.Ql rename b/bar a/foo ,
-respectively, 
-the system may deadlock attempting to lock
-both directories for modification.
-Hard links to directories should be
-replaced by symbolic links by the system administrator.
-.Sh RETURN VALUES
-A 0 value is returned if the operation succeeds, otherwise
+.Pp
+The
+.Fn renameat
+function is equivalent to
 .Fn rename
-returns -1 and the global variable 
-.Va errno
-indicates the reason for the failure.
+except that where
+.Fa from
+or
+.Fa to
+specifies a relative path,
+the directory entry names used are resolved relative to
+the directories associated with file descriptors
+.Fa fromfd
+or
+.Fa tofd
+(respectively) instead of the current working directory.
+.Pp
+If
+.Fn renameat
+is passed the special value
+.Dv AT_FDCWD
+(defined in
+.In fcntl.h )
+in the
+.Fa fromfd
+or
+.Fa tofd
+parameter, the current working directory is used for resolving the respective
+.Fa from
+or
+.Fa to
+argument.
+.Sh RETURN VALUES
+.Rv -std
 .Sh ERRORS
-.Fn Rename
+.Fn rename
+and
+.Fn renameat
 will fail and neither of the argument files will be
 affected if:
 .Bl -tag -width Er
 .It Bq Er ENAMETOOLONG
-A component of a pathname exceeded 
-.Dv {NAME_MAX}
-characters, or an entire path name exceeded 
-.Dv {PATH_MAX}
-characters.
+A component of a pathname exceeded
+.Dv NAME_MAX
+characters, or an entire pathname (including the terminating NUL)
+exceeded
+.Dv PATH_MAX
+bytes.
 .It Bq Er ENOENT
 A component of the
 .Fa from
@@ -123,8 +133,12 @@ does not exist.
 .It Bq Er EACCES
 A component of either path prefix denies search permission.
 .It Bq Er EACCES
-The requested link requires writing in a directory with a mode
-that denies write permission.
+The requested change requires writing in a directory that denies write
+permission.
+.It Bq Er EACCES
+The
+.Fa from
+argument is a directory and denies write permission.
 .It Bq Er EPERM
 The directory containing
 .Fa from
@@ -144,6 +158,9 @@ and neither the containing directory nor
 are owned by the effective user ID.
 .It Bq Er ELOOP
 Too many symbolic links were encountered in translating either pathname.
+.It Bq Er EMLINK
+The link count on the source file or destination directory is at the maximum.
+A rename cannot be completed under these conditions.
 .It Bq Er ENOTDIR
 A component of either path prefix is not a directory.
 .It Bq Er ENOTDIR
@@ -161,9 +178,9 @@ The link named by
 .Fa to
 and the file named by
 .Fa from
-are on different logical devices (file systems).  Note that this error
-code will not be returned if the implementation permits cross-device
-links.
+are on different logical devices (file systems).
+Note that this error code will not be returned if the implementation
+permits cross-device links.
 .It Bq Er ENOSPC
 The directory in which the entry for the new name is being placed
 cannot be extended because there is no space left on the file
@@ -179,10 +196,12 @@ An I/O error occurred while making or updating a directory entry.
 The requested link requires writing in a directory on a read-only file
 system.
 .It Bq Er EFAULT
-.Em Path
+.Fa from
+or
+.Fa to
 points outside the process's allocated address space.
 .It Bq Er EINVAL
-.Fa From
+.Fa from
 is a parent directory of
 .Fa to ,
 or an attempt is made to rename
@@ -190,14 +209,88 @@ or an attempt is made to rename
 or
 .Ql \&.. .
 .It Bq Er ENOTEMPTY
-.Fa To
+.Fa to
 is a directory and is not empty.
 .El
+.Pp
+Additionally,
+.Fn renameat
+will fail if:
+.Bl -tag -width Er
+.It Bq Er EBADF
+The
+.Fa from
+or
+.Fa to
+argument specifies a relative path and the
+.Fa fromfd
+or
+.Fa tofd
+argument, respectively, is neither
+.Dv AT_FDCWD
+nor a valid file descriptor.
+.It Bq Er ENOTDIR
+The
+.Fa from
+or
+.Fa to
+argument specifies a relative path and the
+.Fa fromfd
+or
+.Fa tofd
+argument, respectively,
+is a valid file descriptor but it does not reference a directory.
+.It Bq Er EACCES
+The
+.Fa from
+or
+.Fa to
+argument specifies a relative path but search permission is denied
+for the directory which the
+.Fa fromfd
+or
+.Fa tofd
+file descriptor, respectively, references.
+.El
 .Sh SEE ALSO
-.Xr open 2
+.Xr mv 1 ,
+.Xr open 2 ,
 .Xr symlink 7
 .Sh STANDARDS
 The
 .Fn rename
-function conforms to 
-.St -p1003.1-88 .
+and
+.Fn renameat
+functions conform to
+.St -p1003.1-2008 .
+.Sh HISTORY
+The
+.Fn renameat
+function appeared in
+.Ox 5.0 .
+.Sh CAVEATS
+The system can deadlock if a loop in the file system graph is present.
+This loop takes the form of an entry in directory
+.Sq Pa a ,
+say
+.Sq Pa a/foo ,
+being a hard link to directory
+.Sq Pa b ,
+and an entry in
+directory
+.Sq Pa b ,
+say
+.Sq Pa b/bar ,
+being a hard link
+to directory
+.Sq Pa a .
+When such a loop exists and two separate processes attempt to
+perform
+.Ql rename a/foo b/bar
+and
+.Ql rename b/bar a/foo ,
+respectively,
+the system may deadlock attempting to lock
+both directories for modification.
+Hard links to directories should be
+replaced by symbolic links by the system administrator.

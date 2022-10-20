@@ -1,3 +1,4 @@
+/*	$OpenBSD: scores.h,v 1.5 2003/06/03 03:01:41 millert Exp $	*/
 /*	$NetBSD: scores.h,v 1.2 1995/04/22 07:42:40 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,15 +39,15 @@
  * Tetris scores.
  */
 struct highscore {
-	char	hs_name[20];	/* login name */
-	int	hs_score;	/* raw score */
-	int	hs_level;	/* play level */
-	time_t	hs_time;	/* time at game end */
+	char	hs_name[LOGIN_NAME_MAX];	/* login name */
+	int	hs_score;			/* raw score */
+	int	hs_level;			/* play level */
+	time_t	hs_time;			/* time at game end */
 };
 
 #define MAXHISCORES	80
 #define MAXSCORES	9	/* maximum high score entries per person */
 #define	EXPIRATION	(5L * 365 * 24 * 60 * 60)
 
-void	savescore __P((int));
-void	showscores __P((int));
+void	savescore(int);
+void	showscores(int);

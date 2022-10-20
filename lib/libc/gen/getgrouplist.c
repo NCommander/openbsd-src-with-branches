@@ -1,6 +1,6 @@
-/*	$NetBSD: getgrouplist.c,v 1.5 1995/06/01 22:51:17 jtc Exp $	*/
-
+/*	$OpenBSD: getgrouplist.c,v 1.29 2022/07/17 03:10:47 deraadt Exp $ */
 /*
+ * Copyright (c) 2008 Ingo Schwarze <schwarze@usta.de>
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,48 +29,155 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)getgrouplist.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: getgrouplist.c,v 1.5 1995/06/01 22:51:17 jtc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 /*
  * get credential
  */
 #include <sys/types.h>
+#include <sys/limits.h>
 #include <string.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <grp.h>
+#include <pwd.h>
+#include <errno.h>
+
+#include <rpc/rpc.h>
+#include <rpcsvc/yp.h>
+#include <rpcsvc/ypclnt.h>
+
+#ifdef YP
+#define _PATH_NETID	"/etc/netid"
+#define MAXLINELENGTH	1024
+
+static int _parse_netid(char*, uid_t, gid_t*, int*, int);
+static int _read_netid(const char *, uid_t, gid_t*, int*, int);
+
+/*
+ * Parse one string of the form "uid:gid[,gid[,...]]".
+ * If the uid matches, add the groups to the group list.
+ * If the groups fit, return 1, otherwise return -1. 
+ * If the uid does not match, return 0.
+ */
+static int
+_parse_netid(char *netid, uid_t uid, gid_t *groups, int *ngroups,
+	     int maxgroups)
+{
+	const char *errstr = NULL;
+	char *start, *p;
+	uid_t tuid;
+	gid_t gid;
+	int i;
+
+	/* Check the uid. */
+	p = strchr(netid, ':');
+	if (!p)
+		return (0);
+	*p++ = '\0';
+	tuid = (uid_t)strtonum(netid, 0, UID_MAX, &errstr);
+	if (errstr || tuid != uid)
+		return (0);
+
+        /* Loop over the gids. */
+	while (p && *p) {
+		start = p;
+		p = strchr(start, ',');
+		if (p)
+			*p++ = '\0';
+		gid = (gid_t)strtonum(start, 0, GID_MAX, &errstr);
+		if (errstr)
+			continue;
+
+		/* Skip this group if it is already in the list. */
+		for (i = 0; i < *ngroups; i++)
+			if (groups[i] == gid)
+				break;
+
+		/* Try to add this new group to the list. */
+		if (i == *ngroups) {
+			if (*ngroups >= maxgroups)
+				return (-1);
+			groups[(*ngroups)++] = gid;
+		}
+	}
+	return (1);
+}
+
+/*
+ * Search /etc/netid for a particular uid and process that line.
+ * See _parse_netid for details, including return values.
+ */
+static int
+_read_netid(const char *key, uid_t uid, gid_t *groups, int *ngroups,
+	    int maxgroups)
+{
+	FILE *fp;
+	char line[MAXLINELENGTH], *p;
+	int found = 0;
+
+	fp = fopen(_PATH_NETID, "re");
+	if (!fp) 
+		return (0);
+	while (!found && fgets(line, sizeof(line), fp)) {
+		p = strchr(line, '\n');
+		if (p)
+			*p = '\0';
+		else { /* Skip lines that are too long. */
+			int ch;
+			while ((ch = getc_unlocked(fp)) != '\n' && ch != EOF)
+				;
+			continue;
+		}
+		p = strchr(line, ' ');
+		if (!p)
+			continue;
+		*p++ = '\0';
+		if (strcmp(line, key))
+			continue;
+		found = _parse_netid(p, uid, groups, ngroups, maxgroups);
+	}
+	(void)fclose(fp);
+	return (found);
+}
+#endif /* YP */
 
 int
-getgrouplist(uname, agroup, groups, grpcnt)
-	const char *uname;
-	int agroup;
-	register int *groups;
-	int *grpcnt;
+getgrouplist(const char *uname, gid_t agroup, gid_t *groups, int *grpcnt)
 {
-	register struct group *grp;
-	register struct passwd *pw;
-	register int i, ngroups;
-	int ret, maxgroups;
-
-	ret = 0;
-	ngroups = 0;
-	maxgroups = *grpcnt;
+	int i, ngroups = 0, ret = 0, maxgroups = *grpcnt, bail;
+	int needyp = 0, foundyp = 0;
+	int *skipyp = &foundyp;
+	extern struct group *_getgrent_yp(int *);
+	struct group *grp;
 
 	/*
 	 * install primary group
 	 */
+	if (ngroups >= maxgroups) {
+		*grpcnt = ngroups;
+		return (-1);
+	}
 	groups[ngroups++] = agroup;
 
 	/*
 	 * Scan the group file to find additional groups.
 	 */
 	setgrent();
-	while (grp = getgrent()) {
+	while ((grp = _getgrent_yp(skipyp)) || foundyp) {
+		if (foundyp) {
+			if (foundyp > 0)
+				needyp = 1;
+			else
+				skipyp = NULL;
+			foundyp = 0;
+			continue;
+		}
 		if (grp->gr_gid == agroup)
+			continue;
+		for (bail = 0, i = 0; bail == 0 && i < ngroups; i++)
+			if (groups[i] == grp->gr_gid)
+				bail = 1;
+		if (bail)
 			continue;
 		for (i = 0; grp->gr_mem[i]; i++) {
 			if (!strcmp(grp->gr_mem[i], uname)) {
@@ -87,8 +190,53 @@ getgrouplist(uname, agroup, groups, grpcnt)
 			}
 		}
 	}
+
+#ifdef YP
+	/*
+	 * If we were told that there is a YP marker, look at netid data.
+	 */
+	if (skipyp && needyp) {
+		char buf[MAXLINELENGTH], *ypdata = NULL, *key;
+		static char *__ypdomain;
+		struct passwd pwstore;
+		int ypdatalen;
+
+		/* Construct the netid key to look up. */
+		if (getpwnam_r(uname, &pwstore, buf, sizeof buf, NULL) ||
+		    (!__ypdomain && yp_get_default_domain(&__ypdomain)))
+			goto out;
+		i = asprintf(&key, "unix.%u@%s", pwstore.pw_uid, __ypdomain);
+		if (i == -1)
+			goto out;
+
+		/* First scan the static netid file. */
+		switch (_read_netid(key, pwstore.pw_uid,
+		    groups, &ngroups, maxgroups)) {
+		case -1:
+			ret = -1;
+			/* FALLTHROUGH */
+		case 1:
+			free(key);
+			goto out;
+		default:
+			break;
+		}
+
+		/* Only access YP when there is no static entry. */
+		if (!yp_match(__ypdomain, "netid.byname", key,
+		    (int)strlen(key), &ypdata, &ypdatalen))
+			if (_parse_netid(ypdata, pwstore.pw_uid,
+			    groups, &ngroups, maxgroups) == -1)
+				ret = -1;
+
+		free(key);
+		free(ypdata);
+	}
+#endif /* YP */
+
 out:
 	endgrent();
 	*grpcnt = ngroups;
 	return (ret);
 }
+DEF_WEAK(getgrouplist);

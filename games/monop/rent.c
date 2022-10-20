@@ -1,3 +1,4 @@
+/*	$OpenBSD: rent.c,v 1.6 2016/01/08 18:19:47 mestre Exp $	*/
 /*	$NetBSD: rent.c,v 1.3 1995/03/23 08:35:11 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,55 +30,50 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)rent.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: rent.c,v 1.3 1995/03/23 08:35:11 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdio.h>
 
-# include	"monop.ext"
+#include "monop.ext"
 
 /*
  *	This routine has the player pay rent
  */
-rent(sqp)
-reg SQUARE	*sqp; {
+void
+rent(SQUARE *sqp)
+{
+	int	rnt;
+	PROP	*pp;
+	PLAY	*plp;
 
-	reg int		rnt;
-	reg PROP	*pp;
-	PLAY		*plp;
-
-	plp = &play[sqp->owner];
+	plp = &play[(int)sqp->owner];
 	printf("Owned by %s\n", plp->name);
 	if (sqp->desc->morg) {
 		lucky("The thing is mortgaged.  ");
 		return;
 	}
 	switch (sqp->type) {
-	  case PRPTY:
+	case PRPTY:
 		pp = sqp->desc;
-		if (pp->monop)
+		if (pp->monop) {
 			if (pp->houses == 0)
-				printf("rent is %d\n", rnt=pp->rent[0] * 2);
+				printf("rent is %d\n", rnt = pp->rent[0] * 2);
 			else if (pp->houses < 5)
-				printf("with %d houses, rent is %d\n",
-				    pp->houses, rnt=pp->rent[pp->houses]);
+				printf("with %d house%s, rent is %d\n",
+				    pp->houses, pp->houses == 1 ? "" : "s",
+				    rnt = pp->rent[(int)pp->houses]);
 			else
 				printf("with a hotel, rent is %d\n",
-				    rnt=pp->rent[pp->houses]);
-		else
+				    rnt = pp->rent[(int)pp->houses]);
+		} else
 			printf("rent is %d\n", rnt = pp->rent[0]);
 		break;
-	  case RR:
+	case RR:
 		rnt = 25;
 		rnt <<= (plp->num_rr - 1);
 		if (spec)
 			rnt <<= 1;
 		printf("rent is %d\n", rnt);
 		break;
-	  case UTIL:
+	case UTIL:
 		rnt = roll(2, 6);
 		if (plp->num_util == 2 || spec) {
 			printf("rent is 10 * roll (%d) = %d\n", rnt, rnt * 10);
@@ -91,6 +83,10 @@ reg SQUARE	*sqp; {
 			printf("rent is 4 * roll (%d) = %d\n", rnt, rnt * 4);
 			rnt *= 4;
 		}
+		break;
+	default:	/* Should never be reached */
+		rnt = 0;
+		printf("Warning:  rent() property %d\n", sqp->type);
 		break;
 	}
 	cur_p->money -= rnt;

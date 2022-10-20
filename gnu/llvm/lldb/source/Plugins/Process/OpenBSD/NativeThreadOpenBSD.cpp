@@ -27,9 +27,11 @@ using namespace lldb_private::process_openbsd;
 NativeThreadOpenBSD::NativeThreadOpenBSD(NativeProcessOpenBSD &process,
                                        lldb::tid_t tid)
     : NativeThreadProtocol(process, tid), m_state(StateType::eStateInvalid),
-      m_stop_info(), m_reg_context_up(
-NativeRegisterContextOpenBSD::CreateHostNativeRegisterContextOpenBSD(process.GetArchitecture(), *this)
-), m_stop_description() {}
+      m_stop_info(), m_stop_description() {
+  m_reg_context_up = NativeRegisterContextOpenBSD::CreateHostNativeRegisterContextOpenBSD(process.GetArchitecture(), *this);
+  if (!m_reg_context_up)
+    llvm_unreachable("This architecture does not support debugging running processes.");
+}
 
 void NativeThreadOpenBSD::SetStoppedBySignal(uint32_t signo,
                                             const siginfo_t *info) {
@@ -70,23 +72,6 @@ void NativeThreadOpenBSD::SetStoppedByTrace() {
 void NativeThreadOpenBSD::SetStoppedByExec() {
   SetStopped();
   m_stop_info.reason = StopReason::eStopReasonExec;
-  m_stop_info.details.signal.signo = SIGTRAP;
-}
-
-void NativeThreadOpenBSD::SetStoppedByWatchpoint(uint32_t wp_index) {
-  SetStopped();
-
-  lldbassert(wp_index != LLDB_INVALID_INDEX32 && "wp_index cannot be invalid");
-
-  std::ostringstream ostr;
-  ostr << GetRegisterContext().GetWatchpointAddress(wp_index) << " ";
-  ostr << wp_index;
-
-  ostr << " " << GetRegisterContext().GetWatchpointHitAddress(wp_index);
-
-  m_stop_description = ostr.str();
-
-  m_stop_info.reason = StopReason::eStopReasonWatchpoint;
   m_stop_info.details.signal.signo = SIGTRAP;
 }
 
@@ -148,59 +133,20 @@ return  *m_reg_context_up;
 
 Status NativeThreadOpenBSD::SetWatchpoint(lldb::addr_t addr, size_t size,
                                          uint32_t watch_flags, bool hardware) {
-  if (!hardware)
-    return Status("not implemented");
-  if (m_state == eStateLaunching)
-    return Status();
-  Status error = RemoveWatchpoint(addr);
-  if (error.Fail())
-    return error;
-  uint32_t wp_index = GetRegisterContext().SetHardwareWatchpoint(addr, size, watch_flags);
-  if (wp_index == LLDB_INVALID_INDEX32)
-    return Status("Setting hardware watchpoint failed.");
-  m_watchpoint_index_map.insert({addr, wp_index});
-  return Status();
+  if (hardware)
+    return Status("Not Aailable");
+  return Status("Software watchpoints not implemented");
 }
 
 Status NativeThreadOpenBSD::RemoveWatchpoint(lldb::addr_t addr) {
-  auto wp = m_watchpoint_index_map.find(addr);
-  if (wp == m_watchpoint_index_map.end())
-    return Status();
-  uint32_t wp_index = wp->second;
-  m_watchpoint_index_map.erase(wp);
-  if (GetRegisterContext().ClearHardwareWatchpoint(wp_index))
-    return Status();
-  return Status("Clearing hardware watchpoint failed.");
+  return Status("Software watchpoints not implemented");
 }
 
 Status NativeThreadOpenBSD::SetHardwareBreakpoint(lldb::addr_t addr,
                                                  size_t size) {
-  if (m_state == eStateLaunching)
-    return Status();
-
-  Status error = RemoveHardwareBreakpoint(addr);
-  if (error.Fail())
-    return error;
-
-  uint32_t bp_index = GetRegisterContext().SetHardwareBreakpoint(addr, size);
-
-  if (bp_index == LLDB_INVALID_INDEX32)
-    return Status("Setting hardware breakpoint failed.");
-
-  m_hw_break_index_map.insert({addr, bp_index});
-  return Status();
+  return Status("Not Available");
 }
 
 Status NativeThreadOpenBSD::RemoveHardwareBreakpoint(lldb::addr_t addr) {
-  auto bp = m_hw_break_index_map.find(addr);
-  if (bp == m_hw_break_index_map.end())
-    return Status();
-
-  uint32_t bp_index = bp->second;
-  if (GetRegisterContext().ClearHardwareBreakpoint(bp_index)) {
-    m_hw_break_index_map.erase(bp);
-    return Status();
-  }
-
-  return Status("Clearing hardware breakpoint failed.");
+  return Status("Not Available");
 }

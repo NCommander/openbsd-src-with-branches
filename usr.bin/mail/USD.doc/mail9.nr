@@ -1,3 +1,5 @@
+.\"	$OpenBSD: mail9.nr,v 1.7 2008/11/03 20:07:42 jmc Exp $
+.\"
 .\" Copyright (c) 1980, 1993
 .\"	The Regents of the University of California.  All rights reserved.
 .\"
@@ -9,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -29,9 +27,8 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	@(#)mail9.nr	8.1 (Berkeley) 6/8/93
+.\"	@(#)mail9.nr	8.2 (Berkeley) 5/16/94
 .\"
-.bp
 .sh 1 "Summary of commands, options, and escapes"
 .pp
 This section gives a quick summary of the
@@ -73,10 +70,11 @@ help	Same as \fB?\fP
 hold	Same as \fBpreserve\fP
 if	Conditional execution of \fIMail\fP commands
 ignore	Set/examine list of ignored header fields
+inc	Incorporate new messages
 list	List valid \fIMail\fP commands
-local	List other names for the local host
 mail	Send mail to specified names
 mbox	Arrange to save a list of messages in \fImbox\fP
+more	Invoke pager on message list
 next	Go to next message and type it
 preserve	Arrange to leave list of messages in system mailbox
 print	Print messages
@@ -85,12 +83,15 @@ reply	Compose a reply to a message
 respond	Same as \fBreply\fP
 retain	Supersedes \fBignore\fP
 save	Append messages, headers included, on a file
+saveignore	List of headers to ignore when using the \fBsave\fP command
+saveretain	List of headers to retain when using the \fBsave\fP command
 set	Set binary or valued options
 shell	Invoke an interactive shell
 size	Prints out size of message list
 source	Read \fImail\fP commands from a file
 top	Print first so many (5 by default) lines of list of messages
 type	Same as \fBprint\fP
+unalias	Remove alias
 undelete	Undelete list of messages
 unread	Marks list of messages as not been read
 unset	Undo the operation of a \fBset\fP
@@ -99,7 +100,6 @@ write	Append messages to a file, don't include headers
 xit	Same as \fBexit\fP
 z	Scroll to next/previous screenful of headers
 .TE
-.bp
 .(b
 .pp
 The following table describes the options.  Each option is
@@ -111,12 +111,16 @@ l ci l.
 Option	Type	Description
 _
 EDITOR	valued	Pathname of editor for ~e and \fBedit\fP
-PAGER	valued	Pathname of paginator for \fBPrint\fP, \fBprint\fP, \fBType\fP and \fBtype\fP
+LISTER	valued	Pathname of directory lister
+MBOX	valued	Pathname of the \fImbox\fP file
+PAGER	valued	Pathname of pager for \fBPrint\fP, \fBprint\fP, \fBType\fP and \fBtype\fP
 SHELL	valued	Pathname of shell for \fBshell\fP, ~! and \fB!\fP
 VISUAL	valued	Pathname of screen editor for ~v, \fBvisual\fP
 append	binary	Always append messages to end of \fImbox\fP
 ask	binary	Prompt user for Subject: field when sending
+askbcc	binary	Prompt user for additional BCc's at end of message
 askcc	binary	Prompt user for additional Cc's at end of message
+autoinc	binary	Automatically incorporate new mail
 autoprint	binary	Print next message after \fBdelete\fP
 crt	valued	Minimum number of lines before using \fBPAGER\fP
 debug	binary	Print out debugging information
@@ -124,16 +128,19 @@ dot	binary	Accept . alone on line to terminate message input
 escape	valued	Escape character to be used instead of\ \ ~
 folder	valued	Directory to store folders in
 hold	binary	Hold messages in system mailbox by default
-ignore	binary	Ignore \s-2RUBOUT\s0 while sending mail
-ignoreeof	binary	Don't terminate letters/command input with \fB\(uaD\fP
+ignore	binary	Ignore <Control-C> while sending mail
+ignoreeof	binary	Don't terminate letters/command input with \fB^D\fP
+indentprefix	valued	String used for indenting messages
 keep	binary	Don't unlink system mailbox when empty
 keepsave	binary	Don't delete \fBsave\fPd messages by default
 metoo	binary	Include sending user in aliases
 noheader	binary	Suppress initial printing of version and headers
 nosave	binary	Don't save partial letter in \fIdead.letter\fP
-quiet	binary	Suppress printing of \fIMail\fP version and message numbers
+Replyall	binary	Reverses the sense of the \fB[Rr]eply\fP commands
+quiet	binary	Suppress printing of \fIMail\fP version/message numbers
 record	valued	File to save all outgoing mail in
 screen	valued	Size of window of message headers for \fBz\fP, etc.
+searchheaders	binary	Search string for message headers
 sendmail	valued	Choose alternate mail delivery system
 toplines	valued	Number of lines to print in \fBtop\fP
 verbose	binary	Invoke sendmail with the \fB\-v\fP flag
@@ -147,26 +154,31 @@ while sending mail.
 center;
 c ci ci
 l li l.
-Escape	Arguments	Description
+Escape  Arguments  Description
 _
-~!	command	Execute shell command
-~b	name ...	Add names to "blind" Cc: list
-~c	name ...	Add names to Cc: field
-~d		Read \fIdead.letter\fP into message
-~e		Invoke text editor on partial message
-~f	messages	Read named messages
-~h		Edit the header fields
-~m	messages	Read named messages, right shift by tab
-~p		Print message entered so far
-~q		Abort entry of letter; like \s-2RUBOUT\s0
-~r	filename	Read file into message
-~s	string	Set Subject: field to \fIstring\fP
-~t	name ...	Add names to To: field
-~v		Invoke screen editor on message
-~w	filename	Write message on file
-~|	command	Pipe message through \fIcommand\fP
-~:	Mail command	Execute a \fIMail\fP command
-~~	string	Quote a ~ in front of \fIstring\fP
+~b name ...             Add names to "blind" Cc: list.
+~c name ...             Add names to Cc: field.
+~d                      Read \fIdead.letter\fP into message.
+~e                      Invoke text editor on partial message.
+~F messages             Same as ~f, but includes all headers.
+~f messages             Read in messages.
+~h                      Edit the header fields.
+~M messages             Same as ~m, but includes all headers.
+~m messages             Read in messages, right shifted by a tab.
+~p                      Print (show) the message buffer.
+~q                      Abort message; optionally save copy to ~/dead.letter.
+~r file | ~< file       Read a file into the message buffer.
+~s string               Set Subject: field to \fIstring\fP.
+~t name ...             Add names to To: field.
+~v                      Invoke display editor on message.
+~w filename             Write message to file.
+~x                      Abort message; no copy is saved.
+~?                      Print a brief summary of tilde escapes.
+~!command               Execute shell command.
+~|command               Pipe message through \fIcommand\fP.
+~:command | ~_command   Execute a \fIMail\fP command.
+~~string                Quote a single tilde.
+~.                      Simulate end of file on input.
 .TE
 .)b
 .(b
@@ -180,24 +192,23 @@ c c
 l a.
 Flag	Description
 _
-\-N	Suppress the initial printing of headers
-\-T \fIfile\fP	Article-id's of read/deleted messages to \fIfile\fP
+\-b \fIlist\fP	Send blind carbon copies to \fIlist\fP.
+\-c \fIlist\fP	Send carbon copies to \fIlist\fP
 \-d	Turn on debugging
-\-f \fIfile\fP	Show messages in \fIfile\fP or \fI~/mbox\fP
-\-h \fInumber\fP	Pass on hop count for mail forwarding
+\-f [\fIname\fP]	Show messages in \fIname\fP or \fI~/mbox\fP
+\-I	Force \fIMail\fP to run in interactive mode
 \-i	Ignore tty interrupt signals
-\-n	Inhibit reading of /usr/lib/Mail.rc
-\-r \fIname\fP	Pass on \fIname\fP for mail forwarding
-\-s \fIstring\fP	Use \fIstring\fP as subject in outgoing mail
-\-u \fIname\fP	Read \fIname's\fP mail instead of your own
+\-N	Suppress the initial printing of headers
+\-n	Inhibit reading of /etc/mail.rc
+\-s \fIsubject\fP	Use \fIsubject\fP as subject in outgoing mail
+\-T \fIfile\fP	Article-id's of read/deleted messages to \fIfile\fP
+\-u \fIuser\fP	Read \fIuser\fP's mail instead of your own
 \-v 	Invoke sendmail with the \fB\-v\fP flag
 .TE
 .)b
 .lp
 Notes:
-.b \-T ,
-.b \-d ,
-.b \-h ,
+.b \-d
 and
-.b \-r
+.b \-T
 are not for human use.

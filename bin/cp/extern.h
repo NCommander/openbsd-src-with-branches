@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.14 2015/01/16 06:39:31 deraadt Exp $	*/
 /*	$NetBSD: extern.h,v 1.3 1995/03/21 09:02:16 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,21 +34,21 @@
 
 typedef struct {
 	char *p_end;			/* pointer to NULL at end of path */
-	char *target_end;               /* pointer to end of target base */
-	char p_path[MAXPATHLEN + 1];	/* pointer to the start of a path */
+	char *target_end;		/* pointer to end of target base */
+	char p_path[PATH_MAX];		/* pointer to the start of a path */
 } PATH_T;
 
 extern PATH_T to;
 extern uid_t myuid;
-extern int iflag, pflag, myumask;
-
-#include <sys/cdefs.h>
+extern int fflag, iflag, pflag;
+extern mode_t myumask;
+extern char *__progname;
 
 __BEGIN_DECLS
-int	copy_fifo __P((struct stat *, int));
-int	copy_file __P((FTSENT *, int));
-int	copy_link __P((FTSENT *, int));
-int	copy_special __P((struct stat *, int));
-int	setfile __P((struct stat *, int));
-void	usage __P((void));
+int	copy_fifo(struct stat *, int);
+int	copy_file(FTSENT *, int);
+int	copy_link(FTSENT *, int);
+int	copy_special(struct stat *, int);
+int	setfile(struct stat *, int);
+void	usage(void);
 __END_DECLS

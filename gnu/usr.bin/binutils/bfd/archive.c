@@ -1364,7 +1364,7 @@ bfd_ar_hdr_from_filesystem (bfd *abfd, const char *filename, bfd *member)
   strncpy (hdr->ar_fmag, ARFMAG, 2);
 
   /* Goddamned sprintf doesn't permit MAXIMUM field lengths.  */
-  sprintf ((hdr->ar_date), "%-12ld", (long) status.st_mtime);
+  sprintf ((hdr->ar_date), "%-12lld", (long long) status.st_mtime);
 #ifdef HPUX_LARGE_AR_IDS
   /* HP has a very "special" way to handle UID/GID's with numeric values
      > 99999.  */
@@ -1437,6 +1437,11 @@ bfd_generic_stat_arch_elt (bfd *abfd, struct stat *buf)
   if (aloser == hdr->arelt)	      			\
     return -1;
 
+#define fooll(arelt, stelt, size)			\
+  buf->stelt = strtoll (hdr->arelt, &aloser, size);	\
+  if (aloser == hdr->arelt)	      			\
+    return -1;
+
   /* Some platforms support special notations for large IDs.  */
 #ifdef HPUX_LARGE_AR_IDS
 # define foo2(arelt, stelt, size)					\
@@ -1463,7 +1468,7 @@ bfd_generic_stat_arch_elt (bfd *abfd, struct stat *buf)
 # define foo2(arelt, stelt, size) foo (arelt, stelt, size)
 #endif
 
-  foo (ar_date, st_mtime, 10);
+  fooll (ar_date, st_mtime, 10);
   foo2 (ar_uid, st_uid, 10);
   foo2 (ar_gid, st_gid, 10);
   foo (ar_mode, st_mode, 8);
@@ -1932,7 +1937,7 @@ bsd_write_armap (bfd *arch,
   bfd_ardata (arch)->armap_timestamp = statbuf.st_mtime + ARMAP_TIME_OFFSET;
   bfd_ardata (arch)->armap_datepos = (SARMAG
 				      + offsetof (struct ar_hdr, ar_date[0]));
-  sprintf (hdr.ar_date, "%ld", bfd_ardata (arch)->armap_timestamp);
+  sprintf (hdr.ar_date, "%lld", (long long)bfd_ardata (arch)->armap_timestamp);
   sprintf (hdr.ar_uid, "%ld", (long) getuid ());
   sprintf (hdr.ar_gid, "%ld", (long) getgid ());
   sprintf (hdr.ar_size, "%-10d", (int) mapsize);
@@ -2025,7 +2030,7 @@ _bfd_archive_bsd_update_armap_timestamp (bfd *arch)
 
   /* Prepare an ASCII version suitable for writing.  */
   memset (hdr.ar_date, 0, sizeof (hdr.ar_date));
-  sprintf (hdr.ar_date, "%ld", bfd_ardata (arch)->armap_timestamp);
+  sprintf (hdr.ar_date, "%lld", (long long)bfd_ardata (arch)->armap_timestamp);
   for (i = 0; i < sizeof (hdr.ar_date); i++)
     if (hdr.ar_date[i] == '\0')
       (hdr.ar_date)[i] = ' ';

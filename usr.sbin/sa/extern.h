@@ -1,3 +1,4 @@
+/*	$OpenBSD: extern.h,v 1.7 2022/02/22 17:22:29 deraadt Exp $ */
 /*
  * Copyright (c) 1994 Christopher G. Demetriou
  * All rights reserved.
@@ -27,57 +28,57 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: extern.h,v 1.1 1994/03/24 18:41:50 cgd Exp $
  */
 
-#include <sys/types.h>
-#include <sys/param.h>
 #include <db.h>
+
+#define CI_COMMLEN	(sizeof(((struct acct *)NULL)->ac_comm))
 
 /* structures */
 
 struct cmdinfo {
-	char		ci_comm[MAXCOMLEN+2];	/* command name (+ '*') */
-	u_long		ci_uid;			/* user id */
-	u_quad_t	ci_calls;		/* number of calls */
-	u_quad_t	ci_etime;		/* elapsed time */
-	u_quad_t	ci_utime;		/* user time */
-	u_quad_t	ci_stime;		/* system time */
-	u_quad_t	ci_mem;			/* memory use */
-	u_quad_t	ci_io;			/* number of disk i/o ops */
-	u_int		ci_flags;		/* flags; see below */
+	char		ci_comm[CI_COMMLEN+1];	/* command name (+ '*') */
+	uid_t		ci_uid;			/* user id */
+	pid_t		ci_pid;			/* pid */
+	uint64_t	ci_calls;		/* number of calls */
+	uint64_t	ci_etime;		/* elapsed time */
+	uint64_t	ci_utime;		/* user time */
+	uint64_t	ci_stime;		/* system time */
+	uint64_t	ci_mem;			/* memory use */
+	uint64_t	ci_io;			/* number of disk i/o ops */
+	uint32_t	ci_flags;		/* flags; see below */
 };
 #define	CI_UNPRINTABLE	0x0001			/* unprintable chars in name */
 
 struct userinfo {
-	u_long		ui_uid;			/* user id; for consistency */
-	u_quad_t	ui_calls;		/* number of invocations */
-	u_quad_t	ui_utime;		/* user time */
-	u_quad_t	ui_stime;		/* system time */
-	u_quad_t	ui_mem;			/* memory use */
-	u_quad_t	ui_io;			/* number of disk i/o ops */
+	uid_t		ui_uid;			/* user id; for consistency */
+	uint64_t	ui_calls;		/* number of invocations */
+	uint64_t	ui_utime;		/* user time */
+	uint64_t	ui_stime;		/* system time */
+	uint64_t	ui_mem;			/* memory use */
+	uint64_t	ui_io;			/* number of disk i/o ops */
 };
 
 /* typedefs */
 
-typedef	int (*cmpf_t) __P((const DBT *, const DBT *));
+typedef	int (*cmpf_t)(const DBT *, const DBT *);
 
 /* external functions in sa.c */
-int	main		__P((int, char **));
+int	main(int, char **);
 
 /* external functions in pdb.c */
-int	pacct_init	__P((void));
-void	pacct_destroy	__P((void));
-int	pacct_add	__P((const struct cmdinfo *));
-int	pacct_update	__P((void));
-void	pacct_print	__P((void));
+int	pacct_init(void);
+void	pacct_destroy(void);
+int	pacct_add(const struct cmdinfo *);
+int	pacct_update(void);
+void	pacct_print(void);
 
 /* external functions in usrdb.c */
-int	usracct_init	__P((void));
-void	usracct_destroy	__P((void));
-int	usracct_add	__P((const struct cmdinfo *));
-int	usracct_update	__P((void));
-void	usracct_print	__P((void));
+int	usracct_init(void);
+void	usracct_destroy(void);
+int	usracct_add(const struct cmdinfo *);
+int	usracct_update(void);
+void	usracct_print(void);
 
 /* variables */
 

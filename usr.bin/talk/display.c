@@ -1,3 +1,4 @@
+/*	$OpenBSD: display.c,v 1.17 2013/11/28 18:24:55 deraadt Exp $	*/
 /*	$NetBSD: display.c,v 1.3 1994/12/09 02:14:13 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,31 +30,28 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)display.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: display.c,v 1.3 1994/12/09 02:14:13 jtc Exp $";
-#endif /* not lint */
-
 /*
  * The window 'manager', initializes curses and handles the actual
  * displaying of text
  */
+#include <ctype.h>
+
 #include "talk.h"
 
 xwin_t	my_win;
 xwin_t	his_win;
 WINDOW	*line_win;
 
-int	curses_initialized = 0;
+int	curses_initialized;
+int	high_print;
+bool	smooth_scroll;
 
 /*
  * max HAS to be a function, it is called with
- * a argument of the form --foo at least once.
+ * an argument of the form --foo at least once.
  */
-max(a,b)
-	int a, b;
+int
+max(int a, int b)
 {
 
 	return (a > b ? a : b);
@@ -67,15 +61,19 @@ max(a,b)
  * Display some text on somebody's window, processing some control
  * characters while we are at it.
  */
-display(win, text, size)
-	register xwin_t *win;
-	register char *text;
-	int size;
+void
+display(xwin_t *win, char *text, int size)
 {
-	register int i;
+	int i;
 	char cch;
 
 	for (i = 0; i < size; i++) {
+		/*
+		 * Since we do not use curses's input routines we must
+		 * convert '\r' -> '\n' ourselves.
+		 */
+		if (*text == '\r')
+			*text = '\n';
 		if (*text == '\n') {
 			xscroll(win, 0);
 			text++;
@@ -139,7 +137,9 @@ display(win, text, size)
 			/* check for wraparound */
 			xscroll(win, 0);
 		}
-		if (*text < ' ' && *text != '\t') {
+		if (*text != '\t' &&
+		    ((!high_print && !isprint((unsigned char)*text)) ||
+		      iscntrl((unsigned char)*text))) {
 			waddch(win->x_win, '^');
 			getyx(win->x_win, win->x_line, win->x_col);
 			if (win->x_col == COLS-1) /* check for wraparound */
@@ -147,7 +147,7 @@ display(win, text, size)
 			cch = (*text & 63) + 64;
 			waddch(win->x_win, cch);
 		} else
-			waddch(win->x_win, *text);
+			waddch(win->x_win, (unsigned char)(*text));
 		getyx(win->x_win, win->x_line, win->x_col);
 		text++;
 	}
@@ -157,11 +157,11 @@ display(win, text, size)
 /*
  * Read the character at the indicated position in win
  */
-readwin(win, line, col)
-	WINDOW *win;
+int
+readwin(WINDOW *win, int line, int col)
 {
 	int oldline, oldcol;
-	register int c;
+	int c;
 
 	getyx(win, oldline, oldcol);
 	wmove(win, line, col);
@@ -174,9 +174,8 @@ readwin(win, line, col)
  * Scroll a window, blanking out the line following the current line
  * so that the current position is obvious
  */
-xscroll(win, flag)
-	register xwin_t *win;
-	int flag;
+void
+xscroll(xwin_t *win, int flag)
 {
 
 	if (flag == -1) {
@@ -185,11 +184,19 @@ xscroll(win, flag)
 		win->x_col = 0;
 		return;
 	}
-	win->x_line = (win->x_line + 1) % win->x_nlines;
 	win->x_col = 0;
-	wmove(win->x_win, win->x_line, win->x_col);
-	wclrtoeol(win->x_win);
-	wmove(win->x_win, (win->x_line + 1) % win->x_nlines, win->x_col);
-	wclrtoeol(win->x_win);
+	if (smooth_scroll) {
+		if (++win->x_line == win->x_nlines) {
+			--win->x_line;
+			scroll(win->x_win);
+		}
+	} else {
+		win->x_line = (win->x_line + 1) % win->x_nlines;
+		wmove(win->x_win, win->x_line, win->x_col);
+		wclrtoeol(win->x_win);
+		wmove(win->x_win, (win->x_line + 1) % win->x_nlines,
+		    win->x_col);
+		wclrtoeol(win->x_win);
+	}
 	wmove(win->x_win, win->x_line, win->x_col);
 }

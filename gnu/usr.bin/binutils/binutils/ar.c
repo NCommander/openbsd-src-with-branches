@@ -367,6 +367,8 @@ main (int argc, char **argv)
   program_name = argv[0];
   xmalloc_set_program_name (program_name);
 
+  expandargv (&argc, &argv);
+
   if (is_ranlib < 0)
     {
       char *temp;
@@ -1068,7 +1070,7 @@ write_archive (bfd *iarch)
 
   old_name = xmalloc (strlen (bfd_get_filename (iarch)) + 1);
   strcpy (old_name, bfd_get_filename (iarch));
-  new_name = make_tempname (old_name);
+  new_name = make_tempname (old_name, 0);
 
   output_filename = new_name;
 

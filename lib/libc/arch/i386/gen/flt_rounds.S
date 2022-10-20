@@ -1,11 +1,12 @@
+/* $OpenBSD: flt_rounds.S,v 1.6 2017/08/19 18:23:00 deraadt Exp $ */
 /*
  * Written by J.T. Conklin, Apr 4, 1995
  * Public domain.
  */
 
-#include <machine/asm.h>
+#include "DEFS.h"
 
-	.text
+	.section .rodata
 	.align 2
 _map:
 	.byte 1		/* round to nearest */
@@ -19,7 +20,7 @@ ENTRY(__flt_rounds)
 	movl (%esp),%eax
 	shrl $10,%eax
 	andl $3,%eax
-#ifdef PIC
+#ifdef __PIC__
 	PIC_PROLOGUE
 	leal PIC_GOTOFF(_map),%ecx
 	PIC_EPILOGUE
@@ -29,3 +30,4 @@ ENTRY(__flt_rounds)
 #endif
 	addl $4,%esp
 	ret
+END_STRONG(__flt_rounds);

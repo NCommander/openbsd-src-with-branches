@@ -37,9 +37,7 @@
 
 #include "rldefs.h"
 
-#if defined (GWINSZ_IN_SYS_IOCTL)
 #  include <sys/ioctl.h>
-#endif /* GWINSZ_IN_SYS_IOCTL */
 
 #include "rltty.h"
 #include "readline.h"
@@ -123,7 +121,7 @@ release_sigint ()
 
 /* **************************************************************** */
 /*								    */
-/*		      Saving and Restoring the TTY	    	    */
+/*		      Saving and Restoring the TTY		    */
 /*								    */
 /* **************************************************************** */
 
@@ -544,7 +542,7 @@ set_tty_settings (tty, tiop)
 {
   if (_set_tty_settings (tty, tiop) < 0)
     return -1;
-    
+
 #if 0
 
 #if defined (TERMIOS_TTY_DRIVER)
@@ -705,7 +703,7 @@ rl_deprep_terminal ()
 
 /* **************************************************************** */
 /*								    */
-/*			Bogus Flow Control      		    */
+/*			Bogus Flow Control			    */
 /*								    */
 /* **************************************************************** */
 
