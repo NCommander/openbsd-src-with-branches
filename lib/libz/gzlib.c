@@ -1,4 +1,4 @@
-/*	$OpenBSD: gzlib.c,v 1.1 2021/07/04 14:24:49 tb Exp $ */
+/*	$OpenBSD: gzlib.c,v 1.2 2022/05/08 14:04:22 tb Exp $ */
 /* gzlib.c -- zlib functions common to reading and writing gzip files
  * Copyright (C) 2004-2019 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -31,7 +31,7 @@ local gzFile gz_open OF((const void *, int, const char *));
 
    The gz_strwinerror function does not change the current setting of
    GetLastError. */
-char ZLIB_INTERNAL *gz_strwinerror (error)
+char ZLIB_INTERNAL *gz_strwinerror(error)
      DWORD error;
 {
     static char buf[1024];
