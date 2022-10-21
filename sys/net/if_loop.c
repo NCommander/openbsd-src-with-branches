@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_loop.c,v 1.91 2020/07/22 02:16:01 dlg Exp $	*/
+/*	$OpenBSD: if_loop.c,v 1.92 2022/09/08 10:22:06 kn Exp $	*/
 /*	$NetBSD: if_loop.c,v 1.15 1996/05/07 02:40:33 thorpej Exp $	*/
 
 /*
@@ -204,16 +204,16 @@ loop_clone_destroy(struct ifnet *ifp)
 			return (EPERM);
 
 		/* if there is any other interface in this rdomain, deny */
-		NET_LOCK();
+		NET_LOCK_SHARED();
 		TAILQ_FOREACH(p, &ifnetlist, if_list) {
 			if (p->if_rdomain != ifp->if_rdomain)
 				continue;
 			if (p->if_index == ifp->if_index)
 				continue;
-			NET_UNLOCK();
+			NET_UNLOCK_SHARED();
 			return (EBUSY);
 		}
-		NET_UNLOCK();
+		NET_UNLOCK_SHARED();
 
 		rdomain = ifp->if_rdomain;
 	}
