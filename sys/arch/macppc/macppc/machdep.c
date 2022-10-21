@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.195 2021/12/07 17:50:44 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.196 2022/05/19 05:43:48 miod Exp $	*/
 /*	$NetBSD: machdep.c,v 1.4 1996/10/16 19:33:11 ws Exp $	*/
 
 /*
@@ -346,7 +346,7 @@ install_extint(void (*handler)(void))
 	extint_call = (extint_call & 0xfc000003) | offset;
 	bcopy(&extint, (void *)EXC_EXI, (size_t)&extsize);
 	syncicache((void *)&extint_call, sizeof extint_call);
-	syncicache((void *)EXC_EXI, (int)&extsize);
+	syncicache((void *)EXC_EXI, (size_t)&extsize);
 	ppc_mtmsr(omsr);
 }
 

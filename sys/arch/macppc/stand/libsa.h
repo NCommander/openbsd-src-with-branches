@@ -1,4 +1,4 @@
-/*      $OpenBSD: libsa.h,v 1.1 2007/06/13 02:17:32 drahn Exp $      */
+/*      $OpenBSD: libsa.h,v 1.2 2019/09/02 23:40:29 kettenis Exp $      */
 
 /*
  * Copyright (c) 2006 Mark Kettenis
@@ -21,6 +21,8 @@
 #define DEFAULT_KERNEL_ADDRESS  0
 
 void freeall(void);
+
+void syncicache(void *, size_t);
 
 void machdep(void);
 void devboot(dev_t, char *);
