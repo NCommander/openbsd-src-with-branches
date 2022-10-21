@@ -1,4 +1,4 @@
-/*	$OpenBSD: adb.h,v 1.4 2011/06/15 21:32:05 miod Exp $	*/
+/*	$OpenBSD: adb.h,v 1.5 2011/06/16 10:44:33 mpi Exp $	*/
 /*	$NetBSD: adbsys.h,v 1.4 2000/12/19 02:59:24 tsubai Exp $	*/
 
 /*-
@@ -139,6 +139,8 @@ typedef struct {
 } ADBDataBlock;
 
 int	adbprint(void *, const char *);
+void	adb_lid_closed_intr(void);
+void	adb_power_button_intr(void);
 int	adb_op_sync(Ptr, short);
 int	set_adb_info(ADBSetInfoBlock *, int);
 
