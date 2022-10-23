@@ -1,4 +1,3 @@
-/*	$OpenBSD: gzwrite.c,v 1.2 2022/05/08 14:04:22 tb Exp $ */
 /* gzwrite.c -- zlib functions for writing gzip files
  * Copyright (C) 2004-2019 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
