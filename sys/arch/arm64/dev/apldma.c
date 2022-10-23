@@ -1,4 +1,4 @@
-/*	$OpenBSD: apldma.c,v 1.2 2022/07/27 20:18:46 kettenis Exp $	*/
+/*	$OpenBSD: apldma.c,v 1.3 2022/10/12 11:29:53 jsg Exp $	*/
 /*
  * Copyright (c) 2022 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -259,7 +259,7 @@ apldma_alloc_channel(unsigned int chan)
 	struct apldma_softc *sc = apldma_sc;
 	struct apldma_channel *ac;
 
-	if (chan >= sc->sc_nchannels)
+	if (sc == NULL || chan >= sc->sc_nchannels)
 		return NULL;
 
 	/* We only support Tx channels for now. */
