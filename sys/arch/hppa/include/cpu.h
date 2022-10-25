@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.94 2021/06/02 00:39:26 cheloha Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.95 2021/07/06 09:34:06 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -238,7 +238,7 @@ int	spcopy32(pa_space_t ssp, const uint32_t *src,
 int	spstrcpy(pa_space_t ssp, const void *src,
 		      pa_space_t dsp, void *dst, size_t size, size_t *rsize);
 int	copy_on_fault(void);
-void	switch_trampoline(void);
+void	proc_trampoline(void);
 int	cpu_dumpsize(void);
 int	cpu_dump(void);
 
