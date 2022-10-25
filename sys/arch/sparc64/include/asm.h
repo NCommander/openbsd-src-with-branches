@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.14 2022/01/01 23:47:14 guenther Exp $	*/
+/*	$OpenBSD: asm.h,v 1.15 2022/08/30 16:26:29 miod Exp $	*/
 /*	$NetBSD: asm.h,v 1.15 2000/08/02 22:24:39 eeh Exp $ */
 
 /*
@@ -41,7 +41,7 @@
 #ifndef _MACHINE_ASM_H_
 #define _MACHINE_ASM_H_
 
-/* Pull in CCFSZ, CC64FSZ, and BIAS from frame.h */
+/* Pull in CC64FSZ and BIAS from frame.h */
 #ifndef _LOCORE
 #define _LOCORE
 #endif
