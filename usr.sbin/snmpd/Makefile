@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.20 2022/08/23 08:56:20 martijn Exp $
+#	$OpenBSD: Makefile,v 1.21 2022/10/06 14:41:08 martijn Exp $
 
 PROG=		snmpd
 MAN=		snmpd.8 snmpd.conf.5
@@ -8,8 +8,8 @@ SRCS=		parse.y log.c snmpe.c application.c application_legacy.c \
 		    mps.c trap.c mib.c smi.c snmpd.c \
 		    proc.c usm.c traphandler.c util.c
 
-LDADD=		-levent -lutil -lkvm -lcrypto
-DPADD=		${LIBEVENT} ${LIBUTIL}
+LDADD=		-levent -lutil -lcrypto
+DPADD=		${LIBEVENT} ${LIBUTIL} ${LIBCRYPTO}
 CFLAGS+=	-Wall -I${.CURDIR}
 CFLAGS+=	-Wstrict-prototypes -Wmissing-prototypes
 CFLAGS+=	-Wmissing-declarations
