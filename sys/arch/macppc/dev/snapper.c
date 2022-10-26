@@ -1,4 +1,4 @@
-/*	$OpenBSD: snapper.c,v 1.42 2022/03/21 19:22:39 miod Exp $	*/
+/*	$OpenBSD: snapper.c,v 1.43 2022/10/19 19:14:16 kn Exp $	*/
 /*	$NetBSD: snapper.c,v 1.1 2003/12/27 02:19:34 grant Exp $	*/
 
 /*-
@@ -89,7 +89,6 @@ const struct audio_hw_if snapper_hw_if = {
 	.query_devinfo = i2s_query_devinfo,
 	.allocm = i2s_allocm,
 	.round_buffersize = i2s_round_buffersize,
-	.get_props = i2s_get_props,
 	.trigger_output = i2s_trigger_output,
 	.trigger_input = i2s_trigger_input,
 };
