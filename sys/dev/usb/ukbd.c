@@ -1,4 +1,4 @@
-/*	$OpenBSD: ukbd.c,v 1.86 2022/01/09 05:43:00 jsg Exp $	*/
+/*	$OpenBSD: ukbd.c,v 1.87 2022/09/16 16:30:10 robert Exp $	*/
 /*      $NetBSD: ukbd.c,v 1.85 2003/03/11 16:44:00 augustss Exp $        */
 
 /*
@@ -131,7 +131,6 @@ struct ukbd_softc {
 
 	struct hidkbd		sc_kbd;
 	int			sc_spl;
-	struct hid_location	sc_apple_fn;
 
 #ifdef DDB
 	struct timeout		sc_ddb;	/* for entering DDB */
@@ -242,7 +241,7 @@ ukbd_attach(struct device *parent, struct device *self, void *aux)
 
 	if (uha->uaa->vendor == USB_VENDOR_APPLE) {
 		if (hid_locate(desc, dlen, HID_USAGE2(HUP_APPLE, HUG_FN_KEY),
-		    uha->reportid, hid_input, &sc->sc_apple_fn, &qflags)) {
+		    uha->reportid, hid_input, &kbd->sc_fn, &qflags)) {
 			if (qflags & HIO_VARIABLE) {
 				switch (uha->uaa->product) {
 				case USB_PRODUCT_APPLE_FOUNTAIN_ISO:
