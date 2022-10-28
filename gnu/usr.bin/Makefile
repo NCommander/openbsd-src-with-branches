@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.62 2020/07/04 21:11:52 kettenis Exp $
+#	$OpenBSD: Makefile,v 1.63 2021/05/03 03:45:40 jsg Exp $
 #	$NetBSD: Makefile,v 1.35 1996/04/03 21:20:52 chuck Exp $
 
 .include <bsd.own.mk>
@@ -17,7 +17,7 @@ SUBDIR+=	clang
 .  endif
 .endif
 
-SUBDIR+=	cxxfilt cvs
+SUBDIR+=	cvs
 # binutils-2.17 needs to build gdb in binutils at the moment
 .if make(obj)
 SUBDIR+=	binutils
