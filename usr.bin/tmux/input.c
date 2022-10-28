@@ -1,4 +1,4 @@
-/* $OpenBSD: input.c,v 1.209 2022/09/12 12:02:17 nicm Exp $ */
+/* $OpenBSD: input.c,v 1.210 2022/10/28 12:20:28 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1755,7 +1755,6 @@ static void
 input_csi_dispatch_sm_private(struct input_ctx *ictx)
 {
 	struct screen_write_ctx	*sctx = &ictx->ctx;
-	struct window_pane	*wp = ictx->wp;
 	struct grid_cell	*gc = &ictx->cell.cell;
 	u_int			 i;
 
