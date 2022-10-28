@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbdspvar.h,v 1.16 2002/03/14 03:16:05 millert Exp $	*/
+/*	$OpenBSD: sbdspvar.h,v 1.18 2016/09/14 06:12:19 ratchov Exp $	*/
 /*	$NetBSD: sbdspvar.h,v 1.37 1998/08/10 00:20:39 mycroft Exp $	*/
 
 /*
@@ -242,8 +242,6 @@ int	sbdsp_mixer_query_devinfo(void *, mixer_devinfo_t *);
 void	*sb_malloc(void *, int, size_t, int, int);
 void	sb_free(void *, void *, int);
 size_t sb_round(void *, int, size_t);
-
-int	sbdsp_get_props(void *);
 
 
 int	sbdsp_midi_open(void *, int,
