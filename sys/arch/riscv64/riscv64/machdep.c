@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.27 2022/03/22 06:48:36 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.28 2022/10/03 19:32:22 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
@@ -407,7 +407,7 @@ doreset:
 
 void
 setregs(struct proc *p, struct exec_package *pack, u_long stack,
-    register_t *retval)
+    struct ps_strings *arginfo)
 {
 	struct trapframe *tf = p->p_addr->u_pcb.pcb_tf;
 	struct pcb *pcb = &p->p_addr->u_pcb;
@@ -417,12 +417,10 @@ setregs(struct proc *p, struct exec_package *pack, u_long stack,
 	tf->tf_sstatus &= ~SSTATUS_FS_MASK;
 	tf->tf_sstatus |= SSTATUS_FS_OFF;
 
-	memset(tf, 0, sizeof(*tf));
+	memset(tf, 0, sizeof *tf);
 	tf->tf_sp = STACKALIGN(stack);
 	tf->tf_ra = pack->ep_entry;
 	tf->tf_sepc = pack->ep_entry;
-
-	retval[1] = 0;
 }
 
 void
