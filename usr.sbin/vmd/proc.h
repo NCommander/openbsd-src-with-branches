@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.20 2021/06/16 16:55:02 dv Exp $	*/
+/*	$OpenBSD: proc.h,v 1.21 2022/09/13 10:28:19 martijn Exp $	*/
 
 /*
  * Copyright (c) 2010-2015 Reyk Floeter <reyk@openbsd.org>
@@ -89,7 +89,6 @@ extern enum privsep_procid privsep_process;
 #define CONFIG_RELOAD		0x00
 #define CONFIG_VMS		0x01
 #define CONFIG_SWITCHES		0x02
-#define CONFIG_USERS		0x04
 #define CONFIG_ALL		0xff
 
 struct privsep_pipes {
