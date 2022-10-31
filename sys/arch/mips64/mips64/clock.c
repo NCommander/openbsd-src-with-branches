@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.45 2022/04/06 18:59:26 naddy Exp $ */
+/*	$OpenBSD: clock.c,v 1.46 2022/08/22 00:35:06 cheloha Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -102,6 +102,7 @@ cp0_int5(uint32_t mask, struct trapframe *tf)
 {
 	u_int32_t clkdiff, pendingticks = 0;
 	struct cpu_info *ci = curcpu();
+	int s;
 
 	/*
 	 * If we got an interrupt before we got ready to process it,
@@ -152,6 +153,7 @@ cp0_int5(uint32_t mask, struct trapframe *tf)
 	/*
 	 * Process clock interrupt.
 	 */
+	s = splclock();
 #ifdef MULTIPROCESSOR
 	register_t sr;
 
@@ -166,6 +168,7 @@ cp0_int5(uint32_t mask, struct trapframe *tf)
 #ifdef MULTIPROCESSOR
 	setsr(sr);
 #endif
+	ci->ci_ipl = s;
 
 	return CR_INT_5;	/* Clock is always on 5 */
 }
