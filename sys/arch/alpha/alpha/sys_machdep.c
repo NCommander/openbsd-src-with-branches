@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_machdep.c,v 1.6 2002/04/28 20:55:14 pvalchev Exp $	*/
+/*	$OpenBSD: sys_machdep.c,v 1.7 2008/06/26 05:42:08 ray Exp $	*/
 /*	$NetBSD: sys_machdep.c,v 1.14 2002/01/14 00:53:16 thorpej Exp $	*/
 
 /*-
@@ -143,7 +143,8 @@ sys_sysarch(struct proc *p, void *v, register_t *retval)
 	return (error);
 }
 #else
-int sys_sysarch(struct proc *p, void *v, register_t *retval)
+int
+sys_sysarch(struct proc *p, void *v, register_t *retval)
 {
 	return (ENOSYS);
 }
