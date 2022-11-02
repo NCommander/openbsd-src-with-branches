@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.157 2022/07/20 05:56:34 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.158 2022/08/12 17:19:52 miod Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -641,7 +641,6 @@ child_return(void *arg)
 	 * Set up return value registers as libc:fork() expects
 	 */
 	tf->tf_ret0 = 0;
-	tf->tf_ret1 = 1;	/* ischild */
 	tf->tf_t1 = 0;		/* errno */
 
 	KERNEL_UNLOCK();
