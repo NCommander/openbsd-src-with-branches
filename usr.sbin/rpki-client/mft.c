@@ -168,6 +168,8 @@ rtype_from_file_extension(const char *fn)
 		return RTYPE_RSC;
 	if (strcasecmp(fn + sz - 4, ".asa") == 0)
 		return RTYPE_ASPA;
+	if (strcasecmp(fn + sz - 4, ".tak") == 0)
+		return RTYPE_TAK;
 
 	return RTYPE_INVALID;
 }
@@ -208,6 +210,7 @@ rtype_from_mftfile(const char *fn)
 	case RTYPE_GBR:
 	case RTYPE_ROA:
 	case RTYPE_ASPA:
+	case RTYPE_TAK:
 		return type;
 	default:
 		return RTYPE_INVALID;
