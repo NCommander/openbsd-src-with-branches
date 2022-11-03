@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnd.c,v 1.223 2022/02/06 17:24:58 rob Exp $	*/
+/*	$OpenBSD: rnd.c,v 1.224 2022/10/13 08:38:53 tb Exp $	*/
 
 /*
  * Copyright (c) 2011,2020 Theo de Raadt.
@@ -825,6 +825,6 @@ sys_getentropy(struct proc *p, void *v, register_t *retval)
 	if ((error = copyout(buf, SCARG(uap, buf), SCARG(uap, nbyte))) != 0)
 		return (error);
 	explicit_bzero(buf, sizeof(buf));
-	retval[0] = 0;
+	*retval = 0;
 	return (0);
 }
