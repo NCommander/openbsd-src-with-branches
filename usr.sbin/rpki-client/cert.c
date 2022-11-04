@@ -1,4 +1,4 @@
-/*	$OpenBSD: cert.c,v 1.93 2022/11/04 09:45:19 job Exp $ */
+/*	$OpenBSD: cert.c,v 1.94 2022/11/04 10:09:09 job Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2021 Job Snijders <job@openbsd.org>
@@ -481,7 +481,7 @@ sbgp_sia(struct parse *p, X509_EXTENSION *ext)
 		    "characters", p->fn);
 		goto out;
 	}
-	
+
 	if (strstr(p->res->mft, p->res->repo) != p->res->mft) {
 		warnx("%s: RFC 6487 section 4.8.8: SIA: "
 		    "conflicting URIs for caRepository and rpkiManifest",
