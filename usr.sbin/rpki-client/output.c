@@ -1,4 +1,4 @@
-/*	$OpenBSD: output.c,v 1.26 2022/04/20 15:29:24 tb Exp $ */
+/*	$OpenBSD: output.c,v 1.27 2022/08/30 18:56:49 job Exp $ */
 /*
  * Copyright (c) 2019 Theo de Raadt <deraadt@openbsd.org>
  *
@@ -73,7 +73,7 @@ static const struct outputs {
 	{ FORMAT_BIRD, "bird", output_bird2 },
 	{ FORMAT_CSV, "csv", output_csv },
 	{ FORMAT_JSON, "json", output_json },
-	{ 0, NULL }
+	{ 0, NULL, NULL }
 };
 
 static FILE	*output_createtmp(char *);
