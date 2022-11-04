@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.90 2021/12/09 00:26:11 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.91 2022/11/02 07:20:07 guenther Exp $	*/
 /*	$NetBSD: trap.c,v 1.2 2003/05/04 23:51:56 fvdl Exp $	*/
 
 /*-
@@ -228,7 +228,8 @@ kpageflttrap(struct trapframe *frame, uint64_t cr2)
 	pcb = &p->p_addr->u_pcb;
 
 	/* This will only trigger if SMEP is enabled */
-	if (cr2 <= VM_MAXUSER_ADDRESS && frame->tf_err & PGEX_I) {
+	if (pcb->pcb_onfault == NULL && cr2 <= VM_MAXUSER_ADDRESS &&
+	    frame->tf_err & PGEX_I) {
 		KERNEL_LOCK();
 		fault("attempt to execute user address %p "
 		    "in supervisor mode", (void *)cr2);
