@@ -1,4 +1,4 @@
-/*	$OpenBSD: efiboot.c,v 1.41 2022/04/06 21:27:03 kettenis Exp $	*/
+/*	$OpenBSD: efiboot.c,v 1.42 2022/06/28 19:55:22 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -1122,6 +1122,7 @@ Xdtb_efi(void)
 	}
 
 	fdt = (void *)addr;
+	fdt_init(fdt);
 	return (0);
 }
 
