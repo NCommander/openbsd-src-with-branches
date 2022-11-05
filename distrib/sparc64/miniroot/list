@@ -1,4 +1,4 @@
-#	$OpenBSD: list,v 1.9 2021/07/16 15:24:09 florian Exp $
+#	$OpenBSD: list,v 1.10 2021/07/18 15:18:49 deraadt Exp $
 
 SRCDIRS distrib/special
 
@@ -38,6 +38,7 @@ LINK	instbin					sbin/mount
 LINK	instbin					sbin/mount_cd9660
 LINK	instbin					sbin/mount_ffs
 LINK	instbin					sbin/mount_msdos
+LINK	instbin					sbin/mount_nfs
 LINK	instbin					sbin/newfs
 LINK	instbin					sbin/ping sbin/ping6
 LINK	instbin					sbin/reboot sbin/halt
