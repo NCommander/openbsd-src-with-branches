@@ -1,4 +1,4 @@
-/* $OpenBSD: subr_suspend.c,v 1.11 2022/08/14 01:58:28 jsg Exp $ */
+/* $OpenBSD: subr_suspend.c,v 1.12 2022/09/03 18:05:10 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -19,6 +19,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/buf.h>
+#include <sys/clockintr.h>
 #include <sys/reboot.h>
 #include <sys/sensors.h>
 #include <sys/sysctl.h>
@@ -161,6 +162,10 @@ fail_suspend:
 	splx(s);
 
 	inittodr(gettime());
+#ifdef __HAVE_CLOCKINTR
+	clockintr_cpu_init(NULL);
+	clockintr_trigger();
+#endif
 	sleep_resume(v);
 	resume_randomness(rndbuf, rndbuflen);
 #ifdef MULTIPROCESSOR
