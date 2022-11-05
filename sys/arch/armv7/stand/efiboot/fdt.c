@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdt.c,v 1.5 2021/03/11 11:16:56 jsg Exp $	*/
+/*	$OpenBSD: fdt.c,v 1.8 2022/03/14 19:09:32 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2009 Dariusz Swiderski <sfires@sfires.net>
@@ -493,6 +493,9 @@ fdt_find_node(char *name)
 				break;
 			}
 		}
+
+		if (child == NULL)
+			return NULL; /* No match found. */
 
 		p = q;
 	}
