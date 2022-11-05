@@ -1,4 +1,4 @@
-/*	$Id: test-rsc.c,v 1.3 2022/08/26 06:28:41 tb Exp $ */
+/*	$Id: test-rsc.c,v 1.4 2022/08/26 06:32:03 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -35,6 +35,7 @@
 
 int outformats;
 int verbose;
+int filemode;
 
 int
 main(int argc, char *argv[])
