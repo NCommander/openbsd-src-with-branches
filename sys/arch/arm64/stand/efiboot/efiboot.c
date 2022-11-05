@@ -604,10 +604,15 @@ efi_makebootargs(char *bootargs, int howto)
 	if (!fdt_init(fdt))
 		return NULL;
 
+	/* Create common nodes which might not exist when using mach dtb */
+	node = fdt_find_node("/aliases");
+	if (node == NULL)
+		fdt_node_add_node(fdt_find_node("/"), "aliases", &node);
 	node = fdt_find_node("/chosen");
-	if (!node)
-		return NULL;
+	if (node == NULL)
+		fdt_node_add_node(fdt_find_node("/"), "chosen", &node);
 
+	node = fdt_find_node("/chosen");
 	len = strlen(bootargs) + 1;
 	fdt_node_add_property(node, "bootargs", bootargs, len);
 	fdt_node_add_property(node, "openbsd,boothowto",
