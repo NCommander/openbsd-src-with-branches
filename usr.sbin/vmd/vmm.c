@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.104 2022/03/01 21:46:19 dv Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.105 2022/04/10 19:36:58 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -89,7 +89,7 @@ vmm_run(struct privsep *ps, struct privsep_proc *p, void *arg)
 	 * stdio - for malloc and basic I/O including events.
 	 * vmm - for the vmm ioctls and operations.
 	 * proc - for forking and maitaining vms.
-	 * send - for sending send/recv fds to vm proc.
+	 * sendfd - for sending send/recv fds to vm proc.
 	 * recvfd - for disks, interfaces and other fds.
 	 */
 	if (pledge("stdio vmm sendfd recvfd proc", NULL) == -1)
