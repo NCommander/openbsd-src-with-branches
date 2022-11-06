@@ -1,4 +1,4 @@
-/* $OpenBSD: support.S,v 1.8 2018/09/07 01:32:01 mortimer Exp $ */
+/* $OpenBSD: support.S,v 1.9 2019/03/15 05:42:38 kevlo Exp $ */
 /*-
  * Copyright (c) 2014 Andrew Turner
  * Copyright (c) 2014-2015 The FreeBSD Foundation
@@ -36,8 +36,9 @@
 #include <machine/vmparam.h>
 
 #include "assym.h"
+#include "efi.h"
 
-#ifdef DDB
+#if defined(DDB) || NEFI > 0
 ENTRY(setjmp)
 	RETGUARD_SETUP(setjmp, x15)
 	/* Store the stack pointer */
