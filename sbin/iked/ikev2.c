@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2.c,v 1.354 2022/10/10 11:33:55 tobhe Exp $	*/
+/*	$OpenBSD: ikev2.c,v 1.355 2022/10/24 15:52:39 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -6921,8 +6921,8 @@ ikev2_print_id(struct iked_id *id, char *idstr, size_t idstrlen)
 	    strlcat(idstr, "/", idstrlen) >= idstrlen)
 		return (-1);
 
-	idstr += strlen(idstr);
 	idstrlen -= strlen(idstr);
+	idstr += strlen(idstr);
 
 	switch (id->id_type) {
 	case IKEV2_ID_IPV4:
