@@ -1,4 +1,4 @@
-/*	$OpenBSD: loongson_installboot.c,v 1.8 2022/09/27 11:48:57 kn Exp $	*/
+/*	$OpenBSD: loongson_installboot.c,v 1.9 2022/10/19 19:08:25 kn Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -105,7 +105,7 @@ write_filesystem(struct disklabel *dl, char part)
 	struct ufs_args args;
 	char cmd[60];
 	char dst[PATH_MAX];
-	size_t mntlen, pathlen;
+	size_t mntlen;
 	int rslt;
 
 	/* Create directory for temporary mount point. */
@@ -179,7 +179,6 @@ write_filesystem(struct disklabel *dl, char part)
 	/*
 	 * Copy /usr/mdec/boot to /boot/boot.
 	 */
-	pathlen = strlen(dst);
 	if (strlcat(dst, "/boot", sizeof(dst)) >= sizeof(dst)) {
 		rslt = -1;
 		warn("unable to build /boot path");
