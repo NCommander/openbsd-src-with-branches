@@ -209,7 +209,6 @@ struct pf_pdesc {
 	} hdr;
 };
 
-extern struct timeout	pf_purge_states_to;
 extern struct task	pf_purge_task;
 extern struct timeout	pf_purge_to;
 
@@ -263,6 +262,8 @@ extern struct rwlock	pf_state_lock;
 			    rw_status(&pf_state_lock), __func__);\
 	} while (0)
 
+extern void			 pf_purge_timeout(void *);
+extern void			 pf_purge(void *);
 #endif /* _KERNEL */
 
 #endif /* _NET_PFVAR_PRIV_H_ */
