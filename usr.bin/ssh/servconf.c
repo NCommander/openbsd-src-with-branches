@@ -1,5 +1,5 @@
 
-/* $OpenBSD: servconf.c,v 1.385 2022/06/03 04:30:47 djm Exp $ */
+/* $OpenBSD: servconf.c,v 1.386 2022/09/17 10:34:29 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
@@ -1861,6 +1861,10 @@ process_server_config_line_depth(ServerOptions *options, char *line,
 			    filename, linenum, keyword);
 		else
 			options->max_startups = options->max_startups_begin;
+		if (options->max_startups <= 0 ||
+		    options->max_startups_begin <= 0)
+			fatal("%s line %d: Invalid %s spec.",
+			    filename, linenum, keyword);
 		break;
 
 	case sPerSourceNetBlockSize:
