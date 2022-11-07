@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfkey.c,v 1.11 2017/04/18 02:29:56 deraadt Exp $ */
+/*	$OpenBSD: pfkey.c,v 1.12 2019/01/23 02:02:04 dlg Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -253,7 +253,7 @@ pfkey_read(int sd, struct sadb_msg *h)
 
 	if (recv(sd, &hdr, sizeof(hdr), MSG_PEEK) != sizeof(hdr)) {
 		if (errno == EAGAIN || errno == EINTR)
-			return (0);
+			return (1);
 		log_warn("pfkey peek");
 		return (-1);
 	}
@@ -269,7 +269,7 @@ pfkey_read(int sd, struct sadb_msg *h)
 	/* not ours, discard */
 	if (read(sd, &hdr, sizeof(hdr)) == -1) {
 		if (errno == EAGAIN || errno == EINTR)
-			return (0);
+			return (1);
 		log_warn("pfkey read");
 		return (-1);
 	}
