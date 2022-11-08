@@ -1,3 +1,4 @@
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2022, Google Inc.
  * Copyright (c) 2022, Bob Beck <beck@obtuse.com>
