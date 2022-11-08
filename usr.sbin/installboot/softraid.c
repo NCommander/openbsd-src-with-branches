@@ -1,4 +1,4 @@
-/*	$OpenBSD: softraid.c,v 1.6 2022/11/07 15:56:09 kn Exp $	*/
+/*	$OpenBSD: softraid.c,v 1.7 2022/11/08 12:08:53 kn Exp $	*/
 /*
  * Copyright (c) 2012 Joel Sing <jsing@openbsd.org>
  *
@@ -161,17 +161,14 @@ sr_open_chunk(int devfd, int vol, int disk, struct bioc_disk *bd,
 	if (ioctl(devfd, BIOCDISK, bd) == -1)
 		err(1, "BIOCDISK");
 
+	/* Keydisks always have a size of zero. */
+	if (bd->bd_size == 0)
+		return -1;
+
 	/* Check disk status. */
 	if (bd->bd_status != BIOC_SDONLINE &&
 	    bd->bd_status != BIOC_SDREBUILD) {
 		fprintf(stderr, "softraid chunk %u not online - skipping...\n",
-		    disk);
-		return -1;
-	}
-
-	/* Keydisks always have a size of zero. */
-	if (bd->bd_size == 0) {
-		fprintf(stderr, "softraid chunk %u is keydisk - skipping...\n",
 		    disk);
 		return -1;
 	}
