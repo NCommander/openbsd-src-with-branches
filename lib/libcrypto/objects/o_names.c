@@ -1,4 +1,4 @@
-/* $OpenBSD: o_names.c,v 1.21 2015/07/18 21:21:28 beck Exp $ */
+/* $OpenBSD: o_names.c,v 1.22 2017/01/29 17:49:23 beck Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -197,6 +197,7 @@ OBJ_NAME_add(const char *name, int type, const char *data)
 		free(ret);
 	} else {
 		if (lh_OBJ_NAME_error(names_lh)) {
+			free(onp);
 			/* ERROR */
 			return (0);
 		}
