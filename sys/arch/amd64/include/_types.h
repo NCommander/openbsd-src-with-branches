@@ -1,4 +1,4 @@
-/*	$OpenBSD: _types.h,v 1.16 2015/09/26 16:01:00 guenther Exp $	*/
+/*	$OpenBSD: _types.h,v 1.17 2018/03/05 01:15:25 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -34,6 +34,8 @@
 
 #ifndef _MACHINE__TYPES_H_
 #define _MACHINE__TYPES_H_
+
+#define	__HAVE_CLOCKINTR
 
 /*
  * _ALIGN(p) rounds p (pointer or byte index) up to a correctly-aligned
