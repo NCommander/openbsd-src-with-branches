@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_mpi.c,v 1.7 2014/07/11 08:44:48 jsing Exp $ */
+/* $OpenBSD: bn_mpi.c,v 1.8 2017/01/29 17:49:22 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -92,8 +92,9 @@ BN_bn2mpi(const BIGNUM *a, unsigned char *d)
 }
 
 BIGNUM *
-BN_mpi2bn(const unsigned char *d, int n, BIGNUM *a)
+BN_mpi2bn(const unsigned char *d, int n, BIGNUM *ain)
 {
+	BIGNUM *a = ain;
 	long len;
 	int neg = 0;
 
@@ -121,8 +122,11 @@ BN_mpi2bn(const unsigned char *d, int n, BIGNUM *a)
 	d += 4;
 	if ((*d) & 0x80)
 		neg = 1;
-	if (BN_bin2bn(d, (int)len, a) == NULL)
+	if (BN_bin2bn(d, (int)len, a) == NULL) {
+		if (ain == NULL)
+			BN_free(a);
 		return (NULL);
+	}
 	a->neg = neg;
 	if (neg) {
 		BN_clear_bit(a, BN_num_bits(a) - 1);
