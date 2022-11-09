@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfvar.h,v 1.512 2022/11/06 18:05:05 dlg Exp $ */
+/*	$OpenBSD: pfvar.h,v 1.514 2022/11/07 16:35:12 dlg Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -599,8 +599,6 @@ struct pf_rule {
 		u_int8_t		type;
 	}			divert;
 
-	SLIST_ENTRY(pf_rule)	 gcle;
-	struct pf_ruleset	*ruleset;
 	time_t			 exptime;
 };
 
