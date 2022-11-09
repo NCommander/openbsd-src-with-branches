@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh.c,v 1.578 2022/10/13 09:09:28 jsg Exp $ */
+/* $OpenBSD: ssh.c,v 1.579 2022/10/24 22:43:36 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2011,7 +2011,7 @@ ssh_session2_setup(struct ssh *ssh, int id, int success, void *arg)
 	char *proto = NULL, *data = NULL;
 
 	if (!success)
-		return; /* No need for error message, channels code sens one */
+		return; /* No need for error message, channels code sends one */
 
 	display = getenv("DISPLAY");
 	if (display == NULL && options.forward_x11)
