@@ -1,4 +1,4 @@
-/* $OpenBSD: subr_suspend.c,v 1.12 2022/09/03 18:05:10 kettenis Exp $ */
+/* $OpenBSD: subr_suspend.c,v 1.13 2022/11/05 19:29:46 cheloha Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -142,6 +142,9 @@ top:
 		boothowto |= RB_POWERDOWN;
 		config_suspend_all(DVACT_POWERDOWN);
 		boothowto &= ~RB_POWERDOWN;
+
+		if (cpu_setperf != NULL)
+			cpu_setperf(0);
 	}
 
 	error = gosleep(v);
