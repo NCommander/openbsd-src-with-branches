@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.70 2021/03/11 11:17:00 jsg Exp $	*/
+/*	$OpenBSD: clock.c,v 1.71 2021/10/24 17:05:04 mpi Exp $	*/
 /*	$NetBSD: clock.c,v 1.41 2001/07/24 19:29:25 eeh Exp $ */
 
 /*
@@ -603,6 +603,7 @@ cpu_initclocks(void)
 		level0.ih_number = 1;
 		strlcpy(level0.ih_name, "clock", sizeof(level0.ih_name));
 		intr_establish(10, &level0);
+		evcount_percpu(&level0.ih_count);
 
 		/* We only have one timer so we have no statclock */
 		stathz = 0;	
@@ -758,7 +759,7 @@ tickintr(void *cap)
 	while (ci->ci_tick < tick()) {
 		ci->ci_tick += tick_increment;
 		hardclock((struct clockframe *)cap);
-		atomic_add_long((unsigned long *)&level0.ih_count.ec_count, 1);
+		evcount_inc(&level0.ih_count);
 	}
 
 	/* Reset the interrupt. */
@@ -781,7 +782,7 @@ sys_tickintr(void *cap)
 	while (ci->ci_tick < sys_tick()) {
 		ci->ci_tick += tick_increment;
 		hardclock((struct clockframe *)cap);
-		atomic_add_long((unsigned long *)&level0.ih_count.ec_count, 1);
+		evcount_inc(&level0.ih_count);
 	}
 
 	/* Reset the interrupt. */
@@ -804,7 +805,7 @@ stickintr(void *cap)
 	while (ci->ci_tick < stick()) {
 		ci->ci_tick += tick_increment;
 		hardclock((struct clockframe *)cap);
-		atomic_add_long((unsigned long *)&level0.ih_count.ec_count, 1);
+		evcount_inc(&level0.ih_count);
 	}
 
 	/* Reset the interrupt. */
