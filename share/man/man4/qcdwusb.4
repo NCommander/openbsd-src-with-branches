@@ -1,7 +1,6 @@
-.\"	$OpenBSD: qciic.4,v 1.1 2022/09/12 15:49:36 kettenis Exp $
+.\"	$OpenBSD: qcdwusb.4,v 1.2 2022/11/06 13:01:02 jmc Exp $
 .\"
-.\" Copyright (c) 2016 Jonathan Gray <jsg@openbsd.org>
-.\" Copyright (c) 2022 Mark Kettenis <kettenis@openbsd.org>
+.\" Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
 .\"
 .\" Permission to use, copy, modify, and distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -15,32 +14,31 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 12 2022 $
-.Dt QCIIC 4 arm64
+.Dd $Mdocdate: November 6 2022 $
+.Dt QCDWUSB 4
 .Os
 .Sh NAME
-.Nm qciic
-.Nd Qualcomm Snapdragon GENI I2C controller
+.Nm qcdwusb
+.Nd Qualcomm USB 3.0 glue logic
 .Sh SYNOPSIS
-.Cd "qciic* at acpi?"
-.Cd "iic* at qciic?"
+.Cd "qcdwusb* at fdt?"
+.Cd "xhci* at fdt?"
 .Sh DESCRIPTION
 The
 .Nm
-driver supports the GENI I2C controller found on Qualcomm Snapdragon
-SoCs for use with the
-.Xr iic 4
-framework.
+driver controls the interface logic for the Synopsys DesignWare USB
+3.0 controller on Qualcomm SoCs.
 .Sh SEE ALSO
-.Xr acpi 4 ,
-.Xr iic 4
+.Xr intro 4 ,
+.Xr xhci 4
 .Sh HISTORY
 The
 .Nm
 device driver first appeared in
-.Ox 7.2 .
+.Ox 7.3 .
 .Sh AUTHORS
+.An -nosplit
 The
 .Nm
 driver was written by
-.An Mark Kettenis Aq Mt kettenis@openbsd.org .
+.An Patrick Wildt Aq Mt patrick@blueri.se .
