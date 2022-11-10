@@ -1,22 +1,29 @@
-#	$OpenBSD: Makefile,v 1.7 2022/03/30 08:57:26 tb Exp $
+#	$OpenBSD: Makefile,v 1.8 2022/11/09 16:13:39 jsing Exp $
 
-PROGS=	evptest evp_test evp_pkey_check evp_pkey_cleanup
+PROGS=	evptest evp_test evp_ecx_test evp_pkey_check evp_pkey_cleanup
 LDADD=	-lcrypto
 DPADD=	${LIBCRYPTO}
 WARNINGS=	Yes
 CFLAGS+=	-DLIBRESSL_INTERNAL -DLIBRESSL_CRYPTO_INTERNAL -Werror
+CFLAGS+=	-I${.CURDIR}/../../../../lib/libcrypto/curve25519
 CFLAGS+=	-I${.CURDIR}/../../../../lib/libcrypto/evp
 
 REGRESS_TARGETS+=	regress-evptest
 REGRESS_TARGETS+=	regress-evp_test
+REGRESS_TARGETS+=	regress-evp_ecx_test
 REGRESS_TARGETS+=	regress-evp_pkey_check
 REGRESS_TARGETS+=	regress-evp_pkey_cleanup
+
+LDADD_evp_ecx_test = ${CRYPTO_INT}
 
 regress-evptest:	evptest
 	./evptest ${.CURDIR}/evptests.txt
 
 regress-evp_test:	evp_test
 	./evp_test
+
+regress-evp_ecx_test:	evp_ecx_test
+	./evp_ecx_test
 
 regress-evp_pkey_check: evp_pkey_check
 	./evp_pkey_check
