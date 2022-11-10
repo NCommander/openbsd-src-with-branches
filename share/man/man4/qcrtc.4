@@ -1,4 +1,4 @@
-.\"	$OpenBSD: qcpmic.4,v 1.1 2022/11/10 12:57:08 patrick Exp $
+.\"	$OpenBSD: qcrtc.4,v 1.2 2018/06/18 06:06:52 jmc Exp $
 .\"
 .\" Copyright (c) 2022 Patrick Wildt <patrick@blueri.se>
 .\"
@@ -14,31 +14,21 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: November 10 2022 $
-.Dt QCPMIC 4
+.Dd $Mdocdate: June 18 2018 $
+.Dt QCRTC 4
 .Os
 .Sh NAME
-.Nm qcpmic
-.Nd Qualcomm Power Management IC
+.Nm qcrtc
+.Nd Qualcomm real-time clock
 .Sh SYNOPSIS
-.Cd "qcpmic* at qcspmi?"
-.Cd "qcpmicgpio* at qcpmic?"
-.Cd "qcpon* at qcpmic?"
-.Cd "qcpwm* at qcpmic?"
 .Cd "qcrtc* at qcpmic?"
 .Sh DESCRIPTION
 The
 .Nm
-driver provides support for the PMIC found on various Qualcomm
+driver provides support for the RTC integrated on various Qualcomm
 Snapdragon SoCs.
-The functionality for the hardware blocks found in each PMIC is
-implemented in the children attaching to this driver.
 .Sh SEE ALSO
-.Xr qcspmi 4 ,
-.Xr qcpmicgpio 4 ,
-.Xr qcpon 4 ,
-.Xr qcpwm 4 ,
-.Xr qcrtc 4 ,
+.Xr qcpmic 4 ,
 .Xr intro 4
 .Sh HISTORY
 The
