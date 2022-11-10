@@ -1,4 +1,4 @@
-/* $OpenBSD: ec.h,v 1.27 2021/09/12 16:23:19 tb Exp $ */
+/* $OpenBSD: ec.h,v 1.28 2022/07/12 14:42:49 kn Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -1289,6 +1289,8 @@ void ERR_load_EC_strings(void);
 #define EC_R_INVALID_FIELD				 103
 #define EC_R_INVALID_FORM				 104
 #define EC_R_INVALID_GROUP_ORDER			 122
+#define EC_R_INVALID_KEY				 165
+#define EC_R_INVALID_PEER_KEY				 152
 #define EC_R_INVALID_PENTANOMIAL_BASIS			 132
 #define EC_R_INVALID_PRIVATE_KEY			 123
 #define EC_R_INVALID_TRINOMIAL_BASIS			 137
