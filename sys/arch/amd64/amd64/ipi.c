@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipi.c,v 1.16 2015/07/19 18:44:15 sf Exp $	*/
+/*	$OpenBSD: ipi.c,v 1.17 2020/01/21 02:01:50 mlarkin Exp $	*/
 /*	$NetBSD: ipi.c,v 1.2 2003/03/01 13:05:37 fvdl Exp $	*/
 
 /*-
@@ -103,7 +103,7 @@ x86_ipi_handler(void)
 		if (pending & (1 << bit)) {
 			pending &= ~(1 << bit);
 			(*ipifunc[bit])(ci);
-			ipi_count.ec_count++;
+			evcount_inc(&ipi_count);
 		}
 	}
 
