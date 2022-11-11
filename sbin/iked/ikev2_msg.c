@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_msg.c,v 1.86 2022/09/19 20:54:02 tobhe Exp $	*/
+/*	$OpenBSD: ikev2_msg.c,v 1.87 2022/09/21 22:32:11 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -811,7 +811,8 @@ ikev2_send_encrypted_fragments(struct iked *env, struct iked_sa *sa,
 	    sa->sa_encr == NULL ||
 	    sa->sa_integr == NULL) {
 		log_debug("%s: invalid SA", __func__);
-		goto done;
+		ikestat_inc(env, ikes_frag_send_failures);
+		return ret;
 	}
 
 	sa_fam = ((struct sockaddr *)&sa->sa_local.addr)->sa_family;
