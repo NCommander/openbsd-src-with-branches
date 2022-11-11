@@ -1,4 +1,4 @@
-/* $OpenBSD: errstr.c,v 1.6 2015/10/17 15:00:11 doug Exp $ */
+/* $OpenBSD: errstr.c,v 1.7 2019/07/14 03:30:45 guenther Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -98,11 +98,9 @@ errstr_main(int argc, char **argv)
 	char buf[256];
 	int ret = 0;
 
-	if (single_execution) {
-		if (pledge("stdio rpath", NULL) == -1) {
-			perror("pledge");
-			exit(1);
-		}
+	if (pledge("stdio rpath", NULL) == -1) {
+		perror("pledge");
+		exit(1);
 	}
 
 	memset(&errstr_config, 0, sizeof(errstr_config));

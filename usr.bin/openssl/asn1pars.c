@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1pars.c,v 1.10 2019/07/14 03:30:45 guenther Exp $ */
+/* $OpenBSD: asn1pars.c,v 1.11 2022/01/12 22:55:51 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -247,11 +247,9 @@ asn1parse_main(int argc, char **argv)
 	BUF_MEM *buf = NULL;
 	ASN1_TYPE *at = NULL;
 
-	if (single_execution) {
-		if (pledge("stdio cpath wpath rpath", NULL) == -1) {
-			perror("pledge");
-			exit(1);
-		}
+	if (pledge("stdio cpath wpath rpath", NULL) == -1) {
+		perror("pledge");
+		exit(1);
 	}
 
 	memset(&asn1pars_config, 0, sizeof(asn1pars_config));

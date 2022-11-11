@@ -1,4 +1,4 @@
-/* $OpenBSD: ts.c,v 1.23 2022/03/27 00:37:10 inoguchi Exp $ */
+/* $OpenBSD: ts.c,v 1.24 2022/09/11 18:08:17 tb Exp $ */
 /* Written by Zoltan Glozik (zglozik@stones.com) for the OpenSSL
  * project 2002.
  */
@@ -377,11 +377,9 @@ ts_main(int argc, char **argv)
 	CONF *conf = NULL;
 	char *password = NULL;	/* Password itself. */
 
-	if (single_execution) {
-		if (pledge("stdio cpath wpath rpath tty", NULL) == -1) {
-			perror("pledge");
-			exit(1);
-		}
+	if (pledge("stdio cpath wpath rpath tty", NULL) == -1) {
+		perror("pledge");
+		exit(1);
 	}
 
 	memset(&ts_config, 0, sizeof(ts_config));
