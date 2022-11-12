@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1151 2022/11/11 15:02:31 dlg Exp $ */
+/*	$OpenBSD: pf.c,v 1.1152 2022/11/11 16:12:08 dlg Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1302,6 +1302,7 @@ pf_state_alloc_scrub_memory(const struct pfsync_state_peer *s,
 	return (0);
 }
 
+#if NPFSYNC > 0
 int
 pf_state_import(const struct pfsync_state *sp, int flags)
 {
@@ -1511,6 +1512,7 @@ pf_state_import(const struct pfsync_state *sp, int flags)
 	}
 	return (error);
 }
+#endif /* NPFSYNC > 0 */
 
 /* END state table stuff */
 
