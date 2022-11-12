@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_var.h,v 1.73 2020/07/03 17:42:50 florian Exp $	*/
+/*	$OpenBSD: in6_var.h,v 1.74 2022/01/02 22:36:04 jsg Exp $	*/
 /*	$KAME: in6_var.h,v 1.55 2001/02/16 12:49:45 itojun Exp $	*/
 
 /*
@@ -90,9 +90,6 @@ struct in6_addrlifetime {
 struct nd_ifinfo;
 struct in6_ifextra {
 	struct nd_ifinfo *nd_ifinfo;
-	void *rs_lhcookie;
-	int nprefixes;
-	int ndefrouters;
 };
 
 struct	in6_ifaddr {
