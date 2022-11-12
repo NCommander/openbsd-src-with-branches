@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_parse.y,v 1.46 2022/04/28 21:04:24 dv Exp $	*/
+/*	$OpenBSD: bt_parse.y,v 1.47 2022/11/11 22:40:41 mpi Exp $	*/
 
 /*
  * Copyright (c) 2019-2021 Martin Pieuchot <mpi@openbsd.org>
@@ -218,6 +218,7 @@ variable: lvar			{ $$ = bl_find($1); }
 factor : '(' expr ')'		{ $$ = $2; }
 	| NUMBER		{ $$ = ba_new($1, B_AT_LONG); }
 	| BUILTIN		{ $$ = ba_new(NULL, $1); }
+	| CSTRING		{ $$ = ba_new($1, B_AT_STR); }
 	| staticv
 	| variable
 	| mentry
