@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2021/10/26 21:36:23 djm Exp $
+# $OpenBSD: Makefile,v 1.8 2022/08/29 03:04:29 djm Exp $
 
 .PATH:	${.CURDIR}/man ${.CURDIR}/src
 
@@ -10,6 +10,7 @@ CDIAGFLAGS+=	-Wall -Wextra
 CDIAGFLAGS+=	-Werror
 
 LDADD+=		-L${BSDOBJDIR}/lib/libcbor -lcbor
+LDADD+=		-L${BSDOBJDIR}/lib/libcrypto -lcrypto
 LDADD+=		-L${BSDOBJDIR}/lib/libz -lz
 
 SYMBOL_LIST=	Symbols.list
