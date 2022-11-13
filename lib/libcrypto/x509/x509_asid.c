@@ -1,4 +1,4 @@
-/*	$OpenBSD: x509_asid.c,v 1.34 2022/05/12 20:00:06 tb Exp $ */
+/*	$OpenBSD: x509_asid.c,v 1.35 2022/07/30 17:50:17 tb Exp $ */
 /*
  * Contributed to the OpenSSL Project by the American Registry for
  * Internet Numbers ("ARIN").
@@ -562,8 +562,8 @@ ASIdentifierChoice_is_canonical(ASIdentifierChoice *choice)
 	}
 
 	/*
-	* Check for inverted range.
-	*/
+	 * Check for inverted range.
+	 */
 	i = sk_ASIdOrRange_num(choice->u.asIdsOrRanges) - 1;
 	{
 		ASIdOrRange *a = sk_ASIdOrRange_value(choice->u.asIdsOrRanges,
