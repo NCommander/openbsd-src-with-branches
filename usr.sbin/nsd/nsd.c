@@ -25,6 +25,9 @@
 #include <login_cap.h>
 #endif /* HAVE_LOGIN_CAP_H */
 #endif /* HAVE_SETUSERCONTEXT */
+#ifdef HAVE_OPENSSL_RAND_H
+#include <openssl/rand.h>
+#endif
 
 #include <assert.h>
 #include <ctype.h>
@@ -148,6 +151,62 @@ version(void)
 }
 
 static void
+setup_verifier_environment(void)
+{
+	size_t i;
+	int ret, ip4, ip6;
+	char *buf, host[NI_MAXHOST], serv[NI_MAXSERV];
+	size_t size, cnt = 0;
+
+	/* allocate large enough buffer to hold a list of all ip addresses.
+	   ((" " + INET6_ADDRSTRLEN + "@" + "65535") * n) + "\0" */
+	size = ((INET6_ADDRSTRLEN + 1 + 5 + 1) * nsd.verify_ifs) + 1;
+	buf = xalloc(size);
+
+	ip4 = ip6 = 0;
+	for(i = 0; i < nsd.verify_ifs; i++) {
+		ret = getnameinfo(
+			(struct sockaddr *)&nsd.verify_udp[i].addr.ai_addr,
+			nsd.verify_udp[i].addr.ai_addrlen,
+			host, sizeof(host), serv, sizeof(serv),
+			NI_NUMERICHOST | NI_NUMERICSERV);
+		if(ret != 0) {
+			log_msg(LOG_ERR, "error in getnameinfo: %s",
+				gai_strerror(ret));
+			continue;
+		}
+		buf[cnt++] = ' ';
+		cnt += strlcpy(&buf[cnt], host, size - cnt);
+		assert(cnt < size);
+		buf[cnt++] = '@';
+		cnt += strlcpy(&buf[cnt], serv, size - cnt);
+		assert(cnt < size);
+#ifdef INET6
+		if (nsd.verify_udp[i].addr.ai_family == AF_INET6 && !ip6) {
+			setenv("VERIFY_IPV6_ADDRESS", host, 1);
+			setenv("VERIFY_IPV6_PORT", serv, 1);
+			setenv("VERIFY_IP_ADDRESS", host, 1);
+			setenv("VERIFY_PORT", serv, 1);
+			ip6 = 1;
+		} else
+#endif
+		if (!ip4) {
+			assert(nsd.verify_udp[i].addr.ai_family == AF_INET);
+			setenv("VERIFY_IPV4_ADDRESS", host, 1);
+			setenv("VERIFY_IPV4_PORT", serv, 1);
+			if (!ip6) {
+				setenv("VERIFY_IP_ADDRESS", host, 1);
+				setenv("VERIFY_PORT", serv, 1);
+			}
+			ip4 = 1;
+		}
+	}
+
+	setenv("VERIFY_IP_ADDRESSES", &buf[1], 1);
+	free(buf);
+}
+
+static void
 copyaddrinfo(struct nsd_addrinfo *dest, struct addrinfo *src)
 {
 	dest->ai_flags = src->ai_flags;
@@ -257,10 +316,9 @@ figure_socket_servers(
 static void
 figure_default_sockets(
 	struct nsd_socket **udp, struct nsd_socket **tcp, size_t *ifs,
-	const char *udp_port, const char *tcp_port,
+	const char *node, const char *udp_port, const char *tcp_port,
 	const struct addrinfo *hints)
 {
-	int r;
 	size_t i = 0, n = 1;
 	struct addrinfo ai[2] = { *hints, *hints };
 
@@ -289,22 +347,22 @@ figure_default_sockets(
 #ifdef INET6
 	if(hints->ai_family == AF_UNSPEC) {
 		/*
-		 * With IPv6 we'd like to open two separate sockets,
-		 * one for IPv4 and one for IPv6, both listening to
-		 * the wildcard address (unless the -4 or -6 flags are
-		 * specified).
+		 * With IPv6 we'd like to open two separate sockets, one for
+		 * IPv4 and one for IPv6, both listening to the wildcard
+		 * address (unless the -4 or -6 flags are specified).
 		 *
-		 * However, this is only supported on platforms where
-		 * we can turn the socket option IPV6_V6ONLY _on_.
-		 * Otherwise we just listen to a single IPv6 socket
-		 * and any incoming IPv4 connections will be
-		 * automatically mapped to our IPv6 socket.
+		 * However, this is only supported on platforms where we can
+		 * turn the socket option IPV6_V6ONLY _on_. Otherwise we just
+		 * listen to a single IPv6 socket and any incoming IPv4
+		 * connections will be automatically mapped to our IPv6
+		 * socket.
 		 */
 #ifdef IPV6_V6ONLY
+		int r;
 		struct addrinfo *addrs[2] = { NULL, NULL };
 
-		if((r = getaddrinfo(NULL, udp_port, &ai[0], &addrs[0])) == 0 &&
-		   (r = getaddrinfo(NULL, tcp_port, &ai[1], &addrs[1])) == 0)
+		if((r = getaddrinfo(node, udp_port, &ai[0], &addrs[0])) == 0 &&
+		   (r = getaddrinfo(node, tcp_port, &ai[1], &addrs[1])) == 0)
 		{
 			(*udp)[i].flags |= NSD_SOCKET_IS_OPTIONAL;
 			(*udp)[i].fib = -1;
@@ -332,9 +390,9 @@ figure_default_sockets(
 #endif /* INET6 */
 
 	*ifs = i + 1;
-	setup_socket(&(*udp)[i], NULL, udp_port, &ai[0]);
+	setup_socket(&(*udp)[i], node, udp_port, &ai[0]);
 	figure_socket_servers(&(*udp)[i], NULL);
-	setup_socket(&(*tcp)[i], NULL, tcp_port, &ai[1]);
+	setup_socket(&(*tcp)[i], node, tcp_port, &ai[1]);
 	figure_socket_servers(&(*tcp)[i], NULL);
 }
 
@@ -393,7 +451,7 @@ static void
 figure_sockets(
 	struct nsd_socket **udp, struct nsd_socket **tcp, size_t *ifs,
 	struct ip_address_option *ips,
-	const char *udp_port, const char *tcp_port,
+	const char *node, const char *udp_port, const char *tcp_port,
 	const struct addrinfo *hints)
 {
 	size_t i = 0;
@@ -406,7 +464,7 @@ figure_sockets(
 
 	if(!ips) {
 		figure_default_sockets(
-			udp, tcp, ifs, udp_port, tcp_port, hints);
+			udp, tcp, ifs, node, udp_port, tcp_port, hints);
 		return;
 	}
 
@@ -551,12 +609,12 @@ print_sockets(
 
 	for(i = 0; i < ifs; i++) {
 		assert(udp[i].servers->size == servercnt);
-		addrport2str(&udp[i].addr.ai_addr, sockbuf, sizeof(sockbuf));
+		addrport2str((void*)&udp[i].addr.ai_addr, sockbuf, sizeof(sockbuf));
 		print_socket_servers(&udp[i], serverbuf, serverbufsz);
 		nsd_bitset_or(servers, servers, udp[i].servers);
 		VERBOSITY(3, (LOG_NOTICE, fmt, sockbuf, "udp", serverbuf));
 		assert(tcp[i].servers->size == servercnt);
-		addrport2str(&tcp[i].addr.ai_addr, sockbuf, sizeof(sockbuf));
+		addrport2str((void*)&tcp[i].addr.ai_addr, sockbuf, sizeof(sockbuf));
 		print_socket_servers(&tcp[i], serverbuf, serverbufsz);
 		nsd_bitset_or(servers, servers, tcp[i].servers);
 		VERBOSITY(3, (LOG_NOTICE, fmt, sockbuf, "tcp", serverbuf));
@@ -802,20 +860,20 @@ bind8_stats (struct nsd *nsd)
 	/* XSTATS */
 	/* Only print it if we're in the main daemon or have anything to report... */
 	if (nsd->server_kind == NSD_SERVER_MAIN
-	    || nsd->st.dropped || nsd->st.raxfr || (nsd->st.qudp + nsd->st.qudp6 - nsd->st.dropped)
+	    || nsd->st.dropped || nsd->st.raxfr || nsd->st.rixfr || (nsd->st.qudp + nsd->st.qudp6 - nsd->st.dropped)
 	    || nsd->st.txerr || nsd->st.opcode[OPCODE_QUERY] || nsd->st.opcode[OPCODE_IQUERY]
 	    || nsd->st.wrongzone || nsd->st.ctcp + nsd->st.ctcp6 || nsd->st.rcode[RCODE_SERVFAIL]
 	    || nsd->st.rcode[RCODE_FORMAT] || nsd->st.nona || nsd->st.rcode[RCODE_NXDOMAIN]
 	    || nsd->st.opcode[OPCODE_UPDATE]) {
 
 		log_msg(LOG_INFO, "XSTATS %lld %lu"
-			" RR=%lu RNXD=%lu RFwdR=%lu RDupR=%lu RFail=%lu RFErr=%lu RErr=%lu RAXFR=%lu"
+			" RR=%lu RNXD=%lu RFwdR=%lu RDupR=%lu RFail=%lu RFErr=%lu RErr=%lu RAXFR=%lu RIXFR=%lu"
 			" RLame=%lu ROpts=%lu SSysQ=%lu SAns=%lu SFwdQ=%lu SDupQ=%lu SErr=%lu RQ=%lu"
 			" RIQ=%lu RFwdQ=%lu RDupQ=%lu RTCP=%lu SFwdR=%lu SFail=%lu SFErr=%lu SNaAns=%lu"
 			" SNXD=%lu RUQ=%lu RURQ=%lu RUXFR=%lu RUUpd=%lu",
 			(long long) now, (unsigned long) nsd->st.boot,
 			nsd->st.dropped, (unsigned long)0, (unsigned long)0, (unsigned long)0, (unsigned long)0,
-			(unsigned long)0, (unsigned long)0, nsd->st.raxfr, (unsigned long)0, (unsigned long)0,
+			(unsigned long)0, (unsigned long)0, nsd->st.raxfr, nsd->st.rixfr, (unsigned long)0, (unsigned long)0,
 			(unsigned long)0, nsd->st.qudp + nsd->st.qudp6 - nsd->st.dropped, (unsigned long)0,
 			(unsigned long)0, nsd->st.txerr,
 			nsd->st.opcode[OPCODE_QUERY], nsd->st.opcode[OPCODE_IQUERY], nsd->st.wrongzone,
@@ -827,6 +885,40 @@ bind8_stats (struct nsd *nsd)
 
 }
 #endif /* BIND8_STATS */
+
+static
+int cookie_secret_file_read(nsd_type* nsd) {
+	char secret[NSD_COOKIE_SECRET_SIZE * 2 + 2/*'\n' and '\0'*/];
+	char const* file = nsd->options->cookie_secret_file;
+	FILE* f;
+	int corrupt = 0;
+	size_t count;
+
+	assert( nsd->options->cookie_secret_file != NULL );
+	f = fopen(file, "r");
+	/* a non-existing cookie file is not an error */
+	if( f == NULL ) { return errno != EPERM; }
+	/* cookie secret file exists and is readable */
+	nsd->cookie_count = 0;
+	for( count = 0; count < NSD_COOKIE_HISTORY_SIZE; count++ ) {
+		size_t secret_len = 0;
+		ssize_t decoded_len = 0;
+		if( fgets(secret, sizeof(secret), f) == NULL ) { break; }
+		secret_len = strlen(secret);
+		if( secret_len == 0 ) { break; }
+		assert( secret_len <= sizeof(secret) );
+		secret_len = secret[secret_len - 1] == '\n' ? secret_len - 1 : secret_len;
+		if( secret_len != NSD_COOKIE_SECRET_SIZE * 2 ) { corrupt++; break; }
+		/* needed for `hex_pton`; stripping potential `\n` */
+		secret[secret_len] = '\0';
+		decoded_len = hex_pton(secret, nsd->cookie_secrets[count].cookie_secret,
+		                       NSD_COOKIE_SECRET_SIZE);
+		if( decoded_len != NSD_COOKIE_SECRET_SIZE ) { corrupt++; break; }
+		nsd->cookie_count++;
+	}
+	fclose(f);
+	return corrupt == 0;
+}
 
 extern char *optarg;
 extern int optind;
@@ -847,6 +939,7 @@ main(int argc, char *argv[])
 	struct addrinfo hints;
 	const char *udp_port = 0;
 	const char *tcp_port = 0;
+	const char *verify_port = 0;
 
 	const char *configfile = CONFIGFILE;
 
@@ -869,11 +962,14 @@ main(int argc, char *argv[])
 	nsd.chrootdir	= 0;
 	nsd.nsid 	= NULL;
 	nsd.nsid_len 	= 0;
+	nsd.cookie_count = 0;
 
 	nsd.child_count = 0;
 	nsd.maximum_tcp_count = 0;
 	nsd.current_tcp_count = 0;
 	nsd.file_rotation_ok = 0;
+
+	nsd.do_answer_cookie = 1;
 
 	/* Set up our default identity to gethostname(2) */
 	if (gethostname(hostname, MAXHOSTNAMELEN) == 0) {
@@ -1113,6 +1209,11 @@ main(int argc, char *argv[])
 			tcp_port = TCP_PORT;
 		}
 	}
+	if(nsd.options->verify_port != 0) {
+		verify_port = nsd.options->verify_port;
+	} else {
+		verify_port = VERIFY_PORT;
+	}
 #ifdef BIND8_STATS
 	if(nsd.st.period == 0) {
 		nsd.st.period = nsd.options->statistics;
@@ -1150,6 +1251,36 @@ main(int argc, char *argv[])
 		edns_init_data(&nsd.edns_ipv6, IPV6_MIN_MTU);
 #endif /* IPV6 MTU) */
 #endif /* defined(INET6) */
+
+	nsd.do_answer_cookie = nsd.options->answer_cookie;
+	if (nsd.cookie_count > 0)
+		; /* pass */
+
+	else if (nsd.options->cookie_secret) {
+		ssize_t len = hex_pton(nsd.options->cookie_secret,
+			nsd.cookie_secrets[0].cookie_secret, NSD_COOKIE_SECRET_SIZE);
+		if (len != NSD_COOKIE_SECRET_SIZE ) {
+			error("A cookie secret must be a "
+			      "128 bit hex string");
+		}
+		nsd.cookie_count = 1;
+	} else {
+		size_t j;
+		size_t const cookie_secret_len = NSD_COOKIE_SECRET_SIZE;
+		/* Calculate a new random secret */
+		srandom(getpid() ^ time(NULL));
+
+		for( j = 0; j < NSD_COOKIE_HISTORY_SIZE; j++) {
+#if defined(HAVE_SSL)
+			if (!RAND_status()
+			    || !RAND_bytes(nsd.cookie_secrets[j].cookie_secret, cookie_secret_len))
+#endif
+			for (i = 0; i < cookie_secret_len; i++)
+				nsd.cookie_secrets[j].cookie_secret[i] = random_generate(256);
+		}
+		// XXX: all we have is a random cookie, still pretend we have one
+		nsd.cookie_count = 1;
+	}
 
 	if (nsd.nsid_len == 0 && nsd.options->nsid) {
 		if (strlen(nsd.options->nsid) % 2 != 0) {
@@ -1270,7 +1401,13 @@ main(int argc, char *argv[])
 
 	resolve_interface_names(nsd.options);
 	figure_sockets(&nsd.udp, &nsd.tcp, &nsd.ifs,
-		nsd.options->ip_addresses, udp_port, tcp_port, &hints);
+		nsd.options->ip_addresses, NULL, udp_port, tcp_port, &hints);
+
+	if(nsd.options->verify_enable) {
+		figure_sockets(&nsd.verify_udp, &nsd.verify_tcp, &nsd.verify_ifs,
+			nsd.options->verify_ip_addresses, "localhost", verify_port, verify_port, &hints);
+		setup_verifier_environment();
+	}
 
 	/* Parse the username into uid and gid */
 	nsd.gid = getgid();
@@ -1432,6 +1569,11 @@ main(int argc, char *argv[])
 	}
 #endif /* HAVE_SSL */
 
+	if(nsd.options->cookie_secret_file && nsd.options->cookie_secret_file[0]
+	   && !cookie_secret_file_read(&nsd) ) {
+		log_msg(LOG_ERR, "cookie secret file corrupt or not readable");
+	}
+
 	/* Unless we're debugging, fork... */
 	if (!nsd.debug) {
 		int fd;
@@ -1586,13 +1728,6 @@ main(int argc, char *argv[])
 	options_zonestatnames_create(nsd.options);
 	server_zonestat_alloc(&nsd);
 #endif /* USE_ZONE_STATS */
-#ifdef USE_DNSTAP
-	if(nsd.options->dnstap_enable) {
-		nsd.dt_collector = dt_collector_create(&nsd);
-		dt_collector_start(nsd.dt_collector, &nsd);
-	}
-#endif /* USE_DNSTAP */
-
 	if(nsd.server_kind == NSD_SERVER_MAIN) {
 		server_prepare_xfrd(&nsd);
 		/* xfrd forks this before reading database, so it does not get
@@ -1600,6 +1735,12 @@ main(int argc, char *argv[])
 		server_start_xfrd(&nsd, 0, 0);
 		/* close zonelistfile in non-xfrd processes */
 		zone_list_close(nsd.options);
+#ifdef USE_DNSTAP
+		if(nsd.options->dnstap_enable) {
+			nsd.dt_collector = dt_collector_create(&nsd);
+			dt_collector_start(nsd.dt_collector, &nsd);
+		}
+#endif /* USE_DNSTAP */
 	}
 	if (server_prepare(&nsd) != 0) {
 		unlinkpid(nsd.pidfile);

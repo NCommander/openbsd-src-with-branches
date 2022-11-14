@@ -5,7 +5,7 @@ dnl
 sinclude(acx_nlnetlabs.m4)
 sinclude(dnstap/dnstap.m4)
 
-AC_INIT([NSD],[4.3.6],[nsd-bugs@nlnetlabs.nl])
+AC_INIT([NSD],[4.6.1],[nsd-bugs@nlnetlabs.nl])
 AC_CONFIG_HEADERS([config.h])
 
 #
@@ -174,7 +174,7 @@ AC_ARG_WITH([user],
 AC_SUBST(user)
 AC_DEFINE_UNQUOTED(USER, ["$user"], [the user name to drop privileges to])
 
-AC_PROG_CC
+m4_version_prereq([2.70], [AC_PROG_CC], [AC_PROG_CC_STDC])
 AC_PROG_SED
 AC_PROG_AWK
 AC_PROG_GREP
@@ -250,6 +250,25 @@ if test $ac_cv_c_unused_attribute = yes; then
   AC_DEFINE(HAVE_ATTR_UNUSED, 1, [Whether the C compiler accepts the "unused" attribute])
 fi
 ])dnl
+
+AC_DEFUN([CHECK_WEAK_ATTRIBUTE],
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(whether the C compiler (${CC-cc}) accepts the "weak" attribute)
+AC_CACHE_VAL(ac_cv_c_weak_attribute,
+[ac_cv_c_weak_attribute=no
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[ #include <stdio.h>
+__attribute__((weak)) void f(int x) { printf("%d", x); }
+]], [[
+   f(1);
+]])],[ac_cv_c_weak_attribute="yes"],[ac_cv_c_weak_attribute="no"])
+])
+
+AC_MSG_RESULT($ac_cv_c_weak_attribute)
+if test $ac_cv_c_weak_attribute = yes; then
+  AC_DEFINE(HAVE_ATTR_WEAK, 1, [Whether the C compiler accepts the "weak" attribute])
+  AC_DEFINE(ATTR_WEAK, [__attribute__((weak))], [apply the weak attribute to a symbol])
+fi
+])dnl End of CHECK_WEAK_ATTRIBUTE
 
 AC_DEFUN([CHECK_NORETURN_ATTRIBUTE],
 [AC_REQUIRE([AC_PROG_CC])
@@ -332,6 +351,7 @@ AC_TYPE_OFF_T
 
 AC_CHECK_FORMAT_ATTRIBUTE
 AC_CHECK_UNUSED_ATTRIBUTE
+CHECK_WEAK_ATTRIBUTE
 CHECK_NORETURN_ATTRIBUTE
 ACX_CHECK_MEMCMP_SIGNED
 AC_CHECK_CTIME_R
@@ -349,6 +369,31 @@ AC_DEFUN([CHECK_SSL], [
         ])
     if test x_$withval != x_no; then
         AC_MSG_CHECKING(for SSL)
+	if test -n "$withval"; then
+        	dnl look for openssl install with different version, eg.
+                dnl in /usr/include/openssl11/openssl/ssl.h
+                dnl and /usr/lib64/openssl11/libssl.so
+                dnl with the --with-ssl=/usr/include/openssl11
+                if test ! -f "$withval/include/openssl/ssl.h" -a -f "$withval/openssl/ssl.h"; then
+                        ssldir="$withval"
+                        found_ssl="yes"
+                        withval=""
+                        ssldir_include="$ssldir"
+                        CPPFLAGS="$CPPFLAGS -I$ssldir_include";
+                        dnl find the libdir
+                        ssldir_lib=`echo $ssldir | sed -e 's/include/lib/'`
+                        if test -f "$ssldir_lib/libssl.a" -o -f "$ssldir_lib/libssl.so"; then
+                                : # found here
+                        else
+                                ssldir_lib=`echo $ssldir | sed -e 's/include/lib64/'`
+                                if test -f "$ssldir_lib/libssl.a" -o -f "$ssldir_lib/libssl.so"; then
+                                        : # found here
+                                else
+                                        AC_MSG_ERROR([Could not find openssl lib file, $ssldir_lib/libssl.[so,a], pass like "/usr/local" or "/usr/include/openssl11"])
+                                fi
+                        fi
+                fi
+	fi
         if test x_$withval = x_ -o x_$withval = x_yes; then
             withval="/usr/local/ssl /usr/lib/ssl /usr/ssl /usr/pkg /usr/sfw /usr/local /usr /usr/local/opt/openssl"
         fi
@@ -356,10 +401,15 @@ AC_DEFUN([CHECK_SSL], [
             ssldir="$dir"
             if test -f "$dir/include/openssl/ssl.h"; then
                 found_ssl="yes";
-                AC_DEFINE_UNQUOTED([HAVE_SSL], [], [Define if you have the SSL libraries installed.])
                 if test x_$ssldir != x_/usr; then
                     CPPFLAGS="$CPPFLAGS -I$ssldir/include";
                 fi
+		ssldir_include="$ssldir/include"
+		if test ! -d "$ssldir/lib" -a -d "$ssldir/lib64"; then
+			ssldir_lib="$ssldir/lib64"
+		else
+			ssldir_lib="$ssldir/lib"
+		fi
                 break;
             fi
         done
@@ -368,11 +418,12 @@ AC_DEFUN([CHECK_SSL], [
         else
             AC_MSG_RESULT([found in $ssldir])
             HAVE_SSL=yes
+            AC_DEFINE_UNQUOTED([HAVE_SSL], [], [Define if you have the SSL libraries installed.])
             if test x_$ssldir != x_/usr; then
-                LDFLAGS="$LDFLAGS -L$ssldir/lib";
+                LDFLAGS="$LDFLAGS -L$ssldir_lib";
             fi
 	    if test x_$ssldir = x_/usr/sfw; then
-		LDFLAGS="$LDFLAGS -R$ssldir/lib";
+		LDFLAGS="$LDFLAGS -R$ssldir_lib";
 	    fi
         fi
         AC_SUBST(HAVE_SSL)
@@ -796,6 +847,7 @@ AC_REPLACE_FUNCS(b64_ntop)
 AC_REPLACE_FUNCS(pselect)
 AC_REPLACE_FUNCS(memmove)
 AC_REPLACE_FUNCS(setproctitle)
+AC_REPLACE_FUNCS(explicit_bzero)
 AC_MSG_CHECKING([for reallocarray])
 AC_LINK_IFELSE([AC_LANG_SOURCE(
 [[
@@ -857,6 +909,7 @@ AC_DEFINE_UNQUOTED([TLS_PORT], ["853"], [Define to the default DNS over TLS port
 AC_DEFINE_UNQUOTED([MAXSYSLOGMSGLEN], [512], [Define to the maximum message length to pass to syslog.])
 AC_DEFINE_UNQUOTED([NSD_CONTROL_PORT], [8952], [Define to the default nsd-control port.])
 AC_DEFINE_UNQUOTED([NSD_CONTROL_VERSION], [1], [Define to nsd-control proto version.])
+AC_DEFINE_UNQUOTED([VERIFY_PORT], ["5347"], [Define to the default zone verification udp port.])
 
 dnl
 dnl Determine the syslog facility to use
@@ -995,7 +1048,12 @@ if test x$HAVE_SSL = x"yes"; then
 	SSL_LIBS="-lssl"
 	AC_SUBST(SSL_LIBS)
 	AC_CHECK_HEADERS([openssl/ssl.h openssl/err.h openssl/rand.h openssl/ocsp.h openssl/core_names.h],,, [AC_INCLUDES_DEFAULT])
-	AC_CHECK_FUNCS([HMAC_CTX_reset HMAC_CTX_new EVP_cleanup ERR_load_crypto_strings OPENSSL_init_crypto SSL_CTX_set_security_level CRYPTO_memcmp EC_KEY_new_by_curve_name EVP_MAC_CTX_new EVP_MAC_CTX_set_params])
+	AC_CHECK_FUNCS([HMAC_CTX_reset HMAC_CTX_new EVP_cleanup ERR_load_crypto_strings OPENSSL_init_crypto CRYPTO_memcmp EC_KEY_new_by_curve_name EVP_MAC_CTX_new EVP_MAC_CTX_set_params EVP_MAC_CTX_get_mac_size SHA1_Init])
+	if test "$ac_cv_func_SHA1_Init" = "yes"; then
+		ACX_FUNC_DEPRECATED([SHA1_Init], [(void)SHA1_Init(NULL);], [
+#include <openssl/sha.h>
+])
+	fi
 	AC_CHECK_DECLS([SSL_CTX_set_ecdh_auto,SSL_CTX_set_tmp_ecdh], [], [], [
 AC_INCLUDES_DEFAULT
 #ifdef HAVE_OPENSSL_ERR_H
@@ -1016,11 +1074,18 @@ AC_INCLUDES_DEFAULT
 #include <openssl/ssl.h>
 #include <openssl/evp.h>
 ])
-
+	AC_CHECK_DECL([TLS1_3_VERSION], 
+		[AC_DEFINE([HAVE_TLS_1_3], [1], [Define if TLS 1.3 is supported by OpenSSL])],
+		[AC_MSG_WARN([No TLS 1.3, therefore XFR-over-TLS is disabled])], [[#include <openssl/ssl.h>]])
 
 	BAKLIBS="$LIBS"
 	LIBS="-lssl $LIBS"
-	AC_CHECK_FUNCS([OPENSSL_init_ssl])
+	AC_CHECK_FUNCS([OPENSSL_init_ssl SSL_get1_peer_certificate SSL_CTX_set_security_level ERR_load_SSL_strings])
+	if test "$ac_cv_func_ERR_load_SSL_strings" = "yes"; then
+		ACX_FUNC_DEPRECATED([ERR_load_SSL_strings], [(void)ERR_load_SSL_strings();], [
+#include <openssl/ssl.h>
+])
+	fi
 	LIBS="$BAKLIBS"
 
 else
@@ -1259,6 +1324,10 @@ int inet_aton(const char *cp, struct in_addr *addr);
 #endif
 #ifndef HAVE_MEMMOVE
 void *memmove(void *dest, const void *src, size_t n);
+#endif
+#ifndef HAVE_EXPLICIT_BZERO
+#define explicit_bzero nsd_explicit_bzero
+void explicit_bzero(void* buf, size_t len);
 #endif
 #ifndef HAVE_STRLCAT
 size_t strlcat(char *dst, const char *src, size_t siz);
