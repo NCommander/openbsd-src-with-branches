@@ -1,4 +1,4 @@
-/* $OpenBSD: x509type.c,v 1.14 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: x509type.c,v 1.15 2021/12/12 21:30:14 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -124,3 +124,4 @@ X509_certificate_type(const X509 *x, const EVP_PKEY *pkey)
 		ret |= EVP_PKT_EXP;
 	return (ret);
 }
+LCRYPTO_ALIAS(X509_certificate_type)

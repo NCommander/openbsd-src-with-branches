@@ -1,4 +1,4 @@
-/* $OpenBSD: by_mem.c,v 1.4 2017/01/29 17:49:23 beck Exp $ */
+/* $OpenBSD: by_mem.c,v 1.5 2021/11/01 20:53:08 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -90,6 +90,7 @@ X509_LOOKUP_mem(void)
 {
 	return (&x509_mem_lookup);
 }
+LCRYPTO_ALIAS(X509_LOOKUP_mem)
 
 static int
 by_mem_ctrl(X509_LOOKUP *lu, int cmd, const char *buf,
