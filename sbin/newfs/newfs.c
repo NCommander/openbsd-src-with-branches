@@ -1,4 +1,4 @@
-/*	$OpenBSD: newfs.c,v 1.114 2020/05/19 12:49:51 sthen Exp $	*/
+/*	$OpenBSD: newfs.c,v 1.115 2021/06/03 06:42:03 otto Exp $	*/
 /*	$NetBSD: newfs.c,v 1.20 1996/05/16 07:13:03 thorpej Exp $	*/
 
 /*
@@ -203,7 +203,7 @@ main(int argc, char *argv[])
 		fatal("insane maxpartitions value %d", maxpartitions);
 
 	opstring = mfs ?
-	    "P:T:b:c:e:f:i:m:o:s:" :
+	    "O:P:T:b:c:e:f:i:m:o:s:" :
 	    "NO:S:T:b:c:e:f:g:h:i:m:o:qs:t:";
 	while ((ch = getopt(argc, argv, opstring)) != -1) {
 		switch (ch) {
