@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa_asn1.c,v 1.24 2022/01/14 08:29:06 tb Exp $ */
+/* $OpenBSD: dsa_asn1.c,v 1.25 2022/09/03 16:01:23 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
