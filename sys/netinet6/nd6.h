@@ -94,7 +94,7 @@ struct	in6_ndifreq {
 #include <sys/queue.h>
 
 #define ND_IFINFO(ifp) \
-	((struct nd_ifinfo *)(ifp)->if_afdata[AF_INET6])
+	(((struct in6_ifextra *)(ifp)->if_afdata[AF_INET6])->nd_ifinfo)
 
 struct	llinfo_nd6 {
 	TAILQ_ENTRY(llinfo_nd6)	ln_list;
