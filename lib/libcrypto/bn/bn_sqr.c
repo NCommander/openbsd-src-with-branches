@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_sqr.c,v 1.11 2014/07/11 13:26:31 miod Exp $ */
+/* $OpenBSD: bn_sqr.c,v 1.12 2015/02/09 15:49:22 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -61,7 +61,6 @@
 
 #include "bn_lcl.h"
 
-/* r must not be a */
 /* I've just gone over this and it is now %20 faster on x86 - eay - 27 Jun 96 */
 int
 BN_sqr(BIGNUM *r, const BIGNUM *a, BN_CTX *ctx)
