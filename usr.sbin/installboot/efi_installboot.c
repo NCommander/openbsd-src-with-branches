@@ -1,4 +1,4 @@
-/*	$OpenBSD: efi_installboot.c,v 1.7 2022/11/06 12:33:41 krw Exp $	*/
+/*	$OpenBSD: efi_installboot.c,v 1.8 2022/11/22 09:53:46 tobhe Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -373,10 +373,11 @@ write_firmware(const char *root, const char *mnt)
 		if (verbose)
 			fprintf(stderr, "%s %s to %s\n",
 			    (nowrite ? "would copy" : "copying"), src, dst);
-		if (!nowrite)
+		if (!nowrite) {
 			rslt = filecopy(src, dst);
 			if (rslt == -1)
 				goto cleanup;
+		}
 	}
 	rslt = 0;
 
