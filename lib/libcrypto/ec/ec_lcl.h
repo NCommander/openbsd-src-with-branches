@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_lcl.h,v 1.20 2022/06/30 11:14:47 tb Exp $ */
+/* $OpenBSD: ec_lcl.h,v 1.21 2022/11/22 21:54:01 tb Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -85,9 +85,6 @@ __BEGIN_HIDDEN_DECLS
 # pragma error_messages (off,E_ARRAY_OF_INCOMPLETE_NONAME,E_ARRAY_OF_INCOMPLETE)
 # endif
 #endif
-
-#define bn_wexpand(a,words) (((words) <= (a)->dmax)?(a):bn_expand2((a),(words)))
-BIGNUM *bn_expand2(BIGNUM *a, int words);
 
 /* Use default functions for poin2oct, oct2point and compressed coordinates */
 #define EC_FLAGS_DEFAULT_OCT	0x1
