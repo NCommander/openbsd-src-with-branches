@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.322 2022/09/02 17:46:37 dv Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.323 2022/09/07 18:44:09 dv Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -840,11 +840,9 @@ vm_resetcpu(struct vm_resetcpu_params *vrp)
 	}
 
 	rw_enter_write(&vcpu->vc_lock);
-
-	if (vcpu->vc_state != VCPU_STATE_STOPPED ||
-	    refcnt_shared(&vcpu->vc_refcnt)) {
+	if (vcpu->vc_state != VCPU_STATE_STOPPED)
 		ret = EBUSY;
-	} else {
+	else {
 		if (vcpu_reset_regs(vcpu, &vrp->vrp_init_state)) {
 			printf("%s: failed\n", __func__);
 #ifdef VMM_DEBUG
@@ -896,9 +894,7 @@ vm_intr_pending(struct vm_intr_params *vip)
 		goto out;
 	}
 
-	rw_enter_write(&vcpu->vc_lock);
 	vcpu->vc_intr = vip->vip_intr;
-	rw_exit_write(&vcpu->vc_lock);
 
 	refcnt_rele_wake(&vcpu->vc_refcnt);
 out:
@@ -1784,7 +1780,6 @@ vm_create(struct vm_create_params *vcp, struct proc *p)
 	for (i = 0; i < vcp->vcp_ncpus; i++) {
 		vcpu = pool_get(&vcpu_pool, PR_WAITOK | PR_ZERO);
 		refcnt_init(&vcpu->vc_refcnt);
-		refcnt_rele(&vcpu->vc_refcnt);
 
 		vcpu->vc_parent = vm;
 		if ((ret = vcpu_init(vcpu)) != 0) {
@@ -1794,6 +1789,7 @@ vm_create(struct vm_create_params *vcp, struct proc *p)
 		}
 		vcpu->vc_id = vm->vm_vcpu_ct;
 		vm->vm_vcpu_ct++;
+		/* Publish vcpu to list, inheriting the reference. */
 		SLIST_INSERT_HEAD(&vm->vm_vcpu_list, vcpu, vc_vcpu_link);
 	}
 
@@ -1816,12 +1812,13 @@ vm_create(struct vm_create_params *vcp, struct proc *p)
 	vm->vm_id = vmm_softc->vm_idx;
 	vcp->vcp_id = vm->vm_id;
 
-	/* Publish the vm into the list and update list count. */
-	SLIST_INSERT_HEAD(&vmm_softc->vm_list, vm, vm_link);
+	/* Update list counts. */
 	vmm_softc->vm_ct++;
 	vmm_softc->vcpu_ct += vm->vm_vcpu_ct;
 
-	refcnt_rele(&vm->vm_refcnt);		/* No need for wake. */
+	/* Publish vm into list, inheriting the reference. */
+	SLIST_INSERT_HEAD(&vmm_softc->vm_list, vm, vm_link);
+
 	rw_exit_write(&vmm_softc->vm_lock);
 
 	return (0);
@@ -4063,9 +4060,7 @@ vm_teardown(struct vm **target)
 	/* Free VCPUs */
 	rw_enter_write(&vm->vm_vcpu_lock);
 	SLIST_FOREACH_SAFE(vcpu, &vm->vm_vcpu_list, vc_vcpu_link, tmp) {
-		refcnt_take(&vcpu->vc_refcnt);
 		refcnt_finalize(&vcpu->vc_refcnt, "vcputeardown");
-
 		SLIST_REMOVE(&vm->vm_vcpu_list, vcpu, vcpu, vc_vcpu_link);
 		vcpu_deinit(vcpu);
 
@@ -4475,6 +4470,7 @@ vm_terminate(struct vm_terminate_params *vtp)
 	rw_enter_write(&vmm_softc->vm_lock);
 	SLIST_REMOVE(&vmm_softc->vm_list, vm, vm, vm_link);
 	rw_exit_write(&vmm_softc->vm_lock);
+	refcnt_rele_wake(&vm->vm_refcnt);	/* Drop list reference. */
 
 	vm_id = vm->vm_id;
 	nvcpu = vm->vm_vcpu_ct;
