@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1139 2022/09/03 14:57:54 yasuoka Exp $ */
+/*	$OpenBSD: pf.c,v 1.1140 2022/09/03 19:22:19 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1023,10 +1023,10 @@ pf_state_insert(struct pfi_kif *kif, struct pf_state_key **skw,
 	pf_status.fcounters[FCNT_STATE_INSERT]++;
 	pf_status.states++;
 	pfi_kif_ref(kif, PFI_KIF_REF_STATE);
-	PF_STATE_EXIT_WRITE();
 #if NPFSYNC > 0
 	pfsync_insert_state(s);
 #endif	/* NPFSYNC > 0 */
+	PF_STATE_EXIT_WRITE();
 	return (0);
 }
 
