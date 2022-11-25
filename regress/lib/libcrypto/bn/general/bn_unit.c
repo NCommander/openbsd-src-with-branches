@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_unit.c,v 1.3 2022/11/23 08:01:05 tb Exp $ */
+/*	$OpenBSD: bn_unit.c,v 1.4 2022/11/23 08:58:34 tb Exp $ */
 
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
@@ -49,7 +49,7 @@ test_bn_print_null_derefs(void)
 	int failed = 0;
 
 	if ((a = malloc(size)) == NULL) {
-		warn("malloc(%zu) failed (make sure data limit is > %zu)",
+		warn("malloc(%zu) failed (make sure data limit is >= %zu KiB)",
 		    size, datalimit);
 		return 0;
 	}
