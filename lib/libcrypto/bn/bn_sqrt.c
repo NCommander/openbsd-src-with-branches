@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_sqrt.c,v 1.11 2022/06/20 15:02:21 tb Exp $ */
+/* $OpenBSD: bn_sqrt.c,v 1.12 2022/11/19 12:25:23 tb Exp $ */
 /* Written by Lenka Fibikova <fibikova@exp-math.uni-essen.de>
  * and Bodo Moeller for the OpenSSL project. */
 /* ====================================================================
@@ -87,7 +87,6 @@ BN_mod_sqrt(BIGNUM *in, const BIGNUM *a, const BIGNUM *p, BN_CTX *ctx)
 					BN_free(ret);
 				return NULL;
 			}
-			bn_check_top(ret);
 			return ret;
 		}
 
@@ -105,7 +104,6 @@ BN_mod_sqrt(BIGNUM *in, const BIGNUM *a, const BIGNUM *p, BN_CTX *ctx)
 				BN_free(ret);
 			return NULL;
 		}
-		bn_check_top(ret);
 		return ret;
 	}
 
@@ -407,6 +405,5 @@ end:
 		ret = NULL;
 	}
 	BN_CTX_end(ctx);
-	bn_check_top(ret);
 	return ret;
 }
