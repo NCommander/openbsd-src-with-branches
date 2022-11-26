@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_isqrt.c,v 1.6 2022/08/12 16:13:40 tb Exp $ */
+/*	$OpenBSD: bn_isqrt.c,v 1.7 2022/10/11 13:51:41 tb Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  *
@@ -21,7 +21,7 @@
 
 #include <openssl/bn.h>
 
-#include "bn_lcl.h"
+#include "bn_local.h"
 
 #define N_TESTS		400
 

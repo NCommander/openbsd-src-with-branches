@@ -1,4 +1,4 @@
-/* $OpenBSD: aes_ecb.c,v 1.5 2014/06/12 15:49:27 deraadt Exp $ */
+/* $OpenBSD: aes_ecb.c,v 1.6 2015/02/10 09:46:30 miod Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -56,7 +56,7 @@
 #endif
 
 #include <openssl/aes.h>
-#include "aes_locl.h"
+#include "aes_local.h"
 
 void
 AES_ecb_encrypt(const unsigned char *in, unsigned char *out,

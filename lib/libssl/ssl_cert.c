@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_cert.c,v 1.103 2022/07/07 13:04:39 tb Exp $ */
+/* $OpenBSD: ssl_cert.c,v 1.104 2022/10/02 16:36:41 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -128,7 +128,7 @@
 #include <openssl/pem.h>
 #include <openssl/x509v3.h>
 
-#include "ssl_locl.h"
+#include "ssl_local.h"
 
 int
 SSL_get_ex_data_X509_STORE_CTX_idx(void)

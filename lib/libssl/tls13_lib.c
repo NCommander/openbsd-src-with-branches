@@ -1,4 +1,4 @@
-/*	$OpenBSD: tls13_lib.c,v 1.74 2022/10/20 15:26:25 tb Exp $ */
+/*	$OpenBSD: tls13_lib.c,v 1.75 2022/11/07 11:53:39 jsing Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2019 Bob Beck <beck@openbsd.org>
@@ -20,7 +20,7 @@
 
 #include <openssl/evp.h>
 
-#include "ssl_locl.h"
+#include "ssl_local.h"
 #include "ssl_tlsext.h"
 #include "tls13_internal.h"
 

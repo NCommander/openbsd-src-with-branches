@@ -1,4 +1,4 @@
-/* $OpenBSD: e_cast.c,v 1.12 2022/09/10 17:39:47 jsing Exp $ */
+/* $OpenBSD: e_cast.c,v 1.13 2022/09/15 07:04:19 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -67,7 +67,7 @@
 #include <openssl/evp.h>
 #include <openssl/objects.h>
 
-#include "evp_locl.h"
+#include "evp_local.h"
 
 typedef struct {
 	CAST_KEY ks;

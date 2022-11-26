@@ -1,4 +1,4 @@
-/* $OpenBSD: by_mem.c,v 1.5 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: by_mem.c,v 1.6 2022/11/14 17:48:49 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -68,7 +68,7 @@
 #include <openssl/lhash.h>
 #include <openssl/x509.h>
 
-#include "x509_lcl.h"
+#include "x509_local.h"
 
 static int by_mem_ctrl(X509_LOOKUP *, int, const char *, long, char **);
 

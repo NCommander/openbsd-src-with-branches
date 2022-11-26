@@ -1,4 +1,4 @@
-/* $OpenBSD: aes_ige.c,v 1.7 2015/02/10 09:46:30 miod Exp $ */
+/* $OpenBSD: aes_ige.c,v 1.8 2022/01/22 00:43:41 inoguchi Exp $ */
 /* ====================================================================
  * Copyright (c) 2006 The OpenSSL Project.  All rights reserved.
  *
@@ -52,7 +52,7 @@
 #include <openssl/aes.h>
 #include <openssl/crypto.h>
 
-#include "aes_locl.h"
+#include "aes_local.h"
 
 #define N_WORDS (AES_BLOCK_SIZE / sizeof(unsigned long))
 typedef struct {

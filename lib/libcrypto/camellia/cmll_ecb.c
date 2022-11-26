@@ -1,4 +1,4 @@
-/* $OpenBSD: cmll_ecb.c,v 1.3 2014/06/12 15:49:28 deraadt Exp $ */
+/* $OpenBSD: cmll_ecb.c,v 1.4 2014/11/13 20:01:58 miod Exp $ */
 /* ====================================================================
  * Copyright (c) 2006 The OpenSSL Project.  All rights reserved.
  *
@@ -50,7 +50,7 @@
  */
 
 #include <openssl/camellia.h>
-#include "cmll_locl.h"
+#include "cmll_local.h"
 
 void
 Camellia_ecb_encrypt(const unsigned char *in, unsigned char *out,

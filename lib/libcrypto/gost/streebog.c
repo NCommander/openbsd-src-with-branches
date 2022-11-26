@@ -1,4 +1,4 @@
-/* $OpenBSD: streebog.c,v 1.6 2019/05/09 22:54:28 tb Exp $ */
+/* $OpenBSD: streebog.c,v 1.7 2021/11/09 18:40:21 bcook Exp $ */
 /*
  * Copyright (c) 2014 Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
  * Copyright (c) 2005-2006 Cryptocom LTD
@@ -60,7 +60,7 @@
 #include <openssl/objects.h>
 #include <openssl/gost.h>
 
-#include "gost_locl.h"
+#include "gost_local.h"
 
 static const STREEBOG_LONG64 A_PI_table[8][256] = {
 	{ /* 0 */

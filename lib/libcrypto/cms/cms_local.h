@@ -1,4 +1,4 @@
-/* $OpenBSD: cms_lcl.h,v 1.11 2019/08/11 10:26:04 jsing Exp $ */
+/* $OpenBSD: cms_lcl.h,v 1.12 2019/10/04 18:03:56 tb Exp $ */
 /*
  * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.

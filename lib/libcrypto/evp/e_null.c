@@ -1,4 +1,4 @@
-/* $OpenBSD: e_null.c,v 1.14 2014/07/11 08:44:48 jsing Exp $ */
+/* $OpenBSD: e_null.c,v 1.15 2021/12/12 21:30:13 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -62,7 +62,7 @@
 #include <openssl/evp.h>
 #include <openssl/objects.h>
 
-#include "evp_locl.h"
+#include "evp_local.h"
 
 static int null_init_key(EVP_CIPHER_CTX *ctx, const unsigned char *key,
     const unsigned char *iv, int enc);

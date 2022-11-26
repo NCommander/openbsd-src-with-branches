@@ -1,4 +1,4 @@
-/* $OpenBSD: p12_attr.c,v 1.17 2022/08/20 09:16:18 tb Exp $ */
+/* $OpenBSD: p12_attr.c,v 1.18 2022/11/12 13:03:28 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -61,7 +61,7 @@
 #include <openssl/pkcs12.h>
 
 #include "pkcs12_local.h"
-#include "x509_lcl.h"
+#include "x509_local.h"
 
 /* Add a local keyid to a safebag */
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: p_enc.c,v 1.11 2017/01/29 17:49:23 beck Exp $ */
+/* $OpenBSD: p_enc.c,v 1.12 2021/12/12 21:30:13 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -69,7 +69,7 @@
 #include <openssl/rsa.h>
 #endif
 
-#include "evp_locl.h"
+#include "evp_local.h"
 
 int
 EVP_PKEY_encrypt_old(unsigned char *ek, const unsigned char *key, int key_len,

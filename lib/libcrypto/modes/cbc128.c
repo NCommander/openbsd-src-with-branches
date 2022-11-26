@@ -1,4 +1,4 @@
-/* $OpenBSD: cbc128.c,v 1.4 2015/02/10 09:46:30 miod Exp $ */
+/* $OpenBSD: cbc128.c,v 1.5 2022/01/22 00:45:17 inoguchi Exp $ */
 /* ====================================================================
  * Copyright (c) 2008 The OpenSSL Project.  All rights reserved.
  *
@@ -50,7 +50,7 @@
  */
 
 #include <openssl/crypto.h>
-#include "modes_lcl.h"
+#include "modes_local.h"
 #include <string.h>
 
 #ifndef MODES_DEBUG

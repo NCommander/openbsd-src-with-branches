@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_print.c,v 1.35 2022/11/24 01:30:01 jsing Exp $ */
+/* $OpenBSD: bn_print.c,v 1.36 2022/11/26 13:56:33 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -66,7 +66,7 @@
 #include <openssl/buffer.h>
 #include <openssl/err.h>
 
-#include "bn_lcl.h"
+#include "bn_local.h"
 
 static const char Hex[]="0123456789ABCDEF";
 

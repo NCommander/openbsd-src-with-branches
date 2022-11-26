@@ -1,4 +1,4 @@
-/*	$OpenBSD: tls13_handshake.c,v 1.70 2021/09/16 19:25:30 jsing Exp $	*/
+/*	$OpenBSD: tls13_handshake.c,v 1.71 2022/04/19 17:01:43 tb Exp $	*/
 /*
  * Copyright (c) 2018-2021 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2019 Joel Sing <jsing@openbsd.org>
@@ -18,7 +18,7 @@
 
 #include <stddef.h>
 
-#include "ssl_locl.h"
+#include "ssl_local.h"
 #include "tls13_handshake.h"
 #include "tls13_internal.h"
 

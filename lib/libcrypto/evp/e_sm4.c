@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_sm4.c,v 1.5 2022/09/06 06:17:11 jsing Exp $	*/
+/*	$OpenBSD: e_sm4.c,v 1.6 2022/09/10 17:39:47 jsing Exp $	*/
 /*
  * Copyright (c) 2017, 2019 Ribose Inc
  *
@@ -22,7 +22,7 @@
 #include <openssl/modes.h>
 #include <openssl/sm4.h>
 
-#include "evp_locl.h"
+#include "evp_local.h"
 
 typedef struct {
 	SM4_KEY ks;

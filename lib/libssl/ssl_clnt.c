@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_clnt.c,v 1.155 2022/10/02 16:36:41 jsing Exp $ */
+/* $OpenBSD: ssl_clnt.c,v 1.156 2022/10/20 15:18:54 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -169,8 +169,8 @@
 #endif
 
 #include "bytestring.h"
-#include "dtls_locl.h"
-#include "ssl_locl.h"
+#include "dtls_local.h"
+#include "ssl_local.h"
 #include "ssl_sigalgs.h"
 #include "ssl_tlsext.h"
 

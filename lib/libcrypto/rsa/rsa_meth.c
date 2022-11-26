@@ -1,4 +1,4 @@
-/*	$OpenBSD: rsa_meth.c,v 1.4 2022/01/07 09:55:32 tb Exp $	*/
+/*	$OpenBSD: rsa_meth.c,v 1.5 2022/07/04 12:23:30 tb Exp $	*/
 /*
  * Copyright (c) 2018 Theo Buehler <tb@openbsd.org>
  *
@@ -21,7 +21,7 @@
 #include <openssl/err.h>
 #include <openssl/rsa.h>
 
-#include "rsa_locl.h"
+#include "rsa_local.h"
 
 RSA_METHOD *
 RSA_meth_new(const char *name, int flags)

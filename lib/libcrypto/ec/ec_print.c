@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_print.c,v 1.7 2014/12/03 19:53:20 deraadt Exp $ */
+/* $OpenBSD: ec_print.c,v 1.8 2022/11/19 07:29:29 tb Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -54,7 +54,7 @@
  */
 
 #include <openssl/crypto.h>
-#include "ec_lcl.h"
+#include "ec_local.h"
 
 BIGNUM *
 EC_POINT_point2bn(const EC_GROUP *group, const EC_POINT *point,

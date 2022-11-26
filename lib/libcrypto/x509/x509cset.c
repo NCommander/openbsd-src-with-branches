@@ -1,4 +1,4 @@
-/* $OpenBSD: x509cset.c,v 1.16 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: x509cset.c,v 1.17 2022/11/14 17:48:50 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -63,7 +63,7 @@
 #include <openssl/objects.h>
 #include <openssl/x509.h>
 
-#include "x509_lcl.h"
+#include "x509_local.h"
 
 int
 X509_CRL_up_ref(X509_CRL *x)

@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_locl.h,v 1.12 2022/01/14 08:34:39 tb Exp $ */
+/* $OpenBSD: rsa_locl.h,v 1.13 2022/07/04 12:23:30 tb Exp $ */
 
 __BEGIN_HIDDEN_DECLS
 

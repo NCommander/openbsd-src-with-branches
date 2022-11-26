@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssl_ciphers.c,v 1.15 2022/07/02 16:31:04 tb Exp $ */
+/*	$OpenBSD: ssl_ciphers.c,v 1.16 2022/10/02 16:36:41 jsing Exp $ */
 /*
  * Copyright (c) 2015-2017 Doug Hogan <doug@openbsd.org>
  * Copyright (c) 2015-2018, 2020 Joel Sing <jsing@openbsd.org>
@@ -20,7 +20,7 @@
 #include <openssl/safestack.h>
 
 #include "bytestring.h"
-#include "ssl_locl.h"
+#include "ssl_local.h"
 
 int
 ssl_cipher_in_list(STACK_OF(SSL_CIPHER) *ciphers, const SSL_CIPHER *cipher)

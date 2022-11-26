@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_x931p.c,v 1.12 2021/12/04 16:09:59 tb Exp $ */
+/* $OpenBSD: bn_x931p.c,v 1.13 2022/01/20 10:56:22 inoguchi Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2005.
  */
@@ -59,7 +59,7 @@
 #include <stdio.h>
 #include <openssl/bn.h>
 
-#include "bn_lcl.h"
+#include "bn_local.h"
 
 /* X9.31 routines for prime derivation */
 

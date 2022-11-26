@@ -1,4 +1,4 @@
-/* $OpenBSD: pem_pkey.c,v 1.24 2021/12/12 21:30:14 tb Exp $ */
+/* $OpenBSD: pem_pkey.c,v 1.25 2021/12/24 12:59:18 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -73,8 +73,8 @@
 #include <openssl/engine.h>
 #endif
 
-#include "asn1_locl.h"
-#include "evp_locl.h"
+#include "asn1_local.h"
+#include "evp_local.h"
 
 int pem_check_suffix(const char *pem_str, const char *suffix);
 

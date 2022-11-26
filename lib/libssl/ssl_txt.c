@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_txt.c,v 1.34 2022/06/07 17:22:22 tb Exp $ */
+/* $OpenBSD: ssl_txt.c,v 1.35 2022/06/07 17:55:08 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -86,7 +86,7 @@
 
 #include <openssl/buffer.h>
 
-#include "ssl_locl.h"
+#include "ssl_local.h"
 
 int
 SSL_SESSION_print_fp(FILE *fp, const SSL_SESSION *x)

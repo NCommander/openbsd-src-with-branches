@@ -1,4 +1,4 @@
-/*	$OpenBSD: evp_test.c,v 1.1 2022/11/09 16:13:39 jsing Exp $ */
+/*	$OpenBSD: evp_test.c,v 1.2 2022/11/09 17:15:59 jsing Exp $ */
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
  *
@@ -18,7 +18,7 @@
 #include <openssl/evp.h>
 #include <openssl/ossl_typ.h>
 
-#include "evp_locl.h"
+#include "evp_local.h"
 
 static int
 evp_asn1_method_test(void)

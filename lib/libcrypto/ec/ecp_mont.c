@@ -1,4 +1,4 @@
-/* $OpenBSD: ecp_mont.c,v 1.20 2021/09/08 17:29:21 tb Exp $ */
+/* $OpenBSD: ecp_mont.c,v 1.21 2022/11/19 07:29:29 tb Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -63,7 +63,7 @@
 
 #include <openssl/err.h>
 
-#include "ec_lcl.h"
+#include "ec_local.h"
 
 
 const EC_METHOD *

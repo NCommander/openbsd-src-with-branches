@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_conf.c,v 1.2 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: x509_conf.c,v 1.3 2022/11/14 17:48:50 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -66,7 +66,7 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
-#include "x509_lcl.h"
+#include "x509_local.h"
 
 static int v3_check_critical(const char **value);
 static int v3_check_generic(const char **value);

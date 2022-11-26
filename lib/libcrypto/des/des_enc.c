@@ -1,4 +1,4 @@
-/* $OpenBSD: des_enc.c,v 1.11 2014/06/12 15:49:28 deraadt Exp $ */
+/* $OpenBSD: des_enc.c,v 1.12 2014/10/28 07:35:58 jsg Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,7 +56,7 @@
  * [including the GNU Public Licence.]
  */
 
-#include "des_locl.h"
+#include "des_local.h"
 #include "spr.h"
 
 #ifndef OPENBSD_DES_ASM

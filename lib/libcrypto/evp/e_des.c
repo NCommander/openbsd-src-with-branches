@@ -1,4 +1,4 @@
-/* $OpenBSD: e_des.c,v 1.18 2022/09/04 15:45:25 jsing Exp $ */
+/* $OpenBSD: e_des.c,v 1.19 2022/09/15 07:04:19 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -67,7 +67,7 @@
 #include <openssl/des.h>
 #include <openssl/objects.h>
 
-#include "evp_locl.h"
+#include "evp_local.h"
 
 static int
 des_init_key(EVP_CIPHER_CTX *ctx, const unsigned char *key,

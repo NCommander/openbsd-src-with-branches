@@ -1,4 +1,4 @@
-/* $OpenBSD: ofb64ede.c,v 1.5 2014/10/28 07:35:58 jsg Exp $ */
+/* $OpenBSD: ofb64ede.c,v 1.6 2015/02/07 13:19:15 doug Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,7 +56,7 @@
  * [including the GNU Public Licence.]
  */
 
-#include "des_locl.h"
+#include "des_local.h"
 
 /* The input and output encrypted as though 64bit ofb mode is being
  * used.  The extra state information to record how much of the

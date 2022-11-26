@@ -1,4 +1,4 @@
-/*	$OpenBSD: x509_asid.c,v 1.36 2022/11/13 23:38:42 tb Exp $ */
+/*	$OpenBSD: x509_asid.c,v 1.37 2022/11/14 17:48:50 beck Exp $ */
 /*
  * Contributed to the OpenSSL Project by the American Registry for
  * Internet Numbers ("ARIN").
@@ -73,7 +73,7 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
-#include "x509_lcl.h"
+#include "x509_local.h"
 
 #ifndef OPENSSL_NO_RFC3779
 

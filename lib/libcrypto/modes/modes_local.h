@@ -1,4 +1,4 @@
-/* $OpenBSD: modes_lcl.h,v 1.10 2016/12/21 15:49:29 jsing Exp $ */
+/* $OpenBSD: modes_lcl.h,v 1.11 2021/11/09 18:40:21 bcook Exp $ */
 /* ====================================================================
  * Copyright (c) 2010 The OpenSSL Project.  All rights reserved.
  *

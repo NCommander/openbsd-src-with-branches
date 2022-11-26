@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_oaep.c,v 1.34 2021/12/12 21:30:14 tb Exp $ */
+/* $OpenBSD: rsa_oaep.c,v 1.35 2022/02/20 19:16:34 tb Exp $ */
 /*
  * Copyright 1999-2018 The OpenSSL Project Authors. All Rights Reserved.
  *
@@ -79,9 +79,9 @@
 #include <openssl/rsa.h>
 #include <openssl/sha.h>
 
-#include "constant_time_locl.h"
-#include "evp_locl.h"
-#include "rsa_locl.h"
+#include "constant_time.h"
+#include "evp_local.h"
+#include "rsa_local.h"
 
 int
 RSA_padding_add_PKCS1_OAEP(unsigned char *to, int tlen,

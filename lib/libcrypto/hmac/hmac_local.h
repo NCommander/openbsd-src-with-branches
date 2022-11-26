@@ -1,4 +1,4 @@
-/* $OpenBSD: hmac_local.h,v 1.2 2022/01/14 08:04:14 tb Exp $ */
+/* $OpenBSD: hmac_local.h,v 1.3 2022/01/14 08:06:03 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -62,7 +62,7 @@
 
 #include <openssl/evp.h>
 
-#include "evp_locl.h"
+#include "evp_local.h"
 
 __BEGIN_HIDDEN_DECLS
 

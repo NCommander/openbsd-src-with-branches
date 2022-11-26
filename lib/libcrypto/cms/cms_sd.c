@@ -1,4 +1,4 @@
-/* $OpenBSD: cms_sd.c,v 1.23 2019/08/11 14:35:57 jsing Exp $ */
+/* $OpenBSD: cms_sd.c,v 1.24 2022/08/28 18:27:47 tb Exp $ */
 /*
  * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
@@ -61,9 +61,9 @@
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
 #include <openssl/cms.h>
-#include "cms_lcl.h"
-#include "asn1/asn1_locl.h"
-#include "evp/evp_locl.h"
+#include "cms_local.h"
+#include "asn1/asn1_local.h"
+#include "evp/evp_local.h"
 
 /* CMS SignedData Utilities */
 

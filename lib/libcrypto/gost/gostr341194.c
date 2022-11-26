@@ -1,4 +1,4 @@
-/* $OpenBSD: gostr341194.c,v 1.4 2015/07/15 17:13:17 beck Exp $ */
+/* $OpenBSD: gostr341194.c,v 1.5 2015/09/10 15:56:25 jsing Exp $ */
 /*
  * Copyright (c) 2014 Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
  * Copyright (c) 2005-2006 Cryptocom LTD
@@ -58,7 +58,7 @@
 #include <openssl/objects.h>
 #include <openssl/gost.h>
 
-#include "gost_locl.h"
+#include "gost_local.h"
 
 /* Following functions are various bit meshing routines used in
  * GOST R 34.11-94 algorithms */

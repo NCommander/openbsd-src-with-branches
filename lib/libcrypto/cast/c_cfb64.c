@@ -1,4 +1,4 @@
-/* $OpenBSD: c_cfb64.c,v 1.4 2014/06/12 15:49:28 deraadt Exp $ */
+/* $OpenBSD: c_cfb64.c,v 1.5 2014/10/28 07:35:58 jsg Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -57,7 +57,7 @@
  */
 
 #include <openssl/cast.h>
-#include "cast_lcl.h"
+#include "cast_local.h"
 
 /* The input and output encrypted as though 64bit cfb mode is being
  * used.  The extra state information to record how much of the

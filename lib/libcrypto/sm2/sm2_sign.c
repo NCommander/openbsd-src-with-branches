@@ -1,4 +1,4 @@
-/*	$OpenBSD: sm2_sign.c,v 1.1.1.1 2021/08/18 16:04:32 tb Exp $ */
+/*	$OpenBSD: sm2_sign.c,v 1.2 2022/01/20 11:12:14 inoguchi Exp $ */
 /*
  * Copyright (c) 2017, 2019 Ribose Inc
  *
@@ -24,8 +24,8 @@
 #include <openssl/err.h>
 #include <openssl/bn.h>
 
-#include "bn_lcl.h"
-#include "sm2_locl.h"
+#include "bn_local.h"
+#include "sm2_local.h"
 
 static BIGNUM *
 sm2_compute_msg_hash(const EVP_MD *digest, const EC_KEY *key,

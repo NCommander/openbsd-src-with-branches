@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1object.c,v 1.8 2022/06/22 09:54:19 tb Exp $ */
+/* $OpenBSD: asn1object.c,v 1.9 2022/09/05 21:06:31 tb Exp $ */
 /*
  * Copyright (c) 2017, 2021, 2022 Joel Sing <jsing@openbsd.org>
  *
@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "asn1_locl.h"
+#include "asn1_local.h"
 
 static void
 hexdump(const unsigned char *buf, size_t len)

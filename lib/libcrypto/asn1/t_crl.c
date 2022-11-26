@@ -1,4 +1,4 @@
-/* $OpenBSD: t_crl.c,v 1.19 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: t_crl.c,v 1.20 2021/12/25 13:17:48 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -66,7 +66,7 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
-#include "x509_lcl.h"
+#include "x509_local.h"
 
 int
 X509_CRL_print_fp(FILE *fp, X509_CRL *x)

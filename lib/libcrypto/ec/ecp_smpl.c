@@ -1,4 +1,4 @@
-/* $OpenBSD: ecp_smpl.c,v 1.36 2022/11/19 07:29:29 tb Exp $ */
+/* $OpenBSD: ecp_smpl.c,v 1.37 2022/11/24 01:30:01 jsing Exp $ */
 /* Includes code written by Lenka Fibikova <fibikova@exp-math.uni-essen.de>
  * for the OpenSSL project.
  * Includes code written by Bodo Moeller for the OpenSSL project.
@@ -64,8 +64,8 @@
 
 #include <openssl/err.h>
 
-#include "bn_lcl.h"
-#include "ec_lcl.h"
+#include "bn_local.h"
+#include "ec_local.h"
 
 const EC_METHOD *
 EC_GFp_simple_method(void)

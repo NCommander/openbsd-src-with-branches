@@ -1,4 +1,4 @@
-/* $OpenBSD: ui_lib.c,v 1.44 2020/09/25 11:25:31 tb Exp $ */
+/* $OpenBSD: ui_lib.c,v 1.45 2022/11/12 13:16:10 beck Exp $ */
 /* Written by Richard Levitte (richard@levitte.org) for the OpenSSL
  * project 2001.
  */
@@ -64,7 +64,7 @@
 #include <openssl/err.h>
 #include <openssl/ui.h>
 
-#include "ui_locl.h"
+#include "ui_local.h"
 
 static const UI_METHOD *default_UI_meth = NULL;
 

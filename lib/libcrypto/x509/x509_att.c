@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_att.c,v 1.19 2022/05/09 19:19:33 jsing Exp $ */
+/* $OpenBSD: x509_att.c,v 1.20 2022/11/14 17:48:50 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -66,7 +66,7 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
-#include "x509_lcl.h"
+#include "x509_local.h"
 
 int
 X509at_get_attr_count(const STACK_OF(X509_ATTRIBUTE) *x)

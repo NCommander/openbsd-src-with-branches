@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_chk.c,v 1.15 2022/01/10 00:03:02 tb Exp $ */
+/* $OpenBSD: rsa_chk.c,v 1.16 2022/01/20 11:08:12 inoguchi Exp $ */
 /* ====================================================================
  * Copyright (c) 1999 The OpenSSL Project.  All rights reserved.
  *
@@ -52,8 +52,8 @@
 #include <openssl/err.h>
 #include <openssl/rsa.h>
 
-#include "bn_lcl.h"
-#include "rsa_locl.h"
+#include "bn_local.h"
+#include "rsa_local.h"
 
 int
 RSA_check_key(const RSA *key)

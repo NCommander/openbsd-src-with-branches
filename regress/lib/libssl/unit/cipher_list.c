@@ -1,4 +1,4 @@
-/*	$OpenBSD: cipher_list.c,v 1.11 2022/07/07 13:11:45 tb Exp $	*/
+/*	$OpenBSD: cipher_list.c,v 1.12 2022/10/02 16:38:23 jsing Exp $	*/
 /*
  * Copyright (c) 2015 Doug Hogan <doug@openbsd.org>
  * Copyright (c) 2015 Joel Sing <jsing@openbsd.org>
@@ -39,7 +39,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "ssl_locl.h"
+#include "ssl_local.h"
 
 #include "tests.h"
 

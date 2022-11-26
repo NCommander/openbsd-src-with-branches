@@ -1,4 +1,4 @@
-/* $OpenBSD: e_chacha.c,v 1.8 2020/01/26 07:47:26 tb Exp $ */
+/* $OpenBSD: e_chacha.c,v 1.9 2022/07/30 17:11:38 jsing Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -23,7 +23,7 @@
 #include <openssl/evp.h>
 #include <openssl/objects.h>
 
-#include "evp_locl.h"
+#include "evp_local.h"
 
 static int
 chacha_init(EVP_CIPHER_CTX *ctx, const unsigned char *key,

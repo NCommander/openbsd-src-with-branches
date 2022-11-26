@@ -1,4 +1,4 @@
-/* $OpenBSD: ecp_nist.c,v 1.19 2022/06/30 11:14:47 tb Exp $ */
+/* $OpenBSD: ecp_nist.c,v 1.20 2022/11/19 07:29:29 tb Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project.
  */
@@ -66,7 +66,7 @@
 #include <openssl/err.h>
 #include <openssl/objects.h>
 
-#include "ec_lcl.h"
+#include "ec_local.h"
 
 const EC_METHOD *
 EC_GFp_nist_method(void)

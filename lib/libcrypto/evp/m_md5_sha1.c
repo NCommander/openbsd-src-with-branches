@@ -1,4 +1,4 @@
-/* $OpenBSD: m_md5_sha1.c,v 1.3 2021/12/12 21:30:13 tb Exp $ */
+/* $OpenBSD: m_md5_sha1.c,v 1.4 2022/01/14 08:38:06 tb Exp $ */
 /*
  * Copyright (c) 2017 Joel Sing <jsing@openbsd.org>
  *
@@ -24,7 +24,7 @@
 #include <openssl/rsa.h>
 #endif
 
-#include "evp_locl.h"
+#include "evp_local.h"
 
 struct md5_sha1_ctx {
 	MD5_CTX md5;

@@ -1,4 +1,4 @@
-/* $OpenBSD: i_skey.c,v 1.3 2014/06/12 15:49:29 deraadt Exp $ */
+/* $OpenBSD: i_skey.c,v 1.4 2014/10/28 07:35:58 jsg Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -58,7 +58,7 @@
 
 #include <openssl/crypto.h>
 #include <openssl/idea.h>
-#include "idea_lcl.h"
+#include "idea_local.h"
 
 static IDEA_INT inverse(unsigned int xin);
 void idea_set_encrypt_key(const unsigned char *key, IDEA_KEY_SCHEDULE *ks)

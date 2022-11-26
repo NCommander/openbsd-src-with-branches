@@ -1,4 +1,4 @@
-/* $OpenBSD: sha1dgst.c,v 1.13 2014/07/10 22:45:58 jsing Exp $ */
+/* $OpenBSD: sha1dgst.c,v 1.14 2015/09/13 21:09:56 doug Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -66,7 +66,7 @@
 
 /* The implementation is in ../md32_common.h */
 
-#include "sha_locl.h"
+#include "sha_local.h"
 
 #endif
 

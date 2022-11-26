@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_gf2m.c,v 1.26 2022/11/24 01:30:01 jsing Exp $ */
+/* $OpenBSD: bn_gf2m.c,v 1.27 2022/11/26 13:56:33 jsing Exp $ */
 /* ====================================================================
  * Copyright 2002 Sun Microsystems, Inc. ALL RIGHTS RESERVED.
  *
@@ -95,7 +95,7 @@
 
 #include <openssl/err.h>
 
-#include "bn_lcl.h"
+#include "bn_local.h"
 
 #ifndef OPENSSL_NO_EC2M
 

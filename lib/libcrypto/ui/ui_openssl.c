@@ -1,4 +1,4 @@
-/* $OpenBSD: ui_openssl.c,v 1.25 2015/09/10 15:56:26 jsing Exp $ */
+/* $OpenBSD: ui_openssl.c,v 1.26 2022/11/12 13:16:10 beck Exp $ */
 /* Written by Richard Levitte (richard@levitte.org) and others
  * for the OpenSSL project 2001.
  */
@@ -125,7 +125,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "ui_locl.h"
+#include "ui_local.h"
 
 #ifndef NX509_SIG
 #define NX509_SIG 32

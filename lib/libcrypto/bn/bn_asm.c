@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_asm.c,v 1.14 2015/02/25 15:39:49 bcook Exp $ */
+/* $OpenBSD: bn_asm.c,v 1.15 2017/05/02 03:59:44 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -66,7 +66,7 @@
 
 #include <openssl/opensslconf.h>
 
-#include "bn_lcl.h"
+#include "bn_local.h"
 
 #if defined(BN_LLONG) || defined(BN_UMULT_HIGH)
 

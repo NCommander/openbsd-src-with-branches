@@ -1,4 +1,4 @@
-/* $OpenBSD: ui_util.c,v 1.10 2015/09/10 15:56:26 jsing Exp $ */
+/* $OpenBSD: ui_util.c,v 1.11 2022/11/12 13:16:10 beck Exp $ */
 /* ====================================================================
  * Copyright (c) 2001-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -57,7 +57,7 @@
 
 #include <openssl/ui_compat.h>
 
-#include "ui_locl.h"
+#include "ui_local.h"
 
 int
 UI_UTIL_read_pw_string(char *buf, int length, const char *prompt, int verify)

@@ -1,4 +1,4 @@
-/* $OpenBSD: set_key.c,v 1.19 2014/10/28 07:35:58 jsg Exp $ */
+/* $OpenBSD: set_key.c,v 1.20 2017/02/09 03:43:05 dtucker Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -64,7 +64,7 @@
  * 1.0 First working version
  */
 #include <openssl/crypto.h>
-#include "des_locl.h"
+#include "des_local.h"
 
 int DES_check_key = 0;	/* defaults to false */
 

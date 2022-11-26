@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_lib.c,v 1.45 2022/04/07 17:37:25 tb Exp $ */
+/* $OpenBSD: ec_lib.c,v 1.46 2022/11/19 07:29:29 tb Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -68,8 +68,8 @@
 #include <openssl/err.h>
 #include <openssl/opensslv.h>
 
-#include "bn_lcl.h"
-#include "ec_lcl.h"
+#include "bn_local.h"
+#include "ec_local.h"
 
 /* functions for EC_GROUP objects */
 

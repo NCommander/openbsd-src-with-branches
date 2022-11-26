@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_depr.c,v 1.6 2014/07/11 08:44:47 jsing Exp $ */
+/* $OpenBSD: bn_depr.c,v 1.7 2014/10/18 17:20:40 jsing Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -61,7 +61,7 @@
 
 #include <openssl/opensslconf.h>
 
-#include "bn_lcl.h"
+#include "bn_local.h"
 
 #ifndef OPENSSL_NO_DEPRECATED
 BIGNUM *

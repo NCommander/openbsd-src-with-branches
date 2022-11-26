@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: exportertest.c,v 1.1 2022/11/05 21:58:24 jsing Exp $ */
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
  *
@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "ssl_locl.h"
+#include "ssl_local.h"
 
 static void
 hexdump(const unsigned char *buf, size_t len)

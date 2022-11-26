@@ -1,4 +1,4 @@
-/* $OpenBSD: bio_b64.c,v 1.24 2022/01/07 09:02:18 tb Exp $ */
+/* $OpenBSD: bio_b64.c,v 1.25 2022/01/14 08:40:57 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -64,7 +64,7 @@
 #include <openssl/evp.h>
 
 #include "bio_local.h"
-#include "evp_locl.h"
+#include "evp_local.h"
 
 static int b64_write(BIO *h, const char *buf, int num);
 static int b64_read(BIO *h, char *buf, int size);

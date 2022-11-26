@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_nist.c,v 1.20 2022/05/07 07:47:24 jsing Exp $ */
+/* $OpenBSD: bn_nist.c,v 1.22 2022/07/31 14:38:38 jsing Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project
  */
@@ -60,7 +60,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "bn_lcl.h"
+#include "bn_local.h"
 
 #define CTASSERT(x)	extern char  _ctassert[(x) ? 1 : -1 ]   \
 			    __attribute__((__unused__))

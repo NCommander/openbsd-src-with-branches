@@ -1,4 +1,4 @@
-/* $OpenBSD: key_schedule.c,v 1.8 2019/11/18 02:04:56 beck Exp $ */
+/* $OpenBSD: key_schedule.c,v 1.9 2019/11/18 02:09:58 beck Exp $ */
 /*
  * Copyright (c) 2018-2019 Bob Beck <beck@openbsd.org>
  *
@@ -17,7 +17,7 @@
 
 #include <err.h>
 
-#include "ssl_locl.h"
+#include "ssl_local.h"
 
 #include "bytestring.h"
 #include "ssl_tlsext.h"

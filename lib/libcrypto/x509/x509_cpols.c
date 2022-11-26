@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_cpols.c,v 1.4 2022/01/14 08:16:13 tb Exp $ */
+/* $OpenBSD: x509_cpols.c,v 1.5 2022/11/14 17:48:50 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -66,7 +66,7 @@
 #include <openssl/x509v3.h>
 
 #include "pcy_int.h"
-#include "x509_lcl.h"
+#include "x509_local.h"
 
 /* Certificate policies extension support: this one is a bit complex... */
 

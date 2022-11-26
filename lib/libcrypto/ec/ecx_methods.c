@@ -1,4 +1,4 @@
-/*	$OpenBSD: ecx_methods.c,v 1.2 2022/11/19 07:00:57 tb Exp $ */
+/*	$OpenBSD: ecx_methods.c,v 1.3 2022/11/23 07:37:06 tb Exp $ */
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
  *
@@ -23,10 +23,10 @@
 #include <openssl/evp.h>
 #include <openssl/x509.h>
 
-#include "asn1_locl.h"
+#include "asn1_local.h"
 #include "bytestring.h"
 #include "curve25519_internal.h"
-#include "evp_locl.h"
+#include "evp_local.h"
 
 /*
  * EVP PKEY and PKEY ASN.1 methods Ed25519 and X25519.
