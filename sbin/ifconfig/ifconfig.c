@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifconfig.c,v 1.457 2022/10/26 17:06:31 kn Exp $	*/
+/*	$OpenBSD: ifconfig.c,v 1.458 2022/11/25 23:09:20 deraadt Exp $	*/
 /*	$NetBSD: ifconfig.c,v 1.40 1997/10/01 02:19:43 enami Exp $	*/
 
 /*
@@ -6630,9 +6630,8 @@ __dead void
 usage(void)
 {
 	fprintf(stderr,
-	    "usage: ifconfig [-AaC] [-M lladdr] [interface] [address_family] "
-	    "[address [dest_address]]\n"
-	    "\t\t[parameters]\n");
+	    "usage: ifconfig [-AaC] [-M lladdr] [interface] [address_family]\n"
+	    "\t\t[address [dest_address]] [parameters]\n");
 	exit(1);
 }
 
