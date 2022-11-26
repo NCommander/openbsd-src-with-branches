@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.30 2022/11/08 20:41:36 mlarkin Exp $ */
+/* $OpenBSD: cpu.h,v 1.31 2022/11/24 14:43:16 kettenis Exp $ */
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
  *
@@ -36,7 +36,8 @@
 #define	CPU_ID_AA64PFR1		9
 #define	CPU_ID_AA64SMFR0       10
 #define	CPU_ID_AA64ZFR0	       11
-#define	CPU_MAXID	       12	/* number of valid machdep ids */
+#define	CPU_LIDACTION          12
+#define	CPU_MAXID	       13	/* number of valid machdep ids */
 
 #define	CTL_MACHDEP_NAMES { \
 	{ 0, 0 }, \
