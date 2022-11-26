@@ -1,4 +1,4 @@
-/* $OpenBSD: cms_lcl.h,v 1.12 2019/10/04 18:03:56 tb Exp $ */
+/* $OpenBSD: cms_local.h,v 1.1 2022/11/26 16:08:51 tb Exp $ */
 /*
  * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
@@ -52,8 +52,8 @@
  * ====================================================================
  */
 
-#ifndef HEADER_CMS_LCL_H
-#define HEADER_CMS_LCL_H
+#ifndef HEADER_CMS_LOCAL_H
+#define HEADER_CMS_LOCAL_H
 
 #include <openssl/x509.h>
 
@@ -481,4 +481,4 @@ extern const ASN1_ITEM CMS_RevocationInfoChoice_it;
 extern const ASN1_ITEM CMS_SignedData_it;
 extern const ASN1_ITEM CMS_CompressedData_it;
 
-#endif
+#endif /* !HEADER_CMS_LOCAL_H */

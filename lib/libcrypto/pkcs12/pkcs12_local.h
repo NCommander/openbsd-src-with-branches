@@ -1,4 +1,4 @@
-/* $OpenBSD: pkcs12_local.h,v 1.1 2022/08/20 09:16:18 tb Exp $ */
+/* $OpenBSD: pkcs12_local.h,v 1.2 2022/09/11 17:30:13 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -98,4 +98,4 @@ struct pkcs12_bag_st {
 
 __END_HIDDEN_DECLS
 
-#endif /* HEADER_PKCS12_LOCAL_H */
+#endif /* !HEADER_PKCS12_LOCAL_H */

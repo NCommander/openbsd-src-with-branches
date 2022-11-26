@@ -1,4 +1,4 @@
-/* $OpenBSD: ts_local.h,v 1.1 2022/07/24 08:16:47 tb Exp $ */
+/* $OpenBSD: ts_local.h,v 1.2 2022/09/11 17:31:19 tb Exp $ */
 /* Written by Zoltan Glozik (zglozik@opentsa.org) for the OpenSSL
  * project 2002, 2003, 2004.
  */
@@ -313,4 +313,4 @@ ESS_SIGNING_CERT_V2 *ESS_SIGNING_CERT_V2_dup(ESS_SIGNING_CERT_V2 *a);
 
 __END_HIDDEN_DECLS
 
-#endif /* HEADER_TS_LOCAL_H */
+#endif /* !HEADER_TS_LOCAL_H */

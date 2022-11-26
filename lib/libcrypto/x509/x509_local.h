@@ -1,4 +1,4 @@
-/*	$OpenBSD: x509_lcl.h,v 1.16 2022/08/15 11:52:37 tb Exp $ */
+/*	$OpenBSD: x509_local.h,v 1.1 2022/11/26 16:08:54 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2013.
  */
@@ -56,8 +56,8 @@
  *
  */
 
-#ifndef HEADER_X509_LCL_H
-#define HEADER_X509_LCL_H
+#ifndef HEADER_X509_LOCAL_H
+#define HEADER_X509_LOCAL_H
 
 __BEGIN_HIDDEN_DECLS
 
@@ -377,4 +377,4 @@ int name_cmp(const char *name, const char *cmp);
 
 __END_HIDDEN_DECLS
 
-#endif /* !HEADER_X509_LCL_H */
+#endif /* !HEADER_X509_LOCAL_H */

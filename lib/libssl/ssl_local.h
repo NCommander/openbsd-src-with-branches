@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_locl.h,v 1.432 2022/11/11 17:15:26 jsing Exp $ */
+/* $OpenBSD: ssl_local.h,v 1.1 2022/11/26 16:08:55 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1535,4 +1535,4 @@ int tls_process_peer_certs(SSL *s, STACK_OF(X509) *peer_certs);
 
 __END_HIDDEN_DECLS
 
-#endif
+#endif /* !HEADER_SSL_LOCL_H */
