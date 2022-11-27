@@ -1,4 +1,4 @@
-/*	$OpenBSD: pci.c,v 1.124 2022/03/11 18:00:51 mpi Exp $	*/
+/*	$OpenBSD: pci.c,v 1.125 2022/06/17 10:08:36 kettenis Exp $	*/
 /*	$NetBSD: pci.c,v 1.31 1997/06/06 23:48:04 thorpej Exp $	*/
 
 /*
@@ -1293,7 +1293,7 @@ pciioctl(dev_t dev, u_long cmd, caddr_t data, int flag, struct proc *p)
 		    func == sel->pc_func)
 			break;
 	}
-	if (pd == LIST_END(&pci->sc_devs))
+	if (pd == NULL)
 		return ENXIO;
 
 	tag = pci_make_tag(pc, sel->pc_bus, sel->pc_dev, sel->pc_func);
