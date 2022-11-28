@@ -1,4 +1,4 @@
-/* $OpenBSD: bio_local.h,v 1.2 2022/01/14 08:18:55 tb Exp $ */
+/* $OpenBSD: bio_local.h,v 1.3 2022/01/14 08:40:57 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -87,7 +87,6 @@ struct bio_st {
 	int num;
 	void *ptr;
 	struct bio_st *next_bio;	/* used by filter BIOs */
-	struct bio_st *prev_bio;	/* used by filter BIOs */
 	int references;
 	unsigned long num_read;
 	unsigned long num_write;
