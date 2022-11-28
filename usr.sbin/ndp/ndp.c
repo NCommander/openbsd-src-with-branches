@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.103 2021/03/02 05:34:20 jsg Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.104 2022/11/09 18:00:02 kn Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -887,9 +887,6 @@ ifinfo(const char *ifname)
 	strlcpy(nd.ifname, ifname, sizeof(nd.ifname));
 	if (ioctl(s, SIOCGIFINFO_IN6, (caddr_t)&nd) == -1)
 		err(1, "ioctl(SIOCGIFINFO_IN6)");
-
-	if (!nd.ndi.initialized)
-		errx(1, "%s: not initialized yet", ifname);
 
 	printf("basereachable=%ds%dms",
 	    nd.ndi.basereachable / 1000, nd.ndi.basereachable % 1000);
