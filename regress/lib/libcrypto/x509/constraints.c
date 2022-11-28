@@ -1,4 +1,4 @@
-/*	$OpenBSD: constraints.c,v 1.13 2022/11/11 12:02:34 beck Exp $	*/
+/*	$OpenBSD: constraints.c,v 1.14 2022/11/23 23:06:16 kn Exp $	*/
 /*
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
  *
@@ -466,6 +466,8 @@ test_constraints1(void)
 			char *hostpart = NULL;
 			error = 0;
 			if (!x509_constraints_uri_host(noauthority[j],
+			    strlen(noauthority[j]), NULL) ||
+			    !x509_constraints_uri_host(noauthority[j],
 			    strlen(noauthority[j]), &hostpart)) {
 				FAIL("name '%s' should parse as a URI",
 				    noauthority[j]);
