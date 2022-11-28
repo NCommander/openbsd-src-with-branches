@@ -1,4 +1,4 @@
-/*	$OpenBSD: cms.c,v 1.22 2022/11/26 12:02:36 job Exp $ */
+/*	$OpenBSD: cms.c,v 1.23 2022/11/26 12:36:19 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -296,7 +296,7 @@ cms_parse_validate(X509 **xp, const char *fn, const unsigned char *der,
 
 	if (!cms_parse_validate_internal(xp, fn, der, derlen, oid, NULL, &res,
 	    rsz))
-                return NULL;
+		return NULL;
 
 	return res;
 }
