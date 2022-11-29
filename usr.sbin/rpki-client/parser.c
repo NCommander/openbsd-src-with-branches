@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.78 2022/11/02 12:43:02 job Exp $ */
+/*	$OpenBSD: parser.c,v 1.79 2022/11/29 10:33:09 claudio Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -20,7 +20,6 @@
 #include <sys/tree.h>
 #include <sys/types.h>
 
-#include <assert.h>
 #include <err.h>
 #include <fcntl.h>
 #include <poll.h>

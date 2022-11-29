@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip.c,v 1.24 2022/05/15 15:00:53 deraadt Exp $ */
+/*	$OpenBSD: ip.c,v 1.25 2022/05/15 16:43:34 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -18,7 +18,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#include <assert.h>
 #include <err.h>
 #include <stdarg.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: as.c,v 1.7 2021/12/26 12:32:28 tb Exp $ */
+/*	$OpenBSD: as.c,v 1.8 2022/05/15 16:43:34 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -17,7 +17,6 @@
 
 #include <sys/socket.h>
 
-#include <assert.h>
 #include <err.h>
 #include <stdarg.h>
 #include <stdint.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rrdp.c,v 1.25 2022/09/02 18:08:43 tb Exp $ */
+/*	$OpenBSD: rrdp.c,v 1.26 2022/09/02 18:37:17 claudio Exp $ */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
@@ -18,7 +18,6 @@
 #include <sys/queue.h>
 #include <sys/stat.h>
 
-#include <assert.h>
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
