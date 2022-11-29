@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosvar.h,v 1.27 2019/11/29 16:16:19 kettenis Exp $	*/
+/*	$OpenBSD: biosvar.h,v 1.28 2022/06/29 07:51:54 kettenis Exp $	*/
 
 /*
  * Copyright (c) 1997-1999 Michael Shalayeff
@@ -276,6 +276,7 @@ int bios_sysctl(int *, u_int, void *, size_t *, void *, size_t, struct proc *);
 void bios_getopt(void);
 bios_diskinfo_t *bios_getdiskinfo(dev_t);
 
+extern int biosbasemem;
 extern u_int bootapiver;
 extern bios_memmap_t *bios_memmap;
 extern bios_efiinfo_t *bios_efiinfo;
