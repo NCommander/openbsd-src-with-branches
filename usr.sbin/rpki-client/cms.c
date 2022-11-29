@@ -1,4 +1,4 @@
-/*	$OpenBSD: cms.c,v 1.23 2022/11/26 12:36:19 tb Exp $ */
+/*	$OpenBSD: cms.c,v 1.24 2022/11/28 18:33:56 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -17,7 +17,6 @@
 
 #include <assert.h>
 #include <err.h>
-#include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>

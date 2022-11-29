@@ -1,4 +1,4 @@
-/*	$OpenBSD: roa.c,v 1.56 2022/11/09 18:17:23 job Exp $ */
+/*	$OpenBSD: roa.c,v 1.57 2022/11/26 17:14:40 job Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -18,7 +18,6 @@
 
 #include <assert.h>
 #include <err.h>
-#include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>

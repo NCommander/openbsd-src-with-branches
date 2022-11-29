@@ -1,4 +1,4 @@
-/*	$OpenBSD: cert.c,v 1.97 2022/11/08 08:15:39 tb Exp $ */
+/*	$OpenBSD: cert.c,v 1.98 2022/11/26 17:14:40 job Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2021 Job Snijders <job@openbsd.org>
@@ -23,7 +23,6 @@
 #include <assert.h>
 #include <err.h>
 #include <inttypes.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
