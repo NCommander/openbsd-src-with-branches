@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.24 2021/09/12 07:06:08 anton Exp $
+#	$OpenBSD: Makefile,v 1.25 2022/03/24 22:11:11 bluhm Exp $
 
 SUBDIR+=	csu
 SUBDIR+=	libagentx
@@ -8,6 +8,7 @@ SUBDIR+=	libedit
 SUBDIR+=	libevent
 SUBDIR+=	libexpat
 SUBDIR+=	libfuse
+SUBDIR+=	libkeynote
 SUBDIR+=	libm
 SUBDIR+=	libpthread
 SUBDIR+=	libradius
