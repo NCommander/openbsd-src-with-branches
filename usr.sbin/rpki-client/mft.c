@@ -1,4 +1,4 @@
-/*	$OpenBSD: mft.c,v 1.79 2022/11/26 12:02:37 job Exp $ */
+/*	$OpenBSD: mft.c,v 1.80 2022/11/29 20:41:32 job Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -17,7 +17,6 @@
  */
 
 #include <assert.h>
-#include <ctype.h>
 #include <err.h>
 #include <limits.h>
 #include <stdint.h>
