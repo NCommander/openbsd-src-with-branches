@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_nist.c,v 1.22 2022/07/31 14:38:38 jsing Exp $ */
+/* $OpenBSD: bn_nist.c,v 1.23 2022/11/26 16:08:51 tb Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project
  */
@@ -401,9 +401,6 @@ nist_cp_bn_0(BN_ULONG *dst, const BN_ULONG *src, int top, int max)
 {
 	int i;
 
-#ifdef BN_DEBUG
-	OPENSSL_assert(top <= max);
-#endif
 	for (i = 0; i < top; i++)
 		dst[i] = src[i];
 	for (; i < max; i++)

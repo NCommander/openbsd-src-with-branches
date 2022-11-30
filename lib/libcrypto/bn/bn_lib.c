@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_lib.c,v 1.62 2022/11/26 13:56:33 jsing Exp $ */
+/* $OpenBSD: bn_lib.c,v 1.63 2022/11/26 16:08:51 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -55,11 +55,6 @@
  * copied and put under another distribution licence
  * [including the GNU Public Licence.]
  */
-
-#ifndef BN_DEBUG
-# undef NDEBUG /* avoid conflicting definitions */
-# define NDEBUG
-#endif
 
 #include <assert.h>
 #include <limits.h>
