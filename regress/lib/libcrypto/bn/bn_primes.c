@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_primes.c,v 1.3 2022/12/01 13:49:12 tb Exp $ */
+/*	$OpenBSD: bn_primes.c,v 1.4 2022/12/01 14:32:06 tb Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  *

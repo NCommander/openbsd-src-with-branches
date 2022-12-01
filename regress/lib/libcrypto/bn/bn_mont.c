@@ -1,4 +1,4 @@
-/*	$OpenBSD: mont.c,v 1.5 2021/11/26 16:52:07 tb Exp $	*/
+/*	$OpenBSD: mont.c,v 1.6 2022/01/14 09:32:27 tb Exp $	*/
 
 /*
  * Copyright (c) 2014 Miodrag Vallat.
