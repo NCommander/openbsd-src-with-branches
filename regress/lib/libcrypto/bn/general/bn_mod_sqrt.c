@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: bn_mod_sqrt.c,v 1.1 2022/03/15 16:28:42 tb Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  *
@@ -124,9 +124,6 @@ main(void)
 
 	for (i = 0; i < N_TESTS; i++)
 		failed |= mod_sqrt_test(&mod_sqrt_test_data[i]);
-
-	if (!failed)
-		printf("SUCCESS\n");
 
 	return failed;
 }

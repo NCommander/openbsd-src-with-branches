@@ -1,4 +1,4 @@
-/*	$OpenBSD: evp_pkey_cleanup.c,v 1.1 2022/03/30 08:57:26 tb Exp $ */
+/*	$OpenBSD: evp_pkey_cleanup.c,v 1.2 2022/11/26 16:08:56 tb Exp $ */
 
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
@@ -78,9 +78,6 @@ main(void)
 
 	for (i = 0; i < N_PKEY_IDS; i++)
 		failed |= test_evp_pkey_ctx_cleanup(pkey_ids[i]);
-
-	if (!failed)
-		printf("SUCCESS\n");
 
 	return failed;
 }

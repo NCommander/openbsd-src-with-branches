@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_unit.c,v 1.4 2022/11/23 08:58:34 tb Exp $ */
+/*	$OpenBSD: bn_unit.c,v 1.5 2022/11/25 09:32:10 tb Exp $ */
 
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
@@ -74,9 +74,6 @@ main(void)
 	int failed = 0;
 
 	failed |= test_bn_print_null_derefs();
-
-	if (!failed)
-		printf("SUCCESS\n");
 
 	return failed;
 }

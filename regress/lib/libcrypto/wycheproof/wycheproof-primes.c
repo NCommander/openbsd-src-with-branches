@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: wycheproof-primes.c,v 1.1 2022/07/07 20:01:20 tb Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  *
@@ -56,8 +56,6 @@ main(void)
 
 	for (i = 0; i < N_TESTS; i++)
 		failed |= primality_test(&testcases[i]);
-
-	printf("%s\n", failed ? "FAILED" : "SUCCESS");
 
 	return failed;
 }
