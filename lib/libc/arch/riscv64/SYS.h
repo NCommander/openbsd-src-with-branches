@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.2 2021/05/02 20:08:49 drahn Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.3 2021/05/04 04:26:00 drahn Exp $	*/
 /*-
  * Copyright (c) 2020 Brian Bamsch <bbamsch@google.com>
  * Copyright (c) 1990 The Regents of the University of California.
@@ -44,8 +44,8 @@
 #define TP_OFFSET_ERRNO		TCB_OFFSET_ERRNO
 
 #define SYSENTRY(x)					\
-	.weak _C_LABEL(x);				\
-	_C_LABEL(x) = _C_LABEL(_thread_sys_ ## x);	\
+	.weak x;					\
+	x = _thread_sys_ ## x;				\
 	ENTRY(_thread_sys_ ## x)
 #define SYSENTRY_HIDDEN(x)				\
 	ENTRY(_thread_sys_ ## x)
