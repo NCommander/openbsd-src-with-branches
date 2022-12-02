@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.256 2022/11/23 14:48:28 kn Exp $	*/
+/*	$OpenBSD: in6.c,v 1.257 2022/11/30 14:01:02 kn Exp $	*/
 /*	$KAME: in6.c,v 1.372 2004/06/14 08:14:21 itojun Exp $	*/
 
 /*
@@ -422,7 +422,6 @@ in6_ioctl_get(u_long cmd, caddr_t data, struct ifnet *ifp)
 			return (error);
 	}
 
-	KERNEL_LOCK();
 	NET_LOCK_SHARED();
 
 	if (sa6 != NULL) {
@@ -518,7 +517,6 @@ in6_ioctl_get(u_long cmd, caddr_t data, struct ifnet *ifp)
 
 err:
 	NET_UNLOCK_SHARED();
-	KERNEL_UNLOCK();
 	return (error);
 }
 
