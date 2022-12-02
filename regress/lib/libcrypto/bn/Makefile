@@ -24,8 +24,13 @@ WARNINGS =	Yes
 CFLAGS +=	-Wall -Wundef -Werror
 CFLAGS +=	-I${.CURDIR}/../../../../lib/libcrypto/bn/
 
-# Use default targets from bsd.regress.mk where possible.
-REGRESS_TARGETS = ${PROGS:S/^/run-regress-/}
+.for p in ${PROGS}
+REGRESS_TARGETS +=	run-$p
+.PHONY: 		run-$p
+
+run-$p: $p
+	./$p
+.endfor
 
 # Verify that the bn_isqrt -C output isn't changed by accident.
 isqrt-print-tables: bn_isqrt
