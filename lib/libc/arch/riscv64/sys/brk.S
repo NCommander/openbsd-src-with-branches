@@ -1,4 +1,4 @@
-/*	$OpenBSD: brk.S,v 1.2 2021/10/25 14:38:10 jca Exp $	*/
+/*	$OpenBSD: brk.S,v 1.3 2022/12/02 12:27:08 jca Exp $	*/
 /*
  * Copyright (c) 2021 Dale Rahn <drahn@openbsd.org>
  *
@@ -26,7 +26,7 @@ __minbrk:
 	.dword _end
 	
 
-ENTRY(brk)
+ENTRY_NB(brk)
 	RETGUARD_SETUP(brk, t6)
 	lla	t1, __minbrk
 	ld	t5, 0(t1)

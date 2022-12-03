@@ -1,4 +1,4 @@
-/*	$OpenBSD: sbrk.S,v 1.2 2021/10/25 14:38:10 jca Exp $	*/
+/*	$OpenBSD: sbrk.S,v 1.3 2022/12/02 12:27:08 jca Exp $	*/
 /*
  * Copyright (c) 2021 Dale Rahn <drahn@openbsd.org>
  *
@@ -28,7 +28,7 @@ __curbrk:
 	.dword _end
 	END(__curbrk)
 	
-ENTRY(sbrk)
+ENTRY_NB(sbrk)
 	RETGUARD_SETUP(sbrk, t6)
 
 	lla	t1, __curbrk
