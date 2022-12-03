@@ -1,4 +1,4 @@
-/*	$OpenBSD: dh.c,v 1.30 2021/11/29 06:43:42 deraadt Exp $	*/
+/*	$OpenBSD: dh.c,v 1.31 2021/12/13 18:06:56 tb Exp $	*/
 
 /*
  * Copyright (c) 2010-2014 Reyk Floeter <reyk@openbsd.org>
@@ -838,8 +838,8 @@ kemsx_create_shared2(struct dh_group *group, struct ibuf **sharedp,
 	struct kemsx_key	*kemsx = group->kemsx;
 	struct ibuf		*buf = NULL;
 	EVP_MD_CTX		*ctx = NULL;
-	u_int8_t		*cp;
-	u_int8_t		 shared[CURVE25519_SIZE];
+	uint8_t			*cp;
+	uint8_t			 shared[CURVE25519_SIZE];
 	size_t			 have, need;
 	u_int			 len;
 
