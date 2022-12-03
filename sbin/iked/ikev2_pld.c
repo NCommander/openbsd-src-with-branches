@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_pld.c,v 1.124 2022/07/04 09:23:15 tobhe Exp $	*/
+/*	$OpenBSD: ikev2_pld.c,v 1.125 2022/09/19 20:54:02 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <signal.h>
+#include <endian.h>
 #include <errno.h>
 #include <err.h>
 #include <event.h>
