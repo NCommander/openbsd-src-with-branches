@@ -1,4 +1,4 @@
-/*	$OpenBSD: cut.c,v 1.25 2018/07/13 08:51:14 krw Exp $	*/
+/*	$OpenBSD: cut.c,v 1.26 2019/02/07 19:11:23 tobias Exp $	*/
 /*	$NetBSD: cut.c,v 1.9 1995/09/02 05:59:23 jtc Exp $	*/
 
 /*
@@ -104,7 +104,6 @@ main(int argc, char *argv[])
 		case 's':
 			sflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: hotplugd.c,v 1.16 2020/10/15 19:45:50 naddy Exp $	*/
+/*	$OpenBSD: hotplugd.c,v 1.17 2021/07/12 15:09:21 beck Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -67,7 +67,6 @@ main(int argc, char *argv[])
 		case 'd':
 			device = optarg;
 			break;
-		case '?':
 		default:
 			usage();
 			/* NOTREACHED */

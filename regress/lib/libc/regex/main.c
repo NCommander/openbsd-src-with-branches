@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.10 2016/07/13 06:17:11 guenther Exp $	*/
+/*	$OpenBSD: main.c,v 1.11 2020/02/14 19:17:34 schwarze Exp $	*/
 /*	$NetBSD: main.c,v 1.2 1995/04/20 22:39:51 cgd Exp $	*/
 
 #include <stdio.h>
@@ -61,7 +61,6 @@ main(int argc, char *argv[])
 		case 'x':	/* Debugging. */
 			debug++;
 			break;
-		case '?':
 		default:
 			errflg++;
 			break;

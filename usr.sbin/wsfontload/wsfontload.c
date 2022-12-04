@@ -1,4 +1,4 @@
-/* $OpenBSD: wsfontload.c,v 1.24 2021/10/24 21:24:19 deraadt Exp $ */
+/* $OpenBSD: wsfontload.c,v 1.25 2021/10/25 19:54:29 kn Exp $ */
 /* $NetBSD: wsfontload.c,v 1.2 2000/01/05 18:46:43 ad Exp $ */
 
 /*
@@ -121,7 +121,6 @@ main(int argc, char *argv[])
 		case 'B':
 			f.byteorder = WSDISPLAY_FONTORDER_R2L;
 			break;
-		case '?':
 		default:
 			usage();
 			break;

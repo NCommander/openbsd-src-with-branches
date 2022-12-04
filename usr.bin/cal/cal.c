@@ -1,4 +1,4 @@
-/*	$OpenBSD: cal.c,v 1.29 2015/10/05 13:30:30 deraadt Exp $	*/
+/*	$OpenBSD: cal.c,v 1.30 2015/10/09 01:37:06 deraadt Exp $	*/
 /*	$NetBSD: cal.c,v 1.6 1995/03/26 03:10:24 glass Exp $	*/
 
 /*
@@ -168,7 +168,6 @@ main(int argc, char *argv[])
 		case 'y':
 			yflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: xargs.c,v 1.34 2018/06/12 15:24:31 millert Exp $	*/
+/*	$OpenBSD: xargs.c,v 1.35 2020/07/19 13:19:25 schwarze Exp $	*/
 /*	$FreeBSD: xargs.c,v 1.51 2003/05/03 19:09:11 obrien Exp $	*/
 
 /*-
@@ -169,10 +169,9 @@ main(int argc, char *argv[])
 		case '0':
 			zflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
-	}
+		}
 	argc -= optind;
 	argv += optind;
 

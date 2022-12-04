@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpq.c,v 1.22 2015/02/09 23:00:14 deraadt Exp $	*/
+/*	$OpenBSD: lpq.c,v 1.23 2016/02/29 17:26:02 jca Exp $	*/
 /*	$NetBSD: lpq.c,v 1.9 1999/12/07 14:54:47 mrg Exp $	*/
 
 /*
@@ -104,7 +104,6 @@ main(int argc, char **argv)
 			if (wait_time < 30)
 				warnx("warning: wait time less than 30 seconds");
 			break;
-		case '?':
 		default:
 			usage();
 		}

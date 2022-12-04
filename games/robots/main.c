@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.29 2020/02/14 19:17:33 schwarze Exp $	*/
+/*	$OpenBSD: main.c,v 1.30 2021/10/23 11:22:49 mestre Exp $	*/
 /*	$NetBSD: main.c,v 1.5 1995/04/22 10:08:54 cgd Exp $	*/
 
 /*
@@ -93,7 +93,6 @@ main(int ac, char *av[])
 		case 't':
 			Teleport = TRUE;
 			break;
-		case '?':
 		default:
 			usage();
 		}

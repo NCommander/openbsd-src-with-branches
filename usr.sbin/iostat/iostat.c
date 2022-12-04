@@ -1,4 +1,4 @@
-/*	$OpenBSD: iostat.c,v 1.43 2020/08/21 01:10:07 kn Exp $	*/
+/*	$OpenBSD: iostat.c,v 1.44 2021/07/12 15:09:21 beck Exp $	*/
 /*	$NetBSD: iostat.c,v 1.10 1996/10/25 18:21:58 scottr Exp $	*/
 
 /*
@@ -150,7 +150,6 @@ main(int argc, char *argv[])
 			if (errstr)
 				errx(1, "wait is %s", errstr);
 			break;
-		case '?':
 		default:
 			usage();
 		}

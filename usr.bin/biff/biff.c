@@ -1,4 +1,4 @@
-/*	$OpenBSD: biff.c,v 1.17 2019/06/28 13:35:00 deraadt Exp $	*/
+/*	$OpenBSD: biff.c,v 1.18 2021/07/12 15:09:19 beck Exp $	*/
 /*	$NetBSD: biff.c,v 1.3 1995/03/26 02:34:22 glass Exp $	*/
 
 /*
@@ -51,7 +51,6 @@ main(int argc, char *argv[])
 
 	while ((ch = getopt(argc, argv, "")) != -1)
 		switch(ch) {
-		case '?':
 		default:
 			usage();
 		}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: look.c,v 1.25 2021/10/24 21:24:16 deraadt Exp $	*/
+/*	$OpenBSD: look.c,v 1.26 2022/02/10 14:55:43 cheloha Exp $	*/
 /*	$NetBSD: look.c,v 1.7 1995/08/31 22:41:02 jtc Exp $	*/
 
 /*-
@@ -93,7 +93,6 @@ main(int argc, char *argv[])
 		case 't':
 			termchar = *optarg;
 			break;
-		case '?':
 		default:
 			usage();
 		}

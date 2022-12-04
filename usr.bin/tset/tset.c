@@ -1,4 +1,4 @@
-/*	$OpenBSD: tset.c,v 1.42 2021/06/22 18:32:24 tb Exp $	*/
+/*	$OpenBSD: tset.c,v 1.43 2021/06/22 18:33:48 tb Exp $	*/
 
 /****************************************************************************
  * Copyright (c) 1998-2007,2008 Free Software Foundation, Inc.              *
@@ -1176,7 +1176,6 @@ main(int argc, char **argv)
 	case 'w':		/* set window-size */
 	    opt_w = TRUE;
 	    break;
-	case '?':
 	default:
 	    usage();
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: colrm.c,v 1.12 2016/01/18 20:31:36 schwarze Exp $	*/
+/*	$OpenBSD: colrm.c,v 1.13 2016/10/27 12:53:54 schwarze Exp $	*/
 /*	$NetBSD: colrm.c,v 1.4 1995/09/02 05:51:37 jtc Exp $	*/
 
 /*-
@@ -62,7 +62,6 @@ main(int argc, char *argv[])
 
 	while ((ch = getopt(argc, argv, "")) != -1)
 		switch(ch) {
-		case '?':
 		default:
 			usage();
 		}

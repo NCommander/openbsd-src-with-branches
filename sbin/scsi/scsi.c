@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi.c,v 1.30 2016/06/07 01:29:38 tedu Exp $	*/
+/*	$OpenBSD: scsi.c,v 1.31 2021/06/22 14:51:29 jmc Exp $	*/
 /*	$FreeBSD: scsi.c,v 1.11 1996/04/06 11:00:28 joerg Exp $	*/
 
 /*
@@ -133,7 +133,6 @@ procargs(int *argc_p, char ***argv_p)
 		case 'v':
 			verbose = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}

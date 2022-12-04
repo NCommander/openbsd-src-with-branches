@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.11 2018/08/03 06:55:41 deraadt Exp $	*/
+/*	$OpenBSD: tty.c,v 1.12 2021/07/12 15:09:20 beck Exp $	*/
 /*	$NetBSD: tty.c,v 1.4 1994/12/07 00:46:57 jtc Exp $	*/
 
 /*
@@ -50,7 +50,6 @@ main(int argc, char *argv[])
 		case 's':
 			sflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 			/* NOTREACHED */

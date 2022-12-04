@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_mkdb.c,v 1.17 2018/10/18 14:37:01 deraadt Exp $	*/
+/*	$OpenBSD: dev_mkdb.c,v 1.18 2021/07/12 15:09:20 beck Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -75,7 +75,6 @@ main(int argc, char *argv[])
 
 	while ((ch = getopt(argc, argv, "")) != -1)
 		switch(ch) {
-		case '?':
 		default:
 			usage();
 		}

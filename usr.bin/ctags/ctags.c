@@ -1,4 +1,4 @@
-/*	$OpenBSD: ctags.c,v 1.17 2015/10/07 06:33:31 deraadt Exp $	*/
+/*	$OpenBSD: ctags.c,v 1.18 2015/10/09 01:37:07 deraadt Exp $	*/
 /*	$NetBSD: ctags.c,v 1.4 1995/09/02 05:57:23 jtc Exp $	*/
 
 /*
@@ -112,7 +112,6 @@ main(int argc, char *argv[])
 		case 'x':
 			xflag = 1;
 			break;
-		case '?':
 		default:
 			goto usage;
 		}

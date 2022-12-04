@@ -1,4 +1,4 @@
-/*	$OpenBSD: savecore.c,v 1.63 2021/10/24 21:24:22 deraadt Exp $	*/
+/*	$OpenBSD: savecore.c,v 1.64 2022/03/25 16:14:55 tb Exp $	*/
 /*	$NetBSD: savecore.c,v 1.26 1996/03/18 21:16:05 leo Exp $	*/
 
 /*-
@@ -154,7 +154,6 @@ main(int argc, char *argv[])
 		case 'z':
 			zcompress = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}

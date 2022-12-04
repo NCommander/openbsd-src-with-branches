@@ -1,4 +1,4 @@
-/*	$OpenBSD: chpass.c,v 1.47 2021/07/12 15:09:19 beck Exp $	*/
+/*	$OpenBSD: chpass.c,v 1.48 2021/10/24 21:24:16 deraadt Exp $	*/
 /*	$NetBSD: chpass.c,v 1.8 1996/05/15 21:50:43 jtc Exp $	*/
 
 /*-
@@ -84,7 +84,6 @@ main(int argc, char *argv[])
 			op = NEWSH;
 			arg = optarg;
 			break;
-		case '?':
 		default:
 			usage();
 		}

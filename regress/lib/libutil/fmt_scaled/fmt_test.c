@@ -1,4 +1,4 @@
-/* $OpenBSD: fmt_test.c,v 1.17 2021/06/20 14:09:59 tb Exp $ */
+/* $OpenBSD: fmt_test.c,v 1.18 2022/03/11 07:29:53 dtucker Exp $ */
 
 /*
  * Combined tests for fmt_scaled and scan_scaled.
@@ -45,7 +45,6 @@ main(int argc, char **argv)
 					break;
 			case 'h':
 					usage(0);
-			case '?':
 			default:
 					usage(1);
 			}

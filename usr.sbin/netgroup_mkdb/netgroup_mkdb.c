@@ -1,4 +1,4 @@
-/*	$OpenBSD: netgroup_mkdb.c,v 1.21 2019/06/28 05:33:35 deraadt Exp $	*/
+/*	$OpenBSD: netgroup_mkdb.c,v 1.22 2019/06/28 14:20:40 schwarze Exp $	*/
 
 /*
  * Copyright (c) 1994 Christos Zoulas
@@ -110,7 +110,6 @@ main(int argc, char *argv[])
 			dbname = optarg;
 			break;
 
-		case '?':
 		default:
 			usage();
 		}

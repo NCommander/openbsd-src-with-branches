@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockd.c,v 1.13 2015/01/16 06:40:20 deraadt Exp $	*/
+/*	$OpenBSD: lockd.c,v 1.14 2015/04/18 18:28:38 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1995
@@ -91,7 +91,6 @@ main(int argc, char *argv[])
 			}
 			break;
 		default:
-		case '?':
 			usage();
 			/* NOTREACHED */
 		}

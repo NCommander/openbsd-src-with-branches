@@ -1,4 +1,4 @@
-/*	$OpenBSD: tail.c,v 1.22 2019/01/04 15:04:28 martijn Exp $	*/
+/*	$OpenBSD: tail.c,v 1.23 2021/12/23 23:23:42 jsg Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -114,7 +114,6 @@ main(int argc, char *argv[])
 		case 'r':
 			rflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}

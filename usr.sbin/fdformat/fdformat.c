@@ -1,4 +1,4 @@
-/*	$OpenBSD: fdformat.c,v 1.23 2018/09/17 15:44:16 jmc Exp $	*/
+/*	$OpenBSD: fdformat.c,v 1.24 2019/06/28 13:32:47 deraadt Exp $	*/
 
 /*
  * Copyright (C) 1992-1994 by Joerg Wunsch, Dresden
@@ -236,7 +236,7 @@ main(int argc, char *argv[])
 			verify_only = 1;
 			break;
 
-		case '?': default:
+		default:
 			usage();
 		}
 

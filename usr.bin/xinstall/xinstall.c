@@ -1,4 +1,4 @@
-/*	$OpenBSD: xinstall.c,v 1.75 2021/10/24 21:24:18 deraadt Exp $	*/
+/*	$OpenBSD: xinstall.c,v 1.76 2021/11/28 19:28:42 deraadt Exp $	*/
 /*	$NetBSD: xinstall.c,v 1.9 1995/12/20 10:25:17 jonathan Exp $	*/
 
 /*
@@ -140,7 +140,6 @@ main(int argc, char *argv[])
 		case 'd':
 			dodir = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}

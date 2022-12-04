@@ -1,4 +1,4 @@
-/*	$OpenBSD: disklabel.c,v 1.244 2022/09/06 14:14:44 krw Exp $	*/
+/*	$OpenBSD: disklabel.c,v 1.245 2022/10/12 23:11:32 krw Exp $	*/
 
 /*
  * Copyright (c) 1987, 1993
@@ -186,7 +186,6 @@ main(int argc, char *argv[])
 		case 'v':
 			verbose = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}

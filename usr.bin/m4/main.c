@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.86 2015/11/03 16:21:47 deraadt Exp $	*/
+/*	$OpenBSD: main.c,v 1.87 2017/06/15 13:48:42 bcallah Exp $	*/
 /*	$NetBSD: main.c,v 1.12 1997/02/08 23:54:49 cgd Exp $	*/
 
 /*-
@@ -228,7 +228,7 @@ main(int argc, char *argv[])
 		case 'o':
 			trace_file(optarg);
                         break;
-		case '?':
+		default:
 			usage();
 		}
 

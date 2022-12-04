@@ -1,4 +1,4 @@
-/* $OpenBSD: sshd.c,v 1.591 2022/09/17 10:34:29 djm Exp $ */
+/* $OpenBSD: sshd.c,v 1.592 2022/10/28 00:44:17 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1580,7 +1580,6 @@ main(int ac, char **av)
 				exit(1);
 			free(line);
 			break;
-		case '?':
 		default:
 			usage();
 			break;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dbtest.c,v 1.19 2021/12/13 16:56:48 deraadt Exp $	*/
+/*	$OpenBSD: dbtest.c,v 1.20 2022/11/10 12:38:57 anton Exp $	*/
 /*	$NetBSD: dbtest.c,v 1.8 1996/05/03 21:57:48 cgd Exp $	*/
 
 /*-
@@ -107,7 +107,6 @@ main(int argc, char *argv[])
 		case 's':
 			sflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}
