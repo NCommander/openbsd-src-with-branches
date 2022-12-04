@@ -1,4 +1,4 @@
-/*	$OpenBSD: test_parser_fuzz.c,v 1.6 2022/02/22 13:47:21 claudio Exp $ */
+/*	$OpenBSD: test_parser_fuzz.c,v 1.7 2022/12/03 22:34:35 tobhe Exp $ */
 /*
  * Fuzz tests for payload parsing
  *
@@ -9,6 +9,7 @@
 #include <sys/queue.h>
 #include <sys/uio.h>
 
+#include <endian.h>
 #include <event.h>
 #include <imsg.h>
 #include <string.h>
