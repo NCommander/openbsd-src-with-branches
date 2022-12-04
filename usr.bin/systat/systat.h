@@ -1,4 +1,4 @@
-/*	$OpenBSD: systat.h,v 1.23 2019/03/04 21:27:35 dlg Exp $	*/
+/*	$OpenBSD: systat.h,v 1.24 2021/01/18 00:49:09 mortimer Exp $	*/
 /*	$NetBSD: systat.h,v 1.2 1995/01/20 08:52:14 jtc Exp $	*/
 
 /*-
@@ -58,7 +58,7 @@ extern kvm_t	*kd;
 extern long	ntext;
 extern int	*dk_select;
 extern int	dk_ndrive;
-extern int	hz, stathz;
+extern int	hz;
 extern double	naptime;
 extern size_t	nhosts;
 extern size_t	nports;
