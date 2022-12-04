@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-sk-helper.c,v 1.12 2021/10/28 02:54:18 djm Exp $ */
+/* $OpenBSD: ssh-sk-helper.c,v 1.13 2022/04/29 03:16:48 dtucker Exp $ */
 /*
  * Copyright (c) 2019 Google LLC
  *
@@ -41,7 +41,6 @@
 #include "sshbuf.h"
 #include "msg.h"
 #include "uidswap.h"
-#include "sshkey.h"
 #include "ssherr.h"
 #include "ssh-sk.h"
 
