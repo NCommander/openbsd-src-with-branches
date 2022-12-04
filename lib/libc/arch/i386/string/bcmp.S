@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcmp.S,v 1.4 2015/08/31 02:53:56 guenther Exp $ */
+/*	$OpenBSD: bcmp.S,v 1.5 2017/11/29 05:13:57 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -6,7 +6,7 @@
 
 #include "DEFS.h"
 
-ENTRY(bcmp)
+ENTRY_NB(bcmp)
 	pushl	%edi
 	pushl	%esi
 	movl	12(%esp),%edi
