@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_evcount.c,v 1.13 2022/08/14 01:58:28 jsg Exp $ */
+/*	$OpenBSD: subr_evcount.c,v 1.14 2022/11/10 07:05:41 jmatthew Exp $ */
 /*
  * Copyright (c) 2004 Artur Grabowski <art@openbsd.org>
  * Copyright (c) 2004 Aaron Campbell <aaron@openbsd.org>
@@ -56,7 +56,6 @@ evcount_percpu(struct evcount *ec)
 		TAILQ_INSERT_TAIL(&evcount_percpu_init_list, ec, next);
 	} else {
 		ec->ec_percpu = counters_alloc(1);
-		TAILQ_INSERT_TAIL(&evcount_list, ec, next);
 	}
 }
 
