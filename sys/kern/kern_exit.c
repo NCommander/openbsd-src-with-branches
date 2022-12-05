@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exit.c,v 1.206 2022/10/26 13:31:06 kettenis Exp $	*/
+/*	$OpenBSD: kern_exit.c,v 1.207 2022/11/03 04:56:47 guenther Exp $	*/
 /*	$NetBSD: kern_exit.c,v 1.39 1996/04/22 01:38:25 christos Exp $	*/
 
 /*
@@ -636,7 +636,7 @@ sys_wait4(struct proc *q, void *v, register_t *retval)
 
 	if (SCARG(uap, options) &~ (WUNTRACED|WNOHANG|WCONTINUED))
 		return (EINVAL);
-	
+
 	if (SCARG(uap, pid) == WAIT_MYPGRP) {
 		idtype = P_PGID;
 		id = q->p_p->ps_pgid;

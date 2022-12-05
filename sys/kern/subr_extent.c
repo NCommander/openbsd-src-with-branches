@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_extent.c,v 1.62 2019/09/11 12:30:34 kettenis Exp $	*/
+/*	$OpenBSD: subr_extent.c,v 1.63 2020/01/11 14:30:24 mpi Exp $	*/
 /*	$NetBSD: subr_extent.c,v 1.7 1996/11/21 18:46:34 cgd Exp $	*/
 
 /*-
@@ -790,7 +790,7 @@ skip:
 			 */
 			goto fail;
 		}
-		
+
 		last = rp;
 	}
 

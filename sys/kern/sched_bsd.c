@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched_bsd.c,v 1.71 2022/05/10 22:18:06 solene Exp $	*/
+/*	$OpenBSD: sched_bsd.c,v 1.72 2022/08/14 01:58:27 jsg Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -547,7 +547,7 @@ setperf_auto(void *v)
 		speedup = 1;
 		goto faster;
 	}
-		
+
 	if (!idleticks)
 		if (!(idleticks = mallocarray(ncpusfound, sizeof(*idleticks),
 		    M_DEVBUF, M_NOWAIT | M_ZERO)))

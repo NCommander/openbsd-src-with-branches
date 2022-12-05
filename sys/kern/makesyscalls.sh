@@ -1,5 +1,5 @@
 #! /bin/sh -
-#	$OpenBSD: makesyscalls.sh,v 1.16 2022/05/01 22:59:49 tedu Exp $
+#	$OpenBSD: makesyscalls.sh,v 1.17 2022/10/01 23:49:38 deraadt Exp $
 #	$NetBSD: makesyscalls.sh,v 1.26 1998/01/09 06:17:51 thorpej Exp $
 #
 # Copyright (c) 1994,1996 Christopher G. Demetriou
@@ -245,7 +245,7 @@ function parseline() {
 	if ($f ~ /^[a-z0-9_]*$/) {      # allow syscall alias
 		funcalias=$f
 		f++
-	}	
+	}
 	if ($f != "{")
 		parserr($f, "{")
 	f++

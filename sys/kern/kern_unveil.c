@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_unveil.c,v 1.53 2022/01/11 07:31:50 semarie Exp $	*/
+/*	$OpenBSD: kern_unveil.c,v 1.54 2022/08/14 01:58:27 jsg Exp $	*/
 
 /*
  * Copyright (c) 2017-2019 Bob Beck <beck@openbsd.org>
@@ -600,7 +600,7 @@ unveil_start_relative(struct proc *p, struct nameidata *ni, struct vnode *dp)
 
 	if (pr->ps_uvpaths == NULL)
 		return;
-	
+
 	uv = unveil_lookup(dp, pr, NULL);
 	if (uv == NULL) {
 		uvi = unveil_find_cover(dp, p);

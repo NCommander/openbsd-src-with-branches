@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sched.c,v 1.74 2022/01/20 11:06:57 bluhm Exp $	*/
+/*	$OpenBSD: kern_sched.c,v 1.75 2022/08/14 01:58:27 jsg Exp $	*/
 /*
  * Copyright (c) 2007, 2008 Artur Grabowski <art@openbsd.org>
  *
@@ -350,7 +350,7 @@ again:
 	} 
 
 	KASSERT(p->p_wchan == NULL);
-	return (p);	
+	return (p);
 }
 
 struct cpu_info *

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.298 2022/11/09 22:25:08 deraadt Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.299 2022/11/10 00:14:11 jsg Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -943,7 +943,7 @@ pledge_sysctl(struct proc *p, int miblen, int *mib, void *new)
 	if (miblen >= 3 &&			/* ntpd(8) to read sensors */
 	    mib[0] == CTL_HW && mib[1] == HW_SENSORS)
 		return (0);
-	
+
 	if (miblen == 6 &&		/* if_nameindex() */
 	    mib[0] == CTL_NET && mib[1] == PF_ROUTE &&
 	    mib[2] == 0 && mib[3] == 0 && mib[4] == NET_RT_IFNAMES)

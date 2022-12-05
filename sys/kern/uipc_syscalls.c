@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.204 2022/09/03 21:13:48 mbuhl Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.205 2022/11/30 13:58:39 kn Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -1636,13 +1636,13 @@ out:
 	error = socreate(AF_INET, &so, SCARG(uap, type), 0);
 	if (error)
 		return (error);
-	
+
 	error = ypsockargs(&nam, &ypsin, sizeof ypsin, MT_SONAME);
 	if (error) {
 		soclose(so, MSG_DONTWAIT);
 		return (error);
 	}
-	
+
 #ifdef KTRACE
 	if (KTRPOINT(p, KTR_STRUCT))
 		ktrsockaddr(p, mtod(nam, caddr_t), sizeof(struct sockaddr_in));
