@@ -1,4 +1,4 @@
-/* $OpenBSD: bio_lib.c,v 1.38 2022/11/30 01:56:18 jsing Exp $ */
+/* $OpenBSD: bio_lib.c,v 1.39 2022/12/02 19:44:04 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -727,10 +727,25 @@ BIO_next(BIO *b)
 	return b->next_bio;
 }
 
+/*
+ * Two chains "bio -> oldtail" and "oldhead -> next" become
+ * three chains "oldtail", "bio -> next", and "oldhead".
+ */
 void
-BIO_set_next(BIO *b, BIO *next)
+BIO_set_next(BIO *bio, BIO *next)
 {
-	b->next_bio = next;
+	/* Cut off the tail of the chain containing bio after bio. */
+	if (bio->next_bio != NULL)
+		bio->next_bio->prev_bio = NULL;
+
+	/* Cut off the head of the chain containing next before next. */
+	if (next != NULL && next->prev_bio != NULL)
+		next->prev_bio->next_bio = NULL;
+
+	/* Append the chain starting at next to the chain ending at bio. */
+	bio->next_bio = next;
+	if (next != NULL)
+		next->prev_bio = bio;
 }
 
 void
