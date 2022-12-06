@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_primes.c,v 1.4 2022/12/01 14:32:06 tb Exp $ */
+/*	$OpenBSD: bn_primes.c,v 1.1 2022/12/01 20:50:10 tb Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  *
@@ -14,6 +14,10 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <openssl/bn.h>
 

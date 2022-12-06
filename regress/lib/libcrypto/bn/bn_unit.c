@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_unit.c,v 1.6 2022/12/01 13:49:12 tb Exp $ */
+/*	$OpenBSD: bn_unit.c,v 1.1 2022/12/01 20:50:10 tb Exp $ */
 
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
@@ -18,6 +18,7 @@
 
 #include <err.h>
 #include <limits.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
