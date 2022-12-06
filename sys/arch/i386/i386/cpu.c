@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.108 2022/02/21 10:24:28 mpi Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.109 2022/08/15 04:17:50 daniel Exp $	*/
 /* $NetBSD: cpu.c,v 1.1.2.7 2000/06/26 02:04:05 sommerfeld Exp $ */
 
 /*-
@@ -701,7 +701,6 @@ cpu_hatch(void *v)
 
 	cpu_init_idt();
 	lapic_enable();
-	lapic_startclock();
 	lapic_set_lvt();
 	gdt_init_cpu(ci);
 
@@ -727,6 +726,8 @@ cpu_hatch(void *v)
 		    ci->ci_dev->dv_xname, ci->ci_cpuid);
 	nanouptime(&ci->ci_schedstate.spc_runtime);
 	splx(s);
+
+	lapic_startclock();
 
 	SCHED_LOCK(s);
 	cpu_switchto(NULL, sched_chooseproc());

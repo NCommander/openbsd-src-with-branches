@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.179 2022/08/29 02:58:13 jsg Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.180 2022/11/08 14:49:20 cheloha Exp $	*/
 /*	$NetBSD: cpu.h,v 1.35 1996/05/05 19:29:26 christos Exp $	*/
 
 /*-
@@ -64,6 +64,7 @@
  */
 #define clockframe intrframe
 
+#include <sys/clockintr.h>
 #include <sys/device.h>
 #include <sys/sched.h>
 #include <sys/sensors.h>
@@ -168,6 +169,7 @@ struct cpu_info {
 #if defined(GPROF) || defined(DDBPROF)
 	struct gmonparam	*ci_gmon;
 #endif
+	struct clockintr_queue	ci_queue;
 	char			ci_panicbuf[512];
 };
 
