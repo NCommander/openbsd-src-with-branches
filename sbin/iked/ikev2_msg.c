@@ -1,4 +1,4 @@
-/*	$OpenBSD: ikev2_msg.c,v 1.88 2022/11/11 16:17:16 mbuhl Exp $	*/
+/*	$OpenBSD: ikev2_msg.c,v 1.89 2022/12/03 21:02:27 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -280,7 +280,7 @@ ikev2_msg_send(struct iked *env, struct iked_message *msg)
 	exchange = hdr->ike_exchange;
 	flags = hdr->ike_flags;
 	logit(exchange == IKEV2_EXCHANGE_INFORMATIONAL ?  LOG_DEBUG : LOG_INFO,
-	    "%ssend %s %s %u peer %s local %s, %ld bytes%s",
+	    "%ssend %s %s %u peer %s local %s, %zu bytes%s",
 	    SPI_IH(hdr),
 	    print_map(exchange, ikev2_exchange_map),
 	    (flags & IKEV2_FLAG_RESPONSE) ? "res" : "req",
