@@ -1,4 +1,4 @@
-/*	$OpenBSD: asm.h,v 1.14 2013/05/17 22:28:21 miod Exp $	*/
+/*	$OpenBSD: asm.h,v 1.15 2016/05/27 16:32:38 deraadt Exp $	*/
 
 /*
  * Mach Operating System
@@ -36,29 +36,29 @@
 #define	_ENTRY(name) \
 	.text; .align 3; .globl name; .type name,@function; name:
 
-#define	ENTRY(name)		_ENTRY(_C_LABEL(name))
-#define	ASENTRY(name)		_ENTRY(_ASM_LABEL(name))
+#define	ENTRY(name)		_ENTRY(name)
+#define	ASENTRY(name)		_ENTRY(name)
 
 #define	END(name) \
 	.size name,.-name
 
 #define	GLOBAL(name) \
-	.globl _C_LABEL(name); _C_LABEL(name):
+	.globl name; name:
 
 #define ASGLOBAL(name) \
-	.globl _ASM_LABEL(name); _ASM_LABEL(name):
+	.globl name; name:
 
 #define	LOCAL(name) \
-	_C_LABEL(name):
+	name:
 
 #define	ASLOCAL(name) \
-	_ASM_LABEL(name):
+	name:
 
 #define	BSS(name, size) \
-	.comm	_C_LABEL(name), size
+	.comm	name, size
 
 #define	ASBSS(name, size) \
-	.comm	_ASM_LABEL(name), size
+	.comm	name, size
 
 #define	STRONG_ALIAS(alias,sym)						\
 	.global alias;							\
@@ -180,7 +180,7 @@
 #define	RTE_ERROR_BIT		0
 
 #define	VECTOR(x) \
-	.word	_C_LABEL(x)
+	.word	x
 
 #endif	/* _LOCORE */
 

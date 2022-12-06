@@ -1,4 +1,4 @@
-/*	$OpenBSD: modsi3.S,v 1.1 2013/06/05 22:06:30 miod Exp $	*/
+/*	$OpenBSD: modsi3.S,v 1.2 2013/06/05 22:48:21 miod Exp $	*/
 
 /*
  * Copyright (c) 2013 Miodrag Vallat.
@@ -24,7 +24,7 @@
  */
 
 #ifndef LDSO
-.weak	_C_LABEL(__modsi3)
+.weak	__modsi3
 #endif
 ENTRY(__modsi3)
 	/* if divider is zero, trap */
