@@ -1,4 +1,4 @@
-/*	$OpenBSD: strchr.S,v 1.4 2018/07/03 23:22:48 mortimer Exp $	*/
+/*	$OpenBSD: strchr.S,v 1.5 2018/07/13 05:56:57 guenther Exp $	*/
 /*	$NetBSD: strchr.S,v 1.7 2014/03/22 19:16:34 jakllsch Exp $	*/
 
 /*-
@@ -102,6 +102,7 @@ ENTRY(strchr)
 12:	RETGUARD_POP(r9)
 	RETGUARD_CHECK(strchr, r9)
 	ret
+	lfence
 
 /* Source misaligned: read aligned word and make low bytes invalid */
 /* I (dsl) think aligning the text here will slow things down! */
