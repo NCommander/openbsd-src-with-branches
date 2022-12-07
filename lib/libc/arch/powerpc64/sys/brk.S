@@ -1,4 +1,4 @@
-/* $OpenBSD: brk.S,v 1.3 2020/07/27 07:10:36 kettenis Exp $ */
+/* $OpenBSD: brk.S,v 1.4 2020/10/16 23:42:16 deraadt Exp $ */
 
 /*
  * Copyright (c) 1996 Dale Rahn
@@ -28,7 +28,7 @@
 #include "SYS.h"
 
 	.extern __curbrk
-	.extern _C_LABEL(_end)
+	.extern _end
 
 	.weak	brk
 
