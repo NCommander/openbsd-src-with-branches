@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.1 2015/12/06 18:42:12 schwarze Exp $
+#	$OpenBSD: Makefile,v 1.1 2016/05/03 16:06:11 schwarze Exp $
 
-regress:
-	@sh ${.CURDIR}/fold.sh
+REGRESS_TARGETS+=	fold
+fold:
+	sh ${.CURDIR}/fold.sh
 
 .include <bsd.regress.mk>
