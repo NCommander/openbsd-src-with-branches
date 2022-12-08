@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.4 2020/01/26 02:19:43 kettenis Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.5 2020/02/18 12:19:11 kettenis Exp $	*/
 /*	$NetBSD: SYS.h,v 1.8 2003/08/07 16:42:02 agc Exp $	*/
 
 /*-
@@ -39,8 +39,8 @@
 #include <sys/syscall.h>
 
 #define SYSENTRY(x)					\
-	.weak _C_LABEL(x);				\
-	_C_LABEL(x) = _C_LABEL(_thread_sys_ ## x);	\
+	.weak x;					\
+	x = _thread_sys_ ## x;				\
 	ENTRY(_thread_sys_ ## x)
 #define SYSENTRY_HIDDEN(x)				\
 	ENTRY(_thread_sys_ ## x)
@@ -57,7 +57,7 @@
 	dsb	nsh;			\
 	isb
 
-#define	CERROR		_C_LABEL(__cerror)
+#define	CERROR		__cerror
 
 #define _SYSCALL_NOERROR(x,y)						\
 	SYSENTRY(x);							\

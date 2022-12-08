@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs.S,v 1.7 2018/01/18 18:21:01 deraadt Exp $	*/
+/*	$OpenBSD: ffs.S,v 1.8 2018/01/18 23:42:13 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -50,9 +50,9 @@
  */
 ENTRY(ffs)
 #ifdef __PIC__
-	PICCY_SET(_C_LABEL(__ffstab), %o2, %o3)
+	PICCY_SET(__ffstab, %o2, %o3)
 #else
-	set	_C_LABEL(__ffstab), %o2
+	set	__ffstab, %o2
 #endif
 	andcc	%o0, 0xff, %o1	! get low byte
 	be,a	1f		! try again if 0
@@ -86,7 +86,7 @@ ENTRY(ffs)
 END(ffs)
 .protected ffs
 
-_C_LABEL(__ffstab):
+__ffstab:
 	.byte	-24,1,2,1,3,1,2,1,4,1,2,1,3,1,2,1 /* 00-0f */
 	.byte	5,1,2,1,3,1,2,1,4,1,2,1,3,1,2,1	/* 10-1f */
 	.byte	6,1,2,1,3,1,2,1,4,1,2,1,3,1,2,1	/* 20-2f */

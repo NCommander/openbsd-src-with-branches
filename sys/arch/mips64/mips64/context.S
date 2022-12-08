@@ -1,4 +1,4 @@
-/*	$OpenBSD: context.S,v 1.62 2021/04/29 12:49:19 visa Exp $ */
+/*	$OpenBSD: context.S,v 1.63 2021/05/01 16:11:11 visa Exp $ */
 
 /*
  * Copyright (c) 2002-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -293,7 +293,7 @@ LEAF(proc_trampoline, 0)
 	move	zero, ra
 #endif
 #ifdef MULTIPROCESSOR
-	jal	_C_LABEL(proc_trampoline_mp)
+	jal	proc_trampoline_mp
 	 NOP
 #endif
 	/*

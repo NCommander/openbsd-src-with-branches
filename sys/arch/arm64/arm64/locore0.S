@@ -1,4 +1,4 @@
-/* $OpenBSD: locore0.S,v 1.6 2021/02/16 12:33:22 kettenis Exp $ */
+/* $OpenBSD: locore0.S,v 1.7 2022/03/18 01:49:47 jsg Exp $ */
 /*-
  * Copyright (c) 2012-2014 Andrew Turner
  * All rights reserved.
@@ -157,7 +157,7 @@ virtdone:
 	mov	fp, #0
 	/* Branch to C code */
 	bl	initarm
-	bl	_C_LABEL(main)
+	bl	main
 
 	/* We should not get here */
 	brk	0

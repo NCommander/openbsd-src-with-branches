@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_space_notimpl.S,v 1.2 2007/05/27 16:10:39 drahn Exp $	*/
+/*	$OpenBSD: bus_space_notimpl.S,v 1.3 2016/09/21 11:33:05 kettenis Exp $	*/
 /*	$NetBSD: bus_space_notimpl.S,v 1.2 2001/09/10 02:20:19 reinoud Exp $	*/
 
 /*
@@ -46,7 +46,7 @@
 #define NAME(func)	__C(BUS_SPACE,__C(_bs_,func))
 #define LNAME(func)	__C(L,NAME(func))
 
-#define	__L(x)		_C_LABEL(x)
+#define	__L(x)		x
 #define GLOBAL(func)	.global	__L(NAME(func))
 #define LABEL(func)	__L(NAME(func)):
 #define LLABEL(func)	LNAME(func):
@@ -73,7 +73,7 @@ bs_notimpl_panic:
 	adr     r0, bs_notimpl_message
 	mov	r1, r4
 	mov	r2, sp
-	b       _C_LABEL(panic)
+	b	panic
 
 
 

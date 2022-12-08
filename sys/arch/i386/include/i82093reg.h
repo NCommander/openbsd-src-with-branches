@@ -1,4 +1,4 @@
-/*	$OpenBSD: i82093reg.h,v 1.4 2008/06/26 05:42:10 ray Exp $	*/
+/*	$OpenBSD: i82093reg.h,v 1.5 2011/06/05 19:36:25 deraadt Exp $	*/
 /* $NetBSD: i82093reg.h,v 1.1.2.2 2000/02/21 18:54:07 sommerfeld Exp $ */
 
 /*-
@@ -113,6 +113,6 @@
 #ifdef _KERNEL
 
 #define ioapic_asm_ack(num) \
-	movl	$0,_C_LABEL(local_apic) + LAPIC_EOI
+	movl	$0,local_apic + LAPIC_EOI
 
 #endif
