@@ -1,6 +1,9 @@
-#	$OpenBSD: Makefile,v 1.2 2014/07/08 15:53:52 jsing Exp $
+#	$OpenBSD: Makefile,v 1.3 2022/12/03 09:55:53 tb Exp $
 
-PROG =		biotest
+PROGS +=	bio_chain
+PROGS +=	bio_host
+PROGS +=	bio_mem
+
 LDADD =		-lcrypto
 DPADD =		${LIBCRYPTO}
 WARNINGS =	Yes
