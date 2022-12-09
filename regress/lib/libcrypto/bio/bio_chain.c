@@ -200,8 +200,11 @@ walk_forward(BIO *start, BIO *end, size_t expected_len, size_t i, size_t j,
 	size_t len;
 	int ret = 0;
 
-	if (start == NULL || end == NULL)
+	if (start == NULL || end == NULL) {
+		if (expected_len != 0)
+			goto err;
 		goto done;
+	}
 
 	next = start;
 	len = 0;
@@ -240,8 +243,11 @@ walk_backward(BIO *start, BIO *end, size_t expected_len, size_t i, size_t j,
 	size_t len;
 	int ret = 0;
 
-	if (start == NULL || end == NULL)
+	if (start == NULL || end == NULL) {
+		if (expected_len != 0)
+			goto err;
 		goto done;
+	}
 
 	prev = end;
 	len = 0;
