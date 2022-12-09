@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolvd.c,v 1.30 2022/11/27 15:19:38 kn Exp $	*/
+/*	$OpenBSD: resolvd.c,v 1.31 2022/12/09 18:11:24 otto Exp $	*/
 /*
  * Copyright (c) 2021 Florian Obser <florian@openbsd.org>
  * Copyright (c) 2021 Theo de Raadt <deraadt@openbsd.org>
@@ -654,11 +654,15 @@ regen_resolvconf(const char *why)
 			    line);
 			if (len < 0) {
 				lwarn("asprintf");
+				free(line);
+				fclose(fp);
 				goto err;
 			}
 			iov[iovcnt++].iov_len = len;
 			if (iovcnt >= UIO_MAXIOV) {
 				lwarnx("too many user-managed lines");
+				free(line);
+				fclose(fp);
 				goto err;
 			}
 		}
