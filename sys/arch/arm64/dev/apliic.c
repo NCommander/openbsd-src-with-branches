@@ -1,4 +1,4 @@
-/*	$OpenBSD: apliic.c,v 1.3 2022/02/14 14:55:53 kettenis Exp $	*/
+/*	$OpenBSD: apliic.c,v 1.4 2022/12/06 16:06:32 kettenis Exp $	*/
 /*
  * Copyright (c) 2021 Patrick Wildt <patrick@blueri.se>
  *
@@ -158,7 +158,7 @@ apliic_wait(struct apliic_softc *sc)
 	uint32_t reg;
 	int timo;
 
-	for (timo = 10; timo > 0; timo--) {
+	for (timo = 100; timo > 0; timo--) {
 		reg = HREAD4(sc, I2C_SMSTA);
 		if (reg & I2C_SMSTA_XEN)
 			break;
