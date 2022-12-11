@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpleased.c,v 1.26 2022/07/23 09:33:18 florian Exp $	*/
+/*	$OpenBSD: dhcpleased.c,v 1.27 2022/11/27 15:19:38 kn Exp $	*/
 
 /*
  * Copyright (c) 2017, 2021 Florian Obser <florian@openbsd.org>
@@ -805,6 +805,7 @@ configure_interface(struct imsg_configure_interface *imsg)
 			break;
 		}
 	}
+	freeifaddrs(ifap);
 
 	req_sin_addr->sin_addr = imsg->addr;
 	if (!found) {
