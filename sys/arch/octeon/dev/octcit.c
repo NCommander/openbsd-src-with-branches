@@ -1,4 +1,4 @@
-/*	$OpenBSD: octcit.c,v 1.12 2019/09/01 12:16:01 visa Exp $	*/
+/*	$OpenBSD: octcit.c,v 1.13 2022/08/22 00:35:07 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2017, 2019 Visa Hankala
@@ -24,7 +24,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/atomic.h>
 #include <sys/conf.h>
 #include <sys/device.h>
 #include <sys/evcount.h>
@@ -281,6 +280,7 @@ octcit_intr_establish_intsn(int intsn, int level, int flags,
 	ih->ih_flags = flags;
 	ih->ih_intsn = intsn;
 	evcount_attach(&ih->ih_count, name, &ih->ih_intsn);
+	evcount_percpu(&ih->ih_count);
 
 	s = splhigh();
 
@@ -452,8 +452,7 @@ octcit_intr(uint32_t hwpend, struct trapframe *frame)
 
 		if (ret != 0) {
 			handled = 1;
-			atomic_inc_long(
-			    (unsigned long *)&ih->ih_count.ec_count);
+			evcount_inc(&ih->ih_count);
 		}
 
 		/*
