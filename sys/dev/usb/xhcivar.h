@@ -1,4 +1,4 @@
-/* $OpenBSD: xhcivar.h,v 1.12 2020/12/24 14:11:38 mglocker Exp $ */
+/* $OpenBSD: xhcivar.h,v 1.13 2022/07/15 13:08:23 tb Exp $ */
 
 /*
  * Copyright (c) 2014 Martin Pieuchot
@@ -124,6 +124,7 @@ struct xhci_softc {
 
 int	xhci_init(struct xhci_softc *);
 void	xhci_config(struct xhci_softc *);
+void	xhci_reinit(struct xhci_softc *);
 int	xhci_intr(void *);
 int	xhci_detach(struct device *, int);
 int	xhci_activate(struct device *, int);
