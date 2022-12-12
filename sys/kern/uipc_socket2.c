@@ -142,8 +142,7 @@ soisdisconnecting(struct socket *so)
 {
 	soassertlocked(so);
 	so->so_state &= ~SS_ISCONNECTING;
-	so->so_state |= (SS_ISDISCONNECTING|SS_CANTRCVMORE);
-	so->so_snd.sb_state |= SBS_CANTSENDMORE;
+	so->so_state |= (SS_ISDISCONNECTING|SS_CANTRCVMORE|SS_CANTSENDMORE);
 	wakeup(&so->so_timeo);
 	sowwakeup(so);
 	sorwakeup(so);
@@ -154,8 +153,7 @@ soisdisconnected(struct socket *so)
 {
 	soassertlocked(so);
 	so->so_state &= ~(SS_ISCONNECTING|SS_ISCONNECTED|SS_ISDISCONNECTING);
-	so->so_state |= (SS_CANTRCVMORE|SS_ISDISCONNECTED);
-	so->so_snd.sb_state |= SBS_CANTSENDMORE;
+	so->so_state |= (SS_CANTRCVMORE|SS_CANTSENDMORE|SS_ISDISCONNECTED);
 	wakeup(&so->so_timeo);
 	sowwakeup(so);
 	sorwakeup(so);
@@ -336,7 +334,7 @@ void
 socantsendmore(struct socket *so)
 {
 	soassertlocked(so);
-	so->so_snd.sb_state |= SBS_CANTSENDMORE;
+	so->so_state |= SS_CANTSENDMORE;
 	sowwakeup(so);
 }
 

@@ -174,7 +174,7 @@ fifo_open(void *v)
 		}
 		fip->fi_readers = fip->fi_writers = 0;
 		solock(wso);
-		wso->so_snd.sb_state |= SBS_CANTSENDMORE;
+		wso->so_state |= SS_CANTSENDMORE;
 		wso->so_snd.sb_lowat = PIPE_BUF;
 		sounlock(wso);
 	} else {
@@ -185,7 +185,7 @@ fifo_open(void *v)
 		fip->fi_readers++;
 		if (fip->fi_readers == 1) {
 			solock(wso);
-			wso->so_snd.sb_state &= ~SBS_CANTSENDMORE;
+			wso->so_state &= ~SS_CANTSENDMORE;
 			sounlock(wso);
 			if (fip->fi_writers > 0)
 				wakeup(&fip->fi_writers);
@@ -559,7 +559,7 @@ filt_fifowrite(struct knote *kn, long hint)
 	soassertlocked(so);
 
 	kn->kn_data = sbspace(so, &so->so_snd);
-	if (so->so_snd.sb_state & SBS_CANTSENDMORE) {
+	if (so->so_state & SS_CANTSENDMORE) {
 		kn->kn_flags |= EV_EOF;
 		rv = 1;
 	} else {

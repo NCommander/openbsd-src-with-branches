@@ -773,7 +773,7 @@ tcp_shutdown(struct socket *so)
 		ostate = tp->t_state;
 	}
 
-	if (so->so_snd.sb_state & SBS_CANTSENDMORE)
+	if (so->so_state & SS_CANTSENDMORE)
 		goto out;
 
 	socantsendmore(so);

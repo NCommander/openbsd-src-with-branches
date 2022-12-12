@@ -509,7 +509,7 @@ uipc_send(struct socket *so, struct mbuf *m, struct mbuf *nam,
 			goto out;
 	}
 
-	if (so->so_snd.sb_state & SBS_CANTSENDMORE) {
+	if (so->so_state & SS_CANTSENDMORE) {
 		error = EPIPE;
 		goto dispose;
 	}
