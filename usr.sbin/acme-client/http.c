@@ -1,4 +1,4 @@
-/*	$Id: http.c,v 1.30 2021/07/14 13:33:57 kn Exp $ */
+/*	$Id: http.c,v 1.31 2021/09/14 16:37:20 tb Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -561,7 +561,7 @@ http_head_parse(const struct http *http, struct httpxfer *trans, size_t *sz)
 		}
 
 		*ccp++ = '\0';
-		while (isspace((int)*ccp))
+		while (isspace((unsigned char)*ccp))
 			ccp++;
 		h[hsz].key = cp;
 		h[hsz++].val = ccp;

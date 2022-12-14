@@ -1,4 +1,4 @@
-/*	$Id: revokeproc.c,v 1.19 2021/11/22 08:26:08 tb Exp $ */
+/*	$Id: revokeproc.c,v 1.20 2022/12/14 15:44:13 otto Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -225,7 +225,7 @@ revokeproc(int fd, const char *certfile, int force,
 	while ((tok = strsep(&str, ",")) != NULL) {
 		if (*tok == '\0')
 			continue;
-		while (isspace((int)*tok))
+		while (isspace((unsigned char)*tok))
 			tok++;
 		if (strncmp(tok, "DNS:", 4))
 			continue;
