@@ -1,4 +1,4 @@
-/*	$OpenBSD: geofeed.c,v 1.6 2022/11/27 20:50:09 job Exp $ */
+/*	$OpenBSD: geofeed.c,v 1.7 2022/11/28 15:22:13 tb Exp $ */
 /*
  * Copyright (c) 2022 Job Snijders <job@fastly.com>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -104,7 +104,7 @@ geofeed_parse(X509 **x509, const char *fn, char *buf, size_t len)
 	ssize_t		 linelen;
 	BIO		*bio;
 	char		*b64 = NULL;
-	size_t		 b64sz;
+	size_t		 b64sz = 0;
 	unsigned char	*der = NULL;
 	size_t		 dersz;
 	const ASN1_TIME	*at;
