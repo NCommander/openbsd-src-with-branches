@@ -1,4 +1,4 @@
-/*	$Id: revokeproc.c,v 1.21 2022/12/14 18:32:26 florian Exp $ */
+/*	$Id: revokeproc.c,v 1.22 2022/12/15 16:59:04 tb Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -54,7 +54,7 @@ X509expires(X509 *x)
 		return -1;
 	}
 
-	return mktime(&t);
+	return timegm(&t);
 }
 
 int
