@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: bn_shift.c,v 1.1 2022/12/17 17:18:46 jsing Exp $ */
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
  *
@@ -202,7 +202,7 @@ test_bn_shift(void)
 			goto failure;
 		}
 	}
-		
+
 	if (!check_shift_result(bn1))
 		goto failure;
 
