@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: ui.h,v 1.1 2022/11/12 13:16:10 beck Exp $ */
 /*
  * Copyright (c) 2022 Bob Beck <beck@openbsd.org>
  *
@@ -48,6 +48,7 @@ LCRYPTO_USED(UI_get_default_method);
 LCRYPTO_USED(UI_get_method);
 LCRYPTO_USED(UI_set_method);
 LCRYPTO_USED(UI_OpenSSL);
+LCRYPTO_USED(UI_null);
 LCRYPTO_USED(UI_create_method);
 LCRYPTO_USED(UI_destroy_method);
 LCRYPTO_USED(UI_method_set_opener);
