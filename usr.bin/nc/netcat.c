@@ -1524,12 +1524,13 @@ connection_info(const char *host, const char *port, const char *proto,
     const char *ipaddr)
 {
 	struct servent *sv;
+	char *service = "*";
 
-	/* Don't look up port if -n. */
-	if (nflag)
-		sv = NULL;
-	else {
+	/* Look up service name unless -n. */
+	if (!nflag) {
 		sv = getservbyport(ntohs(atoi(port)), proto);
+		if (sv != NULL)
+			service = sv->s_name;
 	}
 
 	fprintf(stderr, "Connection to %s", host);
@@ -1541,8 +1542,7 @@ connection_info(const char *host, const char *port, const char *proto,
 	if (!nflag && !xflag && strcmp(host, ipaddr) != 0)
 		fprintf(stderr, " (%s)", ipaddr);
 
-	fprintf(stderr, " %s port [%s/%s] succeeded!\n", port, proto,
-	    sv ? sv->s_name : "*");
+	fprintf(stderr, " %s port [%s/%s] succeeded!\n", port, proto, service);
 }
 
 void
