@@ -1510,6 +1510,10 @@ udptest(int s)
 {
 	int i, ret;
 
+	/* Only write to the socket in scan mode or interactive mode. */
+	if (!zflag && !isatty(STDIN_FILENO))
+		return 0;
+
 	for (i = 0; i <= 3; i++) {
 		if (write(s, "X", 1) == 1)
 			ret = 1;
