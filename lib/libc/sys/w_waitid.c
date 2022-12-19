@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: w_waitid.c,v 1.1 2022/10/26 23:16:24 kettenis Exp $ */
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -25,7 +25,7 @@ waitid(idtype_t idtype, id_t id, siginfo_t *info, int options)
 
 	ENTER_CANCEL_POINT(1);
 	ret = HIDDEN(waitid)(idtype, id, info, options);
-	LEAVE_CANCEL_POINT(ret <= 0);
+	LEAVE_CANCEL_POINT(ret == -1 || info->si_signo == 0);
 	return (ret);
 }
 DEF_CANCEL(waitid);
