@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump_subr.h,v 1.21 2017/04/28 13:53:05 mpi Exp $	*/
+/*	$OpenBSD: kdump_subr.h,v 1.22 2018/11/05 17:05:50 anton Exp $	*/
 /*
  * Copyright(c) 2006 2006 David Kirchner <dpk@dpk.net>
  *
@@ -45,6 +45,7 @@ void accessmodename(int);
 void mmapprotname(int);
 void mmapflagsname(int);
 void wait4optname(int);
+void waitidoptname(int);
 void sendrecvflagsname(int);
 void getfsstatflagsname(int);
 void mountflagsname(int);
