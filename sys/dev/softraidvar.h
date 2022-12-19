@@ -1,4 +1,4 @@
-/* $OpenBSD: softraidvar.h,v 1.174 2022/01/09 05:42:37 jsg Exp $ */
+/* $OpenBSD: softraidvar.h,v 1.175 2022/12/19 08:16:36 kn Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  * Copyright (c) 2008 Chris Kuethe <ckuethe@openbsd.org>
@@ -562,8 +562,6 @@ struct sr_discipline {
 	int			sd_must_flush;
 
 	int			sd_deleted;
-
-	struct device		*sd_scsibus_dev;
 
 	/* discipline volume */
 	struct sr_volume	sd_vol;		/* volume associated */
