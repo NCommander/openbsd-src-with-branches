@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpc.c,v 1.37 2021/08/11 18:53:45 martijn Exp $	*/
+/*	$OpenBSD: snmpc.c,v 1.38 2021/10/21 08:17:34 martijn Exp $	*/
 
 /*
  * Copyright (c) 2019 Martijn van Duren <martijn@openbsd.org>
@@ -468,7 +468,9 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	if (version == SNMP_V1 || version == SNMP_V2C) {
+	if (!snmp_app->usecommonopt) {
+		/* No SNMP protocol settings */
+	} else if (version == SNMP_V1 || version == SNMP_V2C) {
 		if (community == NULL || community[0] == '\0')
 			errx(1, "No community name specified.");
 	} else if (version == SNMP_V3) {
