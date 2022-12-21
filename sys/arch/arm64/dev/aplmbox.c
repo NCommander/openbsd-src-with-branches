@@ -1,4 +1,4 @@
-/*	$OpenBSD: aplmbox.c,v 1.3 2022/11/09 19:18:11 kettenis Exp $	*/
+/*	$OpenBSD: aplmbox.c,v 1.4 2022/12/03 13:42:23 kettenis Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -149,7 +149,7 @@ aplmbox_channel(void *cookie, uint32_t *cells, struct mbox_client *mc)
 		sc->sc_rx_arg = mc->mc_rx_arg;
 
 		if (mc->mc_flags & MC_WAKEUP)
-			intr_enable_wakeup(sc->sc_ih);
+			intr_set_wakeup(sc->sc_ih);
 	}
 
 	return sc;

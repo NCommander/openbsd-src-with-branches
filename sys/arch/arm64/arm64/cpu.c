@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.75 2022/12/09 21:23:24 patrick Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.76 2022/12/10 10:13:58 patrick Exp $	*/
 
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
@@ -1168,16 +1168,14 @@ cpu_suspend_primary(void)
 		 * by clearing the flag.
 		 */
 		cpu_suspended = 1;
-		arm_intr_func.setipl(IPL_NONE);
-		intr_enable();
+		intr_enable_wakeup();
 
 		while (cpu_suspended) {
 			__asm volatile("wfi");
 			count++;
 		}
 
-		intr_disable();
-		arm_intr_func.setipl(IPL_HIGH);
+		intr_disable_wakeup();
 
 		/* Unmask clock interrupts. */
 		WRITE_SPECIALREG(cntv_ctl_el0,

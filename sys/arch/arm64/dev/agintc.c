@@ -1,4 +1,4 @@
-/* $OpenBSD: agintc.c,v 1.43 2022/10/13 07:04:53 kettenis Exp $ */
+/* $OpenBSD: agintc.c,v 1.44 2022/10/13 18:34:56 kettenis Exp $ */
 /*
  * Copyright (c) 2007, 2009, 2011, 2017 Dale Rahn <drahn@dalerahn.com>
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
@@ -542,7 +542,7 @@ agintc_attach(struct device *parent, struct device *self, void *aux)
 
 	/* insert self as interrupt handler */
 	arm_set_intr_handler(agintc_splraise, agintc_spllower, agintc_splx,
-	    agintc_setipl, agintc_irq_handler, NULL);
+	    agintc_setipl, agintc_irq_handler, NULL, NULL, NULL);
 
 	/* enable interrupts */
 	ctrl = bus_space_read_4(sc->sc_iot, sc->sc_d_ioh, GICD_CTLR);
