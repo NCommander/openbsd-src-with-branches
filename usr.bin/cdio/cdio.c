@@ -1,4 +1,4 @@
-/*	$OpenBSD: cdio.c,v 1.83 2021/11/28 19:28:41 deraadt Exp $	*/
+/*	$OpenBSD: cdio.c,v 1.84 2022/02/15 08:17:50 jsg Exp $	*/
 
 /*  Copyright (c) 1995 Serge V. Vakulenko
  * All rights reserved.
@@ -227,7 +227,8 @@ help(void)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-sv] [-d host:port] [-f device] [command args ...]\n",
+	fprintf(stderr, "usage: %s [-sv] [-d host:port] [-f device] "
+	    "[command [arg ...]]\n",
 	    __progname);
 	exit(1);
 }

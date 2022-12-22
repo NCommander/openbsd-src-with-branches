@@ -1,6 +1,6 @@
 #!/bin/ksh
 #
-# $OpenBSD: rcctl.sh,v 1.113 2022/05/26 11:27:03 ajacoutot Exp $
+# $OpenBSD: rcctl.sh,v 1.114 2022/09/01 07:25:32 ajacoutot Exp $
 #
 # Copyright (c) 2014, 2015-2022 Antoine Jacoutot <ajacoutot@openbsd.org>
 # Copyright (c) 2014 Ingo Schwarze <schwarze@openbsd.org>
@@ -32,7 +32,7 @@ usage()
 	for _i in ${_rc_actions}; do _a="$(echo -n ${_i}${_a:+|${_a}})"; done
 
 	_rc_err \
-	"usage:	rcctl get|getdef|set service | daemon [variable [arguments]]
+	"usage:	rcctl get|getdef|set service | daemon [variable [argument ...]]
 	rcctl [-df] ${_a} daemon ...
 	rcctl disable|enable|order [daemon ...]
 	rcctl ls all|failed|off|on|rogue|started|stopped"

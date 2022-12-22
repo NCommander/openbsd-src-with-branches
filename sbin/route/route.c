@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.259 2021/10/23 09:28:48 kn Exp $	*/
+/*	$OpenBSD: route.c,v 1.260 2021/11/10 20:24:22 bket Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -135,9 +135,9 @@ usage(char *cp)
 		warnx("botched keyword: %s", cp);
 	fprintf(stderr,
 #ifndef SMALL
-	    "usage: %s [-dnqtv] [-T rtable] command [[modifiers] args]\n",
+	    "usage: %s [-dnqtv] [-T rtable] command [[modifier ...] arg ...]\n",
 #else
-	    "usage: %s [-dnqtv] command [[modifiers] args]\n",
+	    "usage: %s [-dnqtv] command [[modifier ...] arg ...]\n",
 #endif
 	    __progname);
 	exit(1);
