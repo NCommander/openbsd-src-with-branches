@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.240 2022/12/18 19:35:36 schwarze Exp $
+# $OpenBSD: Makefile,v 1.241 2022/12/22 21:05:48 schwarze Exp $
 
 .include <bsd.own.mk>
 
@@ -58,6 +58,7 @@ MAN=	\
 	BIO_s_accept.3 \
 	BIO_s_bio.3 \
 	BIO_s_connect.3 \
+	BIO_s_datagram.3 \
 	BIO_s_fd.3 \
 	BIO_s_file.3 \
 	BIO_s_mem.3 \
