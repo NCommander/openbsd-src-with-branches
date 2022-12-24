@@ -1,4 +1,4 @@
-/* $OpenBSD: tfork_thread.S,v 1.6 2020/10/19 17:57:40 naddy Exp $ */
+/* $OpenBSD: tfork_thread.S,v 1.7 2022/05/24 22:36:58 guenther Exp $ */
 /*
  * Copyright (c) 2005 Dale Rahn <drahn@openbsd.org>
  *
@@ -38,7 +38,7 @@ ENTRY(__tfork_thread)
 	.cfi_startproc
 	.cfi_undefined	lr
 	/* child */
-	ldr	fp, 0
+	mov	fp, #0
 	mov	x0, x3
 	blr	x2
 	SYSTRAP(__threxit)
