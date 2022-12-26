@@ -124,7 +124,7 @@ my @testlists = (
     [ "4.4.7", "Valid Two CRLs Test7",              0 ],
 
     # The test document suggests these should return certificate revoked...
-    # Subsquent discussion has concluded they should not due to unhandle
+    # Subsequent discussion has concluded they should not due to unhandle
     # critical CRL extensions.
     [ "4.4.8", "Invalid Unknown CRL Entry Extension Test8", 36 ],
     [ "4.4.9", "Invalid Unknown CRL Extension Test9",       36 ],
@@ -749,7 +749,7 @@ my @testlists = (
     [ "4.14.29", "Valid cRLIssuer Test29",                        0 ],
 
     # Although this test is valid it has a circular dependency. As a result
-    # an attempt is made to reursively checks a CRL path and rejected due to
+    # an attempt is made to recursively check a CRL path and rejected due to
     # a CRL path validation error. PKITS notes suggest this test does not
     # need to be run due to this issue.
     [ "4.14.30", "Valid cRLIssuer Test30",                                 54 ],
@@ -784,6 +784,15 @@ my $ossl = "ossl/apps/openssl";
 
 my $ossl_cmd = "$ossl_path cms -verify -verify_retcode ";
 $ossl_cmd .= "-CAfile pkitsta.pem -crl_check_all -x509_strict ";
+
+# Check for expiry of trust anchor
+system "$ossl_path x509 -inform DER -in $pkitsta -checkend 0";
+if ($? == 256)
+	{
+	print STDERR "WARNING: using older expired data\n";
+	$ossl_cmd .= "-attime 1291940972 ";
+	}
+
 $ossl_cmd .= "-policy_check -extended_crl -use_deltas -out /dev/null 2>&1 ";
 
 system "$ossl_path x509 -inform DER -in $pkitsta -out pkitsta.pem";
