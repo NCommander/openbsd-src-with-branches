@@ -1,4 +1,4 @@
-/*	$OpenBSD: search.c,v 1.47 2018/07/11 12:21:37 krw Exp $	*/
+/*	$OpenBSD: search.c,v 1.48 2022/10/20 18:59:24 op Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -872,8 +872,8 @@ zapuptochar(int f, int n)
 }
 
 /*
- * Prompt for a charcter and deletes from the point up to, optionally
- * including, the first instance of that charcters.  Marks is cleared
+ * Prompt for a character and deletes from the point up to, optionally
+ * including, the first instance of that character.  Marks is cleared
  * afterwards.
  */
 int

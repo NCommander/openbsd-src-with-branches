@@ -1,4 +1,4 @@
-/*	$OpenBSD: abuf.c,v 1.2 2012/12/07 08:04:58 ratchov Exp $	*/
+/*	$OpenBSD: abuf.c,v 1.4 2016/01/08 16:17:31 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -82,7 +82,7 @@ abuf_rgetblk(struct abuf *buf, int *rsize)
 }
 
 /*
- * discard "count" bytes at the start postion.
+ * discard "count" bytes at the start position.
  */
 void
 abuf_rdiscard(struct abuf *buf, int count)

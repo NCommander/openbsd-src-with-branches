@@ -1,4 +1,4 @@
-/*	$OpenBSD: compress.h,v 1.14 2021/01/18 00:46:58 mortimer Exp $	*/
+/*	$OpenBSD: compress.h,v 1.15 2022/10/22 14:41:27 millert Exp $	*/
 
 /*
  * Copyright (c) 1997 Michael Shalayeff
@@ -38,7 +38,7 @@ struct z_info {
 };
 
 /*
- * making it any bigger does not affect perfomance very much.
+ * making it any bigger does not affect performance very much.
  * actually this value is just a little bit better than 8192.
  */
 #define Z_BUFSIZE 16384

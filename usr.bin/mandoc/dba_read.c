@@ -1,4 +1,4 @@
-/*	$OpenBSD: dba_read.c,v 1.3 2016/08/17 18:58:31 schwarze Exp $ */
+/*	$OpenBSD: dba_read.c,v 1.4 2016/08/17 20:46:06 schwarze Exp $ */
 /*
  * Copyright (c) 2016 Ingo Schwarze <schwarze@openbsd.org>
  *
@@ -17,7 +17,7 @@
  * Function to read the mandoc database from disk into RAM,
  * such that data can be added or removed.
  * The interface is defined in "dba.h".
- * This file is seperate from dba.c because this also uses "dbm.h".
+ * This file is separate from dba.c because this also uses "dbm.h".
  */
 #include <regex.h>
 #include <stdint.h>

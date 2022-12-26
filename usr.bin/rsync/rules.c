@@ -1,4 +1,4 @@
-/*	$OpenBSD: rules.c,v 1.3 2021/11/03 08:30:14 claudio Exp $ */
+/*	$OpenBSD: rules.c,v 1.4 2021/11/03 14:42:12 deraadt Exp $ */
 /*
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
  *
@@ -211,7 +211,7 @@ parse_rule(char *line, enum rule_type def)
 		/* comment */
 		return 0;
 	case '\0':
-		/* ingore empty lines */
+		/* ignore empty lines */
 		return 0;
 	default:
 		len = strcspn(line, " _");

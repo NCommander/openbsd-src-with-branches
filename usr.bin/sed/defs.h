@@ -1,4 +1,4 @@
-/*	$OpenBSD: defs.h,v 1.8 2017/01/20 10:26:16 krw Exp $ */
+/*	$OpenBSD: defs.h,v 1.9 2017/12/13 16:06:34 millert Exp $ */
 /*-
  * Copyright (c) 1992 Diomidis Spinellis.
  * Copyright (c) 1992, 1993
@@ -71,7 +71,7 @@ struct s_subst {
 
 /*
  * An internally compiled command.
- * Initialy, label references are stored in t, on a second pass they
+ * Initially, label references are stored in t, on a second pass they
  * are updated to pointers.
  */
 struct s_command {

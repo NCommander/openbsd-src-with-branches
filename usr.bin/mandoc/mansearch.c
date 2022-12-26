@@ -1,4 +1,4 @@
-/* $OpenBSD: mansearch.c,v 1.65 2019/07/01 22:43:03 schwarze Exp $ */
+/* $OpenBSD: mansearch.c,v 1.66 2022/01/13 04:06:10 schwarze Exp $ */
 /*
  * Copyright (c) 2012 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2013-2018 Ingo Schwarze <schwarze@openbsd.org>
@@ -488,7 +488,7 @@ lstlen(const char *cp, size_t sep)
 
 /*
  * Print the NUL-terminated list of NUL-terminated strings
- * into the buffer, seperating strings with sep.
+ * into the buffer, separating strings with sep.
  */
 static void
 lstcat(char *buf, size_t *i, const char *cp, const char *sep)

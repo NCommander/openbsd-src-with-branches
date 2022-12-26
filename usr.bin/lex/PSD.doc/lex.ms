@@ -1,4 +1,4 @@
-.\"	$OpenBSD: lex.ms,v 1.2 2003/12/09 12:42:41 jmc Exp $
+.\"	$OpenBSD: lex.ms,v 1.3 2004/04/06 10:00:32 jmc Exp $
 .\"
 .\" Copyright (C) Caldera International Inc.  2001-2002.
 .\" All rights reserved.
@@ -1429,7 +1429,7 @@ is copied out after the Lex output.
 .PP
 Definitions intended for Lex are given
 before the first %% delimiter.  Any line in this section
-not contained between %{ and %}, and begining
+not contained between %{ and %}, and beginning
 in column 1, is assumed to define Lex substitution strings.
 The format of such lines is
 .DS I

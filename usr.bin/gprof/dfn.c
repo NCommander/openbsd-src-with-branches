@@ -1,4 +1,4 @@
-/*	$OpenBSD: dfn.c,v 1.7 2009/10/27 23:59:38 deraadt Exp $	*/
+/*	$OpenBSD: dfn.c,v 1.8 2014/03/16 18:38:30 guenther Exp $	*/
 /*	$NetBSD: dfn.c,v 1.5 1995/04/19 07:15:56 cgd Exp $	*/
 
 /*
@@ -69,7 +69,7 @@ dfn(nltype *parentp)
 	}
 #   endif /* DEBUG */
 	/*
-	 *	if we're already numbered, no need to look any furthur.
+	 *	if we're already numbered, no need to look any further.
 	 */
     if ( dfn_numbered( parentp ) ) {
 	return;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: audioctl.c,v 1.42 2020/02/02 05:25:41 ratchov Exp $	*/
+/*	$OpenBSD: audioctl.c,v 1.43 2021/07/12 15:09:19 beck Exp $	*/
 /*
  * Copyright (c) 2016 Alexandre Ratchov <alex@caoua.org>
  *
@@ -71,7 +71,7 @@ int fd, show_names = 1, quiet = 0;
 
 /*
  * parse encoding string (examples: s8, u8, s16, s16le, s24be ...)
- * and fill enconding fields of audio_swpar structure
+ * and fill encoding fields of audio_swpar structure
  */
 int
 strtoenc(struct audio_swpar *ap, char *p)

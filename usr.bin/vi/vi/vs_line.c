@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs_line.c,v 1.14 2014/11/12 04:28:41 bentley Exp $	*/
+/*	$OpenBSD: vs_line.c,v 1.16 2016/05/27 09:18:12 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994
@@ -80,7 +80,7 @@ vs_line(SCR *sp, SMAP *smp, size_t *yp, size_t *xp)
 	 * Move to the line.  This routine can be called by vs_sm_position(),
 	 * which uses it to fill in the cache entry so it can figure out what
 	 * the real contents of the screen are.  Because of this, we have to
-	 * return to whereever we started from.
+	 * return to wherever we started from.
 	 */
 	gp = sp->gp;
 	(void)gp->scr_cursor(sp, &oldy, &oldx);

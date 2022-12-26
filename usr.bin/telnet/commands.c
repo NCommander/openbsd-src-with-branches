@@ -1,4 +1,4 @@
-/*	$OpenBSD: commands.c,v 1.86 2018/09/30 14:35:32 deraadt Exp $	*/
+/*	$OpenBSD: commands.c,v 1.87 2019/06/28 13:35:04 deraadt Exp $	*/
 /*	$NetBSD: commands.c,v 1.14 1996/03/24 22:03:48 jtk Exp $	*/
 
 /*
@@ -1941,7 +1941,7 @@ static char
 	sethelp[] = 	"set operating parameters ('set ?' for more)",
 	unsethelp[] = 	"unset operating parameters ('unset ?' for more)",
 	togglestring[] ="toggle operating parameters ('toggle ?' for more)",
-	slchelp[] =	"change state of special charaters ('slc ?' for more)",
+	slchelp[] =	"change state of special characters ('slc ?' for more)",
 	displayhelp[] =	"display operating parameters",
 	zhelp[] =	"suspend telnet",
 	envhelp[] =	"change environment variables ('environ ?' for more)",
