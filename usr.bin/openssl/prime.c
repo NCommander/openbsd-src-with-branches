@@ -1,4 +1,4 @@
-/* $OpenBSD: prime.c,v 1.13 2019/07/14 03:30:46 guenther Exp $ */
+/* $OpenBSD: prime.c,v 1.14 2022/11/11 17:07:39 joshua Exp $ */
 /* ====================================================================
  * Copyright (c) 2004 The OpenSSL Project.  All rights reserved.
  *
@@ -75,7 +75,7 @@ static const struct option prime_options[] = {
 	{
 		.name = "checks",
 		.argname = "n",
-		.desc = "Miller-Rabin probablistic primality test iterations",
+		.desc = "Miller-Rabin probabilistic primality test iterations",
 		.type = OPTION_ARG_INT,
 		.opt.value = &prime_config.checks,
 	},
