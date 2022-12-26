@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmvar.h,v 1.83 2022/11/09 17:53:12 dv Exp $	*/
+/*	$OpenBSD: vmmvar.h,v 1.84 2022/11/10 11:46:39 dv Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -451,6 +451,10 @@ struct vm_mem_range {
 	paddr_t	vmr_gpa;
 	vaddr_t	vmr_va;
 	size_t	vmr_size;
+	int	vmr_type;
+#define VM_MEM_RAM		0	/* Presented as usable system memory. */
+#define VM_MEM_RESERVED		1	/* Reserved for BIOS, etc. */
+#define VM_MEM_MMIO		2	/* Special region for device mmio. */
 };
 
 /*
