@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: naptr_35.c,v 1.12 2020/02/26 18:47:59 florian Exp $ */
+/* $Id: naptr_35.c,v 1.13 2020/09/14 08:40:43 florian Exp $ */
 
 /* Reviewed: Thu Mar 16 16:52:50 PST 2000 by bwelling */
 
@@ -27,7 +27,7 @@
 
 /*
  * Check the wire format of the Regexp field.
- * Don't allow embeded NUL's.
+ * Don't allow embedded NUL's.
  */
 static inline isc_result_t
 txt_valid_regex(const unsigned char *txt) {

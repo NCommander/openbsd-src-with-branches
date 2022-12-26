@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: ds_43.c,v 1.13 2020/02/26 18:47:59 florian Exp $ */
+/* $Id: zonemd_63.c,v 1.1 2021/04/02 06:37:40 florian Exp $ */
 
 /* RFC8976 */
 
@@ -84,7 +84,7 @@ fromwire_zonemd(ARGS_FROMWIRE) {
 	/*
 	 * serial: 4
 	 * scheme: 1
-	 * hash algorith: 1
+	 * hash algorithm: 1
 	 * digest: at least 1
 	 */
 	if (sr.length < 7)

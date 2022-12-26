@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: name.h,v 1.11 2020/02/25 05:00:42 jsg Exp $ */
+/* $Id: name.h,v 1.12 2020/09/14 08:40:43 florian Exp $ */
 
 #ifndef DNS_NAME_H
 #define DNS_NAME_H 1
@@ -354,7 +354,7 @@ dns_name_equal(const dns_name_t *name1, const dns_name_t *name2);
  * \li	Because it only needs to test for equality, dns_name_equal() can be
  *	significantly faster than dns_name_fullcompare() or dns_name_compare().
  *
- * \li	Offsets tables are not used in the comparision.
+ * \li	Offset tables are not used in the comparison.
  *
  * \li	It makes no sense for one of the names to be relative and the
  *	other absolute.  If both names are relative, then to be meaningfully

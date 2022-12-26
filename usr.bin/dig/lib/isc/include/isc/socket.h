@@ -14,7 +14,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $Id: socket.h,v 1.6 2020/02/24 13:49:39 jsg Exp $ */
+/* $Id: socket.h,v 1.7 2020/09/15 11:47:42 florian Exp $ */
 
 #ifndef ISC_SOCKET_H
 #define ISC_SOCKET_H 1
@@ -248,7 +248,7 @@ isc_socket_cancel(isc_socket_t *sock, isc_task_t *task,
  *
  * \li	"task" is NULL or a valid task
  *
- * "how" is a bitmask describing the type of cancelation to perform.
+ * "how" is a bitmask describing the type of cancellation to perform.
  * The type ISC_SOCKCANCEL_ALL will cancel all pending I/O on this
  * socket.
  *
