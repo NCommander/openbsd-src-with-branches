@@ -539,16 +539,17 @@ $code.=<<___;
 .type	sha1_block_data_order,#function
 .size	sha1_block_data_order,(.-sha1_block_data_order)
 .asciz	"SHA1 block transform for SPARCv9a, CRYPTOGAMS by <appro\@openssl.org>"
+.align	4
 ___
 
 # Purpose of these subroutines is to explicitly encode VIS instructions,
 # so that one can compile the module without having to specify VIS
-# extentions on compiler command line, e.g. -xarch=v9 vs. -xarch=v9a.
+# extensions on compiler command line, e.g. -xarch=v9 vs. -xarch=v9a.
 # Idea is to reserve for option to produce "universal" binary and let
 # programmer detect if current CPU is VIS capable at run-time.
 sub unvis {
 my ($mnemonic,$rs1,$rs2,$rd)=@_;
-my $ref,$opf;
+my ($ref,$opf);
 my %visopf = (	"fmul8ulx16"	=> 0x037,
 		"faligndata"	=> 0x048,
 		"fpadd32"	=> 0x052,

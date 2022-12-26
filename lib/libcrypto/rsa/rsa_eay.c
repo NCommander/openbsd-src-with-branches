@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_eay.c,v 1.54 2022/01/20 11:10:11 inoguchi Exp $ */
+/* $OpenBSD: rsa_eay.c,v 1.55 2022/11/26 16:08:54 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -716,7 +716,7 @@ RSA_eay_mod_exp(BIGNUM *r0, const BIGNUM *I, RSA *rsa, BN_CTX *ctx)
 		BIGNUM p, q;
 
 		/*
-		 * Make sure BN_mod_inverse in Montgomery intialization uses the
+		 * Make sure BN_mod_inverse in Montgomery initialization uses the
 		 * BN_FLG_CONSTTIME flag
 		 */
 		BN_init(&p);

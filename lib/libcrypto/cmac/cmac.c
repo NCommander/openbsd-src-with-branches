@@ -1,4 +1,4 @@
-/* $OpenBSD: cmac.c,v 1.11 2021/12/12 21:30:13 tb Exp $ */
+/* $OpenBSD: cmac.c,v 1.12 2022/11/26 16:08:51 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
  */
@@ -167,7 +167,7 @@ CMAC_Init(CMAC_CTX *ctx, const void *key, size_t keylen,
 		ctx->nlast_block = 0;
 		return 1;
 	}
-	/* Initialiase context */
+	/* Initialise context */
 	if (cipher && !EVP_EncryptInit_ex(&ctx->cctx, cipher, impl, NULL, NULL))
 		return 0;
 	/* Non-NULL key means initialisation complete */

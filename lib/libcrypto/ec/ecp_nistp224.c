@@ -1,4 +1,4 @@
-/* $OpenBSD: ecp_nistp224.c,v 1.28 2022/11/19 07:29:29 tb Exp $ */
+/* $OpenBSD: ecp_nistp224.c,v 1.29 2022/11/26 16:08:52 tb Exp $ */
 /*
  * Written by Emilia Kasper (Google) for the OpenSSL project.
  */
@@ -72,7 +72,7 @@ typedef uint128_t widelimb;
 typedef limb felem[4];
 typedef widelimb widefelem[7];
 
-/* Field element represented as a byte arrary.
+/* Field element represented as a byte array.
  * 28*8 = 224 bits is also the group order size for the elliptic curve,
  * and we also use this type for scalars for point multiplication.
   */

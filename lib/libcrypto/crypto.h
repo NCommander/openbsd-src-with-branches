@@ -1,4 +1,4 @@
-/* $OpenBSD: crypto.h,v 1.56 2022/09/03 17:47:47 jsing Exp $ */
+/* $OpenBSD: crypto.h,v 1.57 2022/09/11 17:26:51 tb Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2006 The OpenSSL Project.  All rights reserved.
  *
@@ -248,8 +248,8 @@ DECLARE_STACK_OF(void)
  * The current classes are SSL_CTX, SSL, SSL_SESSION, and a few more */
 
 typedef struct crypto_ex_data_func_st {
-	long argl;	/* Arbitary long */
-	void *argp;	/* Arbitary void * */
+	long argl;	/* Arbitrary long */
+	void *argp;	/* Arbitrary void * */
 	CRYPTO_EX_new *new_func;
 	CRYPTO_EX_free *free_func;
 	CRYPTO_EX_dup *dup_func;
@@ -540,7 +540,7 @@ void ERR_load_CRYPTO_strings(void);
 #define _OPENSSL_INIT_FLAG_NOOP			0x80000000L
 
 /*
- * These are provided for compatibiliy, but have no effect
+ * These are provided for compatibility, but have no effect
  * on how LibreSSL is initialized.
  */
 #define OPENSSL_INIT_NO_LOAD_CRYPTO_STRINGS	_OPENSSL_INIT_FLAG_NOOP

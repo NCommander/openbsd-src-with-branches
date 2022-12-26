@@ -59,19 +59,19 @@ sub LL()
 					unshift(@_,pop(@_));
 				  }
 				}
-	else			{ die "unvalid SCALE value"; }
+	else			{ die "invalid SCALE value"; }
 }
 
 sub scale()
 {	if	($SCALE==2)	{ &lea(@_[0],&DWP(0,@_[1],@_[1])); }
 	elsif	($SCALE==8)	{ &lea(@_[0],&DWP(0,"",@_[1],8));  }
-	else			{ die "unvalid SCALE value";       }
+	else			{ die "invalid SCALE value";       }
 }
 
 sub row()
 {	if	($SCALE==2)	{ ((8-shift)&7); }
 	elsif	($SCALE==8)	{ (8*shift);     }
-	else			{ die "unvalid SCALE value"; }
+	else			{ die "invalid SCALE value"; }
 }
 
 $tbl="ebp";
@@ -119,7 +119,7 @@ $tbl="ebp";
 	&mov	("eax",&DWP(0,"esp"));
 	&mov	("ebx",&DWP(4,"esp"));
 for($i=0;$i<8;$i++) {
-    my $func = ($i==0)? movq : pxor;
+    my $func = ($i==0)? \&movq : \&pxor;
 	&movb	(&LB("ecx"),&LB("eax"));
 	&movb	(&LB("edx"),&HB("eax"));
 	&scale	("esi","ecx");

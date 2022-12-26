@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_vfy.c,v 1.108 2022/12/01 05:16:08 tb Exp $ */
+/* $OpenBSD: x509_vfy.c,v 1.109 2022/12/01 05:20:30 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -312,7 +312,7 @@ X509_verify_cert_legacy_build_chain(X509_STORE_CTX *ctx, int *bad, int *out_ok)
 		if (ctx->untrusted != NULL) {
 			/*
 			 * If we do not find a non-expired untrusted cert, peek
-			 * ahead and see if we can satisify this from the trusted
+			 * ahead and see if we can satisfy this from the trusted
 			 * store. If not, see if we have an expired untrusted cert.
 			 */
 			xtmp = find_issuer(ctx, sktmp, x, 0);

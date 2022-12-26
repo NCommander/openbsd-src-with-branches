@@ -1,4 +1,4 @@
-/* $OpenBSD: ocsp_cl.c,v 1.20 2021/11/24 19:27:03 tb Exp $ */
+/* $OpenBSD: ocsp_cl.c,v 1.21 2022/01/07 09:45:52 tb Exp $ */
 /* Written by Tom Titchener <Tom_Titchener@groove.net> for the OpenSSL
  * project. */
 
@@ -215,7 +215,7 @@ OCSP_response_get1_basic(OCSP_RESPONSE *resp)
 	return ASN1_item_unpack(rb->response, &OCSP_BASICRESP_it);
 }
 
-/* Return number of OCSP_SINGLERESP reponses present in
+/* Return number of OCSP_SINGLERESP responses present in
  * a basic response.
  */
 int
