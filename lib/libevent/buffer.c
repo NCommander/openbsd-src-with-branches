@@ -1,4 +1,4 @@
-/*	$OpenBSD: buffer.c,v 1.31 2017/03/18 01:48:43 deraadt Exp $	*/
+/*	$OpenBSD: buffer.c,v 1.32 2019/05/03 16:31:34 tobias Exp $	*/
 
 /*
  * Copyright (c) 2002, 2003 Niels Provos <provos@citi.umich.edu>
@@ -435,7 +435,7 @@ evbuffer_read(struct evbuffer *buf, int fd, int howmuch)
 		 * reading.  We do not want to exhaust resources
 		 * before the reader has a chance to do something
 		 * about it.  If the reader does not tell us how much
-		 * data we should read, we artifically limit it.
+		 * data we should read, we artificially limit it.
 		 */
 		if ((size_t)n > buf->totallen << 2)
 			n = buf->totallen << 2;
