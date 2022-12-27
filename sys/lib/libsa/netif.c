@@ -1,4 +1,4 @@
-/*	$OpenBSD: netif.c,v 1.12 2017/09/08 05:36:53 deraadt Exp $	*/
+/*	$OpenBSD: netif.c,v 1.13 2021/10/25 15:59:46 patrick Exp $	*/
 /*	$NetBSD: netif.c,v 1.7 1996/10/13 02:29:03 christos Exp $	*/
 
 /*
@@ -260,8 +260,7 @@ netif_put(struct iodesc *desc, void *pkt, size_t len)
 }
 
 struct iodesc *
-socktodesc(sock)
-	int sock;
+socktodesc(int sock)
 {
 	if (sock >= SOPEN_MAX) {
 		errno = EBADF;
