@@ -1,4 +1,4 @@
-/*	$OpenBSD: yp_prot.h,v 1.10 2016/05/30 02:53:29 guenther Exp $	*/
+/*	$OpenBSD: yp_prot.h,v 1.11 2022/01/28 04:59:15 guenther Exp $	*/
 /*	$NetBSD: yp_prot.h,v 1.6 1995/07/14 21:10:58 christos Exp $	*/
 
 /*
@@ -277,7 +277,7 @@ struct yppushresp_xfr {
 #define YPPUSH_AGE	((unsigned long)2)	/* Master's version not newer */
 #define YPPUSH_NOMAP	((unsigned long)-1)	/* Can't find server for map */
 #define YPPUSH_NODOM	((unsigned long)-2)	/* Domain not supported */
-#define YPPUSH_RSRC	((unsigned long)-3)	/* Local resouce alloc failure */
+#define YPPUSH_RSRC	((unsigned long)-3)	/* Local resource alloc failure */
 #define YPPUSH_RPC	((unsigned long)-4)	/* RPC failure talking to server */
 #define YPPUSH_MADDR	((unsigned long)-5)	/* Can't get master address */
 #define YPPUSH_YPERR	((unsigned long)-6)	/* YP server/map db error */

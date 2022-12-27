@@ -1,4 +1,4 @@
-/*	$OpenBSD: tib.h,v 1.7 2019/05/10 13:29:21 guenther Exp $	*/
+/*	$OpenBSD: tib.h,v 1.8 2020/07/14 16:48:13 kettenis Exp $	*/
 /*
  * Copyright (c) 2011,2014 Philip Guenther <guenther@openbsd.org>
  *
@@ -54,7 +54,7 @@
  *		Short-hand for TCB_TO_TIB(TCB_GET())
  *
  *	TIB_EXTRA_ALIGN
- *		On TLS varaint 2 archs, what alignment is sufficient
+ *		On TLS variant 2 archs, what alignment is sufficient
  *		for the extra space that will be used for struct pthread?
  *
  * The following functions are provided by either ld.so (dynamic) or
