@@ -1,4 +1,4 @@
-/*	$OpenBSD: login_cap.c,v 1.44 2022/03/20 23:24:03 millert Exp $	*/
+/*	$OpenBSD: login_cap.c,v 1.45 2022/03/23 14:39:52 millert Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Todd C. Miller <millert@openbsd.org>
@@ -948,7 +948,7 @@ multiply(u_quad_t n1, u_quad_t n2)
 
 	/*
 	 * First check the magnitude of each number.  If the sum of the
-	 * magnatude is way to high, reject the number.  (If this test
+	 * magnitude is way to high, reject the number.  (If this test
 	 * is not done then the first multiply below may overflow.)
 	 */
 	for (b1 = bpw; (((u_quad_t)1 << (b1-1)) & n1) == 0; --b1)

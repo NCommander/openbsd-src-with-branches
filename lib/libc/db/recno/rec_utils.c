@@ -1,4 +1,4 @@
-/*	$OpenBSD: rec_utils.c,v 1.8 2007/08/07 05:40:34 ray Exp $ */
+/*	$OpenBSD: rec_utils.c,v 1.9 2015/01/16 16:48:51 deraadt Exp $ */
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -75,7 +75,7 @@ dataonly:
 		return (RET_SUCCESS);
 
 	/*
-	 * We must copy big keys/data to make them contigous.  Otherwise,
+	 * We must copy big keys/data to make them contiguous.  Otherwise,
 	 * leave the page pinned and don't copy unless the user specified
 	 * concurrent access.
 	 */

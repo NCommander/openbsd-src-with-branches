@@ -1,4 +1,4 @@
-/*	$OpenBSD: fmt_scaled.c,v 1.20 2021/06/20 14:08:42 tb Exp $	*/
+/*	$OpenBSD: fmt_scaled.c,v 1.22 2022/03/11 09:04:59 dtucker Exp $	*/
 
 /*
  * Copyright (c) 2001, 2002, 2003 Ian F. Darwin.  All rights reserved.
@@ -182,7 +182,7 @@ scan_scaled(char *scaled, long long *result)
 			/* scale whole part */
 			whole *= scale_fact;
 
-			/* truncate fpart so it does't overflow.
+			/* truncate fpart so it doesn't overflow.
 			 * then scale fractional part.
 			 */
 			while (fpart >= LLONG_MAX / scale_fact) {

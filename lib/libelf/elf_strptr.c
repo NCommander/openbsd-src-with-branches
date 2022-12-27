@@ -29,7 +29,7 @@
 
 #include "_libelf.h"
 
-ELFTC_VCSID("$Id: elf_strptr.c,v 1.1 2019/02/01 05:27:37 jsg Exp $");
+ELFTC_VCSID("$Id: elf_strptr.c,v 1.2 2021/09/02 21:12:25 deraadt Exp $");
 
 /*
  * Convert an ELF section#,offset pair to a string pointer.
@@ -83,7 +83,7 @@ elf_strptr(Elf *e, size_t scndx, size_t offset)
 		}
 	} else {
 		/*
-		 * Otherwise, the `d_off' members are not useable and
+		 * Otherwise, the `d_off' members are not usable and
 		 * we need to compute offsets ourselves, taking into
 		 * account 'holes' in coverage of the section introduced
 		 * by alignment requirements.

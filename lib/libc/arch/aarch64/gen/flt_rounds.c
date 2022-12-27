@@ -1,4 +1,4 @@
-/*	$OpenBSD: flt_rounds.c,v 1.3 2006/02/06 17:03:17 jmc Exp $	*/
+/*	$OpenBSD: flt_rounds.c,v 1.1 2017/01/11 18:09:24 patrick Exp $	*/
 /*	$NetBSD: flt_rounds.c,v 1.1 2000/12/29 20:13:48 bjh21 Exp $	*/
 
 /*
@@ -49,7 +49,7 @@ static const int map[] = {
  * Returns:
  *	0 - round to zero
  *	1 - round to nearest
- *	2 - round to postive infinity
+ *	2 - round to positive infinity
  *	3 - round to negative infinity
  *
  * ok all we need to do is get the current FP rounding mode

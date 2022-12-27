@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthdr.c,v 1.11 2015/09/14 11:01:47 guenther Exp $	*/
+/*	$OpenBSD: rthdr.c,v 1.12 2016/09/21 04:38:56 guenther Exp $	*/
 /*	$KAME: rthdr.c,v 1.22 2006/02/09 08:18:58 keiichi Exp $	*/
 
 /*
@@ -50,7 +50,7 @@ inet6_rth_space(int type, int segments)
 	case IPV6_RTHDR_TYPE_0:
 		return (((segments * 2) + 1) << 3);
 	default:
-		return (0);	/* type not suppported */
+		return (0);	/* type not supported */
 	}
 }
 DEF_WEAK(inet6_rth_space);

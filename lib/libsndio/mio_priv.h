@@ -1,4 +1,4 @@
-/*	$OpenBSD: mio_priv.h,v 1.11 2015/01/16 16:48:52 deraadt Exp $	*/
+/*	$OpenBSD: mio_priv.h,v 1.12 2015/11/22 12:01:23 ratchov Exp $	*/
 /*
  * Copyright (c) 2008 Alexandre Ratchov <alex@caoua.org>
  *
@@ -28,7 +28,7 @@ struct mio_hdl {
 	struct mio_ops *ops;
 	unsigned mode;			/* MIO_IN | MIO_OUT */
 	int nbio;			/* true if non-blocking io */
-	int eof;			/* true if error occured */
+	int eof;			/* true if error occurred */
 };
 
 /*

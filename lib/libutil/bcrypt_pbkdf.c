@@ -1,4 +1,4 @@
-/* $OpenBSD: bcrypt_pbkdf.c,v 1.15 2019/11/21 16:13:39 tedu Exp $ */
+/* $OpenBSD: bcrypt_pbkdf.c,v 1.16 2020/08/02 18:35:48 tb Exp $ */
 /*
  * Copyright (c) 2013 Ted Unangst <tedu@openbsd.org>
  *
@@ -33,7 +33,7 @@
  * function with the following modifications:
  * 1. The input password and salt are preprocessed with SHA512.
  * 2. The output length is expanded to 256 bits.
- * 3. Subsequently the magic string to be encrypted is lengthened and modifed
+ * 3. Subsequently the magic string to be encrypted is lengthened and modified
  *    to "OxychromaticBlowfishSwatDynamite"
  * 4. The hash function is defined to perform 64 rounds of initial state
  *    expansion. (More rounds are performed by iterating the hash.)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rnusers.x,v 1.13 2009/10/27 23:59:30 deraadt Exp $	*/
+/*	$OpenBSD: rnusers.x,v 1.14 2010/09/01 14:43:34 millert Exp $	*/
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -51,7 +51,7 @@
 %
 %/*
 % * This is the structure used in version 2 of the rusersd RPC service.
-% * It corresponds to the utmp structure for BSD sytems.
+% * It corresponds to the utmp structure for BSD systems.
 % */
 %
 %#define RNUSERS_MAXUSERLEN 8

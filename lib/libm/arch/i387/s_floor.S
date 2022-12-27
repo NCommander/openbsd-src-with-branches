@@ -1,4 +1,4 @@
-/*	$OpenBSD: s_floor.S,v 1.3 2005/08/02 11:17:31 espie Exp $ */
+/*	$OpenBSD: s_floor.S,v 1.4 2016/09/12 19:47:02 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -14,7 +14,7 @@ ENTRY(floor)
 	orw	$0x0400,%dx		/* round towards -oo */
 	andw	$0xf7ff,%dx
 	movw	%dx,(%esp)
-	fldcw	(%esp)		/* load modfied control word */
+	fldcw	(%esp)		/* load modified control word */
 
 	fldl	12(%esp);		/* round */
 	frndint

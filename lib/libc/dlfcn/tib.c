@@ -1,4 +1,4 @@
-/*	$OpenBSD: tib.c,v 1.1 2016/05/07 19:05:22 guenther Exp $ */
+/*	$OpenBSD: tib.c,v 1.2 2017/12/01 23:30:05 guenther Exp $ */
 /*
  * Copyright (c) 2016 Philip Guenther <guenther@openbsd.org>
  *
@@ -41,7 +41,7 @@ void *
 _dl_allocate_tib(size_t extra)
 {
 #ifdef PIC
-	return NULL;			/* overriden by ld.so */
+	return NULL;			/* overridden by ld.so */
 #else
 	void *base;
 	char *thread;

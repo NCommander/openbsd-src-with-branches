@@ -1,4 +1,4 @@
-/*	$OpenBSD: rthread.c,v 1.96 2017/09/05 02:40:54 guenther Exp $ */
+/*	$OpenBSD: rthread.c,v 1.99 2017/11/04 22:53:57 jca Exp $ */
 /*
  * Copyright (c) 2004,2005 Ted Unangst <tedu@openbsd.org>
  * All Rights Reserved.
@@ -49,7 +49,7 @@
 typeof(dlctl) dlctl asm("_dlctl") __attribute__((weak));
 REDIRECT_SYSCALL(getthrid);
 
-/* weak stub to be overriden by ld.so */
+/* weak stub to be overridden by ld.so */
 int	dlctl(void *handle, int cmd, void *data) { return 0; }
 
 /*

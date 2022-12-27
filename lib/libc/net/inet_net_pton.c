@@ -1,4 +1,4 @@
-/*	$OpenBSD: inet_net_pton.c,v 1.12 2022/04/13 16:20:11 millert Exp $	*/
+/*	$OpenBSD: inet_net_pton.c,v 1.13 2022/04/13 22:17:33 millert Exp $	*/
 
 /*
  * Copyright (c) 2012 by Gilles Chehade <gilles@openbsd.org>
@@ -161,7 +161,7 @@ inet_net_pton_ipv4(const char *src, u_char *dst, size_t size)
 			goto enoent;
 	}
 
-	/* Firey death and destruction unless we prefetched EOS. */
+	/* Fiery death and destruction unless we prefetched EOS. */
 	if (ch != '\0')
 		goto enoent;
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: strncmp.S,v 1.5 2017/08/19 18:25:50 deraadt Exp $ */
+/*	$OpenBSD: strncmp.S,v 1.6 2017/11/29 05:13:57 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -102,7 +102,7 @@ L2:	jz	L4			/* strings are equal */
 	je	L1
 
 	.align 2,0x90
-L3:	movzbl	(%eax),%eax		/* unsigned comparision */
+L3:	movzbl	(%eax),%eax		/* unsigned comparison */
 	movzbl	(%ecx),%ecx
 	subl	%ecx,%eax
 	popl	%ebx

@@ -1,4 +1,4 @@
-/*	$OpenBSD: atfork.c,v 1.2 2015/11/10 04:14:03 guenther Exp $ */
+/*	$OpenBSD: atfork.c,v 1.3 2017/08/15 06:38:41 guenther Exp $ */
 
 /*
  * Copyright (c) 2008 Kurt Miller <kurt@openbsd.org>
@@ -62,7 +62,7 @@ _thread_atfork(void (*prepare)(void), void (*parent)(void),
 DEF_STRONG(_thread_atfork);
 
 /*
- * Copy of pthread_atfork() used by libc and anything staticly linked
+ * Copy of pthread_atfork() used by libc and anything statically linked
  * into the executable.  This passes NULL for the dso, so the callbacks
  * are never removed by dlclose()
  */
