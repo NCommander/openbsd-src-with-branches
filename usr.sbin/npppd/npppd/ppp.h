@@ -1,4 +1,4 @@
-/*	$OpenBSD: ppp.h,v 1.22 2021/03/10 10:51:10 yasuoka Exp $ */
+/*	$OpenBSD: ppp.h,v 1.23 2021/03/29 03:54:39 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -454,7 +454,7 @@ struct _npppd_ppp {
 
 	/** Physical layer */
 	int		tunnel_type;		/** PPP Tunnel Type */
-	uint16_t	tunnel_session_id;	/** Tunnel Sesion Id */
+	uint16_t	tunnel_session_id;	/** Tunnel Session Id */
 	uint16_t	mru;			/** MRU */
 	uint16_t	peer_mru;		/** Peer's MRU */
 	void		*phy_context;		/** Context of physical layer */

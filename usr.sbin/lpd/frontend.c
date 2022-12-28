@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.c,v 1.1.1.1 2018/04/27 16:14:35 eric Exp $	*/
+/*	$OpenBSD: frontend.c,v 1.2 2018/09/05 17:32:56 eric Exp $	*/
 
 /*
  * Copyright (c) 2017 Eric Faurot <eric@openbsd.org>
@@ -79,7 +79,7 @@ frontend(int debug, int verbose)
 	SPLAY_INIT(&conns);
 	lpr_init();
 
-	/* Drop priviledges. */
+	/* Drop privileges. */
 	if ((pw = getpwnam(LPD_USER)) == NULL)
 		fatal("%s: getpwnam: %s", __func__, LPD_USER);
 

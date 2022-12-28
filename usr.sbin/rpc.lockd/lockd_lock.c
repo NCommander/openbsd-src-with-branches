@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockd_lock.c,v 1.9 2015/01/16 06:40:20 deraadt Exp $	*/
+/*	$OpenBSD: lockd_lock.c,v 1.10 2019/06/28 13:32:50 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2000 Manuel Bouyer.
@@ -398,7 +398,7 @@ unlock(nlm4_lock *lck, int flags)
 			/* nothing to do */
 			break;
 		default:
-			syslog(LOG_NOTICE, "unknow status %d for %s",
+			syslog(LOG_NOTICE, "unknown status %d for %s",
 			    fl->status, fl->client_name);
 		}
 		sigunlock();
@@ -835,7 +835,7 @@ notify(const char *hostname, int state)
 			case LKST_DYING:
 				break;
 			default:
-				syslog(LOG_NOTICE, "unknow status %d for %s",
+				syslog(LOG_NOTICE, "unknown status %d for %s",
 				    fl->status, fl->client_name);
 			}
 		}

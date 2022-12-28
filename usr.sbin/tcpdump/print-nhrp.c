@@ -1,4 +1,4 @@
-/*	$OpenBSD:$ */
+/*	$OpenBSD: print-nhrp.c,v 1.1 2020/04/15 20:19:25 remi Exp $ */
 
 /*
  * Copyright (c) 2020 Remi Locherer <remi@openbsd.org>
@@ -148,7 +148,7 @@ nhrp_print(const u_char *p, u_int length)
 	if (vflag) {
 		printf(", hopcnt %u", hdr->hopcnt);
 
-		/* most significat bit must be 0 */
+		/* most significant bit must be 0 */
 		if (hdr->shtl & 0x80)
 			printf(" (shtl bit 7 set)");
 

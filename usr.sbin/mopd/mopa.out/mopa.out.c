@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopa.out.c,v 1.16 2017/01/21 08:33:51 krw Exp $ */
+/*	$OpenBSD: mopa.out.c,v 1.17 2017/10/29 08:45:53 mpi Exp $ */
 
 /*
  * mopa.out - Convert a Unix format kernel into something that
@@ -6,7 +6,7 @@
  *
  * This code was written while referring to the NetBSD/vax boot
  * loader. Therefore anything that can be booted by the Vax
- * should be convertable with this program.
+ * should be convertible with this program.
  *
  * If necessary, the a.out header is stripped, and the program
  * segments are padded out. The BSS segment is zero filled.

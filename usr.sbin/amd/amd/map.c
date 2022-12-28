@@ -1,4 +1,4 @@
-/*	$OpenBSD: map.c,v 1.15 2014/10/26 03:28:41 guenther Exp $	*/
+/*	$OpenBSD: map.c,v 1.16 2015/12/05 21:15:01 mmcc Exp $	*/
 
 /*-
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -877,7 +877,7 @@ free_map_if_success(int rc, int term, void *closure)
 	mf->mf_flags &= ~MFF_UNMOUNTING;
 
 	/*
-	 * If a timeout was defered because the underlying filesystem
+	 * If a timeout was deferred because the underlying filesystem
 	 * was busy then arrange for a timeout as soon as possible.
 	 */
 	if (mf->mf_flags & MFF_WANTTIMO) {

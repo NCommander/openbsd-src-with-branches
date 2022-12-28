@@ -1,4 +1,4 @@
-/*	$OpenBSD: acl.c,v 1.15 2013/12/04 02:18:05 deraadt Exp $ */
+/*	$OpenBSD: acl.c,v 1.16 2018/04/26 12:48:10 schwarze Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -349,7 +349,7 @@ acl_init(char *file)
 		switch (state) {
 		case ACLE_NONETMASK:
 			fprintf(stderr,
-			    "acl: excpected \"netmask\" missing at line %d\n",
+			    "acl: expected \"netmask\" missing at line %d\n",
 			    line_no);
 			break;
 		case ACLE_NONET:

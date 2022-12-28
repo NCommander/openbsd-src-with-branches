@@ -1,4 +1,4 @@
-/*	$OpenBSD: landisk_installboot.c,v 1.10 2021/07/20 14:51:56 kettenis Exp $	*/
+/*	$OpenBSD: landisk_installboot.c,v 1.11 2022/08/31 18:46:06 miod Exp $	*/
 
 /*
  * Copyright (c) 2013 Joel Sing <jsing@openbsd.org>
@@ -71,7 +71,7 @@ md_installboot(int devfd, char *dev)
 			exit(1);
 
 	/*
-	 * Write bootblock into the beggining of the OpenBSD partition or
+	 * Write bootblock into the beginning of the OpenBSD partition or
 	 * at the beginning of the disk.
 	 */
 	md_bootstrap(devfd, dev, stage1);

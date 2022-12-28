@@ -1,4 +1,4 @@
-/*	$OpenBSD: atrun.c,v 1.52 2019/10/20 13:33:30 millert Exp $	*/
+/*	$OpenBSD: atrun.c,v 1.53 2021/10/24 21:24:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002-2003 Todd C. Miller <millert@openbsd.org>
@@ -187,7 +187,7 @@ atrun(at_db *db, double batch_maxload, time_t now)
 		if (fstatat(dfd, atfile, &sb, AT_SYMLINK_NOFOLLOW) != 0) {
 			TAILQ_REMOVE(&db->jobs, job, entries);
 			free(job);
-			continue;		/* disapeared from queue */
+			continue;		/* disappeared from queue */
 		}
 		if (!S_ISREG(sb.st_mode)) {
 			syslog(LOG_WARNING, "(CRON) NOT REGULAR (%s)",

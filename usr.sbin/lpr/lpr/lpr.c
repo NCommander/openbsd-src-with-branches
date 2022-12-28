@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpr.c,v 1.48 2015/02/09 23:00:14 deraadt Exp $ */
+/*	$OpenBSD: lpr.c,v 1.49 2018/04/26 12:42:51 guenther Exp $ */
 /*	$NetBSD: lpr.c,v 1.19 2000/10/11 20:23:52 is Exp $	*/
 
 /*
@@ -168,7 +168,7 @@ main(int argc, char **argv)
 			jobname = optarg;
 			break;
 
-		case 'P':		/* specifiy printer name */
+		case 'P':		/* specify printer name */
 			printer = optarg;
 			break;
 

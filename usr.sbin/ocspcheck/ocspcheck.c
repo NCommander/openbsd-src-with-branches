@@ -1,4 +1,4 @@
-/* $OpenBSD: ocspcheck.c,v 1.29 2021/02/09 16:55:51 claudio Exp $ */
+/* $OpenBSD: ocspcheck.c,v 1.30 2021/07/12 15:09:21 beck Exp $ */
 
 /*
  * Copyright (c) 2017,2020 Bob Beck <beck@openbsd.org>
@@ -379,7 +379,7 @@ ocsp_request_new_from_cert(const char *cadir, char *file, int nonce)
 		goto err;
 	}
 	if (request->data == NULL) {
-		warnx("Unable to allocte memory");
+		warnx("Unable to allocate memory");
 		goto err;
 	}
 	return request;

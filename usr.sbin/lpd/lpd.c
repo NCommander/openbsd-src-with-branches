@@ -1,4 +1,4 @@
-/*	$OpenBSD: lpd.c,v 1.1.1.1 2018/04/27 16:14:37 eric Exp $	*/
+/*	$OpenBSD: lpd.c,v 1.2 2019/06/28 13:32:48 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2017 Eric Faurot <eric@openbsd.org>
@@ -168,7 +168,7 @@ main(int argc, char **argv)
 	signal_add(&evt_sighup, NULL);
 	signal(SIGPIPE, SIG_IGN);
 
-	/* Fork and exec unpriviledged processes. */
+	/* Fork and exec unprivileged processes. */
 	argv = calloc(saved_argc + 3, sizeof(*argv));
 	if (argv == NULL)
 		fatal("calloc");

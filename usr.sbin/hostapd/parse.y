@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.61 2019/05/10 01:29:31 guenther Exp $	*/
+/*	$OpenBSD: parse.y,v 1.62 2021/10/15 15:01:28 naddy Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005, 2006 Reyk Floeter <reyk@openbsd.org>
@@ -1101,7 +1101,7 @@ assign		: ARROW
 mask		: '&'
 		;
 
-comma		: /* emtpy */
+comma		: /* empty */
 		| ',' optnl
 		;
 

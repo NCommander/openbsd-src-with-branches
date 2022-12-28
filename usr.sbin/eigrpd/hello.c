@@ -1,4 +1,4 @@
-/*	$OpenBSD: hello.c,v 1.4 2016/01/15 12:36:41 renato Exp $ */
+/*	$OpenBSD: hello.c,v 1.5 2016/09/02 16:29:55 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -110,7 +110,7 @@ recv_hello(struct eigrp_iface *ei, union eigrpd_addr *src, struct nbr *nbr,
 	    tp->kvalues[2] == 255 && tp->kvalues[3] == 255 &&
 	    tp->kvalues[4] == 255 && tp->kvalues[5] == 0) {
 		if (nbr) {
-			log_debug("%s: peer temination", __func__);
+			log_debug("%s: peer termination", __func__);
 			nbr_del(nbr);
 		}
 		return;

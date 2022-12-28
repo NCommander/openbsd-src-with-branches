@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.249 2022/09/12 10:03:17 claudio Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.250 2022/10/12 11:26:05 jsg Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -740,7 +740,7 @@ path_copy(struct rde_aspath *dst, const struct rde_aspath *src)
 	return (dst);
 }
 
-/* initialize or pepare an aspath for use */
+/* initialize or prepare an aspath for use */
 struct rde_aspath *
 path_prep(struct rde_aspath *asp)
 {
@@ -1130,7 +1130,7 @@ prefix_adjout_update(struct prefix *p, struct rde_peer *peer,
 
 	if (p == NULL) {
 		p = prefix_alloc();
-		/* initally mark DEAD so code below is skipped */
+		/* initially mark DEAD so code below is skipped */
 		p->flags |= PREFIX_FLAG_ADJOUT | PREFIX_FLAG_DEAD;
 
 		p->pt = pt_get(prefix, prefixlen);

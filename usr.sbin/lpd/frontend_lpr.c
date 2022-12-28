@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend_lpr.c,v 1.2 2019/04/04 19:25:45 eric Exp $	*/
+/*	$OpenBSD: frontend_lpr.c,v 1.3 2020/03/16 20:46:44 benno Exp $	*/
 
 /*
  * Copyright (c) 2017 Eric Faurot <eric@openbsd.org>
@@ -269,7 +269,7 @@ lpr_on_request(struct lpr_conn *conn, int fd, const char *hostname,
 			hints.ai_socktype = SOCK_STREAM;
 			conn->flags |= F_WAITADDRINFO;
 			/*
-			 * The callback might run immediatly, so conn->ifd
+			 * The callback might run immediately, so conn->ifd
 			 * must be set before, to block lpr_forward().
 			 */
 			resolver_getaddrinfo(hostname, "printer", &hints,
@@ -661,7 +661,7 @@ lpr_reply(struct lpr_conn *conn, const char *s)
 }
 
 /*
- * Stream reponse file to the client.
+ * Stream response file to the client.
  */
 static void
 lpr_stream(struct lpr_conn *conn)

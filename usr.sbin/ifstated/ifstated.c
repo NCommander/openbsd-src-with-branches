@@ -1,4 +1,4 @@
-/*	$OpenBSD: ifstated.c,v 1.65 2020/12/30 18:40:44 benno Exp $	*/
+/*	$OpenBSD: ifstated.c,v 1.66 2021/07/12 15:09:21 beck Exp $	*/
 
 /*
  * Copyright (c) 2004 Marco Pfatschbacher <mpf@openbsd.org>
@@ -515,7 +515,7 @@ scan_ifstate(const char *ifname, int s, int do_eval)
 }
 
 /*
- * Do a bottom-up ajustment of the expression tree's truth value,
+ * Do a bottom-up adjustment of the expression tree's truth value,
  * level-by-level to ensure that each expression's subexpressions have been
  * evaluated.
  */

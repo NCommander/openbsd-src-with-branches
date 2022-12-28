@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.30 2021/01/19 12:26:38 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.31 2021/01/19 12:29:46 claudio Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -352,7 +352,7 @@ rde_select_ds_ifs(struct mfc *mfc, struct iface *iface)
 
 	rn = rt_match_origin(mfc->origin.s_addr);
 	if (rn == NULL) {
-		log_debug("rde_selected_ds_iface: no informations about "
+		log_debug("rde_selected_ds_iface: no information about "
 		    "the origin %s", inet_ntoa(mfc->origin));
 		return (0);
 	}

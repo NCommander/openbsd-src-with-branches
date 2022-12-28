@@ -1,4 +1,4 @@
-/*	$OpenBSD: radiusd.c,v 1.26 2019/04/03 11:54:56 yasuoka Exp $	*/
+/*	$OpenBSD: radiusd.c,v 1.27 2019/06/28 13:32:49 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2013 Internet Initiative Japan Inc.
@@ -594,7 +594,7 @@ radiusd_access_request_answer(struct radius_query *q)
 
 	if (authen_secret == NULL) {
 		/*
-		 * The module couldn't check the autheticators
+		 * The module couldn't check the authenticators
 		 */
 		if (radius_check_response_authenticator(q->res,
 		    q->client->secret) != 0) {
@@ -1031,7 +1031,7 @@ radiusd_module_start(struct radiusd_module *module)
 				    module->name);
 		} else
 			log_warnx("Module `%s' could not started: module "
-			    "returned unknow message type %d", module->name,
+			    "returned unknown message type %d", module->name,
 			    imsg.hdr.type);
 		goto on_fail;
 	}

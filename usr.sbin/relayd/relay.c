@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.253 2021/01/27 20:33:05 eric Exp $	*/
+/*	$OpenBSD: relay.c,v 1.254 2021/03/24 20:59:53 benno Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -1441,7 +1441,7 @@ relay_session(struct rsession *con)
 		 * Call the UDP protocol-specific handler
 		 */
 		if (rlay->rl_proto->request == NULL)
-			fatalx("invalide UDP session");
+			fatalx("invalid UDP session");
 		if ((*rlay->rl_proto->request)(con) == -1)
 			relay_close(con, "session failed", 1);
 		return;
@@ -2090,7 +2090,7 @@ relay_tls_ctx_create_proto(struct protocol *proto, struct tls_config *tls_cfg)
 
 	/*
 	 * Set session ID context to a random value. It needs to be the
-	 * same accross all relay processes or session caching will fail.
+	 * same across all relay processes or session caching will fail.
 	 */
 	if (tls_config_set_session_id(tls_cfg, env->sc_conf.tls_sid,
 	    sizeof(env->sc_conf.tls_sid)) == -1) {

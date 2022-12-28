@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay_udp.c,v 1.48 2018/04/18 12:10:54 claudio Exp $	*/
+/*	$OpenBSD: relay_udp.c,v 1.49 2018/08/06 17:31:31 benno Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2013 Reyk Floeter <reyk@openbsd.org>
@@ -355,7 +355,7 @@ struct relay_dnshdr {
 	u_int8_t	dns_flags0;
 #define  DNS_F0_QR	0x80		/* response flag */
 #define  DNS_F0_OPCODE	0x78		/* message type */
-#define  DNS_F0_AA	0x04		/* authorative answer */
+#define  DNS_F0_AA	0x04		/* authoritative answer */
 #define  DNS_F0_TC	0x02		/* truncated message */
 #define  DNS_F0_RD	0x01		/* recursion desired */
 

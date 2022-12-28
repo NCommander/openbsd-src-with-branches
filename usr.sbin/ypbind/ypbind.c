@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypbind.c,v 1.75 2022/07/15 16:59:49 deraadt Exp $ */
+/*	$OpenBSD: ypbind.c,v 1.76 2022/07/17 03:12:20 deraadt Exp $ */
 
 /*
  * Copyright (c) 1992, 1993, 1996, 1997, 1998 Theo de Raadt <deraadt@openbsd.org>
@@ -995,7 +995,7 @@ rpc_received(char *dom, struct sockaddr_in *raddrp, int force)
 		return;
 	}
 
-	/* syncronously ask for the matching ypserv TCP port number */
+	/* synchronously ask for the matching ypserv TCP port number */
 	ypserv_udp = raddrp->sin_port;
 	ypserv_tcp = pmap_getport(raddrp, YPPROG,
 	    YPVERS, IPPROTO_TCP);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.17 2017/02/22 14:24:50 renato Exp $ */
+/*	$OpenBSD: kroute.c,v 1.18 2017/07/24 11:00:01 friehm Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -698,7 +698,7 @@ kif_remove(struct kif_node *kif)
 	struct kif_addr	*ka;
 
 	if (RB_REMOVE(kif_tree, &kit, kif) == NULL) {
-		log_warnx("%s failed for inteface %s", __func__, kif->k.ifname);
+		log_warnx("%s failed for interface %s", __func__, kif->k.ifname);
 		return (-1);
 	}
 

@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_cksum.c,v 1.1 2014/06/20 04:01:42 lteo Exp $	*/
+/*	$OpenBSD: in_cksum.c,v 1.2 2018/07/06 04:49:21 dlg Exp $	*/
 
 /*
  * Copyright (c) 1988, 1992, 1993
@@ -116,7 +116,7 @@ in_cksum_fini(uint32_t sum)
 
 /*
  * compute an IP header checksum.
- * don't modifiy the packet.
+ * don't modify the packet.
  */
 uint16_t
 in_cksum(const void *addr, size_t len, uint32_t sum)

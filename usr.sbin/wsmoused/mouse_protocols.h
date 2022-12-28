@@ -1,4 +1,4 @@
-/* $OpenBSD: mouse_protocols.h,v 1.5 2007/04/10 22:37:17 miod Exp $ */
+/* $OpenBSD: mouse_protocols.h,v 1.6 2009/06/05 03:37:10 miod Exp $ */
 
 /*
  * Copyright (c) 2001 Jean-Baptiste Marchand, Julien Montagne and Jerome Verdon
@@ -86,7 +86,7 @@
  * - synchronization mask
  * - synchronization value (must be equal to data ANDed with SYNCMASK)
  * - mask of buttons
- * - mask of each button separetely
+ * - mask of each button separately
  */
 
 /* Microsoft Serial mouse data packet */
