@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus.h,v 1.3 2021/05/05 13:28:56 jsg Exp $	*/
+/*	$OpenBSD: bus.h,v 1.4 2021/05/12 01:20:52 jsg Exp $	*/
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB Sweden.  All rights reserved.
@@ -361,6 +361,7 @@ struct machine_bus_dma_segment {
 
 	paddr_t		_ds_paddr;	/* CPU address */
 	vaddr_t		_ds_vaddr;	/* CPU address */
+	int		_ds_coherent;	/* Coherently mapped */
 };
 typedef struct machine_bus_dma_segment	bus_dma_segment_t;
 
