@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.299 2022/08/14 01:58:27 jsg Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.301 2022/10/16 16:27:02 deraadt Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -1875,8 +1875,13 @@ sys___thrsigdivert(struct proc *p, void *v, register_t *retval)
 
 	if (error == 0) {
 		*retval = si.si_signo;
-		if (SCARG(uap, info) != NULL)
+		if (SCARG(uap, info) != NULL) {
 			error = copyout(&si, SCARG(uap, info), sizeof(si));
+#ifdef KTRACE
+			if (error == 0 && KTRPOINT(p, KTR_STRUCT))
+				ktrsiginfo(p, &si);
+#endif
+		}
 	} else if (error == ERESTART && SCARG(uap, timeout) != NULL) {
 		/*
 		 * Restarting is wrong if there's a timeout, as it'll be
