@@ -1,4 +1,4 @@
-/*	$OpenBSD: bus_dma.c,v 1.4 2021/05/12 01:20:52 jsg Exp $	*/
+/*	$OpenBSD: bus_dma.c,v 1.5 2021/05/14 06:48:52 jsg Exp $	*/
 
 /*
  * Copyright (c) 2003-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -401,7 +401,7 @@ _dmamap_sync(bus_dma_tag_t t, bus_dmamap_t map, bus_addr_t addr,
 	 * and return.
 	 */
 	if (t->_flags & BUS_DMA_COHERENT) {
-		membar_sync();
+		__asm volatile ("fence iorw,iorw" ::: "memory");
 		return;
 	}
 
