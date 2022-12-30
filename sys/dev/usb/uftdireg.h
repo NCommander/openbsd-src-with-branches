@@ -1,4 +1,4 @@
-/*	$OpenBSD: uftdireg.h,v 1.12 2008/07/05 14:41:28 mbalmer Exp $ 	*/
+/*	$OpenBSD: uftdireg.h,v 1.13 2012/09/11 16:04:44 deraadt Exp $ 	*/
 /*	$NetBSD: uftdireg.h,v 1.6 2002/07/11 21:14:28 augustss Exp $ */
 
 /*
@@ -36,7 +36,8 @@
 enum uftdi_type {
 	UFTDI_TYPE_SIO,
 	UFTDI_TYPE_8U232AM,
-	UFTDI_TYPE_2232H
+	UFTDI_TYPE_2232H,
+	UFTDI_TYPE_232R
 };
 
 /*
