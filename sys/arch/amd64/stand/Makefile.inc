@@ -1,6 +1,9 @@
-#	$OpenBSD: Makefile.inc,v 1.17 2017/05/30 22:32:10 naddy Exp $
+#	$OpenBSD: Makefile.inc,v 1.18 2017/07/25 13:32:14 robert Exp $
 
 CFLAGS=${DEBUG} ${COPTS} -Oz -Wall -Werror
+# XXX Workaround for zlib + clang 15
+# https://github.com/madler/zlib/issues/633
+CFLAGS+=	-Wno-deprecated-non-prototype -Wno-unknown-warning-option
 CFLAGS+=	-ffreestanding -fno-stack-protector -DMDRANDOM
 CPPFLAGS+=-I${S} -I${SADIR}/libsa -I. -I${.CURDIR}
 SACFLAGS=-D_STANDALONE
