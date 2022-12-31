@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.32 2022/11/26 17:23:15 tobhe Exp $ */
+/* $OpenBSD: cpu.h,v 1.33 2022/12/10 10:13:58 patrick Exp $ */
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
  *
@@ -52,6 +52,7 @@
 	{ "id_aa64pfr1", CTLTYPE_QUAD }, \
 	{ "id_aa64smfr0", CTLTYPE_QUAD }, \
 	{ "id_aa64zfr0", CTLTYPE_QUAD }, \
+	{ "lidaction", CTLTYPE_INT }, \
 }
 
 #ifdef _KERNEL
