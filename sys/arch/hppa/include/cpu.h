@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.96 2022/10/25 15:15:38 guenther Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.97 2022/12/06 00:40:09 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2000-2004 Michael Shalayeff
@@ -191,7 +191,6 @@ extern int cpu_hvers;
  */
 
 #define	HPPA_PGALIAS	0x00400000
-#define	HPPA_PGAMASK	0xffc00000
 #define	HPPA_PGAOFF	0x003fffff
 
 #define	HPPA_IOBEGIN    0xf0000000
