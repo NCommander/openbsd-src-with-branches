@@ -1,4 +1,4 @@
-/*	$OpenBSD: workqueue.h,v 1.7 2022/01/14 06:53:14 jsg Exp $	*/
+/*	$OpenBSD: workqueue.h,v 1.8 2022/03/01 04:08:04 jsg Exp $	*/
 /*
  * Copyright (c) 2015 Mark Kettenis
  *
@@ -90,6 +90,13 @@ queue_work(struct workqueue_struct *wq, struct work_struct *work)
 {
 	work->tq = (struct taskq *)wq;
 	return task_add(work->tq, &work->task);
+}
+
+static inline void
+cancel_work(struct work_struct *work)
+{
+	if (work->tq != NULL)
+		task_del(work->tq, &work->task);
 }
 
 static inline void

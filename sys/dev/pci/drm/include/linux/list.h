@@ -1,4 +1,4 @@
-/*	$OpenBSD: list.h,v 1.3 2021/07/07 02:38:36 jsg Exp $	*/
+/*	$OpenBSD: list.h,v 1.5 2022/01/14 06:53:14 jsg Exp $	*/
 /* drm_linux_list.h -- linux list functions for the BSDs.
  * Created: Mon Apr 7 14:30:16 1999 by anholt@FreeBSD.org
  */
@@ -34,7 +34,7 @@
 #define _DRM_LINUX_LIST_H_
 
 #include <sys/param.h>
-#include <linux/kernel.h>
+#include <linux/container_of.h>
 #include <linux/types.h>
 #include <linux/poison.h>
 

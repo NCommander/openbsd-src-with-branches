@@ -1,4 +1,4 @@
-/* $OpenBSD: rkvop.c,v 1.5 2022/01/14 06:52:58 jsg Exp $ */
+/* $OpenBSD: rkvop.c,v 1.6 2022/04/06 18:59:28 naddy Exp $ */
 /* $NetBSD: rk_vop.c,v 1.6 2020/01/05 12:14:35 mrg Exp $ */
 /*-
  * Copyright (c) 2019 Jared D. McNeill <jmcneill@invisible.ca>
@@ -272,7 +272,7 @@ rkvop_plane_check(struct drm_plane *plane, struct drm_atomic_state *das)
 		return PTR_ERR(crtc_state);
 
 	return drm_atomic_helper_check_plane_state(state, crtc_state,
-	    DRM_PLANE_HELPER_NO_SCALING, DRM_PLANE_HELPER_NO_SCALING,
+	    DRM_PLANE_NO_SCALING, DRM_PLANE_NO_SCALING,
 	    false, true);
 }
 
