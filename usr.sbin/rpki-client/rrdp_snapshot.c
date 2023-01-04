@@ -1,4 +1,4 @@
-/*	$OpenBSD: rrdp_snapshot.c,v 1.5 2021/11/09 11:01:04 claudio Exp $ */
+/*	$OpenBSD: rrdp_snapshot.c,v 1.6 2022/02/03 18:19:32 claudio Exp $ */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
@@ -69,7 +69,8 @@ start_snapshot_elem(struct snapshot_xml *sxml, const char **attr)
 			if (errstr == NULL)
 				continue;
 		}
-		if (strcmp("session_id", attr[i]) == 0) {
+		if (strcmp("session_id", attr[i]) == 0 &&
+		    valid_uuid(attr[i + 1])) {
 			sxml->session_id = xstrdup(attr[i + 1]);
 			continue;
 		}

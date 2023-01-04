@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.164 2022/12/15 12:02:29 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.165 2022/12/28 21:30:18 jmc Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -659,6 +659,7 @@ int		 valid_rsc(const char *, struct cert *, struct rsc *);
 int		 valid_econtent_version(const char *, const ASN1_INTEGER *);
 int		 valid_aspa(const char *, struct cert *, struct aspa *);
 int		 valid_geofeed(const char *, struct cert *, struct geofeed *);
+int		 valid_uuid(const char *);
 
 /* Working with CMS. */
 unsigned char	*cms_parse_validate(X509 **, const char *,
