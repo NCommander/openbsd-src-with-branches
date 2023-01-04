@@ -1,4 +1,4 @@
-/* 	$OpenBSD: test_sshkey.c,v 1.21 2020/08/27 03:55:22 djm Exp $ */
+/* 	$OpenBSD: test_sshkey.c,v 1.22 2021/12/14 21:25:27 deraadt Exp $ */
 /*
  * Regress test for sshkey.h key management API
  *
@@ -134,7 +134,7 @@ banana(u_char *s, size_t l)
 			memcpy(s + o, "nanananana", l - o);
 			break;
 		}
-		memcpy(s + o, banana, sizeof(the_banana));
+		memcpy(s + o, the_banana, sizeof(the_banana));
 	}
 }
 
