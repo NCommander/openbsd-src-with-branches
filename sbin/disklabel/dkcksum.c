@@ -1,4 +1,4 @@
-/*	$OpenBSD: dkcksum.c,v 1.7 2004/09/28 17:57:46 otto Exp $	*/
+/*	$OpenBSD: dkcksum.c,v 1.8 2009/10/27 23:59:32 deraadt Exp $	*/
 /*	$NetBSD: dkcksum.c,v 1.6 1995/03/18 14:54:42 cgd Exp $	*/
 
 /*-
@@ -36,7 +36,7 @@
 #include "extern.h"
 
 u_short
-dkcksum(struct disklabel *lp)
+dkcksum(const struct disklabel *lp)
 {
 	u_short *start, *end;
 	u_short sum = 0;
