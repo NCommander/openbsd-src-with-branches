@@ -1,4 +1,4 @@
-#	$OpenBSD: scp.sh,v 1.15 2022/10/24 21:52:50 djm Exp $
+#	$OpenBSD: scp.sh,v 1.16 2022/10/30 18:42:07 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="scp"
@@ -30,7 +30,7 @@ for mode in scp sftp ; do
 	else
 		scpopts="-s -D ${SFTPSERVER}"
 	fi
-	verbose "tid: simple copy local file to local file"
+	verbose "$tag: simple copy local file to local file"
 	scpclean
 	$SCP $scpopts ${DATA} ${COPY} || fail "copy failed"
 	cmp ${DATA} ${COPY} || fail "corrupted copy"
