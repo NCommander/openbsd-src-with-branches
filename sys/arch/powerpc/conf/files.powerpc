@@ -1,8 +1,7 @@
-#	$OpenBSD: files.powerpc,v 1.55 2018/01/25 15:06:29 mpi Exp $
+#	$OpenBSD: files.powerpc,v 1.56 2022/10/22 00:58:56 gkoehler Exp $
 #
 
 file	arch/powerpc/powerpc/setjmp.S			ddb
-file	arch/powerpc/powerpc/copystr.c
 file	arch/powerpc/powerpc/cpu_subr.c
 file	arch/powerpc/powerpc/fpu.c
 file	arch/powerpc/powerpc/in_cksum.c
