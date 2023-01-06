@@ -1,4 +1,4 @@
-/*	$OpenBSD: ometric.c,v 1.8 2022/12/12 09:51:04 claudio Exp $ */
+/*	$OpenBSD: ometric.c,v 1.9 2022/12/14 11:23:41 claudio Exp $ */
 
 /*
  * Copyright (c) 2022 Claudio Jeker <claudio@openbsd.org>
@@ -37,7 +37,7 @@ struct olabel {
 struct olabels {
 	STAILQ_HEAD(, olabel)	 labels;
 	struct olabels		*next;
-	int		  	 refcnt;
+	int			 refcnt;
 };
 
 enum ovalue_type {
