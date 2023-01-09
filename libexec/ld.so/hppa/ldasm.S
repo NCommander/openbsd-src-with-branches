@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.23 2017/01/24 07:48:37 guenther Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.24 2017/08/27 21:59:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Michael Shalayeff
@@ -113,7 +113,7 @@ EXIT(_hppa_dl_set_dp)
  * __canonicalize_funcptr_for_compare() function to fixup relocations
  * in order to do function pointer comparisons.
  */
-	bl	_dl_bind, rp
+	b	_dl_bind
 
 ENTRY(_dl_bind_start,32)
 	copy	r3, r1
