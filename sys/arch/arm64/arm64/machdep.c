@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.77 2022/11/24 14:43:16 kettenis Exp $ */
+/* $OpenBSD: machdep.c,v 1.78 2022/11/26 17:23:15 tobhe Exp $ */
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
@@ -71,7 +71,7 @@ void (*cpuresetfn)(void);
 void (*powerdownfn)(void);
 
 int cold = 1;
-int lid_action = 0;
+int lid_action = 1;
 
 struct vm_map *exec_map = NULL;
 struct vm_map *phys_map = NULL;
