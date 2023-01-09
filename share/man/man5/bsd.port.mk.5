@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.570 2022/09/11 08:51:51 espie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.571 2022/09/11 11:56:28 jmc Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -3351,6 +3351,15 @@ and not intended to be a user setting.
 See
 .Ev WRKOBJDIR_MFS
 for configuration.
+.It Ev USE_NOEXECONLY
+If set to
+.Sq Yes ,
+writes a wrapper script to ${WRKDIR}/bin/ld in
+.Cm patch
+adding
+.Fl -no-execute-only .
+Use when a port does not work with execute-only code sections
+which are enabled by default on some architectures.
 .It Ev USE_WXNEEDED
 If set to
 .Sq Yes ,
