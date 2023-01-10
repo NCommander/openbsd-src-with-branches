@@ -1,4 +1,4 @@
-/*	$OpenBSD: specialreg.h,v 1.79 2022/02/21 10:06:35 jsg Exp $	*/
+/*	$OpenBSD: specialreg.h,v 1.80 2022/08/20 23:33:53 daniel Exp $	*/
 /*	$NetBSD: specialreg.h,v 1.7 1994/10/27 04:16:26 cgd Exp $	*/
 
 /*-
@@ -190,6 +190,7 @@
 #define SEFF0ECX_AVX512VBMI	0x00000002 /* AVX-512 vector bit inst */
 #define SEFF0ECX_UMIP		0x00000004 /* UMIP support */
 #define SEFF0ECX_PKU		0x00000008 /* Page prot keys for user mode */
+#define SEFF0ECX_WAITPKG	0x00000010 /* UMONITOR/UMWAIT/TPAUSE insns */
 /* SEFF EDX bits */
 #define SEFF0EDX_AVX512_4FNNIW	0x00000004 /* AVX-512 neural network insns */
 #define SEFF0EDX_AVX512_4FMAPS	0x00000008 /* AVX-512 mult accum single prec */
