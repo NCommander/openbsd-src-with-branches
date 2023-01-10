@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay.c,v 1.149 2022/07/15 17:57:27 kettenis Exp $ */
+/* $OpenBSD: wsdisplay.c,v 1.150 2022/11/26 06:20:18 anton Exp $ */
 /* $NetBSD: wsdisplay.c,v 1.82 2005/02/27 00:27:52 perry Exp $ */
 
 /*
@@ -2212,7 +2212,7 @@ wsdisplay_switchtoconsole(void)
 }
 
 /*
- * Switch rhe console display to its ddb screen, avoiding locking
+ * Switch the console display to its ddb screen, avoiding locking
  * where we can.
  */
 void
