@@ -1,5 +1,5 @@
-/*	$OpenBSD: getline.c,v 1.2 2013/10/29 21:49:07 miod Exp $	*/
-/*	$NetBSD: getline.c,v 1.2 2013/01/20 07:32:45 tsutsui Exp $	*/
+/*	$OpenBSD: boot.c,v 1.12 2022/12/31 02:42:01 aoyama Exp $	*/
+/*	$NetBSD: boot.c,v 1.3 2013/03/05 15:34:53 tsutsui Exp $	*/
 
 /*
  * Copyright (c) 1992 OMRON Corporation.
@@ -35,7 +35,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)getline.c	8.1 (Berkeley) 6/10/93
+ *	@(#)boot.c	8.1 (Berkeley) 6/10/93
  */
 /*
  * Copyright (c) 1992, 1993
@@ -68,66 +68,41 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)getline.c	8.1 (Berkeley) 6/10/93
+ *	@(#)boot.c	8.1 (Berkeley) 6/10/93
  */
 
-/*
- * getline -- simple getline function
- * 	by A.Fujita, Dec-11-1992
- */
+#include <sys/param.h>
+#include <sys/reboot.h>
 
-#include <lib/libkern/libkern.h>
 #include <luna88k/stand/boot/samachdep.h>
+#include <lib/libsa/loadfile.h>
 
-int
-getline(const char *prompt, char *buff)
+#define	BOOT_MAGIC	0xf1abde3f
+
+void (*cpu_boot)(uint32_t, uint32_t, uint32_t, uint32_t);
+uint32_t cpu_bootarg1;
+uint32_t cpu_bootarg2;
+uint32_t cpu_bootarg3;
+uint32_t cpu_bootarg4;
+
+void
+run_loadfile(uint64_t *marks, int howto)
 {
-	int c;
-	char *p, *lp = buff;
+#ifdef DEBUG
+	printf("entry = 0x%lx\n", marks[MARK_ENTRY]);
+	printf("ssym  = 0x%lx\n", marks[MARK_SYM]);
+	printf("esym  = 0x%lx\n", marks[MARK_END]);
+#endif
 
-	printf("%s", prompt);
-
-	for (;;) {
-		c = getchar() & 0x7f;
-
-		switch (c) {
-		case '\n':
-		case '\r':
-			*lp = '\0';
-			putchar('\n');
-			goto outloop;
-
-		case '\b':
-		case 0x7f:
-			if (lp > buff) {
-				lp--;
-				putchar('\b');
-				putchar(' ');
-				putchar('\b');
-			}
-			break;
-
-		case 'r' & 0x1f:
-			putchar('\n');
-			printf("%s", prompt);
-			for (p = buff; p < lp; ++p)
-				putchar(*p);
-			break;
-
-		case 'u' & 0x1f:
-		case 'w' & 0x1f:
-			lp = buff;
-			printf("\n%s", prompt);
-			break;
-
-		default:
-			*lp++ = c;
-			putchar(c);
-			break;
-		}
-	}
-
- outloop:
-	*lp = '\0';
-	return lp - buff;
+	cpu_bootarg1 = BOOT_MAGIC;
+	cpu_bootarg2 = (uint32_t)marks[MARK_END];
+	cpu_bootarg3 = bootdev;		/* set by devopen */
+	cpu_bootarg4 = howto;
+#ifdef DEBUG
+	printf("bootarg: 0x%08x, 0x%08x, 0x%08x, 0x%08x\n",
+	    cpu_bootarg1, cpu_bootarg2, cpu_bootarg3, howto);
+#endif
+	cpu_boot = (void (*)(uint32_t, uint32_t, uint32_t, uint32_t))
+	    (uint32_t)marks[MARK_ENTRY];
+	(*cpu_boot)(cpu_bootarg1, cpu_bootarg2, cpu_bootarg3, cpu_bootarg4);
 }

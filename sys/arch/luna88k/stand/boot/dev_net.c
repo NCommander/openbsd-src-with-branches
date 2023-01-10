@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev_net.c,v 1.4 2020/12/09 18:10:19 krw Exp $	*/
+/*	$OpenBSD: dev_net.c,v 1.5 2021/03/11 11:16:58 jsg Exp $	*/
 /*	$NetBSD: dev_net.c,v 1.26 2011/07/17 20:54:52 joerg Exp $	*/
 
 /*-
@@ -72,7 +72,7 @@ static int netdev_opens;
 static int net_getparams(int);
 
 #ifdef DEBUG
-int debug;
+extern int debug;
 #endif
 
 /*

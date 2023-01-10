@@ -1,4 +1,4 @@
-/*	$OpenBSD: sc.c,v 1.3 2013/10/29 21:49:07 miod Exp $	*/
+/*	$OpenBSD: sc.c,v 1.4 2021/03/11 11:16:58 jsg Exp $	*/
 /*	$NetBSD: sc.c,v 1.4 2013/01/22 15:48:40 tsutsui Exp $	*/
 
 /*
@@ -72,7 +72,7 @@
  */
 
 /*
- * sc.c -- SCSI Protocole Controller (SPC)  driver
+ * sc.c -- SCSI Protocol Controller (SPC)  driver
  * remaked by A.Fujita, MAR-11-199
  */
 
