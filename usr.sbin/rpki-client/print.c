@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.24 2022/12/14 08:46:58 job Exp $ */
+/*	$OpenBSD: print.c,v 1.25 2023/01/06 13:19:43 tb Exp $ */
 /*
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -57,7 +57,8 @@ time2str(time_t t)
 	if (gmtime_r(&t, &tm) == NULL)
 		return "could not convert time";
 
-	strftime(buf, sizeof(buf), "%h %d %T %Y %Z", &tm);
+	strftime(buf, sizeof(buf), "%a %d %b %Y %T %z", &tm);
+
 	return buf;
 }
 
