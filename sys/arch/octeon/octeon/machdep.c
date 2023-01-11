@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.133 2021/07/12 09:32:37 visa Exp $ */
+/*	$OpenBSD: machdep.c,v 1.134 2021/07/24 08:21:13 visa Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Miodrag Vallat.
@@ -793,7 +793,7 @@ octeon_tlb_init(void)
 	pgrain |= PGRAIN_ELPA;
 #endif
 	if (cp0_get_config_3() & CONFIG3_RXI)
-		pgrain |= PGRAIN_XIE;
+		pgrain |= (PGRAIN_RIE | PGRAIN_XIE);
 	cp0_set_pagegrain(pgrain);
 
 	tlb_init(bootcpu_hwinfo.tlbsize);
