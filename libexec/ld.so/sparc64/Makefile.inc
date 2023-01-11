@@ -1,6 +1,6 @@
-#	$OpenBSD: Makefile.inc,v 1.3 2019/10/20 03:44:49 guenther Exp $
+#	$OpenBSD: Makefile.inc,v 1.4 2020/08/11 23:32:06 jca Exp $
 
-CFLAGS += -fpic -msoft-float
+CFLAGS += -fpic -msoft-float -fno-jump-tables
 AFLAGS += -fpic
 LD_SCRIPT = ${.CURDIR}/${MACHINE_CPU}/ld.script
 
