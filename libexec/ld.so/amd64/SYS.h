@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.27 2017/08/15 00:26:02 deraadt Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.1 2017/08/27 21:59:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2002,2004 Dale Rahn
@@ -35,10 +35,13 @@
 	.type	__CONCAT(_dl_,n), @function		;\
 	.align	16,0xcc					;\
 __CONCAT(_dl_,n):					;\
+	RETGUARD_SETUP(_dl_##n, r11)			;\
+	RETGUARD_PUSH(r11)				;\
 	movl	$(__CONCAT(SYS_,n)), %eax		;\
 	movq	%rcx, %r10				;\
 	syscall						;\
-	jb	1f					;\
-	ret						;\
-1:	neg	%rax					;\
+	jnc	1f					;\
+	neg	%rax					;\
+1:	RETGUARD_POP(r11)				;\
+	RETGUARD_CHECK(_dl_##n, r11)			;\
 	ret
