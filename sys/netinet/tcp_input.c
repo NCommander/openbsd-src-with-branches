@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_input.c,v 1.374 2022/01/02 22:36:04 jsg Exp $	*/
+/*	$OpenBSD: tcp_input.c,v 1.375 2022/01/04 06:32:39 yasuoka Exp $	*/
 /*	$NetBSD: tcp_input.c,v 1.23 1996/02/13 23:43:44 christos Exp $	*/
 
 /*
@@ -518,6 +518,11 @@ tcp_input(struct mbuf **mp, int *offp, int proto, int af)
 	th->th_ack = ntohl(th->th_ack);
 	th->th_win = ntohs(th->th_win);
 	th->th_urp = ntohs(th->th_urp);
+
+	if (th->th_dport == 0) {
+		tcpstat_inc(tcps_noport);
+		goto dropwithreset_ratelim;
+	}
 
 	/*
 	 * Locate pcb for segment.

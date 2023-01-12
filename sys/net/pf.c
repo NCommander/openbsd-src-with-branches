@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1125 2022/03/05 10:43:32 jsg Exp $ */
+/*	$OpenBSD: pf.c,v 1.1126 2022/03/17 18:27:55 sthen Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -6729,7 +6729,8 @@ pf_setup_pdesc(struct pf_pdesc *pd, sa_family_t af, int dir,
 		    NULL, reason, pd->af))
 			return (PF_DROP);
 		pd->hdrlen = sizeof(*th);
-		if (pd->off + (th->th_off << 2) > pd->tot_len ||
+		if (th->th_dport == 0 ||
+		    pd->off + (th->th_off << 2) > pd->tot_len ||
 		    (th->th_off << 2) < sizeof(struct tcphdr)) {
 			REASON_SET(reason, PFRES_SHORT);
 			return (PF_DROP);
