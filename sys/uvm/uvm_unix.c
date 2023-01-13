@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_unix.c,v 1.70 2020/10/19 08:19:46 mpi Exp $	*/
+/*	$OpenBSD: uvm_unix.c,v 1.71 2020/10/21 21:24:57 deraadt Exp $	*/
 /*	$NetBSD: uvm_unix.c,v 1.18 2000/09/13 15:00:25 thorpej Exp $	*/
 
 /*
@@ -234,7 +234,8 @@ uvm_should_coredump(struct proc *p, struct vm_map_entry *entry)
 	 *	uvm_map_extract(UVM_EXTRACT_FIXPROT)
 	 * on each such page would suck.
 	 */
-	if ((entry->protection & PROT_READ) == 0)
+	if (!(entry->protection & PROT_READ) &&
+	    entry->start != p->p_p->ps_sigcode)
 		return 0;
 
 	/* Skip ranges excluded from coredumps. */
