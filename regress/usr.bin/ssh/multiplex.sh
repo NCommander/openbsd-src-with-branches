@@ -1,4 +1,4 @@
-#	$OpenBSD: multiplex.sh,v 1.33 2020/06/24 15:16:23 markus Exp $
+#	$OpenBSD: multiplex.sh,v 1.34 2022/06/03 04:31:54 djm Exp $
 #	Placed in the Public Domain.
 
 CTL=$OBJ/ctl-sock
@@ -17,6 +17,7 @@ wait_for_mux_master_ready()
 	fatal "mux master never becomes ready"
 }
 
+maybe_add_scp_path_to_sshd
 start_sshd
 
 start_mux_master()
