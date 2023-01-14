@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.157 2021/07/07 07:28:56 mestre Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.158 2021/07/14 13:33:57 kn Exp $	*/
 
 /*
  * Copyright (c) 2015 Henning Brauer <henning@openbsd.org>
@@ -439,7 +439,7 @@ read_configline(FILE *config)
 }
 
 void
-spamd_tls_init()
+spamd_tls_init(void)
 {
 	if (tlskeyfile == NULL && tlscertfile == NULL)
 		return;
