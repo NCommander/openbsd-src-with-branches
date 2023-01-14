@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.407 2022/11/05 19:29:46 cheloha Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.408 2022/11/07 14:25:44 robert Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -2510,6 +2510,7 @@ sysctl_cpustats(int *name, u_int namelen, void *oldp, size_t *oldlenp,
 	if (!found)
 		return (ENOENT);
 
+	memset(&cs, 0, sizeof cs);
 	memcpy(&cs.cs_time, &ci->ci_schedstate.spc_cp_time, sizeof(cs.cs_time));
 	cs.cs_flags = 0;
 	if (cpu_is_online(ci))
