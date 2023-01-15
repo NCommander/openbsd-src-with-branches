@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.86 2020/12/29 00:59:15 djm Exp $
+#	$OpenBSD: Makefile.inc,v 1.87 2021/01/09 11:58:50 dtucker Exp $
 
 .include <bsd.own.mk>
 
@@ -94,11 +94,7 @@ SRCS_KEY+=	cipher-chachapoly.c
 SRCS_KEY+=	ssh-ed25519.c
 SRCS_KEY+=	ssh-ed25519-sk.c
 # ed25519, from supercop
-SRCS_KEY+=	sc25519.c
-SRCS_KEY+=	ge25519.c
-SRCS_KEY+=	fe25519.c
 SRCS_KEY+=	ed25519.c
-SRCS_KEY+=	verify.c
 SRCS_KEY+=	hash.c
 
 SRCS_KEYP+=	authfile.c
