@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.92 2022/11/04 16:49:31 kettenis Exp $	*/
+/*	$OpenBSD: trap.c,v 1.93 2022/11/07 01:41:57 guenther Exp $	*/
 /*	$NetBSD: trap.c,v 1.2 2003/05/04 23:51:56 fvdl Exp $	*/
 
 /*-
@@ -534,7 +534,7 @@ syscall(struct trapframe *frame)
 	caddr_t params;
 	const struct sysent *callp;
 	struct proc *p;
-	int error;
+	int error, indirect = -1;
 	size_t argsize, argoff;
 	register_t code, args[9], rval[2], *argp;
 
@@ -552,6 +552,7 @@ syscall(struct trapframe *frame)
 		/*
 		 * Code is first argument, followed by actual args.
 		 */
+		indirect = code;
 		code = frame->tf_rdi;
 		argp = &args[1];
 		argoff = 1;
@@ -596,7 +597,7 @@ syscall(struct trapframe *frame)
 	rval[0] = 0;
 	rval[1] = 0;
 
-	error = mi_syscall(p, code, callp, argp, rval);
+	error = mi_syscall(p, code, indirect, callp, argp, rval);
 
 	switch (error) {
 	case 0:

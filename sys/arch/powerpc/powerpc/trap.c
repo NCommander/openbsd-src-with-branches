@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.127 2022/11/02 07:20:07 guenther Exp $	*/
+/*	$OpenBSD: trap.c,v 1.128 2023/01/04 22:13:43 kettenis Exp $	*/
 /*	$NetBSD: trap.c,v 1.3 1996/10/13 03:31:37 christos Exp $	*/
 
 /*
@@ -243,7 +243,7 @@ trap(struct trapframe *frame)
 	size_t argsize;
 	register_t code, error;
 	register_t *params, rval[2], args[10];
-	int n;
+	int n, indirect = -1;
 
 	if (frame->srr1 & PSL_PR) {
 		type |= EXC_USER;
@@ -369,6 +369,7 @@ trap(struct trapframe *frame)
 			 * code is first argument,
 			 * followed by actual args.
 			 */
+			indirect = code;
 			code = *params++;
 			break;
 		case SYS___syscall:
@@ -378,6 +379,7 @@ trap(struct trapframe *frame)
 			 * for the rest of the args.
 			 */
 			params++;
+			indirect = code;
 			code = *params++;
 			break;
 		default:
@@ -403,7 +405,7 @@ trap(struct trapframe *frame)
 		rval[0] = 0;
 		rval[1] = frame->fixreg[FIRSTARG + 1];
 
-		error = mi_syscall(p, code, callp, params, rval);
+		error = mi_syscall(p, code, indirect, callp, params, rval);
 
 		switch (error) {
 		case 0:
