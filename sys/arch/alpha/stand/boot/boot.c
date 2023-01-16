@@ -1,4 +1,4 @@
-/*	$OpenBSD: boot.c,v 1.28 2020/05/26 13:47:27 deraadt Exp $	*/
+/*	$OpenBSD: boot.c,v 1.29 2021/01/29 16:22:34 deraadt Exp $	*/
 /*	$NetBSD: boot.c,v 1.10 1997/01/18 01:58:33 cgd Exp $	*/
 
 /*
@@ -96,6 +96,10 @@ done:
 	close(fd);
 	return (error);
 }
+
+void init_prom_calls(void);
+void OSFpal(void);
+void halt(void);
 
 int
 main()

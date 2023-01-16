@@ -1,8 +1,11 @@
-/*	$OpenBSD: getsecs.c,v 1.2 1996/11/27 19:54:55 niklas Exp $	*/
+/*	$OpenBSD: getsecs.c,v 1.3 2011/06/05 21:49:36 miod Exp $	*/
 
 #include <sys/param.h>
 #include "include/rpb.h"
 #include "include/prom.h"
+
+
+long alpha_rpcc(void);
 
 int
 getsecs()
