@@ -1,4 +1,4 @@
-/*	$OpenBSD: hibernate_machdep.c,v 1.58 2022/01/17 02:54:28 mlarkin Exp $	*/
+/*	$OpenBSD: hibernate_machdep.c,v 1.59 2022/09/02 12:46:18 mlarkin Exp $	*/
 
 /*
  * Copyright (c) 2011 Mike Larkin <mlarkin@openbsd.org>
@@ -110,7 +110,7 @@ get_hibernate_io_function(dev_t dev)
 #if NSOFTRAID > 0
 			{ "softraid", sr_hibernate_io },
 #endif
-#if SDMMC > 0
+#if NSDMMC > 0
 			{ "sdmmc", sdmmc_scsi_hibernate_io },
 #endif
 		};
