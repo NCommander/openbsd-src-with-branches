@@ -1,4 +1,4 @@
-/*	$OpenBSD: options.c,v 1.103 2019/11/15 20:34:17 naddy Exp $	*/
+/*	$OpenBSD: options.c,v 1.104 2022/12/04 23:50:45 cheloha Exp $	*/
 /*	$NetBSD: options.c,v 1.6 1996/03/26 23:54:18 mrg Exp $	*/
 
 /*-
@@ -1107,8 +1107,7 @@ tar_options(int argc, char **argv)
 int mkpath(char *);
 
 int
-mkpath(path)
-	char *path;
+mkpath(char *path)
 {
 	struct stat sb;
 	char *slash;
