@@ -1,4 +1,4 @@
-/* $OpenBSD: servconf.h,v 1.157 2022/09/17 10:34:29 djm Exp $ */
+/* $OpenBSD: servconf.h,v 1.158 2023/01/06 02:47:19 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -231,6 +231,8 @@ typedef struct {
 
 	char	**channel_timeouts;	/* inactivity timeout by channel type */
 	u_int	num_channel_timeouts;
+
+	int	unused_connection_timeout;
 }       ServerOptions;
 
 /* Information about the incoming connection as used by Match */
