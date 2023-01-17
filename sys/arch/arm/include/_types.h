@@ -1,4 +1,4 @@
-/*	$OpenBSD: _types.h,v 1.18 2018/03/01 21:00:50 kettenis Exp $	*/
+/*	$OpenBSD: _types.h,v 1.19 2018/03/05 01:15:25 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -34,6 +34,8 @@
 
 #ifndef _ARM__TYPES_H_
 #define _ARM__TYPES_H_
+
+#define	__HAVE_CLOCKINTR
 
 #if defined(_KERNEL)
 typedef struct label_t {
