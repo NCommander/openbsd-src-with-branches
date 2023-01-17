@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.3 2014/11/17 20:31:21 miod Exp $
+# $OpenBSD: Makefile.inc,v 1.4 2019/05/11 13:05:24 tb Exp $
 
 # alpha-specific libcrypto build rules
 
@@ -32,10 +32,3 @@ ${f}.S: ${LCRYPTO_SRC}/${dir}/asm/${f}.pl
 	/usr/bin/perl \
 		${LCRYPTO_SRC}/${dir}/asm/${f}.pl > ${.TARGET}
 .endfor
-
-CFLAGS+= -DOPENSSL_CPUID_OBJ
-SRCS+=	alphacpuid.S
-GENERATED+=alphacpuid.S
-alphacpuid.S: ${LCRYPTO_SRC}/alphacpuid.pl
-	/usr/bin/perl \
-		${LCRYPTO_SRC}/alphacpuid.pl > ${.TARGET}
