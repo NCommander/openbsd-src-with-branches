@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.586 2023/01/16 10:37:08 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.587 2023/01/17 16:09:01 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -249,8 +249,8 @@ rde_main(int debug, int verbose)
 			}
 		}
 
-		if (rib_dump_pending() || rde_update_queue_pending() ||
-		    nexthop_pending() || peer_imsg_pending())
+		if (peer_imsg_pending() || rde_update_queue_pending() ||
+		    nexthop_pending() || rib_dump_pending())
 			timeout = 0;
 
 		if (poll(pfd, i, timeout) == -1) {
