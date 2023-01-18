@@ -1,4 +1,4 @@
-/*	$OpenBSD: rasops32.c,v 1.11 2020/07/15 08:34:25 fcambus Exp $	*/
+/*	$OpenBSD: rasops32.c,v 1.12 2020/07/20 12:40:45 fcambus Exp $	*/
 /*	$NetBSD: rasops32.c,v 1.7 2000/04/12 14:22:29 pk Exp $	*/
 
 /*-
@@ -203,7 +203,7 @@ rasops32_putchar(void *cookie, int row, int col, u_int uc, uint32_t attr)
 	}
 
 	/* Do underline a pixel at a time */
-	if ((attr & 1) != 0) {
+	if ((attr & WSATTR_UNDERLINE) != 0) {
 		rp -= step;
 		for (cnt = 0; cnt < width; cnt++)
 			((int *)rp)[cnt] = f;

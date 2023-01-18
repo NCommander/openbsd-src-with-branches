@@ -1,4 +1,4 @@
-/*	$OpenBSD: rasops8.c,v 1.10 2010/08/28 12:48:14 miod Exp $	*/
+/*	$OpenBSD: rasops8.c,v 1.11 2020/05/25 09:55:49 jsg Exp $	*/
 /*	$NetBSD: rasops8.c,v 1.8 2000/04/12 14:22:29 pk Exp $	*/
 
 /*-
@@ -145,7 +145,7 @@ rasops8_putchar(void *cookie, int row, int col, u_int uc, uint32_t attr)
 	}
 
 	/* Do underline */
-	if ((attr & 1) != 0) {
+	if ((attr & WSATTR_UNDERLINE) != 0) {
 		u_char c = clr[1];
 
 		rp -= (ri->ri_stride << 1);
@@ -248,7 +248,7 @@ rasops8_putchar8(void *cookie, int row, int col, u_int uc, uint32_t attr)
 	}
 
 	/* Do underline */
-	if ((attr & 1) != 0) {
+	if ((attr & WSATTR_UNDERLINE) != 0) {
 		DELTA(rp, -(ri->ri_stride << 1), int32_t *);
 		rp[0] = rp[1] = stamp[15];
 	}
@@ -319,7 +319,7 @@ rasops8_putchar12(void *cookie, int row, int col, u_int uc, uint32_t attr)
 	}
 
 	/* Do underline */
-	if ((attr & 1) != 0) {
+	if ((attr & WSATTR_UNDERLINE) != 0) {
 		DELTA(rp, -(ri->ri_stride << 1), int32_t *);
 		rp[0] = rp[1] = rp[2] = stamp[15];
 	}
@@ -387,7 +387,7 @@ rasops8_putchar16(void *cookie, int row, int col, u_int uc, uint32_t attr)
 	}
 
 	/* Do underline */
-	if ((attr & 1) != 0) {
+	if ((attr & WSATTR_UNDERLINE) != 0) {
 		DELTA(rp, -(ri->ri_stride << 1), int32_t *);
 		rp[0] = rp[1] = rp[2] = rp[3] = stamp[15];
 	}
