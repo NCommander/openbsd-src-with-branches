@@ -111,6 +111,14 @@ BN_ULONG bn_div_3_words(const BN_ULONG *m, BN_ULONG d1, BN_ULONG d0);
 # endif /* __GNUC__ */
 #endif /* OPENSSL_NO_ASM */
 
+/*
+ * Interface is somewhat quirky, |m| is pointer to most significant limb,
+ * and less significant limb is referred at |m[-1]|. This means that caller
+ * is responsible for ensuring that |m[-1]| is valid. Second condition that
+ * has to be met is that |d0|'s most significant bit has to be set. Or in
+ * other words divisor has to be "bit-aligned to the left." The subroutine
+ * considers four limbs, two of which are "overlapping," hence the name...
+ */
 BN_ULONG
 bn_div_3_words(const BN_ULONG *m, BN_ULONG d1, BN_ULONG d0)
 {
