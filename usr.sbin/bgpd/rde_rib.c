@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_rib.c,v 1.251 2022/12/28 21:30:16 jmc Exp $ */
+/*	$OpenBSD: rde_rib.c,v 1.252 2023/01/18 17:40:17 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org>
@@ -442,7 +442,7 @@ rib_dump_r(struct rib_context *ctx)
 			struct bgpd_addr addr;
 			pt_getaddr(re->prefix, &addr);
 			if (prefix_compare(&ctx->ctx_subtree, &addr,
-			   ctx->ctx_subtreelen) != 0)
+			    ctx->ctx_subtreelen) != 0)
 				/* left subtree, walk is done */
 				break;
 		}
@@ -1342,7 +1342,7 @@ prefix_dump_r(struct rib_context *ctx)
 			struct bgpd_addr addr;
 			pt_getaddr(p->pt, &addr);
 			if (prefix_compare(&ctx->ctx_subtree, &addr,
-			   ctx->ctx_subtreelen) != 0)
+			    ctx->ctx_subtreelen) != 0)
 				/* left subtree, walk is done */
 				break;
 		}
