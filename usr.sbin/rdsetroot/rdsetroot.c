@@ -1,4 +1,4 @@
-/* $OpenBSD: rdsetroot.c,v 1.2 2019/04/16 06:09:52 sunil Exp $ */
+/* $OpenBSD: rdsetroot.c,v 1.3 2021/10/24 21:24:19 deraadt Exp $ */
 
 /*
  * Copyright (c) 2019 Sunil Nimmagadda <sunil@openbsd.org>
@@ -294,6 +294,6 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "usage: %s [-dx] bsd [fs]\n", __progname);
+	fprintf(stderr, "usage: %s [-dx] kernel [disk.fs]\n", __progname);
 	exit(1);
 }
