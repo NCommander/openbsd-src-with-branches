@@ -20,5 +20,7 @@
 
 #ifndef OPENSSL_NO_ASM
 
+#define HAVE_BN_DIV_3_WORDS
+
 #endif
 #endif
