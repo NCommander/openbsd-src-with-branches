@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.c,v 1.129 2022/01/04 15:18:44 claudio Exp $	*/
+/*	$OpenBSD: vmd.c,v 1.130 2022/03/01 21:46:19 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -642,8 +642,9 @@ vmd_check_vmh(struct vm_dump_header *vmh)
 				    code, leaf);
 				return (-1);
 			}
-			if ((vmh->vmh_cpuids[i].c & c & VMM_SEFF0ECX_MASK) !=
-			    (vmh->vmh_cpuids[i].c & VMM_SEFF0ECX_MASK)) {
+#define VMM_SEFF0ECX_MASK_T (SEFF0ECX_UMIP)
+			if ((vmh->vmh_cpuids[i].c & c & VMM_SEFF0ECX_MASK_T) !=
+			    (vmh->vmh_cpuids[i].c & VMM_SEFF0ECX_MASK_T)) {
 				log_debug("%s: incompatible cpu features "
 				    "code: 0x%x leaf: 0x%x  reg: d", __func__,
 				    code, leaf);
