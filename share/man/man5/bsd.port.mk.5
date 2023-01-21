@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.572 2023/01/09 17:17:55 sthen Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.573 2023/01/09 17:41:03 sthen Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -1722,9 +1722,7 @@ tar
 .It archivers/bzip2
 tar.bz2, tbz2, tbz
 .It archivers/xz
-tar.xz, tar.lzma
-.It archivers/lzip/lunzip
-tar.lz
+tar.xz, tar.lzma, tar.lz
 .It archivers/unzip
 zip
 .It archivers/zstd
@@ -2446,11 +2444,11 @@ for patchfile in ${_LIST_PATCHFILES}
 do
     case $$patchfile in
 	*.bz2)
-	  bzip2 -dc $$patchfile | ${PATCH} ${PATCH_DIST_ARGS};;
-	*.lz)
-	  lunzip -c $$patchfile | ${PATCH} ${PATCH_DIST_ARGS};;
+	  ${BZIP2} -d <$$patchfile | ${PATCH} ${PATCH_DIST_ARGS};;
+	*.zst|*.zstd)
+	  zstdcat -c <$$patchfile | ${PATCH} ${PATCH_DIST_ARGS};;
 	*.Z|*.gz)
-	  gzcat $$patchfile | ${PATCH} ${PATCH_DIST_ARGS};;
+	  ${GZIP_CMD} -d <$$patchfile | ${PATCH} ${PATCH_DIST_ARGS};;
 	*)
 	  ${PATCH} ${PATCH_DIST_ARGS} <$$patchfile;;
     esac
