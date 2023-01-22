@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1169 2023/01/06 17:44:34 sashan Exp $ */
+/*	$OpenBSD: pf.c,v 1.1170 2023/01/12 13:09:47 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -4210,6 +4210,10 @@ next_rule:
 	}
 
 	if (pf_anchor_stack_pop(&ruleset, &r, &child, &target) == 0) {
+		/* stop if any rule matched within quick anchors. */
+		if (r->quick == PF_TEST_QUICK && *ctx->am == r)
+			return (PF_TEST_QUICK);
+
 		switch (target) {
 		case PF_NEXT_CHILD:
 			goto next_child;
