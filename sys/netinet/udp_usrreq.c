@@ -1,4 +1,4 @@
-/*	$OpenBSD: udp_usrreq.c,v 1.303 2022/10/03 16:43:52 bluhm Exp $	*/
+/*	$OpenBSD: udp_usrreq.c,v 1.304 2022/10/17 14:49:02 mvs Exp $	*/
 /*	$NetBSD: udp_usrreq.c,v 1.28 1996/03/16 23:54:03 christos Exp $	*/
 
 /*
@@ -400,7 +400,7 @@ udp_input(struct mbuf **mp, int *offp, int proto, int af)
 		rw_enter_write(&udbtable.inpt_notify);
 		mtx_enter(&udbtable.inpt_mtx);
 		TAILQ_FOREACH(inp, &udbtable.inpt_queue, inp_queue) {
-			if (inp->inp_socket->so_state & SS_CANTRCVMORE)
+			if (inp->inp_socket->so_rcv.sb_state & SS_CANTRCVMORE)
 				continue;
 #ifdef INET6
 			/* don't accept it if AF does not match */
