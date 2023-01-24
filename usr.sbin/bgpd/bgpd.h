@@ -1,4 +1,4 @@
-/*	$OpenBSD: bgpd.h,v 1.457 2023/01/11 13:53:17 claudio Exp $ */
+/*	$OpenBSD: bgpd.h,v 1.458 2023/01/17 16:09:01 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -840,7 +840,8 @@ struct ctl_show_rib {
 	uint32_t		flags;
 	uint8_t			prefixlen;
 	uint8_t			origin;
-	uint8_t			validation_state;
+	uint8_t			roa_validation_state;
+	uint8_t			aspa_validation_state;
 	int8_t			dmetric;
 	/* plus an aspath */
 };
