@@ -1,4 +1,4 @@
-/* $OpenBSD: p12_crt.c,v 1.20 2022/08/20 09:16:18 tb Exp $ */
+/* $OpenBSD: p12_crt.c,v 1.21 2022/11/12 13:03:28 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
  */
@@ -113,7 +113,8 @@ PKCS12_create(const char *pass, const char *name, EVP_PKEY *pkey, X509 *cert,
 	if (pkey && cert) {
 		if (!X509_check_private_key(cert, pkey))
 			return NULL;
-		X509_digest(cert, EVP_sha1(), keyid, &keyidlen);
+		if (!X509_digest(cert, EVP_sha1(), keyid, &keyidlen))
+			return NULL;
 	}
 
 	if (cert) {
