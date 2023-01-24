@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.131 2023/01/12 17:35:51 claudio Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.132 2023/01/24 11:28:41 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -224,6 +224,11 @@ rde_filter_match(struct filter_rule *f, struct rde_peer *peer,
 
 	if (f->match.ovs.is_set) {
 		if ((state->vstate & ROA_MASK) != f->match.ovs.validity)
+			return (0);
+	}
+
+	if (f->match.avs.is_set) {
+		if (((state->vstate >> 4) & ASPA_MASK) != f->match.avs.validity)
 			return (0);
 	}
 
