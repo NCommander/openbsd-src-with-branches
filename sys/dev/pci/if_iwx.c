@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwx.c,v 1.150 2022/08/29 17:59:12 stsp Exp $	*/
+/*	$OpenBSD: if_iwx.c,v 1.151 2022/12/23 11:29:32 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014, 2016 genua gmbh <info@genua.de>
@@ -8056,7 +8056,7 @@ iwx_set_key(struct ieee80211com *ic, struct ieee80211_node *ni,
 	if (k->k_cipher != IEEE80211_CIPHER_CCMP) {
 		/* Fallback to software crypto for other ciphers. */
 		err = ieee80211_set_key(ic, ni, k);
-		if (!err && (k->k_flags & IEEE80211_KEY_GROUP))
+		if (!err && in != NULL && (k->k_flags & IEEE80211_KEY_GROUP))
 			in->in_flags |= IWX_NODE_FLAG_HAVE_GROUP_KEY;
 		return err;
 	}
