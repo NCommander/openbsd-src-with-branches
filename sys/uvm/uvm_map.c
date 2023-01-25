@@ -4469,9 +4469,12 @@ uvm_map_extract(struct vm_map *srcmap, vaddr_t start, vsize_t len,
 			goto fail2_unmap;
 		}
 		kernel_map->size += cp_len;
-		if (flags & UVM_EXTRACT_FIXPROT)
-			newentry->protection = newentry->max_protection &
-			    ~PROT_EXEC;
+
+		/* Figure out the best protection */ 
+		if ((flags & UVM_EXTRACT_FIXPROT) &&
+		    newentry->protection != PROT_NONE)
+			newentry->protection = newentry->max_protection;
+		newentry->protection &= ~PROT_EXEC;
 
 		/*
 		 * Step 2: perform pmap copy.
