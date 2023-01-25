@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.23 2021/08/01 17:42:56 kettenis Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.24 2022/04/06 18:59:27 naddy Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -242,6 +242,23 @@ cpu_init(void)
 	isync();
 
 	mtfscr(0);
+	isync();
+
+	/*
+	 * Set AMR to inhibit loads and stores for all virtual page
+	 * class keys, except for Key0 which is used for normal kernel
+	 * access.  This means we can pick any other key to implement
+	 * execute-only mappings.  But we pick Key1 since that allows
+	 * us to use the same bit in the PTE as was used to enable the
+	 * Data Access Compare mechanism on CPUs based on older
+	 * versions of the architecture (such as the PowerPC 970).
+	 *
+	 * Set UAMOR (and AMOR just to be safe) to zero to prevent
+	 * userland from modifying any bits in AMR.
+	 */
+	mtamr(0x3fffffffffffffff);
+	mtuamor(0);
+	mtamor(0);
 	isync();
 }
 
