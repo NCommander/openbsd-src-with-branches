@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_map.h,v 1.80 2022/11/04 09:36:44 mpi Exp $	*/
+/*	$OpenBSD: uvm_map.h,v 1.81 2022/11/17 23:26:07 deraadt Exp $	*/
 /*	$NetBSD: uvm_map.h,v 1.24 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -310,7 +310,7 @@ struct vm_map {
 	struct uvm_addr_state	*uaddr_brk_stack; /* Brk/stack selector. */
 
 	/*
-	 * XXX struct mutex changes size because of compile options, so place
+	 * XXX struct mutex changes size because of compile options, so
 	 * place after fields which are inspected by libkvm / procmap(8)
 	 */
 	struct rwlock		lock;		/* Non-intrsafe lock */
