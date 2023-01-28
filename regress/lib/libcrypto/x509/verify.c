@@ -1,4 +1,4 @@
-/* $OpenBSD: verify.c,v 1.9 2021/10/31 08:27:15 tb Exp $ */
+/* $OpenBSD: verify.c,v 1.10 2022/10/17 18:36:52 jsing Exp $ */
 /*
  * Copyright (c) 2020 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2020-2021 Bob Beck <beck@openbsd.org>
@@ -25,7 +25,8 @@
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
-#include <openssl/x509_verify.h>
+
+#include "x509_verify.h"
 
 #define MODE_MODERN_VFY		0
 #define MODE_MODERN_VFY_DIR	1
