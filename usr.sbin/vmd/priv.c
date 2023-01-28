@@ -1,4 +1,4 @@
-/*	$OpenBSD: priv.c,v 1.20 2022/12/15 16:01:40 dv Exp $	*/
+/*	$OpenBSD: priv.c,v 1.21 2022/12/15 19:36:45 millert Exp $	*/
 
 /*
  * Copyright (c) 2016 Reyk Floeter <reyk@openbsd.org>
@@ -352,7 +352,7 @@ vm_priv_ifconfig(struct privsep *ps, struct vmd_vm *vm)
 	struct sockaddr_in	*sin4;
 	struct sockaddr_in6	*sin6;
 
-	for (i = 0; i < VMM_MAX_NICS_PER_VM; i++) {
+	for (i = 0; i < VM_MAX_NICS_PER_VM; i++) {
 		vif = &vm->vm_ifs[i];
 
 		if (vif->vif_name == NULL)
