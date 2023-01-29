@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_shift.c,v 1.7 2023/01/07 14:30:57 jsing Exp $ */
+/*	$OpenBSD: bn_mul.c,v 1.1 2023/01/21 13:24:39 jsing Exp $ */
 /*
  * Copyright (c) 2023 Joel Sing <jsing@openbsd.org>
  *
