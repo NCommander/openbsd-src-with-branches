@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_mul.c,v 1.1 2023/01/21 13:24:39 jsing Exp $ */
+/*	$OpenBSD: bn_mul_div.c,v 1.3 2023/01/29 15:26:55 jsing Exp $ */
 /*
  * Copyright (c) 2023 Joel Sing <jsing@openbsd.org>
  *
@@ -357,6 +357,9 @@ benchmark_run(const struct benchmark *bm, int seconds)
 		errx(1, "BN_CTX_get");
 	if ((q = BN_CTX_get(bn_ctx)) == NULL)
 		errx(1, "BN_CTX_get");
+
+	BN_set_flags(a, BN_FLG_CONSTTIME);
+	BN_set_flags(b, BN_FLG_CONSTTIME);
 
 	if (!bm->setup(a, bm->a_bits, b, bm->b_bits, r, q))
 		errx(1, "benchmark setup failed");
