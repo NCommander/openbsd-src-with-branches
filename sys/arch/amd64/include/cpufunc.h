@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpufunc.h,v 1.37 2022/09/22 04:57:08 robert Exp $	*/
+/*	$OpenBSD: cpufunc.h,v 1.38 2023/01/20 16:01:04 deraadt Exp $	*/
 /*	$NetBSD: cpufunc.h,v 1.3 2003/05/08 10:27:43 fvdl Exp $	*/
 
 /*-
@@ -238,6 +238,13 @@ rdpkru(u_int ecx)
 	uint32_t edx, pkru;
 	asm volatile("rdpkru " : "=a" (pkru), "=d" (edx) : "c" (ecx));
 	return pkru;
+}
+
+static __inline void
+wrpkru(uint32_t pkru)
+{
+	uint32_t ecx = 0, edx = 0;
+	__asm volatile("wrpkru" : : "a" (pkru), "c" (ecx), "d" (edx));
 }
 
 static __inline void
