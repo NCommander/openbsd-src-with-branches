@@ -1,4 +1,4 @@
-/*	$OpenBSD: wscons_machdep.c,v 1.18 2011/06/28 20:19:18 matthieu Exp $ */
+/*	$OpenBSD: wscons_machdep.c,v 1.19 2016/03/07 05:32:47 naddy Exp $ */
 
 /*
  * Copyright (c) 2001 Aaron Campbell
@@ -28,10 +28,7 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/conf.h>
-#include <sys/device.h>
-#include <sys/extent.h>
 
 #include <machine/bus.h>
 
@@ -62,7 +59,6 @@
 #include <dev/ic/i8042reg.h>
 #include <dev/ic/pckbcvar.h>
 #endif
-#include "pckbd.h"
 #include "ukbd.h"
 #if (NUKBD > 0)
 #include <dev/usb/ukbdvar.h>

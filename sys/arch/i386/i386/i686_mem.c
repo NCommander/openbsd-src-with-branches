@@ -1,4 +1,4 @@
-/* $OpenBSD: i686_mem.c,v 1.18 2016/04/26 15:27:32 mlarkin Exp $ */
+/* $OpenBSD: i686_mem.c,v 1.19 2018/07/30 14:19:12 kettenis Exp $ */
 /*
  * Copyright (c) 1999 Michael Smith <msmith@freebsd.org>
  * All rights reserved.
@@ -28,13 +28,11 @@
  */
 
 #include <sys/param.h>
-#include <sys/kernel.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>
 #include <sys/memrange.h>
 
 #include <machine/cpufunc.h>
-#include <machine/intr.h>
 #include <machine/specialreg.h>
 
 /*

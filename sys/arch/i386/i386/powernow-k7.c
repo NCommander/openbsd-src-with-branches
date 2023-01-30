@@ -1,4 +1,4 @@
-/* $OpenBSD: powernow-k7.c,v 1.42 2018/07/04 02:06:15 mlarkin Exp $ */
+/* $OpenBSD: powernow-k7.c,v 1.43 2018/07/30 14:19:12 kettenis Exp $ */
 
 /*
  * Copyright (c) 2004 Martin Végiard.
@@ -33,7 +33,6 @@
 #include <sys/malloc.h>
 #include <sys/sysctl.h>
 
-#include <machine/cpu.h>
 #include <machine/cpufunc.h>
 #include <machine/bus.h>
 
@@ -44,7 +43,6 @@
 
 #if NACPICPU > 0
 #include <dev/acpi/acpidev.h>
-#include <dev/acpi/acpivar.h>
 #endif
 
 #define BIOS_START			0xe0000

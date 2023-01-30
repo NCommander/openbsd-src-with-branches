@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.127 2022/02/21 10:24:28 mpi Exp $	*/
+/*	$OpenBSD: apm.c,v 1.128 2022/12/06 01:56:44 cheloha Exp $	*/
 
 /*-
  * Copyright (c) 1998-2001 Michael Shalayeff. All rights reserved.
@@ -38,30 +38,22 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/signalvar.h>
 #include <sys/kernel.h>
 #include <sys/kthread.h>
 #include <sys/rwlock.h>
 #include <sys/sysctl.h>
-#include <sys/malloc.h>
 #include <sys/clockintr.h>
 #include <sys/device.h>
 #include <sys/fcntl.h>
-#include <sys/ioctl.h>
 #include <sys/buf.h>
 #include <sys/reboot.h>
 #include <sys/event.h>
 
 #include <machine/conf.h>
-#include <machine/cpu.h>
 #include <machine/cpufunc.h>
 #include <machine/gdt.h>
-#include <machine/psl.h>
 
 #include <dev/isa/isareg.h>
-#include <i386/isa/isa_machdep.h>
-#include <i386/isa/nvram.h>
-#include <dev/isa/isavar.h>
 #include <dev/wscons/wsdisplayvar.h>
 
 #include <machine/acpiapm.h>

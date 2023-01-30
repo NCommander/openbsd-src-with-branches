@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.218 2022/02/21 09:57:18 jsg Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.219 2022/06/29 14:24:29 dv Exp $	*/
 /*	$NetBSD: pmap.c,v 1.91 2000/06/02 17:46:37 thorpej Exp $	*/
 
 /*
@@ -57,19 +57,14 @@
 #include <sys/systm.h>
 #include <sys/atomic.h>
 #include <sys/proc.h>
-#include <sys/malloc.h>
 #include <sys/pool.h>
 #include <sys/user.h>
-#include <sys/kernel.h>
 #include <sys/mutex.h>
 
 #include <uvm/uvm.h>
 
-#include <machine/cpu.h>
 #include <machine/specialreg.h>
-#include <machine/gdt.h>
 
-#include <dev/isa/isareg.h>
 #include <sys/msgbuf.h>
 #include <stand/boot/bootarg.h>
 

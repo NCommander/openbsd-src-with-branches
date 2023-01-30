@@ -1,4 +1,4 @@
-/*	$OpenBSD: acpi_machdep.c,v 1.85 2022/02/21 10:24:28 mpi Exp $	*/
+/*	$OpenBSD: acpi_machdep.c,v 1.86 2022/12/06 01:56:43 cheloha Exp $	*/
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -32,12 +32,11 @@
 #include <machine/acpiapm.h>
 
 #include <machine/cpuvar.h>
+#include <machine/npx.h>
 
 #include <dev/acpi/acpivar.h>
 #include <dev/acpi/acpidev.h>
 #include <dev/isa/isareg.h>
-
-#include <machine/apmvar.h>
 
 #include "apm.h"
 #include "isa.h"

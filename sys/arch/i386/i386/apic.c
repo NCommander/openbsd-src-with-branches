@@ -1,4 +1,4 @@
-/*	$OpenBSD: apic.c,v 1.5 2008/06/26 05:42:10 ray Exp $	*/
+/*	$OpenBSD: apic.c,v 1.6 2009/08/13 13:24:48 kettenis Exp $	*/
 /* $NetBSD: apic.c,v 1.1.2.2 2000/02/21 18:51:00 sommerfeld Exp $ */
 
 /*-
@@ -36,7 +36,6 @@
 #include <sys/systm.h>
 
 #include <machine/i82489reg.h>
-#include <machine/i82489var.h>
 #include <machine/apicvar.h>
 
 void

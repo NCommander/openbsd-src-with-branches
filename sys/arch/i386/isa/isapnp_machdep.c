@@ -1,4 +1,4 @@
-/*	$OpenBSD: isapnp_machdep.c,v 1.3 2006/09/19 11:06:34 jsg Exp $	*/
+/*	$OpenBSD: isapnp_machdep.c,v 1.4 2008/06/26 05:42:11 ray Exp $	*/
 /*	$NetBSD: isapnp_machdep.c,v 1.5 1997/10/04 17:32:30 thorpej Exp $	*/
 
 /*-
@@ -76,8 +76,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/device.h>
-#include <sys/malloc.h>
 
 #include <machine/bus.h>
 

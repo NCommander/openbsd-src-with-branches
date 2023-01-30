@@ -1,4 +1,4 @@
-/*	$OpenBSD: via8231.c,v 1.7 2006/09/19 11:06:34 jsg Exp $	*/
+/*	$OpenBSD: via8231.c,v 1.8 2008/06/26 05:42:11 ray Exp $	*/
 
 /*-
  * Copyright (c) 1999 The NetBSD Foundation, Inc.
@@ -66,7 +66,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/device.h>
 #include <sys/malloc.h>
 
 #include <machine/intr.h>
