@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.335 2023/01/13 14:15:49 dv Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.336 2023/01/30 02:32:01 dv Exp $	*/
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -7035,6 +7035,14 @@ vmm_handle_cpuid(struct vcpu *vcpu)
 			*rbx = curcpu()->ci_feature_sefflags_ebx & VMM_SEFF0EBX_MASK;
 			*rcx = curcpu()->ci_feature_sefflags_ecx & VMM_SEFF0ECX_MASK;
 			*rdx = curcpu()->ci_feature_sefflags_edx & VMM_SEFF0EDX_MASK;
+			/*
+			 * Only expose PKU support if we've detected it in use
+			 * on the host.
+			 */
+			if (vmm_softc->pkru_enabled)
+				*rcx |= SEFF0ECX_PKU;
+			else
+				*rcx &= ~SEFF0ECX_PKU;
 		} else {
 			/* Unsupported subleaf */
 			DPRINTF("%s: function 0x07 (SEFF) unsupported subleaf "
