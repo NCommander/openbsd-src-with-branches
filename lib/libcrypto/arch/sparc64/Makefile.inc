@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.6 2023/01/13 17:27:26 miod Exp $
+# $OpenBSD: Makefile.inc,v 1.7 2023/01/14 15:45:43 jsing Exp $
 
 # sparc64-specific libcrypto build rules
 
@@ -9,7 +9,6 @@ SSLASM+= aes aes-sparcv9 aes-sparcv9
 # bf
 SRCS+= bf_enc.c
 # bn
-SRCS+= bn_asm.c
 # camellia
 SRCS+= camellia.c cmll_cbc.c cmll_misc.c
 # des

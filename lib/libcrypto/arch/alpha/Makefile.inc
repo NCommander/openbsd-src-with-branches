@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.4 2019/05/11 13:05:24 tb Exp $
+# $OpenBSD: Makefile.inc,v 1.5 2023/01/17 15:04:27 miod Exp $
 
 # alpha-specific libcrypto build rules
 
@@ -7,7 +7,6 @@ SRCS+= aes_core.c aes_cbc.c
 # bf
 SRCS+= bf_enc.c
 # bn
-SRCS+= bn_asm.c
 SSLASM+= bn alpha-mont
 CFLAGS+= -DOPENSSL_BN_ASM_MONT
 # camellia

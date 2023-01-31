@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.4 2020/06/29 15:32:44 kettenis Exp $
+# $OpenBSD: Makefile.inc,v 1.5 2023/01/17 15:04:27 miod Exp $
 
 # powerpc-specific libcrypto build rules
 
@@ -10,7 +10,6 @@ SRCS+= aes_core.c aes_cbc.c
 # bf
 SRCS+= bf_enc.c
 # bn
-SRCS+= bn_asm.c
 #SSLASM+= bn ppc bn-ppc
 #SSLASM+= bn ppc-mont ppc-mont		# bn_mul_mont_int
 #SSLASM+= bn ppc64-mont ppc64-mont	# bn_mul_mont_fpu64
