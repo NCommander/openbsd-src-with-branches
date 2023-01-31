@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcopyinout.S,v 1.9 2018/08/06 18:39:13 kettenis Exp $	*/
+/*	$OpenBSD: bcopyinout.S,v 1.10 2022/12/08 01:25:44 guenther Exp $	*/
 /*	$NetBSD: bcopyinout.S,v 1.13 2003/10/31 16:54:05 scw Exp $	*/
 
 /*
@@ -67,7 +67,7 @@
  * We save/restore r4-r11:
  * r4-r11 are scratch
  */
-ENTRY(copyin)
+ENTRY(_copyin)
 	/* Quick exit if length is zero */	
 	teq	r2, #0
 	moveq	r0, #0

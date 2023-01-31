@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.90 2022/06/01 17:16:00 dv Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.91 2022/08/29 02:58:13 jsg Exp $	*/
 /*	$NetBSD: pmap.h,v 1.44 2000/04/24 17:18:18 thorpej Exp $	*/
 
 /*
@@ -358,6 +358,8 @@ void pmap_tmpunmap_pa_pae(void);
 void pmap_flush_cache(vaddr_t, vsize_t);
 void pmap_flush_page(paddr_t);
 void pmap_flush_page_pae(paddr_t);
+
+#define PMAP_CHECK_COPYIN	1
 
 #define PMAP_GROWKERNEL		/* turn on pmap_growkernel interface */
 

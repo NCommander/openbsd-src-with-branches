@@ -1,4 +1,4 @@
-/* $OpenBSD: cpu.h,v 1.67 2022/10/25 15:15:38 guenther Exp $ */
+/* $OpenBSD: cpu.h,v 1.68 2022/12/10 15:02:29 cheloha Exp $ */
 /* $NetBSD: cpu.h,v 1.45 2000/08/21 02:03:12 thorpej Exp $ */
 
 /*-
@@ -442,6 +442,8 @@ intr_restore(u_long s)
 {
 	splx((int)s);
 }
+
+#define copyinsn(p, v, ip)	copyin32((v), (ip))
 
 #endif /* _KERNEL */
 #endif /* _MACHINE_CPU_H_ */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: copystr.S,v 1.10 2022/12/08 01:25:44 guenther Exp $	*/
+/*	$OpenBSD: copystr.S,v 1.11 2023/01/06 19:10:18 miod Exp $	*/
 /*	$NetBSD: copystr.S,v 1.8 2002/10/13 14:54:48 bjh21 Exp $	*/
 
 /*
@@ -67,7 +67,7 @@
  *
  * Copy string from user space to kernel space
  */
-ENTRY(copyinstr)
+ENTRY(_copyinstr)
 	SAVE_REGS
 
 	teq	r2, #0x00000000

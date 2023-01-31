@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.70 2021/07/06 09:34:06 kettenis Exp $ */
+/*	$OpenBSD: cpu.h,v 1.71 2022/12/06 00:56:52 cheloha Exp $ */
 /*
  * Copyright (c) 1996 Nivas Madhur
  * Copyright (c) 1992, 1993
@@ -297,6 +297,8 @@ void	softipi(void);
 int	badaddr(vaddr_t addr, int size);
 void	set_vbr(register_t);
 extern register_t kernel_vbr;
+
+#define copyinsn(p, v, ip) copyin32((v), (ip))
 
 #endif /* _KERNEL */
 #endif /* _M88K_CPU_H_ */
