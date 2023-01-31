@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_add_sub.c,v 1.1 2022/12/01 20:50:10 tb Exp $	*/
+/*	$OpenBSD: bn_add_sub.c,v 1.2 2022/12/02 00:01:06 tb Exp $	*/
 /*
  * Copyright (c) 2018 Theo Buehler <tb@openbsd.org>
  *
@@ -130,11 +130,32 @@ struct hexinput_st test_bn_usub[] = {
 		1,
 	},
 	{
+		"11100000001",
+		"100000000001000000000",
+		"0",
+		0,
+		0,
+	},
+	{
 		"100000000000000000000",
 		"1",
 		"FFFFFFFFFFFFFFFFFFFF",
 		1,
 		1,
+	},
+	{
+		"1",
+		"0",
+		"1",
+		1,
+		1,
+	},
+	{
+		"1",
+		"2",
+		"FFFFFFFFFFFFFFFF",
+		0,
+		0,
 	},
 	{
 		"0",
