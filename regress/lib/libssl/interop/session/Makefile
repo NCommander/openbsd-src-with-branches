@@ -1,11 +1,11 @@
-# $OpenBSD: Makefile,v 1.5 2020/05/11 18:20:24 jsing Exp $
+# $OpenBSD: Makefile,v 1.6 2020/12/17 00:51:11 bluhm Exp $
 
 LIBRARIES =		libressl
-.if exists(/usr/local/bin/eopenssl)
-LIBRARIES +=		openssl
-.endif
 .if exists(/usr/local/bin/eopenssl11)
 LIBRARIES +=		openssl11
+.endif
+.if exists(/usr/local/bin/eopenssl30)
+LIBRARIES +=		openssl30
 .endif
 
 run-session-client-libressl-server-libressl \
