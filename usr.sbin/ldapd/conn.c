@@ -1,4 +1,4 @@
-/*	$OpenBSD: conn.c,v 1.17 2018/07/31 11:01:00 claudio Exp $ */
+/*	$OpenBSD: conn.c,v 1.18 2019/10/24 12:39:26 tb Exp $ */
 
 /*
  * Copyright (c) 2009, 2010 Martin Hedenfalk <martin@bzero.se>
@@ -343,7 +343,7 @@ conn_by_fd(int fd)
 }
 
 int
-conn_close_any()
+conn_close_any(void)
 {
 	struct conn		*conn;
 
