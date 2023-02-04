@@ -1,4 +1,4 @@
-/* $OpenBSD: acpitimer.c,v 1.15 2022/04/06 18:59:27 naddy Exp $ */
+/* $OpenBSD: acpitimer.c,v 1.16 2022/08/25 17:43:34 cheloha Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -42,7 +42,6 @@ uint32_t acpitimer_read(struct acpitimer_softc *);
 
 static struct timecounter acpi_timecounter = {
 	.tc_get_timecount = acpi_get_timecount,
-	.tc_poll_pps = 0,
 	.tc_counter_mask = 0x00ffffff,		/* 24 bits */
 	.tc_frequency = ACPI_FREQUENCY,
 	.tc_name = 0,

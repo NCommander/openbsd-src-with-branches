@@ -1,4 +1,4 @@
-/*	$OpenBSD: gscpm.c,v 1.12 2021/03/11 11:16:57 jsg Exp $	*/
+/*	$OpenBSD: gscpm.c,v 1.13 2022/02/21 10:24:28 mpi Exp $	*/
 /*
  * Copyright (c) 2004 Alexander Yurchenko <grange@openbsd.org>
  *
@@ -51,7 +51,6 @@ u_int	gscpm_get_timecount(struct timecounter *tc);
 
 struct timecounter gscpm_timecounter = {
 	.tc_get_timecount = gscpm_get_timecount,
-	.tc_poll_pps = 0,
 	.tc_counter_mask = 0xffffff,
 	.tc_frequency = 3579545,
 	.tc_name = "GSCPM",

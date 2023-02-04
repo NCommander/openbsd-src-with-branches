@@ -1,4 +1,4 @@
-/* $OpenBSD: acpihpet.c,v 1.29 2022/09/12 10:58:05 cheloha Exp $ */
+/* $OpenBSD: acpihpet.c,v 1.30 2022/11/08 14:54:47 cheloha Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  *
@@ -43,7 +43,6 @@ void		acpihpet_w(bus_space_tag_t _iot, bus_space_handle_t _ioh,
 
 static struct timecounter hpet_timecounter = {
 	.tc_get_timecount = acpihpet_gettime,
-	.tc_poll_pps = 0,
 	.tc_counter_mask = 0xffffffff,
 	.tc_frequency = 0,
 	.tc_name = 0,

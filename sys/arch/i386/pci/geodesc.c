@@ -1,4 +1,4 @@
-/*	$OpenBSD: geodesc.c,v 1.16 2021/02/23 04:44:30 cheloha Exp $	*/
+/*	$OpenBSD: geodesc.c,v 1.17 2022/02/21 10:24:28 mpi Exp $	*/
 
 /*
  * Copyright (c) 2003 Markus Friedl <markus@openbsd.org>
@@ -61,7 +61,6 @@ u_int   geodesc_get_timecount(struct timecounter *tc);
 
 struct timecounter geodesc_timecounter = {
 	.tc_get_timecount = geodesc_get_timecount,
-	.tc_poll_pps = 0,
 	.tc_counter_mask = 0xffffffff,
 	.tc_frequency = 27000000,
 	.tc_name = "GEOTSC",

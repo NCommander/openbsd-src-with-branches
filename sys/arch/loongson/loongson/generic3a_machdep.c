@@ -1,4 +1,4 @@
-/*	$OpenBSD: generic3a_machdep.c,v 1.10 2020/07/21 05:56:02 visa Exp $	*/
+/*	$OpenBSD: generic3a_machdep.c,v 1.11 2021/07/24 08:21:13 visa Exp $	*/
 
 /*
  * Copyright (c) 2009, 2010, 2012 Miodrag Vallat.
@@ -94,7 +94,6 @@ u_int	 rs780e_get_timecount(struct timecounter *);
 
 struct timecounter rs780e_timecounter = {
 	.tc_get_timecount = rs780e_get_timecount,
-	.tc_poll_pps = NULL,
 	.tc_counter_mask = 0xffffffffu,	/* truncated to 32 bits */
 	.tc_frequency = HPET_FREQ,
 	.tc_name = "hpet",
