@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.711 2021/10/25 14:50:29 sashan Exp $	*/
+/*	$OpenBSD: parse.y,v 1.712 2022/09/23 21:33:17 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -134,8 +134,8 @@ struct node_gid {
 };
 
 struct node_icmp {
-	u_int8_t		 code;
-	u_int8_t		 type;
+	u_int16_t		 code;	/* aux. value 256 is legit */
+	u_int16_t		 type;	/* aux. value 256 is legit */
 	u_int8_t		 proto;
 	struct node_icmp	*next;
 	struct node_icmp	*tail;
