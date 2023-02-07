@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2016/07/30 03:25:48 guenther Exp $
+#	$OpenBSD: Makefile,v 1.17 2017/06/12 18:49:34 espie Exp $
 #	$NetBSD: Makefile,v 1.12 1997/04/17 07:27:49 thorpej Exp $
 
 S=	${.CURDIR}/../../../..
@@ -23,7 +23,7 @@ DEFNS= -DPRIMARY_BOOTBLOCK
 
 AFLAGS += -DASSEMBLER ${DEFNS} -fno-pie
 CPPFLAGS += -I${.CURDIR}/../.. -I${S} ${DEFNS}
-CFLAGS = -Werror -mno-fp-regs -fno-pie \
+CFLAGS = -Oz -Werror -mno-fp-regs -fno-pie \
 	-msmall-data -msmall-text
 
 ${PROG}.nosym: ${PROG}.sym
