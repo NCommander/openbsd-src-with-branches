@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_bsd.c,v 1.34 2017/07/19 12:25:52 deraadt Exp $	*/
+/*	$OpenBSD: sys_bsd.c,v 1.35 2019/06/28 13:35:04 deraadt Exp $	*/
 /*	$NetBSD: sys_bsd.c,v 1.11 1996/02/28 21:04:10 thorpej Exp $	*/
 
 /*
@@ -180,8 +180,8 @@ TerminalDefaultChars(void)
  *		local/no signal mapping
  */
 
-static void susp();
-static void ayt();
+static void susp(int);
+static void ayt(int);
 
 void
 TerminalNewMode(int f)
