@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfutils.c,v 1.22 2021/07/12 15:09:20 beck Exp $ */
+/*	$OpenBSD: pfutils.c,v 1.23 2021/10/24 21:24:18 deraadt Exp $ */
 /*
  * Copyright (c) 2006 Chris Kuethe <ckuethe@openbsd.org>
  *
@@ -46,7 +46,7 @@ extern char *changedmac_tab;
 extern char *leased_tab;
 
 __dead void
-pftable_handler()
+pftable_handler(void)
 {
 	struct pf_cmd cmd;
 	struct pollfd pfd[1];

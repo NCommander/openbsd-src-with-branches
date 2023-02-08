@@ -1,4 +1,4 @@
-/*	$OpenBSD: bounce.c,v 1.85 2021/06/14 17:58:15 eric Exp $	*/
+/*	$OpenBSD: bounce.c,v 1.86 2021/07/28 19:39:50 benno Exp $	*/
 
 /*
  * Copyright (c) 2009 Gilles Chehade <gilles@poolp.org>
@@ -236,7 +236,7 @@ bounce_timeout(int fd, short ev, void *arg)
 }
 
 static void
-bounce_drain()
+bounce_drain(void)
 {
 	struct bounce_message	*msg;
 	struct timeval		 tv;

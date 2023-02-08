@@ -1,4 +1,4 @@
-/*	$OpenBSD: carp.c,v 1.16 2017/08/31 16:19:22 otto Exp $	*/
+/*	$OpenBSD: carp.c,v 1.17 2019/01/22 09:25:29 krw Exp $	*/
 
 /*
  * Copyright (c) 2005 Håkan Olsson.  All rights reserved.
@@ -181,7 +181,7 @@ carp_update_state(enum RUNSTATE current_state)
 }
 
 void
-carp_check_state()
+carp_check_state(void)
 {
 	carp_update_state(carp_get_state(cfgstate.carp_ifname));
 }

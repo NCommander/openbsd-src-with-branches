@@ -1,4 +1,4 @@
-/*	$OpenBSD: mda.c,v 1.142 2021/05/26 18:08:55 eric Exp $	*/
+/*	$OpenBSD: mda.c,v 1.143 2021/06/14 17:58:15 eric Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -370,12 +370,12 @@ mda_imsg(struct mproc *p, struct imsg *imsg)
 }
 
 void
-mda_postfork()
+mda_postfork(void)
 {
 }
 
 void
-mda_postprivdrop()
+mda_postprivdrop(void)
 {
 	tree_init(&sessions);
 	tree_init(&users);
