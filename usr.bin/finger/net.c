@@ -1,4 +1,4 @@
-/*	$OpenBSD: net.c,v 1.13 2015/01/16 06:40:07 deraadt Exp $	*/
+/*	$OpenBSD: net.c,v 1.14 2019/06/28 13:35:01 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.
@@ -45,8 +45,7 @@
 #include "extern.h"
 
 void
-netfinger(name)
-	char *name;
+netfinger(char *name)
 {
 	FILE *fp;
 	int c, lastc;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: cmd3.c,v 1.27 2015/10/16 17:56:07 mmcc Exp $	*/
+/*	$OpenBSD: cmd3.c,v 1.28 2019/06/28 13:35:01 deraadt Exp $	*/
 /*	$NetBSD: cmd3.c,v 1.8 1997/07/09 05:29:49 mikel Exp $	*/
 
 /*
@@ -186,8 +186,7 @@ respond(void *v)
  * message header and send them off to mail1()
  */
 int
-_respond(msgvec)
-	int *msgvec;
+_respond(int *msgvec)
 {
 	struct message *mp;
 	char *cp, *rcv, *replyto;
