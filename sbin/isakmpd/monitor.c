@@ -1,4 +1,4 @@
-/* $OpenBSD: monitor.c,v 1.81 2020/01/24 02:14:08 yasuoka Exp $	 */
+/* $OpenBSD: monitor.c,v 1.82 2021/10/24 21:24:21 deraadt Exp $	 */
 
 /*
  * Copyright (c) 2003 Håkan Olsson.  All rights reserved.
@@ -820,7 +820,7 @@ m_priv_check_bind(const struct sockaddr *sa, socklen_t salen)
 }
 
 static void
-m_priv_req_readdir()
+m_priv_req_readdir(void)
 {
 	size_t len;
 	char path[PATH_MAX];
