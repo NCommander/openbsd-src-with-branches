@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolver.c,v 1.156 2022/11/29 11:56:32 florian Exp $	*/
+/*	$OpenBSD: resolver.c,v 1.157 2023/02/07 17:44:02 florian Exp $	*/
 
 
 /*
@@ -2221,7 +2221,7 @@ query_imsg2str(struct query_imsg *query_imsg)
 }
 
 char *
-gen_resolv_conf()
+gen_resolv_conf(void)
 {
 	struct uw_forwarder	*uw_forwarder;
 	char			*resolv_conf = NULL, *tmp = NULL;
