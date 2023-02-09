@@ -1,4 +1,4 @@
-/*	$OpenBSD: session.h,v 1.157 2022/07/28 13:11:51 deraadt Exp $ */
+/*	$OpenBSD: session.h,v 1.158 2022/08/29 14:57:27 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -348,7 +348,7 @@ struct peer	*getpeerbyip(struct bgpd_config *, struct sockaddr *);
 struct peer	*getpeerbyid(struct bgpd_config *, uint32_t);
 int		 peer_matched(struct peer *, struct ctl_neighbor *);
 int		 imsg_ctl_parent(int, uint32_t, pid_t, void *, uint16_t);
-int		 imsg_ctl_rde(int, pid_t, void *, uint16_t);
+int		 imsg_ctl_rde(int, uint32_t, pid_t, void *, uint16_t);
 void		 session_stop(struct peer *, uint8_t);
 
 /* timer.c */
