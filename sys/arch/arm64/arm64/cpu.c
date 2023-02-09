@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.82 2023/01/30 20:05:31 kettenis Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.83 2023/02/09 21:02:24 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
@@ -105,8 +105,8 @@
 #define CPU_PART_AVALANCHE	0x033
 #define CPU_PART_BLIZZARD_PRO	0x034
 #define CPU_PART_AVALANCHE_PRO	0x035
-#define CPU_PART_BLIZZARD_MAX	0x036
-#define CPU_PART_AVALANCHE_MAX	0x037
+#define CPU_PART_BLIZZARD_MAX	0x038
+#define CPU_PART_AVALANCHE_MAX	0x039
 
 #define CPU_IMPL(midr)  (((midr) >> 24) & 0xff)
 #define CPU_PART(midr)  (((midr) >> 4) & 0xfff)
