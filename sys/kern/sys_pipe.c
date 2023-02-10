@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_pipe.c,v 1.142 2022/08/14 01:58:28 jsg Exp $	*/
+/*	$OpenBSD: sys_pipe.c,v 1.143 2022/12/05 23:18:37 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 John S. Dyson
@@ -370,7 +370,7 @@ pipeselwakeup(struct pipe *cpipe)
 {
 	rw_assert_wrlock(cpipe->pipe_lock);
 
-	KNOTE(&cpipe->pipe_klist, 0);
+	knote_locked(&cpipe->pipe_klist, 0);
 
 	if (cpipe->pipe_state & PIPE_ASYNC)
 		pgsigio(&cpipe->pipe_sigio, SIGIO, 0);

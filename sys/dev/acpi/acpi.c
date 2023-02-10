@@ -1,4 +1,4 @@
-/* $OpenBSD: acpi.c,v 1.417 2022/09/12 17:42:31 kettenis Exp $ */
+/* $OpenBSD: acpi.c,v 1.418 2022/09/13 17:14:54 kettenis Exp $ */
 /*
  * Copyright (c) 2005 Thorsten Lockert <tholo@sigmasoft.com>
  * Copyright (c) 2005 Jordan Hargrave <jordan@openbsd.org>
@@ -3483,7 +3483,7 @@ acpi_record_event(struct acpi_softc *sc, u_int type)
 		return (1);
 
 	acpi_evindex++;
-	KNOTE(&sc->sc_note, APM_EVENT_COMPOSE(type, acpi_evindex));
+	knote_locked(&sc->sc_note, APM_EVENT_COMPOSE(type, acpi_evindex));
 	return (0);
 }
 

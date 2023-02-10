@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_generic.c,v 1.150 2022/08/16 13:32:16 visa Exp $	*/
+/*	$OpenBSD: sys_generic.c,v 1.151 2022/12/27 20:13:03 patrick Exp $	*/
 /*	$NetBSD: sys_generic.c,v 1.24 1996/03/29 00:25:32 cgd Exp $	*/
 
 /*
@@ -832,7 +832,7 @@ void
 selwakeup(struct selinfo *sip)
 {
 	KERNEL_LOCK();
-	KNOTE(&sip->si_note, NOTE_SUBMIT);
+	knote_locked(&sip->si_note, NOTE_SUBMIT);
 	KERNEL_UNLOCK();
 }
 

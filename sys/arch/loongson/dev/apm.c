@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.40 2022/04/06 18:59:26 naddy Exp $	*/
+/*	$OpenBSD: apm.c,v 1.41 2022/11/19 16:23:48 cheloha Exp $	*/
 
 /*-
  * Copyright (c) 2001 Alexander Guy.  All rights reserved.
@@ -363,7 +363,7 @@ apm_record_event(u_int event, const char *src, const char *msg)
 		return (1);
 
 	apm_evindex++;
-	KNOTE(&sc->sc_note, APM_EVENT_COMPOSE(event, apm_evindex));
+	knote_locked(&sc->sc_note, APM_EVENT_COMPOSE(event, apm_evindex));
 
 	return (0);
 }

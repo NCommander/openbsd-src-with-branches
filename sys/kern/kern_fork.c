@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_fork.c,v 1.244 2022/11/11 18:09:58 cheloha Exp $	*/
+/*	$OpenBSD: kern_fork.c,v 1.245 2023/01/07 05:24:58 guenther Exp $	*/
 /*	$NetBSD: kern_fork.c,v 1.29 1996/02/09 18:59:34 christos Exp $	*/
 
 /*
@@ -465,7 +465,7 @@ fork1(struct proc *curp, int flags, void (*func)(void *), void *arg,
 	/*
 	 * Notify any interested parties about the new process.
 	 */
-	KNOTE(&curpr->ps_klist, NOTE_FORK | pr->ps_pid);
+	knote_locked(&curpr->ps_klist, NOTE_FORK | pr->ps_pid);
 
 	/*
 	 * Update stats now that we know the fork was successful.
