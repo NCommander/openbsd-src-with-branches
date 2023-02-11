@@ -1,4 +1,4 @@
-/*	$OpenBSD: cerror.S,v 1.9 2016/08/06 19:16:09 guenther Exp $	*/
+/*	$OpenBSD: cerror.S,v 1.10 2016/10/04 03:15:51 guenther Exp $	*/
 /*	$NetBSD: cerror.S,v 1.5 2003/08/07 16:42:04 agc Exp $	*/
 
 /*-
@@ -41,6 +41,6 @@ _ENTRY(CERROR)
 	mrc	p15, 0, r1, c13, c0, 3
 	str	r0, [r1, #TCB_OFFSET_ERRNO]
 	mvn	r0, #0x00000000
-	mvn	r1, #0x00000000
+	mvn	r1, #0x00000000	/* for lseek */
 	mov	pc, lr
 END(CERROR)
