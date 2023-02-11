@@ -1,4 +1,4 @@
-/*	$OpenBSD: conf.c,v 1.3 2014/08/21 14:24:08 mpi Exp $	*/
+/*	$OpenBSD: conf.c,v 1.4 2020/12/09 18:10:19 krw Exp $	*/
 /*	$NetBSD: conf.c,v 1.3 2013/01/16 15:46:20 tsutsui Exp $	*/
 
 /*
@@ -97,7 +97,8 @@ int	n_netif_drivers = sizeof(netif_drivers) / sizeof(netif_drivers[0]);
 	__CONCAT(fs,_read), \
 	__CONCAT(fs,_write), \
 	__CONCAT(fs,_seek), \
-	__CONCAT(fs,_stat) }
+	__CONCAT(fs,_stat), \
+	__CONCAT(fs,_readdir) }
 #ifdef SUPPORT_DISK
 struct fs_ops file_system_disk[] = {
 	FS_OPS(ufs),
