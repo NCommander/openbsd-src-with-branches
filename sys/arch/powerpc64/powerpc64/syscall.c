@@ -1,4 +1,4 @@
-/*	$OpenBSD: syscall.c,v 1.9 2022/11/02 07:20:08 guenther Exp $	*/
+/*	$OpenBSD: syscall.c,v 1.10 2023/01/16 05:32:05 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2015 Dale Rahn <drahn@dalerahn.com>
@@ -40,7 +40,6 @@ syscall(struct trapframe *frame)
 
 	switch (code) {
 	case SYS_syscall:
-	case SYS___syscall:
 		indirect = code;
 		code = *ap++;
 		nap--;

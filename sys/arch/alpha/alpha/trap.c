@@ -1,4 +1,4 @@
-/* $OpenBSD: trap.c,v 1.105 2023/01/16 05:32:04 deraadt Exp $ */
+/* $OpenBSD: trap.c,v 1.106 2023/01/31 15:18:51 deraadt Exp $ */
 /* $NetBSD: trap.c,v 1.52 2000/05/24 16:48:33 thorpej Exp $ */
 
 /*-
@@ -518,11 +518,6 @@ syscall(code, framep)
 
 	switch(code) {
 	case SYS_syscall:
-	case SYS___syscall:
-		/*
-		 * syscall() and __syscall() are handled the same on
-		 * the alpha, as everything is 64-bit aligned, anyway.
-		 */
 		indirect = code;
 		code = framep->tf_regs[FRAME_A0];
 		hidden = 1;

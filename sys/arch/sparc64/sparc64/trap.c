@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.113 2023/01/16 05:32:05 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.114 2023/01/24 07:26:34 miod Exp $	*/
 /*	$NetBSD: trap.c,v 1.73 2001/08/09 01:03:01 eeh Exp $ */
 
 /*
@@ -1133,19 +1133,12 @@ syscall(struct trapframe *tf, register_t code, register_t pc)
 	 * The first six system call arguments are in the six %o registers.
 	 * Any arguments beyond that are in the `argument extension' area
 	 * of the user's stack frame (see <machine/frame.h>).
-	 *
-	 * Check for ``special'' codes that alter this, namely syscall and
-	 * __syscall.  These both pass a syscall number in the first argument
-	 * register, so the other arguments are just shifted down, possibly
-	 * pushing one off the end into the extension area.  This happens
-	 * with mmap() and mquery() used via __syscall().
 	 */
 	ap = &tf->tf_out[0];
 	nap = 6;
 
 	switch (code) {
 	case SYS_syscall:
-	case SYS___syscall:
 		indirect = code;
 		code = *ap++;
 		nap--;

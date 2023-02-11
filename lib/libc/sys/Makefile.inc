@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.inc,v 1.168 2023/01/07 05:24:58 guenther Exp $
+#	$OpenBSD: Makefile.inc,v 1.169 2023/01/08 04:54:50 guenther Exp $
 #	$NetBSD: Makefile.inc,v 1.35 1995/10/16 23:49:07 jtc Exp $
 #	@(#)Makefile.inc	8.1 (Berkeley) 6/17/93
 
@@ -41,7 +41,7 @@ SRCS+=	${CANCEL:%=w_%.c}
 
 # modules with default implementations on all architectures, unless overridden
 # below:
-ASM=	__semctl.o __syscall.o __thrsigdivert.o \
+ASM=	__semctl.o __thrsigdivert.o \
 	access.o acct.o adjfreq.o adjtime.o \
 	bind.o chdir.o chflags.o chflagsat.o chmod.o chown.o chroot.o \
 	clock_getres.o clock_settime.o \
