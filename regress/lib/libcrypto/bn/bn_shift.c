@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_shift.c,v 1.6 2023/01/05 04:44:20 jsing Exp $ */
+/*	$OpenBSD: bn_shift.c,v 1.7 2023/01/07 14:30:57 jsing Exp $ */
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
  *
@@ -339,6 +339,10 @@ test_bn_rshift_to_zero(void)
 	}
 	if (!BN_is_zero(bn1)) {
 		fprintf(stderr, "FAIL: BN is not zero\n");
+		goto failure;
+	}
+	if (BN_is_negative(bn1)) {
+		fprintf(stderr, "FAIL: BN is negative zero\n");
 		goto failure;
 	}
 
