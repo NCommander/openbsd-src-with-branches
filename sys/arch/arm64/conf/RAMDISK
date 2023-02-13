@@ -1,4 +1,4 @@
-# $OpenBSD: RAMDISK,v 1.186 2022/12/24 10:51:27 patrick Exp $
+# $OpenBSD: RAMDISK,v 1.187 2023/01/16 20:12:38 patrick Exp $
 
 machine		arm64
 maxusers	4
@@ -68,6 +68,7 @@ ahci*		at fdt?
 dwge*		at fdt?
 dwpcie*		at fdt?
 pci*		at dwpcie?
+#dwqe*		at fdt?
 ohci*		at fdt?
 ehci*		at fdt?
 pciecam*	at fdt?
