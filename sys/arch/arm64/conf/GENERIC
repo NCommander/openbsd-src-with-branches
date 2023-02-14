@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.256 2023/02/04 23:11:59 mglocker Exp $
+# $OpenBSD: GENERIC,v 1.257 2023/02/13 19:18:53 patrick Exp $
 #
 # GENERIC machine description file
 #
@@ -109,6 +109,7 @@ psci*		at fdt? early 1
 pwmfan*		at fdt?
 pwmleds*	at fdt?
 pwmreg*		at fdt? early 1
+scmi*		at fdt?
 syscon*		at fdt? early 1
 
 virtio*		at fdt?
