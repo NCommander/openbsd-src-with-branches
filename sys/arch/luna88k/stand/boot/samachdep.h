@@ -1,4 +1,4 @@
-/*	$OpenBSD: samachdep.h,v 1.5 2022/10/14 20:53:19 aoyama Exp $	*/
+/*	$OpenBSD: samachdep.h,v 1.6 2023/01/10 17:10:57 miod Exp $	*/
 /*	$NetBSD: samachdep.h,v 1.10 2013/03/05 15:34:53 tsutsui Exp $	*/
 
 /*
@@ -100,6 +100,9 @@ extern uint16_t dipswitch;
 extern volatile uint32_t tick;
 int setjmp(label_t *);
 void delay(int);
+
+/* logo.c */
+void draw_logo(void);
 
 /* sc.c */
 struct scsi_softc;
