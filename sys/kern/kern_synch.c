@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_synch.c,v 1.189 2022/06/28 09:32:27 bluhm Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.190 2022/08/14 01:58:27 jsg Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*
@@ -124,7 +124,7 @@ tsleep(const volatile void *ident, int priority, const char *wmesg, int timo)
 	KASSERT(ident != &nowake || ISSET(priority, PCATCH) || timo != 0);
 
 #ifdef MULTIPROCESSOR
-	KASSERT(timo || _kernel_lock_held());
+	KASSERT(ident == &nowake || timo || _kernel_lock_held());
 #endif
 
 #ifdef DDB
