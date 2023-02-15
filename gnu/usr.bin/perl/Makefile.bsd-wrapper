@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.bsd-wrapper,v 1.111 2020/07/01 00:08:06 afresh1 Exp $
+# $OpenBSD: Makefile.bsd-wrapper,v 1.112 2022/04/12 02:54:51 afresh1 Exp $
 #
 # Build wrapper for Perl
 #
@@ -23,6 +23,9 @@ depend:
 
 test: all
 	${MAKE} test
+
+test_harness: all
+	${MAKE} test_harness
 
 clean:
 	-@test ! -e Makefile || ${MAKE} realclean
