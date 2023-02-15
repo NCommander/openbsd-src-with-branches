@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhcpleased.c,v 1.27 2022/11/27 15:19:38 kn Exp $	*/
+/*	$OpenBSD: dhcpleased.c,v 1.28 2022/12/11 10:47:37 otto Exp $	*/
 
 /*
  * Copyright (c) 2017, 2021 Florian Obser <florian@openbsd.org>
@@ -255,7 +255,7 @@ main(int argc, char *argv[])
 	if ((routesock = socket(AF_ROUTE, SOCK_RAW | SOCK_CLOEXEC |
 	    SOCK_NONBLOCK, AF_INET)) == -1)
 		fatal("route socket");
-	shutdown(SHUT_RD, routesock);
+	shutdown(routesock, SHUT_RD);
 
 	event_init();
 
