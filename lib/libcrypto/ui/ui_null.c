@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: ui_null.c,v 1.1 2022/12/17 21:59:39 tb Exp $ */
 
 /*
  * Written by Theo Buehler. Public domain.
@@ -15,4 +15,4 @@ UI_null(void)
 {
 	return &ui_null;
 }
-LCRYPTO_ALIAS(UI_null)
+LCRYPTO_ALIAS(UI_null);

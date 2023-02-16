@@ -1,4 +1,4 @@
-/* $OpenBSD: p12_npas.c,v 1.16 2022/11/12 13:03:28 beck Exp $ */
+/* $OpenBSD: p12_npas.c,v 1.17 2022/11/26 16:08:53 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -103,7 +103,7 @@ PKCS12_newpass(PKCS12 *p12, const char *oldpass, const char *newpass)
 
 	return 1;
 }
-LCRYPTO_ALIAS(PKCS12_newpass)
+LCRYPTO_ALIAS(PKCS12_newpass);
 
 /* Parse the outer PKCS#12 structure */
 
