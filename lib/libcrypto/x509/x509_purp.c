@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_purp.c,v 1.19 2023/01/20 22:00:47 job Exp $ */
+/* $OpenBSD: x509_purp.c,v 1.20 2023/02/16 08:38:17 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -425,7 +425,6 @@ setup_dp(X509 *x, DIST_POINT *dp)
 		iname = X509_get_issuer_name(x);
 
 	DIST_POINT_set_dpname(dp->distpoint, iname);
-
 }
 
 static void
