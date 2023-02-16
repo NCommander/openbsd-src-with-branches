@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.257 2023/02/13 19:18:53 patrick Exp $
+# $OpenBSD: GENERIC,v 1.258 2023/02/14 19:06:18 kettenis Exp $
 #
 # GENERIC machine description file
 #
@@ -82,7 +82,7 @@ ahci*		at fdt?
 dwge*		at fdt?
 dwpcie*		at fdt?
 pci*		at dwpcie?
-#dwqe*		at fdt?
+dwqe*		at fdt?
 ohci*		at fdt?
 ehci*		at fdt?
 pciecam*	at fdt?
