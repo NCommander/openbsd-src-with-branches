@@ -1,4 +1,4 @@
-/*	$OpenBSD: popen.c,v 1.29 2020/01/15 22:06:59 jan Exp $	*/
+/*	$OpenBSD: popen.c,v 1.30 2020/12/27 15:11:04 florian Exp $	*/
 /*	$NetBSD: popen.c,v 1.5 1995/04/11 02:45:00 cgd Exp $	*/
 
 /*
@@ -61,7 +61,6 @@
 FILE *
 ftpd_ls(const char *path, pid_t *pidptr)
 {
-	char *cp;
 	FILE *iop;
 	int argc = 0, pdes[2];
 	pid_t pid;
