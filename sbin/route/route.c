@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.261 2022/12/22 19:53:22 kn Exp $	*/
+/*	$OpenBSD: route.c,v 1.262 2023/02/14 11:46:08 claudio Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -581,7 +581,7 @@ newroute(int argc, char **argv)
 	if (*cmd != 'g')
 		shutdown(s, SHUT_RD); /* Don't want to read back our messages */
 	while (--argc > 0) {
-		if (**(++argv)== '-') {
+		if (**(++argv) == '-') {
 			switch (key = keyword(1 + *argv)) {
 			case K_LINK:
 				af = AF_LINK;
