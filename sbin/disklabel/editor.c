@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.401 2023/02/02 14:33:38 krw Exp $	*/
+/*	$OpenBSD: editor.c,v 1.402 2023/02/07 14:30:48 krw Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <millert@openbsd.org>
@@ -625,7 +625,7 @@ again:
 
 		/* Find largest chunk of free space. */
 		chunk = free_chunks(lp, -1);
-		chunksize = 0;
+		chunkstart = chunksize = 0;
 		for (; chunk->start != 0 || chunk->stop != 0; chunk++) {
 			start = chunk->start;
 			stop = chunk->stop;
