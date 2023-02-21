@@ -1,4 +1,4 @@
-/*	$OpenBSD: iscsictl.c,v 1.11 2016/08/16 18:41:57 tedu Exp $ */
+/*	$OpenBSD: iscsictl.c,v 1.12 2021/04/16 14:39:33 claudio Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -343,7 +343,7 @@ show_config(struct ctrlmsghdr *cmh, struct pdu *pdu)
 		if (ic == NULL)
 			return;
 
-		printf("Initiator: ISID base %x qalifier %hx\n",
+		printf("Initiator: ISID base %x qualifier %hx\n",
 		    ic->isid_base, ic->isid_qual);
 		break;
 	case CTRL_SESSION_CONFIG:
