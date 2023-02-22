@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.66 2022/10/31 14:02:11 dv Exp $	*/
+/*	$OpenBSD: config.c,v 1.67 2023/01/28 14:40:53 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -547,7 +547,7 @@ int
 config_getvm(struct privsep *ps, struct imsg *imsg)
 {
 	struct vmop_create_params	 vmc;
-	struct vmd_vm			*vm;
+	struct vmd_vm			*vm = NULL;
 
 	IMSG_SIZE_CHECK(imsg, &vmc);
 	memcpy(&vmc, imsg->data, sizeof(vmc));
