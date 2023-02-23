@@ -1,4 +1,4 @@
-/*	$OpenBSD: ktrace.h,v 1.44 2023/01/16 05:32:05 deraadt Exp $	*/
+/*	$OpenBSD: ktrace.h,v 1.45 2023/02/17 18:02:07 deraadt Exp $	*/
 /*	$NetBSD: ktrace.h,v 1.12 1996/02/04 02:12:29 christos Exp $	*/
 
 /*
@@ -34,6 +34,8 @@
 
 #include <sys/uio.h>
 #include <sys/syslimits.h>
+#include <sys/signal.h>
+#include <sys/time.h>
 
 /*
  * operations to ktrace system call  (KTROP(op))
