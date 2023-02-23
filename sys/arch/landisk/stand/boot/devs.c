@@ -1,4 +1,4 @@
-/*	$OpenBSD: devs.c,v 1.11 2019/04/10 04:17:35 deraadt Exp $	*/
+/*	$OpenBSD: devs.c,v 1.12 2020/12/09 18:10:19 krw Exp $	*/
 
 /*
  * Copyright (c) 2006 Michael Shalayeff
@@ -49,25 +49,6 @@ devboot(dev_t bootdev, char *p)
 	p[0] = 'c';
 	p[1] = 'f';
 	p[2] = '\0';
-}
-
-char *
-ttyname(int fd)
-{
-	return "scif";
-}
-
-dev_t
-ttydev(char *name)
-{
-	return NODEV;
-}
-
-int
-cnspeed(dev_t dev, int sp)
-{
-	scif_init(sp);
-	return sp;
 }
 
 void

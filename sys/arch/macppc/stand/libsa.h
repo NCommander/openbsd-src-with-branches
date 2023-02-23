@@ -1,4 +1,4 @@
-/*      $OpenBSD: libsa.h,v 1.2 2019/09/02 23:40:29 kettenis Exp $      */
+/*      $OpenBSD: libsa.h,v 1.3 2022/10/21 21:26:49 gkoehler Exp $      */
 
 /*
  * Copyright (c) 2006 Mark Kettenis
@@ -17,8 +17,6 @@
  */
 
 #include <lib/libsa/stand.h>
-
-#define DEFAULT_KERNEL_ADDRESS  0
 
 void freeall(void);
 

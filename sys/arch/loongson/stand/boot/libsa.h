@@ -1,4 +1,4 @@
-/*	$OpenBSD: libsa.h,v 1.6 2019/04/10 04:17:35 deraadt Exp $	*/
+/*	$OpenBSD: libsa.h,v 1.7 2020/12/09 18:10:19 krw Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -17,8 +17,6 @@
  */
 
 #include <lib/libsa/stand.h>
-
-#define	DEFAULT_KERNEL_ADDRESS	0
 
 /* where the initrd is loaded */
 #define	INITRD_BASE	PHYS_TO_CKSEG0(0x04000000)

@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_i386.c,v 1.2 2019/05/11 19:14:41 mlarkin Exp $	*/
+/*	$OpenBSD: exec_i386.c,v 1.3 2021/10/24 17:49:19 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1997-1998 Michael Shalayeff
@@ -83,7 +83,7 @@ run_loadfile(uint64_t *marks, int howto)
 	if ((av = alloc(ac)) == NULL)
 		panic("alloc for bootarg");
 	efi_makebootargs();
-	delta = DEFAULT_KERNEL_ADDRESS - efi_loadaddr;
+	delta = -efi_loadaddr;
 	if (sa_cleanup != NULL)
 		(*sa_cleanup)();
 

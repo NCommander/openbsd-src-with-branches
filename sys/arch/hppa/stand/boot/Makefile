@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.28 2019/04/20 22:59:03 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.29 2019/11/28 00:17:11 bluhm Exp $
 
 MAN=	boot.8
 MANSUBDIR=hppa
@@ -58,7 +58,8 @@ NOPROG=
 
 .include <bsd.prog.mk>
 
-CPPFLAGS+=${DEBUGFLAGS} -DRELOC=${LOADADDR} -DHEAP_LIMIT=${HEAP_LIMIT}
+CPPFLAGS+=${DEBUGFLAGS} -DRELOC=${LOADADDR} -DHEAP_LIMIT=${HEAP_LIMIT} \
+	  -DBOOT_STTY
 CFLAGS+=$(SACFLAGS)
 CFLAGS+=-fno-pie
 AFLAGS+=-fno-pie
