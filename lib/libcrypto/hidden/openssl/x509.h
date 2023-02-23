@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: x509.h,v 1.1 2022/11/14 17:48:49 beck Exp $ */
 /*
  * Copyright (c) 2022 Bob Beck <beck@openbsd.org>
  *
@@ -105,6 +105,7 @@ LCRYPTO_USED(X509_TRUST_set);
 LCRYPTO_USED(X509_NAME_oneline);
 LCRYPTO_USED(X509_get0_extensions);
 LCRYPTO_USED(X509_get0_tbs_sigalg);
+LCRYPTO_USED(X509_get0_uids);
 LCRYPTO_USED(X509_set_version);
 LCRYPTO_USED(X509_get_version);
 LCRYPTO_USED(X509_set_serialNumber);
