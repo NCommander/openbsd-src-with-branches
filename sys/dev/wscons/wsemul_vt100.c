@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemul_vt100.c,v 1.38 2020/05/25 06:45:26 jsg Exp $ */
+/* $OpenBSD: wsemul_vt100.c,v 1.39 2020/05/25 09:55:49 jsg Exp $ */
 /* $NetBSD: wsemul_vt100.c,v 1.13 2000/04/28 21:56:16 mycroft Exp $ */
 
 /*
@@ -189,7 +189,7 @@ wsemul_vt100_cnattach(const struct wsscreen_descr *type, void *cookie, int ccol,
 	edp->tabs = NULL;
 	edp->dblwid = NULL;
 	edp->dw = 0;
-	edp->dcsarg = 0;
+	edp->dcsarg = NULL;
 	edp->isolatin1tab = edp->decgraphtab = edp->dectechtab = NULL;
 	edp->nrctab = NULL;
 	wsemul_vt100_reset(edp);
@@ -574,12 +574,15 @@ wsemul_vt100_output_esc(struct wsemul_vt100_emuldata *edp,
 		edp->sschartab = 3;
 		break;
 	case 'M': /* RI */
-		if (ROWS_ABOVE > 0) {
-			edp->crow--;
+		i = ROWS_ABOVE;
+		if (i > 0) {
+			if (edp->crow > 0)
+				edp->crow--;
 			CHECK_DW;
-			break;
+		} else if (i == 0) {
+			/* Top of scroll region. */
+			rc = wsemul_vt100_scrolldown(edp, 1);
 		}
-		rc = wsemul_vt100_scrolldown(edp, 1);
 		break;
 	case 'P': /* DCS */
 		edp->nargs = 0;
@@ -807,7 +810,7 @@ int
 wsemul_vt100_output_string(struct wsemul_vt100_emuldata *edp,
     struct wsemul_inputstate *instate)
 {
-	if (edp->dcstype && edp->dcspos < DCS_MAXLEN) {
+	if (edp->dcsarg && edp->dcstype && edp->dcspos < DCS_MAXLEN) {
 		if (instate->inchar & ~0xff) {
 #ifdef VT100_PRINTUNKNOWN
 			printf("unknown char %x in DCS\n", instate->inchar);
