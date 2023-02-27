@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.208 2021/03/11 19:53:40 florian Exp $	*/
+/*	$OpenBSD: if.h,v 1.209 2022/06/27 15:11:23 jan Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -544,6 +544,7 @@ void	if_getdata(struct ifnet *, struct if_data *);
 void	ifinit(void);
 int	ifioctl(struct socket *, u_long, caddr_t, struct proc *);
 int	ifpromisc(struct ifnet *, int);
+void	ifsettso(struct ifnet *, int);
 struct	ifg_group *if_creategroup(const char *);
 int	if_addgroup(struct ifnet *, const char *);
 int	if_delgroup(struct ifnet *, const char *);
