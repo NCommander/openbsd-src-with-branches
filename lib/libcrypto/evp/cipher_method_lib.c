@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Written by Richard Levitte (levitte@openssl.org) for the OpenSSL project
  * 2015.
