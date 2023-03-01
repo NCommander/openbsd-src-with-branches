@@ -1,4 +1,4 @@
-/* $OpenBSD: evp_enc.c,v 1.48 2022/11/26 16:08:52 tb Exp $ */
+/* $OpenBSD: evp_enc.c,v 1.49 2022/12/26 07:18:52 jmc Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -601,6 +601,7 @@ int
 EVP_CIPHER_CTX_cleanup(EVP_CIPHER_CTX *c)
 {
 	if (c->cipher != NULL) {
+		/* XXX - Avoid leaks, so ignore return value of cleanup()... */
 		if (c->cipher->cleanup != NULL)
 			c->cipher->cleanup(c);
 		if (c->cipher_data != NULL)
