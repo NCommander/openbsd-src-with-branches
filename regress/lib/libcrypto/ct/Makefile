@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2022/01/06 04:42:00 jsing Exp $
+# $OpenBSD: Makefile,v 1.3 2022/01/14 09:33:46 tb Exp $
 
 PROG=		cttest
 LDADD=		-lcrypto
@@ -9,11 +9,7 @@ CFLAGS+=	-Wundef -Werror
 CFLAGS+=	-DLIBRESSL_CRYPTO_INTERNAL -DLIBRESSL_INTERNAL
 CFLAGS+=	-I$(BSDSRCDIR)/lib/libcrypto
 
-REGRESS_TARGETS= \
-	regress-cttest
-
-regress-cttest: ${PROG}
-	./cttest \
-	    ${.CURDIR}/../../libcrypto/ct/
+run-regress-cttest: cttest
+	./cttest ${.CURDIR}/../../libcrypto/ct/
 
 .include <bsd.regress.mk>
