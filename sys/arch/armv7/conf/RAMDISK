@@ -186,6 +186,8 @@ mvpcie*		at fdt?
 pci*		at mvpcie?
 mvpxa*		at fdt?
 sdmmc*		at mvpxa?
+mvodog*		at fdt?
+mvortc*		at fdt?
 
 # Rockchip SoCs
 rkclock*	at fdt? early 1
