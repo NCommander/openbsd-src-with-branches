@@ -1,4 +1,4 @@
-/* $OpenBSD: canohost.c,v 1.74 2019/06/28 13:35:04 deraadt Exp $ */
+/* $OpenBSD: canohost.c,v 1.75 2020/10/18 11:32:01 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -43,6 +43,9 @@ get_socket_address(int sock, int remote, int flags)
 	socklen_t addrlen;
 	char ntop[NI_MAXHOST];
 	int r;
+
+	if (sock < 0)
+		return NULL;
 
 	/* Get IP address of client. */
 	addrlen = sizeof(addr);
