@@ -1,4 +1,4 @@
-/* $OpenBSD: misc.h,v 1.100 2022/06/03 04:30:47 djm Exp $ */
+/* $OpenBSD: misc.h,v 1.101 2023/01/06 02:37:04 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -237,5 +237,8 @@ void	notify_complete(struct notifier_ctx *, const char *, ...)
 
 typedef void (*sshsig_t)(int);
 sshsig_t ssh_signal(int, sshsig_t);
+
+/* On OpenBSD time_t is int64_t which is long long. */
+#define SSH_TIME_T_MAX LLONG_MAX
 
 #endif /* _MISC_H */
