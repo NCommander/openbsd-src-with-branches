@@ -1,4 +1,4 @@
-/* $OpenBSD: req.c,v 1.23 2022/02/03 17:44:04 tb Exp $ */
+/* $OpenBSD: req.c,v 1.24 2022/11/11 17:07:39 joshua Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1737,7 +1737,7 @@ do_sign_init(BIO * err, EVP_MD_CTX * ctx, EVP_PKEY * pkey,
 {
 	EVP_PKEY_CTX *pkctx = NULL;
 	int i;
-	EVP_MD_CTX_init(ctx);
+
 	if (!EVP_DigestSignInit(ctx, &pkctx, md, NULL, pkey))
 		return 0;
 	for (i = 0; i < sk_OPENSSL_STRING_num(sigopts); i++) {
