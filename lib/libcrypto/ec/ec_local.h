@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_lcl.h,v 1.23 2022/11/24 16:29:09 tb Exp $ */
+/* $OpenBSD: ec_local.h,v 1.1 2022/11/26 16:08:52 tb Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -251,8 +251,10 @@ struct ec_group_st {
 	/* Enables optimized point arithmetics for special case. */
 	int a_is_minus3;
 
-	void *field_data1;
-	void *field_data2;
+	/* Montgomery context and values used by EC_GFp_mont_method. */
+	BN_MONT_CTX *mont_ctx;
+	BIGNUM *mont_one;
+
 	int (*field_mod_func)(BIGNUM *, const BIGNUM *, const BIGNUM *,
 	    BN_CTX *);
 } /* EC_GROUP */;
