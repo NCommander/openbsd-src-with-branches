@@ -1,4 +1,4 @@
-/*	$OpenBSD: types.h,v 1.50 2022/07/22 15:53:33 tobhe Exp $	*/
+/*	$OpenBSD: types.h,v 1.51 2022/09/19 20:54:02 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -131,7 +131,8 @@ enum imsg_type {
 	IMSG_PRIVKEY,
 	IMSG_PUBKEY,
 	IMSG_CTL_SHOW_CERTSTORE,
-	IMSG_CTL_SHOW_STATS
+	IMSG_CTL_SHOW_STATS,
+	IMSG_CTL_PROCFD,
 };
 
 enum privsep_procid {
