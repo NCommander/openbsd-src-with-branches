@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.34 2022/12/04 11:54:31 tobhe Exp $	*/
+/*	$OpenBSD: control.c,v 1.35 2023/03/04 22:22:50 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -76,7 +76,7 @@ control_run(struct privsep *ps, struct privsep_proc *p, void *arg)
 int
 control_init(struct privsep *ps, struct control_sock *cs)
 {
-	struct iked		*env = ps->ps_env;
+	struct iked		*env = iked_env;
 	struct sockaddr_un	 s_un;
 	int			 fd;
 	mode_t			 old_umask, mode;
