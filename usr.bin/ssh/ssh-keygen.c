@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-keygen.c,v 1.462 2023/02/10 04:56:30 djm Exp $ */
+/* $OpenBSD: ssh-keygen.c,v 1.463 2023/02/28 08:45:24 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1994 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -3030,6 +3030,7 @@ do_moduli_screen(const char *out_file, char **opts, size_t nopts)
 	    generator_wanted, checkpoint,
 	    start_lineno, lines_to_process) != 0)
 		fatal("modulus screening failed");
+	free(checkpoint);
 #else /* WITH_OPENSSL */
 	fatal("Moduli screening is not supported");
 #endif /* WITH_OPENSSL */
