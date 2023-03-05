@@ -1,4 +1,4 @@
-/* $OpenBSD: auth.c,v 1.158 2022/06/03 04:47:21 djm Exp $ */
+/* $OpenBSD: auth.c,v 1.159 2022/12/09 00:17:40 dtucker Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -62,7 +62,6 @@
 #include "authfile.h"
 #include "monitor_wrap.h"
 #include "ssherr.h"
-#include "compat.h"
 #include "channels.h"
 
 /* import */

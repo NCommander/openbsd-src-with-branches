@@ -1,4 +1,4 @@
-/* $OpenBSD: sshconnect.c,v 1.360 2022/11/03 21:59:20 djm Exp $ */
+/* $OpenBSD: sshconnect.c,v 1.361 2023/01/13 02:44:02 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -41,7 +41,6 @@
 #include "ssh.h"
 #include "sshbuf.h"
 #include "packet.h"
-#include "compat.h"
 #include "sshkey.h"
 #include "sshconnect.h"
 #include "hostfile.h"

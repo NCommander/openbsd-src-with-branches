@@ -1,4 +1,4 @@
-/* $OpenBSD: auth2.c,v 1.163 2021/12/26 23:34:41 djm Exp $ */
+/* $OpenBSD: auth2.c,v 1.164 2022/02/23 11:18:13 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -44,7 +44,6 @@
 #include "sshbuf.h"
 #include "misc.h"
 #include "servconf.h"
-#include "compat.h"
 #include "sshkey.h"
 #include "hostfile.h"
 #include "auth.h"

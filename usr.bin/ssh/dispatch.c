@@ -1,4 +1,4 @@
-/* $OpenBSD: dispatch.c,v 1.31 2017/05/31 07:00:13 markus Exp $ */
+/* $OpenBSD: dispatch.c,v 1.32 2019/01/19 21:33:13 djm Exp $ */
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
  *
@@ -32,7 +32,6 @@
 #include "log.h"
 #include "dispatch.h"
 #include "packet.h"
-#include "compat.h"
 #include "ssherr.h"
 
 int
