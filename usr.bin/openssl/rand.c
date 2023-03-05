@@ -1,4 +1,4 @@
-/* $OpenBSD: rand.c,v 1.14 2019/07/14 03:30:46 guenther Exp $ */
+/* $OpenBSD: rand.c,v 1.15 2022/11/11 17:07:39 joshua Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2001 The OpenSSL Project.  All rights reserved.
  *
@@ -62,7 +62,7 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 
-struct {
+static struct {
 	int base64;
 	int hex;
 	char *outfile;

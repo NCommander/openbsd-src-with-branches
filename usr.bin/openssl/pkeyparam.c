@@ -1,4 +1,4 @@
-/* $OpenBSD: pkeyparam.c,v 1.14 2022/01/14 10:17:30 tb Exp $ */
+/* $OpenBSD: pkeyparam.c,v 1.15 2022/11/11 17:07:39 joshua Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006
  */
@@ -65,7 +65,7 @@
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 
-struct {
+static struct {
 	int check;
 	char *infile;
 	int noout;

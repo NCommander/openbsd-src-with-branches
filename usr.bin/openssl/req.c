@@ -1,4 +1,4 @@
-/* $OpenBSD: req.c,v 1.24 2022/11/11 17:07:39 joshua Exp $ */
+/* $OpenBSD: req.c,v 1.25 2023/03/04 06:25:42 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -129,7 +129,7 @@ static int duplicated(LHASH_OF(OPENSSL_STRING) *addexts, char *kv);
 static CONF *req_conf = NULL;
 static CONF *addext_conf = NULL;
 
-struct {
+static struct {
 	LHASH_OF(OPENSSL_STRING) *addexts;
 	BIO *addext_bio;
 	int batch;

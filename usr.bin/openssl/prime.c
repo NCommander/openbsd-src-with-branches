@@ -1,4 +1,4 @@
-/* $OpenBSD: prime.c,v 1.14 2022/11/11 17:07:39 joshua Exp $ */
+/* $OpenBSD: prime.c,v 1.15 2022/12/26 19:32:30 jmc Exp $ */
 /* ====================================================================
  * Copyright (c) 2004 The OpenSSL Project.  All rights reserved.
  *
@@ -56,7 +56,7 @@
 #include <openssl/bn.h>
 #include <openssl/err.h>
 
-struct {
+static struct {
 	int bits;
 	int checks;
 	int generate;

@@ -1,4 +1,4 @@
-/* $OpenBSD: pkeyutl.c,v 1.16 2019/07/14 03:30:46 guenther Exp $ */
+/* $OpenBSD: pkeyutl.c,v 1.17 2022/11/11 17:07:39 joshua Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -68,7 +68,7 @@
 #define KEY_PUBKEY	2
 #define KEY_CERT	3
 
-struct {
+static struct {
 	int asn1parse;
 	EVP_PKEY_CTX *ctx;
 	int hexdump;
