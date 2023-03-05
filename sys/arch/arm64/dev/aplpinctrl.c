@@ -1,4 +1,4 @@
-/*	$OpenBSD: aplpinctrl.c,v 1.4 2022/04/06 18:59:26 naddy Exp $	*/
+/*	$OpenBSD: aplpinctrl.c,v 1.5 2022/12/06 16:07:14 kettenis Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -337,7 +337,7 @@ aplpinctrl_intr_establish(void *cookie, int *cells, int ipl,
 	ih->ih_arg = arg;
 	ih->ih_irq = pin;
 	ih->ih_type = type;
-	ih->ih_ipl = ipl;
+	ih->ih_ipl = ipl & IPL_IRQMASK;
 	ih->ih_name = name;
 	ih->ih_sc = sc;
 	if (name != NULL)

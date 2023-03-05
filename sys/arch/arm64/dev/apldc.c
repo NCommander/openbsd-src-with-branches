@@ -1,4 +1,4 @@
-/*	$OpenBSD: apldc.c,v 1.3 2022/09/15 14:45:49 tobhe Exp $	*/
+/*	$OpenBSD: apldc.c,v 1.4 2022/09/16 16:30:10 robert Exp $	*/
 /*
  * Copyright (c) 2022 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -212,7 +212,7 @@ apldc_intr_establish(void *cookie, int *cells, int ipl,
 	ih = malloc(sizeof(*ih), M_DEVBUF, M_WAITOK);
 	ih->ih_func = func;
 	ih->ih_arg = arg;
-	ih->ih_ipl = ipl;
+	ih->ih_ipl = ipl & IPL_IRQMASK;
 	ih->ih_irq = irq;
 	ih->ih_name = name;
 	ih->ih_level = level;
