@@ -1,4 +1,4 @@
-/* $OpenBSD: kex.h,v 1.116 2021/12/19 22:12:54 djm Exp $ */
+/* $OpenBSD: kex.h,v 1.117 2022/01/06 21:55:23 djm Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -175,6 +175,9 @@ int	 kex_names_valid(const char *);
 char	*kex_alg_list(char);
 char	*kex_names_cat(const char *, const char *);
 int	 kex_assemble_names(char **, const char *, const char *);
+void	 kex_proposal_populate_entries(struct ssh *, char *prop[PROPOSAL_MAX],
+    const char *, const char *, const char *, const char *, const char *);
+void	 kex_proposal_free_entries(char *prop[PROPOSAL_MAX]);
 
 int	 kex_exchange_identification(struct ssh *, int, const char *);
 

@@ -1,4 +1,4 @@
-/* $OpenBSD: compat.h,v 1.60 2023/02/17 03:06:18 dtucker Exp $ */
+/* $OpenBSD: compat.h,v 1.61 2023/02/17 04:22:50 dtucker Exp $ */
 
 /*
  * Copyright (c) 1999, 2000, 2001 Markus Friedl.  All rights reserved.
@@ -61,7 +61,5 @@
 struct ssh;
 
 void    compat_banner(struct ssh *, const char *);
-char	*compat_cipher_proposal(struct ssh *, char *);
-char	*compat_pkalg_proposal(struct ssh *, char *);
-char	*compat_kex_proposal(struct ssh *, char *);
+char	*compat_kex_proposal(struct ssh *, const char *);
 #endif
