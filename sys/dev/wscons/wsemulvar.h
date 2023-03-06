@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemulvar.h,v 1.17 2020/05/25 09:55:49 jsg Exp $ */
+/* $OpenBSD: wsemulvar.h,v 1.18 2020/09/13 10:05:46 fcambus Exp $ */
 /* $NetBSD: wsemulvar.h,v 1.6 1999/01/17 15:46:15 drochner Exp $ */
 
 /*
@@ -78,7 +78,8 @@ struct wsemul_ops {
  * decoding.
  */
 struct wsemul_inputstate {
-	u_int32_t	inchar;	/* character being reconstructed */
+	uint32_t	inchar;	/* character being reconstructed */
+	uint32_t	lbound;	/* lower bound of above */
 	u_int		mbleft;	/* multibyte bytes left until char complete */
 };
 

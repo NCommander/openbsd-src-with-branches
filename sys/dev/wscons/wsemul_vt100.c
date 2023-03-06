@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemul_vt100.c,v 1.42 2023/01/12 20:39:37 nicm Exp $ */
+/* $OpenBSD: wsemul_vt100.c,v 1.43 2023/02/26 15:09:53 miod Exp $ */
 /* $NetBSD: wsemul_vt100.c,v 1.13 2000/04/28 21:56:16 mycroft Exp $ */
 
 /*
@@ -309,6 +309,12 @@ wsemul_vt100_reset(struct wsemul_vt100_emuldata *edp)
 	edp->chartab0 = 0;
 	edp->chartab1 = 2;
 	edp->sschartab = 0;
+	edp->instate.inchar = 0;
+	edp->instate.lbound = 0;
+	edp->instate.mbleft = 0;
+	edp->kstate.inchar = 0;
+	edp->kstate.lbound = 0;
+	edp->kstate.mbleft = 0;
 }
 
 /*

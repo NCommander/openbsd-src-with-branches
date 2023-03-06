@@ -1,4 +1,4 @@
-/* $OpenBSD: wsemul_vt100var.h,v 1.11 2020/05/25 09:55:49 jsg Exp $ */
+/* $OpenBSD: wsemul_vt100var.h,v 1.12 2023/01/12 20:39:37 nicm Exp $ */
 /* $NetBSD: wsemul_vt100var.h,v 1.5 2000/04/28 21:56:17 mycroft Exp $ */
 
 /*
@@ -95,7 +95,7 @@ struct wsemul_vt100_emuldata {
 	struct wsemul_inputstate kstate;	/* kernel input state */
 
 #ifdef HAVE_UTF8_SUPPORT
-	u_char translatebuf[6];
+	u_char translatebuf[4];
 #else
 	u_char translatebuf[1];
 #endif
