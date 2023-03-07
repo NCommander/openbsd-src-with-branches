@@ -1,4 +1,4 @@
-#	$OpenBSD: install.md,v 1.50 2017/12/17 18:29:56 rpe Exp $
+#	$OpenBSD: install.md,v 1.51 2018/01/03 10:22:38 rpe Exp $
 #	$NetBSD: install.md,v 1.3.2.5 1996/08/26 15:45:28 gwr Exp $
 #
 # Copyright (c) 1996 The NetBSD Foundation, Inc.
@@ -32,6 +32,7 @@
 # machine dependent section of installation/upgrade script.
 #
 
+MDBOOTSR=y
 MDHALT=y
 MDTERM=sun
 MDXAPERTURE=1
@@ -44,6 +45,9 @@ md_installboot() {
 		echo "You will not be able to boot OpenBSD from ${1}."
 		exit
 	fi
+}
+
+md_prep_fdisk() {
 }
 
 md_prep_disklabel() {
