@@ -1,4 +1,4 @@
-/*	$OpenBSD: function.c,v 1.50 2020/11/23 06:21:52 halex Exp $	*/
+/*	$OpenBSD: function.c,v 1.51 2022/12/26 18:51:18 jmc Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -1681,7 +1681,6 @@ c_or(char *ignore, char ***ignored, int unused)
  * 	lists of files to feed to subprocesses 2) State on exit
  *	status of past subprocesses.
  */
-/* ARGSUSED1 */
 int
 plan_cleanup(PLAN *plan, void *arg)
 {

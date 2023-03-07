@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipsecctl.c,v 1.83 2017/11/20 10:51:24 mpi Exp $	*/
+/*	$OpenBSD: ipsecctl.c,v 1.84 2018/09/07 12:43:30 kn Exp $	*/
 /*
  * Copyright (c) 2004, 2005 Hans-Joerg Hoexer <hshoexer@openbsd.org>
  *
@@ -503,7 +503,6 @@ ipsecctl_print_flow(struct ipsec_rule *r, int opts)
 	printf("\n");
 }
 
-/* ARGSUSED1 */
 void
 ipsecctl_print_sa(struct ipsec_rule *r, int opts)
 {
