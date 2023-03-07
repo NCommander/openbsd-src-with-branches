@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_print.c,v 1.8 2022/11/19 07:29:29 tb Exp $ */
+/* $OpenBSD: ec_print.c,v 1.9 2022/11/26 16:08:52 tb Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -172,7 +172,7 @@ EC_POINT_hex2point(const EC_GROUP *group, const char *buf,
 
 	ret = EC_POINT_bn2point(group, tmp_bn, point, ctx);
 
-	BN_clear_free(tmp_bn);
+	BN_free(tmp_bn);
 
 	return ret;
 }

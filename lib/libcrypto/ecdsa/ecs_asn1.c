@@ -1,4 +1,4 @@
-/* $OpenBSD: ecs_asn1.c,v 1.11 2022/09/03 16:01:23 jsing Exp $ */
+/* $OpenBSD: ecs_asn1.c,v 1.12 2022/11/26 16:08:52 tb Exp $ */
 /* ====================================================================
  * Copyright (c) 2000-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -141,8 +141,8 @@ ECDSA_SIG_set0(ECDSA_SIG *sig, BIGNUM *r, BIGNUM *s)
 	if (r == NULL || s == NULL)
 		return 0;
 
-	BN_clear_free(sig->r);
-	BN_clear_free(sig->s);
+	BN_free(sig->r);
+	BN_free(sig->s);
 	sig->r = r;
 	sig->s = s;
 	return 1;

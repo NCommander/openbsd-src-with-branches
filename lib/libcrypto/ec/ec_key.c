@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_key.c,v 1.29 2022/11/26 16:08:52 tb Exp $ */
+/* $OpenBSD: ec_key.c,v 1.30 2023/01/14 15:10:45 jsing Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project.
  */
@@ -120,7 +120,7 @@ EC_KEY_free(EC_KEY *r)
 
 	EC_GROUP_free(r->group);
 	EC_POINT_free(r->pub_key);
-	BN_clear_free(r->priv_key);
+	BN_free(r->priv_key);
 
 	EC_EX_DATA_free_all_data(&r->method_data);
 

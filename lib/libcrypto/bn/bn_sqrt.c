@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_sqrt.c,v 1.13 2022/11/26 13:56:33 jsing Exp $ */
+/* $OpenBSD: bn_sqrt.c,v 1.14 2022/11/26 16:08:51 tb Exp $ */
 /* Written by Lenka Fibikova <fibikova@exp-math.uni-essen.de>
  * and Bodo Moeller for the OpenSSL project. */
 /* ====================================================================
@@ -400,7 +400,7 @@ vrfy:
 end:
 	if (err) {
 		if (ret != NULL && ret != in) {
-			BN_clear_free(ret);
+			BN_free(ret);
 		}
 		ret = NULL;
 	}

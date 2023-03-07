@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa_asn1.c,v 1.27 2022/11/19 11:48:24 tb Exp $ */
+/* $OpenBSD: dsa_asn1.c,v 1.28 2022/11/26 16:08:52 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -147,9 +147,9 @@ DSA_SIG_set0(DSA_SIG *sig, BIGNUM *r, BIGNUM *s)
 	if (r == NULL || s == NULL)
 		return 0;
 
-	BN_clear_free(sig->r);
+	BN_free(sig->r);
 	sig->r = r;
-	BN_clear_free(sig->s);
+	BN_free(sig->s);
 	sig->s = s;
 
 	return 1;
