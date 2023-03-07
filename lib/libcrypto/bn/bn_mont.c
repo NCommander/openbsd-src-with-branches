@@ -435,6 +435,14 @@ bn_mod_mul_montgomery(BIGNUM *r, const BIGNUM *a, const BIGNUM *b,
 	if (mctx->N.top <= 1 || a->top != mctx->N.top || b->top != mctx->N.top)
 		return bn_mod_mul_montgomery_simple(r, a, b, mctx, ctx);
 
+	/*
+	 * Legacy bn_mul_mont() performs stack based allocation, without
+	 * size limitation. Allowing a large size results in the stack
+	 * being blown.
+	 */
+	if (mctx->N.top > (8 * 1024 / sizeof(BN_ULONG)))
+		return bn_montgomery_multiply(r, a, b, mctx, ctx);
+
 	if (!bn_wexpand(r, mctx->N.top))
 		return 0;
 
