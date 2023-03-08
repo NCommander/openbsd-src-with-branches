@@ -1,4 +1,4 @@
-/*	$OpenBSD: lapic.c,v 1.65 2022/11/10 08:26:54 jmatthew Exp $	*/
+/*	$OpenBSD: lapic.c,v 1.66 2023/01/31 19:11:47 cheloha Exp $	*/
 /* $NetBSD: lapic.c,v 1.2 2003/05/08 01:04:35 fvdl Exp $ */
 
 /*-
@@ -431,7 +431,7 @@ lapic_timer_rearm(void *unused, uint64_t nsecs)
 	cycles = (nsecs * lapic_timer_nsec_cycle_ratio) >> 32;
 	if (cycles == 0)
 		cycles = 1;
-	lapic_timer_oneshot(0, cycles);
+	lapic_writereg(LAPIC_ICR_TIMER, cycles);
 }
 
 void
