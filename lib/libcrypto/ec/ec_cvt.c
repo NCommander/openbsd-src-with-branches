@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_cvt.c,v 1.8 2022/11/26 16:08:52 tb Exp $ */
+/* $OpenBSD: ec_cvt.c,v 1.9 2023/03/08 05:35:51 jsing Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -89,7 +89,7 @@ ec_group_new_curve(const EC_METHOD *method, const BIGNUM *p, const BIGNUM *a,
 	return group;
 
  err:
-	EC_GROUP_clear_free(group);
+	EC_GROUP_free(group);
 
 	return NULL;
 }
