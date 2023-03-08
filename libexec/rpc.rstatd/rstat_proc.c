@@ -1,4 +1,4 @@
-/*	$OpenBSD: rstat_proc.c,v 1.36 2019/06/28 13:32:53 deraadt Exp $	*/
+/*	$OpenBSD: rstat_proc.c,v 1.37 2019/08/09 21:31:07 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2010, Oracle America, Inc.
@@ -154,7 +154,6 @@ rstatproc_havedisk_1_svc(void *arg, struct svc_req *rqstp)
 	return (rstatproc_havedisk_3_svc(arg, rqstp));
 }
 
-/* ARGSUSED */
 void
 updatestatsig(int sig)
 {

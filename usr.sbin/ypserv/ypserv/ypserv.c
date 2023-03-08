@@ -1,4 +1,4 @@
-/*	$OpenBSD: ypserv.c,v 1.43 2015/11/12 22:33:07 deraadt Exp $ */
+/*	$OpenBSD: ypserv.c,v 1.44 2015/11/17 18:21:48 tedu Exp $ */
 
 /*
  * Copyright (c) 1994 Mats O Jansson <moj@stacken.kth.se>
@@ -81,7 +81,6 @@ _msgout(char *msg)
 #endif
 }
 
-/* ARGSUSED */
 static void
 closedown(int sig)
 {
@@ -538,7 +537,6 @@ main(int argc, char *argv[])
 	/* NOTREACHED */
 }
 
-/* ARGSUSED */
 void
 sig_child(int signo)
 {
@@ -549,7 +547,6 @@ sig_child(int signo)
 	errno = save_errno;
 }
 
-/* ARGSUSED */
 void
 sig_hup(int signo)
 {

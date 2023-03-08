@@ -1,4 +1,4 @@
-/*	$OpenBSD: mainbus.c,v 1.26 2020/08/26 03:29:06 visa Exp $	*/
+/*	$OpenBSD: mainbus.c,v 1.27 2022/03/13 12:33:01 mpi Exp $	*/
 
 /*
  * Copyright (c) 1994, 1995 Carnegie-Mellon University.
@@ -49,7 +49,6 @@ struct cfdriver mainbus_cd = {
 
 #define HH_REG_CONF 	0x90
 
-/*ARGSUSED*/
 static int
 mbmatch(struct device *parent, void *cfdata, void *aux)
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rquotad.c,v 1.23 2019/06/28 13:32:53 deraadt Exp $	*/
+/*	$OpenBSD: rquotad.c,v 1.24 2022/12/26 20:06:43 jmc Exp $	*/
 
 /*
  * by Manuel Bouyer (bouyer@ensta.fr). Public domain.
@@ -49,7 +49,6 @@ struct fs_stat *fs_begin = NULL;
 
 int from_inetd = 1;
 
-/* ARGSUSED */
 static void
 cleanup(int signo)
 {

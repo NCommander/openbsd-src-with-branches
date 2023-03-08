@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbrtowc_sb.c,v 1.1 2010/07/27 16:59:03 stsp Exp $	*/
+/*	$OpenBSD: mbrtowc_sb.c,v 1.2 2014/02/21 18:29:57 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1991 The Regents of the University of California.
@@ -33,7 +33,6 @@
 #include <stdlib.h>
 #include <wchar.h>
 
-/*ARGSUSED*/
 size_t
 mbrtowc(wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
 {

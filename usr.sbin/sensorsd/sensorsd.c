@@ -1,4 +1,4 @@
-/*	$OpenBSD: sensorsd.c,v 1.67 2020/07/22 15:33:49 bluhm Exp $ */
+/*	$OpenBSD: sensorsd.c,v 1.68 2021/07/12 15:09:21 beck Exp $ */
 
 /*
  * Copyright (c) 2003 Henning Brauer <henning@openbsd.org>
@@ -840,7 +840,6 @@ get_val(char *buf, int upper, enum sensor_type type)
 	return (rval);
 }
 
-/* ARGSUSED */
 void
 reparse_cfg(int signo)
 {

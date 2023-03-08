@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vnops.c,v 1.155 2021/12/12 09:14:59 visa Exp $	*/
+/*	$OpenBSD: ufs_vnops.c,v 1.156 2022/06/26 05:20:43 visa Exp $	*/
 /*	$NetBSD: ufs_vnops.c,v 1.18 1996/05/11 18:28:04 mycroft Exp $	*/
 
 /*
@@ -571,7 +571,6 @@ error:
 
 }
 
-/* ARGSUSED */
 int
 ufs_ioctl(void *v)
 {

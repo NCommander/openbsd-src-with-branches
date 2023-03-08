@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.178 2023/02/11 23:22:19 deraadt Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.179 2023/02/16 04:42:08 deraadt Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -707,7 +707,6 @@ sys_minherit(struct proc *p, void *v, register_t *retval)
 /*
  * sys_madvise: give advice about memory usage.
  */
-/* ARGSUSED */
 int
 sys_madvise(struct proc *p, void *v, register_t *retval)
 {

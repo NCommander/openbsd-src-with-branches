@@ -1,4 +1,4 @@
-/*	$OpenBSD: neighbor.c,v 1.10 2016/07/18 21:20:31 benno Exp $ */
+/*	$OpenBSD: neighbor.c,v 1.11 2017/01/17 16:30:54 jca Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -320,7 +320,6 @@ nbr_failed_delete(struct nbr_failed *nbr_failed)
 }
 
 /* timers */
-/* ARGSUSED */
 void
 nbr_timeout_timer(int fd, short event, void *arg)
 {
@@ -332,7 +331,6 @@ nbr_timeout_timer(int fd, short event, void *arg)
 		nbr_fsm(nbr, NBR_EVT_TIMEOUT);
 }
 
-/* ARGSUSED */
 void
 nbr_failed_timeout(int fd, short event, void *arg)
 {

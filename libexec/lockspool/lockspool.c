@@ -1,4 +1,4 @@
-/*	$OpenBSD: lockspool.c,v 1.21 2020/02/09 14:59:20 millert Exp $	*/
+/*	$OpenBSD: lockspool.c,v 1.22 2021/07/12 15:09:18 beck Exp $	*/
 
 /*
  * Copyright (c) 1998 Theo de Raadt <deraadt@theos.com>
@@ -101,7 +101,6 @@ main(int argc, char *argv[])
 	exit (0);
 }
 
-/*ARGSUSED*/
 void
 unhold(int signo)
 {

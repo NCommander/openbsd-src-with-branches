@@ -1,4 +1,4 @@
-/*	$OpenBSD: ophandlers.c,v 1.16 2021/10/24 21:24:18 deraadt Exp $	*/
+/*	$OpenBSD: ophandlers.c,v 1.17 2022/01/12 22:49:53 tb Exp $	*/
 /*	$NetBSD: ophandlers.c,v 1.2 1996/02/28 01:13:30 thorpej Exp $	*/
 
 /*-
@@ -158,7 +158,6 @@ op_handler(char *keyword, char *arg)
 	return (NULL);
 }
 
-/* ARGSUSED */
 static void
 op_notsupp(struct extabent *exent, struct opiocdesc *opiop, char *arg)
 {

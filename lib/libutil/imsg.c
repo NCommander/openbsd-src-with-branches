@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg.c,v 1.16 2017/12/14 09:27:44 kettenis Exp $	*/
+/*	$OpenBSD: imsg.c,v 1.17 2022/01/28 10:41:44 claudio Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -206,7 +206,6 @@ imsg_composev(struct imsgbuf *ibuf, uint32_t type, uint32_t peerid, pid_t pid,
 	return (1);
 }
 
-/* ARGSUSED */
 struct ibuf *
 imsg_create(struct imsgbuf *ibuf, uint32_t type, uint32_t peerid, pid_t pid,
     uint16_t datalen)

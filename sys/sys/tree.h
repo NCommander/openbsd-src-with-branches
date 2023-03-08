@@ -1,4 +1,4 @@
-/*	$OpenBSD: tree.h,v 1.29 2017/07/30 19:27:20 deraadt Exp $	*/
+/*	$OpenBSD: tree.h,v 1.30 2020/10/10 18:03:41 otto Exp $	*/
 /*
  * Copyright 2002 Niels Provos <provos@citi.umich.edu>
  * All rights reserved.
@@ -656,7 +656,6 @@ name##_RB_NFIND(struct name *head, struct type *elm)			\
 	return (res);							\
 }									\
 									\
-/* ARGSUSED */								\
 attr struct type *							\
 name##_RB_NEXT(struct type *elm)					\
 {									\
@@ -678,7 +677,6 @@ name##_RB_NEXT(struct type *elm)					\
 	return (elm);							\
 }									\
 									\
-/* ARGSUSED */								\
 attr struct type *							\
 name##_RB_PREV(struct type *elm)					\
 {									\

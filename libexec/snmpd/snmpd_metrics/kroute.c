@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.1.1.1 2022/09/01 14:20:33 martijn Exp $	*/
+/*	$OpenBSD: kroute.c,v 1.2 2022/12/26 20:06:43 jmc Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Reyk Floeter <reyk@openbsd.org>
@@ -1293,7 +1293,6 @@ fetcharp(struct ktable *kt)
 	return (rv);
 }
 
-/* ARGSUSED */
 void
 dispatch_rtmsg(int fd, short event, void *arg)
 {

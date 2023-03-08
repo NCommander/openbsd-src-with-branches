@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.c,v 1.256 2023/01/31 13:41:54 mvs Exp $	*/
+/*	$OpenBSD: if_ether.c,v 1.257 2023/03/04 09:03:34 kn Exp $	*/
 /*	$NetBSD: if_ether.c,v 1.31 1996/05/11 12:59:58 mycroft Exp $	*/
 
 /*
@@ -121,7 +121,6 @@ unsigned int revarp_ifidx;
 /*
  * Timeout routine.  Age arp_tab entries periodically.
  */
-/* ARGSUSED */
 void
 arptimer(void *arg)
 {

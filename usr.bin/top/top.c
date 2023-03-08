@@ -1,4 +1,4 @@
-/*	$OpenBSD: top.c,v 1.107 2022/09/10 16:58:51 cheloha Exp $	*/
+/*	$OpenBSD: top.c,v 1.108 2022/12/16 15:54:27 cheloha Exp $	*/
 
 /*
  *  Top users/processes display for Unix
@@ -1095,28 +1095,24 @@ reset_display(void)
 	}
 }
 
-/* ARGSUSED */
 void
 leave(int signo)
 {
 	leaveflag = 1;
 }
 
-/* ARGSUSED */
 void
 tstop(int signo)
 {
 	tstopflag = 1;
 }
 
-/* ARGSUSED */
 void
 sigwinch(int signo)
 {
 	winchflag = 1;
 }
 
-/* ARGSUSED */
 void
 onalrm(int signo)
 {

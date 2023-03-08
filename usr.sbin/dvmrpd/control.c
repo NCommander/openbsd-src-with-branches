@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.23 2017/01/08 23:04:42 krw Exp $ */
+/*	$OpenBSD: control.c,v 1.24 2021/01/19 12:23:30 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -116,7 +116,6 @@ control_cleanup(void)
 	unlink(DVMRPD_SOCKET);
 }
 
-/* ARGSUSED */
 void
 control_accept(int listenfd, short event, void *bula)
 {
@@ -214,7 +213,6 @@ control_close(int fd)
 	free(c);
 }
 
-/* ARGSUSED */
 void
 control_dispatch_imsg(int fd, short event, void *bula)
 {

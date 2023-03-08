@@ -1,4 +1,4 @@
-/*	$OpenBSD: eigrpd.c,v 1.27 2019/03/31 03:36:18 yasuoka Exp $ */
+/*	$OpenBSD: eigrpd.c,v 1.28 2021/01/19 10:53:25 claudio Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -61,7 +61,6 @@ static struct imsgev	*iev_rde;
 static pid_t		 eigrpe_pid;
 static pid_t		 rde_pid;
 
-/* ARGSUSED */
 static void
 main_sig_handler(int sig, short event, void *arg)
 {
@@ -362,7 +361,6 @@ start_child(enum eigrpd_process p, char *argv0, int fd, int debug, int verbose,
 }
 
 /* imsg handling */
-/* ARGSUSED */
 static void
 main_dispatch_eigrpe(int fd, short event, void *bula)
 {
@@ -439,7 +437,6 @@ main_dispatch_eigrpe(int fd, short event, void *bula)
 	}
 }
 
-/* ARGSUSED */
 static void
 main_dispatch_rde(int fd, short event, void *bula)
 {

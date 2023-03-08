@@ -1,4 +1,4 @@
-/*	$OpenBSD: comsat.c,v 1.49 2018/09/24 22:56:54 deraadt Exp $	*/
+/*	$OpenBSD: comsat.c,v 1.50 2021/07/12 15:09:18 beck Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -154,7 +154,6 @@ main(int argc, char *argv[])
 	}
 }
 
-/* ARGSUSED */
 void
 reapchildren(int signo)
 {
@@ -165,7 +164,6 @@ reapchildren(int signo)
 	errno = save_errno;
 }
 
-/* ARGSUSED */
 void
 readutmp(int signo)
 {

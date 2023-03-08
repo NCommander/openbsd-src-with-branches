@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.9 2016/04/05 00:52:35 yasuoka Exp $ */
+/*	$OpenBSD: control.c,v 1.10 2016/09/10 05:42:12 jsg Exp $ */
 
 /*
  * Copyright (c) 2010 Claudio Jeker <claudio@openbsd.org>
@@ -135,7 +135,6 @@ control_event_init(void)
 	evtimer_set(&control_state->evt, control_accept, NULL);
 }
 
-/* ARGSUSED */
 void
 control_accept(int listenfd, short event, void *bula)
 {
@@ -196,7 +195,6 @@ control_close(struct control *c)
 
 static char	cbuf[CONTROL_READ_SIZE];
 
-/* ARGSUSED */
 void
 control_dispatch(int fd, short event, void *bula)
 {

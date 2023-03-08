@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.388 2023/03/03 02:37:58 dtucker Exp $ */
+/* $OpenBSD: clientloop.c,v 1.389 2023/03/03 09:48:51 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -206,7 +206,6 @@ quit_message(const char *fmt, ...)
  * Signal handler for the window change signal (SIGWINCH).  This just sets a
  * flag indicating that the window has changed.
  */
-/*ARGSUSED */
 static void
 window_change_handler(int sig)
 {
@@ -217,7 +216,6 @@ window_change_handler(int sig)
  * Signal handler for signals that cause the program to terminate.  These
  * signals must be trapped to restore terminal modes.
  */
-/*ARGSUSED */
 static void
 signal_handler(int sig)
 {

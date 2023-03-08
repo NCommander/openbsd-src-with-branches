@@ -1,4 +1,4 @@
-/*	$OpenBSD: ct.c,v 1.8 2003/04/29 22:38:50 mickey Exp $	*/
+/*	$OpenBSD: ct.c,v 1.9 2004/04/07 18:24:20 mickey Exp $	*/
 
 /*
  * Copyright (c) 1998-2004 Michael Shalayeff
@@ -69,7 +69,6 @@ ctopen(struct open_file *f, ...)
 	return (0);
 }
 
-/*ARGSUSED*/
 int
 ctclose(f)
 	struct open_file *f;

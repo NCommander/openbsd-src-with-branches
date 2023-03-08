@@ -1,4 +1,4 @@
-/*	$OpenBSD: echo.c,v 1.9 2015/10/03 14:51:39 deraadt Exp $	*/
+/*	$OpenBSD: echo.c,v 1.10 2015/10/09 01:37:06 deraadt Exp $	*/
 /*	$NetBSD: echo.c,v 1.6 1995/03/21 09:04:27 cgd Exp $	*/
 
 /*
@@ -35,7 +35,6 @@
 #include <unistd.h>
 #include <err.h>
 
-/* ARGSUSED */
 int
 main(int argc, char *argv[])
 {

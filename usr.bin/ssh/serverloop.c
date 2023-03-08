@@ -1,4 +1,4 @@
-/* $OpenBSD: serverloop.c,v 1.234 2023/01/17 09:44:48 djm Exp $ */
+/* $OpenBSD: serverloop.c,v 1.235 2023/03/05 05:34:09 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -106,14 +106,12 @@ bind_permitted(int port, uid_t uid)
 	return 1;
 }
 
-/*ARGSUSED*/
 static void
 sigchld_handler(int sig)
 {
 	child_terminated = 1;
 }
 
-/*ARGSUSED*/
 static void
 sigterm_handler(int sig)
 {

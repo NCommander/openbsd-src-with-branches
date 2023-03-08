@@ -1,4 +1,4 @@
-/*	$OpenBSD: head.c,v 1.11 2009/10/27 23:59:40 deraadt Exp $	*/
+/*	$OpenBSD: head.c,v 1.12 2014/01/17 18:42:30 okan Exp $	*/
 /*	$NetBSD: head.c,v 1.6 1996/12/28 07:11:03 tls Exp $	*/
 
 /*
@@ -70,7 +70,6 @@ ishead(char *linebuf)
 	return(1);
 }
 
-/*ARGSUSED*/
 void
 fail(char *linebuf, char *reason)
 {

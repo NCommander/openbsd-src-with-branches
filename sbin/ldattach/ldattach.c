@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldattach.c,v 1.17 2016/11/26 11:18:43 mpi Exp $	*/
+/*	$OpenBSD: ldattach.c,v 1.18 2019/06/28 13:32:44 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008 Marc Balmer <mbalmer@openbsd.org>
@@ -332,7 +332,6 @@ bail_out:
 	return 0;
 }
 
-/* ARGSUSED */
 void
 coroner(int useless)
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pr.c,v 1.43 2020/01/22 07:52:37 deraadt Exp $	*/
+/*	$OpenBSD: pr.c,v 1.44 2020/12/13 15:36:36 jmc Exp $	*/
 
 /*-
  * Copyright (c) 1991 Keith Muller.
@@ -1717,7 +1717,6 @@ prtail(int cnt, int incomp)
 /*
  * terminate():    when a SIGINT is recvd
  */
-/*ARGSUSED*/
 void
 terminate(int which_sig)
 {

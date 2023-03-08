@@ -1,4 +1,4 @@
-/*	$OpenBSD: adjacency.c,v 1.26 2016/06/18 17:31:32 renato Exp $ */
+/*	$OpenBSD: adjacency.c,v 1.27 2019/12/12 00:10:29 yasuoka Exp $ */
 
 /*
  * Copyright (c) 2013, 2015 Renato Westphal <renato@openbsd.org>
@@ -156,7 +156,6 @@ adj_get_af(struct adj *adj)
 
 /* adjacency timers */
 
-/* ARGSUSED */
 static void
 adj_itimer(int fd, short event, void *arg)
 {
@@ -296,7 +295,6 @@ tnbr_update_all(int af)
 
 /* target neighbors timers */
 
-/* ARGSUSED */
 static void
 tnbr_hello_timer(int fd, short event, void *arg)
 {

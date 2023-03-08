@@ -1,4 +1,4 @@
-/*	$OpenBSD: rusersd.c,v 1.22 2022/02/21 19:49:46 mestre Exp $	*/
+/*	$OpenBSD: rusersd.c,v 1.23 2022/02/22 08:20:35 mestre Exp $	*/
 
 /*-
  *  Copyright (c) 1993 John Brezak
@@ -49,7 +49,6 @@ extern void rusers_service(struct svc_req *, SVCXPRT *);
 int from_inetd = 1;
 int utmp_fd;
 
-/* ARGSUSED */
 static void
 cleanup(int signo)
 {

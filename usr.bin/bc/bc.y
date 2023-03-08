@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: bc.y,v 1.51 2017/07/02 23:19:07 deraadt Exp $	*/
+/*	$OpenBSD: bc.y,v 1.52 2020/06/30 14:27:02 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -1064,7 +1064,6 @@ escape(const char *str)
 	return ret;
 }
 
-/* ARGSUSED */
 static void
 sigchld(int signo)
 {

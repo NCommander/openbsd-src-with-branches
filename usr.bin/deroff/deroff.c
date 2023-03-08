@@ -1,4 +1,4 @@
-/*	$OpenBSD: deroff.c,v 1.15 2016/09/04 15:29:21 tb Exp $	*/
+/*	$OpenBSD: deroff.c,v 1.16 2023/02/17 18:00:35 miod Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -444,7 +444,6 @@ getfname(void)
 	namechain = q;
 }
 
-/*ARGSUSED*/
 void
 textline(char *str, int constant)
 {

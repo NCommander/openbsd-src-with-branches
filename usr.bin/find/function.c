@@ -1,4 +1,4 @@
-/*	$OpenBSD: function.c,v 1.51 2022/12/26 18:51:18 jmc Exp $	*/
+/*	$OpenBSD: function.c,v 1.52 2023/03/07 17:43:59 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993
@@ -1406,7 +1406,6 @@ f_print(PLAN *plan, FTSENT *entry)
 	return(1);
 }
 
-/* ARGSUSED */
 int
 f_print0(PLAN *plan, FTSENT *entry)
 {

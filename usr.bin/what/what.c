@@ -1,4 +1,4 @@
-/*	$OpenBSD: what.c,v 1.15 2015/10/09 01:37:09 deraadt Exp $	*/
+/*	$OpenBSD: what.c,v 1.16 2020/04/18 15:10:06 martijn Exp $	*/
 /*	$NetBSD: what.c,v 1.4 1994/12/20 16:01:03 jtc Exp $	*/
 
 /*
@@ -50,7 +50,6 @@ extern char *__progname;
 /*
  * what
  */
-/* ARGSUSED */
 int
 main(int argc, char *argv[])
 {

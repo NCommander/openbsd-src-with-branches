@@ -1,4 +1,4 @@
-/*	$OpenBSD: fcnvff.c,v 1.6 2002/05/07 22:19:30 mickey Exp $	*/
+/*	$OpenBSD: fcnvff.c,v 1.7 2003/04/10 17:27:58 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -22,7 +22,6 @@
 /*
  *  Single Floating-point to Double Floating-point
  */
-/*ARGSUSED*/
 int
 sgl_to_dbl_fcnvff(srcptr, null, dstptr, status)
 	sgl_floating_point *srcptr, *null;
@@ -108,7 +107,6 @@ sgl_to_dbl_fcnvff(srcptr, null, dstptr, status)
 /*
  *  Double Floating-point to Single Floating-point
  */
-/*ARGSUSED*/
 int
 dbl_to_sgl_fcnvff(srcptr, null, dstptr, status)
 	dbl_floating_point *srcptr, *null;

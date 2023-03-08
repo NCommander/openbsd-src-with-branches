@@ -1,4 +1,4 @@
-/*	$OpenBSD: kroute.c,v 1.34 2019/12/11 21:04:59 remi Exp $ */
+/*	$OpenBSD: kroute.c,v 1.35 2022/05/06 15:51:09 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -272,7 +272,6 @@ kr_fib_decouple(void)
 	log_info("kernel routing table decoupled");
 }
 
-/* ARGSUSED */
 void
 kr_dispatch_msg(int fd, short event, void *bula)
 {

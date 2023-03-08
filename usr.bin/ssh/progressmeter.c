@@ -1,4 +1,4 @@
-/* $OpenBSD: progressmeter.c,v 1.50 2020/01/23 07:10:22 dtucker Exp $ */
+/* $OpenBSD: progressmeter.c,v 1.51 2023/02/22 03:56:43 djm Exp $ */
 /*
  * Copyright (c) 2003 Nils Nordman.  All rights reserved.
  *
@@ -236,7 +236,6 @@ refresh_progress_meter(int force_update)
 	free(obuf);
 }
 
-/*ARGSUSED*/
 static void
 sig_alarm(int ignore)
 {
@@ -279,7 +278,6 @@ stop_progress_meter(void)
 	atomicio(vwrite, STDOUT_FILENO, "\n", 1);
 }
 
-/*ARGSUSED*/
 static void
 sig_winch(int sig)
 {

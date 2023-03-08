@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_lsdb.c,v 1.50 2015/11/22 13:09:10 claudio Exp $ */
+/*	$OpenBSD: rde_lsdb.c,v 1.51 2020/10/05 09:19:05 jan Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Claudio Jeker <claudio@openbsd.org>
@@ -654,7 +654,6 @@ lsa_dump(struct lsa_tree *tree, int imsg_type, pid_t pid)
 	}
 }
 
-/* ARGSUSED */
 void
 lsa_timeout(int fd, short event, void *bula)
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: kbd.c,v 1.35 2021/03/01 10:51:14 lum Exp $	*/
+/*	$OpenBSD: kbd.c,v 1.36 2022/12/26 19:16:02 jmc Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -254,7 +254,6 @@ universal_argument(int f, int n)
 	}
 }
 
-/* ARGSUSED */
 int
 digit_argument(int f, int n)
 {

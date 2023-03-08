@@ -1,4 +1,4 @@
-/*	$OpenBSD: message.c,v 1.12 2014/10/25 03:23:49 lteo Exp $ */
+/*	$OpenBSD: message.c,v 1.15 2019/12/15 20:51:39 remi Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -36,7 +36,6 @@ extern struct ripd_conf	*oeconf;
 void	 delete_entry(struct rip_route *);
 
 /* timers */
-/* ARGSUSED */
 void
 report_timer(int fd, short event, void *arg)
 {

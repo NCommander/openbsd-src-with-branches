@@ -1,4 +1,4 @@
-/*	$OpenBSD: eso.c,v 1.52 2022/10/19 19:14:17 kn Exp $	*/
+/*	$OpenBSD: eso.c,v 1.53 2022/10/26 20:19:08 kn Exp $	*/
 /*	$NetBSD: eso.c,v 1.48 2006/12/18 23:13:39 kleink Exp $	*/
 
 /*
@@ -628,7 +628,6 @@ eso_reset(struct eso_softc *sc)
 }
 
 
-/* ARGSUSED */
 int
 eso_open(void *hdl, int flags)
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: version.c,v 1.9 2005/06/14 18:14:40 kjell Exp $	*/
+/*	$OpenBSD: version.c,v 1.10 2015/03/19 21:22:15 bcallah Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -19,7 +19,6 @@ const char	version[] = "Mg 2a";
  * Display the version. All this does
  * is copy the version string onto the echo line.
  */
-/* ARGSUSED */
 int
 showversion(int f, int n)
 {

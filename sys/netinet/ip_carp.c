@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_carp.c,v 1.354 2021/03/10 10:21:48 jsg Exp $	*/
+/*	$OpenBSD: ip_carp.c,v 1.355 2022/09/08 10:22:06 kn Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff. All rights reserved.
@@ -782,7 +782,6 @@ carp_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
  * Interface side of the CARP implementation.
  */
 
-/* ARGSUSED */
 void
 carpattach(int n)
 {

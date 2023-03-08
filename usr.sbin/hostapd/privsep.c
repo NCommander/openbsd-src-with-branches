@@ -1,4 +1,4 @@
-/*	$OpenBSD: privsep.c,v 1.26 2019/05/10 01:29:31 guenther Exp $	*/
+/*	$OpenBSD: privsep.c,v 1.27 2019/06/28 13:32:47 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004, 2005 Reyk Floeter <reyk@openbsd.org>
@@ -456,7 +456,6 @@ hostapd_priv_roaming(struct hostapd_apme *apme, struct hostapd_node *node,
 /*
  * If priv parent gets a TERM or HUP, pass it through to child instead.
  */
-/* ARGSUSED */
 void
 hostapd_sig_relay(int sig, short event, void *arg)
 {
@@ -469,7 +468,6 @@ hostapd_sig_relay(int sig, short event, void *arg)
 	errno = oerrno;
 }
 
-/* ARGSUSED */
 void
 hostapd_sig_chld(int sig, short event, void *arg)
 {

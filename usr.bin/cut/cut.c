@@ -1,4 +1,4 @@
-/*	$OpenBSD: cut.c,v 1.26 2019/02/07 19:11:23 tobias Exp $	*/
+/*	$OpenBSD: cut.c,v 1.27 2022/12/04 23:50:47 cheloha Exp $	*/
 /*	$NetBSD: cut.c,v 1.9 1995/09/02 05:59:23 jtc Exp $	*/
 
 /*
@@ -227,7 +227,6 @@ get_list(char *list)
 		memset(positions + 1, '1', autostart);
 }
 
-/* ARGSUSED */
 void
 b_cut(FILE *fp, char *fname)
 {

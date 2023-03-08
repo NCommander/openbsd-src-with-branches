@@ -1,4 +1,4 @@
-/*	$OpenBSD: rstatd.c,v 1.29 2015/12/01 20:25:16 tim Exp $	*/
+/*	$OpenBSD: rstatd.c,v 1.30 2019/06/28 13:32:53 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1993, John Brezak
@@ -51,7 +51,6 @@ int closedown = 20;	/* how long to wait before going dormant */
 
 volatile sig_atomic_t gotsig;
 
-/* ARGSUSED */
 static void
 getsig(int signo)
 {

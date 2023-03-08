@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufs_vfsops.c,v 1.18 2014/09/14 14:17:27 jsg Exp $	*/
+/*	$OpenBSD: ufs_vfsops.c,v 1.19 2015/03/14 03:38:53 jsg Exp $	*/
 /*	$NetBSD: ufs_vfsops.c,v 1.4 1996/02/09 22:36:12 christos Exp $	*/
 
 /*
@@ -57,7 +57,6 @@
  * Make a filesystem operational.
  * Nothing to do at the moment.
  */
-/* ARGSUSED */
 int
 ufs_start(struct mount *mp, int flags, struct proc *p)
 {

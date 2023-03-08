@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.205 2022/10/30 17:43:40 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.206 2023/01/21 19:39:28 miod Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -489,7 +489,6 @@ sendsig(sig_t catcher, int sig, sigset_t mask, const siginfo_t *ksip,
  * modified the state to gain improper privileges or to cause
  * a machine fault.
  */
-/* ARGSUSED */
 int
 sys_sigreturn(struct proc *p, void *v, register_t *retval)
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: neighbor.c,v 1.9 2016/09/02 16:39:44 renato Exp $ */
+/*	$OpenBSD: neighbor.c,v 1.10 2016/09/02 16:44:33 renato Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -232,7 +232,6 @@ nbr_clear_ctl(struct ctl_nbr *nctl)
 
 /* timers */
 
-/* ARGSUSED */
 static void
 nbr_timeout(int fd, short event, void *arg)
 {

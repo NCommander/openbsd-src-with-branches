@@ -1,4 +1,4 @@
-/*	$OpenBSD: restore.c,v 1.16 2009/10/27 23:59:34 deraadt Exp $	*/
+/*	$OpenBSD: restore.c,v 1.17 2013/04/24 13:46:29 deraadt Exp $	*/
 /*	$NetBSD: restore.c,v 1.9 1997/06/18 07:10:16 lukem Exp $	*/
 
 /*
@@ -102,7 +102,6 @@ addfile(char *name, ino_t ino, int type)
  * This is used by the 'i' option to undo previous requests made by addfile.
  * Delete entries from the request queue.
  */
-/* ARGSUSED */
 long
 deletefile(char *name, ino_t ino, int type)
 {

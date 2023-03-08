@@ -1,4 +1,4 @@
-/*	$OpenBSD: unfdpass.c,v 1.2 2021/12/13 16:56:50 deraadt Exp $	*/
+/*	$OpenBSD: unfdpass.c,v 1.3 2022/02/26 20:14:06 bluhm Exp $	*/
 /*	$NetBSD: unfdpass.c,v 1.3 1998/06/24 23:51:30 thorpej Exp $	*/
 
 /*-
@@ -61,7 +61,6 @@ int	main(int, char *[]);
 void	child(int, int);
 void	catch_sigchld(int);
 
-/* ARGSUSED */
 int
 main(int argc, char *argv[])
 {

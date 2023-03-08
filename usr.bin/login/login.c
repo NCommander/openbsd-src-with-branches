@@ -1,4 +1,4 @@
-/*	$OpenBSD: login.c,v 1.72 2019/12/04 09:51:07 deraadt Exp $	*/
+/*	$OpenBSD: login.c,v 1.73 2021/10/24 21:24:16 deraadt Exp $	*/
 /*	$NetBSD: login.c,v 1.13 1996/05/15 23:50:16 jtc Exp $	*/
 
 /*-
@@ -818,14 +818,12 @@ motd(void)
 	(void)close(fd);
 }
 
-/* ARGSUSED */
 void
 sigint(int signo)
 {
 	return;			/* just interrupt syscall */
 }
 
-/* ARGSUSED */
 void
 timedout(int signo)
 {

@@ -1,4 +1,4 @@
-/*      $OpenBSD: tty.c,v 1.3 2015/09/05 09:49:24 jsg Exp $	*/
+/*      $OpenBSD: tty.c,v 1.4 2017/07/02 23:19:07 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2013, Otto Moerbeek <otto@drijf.net>
@@ -44,7 +44,6 @@ gettty(struct termios *t)
 	return ret;
 }
 
-/* ARGSUSED */
 void
 tstpcont(int sig)
 {

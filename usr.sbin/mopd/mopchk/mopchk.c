@@ -1,4 +1,4 @@
-/*	$OpenBSD: mopchk.c,v 1.18 2015/02/09 23:00:14 deraadt Exp $	*/
+/*	$OpenBSD: mopchk.c,v 1.19 2021/10/24 21:24:19 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1995-96 Mats O Jansson.  All rights reserved.
@@ -151,7 +151,6 @@ Usage()
 /*
  * Process incoming packages, NOT. 
  */
-/* ARGSUSED */
 void
 mopProcess(ii, pkt)
 	struct if_info *ii;

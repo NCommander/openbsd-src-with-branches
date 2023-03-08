@@ -1,4 +1,4 @@
-/*	$OpenBSD: ospf6d.c,v 1.51 2021/09/06 13:32:18 deraadt Exp $ */
+/*	$OpenBSD: ospf6d.c,v 1.52 2022/01/20 14:03:31 naddy Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -73,7 +73,6 @@ char			*conffile;
 pid_t			 ospfe_pid = 0;
 pid_t			 rde_pid = 0;
 
-/* ARGSUSED */
 void
 main_sig_handler(int sig, short event, void *arg)
 {
@@ -330,7 +329,6 @@ ospfd_shutdown(void)
 }
 
 /* imsg handling */
-/* ARGSUSED */
 void
 main_dispatch_ospfe(int fd, short event, void *bula)
 {
@@ -405,7 +403,6 @@ main_dispatch_ospfe(int fd, short event, void *bula)
 	}
 }
 
-/* ARGSUSED */
 void
 main_dispatch_rde(int fd, short event, void *bula)
 {

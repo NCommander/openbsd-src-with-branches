@@ -1,4 +1,4 @@
-/*	$OpenBSD: search.c,v 1.26 2016/04/28 09:44:36 schwarze Exp $	*/
+/*	$OpenBSD: search.c,v 1.27 2016/05/06 13:12:52 schwarze Exp $	*/
 /*	$NetBSD: search.c,v 1.45 2016/04/18 17:01:19 christos Exp $	*/
 
 /*-
@@ -95,7 +95,6 @@ search_end(EditLine *el)
  *	Handle regular expression errors
  */
 void
-/*ARGSUSED*/
 regerror(const char *msg)
 {
 }

@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_spf.c,v 1.77 2019/04/04 19:57:08 remi Exp $ */
+/*	$OpenBSD: rde_spf.c,v 1.78 2019/11/19 09:55:55 remi Exp $ */
 
 /*
  * Copyright (c) 2005 Esben Norby <norby@openbsd.org>
@@ -509,7 +509,6 @@ cand_list_clr(void)
 }
 
 /* timers */
-/* ARGSUSED */
 void
 spf_timer(int fd, short event, void *arg)
 {

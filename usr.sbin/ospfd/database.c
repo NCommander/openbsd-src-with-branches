@@ -1,4 +1,4 @@
-/*	$OpenBSD: database.c,v 1.34 2019/07/15 18:26:39 remi Exp $ */
+/*	$OpenBSD: database.c,v 1.35 2021/11/03 21:40:03 sthen Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -381,7 +381,6 @@ db_sum_list_clr(struct nbr *nbr)
 }
 
 /* timers */
-/* ARGSUSED */
 void
 db_tx_timer(int fd, short event, void *arg)
 {

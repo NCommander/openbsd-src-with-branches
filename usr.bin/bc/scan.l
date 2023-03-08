@@ -1,5 +1,5 @@
 %{
-/*      $OpenBSD: scan.l,v 1.30 2017/07/19 12:50:33 espie Exp $	*/
+/*      $OpenBSD: scan.l,v 1.31 2021/08/09 19:13:56 otto Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -233,7 +233,6 @@ add_str(const char *str)
 	strlcat(strbuf, str, strbuf_sz);
 }
 
-/* ARGSUSED */
 void
 abort_line(int sig)
 {

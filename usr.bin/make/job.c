@@ -1,4 +1,4 @@
-/*	$OpenBSD: job.c,v 1.162 2020/06/02 12:24:44 espie Exp $	*/
+/*	$OpenBSD: job.c,v 1.163 2022/12/26 19:16:02 jmc Exp $	*/
 /*	$NetBSD: job.c,v 1.16 1996/11/06 17:59:08 christos Exp $	*/
 
 /*
@@ -524,7 +524,6 @@ debug_kill_printf(const char *fmt, ...)
  *	to ABORT_ERROR so no more jobs will be started.
  *-----------------------------------------------------------------------
  */
-/*ARGSUSED*/
 
 static void
 postprocess_job(Job *job)

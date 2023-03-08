@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_kq.c,v 1.33 2020/12/25 12:59:53 visa Exp $ */
+/*	$OpenBSD: nfs_kq.c,v 1.34 2021/12/11 09:28:26 visa Exp $ */
 /*	$NetBSD: nfs_kq.c,v 1.7 2003/10/30 01:43:10 simonb Exp $	*/
 
 /*-
@@ -89,7 +89,6 @@ struct kevqlist kevlist = SLIST_HEAD_INITIALIZER(kevlist);
  * and exits when the watch list is empty. The overhead of thread creation
  * isn't really important, neither speed of attach and detach of knote.
  */
-/* ARGSUSED */
 void
 nfs_kqpoll(void *arg)
 {

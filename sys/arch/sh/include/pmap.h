@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.17 2023/01/01 19:49:17 miod Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.18 2023/01/31 15:18:55 deraadt Exp $	*/
 /*	$NetBSD: pmap.h,v 1.28 2006/04/10 23:12:11 uwe Exp $	*/
 
 /*-
@@ -69,7 +69,6 @@ void pmap_bootstrap(void);
 #define	pmap_wired_count(pmap)		((pmap)->pm_stats.wired_count)
 #define	pmap_resident_count(pmap)	((pmap)->pm_stats.resident_count)
 
-/* ARGSUSED */
 static __inline void
 pmap_remove_all(struct pmap *pmap)
 {

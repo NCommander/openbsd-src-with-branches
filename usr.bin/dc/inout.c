@@ -1,4 +1,4 @@
-/*	$OpenBSD: inout.c,v 1.21 2017/11/29 19:12:48 otto Exp $	*/
+/*	$OpenBSD: inout.c,v 1.22 2021/11/10 04:39:16 tb Exp $	*/
 
 /*
  * Copyright (c) 2003, Otto Moerbeek <otto@drijf.net>
@@ -81,7 +81,6 @@ src_ungetcharstream(struct source *src)
 	(void)ungetc(src->lastchar, src->u.stream);
 }
 
-/* ARGSUSED */
 static void
 src_freestream(struct source *src)
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: at.c,v 1.82 2019/06/28 13:35:00 deraadt Exp $	*/
+/*	$OpenBSD: at.c,v 1.83 2019/11/29 03:12:35 cheloha Exp $	*/
 
 /*
  *  at.c : Put file into atrun queue
@@ -130,7 +130,6 @@ fatalx(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
-/* ARGSUSED */
 static void
 sigc(int signo)
 {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.24 2017/02/22 14:24:50 renato Exp $ */
+/*	$OpenBSD: interface.c,v 1.25 2019/06/28 13:32:47 deraadt Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -435,7 +435,6 @@ eigrp_if_reset(struct eigrp_iface *ei)
 }
 
 /* timers */
-/* ARGSUSED */
 static void
 eigrp_if_hello_timer(int fd, short event, void *arg)
 {

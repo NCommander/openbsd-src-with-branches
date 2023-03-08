@@ -1,4 +1,4 @@
-/*	$OpenBSD: sendsig.c,v 1.34 2020/11/08 20:37:23 mpi Exp $ */
+/*	$OpenBSD: sendsig.c,v 1.35 2021/10/06 15:46:03 claudio Exp $ */
 
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -173,7 +173,6 @@ sendsig(sig_t catcher, int sig, sigset_t mask, const siginfo_t *ksip,
  * psl to gain improper privileges or to cause
  * a machine fault.
  */
-/* ARGSUSED */
 int
 sys_sigreturn(struct proc *p, void *v, register_t *retval)
 {

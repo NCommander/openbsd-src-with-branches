@@ -1,4 +1,4 @@
-/*	$OpenBSD: el.c,v 1.36 2016/05/22 23:09:56 schwarze Exp $	*/
+/*	$OpenBSD: el.c,v 1.37 2017/04/12 18:24:37 tb Exp $	*/
 /*	$NetBSD: el.c,v 1.61 2011/01/27 23:11:40 christos Exp $	*/
 
 /*-
@@ -597,7 +597,6 @@ el_beep(EditLine *el)
  *	Set the state of EDIT_DISABLED from the `edit' command.
  */
 protected int
-/*ARGSUSED*/
 el_editmode(EditLine *el, int argc, const wchar_t **argv)
 {
 	const wchar_t *how;

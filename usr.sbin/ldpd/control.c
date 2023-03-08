@@ -1,4 +1,4 @@
-/*	$OpenBSD: control.c,v 1.30 2020/06/22 15:09:34 mestre Exp $ */
+/*	$OpenBSD: control.c,v 1.31 2021/01/19 15:14:35 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -104,7 +104,6 @@ control_cleanup(void)
 	close(control_fd);
 }
 
-/* ARGSUSED */
 static void
 control_accept(int listenfd, short event, void *bula)
 {
@@ -189,7 +188,6 @@ control_close(int fd)
 	free(c);
 }
 
-/* ARGSUSED */
 static void
 control_dispatch_imsg(int fd, short event, void *bula)
 {

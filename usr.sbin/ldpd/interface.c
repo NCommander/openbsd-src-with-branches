@@ -1,4 +1,4 @@
-/*	$OpenBSD: interface.c,v 1.50 2017/03/03 23:41:27 renato Exp $ */
+/*	$OpenBSD: interface.c,v 1.51 2019/06/28 13:32:48 deraadt Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -374,7 +374,6 @@ if_update_all(int af)
 }
 
 /* timers */
-/* ARGSUSED */
 static void
 if_hello_timer(int fd, short event, void *arg)
 {

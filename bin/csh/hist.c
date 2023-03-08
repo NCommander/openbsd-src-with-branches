@@ -1,4 +1,4 @@
-/*	$OpenBSD: hist.c,v 1.9 2015/02/08 05:51:37 tedu Exp $	*/
+/*	$OpenBSD: hist.c,v 1.10 2015/12/26 13:48:38 mestre Exp $	*/
 /*	$NetBSD: hist.c,v 1.7 1995/03/21 18:35:44 mycroft Exp $	*/
 
 /*-
@@ -101,7 +101,6 @@ hfree(struct Hist *hp)
 }
 
 void
-/*ARGSUSED*/
 dohist(Char **v, struct command *t)
 {
     int     n, rflg = 0, hflg = 0;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: wall.c,v 1.35 2021/07/12 15:09:20 beck Exp $	*/
+/*	$OpenBSD: wall.c,v 1.36 2022/05/05 10:04:24 bluhm Exp $	*/
 /*	$NetBSD: wall.c,v 1.6 1994/11/17 07:17:58 jtc Exp $	*/
 
 /*
@@ -74,7 +74,6 @@ int nobanner;
 int mbufsize;
 char *mbuf;
 
-/* ARGSUSED */
 int
 main(int argc, char **argv)
 {

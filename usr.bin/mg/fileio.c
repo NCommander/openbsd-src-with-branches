@@ -1,4 +1,4 @@
-/*	$OpenBSD: fileio.c,v 1.107 2021/02/23 08:10:51 lum Exp $	*/
+/*	$OpenBSD: fileio.c,v 1.108 2021/03/01 10:51:14 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -136,7 +136,6 @@ ffwopen(FILE ** ffp, const char *fn, struct buffer *bp)
 /*
  * Close a file.
  */
-/* ARGSUSED */
 int
 ffclose(FILE *ffp, struct buffer *bp)
 {

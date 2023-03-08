@@ -1,4 +1,4 @@
-/*	$OpenBSD: vnd.c,v 1.178 2022/09/01 12:28:53 deraadt Exp $	*/
+/*	$OpenBSD: vnd.c,v 1.179 2022/10/23 14:39:19 krw Exp $	*/
 /*	$NetBSD: vnd.c,v 1.26 1996/03/30 23:06:11 christos Exp $	*/
 
 /*
@@ -359,14 +359,12 @@ vndstrategy(struct buf *bp)
 	splx(s);
 }
 
-/* ARGSUSED */
 int
 vndread(dev_t dev, struct uio *uio, int flags)
 {
 	return (physio(vndstrategy, dev, B_READ, minphys, uio));
 }
 
-/* ARGSUSED */
 int
 vndwrite(dev_t dev, struct uio *uio, int flags)
 {
@@ -391,7 +389,6 @@ vndbdevsize(struct vnode *vp, struct proc *p)
 	return (DL_GETPSIZE(pi.part));
 }
 
-/* ARGSUSED */
 int
 vndioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 {
