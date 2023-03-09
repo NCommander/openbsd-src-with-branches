@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_igc.c,v 1.10 2022/11/11 16:41:44 mbuhl Exp $	*/
+/*	$OpenBSD: if_igc.c,v 1.11 2023/02/09 21:21:27 naddy Exp $	*/
 /*-
  * SPDX-License-Identifier: BSD-2-Clause
  *
@@ -234,7 +234,7 @@ igc_attach(struct device *parent, struct device *self, void *aux)
 	if (igc_check_reset_block(hw))
 		printf(": PHY reset is blocked due to SOL/IDER session\n");
 
-	/* Enable Energy Efficient Ethernet. */
+	/* Disable Energy Efficient Ethernet. */
 	sc->hw.dev_spec._i225.eee_disable = true;
 
 	igc_reset_hw(hw);
