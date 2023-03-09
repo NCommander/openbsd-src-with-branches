@@ -1,4 +1,4 @@
-/*	$OpenBSD: gbr.c,v 1.19 2022/11/29 20:41:32 job Exp $ */
+/*	$OpenBSD: gbr.c,v 1.20 2022/11/30 09:12:50 job Exp $ */
 /*
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
  *
@@ -45,16 +45,19 @@ gbr_parse(X509 **x509, const char *fn, const unsigned char *der, size_t len)
 	struct parse	 p;
 	size_t		 cmsz;
 	unsigned char	*cms;
+	time_t		 signtime;
 
 	memset(&p, 0, sizeof(struct parse));
 	p.fn = fn;
 
-	cms = cms_parse_validate(x509, fn, der, len, gbr_oid, &cmsz);
+	cms = cms_parse_validate(x509, fn, der, len, gbr_oid, &cmsz,
+	    &signtime);
 	if (cms == NULL)
 		return NULL;
 
 	if ((p.res = calloc(1, sizeof(*p.res))) == NULL)
 		err(1, NULL);
+	p.res->signtime = signtime;
 	if ((p.res->vcard = strndup(cms, cmsz)) == NULL)
 		err(1, NULL);
 	free(cms);

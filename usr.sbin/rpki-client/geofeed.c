@@ -1,4 +1,4 @@
-/*	$OpenBSD: geofeed.c,v 1.9 2022/12/28 12:16:35 tb Exp $ */
+/*	$OpenBSD: geofeed.c,v 1.10 2022/12/28 13:21:11 tb Exp $ */
 /*
  * Copyright (c) 2022 Job Snijders <job@fastly.com>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -233,7 +233,7 @@ geofeed_parse(X509 **x509, const char *fn, char *buf, size_t len)
 	}
 
 	if (!cms_parse_validate_detached(x509, fn, der, dersz, geofeed_oid,
-	    bio))
+	    bio, &p.res->signtime))
 		goto out;
 
 	if (!x509_get_aia(*x509, fn, &p.res->aia))
