@@ -1,4 +1,4 @@
-/*	$OpenBSD: aplpcie.c,v 1.13 2022/04/06 18:59:26 naddy Exp $	*/
+/*	$OpenBSD: aplpcie.c,v 1.14 2023/01/01 11:29:09 kettenis Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -387,12 +387,17 @@ aplpcie_attach(struct device *parent, struct device *self, void *aux)
 void
 aplpcie_init_port(struct aplpcie_softc *sc, int node)
 {
+	char status[32];
 	uint32_t reg[5];
 	uint32_t *pwren_gpio;
 	uint32_t *reset_gpio;
 	int pwren_gpiolen, reset_gpiolen;
 	uint32_t stat;
 	int port, timo;
+
+	if (OF_getprop(node, "status", status, sizeof(status)) > 0 &&
+	    strcmp(status, "disabled") == 0)
+		return;
 
 	if (OF_getpropintarray(node, "reg", reg, sizeof(reg)) != sizeof(reg))
 		return;
