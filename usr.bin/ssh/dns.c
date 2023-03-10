@@ -1,4 +1,4 @@
-/* $OpenBSD: dns.c,v 1.42 2022/02/01 23:32:51 djm Exp $ */
+/* $OpenBSD: dns.c,v 1.43 2023/02/10 04:56:30 djm Exp $ */
 
 /*
  * Copyright (c) 2003 Wesley Griffin. All rights reserved.
@@ -256,6 +256,7 @@ verify_host_key_dns(const char *hostname, struct sockaddr *address,
 		if (!dns_read_key(&hostkey_algorithm, &dnskey_digest_type,
 		    &hostkey_digest, &hostkey_digest_len, hostkey)) {
 			error("Error calculating key fingerprint.");
+			free(dnskey_digest);
 			freerrset(fingerprints);
 			return -1;
 		}
