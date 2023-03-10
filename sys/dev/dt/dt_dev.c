@@ -1,4 +1,4 @@
-/*	$OpenBSD: dt_dev.c,v 1.22 2022/02/27 10:14:01 bluhm Exp $ */
+/*	$OpenBSD: dt_dev.c,v 1.23 2023/03/10 11:01:52 claudio Exp $ */
 
 /*
  * Copyright (c) 2019 Martin Pieuchot <mpi@openbsd.org>
@@ -59,6 +59,9 @@
 #elif defined(__i386__)
 #define DT_FA_PROFILE	8
 #define DT_FA_STATIC	2
+#elif defined(__macppc__)
+#define DT_FA_PROFILE  7
+#define DT_FA_STATIC   2
 #elif defined(__octeon__)
 #define DT_FA_PROFILE	6
 #define DT_FA_STATIC	2
