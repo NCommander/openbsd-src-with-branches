@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.c,v 1.373 2023/03/05 05:34:09 dtucker Exp $ */
+/* $OpenBSD: readconf.c,v 1.374 2023/03/09 21:06:24 jcs Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2116,15 +2116,13 @@ parse_pubkey_algos:
 		value2 = 0; /* unlimited lifespan by default */
 		if (value == 3 && arg2 != NULL) {
 			/* allow "AddKeysToAgent confirm 5m" */
-			if ((value2 = convtime(arg2)) == -1 ||
-			    value2 > INT_MAX) {
+			if ((value2 = convtime(arg2)) == -1) {
 				error("%s line %d: invalid time value.",
 				    filename, linenum);
 				goto out;
 			}
 		} else if (value == -1 && arg2 == NULL) {
-			if ((value2 = convtime(arg)) == -1 ||
-			    value2 > INT_MAX) {
+			if ((value2 = convtime(arg)) == -1) {
 				error("%s line %d: unsupported option",
 				    filename, linenum);
 				goto out;
