@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_lib.c,v 1.44 2022/11/26 16:08:54 tb Exp $ */
+/* $OpenBSD: rsa_lib.c,v 1.45 2023/03/07 09:27:10 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -298,7 +298,7 @@ RSA_set0_crt_params(RSA *r, BIGNUM *dmp1, BIGNUM *dmq1, BIGNUM *iqmp)
 	if ((r->dmp1 == NULL && dmp1 == NULL) ||
 	    (r->dmq1 == NULL && dmq1 == NULL) ||
 	    (r->iqmp == NULL && iqmp == NULL))
-	       	return 0;
+		return 0;
 
 	if (dmp1 != NULL) {
 		BN_free(r->dmp1);
