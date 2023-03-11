@@ -1,4 +1,4 @@
-/*	$OpenBSD: evp_test.c,v 1.2 2022/11/09 17:15:59 jsing Exp $ */
+/*	$OpenBSD: evp_test.c,v 1.3 2022/11/26 16:08:56 tb Exp $ */
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
  *
@@ -144,6 +144,8 @@ main(int argc, char **argv)
 
 	failed |= evp_asn1_method_test();
 	failed |= evp_pkey_method_test();
+
+	OPENSSL_cleanup();
 
 	return failed;
 }
