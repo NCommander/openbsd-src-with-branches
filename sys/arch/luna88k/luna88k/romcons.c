@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
  * Copyright (c) 2022 Kenji Aoyama
  *
