@@ -1,4 +1,4 @@
-/*	$OpenBSD: aspa.c,v 1.13 2023/03/10 12:02:11 job Exp $ */
+/*	$OpenBSD: aspa.c,v 1.14 2023/03/10 12:44:56 job Exp $ */
 /*
  * Copyright (c) 2022 Job Snijders <job@fastly.com>
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
@@ -189,7 +189,7 @@ aspa_parse(X509 **x509, const char *fn, const unsigned char *der, size_t len)
 	size_t		 cmsz;
 	unsigned char	*cms;
 	struct cert	*cert = NULL;
-	time_t		 signtime;
+	time_t		 signtime = 0;
 	int		 rc = 0;
 
 	memset(&p, 0, sizeof(struct parse));
