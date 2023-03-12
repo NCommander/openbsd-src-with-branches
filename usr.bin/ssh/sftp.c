@@ -1,4 +1,4 @@
-/* $OpenBSD: sftp.c,v 1.227 2023/03/08 04:43:12 guenther Exp $ */
+/* $OpenBSD: sftp.c,v 1.228 2023/03/08 06:21:32 dtucker Exp $ */
 /*
  * Copyright (c) 2001-2004 Damien Miller <djm@openbsd.org>
  *
@@ -980,7 +980,7 @@ do_globbed_ls(struct sftp_conn *conn, const char *path,
 	 */
 	for (nentries = 0; g.gl_pathv[nentries] != NULL; nentries++)
 		;	/* count entries */
-	indices = calloc(nentries, sizeof(*indices));
+	indices = xcalloc(nentries, sizeof(*indices));
 	for (i = 0; i < nentries; i++)
 		indices[i] = i;
 
