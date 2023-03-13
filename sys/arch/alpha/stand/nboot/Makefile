@@ -1,10 +1,13 @@
-#	$OpenBSD: Makefile,v 1.25 2020/03/11 09:59:31 otto Exp $
+#	$OpenBSD: Makefile,v 1.1 2023/03/11 20:56:01 miod Exp $
 #	$NetBSD: Makefile,v 1.17 1997/04/17 07:27:46 thorpej Exp $
 
+MAN?=	boot.8
+MANSUBDIR=alpha
+
+.if ${MACHINE} == "alpha"
 S=	${.CURDIR}/../../../..
 
 PROG=	boot
-NOMAN=
 INSTALL_STRIP=
 BINMODE= 444
 
@@ -65,3 +68,9 @@ ${PROG}.sym: ${OBJS} ${LIBSA} ${LIBZ}
 	${LD} -nopie -znorelro -Ttext ${BOOT_RELOC} -N -e start \
 	    -o ${PROG}.sym ${OBJS} ${LIBSA} ${LIBZ} ${LIBSA}
 	size ${PROG}.sym
+
+.else
+NOPROG=
+.include <bsd.prog.mk>
+.endif
+
