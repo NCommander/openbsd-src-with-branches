@@ -1,4 +1,4 @@
-.\" $OpenBSD: bgplgd.8,v 1.5 2023/02/03 10:10:36 job Exp $
+.\" $OpenBSD: bgplgd.8,v 1.6 2023/02/03 15:51:09 jmc Exp $
 .\"
 .\" Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
 .\"
@@ -145,6 +145,10 @@ Show only prefixes that match the specified ASPA Validation State.
 Show only selected routes.
 .It Cm error Ns = Ns 1
 Show only prefixes which are marked invalid and were treated as withdrawn.
+.It Cm invalid Ns = Ns 1
+Show only prefixes which are not eligible.
+.It Cm leaked Ns = Ns 1
+Show only prefixes where a route leak was detected.
 .It Cm prefix Ns = Ns Ar addr
 Show only entries that match prefix either as the best matching route or
 show the entry for this CIDR prefix.
