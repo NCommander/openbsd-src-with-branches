@@ -1,4 +1,4 @@
-/* $OpenBSD: authfile.c,v 1.142 2022/01/01 01:55:30 jsg Exp $ */
+/* $OpenBSD: authfile.c,v 1.143 2022/06/21 14:52:13 tobhe Exp $ */
 /*
  * Copyright (c) 2000, 2013 Markus Friedl.  All rights reserved.
  *
@@ -206,6 +206,8 @@ sshkey_try_load_public(struct sshkey **kp, const char *filename,
 	int r;
 	struct sshkey *k = NULL;
 
+	if (kp == NULL)
+		return SSH_ERR_INVALID_ARGUMENT;
 	*kp = NULL;
 	if (commentp != NULL)
 		*commentp = NULL;
