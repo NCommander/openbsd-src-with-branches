@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.262 2023/02/14 11:46:08 claudio Exp $	*/
+/*	$OpenBSD: route.c,v 1.263 2023/02/18 18:07:38 claudio Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -511,7 +511,7 @@ setsource(int argc, char **argv)
 	}
 
 	if (argc <= 0 && ifindex == 0)
-		printsource(af, tableid);
+		printsource(AF_UNSPEC, tableid);
 	if (argc > 1 && ifindex == 0)
 		usage(NULL);
 
