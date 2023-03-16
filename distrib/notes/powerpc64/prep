@@ -1,4 +1,4 @@
-dnl	$OpenBSD: prep,v 1.11 2020/05/17 17:04:27 deraadt Exp $
-
-TBD
-
+dnl	$OpenBSD: prep,v 1.1 2020/07/05 20:01:35 kettenis Exp $
+dnl TBD
+dnl Once this part is written, be sure to revert the ifelse block in
+dnl ../INSTALL which omits the prep section title on powerpc64.
