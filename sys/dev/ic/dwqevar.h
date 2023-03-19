@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dwqe.c,v 1.13 2021/12/20 04:21:32 jmatthew Exp $	*/
+/*	$OpenBSD: dwqevar.h,v 1.1 2023/02/13 19:18:53 patrick Exp $	*/
 /*
  * Copyright (c) 2008, 2019 Mark Kettenis <kettenis@openbsd.org>
  * Copyright (c) 2017, 2022 Patrick Wildt <patrick@blueri.se>
@@ -67,6 +67,7 @@ struct dwqe_softc {
 
 	struct timeout		sc_tick;
 	struct timeout		sc_rxto;
+	struct task		sc_statchg_task;
 
 	uint32_t		sc_clk;
 
