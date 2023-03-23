@@ -1,4 +1,4 @@
-/*	$OpenBSD: aplpinctrl.c,v 1.5 2022/12/06 16:07:14 kettenis Exp $	*/
+/*	$OpenBSD: aplpinctrl.c,v 1.6 2023/03/05 14:45:07 patrick Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -388,7 +388,6 @@ aplpinctrl_intr_disestablish(void *cookie)
 	TAILQ_REMOVE(&sc->sc_handler[ih->ih_irq], ih, ih_list);
 	if (ih->ih_name)
 		evcount_detach(&ih->ih_count);
-	free(ih, M_DEVBUF, sizeof(*ih));
 
 	if (TAILQ_EMPTY(&sc->sc_handler[ih->ih_irq])) {
 		reg = HREAD4(sc, GPIO_PIN(ih->ih_irq));
@@ -396,6 +395,8 @@ aplpinctrl_intr_disestablish(void *cookie)
 		reg |= GPIO_PIN_MODE_IRQ_OFF;
 		HWRITE4(sc, GPIO_PIN(ih->ih_irq), reg);
 	}
+
+	free(ih, M_DEVBUF, sizeof(*ih));
 
 	splx(s);
 }
