@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1171 2023/01/22 23:05:51 yasuoka Exp $ */
+/*	$OpenBSD: pf.c,v 1.1172 2023/03/04 10:55:37 sashan Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1640,8 +1640,8 @@ pf_state_expires(const struct pf_state *st, uint8_t stimeout)
 	 * next pass of the purge task.
 	 */
 
-	/* handle all PFTM_* > PFTM_MAX here */
-	if (stimeout > PFTM_MAX)
+	/* handle all PFTM_* >= PFTM_MAX here */
+	if (stimeout >= PFTM_MAX)
 		return (0);
 
 	KASSERT(stimeout < PFTM_MAX);
