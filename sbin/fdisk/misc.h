@@ -1,4 +1,4 @@
-/*	$OpenBSD: misc.h,v 1.48 2022/04/20 15:49:56 krw Exp $	*/
+/*	$OpenBSD: misc.h,v 1.49 2022/04/20 20:43:32 krw Exp $	*/
 
 /*
  * Copyright (c) 1997 Tobias Weingartner
@@ -29,6 +29,7 @@ struct unit_type {
 #define	WHITESPACE	" \f\n\r\t\v"
 #define	UNTRIMMED	0
 #define	TRIMMED		1
+#define	LINEBUFSZ	100
 
 double		 units_size(const char *, const uint64_t,
     const struct unit_type **);
