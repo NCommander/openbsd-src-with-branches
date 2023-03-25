@@ -1,4 +1,4 @@
-/*	$OpenBSD: recv.c,v 1.5 2005/08/06 20:30:03 espie Exp $ */
+/*	$OpenBSD: recv.c,v 1.6 2015/10/04 07:17:27 guenther Exp $ */
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,6 +36,6 @@
 ssize_t
 recv(int s, void *buf, size_t len, int flags)
 {
-	return (recvfrom(s, buf, len, flags, NULL, 0));
+	return (recvfrom(s, buf, len, flags, NULL, NULL));
 }
 DEF_WEAK(recv);
