@@ -15,6 +15,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "ASTPrint.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/PrettyPrinter.h"
@@ -66,31 +67,11 @@ public:
     const DeclarationMatcher &NodeMatch, StringRef ExpectedPrinted,
     StringRef FileName,
     std::function<void(llvm::raw_ostream &, const NamedDecl *)> Print) {
-  PrintMatch Printer(std::move(Print));
-  MatchFinder Finder;
-  Finder.addMatcher(NodeMatch, &Printer);
-  std::unique_ptr<FrontendActionFactory> Factory =
-      newFrontendActionFactory(&Finder);
-
-  if (!runToolOnCodeWithArgs(Factory->create(), Code, Args, FileName))
-    return testing::AssertionFailure()
-        << "Parsing error in \"" << Code.str() << "\"";
-
-  if (Printer.getNumFoundDecls() == 0)
-    return testing::AssertionFailure()
-        << "Matcher didn't find any named declarations";
-
-  if (Printer.getNumFoundDecls() > 1)
-    return testing::AssertionFailure()
-        << "Matcher should match only one named declaration "
-           "(found " << Printer.getNumFoundDecls() << ")";
-
-  if (Printer.getPrinted() != ExpectedPrinted)
-    return ::testing::AssertionFailure()
-        << "Expected \"" << ExpectedPrinted.str() << "\", "
-           "got \"" << Printer.getPrinted().str() << "\"";
-
-  return ::testing::AssertionSuccess();
+  return PrintedNodeMatches<NamedDecl>(
+      Code, Args, NodeMatch, ExpectedPrinted, FileName,
+      [Print](llvm::raw_ostream &Out, const ASTContext *Context,
+              const NamedDecl *ND,
+              PrintingPolicyAdjuster PolicyAdjuster) { Print(Out, ND); });
 }
 
 ::testing::AssertionResult
@@ -112,36 +93,30 @@ PrintedNamedDeclMatches(StringRef Code, const std::vector<std::string> &Args,
 PrintedNamedDeclCXX98Matches(StringRef Code, StringRef DeclName,
                              StringRef ExpectedPrinted) {
   std::vector<std::string> Args(1, "-std=c++98");
-  return PrintedNamedDeclMatches(Code,
-                                 Args,
+  return PrintedNamedDeclMatches(Code, Args,
                                  /*SuppressUnwrittenScope*/ false,
                                  namedDecl(hasName(DeclName)).bind("id"),
-                                 ExpectedPrinted,
-                                 "input.cc");
+                                 ExpectedPrinted, "input.cc");
 }
 
 ::testing::AssertionResult
 PrintedWrittenNamedDeclCXX11Matches(StringRef Code, StringRef DeclName,
                                     StringRef ExpectedPrinted) {
   std::vector<std::string> Args(1, "-std=c++11");
-  return PrintedNamedDeclMatches(Code,
-                                 Args,
+  return PrintedNamedDeclMatches(Code, Args,
                                  /*SuppressUnwrittenScope*/ true,
                                  namedDecl(hasName(DeclName)).bind("id"),
-                                 ExpectedPrinted,
-                                 "input.cc");
+                                 ExpectedPrinted, "input.cc");
 }
 
 ::testing::AssertionResult
 PrintedWrittenPropertyDeclObjCMatches(StringRef Code, StringRef DeclName,
                                    StringRef ExpectedPrinted) {
   std::vector<std::string> Args{"-std=c++11", "-xobjective-c++"};
-  return PrintedNamedDeclMatches(Code,
-                                 Args,
+  return PrintedNamedDeclMatches(Code, Args,
                                  /*SuppressUnwrittenScope*/ true,
                                  objcPropertyDecl(hasName(DeclName)).bind("id"),
-                                 ExpectedPrinted,
-                                 "input.m");
+                                 ExpectedPrinted, "input.m");
 }
 
 ::testing::AssertionResult
@@ -234,6 +209,27 @@ R"(
     Code,
     "property",
     "Obj::property"));
+}
+
+TEST(NamedDeclPrinter, TestInstanceObjCClassExtension) {
+  const char *Code =
+R"(
+@interface ObjC
+@end
+@interface ObjC () {
+  char data; // legal with non-fragile ABI.
+}
+@end
+)";
+
+  std::vector<std::string> Args{
+      "-std=c++11", "-xobjective-c++",
+      "-fobjc-runtime=macosx" /*force to use non-fragile ABI*/};
+  ASSERT_TRUE(PrintedNamedDeclMatches(Code, Args,
+                                      /*SuppressUnwrittenScope*/ true,
+                                      namedDecl(hasName("data")).bind("id"),
+                                      // not "::data"
+                                      "ObjC::data", "input.mm"));
 }
 
 TEST(NamedDeclPrinter, TestObjCClassExtensionWithGetter) {

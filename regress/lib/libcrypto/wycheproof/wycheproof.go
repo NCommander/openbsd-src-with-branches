@@ -1,4 +1,4 @@
-/* $OpenBSD: wycheproof.go,v 1.140 2023/03/25 09:17:14 tb Exp $ */
+/* $OpenBSD: wycheproof.go,v 1.138 2023/03/08 06:12:52 jsing Exp $ */
 /*
  * Copyright (c) 2018 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2018,2019,2022 Theo Buehler <tb@openbsd.org>
@@ -527,7 +527,6 @@ var nids = map[string]int{
 	"brainpoolP320t1": C.NID_brainpoolP320t1,
 	"brainpoolP384t1": C.NID_brainpoolP384t1,
 	"brainpoolP512t1": C.NID_brainpoolP512t1,
-	"FRP256v1":        C.NID_FRP256v1,
 	"secp160k1":       C.NID_secp160k1,
 	"secp160r1":       C.NID_secp160r1,
 	"secp160r2":       C.NID_secp160r2,
@@ -1255,6 +1254,12 @@ func runChaCha20Poly1305Test(algorithm string, wt *wycheproofTestAead) bool {
 	if msgLen == 0 {
 		msg = append(msg, 0)
 	}
+	if ctLen == 0 {
+		msg = append(ct, 0)
+	}
+	if tagLen == 0 {
+		msg = append(tag, 0)
+	}
 
 	ctx := C.EVP_AEAD_CTX_new()
 	if ctx == nil {
@@ -1593,6 +1598,11 @@ func runECDHTest(nid int, variant testVariant, wt *wycheproofTestECDH) bool {
 }
 
 func runECDHTestGroup(algorithm string, variant testVariant, wtg *wycheproofTestGroupECDH) bool {
+	if wtg.Curve == "FRP256v1" {
+		fmt.Printf("INFO: Skipping %v test group %v with curve %v and %v encoding...\n", algorithm, wtg.Type, wtg.Curve, wtg.Encoding)
+		return true
+	}
+
 	fmt.Printf("Running %v test group %v with curve %v and %v encoding...\n",
 		algorithm, wtg.Type, wtg.Curve, wtg.Encoding)
 

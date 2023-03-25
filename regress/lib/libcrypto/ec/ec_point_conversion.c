@@ -1,4 +1,4 @@
-/*	$OpenBSD: ec_point_conversion.c,v 1.7 2022/12/01 13:49:12 tb Exp $ */
+/*	$OpenBSD: ec_point_conversion.c,v 1.6 2021/12/29 22:48:09 tb Exp $ */
 /*
  * Copyright (c) 2021 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2021 Joel Sing <jsing@openbsd.org>
@@ -109,7 +109,6 @@ roundtrip(EC_GROUP *group, EC_POINT *point, int form, BIGNUM *x, BIGNUM *y)
 	return failed;
 }
 
-#ifndef OPENSSL_NO_EC2M
 static int
 test_hybrid_corner_case(void)
 {
@@ -144,7 +143,6 @@ test_hybrid_corner_case(void)
 
 	return failed;
 }
-#endif
 
 /* XXX This only tests multiples of the generator for now... */
 static int
@@ -244,7 +242,6 @@ static const struct point_conversion {
 	uint8_t octets_len;
 	int valid;
 } point_conversions[] = {
-#ifndef OPENSSL_NO_EC2M
 	{
 		.description = "point at infinity on sect571k1",
 		.nid = NID_sect571k1,
@@ -552,7 +549,7 @@ static const struct point_conversion {
 		.octets_len = 145,
 		.valid = 0,
 	},
-#endif
+
 	{
 		.description = "point at infinity on secp256r1",
 		.nid = NID_X9_62_prime256v1,
@@ -883,9 +880,7 @@ main(int argc, char **argv)
 	int failed = 0;
 
 	failed |= test_random_points();
-#ifndef OPENSSL_NO_EC2M
 	failed |= test_hybrid_corner_case();
-#endif
 	failed |= test_point_conversions();
 
 	return failed;
