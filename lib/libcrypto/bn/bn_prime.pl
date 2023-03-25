@@ -1,5 +1,5 @@
 #!/bin/perl
-# bn_prime.pl
+# 	$OpenBSD$
 
 $num=2048;
 $num=$ARGV[0] if ($#ARGV >= 0);
