@@ -1,4 +1,4 @@
-/*	$OpenBSD: ca.c,v 1.40 2021/06/14 17:58:15 eric Exp $	*/
+/*	$OpenBSD: ca.c,v 1.42 2022/02/18 16:57:36 millert Exp $	*/
 
 /*
  * Copyright (c) 2014 Reyk Floeter <reyk@openbsd.org>
@@ -17,6 +17,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/engine.h>
 #include <pwd.h>
