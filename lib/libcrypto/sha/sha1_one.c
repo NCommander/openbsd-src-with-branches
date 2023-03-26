@@ -1,4 +1,4 @@
-/* $OpenBSD: sha1_one.c,v 1.12 2015/09/10 15:56:26 jsing Exp $ */
+/* $OpenBSD: sha1_one.c,v 1.13 2023/03/26 16:40:07 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -73,11 +73,14 @@ SHA1(const unsigned char *d, size_t n, unsigned char *md)
 
 	if (md == NULL)
 		md = m;
+
 	if (!SHA1_Init(&c))
 		return NULL;
 	SHA1_Update(&c, d, n);
 	SHA1_Final(md, &c);
+
 	explicit_bzero(&c, sizeof(c));
+
 	return (md);
 }
 #endif
