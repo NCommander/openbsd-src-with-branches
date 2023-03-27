@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa_gen.c,v 1.26 2022/11/26 16:08:52 tb Exp $ */
+/* $OpenBSD: dsa_gen.c,v 1.27 2023/01/11 04:39:42 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -264,7 +264,7 @@ dsa_builtin_paramgen(DSA *ret, size_t bits, size_t qbits, const EVP_MD *evpmd,
 			/* more of step 8 */
 			if (!BN_mask_bits(W, bits - 1))
 				goto err;
-			if (!BN_copy(X, W))
+			if (!bn_copy(X, W))
 				goto err;
 			if (!BN_add(X, X, test))
 				goto err;

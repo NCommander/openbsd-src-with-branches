@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_isqrt.c,v 1.5 2022/12/01 21:59:54 tb Exp $ */
+/*	$OpenBSD: bn_isqrt.c,v 1.6 2022/12/17 15:56:25 jsing Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  *
@@ -141,7 +141,7 @@ bn_isqrt(BIGNUM *out_sqrt, int *out_perfect, const BIGNUM *n, BN_CTX *in_ctx)
 		*out_perfect = perfect;
 
 	if (out_sqrt != NULL) {
-		if (!BN_copy(out_sqrt, a))
+		if (!bn_copy(out_sqrt, a))
 			goto err;
 	}
 
