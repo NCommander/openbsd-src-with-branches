@@ -1,4 +1,4 @@
-/* $OpenBSD: ecs_ossl.c,v 1.28 2023/03/04 21:39:34 tb Exp $ */
+/* $OpenBSD: ecs_ossl.c,v 1.29 2023/03/07 09:27:10 jsing Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project
  */
@@ -322,7 +322,7 @@ ecdsa_do_sign(const unsigned char *dgst, int dgst_len,
 			ckinv = kinv;
 		} else {
 			ckinv = in_kinv;
-			if (BN_copy(ret->r, in_r) == NULL) {
+			if (!bn_copy(ret->r, in_r)) {
 				ECDSAerror(ERR_R_MALLOC_FAILURE);
 				goto err;
 			}
