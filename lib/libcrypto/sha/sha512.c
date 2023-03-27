@@ -1,4 +1,4 @@
-/* $OpenBSD: sha512.c,v 1.19 2023/03/26 17:52:07 jsing Exp $ */
+/* $OpenBSD: sha512.c,v 1.20 2023/03/26 17:56:51 jsing Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2011 The OpenSSL Project.  All rights reserved.
  *
@@ -58,6 +58,9 @@
 
 #include <openssl/opensslconf.h>
 
+#include <openssl/crypto.h>
+#include <openssl/sha.h>
+
 #if !defined(OPENSSL_NO_SHA) && !defined(OPENSSL_NO_SHA512)
 /*
  * IMPLEMENTATION NOTES.
@@ -94,10 +97,6 @@
  * 16-bit platforms.
  *					<appro@fy.chalmers.se>
  */
-
-#include <openssl/crypto.h>
-#include <openssl/opensslv.h>
-#include <openssl/sha.h>
 
 #if !defined(__STRICT_ALIGNMENT) || defined(SHA512_ASM)
 #define SHA512_BLOCK_CAN_MANAGE_UNALIGNED_DATA
