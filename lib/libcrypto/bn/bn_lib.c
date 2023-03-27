@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_lib.c,v 1.75 2023/02/14 18:06:06 jsing Exp $ */
+/* $OpenBSD: bn_lib.c,v 1.76 2023/02/14 18:22:35 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -382,6 +382,12 @@ BN_copy(BIGNUM *a, const BIGNUM *b)
 	a->top = b->top;
 	a->neg = b->neg;
 	return (a);
+}
+
+int
+bn_copy(BIGNUM *dst, const BIGNUM *src)
+{
+	return BN_copy(dst, src) != NULL;
 }
 
 void

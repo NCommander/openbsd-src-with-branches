@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_local.h,v 1.16 2023/02/22 05:46:37 jsing Exp $ */
+/* $OpenBSD: bn_local.h,v 1.17 2023/02/22 05:57:19 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -311,6 +311,8 @@ int	BN_gcd_ct(BIGNUM *r, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx);
 int	BN_gcd_nonct(BIGNUM *r, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx);
 
 int	BN_swap_ct(BN_ULONG swap, BIGNUM *a, BIGNUM *b, size_t nwords);
+
+int bn_copy(BIGNUM *dst, const BIGNUM *src);
 
 int bn_isqrt(BIGNUM *out_sqrt, int *out_perfect, const BIGNUM *n, BN_CTX *ctx);
 int bn_is_perfect_square(int *out_perfect, const BIGNUM *n, BN_CTX *ctx);
