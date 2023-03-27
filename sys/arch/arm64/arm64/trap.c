@@ -1,4 +1,4 @@
-/* $OpenBSD: trap.c,v 1.41 2022/11/06 11:44:30 kettenis Exp $ */
+/* $OpenBSD: trap.c,v 1.42 2022/11/07 09:43:04 mpi Exp $ */
 /*-
  * Copyright (c) 2014 Andrew Turner
  * All rights reserved.
@@ -218,6 +218,8 @@ do_el1h_sync(struct trapframe *frame)
 	case EXCP_FP_SIMD:
 	case EXCP_TRAP_FP:
 		panic("FP exception in the kernel");
+	case EXCP_BRANCH_TGT:
+		panic("Branch target exception in the kernel");
 	case EXCP_INSN_ABORT:
 		kdata_abort(frame, esr, far, 1);
 		break;

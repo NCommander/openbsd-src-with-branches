@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.arm64,v 1.43 2022/12/30 06:44:35 jca Exp $
+#	$OpenBSD: Makefile.arm64,v 1.44 2023/01/01 01:34:33 jsg Exp $
 
 # For instructions on building kernels consult the config(8) and options(4)
 # manual pages.
@@ -61,7 +61,7 @@ CWARNFLAGS+=	-Wno-deprecated-non-prototype -Wno-unknown-warning-option
 
 CMACHFLAGS=	-march=armv8-a+nofp+nosimd \
 		-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer \
-		-ffixed-x18
+		-ffixed-x18 -mbranch-protection=bti
 CMACHFLAGS+=	-ffreestanding ${NOPIE_FLAGS}
 SORTR=		sort -R
 .if ${IDENT:M-DNO_PROPOLICE}
