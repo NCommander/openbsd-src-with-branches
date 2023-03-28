@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.596 2023/03/13 16:52:42 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.597 2023/03/21 14:52:36 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -2525,15 +2525,15 @@ rde_aspa_validity(struct rde_peer *peer, struct rde_aspath *asp, uint8_t aid)
 
 	switch (aid) {
 	case AID_INET:
-		if (peer->role != ROLE_CUSTOMER)
-			return asp->aspa_state.onlyup_v4;
-		else
+		if (peer->role == ROLE_CUSTOMER)
 			return asp->aspa_state.downup_v4;
-	case AID_INET6:
-		if (peer->role != ROLE_CUSTOMER)
-			return asp->aspa_state.onlyup_v6;
 		else
+			return asp->aspa_state.onlyup_v4;
+	case AID_INET6:
+		if (peer->role == ROLE_CUSTOMER)
 			return asp->aspa_state.downup_v6;
+		else
+			return asp->aspa_state.onlyup_v6;
 	default:
 		return ASPA_NEVER_KNOWN;	/* not reachable */
 	}
