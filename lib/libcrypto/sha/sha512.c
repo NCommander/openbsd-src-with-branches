@@ -1,4 +1,4 @@
-/* $OpenBSD: sha512.c,v 1.21 2023/03/27 10:13:08 jsing Exp $ */
+/* $OpenBSD: sha512.c,v 1.22 2023/03/27 10:27:12 jsing Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2011 The OpenSSL Project.  All rights reserved.
  *
@@ -535,9 +535,10 @@ void
 SHA512_Transform(SHA512_CTX *c, const unsigned char *data)
 {
 #ifndef SHA512_BLOCK_CAN_MANAGE_UNALIGNED_DATA
-	if ((size_t)data % sizeof(c->u.d[0]) != 0)
-		memcpy(c->u.p, data, sizeof(c->u.p)),
-		    data = c->u.p;
+	if ((size_t)data % sizeof(c->u.d[0]) != 0) {
+		memcpy(c->u.p, data, sizeof(c->u.p));
+		data = c->u.p;
+	}
 #endif
 	sha512_block_data_order(c, data, 1);
 }
