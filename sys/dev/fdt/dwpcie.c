@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwpcie.c,v 1.41 2023/03/16 18:33:19 kettenis Exp $	*/
+/*	$OpenBSD: dwpcie.c,v 1.42 2023/03/30 20:03:32 kn Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -291,8 +291,8 @@ dwpcie_match(struct device *parent, void *match, void *aux)
 {
 	struct fdt_attach_args *faa = aux;
 
-	return (OF_is_compatible(faa->fa_node, "baikal,bm1000-pcie") ||
-	    OF_is_compatible(faa->fa_node, "amlogic,g12a-pcie") ||
+	return (OF_is_compatible(faa->fa_node, "amlogic,g12a-pcie") ||
+	    OF_is_compatible(faa->fa_node, "baikal,bm1000-pcie") ||
 	    OF_is_compatible(faa->fa_node, "fsl,imx8mm-pcie") ||
 	    OF_is_compatible(faa->fa_node, "fsl,imx8mq-pcie") ||
 	    OF_is_compatible(faa->fa_node, "marvell,armada8k-pcie") ||
