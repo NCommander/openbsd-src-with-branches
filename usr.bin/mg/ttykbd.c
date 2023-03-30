@@ -1,4 +1,4 @@
-/*	$OpenBSD: ttykbd.c,v 1.19 2017/12/17 14:37:57 bcallah Exp $	*/
+/*	$OpenBSD: ttykbd.c,v 1.20 2021/02/23 08:10:51 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -77,4 +77,3 @@ ttykeymaptidy(void)
 		/* turn off keypad */
 		putpad(keypad_local, 1);
 }
-
