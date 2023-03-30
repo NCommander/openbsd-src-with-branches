@@ -1,4 +1,4 @@
-/*	$OpenBSD: txphy.c,v 1.11 2013/12/28 03:30:41 deraadt Exp $	*/
+/*	$OpenBSD: txphy.c,v 1.12 2022/04/06 18:59:29 naddy Exp $	*/
 
 /*
  * Copyright (c) 1999 Jason L. Wright (jason@thought.net)
@@ -114,7 +114,7 @@ txphy_service(struct mii_softc *sc, struct mii_data *mii, int cmd)
 		return (ENXIO);
 
 	/*
-	 * Can't isolate the RTL8139 phy, so it has to be the only one.
+	 * Can't isolate the TNETE2101 phy, so it has to be the only one.
 	 */
 	if (IFM_INST(ife->ifm_media) != sc->mii_inst)
 		panic("txphy_service: attempt to isolate phy");
