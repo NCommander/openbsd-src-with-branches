@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.h,v 1.288 2023/03/28 15:17:34 claudio Exp $ */
+/*	$OpenBSD: rde.h,v 1.289 2023/03/29 10:46:11 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004 Claudio Jeker <claudio@openbsd.org> and
@@ -265,7 +265,8 @@ struct pt_entry {
 	RB_ENTRY(pt_entry)		 pt_e;
 	uint8_t				 aid;
 	uint8_t				 prefixlen;
-	uint16_t			 refcnt;
+	uint16_t			 len;
+	uint32_t			 refcnt;
 	uint8_t				 data[4]; /* data depending on aid */
 };
 
