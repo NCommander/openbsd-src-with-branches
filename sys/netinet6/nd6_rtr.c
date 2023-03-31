@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6_rtr.c,v 1.168 2022/12/09 17:32:53 claudio Exp $	*/
+/*	$OpenBSD: nd6_rtr.c,v 1.169 2022/12/10 21:26:21 kn Exp $	*/
 /*	$KAME: nd6_rtr.c,v 1.97 2001/02/07 11:09:13 itojun Exp $	*/
 
 /*
@@ -60,7 +60,7 @@
 int rt6_deleteroute(struct rtentry *, void *, unsigned int);
 
 /*
- * Process Source Link-layer Address Options from 
+ * Process Source Link-layer Address Options from
  * Router Solicitation / Advertisement Messages.
  */
 void
