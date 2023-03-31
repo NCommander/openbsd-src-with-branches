@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_umb.c,v 1.48 2022/01/09 05:43:00 jsg Exp $ */
+/*	$OpenBSD: if_umb.c,v 1.49 2022/01/11 10:34:13 claudio Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -237,13 +237,6 @@ const struct umb_quirk umb_quirks[] = {
 	  2,
 	  UMATCH_VENDOR_PRODUCT
 	},
-
-	{ { USB_VENDOR_QUECTEL, USB_PRODUCT_QUECTEL_EC25 },
-	  0,
-	  1,
-	  UMATCH_VENDOR_PRODUCT
-	},
-
 
 	{ { USB_VENDOR_HUAWEI, USB_PRODUCT_HUAWEI_ME906S },
 	  UMBFLG_NDP_AT_END,
