@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh-agent.c,v 1.296 2023/03/08 04:43:12 guenther Exp $ */
+/* $OpenBSD: ssh-agent.c,v 1.297 2023/03/09 21:06:24 jcs Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -2005,8 +2005,8 @@ main(int ac, char **av)
 	sanitise_stdfd();
 
 	/* drop */
-	setegid(getgid());
-	setgid(getgid());
+	(void)setegid(getgid());
+	(void)setgid(getgid());
 
 	if (getrlimit(RLIMIT_NOFILE, &rlim) == -1)
 		fatal("%s: getrlimit: %s", __progname, strerror(errno));
