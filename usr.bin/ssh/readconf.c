@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.c,v 1.374 2023/03/09 21:06:24 jcs Exp $ */
+/* $OpenBSD: readconf.c,v 1.375 2023/03/10 02:24:56 dtucker Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -1564,6 +1564,7 @@ parse_pubkey_algos:
 					error("%s line %d: keyword %s \"%s\" "
 					    "argument must appear alone.",
 					    filename, linenum, keyword, arg);
+					free(arg2);
 					goto out;
 				}
 			} else {
