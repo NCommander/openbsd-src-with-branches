@@ -340,6 +340,16 @@ umsm_match(struct device *parent, void *match, void *aux)
 		     (id->bInterfaceSubClass == 0x00 &&
 		      id->bInterfaceProtocol == 0x00)))) {
 		return UMATCH_NONE;
+
+	/* See the Quectel LTE&5G Linux USB Driver User Guide */ 
+	} else if (uaa->vendor == USB_VENDOR_QUECTEL) {
+		/* Some interfaces can be used as network devices */
+		if (id->bInterfaceClass != UICLASS_VENDOR)
+			return UMATCH_NONE;
+
+		/* Interface 4 can be used as a network device */
+		if (uaa->ifaceno >= 4)
+			return UMATCH_NONE;
 	}
 
 	return UMATCH_VENDOR_IFACESUBCLASS;
