@@ -1,4 +1,4 @@
-.\" $OpenBSD: bgpd.conf.5,v 1.232 2023/03/13 16:39:29 claudio Exp $
+.\" $OpenBSD: bgpd.conf.5,v 1.233 2023/03/13 18:31:54 jmc Exp $
 .\"
 .\" Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
 .\" Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -839,7 +839,7 @@ The neighbor properties are as follows:
 .It Xo
 .Ic announce
 .Pq Ic IPv4 Ns | Ns Ic IPv6
-.Pq Ic none Ns | Ns Ic unicast Ns | Ns Ic vpn
+.Pq Ic none Ns | Ns Ic unicast Ns | Ns Ic vpn | Ns Ic flowspec
 .Xc
 For the given address family, control which
 .Em subsequent address families
@@ -851,9 +851,11 @@ At the moment, only
 .Ic none ,
 which disables the announcement of that address family,
 .Ic unicast ,
-and
 .Ic vpn ,
-which allows the distribution of BGP MPLS VPNs, are supported.
+which allows the distribution of BGP MPLS VPNs, and
+.Ic flowspec ,
+which allows the distribution of Flow Specification Rules,
+are supported.
 .Pp
 The default is
 .Ic unicast
