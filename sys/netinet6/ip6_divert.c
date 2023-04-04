@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip6_divert.c,v 1.87 2022/10/03 16:43:52 bluhm Exp $ */
+/*      $OpenBSD: ip6_divert.c,v 1.88 2022/10/17 14:49:02 mvs Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -238,6 +238,12 @@ divert6_packet(struct mbuf *m, int dir, u_int16_t divert_port)
 			break;
 		}
 		if_put(ifp);
+	} else {
+		/*
+		 * Calculate protocol checksum for outbound packet diverted
+		 * to userland.  pf out rule diverts before cksum offload.
+		 */
+		in6_proto_cksum_out(m, NULL);
 	}
 
 	mtx_enter(&inp->inp_mtx);
