@@ -1,4 +1,4 @@
-/*	$OpenBSD: ndp.c,v 1.107 2022/12/28 21:30:17 jmc Exp $	*/
+/*	$OpenBSD: ndp.c,v 1.108 2023/04/04 21:18:04 bluhm Exp $	*/
 /*	$KAME: ndp.c,v 1.101 2002/07/17 08:46:33 itojun Exp $	*/
 
 /*
@@ -436,12 +436,13 @@ delete(const char *host)
 			if ((rtm->rtm_flags & RTF_GATEWAY) == 0)
 				goto delete;
 		}
-		/*
-		 * IPv4 arp command retries with sin_other = SIN_PROXY here.
-		 */
-		warnx("delete: cannot locate %s", host);
-		return 1;
 	}
+
+	/*
+	 * IPv4 arp command retries with sin_other = SIN_PROXY here.
+	 */
+	warnx("delete: cannot locate %s", host);
+	return 1;
 
 delete:
 	if (sdl->sdl_family != AF_LINK) {
