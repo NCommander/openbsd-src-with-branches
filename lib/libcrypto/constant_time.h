@@ -1,4 +1,4 @@
-/* crypto/constant_time_locl.h */
+/*	$OpenBSD$ */
 /*-
  * Utilities for constant-time cryptography.
  *
