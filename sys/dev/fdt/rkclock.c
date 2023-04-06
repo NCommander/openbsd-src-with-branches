@@ -1,4 +1,4 @@
-/*	$OpenBSD: rkclock.c,v 1.71 2023/03/23 13:15:02 jsg Exp $	*/
+/*	$OpenBSD: rkclock.c,v 1.72 2023/03/26 10:41:42 kettenis Exp $	*/
 /*
  * Copyright (c) 2017, 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -3777,6 +3777,8 @@ rk3568_pmu_enable(void *cookie, uint32_t *cells, int on)
 	uint32_t idx = cells[0];
 
 	switch (idx) {
+	case RK3568_CLK_USBPHY0_REF:
+	case RK3568_CLK_USBPHY1_REF:
 	case RK3568_CLK_PCIEPHY0_REF:
 	case RK3568_CLK_PCIEPHY1_REF:
 	case RK3568_CLK_PCIEPHY2_REF:
