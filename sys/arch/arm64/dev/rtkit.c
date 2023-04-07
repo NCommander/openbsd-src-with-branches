@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtkit.c,v 1.10 2022/12/03 13:42:23 kettenis Exp $	*/
+/*	$OpenBSD: rtkit.c,v 1.11 2022/12/06 23:18:54 kettenis Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -478,7 +478,9 @@ rtkit_init(int node, const char *name, int flags, struct rtkit *rk)
 	client.mc_rx_callback = rtkit_rx_callback;
 	client.mc_rx_arg = state;
 	if (flags & RK_WAKEUP)
-		client.mc_flags |= MC_WAKEUP;
+		client.mc_flags = MC_WAKEUP;
+	else
+		client.mc_flags = 0;
 
 	state->mc = mbox_channel(node, name, &client);
 	if (state->mc == NULL) {
