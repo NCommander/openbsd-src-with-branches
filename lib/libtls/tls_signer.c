@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_signer.c,v 1.3 2022/02/01 17:13:10 jsing Exp $ */
+/* $OpenBSD: tls_signer.c,v 1.4 2022/02/01 17:18:38 jsing Exp $ */
 /*
  * Copyright (c) 2021 Eric Faurot <eric@openbsd.org>
  *
@@ -193,8 +193,6 @@ tls_sign_rsa(struct tls_signer *signer, struct tls_signer_key *skey,
 		rsa_padding = RSA_NO_PADDING;
 	} else if (padding_type == TLS_PADDING_RSA_PKCS1) {
 		rsa_padding = RSA_PKCS1_PADDING;
-	} else if (padding_type == TLS_PADDING_RSA_X9_31) {
-		rsa_padding = RSA_X931_PADDING;
 	} else {
 		tls_error_setx(&signer->error, "invalid RSA padding type (%d)",
 		    padding_type);
@@ -331,8 +329,6 @@ tls_rsa_priv_enc(int from_len, const unsigned char *from, unsigned char *to,
 		padding_type = TLS_PADDING_NONE;
 	} else if (rsa_padding == RSA_PKCS1_PADDING) {
 		padding_type = TLS_PADDING_RSA_PKCS1;
-	} else if (rsa_padding == RSA_X931_PADDING) {
-		padding_type = TLS_PADDING_RSA_X9_31;
 	} else {
 		goto err;
 	}
