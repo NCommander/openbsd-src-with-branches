@@ -1,4 +1,4 @@
-/* $OpenBSD: err.c,v 1.50 2022/12/26 07:18:52 jmc Exp $ */
+/* $OpenBSD: err.c,v 1.51 2023/03/27 09:15:45 jan Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1040,13 +1040,11 @@ ERR_remove_thread_state(const CRYPTO_THREADID *id)
 	ERRFN(thread_del_item)(&tmp);
 }
 
-#ifndef OPENSSL_NO_DEPRECATED
 void
 ERR_remove_state(unsigned long pid)
 {
 	ERR_remove_thread_state(NULL);
 }
-#endif
 
 ERR_STATE *
 ERR_get_state(void)
