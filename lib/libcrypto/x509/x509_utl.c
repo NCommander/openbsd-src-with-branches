@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_utl.c,v 1.5 2022/12/26 07:18:53 jmc Exp $ */
+/* $OpenBSD: x509_utl.c,v 1.6 2023/02/16 08:38:17 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
  */
@@ -66,7 +66,7 @@
 #include <openssl/err.h>
 #include <openssl/x509v3.h>
 
-char *bn_to_string(const BIGNUM *bn);
+static char *bn_to_string(const BIGNUM *bn);
 static char *strip_spaces(char *name);
 static int sk_strcmp(const char * const *a, const char * const *b);
 static STACK_OF(OPENSSL_STRING) *get_email(X509_NAME *name,
@@ -161,7 +161,7 @@ X509V3_add_value_bool_nf(const char *name, int asn1_bool,
 }
 LCRYPTO_ALIAS(X509V3_add_value_bool_nf);
 
-char *
+static char *
 bn_to_string(const BIGNUM *bn)
 {
 	const char *sign = "";
