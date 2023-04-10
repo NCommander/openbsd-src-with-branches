@@ -1,4 +1,4 @@
-/*	$OpenBSD: mbg.c,v 1.32 2020/12/06 19:23:11 cheloha Exp $ */
+/*	$OpenBSD: mbg.c,v 1.33 2022/03/11 18:00:50 mpi Exp $ */
 
 /*
  * Copyright (c) 2006, 2007 Marc Balmer <mbalmer@openbsd.org>
@@ -557,7 +557,7 @@ mbg_read_asic(struct mbg_softc *sc, int cmd, char *buf, size_t len,
 }
 
 /*
- * degrade the sensor state if we are feerunning for more than
+ * degrade the sensor state if we are freerunning for more than
  * sc->sc_trust seconds.
  */
 void

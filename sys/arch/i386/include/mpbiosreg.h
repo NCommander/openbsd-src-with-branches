@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpbiosreg.h,v 1.4 2008/06/26 05:42:10 ray Exp $	*/
+/*	$OpenBSD: mpbiosreg.h,v 1.5 2011/03/23 16:54:35 pirofti Exp $	*/
 /* $NetBSD: mpbiosreg.h,v 1.1.2.3 2000/02/29 13:17:51 sommerfeld Exp $ */
 
 /*-
@@ -52,7 +52,7 @@
 #define MPS_MCT_NTYPES	5
 
 /*
- * Interrupt typess
+ * Interrupt types
  */
 
 #define MPS_INTTYPE_INT		0
