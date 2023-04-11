@@ -1,3 +1,4 @@
+/*	$OpenBSD: limits.h,v 1.17 2013/08/07 15:34:01 kettenis Exp $	*/
 /*	$NetBSD: limits.h,v 1.1 1996/09/30 16:34:28 ws Exp $	*/
 
 /*-
@@ -31,33 +32,21 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define	CHAR_BIT	8		/* bits per char		*/
-#define	MB_LEN_MAX	1		/* no multibyte characters	*/
-#define	CHAR_MIN	0		/* min value in char		*/
-#define	CHAR_MAX	0xff		/* max value in char		*/
-#define	UCHAR_MAX	0xff		/* max value in unsigned char	*/
-#define	SCHAR_MIN	(-0x7f-1)	/* min value for a signed char	*/
-#define	SCHAR_MAX	0x7f		/* max value for a signed char	*/
+#ifndef _POWERPC_LIMITS_H_
+#define _POWERPC_LIMITS_H_
 
-#define	SHRT_MIN	(-0x7fff-1)	/* min value in short		*/
-#define	SHRT_MAX	0x7fff		/* max value in short		*/
-#define	USHRT_MAX	0xffff		/* max value in unsigned short	*/
+#include <sys/cdefs.h>
 
-#define	INT_MIN		(-0x7fffffff-1)	/* min value in int		*/
-#define	INT_MAX		0x7fffffff	/* max value in int		*/
-#define	UINT_MAX	0xffffffff	/* max value in unsigned int	*/
+#if __POSIX_VISIBLE || __XPG_VISIBLE
+#define	SSIZE_MAX	LONG_MAX	/* max value for a ssize_t */
+#endif
 
-#define	LONG_MIN	(-0x7fffffff-1)	/* min value in long		*/
-#define	LONG_MAX	0x7fffffff	/* max value in long		*/
-#define	ULONG_MAX	0xffffffff	/* max value in unsigned long	*/
-
-#if !defined(_ANSI_SOURCE)
-
-#if !defined(_POSIX_SOURCE) && !defined(_XOPEN_SOURCE)
-#define	SIZE_T_MAX	UINT_MAX	/* max value for a size_t */
+#if __BSD_VISIBLE
+#define	SIZE_T_MAX	ULONG_MAX	/* max value for a size_t (historic) */
 
 #define	UQUAD_MAX	0xffffffffffffffffULL		/* max unsigned quad */
 #define	QUAD_MAX	0x7fffffffffffffffLL		/* max signed quad */
 #define	QUAD_MIN	(-0x7fffffffffffffffLL-1)	/* min signed quad */
-#endif	/* !_POSIX_SOURCE && !_XOPEN_SOURCE */
-#endif	/* !_ANSI_SOURCE */
+#endif	/* __BSD_VISIBLE */
+
+#endif /* _POWERPC_LIMITS_H_ */

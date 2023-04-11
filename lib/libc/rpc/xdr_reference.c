@@ -1,44 +1,38 @@
-/*	$NetBSD: xdr_reference.c,v 1.5 1995/04/14 20:30:18 jtc Exp $	*/
+/*	$OpenBSD: xdr_reference.c,v 1.12 2016/12/20 22:19:08 krw Exp $ */
 
 /*
- * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
- * unrestricted use provided that this legend is included on all tape
- * media and as a part of the software program in whole or part.  Users
- * may copy or modify Sun RPC without charge, but are not authorized
- * to license or distribute it to anyone else except as part of a product or
- * program developed by the user.
- * 
- * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
- * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
- * Sun RPC is provided with no support and without any obligation on the
- * part of Sun Microsystems, Inc. to assist in its use, correction,
- * modification or enhancement.
- * 
- * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
- * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
- * OR ANY PART THEREOF.
- * 
- * In no event will Sun Microsystems, Inc. be liable for any lost revenue
- * or profits or other special, indirect and consequential damages, even if
- * Sun has been advised of the possibility of such damages.
- * 
- * Sun Microsystems, Inc.
- * 2550 Garcia Avenue
- * Mountain View, California  94043
+ * Copyright (c) 2010, Oracle America, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *     * Neither the name of the "Oracle America, Inc." nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *   COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint) 
-/*static char *sccsid = "from: @(#)xdr_reference.c 1.11 87/08/11 SMI";*/
-/*static char *sccsid = "from: @(#)xdr_reference.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: xdr_reference.c,v 1.5 1995/04/14 20:30:18 jtc Exp $";
-#endif
-
 /*
- * xdr_reference.c, Generic XDR routines impelmentation.
- *
- * Copyright (C) 1987, Sun Microsystems, Inc.
+ * xdr_reference.c, Generic XDR routines implementation.
  *
  * These are the "non-trivial" xdr primitives used to serialize and de-serialize
  * "pointers".  See xdr.h for more info on the interface to xdr.
@@ -56,18 +50,17 @@ static char *rcsid = "$NetBSD: xdr_reference.c,v 1.5 1995/04/14 20:30:18 jtc Exp
  * referenced by a pointer inside the structure that is currently being
  * translated.  pp references a pointer to storage. If *pp is null
  * the  necessary storage is allocated.
- * size is the sizeof the referneced structure.
+ * size is the sizeof the referenced structure.
  * proc is the routine to handle the referenced structure.
  */
 bool_t
-xdr_reference(xdrs, pp, size, proc)
-	register XDR *xdrs;
-	caddr_t *pp;		/* the pointer to work on */
-	u_int size;		/* size of the object pointed to */
-	xdrproc_t proc;		/* xdr routine to handle the object */
+xdr_reference(XDR *xdrs,
+    caddr_t *pp,	/* the pointer to work on */
+    u_int size,		/* size of the object pointed to */
+    xdrproc_t proc)	/* xdr routine to handle the object */
 {
-	register caddr_t loc = *pp;
-	register bool_t stat;
+	caddr_t loc = *pp;
+	bool_t stat;
 
 	if (loc == NULL)
 		switch (xdrs->x_op) {
@@ -75,13 +68,11 @@ xdr_reference(xdrs, pp, size, proc)
 			return (TRUE);
 
 		case XDR_DECODE:
-			*pp = loc = (caddr_t) mem_alloc(size);
-			if (loc == NULL) {
-				(void) fprintf(stderr,
-				    "xdr_reference: out of memory\n");
+			*pp = loc = (caddr_t) calloc(size, 1);
+			if (loc == NULL)
 				return (FALSE);
-			}
-			memset(loc, 0, (int)size);
+			break;
+		default:
 			break;
 	}
 
@@ -93,6 +84,7 @@ xdr_reference(xdrs, pp, size, proc)
 	}
 	return (stat);
 }
+DEF_WEAK(xdr_reference);
 
 
 /*
@@ -115,11 +107,7 @@ xdr_reference(xdrs, pp, size, proc)
  *
  */
 bool_t
-xdr_pointer(xdrs,objpp,obj_size,xdr_obj)
-	register XDR *xdrs;
-	char **objpp;
-	u_int obj_size;
-	xdrproc_t xdr_obj;
+xdr_pointer(XDR *xdrs, char **objpp, u_int obj_size, xdrproc_t xdr_obj)
 {
 
 	bool_t more_data;
@@ -134,3 +122,4 @@ xdr_pointer(xdrs,objpp,obj_size,xdr_obj)
 	}
 	return (xdr_reference(xdrs,objpp,obj_size,xdr_obj));
 }
+DEF_WEAK(xdr_pointer);

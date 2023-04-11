@@ -71,6 +71,7 @@ public:
     kRegisterUnused,
     kRegisterUndefined,
     kRegisterInCFA,
+    kRegisterInCFADecrypt,
     kRegisterOffsetFromCFA,
     kRegisterInRegister,
     kRegisterAtExpression,
@@ -723,7 +724,8 @@ bool CFI_Parser<A>::parseFDEInstructions(A &addressSpace,
             "DW_CFA_GNU_negative_offset_extended(%" PRId64 ")\n", offset);
         break;
 
-#if defined(_LIBUNWIND_TARGET_AARCH64) || defined(_LIBUNWIND_TARGET_SPARC)
+#if defined(_LIBUNWIND_TARGET_AARCH64) || defined(_LIBUNWIND_TARGET_SPARC) \
+        || defined(_LIBUNWIND_TARGET_SPARC64)
         // The same constant is used to represent different instructions on
         // AArch64 (negate_ra_state) and SPARC (window_save).
         static_assert(DW_CFA_AARCH64_negate_ra_state == DW_CFA_GNU_window_save,
@@ -738,6 +740,20 @@ bool CFI_Parser<A>::parseFDEInstructions(A &addressSpace,
                                     initialState);
           _LIBUNWIND_TRACE_DWARF("DW_CFA_AARCH64_negate_ra_state\n");
         } break;
+#endif
+
+#if defined(_LIBUNWIND_TARGET_SPARC64)
+      case REGISTERS_SPARC64:
+        // Hardcodes windowed registers for SPARC
+        for (reg = 16; reg < 32; reg++) {
+          if (reg == 31)
+            results->savedRegisters[reg].location = kRegisterInCFADecrypt;
+          else
+            results->savedRegisters[reg].location = kRegisterInCFA;
+          results->savedRegisters[reg].value = (reg - 16) * sizeof(pint_t);
+        }
+        _LIBUNWIND_TRACE_DWARF("DW_CFA_GNU_window_save");
+        break;
 #endif
 
 #if defined(_LIBUNWIND_TARGET_SPARC)

@@ -1,43 +1,42 @@
+/*	$OpenBSD: nfs_prot.x,v 1.5 2010/09/01 14:43:34 millert Exp $	*/
+
 /*
- * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
- * unrestricted use provided that this legend is included on all tape
- * media and as a part of the software program in whole or part.  Users
- * may copy or modify Sun RPC without charge, but are not authorized
- * to license or distribute it to anyone else except as part of a product or
- * program developed by the user.
- * 
- * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
- * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
- * Sun RPC is provided with no support and without any obligation on the
- * part of Sun Microsystems, Inc. to assist in its use, correction,
- * modification or enhancement.
- * 
- * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
- * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
- * OR ANY PART THEREOF.
- * 
- * In no event will Sun Microsystems, Inc. be liable for any lost revenue
- * or profits or other special, indirect and consequential damages, even if
- * Sun has been advised of the possibility of such damages.
- * 
- * Sun Microsystems, Inc.
- * 2550 Garcia Avenue
- * Mountain View, California  94043
+ * Copyright (c) 2010, Oracle America, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *     * Neither the name of the "Oracle America, Inc." nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *   COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef RPC_HDR
-%#ifndef lint
-%/*static char sccsid[] = "from: @(#)nfs_prot.x 1.2 87/10/12 Copyr 1987 Sun Micro";*/
-%/*static char sccsid[] = "from: @(#)nfs_prot.x	2.1 88/08/01 4.0 RPCSRC";*/
-%static char rcsid[] = "$Id: nfs_prot.x,v 1.1 1995/01/12 19:39:48 jtc Exp $";
-%#endif /* not lint */
 #endif
 
-const NFS_PORT          = 2049;
-const NFS_MAXDATA       = 8192;
-const NFS_MAXPATHLEN    = 1024;
+const NFS_PORT		= 2049;
+const NFS_MAXDATA	= 8192;
+const NFS_MAXPATHLEN	= 1024;
 const NFS_MAXNAMLEN	= 255;
 const NFS_FHSIZE	= 32;
 const NFS_COOKIESIZE	= 4;
@@ -91,7 +90,7 @@ enum ftype {
 	NFLNK = 5,	/* symbolic link */
 	NFSOCK = 6,	/* unix domain sockets */
 	NFBAD = 7,	/* unused */
-	NFFIFO = 8 	/* named pipe */
+	NFFIFO = 8	/* named pipe */
 };
 
 /*
@@ -101,7 +100,7 @@ struct nfs_fh {
 	opaque data[NFS_FHSIZE];
 };
 
-/* 
+/*
  * Timeval
  */
 struct nfstime {
@@ -120,7 +119,7 @@ struct fattr {
 	unsigned uid;		/* owner user id */
 	unsigned gid;		/* owner group id */
 	unsigned size;		/* file size in bytes */
-	unsigned blocksize;	/* prefered block size */
+	unsigned blocksize;	/* preferred block size */
 	unsigned rdev;		/* special device # */
 	unsigned blocks;	/* Kb of disk used by file */
 	unsigned fsid;		/* device # */
@@ -143,7 +142,7 @@ struct sattr {
 };
 
 
-typedef string filename<NFS_MAXNAMLEN>; 
+typedef string filename<NFS_MAXNAMLEN>;
 typedef string nfspath<NFS_MAXPATHLEN>;
 
 /*
@@ -217,7 +216,7 @@ default:
 };
 
 /*
- * Arguments to remote write 
+ * Arguments to remote write
  */
 struct writeargs {
 	nfs_fh	file;		/* handle for file */
@@ -299,28 +298,28 @@ default:
  */
 program NFS_PROGRAM {
 	version NFS_VERSION {
-		void 
+		void
 		NFSPROC_NULL(void) = 0;
 
-		attrstat 
+		attrstat
 		NFSPROC_GETATTR(nfs_fh) =	1;
 
-		attrstat 
+		attrstat
 		NFSPROC_SETATTR(sattrargs) = 2;
 
-		void 
+		void
 		NFSPROC_ROOT(void) = 3;
 
-		diropres 
+		diropres
 		NFSPROC_LOOKUP(diropargs) = 4;
 
-		readlinkres 
+		readlinkres
 		NFSPROC_READLINK(nfs_fh) = 5;
 
-		readres 
+		readres
 		NFSPROC_READ(readargs) = 6;
 
-		void 
+		void
 		NFSPROC_WRITECACHE(void) = 7;
 
 		attrstat

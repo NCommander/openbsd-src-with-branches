@@ -1,4 +1,4 @@
-.\"   $OpenBSD: tftpd.8,v 1.26 2008/11/14 07:34:59 stevesk Exp $
+.\"   $OpenBSD: tftpd.8,v 1.9 2022/10/04 23:33:22 kn Exp $
 .\"
 .\" Copyright (c) 1983, 1991 The Regents of the University of California.
 .\" All rights reserved.
@@ -29,25 +29,22 @@
 .\"
 .\"	from: @(#)tftpd.8	6.7 (Berkeley) 5/13/91
 .\"
-.Dd $Mdocdate: November 14 2008 $
+.Dd $Mdocdate: October 4 2022 $
 .Dt TFTPD 8
 .Os
 .Sh NAME
 .Nm tftpd
-.Nd
-.Tn DARPA
-Trivial File Transfer Protocol daemon
+.Nd Trivial File Transfer Protocol daemon
 .Sh SYNOPSIS
 .Nm tftpd
-.Op Fl 46cdv
+.Op Fl 46cdivw
 .Op Fl l Ar address
 .Op Fl p Ar port
-.Op Fl r socket
+.Op Fl r Ar socket
 .Ar directory
 .Sh DESCRIPTION
 .Nm
 is a server which implements the
-.Tn DARPA
 Trivial File Transfer Protocol.
 .Pp
 The use of
@@ -56,11 +53,13 @@ does not require an account or password on the remote system.
 Due to the lack of authentication information,
 .Nm
 will allow only publicly readable files to be accessed.
+By default files may only be read, unless the
+.Fl w
+option is specified.
 Files may be written only if they already exist and are publicly writable,
 unless the
 .Fl c
-flag is specified
-.Pq see below .
+flag is specified.
 Note that this extends the concept of
 .Dq public
 to include
@@ -71,6 +70,15 @@ should be considered before enabling TFTP service.
 The server must be started as root, but will chroot to the
 .Ar directory
 specified on the command line and drop privileges to the _tftpd user.
+.Pp
+.Nm tftpd
+always provides random data at the path
+.Pa /etc/random.seed ,
+and therefore this path will be ignored inside the
+.Ar directory .
+.Ox
+network bootloaders access this path to harvest entropy during
+kernel load.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
@@ -87,16 +95,24 @@ Allow new files to be created;
 otherwise uploaded files must already exist.
 Files are created with default permissions
 allowing anyone to read or write to them.
+.Pp
+This option implies
+.Fl w .
 .It Fl d
 Do not daemonize.
 If this option is specified,
 .Nm
-will run in the foreground and log to stderr.
-.It Fl v
-Log the client IP, type of request, and filename.
-.Fl d
-implies
-.Fl v .
+will run in the foreground and log
+the client IP, type of request, and filename to stderr.
+.It Fl i
+Look up the requested path in the subdirectory named after the
+client's IP address.
+For read requests, if the file is not found,
+.Nm
+falls back on the requested path.
+Note that no attempt is made to limit the client to its subdirectory.
+This option cannot be combined with
+.Fl r .
 .It Fl l Ar address
 Listen on the specified address.
 By default
@@ -112,9 +128,23 @@ service description; see
 .Xr services 5 .
 .It Fl r Ar socket
 Issue filename rewrite requests to the specified UNIX domain socket.
+.Nm
+will write lines in the format "IP OP filename", terminated by a newline,
+where IP is the client's IP address, and OP is one of "read" or "write".
+.Nm
+expects replies in the format "filename" terminated by a newline.
+All rewrite requests from the daemon must be answered
+(even if it is with the original filename)
+before the TFTP request will continue.
 By default
 .Nm
 does not use filename rewriting.
+This option cannot be combined with
+.Fl i .
+.It Fl v
+Log the client IP, type of request, and filename.
+.It Fl w
+Allow files to be written to.
 .It Ar directory
 .Xr chroot 2
 to
@@ -128,6 +158,68 @@ as part of the file name to transfer.
 .Xr pxeboot 8 ,
 .Xr syslogd 8 ,
 .Xr tftp-proxy 8
+.Sh STANDARDS
+.\" .Rs
+.\" .%A K. R. Sollins
+.\" .%D June 1981
+.\" .%R RFC 783
+.\" .%T The TFTP Protocol (Revision 2)
+.\" .Re
+.\" .Pp
+.Rs
+.%A K. Sollins
+.%D July 1992
+.%R RFC 1350
+.%T The TFTP Protocol (Revision 2)
+.Re
+.Pp
+.\" .Rs
+.\" .%A G. Malkin
+.\" .%A A. Harkin
+.\" .%D March 1995
+.\" .%R RFC 1782
+.\" .%T TFTP Option Extension
+.\" .Re
+.\" .Pp
+.\" .Rs
+.\" .%A G. Malkin
+.\" .%A A. Harkin
+.\" .%D March 1995
+.\" .%R RFC 1783
+.\" .%T TFTP Blocksize Option
+.\" .Re
+.\" .Pp
+.\" .Rs
+.\" .%A G. Malkin
+.\" .%A A. Harkin
+.\" .%D March 1995
+.\" .%R RFC 1784
+.\" .%T TFTP Timeout Interval and Transfer Size Options
+.\" .Re
+.\" .Pp
+.Rs
+.%A G. Malkin
+.%A A. Harkin
+.%D May 1998
+.%R RFC 2347
+.%T TFTP Option Extension
+.Re
+.Pp
+.Rs
+.%A G. Malkin
+.%A A. Harkin
+.%D May 1998
+.%R RFC 2348
+.%T TFTP Blocksize Option
+.Re
+.Pp
+.Rs
+.%A G. Malkin
+.%A A. Harkin
+.%D March 1998
+.%R RFC 2349
+.%T TFTP Timeout Interval and Transfer Size Options
+.Re
 .Sh HISTORY
 The
 .Nm

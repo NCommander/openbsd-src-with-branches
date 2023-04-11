@@ -1,4 +1,5 @@
-/*	$NetBSD: libkern.h,v 1.5 1995/09/23 20:35:47 leo Exp $	*/
+/*	$OpenBSD: libkern.h,v 1.35 2018/04/25 11:15:58 dlg Exp $	*/
+/*	$NetBSD: libkern.h,v 1.7 1996/03/14 18:52:08 christos Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,83 +32,140 @@
  *	@(#)libkern.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef __LIBKERN_H__
+#define __LIBKERN_H__
+
 #include <sys/types.h>
 
-static __inline int imax __P((int, int));
-static __inline int imin __P((int, int));
-static __inline u_int max __P((u_int, u_int));
-static __inline u_int min __P((u_int, u_int));
-static __inline long lmax __P((long, long));
-static __inline long lmin __P((long, long));
-static __inline u_long ulmax __P((u_long, u_long));
-static __inline u_long ulmin __P((u_long, u_long));
-static __inline int abs __P((int));
+#ifndef LIBKERN_INLINE
+#define LIBKERN_INLINE	static __inline
+#define LIBKERN_BODY
+#endif
 
-static __inline int
-imax(a, b)
-	int a, b;
+
+LIBKERN_INLINE int imax(int, int);
+LIBKERN_INLINE int imin(int, int);
+LIBKERN_INLINE u_int max(u_int, u_int);
+LIBKERN_INLINE u_int min(u_int, u_int);
+LIBKERN_INLINE long lmax(long, long);
+LIBKERN_INLINE long lmin(long, long);
+LIBKERN_INLINE u_long ulmax(u_long, u_long);
+LIBKERN_INLINE u_long ulmin(u_long, u_long);
+LIBKERN_INLINE int abs(int);
+
+#ifdef LIBKERN_BODY
+LIBKERN_INLINE int
+imax(int a, int b)
 {
 	return (a > b ? a : b);
 }
-static __inline int
-imin(a, b)
-	int a, b;
+LIBKERN_INLINE int
+imin(int a, int b)
 {
 	return (a < b ? a : b);
 }
-static __inline long
-lmax(a, b)
-	long a, b;
+LIBKERN_INLINE long
+lmax(long a, long b)
 {
 	return (a > b ? a : b);
 }
-static __inline long
-lmin(a, b)
-	long a, b;
+LIBKERN_INLINE long
+lmin(long a, long b)
 {
 	return (a < b ? a : b);
 }
-static __inline u_int
-max(a, b)
-	u_int a, b;
+LIBKERN_INLINE u_int
+max(u_int a, u_int b)
 {
 	return (a > b ? a : b);
 }
-static __inline u_int
-min(a, b)
-	u_int a, b;
+LIBKERN_INLINE u_int
+min(u_int a, u_int b)
 {
 	return (a < b ? a : b);
 }
-static __inline u_long
-ulmax(a, b)
-	u_long a, b;
+LIBKERN_INLINE u_long
+ulmax(u_long a, u_long b)
 {
 	return (a > b ? a : b);
 }
-static __inline u_long
-ulmin(a, b)
-	u_long a, b;
+LIBKERN_INLINE u_long
+ulmin(u_long a, u_long b)
 {
 	return (a < b ? a : b);
 }
 
-static __inline int
-abs(j)
-	int j;
+LIBKERN_INLINE int
+abs(int j)
 {
 	return(j < 0 ? -j : j);
 }
+#endif
+
+#ifdef NDEBUG						/* tradition! */
+#define	assert(e)	((void)0)
+#else
+#define	assert(e)	((e) ? (void)0 :				    \
+			    __assert("", __FILE__, __LINE__, #e))
+#endif
+
+#define	__KASSERTSTR	"kernel %sassertion \"%s\" failed: file \"%s\", line %d"
+
+#ifndef DIAGNOSTIC
+#define	KASSERTMSG(e, msg, ...)	((void)0)
+#define	KASSERT(e)	((void)0)
+#else
+#define	KASSERTMSG(e, msg, ...)	((e) ? (void)0 :			    \
+			    panic(__KASSERTSTR " " msg, "diagnostic ", #e,  \
+			    __FILE__, __LINE__, ## __VA_ARGS__))
+#define	KASSERT(e)	((e) ? (void)0 :				    \
+			    __assert("diagnostic ", __FILE__, __LINE__, #e))
+#endif
+
+#ifndef DEBUG
+#define	KDASSERTMSG(e, msg, ...)	((void)0)
+#define	KDASSERT(e)	((void)0)
+#else
+#define	KDASSERTMSG(e, msg, ...)	((e) ? (void)0 :		    \
+			    panic(__KASSERTSTR " " msg, "debugging ", #e,   \
+			    __FILE__, __LINE__, ## __VA_ARGS__))
+#define	KDASSERT(e)	((e) ? (void)0 :				    \
+			    __assert("debugging ", __FILE__, __LINE__, #e))
+#endif
+
+#define	CTASSERT(x)	extern char  _ctassert[(x) ? 1 : -1 ]	\
+			    __attribute__((__unused__))
 
 /* Prototypes for non-quad routines. */
-int	 bcmp __P((const void *, const void *, size_t));
-int	 ffs __P((int));
-int	 locc __P((int, char *, u_int));
-u_long	 random __P((void));
-char	*rindex __P((const char *, int));
-int	 scanc __P((u_int, u_char *, u_char *, int));
-int	 skpc __P((int, int, char *));
-char	*strcat __P((char *, const char *));
-char	*strcpy __P((char *, const char *));
-size_t	 strlen __P((const char *));
-char	*strncpy __P((char *, const char *, size_t));
+void	 __assert(const char *, const char *, int, const char *)
+	    __attribute__ ((__noreturn__));
+int	 bcmp(const void *, const void *, size_t);
+void	 bzero(void *, size_t);
+void	 explicit_bzero(void *, size_t);
+int	 ffs(int);
+int	 fls(int);
+int	 flsl(long);
+void	*memchr(const void *, int, size_t);
+int	 memcmp(const void *, const void *, size_t);
+void	*memset(void *, int c, size_t len);
+u_int32_t random(void);
+int	 scanc(u_int, const u_char *, const u_char [], int);
+int	 skpc(int, size_t, u_char *);
+size_t	 strlen(const char *);
+char	*strncpy(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
+size_t	 strnlen(const char *, size_t);
+size_t	 strlcpy(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
+size_t	 strlcat(char *, const char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,3)));
+int	 strcmp(const char *, const char *);
+int	 strncmp(const char *, const char *, size_t);
+int	 strncasecmp(const char *, const char *, size_t);
+size_t	 getsn(char *, size_t)
+		__attribute__ ((__bounded__(__string__,1,2)));
+char	*strchr(const char *, int);
+char	*strrchr(const char *, int);
+int	 timingsafe_bcmp(const void *, const void *, size_t);
+
+#endif /* __LIBKERN_H__ */

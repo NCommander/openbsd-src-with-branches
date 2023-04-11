@@ -373,12 +373,11 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 
 /* Align all constants and variables to at least a word boundary so
    we can pick up pieces of them faster.  */
-/* ??? Only if block-move stuff knows about different source/destination
-   alignment.  */
-#if 0
 #define CONSTANT_ALIGNMENT(EXP, ALIGN) MAX ((ALIGN), BITS_PER_WORD)
 #define DATA_ALIGNMENT(EXP, ALIGN) MAX ((ALIGN), BITS_PER_WORD)
-#endif
+
+/* Make local arrays of chars word-aligned for the same reasons.  */
+#define LOCAL_ALIGNMENT(TYPE, ALIGN) DATA_ALIGNMENT (TYPE, ALIGN)
 
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.
@@ -739,7 +738,7 @@ extern int alpha_memory_latency;
    is at the high-address end of the local variables;
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
-/* #define FRAME_GROWS_DOWNWARD 0 */
+#define FRAME_GROWS_DOWNWARD 1
 
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the

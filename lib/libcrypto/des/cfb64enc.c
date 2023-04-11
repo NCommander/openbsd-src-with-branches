@@ -1,4 +1,4 @@
-/* crypto/des/cfb64enc.c */
+/* $OpenBSD: cfb64enc.c,v 1.6 2014/10/28 07:35:58 jsg Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,7 +56,7 @@
  * [including the GNU Public Licence.]
  */
 
-#include "des_locl.h"
+#include "des_local.h"
 
 /* The input and output encrypted as though 64bit cfb mode is being
  * used.  The extra state information to record how much of the
@@ -67,9 +67,9 @@ void DES_cfb64_encrypt(const unsigned char *in, unsigned char *out,
 		       long length, DES_key_schedule *schedule,
 		       DES_cblock *ivec, int *num, int enc)
 	{
-	register DES_LONG v0,v1;
-	register long l=length;
-	register int n= *num;
+	DES_LONG v0,v1;
+	long l=length;
+	int n= *num;
 	DES_LONG ti[2];
 	unsigned char *iv,c,cc;
 

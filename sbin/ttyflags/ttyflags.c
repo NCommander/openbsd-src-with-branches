@@ -1,6 +1,8 @@
-/*	$NetBSD: ttyflags.c,v 1.6 1995/08/13 05:24:03 cgd Exp $	*/
+/*	$OpenBSD: ttyflags.c,v 1.16 2021/10/24 21:24:22 deraadt Exp $	*/
+/*	$NetBSD: ttyflags.c,v 1.8 1996/04/09 05:20:30 cgd Exp $	*/
 
 /*
+ * Copyright (c) 1996 Theo de Raadt
  * Copyright (c) 1994 Christopher G. Demetriou
  * All rights reserved.
  *
@@ -30,18 +32,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1994 Christopher G. Demetriou\n\
-	All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-static char rcsid[] = "$NetBSD: ttyflags.c,v 1.6 1995/08/13 05:24:03 cgd Exp $";
-#endif /* not lint */
-
 #include <sys/types.h>
-#include <sys/cdefs.h>
 #include <sys/ioctl.h>
 
 #include <err.h>
@@ -51,13 +42,14 @@ static char rcsid[] = "$NetBSD: ttyflags.c,v 1.6 1995/08/13 05:24:03 cgd Exp $";
 #include <paths.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ttyent.h>
 #include <unistd.h>
 
-int change_all __P((void));
-int change_ttyflags __P((struct ttyent *));
-int change_ttys __P((char **));
-void usage __P((void));
+int all(int);
+int ttys(char **, int);
+int ttyflags(struct ttyent *, int);
+void usage(void);
 
 int nflag, vflag;
 
@@ -67,14 +59,12 @@ int nflag, vflag;
  * the flags of the ttys specified on the command line.
  */
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	int aflag, ch, rval;
+	int aflag, ch, rval, pflag = 0;
 
 	aflag = nflag = vflag = 0;
-	while ((ch = getopt(argc, argv, "anv")) != EOF)
+	while ((ch = getopt(argc, argv, "panv")) != -1)
 		switch (ch) {
 		case 'a':
 			aflag = 1;
@@ -82,10 +72,12 @@ main(argc, argv)
 		case 'n':		/* undocumented */
 			nflag = 1;
 			break;
+		case 'p':
+			pflag = 1;
+			break;
 		case 'v':
 			vflag = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -95,15 +87,13 @@ main(argc, argv)
 	if (aflag && argc != 0)
 		usage();
 
-	rval = 0;
-
 	if (setttyent() == 0)
 		err(1, "setttyent");
 
 	if (aflag)
-		rval = change_all();
+		rval = all(pflag);
 	else
-		rval = change_ttys(argv);
+		rval = ttys(argv, pflag);
 
 	if (endttyent() == 0)
 		warn("endttyent");
@@ -115,15 +105,20 @@ main(argc, argv)
  * Change all /etc/ttys entries' flags.
  */
 int
-change_all()
+all(int print)
 {
 	struct ttyent *tep;
 	int rval;
 
 	rval = 0;
-	for (tep = getttyent(); tep != NULL; tep = getttyent())
-		if (change_ttyflags(tep))
+	for (tep = getttyent(); tep != NULL; tep = getttyent()) {
+		/* pseudo-tty ignore TIOCSFLAGS, so don't bother */
+		if (tep->ty_type == NULL ||
+		    strcmp(tep->ty_type, "network") == 0)
+			continue;
+		if (ttyflags(tep, print))
 			rval = 1;
+	}
 	return (rval);
 }
 
@@ -131,8 +126,7 @@ change_all()
  * Change the specified ttys' flags.
  */
 int
-change_ttys(ttylist)
-	char **ttylist;
+ttys(char **ttylist, int print)
 {
 	struct ttyent *tep;
 	int rval;
@@ -147,58 +141,104 @@ change_ttys(ttylist)
 			continue;
 		}
 
-		if (change_ttyflags(tep))
+		if (ttyflags(tep, print))
 			rval = 1;
 	}
 	return (rval);
 }
 
+
 /*
- * Acutually do the work; find out what the new flags value should be,
+ * Actually do the work; find out what the new flags value should be,
  * open the device, and change the flags.
  */
 int
-change_ttyflags(tep)
-	struct ttyent *tep;
+ttyflags(struct ttyent *tep, int print)
 {
-	int fd, flags, rval, st;
+	int fd, flags = 0, rval = 0, st, sep = 0;
 	char path[PATH_MAX];
+	char strflags[256];
 
 	st = tep->ty_status;
-	flags = rval = 0;
-
-	/* Convert ttyent.h flags into ioctl flags. */
-	if (st & TTY_LOCAL)
-		flags |= TIOCFLAG_CLOCAL;
-	if (st & TTY_RTSCTS)
-		flags |= TIOCFLAG_CRTSCTS;
-	if (st & TTY_SOFTCAR)
-		flags |= TIOCFLAG_SOFTCAR;
-	if (st & TTY_MDMBUF)
-		flags |= TIOCFLAG_MDMBUF;
+	strflags[0] = '\0';
 
 	/* Find the full device path name. */
 	(void)snprintf(path, sizeof path, "%s%s", _PATH_DEV, tep->ty_name);
 
-	if (vflag)
-		warnx("setting flags on %s to %0x", path, flags);
+	if (print == 0) {
+		/* Convert ttyent.h flags into ioctl flags. */
+		if (st & TTY_LOCAL) {
+			flags |= TIOCFLAG_CLOCAL;
+			(void)strlcat(strflags, "local", sizeof strflags);
+			sep++;
+		}
+		if (st & TTY_RTSCTS) {
+			flags |= TIOCFLAG_CRTSCTS;
+			if (sep++)
+				(void)strlcat(strflags, "|", sizeof strflags);
+			(void)strlcat(strflags, "rtscts", sizeof strflags);
+		}
+		if (st & TTY_SOFTCAR) {
+			flags |= TIOCFLAG_SOFTCAR;
+			if (sep++)
+				(void)strlcat(strflags, "|", sizeof strflags);
+			(void)strlcat(strflags, "softcar", sizeof strflags);
+		}
+		if (st & TTY_MDMBUF) {
+			flags |= TIOCFLAG_MDMBUF;
+			if (sep++)
+				(void)strlcat(strflags, "|", sizeof strflags);
+			(void)strlcat(strflags, "mdmbuf", sizeof strflags);
+		}
+		if (vflag)
+			printf("%s setting flags to: %s\n", path, strflags);
+	}
+
 	if (nflag)
 		return (0);
 
 	/* Open the device NON-BLOCKING, set the flags, and close it. */
-	if ((fd = open(path, O_RDONLY | O_NONBLOCK, 0)) == -1) {
+	if ((fd = open(path, O_RDONLY | O_NONBLOCK)) == -1) {
 		if (!(errno == ENXIO ||
 		      (errno == ENOENT && (st & TTY_ON) == 0)))
 			rval = 1;
-		if (rval || vflag)
+		if (vflag)
 			warn("open %s", path);
 		return (rval);
 	}
-	if (ioctl(fd, TIOCSFLAGS, &flags) == -1)
-		if (errno != ENOTTY || vflag) {
-			warn("TIOCSFLAGS on %s", path);
-			rval = (errno != ENOTTY);
+	if (print == 0) {
+		if (ioctl(fd, TIOCSFLAGS, &flags) == -1)
+			if (errno != ENOTTY || vflag) {
+				warn("TIOCSFLAGS on %s", path);
+				rval = (errno != ENOTTY);
+			}
+	} else {
+		if (ioctl(fd, TIOCGFLAGS, &flags) == -1)
+			if (errno != ENOTTY || vflag) {
+				warn("TIOCGFLAGS on %s", path);
+				rval = (errno != ENOTTY);
+			}
+		if (flags & TIOCFLAG_CLOCAL) {
+			(void)strlcat(strflags, "local", sizeof strflags);
+			sep++;
 		}
+		if (flags & TIOCFLAG_CRTSCTS) {
+			if (sep++)
+				(void)strlcat(strflags, "|", sizeof strflags);
+			(void)strlcat(strflags, "rtscts", sizeof strflags);
+		}
+		if (flags & TIOCFLAG_SOFTCAR) {
+			if (sep++)
+				(void)strlcat(strflags, "|", sizeof strflags);
+			(void)strlcat(strflags, "softcar", sizeof strflags);
+		}
+		if (flags & TIOCFLAG_MDMBUF) {
+			if (sep++)
+				(void)strlcat(strflags, "|", sizeof strflags);
+			(void)strlcat(strflags, "mdmbuf", sizeof strflags);
+		}
+		printf("%s flags are: %s\n", path, strflags);
+	}
 	if (close(fd) == -1) {
 		warn("close %s", path);
 		return (1);
@@ -210,8 +250,8 @@ change_ttyflags(tep)
  * Print usage information when a bogus set of arguments is given.
  */
 void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr, "usage: ttyflags [-v] [-a | tty ... ]\n");
+	(void)fprintf(stderr, "usage: ttyflags [-pv] [-a | tty ...]\n");
 	exit(1);
 }

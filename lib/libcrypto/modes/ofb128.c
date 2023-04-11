@@ -1,3 +1,4 @@
+/* $OpenBSD: ofb128.c,v 1.4 2015/02/10 09:46:30 miod Exp $ */
 /* ====================================================================
  * Copyright (c) 2008 The OpenSSL Project.  All rights reserved.
  *
@@ -49,7 +50,7 @@
  */
 
 #include <openssl/crypto.h>
-#include "modes_lcl.h"
+#include "modes_local.h"
 #include <string.h>
 
 #ifndef MODES_DEBUG
@@ -57,7 +58,6 @@
 #  define NDEBUG
 # endif
 #endif
-#include <assert.h>
 
 /* The input and output encrypted as though 128bit ofb mode is being
  * used.  The extra state information to record how much of the
@@ -71,8 +71,6 @@ void CRYPTO_ofb128_encrypt(const unsigned char *in, unsigned char *out,
 	unsigned int n;
 	size_t l=0;
 
-	assert(in && out && key && ivec && num);
-
 	n = *num;
 
 #if !defined(OPENSSL_SMALL_FOOTPRINT)
@@ -82,7 +80,7 @@ void CRYPTO_ofb128_encrypt(const unsigned char *in, unsigned char *out,
 			--len;
 			n = (n+1) % 16;
 		}
-#if defined(STRICT_ALIGNMENT)
+#ifdef __STRICT_ALIGNMENT
 		if (((size_t)in|(size_t)out|(size_t)ivec)%sizeof(size_t) != 0)
 			break;
 #endif

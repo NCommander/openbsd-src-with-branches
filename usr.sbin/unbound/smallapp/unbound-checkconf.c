@@ -889,6 +889,10 @@ morechecks(struct config_file* cfg)
 		endpwent();
 #  endif
 	}
+
+	if (pledge("stdio rpath", NULL) == -1)
+		fatal_exit("Could not pledge");
+
 #endif
 	if(cfg->remote_control_enable && options_remote_is_address(cfg)
 		&& cfg->control_use_cert) {
@@ -1028,6 +1032,10 @@ int main(int argc, char* argv[])
 	if(argc == 1)
 		f = argv[0];
 	else	f = cfgfile;
+
+	if (pledge("stdio rpath dns getpw", NULL) == -1)
+		fatal_exit("Could not pledge");
+
 	checkconf(f, opt, final);
 	checklock_stop();
 	return 0;

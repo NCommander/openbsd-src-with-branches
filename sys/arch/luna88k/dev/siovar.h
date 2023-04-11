@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: siovar.h,v 1.2 2008/06/26 05:42:11 ray Exp $ */
 /* $NetBSD: siovar.h,v 1.1 2000/01/05 08:48:55 nisimura Exp $ */
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -37,12 +30,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-struct sio_softc {
-	struct device scp_dev;
-	caddr_t scp_ctl;
-	void (*scp_intr[2])(int);
-};
-
 struct sio_attach_args {
 	int channel;
 	int hwflags;
@@ -54,6 +41,15 @@ struct sioreg {
 	volatile u_int8_t sio_cmd;
 	volatile unsigned : 24;
 #define sio_stat sio_cmd
+};
+
+struct sio_softc {
+	struct device sc_dev;
+	struct sioreg *sc_ctl;
+	struct {
+		void (*ih_func)(void *);
+		void *ih_arg;
+	} sc_intrhand[2];
 };
 
 int  getsiocsr(struct sioreg *);

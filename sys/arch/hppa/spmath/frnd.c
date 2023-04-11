@@ -1,3 +1,4 @@
+/*	$OpenBSD: frnd.c,v 1.8 2003/04/10 17:27:58 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,54 +12,49 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/frnd.c,v $
- * $Revision: 2.7.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:06:24 $
- */
+/* @(#)frnd.c: Revision: 2.7.88.1 Date: 93/12/07 15:06:24 */
 
-#include "../spmath/float.h"
-#include "../spmath/sgl_float.h"
-#include "../spmath/dbl_float.h"
-#include "../spmath/quad_float.h"
-#include "../spmath/cnv_float.h"
+#include "float.h"
+#include "sgl_float.h"
+#include "dbl_float.h"
+#include "quad_float.h"
+#include "cnv_float.h"
 
 /*
  *  Single Floating-point Round to Integer
  */
 
-/*ARGSUSED*/
-sgl_frnd(srcptr,nullptr,dstptr,status)
-
-sgl_floating_point *srcptr, *dstptr;
-unsigned int *nullptr, *status;
+int
+sgl_frnd(srcptr, null, dstptr, status)
+	sgl_floating_point *srcptr, *null, *dstptr;
+	unsigned int *status;
 {
 	register unsigned int src, result;
 	register int src_exponent;
-	register boolean inexact = FALSE;
+	register int inexact = FALSE;
 
 	src = *srcptr;
-        /*
-         * check source operand for NaN or infinity
-         */
-        if ((src_exponent = Sgl_exponent(src)) == SGL_INFINITY_EXPONENT) {
-                /*
-                 * is signaling NaN?
-                 */
-                if (Sgl_isone_signaling(src)) {
-                        /* trap if INVALIDTRAP enabled */
-                        if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
-                        /* make NaN quiet */
-                        Set_invalidflag();
-                        Sgl_set_quiet(src);
-                }
-                /*
-                 * return quiet NaN or infinity
-                 */
-                *dstptr = src;
-                return(NOEXCEPTION);
-        }
-	/* 
+	/*
+	 * check source operand for NaN or infinity
+	 */
+	if ((src_exponent = Sgl_exponent(src)) == SGL_INFINITY_EXPONENT) {
+		/*
+		 * is signaling NaN?
+		 */
+		if (Sgl_isone_signaling(src)) {
+			/* trap if INVALIDTRAP enabled */
+			if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
+			/* make NaN quiet */
+			Set_invalidflag();
+			Sgl_set_quiet(src);
+		}
+		/*
+		 * return quiet NaN or infinity
+		 */
+		*dstptr = src;
+		return(NOEXCEPTION);
+	}
+	/*
 	 * Need to round?
 	 */
 	if ((src_exponent -= SGL_BIAS) >= SGL_P - 1) {
@@ -85,18 +81,18 @@ unsigned int *nullptr, *status;
 			     break;
 			case ROUNDNEAREST:
 			     if (Sgl_isone_roundbit(src,src_exponent))
-			        if (Sgl_isone_stickybit(src,src_exponent) 
-				|| (Sgl_isone_lowmantissa(result))) 
+				if (Sgl_isone_stickybit(src,src_exponent)
+				|| (Sgl_isone_lowmantissa(result)))
 					Sgl_increment(result);
-			} 
+			}
 		}
 		Sgl_leftshift(result,(SGL_P-1) - (src_exponent));
-		if (Sgl_isone_hiddenoverflow(result)) 
+		if (Sgl_isone_hiddenoverflow(result))
 			Sgl_set_exponent(result,src_exponent + (SGL_BIAS+1));
 		else Sgl_set_exponent(result,src_exponent + SGL_BIAS);
 	}
 	else {
-		result = src;  		/* set sign */
+		result = src;		/* set sign */
 		Sgl_setzero_exponentmantissa(result);
 		/* check for inexact */
 		if (Sgl_isnotzero_exponentmantissa(src)) {
@@ -104,63 +100,63 @@ unsigned int *nullptr, *status;
 			/*  round result  */
 			switch (Rounding_mode()) {
 			case ROUNDPLUS:
-			     if (Sgl_iszero_sign(src)) 
+			     if (Sgl_iszero_sign(src))
 				Sgl_set_exponent(result,SGL_BIAS);
 			     break;
 			case ROUNDMINUS:
-			     if (Sgl_isone_sign(src)) 
+			     if (Sgl_isone_sign(src))
 				Sgl_set_exponent(result,SGL_BIAS);
 			     break;
 			case ROUNDNEAREST:
 			     if (src_exponent == -1)
-			        if (Sgl_isnotzero_mantissa(src))
+				if (Sgl_isnotzero_mantissa(src))
 				   Sgl_set_exponent(result,SGL_BIAS);
-			} 
+			}
 		}
 	}
 	*dstptr = result;
-	if (inexact) 
+	if (inexact) {
 		if (Is_inexacttrap_enabled()) return(INEXACTEXCEPTION);
 		else Set_inexactflag();
+	}
 	return(NOEXCEPTION);
-} 
+}
 
 /*
  *  Double Floating-point Round to Integer
  */
 
-/*ARGSUSED*/
-dbl_frnd(srcptr,nullptr,dstptr,status)
-
-dbl_floating_point *srcptr, *dstptr;
-unsigned int *nullptr, *status;
+int
+dbl_frnd(srcptr, null, dstptr, status)
+	dbl_floating_point *srcptr, *null, *dstptr;
+	unsigned int *status;
 {
 	register unsigned int srcp1, srcp2, resultp1, resultp2;
 	register int src_exponent;
-	register boolean inexact = FALSE;
+	register int inexact = FALSE;
 
 	Dbl_copyfromptr(srcptr,srcp1,srcp2);
-        /*
-         * check source operand for NaN or infinity
-         */
-        if ((src_exponent = Dbl_exponent(srcp1)) == DBL_INFINITY_EXPONENT) {
-                /*
-                 * is signaling NaN?
-                 */
-                if (Dbl_isone_signaling(srcp1)) {
-                        /* trap if INVALIDTRAP enabled */
-                        if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
-                        /* make NaN quiet */
-                        Set_invalidflag();
-                        Dbl_set_quiet(srcp1);
-                }
-                /*
-                 * return quiet NaN or infinity
-                 */
-                Dbl_copytoptr(srcp1,srcp2,dstptr);
-                return(NOEXCEPTION);
-        }
-	/* 
+	/*
+	 * check source operand for NaN or infinity
+	 */
+	if ((src_exponent = Dbl_exponent(srcp1)) == DBL_INFINITY_EXPONENT) {
+		/*
+		 * is signaling NaN?
+		 */
+		if (Dbl_isone_signaling(srcp1)) {
+			/* trap if INVALIDTRAP enabled */
+			if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
+			/* make NaN quiet */
+			Set_invalidflag();
+			Dbl_set_quiet(srcp1);
+		}
+		/*
+		 * return quiet NaN or infinity
+		 */
+		Dbl_copytoptr(srcp1,srcp2,dstptr);
+		return(NOEXCEPTION);
+	}
+	/*
 	 * Need to round?
 	 */
 	if ((src_exponent -= DBL_BIAS) >= DBL_P - 1) {
@@ -181,19 +177,19 @@ unsigned int *nullptr, *status;
 			/*  round result  */
 			switch (Rounding_mode()) {
 			case ROUNDPLUS:
-			     if (Dbl_iszero_sign(srcp1)) 
+			     if (Dbl_iszero_sign(srcp1))
 				Dbl_increment(resultp1,resultp2);
 			     break;
 			case ROUNDMINUS:
-			     if (Dbl_isone_sign(srcp1)) 
+			     if (Dbl_isone_sign(srcp1))
 				Dbl_increment(resultp1,resultp2);
 			     break;
 			case ROUNDNEAREST:
 			     if (Dbl_isone_roundbit(srcp1,srcp2,src_exponent))
-			      if (Dbl_isone_stickybit(srcp1,srcp2,src_exponent) 
-				  || (Dbl_isone_lowmantissap2(resultp2))) 
+			      if (Dbl_isone_stickybit(srcp1,srcp2,src_exponent)
+				  || (Dbl_isone_lowmantissap2(resultp2)))
 					Dbl_increment(resultp1,resultp2);
-			} 
+			}
 		}
 		Dbl_leftshift(resultp1,resultp2,(DBL_P-1) - (src_exponent));
 		if (Dbl_isone_hiddenoverflow(resultp1))
@@ -209,33 +205,32 @@ unsigned int *nullptr, *status;
 			/*  round result  */
 			switch (Rounding_mode()) {
 			case ROUNDPLUS:
-			     if (Dbl_iszero_sign(srcp1)) 
+			     if (Dbl_iszero_sign(srcp1))
 				Dbl_set_exponent(resultp1,DBL_BIAS);
 			     break;
 			case ROUNDMINUS:
-			     if (Dbl_isone_sign(srcp1)) 
+			     if (Dbl_isone_sign(srcp1))
 				Dbl_set_exponent(resultp1,DBL_BIAS);
 			     break;
 			case ROUNDNEAREST:
 			     if (src_exponent == -1)
-			        if (Dbl_isnotzero_mantissa(srcp1,srcp2))
+				if (Dbl_isnotzero_mantissa(srcp1,srcp2))
 				   Dbl_set_exponent(resultp1,DBL_BIAS);
-			} 
+			}
 		}
 	}
 	Dbl_copytoptr(resultp1,resultp2,dstptr);
-	if (inexact)
+	if (inexact) {
 		if (Is_inexacttrap_enabled()) return(INEXACTEXCEPTION);
 		else Set_inexactflag();
+	}
 	return(NOEXCEPTION);
 }
 
-/*ARGSUSED*/
-quad_frnd(srcptr,nullptr,dstptr,status)
-
-quad_floating_point *srcptr, *dstptr;
-unsigned int *nullptr, *status;
+int
+quad_frnd(srcptr, null, dstptr, status)
+	quad_floating_point *srcptr, *null, *dstptr;
+	unsigned int *status;
 {
 	return(UNIMPLEMENTEDEXCEPTION);
 }
-

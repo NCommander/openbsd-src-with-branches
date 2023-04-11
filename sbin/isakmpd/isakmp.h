@@ -1,7 +1,9 @@
-/*	$Id: isakmp.h,v 1.10 1998/07/31 11:36:26 niklas Exp $	*/
+/* $OpenBSD: isakmp.h,v 1.6 2004/04/15 18:39:26 deraadt Exp $	 */
+/* $EOM: isakmp.h,v 1.11 2000/07/05 10:48:43 ho Exp $	 */
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
+ * Copyright (c) 2004 Håkan Olsson.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,11 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -40,7 +37,14 @@
 #include "isakmp_num.h"
 
 /* IANA assigned port */
-#define UDP_DEFAULT_PORT 500
+#define UDP_DEFAULT_PORT		500
+#define UDP_DEFAULT_PORT_STR		"500"
+
+#define ISAKMP_DEFAULT_TRANSPORT	"udp"
+
+/* draft-ietf-ipsec-nat-t-ike-07.txt */
+#define UDP_ENCAP_DEFAULT_PORT		4500
+#define UDP_ENCAP_DEFAULT_PORT_STR	"4500"
 
 /* ISAKMP header extras defines */
 #define ISAKMP_HDR_COOKIES_OFF	ISAKMP_HDR_ICOOKIE_OFF
@@ -57,4 +61,4 @@
 #define ISAKMP_VERSION_MINOR(x)		((x) & 0xf)
 #define ISAKMP_VERSION_MAKE(maj, min)	((maj) << 4 | (min))
 
-#endif /* _ISAKMP_H_ */
+#endif				/* _ISAKMP_H_ */

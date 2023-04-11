@@ -968,6 +968,8 @@ _bfd_elf_print_private_bfd_data (bfd *abfd, void *farg)
 	    case PT_TLS: pt = "TLS"; break;
 	    case PT_GNU_EH_FRAME: pt = "EH_FRAME"; break;
 	    case PT_GNU_STACK: pt = "STACK"; break;
+	    case PT_OPENBSD_RANDOMIZE: pt = "OPENBSD_RANDOMIZE"; break;
+	    case PT_OPENBSD_MUTABLE: pt = "OPENBSD_MUTABLE"; break;
 	    default: sprintf (buf, "0x%lx", p->p_type); pt = buf; break;
 	    }
 	  fprintf (f, "%8s off    0x", pt);
@@ -2291,6 +2293,14 @@ bfd_section_from_phdr (bfd *abfd, Elf_Internal_Phdr *hdr, int index)
     case PT_GNU_STACK:
       return _bfd_elf_make_section_from_phdr (abfd, hdr, index, "stack");
 
+    case PT_OPENBSD_RANDOMIZE:
+      return _bfd_elf_make_section_from_phdr (abfd, hdr, index,
+					      "openbsd_randomize");
+
+    case PT_OPENBSD_MUTABLE:
+      return _bfd_elf_make_section_from_phdr (abfd, hdr, index,
+					      "openbsd_mutable");
+
     default:
       /* Check for any processor-specific program segment types.
          If no handler for them, default to making "segment" sections.  */
@@ -3194,7 +3204,7 @@ map_sections_to_segments (bfd *abfd)
   bfd_boolean writable;
   int tls_count = 0;
   asection *first_tls = NULL;
-  asection *dynsec, *eh_frame_hdr;
+  asection *dynsec, *eh_frame_hdr, *randomdata, *mutabledata;
   bfd_size_type amt;
 
   if (elf_tdata (abfd)->segment_map != NULL)
@@ -3229,11 +3239,13 @@ map_sections_to_segments (bfd *abfd)
   mfirst = NULL;
   pm = &mfirst;
 
-  /* If we have a .interp section, then create a PT_PHDR segment for
-     the program headers and a PT_INTERP segment for the .interp
-     section.  */
+  /* If we have a .interp section, or are creating an executable and
+     have a .dynamic section, then create a PT_PHDR segment for the
+     program headers.  */
   s = bfd_get_section_by_name (abfd, ".interp");
-  if (s != NULL && (s->flags & SEC_LOAD) != 0)
+  if ((s != NULL && (s->flags & SEC_LOAD) != 0) ||
+      (bfd_get_section_by_name (abfd, ".dynamic") &&
+       elf_tdata (abfd)->executable))
     {
       amt = sizeof (struct elf_segment_map);
       m = bfd_zalloc (abfd, amt);
@@ -3248,7 +3260,12 @@ map_sections_to_segments (bfd *abfd)
 
       *pm = m;
       pm = &m->next;
+    }      
 
+  /* If we have a .interp section, then create a PT_INTERP segment for
+     the .interp section.  */
+  if (s != NULL && (s->flags & SEC_LOAD) != 0)
+    {
       amt = sizeof (struct elf_segment_map);
       m = bfd_zalloc (abfd, amt);
       if (m == NULL)
@@ -3509,6 +3526,42 @@ map_sections_to_segments (bfd *abfd)
       m->p_type = PT_GNU_STACK;
       m->p_flags = elf_tdata (abfd)->stack_flags;
       m->p_flags_valid = 1;
+
+      *pm = m;
+      pm = &m->next;
+    }
+
+  /* If there is a .openbsd.randomdata section, throw in a PT_OPENBSD_RANDOMIZE
+     segment.  */
+  randomdata = bfd_get_section_by_name (abfd, ".openbsd.randomdata");
+  if (randomdata != NULL && (randomdata->flags & SEC_LOAD) != 0)
+    {
+      amt = sizeof (struct elf_segment_map);
+      m = bfd_zalloc (abfd, amt);
+      if (m == NULL)
+	goto error_return;
+      m->next = NULL;
+      m->p_type = PT_OPENBSD_RANDOMIZE;
+      m->count = 1;
+      m->sections[0] = randomdata->output_section;
+
+      *pm = m;
+      pm = &m->next;
+    }
+
+  /* If there is a .openbsd.mutable section, throw in a PT_OPENBSD_MUTABLE
+     segment.  */
+  mutabledata = bfd_get_section_by_name (abfd, ".openbsd.mutable");
+  if (mutabledata != NULL && (mutabledata->flags & SEC_LOAD) != 0)
+    {
+      amt = sizeof (struct elf_segment_map);
+      m = bfd_zalloc (abfd, amt);
+      if (m == NULL)
+	goto error_return;
+      m->next = NULL;
+      m->p_type = PT_OPENBSD_MUTABLE;
+      m->count = 1;
+      m->sections[0] = mutabledata->output_section;
 
       *pm = m;
       pm = &m->next;
@@ -4103,23 +4156,45 @@ get_program_header_size (bfd *abfd)
       return elf_tdata (abfd)->program_header_size;
     }
 
-  /* Assume we will need exactly two PT_LOAD segments: one for text
-     and one for data.  */
-  segs = 2;
+  /* We used to assume that two PT_LOAD segments would be enough,
+     code and data, with the change to pad the PLT and GOT, this is no
+     longer true. Now there can be several PT_LOAD sections. 7 seems
+     to be enough with BSS_PLT and .rodata-X, where we have text, data,
+     GOT, dynamic, PLT, bss */
+  segs = 7;
 
   s = bfd_get_section_by_name (abfd, ".interp");
+  s = bfd_get_section_by_name (abfd, ".interp");
+  if ((s != NULL && (s->flags & SEC_LOAD) != 0) ||
+      (bfd_get_section_by_name (abfd, ".dynamic") &&
+       elf_tdata (abfd)->executable))
+    {
+      /* We need a PT_PHDR segment.  */
+      ++segs;
+    }
+
   if (s != NULL && (s->flags & SEC_LOAD) != 0)
     {
       /* If we have a loadable interpreter section, we need a
-	 PT_INTERP segment.  In this case, assume we also need a
-	 PT_PHDR segment, although that may not be true for all
-	 targets.  */
-      segs += 2;
+	 PT_INTERP segment.  */
+      ++segs;
     }
 
   if (bfd_get_section_by_name (abfd, ".dynamic") != NULL)
     {
       /* We need a PT_DYNAMIC segment.  */
+      ++segs;
+    }
+
+  if (bfd_get_section_by_name (abfd, ".openbsd.randomdata") != NULL)
+    {
+      /* We need a PT_OPENBSD_RANDOMIZE segment.  */
+      ++segs;
+    }
+
+  if (bfd_get_section_by_name (abfd, ".openbsd.mutable") != NULL)
+    {
+      /* We need a PT_OPENBSD_MUTABLE segment.  */
       ++segs;
     }
 
@@ -6317,8 +6392,13 @@ _bfd_elf_rel_vtable_reloc_fn
 static int
 elfcore_make_pid (bfd *abfd)
 {
-  return ((elf_tdata (abfd)->core_lwpid << 16)
-	  + (elf_tdata (abfd)->core_pid));
+  int pid;
+
+  pid = elf_tdata (abfd)->core_lwpid;
+  if (pid == 0)
+    pid = elf_tdata (abfd)->core_pid;
+
+  return pid;
 }
 
 /* If there isn't a section called NAME, make one, using
@@ -6960,6 +7040,75 @@ elfcore_grok_netbsd_note (bfd *abfd, Elf_Internal_Note *note)
 }
 
 static bfd_boolean
+elfcore_grok_openbsd_procinfo (bfd *abfd, Elf_Internal_Note *note)
+{
+  /* Signal number at offset 0x08. */
+  elf_tdata (abfd)->core_signal
+    = bfd_h_get_32 (abfd, (bfd_byte *) note->descdata + 0x08);
+
+  /* Process ID at offset 0x20. */
+  elf_tdata (abfd)->core_pid
+    = bfd_h_get_32 (abfd, (bfd_byte *) note->descdata + 0x20);
+
+  /* Command name at 0x48 (max 32 bytes, including nul). */
+  elf_tdata (abfd)->core_command
+    = _bfd_elfcore_strndup (abfd, note->descdata + 0x48, 31);
+
+  return TRUE;
+}
+
+static bfd_boolean
+elfcore_grok_openbsd_note (bfd *abfd, Elf_Internal_Note *note)
+{
+  int lwp;
+
+  if (elfcore_netbsd_get_lwpid (note, &lwp))
+    elf_tdata (abfd)->core_lwpid = lwp;
+
+  if (note->type == NT_OPENBSD_PROCINFO)
+    return elfcore_grok_openbsd_procinfo (abfd, note);
+
+  if (note->type == NT_OPENBSD_REGS)
+    return elfcore_make_note_pseudosection (abfd, ".reg", note);
+
+  if (note->type == NT_OPENBSD_FPREGS)
+    return elfcore_make_note_pseudosection (abfd, ".reg2", note);
+
+  if (note->type == NT_OPENBSD_XFPREGS)
+    return elfcore_make_note_pseudosection (abfd, ".reg-xfp", note);
+
+  if (note->type == NT_OPENBSD_AUXV)
+    {
+      asection *sect = bfd_make_section_anyway (abfd, ".auxv");
+
+      if (sect == NULL)
+	return FALSE;
+      sect->_raw_size = note->descsz;
+      sect->filepos = note->descpos;
+      sect->flags = SEC_HAS_CONTENTS;
+      sect->alignment_power = 1 + bfd_get_arch_size (abfd) / 32;
+
+      return TRUE;
+    }
+
+  if (note->type == NT_OPENBSD_WCOOKIE)
+    {
+      asection *sect = bfd_make_section_anyway (abfd, ".wcookie");
+
+      if (sect == NULL)
+	return FALSE;
+      sect->_raw_size = note->descsz;
+      sect->filepos = note->descpos;
+      sect->flags = SEC_HAS_CONTENTS;
+      sect->alignment_power = 1 + bfd_get_arch_size (abfd) / 32;
+
+      return TRUE;
+    }
+
+  return TRUE;
+}
+
+static bfd_boolean
 elfcore_grok_nto_status (bfd *abfd, Elf_Internal_Note *note, pid_t *tid)
 {
   void *ddata = note->descdata;
@@ -7292,6 +7441,11 @@ elfcore_read_notes (bfd *abfd, file_ptr offset, bfd_size_type size)
       if (strncmp (in.namedata, "NetBSD-CORE", 11) == 0)
         {
           if (! elfcore_grok_netbsd_note (abfd, &in))
+            goto error;
+        }
+      if (strncmp (in.namedata, "OpenBSD", 7) == 0)
+        {
+          if (! elfcore_grok_openbsd_note (abfd, &in))
             goto error;
         }
       else if (strncmp (in.namedata, "QNX", 3) == 0)

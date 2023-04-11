@@ -1,4 +1,4 @@
-/* crypto/x509/x509cset.c */
+/* $OpenBSD: x509cset.c,v 1.18 2022/11/26 16:08:55 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,114 +57,177 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
+
 #include <openssl/asn1.h>
-#include <openssl/objects.h>
 #include <openssl/evp.h>
+#include <openssl/objects.h>
 #include <openssl/x509.h>
 
-int X509_CRL_set_version(X509_CRL *x, long version)
-	{
-	if (x == NULL) return(0);
-	if (x->crl->version == NULL)
-		{
-		if ((x->crl->version=M_ASN1_INTEGER_new()) == NULL)
-			return(0);
-		}
-	return(ASN1_INTEGER_set(x->crl->version,version));
+#include "x509_local.h"
+
+int
+X509_CRL_up_ref(X509_CRL *x)
+{
+	int refs = CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509_CRL);
+	return (refs > 1) ? 1 : 0;
+}
+LCRYPTO_ALIAS(X509_CRL_up_ref);
+
+int
+X509_CRL_set_version(X509_CRL *x, long version)
+{
+	if (x == NULL)
+		return (0);
+	if (x->crl->version == NULL) {
+		if ((x->crl->version = ASN1_INTEGER_new()) == NULL)
+			return (0);
 	}
+	return (ASN1_INTEGER_set(x->crl->version, version));
+}
+LCRYPTO_ALIAS(X509_CRL_set_version);
 
-int X509_CRL_set_issuer_name(X509_CRL *x, X509_NAME *name)
-	{
-	if ((x == NULL) || (x->crl == NULL)) return(0);
-	return(X509_NAME_set(&x->crl->issuer,name));
-	}
+int
+X509_CRL_set_issuer_name(X509_CRL *x, X509_NAME *name)
+{
+	if ((x == NULL) || (x->crl == NULL))
+		return (0);
+	return (X509_NAME_set(&x->crl->issuer, name));
+}
+LCRYPTO_ALIAS(X509_CRL_set_issuer_name);
 
-
-int X509_CRL_set_lastUpdate(X509_CRL *x, const ASN1_TIME *tm)
-	{
+int
+X509_CRL_set_lastUpdate(X509_CRL *x, const ASN1_TIME *tm)
+{
 	ASN1_TIME *in;
 
-	if (x == NULL) return(0);
-	in=x->crl->lastUpdate;
-	if (in != tm)
-		{
-		in=M_ASN1_TIME_dup(tm);
-		if (in != NULL)
-			{
-			M_ASN1_TIME_free(x->crl->lastUpdate);
-			x->crl->lastUpdate=in;
-			}
+	if (x == NULL)
+		return (0);
+	in = x->crl->lastUpdate;
+	if (in != tm) {
+		in = ASN1_STRING_dup(tm);
+		if (in != NULL) {
+			ASN1_TIME_free(x->crl->lastUpdate);
+			x->crl->lastUpdate = in;
 		}
-	return(in != NULL);
 	}
+	return (in != NULL);
+}
+LCRYPTO_ALIAS(X509_CRL_set_lastUpdate);
 
-int X509_CRL_set_nextUpdate(X509_CRL *x, const ASN1_TIME *tm)
-	{
+int
+X509_CRL_set1_lastUpdate(X509_CRL *x, const ASN1_TIME *tm)
+{
+	return X509_CRL_set_lastUpdate(x, tm);
+}
+LCRYPTO_ALIAS(X509_CRL_set1_lastUpdate);
+
+int
+X509_CRL_set_nextUpdate(X509_CRL *x, const ASN1_TIME *tm)
+{
 	ASN1_TIME *in;
 
-	if (x == NULL) return(0);
-	in=x->crl->nextUpdate;
-	if (in != tm)
-		{
-		in=M_ASN1_TIME_dup(tm);
-		if (in != NULL)
-			{
-			M_ASN1_TIME_free(x->crl->nextUpdate);
-			x->crl->nextUpdate=in;
-			}
+	if (x == NULL)
+		return (0);
+	in = x->crl->nextUpdate;
+	if (in != tm) {
+		in = ASN1_STRING_dup(tm);
+		if (in != NULL) {
+			ASN1_TIME_free(x->crl->nextUpdate);
+			x->crl->nextUpdate = in;
 		}
-	return(in != NULL);
 	}
+	return (in != NULL);
+}
+LCRYPTO_ALIAS(X509_CRL_set_nextUpdate);
 
-int X509_CRL_sort(X509_CRL *c)
-	{
+int
+X509_CRL_set1_nextUpdate(X509_CRL *x, const ASN1_TIME *tm)
+{
+	return X509_CRL_set_nextUpdate(x, tm);
+}
+LCRYPTO_ALIAS(X509_CRL_set1_nextUpdate);
+
+int
+X509_CRL_sort(X509_CRL *c)
+{
 	int i;
 	X509_REVOKED *r;
+
 	/* sort the data so it will be written in serial
 	 * number order */
 	sk_X509_REVOKED_sort(c->crl->revoked);
-	for (i=0; i<sk_X509_REVOKED_num(c->crl->revoked); i++)
-		{
-		r=sk_X509_REVOKED_value(c->crl->revoked,i);
-		r->sequence=i;
-		}
+	for (i = 0; i < sk_X509_REVOKED_num(c->crl->revoked); i++) {
+		r = sk_X509_REVOKED_value(c->crl->revoked, i);
+		r->sequence = i;
+	}
 	c->crl->enc.modified = 1;
 	return 1;
-	}
+}
+LCRYPTO_ALIAS(X509_CRL_sort);
 
-int X509_REVOKED_set_revocationDate(X509_REVOKED *x, ASN1_TIME *tm)
-	{
+const STACK_OF(X509_EXTENSION) *
+X509_REVOKED_get0_extensions(const X509_REVOKED *x)
+{
+	return x->extensions;
+}
+LCRYPTO_ALIAS(X509_REVOKED_get0_extensions);
+
+const ASN1_TIME *
+X509_REVOKED_get0_revocationDate(const X509_REVOKED *x)
+{
+	return x->revocationDate;
+}
+LCRYPTO_ALIAS(X509_REVOKED_get0_revocationDate);
+
+const ASN1_INTEGER *
+X509_REVOKED_get0_serialNumber(const X509_REVOKED *x)
+{
+	return x->serialNumber;
+}
+LCRYPTO_ALIAS(X509_REVOKED_get0_serialNumber);
+
+int
+X509_REVOKED_set_revocationDate(X509_REVOKED *x, ASN1_TIME *tm)
+{
 	ASN1_TIME *in;
 
-	if (x == NULL) return(0);
-	in=x->revocationDate;
-	if (in != tm)
-		{
-		in=M_ASN1_TIME_dup(tm);
-		if (in != NULL)
-			{
-			M_ASN1_TIME_free(x->revocationDate);
-			x->revocationDate=in;
-			}
+	if (x == NULL)
+		return (0);
+	in = x->revocationDate;
+	if (in != tm) {
+		in = ASN1_STRING_dup(tm);
+		if (in != NULL) {
+			ASN1_TIME_free(x->revocationDate);
+			x->revocationDate = in;
 		}
-	return(in != NULL);
 	}
+	return (in != NULL);
+}
+LCRYPTO_ALIAS(X509_REVOKED_set_revocationDate);
 
-int X509_REVOKED_set_serialNumber(X509_REVOKED *x, ASN1_INTEGER *serial)
-	{
+int
+X509_REVOKED_set_serialNumber(X509_REVOKED *x, ASN1_INTEGER *serial)
+{
 	ASN1_INTEGER *in;
 
-	if (x == NULL) return(0);
-	in=x->serialNumber;
-	if (in != serial)
-		{
-		in=M_ASN1_INTEGER_dup(serial);
-		if (in != NULL)
-			{
-			M_ASN1_INTEGER_free(x->serialNumber);
-			x->serialNumber=in;
-			}
+	if (x == NULL)
+		return (0);
+	in = x->serialNumber;
+	if (in != serial) {
+		in = ASN1_INTEGER_dup(serial);
+		if (in != NULL) {
+			ASN1_INTEGER_free(x->serialNumber);
+			x->serialNumber = in;
 		}
-	return(in != NULL);
 	}
+	return (in != NULL);
+}
+LCRYPTO_ALIAS(X509_REVOKED_set_serialNumber);
+
+int
+i2d_re_X509_CRL_tbs(X509_CRL *crl, unsigned char **pp)
+{
+	crl->crl->enc.modified = 1;
+	return i2d_X509_CRL_INFO(crl->crl, pp);
+}
+LCRYPTO_ALIAS(i2d_re_X509_CRL_tbs);

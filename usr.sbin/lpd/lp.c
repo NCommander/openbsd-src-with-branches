@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: lp.c,v 1.3 2020/03/16 20:46:44 benno Exp $	*/
 
 /*
  * Copyright (c) 2017 Eric Faurot <eric@openbsd.org>
@@ -116,15 +116,15 @@ lp_scanprinters(struct lp_printer *lp)
 		cgetclose();
 		scanning = 0;
 		return 0;
-	}
-	else if (r == 1) {
+	} else if (r == 1) {
 		memset(lp, 0, sizeof(*lp));
 		r = readent(lp, buf);
 		free(buf);
 		if (r == -2)
 			goto fail;
 		return 1;
-	}
+	} else if (r == -1) 
+		fatal("cannot open %s", _PATH_PRINTCAP);
 	else if (r == -2)
 		errno = ELOOP; /* potential reference loop */
 
@@ -321,9 +321,9 @@ lp_readqueue(struct lp_printer *lp, struct lp_queue *q)
 		if (strlen(d->d_name) < 7)
 			continue;
 
-		if (!isdigit((unsigned int)d->d_name[3]) ||
-		    !isdigit((unsigned int)d->d_name[4]) ||
-		    !isdigit((unsigned int)d->d_name[5]))
+		if (!isdigit((unsigned char)d->d_name[3]) ||
+		    !isdigit((unsigned char)d->d_name[4]) ||
+		    !isdigit((unsigned char)d->d_name[5]))
 			continue;
 
 		if (strlcpy(end, d->d_name, sz) >= sz) {
@@ -822,7 +822,7 @@ lp_create(struct lp_printer *lp, int cf, size_t sz, const char *fname)
 
 	if (cf) {
 		/*
-		 * Create a temporay file, but we want to avoid
+		 * Create a temporary file, but we want to avoid
 		 * a collision with the final cf filename.
 		 */
 		/* XXX this would require a lock on .seq */
@@ -844,7 +844,7 @@ lp_create(struct lp_printer *lp, int cf, size_t sz, const char *fname)
 
 /*
  * Commit the job given by its temporary CF name.
- * This is done by renaming the temporay CF file name to its final name.
+ * This is done by renaming the temporary CF file name to its final name.
  * The functions return 0 on success, or -1 on error and set errno.
  */
 int

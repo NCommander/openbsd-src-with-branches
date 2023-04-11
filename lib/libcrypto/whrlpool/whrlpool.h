@@ -1,8 +1,11 @@
+/* $OpenBSD: whrlpool.h,v 1.4 2014/06/12 15:49:31 deraadt Exp $ */
+
+#include <stddef.h>
+
 #ifndef HEADER_WHRLPOOL_H
 #define HEADER_WHRLPOOL_H
 
-#include <openssl/e_os2.h>
-#include <stddef.h>
+#include <openssl/opensslconf.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,9 +27,6 @@ typedef struct	{
 	} WHIRLPOOL_CTX;
 
 #ifndef OPENSSL_NO_WHIRLPOOL
-#ifdef OPENSSL_FIPS
-int private_WHIRLPOOL_Init(WHIRLPOOL_CTX *c);
-#endif
 int WHIRLPOOL_Init	(WHIRLPOOL_CTX *c);
 int WHIRLPOOL_Update	(WHIRLPOOL_CTX *c,const void *inp,size_t bytes);
 void WHIRLPOOL_BitUpdate(WHIRLPOOL_CTX *c,const void *inp,size_t bits);

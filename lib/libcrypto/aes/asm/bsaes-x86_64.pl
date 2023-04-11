@@ -20,7 +20,7 @@
 # - code was made position-independent;
 # - rounds were folded into a loop resulting in >5x size reduction
 #   from 12.5KB to 2.2KB;
-# - above was possibile thanks to mixcolumns() modification that
+# - above was possible thanks to mixcolumns() modification that
 #   allowed to feed its output back to aesenc[last], this was
 #   achieved at cost of two additional inter-registers moves;
 # - some instruction reordering and interleaving;
@@ -2882,6 +2882,7 @@ $code.=<<___;
 ___
 }
 $code.=<<___;
+.section .rodata
 .type	_bsaes_const,\@object
 .align	64
 _bsaes_const:
@@ -2934,9 +2935,9 @@ _bsaes_const:
 	.quad	0x02060a0e03070b0f, 0x0004080c0105090d
 .L63:
 	.quad	0x6363636363636363, 0x6363636363636363
-.asciz	"Bit-sliced AES for x86_64/SSSE3, Emilia Käsper, Peter Schwabe, Andy Polyakov"
 .align	64
 .size	_bsaes_const,.-_bsaes_const
+.text
 ___
 
 # EXCEPTION_DISPOSITION handler (EXCEPTION_RECORD *rec,ULONG64 frame,

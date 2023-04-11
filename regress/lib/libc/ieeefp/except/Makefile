@@ -1,12 +1,24 @@
-#	$NetBSD: Makefile,v 1.1 1995/04/26 00:27:25 jtc Exp $
+#	$OpenBSD: Makefile,v 1.6 2020/10/18 17:40:06 kettenis Exp $
 
-PROG=	except
-SRCS=	except.c
-NOMAN=
+PROG=except
 
-install:
+REGRESS_TARGETS+= fltdiv fltinv fltovf fltund
 
-regress: ${PROG}
-	./${PROG}
+.if ${MACHINE} == arm64 || ${MACHINE} == armv7 || ${MACHINE} == riscv64
+# Floating-point exceptions are optional and absent on most hardware
+REGRESS_EXPECTED_FAILURES+= fltdiv fltinv fltovf fltund
+.endif
 
-.include <bsd.prog.mk>
+fltdiv: ${PROG}
+	./${PROG} fltdiv
+
+fltinv: ${PROG}
+	./${PROG} fltinv
+
+fltovf: ${PROG}
+	./${PROG} fltovf
+
+fltund: ${PROG}
+	./${PROG} fltund
+
+.include <bsd.regress.mk>

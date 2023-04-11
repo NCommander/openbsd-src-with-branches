@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: sm2_sign.c,v 1.2 2022/01/20 11:12:14 inoguchi Exp $ */
 /*
  * Copyright (c) 2017, 2019 Ribose Inc
  *
@@ -24,8 +24,8 @@
 #include <openssl/err.h>
 #include <openssl/bn.h>
 
-#include "bn_lcl.h"
-#include "sm2_locl.h"
+#include "bn_local.h"
+#include "sm2_local.h"
 
 static BIGNUM *
 sm2_compute_msg_hash(const EVP_MD *digest, const EC_KEY *key,
@@ -194,7 +194,7 @@ sm2_sig_gen(const EC_KEY *key, const BIGNUM *e)
 			goto err;
 		}
 
-		if (!BN_mod_inverse_ct(s, s, order, ctx)) {
+		if (BN_mod_inverse_ct(s, s, order, ctx) == NULL) {
 			SM2error(ERR_R_BN_LIB);
 			goto err;
 		}

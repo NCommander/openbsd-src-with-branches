@@ -1,4 +1,4 @@
-/* crypto/idea/i_ecb.c */
+/* $OpenBSD: i_ecb.c,v 1.3 2014/07/09 11:10:51 bcook Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -57,10 +57,8 @@
  */
 
 #include <openssl/idea.h>
-#include "idea_lcl.h"
+#include "idea_local.h"
 #include <openssl/opensslv.h>
-
-const char IDEA_version[]="IDEA" OPENSSL_VERSION_PTEXT;
 
 const char *idea_options(void)
 	{

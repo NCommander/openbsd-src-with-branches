@@ -1,3 +1,4 @@
+/*	$OpenBSD: srt0.s,v 1.6 2006/07/09 19:36:57 miod Exp $	*/
 /*	$NetBSD: srt0.s,v 1.1 2000/08/20 14:58:42 mrg Exp $	*/
 
 /*
@@ -42,16 +43,18 @@
 	.globl	_esym
 	.data
 _esym:	.word	0			/* end of symbol table */
-	.globl	_C_LABEL(romp)
+	.globl	romp
 	.align	8
-_C_LABEL(romp):	.xword	0		/* openfirmware entry point */
+	.register %g2,	#scratch
+	.register %g3,	#scratch
+romp:		.xword	0		/* openfirmware entry point */
 
 /*
  * Startup entry
  */
 	.text
-	.globl	_start, _C_LABEL(kernel_text)
-	_C_LABEL(kernel_text) = _start
+	.globl	_start, kernel_text
+	kernel_text = _start
 _start:
 	nop			! For some reason this is needed to fixup the text section
 	
@@ -60,13 +63,12 @@ _start:
 	 */
 	
 	mov	%o4, %g7	! save prom vector pointer
-	set	_C_LABEL(romp), %g1
+	set	romp, %g1
 	stx	%o4, [%g1]	! It's initialized data, I hope
 
 	/*
 	 * Start by creating a stack for ourselves.
 	 */
-#ifdef _LP64
 	/* 64-bit stack */
 	btst	1, %sp
 	set	CC64FSZ, %g1	! Frame Size (negative)
@@ -77,20 +79,8 @@ _start:
 1:
 	sub	%sp, %g1, %g1
 	save	%g1, %g0, %sp
-#else
-	/* 32-bit stack */
-	btst	1, %sp
-	set	CC64FSZ, %g1	! Frame Size (negative)
-	bz	1f
-	 set	BIAS, %g2
-	sub	%g1, %g2, %g1
-1:
-	sub	%sp, %g1, %g1	! This is so we properly sign-extend things
-	andn	%g1, 0x7, %g1
-	save	%g1, %g0, %sp
-#endif
 	
-!	mov	%i0, %i4		! Apparenty we get our CIF in i0
+!	mov	%i0, %i4		! Apparently we get our CIF in i0
 	
 	/*
 	 * Set the psr into a known state:
@@ -106,27 +96,27 @@ _start:
 	/*
 	 * XXXXXXXX Need to determine what params are passed
 	 */
-	call	_C_LABEL(setup)
+	call	setup
 	 nop
 	mov	%i1, %o1		
-	call	_C_LABEL(main)
+	call	main
 	 mov	%i2, %o0
-	call	_C_LABEL(exit)
+	call	exit
 	 nop
-	call	_C_LABEL(_rtt)
+	call	_rtt
 	 nop
 
 /*
- * void syncicache(void* start, int size)
+ * void syncicache(void *start, int size)
  *
  * I$ flush.  Really simple.  Just flush over the whole range.
  */
 	.align	8
-	.globl	_C_LABEL(syncicache)
-_C_LABEL(syncicache):
+	.globl	syncicache
+syncicache:
 	dec	4, %o1
 	flush	%o0
-	brgz,a,pt	%o1, _C_LABEL(syncicache)
+	brgz,a,pt	%o1, syncicache
 	 inc	4, %o0
 	retl
 	 nop
@@ -140,15 +130,15 @@ _C_LABEL(syncicache):
  * and 64-bit cells.  The cells we'll allocate off the stack for simplicity.
  */
 	.align 8
-	.globl	_C_LABEL(openfirmware)
+	.globl	openfirmware
 	.proc 1
 	FTYPE(openfirmware)
-_C_LABEL(openfirmware):
+openfirmware:
 	andcc	%sp, 1, %g0
 	bz,pt	%icc, 1f
-	 sethi	%hi(_C_LABEL(romp)), %o1
+	 sethi	%hi(romp), %o1
 	
-	ldx	[%o1+%lo(_C_LABEL(romp))], %o4		! v9 stack, just load the addr and callit
+	ldx	[%o1+%lo(romp)], %o4			! v9 stack, just load the addr and callit
 	save	%sp, -CC64FSZ, %sp
 	mov	%i0, %o0				! Copy over our parameter
 	mov	%g1, %l1
@@ -175,9 +165,9 @@ _C_LABEL(openfirmware):
 1:						! v8 -- need to screw with stack & params
 	save	%sp, -CC64FSZ, %sp			! Get a new 64-bit stack frame
 	add	%sp, -BIAS, %sp
-	sethi	%hi(_C_LABEL(romp)), %o1
+	sethi	%hi(romp), %o1
 	rdpr	%pstate, %l0
-	ldx	[%o1+%lo(_C_LABEL(romp))], %o1		! Do the actual call
+	ldx	[%o1+%lo(romp)], %o1			! Do the actual call
 	srl	%sp, 0, %sp
 	mov	%i0, %o0
 	mov	%g1, %l1

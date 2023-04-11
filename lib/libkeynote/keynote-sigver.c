@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: keynote-sigver.c,v 1.17 2019/06/28 13:32:42 deraadt Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -8,7 +7,7 @@
  *
  * Copyright (C) 1998, 1999 by Angelos D. Keromytis.
  *	
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
@@ -22,116 +21,134 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include <ctype.h>
+#include <fcntl.h>
+#include <regex.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <ctype.h>
-
-#ifdef WIN32
-#include <ctype.h>
-#include <io.h>
-#else
 #include <unistd.h>
-#endif
 
-#include "assertion.h"
-#include "signature.h"
+#include "header.h"
+#include "keynote.h"
+
+void	sigverusage(void);
 
 void
-usage(void)
+sigverusage(void)
 {
     fprintf(stderr, "Arguments:\n");
     fprintf(stderr, "\t<AssertionFile>\n");
 }
 
-#ifdef WIN32
 void
-#else
-int
-#endif
-main(int argc, char *argv[])
+keynote_sigver(int argc, char *argv[])
 {
+    char *buf, **assertlist;
+    int fd, i, n, j;
     struct stat sb;
-    int fd, i;
-    char *buf;
 
     if (argc != 2)
     {
-	usage();
+	sigverusage();
 	exit(0);
     }
 
     /* Open and read assertion file */
-    fd = open(argv[1], O_RDONLY, 0);
-    if (fd < 0)
+    fd = open(argv[1], O_RDONLY);
+    if (fd == -1)
     {
-	perror("open()");
-	exit(-1);
+	perror(argv[1]);
+	exit(1);
     }
 
-    if (fstat(fd, &sb) < 0)
+    if (fstat(fd, &sb) == -1)
     {
 	perror("fstat()");
-	exit(-1);
+	exit(1);
     }
 
     if (sb.st_size == 0) /* Paranoid */
     {
 	fprintf(stderr, "Illegal assertion-file size 0\n");
-	exit(-1);
+	exit(1);
     }
 
-    buf = (char *) calloc(sb.st_size + 1, sizeof(char));
-    if (buf == (char *) NULL)
+    buf = calloc(sb.st_size + 1, sizeof(char));
+    if (buf == NULL)
     {
 	perror("calloc()");
-	exit(-1);
+	exit(1);
     }
 
-    if (read(fd, buf, sb.st_size) < 0)
+    if (read(fd, buf, sb.st_size) == -1)
     {
 	perror("read()");
-	exit(-1);
+	exit(1);
     }
 
     close(fd);
 
-    i = kn_verify_assertion(buf, sb.st_size);
-    if (i == -1)
+    assertlist = kn_read_asserts(buf, sb.st_size, &n);
+    if (assertlist == NULL)
     {
-	switch (keynote_errno)
-	{
-	    case ERROR_MEMORY:
-		fprintf(stderr,
-			"Out of memory while parsing the assertion.\n");
-		break;
+      	fprintf(stderr, "Out of memory while allocating memory for "
+		"assertions.\n");
+	exit(1);
+    }
 
-	    case ERROR_SYNTAX:
-		fprintf(stderr,
-			"Syntax error while parsing the assertion.\n");
-		break;
-
-	    default:
-		fprintf(stderr,
-			"Unknown error while parsing the assertion.\n");
-	}
-
-	exit(-1);
+    if (n == 0)
+    {
+	fprintf(stderr, "No assertions found in %s.\n", argv[1]);
+	free(assertlist);
+	exit(1);
     }
 
     free(buf);
 
-    if (i == SIGRESULT_TRUE)
-      fprintf(stdout, "Signature verified.\n");
-    else
+    for (j = 0; j < n; j++)
     {
-	if (keynote_errno != 0)
-	  fprintf(stdout, "Signature could not be verified "
-		  "(keynote_errno = %d).\n", keynote_errno);
+	i = kn_verify_assertion(assertlist[j], strlen(assertlist[j]));
+	if (i == -1)
+	{
+	    switch (keynote_errno)
+	    {
+		case ERROR_MEMORY:
+		    fprintf(stderr,
+			    "Out of memory while parsing assertion %d.\n", j);
+		    break;
+
+		case ERROR_SYNTAX:
+		    fprintf(stderr,
+			    "Syntax error while parsing assertion %d.\n", j);
+		    break;
+
+		default:
+		    fprintf(stderr,
+			    "Unknown error while parsing assertion %d.\n", j);
+	    }
+	}
 	else
-	  fprintf(stdout, "Signature did not verify!\n");
+	{
+	    if (i == SIGRESULT_TRUE)
+	      fprintf(stdout, "Signature on assertion %d verified.\n", j);
+	    else
+	    {
+		if (keynote_errno != 0)
+		  fprintf(stdout,
+			  "Signature on assertion %d could not be verified "
+			  "(keynote_errno = %d).\n", j, keynote_errno);
+		else
+		  fprintf(stdout,
+			  "Signature on assertion %d did not verify!\n", j);
+	    }
+	}
+
+	free(assertlist[j]);
     }
+
+    free(assertlist);
 
     exit(0);
 }

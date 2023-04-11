@@ -1,0 +1,31 @@
+.\" $OpenBSD: z.in,v 1.3 2017/07/04 14:53:27 schwarze Exp $
+.Dd $Mdocdate: April 27 2022 $
+.Dt ESC-Z 1
+.Os
+.Sh NAME
+.Nm esc-z
+.Nd the roff escape z sequence
+.Sh DESCRIPTION
+single z with ASCII char: >\zx<
+.br
+single z with escape char: >\z\(ci<
+.br
+.ds mystr mytext
+single z with defined string (\*[mystr]): >\z\*[mystr]<
+.br
+single z with font escape: >\z\fBxbold\fP<
+.br
+single z with nospace escape: >\z\c
+new line<
+.br
+single z with overstrike: >\z\o'ab'c<
+.br
+single z with h escape: >\z\h'3'm\z\h'-3'<
+.br
+single z with char and h with positive argument: >\za\h'3'b<
+.br
+single z with char and h with zero argument: >\za\h'0'b<
+.br
+single z near the end of the line: >\z<
+.br
+double z: >\z\zx<

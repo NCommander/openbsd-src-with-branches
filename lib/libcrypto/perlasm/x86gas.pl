@@ -157,10 +157,8 @@ sub ::file_end
 	}
     }
     if (grep {/\b${nmdecor}OPENSSL_ia32cap_P\b/i} @out) {
-	my $tmp=".comm\t${nmdecor}OPENSSL_ia32cap_P,8";
-	if ($::macosx)	{ push (@out,"$tmp,2\n"); }
-	elsif ($::elf)	{ push (@out,"$tmp,4\n"); }
-	else		{ push (@out,"$tmp\n"); }
+	push (@out, ".extern\t${nmdecor}OPENSSL_ia32cap_P\n");
+	push (@out, ".hidden\t${nmdecor}OPENSSL_ia32cap_P\n");
     }
     push(@out,$initseg) if ($initseg);
 }
@@ -179,25 +177,52 @@ sub ::align
     push(@out,".align\t$val\n");
 }
 
-sub ::picmeup
-{ my($dst,$sym,$base,$reflabel)=@_;
+#
+# PIC data access wrappers
+#
+# Usage:
+#   picsetup($base)
+#	- only allowed once per function (because of hardcoded label name),
+#	  sets up pic access, uses $base register as temporary
+#   picsymbol($dst, $sym, $base)
+#	- loads the address of symbol $sym into $dst with the help of $base
+#	  initialized by picsetup
+#   picadjust($sym, $base)
+#	- adjusts a code pointer read from a code_sym table with the help of
+#	  $base initialized by picsetup
+#   code_sym($sym)
+#	- emits a pointer to the given code symbol, relative to the GOT if
+#	  PIC. This pointer will need to be adjusted with picadjust above
+#	  before use.
 
-    if (($::pic && ($::elf || $::aout)) || $::macosx)
-    {	if (!defined($base))
-	{   &::call(&::label("PIC_me_up"));
-	    &::set_label("PIC_me_up");
-	    &::blindpop($dst);
-	    $base=$dst;
-	    $reflabel=&::label("PIC_me_up");
-	}
+sub ::picsetup
+{ my($base)=@_;
+
+    if (($::pic && ($::openbsd || $::elf || $::aout)) || $::macosx)
+    {
+	&::call(&::label("PIC_setup"));
+	&::set_label("PIC_setup");
+	&::blindpop($base);
 	if ($::macosx)
 	{   my $indirect=&::static_label("$nmdecor$sym\$non_lazy_ptr");
-	    &::mov($dst,&::DWP("$indirect-$reflabel",$base));
 	    $non_lazy_ptr{"$nmdecor$sym"}=$indirect;
+	}
+    }
+}
+
+sub ::picsymbol
+{ my($dst,$sym,$base)=@_;
+
+    if (($::pic && ($::openbsd || $::elf || $::aout)) || $::macosx)
+    {
+	my $reflabel=&::label("PIC_setup");
+	if ($::macosx)
+	{   my $indirect=$non_lazy_ptr{"$nmdecor$sym"};
+	    &::mov($dst,&::DWP("$indirect-$reflabel",$base));
 	}
 	else
 	{   &::lea($dst,&::DWP("_GLOBAL_OFFSET_TABLE_+[.-$reflabel]",
-			    $base));
+		$base));
 	    &::mov($dst,&::DWP("$sym\@GOT",$dst));
 	}
     }
@@ -205,10 +230,41 @@ sub ::picmeup
     {	&::lea($dst,&::DWP($sym));	}
 }
 
+sub ::picadjust
+{ my($sym,$base)=@_;
+
+    if (($::pic && ($::openbsd || $::elf || $::aout)) || $::macosx)
+    {
+	my $reflabel=&::label("PIC_setup");
+	&::lea($sym,&::DWP("_GLOBAL_OFFSET_TABLE_+[.-$reflabel]",
+		$base,$sym));
+    }
+}
+
+sub ::code_sym
+{ my($sym)=@_;
+
+    if (($::pic && ($::openbsd || $::elf || $::aout)) || $::macosx)
+    {
+	$sym."\@GOTOFF";
+    }
+    else
+    {
+	$sym;
+    }
+}
+
 sub ::initseg
 { my $f=$nmdecor.shift;
 
-    if ($::android)
+    if ($::openbsd)
+    {	$initseg.=<<___;
+.section	.init
+PIC_PROLOGUE
+	call	PIC_PLT($f)
+PIC_EPILOGUE
+___
+    } elsif ($::android)
     {	$initseg.=<<___;
 .section	.init_array
 .align	4
@@ -249,5 +305,11 @@ ___
 
 sub ::dataseg
 {   push(@out,".data\n");   }
+
+sub ::rodataseg
+{   push(@out,".section .rodata\n");   }
+
+sub ::previous
+{   push(@out,".previous\n");   }
 
 1;

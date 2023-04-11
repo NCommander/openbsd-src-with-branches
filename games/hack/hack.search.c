@@ -1,51 +1,106 @@
+/*	$OpenBSD: hack.search.c,v 1.5 2009/10/27 23:59:25 deraadt Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.search.c,v 1.3 1995/03/23 08:31:28 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include "hack.h"
 
-extern struct monst *makemon();
-
-findit()	/* returns number of things found */
+/* returns number of things found */
+int
+findit(void)
 {
 	int num;
-	register xchar zx,zy;
-	register struct trap *ttmp;
-	register struct monst *mtmp;
+	xchar zx,zy;
+	struct trap *ttmp;
+	struct monst *mtmp;
 	xchar lx,hx,ly,hy;
 
 	if(u.uswallow) return(0);
-	for(lx = u.ux; (num = levl[lx-1][u.uy].typ) && num != CORR; lx--) ;
-	for(hx = u.ux; (num = levl[hx+1][u.uy].typ) && num != CORR; hx++) ;
-	for(ly = u.uy; (num = levl[u.ux][ly-1].typ) && num != CORR; ly--) ;
-	for(hy = u.uy; (num = levl[u.ux][hy+1].typ) && num != CORR; hy++) ;
+	for(lx = u.ux; (num = levl[lx-1][(int)u.uy].typ) && num != CORR; lx--) ;
+	for(hx = u.ux; (num = levl[hx+1][(int)u.uy].typ) && num != CORR; hx++) ;
+	for(ly = u.uy; (num = levl[(int)u.ux][ly-1].typ) && num != CORR; ly--) ;
+	for(hy = u.uy; (num = levl[(int)u.ux][hy+1].typ) && num != CORR; hy++) ;
 	num = 0;
 	for(zy = ly; zy <= hy; zy++)
 		for(zx = lx; zx <= hx; zx++) {
-			if(levl[zx][zy].typ == SDOOR) {
-				levl[zx][zy].typ = DOOR;
+			if (levl[(int)zx][(int)zy].typ == SDOOR) {
+				levl[(int)zx][(int)zy].typ = DOOR;
 				atl(zx, zy, '+');
 				num++;
-			} else if(levl[zx][zy].typ == SCORR) {
-				levl[zx][zy].typ = CORR;
+			} else if (levl[(int)zx][(int)zy].typ == SCORR) {
+				levl[(int)zx][(int)zy].typ = CORR;
 				atl(zx, zy, CORR_SYM);
 				num++;
-			} else if(ttmp = t_at(zx, zy)) {
+			} else if ((ttmp = t_at(zx, zy))) {
 				if(ttmp->ttyp == PIERC){
 					(void) makemon(PM_PIERCER, zx, zy);
 					num++;
 					deltrap(ttmp);
-				} else if(!ttmp->tseen) {
+				} else if (!ttmp->tseen) {
 					ttmp->tseen = 1;
 					if(!vism_at(zx, zy))
 						atl(zx,zy,'^');
 					num++;
 				}
-			} else if(mtmp = m_at(zx,zy)) if(mtmp->mimic){
+			} else if ((mtmp = m_at(zx,zy)) && (mtmp->mimic)) {
 				seemimic(mtmp);
 				num++;
 			}
@@ -53,36 +108,38 @@ findit()	/* returns number of things found */
 	return(num);
 }
 
-dosearch()
+int
+dosearch(void)
 {
-	register xchar x,y;
-	register struct trap *trap;
-	register struct monst *mtmp;
+	xchar x,y;
+	struct trap *trap;
+	struct monst *mtmp;
 
 	if(u.uswallow)
 		pline("What are you looking for? The exit?");
 	else
 	for(x = u.ux-1; x < u.ux+2; x++)
 	for(y = u.uy-1; y < u.uy+2; y++) if(x != u.ux || y != u.uy) {
-		if(levl[x][y].typ == SDOOR) {
+		if(levl[(int)x][(int)y].typ == SDOOR) {
 			if(rn2(7)) continue;
-			levl[x][y].typ = DOOR;
-			levl[x][y].seen = 0;	/* force prl */
+			levl[(int)x][(int)y].typ = DOOR;
+			levl[(int)x][(int)y].seen = 0;	/* force prl */
 			prl(x,y);
 			nomul(0);
-		} else if(levl[x][y].typ == SCORR) {
+		} else if(levl[(int)x][(int)y].typ == SCORR) {
 			if(rn2(7)) continue;
-			levl[x][y].typ = CORR;
-			levl[x][y].seen = 0;	/* force prl */
+			levl[(int)x][(int)y].typ = CORR;
+			levl[(int)x][(int)y].seen = 0;	/* force prl */
 			prl(x,y);
 			nomul(0);
 		} else {
 		/* Be careful not to find anything in an SCORR or SDOOR */
-			if(mtmp = m_at(x,y)) if(mtmp->mimic){
-				seemimic(mtmp);
-				pline("You find a mimic.");
-				return(1);
-			}
+			if ((mtmp = m_at(x,y)))
+				if(mtmp->mimic){
+					seemimic(mtmp);
+					pline("You find a mimic.");
+					return(1);
+				}
 			for(trap = ftrap; trap; trap = trap->ntrap)
 			if(trap->tx == x && trap->ty == y &&
 			   !trap->tseen && !rn2(8)) {
@@ -101,9 +158,12 @@ dosearch()
 	return(1);
 }
 
-doidtrap() {
-register struct trap *trap;
-register int x,y;
+int
+doidtrap(void)
+{
+	struct trap *trap;
+	int x,y;
+
 	if(!getdir(1)) return(0);
 	x = u.ux + u.dx;
 	y = u.uy + u.dy;
@@ -119,8 +179,8 @@ register int x,y;
 	return(0);
 }
 
-wakeup(mtmp)
-register struct monst *mtmp;
+void
+wakeup(struct monst *mtmp)
 {
 	mtmp->msleep = 0;
 	setmangry(mtmp);
@@ -128,8 +188,8 @@ register struct monst *mtmp;
 }
 
 /* NOTE: we must check if(mtmp->mimic) before calling this routine */
-seemimic(mtmp)
-register struct monst *mtmp;
+void
+seemimic(struct monst *mtmp)
 {
 		mtmp->mimic = 0;
 		mtmp->mappearance = 0;

@@ -1,4 +1,5 @@
-/*	$NetBSD: vfs_init.c,v 1.4 1995/03/19 23:45:01 mycroft Exp $	*/
+/*	$OpenBSD: vfs_init.c,v 1.42 2019/04/02 13:07:28 visa Exp $	*/
+/*	$NetBSD: vfs_init.c,v 1.6 1996/02/09 19:00:58 christos Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,228 +37,124 @@
  *	@(#)vfs_init.c	8.3 (Berkeley) 1/4/94
  */
 
-
 #include <sys/param.h>
+#include <sys/systm.h>
 #include <sys/mount.h>
-#include <sys/time.h>
-#include <sys/vnode.h>
-#include <sys/stat.h>
 #include <sys/namei.h>
-#include <sys/ucred.h>
-#include <sys/buf.h>
-#include <sys/errno.h>
-#include <sys/malloc.h>
+#include <sys/vnode.h>
+#include <sys/pool.h>
 
-/*
- * Sigh, such primitive tools are these...
- */
-#if 0
-#define DODEBUG(A) A
-#else
-#define DODEBUG(A)
+struct pool namei_pool;
+
+/* This defines the root filesystem. */
+struct vnode *rootvnode;
+
+/* Set up the filesystem operations for vnodes. */
+static struct vfsconf vfsconflist[] = {
+#ifdef FFS
+        { &ffs_vfsops, MOUNT_FFS, 1, 0, MNT_LOCAL | MNT_SWAPPABLE,
+	    sizeof(struct ufs_args) },
 #endif
 
-extern struct vnodeopv_desc *vfs_opv_descs[];
-				/* a list of lists of vnodeops defns */
-extern struct vnodeop_desc *vfs_op_descs[];
-				/* and the operations they perform */
+#ifdef MFS
+        { &mfs_vfsops, MOUNT_MFS, 3, 0, MNT_LOCAL,
+	    sizeof(struct mfs_args) },
+#endif
+
+#ifdef EXT2FS
+	{ &ext2fs_vfsops, MOUNT_EXT2FS, 17, 0, MNT_LOCAL | MNT_SWAPPABLE,
+	    sizeof(struct ufs_args) },
+#endif
+
+#ifdef CD9660
+        { &cd9660_vfsops, MOUNT_CD9660, 14, 0, MNT_LOCAL,
+	    sizeof(struct iso_args) },
+#endif
+
+#ifdef MSDOSFS
+        { &msdosfs_vfsops, MOUNT_MSDOS, 4, 0, MNT_LOCAL | MNT_SWAPPABLE,
+	    sizeof(struct msdosfs_args) },
+#endif
+
+#ifdef NFSCLIENT
+        { &nfs_vfsops, MOUNT_NFS, 2, 0, MNT_SWAPPABLE,
+	    sizeof(struct nfs_args) },
+#endif
+
+#ifdef NTFS
+	{ &ntfs_vfsops, MOUNT_NTFS, 6, 0, MNT_LOCAL,
+	    sizeof(struct ntfs_args) },
+#endif
+
+#ifdef UDF
+	{ &udf_vfsops, MOUNT_UDF, 13, 0, MNT_LOCAL,
+	    sizeof(struct iso_args) },
+#endif
+
+#ifdef FUSE
+	{ &fusefs_vfsops, MOUNT_FUSEFS, 18, 0, MNT_LOCAL,
+	    sizeof(struct fusefs_args) },
+#endif
+
+#ifdef TMPFS
+	{ &tmpfs_vfsops, MOUNT_TMPFS, 19, 0, MNT_LOCAL,
+	    sizeof(struct tmpfs_args) },
+#endif
+};
+
+
 /*
- * This code doesn't work if the defn is **vnodop_defns with cc.
- * The problem is because of the compiler sometimes putting in an
- * extra level of indirection for arrays.  It's an interesting
- * "feature" of C.
+ * Initially the size of the list, vfsinit will set maxvfsconf
+ * to the highest defined type number.
  */
-int vfs_opv_numops;
+int maxvfsconf = sizeof(vfsconflist) / sizeof(struct vfsconf);
 
-typedef (*PFI)();   /* the standard Pointer to a Function returning an Int */
-
-/*
- * A miscellaneous routine.
- * A generic "default" routine that just returns an error.
- */
-int
-vn_default_error()
-{
-
-	return (EOPNOTSUPP);
-}
-
-/*
- * vfs_init.c
- *
- * Allocate and fill in operations vectors.
- *
- * An undocumented feature of this approach to defining operations is that
- * there can be multiple entries in vfs_opv_descs for the same operations
- * vector. This allows third parties to extend the set of operations
- * supported by another layer in a binary compatibile way. For example,
- * assume that NFS needed to be modified to support Ficus. NFS has an entry
- * (probably nfs_vnopdeop_decls) declaring all the operations NFS supports by
- * default. Ficus could add another entry (ficus_nfs_vnodeop_decl_entensions)
- * listing those new operations Ficus adds to NFS, all without modifying the
- * NFS code. (Of couse, the OTW NFS protocol still needs to be munged, but
- * that is a(whole)nother story.) This is a feature.
- */
-
-/*
- * Allocate and init the vector, if it needs it.
- * Also handle backwards compatibility.
- */
+/* Initialize the vnode structures and initialize each file system type. */
 void
-vfs_opv_init_explicit(vfs_opv_desc)
-	struct vnodeopv_desc *vfs_opv_desc;
+vfsinit(void)
 {
-	int (**opv_desc_vector)();
-	struct vnodeopv_entry_desc *opve_descp;
-
-	opv_desc_vector = *(vfs_opv_desc->opv_desc_vector_p);
-
-	if (opv_desc_vector == NULL) {
-		/* XXX - shouldn't be M_VNODE */
-		MALLOC(opv_desc_vector, PFI *,
-		    vfs_opv_numops * sizeof(PFI), M_VNODE, M_WAITOK);
-		bzero(opv_desc_vector, vfs_opv_numops * sizeof(PFI));
-		*(vfs_opv_desc->opv_desc_vector_p) = opv_desc_vector;
-		DODEBUG(printf("vector at %p allocated\n",
-		    opv_desc_vector_p));
-	}
-
-	for (opve_descp = vfs_opv_desc->opv_desc_ops;
-	     opve_descp->opve_op;
-	     opve_descp++) {
-		/*
-		 * Sanity check:  is this operation listed
-		 * in the list of operations?  We check this
-		 * by seeing if its offest is zero.  Since
-		 * the default routine should always be listed
-		 * first, it should be the only one with a zero
-		 * offset.  Any other operation with a zero
-		 * offset is probably not listed in
-		 * vfs_op_descs, and so is probably an error.
-		 *
-		 * A panic here means the layer programmer
-		 * has committed the all-too common bug
-		 * of adding a new operation to the layer's
-		 * list of vnode operations but
-		 * not adding the operation to the system-wide
-		 * list of supported operations.
-		 */
-		if (opve_descp->opve_op->vdesc_offset == 0 &&
-		    opve_descp->opve_op->vdesc_offset != VOFFSET(vop_default)) {
-			printf("operation %s not listed in %s.\n",
-			    opve_descp->opve_op->vdesc_name, "vfs_op_descs");
-			panic ("vfs_opv_init: bad operation");
-		}
-
-		/*
-		 * Fill in this entry.
-		 */
-		opv_desc_vector[opve_descp->opve_op->vdesc_offset] =
-		    opve_descp->opve_impl;
-	}
-}
-
-void
-vfs_opv_init_default(vfs_opv_desc)
-	struct vnodeopv_desc *vfs_opv_desc;
-{
-	int j;
-	int (**opv_desc_vector)();
-	struct vnodeopv_entry_desc *opve_descp;
-
-	opv_desc_vector = *(vfs_opv_desc->opv_desc_vector_p);
-
-	/*
-	 * Force every operations vector to have a default routine.
-	 */
-	if (opv_desc_vector[VOFFSET(vop_default)] == NULL)
-		panic("vfs_opv_init: operation vector without default routine.");
-
-	for (j = 0; j < vfs_opv_numops; j++)
-		if (opv_desc_vector[j] == NULL)
-			opv_desc_vector[j] = 
-			    opv_desc_vector[VOFFSET(vop_default)];
-}
-
-void
-vfs_opv_init()
-{
+	struct vfsconf *vfsp;
 	int i;
 
-	/*
-	 * Allocate the dynamic vectors and fill them in.
-	 */
-	for (i = 0; vfs_opv_descs[i]; i++)
-		vfs_opv_init_explicit(vfs_opv_descs[i]);
+	pool_init(&namei_pool, MAXPATHLEN, 0, IPL_NONE, PR_WAITOK, "namei",
+	    NULL);
 
-	/*
-	 * Finally, go back and replace unfilled routines
-	 * with their default.
-	 */
-	for (i = 0; vfs_opv_descs[i]; i++)
-		vfs_opv_init_default(vfs_opv_descs[i]);
-}
-
-/*
- * Initialize known vnode operations vectors.
- */
-void
-vfs_op_init()
-{
-	int i;
-
-	DODEBUG(printf("Vnode_interface_init.\n"));
-	/*
-	 * Set all vnode vectors to a well known value.
-	 */
-	for (i = 0; vfs_opv_descs[i]; i++)
-		*(vfs_opv_descs[i]->opv_desc_vector_p) = NULL;
-	/*
-	 * Figure out how many ops there are by counting the table,
-	 * and assign each its offset.
-	 */
-	for (vfs_opv_numops = 0, i = 0; vfs_op_descs[i]; i++) {
-		vfs_op_descs[i]->vdesc_offset = vfs_opv_numops;
-		vfs_opv_numops++;
-	}
-	DODEBUG(printf ("vfs_opv_numops=%d\n", vfs_opv_numops));
-}
-
-/*
- * Routines having to do with the management of the vnode table.
- */
-extern struct vnodeops dead_vnodeops;
-extern struct vnodeops spec_vnodeops;
-extern void vclean();
-struct vattr va_null;
-
-/*
- * Initialize the vnode structures and initialize each file system type.
- */
-vfsinit()
-{
-	struct vfsops **vfsp;
-
-	/*
-	 * Initialize the vnode table
-	 */
+	/* Initialize the vnode table. */
 	vntblinit();
-	/*
-	 * Initialize the vnode name cache
-	 */
+
+	/* Initialize the vnode name cache. */
 	nchinit();
-	/*
-	 * Build vnode operation vectors.
-	 */
-	vfs_op_init();
-	vfs_opv_init();   /* finish the job */
-	/*
-	 * Initialize each file system type.
-	 */
-	vattr_null(&va_null);
-	for (vfsp = &vfssw[0]; vfsp < &vfssw[nvfssw]; vfsp++) {
-		if (*vfsp == NULL)
-			continue;
-		(*(*vfsp)->vfs_init)();
+
+	maxvfsconf = 0;
+	for (i = 0; i < nitems(vfsconflist); i++) {
+		vfsp = &vfsconflist[i];
+		if (vfsp->vfc_typenum > maxvfsconf)
+			maxvfsconf = vfsp->vfc_typenum;
+		if (vfsp->vfc_vfsops->vfs_init != NULL)
+			(*vfsp->vfc_vfsops->vfs_init)(vfsp);
 	}
+}
+
+struct vfsconf *
+vfs_byname(const char *name)
+{
+	int i;
+
+	for (i = 0; i < nitems(vfsconflist); i++) {
+		if (strcmp(vfsconflist[i].vfc_name, name) == 0)
+			return &vfsconflist[i];
+	}
+	return NULL;
+}
+
+struct vfsconf *
+vfs_bytypenum(int typenum)
+{
+	int i;
+
+	for (i = 0; i < nitems(vfsconflist); i++) {
+		if (vfsconflist[i].vfc_typenum == typenum)
+			return &vfsconflist[i];
+	}
+	return NULL;
 }

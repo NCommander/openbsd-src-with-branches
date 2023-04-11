@@ -1,4 +1,5 @@
-.\"	$NetBSD: acct.5,v 1.3 1994/11/30 19:31:10 jtc Exp $
+.\"	$OpenBSD: acct.5,v 1.25 2021/12/13 16:37:37 deraadt Exp $
+.\"	$NetBSD: acct.5,v 1.4 1995/10/22 01:40:10 ghudson Exp $
 .\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,48 +30,53 @@
 .\"
 .\"     @(#)acct.5	8.1 (Berkeley) 6/5/93
 .\"
-.Dd June 5, 1993
+.Dd $Mdocdate: December 13 2021 $
 .Dt ACCT 5
 .Os
 .Sh NAME
 .Nm acct
 .Nd execution accounting file
 .Sh SYNOPSIS
-.Fd #include <sys/acct.h>
+.In sys/acct.h
 .Sh DESCRIPTION
 The kernel maintains the following
 .Fa acct
 information structure for all
-processes. If a process terminates, and accounting is enabled,
-the kernel calls the
+processes.
+If a process terminates or misbehaves in specific ways,
+and accounting is enabled, the kernel calls the
 .Xr acct 2
 function call to prepare and append the record
 to the accounting file.
 .Bd -literal
 /*
  * Accounting structures; these use a comp_t type which is a 3 bits base 8
- * exponent, 13 bit fraction ``floating point'' number.  Units are 1/AHZ
+ * exponent, 13 bit fraction floating point number.  Units are 1/AHZ
  * seconds.
  */
-typedef u_short comp_t;
+typedef u_int16_t comp_t;
 
 struct acct {
-	char	ac_comm[10];	/* name of command */
-	comp_t	ac_utime;	/* user time */
-	comp_t	ac_stime;	/* system time */
-	comp_t	ac_etime;	/* elapsed time */
-	time_t	ac_btime;	/* starting time */
-	uid_t	ac_uid;		/* user id */
-	gid_t	ac_gid;		/* group id */
-	short	ac_mem;		/* memory usage average */
-	comp_t	ac_io;		/* count of IO blocks */
-	dev_t	ac_tty;		/* controlling tty */
-#define	AFORK	0x01		/* forked but not execed */
-#define	ASU	0x02		/* used super-user permissions */
-#define	ACOMPAT	0x04		/* used compatibility mode */
+	char	  ac_comm[24];	/* command name, incl NUL */
+	comp_t	  ac_utime;	/* user time */
+	comp_t	  ac_stime;	/* system time */
+	comp_t	  ac_etime;	/* elapsed time */
+	comp_t	  ac_io;	/* count of IO blocks */
+	time_t	  ac_btime;	/* starting time */
+	uid_t	  ac_uid;	/* user id */
+	gid_t	  ac_gid;	/* group id */
+	u_int32_t ac_mem;	/* average memory usage */
+	dev_t	  ac_tty;	/* controlling tty, or -1 */
+	pid_t	  ac_pid;	/* process id */
+
+#define	AFORK	0x01		/* fork'd but not exec'd */
+#define	AMAP	0x04		/* system call or stack mapping violation */
 #define	ACORE	0x08		/* dumped core */
 #define	AXSIG	0x10		/* killed by a signal */
-	char	ac_flag;	/* accounting flags */
+#define	APLEDGE	0x20		/* killed due to pledge violation */
+#define	ATRAP	0x40		/* memory access violation */
+#define	AUNVEIL	0x80		/* unveil access violation */
+	u_int32_t ac_flag;	/* accounting flags */
 };
 
 /*
@@ -83,30 +85,59 @@ struct acct {
  */
 #define	AHZ	64
 
-#ifdef KERNEL
-struct vnode	*acctp;
+#ifdef _KERNEL
+int	acct_process(struct proc *p);
+int	acct_shutdown(void);
 #endif
 .Ed
 .Pp
-If a terminated process was created by an
+If a terminated or misbehaving process was created by an
 .Xr execve 2 ,
 the name of the executed file (at most ten characters of it)
 is saved in the field
 .Fa ac_comm
-and its status is saved by setting one of more of the following flags in
-.Fa ac_flag:
-.Dv AFORK ,
-.Dv ASU ,
-.Dv ACOMPAT ,
-.Dv ACORE
-and
-.Dv ASIG .
+and its status is saved by setting one or more of the following flags in
+.Fa ac_flag :
+.Bl -tag -width "AUNVEIL"
+.It Dv AFORK
+A new process was created via
+.Xr fork 2
+that was not followed by a call to
+.Xr execve 2 .
+.It Dv AMAP
+The process terminated abnormally due to a system call or stack mapping
+violation.
+.It Dv ACORE
+The process terminated abnormally due to a signal and dumped
+.Xr core 5 .
+.It Dv AXSIG
+The process was killed by a
+.Xr signal 3 .
+.It Dv APLEDGE
+The process was killed due to a
+.Xr pledge 2
+violation.
+.It Dv ATRAP
+The process was killed due to a memory access violation
+detected by a processor trap.
+.It Dv AUNVEIL
+The process attempted a file access that was prevented by
+.Xr unveil 2
+restrictions.
+Note that this does not cause the process to terminate.
+.El
 .Sh SEE ALSO
+.Xr lastcomm 1 ,
 .Xr acct 2 ,
 .Xr execve 2 ,
+.Xr pledge 2 ,
+.Xr unveil 2 ,
+.Xr signal 3 ,
+.Xr core 5 ,
+.Xr accton 8 ,
 .Xr sa 8
 .Sh HISTORY
-A
+An
 .Nm
-file format appeared in
+file format first appeared in
 .At v7 .

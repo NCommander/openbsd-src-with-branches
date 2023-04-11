@@ -1,3 +1,4 @@
+/*	$OpenBSD: strpbrk.c,v 1.5 2005/08/08 08:05:37 espie Exp $ */
 /*
  * Copyright (c) 1985 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,22 +28,16 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)strpbrk.c	5.8 (Berkeley) 1/26/91";*/
-static char *rcsid = "$Id: strpbrk.c,v 1.4 1995/06/15 00:08:25 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <string.h>
 
 /*
  * Find the first occurrence in s1 of a character in s2 (excluding NUL).
  */
 char *
-strpbrk(s1, s2)
-	register const char *s1, *s2;
+strpbrk(const char *s1, const char *s2)
 {
-	register const char *scanp;
-	register int c, sc;
+	const char *scanp;
+	int c, sc;
 
 	while ((c = *s1++) != 0) {
 		for (scanp = s2; (sc = *scanp++) != 0;)
@@ -55,3 +46,4 @@ strpbrk(s1, s2)
 	}
 	return (NULL);
 }
+DEF_STRONG(strpbrk);

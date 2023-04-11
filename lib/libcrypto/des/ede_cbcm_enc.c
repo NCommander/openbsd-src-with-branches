@@ -1,4 +1,4 @@
-/* ede_cbcm_enc.c */
+/* $OpenBSD: ede_cbcm_enc.c,v 1.6 2014/10/28 07:35:58 jsg Exp $ */
 /* Written by Ben Laurie <ben@algroup.co.uk> for the OpenSSL
  * project 13 Feb 1999.
  */
@@ -71,16 +71,16 @@ http://www.cs.technion.ac.il/users/wwwb/cgi-bin/tr-get.cgi/1998/CS/CS0928.ps.gz
 #include <openssl/opensslconf.h> /* To see if OPENSSL_NO_DESCBCM is defined */
 
 #ifndef OPENSSL_NO_DESCBCM
-#include "des_locl.h"
+#include "des_local.h"
 
 void DES_ede3_cbcm_encrypt(const unsigned char *in, unsigned char *out,
 	     long length, DES_key_schedule *ks1, DES_key_schedule *ks2,
 	     DES_key_schedule *ks3, DES_cblock *ivec1, DES_cblock *ivec2,
 	     int enc)
     {
-    register DES_LONG tin0,tin1;
-    register DES_LONG tout0,tout1,xor0,xor1,m0,m1;
-    register long l=length;
+    DES_LONG tin0,tin1;
+    DES_LONG tout0,tout1,xor0,xor1,m0,m1;
+    long l=length;
     DES_LONG tin[2];
     unsigned char *iv1,*iv2;
 
@@ -138,7 +138,7 @@ void DES_ede3_cbcm_encrypt(const unsigned char *in, unsigned char *out,
 	}
     else
 	{
-	register DES_LONG t0,t1;
+	DES_LONG t0,t1;
 
 	c2l(iv1,m0);
 	c2l(iv1,m1);

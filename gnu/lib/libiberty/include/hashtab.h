@@ -48,38 +48,38 @@ typedef unsigned int hashval_t;
 /* Callback function pointer types.  */
 
 /* Calculate hash of a table entry.  */
-typedef hashval_t (*htab_hash) (const void *);
+typedef hashval_t (*htab_hash) PARAMS ((const void *));
 
 /* Compare a table entry with a possible entry.  The entry already in
    the table always comes first, so the second element can be of a
    different type (but in this case htab_find and htab_find_slot
    cannot be used; instead the variants that accept a hash value
    must be used).  */
-typedef int (*htab_eq) (const void *, const void *);
+typedef int (*htab_eq) PARAMS ((const void *, const void *));
 
 /* Cleanup function called whenever a live element is removed from
    the hash table.  */
-typedef void (*htab_del) (void *);
+typedef void (*htab_del) PARAMS ((void *));
   
 /* Function called by htab_traverse for each live element.  The first
    arg is the slot of the element (which can be passed to htab_clear_slot
    if desired), the second arg is the auxiliary pointer handed to
    htab_traverse.  Return 1 to continue scan, 0 to stop.  */
-typedef int (*htab_trav) (void **, void *);
+typedef int (*htab_trav) PARAMS ((void **, void *));
 
 /* Memory-allocation function, with the same functionality as calloc().
    Iff it returns NULL, the hash table implementation will pass an error
    code back to the user, so if your code doesn't handle errors,
    best if you use xcalloc instead.  */
-typedef void *(*htab_alloc) (size_t, size_t);
+typedef PTR (*htab_alloc) PARAMS ((size_t, size_t));
 
 /* We also need a free() routine.  */
-typedef void (*htab_free) (void *);
+typedef void (*htab_free) PARAMS ((PTR));
 
 /* Memory allocation and deallocation; variants which take an extra
    argument.  */
-typedef void *(*htab_alloc_with_arg) (void *, size_t, size_t);
-typedef void (*htab_free_with_arg) (void *, void *);
+typedef PTR (*htab_alloc_with_arg) PARAMS ((void *, size_t, size_t));
+typedef void (*htab_free_with_arg) PARAMS ((void *, void *));
 
 /* This macro defines reserved value for empty table entry.  */
 
@@ -108,7 +108,7 @@ struct htab GTY(())
   htab_del del_f;
 
   /* Table itself.  */
-  void ** GTY ((use_param, length ("%h.size"))) entries;
+  PTR * GTY ((use_param (""), length ("%h.size"))) entries;
 
   /* Current size (in entries) of the hash table.  */
   size_t size;
@@ -132,7 +132,7 @@ struct htab GTY(())
   htab_free free_f;
 
   /* Alternate allocate/free functions, which take an extra argument.  */
-  void * GTY((skip)) alloc_arg;
+  PTR GTY((skip (""))) alloc_arg;
   htab_alloc_with_arg alloc_with_arg_f;
   htab_free_with_arg free_with_arg_f;
 

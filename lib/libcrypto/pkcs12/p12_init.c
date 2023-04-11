@@ -1,4 +1,4 @@
-/* p12_init.c */
+/* $OpenBSD: p12_init.c,v 1.15 2022/11/12 13:03:28 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,36 +57,45 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
+
+#include <openssl/err.h>
 #include <openssl/pkcs12.h>
+
+#include "pkcs12_local.h"
 
 /* Initialise a PKCS12 structure to take data */
 
-PKCS12 *PKCS12_init(int mode)
+PKCS12 *
+PKCS12_init(int mode)
 {
 	PKCS12 *pkcs12;
+
 	if (!(pkcs12 = PKCS12_new())) {
-		PKCS12err(PKCS12_F_PKCS12_INIT,ERR_R_MALLOC_FAILURE);
+		PKCS12error(ERR_R_MALLOC_FAILURE);
 		return NULL;
 	}
-	ASN1_INTEGER_set(pkcs12->version, 3);
-	pkcs12->authsafes->type = OBJ_nid2obj(mode);
+	if (!ASN1_INTEGER_set(pkcs12->version, 3))
+		goto err;
+	if ((pkcs12->authsafes->type = OBJ_nid2obj(mode)) == NULL)
+		goto err;
 	switch (mode) {
-		case NID_pkcs7_data:
-			if (!(pkcs12->authsafes->d.data =
-				 M_ASN1_OCTET_STRING_new())) {
-			PKCS12err(PKCS12_F_PKCS12_INIT,ERR_R_MALLOC_FAILURE);
+	case NID_pkcs7_data:
+		if (!(pkcs12->authsafes->d.data =
+		    ASN1_OCTET_STRING_new())) {
+			PKCS12error(ERR_R_MALLOC_FAILURE);
 			goto err;
 		}
 		break;
-		default:
-			PKCS12err(PKCS12_F_PKCS12_INIT,
-				PKCS12_R_UNSUPPORTED_PKCS12_MODE);
-			goto err;
+	default:
+		PKCS12error(PKCS12_R_UNSUPPORTED_PKCS12_MODE);
+		goto err;
 	}
-		
+
 	return pkcs12;
+
 err:
-	if (pkcs12 != NULL) PKCS12_free(pkcs12);
+	if (pkcs12 != NULL)
+		PKCS12_free(pkcs12);
 	return NULL;
 }
+LCRYPTO_ALIAS(PKCS12_init);

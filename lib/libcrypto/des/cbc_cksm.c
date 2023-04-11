@@ -1,4 +1,4 @@
-/* crypto/des/cbc_cksm.c */
+/* $OpenBSD: cbc_cksm.c,v 1.7 2014/10/28 07:35:58 jsg Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,14 +56,14 @@
  * [including the GNU Public Licence.]
  */
 
-#include "des_locl.h"
+#include "des_local.h"
 
 DES_LONG DES_cbc_cksum(const unsigned char *in, DES_cblock *output,
 		       long length, DES_key_schedule *schedule,
 		       const_DES_cblock *ivec)
 	{
-	register DES_LONG tout0,tout1,tin0,tin1;
-	register long l=length;
+	DES_LONG tout0,tout1,tin0,tin1;
+	long l=length;
 	DES_LONG tin[2];
 	unsigned char *out = &(*output)[0];
 	const unsigned char *iv = &(*ivec)[0];

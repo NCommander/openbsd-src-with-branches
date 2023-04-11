@@ -1,5 +1,4 @@
-/*	$NetBSD: fixsfdi.c,v 1.2 1995/02/27 17:29:56 cgd Exp $	*/
-
+/*	$OpenBSD: fixsfdi.c,v 1.7 2017/12/26 15:11:17 kettenis Exp $ */
 /*-
  * Copyright (c) 1992 The Regents of the University of California.
  * All rights reserved.
@@ -16,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,14 +32,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fixsfdi.c	5.1 (Berkeley) 7/7/92";
-#else
-static char rcsid[] = "$NetBSD: fixsfdi.c,v 1.2 1995/02/27 17:29:56 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include "quad.h"
 
 /*
@@ -53,7 +40,7 @@ static char rcsid[] = "$NetBSD: fixsfdi.c,v 1.2 1995/02/27 17:29:56 cgd Exp $";
  *
  * N.B.: must use new ANSI syntax (sorry).
  */
-long long
+quad_t
 __fixsfdi(float x)
 {
 	if (x < 0)
@@ -67,3 +54,8 @@ __fixsfdi(float x)
 		else
 			return ((quad_t)(u_quad_t)x);
 }
+
+#ifdef __ARM_EABI__
+__strong_alias(__aeabi_f2lz, __fixsfdi);
+__asm(".protected __aeabi_f2lz");
+#endif

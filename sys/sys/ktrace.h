@@ -1,4 +1,5 @@
-/*	$NetBSD: ktrace.h,v 1.11 1995/07/19 15:27:05 christos Exp $	*/
+/*	$OpenBSD: ktrace.h,v 1.45 2023/02/17 18:02:07 deraadt Exp $	*/
+/*	$NetBSD: ktrace.h,v 1.12 1996/02/04 02:12:29 christos Exp $	*/
 
 /*
  * Copyright (c) 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +32,11 @@
  *	@(#)ktrace.h	8.1 (Berkeley) 6/2/93
  */
 
+#include <sys/uio.h>
+#include <sys/syslimits.h>
+#include <sys/signal.h>
+#include <sys/time.h>
+
 /*
  * operations to ktrace system call  (KTROP(op))
  */
@@ -51,23 +53,22 @@
  * ktrace record header
  */
 struct ktr_header {
-	int	ktr_len;		/* length of buf */
-	short	ktr_type;		/* trace record type */
+	uint	ktr_type;		/* trace record type */
 	pid_t	ktr_pid;		/* process id */
-	char	ktr_comm[MAXCOMLEN+1];	/* command name */
-	struct	timeval ktr_time;	/* timestamp */
-	caddr_t	ktr_buf;
+	pid_t	ktr_tid;		/* thread id */
+	struct	timespec ktr_time;	/* timestamp */
+	char	ktr_comm[_MAXCOMLEN];	/* command name, incl NUL */
+	size_t	ktr_len;		/* length of buf */
 };
-
-/*
- * Test for kernel trace point
- */
-#define KTRPOINT(p, type)	\
-	(((p)->p_traceflag & ((1<<(type))|KTRFAC_ACTIVE)) == (1<<(type)))
 
 /*
  * ktrace record types
  */
+
+ /*
+ * KTR_START - start of trace record, one per ktrace(KTROP_SET) syscall
+ */
+#define KTR_START	0x4b545200	/* "KTR" */
 
 /*
  * KTR_SYSCALL - system call record
@@ -75,6 +76,8 @@ struct ktr_header {
 #define KTR_SYSCALL	1
 struct ktr_syscall {
 	int	ktr_code;		/* syscall number */
+#define KTRC_CODE_MASK			0x0000ffff
+#define KTRC_CODE_SYSCALL		0x20000000
 	int	ktr_argsize;		/* size of arguments */
 	/*
 	 * followed by ktr_argsize/sizeof(register_t) "register_t"s
@@ -86,10 +89,12 @@ struct ktr_syscall {
  */
 #define KTR_SYSRET	2
 struct ktr_sysret {
-	short	ktr_code;
-	short	ktr_eosys;
+	int	ktr_code;
 	int	ktr_error;
-	int	ktr_retval;
+	/*
+	 * If ktr_error is zero, then followed by retval: register_t for
+	 * all syscalls except lseek(), which uses long long
+	 */
 };
 
 /*
@@ -119,25 +124,52 @@ struct ktr_psig {
 	sig_t	action;
 	int	mask;
 	int	code;
+	siginfo_t si;
 };
 
 /*
- * KTR_CSW - trace context switches
+ * KTR_STRUCT - misc. structs
  */
-#define KTR_CSW		6
-struct ktr_csw {
-	int	out;	/* 1 if switch out, 0 if switch in */
-	int	user;	/* 1 if usermode (ivcsw), 0 if kernel (vcsw) */
+#define KTR_STRUCT	8
+	/*
+	 * record contains null-terminated struct name followed by
+	 * struct contents
+	 */
+struct sockaddr;
+struct stat;
+
+/*
+ * KTR_USER - user record
+ */
+#define KTR_USER	9
+#define KTR_USER_MAXIDLEN	20
+#define KTR_USER_MAXLEN		2048	/* maximum length of passed data */
+struct ktr_user {
+	char    ktr_id[KTR_USER_MAXIDLEN];      /* string id of caller */
+	/*
+	 * Followed by ktr_len - sizeof(struct ktr_user) of user data.
+	 */
 };
 
 /*
- * KTR_EMUL - emulation change
+ * KTR_EXECARGS and KTR_EXECENV - args and environment records
  */
-#define KTR_EMUL	7
-	/* record contains emulation name */
+#define KTR_EXECARGS	10
+#define KTR_EXECENV	11
+
 
 /*
- * kernel trace points (in p_traceflag)
+ * KTR_PLEDGE - details of pledge violation
+ */
+#define	KTR_PLEDGE	12
+struct ktr_pledge {
+	int		error;
+	int		syscall;
+	uint64_t	code;
+};
+
+/*
+ * kernel trace points (in ps_traceflag)
  */
 #define KTRFAC_MASK	0x00ffffff
 #define KTRFAC_SYSCALL	(1<<KTR_SYSCALL)
@@ -145,21 +177,87 @@ struct ktr_csw {
 #define KTRFAC_NAMEI	(1<<KTR_NAMEI)
 #define KTRFAC_GENIO	(1<<KTR_GENIO)
 #define	KTRFAC_PSIG	(1<<KTR_PSIG)
-#define KTRFAC_CSW	(1<<KTR_CSW)
-#define KTRFAC_EMUL	(1<<KTR_EMUL)
+#define KTRFAC_STRUCT   (1<<KTR_STRUCT)
+#define KTRFAC_USER	(1<<KTR_USER)
+#define KTRFAC_EXECARGS	(1<<KTR_EXECARGS)
+#define KTRFAC_EXECENV	(1<<KTR_EXECENV)
+#define	KTRFAC_PLEDGE	(1<<KTR_PLEDGE)
+
 /*
- * trace flags (also in p_traceflags)
+ * trace flags (also in ps_traceflag)
  */
-#define KTRFAC_ROOT	0x80000000	/* root set this trace */
+#define KTRFAC_ROOT	0x80000000U	/* root set this trace */
 #define KTRFAC_INHERIT	0x40000000	/* pass trace flags to children */
-#define KTRFAC_ACTIVE	0x20000000	/* ktrace logging in progress, ignore */
 
 #ifndef	_KERNEL
 
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-int	ktrace __P((const char *, int, int, pid_t));
+int	ktrace(const char *, int, int, pid_t);
+int	utrace(const char *, const void *, size_t);
 __END_DECLS
+
+#else
+
+/*
+ * Test for kernel trace point
+ */
+#define KTRPOINT(p, type)	\
+	((p)->p_p->ps_traceflag & (1<<(type)) && ((p)->p_flag & P_INKTR) == 0)
+
+void ktrgenio(struct proc *, int, enum uio_rw, struct iovec *, ssize_t);
+void ktrnamei(struct proc *, char *);
+void ktrpsig(struct proc *, int, sig_t, int, int, siginfo_t *);
+void ktrsyscall(struct proc *, register_t, size_t, register_t []);
+void ktrsysret(struct proc *, register_t, int, const register_t [2]);
+int ktruser(struct proc *, const char *, const void *, size_t);
+void ktrexec(struct proc *, int, const char *, ssize_t);
+void ktrpledge(struct proc *, int, uint64_t, int);
+
+void ktrcleartrace(struct process *);
+void ktrsettrace(struct process *, int, struct vnode *, struct ucred *);
+
+void    ktrstruct(struct proc *, const char *, const void *, size_t);
+#define ktrsockaddr(p, s, l) \
+	ktrstruct((p), "sockaddr", (s), (l))
+#define ktrstat(p, s) \
+	ktrstruct((p), "stat", (s), sizeof(struct stat))
+#define ktrabstimespec(p, s) \
+	ktrstruct((p), "abstimespec", (s), sizeof(struct timespec))
+#define ktrreltimespec(p, s) \
+	ktrstruct((p), "reltimespec", (s), sizeof(struct timespec))
+#define ktrabstimeval(p, s) \
+	ktrstruct((p), "abstimeval", (s), sizeof(struct timeval))
+#define ktrreltimeval(p, s) \
+	ktrstruct((p), "reltimeval", (s), sizeof(struct timeval))
+#define ktrsigaction(p, s) \
+	ktrstruct((p), "sigaction", (s), sizeof(struct sigaction))
+#define ktrrlimit(p, s) \
+	ktrstruct((p), "rlimit", (s), sizeof(struct rlimit))
+#define ktrrusage(p, s) \
+	ktrstruct((p), "rusage", (s), sizeof(struct rusage))
+#define ktrfdset(p, s, l) \
+	ktrstruct((p), "fdset", (s), l)
+#define ktrquota(p, s) \
+	ktrstruct((p), "quota", (s), sizeof(struct dqblk))
+#define ktrmsghdr(p, s) \
+	ktrstruct(p, "msghdr", s, sizeof(struct msghdr))
+#define ktrmmsghdr(p, s) \
+	ktrstruct(p, "mmsghdr", s, sizeof(struct mmsghdr))
+#define ktriovec(p, s, count) \
+	ktrstruct(p, "iovec", s, (count) * sizeof(struct iovec))
+#define ktrcmsghdr(p, c, len) \
+	ktrstruct(p, "cmsghdr", c, len)
+#define ktrevent(p, kev, count) \
+	ktrstruct(p, "kevent", kev, (count) * sizeof(struct kevent))
+#define ktrpollfd(p, pfd, count) \
+	ktrstruct(p, "pollfd", pfd, (count) * sizeof(struct pollfd))
+#define ktrfds(p, fds, count) \
+	ktrstruct(p, "fds", fds, (count) * sizeof(int))
+#define ktrflock(p, fl) \
+	ktrstruct(p, "flock", (fl), sizeof(struct flock))
+#define ktrsiginfo(p, si) \
+	ktrstruct(p, "siginfo", (si), sizeof(siginfo_t))
 
 #endif	/* !_KERNEL */

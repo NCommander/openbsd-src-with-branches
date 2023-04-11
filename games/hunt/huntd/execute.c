@@ -1,103 +1,133 @@
+/*	$OpenBSD: execute.c,v 1.13 2016/08/27 02:06:40 guenther Exp $	*/
 /*	$NetBSD: execute.c,v 1.2 1997/10/10 16:33:13 lukem Exp $	*/
 /*
- *  Hunt
- *  Copyright (c) 1985 Conrad C. Huang, Gregory S. Couch, Kenneth C.R.C. Arnold
- *  San Francisco, California
+ * Copyright (c) 1983-2003, Regents of the University of California.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * + Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * + Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ * + Neither the name of the University of California, San Francisco nor
+ *   the names of its contributors may be used to endorse or promote
+ *   products derived from this software without specific prior written
+ *   permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-#ifndef lint
-__RCSID("$NetBSD: execute.c,v 1.2 1997/10/10 16:33:13 lukem Exp $");
-#endif /* not lint */
+#include <sys/select.h>
+#include <stdlib.h>
+#include <string.h>
+#include <syslog.h>
 
-# include	<stdlib.h>
-# include	"hunt.h"
+#include "conf.h"
+#include "hunt.h"
+#include "server.h"
 
-static	void	cloak __P((PLAYER *));
-static	void	face __P((PLAYER *, int));
-static	void	fire __P((PLAYER *, int));
-static	void	fire_slime __P((PLAYER *, int));
-static	void	move_player __P((PLAYER *, int));
-static	void	pickup __P((PLAYER *, int, int, int, int));
-static	void	scan __P((PLAYER *));
+static void	cloak(PLAYER *);
+static void	face(PLAYER *, int);
+static void	fire(PLAYER *, int);
+static void	fire_slime(PLAYER *, int);
+static void	move_player(PLAYER *, int);
+static void	pickup(PLAYER *, int, int, int, int);
+static void	scan(PLAYER *);
 
 
-# ifdef MONITOR
 /*
  * mon_execute:
  *	Execute a single monitor command
  */
 void
-mon_execute(pp)
-	PLAYER	*pp;
+mon_execute(PLAYER *pp)
 {
 	char	ch;
 
 	ch = pp->p_cbuf[pp->p_ncount++];
+
 	switch (ch) {
 	  case CTRL('L'):
+		/* Redraw messed-up screen */
 		sendcom(pp, REDRAW);
 		break;
 	  case 'q':
-		(void) strcpy(pp->p_death, "| Quit |");
+		/* Quit client */
+		(void) strlcpy(pp->p_death, "| Quit |", sizeof pp->p_death);
 		break;
+	  default:
+		/* Ignore everything else */
+		;
 	}
 }
-# endif
 
 /*
  * execute:
- *	Execute a single command
+ *	Execute a single command from a player
  */
 void
-execute(pp)
-	PLAYER	*pp;
+execute(PLAYER *pp)
 {
 	char	ch;
 
 	ch = pp->p_cbuf[pp->p_ncount++];
 
-# ifdef	FLY
+	/* When flying, only allow refresh and quit. */
 	if (pp->p_flying >= 0) {
 		switch (ch) {
 		  case CTRL('L'):
 			sendcom(pp, REDRAW);
 			break;
 		  case 'q':
-			(void) strcpy(pp->p_death, "| Quit |");
+			(void) strlcpy(pp->p_death, "| Quit |",
+			    sizeof pp->p_death);
 			break;
 		}
 		return;
 	}
-# endif
 
+	/* Decode the command character: */
 	switch (ch) {
 	  case CTRL('L'):
-		sendcom(pp, REDRAW);
+		sendcom(pp, REDRAW);	/* Refresh */
 		break;
 	  case 'h':
-		move_player(pp, LEFTS);
+		move_player(pp, LEFTS); /* Move left */
 		break;
 	  case 'H':
-		face(pp, LEFTS);
+		face(pp, LEFTS);	/* Face left */
 		break;
 	  case 'j':
-		move_player(pp, BELOW);
+		move_player(pp, BELOW); /* Move down */
 		break;
 	  case 'J':
-		face(pp, BELOW);
+		face(pp, BELOW);	/* Face down */
 		break;
 	  case 'k':
-		move_player(pp, ABOVE);
+		move_player(pp, ABOVE); /* Move up */
 		break;
 	  case 'K':
-		face(pp, ABOVE);
+		face(pp, ABOVE);	/* Face up */
 		break;
 	  case 'l':
-		move_player(pp, RIGHT);
+		move_player(pp, RIGHT);	/* Move right */
 		break;
 	  case 'L':
-		face(pp, RIGHT);
+		face(pp, RIGHT);	/* Face right */
 		break;
 	  case 'f':
 	  case '1':
@@ -136,7 +166,6 @@ execute(pp)
 	  case '@':
 		fire(pp, 10);		/* 21x21 BOMB */
 		break;
-# ifdef	OOZE
 	  case 'o':
 		fire_slime(pp, 0);	/* SLIME */
 		break;
@@ -144,32 +173,29 @@ execute(pp)
 		fire_slime(pp, 1);	/* SSLIME */
 		break;
 	  case 'p':
-		fire_slime(pp, 2);
+		fire_slime(pp, 2);	/* large slime */
 		break;
 	  case 'P':
-		fire_slime(pp, 3);
+		fire_slime(pp, 3);	/* very large slime */
 		break;
-# endif
-	  case 's':
+	  case 's':			/* start scanning */
 		scan(pp);
 		break;
-	  case 'c':
+	  case 'c':			/* start cloaking */
 		cloak(pp);
 		break;
-	  case 'q':
-		(void) strcpy(pp->p_death, "| Quit |");
+	  case 'q':			/* quit */
+		(void) strlcpy(pp->p_death, "| Quit |", sizeof pp->p_death);
 		break;
 	}
 }
 
 /*
  * move_player:
- *	Execute a move in the given direction
+ *	Try to move player 'pp' in direction 'dir'.
  */
 static void
-move_player(pp, dir)
-	PLAYER	*pp;
-	int	dir;
+move_player(PLAYER *pp, int dir)
 {
 	PLAYER	*newp;
 	int	x, y;
@@ -195,73 +221,78 @@ move_player(pp, dir)
 	}
 
 	moved = FALSE;
+
+	/* What would the player move over: */
 	switch (Maze[y][x]) {
+	  /* Players can move through spaces and doors, no problem: */
 	  case SPACE:
-# ifdef RANDOM
 	  case DOOR:
-# endif
 		moved = TRUE;
 		break;
+	  /* Can't move through walls: */
 	  case WALL1:
 	  case WALL2:
 	  case WALL3:
-# ifdef REFLECT
 	  case WALL4:
 	  case WALL5:
-# endif
 		break;
+	  /* Moving over a mine - try to pick it up: */
 	  case MINE:
 	  case GMINE:
 		if (dir == pp->p_face)
-			pickup(pp, y, x, 2, Maze[y][x]);
+			/* facing it: 2% chance of trip */
+			pickup(pp, y, x, conf_ptrip_face, Maze[y][x]);
 		else if (opposite(dir, pp->p_face))
-			pickup(pp, y, x, 95, Maze[y][x]);
+			/* facing away: 95% chance of trip */
+			pickup(pp, y, x, conf_ptrip_back, Maze[y][x]);
 		else
-			pickup(pp, y, x, 50, Maze[y][x]);
+			/* facing sideways: 50% chance of trip */
+			pickup(pp, y, x, conf_ptrip_side, Maze[y][x]);
+		/* Remove the mine: */
 		Maze[y][x] = SPACE;
 		moved = TRUE;
 		break;
+	  /* Moving into a bullet: */
 	  case SHOT:
 	  case GRENADE:
 	  case SATCHEL:
 	  case BOMB:
-# ifdef OOZE
 	  case SLIME:
-# endif
-# ifdef DRONE
 	  case DSHOT:
-# endif
+		/* Find which bullet: */
 		bp = is_bullet(y, x);
 		if (bp != NULL)
+			/* Detonate it: */
 			bp->b_expl = TRUE;
+		/* Remove it: */
 		Maze[y][x] = SPACE;
 		moved = TRUE;
 		break;
+	  /* Moving into another player: */
 	  case LEFTS:
 	  case RIGHT:
 	  case ABOVE:
 	  case BELOW:
 		if (dir != pp->p_face)
+			/* Can't walk backwards/sideways into another player: */
 			sendcom(pp, BELL);
 		else {
+			/* Stab the other player */
 			newp = play_at(y, x);
-			checkdam(newp, pp, pp->p_ident, STABDAM, KNIFE);
+			checkdam(newp, pp, pp->p_ident, conf_stabdam, KNIFE);
 		}
 		break;
-# ifdef FLY
+	  /* Moving into a player flying overhead: */
 	  case FLYER:
 		newp = play_at(y, x);
 		message(newp, "Oooh, there's a short guy waving at you!");
 		message(pp, "You couldn't quite reach him!");
 		break;
-# endif
-# ifdef BOOTS
-	  case BOOT:
+	  /* Picking up a boot, or two: */
 	  case BOOT_PAIR:
-		if (Maze[y][x] == BOOT)
-			pp->p_nboots++;
-		else
-			pp->p_nboots += 2;
+		pp->p_nboots++;
+	  case BOOT:
+		pp->p_nboots++;
 		for (newp = Boot; newp < &Boot[NBOOTS]; newp++) {
 			if (newp->p_flying < 0)
 				continue;
@@ -278,22 +309,27 @@ move_player(pp, dir)
 		Maze[y][x] = SPACE;
 		moved = TRUE;
 		break;
-# endif
 	}
+
+	/* Can the player be moved? */
 	if (moved) {
+		/* Check the gun status: */
 		if (pp->p_ncshot > 0)
-			if (--pp->p_ncshot == MAXNCSHOT) {
-				cgoto(pp, STAT_GUN_ROW, STAT_VALUE_COL);
-				outstr(pp, " ok", 3);
-			}
+			if (--pp->p_ncshot == conf_maxncshot)
+				outyx(pp, STAT_GUN_ROW, STAT_VALUE_COL, " ok");
+		/* Check for bullets flying past: */
 		if (pp->p_undershot) {
 			fixshots(pp->p_y, pp->p_x, pp->p_over);
 			pp->p_undershot = FALSE;
 		}
+		/* Erase the player: */
 		drawplayer(pp, FALSE);
+		/* Save under: */
 		pp->p_over = Maze[y][x];
+		/* Move the player: */
 		pp->p_y = y;
 		pp->p_x = x;
+		/* Draw the player in their new position */
 		drawplayer(pp, TRUE);
 	}
 }
@@ -303,9 +339,7 @@ move_player(pp, dir)
  *	Change the direction the player is facing
  */
 static void
-face(pp, dir)
-	PLAYER	*pp;
-	int	dir;
+face(PLAYER *pp, int dir)
 {
 	if (pp->p_face != dir) {
 		pp->p_face = dir;
@@ -318,116 +352,105 @@ face(pp, dir)
  *	Fire a shot of the given type in the given direction
  */
 static void
-fire(pp, req_index)
-	PLAYER	*pp;
-	int	req_index;
+fire(PLAYER *pp, int req_index)
 {
 	if (pp == NULL)
 		return;
-# ifdef DEBUG
-	if (req_index < 0 || req_index >= MAXBOMB)
-		message(pp, "What you do?");
-# endif
+
+	/* Drop the shot type down until we can afford it: */
 	while (req_index >= 0 && pp->p_ammo < shot_req[req_index])
 		req_index--;
+
+	/* Can we shoot at all? */
 	if (req_index < 0) {
 		message(pp, "Not enough charges.");
 		return;
 	}
-	if (pp->p_ncshot > MAXNCSHOT)
-		return;
-	if (pp->p_ncshot++ == MAXNCSHOT) {
-		cgoto(pp, STAT_GUN_ROW, STAT_VALUE_COL);
-		outstr(pp, "   ", 3);
-	}
-	pp->p_ammo -= shot_req[req_index];
-	(void) sprintf(Buf, "%3d", pp->p_ammo);
-	cgoto(pp, STAT_AMMO_ROW, STAT_VALUE_COL);
-	outstr(pp, Buf, 3);
 
+	/* Check if the gun is too hot: */
+	if (pp->p_ncshot > conf_maxncshot)
+		return;
+
+	/* Heat up the gun: */
+	if (pp->p_ncshot++ == conf_maxncshot) {
+		/* The gun has overheated: */
+		outyx(pp, STAT_GUN_ROW, STAT_VALUE_COL, "   ");
+	}
+
+	/* Use up some ammo: */
+	pp->p_ammo -= shot_req[req_index];
+	ammo_update(pp);
+
+	/* Start the bullet moving: */
 	add_shot(shot_type[req_index], pp->p_y, pp->p_x, pp->p_face,
 		shot_req[req_index], pp, FALSE, pp->p_face);
 	pp->p_undershot = TRUE;
 
-	/*
-	 * Show the object to everyone
-	 */
+	/* Show the bullet to everyone: */
 	showexpl(pp->p_y, pp->p_x, shot_type[req_index]);
-	for (pp = Player; pp < End_player; pp++)
-		sendcom(pp, REFRESH);
-# ifdef MONITOR
-	for (pp = Monitor; pp < End_monitor; pp++)
-		sendcom(pp, REFRESH);
-# endif
+	sendcom(ALL_PLAYERS, REFRESH);
 }
 
-# ifdef	OOZE
 /*
  * fire_slime:
  *	Fire a slime shot in the given direction
  */
 static void
-fire_slime(pp, req_index)
-	PLAYER	*pp;
-	int	req_index;
+fire_slime(PLAYER *pp, int req_index)
 {
 	if (pp == NULL)
 		return;
-# ifdef DEBUG
-	if (req_index < 0 || req_index >= MAXSLIME)
-		message(pp, "What you do?");
-# endif
+
+	/* Check configuration: */
+	if (!conf_ooze)
+		return;
+
+	/* Drop the slime type back util we can afford it: */
 	while (req_index >= 0 && pp->p_ammo < slime_req[req_index])
 		req_index--;
+
+	/* Can we afford to slime at all? */
 	if (req_index < 0) {
 		message(pp, "Not enough charges.");
 		return;
 	}
-	if (pp->p_ncshot > MAXNCSHOT)
-		return;
-	if (pp->p_ncshot++ == MAXNCSHOT) {
-		cgoto(pp, STAT_GUN_ROW, STAT_VALUE_COL);
-		outstr(pp, "   ", 3);
-	}
-	pp->p_ammo -= slime_req[req_index];
-	(void) sprintf(Buf, "%3d", pp->p_ammo);
-	cgoto(pp, STAT_AMMO_ROW, STAT_VALUE_COL);
-	outstr(pp, Buf, 3);
 
+	/* Is the gun too hot? */
+	if (pp->p_ncshot > conf_maxncshot)
+		return;
+
+	/* Heat up the gun: */
+	if (pp->p_ncshot++ == conf_maxncshot) {
+		/* The gun has overheated: */
+		outyx(pp, STAT_GUN_ROW, STAT_VALUE_COL, "   ");
+	}
+
+	/* Use up some ammo: */
+	pp->p_ammo -= slime_req[req_index];
+	ammo_update(pp);
+
+	/* Start the slime moving: */
 	add_shot(SLIME, pp->p_y, pp->p_x, pp->p_face,
-		slime_req[req_index] * SLIME_FACTOR, pp, FALSE, pp->p_face);
+		slime_req[req_index] * conf_slimefactor, pp, FALSE, pp->p_face);
 	pp->p_undershot = TRUE;
 
-	/*
-	 * Show the object to everyone
-	 */
+	/* Show the object to everyone: */
 	showexpl(pp->p_y, pp->p_x, SLIME);
-	for (pp = Player; pp < End_player; pp++)
-		sendcom(pp, REFRESH);
-# ifdef MONITOR
-	for (pp = Monitor; pp < End_monitor; pp++)
-		sendcom(pp, REFRESH);
-# endif
+	sendcom(ALL_PLAYERS, REFRESH);
 }
-# endif
 
 /*
  * add_shot:
  *	Create a shot with the given properties
  */
 void
-add_shot(type, y, x, face, charge, owner, expl, over)
-int	type;
-int	y, x;
-char	face;
-int	charge;
-PLAYER	*owner;
-int	expl;
-char	over;
+add_shot(int type, int y, int x, char face, int charge, PLAYER *owner,
+    int expl, char over)
 {
 	BULLET	*bp;
 	int	size;
 
+	/* Determine the bullet's size based on its type and charge: */
 	switch (type) {
 	  case SHOT:
 	  case MINE:
@@ -451,28 +474,29 @@ char	over;
 		break;
 	}
 
+	/* Create the bullet: */
 	bp = create_shot(type, y, x, face, charge, size, owner,
 		(owner == NULL) ? NULL : owner->p_ident, expl, over);
+
+	/* Insert the bullet into the front of the bullet list: */
 	bp->b_next = Bullets;
 	Bullets = bp;
 }
 
+/*
+ * create_shot:
+ *	allocate storage for an (unlinked) bullet structure;
+ *	initialize and return it
+ */
 BULLET *
-create_shot(type, y, x, face, charge, size, owner, score, expl, over)
-	int	type;
-	int	y, x;
-	char	face;
-	int	charge;
-	int	size;
-	PLAYER	*owner;
-	IDENT	*score;
-	int	expl;
-	char	over;
+create_shot(int type, int y, int x, char face, int charge, int size,
+    PLAYER *owner, IDENT *score, int expl, char over)
 {
 	BULLET	*bp;
 
-	bp = (BULLET *) malloc(sizeof (BULLET));	/* NOSTRICT */
+	bp = malloc(sizeof (BULLET));
 	if (bp == NULL) {
+		logit(LOG_ERR, "malloc");
 		if (owner != NULL)
 			message(owner, "Out of memory");
 		return NULL;
@@ -498,28 +522,36 @@ create_shot(type, y, x, face, charge, size, owner, score, expl, over)
  *	Turn on or increase length of a cloak
  */
 static void
-cloak(pp)
-	PLAYER	*pp;
+cloak(PLAYER *pp)
 {
+	/* Check configuration: */
+	if (!conf_cloak)
+		return;
+
+	/* Can we afford it?: */
 	if (pp->p_ammo <= 0) {
 		message(pp, "No more charges");
 		return;
 	}
-# ifdef BOOTS
+
+	/* Can't cloak with boots: */
 	if (pp->p_nboots > 0) {
 		message(pp, "Boots are too noisy to cloak!");
 		return;
 	}
-# endif
-	(void) sprintf(Buf, "%3d", --pp->p_ammo);
-	cgoto(pp, STAT_AMMO_ROW, STAT_VALUE_COL);
-	outstr(pp, Buf, 3);
 
-	pp->p_cloak += CLOAKLEN;
+	/* Consume a unit of ammo: */
+	pp->p_ammo--;
+	ammo_update(pp);
 
+	/* Add to the duration of a cloak: */
+	pp->p_cloak += conf_cloaklen;
+
+	/* Disable scan, if enabled: */
 	if (pp->p_scan >= 0)
 		pp->p_scan = -1;
 
+	/* Re-draw the player's scan/cloak status: */
 	showstat(pp);
 }
 
@@ -528,38 +560,43 @@ cloak(pp)
  *	Turn on or increase length of a scan
  */
 static void
-scan(pp)
-	PLAYER	*pp;
+scan(PLAYER *pp)
 {
+	/* Check configuration: */
+	if (!conf_scan)
+		return;
+
+	/* Can we afford it?: */
 	if (pp->p_ammo <= 0) {
 		message(pp, "No more charges");
 		return;
 	}
-	(void) sprintf(Buf, "%3d", --pp->p_ammo);
-	cgoto(pp, STAT_AMMO_ROW, STAT_VALUE_COL);
-	outstr(pp, Buf, 3);
 
-	pp->p_scan += SCANLEN;
+	/* Consume one unit of ammo: */
+	pp->p_ammo--;
+	ammo_update(pp);
 
+	/* Increase the scan time: */
+	pp->p_scan += Nplayer * conf_scanlen;
+
+	/* Disable cloak, if enabled: */
 	if (pp->p_cloak >= 0)
 		pp->p_cloak = -1;
 
+	/* Re-draw the player's scan/cloak status: */
 	showstat(pp);
 }
 
 /*
  * pickup:
- *	check whether the object blew up or whether he picked it up
+ *	pick up a mine or grenade, with some probability of it exploding
  */
-void
-pickup(pp, y, x, prob, obj)
-	PLAYER	*pp;
-	int	y, x;
-	int	prob;
-	int	obj;
+static void
+pickup(PLAYER *pp, int y, int x, int prob, int obj)
 {
 	int	req;
 
+	/* Figure out how much ammo the player is trying to pick up: */
 	switch (obj) {
 	  case MINE:
 		req = BULREQ;
@@ -568,15 +605,26 @@ pickup(pp, y, x, prob, obj)
 		req = GRENREQ;
 		break;
 	  default:
+#ifdef DIAGNOSTIC
 		abort();
+#endif
+		return;
 	}
+
+	/* Does it explode? */
 	if (rand_num(100) < prob)
+		/* Ooooh, unlucky: (Boom) */
 		add_shot(obj, y, x, LEFTS, req, (PLAYER *) NULL,
 			TRUE, pp->p_face);
 	else {
+		/* Safely picked it up. Add to player's ammo: */
 		pp->p_ammo += req;
-		(void) sprintf(Buf, "%3d", pp->p_ammo);
-		cgoto(pp, STAT_AMMO_ROW, STAT_VALUE_COL);
-		outstr(pp, Buf, 3);
+		ammo_update(pp);
 	}
+}
+
+void
+ammo_update(PLAYER *pp)
+{
+	outyx(pp, STAT_AMMO_ROW, STAT_VALUE_COL - 1, "%4d", pp->p_ammo);
 }

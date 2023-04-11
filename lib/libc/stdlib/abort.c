@@ -1,3 +1,4 @@
+/*	$OpenBSD: abort.c,v 1.20 2015/10/25 04:13:59 guenther Exp $ */
 /*
  * Copyright (c) 1985 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,19 +28,17 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)abort.c	5.11 (Berkeley) 2/23/91";*/
-static char *rcsid = "$Id: abort.c,v 1.5 1995/02/28 01:46:24 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <signal.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
+
 void
-abort()
+abort(void)
 {
 	sigset_t mask;
+	struct sigaction sa;
 
 	sigfillset(&mask);
 	/*
@@ -51,15 +46,19 @@ abort()
 	 * any errors -- X311J doesn't allow abort to return anyway.
 	 */
 	sigdelset(&mask, SIGABRT);
-	(void)sigprocmask(SIG_SETMASK, &mask, (sigset_t *)NULL);
-	(void)kill(getpid(), SIGABRT);
+	(void)sigprocmask(SIG_SETMASK, &mask, NULL);
+
+	(void)raise(SIGABRT);
 
 	/*
 	 * if SIGABRT ignored, or caught and the handler returns, do
 	 * it again, only harder.
 	 */
-	(void)signal(SIGABRT, SIG_DFL);
-	(void)sigprocmask(SIG_SETMASK, &mask, (sigset_t *)NULL);
-	(void)kill(getpid(), SIGABRT);
-	exit(1);
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = SIG_DFL;
+	(void)sigaction(SIGABRT, &sa, NULL);
+	(void)sigprocmask(SIG_SETMASK, &mask, NULL);
+	(void)raise(SIGABRT);
+	_exit(1);
 }
+DEF_STRONG(abort);

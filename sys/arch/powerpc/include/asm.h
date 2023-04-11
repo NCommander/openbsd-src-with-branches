@@ -1,3 +1,4 @@
+/*	$OpenBSD: asm.h,v 1.18 2022/12/08 01:25:45 guenther Exp $	*/
 /*	$NetBSD: asm.h,v 1.1 1996/09/30 16:34:20 ws Exp $	*/
 
 /*
@@ -31,59 +32,96 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _PPC_ASM_H_
-#define _PPC_ASM_H_
+#ifndef _POWERPC_ASM_H_
+#define _POWERPC_ASM_H_
 
-/* XXX */
-#define TARGET_ELF
-
-#ifdef PIC
-#define PIC_PROLOGUE	XXX
-#define PIC_EPILOGUE	XXX
-#ifdef	__STDC__
-#define PIC_PLT(x)	XXX
-#define PIC_GOT(x)	XXX
-#define PIC_GOTOFF(x)	XXX
-#else	/* not __STDC__ */
-#define PIC_PLT(x)	XXX
-#define PIC_GOT(x)	XXX
-#define PIC_GOTOFF(x)	XXX
-#endif	/* __STDC__ */
-#else
-#define PIC_PROLOGUE
-#define PIC_EPILOGUE
-#define PIC_PLT(x)	x
-#define PIC_GOT(x)	x
-#define PIC_GOTOFF(x)	x
-#endif
-
-#ifdef TARGET_AOUT
-#ifdef __STDC__
-# define _C_LABEL(x)	_ ## x
-#else
-# define _C_LABEL(x)	_/**/x
-#endif
-#endif
-
-#ifdef TARGET_ELF
-# define _C_LABEL(x)	x
-#endif
+#define _C_LABEL(x)	x
 #define	_ASM_LABEL(x)	x
 
-#define _ENTRY(x) \
-	.text; .align 2; .globl x; .type x,@function; x:
-
-#ifdef PROF
-# define _PROF_PROLOGUE	XXX
+#ifdef __STDC__
+# define _TMP_LABEL(x)	.L_ ## x
 #else
-# define _PROF_PROLOGUE
+# define _TMP_LABEL(x)	.L_/**/x
 #endif
 
-#define	ENTRY(y)	_ENTRY(_C_LABEL(y)); _PROF_PROLOGUE
-#define	ASENTRY(y)	_ENTRY(_ASM_LABEL(y)); _PROF_PROLOGUE
+#define _ENTRY_NB(x) \
+	.text; .align 2; .type x,@function; x:
+#define _ENTRY(x)	.globl x; _ENTRY_NB(x)
 
-#define	ASMSTR		.asciz
+#if defined(PROF) || defined(GPROF)
+# define _PROF_PROLOGUE(y)	\
+	.section ".data"; \
+	.align 2; \
+_TMP_LABEL(y):; \
+	.long 0; \
+	.section ".text"; \
+	mflr 0; \
+	addis 11, 11, _TMP_LABEL(y)@ha; \
+	stw 0, 4(1); \
+	addi 0, 11,_TMP_LABEL(y)@l; \
+	bl _mcount; 
+#else
+# define _PROF_PROLOGUE(y)
+#endif
 
-#define RCSID(x)	.text; .asciz x
+#define	ENTRY(y)	_ENTRY(y); _PROF_PROLOGUE(y)
+#define	ENTRY_NB(y)	_ENTRY_NB(y); _PROF_PROLOGUE(y)
+#define	ASENTRY(y)	_ENTRY(y); _PROF_PROLOGUE(y)
+#define	END(y)		.size y, . - y
 
-#endif /* !_PPC_ASM_H_ */
+#define STRONG_ALIAS(alias,sym) \
+	.global alias; .set alias,sym
+#define WEAK_ALIAS(alias,sym) \
+	.weak alias; .set alias,sym
+
+#if defined(_RET_PROTECTOR)
+# if defined(__PIC__)
+#  define RETGUARD_LOAD_RANDOM(x, reg)					\
+	bcl	20, 31, 66f;						\
+66:	mflr	reg;							\
+	addis	reg, reg, (__retguard_ ## x - 66b)@ha;			\
+	lwz	reg, ((__retguard_ ## x - 66b)@l)(reg)
+# else
+#  define RETGUARD_LOAD_RANDOM(x, reg)					\
+	lis	reg, (__retguard_ ## x)@ha;				\
+	lwz	reg, ((__retguard_ ## x)@l)(reg)
+# endif
+# define RETGUARD_SETUP(x, reg, retreg)					\
+	mflr	retreg;							\
+	RETGUARD_SETUP_LATE(x, reg, retreg)
+# define RETGUARD_SETUP_LATE(x, reg, retreg)				\
+	RETGUARD_SYMBOL(x);						\
+	RETGUARD_LOAD_RANDOM(x, reg);					\
+	xor	reg, reg, retreg
+# define RETGUARD_CHECK(x, reg, retreg)					\
+	xor	reg, reg, retreg;					\
+	RETGUARD_LOAD_RANDOM(x, %r10);					\
+	mtlr	retreg;							\
+	twne	reg, %r10
+# define RETGUARD_SAVE(reg, loc)					\
+	stw reg, loc
+# define RETGUARD_LOAD(reg, loc)					\
+	lwz reg, loc
+# define RETGUARD_SYMBOL(x)						\
+	.ifndef __retguard_ ## x;					\
+	.hidden __retguard_ ## x;					\
+	.type   __retguard_ ## x,@object;				\
+	.pushsection .openbsd.randomdata.retguard,"aw",@progbits; 	\
+	.weak   __retguard_ ## x;					\
+	.p2align 2;							\
+	__retguard_ ## x: ;						\
+	.long 0;							\
+	.size __retguard_ ## x, 4;					\
+	.popsection;							\
+	.endif
+#else
+# define RETGUARD_LOAD_RANDOM(x, reg)
+# define RETGUARD_SETUP(x, reg, retreg)
+# define RETGUARD_SETUP_LATE(x, reg, retreg)
+# define RETGUARD_CHECK(x, reg, retreg)
+# define RETGUARD_SAVE(reg, loc)
+# define RETGUARD_LOAD(reg, loc)
+# define RETGUARD_SYMBOL(x)
+#endif
+
+#endif /* !_POWERPC_ASM_H_ */

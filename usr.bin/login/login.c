@@ -1,4 +1,5 @@
-/*	$NetBSD: login.c,v 1.12 1994/12/23 06:53:01 jtc Exp $	*/
+/*	$OpenBSD: login.c,v 1.73 2021/10/24 21:24:16 deraadt Exp $	*/
+/*	$NetBSD: login.c,v 1.13 1996/05/15 23:50:16 jtc Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1987, 1988, 1991, 1993, 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,110 +29,152 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1987, 1988, 1991, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)login.c	8.4 (Berkeley) 4/2/94";
-#endif
-static char rcsid[] = "$NetBSD: login.c,v 1.12 1994/12/23 06:53:01 jtc Exp $";
-#endif /* not lint */
+/*-
+ * Copyright (c) 1995 Berkeley Software Design, Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed by Berkeley Software Design,
+ *      Inc.
+ * 4. The name of Berkeley Software Design, Inc.  may not be used to endorse
+ *    or promote products derived from this software without specific prior
+ *    written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY BERKELEY SOFTWARE DESIGN, INC. ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL BERKELEY SOFTWARE DESIGN, INC. BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *	BSDI $From: login.c,v 2.28 1999/09/08 22:35:36 prb Exp $
+ */
 
 /*
  * login [ name ]
  * login -h hostname	(for telnetd, etc.)
  * login -f name	(for pre-authenticated login: datakit, xterm, etc.)
+ * login -p		(preserve existing environment; for getty)
  */
 
-#include <sys/param.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <sys/file.h>
+#include <sys/wait.h>
 
 #include <err.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <grp.h>
+#include <login_cap.h>
+#include <netdb.h>
 #include <pwd.h>
-#include <setjmp.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
 #include <ttyent.h>
-#include <tzfile.h>
 #include <unistd.h>
+#include <limits.h>
 #include <utmp.h>
+#include <util.h>
+#include <bsd_auth.h>
 
 #include "pathnames.h"
 
-void	 badlogin __P((char *));
-void	 checknologin __P((void));
-void	 dolastlog __P((int));
-void	 getloginname __P((void));
-void	 motd __P((void));
-int	 rootterm __P((char *));
-void	 sigint __P((int));
-void	 sleepexit __P((int));
-char	*stypeof __P((char *));
-void	 timedout __P((int));
-int	 pwcheck __P((char *, char *, char *, char *));
-#if defined(KERBEROS) || defined(KERBEROS5)
-int	 klogin __P((struct passwd *, char *, char *, char *));
-void	 kdestroy __P((void));
-void	 dofork __P((void));
-#endif
+void	 badlogin(char *);
+void	 dolastlog(int);
+void	 getloginname(void);
+void	 motd(void);
+void	 quickexit(int);
+int	 rootterm(char *);
+void	 sigint(int);
+void	 sighup(int);
+void	 sleepexit(int);
+char	*stypeof(char *);
+void	 timedout(int);
+int	 main(int, char **);
 
-extern void login __P((struct utmp *));
+extern int check_failedlogin(uid_t);
+extern void log_failedlogin(uid_t, char *, char *, char *);
 
 #define	TTYGRPNAME	"tty"		/* name of group to own ttys */
 
+#define	SECSPERDAY	(24 * 60 * 60)
+#define	TWOWEEKS	(2 * 7 * SECSPERDAY)
+
 /*
- * This bounds the time given to login.  Not a define so it can
- * be patched on machines where it's too small.
+ * This bounds the time given to login; may be overridden by /etc/login.conf.
  */
-u_int	timeout = 300;
+u_int		timeout = 300;
 
-#if defined(KERBEROS) || defined(KERBEROS5)
-int	notickets = 1;
-char	*instance;
-char	*krbtkfile_env;
-int	authok;
-#endif
+struct passwd	*pwd;
+login_cap_t	*lc = NULL;
+auth_session_t	*as = NULL;
+int		failures;
+int		needbanner = 1;
+char		term[64], *hostname, *tty;
+char		*style;
+char		*username = NULL, *rusername = NULL;
 
-struct	passwd *pwd;
-int	failures;
-char	term[64], *envinit[1], *hostname, *username, *tty;
+extern char **environ;
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	extern char **environ;
+	char *domain, *p, *ttyn, *shell, *fullname, *instance;
+	char *lipaddr, *script, *ripaddr, *style, *type, *fqdn;
+	char tbuf[PATH_MAX + 2], tname[sizeof(_PATH_TTY) + 10];
+	char localhost[HOST_NAME_MAX+1], *copyright;
+	char mail[sizeof(_PATH_MAILDIR) + 1 + NAME_MAX];
+	int ask, ch, cnt, fflag, pflag, quietlog, rootlogin, lastchance;
+	int error, homeless, needto, authok, tries, backoff;
+	struct addrinfo *ai, hints;
+	struct rlimit cds, scds;
+	quad_t expire, warning;
+	struct utmp utmp;
 	struct group *gr;
 	struct stat st;
-	struct timeval tp;
-	struct utmp utmp;
-	int ask, ch, cnt, fflag, hflag, pflag, quietlog, rootlogin, rval;
 	uid_t uid;
-	char *domain, *p, *salt, *ttyn;
-	char tbuf[MAXPATHLEN + 2], tname[sizeof(_PATH_TTY) + 10];
-	char localhost[MAXHOSTNAMELEN];
-
-	(void)signal(SIGALRM, timedout);
-	(void)alarm(timeout);
-	(void)signal(SIGQUIT, SIG_IGN);
-	(void)signal(SIGINT, SIG_IGN);
-	(void)setpriority(PRIO_PROCESS, 0, 0);
 
 	openlog("login", LOG_ODELAY, LOG_AUTH);
+
+	fqdn = lipaddr = ripaddr = fullname = type = NULL;
+	authok = 0;
+	tries = 10;
+	backoff = 3;
+
+	domain = NULL;
+	if (gethostname(localhost, sizeof(localhost)) == -1) {
+		syslog(LOG_ERR, "couldn't get local hostname: %m");
+		strlcpy(localhost, "localhost", sizeof(localhost));
+	} else if ((domain = strchr(localhost, '.'))) {
+		domain++;
+		if (*domain && strchr(domain, '.') == NULL)
+			domain = localhost;
+	}
+
+	if ((as = auth_open()) == NULL) {
+		syslog(LOG_ERR, "auth_open: %m");
+		err(1, "unable to initialize BSD authentication");
+	}
+	auth_setoption(as, "login", "yes");
 
 	/*
 	 * -p is used by getty to tell login not to destroy the environment
@@ -143,38 +182,81 @@ main(argc, argv)
 	 * -h is used by other servers to pass the name of the remote
 	 *    host to login so that it may be placed in utmp and wtmp
 	 */
-	domain = NULL;
-	if (gethostname(localhost, sizeof(localhost)) < 0)
-		syslog(LOG_ERR, "couldn't get local hostname: %m");
-	else
-		domain = strchr(localhost, '.');
-
-	fflag = hflag = pflag = 0;
+	fflag = pflag = 0;
 	uid = getuid();
-	while ((ch = getopt(argc, argv, "fh:p")) != EOF)
+	while ((ch = getopt(argc, argv, "fh:pu:L:R:")) != -1)
 		switch (ch) {
 		case 'f':
 			fflag = 1;
 			break;
 		case 'h':
-			if (uid)
-				errx(1, "-h option: %s", strerror(EPERM));
-			hflag = 1;
+			if (uid) {
+				warnc(EPERM, "-h option");
+				quickexit(1);
+			}
+			free(fqdn);
+			if ((fqdn = strdup(optarg)) == NULL) {
+				warn(NULL);
+				quickexit(1);
+			}
+			auth_setoption(as, "fqdn", fqdn);
 			if (domain && (p = strchr(optarg, '.')) &&
-			    strcasecmp(p, domain) == 0)
+			    strcasecmp(p+1, domain) == 0)
 				*p = 0;
 			hostname = optarg;
+			auth_setoption(as, "hostname", hostname);
+			break;
+		case 'L':
+			if (uid) {
+				warnc(EPERM, "-L option");
+				quickexit(1);
+			}
+			if (lipaddr) {
+				warnx("duplicate -L option");
+				quickexit(1);
+			}
+			lipaddr = optarg;
+			memset(&hints, 0, sizeof(hints));
+			hints.ai_family = PF_UNSPEC;
+			hints.ai_flags = AI_CANONNAME;
+			error = getaddrinfo(lipaddr, NULL, &hints, &ai);
+			if (!error) {
+				strlcpy(localhost, ai->ai_canonname,
+				    sizeof(localhost));
+				freeaddrinfo(ai);
+			} else
+				strlcpy(localhost, lipaddr, sizeof(localhost));
+			auth_setoption(as, "local_addr", lipaddr);
 			break;
 		case 'p':
 			pflag = 1;
 			break;
-		case '?':
+		case 'R':
+			if (uid) {
+				warnc(EPERM, "-R option");
+				quickexit(1);
+			}
+			if (ripaddr) {
+				warnx("duplicate -R option");
+				quickexit(1);
+			}
+			ripaddr = optarg;
+			auth_setoption(as, "remote_addr", ripaddr);
+			break;
+		case 'u':
+			if (uid) {
+				warnc(EPERM, "-u option");
+				quickexit(1);
+			}
+			rusername = optarg;
+			break;
 		default:
 			if (!uid)
 				syslog(LOG_ERR, "invalid flag %c", ch);
 			(void)fprintf(stderr,
-			    "usage: login [-fp] [-h hostname] [username]\n");
-			exit(1);
+			    "usage: login [-fp] [-h hostname] [-L local-addr] "
+			    "[-R remote-addr] [-u username]\n\t[user]\n");
+			quickexit(1);
 		}
 	argc -= optind;
 	argv += optind;
@@ -185,44 +267,152 @@ main(argc, argv)
 	} else
 		ask = 1;
 
-	for (cnt = getdtablesize(); cnt > 2; cnt--)
-		(void)close(cnt);
+	/*
+	 * If effective user is not root, just run su(1) to emulate login(1).
+	 */
+	if (geteuid() != 0) {
+		char *av[5], **ap;
+
+		auth_close(as);
+		closelog();
+		closefrom(STDERR_FILENO + 1);
+
+		ap = av;
+		*ap++ = _PATH_SU;
+		*ap++ = "-L";
+		if (!pflag)
+			*ap++ = "-l";
+		if (!ask)
+			*ap++ = username;
+		*ap = NULL;
+		execv(_PATH_SU, av);
+		warn("unable to exec %s", _PATH_SU);
+		_exit(1);
+	}
 
 	ttyn = ttyname(STDIN_FILENO);
 	if (ttyn == NULL || *ttyn == '\0') {
 		(void)snprintf(tname, sizeof(tname), "%s??", _PATH_TTY);
 		ttyn = tname;
 	}
-	if (tty = strrchr(ttyn, '/'))
+	if ((tty = strrchr(ttyn, '/')))
 		++tty;
 	else
 		tty = ttyn;
 
+	/*
+	 * Since login deals with sensitive information, turn off coredumps.
+	 */
+	if (getrlimit(RLIMIT_CORE, &scds) == -1) {
+		syslog(LOG_ERR, "couldn't get core dump size: %m");
+		scds.rlim_cur = scds.rlim_max = QUAD_MIN;
+	}
+	cds.rlim_cur = cds.rlim_max = 0;
+	if (setrlimit(RLIMIT_CORE, &cds) == -1) {
+		syslog(LOG_ERR, "couldn't set core dump size to 0: %m");
+		scds.rlim_cur = scds.rlim_max = QUAD_MIN;
+	}
+
+	(void)signal(SIGALRM, timedout);
+	if (argc > 1) {
+		needto = 0;
+		(void)alarm(timeout);
+	} else
+		needto = 1;
+	(void)signal(SIGQUIT, SIG_IGN);
+	(void)signal(SIGINT, SIG_IGN);
+	(void)signal(SIGHUP, SIG_IGN);
+	(void)setpriority(PRIO_PROCESS, 0, 0);
+
+	/* get the default login class */
+	if ((lc = login_getclass(0)) == NULL) { /* get the default class */
+		warnx("Failure to retrieve default class");
+		quickexit(1);
+	}
+	timeout = (u_int)login_getcapnum(lc, "login-timeout", 300, 300);
+	if ((script = login_getcapstr(lc, "classify", NULL, NULL)) != NULL) {
+		unsetenv("AUTH_TYPE");
+		unsetenv("REMOTE_NAME");
+		if (script[0] != '/') {
+			syslog(LOG_ERR, "Invalid classify script: %s", script);
+			warnx("Classification failure");
+			quickexit(1);
+		}
+		shell = strrchr(script, '/') + 1;
+		auth_setstate(as, AUTH_OKAY);
+		if (fflag) {
+			auth_call(as, script, shell, "-f", "--", username,
+			    (char *)NULL);
+		} else {
+			auth_call(as, script, shell, "--", username,
+			    (char *)NULL);
+		}
+		if (!(auth_getstate(as) & AUTH_ALLOW))
+			quickexit(1);
+		auth_setenv(as);
+		if ((p = getenv("AUTH_TYPE")) != NULL &&
+		    strncmp(p, "auth-", 5) == 0)
+			type = p;
+		if ((p = getenv("REMOTE_NAME")) != NULL)
+			hostname = p;
+		/*
+		 * we may have changed some values, reset them
+		 */
+		auth_clroptions(as);
+		if (type)
+			auth_setoption(as, "auth_type", type);
+		if (fqdn)
+			auth_setoption(as, "fqdn", fqdn);
+		if (hostname)
+			auth_setoption(as, "hostname", hostname);
+		if (lipaddr)
+			auth_setoption(as, "local_addr", lipaddr);
+		if (ripaddr)
+			auth_setoption(as, "remote_addr", ripaddr);
+	}
+
+	/*
+	 * Request that things like the approval script print things
+	 * to stdout (in particular, the nologins files)
+	 */
+	auth_setitem(as, AUTHV_INTERACTIVE, "True");
+
 	for (cnt = 0;; ask = 1) {
-#if defined(KERBEROS) || defined(KERBEROS5)
-	        kdestroy();
-#endif
+		/*
+		 * Clean up our current authentication session.
+		 * Options are not cleared so we need to clear any
+		 * we might set below.
+		 */
+		auth_clean(as);
+		auth_clroption(as, "style");
+		auth_clroption(as, "lastchance");
+
+		lastchance = 0;
+
 		if (ask) {
 			fflag = 0;
 			getloginname();
 		}
+		if (needto) {
+			needto = 0;
+			alarm(timeout);
+		}
+		if ((style = strchr(username, ':')) != NULL)
+			*style++ = '\0';
+		free(fullname);
+		if (auth_setitem(as, AUTHV_NAME, username) < 0 ||
+		    (fullname = strdup(username)) == NULL) {
+			syslog(LOG_ERR, "%m");
+			warn(NULL);
+			quickexit(1);
+		}
 		rootlogin = 0;
-#ifdef	KERBEROS
-		if ((instance = strchr(username, '.')) != NULL) {
-			if (strncmp(instance, ".root", 5) == 0)
-				rootlogin = 1;
-			*instance++ = '\0';
-		} else
-			instance = "";
-#endif
-#ifdef KERBEROS5
 		if ((instance = strchr(username, '/')) != NULL) {
-			if (strncmp(instance, "/root", 5) == 0)
+			if (strncmp(instance + 1, "root", 4) == 0)
 				rootlogin = 1;
-			*instance++ = '\0';
-		} else
-			instance = "";
-#endif
+			*instance = '\0';
+		}
+
 		if (strlen(username) > UT_NAMESIZE)
 			username[UT_NAMESIZE] = '\0';
 
@@ -236,137 +426,236 @@ main(argc, argv)
 				badlogin(tbuf);
 			failures = 0;
 		}
-		(void)strcpy(tbuf, username);
+		(void)strlcpy(tbuf, username, sizeof(tbuf));
 
-		if (pwd = getpwnam(username))
-			salt = pwd->pw_passwd;
-		else
-			salt = "xx";
-
-		/*
-		 * if we have a valid account name, and it doesn't have a
-		 * password, or the -f option was specified and the caller
-		 * is root or the caller isn't changing their uid, don't
-		 * authenticate.
-		 */
-		if (pwd) {
-			if (pwd->pw_uid == 0)
-				rootlogin = 1;
-
-			if (fflag && (uid == 0 || uid == pwd->pw_uid)) {
-				/* already authenticated */
-				break;
-			} else if (pwd->pw_passwd[0] == '\0') {
-				/* pretend password okay */
-				rval = 0;
-				goto ttycheck;
-			}
+		if ((pwd = getpwnam(username)) != NULL &&
+		    auth_setpwd(as, pwd) < 0) {
+			syslog(LOG_ERR, "%m");
+			warn(NULL);
+			quickexit(1);
 		}
 
-		fflag = 0;
+		lc = login_getclass(pwd ? pwd->pw_class : NULL);
+		if (!lc)
+			goto failed;
 
-		(void)setpriority(PRIO_PROCESS, 0, -4);
+		style = login_getstyle(lc, style, type);
+		if (!style)
+			goto failed;
 
-		p = getpass("Password:");
-
-		if (pwd) {
-#if defined(KERBEROS) || defined(KERBEROS5)
-			rval = klogin(pwd, instance, localhost, p);
-			if (rval != 0 && rootlogin && pwd->pw_uid != 0)
-				rootlogin = 0;
-			if (rval == 0)
-				authok = 1;
-			else if (rval == 1) {
-				if (pwd->pw_uid != 0)
-					rootlogin = 0;
-				rval = pwcheck(username, p, salt, pwd->pw_passwd);
-			}
-#else
-			rval = pwcheck(username, p, salt, pwd->pw_passwd);
-#endif
-		}
-		memset(p, 0, strlen(p));
-
-		(void)setpriority(PRIO_PROCESS, 0, 0);
-
-	ttycheck:
 		/*
-		 * If trying to log in as root without Kerberos,
-		 * but with insecure terminal, refuse the login attempt.
+		 * We allow "login-tries" attempts to login but start
+		 * slowing down after "login-backoff" attempts.
 		 */
-#if defined(KERBEROS) || defined(KERBEROS5)
-		if (authok == 0)
-#endif
-		if (pwd && !rval && rootlogin && !rootterm(tty)) {
-			(void)fprintf(stderr,
-			    "%s login refused on this terminal.\n",
-			    pwd->pw_name);
+		tries = (int)login_getcapnum(lc, "login-tries", 10, 10);
+		backoff = (int)login_getcapnum(lc, "login-backoff", 3, 3);
+
+		/*
+		 * Turn off the fflag if we have an invalid user
+		 * or we are not root and we are trying to change uids.
+		 */
+		if (!pwd || (uid && uid != pwd->pw_uid))
+			fflag = 0;
+
+		if (pwd && pwd->pw_uid == 0)
+			rootlogin = 1;
+
+		/*
+		 * If we do not have the force flag authenticate the user
+		 */
+		if (!fflag) {
+			lastchance =
+			    login_getcaptime(lc, "password-dead", 0, 0) != 0;
+			if (lastchance)
+				auth_setoption(as, "lastchance", "yes");
+			/*
+			 * Once we start asking for a password
+			 *  we want to log a failure on a hup.
+			 */
+			signal(SIGHUP, sighup);
+			auth_verify(as, style, NULL, lc->lc_class, NULL);
+			authok = auth_getstate(as);
+			/*
+			 * If their password expired and it has not been
+			 * too long since then, give the user one last
+			 * chance to change their password
+			 */
+			if ((authok & AUTH_PWEXPIRED) && lastchance) {
+				authok = AUTH_OKAY;
+			} else
+				lastchance = 0;
+			if ((authok & AUTH_ALLOW) == 0)
+				goto failed;
+			if (auth_setoption(as, "style", style) < 0) {
+				syslog(LOG_ERR, "%m");
+				warn(NULL);
+				quickexit(1);
+			}
+		}
+		/*
+		 * explicitly reject users without password file entries
+		 */
+		if (pwd == NULL)
+			goto failed;
+
+		/*
+		 * If trying to log in as root on an insecure terminal,
+		 * refuse the login attempt unless the authentication
+		 * style explicitly says a root login is okay.
+		 */
+		if (pwd && rootlogin && !rootterm(tty))
+			goto failed;
+
+		if (fflag) {
+			type = 0;
+			style = "forced";
+		}
+		break;
+
+failed:
+		if (authok & AUTH_SILENT)
+			quickexit(0);
+		if (rootlogin && !rootterm(tty)) {
+			warnx("%s login refused on this terminal.",
+			    fullname);
 			if (hostname)
 				syslog(LOG_NOTICE,
-				    "LOGIN %s REFUSED FROM %s ON TTY %s",
-				    pwd->pw_name, hostname, tty);
+				    "LOGIN %s REFUSED FROM %s%s%s ON TTY %s",
+				    fullname, rusername ? rusername : "",
+				    rusername ? "@" : "", hostname, tty);
 			else
 				syslog(LOG_NOTICE,
 				    "LOGIN %s REFUSED ON TTY %s",
-				     pwd->pw_name, tty);
-			continue;
+				    fullname, tty);
+		} else {
+			if (!as || (p = auth_getvalue(as, "errormsg")) == NULL)
+				p = "Login incorrect";
+			(void)printf("%s\n", p);
 		}
-
-		if (pwd && !rval)
-			break;
-
-		(void)printf("Login incorrect\n");
 		failures++;
-		/* we allow 10 tries, but after 3 we start backing off */
-		if (++cnt > 3) {
-			if (cnt >= 10) {
+		if (pwd)
+			log_failedlogin(pwd->pw_uid, hostname, rusername, tty);
+		/*
+		 * By default, we allow 10 tries, but after 3 we start
+		 * backing off to slow down password guessers.
+		 */
+		if (++cnt > backoff) {
+			if (cnt >= tries) {
 				badlogin(username);
 				sleepexit(1);
 			}
-			sleep((u_int)((cnt - 3) * 5));
+			sleep(1);
 		}
 	}
 
 	/* committed to login -- turn off timeout */
-	(void)alarm((u_int)0);
+	(void)alarm(0);
 
 	endpwent();
 
-	/* if user not super-user, check for disabled logins */
-	if (!rootlogin)
-		checknologin();
-
-	if (chdir(pwd->pw_dir) < 0) {
-		(void)printf("No home directory %s!\n", pwd->pw_dir);
-		if (chdir("/"))
-			exit(0);
-		pwd->pw_dir = "/";
-		(void)printf("Logging in with home = \"/\".\n");
+	shell = login_getcapstr(lc, "shell", pwd->pw_shell, pwd->pw_shell);
+	if (*shell == '\0')
+		shell = _PATH_BSHELL;
+	else if (strlen(shell) >= PATH_MAX) {
+		syslog(LOG_ERR, "shell path too long: %s", shell);
+		warnx("invalid shell");
+		quickexit(1);
 	}
 
-	quietlog = access(_PATH_HUSHLOGIN, F_OK) == 0;
+	/* Destroy environment unless user has requested its preservation. */
+	if (!pflag) {
+		if ((environ = calloc(1, sizeof (char *))) == NULL)
+			err(1, "calloc");
+	} else {
+		char **cpp, **cpp2;
 
-	if (pwd->pw_change || pwd->pw_expire)
-		(void)gettimeofday(&tp, (struct timezone *)NULL);
-	if (pwd->pw_change)
-		if (tp.tv_sec >= pwd->pw_change) {
-			(void)printf("Sorry -- your password has expired.\n");
-			sleepexit(1);
-		} else if (pwd->pw_change - tp.tv_sec <
-		    2 * DAYSPERWEEK * SECSPERDAY && !quietlog)
-			(void)printf("Warning: your password expires on %s",
-			    ctime(&pwd->pw_change));
-	if (pwd->pw_expire)
-		if (tp.tv_sec >= pwd->pw_expire) {
-			(void)printf("Sorry -- your account has expired.\n");
-			sleepexit(1);
-		} else if (pwd->pw_expire - tp.tv_sec <
-		    2 * DAYSPERWEEK * SECSPERDAY && !quietlog)
+		for (cpp2 = cpp = environ; *cpp; cpp++) {
+			if (strncmp(*cpp, "LD_", 3) &&
+			    strncmp(*cpp, "ENV=", 4) &&
+			    strncmp(*cpp, "BASH_ENV=", 9) &&
+			    strncmp(*cpp, "IFS=", 4))
+				*cpp2++ = *cpp;
+		}
+		*cpp2 = 0;
+	}
+	/* Note: setusercontext(3) will set PATH */
+	if (setenv("HOME", pwd->pw_dir, 1) == -1 ||
+	    setenv("SHELL", pwd->pw_shell, 1) == -1) {
+		warn("unable to setenv()");
+		quickexit(1);
+	}
+	if (term[0] == '\0')
+		(void)strlcpy(term, stypeof(tty), sizeof(term));
+	(void)snprintf(mail, sizeof(mail), "%s/%s", _PATH_MAILDIR,
+		pwd->pw_name);
+	if (setenv("TERM", term, 0) == -1 ||
+	    setenv("LOGNAME", pwd->pw_name, 1) == -1 ||
+	    setenv("USER", pwd->pw_name, 1) == -1 ||
+	    setenv("MAIL", mail, 1) == -1) {
+		warn("unable to setenv()");
+		quickexit(1);
+	}
+	if (hostname) {
+		if (setenv("REMOTEHOST", hostname, 1) == -1) {
+			warn("unable to setenv()");
+			quickexit(1);
+		}
+	}
+	if (rusername) {
+		if (setenv("REMOTEUSER", rusername, 1) == -1) {
+			warn("unable to setenv()");
+			quickexit(1);
+		}
+	}
+
+	if (setusercontext(lc, pwd, pwd->pw_uid, LOGIN_SETPATH)) {
+		warn("unable to set user context");
+		quickexit(1);
+	}
+	auth_setenv(as);
+
+	/* if user not super-user, check for disabled logins */
+	if (!rootlogin)
+		auth_checknologin(lc);
+
+	setegid(pwd->pw_gid);
+	seteuid(pwd->pw_uid);
+
+	homeless = chdir(pwd->pw_dir);
+	if (homeless) {
+		if (login_getcapbool(lc, "requirehome", 0)) {
+			(void)printf("No home directory %s!\n", pwd->pw_dir);
+			quickexit(1);
+		}
+		if (chdir("/"))
+			quickexit(0);
+	}
+
+	quietlog = ((strcmp(pwd->pw_shell, "/sbin/nologin") == 0) ||
+	    login_getcapbool(lc, "hushlogin", 0) ||
+	    (access(_PATH_HUSHLOGIN, F_OK) == 0));
+
+	seteuid(0);
+	setegid(0);	/* XXX use a saved gid instead? */
+
+	if ((p = auth_getvalue(as, "warnmsg")) != NULL)
+		(void)printf("WARNING: %s\n\n", p);
+
+	expire = auth_check_expire(as);
+	if (expire < 0) {
+		(void)printf("Sorry -- your account has expired.\n");
+		quickexit(1);
+	} else if (expire > 0 && !quietlog) {
+		warning = login_getcaptime(lc, "expire-warn",
+		    TWOWEEKS, TWOWEEKS);
+		if (expire < warning)
 			(void)printf("Warning: your account expires on %s",
 			    ctime(&pwd->pw_expire));
+	}
 
 	/* Nothing else left to fail -- really log in. */
-	memset((void *)&utmp, 0, sizeof(utmp));
+	(void)signal(SIGHUP, SIG_DFL);
+	memset(&utmp, 0, sizeof(utmp));
 	(void)time(&utmp.ut_time);
 	(void)strncpy(utmp.ut_name, username, sizeof(utmp.ut_name));
 	if (hostname)
@@ -374,164 +663,113 @@ main(argc, argv)
 	(void)strncpy(utmp.ut_line, tty, sizeof(utmp.ut_line));
 	login(&utmp);
 
+	if (!quietlog)
+		(void)check_failedlogin(pwd->pw_uid);
 	dolastlog(quietlog);
+
+	login_fbtab(tty, pwd->pw_uid, pwd->pw_gid);
 
 	(void)chown(ttyn, pwd->pw_uid,
 	    (gr = getgrnam(TTYGRPNAME)) ? gr->gr_gid : pwd->pw_gid);
-#if defined(KERBEROS) || defined(KERBEROS5)
-	/* Fork so that we can call kdestroy */
-	if (krbtkfile_env)
-	    dofork();
-#endif
-	(void)setgid(pwd->pw_gid);
-
-	initgroups(username, pwd->pw_gid);
-
-	if (*pwd->pw_shell == '\0')
-		pwd->pw_shell = _PATH_BSHELL;
-
-	/* Destroy environment unless user has requested its preservation. */
-	if (!pflag)
-		environ = envinit;
-	(void)setenv("HOME", pwd->pw_dir, 1);
-	(void)setenv("SHELL", pwd->pw_shell, 1);
-	if (term[0] == '\0')
-		(void)strncpy(term, stypeof(tty), sizeof(term));
-	(void)setenv("TERM", term, 0);
-	(void)setenv("LOGNAME", pwd->pw_name, 1);
-	(void)setenv("USER", pwd->pw_name, 1);
-	(void)setenv("PATH", _PATH_DEFPATH, 0);
-#ifdef KERBEROS
-	if (krbtkfile_env)
-		(void)setenv("KRBTKFILE", krbtkfile_env, 1);
-#endif
-#ifdef KERBEROS5
-	if (krbtkfile_env)
-		(void)setenv("KRB5CCNAME", krbtkfile_env, 1);
-#endif
-
-	if (tty[sizeof("tty")-1] == 'd')
-		syslog(LOG_INFO, "DIALUP %s, %s", tty, pwd->pw_name);
 
 	/* If fflag is on, assume caller/authenticator has logged root login. */
-	if (rootlogin && fflag == 0)
+	if (rootlogin && fflag == 0) {
 		if (hostname)
-			syslog(LOG_NOTICE, "ROOT LOGIN (%s) ON %s FROM %s",
-			    username, tty, hostname);
+			syslog(LOG_NOTICE, "ROOT LOGIN (%s) ON %s FROM %s%s%s",
+			    username, tty, rusername ? rusername : "",
+			    rusername ? "@" : "", hostname);
 		else
 			syslog(LOG_NOTICE, "ROOT LOGIN (%s) ON %s", username, tty);
-
-#if defined(KERBEROS) || defined(KERBEROS5)
-	if (!quietlog && notickets == 1)
-		(void)printf("Warning: no Kerberos tickets issued.\n");
-#endif
+	}
 
 	if (!quietlog) {
-		(void)printf("%s\n\t%s  %s\n\n",
-	    "Copyright (c) 1980, 1983, 1986, 1988, 1990, 1991, 1993, 1994",
-		    "The Regents of the University of California. ",
-		    "All rights reserved.");
+		if ((copyright =
+		    login_getcapstr(lc, "copyright", NULL, NULL)) != NULL)
+			auth_cat(copyright);
 		motd();
-		(void)snprintf(tbuf,
-		    sizeof(tbuf), "%s/%s", _PATH_MAILDIR, pwd->pw_name);
-		if (stat(tbuf, &st) == 0 && st.st_size != 0)
+		if (stat(mail, &st) == 0 && st.st_size != 0)
 			(void)printf("You have %smail.\n",
 			    (st.st_mtime > st.st_atime) ? "new " : "");
 	}
 
 	(void)signal(SIGALRM, SIG_DFL);
 	(void)signal(SIGQUIT, SIG_DFL);
+	(void)signal(SIGHUP, SIG_DFL);
 	(void)signal(SIGINT, SIG_DFL);
 	(void)signal(SIGTSTP, SIG_IGN);
 
 	tbuf[0] = '-';
-	(void)strcpy(tbuf + 1, (p = strrchr(pwd->pw_shell, '/')) ?
-	    p + 1 : pwd->pw_shell);
+	(void)strlcpy(tbuf + 1, (p = strrchr(shell, '/')) ?
+	    p + 1 : shell, sizeof(tbuf) - 1);
 
-	if (setlogin(pwd->pw_name) < 0)
-		syslog(LOG_ERR, "setlogin() failure: %m");
+	if ((scds.rlim_cur != QUAD_MIN || scds.rlim_max != QUAD_MIN) &&
+	    setrlimit(RLIMIT_CORE, &scds) == -1)
+		syslog(LOG_ERR, "couldn't reset core dump size: %m");
 
-	/* Discard permissions last so can't get killed and drop core. */
-	if (rootlogin)
-		(void) setuid(0);
-	else
-		(void) setuid(pwd->pw_uid);
+	if (lastchance)
+		(void)printf("WARNING: Your password has expired."
+		    "  You must change your password, now!\n");
 
-	execlp(pwd->pw_shell, tbuf, 0);
-	err(1, "%s", pwd->pw_shell);
-}
-
-int
-pwcheck(user, p, salt, passwd)
-	char *user, *p, *salt, *passwd;
-{
-#ifdef SKEY
-	if (strcasecmp(p, "s/key") == 0) {
-		if (skey_haskey(user)) {
-			fprintf(stderr, "You have no s/key. ");
-			return 1;
-		} else {
-			return skey_authenticate(user);
-		}
+	if (setusercontext(lc, pwd, rootlogin ? 0 : pwd->pw_uid,
+	    LOGIN_SETALL & ~LOGIN_SETPATH) < 0) {
+		warn("unable to set user context");
+		quickexit(1);
 	}
-#endif
-	return strcmp(crypt(p, salt), passwd);
+
+	if (homeless) {
+		(void)printf("No home directory %s!\n", pwd->pw_dir);
+		(void)printf("Logging in with home = \"/\".\n");
+		(void)setenv("HOME", "/", 1);
+	}
+
+	if (auth_approval(as, lc, NULL, "login") == 0) {
+		if (auth_getstate(as) & AUTH_EXPIRED)
+			(void)printf("Sorry -- your account has expired.\n");
+		else
+			(void)printf("approval failure\n");
+		quickexit(1);
+	}
+
+	/*
+	 * The last thing we do is discard all of the open file descriptors.
+	 * Last because the C library may have some open.
+	 */
+	closefrom(STDERR_FILENO + 1);
+
+	/*
+	 * Close the authentication session, make sure it is marked
+	 * as okay so no files are removed.
+	 */
+	auth_setstate(as, AUTH_OKAY);
+	auth_close(as);
+
+	execlp(shell, tbuf, (char *)NULL);
+	err(1, "%s", shell);
 }
 
-#if defined(KERBEROS) || defined(KERBEROS5)
-#define	NBUFSIZ		(UT_NAMESIZE + 1 + 5)	/* .root suffix */
-#else
-#define	NBUFSIZ		(UT_NAMESIZE + 1)
-#endif
-
-#if defined(KERBEROS) || defined(KERBEROS5)
 /*
- * This routine handles cleanup stuff, and the like.
- * It exists only in the child process.
+ * Allow for a '.' and 16 characters for any instance as well as
+ * space for a ':' and 16 characters defining the authentication type.
  */
-#include <sys/wait.h>
-void
-dofork()
-{
-    int child;
-
-    if (!(child = fork()))
-	    return; /* Child process */
-
-    /* Setup stuff?  This would be things we could do in parallel with login */
-    (void) chdir("/");	/* Let's not keep the fs busy... */
-    
-    /* If we're the parent, watch the child until it dies */
-    while (wait(0) != child)
-	    ;
-
-    /* Cleanup stuff */
-    /* Run kdestroy to destroy tickets */
-    kdestroy();
-
-    /* Leave */
-    exit(0);
-}
-#endif
+#define NBUFSIZ		(UT_NAMESIZE + 1 + 16 + 1 + 16)
 
 void
-getloginname()
+getloginname(void)
 {
+	static char nbuf[NBUFSIZ], *p;
 	int ch;
-	char *p;
-	static char nbuf[NBUFSIZ];
 
 	for (;;) {
 		(void)printf("login: ");
 		for (p = nbuf; (ch = getchar()) != '\n'; ) {
 			if (ch == EOF) {
 				badlogin(username);
-				exit(0);
+				quickexit(0);
 			}
 			if (p < nbuf + (NBUFSIZ - 1))
 				*p++ = ch;
 		}
-		if (p > nbuf)
+		if (p > nbuf) {
 			if (nbuf[0] == '-')
 				(void)fprintf(stderr,
 				    "login names may not start with '-'.\n");
@@ -540,118 +778,118 @@ getloginname()
 				username = nbuf;
 				break;
 			}
+		}
 	}
 }
 
 int
-rootterm(ttyn)
-	char *ttyn;
+rootterm(char *ttyn)
 {
 	struct ttyent *t;
 
+	/* XXX - stash output of getttynam() elsewhere */
 	return ((t = getttynam(ttyn)) && t->ty_status & TTY_SECURE);
 }
 
-jmp_buf motdinterrupt;
-
 void
-motd()
+motd(void)
 {
+	char tbuf[8192], *motd;
 	int fd, nchars;
-	sig_t oldint;
-	char tbuf[8192];
+	struct sigaction sa, osa;
 
-	if ((fd = open(_PATH_MOTDFILE, O_RDONLY, 0)) < 0)
+	motd = login_getcapstr(lc, "welcome", _PATH_MOTDFILE, _PATH_MOTDFILE);
+
+	if ((fd = open(motd, O_RDONLY)) == -1)
 		return;
-	oldint = signal(SIGINT, sigint);
-	if (setjmp(motdinterrupt) == 0)
-		while ((nchars = read(fd, tbuf, sizeof(tbuf))) > 0)
-			(void)write(fileno(stdout), tbuf, nchars);
-	(void)signal(SIGINT, oldint);
+
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = sigint;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;		/* don't set SA_RESTART */
+	(void)sigaction(SIGINT, &sa, &osa);
+
+	/* read and spew motd until EOF, error, or SIGINT */
+	while ((nchars = read(fd, tbuf, sizeof(tbuf))) > 0 &&
+	    write(STDOUT_FILENO, tbuf, nchars) == nchars)
+		;
+
+	(void)sigaction(SIGINT, &osa, NULL);
 	(void)close(fd);
 }
 
-/* ARGSUSED */
 void
-sigint(signo)
-	int signo;
+sigint(int signo)
 {
-	longjmp(motdinterrupt, 1);
-}
-
-/* ARGSUSED */
-void
-timedout(signo)
-	int signo;
-{
-	(void)fprintf(stderr, "Login timed out after %d seconds\n", timeout);
-	exit(0);
+	return;			/* just interrupt syscall */
 }
 
 void
-checknologin()
+timedout(int signo)
 {
-	int fd, nchars;
-	char tbuf[8192];
-
-	if ((fd = open(_PATH_NOLOGIN, O_RDONLY, 0)) >= 0) {
-		while ((nchars = read(fd, tbuf, sizeof(tbuf))) > 0)
-			(void)write(fileno(stdout), tbuf, nchars);
-		sleepexit(0);
-	}
+	dprintf(STDERR_FILENO,
+	    "Login timed out after %d seconds\n", timeout);
+	if (username)
+		badlogin(username);
+	_exit(0);
 }
 
 void
-dolastlog(quiet)
-	int quiet;
+dolastlog(int quiet)
 {
 	struct lastlog ll;
+	off_t pos;
 	int fd;
 
-	if ((fd = open(_PATH_LASTLOG, O_RDWR, 0)) >= 0) {
-		(void)lseek(fd, (off_t)pwd->pw_uid * sizeof(ll), L_SET);
+	if ((fd = open(_PATH_LASTLOG, O_RDWR)) >= 0) {
+		pos = (off_t)pwd->pw_uid * sizeof(ll);
 		if (!quiet) {
-			if (read(fd, (char *)&ll, sizeof(ll)) == sizeof(ll) &&
+			if (pread(fd, &ll, sizeof(ll), pos) == sizeof(ll) &&
 			    ll.ll_time != 0) {
 				(void)printf("Last login: %.*s ",
 				    24-5, (char *)ctime(&ll.ll_time));
+				(void)printf("on %.*s",
+				    (int)sizeof(ll.ll_line),
+				    ll.ll_line);
 				if (*ll.ll_host != '\0')
-					(void)printf("from %.*s\n",
+					(void)printf(" from %.*s",
 					    (int)sizeof(ll.ll_host),
 					    ll.ll_host);
-				else
-					(void)printf("on %.*s\n",
-					    (int)sizeof(ll.ll_line),
-					    ll.ll_line);
+				(void)putchar('\n');
 			}
-			(void)lseek(fd, (off_t)pwd->pw_uid * sizeof(ll), L_SET);
 		}
-		memset((void *)&ll, 0, sizeof(ll));
+		memset(&ll, 0, sizeof(ll));
 		(void)time(&ll.ll_time);
 		(void)strncpy(ll.ll_line, tty, sizeof(ll.ll_line));
 		if (hostname)
 			(void)strncpy(ll.ll_host, hostname, sizeof(ll.ll_host));
-		(void)write(fd, (char *)&ll, sizeof(ll));
+		(void)pwrite(fd, &ll, sizeof(ll), pos);
 		(void)close(fd);
 	}
 }
 
 void
-badlogin(name)
-	char *name;
+badlogin(char *name)
 {
+	struct syslog_data sdata = SYSLOG_DATA_INIT;
+
 	if (failures == 0)
 		return;
 	if (hostname) {
-		syslog(LOG_NOTICE, "%d LOGIN FAILURE%s FROM %s",
-		    failures, failures > 1 ? "S" : "", hostname);
-		syslog(LOG_AUTHPRIV|LOG_NOTICE,
-		    "%d LOGIN FAILURE%s FROM %s, %s",
-		    failures, failures > 1 ? "S" : "", hostname, name);
+		syslog_r(LOG_NOTICE, &sdata,
+		    "%d LOGIN FAILURE%s FROM %s%s%s",
+		    failures, failures > 1 ? "S" : "",
+		    rusername ? rusername : "", rusername ? "@" : "", hostname);
+		syslog_r(LOG_AUTHPRIV|LOG_NOTICE, &sdata,
+		    "%d LOGIN FAILURE%s FROM %s%s%s, %s",
+		    failures, failures > 1 ? "S" : "",
+		    rusername ? rusername : "", rusername ? "@" : "",
+		    hostname, name);
 	} else {
-		syslog(LOG_NOTICE, "%d LOGIN FAILURE%s ON %s",
+		syslog_r(LOG_NOTICE, &sdata,
+		    "%d LOGIN FAILURE%s ON %s",
 		    failures, failures > 1 ? "S" : "", tty);
-		syslog(LOG_AUTHPRIV|LOG_NOTICE,
+		syslog_r(LOG_AUTHPRIV|LOG_NOTICE, &sdata,
 		    "%d LOGIN FAILURE%s ON %s, %s",
 		    failures, failures > 1 ? "S" : "", tty, name);
 	}
@@ -661,18 +899,35 @@ badlogin(name)
 #define	UNKNOWN	"su"
 
 char *
-stypeof(ttyid)
-	char *ttyid;
+stypeof(char *ttyid)
 {
 	struct ttyent *t;
 
-	return (ttyid && (t = getttynam(ttyid)) ? t->ty_type : UNKNOWN);
+	return (ttyid && (t = getttynam(ttyid)) ? t->ty_type :
+	    login_getcapstr(lc, "term", UNKNOWN, UNKNOWN));
 }
 
 void
-sleepexit(eval)
-	int eval;
+sleepexit(int eval)
 {
+	auth_close(as);
 	(void)sleep(5);
 	exit(eval);
+}
+
+void
+quickexit(int eval)
+{
+	if (as)
+		auth_close(as);
+	exit(eval);
+}
+
+
+void
+sighup(int signum)
+{
+	if (username)
+		badlogin(username);
+	_exit(0);
 }

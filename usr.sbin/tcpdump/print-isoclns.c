@@ -1,7 +1,7 @@
-/*	$NetBSD: print-isoclns.c,v 1.2 1995/03/06 19:11:17 mycroft Exp $	*/
+/*	$OpenBSD: print-isoclns.c,v 1.15 2021/12/01 18:28:46 deraadt Exp $	*/
 
 /*
- * Copyright (c) 1992, 1993, 1994
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -19,16 +19,9 @@
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-
-/*
+ *
  * Original code by Matt Thomas, Digital Equipment Corporation
  */
-
-#ifndef lint
-static char rcsid[] =
-    "@(#) Header: print-isoclns.c,v 1.9 94/06/14 20:18:44 leres Exp (LBL)";
-#endif
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -50,19 +43,19 @@ static char rcsid[] =
 #define	ISIS	131
 #define	NULLNS	0
 
-static int osi_cksum(const u_char *, int, const u_char *, u_char *, u_char *);
-static void esis_print(const u_char *, int);
+static int osi_cksum(const u_char *, u_int, const u_char *, u_char *, u_char *);
+static void esis_print(const u_char *, u_int);
 
 void
-isoclns_print(const u_char *p, int length, int caplen,
+isoclns_print(const u_char *p, u_int length, u_int caplen,
 	      const u_char *esrc, const u_char *edst)
 {
 	if (caplen < 1) {
 		printf("[|iso-clns] ");
 		if (!eflag)
 			printf("%s > %s",
-			       etheraddr_string(esrc),
-			       etheraddr_string(edst));
+			    etheraddr_string(esrc),
+			    etheraddr_string(edst));
 		return;
 	}
 
@@ -72,49 +65,49 @@ isoclns_print(const u_char *p, int length, int caplen,
 		/* esis_print(&p, &length); */
 		printf("iso-clns");
 		if (!eflag)
-			(void)printf(" %s > %s",
-				     etheraddr_string(esrc),
-				     etheraddr_string(edst));
+			printf(" %s > %s",
+			    etheraddr_string(esrc),
+			    etheraddr_string(edst));
 		break;
 
 	case ESIS:
 		printf("iso-esis");
 		if (!eflag)
-			(void)printf(" %s > %s",
-				     etheraddr_string(esrc),
-				     etheraddr_string(edst));
+			printf(" %s > %s",
+			    etheraddr_string(esrc),
+			    etheraddr_string(edst));
 		esis_print(p, length);
 		return;
 
 	case ISIS:
 		printf("iso-isis");
 		if (!eflag)
-			(void)printf(" %s > %s",
-				     etheraddr_string(esrc),
-				     etheraddr_string(edst));
+			printf(" %s > %s",
+			    etheraddr_string(esrc),
+			    etheraddr_string(edst));
 		/* isis_print(&p, &length); */
-		(void)printf(" len=%d ", length);
+		printf(" len=%d ", length);
 		if (caplen > 1)
-			default_print_unaligned(p, caplen);
+			default_print(p, caplen);
 		break;
 
 	case NULLNS:
 		printf("iso-nullns");
 		if (!eflag)
-			(void)printf(" %s > %s",
-				     etheraddr_string(esrc),
-				     etheraddr_string(edst));
+			printf(" %s > %s",
+			    etheraddr_string(esrc),
+			    etheraddr_string(edst));
 		break;
 
 	default:
 		printf("iso-clns %02x", p[0]);
 		if (!eflag)
-			(void)printf(" %s > %s",
-				     etheraddr_string(esrc),
-				     etheraddr_string(edst));
-		(void)printf(" len=%d ", length);
+			printf(" %s > %s",
+			    etheraddr_string(esrc),
+			    etheraddr_string(edst));
+		printf(" len=%d ", length);
 		if (caplen > 1)
-			default_print_unaligned(p, caplen);
+			default_print(p, caplen);
 		break;
 	}
 }
@@ -132,7 +125,7 @@ struct esis_hdr {
 };
 
 static void
-esis_print(const u_char *p, int length)
+esis_print(const u_char *p, u_int length)
 {
 	const u_char *ep;
 	int li = p[1];
@@ -160,7 +153,7 @@ esis_print(const u_char *p, int length)
 			printf(" bad pkt!");
 		else {
 			printf(" too short for esis header %d:", li);
-			while (--length >= 0)
+			while (--length != 0)
 				printf("%02X", *p++);
 		}
 		return;
@@ -187,7 +180,7 @@ esis_print(const u_char *p, int length)
 	off[1] = eh->cksum[1];
 	if (vflag && osi_cksum(p, li, eh->cksum, cksum, off)) {
 		printf(" bad cksum (got %02x%02x want %02x%02x)",
-		       eh->cksum[1], eh->cksum[0], cksum[1], cksum[0]);
+		    eh->cksum[1], eh->cksum[0], cksum[1], cksum[0]);
 		return;
 	}
 	if (eh->version != 1) {
@@ -220,11 +213,27 @@ esis_print(const u_char *p, int length)
 		li = ep - p;
 		break;
 	}
-#if 0
-	case ESIS_ESH:
-		printf(" esh");
+	case ESIS_ESH: {
+		const u_char *nsap;
+		int i, nnsaps;
+
+		nnsaps = *p++;
+
+		/* print NSAPs */
+		for (i = 0; i < nnsaps; i++) {
+			nsap = p;
+			p += *p + 1;
+			if (p > ep) {
+				printf(" [bad li]");
+				return;
+			}
+			if (p > snapend)
+				return;
+			printf(" nsap %s", isonsap_string(nsap));
+		}
+		li = ep - p;
 		break;
-#endif
+	}
 	case ESIS_ISH: {
 		const u_char *is;
 
@@ -235,13 +244,13 @@ esis_print(const u_char *p, int length)
 		}
 		if (p > snapend)
 			return;
-		printf(" %s", isonsap_string(is));
+		printf(" net %s", isonsap_string(is));
 		li = ep - p;
 		break;
 	}
 
 	default:
-		(void)printf(" len=%d", length);
+		printf(" len=%d", length);
 		if (length && p < snapend) {
 			length = snapend - p;
 			default_print(p, length);
@@ -283,35 +292,37 @@ esis_print(const u_char *p, int length)
 }
 
 static int
-osi_cksum(register const u_char *p, register int len,
+osi_cksum(const u_char *p, u_int len,
 	  const u_char *toff, u_char *cksum, u_char *off)
 {
-	int x, y, f = (len - ((toff - p) + 1));
-	long c0 = 0, c1 = 0;
+	const u_char *ep;
+	int c0, c1;
+	int n;
 
 	if ((cksum[0] = off[0]) == 0 && (cksum[1] = off[1]) == 0)
 		return 0;
 
-	off[0] = off[1] = 0;
-	while (--len >= 0) {
-		c0 += *p++;
+	n = toff - p + 1;
+	c0 = c1 = 0;
+	ep = p + len;
+	for (; p < toff; p++) {
+		c0 = (c0 + *p);
 		c1 += c0;
-		c0 %= 255;
-		c1 %= 255;
 	}
-	x = (c0 * f - c1);
-	if (x < 0)
-		x = 255 - (-x % 255);
-	else
-		x %= 255;
-	y = -1 * (x + c0);
-	if (y < 0)
-		y = 255 - (-y % 255);
-	else
-		y %= 255;
 
-	off[0] = x;
-	off[1] = y;
+	/* skip cksum bytes */
+	p += 2;		
+	c1 += c0; c1 += c0;
+
+	for (; p < ep; p++) {
+		c0 = (c0 + *p);
+		c1 += c0;
+	}
+
+	c1 = (((c0 * (len - n)) - c1) % 255);
+	cksum[0] = (u_char) ((c1 < 0) ? c1 + 255 : c1);
+	c1 = (-(int) (c1 + c0)) % 255;
+	cksum[1] = (u_char) (c1 < 0 ? c1 + 255 : c1);
 
 	return (off[0] != cksum[0] || off[1] != cksum[1]);
 }

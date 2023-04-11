@@ -1,5 +1,4 @@
-/*	$NetBSD: nlist.c,v 1.6 1995/09/29 04:19:59 cgd Exp $	*/
-
+/*	$OpenBSD: nlist.c,v 1.71 2019/06/28 13:32:41 deraadt Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,95 +28,131 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)nlist.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: nlist.c,v 1.6 1995/09/29 04:19:59 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#ifdef __alpha__
-#define		DO_ECOFF
-#else
-#define		DO_AOUT
-#endif
-
-#if defined(DO_AOUT) + defined(DO_ECOFF) != 1
-	ERROR: NOT PROPERLY CONFIGURED
-#endif
-
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <sys/file.h>
 
 #include <errno.h>
-#include <a.out.h>
-#ifdef DO_ECOFF
-#include <sys/exec_ecoff.h>
-#endif
+#include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <a.out.h>		/* pulls in nlist.h */
+#include <elf.h>
 
-int
-nlist(name, list)
-	const char *name;
-	struct nlist *list;
-{
-	int fd, n;
+#define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
 
-	fd = open(name, O_RDONLY, 0);
-	if (fd < 0)
-		return (-1);
-	n = __fdnlist(fd, list);
-	(void)close(fd);
-	return (n);
-}
+int	__fdnlist(int, struct nlist *);
+PROTO_NORMAL(__fdnlist);
 
 #define	ISLAST(p)	(p->n_un.n_name == 0 || p->n_un.n_name[0] == 0)
 
-#ifdef DO_AOUT
-int
-__fdnlist(fd, list)
-	register int fd;
-	register struct nlist *list;
+/*
+ * __elf_is_okay__ - Determine if ehdr really
+ * is ELF and valid for the target platform.
+ *
+ * WARNING:  This is NOT a ELF ABI function and
+ * as such its use should be restricted.
+ */
+static int
+__elf_is_okay__(Elf_Ehdr *ehdr)
 {
-	register struct nlist *p, *s;
-	register caddr_t strtab;
-	register off_t stroff, symoff;
-	register u_long symsize;
-	register int nent, cc;
-	size_t strsize;
-	struct nlist nbuf[1024];
-	struct exec exec;
-	struct stat st;
+	int retval = 0;
+	/*
+	 * We need to check magic, class size, endianness,
+	 * and version before we look at the rest of the
+	 * Elf_Ehdr structure.  These few elements are
+	 * represented in a machine independent fashion.
+	 */
+	if (IS_ELF(*ehdr) &&
+	    ehdr->e_ident[EI_CLASS] == ELF_TARG_CLASS &&
+	    ehdr->e_ident[EI_DATA] == ELF_TARG_DATA &&
+	    ehdr->e_ident[EI_VERSION] == ELF_TARG_VER) {
 
-	if (lseek(fd, (off_t)0, SEEK_SET) == -1 ||
-	    read(fd, &exec, sizeof(exec)) != sizeof(exec) ||
-	    N_BADMAG(exec) || fstat(fd, &st) < 0)
+		/* Now check the machine dependent header */
+		if (ehdr->e_machine == ELF_TARG_MACH &&
+		    ehdr->e_version == ELF_TARG_VER)
+			retval = 1;
+	}
+
+	if (ehdr->e_shentsize != sizeof(Elf_Shdr))
+		return 0;
+
+	return retval;
+}
+
+int
+__fdnlist(int fd, struct nlist *list)
+{
+	struct nlist *p;
+	caddr_t strtab;
+	Elf_Off symoff = 0, symstroff = 0;
+	Elf_Word symsize = 0, symstrsize = 0;
+	Elf_Sword nent, cc, i;
+	Elf_Sym sbuf[1024];
+	Elf_Sym *s;
+	Elf_Ehdr ehdr;
+	Elf_Shdr *shdr = NULL;
+	Elf_Word shdr_size;
+	struct stat st;
+	int usemalloc = 0;
+	size_t left, len;
+
+	/* Make sure obj is OK */
+	if (pread(fd, &ehdr, sizeof(Elf_Ehdr), 0) != sizeof(Elf_Ehdr) ||
+	    !__elf_is_okay__(&ehdr) || fstat(fd, &st) == -1)
 		return (-1);
 
-	symoff = N_SYMOFF(exec);
-	symsize = exec.a_syms;
-	stroff = symoff + symsize;
+	/* calculate section header table size */
+	shdr_size = ehdr.e_shentsize * ehdr.e_shnum;
 
-	/* Check for files too large to mmap. */
-	if (st.st_size - stroff > SIZE_T_MAX) {
+	/* Make sure it's not too big to mmap */
+	if (SIZE_MAX - ehdr.e_shoff < shdr_size ||
+	    (S_ISREG(st.st_mode) && ehdr.e_shoff + shdr_size > st.st_size)) {
 		errno = EFBIG;
 		return (-1);
 	}
+
+	/* mmap section header table */
+	shdr = mmap(NULL, shdr_size, PROT_READ, MAP_SHARED|MAP_FILE, fd,
+	    ehdr.e_shoff);
+	if (shdr == MAP_FAILED) {
+		usemalloc = 1;
+		if ((shdr = malloc(shdr_size)) == NULL)
+			return (-1);
+
+		if (pread(fd, shdr, shdr_size, ehdr.e_shoff) != shdr_size) {
+			free(shdr);
+			return (-1);
+		}
+	}
+
 	/*
-	 * Map string table into our address space.  This gives us
-	 * an easy way to randomly access all the strings, without
-	 * making the memory allocation permanent as with malloc/free
-	 * (i.e., munmap will return it to the system).
+	 * Find the symbol table entry and its corresponding
+	 * string table entry.	Version 1.1 of the ABI states
+	 * that there is only one symbol table but that this
+	 * could change in the future.
 	 */
-	strsize = st.st_size - stroff;
-	strtab = mmap(NULL, (size_t)strsize, PROT_READ, 0, fd, stroff);
-	if (strtab == (char *)-1)
-		return (-1);
+	for (i = 0; i < ehdr.e_shnum; i++) {
+		if (shdr[i].sh_type == SHT_SYMTAB) {
+			if (shdr[i].sh_link >= ehdr.e_shnum)
+				continue;
+			symoff = shdr[i].sh_offset;
+			symsize = shdr[i].sh_size;
+			symstroff = shdr[shdr[i].sh_link].sh_offset;
+			symstrsize = shdr[shdr[i].sh_link].sh_size;
+			break;
+		}
+	}
+
+	/* Flush the section header table */
+	if (usemalloc)
+		free(shdr);
+	else
+		munmap((caddr_t)shdr, shdr_size);
+
 	/*
 	 * clean out any left-over information for all valid entries.
 	 * Type and value defined to be 0 if not found; historical
@@ -140,134 +171,131 @@ __fdnlist(fd, list)
 		p->n_value = 0;
 		++nent;
 	}
-	if (lseek(fd, symoff, SEEK_SET) == -1)
-		return (-1);
 
-	while (symsize > 0) {
-		cc = MIN(symsize, sizeof(nbuf));
-		if (read(fd, nbuf, cc) != cc)
-			break;
-		symsize -= cc;
-		for (s = nbuf; cc > 0; ++s, cc -= sizeof(*s)) {
-			register int soff = s->n_un.n_strx;
+	/* Don't process any further if object is stripped. */
+	/* ELFism - dunno if stripped by looking at header */
+	if (symoff == 0)
+		return nent;
 
-			if (soff == 0 || (s->n_type & N_STAB) != 0)
-				continue;
-			for (p = list; !ISLAST(p); p++)
-				if (!strcmp(&strtab[soff], p->n_un.n_name)) {
-					p->n_value = s->n_value;
-					p->n_type = s->n_type;
-					p->n_desc = s->n_desc;
-					p->n_other = s->n_other;
-					if (--nent <= 0)
-						break;
-				}
-		}
-	}
-	munmap(strtab, strsize);
-	return (nent);
-}
-#endif /* DO_AOUT */
-
-#ifdef DO_ECOFF
-#define check(off, size)	((off < 0) || (off + size > mappedsize))
-#define	BAD			do { rv = -1; goto out; } while (0)
-#define	BADUNMAP		do { rv = -1; goto unmap; } while (0)
-
-int
-__fdnlist(fd, list)
-	register int fd;
-	register struct nlist *list;
-{
-	struct nlist *p;
-	struct ecoff_filehdr *filehdrp;
-	struct ecoff_symhdr *symhdrp;
-	struct ecoff_extsym *esyms;
-	struct stat st;
-	char *mappedfile;
-	size_t mappedsize;
-	u_long symhdroff, extstroff;
-	u_int symhdrsize;
-	int rv, nent;
-	long i, nesyms;
-
-	rv = -3;
-
-	if (fstat(fd, &st) < 0)
-		BAD;
-	if (st.st_size > SIZE_T_MAX) {
+	/* Check for files too large to mmap. */
+	if (SIZE_MAX - symstrsize < symstroff ||
+	    (S_ISREG(st.st_mode) && symstrsize + symstroff > st.st_size)) {
 		errno = EFBIG;
-		BAD;
+		return (-1);
 	}
-	mappedsize = st.st_size;
-	mappedfile = mmap(NULL, mappedsize, PROT_READ, 0, fd, 0);
-	if (mappedfile == (char *)-1)
-		BAD;
-
-	if (check(0, sizeof *filehdrp))
-		BADUNMAP;
-	filehdrp = (struct ecoff_filehdr *)&mappedfile[0];
-
-	if (ECOFF_BADMAG(filehdrp))
-		BADUNMAP;
-
-	symhdroff = filehdrp->ef_symptr;
-	symhdrsize = filehdrp->ef_syms;
-
-	if (check(symhdroff, sizeof *symhdrp) ||
-	    sizeof *symhdrp != symhdrsize)
-		BADUNMAP;
-	symhdrp = (struct ecoff_symhdr *)&mappedfile[symhdroff];
-
-	nesyms = symhdrp->sh_esymmax;
-	if (check(symhdrp->sh_esymoff, nesyms * sizeof *esyms))
-		BADUNMAP;
-	esyms = (struct ecoff_extsym *)&mappedfile[symhdrp->sh_esymoff];
-	extstroff = symhdrp->sh_estroff;
 
 	/*
-	 * clean out any left-over information for all valid entries.
-	 * Type and value defined to be 0 if not found; historical
-	 * versions cleared other and desc as well.
-	 *
-	 * XXX clearing anything other than n_type and n_value violates
-	 * the semantics given in the man page.
+	 * Map string table into our address space.  This gives us
+	 * an easy way to randomly access all the strings, without
+	 * making the memory allocation permanent as with malloc/free
+	 * (i.e., munmap will return it to the system).
 	 */
-	nent = 0;
-	for (p = list; !ISLAST(p); ++p) {
-		p->n_type = 0;
-		p->n_other = 0;
-		p->n_desc = 0;
-		p->n_value = 0;
-		++nent;
+	if (usemalloc) {
+		if ((strtab = malloc(symstrsize)) == NULL)
+			return (-1);
+		if (pread(fd, strtab, symstrsize, symstroff) != symstrsize) {
+			free(strtab);
+			return (-1);
+		}
+	} else {
+		strtab = mmap(NULL, symstrsize, PROT_READ, MAP_SHARED|MAP_FILE,
+		    fd, symstroff);
+		if (strtab == MAP_FAILED)
+			return (-1);
 	}
 
-	for (i = 0; i < nesyms; i++) {
-		for (p = list; !ISLAST(p); p++) {
-			char *nlistname;
-			char *symtabname;
+	while (symsize >= sizeof(Elf_Sym)) {
+		cc = MINIMUM(symsize, sizeof(sbuf));
+		if (pread(fd, sbuf, cc, symoff) != cc)
+			break;
+		symsize -= cc;
+		symoff += cc;
+		for (s = sbuf; cc > 0; ++s, cc -= sizeof(*s)) {
+			Elf_Word soff = s->st_name;
 
-			nlistname = p->n_un.n_name;
-			if (*nlistname == '_')
-				nlistname++;
-			symtabname =
-			    &mappedfile[extstroff + esyms[i].es_strindex];
+			if (soff == 0 || soff >= symstrsize)
+				continue;
+			left = symstrsize - soff;
 
-			if (!strcmp(symtabname, nlistname)) {
-				p->n_value = esyms[i].es_value;
-				p->n_type = N_EXT;		/* XXX */
-				p->n_desc = 0;			/* XXX */
-				p->n_other = 0;			/* XXX */
+			for (p = list; !ISLAST(p); p++) {
+				char *sym;
+
+				/*
+				 * First we check for the symbol as it was
+				 * provided by the user. If that fails
+				 * and the first char is an '_', skip over
+				 * the '_' and try again.
+				 * XXX - What do we do when the user really
+				 *       wants '_foo' and there are symbols
+				 *       for both 'foo' and '_foo' in the
+				 *	 table and 'foo' is first?
+				 */
+				sym = p->n_un.n_name;
+				len = strlen(sym);
+
+				if ((len >= left ||
+				    strcmp(&strtab[soff], sym) != 0) &&
+				    (sym[0] != '_' || len - 1 >= left ||
+				     strcmp(&strtab[soff], sym + 1) != 0))
+					continue;
+
+				p->n_value = s->st_value;
+
+				/* XXX - type conversion */
+				/*	 is pretty rude. */
+				switch(ELF_ST_TYPE(s->st_info)) {
+				case STT_NOTYPE:
+					switch (s->st_shndx) {
+					case SHN_UNDEF:
+						p->n_type = N_UNDF;
+						break;
+					case SHN_ABS:
+						p->n_type = N_ABS;
+						break;
+					case SHN_COMMON:
+						p->n_type = N_COMM;
+						break;
+					default:
+						p->n_type = N_COMM | N_EXT;
+						break;
+					}
+					break;
+				case STT_OBJECT:
+					p->n_type = N_DATA;
+					break;
+				case STT_FUNC:
+					p->n_type = N_TEXT;
+					break;
+				case STT_FILE:
+					p->n_type = N_FN;
+					break;
+				}
+				if (ELF_ST_BIND(s->st_info) == STB_LOCAL)
+					p->n_type = N_EXT;
+				p->n_desc = 0;
+				p->n_other = 0;
 				if (--nent <= 0)
 					break;
 			}
 		}
 	}
-	rv = nent;
-
-unmap:
-	munmap(mappedfile, mappedsize);
-out:
-	return (rv);
+	if (usemalloc)
+		free(strtab);
+	else
+		munmap(strtab, symstrsize);
+	return (nent);
 }
-#endif /* DO_ECOFF */
+DEF_STRONG(__fdnlist);
+
+int
+nlist(const char *name, struct nlist *list)
+{
+	int fd, n;
+
+	fd = open(name, O_RDONLY | O_CLOEXEC);
+	if (fd == -1)
+		return (-1);
+	n = __fdnlist(fd, list);
+	(void)close(fd);
+	return (n);
+}

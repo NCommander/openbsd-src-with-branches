@@ -1,3 +1,4 @@
+/*	$OpenBSD: SYS.h,v 1.26 2022/06/10 01:56:02 guenther Exp $	*/
 /*-
  * Copyright (c) 1994
  *	Andrew Cagney.  All rights reserved.
@@ -34,7 +35,6 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)SYS.h	8.1 (Berkeley) 6/4/93
- *      $Id: SYS.h,v 1.1.1.1 1996/09/30 05:09:55 drahn Exp $ 
  */
 
 #include <sys/syscall.h>
@@ -42,31 +42,53 @@
 /* r0 will be a non zero errno if there was an error, while r3/r4 will
    contain the return value */
 
-#include "machine/asm.h"
+#include "DEFS.h"
 
-#ifdef __STDC__
-#define PSEUDO_PREFIX(x,y)	.globl _C_LABEL(x) ; \
-				.align 2; \
-				.extern cerror ; \
-			_C_LABEL(x):	li 0, SYS_##y ; \
-				/* sc */
-#else /* !__STDC__ */
-#define PSEUDO_PREFIX(x,y)	.globl _C_LABEL(x) ; \
-				.align 2; \
-				.extern cerror ; \
-			_C_LABEL(x):	li 0, SYS_/**/y ; \
-				/* sc */
-#endif /* !__STDC__ */
-#define PSEUDO_SUFFIX		cmpwi 0, 0 ; \
-				beqlr+ ; \
-				b cerror
 
-#define PREFIX(x)		PSEUDO_PREFIX(x,x)
+/* offsetof(struct tib, tib_errno) - offsetof(struct tib, __tib_tcb) */
+#define	TCB_OFFSET_ERRNO	(-8)
+/* from <powerpc/tcb.h>: TCB address == %r2 - TCB_OFFSET */
+#define	TCB_OFFSET		0x7000
 
-#define SUFFIX			PSEUDO_SUFFIX
+/* offset of errno from %r2 */
+#define	R2_OFFSET_ERRNO		(-TCB_OFFSET + TCB_OFFSET_ERRNO)
 
-#define	PSEUDO(x,y)		PSEUDO_PREFIX(x,y) ; \
-				sc ; \
-				PSEUDO_SUFFIX
+#define SYSENTRY(x)		WEAK_ALIAS(x, _thread_sys_ ## x);	\
+				ENTRY(_thread_sys_ ## x)
+#define SYSENTRY_HIDDEN(x)	ENTRY(_thread_sys_ ## x)
+#define __END_HIDDEN(x)		END(_thread_sys_ ## x);			\
+				_HIDDEN_FALIAS(x, _thread_sys_ ## x);	\
+				END(_HIDDEN(x))
+#define __END(x)		__END_HIDDEN(x); END(x)
+
+#define	PSEUDO_NOERROR(x,y)	SYSENTRY(x)				\
+				RETGUARD_SETUP(x, %r11, %r12);		\
+				li	%r0, SYS_ ## y ;		\
+				sc;					\
+				RETGUARD_CHECK(x, %r11, %r12);		\
+				blr;					\
+				__END(x)
+
+#define	PSEUDO_HIDDEN(x,y)	SYSENTRY_HIDDEN(x)			\
+				RETGUARD_SETUP(x, %r11, %r12);		\
+				li	%r0, SYS_ ## y;			\
+				sc;					\
+				cmpwi	%r0, 0;				\
+				beq+	.L_ret;				\
+				stw	%r0, R2_OFFSET_ERRNO(2);	\
+				li	%r3, -1;			\
+				li	%r4, -1;	/* for lseek */	\
+			.L_ret:						\
+				RETGUARD_CHECK(x, %r11, %r12);		\
+				blr;					\
+				__END_HIDDEN(x)
+
+#define	PSEUDO(x,y)		WEAK_ALIAS(x, _thread_sys_ ## x);	\
+				PSEUDO_HIDDEN(x,y);			\
+				END(x)
 
 #define RSYSCALL(x)		PSEUDO(x,x)
+#define RSYSCALL_HIDDEN(x)	PSEUDO_HIDDEN(x,x)
+#define SYSCALL_END_HIDDEN(x)	__END_HIDDEN(x)
+#define SYSCALL_END(x)		__END(x)
+

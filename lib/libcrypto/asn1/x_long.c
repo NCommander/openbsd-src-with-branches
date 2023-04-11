@@ -1,4 +1,4 @@
-/* x_long.c */
+/* $OpenBSD: x_long.c,v 1.18 2022/07/02 18:14:35 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -56,124 +56,184 @@
  *
  */
 
-#include <stdio.h>
-#include "cryptlib.h"
+#include <limits.h>
+#include <string.h>
+
 #include <openssl/asn1t.h>
 #include <openssl/bn.h>
+#include <openssl/err.h>
 
-/* Custom primitive type for long handling. This converts between an ASN1_INTEGER
- * and a long directly.
+#include "asn1_local.h"
+
+/*
+ * Custom primitive type for long handling. This converts between an
+ * ASN1_INTEGER and a long directly.
  */
-
 
 static int long_new(ASN1_VALUE **pval, const ASN1_ITEM *it);
 static void long_free(ASN1_VALUE **pval, const ASN1_ITEM *it);
+static void long_clear(ASN1_VALUE **pval, const ASN1_ITEM *it);
 
-static int long_i2c(ASN1_VALUE **pval, unsigned char *cont, int *putype, const ASN1_ITEM *it);
-static int long_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len, int utype, char *free_cont, const ASN1_ITEM *it);
-static int long_print(BIO *out, ASN1_VALUE **pval, const ASN1_ITEM *it, int indent, const ASN1_PCTX *pctx);
+static int long_i2c(ASN1_VALUE **pval, unsigned char *content, int *putype,
+    const ASN1_ITEM *it);
+static int long_c2i(ASN1_VALUE **pval, const unsigned char *content, int len,
+    int utype, char *free_content, const ASN1_ITEM *it);
+static int long_print(BIO *out, ASN1_VALUE **pval, const ASN1_ITEM *it,
+    int indent, const ASN1_PCTX *pctx);
 
 static ASN1_PRIMITIVE_FUNCS long_pf = {
-	NULL, 0,
-	long_new,
-	long_free,
-	long_free,	/* Clear should set to initial value */
-	long_c2i,
-	long_i2c,
-	long_print
+	.app_data = NULL,
+	.flags = 0,
+	.prim_new = long_new,
+	.prim_free = long_free,
+	.prim_clear = long_clear,
+	.prim_c2i = long_c2i,
+	.prim_i2c = long_i2c,
+	.prim_print = long_print,
 };
 
-ASN1_ITEM_start(LONG)
-	ASN1_ITYPE_PRIMITIVE, V_ASN1_INTEGER, NULL, 0, &long_pf, ASN1_LONG_UNDEF, "LONG"
-ASN1_ITEM_end(LONG)
+const ASN1_ITEM LONG_it = {
+	.itype = ASN1_ITYPE_PRIMITIVE,
+	.utype = V_ASN1_INTEGER,
+	.templates = NULL,
+	.tcount = 0,
+	.funcs = &long_pf,
+	.size = ASN1_LONG_UNDEF,
+	.sname = "LONG",
+};
 
-ASN1_ITEM_start(ZLONG)
-	ASN1_ITYPE_PRIMITIVE, V_ASN1_INTEGER, NULL, 0, &long_pf, 0, "ZLONG"
-ASN1_ITEM_end(ZLONG)
+const ASN1_ITEM ZLONG_it = {
+	.itype = ASN1_ITYPE_PRIMITIVE,
+	.utype = V_ASN1_INTEGER,
+	.templates = NULL,
+	.tcount = 0,
+	.funcs = &long_pf,
+	.size = 0,
+	.sname = "ZLONG",
+};
 
-static int long_new(ASN1_VALUE **pval, const ASN1_ITEM *it)
+static void
+long_get(ASN1_VALUE **pval, long *out_val)
 {
-	*(long *)pval = it->size;
+	memcpy(out_val, pval, sizeof(long));
+}
+
+static void
+long_set(ASN1_VALUE **pval, long val)
+{
+	memcpy(pval, &val, sizeof(long));
+}
+
+static int
+long_new(ASN1_VALUE **pval, const ASN1_ITEM *it)
+{
+	long_clear(pval, it);
+
 	return 1;
 }
 
-static void long_free(ASN1_VALUE **pval, const ASN1_ITEM *it)
+static void
+long_free(ASN1_VALUE **pval, const ASN1_ITEM *it)
 {
-	*(long *)pval = it->size;
+	long_clear(pval, it);
 }
 
-static int long_i2c(ASN1_VALUE **pval, unsigned char *cont, int *putype, const ASN1_ITEM *it)
+static void
+long_clear(ASN1_VALUE **pval, const ASN1_ITEM *it)
 {
-	long ltmp;
-	unsigned long utmp;
-	int clen, pad, i;
-	/* this exists to bypass broken gcc optimization */
-	char *cp = (char *)pval;
+	/* Zero value. */
+	long_set(pval, it->size);
+}
 
-	/* use memcpy, because we may not be long aligned */
-	memcpy(&ltmp, cp, sizeof(long));
+static int
+long_i2c(ASN1_VALUE **pval, unsigned char *content, int *putype,
+    const ASN1_ITEM *it)
+{
+	ASN1_INTEGER *aint;
+	uint8_t **pp = NULL;
+	long val;
+	int ret = 0;
 
-	if(ltmp == it->size) return -1;
-	/* Convert the long to positive: we subtract one if negative so
-	 * we can cleanly handle the padding if only the MSB of the leading
-	 * octet is set. 
+	long_get(pval, &val);
+
+	/*
+	 * The zero value for this type (stored in the overloaded it->size
+	 * field) is considered to be invalid.
 	 */
-	if(ltmp < 0) utmp = -ltmp - 1;
-	else utmp = ltmp;
-	clen = BN_num_bits_word(utmp);
-	/* If MSB of leading octet set we need to pad */
-	if(!(clen & 0x7)) pad = 1;
-	else pad = 0;
+	if (val == it->size)
+		return -1;
 
-	/* Convert number of bits to number of octets */
-	clen = (clen + 7) >> 3;
+	if ((aint = ASN1_INTEGER_new()) == NULL)
+		goto err;
+	if (!ASN1_INTEGER_set_int64(aint, (int64_t)val))
+		goto err;
+	if (content != NULL)
+		pp = &content;
+	ret = i2c_ASN1_INTEGER(aint, pp);
 
-	if(cont) {
-		if(pad) *cont++ = (ltmp < 0) ? 0xff : 0;
-		for(i = clen - 1; i >= 0; i--) {
-			cont[i] = (unsigned char)(utmp & 0xff);
-			if(ltmp < 0) cont[i] ^= 0xff;
-			utmp >>= 8;
-		}
-	}
-	return clen + pad;
+ err:
+	ASN1_INTEGER_free(aint);
+
+	return ret;
 }
 
-static int long_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len,
-		    int utype, char *free_cont, const ASN1_ITEM *it)
+static int
+long_c2i(ASN1_VALUE **pval, const unsigned char *content, int len, int utype,
+    char *free_content, const ASN1_ITEM *it)
 {
-	int neg, i;
-	long ltmp;
-	unsigned long utmp = 0;
-	char *cp = (char *)pval;
-	if(len > (int)sizeof(long)) {
-		ASN1err(ASN1_F_LONG_C2I, ASN1_R_INTEGER_TOO_LARGE_FOR_LONG);
+	ASN1_INTEGER *aint = NULL;
+	const uint8_t **pp = NULL;
+	int64_t val = 0;
+	int ret = 0;
+
+	/*
+	 * The original long_i2c() mishandled 0 values and encoded them as
+	 * content with zero length, rather than a single zero byte. Permit
+	 * zero length content here for backwards compatibility.
+	 */
+	if (len != 0) {
+		if (content != NULL)
+			pp = &content;
+		if (!c2i_ASN1_INTEGER(&aint, pp, len))
+			goto err;
+		if (!ASN1_INTEGER_get_int64(&val, aint))
+			goto err;
+	}
+
+	if (val < LONG_MIN || val > LONG_MAX) {
+		ASN1error(ASN1_R_INTEGER_TOO_LARGE_FOR_LONG);
+		goto err;
+	}
+
+	/*
+	 * The zero value for this type (stored in the overloaded it->size
+	 * field) is considered to be invalid.
+	 */
+	if (val == (int64_t)it->size) {
+		ASN1error(ASN1_R_INTEGER_TOO_LARGE_FOR_LONG);
+		goto err;
+	}
+
+	long_set(pval, (long)val);
+
+	ret = 1;
+
+ err:
+	ASN1_INTEGER_free(aint);
+
+	return ret;
+}
+
+static int
+long_print(BIO *out, ASN1_VALUE **pval, const ASN1_ITEM *it, int indent,
+    const ASN1_PCTX *pctx)
+{
+	long val;
+
+	long_get(pval, &val);
+
+	if (BIO_printf(out, "%ld\n", val) <= 0)
 		return 0;
-	}
-	/* Is it negative? */
-	if(len && (cont[0] & 0x80)) neg = 1;
-	else neg = 0;
-	utmp = 0;
-	for(i = 0; i < len; i++) {
-		utmp <<= 8;
-		if(neg) utmp |= cont[i] ^ 0xff;
-		else utmp |= cont[i];
-	}
-	ltmp = (long)utmp;
-	if(neg) {
-		ltmp++;
-		ltmp = -ltmp;
-	}
-	if(ltmp == it->size) {
-		ASN1err(ASN1_F_LONG_C2I, ASN1_R_INTEGER_TOO_LARGE_FOR_LONG);
-		return 0;
-	}
-	memcpy(cp, &ltmp, sizeof(long));
+
 	return 1;
 }
-
-static int long_print(BIO *out, ASN1_VALUE **pval, const ASN1_ITEM *it,
-			int indent, const ASN1_PCTX *pctx)
-	{
-	return BIO_printf(out, "%ld\n", *(long *)pval);
-	}

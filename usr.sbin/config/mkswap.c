@@ -1,4 +1,7 @@
-/* 
+/*	$OpenBSD: mkswap.c,v 1.18 2019/06/28 13:33:55 deraadt Exp $	*/
+/*	$NetBSD: mkswap.c,v 1.5 1996/08/31 20:58:27 mycroft Exp $	*/
+
+/*
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -19,11 +22,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,26 +39,30 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)mkswap.c	8.1 (Berkeley) 6/6/93
- *	$Id: mkswap.c,v 1.1 1995/04/28 06:55:17 cgd Exp $
  */
 
-#include <sys/param.h>
+#include <sys/types.h>
+
+#include <err.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "config.h"
 #include "sem.h"
 
-static int mkoneswap __P((struct config *));
+dev_t nodev = (dev_t)-1;
+
+static int mkoneswap(struct config *);
 
 /*
  * Make the various swap*.c files.  Nothing to do for generic swap.
  */
 int
-mkswap()
+mkswap(void)
 {
-	register struct config *cf;
+	struct config *cf;
 
 	for (cf = allcf; cf != NULL; cf = cf->cf_next)
 		if (cf->cf_root != NULL && mkoneswap(cf))
@@ -68,38 +71,34 @@ mkswap()
 }
 
 static char *
-mkdevstr(d)
-dev_t d;
+mkdevstr(dev_t d)
 {
 	static char buf[32];
 
-	if (d == NODEV)
-		(void)sprintf(buf, "NODEV");
+	if (d == nodev)
+		(void)snprintf(buf, sizeof buf, "NODEV");
 	else
-		(void)sprintf(buf, "makedev(%d, %d)", major(d), minor(d));
+		(void)snprintf(buf, sizeof buf, "makedev(%u, %u)",
+		    major(d), minor(d));
 	return buf;
 }
 
 static int
-mkoneswap(cf)
-	register struct config *cf;
+mkoneswap(struct config *cf)
 {
-	register struct nvlist *nv;
-	register FILE *fp;
-	register char *fname;
-	char buf[200];
-	char *mountroot;
+	char fname[200], *mountroot;
+	struct nvlist *nv;
+	FILE *fp;
 
-	(void)sprintf(buf, "swap%s.c", cf->cf_name);
-	fname = path(buf);
+	(void)snprintf(fname, sizeof fname, "swap%s.c", cf->cf_name);
 	if ((fp = fopen(fname, "w")) == NULL) {
-		(void)fprintf(stderr, "config: cannot write %s: %s\n",
-		    fname, strerror(errno));
+		warn("cannot write %s", fname);
 		return (1);
 	}
 	if (fputs("\
 #include <sys/param.h>\n\
-#include <sys/conf.h>\n\n", fp) < 0)
+#include <sys/conf.h>\n\
+#include <sys/systm.h>\n\n", fp) == EOF)
 		goto wrerror;
 	nv = cf->cf_root;
 	if (fprintf(fp, "dev_t\trootdev = %s;\t/* %s */\n",
@@ -109,33 +108,28 @@ mkoneswap(cf)
 	if (fprintf(fp, "dev_t\tdumpdev = %s;\t/* %s */\n",
 	    mkdevstr(nv->nv_int), nv->nv_str) < 0)
 		goto wrerror;
-	if (fputs("\nstruct\tswdevt swdevt[] = {\n", fp) < 0)
+	if (fputs("\nstruct\tswdevt swdevt[] = {\n", fp) == EOF)
 		goto wrerror;
 	for (nv = cf->cf_swap; nv != NULL; nv = nv->nv_next)
-		if (fprintf(fp, "\t{ %s,\t0,\t0 },\t/* %s */\n",
+		if (fprintf(fp, "\t{ %s,\t0 },\t/* %s */\n",
 		    mkdevstr(nv->nv_int), nv->nv_str) < 0)
 			goto wrerror;
-	if (fputs("\t{ NODEV, 0, 0 }\n};\n\n", fp) < 0)
+	if (fputs("\t{ NODEV, 0 }\n};\n\n", fp) == EOF)
 		goto wrerror;
 	mountroot =
-	    cf->cf_root->nv_str == s_nfs ? "nfs_mountroot" : "ffs_mountroot";
-	if (fprintf(fp, "extern int %s();\n", mountroot) < 0)
-		goto wrerror;
-	if (fprintf(fp, "int (*mountroot)() = %s;\n", mountroot) < 0)
+	    cf->cf_root->nv_str == s_nfs ? "nfs_mountroot" : "dk_mountroot";
+	if (fprintf(fp, "int (*mountroot)(void) = %s;\n", mountroot) < 0)
 		goto wrerror;
 
 	if (fclose(fp)) {
 		fp = NULL;
 		goto wrerror;
 	}
-	free(fname);
 	return (0);
 wrerror:
-	(void)fprintf(stderr, "config: error writing %s: %s\n",
-	    fname, strerror(errno));
+	warn("error writing %s", fname);
 	if (fp != NULL)
 		(void)fclose(fp);
 	/* (void)unlink(fname); */
-	free(fname);
 	return (1);
 }

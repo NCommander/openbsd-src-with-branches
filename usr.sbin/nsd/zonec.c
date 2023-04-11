@@ -649,7 +649,7 @@ zparser_conv_b64(region_type *region, const char *b64)
 		/* single 0 represents empty buffer */
 		return alloc_rdata(region, 0);
 	}
-	i = b64_pton(b64, buffer, B64BUFSIZE);
+	i = __b64_pton(b64, buffer, B64BUFSIZE);
 	if (i == -1) {
 		zc_error_prev_line("invalid base64 data");
 	} else {
@@ -1018,7 +1018,7 @@ zparser_conv_svcbparam_ech_value(region_type *region, const char *b64)
 		/* single 0 represents empty buffer */
 		return alloc_rdata(region, 0);
 	}
-	wire_len = b64_pton(b64, buffer, B64BUFSIZE);
+	wire_len = __b64_pton(b64, buffer, B64BUFSIZE);
 	if (wire_len == -1) {
 		zc_error_prev_line("invalid base64 data in ech");
 	} else {

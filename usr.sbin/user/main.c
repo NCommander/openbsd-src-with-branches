@@ -1,4 +1,5 @@
-/* $NetBSD: main.c,v 1.1 1999/12/24 09:08:50 agc Exp $ */
+/* $OpenBSD: main.c,v 1.11 2016/11/29 03:59:31 jsg Exp $ */
+/* $NetBSD: main.c,v 1.3 2002/07/09 10:34:16 tron Exp $ */
 
 /*
  * Copyright (c) 1999 Alistair G. Crooks.  All rights reserved.
@@ -11,10 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Alistair G. Crooks.
- * 4. The name of the author may not be used to endorse or promote
+ * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior written
  *    permission.
  *
@@ -44,12 +42,12 @@ enum {
 
 /* this struct describes a command */
 typedef struct cmd_t {
-	int	c_wc;					/* word count */
-	char	*c_word[MaxCmdWords];			/* command words */
-	int	(*c_func)(int argc, char **argv);	/* called function */
+	int		c_wc;				/* word count */
+	const char	*c_word[MaxCmdWords];		/* command words */
+	int		(*c_func)(int, char **);	/* called function */
 } cmd_t;
 
-/* despatch table for commands */
+/* dispatch table for commands */
 static cmd_t	cmds[] = {
 	{	1,	{ "useradd",	NULL },		useradd		},
 	{	2,	{ "user",	"add" },	useradd		},
@@ -57,20 +55,16 @@ static cmd_t	cmds[] = {
 	{	2,	{ "user",	"mod" },	usermod		},
 	{	1,	{ "userdel",	NULL },		userdel		},
 	{	2,	{ "user",	"del" },	userdel		},
-#ifdef EXTENSIONS
 	{	1,	{ "userinfo",	NULL },		userinfo	},
 	{	2,	{ "user",	"info" },	userinfo	},
-#endif
 	{	1,	{ "groupadd",	NULL },		groupadd	},
 	{	2,	{ "group",	"add" },	groupadd	},
 	{	1,	{ "groupmod",	NULL },		groupmod	},
 	{	2,	{ "group",	"mod" },	groupmod	},
 	{	1,	{ "groupdel",	NULL },		groupdel	},
 	{	2,	{ "group",	"del" },	groupdel	},
-#ifdef EXTENSIONS
 	{	1,	{ "groupinfo",	NULL },		groupinfo	},
 	{	2,	{ "group",	"info" },	groupinfo	},
-#endif
 	{	0	}
 };
 
@@ -87,18 +81,15 @@ main(int argc, char **argv)
 		for (matched = i = 0 ; i < cmdp->c_wc && i < MaxCmdWords ; i++) {
 			if (argc > i) {
 				if (strcmp((i == 0) ? __progname : argv[i],
-						cmdp->c_word[i]) == 0) {
+				    cmdp->c_word[i]) == 0) {
 					matched += 1;
-				} else {
+				} else
 					break;
-				}
 			}
 		}
-		if (matched == cmdp->c_wc) {
-			return (*cmdp->c_func)(argc - (matched - 1), argv + (matched - 1));
-		}
+		if (matched == cmdp->c_wc && cmdp->c_func != NULL)
+			return (*cmdp->c_func)(argc - (matched - 1),
+			    argv + (matched - 1));
 	}
 	usermgmt_usage(__progname);
-	errx(EXIT_FAILURE, "Program `%s' not recognised", __progname);
-	/* NOTREACHED */
 }

@@ -3259,6 +3259,10 @@ ppc_elf_check_relocs (bfd *abfd,
 	case R_PPC_EMB_MRKREF:
 	case R_PPC_NONE:
 	case R_PPC_max:
+	case R_PPC_RELAX32:
+	case R_PPC_RELAX32PC:
+	case R_PPC_RELAX32_PLT:
+	case R_PPC_RELAX32PC_PLT:
 	  break;
 
 	  /* These should only appear in dynamic objects.  */
@@ -3809,7 +3813,7 @@ ppc_elf_gc_sweep_hook (bfd *abfd,
 	    {
 	      bfd_vma addend = r_type == R_PPC_PLTREL24 ? rel->r_addend : 0;
 	      struct plt_entry *ent = find_plt_ent (h, got2, addend);
-	      if (ent->plt.refcount > 0)
+	      if (ent != NULL && ent->plt.refcount > 0)
 		ent->plt.refcount -= 1;
 	    }
 	  break;
@@ -4655,7 +4659,7 @@ ppc_elf_size_dynamic_sections (bfd *output_bfd ATTRIBUTE_UNUSED,
   if (elf_hash_table (info)->dynamic_sections_created)
     {
       /* Set the contents of the .interp section to the interpreter.  */
-      if (info->executable)
+      if (info->executable && !info->static_link)
 	{
 	  s = bfd_get_section_by_name (htab->elf.dynobj, ".interp");
 	  BFD_ASSERT (s != NULL);
@@ -5235,6 +5239,9 @@ ppc_elf_relax_section (bfd *abfd,
 	  irel->r_info = ELF32_R_INFO (ELF32_R_SYM (irel->r_info),
 				       stub_rtype);
 	  irel->r_offset = trampoff + insn_offset;
+	  if (r_type == R_PPC_PLTREL24 &&
+	      (stub_rtype == R_PPC_RELAX32 || stub_rtype == R_PPC_RELAX32PC))
+	    irel->r_addend = 0;
 
 	  /* Record the fixup so we don't do it again this section.  */
 	  f = bfd_malloc (sizeof (*f));
@@ -7447,7 +7454,7 @@ ppc_elf_finish_dynamic_sections (bfd *output_bfd,
 #endif
 
 #define elf_backend_plt_not_loaded	1
-#define elf_backend_can_gc_sections	1
+#define elf_backend_can_gc_sections	0
 #define elf_backend_can_refcount	1
 #define elf_backend_rela_normal		1
 

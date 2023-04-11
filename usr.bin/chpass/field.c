@@ -1,3 +1,4 @@
+/*	$OpenBSD: field.c,v 1.14 2015/01/16 06:40:06 deraadt Exp $	*/
 /*	$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,35 +30,22 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)field.c	8.4 (Berkeley) 4/2/94";
-#else 
-static char rcsid[] = "$NetBSD: field.c,v 1.3 1995/03/26 04:55:28 glass Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
-
 #include <ctype.h>
 #include <err.h>
 #include <errno.h>
 #include <grp.h>
+#include <paths.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "chpass.h"
-#include "pathnames.h"
 
-/* ARGSUSED */
 int
-p_login(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_login(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!*p) {
 		warnx("empty login field");
@@ -71,6 +55,11 @@ p_login(p, pw, ep)
 		warnx("login names may not begin with a hyphen");
 		return (1);
 	}
+	/* XXX - what about truncated names? */
+	if (strcmp(pw->pw_name, p) != 0 && getpwnam(p) != NULL) {
+		warnx("login %s already exists", p);
+		return (1);
+	}
 	if (!(pw->pw_name = strdup(p))) {
 		warnx("can't save entry");
 		return (1);
@@ -78,19 +67,15 @@ p_login(p, pw, ep)
 	if (strchr(p, '.'))
 		warnx("\'.\' is dangerous in a login name");
 	for (; *p; ++p)
-		if (isupper(*p)) {
+		if (isupper((unsigned char)*p)) {
 			warnx("upper-case letters are dangerous in a login name");
 			break;
 		}
 	return (0);
 }
 
-/* ARGSUSED */
 int
-p_passwd(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_passwd(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!*p)
 		pw->pw_passwd = "";	/* "NOLOGIN"; */
@@ -98,54 +83,41 @@ p_passwd(p, pw, ep)
 		warnx("can't save password entry");
 		return (1);
 	}
-	
+
 	return (0);
 }
 
-/* ARGSUSED */
 int
-p_uid(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_uid(char *p, struct passwd *pw, ENTRY *ep)
 {
 	uid_t id;
-	char *np;
+	const char *errstr;
 
 	if (!*p) {
 		warnx("empty uid field");
 		return (1);
 	}
-	if (!isdigit(*p)) {
-		warnx("illegal uid");
-		return (1);
-	}
-	errno = 0;
-	id = strtoul(p, &np, 10);
-	if (*np || (id == ULONG_MAX && errno == ERANGE)) {
-		warnx("illegal uid");
+	id = (uid_t)strtonum(p, 0, UID_MAX, &errstr);
+	if (errstr) {
+		warnx("uid is %s", errstr);
 		return (1);
 	}
 	pw->pw_uid = id;
 	return (0);
 }
 
-/* ARGSUSED */
 int
-p_gid(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_gid(char *p, struct passwd *pw, ENTRY *ep)
 {
 	struct group *gr;
+	const char *errstr;
 	gid_t id;
-	char *np;
 
 	if (!*p) {
 		warnx("empty gid field");
 		return (1);
 	}
-	if (!isdigit(*p)) {
+	if (!isdigit((unsigned char)*p)) {
 		if (!(gr = getgrnam(p))) {
 			warnx("unknown group %s", p);
 			return (1);
@@ -153,22 +125,17 @@ p_gid(p, pw, ep)
 		pw->pw_gid = gr->gr_gid;
 		return (0);
 	}
-	errno = 0;
-	id = strtoul(p, &np, 10);
-	if (*np || (id == ULONG_MAX && errno == ERANGE)) {
-		warnx("illegal gid");
+	id = (uid_t)strtonum(p, 0, GID_MAX, &errstr);
+	if (errstr) {
+		warnx("gid is %s", errstr);
 		return (1);
 	}
 	pw->pw_gid = id;
 	return (0);
 }
 
-/* ARGSUSED */
 int
-p_class(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_class(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!*p)
 		pw->pw_class = "";
@@ -176,16 +143,12 @@ p_class(p, pw, ep)
 		warnx("can't save entry");
 		return (1);
 	}
-	
+
 	return (0);
 }
 
-/* ARGSUSED */
 int
-p_change(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_change(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!atot(p, &pw->pw_change))
 		return (0);
@@ -193,12 +156,8 @@ p_change(p, pw, ep)
 	return (1);
 }
 
-/* ARGSUSED */
 int
-p_expire(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_expire(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!atot(p, &pw->pw_expire))
 		return (0);
@@ -206,12 +165,8 @@ p_expire(p, pw, ep)
 	return (1);
 }
 
-/* ARGSUSED */
 int
-p_gecos(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_gecos(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!*p)
 		ep->save = "";
@@ -222,12 +177,8 @@ p_gecos(p, pw, ep)
 	return (0);
 }
 
-/* ARGSUSED */
 int
-p_hdir(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_hdir(char *p, struct passwd *pw, ENTRY *ep)
 {
 	if (!*p) {
 		warnx("empty home directory field");
@@ -240,33 +191,28 @@ p_hdir(p, pw, ep)
 	return (0);
 }
 
-/* ARGSUSED */
 int
-p_shell(p, pw, ep)
-	char *p;
-	struct passwd *pw;
-	ENTRY *ep;
+p_shell(char *p, struct passwd *pw, ENTRY *ep)
 {
-	char *t, *ok_shell();
+	char *t;
 
 	if (!*p) {
 		pw->pw_shell = _PATH_BSHELL;
 		return (0);
 	}
 	/* only admin can change from or to "restricted" shells */
-	if (uid && pw->pw_shell && !ok_shell(pw->pw_shell)) {
+	if (uid && pw->pw_shell && !ok_shell(pw->pw_shell, NULL)) {
 		warnx("%s: current shell non-standard", pw->pw_shell);
 		return (1);
 	}
-	if (!(t = ok_shell(p))) {
+	if (!ok_shell(p, &t)) {
 		if (uid) {
 			warnx("%s: non-standard shell", p);
 			return (1);
-		}
+		} else
+			t = strdup(p);
 	}
-	else
-		p = t;
-	if (!(pw->pw_shell = strdup(p))) {
+	if (!(pw->pw_shell = t)) {
 		warnx("can't save entry");
 		return (1);
 	}

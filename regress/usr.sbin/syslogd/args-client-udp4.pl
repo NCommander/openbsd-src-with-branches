@@ -7,6 +7,7 @@
 
 use strict;
 use warnings;
+use Socket;
 
 our %args = (
     client => {
@@ -14,9 +15,13 @@ our %args = (
     },
     syslogd => {
 	options => ["-u"],
+	fstat => {
+	    qr/^root .* internet/ => 0,
+	    qr/^_syslogd .* internet/ => 2,
+	},
     },
     file => {
-	loggrep => qr/ localhost /. get_log(),
+	loggrep => qr/ localhost /. get_testgrep(),
     },
 );
 

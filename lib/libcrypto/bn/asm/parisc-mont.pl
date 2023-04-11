@@ -87,16 +87,6 @@ if ($flavour =~ /64/) {
 	$POP		="ldw";
 	$POPMB		="ldwm";
 	$BN_SZ		=$SIZE_T;
-	if (open CONF,"<${dir}../../opensslconf.h") {
-	    while(<CONF>) {
-		if (m/#\s*define\s+SIXTY_FOUR_BIT/) {
-		    $BN_SZ=8;
-		    $LEVEL="2.0";
-		    last;
-		}
-	    }
-	    close CONF;
-	}
 }
 
 $FRAME=8*$SIZE_T+$FRAME_MARKER;	# 8 saved regs + frame marker
@@ -126,7 +116,7 @@ $fp="%r3";
 $hi1="%r2";
 $hi0="%r1";
 
-$xfer=$n0;	# accomodates [-16..15] offset in fld[dw]s
+$xfer=$n0;	# accommodates [-16..15] offset in fld[dw]s
 
 $fm0="%fr4";	$fti=$fm0;
 $fbi="%fr5L";
@@ -136,8 +126,7 @@ $fni="%fr9";	$fnm0="%fr10";	$fnm1="%fr11";
 
 $code=<<___;
 	.LEVEL	$LEVEL
-	.SPACE	\$TEXT\$
-	.SUBSPA	\$CODE\$,QUAD=0,ALIGN=8,ACCESS=0x2C,CODE_ONLY
+	.text
 
 	.EXPORT	bn_mul_mont,ENTRY,ARGW0=GR,ARGW1=GR,ARGW2=GR,ARGW3=GR
 	.ALIGN	64
@@ -220,6 +209,7 @@ $code.=<<___;
 	 flddx		$idx($np),${fni}	; np[2,3]
 ___
 $code.=<<___ if ($BN_SZ==4);
+#ifdef __LP64__
 	mtctl		$hi0,%cr11		; $hi0 still holds 31
 	extrd,u,*=	$hi0,%sar,1,$hi0	; executes on PA-RISC 1.0
 	b		L\$parisc11
@@ -556,6 +546,7 @@ $code.=<<___;
 
 	.ALIGN		8
 L\$parisc11
+#endif
 	xmpyu		${fai}L,${fbi},${fab0}	; ap[j]*bp[0]
 	xmpyu		${fni}L,${fm0}R,${fnm0}	; np[j]*m
 	ldw		-12($xfer),$ablo
@@ -885,7 +876,6 @@ L\$abort
 	.EXIT
 	$POPMB	-$FRAME(%sp),%r3
 	.PROCEND
-	.STRINGZ "Montgomery Multiplication for PA-RISC, CRYPTOGAMS by <appro\@openssl.org>"
 ___
 
 # Explicitly encode PA-RISC 2.0 instructions used in this module, so

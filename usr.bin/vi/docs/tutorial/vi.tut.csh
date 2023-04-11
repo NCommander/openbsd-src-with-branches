@@ -1,4 +1,6 @@
 #!/bin/csh -f
+#	$OpenBSD$
+
 #
 # This makes the user's EXINIT variable set to the 'correct' things.
 # I don't know what will happen if they also have a .exrc file!

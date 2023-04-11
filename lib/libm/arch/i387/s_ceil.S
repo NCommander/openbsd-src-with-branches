@@ -1,28 +1,26 @@
+/*	$OpenBSD: s_ceil.S,v 1.4 2016/09/12 19:47:02 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
-
-RCSID("$NetBSD: s_ceil.S,v 1.4 1995/05/08 23:52:13 jtc Exp $")
+#include "DEFS.h"
 
 ENTRY(ceil)
-	pushl	%ebp
-	movl	%esp,%ebp
 	subl	$8,%esp
 
-	fstcw	-12(%ebp)		/* store fpu control word */
-	movw	-12(%ebp),%dx
+	fstcw	4(%esp)		/* store fpu control word */
+	movw	4(%esp),%dx
 	orw	$0x0800,%dx		/* round towards +oo */
 	andw	$0xfbff,%dx
-	movw	%dx,-16(%ebp)
-	fldcw	-16(%ebp)		/* load modfied control word */
+	movw	%dx,(%esp)
+	fldcw	(%esp)		/* load modified control word */
 
-	fldl	8(%ebp);		/* round */
+	fldl	12(%esp);		/* round */
 	frndint
 
-	fldcw	-12(%ebp)		/* restore original control word */
+	fldcw	4(%esp)		/* restore original control word */
 
-	leave
+	addl	$8,%esp
 	ret
+END_STD(ceil)

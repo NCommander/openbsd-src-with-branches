@@ -1,4 +1,4 @@
-/* crypto/des/ofb64ede.c */
+/* $OpenBSD: ofb64ede.c,v 1.6 2015/02/07 13:19:15 doug Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,23 +56,23 @@
  * [including the GNU Public Licence.]
  */
 
-#include "des_locl.h"
+#include "des_local.h"
 
 /* The input and output encrypted as though 64bit ofb mode is being
  * used.  The extra state information to record how much of the
  * 64bit block we have used is contained in *num;
  */
-void DES_ede3_ofb64_encrypt(register const unsigned char *in,
-			    register unsigned char *out, long length,
+void DES_ede3_ofb64_encrypt(const unsigned char *in,
+			    unsigned char *out, long length,
 			    DES_key_schedule *k1, DES_key_schedule *k2,
 			    DES_key_schedule *k3, DES_cblock *ivec,
 			    int *num)
 	{
-	register DES_LONG v0,v1;
-	register int n= *num;
-	register long l=length;
+	DES_LONG v0,v1;
+	int n= *num;
+	long l=length;
 	DES_cblock d;
-	register char *dp;
+	char *dp;
 	DES_LONG ti[2];
 	unsigned char *iv;
 	int save=0;
@@ -105,8 +105,6 @@ void DES_ede3_ofb64_encrypt(register const unsigned char *in,
 		}
 	if (save)
 		{
-/*		v0=ti[0];
-		v1=ti[1];*/
 		iv = &(*ivec)[0];
 		l2c(v0,iv);
 		l2c(v1,iv);
@@ -114,12 +112,3 @@ void DES_ede3_ofb64_encrypt(register const unsigned char *in,
 	v0=v1=ti[0]=ti[1]=0;
 	*num=n;
 	}
-
-#ifdef undef /* MACRO */
-void DES_ede2_ofb64_encrypt(register unsigned char *in,
-	     register unsigned char *out, long length, DES_key_schedule k1,
-	     DES_key_schedule k2, DES_cblock (*ivec), int *num)
-	{
-	DES_ede3_ofb64_encrypt(in, out, length, k1,k2,k1, ivec, num);
-	}
-#endif

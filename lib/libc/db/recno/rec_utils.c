@@ -1,5 +1,4 @@
-/*	$NetBSD: rec_utils.c,v 1.6 1995/02/27 13:25:29 cgd Exp $	*/
-
+/*	$OpenBSD: rec_utils.c,v 1.9 2015/01/16 16:48:51 deraadt Exp $ */
 /*-
  * Copyright (c) 1990, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,16 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)rec_utils.c	8.4 (Berkeley) 6/20/94";
-#else
-static char rcsid[] = "$NetBSD: rec_utils.c,v 1.6 1995/02/27 13:25:29 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,75 +36,70 @@ static char rcsid[] = "$NetBSD: rec_utils.c,v 1.6 1995/02/27 13:25:29 cgd Exp $"
 #include "recno.h"
 
 /*
- * __REC_RET -- Build return data as a result of search or scan.
+ * __rec_ret --
+ *	Build return data.
  *
  * Parameters:
  *	t:	tree
- *	d:	LEAF to be returned to the user.
- *	data:	user's data structure
+ *	e:	key/data pair to be returned
+ *   nrec:	record number
+ *    key:	user's key structure
+ *   data:	user's data structure
  *
  * Returns:
  *	RET_SUCCESS, RET_ERROR.
  */
 int
-__rec_ret(t, e, nrec, key, data)
-	BTREE *t;
-	EPG *e;
-	recno_t nrec;
-	DBT *key, *data;
+__rec_ret(BTREE *t, EPG *e, recno_t nrec, DBT *key, DBT *data)
 {
-	register RLEAF *rl;
-	register void *p;
+	RLEAF *rl;
+	void *p;
 
+	if (key == NULL)
+		goto dataonly;
+
+	/* We have to copy the key, it's not on the page. */
+	if (sizeof(recno_t) > t->bt_rkey.size) {
+		p = realloc(t->bt_rkey.data, sizeof(recno_t));
+		if (p == NULL)
+			return (RET_ERROR);
+		t->bt_rkey.data = p;
+		t->bt_rkey.size = sizeof(recno_t);
+	}
+	memmove(t->bt_rkey.data, &nrec, sizeof(recno_t));
+	key->size = sizeof(recno_t);
+	key->data = t->bt_rkey.data;
+
+dataonly:
 	if (data == NULL)
-		goto retkey;
-
-	rl = GETRLEAF(e->page, e->index);
+		return (RET_SUCCESS);
 
 	/*
-	 * We always copy big data to make it contigous.  Otherwise, we
+	 * We must copy big keys/data to make them contiguous.  Otherwise,
 	 * leave the page pinned and don't copy unless the user specified
 	 * concurrent access.
 	 */
+	rl = GETRLEAF(e->page, e->index);
 	if (rl->flags & P_BIGDATA) {
 		if (__ovfl_get(t, rl->bytes,
-		    &data->size, &t->bt_dbuf, &t->bt_dbufsz))
+		    &data->size, &t->bt_rdata.data, &t->bt_rdata.size))
 			return (RET_ERROR);
-		data->data = t->bt_dbuf;
-	} else if (ISSET(t, B_DB_LOCK)) {
+		data->data = t->bt_rdata.data;
+	} else if (F_ISSET(t, B_DB_LOCK)) {
 		/* Use +1 in case the first record retrieved is 0 length. */
-		if (rl->dsize + 1 > t->bt_dbufsz) {
-			p = (void *)(t->bt_dbuf == NULL ?
-			    malloc(rl->dsize + 1) :
-			    realloc(t->bt_dbuf, rl->dsize + 1));
+		if (rl->dsize + 1 > t->bt_rdata.size) {
+			p = realloc(t->bt_rdata.data, rl->dsize + 1);
 			if (p == NULL)
 				return (RET_ERROR);
-			t->bt_dbuf = p;
-			t->bt_dbufsz = rl->dsize + 1;
+			t->bt_rdata.data = p;
+			t->bt_rdata.size = rl->dsize + 1;
 		}
-		memmove(t->bt_dbuf, rl->bytes, rl->dsize);
+		memmove(t->bt_rdata.data, rl->bytes, rl->dsize);
 		data->size = rl->dsize;
-		data->data = t->bt_dbuf;
+		data->data = t->bt_rdata.data;
 	} else {
 		data->size = rl->dsize;
 		data->data = rl->bytes;
 	}
-
-retkey:	if (key == NULL)
-		return (RET_SUCCESS);
-
-	/* We have to copy the key, it's not on the page. */
-	if (sizeof(recno_t) > t->bt_kbufsz) {
-		p = (void *)(t->bt_kbuf == NULL ?
-		    malloc(sizeof(recno_t)) :
-		    realloc(t->bt_kbuf, sizeof(recno_t)));
-		if (p == NULL)
-			return (RET_ERROR);
-		t->bt_kbuf = p;
-		t->bt_kbufsz = sizeof(recno_t);
-	}
-	memmove(t->bt_kbuf, &nrec, sizeof(recno_t));
-	key->size = sizeof(recno_t);
-	key->data = t->bt_kbuf;
 	return (RET_SUCCESS);
 }

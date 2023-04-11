@@ -1,11 +1,12 @@
-/* $NetBSD: gusreg.h,v 1.1 1995/07/19 19:58:47 brezak Exp $ */
+/* $OpenBSD: gusreg.h,v 1.6 2008/06/26 05:42:16 ray Exp $ */
+/* $NetBSD: gusreg.h,v 1.6 1997/10/09 07:57:22 jtc Exp $ */
+
 /*-
- * Copyright (c) 1995 John T. Kohl.  All Rights Reserved.
- * Copyright (c) 1994 The Regents of the University of California.
+ * Copyright (c) 1996 The NetBSD Foundation, Inc.
  * All rights reserved.
  *
- * This code is derived from software contributed to Berkeley by
- * Ken Hornstein.
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Ken Hornstein and John Kohl.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -15,27 +16,18 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *      This product includes software developed by the University of
- *      California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- * $Id: gusreg.h,v 1.1 1995/07/19 19:58:47 brezak Exp $
+ * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -48,10 +40,13 @@
  * address.
  */
 
-#define GUS_MIDI_CONTROL	0x100
-#define GUS_MIDI_STATUS		0x100
-#define GUS_MIDI_READ		0x101
-#define GUS_MIDI_WRITE		0x101
+#define GUS_IOH4_OFFSET		0x100
+#define GUS_NPORT4		2
+
+#define GUS_MIDI_CONTROL	(0x100-GUS_IOH4_OFFSET)
+#define GUS_MIDI_STATUS		(0x100-GUS_IOH4_OFFSET)
+#define GUS_MIDI_READ		(0x101-GUS_IOH4_OFFSET)
+#define GUS_MIDI_WRITE		(0x101-GUS_IOH4_OFFSET)
 
 /*
  * Joystick interface - note this is an absolute address, NOT an offset from
@@ -80,11 +75,18 @@
 #define GUS_DMA_CONTROL		0x00b
 #define GUS_IRQCTL_CONTROL	0x00b
 #define GUS_JUMPER_CONTROL	0x00b
-#define GUS_VOICE_SELECT	0x102
-#define GUS_REG_SELECT		0x103
-#define GUS_DATA_LOW		0x104
-#define GUS_DATA_HIGH		0x105
-#define GUS_DRAM_DATA		0x107
+
+#define GUS_NPORT1 16
+
+#define GUS_IOH2_OFFSET		0x102
+#define GUS_VOICE_SELECT	(0x102-GUS_IOH2_OFFSET)
+#define GUS_REG_SELECT		(0x103-GUS_IOH2_OFFSET)
+#define GUS_DATA_LOW		(0x104-GUS_IOH2_OFFSET)
+#define GUS_DATA_HIGH		(0x105-GUS_IOH2_OFFSET)
+/* GUS_MIXER_SELECT 106 */
+#define GUS_DRAM_DATA		(0x107-GUS_IOH2_OFFSET)
+
+#define GUS_NPORT2 6
 
 /*
  * GUS on-board global registers
@@ -183,12 +185,12 @@
 #define GUSMASK_BOTH_RQ		0x40		/* Combine both RQ lines */
 
 /*
- * GUS bitmaks for DMA control
+ * GUS bitmasks for DMA control
  */
 
 #define GUSMASK_DMA_ENABLE	0x01		/* Enable DMA transfer */
 #define GUSMASK_DMA_READ	0x02		/* 1=read, 0=write */
-#define GUSMASK_DMA_WRITE	0x00		/* for consistancy */
+#define GUSMASK_DMA_WRITE	0x00		/* for consistency */
 #define GUSMASK_DMA_WIDTH	0x04		/* Data transfer width */
 #define GUSMASK_DMA_R0		0x00		/* Various DMA speeds */
 #define GUSMASK_DMA_R1		0x08
@@ -230,9 +232,12 @@
  * ICS Mixer registers
  */
 
-#define GUS_MIXER_SELECT	0x506		/* read=board rev, wr=mixer */
-#define GUS_BOARD_REV		0x506
-#define GUS_MIXER_DATA		0x106		/* data for mixer control */
+#define GUS_IOH3_OFFSET		0x506
+#define GUS_NPORT3		1
+
+#define GUS_MIXER_SELECT	(0x506-GUS_IOH3_OFFSET)		/* read=board rev, wr=mixer */
+#define GUS_BOARD_REV		(0x506-GUS_IOH3_OFFSET)
+#define GUS_MIXER_DATA		(0x106-GUS_IOH2_OFFSET)		/* data for mixer control */
 
 #define GUSMIX_CHAN_MIC		ICSMIX_CHAN_0
 #define GUSMIX_CHAN_LINE	ICSMIX_CHAN_1
@@ -244,17 +249,16 @@
  * Codec/Mixer registers
  */
 
-/* all these get +4 more in ad1848, sigh. */
-#define GUS_MAX_CODEC_BASE		0x108
-#define GUS_DAUGHTER_CODEC_BASE		0x52C
-#define GUS_DAUGHTER_CODEC_BASE2	0x600
-#define GUS_DAUGHTER_CODEC_BASE3	0xE7C
-#define GUS_DAUGHTER_CODEC_BASE4	0xF3C
+#define GUS_MAX_CODEC_BASE		0x10C
+#define GUS_DAUGHTER_CODEC_BASE		0x530
+#define GUS_DAUGHTER_CODEC_BASE2	0x604
+#define GUS_DAUGHTER_CODEC_BASE3	0xE80
+#define GUS_DAUGHTER_CODEC_BASE4	0xF40
 
-#define GUS_CODEC_SELECT	4	/* base + 0 */
-#define GUS_CODEC_DATA		5	/* base + 1 */
-#define GUS_CODEC_STATUS	6	/* base + 2 */
-#define GUS_CODEC_PIO		7	/* base + 3 */
+#define GUS_CODEC_SELECT	0
+#define GUS_CODEC_DATA		1
+#define GUS_CODEC_STATUS	2
+#define GUS_CODEC_PIO		3
 
 #define GUS_MAX_CTRL		0x106
 #define	GUS_MAX_BASEBITS	0xf	/* sets middle nibble of 3X6 */

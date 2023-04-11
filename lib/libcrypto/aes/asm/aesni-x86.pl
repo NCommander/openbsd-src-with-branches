@@ -74,7 +74,7 @@ $inout3="xmm5";	$in1="xmm5";
 $inout4="xmm6";	$in0="xmm6";
 $inout5="xmm7";	$ivec="xmm7";
 
-# AESNI extenstion
+# AESNI extension
 sub aeskeygenassist
 { my($dst,$src,$imm)=@_;
     if ("$dst:$src" =~ /xmm([0-7]):xmm([0-7])/)
@@ -2184,6 +2184,5 @@ if ($PREFIX eq "aesni") {
 &set_label("dec_key_ret");
 	&ret	();
 &function_end_B("${PREFIX}_set_decrypt_key");
-&asciz("AES for Intel AES-NI, CRYPTOGAMS by <appro\@openssl.org>");
 
 &asm_finish();

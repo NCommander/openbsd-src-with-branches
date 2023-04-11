@@ -10,11 +10,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Christos Zoulas.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -28,11 +23,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $Id: str.h,v 1.1 1994/12/04 17:11:05 christos Exp $
+ * $Id: str.h,v 1.3 2012/12/05 23:20:26 deraadt Exp $
  */
 
 #include <sys/types.h>
-#include <sys/cdefs.h>
 
 struct string {
 	char  *s_str;
@@ -40,8 +34,8 @@ struct string {
 };
 
 __BEGIN_DECLS
-void str_init		__P((struct string *));
-void str_append		__P((struct string *, const char *, int));
-void str_prepend	__P((struct string *, const char *, int));
-void str_free		__P((struct string *));
+void str_init(struct string *);
+void str_append(struct string *, const char *, int);
+void str_prepend(struct string *, const char *, int);
+void str_free(struct string *);
 __END_DECLS

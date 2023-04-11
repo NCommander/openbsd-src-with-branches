@@ -111,7 +111,7 @@ enum arm_float_abi
 #ifndef FPU_DEFAULT
 # ifdef TE_LINUX
 #  define FPU_DEFAULT FPU_ARCH_FPA
-# elif defined (TE_NetBSD)
+# elif defined (TE_NetBSD) || defined (TE_OpenBSD)
 #  ifdef OBJ_ELF
 #   define FPU_DEFAULT FPU_ARCH_VFP	/* Soft-float, but VFP order.  */
 #  else
@@ -1730,6 +1730,37 @@ s_syntax (int unused ATTRIBUTE_UNUSED)
   demand_empty_rest_of_line ();
 }
 
+static void
+s_inst(int unused ATTRIBUTE_UNUSED)
+{
+	expressionS exp;
+
+	if (thumb_mode) {
+		as_bad(".inst not implemented for Thumb mode");
+		ignore_rest_of_line();
+		return;
+	}
+
+	if (is_it_end_of_statement()) {
+		demand_empty_rest_of_line();
+		return;
+	}
+
+	do {
+		expression(&exp);
+
+		if (exp.X_op != O_constant)
+			as_bad("constant expression required");
+		else
+			emit_expr(&exp, 4);
+
+	} while (*input_line_pointer++ == ',');
+
+	/* Put terminator back into stream. */
+	input_line_pointer--;
+	demand_empty_rest_of_line();
+}
+
 /* Directives: sectioning and alignment.  */
 
 /* Same as s_align_ptwo but align 0 => align 2.	 */
@@ -2469,7 +2500,7 @@ s_arm_unwind_save_mmxwr (void)
 
       if (reg == FAIL)
 	{
-	  as_bad (_(reg_expected_msgs[REG_TYPE_MMXWR]));
+	  as_bad ("%s", _(reg_expected_msgs[REG_TYPE_MMXWR]));
 	  goto error;
 	}
 
@@ -2483,7 +2514,7 @@ s_arm_unwind_save_mmxwr (void)
 	  hi_reg = arm_reg_parse (&input_line_pointer, REG_TYPE_MMXWR);
 	  if (hi_reg == FAIL)
 	    {
-	      as_bad (_(reg_expected_msgs[REG_TYPE_MMXWR]));
+	      as_bad ("%s", _(reg_expected_msgs[REG_TYPE_MMXWR]));
 	      goto error;
 	    }
 	  else if (reg >= hi_reg)
@@ -2601,7 +2632,7 @@ s_arm_unwind_save_mmxwcg (void)
 
       if (reg == FAIL)
 	{
-	  as_bad (_(reg_expected_msgs[REG_TYPE_MMXWCG]));
+	  as_bad ("%s", _(reg_expected_msgs[REG_TYPE_MMXWR]));
 	  goto error;
 	}
 
@@ -2616,7 +2647,7 @@ s_arm_unwind_save_mmxwcg (void)
 	  hi_reg = arm_reg_parse (&input_line_pointer, REG_TYPE_MMXWCG);
 	  if (hi_reg == FAIL)
 	    {
-	      as_bad (_(reg_expected_msgs[REG_TYPE_MMXWCG]));
+	      as_bad ("%s", _(reg_expected_msgs[REG_TYPE_MMXWR]));
 	      goto error;
 	    }
 	  else if (reg >= hi_reg)
@@ -2714,7 +2745,7 @@ s_arm_unwind_movsp (int ignored ATTRIBUTE_UNUSED)
   reg = arm_reg_parse (&input_line_pointer, REG_TYPE_RN);
   if (reg == FAIL)
     {
-      as_bad (_(reg_expected_msgs[REG_TYPE_RN]));
+      as_bad ("%s", _(reg_expected_msgs[REG_TYPE_RN]));
       ignore_rest_of_line ();
       return;
     }
@@ -2985,6 +3016,7 @@ const pseudo_typeS md_pseudo_table[] =
   { "ltorg",	   s_ltorg,	  0 },
   { "pool",	   s_ltorg,	  0 },
   { "syntax",	   s_syntax,	  0 },
+  { "inst",        s_inst,        0 },
 #ifdef OBJ_ELF
   { "word",	   s_arm_elf_cons, 4 },
   { "long",	   s_arm_elf_cons, 4 },
@@ -3489,6 +3521,46 @@ parse_address (char **str, int i)
   return SUCCESS;
 }
 
+/* Parse an operand for a MOVW or MOVT instruction.  */
+static int
+parse_half (char **str)
+{
+  char * p;
+  
+  p = *str;
+  skip_past_char (&p, '#');
+  if (strncasecmp (p, ":lower16:", 9) == 0) 
+    inst.reloc.type = BFD_RELOC_ARM_MOVW;
+  else if (strncasecmp (p, ":upper16:", 9) == 0)
+    inst.reloc.type = BFD_RELOC_ARM_MOVT;
+
+  if (inst.reloc.type != BFD_RELOC_UNUSED)
+    {
+      p += 9;
+      skip_whitespace(p);
+    }
+
+  if (my_get_expression (&inst.reloc.exp, &p, GE_NO_PREFIX))
+    return FAIL;
+
+  if (inst.reloc.type == BFD_RELOC_UNUSED)
+    {
+      if (inst.reloc.exp.X_op != O_constant)
+	{
+	  inst.error = _("constant expression expected");
+	  return FAIL;
+	}
+      if (inst.reloc.exp.X_add_number < 0
+	  || inst.reloc.exp.X_add_number > 0xffff)
+	{
+	  inst.error = _("immediate value out of range");
+	  return FAIL;
+	}
+    }
+  *str = p;
+  return SUCCESS;
+}
+
 /* Miscellaneous. */
 
 /* Parse a PSR flag operand.  The value returned is FAIL on syntax error,
@@ -3790,7 +3862,6 @@ enum operand_parse_code
   OP_I32,	/*		   1 .. 32 */
   OP_I63s,	/*		 -64 .. 63 */
   OP_I255,	/*		   0 .. 255 */
-  OP_Iffff,	/*		   0 .. 65535 */
 
   OP_I4b,	/* immediate, prefix optional, 1 .. 4 */
   OP_I7b,	/*			       0 .. 7 */
@@ -3802,6 +3873,7 @@ enum operand_parse_code
   OP_EXP,	/* arbitrary expression */
   OP_EXPi,	/* same, with optional immediate prefix */
   OP_EXPr,	/* same, with optional relocation suffix */
+  OP_HALF,	/* 0 .. 65535 or low/high reloc.  */
 
   OP_CPSF,	/* CPS flags */
   OP_ENDI,	/* Endianness specifier */
@@ -3940,7 +4012,6 @@ parse_operands (char *str, const unsigned char *pattern)
 	case OP_I32:	 po_imm_or_fail (  1,	  32, FALSE);	break;
 	case OP_I63s:	 po_imm_or_fail (-64,	  63, FALSE);	break;
 	case OP_I255:	 po_imm_or_fail (  0,	 255, FALSE);	break;
-	case OP_Iffff:	 po_imm_or_fail (  0, 0xffff, FALSE);	break;
 
 	case OP_I4b:	 po_imm_or_fail (  1,	   4, TRUE);	break;
 	case OP_oI7b:
@@ -4003,6 +4074,11 @@ parse_operands (char *str, const unsigned char *pattern)
 		  inst.operands[i].hasreloc = 1;
 		}
 	    }
+	  break;
+
+	  /* Operand for MOVW or MOVT.  */
+	case OP_HALF:
+	  po_misc_or_fail (parse_half (&str));
 	  break;
 
 	  /* Register or expression */
@@ -4190,7 +4266,7 @@ parse_operands (char *str, const unsigned char *pattern)
 
 /* Functions for operand encoding.  ARM, then Thumb.  */
 
-#define rotate_left(v, n) (v << n | v >> (32 - n))
+#define rotate_left(v, n) (v << (n % 32) | v >> ((32 - n) % 32))
 
 /* If VAL can be encoded in the immediate field of an ARM instruction,
    return the encoded form.  Otherwise, return FAIL.  */
@@ -4661,6 +4737,7 @@ do_barrier (void)
   if (inst.operands[0].present)
     {
       constraint ((inst.instruction & 0xf0) != 0x40
+		  && (inst.instruction & 0xf0) != 0x50
 		  && inst.operands[0].imm != 0xf,
 		  "bad barrier type");
       inst.instruction |= inst.operands[0].imm;
@@ -5136,10 +5213,22 @@ do_mov (void)
 static void
 do_mov16 (void)
 {
+  bfd_vma imm;
+  bfd_boolean top;
+
+  top = (inst.instruction & 0x00400000) != 0;
+  constraint (top && inst.reloc.type == BFD_RELOC_ARM_MOVW,
+	      _(":lower16: not allowed this instruction"));
+  constraint (!top && inst.reloc.type == BFD_RELOC_ARM_MOVT,
+	      _(":upper16: not allowed instruction"));
   inst.instruction |= inst.operands[0].reg << 12;
-  /* The value is in two pieces: 0:11, 16:19.  */
-  inst.instruction |= (inst.operands[1].imm & 0x00000fff);
-  inst.instruction |= (inst.operands[1].imm & 0x0000f000) << 4;
+  if (inst.reloc.type == BFD_RELOC_UNUSED)
+    {
+      imm = inst.reloc.exp.X_add_number;
+      /* The value is in two pieces: 0:11, 16:19.  */
+      inst.instruction |= (imm & 0x00000fff);
+      inst.instruction |= (imm & 0x0000f000) << 4;
+    }
 }
 
 static void
@@ -6555,6 +6644,7 @@ do_t_barrier (void)
   if (inst.operands[0].present)
     {
       constraint ((inst.instruction & 0xf0) != 0x40
+		  && (inst.instruction & 0xf0) != 0x50
 		  && inst.operands[0].imm != 0xf,
 		  "bad barrier type");
       inst.instruction |= inst.operands[0].imm;
@@ -7310,11 +7400,30 @@ do_t_mov_cmp (void)
 static void
 do_t_mov16 (void)
 {
+  bfd_vma imm;
+  bfd_boolean top;
+
+  top = (inst.instruction & 0x00800000) != 0;
+  if (inst.reloc.type == BFD_RELOC_ARM_MOVW)
+    {
+      constraint (top, _(":lower16: not allowed this instruction"));
+      inst.reloc.type = BFD_RELOC_ARM_THUMB_MOVW;
+    }
+  else if (inst.reloc.type == BFD_RELOC_ARM_MOVT)
+    {
+      constraint (!top, _(":upper16: not allowed this instruction"));
+      inst.reloc.type = BFD_RELOC_ARM_THUMB_MOVT;
+    }
+
   inst.instruction |= inst.operands[0].reg << 8;
-  inst.instruction |= (inst.operands[1].imm & 0xf000) << 4;
-  inst.instruction |= (inst.operands[1].imm & 0x0800) << 15;
-  inst.instruction |= (inst.operands[1].imm & 0x0700) << 4;
-  inst.instruction |= (inst.operands[1].imm & 0x00ff);
+  if (inst.reloc.type == BFD_RELOC_UNUSED)
+    {
+      imm = inst.reloc.exp.X_add_number;
+      inst.instruction |= (imm & 0xf000) << 4;
+      inst.instruction |= (imm & 0x0800) << 15;
+      inst.instruction |= (imm & 0x0700) << 4;
+      inst.instruction |= (imm & 0x00ff);
+    }
 }
 
 static void
@@ -7641,6 +7750,13 @@ do_t_rbit (void)
 {
   inst.instruction |= inst.operands[0].reg << 8;
   inst.instruction |= inst.operands[1].reg << 16;
+}
+
+static void
+do_t_rd_rm (void)
+{
+  inst.instruction |= inst.operands[0].reg << 8;
+  inst.instruction |= inst.operands[1].reg;
 }
 
 static void
@@ -8819,10 +8935,16 @@ static const struct asm_cond conds[] =
 
 static struct asm_barrier_opt barrier_opt_names[] =
 {
-  { "sy",   0xf },
-  { "un",   0x7 },
-  { "st",   0xe },
-  { "unst", 0x6 }
+  { "oshst", 0x2 },
+  { "osh",   0x3 },
+  { "nshst", 0x6 },
+  { "unst",  0x6 },
+  { "nsh",   0x7 },
+  { "un",    0x7 },
+  { "ishst", 0xa },
+  { "ish",   0xb },
+  { "st",    0xe },
+  { "sy",    0xf } 
 };
 
 /* Table of ARM-format instructions.	*/
@@ -9334,6 +9456,9 @@ static const struct asm_opcode insns[] =
  TCE(ldrexd,	1b00f9f, e8d0007f, 3, (RRnpc, oRRnpc, RRnpcb),        ldrexd, t_ldrexd),
  TCE(strexd,	1a00f90, e8c00070, 4, (RRnpc, RRnpc, oRRnpc, RRnpcb), strexd, t_strexd),
 
+ TCE(rrx,      1a00060, ea4f0030, 2, (RR, RR),      rd_rm, t_rd_rm),
+ TCE(rrxs,     1b00060, ea5f0030, 2, (RR, RR),      rd_rm, t_rd_rm),
+
 #undef THUMB_VARIANT
 #define THUMB_VARIANT &arm_ext_v6t2
  TCE(ldrexb,	1d00f9f, e8d00f4f, 2, (RRnpc, RRnpcb),	              rd_rn,  rd_rn),
@@ -9354,8 +9479,8 @@ static const struct asm_opcode insns[] =
  TCE(ubfx,	7e00050, f3c00000, 4, (RR, RR, I31, I32),	   bfx, t_bfx),
 
  TCE(mls,	0600090, fb000010, 4, (RRnpc, RRnpc, RRnpc, RRnpc), mlas, t_mla),
- TCE(movw,	3000000, f2400000, 2, (RRnpc, Iffff),		    mov16, t_mov16),
- TCE(movt,	3400000, f2c00000, 2, (RRnpc, Iffff),		    mov16, t_mov16),
+ TCE(movw,	3000000, f2400000, 2, (RRnpc, HALF),		    mov16, t_mov16),
+ TCE(movt,	3400000, f2c00000, 2, (RRnpc, HALF),		    mov16, t_mov16),
  TCE(rbit,	3ff0f30, fa90f0a0, 2, (RR, RR),			    rd_rm, t_rbit),
 
  TC3(ldrht,	03000b0, f8300e00, 2, (RR, ADDR), ldsttv4, t_ldstt),
@@ -12358,6 +12483,47 @@ md_apply_fix (fixS *	fixP,
       fixP->fx_done = 0;
       return;
 
+    case BFD_RELOC_ARM_MOVW:
+    case BFD_RELOC_ARM_MOVT:
+    case BFD_RELOC_ARM_THUMB_MOVW:
+    case BFD_RELOC_ARM_THUMB_MOVT:
+      if (fixP->fx_done || !seg->use_rela_p)
+	{
+	  /* REL format relocations are limited to a 16-bit addend.  */
+	  if (!fixP->fx_done)
+	    {
+	      if (value < -0x1000 || value > 0xffff)
+		  as_bad_where (fixP->fx_file, fixP->fx_line,
+				_("offset too big"));
+	    }
+	  else if (fixP->fx_r_type == BFD_RELOC_ARM_MOVT
+		   || fixP->fx_r_type == BFD_RELOC_ARM_THUMB_MOVT)
+	    {
+	      value >>= 16;
+	    }
+
+	  if (fixP->fx_r_type == BFD_RELOC_ARM_THUMB_MOVW
+	      || fixP->fx_r_type == BFD_RELOC_ARM_THUMB_MOVT)
+	    {
+	      newval = get_thumb32_insn (buf);
+	      newval &= 0xfbf08f00;
+	      newval |= (value & 0xf000) << 4;
+	      newval |= (value & 0x0800) << 15;
+	      newval |= (value & 0x0700) << 4;
+	      newval |= (value & 0x00ff);
+	      put_thumb32_insn (buf, newval);
+	    }
+	  else
+	    {
+	      newval = md_chars_to_number (buf, 4);
+	      newval &= 0xfff0f000;
+	      newval |= value & 0x0fff;
+	      newval |= (value & 0xf000) << 4;
+	      md_number_to_chars (buf, newval, 4);
+	    }
+	}
+      return;
+
     case BFD_RELOC_UNUSED:
     default:
       as_bad_where (fixP->fx_file, fixP->fx_line,
@@ -12409,6 +12575,34 @@ tc_gen_reloc (asection *section, fixS *fixp)
       if (fixp->fx_pcrel)
 	{
 	  code = BFD_RELOC_32_PCREL;
+	  break;
+	}
+
+    case BFD_RELOC_ARM_MOVW:
+      if (fixp->fx_pcrel)
+	{
+	  code = BFD_RELOC_ARM_MOVW_PCREL;
+	  break;
+	}
+
+    case BFD_RELOC_ARM_MOVT:
+      if (fixp->fx_pcrel)
+	{
+	  code = BFD_RELOC_ARM_MOVT_PCREL;
+	  break;
+	}
+
+    case BFD_RELOC_ARM_THUMB_MOVW:
+      if (fixp->fx_pcrel)
+	{
+	  code = BFD_RELOC_ARM_THUMB_MOVW_PCREL;
+	  break;
+	}
+
+    case BFD_RELOC_ARM_THUMB_MOVT:
+      if (fixp->fx_pcrel)
+	{
+	  code = BFD_RELOC_ARM_THUMB_MOVT_PCREL;
 	  break;
 	}
 
@@ -12677,6 +12871,12 @@ arm_fix_adjustable (fixS * fixP)
       || fixP->fx_r_type == BFD_RELOC_ARM_TARGET2)
     return 0;
 
+  if (fixP->fx_r_type == BFD_RELOC_ARM_MOVW
+      || fixP->fx_r_type == BFD_RELOC_ARM_MOVT
+      || fixP->fx_r_type == BFD_RELOC_ARM_THUMB_MOVW
+      || fixP->fx_r_type == BFD_RELOC_ARM_THUMB_MOVT)
+    return 0;
+
   return 1;
 }
 
@@ -12880,7 +13080,7 @@ md_begin (void)
     }
   else if (!mfpu_opt)
     {
-#if !(defined (TE_LINUX) || defined (TE_NetBSD) || defined (TE_VXWORKS))
+#if !(defined (TE_LINUX) || defined (TE_NetBSD) || defined (TE_OpenBSD) || defined (TE_VXWORKS))
       /* Some environments specify a default FPU.  If they don't, infer it
 	 from the processor.  */
       if (mcpu_fpu_opt)

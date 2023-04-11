@@ -1,27 +1,53 @@
+/*	$OpenBSD: makemaze.c,v 1.9 2016/08/27 02:06:40 guenther Exp $	*/
 /*	$NetBSD: makemaze.c,v 1.2 1997/10/10 16:33:43 lukem Exp $	*/
 /*
- *  Hunt
- *  Copyright (c) 1985 Conrad C. Huang, Gregory S. Couch, Kenneth C.R.C. Arnold
- *  San Francisco, California
+ * Copyright (c) 1983-2003, Regents of the University of California.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * + Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * + Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ * + Neither the name of the University of California, San Francisco nor
+ *   the names of its contributors may be used to endorse or promote
+ *   products derived from this software without specific prior written
+ *   permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sys/cdefs.h>
-#ifndef lint
-__RCSID("$NetBSD: makemaze.c,v 1.2 1997/10/10 16:33:43 lukem Exp $");
-#endif /* not lint */
+#include <sys/select.h>
+#include <string.h>
 
-# include	"hunt.h"
+#include "conf.h"
+#include "hunt.h"
+#include "server.h"
 
 # define	ISCLEAR(y,x)	(Maze[y][x] == SPACE)
 # define	ODD(n)		((n) & 01)
 
-static	int	candig __P((int, int));
-static	void	dig __P((int, int));
-static	void	dig_maze __P((int, int));
-static	void	remap __P((void));
+static	int	candig(int, int);
+static	void	dig(int, int);
+static	void	dig_maze(int, int);
+static	void	remap(void);
 
 void
-makemaze()
+makemaze(void)
 {
 	char	*sp;
 	int	y, x;
@@ -56,8 +82,7 @@ int	incr[NDIR][2] = {
 	};
 
 static void
-dig(y, x)
-	int	y, x;
+dig(int y, int x)
 {
 	int	*dp;
 	int	*ip;
@@ -81,8 +106,7 @@ dig(y, x)
  *	Is it legal to clear this spot?
  */
 static int
-candig(y, x)
-	int	y, x;
+candig(int y, int x)
 {
 	int	i;
 
@@ -111,9 +135,8 @@ candig(y, x)
 	return TRUE;			/* OK */
 }
 
-void
-dig_maze(x, y)
-	int	x, y;
+static void
+dig_maze(int x, int y)
 {
 	int	tx, ty;
 	int	i, j;
@@ -159,8 +182,8 @@ dig_maze(x, y)
 	}
 }
 
-void
-remap()
+static void
+remap(void)
 {
 	int	y, x;
 	char	*sp;
@@ -171,6 +194,7 @@ remap()
 			sp = &Maze[y][x];
 			if (*sp == SPACE)
 				continue;
+			/* Find occupied adjacent cells. */
 			stat = 0;
 			if (y - 1 >= 0 && Maze[y - 1][x] != SPACE)
 				stat |= NORTH;
@@ -184,25 +208,23 @@ remap()
 			  case WEST | EAST:
 			  case EAST:
 			  case WEST:
-				*sp = WALL1;
+				*sp = WALL1;			   /* - */
 				break;
 			  case NORTH | SOUTH:
 			  case NORTH:
 			  case SOUTH:
-				*sp = WALL2;
+				*sp = WALL2;			   /* | */
 				break;
 			  case 0:
-# ifdef RANDOM
-				*sp = DOOR;
-# endif
-# ifdef REFLECT
-				*sp = rand_num(2) ? WALL4 : WALL5;
-# endif
+				if (conf_random)
+					*sp = DOOR;
+				if (conf_reflect)
+					*sp = rand_num(2) ? WALL4 : WALL5;
 				break;
 			  default:
-				*sp = WALL3;
+				*sp = WALL3;			   /* + */
 				break;
 			}
 		}
-	memcpy(Orig_maze, Maze, sizeof Maze);
+	memcpy(Orig_maze, Maze, sizeof Orig_maze);
 }

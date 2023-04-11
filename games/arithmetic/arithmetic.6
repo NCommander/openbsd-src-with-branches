@@ -1,4 +1,4 @@
-.\"	$NetBSD: arithmetic.6,v 1.4 1995/03/21 11:59:31 cgd Exp $
+.\"	$OpenBSD: arithmetic.6,v 1.11 2007/05/31 19:19:16 jmc Exp $
 .\"
 .\" Copyright (c) 1989, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -14,11 +14,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,41 +32,41 @@
 .\"
 .\"	@(#)arithmetic.6	8.1 (Berkeley) 5/31/93
 .\"
-.Dd May 31, 1993
+.Dd $Mdocdate: May 31 2007 $
 .Dt ARITHMETIC 6
-.UC 4
+.Os
 .Sh NAME
 .Nm arithmetic
 .Nd quiz on simple arithmetic
 .Sh SYNOPSIS
 .Nm arithmetic
-.Op Fl o Ar +\-x/
+.Op Fl o Cm +\-x/
 .Op Fl r Ar range
 .Sh DESCRIPTION
-.Nm Arithmetic
+.Nm
 asks you to solve problems in simple arithmetic.
 Each question must be answered correctly before going on to the next.
 After every 20 problems, it prints the score so far and the time taken.
 You can quit at any time by typing the interrupt or end-of-file character.
 .Pp
 The options are as follows:
-.Bl -tag -width indent 
-.It Fl o
+.Bl -tag -width indent
+.It Fl o Cm +\-x/
 By default,
-.Nm arithmetic
+.Nm
 asks questions on addition of numbers from 0 to 10, and corresponding
 subtraction.
 By supplying one or more of the characters
-.Ar +\-x/ ,
+.Cm +\-x/ ,
 you can ask for problems in addition, subtraction, multiplication, and
 division, respectively.
 If you give one of these characters more than once, that kind of problem
 will be asked correspondingly more often.
-.It Fl r
+.It Fl r Ar range
 If a
 .Ar range
 is supplied,
-.Nm arithmetic
+.Nm
 selects the numbers in its problems in the following way.
 For addition and multiplication, the numbers to be added or multiplied
 are between 0 and
@@ -80,19 +76,20 @@ For subtraction and division, both the required result and the number to
 divide by or subtract will be between 0 and
 .Ar range .
 (Of course,
-.Nm arithmetic
-will not ask you to divide by 0.)  The default
-.I range
+.Nm
+will not ask you to divide by 0.)
+The default
+.Ar range
 is 10.
 .El
 .Pp
 When you get a problem wrong,
-.Nm arithmetic
+.Nm
 will remember the numbers involved, and will tend to select those numbers
 more often than others, in problems of the same sort.
 Eventually it will forgive and forget.
 .Pp
-.Nm Arithmetic
+.Nm
 cannot be persuaded to tell you the right answer.
 You must work it out for yourself.
 .Sh DIAGNOSTICS
@@ -101,7 +98,9 @@ if you get a question wrong.
 .Dq Right!
 if you get it right.
 .Dq Please type a number.
-if arithmetic doesn't understand what you typed.
+if
+.Nm
+doesn't understand what you typed.
 .Sh SEE ALSO
 .Xr bc 1 ,
 .Xr dc 1

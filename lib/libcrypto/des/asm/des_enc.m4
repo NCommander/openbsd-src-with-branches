@@ -124,13 +124,13 @@ changequote({,})
 ! technique.
 !
 ! The macro also loads address sbox 1 to 5 to global 1 to 5, address
-! sbox 6 to local6, and addres sbox 8 to out3.
+! sbox 6 to local6, and address sbox 8 to out3.
 !
 ! Rotates the halfs 3 left to bring the sbox bits in convenient positions.
 !
 ! Loads key first round from address in parameter 5 to out0, out1.
 !
-! After the the original LibDES initial permutation, the resulting left
+! After the original LibDES initial permutation, the resulting left
 ! is in the variable initially used for right and vice versa. The macro
 ! implements the possibility to keep the halfs in the original registers.
 !
@@ -266,7 +266,7 @@ define(ip_macro, {
 ! other half (use).
 !
 ! In this version we do two rounds in a loop repeated 7 times
-! and two rounds seperately.
+! and two rounds separately.
 !
 ! One half has the bits for the sboxes in the following positions:
 !
@@ -1536,7 +1536,7 @@ DES_ncbc_encrypt:
 	xor	global4, local1, out5     ! iv xor next block
 
 	ba	.ncbc.enc.next.block_2
-	add	in1, 8, in1               ! output adress
+	add	in1, 8, in1               ! output address
 
 .ncbc.enc.next.block_fp:
 
@@ -1662,7 +1662,7 @@ DES_ncbc_encrypt:
 	.size	 DES_ncbc_encrypt, .DES_ncbc_encrypt.end-DES_ncbc_encrypt
 
 
-! void DES_ede3_cbc_encrypt(input, output, lenght, ks1, ks2, ks3, ivec, enc)
+! void DES_ede3_cbc_encrypt(input, output, length, ks1, ks2, ks3, ivec, enc)
 ! **************************************************************************
 
 

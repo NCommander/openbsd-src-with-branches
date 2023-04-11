@@ -1,4 +1,5 @@
-/*	$NetBSD: disk.c,v 1.2 1995/02/16 02:32:55 cgd Exp $	*/
+/*	$OpenBSD: disk.c,v 1.19 2020/12/09 18:10:17 krw Exp $	*/
+/*	$NetBSD: disk.c,v 1.6 1997/04/06 08:40:33 cgd Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,7 +40,10 @@
 #include <sys/param.h>
 #include <sys/disklabel.h>
 
+#include <machine/rpb.h>
 #include <machine/prom.h>
+
+#include "disk.h"
 
 struct	disk_softc {
 	int	sc_fd;			/* PROM channel number */
@@ -54,18 +54,18 @@ struct	disk_softc {
 };
 
 int
-diskstrategy(devdata, rw, bn, reqcnt, addr, cnt)
-	void *devdata;
-	int rw;
-	daddr_t bn;
-	u_int reqcnt;
-	char *addr;
-	u_int *cnt;	/* out: number of bytes transfered */
+diskstrategy(void *devdata, int rw, daddr_t bn, size_t reqcnt, void *addrvoid,
+    size_t *cnt)
 {
+	char *addr = addrvoid;
 	struct disk_softc *sc;
 	struct partition *pp;
 	prom_return_t ret;
 	int s;
+
+	if ((reqcnt & 0xffffff) != reqcnt ||
+	    reqcnt == 0)
+		asm("call_pal 0");
 
 	twiddle();
 
@@ -78,32 +78,30 @@ diskstrategy(devdata, rw, bn, reqcnt, addr, cnt)
 	sc = (struct disk_softc *)devdata;
 	pp = &sc->sc_label.d_partitions[sc->sc_part];
 
-	ret.bits = prom_read(sc->sc_fd, reqcnt, addr, bn + pp->p_offset);
+	if (rw == F_READ)
+		ret.bits = prom_read(sc->sc_fd, reqcnt, addr, bn + pp->p_offset);
+	else
+		ret.bits = prom_write(sc->sc_fd, reqcnt, addr, bn + pp->p_offset);
 	if (ret.u.status)
 		return (EIO);
-	*cnt = ret.u.retval;
+	if (cnt)
+		*cnt = ret.u.retval;
 	return (0);
 }
 
 int
-diskopen(f, ctlr, unit, part)
-	struct open_file *f;
-	int ctlr, unit, part;
+diskopen(struct open_file *f, int ctlr, int unit, int part)
 {
 	struct disklabel *lp;
 	prom_return_t ret;
-	int cnt, devlen, i;
+	size_t cnt;
+	int devlen, i;
 	char *msg, buf[DEV_BSIZE], devname[32];
-	static struct disk_softc *sc;
+	struct disk_softc *sc;
 
-if (sc != NULL) {
-	f->f_devdata = (void *)sc;
-	return 0;
-}
-
-	if (unit >= 8 || part >= 8)
+	if (unit >= 16 || part >= MAXPARTITIONS)
 		return (ENXIO);
-	/* 
+	/*
 	 * XXX
 	 * We don't know what device names look like yet,
 	 * so we can't change them.
@@ -111,7 +109,7 @@ if (sc != NULL) {
 	ret.bits = prom_getenv(PROM_E_BOOTED_DEV, devname, sizeof(devname));
 	devlen = ret.u.retval;
 
-	ret.bits = prom_open(devname, devlen);
+	ret.bits = prom_open((u_int64_t)devname, devlen);
 	if (ret.u.status == 2)
 		return (ENXIO);
 	if (ret.u.status == 3)
@@ -131,30 +129,38 @@ if (sc != NULL) {
 	lp->d_secsize = DEV_BSIZE;
 	lp->d_secpercyl = 1;
 	lp->d_npartitions = MAXPARTITIONS;
-	lp->d_partitions[part].p_offset = 0;
-	lp->d_partitions[part].p_size = 0x7fffffff;
+	DL_SETPOFFSET(&lp->d_partitions[part], 0);
+	DL_SETPSIZE(&lp->d_partitions[part], 0x7fffffff);
 	i = diskstrategy(sc, F_READ,
-	    (daddr_t)LABELSECTOR, DEV_BSIZE, buf, &cnt);
+	    LABELSECTOR, DEV_BSIZE, buf, &cnt);
 	if (i || cnt != DEV_BSIZE) {
 		printf("disk%d: error reading disk label\n", unit);
 		goto bad;
+	} else if (((struct disklabel *)(buf + LABELOFFSET))->d_magic !=
+		    DISKMAGIC) {
+		/* No label at all.  Fake all partitions as whole disk. */
+		for (i = 0; i < MAXPARTITIONS; i++) {
+			DL_SETPOFFSET(&lp->d_partitions[part], 0);
+			DL_SETPSIZE(&lp->d_partitions[part], 0x7fffffff);
+		}
 	} else {
-		msg = getdisklabel(buf, lp);
+		msg = getdisklabel(buf + LABELOFFSET, lp);
 		if (msg) {
 			printf("disk%d: %s\n", unit, msg);
 			goto bad;
 		}
 	}
 
-	if (part >= lp->d_npartitions || lp->d_partitions[part].p_size == 0) {
+	if (part >= lp->d_npartitions ||
+	    DL_GETPSIZE(&lp->d_partitions[part]) == 0) {
 bad:		free(sc, sizeof(struct disk_softc));
 		return (ENXIO);
 	}
 	return (0);
 }
 
-diskclose(f)
-	struct open_file *f;
+int
+diskclose(struct open_file *f)
 {
 	struct disk_softc *sc;
 

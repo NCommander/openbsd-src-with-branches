@@ -1,4 +1,4 @@
-/* crypto/aes/aes_misc.c -*- mode:C; c-file-style: "eay" -*- */
+/* $OpenBSD: aes_misc.c,v 1.10 2014/07/09 11:10:50 bcook Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -52,34 +52,14 @@
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 #include <openssl/aes.h>
-#include "aes_locl.h"
+#include "aes_local.h"
 
-const char AES_version[]="AES" OPENSSL_VERSION_PTEXT;
-
-const char *AES_options(void) {
+const char *
+AES_options(void)
+{
 #ifdef FULL_UNROLL
-        return "aes(full)";
+	return "aes(full)";
 #else   
-        return "aes(partial)";
+	return "aes(partial)";
 #endif
 }
-
-/* FIPS wrapper functions to block low level AES calls in FIPS mode */
-
-int AES_set_encrypt_key(const unsigned char *userKey, const int bits,
-			AES_KEY *key)
-	{
-#ifdef OPENSSL_FIPS
-	fips_cipher_abort(AES);
-#endif
-	return private_AES_set_encrypt_key(userKey, bits, key);
-	}
-
-int AES_set_decrypt_key(const unsigned char *userKey, const int bits,
-			AES_KEY *key)
-	{
-#ifdef OPENSSL_FIPS
-	fips_cipher_abort(AES);
-#endif
-	return private_AES_set_decrypt_key(userKey, bits, key);
-	}

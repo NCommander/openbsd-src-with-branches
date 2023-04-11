@@ -272,6 +272,9 @@
 #define EV_NONE		0		/* Invalid ELF version */
 #define EV_CURRENT	1		/* Current version */
 
+/* Magic for e_phnum: get real value from sh_info of first section header */
+#define PN_XNUM		0xffff
+
 /* Values for program header, p_type field.  */
 
 #define PT_NULL		0		/* Program header table entry unused */
@@ -289,6 +292,10 @@
 
 #define PT_GNU_EH_FRAME	(PT_LOOS + 0x474e550)
 #define PT_GNU_STACK	(PT_LOOS + 0x474e551)
+
+#define PT_OPENBSD_RANDOMIZE	0x65a3dbe6
+#define PT_OPENBSD_MUTABLE	0x65a3dbe5
+
 
 /* Program segment permissions, in program header p_flags field.  */
 
@@ -384,6 +391,17 @@
 
 #define NT_NETBSDCORE_PROCINFO	1	/* Has a struct procinfo */
 #define NT_NETBSDCORE_FIRSTMACH	32	/* start of machdep note types */
+
+
+/* Note segments for core files on OpenBSD systems.  Note name is
+   "OpenBSD".  */
+
+#define NT_OPENBSD_PROCINFO	10
+#define NT_OPENBSD_AUXV		11
+#define NT_OPENBSD_REGS		20
+#define NT_OPENBSD_FPREGS	21
+#define NT_OPENBSD_XFPREGS	22
+#define NT_OPENBSD_WCOOKIE	23
 
 
 /* Values of note segment descriptor types for object files.  */

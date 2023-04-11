@@ -1,4 +1,4 @@
-/* crypto/des/qud_cksm.c */
+/* $OpenBSD: qud_cksm.c,v 1.7 2014/06/12 15:49:28 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -61,7 +61,7 @@
  * This module in only based on the code in this paper and is
  * almost definitely not the same as the MIT implementation.
  */
-#include "des_locl.h"
+#include "des_local.h"
 
 /* bug fix for dos - 7/6/91 - Larry hughes@logos.ucs.indiana.edu */
 #define Q_B0(a)	(((DES_LONG)(a)))
@@ -80,18 +80,10 @@ DES_LONG DES_quad_cksum(const unsigned char *input, DES_cblock output[],
 	int i;
 	long l;
 	const unsigned char *cp;
-#ifdef _CRAY
-	struct lp_st { int a:32; int b:32; } *lp;
-#else
 	DES_LONG *lp;
-#endif
 
 	if (out_count < 1) out_count=1;
-#ifdef _CRAY
-	lp = (struct lp_st *) &(output[0])[0];
-#else
 	lp = (DES_LONG *) &(output[0])[0];
-#endif
 
 	z0=Q_B0((*seed)[0])|Q_B1((*seed)[1])|Q_B2((*seed)[2])|Q_B3((*seed)[3]);
 	z1=Q_B0((*seed)[4])|Q_B1((*seed)[5])|Q_B2((*seed)[6])|Q_B3((*seed)[7]);
@@ -124,14 +116,8 @@ DES_LONG DES_quad_cksum(const unsigned char *input, DES_cblock output[],
 			{
 			/* The MIT library assumes that the checksum is
 			 * composed of 2*out_count 32 bit ints */
-#ifdef _CRAY
-			(*lp).a = z0;
-			(*lp).b = z1;
-			lp++;
-#else
 			*lp++ = z0;
 			*lp++ = z1;
-#endif
 			}
 		}
 	return(z0);

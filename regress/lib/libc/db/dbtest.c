@@ -1,7 +1,8 @@
-/*	$NetBSD: dbtest.c,v 1.7 1995/04/20 22:39:22 cgd Exp $	*/
+/*	$OpenBSD: dbtest.c,v 1.20 2022/11/10 12:38:57 anton Exp $	*/
+/*	$NetBSD: dbtest.c,v 1.8 1996/05/03 21:57:48 cgd Exp $	*/
 
 /*-
- * Copyright (c) 1992, 1993
+ * Copyright (c) 1992, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,78 +30,66 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1992, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dbtest.c	8.8 (Berkeley) 2/21/94";
-#else
-static char rcsid[] = "$NetBSD: dbtest.c,v 1.7 1995/04/20 22:39:22 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <unistd.h>
 
 #include <db.h>
 
+#define MINIMUM(a, b)    (((a) < (b)) ? (a) : (b))
+
 enum S { COMMAND, COMPARE, GET, PUT, REMOVE, SEQ, SEQFLAG, KEY, DATA };
 
-void	 compare __P((DBT *, DBT *));
-DBTYPE	 dbtype __P((char *));
-void	 dump __P((DB *, int));
-void	 err __P((const char *, ...));
-void	 get __P((DB *, DBT *));
-void	 getdata __P((DB *, DBT *, DBT *));
-void	 put __P((DB *, DBT *, DBT *));
-void	 rem __P((DB *, DBT *));
-void	*rfile __P((char *, size_t *));
-void	 seq __P((DB *, DBT *));
-u_int	 setflags __P((char *));
-void	*setinfo __P((DBTYPE, char *));
-void	 usage __P((void));
-void	*xmalloc __P((char *, size_t));
+void	 compare(DBT *, DBT *);
+DBTYPE	 dbtype(char *);
+void	 dump(DB *, int);
+void	 __dead dberr(const char *, ...);
+void	 get(DB *, DBT *);
+void	 getdata(DB *, DBT *, DBT *);
+void	 put(DB *, DBT *, DBT *);
+void	 rem(DB *, DBT *);
+char	*sflags(int);
+void	 synk(DB *);
+void	*rfile(char *, size_t *);
+void	 seq(DB *, DBT *);
+u_int	 setflags(char *);
+void	*setinfo(DBTYPE, char *);
+void	 __dead usage(void);
+void	*xmalloc(char *, size_t);
 
-DBTYPE type;
-void *infop;
-u_long lineno;
-u_int flags;
-int ofd = STDOUT_FILENO;
+DBTYPE type;				/* Database type. */
+void *infop;				/* Iflags. */
+u_long lineno;				/* Current line in test script. */
+u_int flags;				/* Current DB flags. */
+int ofd = STDOUT_FILENO;		/* Standard output fd. */
 
 DB *XXdbp;				/* Global for gdb. */
+int XXlineno;				/* Fast breakpoint for gdb. */
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	extern int optind;
-	extern char *optarg;
 	enum S command, state;
 	DB *dbp;
 	DBT data, key, keydata;
 	size_t len;
-	int ch, oflags;
-	char *fname, *infoarg, *p, buf[8 * 1024];
+	int ch, oflags, sflag;
+	char *fname, *infoarg, *p, *t, buf[8 * 1024];
 
 	infoarg = NULL;
 	fname = NULL;
 	oflags = O_CREAT | O_RDWR;
-	while ((ch = getopt(argc, argv, "f:i:lo:")) != EOF)
-		switch(ch) {
+	sflag = 0;
+	while ((ch = getopt(argc, argv, "f:i:lo:s")) != -1)
+		switch (ch) {
 		case 'f':
 			fname = optarg;
 			break;
@@ -117,9 +102,11 @@ main(argc, argv)
 		case 'o':
 			if ((ofd = open(optarg,
 			    O_WRONLY|O_CREAT|O_TRUNC, 0666)) < 0)
-				err("%s: %s", optarg, strerror(errno));
+				dberr("%s: %s", optarg, strerror(errno));
 			break;
-		case '?':
+		case 's':
+			sflag = 1;
+			break;
 		default:
 			usage();
 		}
@@ -133,8 +120,8 @@ main(argc, argv)
 	type = dbtype(*argv++);
 
 	/* Open the descriptor file. */
-	if (freopen(*argv, "r", stdin) == NULL)
-		err("%s: %s", *argv, strerror(errno));
+        if (strcmp(*argv, "-") && freopen(*argv, "r", stdin) == NULL)
+	    dberr("%s: %s", *argv, strerror(errno));
 
 	/* Set up the db structure as necessary. */
 	if (infoarg == NULL)
@@ -145,61 +132,93 @@ main(argc, argv)
 			if (*p != '\0')
 				infop = setinfo(type, p);
 
-	/* Open the DB. */
+	/*
+	 * Open the DB.  Delete any preexisting copy, you almost never
+	 * want it around, and it often screws up tests.
+	 */
 	if (fname == NULL) {
 		p = getenv("TMPDIR");
 		if (p == NULL)
-			p = "/var/tmp";
-		(void)sprintf(buf, "%s/__dbtest", p);
+			p = "/tmp";
+		(void)snprintf(buf, sizeof buf, "%s/__dbtest", p);
 		fname = buf;
 		(void)unlink(buf);
-	}
+	} else  if (!sflag)
+		(void)unlink(fname);
+
 	if ((dbp = dbopen(fname,
 	    oflags, S_IRUSR | S_IWUSR, type, infop)) == NULL)
-		err("dbopen: %s", strerror(errno));
+		dberr("dbopen: %s", strerror(errno));
 	XXdbp = dbp;
 
 	state = COMMAND;
 	for (lineno = 1;
 	    (p = fgets(buf, sizeof(buf), stdin)) != NULL; ++lineno) {
-		len = strlen(buf);
-		switch(*p) {
+		/* Delete the newline, displaying the key/data is easier. */
+		if (ofd == STDOUT_FILENO && (t = strchr(p, '\n')) != NULL)
+			*t = '\0';
+		if ((len = strlen(buf)) == 0 || isspace((unsigned char)*p) || *p == '#')
+			continue;
+
+		/* Convenient gdb break point. */
+		if (XXlineno == lineno)
+			XXlineno = 1;
+		switch (*p) {
 		case 'c':			/* compare */
 			if (state != COMMAND)
-				err("line %lu: not expecting command", lineno);
+				dberr("line %lu: not expecting command",
+				    lineno);
 			state = KEY;
 			command = COMPARE;
 			break;
 		case 'e':			/* echo */
 			if (state != COMMAND)
-				err("line %lu: not expecting command", lineno);
+				dberr("line %lu: not expecting command",
+				    lineno);
 			/* Don't display the newline, if CR at EOL. */
 			if (p[len - 2] == '\r')
 				--len;
-			if (write(ofd, p + 1, len - 1) != len - 1)
-				err("write: %s", strerror(errno));
+			if (write(ofd, p + 1, len - 1) != len - 1 ||
+			    write(ofd, "\n", 1) != 1)
+				dberr("write: %s", strerror(errno));
 			break;
 		case 'g':			/* get */
 			if (state != COMMAND)
-				err("line %lu: not expecting command", lineno);
+				dberr("line %lu: not expecting command",
+				    lineno);
 			state = KEY;
 			command = GET;
 			break;
 		case 'p':			/* put */
 			if (state != COMMAND)
-				err("line %lu: not expecting command", lineno);
+				dberr("line %lu: not expecting command",
+				    lineno);
 			state = KEY;
 			command = PUT;
 			break;
 		case 'r':			/* remove */
 			if (state != COMMAND)
-				err("line %lu: not expecting command", lineno);
-			state = KEY;
-			command = REMOVE;
+				dberr("line %lu: not expecting command",
+				    lineno);
+                        if (flags == R_CURSOR) {
+				rem(dbp, &key);
+				state = COMMAND;
+                        } else {
+				state = KEY;
+				command = REMOVE;
+			}
+			break;
+		case 'S':			/* sync */
+			if (state != COMMAND)
+				dberr("line %lu: not expecting command",
+				    lineno);
+			synk(dbp);
+			state = COMMAND;
 			break;
 		case 's':			/* seq */
 			if (state != COMMAND)
-				err("line %lu: not expecting command", lineno);
+				dberr("line %lu: not expecting command",
+				    lineno);
 			if (flags == R_CURSOR) {
 				state = KEY;
 				command = SEQ;
@@ -211,15 +230,15 @@ main(argc, argv)
 			break;
 		case 'D':			/* data file */
 			if (state != DATA)
-				err("line %lu: not expecting data", lineno);
+				dberr("line %lu: not expecting data", lineno);
 			data.data = rfile(p + 1, &data.size);
 			goto ldata;
 		case 'd':			/* data */
 			if (state != DATA)
-				err("line %lu: not expecting data", lineno);
+				dberr("line %lu: not expecting data", lineno);
 			data.data = xmalloc(p + 1, len - 1);
 			data.size = len - 1;
-ldata:			switch(command) {
+ldata:			switch (command) {
 			case COMPARE:
 				compare(&keydata, &data);
 				break;
@@ -227,7 +246,7 @@ ldata:			switch(command) {
 				put(dbp, &key, &data);
 				break;
 			default:
-				err("line %lu: command doesn't take data",
+				dberr("line %lu: command doesn't take data",
 				    lineno);
 			}
 			if (type != DB_RECNO)
@@ -237,15 +256,15 @@ ldata:			switch(command) {
 			break;
 		case 'K':			/* key file */
 			if (state != KEY)
-				err("line %lu: not expecting a key", lineno);
+				dberr("line %lu: not expecting a key", lineno);
 			if (type == DB_RECNO)
-				err("line %lu: 'K' not available for recno",
+				dberr("line %lu: 'K' not available for recno",
 				    lineno);
 			key.data = rfile(p + 1, &key.size);
 			goto lkey;
 		case 'k':			/* key */
 			if (state != KEY)
-				err("line %lu: not expecting a key", lineno);
+				dberr("line %lu: not expecting a key", lineno);
 			if (type == DB_RECNO) {
 				static recno_t recno;
 				recno = atoi(p + 1);
@@ -255,7 +274,7 @@ ldata:			switch(command) {
 				key.data = xmalloc(p + 1, len - 1);
 				key.size = len - 1;
 			}
-lkey:			switch(command) {
+lkey:			switch (command) {
 			case COMPARE:
 				getdata(dbp, &key, &keydata);
 				state = DATA;
@@ -271,18 +290,18 @@ lkey:			switch(command) {
 				break;
 			case REMOVE:
 				rem(dbp, &key);
-				if (type != DB_RECNO)
+				if ((type != DB_RECNO) && (flags != R_CURSOR))
 					free(key.data);
 				state = COMMAND;
 				break;
 			case SEQ:
 				seq(dbp, &key);
-				if (type != DB_RECNO)
+				if ((type != DB_RECNO) && (flags != R_CURSOR))
 					free(key.data);
 				state = COMMAND;
 				break;
 			default:
-				err("line %lu: command doesn't take a key",
+				dberr("line %lu: command doesn't take a key",
 				    lineno);
 			}
 			break;
@@ -290,22 +309,25 @@ lkey:			switch(command) {
 			dump(dbp, p[1] == 'r');
 			break;
 		default:
-			err("line %lu: %s: unknown command character",
-			    p, lineno);
+			dberr("line %lu: %s: unknown command character",
+			    lineno, p);
 		}
 	}
 #ifdef STATISTICS
-	if (type == DB_BTREE)
+	/*
+	 * -l must be used (DB_LOCK must be set) for this to be
+	 * used, otherwise a page will be locked and it will fail.
+	 */
+	if (type == DB_BTREE && oflags & DB_LOCK)
 		__bt_stat(dbp);
 #endif
 	if (dbp->close(dbp))
-		err("db->close: %s", strerror(errno));
+		dberr("db->close: %s", strerror(errno));
 	(void)close(ofd);
 	exit(0);
 }
 
 #define	NOOVERWRITE	"put failed, would overwrite key\n"
-#define	NOSUCHKEY	"get failed, no such key\n"
 
 void
 compare(db1, db2)
@@ -318,10 +340,10 @@ compare(db1, db2)
 		printf("compare failed: key->data len %lu != data len %lu\n",
 		    db1->size, db2->size);
 
-	len = MIN(db1->size, db2->size);
+	len = MINIMUM(db1->size, db2->size);
 	for (p1 = db1->data, p2 = db2->data; len--;)
 		if (*p1++ != *p2++) {
-			printf("compare failed at offset %d\n",
+			printf("compare failed at offset %ld\n",
 			    p1 - (u_char *)db1->data);
 			break;
 		}
@@ -334,17 +356,23 @@ get(dbp, kp)
 {
 	DBT data;
 
-	switch(dbp->get(dbp, kp, &data, flags)) {
+	switch (dbp->get(dbp, kp, &data, flags)) {
 	case 0:
 		(void)write(ofd, data.data, data.size);
+		if (ofd == STDOUT_FILENO)
+			(void)write(ofd, "\n", 1);
 		break;
 	case -1:
-		err("line %lu: get: %s", lineno, strerror(errno));
+		dberr("line %lu: get: %s", lineno, strerror(errno));
 		/* NOTREACHED */
 	case 1:
-		(void)write(ofd, NOSUCHKEY, sizeof(NOSUCHKEY) - 1);
-		(void)fprintf(stderr, "%d: %.*s: %s\n", 
-		    lineno, kp->size, kp->data, NOSUCHKEY);
+#define	NOSUCHKEY	"get failed, no such key\n"
+		if (ofd != STDOUT_FILENO)
+			(void)write(ofd, NOSUCHKEY, sizeof(NOSUCHKEY) - 1);
+		else
+			(void)fprintf(stderr, "%lu: %.*s: %s", lineno,
+			    MINIMUM((int)kp->size, 20), kp->data, NOSUCHKEY);
+#undef	NOSUCHKEY
 		break;
 	}
 }
@@ -354,14 +382,14 @@ getdata(dbp, kp, dp)
 	DB *dbp;
 	DBT *kp, *dp;
 {
-	switch(dbp->get(dbp, kp, dp, flags)) {
+	switch (dbp->get(dbp, kp, dp, flags)) {
 	case 0:
 		return;
 	case -1:
-		err("line %lu: getdata: %s", lineno, strerror(errno));
+		dberr("line %lu: getdata: %s", lineno, strerror(errno));
 		/* NOTREACHED */
 	case 1:
-		err("line %lu: get failed, no such key", lineno);
+		dberr("line %lu: getdata failed, no such key", lineno);
 		/* NOTREACHED */
 	}
 }
@@ -371,11 +399,11 @@ put(dbp, kp, dp)
 	DB *dbp;
 	DBT *kp, *dp;
 {
-	switch(dbp->put(dbp, kp, dp, flags)) {
+	switch (dbp->put(dbp, kp, dp, flags)) {
 	case 0:
 		break;
 	case -1:
-		err("line %lu: put: %s", lineno, strerror(errno));
+		dberr("line %lu: put: %s", lineno, strerror(errno));
 		/* NOTREACHED */
 	case 1:
 		(void)write(ofd, NOOVERWRITE, sizeof(NOOVERWRITE) - 1);
@@ -388,15 +416,37 @@ rem(dbp, kp)
 	DB *dbp;
 	DBT *kp;
 {
-	switch(dbp->del(dbp, kp, flags)) {
+	switch (dbp->del(dbp, kp, flags)) {
 	case 0:
 		break;
 	case -1:
-		err("line %lu: get: %s", lineno, strerror(errno));
+		dberr("line %lu: rem: %s", lineno, strerror(errno));
 		/* NOTREACHED */
 	case 1:
-		(void)write(ofd, NOSUCHKEY, sizeof(NOSUCHKEY) - 1);
+#define	NOSUCHKEY	"rem failed, no such key\n"
+		if (ofd != STDOUT_FILENO)
+			(void)write(ofd, NOSUCHKEY, sizeof(NOSUCHKEY) - 1);
+		else if (flags != R_CURSOR)
+			(void)fprintf(stderr, "%lu: %.*s: %s", lineno,
+			    MINIMUM((int)kp->size, 20), kp->data, NOSUCHKEY);
+		else
+			(void)fprintf(stderr,
+			    "%lu: rem of cursor failed\n", lineno);
+#undef	NOSUCHKEY
 		break;
+	}
+}
+
+void
+synk(dbp)
+	DB *dbp;
+{
+	switch (dbp->sync(dbp, flags)) {
+	case 0:
+		break;
+	case -1:
+		dberr("line %lu: synk: %s", lineno, strerror(errno));
+		/* NOTREACHED */
 	}
 }
 
@@ -407,15 +457,26 @@ seq(dbp, kp)
 {
 	DBT data;
 
-	switch(dbp->seq(dbp, kp, &data, flags)) {
+	switch (dbp->seq(dbp, kp, &data, flags)) {
 	case 0:
 		(void)write(ofd, data.data, data.size);
+		if (ofd == STDOUT_FILENO)
+			(void)write(ofd, "\n", 1);
 		break;
 	case -1:
-		err("line %lu: seq: %s", lineno, strerror(errno));
+		dberr("line %lu: seq: %s", lineno, strerror(errno));
 		/* NOTREACHED */
 	case 1:
-		(void)write(ofd, NOSUCHKEY, sizeof(NOSUCHKEY) - 1);
+#define	NOSUCHKEY	"seq failed, no such key\n"
+		if (ofd != STDOUT_FILENO)
+			(void)write(ofd, NOSUCHKEY, sizeof(NOSUCHKEY) - 1);
+		else if (flags == R_CURSOR)
+			(void)fprintf(stderr, "%lu: %.*s: %s", lineno,
+			    MINIMUM((int)kp->size, 20), kp->data, NOSUCHKEY);
+		else
+			(void)fprintf(stderr,
+			    "%lu: seq (%s) failed\n", lineno, sflags(flags));
+#undef	NOSUCHKEY
 		break;
 	}
 }
@@ -436,14 +497,16 @@ dump(dbp, rev)
 		nflags = R_NEXT;
 	}
 	for (;; flags = nflags)
-		switch(dbp->seq(dbp, &key, &data, flags)) {
+		switch (dbp->seq(dbp, &key, &data, flags)) {
 		case 0:
 			(void)write(ofd, data.data, data.size);
+			if (ofd == STDOUT_FILENO)
+				(void)write(ofd, "\n", 1);
 			break;
 		case 1:
 			goto done;
 		case -1:
-			err("line %lu: (dump) seq: %s",
+			dberr("line %lu: (dump) seq: %s",
 			    lineno, strerror(errno));
 			/* NOTREACHED */
 		}
@@ -454,33 +517,44 @@ u_int
 setflags(s)
 	char *s;
 {
-	char *p, *index();
+	char *p;
 
-	for (; isspace(*s); ++s);
-	if (*s == '\n')
+	for (; isspace((unsigned char)*s); ++s);
+	if (*s == '\n' || *s == '\0')
 		return (0);
-	if ((p = index(s, '\n')) != NULL)
+	if ((p = strchr(s, '\n')) != NULL)
 		*p = '\0';
-	if (!strcmp(s, "R_CURSOR"))
-		return (R_CURSOR);
-	if (!strcmp(s, "R_FIRST"))
-		return (R_FIRST);
-	if (!strcmp(s, "R_IAFTER"))
-		return (R_IAFTER);
-	if (!strcmp(s, "R_IBEFORE"))
-		return (R_IBEFORE);
-	if (!strcmp(s, "R_LAST"))
-		return (R_LAST);
-	if (!strcmp(s, "R_NEXT"))
-		return (R_NEXT);
-	if (!strcmp(s, "R_NOOVERWRITE"))
-		return (R_NOOVERWRITE);
-	if (!strcmp(s, "R_PREV"))
-		return (R_PREV);
-	if (!strcmp(s, "R_SETCURSOR"))
-		return (R_SETCURSOR);
-	err("line %lu: %s: unknown flag", lineno, s);
+	if (!strcmp(s, "R_CURSOR"))		return (R_CURSOR);
+	if (!strcmp(s, "R_FIRST"))		return (R_FIRST);
+	if (!strcmp(s, "R_IAFTER")) 		return (R_IAFTER);
+	if (!strcmp(s, "R_IBEFORE")) 		return (R_IBEFORE);
+	if (!strcmp(s, "R_LAST")) 		return (R_LAST);
+	if (!strcmp(s, "R_NEXT")) 		return (R_NEXT);
+	if (!strcmp(s, "R_NOOVERWRITE"))	return (R_NOOVERWRITE);
+	if (!strcmp(s, "R_PREV"))		return (R_PREV);
+	if (!strcmp(s, "R_SETCURSOR"))		return (R_SETCURSOR);
+
+	dberr("line %lu: %s: unknown flag", lineno, s);
 	/* NOTREACHED */
+}
+
+char *
+sflags(flags)
+	int flags;
+{
+	switch (flags) {
+	case R_CURSOR:		return ("R_CURSOR");
+	case R_FIRST:		return ("R_FIRST");
+	case R_IAFTER:		return ("R_IAFTER");
+	case R_IBEFORE:		return ("R_IBEFORE");
+	case R_LAST:		return ("R_LAST");
+	case R_NEXT:		return ("R_NEXT");
+	case R_NOOVERWRITE:	return ("R_NOOVERWRITE");
+	case R_PREV:		return ("R_PREV");
+	case R_SETCURSOR:	return ("R_SETCURSOR");
+	}
+
+	return ("UNKNOWN!");
 }
 	
 DBTYPE
@@ -493,7 +567,7 @@ dbtype(s)
 		return (DB_HASH);
 	if (!strcmp(s, "recno"))
 		return (DB_RECNO);
-	err("%s: unknown type (use btree, hash or recno)", s);
+	dberr("%s: unknown type (use btree, hash or recno)", s);
 	/* NOTREACHED */
 }
 
@@ -505,15 +579,15 @@ setinfo(type, s)
 	static BTREEINFO ib;
 	static HASHINFO ih;
 	static RECNOINFO rh;
-	char *eq, *index();
+	char *eq;
 
-	if ((eq = index(s, '=')) == NULL)
-		err("%s: illegal structure set statement", s);
+	if ((eq = strchr(s, '=')) == NULL)
+		dberr("%s: illegal structure set statement", s);
 	*eq++ = '\0';
-	if (!isdigit(*eq))
-		err("%s: structure set statement must be a number", s);
+	if (!isdigit((unsigned char)*eq))
+		dberr("%s: structure set statement must be a number", s);
 		
-	switch(type) {
+	switch (type) {
 	case DB_BTREE:
 		if (!strcmp("flags", s)) {
 			ib.flags = atoi(eq);
@@ -589,7 +663,7 @@ setinfo(type, s)
 		}
 		break;
 	}
-	err("%s: unknown structure value", s);
+	dberr("%s: unknown structure value", s);
 	/* NOTREACHED */
 }
 
@@ -601,20 +675,18 @@ rfile(name, lenp)
 	struct stat sb;
 	void *p;
 	int fd;
-	char *np, *index();
+	char *np;
 
-	for (; isspace(*name); ++name);
-	if ((np = index(name, '\n')) != NULL)
+	for (; isspace((unsigned char)*name); ++name);
+	if ((np = strchr(name, '\n')) != NULL)
 		*np = '\0';
-	if ((fd = open(name, O_RDONLY, 0)) < 0 ||
+	if ((fd = open(name, O_RDONLY)) < 0 ||
 	    fstat(fd, &sb))
-		err("%s: %s\n", name, strerror(errno));
-#ifdef NOT_PORTABLE
-	if (sb.st_size > (off_t)SIZE_T_MAX)
-		err("%s: %s\n", name, strerror(E2BIG));
-#endif
+		dberr("%s: %s\n", name, strerror(errno));
+	if (sb.st_size > (off_t)INT_MAX)
+		dberr("%s: %s\n", name, strerror(E2BIG));
 	if ((p = (void *)malloc((u_int)sb.st_size)) == NULL)
-		err("%s", strerror(errno));
+		dberr("%s", strerror(errno));
 	(void)read(fd, p, (int)sb.st_size);
 	*lenp = sb.st_size;
 	(void)close(fd);
@@ -629,12 +701,12 @@ xmalloc(text, len)
 	void *p;
 
 	if ((p = (void *)malloc(len)) == NULL)
-		err("%s", strerror(errno));
+		dberr("%s", strerror(errno));
 	memmove(p, text, len);
 	return (p);
 }
 
-void
+void __dead
 usage()
 {
 	(void)fprintf(stderr,
@@ -642,27 +714,12 @@ usage()
 	exit(1);
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-void
-#if __STDC__
-err(const char *fmt, ...)
-#else
-err(fmt, va_alist)
-	char *fmt;
-        va_dcl
-#endif
+void __dead
+dberr(const char *fmt, ...)
 {
 	va_list ap;
-#if __STDC__
+
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	(void)fprintf(stderr, "dbtest: ");
 	(void)vfprintf(stderr, fmt, ap);
 	va_end(ap);

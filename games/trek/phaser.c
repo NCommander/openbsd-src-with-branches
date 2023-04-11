@@ -1,3 +1,4 @@
+/*	$OpenBSD: phaser.c,v 1.9 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: phaser.c,v 1.4 1995/04/24 12:26:02 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,16 +30,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)phaser.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: phaser.c,v 1.4 1995/04/24 12:26:02 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <math.h>
+#include <stdio.h>
 
-# include	"trek.h"
-# include	"getpar.h"
+#include "getpar.h"
+#include "trek.h"
 
 /* factors for phaser hits; see description below */
 
@@ -73,15 +65,13 @@ static char rcsid[] = "$NetBSD: phaser.c,v 1.4 1995/04/24 12:26:02 cgd Exp $";
 **	fairly large spread.
 **
 **	Phasers spread slightly, even if you specify zero spread.
-**
-**	Uses trace flag 30
 */
 
-struct cvntab	Matab[] =
+const struct cvntab	Matab[] =
 {
-	"m",		"anual",		(int (*)())1,		0,
-	"a",		"utomatic",		0,		0,
-	0
+	{ "m",		"anual",	(cmdfun)1,	0 },
+	{ "a",		"utomatic",	(cmdfun)0,	0 },
+	{ NULL,		NULL,		NULL,		0 }
 };
 
 struct banks
@@ -92,29 +82,37 @@ struct banks
 };
 
 
-
-phaser()
+void
+phaser(int v)
 {
-	register int		i;
-	int			j;
-	register struct kling	*k;
-	double			dx, dy;
-	double			anglefactor, distfactor;
-	register struct banks	*b;
-	int			manual, flag, extra;
-	int			hit;
-	double			tot;
-	int			n;
-	int			hitreqd[NBANKS];
-	struct banks		bank[NBANKS];
-	struct cvntab		*ptr;
+	int		i, j;
+	struct kling	*k;
+	double		dx, dy;
+	double		anglefactor, distfactor;
+	struct banks	*b;
+	int		manual, flag, extra;
+	int		hit;
+	double		tot;
+	int		n;
+	int		hitreqd[NBANKS];
+	struct banks	bank[NBANKS];
+	const struct cvntab	*ptr;
 
 	if (Ship.cond == DOCKED)
-		return(printf("Phasers cannot fire through starbase shields\n"));
+	{
+		printf("Phasers cannot fire through starbase shields\n");
+		return;
+	}
 	if (damaged(PHASER))
-		return (out(PHASER));
+	{
+		out(PHASER);
+		return;
+	}
 	if (Ship.shldup)
-		return (printf("Sulu: Captain, we cannot fire through shields.\n"));
+	{
+		printf("Sulu: Captain, we cannot fire through shields.\n");
+		return;
+	}
 	if (Ship.cloaked)
 	{
 		printf("Sulu: Captain, surely you must realize that we cannot fire\n");
@@ -128,13 +126,13 @@ phaser()
 	{
 		if (damaged(COMPUTER))
 		{
-			printf(Device[COMPUTER].name);
+			printf("%s", Device[COMPUTER].name);
 			manual++;
 		}
 		else
 			if (damaged(SRSCAN))
 			{
-				printf(Device[SRSCAN].name);
+				printf("%s", Device[SRSCAN].name);
 				manual++;
 			}
 		if (manual)
@@ -199,7 +197,10 @@ phaser()
 	{
 		/* automatic distribution of power */
 		if (Etc.nkling <= 0)
-			return (printf("Sulu: But there are no Klingons in this quadrant\n"));
+		{
+			printf("Sulu: But there are no Klingons in this quadrant\n");
+			return;
+		}
 		printf("Phasers locked on target.  ");
 		while (flag)
 		{

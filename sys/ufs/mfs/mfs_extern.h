@@ -1,4 +1,5 @@
-/*	$NetBSD: mfs_extern.h,v 1.3 1994/12/14 13:03:51 mycroft Exp $	*/
+/*	$OpenBSD: mfs_extern.h,v 1.21 2021/03/24 16:17:06 semarie Exp $	*/
+/*	$NetBSD: mfs_extern.h,v 1.4 1996/02/09 22:31:27 christos Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,21 +39,26 @@ struct proc;
 struct statfs;
 struct ucred;
 struct vnode;
+struct vfsconf;
+struct mbuf;
+struct mfsnode;
 
-__BEGIN_DECLS
-int	mfs_badop __P((void));
-int	mfs_bmap __P((struct vop_bmap_args *));
-int	mfs_close __P((struct vop_close_args *));
-void	mfs_doio __P((struct buf *bp, caddr_t base));
-int	mfs_inactive __P((struct vop_inactive_args *)); /* XXX */
-int	mfs_reclaim __P((struct vop_reclaim_args *));
-int	mfs_init __P((void));
-int	mfs_ioctl __P((struct vop_ioctl_args *));
-int	mfs_mount __P((struct mount *mp,
-	    char *path, caddr_t data, struct nameidata *ndp, struct proc *p));
-int	mfs_open __P((struct vop_open_args *));
-int	mfs_print __P((struct vop_print_args *)); /* XXX */
-int	mfs_start __P((struct mount *mp, int flags, struct proc *p));
-int	mfs_statfs __P((struct mount *mp, struct statfs *sbp, struct proc *p));
-int	mfs_strategy __P((struct vop_strategy_args *)); /* XXX */
-__END_DECLS
+extern const struct vops mfs_vops;
+
+/* mfs_vfsops.c */
+int mfs_mount(struct mount *, const char *, void *, struct nameidata *,
+    struct proc *);
+int mfs_start(struct mount *, int, struct proc *);
+int mfs_init(struct vfsconf *);
+int mfs_checkexp(struct mount *, struct mbuf *, int *, struct ucred **);
+
+/* mfs_vnops.c */
+int mfs_open(void *);
+int mfs_ioctl(void *);
+int mfs_strategy(void *);
+void mfs_doio(struct mfsnode *, struct buf *);
+int mfs_close(void *);
+int mfs_inactive(void *);
+int mfs_reclaim(void *);
+int mfs_print(void *);
+

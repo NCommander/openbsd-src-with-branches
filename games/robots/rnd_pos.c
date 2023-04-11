@@ -1,4 +1,4 @@
-/*	$NetBSD: rnd_pos.c,v 1.3 1995/04/22 10:09:07 cgd Exp $	*/
+/*	$OpenBSD: rnd_pos.c,v 1.7 2016/01/04 17:33:24 mestre Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,28 +29,19 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)rnd_pos.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: rnd_pos.c,v 1.3 1995/04/22 10:09:07 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdlib.h>
 
-# include	"robots.h"
-
-# define	IS_SAME(p,y,x)	((p).y != -1 && (p).y == y && (p).x == x)
+#include "robots.h"
 
 /*
  * rnd_pos:
  *	Pick a random, unoccupied position
  */
 COORD *
-rnd_pos()
+rnd_pos(void)
 {
 	static COORD	pos;
 	static int	call = 0;
-	register int	i = 0;
 
 	do {
 		pos.y = rnd(Y_FIELDSIZE - 1) + 1;
@@ -65,10 +52,8 @@ rnd_pos()
 	return &pos;
 }
 
-rnd(range)
-int	range;
+int
+rnd(int range)
 {
-	unsigned int	rand();
-
-	return rand() % range;
+	return arc4random_uniform(range);
 }

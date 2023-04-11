@@ -1,3 +1,4 @@
+/*	$OpenBSD: comm.c,v 1.10 2015/10/09 01:37:07 deraadt Exp $	*/
 /*	$NetBSD: comm.c,v 1.10 1995/09/05 19:57:43 jtc Exp $	*/
 
 /*
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,19 +33,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1989, 1993, 1994\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)comm.c	8.4 (Berkeley) 5/4/95";
-#endif
-static char rcsid[] = "$NetBSD: comm.c,v 1.10 1995/09/05 19:57:43 jtc Exp $";
-#endif /* not lint */
-
 #include <err.h>
 #include <limits.h>
 #include <locale.h>
@@ -61,25 +45,28 @@ static char rcsid[] = "$NetBSD: comm.c,v 1.10 1995/09/05 19:57:43 jtc Exp $";
 
 char *tabs[] = { "", "\t", "\t\t" };
 
-FILE   *file __P((const char *));
-void	show __P((FILE *, char *, char *));
-void	usage __P((void));
+FILE   *file(const char *);
+void	show(FILE *, char *, char *);
+void	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
 	int comp, file1done, file2done, read1, read2;
 	int ch, flag1, flag2, flag3;
 	FILE *fp1, *fp2;
 	char *col1, *col2, *col3;
 	char **p, line1[MAXLINELEN], line2[MAXLINELEN];
+	int (*compare)(const char * ,const char *);
 
 	setlocale(LC_ALL, "");
 
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
+
 	flag1 = flag2 = flag3 = 1;
-	while ((ch = getopt(argc, argv, "123")) != -1)
+	compare = strcoll;
+	while ((ch = getopt(argc, argv, "123f")) != -1)
 		switch(ch) {
 		case '1':
 			flag1 = 0;
@@ -90,7 +77,9 @@ main(argc, argv)
 		case '3':
 			flag3 = 0;
 			break;
-		case '?':
+		case 'f':
+			compare = strcasecmp;
+			break;
 		default:
 			usage();
 		}
@@ -133,7 +122,7 @@ main(argc, argv)
 		}
 
 		/* lines are the same */
-		if (!(comp = strcoll(line1, line2))) {
+		if (!(comp = compare(line1, line2))) {
 			read1 = read2 = 1;
 			if (col3)
 				if (printf("%s%s", col3, line1) < 0)
@@ -164,17 +153,14 @@ main(argc, argv)
 }
 
 void
-show(fp, offset, buf)
-	FILE *fp;
-	char *offset, *buf;
+show(FILE *fp, char *offset, char *buf)
 {
 	while (printf("%s%s", offset, buf) >= 0 && fgets(buf, MAXLINELEN, fp))
 		;
 }
 
 FILE *
-file(name)
-	const char *name;
+file(const char *name)
 {
 	FILE *fp;
 
@@ -186,9 +172,8 @@ file(name)
 }
 
 void
-usage()
+usage(void)
 {
-
-	(void)fprintf(stderr, "usage: comm [-123] file1 file2\n");
+	(void)fprintf(stderr, "usage: comm [-123f] file1 file2\n");
 	exit(1);
 }

@@ -1,6 +1,8 @@
+/*	$OpenBSD: strsep.c,v 1.7 2014/02/05 20:42:32 stsp Exp $	*/
+
 /*-
- * Copyright (c) 1990 The Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1990, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,15 +29,10 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static const char sccsid[] = "from: @(#)strsep.c	5.4 (Berkeley) 1/26/91";*/
-static char *rcsid = "$Id: strsep.c,v 1.4 1995/06/15 00:08:31 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <string.h>
 
 /*
- * Get next token from string *stringp, where tokens are nonempty
+ * Get next token from string *stringp, where tokens are possibly-empty
  * strings separated by characters from delim.  
  *
  * Writes NULs into the string at *stringp to end tokens.
@@ -47,16 +40,14 @@ static char *rcsid = "$Id: strsep.c,v 1.4 1995/06/15 00:08:31 jtc Exp $";
  * On return, *stringp points past the last NUL written (if there might
  * be further tokens), or is NULL (if there are definitely no more tokens).
  *
- * If *stringp is NULL, strtoken returns NULL.
+ * If *stringp is NULL, strsep returns NULL.
  */
 char *
-strsep(stringp, delim)
-	register char **stringp;
-	register const char *delim;
+strsep(char **stringp, const char *delim)
 {
-	register char *s;
-	register const char *spanp;
-	register int c, sc;
+	char *s;
+	const char *spanp;
+	int c, sc;
 	char *tok;
 
 	if ((s = *stringp) == NULL)
@@ -77,3 +68,4 @@ strsep(stringp, delim)
 	}
 	/* NOTREACHED */
 }
+DEF_WEAK(strsep);

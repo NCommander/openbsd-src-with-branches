@@ -1,4 +1,4 @@
-/* p12_utl.c */
+/* $OpenBSD: p12_utl.c,v 1.20 2022/11/12 13:03:28 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -56,91 +56,102 @@
  *
  */
 
+#include <limits.h>
 #include <stdio.h>
-#include "cryptlib.h"
+#include <string.h>
+
 #include <openssl/pkcs12.h>
+
+#include "pkcs12_local.h"
 
 /* Cheap and nasty Unicode stuff */
 
-unsigned char *OPENSSL_asc2uni(const char *asc, int asclen, unsigned char **uni, int *unilen)
+unsigned char *
+OPENSSL_asc2uni(const char *asc, int asclen, unsigned char **uni, int *unilen)
 {
-	int ulen, i;
+	size_t ulen, i;
 	unsigned char *unitmp;
-	if (asclen == -1) asclen = strlen(asc);
-	ulen = asclen*2  + 2;
-	if (!(unitmp = OPENSSL_malloc(ulen))) return NULL;
-	for (i = 0; i < ulen - 2; i+=2) {
-		unitmp[i] = 0;
-		unitmp[i + 1] = asc[i>>1];
+
+	if (asclen < 0)
+		ulen = strlen(asc);
+	else
+		ulen = (size_t)asclen;
+	ulen++;
+	if (ulen == 0) /* unlikely overflow */
+		return NULL;
+	if ((unitmp = reallocarray(NULL, ulen, 2)) == NULL)
+		return NULL;
+	ulen *= 2;
+	/* XXX This interface ought to use unsigned types */
+	if (ulen > INT_MAX) {
+		free(unitmp);
+		return NULL;
 	}
-	/* Make result double null terminated */
+	for (i = 0; i < ulen - 2; i += 2) {
+		unitmp[i] = 0;
+		unitmp[i + 1] = *asc++;
+	}
+	/* Make result double-NUL terminated */
 	unitmp[ulen - 2] = 0;
 	unitmp[ulen - 1] = 0;
-	if (unilen) *unilen = ulen;
-	if (uni) *uni = unitmp;
+	if (unilen)
+		*unilen = ulen;
+	if (uni)
+		*uni = unitmp;
 	return unitmp;
 }
+LCRYPTO_ALIAS(OPENSSL_asc2uni);
 
-char *OPENSSL_uni2asc(unsigned char *uni, int unilen)
+char *
+OPENSSL_uni2asc(const unsigned char *uni, int unilen)
 {
-	int asclen, i;
+	size_t asclen, u16len, i;
 	char *asctmp;
-	asclen = unilen / 2;
-	/* If no terminating zero allow for one */
-	if (!unilen || uni[unilen - 1]) asclen++;
+
+	if (unilen < 0)
+		return NULL;
+
+	asclen = u16len = (size_t)unilen / 2;
+	/* If no terminating NUL, allow for one */
+	if (unilen == 0 || uni[unilen - 1] != '\0')
+		asclen++;
+	if ((asctmp = malloc(asclen)) == NULL)
+		return NULL;
+	/* Skip first zero byte */
 	uni++;
-	if (!(asctmp = OPENSSL_malloc(asclen))) return NULL;
-	for (i = 0; i < unilen; i+=2) asctmp[i>>1] = uni[i];
-	asctmp[asclen - 1] = 0;
+	for (i = 0; i < u16len; i++) {
+		asctmp[i] = *uni;
+		uni += 2;
+	}
+	asctmp[asclen - 1] = '\0';
 	return asctmp;
 }
+LCRYPTO_ALIAS(OPENSSL_uni2asc);
 
-int i2d_PKCS12_bio(BIO *bp, PKCS12 *p12)
+int
+i2d_PKCS12_bio(BIO *bp, PKCS12 *p12)
 {
-	return ASN1_item_i2d_bio(ASN1_ITEM_rptr(PKCS12), bp, p12);
+	return ASN1_item_i2d_bio(&PKCS12_it, bp, p12);
 }
+LCRYPTO_ALIAS(i2d_PKCS12_bio);
 
-#ifndef OPENSSL_NO_FP_API
-int i2d_PKCS12_fp(FILE *fp, PKCS12 *p12)
+int
+i2d_PKCS12_fp(FILE *fp, PKCS12 *p12)
 {
-	return ASN1_item_i2d_fp(ASN1_ITEM_rptr(PKCS12), fp, p12);
+	return ASN1_item_i2d_fp(&PKCS12_it, fp, p12);
 }
-#endif
+LCRYPTO_ALIAS(i2d_PKCS12_fp);
 
-PKCS12 *d2i_PKCS12_bio(BIO *bp, PKCS12 **p12)
+PKCS12 *
+d2i_PKCS12_bio(BIO *bp, PKCS12 **p12)
 {
-	return ASN1_item_d2i_bio(ASN1_ITEM_rptr(PKCS12), bp, p12);
+	return ASN1_item_d2i_bio(&PKCS12_it, bp, p12);
 }
-#ifndef OPENSSL_NO_FP_API
-PKCS12 *d2i_PKCS12_fp(FILE *fp, PKCS12 **p12)
-{
-        return ASN1_item_d2i_fp(ASN1_ITEM_rptr(PKCS12), fp, p12);
-}
-#endif
+LCRYPTO_ALIAS(d2i_PKCS12_bio);
 
-PKCS12_SAFEBAG *PKCS12_x5092certbag(X509 *x509)
+PKCS12 *
+d2i_PKCS12_fp(FILE *fp, PKCS12 **p12)
 {
-	return PKCS12_item_pack_safebag(x509, ASN1_ITEM_rptr(X509),
-			NID_x509Certificate, NID_certBag);
+	    return ASN1_item_d2i_fp(&PKCS12_it, fp, p12);
 }
-
-PKCS12_SAFEBAG *PKCS12_x509crl2certbag(X509_CRL *crl)
-{
-	return PKCS12_item_pack_safebag(crl, ASN1_ITEM_rptr(X509_CRL),
-			NID_x509Crl, NID_crlBag);
-}
-
-X509 *PKCS12_certbag2x509(PKCS12_SAFEBAG *bag)
-{
-	if(M_PKCS12_bag_type(bag) != NID_certBag) return NULL;
-	if(M_PKCS12_cert_bag_type(bag) != NID_x509Certificate) return NULL;
-	return ASN1_item_unpack(bag->value.bag->value.octet, ASN1_ITEM_rptr(X509));
-}
-
-X509_CRL *PKCS12_certbag2x509crl(PKCS12_SAFEBAG *bag)
-{
-	if(M_PKCS12_bag_type(bag) != NID_crlBag) return NULL;
-	if(M_PKCS12_cert_bag_type(bag) != NID_x509Crl) return NULL;
-	return ASN1_item_unpack(bag->value.bag->value.octet,
-							ASN1_ITEM_rptr(X509_CRL));
-}
+LCRYPTO_ALIAS(d2i_PKCS12_fp);

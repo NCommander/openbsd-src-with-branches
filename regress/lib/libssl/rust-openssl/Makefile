@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.3 2022/12/04 19:31:13 tb Exp $
 
 RUST_OPENSSL_TESTS =	/usr/local/share/rust-openssl-tests
 CARGO =			/usr/local/bin/cargo
@@ -30,8 +30,18 @@ CLEANFILES += Cargo.lock
 CLEANFILES += Cargo.toml
 . endif
 
+# Force use of base-clang on sparc64 since the build with base-gcc fails with:
+# error occurred: Command "cc" "-O0" "-ffunction-sections" "-fdata-sections" [...]
+# did not execute successfully (status code exit status: 1).
+. if "${MACHINE_ARCH}" == sparc64
+CARGO_CC=/usr/bin/clang
+. else
+CARGO_CC=cc
+. endif
+
 rust-openssl-test: ${_WORKSPACE_COOKIE}
-	cd ${.OBJDIR} && cargo test --offline --color=never -- --color=never
+	cd ${.OBJDIR} && env CC=${CARGO_CC} \
+		cargo test --offline --color=never -- --color=never
 
 CLEANFILES +=	${_WORKSPACE_COOKIE} ${WORKSPACE_LINKS}
 

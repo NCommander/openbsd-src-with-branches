@@ -212,6 +212,7 @@ END_RELOC_NUMBERS (R_MIPS_maxext)
 #define E_MIPS_MACH_4120	0x00870000
 #define E_MIPS_MACH_4111	0x00880000
 #define E_MIPS_MACH_SB1         0x008a0000
+#define E_MIPS_MACH_OCTEON      0x008b0000
 #define E_MIPS_MACH_5400	0x00910000
 #define E_MIPS_MACH_5500	0x00980000
 #define E_MIPS_MACH_9000	0x00990000
@@ -658,6 +659,10 @@ extern void bfd_mips_elf32_swap_reginfo_out
 
 /* Address of auxiliary .dynamic.  */
 #define DT_MIPS_AUX_DYNAMIC	0x70000031
+
+/* Relative address of run time loader map, used for debugging.  */
+#define DT_MIPS_RLD_MAP_REL	0x70000035
+
 
 /* Flags which may appear in a DT_MIPS_FLAGS entry.  */
 

@@ -1,4 +1,5 @@
-/*	$NetBSD: namei.h,v 1.10 1995/04/15 08:12:35 cgd Exp $	*/
+/*	$OpenBSD: namei.h,v 1.49 2022/01/09 10:28:07 claudio Exp $	*/
+/*	$NetBSD: namei.h,v 1.11 1996/02/09 18:25:20 christos Exp $	*/
 
 /*
  * Copyright (c) 1985, 1989, 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -39,6 +36,10 @@
 #define	_SYS_NAMEI_H_
 
 #include <sys/queue.h>
+#include <sys/tree.h>
+#include <sys/uio.h>
+
+struct unveil;
 
 /*
  * Encapsulation of namei parameters.
@@ -47,7 +48,8 @@ struct nameidata {
 	/*
 	 * Arguments to namei/lookup.
 	 */
-	caddr_t	ni_dirp;		/* pathname pointer */
+	const char *ni_dirp;		/* pathname pointer */
+	int	ni_dirfd;		/* dirfd from *at() functions */
 	enum	uio_seg ni_segflg;	/* location of pathname */
      /* u_long	ni_nameiop;		   namei operation */
      /* u_long	ni_flags;		   flags to namei */
@@ -58,17 +60,22 @@ struct nameidata {
      /* struct	ucred *ni_cred;		   credentials */
 	struct	vnode *ni_startdir;	/* starting directory */
 	struct	vnode *ni_rootdir;	/* logical root directory */
+	uint64_t ni_pledge;		/* expected pledge for namei */
+	u_char ni_unveil;		/* required unveil flags for namei */
 	/*
 	 * Results: returned from/manipulated by lookup
 	 */
 	struct	vnode *ni_vp;		/* vnode of result */
 	struct	vnode *ni_dvp;		/* vnode of intermediate directory */
+
 	/*
 	 * Shared between namei and lookup/commit routines.
 	 */
 	size_t	ni_pathlen;		/* remaining chars in path */
 	char	*ni_next;		/* next location in pathname */
 	u_long	ni_loopcnt;		/* count of symlinks encountered */
+	struct unveil *ni_unveil_match; /* last matching unveil component */
+
 	/*
 	 * Lookup parameters: this structure describes the subset of
 	 * information from the nameidata structure that is passed
@@ -86,9 +93,10 @@ struct nameidata {
 		 * Shared between lookup and commit routines.
 		 */
 		char	*cn_pnbuf;	/* pathname buffer */
+		char	*cn_rpbuf;	/* realpath buffer */
+		size_t	cn_rpi;		/* realpath index */
 		char	*cn_nameptr;	/* pointer to looked up name */
 		long	cn_namelen;	/* length of looked up component */
-		u_long	cn_hash;	/* hash value of looked up name */
 		long	cn_consume;	/* chars to consume in lookup() */
 	} ni_cnd;
 };
@@ -126,69 +134,141 @@ struct nameidata {
  * name being sought. The caller is responsible for releasing the
  * buffer and for vrele'ing ni_startdir.
  */
-#define	NOCROSSMOUNT	0x00100	/* do not cross mount points */
-#define	RDONLY		0x00200	/* lookup with read-only semantics */
-#define	HASBUF		0x00400	/* has allocated pathname buffer */
-#define	SAVENAME	0x00800	/* save pathanme buffer */
-#define	SAVESTART	0x01000	/* save starting directory */
-#define ISDOTDOT	0x02000	/* current component name is .. */
-#define MAKEENTRY	0x04000	/* entry is to be added to name cache */
-#define ISLASTCN	0x08000	/* this is last component of pathname */
-#define ISSYMLINK	0x10000	/* symlink needs interpretation */
-#define	ISWHITEOUT	0x20000	/* found whiteout */
-#define	DOWHITEOUT	0x40000	/* do whiteouts */
-#define PARAMASK	0xfff00	/* mask of parameter descriptors */
+#define	NOCROSSMOUNT	0x000100      /* do not cross mount points */
+#define	RDONLY		0x000200      /* lookup with read-only semantics */
+#define	HASBUF		0x000400      /* has allocated pathname buffer */
+#define	SAVENAME	0x000800      /* save pathname buffer */
+#define	SAVESTART	0x001000      /* save starting directory */
+#define ISDOTDOT	0x002000      /* current component name is .. */
+#define MAKEENTRY	0x004000      /* entry is to be added to name cache */
+#define ISLASTCN	0x008000      /* this is last component of pathname */
+#define ISSYMLINK	0x010000      /* symlink needs interpretation */
+#define REALPATH	0x020000      /* save pathname buffer for realpath */
+#define	REQUIREDIR	0x080000      /* must be a directory */
+#define STRIPSLASHES    0x100000      /* strip trailing slashes */
+#define PDIRUNLOCK	0x200000      /* vfs_lookup() unlocked parent dir */
+#define BYPASSUNVEIL	0x400000      /* bypass pledgepath check */
+#define KERNELPATH	0x800000      /* access file as kernel, not process */
+
 /*
  * Initialization of an nameidata structure.
  */
-#define NDINIT(ndp, op, flags, segflg, namep, p) { \
-	(ndp)->ni_cnd.cn_nameiop = op; \
-	(ndp)->ni_cnd.cn_flags = flags; \
-	(ndp)->ni_segflg = segflg; \
-	(ndp)->ni_dirp = namep; \
-	(ndp)->ni_cnd.cn_proc = p; \
-}
+void ndinitat(struct nameidata *ndp, u_long op, u_long flags,
+    enum uio_seg segflg, int dirfd, const char *namep, struct proc *p);
+
+#define NDINITAT(ndp, op, flags, segflg, dirfd, namep, p)  \
+	ndinitat(ndp, op, flags, segflg, dirfd, namep, p)
+
+#define NDINIT(ndp, op, flags, segflp, namep, p) \
+	ndinitat(ndp, op, flags, segflp, AT_FDCWD, namep, p)
+
+/* Defined for users of NDINIT(). */
+#define	AT_FDCWD	-100
 #endif
 
 /*
  * This structure describes the elements in the cache of recent
- * names looked up by namei. NCHNAMLEN is sized to make structure
- * size a power of two to optimize malloc's. Minimum reasonable
- * size is 15.
+ * names looked up by namei.
  */
 
-#define	NCHNAMLEN	31	/* maximum name segment length we bother with */
+#define	NAMECACHE_MAXLEN 31 /* maximum name segment length we bother with */
 
 struct	namecache {
-	LIST_ENTRY(namecache) nc_hash;	/* hash chain */
-	TAILQ_ENTRY(namecache) nc_lru;	/* LRU chain */
+	TAILQ_ENTRY(namecache) nc_lru;	/* Regular Entry LRU chain */
+	TAILQ_ENTRY(namecache) nc_neg;	/* Negative Entry LRU chain */
+	RBT_ENTRY(namecache) n_rbcache;	/* Namecache rb tree from vnode */
+	TAILQ_ENTRY(namecache) nc_me;	/* ncp's referring to me */
 	struct	vnode *nc_dvp;		/* vnode of parent of name */
 	u_long	nc_dvpid;		/* capability number of nc_dvp */
 	struct	vnode *nc_vp;		/* vnode the name refers to */
 	u_long	nc_vpid;		/* capability number of nc_vp */
 	char	nc_nlen;		/* length of name */
-	char	nc_name[NCHNAMLEN];	/* segment name */
+	char	nc_name[NAMECACHE_MAXLEN];	/* segment name */
 };
 
 #ifdef _KERNEL
-u_long	nextvnodeid;
-int	namei __P((struct nameidata *ndp));
-int	lookup __P((struct nameidata *ndp));
-int	relookup __P((struct vnode *dvp, struct vnode **vpp,
-	    struct componentname *cnp));
+struct	namecache_rb_cache;
+
+int	namei(struct nameidata *ndp);
+int	vfs_lookup(struct nameidata *ndp);
+int	vfs_relookup(struct vnode *dvp, struct vnode **vpp,
+		      struct componentname *cnp);
+void cache_tree_init(struct namecache_rb_cache *);
+void cache_purge(struct vnode *);
+int cache_lookup(struct vnode *, struct vnode **, struct componentname *);
+void cache_enter(struct vnode *, struct vnode *, struct componentname *);
+int cache_revlookup(struct vnode *, struct vnode **, char **, char *);
+void nchinit(void);
+struct mount;
+void cache_purgevfs(struct mount *);
+
+int unveil_add(struct proc *, struct nameidata *, const char *);
+void unveil_removevnode(struct vnode *);
+ssize_t unveil_find_cover(struct vnode *, struct proc *);
+struct unveil *unveil_lookup(struct vnode *, struct process *, ssize_t *);
+void unveil_start_relative(struct proc *, struct nameidata *, struct vnode *);
+void unveil_check_component(struct proc *, struct nameidata *, struct vnode *);
+int unveil_check_final(struct proc *, struct nameidata *);
+
+extern struct pool namei_pool;
+
 #endif
 
 /*
  * Stats on usefulness of namei caches.
  */
 struct	nchstats {
-	long	ncs_goodhits;		/* hits that we can really use */
-	long	ncs_neghits;		/* negative hits that we can use */
-	long	ncs_badhits;		/* hits we must drop */
-	long	ncs_falsehits;		/* hits with id mismatch */
-	long	ncs_miss;		/* misses */
-	long	ncs_long;		/* long names that ignore cache */
-	long	ncs_pass2;		/* names found with passes == 2 */
-	long	ncs_2passes;		/* number of times we attempt it */
+	u_int64_t	ncs_goodhits;	/* hits that we can really use */
+	u_int64_t	ncs_neghits;	/* negative hits that we can use */
+	u_int64_t	ncs_badhits;	/* hits we must drop */
+	u_int64_t	ncs_falsehits;	/* hits with id mismatch */
+	u_int64_t	ncs_miss;	/* misses */
+	u_int64_t	ncs_long;	/* long names that ignore cache */
+	u_int64_t	ncs_pass2;	/* names found with passes == 2 */
+	u_int64_t	ncs_2passes;	/* number of times we attempt it */
+	u_int64_t	ncs_revhits;	/* reverse-cache hits */
+	u_int64_t	ncs_revmiss;	/* reverse-cache misses */
+	u_int64_t	ncs_dothits;	/* hits on '.' lookups */
+	u_int64_t	ncs_dotdothits;	/* hits on '..' lookups */
 };
+
+/* These sysctl names are only really used by sysctl(8) */
+#define KERN_NCHSTATS_GOODHITS		1
+#define KERN_NCHSTATS_NEGHITS		2
+#define KERN_NCHSTATS_BADHITS		3
+#define KERN_NCHSTATS_FALSEHITS		4
+#define KERN_NCHSTATS_MISS		5
+#define KERN_NCHSTATS_LONG		6
+#define KERN_NCHSTATS_PASS2		7
+#define KERN_NCHSTATS_2PASSES		8
+#define KERN_NCHSTATS_REVHITS           9
+#define KERN_NCHSTATS_REVMISS           10
+#define KERN_NCHSTATS_DOTHITS		11
+#define KERN_NCHSTATS_DOTDOTHITS	12
+#define KERN_NCHSTATS_MAXID		13
+
+#define CTL_KERN_NCHSTATS_NAMES {		\
+	{ 0, 0 },				\
+	{ "good_hits", CTLTYPE_QUAD },		\
+	{ "negative_hits", CTLTYPE_QUAD },	\
+	{ "bad_hits", CTLTYPE_QUAD },		\
+	{ "false_hits", CTLTYPE_QUAD },		\
+	{ "misses", CTLTYPE_QUAD },		\
+	{ "long_names", CTLTYPE_QUAD },		\
+	{ "pass2", CTLTYPE_QUAD },		\
+	{ "2passes", CTLTYPE_QUAD },		\
+	{ "ncs_revhits", CTLTYPE_QUAD },	\
+	{ "ncs_revmiss", CTLTYPE_QUAD },	\
+	{ "ncs_dothits", CTLTYPE_QUAD },	\
+	{ "nch_dotdothits", CTLTYPE_QUAD },	\
+}
+
+/* Unveil flags for namei */
+#define	UNVEIL_READ	0x01
+#define	UNVEIL_WRITE	0x02
+#define	UNVEIL_CREATE	0x04
+#define	UNVEIL_EXEC	0x08
+#define	UNVEIL_USERSET	0x10
+#define	UNVEIL_MASK	0x0F
+
 #endif /* !_SYS_NAMEI_H_ */

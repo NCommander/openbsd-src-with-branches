@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sbrk.S,v 1.7 2022/09/02 06:19:04 miod Exp $	*/
 /*	$NetBSD: sbrk.S,v 1.9 2006/01/06 03:58:31 uwe Exp $	*/
 
 /*-
@@ -37,21 +37,23 @@
 
 #include "SYS.h"
 
-	.globl	_C_LABEL(end)
-	.globl	_C_LABEL(__curbrk)
+	.globl	_end
+	.globl	__curbrk
+	.hidden	__curbrk
 
-#ifdef WEAK_ALIAS
-WEAK_ALIAS(sbrk,_sbrk)
-#endif
+	.weak	sbrk
 
 	.data
-_C_LABEL(__curbrk):
-	.long	_C_LABEL(end)
+__curbrk:
+	.long	_end
+	.size	__curbrk, . - __curbrk
+	.type	__curbrk,@object
+
 	.text
 
-SYSENTRY(_sbrk)
+ENTRY(sbrk)
 	mov	r4, r2
-#ifdef PIC
+#ifdef __PIC__
 	mova	L_GOT, r0
 	mov.l	L_GOT, r3
 	add	r0, r3
@@ -62,10 +64,14 @@ SYSENTRY(_sbrk)
 #endif
 	mov.l	@r0, r0
 	add	r0, r4
+#if SYS_break >= 128
 	mov.l	LSYS_break, r0
+#else
+	mov	#SYS_break, r0
+#endif
 	trapa	#0x80
-	bf	err
-#ifdef PIC
+	bf	1f
+#ifdef __PIC__
 	mov.l	Lcurbrk, r0
 	mov.l	@(r0, r3), r1
 #else
@@ -74,16 +80,18 @@ SYSENTRY(_sbrk)
 	mov.l	@r1, r0
 	add	r0, r2
 	rts
-	mov.l	r2, @r1
-err:
-	JUMP_CERROR
+	 mov.l	r2, @r1
+1:
+	SET_ERRNO_AND_RETURN
 
 	.align	2
+#if SYS_break >= 128
 LSYS_break:	.long	SYS_break
-#ifdef PIC
-L_GOT:		.long	_GLOBAL_OFFSET_TABLE_
-Lcurbrk:	.long	_C_LABEL(__curbrk)@GOT
-#else
-Lcurbrk:	.long	_C_LABEL(__curbrk)
 #endif
-	SET_ENTRY_SIZE(_sbrk)
+#ifdef __PIC__
+L_GOT:		.long	_GLOBAL_OFFSET_TABLE_
+Lcurbrk:	.long	__curbrk@GOT
+#else
+Lcurbrk:	.long	__curbrk
+#endif
+	SET_ENTRY_SIZE(sbrk)

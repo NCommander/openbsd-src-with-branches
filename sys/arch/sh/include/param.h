@@ -1,5 +1,4 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: param.h,v 1.15 2006/08/28 13:43:35 yamt Exp $	*/
+/*	$OpenBSD: param.h,v 1.12 2016/09/03 14:25:27 bluhm Exp $	*/
 
 /*-
  * Copyright (c) 2002 The NetBSD Foundation, Inc. All rights reserved.
@@ -32,15 +31,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)param.h	5.8 (Berkeley) 6/28/91
  */
 
-/*
- * SuperH dependent constants.
- */
-
-#ifndef _SH_PARAM_H_
+#ifndef	_SH_PARAM_H_
 #define	_SH_PARAM_H_
 
 #define	_MACHINE_ARCH	sh
@@ -62,36 +55,21 @@
 #define	PAGE_SIZE		(1 << PAGE_SHIFT)
 #define	PAGE_MASK		(PAGE_SIZE - 1)
 
-#define	PGSHIFT			PAGE_SHIFT
+#ifdef _KERNEL
+
 #define	NBPG			PAGE_SIZE
+#define	PGSHIFT			PAGE_SHIFT
 #define	PGOFSET			PAGE_MASK
 
-/*
- * Round p (pointer or byte index) up to a correctly-aligned value
- * for all data types (int, long, ...).   The result is u_int and
- * must be cast to any desired pointer type.
- *
- * ALIGNED_POINTER is a boolean macro that checks whether an address
- * is valid to fetch data elements of type t from on this architecture.
- * This does not reflect the optimal alignment, just the possibility
- * (within reasonable limits).
- *
- */
-#define	ALIGNBYTES		(sizeof(int) - 1)
-#define	ALIGN(p)		(((u_int)(p) + ALIGNBYTES) & ~ALIGNBYTES)
-#define	ALIGNED_POINTER(p, t)	((((u_long)(p)) & (sizeof(t) - 1)) == 0)
-
-#define	DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
-#define	DEV_BSIZE	(1 << DEV_BSHIFT)
-#define	BLKDEV_IOSIZE	2048
-#define	MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
+#endif
 
 /*
  * u-space.
  */
-#define	UPAGES		2		/* pages of u-area */
-#define	USPACE		(UPAGES * NBPG)	/* total size of u-area */
+#define	UPAGES		3			/* pages of u-area */
+#define	USPACE		(UPAGES * PAGE_SIZE)	/* total size of u-area */
 #define	USPACE_ALIGN	(0)
+
 #if UPAGES == 1
 #error "too small u-area"
 #elif UPAGES == 2
@@ -100,38 +78,20 @@
 #undef	P1_STACK	/* kernel stack is P3-area */
 #endif
 
+#ifdef _KERNEL
+
+#define	NMBCLUSTERS	(8 * 1024)		/* max cluster allocation */
+
 #ifndef MSGBUFSIZE
-#define	MSGBUFSIZE	NBPG		/* default message buffer size */
+#define	MSGBUFSIZE	PAGE_SIZE		/* default message buffer size */
 #endif
 
-#define	btoc(x)		(((x) + PAGE_MASK) >> PAGE_SHIFT)
-#define	ctob(x)		((x) << PAGE_SHIFT)
-
-#define	btodb(bytes)	 		/* calculates (bytes / DEV_BSIZE) */ \
-	((bytes) >> DEV_BSHIFT)
-#define	dbtob(db)			/* calculates (db * DEV_BSIZE) */ \
-	((db) << DEV_BSHIFT)
-
 /*
- * Constants related to network buffer management.
- * MCLBYTES must be no larger than NBPG (the software page size), and,
- * on machines that exchange pages of input or output buffers with mbuf
- * clusters (MAPPED_MBUFS), MCLBYTES must also be an integral multiple
- * of the hardware page size.
- */
-#define	MSIZE		256		/* size of an mbuf */
-
-#define	MCLSHIFT	11		/* convert bytes to m_buf clusters */
-					/* 2K cluster can hold Ether frame */
-#define	MCLBYTES	(1 << MCLSHIFT)	/* size of a m_buf cluster */
-
-#define	NMBCLUSTERS	4096		/* map size, max cluster allocation */
-
-/*
- * Minimum and maximum sizes of the kernel malloc arena in PAGE_SIZE-sized
+ * Maximum size of the kernel malloc arena in PAGE_SIZE-sized
  * logical pages.
  */
-#define	NKMEMPAGES_MIN_DEFAULT	((4 * 1024 * 1024) >> PAGE_SHIFT)
 #define	NKMEMPAGES_MAX_DEFAULT	((64 * 1024 * 1024) >> PAGE_SHIFT)
 
-#endif /* !_SH3_PARAM_H_ */
+#endif /* _KERNEL */
+
+#endif /* _SH_PARAM_H_ */

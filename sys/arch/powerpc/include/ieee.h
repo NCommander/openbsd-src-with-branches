@@ -1,4 +1,4 @@
-/*	$NetBSD: ieee.h,v 1.1 1996/09/30 16:34:25 ws Exp $ */
+/*	$OpenBSD: ieee.h,v 1.4 2003/06/02 23:27:53 millert Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -21,11 +21,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -82,10 +78,9 @@
 #define	SNG_FRACBITS	23
 
 #define	DBL_EXPBITS	11
+#define	DBL_FRACHBITS	20
+#define	DBL_FRACLBITS	32
 #define	DBL_FRACBITS	52
-
-#define	EXT_EXPBITS	15
-#define	EXT_FRACBITS	112
 
 struct ieee_single {
 	u_int	sng_sign:1;
@@ -100,15 +95,6 @@ struct ieee_double {
 	u_int	dbl_fracl;
 };
 
-struct ieee_ext {
-	u_int	ext_sign:1;
-	u_int	ext_exp:15;
-	u_int	ext_frach:16;
-	u_int	ext_frachm;
-	u_int	ext_fraclm;
-	u_int	ext_fracl;
-};
-
 /*
  * Floats whose exponent is in [1..INFNAN) (of whatever type) are
  * `normal'.  Floats whose exponent is INFNAN are either Inf or NaN.
@@ -120,12 +106,10 @@ struct ieee_ext {
  */
 #define	SNG_EXP_INFNAN	255
 #define	DBL_EXP_INFNAN	2047
-#define	EXT_EXP_INFNAN	32767
 
 #if 0
 #define	SNG_QUIETNAN	(1 << 22)
 #define	DBL_QUIETNAN	(1 << 19)
-#define	EXT_QUIETNAN	(1 << 15)
 #endif
 
 /*
@@ -133,4 +117,3 @@ struct ieee_ext {
  */
 #define	SNG_EXP_BIAS	127
 #define	DBL_EXP_BIAS	1023
-#define	EXT_EXP_BIAS	16383

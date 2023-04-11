@@ -1,3 +1,21 @@
+/*	$OpenBSD: fstat.c,v 1.102 2021/07/17 20:46:02 kn Exp $	*/
+
+/*
+ * Copyright (c) 2009 Todd C. Miller <millert@openbsd.org>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 /*-
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +28,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,139 +45,144 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1988, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)fstat.c	8.1 (Berkeley) 6/6/93";*/
-static char *rcsid = "$Id: fstat.c,v 1.14 1995/03/28 17:24:12 jtc Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
-#include <sys/time.h>
-#include <sys/proc.h>
-#include <sys/user.h>
+#include <sys/types.h>
+#include <sys/queue.h>
+#include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/vnode.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
-#include <sys/domain.h>
-#include <sys/protosw.h>
-#include <sys/unpcb.h>
+#include <sys/eventvar.h>
 #include <sys/sysctl.h>
 #include <sys/filedesc.h>
-#define	_KERNEL
+#define _KERNEL /* for DTYPE_* */
 #include <sys/file.h>
-#include <ufs/ufs/quota.h>
-#include <ufs/ufs/inode.h>
 #undef _KERNEL
-#define NFS
-#include <sys/mount.h>
-#include <nfs/nfsv2.h>
-#include <nfs/rpcv2.h>
-#include <nfs/nfs.h>
-#include <nfs/nfsnode.h>
-#undef NFS
 
 #include <net/route.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
-#include <netinet/ip.h>
-#include <netinet/in_pcb.h>
+
+#include <netdb.h>
+#include <arpa/inet.h>
+
+#include <sys/pipe.h>
 
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <kvm.h>
+#include <limits.h>
 #include <nlist.h>
-#include <paths.h>
 #include <pwd.h>
+#include <search.h>
+#include <signal.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <err.h>
 
-#define	TEXT	-1
-#define	CDIR	-2
-#define	RDIR	-3
-#define	TRACE	-4
+#include "fstat.h"
 
-typedef struct devs {
-	struct	devs *next;
-	long	fsid;
-	ino_t	ino;
-	char	*name;
-} DEVS;
-DEVS *devs;
+#define MAXIMUM(a, b)	(((a) > (b)) ? (a) : (b))
 
-struct  filestat {
-	long	fsid;
-	long	fileid;
-	mode_t	mode;
-	u_long	size;
-	dev_t	rdev;
+struct fstat_filter {
+	int what;
+	int arg;
 };
 
-#ifdef notdef
-struct nlist nl[] = {
-	{ "" },
-};
-#endif
+struct fileargs fileargs = SLIST_HEAD_INITIALIZER(fileargs);
 
-int 	fsflg,	/* show files on same filesystem as file(s) argument */
-	pflg,	/* show files open by a particular pid */
-	uflg;	/* show files open by a particular (effective) user */
-int 	checkfile; /* true if restricting to particular files or filesystems */
+int	fsflg;	/* show files on same filesystem as file(s) argument */
+int	uflg;	/* show files open by a particular (effective) user */
+int	checkfile; /* true if restricting to particular files or filesystems */
 int	nflg;	/* (numerical) display f.s. and rdev as dev_t */
+int	oflg;	/* display file offset */
+int	sflg;	/* display file xfer/bytes counters */
 int	vflg;	/* display errors in locating kernel data objects etc... */
+int	cflg; 	/* fuser only */
 
-#define dprintf	if (vflg) fprintf
+int	fuser;	/* 1 if we are fuser, 0 if we are fstat */
+int	signo;	/* signal to send (fuser only) */
 
-struct file **ofiles;	/* buffer of pointers to file structures */
-int maxfiles;
-#define ALLOC_OFILES(d)	\
-	if ((d) > maxfiles) { \
-		free(ofiles); \
-		ofiles = malloc((d) * sizeof(struct file *)); \
-		if (ofiles == NULL) { \
-			fprintf(stderr, "fstat: %s\n", strerror(errno)); \
-			exit(1); \
-		} \
-		maxfiles = (d); \
-	}
-
-/*
- * a kvm_read that returns true if everything is read 
- */
-#define KVM_READ(kaddr, paddr, len) \
-	(kvm_read(kd, (u_long)(kaddr), (char *)(paddr), (len)) == (len))
+int	nfilter = 0;	/* How many uid/pid filters are in place */
+struct fstat_filter *filter = NULL; /* An array of uid/pid filters */
 
 kvm_t *kd;
+uid_t uid;
 
-int ufs_filestat(), nfs_filestat();
-void dofiles(), getinetproto(), socktrans();
-void usage(), vtrans();
+void fstat_dofile(struct kinfo_file *);
+void fstat_header(void);
+void getinetproto(int);
+__dead void usage(void);
+int getfname(char *);
+void kqueuetrans(struct kinfo_file *);
+void pipetrans(struct kinfo_file *);
+struct kinfo_file *splice_find(char, u_int64_t);
+void splice_insert(char, u_int64_t, struct kinfo_file *);
+void find_splices(struct kinfo_file *, int);
+void print_inet_details(struct kinfo_file *);
+void print_inet6_details(struct kinfo_file *);
+void print_sock_details(struct kinfo_file *);
+void socktrans(struct kinfo_file *);
+void vtrans(struct kinfo_file *);
+const char *inet6_addrstr(struct in6_addr *);
+int signame_to_signum(char *);
+void hide(void *p);
 
-main(argc, argv)
-	int argc;
-	char **argv;
+int hideroot;
+
+void
+hide(void *p)
 {
-	extern char *optarg;
-	extern int optind;
-	register struct passwd *passwd;
-	struct kinfo_proc *p, *plast;
-	int arg, ch, what;
-	char *memf, *nlistf;
-	int cnt;
+	printf("%p", hideroot ? NULL : p);
+}
 
-	arg = 0;
-	what = KERN_PROC_ALL;
+int
+main(int argc, char *argv[])
+{
+	struct kinfo_file *kf, *kflast;
+	int ch;
+	char *memf, *nlistf, *optstr;
+	char buf[_POSIX2_LINE_MAX];
+	const char *errstr;
+	int cnt, flags;
+
+	hideroot = getuid();
+
 	nlistf = memf = NULL;
-	while ((ch = getopt(argc, argv, "fnp:u:vNM")) != EOF)
-		switch((char)ch) {
+	oflg = 0;
+
+	/* are we fstat(1) or fuser(1)? */
+	if (strcmp(__progname, "fuser") == 0) {
+		fuser = 1;
+		optstr = "cfks:uM:N:";
+	} else {
+		fuser = 0;
+		optstr = "fnop:su:vN:M:";
+	}
+
+	/*
+	 * fuser and fstat share three flags: -f, -s and -u.  In both cases
+	 * -f is a boolean, but for -u fstat wants an argument while fuser
+	 * does not and for -s fuser wants an argument whereas fstat does not.
+	 */
+	while ((ch = getopt(argc, argv, optstr)) != -1)
+		switch ((char)ch) {
+		case 'c':
+			if (fsflg)
+				usage();
+			cflg = 1;
+			break;
 		case 'f':
+			if (cflg)
+				usage();
 			fsflg = 1;
+			break;
+		case 'k':
+			sflg = 1;
+			signo = SIGKILL;
 			break;
 		case 'M':
 			memf = optarg;
@@ -174,453 +193,582 @@ main(argc, argv)
 		case 'n':
 			nflg = 1;
 			break;
+		case 'o':
+			oflg = 1;
+			break;
 		case 'p':
-			if (pflg++)
-				usage();
-			if (!isdigit(*optarg)) {
-				fprintf(stderr,
-				    "fstat: -p requires a process id\n");
+			if ((filter = recallocarray(filter, nfilter, nfilter + 1,
+			    sizeof(*filter))) == NULL)
+				err(1, NULL);
+			filter[nfilter].arg = strtonum(optarg, 0, INT_MAX,
+			    &errstr);
+			if (errstr != NULL) {
+				warnx("-p requires a process id, %s: %s",
+					errstr, optarg);
 				usage();
 			}
-			what = KERN_PROC_PID;
-			arg = atoi(optarg);
+			filter[nfilter].what = KERN_FILE_BYPID;
+			nfilter++;
+			break;
+		case 's':
+			sflg = 1;
+			if (fuser) {
+				signo = signame_to_signum(optarg);
+				if (signo == -1) {
+					warnx("invalid signal %s", optarg);
+					usage();
+				}
+			}
 			break;
 		case 'u':
-			if (uflg++)
-				usage();
-			if (!(passwd = getpwnam(optarg))) {
-				fprintf(stderr, "%s: unknown uid\n",
-				    optarg);
-				exit(1);
+			uflg = 1;
+			if (!fuser) {
+				uid_t uid;
+
+				if (uid_from_user(optarg, &uid) == -1) {
+					uid = strtonum(optarg, 0, UID_MAX,
+					    &errstr);
+					if (errstr != NULL) {
+						errx(1, "%s: unknown uid",
+						    optarg);
+					}
+				}
+				if ((filter = recallocarray(filter, nfilter,
+				    nfilter + 1, sizeof(*filter))) == NULL)
+					err(1, NULL);
+				filter[nfilter].arg = uid;
+				filter[nfilter].what = KERN_FILE_BYUID;
+				nfilter++;
 			}
-			what = KERN_PROC_UID;
-			arg = passwd->pw_uid;
 			break;
 		case 'v':
 			vflg = 1;
 			break;
-		case '?':
 		default:
 			usage();
 		}
+
+	/*
+	 * get the uid, for oflg and sflg
+	 */
+	uid = getuid();
+
+	/*
+	 * Use sysctl unless inspecting an alternate kernel.
+	 */
+	if (nlistf == NULL || memf == NULL)
+		flags = KVM_NO_FILES;
+	else
+		flags = O_RDONLY;
+
+	if ((kd = kvm_openfiles(nlistf, memf, NULL, flags, buf)) == NULL)
+		errx(1, "%s", buf);
 
 	if (*(argv += optind)) {
 		for (; *argv; ++argv) {
 			if (getfname(*argv))
 				checkfile = 1;
 		}
-		if (!checkfile)	/* file(s) specified, but none accessable */
+		/* file(s) specified, but none accessible */
+		if (!checkfile)
 			exit(1);
-	}
+	} else if (fuser)
+		usage();
 
-	ALLOC_OFILES(256);	/* reserve space for file pointers */
-
-	if (fsflg && !checkfile) {	
-		/* -f with no files means use wd */
+	if (!fuser && fsflg && !checkfile) {
+		/* fstat -f with no files means use wd */
 		if (getfname(".") == 0)
 			exit(1);
 		checkfile = 1;
 	}
 
-	/*
-	 * Discard setgid privileges if not the running kernel so that bad
-	 * guys can't print interesting stuff from kernel memory.
-	 */
-	if (nlistf != NULL || memf != NULL)
-		setgid(getgid());
+	if (nfilter == 1) {
+		if ((kf = kvm_getfiles(kd, filter[0].what, filter[0].arg,
+		    sizeof(*kf), &cnt)) == NULL)
+			errx(1, "%s", kvm_geterr(kd));
+	} else {
+		if ((kf = kvm_getfiles(kd, KERN_FILE_BYPID, -1, sizeof(*kf),
+		    &cnt)) == NULL)
+			errx(1, "%s", kvm_geterr(kd));
+	}
 
-	if ((kd = kvm_open(nlistf, memf, NULL, O_RDONLY, NULL)) == NULL) {
-		fprintf(stderr, "fstat: %s\n", kvm_geterr(kd));
-		exit(1);
+	if (fuser) {
+		/*
+		 * fuser
+		 *  uflg: need "getpw"
+		 *  sflg: need "proc" (might call kill(2))
+		 */
+		if (uflg && sflg) {
+			if (pledge("stdio rpath getpw proc", NULL) == -1)
+				err(1, "pledge");
+		} else if (uflg) {
+			if (pledge("stdio rpath getpw", NULL) == -1)
+				err(1, "pledge");
+		} else if (sflg) {
+			if (pledge("stdio rpath proc", NULL) == -1)
+				err(1, "pledge");
+		} else {
+			if (pledge("stdio rpath", NULL) == -1)
+				err(1, "pledge");
+		}
+	} else {
+		/* fstat */
+		if (pledge("stdio rpath getpw", NULL) == -1)
+			err(1, "pledge");
 	}
-#ifdef notdef
-	if (kvm_nlist(kd, nl) != 0) {
-		fprintf(stderr, "fstat: no namelist: %s\n", kvm_geterr(kd));
-		exit(1);
-	}
-#endif
-	if ((p = kvm_getprocs(kd, what, arg, &cnt)) == NULL) {
-		fprintf(stderr, "fstat: %s\n", kvm_geterr(kd));
-		exit(1);
-	}
-	if (nflg)
-		printf("%s",
-"USER     CMD          PID   FD  DEV    INUM       MODE SZ|DV R/W");
-	else
-		printf("%s",
-"USER     CMD          PID   FD MOUNT      INUM MODE         SZ|DV R/W");
-	if (checkfile && fsflg == 0)
-		printf(" NAME\n");
-	else
-		putchar('\n');
 
-	for (plast = &p[cnt]; p < plast; ++p) {
-		if (p->kp_proc.p_stat == SZOMB)
-			continue;
-		dofiles(p);
+	find_splices(kf, cnt);
+	if (!fuser)
+		fstat_header();
+	for (kflast = &kf[cnt]; kf < kflast; ++kf) {
+		if (fuser)
+			fuser_check(kf);
+		else
+			fstat_dofile(kf);
 	}
+	if (fuser)
+		fuser_run();
+
 	exit(0);
 }
 
-char	*Uname, *Comm;
-int	Pid;
+void
+fstat_header(void)
+{
+	if (nflg)
+		printf("%s",
+"USER     CMD          PID   FD  DEV      INUM        MODE   R/W    SZ|DV");
+	else
+		printf("%s",
+"USER     CMD          PID   FD MOUNT        INUM  MODE         R/W    SZ|DV");
+	if (oflg)
+		printf("%s", ":OFFSET  ");
+	if (checkfile && fsflg == 0)
+		printf(" NAME");
+	if (sflg)
+		printf("    XFERS   KBYTES");
+	putchar('\n');
+}
 
-#define PREFIX(i) printf("%-8.8s %-10s %5d", Uname, Comm, Pid); \
-	switch(i) { \
-	case TEXT: \
+const char *Uname, *Comm;
+uid_t	*procuid;
+pid_t	Pid;
+
+#define PREFIX(i) do { \
+	printf("%-8.8s %-10s %5ld", Uname, Comm, (long)Pid); \
+	switch (i) { \
+	case KERN_FILE_TEXT: \
 		printf(" text"); \
 		break; \
-	case CDIR: \
+	case KERN_FILE_CDIR: \
 		printf("   wd"); \
 		break; \
-	case RDIR: \
+	case KERN_FILE_RDIR: \
 		printf(" root"); \
 		break; \
-	case TRACE: \
+	case KERN_FILE_TRACE: \
 		printf("   tr"); \
 		break; \
 	default: \
 		printf(" %4d", i); \
 		break; \
-	}
+	} \
+} while (0)
 
 /*
  * print open files attributed to this process
  */
 void
-dofiles(kp)
-	struct kinfo_proc *kp;
+fstat_dofile(struct kinfo_file *kf)
 {
-	int i, last;
-	struct file file;
-	struct filedesc0 filed0;
-#define	filed	filed0.fd_fd
-	struct proc *p = &kp->kp_proc;
-	struct eproc *ep = &kp->kp_eproc;
+	int i;
 
-	extern char *user_from_uid();
+	Uname = user_from_uid(kf->p_uid, 0);
+	procuid = &kf->p_uid;
+	Pid = kf->p_pid;
+	Comm = kf->p_comm;
 
-	Uname = user_from_uid(ep->e_ucred.cr_uid, 0);
-	Pid = p->p_pid;
-	Comm = p->p_comm;
-
-	if (p->p_fd == NULL)
-		return;
-	if (!KVM_READ(p->p_fd, &filed0, sizeof (filed0))) {
-		dprintf(stderr, "can't read filedesc at %x for pid %d\n",
-			p->p_fd, Pid);
-		return;
+	for (i = 0; i < nfilter; i++) {
+		if (filter[i].what == KERN_FILE_BYPID) {
+			if (filter[i].arg == Pid)
+				break;
+		} else if (filter[i].arg == *procuid) {
+			break;
+		}
 	}
-	if (filed.fd_nfiles < 0 || filed.fd_lastfile >= filed.fd_nfiles ||
-	    filed.fd_freefile > filed.fd_lastfile + 1) {
-		dprintf(stderr, "filedesc corrupted at %x for pid %d\n",
-			p->p_fd, Pid);
+	if (i == nfilter && nfilter != 0)
 		return;
-	}
-	/*
-	 * root directory vnode, if one
-	 */
-	if (filed.fd_rdir)
-		vtrans(filed.fd_rdir, RDIR, FREAD);
-	/*
-	 * current working directory vnode
-	 */
-	vtrans(filed.fd_cdir, CDIR, FREAD);
-	/*
-	 * ktrace vnode, if one
-	 */
-	if (p->p_tracep)
-		vtrans(p->p_tracep, TRACE, FREAD|FWRITE);
-	/*
-	 * open files
-	 */
-#define FPSIZE	(sizeof (struct file *))
-	ALLOC_OFILES(filed.fd_lastfile+1);
-	if (filed.fd_nfiles > NDFILE) {
-		if (!KVM_READ(filed.fd_ofiles, ofiles,
-		    (filed.fd_lastfile+1) * FPSIZE)) {
-			dprintf(stderr,
-			    "can't read file structures at %x for pid %d\n",
-			    filed.fd_ofiles, Pid);
-			return;
+
+	switch (kf->f_type) {
+	case DTYPE_VNODE:
+		vtrans(kf);
+		break;
+	case DTYPE_SOCKET:
+		socktrans(kf);
+		break;
+	case DTYPE_PIPE:
+		if (checkfile == 0)
+			pipetrans(kf);
+		break;
+	case DTYPE_KQUEUE:
+		if (checkfile == 0)
+			kqueuetrans(kf);
+		break;
+	default:
+		if (vflg) {
+			warnx("unknown file type %d for file %d of pid %ld",
+			    kf->f_type, kf->fd_fd, (long)Pid);
 		}
-	} else
-		bcopy(filed0.fd_dfiles, ofiles, (filed.fd_lastfile+1) * FPSIZE);
-	for (i = 0; i <= filed.fd_lastfile; i++) {
-		if (ofiles[i] == NULL)
-			continue;
-		if (!KVM_READ(ofiles[i], &file, sizeof (struct file))) {
-			dprintf(stderr, "can't read file %d at %x for pid %d\n",
-				i, ofiles[i], Pid);
-			continue;
-		}
-		if (file.f_type == DTYPE_VNODE)
-			vtrans((struct vnode *)file.f_data, i, file.f_flag);
-		else if (file.f_type == DTYPE_SOCKET) {
-			if (checkfile == 0)
-				socktrans((struct socket *)file.f_data, i);
-		}
-		else {
-			dprintf(stderr, 
-				"unknown file type %d for file %d of pid %d\n",
-				file.f_type, i, Pid);
-		}
+		break;
 	}
 }
 
 void
-vtrans(vp, i, flag)
-	struct vnode *vp;
-	int i;
-	int flag;
+vtrans(struct kinfo_file *kf)
 {
-	struct vnode vn;
-	struct filestat fst;
-	char rw[3], mode[15];
-	char *badtype = NULL, *filename, *getmnton();
+	const char *badtype = NULL;
+	char rwep[5], mode[12];
+	char *filename = NULL;
 
-	filename = badtype = NULL;
-	if (!KVM_READ(vp, &vn, sizeof (struct vnode))) {
-		dprintf(stderr, "can't read vnode at %x for pid %d\n",
-			vp, Pid);
-		return;
-	}
-	if (vn.v_type == VNON || vn.v_tag == VT_NON)
+	if (kf->v_type == VNON)
 		badtype = "none";
-	else if (vn.v_type == VBAD)
+	else if (kf->v_type == VBAD)
 		badtype = "bad";
-	else
-		switch (vn.v_tag) {
-		case VT_UFS:
-			if (!ufs_filestat(&vn, &fst))
-				badtype = "error";
-			break;
-		case VT_MFS:
-			if (!ufs_filestat(&vn, &fst))
-				badtype = "error";
-			break;
-		case VT_NFS:
-			if (!nfs_filestat(&vn, &fst))
-				badtype = "error";
-			break;
-		default: {
-			static char unknown[10];
-			sprintf(badtype = unknown, "?(%x)", vn.v_tag);
-			break;;
-		}
-	}
+	else if (kf->v_tag == VT_NON && !(kf->v_flag & VCLONE))
+		badtype = "none";	/* not a clone */
+
 	if (checkfile) {
 		int fsmatch = 0;
-		register DEVS *d;
+		struct filearg *fa;
 
 		if (badtype)
 			return;
-		for (d = devs; d != NULL; d = d->next)
-			if (d->fsid == fst.fsid) {
+		SLIST_FOREACH(fa, &fileargs, next) {
+			if (fa->dev == kf->va_fsid) {
 				fsmatch = 1;
-				if (d->ino == fst.fileid) {
-					filename = d->name;
+				if (fa->ino == kf->va_fileid) {
+					filename = fa->name;
 					break;
 				}
 			}
+		}
 		if (fsmatch == 0 || (filename == NULL && fsflg == 0))
 			return;
 	}
-	PREFIX(i);
+	PREFIX(kf->fd_fd);
 	if (badtype) {
-		(void)printf(" -         -  %10s    -\n", badtype);
+		(void)printf(" -           -  %10s    -\n", badtype);
 		return;
 	}
+
 	if (nflg)
-		(void)printf(" %2d,%-2d", major(fst.fsid), minor(fst.fsid));
+		(void)printf(" %2lu,%-2lu", (long)major(kf->va_fsid),
+		    (long)minor(kf->va_fsid));
+	else if (!(kf->v_flag & VCLONE))
+		(void)printf(" %-8s", kf->f_mntonname);
 	else
-		(void)printf(" %-8s", getmnton(vn.v_mount));
+		(void)printf(" clone   ");
 	if (nflg)
-		(void)sprintf(mode, "%o", fst.mode);
+		(void)snprintf(mode, sizeof(mode), "%o", kf->va_mode);
 	else
-		strmode(fst.mode, mode);
-	(void)printf(" %6d %10s", fst.fileid, mode);
-	switch (vn.v_type) {
+		strmode(kf->va_mode, mode);
+	printf(" %8llu%s %11s", kf->va_fileid,
+	    kf->va_nlink == 0 ? "*" : " ",
+	    mode);
+	rwep[0] = '\0';
+	if (kf->f_flag & FREAD)
+		strlcat(rwep, "r", sizeof rwep);
+	if (kf->f_flag & FWRITE)
+		strlcat(rwep, "w", sizeof rwep);
+	if (kf->fd_ofileflags & UF_EXCLOSE)
+		strlcat(rwep, "e", sizeof rwep);
+	if (kf->fd_ofileflags & UF_PLEDGED)
+		strlcat(rwep, "p", sizeof rwep);
+	printf(" %4s", rwep);
+	switch (kf->v_type) {
 	case VBLK:
 	case VCHR: {
 		char *name;
 
-		if (nflg || ((name = devname(fst.rdev, vn.v_type == VCHR ? 
-		    S_IFCHR : S_IFBLK)) == NULL))
-			printf("  %2d,%-2d", major(fst.rdev), minor(fst.rdev));
+		if (nflg || ((name = devname(kf->va_rdev,
+		    kf->v_type == VCHR ?  S_IFCHR : S_IFBLK)) == NULL))
+			printf("   %2u,%-3u", major(kf->va_rdev), minor(kf->va_rdev));
 		else
-			printf(" %6s", name);
+			printf("  %7s", name);
+		if (oflg)
+			printf("         ");
 		break;
 	}
 	default:
-		printf(" %6d", fst.size);
+		printf(" %8llu", kf->va_size);
+		if (oflg) {
+			if (uid == 0 || uid == *procuid)
+				printf(":%-8llu", kf->f_offset);
+			else
+				printf(":%-8s", "*");
+		}
 	}
-	rw[0] = '\0';
-	if (flag & FREAD)
-		strcat(rw, "r");
-	if (flag & FWRITE)
-		strcat(rw, "w");
-	printf(" %2s", rw);
+	if (sflg) {
+		if (uid == 0 || uid == *procuid) {
+			printf(" %8llu %8llu",
+			    (kf->f_rxfer + kf->f_rwfer),
+			    (kf->f_rbytes + kf->f_wbytes) / 1024);
+		} else {
+			printf(" %8s %8s", "*", "*");
+		}
+	}
 	if (filename && !fsflg)
-		printf("  %s", filename);
+		printf(" %s", filename);
 	putchar('\n');
 }
 
-int
-ufs_filestat(vp, fsp)
-	struct vnode *vp;
-	struct filestat *fsp;
+void
+pipetrans(struct kinfo_file *kf)
 {
-	struct inode inode;
+	void *maxaddr;
 
-	if (!KVM_READ(VTOI(vp), &inode, sizeof (inode))) {
-		dprintf(stderr, "can't read inode at %x for pid %d\n",
-			VTOI(vp), Pid);
-		return 0;
-	}
-	fsp->fsid = inode.i_dev & 0xffff;
-	fsp->fileid = (long)inode.i_number;
-	fsp->mode = (mode_t)inode.i_mode;
-	fsp->size = (u_long)inode.i_size;
-	fsp->rdev = inode.i_rdev;
+	PREFIX(kf->fd_fd);
 
-	return 1;
-}
+	printf(" ");
 
-int
-nfs_filestat(vp, fsp)
-	struct vnode *vp;
-	struct filestat *fsp;
-{
-	struct nfsnode nfsnode;
-	register mode_t mode;
+	/*
+	 * We don't have enough space to fit both peer and own address, so
+	 * we select the higher address so both ends of the pipe have the
+	 * same visible addr. (it's the higher address because when the other
+	 * end closes, it becomes 0)
+	 */
+	maxaddr = (void *)(uintptr_t)MAXIMUM(kf->f_data, kf->pipe_peer);
 
-	if (!KVM_READ(VTONFS(vp), &nfsnode, sizeof (nfsnode))) {
-		dprintf(stderr, "can't read nfsnode at %x for pid %d\n",
-			VTONFS(vp), Pid);
-		return 0;
-	}
-	fsp->fsid = nfsnode.n_vattr.va_fsid;
-	fsp->fileid = nfsnode.n_vattr.va_fileid;
-	fsp->size = nfsnode.n_size;
-	fsp->rdev = nfsnode.n_vattr.va_rdev;
-	mode = (mode_t)nfsnode.n_vattr.va_mode;
-	switch (vp->v_type) {
-	case VREG:
-		mode |= S_IFREG;
-		break;
-	case VDIR:
-		mode |= S_IFDIR;
-		break;
-	case VBLK:
-		mode |= S_IFBLK;
-		break;
-	case VCHR:
-		mode |= S_IFCHR;
-		break;
-	case VLNK:
-		mode |= S_IFLNK;
-		break;
-	case VSOCK:
-		mode |= S_IFSOCK;
-		break;
-	case VFIFO:
-		mode |= S_IFIFO;
-		break;
-	};
-	fsp->mode = mode;
-
-	return 1;
-}
-
-
-char *
-getmnton(m)
-	struct mount *m;
-{
-	static struct mount mount;
-	static struct mtab {
-		struct mtab *next;
-		struct mount *m;
-		char mntonname[MNAMELEN];
-	} *mhead = NULL;
-	register struct mtab *mt;
-
-	for (mt = mhead; mt != NULL; mt = mt->next)
-		if (m == mt->m)
-			return (mt->mntonname);
-	if (!KVM_READ(m, &mount, sizeof(struct mount))) {
-		fprintf(stderr, "can't read mount table at %x\n", m);
-		return (NULL);
-	}
-	if ((mt = malloc(sizeof (struct mtab))) == NULL) {
-		fprintf(stderr, "fstat: %s\n", strerror(errno));
-		exit(1);
-	}
-	mt->m = m;
-	bcopy(&mount.mnt_stat.f_mntonname[0], &mt->mntonname[0], MNAMELEN);
-	mt->next = mhead;
-	mhead = mt;
-	return (mt->mntonname);
+	printf("pipe ");
+	hide(maxaddr);
+	printf(" state: %s%s%s",
+	    (kf->pipe_state & PIPE_WANTR) ? "R" : "",
+	    (kf->pipe_state & PIPE_WANTW) ? "W" : "",
+	    (kf->pipe_state & PIPE_EOF) ? "E" : "");
+	if (sflg)
+		printf("\t%8llu %8llu",
+		    (kf->f_rxfer + kf->f_rwfer),
+		    (kf->f_rbytes + kf->f_wbytes) / 1024);
+	printf("\n");
+	return;
 }
 
 void
-socktrans(sock, i)
-	struct socket *sock;
-	int i;
+kqueuetrans(struct kinfo_file *kf)
+{
+	PREFIX(kf->fd_fd);
+
+	printf(" ");
+
+	printf("kqueue ");
+	hide((void *)(uintptr_t)kf->f_data);
+	printf(" %d state: %s\n",
+	    kf->kq_count,
+	    (kf->kq_state & KQ_SLEEP) ? "W" : "");
+	return;
+}
+
+const char *
+inet6_addrstr(struct in6_addr *p)
+{
+	struct sockaddr_in6 sin6;
+	static char hbuf[NI_MAXHOST];
+	const int niflags = NI_NUMERICHOST;
+
+	memset(&sin6, 0, sizeof(sin6));
+	sin6.sin6_family = AF_INET6;
+	sin6.sin6_len = sizeof(struct sockaddr_in6);
+	sin6.sin6_addr = *p;
+	if (IN6_IS_ADDR_LINKLOCAL(p) &&
+	    *(u_int16_t *)&sin6.sin6_addr.s6_addr[2] != 0) {
+		sin6.sin6_scope_id =
+		    ntohs(*(u_int16_t *)&sin6.sin6_addr.s6_addr[2]);
+		sin6.sin6_addr.s6_addr[2] = sin6.sin6_addr.s6_addr[3] = 0;
+	}
+
+	if (getnameinfo((struct sockaddr *)&sin6, sin6.sin6_len,
+	    hbuf, sizeof(hbuf), NULL, 0, niflags))
+		return "invalid";
+
+	return hbuf;
+}
+
+void
+splice_insert(char type, u_int64_t ptr, struct kinfo_file *data)
+{
+	ENTRY entry, *found;
+
+	if (asprintf(&entry.key, "%c%llx", type, hideroot ? 0 : ptr) == -1)
+		err(1, NULL);
+	entry.data = data;
+	if ((found = hsearch(entry, ENTER)) == NULL)
+		err(1, "hsearch");
+	/* if it's ambiguous, set the data to NULL */
+	if (found->data != data)
+		found->data = NULL;
+}
+
+struct kinfo_file *
+splice_find(char type, u_int64_t ptr)
+{
+	ENTRY entry, *found;
+	char buf[20];
+
+	snprintf(buf, sizeof(buf), "%c%llx", type, hideroot ? 0 : ptr);
+	entry.key = buf;
+	found = hsearch(entry, FIND);
+	return (found != NULL ? found->data : NULL);
+}
+
+void
+find_splices(struct kinfo_file *kf, int cnt)
+{
+	int i, created;
+
+	created = 0;
+	for (i = 0; i < cnt; i++) {
+		if (kf[i].f_type != DTYPE_SOCKET ||
+		    (kf[i].so_splice == 0 && kf[i].so_splicelen != -1))
+			continue;
+		if (created++ == 0) {
+			if (hcreate(1000) == 0)
+				err(1, "hcreate");
+		}
+		splice_insert('>', kf[i].f_data, &kf[i]);
+		if (kf[i].so_splice != 0)
+			splice_insert('<', kf[i].so_splice, &kf[i]);
+	}
+}
+
+void
+print_inet_details(struct kinfo_file *kf)
+{
+	struct in_addr laddr, faddr;
+
+	memcpy(&laddr, kf->inp_laddru, sizeof(laddr));
+	memcpy(&faddr, kf->inp_faddru, sizeof(faddr));
+	if (kf->so_protocol == IPPROTO_TCP) {
+		printf(" ");
+		hide((void *)(uintptr_t)kf->inp_ppcb);
+		printf(" %s:%d", laddr.s_addr == INADDR_ANY ? "*" :
+		    inet_ntoa(laddr), ntohs(kf->inp_lport));
+		if (kf->inp_fport) {
+			if (kf->so_state & SS_CONNECTOUT)
+				printf(" --> ");
+			else
+				printf(" <-- ");
+			printf("%s:%d",
+			    faddr.s_addr == INADDR_ANY ? "*" :
+			    inet_ntoa(faddr), ntohs(kf->inp_fport));
+		}
+	} else if (kf->so_protocol == IPPROTO_UDP) {
+		printf(" %s:%d", laddr.s_addr == INADDR_ANY ? "*" :
+		    inet_ntoa(laddr), ntohs(kf->inp_lport));
+		if (kf->inp_fport) {
+			printf(" <-> %s:%d",
+			    faddr.s_addr == INADDR_ANY ? "*" :
+			    inet_ntoa(faddr), ntohs(kf->inp_fport));
+		}
+	} else if (kf->so_pcb) {
+		printf(" ");
+		hide((void *)(uintptr_t)kf->so_pcb);
+	}
+}
+
+void
+print_inet6_details(struct kinfo_file *kf)
+{
+	char xaddrbuf[NI_MAXHOST + 2];
+	struct in6_addr laddr6, faddr6;
+
+	memcpy(&laddr6, kf->inp_laddru, sizeof(laddr6));
+	memcpy(&faddr6, kf->inp_faddru, sizeof(faddr6));
+	if (kf->so_protocol == IPPROTO_TCP) {
+		printf(" ");
+		hide((void *)(uintptr_t)kf->inp_ppcb);
+		snprintf(xaddrbuf, sizeof(xaddrbuf), "[%s]",
+		    inet6_addrstr(&laddr6));
+		printf(" %s:%d",
+		    IN6_IS_ADDR_UNSPECIFIED(&laddr6) ? "*" :
+		    xaddrbuf, ntohs(kf->inp_lport));
+		if (kf->inp_fport) {
+			if (kf->so_state & SS_CONNECTOUT)
+				printf(" --> ");
+			else
+				printf(" <-- ");
+			snprintf(xaddrbuf, sizeof(xaddrbuf), "[%s]",
+			    inet6_addrstr(&faddr6));
+			printf("%s:%d",
+			    IN6_IS_ADDR_UNSPECIFIED(&faddr6) ? "*" :
+			    xaddrbuf, ntohs(kf->inp_fport));
+		}
+	} else if (kf->so_protocol == IPPROTO_UDP) {
+		snprintf(xaddrbuf, sizeof(xaddrbuf), "[%s]",
+		    inet6_addrstr(&laddr6));
+		printf(" %s:%d",
+		    IN6_IS_ADDR_UNSPECIFIED(&laddr6) ? "*" :
+		    xaddrbuf, ntohs(kf->inp_lport));
+		if (kf->inp_fport) {
+			snprintf(xaddrbuf, sizeof(xaddrbuf), "[%s]",
+			    inet6_addrstr(&faddr6));
+			printf(" <-> %s:%d",
+			    IN6_IS_ADDR_UNSPECIFIED(&faddr6) ? "*" :
+			    xaddrbuf, ntohs(kf->inp_fport));
+		}
+	} else if (kf->so_pcb) {
+		printf(" ");
+		hide((void *)(uintptr_t)kf->so_pcb);
+	}
+}
+
+void
+print_sock_details(struct kinfo_file *kf)
+{
+	if (kf->so_family == AF_INET)
+		print_inet_details(kf);
+	else if (kf->so_family == AF_INET6)
+		print_inet6_details(kf);
+}
+
+void
+socktrans(struct kinfo_file *kf)
 {
 	static char *stypename[] = {
 		"unused",	/* 0 */
-		"stream", 	/* 1 */
+		"stream",	/* 1 */
 		"dgram",	/* 2 */
 		"raw",		/* 3 */
 		"rdm",		/* 4 */
 		"seqpak"	/* 5 */
 	};
 #define	STYPEMAX 5
-	struct socket	so;
-	struct protosw	proto;
-	struct domain	dom;
-	struct inpcb	inpcb;
-	struct unpcb	unpcb;
-	int len;
-	char dname[32], *strcpy();
+	char *stype, stypebuf[24];
 
-	PREFIX(i);
+	if (checkfile) {
+		struct filearg *fa;
 
-	/* fill in socket */
-	if (!KVM_READ(sock, &so, sizeof(struct socket))) {
-		dprintf(stderr, "can't read sock at %x\n", sock);
-		goto bad;
+		if (kf->so_type != AF_UNIX)
+			return;
+		SLIST_FOREACH(fa, &fileargs, next) {
+			if (fa->dev != 0)
+				continue;
+			if (strcmp(kf->unp_path, fa->name) == 0)
+				break;
+		}
+		if (fa == NULL)
+			return;
 	}
 
-	/* fill in protosw entry */
-	if (!KVM_READ(so.so_proto, &proto, sizeof(struct protosw))) {
-		dprintf(stderr, "can't read protosw at %x", so.so_proto);
-		goto bad;
+	PREFIX(kf->fd_fd);
+
+	if (kf->so_type > STYPEMAX) {
+		snprintf(stypebuf, sizeof(stypebuf), "?%d", kf->so_type);
+		stype = stypebuf;
+	} else {
+		stype = stypename[kf->so_type];
 	}
 
-	/* fill in domain */
-	if (!KVM_READ(proto.pr_domain, &dom, sizeof(struct domain))) {
-		dprintf(stderr, "can't read domain at %x\n", proto.pr_domain);
-		goto bad;
-	}
-
-	if ((len = kvm_read(kd, (u_long)dom.dom_name, dname,
-	    sizeof(dname) - 1)) < 0) {
-		dprintf(stderr, "can't read domain name at %x\n",
-			dom.dom_name);
-		dname[0] = '\0';
-	}
-	else
-		dname[len] = '\0';
-
-	if ((u_short)so.so_type > STYPEMAX)
-		printf("* %s ?%d", dname, so.so_type);
-	else
-		printf("* %s %s", dname, stypename[so.so_type]);
-
-	/* 
+	/*
 	 * protocol specific formatting
 	 *
 	 * Try to find interesting things to print.  For tcp, the interesting
@@ -631,58 +779,93 @@ socktrans(sock, i)
 	 * The idea is not to duplicate netstat, but to make available enough
 	 * information for further analysis.
 	 */
-	switch(dom.dom_family) {
+	switch (kf->so_family) {
 	case AF_INET:
-		getinetproto(proto.pr_protocol);
-		if (proto.pr_protocol == IPPROTO_TCP ) {
-			if (so.so_pcb) {
-				if (kvm_read(kd, (u_long)so.so_pcb,
-				    (char *)&inpcb, sizeof(struct inpcb))
-				    != sizeof(struct inpcb)) {
-					dprintf(stderr, 
-					    "can't read inpcb at %x\n",
-					    so.so_pcb);
-					goto bad;
-				}
-				printf(" %lx", (long)inpcb.inp_ppcb);
-			}
-		}
-		else if (so.so_pcb)
-			printf(" %lx", (long)so.so_pcb);
+		printf("* internet %s", stype);
+		getinetproto(kf->so_protocol);
+		print_inet_details(kf);
+		if (kf->inp_rtableid)
+			printf(" rtable %u", kf->inp_rtableid);
+		break;
+	case AF_INET6:
+		printf("* internet6 %s", stype);
+		getinetproto(kf->so_protocol);
+		print_inet6_details(kf);
+		if (kf->inp_rtableid)
+			printf(" rtable %u", kf->inp_rtableid);
 		break;
 	case AF_UNIX:
 		/* print address of pcb and connected pcb */
-		if (so.so_pcb) {
-			printf(" %lx", (long)so.so_pcb);
-			if (kvm_read(kd, (u_long)so.so_pcb, (char *)&unpcb,
-			    sizeof(struct unpcb)) != sizeof(struct unpcb)){
-				dprintf(stderr, "can't read unpcb at %x\n",
-				    so.so_pcb);
-				goto bad;
-			}
-			if (unpcb.unp_conn) {
+		printf("* unix %s", stype);
+		if (kf->so_pcb) {
+			printf(" ");
+			hide((void *)(uintptr_t)kf->so_pcb);
+			if (kf->unp_conn) {
 				char shoconn[4], *cp;
 
 				cp = shoconn;
-				if (!(so.so_state & SS_CANTRCVMORE))
+				if (!(kf->so_state & SS_CANTRCVMORE))
 					*cp++ = '<';
 				*cp++ = '-';
-				if (!(so.so_state & SS_CANTSENDMORE))
+				if (!(kf->so_state & SS_CANTSENDMORE))
 					*cp++ = '>';
 				*cp = '\0';
-				printf(" %s %lx", shoconn,
-				    (long)unpcb.unp_conn);
+				printf(" %s ", shoconn);
+				hide((void *)(uintptr_t)kf->unp_conn);
 			}
 		}
+		if (kf->unp_path[0] != '\0')
+			printf(" %s", kf->unp_path);
+		break;
+	case AF_MPLS:
+		/* print protocol number and socket address */
+		printf("* mpls %s", stype);
+		printf(" %d ", kf->so_protocol);
+		hide((void *)(uintptr_t)kf->f_data);
+		break;
+	case AF_ROUTE:
+		/* print protocol number and socket address */
+		printf("* route %s", stype);
+		printf(" %d ", kf->so_protocol);
+		hide((void *)(uintptr_t)kf->f_data);
+		break;
+	case AF_KEY:
+		printf("* pfkey %s", stype);
+		printf(" %d ", kf->so_protocol);
+		hide((void *)(uintptr_t)kf->f_data);
 		break;
 	default:
 		/* print protocol number and socket address */
-		printf(" %d %lx", proto.pr_protocol, (long)sock);
+		printf("* %d %s", kf->so_family, stype);
+		printf(" %d ", kf->so_protocol);
+		hide((void *)(uintptr_t)kf->f_data);
 	}
+	if (kf->so_splice != 0 || kf->so_splicelen == -1) {
+		struct kinfo_file *from, *to;
+
+		from = splice_find('<', kf->f_data);
+		to = NULL;
+		if (kf->so_splice != 0)
+			to = splice_find('>', kf->so_splice);
+
+		if (to != NULL && from == to) {
+			printf(" <==>");
+			print_sock_details(to);
+		} else if (kf->so_splice != 0) {
+			printf(" ==>");
+			if (to != NULL)
+				print_sock_details(to);
+		} else if (kf->so_splicelen == -1) {
+			printf(" <==");
+			if (from != NULL)
+				print_sock_details(from);
+		}
+	}
+	if (sflg)
+		printf("\t%8llu %8llu",
+		    (kf->f_rxfer + kf->f_rwfer),
+		    (kf->f_rbytes + kf->f_wbytes) / 1024);
 	printf("\n");
-	return;
-bad:
-	printf("* error\n");
 }
 
 /*
@@ -690,64 +873,103 @@ bad:
  *	print name of protocol number
  */
 void
-getinetproto(number)
-	int number;
+getinetproto(int number)
 {
-	char *cp;
+	static int isopen;
+	struct protoent *pe;
 
-	switch(number) {
-	case IPPROTO_IP:
-		cp = "ip"; break;
-	case IPPROTO_ICMP:
-		cp ="icmp"; break;
-	case IPPROTO_GGP:
-		cp ="ggp"; break;
-	case IPPROTO_TCP:
-		cp ="tcp"; break;
-	case IPPROTO_EGP:
-		cp ="egp"; break;
-	case IPPROTO_PUP:
-		cp ="pup"; break;
-	case IPPROTO_UDP:
-		cp ="udp"; break;
-	case IPPROTO_IDP:
-		cp ="idp"; break;
-	case IPPROTO_RAW:
-		cp ="raw"; break;
-	default:
+	if (!isopen)
+		setprotoent(++isopen);
+	if ((pe = getprotobynumber(number)) != NULL)
+		printf(" %s", pe->p_name);
+	else
 		printf(" %d", number);
-		return;
-	}
-	printf(" %s", cp);
 }
 
-getfname(filename)
-	char *filename;
+int
+getfname(char *filename)
 {
-	struct stat statbuf;
-	DEVS *cur;
+	static struct statfs *mntbuf;
+	static int nmounts;
+	int i;
+	struct stat sb;
+	struct filearg *cur;
 
-	if (stat(filename, &statbuf)) {
-		fprintf(stderr, "fstat: %s: %s\n", filename, strerror(errno));
-		return(0);
+	if (stat(filename, &sb)) {
+		warn("%s", filename);
+		return (0);
 	}
-	if ((cur = malloc(sizeof(DEVS))) == NULL) {
-		fprintf(stderr, "fstat: %s\n", strerror(errno));
-		exit(1);
-	}
-	cur->next = devs;
-	devs = cur;
 
-	cur->ino = statbuf.st_ino;
-	cur->fsid = statbuf.st_dev & 0xffff;
+	/*
+	 * POSIX specifies "For block special devices, all processes using any
+	 * file on that device are listed".  However the -f flag description
+	 * states "The report shall be only for the named files", so we only
+	 * look up a block device if the -f flag has not be specified.
+	 */
+	if (fuser && !fsflg && S_ISBLK(sb.st_mode)) {
+		if (mntbuf == NULL) {
+			nmounts = getmntinfo(&mntbuf, MNT_NOWAIT);
+			if (nmounts == -1)
+				err(1, "getmntinfo");
+		}
+		for (i = 0; i < nmounts; i++) {
+			if (!strcmp(mntbuf[i].f_mntfromname, filename)) {
+				if (stat(mntbuf[i].f_mntonname, &sb) == -1) {
+					warn("%s", filename);
+					return (0);
+				}
+				cflg = 1;
+				break;
+			}
+		}
+	}
+	if (!fuser && S_ISSOCK(sb.st_mode)) {
+		char *newname = realpath(filename, NULL);
+		if (newname != NULL)
+			filename = newname;
+	}
+
+	if ((cur = calloc(1, sizeof(*cur))) == NULL)
+		err(1, NULL);
+
+	if (!S_ISSOCK(sb.st_mode)) {
+		cur->ino = sb.st_ino;
+		cur->dev = sb.st_dev & 0xffff;
+	}
 	cur->name = filename;
-	return(1);
+	TAILQ_INIT(&cur->fusers);
+	SLIST_INSERT_HEAD(&fileargs, cur, next);
+	return (1);
+}
+
+int
+signame_to_signum(char *sig)
+{
+	int n;
+	const char *errstr = NULL;
+
+	if (isdigit((unsigned char)*sig)) {
+		n = strtonum(sig, 0, NSIG - 1, &errstr);
+		return (errstr ? -1 : n);
+	}
+	if (!strncasecmp(sig, "sig", 3))
+		sig += 3;
+	for (n = 1; n < NSIG; n++) {
+		if (!strcasecmp(sys_signame[n], sig))
+			return (n);
+	}
+	return (-1);
 }
 
 void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr,
- "usage: fstat [-fnv] [-p pid] [-u user] [-N system] [-M core] [file ...]\n");
+	if (fuser) {
+		fprintf(stderr, "usage: fuser [-cfku] [-M core] "
+		    "[-N system] [-s signal] file ...\n");
+	} else {
+		fprintf(stderr, "usage: fstat [-fnosv] [-M core] [-N system] "
+		    "[-p pid] [-u user] [file ...]\n");
+	}
 	exit(1);
 }

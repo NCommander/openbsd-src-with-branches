@@ -1,0 +1,4 @@
+dnl	$OpenBSD: whatis,v 1.4 2019/04/24 13:26:15 visa Exp $
+
+OpenBSD/MACHINE is a port intended to run on MIPS64-based systems that utilize
+the Cavium OCTEON, OCTEON Plus, OCTEON II, and OCTEON III system on chips.

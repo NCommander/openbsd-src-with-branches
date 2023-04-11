@@ -1,4 +1,4 @@
-/* crypto/cast/c_skey.c */
+/* $OpenBSD: c_skey.c,v 1.11 2014/06/12 15:49:28 deraadt Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -58,7 +58,7 @@
 
 #include <openssl/crypto.h>
 #include <openssl/cast.h>
-#include "cast_lcl.h"
+#include "cast_local.h"
 #include "cast_s.h"
 
 #define CAST_exp(l,A,a,n) \
@@ -73,13 +73,6 @@
 #define S6 CAST_S_table6
 #define S7 CAST_S_table7
 void CAST_set_key(CAST_KEY *key, int len, const unsigned char *data)
-#ifdef OPENSSL_FIPS
-	{
-	fips_cipher_abort(CAST);
-	private_CAST_set_key(key, len, data);
-	}
-void private_CAST_set_key(CAST_KEY *key, int len, const unsigned char *data)
-#endif
 	{
 	CAST_LONG x[16];
 	CAST_LONG z[16];

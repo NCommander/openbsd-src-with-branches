@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: trap.c,v 1.53 2023/01/16 05:32:05 deraadt Exp $	*/
 /*	$NetBSD: exception.c,v 1.32 2006/09/04 23:57:52 uwe Exp $	*/
 /*	$NetBSD: syscall.c,v 1.6 2006/03/07 07:21:50 thorpej Exp $	*/
 
@@ -84,48 +84,58 @@
 #include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/pool.h>
-#include <sys/user.h>
 #include <sys/kernel.h>
 #include <sys/signal.h>
-#include <sys/syscall.h>
-
-#ifdef KTRACE
-#include <sys/ktrace.h>
-#endif
-
-#include "systrace.h"
-#if NSYSTRACE > 0
-#include <dev/systrace.h>
-#endif
-
+#include <sys/resourcevar.h>
+#include <sys/signalvar.h>
 #include <uvm/uvm_extern.h>
+#include <sys/syscall.h>
+#include <sys/syscall_mi.h>
 
+#include <sh/cache.h>
 #include <sh/cpu.h>
 #include <sh/mmu.h>
+#include <sh/pcb.h>
 #include <sh/trap.h>
-#include <sh/userret.h>
+#ifdef SH4
+#include <sh/fpu.h>
+#endif
 
 #ifdef DDB
 #include <machine/db_machdep.h>
 #endif
 
 const char * const exp_type[] = {
-	"--",					/* 0x000 (reset vector) */
-	"--",					/* 0x020 (reset vector) */
-	"TLB miss/invalid (load)",		/* 0x040 EXPEVT_TLB_MISS_LD */
-	"TLB miss/invalid (store)",		/* 0x060 EXPEVT_TLB_MISS_ST */
-	"initial page write",			/* 0x080 EXPEVT_TLB_MOD */
-	"TLB protection violation (load)",	/* 0x0a0 EXPEVT_TLB_PROT_LD */
-	"TLB protection violation (store)",	/* 0x0c0 EXPEVT_TLB_PROT_ST */
-	"address error (load)",			/* 0x0e0 EXPEVT_ADDR_ERR_LD */
-	"address error (store)",		/* 0x100 EXPEVT_ADDR_ERR_ST */
-	"FPU",					/* 0x120 EXPEVT_FPU */
-	"--",					/* 0x140 (reset vector) */
-	"unconditional trap (TRAPA)",		/* 0x160 EXPEVT_TRAPA */
-	"reserved instruction code exception",	/* 0x180 EXPEVT_RES_INST */
-	"illegal slot instruction exception",	/* 0x1a0 EXPEVT_SLOT_INST */
-	"--",					/* 0x1c0 (external interrupt) */
-	"user break point trap",		/* 0x1e0 EXPEVT_BREAK */
+	NULL,					/* 000 (reset vector) */
+	NULL,					/* 020 (reset vector) */
+	"TLB miss/invalid (load)",		/* 040 EXPEVT_TLB_MISS_LD */
+	"TLB miss/invalid (store)",		/* 060 EXPEVT_TLB_MISS_ST */
+	"initial page write",			/* 080 EXPEVT_TLB_MOD */
+	"TLB protection violation (load)",	/* 0a0 EXPEVT_TLB_PROT_LD */
+	"TLB protection violation (store)",	/* 0c0 EXPEVT_TLB_PROT_ST */
+	"address error (load)",			/* 0e0 EXPEVT_ADDR_ERR_LD */
+	"address error (store)",		/* 100 EXPEVT_ADDR_ERR_ST */
+	"FPU",					/* 120 EXPEVT_FPU */
+	NULL,					/* 140 (reset vector) */
+	"unconditional trap (TRAPA)",		/* 160 EXPEVT_TRAPA */
+	"reserved instruction code exception",	/* 180 EXPEVT_RES_INST */
+	"illegal slot instruction exception",	/* 1a0 EXPEVT_SLOT_INST */
+	NULL,					/* 1c0 (external interrupt) */
+	"user break point trap",		/* 1e0 EXPEVT_BREAK */
+	NULL, NULL, NULL, NULL,			/* 200-260 */
+	NULL, NULL, NULL, NULL,			/* 280-2e0 */
+	NULL, NULL, NULL, NULL,			/* 300-360 */
+	NULL, NULL, NULL, NULL,			/* 380-3e0 */
+	NULL, NULL, NULL, NULL,			/* 400-460 */
+	NULL, NULL, NULL, NULL,			/* 480-4e0 */
+	NULL, NULL, NULL, NULL,			/* 500-560 */
+	NULL, NULL, NULL, NULL,			/* 580-5e0 */
+	NULL, NULL, NULL, NULL,			/* 600-660 */
+	NULL, NULL, NULL, NULL,			/* 680-6e0 */
+	NULL, NULL, NULL, NULL,			/* 700-760 */
+	NULL, NULL, NULL, NULL,			/* 780-7e0 */
+	"FPU disabled",				/* 800 EXPEVT_FPU_DISABLE */
+	"slot FPU disabled"			/* 820 EXPEVT_FPU_SLOT_DISABLE */
 };
 const int exp_types = sizeof exp_type / sizeof exp_type[0];
 
@@ -133,10 +143,11 @@ void general_exception(struct proc *, struct trapframe *, uint32_t);
 void tlb_exception(struct proc *, struct trapframe *, uint32_t);
 void ast(struct proc *, struct trapframe *);
 void syscall(struct proc *, struct trapframe *);
+void cachectl(struct proc *, struct trapframe *);
 
 /*
  * void general_exception(struct proc *p, struct trapframe *tf):
- *	p  ... curproc when exception occured.
+ *	p  ... curproc when exception occurred.
  *	tf ... full user context.
  *	va ... fault va for user mode EXPEVT_ADDR_ERR_{LD,ST}
  */
@@ -144,32 +155,47 @@ void
 general_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 {
 	int expevt = tf->tf_expevt;
-	int tra;
-	boolean_t usermode = !KERNELMODE(tf->tf_ssr);
+	int tra = _reg_read_4(SH_(TRA));
+	int usermode = !KERNELMODE(tf->tf_ssr);
 	union sigval sv;
 
 	uvmexp.traps++;
 
-	if (p == NULL)
- 		goto do_panic;
+	/*
+	 * This function is entered at splhigh. Restore the interrupt
+	 * level to what it was when the trap occurred.
+	 */
+	splx(tf->tf_ssr & PSL_IMASK);
 
 	if (usermode) {
+		if (p == NULL)
+			goto do_panic;
 		KDASSERT(p->p_md.md_regs == tf); /* check exception depth */
 		expevt |= EXP_USER;
+		refreshcreds(p);
 	}
 
 	switch (expevt) {
-	case EXPEVT_TRAPA:
-		/* Check for ddb request */
-		tra = _reg_read_4(SH_(TRA));
-		if (tra == (_SH_TRA_BREAK << 2)) {
-			kdb_trap(expevt, tra, tf);
-			goto out;
-		} else
+	case EXPEVT_BREAK:
+#ifdef DDB
+		if (db_ktrap(EXPEVT_BREAK, 0, tf))
+			return;
+		else
+#endif
 			goto do_panic;
+		break;
+	case EXPEVT_TRAPA:
+#ifdef DDB
+		/* Check for ddb request */
+		if (tra == (_SH_TRA_BREAK << 2) &&
+		    db_ktrap(expevt, tra, tf))
+			return;
+		else
+#endif
+			goto do_panic;
+		break;
 	case EXPEVT_TRAPA | EXP_USER:
 		/* Check for debugger break */
-		tra = _reg_read_4(SH_(TRA));
 		switch (tra) {
 		case _SH_TRA_BREAK << 2:
 			tf->tf_spc -= 2; /* back to the breakpoint address */
@@ -179,6 +205,9 @@ general_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 			goto out;
 		case _SH_TRA_SYSCALL << 2:
 			syscall(p, tf);
+			return;
+		case _SH_TRA_CACHECTL << 2:
+			cachectl(p, tf);
 			return;
 		default:
 			sv.sival_ptr = (void *)tf->tf_spc;
@@ -190,10 +219,10 @@ general_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 
 	case EXPEVT_ADDR_ERR_LD: /* FALLTHROUGH */
 	case EXPEVT_ADDR_ERR_ST:
-		KDASSERT(p->p_md.md_pcb->pcb_onfault != NULL);
-		tf->tf_spc = (int)p->p_md.md_pcb->pcb_onfault;
-		if (tf->tf_spc == 0)
+		KDASSERT(p && p->p_md.md_pcb->pcb_onfault != NULL);
+		if (p == NULL || p->p_md.md_pcb->pcb_onfault == 0)
 			goto do_panic;
+		tf->tf_spc = (int)p->p_md.md_pcb->pcb_onfault;
 		break;
 
 	case EXPEVT_ADDR_ERR_LD | EXP_USER: /* FALLTHROUGH */
@@ -218,6 +247,40 @@ general_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 		trapsignal(p, SIGTRAP, expevt & ~EXP_USER, TRAP_TRACE, sv);
 		goto out;
 
+#ifdef SH4
+	case EXPEVT_FPU_DISABLE | EXP_USER: /* FALLTHROUGH */
+	case EXPEVT_FPU_SLOT_DISABLE | EXP_USER:
+		sv.sival_ptr = (void *)tf->tf_spc;
+		trapsignal(p, SIGILL, expevt & ~EXP_USER, ILL_COPROC, sv);
+		goto out;
+
+	case EXPEVT_FPU | EXP_USER:
+	    {
+		int fpscr, sigi;
+
+		/* XXX worth putting in the trapframe? */
+		__asm__ volatile ("sts fpscr, %0" : "=r" (fpscr));
+		fpscr = (fpscr & FPSCR_CAUSE_MASK) >> FPSCR_CAUSE_SHIFT;
+		if (fpscr & FPEXC_E)
+			sigi = FPE_FLTINV;	/* XXX any better value? */
+		else if (fpscr & FPEXC_V)
+			sigi = FPE_FLTINV;
+		else if (fpscr & FPEXC_Z)
+			sigi = FPE_FLTDIV;
+		else if (fpscr & FPEXC_O)
+			sigi = FPE_FLTOVF;
+		else if (fpscr & FPEXC_U)
+			sigi = FPE_FLTUND;
+		else if (fpscr & FPEXC_I)
+			sigi = FPE_FLTRES;
+		else
+			sigi = 0;	/* shouldn't happen */
+		sv.sival_ptr = (void *)tf->tf_spc;
+		trapsignal(p, SIGFPE, expevt & ~EXP_USER, sigi, sv);
+	    }
+		goto out;
+#endif
+
 	default:
 		goto do_panic;
 	}
@@ -229,12 +292,13 @@ out:
 	return;
 
 do_panic:
-	if ((expevt >> 5) < exp_types)
+	if ((expevt >> 5) < exp_types && exp_type[expevt >> 5] != NULL)
 		printf("fatal %s", exp_type[expevt >> 5]);
 	else
 		printf("EXPEVT 0x%03x", expevt);
 	printf(" in %s mode\n", expevt & EXP_USER ? "user" : "kernel");
-	printf(" spc %x ssr %x \n", tf->tf_spc, tf->tf_ssr);
+	printf("va 0x%x spc 0x%x ssr 0x%x pr 0x%x \n",
+	    va, tf->tf_spc, tf->tf_ssr, tf->tf_pr);
 
 	panic("general_exception");
 	/* NOTREACHED */
@@ -243,7 +307,7 @@ do_panic:
 
 /*
  * void tlb_exception(struct proc *p, struct trapframe *tf, uint32_t va):
- *	p  ... curproc when exception occured.
+ *	p  ... curproc when exception occurred.
  *	tf ... full user context.
  *	va ... fault address.
  */
@@ -253,8 +317,8 @@ tlb_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 	struct vm_map *map;
 	pmap_t pmap;
 	union sigval sv;
-	boolean_t usermode;
-	int err, track, ftype;
+	int usermode;
+	int err, track, access_type;
 	const char *panic_msg;
 
 #define TLB_ASSERT(assert, msg)				\
@@ -265,10 +329,16 @@ tlb_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 			}				\
 		} while(/*CONSTCOND*/0)
 
+	/*
+	 * This function is entered at splhigh. Restore the interrupt
+	 * level to what it was when the trap occurred.
+	 */
+	splx(tf->tf_ssr & PSL_IMASK);
 
 	usermode = !KERNELMODE(tf->tf_ssr);
 	if (usermode) {
 		KDASSERT(p->p_md.md_regs == tf);
+		refreshcreds(p);
 	} else {
 		KDASSERT(p == NULL ||		/* idle */
 		    p == &proc0 ||		/* kthread */
@@ -277,16 +347,16 @@ tlb_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 
 	switch (tf->tf_expevt) {
 	case EXPEVT_TLB_MISS_LD:
-		track = PVH_REFERENCED;
-		ftype = VM_PROT_READ;
+		track = PG_PMAP_REF;
+		access_type = PROT_READ;
 		break;
 	case EXPEVT_TLB_MISS_ST:
-		track = PVH_REFERENCED;
-		ftype = VM_PROT_WRITE;
+		track = PG_PMAP_REF;
+		access_type = PROT_WRITE;
 		break;
 	case EXPEVT_TLB_MOD:
-		track = PVH_REFERENCED | PVH_MODIFIED;
-		ftype = VM_PROT_WRITE;
+		track = PG_PMAP_REF | PG_PMAP_MOD;
+		access_type = PROT_WRITE;
 		break;
 	case EXPEVT_TLB_PROT_LD:
 		TLB_ASSERT((int)va > 0,
@@ -294,7 +364,7 @@ tlb_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 		if (usermode) {
 			sv.sival_ptr = (void *)va;
 			trapsignal(p, SIGSEGV, tf->tf_expevt, SEGV_ACCERR, sv);
-			goto user_fault;
+			goto out;
 		} else {
 			TLB_ASSERT(p->p_md.md_pcb->pcb_onfault != NULL,
 			    "no copyin/out fault handler (load protection)");
@@ -304,7 +374,7 @@ tlb_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 
 	case EXPEVT_TLB_PROT_ST:
 		track = 0;	/* call uvm_fault first. (COW) */
-		ftype = VM_PROT_WRITE;
+		access_type = PROT_WRITE;
 		break;
 
 	default:
@@ -313,6 +383,11 @@ tlb_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 
 	/* Select address space */
 	if (usermode) {
+		if (!uvm_map_inentry(p, &p->p_spinentry, PROC_STACK(p),
+		    "[%s]%d/%d sp=%lx inside %lx-%lx: not MAP_STACK\n",
+		    uvm_map_inentry_sp, p->p_vmspace->vm_map.sserial))
+			goto out;
+
 		TLB_ASSERT(p != NULL, "no curproc");
 		map = &p->p_vmspace->vm_map;
 		pmap = map->pmap;
@@ -340,35 +415,19 @@ tlb_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 		return;
 	}
 
-	/* Page not found. call fault handler */
-	if (!usermode && pmap != pmap_kernel() &&
-	    p->p_md.md_pcb->pcb_faultbail) {
-		TLB_ASSERT(p->p_md.md_pcb->pcb_onfault != NULL,
-		    "no copyin/out fault handler (interrupt context)");
-		tf->tf_spc = (int)p->p_md.md_pcb->pcb_onfault;
-		return;
+	err = uvm_fault(map, va, 0, access_type);
+	if (usermode && access_type == PROT_READ && err == EACCES) {
+		access_type = PROT_EXEC;
+		err = uvm_fault(map, va, 0, access_type);
 	}
-
-	err = uvm_fault(map, va, 0, ftype);
 
 	/* User stack extension */
-	if (map != kernel_map &&
-	    (va >= (vaddr_t)p->p_vmspace->vm_maxsaddr) &&
-	    (va < USRSTACK)) {
-		if (err == 0) {
-			struct vmspace *vm = p->p_vmspace;
-			uint32_t nss;
-			nss = btoc(USRSTACK - va);
-			if (nss > vm->vm_ssize)
-				vm->vm_ssize = nss;
-		} else if (err == EACCES) {
-			err = EFAULT;
-		}
-	}
+	if (err == 0 && map != kernel_map)
+		uvm_grow(p, va);
 
 	/* Page in. load PTE to TLB. */
 	if (err == 0) {
-		boolean_t loaded = __pmap_pte_load(pmap, va, track);
+		int loaded = __pmap_pte_load(pmap, va, track);
 		TLB_ASSERT(loaded, "page table entry not found");
 		if (usermode)
 			userret(p);
@@ -380,13 +439,12 @@ tlb_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 		sv.sival_ptr = (void *)va;
 		if (err == ENOMEM) {
 			printf("UVM: pid %d (%s), uid %d killed: out of swap\n",
-			    p->p_pid, p->p_comm,
-			    p->p_cred && p->p_ucred ?
-				(int)p->p_ucred->cr_uid : -1);
+			    p->p_p->ps_pid, p->p_p->ps_comm,
+			    p->p_ucred ? (int)p->p_ucred->cr_uid : -1);
 			trapsignal(p, SIGKILL, tf->tf_expevt, SEGV_MAPERR, sv);
 		} else
 			trapsignal(p, SIGSEGV, tf->tf_expevt, SEGV_MAPERR, sv);
-		goto user_fault;
+		goto out;
 	} else {
 		TLB_ASSERT(p->p_md.md_pcb->pcb_onfault,
 		    "no copyin/out fault handler (page not found)");
@@ -394,7 +452,7 @@ tlb_exception(struct proc *p, struct trapframe *tf, uint32_t va)
 	}
 	return;
 
-user_fault:
+out:
 	userret(p);
 	ast(p, tf);
 	return;
@@ -410,7 +468,7 @@ tlb_panic:
 
 /*
  * void ast(struct proc *p, struct trapframe *tf):
- *	p  ... curproc when exception occured.
+ *	p  ... curproc when exception occurred.
  *	tf ... full user context.
  *	This is called upon exception return. if return from kernel to user,
  *	handle asynchronous software traps and context switch if needed.
@@ -424,21 +482,33 @@ ast(struct proc *p, struct trapframe *tf)
 	KDASSERT(p->p_md.md_regs == tf);
 
 	while (p->p_md.md_astpending) {
-		uvmexp.softs++;
 		p->p_md.md_astpending = 0;
-
-		if (p->p_flag & P_OWEUPC) {
-			p->p_flag &= ~P_OWEUPC;
-			ADDUPROF(p);
-		}
-
-		if (want_resched) {
-			/* We are being preempted. */
-			preempt(NULL);
-		}
-
+		refreshcreds(p);
+		uvmexp.softs++;
+		mi_ast(p, curcpu()->ci_want_resched);
 		userret(p);
 	}
+}
+
+void
+cachectl(struct proc *p, struct trapframe *tf)
+{
+	vaddr_t va;
+	vsize_t len;
+
+	if (!SH_HAS_UNIFIED_CACHE) {
+		va = (vaddr_t)tf->tf_r4;
+		len = (vsize_t)tf->tf_r5;
+
+		if (va < VM_MIN_ADDRESS || va >= VM_MAXUSER_ADDRESS ||
+		    va + len <= va || va + len >= VM_MAXUSER_ADDRESS)
+			len = 0;
+
+		if (len != 0)
+			sh_icache_sync_range_index(va, len);
+	}
+
+	userret(p);
 }
 
 void
@@ -446,17 +516,14 @@ syscall(struct proc *p, struct trapframe *tf)
 {
 	caddr_t params;
 	const struct sysent *callp;
-	int error, oerror, opc, nsys;
-	size_t argsize;
-	register_t code, args[8], rval[2], ocode;
+	int error, opc, indirect = -1;
+	int argoff, argsize;
+	register_t code, args[8], rval[2];
 
 	uvmexp.syscalls++;
 
 	opc = tf->tf_spc;
-	ocode = code = tf->tf_r0;
-
-	nsys = p->p_emul->e_nsysent;
-	callp = p->p_emul->e_sysent;
+	code = tf->tf_r0;
 
 	params = (caddr_t)tf->tf_r15;
 
@@ -465,102 +532,71 @@ syscall(struct proc *p, struct trapframe *tf)
 		/*
 		 * Code is first argument, followed by actual args.
 		 */
+		indirect = code;
 	        code = tf->tf_r4;
-		break;
-	case SYS___syscall:
-		/*
-		 * Like syscall, but code is a quad, so as to maintain
-		 * quad alignment for the rest of the arguments.
-		 */
-		if (callp != sysent)
-			break;
-#if _BYTE_ORDER == BIG_ENDIAN
-		code = tf->tf_r5;
-#else
-		code = tf->tf_r4;
-#endif
+		argoff = 1;
 		break;
 	default:
+		argoff = 0;
 		break;
 	}
-	if (code < 0 || code >= nsys)
-		callp += p->p_emul->e_nosys;		/* illegal */
+
+	callp = sysent;
+	if (code < 0 || code >= SYS_MAXSYSCALL)
+		callp += SYS_syscall;
 	else
 		callp += code;
 	argsize = callp->sy_argsize;
 #ifdef DIAGNOSTIC
 	if (argsize > sizeof args) {
-		callp += p->p_emul->e_nosys - code;
-		goto bad;
+		callp += SYS_syscall - code;
+		argsize = callp->sy_argsize;
 	}
 #endif
 
-	switch (ocode) {
-	case SYS_syscall:
-		if (argsize) {
-			args[0] = tf->tf_r5;
-			args[1] = tf->tf_r6;
-			args[2] = tf->tf_r7;
-			if (argsize > 3 * sizeof(int)) {
-				argsize -= 3 * sizeof(int);
-				error = copyin(params, (caddr_t)&args[3],
-					       argsize);
-			} else
-				error = 0;
-		} else
-			error = 0;
-		break;
-	case SYS___syscall:
-		if (argsize) {
-			args[0] = tf->tf_r6;
-			args[1] = tf->tf_r7;
-			if (argsize > 2 * sizeof(int)) {
-				argsize -= 2 * sizeof(int);
-				error = copyin(params, (caddr_t)&args[2],
-					       argsize);
-			} else
-				error = 0;
-		} else
-			error = 0;
-		break;
-	default:
-		if (argsize) {
-			args[0] = tf->tf_r4;
-			args[1] = tf->tf_r5;
-			args[2] = tf->tf_r6;
-			args[3] = tf->tf_r7;
-			if (argsize > 4 * sizeof(int)) {
-				argsize -= 4 * sizeof(int);
-				error = copyin(params, (caddr_t)&args[4],
-					       argsize);
-			} else
-				error = 0;
-		} else
-			error = 0;
-		break;
+	if (argsize) {
+		register_t *ap;
+		int off_t_arg;
+
+		switch (code) {
+		default:		off_t_arg = 0;	break;
+		case SYS_lseek:
+		case SYS_truncate:
+		case SYS_ftruncate:	off_t_arg = 1;	break;
+		case SYS_preadv:
+		case SYS_pwritev:
+		case SYS_pread:
+		case SYS_pwrite:	off_t_arg = 3;	break;
+		}
+
+		ap = args;
+		switch (argoff) {
+		case 0:	*ap++ = tf->tf_r4; argsize -= sizeof(int);
+		case 1:	*ap++ = tf->tf_r5; argsize -= sizeof(int);
+		case 2: *ap++ = tf->tf_r6; argsize -= sizeof(int);
+			/*
+			 * off_t args aren't split between register
+			 * and stack, but rather r7 is skipped and
+			 * the entire off_t is on the stack.
+			 */
+			if (argoff + off_t_arg == 3)
+				break;
+			*ap++ = tf->tf_r7; argsize -= sizeof(int);
+			break;
+		}
+
+		if (argsize > 0) {
+			if ((error = copyin(params, ap, argsize)))
+				goto bad;
+		}
 	}
-
-	if (error)
-		goto bad;
-
-#ifdef SYSCALL_DEBUG
-	scdebug_call(p, code, args);
-#endif
-#ifdef KTRACE
-	if (KTRPOINT(p, KTR_SYSCALL))
-		ktrsyscall(p, code, callp->sy_argsize, args);
-#endif
 
 	rval[0] = 0;
 	rval[1] = tf->tf_r1;
-#if NSYSTRACE > 0
-	if (ISSET(p->p_flag, P_SYSTRACE))
-		error = systrace_redirect(code, p, args, rval);
-	else
-#endif
-		error = (*callp->sy_call)(p, args, rval);
 
-	switch (oerror = error) {
+	error = mi_syscall(p, code, indirect, callp, args, rval);
+
+	switch (error) {
 	case 0:
 		tf->tf_r0 = rval[0];
 		tf->tf_r1 = rval[1];
@@ -574,22 +610,13 @@ syscall(struct proc *p, struct trapframe *tf)
 		/* nothing to do */
 		break;
 	default:
-bad:
-		if (p->p_emul->e_errno)
-			error = p->p_emul->e_errno[error];
+	bad:
 		tf->tf_r0 = error;
 		tf->tf_ssr &= ~PSL_TBIT;	/* T bit */
 		break;
 	}
 
-#ifdef SYSCALL_DEBUG
-	scdebug_ret(p, code, oerror, rval);
-#endif
-	userret(p);
-#ifdef KTRACE
-	if (KTRPOINT(p, KTR_SYSRET))
-		ktrsysret(p, code, oerror, rval[0]);
-#endif
+	mi_syscall_return(p, code, error, rval);
 }
 
 /*
@@ -607,12 +634,6 @@ child_return(void *arg)
 	tf->tf_r0 = 0;
 	tf->tf_ssr |= PSL_TBIT; /* This indicates no error. */
 
-	userret(p);
-
-#ifdef KTRACE
-	if (KTRPOINT(p, KTR_SYSRET))
-		ktrsysret(p,
-		    (p->p_flag & P_PPWAIT) ? SYS_vfork : SYS_fork, 0, 0);
-#endif
+	mi_child_return(p);
 }
 

@@ -1,11 +1,7 @@
-#	from: @(#)Makefile	5.5 (Berkeley) 5/11/90
-#	$Id: Makefile,v 1.6 1994/05/24 06:52:17 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.8 2001/05/29 21:40:35 millert Exp $
 
 PROG=	su
 BINOWN=	root
 BINMODE=4555
-CFLAGS+=-DSKEY
-LDADD+= -lcrypt -lskey
-DPADD+= ${LIBCRYPT} ${LIBSKEY}
-
+COPTS=-Wall
 .include <bsd.prog.mk>

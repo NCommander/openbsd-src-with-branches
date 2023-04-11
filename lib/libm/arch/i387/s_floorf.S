@@ -1,28 +1,26 @@
+/*	$OpenBSD: s_floorf.S,v 1.4 2016/09/12 19:47:02 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
  */
 
-#include <machine/asm.h>
-
-RCSID("$NetBSD: s_floorf.S,v 1.3 1995/05/09 00:04:32 jtc Exp $")
+#include "DEFS.h"
 
 ENTRY(floorf)
-	pushl	%ebp
-	movl	%esp,%ebp
 	subl	$8,%esp
 
-	fstcw	-12(%ebp)		/* store fpu control word */
-	movw	-12(%ebp),%dx
+	fstcw	4(%esp)		/* store fpu control word */
+	movw	4(%esp),%dx
 	orw	$0x0400,%dx		/* round towards -oo */
 	andw	$0xf7ff,%dx
-	movw	%dx,-16(%ebp)
-	fldcw	-16(%ebp)		/* load modfied control word */
+	movw	%dx,(%esp)
+	fldcw	(%esp)		/* load modified control word */
 
-	flds	8(%ebp);		/* round */
+	flds	12(%esp);		/* round */
 	frndint
 
-	fldcw	-12(%ebp)		/* restore original control word */
+	fldcw	4(%esp)		/* restore original control word */
 
-	leave
+	addl	$8,%esp
 	ret
+END_STD(floorf)

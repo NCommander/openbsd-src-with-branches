@@ -77,6 +77,8 @@ enum option_values
   OPTION_EL,
   OPTION_EMBEDDED_RELOCS,
   OPTION_EXPORT_DYNAMIC,
+  OPTION_EXECUTE_ONLY,
+  OPTION_NO_EXECUTE_ONLY,
   OPTION_HELP,
   OPTION_IGNORE,
   OPTION_MAP,
@@ -149,6 +151,7 @@ enum option_values
   OPTION_ACCEPT_UNKNOWN_INPUT_ARCH,
   OPTION_NO_ACCEPT_UNKNOWN_INPUT_ARCH,
   OPTION_PIE,
+  OPTION_NOPIE,
   OPTION_UNRESOLVED_SYMBOLS,
   OPTION_WARN_UNRESOLVED_SYMBOLS,
   OPTION_ERROR_UNRESOLVED_SYMBOLS,
@@ -299,6 +302,9 @@ static const struct ld_option ld_options[] =
   { {NULL, required_argument, NULL, '\0'},
     'Y', N_("PATH"), N_("Default search path for Solaris compatibility"),
     ONE_DASH },
+  { {"Zmagic", no_argument, NULL, 'Z'},
+      'Z', NULL, N_("Do not page align got/plt, old style executable"),
+      EXACTLY_TWO_DASHES },
   { {"start-group", no_argument, NULL, '('},
     '(', NULL, N_("Start a group"), TWO_DASHES },
   { {"end-group", no_argument, NULL, ')'},
@@ -357,6 +363,10 @@ static const struct ld_option ld_options[] =
     TWO_DASHES },
   { {"embedded-relocs", no_argument, NULL, OPTION_EMBEDDED_RELOCS},
     '\0', NULL, N_("Generate embedded relocs"), TWO_DASHES},
+  { {"execute-only", no_argument, NULL, OPTION_EXECUTE_ONLY},
+    '\0', NULL, N_("Mark executable sections unreadable"), TWO_DASHES},
+  { {"no-execute-only", no_argument, NULL, OPTION_NO_EXECUTE_ONLY},
+    '\0', NULL, N_("Do not mark executable sections unreadable"), TWO_DASHES},
   { {"fatal-warnings", no_argument, NULL, OPTION_WARN_FATAL},
     '\0', NULL, N_("Treat warnings as errors"),
     TWO_DASHES },
@@ -445,6 +455,8 @@ static const struct ld_option ld_options[] =
     '\0', NULL, N_("Create a position independent executable"), ONE_DASH },
   { {"pic-executable", no_argument, NULL, OPTION_PIE},
     '\0', NULL, NULL, TWO_DASHES },
+  { {"nopie", no_argument, NULL, OPTION_NOPIE},
+    '\0', NULL, N_("Do not create a position independent executable"), ONE_DASH },
   { {"sort-common", no_argument, NULL, OPTION_SORT_COMMON},
     '\0', NULL, N_("Sort common symbols by size"), TWO_DASHES },
   { {"sort_common", no_argument, NULL, OPTION_SORT_COMMON},
@@ -763,6 +775,12 @@ parse_args (unsigned argc, char **argv)
 	case OPTION_EMBEDDED_RELOCS:
 	  command_line.embedded_relocs = TRUE;
 	  break;
+	case OPTION_EXECUTE_ONLY:
+	  link_info.execute_only = TRUE;
+	  break;
+	case OPTION_NO_EXECUTE_ONLY:
+	  link_info.execute_only = FALSE;
+	  break;
 	case OPTION_EXPORT_DYNAMIC:
 	case 'E': /* HP/UX compatibility.  */
 	  link_info.export_dynamic = TRUE;
@@ -1070,6 +1088,7 @@ parse_args (unsigned argc, char **argv)
 	  if (config.has_shared)
 	    {
 	      link_info.shared = TRUE;
+	      link_info.pie = FALSE;
 	      /* When creating a shared library, the default
 		 behaviour is to ignore any unresolved references.  */
 	      if (link_info.unresolved_syms_in_objects == RM_NOT_YET_SET)
@@ -1088,6 +1107,15 @@ parse_args (unsigned argc, char **argv)
 	    }
 	  else
 	    einfo (_("%P%F: -pie not supported\n"));
+	  break;
+	case OPTION_NOPIE:
+	  if (config.has_shared)
+	    {
+	      link_info.shared = FALSE;
+	      link_info.pie = FALSE;
+	    }
+	  else
+	    einfo (_("%P%F: -nopie not supported\n"));
 	  break;
 	case 'h':		/* Used on Solaris.  */
 	case OPTION_SONAME:
@@ -1280,6 +1308,9 @@ parse_args (unsigned argc, char **argv)
 	case 'y':
 	  add_ysym (optarg);
 	  break;
+	case 'Z':
+	  config.data_bss_contig = TRUE;
+	  break;
 	case OPTION_SPARE_DYNAMIC_TAGS:
 	  link_info.spare_dynamic_tags = strtoul (optarg, NULL, 0);
 	  break;
@@ -1331,7 +1362,7 @@ parse_args (unsigned argc, char **argv)
 	  break;
 
 	case OPTION_REDUCE_MEMORY_OVERHEADS:
-	  command_line.reduce_memory_overheads = TRUE;
+	  link_info.reduce_memory_overheads = TRUE;
 	  if (config.hash_table_size == 0)
 	    config.hash_table_size = 1021;
 	  break;

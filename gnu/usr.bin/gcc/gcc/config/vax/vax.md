@@ -1496,18 +1496,22 @@
   ""
   "*
 {
+#if 0
   if (GET_CODE (operands[0]) != REG || GET_CODE (operands[2]) != CONST_INT
       || GET_CODE (operands[3]) != CONST_INT
       || INTVAL (operands[2]) + INTVAL (operands[3]) > 32
       || side_effects_p (operands[1])
       || (GET_CODE (operands[1]) == MEM
 	  && mode_dependent_address_p (XEXP (operands[1], 0))))
+#endif
     return \"extzv %3,%2,%1,%0\";
+#if 0
   if (INTVAL (operands[2]) == 8)
     return \"rotl %R3,%1,%0\;movzbl %0,%0\";
   if (INTVAL (operands[2]) == 16)
     return \"rotl %R3,%1,%0\;movzwl %0,%0\";
   return \"rotl %R3,%1,%0\;bicl2 %M2,%0\";
+#endif
 }")
 
 (define_expand "insv"
@@ -1642,37 +1646,10 @@
   "j%C0 %l1") ; %C0 negates condition
 
 ;; Recognize jbs, jlbs, jbc and jlbc instructions.  Note that the operand
-;; of jlbs and jlbc insns are SImode in the hardware.  However, if it is
-;; memory, we use QImode in the insn.  So we can't use those instructions
-;; for mode-dependent addresses.
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else
-	 (ne (zero_extract:SI (match_operand:QI 0 "memory_operand" "Q,g")
-			      (const_int 1)
-			      (match_operand:SI 1 "general_operand" "I,g"))
-	     (const_int 0))
-	 (label_ref (match_operand 2 "" ""))
-	 (pc)))]
-  ""
-  "@
-   jlbs %0,%l2
-   jbs %1,%0,%l2")
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else
-	 (eq (zero_extract:SI (match_operand:QI 0 "memory_operand" "Q,g")
-			      (const_int 1)
-			      (match_operand:SI 1 "general_operand" "I,g"))
-	     (const_int 0))
-	 (label_ref (match_operand 2 "" ""))
-	 (pc)))]
-  ""
-  "@
-   jlbc %0,%l2
-   jbc %1,%0,%l2")
+;; of jlbs and jlbc insns are SImode in the hardware.  Thus, if it is
+;; memory, we can only use SImode in the insn.  By only allowing
+;; register_operand here, we force a (possible zero-extended) load into a
+;; register, regardless of the actual mode of the memory operand.
 
 (define_insn ""
   [(set (pc)

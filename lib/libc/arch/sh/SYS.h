@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: SYS.h,v 1.12 2022/09/02 06:19:04 miod Exp $	*/
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -37,74 +37,104 @@
 #include <machine/asm.h>
 #include <sys/syscall.h>
 
-#ifdef __STDC__
+
+/*
+ * We need to offset the TCB pointer (in register gbr) by this much:
+ *	offsetof(struct tib, tib_errno) - offsetof(struct tib, __tib_tcb)
+ * That's negative on a variant I arch like sh, but you can't directly
+ * load negative numbers or use them as displacements.  Ha!  So this is the
+ * negative of the real value and we'll explicitly subtract it in the asm
+ */
+#define	TCB_OFFSET_ERRNO_NEG	8
+
+/*
+ * We define a hidden alias with the prefix "_libc_" for each global symbol
+ * that may be used internally.  By referencing _libc_x instead of x, other
+ * parts of libc prevent overriding by the application and avoid unnecessary
+ * relocations.
+ */
+#define _HIDDEN(x)		_libc_##x
+#define _HIDDEN_ALIAS(x,y)			\
+	STRONG_ALIAS(_HIDDEN(x),y);		\
+	.hidden _HIDDEN(x)
+#define _HIDDEN_FALIAS(x,y)			\
+	_HIDDEN_ALIAS(x,y);			\
+	.type _HIDDEN(x),@function
+
+/*
+ * For functions implemented in ASM that aren't syscalls.
+ *   END_STRONG(x)	Like DEF_STRONG() in C; for standard/reserved C names
+ *   END_WEAK(x)	Like DEF_WEAK() in C; for non-ISO C names
+ */
+#define	END_STRONG(x)	SET_ENTRY_SIZE(x);		\
+			_HIDDEN_FALIAS(x,x);		\
+			SET_ENTRY_SIZE(_HIDDEN(x))
+#define	END_WEAK(x)	END_STRONG(x); .weak x
+
+
 #define	SYSENTRY(x)					\
-	.weak	_C_LABEL(x);				\
-	_C_LABEL(x) = _C_LABEL(_thread_sys_ ## x);	\
+	WEAK_ALIAS(x,_thread_sys_ ## x);		\
 	ENTRY(_thread_sys_ ## x)
-#else
-#define	SYSENTRY(x)					\
-	.weak	_C_LABEL(x);				\
-	_C_LABEL(x) = _C_LABEL(_thread_sys_/**/x);	\
-	ENTRY(_thread_sys_/**/x)
+#define	SYSENTRY_HIDDEN(x)				\
+	ENTRY(_thread_sys_ ## x)
+
+#define	__END_HIDDEN(x)					\
+	SET_ENTRY_SIZE(_thread_sys_ ## x);		\
+	_HIDDEN_FALIAS(x,_thread_sys_ ## x);		\
+	SET_ENTRY_SIZE(_HIDDEN(x))
+#define	__END(x)					\
+	__END_HIDDEN(x); SET_ENTRY_SIZE(x)
+
+#ifdef __ASSEMBLER__
+/*
+ * If the system call number fits in a 8-bit signed value (i.e. fits in 7 bits),
+ * then we can use the #imm8 addressing mode.
+ */
+
+.macro systrap num
+.iflt \num - 128
+	mov	# \num, r0
+	trapa	#0x80
+.else
+	mov.l	903f, r0
+	trapa	#0x80
+	bra	904f
+	 nop
+	.align	2
+ 903:	.long	\num
+ 904:
+.endif
+.endm
 #endif
 
-#ifdef __STDC__
 #define SYSTRAP(x)					\
-		mov.l	903f, r0;			\
-		.word	0xc380;	/* trapa #0x80; */	\
-		bra	904f;				\
-		 nop;					\
-		.align	2;				\
-	903:	.long	(SYS_ ## x);			\
-	904:
-#else
-#define SYSTRAP(x)					\
-		mov.l	903f, r0;			\
-		trapa	#0x80;				\
-		bra	904f;				\
-		 nop;					\
-		.align	2;				\
-	903:	.long	(SYS_/**/x);			\
-	904:
-#endif
-
-#define	CERROR	_C_LABEL(__cerror)
+		systrap	SYS_ ## x
 
 #define _SYSCALL_NOERROR(x,y)				\
 		SYSENTRY(x);				\
 		SYSTRAP(y)
+#define _SYSCALL_HIDDEN_NOERROR(x,y)			\
+		SYSENTRY_HIDDEN(x);			\
+		SYSTRAP(y)
 
-#ifdef PIC
-
-#define JUMP_CERROR					\
-		mov	r0, r4;				\
-		mov.l	912f, r1;			\
-		mova	912f, r0;			\
-		mov.l	913f, r2;			\
-		add	r1, r0;				\
-		mov.l	@(r0, r2), r3;			\
-		jmp	@r3;				\
-		 nop;					\
-		.align	2;				\
-	912:	.long	_GLOBAL_OFFSET_TABLE_;		\
-	913:	.long	PIC_GOT(CERROR)
-
-#else  /* !PIC */
-
-#define JUMP_CERROR					\
-		mov.l	912f, r3;			\
-		jmp	@r3;				\
-		 mov	r0, r4;				\
-		.align	2;				\
-	912:	.long	CERROR
-
-#endif /* !PIC */
+#define SET_ERRNO_AND_RETURN				\
+		stc	gbr,r1;				\
+		mov	#TCB_OFFSET_ERRNO_NEG,r2;	\
+		sub	r2,r1;				\
+		mov.l	r0,@r1;				\
+		mov	#-1, r1;	/* for lseek */	\
+		rts;					\
+		 mov	#-1, r0
 
 #define _SYSCALL(x,y)					\
 		.text;					\
-	911:	JUMP_CERROR;				\
+	911:	SET_ERRNO_AND_RETURN;			\
 		_SYSCALL_NOERROR(x,y);			\
+		bf	911b
+#define _SYSCALL_HIDDEN(x,y)				\
+		.text;					\
+	911:	SET_ERRNO_AND_RETURN;			\
+		_SYSCALL_HIDDEN_NOERROR(x,y);		\
 		bf	911b
 
 #define SYSCALL_NOERROR(x)				\
@@ -116,17 +146,23 @@
 #define PSEUDO_NOERROR(x,y)				\
 		_SYSCALL_NOERROR(x,y);			\
 		rts;					\
-		 nop
+		 nop;					\
+		__END(x)
 
 #define PSEUDO(x,y)					\
 		_SYSCALL(x,y);				\
 		rts;					\
-		 nop
+		 nop;					\
+		__END(x)
 
-#define RSYSCALL_NOERROR(x)				\
-		PSEUDO_NOERROR(x,x)
+#define PSEUDO_HIDDEN(x,y)				\
+		_SYSCALL_HIDDEN(x,y);			\
+		rts;					\
+		 nop;					\
+		__END_HIDDEN(x)
 
-#define RSYSCALL(x)					\
-		PSEUDO(x,x)
-
-	.globl	CERROR
+#define RSYSCALL_NOERROR(x)		PSEUDO_NOERROR(x,x)
+#define RSYSCALL(x)			PSEUDO(x,x)
+#define RSYSCALL_HIDDEN(x)		PSEUDO_HIDDEN(x,x)
+#define SYSCALL_END(x)			__END(x)
+#define SYSCALL_END_HIDDEN(x)		__END_HIDDEN(x)

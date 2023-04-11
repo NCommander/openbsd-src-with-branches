@@ -1,3 +1,4 @@
+.\"	$OpenBSD: sigaltstack.2,v 1.25 2022/03/31 17:27:16 naddy Exp $
 .\"	$NetBSD: sigaltstack.2,v 1.3 1995/02/27 10:41:52 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1991, 1992, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,63 +30,57 @@
 .\"
 .\"     @(#)sigaltstack.2	8.1 (Berkeley) 6/4/93
 .\"
-.Dd June 4, 1993
+.Dd $Mdocdate: March 31 2022 $
 .Dt SIGALTSTACK 2
-.Os BSD 4.2
+.Os
 .Sh NAME
 .Nm sigaltstack
 .Nd set and/or get signal stack context
 .Sh SYNOPSIS
-.Fd #include <sys/types.h>
-.Fd #include <signal.h>
+.In signal.h
 .Bd -literal
-struct sigaltstack {
-	char   *ss_sp;
-	int	ss_size;
-	int     ss_flags;
-};
+typedef struct sigaltstack {
+	void	*ss_sp;
+	size_t	 ss_size;
+	int	 ss_flags;
+} stack_t;
 .Ed
 .Ft int
-.Fn sigaltstack "const struct sigaltstack *ss" "struct sigaltstack *oss"
+.Fn sigaltstack "const stack_t *ss" "stack_t *oss"
 .Sh DESCRIPTION
-.Fn Sigaltstack
+.Fn sigaltstack
 allows users to define an alternate stack on which signals
+delivered to this thread
 are to be processed.
 If
 .Fa ss
-is non-zero,
-it specifies a pointer to and the size of a
-.Em "signal stack"
-on which to deliver signals,
-and tells the system if the process is currently executing
-on that stack.
+is non-zero and
+.Dv SS_DISABLE
+is set in
+.Fa ss_flags ,
+the signal stack will be disabled.
+A disabled stack will cause all signals to be
+taken on the regular user stack.
+Trying to disable an active stack will cause
+.Fn sigaltstack
+to return \-1 with
+.Va errno
+set to
+.Er EPERM .
+.Pp
+Otherwise,
+.Fa ss_sp
+specifies a pointer to a space to be used as the signal stack and
+.Fa ss_size
+specifies the size of that space.
 When a signal's action indicates its handler
 should execute on the signal stack (specified with a
 .Xr sigaction 2
 call), the system checks to see
-if the process is currently executing on that stack.
-If the process is not currently executing on the signal stack,
+if the thread is currently executing on that stack.
+If the thread is not currently executing on the signal stack,
 the system arranges a switch to the signal stack for the
-duration of the signal handler's execution. 
-.Pp
-If
-.Dv SA_DISABLE
-is set in
-.Fa ss_flags ,
-.Fa ss_sp
-and
-.Fa ss_size
-are ignored and the signal stack will be disabled.
-Trying to disable an active stack will cause
-.Nm
-to return -1 with
-.Va errno
-set to
-.Dv EINVAL .
-A disabled stack will cause all signals to be
-taken on the regular user stack.
-If the stack is later re-enabled then all signals that were specified
-to be processed on an alternate stack will resume doing so.
+duration of the signal handler's execution.
 .Pp
 If
 .Fa oss
@@ -97,11 +88,11 @@ is non-zero, the current signal stack state is returned.
 The
 .Fa ss_flags
 field will contain the value
-.Dv SA_ONSTACK
-if the process is currently on a signal stack and
-.Dv SA_DISABLE
+.Dv SS_ONSTACK
+if the thread is currently on a signal stack and
+.Dv SS_DISABLE
 if the signal stack is currently disabled.
-.Sh NOTES
+.Pp
 The value
 .Dv SIGSTKSZ
 is defined to be the number of bytes/chars that would be used to cover
@@ -112,9 +103,10 @@ if ((sigstk.ss_sp = malloc(SIGSTKSZ)) == NULL)
 	/* error return */
 sigstk.ss_size = SIGSTKSZ;
 sigstk.ss_flags = 0;
-if (sigaltstack(&sigstk,0) < 0)
+if (sigaltstack(&sigstk, NULL) == -1)
 	perror("sigaltstack");
 .Ed
+.Pp
 An alternative approach is provided for programs with signal handlers
 that require a specific amount of stack space other than the default size.
 The value
@@ -129,16 +121,37 @@ to their stack requirements to allow for the operating system overhead.
 Signal stacks are automatically adjusted for the direction of stack
 growth and alignment requirements.
 Signal stacks may or may not be protected by the hardware and
-are not ``grown'' automatically as is done for the normal stack.
-If the stack overflows and this space is not protected
+are not
+.Dq grown
+automatically as is done for the normal stack.
+If the stack overflows and this space is not protected,
 unpredictable results may occur.
+.Pp
+On
+.Ox
+some additional restrictions prevent dangerous address space modifications.
+The proposed space at
+.Fa ss_sp
+is verified to be contiguously mapped for read-write permissions
+(no execute)
+and incapable of syscall entry
+(see
+.Xr msyscall 2 ) .
+If those conditions are met, a page-aligned inner region will be freshly mapped
+(all zero) with
+.Dv MAP_STACK
+(see
+.Xr mmap 2 ) ,
+destroying the pre-existing data in the region.
+Once the sigaltstack is disabled, the
+.Dv MAP_STACK
+attribute remains on the memory, so it is best to deallocate the memory
+via a method that results in
+.Xr munmap 2 .
 .Sh RETURN VALUES
-Upon successful completion, a value of 0 is returned.
-Otherwise, a value of -1 is returned and 
-.Va errno
-is set to indicate the error.
+.Rv -std
 .Sh ERRORS
-.Fn Sigstack
+.Fn sigaltstack
 will fail and the signal stack context will remain unchanged
 if one of the following occurs.
 .Bl -tag -width [ENOMEM]
@@ -150,17 +163,32 @@ or
 points to memory that is not a valid part of the process
 address space.
 .It Bq Er EINVAL
-An attempt was made to disable an active stack.
+The
+.Fa ss_flags
+member pointed to by the
+.Fa ss
+argument contains flags other than
+.Dv SS_DISABLE .
+.It Bq Er EINVAL
+The memory region is not acceptable for use as a stack;
+see above.
 .It Bq Er ENOMEM
 Size of alternate stack area is less than or equal to
 .Dv MINSIGSTKSZ .
+.It Bq Er EPERM
+An attempt was made to disable an active stack.
 .El
 .Sh SEE ALSO
 .Xr sigaction 2 ,
 .Xr setjmp 3
+.Sh STANDARDS
+The
+.Fn sigaltstack
+function conforms to
+.St -p1003.1-2008 .
 .Sh HISTORY
 The predecessor to
-.Nm sigaltstack ,
+.Fn sigaltstack ,
 the
 .Fn sigstack
 system call, appeared in

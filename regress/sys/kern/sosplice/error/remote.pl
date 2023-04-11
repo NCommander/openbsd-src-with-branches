@@ -1,7 +1,7 @@
 #!/usr/bin/perl
-#	$OpenBSD$
+#	$OpenBSD: remote.pl,v 1.3 2016/05/03 19:13:04 bluhm Exp $
 
-# Copyright (c) 2010-2013 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2010-2014 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -21,18 +21,18 @@ use Cwd;
 use File::Basename;
 
 sub usage {
-	die "usage: remote.pl remotessh test-args.pl\n";
+	die "usage: remote.pl remotessh args-test.pl\n";
 }
 
 @ARGV == 2 or usage();
 
 my($remotessh, $testfile) = @ARGV;
 
-my @opts = split(' ', $ENV{SSH_OPTIONS}) if $ENV{SSH_OPTIONS};
+my @opts = $ENV{SSH_OPTIONS} ? split(' ', $ENV{SSH_OPTIONS}) : ();
 my $dir = dirname($0);
-$dir = getcwd() if ! $dir || $dir eq '.';
-my @cmd = ('ssh', '-n', @opts, $remotessh, 'perl',
-    '-I', "$dir/..", "$dir/error.pl", "$dir/".basename($testfile));
+$dir = getcwd() if ! $dir || $dir eq ".";
+my @cmd = ("ssh", "-n", @opts, $remotessh, "perl",
+    "-I", "$dir/..", "$dir/error.pl", "$dir/".basename($testfile));
 #print STDERR "execute: @cmd\n";
 exec @cmd;
-die "Exec @cmd failed: $!";
+die "Exec '@cmd' failed: $!";

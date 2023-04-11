@@ -1,3 +1,4 @@
+/*	$OpenBSD: getcom.c,v 1.16 2015/12/31 17:51:19 mestre Exp $	*/
 /*	$NetBSD: getcom.c,v 1.3 1995/03/21 15:07:30 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,35 +30,35 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)getcom.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: getcom.c,v 1.3 1995/03/21 15:07:30 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <stdio.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <string.h>
 
-char *
-getcom(buf, size, prompt, error)
-	char *buf;
-	int size;
-	char *prompt, *error;
+#include "extern.h"
+
+char   *
+getcom(char *buf, int size, const char *prompt, const char *error)
 {
 	for (;;) {
-		fputs(prompt, stdout); 
-		if (fgets(buf, size, stdin) == 0) {
+		fputs(prompt, stdout);
+		if (fgets(buf, size, stdin) == NULL) {
+			if (feof(stdin))
+				die(0);
 			clearerr(stdin);
 			continue;
 		}
-		while (isspace(*buf))
+		while (isspace((unsigned char)*buf))
 			buf++;
 		if (*buf)
 			break;
 		if (error)
 			puts(error);
+	}
+	/* If we didn't get to the end of the line, don't read it in next time */
+	if (buf[strlen(buf) - 1] != '\n') {
+		int i;
+		while ((i = getchar()) != '\n' && i != EOF)
+			continue;
 	}
 	return (buf);
 }
@@ -71,35 +68,48 @@ getcom(buf, size, prompt, error)
  * shifts to UPPERCASE if flag > 0, lowercase if flag < 0,
  * and leaves it unchanged if flag = 0
  */
-char *
-getword(buf1, buf2, flag)
-	register char *buf1, *buf2;
-	register flag;
+char   *
+getword(char *buf1, char *buf2, int flag)
 {
-	while (isspace(*buf1))
+	int cnt;
+
+	cnt = 1;
+	while (isspace((unsigned char)*buf1))
 		buf1++;
-	if (*buf1 != ',') {
+	if (*buf1 != ',' && *buf1 != '.') {
 		if (!*buf1) {
-			*buf2 = 0;
+			*buf2 = '\0';
 			return (0);
 		}
-		while (*buf1 && !isspace(*buf1) && *buf1 != ',')
-			if (flag < 0)
-				if (isupper(*buf1))
-					*buf2++ = tolower(*buf1++);
-				else
+		while (cnt < WORDLEN && *buf1 && !isspace((unsigned char)*buf1) &&
+		       *buf1 != ',' && *buf1 != '.')
+			if (flag < 0) {
+				if (isupper((unsigned char)*buf1)) {
+					*buf2++ = tolower((unsigned char)*buf1++);
+					cnt++;
+				} else {
 					*buf2++ = *buf1++;
-			else if (flag > 0)
-				if (islower(*buf1))
-					*buf2++ = toupper(*buf1++);
-				else
+					cnt++;
+				}
+			} else if (flag > 0) {
+				if (islower((unsigned char)*buf1)) {
+					*buf2++ = toupper((unsigned char)*buf1++);
+					cnt++;
+				} else {
 					*buf2++ = *buf1++;
-			else
+					cnt++;
+				}
+			} else {
 				*buf2++ = *buf1++;
+				cnt++;
+			}
+		if (cnt == WORDLEN)
+			while (*buf1 && !isspace((unsigned char)*buf1))
+				buf1++;
 	} else
 		*buf2++ = *buf1++;
-	*buf2 = 0;
-	while (isspace(*buf1))
+	*buf2 = '\0';
+	while (isspace((unsigned char)*buf1))
 		buf1++;
-	return (*buf1 ? buf1 : 0);
+	return (*buf1 ? buf1 : NULL);
 }

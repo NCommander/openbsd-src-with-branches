@@ -181,16 +181,6 @@ if [ "x${LIB_PATH}" = "x" ] && [ "x${USE_LIBPATH}" = xyes ] ; then
   esac
 fi
 
-# Always search $(tooldir)/lib, aka /usr/local/TARGET/lib, except for
-# sysrooted configurations and when LIBPATH=":".
-if [ "x${use_sysroot}" != "xyes" ] ; then
-  case :${LIB_PATH}: in
-  ::: | *:${tool_lib}:*) ;;
-  ::) LIB_PATH=${tool_lib} ;;
-  *) LIB_PATH=${tool_lib}:${LIB_PATH} ;;
-  esac
-fi
-
 LIB_SEARCH_DIRS=`echo ${LIB_PATH} | sed -e 's/:/ /g' -e 's/\([^ ][^ ]*\)/SEARCH_DIR(\\"\1\\");/g'`
 
 # We need it for testsuite.
@@ -222,7 +212,7 @@ fi
 #   $SCRIPT_NAME is "elf" and $GENERATE_SHLIB_SCRIPT is set by the emulation
 #   parameters too.
 
-if [ "x$SCRIPT_NAME" = "xelf" ]; then
+if [ "x$SCRIPT_NAME" = "xelf" ] || [ "x$SCRIPT_NAME" = "xelf_obsd" ]; then
   GENERATE_COMBRELOC_SCRIPT=yes
 fi
 
@@ -288,7 +278,7 @@ if test -n "$GENERATE_COMBRELOC_SCRIPT"; then
   LD_FLAG=w
   RELRO_NOW=" "
   COMBRELOC=ldscripts/${EMULATION_NAME}.xw.tmp
-  ( echo "/* Script for -z combreloc -z now -z relro: combine and sort reloc sections */"
+  ( echo "/* Script for -z combreloc -z relro: combine and sort reloc sections */"
     . ${CUSTOMIZER_SCRIPT} ${EMULATION_NAME}
     . ${srcdir}/scripttempl/${SCRIPT_NAME}.sc
   ) | sed -e '/^ *$/d;s/[ 	]*$//' > ldscripts/${EMULATION_NAME}.xw
@@ -319,7 +309,7 @@ if test -n "$GENERATE_SHLIB_SCRIPT"; then
     LD_FLAG=wshared
     RELRO_NOW=" "
     COMBRELOC=ldscripts/${EMULATION_NAME}.xsw.tmp
-    ( echo "/* Script for --shared -z combreloc -z now -z relro: shared library, combine & sort relocs */"
+    ( echo "/* Script for --shared -z combreloc -z relro: shared library, combine & sort relocs */"
       . ${CUSTOMIZER_SCRIPT} ${EMULATION_NAME}
       . ${srcdir}/scripttempl/${SCRIPT_NAME}.sc
     ) | sed -e '/^ *$/d;s/[ 	]*$//' > ldscripts/${EMULATION_NAME}.xsw
@@ -352,16 +342,37 @@ if test -n "$GENERATE_PIE_SCRIPT"; then
     LD_FLAG=wpie
     RELRO_NOW=" "
     COMBRELOC=ldscripts/${EMULATION_NAME}.xdw.tmp
-    ( echo "/* Script for -pie -z combreloc -z now -z relro: position independent executable, combine & sort relocs */"
+    ( echo "/* Script for -pie -z combreloc -z relro: position independent executable, combine & sort relocs */"
       . ${CUSTOMIZER_SCRIPT} ${EMULATION_NAME}
       . ${srcdir}/scripttempl/${SCRIPT_NAME}.sc
     ) | sed -e '/^ *$/d;s/[ 	]*$//' > ldscripts/${EMULATION_NAME}.xdw
     rm -f ${COMBRELOC}
+    LD_FLAG=Zcpie
+    ( echo "/* Script for -pie -z combreloc, -Z: position independent executable, combine & sort relocs, no PLT/GOT padding */"
+      . ${CUSTOMIZER_SCRIPT} ${EMULATION_NAME}
+      . ${srcdir}/scripttempl/${SCRIPT_NAME}.sc
+    ) | sed -e '/^ *$/d;s/[ 	]*$//' > ldscripts/${EMULATION_NAME}.xdcz
+    rm -f ${COMBRELOC}
     COMBRELOC=
     unset RELRO_NOW
   fi
+  LD_FLAG=Zpie
+  DATA_ALIGNMENT=${DATA_ALIGNMENT_sc-${DATA_ALIGNMENT}}
+  (
+    echo "/* Script for ld -pie -Z: link position independent executable, no PLT/GOT padding */"
+    . ${CUSTOMIZER_SCRIPT} ${EMULATION_NAME}
+    . ${srcdir}/scripttempl/${SCRIPT_NAME}.sc
+  ) | sed -e '/^ *$/d;s/[ 	]*$//' > ldscripts/${EMULATION_NAME}.xdz
   unset CREATE_PIE
 fi
+
+LD_FLAG=Z
+DATA_ALIGNMENT=${DATA_ALIGNMENT_}
+RELOCATING=" "
+( echo "/* Script for -Z: traditional binaries with no PLT/GOT padding */"
+  . ${srcdir}/emulparams/${EMULATION_NAME}.sh
+  . ${srcdir}/scripttempl/${SCRIPT_NAME}.sc
+) | sed -e '/^ *$/d;s/[        ]*$//' > ldscripts/${EMULATION_NAME}.xz
 
 case " $EMULATION_LIBPATH " in
     *" ${EMULATION_NAME} "*) COMPILE_IN=true;;

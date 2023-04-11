@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: cpu.c,v 1.5 2020/09/25 14:42:25 deraadt Exp $	*/
 /*	$NetBSD: cpu.c,v 1.8 2006/01/02 23:16:20 uwe Exp $	*/
 
 /*-
@@ -13,13 +13,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -36,8 +29,10 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
+#include <sys/proc.h>
 #include <sys/device.h>
 
+#include <sh/cpu.h>
 #include <sh/clock.h>
 #include <sh/cache.h>
 #include <sh/mmu.h>
@@ -47,13 +42,15 @@
 int	cpu_match(struct device *, void *, void *);
 void	cpu_attach(struct device *, struct device *, void *);
 
-struct cfattach cpu_ca = {
+const struct cfattach cpu_ca = {
 	sizeof(struct device), cpu_match, cpu_attach
 };
 
 struct cfdriver cpu_cd = {
 	0, "cpu", DV_DULL
 };
+
+struct cpu_info cpu_info_store;
 
 int
 cpu_match(struct device *parent, void *vcf, void *aux)
@@ -69,11 +66,22 @@ cpu_match(struct device *parent, void *vcf, void *aux)
 void
 cpu_attach(struct device *parent, struct device *self, void *aux)
 {
+	extern char cpu_model[120];
+
 #define	MHZ(x) ((x) / 1000000), (((x) % 1000000) / 1000)
-	printf(": HITACHI SH%d %d.%02d MHz PCLOCK %d.%02d MHz\n",
-	    CPU_IS_SH3 ? 3 : 4, MHZ(sh_clock_get_cpuclock()),
+	printf(": HITACHI %s %d.%02d MHz PCLOCK %d.%02d MHz\n",
+	    cpu_model, MHZ(sh_clock_get_cpuclock()),
 	    MHZ(sh_clock_get_pclock()));
 #undef MHZ
 	sh_cache_information();
 	sh_mmu_information();
+}
+
+void
+need_resched(struct cpu_info *ci)
+{
+	ci->ci_want_resched = 1;
+
+	if (ci->ci_curproc)
+		aston(ci->ci_curproc);
 }

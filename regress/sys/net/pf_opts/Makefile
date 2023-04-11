@@ -1,4 +1,4 @@
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.5 2022/04/29 18:58:33 bluhm Exp $
 
 # Copyright (c) 2022 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -39,7 +39,7 @@ NUMS =		${N1} ${N2}
 
 .if ! (make(clean) || make(cleandir) || make(obj))
 
-PF_STATUS !=	${SUDO} pfctl -si | sed -n 's/^Status: \([^ ]*\) .*/\1/p'
+PF_STATUS !=	${SUDO} /sbin/pfctl -si | sed -n 's/^Status: \([^ ]*\) .*/\1/p'
 .if empty(PF_STATUS:MEnabled)
 regress:
 	@echo pf status: "${PF_STATUS}"
@@ -47,7 +47,7 @@ regress:
 	@echo SKIPPED
 .endif
 
-PF_SKIP !=	${SUDO} pfctl -sI -v | sed -n 's/ (skip)//p'
+PF_SKIP !=	${SUDO} /sbin/pfctl -sI -v | sed -n 's/ (skip)//p'
 .if ! empty(PF_SKIP:Mlo*:Nlo0)
 regress:
 	@echo pf skip: "${PF_SKIP}"
@@ -55,7 +55,8 @@ regress:
 	@echo SKIPPED
 .endif
 
-PF_ANCHOR !=	${SUDO} pfctl -sr | sed -n 's/^anchor "\([^"]*\)" all$$/\1/p'
+PF_ANCHOR !=	${SUDO} /sbin/pfctl -sr |\
+		    sed -n 's/^anchor "\([^"]*\)" all$$/\1/p'
 .if empty(PF_ANCHOR:Mregress)
 regress:
 	@echo pf anchor: "${PF_ANCHOR}"
@@ -79,23 +80,33 @@ REGRESS_SETUP_ONCE +=	ifconfig
 ifconfig: unconfig
 	# Create and configure loopback interfaces.
 .for n in ${NUMS}
-	${SUDO} ifconfig lo$n rdomain $n
-	${SUDO} ifconfig lo$n inet 127.0.0.1/8
-	${SUDO} ifconfig lo$n inet 127.0.0.$n alias
-	${SUDO} ifconfig lo$n inet6 ::1/128
-	${SUDO} ifconfig lo$n inet6 fe80::$n/64
+	${SUDO} /sbin/ifconfig lo$n rdomain $n
+	${SUDO} /sbin/ifconfig lo$n inet 127.0.0.1/8
+	${SUDO} /sbin/ifconfig lo$n inet 127.0.0.$n alias
+	${SUDO} /sbin/ifconfig lo$n inet6 ::1/128
+	${SUDO} /sbin/ifconfig lo$n inet6 fe80::$n/64
+	${SUDO} /sbin/route -n -T $n add -inet 224.0.0.0/4 127.0.0.1
 .endfor
-	${SUDO} route -n -T ${N1} add -inet -host 127.0.0.${N2} 127.0.0.1
-	${SUDO} route -n -T ${N2} add -inet -host 127.0.0.${N1} 127.0.0.1
+	# Wait until IPv6 addresses are no longer tentative.
+	for i in `jot 50`; do\
+	    if ! { /sbin/ifconfig lo${N1}; /sbin/ifconfig lo${N2}; }\
+		| fgrep -q tentative; then\
+		    break;\
+	    fi;\
+	    sleep .1;\
+	done
+	! { /sbin/ifconfig lo${N1}; /sbin/ifconfig lo${N2}; }\
+	    | fgrep tentative
 
 REGRESS_CLEANUP +=	unconfig
 unconfig: stamp-stop
 	# Destroy interfaces.
 .for n in ${NUMS}
-	-${SUDO} ifconfig lo$n inet 127.0.0.1 delete
-	-${SUDO} ifconfig lo$n inet 127.0.0.$n delete
-	-${SUDO} ifconfig lo$n inet6 ::1 delete
-	-${SUDO} ifconfig lo$n inet6 fe80::$n/64 delete
+	-${SUDO} /sbin/ifconfig lo$n rdomain $n
+	-${SUDO} /sbin/ifconfig lo$n inet 127.0.0.1 delete
+	-${SUDO} /sbin/ifconfig lo$n inet 127.0.0.$n delete
+	-${SUDO} /sbin/ifconfig lo$n inet6 ::1 delete
+	-${SUDO} /sbin/ifconfig lo$n inet6 fe80::$n/64 delete
 .endfor
 	rm -f stamp-ifconfig
 
@@ -114,7 +125,7 @@ REGRESS_SETUP_ONCE +=	pfctl
 pfctl: addr.py pf.conf
 	# Load the pf rules into the kernel.
 	cat addr.py ${.CURDIR}/pf.conf | /sbin/pfctl -n -f -
-	cat addr.py ${.CURDIR}/pf.conf | ${SUDO} pfctl -a regress -f -
+	cat addr.py ${.CURDIR}/pf.conf | ${SUDO} /sbin/pfctl -a regress -f -
 
 # run tcpdump on lo and pflog device
 DUMPCMD =	/usr/sbin/tcpdump -l -e -vvv -s 2048 -ni
@@ -144,10 +155,8 @@ stamp-stop:
 # Only do that if necessary to keep visible output short.
 .if ${.CURDIR} == ${.OBJDIR}
 PYTHON =	python3 -u ./
-PYPATH =
 .else
-PYTHON =	python3 -u ${.CURDIR}/
-PYPATH =	PYTHONPATH=${.OBJDIR}
+PYTHON =	env PYTHONPATH=${.OBJDIR} python3 -u ${.CURDIR}/
 .endif
 
 # ping
@@ -194,13 +203,13 @@ run-bpf-ping-record: stamp-stop
 
 REGRESS_TARGETS +=	run-icmp
 run-icmp: stamp-bpf
-	${SUDO} ${PYPATH} /sbin/route -T ${N1} exec ${PYTHON}icmp.py N1
-	${SUDO} ${PYPATH} /sbin/route -T ${N2} exec ${PYTHON}icmp.py N2
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp.py N2
 
 REGRESS_TARGETS +=	run-icmp6
 run-icmp6: stamp-bpf
-	${SUDO} ${PYPATH} /sbin/route -T ${N1} exec ${PYTHON}icmp6.py N1
-	${SUDO} ${PYPATH} /sbin/route -T ${N2} exec ${PYTHON}icmp6.py N2
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp6.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp6.py N2
 
 REGRESS_TARGETS +=	run-bpf-icmp
 run-bpf-icmp: stamp-stop
@@ -216,68 +225,126 @@ run-bpf-icmp: stamp-stop
 
 REGRESS_TARGETS +=	run-icmp6-hop
 run-icmp6-hop: stamp-bpf
-	${SUDO} ${PYPATH} /sbin/route -T ${N1} exec ${PYTHON}icmp6_hop.py N1
-	${SUDO} ${PYPATH} /sbin/route -T ${N2} exec ${PYTHON}icmp6_hop.py N2
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp6_hop.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp6_hop.py N2
 
 REGRESS_TARGETS +=	run-icmp6-dst
 run-icmp6-dst: stamp-bpf
-	${SUDO} ${PYPATH} /sbin/route -T ${N1} exec ${PYTHON}icmp6_dst.py N1
-	${SUDO} ${PYPATH} /sbin/route -T ${N2} exec ${PYTHON}icmp6_dst.py N2
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp6_dst.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp6_dst.py N2
 
 REGRESS_TARGETS +=	run-bpf-ext
 run-bpf-ext: stamp-stop
 	# Check that icmp6 packet with extension headers were blocked
-	fgrep ' fe80::${N2}: HBH icmp6' pflog0.tcpdump
-	fgrep ' fe80::${N2}: DSTOPT icmp6' pflog0.tcpdump
+	fgrep ' fe80::${N2}: HBH icmp6:' pflog0.tcpdump
+	fgrep ' fe80::${N2}: DSTOPT icmp6:' pflog0.tcpdump
 	! grep fe80::${N1} pflog0.tcpdump
 
 # icmp with options
 
 REGRESS_TARGETS +=	run-icmp-pad
 run-icmp-pad: stamp-bpf
-	${SUDO} ${PYPATH} /sbin/route -T ${N1} exec ${PYTHON}icmp_pad.py N1
-	${SUDO} ${PYPATH} /sbin/route -T ${N2} exec ${PYTHON}icmp_pad.py N2
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp_pad.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp_pad.py N2
 
 REGRESS_TARGETS +=	run-icmp-eol
 run-icmp-eol: stamp-bpf
-	${SUDO} ${PYPATH} /sbin/route -T ${N1} exec ${PYTHON}icmp_eol.py N1
-	${SUDO} ${PYPATH} /sbin/route -T ${N2} exec ${PYTHON}icmp_eol.py N2
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp_eol.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp_eol.py N2
 
 REGRESS_TARGETS +=	run-icmp6-pad
 run-icmp6-pad: stamp-bpf
-	${SUDO} ${PYPATH} /sbin/route -T ${N1} exec ${PYTHON}icmp6_hop_pad.py N1
-	${SUDO} ${PYPATH} /sbin/route -T ${N2} exec ${PYTHON}icmp6_hop_pad.py N2
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp6_hop_pad.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp6_hop_pad.py N2
+
+REGRESS_TARGETS +=	run-icmp-max
+run-icmp-max: stamp-bpf
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp_max.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp_max.py N2
+
+REGRESS_TARGETS +=	run-icmp6-max
+run-icmp6-max: stamp-bpf
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp6_hop_max.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp6_hop_max.py N2
 
 REGRESS_TARGETS +=	run-icmp-ra
 run-icmp-ra: stamp-bpf
-	${SUDO} ${PYPATH} /sbin/route -T ${N1} exec ${PYTHON}icmp_ra.py N1
-	${SUDO} ${PYPATH} /sbin/route -T ${N2} exec ${PYTHON}icmp_ra.py N2
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp_ra.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp_ra.py N2
 
 REGRESS_TARGETS +=	run-icmp6-ra
 run-icmp6-ra: stamp-bpf
-	${SUDO} ${PYPATH} /sbin/route -T ${N1} exec ${PYTHON}icmp6_hop_ra.py N1
-	${SUDO} ${PYPATH} /sbin/route -T ${N2} exec ${PYTHON}icmp6_hop_ra.py N2
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp6_hop_ra.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp6_hop_ra.py N2
 
 REGRESS_TARGETS +=	run-icmp-bad
 run-icmp-bad: stamp-bpf
-	${SUDO} ${PYPATH} /sbin/route -T ${N1} exec ${PYTHON}icmp_bad.py N1
-	${SUDO} ${PYPATH} /sbin/route -T ${N2} exec ${PYTHON}icmp_bad.py N2
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp_bad.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp_bad.py N2
 
 REGRESS_TARGETS +=	run-icmp6-bad
 run-icmp6-bad: stamp-bpf
-	${SUDO} ${PYPATH} /sbin/route -T ${N1} exec ${PYTHON}icmp6_hop_bad.py N1
-	${SUDO} ${PYPATH} /sbin/route -T ${N2} exec ${PYTHON}icmp6_hop_bad.py N2
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp6_hop_bad.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp6_hop_bad.py N2
 
 REGRESS_TARGETS +=	run-bpf-opts
 run-bpf-opts: stamp-stop
 	# Check that icmp packet with options were blocked
 	grep ' 127.0.0.${N2}:.* optlen=4 NOP NOP NOP NOP)' pflog0.tcpdump
 	grep ' 127.0.0.${N2}:.* optlen=4 NOP EOL-2)' pflog0.tcpdump
+	grep ' 127.0.0.${N2}:.* optlen=40 NOP ' pflog0.tcpdump
 	grep ' 127.0.0.${N2}:.* optlen=8 NOP IPOPT-148{4} NOP ' pflog0.tcpdump
 	grep ' 127.0.0.${N2}:.* optlen=4 IPOPT-3{4})' pflog0.tcpdump
-	grep ' fe80::${N2}: HBH icmp6' pflog0.tcpdump
-	grep ' fe80::${N2}: HBH (rtalert: 0x0000) icmp6' pflog0.tcpdump
-	grep ' fe80::${N2}: HBH (type 0x03: len=0) icmp6' pflog0.tcpdump
+	grep ' fe80::${N2}: HBH icmp6:.* (len 28,' pflog0.tcpdump
+	grep ' fe80::${N2}: HBH icmp6:.* (len 284,' pflog0.tcpdump
+	grep ' fe80::${N2}: HBH (rtalert: 0x0000) icmp6:' pflog0.tcpdump
+	grep ' fe80::${N2}: HBH (type 0x03: len=0) icmp6:' pflog0.tcpdump
+	! grep '127.0.0.${N1}' pflog0.tcpdump
+	! grep 'fe80::${N1}' pflog0.tcpdump
+
+# multicast with router alert
+
+REGRESS_TARGETS +=	run-igmp
+run-igmp: stamp-bpf
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}igmp_ra.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}igmp_ra.py N2
+
+REGRESS_TARGETS +=	run-icmp6-mld
+run-icmp6-mld: stamp-bpf
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp6_mld_ra.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp6_mld_ra.py N2
+
+REGRESS_TARGETS +=	run-bpf-mcast
+run-bpf-mcast: stamp-stop
+	# Check that multicast protocol packet with router alert passed
+	grep '127.0.0.${N2} > 224.0.0.1:\
+	    igmp query .* IPOPT-148{4}' lo${N2}.tcpdump
+	grep 'fe80::${N2} > ff02::1:\
+	    HBH (rtalert:.* icmp6: multicast ' lo${N2}.tcpdump
+	! grep '127.0.0.${N1}' pflog0.tcpdump
+	! grep 'fe80::${N1}' pflog0.tcpdump
+	! grep '127.0.0.${N2}' pflog0.tcpdump
+	! grep 'fe80::${N2}' pflog0.tcpdump
+	! grep '224.0.0.1' pflog0.tcpdump
+	! grep 'ff02::1' pflog0.tcpdump
+
+REGRESS_TARGETS +=	run-igmp-bad
+run-igmp-bad: stamp-bpf
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}igmp_bad.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}igmp_bad.py N2
+
+REGRESS_TARGETS +=	run-icmp6-mld-bad
+run-icmp6-mld-bad: stamp-bpf
+	${SUDO} /sbin/route -T ${N1} exec ${PYTHON}icmp6_mld_bad.py N1
+	${SUDO} /sbin/route -T ${N2} exec ${PYTHON}icmp6_mld_bad.py N2
+
+REGRESS_TARGETS +=	run-bpf-mcast-bad
+run-bpf-mcast-bad: stamp-stop
+	# Check that multicast protocol packet with options were blocked
+	grep '127.0.0.${N2} > 224.0.0.1:\
+	    igmp query .* IPOPT-3{4}' pflog0.tcpdump
+	grep 'fe80::${N2} > ff02::1:\
+	    HBH (type 0x03:.* icmp6: multicast ' pflog0.tcpdump
 	! grep '127.0.0.${N1}' pflog0.tcpdump
 	! grep 'fe80::${N1}' pflog0.tcpdump
 

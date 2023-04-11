@@ -10,10 +10,6 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_sin.c,v 1.7 1995/05/10 20:48:15 jtc Exp $";
-#endif
-
 /* sin(x)
  * Return sine function of x.
  *
@@ -45,15 +41,13 @@ static char rcsid[] = "$NetBSD: s_sin.c,v 1.7 1995/05/10 20:48:15 jtc Exp $";
  *	TRIG(x) returns trig(x) nearly rounded 
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
-	double sin(double x)
-#else
-	double sin(x)
-	double x;
-#endif
+double
+sin(double x)
 {
 	double y[2],z=0.0;
 	int32_t n, ix;
@@ -63,7 +57,11 @@ static char rcsid[] = "$NetBSD: s_sin.c,v 1.7 1995/05/10 20:48:15 jtc Exp $";
 
     /* |x| ~< pi/4 */
 	ix &= 0x7fffffff;
-	if(ix <= 0x3fe921fb) return __kernel_sin(x,z,0);
+	if(ix <= 0x3fe921fb) {
+	    if(ix<0x3e400000)			/* |x| < 2**-27 */
+	       {if((int)x==0) return x;}	/* generate inexact */
+	    return __kernel_sin(x,z,0);
+	}
 
     /* sin(Inf or NaN) is NaN */
 	else if (ix>=0x7ff00000) return x-x;
@@ -80,3 +78,5 @@ static char rcsid[] = "$NetBSD: s_sin.c,v 1.7 1995/05/10 20:48:15 jtc Exp $";
 	    }
 	}
 }
+DEF_STD(sin);
+LDBL_MAYBE_CLONE(sin);

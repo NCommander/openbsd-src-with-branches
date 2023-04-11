@@ -1,47 +1,107 @@
+/*	$OpenBSD: hack.save.c,v 1.13 2016/01/09 18:33:15 mestre Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.save.c,v 1.5 1995/03/23 08:31:27 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-#include "hack.h"
-extern char genocided[60];	/* defined in Decl.c */
-extern char fut_geno[60];	/* idem */
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
+#include "hack.h"
+
+extern char genocided[60];	/* defined in Decl.c */
+extern char fut_geno[60];	/* idem */
 extern char SAVEF[], nul[];
 extern char pl_character[PL_CSIZ];
-extern struct obj *restobjchn();
-extern struct monst *restmonchn();
 
-dosave(){
+static int dosave0(int);
+
+int
+dosave(void)
+{
 	if(dosave0(0)) {
 		settty("Be seeing you ...\n");
 		exit(0);
 	}
-#ifdef lint
 	return(0);
-#endif lint
 }
 
-#ifndef NOSAVEONHANGUP
-hangup(){
+void
+hackhangup(int notused)
+{
 	(void) dosave0(1);
 	exit(1);
 }
-#endif NOSAVEONHANGUP
 
 /* returns 1 if save successful */
-dosave0(hu) int hu; {
-	register fd, ofd;
+static int
+dosave0(int hu)
+{
+	int fd, ofd;
 	int tmp;		/* not register ! */
 
 	(void) signal(SIGHUP, SIG_IGN);
 	(void) signal(SIGINT, SIG_IGN);
-	if((fd = creat(SAVEF, FMASK)) < 0) {
+	if((fd = open(SAVEF, O_CREAT | O_TRUNC | O_WRONLY, FMASK)) == -1) {
 		if(!hu) pline("Cannot open save file. (Continue or Quit)");
 		(void) unlink(SAVEF);		/* ab@unido */
 		return(0);
@@ -53,17 +113,17 @@ dosave0(hu) int hu; {
 	saveobjchn(fd, fcobj);
 	savemonchn(fd, fallen_down);
 	tmp = getuid();
-	bwrite(fd, (char *) &tmp, sizeof tmp);
-	bwrite(fd, (char *) &flags, sizeof(struct flag));
-	bwrite(fd, (char *) &dlevel, sizeof dlevel);
-	bwrite(fd, (char *) &maxdlevel, sizeof maxdlevel);
-	bwrite(fd, (char *) &moves, sizeof moves);
-	bwrite(fd, (char *) &u, sizeof(struct you));
+	bwrite(fd, &tmp, sizeof tmp);
+	bwrite(fd, &flags, sizeof(struct flag));
+	bwrite(fd, &dlevel, sizeof dlevel);
+	bwrite(fd, &maxdlevel, sizeof maxdlevel);
+	bwrite(fd, &moves, sizeof moves);
+	bwrite(fd, &u, sizeof(struct you));
 	if(u.ustuck)
-		bwrite(fd, (char *) &(u.ustuck->m_id), sizeof u.ustuck->m_id);
-	bwrite(fd, (char *) pl_character, sizeof pl_character);
-	bwrite(fd, (char *) genocided, sizeof genocided);
-	bwrite(fd, (char *) fut_geno, sizeof fut_geno);
+		bwrite(fd, &(u.ustuck->m_id), sizeof u.ustuck->m_id);
+	bwrite(fd, pl_character, sizeof pl_character);
+	bwrite(fd, genocided, sizeof genocided);
+	bwrite(fd, fut_geno, sizeof fut_geno);
 	savenames(fd);
 	for(tmp = 1; tmp <= maxdlevel; tmp++) {
 		extern int hackpid;
@@ -71,7 +131,7 @@ dosave0(hu) int hu; {
 
 		if(tmp == dlevel || !level_exists[tmp]) continue;
 		glo(tmp);
-		if((ofd = open(lock, 0)) < 0) {
+		if((ofd = open(lock, O_RDONLY)) == -1) {
 		    if(!hu) pline("Error while saving: cannot read %s.", lock);
 		    (void) close(fd);
 		    (void) unlink(SAVEF);
@@ -80,7 +140,7 @@ dosave0(hu) int hu; {
 		}
 		getlev(ofd, hackpid, tmp);
 		(void) close(ofd);
-		bwrite(fd, (char *) &tmp, sizeof tmp);	/* level number */
+		bwrite(fd, &tmp, sizeof tmp);		/* level number */
 		savelev(fd,tmp);			/* actual level */
 		(void) unlink(lock);
 	}
@@ -92,10 +152,10 @@ dosave0(hu) int hu; {
 	return(1);
 }
 
-dorecover(fd)
-register fd;
+int
+dorecover(int fd)
 {
-	register nfd;
+	int nfd;
 	int tmp;		/* not a register ! */
 	unsigned mid;		/* idem */
 	struct obj *otmp;
@@ -133,12 +193,12 @@ register fd;
 			break;
 		getlev(fd, 0, tmp);
 		glo(tmp);
-		if((nfd = creat(lock, FMASK)) < 0)
+		if((nfd = open(lock, O_CREAT | O_TRUNC | O_WRONLY, FMASK)) == -1)
 			panic("Cannot open temp file %s!\n", lock);
 		savelev(nfd,tmp);
 		(void) close(nfd);
 	}
-	(void) lseek(fd, (off_t)0, 0);
+	(void) lseek(fd, (off_t)0, SEEK_SET);
 	getlev(fd, 0, 0);
 	(void) close(fd);
 	(void) unlink(SAVEF);
@@ -158,7 +218,7 @@ register fd;
 		}
 	}
 	if(u.ustuck) {
-		register struct monst *mtmp;
+		struct monst *mtmp;
 
 		for(mtmp = fmon; mtmp; mtmp = mtmp->nmon)
 			if(mtmp->m_id == mid) goto monfnd;
@@ -168,23 +228,18 @@ register fd;
 	}
 #ifndef QUEST
 	setsee();  /* only to recompute seelx etc. - these weren't saved */
-#endif QUEST
+#endif /* QUEST */
 	docrt();
 	restoring = FALSE;
 	return(1);
 }
 
 struct obj *
-restobjchn(fd)
-register fd;
+restobjchn(int fd)
 {
-	register struct obj *otmp, *otmp2;
-	register struct obj *first = 0;
+	struct obj *otmp, *otmp2;
+	struct obj *first = 0;
 	int xl;
-#ifdef lint
-	/* suppress "used before set" warning from lint */
-	otmp2 = 0;
-#endif lint
 	while(1) {
 		mread(fd, (char *) &xl, sizeof(xl));
 		if(xl == -1) break;
@@ -203,11 +258,10 @@ register fd;
 }
 
 struct monst *
-restmonchn(fd)
-register fd;
+restmonchn(int fd)
 {
-	register struct monst *mtmp, *mtmp2;
-	register struct monst *first = 0;
+	struct monst *mtmp, *mtmp2;
+	struct monst *first = 0;
 	int xl;
 
 	struct permonst *monbegin;
@@ -216,10 +270,6 @@ register fd;
 	mread(fd, (char *)&monbegin, sizeof(monbegin));
 	differ = (char *)(&mons[0]) - (char *)(monbegin);
 
-#ifdef lint
-	/* suppress "used before set" warning from lint */
-	mtmp2 = 0;
-#endif lint
 	while(1) {
 		mread(fd, (char *) &xl, sizeof(xl));
 		if(xl == -1) break;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: file.h,v 1.65 2022/01/20 03:43:31 jsg Exp $	*/
 /*	$NetBSD: file.h,v 1.11 1995/03/26 20:24:13 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,46 +32,108 @@
  *	@(#)file.h	8.2 (Berkeley) 8/20/94
  */
 
+#ifndef _KERNEL
 #include <sys/fcntl.h>
-#include <sys/unistd.h>
+
+#else /* _KERNEL */
+#include <sys/queue.h>
+#include <sys/mutex.h>
+#endif /* _KERNEL */
+
+#define	DTYPE_VNODE	1	/* file */
+#define	DTYPE_SOCKET	2	/* communications endpoint */
+#define	DTYPE_PIPE	3	/* pipe */
+#define	DTYPE_KQUEUE	4	/* event queue */
+#define	DTYPE_DMABUF	5	/* DMA buffer (for DRM) */
+#define	DTYPE_SYNC	6	/* sync file (for DRM) */
 
 #ifdef _KERNEL
-#include <sys/queue.h>
-
 struct proc;
 struct uio;
+struct knote;
+struct stat;
+struct file;
+struct ucred;
+
+/**
+ * File operations.
+ * The following entries could be called without KERNEL_LOCK hold:
+ * - fo_read
+ * - fo_write
+ * - fo_close
+ */
+struct	fileops {
+	int	(*fo_read)(struct file *, struct uio *, int);
+	int	(*fo_write)(struct file *, struct uio *, int);
+	int	(*fo_ioctl)(struct file *, u_long, caddr_t, struct proc *);
+	int	(*fo_kqfilter)(struct file *, struct knote *);
+	int	(*fo_stat)(struct file *, struct stat *, struct proc *);
+	int	(*fo_close)(struct file *, struct proc *);
+	int	(*fo_seek)(struct file *, off_t *, int, struct proc *);
+};
+#define FO_POSITION	0x00000001	/* positioned read/write */
 
 /*
  * Kernel descriptor table.
  * One entry for each open kernel vnode and socket.
+ *
+ *  Locks used to protect struct members in this file:
+ *	I	immutable after creation
+ *	F	global `fhdlk' mutex
+ *	a	atomic operations
+ *	f	per file `f_mtx'
+ *	v	vnode lock
  */
 struct file {
-	LIST_ENTRY(file) f_list;/* list of active files */
-	short	f_flag;		/* see fcntl.h */
-#define	DTYPE_VNODE	1	/* file */
-#define	DTYPE_SOCKET	2	/* communications endpoint */
-	short	f_type;		/* descriptor type */
-	short	f_count;	/* reference count */
-	short	f_msgcount;	/* references from message queue */
-	struct	ucred *f_cred;	/* credentials associated with descriptor */
-	struct	fileops {
-		int	(*fo_read)	__P((struct file *fp, struct uio *uio,
-					    struct ucred *cred));
-		int	(*fo_write)	__P((struct file *fp, struct uio *uio,
-					    struct ucred *cred));
-		int	(*fo_ioctl)	__P((struct file *fp, u_long com,
-					    caddr_t data, struct proc *p));
-		int	(*fo_select)	__P((struct file *fp, int which,
-					    struct proc *p));
-		int	(*fo_close)	__P((struct file *fp, struct proc *p));
-	} *f_ops;
-	off_t	f_offset;
-	caddr_t	f_data;		/* vnode or socket */
+	LIST_ENTRY(file) f_list;/* [F] list of active files */
+	struct mutex f_mtx;
+	u_int	f_flag;		/* [a] see fcntl.h */
+	u_int	f_iflags;	/* [a] internal flags */
+	int	f_type;		/* [I] descriptor type */
+	u_int	f_count;	/* [a] reference count */
+	struct	ucred *f_cred;	/* [I] credentials associated with descriptor */
+	const struct fileops *f_ops; /* [I] file operation pointers */
+	off_t	f_offset;	/* [f,v] offset */
+	void 	*f_data;	/* [I] private data */
+	uint64_t f_rxfer;	/* [f] total number of read transfers */
+	uint64_t f_wxfer;	/* [f] total number of write transfers */
+	uint64_t f_seek;	/* [f] total independent seek operations */
+	uint64_t f_rbytes;	/* [f] total bytes read */
+	uint64_t f_wbytes;	/* [f] total bytes written */
 };
 
+#define FIF_HASLOCK		0x01	/* descriptor holds advisory lock */
+#define FIF_INSERTED		0x80	/* present in `filehead' */
+
+#define FREF(fp) \
+	do { \
+		extern void vfs_stall_barrier(void); \
+		vfs_stall_barrier(); \
+		atomic_inc_int(&(fp)->f_count); \
+	} while (0)
+
+#define FRELE(fp,p) \
+	(atomic_dec_int_nv(&fp->f_count) == 0 ? fdrop(fp, p) : 0)
+
+#define FDUP_MAX_COUNT		(UINT_MAX - 2 * MAXCPUS)
+
+int	fdrop(struct file *, struct proc *);
+
+static inline off_t
+foffset(struct file *fp)
+{
+	off_t offset;
+
+	mtx_enter(&fp->f_mtx);
+	offset = fp->f_offset;
+	mtx_leave(&fp->f_mtx);
+	return (offset);
+}
+
 LIST_HEAD(filelist, file);
-extern struct filelist filehead;	/* head of list of open files */
 extern int maxfiles;			/* kernel limit on number of open files */
-extern int nfiles;			/* actual number of open files */
+extern int numfiles;			/* actual number of open files */
+extern const struct fileops socketops;	/* socket operations for files */
+extern const struct fileops vnops;	/* vnode operations for files */
 
 #endif /* _KERNEL */

@@ -121,7 +121,7 @@ my %globals;
 		$self->{sz} = "";
 	    } elsif ($self->{op} =~ /^v/) { # VEX
 		$self->{sz} = "";
-	    } elsif ($self->{op} =~ /movq/ && $line =~ /%xmm/) {
+	    } elsif ($self->{op} =~ /mov[dq]/ && $line =~ /%xmm/) {
 		$self->{sz} = "";
 	    } elsif ($self->{op} =~ /([a-z]{3,})([qlwb])$/) {
 		$self->{op} = $1;
@@ -149,7 +149,7 @@ my %globals;
 		    $epilogue = "movq	8(%rsp),%rdi\n\t" .
 				"movq	16(%rsp),%rsi\n\t";
 		}
-	    	$epilogue . ".byte	0xf3,0xc3";
+	    	$epilogue . "retq";
 	    } elsif ($self->{op} eq "call" && !$elf && $current_segment eq ".init") {
 		".p2align\t3\n\t.quad";
 	    } else {
@@ -291,7 +291,7 @@ my %globals;
 }
 { package register;	# pick up registers, which start with %.
     sub re {
-	my	$class = shift;	# muliple instances...
+	my	$class = shift;	# multiple instances...
 	my	$self = {};
 	local	*line = shift;
 	undef	$ret;
@@ -393,7 +393,7 @@ my %globals;
 	}
     }
 }
-{ package expr;		# pick up expressioins
+{ package expr;		# pick up expressions
     sub re {
 	my	$self = shift;	# single instance is enough...
 	local	*line = shift;
@@ -504,6 +504,9 @@ my %globals;
 		    $self->{value} = ".p2align\t" . (log($line)/log(2));
 		} elsif ($dir eq ".section") {
 		    $current_segment=$line;
+		    if (!$elf && $current_segment eq ".rodata") {
+			if	($flavour eq "macosx")	{ $self->{value} = ".section\t__DATA,__const"; }
+		    }
 		    if (!$elf && $current_segment eq ".init") {
 			if	($flavour eq "macosx")	{ $self->{value} = ".mod_init_func"; }
 			elsif	($flavour eq "mingw64")	{ $self->{value} = ".section\t.ctors"; }
@@ -550,9 +553,10 @@ my %globals;
 		/\.section/ && do { my $v=undef;
 				    $line =~ s/([^,]*).*/$1/;
 				    $line = ".CRT\$XCU" if ($line eq ".init");
+				    $line = ".rdata" if ($line eq ".rodata");
 				    if ($nasm) {
 					$v="section	$line";
-					if ($line=~/\.([px])data/) {
+					if ($line=~/\.([prx])data/) {
 					    $v.=" rdata align=";
 					    $v.=$1 eq "p"? 4 : 8;
 					} elsif ($line=~/\.CRT\$/i) {
@@ -561,7 +565,7 @@ my %globals;
 				    } else {
 					$v="$current_segment\tENDS\n" if ($current_segment);
 					$v.="$line\tSEGMENT";
-					if ($line=~/\.([px])data/) {
+					if ($line=~/\.([prx])data/) {
 					    $v.=" READONLY";
 					    $v.=" ALIGN(".($1 eq "p" ? 4 : 8).")" if ($masm>=$masmref);
 					} elsif ($line=~/\.CRT\$/i) {
@@ -662,7 +666,9 @@ sub rex {
 my %regrm = (	"%eax"=>0, "%ecx"=>1, "%edx"=>2, "%ebx"=>3,
 		"%esp"=>4, "%ebp"=>5, "%esi"=>6, "%edi"=>7	);
 
-my $movq = sub {	# elderly gas can't handle inter-register movq
+if ($flavour ne "openbsd") {
+
+$movq = sub {	# elderly gas can't handle inter-register movq
   my $arg = shift;
   my @opcode=(0x66);
     if ($arg =~ /%xmm([0-9]+),\s*%r(\w+)/) {
@@ -683,6 +689,8 @@ my $movq = sub {	# elderly gas can't handle inter-register movq
 	();
     }
 };
+
+}
 
 my $pextrd = sub {
     if (shift =~ /\$([0-9]+),\s*%xmm([0-9]+),\s*(%\w+)/) {
@@ -720,7 +728,9 @@ my $pinsrd = sub {
     }
 };
 
-my $pshufb = sub {
+if ($flavour ne "openbsd") {
+
+$pshufb = sub {
     if (shift =~ /%xmm([0-9]+),\s*%xmm([0-9]+)/) {
       my @opcode=(0x66);
 	rex(\@opcode,$2,$1);
@@ -732,7 +742,7 @@ my $pshufb = sub {
     }
 };
 
-my $palignr = sub {
+$palignr = sub {
     if (shift =~ /\$([0-9]+),\s*%xmm([0-9]+),\s*%xmm([0-9]+)/) {
       my @opcode=(0x66);
 	rex(\@opcode,$3,$2);
@@ -745,7 +755,7 @@ my $palignr = sub {
     }
 };
 
-my $pclmulqdq = sub {
+$pclmulqdq = sub {
     if (shift =~ /\$([x0-9a-f]+),\s*%xmm([0-9]+),\s*%xmm([0-9]+)/) {
       my @opcode=(0x66);
 	rex(\@opcode,$3,$2);
@@ -759,18 +769,7 @@ my $pclmulqdq = sub {
     }
 };
 
-my $rdrand = sub {
-    if (shift =~ /%[er](\w+)/) {
-      my @opcode=();
-      my $dst=$1;
-	if ($dst !~ /[0-9]+/) { $dst = $regrm{"%e$dst"}; }
-	rex(\@opcode,0,$1,8);
-	push @opcode,0x0f,0xc7,0xf0|($dst&7);
-	@opcode;
-    } else {
-	();
-    }
-};
+}
 
 if ($nasm) {
     print <<___;
@@ -782,6 +781,8 @@ ___
 OPTION	DOTNAME
 ___
 }
+print "#include \"x86_arch.h\"\n";
+
 while($line=<>) {
 
     chomp($line);
@@ -882,7 +883,7 @@ close STDOUT;
 # (#)	Nth argument, volatile
 #
 # In Unix terms top of stack is argument transfer area for arguments
-# which could not be accomodated in registers. Or in other words 7th
+# which could not be accommodated in registers. Or in other words 7th
 # [integer] argument resides at 8(%rsp) upon function entry point.
 # 128 bytes above %rsp constitute a "red zone" which is not touched
 # by signal handlers and can be used as temporal storage without
@@ -899,7 +900,7 @@ close STDOUT;
 # the area above user stack pointer in true asynchronous manner...
 #
 # All the above means that if assembler programmer adheres to Unix
-# register and stack layout, but disregards the "red zone" existense,
+# register and stack layout, but disregards the "red zone" existence,
 # it's possible to use following prologue and epilogue to "gear" from
 # Unix to Win64 ABI in leaf functions with not more than 6 arguments.
 #

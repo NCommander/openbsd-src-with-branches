@@ -1,4 +1,4 @@
-/* crypto/des/pcbc_enc.c */
+/* $OpenBSD: pcbc_enc.c,v 1.6 2014/10/28 07:35:58 jsg Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -56,13 +56,13 @@
  * [including the GNU Public Licence.]
  */
 
-#include "des_locl.h"
+#include "des_local.h"
 
 void DES_pcbc_encrypt(const unsigned char *input, unsigned char *output,
 		      long length, DES_key_schedule *schedule,
 		      DES_cblock *ivec, int enc)
 	{
-	register DES_LONG sin0,sin1,xor0,xor1,tout0,tout1;
+	DES_LONG sin0,sin1,xor0,xor1,tout0,tout1;
 	DES_LONG tin[2];
 	const unsigned char *in;
 	unsigned char *out,*iv;
