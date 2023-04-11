@@ -1,4 +1,4 @@
-.\"	$OpenBSD: dpb.1,v 1.29 2023/03/05 10:41:59 espie Exp $
+.\"	$OpenBSD: dpb.1,v 1.30 2023/03/05 12:56:41 jmc Exp $
 .\"
 .\" Copyright (c) 2010-2013 Marc Espie <espie@openbsd.org>
 .\"
@@ -58,7 +58,11 @@ installations.
 If run as non-root,
 .Nm
 will warn.
-The preferred way is to run it as root (and preferably under a chroot).
+The preferred way is to run it as root (and preferably under a chroot, see
+.Xr bulk 8
+and
+.Xr proot 1
+for example setups).
 .Nm
 will then change its identity to different users as needed.
 See
@@ -1771,7 +1775,8 @@ and restart it.
 .Xr clean-old-distfiles 1 ,
 .Xr dpb-replay 1 ,
 .Xr proot 1 ,
-.Xr pkgpath 7
+.Xr pkgpath 7 ,
+.Xr bulk 8
 .Sh HISTORY
 The original
 .Nm dpb
