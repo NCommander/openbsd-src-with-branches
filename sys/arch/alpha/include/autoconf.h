@@ -1,4 +1,4 @@
-/* $OpenBSD: autoconf.h,v 1.12 2001/09/01 05:48:18 jason Exp $ */
+/* $OpenBSD: autoconf.h,v 1.13 2020/05/25 15:00:23 deraadt Exp $ */
 /* $NetBSD: autoconf.h,v 1.19 2000/06/08 03:10:06 thorpej Exp $ */
 
 /*
@@ -51,7 +51,7 @@ struct bootdev_data {
 
 /*
  * The boot program passes a pointer (in the boot environment virtual
- * address address space; "BEVA") to a bootinfo to the kernel using
+ * address space; "BEVA") to a bootinfo to the kernel using
  * the following convention:
  *
  *	a0 contains first free page frame number

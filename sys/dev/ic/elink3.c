@@ -1,4 +1,4 @@
-/*	$OpenBSD: elink3.c,v 1.97 2020/07/10 13:26:37 patrick Exp $	*/
+/*	$OpenBSD: elink3.c,v 1.98 2020/12/12 11:48:52 jan Exp $	*/
 /*	$NetBSD: elink3.c,v 1.32 1997/05/14 00:22:00 thorpej Exp $	*/
 
 /*
@@ -609,7 +609,7 @@ epinit(struct ep_softc *sc)
 	for (i = 0; i < 31; i++)
 		bus_space_read_1(iot, ioh, ep_w1_reg(sc, EP_W1_TX_STATUS));
 
-	/* Set threshold for for Tx-space available interrupt. */
+	/* Set threshold for Tx-space available interrupt. */
 	bus_space_write_2(iot, ioh, EP_COMMAND,
 	    SET_TX_AVAIL_THRESH | (1600 >> sc->txashift));
 

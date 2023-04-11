@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_event.c,v 1.194 2022/11/09 22:25:36 claudio Exp $	*/
+/*	$OpenBSD: kern_event.c,v 1.195 2023/02/10 14:34:17 visa Exp $	*/
 
 /*-
  * Copyright (c) 1999,2000,2001 Jonathan Lemon <jlemon@FreeBSD.org>
@@ -172,7 +172,7 @@ int kq_timeoutmax = (4 * 1024);
 #define KN_HASH(val, mask)	(((val) ^ (val >> 8)) & (mask))
 
 /*
- * Table for for all system-defined filters.
+ * Table for all system-defined filters.
  */
 const struct filterops *const sysfilt_ops[] = {
 	&file_filtops,			/* EVFILT_READ */

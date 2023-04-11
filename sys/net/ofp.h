@@ -1,4 +1,4 @@
-/*	$OpenBSD: ofp.h,v 1.13 2016/12/02 17:10:20 rzalamena Exp $	*/
+/*	$OpenBSD: ofp.h,v 1.14 2021/03/10 10:21:48 jsg Exp $	*/
 
 /*
  * Copyright (c) 2013-2016 Reyk Floeter <reyk@openbsd.org>
@@ -193,7 +193,7 @@ struct ofp_match {
 	uint16_t	om_length;
 } __packed;
 
-/* Flow matching type type */
+/* Flow matching type */
 #define OFP_MATCH_STANDARD		0	/* Standard match deprecated */
 #define OFP_MATCH_OXM			1	/* OpenFlow Extensible Match */
 

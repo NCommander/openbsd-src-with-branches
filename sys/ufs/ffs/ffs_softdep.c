@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_softdep.c,v 1.149 2020/03/09 16:49:12 millert Exp $	*/
+/*	$OpenBSD: ffs_softdep.c,v 1.150 2021/04/28 09:53:53 claudio Exp $	*/
 
 /*
  * Copyright 1998, 2000 Marshall Kirk McKusick. All Rights Reserved.
@@ -1926,7 +1926,7 @@ softdep_setup_freeblocks(struct inode *ip, off_t length)
 	DIP_ASSIGN(ip, size, 0);
 
 	/*
-	 * Push the zero'ed inode to to its disk buffer so that we are free
+	 * Push the zero'ed inode to its disk buffer so that we are free
 	 * to delete its dependencies below. Once the dependencies are gone
 	 * the buffer can be safely released.
 	 */

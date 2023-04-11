@@ -1,4 +1,4 @@
-/*	$OpenBSD: malo.c,v 1.122 2022/01/09 05:42:38 jsg Exp $ */
+/*	$OpenBSD: malo.c,v 1.123 2022/04/21 21:03:02 stsp Exp $ */
 
 /*
  * Copyright (c) 2006 Claudio Jeker <claudio@openbsd.org>
@@ -1662,7 +1662,7 @@ malo_rx_intr(struct malo_softc *sc)
 		}
 
 		/*
-		 * New mbuf mbuf successfully loaded
+		 * New mbuf successfully loaded
 		 */
 		m = data->m;
 		data->m = mnew;

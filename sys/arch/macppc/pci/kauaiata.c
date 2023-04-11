@@ -1,4 +1,4 @@
-/*	$OpenBSD: kauaiata.c,v 1.10 2008/04/25 14:51:35 jmc Exp $ */
+/*	$OpenBSD: kauaiata.c,v 1.11 2022/03/13 12:33:01 mpi Exp $ */
 
 /*
  * Copyright (c) 2003 Dale Rahn
@@ -27,7 +27,7 @@
  */
 
 /*
- * Glue to to attach kauai ata to the macobio_wdc
+ * Glue to attach kauai ata to the macobio_wdc
  * which it heavily resembles.
  */
 

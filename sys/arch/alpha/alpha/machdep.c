@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.201 2023/02/06 11:16:22 miod Exp $ */
+/* $OpenBSD: machdep.c,v 1.202 2023/03/08 04:43:07 guenther Exp $ */
 /* $NetBSD: machdep.c,v 1.210 2000/06/01 17:12:38 thorpej Exp $ */
 
 /*-
@@ -436,7 +436,7 @@ nobootinfo:
 	/*
 	 * Find out how much memory is available, by looking at
 	 * the memory cluster descriptors.  This also tries to do
-	 * its best to detect things things that have never been seen
+	 * its best to detect things that have never been seen
 	 * before...
 	 */
 	mddtp = (struct mddt *)(((caddr_t)hwrpb) + hwrpb->rpb_memdat_off);
