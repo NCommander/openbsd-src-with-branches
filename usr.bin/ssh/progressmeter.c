@@ -1,4 +1,4 @@
-/* $OpenBSD: progressmeter.c,v 1.51 2023/02/22 03:56:43 djm Exp $ */
+/* $OpenBSD: progressmeter.c,v 1.52 2023/03/08 04:43:12 guenther Exp $ */
 /*
  * Copyright (c) 2003 Nils Nordman.  All rights reserved.
  *
@@ -29,7 +29,6 @@
 
 #include <errno.h>
 #include <limits.h>
-#include <signal.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdlib.h>
