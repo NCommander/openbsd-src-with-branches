@@ -31,4 +31,36 @@ crypto_store_htobe64(uint8_t *dst, uint64_t v)
 }
 #endif
 
+#ifndef HAVE_CRYPTO_ROL_U32
+static inline uint32_t
+crypto_rol_u32(uint32_t v, size_t shift)
+{
+	return (v << shift) | (v >> (32 - shift));
+}
+#endif
+
+#ifndef HAVE_CRYPTO_ROR_U32
+static inline uint32_t
+crypto_ror_u32(uint32_t v, size_t shift)
+{
+	return (v << (32 - shift)) | (v >> shift);
+}
+#endif
+
+#ifndef HAVE_CRYPTO_ROL_U64
+static inline uint64_t
+crypto_rol_u64(uint64_t v, size_t shift)
+{
+	return (v << shift) | (v >> (64 - shift));
+}
+#endif
+
+#ifndef HAVE_CRYPTO_ROR_U64
+static inline uint64_t
+crypto_ror_u64(uint64_t v, size_t shift)
+{
+	return (v << (64 - shift)) | (v >> shift);
+}
+#endif
+
 #endif
