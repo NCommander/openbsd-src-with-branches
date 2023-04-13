@@ -1,4 +1,4 @@
-/* $OpenBSD: vmparam.h,v 1.28 2015/11/01 20:09:59 miod Exp $ */
+/* $OpenBSD: vmparam.h,v 1.29 2023/04/13 15:05:19 miod Exp $ */
 /* $NetBSD: vmparam.h,v 1.18 2000/05/22 17:13:54 thorpej Exp $ */
 
 /*
@@ -107,7 +107,7 @@
 #define VM_PHYS_SIZE		(USRIOSIZE * PAGE_SIZE)
 
 /* some Alpha-specific constants */
-#define	VPTBASE		((vaddr_t)0xfffffffc00000000)	/* Virt. pg table */
+#define	VPTBASE		((vaddr_t)0xfffffffc00000000UL)	/* Virt. pg table */
 
 #define	VM_PHYSSEG_MAX		16		/* XXX */
 #define	VM_PHYSSEG_STRAT	VM_PSTRAT_BSEARCH
