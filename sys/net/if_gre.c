@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gre.c,v 1.171 2021/03/10 10:21:47 jsg Exp $ */
+/*	$OpenBSD: if_gre.c,v 1.172 2022/06/26 15:50:21 mvs Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -97,7 +97,6 @@
 #include <sys/sysctl.h>
 
 /* for nvgre bridge shizz */
-#include <sys/socket.h>
 #include <net/if_bridge.h>
 #include <net/if_etherbridge.h>
 

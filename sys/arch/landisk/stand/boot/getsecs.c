@@ -1,4 +1,4 @@
-/*	$OpenBSD: getsecs.c,v 1.6 2022/08/24 19:36:55 miod Exp $	*/
+/*	$OpenBSD: getsecs.c,v 1.7 2022/09/02 10:15:35 miod Exp $	*/
 /*	$NetBSD: getsecs.c,v 1.4 2022/08/24 14:22:35 nonaka Exp $	*/
 
 /*-
@@ -27,7 +27,6 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/param.h>
 #include <sys/param.h>
 
 #include <libsa.h>

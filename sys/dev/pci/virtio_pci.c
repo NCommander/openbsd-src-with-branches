@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio_pci.c,v 1.30 2021/09/03 14:04:35 patrick Exp $	*/
+/*	$OpenBSD: virtio_pci.c,v 1.31 2022/03/11 18:00:52 mpi Exp $	*/
 /*	$NetBSD: virtio.c,v 1.3 2011/11/02 23:05:52 njoly Exp $	*/
 
 /*
@@ -39,7 +39,6 @@
 
 #include <dev/pv/virtioreg.h>
 #include <dev/pv/virtiovar.h>
-#include <dev/pci/virtio_pcireg.h>
 
 #define DNPRINTF(n,x...)				\
     do { if (VIRTIO_DEBUG >= n) printf(x); } while(0)

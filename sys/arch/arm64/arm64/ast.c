@@ -1,4 +1,4 @@
-/* $OpenBSD: ast.c,v 1.6 2018/06/22 15:33:33 kettenis Exp $ */
+/* $OpenBSD: ast.c,v 1.7 2018/06/22 16:08:12 drahn Exp $ */
 /*
  * Copyright (c) 2015 Dale Rahn <drahn@dalerahn.com>
  *
@@ -19,7 +19,6 @@
 #include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/signalvar.h>
-#include <sys/proc.h>
 #include <sys/user.h>
 #include <sys/signal.h>
 #include <sys/syscall.h>

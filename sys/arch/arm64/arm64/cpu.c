@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.86 2023/02/20 00:01:16 patrick Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.87 2023/03/27 17:49:13 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2016 Dale Rahn <drahn@dalerahn.com>
@@ -37,7 +37,6 @@
 #include <dev/ofw/fdt.h>
 
 #include <machine/cpufunc.h>
-#include <machine/fdt.h>
 
 #include "psci.h"
 #if NPSCI > 0

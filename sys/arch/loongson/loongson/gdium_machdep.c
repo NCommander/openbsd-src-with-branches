@@ -1,4 +1,4 @@
-/*	$OpenBSD: gdium_machdep.c,v 1.7 2012/10/03 21:44:51 miod Exp $	*/
+/*	$OpenBSD: gdium_machdep.c,v 1.8 2014/03/27 22:16:03 miod Exp $	*/
 
 /*
  * Copyright (c) 2010 Miodrag Vallat.
@@ -201,7 +201,6 @@ extern struct cfdriver umass_cd;
 extern struct cfdriver scsibus_cd;
 extern struct cfdriver sd_cd;
 
-#include <dev/pci/pcivar.h>
 #include <dev/usb/usb.h>
 #include <dev/usb/usbdi.h>
 
