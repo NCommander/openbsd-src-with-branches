@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.175 2023/03/13 19:51:49 job Exp $ */
+/*	$OpenBSD: extern.h,v 1.176 2023/03/30 15:29:15 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -507,6 +507,7 @@ struct entity {
 	TAILQ_ENTRY(entity) entries;
 	char		*path;		/* path relative to repository */
 	char		*file;		/* filename or valid repo path */
+	char		*mftaki;	/* expected AKI (taken from Manifest) */
 	unsigned char	*data;		/* optional data blob */
 	size_t		 datasz;	/* length of optional data blob */
 	unsigned int	 repoid;	/* repository identifier */
@@ -666,7 +667,7 @@ void		 crl_tree_free(struct crl_tree *);
 /* Validation of our objects. */
 
 struct auth	*valid_ski_aki(const char *, struct auth_tree *,
-		    const char *, const char *);
+		    const char *, const char *, const char *);
 int		 valid_ta(const char *, struct auth_tree *,
 		    const struct cert *);
 int		 valid_cert(const char *, struct auth *, const struct cert *);
