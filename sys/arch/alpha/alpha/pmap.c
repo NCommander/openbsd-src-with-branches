@@ -1,4 +1,4 @@
-/* $OpenBSD: pmap.c,v 1.89 2023/02/06 11:16:22 miod Exp $ */
+/* $OpenBSD: pmap.c,v 1.90 2023/04/11 00:45:07 jsg Exp $ */
 /* $NetBSD: pmap.c,v 1.154 2000/12/07 22:18:55 thorpej Exp $ */
 
 /*-
@@ -2015,17 +2015,6 @@ pmap_extract(pmap_t pmap, vaddr_t va, paddr_t *pap)
 #endif
 	return (rv);
 }
-
-/*
- * pmap_copy:			[ INTERFACE ]
- *
- *	Copy the mapping range specified by src_addr/len
- *	from the source map to the range dst_addr/len
- *	in the destination map.
- *
- *	This routine is only advisory and need not do anything.
- */
-/* call deleted in <machine/pmap.h> */
 
 /*
  * pmap_collect:		[ INTERFACE ]
