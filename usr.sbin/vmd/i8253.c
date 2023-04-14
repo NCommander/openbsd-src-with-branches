@@ -1,4 +1,4 @@
-/* $OpenBSD: i8253.c,v 1.35 2022/09/02 21:33:51 cheloha Exp $ */
+/* $OpenBSD: i8253.c,v 1.36 2022/11/10 18:58:02 mbuhl Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -418,7 +418,7 @@ i8253_restore(int fd, uint32_t vm_id)
 }
 
 void
-i8253_stop()
+i8253_stop(void)
 {
 	int i;
 	for (i = 0; i < 3; i++)
@@ -427,7 +427,7 @@ i8253_stop()
 }
 
 void
-i8253_start()
+i8253_start(void)
 {
 	int i;
 	for (i = 0; i < 3; i++)
