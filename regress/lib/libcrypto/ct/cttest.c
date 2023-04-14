@@ -1,4 +1,4 @@
-/* $OpenBSD: cttest.c,v 1.3 2022/01/06 04:42:00 jsing Exp $ */
+/* $OpenBSD: cttest.c,v 1.4 2023/01/01 17:00:08 miod Exp $ */
 /*
  * Copyright (c) 2021 Joel Sing <jsing@openbsd.org>
  *
@@ -18,11 +18,10 @@
 #include <err.h>
 #include <string.h>
 
+#include <openssl/ct.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/x509v3.h>
-
-#include "ct/ct.h"
 
 char *test_ctlog_conf_file;
 char *test_cert_file;
