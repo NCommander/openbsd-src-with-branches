@@ -1,4 +1,4 @@
-/* $OpenBSD: exportertest.c,v 1.1 2022/11/05 21:58:24 jsing Exp $ */
+/* $OpenBSD: exportertest.c,v 1.2 2022/11/26 16:08:56 tb Exp $ */
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
  *
@@ -558,7 +558,6 @@ exporter_test(size_t test_no, const struct exporter_test *et)
 		fprintf(stderr, "FAIL: SSL_set_session\n");
 		goto failure;
 	}
-	SSL_SESSION_up_ref(ssl_session);
 
 	memcpy(ssl_session->master_key, et->master_key,
 	    sizeof(ssl_session->master_key));
