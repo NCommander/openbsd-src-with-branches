@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_vfsops.c,v 1.192 2021/10/20 06:35:39 semarie Exp $	*/
+/*	$OpenBSD: ffs_vfsops.c,v 1.193 2022/08/12 14:30:53 visa Exp $	*/
 /*	$NetBSD: ffs_vfsops.c,v 1.19 1996/02/09 22:22:26 christos Exp $	*/
 
 /*
@@ -89,12 +89,12 @@ const struct vfsops ffs_vfsops = {
 };
 
 struct inode_vtbl ffs_vtbl = {
-	ffs_truncate,
-	ffs_update,
-	ffs_inode_alloc,
-	ffs_inode_free,
-	ffs_balloc,
-	ffs_bufatoff
+	.iv_truncate	= ffs_truncate,
+	.iv_update	= ffs_update,
+	.iv_inode_alloc	= ffs_inode_alloc,
+	.iv_inode_free	= ffs_inode_free,
+	.iv_buf_alloc	= ffs_balloc,
+	.iv_bufatoff	= ffs_bufatoff
 };
 
 int
