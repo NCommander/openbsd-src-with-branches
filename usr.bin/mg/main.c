@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.93 2023/03/30 19:00:02 op Exp $	*/
+/*	$OpenBSD: main.c,v 1.94 2023/03/30 19:01:25 op Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -51,7 +51,7 @@ extern char	*__progname;
 extern void     closetags(void);
 
 static __dead void
-usage()
+usage(void)
 {
 	fprintf(stderr, "usage: %s [-nR] [-b file] [-f mode] [-u file] "
 	    "[+number] [file ...]\n",
