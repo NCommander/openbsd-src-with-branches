@@ -1,4 +1,4 @@
-/* $OpenBSD: cttest.c,v 1.6 2023/04/14 12:37:20 tb Exp $ */
+/* $OpenBSD: cttest.c,v 1.7 2023/04/14 14:14:39 tb Exp $ */
 /*
  * Copyright (c) 2021 Joel Sing <jsing@openbsd.org>
  *
@@ -450,6 +450,7 @@ ct_sct_verify_test(void)
 	CTLOG_STORE_free(ctlog_store);
 	X509_free(cert);
 	X509_free(issuer);
+	SCT_LIST_free(scts);
 
 	return failed;
 }
