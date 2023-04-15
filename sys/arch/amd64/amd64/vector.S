@@ -1,4 +1,4 @@
-/*	$OpenBSD: vector.S,v 1.88 2023/01/20 16:01:04 deraadt Exp $	*/
+/*	$OpenBSD: vector.S,v 1.89 2023/04/15 01:22:50 jsg Exp $	*/
 /*	$NetBSD: vector.S,v 1.5 2004/06/28 09:13:11 fvdl Exp $	*/
 
 /*
@@ -362,7 +362,7 @@ IDTVEC(trap14)
 	ZTRAP(T_VE)
 IDTVEC(trap15)
 	ZTRAP(T_CP)
-IDTVEC_NOALIGN(trap16)
+IDTVEC(trap16)
 IDTVEC_NOALIGN(trap17)
 IDTVEC_NOALIGN(trap18)
 IDTVEC_NOALIGN(trap19)
