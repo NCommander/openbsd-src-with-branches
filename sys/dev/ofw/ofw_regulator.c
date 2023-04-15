@@ -108,6 +108,14 @@ regulator_fixed_set(int node, int enable)
 	int len;
 	char *prop = "gpio";
 
+	/*
+	 * This regulator may rely on another. That "parent" regulator
+	 * may be used by multiple other devices/regulators, so unless
+	 * we refcnt use of a regulator we can only turn it on.
+	 */
+	if (enable)
+		regulator_enable(OF_getpropint(node, "vin-supply", 0));
+
 	pinctrl_byname(node, "default");
 
 	/* The "gpio"/"gpios" property is optional. */
