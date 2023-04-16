@@ -1,4 +1,4 @@
-/* $OpenBSD: vpm_int.h,v 1.3 2016/12/21 15:49:29 jsing Exp $ */
+/* $OpenBSD: vpm_int.h,v 1.4 2018/04/06 07:08:20 beck Exp $ */
 /*
  * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL project
  * 2013.
@@ -60,16 +60,5 @@
 __BEGIN_HIDDEN_DECLS
 
 /* internal only structure to hold additional X509_VERIFY_PARAM data */
-
-struct X509_VERIFY_PARAM_ID_st {
-	STACK_OF(OPENSSL_STRING) *hosts; /* Set of acceptable names */
-	unsigned int hostflags;     /* Flags to control matching features */
-	char *peername;             /* Matching hostname in peer certificate */
-	char *email;                /* If not NULL email address to match */
-	size_t emaillen;
-	unsigned char *ip;          /* If not NULL IP address to match */
-	size_t iplen;               /* Length of IP address */
-	int poisoned;
-};
 
 __END_HIDDEN_DECLS
