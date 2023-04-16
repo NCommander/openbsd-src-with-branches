@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.102 2023/04/13 15:01:18 tb Exp $
+# $OpenBSD: Makefile,v 1.103 2023/04/14 11:10:11 jsing Exp $
 
 LIB=	crypto
 LIBREBUILD=y
@@ -52,6 +52,7 @@ CFLAGS+= -I${LCRYPTO_SRC}/modes
 CFLAGS+= -I${LCRYPTO_SRC}/ocsp
 CFLAGS+= -I${LCRYPTO_SRC}/pkcs12
 CFLAGS+= -I${LCRYPTO_SRC}/rsa
+CFLAGS+= -I${LCRYPTO_SRC}/sha
 CFLAGS+= -I${LCRYPTO_SRC}/ts
 CFLAGS+= -I${LCRYPTO_SRC}/x509
 
