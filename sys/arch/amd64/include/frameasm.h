@@ -1,4 +1,4 @@
-/*	$OpenBSD: frameasm.h,v 1.24 2020/11/09 19:29:27 guenther Exp $	*/
+/*	$OpenBSD: frameasm.h,v 1.25 2020/11/12 23:29:16 guenther Exp $	*/
 /*	$NetBSD: frameasm.h,v 1.1 2003/04/26 18:39:40 fvdl Exp $	*/
 
 #ifndef _AMD64_MACHINE_FRAMEASM_H
@@ -63,6 +63,7 @@
  */
 #define INTRENTRY_LABEL(label)	X##label##_untramp
 #define	INTRENTRY(label) \
+	endbr64				; \
 	testb	$SEL_RPL,IRETQ_CS(%rsp)	; \
 	je	INTRENTRY_LABEL(label)	; \
 	swapgs				; \
