@@ -1,4 +1,4 @@
-/*	$OpenBSD: paragraph.c,v 1.46 2018/11/17 09:52:34 lum Exp $	*/
+/*	$OpenBSD: paragraph.c,v 1.47 2023/03/08 04:43:11 guenther Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -412,11 +412,7 @@ fillword(int f, int n)
 		if (i == curwp->w_doto)
 			return selfinsert(f, n);
 		c = lgetc(curwp->w_dotp, i);
-		if (c == '\t'
-#ifdef NOTAB
-		    && !(curbp->b_flag & BFNOTAB)
-#endif
-			)
+		if (c == '\t')
 			col |= 0x07;
 		else if (ISCTRL(c) != FALSE)
 			++col;

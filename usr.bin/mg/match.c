@@ -1,4 +1,4 @@
-/*	$OpenBSD: match.c,v 1.21 2019/07/02 16:25:39 lum Exp $	*/
+/*	$OpenBSD: match.c,v 1.22 2021/03/01 10:51:14 lum Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -169,11 +169,7 @@ displaymatch(struct line *clp, int cbo)
 		bufo = 0;
 		for (cp = 0; cp < llength(clp); cp++) {
 			c = lgetc(clp, cp);
-			if (c != '\t'
-#ifdef NOTAB
-			    || (curbp->b_flag & BFNOTAB)
-#endif
-				)
+			if (c != '\t')
 				if (ISCTRL(c)) {
 					buf[bufo++] = '^';
 					buf[bufo++] = CCHR(c);
