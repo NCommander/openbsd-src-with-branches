@@ -1,4 +1,4 @@
-/*      $OpenBSD: interpreter.c,v 1.33 2022/01/20 14:07:34 naddy Exp $	*/
+/*      $OpenBSD: interpreter.c,v 1.34 2022/01/28 06:18:41 guenther Exp $	*/
 /*
  * This file is in the public domain.
  *
@@ -406,7 +406,7 @@ parsexp(char *begp, const char *par1, const char *par2, int blkid, int expctr,
 	 * If no extant mg command found, just return.
 	 */
 	if ((funcp = name_function(cmdp)) == NULL)
-		return (dobeep_msgs("Unknown command: ", cmdp));
+		return (dobeep_msgs("Unknown command:", cmdp));
 
 	numparams = numparams_function(funcp);
 	if (numparams == 0)
