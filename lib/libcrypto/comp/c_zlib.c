@@ -1,4 +1,4 @@
-/* $OpenBSD: c_zlib.c,v 1.24 2022/12/24 07:12:09 tb Exp $ */
+/* $OpenBSD: c_zlib.c,v 1.25 2022/12/26 07:18:51 jmc Exp $ */
 /*
  * ---------------------------------------------------------------------------
  * Major patches to this file were contributed by
@@ -122,6 +122,7 @@
 #include <openssl/comp.h>
 #include <openssl/err.h>
 
+#include "bio_local.h"
 #include "comp_local.h"
 
 COMP_METHOD *COMP_zlib(void );
