@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.45 2023/03/08 04:43:11 guenther Exp $	*/
+/*	$OpenBSD: util.c,v 1.46 2023/04/17 09:49:04 op Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -15,6 +15,8 @@
 #include <stdio.h>
 
 #include "def.h"
+
+int	doindent(int);
 
 /*
  * Display a bunch of useful information about the current location of dot.
