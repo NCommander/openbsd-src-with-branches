@@ -1,4 +1,4 @@
-/* $OpenBSD: dh_ameth.c,v 1.26 2022/12/26 07:18:51 jmc Exp $ */
+/* $OpenBSD: dh_ameth.c,v 1.27 2023/04/17 05:51:16 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -484,9 +484,11 @@ DHparams_print_fp(FILE *fp, const DH *x)
 		DHerror(ERR_R_BUF_LIB);
 		return 0;
 	}
-	BIO_set_fp(b,fp,BIO_NOCLOSE);
+
+	BIO_set_fp(b, fp, BIO_NOCLOSE);
 	ret = DHparams_print(b, x);
 	BIO_free(b);
+
 	return ret;
 }
 
