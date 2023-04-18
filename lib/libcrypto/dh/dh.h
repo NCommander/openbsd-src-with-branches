@@ -1,4 +1,4 @@
-/* $OpenBSD: dh.h,v 1.35 2022/07/12 14:42:49 kn Exp $ */
+/* $OpenBSD: dh.h,v 1.36 2023/04/09 19:10:23 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -69,9 +69,7 @@
 #include <openssl/bio.h>
 #endif
 #include <openssl/ossl_typ.h>
-#ifndef OPENSSL_NO_DEPRECATED
 #include <openssl/bn.h>
-#endif
 
 #ifndef OPENSSL_DH_MAX_MODULUS_BITS
 # define OPENSSL_DH_MAX_MODULUS_BITS	10000
