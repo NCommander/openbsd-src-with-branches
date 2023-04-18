@@ -1,4 +1,4 @@
-/*	$OpenBSD: ectest.c,v 1.17 2023/04/18 08:17:49 tb Exp $	*/
+/*	$OpenBSD: ectest.c,v 1.18 2023/04/18 15:20:34 tb Exp $	*/
 /* crypto/ec/ectest.c */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
@@ -181,11 +181,9 @@ prime_field_tests(void)
 	size_t i, len;
 	int k;
 
-#if 1 /* optional */
 	ctx = BN_CTX_new();
 	if (!ctx)
 		ABORT;
-#endif
 
 	p = BN_new();
 	a = BN_new();
