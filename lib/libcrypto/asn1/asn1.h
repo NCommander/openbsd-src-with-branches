@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1.h,v 1.72 2022/11/13 13:59:46 tb Exp $ */
+/* $OpenBSD: asn1.h,v 1.73 2023/04/18 08:33:43 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -66,11 +66,11 @@
 #ifndef OPENSSL_NO_BIO
 #include <openssl/bio.h>
 #endif
+#include <openssl/bn.h>
 #include <openssl/stack.h>
 #include <openssl/safestack.h>
 
 #include <openssl/ossl_typ.h>
-#include <openssl/bn.h>
 
 #ifdef  __cplusplus
 extern "C" {
