@@ -526,7 +526,7 @@ rkclock_get_frequency(struct rkclock_softc *sc, uint32_t idx)
 
 	clk = rkclock_lookup(sc, idx);
 	if (clk == NULL) {
-		printf("%s: 0x%08x\n", __func__, idx);
+		printf("%s(%s, %u)\n", __func__, sc->sc_dev.dv_xname, idx);
 		return 0;
 	}
 
