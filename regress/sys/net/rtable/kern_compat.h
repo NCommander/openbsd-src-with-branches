@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_compat.h,v 1.12 2021/04/13 08:21:12 claudio Exp $	*/
+/*	$OpenBSD: kern_compat.h,v 1.13 2022/06/28 10:01:13 bluhm Exp $	*/
 
 #ifndef _KERN_COMPAT_H_
 #define _KERN_COMPAT_H_
@@ -32,6 +32,10 @@
 #define KERNEL_ASSERT_LOCKED()	/* nothing */
 #define KERNEL_LOCK()		/* nothing */
 #define KERNEL_UNLOCK()		/* nothing */
+
+#define NET_ASSERT_UNLOCKED()		/* nothing */
+#define NET_ASSERT_LOCKED()		/* nothing */
+#define NET_ASSERT_LOCKED_EXCLUSIVE()	/* nothing */
 
 #define panic(x...) errx(1, x)
 
