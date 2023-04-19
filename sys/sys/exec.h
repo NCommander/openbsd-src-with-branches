@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec.h,v 1.50 2022/10/27 22:48:17 deraadt Exp $	*/
+/*	$OpenBSD: exec.h,v 1.51 2022/10/30 17:43:40 guenther Exp $	*/
 /*	$NetBSD: exec.h,v 1.59 1996/02/09 18:25:09 christos Exp $	*/
 
 /*-
@@ -138,6 +138,7 @@ struct exec_package {
 #define	EXEC_SKIPARG	0x0008		/* don't copy user-supplied argv[0] */
 #define	EXEC_DESTR	0x0010		/* destructive ops performed */
 #define	EXEC_WXNEEDED	0x0020		/* executable will violate W^X */
+#define	EXEC_NOBTCFI	0x0040		/* no branch target CFI */
 
 #ifdef _KERNEL
 /*
