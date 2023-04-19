@@ -1,5 +1,5 @@
 /*
- * $OpenBSD: util.c,v 1.3 2021/09/02 20:57:58 deraadt Exp $
+ * $OpenBSD: util.c,v 1.4 2022/12/26 20:06:43 jmc Exp $
  * Copyright (c) 2002 Institute for Open Systems Technology Australia (IFOST)
  * Copyright (c) 2007 Michael Erdely <merdely@openbsd.org>
  * Copyright (c) 2019 Martijn van Duren <martijn@openbsd.org>
@@ -30,7 +30,6 @@
  */
 
 #include <sys/socket.h>
-#include <limits.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
