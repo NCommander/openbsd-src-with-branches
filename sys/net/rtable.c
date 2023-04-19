@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtable.c,v 1.80 2022/06/29 22:20:47 bluhm Exp $ */
+/*	$OpenBSD: rtable.c,v 1.81 2023/04/18 10:19:16 mvs Exp $ */
 
 /*
  * Copyright (c) 2014-2016 Martin Pieuchot
@@ -376,6 +376,8 @@ rtable_setsource(unsigned int rtableid, int af, struct sockaddr *src)
 {
 	struct art_root		*ar;
 
+	NET_ASSERT_LOCKED_EXCLUSIVE();
+
 	if ((ar = rtable_get(rtableid, af)) == NULL)
 		return (EAFNOSUPPORT);
 
@@ -388,6 +390,8 @@ struct sockaddr *
 rtable_getsource(unsigned int rtableid, int af)
 {
 	struct art_root		*ar;
+
+	NET_ASSERT_LOCKED();
 
 	ar = rtable_get(rtableid, af);
 	if (ar == NULL)
