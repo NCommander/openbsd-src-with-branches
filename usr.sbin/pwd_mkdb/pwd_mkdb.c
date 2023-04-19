@@ -1,4 +1,4 @@
-/*	$OpenBSD: pwd_mkdb.c,v 1.59 2021/11/28 19:28:42 deraadt Exp $	*/
+/*	$OpenBSD: pwd_mkdb.c,v 1.60 2022/12/04 23:50:51 cheloha Exp $	*/
 
 /*-
  * Copyright (c) 1991, 1993, 1994
@@ -47,7 +47,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <limits.h>
 #include <util.h>
 
 #define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))

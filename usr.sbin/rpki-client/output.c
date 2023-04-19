@@ -1,4 +1,4 @@
-/*	$OpenBSD: output.c,v 1.28 2022/11/04 13:01:19 tb Exp $ */
+/*	$OpenBSD: output.c,v 1.29 2022/12/15 12:02:29 claudio Exp $ */
 /*
  * Copyright (c) 2019 Theo de Raadt <deraadt@openbsd.org>
  *
@@ -51,7 +51,6 @@
 #include <signal.h>
 #include <string.h>
 #include <limits.h>
-#include <unistd.h>
 #include <time.h>
 
 #include "extern.h"

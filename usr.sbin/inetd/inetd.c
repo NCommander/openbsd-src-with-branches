@@ -1,4 +1,4 @@
-/*	$OpenBSD: inetd.c,v 1.162 2020/12/30 18:41:06 benno Exp $	*/
+/*	$OpenBSD: inetd.c,v 1.163 2022/12/04 23:50:50 cheloha Exp $	*/
 
 /*
  * Copyright (c) 1983,1991 The Regents of the University of California.
@@ -1489,7 +1489,6 @@ discard_dg(int s, struct servtab *sep)
 	(void) read(s, buffer, sizeof(buffer));
 }
 
-#include <ctype.h>
 #define LINESIZ 72
 char ring[128];
 char *endring;

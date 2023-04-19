@@ -1,5 +1,5 @@
 /* $NetBSD: loadfile.c,v 1.10 2000/12/03 02:53:04 tsutsui Exp $ */
-/* $OpenBSD: loadfile_elf.c,v 1.44 2022/12/26 23:50:20 dv Exp $ */
+/* $OpenBSD: loadfile_elf.c,v 1.45 2022/12/28 21:30:19 jmc Exp $ */
 
 /*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
@@ -94,7 +94,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <err.h>
-#include <errno.h>
 #include <stddef.h>
 
 #include <machine/vmmvar.h>

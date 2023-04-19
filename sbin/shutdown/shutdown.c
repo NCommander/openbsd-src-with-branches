@@ -1,4 +1,4 @@
-/*	$OpenBSD: shutdown.c,v 1.53 2021/07/12 15:09:19 beck Exp $	*/
+/*	$OpenBSD: shutdown.c,v 1.54 2023/01/13 07:02:16 cheloha Exp $	*/
 /*	$NetBSD: shutdown.c,v 1.9 1995/03/18 15:01:09 cgd Exp $	*/
 
 /*
@@ -33,7 +33,6 @@
 #include <sys/types.h>
 #include <sys/resource.h>
 #include <sys/syslog.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 
 #include <ctype.h>

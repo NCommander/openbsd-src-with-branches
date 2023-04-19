@@ -1,4 +1,4 @@
-/*	$OpenBSD: spamd.c,v 1.158 2021/07/14 13:33:57 kn Exp $	*/
+/*	$OpenBSD: spamd.c,v 1.159 2023/01/14 07:36:16 tb Exp $	*/
 
 /*
  * Copyright (c) 2015 Henning Brauer <henning@openbsd.org>
@@ -39,7 +39,6 @@
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
-#include <limits.h>
 #include <tls.h>
 
 #include <netdb.h>

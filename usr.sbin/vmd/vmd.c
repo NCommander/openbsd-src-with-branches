@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmd.c,v 1.139 2023/04/02 02:04:10 dv Exp $	*/
+/*	$OpenBSD: vmd.c,v 1.140 2023/04/16 12:47:26 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Reyk Floeter <reyk@openbsd.org>
@@ -38,7 +38,6 @@
 #include <unistd.h>
 #include <util.h>
 #include <ctype.h>
-#include <pwd.h>
 #include <grp.h>
 
 #include <machine/specialreg.h>

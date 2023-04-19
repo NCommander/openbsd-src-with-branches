@@ -1,4 +1,4 @@
-/*	$OpenBSD: rad.c,v 1.27 2021/02/27 10:35:20 florian Exp $	*/
+/*	$OpenBSD: rad.c,v 1.28 2022/10/15 13:26:15 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -28,7 +28,6 @@
 #include <netinet/in.h>
 #include <net/if.h>
 #include <net/route.h>
-#include <netinet/in.h>
 #include <netinet/if_ether.h>
 #include <netinet6/in6_var.h>
 #include <netinet/icmp6.h>
