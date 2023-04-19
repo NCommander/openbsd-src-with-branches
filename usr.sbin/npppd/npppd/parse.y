@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.25 2021/10/15 15:01:28 naddy Exp $ */
+/*	$OpenBSD: parse.y,v 1.26 2023/02/02 09:34:17 mvs Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -40,7 +40,6 @@
 #include <event.h>
 
 #include <stdbool.h>
-#include <stdarg.h>
 #include "npppd_auth.h"
 #include "npppd.h"
 #ifdef USE_NPPPD_RADIUS
