@@ -442,7 +442,8 @@ sdmmc_inquiry(struct scsi_xfer *xs)
 
 	memset(&inq, 0, sizeof inq);
 	inq.device = T_DIRECT;
-	inq.dev_qual2 = SID_REMOVABLE;
+	if (!ISSET(sc->sc_caps, SMC_CAPS_NONREMOVABLE))
+		inq.dev_qual2 = SID_REMOVABLE;
 	inq.version = SCSI_REV_2;
 	inq.response_format = SID_SCSI2_RESPONSE;
 	inq.additional_length = SID_SCSI2_ALEN;
