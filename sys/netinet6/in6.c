@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.c,v 1.258 2022/12/02 12:56:51 kn Exp $	*/
+/*	$OpenBSD: in6.c,v 1.259 2022/12/06 22:19:39 mvs Exp $	*/
 /*	$KAME: in6.c,v 1.372 2004/06/14 08:14:21 itojun Exp $	*/
 
 /*
@@ -207,9 +207,7 @@ in6_control(struct socket *so, u_long cmd, caddr_t data, struct ifnet *ifp)
 #ifdef MROUTING
 	case SIOCGETSGCNT_IN6:
 	case SIOCGETMIFCNT_IN6:
-		KERNEL_LOCK();
 		error = mrt6_ioctl(so, cmd, data);
-		KERNEL_UNLOCK();
 		break;
 #endif /* MROUTING */
 	default:

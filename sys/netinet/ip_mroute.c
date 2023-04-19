@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.c,v 1.136 2022/08/06 15:57:59 bluhm Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.137 2022/09/08 10:22:06 kn Exp $	*/
 /*	$NetBSD: ip_mroute.c,v 1.85 2004/04/26 01:31:57 matt Exp $	*/
 
 /*
@@ -261,6 +261,8 @@ mrt_ioctl(struct socket *so, u_long cmd, caddr_t data)
 	if (inp == NULL)
 		return (ENOTCONN);
 
+	KERNEL_LOCK();
+
 	if (so != ip_mrouter[inp->inp_rtableid])
 		error = EINVAL;
 	else
@@ -282,6 +284,7 @@ mrt_ioctl(struct socket *so, u_long cmd, caddr_t data)
 			break;
 		}
 
+	KERNEL_UNLOCK();
 	return (error);
 }
 
