@@ -1,4 +1,4 @@
-/*	$OpenBSD: sdmmcchip.h,v 1.13 2018/12/29 11:37:30 patrick Exp $	*/
+/*	$OpenBSD: sdmmcchip.h,v 1.14 2020/08/14 14:49:04 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2006 Uwe Stuehler <uwe@openbsd.org>
@@ -112,6 +112,7 @@ struct sdmmcbus_attach_args {
 	int	caps;
 	long	max_seg;
 	long	max_xfer;
+	bus_size_t dma_boundary;
 	void	*cookies[SDMMC_MAX_FUNCTIONS];
 };
 

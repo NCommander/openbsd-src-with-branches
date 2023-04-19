@@ -231,6 +231,7 @@ dwmshc_attach(struct device *parent, struct device *self, void *aux)
 
 	sdhc->sc_host = &sc->sc_host;
 	sdhc->sc_dmat = faa->fa_dmat;
+	sdhc->sc_dma_boundary = 128 * 1024 * 1024;
 
 	sdhc->sc_bus_clock_pre = dwmshc_clock_pre;
 	sdhc->sc_bus_clock_post = dwmshc_clock_post;
