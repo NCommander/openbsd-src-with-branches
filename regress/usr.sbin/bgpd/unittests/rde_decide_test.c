@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_decide_test.c,v 1.14 2022/09/24 11:29:16 claudio Exp $ */
+/*	$OpenBSD: rde_decide_test.c,v 1.15 2023/02/13 18:09:05 claudio Exp $ */
 
 /*
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
@@ -32,7 +32,9 @@ struct rib dummy_rib = {
 	.flags = 0,
 };
 
-struct rib_entry dummy_re;
+struct rib flowrib;
+struct pt_entry dummy_pt;
+struct rib_entry dummy_re = { .prefix = &dummy_pt };
 
 struct rde_peer peer1 = {
 	.conf.ebgp = 1,
