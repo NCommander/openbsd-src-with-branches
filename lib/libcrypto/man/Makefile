@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.242 2022/12/23 15:59:34 schwarze Exp $
+# $OpenBSD: Makefile,v 1.243 2023/03/16 15:06:17 tb Exp $
 
 .include <bsd.own.mk>
 
@@ -436,6 +436,7 @@ MAN=	\
 	i2d_PKCS7_bio_stream.3 \
 	lh_new.3 \
 	lh_stats.3 \
+	s2i_ASN1_INTEGER.3 \
 	openssl.cnf.5 \
 	x509v3.cnf.5
 
