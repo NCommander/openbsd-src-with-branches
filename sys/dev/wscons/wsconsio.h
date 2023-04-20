@@ -1,4 +1,4 @@
-/* $OpenBSD: wsconsio.h,v 1.97 2021/03/12 23:42:50 kettenis Exp $ */
+/* $OpenBSD: wsconsio.h,v 1.98 2022/07/15 17:57:27 kettenis Exp $ */
 /* $NetBSD: wsconsio.h,v 1.74 2005/04/28 07:15:44 martin Exp $ */
 
 /*
@@ -442,6 +442,7 @@ struct wsmouse_parameters {
 #define		WSDISPLAY_TYPE_EFIFB	71	/* EFI framebuffer */
 #define		WSDISPLAY_TYPE_RKDRM	72	/* Rockchip KMS framebuffer */
 #define		WSDISPLAY_TYPE_ASTFB	73	/* AST framebuffer */
+#define		WSDISPLAY_TYPE_VIOGPU	74	/* VirtIO GPU */
 
 /* Basic display information.  Not applicable to all display types. */
 struct wsdisplay_fbinfo {
