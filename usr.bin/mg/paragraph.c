@@ -1,4 +1,4 @@
-/*	$OpenBSD: paragraph.c,v 1.47 2023/03/08 04:43:11 guenther Exp $	*/
+/*	$OpenBSD: paragraph.c,v 1.48 2023/04/17 09:49:04 op Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -413,7 +413,7 @@ fillword(int f, int n)
 			return selfinsert(f, n);
 		c = lgetc(curwp->w_dotp, i);
 		if (c == '\t')
-			col |= 0x07;
+			col = ntabstop(col, curwp->w_bufp->b_tabw);
 		else if (ISCTRL(c) != FALSE)
 			++col;
 	}
