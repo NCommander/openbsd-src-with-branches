@@ -49,7 +49,6 @@ struct	vlanreq {
 #ifdef _KERNEL
 struct mbuf	*vlan_input(struct ifnet *, struct mbuf *, unsigned int *);
 struct mbuf	*vlan_inject(struct mbuf *, uint16_t, uint16_t);
-void		 vlan_flags_from_parent(struct ifnet *, int);
 #endif /* _KERNEL */
 
 #endif /* _NET_IF_VLAN_VAR_H_ */

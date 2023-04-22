@@ -92,7 +92,6 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_types.h>
-#include <net/if_vlan_var.h>
 #include <net/route.h>
 #include <net/netisr.h>
 
@@ -3150,10 +3149,6 @@ ifsettso(struct ifnet *ifp, int on)
 	else
 		goto out;
 
-	/* Change TSO flag also on attached vlan(4)/svlan(4) interfaces. */
-	vlan_flags_from_parent(ifp, IFXF_TSO);
-
-	/* restart interface */
 	if (ISSET(ifp->if_flags, IFF_UP)) {
 		/* go down for a moment... */
 		CLR(ifp->if_flags, IFF_UP);
