@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.49 2022/11/07 17:42:08 joshua Exp $
+#	$OpenBSD: Makefile,v 1.50 2022/12/01 23:03:40 tb Exp $
 
 SUBDIR += aead
 SUBDIR += aes
@@ -9,6 +9,7 @@ SUBDIR += bf
 SUBDIR += bio
 SUBDIR += bn
 SUBDIR += CA
+SUBDIR += c2sp
 SUBDIR += cast
 SUBDIR += certs
 SUBDIR += chacha
