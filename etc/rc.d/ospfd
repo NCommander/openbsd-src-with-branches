@@ -1,9 +1,0 @@
-#!/bin/ksh
-#
-# $OpenBSD: ospfd,v 1.2 2016/02/02 17:51:11 sthen Exp $
-
-daemon="/usr/sbin/ospfd"
-
-. /etc/rc.d/rc.subr
-
-rc_cmd $1

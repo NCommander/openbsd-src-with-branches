@@ -1,8 +1,0 @@
-.\" $OpenBSD$
-.TH SS-BROKEN_ELINE 1 "July 30, 2014"
-.SH NAME
-SS-broken_eline \- subsection and element line scope broken by eof
-.SH DESCRIPTION
-some text
-.SS
-.B
