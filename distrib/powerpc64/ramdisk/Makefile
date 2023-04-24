@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.4 2022/02/10 15:12:57 krw Exp $
+#	$OpenBSD: Makefile,v 1.5 2023/02/10 15:54:33 krw Exp $
 
 FS=		miniroot${OSrev}.img
 FSSIZE=		67584
@@ -16,8 +16,8 @@ MOUNT_ARGS_msdos=-o-l
 LISTS=		${.CURDIR}/list
 UTILS=		${.CURDIR}/../../miniroot
 
-MRFSDISKTYPE=	rdroot
-MRMAKEFSARGS=	-o disklabel=${MRFSDISKTYPE},minfree=0,density=4096
+MRDISKTYPE=	rdroot
+MRMAKEFSARGS=	-o disklabel=${MRDISKTYPE},minfree=0,density=4096
 
 all: ${FS}
 
