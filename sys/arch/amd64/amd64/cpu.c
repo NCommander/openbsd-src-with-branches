@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.166 2023/04/17 00:42:04 jsg Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.167 2023/04/22 18:27:28 guenther Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -989,6 +989,8 @@ cpu_hatch(void *v)
 		delay(10);
 #ifdef HIBERNATE
 	if ((ci->ci_flags & CPUF_PARK) != 0) {
+		if (ci->ci_feature_sefflags_edx & SEFF0EDX_IBT)
+			lcr4(rcr4() & ~CR4_CET);
 		atomic_clearbits_int(&ci->ci_flags, CPUF_PARK);
 		hibernate_drop_to_real_mode();
 	}
