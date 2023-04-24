@@ -1,4 +1,4 @@
-#	$OpenBSD: changelist,v 1.134 2023/04/18 08:48:17 semarie Exp $
+#	$OpenBSD: changelist,v 1.135 2023/04/18 08:50:37 semarie Exp $
 #
 # List of files which the security script backs up and checks
 # for modifications.
@@ -142,6 +142,7 @@
 /etc/sysctl.conf
 /etc/syslog.conf
 /etc/sysmerge.ignore
+/etc/tmux.conf
 /etc/ttys
 /etc/unwind.conf
 /etc/usermgmt.conf
