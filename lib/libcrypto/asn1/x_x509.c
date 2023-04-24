@@ -61,7 +61,6 @@
 #include <openssl/opensslconf.h>
 
 #include <openssl/asn1t.h>
-#include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
@@ -195,34 +194,10 @@ x509_cb(int operation, ASN1_VALUE **pval, const ASN1_ITEM *it, void *exarg)
 		CRYPTO_new_ex_data(CRYPTO_EX_INDEX_X509, ret, &ret->ex_data);
 		break;
 
-	case ASN1_OP_D2I_POST: {
-		const ASN1_BIT_STRING *issuerUID = NULL, *subjectUID = NULL;
-		long version;
-
-		version = X509_get_version(ret);
-		/* accept 0 despite DER requiring omission of default values */
-		if (version < 0 || version > 2) {
-			X509error(X509_R_INVALID_VERSION);
-			return 0;
-		}
-
-		/* RFC 5280 section 4.1.2.8, these fields require v2 or v3 */
-		X509_get0_uids(ret, &issuerUID, &subjectUID);
-		if ((issuerUID != NULL || subjectUID != NULL) && version == 0) {
-			X509error(X509_R_INVALID_VERSION);
-			return 0;
-		}
-
-		/* RFC 5280 section 4.1.2.9, extensions require v3. */
-		if (X509_get_ext_count(ret) != 0 && version != 2) {
-			X509error(X509_R_INVALID_VERSION);
-			return 0;
-		}
-
+	case ASN1_OP_D2I_POST:
 		free(ret->name);
 		ret->name = X509_NAME_oneline(ret->cert_info->subject, NULL, 0);
 		break;
-	}
 
 	case ASN1_OP_FREE_POST:
 		CRYPTO_free_ex_data(CRYPTO_EX_INDEX_X509, ret, &ret->ex_data);
