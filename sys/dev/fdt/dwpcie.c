@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwpcie.c,v 1.43 2023/03/30 20:07:49 kn Exp $	*/
+/*	$OpenBSD: dwpcie.c,v 1.44 2023/04/05 10:48:12 kettenis Exp $	*/
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -701,6 +701,7 @@ dwpcie_attach_deferred(struct device *self)
 	if (OF_is_compatible(sc->sc_node, "baikal,bm1000-pcie") ||
 	    OF_is_compatible(sc->sc_node, "marvell,armada8k-pcie") ||
 	    OF_is_compatible(sc->sc_node, "rockchip,rk3568-pcie") ||
+	    OF_getproplen(sc->sc_node, "msi-map") > 0 ||
 	    sc->sc_msi_addr)
 		pba.pba_flags |= PCI_FLAGS_MSI_ENABLED;
 
