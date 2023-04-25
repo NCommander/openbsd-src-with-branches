@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_mod_exp.c,v 1.34 2023/03/29 10:36:14 tb Exp $ */
+/*	$OpenBSD: bn_mod_exp.c,v 1.35 2023/04/06 07:08:41 tb Exp $ */
 
 /*
  * Copyright (c) 2022,2023 Theo Buehler <tb@openbsd.org>
@@ -27,6 +27,9 @@
 
 #define N_MOD_EXP_TESTS		100
 #define N_MOD_EXP2_TESTS	50
+
+int	BN_mod_exp_recp(BIGNUM *r, const BIGNUM *a, const BIGNUM *p,
+    const BIGNUM *m, BN_CTX *ctx);
 
 #define INIT_MOD_EXP_FN(f) { .name = #f, .mod_exp_fn = (f), }
 #define INIT_MOD_EXP_MONT_FN(f) { .name = #f, .mod_exp_mont_fn = (f), }
