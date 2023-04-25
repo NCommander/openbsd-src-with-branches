@@ -1,4 +1,4 @@
-/* $OpenBSD: pk7_mime.c,v 1.14 2022/11/12 12:11:14 beck Exp $ */
+/* $OpenBSD: pk7_mime.c,v 1.15 2023/02/16 08:38:17 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
  */
@@ -57,6 +57,8 @@
 
 #include <openssl/asn1.h>
 #include <openssl/x509.h>
+
+#include "asn1_local.h"
 
 /* PKCS#7 wrappers round generalised stream and MIME routines */
 
