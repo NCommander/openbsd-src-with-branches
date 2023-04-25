@@ -79,6 +79,18 @@
 
 #include "bn_local.h"
 
+/* XXX - remove these once bn_local.h is fixed. */
+void	BN_RECP_CTX_init(BN_RECP_CTX *recp);
+BN_RECP_CTX *BN_RECP_CTX_new(void);
+void	BN_RECP_CTX_free(BN_RECP_CTX *recp);
+int	BN_RECP_CTX_set(BN_RECP_CTX *recp, const BIGNUM *rdiv, BN_CTX *ctx);
+int	BN_mod_mul_reciprocal(BIGNUM *r, const BIGNUM *x, const BIGNUM *y,
+    BN_RECP_CTX *recp, BN_CTX *ctx);
+int	BN_mod_exp_recp(BIGNUM *r, const BIGNUM *a, const BIGNUM *p,
+    const BIGNUM *m, BN_CTX *ctx);
+int	BN_div_recp(BIGNUM *dv, BIGNUM *rem, const BIGNUM *m,
+    BN_RECP_CTX *recp, BN_CTX *ctx);
+
 const int num0 = 100; /* number of tests */
 const int num1 = 50;  /* additional tests for some functions */
 const int num2 = 5;   /* number of tests for slow functions */
