@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.1 2017/08/27 21:59:52 deraadt Exp $	*/
+/*	$OpenBSD: SYS.h,v 1.2 2023/01/11 01:55:17 mortimer Exp $	*/
 
 /*
  * Copyright (c) 2002,2004 Dale Rahn
@@ -35,6 +35,7 @@
 	.type	__CONCAT(_dl_,n), @function		;\
 	.align	16,0xcc					;\
 __CONCAT(_dl_,n):					;\
+	endbr64						;\
 	RETGUARD_SETUP(_dl_##n, r11)			;\
 	RETGUARD_PUSH(r11)				;\
 	movl	$(__CONCAT(SYS_,n)), %eax		;\
