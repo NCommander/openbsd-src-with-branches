@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_mont.c,v 1.56 2023/04/07 23:03:32 tb Exp $ */
+/* $OpenBSD: bn_mont.c,v 1.57 2023/04/22 14:31:44 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -136,15 +136,6 @@ BN_MONT_CTX_new(void)
 	BN_init(&mctx->N);
 
 	return mctx;
-}
-
-void
-BN_MONT_CTX_init(BN_MONT_CTX *mctx)
-{
-	memset(mctx, 0, sizeof(*mctx));
-
-	BN_init(&mctx->RR);
-	BN_init(&mctx->N);
 }
 
 void
