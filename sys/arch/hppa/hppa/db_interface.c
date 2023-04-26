@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.47 2020/01/20 15:58:23 visa Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.48 2020/04/18 04:45:20 visa Exp $	*/
 
 /*
  * Copyright (c) 1999-2003 Michael Shalayeff
@@ -340,4 +340,10 @@ stacktrace_save_at(struct stacktrace *st, unsigned int skip)
 		rp = fp[-5];
 		fp = (register_t *)fp[0];
 	}
+}
+
+void
+stacktrace_save_utrace(struct stacktrace *st)
+{
+	st->st_count = 0;
 }
