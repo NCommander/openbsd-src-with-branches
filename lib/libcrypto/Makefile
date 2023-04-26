@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.118 2023/04/25 23:16:31 tb Exp $
+# $OpenBSD: Makefile,v 1.119 2023/04/26 08:25:37 tb Exp $
 
 LIB=	crypto
 LIBREBUILD=y
@@ -561,7 +561,6 @@ SRCS+= p12_utl.c
 SRCS+= pk12err.c
 
 # pkcs7/
-SRCS+= bio_pk7.c
 SRCS+= pk7_asn1.c
 SRCS+= pk7_attr.c
 SRCS+= pk7_doit.c
