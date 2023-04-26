@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /* Copyright (c) 2022, Google Inc.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
