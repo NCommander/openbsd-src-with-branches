@@ -1,4 +1,4 @@
-/* $OpenBSD: trap.c,v 1.42 2022/11/07 09:43:04 mpi Exp $ */
+/* $OpenBSD: trap.c,v 1.43 2023/03/27 19:02:47 kettenis Exp $ */
 /*-
  * Copyright (c) 2014 Andrew Turner
  * All rights reserved.
@@ -280,6 +280,11 @@ do_el0_sync(struct trapframe *frame)
 	case EXCP_FP_SIMD:
 	case EXCP_TRAP_FP:
 		fpu_load(p);
+		break;
+	case EXCP_BRANCH_TGT:
+		curcpu()->ci_flush_bp();
+		sv.sival_ptr = (void *)frame->tf_elr;
+		trapsignal(p, SIGILL, 0, ILL_ILLOPC, sv);
 		break;
 	case EXCP_SVC:
 		svc_handler(frame);
