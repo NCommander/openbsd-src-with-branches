@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.26 2021/10/04 17:02:21 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.27 2022/03/26 14:26:44 deraadt Exp $
 
 FS=		miniroot${OSrev}.img
 FSSIZE=		8448
@@ -11,16 +11,12 @@ RAMDISK=	RAMDISK_CD
 LISTS=		${.CURDIR}/list
 UTILS=		${.CURDIR}/../../miniroot
 
-LBA=1
-
 all: ${FS} ${CDROM}
 
 ${FS}: bsd.gz
 	dd if=/dev/zero of=${FS} bs=512 count=${FSSIZE}
 	vnconfig -v ${FS} > vnd
-.ifdef LBA
 	fdisk -yi -l ${FSSIZE} -f ${DESTDIR}/usr/mdec/mbr `cat vnd`
-.endif
 	disklabel -w `cat vnd` ${FSDISKTYPE}
 	newfs -O 1 -m 0 -o space -i 524288 -c ${FSSIZE} /dev/r`cat vnd`a
 	mount /dev/`cat vnd`a ${MOUNT_POINT}
