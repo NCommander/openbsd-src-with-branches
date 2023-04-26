@@ -1,4 +1,4 @@
-/*	$OpenBSD: filemode.c,v 1.28 2023/03/13 21:01:06 job Exp $ */
+/*	$OpenBSD: filemode.c,v 1.29 2023/03/15 11:09:34 job Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -609,6 +609,7 @@ parse_file(struct entityq *q, struct msgbuf *msgq)
 		b = io_new_buffer();
 		io_simple_buffer(b, &entp->type, sizeof(entp->type));
 		io_simple_buffer(b, &entp->repoid, sizeof(entp->repoid));
+		io_simple_buffer(b, &entp->talid, sizeof(entp->talid));
 		io_str_buffer(b, entp->file);
 		io_close_buffer(msgq, b);
 		entity_free(entp);
