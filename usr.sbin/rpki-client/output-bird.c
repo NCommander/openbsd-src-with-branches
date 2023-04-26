@@ -1,4 +1,4 @@
-/*	$OpenBSD: output-bird.c,v 1.14 2022/05/15 16:43:34 tb Exp $ */
+/*	$OpenBSD: output-bird.c,v 1.15 2022/08/30 18:56:49 job Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2020 Robert Scheck <robert@fedoraproject.org>
@@ -84,7 +84,7 @@ output_bird2(FILE *out, struct vrp_tree *vrps, struct brk_tree *brks,
 {
 	extern		const char *bird_tablename;
 	struct vrp	*v;
-	time_t		 now = time(NULL);
+	time_t		 now = get_current_time();
 
 	if (outputheader(out, st) < 0)
 		return -1;

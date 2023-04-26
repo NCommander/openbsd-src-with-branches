@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.177 2023/04/13 17:04:02 job Exp $ */
+/*	$OpenBSD: extern.h,v 1.178 2023/04/26 16:32:41 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -943,5 +943,13 @@ int	mkpathat(int, const char *);
 
 /* Maximum number of delta files per RRDP notification file. */
 #define MAX_RRDP_DELTAS		300
+
+/*
+ * Time - Evaluation time is used as the current time if it is
+ * larger than X509_TIME_MIN, otherwise the system time is used.
+ */
+#define X509_TIME_MAX 253402300799LL
+#define X509_TIME_MIN -62167219200LL
+extern time_t  get_current_time(void);
 
 #endif /* ! EXTERN_H */
