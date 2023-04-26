@@ -1,4 +1,4 @@
-/*	$OpenBSD: uts.c,v 1.42 2019/11/06 20:25:14 mglocker Exp $ */
+/*	$OpenBSD: uts.c,v 1.43 2020/07/31 10:49:33 mglocker Exp $ */
 
 /*
  * Copyright (c) 2007 Robert Nagy <robert@openbsd.org>
@@ -157,7 +157,7 @@ uts_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_intr_pipe = NULL;
 	sc->sc_enabled = sc->sc_isize = 0;
 
-	/* Copy the default scalue values to each softc */
+	/* Copy the default scale values to each softc */
 	bcopy(&def_scale, &sc->sc_tsscale, sizeof(sc->sc_tsscale));
 
 	/* get the config descriptor */
