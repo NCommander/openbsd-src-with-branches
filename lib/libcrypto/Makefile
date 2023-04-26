@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.119 2023/04/26 08:25:37 tb Exp $
+# $OpenBSD: Makefile,v 1.120 2023/04/26 14:27:40 tb Exp $
 
 LIB=	crypto
 LIBREBUILD=y
@@ -689,6 +689,7 @@ SRCS+= x509_ocsp.c
 SRCS+= x509_pcons.c
 SRCS+= x509_pku.c
 SRCS+= x509_pmaps.c
+SRCS+= x509_policy.c
 SRCS+= x509_prn.c
 SRCS+= x509_purp.c
 SRCS+= x509_r2x.c
