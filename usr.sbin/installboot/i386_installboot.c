@@ -1,4 +1,4 @@
-/*	$OpenBSD: i386_installboot.c,v 1.43 2022/09/14 16:43:00 kn Exp $	*/
+/*	$OpenBSD: i386_installboot.c,v 1.44 2022/11/06 12:33:41 krw Exp $	*/
 /*	$NetBSD: installboot.c,v 1.5 1995/11/17 23:23:50 gwr Exp $ */
 
 /*
@@ -252,7 +252,7 @@ create_filesystem(struct disklabel *dl, char part)
 	char cmd[60];
 	int rslt;
 
-	/* Mount <duid>.<part> as msdos filesystem. */
+	/* Newfs <duid>.<part> as msdos filesystem. */
 	memset(&args, 0, sizeof(args));
 	rslt = asprintf(&args.fspec,
 	    "%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx.%c",

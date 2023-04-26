@@ -1,4 +1,4 @@
-/*	$OpenBSD: octeon_installboot.c,v 1.9 2022/11/06 12:33:41 krw Exp $	*/
+/*	$OpenBSD: octeon_installboot.c,v 1.10 2022/11/06 20:03:49 krw Exp $	*/
 
 /*
  * Copyright (c) 2011 Joel Sing <jsing@openbsd.org>
@@ -123,7 +123,7 @@ create_filesystem(struct disklabel *dl, char part)
 	char cmd[60];
 	int rslt;
 
-	/* Mount <duid>.<part> as msdos filesystem. */
+	/* Newfs <duid>.<part> as msdos filesystem. */
 	memset(&args, 0, sizeof(args));
 	rslt = asprintf(&args.fspec,
 	    "%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx.%c",
