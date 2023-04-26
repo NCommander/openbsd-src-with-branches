@@ -1,4 +1,4 @@
-/* $OpenBSD: pcy_node.c,v 1.7 2019/04/21 16:25:40 tb Exp $ */
+/* $OpenBSD: pcy_node.c,v 1.1 2020/06/04 15:19:31 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2004.
  */
@@ -59,6 +59,8 @@
 #include <openssl/asn1.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+
+#ifndef LIBRESSL_HAS_POLICY_DAG
 
 #include "pcy_int.h"
 
@@ -198,3 +200,5 @@ policy_node_match(const X509_POLICY_LEVEL *lvl, const X509_POLICY_NODE *node,
 	}
 	return 0;
 }
+
+#endif /* LIBRESSL_HAS_POLICY_DAG */

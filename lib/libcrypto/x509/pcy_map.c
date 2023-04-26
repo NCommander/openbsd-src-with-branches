@@ -1,4 +1,4 @@
-/* $OpenBSD: pcy_map.c,v 1.2 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: pcy_map.c,v 1.3 2022/11/26 16:08:54 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2004.
  */
@@ -58,6 +58,8 @@
 
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+
+#ifndef LIBRESSL_HAS_POLICY_DAG
 
 #include "pcy_int.h"
 #include "x509_local.h"
@@ -125,3 +127,5 @@ bad_mapping:
 	sk_POLICY_MAPPING_pop_free(maps, POLICY_MAPPING_free);
 	return ret;
 }
+
+#endif /* LIBRESSL_HAS_POLICY_DAG */
