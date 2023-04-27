@@ -1,4 +1,4 @@
-/*	$Id: test-roa.c,v 1.19 2022/08/26 06:32:03 tb Exp $ */
+/*	$Id: test-roa.c,v 1.20 2022/11/05 10:32:51 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -94,4 +94,10 @@ main(int argc, char *argv[])
 
 	printf("OK\n");
 	return 0;
+}
+
+time_t
+get_current_time(void)
+{
+	return time(NULL);
 }

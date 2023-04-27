@@ -1,4 +1,4 @@
-/*	$Id: test-geofeed.c,v 1.12 2022/11/05 10:32:51 job Exp $ */
+/*	$Id: test-geofeed.c,v 1.1 2022/11/26 12:34:31 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -95,4 +95,10 @@ main(int argc, char *argv[])
 
 	printf("OK\n");
 	return 0;
+}
+
+time_t
+get_current_time(void)
+{
+	return time(NULL);
 }

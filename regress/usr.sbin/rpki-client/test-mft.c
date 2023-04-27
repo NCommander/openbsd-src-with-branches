@@ -1,4 +1,4 @@
-/*	$Id: test-mft.c,v 1.21 2022/08/26 06:28:41 tb Exp $ */
+/*	$Id: test-mft.c,v 1.22 2022/08/26 06:32:03 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -96,4 +96,10 @@ main(int argc, char *argv[])
 
 	printf("OK\n");
 	return 0;
+}
+
+time_t
+get_current_time(void)
+{
+	return time(NULL);
 }

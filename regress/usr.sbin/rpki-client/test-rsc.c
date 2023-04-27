@@ -1,4 +1,4 @@
-/*	$Id: test-rsc.c,v 1.4 2022/08/26 06:32:03 tb Exp $ */
+/*	$Id: test-rsc.c,v 1.5 2022/11/05 10:32:51 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -97,4 +97,10 @@ main(int argc, char *argv[])
 
 	printf("OK\n");
 	return 0;
+}
+
+time_t
+get_current_time(void)
+{
+	return time(NULL);
 }
