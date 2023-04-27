@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rsync.1,v 1.30 2022/08/02 18:09:20 job Exp $
+.\"	$OpenBSD: rsync.1,v 1.31 2023/04/27 16:28:18 claudio Exp $
 .\"
 .\" Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: August 2 2022 $
+.Dd $Mdocdate: April 27 2023 $
 .Dt OPENRSYNC 1
 .Os
 .Sh NAME
@@ -209,6 +209,8 @@ The default is 0, which means no timeout.
 .It Fl t , -times
 Set destination file and directory modification time to match the source
 when it is updated or created.
+.It Fl V , -version
+Print version and exit.
 .It Fl v , -verbose
 Increase verbosity.
 Specify once for files being transferred, twice for specific status,
@@ -219,8 +221,6 @@ Do not cross filesystem boundaries.
 If this option is repeated, all mount point directories from the copy are
 omitted.
 Otherwise, it includes an empty directory at each mount point it encounters.
-.It Fl V , -version
-Print version and exit.
 .El
 .Pp
 A remote
