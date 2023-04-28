@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_oce.c,v 1.105 2022/01/09 05:42:54 jsg Exp $	*/
+/*	$OpenBSD: if_oce.c,v 1.106 2022/03/11 18:00:48 mpi Exp $	*/
 
 /*
  * Copyright (c) 2012 Mike Belopuhov
@@ -902,9 +902,8 @@ oce_rxrinfo(struct oce_softc *sc, struct if_rxrinfo *ifri)
 	u_int n = 0;
 
 	if (sc->sc_nrq > 1) {
-		if ((ifr = mallocarray(sc->sc_nrq, sizeof(*ifr), M_DEVBUF,
-		    M_WAITOK | M_ZERO)) == NULL)
-			return (ENOMEM);
+		ifr = mallocarray(sc->sc_nrq, sizeof(*ifr), M_DEVBUF,
+		    M_WAITOK | M_ZERO);
 	} else
 		ifr = &ifr1;
 
