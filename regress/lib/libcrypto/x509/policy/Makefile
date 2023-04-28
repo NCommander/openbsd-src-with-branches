@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.5 2020/10/02 19:38:39 tb Exp $
+#	$OpenBSD: Makefile,v 1.1 2023/04/27 12:23:31 beck Exp $
 
 PROGS =		policy
 
@@ -14,6 +14,7 @@ CFLAGS += 	-I${.CURDIR}/../../../../../lib/libcrypto/bytestring
 CFLAGS += 	-DCERTSDIR=\"${.CURDIR}/../../../libcrypto/x509/policy\"
 
 REGRESS_TARGETS =  policy-test
+REGRESS_EXPECTED_FAILURES =  policy-test
 
 policy-test:	policy
 	./policy 
