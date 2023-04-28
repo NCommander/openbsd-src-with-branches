@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.199 2023/01/31 15:18:55 deraadt Exp $	*/
+/*	$OpenBSD: locore.s,v 1.200 2023/04/13 15:36:28 miod Exp $	*/
 /*	$NetBSD: locore.s,v 1.137 2001/08/13 06:10:10 jdolecek Exp $	*/
 
 /*
@@ -65,7 +65,6 @@
 #include "ksyms.h"
 #include <machine/param.h>
 #include <sparc64/sparc64/intreg.h>
-#include <sparc64/sparc64/timerreg.h>
 #include <machine/ctlreg.h>
 #include <machine/psl.h>
 #include <machine/signal.h>

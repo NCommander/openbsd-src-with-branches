@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.141 2022/09/02 20:06:56 miod Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.142 2023/03/08 04:43:07 guenther Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.51 2001/07/24 19:32:11 eeh Exp $ */
 
 /*
@@ -77,7 +77,6 @@
 #include <machine/pmap.h>
 #include <machine/trap.h>
 #include <sparc64/sparc64/cache.h>
-#include <sparc64/sparc64/timerreg.h>
 #include <sparc64/dev/vbusvar.h>
 #include <sparc64/dev/cbusvar.h>
 
