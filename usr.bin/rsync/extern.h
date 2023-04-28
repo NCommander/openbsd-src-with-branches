@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.43 2021/10/29 08:00:59 claudio Exp $ */
+/*	$OpenBSD: extern.h,v 1.44 2022/08/02 18:09:20 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -145,6 +145,8 @@ struct	opts {
 	int		 no_motd;		/* --no-motd */
 	int		 numeric_ids;		/* --numeric-ids */
 	int		 one_file_system;	/* -x */
+	int		 ignore_times;		/* -I */
+	int		 size_only;		/* --size-only */
 	int		 alt_base_mode;
 	off_t		 max_size;		/* --max-size */
 	off_t		 min_size;		/* --min-size */
