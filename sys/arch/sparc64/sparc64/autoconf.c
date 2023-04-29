@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.c,v 1.142 2023/03/08 04:43:07 guenther Exp $	*/
+/*	$OpenBSD: autoconf.c,v 1.143 2023/04/28 18:27:55 cheloha Exp $	*/
 /*	$NetBSD: autoconf.c,v 1.51 2001/07/24 19:32:11 eeh Exp $ */
 
 /*
@@ -931,6 +931,7 @@ extern bus_space_tag_t mainbus_space_tag;
 		"options",
 		"packages",
 		"chosen",
+		"counter-timer",
 		NULL
 	};
 
