@@ -1,4 +1,4 @@
-/*	$OpenBSD: atactl.c,v 1.47 2021/09/02 11:36:47 semarie Exp $	*/
+/*	$OpenBSD: atactl.c,v 1.48 2023/03/06 17:39:54 miod Exp $	*/
 /*	$NetBSD: atactl.c,v 1.4 1999/02/24 18:49:14 jwise Exp $	*/
 
 /*-
@@ -1657,13 +1657,11 @@ device_attr(int argc, char *argv[])
 	req.datalen = sizeof(attr_thr);
 	ata_command(&req);
 
-	if (attr_val.revision != attr_thr.revision) {
-		/*
-		 * Non standard vendor implementation.
-		 * Return, since we don't know how to use this.
-		 */
-		return;
-	}
+	if (smart_cksum((u_int8_t *)&attr_val, sizeof(attr_val)) != 0)
+		errx(1, "Checksum mismatch (attr_val)");
+
+	if (smart_cksum((u_int8_t *)&attr_thr, sizeof(attr_thr)) != 0)
+		errx(1, "Checksum mismatch (attr_thr)");
 
 	attr = attr_val.attribute;
 	thr = attr_thr.threshold;
