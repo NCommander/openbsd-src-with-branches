@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_vfy.c,v 1.118 2023/04/28 16:50:16 beck Exp $ */
+/* $OpenBSD: x509_vfy.c,v 1.119 2023/04/30 14:43:04 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -155,14 +155,6 @@ null_callback(int ok, X509_STORE_CTX *e)
 {
 	return ok;
 }
-
-#if 0
-static int
-x509_subject_cmp(X509 **a, X509 **b)
-{
-	return X509_subject_name_cmp(*a, *b);
-}
-#endif
 
 /* Return 1 if a certificate is self signed */
 static int
