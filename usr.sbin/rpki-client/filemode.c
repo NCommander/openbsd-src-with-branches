@@ -1,4 +1,4 @@
-/*	$OpenBSD: filemode.c,v 1.29 2023/03/15 11:09:34 job Exp $ */
+/*	$OpenBSD: filemode.c,v 1.30 2023/04/26 16:32:41 claudio Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -478,6 +478,7 @@ proc_parser_file(char *file, unsigned char *buf, size_t len)
 		} else {
 			cert_free(cert);
 			cert = NULL;
+			expires = NULL;
 			status = 0;
 		}
 	}
