@@ -1,4 +1,4 @@
-/*	$OpenBSD: ecdsatest.c,v 1.14 2022/09/02 11:47:25 tb Exp $	*/
+/*	$OpenBSD: ecdsatest.c,v 1.15 2023/05/04 13:41:20 tb Exp $	*/
 /*
  * Written by Nils Larsch for the OpenSSL project.
  */
@@ -154,7 +154,8 @@ test_builtin(void)
 			goto err;
 		}
 
-		if ((wrong_eckey = EC_KEY_new()) == NULL)
+		/* Exercise ECParameters_dup() and let ASAN test for leaks. */
+		if ((wrong_eckey = ECParameters_dup(key)) == NULL)
 			goto err;
 		group = EC_GROUP_new_by_curve_name(nid);
 		if (group == NULL)
