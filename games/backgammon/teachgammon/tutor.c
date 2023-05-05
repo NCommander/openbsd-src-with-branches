@@ -1,4 +1,4 @@
-/*	$OpenBSD: tutor.c,v 1.8 2016/01/08 13:40:05 tb Exp $	*/
+/*	$OpenBSD: tutor.c,v 1.9 2017/01/20 01:12:44 krw Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -146,8 +146,7 @@ clrest(void)
 }
 
 int
-brdeq(b1, b2)
-	const int    *b1, *b2;
+brdeq(const int *b1, const int *b2)
 {
 	const int    *e;
 
