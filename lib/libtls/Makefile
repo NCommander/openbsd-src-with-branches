@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.36 2020/06/09 16:53:53 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.37 2022/01/25 21:51:24 eric Exp $
 
 .include <bsd.own.mk>
 .ifndef NOMAN
@@ -7,7 +7,7 @@ SUBDIR=	man
 
 CFLAGS+= -Wall -Wimplicit -Wundef
 .if ${COMPILER_VERSION:L} == "clang"
-CFLAGS+= -Werror
+CFLAGS+= -Werror -Wshadow
 .endif
 CFLAGS+= -DLIBRESSL_INTERNAL
 
