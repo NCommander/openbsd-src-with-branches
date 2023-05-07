@@ -1,4 +1,4 @@
-/*	$OpenBSD: nd6.c,v 1.274 2023/05/03 11:43:31 bluhm Exp $	*/
+/*	$OpenBSD: nd6.c,v 1.275 2023/05/04 06:56:56 bluhm Exp $	*/
 /*	$KAME: nd6.c,v 1.280 2002/06/08 19:52:07 itojun Exp $	*/
 
 /*
@@ -1181,7 +1181,7 @@ fail:
 			 * meaningless.
 			 */
 			nd6_llinfo_settimer(ln, nd6_gctimer);
-			if_mqoutput(ifp, &ln->ln_mq, &ln_hold_total,
+			if_output_mq(ifp, &ln->ln_mq, &ln_hold_total,
 			    rt_key(rt), rt);
 		} else if (ln->ln_state == ND6_LLINFO_INCOMPLETE) {
 			/* probe right away */
