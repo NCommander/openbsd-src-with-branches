@@ -513,6 +513,11 @@ get_range(bitstr_t *bits, int low, int high, const char *names[],
 				return (EOF);
 			}
 
+			/* we must perform the bounds checking ourselves
+			 */
+			if (num1 < low || num2 > high)
+				return (EOF);
+
 			if (ch == '/') {
 				/* randomize the step value instead of num1
 				 */
