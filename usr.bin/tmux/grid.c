@@ -1,4 +1,4 @@
-/* $OpenBSD: grid.c,v 1.126 2022/07/06 07:36:36 nicm Exp $ */
+/* $OpenBSD: grid.c,v 1.127 2022/09/28 07:55:29 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -53,7 +53,7 @@ static const struct grid_cell grid_cleared_cell = {
 	{ { ' ' }, 0, 1, 1 }, 0, GRID_FLAG_CLEARED, 8, 8, 0, 0
 };
 static const struct grid_cell_entry grid_cleared_entry = {
-	GRID_FLAG_CLEARED, { .data = { 0, 8, 8, ' ' } }
+	{ .data = { 0, 8, 8, ' ' } }, GRID_FLAG_CLEARED
 };
 
 /* Store cell in entry. */

@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.1196 2023/04/17 18:22:24 nicm Exp $ */
+/* $OpenBSD: tmux.h,v 1.1197 2023/04/25 09:31:50 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -723,7 +723,6 @@ struct grid_extd_entry {
 
 /* Grid cell entry. */
 struct grid_cell_entry {
-	u_char			flags;
 	union {
 		u_int		offset;
 		struct {
@@ -733,6 +732,7 @@ struct grid_cell_entry {
 			u_char	data;
 		} data;
 	};
+	u_char			flags;
 } __packed;
 
 /* Grid line. */
