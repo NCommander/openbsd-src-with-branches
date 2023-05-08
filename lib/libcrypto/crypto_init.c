@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Copyright (c) 2018 Bob Beck <beck@openbsd.org>
  *
