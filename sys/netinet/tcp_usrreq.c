@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.216 2023/01/22 12:05:44 mvs Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.217 2023/03/14 00:24:05 yasuoka Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -166,6 +166,7 @@ const struct sysctl_bounded_args tcpctl_vars[] = {
 	{ TCPCTL_SYN_BUCKET_LIMIT, &tcp_syn_bucket_limit, 1, INT_MAX },
 	{ TCPCTL_RFC3390, &tcp_do_rfc3390, 0, 2 },
 	{ TCPCTL_ALWAYS_KEEPALIVE, &tcp_always_keepalive, 0, 1 },
+	{ TCPCTL_TSO, &tcp_do_tso, 0, 1 },
 };
 
 struct	inpcbtable tcbtable;
@@ -1335,6 +1336,10 @@ tcp_sysctl_tcpstat(void *oldp, size_t *oldlenp, void *newp)
 	ASSIGN(tcps_sack_rcv_opts);
 	ASSIGN(tcps_sack_snd_opts);
 	ASSIGN(tcps_sack_drop_opts);
+	ASSIGN(tcps_outswtso);
+	ASSIGN(tcps_outhwtso);
+	ASSIGN(tcps_outpkttso);
+	ASSIGN(tcps_outbadtso);
 
 #undef ASSIGN
 
@@ -1494,8 +1499,8 @@ tcp_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 
 	default:
 		NET_LOCK();
-		error = sysctl_bounded_arr(tcpctl_vars, nitems(tcpctl_vars), name,
-		     namelen, oldp, oldlenp, newp, newlen);
+		error = sysctl_bounded_arr(tcpctl_vars, nitems(tcpctl_vars),
+		    name, namelen, oldp, oldlenp, newp, newlen);
 		NET_UNLOCK();
 		return (error);
 	}
