@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.290 2021/10/15 15:01:29 naddy Exp $	*/
+/*	$OpenBSD: parse.y,v 1.291 2022/02/10 14:59:35 millert Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -34,6 +34,8 @@
 #include <ifaddrs.h>
 #include <inttypes.h>
 #include <resolv.h>
+#include <stdlib.h>
+#include <string.h>
 #include <syslog.h>
 #include <unistd.h>
 #include <util.h>
