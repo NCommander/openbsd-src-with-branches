@@ -1,4 +1,4 @@
-/*	$OpenBSD: http.c,v 1.72 2022/11/02 11:44:19 claudio Exp $ */
+/*	$OpenBSD: http.c,v 1.73 2022/11/02 16:50:51 claudio Exp $ */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
@@ -1954,6 +1954,7 @@ proc_http(char *bind_addr, int fd)
 			if (conn->pfd != NULL && conn->pfd->revents != 0)
 				http_do(conn, http_handle);
 			else if (conn->io_time <= now) {
+				conn->io_time = 0;
 				if (conn->state == STATE_CONNECT) {
 					warnx("%s: connect timeout",
 					    conn_info(conn));
