@@ -1,4 +1,4 @@
-/*	$OpenBSD: efiboot.c,v 1.46 2022/12/08 00:29:06 patrick Exp $	*/
+/*	$OpenBSD: efiboot.c,v 1.47 2023/02/15 14:13:38 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -831,6 +831,15 @@ devboot(dev_t dev, char *p)
 		return;
 	}
 
+	/*
+	 * If there is no BSD disklabel on the boot device, boot from
+	 * the ESP instead.
+	 */
+	if ((bootdev_dip->flags & DISKINFO_FLAG_GOODLABEL) == 0) {
+		strlcpy(p, "esp0a", 6);
+		return;
+	}
+
 	TAILQ_FOREACH(dip, &disklist, list) {
 		if (bootdev_dip == dip)
 			break;
@@ -841,8 +850,7 @@ devboot(dev_t dev, char *p)
 	 * Determine the partition type for the 'a' partition of the
 	 * boot device.
 	 */
-	if ((bootdev_dip->flags & DISKINFO_FLAG_GOODLABEL) != 0)
-		part_type = bootdev_dip->disklabel.d_partitions[0].p_fstype;
+	part_type = bootdev_dip->disklabel.d_partitions[0].p_fstype;
 
 	/*
 	 * See if we booted from a disk that is a member of a bootable
