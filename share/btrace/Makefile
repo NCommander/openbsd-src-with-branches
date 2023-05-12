@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.1 2021/10/23 19:37:35 mpi Exp $
 
-FILES=	kprofile.bt runqlat.bt
+FILES=	kprofile.bt runqlat.bt uprofile.bt
 NOOBJ=	noobj
 
 install:
