@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_gre.c,v 1.172 2022/06/26 15:50:21 mvs Exp $ */
+/*	$OpenBSD: if_gre.c,v 1.173 2023/04/13 02:19:05 jsg Exp $ */
 /*	$NetBSD: if_gre.c,v 1.9 1999/10/25 19:18:11 drochner Exp $ */
 
 /*
@@ -3028,8 +3028,7 @@ gre_keepalive_send(void *arg)
 
 		ip = mtod(m, struct ip *);
 		ip->ip_id = htons(ip_randomid());
-		ip->ip_sum = 0;
-		ip->ip_sum = in_cksum(m, sizeof(*ip));
+		in_hdr_cksum_out(m, NULL);
 
 		proto = htons(ETHERTYPE_IP);
 		break;

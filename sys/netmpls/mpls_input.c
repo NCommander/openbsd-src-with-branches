@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_input.c,v 1.77 2021/03/10 10:21:49 jsg Exp $	*/
+/*	$OpenBSD: mpls_input.c,v 1.78 2021/07/22 11:07:17 mvs Exp $	*/
 
 /*
  * Copyright (c) 2008 Claudio Jeker <claudio@openbsd.org>
@@ -416,8 +416,7 @@ mpls_do_error(struct mbuf *m, int type, int code, int destmtu)
 		/* stuff to fix up which is normally done in ip_output */
 		ip->ip_v = IPVERSION;
 		ip->ip_id = htons(ip_randomid());
-		ip->ip_sum = 0;
-		ip->ip_sum = in_cksum(m, sizeof(*ip));
+		in_hdr_cksum_out(m, NULL);
 
 		/* stolen from icmp_send() */
 		icp = (struct icmp *)(mtod(m, caddr_t) + sizeof(*ip));
