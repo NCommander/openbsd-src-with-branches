@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_config.c,v 1.64 2021/10/21 08:33:07 tb Exp $ */
+/* $OpenBSD: tls_config.c,v 1.65 2022/01/25 21:51:24 eric Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <tls.h>

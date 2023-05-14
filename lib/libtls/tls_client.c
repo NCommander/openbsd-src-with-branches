@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_client.c,v 1.47 2021/06/01 20:26:11 tb Exp $ */
+/* $OpenBSD: tls_client.c,v 1.48 2021/10/21 08:38:11 tb Exp $ */
 /*
  * Copyright (c) 2014 Joel Sing <jsing@openbsd.org>
  *
@@ -25,6 +25,7 @@
 #include <limits.h>
 #include <netdb.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <openssl/err.h>

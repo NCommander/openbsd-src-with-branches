@@ -1,4 +1,4 @@
-/*	$OpenBSD: tls_ocsp.c,v 1.21 2021/10/21 14:57:55 tb Exp $ */
+/*	$OpenBSD: tls_ocsp.c,v 1.22 2021/10/31 16:39:32 tb Exp $ */
 /*
  * Copyright (c) 2015 Marko Kreen <markokr@gmail.com>
  * Copyright (c) 2016 Bob Beck <beck@openbsd.org>
@@ -20,6 +20,8 @@
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
+
+#include <string.h>
 
 #include <openssl/err.h>
 #include <openssl/ocsp.h>
