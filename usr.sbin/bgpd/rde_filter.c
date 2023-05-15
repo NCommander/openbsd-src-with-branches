@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_filter.c,v 1.133 2023/01/24 14:13:12 claudio Exp $ */
+/*	$OpenBSD: rde_filter.c,v 1.134 2023/03/10 07:57:15 claudio Exp $ */
 
 /*
  * Copyright (c) 2004 Claudio Jeker <claudio@openbsd.org>
@@ -583,6 +583,12 @@ filterset_copy(struct filter_set_head *source, struct filter_set_head *dest)
 		if ((t = malloc(sizeof(struct filter_set))) == NULL)
 			fatal(NULL);
 		memcpy(t, s, sizeof(struct filter_set));
+		if (t->type == ACTION_RTLABEL_ID)
+			rtlabel_ref(t->action.id);
+		else if (t->type == ACTION_PFTABLE_ID)
+			pftable_ref(t->action.id);
+		else if (t->type == ACTION_SET_NEXTHOP_REF)
+			nexthop_ref(t->action.nh_ref);
 		TAILQ_INSERT_TAIL(dest, t, entry);
 	}
 }
