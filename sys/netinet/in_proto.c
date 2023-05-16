@@ -1,4 +1,4 @@
-/*	$OpenBSD: in_proto.c,v 1.98 2022/02/25 23:51:03 guenther Exp $	*/
+/*	$OpenBSD: in_proto.c,v 1.99 2022/08/15 09:11:38 mvs Exp $	*/
 /*	$NetBSD: in_proto.c,v 1.14 1996/02/18 18:58:32 christos Exp $	*/
 
 /*
@@ -177,6 +177,7 @@ u_char ip_protox[IPPROTO_MAX];
 const struct protosw inetsw[] = {
 {
   .pr_domain	= &inetdomain,
+  .pr_flags	= PR_MPSYSCTL,
   .pr_init	= ip_init,
   .pr_slowtimo	= ip_slowtimo,
   .pr_sysctl	= ip_sysctl

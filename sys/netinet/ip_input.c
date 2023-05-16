@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_input.c,v 1.382 2023/03/08 23:17:02 bluhm Exp $	*/
+/*	$OpenBSD: ip_input.c,v 1.383 2023/04/05 21:51:47 bluhm Exp $	*/
 /*	$NetBSD: ip_input.c,v 1.30 1996/03/16 23:53:58 christos Exp $	*/
 
 /*
@@ -1704,8 +1704,11 @@ ip_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
 		return (ip_sysctl_ipstat(oldp, oldlenp, newp));
 #ifdef MROUTING
 	case IPCTL_MRTSTATS:
-		return (sysctl_rdstruct(oldp, oldlenp, newp,
-		    &mrtstat, sizeof(mrtstat)));
+		KERNEL_LOCK();
+		error = sysctl_rdstruct(oldp, oldlenp, newp,
+		    &mrtstat, sizeof(mrtstat));
+		KERNEL_UNLOCK();
+		return (error);
 	case IPCTL_MRTMFC:
 		if (newp)
 			return (EPERM);
