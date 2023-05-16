@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_aggr.c,v 1.38 2021/02/28 03:59:25 dlg Exp $ */
+/*	$OpenBSD: if_aggr.c,v 1.39 2022/02/05 03:56:16 dlg Exp $ */
 
 /*
  * Copyright (c) 2019 The University of Queensland
@@ -2617,6 +2617,9 @@ aggr_update_capabilities(struct aggr_softc *sc)
 	uint32_t hardmtu = ETHER_MAX_HARDMTU_LEN;
 	uint32_t capabilities = ~0;
 	int set = 0;
+
+	/* Do not inherit LRO capabilities. */
+	CLR(capabilities, IFCAP_LRO);
 
 	rw_enter_read(&sc->sc_lock);
 	TAILQ_FOREACH(p, &sc->sc_ports, p_entry) {
