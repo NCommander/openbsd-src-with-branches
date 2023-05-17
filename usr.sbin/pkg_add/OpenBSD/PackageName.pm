@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackageName.pm,v 1.55 2021/11/24 16:51:08 espie Exp $
+# $OpenBSD: PackageName.pm,v 1.56 2021/11/25 18:23:53 espie Exp $
 #
 # Copyright (c) 2003-2010 Marc Espie <espie@openbsd.org>
 #
@@ -20,7 +20,7 @@ use warnings;
 
 package OpenBSD::PackageName;
 
-sub url2pkgname($)
+sub url2pkgname
 {
 	my $name = $_[0];
 	$name =~ s|.*/||;

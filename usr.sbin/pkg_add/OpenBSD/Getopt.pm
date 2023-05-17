@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD$
+# $OpenBSD: Getopt.pm,v 1.12 2012/04/10 16:57:12 espie Exp $
 #
 # Copyright (c) 2006 Marc Espie <espie@openbsd.org>
 #
@@ -48,7 +48,7 @@ sub handle_option
 	}
 }
 
-sub getopts($;$)
+sub getopts
 {
     my ($args, $hash) = @_;
 

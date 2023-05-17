@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: HTTP.pm,v 1.12 2014/08/27 18:40:03 kspillner Exp $
+# $OpenBSD: HTTP.pm,v 1.13 2017/08/04 11:53:03 sthen Exp $
 #
 # Copyright (c) 2011 Marc Espie <espie@openbsd.org>
 #
@@ -232,7 +232,7 @@ package _Proxy;
 my $pid;
 my $token = 0;
 
-sub batch(&)
+sub batch
 {
 	my $code = shift;
 	if (defined $pid) {
@@ -250,7 +250,7 @@ sub batch(&)
 	}
 }
 
-sub abort_batch()
+sub abort_batch
 {
 	if (defined $pid) {
 		kill HUP => $pid;
