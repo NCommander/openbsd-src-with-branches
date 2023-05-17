@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Installed.pm,v 1.43 2022/04/29 10:44:05 espie Exp $
+# $OpenBSD: Installed.pm,v 1.44 2022/05/08 13:21:04 espie Exp $
 #
 # Copyright (c) 2007-2014 Marc Espie <espie@openbsd.org>
 #
@@ -75,7 +75,7 @@ sub setup_cache
 	# with the corresponding release
 	if (defined $repo->{release}) {
 		my $url = $repo->urlscheme."://$repo->{host}$repo->{release}";
-		my $r2 = $repo->parse_url(\$url, $state);
+		my $r2 = OpenBSD::PackageRepository->parse(\$url, $state);
 		$r2->{info_cache} = $repo->{info_cache};
 	}
 }
