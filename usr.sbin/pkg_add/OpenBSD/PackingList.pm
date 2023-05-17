@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: PackingList.pm,v 1.149 2022/06/06 07:21:17 espie Exp $
+# $OpenBSD: PackingList.pm,v 1.150 2023/05/16 14:31:26 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -527,7 +527,7 @@ sub to_cache
 {
 	my ($self) = @_;
 	return if defined $plist_cache->{$self->pkgname};
-	my $plist = OpenBSD::PackingList::Depend->new;
+	my $plist = OpenBSD::PackingList->new;
 	for my $c (@cache_categories) {
 		if (defined $self->{$c}) {
 			$plist->{$c} = $self->{$c};
