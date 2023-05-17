@@ -1,4 +1,4 @@
-/*	$OpenBSD: validate.c,v 1.54 2023/01/18 18:12:20 job Exp $ */
+/*	$OpenBSD: validate.c,v 1.55 2023/03/06 16:04:52 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -145,6 +145,8 @@ valid_cert(const char *fn, struct auth *a, const struct cert *cert)
 	}
 
 	for (i = 0; i < cert->ipsz; i++) {
+		if (cert->ips[i].type == CERT_IP_INHERIT)
+			continue;
 		if (valid_ip(a, cert->ips[i].afi, cert->ips[i].min,
 		    cert->ips[i].max))
 			continue;
