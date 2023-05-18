@@ -1,7 +1,6 @@
-/*	$OpenBSD: getcwd.c,v 1.21 2016/05/07 19:48:00 guenther Exp $	*/
-
+/*	$OpenBSD$	*/
 /*
- * Copyright (c) 2005 Marius Eriksen <marius@openbsd.org>
+ * Copyright (c) 2023 Philip Guenther <guenther@openbsd.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,30 +15,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <errno.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <unistd.h>
+#ifndef _LIBC_SYS_SHM_H_
+#define _LIBC_SYS_SHM_H_
 
-char *
-getcwd(char *buf, size_t size)
-{
-	char *allocated = NULL;
+#include_next <sys/shm.h>
 
-	if (buf != NULL && size == 0) {
-		errno = EINVAL;
-		return (NULL);
-	}
+PROTO_NORMAL(shmat);
+PROTO_NORMAL(shmctl);
+PROTO_NORMAL(shmdt);
+PROTO_NORMAL(shmget);
 
-	if (buf == NULL &&
-	    (allocated = buf = malloc(size = PATH_MAX)) == NULL)
-		return (NULL);
-
-	if (__getcwd(buf, size) == -1) {
-		free(allocated);
-		return (NULL);
-	}
-
-	return (buf);
-}
-DEF_WEAK(getcwd);
+#endif /* !_LIBC_SYS_SHM_H_ */

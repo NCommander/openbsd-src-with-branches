@@ -1,4 +1,4 @@
-/*	$OpenBSD: getwd.c,v 1.12 2017/11/28 06:55:49 tb Exp $ */
+/*	$OpenBSD: getwd.c,v 1.13 2021/12/16 19:12:43 millert Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -33,9 +33,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
-int __getcwd(char *buf, size_t len);
-PROTO_NORMAL(__getcwd);
 
 char *
 getwd(char *buf)
