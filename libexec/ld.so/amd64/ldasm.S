@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldasm.S,v 1.29 2017/08/28 14:12:09 deraadt Exp $	*/
+/*	$OpenBSD: ldasm.S,v 1.30 2019/05/10 13:29:21 guenther Exp $	*/
 
 /*
  * Copyright (c) 2002,2004 Dale Rahn
@@ -70,6 +70,7 @@ END(_dl_start)
 _ENTRY(_dl_bind_start)
 	.cfi_startproc
 	.cfi_adjust_cfa_offset	16
+	endbr64
 	pushfq				# save registers
 	.cfi_adjust_cfa_offset	8
 	/*.cfi_offset	%rflags, -16 */
