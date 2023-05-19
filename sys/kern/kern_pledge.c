@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.303 2023/02/11 23:22:17 deraadt Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.304 2023/02/19 18:46:46 anton Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -231,6 +231,7 @@ const uint64_t pledge_syscalls[SYS_MAXSYSCALL] = {
 	[SYS_socketpair] = PLEDGE_STDIO,
 
 	[SYS_wait4] = PLEDGE_STDIO,
+	[SYS_waitid] = PLEDGE_STDIO,
 
 	/*
 	 * Can kill self with "stdio".  Killing another pid
