@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_ameth.c,v 1.27 2022/11/26 16:08:54 tb Exp $ */
+/* $OpenBSD: rsa_ameth.c,v 1.28 2023/03/25 09:12:35 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -1152,6 +1152,7 @@ const EVP_PKEY_ASN1_METHOD rsa_pss_asn1_meth = {
 
 	.pkey_size = int_rsa_size,
 	.pkey_bits = rsa_bits,
+	.pkey_security_bits = rsa_security_bits,
 
 	.sig_print = rsa_sig_print,
 
