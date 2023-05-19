@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Getopt.pm,v 1.12 2012/04/10 16:57:12 espie Exp $
+# $OpenBSD: Getopt.pm,v 1.13 2023/05/17 15:51:58 espie Exp $
 #
 # Copyright (c) 2006 Marc Espie <espie@openbsd.org>
 #
@@ -82,7 +82,7 @@ sub getopts
 	}
     }
     local $Exporter::ExportLevel = 1;
-    import OpenBSD::Getopt;
+    OpenBSD::Getopt->import;
     return $hash;
 }
 
