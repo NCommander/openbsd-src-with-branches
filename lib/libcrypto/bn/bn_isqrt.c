@@ -22,7 +22,9 @@
 #include <openssl/err.h>
 
 #include "bn_local.h"
-#include "crypto_internal.h"
+
+#define CTASSERT(x)	extern char  _ctassert[(x) ? 1 : -1 ]   \
+			    __attribute__((__unused__))
 
 /*
  * Calculate integer square root of |n| using a variant of Newton's method.
