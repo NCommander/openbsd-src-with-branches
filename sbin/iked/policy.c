@@ -1,4 +1,4 @@
-/*	$OpenBSD: policy.c,v 1.92 2022/10/10 11:33:55 tobhe Exp $	*/
+/*	$OpenBSD: policy.c,v 1.93 2023/02/08 19:59:10 tb Exp $	*/
 
 /*
  * Copyright (c) 2020-2021 Tobias Heider <tobhe@openbsd.org>
@@ -784,8 +784,8 @@ childsa_free(struct iked_childsa *csa)
 		csb->csa_bundled = NULL;
 	if ((csb = csa->csa_peersa) != NULL)
 		csb->csa_peersa = NULL;
-	ibuf_release(csa->csa_encrkey);
-	ibuf_release(csa->csa_integrkey);
+	ibuf_free(csa->csa_encrkey);
+	ibuf_free(csa->csa_integrkey);
 	free(csa);
 }
 
