@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_usrreq.c,v 1.217 2023/03/14 00:24:05 yasuoka Exp $	*/
+/*	$OpenBSD: tcp_usrreq.c,v 1.218 2023/05/10 12:07:16 bluhm Exp $	*/
 /*	$NetBSD: tcp_usrreq.c,v 1.20 1996/02/13 23:44:16 christos Exp $	*/
 
 /*
@@ -1340,6 +1340,9 @@ tcp_sysctl_tcpstat(void *oldp, size_t *oldlenp, void *newp)
 	ASSIGN(tcps_outhwtso);
 	ASSIGN(tcps_outpkttso);
 	ASSIGN(tcps_outbadtso);
+	ASSIGN(tcps_inhwlro);
+	ASSIGN(tcps_inpktlro);
+	ASSIGN(tcps_inbadlro);
 
 #undef ASSIGN
 
