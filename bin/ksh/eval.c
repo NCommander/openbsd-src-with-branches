@@ -1,4 +1,4 @@
-/*	$OpenBSD: eval.c,v 1.65 2019/06/28 13:34:59 deraadt Exp $	*/
+/*	$OpenBSD: eval.c,v 1.66 2020/09/13 15:39:09 tb Exp $	*/
 
 /*
  * Expansion - quoting, separation, substitution, globbing
@@ -8,6 +8,7 @@
 
 #include <ctype.h>
 #include <dirent.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -909,7 +910,7 @@ comsub(Expand *xp, char *cp)
 			SHF_MAPHI|SHF_CLEXEC);
 		if (shf == NULL)
 			warningf(!Flag(FTALKING),
-			    "%s: cannot open $(<) input", name);
+			    "%s: %s", name, strerror(errno));
 		xp->split = 0;	/* no waitlast() */
 	} else {
 		int ofd1, pv[2];
