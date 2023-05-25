@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpii.c,v 1.143 2022/04/16 19:19:59 naddy Exp $	*/
+/*	$OpenBSD: mpii.c,v 1.144 2022/10/18 07:04:20 kn Exp $	*/
 /*
  * Copyright (c) 2010, 2012 Mike Belopuhov
  * Copyright (c) 2009 James Giannoules
@@ -2857,7 +2857,8 @@ mpii_init_queues(struct mpii_softc *sc)
 void
 mpii_wait(struct mpii_softc *sc, struct mpii_ccb *ccb)
 {
-	struct mutex		mtx = MUTEX_INITIALIZER(IPL_BIO);
+	struct mutex		mtx = MUTEX_INITIALIZER_FLAGS(IPL_BIO,
+	    __MTX_NAME, MTX_NOWITNESS);
 	void			(*done)(struct mpii_ccb *);
 	void			*cookie;
 

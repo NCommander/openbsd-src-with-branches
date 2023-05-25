@@ -1,4 +1,4 @@
-/*	$OpenBSD: scsi_base.c,v 1.279 2021/05/13 02:22:33 krw Exp $	*/
+/*	$OpenBSD: scsi_base.c,v 1.280 2022/02/28 14:48:11 krw Exp $	*/
 /*	$NetBSD: scsi_base.c,v 1.43 1997/04/02 02:29:36 mycroft Exp $	*/
 
 /*
@@ -1497,7 +1497,8 @@ scsi_done(struct scsi_xfer *xs)
 int
 scsi_xs_sync(struct scsi_xfer *xs)
 {
-	struct mutex	cookie = MUTEX_INITIALIZER(IPL_BIO);
+	struct mutex	cookie = MUTEX_INITIALIZER_FLAGS(IPL_BIO, __MTX_NAME,
+	    MTX_NOWITNESS);
 	int		error;
 
 #ifdef DIAGNOSTIC

@@ -1,4 +1,4 @@
-/* $OpenBSD: mfi.c,v 1.187 2020/09/22 19:32:52 krw Exp $ */
+/* $OpenBSD: mfi.c,v 1.188 2022/04/16 19:19:59 naddy Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -925,7 +925,8 @@ mfi_poll(struct mfi_softc *sc, struct mfi_ccb *ccb)
 void
 mfi_exec(struct mfi_softc *sc, struct mfi_ccb *ccb)
 {
-	struct mutex m = MUTEX_INITIALIZER(IPL_BIO);
+	struct mutex m = MUTEX_INITIALIZER_FLAGS(IPL_BIO, __MTX_NAME,
+	    MTX_NOWITNESS);
 
 #ifdef DIAGNOSTIC
 	if (ccb->ccb_cookie != NULL || ccb->ccb_done != NULL)
