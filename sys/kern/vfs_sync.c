@@ -1,4 +1,4 @@
-/*       $OpenBSD: vfs_sync.c,v 1.67 2021/10/15 06:30:06 semarie Exp $  */
+/*       $OpenBSD: vfs_sync.c,v 1.68 2022/08/14 01:58:28 jsg Exp $  */
 
 /*
  *  Portions of this code are:
@@ -245,7 +245,7 @@ int
 speedup_syncer(void)
 {
 	if (syncerproc)
-		wakeup_proc(syncerproc, &syncer_chan);
+		wakeup_one(&syncer_chan);
 	if (rushjob < syncdelay / 2) {
 		rushjob += 1;
 		stat_rush_requests += 1;
