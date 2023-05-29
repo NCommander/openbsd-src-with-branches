@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmmci.c,v 1.8 2020/06/24 22:03:40 cheloha Exp $	*/
+/*	$OpenBSD: vmmci.c,v 1.9 2021/11/05 11:38:29 mpi Exp $	*/
 
 /*
  * Copyright (c) 2017 Reyk Floeter <reyk@openbsd.org>
@@ -120,6 +120,7 @@ vmmci_attach(struct device *parent, struct device *self, void *aux)
 	}
 
 	printf("\n");
+	virtio_set_status(vsc, VIRTIO_CONFIG_DEVICE_STATUS_DRIVER_OK);
 }
 
 int
