@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.h,v 1.212 2023/05/15 16:34:56 bluhm Exp $	*/
+/*	$OpenBSD: if.h,v 1.213 2023/05/16 14:32:54 jan Exp $	*/
 /*	$NetBSD: if.h,v 1.23 1996/05/07 02:40:27 thorpej Exp $	*/
 
 /*
@@ -560,6 +560,7 @@ int	if_congested(void);
 __dead void	unhandled_af(int);
 int	if_setlladdr(struct ifnet *, const uint8_t *);
 struct taskq * net_tq(unsigned int);
+void	net_tq_barriers(const char *);
 
 #endif /* _KERNEL */
 
