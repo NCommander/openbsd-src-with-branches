@@ -35,8 +35,6 @@ int outformats;
 int verbose;
 int filemode;
 
-int64_t evaluation_time;
-
 static void
 test(const char *res, uint16_t afiv, size_t sz, size_t unused, ...)
 {
@@ -129,4 +127,10 @@ main(int argc, char *argv[])
 
 	printf("OK\n");
 	return 0;
+}
+
+time_t
+get_current_time(void)
+{
+	return time(NULL);
 }

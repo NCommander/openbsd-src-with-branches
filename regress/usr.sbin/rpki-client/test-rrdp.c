@@ -37,8 +37,6 @@
 
 int verbose;
 
-int64_t evaluation_time;
-
 #define REGRESS_NOTIFY_URI	"https://rpki.example.com/notify.xml"
 
 #define MAX_SESSIONS	12
@@ -339,4 +337,10 @@ usage:
 	fprintf(stderr, "usage: %s [-S session_id] [-N serial] [-H hash] "
 	    "-d | -n | -s\n", "test-rrdp");
 	exit(1);
+}
+
+time_t
+get_current_time(void)
+{
+	return time(NULL);
 }

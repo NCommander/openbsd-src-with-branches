@@ -36,8 +36,6 @@
 int outformats;
 int verbose;
 
-int64_t evaluation_time;
-
 int
 main(int argc, char *argv[])
 {
@@ -98,4 +96,10 @@ main(int argc, char *argv[])
 
 	printf("OK\n");
 	return 0;
+}
+
+time_t
+get_current_time(void)
+{
+	return time(NULL);
 }
