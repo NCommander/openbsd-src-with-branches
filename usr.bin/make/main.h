@@ -1,6 +1,6 @@
 #ifndef MAIN_H
 #define MAIN_H
-/*	$OpenBSD: main.h,v 1.5 2010/07/19 19:46:44 espie Exp $ */
+/*	$OpenBSD: main.h,v 1.6 2020/01/13 14:51:50 espie Exp $ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -41,4 +41,8 @@ extern Lst	create;
 /* set_notparallel(): used to influence running mode from parse.c */
 extern void set_notparallel(void);
 
+/* dump_unreadable: in case of some errors, dump makefile names
+ * we found but are unable to read.
+ */
+extern void dump_unreadable(void);
 #endif
