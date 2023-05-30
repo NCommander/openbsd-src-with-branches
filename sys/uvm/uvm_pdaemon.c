@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_pdaemon.c,v 1.104 2022/08/31 09:26:04 mpi Exp $	*/
+/*	$OpenBSD: uvm_pdaemon.c,v 1.105 2022/09/10 20:35:29 miod Exp $	*/
 /*	$NetBSD: uvm_pdaemon.c,v 1.23 2000/08/20 10:24:14 bjh21 Exp $	*/
 
 /*
@@ -236,7 +236,7 @@ uvm_pageout(void *arg)
 		} else {
 			if (uvm_nowait_failed) {
 				/*
-				 * XXX realisticly, this is what our
+				 * XXX realistically, this is what our
 				 * nowait callers probably care about
 				 */
 				constraint = dma_constraint;

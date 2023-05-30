@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_xe.c,v 1.61 2021/03/07 06:20:09 jsg Exp $	*/
+/*	$OpenBSD: if_xe.c,v 1.62 2022/04/06 18:59:30 naddy Exp $	*/
 
 /*
  * Copyright (c) 1999 Niklas Hallqvist, Brandon Creighton, Job de Haas
@@ -1326,7 +1326,7 @@ xe_full_reset(struct xe_softc *sc)
 	/* Set the local memory dividing line. */
 	if (sc->sc_rev != 1) {
 		PAGE(sc, 2);
-		/* XXX Symbolic constant preferrable. */
+		/* XXX Symbolic constant preferable. */
 		bus_space_write_2(bst, bsh, offset + RBS0, 0x2000);
 	}
 
