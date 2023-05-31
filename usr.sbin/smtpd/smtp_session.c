@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.432 2021/07/01 07:42:16 eric Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.433 2022/10/20 01:16:04 millert Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -24,6 +24,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <tls.h>
 #include <unistd.h>
 #include <vis.h>

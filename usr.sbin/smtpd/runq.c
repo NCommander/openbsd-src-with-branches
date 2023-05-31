@@ -1,4 +1,4 @@
-/*	$OpenBSD: runq.c,v 1.3 2019/06/14 19:55:25 eric Exp $	*/
+/*	$OpenBSD: runq.c,v 1.4 2021/06/14 17:58:16 eric Exp $	*/
 
 /*
  * Copyright (c) 2013,2019 Eric Faurot <eric@openbsd.org>
@@ -17,6 +17,7 @@
  */
 
 #include <stdlib.h>
+#include <time.h>
 
 #include "smtpd.h"
 
