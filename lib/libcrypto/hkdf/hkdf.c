@@ -1,4 +1,4 @@
-/* $OpenBSD: hkdf.c,v 1.7 2021/12/12 21:30:14 tb Exp $ */
+/* $OpenBSD: hkdf.c,v 1.8 2022/11/26 16:08:53 tb Exp $ */
 /* Copyright (c) 2014, Google Inc.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
@@ -102,7 +102,7 @@ HKDF_expand(uint8_t *out_key, size_t out_len,
 			goto out;
 
 		todo = digest_len;
-		if (done + todo > out_len)
+		if (todo > out_len - done)
 			todo = out_len - done;
 
 		memcpy(out_key + done, previous, todo);
