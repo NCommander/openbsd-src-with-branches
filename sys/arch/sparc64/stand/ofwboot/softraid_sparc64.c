@@ -1,4 +1,4 @@
-/*	$OpenBSD: softraid_sparc64.c,v 1.6 2022/09/02 08:13:03 kn Exp $	*/
+/*	$OpenBSD: softraid_sparc64.c,v 1.7 2023/06/01 17:24:56 krw Exp $	*/
 
 /*
  * Copyright (c) 2012 Joel Sing <jsing@openbsd.org>
@@ -404,7 +404,6 @@ const char *
 sr_getdisklabel(struct sr_boot_volume *bv, struct disklabel *label)
 {
 	struct of_dev ofdev;
-	int err;
 #ifdef DEBUG
 	int i;
 #endif
