@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf.c,v 1.1179 2023/05/13 13:35:17 bluhm Exp $ */
+/*	$OpenBSD: pf.c,v 1.1180 2023/05/15 16:34:56 bluhm Exp $ */
 
 /*
  * Copyright (c) 2001 Daniel Hartmeier
@@ -1713,6 +1713,9 @@ void
 pf_remove_state(struct pf_state *st)
 {
 	PF_ASSERT_LOCKED();
+
+	if (st->timeout == PFTM_UNLINKED)
+		return;
 
 	/* handle load balancing related tasks */
 	pf_postprocess_addr(st);
