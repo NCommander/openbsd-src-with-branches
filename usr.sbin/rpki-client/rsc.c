@@ -1,4 +1,4 @@
-/*	$OpenBSD: rsc.c,v 1.24 2023/03/12 11:46:35 tb Exp $ */
+/*	$OpenBSD: rsc.c,v 1.25 2023/03/12 13:31:39 tb Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2022 Job Snijders <job@fastly.com>
@@ -339,7 +339,7 @@ rsc_parse_econtent(const unsigned char *d, size_t dsz, struct parse *p)
 		goto out;
 	}
 
-	if (!valid_econtent_version(p->fn, rsc->version))
+	if (!valid_econtent_version(p->fn, rsc->version, 0))
 		goto out;
 
 	resources = rsc->resources;
