@@ -1,4 +1,4 @@
-/* $OpenBSD: openssl.c,v 1.32 2022/11/11 18:24:32 joshua Exp $ */
+/* $OpenBSD: openssl.c,v 1.33 2023/04/25 16:11:02 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -329,10 +329,6 @@ FUNCTION functions[] = {
 	{ FUNC_TYPE_CIPHER, "sm4-ofb", enc_main },
 	{ FUNC_TYPE_CIPHER, "sm4-cfb", enc_main },
 #endif
-#ifdef ZLIB
-	{ FUNC_TYPE_CIPHER, "zlib", enc_main },
-#endif
-
 	{ 0, NULL, NULL }
 };
 
