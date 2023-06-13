@@ -1,4 +1,4 @@
-/*	$OpenBSD: seq.c,v 1.6 2022/02/25 16:00:39 tb Exp $	*/
+/*	$OpenBSD: seq.c,v 1.7 2023/06/12 20:15:06 millert Exp $	*/
 
 /*-
  * Copyright (c) 2005 The NetBSD Foundation, Inc.
@@ -176,7 +176,6 @@ main(int argc, char *argv[])
 	} else
 		fmt = generate_format(first, incr, last, equalize, pad);
 
-	warnx("first: %f, incr: %f", first, incr);
 	for (step = 1, cur = first; incr > 0 ? cur <= last : cur >= last;
 	    cur = first + incr * step++) {
 		if (cur != first)
