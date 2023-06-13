@@ -1,4 +1,4 @@
-/*	$OpenBSD: util.c,v 1.39 2020/04/10 20:58:33 tobhe Exp $	*/
+/*	$OpenBSD: util.c,v 1.40 2020/08/15 11:31:17 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -667,6 +667,12 @@ print_host(struct sockaddr *sa, char *buf, size_t len)
 	}
 
 	return (buf);
+}
+
+const char *
+print_addr(void *addr)
+{
+	return print_host(addr, NULL, 0);
 }
 
 char *
