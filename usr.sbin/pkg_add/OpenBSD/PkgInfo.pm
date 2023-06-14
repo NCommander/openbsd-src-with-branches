@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 # ex:ts=8 sw=4:
-# $OpenBSD: PkgInfo.pm,v 1.50 2020/02/19 14:23:26 espie Exp $
+# $OpenBSD: PkgInfo.pm,v 1.51 2023/06/13 09:07:17 espie Exp $
 #
 # Copyright (c) 2003-2014 Marc Espie <espie@openbsd.org>
 #
@@ -642,6 +642,7 @@ sub parse_and_run($self, $cmd)
 			$self->print_info($state, $pkgname, $handle);
 		})) {
 			$exit_code = 1;
+			$state->errsay("Can't find #1", $pkg);
 		}
 	}
 	for my $extra (@extra) {
