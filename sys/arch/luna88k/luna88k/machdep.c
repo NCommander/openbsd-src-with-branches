@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.141 2022/12/06 00:56:52 cheloha Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.142 2022/12/10 02:41:56 aoyama Exp $	*/
 /*
  * Copyright (c) 1998, 1999, 2000, 2001 Steve Murphree, Jr.
  * Copyright (c) 1996 Nivas Madhur
@@ -762,6 +762,7 @@ secondary_main()
 	cpu_configuration_print(0);
 	ncpus++;
 
+	clockqueue_init(&ci->ci_queue);
 	sched_init_cpu(ci);
 	nanouptime(&ci->ci_schedstate.spc_runtime);
 	ci->ci_curproc = NULL;

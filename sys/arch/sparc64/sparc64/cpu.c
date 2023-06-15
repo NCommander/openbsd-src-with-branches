@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.72 2021/01/02 05:36:49 jmatthew Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.73 2021/10/24 17:05:04 mpi Exp $	*/
 /*	$NetBSD: cpu.c,v 1.13 2001/05/26 21:27:15 chs Exp $ */
 
 /*
@@ -185,6 +185,7 @@ alloc_cpuinfo(struct mainbus_attach_args *ma)
 	cpi->ci_self = cpi;
 	cpi->ci_node = ma->ma_node;
 
+	clockqueue_init(&cpi->ci_queue);
 	sched_init_cpu(cpi);
 
 	/*

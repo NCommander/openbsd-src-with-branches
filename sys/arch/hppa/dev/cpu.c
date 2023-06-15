@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.43 2022/03/13 08:04:38 mpi Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.44 2022/12/06 00:40:09 cheloha Exp $	*/
 
 /*
  * Copyright (c) 1998-2003 Michael Shalayeff
@@ -202,6 +202,7 @@ cpu_boot_secondary_processors(void)
 
 		ci->ci_randseed = (arc4random() & 0x7fffffff) + 1;
 
+		clockqueue_init(&ci->ci_queue);
 		sched_init_cpu(ci);
 
 		/* Release the specified CPU by triggering an EIR{0}. */

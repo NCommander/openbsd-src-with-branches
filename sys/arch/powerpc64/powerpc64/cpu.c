@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.24 2022/04/06 18:59:27 naddy Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.25 2023/01/25 09:53:53 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -189,6 +189,7 @@ cpu_attach(struct device *parent, struct device *dev, void *aux)
 	if (dev->dv_unit != 0) {
 		int timeout = 10000;
 
+		clockqueue_init(&ci->ci_queue);
 		sched_init_cpu(ci);
 		ncpus++;
 

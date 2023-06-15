@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.167 2023/04/22 18:27:28 guenther Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.168 2023/04/24 09:04:03 dv Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -664,6 +664,7 @@ cpu_attach(struct device *parent, struct device *self, void *aux)
 #if defined(MULTIPROCESSOR)
 		cpu_intr_init(ci);
 		cpu_start_secondary(ci);
+		clockqueue_init(&ci->ci_queue);
 		sched_init_cpu(ci);
 		ncpus++;
 		if (ci->ci_flags & CPUF_PRESENT) {
