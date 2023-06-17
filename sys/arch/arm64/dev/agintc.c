@@ -1,4 +1,4 @@
-/* $OpenBSD: agintc.c,v 1.47 2023/01/27 23:11:59 kettenis Exp $ */
+/* $OpenBSD: agintc.c,v 1.48 2023/04/25 10:35:48 patrick Exp $ */
 /*
  * Copyright (c) 2007, 2009, 2011, 2017 Dale Rahn <drahn@dalerahn.com>
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
@@ -1962,6 +1962,9 @@ agintc_intr_disestablish_msi(void *cookie)
 {
 	agintc_intr_disestablish(*(void **)cookie);
 	*(void **)cookie = NULL;
+
+	/* Invalidate cache. */
+	agintc_msi_invall();
 }
 
 void
