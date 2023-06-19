@@ -1,4 +1,4 @@
-/*	$OpenBSD: imsg_util.c,v 1.17 2023/05/30 08:41:15 claudio Exp $	*/
+/*	$OpenBSD: imsg_util.c,v 1.18 2023/06/12 09:02:32 claudio Exp $	*/
 
 /*
  * Copyright (c) 2010-2013 Reyk Floeter <reyk@openbsd.org>
@@ -81,12 +81,6 @@ ibuf_length(struct ibuf *buf)
 	if (buf == NULL || buf->buf == NULL)
 		return (0);
 	return (ibuf_size(buf));
-}
-
-void *
-ibuf_data(struct ibuf *buf)
-{
-	return (ibuf_seek(buf, 0, 0));
 }
 
 void *
