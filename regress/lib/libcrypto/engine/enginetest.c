@@ -1,4 +1,4 @@
-/*	$OpenBSD: enginetest.c,v 1.8 2018/07/17 17:06:49 tb Exp $	*/
+/*	$OpenBSD: enginetest.c,v 1.9 2022/09/05 21:06:31 tb Exp $	*/
 /* Written by Geoff Thorpe (geoff@geoffthorpe.net) for the OpenSSL
  * project 2000.
  */
@@ -61,6 +61,7 @@
 
 #include <openssl/buffer.h>
 #include <openssl/crypto.h>
+#ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #include <openssl/err.h>
 
@@ -242,3 +243,11 @@ end:
 	CRYPTO_mem_leaks_fp(stderr);
 	return to_return;
 }
+#else
+int
+main(void)
+{
+	printf("ENGINE support is disabled\n");
+	return 0;
+}
+#endif
