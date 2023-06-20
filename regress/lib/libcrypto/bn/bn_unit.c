@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_unit.c,v 1.4 2023/03/31 19:40:08 tb Exp $ */
+/*	$OpenBSD: bn_unit.c,v 1.5 2023/06/20 06:36:09 jsing Exp $ */
 
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
@@ -80,7 +80,7 @@ test_bn_num_bits(void)
 		errx(1, "BN_new");
 
 	if ((num_bits = BN_num_bits(bn)) != 0) {
-		warnx("BN_num_bits_word(0): want 0, got %d", num_bits);
+		warnx("BN_num_bits(0): want 0, got %d", num_bits);
 		failed |= 1;
 	}
 
