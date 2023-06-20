@@ -1,4 +1,4 @@
-.\" $OpenBSD: imsg_init.3,v 1.26 2023/06/19 17:19:50 claudio Exp $
+.\" $OpenBSD: imsg_init.3,v 1.27 2023/06/20 05:56:19 jmc Exp $
 .\"
 .\" Copyright (c) 2010 Nicholas Marriott <nicm@openbsd.org>
 .\"
@@ -14,7 +14,7 @@
 .\" IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
 .\" OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: June 19 2023 $
+.Dd $Mdocdate: June 20 2023 $
 .Dt IMSG_INIT 3
 .Os
 .Sh NAME
@@ -521,7 +521,7 @@ and will be transmitted or closed by the ibuf API.
 Any previously set file descriptor will be closed before assigning a
 new descriptor.
 .Fn ibuf_fd_get
-returns the file descriptor and passes the responsibilty to track the
+returns the file descriptor and passes the responsibility to track the
 descriptor back to the program.
 .Fn ibuf_fd_avail
 returns true if there is a file descriptor set on
