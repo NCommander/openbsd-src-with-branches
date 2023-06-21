@@ -1,4 +1,4 @@
-/*	$OpenBSD: lsupdate.c,v 1.51 2023/03/08 04:43:14 guenther Exp $ */
+/*	$OpenBSD: lsupdate.c,v 1.52 2023/06/20 15:19:55 claudio Exp $ */
 
 /*
  * Copyright (c) 2005 Claudio Jeker <claudio@openbsd.org>
@@ -201,8 +201,6 @@ add_ls_update(struct ibuf *buf, struct iface *iface, void *data, u_int16_t len,
 
 	return (1);
 }
-
-
 
 int
 send_ls_update(struct ibuf *buf, struct iface *iface, struct in_addr addr,
