@@ -1,4 +1,4 @@
-/*	$OpenBSD: sh.h,v 1.75 2019/02/20 23:59:17 schwarze Exp $	*/
+/*	$OpenBSD: sh.h,v 1.76 2020/07/07 10:33:58 jca Exp $	*/
 
 /*
  * Public Domain Bourne/Korn shell
@@ -441,7 +441,6 @@ void	flushcom(int);
 char *	search(const char *, const char *, int, int *);
 int	search_access(const char *, int, int *);
 int	pr_menu(char *const *);
-int	pr_list(char *const *);
 /* expr.c */
 int	evaluate(const char *, int64_t *, int, bool);
 int	v_evaluate(struct tbl *, const char *, volatile int, bool);

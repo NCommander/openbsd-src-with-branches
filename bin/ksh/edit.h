@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.h,v 1.11 2016/01/26 17:39:31 mmcc Exp $	*/
+/*	$OpenBSD: edit.h,v 1.12 2018/06/18 17:03:58 millert Exp $	*/
 
 /* NAME:
  *      edit.h - globals for edit modes
@@ -15,6 +15,10 @@
  */
 
 #define	BEL		0x07
+
+#undef CTRL
+#define CTRL(x)		((x) == '?' ? 0x7F : (x) & 0x1F)	/* ASCII */
+#define UNCTRL(x)	((x) == 0x7F ? '?' : (x) | 0x40)	/* ASCII */
 
 /* tty driver characters we are interested in */
 typedef struct {
