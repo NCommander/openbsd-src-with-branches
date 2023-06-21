@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.13 2014/11/17 21:53:55 tobias Exp $ */
+/*	$OpenBSD: parser.c,v 1.14 2019/05/26 09:27:09 remi Exp $ */
 
 /*
  * Copyright (c) 2004 Esben Norby <norby@openbsd.org>
@@ -73,6 +73,7 @@ static const struct token t_main[] = {
 static const struct token t_fib[] = {
 	{ KEYWORD,	"couple",	FIB_COUPLE,	NULL},
 	{ KEYWORD,	"decouple",	FIB_DECOUPLE,	NULL},
+	{ KEYWORD,	"reload",	FIB_RELOAD,	NULL},
 	{ ENDTOKEN,	"",		NONE,		NULL}
 };
 
