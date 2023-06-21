@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_lib.c,v 1.86 2023/04/30 19:15:48 tb Exp $ */
+/* $OpenBSD: bn_lib.c,v 1.87 2023/06/21 07:41:55 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -162,7 +162,7 @@ BN_value_one(void)
 int
 BN_num_bits_word(BN_ULONG w)
 {
-	return BN_BITS2 - bn_word_clz(w);
+	return BN_BITS2 - bn_clzw(w);
 }
 
 int
