@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_arch.h,v 1.10 2023/06/12 16:42:11 jsing Exp $ */
+/*	$OpenBSD: bn_arch.h,v 1.11 2023/06/17 15:40:46 jsing Exp $ */
 /*
  * Copyright (c) 2023 Joel Sing <jsing@openbsd.org>
  *
@@ -23,6 +23,20 @@
 #ifndef OPENSSL_NO_ASM
 
 #if defined(__GNUC__)
+
+#define HAVE_BN_CLZW
+
+static inline int
+bn_clzw(BN_ULONG w)
+{
+	BN_ULONG n;
+
+	__asm__ ("clz   %[n], %[w]"
+	    : [n]"=r"(n)
+	    : [w]"r"(w));
+
+	return n;
+}
 
 #define HAVE_BN_ADDW
 
