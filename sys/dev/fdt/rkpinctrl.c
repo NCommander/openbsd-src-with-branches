@@ -1,4 +1,4 @@
-/*	$OpenBSD: rkpinctrl.c,v 1.11 2023/03/04 22:51:12 kettenis Exp $	*/
+/*	$OpenBSD: rkpinctrl.c,v 1.12 2023/06/19 13:37:22 kettenis Exp $	*/
 /*
  * Copyright (c) 2017, 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -550,8 +550,8 @@ rk3328_pinctrl(uint32_t phandle, void *cookie)
 		bank = pins[i];
 		idx = pins[i + 1];
 		mux = pins[i + 2];
-		pull = rk3288_pull(bank, idx, pins[i + 3]);
-		strength = rk3288_strength(bank, idx, pins[i + 3]);
+		pull = rk3328_pull(bank, idx, pins[i + 3]);
+		strength = rk3328_strength(bank, idx, pins[i + 3]);
 
 		if (bank > 3 || idx > 32 || mux > 3)
 			continue;
