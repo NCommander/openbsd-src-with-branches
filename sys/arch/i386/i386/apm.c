@@ -1,4 +1,4 @@
-/*	$OpenBSD: apm.c,v 1.129 2023/01/30 10:49:04 jsg Exp $	*/
+/*	$OpenBSD: apm.c,v 1.130 2023/02/10 14:34:16 visa Exp $	*/
 
 /*-
  * Copyright (c) 1998-2001 Michael Shalayeff. All rights reserved.
@@ -907,7 +907,7 @@ apm_thread(void *v)
 		rw_enter_write(&sc->sc_lock);
 		(void) apm_periodic_check(sc);
 		rw_exit_write(&sc->sc_lock);
-		tsleep_nsec(&lbolt, PWAIT, "apmev", INFSLP);
+		tsleep_nsec(&nowake, PWAIT, "apmev", SEC_TO_NSEC(1));
 	}
 }
 
