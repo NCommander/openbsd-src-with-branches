@@ -1,4 +1,4 @@
-.\"	$OpenBSD: aplsmc.4,v 1.1 2022/01/10 09:16:30 kettenis Exp $
+.\"	$OpenBSD: aplsmc.4,v 1.2 2022/01/10 21:16:44 jmc Exp $
 .\"
 .\" Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
 .\"
@@ -28,7 +28,7 @@ The
 driver provides support for the System Management Controller (SMC)
 found on various Apple SoCs.
 The driver provides a collection of current, fan, power, temperature,
-voltage and battery information sensors.
+voltage, lid position and battery information sensors.
 .Pp
 Sensor values are made available through the
 .Xr sysctl 8
