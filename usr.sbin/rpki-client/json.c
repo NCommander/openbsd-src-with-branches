@@ -1,4 +1,4 @@
-/*	$OpenBSD: json.c,v 1.2 2023/05/03 07:56:05 claudio Exp $ */
+/*	$OpenBSD: json.c,v 1.3 2023/06/05 14:19:13 claudio Exp $ */
 
 /*
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
@@ -232,7 +232,7 @@ json_do_string(const char *name, const char *v)
 		eb = fprintf(jsonfh, "\"") < 0;
 	while ((c = *v++) != '\0' && !eb) {
 		/* skip escaping '/' since our use case does not require it */
-		switch(c) {
+		switch (c) {
 		case '"':
 			eb = fprintf(jsonfh, "\\\"") < 0;
 			break;
