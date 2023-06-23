@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_mbuf.c,v 1.285 2023/05/05 01:19:51 bluhm Exp $	*/
+/*	$OpenBSD: uipc_mbuf.c,v 1.286 2023/05/16 20:09:27 mvs Exp $	*/
 /*	$NetBSD: uipc_mbuf.c,v 1.15.4.1 1996/06/13 17:11:44 cgd Exp $	*/
 
 /*
@@ -214,7 +214,7 @@ nmbclust_update(long newval)
 {
 	int i;
 
-	if (newval < 0 || newval > LONG_MAX / MCLBYTES)
+	if (newval <= 0 || newval > LONG_MAX / MCLBYTES)
 		return ERANGE;
 	/* update the global mbuf memory limit */
 	nmbclust = newval;
