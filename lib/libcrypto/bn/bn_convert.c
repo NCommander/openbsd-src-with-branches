@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_convert.c,v 1.10 2023/06/23 10:31:27 tb Exp $ */
+/* $OpenBSD: bn_convert.c,v 1.11 2023/06/23 10:33:12 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -301,7 +301,8 @@ BN_asc2bn(BIGNUM **bnp, const char *s)
 		return 0;
 
  done:
-	BN_set_negative(*bnp, neg);
+	if (bnp != NULL && *bnp != NULL)
+		BN_set_negative(*bnp, neg);
 
 	return 1;
 }
