@@ -1,4 +1,4 @@
-/*	$OpenBSD: bn_arch.c,v 1.5 2023/02/16 11:13:05 jsing Exp $ */
+/*	$OpenBSD: bn_arch.c,v 1.6 2023/02/22 05:46:37 jsing Exp $ */
 /*
  * Copyright (c) 2023 Joel Sing <jsing@openbsd.org>
  *
@@ -96,9 +96,9 @@ bn_mul_comba8(BN_ULONG *rd, BN_ULONG *ad, BN_ULONG *bd)
 
 #ifdef HAVE_BN_SQR
 int
-bn_sqr(BIGNUM *r, const BIGNUM *a, int rn, BN_CTX *ctx)
+bn_sqr(BIGNUM *r, const BIGNUM *a, int r_len, BN_CTX *ctx)
 {
-	bignum_sqr(rn, (uint64_t *)r->d, a->top, (uint64_t *)a->d);
+	bignum_sqr(r_len, (uint64_t *)r->d, a->top, (uint64_t *)a->d);
 
 	return 1;
 }
