@@ -1,3 +1,4 @@
+/*	$OpenBSD$ */
 /*
  * Written by Stephen Henson for the OpenSSL project.
  */
