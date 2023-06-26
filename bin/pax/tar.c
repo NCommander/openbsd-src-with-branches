@@ -1,4 +1,4 @@
-/*	$OpenBSD: tar.c,v 1.69 2021/06/14 00:36:13 deraadt Exp $	*/
+/*	$OpenBSD: tar.c,v 1.70 2022/03/01 21:19:11 sthen Exp $	*/
 /*	$NetBSD: tar.c,v 1.5 1995/03/21 09:07:49 cgd Exp $	*/
 
 /*-
@@ -411,7 +411,7 @@ tar_rd(ARCHD *arcn, char *buf)
 	arcn->sb.st_size = (off_t)asc_ull(hd->size, sizeof(hd->size), OCT);
 	val = asc_ull(hd->mtime, sizeof(hd->mtime), OCT);
 	if (val > MAX_TIME_T)
-		arcn->sb.st_mtime = INT_MAX;                    /* XXX 2038 */
+		arcn->sb.st_mtime = MAX_TIME_T;
 	else
 		arcn->sb.st_mtime = val;
 	arcn->sb.st_ctime = arcn->sb.st_atime = arcn->sb.st_mtime;
@@ -788,7 +788,7 @@ reset:
 	if (arcn->sb.st_mtime == 0) {
 		val = asc_ull(hd->mtime, sizeof(hd->mtime), OCT);
 		if (val > MAX_TIME_T)
-			arcn->sb.st_mtime = INT_MAX;		/* XXX 2038 */
+			arcn->sb.st_mtime = MAX_TIME_T;
 		else
 			arcn->sb.st_mtime = val;
 	}
