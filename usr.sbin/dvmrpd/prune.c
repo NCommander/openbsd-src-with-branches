@@ -1,4 +1,4 @@
-/*	$OpenBSD: prune.c,v 1.5 2015/05/05 01:26:37 jsg Exp $ */
+/*	$OpenBSD: prune.c,v 1.6 2015/12/07 19:14:49 mmcc Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -37,7 +37,6 @@ send_prune(struct nbr *nbr, struct prune *p)
 {
 	struct sockaddr_in	 dst;
 	struct ibuf		*buf;
-	struct dvmrp_hdr	*dvmrp_hdr;
 	struct prune_hdr	 prune;
 	int			 ret = 0;
 
@@ -69,11 +68,7 @@ send_prune(struct nbr *nbr, struct prune *p)
 
 	ibuf_add(buf, &prune, sizeof(prune));
 
-	/* update chksum */
-	dvmrp_hdr = ibuf_seek(buf, 0, sizeof(*dvmrp_hdr));
-	dvmrp_hdr->chksum = in_cksum(buf->buf, buf->wpos);
-
-	ret = send_packet(nbr->iface, buf->buf, buf->wpos, &dst);
+	ret = send_packet(nbr->iface, buf, &dst);
 	ibuf_free(buf);
 
 	return (ret);

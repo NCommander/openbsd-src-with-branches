@@ -1,4 +1,4 @@
-/*	$OpenBSD: igmp.c,v 1.3 2014/11/18 20:54:28 krw Exp $ */
+/*	$OpenBSD: igmp.c,v 1.4 2015/12/07 19:14:49 mmcc Exp $ */
 
 /*
  * Copyright (c) 2005, 2006 Esben Norby <norby@openbsd.org>
@@ -73,9 +73,6 @@ send_igmp_query(struct iface *iface, struct group *group)
 		igmp_hdr.max_resp_time = iface->last_member_query_interval;
 	}
 
-	/* update chksum */
-	igmp_hdr.chksum = in_cksum(&igmp_hdr, sizeof(igmp_hdr));
-
 	ibuf_add(buf, &igmp_hdr, sizeof(igmp_hdr));
 
 	/* set destination address */
@@ -83,7 +80,7 @@ send_igmp_query(struct iface *iface, struct group *group)
 	dst.sin_len = sizeof(struct sockaddr_in);
 	inet_aton(AllSystems, &dst.sin_addr);
 
-	ret = send_packet(iface, buf->buf, buf->wpos, &dst);
+	ret = send_packet(iface, buf, &dst);
 	ibuf_free(buf);
 	return (ret);
 }
