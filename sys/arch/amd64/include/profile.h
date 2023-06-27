@@ -1,4 +1,4 @@
-/*	$OpenBSD: profile.h,v 1.4 2012/08/22 17:19:35 pascal Exp $	*/
+/*	$OpenBSD: profile.h,v 1.5 2021/09/04 22:15:33 bluhm Exp $	*/
 /*	$NetBSD: profile.h,v 1.3 2003/11/28 23:22:45 fvdl Exp $	*/
 
 /*
@@ -72,6 +72,6 @@ __asm(" .globl __mcount		\n"			\
 
 
 #ifdef _KERNEL
-#define MCOUNT_ENTER	(void)&s; __asm__("cli");
-#define MCOUNT_EXIT	__asm__("sti");
+#define MCOUNT_ENTER	s = intr_disable()
+#define MCOUNT_EXIT	intr_restore(s)
 #endif /* _KERNEL */
