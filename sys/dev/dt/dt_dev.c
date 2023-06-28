@@ -1,4 +1,4 @@
-/*	$OpenBSD: dt_dev.c,v 1.25 2023/03/10 22:14:32 bluhm Exp $ */
+/*	$OpenBSD: dt_dev.c,v 1.26 2023/04/26 16:53:59 claudio Exp $ */
 
 /*
  * Copyright (c) 2019 Martin Pieuchot <mpi@openbsd.org>
@@ -240,8 +240,8 @@ dtread(dev_t dev, struct uio *uio, int flags)
 		return (EMSGSIZE);
 
 	while (!sc->ds_evtcnt) {
-		sleep_setup(&sls, sc, PWAIT | PCATCH, "dtread", 0);
-		error = sleep_finish(&sls, !sc->ds_evtcnt);
+		sleep_setup(&sls, sc, PWAIT | PCATCH, "dtread");
+		error = sleep_finish(&sls, PWAIT | PCATCH, 0, !sc->ds_evtcnt);
 		if (error == EINTR || error == ERESTART)
 			break;
 	}
