@@ -1,4 +1,4 @@
-/*	$OpenBSD: fetch.c,v 1.213 2022/12/26 19:16:01 jmc Exp $	*/
+/*	$OpenBSD: fetch.c,v 1.214 2023/03/08 04:43:11 guenther Exp $	*/
 /*	$NetBSD: fetch.c,v 1.14 1997/08/18 10:20:20 lukem Exp $	*/
 
 /*-
@@ -984,6 +984,7 @@ noslash:
 		} else if (strncasecmp(cp, LAST_MODIFIED,
 			    sizeof(LAST_MODIFIED) - 1) == 0) {
 			cp += sizeof(LAST_MODIFIED) - 1;
+			cp += strspn(cp, " \t");
 			cp[strcspn(cp, "\t")] = '\0';
 			if (strptime(cp, "%a, %d %h %Y %T %Z", &lmt) == NULL)
 				server_timestamps = 0;
