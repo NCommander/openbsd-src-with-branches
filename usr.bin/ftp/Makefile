@@ -12,6 +12,5 @@ LDADD+=	-ledit -lcurses -ltls -lssl -lcrypto
 DPADD+=	${LIBEDIT} ${LIBCURSES} ${LIBTLS} ${LIBSSL} ${LIBCRYPTO}
 
 #COPTS+= -Wall -Wconversion -Wstrict-prototypes -Wmissing-prototypes
-COPTS+= -Wall -Wstrict-prototypes -Wmissing-prototypes
 
 .include <bsd.prog.mk>
