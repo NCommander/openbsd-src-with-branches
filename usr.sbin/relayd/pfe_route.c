@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe_route.c,v 1.12 2017/05/28 10:39:15 benno Exp $	*/
+/*	$OpenBSD: pfe_route.c,v 1.13 2023/06/29 16:11:02 claudio Exp $	*/
 
 /*
  * Copyright (c) 2009 - 2011 Reyk Floeter <reyk@openbsd.org>
@@ -93,7 +93,7 @@ pfe_apply_prefixlen(struct sockaddr_storage *ss, int af, int len)
 	int q, r, off;
 	uint8_t *b = (uint8_t *)ss;
 
-        q = len >> 3;
+	q = len >> 3;
 	r = len & 7;
 
 	bzero(ss, sizeof(*ss));
