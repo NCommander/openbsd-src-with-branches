@@ -1,4 +1,4 @@
-/*	$OpenBSD: roa.c,v 1.67 2023/05/23 06:42:08 tb Exp $ */
+/*	$OpenBSD: roa.c,v 1.68 2023/06/07 10:46:34 job Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -114,7 +114,7 @@ roa_parse_econtent(const unsigned char *d, size_t dsz, struct parse *p)
 	int				 i, j, rc = 0;
 
 	if ((roa = d2i_RouteOriginAttestation(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 6482 section 3: failed to parse "
+		warnx("%s: RFC 6482 section 3: failed to parse "
 		    "RouteOriginAttestation", p->fn);
 		goto out;
 	}
