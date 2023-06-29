@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.242 2023/06/20 15:15:14 claudio Exp $ */
+/*	$OpenBSD: main.c,v 1.243 2023/06/23 11:36:24 claudio Exp $ */
 /*
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -750,8 +750,6 @@ sum_stats(const struct repo *rp, const struct repotalstats *in, void *arg)
 	out->vaps += in->vaps;
 	out->vaps_uniqs += in->vaps_uniqs;
 	out->vaps_pas += in->vaps_pas;
-	out->vaps_pas4 += in->vaps_pas4;
-	out->vaps_pas6 += in->vaps_pas6;
 }
 
 static void

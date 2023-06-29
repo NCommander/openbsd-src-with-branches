@@ -1,4 +1,4 @@
-/*	$OpenBSD: output-ometric.c,v 1.3 2023/04/26 16:32:41 claudio Exp $ */
+/*	$OpenBSD: output-ometric.c,v 1.4 2023/06/05 14:19:13 claudio Exp $ */
 /*
  * Copyright (c) 2022 Claudio Jeker <claudio@openbsd.org>
  *
@@ -83,11 +83,7 @@ set_common_stats(const struct repotalstats *in, struct ometric *metric,
 	ometric_set_int_with_labels(metric, in->vaps_uniqs,
 	    OKV("type", "state"), OKV("vap", "unique"), ol);
 	ometric_set_int_with_labels(metric, in->vaps_pas,
-	    OKV("type", "state"), OKV("vap providers", "both"), ol);
-	ometric_set_int_with_labels(metric, in->vaps_pas4,
-	    OKV("type", "state"), OKV("vap providers", "IPv4 only"), ol);
-	ometric_set_int_with_labels(metric, in->vaps_pas6,
-	    OKV("type", "state"), OKV("vap providers", "IPv6 only"), ol);
+	    OKV("type", "state"), OKV("vap providers", "total"), ol);
 }
 
 static void
