@@ -7,8 +7,8 @@
  *
  */
 
-#ifndef _TSIG_H_
-#define _TSIG_H_
+#ifndef TSIG_H
+#define TSIG_H
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -21,10 +21,6 @@
 #define TSIG_ERROR_BADSIG   16
 #define TSIG_ERROR_BADKEY   17
 #define TSIG_ERROR_BADTIME  18
-
-#define TSIG_HMAC_MD5       157
-#define TSIG_HMAC_SHA1      158
-#define TSIG_HMAC_SHA256    159
 
 typedef struct tsig_algorithm tsig_algorithm_type;
 typedef struct tsig_key tsig_key_type;
@@ -103,7 +99,7 @@ struct tsig_key
 {
 	const dname_type *name;
 	size_t            size;
-	const uint8_t    *data;
+	uint8_t		 *data;
 };
 
 struct tsig_record
@@ -144,6 +140,7 @@ int tsig_init(region_type *region);
  * Add the specified key to the TSIG key table.
  */
 void tsig_add_key(tsig_key_type *key);
+void tsig_del_key(tsig_key_type *key);
 
 /*
  * Add the specified algorithm to the TSIG algorithm table.
@@ -154,11 +151,6 @@ void tsig_add_algorithm(tsig_algorithm_type *algorithm);
  * Find an HMAC algorithm based on its short name.
  */
 tsig_algorithm_type *tsig_get_algorithm_by_name(const char *name);
-
-/*
- * Find an HMAC algorithm based on its identifier.
- */
-tsig_algorithm_type *tsig_get_algorithm_by_id(uint8_t alg);
 
 /*
  * Return a descriptive error message based on the TSIG error code.
@@ -177,12 +169,19 @@ void tsig_create_record(tsig_record_type* tsig,
 /*
  * Like tsig_create_record, with custom region settings.
  * The size params are used to customise the rr_region and context_region.
+ * If region is NULL, no cleanup is attached to it.
  */
 void tsig_create_record_custom(tsig_record_type* tsig,
 			region_type* region,
 			size_t chunk_size,
 			size_t large_object_size,
 			size_t initial_cleanup_size);
+
+/*
+ * Destroy tsig record internals (the main ptr is user alloced).
+ * if region is nonNULL, removes cleanup.
+ */
+void tsig_delete_record(tsig_record_type* tsig, region_type* region);
 
 /*
  * Call this before starting to analyze or signing a sequence of
@@ -290,4 +289,4 @@ int tsig_strlowercmp(const char* str1, const char* str2);
  */
 void tsig_finalize(void);
 
-#endif /* _TSIG_H_ */
+#endif /* TSIG_H */

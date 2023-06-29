@@ -7,10 +7,10 @@
  *
  */
 
-#ifndef _TSIG_OPENSSL_H_
-#define _TSIG_OPENSSL_H_
+#ifndef TSIG_OPENSSL_H
+#define TSIG_OPENSSL_H
 
-#if defined(TSIG) && defined(HAVE_SSL)
+#if defined(HAVE_SSL)
 
 #include "region-allocator.h"
 
@@ -22,8 +22,8 @@
  */
 int tsig_openssl_init(region_type *region);
 
-void tsig_openssl_finalize();
+void tsig_openssl_finalize(void);
 
-#endif /* defined(TSIG) && defined(HAVE_SSL) */
+#endif /* defined(HAVE_SSL) */
 
-#endif /* _TSIG_H_ */
+#endif /* TSIG_OPENSSL_H */
