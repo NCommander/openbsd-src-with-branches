@@ -1,4 +1,4 @@
-/* $OpenBSD: names.c,v 1.15 2021/12/12 21:30:13 tb Exp $ */
+/* $OpenBSD: names.c,v 1.16 2022/11/26 16:08:52 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -63,6 +63,9 @@
 #include <openssl/x509.h>
 
 #include "evp_local.h"
+
+extern int obj_cleanup_defer;
+void check_defer(int nid);
 
 int
 EVP_add_cipher(const EVP_CIPHER *c)
