@@ -1,4 +1,4 @@
-/* $OpenBSD: tty-keys.c,v 1.165 2023/01/09 14:12:41 nicm Exp $ */
+/* $OpenBSD: tty-keys.c,v 1.166 2023/04/17 17:57:35 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -1160,7 +1160,7 @@ tty_keys_clipboard(struct tty *tty, const char *buf, size_t len, size_t *size)
 {
 	struct client		*c = tty->client;
 	struct window_pane	*wp;
-	size_t			 end, terminator, needed;
+	size_t			 end, terminator = 0, needed;
 	char			*copy, *out;
 	int			 outlen;
 	u_int			 i;
