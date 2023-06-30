@@ -1,4 +1,4 @@
-/* $OpenBSD: ecp_smpl.c,v 1.43 2023/03/27 10:25:02 tb Exp $ */
+/* $OpenBSD: ecp_smpl.c,v 1.44 2023/04/11 18:58:20 jsing Exp $ */
 /* Includes code written by Lenka Fibikova <fibikova@exp-math.uni-essen.de>
  * for the OpenSSL project.
  * Includes code written by Bodo Moeller for the OpenSSL project.
@@ -162,7 +162,7 @@ ec_GFp_simple_group_set_curve(EC_GROUP *group,
 
  err:
 	BN_CTX_end(ctx);
-	
+
 	return ret;
 }
 
