@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfe_filter.c,v 1.61 2017/01/24 10:49:14 benno Exp $	*/
+/*	$OpenBSD: pfe_filter.c,v 1.62 2017/05/28 10:39:15 benno Exp $	*/
 
 /*
  * Copyright (c) 2006 Pierre-Yves Ritschard <pyr@openbsd.org>
@@ -632,7 +632,8 @@ check_table(struct relayd *env, struct rdr *rdr, struct table *table)
 		goto toolong;
 
 	if (ioctl(env->sc_pf->dev, DIOCRGETTSTATS, &io) == -1)
-		fatal("%s: cannot get table stats", __func__);
+		fatal("%s: cannot get table stats for %s@%s", __func__,
+		    io.pfrio_table.pfrt_name, io.pfrio_table.pfrt_anchor);
 
 	return (tstats.pfrts_match);
 
