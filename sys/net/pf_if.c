@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_if.c,v 1.109 2022/11/22 22:28:40 sashan Exp $ */
+/*	$OpenBSD: pf_if.c,v 1.110 2023/05/18 14:11:18 kn Exp $ */
 
 /*
  * Copyright 2005 Henning Brauer <henning@openbsd.org>
@@ -92,7 +92,7 @@ RB_PROTOTYPE(pfi_ifhead, pfi_kif, pfik_tree, pfi_if_compare);
 RB_GENERATE(pfi_ifhead, pfi_kif, pfik_tree, pfi_if_compare);
 
 #define PFI_BUFFER_MAX		0x10000
-#define PFI_MTYPE		M_IFADDR
+#define PFI_MTYPE		M_PF
 
 struct pfi_kif *
 pfi_kif_alloc(const char *kif_name, int mflags)
