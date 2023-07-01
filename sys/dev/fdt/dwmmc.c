@@ -359,6 +359,10 @@ dwmmc_attach(struct device *parent, struct device *self, void *aux)
 	/* if ciu clock is missing the rate is clock-frequency */
 	if (sc->sc_clkbase == 0)
 		sc->sc_clkbase = freq;
+	if (sc->sc_clkbase == 0) {
+		printf(": no clock base\n");
+		return;
+	}
 	div = OF_getpropint(faa->fa_node, "samsung,dw-mshc-ciu-div", div);
 	sc->sc_clkbase /= (div + 1);
 
