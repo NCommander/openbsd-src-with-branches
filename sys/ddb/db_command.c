@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_command.c,v 1.97 2022/11/05 19:29:45 cheloha Exp $	*/
+/*	$OpenBSD: db_command.c,v 1.98 2023/03/08 04:43:07 guenther Exp $	*/
 /*	$NetBSD: db_command.c,v 1.20 1996/03/30 22:30:05 christos Exp $	*/
 
 /*
@@ -579,9 +579,7 @@ db_bcstats_print_cmd(db_expr_t addr, int have_addr, db_expr_t count, char *modif
 const struct db_command db_show_all_cmds[] = {
 	{ "procs",	db_show_all_procs,	0, NULL },
 	{ "callout",	db_show_callout,	0, NULL },
-#ifdef __HAVE_CLOCKINTR
 	{ "clockintr",	db_show_all_clockintr,	0, NULL },
-#endif
 	{ "pools",	db_show_all_pools,	0, NULL },
 	{ "mounts",	db_show_all_mounts,	0, NULL },
 	{ "vnodes",	db_show_all_vnodes,	0, NULL },
