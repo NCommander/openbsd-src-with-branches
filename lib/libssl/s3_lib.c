@@ -1,4 +1,4 @@
-/* $OpenBSD: s3_lib.c,v 1.243 2023/05/16 14:10:43 jcs Exp $ */
+/* $OpenBSD: s3_lib.c,v 1.244 2023/05/26 13:44:05 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1672,7 +1672,7 @@ ssl3_clear(SSL *s)
 	s->s3->in_read_app_data = 0;
 
 	s->packet_length = 0;
-	s->version = TLS1_VERSION;
+	s->version = TLS1_2_VERSION;
 
 	s->s3->hs.state = SSL_ST_BEFORE|((s->server) ? SSL_ST_ACCEPT : SSL_ST_CONNECT);
 }
