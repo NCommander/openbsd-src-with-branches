@@ -1,4 +1,4 @@
-/*	$OpenBSD: packet.c,v 1.35 2021/01/19 16:01:39 claudio Exp $ */
+/*	$OpenBSD: packet.c,v 1.36 2021/11/03 21:40:03 sthen Exp $ */
 
 /*
  * Copyright (c) 2004, 2005 Esben Norby <norby@openbsd.org>
@@ -85,7 +85,7 @@ send_packet(struct iface *iface, struct ibuf *buf, struct sockaddr_in *dst)
 	bzero(&msg, sizeof(msg));
 	iov[0].iov_base = &ip_hdr;
 	iov[0].iov_len = sizeof(ip_hdr);
-	iov[1].iov_base = buf->buf;
+	iov[1].iov_base = ibuf_data(buf);
 	iov[1].iov_len = ibuf_size(buf);
 	msg.msg_name = dst;
 	msg.msg_namelen = sizeof(*dst);
