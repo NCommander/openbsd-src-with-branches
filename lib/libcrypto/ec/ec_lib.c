@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_lib.c,v 1.60 2023/06/24 18:21:07 jsing Exp $ */
+/* $OpenBSD: ec_lib.c,v 1.61 2023/06/25 18:52:27 tb Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -357,7 +357,6 @@ EC_GROUP_get0_generator(const EC_GROUP *group)
 	return group->generator;
 }
 
-
 int
 EC_GROUP_get_order(const EC_GROUP *group, BIGNUM *order, BN_CTX *ctx)
 {
@@ -365,6 +364,12 @@ EC_GROUP_get_order(const EC_GROUP *group, BIGNUM *order, BN_CTX *ctx)
 		return 0;
 
 	return !BN_is_zero(order);
+}
+
+const BIGNUM *
+EC_GROUP_get0_order(const EC_GROUP *group)
+{
+	return &group->order;
 }
 
 int
