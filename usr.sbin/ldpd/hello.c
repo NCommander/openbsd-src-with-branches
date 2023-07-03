@@ -1,4 +1,4 @@
-/*	$OpenBSD: hello.c,v 1.57 2016/07/16 19:20:16 renato Exp $ */
+/*	$OpenBSD: hello.c,v 1.58 2019/12/12 00:10:29 yasuoka Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -139,7 +139,7 @@ send_hello(enum hello_type type, struct iface_af *ia, struct tnbr *tnbr)
 		return (-1);
 	}
 
-	send_packet(fd, af, &dst, ia, buf->buf, buf->wpos);
+	send_packet(fd, af, &dst, ia, ibuf_data(buf), ibuf_size(buf));
 	ibuf_free(buf);
 
 	return (0);
