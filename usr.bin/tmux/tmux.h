@@ -1,4 +1,4 @@
-/* $OpenBSD: tmux.h,v 1.1198 2023/05/08 10:03:39 tb Exp $ */
+/* $OpenBSD: tmux.h,v 1.1199 2023/06/08 11:17:29 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -671,6 +671,7 @@ struct colour_palette {
 #define GRID_LINE_WRAPPED 0x1
 #define GRID_LINE_EXTENDED 0x2
 #define GRID_LINE_DEAD 0x4
+#define GRID_LINE_START_PROMPT 0x8
 
 /* Grid string flags. */
 #define GRID_STRING_WITH_SEQUENCES 0x1
