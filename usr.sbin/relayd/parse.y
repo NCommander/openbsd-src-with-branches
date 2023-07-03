@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.252 2021/01/17 15:17:13 rob Exp $	*/
+/*	$OpenBSD: parse.y,v 1.253 2021/10/15 15:01:28 naddy Exp $	*/
 
 /*
  * Copyright (c) 2007 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -996,7 +996,7 @@ tablecheck	: ICMP			{ table->conf.check = CHECK_ICMP; }
 				free($5);
 				YYERROR;
 			}
-			memcpy(table->conf.exbinbuf, ibuf->buf,
+			memcpy(table->conf.exbinbuf, ibuf_data(ibuf),
 			    ibuf_size(ibuf));
 			ibuf_free(ibuf);
 			free($5);

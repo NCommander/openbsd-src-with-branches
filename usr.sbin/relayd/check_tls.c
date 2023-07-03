@@ -1,4 +1,4 @@
-/*	$OpenBSD: check_tls.c,v 1.1 2017/05/27 08:33:25 claudio Exp $	*/
+/*	$OpenBSD: check_tls.c,v 1.2 2019/09/15 19:23:29 rob Exp $	*/
 
 /*
  * Copyright (c) 2017 Claudio Jeker <claudio@openbsd.org>
@@ -104,10 +104,10 @@ check_tls_write(int s, short event, void *arg)
 
 	if (cte->table->sendbinbuf != NULL) {
 		len = ibuf_size(cte->table->sendbinbuf);
-		buf = cte->table->sendbinbuf->buf;
+		buf = ibuf_data(cte->table->sendbinbuf);
 		log_debug("%s: table %s sending binary", __func__,
 		    cte->table->conf.name);
-		print_hex(cte->table->sendbinbuf->buf, 0, len);
+		print_hex(buf, 0, len);
 	} else {
 		len = strlen(cte->table->sendbuf);
 		buf = cte->table->sendbuf;
