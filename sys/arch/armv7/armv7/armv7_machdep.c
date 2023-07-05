@@ -1,4 +1,4 @@
-/*	$OpenBSD: armv7_machdep.c,v 1.64 2021/10/06 12:50:10 visa Exp $ */
+/*	$OpenBSD: armv7_machdep.c,v 1.65 2022/10/03 19:32:22 kettenis Exp $ */
 /*	$NetBSD: lubbock_machdep.c,v 1.2 2003/07/15 00:25:06 lukem Exp $ */
 
 /*
@@ -153,11 +153,6 @@ u_int cpu_reset_address = 0;
 
 vaddr_t physical_freestart;
 int physmem;
-
-/*int debug_flags;*/
-#ifndef PMAP_STATIC_L1S
-int max_processes = 64;			/* Default number */
-#endif	/* !PMAP_STATIC_L1S */
 
 /* Physical and virtual addresses for some global pages */
 pv_addr_t systempage;
