@@ -32,7 +32,7 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)amd.c	8.1 (Berkeley) 6/6/93
- *	$Id: amd.c,v 1.23 2019/06/28 13:32:46 deraadt Exp $
+ *	$Id: amd.c,v 1.24 2021/10/21 10:55:56 deraadt Exp $
  */
 
 /*
@@ -189,6 +189,8 @@ main(int argc, char *argv[])
 	char *domdot;
 	pid_t ppid = 0;
 	int error;
+
+	logfp = stderr;		/* Log errors to stderr initially */
 
 	/*
 	 * Make sure some built-in assumptions are true before we start
