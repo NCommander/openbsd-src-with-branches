@@ -1,4 +1,4 @@
-/* $OpenBSD: bf_null.c,v 1.13 2022/01/07 09:02:17 tb Exp $ */
+/* $OpenBSD: bf_null.c,v 1.14 2022/01/14 08:40:57 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -93,6 +93,7 @@ BIO_f_null(void)
 {
 	return (&methods_nullf);
 }
+LCRYPTO_ALIAS(BIO_f_null);
 
 static int
 nullf_new(BIO *bi)

@@ -1,4 +1,4 @@
-/* $OpenBSD: t_x509a.c,v 1.10 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: t_x509a.c,v 1.11 2022/11/26 16:08:50 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -117,3 +117,4 @@ X509_CERT_AUX_print(BIO *out, X509_CERT_AUX *aux, int indent)
 	}
 	return 1;
 }
+LCRYPTO_ALIAS(X509_CERT_AUX_print);

@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1_err.c,v 1.24 2022/07/12 14:42:48 kn Exp $ */
+/* $OpenBSD: asn1_err.c,v 1.25 2022/08/29 06:48:58 jsing Exp $ */
 /* ====================================================================
  * Copyright (c) 1999-2011 The OpenSSL Project.  All rights reserved.
  *
@@ -211,3 +211,4 @@ ERR_load_ASN1_strings(void)
 	}
 #endif
 }
+LCRYPTO_ALIAS(ERR_load_ASN1_strings);

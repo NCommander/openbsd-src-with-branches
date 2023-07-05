@@ -1,4 +1,4 @@
-/* $OpenBSD: bss_acpt.c,v 1.29 2018/05/12 18:51:59 tb Exp $ */
+/* $OpenBSD: bss_acpt.c,v 1.30 2022/01/07 09:02:17 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -118,6 +118,7 @@ BIO_s_accept(void)
 {
 	return (&methods_acceptp);
 }
+LCRYPTO_ALIAS(BIO_s_accept);
 
 static int
 acpt_new(BIO *bi)
@@ -452,4 +453,4 @@ BIO_new_accept(const char *str)
 		return (NULL);
 	}
 }
-
+LCRYPTO_ALIAS(BIO_new_accept);

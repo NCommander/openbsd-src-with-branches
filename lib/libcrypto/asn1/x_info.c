@@ -1,4 +1,4 @@
-/* $OpenBSD: x_info.c,v 1.17 2017/01/29 17:49:22 beck Exp $ */
+/* $OpenBSD: x_info.c,v 1.18 2020/09/03 17:29:05 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -75,6 +75,7 @@ X509_INFO_new(void)
 
 	return ret;
 }
+LCRYPTO_ALIAS(X509_INFO_new);
 
 void
 X509_INFO_free(X509_INFO *x)
@@ -92,3 +93,4 @@ X509_INFO_free(X509_INFO *x)
 
 	free(x);
 }
+LCRYPTO_ALIAS(X509_INFO_free);

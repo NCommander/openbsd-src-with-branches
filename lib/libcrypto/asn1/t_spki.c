@@ -1,4 +1,4 @@
-/* $OpenBSD: t_spki.c,v 1.13 2021/11/01 20:53:08 tb Exp $ */
+/* $OpenBSD: t_spki.c,v 1.14 2022/11/26 16:08:50 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 1999.
  */
@@ -113,3 +113,4 @@ NETSCAPE_SPKI_print(BIO *out, NETSCAPE_SPKI *spki)
 	BIO_write(out, "\n", 1);
 	return 1;
 }
+LCRYPTO_ALIAS(NETSCAPE_SPKI_print);
