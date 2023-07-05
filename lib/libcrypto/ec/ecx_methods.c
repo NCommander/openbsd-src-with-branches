@@ -1,4 +1,4 @@
-/*	$OpenBSD: ecx_methods.c,v 1.5 2023/03/15 06:34:07 tb Exp $ */
+/*	$OpenBSD: ecx_methods.c,v 1.6 2023/07/02 15:02:52 tb Exp $ */
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
  *
@@ -486,7 +486,7 @@ ecx_free(EVP_PKEY *pkey)
 {
 	struct ecx_key_st *ecx_key = pkey->pkey.ecx;
 
-	return ecx_key_free(ecx_key);
+	ecx_key_free(ecx_key);
 }
 
 static int
