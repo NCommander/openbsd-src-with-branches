@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_vfy.h,v 1.4 2023/04/25 18:32:42 tb Exp $ */
+/* $OpenBSD: x509_vfy.h,v 1.5 2023/07/03 11:43:15 tobhe Exp $ */
 /*
  * Copyright (c) 2022 Bob Beck <beck@openbsd.org>
  *
@@ -18,7 +18,11 @@
 #ifndef _LIBCRYPTO_X509_VFY_H
 #define _LIBCRYPTO_X509_VFY_H
 
+#ifndef _MSC_VER
 #include_next <openssl/x509_vfy.h>
+#else
+#include "../include/openssl/x509_vfy.h"
+#endif
 #include "crypto_namespace.h"
 
 LCRYPTO_USED(X509_STORE_set_depth);

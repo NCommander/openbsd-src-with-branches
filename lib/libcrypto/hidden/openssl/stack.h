@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: stack.h,v 1.1 2022/11/11 19:18:55 beck Exp $ */
 /*
  * Copyright (c) 2022 Bob Beck <beck@openbsd.org>
  *
@@ -18,7 +18,11 @@
 #ifndef _LIBCRYPTO_STACK_H
 #define _LIBCRYPTO_STACK_H
 
+#ifndef _MSC_VER
 #include_next <openssl/stack.h>
+#else
+#include "../include/openssl/stack.h"
+#endif
 #include "crypto_namespace.h"
 
 LCRYPTO_USED(sk_num);

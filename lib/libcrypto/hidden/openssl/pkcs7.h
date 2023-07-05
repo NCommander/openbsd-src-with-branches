@@ -1,4 +1,4 @@
-/* $OpenBSD: pkcs7.h,v 1.1 2022/11/12 12:11:14 beck Exp $ */
+/* $OpenBSD: pkcs7.h,v 1.2 2023/04/25 18:13:25 tb Exp $ */
 /*
  * Copyright (c) 2022 Bob Beck <beck@openbsd.org>
  *
@@ -18,7 +18,11 @@
 #ifndef _LIBCRYPTO_PKCS7_H
 #define _LIBCRYPTO_PKCS7_H
 
+#ifndef _MSC_VER
 #include_next <openssl/pkcs7.h>
+#else
+#include "../include/openssl/pkcs7.h"
+#endif
 #include "crypto_namespace.h"
 
 LCRYPTO_USED(PKCS7_ISSUER_AND_SERIAL_new);
