@@ -1,4 +1,4 @@
-/*	$OpenBSD: pf_norm.c,v 1.226 2022/11/06 18:05:05 dlg Exp $ */
+/*	$OpenBSD: pf_norm.c,v 1.227 2023/05/07 16:23:23 bluhm Exp $ */
 
 /*
  * Copyright 2001 Niels Provos <provos@citi.umich.edu>
@@ -1098,10 +1098,22 @@ no_fragment:
 }
 #endif /* INET6 */
 
+struct pf_state_scrub *
+pf_state_scrub_get(void)
+{
+	return (pool_get(&pf_state_scrub_pl, PR_NOWAIT | PR_ZERO));
+}
+
+void
+pf_state_scrub_put(struct pf_state_scrub *scrub)
+{
+	pool_put(&pf_state_scrub_pl, scrub);
+}
+
 int
 pf_normalize_tcp_alloc(struct pf_state_peer *src)
 {
-	src->scrub = pool_get(&pf_state_scrub_pl, PR_NOWAIT | PR_ZERO);
+	src->scrub = pf_state_scrub_get();
 	if (src->scrub == NULL)
 		return (ENOMEM);
 
