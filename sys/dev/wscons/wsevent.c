@@ -1,4 +1,4 @@
-/* $OpenBSD: wsevent.c,v 1.25 2020/12/25 12:59:52 visa Exp $ */
+/* $OpenBSD: wsevent.c,v 1.26 2022/07/02 08:50:42 visa Exp $ */
 /* $NetBSD: wsevent.c,v 1.16 2003/08/07 16:31:29 agc Exp $ */
 
 /*
@@ -133,6 +133,8 @@ wsevent_fini(struct wseventvar *ev)
 	}
 	free(ev->q, M_DEVBUF, WSEVENT_QSIZE * sizeof(struct wscons_event));
 	ev->q = NULL;
+
+	klist_invalidate(&ev->sel.si_note);
 
 	sigio_free(&ev->sigio);
 }
