@@ -1,4 +1,4 @@
-/* $OpenBSD: ts_req_print.c,v 1.3 2014/06/12 15:49:31 deraadt Exp $ */
+/* $OpenBSD: ts_req_print.c,v 1.4 2014/07/11 08:44:49 jsing Exp $ */
 /* Written by Zoltan Glozik (zglozik@stones.com) for the OpenSSL
  * project 2002.
  */
@@ -102,3 +102,4 @@ TS_REQ_print_bio(BIO *bio, TS_REQ *a)
 
 	return 1;
 }
+LCRYPTO_ALIAS(TS_REQ_print_bio);
