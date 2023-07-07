@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtiovar.h,v 1.13 2019/05/26 15:20:04 sf Exp $	*/
+/*	$OpenBSD: virtiovar.h,v 1.14 2019/05/26 15:22:31 sf Exp $	*/
 /*	$NetBSD: virtiovar.h,v 1.1 2011/10/30 12:12:21 hannken Exp $	*/
 
 /*
@@ -233,6 +233,7 @@ int virtio_dequeue_commit(struct virtqueue*, int);
 
 int virtio_intr(void *arg);
 int virtio_check_vqs(struct virtio_softc *);
+int virtio_check_vq(struct virtio_softc *, struct virtqueue *);
 void virtio_stop_vq_intr(struct virtio_softc *, struct virtqueue *);
 int virtio_start_vq_intr(struct virtio_softc *, struct virtqueue *);
 
