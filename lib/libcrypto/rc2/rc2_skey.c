@@ -1,4 +1,4 @@
-/* $OpenBSD: rc2_skey.c,v 1.13 2022/11/26 16:08:54 tb Exp $ */
+/* $OpenBSD: rc2_skey.c,v 1.14 2023/07/07 08:29:37 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -139,3 +139,4 @@ RC2_set_key(RC2_KEY *key, int len, const unsigned char *data, int bits)
 	for (i = 127; i >= 0; i -= 2)
 		*(ki--) = ((k[i] << 8)|k[i - 1]) & 0xffff;
 }
+LCRYPTO_ALIAS(RC2_set_key);
