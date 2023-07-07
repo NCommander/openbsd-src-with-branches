@@ -46,8 +46,6 @@ LCRYPTO_USED(ERR_print_errors_cb);
 LCRYPTO_USED(ERR_print_errors_fp);
 LCRYPTO_USED(ERR_print_errors);
 LCRYPTO_USED(ERR_asprintf_error_data);
-LCRYPTO_USED(ERR_add_error_data);
-LCRYPTO_USED(ERR_add_error_vdata);
 LCRYPTO_USED(ERR_load_strings);
 LCRYPTO_USED(ERR_unload_strings);
 LCRYPTO_USED(ERR_load_ERR_strings);

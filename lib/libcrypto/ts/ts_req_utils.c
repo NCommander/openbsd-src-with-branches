@@ -1,4 +1,4 @@
-/* $OpenBSD: ts_req_utils.c,v 1.7 2022/07/24 08:16:47 tb Exp $ */
+/* $OpenBSD: ts_req_utils.c,v 1.8 2023/07/07 07:25:21 beck Exp $ */
 /* Written by Zoltan Glozik (zglozik@stones.com) for the OpenSSL
  * project 2002.
  */
@@ -212,6 +212,7 @@ STACK_OF(X509_EXTENSION) *TS_REQ_get_exts(TS_REQ *a)
 {
 	return a->extensions;
 }
+LCRYPTO_ALIAS(TS_REQ_get_exts);
 
 void
 TS_REQ_ext_free(TS_REQ *a)

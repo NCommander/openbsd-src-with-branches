@@ -1,4 +1,4 @@
-/* $OpenBSD: chacha.h,v 1.1 2023/07/05 16:17:20 beck Exp $ */
+/* $OpenBSD$ */
 /*
  * Copyright (c) 2023 Bob Beck <beck@openbsd.org>
  *
