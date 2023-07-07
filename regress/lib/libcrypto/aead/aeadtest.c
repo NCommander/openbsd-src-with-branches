@@ -1,4 +1,4 @@
-/*	$OpenBSD: aeadtest.c,v 1.22 2022/07/30 17:09:45 jsing Exp $	*/
+/*	$OpenBSD: aeadtest.c,v 1.23 2022/08/20 19:25:14 jsing Exp $	*/
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2014, Google Inc.
@@ -47,6 +47,13 @@
  */
 
 #define BUF_MAX 1024
+
+/* MS defines in global headers, remove it */
+#ifdef _MSC_VER
+#ifdef IN
+#undef IN
+#endif
+#endif
 
 /* These are the different types of line that are found in the input file. */
 enum {
