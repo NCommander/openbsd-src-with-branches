@@ -1,4 +1,4 @@
-/* $OpenBSD: m_ripemd.c,v 1.14 2022/01/14 08:38:06 tb Exp $ */
+/* $OpenBSD: m_ripemd.c,v 1.15 2022/11/26 16:08:52 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -110,4 +110,5 @@ EVP_ripemd160(void)
 {
 	return (&ripemd160_md);
 }
+LCRYPTO_ALIAS(EVP_ripemd160);
 #endif

@@ -1,4 +1,4 @@
-/* $OpenBSD: bio_b64.c,v 1.25 2022/01/14 08:40:57 tb Exp $ */
+/* $OpenBSD: bio_b64.c,v 1.26 2022/11/26 16:08:52 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -111,6 +111,7 @@ BIO_f_base64(void)
 {
 	return (&methods_b64);
 }
+LCRYPTO_ALIAS(BIO_f_base64);
 
 static int
 b64_new(BIO *bi)

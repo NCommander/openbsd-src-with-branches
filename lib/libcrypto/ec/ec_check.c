@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_check.c,v 1.13 2023/04/11 18:58:20 jsing Exp $ */
+/* $OpenBSD: ec_check.c,v 1.14 2023/07/03 09:29:55 tb Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -109,3 +109,4 @@ EC_GROUP_check(const EC_GROUP *group, BN_CTX *ctx_in)
 
 	return ret;
 }
+LCRYPTO_ALIAS(EC_GROUP_check);

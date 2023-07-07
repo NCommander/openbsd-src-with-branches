@@ -1,4 +1,4 @@
-/* $OpenBSD: e_chacha20poly1305.c,v 1.27 2022/11/26 16:08:52 tb Exp $ */
+/* $OpenBSD: e_chacha20poly1305.c,v 1.28 2023/03/01 11:16:06 tb Exp $ */
 
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
@@ -348,6 +348,7 @@ EVP_aead_chacha20_poly1305()
 {
 	return &aead_chacha20_poly1305;
 }
+LCRYPTO_ALIAS(EVP_aead_chacha20_poly1305);
 
 static const EVP_AEAD aead_xchacha20_poly1305 = {
 	.key_len = 32,
@@ -366,6 +367,7 @@ EVP_aead_xchacha20_poly1305()
 {
 	return &aead_xchacha20_poly1305;
 }
+LCRYPTO_ALIAS(EVP_aead_xchacha20_poly1305);
 
 struct chacha20_poly1305_ctx {
 	ChaCha_ctx chacha;
@@ -606,5 +608,6 @@ EVP_chacha20_poly1305(void)
 {
 	return &cipher_chacha20_poly1305;
 }
+LCRYPTO_ALIAS(EVP_chacha20_poly1305);
 
 #endif  /* !OPENSSL_NO_CHACHA && !OPENSSL_NO_POLY1305 */
