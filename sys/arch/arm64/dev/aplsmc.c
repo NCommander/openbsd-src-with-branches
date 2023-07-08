@@ -1,4 +1,4 @@
-/*	$OpenBSD: aplsmc.c,v 1.22 2023/05/27 19:35:55 kettenis Exp $	*/
+/*	$OpenBSD: aplsmc.c,v 1.23 2023/05/29 04:24:39 deraadt Exp $	*/
 /*
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -366,7 +366,6 @@ aplsmc_handle_notification(struct aplsmc_softc *sc, uint64_t data)
 	extern int allowpowerdown;
 #ifdef SUSPEND
 	extern int cpu_suspended;
-	extern void suspend(void);
 
 	if (cpu_suspended) {
 		switch (SMC_EV_TYPE(data)) {
@@ -433,7 +432,7 @@ aplsmc_handle_notification(struct aplsmc_softc *sc, uint64_t data)
 			}
 		case 1:
 #ifdef SUSPEND
-			suspend();
+			request_sleep(SLEEP_SUSPEND);
 #endif
 			break;
 		case 2:
