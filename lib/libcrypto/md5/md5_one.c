@@ -1,4 +1,4 @@
-/* $OpenBSD: md5_one.c,v 1.10 2015/09/10 15:56:25 jsing Exp $ */
+/* $OpenBSD: md5_one.c,v 1.11 2023/07/08 06:50:38 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -76,4 +76,4 @@ MD5(const unsigned char *d, size_t n, unsigned char *md)
 	explicit_bzero(&c, sizeof(c));
 	return (md);
 }
-
+LCRYPTO_ALIAS(MD5);

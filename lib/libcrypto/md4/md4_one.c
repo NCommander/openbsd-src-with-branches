@@ -1,4 +1,4 @@
-/* $OpenBSD: md4_one.c,v 1.10 2015/09/14 01:45:03 doug Exp $ */
+/* $OpenBSD: md4_one.c,v 1.11 2023/07/08 06:47:26 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -76,4 +76,4 @@ MD4(const unsigned char *d, size_t n, unsigned char *md)
 	explicit_bzero(&c, sizeof(c));
 	return (md);
 }
-
+LCRYPTO_ALIAS(MD4);
