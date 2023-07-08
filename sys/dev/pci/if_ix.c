@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ix.c,v 1.196 2023/05/23 09:16:16 jan Exp $	*/
+/*	$OpenBSD: if_ix.c,v 1.197 2023/06/01 09:05:33 jan Exp $	*/
 
 /******************************************************************************
 
@@ -3094,8 +3094,11 @@ ixgbe_free_receive_buffers(struct rx_ring *rxr)
 				m_freem(rxbuf->buf);
 				rxbuf->buf = NULL;
 			}
-			bus_dmamap_destroy(rxr->rxdma.dma_tag, rxbuf->map);
-			rxbuf->map = NULL;
+			if (rxbuf->map != NULL) {
+				bus_dmamap_destroy(rxr->rxdma.dma_tag,
+				    rxbuf->map);
+				rxbuf->map = NULL;
+			}
 		}
 		free(rxr->rx_buffers, M_DEVBUF,
 		    sc->num_rx_desc * sizeof(struct ixgbe_rx_buf));
