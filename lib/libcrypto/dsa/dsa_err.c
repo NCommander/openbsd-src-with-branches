@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa_err.c,v 1.17 2022/11/19 06:33:00 tb Exp $ */
+/* $OpenBSD: dsa_err.c,v 1.18 2023/03/04 20:47:04 tb Exp $ */
 /* ====================================================================
  * Copyright (c) 1999-2011 The OpenSSL Project.  All rights reserved.
  *
@@ -101,3 +101,4 @@ void ERR_load_DSA_strings(void)
 		}
 #endif
 	}
+LCRYPTO_ALIAS(ERR_load_DSA_strings);
