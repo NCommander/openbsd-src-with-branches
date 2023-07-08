@@ -1,4 +1,4 @@
-/* $OpenBSD: cms_err.c,v 1.12 2020/06/05 16:51:12 jsing Exp $ */
+/* $OpenBSD: cms_err.c,v 1.13 2022/07/12 14:42:48 kn Exp $ */
 /*
  * Copyright 1995-2018 The OpenSSL Project Authors. All Rights Reserved.
  *
@@ -161,3 +161,4 @@ ERR_load_CMS_strings(void)
 #endif
 	return 1;
 }
+LCRYPTO_ALIAS(ERR_load_CMS_strings);

@@ -1,4 +1,4 @@
-/* $OpenBSD: c_zlib.c,v 1.26 2023/04/17 13:18:00 tb Exp $ */
+/* $OpenBSD: c_zlib.c,v 1.27 2023/06/11 05:35:43 tb Exp $ */
 /*
  * ---------------------------------------------------------------------------
  * Major patches to this file were contributed by
@@ -137,8 +137,10 @@ COMP_zlib(void)
 {
 	return &zlib_method_nozlib;
 }
+LCRYPTO_ALIAS(COMP_zlib);
 
 void
 COMP_zlib_cleanup(void)
 {
 }
+LCRYPTO_ALIAS(COMP_zlib_cleanup);

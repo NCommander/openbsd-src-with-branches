@@ -1,4 +1,4 @@
-/* $OpenBSD: buf_err.c,v 1.11 2017/01/29 17:49:22 beck Exp $ */
+/* $OpenBSD: buf_err.c,v 1.12 2022/07/12 14:42:48 kn Exp $ */
 /* ====================================================================
  * Copyright (c) 1999-2006 The OpenSSL Project.  All rights reserved.
  *
@@ -86,3 +86,4 @@ ERR_load_BUF_strings(void)
 	}
 #endif
 }
+LCRYPTO_ALIAS(ERR_load_BUF_strings);
