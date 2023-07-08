@@ -1,4 +1,4 @@
-/* $OpenBSD: ofb128.c,v 1.5 2022/11/26 16:08:53 tb Exp $ */
+/* $OpenBSD: ofb128.c,v 1.6 2023/07/08 14:55:36 beck Exp $ */
 /* ====================================================================
  * Copyright (c) 2008 The OpenSSL Project.  All rights reserved.
  *
@@ -121,3 +121,4 @@ CRYPTO_ofb128_encrypt(const unsigned char *in, unsigned char *out,
 
 	*num = n;
 }
+LCRYPTO_ALIAS(CRYPTO_ofb128_encrypt);

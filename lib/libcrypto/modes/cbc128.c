@@ -1,4 +1,4 @@
-/* $OpenBSD: cbc128.c,v 1.6 2022/11/26 16:08:53 tb Exp $ */
+/* $OpenBSD: cbc128.c,v 1.7 2023/07/08 14:55:36 beck Exp $ */
 /* ====================================================================
  * Copyright (c) 2008 The OpenSSL Project.  All rights reserved.
  *
@@ -114,6 +114,7 @@ CRYPTO_cbc128_encrypt(const unsigned char *in, unsigned char *out,
 	}
 	memmove(ivec, iv, 16);
 }
+LCRYPTO_ALIAS(CRYPTO_cbc128_encrypt);
 
 void
 CRYPTO_cbc128_decrypt(const unsigned char *in, unsigned char *out,
@@ -210,3 +211,4 @@ CRYPTO_cbc128_decrypt(const unsigned char *in, unsigned char *out,
 		out += 16;
 	}
 }
+LCRYPTO_ALIAS(CRYPTO_cbc128_decrypt);
