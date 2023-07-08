@@ -1,4 +1,4 @@
-/* $OpenBSD: dh_err.c,v 1.17 2022/01/10 12:00:52 tb Exp $ */
+/* $OpenBSD: dh_err.c,v 1.18 2022/07/12 14:42:49 kn Exp $ */
 /* ====================================================================
  * Copyright (c) 1999-2011 The OpenSSL Project.  All rights reserved.
  *
@@ -111,3 +111,4 @@ void ERR_load_DH_strings(void)
 		}
 #endif
 	}
+LCRYPTO_ALIAS(ERR_load_DH_strings);

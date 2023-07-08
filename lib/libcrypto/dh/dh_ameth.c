@@ -1,4 +1,4 @@
-/* $OpenBSD: dh_ameth.c,v 1.28 2023/04/17 05:57:17 tb Exp $ */
+/* $OpenBSD: dh_ameth.c,v 1.29 2023/07/07 06:59:18 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -448,6 +448,7 @@ DHparams_print(BIO *bp, const DH *x)
 {
 	return do_dh_print(bp, x, 4, NULL, 0);
 }
+LCRYPTO_ALIAS(DHparams_print);
 
 int
 DHparams_print_fp(FILE *fp, const DH *x)
@@ -466,6 +467,7 @@ DHparams_print_fp(FILE *fp, const DH *x)
 
 	return ret;
 }
+LCRYPTO_ALIAS(DHparams_print_fp);
 
 static int
 dh_pkey_public_check(const EVP_PKEY *pkey)
