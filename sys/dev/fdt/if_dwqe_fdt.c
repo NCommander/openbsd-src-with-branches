@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dwqe_fdt.c,v 1.12 2023/05/30 08:30:01 jsg Exp $	*/
+/*	$OpenBSD: if_dwqe_fdt.c,v 1.13 2023/07/04 12:58:42 kettenis Exp $	*/
 /*
  * Copyright (c) 2008, 2019 Mark Kettenis <kettenis@openbsd.org>
  * Copyright (c) 2017, 2022 Patrick Wildt <patrick@blueri.se>
@@ -141,6 +141,7 @@ dwqe_fdt_attach(struct device *parent, struct device *self, void *aux)
 		sc->sc_phyloc = OF_getpropint(node, "reg", MII_PHY_ANY);
 	else
 		sc->sc_phyloc = MII_PHY_ANY;
+	sc->sc_mii.mii_node = node;
 
 	pinctrl_byname(faa->fa_node, "default");
 
