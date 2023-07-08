@@ -1,4 +1,4 @@
-/*	$OpenBSD: make.c,v 1.81 2020/01/13 15:41:53 espie Exp $	*/
+/*	$OpenBSD: make.c,v 1.82 2020/01/26 12:41:21 espie Exp $	*/
 /*	$NetBSD: make.c,v 1.10 1996/11/06 17:59:15 christos Exp $	*/
 
 /*
@@ -488,8 +488,9 @@ add_targets_to_make(Lst todo)
 
 		if (gn->children_left != 0) {
 			if (DEBUG(MAKE))
-				printf("%s: not queuing (%d children left to build)\n",
-				    gn->name, gn->children_left);
+				printf("%s: not queuing (%d child%s left to build)\n",
+				    gn->name, gn->children_left, 
+				    gn->children_left > 1 ? "ren" : "");
 			Lst_ForEach(&gn->children, MakeAddChild,
 			    &examine);
 		} else {
