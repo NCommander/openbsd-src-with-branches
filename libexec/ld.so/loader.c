@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.211 2023/02/18 01:22:50 deraadt Exp $ */
+/*	$OpenBSD: loader.c,v 1.212 2023/02/20 00:51:57 gnezdo Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -781,7 +781,7 @@ _dl_rtld(elf_object_t *object)
 		}
 	}
 
-	/* 
+	/*
 	 * TEXTREL binaries are loaded without immutable on un-writeable sections.
 	 * After text relocations are finished, these regions can become
 	 * immutable.  OPENBSD_MUTABLE section always overlaps writeable LOADs,
