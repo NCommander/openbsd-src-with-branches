@@ -1,4 +1,4 @@
-/* $OpenBSD: cfb64ede.c,v 1.10 2022/11/26 16:08:51 tb Exp $ */
+/* $OpenBSD: cfb64ede.c,v 1.11 2023/07/08 07:11:07 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -178,13 +178,13 @@ DES_ede3_cfb_encrypt(const unsigned char *in, unsigned char *out,
 				memmove(ovec, ovec + num/8,
 				    8 + (num % 8 ? 1 : 0));
 				/* now the remaining bits */
-				if (num % 8 != 0)
-					for (i = 0; i < 8; ++i)
-					{
+				if (num % 8 != 0) {
+					for (i = 0; i < 8; ++i) {
 						ovec[i] <<= num % 8;
 						ovec[i] |= ovec[i + 1] >>
 						    (8 - num % 8);
 					}
+				}
 				iv = &ovec[0];
 				c2l(iv, v0);
 				c2l(iv, v1);
@@ -216,13 +216,13 @@ DES_ede3_cfb_encrypt(const unsigned char *in, unsigned char *out,
 				memmove(ovec, ovec + num/8,
 				    8 + (num % 8 ? 1 : 0));
 				/* now the remaining bits */
-				if (num % 8 != 0)
-					for (i = 0; i < 8; ++i)
-					{
+				if (num % 8 != 0) {
+					for (i = 0; i < 8; ++i) {
 						ovec[i] <<= num % 8;
 						ovec[i] |= ovec[i + 1] >>
 						    (8 - num % 8);
 					}
+				}
 				iv = &ovec[0];
 				c2l(iv, v0);
 				c2l(iv, v1);
