@@ -1,4 +1,4 @@
-/* $OpenBSD: c_ofb64.c,v 1.6 2022/11/26 16:08:51 tb Exp $ */
+/* $OpenBSD: c_ofb64.c,v 1.7 2023/07/08 07:25:43 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -108,3 +108,4 @@ CAST_ofb64_encrypt(const unsigned char *in, unsigned char *out,
 	t = v0 = v1 = ti[0] = ti[1] = 0;
 	*num = n;
 }
+LCRYPTO_ALIAS(CAST_ofb64_encrypt);
