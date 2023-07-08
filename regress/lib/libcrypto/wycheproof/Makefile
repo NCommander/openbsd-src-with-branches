@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2023/03/08 05:36:45 tb Exp $
+# $OpenBSD: Makefile,v 1.8 2023/07/08 18:33:41 espie Exp $
 
 WYCHEPROOF_TESTVECTORS = /usr/local/share/wycheproof/testvectors/
 
@@ -36,7 +36,7 @@ primality_testcases.h: wycheproof-json.pl ${WYCHEPROOF_TESTVECTORS}/primality_te
 
 wycheproof-primes.o: primality_testcases.h
 
-regress-wycheproof-primes:  wycheproof-primes
+regress-wycheproof-primes: wycheproof-primes
 	./wycheproof-primes
 
 CLEANFILES +=	primality_testcases.h
