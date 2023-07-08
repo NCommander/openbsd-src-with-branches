@@ -1,4 +1,4 @@
-/*	$OpenBSD: radius.c,v 1.2 2015/07/27 03:01:22 yasuoka Exp $ */
+/*	$OpenBSD: radius.c,v 1.3 2015/08/20 21:51:42 deraadt Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -26,12 +26,11 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-
 #include <sys/uio.h>
-#include <stdbool.h>
+#include <arpa/inet.h>
+
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

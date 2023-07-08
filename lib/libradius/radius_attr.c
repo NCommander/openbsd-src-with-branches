@@ -1,4 +1,4 @@
-/*	$OpenBSD: radius+.c,v 1.6 2012/05/08 13:15:12 yasuoka Exp $ */
+/*	$OpenBSD: radius_attr.c,v 1.1 2015/07/20 23:52:29 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -26,14 +26,13 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
-#include <md5.h>
+#include <endian.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "radius.h"

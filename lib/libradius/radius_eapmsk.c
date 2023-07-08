@@ -1,4 +1,4 @@
-/*	$OpenBSD: $ */
+/*	$OpenBSD: radius_eapmsk.c,v 1.1 2015/07/20 23:52:29 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2013 Internet Initiative Japan Inc.
@@ -26,16 +26,8 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
-
-#include <openssl/md5.h>
 
 #include "radius.h"
 
