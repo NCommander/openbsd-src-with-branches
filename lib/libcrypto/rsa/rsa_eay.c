@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa_eay.c,v 1.60 2023/05/05 12:21:44 tb Exp $ */
+/* $OpenBSD: rsa_eay.c,v 1.61 2023/07/07 10:11:23 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -849,10 +849,11 @@ RSA_PKCS1_OpenSSL(void)
 {
 	return &rsa_pkcs1_meth;
 }
+LCRYPTO_ALIAS(RSA_PKCS1_OpenSSL);
 
 const RSA_METHOD *
 RSA_PKCS1_SSLeay(void)
 {
 	return RSA_PKCS1_OpenSSL();
 }
-
+LCRYPTO_ALIAS(RSA_PKCS1_SSLeay);
