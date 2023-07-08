@@ -1,4 +1,4 @@
-# $OpenBSD: Util.pm,v 1.5 2012/07/10 12:24:45 espie Exp $
+# $OpenBSD: Util.pm,v 1.6 2014/04/16 10:31:27 zhuk Exp $
 
 # Copyright (c) 2007-2010 Steven Mestdagh <steven@openbsd.org>
 # Copyright (c) 2012 Marc Espie <espie@openbsd.org>
@@ -15,8 +15,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-use strict;
-use warnings;
+use v5.36;
 package LT::Util;
 require Exporter;
 our @ISA = qw(Exporter);
@@ -27,16 +26,15 @@ use Cwd;
 our $ltdir = '.libs';
 our $version = '1.5.26'; # pretend to be this version of libtool
 
-sub abs_dir
+sub abs_dir($a)
 {
-	my $a = shift;
 	return dirname(Cwd::abs_path($a));
 }
 
-sub shortdie
+sub shortdie(@p)
 {
 	$SIG{__DIE__} = 'DEFAULT';
-	die @_;
+	die @p;
 }
 
 1;
