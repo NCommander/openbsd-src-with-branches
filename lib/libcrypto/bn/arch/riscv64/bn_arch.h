@@ -63,6 +63,23 @@ bn_mulw(BN_ULONG a, BN_ULONG b, BN_ULONG *out_r1, BN_ULONG *out_r0)
 	*out_r0 = r0;
 }
 
+#define HAVE_BN_SUBW
+
+static inline void
+bn_subw(BN_ULONG a, BN_ULONG b, BN_ULONG *out_borrow, BN_ULONG *out_r0)
+{
+	BN_ULONG borrow, r0;
+
+	__asm__ (
+	    "sub   %[r0], %[a], %[b] \n"
+	    "sltu  %[borrow], %[a], %[r0] \n"
+	    : [borrow]"=r"(borrow), [r0]"=&r"(r0)
+	    : [a]"r"(a), [b]"r"(b));
+
+	*out_borrow = borrow;
+	*out_r0 = r0;
+}
+
 #endif /* __GNUC__ */
 
 #endif
