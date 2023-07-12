@@ -1,4 +1,4 @@
-/*	$OpenBSD: pch.c,v 1.63 2022/12/26 19:16:02 jmc Exp $	*/
+/*	$OpenBSD: pch.c,v 1.64 2023/07/12 11:26:13 tb Exp $	*/
 
 /*
  * patch - a program to apply diffs to original files
@@ -1422,7 +1422,7 @@ compare_names(const struct file_name *names, bool assume_exists)
 {
 	size_t min_components, min_baselen, min_len, tmp;
 	char *best = NULL;
-	char *path;
+	char *path, *bn;
 	int i;
 
 	/*
@@ -1443,7 +1443,10 @@ compare_names(const struct file_name *names, bool assume_exists)
 			min_components = tmp;
 			best = path;
 		}
-		if ((tmp = strlen(basename(path))) > min_baselen)
+		bn = basename(path);
+		if (bn == NULL)
+			continue;
+		if ((tmp = strlen(bn)) > min_baselen)
 			continue;
 		if (tmp < min_baselen) {
 			min_baselen = tmp;
