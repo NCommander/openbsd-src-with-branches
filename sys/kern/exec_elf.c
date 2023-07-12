@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_elf.c,v 1.167 2022/08/14 01:58:27 jsg Exp $	*/
+/*	$OpenBSD: exec_elf.c,v 1.168 2022/08/29 16:53:46 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1996 Per Fogelstrom
@@ -312,6 +312,11 @@ elf_load_file(struct proc *p, char *path, struct exec_package *epp,
 		goto bad1;
 
 	for (i = 0; i < eh.e_phnum; i++) {
+		if ((ph[i].p_align > 1) && !powerof2(ph[i].p_align)) {
+			error = EINVAL;
+			goto bad1;
+		}
+
 		if (ph[i].p_type == PT_LOAD) {
 			if (ph[i].p_filesz > ph[i].p_memsz ||
 			    ph[i].p_memsz == 0) {
@@ -501,6 +506,11 @@ exec_elf_makecmds(struct proc *p, struct exec_package *epp)
 	epp->ep_dsize = ELF_NO_ADDR;
 
 	for (i = 0, pp = ph; i < eh->e_phnum; i++, pp++) {
+		if ((pp->p_align > 1) && !powerof2(pp->p_align)) {
+			error = EINVAL;
+			goto bad;
+		}
+
 		if (pp->p_type == PT_INTERP && !interp) {
 			if (pp->p_filesz < 2 || pp->p_filesz > MAXPATHLEN)
 				goto bad;
@@ -526,7 +536,7 @@ exec_elf_makecmds(struct proc *p, struct exec_package *epp)
 
 	if (eh->e_type == ET_DYN) {
 		/* need phdr and load sections for PIE */
-		if (!has_phdr || base_ph == NULL) {
+		if (!has_phdr || base_ph == NULL || base_ph->p_vaddr != 0) {
 			error = EINVAL;
 			goto bad;
 		}
