@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac.c,v 1.93 2022/01/09 05:42:37 jsg Exp $	*/
+/*	$OpenBSD: aac.c,v 1.94 2022/04/16 19:19:58 naddy Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -2074,9 +2074,7 @@ aac_rkt_set_interrupts(struct aac_softc *sc, int enable)
 }
 
 void
-aac_eval_mapping(size, cyls, heads, secs)
-	u_int32_t size;
-	int *cyls, *heads, *secs;
+aac_eval_mapping(u_int32_t size, int *cyls, int *heads, int *secs)
 {
 	*cyls = size / AAC_HEADS / AAC_SECS;
 	if (*cyls < AAC_MAXCYLS) {
