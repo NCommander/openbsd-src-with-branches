@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.c,v 1.102 2023/04/27 22:47:27 dv Exp $	*/
+/*	$OpenBSD: virtio.c,v 1.103 2023/05/13 23:15:28 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -591,7 +591,9 @@ virtio_init(struct vmd_vm *vm, int child_cdrom,
 			    vmc->vmc_ifflags[i] & VMIFF_LOCAL ? 1 : 0;
 			if (i == 0 && vmc->vmc_bootdevice & VMBOOTDEV_NET)
 				dev->vionet.pxeboot = 1;
-
+			memcpy(&dev->vionet.local_prefix,
+			    &env->vmd_cfg.cfg_localprefix,
+			    sizeof(dev->vionet.local_prefix));
 			log_debug("%s: vm \"%s\" vio%u lladdr %s%s%s%s",
 			    __func__, vcp->vcp_name, i,
 			    ether_ntoa((void *)dev->vionet.mac),

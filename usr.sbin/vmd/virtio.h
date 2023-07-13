@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.h,v 1.44 2023/04/25 12:46:13 dv Exp $	*/
+/*	$OpenBSD: virtio.h,v 1.45 2023/04/27 22:47:27 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -257,6 +257,7 @@ struct vionet_dev {
 	int lockedmac;
 	int local;
 	int pxeboot;
+	struct local_prefix local_prefix;
 
 	unsigned int idx;
 };
