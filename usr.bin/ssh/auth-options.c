@@ -1,4 +1,4 @@
-/* $OpenBSD: auth-options.c,v 1.99 2023/03/29 00:18:35 djm Exp $ */
+/* $OpenBSD: auth-options.c,v 1.100 2023/07/14 05:31:44 djm Exp $ */
 /*
  * Copyright (c) 2018 Damien Miller <djm@mindrot.org>
  *
@@ -23,6 +23,7 @@
 #include <pwd.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdarg.h>
 #include <ctype.h>
 #include <limits.h>
