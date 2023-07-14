@@ -1,4 +1,4 @@
-/*	$OpenBSD: dispatch.c,v 1.1 2017/03/17 14:45:16 rzalamena Exp $	*/
+/*	$OpenBSD: dispatch.c,v 1.2 2021/01/17 13:41:24 claudio Exp $	*/
 
 /*
  * Copyright 2004 Henning Brauer <henning@openbsd.org>
@@ -168,7 +168,8 @@ setup_iflist(void)
 
 			/* Skip non ethernet interfaces. */
 			if (ifi->ifi_type != IFT_ETHER &&
-			    ifi->ifi_type != IFT_ENC) {
+			    ifi->ifi_type != IFT_ENC &&
+			    ifi->ifi_type != IFT_CARP) {
 				TAILQ_REMOVE(&intflist, intf, entry);
 				free(intf);
 				continue;
