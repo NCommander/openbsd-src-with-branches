@@ -1,6 +1,8 @@
-#	$OpenBSD: Makefile,v 1.4 2021/04/20 17:21:27 tb Exp $
+#	$OpenBSD: Makefile,v 1.5 2021/05/10 20:41:44 tb Exp $
 
-PROG=	ecdhtest
+PROGS =		ecdhtest
+PROGS +=	ecc_cdh
+
 LDADD=	-lcrypto
 DPADD=	${LIBCRYPTO}
 WARNINGS=	Yes
