@@ -1,3 +1,4 @@
+/* $OpenBSD: chacha.c,v 1.1 2013/11/21 00:45:44 djm Exp $ */
 /*
 chacha-merged.c version 20080118
 D. J. Bernstein
@@ -5,8 +6,6 @@ Public domain.
 */
 
 #include "chacha.h"
-
-/* $OpenBSD$ */
 
 typedef unsigned char u8;
 typedef unsigned int u32;

@@ -1,5 +1,4 @@
-
-/* $OpenBSD: servconf.c,v 1.394 2023/06/05 13:24:36 millert Exp $ */
+/* $OpenBSD: servconf.c,v 1.395 2023/06/21 05:10:26 djm Exp $ */
 /*
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
  *                    All rights reserved
