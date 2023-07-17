@@ -1,4 +1,4 @@
-/* $OpenBSD: readconf.h,v 1.149 2022/11/28 01:37:36 djm Exp $ */
+/* $OpenBSD: readconf.h,v 1.150 2023/01/13 02:58:20 dtucker Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -70,6 +70,7 @@ typedef struct {
 	char   *kex_algorithms;	/* SSH2 kex methods in order of preference. */
 	char   *ca_sign_algorithms;	/* Allowed CA signature algorithms */
 	char   *hostname;	/* Real host to connect. */
+	char   *tag;		/* Configuration tag name. */
 	char   *host_key_alias;	/* hostname alias for .ssh/known_hosts */
 	char   *proxy_command;	/* Proxy command for connecting the host. */
 	char   *user;		/* User to log in as. */
