@@ -1,4 +1,4 @@
-/*	$OpenBSD: entries.c,v 1.4 2017/07/12 23:18:24 jca Exp $ */
+/*	$OpenBSD: entries.c,v 1.5 2022/02/05 22:59:58 naddy Exp $ */
 /*
  * Copyright (c) 2008 Pierre-Yves Ritschard <pyr@openbsd.org>
  *
@@ -34,6 +34,7 @@
 #include <limits.h>
 
 #include "ypldap.h"
+#include "log.h"
 
 void
 flatten_entries(struct env *env)
