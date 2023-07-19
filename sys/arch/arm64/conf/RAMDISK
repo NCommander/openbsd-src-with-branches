@@ -1,4 +1,4 @@
-# $OpenBSD: RAMDISK,v 1.206 2023/06/10 18:31:38 patrick Exp $
+# $OpenBSD: RAMDISK,v 1.207 2023/06/27 22:38:46 patrick Exp $
 
 machine		arm64
 maxusers	4
@@ -125,7 +125,7 @@ nvme*		at aplns?
 aplpcie*	at fdt?
 pci*		at aplpcie?
 aplpinctrl*	at fdt? early 1
-aplpmgr*	at fdt? early 1
+aplpmgr*	at fdt? early 2
 aplrtk*		at fdt?
 aplsart*	at fdt?
 aplsmc*		at fdt?
