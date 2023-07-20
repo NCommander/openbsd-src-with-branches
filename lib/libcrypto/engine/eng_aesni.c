@@ -1,4 +1,4 @@
-/* $OpenBSD: eng_aesni.c,v 1.12 2022/12/26 07:18:51 jmc Exp $ */
+/* $OpenBSD: eng_aesni.c,v 1.13 2023/07/20 14:17:13 tb Exp $ */
 /*
  * Support for Intel AES-NI instruction set
  *   Author: Huang Ying <ying.huang@intel.com>
@@ -80,7 +80,6 @@
 #if !defined(OPENSSL_NO_HW) && !defined(OPENSSL_NO_HW_AES_NI) && !defined(OPENSSL_NO_AES)
 
 #include <openssl/aes.h>
-#include <openssl/dso.h>
 #include <openssl/engine.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>

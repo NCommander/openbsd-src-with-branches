@@ -1,4 +1,4 @@
-/* $OpenBSD: eng_openssl.c,v 1.15 2022/01/09 23:55:31 tb Exp $ */
+/* $OpenBSD: eng_openssl.c,v 1.16 2022/11/26 16:08:52 tb Exp $ */
 /* Written by Geoff Thorpe (geoff@geoffthorpe.net) for the OpenSSL
  * project 2000.
  */
@@ -67,7 +67,6 @@
 #include <openssl/opensslconf.h>
 
 #include <openssl/crypto.h>
-#include <openssl/dso.h>
 #include <openssl/engine.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
