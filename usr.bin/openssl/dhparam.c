@@ -1,4 +1,4 @@
-/* $OpenBSD: dhparam.c,v 1.16 2023/03/05 13:12:53 tb Exp $ */
+/* $OpenBSD: dhparam.c,v 1.17 2023/03/06 14:32:06 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -222,7 +222,7 @@ static const struct option dhparam_options[] = {
 };
 
 static void
-dhparam_usage()
+dhparam_usage(void)
 {
 	fprintf(stderr,
 	    "usage: dhparam [-2 | -5] [-C] [-check] [-dsaparam]\n"

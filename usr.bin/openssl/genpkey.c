@@ -1,4 +1,4 @@
-/* $OpenBSD: genpkey.c,v 1.15 2023/03/05 13:12:53 tb Exp $ */
+/* $OpenBSD: genpkey.c,v 1.16 2023/03/06 14:32:06 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006
  */
@@ -206,7 +206,7 @@ static const struct option genpkey_options[] = {
 };
 
 static void
-genpkey_usage()
+genpkey_usage(void)
 {
 	fprintf(stderr,
 	    "usage: genpkey [-algorithm alg] [cipher] [-genparam] [-out file]\n"

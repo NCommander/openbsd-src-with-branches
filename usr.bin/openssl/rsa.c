@@ -1,4 +1,4 @@
-/* $OpenBSD: rsa.c,v 1.17 2022/11/11 17:07:39 joshua Exp $ */
+/* $OpenBSD: rsa.c,v 1.18 2023/03/06 14:32:06 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -228,7 +228,7 @@ static const struct option rsa_options[] = {
 };
 
 static void
-rsa_usage()
+rsa_usage(void)
 {
 	int n = 0;
 
