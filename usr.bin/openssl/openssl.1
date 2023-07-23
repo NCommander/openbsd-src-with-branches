@@ -1,4 +1,4 @@
-.\" $OpenBSD: openssl.1,v 1.149 2023/07/03 06:22:07 beck Exp $
+.\" $OpenBSD: openssl.1,v 1.150 2023/07/03 08:37:22 jmc Exp $
 .\" ====================================================================
 .\" Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
 .\"
@@ -2300,7 +2300,6 @@ Print extra details about the processing.
 .Tg errstr
 .Sh ERRSTR
 .Nm openssl errstr
-.Op Fl stats
 .Ar errno ...
 .Pp
 The
@@ -2322,12 +2321,6 @@ The remaining fields
 and
 .Bq reason string
 are all ASCII text.
-.Pp
-The options are as follows:
-.Bl -tag -width Ds
-.It Fl stats
-Print debugging statistics about various aspects of the hash table.
-.El
 .Tg gendsa
 .Sh GENDSA
 .Bl -hang -width "openssl gendsa"
