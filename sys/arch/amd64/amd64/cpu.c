@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.164 2023/01/20 16:01:04 deraadt Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.165 2023/03/09 13:17:28 jsg Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -1139,7 +1139,7 @@ void
 cpu_fix_msrs(struct cpu_info *ci)
 {
 	int family = ci->ci_family;
-	uint64_t msr;
+	uint64_t msr, nmsr;
 
 	if (!strcmp(cpu_vendor, "GenuineIntel")) {
 		if ((family > 6 || (family == 6 && ci->ci_model >= 0xd)) &&
@@ -1182,11 +1182,17 @@ cpu_fix_msrs(struct cpu_info *ci)
 		 * where LFENCE is always serializing.
 		 */
 		if (family >= 0x10 && family != 0x11) {
-			msr = rdmsr(MSR_DE_CFG);
-			if ((msr & DE_CFG_SERIALIZE_LFENCE) == 0) {
-				msr |= DE_CFG_SERIALIZE_LFENCE;
-				wrmsr(MSR_DE_CFG, msr);
-			}
+			nmsr = msr = rdmsr(MSR_DE_CFG);
+			nmsr |= DE_CFG_SERIALIZE_LFENCE;
+			if (msr != nmsr)
+				wrmsr(MSR_DE_CFG, nmsr);
+		}
+		if (family == 0x17 && ci->ci_model >= 0x31) {
+			nmsr = msr = rdmsr(MSR_DE_CFG);
+#define DE_CFG_SERIALIZE_9 (1 << 9)	/* Zenbleed chickenbit */
+			nmsr |= DE_CFG_SERIALIZE_9;
+			if (msr != nmsr)
+				wrmsr(MSR_DE_CFG, nmsr);
 		}
 	}
 }
