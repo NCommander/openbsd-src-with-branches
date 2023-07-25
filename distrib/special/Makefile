@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.47 2021/05/19 17:23:14 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.47 2021/05/19 17:25:10 deraadt Exp $
 
 SUBDIR=	libstubs \
-	arch bioctl cat chmod chroot cp date dd df dhclient dhcpleased disklabel \
+	arch bioctl cat chmod chroot cp date dd df dhcpleased disklabel \
 	dmesg doas ed eeprom encrypt fdisk fsck fsck_ext2fs fsck_ffs fsck_msdos ftp \
 	ftp-ssl grep growfs gzip hostname ifconfig init installboot kbd ksh ln \
 	ls md5 mkdir mknod mkuboot more mount mount_cd9660 mount_ext2fs \
