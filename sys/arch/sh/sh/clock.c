@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.13 2023/03/12 22:18:58 cheloha Exp $	*/
+/*	$OpenBSD: clock.c,v 1.14 2023/04/10 04:21:20 jsg Exp $	*/
 /*	$NetBSD: clock.c,v 1.32 2006/09/05 11:09:36 uwe Exp $	*/
 
 /*-
@@ -203,7 +203,6 @@ sh_clock_get_pclock(void)
 void
 setstatclockrate(int newhz)
 {
-	clockintr_setstatclockrate(newhz);
 }
 
 u_int

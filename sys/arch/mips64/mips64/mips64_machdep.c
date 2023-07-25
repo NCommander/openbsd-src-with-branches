@@ -1,4 +1,4 @@
-/*	$OpenBSD: mips64_machdep.c,v 1.40 2022/11/19 16:23:48 cheloha Exp $ */
+/*	$OpenBSD: mips64_machdep.c,v 1.41 2023/02/04 19:19:36 cheloha Exp $ */
 
 /*
  * Copyright (c) 2009, 2010, 2012 Miodrag Vallat.
@@ -333,7 +333,6 @@ cpu_initclocks(void)
 void
 setstatclockrate(int newhz)
 {
-	clockintr_setstatclockrate(newhz);
 }
 
 /*

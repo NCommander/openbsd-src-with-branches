@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.9 2023/02/04 19:19:36 cheloha Exp $	*/
+/*	$OpenBSD: clock.c,v 1.10 2023/02/04 23:20:54 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -141,7 +141,6 @@ decr_intr(struct trapframe *frame)
 void
 setstatclockrate(int newhz)
 {
-	clockintr_setstatclockrate(newhz);
 }
 
 void

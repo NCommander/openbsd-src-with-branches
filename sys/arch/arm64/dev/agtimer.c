@@ -1,4 +1,4 @@
-/* $OpenBSD: agtimer.c,v 1.21 2023/01/09 15:22:53 kettenis Exp $ */
+/* $OpenBSD: agtimer.c,v 1.22 2023/02/04 19:19:36 cheloha Exp $ */
 /*
  * Copyright (c) 2011 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2013 Patrick Wildt <patrick@blueri.se>
@@ -354,7 +354,6 @@ agtimer_delay(u_int usecs)
 void
 agtimer_setstatclockrate(int newhz)
 {
-	clockintr_setstatclockrate(newhz);
 }
 
 void
