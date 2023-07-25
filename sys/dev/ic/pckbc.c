@@ -1,4 +1,4 @@
-/* $OpenBSD: pckbc.c,v 1.52 2019/06/03 16:46:49 anton Exp $ */
+/* $OpenBSD: pckbc.c,v 1.53 2019/11/30 18:18:34 cheloha Exp $ */
 /* $NetBSD: pckbc.c,v 1.5 2000/06/09 04:58:35 soda Exp $ */
 
 /*
@@ -514,12 +514,20 @@ pckbc_poll_data(pckbc_tag_t self, pckbc_slot_t slot)
  * set scancode translation on
  */
 int
-pckbc_xt_translation(pckbc_tag_t self)
+pckbc_xt_translation(pckbc_tag_t self, int *table)
 {
 	struct pckbc_internal *t = self;
 
-	if (ISSET(t->t_flags, PCKBC_CANT_TRANSLATE))
+#ifdef __sparc64__ /* only pckbc@ebus on sparc64 uses this */
+	if ((t->t_flags & PCKBC_CANT_TRANSLATE) != 0) {
+		/* Hardware lacks translation capability. Nothing to do! */
+		if (t->t_flags & PCKBC_FIXED_SET2)
+			*table = 2;
+		else /* PCKBC_FIXED_SET3 */
+			*table = 3;
 		return (-1);
+	}
+#endif
 
 	if (t->t_cmdbyte & KC8_TRANS)
 		return (0);

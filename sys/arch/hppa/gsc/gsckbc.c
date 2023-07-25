@@ -1,4 +1,4 @@
-/*	$OpenBSD: gsckbc.c,v 1.20 2019/10/12 15:53:24 cheloha Exp $	*/
+/*	$OpenBSD: gsckbc.c,v 1.21 2022/03/13 08:04:38 mpi Exp $	*/
 /*
  * Copyright (c) 2003, Miodrag Vallat.
  * All rights reserved.
@@ -581,8 +581,9 @@ pckbc_poll_data(self, slot)
 }
 
 int
-pckbc_xt_translation(self)
+pckbc_xt_translation(self, table)
 	pckbc_tag_t self;
+	int *table;
 {
 	/* Translation isn't supported... */
 	return (-1);
