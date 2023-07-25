@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.165 2023/03/09 13:17:28 jsg Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.165.4.1 2023/07/24 19:31:39 bluhm Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -1187,7 +1187,8 @@ cpu_fix_msrs(struct cpu_info *ci)
 			if (msr != nmsr)
 				wrmsr(MSR_DE_CFG, nmsr);
 		}
-		if (family == 0x17 && ci->ci_model >= 0x31) {
+		if (family == 0x17 && ci->ci_model >= 0x31 &&
+		    (cpu_ecxfeature & CPUIDECX_HV) == 0) {
 			nmsr = msr = rdmsr(MSR_DE_CFG);
 #define DE_CFG_SERIALIZE_9 (1 << 9)	/* Zenbleed chickenbit */
 			nmsr |= DE_CFG_SERIALIZE_9;
