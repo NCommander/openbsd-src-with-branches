@@ -1,5 +1,4 @@
-/*	$OpenBSD: ectest.c,v 1.19 2023/04/18 15:28:17 tb Exp $	*/
-/* crypto/ec/ectest.c */
+/*	$OpenBSD: ectest.c,v 1.20 2023/07/24 17:00:11 tb Exp $	*/
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
