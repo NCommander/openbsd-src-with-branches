@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ether.h,v 1.88 2023/02/07 16:14:55 bluhm Exp $	*/
+/*	$OpenBSD: if_ether.h,v 1.89 2023/07/06 19:46:53 kn Exp $	*/
 /*	$NetBSD: if_ether.h,v 1.22 1996/05/11 13:00:00 mycroft Exp $	*/
 
 /*
@@ -301,11 +301,12 @@ uint64_t	ether_addr_to_e64(const struct ether_addr *);
 void		ether_e64_to_addr(struct ether_addr *, uint64_t);
 
 struct ether_extracted {
-	struct ether_header	*eh;
-	struct ip		*ip4;
-	struct ip6_hdr		*ip6;
-	struct tcphdr		*tcp;
-	struct udphdr		*udp;
+	struct ether_header		*eh;
+	struct ether_vlan_header	*evh;
+	struct ip			*ip4;
+	struct ip6_hdr			*ip6;
+	struct tcphdr			*tcp;
+	struct udphdr			*udp;
 };
 
 void ether_extract_headers(struct mbuf *, struct ether_extracted *);
