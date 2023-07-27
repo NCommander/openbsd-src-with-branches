@@ -1,4 +1,4 @@
-/*	$OpenBSD: crt0.c,v 1.16 2021/11/14 00:45:38 guenther Exp $	*/
+/*	$OpenBSD: crt0.c,v 1.17 2022/01/12 21:41:06 guenther Exp $	*/
 
 /*
  * Copyright (c) 1995 Christopher G. Demetriou
@@ -60,7 +60,7 @@ char	***_csu_finish(char **_argv, char **_envp, void (*_cleanup)(void));
 
 #ifdef MCRT0
 #include <sys/gmon.h>
-extern unsigned char _etext, _eprol;
+extern __dso_hidden unsigned char _etext, _eprol;
 #endif /* MCRT0 */
 
 #ifdef RCRT0
