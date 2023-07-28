@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1.h,v 1.3 2023/07/28 09:58:30 tb Exp $ */
+/* $OpenBSD: asn1.h,v 1.4 2023/07/28 10:02:11 tb Exp $ */
 /*
  * Copyright (c) 2023 Bob Beck <beck@openbsd.org>
  *
@@ -61,7 +61,6 @@ LCRYPTO_USED(i2d_ASN1_BIT_STRING);
 LCRYPTO_USED(ASN1_BIT_STRING_set);
 LCRYPTO_USED(ASN1_BIT_STRING_set_bit);
 LCRYPTO_USED(ASN1_BIT_STRING_get_bit);
-LCRYPTO_USED(ASN1_BIT_STRING_check);
 LCRYPTO_USED(ASN1_BIT_STRING_name_print);
 LCRYPTO_USED(ASN1_BIT_STRING_num_asc);
 LCRYPTO_USED(ASN1_BIT_STRING_set_asc);
