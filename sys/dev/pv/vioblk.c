@@ -1,4 +1,4 @@
-/*	$OpenBSD: vioblk.c,v 1.35 2022/04/16 19:19:59 naddy Exp $	*/
+/*	$OpenBSD: vioblk.c,v 1.36 2023/05/29 08:13:35 sf Exp $	*/
 
 /*
  * Copyright (c) 2012 Stefan Fritsch.
@@ -174,7 +174,7 @@ vioblk_attach(struct device *parent, struct device *self, void *aux)
 
 	vsc->sc_vqs = &sc->sc_vq[0];
 	vsc->sc_nvqs = 1;
-	vsc->sc_config_change = 0;
+	vsc->sc_config_change = NULL;
 	if (vsc->sc_child)
 		panic("already attached to something else");
 	vsc->sc_child = self;

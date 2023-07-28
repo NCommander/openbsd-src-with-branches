@@ -1,4 +1,4 @@
-/*	$OpenBSD: viocon.c,v 1.8 2021/11/05 11:38:29 mpi Exp $	*/
+/*	$OpenBSD: viocon.c,v 1.9 2023/05/29 08:13:35 sf Exp $	*/
 
 /*
  * Copyright (c) 2013-2015 Stefan Fritsch <sf@sfritsch.de>
@@ -180,7 +180,7 @@ viocon_attach(struct device *parent, struct device *self, void *aux)
 		panic("already attached to something else");
 	vsc->sc_child = self;
 	vsc->sc_ipl = IPL_TTY;
-	vsc->sc_config_change = 0;
+	vsc->sc_config_change = NULL;
 	sc->sc_virtio = vsc;
 	sc->sc_max_ports = maxports;
 
