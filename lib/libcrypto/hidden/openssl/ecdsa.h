@@ -1,4 +1,4 @@
-/* $OpenBSD: ecdsa.h,v 1.2 2023/07/07 19:37:54 beck Exp $ */
+/* $OpenBSD: ecdsa.h,v 1.3 2023/07/28 08:49:43 tb Exp $ */
 /*
  * Copyright (c) 2023 Bob Beck <beck@openbsd.org>
  *
@@ -49,6 +49,5 @@ LCRYPTO_USED(EC_KEY_METHOD_set_sign);
 LCRYPTO_USED(EC_KEY_METHOD_set_verify);
 LCRYPTO_USED(EC_KEY_METHOD_get_sign);
 LCRYPTO_USED(EC_KEY_METHOD_get_verify);
-LCRYPTO_USED(ERR_load_ECDSA_strings);
 
 #endif /* _LIBCRYPTO_ECDSA_H */
