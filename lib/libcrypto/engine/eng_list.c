@@ -1,4 +1,4 @@
-/* $OpenBSD: eng_list.c,v 1.24 2019/01/19 01:07:00 tb Exp $ */
+/* $OpenBSD: eng_list.c,v 1.25 2022/12/26 07:18:51 jmc Exp $ */
 /* Written by Geoff Thorpe (geoff@geoffthorpe.net) for the OpenSSL
  * project 2000.
  */
@@ -312,9 +312,6 @@ engine_cpy(ENGINE *dest, const ENGINE *src)
 #endif
 #ifndef OPENSSL_NO_ECDH
 	dest->ecdh_meth = src->ecdh_meth;
-#endif
-#ifndef OPENSSL_NO_ECDSA
-	dest->ecdsa_meth = src->ecdsa_meth;
 #endif
 #ifndef OPENSSL_NO_EC
 	dest->ec_meth = src->ec_meth;
