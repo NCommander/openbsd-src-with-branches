@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_kex.c,v 1.10 2022/01/14 09:11:22 tb Exp $ */
+/* $OpenBSD: ssl_kex.c,v 1.11 2023/06/27 11:03:41 tb Exp $ */
 /*
  * Copyright (c) 2020, 2021 Joel Sing <jsing@openbsd.org>
  *
@@ -20,7 +20,6 @@
 #include <openssl/bn.h>
 #include <openssl/dh.h>
 #include <openssl/ec.h>
-#include <openssl/ecdh.h>
 #include <openssl/evp.h>
 #include <openssl/objects.h>
 
