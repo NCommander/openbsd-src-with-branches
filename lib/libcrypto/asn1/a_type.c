@@ -1,4 +1,4 @@
-/* $OpenBSD: a_type.c,v 1.25 2023/03/11 14:05:02 jsing Exp $ */
+/* $OpenBSD: a_type.c,v 1.26 2023/07/05 21:23:36 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -61,6 +61,8 @@
 #include <openssl/asn1t.h>
 #include <openssl/err.h>
 #include <openssl/objects.h>
+
+#include "asn1_local.h"
 
 typedef struct {
 	ASN1_INTEGER *num;
