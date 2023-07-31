@@ -1,4 +1,4 @@
-/* $OpenBSD: aes.h,v 1.13 2014/06/12 15:49:27 deraadt Exp $ */
+/* $OpenBSD: aes.h,v 1.14 2014/07/09 09:10:07 miod Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2002 The OpenSSL Project.  All rights reserved.
  *
@@ -78,8 +78,6 @@ struct aes_key_st {
 	int rounds;
 };
 typedef struct aes_key_st AES_KEY;
-
-const char *AES_options(void);
 
 int AES_set_encrypt_key(const unsigned char *userKey, const int bits,
     AES_KEY *key);
