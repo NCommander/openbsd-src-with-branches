@@ -1,4 +1,4 @@
-/*      $OpenBSD: codepatch.c,v 1.4 2017/07/10 00:59:24 mortimer Exp $    */
+/*      $OpenBSD: codepatch.c,v 1.5 2020/09/11 09:27:10 mpi Exp $    */
 /*
  * Copyright (c) 2014-2015 Stefan Fritsch <sf@sfritsch.de>
  *
@@ -147,7 +147,7 @@ codepatch_nop(uint16_t tag)
 
 /* Patch with alternative code */
 void
-codepatch_replace(uint16_t tag, void *code, size_t len)
+codepatch_replace(uint16_t tag, const void *code, size_t len)
 {
 	struct codepatch *patch;
 	unsigned char *rwaddr;
