@@ -1,4 +1,4 @@
-/*	$OpenBSD: scatterlist.h,v 1.4 2021/07/07 02:38:36 jsg Exp $	*/
+/*	$OpenBSD: scatterlist.h,v 1.5 2023/01/01 01:34:58 jsg Exp $	*/
 /*
  * Copyright (c) 2013, 2014, 2015 Mark Kettenis
  *
@@ -119,7 +119,6 @@ sg_set_page(struct scatterlist *sgl, struct vm_page *page,
 	sgl->dma_address = page ? VM_PAGE_TO_PHYS(page) : 0;
 	sgl->offset = offset;
 	sgl->length = length;
-	sgl->end = false;
 }
 
 #define sg_dma_address(sg)	((sg)->dma_address)
