@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_syscalls.c,v 1.211 2023/01/27 21:01:59 mvs Exp $	*/
+/*	$OpenBSD: uipc_syscalls.c,v 1.212 2023/02/10 14:34:17 visa Exp $	*/
 /*	$NetBSD: uipc_syscalls.c,v 1.19 1996/02/09 19:00:48 christos Exp $	*/
 
 /*
@@ -1232,9 +1232,7 @@ sys_setsockopt(struct proc *p, void *v, register_t *retval)
 		m->m_len = SCARG(uap, valsize);
 	}
 	so = fp->f_data;
-	solock(so);
 	error = sosetopt(so, SCARG(uap, level), SCARG(uap, name), m);
-	sounlock(so);
 bad:
 	m_freem(m);
 	FRELE(fp, p);
