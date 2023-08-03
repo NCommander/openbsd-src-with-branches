@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched.h,v 1.57 2020/12/25 12:49:31 visa Exp $	*/
+/*	$OpenBSD: sched.h,v 1.58 2023/07/25 18:16:19 cheloha Exp $	*/
 /* $NetBSD: sched.h,v 1.2 1999/02/28 18:14:58 ross Exp $ */
 
 /*-
@@ -110,7 +110,6 @@ struct schedstate_percpu {
 	struct clockintr *spc_profclock; /* [o] profclock handle */
 
 	u_int spc_nrun;			/* procs on the run queues */
-	fixpt_t spc_ldavg;		/* shortest load avg. for this cpu */
 
 	volatile uint32_t spc_whichqs;
 	volatile u_int spc_spinning;	/* this cpu is currently spinning */
