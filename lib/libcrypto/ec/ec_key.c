@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_key.c,v 1.35 2023/07/05 08:39:40 tb Exp $ */
+/* $OpenBSD: ec_key.c,v 1.36 2023/07/07 13:54:45 beck Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project.
  */
@@ -269,7 +269,7 @@ ec_key_gen(EC_KEY *eckey)
 
 	if ((order = EC_GROUP_get0_order(eckey->group)) == NULL)
 		goto err;
-	if (!bn_rand_interval(priv_key, BN_value_one(), order))
+	if (!bn_rand_interval(priv_key, 1, order))
 		goto err;
 	if (!EC_POINT_mul(eckey->group, pub_key, priv_key, NULL, NULL, NULL))
 		goto err;
