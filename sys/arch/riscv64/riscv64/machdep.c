@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.29 2022/10/30 17:43:40 guenther Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.30 2022/12/06 00:11:23 jca Exp $	*/
 
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
@@ -195,22 +195,12 @@ consinit(void)
 }
 
 void
-cpu_idle_enter(void)
-{
-}
-
-void
 cpu_idle_cycle(void)
 {
 	// Enable interrupts
 	intr_enable();
 	// XXX Data Sync Barrier? (Maybe SFENCE???)
 	__asm volatile("wfi");
-}
-
-void
-cpu_idle_leave(void)
-{
 }
 
 /* Dummy trapframe for proc0. */
