@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.141 2023/01/11 03:19:52 visa Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.142 2023/07/25 18:16:20 cheloha Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -217,6 +217,8 @@ extern struct cpu_info *cpu_info_list;
 
 #define CPU_INFO_UNIT(ci)               ((ci)->ci_dev ? (ci)->ci_dev->dv_unit : 0)
 
+#define	cpu_idle_enter()	do { /* nothing */ } while (0)
+#define	cpu_idle_leave()	do { /* nothing */ } while (0)
 extern void (*cpu_idle_cycle_func)(void);
 #define cpu_idle_cycle()		(*cpu_idle_cycle_func)()
 
