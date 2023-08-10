@@ -1,4 +1,4 @@
-/* $OpenBSD: sha256.c,v 1.26 2023/07/07 15:06:50 jsing Exp $ */
+/* $OpenBSD: sha256.c,v 1.27 2023/07/08 12:24:10 beck Exp $ */
 /* ====================================================================
  * Copyright (c) 1998-2011 The OpenSSL Project.  All rights reserved.
  *
@@ -135,7 +135,7 @@ sha256_block_data_order(SHA256_CTX *ctx, const void *_in, size_t num)
 {
 	const uint8_t *in = _in;
 	const SHA_LONG *in32;
-	unsigned MD32_REG_T a, b, c, d, e, f, g, h, s0, s1, T1;
+	unsigned int a, b, c, d, e, f, g, h, s0, s1, T1;
 	SHA_LONG X[16];
 	int i;
 
