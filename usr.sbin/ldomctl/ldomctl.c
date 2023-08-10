@@ -1,4 +1,4 @@
-/*	$OpenBSD: ldomctl.c,v 1.39 2021/01/30 19:34:13 kn Exp $	*/
+/*	$OpenBSD: ldomctl.c,v 1.40 2021/10/24 21:24:18 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2012 Mark Kettenis
@@ -592,6 +592,8 @@ guest_status(int argc, char **argv)
 		if (nbytes != sizeof(msg))
 			err(1, "read");
 
+		utilisation = 0.0;
+
 		memcpy(&state, msg.msg.resstat.data, sizeof(state));
 		switch (state.state) {
 		case GUEST_STATE_STOPPED:
@@ -644,8 +646,6 @@ guest_status(int argc, char **argv)
 			if (yielded_cycles <= total_cycles)
 				utilisation = (100.0 * (total_cycles
 				    - yielded_cycles)) / total_cycles;
-			else
-				utilisation = 0.0;
 
 			break;
 		case GUEST_STATE_SUSPENDED:
