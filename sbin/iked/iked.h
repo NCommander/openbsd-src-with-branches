@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.222 2023/07/18 15:07:41 claudio Exp $	*/
+/*	$OpenBSD: iked.h,v 1.223 2023/07/28 11:23:03 claudio Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -260,6 +260,7 @@ struct iked_policy {
 #define IKED_POLICY_SKIP		 0x10
 #define IKED_POLICY_IPCOMP		 0x20
 #define IKED_POLICY_TRANSPORT		 0x40
+#define IKED_POLICY_ROUTING		 0x80
 
 	int				 pol_refcnt;
 
