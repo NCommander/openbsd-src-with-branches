@@ -1,4 +1,4 @@
-/*	$OpenBSD: dhtest.c,v 1.7 2022/01/12 08:58:12 tb Exp $	*/
+/*	$OpenBSD: dhtest.c,v 1.8 2023/07/28 13:05:59 tb Exp $	*/
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -107,6 +107,13 @@ main(int argc, char *argv[])
 	BN_GENCB_set(_cb, &cb, NULL);
 	if ((a = DH_new()) == NULL)
 		goto err;
+
+#ifdef OPENSSL_NO_ENGINE
+	if (DH_get0_engine(a) != NULL) {
+		fprintf(stderr, "ENGINE was not NULL\n");
+		goto err;
+	}
+#endif
 
 	if (!DH_generate_parameters_ex(a, 64, DH_GENERATOR_5, _cb))
 		goto err;
