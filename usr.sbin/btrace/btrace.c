@@ -1,4 +1,4 @@
-/*	$OpenBSD: btrace.c,v 1.70 2023/05/12 14:14:16 claudio Exp $ */
+/*	$OpenBSD: btrace.c,v 1.71 2023/06/27 14:17:00 claudio Exp $ */
 
 /*
  * Copyright (c) 2019 - 2021 Martin Pieuchot <mpi@openbsd.org>
@@ -1026,6 +1026,14 @@ stmt_store(struct bt_stmt *bs, struct dt_evt *dtev)
 		break;
 	case B_AT_LONG:
 		bv->bv_value = ba;
+		bv->bv_type = B_VT_LONG;
+		break;
+	case B_AT_BI_PID:
+		bv->bv_value = ba_new((long)dtev->dtev_pid, B_AT_LONG);
+		bv->bv_type = B_VT_LONG;
+		break;
+	case B_AT_BI_TID:
+		bv->bv_value = ba_new((long)dtev->dtev_tid, B_AT_LONG);
 		bv->bv_type = B_VT_LONG;
 		break;
 	case B_AT_BI_NSECS:
