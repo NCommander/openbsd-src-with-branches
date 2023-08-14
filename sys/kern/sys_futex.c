@@ -1,4 +1,4 @@
-/*	$OpenBSD: sys_futex.c,v 1.20 2021/11/22 14:57:17 visa Exp $ */
+/*	$OpenBSD: sys_futex.c,v 1.21 2022/08/14 01:58:28 jsg Exp $ */
 
 /*
  * Copyright (c) 2016-2017 Martin Pieuchot
@@ -31,15 +31,6 @@
 #endif
 
 #include <uvm/uvm.h>
-
-/*
- * Atomicity is only needed on MULTIPROCESSOR kernels.  Fall back on
- * copyin(9) until non-MULTIPROCESSOR architectures have a copyin32(9)
- * implementation.
- */
-#ifndef MULTIPROCESSOR
-#define copyin32(uaddr, kaddr)	copyin((uaddr), (kaddr), sizeof(uint32_t))
-#endif
 
 /*
  * Kernel representation of a futex.
