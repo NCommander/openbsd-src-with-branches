@@ -1,11 +1,9 @@
-#	$OpenBSD: Makefile,v 1.2 2018/06/25 16:29:00 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.3 2021/03/20 16:36:52 kn Exp $
 
 PROG=	slaacd
 COPTS+=	-DSMALL
 .PATH:  ${.CURDIR}/../../../sbin/slaacd
 SRCS=	engine.c frontend.c slaacd.c
-
-MAN=
 
 YFLAGS=
 LDADD+=	-levent -lutil

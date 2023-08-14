@@ -1,7 +1,6 @@
-#	$OpenBSD: Makefile,v 1.3 1997/09/21 11:35:53 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.1 2014/12/23 17:16:03 deraadt Exp $
 
 PROG=	sync
-MAN=	sync.8
 
 .PATH:	${.CURDIR}/../../../bin/sync
 .include <bsd.prog.mk>

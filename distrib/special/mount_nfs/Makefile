@@ -1,8 +1,7 @@
-#	$OpenBSD: Makefile,v 1.11 2004/06/22 21:12:00 otto Exp $
+#	$OpenBSD: Makefile,v 1.1 2014/12/23 17:16:02 deraadt Exp $
 
 PROG=	mount_nfs
 SRCS=	mount_nfs.c getmntopts.c
-MAN=	mount_nfs.8
 
 MOUNT=	${.CURDIR}/../../../sbin/mount
 CFLAGS+= -DNFS -I${MOUNT}

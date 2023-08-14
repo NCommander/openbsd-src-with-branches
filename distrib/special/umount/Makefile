@@ -1,7 +1,6 @@
-#	$OpenBSD: Makefile,v 1.4 2013/04/21 11:56:09 jsing Exp $
+#	$OpenBSD: Makefile,v 1.1 2014/02/21 19:01:02 deraadt Exp $
 
 PROG=	umount
-MAN=	umount.8
 
 CFLAGS+= -DNO_NFS
 DPADD+=	${LIBUTIL}
