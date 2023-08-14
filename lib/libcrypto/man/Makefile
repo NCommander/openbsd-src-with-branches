@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.258 2023/07/26 20:08:59 tb Exp $
+# $OpenBSD: Makefile,v 1.259 2023/07/28 05:48:33 tb Exp $
 
 .include <bsd.own.mk>
 
@@ -202,6 +202,7 @@ MAN=	\
 	EVP_camellia_128_cbc.3 \
 	EVP_des_cbc.3 \
 	EVP_rc4.3 \
+	EVP_sha3_224.3 \
 	EVP_sm3.3 \
 	EVP_sm4_cbc.3 \
 	EVP_whirlpool.3 \
