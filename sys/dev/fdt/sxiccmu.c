@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxiccmu.c,v 1.30 2021/12/03 19:22:42 uaa Exp $	*/
+/*	$OpenBSD: sxiccmu.c,v 1.31 2022/06/28 23:43:12 naddy Exp $	*/
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2013 Artturi Alm
@@ -1158,7 +1158,7 @@ sxiccmu_a80_get_frequency(struct sxiccmu_softc *sc, uint32_t idx)
 
 /* Allwinner H3/H5 */
 #define H3_PLL_CPUX_CTRL_REG		0x0000
-#define H3_PLL_CPUX_ENABLE		(1 << 31)
+#define H3_PLL_CPUX_ENABLE		(1U << 31)
 #define H3_PLL_CPUX_LOCK		(1 << 28)
 #define H3_PLL_CPUX_OUT_EXT_DIVP(x)	(((x) >> 16) & 0x3)
 #define H3_PLL_CPUX_OUT_EXT_DIVP_MASK	(0x3 << 16)
