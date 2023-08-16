@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.106 2022/12/28 21:30:15 jmc Exp $ */
+/*	$OpenBSD: config.c,v 1.107 2023/04/18 12:11:27 claudio Exp $ */
 
 /*
  * Copyright (c) 2003, 2004, 2005 Henning Brauer <henning@openbsd.org>
@@ -224,7 +224,6 @@ free_aspa(struct aspa_set *aspa)
 	if (aspa == NULL)
 		return;
 	free(aspa->tas);
-	free(aspa->tas_aid);
 	free(aspa);
 }
 
