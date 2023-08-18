@@ -1,4 +1,4 @@
-/*	$OpenBSD: if.c,v 1.705 2023/07/07 08:05:02 bluhm Exp $	*/
+/*	$OpenBSD: if.c,v 1.706 2023/07/07 19:45:26 bluhm Exp $	*/
 /*	$NetBSD: if.c,v 1.35 1996/05/07 05:26:04 thorpej Exp $	*/
 
 /*
@@ -910,7 +910,7 @@ if_output_tso(struct ifnet *ifp, struct mbuf **mp, struct sockaddr *dst,
 
 	/*
 	 * Try to send with TSO first.  When forwarding LRO may set
-	 * maximium segment size in mbuf header.  Chop TCP segment
+	 * maximum segment size in mbuf header.  Chop TCP segment
 	 * even if it would fit interface MTU to preserve maximum
 	 * path MTU.
 	 */
