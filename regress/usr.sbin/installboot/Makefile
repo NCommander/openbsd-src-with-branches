@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.37 2023/01/23 14:49:16 kn Exp $
+#	$OpenBSD: Makefile,v 1.38 2023/02/07 15:04:27 kn Exp $
 
 INSTALLBOOT ?=		/usr/sbin/installboot
 DRY_RUN =		${INSTALLBOOT} -n
@@ -84,7 +84,7 @@ create-root: create-disks
 .if ${USE_SOFTRAID:L} == "yes"
 	${SUDO} bioctl -l"$$(sed -- s/$$/a/ ${DISKDEVFILES} | paste -sd, -- -)" \
 	    -c1C -k"$$(<${KEYDEVFILE})"a -- softraid0 | \
-		awk -- '{ print $$NF }' 1>${ROOTDEVFILE}
+		grep -o -- 'sd[0-9]*$$' 1>${ROOTDEVFILE}
 	${SUDO} ${FORMAT_DISK} -- "$$(<${ROOTDEVFILE})" 1>/dev/null
 .else
 	ln -s -- ${DISKDEVFILES} ${ROOTDEVFILE}
