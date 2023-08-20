@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_pledge.c,v 1.305 2023/05/19 01:12:23 guenther Exp $	*/
+/*	$OpenBSD: kern_pledge.c,v 1.306 2023/06/02 17:44:29 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2015 Nicholas Marriott <nicm@openbsd.org>
@@ -209,6 +209,7 @@ const uint64_t pledge_syscalls[SYS_MAXSYSCALL] = {
 	[SYS_ppoll] = PLEDGE_STDIO,
 	[SYS_kevent] = PLEDGE_STDIO,
 	[SYS_kqueue] = PLEDGE_STDIO,
+	[SYS_kqueue1] = PLEDGE_STDIO,
 	[SYS_select] = PLEDGE_STDIO,
 	[SYS_pselect] = PLEDGE_STDIO,
 
