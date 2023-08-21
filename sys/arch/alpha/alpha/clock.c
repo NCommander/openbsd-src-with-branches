@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.27 2023/02/04 19:19:36 cheloha Exp $	*/
+/*	$OpenBSD: clock.c,v 1.28 2023/07/25 18:16:19 cheloha Exp $	*/
 /*	$NetBSD: clock.c,v 1.29 2000/06/05 21:47:10 thorpej Exp $	*/
 
 /*
@@ -189,7 +189,6 @@ cpu_initclocks(void)
 	rpcc_timecounter.tc_frequency = cycles_per_sec;
 	tc_init(&rpcc_timecounter);
 
-	schedhz = 16;
 	stathz = hz;
 	profhz = stathz;
 	clockintr_init(0);
