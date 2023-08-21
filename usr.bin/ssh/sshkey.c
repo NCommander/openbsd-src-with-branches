@@ -1,4 +1,4 @@
-/* $OpenBSD: sshkey.c,v 1.136 2023/06/21 05:10:26 djm Exp $ */
+/* $OpenBSD: sshkey.c,v 1.137 2023/07/27 22:23:05 djm Exp $ */
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
  * Copyright (c) 2008 Alexander von Gernler.  All rights reserved.
@@ -38,6 +38,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <util.h>
 #include <limits.h>
