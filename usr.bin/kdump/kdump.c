@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.156 2023/02/17 18:01:26 deraadt Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.157 2023/04/16 19:42:40 otto Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -876,6 +876,7 @@ static const formatter scargs[][8] = {
     [SYS_msync]		= { Pptr, Pbigsize, Msyncflagsname },
     [SYS_pipe]		= { Pptr },
     [SYS_fhopen]	= { Pptr, Openflagsname },
+    [SYS_kqueue1]	= { Flagsname },
     [SYS_mlockall]	= { Mlockallname },
     [SYS_getresuid]	= { Pptr, Pptr, Pptr },
     [SYS_setresuid]	= { Uidname, Uidname, Uidname },
