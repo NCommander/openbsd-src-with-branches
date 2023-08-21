@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.2 2023/08/21 05:10:25 anton Exp $
+#	$OpenBSD: Makefile,v 1.3 2023/08/21 15:59:38 kn Exp $
 
 BIOCTL ?=		/sbin/bioctl
 
@@ -36,7 +36,7 @@ FAILURE_TESTS =			recreate-existing-volume \
 				set-empty-passphrase
 REGRESS_EXPECTED_FAILURES +=	${FAILURE_TESTS}
 REGRESS_TARGETS +=		${FAILURE_TESTS}
-REGRESS_ROOT_TARGETS =		${FAILURE_TESTS}
+REGRESS_ROOT_TARGETS +=		${FAILURE_TESTS}
 
 recreate-existing-volume:
 	${SUDO} ${BIOCTL} -cC -l"$$(<${CHUNKDEVFILE})a" -- softraid0
