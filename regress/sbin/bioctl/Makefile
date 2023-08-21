@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2023/08/21 15:59:38 kn Exp $
+#	$OpenBSD: Makefile,v 1.4 2023/08/21 16:58:14 kn Exp $
 
 BIOCTL ?=		/sbin/bioctl
 
@@ -32,13 +32,13 @@ scripted-change-passphrase:
 		${SUDO} ${BIOCTL} -s -P -- "$$(<${VOLDEVFILE})"
 
 
-FAILURE_TESTS =			recreate-existing-volume \
+FAILURE_TESTS =			reuse-active-chunk \
 				set-empty-passphrase
 REGRESS_EXPECTED_FAILURES +=	${FAILURE_TESTS}
 REGRESS_TARGETS +=		${FAILURE_TESTS}
 REGRESS_ROOT_TARGETS +=		${FAILURE_TESTS}
 
-recreate-existing-volume:
+reuse-active-chunk:
 	${SUDO} ${BIOCTL} -cC -l"$$(<${CHUNKDEVFILE})a" -- softraid0
 
 set-empty-passphrase:
