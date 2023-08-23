@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.78 2023/07/25 18:16:21 cheloha Exp $	*/
+/*	$OpenBSD: clock.c,v 1.79 2023/08/07 17:11:13 miod Exp $	*/
 /*	$NetBSD: clock.c,v 1.41 2001/07/24 19:29:25 eeh Exp $ */
 
 /*
@@ -562,7 +562,11 @@ cpu_initclocks(void)
 
 	for (ci = cpus; ci != NULL; ci = ci->ci_next)
 		memcpy(&ci->ci_tickintr, &level0, sizeof(level0));
+}
 
+void
+cpu_startclock(void)
+{
 	cpu_start_clock();
 }
 

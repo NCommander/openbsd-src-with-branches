@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.16 2023/07/25 18:16:21 cheloha Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.17 2023/08/05 05:45:52 guenther Exp $	*/
 
 /*
  * Copyright (c) 2019 Mike Larkin <mlarkin@openbsd.org>
@@ -171,7 +171,6 @@ extern struct cpu_info *cpu_info_list;
 extern struct cpu_info *cpu_info[MAXCPUS];
 
 void	cpu_boot_secondary_processors(void);
-void	cpu_startclock(void);
 
 #endif /* !MULTIPROCESSOR */
 
