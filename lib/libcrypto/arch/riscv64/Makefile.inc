@@ -1,10 +1,10 @@
-# $OpenBSD$
+# $OpenBSD: Makefile.inc,v 1.1 2023/07/07 15:51:03 jsing Exp $
 
 # riscv64 libcrypto build rules
 
 # aes
 SRCS+= aes_core.c
-SRCS+= aes_cbc.c 
+SRCS+= aes_cbc.c
 
 # bf
 SRCS+= bf_enc.c
