@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.392 2023/04/03 08:10:54 dtucker Exp $ */
+/* $OpenBSD: clientloop.c,v 1.393 2023/08/28 03:31:16 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -609,9 +609,9 @@ obfuscate_keystroke_timing(struct ssh *ssh, struct timespec *timeout)
 		return 0;
 
 	/* Calculate number of intervals missed since the last check */
-	n = (now.tv_sec - next_interval.tv_sec) * 1000 * 1000 * 1000;
+	n = (now.tv_sec - next_interval.tv_sec) * 1000LL * 1000 * 1000;
 	n += now.tv_nsec - next_interval.tv_nsec;
-	n /= options.obscure_keystroke_timing_interval * 1000 * 1000;
+	n /= options.obscure_keystroke_timing_interval * 1000LL * 1000;
 	n = (n < 0) ? 1 : n + 1;
 
 	/* Advance to the next interval */
