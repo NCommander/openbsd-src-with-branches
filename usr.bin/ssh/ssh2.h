@@ -1,4 +1,4 @@
-/* $OpenBSD: ssh2.h,v 1.19 2020/11/19 23:05:05 dtucker Exp $ */
+/* $OpenBSD: ssh2.h,v 1.20 2023/08/14 03:37:00 djm Exp $ */
 
 /*
  * Copyright (c) 2000 Markus Friedl.  All rights reserved.
@@ -107,6 +107,10 @@
 /* ecdh */
 #define SSH2_MSG_KEX_ECDH_INIT				30
 #define SSH2_MSG_KEX_ECDH_REPLY				31
+
+/* transport layer: OpenSSH extensions */
+#define SSH2_MSG_PING					192
+#define SSH2_MSG_PONG					193
 
 /* user authentication: generic */
 
