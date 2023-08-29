@@ -1,4 +1,4 @@
-/* $OpenBSD: dwiic.c,v 1.13 2021/11/07 14:07:43 stsp Exp $ */
+/* $OpenBSD: dwiic.c,v 1.14 2022/01/09 05:42:38 jsg Exp $ */
 /*
  * Synopsys DesignWare I2C controller
  *
@@ -21,11 +21,13 @@
 #include <sys/systm.h>
 #include <sys/kernel.h>
 
+#ifdef __HAVE_ACPI
 #include <dev/acpi/acpireg.h>
 #include <dev/acpi/acpivar.h>
 #include <dev/acpi/acpidev.h>
 #include <dev/acpi/amltypes.h>
 #include <dev/acpi/dsdt.h>
+#endif
 
 #include <dev/i2c/i2cvar.h>
 
