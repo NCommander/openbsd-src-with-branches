@@ -1,4 +1,4 @@
-/*	$Id: acctproc.c,v 1.30 2022/12/18 12:39:59 tb Exp $ */
+/*	$Id: acctproc.c,v 1.31 2022/12/19 11:16:52 tb Exp $ */
 /*
  * Copyright (c) 2016 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -27,7 +27,6 @@
 
 #include <openssl/bn.h>
 #include <openssl/ec.h>
-#include <openssl/ecdsa.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
 #include <openssl/err.h>
