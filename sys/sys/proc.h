@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.346 2023/07/14 07:07:08 claudio Exp $	*/
+/*	$OpenBSD: proc.h,v 1.347 2023/08/05 20:07:56 cheloha Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -354,7 +354,6 @@ struct proc {
 
 	struct	rusage p_ru;		/* Statistics */
 	struct	tusage p_tu;		/* accumulated times. */
-	struct	timespec p_rtime;	/* Real time. */
 
 	struct	plimit	*p_limit;	/* [l] read ref. of p_p->ps_limit */
 	struct	kcov_dev *p_kd;		/* kcov device handle */

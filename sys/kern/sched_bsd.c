@@ -1,4 +1,4 @@
-/*	$OpenBSD: sched_bsd.c,v 1.82 2023/08/18 09:18:52 claudio Exp $	*/
+/*	$OpenBSD: sched_bsd.c,v 1.83 2023/08/19 11:14:11 claudio Exp $	*/
 /*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
 /*-
@@ -385,13 +385,13 @@ mi_switch(void)
 		    (long long)spc->spc_runtime.tv_sec,
 		    spc->spc_runtime.tv_nsec);
 #endif
+		timespecclear(&ts);
 	} else {
 		timespecsub(&ts, &spc->spc_runtime, &ts);
-		timespecadd(&p->p_rtime, &ts, &p->p_rtime);
 	}
 
 	/* add the time counts for this thread to the process's total */
-	tuagg_unlocked(pr, p);
+	tuagg_locked(pr, p, &ts);
 
 	/* Stop any optional clock interrupts. */
 	if (ISSET(spc->spc_schedflags, SPCF_ITIMER)) {

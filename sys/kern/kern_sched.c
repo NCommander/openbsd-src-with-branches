@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sched.c,v 1.85 2023/08/11 22:02:50 cheloha Exp $	*/
+/*	$OpenBSD: kern_sched.c,v 1.86 2023/08/14 08:33:24 mpi Exp $	*/
 /*
  * Copyright (c) 2007, 2008 Artur Grabowski <art@openbsd.org>
  *
@@ -230,13 +230,8 @@ void
 sched_exit(struct proc *p)
 {
 	struct schedstate_percpu *spc = &curcpu()->ci_schedstate;
-	struct timespec ts;
 	struct proc *idle;
 	int s;
-
-	nanouptime(&ts);
-	timespecsub(&ts, &spc->spc_runtime, &ts);
-	timespecadd(&p->p_rtime, &ts, &p->p_rtime);
 
 	if (ISSET(spc->spc_schedflags, SPCF_ITIMER)) {
 		atomic_clearbits_int(&spc->spc_schedflags, SPCF_ITIMER);
