@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_umb.h,v 1.9 2021/03/30 15:59:04 patrick Exp $ */
+/*	$OpenBSD: if_umb.h,v 1.10 2021/07/04 19:22:32 sthen Exp $ */
 
 /*
  * Copyright (c) 2016 genua mbH
@@ -388,5 +388,8 @@ struct umb_softc {
 #define sc_state		sc_info.state
 #define sc_roaming		sc_info.enable_roaming
 	struct umb_info		 sc_info;
+
+	struct rwlock		 sc_kstat_lock;
+	struct kstat		*sc_kstat_signal;
 };
 #endif /* _KERNEL */
