@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1time.c,v 1.15 2022/09/05 20:53:01 tb Exp $ */
+/* $OpenBSD: asn1time.c,v 1.16 2022/09/05 21:06:31 tb Exp $ */
 /*
  * Copyright (c) 2015 Joel Sing <jsing@openbsd.org>
  *
@@ -527,6 +527,9 @@ main(int argc, char **argv)
 		att = &asn1_gentime_tests[i];
 		failed |= asn1_time_test(i, att, V_ASN1_GENERALIZEDTIME);
 	}
+
+	/* Check for a leak in ASN1_TIME_normalize(). */
+	failed |= ASN1_TIME_normalize(NULL) != 0;
 
 	return (failed);
 }
