@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-capture-pane.c,v 1.58 2022/07/06 07:36:36 nicm Exp $ */
+/* $OpenBSD: cmd-capture-pane.c,v 1.59 2022/09/28 07:55:29 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Jonathan Alvarado <radobobo@users.sourceforge.net>
@@ -39,7 +39,7 @@ const struct cmd_entry cmd_capture_pane_entry = {
 	.name = "capture-pane",
 	.alias = "capturep",
 
-	.args = { "ab:CeE:JNpPqS:t:", 0, 0, NULL },
+	.args = { "ab:CeE:JNpPqS:Tt:", 0, 0, NULL },
 	.usage = "[-aCeJNpPqT] " CMD_BUFFER_USAGE " [-E end-line] "
 		 "[-S start-line] " CMD_TARGET_PANE_USAGE,
 
