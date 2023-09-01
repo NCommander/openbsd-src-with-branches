@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.109 2022/05/30 12:48:57 nicm Exp $
+# $OpenBSD: Makefile,v 1.110 2022/06/30 09:55:53 nicm Exp $
 
 PROG=	tmux
 SRCS=	alerts.c \
@@ -121,6 +121,7 @@ SRCS=	alerts.c \
 	tty-term.c \
 	tty.c \
 	utf8.c \
+	utf8-combined.c \
 	window-buffer.c \
 	window-client.c \
 	window-clock.c \
