@@ -1,4 +1,4 @@
-/* $OpenBSD: vmm_machdep.c,v 1.4 2023/07/10 03:32:10 guenther Exp $ */
+/* $OpenBSD: vmm_machdep.c,v 1.5 2023/08/15 08:27:29 miod Exp $ */
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -6319,7 +6319,7 @@ vmm_handle_cpuid(struct vcpu *vcpu)
 		*rax = eax;
 		*rbx = ebx;
 		*rcx = ecx;
-		*rdx = edx;
+		*rdx = edx & VMM_APMI_EDX_MASK;
 		break;
 	case 0x80000008:	/* Phys bits info and topology (AMD) */
 		*rax = eax;
