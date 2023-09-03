@@ -1,4 +1,4 @@
-/*	$OpenBSD: relay.c,v 1.255 2022/12/28 21:30:18 jmc Exp $	*/
+/*	$OpenBSD: relay.c,v 1.256 2023/06/06 15:16:52 beck Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2014 Reyk Floeter <reyk@openbsd.org>
@@ -2629,7 +2629,7 @@ relay_bufferevent_write_chunk(struct ctl_relay_event *cre,
     struct evbuffer *buf, size_t size)
 {
 	int ret;
-	ret = relay_bufferevent_write(cre, buf->buffer, size);
+	ret = relay_bufferevent_write(cre, EVBUFFER_DATA(buf), size);
 	if (ret != -1)
 		evbuffer_drain(buf, size);
 	return (ret);
