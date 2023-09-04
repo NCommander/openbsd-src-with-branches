@@ -1,4 +1,4 @@
-/* $OpenBSD: wp_dgst.c,v 1.4 2014/07/12 11:25:25 miod Exp $ */
+/* $OpenBSD: wp_dgst.c,v 1.5 2022/11/26 16:08:54 tb Exp $ */
 /**
  * The Whirlpool hashing function.
  *
@@ -51,6 +51,8 @@
  * routine whirlpool_block is designed to operate on multi-block
  * input. This is done for performance.
  */
+
+#include <sys/types.h>
 
 #include "wp_local.h"
 #include <openssl/crypto.h>

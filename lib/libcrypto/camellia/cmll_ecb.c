@@ -1,4 +1,4 @@
-/* $OpenBSD: cmll_ecb.c,v 1.4 2014/11/13 20:01:58 miod Exp $ */
+/* $OpenBSD: cmll_ecb.c,v 1.5 2022/11/26 16:08:51 tb Exp $ */
 /* ====================================================================
  * Copyright (c) 2006 The OpenSSL Project.  All rights reserved.
  *
@@ -48,6 +48,8 @@
  * ====================================================================
  *
  */
+
+#include <sys/types.h>
 
 #include <openssl/camellia.h>
 #include "cmll_local.h"
