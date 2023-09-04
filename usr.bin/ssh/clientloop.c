@@ -1,4 +1,4 @@
-/* $OpenBSD: clientloop.c,v 1.393 2023/08/28 03:31:16 djm Exp $ */
+/* $OpenBSD: clientloop.c,v 1.394 2023/08/28 04:06:52 djm Exp $ */
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
@@ -564,9 +564,11 @@ obfuscate_keystroke_timing(struct ssh *ssh, struct timespec *timeout)
 	}
 
 	if (stop_reason != NULL) {
-		active = 0;
-		debug3_f("stopping: %s (%llu chaff packets sent)",
-		    stop_reason, nchaff);
+		if (active) {
+			debug3_f("stopping: %s (%llu chaff packets sent)",
+			    stop_reason, nchaff);
+			active = 0;
+		}
 		return 1;
 	}
 
