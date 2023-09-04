@@ -1,4 +1,4 @@
-/*	$OpenBSD: varname.c,v 1.5 2010/07/19 19:46:44 espie Exp $	*/
+/*	$OpenBSD: varname.c,v 1.6 2012/08/25 08:12:56 espie Exp $	*/
 /*
  * Copyright (c) 2001 Marc Espie.
  *
@@ -25,7 +25,6 @@
  */
 
 #include <stdlib.h>
-#include "config.h"
 #include "defines.h"
 #include "var.h"
 #include "buf.h"
@@ -39,11 +38,6 @@ VarName_Get(const char *start, struct Name *name, SymTable *ctxt, bool err,
 	size_t len;
 
 	p = cont(start);
-	/* If we don't want recursive variables, we skip over '$' */
-	if (!FEATURES(FEATURE_RECVARS)) {
-		while (*p == '$')
-			p = cont(p+1);
-	}
 	if (*p != '$') {
 		name->s = start;
 		name->e = p;

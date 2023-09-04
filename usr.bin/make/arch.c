@@ -1,4 +1,4 @@
-/*	$OpenBSD: arch.c,v 1.92 2022/12/26 19:16:02 jmc Exp $ */
+/*	$OpenBSD: arch.c,v 1.93 2023/02/17 17:59:36 miod Exp $ */
 /*	$NetBSD: arch.c,v 1.17 1996/11/06 17:58:59 christos Exp $	*/
 
 /*
@@ -82,7 +82,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <ohash.h>
-#include "config.h"
 #include "defines.h"
 #include "buf.h"
 #include "dir.h"

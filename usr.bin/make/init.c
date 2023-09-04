@@ -1,4 +1,4 @@
-/*	$OpenBSD: init.c,v 1.8 2020/01/16 16:07:18 espie Exp $ */
+/*	$OpenBSD: init.c,v 1.9 2023/08/31 06:53:28 espie Exp $ */
 
 /*
  * Copyright (c) 2001 Marc Espie.
@@ -26,7 +26,6 @@
  */
 #include <stdio.h>
 #include "defines.h"
-#include "config.h"
 #include "init.h"
 #include "timestamp.h"
 #include "stats.h"

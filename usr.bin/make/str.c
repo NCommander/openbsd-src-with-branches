@@ -1,4 +1,4 @@
-/*	$OpenBSD: str.c,v 1.31 2014/05/18 08:08:50 espie Exp $	*/
+/*	$OpenBSD: str.c,v 1.32 2019/05/21 17:21:02 espie Exp $	*/
 /*	$NetBSD: str.c,v 1.13 1996/11/06 17:59:23 christos Exp $	*/
 
 /*-
@@ -37,7 +37,6 @@
 
 #include <ctype.h>
 #include <string.h>
-#include "config.h"
 #include "defines.h"
 #include "str.h"
 #include "memory.h"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lowparse.c,v 1.34 2015/12/05 18:31:17 espie Exp $ */
+/*	$OpenBSD: lowparse.c,v 1.35 2016/10/21 16:12:38 espie Exp $ */
 
 /* low-level parsing functions. */
 
@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "config.h"
 #include "defines.h"
 #include "buf.h"
 #include "lowparse.h"

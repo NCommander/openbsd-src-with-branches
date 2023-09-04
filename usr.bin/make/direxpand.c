@@ -1,4 +1,4 @@
-/*	$OpenBSD: direxpand.c,v 1.7 2015/01/23 22:35:57 espie Exp $ */
+/*	$OpenBSD: direxpand.c,v 1.8 2016/10/21 16:12:38 espie Exp $ */
 /*
  * Copyright (c) 1999,2007 Marc Espie.
  *
@@ -62,7 +62,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
 #include "defines.h"
 #include "lst.h"
 #include "dir.h"
