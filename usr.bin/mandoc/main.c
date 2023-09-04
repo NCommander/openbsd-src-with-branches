@@ -1,4 +1,4 @@
-/* $OpenBSD: main.c,v 1.261 2021/10/04 20:24:00 schwarze Exp $ */
+/* $OpenBSD: main.c,v 1.262 2021/10/04 21:28:50 schwarze Exp $ */
 /*
  * Copyright (c) 2010-2012, 2014-2021 Ingo Schwarze <schwarze@openbsd.org>
  * Copyright (c) 2008-2012 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -504,7 +504,8 @@ main(int argc, char *argv[])
 
 			best_prio = 40;
 			for (ib = i = 0; i < resnsz; i++) {
-				sec = resn[i].file;
+				sec = resn[i].file +
+				    strlen(conf.manpath.paths[resn[i].ipath]);
 				sec += strcspn(sec, "123456789");
 				if (sec[0] == '\0')
 					continue; /* No section at all. */
