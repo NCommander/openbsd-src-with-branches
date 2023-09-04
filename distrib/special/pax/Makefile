@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.1 2014/01/11 05:37:18 deraadt Exp $
+#	$OpenBSD: Makefile,v 1.2 2018/09/13 16:34:33 sthen Exp $
 
 .PATH:  ${.CURDIR}/../../../bin/pax
-CFLAGS+=-DNOCPIO -I${.CURDIR}/../../../bin/pax
+CFLAGS+=-DNOCPIO -DSMALL -I${.CURDIR}/../../../bin/pax
 
 PROG=   pax
 SRCS=	ar_io.c ar_subs.c buf_subs.c file_subs.c ftree.c\
