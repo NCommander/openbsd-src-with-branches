@@ -1,4 +1,4 @@
-/*	$OpenBSD: pfctl_radix.c,v 1.36 2020/01/15 16:15:08 kn Exp $ */
+/*	$OpenBSD: pfctl_radix.c,v 1.37 2020/01/15 22:31:51 kn Exp $ */
 
 /*
  * Copyright (c) 2002 Cedric Berger
@@ -53,7 +53,7 @@
 
 extern int dev;
 
-static int	 pfr_next_token(char buf[], FILE *);
+static int	 pfr_next_token(char buf[BUF_SIZE], FILE *);
 
 
 int
