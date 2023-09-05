@@ -55,14 +55,39 @@ int pythonmod_init(struct module_env* env, int id);
 void pythonmod_deinit(struct module_env* env, int id);
 
 /** python module operate on a query */
-void pythonmod_operate(struct module_qstate* qstate, enum module_ev event, int id, struct outbound_entry* outbound);
+void pythonmod_operate(struct module_qstate* qstate, enum module_ev event,
+	int id, struct outbound_entry* outbound);
 
 /** python module  */
-void pythonmod_inform_super(struct module_qstate* qstate, int id, struct module_qstate* super);
+void pythonmod_inform_super(struct module_qstate* qstate, int id,
+	struct module_qstate* super);
 
 /** python module cleanup query state */
 void pythonmod_clear(struct module_qstate* qstate, int id);
 
 /** python module alloc size routine */
 size_t pythonmod_get_mem(struct module_env* env, int id);
+
+/** Declared here for fptr_wlist access. The definition is in interface.i. */
+int python_inplace_cb_reply_generic(struct query_info* qinfo,
+	struct module_qstate* qstate, struct reply_info* rep, int rcode,
+	struct edns_data* edns, struct edns_option** opt_list_out,
+	struct comm_reply* repinfo, struct regional* region,
+	struct timeval* start_time, int id, void* python_callback);
+
+/** Declared here for fptr_wlist access. The definition is in interface.i. */
+int python_inplace_cb_query_generic(
+        struct query_info* qinfo, uint16_t flags, struct module_qstate* qstate,
+        struct sockaddr_storage* addr, socklen_t addrlen,
+        uint8_t* zone, size_t zonelen, struct regional* region, int id,
+        void* python_callback);
+
+/** Declared here for fptr_wlist access. The definition is in interface.i. */
+int python_inplace_cb_query_response(struct module_qstate* qstate,
+    struct dns_msg* response, int id, void* python_callback);
+
+/** Declared here for fptr_wlist access. The definition is in interface.i. */
+int python_inplace_cb_edns_back_parsed_call(struct module_qstate* qstate,
+    int id, void* python_callback);
+
 #endif /* PYTHONMOD_H */
