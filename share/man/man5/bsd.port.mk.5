@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.586 2023/09/04 12:40:44 espie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.587 2023/09/04 22:36:55 thfr Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -1669,8 +1669,17 @@ If ${DISTFILES*} varies depending on
 or architecture, use
 .Ev SUPDISTFILES*
 to ensure distfiles mirroring and
-.Cm makesum
+.Cm makesum Ns 's
 proper operation.
+.Pp
+If no
+.Ev DISTFILES*
+is set and if
+.Ev MASTER_SITES
+is not null, then
+.Ev DISTFILES
+will be set to
+.Pa ${DISNAME}${EXTRACT_SUFX} .
 .It Ev DISTNAME
 Name used to identify the port.
 See
