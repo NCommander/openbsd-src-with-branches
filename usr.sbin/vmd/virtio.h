@@ -1,4 +1,4 @@
-/*	$OpenBSD: virtio.h,v 1.45 2023/04/27 22:47:27 dv Exp $	*/
+/*	$OpenBSD: virtio.h,v 1.46 2023/07/13 18:31:59 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -319,11 +319,9 @@ struct vmmci_dev {
 };
 
 struct ioinfo {
-	struct virtio_backing *file;
 	uint8_t *buf;
 	ssize_t len;
 	off_t offset;
-	int error;
 };
 
 /* virtio.c */
