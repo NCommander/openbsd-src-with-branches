@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.unix.c,v 1.21 2021/12/15 16:29:29 deraadt Exp $	*/
+/*	$OpenBSD: hack.unix.c,v 1.22 2023/06/03 15:19:38 op Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -97,7 +97,6 @@ static struct tm *
 getlt(void)
 {
 	time_t date;
-	struct tm *localtime();
 
 	(void) time(&date);
 	return(localtime(&date));

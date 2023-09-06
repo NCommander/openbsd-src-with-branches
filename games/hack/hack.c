@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.c,v 1.10 2016/01/09 18:33:15 mestre Exp $	*/
+/*	$OpenBSD: hack.c,v 1.11 2016/01/10 15:12:20 mestre Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -69,7 +69,6 @@
 #include "hack.h"
 
 extern char *nomovemsg;
-extern char *exclam();
 
 static void movobj(struct obj *, int, int);
 #ifdef QUEST

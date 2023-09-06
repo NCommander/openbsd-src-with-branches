@@ -1,4 +1,4 @@
-/*	$OpenBSD: hack.main.c,v 1.24 2019/06/28 13:32:52 deraadt Exp $	*/
+/*	$OpenBSD: hack.main.c,v 1.25 2023/06/03 15:19:38 op Exp $	*/
 
 /*
  * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
@@ -350,7 +350,6 @@ not_recovered:
 
 			if(moves%2 == 0 ||
 			  (!(Fast & ~INTRINSIC) && (!Fast || rn2(3)))) {
-				extern struct monst *makemon();
 				movemon();
 				if(!rn2(70))
 				    (void) makemon((struct permonst *)0, 0, 0);
