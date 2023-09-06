@@ -1,4 +1,4 @@
-/*	$OpenBSD: editor.c,v 1.414 2023/07/03 06:07:40 krw Exp $	*/
+/*	$OpenBSD: editor.c,v 1.415 2023/07/05 07:28:10 krw Exp $	*/
 
 /*
  * Copyright (c) 1997-2000 Todd C. Miller <millert@openbsd.org>
@@ -1799,8 +1799,6 @@ micmp(const void *a1, const void *a2)
 void
 zero_partitions(struct disklabel *lp)
 {
-	int i;
-
 	memset(lp->d_partitions, 0, sizeof(lp->d_partitions));
 	DL_SETPSIZE(&lp->d_partitions[RAW_PART], DL_GETDSIZE(lp));
 
