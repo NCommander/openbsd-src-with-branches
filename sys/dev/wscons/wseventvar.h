@@ -1,4 +1,4 @@
-/* $OpenBSD: wseventvar.h,v 1.10 2019/05/22 18:52:14 anton Exp $ */
+/* $OpenBSD: wseventvar.h,v 1.11 2022/07/02 08:50:42 visa Exp $ */
 /* $NetBSD: wseventvar.h,v 1.1 1998/03/22 14:24:03 drochner Exp $ */
 
 /*
@@ -71,6 +71,7 @@
  *	@(#)event_var.h	8.1 (Berkeley) 6/11/93
  */
 
+#include <sys/selinfo.h>
 #include <sys/sigio.h>
 
 /*

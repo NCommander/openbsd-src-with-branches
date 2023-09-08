@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_vnops.c,v 1.138 2022/06/26 05:20:42 visa Exp $	*/
+/*	$OpenBSD: msdosfs_vnops.c,v 1.139 2022/08/23 20:37:16 cheloha Exp $	*/
 /*	$NetBSD: msdosfs_vnops.c,v 1.63 1997/10/17 11:24:19 ws Exp $	*/
 
 /*-
@@ -1970,7 +1970,7 @@ msdosfs_kqfilter(void *v)
 
 	kn->kn_hook = (caddr_t)vp;
 
-	klist_insert_locked(&vp->v_selectinfo.si_note, kn);
+	klist_insert_locked(&vp->v_klist, kn);
 
 	return (0);
 }
@@ -1980,7 +1980,7 @@ filt_msdosfsdetach(struct knote *kn)
 {
 	struct vnode *vp = (struct vnode *)kn->kn_hook;
 
-	klist_remove_locked(&vp->v_selectinfo.si_note, kn);
+	klist_remove_locked(&vp->v_klist, kn);
 }
 
 int

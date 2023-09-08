@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_vnops.c,v 1.51 2021/12/11 09:28:26 visa Exp $	*/
+/*	$OpenBSD: tmpfs_vnops.c,v 1.52 2022/06/26 05:20:42 visa Exp $	*/
 /*	$NetBSD: tmpfs_vnops.c,v 1.100 2012/11/05 17:27:39 dholland Exp $	*/
 
 /*
@@ -2627,7 +2627,7 @@ tmpfs_kqfilter(void *v)
 
 	kn->kn_hook = (caddr_t)vp;
 
-	klist_insert_locked(&vp->v_selectinfo.si_note, kn);
+	klist_insert_locked(&vp->v_klist, kn);
 
 	return (0);
 }
@@ -2637,7 +2637,7 @@ filt_tmpfsdetach(struct knote *kn)
 {
 	struct vnode *vp = (struct vnode *)kn->kn_hook;
 
-	klist_remove_locked(&vp->v_selectinfo.si_note, kn);
+	klist_remove_locked(&vp->v_klist, kn);
 }
 
 int
