@@ -4148,10 +4148,6 @@ enter_ruleset:
 			    (r->rule_flag & PFRULE_STATESLOPPY) == 0 &&
 			    ctx->icmp_dir != PF_IN),
 				TAILQ_NEXT(r, entries));
-			/* icmp packet must match existing state */
-			PF_TEST_ATTRIB(r->keep_state && ctx->state_icmp &&
-			    (r->rule_flag & PFRULE_STATESLOPPY) == 0,
-				TAILQ_NEXT(r, entries));
 			break;
 
 		case IPPROTO_ICMPV6:
@@ -4168,10 +4164,6 @@ enter_ruleset:
 			    (r->rule_flag & PFRULE_STATESLOPPY) == 0 &&
 			    ctx->icmp_dir != PF_IN &&
 			    ctx->icmptype != ND_NEIGHBOR_ADVERT),
-				TAILQ_NEXT(r, entries));
-			/* icmp packet must match existing state */
-			PF_TEST_ATTRIB(r->keep_state && ctx->state_icmp &&
-			    (r->rule_flag & PFRULE_STATESLOPPY) == 0,
 				TAILQ_NEXT(r, entries));
 			break;
 
