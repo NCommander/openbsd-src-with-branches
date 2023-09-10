@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_time.c,v 1.164 2023/08/05 20:07:55 cheloha Exp $	*/
+/*	$OpenBSD: kern_time.c,v 1.165 2023/08/29 16:19:34 claudio Exp $	*/
 /*	$NetBSD: kern_time.c,v 1.20 1996/02/18 11:57:06 fvdl Exp $	*/
 
 /*
@@ -755,7 +755,7 @@ itimerdecr(struct itimerspec *itp, const struct timespec *decrement)
 }
 
 void
-itimer_update(struct clockintr *cl, void *cf)
+itimer_update(struct clockintr *cl, void *cf, void *arg)
 {
 	struct timespec elapsed;
 	uint64_t nsecs;
