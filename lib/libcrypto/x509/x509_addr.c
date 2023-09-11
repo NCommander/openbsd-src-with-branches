@@ -676,10 +676,9 @@ i2r_IPAddrBlocks(const X509V3_EXT_METHOD *method, void *ext, BIO *out,
 {
 	const IPAddrBlocks *addr = ext;
 	IPAddressFamily *af;
-	uint16_t afi = 0;
-	uint8_t safi = 0;
-	int safi_is_set = 0;
-	int i;
+	uint16_t afi;
+	uint8_t safi;
+	int i, safi_is_set;
 
 	for (i = 0; i < sk_IPAddressFamily_num(addr); i++) {
 		af = sk_IPAddressFamily_value(addr, i);
