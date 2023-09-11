@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_sm_isa.c,v 1.15 2021/03/07 06:17:03 jsg Exp $	*/
+/*	$OpenBSD: if_sm_isa.c,v 1.16 2022/04/06 18:59:28 naddy Exp $	*/
 /*	$NetBSD: if_sm_isa.c,v 1.4 1998/07/05 06:49:14 jonathan Exp $	*/
 
 /*-
@@ -40,7 +40,6 @@
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/syslog.h>
-#include <sys/selinfo.h>
 #include <sys/timeout.h>
 #include <sys/device.h>
 

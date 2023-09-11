@@ -1,4 +1,4 @@
-/*	$OpenBSD: elink3.c,v 1.98 2020/12/12 11:48:52 jan Exp $	*/
+/*	$OpenBSD: elink3.c,v 1.99 2023/04/11 00:45:08 jsg Exp $	*/
 /*	$NetBSD: elink3.c,v 1.32 1997/05/14 00:22:00 thorpej Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/syslog.h>
-#include <sys/selinfo.h>
 #include <sys/timeout.h>
 #include <sys/device.h>
 

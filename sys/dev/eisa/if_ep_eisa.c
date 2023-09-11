@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_eisa.c,v 1.27 2021/03/07 06:18:48 jsg Exp $	*/
+/*	$OpenBSD: if_ep_eisa.c,v 1.28 2022/04/06 18:59:28 naddy Exp $	*/
 /*	$NetBSD: if_ep_eisa.c,v 1.13 1997/04/18 00:50:33 cgd Exp $	*/
 
 /*
@@ -41,7 +41,6 @@
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/syslog.h>
-#include <sys/selinfo.h>
 #include <sys/timeout.h>
 #include <sys/device.h>
 

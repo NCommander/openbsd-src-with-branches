@@ -1,4 +1,4 @@
-/*	$OpenBSD: cy.c,v 1.40 2021/03/07 06:21:38 jsg Exp $	*/
+/*	$OpenBSD: cy.c,v 1.41 2021/09/01 16:10:39 jan Exp $	*/
 /*
  * Copyright (c) 1996 Timo Rossi.
  * All rights reserved.
@@ -56,7 +56,6 @@
 #include <sys/fcntl.h>
 #include <sys/tty.h>
 #include <sys/conf.h>
-#include <sys/selinfo.h>
 #include <sys/device.h>
 #include <sys/malloc.h>
 #include <sys/systm.h>

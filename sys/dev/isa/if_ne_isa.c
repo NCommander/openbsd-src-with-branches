@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ne_isa.c,v 1.17 2015/11/24 17:11:39 mpi Exp $	*/
+/*	$OpenBSD: if_ne_isa.c,v 1.18 2022/04/06 18:59:28 naddy Exp $	*/
 /*	$NetBSD: if_ne_isa.c,v 1.6 1998/07/05 06:49:13 jonathan Exp $	*/
 
 /*-
@@ -40,7 +40,6 @@
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/syslog.h>
-#include <sys/selinfo.h>
 #include <sys/device.h>
 
 #include <net/if.h>

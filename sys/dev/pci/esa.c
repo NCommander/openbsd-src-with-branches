@@ -1,4 +1,4 @@
-/*	$OpenBSD: esa.c,v 1.40 2022/10/19 19:14:16 kn Exp $	*/
+/*	$OpenBSD: esa.c,v 1.41 2022/10/26 20:19:08 kn Exp $	*/
 /* $NetBSD: esa.c,v 1.12 2002/03/24 14:17:35 jmcneill Exp $ */
 
 /*
@@ -50,7 +50,6 @@
 #include <sys/device.h>
 #include <sys/conf.h>
 #include <sys/exec.h>
-#include <sys/selinfo.h>
 #include <sys/audioio.h>
 
 #include <machine/bus.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: aic_pcmcia.c,v 1.18 2021/03/07 06:20:09 jsg Exp $	*/
+/*	$OpenBSD: aic_pcmcia.c,v 1.19 2022/04/06 18:59:30 naddy Exp $	*/
 /*	$NetBSD: aic_pcmcia.c,v 1.6 1998/07/19 17:28:15 christos Exp $	*/
 
 /*
@@ -32,7 +32,6 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/selinfo.h>
 #include <sys/device.h>
 
 #include <machine/cpu.h>

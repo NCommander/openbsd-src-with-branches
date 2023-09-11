@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ep_isapnp.c,v 1.16 2015/11/24 17:11:39 mpi Exp $	*/
+/*	$OpenBSD: if_ep_isapnp.c,v 1.17 2022/04/06 18:59:28 naddy Exp $	*/
 /*	$NetBSD: if_ep_isapnp.c,v 1.5 1996/05/12 23:52:36 mycroft Exp $	*/
 
 /*
@@ -45,7 +45,6 @@
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/syslog.h>
-#include <sys/selinfo.h>
 #include <sys/device.h>
 #include <sys/timeout.h>
 #include <sys/queue.h>
