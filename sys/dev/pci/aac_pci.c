@@ -1,4 +1,4 @@
-/*	$OpenBSD: aac_pci.c,v 1.26 2022/03/11 18:00:45 mpi Exp $	*/
+/*	$OpenBSD: aac_pci.c,v 1.27 2023/07/13 07:31:12 jsg Exp $	*/
 
 /*-
  * Copyright (c) 2000 Michael Smith
@@ -44,7 +44,6 @@
 #include <sys/kernel.h>
 #include <sys/malloc.h>
 #include <sys/queue.h>
-#include <sys/selinfo.h>
 #include <sys/rwlock.h>
 #include <sys/endian.h>
 
