@@ -1,4 +1,4 @@
-/*	$OpenBSD: bt_parser.h,v 1.22 2021/11/12 16:57:24 claudio Exp $	*/
+/*	$OpenBSD: bt_parser.h,v 1.23 2022/12/28 21:30:16 jmc Exp $	*/
 
 /*
  * Copyright (c) 2019-2021 Martin Pieuchot <mpi@openbsd.org>
@@ -94,7 +94,7 @@ struct bt_rule {
 };
 
 /*
- * Global variable representation.
+ * Global and local variable representation.
  *
  * Variables are untyped and also include maps and histograms.
  */
@@ -105,6 +105,7 @@ struct bt_var {
 	enum bt_vartype	{
 		B_VT_STR = 1,
 		B_VT_LONG,
+		B_VT_TUPLE,
 		B_VT_MAP,
 		B_VT_HIST,
 	}			 bv_type;
@@ -126,6 +127,8 @@ struct bt_arg {
 		B_AT_VAR,			/* global/local variable */
 		B_AT_MAP,			/* global map (@map[]) */
 		B_AT_HIST,			/* histogram */
+		B_AT_TUPLE,			/* tuple (1, 42, "str") */
+		B_AT_TMEMBER,			/* tuple member $t.2 */
 		B_AT_NIL,			/* empty value */
 
 		B_AT_BI_PID,
