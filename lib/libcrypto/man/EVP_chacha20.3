@@ -1,4 +1,4 @@
-.\" $OpenBSD: EVP_chacha20.3,v 1.5 2023/08/24 04:23:30 tb Exp $
+.\" $OpenBSD: EVP_chacha20.3,v 1.6 2023/08/24 04:33:08 tb Exp $
 .\" full merge up to: OpenSSL 35fd9953 May 28 14:49:38 2019 +0200
 .\"
 .\" This file is a derived work.
@@ -135,6 +135,9 @@ argument of 32 bytes = 256 bits and an
 argument of 12 bytes = 96 bits.
 This supports additional authenticated data (AAD) and produces a 128-bit
 authentication tag.
+The constant
+.Dv EVP_CHACHAPOLY_TLS_TAG_LEN
+specifies the length of the authentication tag in bytes and has a value of 16.
 .Pp
 The following
 .Fa type
