@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_meter.c,v 1.48 2023/08/03 16:12:08 claudio Exp $	*/
+/*	$OpenBSD: uvm_meter.c,v 1.49 2023/08/18 09:18:52 claudio Exp $	*/
 /*	$NetBSD: uvm_meter.c,v 1.21 2001/07/14 06:36:03 matt Exp $	*/
 
 /*
@@ -249,11 +249,12 @@ uvm_total(struct vmtotal *totalp)
 void
 uvmexp_read(struct uvmexp *uexp)
 {
-		uint64_t counters[exp_ncounters];
+		uint64_t counters[exp_ncounters], scratch[exp_ncounters];
 
 		memcpy(uexp, &uvmexp, sizeof(*uexp));
 
-		counters_read(uvmexp_counters, counters, exp_ncounters);
+		counters_read(uvmexp_counters, counters, exp_ncounters,
+		    scratch);
 
 		/* stat counters */
 		uexp->faults = (int)counters[faults];

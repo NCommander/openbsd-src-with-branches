@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_pfsync.c,v 1.319 2023/07/31 11:13:09 dlg Exp $	*/
+/*	$OpenBSD: if_pfsync.c,v 1.320 2023/08/18 08:03:57 jsg Exp $	*/
 
 /*
  * Copyright (c) 2002 Michael Shalayeff
@@ -3339,7 +3339,7 @@ pfsync_sysctl_pfsyncstat(void *oldp, size_t *oldlenp, void *newp)
 	CTASSERT(sizeof(pfsyncstat) == (pfsyncs_ncounters * sizeof(uint64_t)));
 	memset(&pfsyncstat, 0, sizeof pfsyncstat);
 	counters_read(pfsynccounters, (uint64_t *)&pfsyncstat,
-	    pfsyncs_ncounters);
+	    pfsyncs_ncounters, NULL);
 	return (sysctl_rdstruct(oldp, oldlenp, newp,
 	    &pfsyncstat, sizeof(pfsyncstat)));
 }

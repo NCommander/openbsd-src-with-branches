@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_divert.c,v 1.90 2023/04/04 10:12:03 bluhm Exp $ */
+/*      $OpenBSD: ip_divert.c,v 1.91 2023/05/13 13:35:17 bluhm Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -350,7 +350,7 @@ divert_sysctl_divstat(void *oldp, size_t *oldlenp, void *newp)
 
 	CTASSERT(sizeof(divstat) == (nitems(counters) * sizeof(u_long)));
 	memset(&divstat, 0, sizeof divstat);
-	counters_read(divcounters, counters, nitems(counters));
+	counters_read(divcounters, counters, nitems(counters), NULL);
 
 	for (i = 0; i < nitems(counters); i++)
 		words[i] = (u_long)counters[i];
