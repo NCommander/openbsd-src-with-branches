@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: Cache.pm,v 1.11 2022/05/29 10:48:41 espie Exp $
+# $OpenBSD: Cache.pm,v 1.12 2023/06/13 09:07:18 espie Exp $
 #
 # Copyright (c) 2022 Marc Espie <espie@openbsd.org>
 #
@@ -137,9 +137,6 @@ sub get_cached_info($self, $name)
 		$content = '';
 		open my $fh, "-|", $self->pipe_locate($name.":*") or die $!;
 		while (<$fh>) {
-			if (m/\@option\s+always-update/) {
-				return undef;
-			}
 			if (m/^.*?\:(.*)/) {
 				$content .= $1."\n";
 			} else {
