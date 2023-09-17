@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.40 2023/07/25 18:16:19 cheloha Exp $	*/
+/*	$OpenBSD: clock.c,v 1.41 2023/08/23 01:55:46 cheloha Exp $	*/
 /*	$NetBSD: clock.c,v 1.1 2003/04/26 18:39:50 fvdl Exp $	*/
 
 /*-
@@ -283,7 +283,6 @@ i8254_initclocks(void)
 
 	stathz = 128;
 	profhz = 1024;		/* XXX does not divide into 1 billion */
-	clockintr_init(0);
 }
 
 void
