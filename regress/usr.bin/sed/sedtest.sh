@@ -1,5 +1,5 @@
 #!/bin/sh -
-#	$OpenBSD: sedtest.sh,v 1.7 2018/07/09 13:07:09 schwarze Exp $
+#	$OpenBSD: sedtest.sh,v 1.8 2018/12/07 15:30:31 schwarze Exp $
 #
 # Copyright (c) 1992 Diomidis Spinellis.
 # Copyright (c) 1992, 1993
@@ -359,8 +359,7 @@ p
 test_print()
 {
 	echo Testing print and file routines
-	awk 'END {for (i = 1; i < 256; i++) printf("%c", i);print "\n"}' \
-		</dev/null >lines3
+	{ jot -c -s '' 255 1; printf '\n'; } >lines3
 	# GNU and SunOS sed behave differently here
 	mark '7.1'
 	$SED -n l lines3
