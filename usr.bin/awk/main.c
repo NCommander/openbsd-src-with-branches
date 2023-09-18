@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.59 2023/09/17 14:49:44 millert Exp $	*/
+/*	$OpenBSD: main.c,v 1.60 2023/09/18 15:20:48 jmc Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -55,6 +55,8 @@ static size_t	curpfile;	/* current filename */
 bool	CSV = false;		/* true for csv input */
 bool	safe = false;		/* true => "safe" mode */
 bool	do_posix = false;	/* true => POSIX mode */
+
+size_t	awk_mb_cur_max = 1;
 
 static noreturn void fpecatch(int n
 #ifdef SA_SIGINFO
@@ -135,6 +137,7 @@ int main(int argc, char *argv[])
 
 	setlocale(LC_CTYPE, "");
 	setlocale(LC_NUMERIC, "C"); /* for parsing cmdline & prog */
+	awk_mb_cur_max = MB_CUR_MAX;
 
 	cmdname = __progname;
 	if (pledge("stdio rpath wpath cpath proc exec", NULL) == -1) {
