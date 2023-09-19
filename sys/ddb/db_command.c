@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_command.c,v 1.98 2023/03/08 04:43:07 guenther Exp $	*/
+/*	$OpenBSD: db_command.c,v 1.99 2023/07/02 19:02:27 cheloha Exp $	*/
 /*	$NetBSD: db_command.c,v 1.20 1996/03/30 22:30:05 christos Exp $	*/
 
 /*
@@ -541,6 +541,13 @@ db_proc_print_cmd(db_expr_t addr, int have_addr, db_expr_t count, char *modif)
 {
 	if (!have_addr)
 		addr = (db_expr_t)curproc;
+	if (modif[0] == 't') {
+		addr = (db_expr_t)tfind((pid_t)addr);
+		if (addr == 0) {
+			db_printf("not found\n");
+			return;
+		}
+	}
 
 	proc_printit((struct proc *)addr, modif, db_printf);
 }
