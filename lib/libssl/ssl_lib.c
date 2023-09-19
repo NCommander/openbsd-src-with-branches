@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_lib.c,v 1.311 2023/07/08 16:40:13 beck Exp $ */
+/* $OpenBSD: ssl_lib.c,v 1.312 2023/07/19 13:34:33 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -2119,11 +2119,11 @@ SSL_CTX_new(const SSL_METHOD *meth)
 	if ((ret->cert = ssl_cert_new()) == NULL)
 		goto err;
 
-	ret->default_passwd_callback = 0;
+	ret->default_passwd_callback = NULL;
 	ret->default_passwd_callback_userdata = NULL;
-	ret->client_cert_cb = 0;
-	ret->app_gen_cookie_cb = 0;
-	ret->app_verify_cookie_cb = 0;
+	ret->client_cert_cb = NULL;
+	ret->app_gen_cookie_cb = NULL;
+	ret->app_verify_cookie_cb = NULL;
 
 	ret->sessions = lh_SSL_SESSION_new();
 	if (ret->sessions == NULL)
