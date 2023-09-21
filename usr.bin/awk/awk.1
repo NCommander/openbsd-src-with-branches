@@ -1,4 +1,4 @@
-.\"	$OpenBSD: awk.1,v 1.66 2023/09/18 15:20:48 jmc Exp $
+.\"	$OpenBSD: awk.1,v 1.67 2023/09/21 16:30:54 schwarze Exp $
 .\"
 .\" Copyright (C) Lucent Technologies 1997
 .\" All Rights Reserved
@@ -22,7 +22,7 @@
 .\" ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 .\" THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: September 18 2023 $
+.Dd $Mdocdate: September 21 2023 $
 .Dt AWK 1
 .Os
 .Sh NAME
@@ -1047,7 +1047,8 @@ mode, treating non-ASCII input bytes as non-letter characters rather
 than as input encoding errors intentionally violates the specification.
 .Pp
 The flags
-.Op Fl \&dV
+.Op Fl \&dV ,
+.Op Fl -csv ,
 and
 .Op Fl safe ,
 support for regular expressions in
