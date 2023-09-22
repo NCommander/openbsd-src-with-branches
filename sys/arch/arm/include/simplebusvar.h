@@ -1,4 +1,4 @@
-/* $OpenBSD: simplebusvar.h,v 1.2 2019/04/16 13:16:06 kettenis Exp $ */
+/* $OpenBSD: simplebusvar.h,v 1.3 2020/04/29 15:25:07 kettenis Exp $ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *

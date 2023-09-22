@@ -1,4 +1,4 @@
-/* $OpenBSD: ampintc.c,v 1.30 2022/01/03 03:06:49 jsg Exp $ */
+/* $OpenBSD: ampintc.c,v 1.31 2022/03/12 14:40:41 mpi Exp $ */
 /*
  * Copyright (c) 2007,2009,2011 Dale Rahn <drahn@openbsd.org>
  *
@@ -37,7 +37,7 @@
 #include <dev/ofw/fdt.h>
 #include <dev/ofw/openfirm.h>
 
-#include <arm/simplebus/simplebusvar.h>
+#include <machine/simplebusvar.h>
 
 /* registers */
 #define	ICD_DCR			0x000

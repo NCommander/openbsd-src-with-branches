@@ -1,4 +1,4 @@
-/* $OpenBSD: simplebus.c,v 1.16 2022/11/06 12:01:52 patrick Exp $ */
+/* $OpenBSD: simplebus.c,v 1.17 2023/07/19 20:26:11 kettenis Exp $ */
 /*
  * Copyright (c) 2016 Patrick Wildt <patrick@blueri.se>
  *
@@ -26,8 +26,8 @@
 #include <dev/ofw/fdt.h>
 #include <dev/ofw/ofw_misc.h>
 
-#include <arm64/fdt.h>
-#include <arm64/dev/simplebusvar.h>
+#include <machine/fdt.h>
+#include <machine/simplebusvar.h>
 
 int simplebus_match(struct device *, void *, void *);
 void simplebus_attach(struct device *, struct device *, void *);

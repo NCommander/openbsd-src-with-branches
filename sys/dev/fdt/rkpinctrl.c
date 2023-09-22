@@ -1,4 +1,4 @@
-/*	$OpenBSD: rkpinctrl.c,v 1.12 2023/06/19 13:37:22 kettenis Exp $	*/
+/*	$OpenBSD: rkpinctrl.c,v 1.13 2023/06/21 01:10:17 jsg Exp $	*/
 /*
  * Copyright (c) 2017, 2018 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -29,11 +29,7 @@
 #include <dev/ofw/ofw_pinctrl.h>
 #include <dev/ofw/fdt.h>
 
-#ifdef __armv7__
-#include <arm/simplebus/simplebusvar.h>
-#else
-#include <arm64/dev/simplebusvar.h>
-#endif
+#include <machine/simplebusvar.h>
 
 /* Pin numbers (from devicetree bindings) */
 #define RK_PA0		0

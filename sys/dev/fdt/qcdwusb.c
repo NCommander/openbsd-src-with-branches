@@ -1,4 +1,4 @@
-/*	$OpenBSD: qcdwusb.c,v 1.5 2022/04/06 18:59:28 naddy Exp $	*/
+/*	$OpenBSD: qcdwusb.c,v 1.1 2022/11/06 12:12:45 patrick Exp $	*/
 /*
  * Copyright (c) 2017, 2018 Mark Kettenis <kettenis@openbsd.org>
  * Copyright (c) 2020, 2022 Patrick Wildt <patrick@blueri.se>
@@ -22,8 +22,7 @@
 
 #include <machine/bus.h>
 #include <machine/fdt.h>
-
-#include <arm64/dev/simplebusvar.h>
+#include <machine/simplebusvar.h>
 
 #include <dev/ofw/openfirm.h>
 #include <dev/ofw/ofw_clock.h>

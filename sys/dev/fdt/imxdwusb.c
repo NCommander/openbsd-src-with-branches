@@ -1,4 +1,4 @@
-/*	$OpenBSD: imxdwusb.c,v 1.4 2020/12/19 01:21:35 patrick Exp $	*/
+/*	$OpenBSD: imxdwusb.c,v 1.5 2022/04/06 18:59:28 naddy Exp $	*/
 /*
  * Copyright (c) 2017, 2018 Mark Kettenis <kettenis@openbsd.org>
  * Copyright (c) 2020 Patrick Wildt <patrick@blueri.se>
@@ -22,8 +22,7 @@
 
 #include <machine/bus.h>
 #include <machine/fdt.h>
-
-#include <arm64/dev/simplebusvar.h>
+#include <machine/simplebusvar.h>
 
 #include <dev/ofw/openfirm.h>
 #include <dev/ofw/ofw_clock.h>

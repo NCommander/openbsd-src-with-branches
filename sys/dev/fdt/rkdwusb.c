@@ -1,4 +1,4 @@
-/*	$OpenBSD: rkdwusb.c,v 1.3 2019/08/29 11:51:48 kettenis Exp $	*/
+/*	$OpenBSD: rkdwusb.c,v 1.4 2021/10/24 17:52:26 mpi Exp $	*/
 /*
  * Copyright (c) 2017 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -21,8 +21,7 @@
 
 #include <machine/bus.h>
 #include <machine/fdt.h>
-
-#include <arm64/dev/simplebusvar.h>
+#include <machine/simplebusvar.h>
 
 #include <dev/ofw/openfirm.h>
 #include <dev/ofw/ofw_clock.h>

@@ -1,4 +1,4 @@
-/* $OpenBSD: agintc.c,v 1.52 2023/07/07 10:11:39 patrick Exp $ */
+/* $OpenBSD: agintc.c,v 1.53 2023/09/12 08:29:28 jmatthew Exp $ */
 /*
  * Copyright (c) 2007, 2009, 2011, 2017 Dale Rahn <drahn@dalerahn.com>
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
@@ -35,7 +35,7 @@
 #include <dev/ofw/fdt.h>
 #include <dev/ofw/openfirm.h>
 
-#include <arm64/dev/simplebusvar.h>
+#include <machine/simplebusvar.h>
 
 #define ICC_PMR		s3_0_c4_c6_0
 #define ICC_IAR0	s3_0_c12_c8_0
