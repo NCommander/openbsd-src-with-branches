@@ -1,4 +1,4 @@
-/*	$OpenBSD: vionet.c,v 1.3 2023/05/13 23:15:28 dv Exp $	*/
+/*	$OpenBSD: vionet.c,v 1.4 2023/09/01 19:42:26 dv Exp $	*/
 
 /*
  * Copyright (c) 2023 Dave Voutila <dv@openbsd.org>
@@ -800,7 +800,7 @@ handle_sync_io(int fd, short event, void *arg)
 			/* Dump device */
 			n = atomicio(vwrite, dev->sync_fd, dev, sizeof(*dev));
 			if (n != sizeof(*dev)) {
-				log_warnx("%s: failed to dump vioblk device",
+				log_warnx("%s: failed to dump vionet device",
 				    __func__);
 				break;
 			}
