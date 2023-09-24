@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.125 2023/05/17 05:52:01 djm Exp $
+#	$OpenBSD: Makefile,v 1.126 2023/09/06 23:36:09 djm Exp $
 
 OPENSSL?=	yes
 
@@ -9,8 +9,6 @@ SUBDIR=		unittests
 SUBDIR+=	misc
 
 REGRESS_SETUP_ONCE=misc	# For sk-dummy.so
-
-REGRESS_FAIL_EARLY?=	yes
 
 # Key conversion operations are not supported when built w/out OpenSSL.
 .if !defined(LTESTS_FROM) && ${OPENSSL:L} != no
