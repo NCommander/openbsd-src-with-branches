@@ -1,4 +1,4 @@
-/*	$Id: test-aspa.c,v 1.3 2023/04/27 06:11:43 claudio Exp $ */
+/*	$Id: test-aspa.c,v 1.5 2023/05/30 12:14:48 claudio Exp $ */
 /*
  * Copyright (c) 2022 Job Snijders <job@fastly.com>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -71,7 +71,7 @@ main(int argc, char *argv[])
 
 	for (i = 0; i < argc; i++) {
 		buf = load_file(argv[i], &len);
-		if ((p = aspa_parse(&xp, argv[i], buf, len)) == NULL) {
+		if ((p = aspa_parse(&xp, argv[i], -1, buf, len)) == NULL) {
 			free(buf);
 			break;
 		}

@@ -1,4 +1,4 @@
-/*	$Id: test-roa.c,v 1.21 2023/04/27 06:11:43 claudio Exp $ */
+/*	$Id: test-roa.c,v 1.23 2023/05/30 12:14:48 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -70,7 +70,7 @@ main(int argc, char *argv[])
 
 	for (i = 0; i < argc; i++) {
 		buf = load_file(argv[i], &len);
-		if ((p = roa_parse(&xp, argv[i], buf, len)) == NULL) {
+		if ((p = roa_parse(&xp, argv[i], -1, buf, len)) == NULL) {
 			free(buf);
 			break;
 		}
