@@ -1,4 +1,4 @@
-#	$OpenBSD: GENERIC,v 1.517 2023/04/23 00:50:29 dlg Exp $
+#	$OpenBSD: GENERIC,v 1.518 2023/07/08 02:43:02 jcs Exp $
 #
 # For further information on compiling OpenBSD kernels, see the config(8)
 # man page.
@@ -592,6 +592,7 @@ pgt*	at cardbus?			# Prism54 Full-MAC
 malo*	at pci?				# Marvell Libertas
 malo*	at cardbus?			# Marvell Libertas
 malo*	at pcmcia?			# Marvell 88W8385
+mbg*	at pci?				# Meinberg Funkuhren radio clocks
 bwfm*	at pci?				# Broadcom FullMAC
 
 # Media Independent Interface (mii) drivers
