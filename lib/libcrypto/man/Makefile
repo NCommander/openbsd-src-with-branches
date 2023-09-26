@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.271 2023/09/25 12:00:49 tb Exp $
+# $OpenBSD: Makefile,v 1.272 2023/09/26 15:34:23 tb Exp $
 
 .include <bsd.own.mk>
 
@@ -393,6 +393,8 @@ MAN=	\
 	X509at_add1_attr.3 \
 	X509at_get_attr.3 \
 	X509v3_addr_add_inherit.3 \
+	X509v3_addr_get_range.3 \
+	X509v3_asid_add_id_or_range.3 \
 	X509v3_asid_add_id_or_range.3 \
 	X509v3_get_ext_by_NID.3 \
 	a2d_ASN1_OBJECT.3 \
