@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.10 2020/12/16 22:59:55 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.11 2023/04/26 10:14:21 dv Exp $
 
 VMD ?= /usr/sbin/vmd
 
@@ -18,7 +18,7 @@ run-pass-$n:
 REGRESS_TARGETS +=	run-fail-$n
 run-fail-$n:
 	${VMD} -n -f ${.CURDIR}/vmd-fail-$n.conf 2>&1 | \
-	    cut -d : -f 2,3,4 | \
+	    sed -e 's/^vmd: //' -e 's|${.CURDIR}/vmd-fail-$n.conf:||' | \
 	    diff -u ${.CURDIR}/vmd-fail-$n.ok /dev/stdin
 .endfor
 
