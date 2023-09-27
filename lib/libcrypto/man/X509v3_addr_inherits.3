@@ -1,4 +1,4 @@
-.\" $OpenBSD: X509v3_addr_get_range.3,v 1.1 2023/09/26 18:35:34 tb Exp $
+.\" $OpenBSD: X509v3_addr_inherits.3,v 1.1 2023/09/26 20:42:45 tb Exp $
 .\"
 .\" Copyright (c) 2023 Theo Buehler <tb@openbsd.org>
 .\"
@@ -20,7 +20,7 @@
 .Sh NAME
 .Nm X509v3_addr_inherits ,
 .Nm X509v3_asid_inherits
-.Nd inheritance for the IP address and AS number delegation extensions
+.Nd RFC 3779 inheritance
 .Sh SYNOPSIS
 .In openssl/x509v3.h
 .Ft int
@@ -96,7 +96,7 @@ and have been available since
 .Fn X509v3_asid_inherits
 ignores whether the
 .Fa inherit
-is present or absent in the list that is considered to use inheritance.
+element is present or absent in the list that is considered to use inheritance.
 .Pp
 There is no API that determines whether all lists contained in an
 .Vt ASIdentifiers

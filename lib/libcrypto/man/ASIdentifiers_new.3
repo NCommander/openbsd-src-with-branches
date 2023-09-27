@@ -1,4 +1,4 @@
-.\" $OpenBSD: ASIdentifiers_new.3,v 1.5 2023/09/26 15:34:23 tb Exp $
+.\" $OpenBSD: ASIdentifiers_new.3,v 1.6 2023/09/26 20:42:45 tb Exp $
 .\"
 .\" Copyright (c) 2021 Theo Buehler <tb@openbsd.org>
 .\"
@@ -22,7 +22,7 @@
 .Nm ASIdentifiers_free ,
 .Nm d2i_ASIdentifiers ,
 .Nm i2d_ASIdentifiers
-.Nd X509v3 certificate extension for autonomous system identifier delegation
+.Nd RFC 3779 autonomous system identifier delegation extensions
 .Sh SYNOPSIS
 .In openssl/x509v3.h
 .Ft ASIdentifiers *
@@ -112,7 +112,7 @@ or a value <= 0 if an error occurs.
 .Xr crypto 3 ,
 .Xr IPAddressRange_new 3 ,
 .Xr X509_new 3 ,
-.Xr X509v3_asid_add_id_or_range 3
+.Xr X509v3_asid_add_id_or_range 3 ,
 .Xr X509v3_asid_inherits 3
 .Sh STANDARDS
 RFC 3779: X.509 Extensions for IP Addresses and AS Identifiers:
