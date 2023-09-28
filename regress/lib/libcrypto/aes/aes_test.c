@@ -1,4 +1,4 @@
-/*	$OpenBSD: aes_test.c,v 1.1 2022/11/07 17:41:40 joshua Exp $ */
+/*	$OpenBSD: aes_test.c,v 1.2 2022/11/07 23:09:25 joshua Exp $ */
 /*
  * Copyright (c) 2022 Joshua Sing <joshua@hypera.dev>
  *
@@ -913,8 +913,8 @@ aes_test(void)
 			if (!aes_ecb_test(i, label, key_bits, at))
 				goto failed;
 			break;
-		
-		/* CBC */	
+
+		/* CBC */
 		case NID_aes_128_cbc:
 		case NID_aes_192_cbc:
 		case NID_aes_256_cbc:
