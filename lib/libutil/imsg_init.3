@@ -1,4 +1,4 @@
-.\" $OpenBSD: imsg_init.3,v 1.27 2023/06/20 05:56:19 jmc Exp $
+.\" $OpenBSD: imsg_init.3,v 1.28 2023/06/20 06:53:29 jsg Exp $
 .\"
 .\" Copyright (c) 2010 Nicholas Marriott <nicm@openbsd.org>
 .\"
@@ -472,9 +472,9 @@ with the data of extent
 .Pp
 .Fn ibuf_set_n8 ,
 .Fn ibuf_set_n16 ,
-.Fn ibuf_seek_set_n32
+.Fn ibuf_set_n32
 and
-.Fn ibuf_seek_set_n64
+.Fn ibuf_set_n64
 replace a 1-byte, 2-byte, 4-byte or 8-byte
 .Fa value
 at offset
