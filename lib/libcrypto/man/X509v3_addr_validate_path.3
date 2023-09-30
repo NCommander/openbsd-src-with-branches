@@ -1,4 +1,4 @@
-.\" $OpenBSD: X509v3_addr_validate_path.3,v 1.2 2023/09/29 09:28:21 tb Exp $
+.\" $OpenBSD: X509v3_addr_validate_path.3,v 1.3 2023/09/29 15:41:06 tb Exp $
 .\"
 .\" Copyright (c) 2023 Theo Buehler <tb@openbsd.org>
 .\"
@@ -31,7 +31,7 @@
 .Fo X509v3_addr_validate_resource_set
 .Fa "STACK_OF(X509) *chain"
 .Fa "IPAddrBlocks *addrblocks"
-.Fa "int allow_inheritance"
+.Fa "int allow_inherit"
 .Fc
 .Ft int
 .Fn X509v3_asid_validate_path "X509_STORE_CTX *ctx"
@@ -39,7 +39,7 @@
 .Fo X509v3_asid_validate_resource_set
 .Fa "STACK_OF(X509) *chain"
 .Fa "ASIdentifiers *asid"
-.Fa "int allow_inheritance"
+.Fa "int allow_inherit"
 .Fc
 .Sh DESCRIPTION
 Both RFC 3779 extensions require additional checking in the certification
@@ -157,8 +157,8 @@ is
 .Dv NULL
 or empty.
 If
-.Fa allow_inheritance
-is 0 ,
+.Fa allow_inherit
+is 0,
 .Fa addrblocks
 or
 .Fa asid
