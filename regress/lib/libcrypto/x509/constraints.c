@@ -1,4 +1,4 @@
-/*	$OpenBSD: constraints.c,v 1.15 2022/11/28 07:24:03 tb Exp $	*/
+/*	$OpenBSD: constraints.c,v 1.16 2023/09/29 15:53:59 beck Exp $	*/
 /*
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
  *
@@ -388,6 +388,7 @@ test_invalid_uri(void)
  done:
 	return failure;
 }
+
 static int
 test_valid_uri(void)
 {
