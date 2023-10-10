@@ -1,7 +1,7 @@
 # Check if lld is built as a standalone project.
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   project(lld)
-  cmake_minimum_required(VERSION 3.4.3)
+  cmake_minimum_required(VERSION 3.13.4)
 
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
   set(LLD_BUILT_STANDALONE TRUE)
@@ -35,6 +35,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   set(LLVM_MAIN_SRC_DIR ${MAIN_SRC_DIR} CACHE PATH "Path to LLVM source tree")
 
   file(TO_CMAKE_PATH ${LLVM_OBJ_ROOT} LLVM_BINARY_DIR)
+  file(TO_CMAKE_PATH ${LLVM_CMAKE_PATH} LLVM_CMAKE_PATH)
 
   if(NOT EXISTS "${LLVM_CMAKE_PATH}/LLVMConfig.cmake")
     message(FATAL_ERROR "LLVMConfig.cmake not found")
@@ -54,19 +55,12 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   include(AddLLVM)
   include(TableGen)
   include(HandleLLVMOptions)
+  include(GetErrcMessages)
+  include(CheckAtomic)
 
   if(LLVM_INCLUDE_TESTS)
-    include(FindPythonInterp)
-    if(NOT PYTHONINTERP_FOUND)
-      message(FATAL_ERROR
-"Unable to find Python interpreter, required for testing.
-
-Please install Python or specify the PYTHON_EXECUTABLE CMake variable.")
-    endif()
-
-    if(${PYTHON_VERSION_STRING} VERSION_LESS 2.7)
-      message(FATAL_ERROR "Python 2.7 or newer is required")
-    endif()
+    find_package(Python3 ${LLVM_MINIMUM_PYTHON_VERSION} REQUIRED
+      COMPONENTS Interpreter)
 
     # Check prebuilt llvm/utils.
     if(EXISTS ${LLVM_TOOLS_BINARY_DIR}/FileCheck${CMAKE_EXECUTABLE_SUFFIX}
@@ -106,6 +100,8 @@ Please install Python or specify the PYTHON_EXECUTABLE CMake variable.")
       endif()
       set(LLVM_LIT_ARGS "${LIT_ARGS_DEFAULT}" CACHE STRING "Default options for lit")
 
+      get_errc_messages(LLVM_LIT_ERRC_MESSAGES)
+
       # On Win32 hosts, provide an option to specify the path to the GnuWin32 tools.
       if(WIN32 AND NOT CYGWIN)
         set(LLVM_LIT_TOOLS_DIR "" CACHE PATH "Path to GnuWin32 tools")
@@ -114,11 +110,22 @@ Please install Python or specify the PYTHON_EXECUTABLE CMake variable.")
       set(LLVM_INCLUDE_TESTS OFF)
     endif()
   endif()
+
+  if(LLVM_HAVE_LIBXAR)
+    set(XAR_LIB xar)
+  endif()
 endif()
 
 set(LLD_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LLD_INCLUDE_DIR ${LLD_SOURCE_DIR}/include )
 set(LLD_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
+set(LLD_VENDOR ${PACKAGE_VENDOR} CACHE STRING
+  "Vendor-specific text for showing with version information.")
+
+if(LLD_VENDOR)
+  add_definitions(-DLLD_VENDOR="${LLD_VENDOR}")
+endif()
 
 # Compute the LLD version from the LLVM version.
 string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?" LLD_VERSION
@@ -129,33 +136,6 @@ string(REGEX REPLACE "([0-9]+)\\.[0-9]+(\\.[0-9]+)?" "\\1" LLD_VERSION_MAJOR
   ${LLD_VERSION})
 string(REGEX REPLACE "[0-9]+\\.([0-9]+)(\\.[0-9]+)?" "\\1" LLD_VERSION_MINOR
   ${LLD_VERSION})
-
-# Determine LLD revision and repository.
-# TODO: Figure out a way to get the revision and the repository on windows.
-if ( NOT CMAKE_SYSTEM_NAME MATCHES "Windows" )
-  execute_process(COMMAND ${CMAKE_SOURCE_DIR}/utils/GetSourceVersion ${LLD_SOURCE_DIR}
-                  OUTPUT_VARIABLE LLD_REVISION)
-
-  execute_process(COMMAND ${CMAKE_SOURCE_DIR}/utils/GetRepositoryPath ${LLD_SOURCE_DIR}
-                  OUTPUT_VARIABLE LLD_REPOSITORY)
-  if ( LLD_REPOSITORY )
-    # Replace newline characters with spaces
-    string(REGEX REPLACE "(\r?\n)+" " " LLD_REPOSITORY ${LLD_REPOSITORY})
-    # Remove leading spaces
-    STRING(REGEX REPLACE "^[ \t\r\n]+" "" LLD_REPOSITORY "${LLD_REPOSITORY}" )
-    # Remove trailing spaces
-    string(REGEX REPLACE "(\ )+$" "" LLD_REPOSITORY ${LLD_REPOSITORY})
-  endif()
-
-  if ( LLD_REVISION )
-    # Replace newline characters with spaces
-    string(REGEX REPLACE "(\r?\n)+" " " LLD_REVISION ${LLD_REVISION})
-    # Remove leading spaces
-    STRING(REGEX REPLACE "^[ \t\r\n]+" "" LLD_REVISION "${LLD_REVISION}" )
-    # Remove trailing spaces
-    string(REGEX REPLACE "(\ )+$" "" LLD_REVISION ${LLD_REVISION})
-  endif()
-endif ()
 
 # Configure the Version.inc file.
 configure_file(
@@ -190,6 +170,12 @@ endif()
 option(LLD_BUILD_TOOLS
   "Build the lld tools. If OFF, just generate build targets." ON)
 
+option(LLD_DEFAULT_LD_LLD_IS_MINGW
+    "Use MinGW as the default backend for ld.lld. If OFF, ELF will be used." OFF)
+if (LLD_DEFAULT_LD_LLD_IS_MINGW)
+  add_definitions("-DLLD_DEFAULT_LD_LLD_IS_MINGW=1")
+endif()
+
 if (MSVC)
   add_definitions(-wd4530) # Suppress 'warning C4530: C++ exception handler used, but unwind semantics are not enabled.'
   add_definitions(-wd4062) # Suppress 'warning C4062: enumerator X in switch of enum Y is not handled' from system header.
@@ -205,7 +191,6 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
     DESTINATION include
     FILES_MATCHING
     PATTERN "*.h"
-    PATTERN ".svn" EXCLUDE
     )
 endif()
 
@@ -221,5 +206,8 @@ endif()
 add_subdirectory(docs)
 add_subdirectory(COFF)
 add_subdirectory(ELF)
+add_subdirectory(MachO)
 add_subdirectory(MinGW)
 add_subdirectory(wasm)
+
+add_subdirectory(cmake/modules)

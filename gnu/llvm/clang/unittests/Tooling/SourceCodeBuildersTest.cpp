@@ -133,7 +133,7 @@ static void testBuilder(
   ASSERT_TRUE(StmtMatch);
   EXPECT_THAT(Builder(*StmtMatch->Result.Nodes.getNodeAs<Expr>("expr"),
                       *StmtMatch->Result.Context),
-              ValueIs(Expected));
+              ValueIs(std::string(Expected)));
 }
 
 TEST(SourceCodeBuildersTest, BuildParensUnaryOp) {
@@ -170,6 +170,24 @@ TEST(SourceCodeBuildersTest, BuildAddressOfPointerDereferenceIgnoresParens) {
 
 TEST(SourceCodeBuildersTest, BuildAddressOfBinaryOperation) {
   testBuilder(buildAddressOf, "S x; x + x;", "&(x + x)");
+}
+
+TEST(SourceCodeBuildersTest, BuildAddressOfImplicitThis) {
+  StringRef Snippet = R"cc(
+    struct Struct {
+      void foo() {}
+      void bar() {
+        foo();
+      }
+    };
+  )cc";
+  auto StmtMatch = matchStmt(
+      Snippet,
+      cxxMemberCallExpr(onImplicitObjectArgument(cxxThisExpr().bind("expr"))));
+  ASSERT_TRUE(StmtMatch);
+  EXPECT_THAT(buildAddressOf(*StmtMatch->Result.Nodes.getNodeAs<Expr>("expr"),
+                             *StmtMatch->Result.Context),
+              ValueIs(std::string("this")));
 }
 
 TEST(SourceCodeBuildersTest, BuildDereferencePointer) {

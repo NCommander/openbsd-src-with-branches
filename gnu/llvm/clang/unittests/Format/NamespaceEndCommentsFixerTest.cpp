@@ -8,7 +8,6 @@
 
 #include "clang/Format/Format.h"
 
-#include "clang/Frontend/TextDiagnosticPrinter.h"
 #include "llvm/Support/Debug.h"
 #include "gtest/gtest.h"
 
@@ -423,8 +422,7 @@ TEST_F(NamespaceEndCommentsFixerTest, AddsNewlineIfNeeded) {
 TEST_F(NamespaceEndCommentsFixerTest, DoesNotAddEndCommentForShortNamespace) {
   EXPECT_EQ("namespace {}", fixNamespaceEndComments("namespace {}"));
   EXPECT_EQ("namespace A {}", fixNamespaceEndComments("namespace A {}"));
-  EXPECT_EQ("namespace A { a }",
-            fixNamespaceEndComments("namespace A { a }"));
+  EXPECT_EQ("namespace A { a }", fixNamespaceEndComments("namespace A { a }"));
   EXPECT_EQ("namespace A { a };",
             fixNamespaceEndComments("namespace A { a };"));
 }
@@ -818,7 +816,7 @@ TEST_F(NamespaceEndCommentsFixerTest,
                                     "}\n"));
 }
 
-TEST_F(NamespaceEndCommentsFixerTest, AddEndCommentForNamespacesAroundMacros) {
+TEST_F(NamespaceEndCommentsFixerTest, AddsEndCommentForNamespacesAroundMacros) {
   // Conditional blocks around are fine
   EXPECT_EQ("namespace A {\n"
             "#if 1\n"
@@ -1089,6 +1087,103 @@ TEST_F(NamespaceEndCommentsFixerTest, HandlesInlineAtEndOfLine_PR32438) {
                                     "#define c inline\n"
                                     "void d() {\n"
                                     "}\n"));
+}
+
+TEST_F(NamespaceEndCommentsFixerTest, IgnoreUnbalanced) {
+  EXPECT_EQ("namespace A {\n"
+            "class Foo {\n"
+            "}\n"
+            "}// namespace A\n",
+            fixNamespaceEndComments("namespace A {\n"
+                                    "class Foo {\n"
+                                    "}\n"
+                                    "}\n"));
+  EXPECT_EQ("namespace A {\n"
+            "class Foo {\n"
+            "}\n",
+            fixNamespaceEndComments("namespace A {\n"
+                                    "class Foo {\n"
+                                    "}\n"));
+
+  EXPECT_EQ("namespace A {\n"
+            "class Foo {\n"
+            "}\n"
+            "}\n"
+            "}\n",
+            fixNamespaceEndComments("namespace A {\n"
+                                    "class Foo {\n"
+                                    "}\n"
+                                    "}\n"
+                                    "}\n"));
+}
+
+using ShortNamespaceLinesTest = NamespaceEndCommentsFixerTest;
+
+TEST_F(ShortNamespaceLinesTest, ZeroUnwrappedLines) {
+  auto Style = getLLVMStyle();
+  Style.ShortNamespaceLines = 0u;
+
+  EXPECT_EQ("namespace OneLinerNamespace {}\n",
+            fixNamespaceEndComments("namespace OneLinerNamespace {}\n", Style));
+  EXPECT_EQ("namespace ShortNamespace {\n"
+            "}\n",
+            fixNamespaceEndComments("namespace ShortNamespace {\n"
+                                    "}\n",
+                                    Style));
+  EXPECT_EQ("namespace LongNamespace {\n"
+            "int i;\n"
+            "}// namespace LongNamespace\n",
+            fixNamespaceEndComments("namespace LongNamespace {\n"
+                                    "int i;\n"
+                                    "}\n",
+                                    Style));
+}
+
+TEST_F(ShortNamespaceLinesTest, OneUnwrappedLine) {
+  constexpr auto DefaultUnwrappedLines = 1u;
+  auto const Style = getLLVMStyle();
+
+  EXPECT_EQ(DefaultUnwrappedLines, Style.ShortNamespaceLines);
+  EXPECT_EQ("namespace ShortNamespace {\n"
+            "int i;\n"
+            "}\n",
+            fixNamespaceEndComments("namespace ShortNamespace {\n"
+                                    "int i;\n"
+                                    "}\n"));
+  EXPECT_EQ("namespace LongNamespace {\n"
+            "int i;\n"
+            "int j;\n"
+            "}// namespace LongNamespace\n",
+            fixNamespaceEndComments("namespace LongNamespace {\n"
+                                    "int i;\n"
+                                    "int j;\n"
+                                    "}\n"));
+}
+
+TEST_F(ShortNamespaceLinesTest, MultipleUnwrappedLine) {
+  auto Style = getLLVMStyle();
+  Style.ShortNamespaceLines = 2u;
+
+  EXPECT_EQ("namespace ShortNamespace {\n"
+            "int i;\n"
+            "int j;\n"
+            "}\n",
+            fixNamespaceEndComments("namespace ShortNamespace {\n"
+                                    "int i;\n"
+                                    "int j;\n"
+                                    "}\n",
+                                    Style));
+  EXPECT_EQ("namespace LongNamespace {\n"
+            "int i;\n"
+            "int j;\n"
+            "int k;\n"
+            "}// namespace LongNamespace\n",
+            fixNamespaceEndComments("namespace LongNamespace {\n"
+                                    "int i;\n"
+                                    "int j;\n"
+                                    "int k;\n"
+                                    "}\n",
+                                    Style));
 }
 } // end namespace
 } // end namespace format

@@ -1,4 +1,4 @@
-#	$OpenBSD: agent-pkcs11.sh,v 1.10 2023/10/06 03:25:14 djm Exp $
+#	$OpenBSD: agent-pkcs11.sh,v 1.8 2021/05/24 10:25:18 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="pkcs11 agent test"
@@ -38,7 +38,6 @@ export SSH_ASKPASS
 unset DISPLAY
 
 # start command w/o tty, so ssh-add accepts pin from stdin
-# XXX could force askpass instead
 notty() {
 	perl -e 'use POSIX; POSIX::setsid(); 
 	    if (fork) { wait; exit($? >> 8); } else { exec(@ARGV) }' "$@"
@@ -46,23 +45,18 @@ notty() {
 
 trace "generating keys"
 RSA=${DIR}/RSA
-RSAP8=${DIR}/RSAP8
-ECPARAM=${DIR}/ECPARAM
 EC=${DIR}/EC
-ECP8=${DIR}/ECP8
-$OPENSSL_BIN genpkey -algorithm rsa > $RSA || fatal "genpkey RSA fail"
-$OPENSSL_BIN pkcs8 -nocrypt -in $RSA > $RSAP8 || fatal "pkcs8 RSA fail"
-softhsm2-util --slot "$slot" --label 01 --id 01 \
-    --pin "$TEST_SSH_PIN" --import $RSAP8 || fatal "softhsm import RSA fail"
-
+$OPENSSL_BIN genpkey -algorithm rsa > $RSA
+$OPENSSL_BIN pkcs8 -nocrypt -in $RSA |\
+    softhsm2-util --slot "$slot" --label 01 --id 01 --pin "$TEST_SSH_PIN" --import /dev/stdin
 $OPENSSL_BIN genpkey \
     -genparam \
     -algorithm ec \
-    -pkeyopt ec_paramgen_curve:prime256v1 > $ECPARAM || fatal "param EC fail"
-$OPENSSL_BIN genpkey -paramfile $ECPARAM > $EC || fatal "genpkey EC fail"
-$OPENSSL_BIN pkcs8 -nocrypt -in $EC > $ECP8 || fatal "pkcs8 EC fail"
-softhsm2-util --slot "$slot" --label 02 --id 02 \
-    --pin "$TEST_SSH_PIN" --import $ECP8 || fatal "softhsm import EC fail"
+    -pkeyopt ec_paramgen_curve:prime256v1 |\
+    $OPENSSL_BIN genpkey \
+    -paramfile /dev/stdin > $EC
+$OPENSSL_BIN pkcs8 -nocrypt -in $EC |\
+    softhsm2-util --slot "$slot" --label 02 --id 02 --pin "$TEST_SSH_PIN" --import /dev/stdin
 
 trace "start agent"
 eval `${SSHAGENT} ${EXTRA_AGENT_ARGS} -s` > /dev/null
@@ -89,8 +83,7 @@ else
 		chmod 600 $k
 		ssh-keygen -y -f $k > $k.pub
 		pub=$(cat $k.pub)
-		${SSHADD} -L | grep -q "$pub" || \
-			fail "key $k missing in ssh-add -L"
+		${SSHADD} -L | grep -q "$pub" || fail "key $k missing in ssh-add -L"
 		${SSHADD} -T $k.pub || fail "ssh-add -T with $k failed"
 
 		# add to authorized keys

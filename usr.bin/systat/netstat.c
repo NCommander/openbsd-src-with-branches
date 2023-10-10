@@ -1,4 +1,4 @@
-/*	$OpenBSD: netstat.c,v 1.45 2015/03/12 01:03:00 claudio Exp $	*/
+/*	$OpenBSD: netstat.c,v 1.44 2015/01/20 18:26:57 deraadt Exp $	*/
 /*	$NetBSD: netstat.c,v 1.3 1995/06/18 23:53:07 cgd Exp $	*/
 
 /*-
@@ -388,7 +388,7 @@ shownetstat(struct netinfo *p)
 	switch (p->nif_proto) {
 	case IPPROTO_TCP:
 	case IPPROTO_UDP:
-		tbprintf("%s", proto);
+		tbprintf(proto);
 		if (p->nif_family == AF_INET6)
 			tbprintf("6");
 		break;

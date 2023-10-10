@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: AddCreateDelete.pm,v 1.55 2023/10/08 12:44:58 espie Exp $
+# $OpenBSD: AddCreateDelete.pm,v 1.51 2023/05/27 09:59:51 espie Exp $
 #
 # Copyright (c) 2007-2014 Marc Espie <espie@openbsd.org>
 #
@@ -55,28 +55,6 @@ sub add_interactive_options($self)
 	return $self;
 }
 
-my $setup = {
-	nowantlib => q'
-	    	use OpenBSD::Dependencies::SolverBase;
-		no warnings qw(redefine);
-		package OpenBSD::Dependencies::SolverBase;
-		sub solve_wantlibs($, $) { 1 }
-	    ',
-	nosystemwantlib => q'
-	    	use OpenBSD::LibSpec;
-		package OpenBSD::Library::System;
-		sub no_match_dispatch($library, $spec, $base)
-		{
-			return $spec->no_match_name($library, $base);
-		}
-	    ',
-	norun => q'
-		package OpenBSD::State;
-		sub _system(@) { 0 }
-	    ',
-};
-		
-
 sub handle_options($state, $opt_string, @usage)
 {
 	my $i;
@@ -100,19 +78,6 @@ sub handle_options($state, $opt_string, @usage)
 		}
 	}
 	$state->{interactive} = $state->interactive_class($i)->new($state, $i);
-	if ($state->defines('REGRESSION_TESTING')) {
-		for my $i (split(',', $state->defines('REGRESSION_TESTING'))) {
-			$state->{regression}{$i} = 1;
-			if (defined $setup->{$i}) {
-				eval "$setup->{$i}";
-				if ($@) {
-					$state->fatal(
-					    "Regression testing #1: #2", 
-					    $i, $@);
-				}
-			}
-		}
-	}
 }
 
 sub interactive_class($, $i)

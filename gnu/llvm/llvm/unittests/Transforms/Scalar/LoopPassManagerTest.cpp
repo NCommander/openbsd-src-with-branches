@@ -9,6 +9,10 @@
 #include "llvm/Transforms/Scalar/LoopPassManager.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/AssumptionCache.h"
+#include "llvm/Analysis/BlockFrequencyInfo.h"
+#include "llvm/Analysis/BranchProbabilityInfo.h"
+#include "llvm/Analysis/MemorySSA.h"
+#include "llvm/Analysis/PostDominators.h"
 #include "llvm/Analysis/ScalarEvolution.h"
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/Analysis/TargetTransformInfo.h"
@@ -189,6 +193,16 @@ struct MockLoopPassHandle
   MockLoopPassHandle() { setDefaults(); }
 };
 
+struct MockLoopNestPassHandle
+    : MockPassHandleBase<MockLoopNestPassHandle, LoopNest, LoopAnalysisManager,
+                         LoopStandardAnalysisResults &, LPMUpdater &> {
+  MOCK_METHOD4(run,
+               PreservedAnalyses(LoopNest &, LoopAnalysisManager &,
+                                 LoopStandardAnalysisResults &, LPMUpdater &));
+
+  MockLoopNestPassHandle() { setDefaults(); }
+};
+
 struct MockFunctionPassHandle
     : MockPassHandleBase<MockFunctionPassHandle, Function> {
   MOCK_METHOD2(run, PreservedAnalyses(Function &, FunctionAnalysisManager &));
@@ -238,6 +252,7 @@ protected:
 
   MockLoopAnalysisHandle MLAHandle;
   MockLoopPassHandle MLPHandle;
+  MockLoopNestPassHandle MLNPHandle;
   MockFunctionPassHandle MFPHandle;
   MockModulePassHandle MMPHandle;
 
@@ -282,7 +297,7 @@ public:
                   "end:\n"
                   "  ret void\n"
                   "}\n")),
-        LAM(true), FAM(true), MAM(true) {
+        LAM(), FAM(), MAM() {
     // Register our mock analysis.
     LAM.registerPass([&] { return MLAHandle.getAnalysis(); });
 
@@ -293,6 +308,9 @@ public:
     // those.
     FAM.registerPass([&] { return AAManager(); });
     FAM.registerPass([&] { return AssumptionAnalysis(); });
+    FAM.registerPass([&] { return BlockFrequencyAnalysis(); });
+    FAM.registerPass([&] { return BranchProbabilityAnalysis(); });
+    FAM.registerPass([&] { return PostDominatorTreeAnalysis(); });
     FAM.registerPass([&] { return MemorySSAAnalysis(); });
     FAM.registerPass([&] { return ScalarEvolutionAnalysis(); });
     FAM.registerPass([&] { return TargetLibraryAnalysis(); });
@@ -312,7 +330,7 @@ public:
 };
 
 TEST_F(LoopPassManagerTest, Basic) {
-  ModulePassManager MPM(true);
+  ModulePassManager MPM;
   ::testing::InSequence MakeExpectationsSequenced;
 
   // First we just visit all the loops in all the functions and get their
@@ -332,9 +350,9 @@ TEST_F(LoopPassManagerTest, Basic) {
   EXPECT_CALL(MLAHandle, run(HasName("loop.g.0"), _, _));
   // Wire the loop pass through pass managers into the module pipeline.
   {
-    LoopPassManager LPM(true);
+    LoopPassManager LPM;
     LPM.addPass(MLPHandle.getPass());
-    FunctionPassManager FPM(true);
+    FunctionPassManager FPM;
     FPM.addPass(createFunctionToLoopPassAdaptor(std::move(LPM)));
     MPM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
   }
@@ -358,10 +376,10 @@ TEST_F(LoopPassManagerTest, Basic) {
       .WillOnce(Invoke(getLoopAnalysisResult));
   // Wire two loop pass runs into the module pipeline.
   {
-    LoopPassManager LPM(true);
+    LoopPassManager LPM;
     LPM.addPass(MLPHandle.getPass());
     LPM.addPass(MLPHandle.getPass());
-    FunctionPassManager FPM(true);
+    FunctionPassManager FPM;
     FPM.addPass(createFunctionToLoopPassAdaptor(std::move(LPM)));
     MPM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
   }
@@ -371,8 +389,8 @@ TEST_F(LoopPassManagerTest, Basic) {
 }
 
 TEST_F(LoopPassManagerTest, FunctionPassInvalidationOfLoopAnalyses) {
-  ModulePassManager MPM(true);
-  FunctionPassManager FPM(true);
+  ModulePassManager MPM;
+  FunctionPassManager FPM;
   // We process each function completely in sequence.
   ::testing::Sequence FSequence, GSequence;
 
@@ -455,7 +473,7 @@ TEST_F(LoopPassManagerTest, FunctionPassInvalidationOfLoopAnalyses) {
 }
 
 TEST_F(LoopPassManagerTest, ModulePassInvalidationOfLoopAnalyses) {
-  ModulePassManager MPM(true);
+  ModulePassManager MPM;
   ::testing::InSequence MakeExpectationsSequenced;
 
   // First, force the analysis result to be computed for each loop.
@@ -546,8 +564,8 @@ TEST_F(LoopPassManagerTest, ModulePassInvalidationOfLoopAnalyses) {
 // become invalid, the analysis proxy itself becomes invalid and we clear all
 // loop analysis results.
 TEST_F(LoopPassManagerTest, InvalidationOfBundledAnalyses) {
-  ModulePassManager MPM(true);
-  FunctionPassManager FPM(true);
+  ModulePassManager MPM;
+  FunctionPassManager FPM;
   ::testing::InSequence MakeExpectationsSequenced;
 
   // First, force the analysis result to be computed for each loop.
@@ -592,7 +610,6 @@ TEST_F(LoopPassManagerTest, InvalidationOfBundledAnalyses) {
 
   EXPECT_CALL(MFPHandle, run(HasName("f"), _)).WillOnce(InvokeWithoutArgs([] {
     auto PA = PreservedAnalyses::none();
-    PA.preserve<AAManager>();
     // Not preserving `DominatorTreeAnalysis`.
     PA.preserve<LoopAnalysis>();
     PA.preserve<LoopAnalysisManagerFunctionProxy>();
@@ -608,7 +625,6 @@ TEST_F(LoopPassManagerTest, InvalidationOfBundledAnalyses) {
 
   EXPECT_CALL(MFPHandle, run(HasName("f"), _)).WillOnce(InvokeWithoutArgs([] {
     auto PA = PreservedAnalyses::none();
-    PA.preserve<AAManager>();
     PA.preserve<DominatorTreeAnalysis>();
     // Not preserving the `LoopAnalysis`.
     PA.preserve<LoopAnalysisManagerFunctionProxy>();
@@ -624,7 +640,6 @@ TEST_F(LoopPassManagerTest, InvalidationOfBundledAnalyses) {
 
   EXPECT_CALL(MFPHandle, run(HasName("f"), _)).WillOnce(InvokeWithoutArgs([] {
     auto PA = PreservedAnalyses::none();
-    PA.preserve<AAManager>();
     PA.preserve<DominatorTreeAnalysis>();
     PA.preserve<LoopAnalysis>();
     // Not preserving the `LoopAnalysisManagerFunctionProxy`.
@@ -640,7 +655,6 @@ TEST_F(LoopPassManagerTest, InvalidationOfBundledAnalyses) {
 
   EXPECT_CALL(MFPHandle, run(HasName("f"), _)).WillOnce(InvokeWithoutArgs([] {
     auto PA = PreservedAnalyses::none();
-    PA.preserve<AAManager>();
     PA.preserve<DominatorTreeAnalysis>();
     PA.preserve<LoopAnalysis>();
     PA.preserve<LoopAnalysisManagerFunctionProxy>();
@@ -754,11 +768,11 @@ TEST_F(LoopPassManagerTest, IndirectInvalidation) {
       }));
 
   // Build the pipeline and run it.
-  ModulePassManager MPM(true);
-  FunctionPassManager FPM(true);
+  ModulePassManager MPM;
+  FunctionPassManager FPM;
   FPM.addPass(
       createFunctionToLoopPassAdaptor(RequireAnalysisLoopPass<AnalysisA>()));
-  LoopPassManager LPM(true);
+  LoopPassManager LPM;
   LPM.addPass(MLPHandle.getPass());
   LPM.addPass(MLPHandle.getPass());
   FPM.addPass(createFunctionToLoopPassAdaptor(std::move(LPM)));
@@ -779,9 +793,11 @@ TEST_F(LoopPassManagerTest, IndirectOuterPassInvalidation) {
       .WillByDefault(Invoke([&](Loop &L, LoopAnalysisManager &AM,
                                 LoopStandardAnalysisResults &AR) {
         auto &FAMP = AM.getResult<FunctionAnalysisManagerLoopProxy>(L, AR);
-        auto &FAM = FAMP.getManager();
         Function &F = *L.getHeader()->getParent();
-        if (FAM.getCachedResult<FunctionAnalysis>(F))
+        // This call will assert when trying to get the actual analysis if the
+        // FunctionAnalysis can be invalidated. Only check its existence.
+        // Alternatively, use FAM above, for the purposes of this unittest.
+        if (FAMP.cachedResultExists<FunctionAnalysis>(F))
           FAMP.registerOuterAnalysisInvalidation<FunctionAnalysis,
                                                  LoopAnalysis>();
         return MLAHandle.getResult();
@@ -836,8 +852,8 @@ TEST_F(LoopPassManagerTest, IndirectOuterPassInvalidation) {
   }));
 
   // Build the pipeline and run it.
-  ModulePassManager MPM(true);
-  FunctionPassManager FPM(true);
+  ModulePassManager MPM;
+  FunctionPassManager FPM;
   FPM.addPass(MFPHandle.getPass());
   FPM.addPass(
       createFunctionToLoopPassAdaptor(RequireAnalysisLoopPass<LoopAnalysis>()));
@@ -915,9 +931,9 @@ TEST_F(LoopPassManagerTest, LoopChildInsertion) {
   // pass pipeline consisting of three mock pass runs over each loop. After
   // this we run both domtree and loop verification passes to make sure that
   // the IR remained valid during our mutations.
-  ModulePassManager MPM(true);
-  FunctionPassManager FPM(true);
-  LoopPassManager LPM(true);
+  ModulePassManager MPM;
+  FunctionPassManager FPM;
+  LoopPassManager LPM;
   LPM.addPass(MLPHandle.getPass());
   LPM.addPass(MLPHandle.getPass());
   LPM.addPass(MLPHandle.getPass());
@@ -1118,9 +1134,9 @@ TEST_F(LoopPassManagerTest, LoopPeerInsertion) {
   // pass pipeline consisting of three mock pass runs over each loop. After
   // this we run both domtree and loop verification passes to make sure that
   // the IR remained valid during our mutations.
-  ModulePassManager MPM(true);
-  FunctionPassManager FPM(true);
-  LoopPassManager LPM(true);
+  ModulePassManager MPM;
+  FunctionPassManager FPM;
+  LoopPassManager LPM;
   LPM.addPass(MLPHandle.getPass());
   LPM.addPass(MLPHandle.getPass());
   LPM.addPass(MLPHandle.getPass());
@@ -1381,7 +1397,7 @@ TEST_F(LoopPassManagerTest, LoopDeletion) {
   // have no PHI nodes and there is always a single i-dom.
   auto EraseLoop = [](Loop &L, BasicBlock &IDomBB,
                       LoopStandardAnalysisResults &AR, LPMUpdater &Updater) {
-    assert(L.empty() && "Can only delete leaf loops with this routine!");
+    assert(L.isInnermost() && "Can only delete leaf loops with this routine!");
     SmallVector<BasicBlock *, 4> LoopBBs(L.block_begin(), L.block_end());
     Updater.markLoopAsDeleted(L, L.getName());
     IDomBB.getTerminator()->replaceUsesOfWith(L.getHeader(),
@@ -1402,14 +1418,14 @@ TEST_F(LoopPassManagerTest, LoopDeletion) {
   };
 
   // Build up the pass managers.
-  ModulePassManager MPM(true);
-  FunctionPassManager FPM(true);
+  ModulePassManager MPM;
+  FunctionPassManager FPM;
   // We run several loop pass pipelines across the loop nest, but they all take
   // the same form of three mock pass runs in a loop pipeline followed by
   // domtree and loop verification. We use a lambda to stamp this out each
   // time.
   auto AddLoopPipelineAndVerificationPasses = [&] {
-    LoopPassManager LPM(true);
+    LoopPassManager LPM;
     LPM.addPass(MLPHandle.getPass());
     LPM.addPass(MLPHandle.getPass());
     LPM.addPass(MLPHandle.getPass());
@@ -1581,4 +1597,72 @@ TEST_F(LoopPassManagerTest, LoopDeletion) {
   MPM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
   MPM.run(*M, MAM);
 }
+
+TEST_F(LoopPassManagerTest, HandleLoopNestPass) {
+  ::testing::Sequence FSequence, GSequence;
+
+  EXPECT_CALL(MLPHandle, run(HasName("loop.0.0"), _, _, _))
+      .Times(2)
+      .InSequence(FSequence);
+  EXPECT_CALL(MLPHandle, run(HasName("loop.0.1"), _, _, _))
+      .Times(2)
+      .InSequence(FSequence);
+  EXPECT_CALL(MLPHandle, run(HasName("loop.0"), _, _, _)).InSequence(FSequence);
+  EXPECT_CALL(MLNPHandle, run(HasName("loop.0"), _, _, _))
+      .InSequence(FSequence);
+  EXPECT_CALL(MLPHandle, run(HasName("loop.0"), _, _, _)).InSequence(FSequence);
+  EXPECT_CALL(MLNPHandle, run(HasName("loop.0"), _, _, _))
+      .InSequence(FSequence);
+  EXPECT_CALL(MLPHandle, run(HasName("loop.g.0"), _, _, _))
+      .InSequence(GSequence);
+  EXPECT_CALL(MLNPHandle, run(HasName("loop.g.0"), _, _, _))
+      .InSequence(GSequence);
+  EXPECT_CALL(MLPHandle, run(HasName("loop.g.0"), _, _, _))
+      .InSequence(GSequence);
+  EXPECT_CALL(MLNPHandle, run(HasName("loop.g.0"), _, _, _))
+      .InSequence(GSequence);
+
+  EXPECT_CALL(MLNPHandle, run(HasName("loop.0"), _, _, _))
+      .InSequence(FSequence);
+  EXPECT_CALL(MLNPHandle, run(HasName("loop.g.0"), _, _, _))
+      .InSequence(GSequence);
+
+  EXPECT_CALL(MLNPHandle, run(HasName("loop.0"), _, _, _))
+      .InSequence(FSequence);
+  EXPECT_CALL(MLNPHandle, run(HasName("loop.g.0"), _, _, _))
+      .InSequence(GSequence);
+
+  ModulePassManager MPM;
+  FunctionPassManager FPM;
+
+  {
+    LoopPassManager LPM;
+    LPM.addPass(MLPHandle.getPass());
+    LPM.addPass(MLNPHandle.getPass());
+    LPM.addPass(MLPHandle.getPass());
+    LPM.addPass(MLNPHandle.getPass());
+
+    auto Adaptor = createFunctionToLoopPassAdaptor(std::move(LPM));
+    ASSERT_FALSE(Adaptor.isLoopNestMode());
+    FPM.addPass(std::move(Adaptor));
+  }
+
+  {
+    auto Adaptor = createFunctionToLoopPassAdaptor(MLNPHandle.getPass());
+    ASSERT_TRUE(Adaptor.isLoopNestMode());
+    FPM.addPass(std::move(Adaptor));
+  }
+
+  {
+    LoopPassManager LPM;
+    LPM.addPass(MLNPHandle.getPass());
+    auto Adaptor = createFunctionToLoopPassAdaptor(MLNPHandle.getPass());
+    ASSERT_TRUE(Adaptor.isLoopNestMode());
+    FPM.addPass(std::move(Adaptor));
+  }
+
+  MPM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
+  MPM.run(*M, MAM);
 }
+
+} // namespace

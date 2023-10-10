@@ -1,4 +1,4 @@
-/*	$OpenBSD: ls.c,v 1.55 2023/10/07 11:51:08 schwarze Exp $	*/
+/*	$OpenBSD: ls.c,v 1.53 2020/07/06 00:55:05 millert Exp $	*/
 /*	$NetBSD: ls.c,v 1.18 1996/07/09 09:16:29 mycroft Exp $	*/
 
 /*
@@ -436,12 +436,12 @@ display(FTSENT *p, FTSENT *list)
 	unsigned long long btotal;
 	blkcnt_t maxblock;
 	ino_t maxinode;
-	unsigned int maxmajor, maxminor;
 	int bcfile, flen, glen, ulen, maxflags, maxgroup, maxuser, maxlen;
 	int entries, needstats;
 	int width;
 	const char *user, *group;
 	char nuser[12], ngroup[12];
+	char buf[21];	/* 64 bits == 20 digits */
 	char *flags = NULL;
 
 	needstats = f_inode || f_longform || f_size;
@@ -449,7 +449,6 @@ display(FTSENT *p, FTSENT *list)
 	btotal = maxblock = maxinode = maxlen = maxnlink = 0;
 	bcfile = 0;
 	maxuser = maxgroup = maxflags = 0;
-	maxmajor = maxminor = 0;
 	maxsize = 0;
 	for (cur = list, entries = 0; cur != NULL; cur = cur->fts_link) {
 		if (cur->fts_info == FTS_ERR || cur->fts_info == FTS_NS) {
@@ -524,13 +523,9 @@ display(FTSENT *p, FTSENT *list)
 				(void)strlcpy(np->group, group, glen + 1);
 
 				if (S_ISCHR(sp->st_mode) ||
-				    S_ISBLK(sp->st_mode)) {
+				    S_ISBLK(sp->st_mode))
 					bcfile = 1;
-					if (maxmajor < major(sp->st_rdev))
-						maxmajor = major(sp->st_rdev);
-					if (maxminor < minor(sp->st_rdev))
-						maxminor = minor(sp->st_rdev);
-				}
+
 				if (f_flags) {
 					np->flags = &np->data[ulen + 1 + glen + 1];
 					(void)strlcpy(np->flags, flags, flen + 1);
@@ -556,29 +551,25 @@ display(FTSENT *p, FTSENT *list)
 	d.entries = entries;
 	d.maxlen = maxlen;
 	if (needstats) {
+		d.bcfile = bcfile;
 		d.btotal = btotal;
-		d.s_block = snprintf(NULL, 0, "%llu",
+		(void)snprintf(buf, sizeof(buf), "%llu",
 		    (unsigned long long)maxblock);
+		d.s_block = strlen(buf);
 		d.s_flags = maxflags;
 		d.s_group = maxgroup;
-		d.s_inode = snprintf(NULL, 0, "%llu",
+		(void)snprintf(buf, sizeof(buf), "%llu",
 		    (unsigned long long)maxinode);
-		d.s_nlink = snprintf(NULL, 0, "%lu",
+		d.s_inode = strlen(buf);
+		(void)snprintf(buf, sizeof(buf), "%lu",
 		    (unsigned long)maxnlink);
-		if (!f_humanval)
-			d.s_size = snprintf(NULL, 0, "%lld",
+		d.s_nlink = strlen(buf);
+		if (!f_humanval) {
+			(void)snprintf(buf, sizeof(buf), "%lld",
 			    (long long)maxsize);
-		else
+			d.s_size = strlen(buf);
+		} else
 			d.s_size = FMT_SCALED_STRSIZE-2; /* no - or '\0' */
-		d.s_major = d.s_minor = 3;
-		if (bcfile) {
-			d.s_major = snprintf(NULL, 0, "%u", maxmajor);
-			d.s_minor = snprintf(NULL, 0, "%u", maxminor);
-			if (d.s_size <= d.s_major + 2 + d.s_minor)
-				d.s_size = d.s_major + 2 + d.s_minor;
-			else
-				d.s_major = d.s_size - 2 - d.s_minor;
-		}
 		d.s_user = maxuser;
 	}
 

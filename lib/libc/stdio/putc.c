@@ -1,4 +1,4 @@
-/*	$OpenBSD: putc.c,v 1.13 2015/08/31 02:53:57 guenther Exp $ */
+/*	$OpenBSD: putc.c,v 1.12 2009/11/21 10:11:54 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,6 +32,7 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
 #include "local.h"
 
 /*
@@ -42,8 +43,10 @@
 int
 putc_unlocked(int c, FILE *fp)
 {
-	if (cantwrite(fp))
+	if (cantwrite(fp)) {
+		errno = EBADF;
 		return (EOF);
+	}
 	_SET_ORIENTATION(fp, -1);
 	return (__sputc(c, fp));
 }

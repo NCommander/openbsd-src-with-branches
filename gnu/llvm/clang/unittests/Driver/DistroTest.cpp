@@ -11,9 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 #include "clang/Driver/Distro.h"
+#include "llvm/Support/Host.h"
 #include "llvm/Support/VirtualFileSystem.h"
 #include "llvm/Support/raw_ostream.h"
 #include "gtest/gtest.h"
+
 using namespace clang;
 using namespace clang::driver;
 
@@ -273,12 +275,10 @@ TEST(DistroTest, DetectDebian) {
 
 TEST(DistroTest, DetectExherbo) {
   llvm::vfs::InMemoryFileSystem ExherboFileSystem;
-  ExherboFileSystem.addFile("/etc/exherbo-release", 0, // (ASCII art)
-                                 llvm::MemoryBuffer::getMemBuffer(""));
   ExherboFileSystem.addFile("/etc/os-release", 0,
       llvm::MemoryBuffer::getMemBuffer("NAME=\"Exherbo\"\n"
                                        "PRETTY_NAME=\"Exherbo Linux\"\n"
-                                       "ID=\"exherbo\"\n"
+                                       "ID=exherbo\n"
                                        "ANSI_COLOR=\"0;32\"\n"
                                        "HOME_URL=\"https://www.exherbo.org/\"\n"
                                        "SUPPORT_URL=\"irc://irc.freenode.net/#exherbo\"\n"

@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwqe.c,v 1.12 2023/10/09 14:25:00 stsp Exp $	*/
+/*	$OpenBSD: dwqe.c,v 1.10 2023/07/04 12:48:42 kettenis Exp $	*/
 /*
  * Copyright (c) 2008, 2019 Mark Kettenis <kettenis@openbsd.org>
  * Copyright (c) 2017, 2022 Patrick Wildt <patrick@blueri.se>
@@ -34,9 +34,18 @@
 #include <sys/timeout.h>
 
 #include <machine/bus.h>
+#include <machine/fdt.h>
 
 #include <net/if.h>
 #include <net/if_media.h>
+
+#include <dev/ofw/openfirm.h>
+#include <dev/ofw/ofw_clock.h>
+#include <dev/ofw/ofw_gpio.h>
+#include <dev/ofw/ofw_misc.h>
+#include <dev/ofw/ofw_pinctrl.h>
+#include <dev/ofw/ofw_regulator.h>
+#include <dev/ofw/fdt.h>
 
 #include <dev/mii/mii.h>
 #include <dev/mii/miivar.h>
@@ -772,7 +781,7 @@ dwqe_up(struct dwqe_softc *sc)
 	ifp->if_flags |= IFF_RUNNING;
 	ifq_clr_oactive(&ifp->if_snd);
 
-	dwqe_write(sc, GMAC_MAC_1US_TIC_CTR, (sc->sc_clkrate / 1000000) - 1);
+	dwqe_write(sc, GMAC_MAC_1US_TIC_CTR, (sc->sc_clk / 1000000) - 1);
 
 	/* Start receive DMA */
 	reg = dwqe_read(sc, GMAC_CHAN_RX_CONTROL(0));

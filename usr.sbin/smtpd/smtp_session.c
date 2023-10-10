@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.435 2023/06/23 18:32:28 op Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.434 2023/05/31 16:51:46 op Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -2624,7 +2624,7 @@ smtp_tx_dataline(struct smtp_tx *tx, const char *line)
 
 		case RFC5322_END_OF_HEADERS:
 			if (tx->session->listener->local ||
-			    tx->session->listener->port == htons(587)) {
+			    tx->session->listener->port == 587) {
 
 				if (!tx->has_date) {
 					log_debug("debug: %p: adding Date", tx);

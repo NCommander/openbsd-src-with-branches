@@ -1,4 +1,4 @@
-/*	$OpenBSD: wsetup.c,v 1.7 2005/08/08 08:05:36 espie Exp $ */
+/*	$OpenBSD$ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -31,7 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "local.h"
@@ -39,7 +38,7 @@
 /*
  * Various output routines call wsetup to be sure it is safe to write,
  * because either _flags does not include __SWR, or _buf is NULL.
- * __swsetup returns 0 if OK to write, nonzero otherwise, setting errno.
+ * _wsetup returns 0 if OK to write, nonzero otherwise.
  */
 int
 __swsetup(FILE *fp)
@@ -52,11 +51,8 @@ __swsetup(FILE *fp)
 	 * If we are not writing, we had better be reading and writing.
 	 */
 	if ((fp->_flags & __SWR) == 0) {
-		if ((fp->_flags & __SRW) == 0) {
-			errno = EBADF;
-			fp->_flags |= __SERR;
+		if ((fp->_flags & __SRW) == 0)
 			return (EOF);
-		}
 		if (fp->_flags & __SRD) {
 			/* clobber any ungetc data */
 			if (HASUB(fp))
@@ -72,11 +68,8 @@ __swsetup(FILE *fp)
 	 * Make a buffer if necessary, then set _w.
 	 */
 	if (fp->_bf._base == NULL) {
-		if ((fp->_flags & (__SSTR | __SALC)) == __SSTR) {
-			errno = EINVAL;
-			fp->_flags |= __SERR;
+		if ((fp->_flags & (__SSTR | __SALC)) == __SSTR)
 			return (EOF);
-		}
 		__smakebuf(fp);
 	}
 	if (fp->_flags & __SLBF) {

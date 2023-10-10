@@ -1,4 +1,4 @@
-/*	$OpenBSD: wbuf.c,v 1.13 2015/08/31 02:53:57 guenther Exp $ */
+/*	$OpenBSD: wbuf.c,v 1.12 2009/11/09 00:18:28 kurt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -32,6 +32,7 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
 #include "local.h"
 
 /*
@@ -53,8 +54,10 @@ __swbuf(int c, FILE *fp)
 	 * calls might wrap _w from negative to positive.
 	 */
 	fp->_w = fp->_lbfsize;
-	if (cantwrite(fp))
+	if (cantwrite(fp)) {
+		errno = EBADF;
 		return (EOF);
+	}
 	c = (unsigned char)c;
 
 	/*
