@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipsp.h,v 1.241 2023/07/06 04:55:05 dlg Exp $	*/
+/*	$OpenBSD: ip_ipsp.h,v 1.242 2023/08/07 01:44:51 dlg Exp $	*/
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr),
@@ -613,6 +613,7 @@ void	tdb_unlink(struct tdb *);
 void	tdb_unlink_locked(struct tdb *);
 void	tdb_cleanspd(struct tdb *);
 void	tdb_unbundle(struct tdb *);
+void	tdb_addtimeouts(struct tdb *);
 void	tdb_deltimeouts(struct tdb *);
 int	tdb_walk(u_int, int (*)(struct tdb *, void *, int), void *);
 void	tdb_printit(void *, int, int (*)(const char *, ...));
