@@ -33,7 +33,7 @@
 .\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 .\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" $OpenBSD: ssh_config.5,v 1.387 2023/10/04 04:03:50 djm Exp $
+.\" $OpenBSD: ssh_config.5,v 1.388 2023/10/04 05:42:10 jmc Exp $
 .Dd $Mdocdate: October 4 2023 $
 .Dt SSH_CONFIG 5
 .Os
@@ -1070,6 +1070,9 @@ may use the tilde syntax to refer to a user's home directory
 or the tokens described in the
 .Sx TOKENS
 section.
+Alternately an argument of
+.Cm none
+may be used to indicate no identity files should be loaded.
 .Pp
 It is possible to have
 multiple identity files specified in configuration files; all these
