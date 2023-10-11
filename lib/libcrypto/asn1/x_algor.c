@@ -1,4 +1,4 @@
-/* $OpenBSD: x_algor.c,v 1.29 2023/10/11 13:12:46 tb Exp $ */
+/* $OpenBSD: x_algor.c,v 1.25 2023/07/07 19:37:52 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -57,9 +57,12 @@
  */
 
 #include <stddef.h>
-#include <openssl/x509.h>
+
 #include <openssl/asn1.h>
 #include <openssl/asn1t.h>
+#include <openssl/x509.h>
+
+#include "x509_local.h"
 
 static const ASN1_TEMPLATE X509_ALGOR_seq_tt[] = {
 	{
@@ -101,7 +104,6 @@ const ASN1_ITEM X509_ALGORS_it = {
 	.size = 0,
 	.sname = "X509_ALGORS",
 };
-
 
 X509_ALGOR *
 d2i_X509_ALGOR(X509_ALGOR **a, const unsigned char **in, long len)
