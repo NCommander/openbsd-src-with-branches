@@ -1,4 +1,4 @@
-/*	$OpenBSD: roa.c,v 1.69 2023/06/29 10:28:25 tb Exp $ */
+/*	$OpenBSD: roa.c,v 1.70 2023/09/25 11:08:45 tb Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -257,7 +257,7 @@ roa_parse(X509 **x509, const char *fn, int talid, const unsigned char *der,
 		goto out;
 	}
 
-	if ((cert = cert_parse_ee_cert(fn, *x509)) == NULL)
+	if ((cert = cert_parse_ee_cert(fn, talid, *x509)) == NULL)
 		goto out;
 
 	if (cert->asz > 0) {

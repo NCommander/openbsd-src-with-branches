@@ -1,4 +1,4 @@
-/*	$OpenBSD: aspa.c,v 1.22 2023/07/10 12:02:37 job Exp $ */
+/*	$OpenBSD: aspa.c,v 1.23 2023/09/25 11:08:45 tb Exp $ */
 /*
  * Copyright (c) 2022 Job Snijders <job@fastly.com>
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
@@ -215,7 +215,7 @@ aspa_parse(X509 **x509, const char *fn, int talid, const unsigned char *der,
 	if (!aspa_parse_econtent(cms, cmsz, &p))
 		goto out;
 
-	if ((cert = cert_parse_ee_cert(fn, *x509)) == NULL)
+	if ((cert = cert_parse_ee_cert(fn, talid, *x509)) == NULL)
 		goto out;
 
 	p.res->valid = valid_aspa(fn, cert, p.res);
