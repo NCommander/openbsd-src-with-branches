@@ -1,7 +1,5 @@
-/* $OpenBSD$ */
-
 /****************************************************************************
- * Copyright (c) 1998-2007,2008 Free Software Foundation, Inc.              *
+ * Copyright 2021,2023 Thomas E. Dickey                                     *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -28,60 +26,55 @@
  * authorization.                                                           *
  ****************************************************************************/
 
-/****************************************************************************
- *  Author: Zeyd M. Ben-Halim <zmbenhal@netcom.com> 1992,1995               *
- *     and: Eric S. Raymond <esr@snark.thyrsus.com>                         *
- *     and: Thomas E. Dickey                        1996-on                 *
- ****************************************************************************/
+/* $Id: nc_access.h,v 1.6 2023/05/06 10:54:55 tom Exp $ */
+
+#ifndef NC_ACCESS_included
+#define NC_ACCESS_included 1
+/* *INDENT-OFF* */
+
+#include <ncurses_cfg.h>
+#include <curses.h>
+#include <sys/types.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
- *	lib_tracechr.c - Tracing/Debugging routines
+ * Turn off the 'use_terminfo_vars()' symbol to limit access to environment
+ * variables when running with privileges.
  */
-#include <curses.priv.h>
-
-#include <ctype.h>
-
-MODULE_ID("$Id: lib_tracechr.c,v 1.19 2008/08/03 15:39:29 tom Exp $")
-
-#ifdef TRACE
-
-NCURSES_EXPORT(char *)
-_nc_tracechar(SCREEN *sp, int ch)
-{
-    NCURSES_CONST char *name;
-    char *MyBuffer = ((sp != 0)
-		      ? sp->tracechr_buf
-		      : _nc_globals.tracechr_buf);
-    size_t len = ((sp != 0)
-		  ? _nc_screen_tracechr_buf_size
-		  : _nc_globals_traceatr_color_buf_size);
-
-    if (ch > KEY_MIN || ch < 0) {
-	name = _nc_keyname(sp, ch);
-	if (name == 0 || *name == '\0')
-	    name = "NULL";
-	(void) snprintf(MyBuffer, len, "'%.30s' = %#03o", name, ch);
-    } else if (!is8bits(ch) || !isprint(UChar(ch))) {
-	/*
-	 * workaround for glibc bug:
-	 * sprintf changes the result from unctrl() to an empty string if it
-	 * does not correspond to a valid multibyte sequence.
-	 */
-	(void) snprintf(MyBuffer, len, "%#03o", ch);
-    } else {
-	name = _nc_unctrl(sp, (chtype) ch);
-	if (name == 0 || *name == 0)
-	    name = "null";	/* shouldn't happen */
-	(void) snprintf(MyBuffer, len, "'%.30s' = %#03o", name, ch);
-    }
-    return (MyBuffer);
-}
-
-NCURSES_EXPORT(char *)
-_tracechar(int ch)
-{
-    return _nc_tracechar(SP, ch);
-}
+#if defined(USE_ROOT_ENVIRON) && defined(USE_SETUID_ENVIRON)
+#define use_terminfo_vars() 1
 #else
-EMPTY_MODULE(_nc_lib_tracechr)
+#define use_terminfo_vars() _nc_env_access()
 #endif
+
+extern NCURSES_EXPORT(int) _nc_env_access (void);
+
+/*
+ * Turn off this symbol to limit access to files when running setuid.
+ */
+#ifdef USE_ROOT_ACCESS
+
+#define safe_fopen(name,mode)       fopen(name,mode)
+#define safe_open2(name,flags)      open(name,flags)
+#define safe_open3(name,flags,mode) open(name,flags,mode)
+
+#else
+
+#define safe_fopen(name,mode)       _nc_safe_fopen(name,mode)
+#define safe_open2(name,flags)      _nc_safe_open3(name,flags,0)
+#define safe_open3(name,flags,mode) _nc_safe_open3(name,flags,mode)
+extern NCURSES_EXPORT(FILE *)       _nc_safe_fopen (const char *, const char *);
+extern NCURSES_EXPORT(int)          _nc_safe_open3 (const char *, int, mode_t);
+
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+/* *INDENT-ON* */
+
+#endif /* NC_ACCESS_included */

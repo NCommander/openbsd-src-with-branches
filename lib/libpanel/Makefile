@@ -1,11 +1,12 @@
-# $OpenBSD: Makefile,v 1.11 2016/03/30 06:38:42 jmc Exp $
+# $OpenBSD$
 
 LIB=	panel
-SRCS=	p_above.c p_below.c p_bottom.c p_delete.c p_hidden.c p_hide.c p_move.c \
-	p_new.c p_replace.c p_show.c p_top.c p_update.c p_user.c p_win.c panel.c
+SRCS=	p_above.c p_below.c p_bottom.c p_delete.c p_hidden.c p_hide.c \
+	p_move.c p_new.c p_replace.c p_show.c p_top.c p_update.c p_user.c \
+	p_win.c panel.c
 HDRS=	panel.h
+CFLAGS+=-I${.CURDIR}/../libcurses -D_XOPEN_SOURCE_EXTENDED -DNDEBUG
 MAN=	panel.3
-CFLAGS+= -I${.CURDIR}/../libcurses
 
 includes:
 	@cd ${.CURDIR}; for i in ${HDRS}; do \

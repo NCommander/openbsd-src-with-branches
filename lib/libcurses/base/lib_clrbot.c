@@ -1,7 +1,8 @@
-/* $OpenBSD$ */
+/* $OpenBSD: lib_clrbot.c,v 1.4 2010/01/12 23:22:05 nicm Exp $ */
 
 /****************************************************************************
- * Copyright (c) 1998-2001,2006 Free Software Foundation, Inc.              *
+ * Copyright 2020 Thomas E. Dickey                                          *
+ * Copyright 1998-2006,2009 Free Software Foundation, Inc.                  *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -42,14 +43,14 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$Id: lib_clrbot.c,v 1.20 2006/10/14 20:43:31 tom Exp $")
+MODULE_ID("$Id: lib_clrbot.c,v 1.4 2010/01/12 23:22:05 nicm Exp $")
 
 NCURSES_EXPORT(int)
 wclrtobot(WINDOW *win)
 {
     int code = ERR;
 
-    T((T_CALLED("wclrtobot(%p)"), win));
+    T((T_CALLED("wclrtobot(%p)"), (void *) win));
 
     if (win) {
 	NCURSES_SIZE_T y;

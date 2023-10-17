@@ -1,7 +1,8 @@
-/* $OpenBSD$ */
+/* $OpenBSD: lib_in_wch.c,v 1.1 2010/09/06 17:26:17 nicm Exp $ */
 
 /****************************************************************************
- * Copyright (c) 2002-2004,2006 Free Software Foundation, Inc.              *
+ * Copyright 2020 Thomas E. Dickey                                          *
+ * Copyright 2002-2009,2016 Free Software Foundation, Inc.                  *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -41,17 +42,19 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$Id: lib_in_wch.c,v 1.4 2006/09/03 15:41:22 tom Exp $")
+MODULE_ID("$Id: lib_in_wch.c,v 1.1 2010/09/06 17:26:17 nicm Exp $")
 
 NCURSES_EXPORT(int)
 win_wch(WINDOW *win, cchar_t *wcval)
 {
-    int row, col;
     int code = OK;
 
-    TR(TRACE_CCALLS, (T_CALLED("win_wch(%p,%p)"), win, wcval));
+    TR(TRACE_CCALLS, (T_CALLED("win_wch(%p,%p)"), (void *) win, (void *) wcval));
+
     if (win != 0
 	&& wcval != 0) {
+	int row, col;
+
 	getyx(win, row, col);
 
 	*wcval = win->_line[row].text[col];

@@ -1,19 +1,14 @@
-#	$OpenBSD: Makefile,v 1.11 2017/06/16 10:25:54 espie Exp $
+#	$OpenBSD: Makefile,v 1.12 2019/12/21 21:40:01 espie Exp $
 
 PROG=	tset
-SRCS=	tset.c dump_entry.c
+SRCS=	reset_cmd.c transform.c tset.c tty_settings.c
+CURSES=	${.CURDIR}/../../lib/libcurses
 DPADD=	${LIBCURSES}
 LDADD=	-lcurses
-CURSES= ${.CURDIR}/../../lib/libcurses
-TIC= ${.CURDIR}/../tic
-CFLAGS+= -I${CURSES} -I${TIC} -I${.CURDIR} -I. -DHAVE_GETTTYNAM -DHAVE_TTYENT_H
-CLEANFILES+= termsort.c
-.PATH:  ${TIC}
 LINKS=	${BINDIR}/tset ${BINDIR}/reset
-
-dump_entry.o: termsort.c
-
-termsort.c: ${TIC}/MKtermsort.sh
-	sh ${TIC}/MKtermsort.sh awk ${CURSES}/Caps > ${.TARGET}
+TIC= ${.CURDIR}/../tic
+CFLAGS+= -I${CURSES} -I${TIC} -I${.CURDIR} -I.
+.PATH:  ${TIC}
+CLEANFILES+= termsort.h
 
 .include <bsd.prog.mk>

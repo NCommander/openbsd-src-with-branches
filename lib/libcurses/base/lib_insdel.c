@@ -1,7 +1,8 @@
-/* $OpenBSD$ */
+/* $OpenBSD: lib_insdel.c,v 1.3 2010/01/12 23:22:05 nicm Exp $ */
 
 /****************************************************************************
- * Copyright (c) 1998-2001,2003 Free Software Foundation, Inc.              *
+ * Copyright 2020 Thomas E. Dickey                                          *
+ * Copyright 1998-2003,2009 Free Software Foundation, Inc.                  *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -44,14 +45,14 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$Id: lib_insdel.c,v 1.12 2003/07/26 22:40:06 tom Exp $")
+MODULE_ID("$Id: lib_insdel.c,v 1.3 2010/01/12 23:22:05 nicm Exp $")
 
 NCURSES_EXPORT(int)
 winsdelln(WINDOW *win, int n)
 {
     int code = ERR;
 
-    T((T_CALLED("winsdelln(%p,%d)"), win, n));
+    T((T_CALLED("winsdelln(%p,%d)"), (void *) win, n));
 
     if (win) {
 	if (n != 0) {

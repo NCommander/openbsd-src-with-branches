@@ -1,7 +1,8 @@
-/* $OpenBSD$ */
+/* $OpenBSD: p_top.c,v 1.4 2010/01/12 23:22:08 nicm Exp $ */
 
 /****************************************************************************
- * Copyright (c) 1998-2000,2005 Free Software Foundation, Inc.              *
+ * Copyright 2020 Thomas E. Dickey                                          *
+ * Copyright 1998-2005,2010 Free Software Foundation, Inc.                  *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -38,11 +39,11 @@
  */
 #include "panel.priv.h"
 
-MODULE_ID("$Id: p_top.c,v 1.5 2005/02/19 16:42:23 tom Exp $")
+MODULE_ID("$Id: p_top.c,v 1.4 2010/01/12 23:22:08 nicm Exp $")
 
-NCURSES_EXPORT(int)
+PANEL_EXPORT(int)
 top_panel(PANEL * pan)
 {
-  T((T_CALLED("top_panel(%p)"), pan));
+  T((T_CALLED("top_panel(%p)"), (void *)pan));
   returnCode(show_panel(pan));
 }

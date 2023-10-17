@@ -1,7 +1,8 @@
-/* $OpenBSD$ */
+/* $OpenBSD: version.c,v 1.5 2010/01/12 23:22:06 nicm Exp $ */
 
 /****************************************************************************
- * Copyright (c) 1999-2004,2005 Free Software Foundation, Inc.              *
+ * Copyright 2020 Thomas E. Dickey                                          *
+ * Copyright 1999-2004,2005 Free Software Foundation, Inc.                  *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -34,7 +35,7 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$Id: version.c,v 1.6 2005/01/02 01:23:54 tom Exp $")
+MODULE_ID("$Id: version.c,v 1.5 2010/01/12 23:22:06 nicm Exp $")
 
 NCURSES_EXPORT(const char *)
 curses_version(void)

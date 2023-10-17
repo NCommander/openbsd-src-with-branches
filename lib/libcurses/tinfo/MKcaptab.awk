@@ -1,6 +1,7 @@
-# $OpenBSD$
+# $OpenBSD: MKcaptab.awk,v 1.4 2010/01/12 23:22:06 nicm Exp $
 ##############################################################################
-# Copyright (c) 1998-2006,2007 Free Software Foundation, Inc.                #
+# Copyright 2020 Thomas E. Dickey                                            #
+# Copyright 1998-2006,2007 Free Software Foundation, Inc.                    #
 #                                                                            #
 # Permission is hereby granted, free of charge, to any person obtaining a    #
 # copy of this software and associated documentation files (the "Software"), #
@@ -26,7 +27,7 @@
 # use or other dealings in this Software without prior written               #
 # authorization.                                                             #
 ##############################################################################
-# $Id: MKcaptab.awk,v 1.20 2007/08/12 00:26:15 tom Exp $
+# $Id: MKcaptab.awk,v 1.4 2010/01/12 23:22:06 nicm Exp $
 function add_string(text) {
     if (text != "IGNORE") {
 	offsets[num_strings] = offset;

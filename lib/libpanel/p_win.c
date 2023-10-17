@@ -1,7 +1,8 @@
-/* $OpenBSD$ */
+/* $OpenBSD: p_win.c,v 1.4 2010/01/12 23:22:08 nicm Exp $ */
 
 /****************************************************************************
- * Copyright (c) 1998-2000,2005 Free Software Foundation, Inc.              *
+ * Copyright 2020 Thomas E. Dickey                                          *
+ * Copyright 1998-2005,2010 Free Software Foundation, Inc.                  *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -38,11 +39,11 @@
  */
 #include "panel.priv.h"
 
-MODULE_ID("$Id: p_win.c,v 1.5 2005/02/19 16:44:16 tom Exp $")
+MODULE_ID("$Id: p_win.c,v 1.4 2010/01/12 23:22:08 nicm Exp $")
 
-NCURSES_EXPORT(WINDOW *)
+PANEL_EXPORT(WINDOW *)
 panel_window(const PANEL * pan)
 {
-  T((T_CALLED("panel_window(%p)"), pan));
+  T((T_CALLED("panel_window(%p)"), (const void *)pan));
   returnWin(pan ? pan->win : (WINDOW *)0);
 }

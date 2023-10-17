@@ -1,7 +1,6 @@
-/* $OpenBSD$ */
-
 /****************************************************************************
- * Copyright (c) 1998-2007,2008 Free Software Foundation, Inc.              *
+ * Copyright 2020,2023 Thomas E. Dickey                                     *
+ * Copyright 2014,2015 Free Software Foundation, Inc.                       *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -29,93 +28,82 @@
  ****************************************************************************/
 
 /****************************************************************************
- *  Author: Thomas E. Dickey                 1997-on                        *
+ *  Author: Thomas E. Dickey                                                *
  ****************************************************************************/
-/*
- *	trace_buf.c - Tracing/Debugging buffers (attributes)
- */
 
-#include <curses.priv.h>
+#include <tparm_type.h>
 
-MODULE_ID("$Id: trace_buf.c,v 1.14 2008/08/03 15:13:56 tom Exp $")
-
-#define MyList _nc_globals.tracebuf_ptr
-#define MySize _nc_globals.tracebuf_used
-
-static char *
-_nc_trace_alloc(int bufnum, size_t want)
-{
-#ifdef TRACE
-    char *result = 0;
-
-    if (bufnum >= 0) {
-	if ((size_t) (bufnum + 1) > MySize) {
-	    size_t need = (bufnum + 1) * 2;
-	    if ((MyList = typeRealloc(TRACEBUF, need, MyList)) != 0) {
-		while (need > MySize)
-		    MyList[MySize++].text = 0;
-	    }
-	}
-
-	if (MyList != 0) {
-	    if (MyList[bufnum].text == 0
-		|| want > MyList[bufnum].size) {
-		MyList[bufnum].text = typeRealloc(char, want, MyList[bufnum].text);
-		if (MyList[bufnum].text != 0)
-		    MyList[bufnum].size = want;
-	    }
-	    result = MyList[bufnum].text;
-	}
-    }
-#if NO_LEAKS
-    else {
-	if (MySize) {
-	    if (MyList) {
-		while (MySize--) {
-		    if (MyList[MySize].text != 0) {
-			free(MyList[MySize].text);
-		    }
-		}
-		free(MyList);
-		MyList = 0;
-	    }
-	    MySize = 0;
-	}
-    }
-#endif
-    return result;
-#else
-    return NULL;
-#endif
-}
+MODULE_ID("$Id: tparm_type.c,v 1.5 2023/04/08 15:57:01 tom Exp $")
 
 /*
- * (re)Allocate a buffer big enough for the caller's wants.
+ * Lookup the type of call we should make to tparm().  This ignores the actual
+ * terminfo capability (bad, because it is not extensible), but makes this
+ * code portable to platforms where sizeof(int) != sizeof(char *).
  */
-NCURSES_EXPORT(char *)
-_nc_trace_buf(int bufnum, size_t want)
+TParams
+tparm_type(const char *name)
 {
-    char *result = _nc_trace_alloc(bufnum, want);
-    if (result != 0)
-	*result = '\0';
+#define TD(code, longname, ti, tc) \
+    	{code, {longname} }, \
+	{code, {ti} }, \
+	{code, {tc} }
+#define XD(code, onlyname) TD(code, onlyname, onlyname, onlyname)
+    TParams result = Numbers;
+    /* *INDENT-OFF* */
+    static const struct {
+	TParams code;
+	const char name[12];
+    } table[] = {
+	TD(Num_Str,	"pkey_key",	"pfkey",	"pk"),
+	TD(Num_Str,	"pkey_local",	"pfloc",	"pl"),
+	TD(Num_Str,	"pkey_xmit",	"pfx",		"px"),
+	TD(Num_Str,	"plab_norm",	"pln",		"pn"),
+	TD(Num_Str_Str, "pkey_plab",	"pfxl",		"xl"),
+#if NCURSES_XNAMES
+	XD(Str,		"Cs"),
+	XD(Str_Str,	"Ms"),
+#endif
+    };
+    /* *INDENT-ON* */
+
+    unsigned n;
+    for (n = 0; n < SIZEOF(table); n++) {
+	if (!strcmp(name, table[n].name)) {
+	    result = table[n].code;
+	    break;
+	}
+    }
     return result;
 }
 
-/*
- * Append a new string to an existing buffer.
- */
-NCURSES_EXPORT(char *)
-_nc_trace_bufcat(int bufnum, const char *value)
+TParams
+guess_tparm_type(int nparam, char **p_is_s)
 {
-    char *buffer = _nc_trace_alloc(bufnum, 0);
-    if (buffer != 0) {
-        size_t have = strlen(buffer), length;
-
-	length = 1 + have + strlen(value);
-	buffer = _nc_trace_alloc(bufnum, length);
-	if (buffer != 0)
-	     (void) strlcpy(buffer + have, value, length);
-
+    TParams result = Other;
+    switch (nparam) {
+    case 0:
+    case 1:
+	if (!p_is_s[0])
+	    result = Numbers;
+	if (p_is_s[0])
+	    result = Str;
+	break;
+    case 2:
+	if (!p_is_s[0] && !p_is_s[1])
+	    result = Numbers;
+	if (!p_is_s[0] && p_is_s[1])
+	    result = Num_Str;
+	if (p_is_s[0] && p_is_s[1])
+	    result = Str_Str;
+	break;
+    case 3:
+	if (!p_is_s[0] && !p_is_s[1] && !p_is_s[2])
+	    result = Numbers;
+	if (!p_is_s[0] && p_is_s[1] && p_is_s[2])
+	    result = Num_Str_Str;
+	break;
+    default:
+	break;
     }
-    return buffer;
+    return result;
 }

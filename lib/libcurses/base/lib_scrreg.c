@@ -1,7 +1,8 @@
-/* $OpenBSD$ */
+/* $OpenBSD: lib_scrreg.c,v 1.4 2010/01/12 23:22:06 nicm Exp $ */
 
 /****************************************************************************
- * Copyright (c) 1998,2000 Free Software Foundation, Inc.                   *
+ * Copyright 2020 Thomas E. Dickey                                          *
+ * Copyright 1998-2000,2009 Free Software Foundation, Inc.                  *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -42,12 +43,12 @@
 
 #include <curses.priv.h>
 
-MODULE_ID("$Id: lib_scrreg.c,v 1.10 2000/12/10 02:43:27 tom Exp $")
+MODULE_ID("$Id: lib_scrreg.c,v 1.4 2010/01/12 23:22:06 nicm Exp $")
 
 NCURSES_EXPORT(int)
 wsetscrreg(WINDOW *win, int top, int bottom)
 {
-    T((T_CALLED("wsetscrreg(%p,%d,%d)"), win, top, bottom));
+    T((T_CALLED("wsetscrreg(%p,%d,%d)"), (void *) win, top, bottom));
 
     if (win &&
 	top >= 0 && top <= win->_maxy &&

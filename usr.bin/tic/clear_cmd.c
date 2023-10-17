@@ -1,7 +1,6 @@
-/* $OpenBSD$ */
-
 /****************************************************************************
- * Copyright (c) 1999,2000 Free Software Foundation, Inc.                   *
+ * Copyright 2018,2020 Thomas E. Dickey                                     *
+ * Copyright 2016,2017 Free Software Foundation, Inc.                       *
  *                                                                          *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files (the            *
@@ -29,49 +28,33 @@
  ****************************************************************************/
 
 /****************************************************************************
- *  Author: Thomas E. Dickey <dickey@clark.net> 1999                        *
+ *  Author: Thomas E. Dickey                                                *
  ****************************************************************************/
+
 /*
- *	trace_xnames.c - Tracing/Debugging buffers (TERMTYPE extended names)
+ * clear.c --  clears the terminal's screen
  */
 
-#include <curses.priv.h>
-#include <term_entry.h>
+#define USE_LIBTINFO
+#include <clear_cmd.h>
 
-MODULE_ID("$Id: trace_xnames.c,v 1.5 2000/12/10 03:02:45 tom Exp $")
+MODULE_ID("$Id: clear_cmd.c,v 1.5 2020/02/02 23:34:34 tom Exp $")
 
-NCURSES_EXPORT(void)
-_nc_trace_xnames(TERMTYPE * tp GCC_UNUSED)
+static int
+putch(int c)
 {
-#ifdef TRACE
-#if NCURSES_XNAMES
-    int limit = tp->ext_Booleans + tp->ext_Numbers + tp->ext_Strings;
-    int n, m;
-    if (limit) {
-	int begin_num = tp->ext_Booleans;
-	int begin_str = tp->ext_Booleans + tp->ext_Numbers;
+    return putchar(c);
+}
 
-	_tracef("extended names (%s) %d = %d+%d+%d of %d+%d+%d",
-		tp->term_names,
-		limit,
-		tp->ext_Booleans, tp->ext_Numbers, tp->ext_Strings,
-		tp->num_Booleans, tp->num_Numbers, tp->num_Strings);
-	for (n = 0; n < limit; n++) {
-	    if ((m = n - begin_str) >= 0) {
-		_tracef("[%d] %s = %s", n,
-			tp->ext_Names[n],
-			_nc_visbuf(tp->Strings[tp->num_Strings + m - tp->ext_Strings]));
-	    } else if ((m = n - begin_num) >= 0) {
-		_tracef("[%d] %s = %d (num)", n,
-			tp->ext_Names[n],
-			tp->Numbers[tp->num_Numbers + m - tp->ext_Numbers]);
-	    } else {
-		_tracef("[%d] %s = %d (bool)", n,
-			tp->ext_Names[n],
-			tp->Booleans[tp->num_Booleans + n - tp->ext_Booleans]);
-	    }
-	}
+int
+clear_cmd(bool legacy)
+{
+    int retval = tputs(clear_screen, lines > 0 ? lines : 1, putch);
+    if (!legacy) {
+	/* Clear the scrollback buffer if possible. */
+	char *E3 = tigetstr("E3");
+	if (E3)
+	    (void) tputs(E3, lines > 0 ? lines : 1, putch);
     }
-#endif
-#endif
+    return retval;
 }
