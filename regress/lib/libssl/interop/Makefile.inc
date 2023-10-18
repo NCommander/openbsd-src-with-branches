@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.7 2020/09/15 01:45:16 bluhm Exp $
+# $OpenBSD: Makefile.inc,v 1.8 2020/12/17 00:51:11 bluhm Exp $
 
 .PATH:			${.CURDIR}/..
 
@@ -23,6 +23,8 @@ run-self-client-server: client server 127.0.0.1.crt
 	LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
 	    ./client >client-self.out \
 	    `sed -n 's/listen sock: //p' server-self.out`
+	# wait for server to terminate
+	-sed -n 's/listen sock: //p' server-self.out | xargs nc 2>/dev/null
 	# check that the client run successfully to the end
 	grep -q '^success$$' client-self.out
 	# client must have read server greeting
