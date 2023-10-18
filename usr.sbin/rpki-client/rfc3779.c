@@ -1,4 +1,4 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: rfc3779.c,v 1.1 2023/10/13 12:06:49 job Exp $ */
 /*
  * Copyright (c) 2021 Theo Buehler <tb@openbsd.org>
  *
@@ -15,9 +15,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <err.h>
 #include <stddef.h>
 
+#include <openssl/asn1.h>
 #include <openssl/x509v3.h>
 
 #include "extern.h"
