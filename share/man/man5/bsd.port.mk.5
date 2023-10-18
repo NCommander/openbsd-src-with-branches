@@ -1,4 +1,4 @@
-.\" $OpenBSD: bsd.port.mk.5,v 1.635 2023/09/27 08:20:50 semarie Exp $
+.\" $OpenBSD: bsd.port.mk.5,v 1.636 2023/09/27 12:24:22 espie Exp $
 .\"
 .\" Copyright (c) 2000-2008 Marc Espie
 .\"
@@ -3088,6 +3088,16 @@ all the work will need to be done again.
 .Pp
 See also
 .Ev BUILD_ONCE .
+.It Ev RANDOMIZE_SUBDIRS
+Actually lives in
+.Pa bsd.port.subdir.mk .
+Set to
+.Sq Yes
+to randomize tree traversal, as used by
+.Xr dbp 1 Ns 's Fl r
+option.
+Defaults to
+.Sq \&No Ns .
 .It Ev RCDIR
 Location for daemon startup scripts.
 Defaults to
