@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.7 2022/04/29 17:27:37 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.8 2023/10/11 18:07:56 anton Exp $
 
 # Copyright (c) 2018-2020 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -140,7 +140,6 @@ ifconfig: unconfig
 
 REGRESS_CLEANUP +=	unconfig
 unconfig:
-	# Destroy interfaces, keep lo as routing domain cannot be destroyed.
 .for n in ${NUMS}
 	-${SUDO} /sbin/ifconfig lo$n rdomain $n
 	-${SUDO} /sbin/ifconfig lo$n inet 127.0.0.1 delete
@@ -149,6 +148,7 @@ unconfig:
 	-${SUDO} /sbin/ifconfig lo$n inet6 ${SRC_TUNNEL6_$n} delete
 	-${SUDO} /sbin/ifconfig gif$n4 destroy
 	-${SUDO} /sbin/ifconfig gif$n6 destroy
+	-${SUDO} /sbin/ifconfig lo$n destroy
 .endfor
 	rm -f stamp-ifconfig
 

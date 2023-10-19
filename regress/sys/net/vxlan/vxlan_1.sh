@@ -1,11 +1,14 @@
 #!/bin/ksh
-#	$OpenBSD$
+#	$OpenBSD: vxlan_1.sh,v 1.1 2016/10/07 02:06:57 yasuoka Exp $
 
 
 cleanup()
 {
 	for if in $ALL_IFS; do
 		ifconfig $if destroy 2>/dev/null
+	done
+	for id in $RDOMAINS; do
+		ifconfig lo$id destroy 2>/dev/null
 	done
 }
 

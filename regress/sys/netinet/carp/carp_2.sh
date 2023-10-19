@@ -1,11 +1,14 @@
 #!/bin/ksh
-#	$OpenBSD: etherip_1.sh,v 1.2 2016/10/10 18:25:26 bluhm Exp $
+#	$OpenBSD: carp_2.sh,v 1.1 2016/10/24 02:52:02 yasuoka Exp $
 
 
 cleanup()
 {
 	for if in $ALL_IFS; do
 		ifconfig $if destroy 2>/dev/null
+	done
+	for i in $RDOMAINS; do
+		ifconfig lo$i destroy 2>/dev/null
 	done
 }
 

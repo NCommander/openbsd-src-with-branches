@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.3 2022/04/29 17:27:37 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.4 2023/10/11 18:07:56 anton Exp $
 
 # Copyright (c) 2021 Alexander Bluhm <bluhm@openbsd.org>
 #
@@ -130,6 +130,7 @@ unconfig:
 	-${SUDO} /sbin/route -n -T $n delete -inet6 fc00::/48
 	-${SUDO} /sbin/ifconfig lo$n inet 127.0.0.1 delete
 	-${SUDO} /sbin/ifconfig lo$n inet6 ::1 delete
+	-${SUDO} /sbin/ifconfig lo$n destroy
 .endfor
 	rm -f stamp-ifconfig
 
