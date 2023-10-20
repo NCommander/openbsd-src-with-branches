@@ -1,75 +1,70 @@
-/*	$NetBSD: xdr_stdio.c,v 1.3 1995/02/25 03:02:09 cgd Exp $	*/
+/*	$OpenBSD: xdr_stdio.c,v 1.16 2022/02/14 03:38:59 guenther Exp $ */
 
 /*
- * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
- * unrestricted use provided that this legend is included on all tape
- * media and as a part of the software program in whole or part.  Users
- * may copy or modify Sun RPC without charge, but are not authorized
- * to license or distribute it to anyone else except as part of a product or
- * program developed by the user.
- * 
- * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
- * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
- * Sun RPC is provided with no support and without any obligation on the
- * part of Sun Microsystems, Inc. to assist in its use, correction,
- * modification or enhancement.
- * 
- * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
- * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
- * OR ANY PART THEREOF.
- * 
- * In no event will Sun Microsystems, Inc. be liable for any lost revenue
- * or profits or other special, indirect and consequential damages, even if
- * Sun has been advised of the possibility of such damages.
- * 
- * Sun Microsystems, Inc.
- * 2550 Garcia Avenue
- * Mountain View, California  94043
+ * Copyright (c) 2010, Oracle America, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *     * Neither the name of the "Oracle America, Inc." nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *   COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)xdr_stdio.c 1.16 87/08/11 Copyr 1984 Sun Micro";*/
-/*static char *sccsid = "from: @(#)xdr_stdio.c	2.1 88/07/29 4.0 RPCSRC";*/
-static char *rcsid = "$NetBSD: xdr_stdio.c,v 1.3 1995/02/25 03:02:09 cgd Exp $";
-#endif
 
 /*
  * xdr_stdio.c, XDR implementation on standard i/o file.
- *
- * Copyright (C) 1984, Sun Microsystems, Inc.
  *
  * This set of routines implements a XDR on a stdio stream.
  * XDR_ENCODE serializes onto the stream, XDR_DECODE de-serializes
  * from the stream.
  */
 
-#include <rpc/types.h>
 #include <stdio.h>
+#include <rpc/types.h>
 #include <rpc/xdr.h>
 
-static bool_t	xdrstdio_getlong();
-static bool_t	xdrstdio_putlong();
-static bool_t	xdrstdio_getbytes();
-static bool_t	xdrstdio_putbytes();
-static u_int	xdrstdio_getpos();
-static bool_t	xdrstdio_setpos();
-static int32_t *xdrstdio_inline();
-static void	xdrstdio_destroy();
+static bool_t	xdrstdio_getlong(XDR *, long *);
+static bool_t	xdrstdio_putlong(XDR *, long *);
+static bool_t	xdrstdio_getbytes(XDR *, caddr_t, u_int);
+static bool_t	xdrstdio_putbytes(XDR *, caddr_t, u_int);
+static u_int	xdrstdio_getpos(XDR *);
+static bool_t	xdrstdio_setpos(XDR *, u_int);
+static int32_t *xdrstdio_inline(XDR *, u_int);
+static void	xdrstdio_destroy(XDR *);
 
 /*
  * Ops vector for stdio type XDR
  */
-static struct xdr_ops	xdrstdio_ops = {
-	xdrstdio_getlong,	/* deseraialize a long int */
-	xdrstdio_putlong,	/* seraialize a long int */
+static const struct xdr_ops	xdrstdio_ops = {
+	xdrstdio_getlong,	/* deserialize a long int */
+	xdrstdio_putlong,	/* serialize a long int */
 	xdrstdio_getbytes,	/* deserialize counted bytes */
 	xdrstdio_putbytes,	/* serialize counted bytes */
 	xdrstdio_getpos,	/* get offset in the stream */
 	xdrstdio_setpos,	/* set offset in the stream */
 	xdrstdio_inline,	/* prime stream for inline macros */
-	xdrstdio_destroy	/* destroy stream */
+	xdrstdio_destroy,	/* destroy stream */
+	NULL,			/* xdrstdio_control */
 };
 
 /*
@@ -78,10 +73,7 @@ static struct xdr_ops	xdrstdio_ops = {
  * Operation flag is set to op.
  */
 void
-xdrstdio_create(xdrs, file, op)
-	register XDR *xdrs;
-	FILE *file;
-	enum xdr_op op;
+xdrstdio_create(XDR *xdrs, FILE *file, enum xdr_op op)
 {
 
 	xdrs->x_op = op;
@@ -96,44 +88,35 @@ xdrstdio_create(xdrs, file, op)
  * Cleans up the xdr stream handle xdrs previously set up by xdrstdio_create.
  */
 static void
-xdrstdio_destroy(xdrs)
-	register XDR *xdrs;
+xdrstdio_destroy(XDR *xdrs)
 {
 	(void)fflush((FILE *)xdrs->x_private);
 	/* xx should we close the file ?? */
-};
+}
 
 static bool_t
-xdrstdio_getlong(xdrs, lp)
-	XDR *xdrs;
-	register long *lp;
+xdrstdio_getlong(XDR *xdrs, long int *lp)
 {
+	u_int32_t temp;
 
-	if (fread((caddr_t)lp, sizeof(int32_t), 1,
-	    (FILE *)xdrs->x_private) != 1)
+	if (fread(&temp, sizeof(int32_t), 1, (FILE *)xdrs->x_private) != 1)
 		return (FALSE);
-	*lp = (long)ntohl((int32_t)*lp);
+	*lp = (long)ntohl(temp);
 	return (TRUE);
 }
 
 static bool_t
-xdrstdio_putlong(xdrs, lp)
-	XDR *xdrs;
-	long *lp;
+xdrstdio_putlong(XDR *xdrs, long int *lp)
 {
-	long mycopy = (long)htonl((int32_t)*lp);
+	int32_t mycopy = htonl((u_int32_t)*lp);
 
-	if (fwrite((caddr_t)&mycopy, sizeof(int32_t), 1,
-	    (FILE *)xdrs->x_private) != 1)
+	if (fwrite(&mycopy, sizeof(int32_t), 1, (FILE *)xdrs->x_private) != 1)
 		return (FALSE);
 	return (TRUE);
 }
 
 static bool_t
-xdrstdio_getbytes(xdrs, addr, len)
-	XDR *xdrs;
-	caddr_t addr;
-	u_int len;
+xdrstdio_getbytes(XDR *xdrs, caddr_t addr, u_int len)
 {
 
 	if ((len != 0) && (fread(addr, (int)len, 1, (FILE *)xdrs->x_private) != 1))
@@ -142,10 +125,7 @@ xdrstdio_getbytes(xdrs, addr, len)
 }
 
 static bool_t
-xdrstdio_putbytes(xdrs, addr, len)
-	XDR *xdrs;
-	caddr_t addr;
-	u_int len;
+xdrstdio_putbytes(XDR *xdrs, caddr_t addr, u_int len)
 {
 
 	if ((len != 0) && (fwrite(addr, (int)len, 1, (FILE *)xdrs->x_private) != 1))
@@ -154,31 +134,26 @@ xdrstdio_putbytes(xdrs, addr, len)
 }
 
 static u_int
-xdrstdio_getpos(xdrs)
-	XDR *xdrs;
+xdrstdio_getpos(XDR *xdrs)
 {
 
 	return ((u_int) ftell((FILE *)xdrs->x_private));
 }
 
 static bool_t
-xdrstdio_setpos(xdrs, pos) 
-	XDR *xdrs;
-	u_int pos;
+xdrstdio_setpos(XDR *xdrs, u_int pos)
 { 
 
-	return ((fseek((FILE *)xdrs->x_private, (long)pos, 0) < 0) ?
+	return ((fseeko((FILE *)xdrs->x_private, pos, SEEK_SET) == -1) ?
 		FALSE : TRUE);
 }
 
 static int32_t *
-xdrstdio_inline(xdrs, len)
-	XDR *xdrs;
-	u_int len;
+xdrstdio_inline(XDR *xdrs, u_int len)
 {
 
 	/*
-	 * Must do some work to implement this: must insure
+	 * Must do some work to implement this: must ensure
 	 * enough data in the underlying stdio buffer,
 	 * that the buffer is aligned so that we can indirect through a
 	 * long *, and stuff this pointer in xdrs->x_buf.  Doing

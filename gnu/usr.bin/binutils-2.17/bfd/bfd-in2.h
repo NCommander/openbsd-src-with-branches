@@ -38,6 +38,7 @@ extern "C" {
 
 #include "ansidecl.h"
 #include "symcat.h"
+#include <time.h>	/* time_t */
 #if defined (__STDC__) || defined (ALMOST_STDC) || defined (HAVE_STRINGIZE)
 #ifndef SABER
 /* This hack is to avoid a problem with some strict ANSI C preprocessors.
@@ -245,6 +246,12 @@ bfd_format;
 /* This BFD has been created by the linker and doesn't correspond
    to any input file.  */
 #define BFD_LINKER_CREATED 0x2000
+
+/* This may be set before writing out a BFD to request that the output
+   be as deterministic as is supported by the format.  For example,
+   archive members may have their uid, gid, timestamp, and mode all set
+   to constant, 'reasonable' values.  */
+#define BFD_DETERMINISTIC 0x4000
 
 /* Symbols and relocation.  */
 
@@ -1068,7 +1075,7 @@ bfd_boolean bfd_fill_in_gnu_debuglink_section
 
 
 /* Extracted from bfdio.c.  */
-long bfd_get_mtime (bfd *abfd);
+time_t bfd_get_mtime (bfd *abfd);
 
 long bfd_get_size (bfd *abfd);
 
@@ -1757,6 +1764,7 @@ enum bfd_architecture
 #define bfd_mach_mips16                16
 #define bfd_mach_mips5                 5
 #define bfd_mach_mips_sb1              12310201 /* octal 'SB', 01 */
+#define bfd_mach_mips_octeon           6501
 #define bfd_mach_mipsisa32             32
 #define bfd_mach_mipsisa32r2           33
 #define bfd_mach_mipsisa64             64
@@ -1978,6 +1986,8 @@ enum bfd_architecture
 #define bfd_mach_z80            3 /* With ixl, ixh, iyl, and iyh.  */
 #define bfd_mach_z80full        7 /* All undocumented instructions.  */
 #define bfd_mach_r800           11 /* R800: successor with multiplication.  */
+  bfd_arch_aarch64,
+  bfd_arch_riscv64,
   bfd_arch_last
   };
 
@@ -2326,6 +2336,8 @@ displacement is used on the Alpha.  */
   BFD_RELOC_32_PCREL_S2,
   BFD_RELOC_16_PCREL_S2,
   BFD_RELOC_23_PCREL_S2,
+  BFD_RELOC_18_PCREL_S2,
+  BFD_RELOC_28_PCREL_S2,
 
 /* High 22 bits and low 10 bits of 32-bit value, placed into lower bits of
 the target word.  These are used on the SPARC.  */
@@ -2902,6 +2914,16 @@ pc-relative or some form of GOT-indirect relocation.  */
 
 /* 31-bit PC relative address.  */
   BFD_RELOC_ARM_PREL31,
+
+/* Low and High halfword relocations for MOVW and MOVT instructions.  */
+  BFD_RELOC_ARM_MOVW,
+  BFD_RELOC_ARM_MOVT,
+  BFD_RELOC_ARM_MOVW_PCREL,
+  BFD_RELOC_ARM_MOVT_PCREL,
+  BFD_RELOC_ARM_THUMB_MOVW,
+  BFD_RELOC_ARM_THUMB_MOVT,
+  BFD_RELOC_ARM_THUMB_MOVW_PCREL,
+  BFD_RELOC_ARM_THUMB_MOVT_PCREL,
 
 /* Relocations for setting up GOTs and PLTs for shared libraries.  */
   BFD_RELOC_ARM_JUMP_SLOT,
@@ -4372,7 +4394,7 @@ struct bfd
   bfd_boolean mtime_set;
 
   /* File modified time, if mtime_set is TRUE.  */
-  long mtime;
+  time_t mtime;
 
   /* Reserved for an unimplemented file locking extension.  */
   int ifd;
@@ -5065,7 +5087,8 @@ typedef struct bfd_target
 
   /* Check if SEC has been already linked during a reloceatable or
      final link.  */
-  void (*_section_already_linked) (bfd *, struct bfd_section *);
+  void (*_section_already_linked) (bfd *, struct bfd_section *,
+                                   struct bfd_link_info *);
 
   /* Routines to handle dynamic symbols and relocs.  */
 #define BFD_JUMP_TABLE_DYNAMIC(NAME) \
@@ -5125,10 +5148,11 @@ bfd_boolean bfd_link_split_section (bfd *abfd, asection *sec);
 #define bfd_link_split_section(abfd, sec) \
        BFD_SEND (abfd, _bfd_link_split_section, (abfd, sec))
 
-void bfd_section_already_linked (bfd *abfd, asection *sec);
+void bfd_section_already_linked (bfd *abfd, asection *sec,
+    struct bfd_link_info *info);
 
-#define bfd_section_already_linked(abfd, sec) \
-       BFD_SEND (abfd, _section_already_linked, (abfd, sec))
+#define bfd_section_already_linked(abfd, sec, info) \
+       BFD_SEND (abfd, _section_already_linked, (abfd, sec, info))
 
 /* Extracted from simple.c.  */
 bfd_byte *bfd_simple_get_relocated_section_contents

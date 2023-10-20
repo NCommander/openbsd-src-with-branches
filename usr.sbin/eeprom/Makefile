@@ -1,20 +1,19 @@
-#	from: @(#)Makefile	5.8 (Berkeley) 7/28/90
-#	$NetBSD: Makefile,v 1.1 1995/07/13 18:07:19 thorpej Exp $
+#	$OpenBSD: Makefile,v 1.20 2020/06/29 15:34:07 kettenis Exp $
 
+.if ${MACHINE} == "arm64" || ${MACHINE} == "armv7" || \
+    ${MACHINE} == "macppc" || ${MACHINE} == "octeon" || \
+    ${MACHINE} == "powerpc64" || ${MACHINE} == "riscv64" || \
+    ${MACHINE} == "sparc64"
 PROG=	eeprom
-MAN=	eeprom.8
 
-BINGRP=	kmem
-BINMODE=2555
+SRCS=	main.c
+SRCS+=	ophandlers.c optree.c
 
-SRCS=	eehandlers.c getdate.c main.c
-
-.if ${MACHINE} == "sparc"
-SRCS+=	ophandlers.c
-DPADD=	${LIBKVM}
-LDADD=	-lkvm
+.else
+NOPROG=yes
 .endif
 
-CLEANFILES+=getdate.c y.tab.h
+MAN=	eeprom.8
+MANSUBDIR=arm64 armv7 macppc octeon powerpc64 riscv64 sparc64
 
 .include <bsd.prog.mk>

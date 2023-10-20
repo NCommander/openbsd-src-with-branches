@@ -1,4 +1,4 @@
-.TH "nsd.conf" "5" "Nov 10, 2022" "NLnet Labs" "nsd 4.6.1"
+.TH "nsd.conf" "5" "Jun  7, 2023" "NLnet Labs" "nsd 4.7.0"
 .\" Copyright (c) 2001\-2008, NLnet Labs. All rights reserved.
 .\" See LICENSE for the license.
 .SH "NAME"
@@ -444,7 +444,7 @@ Extra data is only added for referrals, when it is really necessary.
 This is different from the \-\-enable-minimal-responses configure time option,
 that reduces packets, but exactly to the fragmentation length, the nsd.conf
 option reduces packets as small as possible.
-The default is no.
+The default is yes.
 .TP
 .B confine\-to\-zone:\fR <yes or no>
 If set to yes, additional information will not be added to the response if the
@@ -456,7 +456,7 @@ Refuse queries of type ANY.  This is useful to stop query floods trying
 to get large responses.  Note that rrl ratelimiting also has type ANY as
 a ratelimiting type.  It sends truncation in response to UDP type ANY queries,
 and it allows TCP type ANY queries like normal.
-The default is no.
+The default is yes.
 .TP
 .B zonefiles\-check:\fR <yes or no>
 Make NSD check the mtime of zone files on start and sighup.  If you
@@ -513,7 +513,7 @@ With the value 0 the rate is unlimited.
 .TP
 .B answer\-cookie:\fR <yes or no>
 Enable to answer to requests containing DNS Cookies as specified in RFC7873.
-Default is no.
+Default is yes.
 .TP
 .B cookie\-secret:\fR <128 bit hex string>
 Servers in an anycast deployment need to be able to  verify  each other's DNS
@@ -1070,6 +1070,23 @@ for those messages to the server.
 .B dnstap-socket-path:\fR <file name>
 Sets the unix socket file name for connecting to the server that is
 listening on that socket.  Default is "@dnstap_socket_path@".
+.TP
+.B dnstap-ip:\fR <"" or addr[@port]>
+If disabled with "", the socket path is used. With a value, like address or
+address@port, like "127.0.0.1@3333" TCP or TLS is used. Default is "".
+.TP
+.B dnstap-tls:\fR <yes or no>
+If enabled, TLS is used to the address specified in \fBdnstap-ip\fR. Otherwise,
+TCP is used. Default is yes.
+.TP
+.B dnstap-tls-server-name:\fR <string>
+The name for authenticating the upstream server. With "" disabled.
+.TP
+.B dnstap-tls-client-key-file:\fR <file name>
+The key file for client authentication, or "" disabled.
+.TP
+.B dnstap-tls-client-cert-file:\fR <file name>
+The cert file for client authentication, or "" disabled.
 .TP
 .B dnstap-send-identity:\fR <yes or no>
 If enabled, the server identity is included in the log messages.

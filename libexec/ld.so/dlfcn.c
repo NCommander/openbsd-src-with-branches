@@ -1,8 +1,8 @@
-/*	$OpenBSD$ */
+/*	$OpenBSD: dlfcn.c,v 1.114 2023/07/08 14:09:43 jasper Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -11,12 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed under OpenBSD by
- *	Per Fogelstrom, Opsycon AB, Sweden.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -35,81 +29,133 @@
 #define _DYN_LOADER
 
 #include <sys/types.h>
-#include <nlist.h>
 #include <link.h>
 #include <dlfcn.h>
+#include <unistd.h>
 
 #include "syscall.h"
-#include "archdep.h"
+#include "util.h"
 #include "resolve.h"
+#include "archdep.h"
 
 int _dl_errno;
 
-void _dl_show_objects(void);
-
 static int _dl_real_close(void *handle);
-static void _dl_unload_deps(elf_object_t *object);
-extern char *_dl_debug;
+static lock_cb *_dl_thread_fnc = NULL;
+static elf_object_t *obj_from_addr(const void *addr);
+
+#define OK_FLAGS 	(0 \
+	| RTLD_TRACE	\
+	| RTLD_LAZY	\
+	| RTLD_NOW	\
+	| RTLD_GLOBAL	\
+	| RTLD_NODELETE	\
+	| RTLD_NOLOAD	\
+	)
 
 void *
-dlopen(const char *libname, int how)
+dlopen(const char *libname, int flags)
 {
-	elf_object_t	*object;
-	elf_object_t	*dynobj;
-	Elf32_Dyn	*dynp;
+	elf_object_t *object;
+	lock_cb *cb;
+	int failed = 0;
+	int obj_flags;
 
-	if (_dl_debug) {
-		_dl_printf("loading: %s\n", libname);
-	}
-	object = _dl_load_shlib(libname, _dl_objects, OBJTYPE_DLO);
-	if(object == 0) {
-		return((void *)0);
+	if (flags & ~OK_FLAGS) {
+		_dl_errno = DL_INVALID_MODE;
+		return NULL;
 	}
 
-	if(object->refcount > 1) {
-		return((void *)object);	/* Already loaded */
+	if (libname == NULL)
+		return RTLD_DEFAULT;
+
+	if ((flags & RTLD_TRACE) == RTLD_TRACE) {
+		_dl_traceld = 1;
 	}
 
-	/*
-	 *	Check for 'needed' objects. For each 'needed' object we
-	 *	create a 'shadow' object and add it to a list attached to
-	 *	the object so we know our dependencies. This list should
-	 *	also be used to determine the library search order when
-	 *	resolving undefined symbols. This is not yet done. XXX
-	 */
-	dynobj = object;
-	while(dynobj) {
-		elf_object_t *tmpobj = dynobj;
-                for(dynp = dynobj->load_dyn; dynp->d_tag; dynp++) {
-			const char *libname;
-			elf_object_t *depobj;
+	DL_DEB(("dlopen: loading: %s\n", libname));
 
-                        if(dynp->d_tag != DT_NEEDED) {
-				continue;
-			}
-			libname = dynobj->dyn.strtab + dynp->d_un.d_val;
-			depobj = _dl_load_shlib(libname, dynobj, OBJTYPE_DLO);
-			if(!depobj) {
-				_dl_exit(4);
-			}
-			tmpobj->dep_next = _dl_malloc(sizeof(elf_object_t));
-			tmpobj->dep_next->next = depobj;
-			tmpobj = tmpobj->dep_next;
-                }
-                dynobj = dynobj->next;
-        }
+	cb = _dl_thread_kern_stop();
 
-	_dl_rtld(object);
-	_dl_call_init(object);
-
-#ifdef __mips__
-	if(_dl_debug_map->r_brk) {
+	if (_dl_debug_map && _dl_debug_map->r_brk) {
 		_dl_debug_map->r_state = RT_ADD;
-		(*((void (*)())_dl_debug_map->r_brk))();
-		_dl_debug_map->r_state = RT_CONSISTENT;
-		(*((void (*)())_dl_debug_map->r_brk))();
+		(*((void (*)(void))_dl_debug_map->r_brk))();
 	}
-#endif /* __mips__ */
+
+	_dl_loading_object = NULL;
+
+	obj_flags = (flags & RTLD_NOW ? DF_1_NOW : 0)
+	    | (flags & RTLD_GLOBAL ? DF_1_GLOBAL : 0)
+	    | (flags & RTLD_NOLOAD ? DF_1_NOOPEN : 0)
+	    ;
+	object = _dl_load_shlib(libname, _dl_objects, OBJTYPE_DLO, obj_flags, 0);
+	if (object == 0) {
+		DL_DEB(("dlopen: failed to open %s\n", libname));
+		failed = 1;
+		goto loaded;
+	}
+
+	if (flags & RTLD_NODELETE) {
+		object->obj_flags |= DF_1_NODELETE;
+		object->nodelete = 1;
+	}
+
+	_dl_link_dlopen(object);
+
+	if (OBJECT_REF_CNT(object) > 1) {
+		_dl_handle_nodelete(object);
+
+		/* if opened but grpsym_vec has not been filled in */
+		if (object->grpsym_vec.len == 0)
+			_dl_cache_grpsym_list_setup(object);
+		if (_dl_traceld) {
+			_dl_show_objects(object);
+			_dl_unload_shlib(object);
+			_dl_exit(0);
+		}
+		goto loaded;
+	}
+
+	/* this add_object should not be here, XXX */
+	_dl_add_object(object);
+
+	DL_DEB(("head [%s]\n", object->load_name ));
+
+	if ((failed = _dl_load_dep_libs(object, obj_flags, 0)) == 1) {
+		_dl_real_close(object);
+		object = NULL;
+		_dl_errno = DL_CANT_LOAD_OBJ;
+	} else {
+		int err;
+		DL_DEB(("tail %s\n", object->load_name ));
+		if (_dl_traceld) {
+			_dl_show_objects(object);
+			_dl_unload_shlib(object);
+			_dl_exit(0);
+		}
+		err = _dl_rtld(object);
+		if (err != 0) {
+			_dl_real_close(object);
+			_dl_errno = DL_CANT_LOAD_OBJ;
+			object = NULL;
+			failed = 1;
+		} else {
+			_dl_call_init(object);
+		}
+	}
+
+loaded:
+	_dl_loading_object = NULL;
+
+	if (_dl_debug_map && _dl_debug_map->r_brk) {
+		_dl_debug_map->r_state = RT_CONSISTENT;
+		(*((void (*)(void))_dl_debug_map->r_brk))();
+	}
+
+	_dl_thread_kern_go(cb);
+
+	DL_DEB(("dlopen: %s: done (%s).\n", libname,
+	    failed ? "failed" : "success"));
 
 	return((void *)object);
 }
@@ -119,160 +165,512 @@ dlsym(void *handle, const char *name)
 {
 	elf_object_t	*object;
 	elf_object_t	*dynobj;
-	void		*retval;
-	const Elf32_Sym	*sym = 0;
+	struct sym_res	sr;
+	int		flags;
+	Elf_Addr	addr;
 
-	object = (elf_object_t *)handle;
-	dynobj = _dl_objects;
-	while(dynobj && dynobj != object) {
-		dynobj = dynobj->next;
-	}
-	if(!dynobj || object != dynobj) {
-		_dl_errno = DL_INVALID_HANDLE;
-		return(0);
+	if (handle == NULL || handle == RTLD_NEXT ||
+	    handle == RTLD_SELF || handle == RTLD_DEFAULT) {
+		void *retaddr;
+
+		retaddr = __builtin_return_address(0);	/* __GNUC__ only */
+
+		if ((object = obj_from_addr(retaddr)) == NULL) {
+			_dl_errno = DL_CANT_FIND_OBJ;
+			return(0);
+		}
+
+		if (handle == RTLD_NEXT)
+			flags = SYM_SEARCH_NEXT|SYM_PLT;
+		else if (handle == RTLD_SELF)
+			flags = SYM_SEARCH_SELF|SYM_PLT;
+		else if (handle == RTLD_DEFAULT)
+			flags = SYM_SEARCH_ALL|SYM_PLT;
+		else
+			flags = SYM_DLSYM|SYM_PLT;
+
+	} else {
+		object = (elf_object_t *)handle;
+		flags = SYM_DLSYM|SYM_PLT;
+
+		dynobj = _dl_objects;
+		while (dynobj && dynobj != object)
+			dynobj = dynobj->next;
+
+		if (!dynobj || object != dynobj) {
+			_dl_errno = DL_INVALID_HANDLE;
+			return(0);
+		}
 	}
 
-	retval = (void *)_dl_find_symbol(name, object, &sym, 1, 1);
-	if(retval) {
-		retval += sym->st_value;
-	}
-	else {
+	sr = _dl_find_symbol(name, flags|SYM_NOWARNNOTFOUND, NULL, object);
+	if (sr.sym == NULL) {
+		DL_DEB(("dlsym: failed to find symbol %s\n", name));
 		_dl_errno = DL_NO_SYMBOL;
+		return NULL;
 	}
-	return(retval);
+
+	addr = sr.obj->obj_base + sr.sym->st_value;
+#ifdef __hppa__
+	if (ELF_ST_TYPE(sr.sym->st_info) == STT_FUNC)
+		addr = _dl_md_plabel(addr, sr.obj->dyn.pltgot);
+#endif
+	DL_DEB(("dlsym: %s in %s: %p\n",
+	    name, object->load_name, (void *)addr));
+	return (void *)addr;
 }
 
 int
 dlctl(void *handle, int command, void *data)
 {
-	switch(command) {
+	int retval;
 
-#ifdef __mips__
-	case DL_DUMP_MAP:
-		_dl_show_objects();
-		return(0);
-#endif /* __mips__ */
+	switch (command) {
+	case DL_SETTHREADLCK:
+		DL_DEB(("dlctl: _dl_thread_fnc set to %p\n", data));
+		_dl_thread_fnc = data;
+		retval = 0;
+		break;
+	case DL_SETBINDLCK:
+		/* made superfluous by kbind */
+		retval = 0;
+		break;
+	case DL_REFERENCE:
+	{
+		elf_object_t *obj;
 
-	default:
-		_dl_errno = DL_INVALID_CTL;
+		obj = obj_from_addr(data);
+		if (obj == NULL) {
+			_dl_errno = DL_CANT_FIND_OBJ;
+			retval = -1;
+			break;
+		}
+		if ((obj->status & STAT_NODELETE) == 0) {
+			obj->opencount++;
+			obj->status |= STAT_NODELETE;
+		}
+		retval = 0;
 		break;
 	}
-	return(-1);
+	case 0x20:
+		_dl_show_objects(NULL);
+		retval = 0;
+		break;
+	case 0x21:
+	{
+		struct object_vector vec;
+		struct dep_node *n, *m;
+		elf_object_t *obj;
+		int i;
+
+		_dl_printf("Load Groups:\n");
+
+		TAILQ_FOREACH(n, &_dlopened_child_list, next_sib) {
+			obj = n->data;
+			_dl_printf("%s\n", obj->load_name);
+
+			_dl_printf("  children\n");
+			for (vec = obj->child_vec, i = 0; i < vec.len; i++)
+				_dl_printf("\t[%s]\n", vec.vec[i]->load_name);
+
+			_dl_printf("  grpref\n");
+			TAILQ_FOREACH(m, &obj->grpref_list, next_sib)
+				_dl_printf("\t[%s]\n", m->data->load_name);
+			_dl_printf("\n");
+		}
+		retval = 0;
+		break;
+	}
+	default:
+		_dl_errno = DL_INVALID_CTL;
+		retval = -1;
+		break;
+	}
+	return (retval);
 }
+__strong_alias(_dlctl,dlctl);
 
 int
 dlclose(void *handle)
 {
+	lock_cb *cb;
 	int retval;
+
+	if (handle == RTLD_DEFAULT)
+		return 0;
+
+	cb = _dl_thread_kern_stop();
+
+	if (_dl_debug_map && _dl_debug_map->r_brk) {
+		_dl_debug_map->r_state = RT_DELETE;
+		(*((void (*)(void))_dl_debug_map->r_brk))();
+	}
 
 	retval = _dl_real_close(handle);
 
-#ifdef __mips__
-	if(_dl_debug_map->r_brk) {
-		_dl_debug_map->r_state = RT_DELETE;
-		(*((void (*)())_dl_debug_map->r_brk))();
+	if (_dl_debug_map && _dl_debug_map->r_brk) {
 		_dl_debug_map->r_state = RT_CONSISTENT;
-		(*((void (*)())_dl_debug_map->r_brk))();
+		(*((void (*)(void))_dl_debug_map->r_brk))();
 	}
-#endif /* __mips__ */
-	return(retval);
+	_dl_thread_kern_go(cb);
+	return (retval);
 }
 
-static int
+int
 _dl_real_close(void *handle)
 {
 	elf_object_t	*object;
 	elf_object_t	*dynobj;
 
 	object = (elf_object_t *)handle;
+
 	dynobj = _dl_objects;
-	while(dynobj && dynobj != object) {
+	while (dynobj && dynobj != object)
 		dynobj = dynobj->next;
-	}
-	if(!dynobj || object != dynobj) {
+
+	if (!dynobj || object != dynobj) {
 		_dl_errno = DL_INVALID_HANDLE;
-		return(1);
+		return (1);
 	}
 
-	if(object->refcount == 1) {
-		if(dynobj->dep_next) {
-			_dl_unload_deps(dynobj);
-		}
+	if (object->opencount == 0) {
+		_dl_errno = DL_INVALID_HANDLE;
+		return (1);
 	}
 
+	object->opencount--;
+	_dl_notify_unload_shlib(object);
+	_dl_run_all_dtors();
 	_dl_unload_shlib(object);
-	return(0);
+	_dl_cleanup_objects();
+	return (0);
 }
 
-/*
- *	Scan through the shadow dep list and 'unload' every library
- *	we depend upon. Shadow objects are removed when removing ourself.
- */
-static void
-_dl_unload_deps(elf_object_t *object)
-{
-	elf_object_t *depobj;
-
-	depobj = object->dep_next;
-	while(depobj) {
-		if(depobj->next->refcount == 1) { /* This object will go away */
-			if(depobj->next->dep_next) {
-				_dl_unload_deps(depobj->next);
-			}
-			_dl_unload_shlib(depobj->next);
-		}
-		depobj = depobj->dep_next;
-	}
-}
 
 /*
- *	dlerror()
- *
- *	Return a character string describing the last dl... error occured.
+ * Return a character string describing the last dl... error occurred.
  */
-const char *
-dlerror()
+char *
+dlerror(void)
 {
-	switch(_dl_errno) {
+	char *errmsg;
+
+	switch (_dl_errno) {
+	case 0:	/* NO ERROR */
+		errmsg = NULL;
+		break;
 	case DL_NOT_FOUND:
-		return("File not found");
+		errmsg = "File not found";
+		break;
 	case DL_CANT_OPEN:
-		return("Can't open file");
+		errmsg = "Can't open file";
+		break;
 	case DL_NOT_ELF:
-		return("File not an ELF object");
+		errmsg = "File not an ELF object";
+		break;
 	case DL_CANT_OPEN_REF:
-		return("Can't open referenced object");
+		errmsg = "Can't open referenced object";
+		break;
 	case DL_CANT_MMAP:
-		return("Can't map ELF object");
+		errmsg = "Can't map ELF object";
+		break;
 	case DL_INVALID_HANDLE:
-		return("Invalid handle");
+		errmsg = "Invalid handle";
+		break;
 	case DL_NO_SYMBOL:
-		return("Unable to resolve symbol");
+		errmsg = "Unable to resolve symbol";
+		break;
 	case DL_INVALID_CTL:
-		return("Invalid dlctl() command");
+		errmsg = "Invalid dlctl() command";
+		break;
+	case DL_NO_OBJECT:
+		errmsg = "No shared object contains address";
+		break;
+	case DL_CANT_FIND_OBJ:
+		errmsg = "Cannot determine caller's shared object";
+		break;
+	case DL_CANT_LOAD_OBJ:
+		errmsg = "Cannot load specified object";
+		break;
+	case DL_INVALID_MODE:
+		errmsg = "Invalid mode";
+		break;
 	default:
-		return("Unknown error");
+		errmsg = "Unknown error";
 	}
+
+	_dl_errno = 0;
+	return (errmsg);
 }
 
+static void
+_dl_tracefmt(int fd, elf_object_t *object, const char *fmt1, const char *fmt2,
+    const char *objtypename)
+{
+	const char *fmt;
+	int i;
+
+	fmt = object->sod.sod_library ? fmt1 : fmt2;
+
+	for (i = 0; fmt[i]; i++) {
+		if (fmt[i] != '%' && fmt[i] != '\\') {
+			_dl_dprintf(fd, "%c", fmt[i]);
+			continue;
+		}
+		if (fmt[i] == '%') {
+			i++;
+			switch (fmt[i]) {
+			case '\0':
+				return;
+			case '%':
+				_dl_dprintf(fd, "%c", '%');
+				break;
+			case 'A':
+				_dl_dprintf(fd, "%s", _dl_traceprog ?
+				    _dl_traceprog : "");
+				break;
+			case 'a':
+				_dl_dprintf(fd, "%s", __progname);
+				break;
+			case 'e':
+				_dl_dprintf(fd, "%lX",
+				    (void *)(object->load_base +
+				    object->load_size));
+				break;
+			case 'g':
+				_dl_dprintf(fd, "%d", object->grprefcount);
+				break;
+			case 'm':
+				_dl_dprintf(fd, "%d", object->sod.sod_major);
+				break;
+			case 'n':
+				_dl_dprintf(fd, "%d", object->sod.sod_minor);
+				break;
+			case 'O':
+				_dl_dprintf(fd, "%d", object->opencount);
+				break;
+			case 'o':
+				_dl_dprintf(fd, "%s", object->sod.sod_name);
+				break;
+			case 'p':
+				_dl_dprintf(fd, "%s", object->load_name);
+				break;
+			case 'r':
+				_dl_dprintf(fd, "%d", object->refcount);
+				break;
+			case 't':
+				_dl_dprintf(fd, "%s", objtypename);
+				break;
+			case 'x':
+				_dl_dprintf(fd, "%lX", object->load_base);
+				break;
+			}
+		}
+		if (fmt[i] == '\\') {
+			i++;
+			switch (fmt[i]) {
+			case '\0':
+				return;
+			case 'n':
+				_dl_dprintf(fd, "%c", '\n');
+				break;
+			case 'r':
+				_dl_dprintf(fd, "%c", '\r');
+				break;
+			case 't':
+				_dl_dprintf(fd, "%c", '\t');
+				break;
+			default:
+				_dl_dprintf(fd, "%c", fmt[i]);
+				break;
+			}
+		}
+	}
+}
 
 void
-_dl_show_objects()
+_dl_show_objects(elf_object_t *trace)
 {
 	elf_object_t *object;
-static char *otyp[] = {
-	"none", "rtld", "exe ", "rlib", "dlib"
-};
+	char *objtypename;
+	int outputfd;
+	char *pad;
+	const char *fmt1, *fmt2;
 
 	object = _dl_objects;
+	if (_dl_traceld)
+		outputfd = STDOUT_FILENO;
+	else
+		outputfd = STDERR_FILENO;
 
-	_dl_printf("Currently loaded modules:\n");
-	_dl_printf("Start    End      Type Ref Name\n");
+	if (sizeof(long) == 8)
+		pad = "        ";
+	else
+		pad = "";
 
-	while(object) {
-		_dl_printf("%X %X %s  %d  %s\n", object->load_addr,
-				object->load_size, otyp[object->obj_type],
-				object->refcount, object->load_name);
-		object = object->next;
+	fmt1 = _dl_tracefmt1 ? _dl_tracefmt1 :
+	    "\t%x %e %t %O    %r   %g      %p\n";
+	fmt2 = _dl_tracefmt2 ? _dl_tracefmt2 :
+	    "\t%x %e %t %O    %r   %g      %p\n";
+
+	if (_dl_tracefmt1 == NULL && _dl_tracefmt2 == NULL)
+		_dl_dprintf(outputfd, "\tStart   %s End     %s Type  Open Ref GrpRef Name\n",
+		    pad, pad);
+
+	if (trace != NULL) {
+		for (; object != NULL; object = object->next) {
+			if (object == trace)
+				break;
+			if (object->obj_type == OBJTYPE_LDR) {
+				object = object->next;
+				break;
+			}
+		}
 	}
+
+	for (; object != NULL; object = object->next) {
+		switch (object->obj_type) {
+		case OBJTYPE_LDR:
+			objtypename = "ld.so";
+			break;
+		case OBJTYPE_EXE:
+			objtypename = "exe  ";
+			break;
+		case OBJTYPE_LIB:
+			objtypename = "rlib ";
+			break;
+		case OBJTYPE_DLO:
+			objtypename = "dlib ";
+			break;
+		default:
+			objtypename = "?????";
+			break;
+		}
+		_dl_tracefmt(outputfd, object, fmt1, fmt2, objtypename);
+	}
+}
+
+lock_cb *
+_dl_thread_kern_stop(void)
+{
+	lock_cb *cb = _dl_thread_fnc;
+
+	if (cb != NULL)
+		(*cb)(0);
+	return cb;
+}
+
+void
+_dl_thread_kern_go(lock_cb *cb)
+{
+	if (cb != NULL)
+		(*cb)(1);
+}
+
+int
+dl_iterate_phdr(int (*callback)(struct dl_phdr_info *, size_t, void *data),
+	void *data)
+{
+	elf_object_t *object;
+	struct dl_phdr_info info;
+	int retval = -1;
+
+	for (object = _dl_objects; object != NULL; object = object->next) {
+		if (object->phdrp == NULL)
+			continue;
+
+		info.dlpi_addr = object->obj_base;
+		info.dlpi_name = object->load_name;
+		info.dlpi_phdr = object->phdrp;
+		info.dlpi_phnum = object->phdrc;
+		retval = callback(&info, sizeof (struct dl_phdr_info), data);
+		if (retval)
+			break;
+	}
+
+	return retval;
+}
+
+static elf_object_t *
+obj_from_addr(const void *addr)
+{
+	elf_object_t *dynobj;
+	Elf_Phdr *phdrp;
+	int phdrc;
+	Elf_Addr start;
+	int i;
+
+	for (dynobj = _dl_objects; dynobj != NULL; dynobj = dynobj->next) {
+		if (dynobj->phdrp == NULL)
+			continue;
+
+		phdrp = dynobj->phdrp;
+		phdrc = dynobj->phdrc;
+
+		for (i = 0; i < phdrc; i++, phdrp++) {
+			if (phdrp->p_type == PT_LOAD) {
+				start = dynobj->obj_base + phdrp->p_vaddr;
+				if ((Elf_Addr)addr >= start &&
+				    (Elf_Addr)addr < start + phdrp->p_memsz)
+					return dynobj;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+int
+dladdr(const void *addr, Dl_info *info)
+{
+	const elf_object_t *object;
+	const Elf_Sym *sym;
+	void *symbol_addr;
+	u_int32_t symoffset;
+
+	object = obj_from_addr(addr);
+
+	if (object == NULL) {
+		_dl_errno = DL_NO_OBJECT;
+		return 0;
+	}
+
+	info->dli_fname = (char *)object->load_name;
+	info->dli_fbase = (void *)object->load_base;
+	info->dli_sname = NULL;
+	info->dli_saddr = NULL;
+
+	/*
+	 * Walk the symbol list looking for the symbol whose address is
+	 * closest to the address sent in.
+	 */
+	for (symoffset = 0; symoffset < object->nchains; symoffset++) {
+		sym = object->dyn.symtab + symoffset;
+
+		/*
+		 * For skip the symbol if st_shndx is either SHN_UNDEF or
+		 * SHN_COMMON.
+		 */
+		if (sym->st_shndx == SHN_UNDEF || sym->st_shndx == SHN_COMMON)
+			continue;
+
+		/*
+		 * If the symbol is greater than the specified address, or if
+		 * it is further away from addr than the current nearest
+		 * symbol, then reject it.
+		 */
+		symbol_addr = (void *)(object->obj_base + sym->st_value);
+		if (symbol_addr > addr || symbol_addr < info->dli_saddr)
+			continue;
+
+		/* Update our idea of the nearest symbol. */
+		info->dli_sname = object->dyn.strtab + sym->st_name;
+		info->dli_saddr = symbol_addr;
+
+		/* Exact match? */
+		if (info->dli_saddr == addr)
+			break;
+	}
+
+	return 1;
 }

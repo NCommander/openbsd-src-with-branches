@@ -1,4 +1,4 @@
-/* x_bignum.c */
+/* $OpenBSD: x_bignum.c,v 1.12 2022/07/30 13:42:25 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,83 +57,149 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
+
 #include <openssl/asn1t.h>
 #include <openssl/bn.h>
 
-/* Custom primitive type for BIGNUM handling. This reads in an ASN1_INTEGER as a
- * BIGNUM directly. Currently it ignores the sign which isn't a problem since all
- * BIGNUMs used are non negative and anything that looks negative is normally due
- * to an encoding error.
- */
+#include "asn1_local.h"
+#include "bytestring.h"
 
-#define BN_SENSITIVE	1
+/*
+ * Custom primitive type for that reads an ASN.1 INTEGER into a BIGNUM.
+ */
 
 static int bn_new(ASN1_VALUE **pval, const ASN1_ITEM *it);
 static void bn_free(ASN1_VALUE **pval, const ASN1_ITEM *it);
+static void bn_clear(ASN1_VALUE **pval, const ASN1_ITEM *it);
 
-static int bn_i2c(ASN1_VALUE **pval, unsigned char *cont, int *putype, const ASN1_ITEM *it);
-static int bn_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len, int utype, char *free_cont, const ASN1_ITEM *it);
+static int bn_i2c(ASN1_VALUE **pval, unsigned char *cont, int *putype,
+    const ASN1_ITEM *it);
+static int bn_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len,
+    int utype, char *free_cont, const ASN1_ITEM *it);
+static int bn_print(BIO *out, ASN1_VALUE **pval, const ASN1_ITEM *it,
+    int indent, const ASN1_PCTX *pctx);
 
 static ASN1_PRIMITIVE_FUNCS bignum_pf = {
-	NULL, 0,
-	bn_new,
-	bn_free,
-	0,
-	bn_c2i,
-	bn_i2c
+	.app_data = NULL,
+	.flags = 0,
+	.prim_new = bn_new,
+	.prim_free = bn_free,
+	.prim_clear = bn_clear,
+	.prim_c2i = bn_c2i,
+	.prim_i2c = bn_i2c,
+	.prim_print = bn_print,
 };
 
-ASN1_ITEM_start(BIGNUM)
-	ASN1_ITYPE_PRIMITIVE, V_ASN1_INTEGER, NULL, 0, &bignum_pf, 0, "BIGNUM"
-ASN1_ITEM_end(BIGNUM)
+const ASN1_ITEM BIGNUM_it = {
+        .itype = ASN1_ITYPE_PRIMITIVE,
+        .utype = V_ASN1_INTEGER,
+        .templates = NULL,
+        .tcount = 0,
+        .funcs = &bignum_pf,
+        .size = 0,
+        .sname = "BIGNUM",
+};
 
-ASN1_ITEM_start(CBIGNUM)
-	ASN1_ITYPE_PRIMITIVE, V_ASN1_INTEGER, NULL, 0, &bignum_pf, BN_SENSITIVE, "BIGNUM"
-ASN1_ITEM_end(CBIGNUM)
+const ASN1_ITEM CBIGNUM_it = {
+        .itype = ASN1_ITYPE_PRIMITIVE,
+        .utype = V_ASN1_INTEGER,
+        .templates = NULL,
+        .tcount = 0,
+        .funcs = &bignum_pf,
+        .size = 0,
+        .sname = "BIGNUM",
+};
 
-static int bn_new(ASN1_VALUE **pval, const ASN1_ITEM *it)
+static int
+bn_new(ASN1_VALUE **pval, const ASN1_ITEM *it)
 {
-	*pval = (ASN1_VALUE *)BN_new();
-	if(*pval) return 1;
-	else return 0;
-}
-
-static void bn_free(ASN1_VALUE **pval, const ASN1_ITEM *it)
-{
-	if(!*pval) return;
-	if(it->size & BN_SENSITIVE) BN_clear_free((BIGNUM *)*pval);
-	else BN_free((BIGNUM *)*pval);
-	*pval = NULL;
-}
-
-static int bn_i2c(ASN1_VALUE **pval, unsigned char *cont, int *putype, const ASN1_ITEM *it)
-{
-	BIGNUM *bn;
-	int pad;
-	if(!*pval) return -1;
-	bn = (BIGNUM *)*pval;
-	/* If MSB set in an octet we need a padding byte */
-	if(BN_num_bits(bn) & 0x7) pad = 0;
-	else pad = 1;
-	if(cont) {
-		if(pad) *cont++ = 0;
-		BN_bn2bin(bn, cont);
-	}
-	return pad + BN_num_bytes(bn);
-}
-
-static int bn_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len,
-		  int utype, char *free_cont, const ASN1_ITEM *it)
-{
-	BIGNUM *bn;
-	if(!*pval) bn_new(pval, it);
-	bn  = (BIGNUM *)*pval;
-	if(!BN_bin2bn(cont, len, bn)) {
-		bn_free(pval, it);
+	if ((*pval = (ASN1_VALUE *)BN_new()) == NULL)
 		return 0;
-	}
+
 	return 1;
 }
 
+static void
+bn_clear(ASN1_VALUE **pval, const ASN1_ITEM *it)
+{
+	BN_free((BIGNUM *)*pval);
+	*pval = NULL;
+}
 
+static void
+bn_free(ASN1_VALUE **pval, const ASN1_ITEM *it)
+{
+	if (*pval == NULL)
+		return;
+
+	bn_clear(pval, it);
+}
+
+static int
+bn_i2c(ASN1_VALUE **pval, unsigned char *content, int *putype, const ASN1_ITEM *it)
+{
+	ASN1_INTEGER *aint = NULL;
+	unsigned char **pp = NULL;
+	const BIGNUM *bn;
+	int ret;
+
+	if (*pval == NULL)
+		return -1;
+
+	bn = (const BIGNUM *)*pval;
+
+	if ((aint = BN_to_ASN1_INTEGER(bn, NULL)) == NULL)
+		return -1;
+
+	if (content != NULL)
+		pp = &content;
+
+	ret = i2c_ASN1_INTEGER(aint, pp);
+
+	ASN1_INTEGER_free(aint);
+
+	return ret;
+}
+
+static int
+bn_c2i(ASN1_VALUE **pval, const unsigned char *content, int len, int utype,
+    char *free_content, const ASN1_ITEM *it)
+{
+	ASN1_INTEGER *aint = NULL;
+	BIGNUM *bn;
+	CBS cbs;
+	int ret = 0;
+
+	bn_clear(pval, it);
+
+	if (len < 0)
+		goto err;
+	CBS_init(&cbs, content, len);
+	if (!c2i_ASN1_INTEGER_cbs(&aint, &cbs))
+		goto err;
+
+	if ((bn = ASN1_INTEGER_to_BN(aint, NULL)) == NULL)
+		goto err;
+	*pval = (ASN1_VALUE *)bn;
+
+	ret = 1;
+
+ err:
+	ASN1_INTEGER_free(aint);
+
+	return ret;
+}
+
+static int
+bn_print(BIO *out, ASN1_VALUE **pval, const ASN1_ITEM *it, int indent,
+    const ASN1_PCTX *pctx)
+{
+	const BIGNUM *bn = (BIGNUM *)*pval;
+
+	if (!BN_print(out, bn))
+		return 0;
+	if (BIO_printf(out, "\n") <= 0)
+		return 0;
+
+	return 1;
+}

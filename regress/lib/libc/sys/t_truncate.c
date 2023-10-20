@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: t_truncate.c,v 1.3 2021/12/13 16:56:48 deraadt Exp $	*/
 /* $NetBSD: t_truncate.c,v 1.3 2017/01/13 20:03:51 christos Exp $ */
 
 /*-
@@ -31,9 +31,6 @@
  */
 
 #include "macros.h"
-
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_truncate.c,v 1.3 2017/01/13 20:03:51 christos Exp $");
 
 #include <sys/stat.h>
 
@@ -96,7 +93,7 @@ ATF_TC_BODY(ftruncate_err, tc)
 {
 	int fd;
 
-	fd = open("/etc/passwd", O_RDONLY, 0400);
+	fd = open("/etc/passwd", O_RDONLY);
 	ATF_REQUIRE(fd >= 0);
 
 	errno = 0;
@@ -160,7 +157,7 @@ ATF_TC_BODY(truncate_err, tc)
 	ATF_REQUIRE_ERRNO(EFAULT, truncate((void *)-1, 999) == -1);
 
 	errno = 0;
-	ATF_REQUIRE_ERRNO(EISDIR, truncate("/etc", 999) == -1);
+	ATF_REQUIRE_ERRNO(EISDIR, truncate("/tmp", 999) == -1);
 
 	errno = 0;
 	ATF_REQUIRE_ERRNO(ENOENT, truncate("/a/b/c/d/e/f/g", 999) == -1);

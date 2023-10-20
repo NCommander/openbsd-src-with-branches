@@ -1,3 +1,4 @@
+/* $OpenBSD: hm_ameth.c,v 1.18 2022/11/19 04:36:52 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2007.
  */
@@ -9,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -55,113 +56,116 @@
  *
  */
 
+#include <limits.h>
 #include <stdio.h>
-#include "cryptlib.h"
+#include <string.h>
+
 #include <openssl/evp.h>
-#include "asn1_locl.h"
+#include <openssl/hmac.h>
 
-#define HMAC_TEST_PRIVATE_KEY_FORMAT
+#include "asn1_local.h"
+#include "bytestring.h"
+#include "evp_local.h"
+#include "hmac_local.h"
 
-/* HMAC "ASN1" method. This is just here to indicate the
- * maximum HMAC output length and to free up an HMAC
- * key.
- */
+static int
+hmac_pkey_public_cmp(const EVP_PKEY *a, const EVP_PKEY *b)
+{
+	/* The ameth pub_cmp must return 1 on match, 0 on mismatch. */
+	return ASN1_OCTET_STRING_cmp(a->pkey.ptr, b->pkey.ptr) == 0;
+}
 
-static int hmac_size(const EVP_PKEY *pkey)
-	{
+static int
+hmac_size(const EVP_PKEY *pkey)
+{
 	return EVP_MAX_MD_SIZE;
-	}
+}
 
-static void hmac_key_free(EVP_PKEY *pkey)
-	{
-	ASN1_OCTET_STRING *os = (ASN1_OCTET_STRING *)pkey->pkey.ptr;
-	if (os)
-		{
-		if (os->data)
-			OPENSSL_cleanse(os->data, os->length);
-		ASN1_OCTET_STRING_free(os);
-		}
-	}
+static void
+hmac_key_free(EVP_PKEY *pkey)
+{
+	ASN1_OCTET_STRING *os;
 
+	if ((os = pkey->pkey.ptr) == NULL)
+		return;
 
-static int hmac_pkey_ctrl(EVP_PKEY *pkey, int op, long arg1, void *arg2)
-	{
-	switch (op)
-		{
-		case ASN1_PKEY_CTRL_DEFAULT_MD_NID:
+	if (os->data != NULL)
+		explicit_bzero(os->data, os->length);
+
+	ASN1_OCTET_STRING_free(os);
+}
+
+static int
+hmac_pkey_ctrl(EVP_PKEY *pkey, int op, long arg1, void *arg2)
+{
+	switch (op) {
+	case ASN1_PKEY_CTRL_DEFAULT_MD_NID:
 		*(int *)arg2 = NID_sha1;
 		return 1;
-
-		default:
+	default:
 		return -2;
-		}
 	}
+}
 
-#ifdef HMAC_TEST_PRIVATE_KEY_FORMAT
-/* A bogus private key format for test purposes. This is simply the
- * HMAC key with "HMAC PRIVATE KEY" in the headers. When enabled the
- * genpkey utility can be used to "generate" HMAC keys.
- */
+static int
+hmac_set_priv_key(EVP_PKEY *pkey, const unsigned char *priv, size_t len)
+{
+	ASN1_OCTET_STRING *os = NULL;
 
-static int old_hmac_decode(EVP_PKEY *pkey,
-					const unsigned char **pder, int derlen)
-	{
-	ASN1_OCTET_STRING *os;
-	os = ASN1_OCTET_STRING_new();
-	if (!os || !ASN1_OCTET_STRING_set(os, *pder, derlen))
-		return 0;
-	EVP_PKEY_assign(pkey, EVP_PKEY_HMAC, os);
+	if (pkey->pkey.ptr != NULL)
+		goto err;
+
+	if (len > INT_MAX)
+		goto err;
+
+	if ((os = ASN1_OCTET_STRING_new()) == NULL)
+		goto err;
+
+	if (!ASN1_OCTET_STRING_set(os, priv, len))
+		goto err;
+
+	pkey->pkey.ptr = os;
+
 	return 1;
+
+ err:
+	ASN1_OCTET_STRING_free(os);
+
+	return 0;
+}
+
+static int
+hmac_get_priv_key(const EVP_PKEY *pkey, unsigned char *priv, size_t *len)
+{
+	ASN1_OCTET_STRING *os;
+	CBS cbs;
+
+	if ((os = pkey->pkey.ptr) == NULL)
+		return 0;
+
+	if (priv == NULL) {
+		*len = os->length;
+		return 1;
 	}
 
-static int old_hmac_encode(const EVP_PKEY *pkey, unsigned char **pder)
-	{
-	int inc;
-	ASN1_OCTET_STRING *os = (ASN1_OCTET_STRING *)pkey->pkey.ptr;
-	if (pder)
-		{
-		if (!*pder)
-			{
-			*pder = OPENSSL_malloc(os->length);
-			inc = 0;
-			}
-		else inc = 1;
+	CBS_init(&cbs, os->data, os->length);
+	return CBS_write_bytes(&cbs, priv, *len, len);
+}
 
-		memcpy(*pder, os->data, os->length);
+const EVP_PKEY_ASN1_METHOD hmac_asn1_meth = {
+	.pkey_id = EVP_PKEY_HMAC,
+	.pkey_base_id = EVP_PKEY_HMAC,
 
-		if (inc)
-			*pder += os->length;
-		}
-			
-	return os->length;
-	}
+	.pem_str = "HMAC",
+	.info = "OpenSSL HMAC method",
 
-#endif
+	.pub_cmp = hmac_pkey_public_cmp,
 
-const EVP_PKEY_ASN1_METHOD hmac_asn1_meth = 
-	{
-	EVP_PKEY_HMAC,
-	EVP_PKEY_HMAC,
-	0,
+	.pkey_size = hmac_size,
 
-	"HMAC",
-	"OpenSSL HMAC method",
+	.pkey_free = hmac_key_free,
+	.pkey_ctrl = hmac_pkey_ctrl,
 
-	0,0,0,0,
-
-	0,0,0,
-
-	hmac_size,
-	0,
-	0,0,0,0,0,0,0,
-
-	hmac_key_free,
-	hmac_pkey_ctrl,
-#ifdef HMAC_TEST_PRIVATE_KEY_FORMAT
-	old_hmac_decode,
-	old_hmac_encode
-#else
-	0,0
-#endif
-	};
-
+	.set_priv_key = hmac_set_priv_key,
+	.get_priv_key = hmac_get_priv_key,
+};

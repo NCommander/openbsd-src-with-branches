@@ -1,26 +1,87 @@
+/*	$OpenBSD: hack.fight.c,v 1.9 2009/10/27 23:59:25 deraadt Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.fight.c,v 1.3 1995/03/23 08:30:12 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-#include	"hack.h"
+#include <stdio.h>
+
+#include "hack.h"
+
 extern struct permonst li_dog, dog, la_dog;
-extern char *exclam(), *xname();
-extern struct obj *mkobj_at();
 
 static boolean far_noise;
 static long noisetime;
 
+static void monstone(struct monst *);
+
 /* hitmm returns 0 (miss), 1 (hit), or 2 (kill) */
-hitmm(magr,mdef) register struct monst *magr,*mdef; {
-register struct permonst *pa = magr->data, *pd = mdef->data;
-int hit;
-schar tmp;
-boolean vis;
-	if(index("Eauy", pa->mlet)) return(0);
+int
+hitmm(struct monst * magr, struct monst * mdef)
+{
+	struct permonst *pa = magr->data, *pd = mdef->data;
+	int hit;
+	schar tmp;
+	boolean vis;
+
+	if(strchr("Eauy", pa->mlet)) return(0);
 	if(magr->mfroz) return(0);		/* riv05!a3 */
 	tmp = pd->ac + pa->mlevel;
 	if(mdef->mconf || mdef->mfroz || mdef->msleep){
@@ -34,7 +95,7 @@ boolean vis;
 		char buf[BUFSZ];
 		if(mdef->mimic) seemimic(mdef);
 		if(magr->mimic) seemimic(magr);
-		(void) sprintf(buf,"%s %s", Monnam(magr),
+		(void) snprintf(buf,sizeof buf,"%s %s", Monnam(magr),
 			hit ? "hits" : "misses");
 		pline("%s %s.", buf, monnam(mdef));
 	} else {
@@ -72,23 +133,28 @@ boolean vis;
 }
 
 /* drop (perhaps) a cadaver and remove monster */
-mondied(mdef) register struct monst *mdef; {
-register struct permonst *pd = mdef->data;
-		if(letter(pd->mlet) && rn2(3)){
-			(void) mkobj_at(pd->mlet,mdef->mx,mdef->my);
-			if(cansee(mdef->mx,mdef->my)){
-				unpmon(mdef);
-				atl(mdef->mx,mdef->my,fobj->olet);
-			}
-			stackobj(fobj);
+void
+mondied(struct monst *mdef)
+{
+	struct permonst *pd = mdef->data;
+
+	if(letter(pd->mlet) && rn2(3)){
+		(void) mkobj_at(pd->mlet,mdef->mx,mdef->my);
+		if(cansee(mdef->mx,mdef->my)){
+			unpmon(mdef);
+			atl(mdef->mx,mdef->my,fobj->olet);
 		}
-		mondead(mdef);
+		stackobj(fobj);
+	}
+	mondead(mdef);
 }
 
 /* drop a rock and remove monster */
-monstone(mdef) register struct monst *mdef; {
+static void
+monstone(struct monst *mdef)
+{
 	extern char mlarge[];
-	if(index(mlarge, mdef->data->mlet))
+	if(strchr(mlarge, mdef->data->mlet))
 		mksobj_at(ENORMOUS_ROCK, mdef->mx, mdef->my);
 	else
 		mksobj_at(ROCK, mdef->mx, mdef->my);
@@ -98,10 +164,12 @@ monstone(mdef) register struct monst *mdef; {
 	}
 	mondead(mdef);
 }
-		
 
-fightm(mtmp) register struct monst *mtmp; {
-register struct monst *mon;
+int
+fightm(struct monst *mtmp)
+{
+	struct monst *mon;
+
 	for(mon = fmon; mon; mon = mon->nmon) if(mon != mtmp) {
 		if(DIST(mon->mx,mon->my,mtmp->mx,mtmp->my) < 3)
 		    if(rn2(4))
@@ -111,12 +179,12 @@ register struct monst *mon;
 }
 
 /* u is hit by sth, but not a monster */
-thitu(tlev,dam,name)
-register tlev,dam;
-register char *name;
+int
+thitu(int tlev, int dam, char *name)
 {
-char buf[BUFSZ];
-	setan(name,buf);
+	char buf[BUFSZ];
+
+	setan(name,buf,sizeof buf);
 	if(u.uac + tlev <= rnd(20)) {
 		if(Blind) pline("It misses.");
 		else pline("You are almost hit by %s!", buf);
@@ -131,13 +199,11 @@ char buf[BUFSZ];
 
 char mlarge[] = "bCDdegIlmnoPSsTUwY',&";
 
+/* return TRUE if mon still alive */
 boolean
-hmon(mon,obj,thrown)	/* return TRUE if mon still alive */
-register struct monst *mon;
-register struct obj *obj;
-register thrown;
+hmon(struct monst *mon, struct obj *obj, int thrown)
 {
-	register tmp;
+	int tmp;
 	boolean hittxt = FALSE;
 
 	if(!obj){
@@ -151,7 +217,7 @@ register thrown;
 	    if(obj == uwep && (obj->otyp > SPEAR || obj->otyp < BOOMERANG))
 		tmp = rnd(2);
 	    else {
-		if(index(mlarge, mon->data->mlet)) {
+		if(strchr(mlarge, mon->data->mlet)) {
 			tmp = rnd(objects[obj->otyp].wldam);
 			if(obj->otyp == TWO_HANDED_SWORD) tmp += d(2,6);
 			else if(obj->otyp == FLAIL) tmp += rnd(4);
@@ -194,7 +260,7 @@ register thrown;
 			killed(mon);
 			return(FALSE);
 		case CLOVE_OF_GARLIC:		/* no effect against demons */
-			if(index(UNDEAD, mon->data->mlet))
+			if(strchr(UNDEAD, mon->data->mlet))
 				mon->mflee = 1;
 			tmp = 1;
 			break;
@@ -252,12 +318,12 @@ register thrown;
 
 /* try to attack; return FALSE if monster evaded */
 /* u.dx and u.dy must be set */
-attack(mtmp)
-register struct monst *mtmp;
+boolean
+attack(struct monst *mtmp)
 {
 	schar tmp;
 	boolean malive = TRUE;
-	register struct permonst *mdat;
+	struct permonst *mdat;
 	mdat = mtmp->data;
 
 	u_wipe_engr(3);   /* andrew@orca: prevent unlimited pick-axe attacks */
@@ -287,7 +353,7 @@ register struct monst *mtmp;
 	wakeup(mtmp);
 
 	if(mtmp->mhide && mtmp->mundetected){
-		register struct obj *obj;
+		struct obj *obj;
 
 		mtmp->mundetected = 0;
 		if((obj = o_at(mtmp->mx,mtmp->my)) && !Blind)
@@ -304,7 +370,7 @@ register struct monst *mtmp;
 		else if(uwep->otyp == DAGGER) tmp += 2;
 		else if(uwep->otyp == CRYSKNIFE) tmp += 3;
 		else if(uwep->otyp == SPEAR &&
-			index("XDne", mdat->mlet)) tmp += 2;
+			strchr("XDne", mdat->mlet)) tmp += 2;
 	}
 	if(mtmp->msleep) {
 		mtmp->msleep = 0;
@@ -338,7 +404,7 @@ register struct monst *mtmp;
 			if(mtmp->wormno)
 				cutworm(mtmp, u.ux+u.dx, u.uy+u.dy,
 					uwep ? uwep->otyp : 0);
-#endif NOWORM
+#endif /* NOWORM */
 		}
 		if(mdat->mlet == 'a') {
 			if(rn2(2)) {

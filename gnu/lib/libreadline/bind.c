@@ -348,7 +348,7 @@ rl_translate_keyseq (seq, array, len)
 {
   register int i, c, l, temp;
 
-  for (i = l = 0; c = seq[i]; i++)
+  for (i = l = 0; (c = seq[i]); i++)
     {
       if (c == '\\')
 	{
@@ -381,7 +381,7 @@ rl_translate_keyseq (seq, array, len)
 		  array[l++] = (seq[i] == '?') ? RUBOUT : CTRL (_rl_to_upper (seq[i]));
 		}
 	      continue;
-	    }	      
+	    }
 
 	  /* Translate other backslash-escaped characters.  These are the
 	     same escape sequences that bash's `echo' and `printf' builtins
@@ -523,12 +523,12 @@ _rl_untranslate_macro_value (seq)
 	  c = _rl_to_lower (UNCTRL (c));
 	}
       else if (c == RUBOUT)
- 	{
- 	  *r++ = '\\';
- 	  *r++ = 'C';
- 	  *r++ = '-';
- 	  c = '?';
- 	}
+	{
+	  *r++ = '\\';
+	  *r++ = 'C';
+	  *r++ = '-';
+	  c = '?';
+	}
 
       if (c == ESC)
 	{
@@ -705,7 +705,7 @@ rl_read_init_file (filename)
       filename = last_readline_init_file;
       if (filename == 0)
         filename = sh_get_env_value ("INPUTRC");
-      if (filename == 0)
+      if (filename == 0 || *filename == '\0')
 	filename = DEFAULT_INPUTRC;
     }
 
@@ -738,7 +738,7 @@ _rl_read_init_file (filename, include_level)
 
   if (buffer == 0)
     return (errno);
-  
+
   if (include_level == 0 && filename != last_readline_init_file)
     {
       FREE (last_readline_init_file);
@@ -800,7 +800,7 @@ _rl_init_file_error (msg)
 
 /* **************************************************************** */
 /*								    */
-/*			Parser Directives       		    */
+/*			Parser Directives			    */
 /*								    */
 /* **************************************************************** */
 
@@ -962,7 +962,7 @@ parser_include (args)
 
   return r;
 }
-  
+
 /* Associate textual names with actual functions. */
 static struct {
   const char *name;
@@ -1050,7 +1050,7 @@ rl_parse_and_bind (string)
     {
       int passc = 0;
 
-      for (i = 1; c = string[i]; i++)
+      for (i = 1; (c = string[i]); i++)
 	{
 	  if (passc)
 	    {
@@ -1126,7 +1126,7 @@ rl_parse_and_bind (string)
     {
       int delimiter = string[i++], passc;
 
-      for (passc = 0; c = string[i]; i++)
+      for (passc = 0; (c = string[i]); i++)
 	{
 	  if (passc)
 	    {
@@ -1373,7 +1373,7 @@ find_string_var (name)
    values result in 0 (false). */
 static int
 bool_to_int (value)
-     char *value;
+     const char *value;
 {
   return (value == 0 || *value == '\0' ||
 		(_rl_stricmp (value, "on") == 0) ||
@@ -1525,7 +1525,7 @@ sv_isrchterm (value)
   free (v);
   return 0;
 }
-      
+
 /* Return the character which matches NAME.
    For example, `Space' returns ' '. */
 
@@ -1602,7 +1602,7 @@ rl_get_keymap_name (map)
       return ((char *)keymap_names[i].name);
   return ((char *)NULL);
 }
-  
+
 void
 rl_set_keymap (map)
      Keymap map;
@@ -1803,19 +1803,20 @@ rl_invoking_keyseqs_in_map (function, map)
 
 	    for (i = 0; seqs[i]; i++)
 	      {
-		char *keyname = (char *)xmalloc (6 + strlen (seqs[i]));
+		int len = 6 + strlen(seqs[i]);
+		char *keyname = (char *)xmalloc (len);
 
 		if (key == ESC)
 #if 0
-		  sprintf (keyname, "\\e");
+		  snprintf(keyname, len, "\\e");
 #else
 		/* XXX - experimental */
-		  sprintf (keyname, "\\M-");
+		  snprintf(keyname, len, "\\M-");
 #endif
 		else if (CTRL_CHAR (key))
-		  sprintf (keyname, "\\C-%c", _rl_to_lower (UNCTRL (key)));
+		  snprintf(keyname, len, "\\C-%c", _rl_to_lower (UNCTRL (key)));
 		else if (key == RUBOUT)
-		  sprintf (keyname, "\\C-?");
+		  snprintf(keyname, len, "\\C-?");
 		else if (key == '\\' || key == '"')
 		  {
 		    keyname[0] = '\\';
@@ -1827,8 +1828,8 @@ rl_invoking_keyseqs_in_map (function, map)
 		    keyname[0] = (char) key;
 		    keyname[1] = '\0';
 		  }
-		
-		strcat (keyname, seqs[i]);
+
+		strlcat (keyname, seqs[i], len);
 		free (seqs[i]);
 
 		if (result_index + 2 > result_size)
@@ -1873,7 +1874,7 @@ rl_function_dumper (print_readably)
 
   fprintf (rl_outstream, "\n");
 
-  for (i = 0; name = names[i]; i++)
+  for (i = 0; (name = names[i]); i++)
     {
       rl_command_func_t *function;
       char **invokers;
@@ -1977,9 +1978,10 @@ _rl_macro_dumper_internal (print_readably, map, prefix)
 	  prefix_len = prefix ? strlen (prefix) : 0;
 	  if (key == ESC)
 	    {
-	      keyname = (char *)xmalloc (3 + prefix_len);
+	      int len = 3 + prefix_len;
+	      keyname = (char *)xmalloc (len);
 	      if (prefix)
-		strcpy (keyname, prefix);
+		strlcpy (keyname, prefix, len);
 	      keyname[prefix_len] = '\\';
 	      keyname[prefix_len + 1] = 'e';
 	      keyname[prefix_len + 2] = '\0';
@@ -1989,9 +1991,8 @@ _rl_macro_dumper_internal (print_readably, map, prefix)
 	      keyname = _rl_get_keyname (key);
 	      if (prefix)
 		{
-		  out = (char *)xmalloc (strlen (keyname) + prefix_len + 1);
-		  strcpy (out, prefix);
-		  strcpy (out + prefix_len, keyname);
+		  if (asprintf(&out, "%s%s", prefix, keyname) == -1)
+		    memory_error_and_abort("asprintf");
 		  free (keyname);
 		  keyname = out;
 		}

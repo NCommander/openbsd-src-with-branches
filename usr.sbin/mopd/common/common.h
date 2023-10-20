@@ -1,3 +1,6 @@
+/*	$OpenBSD: common.h,v 1.9 2014/12/13 14:44:59 miod Exp $	*/
+/*	$NetBSD: common.h,v 1.9 2011/08/30 19:49:10 joerg Exp $	*/
+
 /*
  * Copyright (c) 1993-95 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -25,8 +23,6 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *	$Id: common.h,v 1.14 1996/08/13 12:22:29 moj Exp $
  *
  */
 
@@ -56,9 +52,11 @@ struct if_info {
 	int	trans;			/* Transport type Ethernet/802.3   */
 	u_char	eaddr[6];		/* Ethernet addr of this interface */
 	char	if_name[IFNAME_SIZE];	/* Interface Name		   */
-	int	(*iopen)();		/* Interface Open Routine	   */
-	int	(*write)();		/* Interface Write Routine	   */
-	void	(*read)();		/* Interface Read Routine          */
+	int	(*iopen)(char *, int, u_short, int);
+					/* Interface Open Routine	   */
+	int	(*write)(int, u_char *, int, int);
+					/* Interface Write Routine	   */
+	void	(*read)(void);		/* Interface Read Routine          */
 	struct if_info *next;		/* Next Interface		   */
 };
 
@@ -67,26 +65,51 @@ struct if_info {
 #define DL_STATUS_SENT_MLD	 2
 #define DL_STATUS_SENT_PLT	 3
 
+typedef enum {
+	IMAGE_TYPE_MOP,			/* MOP image */
+	IMAGE_TYPE_AOUT,		/* a.out image */
+	IMAGE_TYPE_ELF32,		/* Elf32 image */
+	IMAGE_TYPE_ELF64		/* Elf64 image */
+} mopd_imagetype;
+
 struct dllist {
-	u_char	status;			/* Status byte			*/
+	u_char		status;		/* Status byte			*/
 	struct if_info *ii;		/* interface pointer		*/
-	u_char	eaddr[6];		/* targets ethernet addres	*/
-	int	ldfd;			/* filedescriptor for loadfile	*/
-	u_short	dl_bsz;			/* Data Link Buffer Size	*/
-	int	timeout;		/* Timeout counter		*/
-	u_char	count;			/* Packet Counter		*/
-	u_long	loadaddr;		/* Load Address			*/
-	u_long	xferaddr;		/* Transfer Address		*/
-	u_long	nloadaddr;		/* Next Load Address		*/
-	long	lseek;			/* Seek before last read	*/
-	int	aout;			/* Is it an a.out file		*/
-	u_long	a_text;			/* Size of text segment		*/
-	u_long	a_text_fill;		/* Size of text segment fill	*/
-	u_long	a_data;			/* Size of data segment		*/
-	u_long	a_data_fill;		/* Size of data segment fill	*/
-	u_long	a_bss;			/* Size of bss segment		*/
-	u_long	a_bss_fill;		/* Size of bss segment fill	*/
-	long	a_lseek;		/* Keep track of pos in newfile */
+	u_char		eaddr[6];	/* targets ethernet address	*/
+	int		ldfd;		/* filedescriptor for loadfile	*/
+	u_short		dl_bsz;		/* Data Link Buffer Size	*/
+	int		timeout;	/* Timeout counter		*/
+	u_char		count;		/* Packet Counter		*/
+	u_int32_t	loadaddr;	/* Load Address			*/
+	u_int32_t	xferaddr;	/* Transfer Address		*/
+	u_int32_t	nloadaddr;	/* Next Load Address		*/
+	off_t		lseek;		/* Seek before last read	*/
+	mopd_imagetype	image_type;	/* what type of image is it?	*/
+
+	/* For ELF files */
+	int		e_machine;	/* Machine ID			*/
+	int		e_nsec;		/* number of program sections	*/
+#define	SEC_MAX	4
+	struct {
+		off_t s_foff;		/* file offset of section	*/
+		u_int32_t s_vaddr;	/* virtual address of section	*/
+		u_int32_t s_fsize;	/* file size of section		*/
+		u_int32_t s_msize;	/* memory size of section	*/
+		u_int32_t s_pad;	/* padding until next section	*/
+		u_int32_t s_loff;	/* logical offset into image	*/
+	} e_sections[SEC_MAX];		/* program sections		*/
+	u_int32_t	e_curpos;	/* current logical position	*/
+	int		e_cursec;	/* current section */
+
+	/* For a.out files */
+	int		a_mid;		/* Machine ID			*/
+	u_int32_t	a_text;		/* Size of text segment		*/
+	u_int32_t	a_text_fill;	/* Size of text segment fill	*/
+	u_int32_t	a_data;		/* Size of data segment		*/
+	u_int32_t	a_data_fill;	/* Size of data segment fill	*/
+	u_int32_t	a_bss;		/* Size of bss segment		*/
+	u_int32_t	a_bss_fill;	/* Size of bss segment fill	*/
+	off_t		a_lseek;	/* Keep track of pos in newfile */
 };
 
-#endif _COMMON_H_
+#endif /* _COMMON_H_ */

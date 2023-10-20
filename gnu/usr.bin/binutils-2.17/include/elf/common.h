@@ -185,6 +185,8 @@
 #define EM_BLACKFIN	106	/* ADI Blackfin */
 #define EM_ALTERA_NIOS2	113	/* Altera Nios II soft-core processor */
 #define EM_CRX		114	/* National Semiconductor CRX */
+#define EM_AARCH64	183 
+#define EM_RISCV	243
 
 /* If it is necessary to assign new unofficial EM_* values, please pick large
    random numbers (0x8523, 0xa7f2, etc.) to minimize the chances of collision
@@ -285,6 +287,9 @@
 #define EV_NONE		0		/* Invalid ELF version */
 #define EV_CURRENT	1		/* Current version */
 
+/* Magic for e_phnum: get real value from sh_info of first section header */
+#define PN_XNUM		0xffff
+
 /* Values for program header, p_type field.  */
 
 #define PT_NULL		0		/* Program header table entry unused */
@@ -304,6 +309,12 @@
 #define PT_SUNW_EH_FRAME PT_GNU_EH_FRAME      /* Solaris uses the same value */
 #define PT_GNU_STACK	(PT_LOOS + 0x474e551) /* Stack flags */
 #define PT_GNU_RELRO	(PT_LOOS + 0x474e552) /* Read-only after relocation */
+
+#define PT_OPENBSD_RANDOMIZE	0x65a3dbe6 /* Fill with random data. */
+#define PT_OPENBSD_WXNEEDED	0x65a3dbe7 /* Program does W^X violations */
+#define PT_OPENBSD_NOBTCFI	0x65a3dbe8 /* no branch target CFI */
+#define PT_OPENBSD_BOOTDATA	0x65a41be6 /* Section for boot arguments */
+#define PT_OPENBSD_MUTABLE	0x65a3dbe5 /* Like bss, but not immutable */
 
 /* Program segment permissions, in program header p_flags field.  */
 
@@ -334,10 +345,12 @@
 #define SHT_PREINIT_ARRAY 16		/* Array of ptrs to pre-init funcs */
 #define SHT_GROUP	  17		/* Section contains a section group */
 #define SHT_SYMTAB_SHNDX  18		/* Indicies for SHN_XINDEX entries */
+#define SHT_RELR	  19		/* relative-only relocation section */
 
 #define SHT_LOOS	0x60000000	/* First of OS specific semantics */
 #define SHT_HIOS	0x6fffffff	/* Last of OS specific semantics */
 
+#define SHT_GNU_HASH	0x6ffffff6	/* GNU style symbol hash table */
 #define SHT_GNU_LIBLIST	0x6ffffff7	/* List of prelink dependencies */
 
 /* The next three section types are defined by Solaris, and are named
@@ -350,6 +363,9 @@
 #define SHT_GNU_verdef	SHT_SUNW_verdef
 #define SHT_GNU_verneed	SHT_SUNW_verneed
 #define SHT_GNU_versym	SHT_SUNW_versym
+
+#define SHT_LLVM_LINKER_OPTIONS 0x6fff4c01 /* Linker options */
+#define SHT_LLVM_ADDRSIG 0x6fff4c03	/* List of address-significant symbols */
 
 #define SHT_LOPROC	0x70000000	/* Processor-specific semantics, lo */
 #define SHT_HIPROC	0x7FFFFFFF	/* Processor-specific semantics, hi */
@@ -399,6 +415,17 @@
 
 #define NT_NETBSDCORE_PROCINFO	1	/* Has a struct procinfo */
 #define NT_NETBSDCORE_FIRSTMACH	32	/* start of machdep note types */
+
+
+/* Note segments for core files on OpenBSD systems.  Note name is
+   "OpenBSD".  */
+
+#define NT_OPENBSD_PROCINFO	10
+#define NT_OPENBSD_AUXV		11
+#define NT_OPENBSD_REGS		20
+#define NT_OPENBSD_FPREGS	21
+#define NT_OPENBSD_XFPREGS	22
+#define NT_OPENBSD_WCOOKIE	23
 
 
 /* Values of note segment descriptor types for object files.  */
@@ -546,6 +573,9 @@
 #define DT_ENCODING	31
 #define DT_PREINIT_ARRAY   32
 #define DT_PREINIT_ARRAYSZ 33
+#define DT_RELRSZ	35
+#define DT_RELR		36
+#define DT_RELRENT	37
 
 /* Note, the Oct 4, 1999 draft of the ELF ABI changed the values
    for DT_LOOS and DT_HIOS.  Some implementations however, use
@@ -577,6 +607,7 @@
 #define DT_VALRNGHI	0x6ffffdff
 
 #define DT_ADDRRNGLO	0x6ffffe00
+#define DT_GNU_HASH	0x6ffffef5
 #define DT_TLSDESC_PLT	0x6ffffef6
 #define DT_TLSDESC_GOT	0x6ffffef7
 #define DT_GNU_CONFLICT	0x6ffffef8
@@ -640,6 +671,19 @@
 #define DF_1_NODEFLIB	0x00000800
 #define DF_1_NODUMP	0x00001000
 #define DF_1_CONLFAT	0x00002000
+#define DF_1_ENDFILTEE	0x00004000
+#define DF_1_DISPRELDNE	0x00008000
+#define DF_1_DISPRELPND	0x00010000
+#define DF_1_NODIRECT	0x00020000
+#define DF_1_IGNMULDEF	0x00040000
+#define DF_1_NOKSYMS	0x00080000
+#define DF_1_NOHDR	0x00100000
+#define DF_1_EDITED	0x00200000
+#define DF_1_NORELOC	0x00400000
+#define DF_1_SYMINTPOSE	0x00800000
+#define DF_1_GLOBAUDIT	0x01000000
+#define DF_1_SINGLETON	0x02000000
+#define DF_1_PIE	0x08000000
 
 /* Flag values for the DT_FLAGS entry.	*/
 #define DF_ORIGIN	(1 << 0)

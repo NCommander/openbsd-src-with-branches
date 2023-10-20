@@ -1,3 +1,4 @@
+/*	$OpenBSD: memchr.c,v 1.7 2005/08/08 08:05:37 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,26 +31,19 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)memchr.c	5.6 (Berkeley) 1/26/91";*/
-static char *rcsid = "$Id: memchr.c,v 1.4 1995/06/15 00:07:27 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <string.h>
 
 void *
-memchr(s, c, n)
-	const void *s;
-	register unsigned char c;
-	register size_t n;
+memchr(const void *s, int c, size_t n)
 {
 	if (n != 0) {
-		register const unsigned char *p = s;
+		const unsigned char *p = s;
 
 		do {
-			if (*p++ == c)
+			if (*p++ == (unsigned char)c)
 				return ((void *)(p - 1));
 		} while (--n != 0);
 	}
 	return (NULL);
 }
+DEF_STRONG(memchr);

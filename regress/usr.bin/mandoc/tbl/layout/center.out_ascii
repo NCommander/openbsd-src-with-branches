@@ -1,13 +1,10 @@
 TBL-LAYOUT-CENTER(1)        General Commands Manual       TBL-LAYOUT-CENTER(1)
 
-
-
 NNAAMMEE
        tbl-layout-center - centering of table cells
 
 DDEESSCCRRIIPPTTIIOONN
        normal text
-
            *     *     *
           **    **     **
          ***    ***    ***
@@ -17,6 +14,7 @@ DDEESSCCRRIIPPTTIIOONN
         ****   ****    ****
        *****   *****   *****
 
+       leaked tab settings:
+       a    b    c    de
 
-
-                                                          TBL-LAYOUT-CENTER(1)
+OpenBSD                          June 17, 2017            TBL-LAYOUT-CENTER(1)

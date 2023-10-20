@@ -1,3 +1,4 @@
+/*	$OpenBSD: net.c,v 1.8 2021/01/30 21:06:45 deraadt Exp $	*/
 /*	$NetBSD: net.c,v 1.1 2000/08/20 14:58:38 mrg Exp $	*/
 
 /*
@@ -55,17 +56,21 @@
 
 #include <net/if.h>
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 
 #include <lib/libsa/stand.h>
 #include <lib/libsa/net.h>
 #include <lib/libsa/netif.h>
+#include <lib/libsa/bootparam.h>
+#include <lib/libsa/bootp.h>
+#include <lib/libsa/nfs.h>
 
+#include "ofdev.h"
 
-static int net_mountroot_bootparams __P((void));
-static int net_mountroot_bootp __P((void));
+int net_mountroot_bootparams(void);
+int net_mountroot_bootp(void);
+int net_mountroot(void);
 
-char	rootpath[FNAME_SIZE];
+extern char	rootpath[FNAME_SIZE];
 
 static	int netdev_sock = -1;
 static	int open_count;
@@ -75,11 +80,10 @@ static	int open_count;
  * This opens the low-level device and sets f->f_devdata.
  */
 int
-net_open(op)
-	struct of_dev *op;
+net_open(struct of_dev *op)
 {
 	int error = 0;
-	
+
 	/*
 	 * On first open, do netif open, mount, etc.
 	 */
@@ -101,9 +105,8 @@ bad:
 	return error;
 }
 
-int
-net_close(op)
-	struct of_dev *op;
+void
+net_close(struct of_dev *op)
 {
 	/*
 	 * On last close, do netif close, etc.
@@ -116,7 +119,7 @@ net_close(op)
 }
 
 int
-net_mountroot_bootparams()
+net_mountroot_bootparams(void)
 {
 	/* Get our IP address.  (rarp.c) */
 	if (rarp_getipaddress(netdev_sock) == -1)
@@ -139,7 +142,7 @@ net_mountroot_bootparams()
 }
 
 int
-net_mountroot_bootp()
+net_mountroot_bootp(void)
 {
 	bootp(netdev_sock);
 
@@ -161,7 +164,7 @@ net_mountroot_bootp()
 }
 
 int
-net_mountroot()
+net_mountroot(void)
 {
 	int error;
 

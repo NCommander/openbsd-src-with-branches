@@ -1,4 +1,5 @@
-/*	$NetBSD: lastcomm.c,v 1.7.2.1 1995/10/12 06:55:13 jtc Exp $	*/
+/*	$OpenBSD: lastcomm.c,v 1.32 2023/02/01 00:03:38 bluhm Exp $	*/
+/*	$NetBSD: lastcomm.c,v 1.9 1995/10/22 01:43:42 ghudson Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,62 +30,53 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)lastcomm.c	8.2 (Berkeley) 4/29/95";
-#endif
-static char rcsid[] = "$NetBSD: lastcomm.c,v 1.7.2.1 1995/10/12 06:55:13 jtc Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/acct.h>
 
 #include <ctype.h>
 #include <err.h>
 #include <fcntl.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <struct.h>
 #include <unistd.h>
 #include <utmp.h>
+#include <pwd.h>
 #include "pathnames.h"
 
-time_t	 expand __P((u_int));
-char	*flagbits __P((int));
-char	*getdev __P((dev_t));
-int	 requested __P((char *[], struct acct *));
-void	 usage __P((void));
-char	*user_from_uid();
+time_t	 expand(u_int);
+char	*flagbits(int);
+char	*getdev(dev_t);
+int	 requested(char *[], struct acct *);
+void	 usage(void);
+
+#define SECSPERMIN	(60)
+#define SECSPERHOUR	(60 * 60)
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register char *p;
+	char *p;
 	struct acct ab;
 	struct stat sb;
 	FILE *fp;
 	off_t size;
 	time_t t;
+	double delta;
 	int ch;
 	char *acctfile;
 
+	if (pledge("stdio rpath getpw", NULL) == -1)
+		err(1, "pledge");
+
 	acctfile = _PATH_ACCT;
-	while ((ch = getopt(argc, argv, "f:")) != EOF)
-		switch((char)ch) {
+	while ((ch = getopt(argc, argv, "f:")) != -1)
+		switch(ch) {
 		case 'f':
 			acctfile = optarg;
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -118,42 +106,51 @@ main(argc, argv)
 		err(1, "%s", acctfile);
 
 	for (;;) {
+		char commpid[sizeof(ab.ac_comm) + 13];
+
 		if (fread(&ab, sizeof(struct acct), 1, fp) != 1)
 			err(1, "%s", acctfile);
-
-		if (fseek(fp, 2 * -(long)sizeof(struct acct), SEEK_CUR) == -1)
-			err(1, "%s", acctfile);
-
-		if (size == 0)
-			break;
-		size -= sizeof(struct acct);
 
 		if (ab.ac_comm[0] == '\0') {
 			ab.ac_comm[0] = '?';
 			ab.ac_comm[1] = '\0';
 		} else
 			for (p = &ab.ac_comm[0];
-			    p < &ab.ac_comm[fldsiz(acct, ac_comm)] && *p; ++p)
-				if (!isprint(*p))
+			    p < &ab.ac_comm[sizeof ab.ac_comm] && *p; ++p)
+				if (!isprint((unsigned char)*p))
 					*p = '?';
-		if (*argv && !requested(argv, &ab))
-			continue;
+		snprintf(commpid, sizeof(commpid), "%s[%d]",
+		    ab.ac_comm, ab.ac_pid);
+		if (!*argv || requested(argv, &ab)) {
+			t = expand(ab.ac_utime) + expand(ab.ac_stime);
+			(void)printf("%-*.*s %-7s %-*.*s %-*.*s %6.2f secs %.16s",
+			    (int)sizeof commpid,
+			    (int)sizeof commpid,
+			    commpid, flagbits(ab.ac_flag), UT_NAMESIZE,
+			    UT_NAMESIZE, user_from_uid(ab.ac_uid, 0),
+			    UT_LINESIZE, UT_LINESIZE, getdev(ab.ac_tty),
+			    t / (double)AHZ, ctime(&ab.ac_btime));
+			delta = expand(ab.ac_etime) / (double)AHZ;
+			printf(" (%1.0f:%02.0f:%05.2f)\n",
+			    delta / SECSPERHOUR,
+			    fmod(delta, (double)SECSPERHOUR) / SECSPERMIN,
+			    fmod(delta, (double)SECSPERMIN));
+		}
 
-		t = expand(ab.ac_utime) + expand(ab.ac_stime);
-		(void)printf("%-*.*s %-7s %-*.*s %-*.*s %6.2f secs %.16s\n",
-		    fldsiz(acct, ac_comm), fldsiz(acct, ac_comm), ab.ac_comm,
-		    flagbits(ab.ac_flag), UT_NAMESIZE, UT_NAMESIZE,
-		    user_from_uid(ab.ac_uid, 0), UT_LINESIZE, UT_LINESIZE,
-		    getdev(ab.ac_tty), t / (double)AHZ, ctime(&ab.ac_btime));
+		if (size == 0)
+			break;
+		/* seek to previous entry */
+		if (fseek(fp, 2 * -(long)sizeof(struct acct), SEEK_CUR) == -1)
+			err(1, "%s", acctfile);
+		size -= sizeof(struct acct);
 	}
 	exit(0);
 }
 
 time_t
-expand(t)
-	u_int t;
+expand(u_int t)
 {
-	register time_t nt;
+	time_t nt;
 
 	nt = t & 017777;
 	t >>= 13;
@@ -165,8 +162,7 @@ expand(t)
 }
 
 char *
-flagbits(f)
-	register int f;
+flagbits(int f)
 {
 	static char flags[20] = "-";
 	char *p;
@@ -174,39 +170,39 @@ flagbits(f)
 #define	BIT(flag, ch)	if (f & flag) *p++ = ch
 
 	p = flags + 1;
-	BIT(ASU, 'S');
 	BIT(AFORK, 'F');
-	BIT(ACOMPAT, 'C');
+	BIT(AMAP, 'M');
 	BIT(ACORE, 'D');
 	BIT(AXSIG, 'X');
+	BIT(APLEDGE, 'P');
+	BIT(ATRAP, 'T');
+	BIT(AUNVEIL, 'U');
+	BIT(AEXECVE, 'E');
 	*p = '\0';
 	return (flags);
 }
 
 int
-requested(argv, acp)
-	register char *argv[];
-	register struct acct *acp;
+requested(char *argv[], struct acct *acp)
 {
 	do {
 		if (!strcmp(user_from_uid(acp->ac_uid, 0), *argv))
 			return (1);
 		if (!strcmp(getdev(acp->ac_tty), *argv))
 			return (1);
-		if (!strncmp(acp->ac_comm, *argv, fldsiz(acct, ac_comm)))
+		if (!strncmp(acp->ac_comm, *argv, sizeof acp->ac_comm))
 			return (1);
 	} while (*++argv);
 	return (0);
 }
 
 char *
-getdev(dev)
-	dev_t dev;
+getdev(dev_t dev)
 {
 	static dev_t lastdev = (dev_t)-1;
 	static char *lastname;
 
-	if (dev == NODEV)			/* Special case. */
+	if (dev == -1)				/* Special case. */
 		return ("__");
 	if (dev == lastdev)			/* One-element cache. */
 		return (lastname);
@@ -217,9 +213,9 @@ getdev(dev)
 }
 
 void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
-	    "lastcomm [ -f file ] [command ...] [user ...] [tty ...]\n");
+	    "usage: lastcomm [-f file] [command ...] [user ...] [terminal ...]\n");
 	exit(1);
 }

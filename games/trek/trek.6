@@ -1,3 +1,4 @@
+.\"	$OpenBSD: trek.6,v 1.16 2017/05/26 19:48:28 tedu Exp $
 .\"	$NetBSD: trek.6,v 1.4 1995/04/22 10:59:35 cgd Exp $
 .\"
 .\" Copyright (c) 1980, 1993
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,39 +30,28 @@
 .\"
 .\"	@(#)trek.6	8.2 (Berkeley) 12/30/93
 .\"
-.Dd December 30, 1993
+.Dd $Mdocdate: May 26 2017 $
 .Dt TREK 6
 .Os
 .Sh NAME
-.Nm trek 
+.Nm trek
 .Nd trekkie game
 .Sh SYNOPSIS
-.Nm /usr/games/trek
-.Oo
-.Op Fl a
-.Ar file
-.Oc
+.Nm trek
 .Sh DESCRIPTION
-.Nm Trek
-is a game of space glory and war.  Below is a summary of commands.
+.Nm
+is a game of space glory and war.
+Below is a summary of commands.
 For complete documentation, see
-.Em Trek
+.Em Star Trek
 by Eric Allman.
 .Pp
-If a filename is given, a log of the game is written onto that file.
-If the
-.Fl a
-flag is given before the filename, that file is appended to, not truncated.
-.Pp
 The game will ask you what length game you would like.
-Valid responses are 
+Valid responses are
 .Dq short ,
 .Dq medium ,
-and 
+and
 .Dq long .
-You may also type 
-.Dq restart ,
-which restarts a previously saved game.
 You will then be prompted for the skill, to which you must respond
 .Dq novice ,
 .Dq fair ,
@@ -74,14 +60,10 @@ You will then be prompted for the skill, to which you must respond
 .Dq commodore ,
 or
 .Dq impossible .
-You should normally start out with a novice and work up.
+You should normally start out with novice and work up.
 .Pp
 In general, throughout the game, if you forget what is appropriate
 the game will tell you what it expects if you just type in a question mark.
-.Sh AUTHOR
-Eric Allman
-.Sh "SEE ALSO"
-.Pa /usr/doc/trek
 .Sh COMMAND SUMMARY
 .Bl -item -compact
 .It
@@ -89,7 +71,7 @@ Eric Allman
 .It
 .Ic ca Ns pture
 .It
-.Ic cl Ns oak 
+.Ic cl Ns oak
 .Ic u Ns p/ Ns Ic d Ns own
 .It
 .Ic c Ns omputer request; ...
@@ -114,25 +96,27 @@ amount
 .Ic p Ns hasers Ic m Ns anual
 amt1 course1 spread1 ...
 .It
-.Ic t Ns orpedo course
-.Op Ic y Ns es
-.No angle/ Ns Ic n Ns o
-.It
 .Ic ram No course distance
 .It
 .Ic r Ns est time
 .It
-.Ic shell
-.It
-.Ic sh Ns ields 
+.Ic sh Ns ields
 .Ic u Ns p/ Ns Ic d Ns own
 .It
 .Ic s Ns rscan
-.Op Ic y Ns es/ Ic n Ns o
+.Sm off
+.Op Ic y No es/ Ic n No o
+.Sm on
 .It
 .Ic st Ns atus
 .It
 .Ic terminate y Ns es/ Ns Ic n Ns o
+.It
+.Ic t Ns orpedo course
+.Sm off
+.Op Ic y No es/ Ic n No o
+.Sm on
+.Op burst angle
 .It
 .Ic u Ns ndock
 .It
@@ -140,3 +124,23 @@ amt1 course1 spread1 ...
 .It
 .Ic w Ns arp warp_factor
 .El
+.Sh HISTORY
+The
+.Nm
+game first appeared in
+.Bx 1 .
+.Sh SEE ALSO
+.Rs
+.\" 4.4BSD USD:31
+.%A E. Allman
+.%T Star Trek
+.%B 4.4BSD User's Supplementary Documents (USD)
+.Re
+.Sh AUTHORS
+.An -nosplit
+.An Eric Allman ,
+May 1976, with contributions from
+.An Jeff Poskanzer ,
+.An Pete Rubinstein ,
+and
+.An Steve Bourne .

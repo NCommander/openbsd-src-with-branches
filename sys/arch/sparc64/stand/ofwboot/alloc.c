@@ -1,3 +1,4 @@
+/*	$OpenBSD: alloc.c,v 1.8 2015/09/14 17:34:03 semarie Exp $	*/
 /*	$NetBSD: alloc.c,v 1.1 2000/08/20 14:58:37 mrg Exp $	*/
 
 /*
@@ -91,8 +92,7 @@ LIST_HEAD(, ml) allocatedlist = LIST_HEAD_INITIALIZER(allocatedlist);
 #define	OVERHEAD	ALIGN(sizeof (struct ml))	/* shorthand */
 
 void *
-alloc(size)
-	unsigned size;
+alloc(unsigned size)
 {
 	struct ml *f, *bestf;
 	unsigned bestsize = 0xffffffff;	/* greater than any real size */
@@ -111,15 +111,14 @@ alloc(size)
 
 #ifdef ALLOC_FIRST_FIT
 	/* scan freelist */
-	for (f = freelist.lh_first; f != NULL && f->size < size;
-	    f = f->list.le_next)
-		/* noop */ ;
+	LIST_FOREACH(f, &freelist, list)
+		if (f->size >= size)
+			break;
 	bestf = f;
-	failed = (bestf == (struct fl *)0);
+	failed = (bestf == NULL);
 #else
 	/* scan freelist */
-	f = freelist.lh_first;
-	while (f != NULL) {
+	LIST_FOREACH(f, &freelist, list) {
 		if (f->size >= size) {
 			if (f->size == size)	/* exact match */
 				goto found;
@@ -130,7 +129,6 @@ alloc(size)
 				bestsize = f->size;
 			}
 		}
-		f = f->list.le_next;
 	}
 
 	/* no match in freelist if bestsize unchanged */
@@ -142,8 +140,8 @@ alloc(size)
 		 * Allocate memory from the OpenFirmware, rounded
 		 * to page size, and record the chunk size.
 		 */
-		size = roundup(size, NBPG);
-		help = OF_claim(0, size, NBPG);
+		size = roundup(size, PAGE_SIZE);
+		help = OF_claim(0, size, PAGE_SIZE);
 		if (help == (char *)-1)
 			panic("alloc: out of memory");
 
@@ -173,11 +171,14 @@ alloc(size)
 }
 
 void
-free(ptr, size)
-	void *ptr;
-	unsigned size;	/* only for consistenct check */
+free(void *ptr, unsigned size)
 {
-	register struct ml *a = (struct ml *)((char*)ptr - OVERHEAD);
+	register struct ml *a;
+
+	if (ptr == NULL)
+		return;
+
+	a = (struct ml *)((char *)ptr - OVERHEAD);
 
 #ifdef ALLOC_TRACE
 	printf("free(%lx, %u) (origsize %u)\n", (u_long)ptr, size, a->size);
@@ -191,24 +192,4 @@ free(ptr, size)
 	/* Remove from allocated list, place on freelist. */
 	LIST_REMOVE(a, list);
 	LIST_INSERT_HEAD(&freelist, a, list);
-}
-
-void
-freeall()
-{
-#ifdef __notyet__		/* Firmware bug ?! */
-	struct ml *m;
-
-	/* Release chunks on freelist... */
-	while ((m = freelist.lh_first) != NULL) {
-		LIST_REMOVE(m, list);
-		OF_release(m, m->size);
-	}
-
-	/* ...and allocated list. */
-	while ((m = allocatedlist.lh_first) != NULL) {
-		LIST_REMOVE(m, list);
-		OF_release(m, m->size);
-	}
-#endif /* __notyet__ */
 }

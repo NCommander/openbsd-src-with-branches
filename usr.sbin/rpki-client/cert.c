@@ -1,5 +1,7 @@
-/*	$Id$ */
+/*	$OpenBSD: cert.c,v 1.116 2023/09/25 14:56:20 tb Exp $ */
 /*
+ * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
+ * Copyright (c) 2021 Job Snijders <job@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -14,30 +16,18 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include "config.h"
 
-#include <sys/socket.h>
-
-#include <arpa/inet.h>
 #include <assert.h>
 #include <err.h>
-#include <inttypes.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <openssl/ssl.h>
-#include <openssl/x509v3.h> /* DIST_POINT */
+#include <openssl/asn1.h>
+#include <openssl/x509.h>
+#include <openssl/x509v3.h>
 
 #include "extern.h"
-
-/*
- * Type of ASIdentifier (RFC 3779, 3.2.3).
- */
-#define	ASID_TYPE_ASNUM	0x00
-#define ASID_TYPE_RDI	0x01
-#define ASID_TYPE_MAX	ASID_TYPE_RDI
 
 /*
  * A parsing sequence of a file (which may just be <stdin>).
@@ -47,51 +37,29 @@ struct	parse {
 	const char	*fn; /* currently-parsed file */
 };
 
-/*
- * Wrapper around ASN1_get_object() that preserves the current start
- * state and returns a more meaningful value.
- * Return zero on failure, non-zero on success.
- */
-static int
-ASN1_frame(struct parse *p, size_t sz,
-	const unsigned char **cnt, long *cntsz, int *tag)
-{
-	int	 ret, pcls;
-
-	assert(cnt != NULL && *cnt != NULL);
-	assert(sz > 0);
-	ret = ASN1_get_object(cnt, cntsz, tag, &pcls, sz);
-	if ((ret & 0x80)) {
-		cryptowarnx("%s: ASN1_get_object", p->fn);
-		return 0;
-	}
-	return ASN1_object_size((ret & 0x01) ? 2 : 0, *cntsz, *tag);
-}
+extern ASN1_OBJECT	*certpol_oid;	/* id-cp-ipAddr-asNumber cert policy */
+extern ASN1_OBJECT	*carepo_oid;	/* 1.3.6.1.5.5.7.48.5 (caRepository) */
+extern ASN1_OBJECT	*manifest_oid;	/* 1.3.6.1.5.5.7.48.10 (rpkiManifest) */
+extern ASN1_OBJECT	*notify_oid;	/* 1.3.6.1.5.5.7.48.13 (rpkiNotify) */
 
 /*
  * Append an IP address structure to our list of results.
- * This will also constrain us to having at most one inheritence
- * statement per AFI and also not have overlapping rages (as prohibited
+ * This will also constrain us to having at most one inheritance
+ * statement per AFI and also not have overlapping ranges (as prohibited
  * in section 2.2.3.6).
  * It does not make sure that ranges can't coalesce, that is, that any
  * two ranges abut each other.
  * This is warned against in section 2.2.3.6, but doesn't change the
  * semantics of the system.
- * Return zero on failure (IP overlap) non-zero on success.
+ * Returns zero on failure (IP overlap) non-zero on success.
  */
 static int
-append_ip(struct parse *p, const struct cert_ip *ip)
+append_ip(const char *fn, struct cert_ip *ips, size_t *ipsz,
+    const struct cert_ip *ip)
 {
-	struct cert	*res = p->res;
-
-	if (!ip_addr_check_overlap
-	    (ip, p->fn, p->res->ips, p->res->ipsz))
+	if (!ip_addr_check_overlap(ip, fn, ips, *ipsz))
 		return 0;
-	res->ips = reallocarray(res->ips,
-		res->ipsz + 1, sizeof(struct cert_ip));
-	if (res->ips == NULL)
-		err(EXIT_FAILURE, NULL);
-	res->ips[res->ipsz++] = *ip;
+	ips[(*ipsz)++] = *ip;
 	return 1;
 }
 
@@ -101,480 +69,59 @@ append_ip(struct parse *p, const struct cert_ip *ip)
  * as defined by RFC 3779 section 3.3.
  */
 static int
-append_as(struct parse *p, const struct cert_as *as)
+append_as(const char *fn, struct cert_as *ases, size_t *asz,
+    const struct cert_as *as)
 {
-
-	if (!as_check_overlap(as, p->fn, p->res->as, p->res->asz))
+	if (!as_check_overlap(as, fn, ases, *asz))
 		return 0;
-	p->res->as = reallocarray(p->res->as,
-		p->res->asz + 1, sizeof(struct cert_as));
-	if (p->res->as == NULL)
-		err(EXIT_FAILURE, NULL);
-	p->res->as[p->res->asz++] = *as;
+	ases[(*asz)++] = *as;
 	return 1;
 }
 
 /*
- * Construct a RFC 3779 2.2.3.8 range by its bit string.
- * Return zero on failure, non-zero on success.
- */
-static int
-sbgp_addr(struct parse *p,
-	struct cert_ip *ip, const ASN1_BIT_STRING *bs)
-{
-
-	if (!ip_addr_parse(bs, ip->afi, p->fn, &ip->ip)) {
-		warnx("%s: RFC 3779 section 2.2.3.8: IPAddress: "
-			"invalid IP address", p->fn);
-		return 0;
-	} else if (!ip_cert_compose_ranges(ip)) {
-		warnx("%s: RFC 3779 section 2.2.3.8: IPAddress: "
-			"IP address range reversed", p->fn);
-		return 0;
-	}
-	return append_ip(p, ip);
-}
-
-/*
- * Parse the SIA manifest, 4.8.8.1.
- * There may be multiple different resources at this location, so throw
- * out all but the matching resource type.
+ * Parse a range of AS identifiers as in 3.2.3.8.
  * Returns zero on failure, non-zero on success.
  */
-static int
-sbgp_sia_resource_mft(struct parse *p,
-	const unsigned char *d, size_t dsz)
+int
+sbgp_as_range(const char *fn, struct cert_as *ases, size_t *asz,
+    const ASRange *range)
 {
-	ASN1_SEQUENCE_ANY	*seq;
-	const ASN1_TYPE		*t;
-	int			 rc = 0, ptag;
-	char		  	 buf[128];
-	long			 plen;
-	enum rtype		 rt;
-
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"failed ASN.1 sequence parse", p->fn);
-		goto out;
-	} else if (sk_ASN1_TYPE_num(seq) != 2) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"want 2 elements, have %d",
-			p->fn, sk_ASN1_TYPE_num(seq));
-		goto out;
-	}
-
-	/* Composed of an OID and its continuation. */
-
-	t = sk_ASN1_TYPE_value(seq, 0);
-	if (t->type != V_ASN1_OBJECT) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"want ASN.1 object, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
-	}
-	OBJ_obj2txt(buf, sizeof(buf), t->value.object, 1);
-
-	/*
-	 * Ignore all but manifest.
-	 * Things we may want to consider later:
-	 *  - 1.3.6.1.5.5.7.48.13 (rpkiNotify)
-	 *  - 1.3.6.1.5.5.7.48.5 (CA repository)
-	 */
-
-	if (strcmp(buf, "1.3.6.1.5.5.7.48.10")) {
-		rc = 1;
-		goto out;
-	} else if (p->res->mft != NULL) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"MFT location already specified", p->fn);
-		goto out;
-	}
-
-	t = sk_ASN1_TYPE_value(seq, 1);
-	if (t->type != V_ASN1_OTHER) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"want ASN.1 external, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
-	}
-
-	/* FIXME: there must be a way to do this without ASN1_frame. */
-
-	d = t->value.asn1_string->data;
-	dsz = t->value.asn1_string->length;
-	if (!ASN1_frame(p, dsz, &d, &plen, &ptag))
-		goto out;
-
-	if ((p->res->mft = strndup((const char *)d, plen)) == NULL)
-		err(EXIT_FAILURE, NULL);
-
-	/* Make sure it's an MFT rsync address. */
-
-	if (!rsync_uri_parse(NULL, NULL, NULL,
-	    NULL, NULL, NULL, &rt, p->res->mft)) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"failed to parse rsync URI", p->fn);
-		free(p->res->mft);
-		p->res->mft = NULL;
-		goto out;
-	} else if (rt != RTYPE_MFT) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"invalid rsync URI suffix", p->fn);
-		free(p->res->mft);
-		p->res->mft = NULL;
-		goto out;
-	}
-
-	rc = 1;
-out:
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	return rc;
-}
-
-/*
- * Parse the very specific subset of information in the CRL distribution
- * point extension.
- * See RFC 6487, sectoin 4.8.6 for details.
- * Returns zero on failure, non-zero on success.
- */
-static int
-sbgp_crl_bits(struct parse *p, const unsigned char *d, size_t dsz)
-{
-	DIST_POINT		*pnt = NULL;
-	ASN1_SEQUENCE_ANY	*seq;
-	const ASN1_TYPE		*t;
-	int			 rc = 0;
-	char			*buf = NULL;
-	GENERAL_NAMES		*nms;
-	GENERAL_NAME		*nm;
-
-	/*
-	 * I think this can be parsed as a DIST_POINTS array, but that
-	 * doesn't really get us much, so do it this way.
-	 */
-
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"failed ASN.1 sequence parse", p->fn);
-		goto out;
-	} else if (sk_ASN1_TYPE_num(seq) != 1) {
-		warnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"want 1 element, have %d", p->fn,
-			sk_ASN1_TYPE_num(seq));
-		goto out;
-	}
-
-	t = sk_ASN1_TYPE_value(seq, 0);
-	if (t->type != V_ASN1_SEQUENCE) {
-		warnx("%s: RFC 6487 section 4.8.6: CRL: want ASN.1 "
-			"sequence, have %s (NID %d)", p->fn,
-			ASN1_tag2str(t->type), t->type);
-		goto out;
-	}
-
-	/*
-	 * Now actually drill down into the point itself.
-	 * It is fully specified by section 4.8.6.
-	 */
-
-	d = t->value.asn1_string->data;
-	dsz = t->value.asn1_string->length;
-
-	if ((pnt = d2i_DIST_POINT(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"failed dist points parse", p->fn);
-		goto out;
-	} else if (pnt->distpoint == NULL) {
-		warnx("%s: RFC 6487 section 4.8.6: CRL: no "
-			"distribution point name", p->fn);
-		goto out;
-	} else if (pnt->distpoint->type != 0) {
-		warnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"expected GEN_OTHERNAME, have %d",
-			p->fn, pnt->distpoint->type);
-		goto out;
-	}
-
-	nms = pnt->distpoint->name.fullname;
-	if (sk_GENERAL_NAME_num(nms) != 1) {
-		warnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"want 1 full name, have %d", p->fn,
-			sk_GENERAL_NAME_num(nms));
-		goto out;
-	}
-
-	nm = sk_GENERAL_NAME_value(nms, 0);
-	if (nm->type != GEN_URI) {
-		warnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"want URI type, have %d", p->fn, nm->type);
-		goto out;
-	}
-
-	assert(p->res->crl == NULL);
-	p->res->crl = strndup
-		((const char *)nm->d.uniformResourceIdentifier->data,
-		 nm->d.uniformResourceIdentifier->length);
-	if (p->res->crl == NULL)
-		err(EXIT_FAILURE, NULL);
-
-	rc = 1;
-out:
-	free(buf);
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	DIST_POINT_free(pnt);
-	return rc;
-}
-
-/*
- * Multiple locations as defined in RFC 6487, 4.8.8.1.
- * Returns zero on failure, non-zero on success.
- */
-static int
-sbgp_sia_resource(struct parse *p, const unsigned char *d, size_t dsz)
-{
-	ASN1_SEQUENCE_ANY	*seq;
-	const ASN1_TYPE		*t;
-	int			 rc = 0, i;
-
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"failed ASN.1 sequence parse", p->fn);
-		goto out;
-	}
-
-	for (i = 0; i < sk_ASN1_TYPE_num(seq); i++) {
-		t = sk_ASN1_TYPE_value(seq, i);
-		if (t->type != V_ASN1_SEQUENCE) {
-			warnx("%s: RFC 6487 section 4.8.8: SIA: "
-				"want ASN.1 sequence, have %s (NID %d)",
-				p->fn, ASN1_tag2str(t->type), t->type);
-			goto out;
-		}
-		d = t->value.asn1_string->data;
-		dsz = t->value.asn1_string->length;
-		if (!sbgp_sia_resource_mft(p, d, dsz))
-			goto out;
-	}
-
-	rc = 1;
-out:
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	return rc;
-}
-
-/*
- * Parse "CRL Distribution Points" extension, RFC 6487 4.8.6.
- * Returns zero on failure, non-zero on success.
- */
-static int
-sbgp_crl(struct parse *p, X509_EXTENSION *ext)
-{
-	unsigned char		*sv = NULL;
-	const unsigned char 	*d;
-	ASN1_SEQUENCE_ANY	*seq = NULL;
-	const ASN1_TYPE		*t;
-	int			 dsz, rc = 0;
-
-	if (p->res->crl != NULL) {
-		warnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"multiple specifications", p->fn);
-		goto out;
-	} else if ((dsz = i2d_X509_EXTENSION(ext, &sv)) < 0) {
-		cryptowarnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"failed extension parse", p->fn);
-		goto out;
-	}
-	d = sv;
-
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"failed ASN.1 sequence parse", p->fn);
-		goto out;
-	} else if (sk_ASN1_TYPE_num(seq) != 2) {
-		warnx("%s: RFC 6487 section 4.8.6: SIA: "
-			"want 2 elements, have %d", p->fn,
-			sk_ASN1_TYPE_num(seq));
-		goto out;
-	}
-
-	t = sk_ASN1_TYPE_value(seq, 0);
-	if (t->type != V_ASN1_OBJECT) {
-		warnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"want ASN.1 object, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
-	}
-	if (OBJ_obj2nid(t->value.object) !=
-	    NID_crl_distribution_points) {
-		warnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"incorrect OID, have %s (NID %d)", p->fn,
-			ASN1_tag2str(OBJ_obj2nid(t->value.object)),
-			OBJ_obj2nid(t->value.object));
-		goto out;
-	}
-
-	t = sk_ASN1_TYPE_value(seq, 1);
-	if (t->type != V_ASN1_OCTET_STRING) {
-		warnx("%s: RFC 6487 section 4.8.6: CRL: "
-			"want ASN.1 octet string, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
-	}
-
-	/*
-	 * Now we've peeled back the envelope to get to the single
-	 * entity of the extension, which is our distribution point.
-	 */
-
-	d = t->value.octet_string->data;
-	dsz = t->value.octet_string->length;
-	if (!sbgp_crl_bits(p, d, dsz))
-		goto out;
-
-	rc = 1;
-out:
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	free(sv);
-	return rc;
-}
-
-/*
- * Parse "Subject Information Access" extension, RFC 6487 4.8.8.
- * Returns zero on failure, non-zero on success.
- */
-static int
-sbgp_sia(struct parse *p, X509_EXTENSION *ext)
-{
-	unsigned char		*sv = NULL;
-	const unsigned char 	*d;
-	ASN1_SEQUENCE_ANY	*seq = NULL;
-	const ASN1_TYPE		*t;
-	int			 dsz, rc = 0;
-
-	if ((dsz = i2d_X509_EXTENSION(ext, &sv)) < 0) {
-		cryptowarnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"failed extension parse", p->fn);
-		goto out;
-	}
-	d = sv;
-
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"failed ASN.1 sequence parse", p->fn);
-		goto out;
-	} else if (sk_ASN1_TYPE_num(seq) != 2) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"want 2 elements, have %d", p->fn,
-			sk_ASN1_TYPE_num(seq));
-		goto out;
-	}
-
-	t = sk_ASN1_TYPE_value(seq, 0);
-	if (t->type != V_ASN1_OBJECT) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"want ASN.1 object, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
-	} else if (OBJ_obj2nid(t->value.object) != NID_sinfo_access) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"incorrect OID, have %s (NID %d)", p->fn,
-			ASN1_tag2str(OBJ_obj2nid(t->value.object)),
-			OBJ_obj2nid(t->value.object));
-		goto out;
-	}
-
-	t = sk_ASN1_TYPE_value(seq, 1);
-	if (t->type != V_ASN1_OCTET_STRING) {
-		warnx("%s: RFC 6487 section 4.8.8: SIA: "
-			"want ASN.1 octet string, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
-	}
-
-	d = t->value.octet_string->data;
-	dsz = t->value.octet_string->length;
-	if (!sbgp_sia_resource(p, d, dsz))
-		goto out;
-
-	rc = 1;
-out:
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	free(sv);
-	return rc;
-}
-
-/*
- * Parse a range of addresses as in 3.2.3.8.
- * Returns zero on failure, non-zero on success.
- */
-static int
-sbgp_asrange(struct parse *p, const unsigned char *d, size_t dsz)
-{
-	struct cert_as	 	 as;
-	ASN1_SEQUENCE_ANY	*seq;
-	const ASN1_TYPE		*t;
-	int			 rc = 0;
-
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 3779 section 3.2.3.8: "
-			"ASRange: failed ASN.1 sequence parse", p->fn);
-		goto out;
-	} else if (sk_ASN1_TYPE_num(seq) != 2) {
-		warnx("%s: RFC 3779 section 3.2.3.8: ASRange: "
-			"want 2 elements, have %d", p->fn,
-			sk_ASN1_TYPE_num(seq));
-		goto out;
-	}
+	struct cert_as		 as;
 
 	memset(&as, 0, sizeof(struct cert_as));
 	as.type = CERT_AS_RANGE;
 
-	t = sk_ASN1_TYPE_value(seq, 0);
-	if (t->type != V_ASN1_INTEGER) {
-		warnx("%s: RFC 3779 section 3.2.3.8: ASRange: "
-			"want ASN.1 integer, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
-	} else if (!as_id_parse(t->value.integer, &as.range.min)) {
-		warnx("%s: RFC 3770 section 3.2.3.8 (via RFC 1930): "
-			"malformed AS identifier", p->fn);
+	if (!as_id_parse(range->min, &as.range.min)) {
+		warnx("%s: RFC 3779 section 3.2.3.8 (via RFC 1930): "
+		    "malformed AS identifier", fn);
 		return 0;
 	}
-	
-	t = sk_ASN1_TYPE_value(seq, 1);
-	if (t->type != V_ASN1_INTEGER) {
-		warnx("%s: RFC 3779 section 3.2.3.8: ASRange: "
-			"want ASN.1 integer, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
-	} else if (!as_id_parse(t->value.integer, &as.range.max)) {
-		warnx("%s: RFC 3770 section 3.2.3.8 (via RFC 1930): "
-			"malformed AS identifier", p->fn);
+
+	if (!as_id_parse(range->max, &as.range.max)) {
+		warnx("%s: RFC 3779 section 3.2.3.8 (via RFC 1930): "
+		    "malformed AS identifier", fn);
 		return 0;
 	}
 
 	if (as.range.max == as.range.min) {
 		warnx("%s: RFC 3379 section 3.2.3.8: ASRange: "
-			"range is singular", p->fn);
-		goto out;
+		    "range is singular", fn);
+		return 0;
 	} else if (as.range.max < as.range.min) {
 		warnx("%s: RFC 3379 section 3.2.3.8: ASRange: "
-			"range is out of order", p->fn);
-		goto out;
-	} else if (!append_as(p, &as))
-		goto out;
+		    "range is out of order", fn);
+		return 0;
+	}
 
-	rc = 1;
-out:
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	return rc;
+	return append_as(fn, ases, asz, &as);
 }
 
 /*
  * Parse an entire 3.2.3.10 integer type.
  */
-static int
-sbgp_asid(struct parse *p, const ASN1_INTEGER *i)
+int
+sbgp_as_id(const char *fn, struct cert_as *ases, size_t *asz,
+    const ASN1_INTEGER *i)
 {
 	struct cert_as	 as;
 
@@ -582,101 +129,114 @@ sbgp_asid(struct parse *p, const ASN1_INTEGER *i)
 	as.type = CERT_AS_ID;
 
 	if (!as_id_parse(i, &as.id)) {
-		warnx("%s: RFC 3770 section 3.2.3.10 (via RFC 1930): "
-			"malformed AS identifier", p->fn);
+		warnx("%s: RFC 3779 section 3.2.3.10 (via RFC 1930): "
+		    "malformed AS identifier", fn);
 		return 0;
-	} else if (as.id == 0) {
-		warnx("%s: RFC 3770 section 3.2.3.10 (via RFC 1930): "
-			"AS identifiers zero is reserved", p->fn);
+	}
+	if (as.id == 0) {
+		warnx("%s: RFC 3779 section 3.2.3.10 (via RFC 1930): "
+		    "AS identifier zero is reserved", fn);
 		return 0;
 	}
 
-	return append_as(p, &as);
+	return append_as(fn, ases, asz, &as);
 }
 
-/*
- * Parse one of RFC 3779 3.2.3.2.
- * Returns zero on failure, non-zero on success.
- */
 static int
-sbgp_asnum(struct parse *p, const unsigned char *d, size_t dsz)
+sbgp_as_inherit(const char *fn, struct cert_as *ases, size_t *asz)
 {
-	struct cert_as	 	 as;
-	ASN1_TYPE		*t, *tt;
-	ASN1_SEQUENCE_ANY	*seq = NULL;
-	int			 i, rc = 0;
-	const unsigned char	*sv = d;
+	struct cert_as as;
 
-	/* We can either be a null (inherit) or sequence. */
+	memset(&as, 0, sizeof(struct cert_as));
+	as.type = CERT_AS_INHERIT;
 
-	if ((t = d2i_ASN1_TYPE(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 3779 section 3.2.3.2: "
-			"ASIdentifierChoice: failed ASN.1 "
-			"type parse", p->fn);
+	return append_as(fn, ases, asz, &as);
+}
+
+int
+sbgp_parse_assysnum(const char *fn, const ASIdentifiers *asidentifiers,
+    struct cert_as **out_as, size_t *out_asz)
+{
+	const ASIdOrRanges	*aors = NULL;
+	struct cert_as		*as = NULL;
+	size_t			 asz = 0, sz;
+	int			 i;
+
+	assert(*out_as == NULL && *out_asz == 0);
+
+	if (asidentifiers->rdi != NULL) {
+		warnx("%s: RFC 6487 section 4.8.11: autonomousSysNum: "
+		    "should not have RDI values", fn);
 		goto out;
 	}
 
-	/*
-	 * Section 3779 3.2.3.3 is to inherit with an ASN.1 NULL type,
-	 * which is the easy case.
-	 */
-
-	switch (t->type) {
-	case V_ASN1_NULL:
-		memset(&as, 0, sizeof(struct cert_as));
-		as.type = CERT_AS_INHERIT;
-		if (!append_as(p, &as))
-			goto out;
-		rc = 1;
+	if (asidentifiers->asnum == NULL) {
+		warnx("%s: RFC 6487 section 4.8.11: autonomousSysNum: "
+		    "no AS number resource set", fn);
 		goto out;
-	case V_ASN1_SEQUENCE:
+	}
+
+	switch (asidentifiers->asnum->type) {
+	case ASIdentifierChoice_inherit:
+		sz = 1;
+		break;
+	case ASIdentifierChoice_asIdsOrRanges:
+		aors = asidentifiers->asnum->u.asIdsOrRanges;
+		sz = sk_ASIdOrRange_num(aors);
 		break;
 	default:
-		warnx("%s: RFC 3779 section 3.2.3.2: "
-			"ASIdentifierChoice: want ASN.1 sequence "
-			"or null, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
+		warnx("%s: RFC 3779 section 3.2.3.2: ASIdentifierChoice: "
+		    "unknown type %d", fn, asidentifiers->asnum->type);
 		goto out;
 	}
 
-	/* This is RFC 3779 3.2.3.4. */
-
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &sv, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 3779 section 3.2.3.2: "
-			"ASIdentifierChoice: failed ASN.1 sequence "
-			"parse", p->fn);
+	if (sz == 0) {
+		warnx("%s: RFC 6487 section 4.8.11: empty asIdsOrRanges", fn);
 		goto out;
 	}
+	if (sz >= MAX_AS_SIZE) {
+		warnx("%s: too many AS number entries: limit %d",
+		    fn, MAX_AS_SIZE);
+		goto out;
+	}
+	as = calloc(sz, sizeof(struct cert_as));
+	if (as == NULL)
+		err(1, NULL);
 
-	/* Accepts RFC 3779 3.2.3.6 or 3.2.3.7 (sequence). */
+	if (aors == NULL) {
+		if (!sbgp_as_inherit(fn, as, &asz))
+			goto out;
+	}
 
-	for (i = 0; i < sk_ASN1_TYPE_num(seq); i++) {
-		tt = sk_ASN1_TYPE_value(seq, i);
-		switch (tt->type) {
-		case V_ASN1_INTEGER:
-			if (!sbgp_asid(p, tt->value.integer))
+	for (i = 0; i < sk_ASIdOrRange_num(aors); i++) {
+		const ASIdOrRange *aor;
+
+		aor = sk_ASIdOrRange_value(aors, i);
+		switch (aor->type) {
+		case ASIdOrRange_id:
+			if (!sbgp_as_id(fn, as, &asz, aor->u.id))
 				goto out;
 			break;
-		case V_ASN1_SEQUENCE:
-			d = tt->value.asn1_string->data;
-			dsz = tt->value.asn1_string->length;
-			if (!sbgp_asrange(p, d, dsz))
+		case ASIdOrRange_range:
+			if (!sbgp_as_range(fn, as, &asz, aor->u.range))
 				goto out;
 			break;
 		default:
-			warnx("%s: RFC 3779 section 3.2.3.4: "
-				"IPAddressOrRange: want ASN.1 sequence "
-				"or integer, have %s (NID %d)",
-				p->fn, ASN1_tag2str(tt->type), tt->type);
+			warnx("%s: RFC 3779 section 3.2.3.5: ASIdOrRange: "
+			    "unknown type %d", fn, aor->type);
 			goto out;
 		}
 	}
 
-	rc = 1;
-out:
-	ASN1_TYPE_free(t);
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	return rc;
+	*out_as = as;
+	*out_asz = asz;
+
+	return 1;
+
+ out:
+	free(as);
+
+	return 0;
 }
 
 /*
@@ -687,303 +247,195 @@ out:
 static int
 sbgp_assysnum(struct parse *p, X509_EXTENSION *ext)
 {
-	unsigned char		*sv = NULL;
-	const unsigned char 	*d;
-	ASN1_SEQUENCE_ANY	*seq = NULL, *sseq = NULL;
-	const ASN1_TYPE		*t;
-	int			 dsz, rc = 0, i, ptag;
-	long		 	 plen;
+	ASIdentifiers		*asidentifiers = NULL;
+	int			 rc = 0;
 
-	if ((dsz = i2d_X509_EXTENSION(ext, &sv)) < 0) {
-		cryptowarnx("%s: RFC 6487 section 4.8.11: autonomous"
-			"SysNum: failed extension parse", p->fn);
-		goto out;
-	}
-
-	/* Start with RFC 3779, section 3.2 top-level. */
-
-	d = sv;
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 6487 section 4.8.11: autonomous"
-			"SysNum: failed ASN.1 sequence parse", p->fn);
-		goto out;
-	} else if (sk_ASN1_TYPE_num(seq) != 3) {
+	if (!X509_EXTENSION_get_critical(ext)) {
 		warnx("%s: RFC 6487 section 4.8.11: autonomousSysNum: "
-			"want 3 elements, have %d", p->fn,
-			sk_ASN1_TYPE_num(seq));
+		    "extension not critical", p->fn);
 		goto out;
 	}
 
-	t = sk_ASN1_TYPE_value(seq, 0);
-	if (t->type != V_ASN1_OBJECT) {
-		warnx("%s: RFC 6487 section 4.8.11: autonomomusSysNum: "
-			"want ASN.1 object, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
+	if ((asidentifiers = X509V3_EXT_d2i(ext)) == NULL) {
+		warnx("%s: RFC 6487 section 4.8.11: autonomousSysNum: "
+		    "failed extension parse", p->fn);
 		goto out;
 	}
 
-	/* FIXME: verify OID. */
-
-	t = sk_ASN1_TYPE_value(seq, 1);
-	if (t->type != V_ASN1_BOOLEAN) {
-		warnx("%s: RFC 6487 section 4.8.11: autonomomusSysNum: "
-			"want ASN.1 boolean, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
+	if (!sbgp_parse_assysnum(p->fn, asidentifiers,
+	    &p->res->as, &p->res->asz))
 		goto out;
-	}
-
-	t = sk_ASN1_TYPE_value(seq, 2);
-	if (t->type != V_ASN1_OCTET_STRING) {
-		warnx("%s: RFC 6487 section 4.8.11: autonomomusSysNum: "
-			"want ASN.1 octet string, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
-	}
-
-	/* Within RFC 3779 3.2.3, check 3.2.3.1. */
-
-	d = t->value.octet_string->data;
-	dsz = t->value.octet_string->length;
-
-	if ((sseq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 3779 section 3.2.3.1: ASIdentifiers: "
-			"failed ASN.1 sequence parse", p->fn);
-		goto out;
-	}
-
-	/* Scan through for private 3.2.3.2 classes. */
-
-	for (i = 0; i < sk_ASN1_TYPE_num(sseq); i++) {
-		t = sk_ASN1_TYPE_value(sseq, i);
-		if (t->type != V_ASN1_OTHER) {
-			warnx("%s: RFC 3779 section 3.2.3.1: "
-				"ASIdentifiers: want ASN.1 explicit, "
-				"have %s (NID %d)", p->fn,
-				ASN1_tag2str(t->type), t->type);
-			goto out;
-		}
-
-		/* Use the low-level ASN1_frame. */
-
-		d = t->value.asn1_string->data;
-		dsz = t->value.asn1_string->length;
-		if (!ASN1_frame(p, dsz, &d, &plen, &ptag))
-			goto out;
-
-		/* Ignore bad AS identifiers and RDI entries. */
-
-		if (ptag > ASID_TYPE_MAX) {
-			warnx("%s: RFC 3779 section 3.2.3.1: "
-				"ASIdentifiers: unknown explicit "
-				"tag 0x%02x", p->fn, ptag);
-			goto out;
-		} else if (ptag == ASID_TYPE_RDI)
-			continue;
-
-		if (!sbgp_asnum(p, d, plen))
-			goto out;
-	}
 
 	rc = 1;
-out:
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	sk_ASN1_TYPE_pop_free(sseq, ASN1_TYPE_free);
-	free(sv);
+ out:
+	ASIdentifiers_free(asidentifiers);
 	return rc;
+}
+
+/*
+ * Construct a RFC 3779 2.2.3.8 range from its bit string.
+ * Returns zero on failure, non-zero on success.
+ */
+int
+sbgp_addr(const char *fn, struct cert_ip *ips, size_t *ipsz, enum afi afi,
+    const ASN1_BIT_STRING *bs)
+{
+	struct cert_ip	ip;
+
+	memset(&ip, 0, sizeof(struct cert_ip));
+
+	ip.afi = afi;
+	ip.type = CERT_IP_ADDR;
+
+	if (!ip_addr_parse(bs, afi, fn, &ip.ip)) {
+		warnx("%s: RFC 3779 section 2.2.3.8: IPAddress: "
+		    "invalid IP address", fn);
+		return 0;
+	}
+
+	if (!ip_cert_compose_ranges(&ip)) {
+		warnx("%s: RFC 3779 section 2.2.3.8: IPAddress: "
+		    "IP address range reversed", fn);
+		return 0;
+	}
+
+	return append_ip(fn, ips, ipsz, &ip);
 }
 
 /*
  * Parse RFC 3779 2.2.3.9 range of addresses.
- * Return zero on failure, non-zero on success.
- */
-static int
-sbgp_addr_range(struct parse *p, struct cert_ip *ip,
-	const unsigned char *d, size_t dsz)
-{
-	ASN1_SEQUENCE_ANY	*seq;
-	const ASN1_TYPE		*t;
-	int			 rc = 0;
-
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 3779 section 2.2.3.9: "
-			"IPAddressRange: failed ASN.1 sequence "
-			"parse", p->fn);
-		goto out;
-	} else if (sk_ASN1_TYPE_num(seq) != 2) {
-		warnx("%s: RFC 3779 section 2.2.3.9: "
-			"IPAddressRange: want 2 elements, have %d",
-			p->fn, sk_ASN1_TYPE_num(seq));
-		goto out;
-	}
-
-	t = sk_ASN1_TYPE_value(seq, 0);
-	if (t->type != V_ASN1_BIT_STRING) {
-		warnx("%s: RFC 3779 section 2.2.3.9: IPAddressRange: "
-			"want ASN.1 bit string, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
-	}
-	if (!ip_addr_parse(t->value.bit_string,
-	    ip->afi, p->fn, &ip->range.min)) {
-		warnx("%s: RFC 3779 section 2.2.3.9: IPAddressRange: "
-			"invalid IP address", p->fn);
-		goto out;
-	}
-
-	t = sk_ASN1_TYPE_value(seq, 1);
-	if (t->type != V_ASN1_BIT_STRING) {
-		warnx("%s: RFC 3779 section 2.2.3.9: IPAddressRange: "
-			"want ASN.1 bit string, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
-	}
-	if (!ip_addr_parse(t->value.bit_string,
-	    ip->afi, p->fn, &ip->range.max)) {
-		warnx("%s: RFC 3779 section 2.2.3.9: IPAddressRange: "
-			"invalid IP address", p->fn);
-		goto out;
-	}
-
-	if (!ip_cert_compose_ranges(ip)) {
-		warnx("%s: RFC 3779 section 2.2.3.9: IPAddressRange: "
-			"IP address range reversed", p->fn);
-		return 0;
-	}
-
-	rc = append_ip(p, ip);
-out:
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	return rc;
-}
-
-/*
- * Parse an IP address or range, RFC 3779 2.2.3.7.
- * We don't constrain this parse (as specified in section 2.2.3.6) to
- * having any kind of order.
  * Returns zero on failure, non-zero on success.
  */
-static int
-sbgp_addr_or_range(struct parse *p, struct cert_ip *ip,
-	const unsigned char *d, size_t dsz)
+int
+sbgp_addr_range(const char *fn, struct cert_ip *ips, size_t *ipsz,
+    enum afi afi, const IPAddressRange *range)
 {
-	struct cert_ip	 	 nip;
-	ASN1_SEQUENCE_ANY	*seq;
-	const ASN1_TYPE		*t;
-	int			 i, rc = 0;
-
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 3779 section 2.2.3.7: "
-			"IPAddressOrRange: failed ASN.1 sequence "
-			"parse", p->fn);
-		goto out;
-	}
-
-	/* Either RFC 3779 2.2.3.8 or 2.2.3.9. */
-
-	for (i = 0; i < sk_ASN1_TYPE_num(seq); i++) {
-		nip = *ip;
-		t = sk_ASN1_TYPE_value(seq, i);
-		switch (t->type) {
-		case V_ASN1_BIT_STRING:
-			nip.type = CERT_IP_ADDR;
-			if (!sbgp_addr(p, &nip, t->value.bit_string))
-				goto out;
-			break;
-		case V_ASN1_SEQUENCE:
-			nip.type = CERT_IP_RANGE;
-			d = t->value.asn1_string->data;
-			dsz = t->value.asn1_string->length;
-			if (!sbgp_addr_range(p, &nip, d, dsz))
-				goto out;
-			break;
-		default:
-			warnx("%s: RFC 3779 section 2.2.3.7: "
-				"IPAddressOrRange: want ASN.1 sequence "
-				"or bit string, have %s (NID %d)",
-				p->fn, ASN1_tag2str(t->type), t->type);
-			goto out;
-		}
-	}
-
-	rc = 1;
-out:
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	return rc;
-}
-
-/*
- * Parse a sequence of address families as in RFC 3779 sec. 2.2.3.2.
- * Ignore several stipulations of the RFC (2.2.3.3).
- * Namely, we don't require entries to be ordered in any way (type, AFI
- * or SAFI group, etc.).
- * This is because it doesn't matter for our purposes: we're going to
- * validate in the same way regardless.
- * Returns zero no failure, non-zero on success.
- */
-static int
-sbgp_ipaddrfam(struct parse *p, const unsigned char *d, size_t dsz)
-{
-	struct cert_ip	 	 ip;
-	ASN1_SEQUENCE_ANY	*seq;
-	const ASN1_TYPE		*t;
-	int			 rc = 0;
+	struct cert_ip	ip;
 
 	memset(&ip, 0, sizeof(struct cert_ip));
 
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 3779 section 2.2.3.2: "
-			"IPAddressFamily: failed ASN.1 sequence "
-			"parse", p->fn);
-		goto out;
-	} else if (sk_ASN1_TYPE_num(seq) != 2) {
-		warnx("%s: RFC 3779 section 2.2.3.2: "
-			"IPAddressFamily: want 2 elements, have %d",
-			p->fn, sk_ASN1_TYPE_num(seq));
-		goto out;
+	ip.afi = afi;
+	ip.type = CERT_IP_RANGE;
+
+	if (!ip_addr_parse(range->min, afi, fn, &ip.range.min)) {
+		warnx("%s: RFC 3779 section 2.2.3.9: IPAddressRange: "
+		    "invalid IP address", fn);
+		return 0;
 	}
 
-	/* Get address family, RFC 3779, 2.2.3.3. */
-
-	t = sk_ASN1_TYPE_value(seq, 0);
-	if (t->type != V_ASN1_OCTET_STRING) {
-		warnx("%s: RFC 3779 section 2.2.3.2: addressFamily: "
-			"want ASN.1 octet string, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
+	if (!ip_addr_parse(range->max, afi, fn, &ip.range.max)) {
+		warnx("%s: RFC 3779 section 2.2.3.9: IPAddressRange: "
+		    "invalid IP address", fn);
+		return 0;
 	}
 
-	if (!ip_addr_afi_parse(p->fn, t->value.octet_string, &ip.afi)) {
-		warnx("%s: RFC 3779 section 2.2.3.2: addressFamily: "
-			"invalid AFI", p->fn);
-		goto out;
+	if (!ip_cert_compose_ranges(&ip)) {
+		warnx("%s: RFC 3779 section 2.2.3.9: IPAddressRange: "
+		    "IP address range reversed", fn);
+		return 0;
 	}
 
-	/* Either sequence or null (inherit), RFC 3779 sec. 2.2.3.4. */
+	return append_ip(fn, ips, ipsz, &ip);
+}
 
-	t = sk_ASN1_TYPE_value(seq, 1);
-	switch (t->type) {
-	case V_ASN1_SEQUENCE:
-		d = t->value.asn1_string->data;
-		dsz = t->value.asn1_string->length;
-		if (!sbgp_addr_or_range(p, &ip, d, dsz))
+static int
+sbgp_addr_inherit(const char *fn, struct cert_ip *ips, size_t *ipsz,
+    enum afi afi)
+{
+	struct cert_ip	ip;
+
+	memset(&ip, 0, sizeof(struct cert_ip));
+
+	ip.afi = afi;
+	ip.type = CERT_IP_INHERIT;
+
+	return append_ip(fn, ips, ipsz, &ip);
+}
+
+int
+sbgp_parse_ipaddrblk(const char *fn, const IPAddrBlocks *addrblk,
+    struct cert_ip **out_ips, size_t *out_ipsz)
+{
+	const IPAddressFamily	*af;
+	const IPAddressOrRanges	*aors;
+	const IPAddressOrRange	*aor;
+	enum afi		 afi;
+	struct cert_ip		*ips = NULL;
+	size_t			 ipsz = 0, sz;
+	int			 i, j;
+
+	assert(*out_ips == NULL && *out_ipsz == 0);
+
+	for (i = 0; i < sk_IPAddressFamily_num(addrblk); i++) {
+		af = sk_IPAddressFamily_value(addrblk, i);
+
+		switch (af->ipAddressChoice->type) {
+		case IPAddressChoice_inherit:
+			aors = NULL;
+			sz = ipsz + 1;
+			break;
+		case IPAddressChoice_addressesOrRanges:
+			aors = af->ipAddressChoice->u.addressesOrRanges;
+			sz = ipsz + sk_IPAddressOrRange_num(aors);
+			break;
+		default:
+			warnx("%s: RFC 3779: IPAddressChoice: unknown type %d",
+			    fn, af->ipAddressChoice->type);
 			goto out;
-		break;
-	case V_ASN1_NULL:
-		ip.type = CERT_IP_INHERIT;
-		if (!append_ip(p, &ip))
+		}
+		if (sz == ipsz) {
+			warnx("%s: RFC 6487 section 4.8.10: "
+			    "empty ipAddressesOrRanges", fn);
 			goto out;
-		break;
-	default:
-		warnx("%s: RFC 3779 section 2.2.3.2: IPAddressChoice: "
-			"want ASN.1 sequence or null, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
-		goto out;
+		}
+
+		if (sz >= MAX_IP_SIZE)
+			goto out;
+		ips = recallocarray(ips, ipsz, sz, sizeof(struct cert_ip));
+		if (ips == NULL)
+			err(1, NULL);
+
+		if (!ip_addr_afi_parse(fn, af->addressFamily, &afi)) {
+			warnx("%s: RFC 3779: invalid AFI", fn);
+			goto out;
+		}
+
+		if (aors == NULL) {
+			if (!sbgp_addr_inherit(fn, ips, &ipsz, afi))
+				goto out;
+			continue;
+		}
+
+		for (j = 0; j < sk_IPAddressOrRange_num(aors); j++) {
+			aor = sk_IPAddressOrRange_value(aors, j);
+			switch (aor->type) {
+			case IPAddressOrRange_addressPrefix:
+				if (!sbgp_addr(fn, ips, &ipsz, afi,
+				    aor->u.addressPrefix))
+					goto out;
+				break;
+			case IPAddressOrRange_addressRange:
+				if (!sbgp_addr_range(fn, ips, &ipsz, afi,
+				    aor->u.addressRange))
+					goto out;
+				break;
+			default:
+				warnx("%s: RFC 3779: IPAddressOrRange: "
+				    "unknown type %d", fn, aor->type);
+				goto out;
+			}
+		}
 	}
 
-	rc = 1;
-out:
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	return rc;
+	*out_ips = ips;
+	*out_ipsz = ipsz;
+
+	return 1;
+
+ out:
+	free(ips);
+
+	return 0;
 }
 
 /*
@@ -994,173 +446,338 @@ out:
 static int
 sbgp_ipaddrblk(struct parse *p, X509_EXTENSION *ext)
 {
-	int	 	 	 dsz, rc = 0;
-	unsigned char		*sv = NULL;
-	const unsigned char 	*d;
-	ASN1_SEQUENCE_ANY	*seq = NULL, *sseq = NULL;
-	const ASN1_TYPE		*t = NULL;
-	int			 i;
+	STACK_OF(IPAddressFamily)	*addrblk = NULL;
+	int				 rc = 0;
 
-	if ((dsz = i2d_X509_EXTENSION(ext, &sv)) < 0) {
-		cryptowarnx("%s: RFC 6487 section 4.8.10: sbgp-"
-			"ipAddrBlock: failed extension parse", p->fn);
-		goto out;
-	}
-	d = sv;
-
-	if ((seq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 6487 section 4.8.10: sbgp-"
-			"ipAddrBlock: failed ASN.1 sequence "
-			"parse", p->fn);
-		goto out;
-	} else if (sk_ASN1_TYPE_num(seq) != 3) {
-		warnx("%s: RFC 6487 section 4.8.10: sbgp-"
-			"ipAddrBlock: want 3 elements, have %d",
-			p->fn, sk_ASN1_TYPE_num(seq));
-		goto out;
-	}
-
-	t = sk_ASN1_TYPE_value(seq, 0);
-	if (t->type != V_ASN1_OBJECT) {
+	if (!X509_EXTENSION_get_critical(ext)) {
 		warnx("%s: RFC 6487 section 4.8.10: sbgp-ipAddrBlock: "
-			"want ASN.1 object, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
+		    "extension not critical", p->fn);
 		goto out;
 	}
 
-	/* FIXME: verify OID. */
-
-	t = sk_ASN1_TYPE_value(seq, 1);
-	if (t->type != V_ASN1_BOOLEAN) {
+	if ((addrblk = X509V3_EXT_d2i(ext)) == NULL) {
 		warnx("%s: RFC 6487 section 4.8.10: sbgp-ipAddrBlock: "
-			"want ASN.1 boolean, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
+		    "failed extension parse", p->fn);
 		goto out;
 	}
 
-	t = sk_ASN1_TYPE_value(seq, 2);
-	if (t->type != V_ASN1_OCTET_STRING) {
-		warnx("%s: RFC 6487 section 4.8.10: sbgp-ipAddrBlock: "
-			"want ASN.1 octet string, have %s (NID %d)",
-			p->fn, ASN1_tag2str(t->type), t->type);
+	if (!sbgp_parse_ipaddrblk(p->fn, addrblk, &p->res->ips, &p->res->ipsz))
 		goto out;
-	}
 
-	/* The blocks sequence, RFC 3779 2.2.3.1. */
-
-	d = t->value.octet_string->data;
-	dsz = t->value.octet_string->length;
-
-	if ((sseq = d2i_ASN1_SEQUENCE_ANY(NULL, &d, dsz)) == NULL) {
-		cryptowarnx("%s: RFC 3779 section 2.2.3.1: IPAddrBlocks: "
-			"failed ASN.1 sequence parse", p->fn);
+	if (p->res->ipsz == 0) {
+		warnx("%s: RFC 6487 section 4.8.10: empty ipAddrBlock", p->fn);
 		goto out;
-	}
-
-	/* Each sequence element contains RFC 3779 sec. 2.2.3.2. */
-
-	for (i = 0; i < sk_ASN1_TYPE_num(sseq); i++) {
-		t = sk_ASN1_TYPE_value(sseq, i);
-		if (V_ASN1_SEQUENCE != t->type) {
-			warnx("%s: RFC 3779 section 2.2.3.2: "
-				"IPAddressFamily: want ASN.1 sequence, "
-				"have %s (NID %d)", p->fn,
-				ASN1_tag2str(t->type), t->type);
-			goto out;
-		}
-		d = t->value.asn1_string->data;
-		dsz = t->value.asn1_string->length;
-		if (!sbgp_ipaddrfam(p, d, dsz))
-			goto out;
 	}
 
 	rc = 1;
-out:
-	sk_ASN1_TYPE_pop_free(seq, ASN1_TYPE_free);
-	sk_ASN1_TYPE_pop_free(sseq, ASN1_TYPE_free);
-	free(sv);
+ out:
+	sk_IPAddressFamily_pop_free(addrblk, IPAddressFamily_free);
 	return rc;
+}
+
+/*
+ * Parse "Subject Information Access" extension, RFC 6487 4.8.8.
+ * Returns zero on failure, non-zero on success.
+ */
+static int
+sbgp_sia(struct parse *p, X509_EXTENSION *ext)
+{
+	AUTHORITY_INFO_ACCESS	*sia = NULL;
+	ACCESS_DESCRIPTION	*ad;
+	ASN1_OBJECT		*oid;
+	const char		*mftfilename;
+	int			 i, rc = 0;
+
+	if (X509_EXTENSION_get_critical(ext)) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "extension not non-critical", p->fn);
+		goto out;
+	}
+
+	if ((sia = X509V3_EXT_d2i(ext)) == NULL) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: failed extension parse",
+		    p->fn);
+		goto out;
+	}
+
+	for (i = 0; i < sk_ACCESS_DESCRIPTION_num(sia); i++) {
+		ad = sk_ACCESS_DESCRIPTION_value(sia, i);
+
+		oid = ad->method;
+
+		if (OBJ_cmp(oid, carepo_oid) == 0) {
+			if (!x509_location(p->fn, "SIA: caRepository",
+			    "rsync://", ad->location, &p->res->repo))
+				goto out;
+		} else if (OBJ_cmp(oid, manifest_oid) == 0) {
+			if (!x509_location(p->fn, "SIA: rpkiManifest",
+			    "rsync://", ad->location, &p->res->mft))
+				goto out;
+		} else if (OBJ_cmp(oid, notify_oid) == 0) {
+			if (!x509_location(p->fn, "SIA: rpkiNotify",
+			    "https://", ad->location, &p->res->notify))
+				goto out;
+		}
+	}
+
+	if (p->res->mft == NULL || p->res->repo == NULL) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: missing caRepository "
+		    "or rpkiManifest", p->fn);
+		goto out;
+	}
+
+	mftfilename = strrchr(p->res->mft, '/');
+	if (mftfilename == NULL) {
+		warnx("%s: SIA: invalid rpkiManifest entry", p->fn);
+		goto out;
+	}
+	mftfilename++;
+	if (!valid_filename(mftfilename, strlen(mftfilename))) {
+		warnx("%s: SIA: rpkiManifest filename contains invalid "
+		    "characters", p->fn);
+		goto out;
+	}
+
+	if (strstr(p->res->mft, p->res->repo) != p->res->mft) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "conflicting URIs for caRepository and rpkiManifest",
+		    p->fn);
+		goto out;
+	}
+
+	if (rtype_from_file_extension(p->res->mft) != RTYPE_MFT) {
+		warnx("%s: RFC 6487 section 4.8.8: SIA: "
+		    "not an MFT file", p->fn);
+		goto out;
+	}
+
+	rc = 1;
+ out:
+	AUTHORITY_INFO_ACCESS_free(sia);
+	return rc;
+}
+
+/*
+ * Parse the certificate policies extension and check that it follows RFC 7318.
+ * Returns zero on failure, non-zero on success.
+ */
+static int
+certificate_policies(struct parse *p, X509_EXTENSION *ext)
+{
+	STACK_OF(POLICYINFO)		*policies = NULL;
+	POLICYINFO			*policy;
+	STACK_OF(POLICYQUALINFO)	*qualifiers;
+	POLICYQUALINFO			*qualifier;
+	int				 nid;
+	int				 rc = 0;
+
+	if (!X509_EXTENSION_get_critical(ext)) {
+		warnx("%s: RFC 6487 section 4.8.9: certificatePolicies: "
+		    "extension not critical", p->fn);
+		goto out;
+	}
+
+	if ((policies = X509V3_EXT_d2i(ext)) == NULL) {
+		warnx("%s: RFC 6487 section 4.8.9: certificatePolicies: "
+		    "failed extension parse", p->fn);
+		goto out;
+	}
+
+	if (sk_POLICYINFO_num(policies) != 1) {
+		warnx("%s: RFC 6487 section 4.8.9: certificatePolicies: "
+		    "want 1 policy, got %d", p->fn,
+		    sk_POLICYINFO_num(policies));
+		goto out;
+	}
+
+	policy = sk_POLICYINFO_value(policies, 0);
+	assert(policy != NULL && policy->policyid != NULL);
+
+	if (OBJ_cmp(policy->policyid, certpol_oid) != 0) {
+		char pbuf[128], cbuf[128];
+
+		OBJ_obj2txt(pbuf, sizeof(pbuf), policy->policyid, 1);
+		OBJ_obj2txt(cbuf, sizeof(cbuf), certpol_oid, 1);
+		warnx("%s: RFC 7318 section 2: certificatePolicies: "
+		    "unexpected OID: %s, want %s", p->fn, pbuf, cbuf);
+		goto out;
+	}
+
+	/* Policy qualifiers are optional. If they're absent, we're done. */
+	if ((qualifiers = policy->qualifiers) == NULL) {
+		rc = 1;
+		goto out;
+	}
+
+	if (sk_POLICYQUALINFO_num(qualifiers) != 1) {
+		warnx("%s: RFC 7318 section 2: certificatePolicies: "
+		    "want 1 policy qualifier, got %d", p->fn,
+		    sk_POLICYQUALINFO_num(qualifiers));
+		goto out;
+	}
+
+	qualifier = sk_POLICYQUALINFO_value(qualifiers, 0);
+	assert(qualifier != NULL && qualifier->pqualid != NULL);
+
+	if ((nid = OBJ_obj2nid(qualifier->pqualid)) != NID_id_qt_cps) {
+		warnx("%s: RFC 7318 section 2: certificatePolicies: "
+		    "want CPS, got %d (%s)", p->fn, nid, OBJ_nid2sn(nid));
+		goto out;
+	}
+
+	if (verbose > 1 && !filemode)
+		warnx("%s: CPS %.*s", p->fn, qualifier->d.cpsuri->length,
+		    qualifier->d.cpsuri->data);
+
+	rc = 1;
+ out:
+	sk_POLICYINFO_pop_free(policies, POLICYINFO_free);
+	return rc;
+}
+
+/*
+ * Lightweight version of cert_parse_pre() for EE certs.
+ * Parses the two RFC 3779 extensions, and performs some sanity checks.
+ * Returns cert on success and NULL on failure.
+ */
+struct cert *
+cert_parse_ee_cert(const char *fn, X509 *x)
+{
+	struct parse		 p;
+	X509_EXTENSION		*ext;
+	int			 index;
+
+	memset(&p, 0, sizeof(struct parse));
+	p.fn = fn;
+	if ((p.res = calloc(1, sizeof(struct cert))) == NULL)
+		err(1, NULL);
+
+	if (X509_get_version(x) != 2) {
+		warnx("%s: RFC 6487 4.1: X.509 version must be v3", fn);
+		goto out;
+	}
+
+	if (!x509_valid_subject(fn, x))
+		goto out;
+
+	if (X509_get_key_usage(x) != KU_DIGITAL_SIGNATURE) {
+		warnx("%s: RFC 6487 section 4.8.4: KU must be digitalSignature",
+		    fn);
+		goto out;
+	}
+
+	/* EKU may be allowed for some purposes in the future. */
+	if (X509_get_extended_key_usage(x) != UINT32_MAX) {
+		warnx("%s: RFC 6487 section 4.8.5: EKU not allowed", fn);
+		goto out;
+	}
+
+	index = X509_get_ext_by_NID(x, NID_sbgp_ipAddrBlock, -1);
+	if ((ext = X509_get_ext(x, index)) != NULL) {
+		if (!sbgp_ipaddrblk(&p, ext))
+			goto out;
+	}
+
+	index = X509_get_ext_by_NID(x, NID_sbgp_autonomousSysNum, -1);
+	if ((ext = X509_get_ext(x, index)) != NULL) {
+		if (!sbgp_assysnum(&p, ext))
+			goto out;
+	}
+
+	if (!X509_up_ref(x)) {
+		warnx("%s: X509_up_ref failed", fn);
+		goto out;
+	}
+
+	p.res->x509 = x;
+	return p.res;
+
+ out:
+	cert_free(p.res);
+	return NULL;
 }
 
 /*
  * Parse and partially validate an RPKI X509 certificate (either a trust
  * anchor or a certificate) as defined in RFC 6487.
- * If "ta" is set, this is a trust anchor and must be self-signed.
- * Returns the parse results or NULL on failure ("xp" will be NULL too).
- * On success, free the pointer with cert_free() and make sure that "xp"
- * is also dereferenced.
+ * Returns the parse results or NULL on failure.
  */
-static struct cert *
-cert_parse_inner(X509 **xp, const char *fn, const unsigned char *dgst, int ta)
+struct cert *
+cert_parse_pre(const char *fn, const unsigned char *der, size_t len)
 {
-	int	 	 rc = 0, extsz, c, sz;
-	size_t		 i;
-	X509		*x = NULL;
-	X509_EXTENSION	*ext = NULL;
-	ASN1_OBJECT	*obj;
-	struct parse	 p;
-	BIO		*bio = NULL, *shamd;
-	EVP_MD		*md;
-	char		 mdbuf[EVP_MAX_MD_SIZE];
+	const unsigned char	*oder;
+	int			 extsz;
+	size_t			 i;
+	X509			*x = NULL;
+	X509_EXTENSION		*ext = NULL;
+	const X509_ALGOR	*palg;
+	const ASN1_BIT_STRING	*piuid = NULL, *psuid = NULL;
+	const ASN1_OBJECT	*cobj;
+	ASN1_OBJECT		*obj;
+	EVP_PKEY		*pkey;
+	struct parse		 p;
+	int			 nid, ip, as, sia, cp, crldp, aia, aki, ski,
+				 eku, bc, ku;
 
-	*xp = NULL;
+	nid = ip = as = sia = cp = crldp = aia = aki = ski = eku = bc = ku = 0;
 
-	if ((bio = BIO_new_file(fn, "rb")) == NULL) {
-		cryptowarnx("%s: BIO_new_file", fn);
+	/* just fail for empty buffers, the warning was printed elsewhere */
+	if (der == NULL)
 		return NULL;
-	}
 
 	memset(&p, 0, sizeof(struct parse));
 	p.fn = fn;
 	if ((p.res = calloc(1, sizeof(struct cert))) == NULL)
-		err(EXIT_FAILURE, NULL);
+		err(1, NULL);
 
-	/*
-	 * If we have a digest specified, create an MD chain that will
-	 * automatically compute a digest during the X509 creation.
-	 */
-
-	if (dgst != NULL) {
-		if ((shamd = BIO_new(BIO_f_md())) == NULL)
-			cryptoerrx("BIO_new");
-		if (!BIO_set_md(shamd, EVP_sha256()))
-			cryptoerrx("BIO_set_md");
-		if ((bio = BIO_push(shamd, bio)) == NULL)
-			cryptoerrx("BIO_push");
-	}
-
-	if ((x = *xp = d2i_X509_bio(bio, NULL)) == NULL) {
-		cryptowarnx("%s: d2i_X509_bio", p.fn);
+	oder = der;
+	if ((x = d2i_X509(NULL, &der, len)) == NULL) {
+		warnx("%s: d2i_X509", p.fn);
 		goto out;
 	}
-	
-	/*
-	 * If we have a digest, find it in the chain (we'll already have
-	 * made it, so assert otherwise) and verify it.
-	 */
-
-	if (dgst != NULL) {
-		shamd = BIO_find_type(bio, BIO_TYPE_MD);
-		assert(shamd != NULL);
-
-		if (!BIO_get_md(shamd, &md))
-			cryptoerrx("BIO_get_md");
-		assert(EVP_MD_type(md) == NID_sha256);
-
-		if ((sz = BIO_gets(shamd, mdbuf, EVP_MAX_MD_SIZE)) < 0)
-			cryptoerrx("BIO_gets");
-		assert(sz == SHA256_DIGEST_LENGTH);
-
-		if (memcmp(mdbuf, dgst, SHA256_DIGEST_LENGTH)) {
-			warnx("%s: bad message digest", p.fn);
-			goto out;
-		}
+	if (der != oder + len) {
+		warnx("%s: %td bytes trailing garbage", fn, oder + len - der);
+		goto out;
 	}
+
+	/* Cache X509v3 extensions, see X509_check_ca(3). */
+	if (X509_check_purpose(x, -1, -1) <= 0) {
+		warnx("%s: could not cache X509v3 extensions", p.fn);
+		goto out;
+	}
+
+	if (X509_get_version(x) != 2) {
+		warnx("%s: RFC 6487 4.1: X.509 version must be v3", fn);
+		goto out;
+	}
+
+	X509_get0_signature(NULL, &palg, x);
+	if (palg == NULL) {
+		warnx("%s: X509_get0_signature", p.fn);
+		goto out;
+	}
+	X509_ALGOR_get0(&cobj, NULL, NULL, palg);
+	if ((nid = OBJ_obj2nid(cobj)) != NID_sha256WithRSAEncryption) {
+		warnx("%s: RFC 7935: wrong signature algorithm %s, want %s",
+		    fn, OBJ_nid2ln(nid),
+		    OBJ_nid2ln(NID_sha256WithRSAEncryption));
+		goto out;
+	}
+
+	X509_get0_uids(x, &piuid, &psuid);
+	if (piuid != NULL || psuid != NULL) {
+		warnx("%s: issuer or subject unique identifiers not allowed",
+		    fn);
+		goto out;
+	}
+
+	if (!x509_valid_subject(p.fn, x))
+		goto out;
 
 	/* Look for X509v3 extensions. */
 
 	if ((extsz = X509_get_ext_count(x)) < 0)
-		cryptoerrx("X509_get_ext_count");
+		errx(1, "X509_get_ext_count");
 
 	for (i = 0; i < (size_t)extsz; i++) {
 		ext = X509_get_ext(x, i);
@@ -1168,138 +785,269 @@ cert_parse_inner(X509 **xp, const char *fn, const unsigned char *dgst, int ta)
 		obj = X509_EXTENSION_get_object(ext);
 		assert(obj != NULL);
 
-		switch (OBJ_obj2nid(obj)) {
+		switch (nid = OBJ_obj2nid(obj)) {
 		case NID_sbgp_ipAddrBlock:
-			c = sbgp_ipaddrblk(&p, ext);
+			if (ip++ > 0)
+				goto dup;
+			if (!sbgp_ipaddrblk(&p, ext))
+				goto out;
 			break;
 		case NID_sbgp_autonomousSysNum:
-			c = sbgp_assysnum(&p, ext);
+			if (as++ > 0)
+				goto dup;
+			if (!sbgp_assysnum(&p, ext))
+				goto out;
 			break;
 		case NID_sinfo_access:
-			c = sbgp_sia(&p, ext);
+			if (sia++ > 0)
+				goto dup;
+			if (!sbgp_sia(&p, ext))
+				goto out;
+			break;
+		case NID_certificate_policies:
+			if (cp++ > 0)
+				goto dup;
+			if (!certificate_policies(&p, ext))
+				goto out;
 			break;
 		case NID_crl_distribution_points:
-			c = sbgp_crl(&p, ext);
+			if (crldp++ > 0)
+				goto dup;
+			break;
+		case NID_info_access:
+			if (aia++ > 0)
+				goto dup;
 			break;
 		case NID_authority_key_identifier:
-			free(p.res->aki);
-			p.res->aki = x509_get_aki_ext(ext, p.fn);
-			c = (p.res->aki != NULL);
+			if (aki++ > 0)
+				goto dup;
 			break;
 		case NID_subject_key_identifier:
-			free(p.res->ski);
-			p.res->ski = x509_get_ski_ext(ext, p.fn);
-			c = (p.res->ski != NULL);
+			if (ski++ > 0)
+				goto dup;
+			break;
+		case NID_ext_key_usage:
+			if (eku++ > 0)
+				goto dup;
+			break;
+		case NID_basic_constraints:
+			if (bc++ > 0)
+				goto dup;
+			break;
+		case NID_key_usage:
+			if (ku++ > 0)
+				goto dup;
 			break;
 		default:
-			c = 1;
-			/* {
+			/* unexpected extensions warrant investigation */
+			{
 				char objn[64];
 				OBJ_obj2txt(objn, sizeof(objn), obj, 0);
 				warnx("%s: ignoring %s (NID %d)",
-					p.fn, objn, OBJ_obj2nid(obj));
-			} */
+				    p.fn, objn, OBJ_obj2nid(obj));
+			}
 			break;
 		}
-		if (c == 0)
-			goto out;
 	}
 
+	if (!x509_get_aki(x, p.fn, &p.res->aki))
+		goto out;
+	if (!x509_get_ski(x, p.fn, &p.res->ski))
+		goto out;
+	if (!x509_get_aia(x, p.fn, &p.res->aia))
+		goto out;
+	if (!x509_get_crl(x, p.fn, &p.res->crl))
+		goto out;
+	if (!x509_get_notbefore(x, p.fn, &p.res->notbefore))
+		goto out;
+	if (!x509_get_notafter(x, p.fn, &p.res->notafter))
+		goto out;
+	p.res->purpose = x509_get_purpose(x, p.fn);
+
 	/* Validation on required fields. */
+
+	switch (p.res->purpose) {
+	case CERT_PURPOSE_CA:
+		if ((pkey = X509_get0_pubkey(x)) == NULL) {
+			warnx("%s: X509_get0_pubkey failed", p.fn);
+			goto out;
+		}
+		if (!valid_ca_pkey(p.fn, pkey))
+			goto out;
+
+		if (X509_get_key_usage(x) != (KU_KEY_CERT_SIGN | KU_CRL_SIGN)) {
+			warnx("%s: RFC 6487 section 4.8.4: key usage violation",
+			    p.fn);
+			goto out;
+		}
+
+		/* EKU may be allowed for some purposes in the future. */
+		if (X509_get_extended_key_usage(x) != UINT32_MAX) {
+			warnx("%s: RFC 6487 section 4.8.5: EKU not allowed",
+			    fn);
+			goto out;
+		}
+
+		if (p.res->mft == NULL) {
+			warnx("%s: RFC 6487 section 4.8.8: missing SIA", p.fn);
+			goto out;
+		}
+		if (p.res->asz == 0 && p.res->ipsz == 0) {
+			warnx("%s: missing IP or AS resources", p.fn);
+			goto out;
+		}
+		break;
+	case CERT_PURPOSE_BGPSEC_ROUTER:
+		p.res->pubkey = x509_get_pubkey(x, p.fn);
+		if (p.res->pubkey == NULL) {
+			warnx("%s: x509_get_pubkey failed", p.fn);
+			goto out;
+		}
+		if (p.res->ipsz > 0) {
+			warnx("%s: unexpected IP resources in BGPsec cert",
+			    p.fn);
+			goto out;
+		}
+		for (i = 0; i < p.res->asz; i++) {
+			if (p.res->as[i].type == CERT_AS_INHERIT) {
+				warnx("%s: inherit elements not allowed in EE"
+				    " cert", p.fn);
+				goto out;
+			}
+		}
+		if (sia) {
+			warnx("%s: unexpected SIA extension in BGPsec cert",
+			    p.fn);
+			goto out;
+		}
+		break;
+	default:
+		warnx("%s: x509_get_purpose failed in %s", p.fn, __func__);
+		goto out;
+	}
 
 	if (p.res->ski == NULL) {
 		warnx("%s: RFC 6487 section 8.4.2: missing SKI", p.fn);
 		goto out;
 	}
 
-	if (ta && p.res->aki != NULL && strcmp(p.res->aki, p.res->ski)) {
-		warnx("%s: RFC 6487 section 8.4.2: trust anchor "
-			"AKI, if specified, must match SKI", p.fn);
-		goto out;
-	}
+	p.res->x509 = x;
+	return p.res;
 
-	if (!ta && p.res->aki == NULL) {
-		warnx("%s: RFC 6487 section 8.4.2: non-trust "
-			"anchor missing AKI", p.fn);
-		goto out;
-	} else if (!ta && strcmp(p.res->aki, p.res->ski) == 0) {
-		warnx("%s: RFC 6487 section 8.4.2: non-trust "
-			"anchor AKI may not match SKI", p.fn);
-		goto out;
-	}
-
-	if (ta && p.res->crl != NULL) {
-		warnx("%s: RFC 6487 section 8.4.2: trust anchor "
-			"may not specify CRL resource", p.fn);
-		goto out;
-	}
-
-	if (p.res->asz == 0 && p.res->ipsz == 0) {
-		warnx("%s: RFC 6487 section 4.8.10 and 4.8.11: "
-			"missing IP or AS resources", p.fn);
-		goto out;
-	}
-	
-	if (p.res->mft == NULL) {
-		warnx("%s: RFC 6487 section 4.8.8: missing SIA", p.fn);
-		goto out;
-	}
-
-	rc = 1;
-out:
-	BIO_free_all(bio);
-	if (rc == 0) {
-		cert_free(p.res);
-		X509_free(x);
-		*xp = NULL;
-	}
-	return (rc == 0) ? NULL : p.res;
+ dup:
+	warnx("%s: RFC 5280 section 4.2: duplicate %s extension", fn,
+	    OBJ_nid2sn(nid));
+ out:
+	cert_free(p.res);
+	X509_free(x);
+	return NULL;
 }
 
 struct cert *
-cert_parse(X509 **xp, const char *fn, const unsigned char *dgst)
+cert_parse(const char *fn, struct cert *p)
 {
-
-	return cert_parse_inner(xp, fn, dgst, 0);
-}
-
-struct cert *
-ta_parse(X509 **xp, const char *fn, const unsigned char *pkey, size_t pkeysz)
-{
-	EVP_PKEY	*pk = NULL, *opk = NULL;
-	struct cert	*p;
-	int		 rc = 0;
-
-	if ((p = cert_parse_inner(xp, fn, NULL, 1)) == NULL)
+	if (p == NULL)
 		return NULL;
 
-	if (pkey != NULL) {
-		assert(*xp != NULL);
-		pk = d2i_PUBKEY(NULL, &pkey, pkeysz);
-		assert(pk != NULL);
+	if (p->aki == NULL) {
+		warnx("%s: RFC 6487 section 8.4.2: "
+		    "non-trust anchor missing AKI", fn);
+		goto badcert;
+	}
+	if (strcmp(p->aki, p->ski) == 0) {
+		warnx("%s: RFC 6487 section 8.4.2: "
+		    "non-trust anchor AKI may not match SKI", fn);
+		goto badcert;
+	}
+	if (p->aia == NULL) {
+		warnx("%s: RFC 6487 section 8.4.7: AIA: extension missing", fn);
+		goto badcert;
+	}
+	if (p->crl == NULL) {
+		warnx("%s: RFC 6487 section 4.8.6: CRL: "
+		    "no CRL distribution point extension", fn);
+		goto badcert;
+	}
+	return p;
 
-		if ((opk = X509_get_pubkey(*xp)) == NULL)
-			cryptowarnx("%s: RFC 6487 (trust anchor): "
-				"missing pubkey", fn);
-		else if (!EVP_PKEY_cmp(pk, opk))
-			cryptowarnx("%s: RFC 6487 (trust anchor): "
-				"pubkey does not match TAL pubkey", fn);
-		else
-			rc = 1;
+badcert:
+	cert_free(p);
+	return NULL;
+}
 
-		EVP_PKEY_free(pk);
-		EVP_PKEY_free(opk);
-	} else
-		rc = 1;
+struct cert *
+ta_parse(const char *fn, struct cert *p, const unsigned char *pkey,
+    size_t pkeysz)
+{
+	ASN1_TIME	*notBefore, *notAfter;
+	EVP_PKEY	*pk, *opk;
 
-	if (rc == 0) {
-		cert_free(p);
-		p = NULL;
-		X509_free(*xp);
-		*xp = NULL;
+	if (p == NULL)
+		return NULL;
+
+	/* first check pubkey against the one from the TAL */
+	pk = d2i_PUBKEY(NULL, &pkey, pkeysz);
+	if (pk == NULL) {
+		warnx("%s: RFC 6487 (trust anchor): bad TAL pubkey", fn);
+		goto badcert;
+	}
+	if ((opk = X509_get0_pubkey(p->x509)) == NULL) {
+		warnx("%s: RFC 6487 (trust anchor): missing pubkey", fn);
+		goto badcert;
+	}
+	if (EVP_PKEY_cmp(pk, opk) != 1) {
+		warnx("%s: RFC 6487 (trust anchor): "
+		    "pubkey does not match TAL pubkey", fn);
+		goto badcert;
 	}
 
+	if ((notBefore = X509_get_notBefore(p->x509)) == NULL) {
+		warnx("%s: certificate has invalid notBefore", fn);
+		goto badcert;
+	}
+	if ((notAfter = X509_get_notAfter(p->x509)) == NULL) {
+		warnx("%s: certificate has invalid notAfter", fn);
+		goto badcert;
+	}
+	if (X509_cmp_current_time(notBefore) != -1) {
+		warnx("%s: certificate not yet valid", fn);
+		goto badcert;
+	}
+	if (X509_cmp_current_time(notAfter) != 1) {
+		warnx("%s: certificate has expired", fn);
+		goto badcert;
+	}
+	if (p->aki != NULL && strcmp(p->aki, p->ski)) {
+		warnx("%s: RFC 6487 section 8.4.2: "
+		    "trust anchor AKI, if specified, must match SKI", fn);
+		goto badcert;
+	}
+	if (p->aia != NULL) {
+		warnx("%s: RFC 6487 section 8.4.7: "
+		    "trust anchor must not have AIA", fn);
+		goto badcert;
+	}
+	if (p->crl != NULL) {
+		warnx("%s: RFC 6487 section 8.4.2: "
+		    "trust anchor may not specify CRL resource", fn);
+		goto badcert;
+	}
+	if (p->purpose == CERT_PURPOSE_BGPSEC_ROUTER) {
+		warnx("%s: BGPsec cert cannot be a trust anchor", fn);
+		goto badcert;
+	}
+	if (x509_any_inherits(p->x509)) {
+		warnx("%s: Trust anchor IP/AS resources may not inherit", fn);
+		goto badcert;
+	}
+
+	EVP_PKEY_free(pk);
 	return p;
+
+badcert:
+	EVP_PKEY_free(pk);
+	cert_free(p);
+	return NULL;
 }
 
 /*
@@ -1309,49 +1057,21 @@ ta_parse(X509 **xp, const char *fn, const unsigned char *pkey, size_t pkeysz)
 void
 cert_free(struct cert *p)
 {
-
-	if (NULL == p)
+	if (p == NULL)
 		return;
 
 	free(p->crl);
+	free(p->repo);
 	free(p->mft);
+	free(p->notify);
 	free(p->ips);
 	free(p->as);
+	free(p->aia);
 	free(p->aki);
 	free(p->ski);
+	free(p->pubkey);
+	X509_free(p->x509);
 	free(p);
-}
-
-static void
-cert_ip_buffer(char **b, size_t *bsz,
-	size_t *bmax, const struct cert_ip *p)
-{
-
-	io_simple_buffer(b, bsz, bmax, &p->afi, sizeof(enum afi));
-	io_simple_buffer(b, bsz, bmax, &p->type, sizeof(enum cert_ip_type));
-
-	if (p->type != CERT_IP_INHERIT) {
-		io_simple_buffer(b, bsz, bmax, &p->min, sizeof(p->min));
-		io_simple_buffer(b, bsz, bmax, &p->max, sizeof(p->max));
-	}
-
-	if (p->type == CERT_IP_RANGE)
-		ip_addr_range_buffer(b, bsz, bmax, &p->range);
-	else if (p->type == CERT_IP_ADDR)
-		ip_addr_buffer(b, bsz, bmax, &p->ip);
-}
-
-static void
-cert_as_buffer(char **b, size_t *bsz,
-	size_t *bmax, const struct cert_as *p)
-{
-
-	io_simple_buffer(b, bsz, bmax, &p->type, sizeof(enum cert_as_type));
-	if (p->type == CERT_AS_RANGE) {
-		io_simple_buffer(b, bsz, bmax, &p->range.min, sizeof(uint32_t));
-		io_simple_buffer(b, bsz, bmax, &p->range.max, sizeof(uint32_t));
-	} else if (p->type == CERT_AS_ID)
-		io_simple_buffer(b, bsz, bmax, &p->id, sizeof(uint32_t));
 }
 
 /*
@@ -1359,61 +1079,26 @@ cert_as_buffer(char **b, size_t *bsz,
  * See cert_read() for the other side of the pipe.
  */
 void
-cert_buffer(char **b, size_t *bsz, size_t *bmax, const struct cert *p)
+cert_buffer(struct ibuf *b, const struct cert *p)
 {
-	size_t	 i;
-	int	 has_crl, has_aki;
+	io_simple_buffer(b, &p->notafter, sizeof(p->notafter));
+	io_simple_buffer(b, &p->purpose, sizeof(p->purpose));
+	io_simple_buffer(b, &p->talid, sizeof(p->talid));
+	io_simple_buffer(b, &p->repoid, sizeof(p->repoid));
+	io_simple_buffer(b, &p->ipsz, sizeof(p->ipsz));
+	io_simple_buffer(b, &p->asz, sizeof(p->asz));
 
-	io_simple_buffer(b, bsz, bmax, &p->valid, sizeof(int));
-	io_simple_buffer(b, bsz, bmax, &p->ipsz, sizeof(size_t));
-	for (i = 0; i < p->ipsz; i++)
-		cert_ip_buffer(b, bsz, bmax, &p->ips[i]);
+	io_simple_buffer(b, p->ips, p->ipsz * sizeof(p->ips[0]));
+	io_simple_buffer(b, p->as, p->asz * sizeof(p->as[0]));
 
-	io_simple_buffer(b, bsz, bmax, &p->asz, sizeof(size_t));
-	for (i = 0; i < p->asz; i++)
-		cert_as_buffer(b, bsz, bmax, &p->as[i]);
-
-	io_str_buffer(b, bsz, bmax, p->mft);
-
-	has_crl = (p->crl != NULL);
-	io_simple_buffer(b, bsz, bmax, &has_crl, sizeof(int));
-	if (has_crl)
-		io_str_buffer(b, bsz, bmax, p->crl);
-	has_aki = (p->aki != NULL);
-	io_simple_buffer(b, bsz, bmax, &has_aki, sizeof(int));
-	if (has_aki)
-		io_str_buffer(b, bsz, bmax, p->aki);
-	io_str_buffer(b, bsz, bmax, p->ski);
-}
-
-static void
-cert_ip_read(int fd, struct cert_ip *p)
-{
-
-	io_simple_read(fd, &p->afi, sizeof(enum afi));
-	io_simple_read(fd, &p->type, sizeof(enum cert_ip_type));
-
-	if (p->type != CERT_IP_INHERIT) {
-		io_simple_read(fd, &p->min, sizeof(p->min));
-		io_simple_read(fd, &p->max, sizeof(p->max));
-	}
-
-	if (p->type == CERT_IP_RANGE)
-		ip_addr_range_read(fd, &p->range);
-	else if (p->type == CERT_IP_ADDR)
-		ip_addr_read(fd, &p->ip);
-}
-
-static void
-cert_as_read(int fd, struct cert_as *p)
-{
-
-	io_simple_read(fd, &p->type, sizeof(enum cert_as_type));
-	if (p->type == CERT_AS_RANGE) {
-		io_simple_read(fd, &p->range.min, sizeof(uint32_t));
-		io_simple_read(fd, &p->range.max, sizeof(uint32_t));
-	} else if (p->type == CERT_AS_ID)
-		io_simple_read(fd, &p->id, sizeof(uint32_t));
+	io_str_buffer(b, p->mft);
+	io_str_buffer(b, p->notify);
+	io_str_buffer(b, p->repo);
+	io_str_buffer(b, p->crl);
+	io_str_buffer(b, p->aia);
+	io_str_buffer(b, p->aki);
+	io_str_buffer(b, p->ski);
+	io_str_buffer(b, p->pubkey);
 }
 
 /*
@@ -1422,39 +1107,169 @@ cert_as_read(int fd, struct cert_as *p)
  * Always returns a valid pointer.
  */
 struct cert *
-cert_read(int fd)
+cert_read(struct ibuf *b)
 {
 	struct cert	*p;
-	size_t		 i;
-	int		 has_crl, has_aki;
 
 	if ((p = calloc(1, sizeof(struct cert))) == NULL)
-		err(EXIT_FAILURE, NULL);
+		err(1, NULL);
 
-	io_simple_read(fd, &p->valid, sizeof(int));
-	io_simple_read(fd, &p->ipsz, sizeof(size_t));
+	io_read_buf(b, &p->notafter, sizeof(p->notafter));
+	io_read_buf(b, &p->purpose, sizeof(p->purpose));
+	io_read_buf(b, &p->talid, sizeof(p->talid));
+	io_read_buf(b, &p->repoid, sizeof(p->repoid));
+	io_read_buf(b, &p->ipsz, sizeof(p->ipsz));
+	io_read_buf(b, &p->asz, sizeof(p->asz));
+
 	p->ips = calloc(p->ipsz, sizeof(struct cert_ip));
 	if (p->ips == NULL)
-		err(EXIT_FAILURE, NULL);
-	for (i = 0; i < p->ipsz; i++)
-		cert_ip_read(fd, &p->ips[i]);
+		err(1, NULL);
+	io_read_buf(b, p->ips, p->ipsz * sizeof(p->ips[0]));
 
-	io_simple_read(fd, &p->asz, sizeof(size_t));
 	p->as = calloc(p->asz, sizeof(struct cert_as));
 	if (p->as == NULL)
-		err(EXIT_FAILURE, NULL);
-	for (i = 0; i < p->asz; i++)
-		cert_as_read(fd, &p->as[i]);
+		err(1, NULL);
+	io_read_buf(b, p->as, p->asz * sizeof(p->as[0]));
 
-	io_str_read(fd, &p->mft);
-	io_simple_read(fd, &has_crl, sizeof(int));
-	if (has_crl)
-		io_str_read(fd, &p->crl);
-	io_simple_read(fd, &has_aki, sizeof(int));
-	if (has_aki)
-		io_str_read(fd, &p->aki);
-	io_str_read(fd, &p->ski);
+	io_read_str(b, &p->mft);
+	io_read_str(b, &p->notify);
+	io_read_str(b, &p->repo);
+	io_read_str(b, &p->crl);
+	io_read_str(b, &p->aia);
+	io_read_str(b, &p->aki);
+	io_read_str(b, &p->ski);
+	io_read_str(b, &p->pubkey);
 
+	assert(p->mft != NULL || p->purpose == CERT_PURPOSE_BGPSEC_ROUTER);
+	assert(p->ski);
 	return p;
 }
 
+static inline int
+authcmp(struct auth *a, struct auth *b)
+{
+	return strcmp(a->cert->ski, b->cert->ski);
+}
+
+RB_GENERATE_STATIC(auth_tree, auth, entry, authcmp);
+
+void
+auth_tree_free(struct auth_tree *auths)
+{
+	struct auth	*auth, *tauth;
+
+	RB_FOREACH_SAFE(auth, auth_tree, auths, tauth) {
+		RB_REMOVE(auth_tree, auths, auth);
+		cert_free(auth->cert);
+		free(auth);
+	}
+}
+
+struct auth *
+auth_find(struct auth_tree *auths, const char *aki)
+{
+	struct auth a;
+	struct cert c;
+
+	/* we look up the cert where the ski == aki */
+	c.ski = (char *)aki;
+	a.cert = &c;
+
+	return RB_FIND(auth_tree, auths, &a);
+}
+
+struct auth *
+auth_insert(struct auth_tree *auths, struct cert *cert, struct auth *parent)
+{
+	struct auth *na;
+
+	na = malloc(sizeof(*na));
+	if (na == NULL)
+		err(1, NULL);
+
+	na->parent = parent;
+	na->cert = cert;
+	na->any_inherits = x509_any_inherits(cert->x509);
+
+	if (RB_INSERT(auth_tree, auths, na) != NULL)
+		err(1, "auth tree corrupted");
+
+	return na;
+}
+
+static void
+insert_brk(struct brk_tree *tree, struct cert *cert, int asid)
+{
+	struct brk	*b, *found;
+
+	if ((b = calloc(1, sizeof(*b))) == NULL)
+		err(1, NULL);
+
+	b->asid = asid;
+	b->expires = cert->notafter;
+	b->talid = cert->talid;
+	if ((b->ski = strdup(cert->ski)) == NULL)
+		err(1, NULL);
+	if ((b->pubkey = strdup(cert->pubkey)) == NULL)
+		err(1, NULL);
+
+	/*
+	 * Check if a similar BRK already exists in the tree. If the found BRK
+	 * expires sooner, update it to this BRK's later expiry moment.
+	 */
+	if ((found = RB_INSERT(brk_tree, tree, b)) != NULL) {
+		if (found->expires < b->expires) {
+			found->expires = b->expires;
+			found->talid = b->talid;
+		}
+		free(b->ski);
+		free(b->pubkey);
+		free(b);
+	}
+}
+
+/*
+ * Add each BGPsec Router Key into the BRK tree.
+ */
+void
+cert_insert_brks(struct brk_tree *tree, struct cert *cert)
+{
+	size_t		 i, asid;
+
+	for (i = 0; i < cert->asz; i++) {
+		switch (cert->as[i].type) {
+		case CERT_AS_ID:
+			insert_brk(tree, cert, cert->as[i].id);
+			break;
+		case CERT_AS_RANGE:
+			for (asid = cert->as[i].range.min;
+			    asid <= cert->as[i].range.max; asid++)
+				insert_brk(tree, cert, asid);
+			break;
+		default:
+			warnx("invalid AS identifier type");
+			continue;
+		}
+	}
+}
+
+static inline int
+brkcmp(struct brk *a, struct brk *b)
+{
+	int rv;
+
+	if (a->asid > b->asid)
+		return 1;
+	if (a->asid < b->asid)
+		return -1;
+
+	rv = strcmp(a->ski, b->ski);
+	if (rv > 0)
+		return 1;
+	if (rv < 0)
+		return -1;
+
+	return strcmp(a->pubkey, b->pubkey);
+}
+
+RB_GENERATE(brk_tree, brk, entry, brkcmp);

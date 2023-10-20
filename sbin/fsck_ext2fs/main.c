@@ -1,8 +1,8 @@
-/*	$NetBSD: main.c,v 1.23 1996/10/22 16:35:04 christos Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: main.c,v 1.29 2021/01/27 05:03:23 deraadt Exp $	*/
+/*	$NetBSD: main.c,v 1.1 1997/06/11 11:21:50 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,21 +31,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1986, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)main.c	8.2 (Berkeley) 1/23/94";
-#else
-static char rcsid[] = "$NetBSD: main.c,v 1.23 1996/10/22 16:35:04 christos Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/signal.h>
 #include <sys/time.h>
 #include <sys/mount.h>
 #include <ufs/ext2fs/ext2fs_dinode.h>
@@ -59,35 +42,77 @@ static char rcsid[] = "$NetBSD: main.c,v 1.23 1996/10/22 16:35:04 christos Exp $
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <time.h>
 #include <unistd.h>
+#include <err.h>
 
 #include "fsck.h"
 #include "extern.h"
 #include "fsutil.h"
 
-int	returntosingle;
+volatile sig_atomic_t	returntosingle;
 
-int	main __P((int, char *[]));
+int	main(int, char *[]);
 
-static int	argtoi __P((int, char *, char *, int));
-static int	checkfilesys __P((char *, char *, long, int));
-static int	docheck __P((struct fstab *));
-static  void usage __P((void));
+static int	argtoi(int, char *, char *, int);
+static int	checkfilesys(char *, char *, long, int);
+static  void usage(void);
 
+struct bufarea bufhead;		/* head of list of other blks in filesys */
+struct bufarea sblk;		/* file system superblock */
+struct bufarea asblk;		/* first alternate superblock */
+struct bufarea *pdirbp;		/* current directory contents */
+struct bufarea *pbp;		/* current inode block */
+struct bufarea *getdatablk(daddr32_t, long);
+struct m_ext2fs sblock;
+
+struct dups *duplist;		/* head of dup list */
+struct dups *muldup;		/* end of unique duplicate dup block numbers */
+
+struct zlncnt *zlnhead;		/* head of zero link count list */
+
+struct inoinfo **inphead, **inpsort;
+long numdirs, listmax, inplast;
+
+long	secsize;		/* actual disk sector size */
+char	nflag;			/* assume a no response */
+char	yflag;			/* assume a yes response */
+int	bflag;			/* location of alternate super block */
+int	debug;			/* output debugging info */
+int	preen;			/* just fix normal inconsistencies */
+char	havesb;			/* superblock has been read */
+char	skipclean;		/* skip clean file systems if preening */
+int	fsmodified;		/* 1 => write done to file system */
+int	fsreadfd;		/* file descriptor for reading file system */
+int	fswritefd;		/* file descriptor for writing file system */
+int	rerun;			/* rerun fsck.  Only used in non-preen mode */
+
+daddr32_t	maxfsblock;		/* number of blocks in the file system */
+char	*blockmap;		/* ptr to primary blk allocation map */
+ino_t	maxino;			/* number of inodes in file system */
+ino_t	lastino;		/* last inode in use */
+char	*statemap;		/* ptr to inode state table */
+u_char	*typemap;		/* ptr to inode type table */
+int16_t	*lncntp;		/* ptr to link count table */
+
+ino_t	lfdir;			/* lost & found directory inode number */
+
+daddr32_t	n_blks;			/* number of blocks in use */
+daddr32_t	n_files;		/* number of files in use */
+
+struct	ext2fs_dinode zino;
 
 int
-main(argc, argv)
-	int	argc;
-	char	*argv[];
+main(int argc, char *argv[])
 {
 	int ch;
 	int ret = 0;
-	extern char *optarg;
-	extern int optind;
+
+	checkroot();
 
 	sync();
 	skipclean = 1;
-	while ((ch = getopt(argc, argv, "b:c:dfm:npy")) != EOF) {
+	while ((ch = getopt(argc, argv, "b:dfm:npy")) != -1) {
 		switch (ch) {
 		case 'b':
 			skipclean = 0;
@@ -96,7 +121,7 @@ main(argc, argv)
 			break;
 
 		case 'd':
-			debug++;
+			debug = 1;
 			break;
 
 		case 'f':
@@ -111,16 +136,16 @@ main(argc, argv)
 			break;
 
 		case 'n':
-			nflag++;
+			nflag = 1;
 			yflag = 0;
 			break;
 
 		case 'p':
-			preen++;
+			preen = 1;
 			break;
 
 		case 'y':
-			yflag++;
+			yflag = 1;
 			nflag = 0;
 			break;
 
@@ -132,7 +157,7 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-	if (!argc)
+	if (argc != 1)
 		usage();
 
 	if (signal(SIGINT, SIG_IGN) != SIG_IGN)
@@ -140,8 +165,7 @@ main(argc, argv)
 	if (preen)
 		(void)signal(SIGQUIT, catchquit);
 
-	while (argc-- > 0)
-		(void)checkfilesys(blockcheck(*argv++), 0, 0L, 0);
+	(void)checkfilesys(blockcheck(*argv), 0, 0L, 0);
 
 	if (returntosingle)
 		ret = 2;
@@ -150,10 +174,7 @@ main(argc, argv)
 }
 
 static int
-argtoi(flag, req, str, base)
-	int flag;
-	char *req, *str;
-	int base;
+argtoi(int flag, char *req, char *str, int base)
 {
 	char *cp;
 	int ret;
@@ -165,41 +186,22 @@ argtoi(flag, req, str, base)
 }
 
 /*
- * Determine whether a filesystem should be checked.
- */
-static int
-docheck(fsp)
-	register struct fstab *fsp;
-{
-
-	if ( strcmp(fsp->fs_vfstype, "ext2fs") ||
-	    (strcmp(fsp->fs_type, FSTAB_RW) &&
-	     strcmp(fsp->fs_type, FSTAB_RO)) ||
-	    fsp->fs_passno == 0)
-		return (0);
-	return (1);
-}
-
-/*
  * Check the specified filesystem.
  */
-/* ARGSUSED */
 static int
-checkfilesys(filesys, mntpt, auxdata, child)
-	char *filesys, *mntpt;
-	long auxdata;
-	int child;
+checkfilesys(char *filesys, char *mntpt, long auxdata, int child)
 {
-	daddr_t n_bfree;
+	daddr32_t n_bfree;
 	struct dups *dp;
 	struct zlncnt *zlnp;
-	int cylno;
+	int i;
 
 	if (preen && child)
 		(void)signal(SIGQUIT, voidquit);
-	setcdevname(filesys, preen);
+	setcdevname(filesys, NULL, preen);
 	if (debug && preen)
 		pwarn("starting\n");
+
 	switch (setup(filesys)) {
 	case 0:
 		if (preen)
@@ -211,6 +213,10 @@ checkfilesys(filesys, mntpt, auxdata, child)
 	 * 1: scan inodes tallying blocks used
 	 */
 	if (preen == 0) {
+		if (sblock.e2fs.e2fs_rev > E2FS_REV0) {
+			printf("** Last Mounted on %s\n",
+			    sblock.e2fs.e2fs_fsmnt);
+		}
 		if (hotroot())
 			printf("** Root file system\n");
 		printf("** Phase 1 - Check Blocks and Sizes\n");
@@ -259,7 +265,7 @@ checkfilesys(filesys, mntpt, auxdata, child)
 	 * print out summary statistics
 	 */
 	n_bfree = sblock.e2fs.e2fs_fbcount;
-		
+
 	pwarn("%d files, %d used, %d free\n",
 	    n_files, n_blks, n_bfree);
 	if (debug &&
@@ -267,7 +273,8 @@ checkfilesys(filesys, mntpt, auxdata, child)
 	    (n_files -= maxino - 9 - sblock.e2fs.e2fs_ficount))
 		printf("%d files missing\n", n_files);
 	if (debug) {
-		n_blks += sblock.e2fs_ncg * cgoverhead;
+		for (i = 0; i < sblock.e2fs_ncg; i++)
+			n_blks +=  cgoverhead(i);
 		n_blks += sblock.e2fs.e2fs_first_dblock;
 		if (n_blks -= maxfsblock - n_bfree)
 			printf("%d blocks missing\n", n_blks);
@@ -280,13 +287,14 @@ checkfilesys(filesys, mntpt, auxdata, child)
 		if (zlnhead != NULL) {
 			printf("The following zero link count inodes remain:");
 			for (zlnp = zlnhead; zlnp; zlnp = zlnp->next)
-				printf(" %u,", zlnp->zlncnt);
+				printf(" %llu,",
+				    (unsigned long long)zlnp->zlncnt);
 			printf("\n");
 		}
 	}
-	zlnhead = (struct zlncnt *)0;
-	duplist = (struct dups *)0;
-	muldup = (struct dups *)0;
+	zlnhead = NULL;
+	duplist = NULL;
+	muldup = NULL;
 	inocleanup();
 	if (fsmodified) {
 		time_t t;
@@ -318,8 +326,8 @@ checkfilesys(filesys, mntpt, auxdata, child)
 
 			if (flags & MNT_RDONLY) {
 				args.fspec = 0;
-				args.export.ex_flags = 0;
-				args.export.ex_root = 0;
+				args.export_info.ex_flags = 0;
+				args.export_info.ex_root = 0;
 				flags |= MNT_UPDATE | MNT_RELOAD;
 				ret = mount(MOUNT_EXT2FS, "/", flags, &args);
 				if (ret == 0)
@@ -335,13 +343,12 @@ checkfilesys(filesys, mntpt, auxdata, child)
 }
 
 static void
-usage()
+usage(void)
 {
 	extern char *__progname;
 
 	(void) fprintf(stderr,
-	    "Usage: %s [-dfnpy] [-b block] [-c level] [-m mode] filesystem ...\n",
+	    "usage: %s [-dfnpy] [-b block#] [-m mode] filesystem\n",
 	    __progname);
 	exit(1);
 }
-

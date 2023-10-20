@@ -1,4 +1,4 @@
-.\"	$NetBSD: uname.3,v 1.2 1995/02/25 15:39:35 cgd Exp $
+.\"	$OpenBSD: uname.3,v 1.17 2022/07/25 02:25:55 jsg Exp $
 .\"
 .\" Copyright (c) 1994
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,58 +27,58 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	@(#)uname.3	8.1 (Berkeley) 1/4/94
-.\"
-.Dd "January 4, 1994"
+.Dd $Mdocdate: July 25 2022 $
 .Dt UNAME 3
 .Os
 .Sh NAME
 .Nm uname
 .Nd get system identification
 .Sh SYNOPSIS
-.Fd #include <sys/utsname.h>
+.In sys/utsname.h
 .Ft int
 .Fn uname "struct utsname *name"
 .Sh DESCRIPTION
 The
 .Fn uname
-function stores nul-terminated strings of information identifying
+function stores NUL-terminated strings of information identifying
 the current system into the structure referenced by
 .Fa name .
 .Pp
 The
-.Li utsname
+.Vt utsname
 structure is defined in the
-.Li <sys/utsname.h>
+.In sys/utsname.h
 header file, and contains the following members:
-.Bl -tag -width nodenameXXXX -offset indent
-.It sysname
+.Pp
+.Bl -tag -width nodenameXXXX -offset indent -compact
+.It Fa sysname
 Name of the operating system implementation.
-.It nodename
+.It Fa nodename
 Network name of this machine.
-.It release
+.It Fa release
 Release level of the operating system.
-.It version
+.It Fa version
 Version level of the operating system.
-.It machine
+.It Fa machine
 Machine hardware platform.
 .El
 .Sh RETURN VALUES
-If
-.Nm uname
-is successful, 0 is returned, otherwise, -1 is returned and
+The
+.Fn uname
+function returns a non-negative value if successful;
+otherwise the value -1 is returned and the global variable
 .Va errno
-is set appropriately.
+is set to indicate the error.
 .Sh ERRORS
 The
 .Fn uname
 function may fail and set
 .Va errno
-for any of the errors specified for the library functions
-.Xr sysctl 3 .
+for any of the errors specified for the library function
+.Xr sysctl 2 .
 .Sh SEE ALSO
 .Xr uname 1 ,
-.Xr sysctl 3
+.Xr sysctl 2
 .Sh STANDARDS
 The
 .Fn uname
@@ -90,5 +86,7 @@ function conforms to
 .St -p1003.1-88 .
 .Sh HISTORY
 The
-.Nm uname
-function first appeared in 4.4BSD.
+.Fn uname
+function first appeared in PWB/UNIX 1.0
+and was reimplemented for
+.Bx 4.4 .

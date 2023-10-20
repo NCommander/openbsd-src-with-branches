@@ -1,0 +1,2 @@
+! $OpenBSD$
+XTerm*loginShell:true

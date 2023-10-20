@@ -1,4 +1,4 @@
-/* crypto/dsa/dsa_prn.c */
+/* $OpenBSD: dsa_prn.c,v 1.9 2022/11/19 06:33:00 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,65 +57,79 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
-#include <openssl/evp.h>
+
 #include <openssl/dsa.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
 
-#ifndef OPENSSL_NO_FP_API
-int DSA_print_fp(FILE *fp, const DSA *x, int off)
-	{
+int
+DSA_print_fp(FILE *fp, const DSA *x, int off)
+{
 	BIO *b;
 	int ret;
 
-	if ((b=BIO_new(BIO_s_file())) == NULL)
-		{
-		DSAerr(DSA_F_DSA_PRINT_FP,ERR_R_BUF_LIB);
-		return(0);
-		}
-	BIO_set_fp(b,fp,BIO_NOCLOSE);
-	ret=DSA_print(b,x,off);
-	BIO_free(b);
-	return(ret);
-	}
-
-int DSAparams_print_fp(FILE *fp, const DSA *x)
-	{
-	BIO *b;
-	int ret;
-
-	if ((b=BIO_new(BIO_s_file())) == NULL)
-		{
-		DSAerr(DSA_F_DSAPARAMS_PRINT_FP,ERR_R_BUF_LIB);
-		return(0);
-		}
-	BIO_set_fp(b,fp,BIO_NOCLOSE);
-	ret=DSAparams_print(b, x);
-	BIO_free(b);
-	return(ret);
-	}
-#endif
-
-int DSA_print(BIO *bp, const DSA *x, int off)
-	{
-	EVP_PKEY *pk;
-	int ret;
-	pk = EVP_PKEY_new();
-	if (!pk || !EVP_PKEY_set1_DSA(pk, (DSA *)x))
+	if ((b = BIO_new(BIO_s_file())) == NULL) {
+		DSAerror(ERR_R_BUF_LIB);
 		return 0;
+	}
+	BIO_set_fp(b, fp, BIO_NOCLOSE);
+	ret = DSA_print(b, x, off);
+	BIO_free(b);
+	return ret;
+}
+LCRYPTO_ALIAS(DSA_print_fp);
+
+int
+DSAparams_print_fp(FILE *fp, const DSA *x)
+{
+	BIO *b;
+	int ret;
+
+	if ((b = BIO_new(BIO_s_file())) == NULL) {
+		DSAerror(ERR_R_BUF_LIB);
+		return 0;
+	}
+	BIO_set_fp(b, fp, BIO_NOCLOSE);
+	ret = DSAparams_print(b, x);
+	BIO_free(b);
+	return ret;
+}
+LCRYPTO_ALIAS(DSAparams_print_fp);
+
+int
+DSA_print(BIO *bp, const DSA *x, int off)
+{
+	EVP_PKEY *pk;
+	int ret = 0;
+
+	if ((pk = EVP_PKEY_new()) == NULL)
+		goto err;
+
+	if (!EVP_PKEY_set1_DSA(pk, (DSA *)x))
+		goto err;
+
 	ret = EVP_PKEY_print_private(bp, pk, off, NULL);
+ err:
 	EVP_PKEY_free(pk);
 	return ret;
-	}
+}
+LCRYPTO_ALIAS(DSA_print);
 
-int DSAparams_print(BIO *bp, const DSA *x)
-	{
+int
+DSAparams_print(BIO *bp, const DSA *x)
+{
 	EVP_PKEY *pk;
-	int ret;
-	pk = EVP_PKEY_new();
-	if (!pk || !EVP_PKEY_set1_DSA(pk, (DSA *)x))
-		return 0;
+	int ret = 0;
+
+	if ((pk = EVP_PKEY_new()) == NULL)
+		goto err;
+
+	if (!EVP_PKEY_set1_DSA(pk, (DSA *)x))
+		goto err;
+
 	ret = EVP_PKEY_print_params(bp, pk, 4, NULL);
+ err:
 	EVP_PKEY_free(pk);
 	return ret;
-	}
-
+}
+LCRYPTO_ALIAS(DSAparams_print);

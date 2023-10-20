@@ -83,20 +83,22 @@ open OUT,"| \"$^X\" $xlate $flavour $output";
 $code.=<<___;
 .text
 .extern	OPENSSL_ia32cap_P
+.hidden	OPENSSL_ia32cap_P
 
 .globl	aesni_cbc_sha1_enc
 .type	aesni_cbc_sha1_enc,\@abi-omnipotent
 .align	16
 aesni_cbc_sha1_enc:
+	endbr64
 	# caller should check for SSSE3 and AES-NI bits
 	mov	OPENSSL_ia32cap_P+0(%rip),%r10d
 	mov	OPENSSL_ia32cap_P+4(%rip),%r11d
 ___
 $code.=<<___ if ($avx);
-	and	\$`1<<28`,%r11d		# mask AVX bit
-	and	\$`1<<30`,%r10d		# mask "Intel CPU" bit
+	and	\$IA32CAP_MASK1_AVX,%r11d	# mask AVX bit
+	and	\$IA32CAP_MASK0_INTEL,%r10d	# mask "Intel CPU" bit
 	or	%r11d,%r10d
-	cmp	\$`1<<28|1<<30`,%r10d
+	cmp	\$(IA32CAP_MASK1_AVX|IA32CAP_MASK0_INTEL),%r10d
 	je	aesni_cbc_sha1_enc_avx
 ___
 $code.=<<___;
@@ -131,6 +133,7 @@ $code.=<<___;
 .type	aesni_cbc_sha1_enc_ssse3,\@function,6
 .align	16
 aesni_cbc_sha1_enc_ssse3:
+	endbr64
 	mov	`($win64?56:8)`(%rsp),$inp	# load 7th argument
 	#shr	\$6,$len			# debugging artefact
 	#jz	.Lepilogue_ssse3		# debugging artefact
@@ -249,7 +252,7 @@ ___
     $r++;	unshift(@rndkey,pop(@rndkey));
 };
 
-sub Xupdate_ssse3_16_31()		# recall that $Xi starts wtih 4
+sub Xupdate_ssse3_16_31()		# recall that $Xi starts with 4
 { use integer;
   my $body = shift;
   my @insns = (&$body,&$body,&$body,&$body);	# 40 instructions
@@ -649,6 +652,7 @@ $code.=<<___;
 .type	aesni_cbc_sha1_enc_avx,\@function,6
 .align	16
 aesni_cbc_sha1_enc_avx:
+	endbr64
 	mov	`($win64?56:8)`(%rsp),$inp	# load 7th argument
 	#shr	\$6,$len			# debugging artefact
 	#jz	.Lepilogue_avx			# debugging artefact
@@ -766,7 +770,7 @@ ___
     $r++;	unshift(@rndkey,pop(@rndkey));
 };
 
-sub Xupdate_avx_16_31()		# recall that $Xi starts wtih 4
+sub Xupdate_avx_16_31()		# recall that $Xi starts with 4
 { use integer;
   my $body = shift;
   my @insns = (&$body,&$body,&$body,&$body);	# 40 instructions
@@ -1074,6 +1078,7 @@ $code.=<<___;
 ___
 }
 $code.=<<___;
+.section .rodata
 .align	64
 K_XX_XX:
 .long	0x5a827999,0x5a827999,0x5a827999,0x5a827999	# K_00_19
@@ -1081,9 +1086,8 @@ K_XX_XX:
 .long	0x8f1bbcdc,0x8f1bbcdc,0x8f1bbcdc,0x8f1bbcdc	# K_40_59
 .long	0xca62c1d6,0xca62c1d6,0xca62c1d6,0xca62c1d6	# K_60_79
 .long	0x00010203,0x04050607,0x08090a0b,0x0c0d0e0f	# pbswap mask
-
-.asciz	"AESNI-CBC+SHA1 stitch for x86_64, CRYPTOGAMS by <appro\@openssl.org>"
 .align	64
+.text
 ___
 
 # EXCEPTION_DISPOSITION handler (EXCEPTION_RECORD *rec,ULONG64 frame,
@@ -1099,6 +1103,7 @@ $code.=<<___;
 .type	ssse3_handler,\@abi-omnipotent
 .align	16
 ssse3_handler:
+	endbr64
 	push	%rsi
 	push	%rdi
 	push	%rbx
@@ -1226,25 +1231,7 @@ sub rex {
     push @opcode,$rex|0x40	if($rex);
 }
 
-sub aesni {
-  my $line=shift;
-  my @opcode=(0x66);
-
-    if ($line=~/(aes[a-z]+)\s+%xmm([0-9]+),\s*%xmm([0-9]+)/) {
-	my %opcodelet = (
-		"aesenc" => 0xdc,	"aesenclast" => 0xdd
-	);
-	return undef if (!defined($opcodelet{$1}));
-	rex(\@opcode,$3,$2);
-	push @opcode,0x0f,0x38,$opcodelet{$1};
-	push @opcode,0xc0|($2&7)|(($3&7)<<3);	# ModR/M
-	return ".byte\t".join(',',@opcode);
-    }
-    return $line;
-}
-
 $code =~ s/\`([^\`]*)\`/eval($1)/gem;
-$code =~ s/\b(aes.*%xmm[0-9]+).*$/aesni($1)/gem;
 
 print $code;
 close STDOUT;

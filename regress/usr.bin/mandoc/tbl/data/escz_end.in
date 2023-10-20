@@ -1,0 +1,14 @@
+.\" $OpenBSD$
+.TH TBL-DATA-ESCZ_END 1 "April 26, 2022"
+.SH NAME
+tbl-data-escz_end \- z escape sequence at the end of a tbl(7) cell
+.SH DESCRIPTION
+initial text
+.TS
+tab(:);
+LLL.
+a:b:c
+d\z:e:f
+.TE
+.sp
+final text

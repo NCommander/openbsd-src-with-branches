@@ -1,3 +1,4 @@
+/*	$OpenBSD: sfsqrt.c,v 1.7 2003/04/10 17:27:59 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,65 +12,60 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/sfsqrt.c,v $
- * $Revision: 1.9.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:07:13 $
- */
+/* @(#)sfsqrt.c: Revision: 1.9.88.1 Date: 93/12/07 15:07:13 */
 
-#include "../spmath/float.h"
-#include "../spmath/sgl_float.h"
+#include "float.h"
+#include "sgl_float.h"
 
 /*
  *  Single Floating-point Square Root
  */
 
-/*ARGSUSED*/
-sgl_fsqrt(srcptr,nullptr,dstptr,status)
-
-sgl_floating_point *srcptr, *dstptr;
-unsigned int *nullptr, *status;
+int
+sgl_fsqrt(srcptr, null, dstptr, status)
+	sgl_floating_point *srcptr, *null, *dstptr;
+	unsigned int *status;
 {
 	register unsigned int src, result;
 	register int src_exponent, newbit, sum;
-	register boolean guardbit = FALSE, even_exponent;
+	register int guardbit = FALSE, even_exponent;
 
 	src = *srcptr;
-        /*
-         * check source operand for NaN or infinity
-         */
-        if ((src_exponent = Sgl_exponent(src)) == SGL_INFINITY_EXPONENT) {
-                /*
-                 * is signaling NaN?
-                 */
-                if (Sgl_isone_signaling(src)) {
-                        /* trap if INVALIDTRAP enabled */
-                        if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
-                        /* make NaN quiet */
-                        Set_invalidflag();
-                        Sgl_set_quiet(src);
-                }
-                /*
-                 * Return quiet NaN or positive infinity.
-		 *  Fall thru to negative test if negative infinity.
-                 */
-		if (Sgl_iszero_sign(src) || Sgl_isnotzero_mantissa(src)) {
-                	*dstptr = src;
-                	return(NOEXCEPTION);
+	/*
+	 * check source operand for NaN or infinity
+	 */
+	if ((src_exponent = Sgl_exponent(src)) == SGL_INFINITY_EXPONENT) {
+		/*
+		 * is signaling NaN?
+		 */
+		if (Sgl_isone_signaling(src)) {
+			/* trap if INVALIDTRAP enabled */
+			if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
+			/* make NaN quiet */
+			Set_invalidflag();
+			Sgl_set_quiet(src);
 		}
-        }
+		/*
+		 * Return quiet NaN or positive infinity.
+		 *  Fall thru to negative test if negative infinity.
+		 */
+		if (Sgl_iszero_sign(src) || Sgl_isnotzero_mantissa(src)) {
+			*dstptr = src;
+			return(NOEXCEPTION);
+		}
+	}
 
-        /*
-         * check for zero source operand
-         */
+	/*
+	 * check for zero source operand
+	 */
 	if (Sgl_iszero_exponentmantissa(src)) {
 		*dstptr = src;
 		return(NOEXCEPTION);
 	}
 
-        /*
-         * check for negative source operand 
-         */
+	/*
+	 * check for negative source operand
+	 */
 	if (Sgl_isone_sign(src)) {
 		/* trap if INVALIDTRAP enabled */
 		if (Is_invalidtrap_enabled()) return(INVALIDEXCEPTION);
@@ -101,7 +97,7 @@ unsigned int *nullptr, *status;
 	}
 	/*
 	 * Add comment here.  Explain following algorithm.
-	 * 
+	 *
 	 * Trust me, it works.
 	 *
 	 */
@@ -124,7 +120,7 @@ unsigned int *nullptr, *status;
 
 	/* check for inexact */
 	if (Sgl_isnotzero(src)) {
-		if (!even_exponent & Sgl_islessthan(result,src)) 
+		if (!even_exponent & Sgl_islessthan(result,src))
 			Sgl_increment(result);
 		guardbit = Sgl_lowmantissa(result);
 		Sgl_rightshiftby1(result);
@@ -135,7 +131,7 @@ unsigned int *nullptr, *status;
 		     Sgl_increment(result);
 		     break;
 		case ROUNDNEAREST:
-		     /* stickybit is always true, so guardbit 
+		     /* stickybit is always true, so guardbit
 		      * is enough to determine rounding */
 		     if (guardbit) {
 			Sgl_increment(result);

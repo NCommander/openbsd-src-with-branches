@@ -1,3 +1,4 @@
+/*	$OpenBSD: mille.c,v 1.25 2016/01/08 18:09:59 mestre Exp $	*/
 /*	$NetBSD: mille.c,v 1.4 1995/03/24 05:01:48 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,46 +30,33 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1982, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)mille.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: mille.c,v 1.4 1995/03/24 05:01:48 cgd Exp $";
+#include <err.h>
+#include <signal.h>
+#include <stdlib.h>
+#ifdef DEBUG
+#include <string.h>
 #endif
-#endif /* not lint */
+#include <unistd.h>
 
-# include	"mille.h"
-# include	<signal.h>
-# ifdef attron
-#	include	<term.h>
-# endif	attron
+#include "mille.h"
 
 /*
  * @(#)mille.c	1.3 (Berkeley) 5/10/83
  */
 
-void	rub();
+int
+main(int ac, char *av[])
+{
+	bool	restore;
+	extern char *__progname;
 
-main(ac, av)
-reg int		ac;
-reg char	*av[]; {
-
-	reg bool	restore;
-
-	/* run as the user */
-	setuid(getuid());
-
+#ifdef DEBUG
 	if (strcmp(av[0], "a.out") == 0) {
 		outf = fopen("q", "w");
-		setbuf(outf, (char *)NULL);
+		setvbuf(outf, NULL, _IONBF, 0);
 		Debug = TRUE;
 	}
+#endif
 	restore = FALSE;
 	switch (ac) {
 	  case 2:
@@ -81,30 +65,28 @@ reg char	*av[]; {
 	  case 1:
 		break;
 	  default:
-		printf("usage: milles [ restore_file ]\n");
-		exit(-1);
-		/* NOTREACHED */
+		fprintf(stderr, "usage: %s [file]\n", __progname);
+		return 1;
 	}
 	Play = PLAYER;
 	initscr();
+
+	if (pledge("stdio rpath wpath cpath tty", NULL) == -1)
+		err(1, "pledge");
+
+	if ((LINES < 24) || (COLS < 80)) {
+		endwin();
+		fprintf(stderr, "Screen must be at least 24x80\n");
+		return 1;
+	}
 	delwin(stdscr);
 	stdscr = Board = newwin(BOARD_Y, BOARD_X, 0, 0);
 	Score = newwin(SCORE_Y, SCORE_X, 0, 40);
 	Miles = newwin(MILES_Y, MILES_X, 17, 0);
-#ifdef attron
-	idlok(Board, TRUE);
-	idlok(Score, TRUE);
-	idlok(Miles, TRUE);
-#endif
 	leaveok(Score, TRUE);
 	leaveok(Miles, TRUE);
 	clearok(curscr, TRUE);
-# ifndef PROF
-	srandom(getpid());
-# else
-	srandom(0);
-# endif
-	crmode();
+	cbreak();
 	noecho();
 	signal(SIGINT, rub);
 	for (;;) {
@@ -146,8 +128,8 @@ reg char	*av[]; {
  * quit.
  */
 void
-rub() {
-
+rub(int dummy)
+{
 	(void)signal(SIGINT, SIG_IGN);
 	if (getyn(REALLYPROMPT))
 		die(0);
@@ -157,9 +139,9 @@ rub() {
 /*
  *	Time to go beddy-by
  */
-die(code)
-int code; {
-
+void
+die(int code)
+{
 	(void)signal(SIGINT, SIG_IGN);
 	if (outf)
 		fflush(outf);

@@ -1,1457 +1,774 @@
-#	from: @(#)4.4BSD.dist	8.1 (Berkeley) 6/13/93
-#	$Id: 4.4BSD.dist,v 1.10 1995/08/19 18:09:52 chopps Exp $
+#	$OpenBSD: 4.4BSD.dist,v 1.322 2022/08/23 08:56:20 martijn Exp $
 
 /set type=dir uname=root gname=wheel mode=0755
-# .
-.
 
-# ./altroot
+. nochange
 altroot
-# ./altroot
 ..
-
-# ./bin
 bin
-# ./bin
 ..
-
-# ./dev
 dev
-
-# ./dev/fd
-fd
-# ./dev/fd
-..
-
-# ./dev
 ..
 
 # ./etc
 etc
+    amd
+    ..
+    authpf			uname=root mode=0755
+    ..
+    examples
+    ..
+    firmware
+    ..
+    hotplug
+    ..
 
-# ./etc/disklabels
-disklabels
-# ./etc/disklabels
-..
+    # ./etc/iked
+    iked
+        ca
+        ..
+        certs
+        ..
+        crls
+        ..
+        private			uname=root mode=0700
+        ..
 
-# ./etc/kerberosIV
-kerberosIV
-# ./etc/kerberosIV
-..
+        # ./etc/iked/pubkeys
+        pubkeys			uname=root mode=0755
+            fqdn		uname=root mode=0755
+            ..
+            ipv4		uname=root mode=0755
+            ..
+            ipv6		uname=root mode=0755
+            ..
+            ufqdn		uname=root mode=0755
+            ..
+        ..
+    ..
 
-# ./etc/mtree
-mtree
-# ./etc/mtree
-..
+    # ./etc/isakmpd
+    isakmpd
+        ca
+        ..
+        certs
+        ..
+        crls
+        ..
+        keynote
+        ..
+        private			uname=root mode=0700
+        ..
 
-# ./etc/namedb
-namedb
-# ./etc/namedb
-..
+        # ./etc/isakmpd/pubkeys
+        pubkeys			uname=root mode=0755
+            fqdn		uname=root mode=0755
+            ..
+            ipv4		uname=root mode=0755
+            ..
+            ipv6		uname=root mode=0755
+            ..
+            ufqdn		uname=root mode=0755
+            ..
+        ..
+    ..
 
-# ./etc/sliphome
-sliphome
-# ./etc/sliphome
-..
+    # ./etc/ldap
+    ldap
+        certs			mode=0700
+        ..
+    ..
+    login.conf.d		mode=0755
+    ..
+    acme			mode=0700
+    ..
+    mail
+    ..
+    mtree
+    ..
+    npppd
+    ..
+    ppp
+    ..
+    rc.d
+    ..
+    rpki
+    ..
+    skel
+        .ssh			uname=root mode=0700
+        ..
+    ..
+    signify
+    ..
+    ssh
+    ..
 
-# ./etc/uucp
-uucp
-# ./etc/uucp
-..
+    # ./etc/ssl
+    ssl
+        private			uname=root mode=0700
+        ..
+    ..
 
-# ./etc
 ..
 
 # ./home
 home
-# ./home
 ..
-
-# ./mnt
 mnt
-# ./mnt
 ..
-
-# ./root
-root
-# ./root
+root				mode=0700
+    .ssh			uname=root mode=0700
+    ..
 ..
-
-# ./sbin
 sbin
-# ./sbin
 ..
-
-# ./stand
-stand
-# ./stand
-..
-
-# ./tmp
-tmp             mode=01777
-# ./tmp
+tmp				mode=01777
 ..
 
 # ./usr
 usr
-
-# ./usr/bin
-bin
-# ./usr/bin
-..
-
-# ./usr/games
-games
-
-# ./usr/games/hide
-hide            gname=games uname=games mode=0700
-# ./usr/games/hide
-..
-
-# ./usr/games
-..
-
-# ./usr/include
-include
-
-# ./usr/include/arpa
-arpa
-# ./usr/include/arpa
-..
-
-# ./usr/include/g++
-g++
-
-# ./usr/include/g++/gen
-gen
-# ./usr/include/g++/gen
-..
-
-# ./usr/include/g++
-..
-
-# ./usr/include/kerberosIV
-kerberosIV
-# ./usr/include/kerberosIV
-..
-
-# ./usr/include/protocols
-protocols
-# ./usr/include/protocols
-..
-
-# ./usr/include/rpc
-rpc
-# ./usr/include/rpc
-..
-
-# ./usr/include/rpcsvc
-rpcsvc
-# ./usr/include/rpcsvc
-..
-
-# ./usr/include
-..
-
-# ./usr/lib
-lib
-# ./usr/lib
-..
-
-# ./usr/libdata
-libdata
-
-# ./usr/libdata/lint
-lint
-# ./usr/libdata/lint
-..
-
-# ./usr/libdata
-..
-
-# ./usr/libexec
-libexec
-
-# ./usr/libexec/lpr
-lpr
-# ./usr/libexec/lpr
-..
-
-# ./usr/libexec/uucp
-uucp
-# ./usr/libexec/uucp
-..
-
-# ./usr/libexec
-..
-
-# ./usr/local
-local
-
-# ./usr/local/bin
-bin
-# ./usr/local/bin
-..
-
-# ./usr/local/lib
-lib
-# ./usr/local/lib
-..
-
-# ./usr/local/libdata
-libdata
-# ./usr/local/libdata
-..
-
-# ./usr/local/libexec
-libexec
-# ./usr/local/libexec
-..
-
-# ./usr/local/man
-man
-
-# ./usr/local/man/cat1
-cat1
-# ./usr/local/man/cat1
-..
-
-# ./usr/local/man/cat2
-cat2
-# ./usr/local/man/cat2
-..
-
-# ./usr/local/man/cat3
-cat3
-# ./usr/local/man/cat3
-..
-
-# ./usr/local/man/cat4
-cat4
-# ./usr/local/man/cat4
-..
-
-# ./usr/local/man/cat5
-cat5
-# ./usr/local/man/cat5
-..
-
-# ./usr/local/man/cat6
-cat6
-# ./usr/local/man/cat6
-..
-
-# ./usr/local/man/cat7
-cat7
-# ./usr/local/man/cat7
-..
-
-# ./usr/local/man/cat8
-cat8
-# ./usr/local/man/cat8
-..
-
-# ./usr/local/man/man1
-man1
-# ./usr/local/man/man1
-..
-
-# ./usr/local/man/man2
-man2
-# ./usr/local/man/man2
-..
-
-# ./usr/local/man/man3
-man3
-# ./usr/local/man/man3
-..
-
-# ./usr/local/man/man4
-man4
-# ./usr/local/man/man4
-..
-
-# ./usr/local/man/man5
-man5
-# ./usr/local/man/man5
-..
-
-# ./usr/local/man/man6
-man6
-# ./usr/local/man/man6
-..
-
-# ./usr/local/man/man7
-man7
-# ./usr/local/man/man7
-..
-
-# ./usr/local/man/man8
-man8
-# ./usr/local/man/man8
-..
-
-# ./usr/local/man
-..
-
-# ./usr/local/sbin
-sbin
-# ./usr/local/sbin
-..
-
-# ./usr/local
-..
-
-# ./usr/mdec
-mdec
-# ./usr/mdec
-..
-
-# ./usr/obj		XXX
-obj
-# ./usr/obj		XXX
-..
-
-# ./usr/sbin
-sbin
-# ./usr/sbin
-..
-
-# ./usr/share
-share
-
-# ./usr/share/calendar
-calendar
-# ./usr/share/calendar
-..
-
-# ./usr/share/dict
-dict
-
-# ./usr/share/dict/papers
-papers
-# ./usr/share/dict/papers
-..
-
-# ./usr/share/dict/special
-special
-# ./usr/share/dict/special
-..
-
-# ./usr/share/dict
-..
-
-# ./usr/share/doc
-doc
-
-# ./usr/share/doc/psd
-psd
-
-# ./usr/share/doc/psd/01.cacm
-01.cacm
-# ./usr/share/doc/psd/01.cacm
-..
-
-# ./usr/share/doc/psd/02.implement
-02.implement
-# ./usr/share/doc/psd/02.implement
-..
-
-# ./usr/share/doc/psd/03.iosys
-03.iosys
-# ./usr/share/doc/psd/03.iosys
-..
-
-# ./usr/share/doc/psd/04.uprog
-04.uprog
-# ./usr/share/doc/psd/04.uprog
-..
-
-# ./usr/share/doc/psd/05.sysman
-05.sysman
-# ./usr/share/doc/psd/05.sysman
-..
-
-# ./usr/share/doc/psd/06.Clang
-06.Clang
-# ./usr/share/doc/psd/06.Clang
-..
-
-# ./usr/share/doc/psd/07.pascal
-07.pascal
-# ./usr/share/doc/psd/07.pascal
-..
-
-# ./usr/share/doc/psd/08.f77
-08.f77
-# ./usr/share/doc/psd/08.f77
-..
-
-# ./usr/share/doc/psd/09.f77io
-09.f77io
-# ./usr/share/doc/psd/09.f77io
-..
-
-# ./usr/share/doc/psd/10.gdb
-10.gdb
-# ./usr/share/doc/psd/10.gdb
-..
-
-# ./usr/share/doc/psd/11.adb
-11.adb
-# ./usr/share/doc/psd/11.adb
-..
-
-# ./usr/share/doc/psd/12.make
-12.make
-# ./usr/share/doc/psd/12.make
-..
-
-# ./usr/share/doc/psd/13.rcs
-13.rcs
-# ./usr/share/doc/psd/13.rcs
-..
-
-# ./usr/share/doc/psd/14.sccs
-14.sccs
-# ./usr/share/doc/psd/14.sccs
-..
-
-# ./usr/share/doc/psd/15.yacc
-15.yacc
-# ./usr/share/doc/psd/15.yacc
-..
-
-# ./usr/share/doc/psd/16.lex
-16.lex
-# ./usr/share/doc/psd/16.lex
-..
-
-# ./usr/share/doc/psd/17.m4
-17.m4
-# ./usr/share/doc/psd/17.m4
-..
-
-# ./usr/share/doc/psd/18.gprof
-18.gprof
-# ./usr/share/doc/psd/18.gprof
-..
-
-# ./usr/share/doc/psd/19.curses
-19.curses
-# ./usr/share/doc/psd/19.curses
-..
-
-# ./usr/share/doc/psd/20.ipctut
-20.ipctut
-# ./usr/share/doc/psd/20.ipctut
-..
-
-# ./usr/share/doc/psd/21.ipc
-21.ipc
-# ./usr/share/doc/psd/21.ipc
-..
-
-# ./usr/share/doc/psd
-..
-
-# ./usr/share/doc/smm
-smm
-
-# ./usr/share/doc/smm/01.setup
-01.setup
-
-# ./usr/share/doc/smm/01.setup/tahoe
-tahoe
-# ./usr/share/doc/smm/01.setup/tahoe
-..
-
-# ./usr/share/doc/smm/01.setup/vax
-vax
-# ./usr/share/doc/smm/01.setup/vax
-..
-
-# ./usr/share/doc/smm/01.setup
-..
-
-# ./usr/share/doc/smm/02.config
-02.config
-# ./usr/share/doc/smm/02.config
-..
-
-# ./usr/share/doc/smm/03.fsck
-03.fsck
-# ./usr/share/doc/smm/03.fsck
-..
-
-# ./usr/share/doc/smm/04.quotas
-04.quotas
-# ./usr/share/doc/smm/04.quotas
-..
-
-# ./usr/share/doc/smm/05.fastfs
-05.fastfs
-# ./usr/share/doc/smm/05.fastfs
-..
-
-# ./usr/share/doc/smm/06.nfs
-06.nfs
-# ./usr/share/doc/smm/06.nfs
-..
-
-# ./usr/share/doc/smm/07.lpd
-07.lpd
-# ./usr/share/doc/smm/07.lpd
-..
-
-# ./usr/share/doc/smm/08.sendmailop
-08.sendmailop
-# ./usr/share/doc/smm/08.sendmailop
-..
-
-# ./usr/share/doc/smm/09.sendmail
-09.sendmail
-# ./usr/share/doc/smm/09.sendmail
-..
-
-# ./usr/share/doc/smm/10.named
-10.named
-# ./usr/share/doc/smm/10.named
-..
-
-# ./usr/share/doc/smm/11.timedop
-11.timedop
-# ./usr/share/doc/smm/11.timedop
-..
-
-# ./usr/share/doc/smm/12.timed
-12.timed
-# ./usr/share/doc/smm/12.timed
-..
-
-# ./usr/share/doc/smm/13.amd
-13.amd
-# ./usr/share/doc/smm/13.amd
-..
-
-# ./usr/share/doc/smm/14.uucpimpl
-14.uucpimpl
-# ./usr/share/doc/smm/14.uucpimpl
-..
-
-# ./usr/share/doc/smm/15.uucpnet
-15.uucpnet
-# ./usr/share/doc/smm/15.uucpnet
-..
-
-# ./usr/share/doc/smm/16.security
-16.security
-# ./usr/share/doc/smm/16.security
-..
-
-# ./usr/share/doc/smm/17.password
-17.password
-# ./usr/share/doc/smm/17.password
-..
-
-# ./usr/share/doc/smm/18.net
-18.net
-# ./usr/share/doc/smm/18.net
-..
-
-# ./usr/share/doc/smm
-..
-
-# ./usr/share/doc/usd
-usd
-
-# ./usr/share/doc/usd/01.begin
-01.begin
-# ./usr/share/doc/usd/01.begin
-..
-
-# ./usr/share/doc/usd/02.learn
-02.learn
-# ./usr/share/doc/usd/02.learn
-..
-
-# ./usr/share/doc/usd/03.shell
-03.shell
-# ./usr/share/doc/usd/03.shell
-..
-
-# ./usr/share/doc/usd/04.csh
-04.csh
-# ./usr/share/doc/usd/04.csh
-..
-
-# ./usr/share/doc/usd/05.dc
-05.dc
-# ./usr/share/doc/usd/05.dc
-..
-
-# ./usr/share/doc/usd/06.bc
-06.bc
-# ./usr/share/doc/usd/06.bc
-..
-
-# ./usr/share/doc/usd/07.mail
-07.mail
-# ./usr/share/doc/usd/07.mail
-..
-
-# ./usr/share/doc/usd/08.mh
-08.mh
-# ./usr/share/doc/usd/08.mh
-..
-
-# ./usr/share/doc/usd/09.edtut
-09.edtut
-# ./usr/share/doc/usd/09.edtut
-..
-
-# ./usr/share/doc/usd/10.edadv
-10.edadv
-# ./usr/share/doc/usd/10.edadv
-..
-
-# ./usr/share/doc/usd/11.edit
-11.edit
-# ./usr/share/doc/usd/11.edit
-..
-
-# ./usr/share/doc/usd/12.vi
-12.vi
-# ./usr/share/doc/usd/12.vi
-..
-
-# ./usr/share/doc/usd/13.viref
-13.viref
-# ./usr/share/doc/usd/13.viref
-..
-
-# ./usr/share/doc/usd/13.ex
-13.ex
-# ./usr/share/doc/usd/13.ex
-..
-
-# ./usr/share/doc/usd/14.jove
-14.jove
-# ./usr/share/doc/usd/14.jove
-..
-
-# ./usr/share/doc/usd/15.sed
-15.sed
-# ./usr/share/doc/usd/15.sed
-..
-
-# ./usr/share/doc/usd/16.awk
-16.awk
-# ./usr/share/doc/usd/16.awk
-..
-
-# ./usr/share/doc/usd/17.msmacros
-17.msmacros
-# ./usr/share/doc/usd/17.msmacros
-..
-
-# ./usr/share/doc/usd/18.msdiffs
-18.msdiffs
-# ./usr/share/doc/usd/18.msdiffs
-..
-
-# ./usr/share/doc/usd/19.memacros
-19.memacros
-# ./usr/share/doc/usd/19.memacros
-..
-
-# ./usr/share/doc/usd/20.meref
-20.meref
-# ./usr/share/doc/usd/20.meref
-..
-
-# ./usr/share/doc/usd/21.troff
-21.troff
-# ./usr/share/doc/usd/21.troff
-..
-
-# ./usr/share/doc/usd/22.trofftut
-22.trofftut
-# ./usr/share/doc/usd/22.trofftut
-..
-
-# ./usr/share/doc/usd/23.eqn
-23.eqn
-# ./usr/share/doc/usd/23.eqn
-..
-
-# ./usr/share/doc/usd/24.eqnguide
-24.eqnguide
-# ./usr/share/doc/usd/24.eqnguide
-..
-
-# ./usr/share/doc/usd/25.tbl
-25.tbl
-# ./usr/share/doc/usd/25.tbl
-..
-
-# ./usr/share/doc/usd/26.refer
-26.refer
-# ./usr/share/doc/usd/26.refer
-..
-
-# ./usr/share/doc/usd/27.invert
-27.invert
-# ./usr/share/doc/usd/27.invert
-..
-
-# ./usr/share/doc/usd/28.bib
-28.bib
-# ./usr/share/doc/usd/28.bib
-..
-
-# ./usr/share/doc/usd/29.diction
-29.diction
-# ./usr/share/doc/usd/29.diction
-..
-
-# ./usr/share/doc/usd/30.rogue
-30.rogue
-# ./usr/share/doc/usd/30.rogue
-..
-
-# ./usr/share/doc/usd/31.trek
-31.trek
-# ./usr/share/doc/usd/31.trek
-..
-
-# ./usr/share/doc/usd
-..
-
-# ./usr/share/doc
-..
-
-# ./usr/share/games
-games
-
-# ./usr/share/games/atc
-atc
-# ./usr/share/games/atc
-..
-
-# ./usr/share/games/boggle
-boggle
-# ./usr/share/games/boggle
-..
-
-# ./usr/share/games/ching
-ching
-# ./usr/share/games/ching
-..
-
-# ./usr/share/games/fortune
-fortune
-# ./usr/share/games/fortune
-..
-
-# ./usr/share/games/larn
-larn
-# ./usr/share/games/larn
-..
-
-# ./usr/share/games/quiz.db
-quiz.db
-# ./usr/share/games/quiz.db
-..
-
-# ./usr/share/games
-..
-
-# ./usr/share/gnats
-gnats
-# ./usr/share/gnats
-..
-
-# ./usr/share/groff_font
-groff_font
-
-# ./usr/share/groff_font/devX100
-devX100
-# ./usr/share/groff_font/devX100
-..
-
-# ./usr/share/groff_font/devX100-12
-devX100-12
-# ./usr/share/groff_font/devX100-12
-..
-
-# ./usr/share/groff_font/devX75
-devX75
-# ./usr/share/groff_font/devX75
-..
-
-# ./usr/share/groff_font/devX75-12
-devX75-12
-# ./usr/share/groff_font/devX75-12
-..
-
-# ./usr/share/groff_font/devascii
-devascii
-# ./usr/share/groff_font/devascii
-..
-
-# ./usr/share/groff_font/devdvi
-devdvi
-
-# ./usr/share/groff_font/devdvi/generate
-generate
-# ./usr/share/groff_font/devdvi/generate
-..
-
-# ./usr/share/groff_font/devdvi
-..
-
-# ./usr/share/groff_font/devlatin1
-devlatin1
-# ./usr/share/groff_font/devlatin1
-..
-
-# ./usr/share/groff_font/devps
-devps
-
-# ./usr/share/groff_font/devps/generate
-generate
-# ./usr/share/groff_font/devps/generate
-..
-
-# ./usr/share/groff_font/devps
-..
-
-# ./usr/share/groff_font
-..
-
-# ./usr/share/lkm
-lkm
-
-# ./usr/share/lkm/misc
-misc
-# ./usr/share/lkm/misc
-..
-
-# ./usr/share/lkm/syscall
-syscall
-# ./usr/share/lkm/syscall
-..
-
-# ./usr/share/lkm/vfs
-vfs
-# ./usr/share/lkm/vfs
-..
-
-# ./usr/share/lkm
-..
-
-# ./usr/share/locale
-locale
-# ./usr/share/locale
-..
-
-# ./usr/share/man
-man
-
-# ./usr/share/man/cat1
-cat1
-# ./usr/share/man/cat1
-..
-
-# ./usr/share/man/cat2
-cat2
-# ./usr/share/man/cat2
-..
-
-# ./usr/share/man/cat3
-cat3
-# ./usr/share/man/cat3
-..
-
-# ./usr/share/man/cat3f
-cat3f
-# ./usr/share/man/cat3f
-..
-
-# ./usr/share/man/cat4
-cat4
-
-# ./usr/share/man/cat4/amiga
-amiga
-# ./usr/share/man/cat4/amiga
-..
-
-# ./usr/share/man/cat4/hp300
-hp300
-# ./usr/share/man/cat4/hp300
-..
-
-# ./usr/share/man/cat4/i386
-i386
-# ./usr/share/man/cat4/i386
-..
-
-# ./usr/share/man/cat4/mac68k
-mac68k
-# ./usr/share/man/cat4/mac68k
-..
-
-# ./usr/share/man/cat4/pc532
-pc532
-# ./usr/share/man/cat4/pc532
-..
-
-# ./usr/share/man/cat4/sparc
-sparc
-# ./usr/share/man/cat4/sparc
-..
-
-# ./usr/share/man/cat4/sun3
-sun3
-# ./usr/share/man/cat4/sun3
-..
-
-# ./usr/share/man/cat4/tahoe
-tahoe
-# ./usr/share/man/cat4/tahoe
-..
-
-# ./usr/share/man/cat4/vax
-vax
-# ./usr/share/man/cat4/vax
-..
-
-# ./usr/share/man/cat4
-..
-
-# ./usr/share/man/cat5
-cat5
-# ./usr/share/man/cat5
-..
-
-# ./usr/share/man/cat6
-cat6
-# ./usr/share/man/cat6
-..
-
-# ./usr/share/man/cat7
-cat7
-# ./usr/share/man/cat7
-..
-
-# ./usr/share/man/cat8
-cat8
-
-# ./usr/share/man/cat8/amiga
-amiga
-# ./usr/share/man/cat8/amiga
-..
-
-# ./usr/share/man/cat8/hp300
-hp300
-# ./usr/share/man/cat8/hp300
-..
-
-# ./usr/share/man/cat8/i386
-i386
-# ./usr/share/man/cat8/i386
-..
-
-# ./usr/share/man/cat8/mac68k
-mac68k
-# ./usr/share/man/cat8/mac68k
-..
-
-# ./usr/share/man/cat8/pc532
-pc532
-# ./usr/share/man/cat8/pc532
-..
-
-# ./usr/share/man/cat8/sparc
-sparc
-# ./usr/share/man/cat8/sparc
-..
-
-# ./usr/share/man/cat8/sun3
-sun3
-# ./usr/share/man/cat8/sun3
-..
-
-# ./usr/share/man/cat8/tahoe
-tahoe
-# ./usr/share/man/cat8/tahoe
-..
-
-# ./usr/share/man/cat8/vax
-vax
-# ./usr/share/man/cat8/vax
-..
-
-# ./usr/share/man/cat8
-..
-
-# ./usr/share/man/man1
-man1
-# ./usr/share/man/man1
-..
-
-# ./usr/share/man/man2
-man2
-# ./usr/share/man/man2
-..
-
-# ./usr/share/man/man3
-man3
-# ./usr/share/man/man3
-..
-
-# ./usr/share/man/man3f
-man3f
-# ./usr/share/man/man3f
-..
-
-# ./usr/share/man/man4
-man4
-
-# ./usr/share/man/man4/amiga
-amiga
-# ./usr/share/man/man4/amiga
-..
-
-# ./usr/share/man/man4/hp300
-hp300
-# ./usr/share/man/man4/hp300
-..
-
-# ./usr/share/man/man4/i386
-i386
-# ./usr/share/man/man4/i386
-..
-
-# ./usr/share/man/man4/mac68k
-mac68k
-# ./usr/share/man/man4/mac68k
-..
-
-# ./usr/share/man/man4/pc532
-pc532
-# ./usr/share/man/man4/pc532
-..
-
-# ./usr/share/man/man4/sparc
-sparc
-# ./usr/share/man/man4/sparc
-..
-
-# ./usr/share/man/man4/sun3
-sun3
-# ./usr/share/man/man4/sun3
-..
-
-# ./usr/share/man/man4/tahoe
-tahoe
-# ./usr/share/man/man4/tahoe
-..
-
-# ./usr/share/man/man4/vax
-vax
-# ./usr/share/man/man4/vax
-..
-
-# ./usr/share/man/man4
-..
-
-# ./usr/share/man/man5
-man5
-# ./usr/share/man/man5
-..
-
-# ./usr/share/man/man6
-man6
-# ./usr/share/man/man6
-..
-
-# ./usr/share/man/man7
-man7
-# ./usr/share/man/man7
-..
-
-# ./usr/share/man/man8
-man8
-
-# ./usr/share/man/man8/amiga
-amiga
-# ./usr/share/man/man8/amiga
-..
-
-# ./usr/share/man/man8/hp300
-hp300
-# ./usr/share/man/man8/hp300
-..
-
-# ./usr/share/man/man8/i386
-i386
-# ./usr/share/man/man8/i386
-..
-
-# ./usr/share/man/man8/mac68k
-mac68k
-# ./usr/share/man/man8/mac68k
-..
-
-# ./usr/share/man/man8/pc532
-pc532
-# ./usr/share/man/man8/pc532
-..
-
-# ./usr/share/man/man8/sparc
-sparc
-# ./usr/share/man/man8/sparc
-..
-
-# ./usr/share/man/man8/sun3
-sun3
-# ./usr/share/man/man8/sun3
-..
-
-# ./usr/share/man/man8/tahoe
-tahoe
-# ./usr/share/man/man8/tahoe
-..
-
-# ./usr/share/man/man8/vax
-vax
-# ./usr/share/man/man8/vax
-..
-
-# ./usr/share/man/man8
-..
-
-# ./usr/share/man
-..
-
-# ./usr/share/me
-me
-# ./usr/share/me
-..
-
-# ./usr/share/misc
-misc
-# ./usr/share/misc
-..
-
-# ./usr/share/mk
-mk
-# ./usr/share/mk
-..
-
-# ./usr/share/ms
-ms
-# ./usr/share/ms
-..
-
-# ./usr/share/nls
-nls
-# ./usr/share/nls
-..
-
-# ./usr/share/skel
-skel
-# ./usr/share/skel
-..
-
-# ./usr/share/tabset
-tabset
-# ./usr/share/tabset
-..
-
-# ./usr/share/tmac
-tmac
-
-# ./usr/share/tmac/mm
-mm
-# ./usr/share/tmac/mm
-..
-
-# ./usr/share/tmac
-..
-
-# ./usr/share/zoneinfo
-zoneinfo         mode=0555
-
-# ./usr/share/zoneinfo/Australia
-Australia        mode=0555
-# ./usr/share/zoneinfo/Australia
-..
-
-# ./usr/share/zoneinfo/Brazil
-Brazil           mode=0555
-# ./usr/share/zoneinfo/Brazil
-..
-
-# ./usr/share/zoneinfo/Canada
-Canada           mode=0555
-# ./usr/share/zoneinfo/Canada
-..
-
-# ./usr/share/zoneinfo/Chile
-Chile            mode=0555
-# ./usr/share/zoneinfo/Chile
-..
-
-# ./usr/share/zoneinfo/Mexico
-Mexico           mode=0555
-# ./usr/share/zoneinfo/Mexico
-..
-
-# ./usr/share/zoneinfo/SystemV
-SystemV          mode=0555
-# ./usr/share/zoneinfo/SystemV
-..
-
-# ./usr/share/zoneinfo/US
-US               mode=0555
-# ./usr/share/zoneinfo/US
-..
-
-# ./usr/share/zoneinfo
-..
-
-# ./usr/share
-..
-
-# ./usr/src
-src
-# ./usr/src
-..
-
-# ./usr
+    bin
+    ..
+    games
+    ..
+
+    # ./usr/include
+    include			gname=bin uname=root mode=0755
+        arpa			gname=bin uname=root mode=0755
+        ..
+        openssl			gname=bin uname=root mode=0755
+        ..
+        protocols		gname=bin uname=root mode=0755
+        ..
+        readline		gname=bin uname=root mode=0755
+        ..
+        rpc			gname=bin uname=root mode=0755
+        ..
+        rpcsvc			gname=bin uname=root mode=0755
+        ..
+    ..
+
+    # ./usr/lib
+    lib
+        debug			gname=bin uname=root mode=0755
+        ..
+        locate			gname=bin uname=root mode=0755
+        ..
+        pkgconfig		gname=bin uname=root mode=0755
+        ..
+    ..
+
+    # ./usr/libdata
+    libdata
+        perl5
+        ..
+    ..
+
+    # ./usr/libexec
+    libexec
+        auth			type=dir uname=root gname=auth mode=0750
+        ..
+        lpr
+        ..
+        radiusd			type=dir uname=root gname=wheel mode=0755
+        ..
+        snmpd			type=dir uname=root gname=wheel mode=0755
+        ..
+    ..
+
+    # ./usr/local
+    local
+        bin
+        ..
+        lib
+            pkgconfig
+            ..
+        ..
+        include
+        ..
+        info
+        ..
+        libexec
+        ..
+
+        # ./usr/local/man
+        man
+            cat1
+            ..
+            cat2
+            ..
+            cat3
+            ..
+            cat3f
+            ..
+            cat3p
+            ..
+            cat4
+            ..
+            cat5
+            ..
+            cat6
+            ..
+            cat7
+            ..
+            cat8
+            ..
+            cat9
+            ..
+            catl
+            ..
+            catn
+            ..
+
+            # ./usr/local/man/ja_JP.EUC
+            ja_JP.EUC
+                cat1
+                ..
+                cat2
+                ..
+                cat3
+                ..
+                cat3p
+                ..
+                cat4
+                ..
+                cat5
+                ..
+                cat6
+                ..
+                cat7
+                ..
+                cat8
+                ..
+                cat9
+                ..
+                catl
+                ..
+                catn
+                ..
+                man1
+                ..
+                man2
+                ..
+                man3
+                ..
+                man4
+                ..
+                man5
+                ..
+                man6
+                ..
+                man7
+                ..
+                man8
+                ..
+                man9
+                ..
+                manl
+                ..
+                mann
+                ..
+            ..
+
+            # ./usr/local/man/man1
+            man1
+            ..
+            man2
+            ..
+            man3
+            ..
+            man3f
+            ..
+            man3p
+            ..
+            man4
+            ..
+            man5
+            ..
+            man6
+            ..
+            man7
+            ..
+            man8
+            ..
+            man9
+            ..
+            manl
+            ..
+            mann
+            ..
+        ..
+
+        # ./usr/local/sbin
+        sbin
+        ..
+
+        # ./usr/local/share
+        share
+            dict
+            ..
+            doc
+                pkg-readmes
+                ..
+            ..
+            examples
+                login.conf.d
+                ..
+            ..
+            misc
+            ..
+
+            # ./usr/local/share/nls
+            nls
+                C
+                ..
+                da_DK.ISO_8859-1
+                ..
+                de_AT.ISO_8859-1
+                ..
+                de_CH.ISO_8859-1
+                ..
+                de_DE.ISO_8859-1
+                ..
+                el_GR.ISO_8859-7
+                ..
+                en_AU.ISO_8859-1
+                ..
+                en_CA.ISO_8859-1
+                ..
+                en_GB.ISO_8859-1
+                ..
+                en_US.ISO_8859-1
+                ..
+                es_ES.ISO_8859-1
+                ..
+                et_EE.ISO-8859-1
+                ..
+                fi_FI.ISO_8859-1
+                ..
+                fr_BE.ISO_8859-1
+                ..
+                fr_CA.ISO_8859-1
+                ..
+                fr_CH.ISO_8859-1
+                ..
+                fr_FR.ISO_8859-1
+                ..
+                hr_HR.ISO_8859-2
+                ..
+                is_IS.ISO_8859-1
+                ..
+                it_CH.ISO_8859-1
+                ..
+                it_IT.ISO_8859-1
+                ..
+                ja_JP.EUC
+                ..
+                ko_KR.EUC
+                ..
+                lt_LN.ASCII
+                ..
+                lt_LN.ISO_8859-1
+                ..
+                lt_LN.ISO_8859-2
+                ..
+                nl_BE.ISO_8859-1
+                ..
+                nl_NL.ISO_8859-1
+                ..
+                no_NO.ISO_8859-1
+                ..
+                pl_PL.ISO_8859-2
+                ..
+                pt_PT.ISO_8859-1
+                ..
+                ru_RU.CP866
+                ..
+                ru_RU.ISO_8859-5
+                ..
+                ru_RU.KOI8-R
+                ..
+                sv_SE.ISO_8859-1
+                ..
+                uk_UA.KOI8-U
+                ..
+            ..
+
+            # ./usr/local/share/pkgconfig
+            pkgconfig
+            ..
+            skel
+            ..
+        ..
+
+        # ./usr/local/libdata
+        libdata
+            perl5
+                site_perl
+                ..
+            ..
+        ..
+    ..
+
+    # ./usr/mdec
+    mdec
+    ..
+    sbin
+    ..
+
+    # ./usr/share
+    share
+        # ./usr/share/btrace
+	btrace
+	..
+
+        # ./usr/share/calendar
+        calendar
+        ..
+
+        # ./usr/share/dict
+        dict
+            papers
+            ..
+            special
+            ..
+        ..
+
+        # ./usr/share/doc
+        doc
+        ..
+
+        # ./usr/share/games
+        games
+            atc
+            ..
+            boggle
+            ..
+            fortune
+            ..
+            hack
+            ..
+            quiz.db
+            ..
+        ..
+
+        # ./usr/share/info
+        info
+        ..
+        locale
+        ..
+
+        # ./usr/share/man
+        man
+            man1
+                amd64
+                ..
+                i386
+                ..
+                sparc64
+                ..
+            ..
+
+            # ./usr/share/man/man2
+            man2
+                alpha
+                ..
+                amd64
+                ..
+                armv7
+                ..
+                i386
+                ..
+            ..
+
+            # ./usr/share/man/man3
+            man3
+                loongson
+                ..
+                octeon
+                ..
+            ..
+
+            # ./usr/share/man/man3p
+            man3p
+            ..
+
+            # ./usr/share/man/man4
+            man4
+                alpha
+                ..
+                amd64
+                ..
+                arm64
+                ..
+                armv7
+                ..
+                hppa
+                ..
+                i386
+                ..
+                landisk
+                ..
+                loongson
+                ..
+                luna88k
+                ..
+                macppc
+                ..
+                octeon
+                ..
+                powerpc64
+                ..
+                riscv64
+                ..
+                sparc64
+                ..
+            ..
+
+            # ./usr/share/man/man5
+            man5
+                sparc64
+                ..
+            ..
+            man6
+            ..
+            man7
+            ..
+
+            # ./usr/share/man/man8
+            man8
+                alpha
+                ..
+                amd64
+                ..
+                arm64
+                ..
+                armv7
+                ..
+                hppa
+                ..
+                i386
+                ..
+                landisk
+                ..
+                loongson
+                ..
+                luna88k
+                ..
+                macppc
+                ..
+                octeon
+                ..
+                powerpc64
+                ..
+                riscv64
+                ..
+                sparc64
+                ..
+            ..
+
+            # ./usr/share/man/man9
+            man9
+            ..
+        ..
+
+        # ./usr/share/misc
+        misc
+        ..
+        mk
+        ..
+
+        # ./usr/share/relink
+        relink
+
+            # ./usr/share/relink/kernel
+            kernel
+            ..
+        ..
+        snmp
+            mibs
+            ..
+        ..
+        tabset
+        ..
+
+        # ./usr/share/zoneinfo
+        zoneinfo		gname=bin uname=root mode=0755
+            Australia		gname=bin uname=root mode=0755
+            ..
+            Brazil		gname=bin uname=root mode=0755
+            ..
+            Canada		gname=bin uname=root mode=0755
+            ..
+            Chile		gname=bin uname=root mode=0755
+            ..
+            Mexico		gname=bin uname=root mode=0755
+            ..
+            US			gname=bin uname=root mode=0755
+            ..
+        ..
+   ..
 ..
 
 # ./var
 var
+    account
+    ..
+    agentx			uname=root gname=wheel mode=755
+    ..
+    authpf			uname=root gname=authpf mode=0770
+    ..
+    empty			mode=0755
+    ..
+    backups			mode=0700
+    ..
+    yp				mode=755
+    ..
+    crash			mode=770
+    ..
+    cache			mode=755
+        rpki-client		uname=_rpki-client gname=wheel mode=0755
+        ..
+    ..
 
-# ./var/account
-account
-# ./var/account
-..
+    # ./var/cron
+    cron			mode=0555
+        atjobs			gname=crontab mode=01770
+        ..
+        tabs			gname=crontab mode=01730
+        ..
+    ..
 
-# ./var/at
-at
+    # ./var/db
+    db
+        acpi
+	..
+        dhcpleased
+	..
+        ldap			mode=0700
+        ..
+        ns
+        ..
+        rpki-client		uname=_rpki-client mode=0755
+        ..
+        pkg
+        ..
+        yubikey			uname=root gname=auth mode=0770
+        ..
+    ..
 
-# ./var/at/jobs
-jobs		mode=0700
-# ./var/at/jobs
-..
+    # ./var/games
+    games			uname=root gname=games mode=0775
+        save			uname=root gname=games mode=0775
+        ..
+        phantasia		uname=root gname=games mode=0775
+        ..
+    ..
 
-# ./var/at/spool
-spool		mode=0700
-# ./var/at/spool
-..
+    # ./var/log
+    log
+        rdist
+        ..
+    ..
+    mail
+    ..
 
-# ./var/at
-..
+    # ./var/nsd
+    nsd
+        db			uname=root gname=_nsd mode=0775
+        ..
+        etc			uname=root gname=_nsd mode=0750
+        ..
+        run			uname=root gname=_nsd mode=0775
+            xfr			uname=root gname=_nsd mode=0770
+            ..
+        ..
 
-# ./var/backups
-backups
-# ./var/backups
-..
+        # ./var/nsd/zones
+        zones			uname=root gname=wheel mode=0755
+            master		uname=root gname=wheel mode=0755
+            ..
+            slave		uname=root gname=_nsd mode=0775
+            ..
+        ..
+    ..
 
-# ./var/crash
-crash		mode=775
-# ./var/crash
-..
+    # ./var/quotas
+    quotas			gname=operator mode=0750
+    ..
+    run
+    ..
+    sysmerge			uname=root gname=wheel mode=0700
+    ..
+    syspatch			uname=root gname=wheel mode=0755
+    ..
 
-# ./var/cron
-cron
+    # ./var/spool
+    spool
+        ftp			mode=0555
+            bin			mode=0511
+            ..
+            etc			mode=0511
+            ..
+            hidden		mode=0111
+            ..
+        ..
 
-# ./var/cron/tabs
-tabs		mode=0700
-# ./var/cron/tabs
-..
+        # ./var/spool/lock
+        lock			uname=root gname=dialer mode=1775
+        ..
+        output
+            lpd			gname=daemon mode=0775
+	    ..
+        ..
 
-# ./var/cron
-..
+        # ./var/spool/smtpd
+        smtpd			type=dir uname=root gname=wheel mode=0711
+            corrupt		type=dir uname=_smtpq gname=wheel mode=0700
+            ..
+            incoming		type=dir uname=_smtpq gname=wheel mode=0700
+            ..
+            offline		type=dir uname=root gname=_smtpq mode=0770
+            ..
+            purge		type=dir uname=_smtpq gname=wheel mode=0700
+            ..
+            queue		type=dir uname=_smtpq gname=wheel mode=0700
+            ..
+            temporary		type=dir uname=_smtpq gname=wheel mode=0700
+            ..
+        ..
 
-# ./var/db
-db
+    ..
 
-# ./var/db/ns
-ns
-# ./var/db/ns
-..
+    # ./var/unbound
+    unbound
+        etc			uname=root gname=wheel mode=0755
+        ..
+        db			uname=root gname=_unbound mode=0775
+        ..
+    ..
 
-# ./var/db
-..
+    # ./var/www
+    www				type=dir uname=root gname=daemon mode=755
+        cache			type=dir uname=www gname=daemon mode=1700
+        ..
+        cgi-bin			type=dir uname=root gname=daemon mode=755
+        ..
+        htdocs			type=dir uname=root gname=daemon mode=755
+        ..
+        acme			type=dir uname=root gname=daemon mode=755
+        ..
+        logs			type=dir uname=root gname=daemon mode=755
+        ..
+        conf			type=dir uname=root gname=daemon mode=755
+        ..
+        bin			type=dir uname=root gname=daemon mode=755
+        ..
+        run			type=dir uname=root gname=daemon mode=755
+        ..
+    ..
 
-# ./var/games
-games            uname=games gname=games mode=0775
-
-# ./var/games/hackdir
-hackdir          uname=games gname=games mode=0775
-
-# ./var/games/hackdir/save
-save		 uname=games gname=games mode=0770
-# ./var/games/hackdir/save
-..
-
-# ./var/games/hackdir
-..
-
-# ./var/games/hackdir/save		XXX
-save		uname=games gname=games mode=0775
-# ./var/games/hackdir/save		XXX
-..
-
-# ./var/games/larn
-larn             uname=games gname=games mode=0775
-# ./var/games/larn
-..
-
-# ./var/games/phantasia
-phantasia        uname=games gname=games mode=0775
-# ./var/games/phantasia
-..
-
-# ./var/games
-..
-
-# ./var/log
-log
-
-# ./var/log/rdist
-rdist
-# ./var/log/rdist
-..
-
-# ./var/log
-..
-
-# ./var/mail
-mail
-# ./var/mail
-..
-
-# ./var/msgs
-msgs
-# ./var/msgs
-..
-
-# ./var/obj				XXX
-#obj
-# ./var/obj				XXX
-#..
-
-# ./var/preserve
-preserve
-# ./var/preserve
-..
-
-# ./var/quotas
-quotas            gname=operator mode=0750
-# ./var/quotas
-..
-
-# ./var/run
-run
-# ./var/run
-..
-
-# ./var/rwho
-rwho
-# ./var/rwho
-..
-
-# ./var/spool
-spool
-
-# ./var/spool/ftp
-ftp
-
-# ./var/spool/ftp/bin
-bin
-# ./var/spool/ftp/bin
-..
-
-# ./var/spool/ftp/etc
-etc
-# ./var/spool/ftp/etc
-..
-
-# ./var/spool/ftp/hidden
-hidden           mode=0111
-# ./var/spool/ftp/hidden
-..
-
-# ./var/spool/ftp/pub			XXX
-#pub               mode=0777
-# ./var/spool/ftp/pub			XXX
-#..
-
-# ./var/spool/ftp
-..
-
-# ./var/spool/lock
-lock		uname=uucp gname=daemon
-# ./var/spool/lock
-..
-
-# ./var/spool/lpd
-lpd
-# ./var/spool/lpd
-..
-
-# ./var/spool/mqueue
-mqueue
-# ./var/spool/mqueue
-..
-
-# ./var/spool/output
-output
-# ./var/spool/output
-..
-
-# ./var/spool/secretmail
-secretmail
-# ./var/spool/secretmail
-..
-
-# ./var/spool/sockets
-sockets	mode=777
-# ./var/spool/sockets
-..
-
-/set uname=uucp gname=daemon
-# ./var/spool/uucp
-uucp
-# ./var/spool/uucp
-..
-
-# ./var/spool/uucppublic
-uucppublic       mode=01777
-# ./var/spool/uucppublic
-..
-
-/set uname=root gname=wheel
-# ./var/spool
-..
-
-# ./var/tmp
-tmp        mode=01777
-
-# ./var/tmp/vi.recover
-vi.recover	 mode=01777
-# ./var/tmp/vi.recover
-..
-
-# ./var/tmp
-..
-
-# ./var
+    # ./var/audit
+    audit			type=dir uname=root gname=wheel mode=2770
+    ..
 ..

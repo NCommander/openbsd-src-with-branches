@@ -1,8 +1,9 @@
-/*	$NetBSD: fat.h,v 1.8 1995/09/09 19:38:01 ws Exp $	*/
+/*	$OpenBSD: fat.h,v 1.12 2017/08/14 22:45:12 sf Exp $	*/
+/*	$NetBSD: fat.h,v 1.11 1997/10/17 11:23:49 ws Exp $	*/
 
 /*-
- * Copyright (C) 1994 Wolfgang Solfrank.
- * Copyright (C) 1994 TooLs GmbH.
+ * Copyright (C) 1994, 1997 Wolfgang Solfrank.
+ * Copyright (C) 1994, 1997 TooLs GmbH.
  * All rights reserved.
  * Original code by Paul Popelka (paulp@uts.amdahl.com) (see below).
  *
@@ -33,57 +34,50 @@
  */
 /*
  * Written by Paul Popelka (paulp@uts.amdahl.com)
- * 
+ *
  * You can do anything you want with this software, just don't say you wrote
  * it, and don't remove this notice.
- * 
+ *
  * This software is provided "as is".
- * 
+ *
  * The author supplies this software to be publicly redistributed on the
  * understanding that the author is not responsible for the correct
  * functioning of this software in any circumstances and is not liable for
  * any damages caused by this software.
- * 
+ *
  * October 1992
  */
 
 /*
  * Some useful cluster numbers.
  */
-#define	MSDOSFSROOT	0	/* cluster 0 means the root dir */
-#define	CLUST_FREE	0	/* cluster 0 also means a free cluster */
+#define	MSDOSFSROOT	0		/* cluster 0 means the root dir */
+#define	CLUST_FREE	0		/* cluster 0 also means a free cluster */
 #define	MSDOSFSFREE	CLUST_FREE
-#define	CLUST_FIRST	2	/* first legal cluster number */
-#define	CLUST_RSRVS	0xfff0	/* start of reserved cluster range */
-#define	CLUST_RSRVE	0xfff6	/* end of reserved cluster range */
-#define	CLUST_BAD	0xfff7	/* a cluster with a defect */
-#define	CLUST_EOFS	0xfff8	/* start of eof cluster range */
-#define	CLUST_EOFE	0xffff	/* end of eof cluster range */
+#define	CLUST_FIRST	2		/* first legal cluster number */
+#define	CLUST_RSRVD	0xfffffff6	/* reserved cluster range */
+#define	CLUST_BAD	0xfffffff7	/* a cluster with a defect */
+#define	CLUST_EOFS	0xfffffff8	/* start of eof cluster range */
+#define	CLUST_EOFE	0xffffffff	/* end of eof cluster range */
+#define	CLUST_END	CLUST_EOFE	/* bigger than any valid cluster */
 
-#define	FAT12_MASK	0x0fff	/* mask for 12 bit cluster numbers */
-#define	FAT16_MASK	0xffff	/* mask for 16 bit cluster numbers */
+#define	FAT12_MASK	0x00000fff	/* mask for 12 bit cluster numbers */
+#define	FAT16_MASK	0x0000ffff	/* mask for 16 bit cluster numbers */
+#define	FAT32_MASK	0x0fffffff	/* mask for FAT32 cluster numbers */
 
-#ifdef	atari
 /*
- * Return true if filesystem uses 12 bit fats. If the filesystem
- * is on floppy we've got a 12 bit fat filesystem, otherwise 16 bit.
- * We check the d_type field in the disklabel struct while mounting
- * and store the result in the pm_fatentrysize field in the
- * msdosfsmount struct.
- */
-#define	FAT12(pmp)	(pmp->pm_fatentrysize == 12)
-#define	FAT16(pmp)	(pmp->pm_fatentrysize == 16)
-#else	/* !atari */
-/*
+ * MSDOSFS:
  * Return true if filesystem uses 12 bit fats. Microsoft Programmer's
  * Reference says if the maximum cluster number in a filesystem is greater
- * than 4086 then we've got a 16 bit fat filesystem.
+ * than 4084 ((CLUST_RSRVD - CLUST_FIRST) & FAT12_MASK) then we've got a
+ * 16 bit fat filesystem. While mounting, the result of this test is stored
+ * in pm_fatentrysize.
  */
-#define	FAT12(pmp)	(pmp->pm_maxcluster <= 4086)
-#define	FAT16(pmp)	(pmp->pm_maxcluster >  4086)
-#endif	/* !atari */
+#define	FAT12(pmp)	(pmp->pm_fatmask == FAT12_MASK)
+#define	FAT16(pmp)	(pmp->pm_fatmask == FAT16_MASK)
+#define	FAT32(pmp)	(pmp->pm_fatmask == FAT32_MASK)
 
-#define	MSDOSFSEOF(cn)	(((cn) & 0xfff8) == 0xfff8)
+#define	MSDOSFSEOF(pmp, cn)	((((cn) | ~(pmp)->pm_fatmask) & CLUST_EOFS) == CLUST_EOFS)
 
 #ifdef _KERNEL
 /*
@@ -99,13 +93,13 @@
  */
 #define	DE_CLEAR	1	/* Zero out the blocks allocated */
 
-int pcbmap __P((struct denode *, u_long, daddr_t *, u_long *, int *));
-int clusterfree __P((struct msdosfsmount *, u_long, u_long *));
-int clusteralloc __P((struct msdosfsmount *, u_long, u_long, u_long, u_long *, u_long *));
-int extendfile __P((struct denode *, u_long, struct buf **, u_long *, int));
-int fatentry __P((int, struct msdosfsmount *, u_long, u_long *, u_long));
-void fc_purge __P((struct denode *, u_int));
-void fc_lookup __P((struct denode *, u_long, u_long *, u_long *));
-int fillinusemap __P((struct msdosfsmount *));
-int freeclusterchain __P((struct msdosfsmount *, u_long));
+int pcbmap(struct denode *, uint32_t, daddr_t *, uint32_t *, int *);
+int clusterfree(struct msdosfsmount *, uint32_t, uint32_t *);
+int clusteralloc(struct msdosfsmount *, uint32_t, uint32_t, uint32_t *, uint32_t *);
+int extendfile(struct denode *, uint32_t, struct buf **, uint32_t *, int);
+int fatentry(int, struct msdosfsmount *, uint32_t, uint32_t *, uint32_t);
+void fc_purge(struct denode *, u_int);
+void fc_lookup(struct denode *, uint32_t, uint32_t *, uint32_t *);
+int fillinusemap(struct msdosfsmount *);
+int freeclusterchain(struct msdosfsmount *, uint32_t);
 #endif	/* _KERNEL */

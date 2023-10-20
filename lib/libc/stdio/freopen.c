@@ -1,5 +1,4 @@
-/*	$NetBSD: freopen.c,v 1.4 1995/02/02 02:09:36 jtc Exp $	*/
-
+/*	$OpenBSD: freopen.c,v 1.16 2016/09/21 04:38:56 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,17 +31,11 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)freopen.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: freopen.c,v 1.4 1995/02/02 02:09:36 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <limits.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,11 +47,9 @@ static char rcsid[] = "$NetBSD: freopen.c,v 1.4 1995/02/02 02:09:36 jtc Exp $";
  * all possible, no matter what.
  */
 FILE *
-freopen(file, mode, fp)
-	const char *file, *mode;
-	register FILE *fp;
+freopen(const char *file, const char *mode, FILE *fp)
 {
-	register int f;
+	int f;
 	int flags, isopen, oflags, sverrno, wantfd;
 
 	if ((flags = __sflags(mode, &oflags)) == 0) {
@@ -72,6 +59,8 @@ freopen(file, mode, fp)
 
 	if (!__sdidinit)
 		__sinit();
+
+	FLOCKFILE(fp);
 
 	/*
 	 * There are actually programs that depend on being able to "freopen"
@@ -99,7 +88,7 @@ freopen(file, mode, fp)
 
 	/* Get a new descriptor to refer to the new file. */
 	f = open(file, oflags, DEFFILEMODE);
-	if (f < 0 && isopen) {
+	if (f == -1 && isopen) {
 		/* If out of fd's close the old one and try again. */
 		if (errno == ENFILE || errno == EMFILE) {
 			(void) (*fp->_close)(fp->_cookie);
@@ -114,7 +103,7 @@ freopen(file, mode, fp)
 	 * keep fp->_base: it may be the wrong size.  This loses the effect
 	 * of any setbuffer calls, but stdio has always done this before.
 	 */
-	if (isopen)
+	if (isopen && f != wantfd)
 		(void) (*fp->_close)(fp->_cookie);
 	if (fp->_flags & __SMBF)
 		free((char *)fp->_bf._base);
@@ -126,13 +115,15 @@ freopen(file, mode, fp)
 	fp->_lbfsize = 0;
 	if (HASUB(fp))
 		FREEUB(fp);
-	fp->_ub._size = 0;
+	_UB(fp)._size = 0;
+	WCIO_FREE(fp);
 	if (HASLB(fp))
 		FREELB(fp);
 	fp->_lb._size = 0;
 
-	if (f < 0) {			/* did not get it after all */
+	if (f == -1) {			/* did not get it after all */
 		fp->_flags = 0;		/* set it free */
+		FUNLOCKFILE(fp);
 		errno = sverrno;	/* restore in case _close clobbered */
 		return (NULL);
 	}
@@ -143,10 +134,18 @@ freopen(file, mode, fp)
 	 * assume stderr is always fd STDERR_FILENO, even if being freopen'd.
 	 */
 	if (wantfd >= 0 && f != wantfd) {
-		if (dup2(f, wantfd) >= 0) {
+		if (dup3(f, wantfd, oflags & O_CLOEXEC) >= 0) {
 			(void) close(f);
 			f = wantfd;
 		}
+	}
+
+	/* _file is only a short */
+	if (f > SHRT_MAX) {
+		fp->_flags = 0;		/* set it free */
+		FUNLOCKFILE(fp);
+		errno = EMFILE;
+		return (NULL);
 	}
 
 	fp->_flags = flags;
@@ -156,5 +155,18 @@ freopen(file, mode, fp)
 	fp->_write = __swrite;
 	fp->_seek = __sseek;
 	fp->_close = __sclose;
+
+	/*
+	 * When opening in append mode, even though we use O_APPEND,
+	 * we need to seek to the end so that ftell() gets the right
+	 * answer.  If the user then alters the seek pointer, or
+	 * the file extends, this will fail, but there is not much
+	 * we can do about this.  (We could set __SAPP and check in
+	 * fseek and ftell.)
+	 */
+	if (oflags & O_APPEND)
+		(void) __sseek(fp, 0, SEEK_END);
+	FUNLOCKFILE(fp);
 	return (fp);
 }
+DEF_STRONG(freopen);

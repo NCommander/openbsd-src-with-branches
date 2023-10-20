@@ -1,4 +1,4 @@
-/*	$NetBSD: param.h,v 1.18.2.1 1995/10/12 05:42:01 jtc Exp $	*/
+/*	$OpenBSD: param.h,v 1.140 2023/03/04 14:49:37 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -17,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,22 +32,21 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)param.h	8.2 (Berkeley) 1/21/94
  */
+
+#ifndef _SYS_PARAM_H_
+#define	_SYS_PARAM_H_
 
 #define	BSD	199306		/* System version (year & month). */
 #define BSD4_3	1
 #define BSD4_4	1
 
-#define NetBSD	199511		/* NetBSD version (year & month). */
-#define NetBSD1_1 1		/* NetBSD 1.1 */
+#define OpenBSD	202310		/* OpenBSD version (year & month). */
+#define OpenBSD7_4 1		/* OpenBSD 7.4 */
 
-#ifndef NULL
-#define	NULL	0
-#endif
+#include <sys/_null.h>
 
-#ifndef LOCORE
+#ifndef _LOCORE
 #include <sys/types.h>
 #endif
 
@@ -64,33 +59,35 @@
  */
 #include <sys/syslimits.h>
 
-#define	MAXCOMLEN	16		/* max command name remembered */
-#define	MAXINTERP	64		/* max interpreter file name length */
-#define	MAXLOGNAME	12		/* max login name length */
+#define	MAXCOMLEN	_MAXCOMLEN-1	/* max command name remembered, without NUL */
+#define	MAXINTERP	128		/* max interpreter file name length */
+#define	MAXLOGNAME	LOGIN_NAME_MAX	/* max login name length w/ NUL */
 #define	MAXUPRC		CHILD_MAX	/* max simultaneous processes */
 #define	NCARGS		ARG_MAX		/* max bytes for an exec function */
 #define	NGROUPS		NGROUPS_MAX	/* max number groups */
-#define	NOFILE		OPEN_MAX	/* max open files per process */
+#define	NOFILE		OPEN_MAX	/* max open files per process (soft) */
+#define	NOFILE_MAX	1024		/* max open files per process (hard) */
 #define	NOGROUP		65535		/* marker for empty group set member */
-#define MAXHOSTNAMELEN	256		/* max hostname size */
+#define MAXHOSTNAMELEN	256		/* max hostname length w/ NUL */
 
 /* More types and definitions used throughout the kernel. */
 #ifdef _KERNEL
-#include <sys/cdefs.h>
 #include <sys/errno.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/ucred.h>
 #include <sys/uio.h>
+#include <sys/srp.h>
 #endif
 
 /* Signals. */
 #include <sys/signal.h>
 
 /* Machine type dependent parameters. */
+#include <sys/limits.h>
 #include <machine/param.h>
-#include <machine/limits.h>
 
+#ifdef _KERNEL
 /*
  * Priorities.  Note that with 32 run queues, differences less than 4 are
  * insignificant.
@@ -100,7 +97,9 @@
 #define	PINOD	8
 #define	PRIBIO	16
 #define	PVFS	20
+#endif /* _KERNEL */
 #define	PZERO	22		/* No longer magic, shouldn't be here.  XXX */
+#ifdef _KERNEL
 #define	PSOCK	24
 #define	PWAIT	32
 #define	PLOCK	36
@@ -108,42 +107,17 @@
 #define	PUSER	50
 #define	MAXPRI	127		/* Priorities range from 0 through MAXPRI. */
 
-#define	PRIMASK	0x0ff
-#define	PCATCH	0x100		/* OR'd with pri for tsleep to check signals */
+#define	PRIMASK		0x0ff
+#define	PCATCH		0x100	/* OR'd with pri for tsleep to check signals */
+#define PNORELOCK	0x200	/* OR'd with pri for msleep to not reacquire
+				   the mutex */
+#endif /* _KERNEL */
 
-#define	NZERO	0		/* default "nice" */
-
-#define	NBPW	sizeof(int)	/* number of bytes per word (integer) */
-
-#define	CMASK	022		/* default file mask: S_IWGRP|S_IWOTH */
 #define	NODEV	(dev_t)(-1)	/* non-existent device */
 
-/*
- * Clustering of hardware pages on machines with ridiculously small
- * page sizes is done here.  The paging subsystem deals with units of
- * CLSIZE pte's describing NBPG (from machine/machparam.h) pages each.
- */
-#define	CLBYTES		(CLSIZE*NBPG)
-#define	CLOFSET		(CLSIZE*NBPG-1)	/* for clusters, like PGOFSET */
-#define	claligned(x)	((((int)(x))&CLOFSET)==0)
-#define	CLOFF		CLOFSET
-#define	CLSHIFT		(PGSHIFT+CLSIZELOG2)
-
-#if CLSIZE==1
-#define	clbase(i)	(i)
-#define	clrnd(i)	(i)
-#else
-/* Give the base virtual address (first of CLSIZE). */
-#define	clbase(i)	((i) &~ (CLSIZE-1))
-/* Round a number of clicks up to a whole cluster. */
-#define	clrnd(i)	(((i) + (CLSIZE-1)) &~ (CLSIZE-1))
-#endif
-
-#define	CBLOCK	64		/* Clist block size, must be a power of 2. */
-#define CBQSIZE	(CBLOCK/NBBY)	/* Quote bytes/cblock - can do better. */
-				/* Data chars/clist. */
-#define	CBSIZE	(CBLOCK - sizeof(struct cblock *) - CBQSIZE)
-#define	CROUND	(CBLOCK - 1)	/* Clist rounding. */
+#define	ALIGNBYTES		_ALIGNBYTES
+#define	ALIGN(p)		_ALIGN(p)
+#define	ALIGNED_POINTER(p,t)	_ALIGNED_POINTER(p,t)
 
 /*
  * File system parameters and macros.
@@ -152,13 +126,38 @@
  * smaller units (fragments) only in the last direct block.  MAXBSIZE
  * primarily determines the size of buffers in the buffer pool.  It may be
  * made larger without any effect on existing file systems; however making
- * it smaller make make some file systems unmountable.
+ * it smaller makes some file systems unmountable.
  */
-#define	MAXBSIZE	16384 /* XXX MAXPHYS */
-#define MAXFRAG 	8
+#ifdef _KERNEL
+#define MAXPHYS		(64 * 1024)	/* max raw I/O transfer size */
+#endif /* _KERNEL */
+#define	MAXBSIZE	(64 * 1024)
+
+#define	_DEV_BSHIFT	9		/* log2(DEV_BSIZE) */
+#define	DEV_BSIZE	(1 << _DEV_BSHIFT)
+#ifdef _KERNEL
+#define	DEV_BSHIFT	_DEV_BSHIFT
+#define	BLKDEV_IOSIZE	PAGE_SIZE
+#endif /* _KERNEL */
+
+/* pages to disk blocks */
+#ifndef ctod
+#define ctod(x)         ((x) << (PAGE_SHIFT - _DEV_BSHIFT))
+#endif
+#ifndef dtoc
+#define dtoc(x)         ((x) >> (PAGE_SHIFT - _DEV_BSHIFT))
+#endif
+
+/* bytes to disk blocks */
+#ifndef btodb
+#define btodb(x)        ((x) >> _DEV_BSHIFT)
+#endif
+#ifndef dbtob
+#define dbtob(x)        ((x) << _DEV_BSHIFT)
+#endif
 
 /*
- * MAXPATHLEN defines the longest permissable path length after expanding
+ * MAXPATHLEN defines the longest permissible path length after expanding
  * symbolic links. It is used to allocate a temporary buffer from the buffer
  * pool in which to do the name expansion, hence should be a power of two,
  * and must be less than or equal to MAXBSIZE.  MAXSYMLINKS defines the
@@ -167,13 +166,20 @@
  * infinite loops reasonably quickly.
  */
 #define	MAXPATHLEN	PATH_MAX
-#define MAXSYMLINKS	32
+#define MAXSYMLINKS	SYMLOOP_MAX
+
+/* Macros to set/clear/test flags. */
+#ifdef _KERNEL
+#define SET(t, f)	((t) |= (f))
+#define CLR(t, f)	((t) &= ~(f))
+#define ISSET(t, f)	((t) & (f))
+#endif /* _KERNEL */
 
 /* Bit map related macros. */
-#define	setbit(a,i)	((a)[(i)/NBBY] |= 1<<((i)%NBBY))
-#define	clrbit(a,i)	((a)[(i)/NBBY] &= ~(1<<((i)%NBBY)))
-#define	isset(a,i)	((a)[(i)/NBBY] & (1<<((i)%NBBY)))
-#define	isclr(a,i)	(((a)[(i)/NBBY] & (1<<((i)%NBBY))) == 0)
+#define	setbit(a,i)	((a)[(i)>>3] |= 1<<((i)&(NBBY-1)))
+#define	clrbit(a,i)	((a)[(i)>>3] &= ~(1<<((i)&(NBBY-1))))
+#define	isset(a,i)	((a)[(i)>>3] & (1<<((i)&(NBBY-1))))
+#define	isclr(a,i)	(((a)[(i)>>3] & (1<<((i)&(NBBY-1)))) == 0)
 
 /* Macros for counting and rounding. */
 #ifndef howmany
@@ -183,28 +189,19 @@
 #define powerof2(x)	((((x)-1)&(x))==0)
 
 /* Macros for min/max. */
-#ifndef _KERNEL
 #define	MIN(a,b) (((a)<(b))?(a):(b))
 #define	MAX(a,b) (((a)>(b))?(a):(b))
-#endif
 
-/*
- * Constants for setting the parameters of the kernel memory allocator.
- *
- * 2 ** MINBUCKET is the smallest unit of memory that will be
- * allocated. It must be at least large enough to hold a pointer.
- *
- * Units of memory less or equal to MAXALLOCSAVE will permanently
- * allocate physical memory; requests for these size pieces of
- * memory are quite fast. Allocations greater than MAXALLOCSAVE must
- * always allocate and free physical memory; requests for these
- * size allocations should be done infrequently as they will be slow.
- *
- * Constraints: CLBYTES <= MAXALLOCSAVE <= 2 ** (MINBUCKET + 14), and
- * MAXALLOCSIZE must be a power of two.
- */
-#define MINBUCKET	4		/* 4 => min allocation of 16 bytes */
-#define MAXALLOCSAVE	(2 * CLBYTES)
+/* Macros for calculating the offset of a field */
+#if !defined(offsetof) && defined(_KERNEL)
+#if __GNUC_PREREQ__(4, 0)
+#define offsetof(s, e) __builtin_offsetof(s, e)
+#else
+#define offsetof(s, e) ((size_t)&((s *)0)->e)
+#endif
+#endif /* !defined(offsetof) && defined(_KERNEL) */
+
+#define nitems(_a)	(sizeof((_a)) / sizeof((_a)[0]))
 
 /*
  * Scale factor for scaled integers used to count %cpu time and load avgs.
@@ -217,5 +214,10 @@
  * For the scheduler to maintain a 1:1 mapping of CPU `tick' to `%age',
  * FSHIFT must be at least 11; this gives us a maximum load avg of ~1024.
  */
-#define	FSHIFT	11		/* bits to right of fixed binary point */
-#define FSCALE	(1<<FSHIFT)
+#define	_FSHIFT	11		/* bits to right of fixed binary point */
+#ifdef _KERNEL
+#define	FSHIFT	_FSHIFT	
+#endif
+#define FSCALE	(1<<_FSHIFT)
+
+#endif /* !_SYS_PARAM_H_ */

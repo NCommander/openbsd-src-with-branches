@@ -1,4 +1,4 @@
-.\"	$NetBSD: getpwent.3,v 1.7 1995/02/27 04:13:01 cgd Exp $
+.\"	$OpenBSD: getpwent.3,v 1.32 2018/08/21 20:20:04 millert Exp $
 .\"
 .\" Copyright (c) 1988, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,45 +27,29 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)getpwent.3	8.2 (Berkeley) 12/11/93
-.\"
-.Dd December 11, 1993
+.Dd $Mdocdate: August 21 2018 $
 .Dt GETPWENT 3
 .Os
 .Sh NAME
 .Nm getpwent ,
-.Nm getpwnam ,
-.Nm getpwuid ,
-.Nm setpassent ,
 .Nm setpwent ,
 .Nm endpwent
-.Nd password database operations
+.Nd sequential password database access
 .Sh SYNOPSIS
-.Fd #include <sys/types.h>
-.Fd #include <pwd.h>
+.In pwd.h
 .Ft struct passwd *
 .Fn getpwent void
-.Ft struct passwd *
-.Fn getpwnam "const char *login"
-.Ft struct passwd *
-.Fn getpwuid "uid_t uid" 
-.Ft int
-.Fn setpassent "int  stayopen"
 .Ft void
 .Fn setpwent void
 .Ft void
 .Fn endpwent void
 .Sh DESCRIPTION
-These functions
-operate on the password database file
-which is described
-in
+These functions operate on the password database file which is described in
 .Xr passwd 5 .
 Each entry in the database is defined by the structure
-.Ar passwd
-found in the include
-file
-.Aq Pa pwd.h :
+.Vt struct passwd
+found in the include file
+.In pwd.h :
 .Bd -literal -offset indent
 struct passwd {
 	char	*pw_name;	/* user name */
@@ -85,125 +65,126 @@ struct passwd {
 };
 .Ed
 .Pp
-The functions
-.Fn getpwnam
-and
-.Fn getpwuid
-search the password database for the given login name or user uid,
-respectively, always returning the first one encountered.
-.Pp
 The
 .Fn getpwent
-function
-sequentially reads the password database and is intended for programs
+function sequentially reads the password database and is intended for programs
 that wish to process the complete list of users.
-.Pp
-The
-.Fn setpassent
-function
-accomplishes two purposes.
-First, it causes
-.Fn getpwent
-to ``rewind'' to the beginning of the database.
-Additionally, if
-.Fa stayopen
-is non-zero, file descriptors are left open, significantly speeding
-up subsequent accesses for all of the routines.
-(This latter functionality is unnecessary for
-.Fn getpwent
-as it doesn't close its file descriptors by default.)
 .Pp
 It is dangerous for long-running programs to keep the file descriptors
 open as the database will become out of date if it is updated while the
 program is running.
+However the file descriptors are automatically closed when
+.Xr execve 2
+is called.
 .Pp
-The
 .Fn setpwent
-function
-is equivalent to
-.Fn setpassent
-with an argument of zero.
+causes
+.Fn getpwent
+to
+.Dq rewind
+to the beginning of the database.
 .Pp
 The
 .Fn endpwent
-function
-closes any open files.
+function closes any file descriptors opened by
+.Fn setpwent
+or
+.Fn getpwent .
 .Pp
-These routines have been written to ``shadow'' the password file, e.g.
+These routines have been written to
+.Dq shadow
+the password file, that is,
 allow only certain programs to have access to the encrypted password.
-If the process which calls them has an effective uid of 0, the encrypted
-password will be returned, otherwise, the password field of the returned
-structure will point to the string
+If the process which calls them has an effective UID of 0 or has the
+.Dq _shadow
+group in its group vector, the encrypted password will be returned, otherwise,
+the password field of the returned structure will point to the string
 .Ql * .
+.Sh YP SUPPORT
+If YP is active,
+.Fn getpwent
+also uses the
+.Pa master.passwd.byname
+YP map (if available) or the
+.Pa passwd.byname
+YP map.
+This is in addition to the passwd file,
+and respects the order of both normal and YP
+entries in the passwd file.
 .Sh RETURN VALUES
-The functions
+The
+.Fn getpwent
+function returns a valid pointer to a passwd structure on success
+or a null pointer if end-of-file is reached or an error occurs.
+Subsequent calls to
 .Fn getpwent ,
 .Fn getpwnam ,
-and
-.Fn getpwuid ,
-return a valid pointer to a passwd structure on success
-and a null pointer if end-of-file is reached or an error occurs.
-The
-.Fn setpassent
-function returns 0 on failure and 1 on success.
+.Fn getpwnam_shadow ,
+.Fn getpwuid
+or
+.Fn getpwuid_shadow
+may invalidate the returned pointer or overwrite the contents
+of the passwd structure it points to.
+.Pp
 The
 .Fn endpwent
-and 
+and
 .Fn setpwent
-functions
-have no return value.
+functions have no return value.
 .Sh FILES
 .Bl -tag -width /etc/master.passwd -compact
 .It Pa /etc/pwd.db
-The insecure password database file
+insecure password database file
 .It Pa /etc/spwd.db
-The secure password database file
+secure password database file
 .It Pa /etc/master.passwd
-The current password file
+current password file
 .It Pa /etc/passwd
-A Version 7 format password file
+legacy password file
 .El
+.Sh ERRORS
+The
+.Fn getpwent
+function may fail for any of the errors specified for
+.Xr dbopen 3
+and its
+.Fn get
+routine.
+.Pp
+If YP is active, it may also fail due to errors caused by the YP subsystem.
 .Sh SEE ALSO
-.Xr getlogin 3 ,
+.Xr getlogin 2 ,
 .Xr getgrent 3 ,
+.Xr getgrouplist 3 ,
+.Xr getpwnam 3 ,
+.Xr pw_dup 3 ,
 .Xr passwd 5 ,
+.Xr Makefile.yp 8 ,
 .Xr pwd_mkdb 8 ,
-.Xr vipw 8
+.Xr vipw 8 ,
+.Xr yp 8
+.Sh STANDARDS
+These functions are compliant with the X/Open System Interfaces option of the
+.St -p1003.1-2008
+specification.
 .Sh HISTORY
 The
-.Nm getpwent ,
-.Nm getpwnam ,
-.Nm getpwuid ,
-.Nm setpwent,
+.Fn getpwent ,
+.Fn setpwent ,
 and
-.Nm endpwent
+.Fn endpwent
 functions appeared in
 .At v7 .
-The
-.Nm setpassent
-function appeared in
-.Bx 4.3 Reno .
-.Sh BUGS
-The functions
-.Fn getpwent ,
-.Fn getpwnam ,
-and
-.Fn getpwuid ,
-leave their results in an internal static object and return
-a pointer to that object. Subsequent calls to
-the same function
-will modify the same object.
 .Pp
+The historic function
+.Fn setpwfile ,
+which allowed the specification of alternate password databases,
+has been deprecated and is no longer available.
+.Sh BUGS
 The routines
 .Fn getpwent ,
 .Fn endpwent ,
-.Fn setpassent ,
 and
 .Fn setpwent
 are fairly useless in a networked environment and should be
 avoided, if possible.
-.Sh COMPATIBILITY
-The historic function
-.Xr setpwfile 3 ,
-which allowed the specification of alternate password databases,
-has been deprecated and is no longer available.

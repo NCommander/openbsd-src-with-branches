@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mb89352var.h,v 1.8 2021/03/11 11:16:58 jsg Exp $	*/
 /*	$NetBSD: mb89352var.h,v 1.6 2003/08/02 12:48:09 tsutsui Exp $	*/
 /*	NecBSD: mb89352var.h,v 1.4 1998/03/14 07:31:22 kmatsuda Exp 	*/
 
@@ -63,7 +63,7 @@
 /*
  * ACB. Holds additional information for each SCSI command Comments: We
  * need a separate scsi command block because we may need to overwrite it
- * with a request sense command.  Basicly, we refrain from fiddling with
+ * with a request sense command.  Basically, we refrain from fiddling with
  * the scsi_xfer struct (except do the expected updating of return values).
  * We'll generally update: xs->{flags,resid,error,sense,status} and
  * occasionally xs->retries.
@@ -83,7 +83,6 @@ struct spc_acb {
 	TAILQ_ENTRY(spc_acb) chain;
 	struct scsi_xfer *xs;	/* SCSI xfer ctrl block from above */
 	int flags;
-#define ACB_ALLOC	0x01
 #define ACB_NEXUS	0x02
 #define ACB_SENSE	0x04
 #define ACB_ABORT	0x40
@@ -117,16 +116,16 @@ struct spc_softc {
 	bus_space_tag_t sc_iot;
 	bus_space_handle_t sc_ioh;
 
-	struct scsi_link sc_link;	/* prototype for subdevs */
-
 	TAILQ_HEAD(, spc_acb) free_list, ready_list, nexus_list;
 	struct spc_acb *sc_nexus;	/* current command */
 	struct spc_acb sc_acb[8];
 	struct spc_tinfo sc_tinfo[8];
+	struct mutex sc_acb_mtx;
+	struct scsi_iopool sc_iopool;
 
 	/* Data about the current nexus (updated for every cmd switch) */
 	u_char	*sc_dp;		/* Current data pointer */
-	size_t	sc_dleft;	/* Data bytes left to transfer */
+	ssize_t	sc_dleft;	/* Data bytes left to transfer */
 	u_char	*sc_cp;		/* Current command pointer */
 	size_t	sc_cleft;	/* Command bytes left to transfer */
 
@@ -189,8 +188,8 @@ struct spc_softc {
 #define SPC_DOBREAK	0x40
 extern int spc_debug; /* SPC_SHOWSTART|SPC_SHOWMISC|SPC_SHOWTRACE; */
 #define SPC_PRINT(b, s)	do {if ((spc_debug & (b)) != 0) printf s;} while (0)
-#define SPC_BREAK()	do {if ((spc_debug & SPC_DOBREAK) != 0) Debugger();} while (0)
-#define SPC_ASSERT(x)	do {if (x) {} else {printf("%s at line %d: assertion failed\n", sc->sc_dev.dv_xname, __LINE__); Debugger();}} while (0)
+#define SPC_BREAK()	do {if ((spc_debug & SPC_DOBREAK) != 0) db_enter();} while (0)
+#define SPC_ASSERT(x)	do {if (x) {} else {printf("%s at line %d: assertion failed\n", sc->sc_dev.dv_xname, __LINE__); db_enter();}} while (0)
 #else
 #define SPC_PRINT(b, s)
 #define SPC_BREAK()
@@ -204,11 +203,11 @@ extern int spc_debug; /* SPC_SHOWSTART|SPC_SHOWMISC|SPC_SHOWTRACE; */
 #define SPC_TRACE(s)	SPC_PRINT(SPC_SHOWTRACE, s)
 #define SPC_START(s)	SPC_PRINT(SPC_SHOWSTART, s)
 
-void	spc_attach(struct spc_softc *, struct scsi_adapter *);
+void	spc_attach(struct spc_softc *, const struct scsi_adapter *);
 int	spc_intr(void *);
 int	spc_find(bus_space_tag_t, bus_space_handle_t, int);
 void	spc_init(struct spc_softc *);
 void	spc_sched(struct spc_softc *);
-int	spc_scsi_cmd(struct scsi_xfer *);
+void	spc_scsi_cmd(struct scsi_xfer *);
 void	spc_minphys(struct buf *);
 #endif	/* _MB89352VAR_H_ */

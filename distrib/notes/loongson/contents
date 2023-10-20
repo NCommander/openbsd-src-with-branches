@@ -1,0 +1,34 @@
+dnl	$OpenBSD: contents,v 1.16 2022/09/19 04:29:56 jsg Exp $
+TopPart
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDbsdmp
+
+OpenBSDrd
+
+OpenBSDcd
+
+OpenBSDminiroot
+
+	boot		The OpenBSD/MACHINE bootloader.
+
+DistributionDescription(eight)
+
+OpenBSDbase(145513188,456045881)
+
+OpenBSDcomp(65348072,272801184)
+
+OpenBSDgame(2904700,7552589)
+
+OpenBSDman(8017632,30942161)
+
+OpenBSDxbase(49026394,181964605)
+
+OpenBSDxfont(23519425,35818896)
+
+OpenBSDxserv(11057328,42597821)
+
+OpenBSDxshare(4696791,24957209)

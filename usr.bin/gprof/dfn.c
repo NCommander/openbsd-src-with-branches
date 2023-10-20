@@ -1,3 +1,4 @@
+/*	$OpenBSD: dfn.c,v 1.8 2014/03/16 18:38:30 guenther Exp $	*/
 /*	$NetBSD: dfn.c,v 1.5 1995/04/19 07:15:56 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dfn.c	8.1 (Berkeley) 6/6/93";
-#else
-static char rcsid[] = "$NetBSD: dfn.c,v 1.5 1995/04/19 07:15:56 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include <stdio.h>
 #include "gprof.h"
 
@@ -56,6 +45,7 @@ int	dfn_depth;
 
 int	dfn_counter;
 
+void
 dfn_init()
 {
 
@@ -66,8 +56,8 @@ dfn_init()
     /*
      *	given this parent, depth first number its children.
      */
-dfn( parentp )
-    nltype	*parentp;
+void
+dfn(nltype *parentp)
 {
     arctype	*arcp;
 
@@ -77,9 +67,9 @@ dfn( parentp )
 	    printname( parentp );
 	    printf( ")\n" );
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
 	/*
-	 *	if we're already numbered, no need to look any furthur.
+	 *	if we're already numbered, no need to look any further.
 	 */
     if ( dfn_numbered( parentp ) ) {
 	return;
@@ -112,15 +102,13 @@ dfn( parentp )
     /*
      *	push a parent onto the stack and mark it busy
      */
-dfn_pre_visit( parentp )
-    nltype	*parentp;
+void
+dfn_pre_visit(nltype *parentp)
 {
 
     dfn_depth += 1;
-    if ( dfn_depth >= DFN_DEPTH ) {
-	fprintf( stderr , "[dfn] out of my depth (dfn_stack overflow)\n" );
-	exit( 1 );
-    }
+    if ( dfn_depth >= DFN_DEPTH )
+	errx(1, "[dfn] out of my depth (dfn_stack overflow)" );
     dfn_stack[ dfn_depth ].nlentryp = parentp;
     dfn_stack[ dfn_depth ].cycletop = dfn_depth;
     parentp -> toporder = DFN_BUSY;
@@ -130,15 +118,14 @@ dfn_pre_visit( parentp )
 	    printname( parentp );
 	    printf( "\n" );
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
 }
 
     /*
      *	are we already numbered?
      */
 bool
-dfn_numbered( childp )
-    nltype	*childp;
+dfn_numbered(nltype *childp)
 {
     
     return ( childp -> toporder != DFN_NAN && childp -> toporder != DFN_BUSY );
@@ -148,8 +135,7 @@ dfn_numbered( childp )
      *	are we already busy?
      */
 bool
-dfn_busy( childp )
-    nltype	*childp;
+dfn_busy(nltype *childp)
 {
 
     if ( childp -> toporder == DFN_NAN ) {
@@ -161,8 +147,8 @@ dfn_busy( childp )
     /*
      *	MISSING: an explanation
      */
-dfn_findcycle( childp )
-    nltype	*childp;
+void
+dfn_findcycle(nltype *childp)
 {
     int		cycletop;
     nltype	*cycleheadp;
@@ -179,10 +165,8 @@ dfn_findcycle( childp )
 	    break;
 	}
     }
-    if ( cycletop <= 0 ) {
-	fprintf( stderr , "[dfn_findcycle] couldn't find head of cycle\n" );
-	exit( 1 );
-    }
+    if ( cycletop <= 0 )
+	errx( 1, "[dfn_findcycle] couldn't find head of cycle");
 #   ifdef DEBUG
 	if ( debug & DFNDEBUG ) {
 	    printf( "[dfn_findcycle] dfn_depth %d cycletop %d " ,
@@ -190,7 +174,7 @@ dfn_findcycle( childp )
 	    printname( cycleheadp );
 	    printf( "\n" );
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
     if ( cycletop == dfn_depth ) {
 	    /*
 	     *	this is previous function, e.g. this calls itself
@@ -212,7 +196,7 @@ dfn_findcycle( childp )
 		    printname( tailp );
 		    printf( "\n" );
 		}
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	}
 	    /*
 	     *	if what we think is the top of the cycle
@@ -227,7 +211,7 @@ dfn_findcycle( childp )
 		    printname( cycleheadp );
 		    printf( "\n" );
 		}
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	}
 	for ( index = cycletop + 1 ; index <= dfn_depth ; index += 1 ) {
 	    childp = dfn_stack[ index ].nlentryp;
@@ -246,7 +230,7 @@ dfn_findcycle( childp )
 			printname( cycleheadp );
 			printf( "\n" );
 		    }
-#		endif DEBUG
+#		endif /* DEBUG */
 		for ( tailp = childp ; tailp->cnext ; tailp = tailp->cnext ) {
 		    tailp -> cnext -> cyclehead = cycleheadp;
 #		    ifdef DEBUG
@@ -257,22 +241,19 @@ dfn_findcycle( childp )
 			    printname( cycleheadp );
 			    printf( "\n" );
 			}
-#		    endif DEBUG
+#		    endif /* DEBUG */
 		}
-	    } else if ( childp -> cyclehead != cycleheadp /* firewall */ ) {
-		fprintf( stderr ,
-			"[dfn_busy] glommed, but not to cyclehead\n" );
-	    }
+	    } else if ( childp -> cyclehead != cycleheadp /* firewall */ )
+		warnx("[dfn_busy] glommed, but not to cyclehead");
 	}
     }
 }
 
     /*
      *	deal with self-cycles
-     *	for lint: ARGSUSED
      */
-dfn_self_cycle( parentp )
-    nltype	*parentp;
+void
+dfn_self_cycle(nltype *parentp __unused)
 {
 	/*
 	 *	since we are taking out self-cycles elsewhere
@@ -284,7 +265,7 @@ dfn_self_cycle( parentp )
 	    printname( parentp );
 	    printf( "\n" );
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
 }
 
     /*
@@ -292,8 +273,8 @@ dfn_self_cycle( parentp )
      *	[MISSING: an explanation]
      *	and pop it off the stack
      */
-dfn_post_visit( parentp )
-    nltype	*parentp;
+void
+dfn_post_visit(nltype *parentp)
 {
     nltype	*memberp;
 
@@ -303,7 +284,7 @@ dfn_post_visit( parentp )
 	    printname( parentp );
 	    printf( "\n" );
 	}
-#   endif DEBUG
+#   endif /* DEBUG */
 	/*
 	 *	number functions and things in their cycles
 	 *	unless the function is itself part of a cycle
@@ -318,14 +299,14 @@ dfn_post_visit( parentp )
 		    printname( memberp );
 		    printf( " -> toporder = %d\n" , dfn_counter );
 		}
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	}
     } else {
 #	ifdef DEBUG
 	    if ( debug & DFNDEBUG ) {
 		printf( "[dfn_post_visit]\t\tis part of a cycle\n" );
 	    }
-#	endif DEBUG
+#	endif /* DEBUG */
     }
     dfn_depth -= 1;
 }

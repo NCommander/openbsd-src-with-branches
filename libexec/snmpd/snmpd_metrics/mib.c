@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.103 2022/06/30 11:28:36 martijn Exp $	*/
+/*	$OpenBSD: mib.c,v 1.3 2023/04/19 12:58:15 jsg Exp $	*/
 
 /*
  * Copyright (c) 2022 Martijn van Duren <martijn@openbsd.org>
@@ -57,7 +57,6 @@
 #include <syslog.h>
 #include <time.h>
 #include <unistd.h>
-#include <pwd.h>
 #include <libgen.h>
 #include <limits.h>
 #include <kvm.h>
@@ -1184,6 +1183,8 @@ struct carpif {
 	struct kif	 kif;
 };
 
+void	 mib_close_pftrans(struct agentx_varbind *, u_int32_t);
+
 void	 mib_pfinfo(struct agentx_varbind *);
 void	 mib_pfcounters(struct agentx_varbind *);
 void	 mib_pfscounters(struct agentx_varbind *);
@@ -1746,6 +1747,17 @@ mib_pftableaddrs(struct agentx_varbind *vb)
 }
 
 void
+mib_close_pftrans(struct agentx_varbind *vb, u_int32_t ticket)
+{
+	extern int		devpf;
+
+	if (ioctl(devpf, DIOCXEND, &ticket) == -1) {
+		log_warn("DIOCXEND");
+		agentx_varbind_error(vb);
+	}
+}
+
+void
 mib_pflabelnum(struct agentx_varbind *vb)
 {
 	struct pfioc_rule	 pr;
@@ -1766,6 +1778,7 @@ mib_pflabelnum(struct agentx_varbind *vb)
 		if (ioctl(devpf, DIOCGETRULE, &pr) == -1) {
 			log_warn("DIOCGETRULE");
 			agentx_varbind_error(vb);
+			mib_close_pftrans(vb, pr.ticket);
 			return;
 		}
 
@@ -1774,6 +1787,8 @@ mib_pflabelnum(struct agentx_varbind *vb)
 	}
 
 	agentx_varbind_integer(vb, lnr);
+
+	mib_close_pftrans(vb, pr.ticket);
 }
 
 void
@@ -1819,6 +1834,7 @@ mib_pflabels(struct agentx_varbind *vb)
 		if (ioctl(devpf, DIOCGETRULE, &pr) == -1) {
 			log_warn("DIOCGETRULE");
 			agentx_varbind_error(vb);
+			mib_close_pftrans(vb, pr.ticket);
 			return;
 		}
 
@@ -1827,6 +1843,8 @@ mib_pflabels(struct agentx_varbind *vb)
 			break;
 		}
 	}
+
+	mib_close_pftrans(vb, pr.ticket);
 
 	if (r == NULL) {
 		agentx_varbind_notfound(vb);
@@ -3325,7 +3343,7 @@ main(int argc, char *argv[])
 	if ((hrDeviceIndex = agentx_object(host, AGENTX_OID(HRDEVICEINDEX),
 	    &hrDeviceIdx, 1, 0, mib_hrdevice)) == NULL ||
 	    (hrDeviceType = agentx_object(host, AGENTX_OID(HRDEVICETYPE),
-	    &hrDeviceIdx, 1, 0, mib_hrdevice)) == NULL |
+	    &hrDeviceIdx, 1, 0, mib_hrdevice)) == NULL ||
 	    (hrDeviceDescr = agentx_object(host, AGENTX_OID(HRDEVICEDESCR),
 	    &hrDeviceIdx, 1, 0, mib_hrdevice)) == NULL ||
 	    (hrDeviceID = agentx_object(host, AGENTX_OID(HRDEVICEID),

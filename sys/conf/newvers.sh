@@ -1,5 +1,6 @@
 #!/bin/sh -
 #
+#	$OpenBSD: newvers.sh,v 1.197 2023/09/26 13:27:32 deraadt Exp $
 #	$NetBSD: newvers.sh,v 1.17.2.1 1995/10/12 05:17:11 jtc Exp $
 #
 # Copyright (c) 1984, 1986, 1990, 1993
@@ -13,11 +14,7 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#	This product includes software developed by the University of
-#	California, Berkeley and its contributors.
-# 4. Neither the name of the University nor the names of its contributors
+# 3. Neither the name of the University nor the names of its contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
 #
@@ -35,24 +32,59 @@
 #
 #	@(#)newvers.sh	8.1 (Berkeley) 4/20/94
 
-if [ ! -r version ]
+umask 007
+
+if [ ! -r version -o ! -s version ]
 then
 	echo 0 > version
 fi
 
 touch version
-v=`cat version` u=${USER-root} d=`pwd` h=`hostname` t=`date`
-id=`basename ${d}`
+v=`cat version` u=`logname` d=${PWD%/obj} h=`hostname` t=`date`
+id=`basename "${d}"`
 
-ost="NetBSD"
-osr="1.1_ALPHA"
+# additional things which need version number upgrades:
+#	sys/sys/param.h:
+#		OpenBSD symbol
+#		OpenBSD_X_X symbol
+#	share/mk/sys.mk
+#		OSMAJOR
+#		OSMINOR
+#	etc/root/root.mail
+#		VERSION and other bits
+#	sys/arch/macppc/stand/tbxidata/bsd.tbxi
+#		change	/X.X/macppc/bsd.rd
+#	usr.bin/signify/signify.1
+#		change the version in the EXAMPLES section
+#
+# When adding -beta, create a new www/<version>.html so devs can
+# start adding to it. When removing -beta, roll errata pages.
+#
+# -current and -beta tagging:
+#	For release, select STATUS ""
+#	Right after release unlock, select STATUS "-current"
+#	and enable POOL_DEBUG in sys/conf/GENERIC
+#	A month or so before release, select STATUS "-beta"
+#	and disable POOL_DEBUG in sys/conf/GENERIC
 
-echo "char ostype[] = \"${ost}\";" > vers.c
-echo "char osrelease[] = \"${osr}\";" >> vers.c
-echo "char sccs[4] = { '@', '(', '#', ')' };" >> vers.c
-echo \
-  "char version[] = \
-    \"${ost} ${osr} (${id}) #${v}: ${t}\\n    ${u}@${h}:${d}\\n\";" \
-  >> vers.c
+ost="OpenBSD"
+osr="7.4"
 
-echo `expr ${v} + 1` > version
+cat >vers.c <<eof
+#define STATUS "-stable"		/* stable branch */
+#if 0
+#define STATUS ""			/* release */
+#define STATUS "-current"		/* just after a release */
+#define STATUS "-beta"			/* just before a release */
+#endif
+
+const char ostype[] = "${ost}";
+const char osrelease[] = "${osr}";
+const char osversion[] = "${id}#${v}";
+const char sccs[] =
+    "    @(#)${ost} ${osr}" STATUS " (${id}) #${v}: ${t}\n";
+const char version[512] =
+    "${ost} ${osr}" STATUS " (${id}) #${v}: ${t}\n    ${u}@${h}:${d}\n";
+eof
+
+expr ${v} + 1 > version

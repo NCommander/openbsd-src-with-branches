@@ -1,32 +1,35 @@
+/*	$OpenBSD: svc.h,v 1.16 2016/08/27 04:28:28 guenther Exp $	*/
 /*	$NetBSD: svc.h,v 1.9 1995/04/29 05:28:01 cgd Exp $	*/
 
 /*
- * Sun RPC is a product of Sun Microsystems, Inc. and is provided for
- * unrestricted use provided that this legend is included on all tape
- * media and as a part of the software program in whole or part.  Users
- * may copy or modify Sun RPC without charge, but are not authorized
- * to license or distribute it to anyone else except as part of a product or
- * program developed by the user.
- * 
- * SUN RPC IS PROVIDED AS IS WITH NO WARRANTIES OF ANY KIND INCLUDING THE
- * WARRANTIES OF DESIGN, MERCHANTIBILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE, OR ARISING FROM A COURSE OF DEALING, USAGE OR TRADE PRACTICE.
- * 
- * Sun RPC is provided with no support and without any obligation on the
- * part of Sun Microsystems, Inc. to assist in its use, correction,
- * modification or enhancement.
- * 
- * SUN MICROSYSTEMS, INC. SHALL HAVE NO LIABILITY WITH RESPECT TO THE
- * INFRINGEMENT OF COPYRIGHTS, TRADE SECRETS OR ANY PATENTS BY SUN RPC
- * OR ANY PART THEREOF.
- * 
- * In no event will Sun Microsystems, Inc. be liable for any lost revenue
- * or profits or other special, indirect and consequential damages, even if
- * Sun has been advised of the possibility of such damages.
- * 
- * Sun Microsystems, Inc.
- * 2550 Garcia Avenue
- * Mountain View, California  94043
+ * Copyright (c) 2010, Oracle America, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *     * Neither the name of the "Oracle America, Inc." nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *   FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *   COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *	from: @(#)svc.h 1.20 88/02/08 SMI 
  *	@(#)svc.h	2.2 88/07/29 4.0 RPCSRC
@@ -34,13 +37,12 @@
 
 /*
  * svc.h, Server-side remote procedure call interface.
- *
- * Copyright (C) 1984, Sun Microsystems, Inc.
  */
 
 #ifndef _RPC_SVC_H
 #define _RPC_SVC_H
 #include <sys/cdefs.h>
+#include <poll.h>
 
 /*
  * This interface must manage two items concerning remote procedure calling:
@@ -75,26 +77,25 @@ enum xprt_stat {
  */
 typedef struct __rpc_svcxprt {
 	int		xp_sock;
-	u_short		xp_port;	 /* associated port number */
-	struct xp_ops {
-		/* receive incomming requests */
-		bool_t	(*xp_recv) __P((struct __rpc_svcxprt *,
-			    struct rpc_msg *));
+	unsigned short	xp_port;	 /* associated port number */
+	const struct xp_ops {
+		/* receive incoming requests */
+		bool_t	(*xp_recv)(struct __rpc_svcxprt *,
+			    struct rpc_msg *);
 		/* get transport status */
-		enum xprt_stat (*xp_stat) __P((struct __rpc_svcxprt *));
+		enum xprt_stat (*xp_stat)(struct __rpc_svcxprt *);
 		/* get arguments */
-		bool_t	(*xp_getargs) __P((struct __rpc_svcxprt *, xdrproc_t,
-			    caddr_t));
+		bool_t	(*xp_getargs)(struct __rpc_svcxprt *, xdrproc_t,
+			    caddr_t);
 		/* send reply */
-		bool_t	(*xp_reply) __P((struct __rpc_svcxprt *,
-			    struct rpc_msg *));
+		bool_t	(*xp_reply)(struct __rpc_svcxprt *, struct rpc_msg *);
 		/* free mem allocated for args */
-		bool_t	(*xp_freeargs) __P((struct __rpc_svcxprt *, xdrproc_t,
-			    caddr_t));
+		bool_t	(*xp_freeargs)(struct __rpc_svcxprt *, xdrproc_t,
+			    caddr_t);
 		/* destroy this struct */
-		void	(*xp_destroy) __P((struct __rpc_svcxprt *));
+		void	(*xp_destroy)(struct __rpc_svcxprt *);
 	} *xp_ops;
-	int		xp_addrlen;	 /* length of remote address */
+	socklen_t	xp_addrlen;	 /* length of remote address */
 	struct sockaddr_in xp_raddr;	 /* remote address */
 	struct opaque_auth xp_verf;	 /* raw response verifier */
 	caddr_t		xp_p1;		 /* private */
@@ -163,25 +164,25 @@ struct svc_req {
  *
  * svc_register(xprt, prog, vers, dispatch, protocol)
  *	SVCXPRT *xprt;
- *	u_long prog;
- *	u_long vers;
+ *	unsigned long prog;
+ *	unsigned long vers;
  *	void (*dispatch)();
  *	int protocol;    like TCP or UDP, zero means do not register 
  */
 __BEGIN_DECLS
-extern bool_t	svc_register __P((SVCXPRT *, u_long, u_long,
-		    void (*) __P((struct svc_req *, SVCXPRT *)), int));
+extern bool_t	svc_register(SVCXPRT *, unsigned long, unsigned long,
+		    void (*)(struct svc_req *, SVCXPRT *), int);
 __END_DECLS
 
 /*
  * Service un-registration
  *
  * svc_unregister(prog, vers)
- *	u_long prog;
- *	u_long vers;
+ *	unsigned long prog;
+ *	unsigned long vers;
  */
 __BEGIN_DECLS
-extern void	svc_unregister __P((u_long, u_long));
+extern void	svc_unregister(unsigned long, unsigned long);
 __END_DECLS
 
 /*
@@ -191,7 +192,7 @@ __END_DECLS
  *	SVCXPRT *xprt;
  */
 __BEGIN_DECLS
-extern void	xprt_register	__P((SVCXPRT *));
+extern void	xprt_register(SVCXPRT *);
 __END_DECLS
 
 /*
@@ -201,7 +202,7 @@ __END_DECLS
  *	SVCXPRT *xprt;
  */
 __BEGIN_DECLS
-extern void	xprt_unregister	__P((SVCXPRT *));
+extern void	xprt_unregister(SVCXPRT *);
 __END_DECLS
 
 
@@ -234,14 +235,14 @@ __END_DECLS
  */
 
 __BEGIN_DECLS
-extern bool_t	svc_sendreply	__P((SVCXPRT *, xdrproc_t, char *));
-extern void	svcerr_decode	__P((SVCXPRT *));
-extern void	svcerr_weakauth	__P((SVCXPRT *));
-extern void	svcerr_noproc	__P((SVCXPRT *));
-extern void	svcerr_progvers	__P((SVCXPRT *, u_long, u_long));
-extern void	svcerr_auth	__P((SVCXPRT *, enum auth_stat));
-extern void	svcerr_noprog	__P((SVCXPRT *));
-extern void	svcerr_systemerr __P((SVCXPRT *));
+extern bool_t	svc_sendreply(SVCXPRT *, xdrproc_t, char *);
+extern void	svcerr_decode(SVCXPRT *);
+extern void	svcerr_weakauth(SVCXPRT *);
+extern void	svcerr_noproc(SVCXPRT *);
+extern void	svcerr_progvers(SVCXPRT *, unsigned long, unsigned long);
+extern void	svcerr_auth(SVCXPRT *, enum auth_stat);
+extern void	svcerr_noprog(SVCXPRT *);
+extern void	svcerr_systemerr(SVCXPRT *);
 __END_DECLS
     
 /*
@@ -249,7 +250,7 @@ __END_DECLS
  * Somebody has to wait for incoming requests and then call the correct
  * service routine.  The routine svc_run does infinite waiting; i.e.,
  * svc_run never returns.
- * Since another (co-existant) package may wish to selectively wait for
+ * Since another (co-existent) package may wish to selectively wait for
  * incoming calls or other events outside of the rpc architecture, the
  * routine svc_getreq is provided.  It must be passed readfds, the
  * "in-place" results of a select system call (see select, section 2).
@@ -259,13 +260,12 @@ __END_DECLS
  * Global keeper of rpc service descriptors in use
  * dynamic; must be inspected before each call to select 
  */
-extern int svc_maxfd;
-#ifdef FD_SETSIZE
+#include <sys/select.h>			/* for fd_set */
 extern fd_set svc_fdset;
 #define svc_fds svc_fdset.fds_bits[0]	/* compatibility */
-#else
-extern int svc_fds;
-#endif /* def FD_SETSIZE */
+extern struct pollfd *svc_pollfd;
+extern int svc_max_pollfd;
+extern int svc_maxfd;			/* non-standard */
 
 /*
  * a small program implemented by the svc_rpc implementation itself;
@@ -274,9 +274,12 @@ extern int svc_fds;
 extern void rpctest_service();				/* XXX relic? */
 
 __BEGIN_DECLS
-extern void	svc_getreq	__P((int));
-extern void	svc_getreqset	__P((fd_set *));
-extern void	svc_run		__P((void));
+extern void	svc_getreq(int);
+extern void	svc_getreq_common(int);
+extern void	svc_getreq_poll(struct pollfd *, const int);
+extern void	svc_getreqset(fd_set *);
+extern void	svc_getreqset2(fd_set *, int);
+extern void	svc_run(void);
 __END_DECLS
 
 /*
@@ -292,7 +295,7 @@ __END_DECLS
  * Memory based rpc for testing and timing.
  */
 __BEGIN_DECLS
-extern SVCXPRT *svcraw_create __P((void));
+extern SVCXPRT *svcraw_create(void);
 __END_DECLS
 
 
@@ -300,8 +303,9 @@ __END_DECLS
  * Udp based rpc.
  */
 __BEGIN_DECLS
-extern SVCXPRT *svcudp_create __P((int));
-extern SVCXPRT *svcudp_bufcreate __P((int, u_int, u_int));
+extern SVCXPRT *svcudp_create(int);
+extern SVCXPRT *svcudp_bufcreate(int, unsigned int, unsigned int);
+extern int svcudp_enablecache(SVCXPRT *, u_long);
 __END_DECLS
 
 
@@ -309,14 +313,14 @@ __END_DECLS
  * Tcp based rpc.
  */
 __BEGIN_DECLS
-extern SVCXPRT *svctcp_create __P((int, u_int, u_int));
+extern SVCXPRT *svctcp_create(int, unsigned int, unsigned int);
 __END_DECLS
 
 /*
  * Fd based rpc.
  */
 __BEGIN_DECLS
-extern SVCXPRT *svcfd_create __P((int, u_int, u_int));
+extern SVCXPRT *svcfd_create(int, unsigned int, unsigned int);
 __END_DECLS
 
 #endif /* !_RPC_SVC_H */

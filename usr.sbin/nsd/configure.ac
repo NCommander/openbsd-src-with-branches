@@ -5,7 +5,7 @@ dnl
 sinclude(acx_nlnetlabs.m4)
 sinclude(dnstap/dnstap.m4)
 
-AC_INIT([NSD],[4.6.1],[nsd-bugs@nlnetlabs.nl])
+AC_INIT([NSD],[4.7.0],[nsd-bugs@nlnetlabs.nl])
 AC_CONFIG_HEADERS([config.h])
 
 #
@@ -296,7 +296,7 @@ AC_MSG_CHECKING(whether $CC supports -$1)
 cache=`echo $1 | $SED 'y%.=/+-%___p_%'`
 AC_CACHE_VAL(cv_prog_cc_flag_$cache,
 [
-echo 'void f(){}' >conftest.c
+echo 'void f(void){}' >conftest.c
 if test -z "`$CC -$1 -c conftest.c 2>&1`"; then
 eval "cv_prog_cc_flag_$cache=yes"
 else
@@ -698,6 +698,9 @@ case "$enable_recvmmsg" in
         yes)
 		AC_CHECK_FUNC([recvmmsg], [
 AC_RUN_IFELSE([AC_LANG_SOURCE([[
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #include <sys/socket.h>
 #include <errno.h>
 int main(void)
@@ -714,6 +717,9 @@ AC_DEFINE([HAVE_RECVMMSG], [1], [Define if recvmmsg exists])]
 )])
 		AC_CHECK_FUNC([sendmmsg], [
 AC_RUN_IFELSE([AC_LANG_SOURCE([[
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #include <sys/socket.h>
 #include <errno.h>
 int main(void)
@@ -842,8 +848,6 @@ AC_REPLACE_FUNCS(snprintf)
 AC_REPLACE_FUNCS(strlcat)
 AC_REPLACE_FUNCS(strlcpy)
 AC_REPLACE_FUNCS(strptime)
-AC_REPLACE_FUNCS(b64_pton)
-AC_REPLACE_FUNCS(b64_ntop)
 AC_REPLACE_FUNCS(pselect)
 AC_REPLACE_FUNCS(memmove)
 AC_REPLACE_FUNCS(setproctitle)
@@ -875,6 +879,41 @@ AC_INCLUDES_DEFAULT
 	AC_MSG_RESULT(no)
 	AC_LIBOBJ(reallocarray)
 ])
+
+#
+# Check for b64_ntop (and assume result applies to b64_pton as well).
+# The functions are actually prefixed with __ and resolv.h defines
+# macros for the unprefixed versions, however including this header
+# causes conflicts with our T_xx defines.
+#
+AC_MSG_CHECKING(for __b64_ntop)
+AC_TRY_LINK([#include <stddef.h>],
+	[__b64_ntop(NULL, 0, NULL, 0);],
+	found_b64_ntop=yes,
+	found_b64_ntop=no
+)
+if test "x$found_b64_ntop" = xno; then
+	AC_MSG_RESULT(no)
+
+	AC_MSG_CHECKING(for __b64_ntop with -lresolv)
+	LIBS="$LIBS -lresolv"
+	AC_TRY_LINK([#include <stddef.h>],
+		[__b64_ntop(NULL, 0, NULL, 0);],
+		found_b64_ntop=yes,
+		found_b64_ntop=no
+	)
+	if test "x$found_b64_ntop" = xno; then
+		AC_MSG_RESULT(no)
+	fi
+fi
+if test "x$found_b64_ntop" = xyes; then
+	AC_DEFINE(HAVE_B64_NTOP, 1, [Define to 1 if you have the `b64_ntop' function.])
+	AC_DEFINE(HAVE_B64_PTON, 1, [Define to 1 if you have the `b64_pton' function.])
+	AC_MSG_RESULT(yes)
+else
+	AC_LIBOBJ([b64_ntop])
+	AC_LIBOBJ([b64_pton])
+fi
 
 AC_MSG_CHECKING(for pselect prototype in sys/select.h)
 AC_EGREP_HEADER([[^a-zA-Z_]*pselect[^a-zA-Z_]], sys/select.h, AC_DEFINE(HAVE_PSELECT_PROTO, 1,
@@ -932,14 +971,7 @@ AC_DEFINE_UNQUOTED([TCP_TIMEOUT], $tcp_timeout, [Define to the default tcp timeo
 dnl
 dnl Features
 dnl
-AC_ARG_ENABLE(root-server, AS_HELP_STRING([--enable-root-server],[Configure NSD as a root server]))
-case "$enable_root_server" in
-        yes)
-		AC_DEFINE_UNQUOTED([ROOT_SERVER], [], [Define this to configure as a root server.])
-		;;
-        no|*)
-                ;;
-esac
+AC_ARG_ENABLE(root-server, AS_HELP_STRING([--enable-root-server],[Configure NSD as a root server (obsolete)]))
 
 AC_ARG_ENABLE(ipv6, AS_HELP_STRING([--disable-ipv6],[Disables IPv6 support]))
 case "$enable_ipv6" in
@@ -1089,7 +1121,6 @@ AC_INCLUDES_DEFAULT
 	LIBS="$BAKLIBS"
 
 else
-	AC_MSG_WARN([No SSL, therefore remote-control is disabled])
 	AC_MSG_WARN([No SSL, therefore TLS is disabled])
 fi
 
@@ -1297,13 +1328,11 @@ AH_BOTTOM([
 ])
 
 AH_BOTTOM([
-#ifndef HAVE_B64_NTOP
-int b64_ntop(uint8_t const *src, size_t srclength,
+int __b64_ntop(uint8_t const *src, size_t srclength,
 	     char *target, size_t targsize);
-#endif /* !HAVE_B64_NTOP */
-#ifndef HAVE_B64_PTON
-int b64_pton(char const *src, uint8_t *target, size_t targsize);
-#endif /* !HAVE_B64_PTON */
+int __b64_pton(char const *src, uint8_t *target, size_t targsize);
+])
+AH_BOTTOM([
 #ifndef HAVE_FSEEKO
 #define fseeko fseek
 #define ftello ftell

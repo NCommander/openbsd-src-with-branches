@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_time.c,v 1.16 1995/10/07 06:28:28 mycroft Exp $	*/
+/*	$OpenBSD: kern_time.c,v 1.165 2023/08/29 16:19:34 claudio Exp $	*/
+/*	$NetBSD: kern_time.c,v 1.20 1996/02/18 11:57:06 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,20 +29,32 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)kern_time.c	8.1 (Berkeley) 6/10/93
+ *	@(#)kern_time.c	8.4 (Berkeley) 5/26/95
  */
 
 #include <sys/param.h>
-#include <sys/resourcevar.h>
 #include <sys/kernel.h>
 #include <sys/systm.h>
+#include <sys/clockintr.h>
+#include <sys/mutex.h>
+#include <sys/rwlock.h>
 #include <sys/proc.h>
-#include <sys/vnode.h>
+#include <sys/ktrace.h>
+#include <sys/signalvar.h>
+#include <sys/stdint.h>
+#include <sys/pledge.h>
+#include <sys/task.h>
+#include <sys/time.h>
+#include <sys/timeout.h>
+#include <sys/timetc.h>
 
 #include <sys/mount.h>
 #include <sys/syscallargs.h>
 
-#include <machine/cpu.h>
+#include <dev/clock_subr.h>
+
+int itimerfix(struct itimerval *);
+void process_reset_itimer_flag(struct process *);
 
 /* 
  * Time of day and interval timer support.
@@ -57,145 +66,444 @@
  * timers when they expire.
  */
 
-/* ARGSUSED */
+/* This function is used by clock_settime and settimeofday */
 int
-sys_gettimeofday(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
+settime(const struct timespec *ts)
 {
-	register struct sys_gettimeofday_args /* {
+	struct timespec now;
+
+	/*
+	 * Don't allow the time to be set forward so far it will wrap
+	 * and become negative, thus allowing an attacker to bypass
+	 * the next check below.  The cutoff is 1 year before rollover
+	 * occurs, so even if the attacker uses adjtime(2) to move
+	 * the time past the cutoff, it will take a very long time
+	 * to get to the wrap point.
+	 *
+	 * XXX: we check against UINT_MAX until we can figure out
+	 *	how to deal with the hardware RTCs.
+	 */
+	if (ts->tv_sec > UINT_MAX - 365*24*60*60) {
+		printf("denied attempt to set clock forward to %lld\n",
+		    (long long)ts->tv_sec);
+		return (EPERM);
+	}
+	/*
+	 * If the system is secure, we do not allow the time to be
+	 * set to an earlier value (it may be slowed using adjtime,
+	 * but not set back). This feature prevent interlopers from
+	 * setting arbitrary time stamps on files.
+	 */
+	nanotime(&now);
+	if (securelevel > 1 && timespeccmp(ts, &now, <=)) {
+		printf("denied attempt to set clock back %lld seconds\n",
+		    (long long)now.tv_sec - ts->tv_sec);
+		return (EPERM);
+	}
+
+	tc_setrealtimeclock(ts);
+	KERNEL_LOCK();
+	resettodr();
+	KERNEL_UNLOCK();
+
+	return (0);
+}
+
+int
+clock_gettime(struct proc *p, clockid_t clock_id, struct timespec *tp)
+{
+	struct proc *q;
+	int error = 0;
+
+	switch (clock_id) {
+	case CLOCK_REALTIME:
+		nanotime(tp);
+		break;
+	case CLOCK_UPTIME:
+		nanoruntime(tp);
+		break;
+	case CLOCK_MONOTONIC:
+	case CLOCK_BOOTTIME:
+		nanouptime(tp);
+		break;
+	case CLOCK_PROCESS_CPUTIME_ID:
+		nanouptime(tp);
+		timespecsub(tp, &curcpu()->ci_schedstate.spc_runtime, tp);
+		timespecadd(tp, &p->p_p->ps_tu.tu_runtime, tp);
+		break;
+	case CLOCK_THREAD_CPUTIME_ID:
+		nanouptime(tp);
+		timespecsub(tp, &curcpu()->ci_schedstate.spc_runtime, tp);
+		timespecadd(tp, &p->p_tu.tu_runtime, tp);
+		break;
+	default:
+		/* check for clock from pthread_getcpuclockid() */
+		if (__CLOCK_TYPE(clock_id) == CLOCK_THREAD_CPUTIME_ID) {
+			KERNEL_LOCK();
+			q = tfind_user(__CLOCK_PTID(clock_id), p->p_p);
+			if (q == NULL)
+				error = ESRCH;
+			else
+				*tp = q->p_tu.tu_runtime;
+			KERNEL_UNLOCK();
+		} else
+			error = EINVAL;
+		break;
+	}
+	return (error);
+}
+
+int
+sys_clock_gettime(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_clock_gettime_args /* {
+		syscallarg(clockid_t) clock_id;
+		syscallarg(struct timespec *) tp;
+	} */ *uap = v;
+	struct timespec ats;
+	int error;
+
+	memset(&ats, 0, sizeof(ats));
+	if ((error = clock_gettime(p, SCARG(uap, clock_id), &ats)) != 0)
+		return (error);
+
+	error = copyout(&ats, SCARG(uap, tp), sizeof(ats));
+#ifdef KTRACE
+	if (error == 0 && KTRPOINT(p, KTR_STRUCT))
+		ktrabstimespec(p, &ats);
+#endif
+	return (error);
+}
+
+int
+sys_clock_settime(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_clock_settime_args /* {
+		syscallarg(clockid_t) clock_id;
+		syscallarg(const struct timespec *) tp;
+	} */ *uap = v;
+	struct timespec ats;
+	clockid_t clock_id;
+	int error;
+
+	if ((error = suser(p)) != 0)
+		return (error);
+
+	if ((error = copyin(SCARG(uap, tp), &ats, sizeof(ats))) != 0)
+		return (error);
+
+	clock_id = SCARG(uap, clock_id);
+	switch (clock_id) {
+	case CLOCK_REALTIME:
+		if (!timespecisvalid(&ats))
+			return (EINVAL);
+		if ((error = settime(&ats)) != 0)
+			return (error);
+		break;
+	default:	/* Other clocks are read-only */
+		return (EINVAL);
+	}
+
+	return (0);
+}
+
+int
+sys_clock_getres(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_clock_getres_args /* {
+		syscallarg(clockid_t) clock_id;
+		syscallarg(struct timespec *) tp;
+	} */ *uap = v;
+	clockid_t clock_id;
+	struct bintime bt;
+	struct timespec ts;
+	struct proc *q;
+	u_int64_t scale;
+	int error = 0;
+
+	memset(&ts, 0, sizeof(ts));
+	clock_id = SCARG(uap, clock_id);
+
+	switch (clock_id) {
+	case CLOCK_REALTIME:
+	case CLOCK_MONOTONIC:
+	case CLOCK_BOOTTIME:
+	case CLOCK_UPTIME:
+		memset(&bt, 0, sizeof(bt));
+		rw_enter_read(&tc_lock);
+		scale = ((1ULL << 63) / tc_getfrequency()) * 2;
+		bt.frac = tc_getprecision() * scale;
+		rw_exit_read(&tc_lock);
+		BINTIME_TO_TIMESPEC(&bt, &ts);
+		break;
+	case CLOCK_PROCESS_CPUTIME_ID:
+	case CLOCK_THREAD_CPUTIME_ID:
+		ts.tv_nsec = 1000000000 / stathz;
+		break;
+	default:
+		/* check for clock from pthread_getcpuclockid() */
+		if (__CLOCK_TYPE(clock_id) == CLOCK_THREAD_CPUTIME_ID) {
+			KERNEL_LOCK();
+			q = tfind_user(__CLOCK_PTID(clock_id), p->p_p);
+			if (q == NULL)
+				error = ESRCH;
+			else
+				ts.tv_nsec = 1000000000 / stathz;
+			KERNEL_UNLOCK();
+		} else
+			error = EINVAL;
+		break;
+	}
+
+	if (error == 0 && SCARG(uap, tp)) {
+		ts.tv_nsec = MAX(ts.tv_nsec, 1);
+		error = copyout(&ts, SCARG(uap, tp), sizeof(ts));
+#ifdef KTRACE
+		if (error == 0 && KTRPOINT(p, KTR_STRUCT))
+			ktrreltimespec(p, &ts);
+#endif
+	}
+
+	return error;
+}
+
+int
+sys_nanosleep(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_nanosleep_args/* {
+		syscallarg(const struct timespec *) rqtp;
+		syscallarg(struct timespec *) rmtp;
+	} */ *uap = v;
+	struct timespec elapsed, remainder, request, start, stop;
+	uint64_t nsecs;
+	struct timespec *rmtp;
+	int copyout_error, error;
+
+	rmtp = SCARG(uap, rmtp);
+	error = copyin(SCARG(uap, rqtp), &request, sizeof(request));
+	if (error)
+		return (error);
+#ifdef KTRACE
+	if (KTRPOINT(p, KTR_STRUCT))
+		ktrreltimespec(p, &request);
+#endif
+
+	if (request.tv_sec < 0 || !timespecisvalid(&request))
+		return (EINVAL);
+
+	do {
+		getnanouptime(&start);
+		nsecs = MAX(1, MIN(TIMESPEC_TO_NSEC(&request), MAXTSLP));
+		error = tsleep_nsec(&nowake, PWAIT | PCATCH, "nanoslp", nsecs);
+		getnanouptime(&stop);
+		timespecsub(&stop, &start, &elapsed);
+		timespecsub(&request, &elapsed, &request);
+		if (request.tv_sec < 0)
+			timespecclear(&request);
+		if (error != EWOULDBLOCK)
+			break;
+	} while (timespecisset(&request));
+
+	if (error == ERESTART)
+		error = EINTR;
+	if (error == EWOULDBLOCK)
+		error = 0;
+
+	if (rmtp) {
+		memset(&remainder, 0, sizeof(remainder));
+		remainder = request;
+		copyout_error = copyout(&remainder, rmtp, sizeof(remainder));
+		if (copyout_error)
+			error = copyout_error;
+#ifdef KTRACE
+		if (copyout_error == 0 && KTRPOINT(p, KTR_STRUCT))
+			ktrreltimespec(p, &remainder);
+#endif
+	}
+
+	return error;
+}
+
+int
+sys_gettimeofday(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_gettimeofday_args /* {
 		syscallarg(struct timeval *) tp;
 		syscallarg(struct timezone *) tzp;
 	} */ *uap = v;
 	struct timeval atv;
+	static const struct timezone zerotz = { 0, 0 };
+	struct timeval *tp;
+	struct timezone *tzp;
 	int error = 0;
 
-	if (SCARG(uap, tp)) {
+	tp = SCARG(uap, tp);
+	tzp = SCARG(uap, tzp);
+
+	if (tp) {
+		memset(&atv, 0, sizeof(atv));
 		microtime(&atv);
-		if (error = copyout((caddr_t)&atv, (caddr_t)SCARG(uap, tp),
-		    sizeof (atv)))
+		if ((error = copyout(&atv, tp, sizeof (atv))))
 			return (error);
+#ifdef KTRACE
+		if (KTRPOINT(p, KTR_STRUCT))
+			ktrabstimeval(p, &atv);
+#endif
 	}
-	if (SCARG(uap, tzp))
-		error = copyout((caddr_t)&tz, (caddr_t)SCARG(uap, tzp),
-		    sizeof (tz));
+	if (tzp)
+		error = copyout(&zerotz, tzp, sizeof(zerotz));
 	return (error);
 }
 
-/* ARGSUSED */
 int
-sys_settimeofday(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
+sys_settimeofday(struct proc *p, void *v, register_t *retval)
 {
 	struct sys_settimeofday_args /* {
-		syscallarg(struct timeval *) tv;
-		syscallarg(struct timezone *) tzp;
+		syscallarg(const struct timeval *) tv;
+		syscallarg(const struct timezone *) tzp;
 	} */ *uap = v;
-	struct timeval atv, delta;
 	struct timezone atz;
-	int error, s;
+	struct timeval atv;
+	const struct timeval *tv;
+	const struct timezone *tzp;
+	int error;
 
-	if (error = suser(p->p_ucred, &p->p_acflag))
+	tv = SCARG(uap, tv);
+	tzp = SCARG(uap, tzp);
+
+	if ((error = suser(p)))
 		return (error);
 	/* Verify all parameters before changing time. */
-	if (SCARG(uap, tv) && (error = copyin((caddr_t)SCARG(uap, tv),
-	    (caddr_t)&atv, sizeof(atv))))
+	if (tv && (error = copyin(tv, &atv, sizeof(atv))))
 		return (error);
-	if (SCARG(uap, tzp) && (error = copyin((caddr_t)SCARG(uap, tzp),
-	    (caddr_t)&atz, sizeof(atz))))
+	if (tzp && (error = copyin(tzp, &atz, sizeof(atz))))
 		return (error);
-	if (SCARG(uap, tv)) {
-		/* WHAT DO WE DO ABOUT PENDING REAL-TIME TIMEOUTS??? */
-		s = splclock();
-		timersub(&atv, &time, &delta);
-		time = atv;
-		(void) splsoftclock();
-		timeradd(&boottime, &delta, &boottime);
-		timeradd(&runtime, &delta, &runtime);
-# 		if defined(NFSCLIENT) || defined(NFSSERVER)
-			lease_updatetime(delta.tv_sec);
-#		endif
-		splx(s);
-		resettodr();
+	if (tv) {
+		struct timespec ts;
+
+#ifdef KTRACE
+		if (KTRPOINT(p, KTR_STRUCT))
+			ktrabstimeval(p, &atv);
+#endif
+		if (!timerisvalid(&atv))
+			return (EINVAL);
+		TIMEVAL_TO_TIMESPEC(&atv, &ts);
+		if ((error = settime(&ts)) != 0)
+			return (error);
 	}
-	if (SCARG(uap, tzp))
-		tz = atz;
+
 	return (0);
 }
 
-int	tickdelta;			/* current clock skew, us. per tick */
-long	timedelta;			/* unapplied time correction, us. */
-long	bigadj = 1000000;		/* use 10x skew above bigadj us. */
+#define ADJFREQ_MAX (500000000LL << 32)
+#define ADJFREQ_MIN (-ADJFREQ_MAX)
 
-/* ARGSUSED */
 int
-sys_adjtime(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
+sys_adjfreq(struct proc *p, void *v, register_t *retval)
 {
-	register struct sys_adjtime_args /* {
-		syscallarg(struct timeval *) delta;
+	struct sys_adjfreq_args /* {
+		syscallarg(const int64_t *) freq;
+		syscallarg(int64_t *) oldfreq;
+	} */ *uap = v;
+	int error = 0;
+	int64_t f, oldf;
+	const int64_t *freq = SCARG(uap, freq);
+	int64_t *oldfreq = SCARG(uap, oldfreq);
+
+	if (freq) {
+		if ((error = suser(p)))
+			return (error);
+		if ((error = copyin(freq, &f, sizeof(f))))
+			return (error);
+		if (f < ADJFREQ_MIN || f > ADJFREQ_MAX)
+			return (EINVAL);
+	}
+
+	rw_enter(&tc_lock, (freq == NULL) ? RW_READ : RW_WRITE);
+	if (oldfreq) {
+		tc_adjfreq(&oldf, NULL);
+		if ((error = copyout(&oldf, oldfreq, sizeof(oldf))))
+			goto out;
+	}
+	if (freq)
+		tc_adjfreq(NULL, &f);
+out:
+	rw_exit(&tc_lock);
+	return (error);
+}
+
+int
+sys_adjtime(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_adjtime_args /* {
+		syscallarg(const struct timeval *) delta;
 		syscallarg(struct timeval *) olddelta;
 	} */ *uap = v;
 	struct timeval atv;
-	register long ndelta, ntickdelta, odelta;
-	int s, error;
+	const struct timeval *delta = SCARG(uap, delta);
+	struct timeval *olddelta = SCARG(uap, olddelta);
+	int64_t adjustment, remaining;
+	int error;
 
-	if (error = suser(p->p_ucred, &p->p_acflag))
-		return (error);
-	if (error = copyin((caddr_t)SCARG(uap, delta), (caddr_t)&atv,
-	    sizeof(struct timeval)))
-		return (error);
+	error = pledge_adjtime(p, delta);
+	if (error)
+		return error;
 
-	/*
-	 * Compute the total correction and the rate at which to apply it.
-	 * Round the adjustment down to a whole multiple of the per-tick
-	 * delta, so that after some number of incremental changes in
-	 * hardclock(), tickdelta will become zero, lest the correction
-	 * overshoot and start taking us away from the desired final time.
-	 */
-	ndelta = atv.tv_sec * 1000000 + atv.tv_usec;
-	if (ndelta > bigadj)
-		ntickdelta = 10 * tickadj;
-	else
-		ntickdelta = tickadj;
-	if (ndelta % ntickdelta)
-		ndelta = ndelta / ntickdelta * ntickdelta;
+	if (delta) {
+		if ((error = suser(p)))
+			return (error);
+		if ((error = copyin(delta, &atv, sizeof(struct timeval))))
+			return (error);
+#ifdef KTRACE
+		if (KTRPOINT(p, KTR_STRUCT))
+			ktrreltimeval(p, &atv);
+#endif
+		if (!timerisvalid(&atv))
+			return (EINVAL);
 
-	/*
-	 * To make hardclock()'s job easier, make the per-tick delta negative
-	 * if we want time to run slower; then hardclock can simply compute
-	 * tick + tickdelta, and subtract tickdelta from timedelta.
-	 */
-	if (ndelta < 0)
-		ntickdelta = -ntickdelta;
-	s = splclock();
-	odelta = timedelta;
-	timedelta = ndelta;
-	tickdelta = ntickdelta;
-	splx(s);
+		if (atv.tv_sec > INT64_MAX / 1000000)
+			return EINVAL;
+		if (atv.tv_sec < INT64_MIN / 1000000)
+			return EINVAL;
+		adjustment = atv.tv_sec * 1000000;
+		if (adjustment > INT64_MAX - atv.tv_usec)
+			return EINVAL;
+		adjustment += atv.tv_usec;
 
-	if (SCARG(uap, olddelta)) {
-		atv.tv_sec = odelta / 1000000;
-		atv.tv_usec = odelta % 1000000;
-		(void) copyout((caddr_t)&atv, (caddr_t)SCARG(uap, olddelta),
-		    sizeof(struct timeval));
+		rw_enter_write(&tc_lock);
 	}
-	return (0);
+
+	if (olddelta) {
+		tc_adjtime(&remaining, NULL);
+		memset(&atv, 0, sizeof(atv));
+		atv.tv_sec =  remaining / 1000000;
+		atv.tv_usec = remaining % 1000000;
+		if (atv.tv_usec < 0) {
+			atv.tv_usec += 1000000;
+			atv.tv_sec--;
+		}
+
+		if ((error = copyout(&atv, olddelta, sizeof(struct timeval))))
+			goto out;
+	}
+
+	if (delta)
+		tc_adjtime(NULL, &adjustment);
+out:
+	if (delta)
+		rw_exit_write(&tc_lock);
+	return (error);
 }
 
+
+struct mutex itimer_mtx = MUTEX_INITIALIZER(IPL_CLOCK);
+
 /*
- * Get value of an interval timer.  The process virtual and
- * profiling virtual time timers are kept in the p_stats area, since
- * they can be swapped out.  These are kept internally in the
+ * Get or set value of an interval timer.  The process virtual and
+ * profiling virtual time timers are kept internally in the
  * way they are specified externally: in time until they expire.
  *
- * The real time interval timer is kept in the process table slot
- * for the process, and its value (it_value) is kept as an
+ * The real time interval timer's it_value, in contrast, is kept as an 
  * absolute time rather than as a delta, so that it is easy to keep
  * periodic real-time signals from drifting.
  *
@@ -209,84 +517,139 @@ sys_adjtime(p, v, retval)
  * real time timers .it_interval.  Rather, we compute the next time in
  * absolute time the timer should go off.
  */
-/* ARGSUSED */
-int
-sys_getitimer(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
+void
+setitimer(int which, const struct itimerval *itv, struct itimerval *olditv)
 {
-	register struct sys_getitimer_args /* {
-		syscallarg(u_int) which;
-		syscallarg(struct itimerval *) itv;
-	} */ *uap = v;
-	struct itimerval aitv;
-	int s;
+	struct itimerspec its, oldits;
+	struct timespec now;
+	struct itimerspec *itimer;
+	struct process *pr;
 
-	if (SCARG(uap, which) > ITIMER_PROF)
-		return (EINVAL);
-	s = splclock();
-	if (SCARG(uap, which) == ITIMER_REAL) {
-		/*
-		 * Convert from absolute to relative time in .it_value
-		 * part of real time timer.  If time for real time timer
-		 * has passed return 0, else return difference between
-		 * current time and time for the timer to go off.
-		 */
-		aitv = p->p_realtimer;
-		if (timerisset(&aitv.it_value))
-			if (timercmp(&aitv.it_value, &time, <))
-				timerclear(&aitv.it_value);
-			else
-				timersub(&aitv.it_value, &time, &aitv.it_value);
+	KASSERT(which >= ITIMER_REAL && which <= ITIMER_PROF);
+
+	pr = curproc->p_p;
+	itimer = &pr->ps_timer[which];
+
+	if (itv != NULL) {
+		TIMEVAL_TO_TIMESPEC(&itv->it_value, &its.it_value);
+		TIMEVAL_TO_TIMESPEC(&itv->it_interval, &its.it_interval);
+	}
+
+	if (which == ITIMER_REAL) {
+		mtx_enter(&pr->ps_mtx);
+		nanouptime(&now);
 	} else
-		aitv = p->p_stats->p_timer[SCARG(uap, which)];
-	splx(s);
-	return (copyout((caddr_t)&aitv, (caddr_t)SCARG(uap, itv),
-	    sizeof (struct itimerval)));
+		mtx_enter(&itimer_mtx);
+
+	if (olditv != NULL)
+		oldits = *itimer;
+	if (itv != NULL) {
+		if (which == ITIMER_REAL) {
+			if (timespecisset(&its.it_value)) {
+				timespecadd(&its.it_value, &now, &its.it_value);
+				timeout_abs_ts(&pr->ps_realit_to,&its.it_value);
+			} else
+				timeout_del(&pr->ps_realit_to);
+		}
+		*itimer = its;
+		if (which == ITIMER_VIRTUAL || which == ITIMER_PROF) {
+			process_reset_itimer_flag(pr);
+			need_resched(curcpu());
+		}
+	}
+
+	if (which == ITIMER_REAL)
+		mtx_leave(&pr->ps_mtx);
+	else
+		mtx_leave(&itimer_mtx);
+
+	if (olditv != NULL) {
+		if (which == ITIMER_REAL && timespecisset(&oldits.it_value)) {
+			if (timespeccmp(&oldits.it_value, &now, <))
+				timespecclear(&oldits.it_value);
+			else {
+				timespecsub(&oldits.it_value, &now,
+				    &oldits.it_value);
+			}
+		}
+		TIMESPEC_TO_TIMEVAL(&olditv->it_value, &oldits.it_value);
+		TIMESPEC_TO_TIMEVAL(&olditv->it_interval, &oldits.it_interval);
+	}
 }
 
-/* ARGSUSED */
-int
-sys_setitimer(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
+void
+cancel_all_itimers(void)
 {
-	register struct sys_setitimer_args /* {
-		syscallarg(u_int) which;
+	struct itimerval itv;
+	int i;
+
+	timerclear(&itv.it_value);
+	timerclear(&itv.it_interval);
+
+	for (i = 0; i < nitems(curproc->p_p->ps_timer); i++)
+		setitimer(i, &itv, NULL);
+}
+
+int
+sys_getitimer(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_getitimer_args /* {
+		syscallarg(int) which;
 		syscallarg(struct itimerval *) itv;
-		syscallarg(struct itimerval *) oitv;
 	} */ *uap = v;
 	struct itimerval aitv;
-	register struct itimerval *itvp;
-	int s, error;
+	int which;
 
-	if (SCARG(uap, which) > ITIMER_PROF)
-		return (EINVAL);
-	itvp = SCARG(uap, itv);
-	if (itvp && (error = copyin((caddr_t)itvp, (caddr_t)&aitv,
-	    sizeof(struct itimerval))))
-		return (error);
-	if ((SCARG(uap, itv) = SCARG(uap, oitv)) &&
-	    (error = sys_getitimer(p, uap, retval)))
-		return (error);
-	if (itvp == 0)
-		return (0);
-	if (itimerfix(&aitv.it_value) || itimerfix(&aitv.it_interval))
-		return (EINVAL);
-	s = splclock();
-	if (SCARG(uap, which) == ITIMER_REAL) {
-		untimeout(realitexpire, p);
-		if (timerisset(&aitv.it_value)) {
-			timeradd(&aitv.it_value, &time, &aitv.it_value);
-			timeout(realitexpire, p, hzto(&aitv.it_value));
-		}
-		p->p_realtimer = aitv;
-	} else
-		p->p_stats->p_timer[SCARG(uap, which)] = aitv;
-	splx(s);
-	return (0);
+	which = SCARG(uap, which);
+	if (which < ITIMER_REAL || which > ITIMER_PROF)
+		return EINVAL;
+
+	memset(&aitv, 0, sizeof(aitv));
+
+	setitimer(which, NULL, &aitv);
+
+	return copyout(&aitv, SCARG(uap, itv), sizeof(aitv));
+}
+
+int
+sys_setitimer(struct proc *p, void *v, register_t *retval)
+{
+	struct sys_setitimer_args /* {
+		syscallarg(int) which;
+		syscallarg(const struct itimerval *) itv;
+		syscallarg(struct itimerval *) oitv;
+	} */ *uap = v;
+	struct itimerval aitv, olditv;
+	struct itimerval *newitvp, *olditvp;
+	int error, which;
+
+	which = SCARG(uap, which);
+	if (which < ITIMER_REAL || which > ITIMER_PROF)
+		return EINVAL;
+
+	newitvp = olditvp = NULL;
+	if (SCARG(uap, itv) != NULL) {
+		error = copyin(SCARG(uap, itv), &aitv, sizeof(aitv));
+		if (error)
+			return error;
+		error = itimerfix(&aitv);
+		if (error)
+			return error;
+		newitvp = &aitv;
+	}
+	if (SCARG(uap, oitv) != NULL) {
+		memset(&olditv, 0, sizeof(olditv));
+		olditvp = &olditv;
+	}
+	if (newitvp == NULL && olditvp == NULL)
+		return 0;
+
+	setitimer(which, newitvp, olditvp);
+
+	if (SCARG(uap, oitv) != NULL)
+		return copyout(&olditv, SCARG(uap, oitv), sizeof(olditv));
+
+	return 0;
 }
 
 /*
@@ -298,90 +661,357 @@ sys_setitimer(p, v, retval)
  * SIGALRM calls to be compressed into one.
  */
 void
-realitexpire(arg)
-	void *arg;
+realitexpire(void *arg)
 {
-	register struct proc *p;
-	int s;
+	struct timespec cts;
+	struct process *pr = arg;
+	struct itimerspec *tp = &pr->ps_timer[ITIMER_REAL];
+	int need_signal = 0;
 
-	p = (struct proc *)arg;
-	psignal(p, SIGALRM);
-	if (!timerisset(&p->p_realtimer.it_interval)) {
-		timerclear(&p->p_realtimer.it_value);
-		return;
+	mtx_enter(&pr->ps_mtx);
+
+	/*
+	 * Do nothing if the timer was cancelled or rescheduled while we
+	 * were entering the mutex.
+	 */
+	if (!timespecisset(&tp->it_value) || timeout_pending(&pr->ps_realit_to))
+		goto out;
+
+	/* The timer expired.  We need to send the signal. */
+	need_signal = 1;
+
+	/* One-shot timers are not reloaded. */
+	if (!timespecisset(&tp->it_interval)) {
+		timespecclear(&tp->it_value);
+		goto out;
 	}
-	for (;;) {
-		s = splclock();
-		timeradd(&p->p_realtimer.it_value,
-		    &p->p_realtimer.it_interval, &p->p_realtimer.it_value);
-		if (timercmp(&p->p_realtimer.it_value, &time, >)) {
-			timeout(realitexpire, p,
-			    hzto(&p->p_realtimer.it_value));
-			splx(s);
-			return;
-		}
-		splx(s);
-	}
+
+	/*
+	 * Find the nearest future expiration point and restart
+	 * the timeout.
+	 */
+	nanouptime(&cts);
+	while (timespeccmp(&tp->it_value, &cts, <=))
+		timespecadd(&tp->it_value, &tp->it_interval, &tp->it_value);
+	if ((pr->ps_flags & PS_EXITING) == 0)
+		timeout_abs_ts(&pr->ps_realit_to, &tp->it_value);
+
+out:
+	mtx_leave(&pr->ps_mtx);
+
+	if (need_signal)
+		prsignal(pr, SIGALRM);
 }
 
 /*
- * Check that a proposed value to load into the .it_value or
- * .it_interval part of an interval timer is acceptable, and
- * fix it to have at least minimal value (i.e. if it is less
- * than the resolution of the clock, round it up.)
+ * Check if the given setitimer(2) input is valid.  Clear it_interval
+ * if it_value is unset.  Round it_interval up to the minimum interval
+ * if necessary.
  */
 int
-itimerfix(tv)
-	struct timeval *tv;
+itimerfix(struct itimerval *itv)
 {
+	static const struct timeval max = { .tv_sec = UINT_MAX, .tv_usec = 0 };
+	struct timeval min_interval = { .tv_sec = 0, .tv_usec = tick };
 
-	if (tv->tv_sec < 0 || tv->tv_sec > 100000000 ||
-	    tv->tv_usec < 0 || tv->tv_usec >= 1000000)
-		return (EINVAL);
-	if (tv->tv_sec == 0 && tv->tv_usec != 0 && tv->tv_usec < tick)
-		tv->tv_usec = tick;
-	return (0);
+	if (itv->it_value.tv_sec < 0 || !timerisvalid(&itv->it_value))
+		return EINVAL;
+	if (timercmp(&itv->it_value, &max, >))
+		return EINVAL;
+	if (itv->it_interval.tv_sec < 0 || !timerisvalid(&itv->it_interval))
+		return EINVAL;
+	if (timercmp(&itv->it_interval, &max, >))
+		return EINVAL;
+
+	if (!timerisset(&itv->it_value))
+		timerclear(&itv->it_interval);
+	if (timerisset(&itv->it_interval)) {
+		if (timercmp(&itv->it_interval, &min_interval, <))
+			itv->it_interval = min_interval;
+	}
+
+	return 0;
 }
 
 /*
- * Decrement an interval timer by a specified number
- * of microseconds, which must be less than a second,
- * i.e. < 1000000.  If the timer expires, then reload
- * it.  In this case, carry over (usec - old value) to
- * reduce the value reloaded into the timer so that
- * the timer does not drift.  This routine assumes
- * that it is called in a context where the timers
- * on which it is operating cannot change in value.
+ * Decrement an interval timer by the given duration.
+ * If the timer expires and it is periodic then reload it.  When reloading
+ * the timer we subtract any overrun from the next period so that the timer
+ * does not drift.
  */
 int
-itimerdecr(itp, usec)
-	register struct itimerval *itp;
-	int usec;
+itimerdecr(struct itimerspec *itp, const struct timespec *decrement)
 {
-
-	if (itp->it_value.tv_usec < usec) {
-		if (itp->it_value.tv_sec == 0) {
-			/* expired, and already in next interval */
-			usec -= itp->it_value.tv_usec;
-			goto expire;
-		}
-		itp->it_value.tv_usec += 1000000;
-		itp->it_value.tv_sec--;
-	}
-	itp->it_value.tv_usec -= usec;
-	usec = 0;
-	if (timerisset(&itp->it_value))
+	timespecsub(&itp->it_value, decrement, &itp->it_value);
+	if (itp->it_value.tv_sec >= 0 && timespecisset(&itp->it_value))
 		return (1);
-	/* expired, exactly at end of interval */
-expire:
-	if (timerisset(&itp->it_interval)) {
-		itp->it_value = itp->it_interval;
-		itp->it_value.tv_usec -= usec;
-		if (itp->it_value.tv_usec < 0) {
-			itp->it_value.tv_usec += 1000000;
-			itp->it_value.tv_sec--;
-		}
-	} else
-		itp->it_value.tv_usec = 0;		/* sec is already 0 */
+	if (!timespecisset(&itp->it_interval)) {
+		timespecclear(&itp->it_value);
+		return (0);
+	}
+	while (itp->it_value.tv_sec < 0 || !timespecisset(&itp->it_value))
+		timespecadd(&itp->it_value, &itp->it_interval, &itp->it_value);
 	return (0);
+}
+
+void
+itimer_update(struct clockintr *cl, void *cf, void *arg)
+{
+	struct timespec elapsed;
+	uint64_t nsecs;
+	struct clockframe *frame = cf;
+	struct proc *p = curproc;
+	struct process *pr;
+
+	if (p == NULL || ISSET(p->p_flag, P_SYSTEM | P_WEXIT))
+		return;
+
+	pr = p->p_p;
+	if (!ISSET(pr->ps_flags, PS_ITIMER))
+		return;
+
+	nsecs = clockintr_advance(cl, hardclock_period) * hardclock_period;
+	NSEC_TO_TIMESPEC(nsecs, &elapsed);
+
+	mtx_enter(&itimer_mtx);
+	if (CLKF_USERMODE(frame) &&
+	    timespecisset(&pr->ps_timer[ITIMER_VIRTUAL].it_value) &&
+	    itimerdecr(&pr->ps_timer[ITIMER_VIRTUAL], &elapsed) == 0) {
+		process_reset_itimer_flag(pr);
+		atomic_setbits_int(&p->p_flag, P_ALRMPEND);
+		need_proftick(p);
+	}
+	if (timespecisset(&pr->ps_timer[ITIMER_PROF].it_value) &&
+	    itimerdecr(&pr->ps_timer[ITIMER_PROF], &elapsed) == 0) {
+		process_reset_itimer_flag(pr);
+		atomic_setbits_int(&p->p_flag, P_PROFPEND);
+		need_proftick(p);
+	}
+	mtx_leave(&itimer_mtx);
+}
+
+void
+process_reset_itimer_flag(struct process *ps)
+{
+	if (timespecisset(&ps->ps_timer[ITIMER_VIRTUAL].it_value) ||
+	    timespecisset(&ps->ps_timer[ITIMER_PROF].it_value))
+		atomic_setbits_int(&ps->ps_flags, PS_ITIMER);
+	else
+		atomic_clearbits_int(&ps->ps_flags, PS_ITIMER);
+}
+
+struct mutex ratecheck_mtx = MUTEX_INITIALIZER(IPL_HIGH);
+
+/*
+ * ratecheck(): simple time-based rate-limit checking.  see ratecheck(9)
+ * for usage and rationale.
+ */
+int
+ratecheck(struct timeval *lasttime, const struct timeval *mininterval)
+{
+	struct timeval tv, delta;
+	int rv = 0;
+
+	getmicrouptime(&tv);
+
+	mtx_enter(&ratecheck_mtx);
+	timersub(&tv, lasttime, &delta);
+
+	/*
+	 * check for 0,0 is so that the message will be seen at least once,
+	 * even if interval is huge.
+	 */
+	if (timercmp(&delta, mininterval, >=) ||
+	    (lasttime->tv_sec == 0 && lasttime->tv_usec == 0)) {
+		*lasttime = tv;
+		rv = 1;
+	}
+	mtx_leave(&ratecheck_mtx);
+
+	return (rv);
+}
+
+struct mutex ppsratecheck_mtx = MUTEX_INITIALIZER(IPL_HIGH);
+
+/*
+ * ppsratecheck(): packets (or events) per second limitation.
+ */
+int
+ppsratecheck(struct timeval *lasttime, int *curpps, int maxpps)
+{
+	struct timeval tv, delta;
+	int rv;
+
+	microuptime(&tv);
+
+	mtx_enter(&ppsratecheck_mtx);
+	timersub(&tv, lasttime, &delta);
+
+	/*
+	 * check for 0,0 is so that the message will be seen at least once.
+	 * if more than one second have passed since the last update of
+	 * lasttime, reset the counter.
+	 *
+	 * we do increment *curpps even in *curpps < maxpps case, as some may
+	 * try to use *curpps for stat purposes as well.
+	 */
+	if (maxpps == 0)
+		rv = 0;
+	else if ((lasttime->tv_sec == 0 && lasttime->tv_usec == 0) ||
+	    delta.tv_sec >= 1) {
+		*lasttime = tv;
+		*curpps = 0;
+		rv = 1;
+	} else if (maxpps < 0)
+		rv = 1;
+	else if (*curpps < maxpps)
+		rv = 1;
+	else
+		rv = 0;
+
+	/* be careful about wrap-around */
+	if (*curpps + 1 > *curpps)
+		*curpps = *curpps + 1;
+
+	mtx_leave(&ppsratecheck_mtx);
+
+	return (rv);
+}
+
+todr_chip_handle_t todr_handle;
+int inittodr_done;
+
+#define MINYEAR		((OpenBSD / 100) - 1)	/* minimum plausible year */
+
+/*
+ * inittodr:
+ *
+ *      Initialize time from the time-of-day register.
+ */
+void
+inittodr(time_t base)
+{
+	time_t deltat;
+	struct timeval rtctime;
+	struct timespec ts;
+	int badbase;
+
+	inittodr_done = 1;
+
+	if (base < (MINYEAR - 1970) * SECYR) {
+		printf("WARNING: preposterous time in file system\n");
+		/* read the system clock anyway */
+		base = (MINYEAR - 1970) * SECYR;
+		badbase = 1;
+	} else
+		badbase = 0;
+
+	rtctime.tv_sec = base;
+	rtctime.tv_usec = 0;
+
+	if (todr_handle == NULL ||
+	    todr_gettime(todr_handle, &rtctime) != 0 ||
+	    rtctime.tv_sec < (MINYEAR - 1970) * SECYR) {
+		/*
+		 * Believe the time in the file system for lack of
+		 * anything better, resetting the TODR.
+		 */
+		rtctime.tv_sec = base;
+		rtctime.tv_usec = 0;
+		if (todr_handle != NULL && !badbase)
+			printf("WARNING: bad clock chip time\n");
+		ts.tv_sec = rtctime.tv_sec;
+		ts.tv_nsec = rtctime.tv_usec * 1000;
+		tc_setclock(&ts);
+		goto bad;
+	} else {
+		ts.tv_sec = rtctime.tv_sec;
+		ts.tv_nsec = rtctime.tv_usec * 1000;
+		tc_setclock(&ts);
+	}
+
+	if (!badbase) {
+		/*
+		 * See if we gained/lost two or more days; if
+		 * so, assume something is amiss.
+		 */
+		deltat = rtctime.tv_sec - base;
+		if (deltat < 0)
+			deltat = -deltat;
+		if (deltat < 2 * SECDAY)
+			return;         /* all is well */
+#ifndef SMALL_KERNEL
+		printf("WARNING: clock %s %lld days\n",
+		    rtctime.tv_sec < base ? "lost" : "gained",
+		    (long long)(deltat / SECDAY));
+#endif
+	}
+ bad:
+	printf("WARNING: CHECK AND RESET THE DATE!\n");
+}
+
+/*
+ * resettodr:
+ *
+ *      Reset the time-of-day register with the current time.
+ */
+void
+resettodr(void)
+{
+	struct timeval rtctime;
+
+	/*
+	 * Skip writing the RTC if inittodr(9) never ran.  We don't
+	 * want to overwrite a reasonable value with a nonsense value.
+	 */
+	if (!inittodr_done)
+		return;
+
+	microtime(&rtctime);
+
+	if (todr_handle != NULL &&
+	    todr_settime(todr_handle, &rtctime) != 0)
+		printf("WARNING: can't update clock chip time\n");
+}
+
+void
+todr_attach(struct todr_chip_handle *todr)
+{
+	if (todr_handle == NULL ||
+	    todr->todr_quality > todr_handle->todr_quality)
+		todr_handle = todr;
+}
+
+#define RESETTODR_PERIOD	1800
+
+void periodic_resettodr(void *);
+void perform_resettodr(void *);
+
+struct timeout resettodr_to = TIMEOUT_INITIALIZER(periodic_resettodr, NULL);
+struct task resettodr_task = TASK_INITIALIZER(perform_resettodr, NULL);
+
+void
+periodic_resettodr(void *arg __unused)
+{
+	task_add(systq, &resettodr_task);
+}
+
+void
+perform_resettodr(void *arg __unused)
+{
+	resettodr();
+	timeout_add_sec(&resettodr_to, RESETTODR_PERIOD);
+}
+
+void
+start_periodic_resettodr(void)
+{
+	timeout_add_sec(&resettodr_to, RESETTODR_PERIOD);
+}
+
+void
+stop_periodic_resettodr(void)
+{
+	timeout_del(&resettodr_to);
+	task_del(systq, &resettodr_task);
 }

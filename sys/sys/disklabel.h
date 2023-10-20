@@ -1,4 +1,5 @@
-/*	$NetBSD: disklabel.h,v 1.35 1995/10/09 12:00:18 pk Exp $	*/
+/*	$OpenBSD: disklabel.h,v 1.85 2022/10/12 23:11:33 krw Exp $	*/
+/*	$NetBSD: disklabel.h,v 1.41 1996/05/10 23:07:37 mark Exp $	*/
 
 /*
  * Copyright (c) 1987, 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -46,9 +43,11 @@
  * disk geometry, filesystem partitions, and drive specific information.
  * The location of the label, as well as the number of partitions the
  * label can describe and the number of the "whole disk" (raw)
- * paritition are machine dependent.
+ * partition are machine dependent.
  */
 #include <machine/disklabel.h>
+
+#include <sys/uuid.h>
 
 /*
  * The absolute maximum number of disk partitions allowed.
@@ -65,36 +64,25 @@
  */
 #define	DISKUNIT(dev)	(minor(dev) / MAXPARTITIONS)
 #define	DISKPART(dev)	(minor(dev) % MAXPARTITIONS)
+#define	RAW_PART	2	/* 'c' partition */
+#define	DISKMINOR(unit, part) \
+    (((unit) * MAXPARTITIONS) + (part))
 #define	MAKEDISKDEV(maj, unit, part) \
-    (makedev((maj), ((unit) * MAXPARTITIONS) + (part)))
+    (makedev((maj), DISKMINOR((unit), (part))))
+#define	DISKLABELDEV(dev) \
+    (MAKEDISKDEV(major(dev), DISKUNIT(dev), RAW_PART))
 
 #define DISKMAGIC	((u_int32_t)0x82564557)	/* The disk magic number */
 
-#ifndef LOCORE
+#define MAXDISKSIZE	0x7fffffffffffLL	/* 47 bits of reach */
+
+#ifndef _LOCORE
 struct disklabel {
 	u_int32_t d_magic;		/* the magic number */
 	u_int16_t d_type;		/* drive type */
 	u_int16_t d_subtype;		/* controller/d_type specific */
 	char	  d_typename[16];	/* type name, e.g. "eagle" */
-
-	/* 
-	 * d_packname contains the pack identifier and is returned when
-	 * the disklabel is read off the disk or in-core copy.
-	 * d_boot0 and d_boot1 are the (optional) names of the
-	 * primary (block 0) and secondary (block 1-15) bootstraps
-	 * as found in /usr/mdec.  These are returned when using
-	 * getdiskbyname(3) to retrieve the values from /etc/disktab.
-	 */
-	union {
-		char	un_d_packname[16];	/* pack identifier */ 
-		struct {
-			char *un_d_boot0;	/* primary bootstrap name */
-			char *un_d_boot1;	/* secondary bootstrap name */
-		} un_b; 
-	} d_un; 
-#define d_packname	d_un.un_d_packname
-#define d_boot0		d_un.un_b.un_d_boot0
-#define d_boot1		d_un.un_b.un_d_boot1
+	char	  d_packname[16];	/* pack identifier */
 
 			/* disk geometry: */
 	u_int32_t d_secsize;		/* # of bytes per sector */
@@ -102,16 +90,10 @@ struct disklabel {
 	u_int32_t d_ntracks;		/* # of tracks per cylinder */
 	u_int32_t d_ncylinders;		/* # of data cylinders per unit */
 	u_int32_t d_secpercyl;		/* # of data sectors per cylinder */
-	u_int32_t d_secperunit;		/* # of data sectors per unit */
+	u_int32_t d_secperunit;		/* # of data sectors (low part) */
 
-	/*
-	 * Spares (bad sector replacements) below are not counted in
-	 * d_nsectors or d_secpercyl.  Spare sectors are assumed to
-	 * be physical sectors which occupy space at the end of each
-	 * track and/or cylinder.
-	 */
-	u_int16_t d_sparespertrack;	/* # of spare sectors per track */
-	u_int16_t d_sparespercyl;	/* # of spare sectors per cylinder */
+	u_char	d_uid[8];		/* Unique label identifier. */
+
 	/*
 	 * Alternate cylinders include maintenance, replacement, configuration
 	 * description areas, etc.
@@ -119,66 +101,98 @@ struct disklabel {
 	u_int32_t d_acylinders;		/* # of alt. cylinders per unit */
 
 			/* hardware characteristics: */
-	/*
-	 * d_interleave, d_trackskew and d_cylskew describe perturbations
-	 * in the media format used to compensate for a slow controller.
-	 * Interleave is physical sector interleave, set up by the
-	 * formatter or controller when formatting.  When interleaving is
-	 * in use, logically adjacent sectors are not physically
-	 * contiguous, but instead are separated by some number of
-	 * sectors.  It is specified as the ratio of physical sectors
-	 * traversed per logical sector.  Thus an interleave of 1:1
-	 * implies contiguous layout, while 2:1 implies that logical
-	 * sector 0 is separated by one sector from logical sector 1.
-	 * d_trackskew is the offset of sector 0 on track N relative to
-	 * sector 0 on track N-1 on the same cylinder.  Finally, d_cylskew
-	 * is the offset of sector 0 on cylinder N relative to sector 0
-	 * on cylinder N-1.
-	 */
-	u_int16_t d_rpm;		/* rotational speed */
-	u_int16_t d_interleave;		/* hardware sector interleave */
-	u_int16_t d_trackskew;		/* sector 0 skew, per track */
-	u_int16_t d_cylskew;		/* sector 0 skew, per cylinder */
-	u_int32_t d_headswitch;		/* head switch time, usec */
-	u_int32_t d_trkseek;		/* track-to-track seek, usec */
+	u_int16_t d_bstarth;		/* start of useable region (high part) */
+	u_int16_t d_bendh;		/* size of useable region (high part) */
+	u_int32_t d_bstart;		/* start of useable region */
+	u_int32_t d_bend;		/* end of useable region */
 	u_int32_t d_flags;		/* generic flags */
 #define NDDATA 5
-	u_int32_t d_drivedata[NDDATA];	/* drive-type specific information */
-#define NSPARE 5
+	u_int32_t d_spare4[NDDATA];
+	u_int16_t d_secperunith;	/* # of data sectors (high part) */
+	u_int16_t d_version;		/* version # (1=48 bit addressing) */
+#define NSPARE 4
 	u_int32_t d_spare[NSPARE];	/* reserved for future use */
 	u_int32_t d_magic2;		/* the magic number (again) */
 	u_int16_t d_checksum;		/* xor of data incl. partitions */
 
 			/* filesystem and partition information: */
 	u_int16_t d_npartitions;	/* number of partitions in following */
-	u_int32_t d_bbsize;		/* size of boot area at sn0, bytes */
-	u_int32_t d_sbsize;		/* max size of fs superblock, bytes */
+	u_int32_t d_spare2;
+	u_int32_t d_spare3;
 	struct	partition {		/* the partition table */
-		u_int32_t p_size;	/* number of sectors in partition */
-		u_int32_t p_offset;	/* starting sector */
-		u_int32_t p_fsize;	/* filesystem basic fragment size */
+		u_int32_t p_size;	/* number of sectors (low part) */
+		u_int32_t p_offset;	/* starting sector (low part) */
+		u_int16_t p_offseth;	/* starting sector (high part) */
+		u_int16_t p_sizeh;	/* number of sectors (high part) */
 		u_int8_t p_fstype;	/* filesystem type, see below */
-		u_int8_t p_frag;	/* filesystem fragments per block */
-		union {
-			u_int16_t cpg;	/* UFS: FS cylinders per group */
-			u_int16_t sgs;	/* LFS: FS segment shift */
-		} __partition_u1;
-#define	p_cpg	__partition_u1.cpg
-#define	p_sgs	__partition_u1.sgs
+		u_int8_t p_fragblock;	/* encoded filesystem frag/block */
+		u_int16_t p_cpg;	/* UFS: FS cylinders per group */
 	} d_partitions[MAXPARTITIONS];	/* actually may be more */
 };
-#else /* LOCORE */
-	/*
-	 * offsets for asm boot files.
-	 */
-	.set	d_secsize,40
-	.set	d_nsectors,44
-	.set	d_ntracks,48
-	.set	d_ncylinders,52
-	.set	d_secpercyl,56
-	.set	d_secperunit,60
-	.set	d_end_,276		/* size of disk label */
-#endif /* LOCORE */
+
+
+struct	__partitionv0 {		/* old (v0) partition table entry */
+	u_int32_t p_size;	/* number of sectors in partition */
+	u_int32_t p_offset;	/* starting sector */
+	u_int32_t p_fsize;	/* filesystem basic fragment size */
+	u_int8_t p_fstype;	/* filesystem type, see below */
+	u_int8_t p_frag;	/* filesystem fragments per block */
+	union {
+		u_int16_t cpg;	/* UFS: FS cylinders per group */
+		u_int16_t sgs;	/* LFS: FS segment shift */
+	} __partitionv0_u1;
+};
+#endif /* _LOCORE */
+
+
+#define DISKLABELV1_FFS_FRAGBLOCK(fsize, frag) 			\
+	((fsize) * (frag) == 0 ? 0 :				\
+	(((ffs((fsize) * (frag)) - 13) << 3) | (ffs(frag))))
+
+#define DISKLABELV1_FFS_BSIZE(i) ((i) == 0 ? 0 : (1 << (((i) >> 3) + 12)))
+#define DISKLABELV1_FFS_FRAG(i) ((i) == 0 ? 0 : (1 << (((i) & 0x07) - 1)))
+#define DISKLABELV1_FFS_FSIZE(i) (DISKLABELV1_FFS_FRAG(i) == 0 ? 0 : \
+	(DISKLABELV1_FFS_BSIZE(i) / DISKLABELV1_FFS_FRAG(i)))
+
+#define DL_GETPSIZE(p)		(((u_int64_t)(p)->p_sizeh << 32) + (p)->p_size)
+#define DL_SETPSIZE(p, n)	do { \
+					u_int64_t __x = (n); \
+					(p)->p_sizeh = __x >> 32; \
+					(p)->p_size = __x; \
+				} while (0)
+#define DL_GETPOFFSET(p)	(((u_int64_t)(p)->p_offseth << 32) + (p)->p_offset)
+#define DL_SETPOFFSET(p, n)	do { \
+					u_int64_t __x = (n); \
+					(p)->p_offseth = __x >> 32; \
+					(p)->p_offset = __x; \
+				} while (0)
+
+#define DL_GETDSIZE(d)		(((u_int64_t)(d)->d_secperunith << 32) + \
+				    (d)->d_secperunit)
+#define DL_SETDSIZE(d, n)	do { \
+					u_int64_t __x = (n); \
+					(d)->d_secperunith = __x >> 32; \
+					(d)->d_secperunit = __x; \
+				} while (0)
+#define DL_GETBSTART(d)		(((u_int64_t)(d)->d_bstarth << 32) + \
+				    (d)->d_bstart)
+#define DL_SETBSTART(d, n)	do { \
+					u_int64_t __x = (n); \
+					(d)->d_bstarth = __x >> 32; \
+					(d)->d_bstart = __x; \
+				} while (0)
+#define DL_GETBEND(d)		(((u_int64_t)(d)->d_bendh << 32) + \
+				    (d)->d_bend)
+#define DL_SETBEND(d, n)	do { \
+					u_int64_t __x = (n); \
+					(d)->d_bendh = __x >> 32; \
+					(d)->d_bend = __x; \
+				} while (0)
+
+#define DL_BLKSPERSEC(d)	((d)->d_secsize / DEV_BSIZE)
+#define DL_SECTOBLK(d, n)	((n) * DL_BLKSPERSEC(d))
+#define DL_BLKTOSEC(d, n)	((n) / DL_BLKSPERSEC(d))
+#define DL_BLKOFFSET(d, n)	(((n) % DL_BLKSPERSEC(d)) * DEV_BSIZE)
 
 /* d_type values: */
 #define	DTYPE_SMD		1		/* SMD, XSMD; VAX hp/up */
@@ -190,11 +204,14 @@ struct disklabel {
 #define	DTYPE_HPIB		7		/* CS/80 on HP-IB */
 #define	DTYPE_HPFL		8		/* HP Fiber-link */
 #define	DTYPE_FLOPPY		10		/* floppy */
-#define	DTYPE_CCD		11		/* concatenated disk device */
+#define	DTYPE_CCD		11		/* was: concatenated disk device */
 #define	DTYPE_VND		12		/* vnode pseudo-disk */
+#define	DTYPE_ATAPI		13		/* ATAPI */
+#define DTYPE_RAID		14		/* was: RAIDframe */
+#define DTYPE_RDROOT		15		/* ram disk root */
 
 #ifdef DKTYPENAMES
-static char *dktypenames[] = {
+static const char * const dktypenames[] = {
 	"unknown",
 	"SMD",
 	"MSCP",
@@ -206,8 +223,11 @@ static char *dktypenames[] = {
 	"HP-FL",
 	"type 9",
 	"floppy",
-	"ccd",
+	"ccd",			/* deprecated */
 	"vnd",
+	"ATAPI",
+	"RAID",
+	"rdroot",
 	NULL
 };
 #define DKMAXTYPES	(sizeof(dktypenames) / sizeof(dktypenames[0]) - 1)
@@ -234,16 +254,22 @@ static char *dktypenames[] = {
 #define	FS_BOOT		13		/* partition contains bootstrap */
 #define	FS_ADOS		14		/* AmigaDOS fast file system */
 #define	FS_HFS		15		/* Macintosh HFS */
+#define	FS_ADFS		16		/* Acorn Disk Filing System */
+#define FS_EXT2FS	17		/* ext2fs */
+#define FS_CCD		18		/* ccd component */
+#define FS_RAID		19		/* RAIDframe or softraid */
+#define FS_NTFS		20		/* Windows/NT file system */
+#define FS_UDF		21		/* UDF (DVD) filesystem */
 
-#ifdef	DKTYPENAMES
-static char *fstypenames[] = {
+#ifdef DKTYPENAMES
+static const char * const fstypenames[] = {
 	"unused",
 	"swap",
-	"Version 6",
-	"Version 7",
-	"System V",
+	"Version6",
+	"Version7",
+	"SystemV",
 	"4.1BSD",
-	"Eighth Edition",
+	"Eighth-Edition",
 	"4.2BSD",
 	"MSDOS",
 	"4.4LFS",
@@ -253,53 +279,51 @@ static char *fstypenames[] = {
 	"boot",
 	"ADOS",
 	"HFS",
+	"ADFS",
+	"ext2fs",
+	"ccd",
+	"RAID",
+	"NTFS",
+	"UDF",
 	NULL
 };
+
+/* Similar to the above, but used for things like the mount command. */
+static char *fstypesnames[] = {
+	"",		/* 0 */
+	"",		/* 1 */
+	"",		/* 2 */
+	"",		/* 3 */
+	"",		/* 4 */
+	"",		/* 5 */
+	"",		/* 6 */
+	"ffs",		/* 7 */
+	"msdos",	/* 8 */
+	"lfs",		/* 9 */
+	"",		/* 10 */
+	"",		/* 11 */
+	"cd9660",	/* 12 */
+	"",		/* 13 */
+	"ados",		/* 14 */
+	"",		/* 15 */
+	"",		/* 16 */
+	"ext2fs",	/* 17 */
+	"",		/* 18 */
+	"",		/* 19 */
+	"ntfs",		/* 20 */
+	"udf",		/* 21 */
+	NULL
+};
+
 #define FSMAXTYPES	(sizeof(fstypenames) / sizeof(fstypenames[0]) - 1)
 #endif
 
 /*
  * flags shared by various drives:
  */
-#define		D_REMOVABLE	0x01		/* removable media */
-#define		D_ECC		0x02		/* supports ECC */
-#define		D_BADSECT	0x04		/* supports bad sector forw. */
-#define		D_RAMDISK	0x08		/* disk emulator */
-#define		D_CHAIN		0x10		/* can do back-back transfers */
+#define		D_VENDOR	0x08		/* vendor disklabel */
 
-/*
- * Drive data for SMD.
- */
-#define	d_smdflags	d_drivedata[0]
-#define		D_SSE		0x1		/* supports skip sectoring */
-#define	d_mindist	d_drivedata[1]
-#define	d_maxdist	d_drivedata[2]
-#define	d_sdist		d_drivedata[3]
-
-/*
- * Drive data for ST506.
- */
-#define d_precompcyl	d_drivedata[0]
-#define d_gap3		d_drivedata[1]		/* used only when formatting */
-
-/*
- * Drive data for SCSI.
- */
-#define	d_blind		d_drivedata[0]
-
-#ifndef LOCORE
-/*
- * Structure used to perform a format or other raw operation, returning
- * data and/or register values.  Register identification and format
- * are device- and driver-dependent.
- */
-struct format_op {
-	char	*df_buf;
-	int	 df_count;		/* value-result */
-	daddr_t	 df_startblk;
-	int	 df_reg[8];		/* result */
-};
-
+#ifndef _LOCORE
 /*
  * Structure used internally to retrieve information about a partition
  * on a disk.
@@ -309,46 +333,190 @@ struct partinfo {
 	struct partition *part;
 };
 
-/*
- * Disk-specific ioctls.
- */
-		/* get and set disklabel; DIOCGPART used internally */
-#define DIOCGDINFO	_IOR('d', 101, struct disklabel)/* get */
-#define DIOCSDINFO	_IOW('d', 102, struct disklabel)/* set */
-#define DIOCWDINFO	_IOW('d', 103, struct disklabel)/* set, update disk */
-#define DIOCGPART	_IOW('d', 104, struct partinfo)	/* get partition */
+/* GUID partition table -- located at sector 1 of some disks. */
+#define	GPTSECTOR		1	/* DOS boot block relative sector # */
+#define	GPTSIGNATURE		0x5452415020494645LL
+				/* ASCII string "EFI PART" encoded as 64-bit */
+#define	GPTREVISION		0x10000		/* GPT header version 1.0 */
+#define	NGPTPARTITIONS		128
+#define	GPTPARTATTR_REQUIRED		(1ULL << 0)
+#define	GPTPARTATTR_IGNORE		(1ULL << 1)
+#define	GPTPARTATTR_BOOTABLE		(1ULL << 2)
+#define	GPTPARTATTR_MS_READONLY		(1ULL << 60)
+#define	GPTPARTATTR_MS_SHADOW		(1ULL << 61)
+#define	GPTPARTATTR_MS_HIDDEN		(1ULL << 62)
+#define	GPTPARTATTR_MS_NOAUTOMOUNT	(1ULL << 63)
 
-/* do format operation, read or write */
-#define DIOCRFORMAT	_IOWR('d', 105, struct format_op)
-#define DIOCWFORMAT	_IOWR('d', 106, struct format_op)
+#define	GPTMINHDRSIZE		92
+#define	GPTMINPARTSIZE		128
+#define	GPTPARTNAMESIZE		36
 
-#define DIOCSSTEP	_IOW('d', 107, int)	/* set step rate */
-#define DIOCSRETRIES	_IOW('d', 108, int)	/* set # of retries */
-#define DIOCWLABEL	_IOW('d', 109, int)	/* write en/disable label */
+/* all values in the GPT need to be little endian as per UEFI specification */
+struct gpt_header {
+	u_int64_t gh_sig;	/* "EFI PART" */
+	u_int32_t gh_rev;	/* GPT Version 1.0: 0x00000100 */
+	u_int32_t gh_size;	/* Little-Endian */
+	u_int32_t gh_csum;	/* CRC32: with this field as 0 */
+	u_int32_t gh_rsvd;	/* always zero */
+	u_int64_t gh_lba_self;	/* LBA of this header */
+	u_int64_t gh_lba_alt;	/* LBA of alternate header */
+	u_int64_t gh_lba_start;	/* first usable LBA */
+	u_int64_t gh_lba_end;	/* last usable LBA */
+	struct uuid gh_guid;	/* disk GUID used to identify the disk */
+	u_int64_t gh_part_lba;	/* starting LBA of GPT partition entries */
+	u_int32_t gh_part_num;	/* # of partition entries */
+	u_int32_t gh_part_size;	/* size per entry, shall be 128*(2**n)
+				   with n >= 0 */
+	u_int32_t gh_part_csum;	/* CRC32 checksum of all partition entries:
+				 * starts at gh_part_lba and is computed over
+				 * a byte length of gh_part_num*gh_part_size */
+	/* the rest of the block is reserved by UEFI and must be zero */
+};
 
-#define DIOCSBAD	_IOW('d', 110, struct dkbad)	/* set kernel dkbad */
-#define DIOCEJECT	_IO('d', 112)		/* Eject removable disk */
+struct gpt_partition {
+	struct uuid gp_type;	/* partition type GUID */
+	struct uuid gp_guid;	/* unique partition GUID */
+	u_int64_t gp_lba_start;	/* starting LBA of this partition */
+	u_int64_t gp_lba_end;	/* ending LBA of this partition, inclusive,
+				   usually odd */
+	u_int64_t gp_attrs;	/* attribute flags */
+	u_int16_t gp_name[GPTPARTNAMESIZE]; /* partition name, utf-16le */
+	/* the rest of the GPT partition entry, if any, is reserved by UEFI
+	   and must be zero */
+};
+
+#define GPT_UUID_UNUSED \
+    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
+#define GPT_UUID_MSDOS \
+    { 0xeb, 0xd0, 0xa0, 0xa2, 0xb9, 0xe5, 0x44, 0x33, \
+      0x87, 0xc0, 0x68, 0xb6, 0xb7, 0x26, 0x99, 0xc7 }
+#define GPT_UUID_EFI_SYSTEM \
+    { 0xc1, 0x2a, 0x73, 0x28, 0xf8, 0x1f, 0x11, 0xd2, \
+      0xba, 0x4b, 0x00, 0xa0, 0xc9, 0x3e, 0xc9, 0x3b }
+#define GPT_UUID_LEGACY_MBR \
+    { 0x02, 0x4d, 0xee, 0x41, 0x33, 0x37, 0x11, 0xd3, \
+      0x9d, 0x69, 0x00, 0x08, 0xc7, 0x81, 0xf3, 0x9f }
+#define GPT_UUID_OPENBSD \
+    { 0x82, 0x4c, 0xc7, 0xa0, 0x36, 0xa8, 0x11, 0xe3, \
+      0x89, 0x0a, 0x95, 0x25, 0x19, 0xad, 0x3f, 0x61 }
+#define GPT_UUID_CHROMEROOTFS \
+    { 0x3c, 0xb8, 0xe2, 0x02, 0x3b, 0x7e, 0x47, 0xdd, \
+      0x8a, 0x3c, 0x7f, 0xf2, 0xa1, 0x3c, 0xfc, 0xec }
+#define GPT_UUID_LINUX \
+    { 0x0f, 0xc6, 0x3d, 0xaf, 0x84, 0x83, 0x47, 0x72, \
+      0x8e, 0x79, 0x3d, 0x69, 0xd8, 0x47, 0x7d, 0xe4 }
+#define GPT_UUID_LINUX_HOME \
+    { 0x93, 0x3a, 0xc7, 0xe1, 0x2e, 0xb4, 0x4f, 0x13, \
+      0xb8, 0x44, 0x0e, 0x14, 0xe2, 0xae, 0xf9, 0x15 }
+#define GPT_UUID_LINUX_SRV \
+    { 0x3b, 0x8f, 0x84, 0x25, 0x20, 0xe0, 0x4f, 0x3b, \
+      0x90, 0x7f, 0x1a, 0x25, 0xa7, 0x6f, 0x98, 0xe8 }
+#define GPT_UUID_FBSD_DATA \
+    { 0x51, 0x6e, 0x7c, 0xb4, 0x6e, 0xcf, 0x11, 0xd6, \
+      0x8f, 0xf8, 0x00, 0x02, 0x2d, 0x09, 0x71, 0x2b }
+#define GPT_UUID_FBSD_UFS \
+    { 0x51, 0x6e, 0x7c, 0xb6, 0x6e, 0xcf, 0x11, 0xd6, \
+      0x8f, 0xf8, 0x00, 0x02, 0x2d, 0x09, 0x71, 0x2b }
+#define GPT_UUID_NBSD_UFS \
+    { 0x49, 0xf4, 0x8d, 0x5a, 0xb1, 0x0e, 0x11, 0xdc, \
+      0xb9, 0x9b, 0x00, 0x19, 0xd1, 0x87, 0x96, 0x48 }
+#define GPT_UUID_APPLE_HFS \
+    { 0x48, 0x46, 0x53, 0x00, 0x00, 0x00, 0x11, 0xaa, \
+      0xaa, 0x11, 0x00, 0x30, 0x65, 0x43, 0xec, 0xac }
+#define GPT_UUID_APPLE_UFS \
+    { 0x55, 0x46, 0x53, 0x00, 0x00, 0x00, 0x11, 0xaa, \
+      0xaa, 0x11, 0x00, 0x30, 0x65, 0x43, 0xec, 0xac }
+#define GPT_UUID_BIOS_BOOT \
+    { 0x21, 0x68, 0x61, 0x48, 0x64, 0x49, 0x6e, 0x6f, \
+      0x74, 0x4e, 0x65, 0x65, 0x64, 0x45, 0x46, 0x49 }
+
+/* DOS partition table -- located at start of some disks. */
+#define	DOS_LABELSECTOR 1
+#define	DOSBBSECTOR	0		/* DOS boot block relative sector # */
+#define	DOSPARTOFF	446
+#define	DOSDISKOFF	444
+#define	NDOSPART	4
+#define	DOSACTIVE	0x80		/* active partition */
+
+#define	DOSMBR_SIGNATURE	(0xaa55)
+#define	DOSMBR_SIGNATURE_OFF	(0x1fe)
+
+/* Maximum number of Extended Boot Records (EBRs) to traverse. */
+#define	DOS_MAXEBR	256
+
+struct dos_partition {
+	u_int8_t	dp_flag;	/* bootstrap flags */
+	u_int8_t	dp_shd;		/* starting head */
+	u_int8_t	dp_ssect;	/* starting sector */
+	u_int8_t	dp_scyl;	/* starting cylinder */
+	u_int8_t	dp_typ;		/* partition type (see below) */
+	u_int8_t	dp_ehd;		/* end head */
+	u_int8_t	dp_esect;	/* end sector */
+	u_int8_t	dp_ecyl;	/* end cylinder */
+	u_int32_t	dp_start;	/* absolute starting sector number */
+	u_int32_t	dp_size;	/* partition size in sectors */
+};
+
+/* Isolate the relevant bits to get sector and cylinder. */
+#define	DPSECT(s)	((s) & 0x3f)
+#define	DPCYL(c, s)	((c) + (((s) & 0xc0) << 2))
+
+/* Known DOS partition types. */
+#define	DOSPTYP_UNUSED	0x00		/* Unused partition */
+#define	DOSPTYP_FAT12	0x01		/* 12-bit FAT */
+#define	DOSPTYP_FAT16S	0x04		/* 16-bit FAT, less than 32M */
+#define	DOSPTYP_EXTEND	0x05		/* Extended; contains sub-partitions */
+#define	DOSPTYP_FAT16B	0x06		/* 16-bit FAT, more than 32M */
+#define	DOSPTYP_NTFS	0x07		/* NTFS */
+#define	DOSPTYP_FAT32	0x0b		/* 32-bit FAT */
+#define	DOSPTYP_FAT32L	0x0c		/* 32-bit FAT, LBA-mapped */
+#define	DOSPTYP_FAT16L	0x0e		/* 16-bit FAT, LBA-mapped */
+#define	DOSPTYP_EXTENDL 0x0f		/* Extended, LBA-mapped; (sub-partitions) */
+#define	DOSPTYP_ONTRACK	0x54
+#define	DOSPTYP_LINUX	0x83		/* That other thing */
+#define	DOSPTYP_FREEBSD	0xa5		/* FreeBSD partition type */
+#define	DOSPTYP_OPENBSD	0xa6		/* OpenBSD partition type */
+#define	DOSPTYP_NETBSD	0xa9		/* NetBSD partition type */
+#define	DOSPTYP_EFI	0xee		/* EFI Protective Partition */
+#define	DOSPTYP_EFISYS	0xef		/* EFI System Partition */
+
+struct dos_mbr {
+	u_int8_t		dmbr_boot[DOSPARTOFF];
+	struct dos_partition	dmbr_parts[NDOSPART];
+	u_int16_t		dmbr_sign;
+} __packed;
 
 #ifdef _KERNEL
-void	 diskerr
-	    __P((struct buf *, char *, char *, int, int, struct disklabel *));
-void	 disksort __P((struct buf *, struct buf *));
-u_int	 dkcksum __P((struct disklabel *));
-int	 setdisklabel __P((struct disklabel *, struct disklabel *, u_long,
-	    struct cpu_disklabel *));
-char	*readdisklabel __P((dev_t, void (*)(), struct disklabel *,
-	    struct cpu_disklabel *));
-int	 writedisklabel __P((dev_t, void (*)(), struct disklabel *,
-	    struct cpu_disklabel *));
+void	 diskerr(struct buf *, char *, char *, int, int, struct disklabel *);
+u_int	 dkcksum(struct disklabel *);
+int	 initdisklabel(struct disklabel *);
+int	 checkdisklabel(dev_t, void *, struct disklabel *, u_int64_t, u_int64_t);
+int	 setdisklabel(struct disklabel *, struct disklabel *, u_int);
+int	 readdisklabel(dev_t, void (*)(struct buf *), struct disklabel *, int);
+int	 writedisklabel(dev_t, void (*)(struct buf *), struct disklabel *);
+int	 bounds_check_with_label(struct buf *, struct disklabel *);
+int	 readdisksector(struct buf *, void (*)(struct buf *),
+	    struct disklabel *, u_int64_t);
+int	 readdoslabel(struct buf *, void (*)(struct buf *),
+	    struct disklabel *, daddr_t *, int);
+#ifdef CD9660
+int iso_disklabelspoof(dev_t dev, void (*strat)(struct buf *),
+	struct disklabel *lp);
 #endif
-#endif /* LOCORE */
+#ifdef UDF
+int udf_disklabelspoof(dev_t dev, void (*strat)(struct buf *),
+	struct disklabel *lp);
+#endif
+#endif
+#endif /* _LOCORE */
 
-#if !defined(_KERNEL) && !defined(LOCORE)
+#if !defined(_KERNEL) && !defined(_LOCORE)
 
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-struct disklabel *getdiskbyname __P((const char *));
+struct disklabel *getdiskbyname(const char *);
 __END_DECLS
 
 #endif

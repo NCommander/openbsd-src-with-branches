@@ -1,6 +1,8 @@
+/*	$OpenBSD: wc.c,v 1.30 2022/09/02 15:21:40 cheloha Exp $	*/
+
 /*
- * Copyright (c) 1980, 1987 Regents of the University of California.
- * All rights reserved.
+ * Copyright (c) 1980, 1987, 1991, 1993
+ *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,63 +29,63 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1980, 1987 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
+#include <sys/stat.h>
 
-#ifndef lint
-/*static char sccsid[] = "from: @(#)wc.c	5.7 (Berkeley) 3/2/91";*/
-static char rcsid[] = "$Id: wc.c,v 1.9 1994/01/03 03:11:06 andrew Exp $";
-#endif /* not lint */
-
-/* wc line, word and char count */
-
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <locale.h>
 #include <ctype.h>
-#include <errno.h>
-#include <sys/param.h>
-#include <sys/stat.h>
-#include <sys/file.h>
-#include <unistd.h>
 #include <err.h>
+#include <unistd.h>
+#include <util.h>
+#include <wchar.h>
+#include <wctype.h>
 
-static void	print_counts();
-static void	cnt();
-static long	tlinect, twordct, tcharct;
-static int	doline, doword, dochar;
-static int 	rval = 0;
+#define	_MAXBSIZE (64 * 1024)
+
+int64_t	tlinect, twordct, tcharct;
+int	doline, doword, dochar, humanchar, multibyte;
+int	rval;
+extern char *__progname;
+
+static void print_counts(int64_t, int64_t, int64_t, const char *);
+static void format_and_print(int64_t);
+static void cnt(const char *);
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
-	extern int optind;
-	register int ch;
+	int ch;
 
-	setlocale(LC_ALL, "");
+	setlocale(LC_CTYPE, "");
 
-	while ((ch = getopt(argc, argv, "lwcm")) != -1)
-		switch((char)ch) {
+	if (pledge("stdio rpath", NULL) == -1)
+		err(1, "pledge");
+
+	while ((ch = getopt(argc, argv, "lwchm")) != -1)
+		switch(ch) {
 		case 'l':
 			doline = 1;
 			break;
 		case 'w':
 			doword = 1;
 			break;
-		case 'c':
 		case 'm':
+			if (MB_CUR_MAX > 1)
+				multibyte = 1;
+			/* FALLTHROUGH */
+		case 'c':
 			dochar = 1;
 			break;
-		case '?':
+		case 'h':
+			humanchar = 1;
+			break;
 		default:
-			fprintf(stderr, "usage: wc [-c | -m] [-lw] [file ...]\n");
-			exit(1);
+			fprintf(stderr,
+			    "usage: %s [-c | -m] [-hlw] [file ...]\n",
+			    __progname);
+			return 1;
 		}
 	argv += optind;
 	argc -= optind;
@@ -97,12 +95,11 @@ main(argc, argv)
 	 * if you don't get any arguments, you have to turn them
 	 * all on.
 	 */
-	if (!doline && !doword && !dochar) {
+	if (!doline && !doword && !dochar)
 		doline = doword = dochar = 1;
-	}
 
 	if (!*argv) {
-		cnt((char *)NULL);
+		cnt(NULL);
 	} else {
 		int dototal = (argc > 1);
 
@@ -110,149 +107,198 @@ main(argc, argv)
 			cnt(*argv);
 		} while(*++argv);
 
-		if (dototal) {
-			print_counts (tlinect, twordct, tcharct, "total"); 
-		}
+		if (dototal)
+			print_counts(tlinect, twordct, tcharct, "total");
 	}
 
-	exit(rval);
+	return rval;
 }
 
-
 static void
-cnt(file)
-	char *file;
+cnt(const char *path)
 {
-	register u_char *C;
-	register short gotsp;
-	register int len;
-	register long linect, wordct, charct;
+	static char *buf;
+	static size_t bufsz;
+
+	FILE *stream;
+	const char *file;
+	char *C;
+	wchar_t wc;
+	short gotsp;
+	ssize_t len;
+	int64_t linect, wordct, charct;
 	struct stat sbuf;
 	int fd;
-	u_char buf[MAXBSIZE];
 
 	linect = wordct = charct = 0;
-	if (file) {
-		if ((fd = open(file, O_RDONLY, 0)) < 0) {
-			warn ("%s", file);
+	stream = NULL;
+	if (path != NULL) {
+		file = path;
+		if ((fd = open(file, O_RDONLY)) == -1) {
+			warn("%s", file);
 			rval = 1;
 			return;
 		}
 	} else  {
+		file = "(stdin)";
 		fd = STDIN_FILENO;
 	}
-	
-	if (!doword) {
+
+	if (!multibyte) {
+		if (bufsz < _MAXBSIZE &&
+		    (buf = realloc(buf, _MAXBSIZE)) == NULL)
+			err(1, NULL);
+
 		/*
-		 * line counting is split out because it's a lot
+		 * According to POSIX, a word is a "maximal string of
+		 * characters delimited by whitespace."  Nothing is said
+		 * about a character being printing or non-printing.
+		 */
+		if (doword) {
+			gotsp = 1;
+			while ((len = read(fd, buf, _MAXBSIZE)) > 0) {
+				charct += len;
+				for (C = buf; len--; ++C) {
+					if (isspace((unsigned char)*C)) {
+						gotsp = 1;
+						if (*C == '\n')
+							++linect;
+					} else if (gotsp) {
+						gotsp = 0;
+						++wordct;
+					}
+				}
+			}
+			if (len == -1) {
+				warn("%s", file);
+				rval = 1;
+			}
+		}
+		/*
+		 * Line counting is split out because it's a lot
 		 * faster to get lines than to get words, since
 		 * the word count requires some logic.
 		 */
-		if (doline) {
-			while((len = read(fd, buf, MAXBSIZE)) > 0) {
+		else if (doline) {
+			while ((len = read(fd, buf, _MAXBSIZE)) > 0) {
 				charct += len;
 				for (C = buf; len--; ++C)
 					if (*C == '\n')
 						++linect;
 			}
 			if (len == -1) {
-				warn ("%s", file);
+				warn("%s", file);
 				rval = 1;
 			}
 		}
-
 		/*
-		 * if all we need is the number of characters and
+		 * If all we need is the number of characters and
 		 * it's a directory or a regular or linked file, just
 		 * stat the puppy.  We avoid testing for it not being
 		 * a special device in case someone adds a new type
 		 * of inode.
 		 */
 		else if (dochar) {
-			int ifmt;
+			mode_t ifmt;
 
 			if (fstat(fd, &sbuf)) {
-				warn ("%s", file);
+				warn("%s", file);
 				rval = 1;
 			} else {
 				ifmt = sbuf.st_mode & S_IFMT;
 				if (ifmt == S_IFREG || ifmt == S_IFLNK
-					|| ifmt == S_IFDIR) {
+				    || ifmt == S_IFDIR) {
 					charct = sbuf.st_size;
 				} else {
-					while((len = read(fd, buf, MAXBSIZE)) > 0)
+					while ((len = read(fd, buf, _MAXBSIZE)) > 0)
 						charct += len;
 					if (len == -1) {
-						warn ("%s", file);
+						warn("%s", file);
 						rval = 1;
 					}
 				}
 			}
 		}
-	}
-	else
-	{
-		/* do it the hard way... */
+	} else {
+		if (path == NULL)
+			stream = stdin;
+		else if ((stream = fdopen(fd, "r")) == NULL) {
+			warn("%s", file);
+			close(fd);
+			rval = 1;
+			return;
+		}
+
 		gotsp = 1;
-		while ((len = read(fd, buf, MAXBSIZE)) > 0) {
-			charct += len;
-			for (C = buf; len--; ++C) {
-				if (isspace (*C)) {
+		while ((len = getline(&buf, &bufsz, stream)) > 0) {
+			const char *end = buf + len;
+			for (C = buf; C < end; C += len) {
+				++charct;
+				len = mbtowc(&wc, C, MB_CUR_MAX);
+				if (len == -1) {
+					mbtowc(NULL, NULL,
+					    MB_CUR_MAX);
+					len = 1;
+					wc = L'?';
+				} else if (len == 0)
+					len = 1;
+				if (iswspace(wc)) {
 					gotsp = 1;
-					if (*C == '\n') {
+					if (wc == L'\n')
 						++linect;
-					}
-				} else {
-					/*
-					 * This line implements the POSIX
-					 * spec, i.e. a word is a "maximal
-					 * string of characters delimited by
-					 * whitespace."  Notice nothing was
-					 * said about a character being
-					 * printing or non-printing.
-					 */
-					if (gotsp) {
-						gotsp = 0;
-						++wordct;
-					}
+				} else if (gotsp) {
+					gotsp = 0;
+					++wordct;
 				}
 			}
 		}
-		if (len == -1) {
-			warn ("%s", file);
+		if (ferror(stream)) {
+			warn("%s", file);
 			rval = 1;
 		}
 	}
 
-	print_counts (linect, wordct, charct, file ? file : "");
+	print_counts(linect, wordct, charct, path);
 
-	/* don't bother checkint doline, doword, or dochar --- speeds
-           up the common case */
+	/*
+	 * Don't bother checking doline, doword, or dochar -- speeds
+	 * up the common case
+	 */
 	tlinect += linect;
 	twordct += wordct;
 	tcharct += charct;
 
-	if (close(fd)) {
-		warn ("%s", file);
+	if ((stream == NULL ? close(fd) : fclose(stream)) != 0) {
+		warn("%s", file);
 		rval = 1;
 	}
 }
 
-
-void
-print_counts (lines, words, chars, name)
-	long lines;
-	long words;
-	long chars;
-	char *name;
+static void
+format_and_print(int64_t v)
 {
+	if (humanchar) {
+		char result[FMT_SCALED_STRSIZE];
 
+		fmt_scaled((long long)v, result);
+		printf("%7s", result);
+	} else {
+		printf(" %7lld", v);
+	}
+}
+
+static void
+print_counts(int64_t lines, int64_t words, int64_t chars, const char *name)
+{
 	if (doline)
-		printf(" %7ld", lines);
+		format_and_print(lines);
 	if (doword)
-		printf(" %7ld", words);
+		format_and_print(words);
 	if (dochar)
-		printf(" %7ld", chars);
+		format_and_print(chars);
 
-	printf (" %s\n", name);
+	if (name)
+		printf(" %s\n", name);
+	else
+		printf("\n");
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: str.c,v 1.14 2021/11/02 03:09:15 cheloha Exp $	*/
 /*	$NetBSD: str.c,v 1.7 1995/08/31 22:13:47 jtc Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,38 +30,31 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)str.c	8.2 (Berkeley) 4/28/95";
-#endif
-static char rcsid[] = "$NetBSD: str.c,v 1.7 1995/08/31 22:13:47 jtc Exp $";
-#endif /* not lint */
-
-#include <sys/cdefs.h>
 #include <sys/types.h>
 
+#include <assert.h>
 #include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <err.h>
 
 #include "extern.h"
 
-static int	backslash __P((STR *));
-static int	bracket __P((STR *));
-static int	c_class __P((const void *, const void *));
-static void	genclass __P((STR *));
-static void	genequiv __P((STR *));
-static int	genrange __P((STR *));
-static void	genseq __P((STR *));
+static int	backslash(STR *);
+static int	bracket(STR *);
+static int	c_class(const void *, const void *);
+static void	genclass(STR *);
+static void	genequiv(STR *);
+static int	genrange(STR *);
+static void	genseq(STR *);
 
 int
-next(s)
-	register STR *s;
+next(STR *s)
 {
-	register int ch;
+	int ch;
 
 	switch (s->state) {
 	case EOS:
@@ -112,35 +102,36 @@ next(s)
 			return (next(s));
 		}
 		return (1);
+	default:
+		return 0;
 	}
 	/* NOTREACHED */
 }
 
 static int
-bracket(s)
-	register STR *s;
+bracket(STR *s)
 {
-	register char *p;
+	char *p;
 
 	switch (s->str[1]) {
 	case ':':				/* "[:class:]" */
-		if ((p = strstr(s->str + 2, ":]")) == NULL)
+		if ((p = strstr((char *)s->str + 2, ":]")) == NULL)
 			return (0);
 		*p = '\0';
 		s->str += 2;
 		genclass(s);
-		s->str = p + 2;
+		s->str = (unsigned char *)p + 2;
 		return (1);
 	case '=':				/* "[=equiv=]" */
-		if ((p = strstr(s->str + 2, "=]")) == NULL)
+		if ((p = strstr((char *)s->str + 2, "=]")) == NULL)
 			return (0);
 		s->str += 2;
 		genequiv(s);
 		return (1);
 	default:				/* "[\###*n]" or "[#*n]" */
-		if ((p = strpbrk(s->str + 2, "*]")) == NULL)
+		if ((p = strpbrk((char *)s->str + 2, "*]")) == NULL)
 			return (0);
-		if (p[0] != '*' || index(p, ']') == NULL)
+		if (p[0] != '*' || strchr(p, ']') == NULL)
 			return (0);
 		s->str += 1;
 		genseq(s);
@@ -151,7 +142,7 @@ bracket(s)
 
 typedef struct {
 	char *name;
-	int (*func) __P((int));
+	int (*func)(int);
 	int *set;
 } CLASS;
 
@@ -163,7 +154,7 @@ static CLASS classes[] = {
 	{ "digit",  isdigit,  },
 	{ "graph",  isgraph,  },
 	{ "lower",  islower,  },
-	{ "print",  isupper,  },
+	{ "print",  isprint,  },
 	{ "punct",  ispunct,  },
 	{ "space",  isspace,  },
 	{ "upper",  isupper,  },
@@ -171,25 +162,38 @@ static CLASS classes[] = {
 };
 
 static void
-genclass(s)
-	STR *s;
+genclass(STR *s)
 {
-	register int cnt, (*func) __P((int));
 	CLASS *cp, tmp;
-	int *p;
+	size_t len;
+	int i;
 
-	tmp.name = s->str;
+	tmp.name = (char *)s->str;
 	if ((cp = (CLASS *)bsearch(&tmp, classes, sizeof(classes) /
 	    sizeof(CLASS), sizeof(CLASS), c_class)) == NULL)
-		err("unknown class %s", s->str);
+		errx(1, "unknown class %s", s->str);
 
-	if ((cp->set = p = malloc((NCHARS + 1) * sizeof(int))) == NULL)
-		err("%s", strerror(errno));
-	bzero(p, (NCHARS + 1) * sizeof(int));
-	for (cnt = 0, func = cp->func; cnt < NCHARS; ++cnt)
-		if ((func)(cnt))
-			*p++ = cnt;
-	*p = OOBCH;
+	/*
+	 * Generate the set of characters in the class if we haven't
+	 * already done so.
+	 */
+	if (cp->set == NULL) {
+		cp->set = reallocarray(NULL, NCHARS + 1, sizeof(*cp->set));
+		if (cp->set == NULL)
+			err(1, NULL);
+		len = 0;
+		for (i = 0; i < NCHARS; i++) {
+			if (cp->func(i)) {
+				cp->set[len] = i;
+				len++;
+			}
+		}
+		cp->set[len] = OOBCH;
+		len++;
+		cp->set = reallocarray(cp->set, len, sizeof(*cp->set));
+		if (cp->set == NULL)
+			err(1, NULL);
+	}
 
 	s->cnt = 0;
 	s->state = SET;
@@ -197,8 +201,7 @@ genclass(s)
 }
 
 static int
-c_class(a, b)
-	const void *a, *b;
+c_class(const void *a, const void *b)
 {
 	return (strcmp(((CLASS *)a)->name, ((CLASS *)b)->name));
 }
@@ -208,17 +211,16 @@ c_class(a, b)
  * we just syntax check and grab the character.
  */
 static void
-genequiv(s)
-	STR *s;
+genequiv(STR *s)
 {
 	if (*s->str == '\\') {
 		s->equiv[0] = backslash(s);
 		if (*s->str != '=')
-			err("misplaced equivalence equals sign");
+			errx(1, "misplaced equivalence equals sign");
 	} else {
 		s->equiv[0] = s->str[0];
 		if (s->str[1] != '=')
-			err("misplaced equivalence equals sign");
+			errx(1, "misplaced equivalence equals sign");
 	}
 	s->str += 2;
 	s->cnt = 0;
@@ -227,11 +229,10 @@ genequiv(s)
 }
 
 static int
-genrange(s)
-	STR *s;
+genrange(STR *s)
 {
 	int stopval;
-	char *savestart;
+	unsigned char *savestart;
 
 	savestart = s->str;
 	stopval = *++s->str == '\\' ? backslash(s) : *s->str++;
@@ -246,20 +247,19 @@ genrange(s)
 }
 
 static void
-genseq(s)
-	STR *s;
+genseq(STR *s)
 {
 	char *ep;
 
 	if (s->which == STRING1)
-		err("sequences only valid in string2");
+		errx(1, "sequences only valid in string2");
 
 	if (*s->str == '\\')
 		s->lastch = backslash(s);
 	else
 		s->lastch = *s->str++;
 	if (*s->str != '*')
-		err("misplaced sequence asterisk");
+		errx(1, "misplaced sequence asterisk");
 
 	switch (*++s->str) {
 	case '\\':
@@ -271,13 +271,13 @@ genseq(s)
 		break;
 	default:
 		if (isdigit(*s->str)) {
-			s->cnt = strtol(s->str, &ep, 0);
+			s->cnt = strtol((char *)s->str, &ep, 0);
 			if (*ep == ']') {
-				s->str = ep + 1;
+				s->str = (unsigned char *)ep + 1;
 				break;
 			}
 		}
-		err("illegal sequence count");
+		errx(1, "illegal sequence count");
 		/* NOTREACHED */
 	}
 
@@ -289,25 +289,34 @@ genseq(s)
  * an escape code or a literal character.
  */
 static int
-backslash(s)
-	register STR *s;
+backslash(STR *s)
 {
-	register int ch, cnt, val;
+	size_t i;
+	int ch, val;
 
-	for (cnt = val = 0;;) {
-		ch = *++s->str;
-		if (!isascii(ch) || !isdigit(ch))
-			break;
-		val = val * 8 + ch - '0';
-		if (++cnt == 3) {
-			++s->str;
-			break;
-		}
+	assert(*s->str == '\\');
+	s->str++;
+
+	/* Empty escapes become plain backslashes. */
+	if (*s->str == '\0') {
+		s->state = EOS;
+		return ('\\');
 	}
-	if (cnt)
+
+	val = 0;
+	for (i = 0; i < 3; i++) {
+		if (s->str[i] < '0' || '7' < s->str[i])
+			break;
+		val = val * 8 + s->str[i] - '0';
+	}
+	if (i > 0) {
+		if (val > UCHAR_MAX)
+			errx(1, "octal value out of range: %d", val);
+		s->str += i;
 		return (val);
-	if (ch != '\0')
-		++s->str;
+	}
+
+	ch = *s->str++;
 	switch (ch) {
 		case 'a':			/* escape characters */
 			return ('\7');
@@ -323,9 +332,6 @@ backslash(s)
 			return ('\t');
 		case 'v':
 			return ('\13');
-		case '\0':			/*  \" -> \ */
-			s->state = EOS;
-			return ('\\');
 		default:			/* \x" -> x */
 			return (ch);
 	}

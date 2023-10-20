@@ -1,3 +1,5 @@
+/*	$OpenBSD: os.h,v 1.6 2003/08/19 22:19:08 itojun Exp $ */
+
 /*
  * Copyright (c) 1994-95 Mats O Jansson.  All rights reserved.
  *
@@ -9,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Mats O Jansson.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -26,7 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *	$Id: os.h,v 1.5 1995/08/05 18:53:37 moj Exp $
+ *	$OpenBSD: os.h,v 1.6 2003/08/19 22:19:08 itojun Exp $
  *
  */
 
@@ -49,9 +46,11 @@
 #include <sys/time.h>
 #include <time.h>
 #include <fcntl.h>
-#include <strings.h>
+#include <string.h>
 #include <unistd.h>
+#include <ifaddrs.h>
+#include <err.h>
 
 #define  DEV_NEW_CONF
 
-#endif _OS_H_
+#endif /* _OS_H_ */

@@ -1,24 +1,32 @@
-#	$NetBSD: Makefile,v 1.17 1995/04/23 19:27:59 ragge Exp $
-#	@(#)Makefile	8.2 (Berkeley) 3/17/94
+#	$OpenBSD: Makefile,v 1.69 2021/06/24 21:11:40 jmc Exp $
 
 PROG=	disklabel
-SRCS=	disklabel.c dkcksum.c
-MAN=	disklabel.5 disklabel.8
+SRCS=	disklabel.c dkcksum.c editor.c manual.c
+DPADD=	${LIBUTIL}
+LDADD=	-lutil
+MAN=	disklabel.8 disklabel.5
 
-.if ${MACHINE} == "amiga"
-CFLAGS+= -D${MACHINE}
+CLEANFILES += disklabel.cat8 manual.c
+
+.include <bsd.own.mk>
+
+.ifdef NOMAN
+manual.c:
+	(echo 'const unsigned char manpage[] = {'; \
+	echo 'no manual' | gzip -9c | hexdump -ve '"0x" 1/1 "%02x,"'; \
+	echo '};'; echo 'const int manpage_sz = sizeof(manpage);') > manual.c
+.else
+disklabel.cat8:	disklabel.8
+	mandoc -Tascii ${.ALLSRC} > ${.TARGET}
+
+manual.c:	disklabel.cat8
+	(echo 'const unsigned char manpage[] = {'; \
+	cat disklabel.cat8 | gzip -9c | hexdump -ve '"0x" 1/1 "%02x,"'; \
+	echo '};'; echo 'const int manpage_sz = sizeof(manpage);') > manual.c
 .endif
 
-.if (${MACHINE} == "i386") || (${MACHINE} == "alpha")
-CFLAGS+= -DNUMBOOT=2
-.endif
-
-.if (${MACHINE} == "hp300") || (${MACHINE} == "vax")
-CFLAGS+= -DNUMBOOT=1
-.endif
-
-.if ${MACHINE} == "i386"
-CFLAGS+= -DRAWPARTITION=\'d\'
+.if ${MACHINE} == "sparc64"
+CFLAGS+= -DSUN_CYLCHECK -DSUN_AAT0
 .endif
 
 .include <bsd.prog.mk>

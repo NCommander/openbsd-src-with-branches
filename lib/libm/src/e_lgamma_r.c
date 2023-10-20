@@ -10,11 +10,7 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_lgamma_r.c,v 1.7 1995/05/10 20:45:42 jtc Exp $";
-#endif
-
-/* __ieee754_lgamma_r(x, signgamp)
+/* lgamma_r(x, signgamp)
  * Reentrant version of the logarithm of the Gamma function 
  * with user provide pointer for the sign of Gamma(x). 
  *
@@ -28,7 +24,7 @@ static char rcsid[] = "$NetBSD: e_lgamma_r.c,v 1.7 1995/05/10 20:45:42 jtc Exp $
  *			    = log(6.3*5.3) + lgamma(5.3)
  *			    = log(6.3*5.3*4.3*3.3*2.3) + lgamma(2.3)
  *   2. Polynomial approximation of lgamma around its
- *	minimun ymin=1.461632144968362245 to maintain monotonicity.
+ *	minimum ymin=1.461632144968362245 to maintain monotonicity.
  *	On [ymin-0.23, ymin+0.27] (i.e., [1.23164,1.73163]), use
  *		Let z = x-ymin;
  *		lgamma(x) = -1.214862905358496078218 + z^2*poly(z)
@@ -84,11 +80,7 @@ static char rcsid[] = "$NetBSD: e_lgamma_r.c,v 1.7 1995/05/10 20:45:42 jtc Exp $
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
 static const double 
-#else
-static double 
-#endif
 two52=  4.50359962737049600000e+15, /* 0x43300000, 0x00000000 */
 half=  5.00000000000000000000e-01, /* 0x3FE00000, 0x00000000 */
 one =  1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
@@ -156,18 +148,10 @@ w4  = -5.95187557450339963135e-04, /* 0xBF4380CB, 0x8C0FE741 */
 w5  =  8.36339918996282139126e-04, /* 0x3F4B67BA, 0x4CDAD5D1 */
 w6  = -1.63092934096575273989e-03; /* 0xBF5AB89D, 0x0B9E43E4 */
 
-#ifdef __STDC__
 static const double zero=  0.00000000000000000000e+00;
-#else
-static double zero=  0.00000000000000000000e+00;
-#endif
 
-#ifdef __STDC__
-	static double sin_pi(double x)
-#else
-	static double sin_pi(x)
-	double x;
-#endif
+static double
+sin_pi(double x)
 {
 	double y,z;
 	int n,ix;
@@ -212,12 +196,8 @@ static double zero=  0.00000000000000000000e+00;
 }
 
 
-#ifdef __STDC__
-	double __ieee754_lgamma_r(double x, int *signgamp)
-#else
-	double __ieee754_lgamma_r(x,signgamp)
-	double x; int *signgamp;
-#endif
+double
+lgamma_r(double x, int *signgamp)
 {
 	double t,y,z,nadj,p,p1,p2,p3,q,r,w;
 	int i,hx,lx,ix;
@@ -228,19 +208,23 @@ static double zero=  0.00000000000000000000e+00;
 	*signgamp = 1;
 	ix = hx&0x7fffffff;
 	if(ix>=0x7ff00000) return x*x;
-	if((ix|lx)==0) return one/zero;
+	if((ix|lx)==0) {
+	    if(hx<0)
+		*signgamp = -1;
+	    return one/zero;
+	}
 	if(ix<0x3b900000) {	/* |x|<2**-70, return -log(|x|) */
 	    if(hx<0) {
 	        *signgamp = -1;
-	        return -__ieee754_log(-x);
-	    } else return -__ieee754_log(x);
+	        return - log(-x);
+	    } else return - log(x);
 	}
 	if(hx<0) {
 	    if(ix>=0x43300000) 	/* |x|>=2**52, must be -integer */
 		return one/zero;
 	    t = sin_pi(x);
 	    if(t==zero) return one/zero; /* -integer */
-	    nadj = __ieee754_log(pi/fabs(t*x));
+	    nadj = log(pi/fabs(t*x));
 	    if(t<zero) *signgamp = -1;
 	    x = -x;
 	}
@@ -250,7 +234,7 @@ static double zero=  0.00000000000000000000e+00;
     /* for x < 2.0 */
 	else if(ix<0x40000000) {
 	    if(ix<=0x3feccccc) { 	/* lgamma(x) = lgamma(x+1)-log(x) */
-		r = -__ieee754_log(x);
+		r = - log(x);
 		if(ix>=0x3FE76944) {y = one-x; i= 0;}
 		else if(ix>=0x3FCDA661) {y= x-(tc-one); i=1;}
 	  	else {y = x; i=2;}
@@ -295,18 +279,19 @@ static double zero=  0.00000000000000000000e+00;
 	    case 5: z *= (y+4.0);	/* FALLTHRU */
 	    case 4: z *= (y+3.0);	/* FALLTHRU */
 	    case 3: z *= (y+2.0);	/* FALLTHRU */
-		    r += __ieee754_log(z); break;
+		    r += log(z); break;
 	    }
     /* 8.0 <= x < 2**58 */
 	} else if (ix < 0x43900000) {
-	    t = __ieee754_log(x);
+	    t = log(x);
 	    z = one/x;
 	    y = z*z;
 	    w = w0+z*(w1+y*(w2+y*(w3+y*(w4+y*(w5+y*w6)))));
 	    r = (x-half)*(t-one)+w;
 	} else 
     /* 2**58 <= x <= inf */
-	    r =  x*(__ieee754_log(x)-one);
+	    r =  x*(log(x)-one);
 	if(hx<0) r = nadj - r;
 	return r;
 }
+DEF_NONSTD(lgamma_r);

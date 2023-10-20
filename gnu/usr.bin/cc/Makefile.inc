@@ -1,9 +1,20 @@
 # $FreeBSD: src/gnu/usr.bin/cc/Makefile.inc,v 1.66.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD$
+# $OpenBSD: Makefile.inc,v 1.6 2012/09/16 20:46:35 kettenis Exp $
+
+.include "../Makefile.inc"
+
+.if ${COMPILER_VERSION:L} == "clang"
+CC=	gcc
+CXX=	g++
+.endif
 
 # Sometimes this is .include'd several times...
 .if !defined(__CC_MAKEFILE_INC__)
 __CC_MAKEFILE_INC__= ${MFILE}
+
+.if defined(CROSSDIR)
+TOOLS_PREFIX=${CROSSDIR}
+.endif
 
 GCCLIB= ${.CURDIR}/../../../gcc
 GCCDIR=	${GCCLIB}/gcc
@@ -14,9 +25,12 @@ GCCDIR=	${GCCLIB}/gcc
 MD_FILE=	${GCCDIR}/config/${GCC_CPU}/${GCC_CPU}.md
 GCC_TARGET=	${TARGET_ARCH}-unknown-openbsd${OSREV}
 
+NOPIE=		Yes
+
 CFLAGS+=	-DIN_GCC -DHAVE_CONFIG_H
 CFLAGS+=	-DPREFIX=\"${TOOLS_PREFIX}/usr\"
 #CFLAGS+=	-DWANT_COMPILER_INVARIANTS
+CFLAGS+=	${PIE_DEFAULT}
 
 # If building 64-bit longs for the i386, "_LARGE_LONG" should also be defined
 # to get the proper sizes in limits.h

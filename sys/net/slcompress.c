@@ -1,4 +1,5 @@
-/*	$NetBSD: slcompress.c,v 1.12 1995/07/04 06:28:28 paulus Exp $	*/
+/*	$OpenBSD: slcompress.c,v 1.11 2014/07/22 11:06:10 mpi Exp $	*/
+/*	$NetBSD: slcompress.c,v 1.17 1997/05/17 21:12:10 christos Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993, 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,9 +42,9 @@
 
 #include <sys/param.h>
 #include <sys/mbuf.h>
+#include <sys/systm.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 
@@ -61,21 +58,45 @@
 
 #define BCMP(p1, p2, n) bcmp((char *)(p1), (char *)(p2), (int)(n))
 #define BCOPY(p1, p2, n) bcopy((char *)(p1), (char *)(p2), (int)(n))
-#ifndef _KERNEL
-#define ovbcopy bcopy
-#endif
 
 void
-sl_compress_init(comp, max_state)
-	struct slcompress *comp;
-	int max_state;
+sl_compress_init(struct slcompress *comp)
 {
-	register u_int i;
-	register struct cstate *tstate = comp->tstate;
+	u_int i;
+	struct cstate *tstate = comp->tstate;
 
-	if (max_state == -1)
-		max_state = MAX_STATES - 1;
 	bzero((char *)comp, sizeof(*comp));
+	for (i = MAX_STATES - 1; i > 0; --i) {
+		tstate[i].cs_id = i;
+		tstate[i].cs_next = &tstate[i - 1];
+	}
+	tstate[0].cs_next = &tstate[MAX_STATES - 1];
+	tstate[0].cs_id = 0;
+	comp->last_cs = &tstate[0];
+	comp->last_recv = 255;
+	comp->last_xmit = 255;
+	comp->flags = SLF_TOSS;
+}
+
+
+/*
+ * Like sl_compress_init, but we get to specify the maximum connection
+ * ID to use on transmission.
+ */
+void
+sl_compress_setup(struct slcompress *comp, int max_state)
+{
+	u_int i;
+	struct cstate *tstate = comp->tstate;
+
+	if (max_state == -1) {
+		max_state = MAX_STATES - 1;
+		bzero((char *)comp, sizeof(*comp));
+	} else {
+		/* Don't reset statistics */
+		bzero((char *)comp->tstate, sizeof(comp->tstate));
+		bzero((char *)comp->rstate, sizeof(comp->rstate));
+	}
 	for (i = max_state; i > 0; --i) {
 		tstate[i].cs_id = i;
 		tstate[i].cs_next = &tstate[i - 1];
@@ -142,20 +163,17 @@ sl_compress_init(comp, max_state)
 }
 
 u_int
-sl_compress_tcp(m, ip, comp, compress_cid)
-	struct mbuf *m;
-	register struct ip *ip;
-	struct slcompress *comp;
-	int compress_cid;
+sl_compress_tcp(struct mbuf *m, struct ip *ip, struct slcompress *comp,
+    int compress_cid)
 {
-	register struct cstate *cs = comp->last_cs->cs_next;
-	register u_int hlen = ip->ip_hl;
-	register struct tcphdr *oth;
-	register struct tcphdr *th;
-	register u_int deltaS, deltaA;
-	register u_int changes = 0;
+	struct cstate *cs = comp->last_cs->cs_next;
+	u_int hlen = ip->ip_hl;
+	struct tcphdr *oth;
+	struct tcphdr *th;
+	u_int deltaS, deltaA;
+	u_int changes = 0;
 	u_char new_seq[16];
-	register u_char *cp = new_seq;
+	u_char *cp = new_seq;
 
 	/*
 	 * Bail if this is an IP fragment or if the TCP packet isn't
@@ -192,8 +210,8 @@ sl_compress_tcp(m, ip, comp, compress_cid)
 		 * states via linear search.  If we don't find a state
 		 * for the datagram, the oldest state is (re-)used.
 		 */
-		register struct cstate *lcs;
-		register struct cstate *lastcs = comp->last_cs;
+		struct cstate *lcs;
+		struct cstate *lastcs = comp->last_cs;
 
 		do {
 			lcs = cs; cs = cs->cs_next;
@@ -275,19 +293,22 @@ sl_compress_tcp(m, ip, comp, compress_cid)
 		 * with it. */
 		 goto uncompressed;
 
-	if (deltaS = (u_int16_t)(ntohs(th->th_win) - ntohs(oth->th_win))) {
+	deltaS = (u_int16_t)(ntohs(th->th_win) - ntohs(oth->th_win));
+	if (deltaS) {
 		ENCODE(deltaS);
 		changes |= NEW_W;
 	}
 
-	if (deltaA = ntohl(th->th_ack) - ntohl(oth->th_ack)) {
+	deltaA = ntohl(th->th_ack) - ntohl(oth->th_ack);
+	if (deltaA) {
 		if (deltaA > 0xffff)
 			goto uncompressed;
 		ENCODE(deltaA);
 		changes |= NEW_A;
 	}
 
-	if (deltaS = ntohl(th->th_seq) - ntohl(oth->th_seq)) {
+	deltaS = ntohl(th->th_seq) - ntohl(oth->th_seq);
+	if (deltaS) {
 		if (deltaS > 0xffff)
 			goto uncompressed;
 		ENCODE(deltaS);
@@ -309,7 +330,7 @@ sl_compress_tcp(m, ip, comp, compress_cid)
 		    ntohs(cs->cs_ip.ip_len) == hlen)
 			break;
 
-		/* (fall through) */
+		/* FALLTHROUGH */
 
 	case SPECIAL_I:
 	case SPECIAL_D:
@@ -395,11 +416,7 @@ uncompressed:
 
 
 int
-sl_uncompress_tcp(bufp, len, type, comp)
-	u_char **bufp;
-	int len;
-	u_int type;
-	struct slcompress *comp;
+sl_uncompress_tcp(u_char **bufp, int len, u_int type, struct slcompress *comp)
 {
 	u_char *hdr, *cp;
 	int hlen, vjlen;
@@ -422,10 +439,10 @@ sl_uncompress_tcp(bufp, len, type, comp)
 	 * header (we assume the packet we were handed has enough space to
 	 * prepend 128 bytes of header).
 	 */
-	if ((int)cp & 3) {
+	if ((long)cp & 3) {
 		if (len > 0)
-			(void) ovbcopy(cp, (caddr_t)((int)cp &~ 3), len);
-		cp = (u_char *)((int)cp &~ 3);
+			(void) memmove((caddr_t)((long)cp &~ 3), cp, len);
+		cp = (u_char *)((long)cp &~ 3);
 	}
 	cp -= hlen;
 	len += hlen;
@@ -443,21 +460,16 @@ sl_uncompress_tcp(bufp, len, type, comp)
  * in *hdrp and its length in *hlenp.
  */
 int
-sl_uncompress_tcp_core(buf, buflen, total_len, type, comp, hdrp, hlenp)
-	u_char *buf;
-	int buflen, total_len;
-	u_int type;
-	struct slcompress *comp;
-	u_char **hdrp;
-	u_int *hlenp;
+sl_uncompress_tcp_core(u_char *buf, int buflen, int total_len, u_int type,
+    struct slcompress *comp, u_char **hdrp, u_int *hlenp)
 {
-	register u_char *cp;
-	register u_int hlen, changes;
-	register struct tcphdr *th;
-	register struct cstate *cs;
-	register struct ip *ip;
-	register u_int16_t *bp;
-	register u_int vjlen;
+	u_char *cp;
+	u_int hlen, changes;
+	struct tcphdr *th;
+	struct cstate *cs;
+	struct ip *ip;
+	u_int16_t *bp;
+	u_int vjlen;
 
 	switch (type) {
 
@@ -468,9 +480,16 @@ sl_uncompress_tcp_core(buf, buflen, total_len, type, comp, hdrp, hlenp)
 		cs = &comp->rstate[comp->last_recv = ip->ip_p];
 		comp->flags &=~ SLF_TOSS;
 		ip->ip_p = IPPROTO_TCP;
-		hlen = ip->ip_hl;
-		hlen += ((struct tcphdr *)&((int32_t *)ip)[hlen])->th_off;
-		hlen <<= 2;
+		/*
+		 * Calculate the size of the TCP/IP header and make sure that
+		 * we don't overflow the space we have available for it.
+		 */
+		hlen = ip->ip_hl << 2;
+		if (hlen + sizeof(struct tcphdr) > buflen)
+			goto bad;
+		hlen += ((struct tcphdr *)&((char *)ip)[hlen])->th_off << 2;
+		if (hlen > MAX_HDR || hlen > buflen)
+			goto bad;
 		BCOPY(ip, &cs->cs_ip, hlen);
 		cs->cs_hlen = hlen;
 		INCR(sls_uncompressedin)
@@ -518,7 +537,7 @@ sl_uncompress_tcp_core(buf, buflen, total_len, type, comp, hdrp, hlenp)
 	switch (changes & SPECIALS_MASK) {
 	case SPECIAL_I:
 		{
-		register u_int i = ntohs(cs->cs_ip.ip_len) - cs->cs_hlen;
+		u_int i = ntohs(cs->cs_ip.ip_len) - cs->cs_hlen;
 		th->th_ack = htonl(ntohl(th->th_ack) + i);
 		th->th_seq = htonl(ntohl(th->th_seq) + i);
 		}

@@ -1,32 +1,35 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.11 2023/04/26 10:14:21 dv Exp $
 
 VMD ?= /usr/sbin/vmd
 
-VMD_PASS=boot-keyword memory-round memory-just-enough
-VMD_FAIL=kernel-keyword too-few-ram vm-name-too-long too-many-ifs \
-	 boot-name-too-long disk-path-too-long too-many-disks
-
-REGRESS_TARGETS=
+VMD_PASS=boot-keyword memory-round memory-just-enough cdrom-keyword \
+	 format-keyword
+VMD_FAIL=kernel-keyword too-few-ram too-many-ifs too-many-disks \
+	 switch-no-interface switch-no-add bad-format missing-format
 
 .for n in ${VMD_PASS}
-REGRESS_TARGETS +=	vmd-pass-${n}
-
-vmd-pass-${n}:
-	@echo '======== $@ ========'
-	${VMD} -n -f ${.CURDIR}/vmd-pass-${n}.conf 2>&1 | \
-	    diff -u ${.CURDIR}/vmd-pass-${n}.ok /dev/stdin
+REGRESS_TARGETS +=	run-pass-$n
+run-pass-$n:
+	${VMD} -n -f ${.CURDIR}/vmd-pass-$n.conf 2>&1 | \
+	    diff -u ${.CURDIR}/vmd-pass-$n.ok /dev/stdin
 .endfor
 
 .for n in ${VMD_FAIL}
-REGRESS_TARGETS +=	vmd-fail-${n}
-
-vmd-fail-${n}:
-	@echo '======== $@ ========'
-	${VMD} -n -f ${.CURDIR}/vmd-fail-${n}.conf 2>&1 | \
-	    cut -d : -f 2,3,4 | \
-	    diff -u ${.CURDIR}/vmd-fail-${n}.ok /dev/stdin
+REGRESS_TARGETS +=	run-fail-$n
+run-fail-$n:
+	${VMD} -n -f ${.CURDIR}/vmd-fail-$n.conf 2>&1 | \
+	    sed -e 's/^vmd: //' -e 's|${.CURDIR}/vmd-fail-$n.conf:||' | \
+	    diff -u ${.CURDIR}/vmd-fail-$n.ok /dev/stdin
 .endfor
 
-.PHONY: ${REGRESS_TARGETS}
+run-fail-too-many-disks: disk0.img disk1.img disk2.img disk3.img disk4.img
+run-fail-bad-format run-fail-missing-format run-pass-format-keyword: foo.img
+
+foo.img disk0.img disk1.img disk2.img disk3.img disk4.img:
+	touch $@
+
+clean:
+	rm -f -- *.img
+	rm -rf some
 
 .include <bsd.regress.mk>

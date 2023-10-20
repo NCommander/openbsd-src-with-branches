@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: lpd.c,v 1.2 2019/06/28 13:32:48 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2017 Eric Faurot <eric@openbsd.org>
@@ -168,7 +168,7 @@ main(int argc, char **argv)
 	signal_add(&evt_sighup, NULL);
 	signal(SIGPIPE, SIG_IGN);
 
-	/* Fork and exec unpriviledged processes. */
+	/* Fork and exec unprivileged processes. */
 	argv = calloc(saved_argc + 3, sizeof(*argv));
 	if (argv == NULL)
 		fatal("calloc");
@@ -313,7 +313,7 @@ priv_open_listener(struct listener *l)
 	case AF_INET6:
 		opt = 1;
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt,
-			sizeof(opt)) < 0)
+		    sizeof(opt)) == -1)
 			fatal("setsockopt: %s", log_fmt_sockaddr(sa));
 
 		if (bind(sock, sa, sa->sa_len) == -1)

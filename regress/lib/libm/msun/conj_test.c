@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/*	$OpenBSD: conj_test.c,v 1.3 2021/10/22 18:00:22 mbuhl Exp $	*/
 /*-
  * Copyright (c) 2008 David Schultz <das@FreeBSD.org>
  * All rights reserved.
@@ -29,10 +29,6 @@
  * Tests for conj{,f,l}()
  */
 
-#include <sys/cdefs.h>
-/* $FreeBSD: head/lib/msun/tests/conj_test.c 314650 2017-03-04 10:07:46Z ngie $ */
-
-#include <assert.h>
 #include <complex.h>
 #include <fenv.h>
 #include <math.h>
@@ -42,7 +38,6 @@
 
 #pragma	STDC CX_LIMITED_RANGE	OFF
 
-/* Make sure gcc doesn't use builtin versions of these or honor __pure2. */
 static float complex (*libconjf)(float complex) = conjf;
 static double complex (*libconj)(double complex) = conj;
 static long double complex (*libconjl)(long double complex) = conjl;
@@ -71,70 +66,54 @@ static const double tests[] = {
 	-INFINITY, INFINITY,
 };
 
-int
-main(void)
+ATF_TC_WITHOUT_HEAD(main);
+ATF_TC_BODY(main, tc)
 {
 	static const int ntests = sizeof(tests) / sizeof(tests[0]) / 2;
 	complex float in;
 	complex long double expected;
 	int i;
 
-	printf("1..%d\n", ntests * 3);
-
 	for (i = 0; i < ntests; i++) {
 		__real__ expected = __real__ in = tests[2 * i];
 		__imag__ in = tests[2 * i + 1];
 		__imag__ expected = -cimag(in);
 
-		assert(fpequal(libcrealf(in), __real__ in));
-		assert(fpequal(libcreal(in), __real__ in));
-		assert(fpequal(libcreall(in), __real__ in));
-		assert(fpequal(libcimagf(in), __imag__ in));
-		assert(fpequal(libcimag(in), __imag__ in));
-		assert(fpequal(libcimagl(in), __imag__ in));
+		ATF_REQUIRE(fpequal_cs(libcrealf(in), __real__ in, true));
+		ATF_REQUIRE(fpequal_cs(libcreal(in), __real__ in, true));
+		ATF_REQUIRE(fpequal_cs(libcreall(in), __real__ in, true));
+		ATF_REQUIRE(fpequal_cs(libcimagf(in), __imag__ in, true));
+		ATF_REQUIRE(fpequal_cs(libcimag(in), __imag__ in, true));
+		ATF_REQUIRE(fpequal_cs(libcimagl(in), __imag__ in, true));
+ 
+		ATF_REQUIRE_EQ(0, feclearexcept(FE_ALL_EXCEPT));
+		ATF_REQUIRE_MSG(
+		    cfpequal(libconjf(in), expected),
+		    "conjf(%#.2g + %#.2gI): wrong value", creal(in), cimag(in)
+		);
+		ATF_REQUIRE_EQ_MSG(0, fetestexcept(FE_ALL_EXCEPT),
+		    "conj(%#.2g + %#.2gI): threw an exception: %#x", creal(in),
+		    cimag(in), fetestexcept(FE_ALL_EXCEPT));
+ 
+		ATF_REQUIRE_EQ(0, feclearexcept(FE_ALL_EXCEPT));
+		ATF_REQUIRE_MSG(cfpequal(libconj(in), expected),
+		    "conj(%#.2g + %#.2gI): wrong value", creal(in), cimag(in));
+		ATF_REQUIRE_EQ_MSG(0, fetestexcept(FE_ALL_EXCEPT),
+		    "conj(%#.2g + %#.2gI): threw an exception: %#x", creal(in),
+		    cimag(in), fetestexcept(FE_ALL_EXCEPT));
+ 
+		ATF_REQUIRE_EQ(0, feclearexcept(FE_ALL_EXCEPT));
+		ATF_REQUIRE_MSG(cfpequal(libconjl(in), expected),
+		    "conjl(%#.2g + %#.2gI): wrong value", creal(in), cimag(in));
+		ATF_REQUIRE_EQ_MSG(0, fetestexcept(FE_ALL_EXCEPT),
+		    "conjl(%#.2g + %#.2gI): threw an exception: %#x", creal(in),
+		    cimag(in), fetestexcept(FE_ALL_EXCEPT));
+ 	}
+}
 
-		feclearexcept(FE_ALL_EXCEPT);
-		if (!cfpequal(libconjf(in), expected)) {
-			printf("not ok %d\t# conjf(%#.2g + %#.2gI): "
-			       "wrong value\n",
-			       3 * i + 1, creal(in), cimag(in));
-		} else if (fetestexcept(FE_ALL_EXCEPT)) {
-			printf("not ok %d\t# conjf(%#.2g + %#.2gI): "
-			       "threw an exception\n",
-			       3 * i + 1, creal(in), cimag(in));
-		} else {
-			printf("ok %d\t\t# conjf(%#.2g + %#.2gI)\n",
-			       3 * i + 1, creal(in), cimag(in));
-		}
-
-		feclearexcept(FE_ALL_EXCEPT);
-		if (!cfpequal(libconj(in), expected)) {
-			printf("not ok %d\t# conj(%#.2g + %#.2gI): "
-			       "wrong value\n",
-			       3 * i + 2, creal(in), cimag(in));
-		} else if (fetestexcept(FE_ALL_EXCEPT)) {
-			printf("not ok %d\t# conj(%#.2g + %#.2gI): "
-			       "threw an exception\n",
-			       3 * i + 2, creal(in), cimag(in));
-		} else {
-			printf("ok %d\t\t# conj(%#.2g + %#.2gI)\n",
-			       3 * i + 2, creal(in), cimag(in));
-		}
-
-		feclearexcept(FE_ALL_EXCEPT);
-		if (!cfpequal(libconjl(in), expected)) {
-			printf("not ok %d\t# conjl(%#.2g + %#.2gI): "
-			       "wrong value\n",
-			       3 * i + 3, creal(in), cimag(in));
-		} else if (fetestexcept(FE_ALL_EXCEPT)) {
-			printf("not ok %d\t# conjl(%#.2g + %#.2gI): "
-			       "threw an exception\n",
-			       3 * i + 3, creal(in), cimag(in));
-		} else {
-			printf("ok %d\t\t# conjl(%#.2g + %#.2gI)\n",
-			       3 * i + 3, creal(in), cimag(in));
-		}
-	}
-
-	return (0);
+ATF_TP_ADD_TCS(tp)
+{
+	ATF_TP_ADD_TC(tp, main);
+ 
+	return (atf_no_error());
 }

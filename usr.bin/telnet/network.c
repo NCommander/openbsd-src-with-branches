@@ -1,3 +1,6 @@
+/*	$OpenBSD: network.c,v 1.16 2014/07/20 10:55:26 guenther Exp $	*/
+/*	$NetBSD: network.c,v 1.5 1996/02/28 21:04:06 thorpej Exp $	*/
+
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,24 +30,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/* from: static char sccsid[] = "@(#)network.c	8.1 (Berkeley) 6/6/93"; */
-static char *rcsid = "$Id: network.c,v 1.3 1994/02/25 03:00:31 cgd Exp $";
-#endif /* not lint */
+#include "telnet_locl.h"
 
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/time.h>
-
 #include <errno.h>
-
-#include <arpa/telnet.h>
-
-#include "ring.h"
-
-#include "defines.h"
-#include "externs.h"
-#include "fdset.h"
+#include <poll.h>
+#include <unistd.h>
 
 Ring		netoring, netiring;
 unsigned char	netobuf[2*BUFSIZ], netibuf[BUFSIZ];
@@ -57,16 +44,12 @@ unsigned char	netobuf[2*BUFSIZ], netibuf[BUFSIZ];
  * Initialize internal network data structures.
  */
 
-    void
-init_network()
+void
+init_network(void)
 {
-    if (ring_init(&netoring, netobuf, sizeof netobuf) != 1) {
-	exit(1);
-    }
-    if (ring_init(&netiring, netibuf, sizeof netibuf) != 1) {
-	exit(1);
-    }
-    NetTrace = stdout;
+	ring_init(&netoring, netobuf, sizeof netobuf);
+	ring_init(&netiring, netibuf, sizeof netibuf);
+	SetNetTrace(NULL);
 }
 
 
@@ -75,31 +58,27 @@ init_network()
  * Telnet "synch" processing).
  */
 
-    int
-stilloob()
+int
+stilloob(void)
 {
-    static struct timeval timeout = { 0 };
-    fd_set	excepts;
+    struct pollfd pfd[1];
     int value;
 
     do {
-	FD_ZERO(&excepts);
-	FD_SET(net, &excepts);
-	value = select(net+1, (fd_set *)0, (fd_set *)0, &excepts, &timeout);
+	pfd[0].fd = net;
+	pfd[0].events = POLLRDBAND;
+	value = poll(pfd, 1, 0);
     } while ((value == -1) && (errno == EINTR));
 
     if (value < 0) {
-	perror("select");
-	(void) quit();
-	/* NOTREACHED */
+	perror("poll");
+	quit();
     }
-    if (FD_ISSET(net, &excepts)) {
+    if (pfd[0].revents & POLLRDBAND)
 	return 1;
-    } else {
+    else
 	return 0;
-    }
 }
-
 
 /*
  *  setneturg()
@@ -107,12 +86,11 @@ stilloob()
  *	Sets "neturg" to the current location.
  */
 
-    void
-setneturg()
+void
+setneturg(void)
 {
     ring_mark(&netoring);
 }
-
 
 /*
  *  netflush
@@ -123,11 +101,10 @@ setneturg()
  *	useful work.
  */
 
-
-    int
-netflush()
+int
+netflush(void)
 {
-    register int n, n1;
+    int n, n1;
 
     if ((n1 = n = ring_full_consecutive(&netoring)) > 0) {
 	if (!ring_at_mark(&netoring)) {
@@ -148,10 +125,9 @@ netflush()
 	if (errno != ENOBUFS && errno != EWOULDBLOCK) {
 	    setcommandmode();
 	    perror(hostname);
-	    (void)NetClose(net);
+	    (void)close(net);
 	    ring_clear_mark(&netoring);
 	    longjmp(peerdied, -1);
-	    /*NOTREACHED*/
 	}
 	n = 0;
     }

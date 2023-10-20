@@ -1,0 +1,10 @@
+.\" $OpenBSD$
+.TH UC-BASIC 1 "April 27, 2022"
+.SH NAME
+UC-basic \- the University of California footer macro
+.SH DESCRIPTION
+initial text
+.B
+.UC
+bold text
+final text

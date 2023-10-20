@@ -1,8 +1,8 @@
-/*	$NetBSD: inode.c,v 1.23 1996/10/11 20:15:47 thorpej Exp $	*/
-
-/* Modified for EXT2FS on NetBSD by Manuel Bouyer, April 1997 */
+/*	$OpenBSD: inode.c,v 1.28 2018/09/16 02:43:11 millert Exp $	*/
+/*	$NetBSD: inode.c,v 1.8 2000/01/28 16:01:46 bouyer Exp $	*/
 
 /*
+ * Copyright (c) 1997 Manuel Bouyer.
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -14,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,15 +31,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)inode.c	8.5 (Berkeley) 2/8/95";
-#else
-static char rcsid[] = "$NetBSD: inode.c,v 1.23 1996/10/11 20:15:47 thorpej Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
+#include <sys/param.h>	/* btodb */
 #include <sys/time.h>
 #include <ufs/ext2fs/ext2fs_dinode.h>
 #include <ufs/ext2fs/ext2fs_dir.h>
@@ -56,51 +44,108 @@ static char rcsid[] = "$NetBSD: inode.c,v 1.23 1996/10/11 20:15:47 thorpej Exp $
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <limits.h>
 
 #include "fsck.h"
 #include "fsutil.h"
 #include "extern.h"
 
+/*
+ * CG is stored in fs byte order in memory, so we can't use ino_to_fsba
+ * here.
+ */
+
+#define fsck_ino_to_fsba(fs, x) \
+	(letoh32((fs)->e2fs_gd[ino_to_cg(fs, x)].ext2bgd_i_tables) + \
+	(((x)-1) % (fs)->e2fs.e2fs_ipg)/(fs)->e2fs_ipb)
+
 static ino_t startinum;
 
-static int iblock __P((struct inodesc *, long, u_int64_t));
+static int iblock(struct inodesc *, long, u_int64_t);
+static int setlarge(void);
+
+static int
+setlarge(void)
+{
+	if (sblock.e2fs.e2fs_rev < E2FS_REV1) {
+		pfatal("LARGE FILES UNSUPPORTED ON REVISION 0 FILESYSTEMS");
+		return 0;
+	}
+	if (!(sblock.e2fs.e2fs_features_rocompat & EXT2F_ROCOMPAT_LARGE_FILE)) {
+		if (preen)
+			pwarn("SETTING LARGE FILE INDICATOR\n");
+		else if (!reply("SET LARGE FILE INDICATOR"))
+			return 0;
+		sblock.e2fs.e2fs_features_rocompat |= EXT2F_ROCOMPAT_LARGE_FILE;
+		sbdirty();
+	}
+	return 1;
+}
+
+u_int64_t
+inosize(struct ext2fs_dinode *dp)
+{
+	u_int64_t size = letoh32(dp->e2di_size);
+
+	if ((letoh16(dp->e2di_mode) & IFMT) == IFREG)
+		size |= (u_int64_t)letoh32(dp->e2di_size_hi) << 32;
+	if (size >= 0x80000000U)
+		 (void)setlarge();
+	 return size;
+}
+
+void
+inossize(struct ext2fs_dinode *dp, u_int64_t size)
+{
+	if ((letoh16(dp->e2di_mode) & IFMT) == IFREG) {
+		dp->e2di_size_hi = htole32(size >> 32);
+		if (size >= 0x80000000U)
+			if (!setlarge())
+				return;
+	} else if (size >= 0x80000000U) {
+		pfatal("TRYING TO SET FILESIZE TO %llu ON MODE %x FILE\n",
+		    (unsigned long long)size, letoh16(dp->e2di_mode) & IFMT);
+		return;
+	}
+	dp->e2di_size = htole32(size);
+}
 
 int
-ckinode(dp, idesc)
-	struct ext2fs_dinode *dp;
-	register struct inodesc *idesc;
+ckinode(struct ext2fs_dinode *dp, struct inodesc *idesc)
 {
-	register u_int32_t *ap;
-	long ret, n, ndb, offset;
+	u_int32_t *ap;
+	long ret, n, ndb;
 	struct ext2fs_dinode dino;
 	u_int64_t remsize, sizepb;
 	mode_t mode;
-	char pathbuf[MAXPATHLEN + 1];
+	char pathbuf[PATH_MAX + 1];
 
 	if (idesc->id_fix != IGNORE)
 		idesc->id_fix = DONTKNOW;
 	idesc->id_entryno = 0;
-	idesc->id_filesize = dp->e2di_size;
-	mode = dp->e2di_mode & IFMT;
-	if (mode == IFBLK || mode == IFCHR || (mode == IFLNK &&
-	    (dp->e2di_size < EXT2_MAXSYMLINKLEN)))
+	idesc->id_filesize = inosize(dp);
+	mode = letoh16(dp->e2di_mode) & IFMT;
+	if (mode == IFBLK || mode == IFCHR || mode == IFIFO ||
+	    (mode == IFLNK && (inosize(dp) < EXT2_MAXSYMLINKLEN)))
 		return (KEEPON);
 	dino = *dp;
-	ndb = howmany(dino.e2di_size, sblock.e2fs_bsize);
+	ndb = howmany(inosize(&dino), sblock.e2fs_bsize);
 	for (ap = &dino.e2di_blocks[0]; ap < &dino.e2di_blocks[NDADDR];
 																ap++,ndb--) {
 		idesc->id_numfrags = 1;
 		if (*ap == 0) {
 			if (idesc->id_type == DATA && ndb > 0) {
 				/* An empty block in a directory XXX */
-				getpathname(pathbuf, idesc->id_number,
-				    idesc->id_number);
+				getpathname(pathbuf, sizeof pathbuf,
+				    idesc->id_number, idesc->id_number);
 				pfatal("DIRECTORY %s: CONTAINS EMPTY BLOCKS",
 				    pathbuf);
 				if (reply("ADJUST LENGTH") == 1) {
 					dp = ginode(idesc->id_number);
-					dp->e2di_size = (ap - &dino.e2di_blocks[0]) *
-					    sblock.e2fs_bsize;
+					inossize(dp,
+					    (ap - &dino.e2di_blocks[0]) *
+					    sblock.e2fs_bsize);
 					printf(
 					    "YOU MUST RERUN FSCK AFTERWARDS\n");
 					rerun = 1;
@@ -109,7 +154,7 @@ ckinode(dp, idesc)
 			}
 			continue;
 		}
-		idesc->id_blkno = *ap;
+		idesc->id_blkno = letoh32(*ap);
 		if (idesc->id_type == ADDR)
 			ret = (*idesc->id_func)(idesc);
 		else
@@ -118,24 +163,24 @@ ckinode(dp, idesc)
 			return (ret);
 	}
 	idesc->id_numfrags = 1;
-	remsize = dino.e2di_size - sblock.e2fs_bsize * NDADDR;
+	remsize = inosize(&dino) - sblock.e2fs_bsize * NDADDR;
 	sizepb = sblock.e2fs_bsize;
 	for (ap = &dino.e2di_blocks[NDADDR], n = 1; n <= NIADDR; ap++, n++) {
 		if (*ap) {
-			idesc->id_blkno = *ap;
+			idesc->id_blkno = letoh32(*ap);
 			ret = iblock(idesc, n, remsize);
 			if (ret & STOP)
 				return (ret);
 		} else {
 			if (idesc->id_type == DATA && remsize > 0) {
 				/* An empty block in a directory XXX */
-				getpathname(pathbuf, idesc->id_number,
-				    idesc->id_number);
+				getpathname(pathbuf, sizeof pathbuf,
+				    idesc->id_number, idesc->id_number);
 				pfatal("DIRECTORY %s: CONTAINS EMPTY BLOCKS",
 				    pathbuf);
 				if (reply("ADJUST LENGTH") == 1) {
 					dp = ginode(idesc->id_number);
-					dp->e2di_size -= remsize;
+					inossize(dp, inosize(dp) - remsize);
 					remsize = 0;
 					printf(
 					    "YOU MUST RERUN FSCK AFTERWARDS\n");
@@ -152,18 +197,15 @@ ckinode(dp, idesc)
 }
 
 static int
-iblock(idesc, ilevel, isize)
-	struct inodesc *idesc;
-	long ilevel;
-	u_int64_t isize;
+iblock(struct inodesc *idesc, long ilevel, u_int64_t isize)
 {
-	register daddr_t *ap;
-	register daddr_t *aplim;
-	register struct bufarea *bp;
-	int i, n, (*func) __P((struct inodesc *)), nif;
+	daddr32_t *ap;
+	daddr32_t *aplim;
+	struct bufarea *bp;
+	int i, n, (*func)(struct inodesc *), nif;
 	u_int64_t sizepb;
 	char buf[BUFSIZ];
-	char pathbuf[MAXPATHLEN + 1];
+	char pathbuf[PATH_MAX + 1];
 	struct ext2fs_dinode *dp;
 
 	if (idesc->id_type == ADDR) {
@@ -188,8 +230,9 @@ iblock(idesc, ilevel, isize)
 		for (ap = &bp->b_un.b_indir[nif]; ap < aplim; ap++) {
 			if (*ap == 0)
 				continue;
-			(void)sprintf(buf, "PARTIALLY TRUNCATED INODE I=%u",
-				idesc->id_number);
+			(void)snprintf(buf, sizeof(buf),
+			    "PARTIALLY TRUNCATED INODE I=%llu",
+			    (unsigned long long)idesc->id_number);
 			if (dofix(idesc, buf)) {
 				*ap = 0;
 				dirty(bp);
@@ -200,7 +243,7 @@ iblock(idesc, ilevel, isize)
 	aplim = &bp->b_un.b_indir[nif];
 	for (ap = bp->b_un.b_indir; ap < aplim; ap++) {
 		if (*ap) {
-			idesc->id_blkno = *ap;
+			idesc->id_blkno = letoh32(*ap);
 			if (ilevel == 0)
 				n = (*func)(idesc);
 			else
@@ -212,13 +255,13 @@ iblock(idesc, ilevel, isize)
 		} else {
 			if (idesc->id_type == DATA && isize > 0) {
 				/* An empty block in a directory XXX */
-				getpathname(pathbuf, idesc->id_number,
-				    idesc->id_number);
+				getpathname(pathbuf, sizeof pathbuf,
+				    idesc->id_number, idesc->id_number);
 				pfatal("DIRECTORY %s: CONTAINS EMPTY BLOCKS",
 				    pathbuf);
 				if (reply("ADJUST LENGTH") == 1) {
 					dp = ginode(idesc->id_number);
-					dp->e2di_size -= isize;
+					inossize(dp, inosize(dp) - isize);
 					isize = 0;
 					printf(
 					    "YOU MUST RERUN FSCK AFTERWARDS\n");
@@ -240,39 +283,38 @@ iblock(idesc, ilevel, isize)
  * Return 0 if in range, 1 if out of range.
  */
 int
-chkrange(blk, cnt)
-	daddr_t blk;
-	int cnt;
+chkrange(daddr32_t blk, int cnt)
 {
-	register int c;
+	int c, overh;
 
 	if ((unsigned)(blk + cnt) > maxfsblock)
 		return (1);
 	c = dtog(&sblock, blk);
-	if (blk < sblock.e2fs.e2fs_bpg * c + cgoverhead +
-											sblock.e2fs.e2fs_first_dblock) {
-		if ((blk + cnt) > sblock.e2fs.e2fs_bpg * c + cgoverhead +
-											sblock.e2fs.e2fs_first_dblock) {
+	overh = cgoverhead(c);
+	if (blk < sblock.e2fs.e2fs_bpg * c + overh +
+	    sblock.e2fs.e2fs_first_dblock) {
+		if ((blk + cnt) > sblock.e2fs.e2fs_bpg * c + overh +
+		    sblock.e2fs.e2fs_first_dblock) {
 			if (debug) {
 				printf("blk %d < cgdmin %d;",
-				    blk, sblock.e2fs.e2fs_bpg * c + cgoverhead +
-											sblock.e2fs.e2fs_first_dblock);
+				    blk, sblock.e2fs.e2fs_bpg * c + overh +
+				    sblock.e2fs.e2fs_first_dblock);
 				printf(" blk + cnt %d > cgsbase %d\n",
-				    blk + cnt, sblock.e2fs.e2fs_bpg * c + cgoverhead +
-											sblock.e2fs.e2fs_first_dblock);
+				    blk + cnt, sblock.e2fs.e2fs_bpg * c +
+				    overh + sblock.e2fs.e2fs_first_dblock);
 			}
 			return (1);
 		}
 	} else {
-		if ((blk + cnt) > sblock.e2fs.e2fs_bpg * (c + 1) + cgoverhead +
-											sblock.e2fs.e2fs_first_dblock) {
+		if ((blk + cnt) > sblock.e2fs.e2fs_bpg * (c + 1) + overh +
+		    sblock.e2fs.e2fs_first_dblock) {
 			if (debug)  {
 				printf("blk %d >= cgdmin %d;",
-				    blk, sblock.e2fs.e2fs_bpg * c + cgoverhead +
-											sblock.e2fs.e2fs_first_dblock);
+				    blk, sblock.e2fs.e2fs_bpg * c + overh +
+				    sblock.e2fs.e2fs_first_dblock);
 				printf(" blk + cnt %d > cgdmax %d\n",
-				    blk+cnt, sblock.e2fs.e2fs_bpg * (c + 1) + cgoverhead +
-											sblock.e2fs.e2fs_first_dblock);
+				    blk+cnt, sblock.e2fs.e2fs_bpg * (c + 1) +
+				    overh + sblock.e2fs.e2fs_first_dblock);
 			}
 			return (1);
 		}
@@ -284,17 +326,17 @@ chkrange(blk, cnt)
  * General purpose interface for reading inodes.
  */
 struct ext2fs_dinode *
-ginode(inumber)
-	ino_t inumber;
+ginode(ino_t inumber)
 {
-	daddr_t iblk;
+	daddr32_t iblk;
 
 	if ((inumber < EXT2_FIRSTINO && inumber != EXT2_ROOTINO)
 		|| inumber > maxino)
-		errexit("bad inode number %d to ginode\n", inumber);
+		errexit("bad inode number %llu to ginode\n",
+		    (unsigned long long)inumber);
 	if (startinum == 0 ||
 	    inumber < startinum || inumber >= startinum + sblock.e2fs_ipb) {
-		iblk = ino_to_fsba(&sblock, inumber);
+		iblk = fsck_ino_to_fsba(&sblock, inumber);
 		if (pbp != 0)
 			pbp->b_flags &= ~B_INUSE;
 		pbp = getdatablk(iblk, sblock.e2fs_bsize);
@@ -312,18 +354,19 @@ long readcnt, readpercg, fullcnt, inobufsize, partialcnt, partialsize;
 struct ext2fs_dinode *inodebuf;
 
 struct ext2fs_dinode *
-getnextinode(inumber)
-	ino_t inumber;
+getnextinode(ino_t inumber)
 {
 	long size;
-	daddr_t dblk;
-	static struct ext2fs_dinode *dp;
+	daddr32_t dblk;
+	struct ext2fs_dinode *dp;
+	static char *bp;
 
 	if (inumber != nextino++ || inumber > maxino)
-		errexit("bad inode number %d to nextinode\n", inumber);
+		errexit("bad inode number %llu to nextinode\n",
+		    (unsigned long long)inumber);
 	if (inumber >= lastinum) {
 		readcnt++;
-		dblk = fsbtodb(&sblock, ino_to_fsba(&sblock, lastinum));
+		dblk = fsbtodb(&sblock, fsck_ino_to_fsba(&sblock, lastinum));
 		if (readcnt % readpercg == 0) {
 			size = partialsize;
 			lastinum += partialcnt;
@@ -332,13 +375,17 @@ getnextinode(inumber)
 			lastinum += fullcnt;
 		}
 		(void)bread(fsreadfd, (char *)inodebuf, dblk, size);
-		dp = inodebuf;
+		bp = (char *)inodebuf;
 	}
-	return (dp++);
+
+	dp = (struct ext2fs_dinode *)bp;
+	bp += EXT2_DINODE_SIZE(&sblock);
+
+	return (dp);
 }
 
 void
-resetinodebuf()
+resetinodebuf(void)
 {
 
 	startinum = 0;
@@ -346,10 +393,10 @@ resetinodebuf()
 	lastinum = 1;
 	readcnt = 0;
 	inobufsize = blkroundup(&sblock, INOBUFSIZE);
-	fullcnt = inobufsize / sizeof(struct ext2fs_dinode);
+	fullcnt = inobufsize / EXT2_DINODE_SIZE(&sblock);
 	readpercg = sblock.e2fs.e2fs_ipg / fullcnt;
 	partialcnt = sblock.e2fs.e2fs_ipg % fullcnt;
-	partialsize = partialcnt * sizeof(struct ext2fs_dinode);
+	partialsize = partialcnt * EXT2_DINODE_SIZE(&sblock);
 	if (partialcnt != 0) {
 		readpercg++;
 	} else {
@@ -357,15 +404,14 @@ resetinodebuf()
 		partialsize = inobufsize;
 	}
 	if (inodebuf == NULL &&
-	    (inodebuf = (struct ext2fs_dinode *)malloc((unsigned)inobufsize)) ==
-		NULL)
+	    (inodebuf = malloc((unsigned)inobufsize)) == NULL)
 		errexit("Cannot allocate space for inode buffer\n");
 	while (nextino < EXT2_ROOTINO)
 		(void)getnextinode(nextino);
 }
 
 void
-freeinodebuf()
+freeinodebuf(void)
 {
 
 	if (inodebuf != NULL)
@@ -381,19 +427,16 @@ freeinodebuf()
  * Enter inodes into the cache.
  */
 void
-cacheino(dp, inumber)
-	register struct ext2fs_dinode *dp;
-	ino_t inumber;
+cacheino(struct ext2fs_dinode *dp, ino_t inumber)
 {
-	register struct inoinfo *inp;
+	struct inoinfo *inp;
 	struct inoinfo **inpp;
 	unsigned int blks;
 
-	blks = howmany(dp->e2di_size, sblock.e2fs_bsize);
+	blks = howmany(inosize(dp), sblock.e2fs_bsize);
 	if (blks > NDADDR)
 		blks = NDADDR + NIADDR;
-	inp = (struct inoinfo *)
-		malloc(sizeof(*inp) + (blks - 1) * sizeof(daddr_t));
+	inp = malloc(sizeof(*inp) + (blks - 1) * sizeof(daddr32_t));
 	if (inp == NULL)
 		return;
 	inpp = &inphead[inumber % numdirs];
@@ -406,13 +449,13 @@ cacheino(dp, inumber)
 		inp->i_parent = (ino_t)0;
 	inp->i_dotdot = (ino_t)0;
 	inp->i_number = inumber;
-	inp->i_isize = dp->e2di_size;
-	inp->i_numblks = blks * sizeof(daddr_t);
+	inp->i_isize = inosize(dp);
+	inp->i_numblks = blks * sizeof(daddr32_t);
 	memcpy(&inp->i_blks[0], &dp->e2di_blocks[0], (size_t)inp->i_numblks);
 	if (inplast == listmax) {
 		listmax += 100;
-		inpsort = (struct inoinfo **)realloc((char *)inpsort,
-		    (unsigned)listmax * sizeof(struct inoinfo *));
+		inpsort = reallocarray(inpsort, listmax,
+		    sizeof(struct inoinfo *));
 		if (inpsort == NULL)
 			errexit("cannot increase directory list\n");
 	}
@@ -423,27 +466,26 @@ cacheino(dp, inumber)
  * Look up an inode cache structure.
  */
 struct inoinfo *
-getinoinfo(inumber)
-	ino_t inumber;
+getinoinfo(ino_t inumber)
 {
-	register struct inoinfo *inp;
+	struct inoinfo *inp;
 
 	for (inp = inphead[inumber % numdirs]; inp; inp = inp->i_nexthash) {
 		if (inp->i_number != inumber)
 			continue;
 		return (inp);
 	}
-	errexit("cannot find inode %d\n", inumber);
-	return ((struct inoinfo *)0);
+	errexit("cannot find inode %llu\n", (unsigned long long)inumber);
+	return (NULL);
 }
 
 /*
  * Clean up all the inode cache structure.
  */
 void
-inocleanup()
+inocleanup(void)
 {
-	register struct inoinfo **inpp;
+	struct inoinfo **inpp;
 
 	if (inphead == NULL)
 		return;
@@ -453,21 +495,18 @@ inocleanup()
 	free((char *)inpsort);
 	inphead = inpsort = NULL;
 }
-	
+
 void
-inodirty()
+inodirty(void)
 {
-	
+
 	dirty(pbp);
 }
 
 void
-clri(idesc, type, flag)
-	register struct inodesc *idesc;
-	char *type;
-	int flag;
+clri(struct inodesc *idesc, char *type, int flag)
 {
-	register struct ext2fs_dinode *dp;
+	struct ext2fs_dinode *dp;
 
 	dp = ginode(idesc->id_number);
 	if (flag == 1) {
@@ -487,72 +526,69 @@ clri(idesc, type, flag)
 }
 
 int
-findname(idesc)
-	struct inodesc *idesc;
+findname(struct inodesc *idesc)
 {
-	register struct ext2fs_direct *dirp = idesc->id_dirp;
+	struct ext2fs_direct *dirp = idesc->id_dirp;
+	u_int16_t namlen = dirp->e2d_namlen;
 
-	if (dirp->e2d_ino != idesc->id_parent)
+	if (letoh32(dirp->e2d_ino) != idesc->id_parent)
 		return (KEEPON);
-	memcpy(idesc->id_name, dirp->e2d_name, (size_t)dirp->e2d_namlen);
-	idesc->id_name[dirp->e2d_namlen] = '\0';
+	memcpy(idesc->id_name, dirp->e2d_name, (size_t)namlen);
+	idesc->id_name[namlen] = '\0';
 	return (STOP|FOUND);
 }
 
 int
-findino(idesc)
-	struct inodesc *idesc;
+findino(struct inodesc *idesc)
 {
-	register struct ext2fs_direct *dirp = idesc->id_dirp;
+	struct ext2fs_direct *dirp = idesc->id_dirp;
+	u_int32_t ino = letoh32(dirp->e2d_ino);
 
-	if (dirp->e2d_ino == 0)
+	if (ino == 0)
 		return (KEEPON);
 	if (strcmp(dirp->e2d_name, idesc->id_name) == 0 &&
-	    (dirp->e2d_ino == EXT2_ROOTINO || dirp->e2d_ino >= EXT2_FIRSTINO) 
-		&& dirp->e2d_ino <= maxino) {
-		idesc->id_parent = dirp->e2d_ino;
+	    (ino == EXT2_ROOTINO || ino >= EXT2_FIRSTINO)
+		&& ino <= maxino) {
+		idesc->id_parent = ino;
 		return (STOP|FOUND);
 	}
 	return (KEEPON);
 }
 
 void
-pinode(ino)
-	ino_t ino;
+pinode(ino_t ino)
 {
-	register struct ext2fs_dinode *dp;
-	register char *p;
-	struct passwd *pw;
+	struct ext2fs_dinode *dp;
+	const char *p;
 	time_t t;
+	u_int32_t uid;
 
-	printf(" I=%u ", ino);
+	printf(" I=%llu ", (unsigned long long)ino);
 	if ((ino < EXT2_FIRSTINO && ino != EXT2_ROOTINO) || ino > maxino)
 		return;
 	dp = ginode(ino);
 	printf(" OWNER=");
+	uid = letoh16(dp->e2di_uid_low) | (letoh16(dp->e2di_uid_high) << 16);
 #ifndef SMALL
-	if ((pw = getpwuid((int)dp->e2di_uid)) != 0)
-		printf("%s ", pw->pw_name);
+	if ((p = user_from_uid(uid, 1)) != NULL)
+		printf("%s ", p);
 	else
 #endif
-		printf("%u ", (unsigned)dp->e2di_uid);
-	printf("MODE=%o\n", dp->e2di_mode);
+		printf("%u ", uid);
+	printf("MODE=%o\n", letoh16(dp->e2di_mode));
 	if (preen)
 		printf("%s: ", cdevname());
-	printf("SIZE=%u ", dp->e2di_size);
-	t = dp->e2di_mtime;
+	printf("SIZE=%llu ", (long long)inosize(dp));
+	t = (time_t) letoh32(dp->e2di_mtime);
 	p = ctime(&t);
 	printf("MTIME=%12.12s %4.4s ", &p[4], &p[20]);
 }
 
 void
-blkerror(ino, type, blk)
-	ino_t ino;
-	char *type;
-	daddr_t blk;
+blkerror(ino_t ino, char *type, daddr32_t blk)
 {
 
-	pfatal("%d %s I=%u", blk, type, ino);
+	pfatal("%d %s I=%llu", blk, type, (unsigned long long)ino);
 	printf("\n");
 	switch (statemap[ino]) {
 
@@ -578,12 +614,10 @@ blkerror(ino, type, blk)
  * allocate an unused inode
  */
 ino_t
-allocino(request, type)
-	ino_t request;
-	int type;
+allocino(ino_t request, int type)
 {
-	register ino_t ino;
-	register struct ext2fs_dinode *dp;
+	ino_t ino;
+	struct ext2fs_dinode *dp;
 	time_t t;
 
 	if (request == 0)
@@ -610,20 +644,21 @@ allocino(request, type)
 		return (0);
 	}
 	dp = ginode(ino);
-	dp->e2di_blocks[0] = allocblk();
+	dp->e2di_blocks[0] = htole32(allocblk());
 	if (dp->e2di_blocks[0] == 0) {
 		statemap[ino] = USTATE;
 		return (0);
 	}
-	dp->e2di_mode = type;
+	dp->e2di_mode = htole16(type);
 	(void)time(&t);
-	dp->e2di_atime = t;
+	dp->e2di_atime = (u_int32_t)htole32(t);
 	dp->e2di_mtime = dp->e2di_ctime = dp->e2di_atime;
 	dp->e2di_dtime = 0;
-	dp->e2di_size = sblock.e2fs_bsize;
-	dp->e2di_nblock = btodb(sblock.e2fs_bsize);
+	inossize(dp, sblock.e2fs_bsize);
+	dp->e2di_nblock = htole32(btodb(sblock.e2fs_bsize));
 	n_files++;
 	inodirty();
+	typemap[ino] = E2IFTODT(type);
 	return (ino);
 }
 
@@ -631,8 +666,7 @@ allocino(request, type)
  * deallocate an inode
  */
 void
-freeino(ino)
-	ino_t ino;
+freeino(ino_t ino)
 {
 	struct inodesc idesc;
 	struct ext2fs_dinode *dp;

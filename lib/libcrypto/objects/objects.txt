@@ -168,12 +168,15 @@ pkcs1 5			: RSA-SHA1		: sha1WithRSAEncryption
 # According to PKCS #1 version 2.1
 pkcs1 7			: RSAES-OAEP		: rsaesOaep
 pkcs1 8			: MGF1			: mgf1
+pkcs1 9			: PSPECIFIED		: pSpecified
 pkcs1 10		: RSASSA-PSS		: rsassaPss
 
 pkcs1 11		: RSA-SHA256		: sha256WithRSAEncryption
 pkcs1 12		: RSA-SHA384		: sha384WithRSAEncryption
 pkcs1 13		: RSA-SHA512		: sha512WithRSAEncryption
 pkcs1 14		: RSA-SHA224		: sha224WithRSAEncryption
+pkcs1 15		: RSA-SHA512/224	: sha512-224WithRSAEncryption
+pkcs1 16		: RSA-SHA512/256	: sha512-256WithRSAEncryption
 
 pkcs 3			: pkcs3
 pkcs3 1			:			: dhKeyAgreement
@@ -256,7 +259,15 @@ id-smime-ct 6		: id-smime-ct-contentInfo
 id-smime-ct 7		: id-smime-ct-DVCSRequestData
 id-smime-ct 8		: id-smime-ct-DVCSResponseData
 id-smime-ct 9		: id-smime-ct-compressedData
+id-smime-ct 24		: id-ct-routeOriginAuthz
+id-smime-ct 26		: id-ct-rpkiManifest
 id-smime-ct 27		: id-ct-asciiTextWithCRLF
+id-smime-ct 35		: id-ct-rpkiGhostbusters
+id-smime-ct 36		: id-ct-resourceTaggedAttest
+id-smime-ct 47		: id-ct-geofeedCSVwithCRLF
+id-smime-ct 48		: id-ct-signedChecklist
+id-smime-ct 49		: id-ct-ASPA
+id-smime-ct 50		: id-ct-signedTAL
 
 # S/MIME Attributes
 id-smime-aa 1		: id-smime-aa-receiptRequest
@@ -290,6 +301,7 @@ id-smime-aa 26		: id-smime-aa-ets-certCRLTimestamp
 id-smime-aa 27		: id-smime-aa-ets-archiveTimeStamp
 id-smime-aa 28		: id-smime-aa-signatureType
 id-smime-aa 29		: id-smime-aa-dvcs-dvc
+id-smime-aa 47		: id-smime-aa-signingCertificateV2
 
 # S/MIME Algorithm Identifiers
 # obsolete
@@ -369,6 +381,9 @@ rsadsi 2 9		:			: hmacWithSHA256
 rsadsi 2 10		:			: hmacWithSHA384
 rsadsi 2 11		:			: hmacWithSHA512
 
+rsadsi 2 12		:			: hmacWithSHA512-224
+rsadsi 2 13		:			: hmacWithSHA512-256
+
 rsadsi 3 2		: RC2-CBC		: rc2-cbc
 			: RC2-ECB		: rc2-ecb
 !Cname rc2-cfb64
@@ -435,6 +450,7 @@ id-pkix 9		: id-pda
 id-pkix 10		: id-aca
 id-pkix 11		: id-qcs
 id-pkix 12		: id-cct
+id-pkix 14		: id-cp
 id-pkix 21		: id-ppl
 id-pkix 48		: id-ad
 
@@ -471,6 +487,9 @@ id-pe 10		: ac-proxying
 !Cname sinfo-access
 id-pe 11		: subjectInfoAccess	: Subject Information Access
 id-pe 14		: proxyCertInfo		: Proxy Certificate Information
+id-pe 24		: tlsfeature		: TLS Feature
+id-pe 28		: sbgp-ipAddrBlockv2
+id-pe 29		: sbgp-autonomousSysNumv2
 
 # PKIX policyQualifiers for Internet policy qualifiers
 id-qt 1			: id-qt-cps		: Policy Qualifier CPS
@@ -495,6 +514,7 @@ id-kp 8			: timeStamping		: Time Stamping
 !Cname OCSP-sign
 id-kp 9			: OCSPSigning		: OCSP Signing
 id-kp 10		: DVCS			: dvcs
+id-kp 30		: id-kp-bgpsec-router	: BGPsec Router
 
 # CMP information types
 id-it 1			: id-it-caProtEncCert
@@ -588,6 +608,10 @@ id-cct 1		: id-cct-crs
 id-cct 2		: id-cct-PKIData
 id-cct 3		: id-cct-PKIResponse
 
+# PKIX Certificate Policies
+id-cp 2			: ipAddr-asNumber
+id-cp 3			: ipAddr-asNumberv2
+
 # Predefined Proxy Certificate policy languages
 id-ppl 0		: id-ppl-anyLanguage	: Any language
 id-ppl 1		: id-ppl-inheritAll	: Inherit all
@@ -603,7 +627,9 @@ id-ad 3			: ad_timestamping	: AD Time Stamping
 !Cname ad-dvcs
 id-ad 4			: AD_DVCS		: ad dvcs
 id-ad 5			: caRepository		: CA Repository
-
+id-ad 10		: rpkiManifest		: RPKI Manifest
+id-ad 11		: signedObject		: Signed Object
+id-ad 13		: rpkiNotify		: RPKI Notify
 
 !Alias id-pkix-OCSP ad-OCSP
 !module id-pkix-OCSP
@@ -747,7 +773,7 @@ id-ce 24		: invalidityDate	: Invalidity Date
 !Cname delta-crl
 id-ce 27		: deltaCRL		: X509v3 Delta CRL Indicator
 !Cname issuing-distribution-point
-id-ce 28		: issuingDistributionPoint : X509v3 Issuing Distrubution Point
+id-ce 28		: issuingDistributionPoint : X509v3 Issuing Distribution Point
 !Cname certificate-issuer
 id-ce 29		: certificateIssuer	: X509v3 Certificate Issuer
 !Cname name-constraints
@@ -821,7 +847,7 @@ internet 6		: snmpv2		: SNMPv2
 # Documents refer to "internet 7" as "mail". This however leads to ambiguities
 # with RFC2798, Section 9.1.3, where "mail" is defined as the short name for
 # rfc822Mailbox. The short name is therefore here left out for a reason.
-# Subclasses of "mail", e.g. "MIME MHS" don't consitute a problem, as
+# Subclasses of "mail", e.g. "MIME MHS" don't constitute a problem, as
 # references are realized via long name "Mail" (with capital M).
 internet 7		:			: Mail
 
@@ -829,6 +855,12 @@ Private 1		: enterprises		: Enterprises
 
 # RFC 2247
 Enterprises 1466 344	: dcobject		: dcObject
+
+# Extended Validation
+!Alias extendedValidation Enterprises 311 60
+extendedValidation 2 1 1 :			: jurisdictionLocalityName
+extendedValidation 2 1 2 :			: jurisdictionStateOrProvinceName
+extendedValidation 2 1 3 :			: jurisdictionCountryName
 
 # RFC 1495
 Mail 1			: mime-mhs		: MIME MHS
@@ -843,10 +875,16 @@ mime-mhs-headings 2	: id-hex-multipart-message : id-hex-multipart-message
 !Cname zlib-compression
 id-smime-alg 8		: ZLIB			: zlib compression
 
-# AES aka Rijndael
+#
+# NIST CSOR
+#
+# https://csrc.nisg.gov/projects/computer-security-objects/register/algorithm-registration
+#
 
 !Alias csor 2 16 840 1 101 3
 !Alias nistAlgorithms csor 4
+
+# AES aka Rijndael
 !Alias aes nistAlgorithms 1
 
 aes 1			: AES-128-ECB		: aes-128-ecb
@@ -900,17 +938,43 @@ aes 48			: id-aes256-wrap-pad
 			: DES-EDE3-CFB1		: des-ede3-cfb1
 			: DES-EDE3-CFB8		: des-ede3-cfb8
 
-# OIDs for SHA224, SHA256, SHA385 and SHA512, according to x9.84.
+# NIST CSOR Hash Algorithms (see also RFC 4231, RFC 8017, RFC 8702)
 !Alias nist_hashalgs nistAlgorithms 2
 nist_hashalgs 1		: SHA256		: sha256
 nist_hashalgs 2		: SHA384		: sha384
 nist_hashalgs 3		: SHA512		: sha512
 nist_hashalgs 4		: SHA224		: sha224
+nist_hashalgs 5		: SHA512-224		: sha512-224
+nist_hashalgs 6		: SHA512-256		: sha512-256
+nist_hashalgs 7		: SHA3-224		: sha3-224
+nist_hashalgs 8		: SHA3-256		: sha3-256
+nist_hashalgs 9		: SHA3-384		: sha3-384
+nist_hashalgs 10	: SHA3-512		: sha3-512
+#nist_hashalgs 11 	: SHAKE128		: shake128
+#nist_hashalgs 12	: SHAKE256		: shake256
+nist_hashalgs 13	: id-hmacWithSHA3-224	: hmac-sha3-224
+nist_hashalgs 14	: id-hmacWithSHA3-256	: hmac-sha3-256
+nist_hashalgs 15	: id-hmacWithSHA3-384	: hmac-sha3-384
+nist_hashalgs 16	: id-hmacWithSHA3-512	: hmac-sha3-512
 
-# OIDs for dsa-with-sha224 and dsa-with-sha256
-!Alias dsa_with_sha2 nistAlgorithms 3
-dsa_with_sha2 1		: dsa_with_SHA224
-dsa_with_sha2 2		: dsa_with_SHA256
+# NIST CSOR Signature Algorithms
+!Alias nist_sigalgs nistAlgorithms 3
+nist_sigalgs 1		: id-dsa-with-sha224			: dsa_with_SHA224
+nist_sigalgs 2		: id-dsa-with-sha256			: dsa_with_SHA256
+nist_sigalgs 3		: id-dsa-with-sha384			: dsa_with_SHA384
+nist_sigalgs 4		: id-dsa-with-sha512			: dsa_with_SHA512
+nist_sigalgs 5		: id-dsa-with-sha3-224			: dsa_with_SHA3-224
+nist_sigalgs 6		: id-dsa-with-sha3-256			: dsa_with_SHA3-256
+nist_sigalgs 7		: id-dsa-with-sha3-384			: dsa_with_SHA3-384
+nist_sigalgs 8		: id-dsa-with-sha3-512			: dsa_with_SHA3-512
+nist_sigalgs 9		: id-ecdsa-with-sha3-224		: ecdsa_with_SHA3-224
+nist_sigalgs 10		: id-ecdsa-with-sha3-256		: ecdsa_with_SHA3-256
+nist_sigalgs 11		: id-ecdsa-with-sha3-384		: ecdsa_with_SHA3-384
+nist_sigalgs 12		: id-ecdsa-with-sha3-512		: ecdsa_with_SHA3-512
+nist_sigalgs 13		: id-rsassa-pkcs1-v1_5-with-sha3-224	: RSA-SHA3-224
+nist_sigalgs 14		: id-rsassa-pkcs1-v1_5-with-sha3-256	: RSA-SHA3-256
+nist_sigalgs 15		: id-rsassa-pkcs1-v1_5-with-sha3-384	: RSA-SHA3-384
+nist_sigalgs 16		: id-rsassa-pkcs1-v1_5-with-sha3-512	: RSA-SHA3-512
 
 # Hold instruction CRL entry extension
 !Cname hold-instruction-code
@@ -1228,6 +1292,11 @@ cryptocom 1 3 4		: id-GostR3411-94-with-GostR3410-2001-cc : GOST R 34.11-94 with
 
 cryptocom 1 8 1		: id-GostR3410-2001-ParamSet-cc : GOST R 3410-2001 Parameter Set Cryptocom
 
+# Definitions for SM3
+
+1 2 156 10197 1 401 : SM3     : sm3
+1 2 156 10197 1 504 : RSA-SM3 : sm3WithRSAEncryption
+
 # Definitions for Camellia cipher - CBC MODE
 
 1 2 392 200011 61 1 1 1 2 : CAMELLIA-128-CBC		: camellia-128-cbc
@@ -1279,6 +1348,22 @@ kisa 1 5                : SEED-CFB      : seed-cfb
 !Cname seed-ofb128
 kisa 1 6                : SEED-OFB      : seed-ofb
 
+# Definitions for SM4 cipher
+
+member-body 156         : ISO-CN        : ISO CN Member Body
+ISO-CN 10197            : oscca
+oscca 1                 : sm-scheme
+
+sm-scheme 104 1         : SM4-ECB       : sm4-ecb
+sm-scheme 104 2         : SM4-CBC       : sm4-cbc
+!Cname sm4-ofb128
+sm-scheme 104 3         : SM4-OFB       : sm4-ofb
+!Cname sm4-cfb128
+sm-scheme 104 4         : SM4-CFB       : sm4-cfb
+sm-scheme 104 5         : SM4-CFB1      : sm4-cfb1
+sm-scheme 104 6         : SM4-CFB8      : sm4-cfb8
+sm-scheme 104 7         : SM4-CTR       : sm4-ctr
+
 # There is no OID that just denotes "HMAC" oddly enough...
 
 			: HMAC				: hmac
@@ -1290,3 +1375,101 @@ kisa 1 6                : SEED-OFB      : seed-ofb
 			: AES-128-CBC-HMAC-SHA1		: aes-128-cbc-hmac-sha1
 			: AES-192-CBC-HMAC-SHA1		: aes-192-cbc-hmac-sha1
 			: AES-256-CBC-HMAC-SHA1		: aes-256-cbc-hmac-sha1
+
+# ECDH schemes from RFC 5753
+!Alias x9-63-scheme 1 3 133 16 840 63 0
+!Alias secg-scheme certicom-arc 1
+
+x9-63-scheme 2   : dhSinglePass-stdDH-sha1kdf-scheme
+secg-scheme 11 0 : dhSinglePass-stdDH-sha224kdf-scheme
+secg-scheme 11 1 : dhSinglePass-stdDH-sha256kdf-scheme
+secg-scheme 11 2 : dhSinglePass-stdDH-sha384kdf-scheme
+secg-scheme 11 3 : dhSinglePass-stdDH-sha512kdf-scheme
+
+x9-63-scheme 3   : dhSinglePass-cofactorDH-sha1kdf-scheme
+secg-scheme 14 0 : dhSinglePass-cofactorDH-sha224kdf-scheme
+secg-scheme 14 1 : dhSinglePass-cofactorDH-sha256kdf-scheme
+secg-scheme 14 2 : dhSinglePass-cofactorDH-sha384kdf-scheme
+secg-scheme 14 3 : dhSinglePass-cofactorDH-sha512kdf-scheme
+
+# DH NIDs for use with lookup tables.
+                 : dh-std-kdf
+                 : dh-cofactor-kdf
+
+# RFC 6962 Extension OIDs (see http://www.ietf.org/rfc/rfc6962.txt)
+1 3 6 1 4 1 11129 2 4 2	: ct_precert_scts		: CT Precertificate SCTs
+1 3 6 1 4 1 11129 2 4 3	: ct_precert_poison		: CT Precertificate Poison
+1 3 6 1 4 1 11129 2 4 4	: ct_precert_signer		: CT Precertificate Signer
+1 3 6 1 4 1 11129 2 4 5	: ct_cert_scts			: CT Certificate SCTs
+
+# NID for HKDF
+                            : HKDF              : hkdf
+
+identified-organization 36		: teletrust
+teletrust 3 3 2 8 1 : brainpool
+brainpool 1 1 : brainpoolP160r1
+brainpool 1 2 : brainpoolP160t1
+brainpool 1 3 : brainpoolP192r1
+brainpool 1 4 : brainpoolP192t1
+brainpool 1 5 : brainpoolP224r1
+brainpool 1 6 : brainpoolP224t1
+brainpool 1 7 : brainpoolP256r1
+brainpool 1 8 : brainpoolP256t1
+brainpool 1 9 : brainpoolP320r1
+brainpool 1 10 : brainpoolP320t1
+brainpool 1 11 : brainpoolP384r1
+brainpool 1 12 : brainpoolP384t1
+brainpool 1 13 : brainpoolP512r1
+brainpool 1 14 : brainpoolP512t1
+
+1 2 250 1 223 101 256 1 : FRP256v1
+
+# ChaCha Stream Cipher
+!Cname chacha20
+			: ChaCha		: chacha
+
+			: ChaCha20-Poly1305 : chacha20-poly1305
+
+			: gost89-ecb
+			: gost89-cbc
+
+member-body 643 7 1	: tc26
+!Cname id-tc26-gost3411-2012-256
+tc26 1 2 2		: streebog256 : GOST R 34.11-2012 (256 bit)
+!Cname id-tc26-gost3411-2012-512
+tc26 1 2 3		: streebog512 : GOST R 34-11-2012 (512 bit)
+tc26 1 4 1		: id-tc26-hmac-gost-3411-12-256	: HMAC STREEBOG 256
+tc26 1 4 2		: id-tc26-hmac-gost-3411-12-512	: HMAC STREEBOG 512
+tc26 2 1 1 1		: id-tc26-gost-3410-12-256-paramSetA : GOST R 34.10-2012 (256 bit) ParamSet A
+tc26 2 1 1 2		: id-tc26-gost-3410-12-256-paramSetB : GOST R 34.10-2012 (256 bit) ParamSet B
+tc26 2 1 1 3		: id-tc26-gost-3410-12-256-paramSetC : GOST R 34.10-2012 (256 bit) ParamSet C
+tc26 2 1 1 4		: id-tc26-gost-3410-12-256-paramSetD : GOST R 34.10-2012 (256 bit) ParamSet D
+tc26 2 1 2 0		: id-tc26-gost-3410-12-512-paramSetTest : GOST R 34.10-2012 (512 bit) testing parameter set
+tc26 2 1 2 1		: id-tc26-gost-3410-12-512-paramSetA : GOST R 34.10-2012 (512 bit) ParamSet A
+tc26 2 1 2 2		: id-tc26-gost-3410-12-512-paramSetB : GOST R 34.10-2012 (512 bit) ParamSet B
+tc26 2 1 2 3		: id-tc26-gost-3410-12-512-paramSetC : GOST R 34.10-2012 (512 bit) ParamSet C
+tc26 2 5 1 1		: id-tc26-gost-28147-param-Z
+tc26 1 1 1		: id-tc26-gost3410-2012-256 : GOST R 34.10-2012 (256 bit)
+tc26 1 1 2		: id-tc26-gost3410-2012-512 : GOST R 34.10-2012 (512 bit)
+tc26 1 3 2		: id-tc26-signwithdigest-gost3410-2012-256 : GOST R 34.11-2012 with GOST R 34.10-2012 (256 bit)
+tc26 1 3 3		: id-tc26-signwithdigest-gost3410-2012-512 : GOST R 34.11-2012 with GOST R 34.10-2012 (512 bit)
+
+# Curves from draft-ietf-curdle-pkix-02
+1 3 101 110		: X25519
+1 3 101 111		: X448
+1 3 101 112		: Ed25519
+1 3 101 113		: Ed448
+1 3 101 114		: Ed25519ph
+1 3 101 115		: Ed448ph
+
+# TLS cipher suite key exchange
+			: KxRSA			: kx-rsa
+			: KxECDHE		: kx-ecdhe
+			: KxDHE			: kx-dhe
+			: KxGOST		: kx-gost
+
+# TLS cipher suite authentication
+			: AuthRSA		: auth-rsa
+			: AuthECDSA		: auth-ecdsa
+			: AuthGOST01		: auth-gost01
+			: AuthNULL		: auth-null

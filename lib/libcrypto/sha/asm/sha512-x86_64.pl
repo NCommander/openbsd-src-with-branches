@@ -34,7 +34,7 @@
 # level parallelism, on a given CPU implementation in this case.
 #
 # Special note on Intel EM64T. While Opteron CPU exhibits perfect
-# perfromance ratio of 1.5 between 64- and 32-bit flavors [see above],
+# performance ratio of 1.5 between 64- and 32-bit flavors [see above],
 # [currently available] EM64T CPUs apparently are far from it. On the
 # contrary, 64-bit version, sha512_block, is ~30% *slower* than 32-bit
 # sha256_block:-( This is presumably because 64-bit shifts/rotates
@@ -43,8 +43,6 @@
 $flavour = shift;
 $output  = shift;
 if ($flavour =~ /\./) { $output = $flavour; undef $flavour; }
-
-$win64=0; $win64=1 if ($flavour =~ /[nm]asm|mingw64/ || $output =~ /\.asm$/);
 
 $0 =~ m/(.*[\/\\])[^\/\\]+$/; $dir=$1;
 ( $xlate="${dir}x86_64-xlate.pl" and -f $xlate ) or
@@ -177,6 +175,7 @@ $code=<<___;
 .type	$func,\@function,4
 .align	16
 $func:
+	endbr64
 	push	%rbx
 	push	%rbp
 	push	%r12
@@ -271,6 +270,7 @@ ___
 
 if ($SZ==4) {
 $code.=<<___;
+.section .rodata
 .align	64
 .type	$TABLE,\@object
 $TABLE:
@@ -290,9 +290,11 @@ $TABLE:
 	.long	0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3
 	.long	0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208
 	.long	0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+.text
 ___
 } else {
 $code.=<<___;
+.section .rodata
 .align	64
 .type	$TABLE,\@object
 $TABLE:
@@ -336,113 +338,7 @@ $TABLE:
 	.quad	0x3c9ebe0a15c9bebc,0x431d67c49c100d4c
 	.quad	0x4cc5d4becb3e42b6,0x597f299cfc657e2a
 	.quad	0x5fcb6fab3ad6faec,0x6c44198c4a475817
-___
-}
-
-# EXCEPTION_DISPOSITION handler (EXCEPTION_RECORD *rec,ULONG64 frame,
-#		CONTEXT *context,DISPATCHER_CONTEXT *disp)
-if ($win64) {
-$rec="%rcx";
-$frame="%rdx";
-$context="%r8";
-$disp="%r9";
-
-$code.=<<___;
-.extern	__imp_RtlVirtualUnwind
-.type	se_handler,\@abi-omnipotent
-.align	16
-se_handler:
-	push	%rsi
-	push	%rdi
-	push	%rbx
-	push	%rbp
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	pushfq
-	sub	\$64,%rsp
-
-	mov	120($context),%rax	# pull context->Rax
-	mov	248($context),%rbx	# pull context->Rip
-
-	lea	.Lprologue(%rip),%r10
-	cmp	%r10,%rbx		# context->Rip<.Lprologue
-	jb	.Lin_prologue
-
-	mov	152($context),%rax	# pull context->Rsp
-
-	lea	.Lepilogue(%rip),%r10
-	cmp	%r10,%rbx		# context->Rip>=.Lepilogue
-	jae	.Lin_prologue
-
-	mov	16*$SZ+3*8(%rax),%rax	# pull $_rsp
-	lea	48(%rax),%rax
-
-	mov	-8(%rax),%rbx
-	mov	-16(%rax),%rbp
-	mov	-24(%rax),%r12
-	mov	-32(%rax),%r13
-	mov	-40(%rax),%r14
-	mov	-48(%rax),%r15
-	mov	%rbx,144($context)	# restore context->Rbx
-	mov	%rbp,160($context)	# restore context->Rbp
-	mov	%r12,216($context)	# restore context->R12
-	mov	%r13,224($context)	# restore context->R13
-	mov	%r14,232($context)	# restore context->R14
-	mov	%r15,240($context)	# restore context->R15
-
-.Lin_prologue:
-	mov	8(%rax),%rdi
-	mov	16(%rax),%rsi
-	mov	%rax,152($context)	# restore context->Rsp
-	mov	%rsi,168($context)	# restore context->Rsi
-	mov	%rdi,176($context)	# restore context->Rdi
-
-	mov	40($disp),%rdi		# disp->ContextRecord
-	mov	$context,%rsi		# context
-	mov	\$154,%ecx		# sizeof(CONTEXT)
-	.long	0xa548f3fc		# cld; rep movsq
-
-	mov	$disp,%rsi
-	xor	%rcx,%rcx		# arg1, UNW_FLAG_NHANDLER
-	mov	8(%rsi),%rdx		# arg2, disp->ImageBase
-	mov	0(%rsi),%r8		# arg3, disp->ControlPc
-	mov	16(%rsi),%r9		# arg4, disp->FunctionEntry
-	mov	40(%rsi),%r10		# disp->ContextRecord
-	lea	56(%rsi),%r11		# &disp->HandlerData
-	lea	24(%rsi),%r12		# &disp->EstablisherFrame
-	mov	%r10,32(%rsp)		# arg5
-	mov	%r11,40(%rsp)		# arg6
-	mov	%r12,48(%rsp)		# arg7
-	mov	%rcx,56(%rsp)		# arg8, (NULL)
-	call	*__imp_RtlVirtualUnwind(%rip)
-
-	mov	\$1,%eax		# ExceptionContinueSearch
-	add	\$64,%rsp
-	popfq
-	pop	%r15
-	pop	%r14
-	pop	%r13
-	pop	%r12
-	pop	%rbp
-	pop	%rbx
-	pop	%rdi
-	pop	%rsi
-	ret
-.size	se_handler,.-se_handler
-
-.section	.pdata
-.align	4
-	.rva	.LSEH_begin_$func
-	.rva	.LSEH_end_$func
-	.rva	.LSEH_info_$func
-
-.section	.xdata
-.align	8
-.LSEH_info_$func:
-	.byte	9,0,0,0
-	.rva	se_handler
+.text
 ___
 }
 

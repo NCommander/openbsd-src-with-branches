@@ -1470,6 +1470,10 @@ void CompilerInvocation::GenerateCodeGenArgs(
                 F.Filename, SA);
   }
 
+  if (Opts.ReturnProtector) {
+    GenerateArg(Args, OPT_ret_protector, SA);
+  }
+
   // TODO: Consider removing marshalling annotations from f[no_]emulated_tls.
   //  That would make it easy to generate the option only **once** if it was
   //  explicitly set to non-default value.
@@ -1805,6 +1809,8 @@ bool CompilerInvocation::ParseCodeGenArgs(CodeGenOptions &Opts, ArgList &Args,
     }
     Opts.LinkBitcodeFiles.push_back(F);
   }
+
+  Opts.ReturnProtector = Args.hasArg(OPT_ret_protector);
 
   if (Args.getLastArg(OPT_femulated_tls) ||
       Args.getLastArg(OPT_fno_emulated_tls)) {

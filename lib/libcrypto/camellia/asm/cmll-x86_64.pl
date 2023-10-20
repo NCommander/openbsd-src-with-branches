@@ -33,8 +33,6 @@ $flavour = shift;
 $output  = shift;
 if ($flavour =~ /\./) { $output = $flavour; undef $flavour; }
 
-$win64=0; $win64=1 if ($flavour =~ /[nm]asm|mingw64/ || $output =~ /\.asm$/);
-
 $0 =~ m/(.*[\/\\])[^\/\\]+$/; $dir=$1;
 ( $xlate="${dir}x86_64-xlate.pl" and -f $xlate ) or
 ( $xlate="${dir}../../perlasm/x86_64-xlate.pl" and -f $xlate) or
@@ -57,7 +55,7 @@ $inp="%r12";
 $out="%r13";
 $key="%r14";
 $keyend="%r15";
-$arg0d=$win64?"%ecx":"%edi";
+$arg0d="%edi";
 
 # const unsigned int Camellia_SBOX[4][256];
 # Well, sort of... Camellia_SBOX[0][] is interleaved with [1][],
@@ -118,6 +116,7 @@ $code=<<___;
 .type	Camellia_EncryptBlock,\@abi-omnipotent
 .align	16
 Camellia_EncryptBlock:
+	endbr64
 	movl	\$128,%eax
 	subl	$arg0d,%eax
 	movl	\$3,$arg0d
@@ -130,6 +129,7 @@ Camellia_EncryptBlock:
 .align	16
 .Lenc_rounds:
 Camellia_EncryptBlock_Rounds:
+	endbr64
 	push	%rbx
 	push	%rbp
 	push	%r13
@@ -178,6 +178,7 @@ Camellia_EncryptBlock_Rounds:
 .type	_x86_64_Camellia_encrypt,\@abi-omnipotent
 .align	16
 _x86_64_Camellia_encrypt:
+	endbr64
 	xor	0($key),@S[1]
 	xor	4($key),@S[0]		# ^=key[0-3]
 	xor	8($key),@S[3]
@@ -220,7 +221,7 @@ $code.=<<___;
 	mov	$t2,@S[2]
 	mov	$t3,@S[3]
 
-	.byte	0xf3,0xc3		# rep ret
+	retq
 .size	_x86_64_Camellia_encrypt,.-_x86_64_Camellia_encrypt
 
 # V1.x API
@@ -228,6 +229,7 @@ $code.=<<___;
 .type	Camellia_DecryptBlock,\@abi-omnipotent
 .align	16
 Camellia_DecryptBlock:
+	endbr64
 	movl	\$128,%eax
 	subl	$arg0d,%eax
 	movl	\$3,$arg0d
@@ -240,6 +242,7 @@ Camellia_DecryptBlock:
 .align	16
 .Ldec_rounds:
 Camellia_DecryptBlock_Rounds:
+	endbr64
 	push	%rbx
 	push	%rbp
 	push	%r13
@@ -288,6 +291,7 @@ Camellia_DecryptBlock_Rounds:
 .type	_x86_64_Camellia_decrypt,\@abi-omnipotent
 .align	16
 _x86_64_Camellia_decrypt:
+	endbr64
 	xor	0($key),@S[1]
 	xor	4($key),@S[0]		# ^=key[0-3]
 	xor	8($key),@S[3]
@@ -331,7 +335,7 @@ $code.=<<___;
 	mov	$t0,@S[2]
 	mov	$t1,@S[3]
 
-	.byte	0xf3,0xc3		# rep ret
+	retq
 .size	_x86_64_Camellia_decrypt,.-_x86_64_Camellia_decrypt
 ___
 
@@ -402,6 +406,7 @@ $code.=<<___;
 .type	Camellia_Ekeygen,\@function,3
 .align	16
 Camellia_Ekeygen:
+	endbr64
 	push	%rbx
 	push	%rbp
 	push	%r13
@@ -601,6 +606,7 @@ sub S0222 { my $i=shift; $i=@SBOX[$i]; $i=($i<<1|$i>>7)&0xff; $i=$i<<16|$i<<8|$i
 sub S3033 { my $i=shift; $i=@SBOX[$i]; $i=($i>>1|$i<<7)&0xff; $i=$i<<24|$i<<8|$i; sprintf("0x%08x",$i); }
 
 $code.=<<___;
+.section .rodata
 .align	64
 .LCamellia_SIGMA:
 .long	0x3bcc908b, 0xa09e667f, 0x4caa73b2, 0xb67ae858
@@ -626,10 +632,12 @@ $_ivp="40(%rsp)";
 $_rsp="48(%rsp)";
 
 $code.=<<___;
+.text
 .globl	Camellia_cbc_encrypt
 .type	Camellia_cbc_encrypt,\@function,6
 .align	16
 Camellia_cbc_encrypt:
+	endbr64
 	cmp	\$0,%rdx
 	je	.Lcbc_abort
 	push	%rbx
@@ -859,220 +867,6 @@ Camellia_cbc_encrypt:
 .Lcbc_abort:
 	ret
 .size	Camellia_cbc_encrypt,.-Camellia_cbc_encrypt
-
-.asciz	"Camellia for x86_64 by <appro\@openssl.org>"
-___
-}
-
-# EXCEPTION_DISPOSITION handler (EXCEPTION_RECORD *rec,ULONG64 frame,
-#		CONTEXT *context,DISPATCHER_CONTEXT *disp)
-if ($win64) {
-$rec="%rcx";
-$frame="%rdx";
-$context="%r8";
-$disp="%r9";
-
-$code.=<<___;
-.extern	__imp_RtlVirtualUnwind
-.type	common_se_handler,\@abi-omnipotent
-.align	16
-common_se_handler:
-	push	%rsi
-	push	%rdi
-	push	%rbx
-	push	%rbp
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	pushfq
-	lea	-64(%rsp),%rsp
-
-	mov	120($context),%rax	# pull context->Rax
-	mov	248($context),%rbx	# pull context->Rip
-
-	mov	8($disp),%rsi		# disp->ImageBase
-	mov	56($disp),%r11		# disp->HandlerData
-
-	mov	0(%r11),%r10d		# HandlerData[0]
-	lea	(%rsi,%r10),%r10	# prologue label
-	cmp	%r10,%rbx		# context->Rip<prologue label
-	jb	.Lin_prologue
-
-	mov	152($context),%rax	# pull context->Rsp
-
-	mov	4(%r11),%r10d		# HandlerData[1]
-	lea	(%rsi,%r10),%r10	# epilogue label
-	cmp	%r10,%rbx		# context->Rip>=epilogue label
-	jae	.Lin_prologue
-
-	lea	40(%rax),%rax
-	mov	-8(%rax),%rbx
-	mov	-16(%rax),%rbp
-	mov	-24(%rax),%r13
-	mov	-32(%rax),%r14
-	mov	-40(%rax),%r15
-	mov	%rbx,144($context)	# restore context->Rbx
-	mov	%rbp,160($context)	# restore context->Rbp
-	mov	%r13,224($context)	# restore context->R13
-	mov	%r14,232($context)	# restore context->R14
-	mov	%r15,240($context)	# restore context->R15
-
-.Lin_prologue:
-	mov	8(%rax),%rdi
-	mov	16(%rax),%rsi
-	mov	%rax,152($context)	# restore context->Rsp
-	mov	%rsi,168($context)	# restore context->Rsi
-	mov	%rdi,176($context)	# restore context->Rdi
-
-	jmp	.Lcommon_seh_exit
-.size	common_se_handler,.-common_se_handler
-
-.type	cbc_se_handler,\@abi-omnipotent
-.align	16
-cbc_se_handler:
-	push	%rsi
-	push	%rdi
-	push	%rbx
-	push	%rbp
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	pushfq
-	lea	-64(%rsp),%rsp
-
-	mov	120($context),%rax	# pull context->Rax
-	mov	248($context),%rbx	# pull context->Rip
-
-	lea	.Lcbc_prologue(%rip),%r10
-	cmp	%r10,%rbx		# context->Rip<.Lcbc_prologue
-	jb	.Lin_cbc_prologue
-
-	lea	.Lcbc_body(%rip),%r10
-	cmp	%r10,%rbx		# context->Rip<.Lcbc_body
-	jb	.Lin_cbc_frame_setup
-
-	mov	152($context),%rax	# pull context->Rsp
-
-	lea	.Lcbc_abort(%rip),%r10
-	cmp	%r10,%rbx		# context->Rip>=.Lcbc_abort
-	jae	.Lin_cbc_prologue
-
-	# handle pushf/popf in Camellia_cbc_encrypt
-	lea	.Lcbc_enc_pushf(%rip),%r10
-	cmp	%r10,%rbx		# context->Rip<=.Lcbc_enc_pushf
-	jbe	.Lin_cbc_no_flag
-	lea	8(%rax),%rax
-	lea	.Lcbc_enc_popf(%rip),%r10
-	cmp	%r10,%rbx		# context->Rip<.Lcbc_enc_popf
-	jb	.Lin_cbc_no_flag
-	lea	-8(%rax),%rax
-	lea	.Lcbc_dec_pushf(%rip),%r10
-	cmp	%r10,%rbx		# context->Rip<=.Lcbc_dec_pushf
-	jbe	.Lin_cbc_no_flag
-	lea	8(%rax),%rax
-	lea	.Lcbc_dec_popf(%rip),%r10
-	cmp	%r10,%rbx		# context->Rip<.Lcbc_dec_popf
-	jb	.Lin_cbc_no_flag
-	lea	-8(%rax),%rax
-
-.Lin_cbc_no_flag:
-	mov	48(%rax),%rax		# $_rsp
-	lea	48(%rax),%rax
-
-.Lin_cbc_frame_setup:
-	mov	-8(%rax),%rbx
-	mov	-16(%rax),%rbp
-	mov	-24(%rax),%r12
-	mov	-32(%rax),%r13
-	mov	-40(%rax),%r14
-	mov	-48(%rax),%r15
-	mov	%rbx,144($context)	# restore context->Rbx
-	mov	%rbp,160($context)	# restore context->Rbp
-	mov	%r12,216($context)	# restore context->R12
-	mov	%r13,224($context)	# restore context->R13
-	mov	%r14,232($context)	# restore context->R14
-	mov	%r15,240($context)	# restore context->R15
-
-.Lin_cbc_prologue:
-	mov	8(%rax),%rdi
-	mov	16(%rax),%rsi
-	mov	%rax,152($context)	# restore context->Rsp
-	mov	%rsi,168($context)	# restore context->Rsi
-	mov	%rdi,176($context)	# restore context->Rdi
-
-.align	4
-.Lcommon_seh_exit:
-
-	mov	40($disp),%rdi		# disp->ContextRecord
-	mov	$context,%rsi		# context
-	mov	\$`1232/8`,%ecx		# sizeof(CONTEXT)
-	.long	0xa548f3fc		# cld; rep movsq
-
-	mov	$disp,%rsi
-	xor	%rcx,%rcx		# arg1, UNW_FLAG_NHANDLER
-	mov	8(%rsi),%rdx		# arg2, disp->ImageBase
-	mov	0(%rsi),%r8		# arg3, disp->ControlPc
-	mov	16(%rsi),%r9		# arg4, disp->FunctionEntry
-	mov	40(%rsi),%r10		# disp->ContextRecord
-	lea	56(%rsi),%r11		# &disp->HandlerData
-	lea	24(%rsi),%r12		# &disp->EstablisherFrame
-	mov	%r10,32(%rsp)		# arg5
-	mov	%r11,40(%rsp)		# arg6
-	mov	%r12,48(%rsp)		# arg7
-	mov	%rcx,56(%rsp)		# arg8, (NULL)
-	call	*__imp_RtlVirtualUnwind(%rip)
-
-	mov	\$1,%eax		# ExceptionContinueSearch
-	lea	64(%rsp),%rsp
-	popfq
-	pop	%r15
-	pop	%r14
-	pop	%r13
-	pop	%r12
-	pop	%rbp
-	pop	%rbx
-	pop	%rdi
-	pop	%rsi
-	ret
-.size	cbc_se_handler,.-cbc_se_handler
-
-.section	.pdata
-.align	4
-	.rva	.LSEH_begin_Camellia_EncryptBlock_Rounds
-	.rva	.LSEH_end_Camellia_EncryptBlock_Rounds
-	.rva	.LSEH_info_Camellia_EncryptBlock_Rounds
-
-	.rva	.LSEH_begin_Camellia_DecryptBlock_Rounds
-	.rva	.LSEH_end_Camellia_DecryptBlock_Rounds
-	.rva	.LSEH_info_Camellia_DecryptBlock_Rounds
-
-	.rva	.LSEH_begin_Camellia_Ekeygen
-	.rva	.LSEH_end_Camellia_Ekeygen
-	.rva	.LSEH_info_Camellia_Ekeygen
-
-	.rva	.LSEH_begin_Camellia_cbc_encrypt
-	.rva	.LSEH_end_Camellia_cbc_encrypt
-	.rva	.LSEH_info_Camellia_cbc_encrypt
-
-.section	.xdata
-.align	8
-.LSEH_info_Camellia_EncryptBlock_Rounds:
-	.byte	9,0,0,0
-	.rva	common_se_handler
-	.rva	.Lenc_prologue,.Lenc_epilogue	# HandlerData[]
-.LSEH_info_Camellia_DecryptBlock_Rounds:
-	.byte	9,0,0,0
-	.rva	common_se_handler
-	.rva	.Ldec_prologue,.Ldec_epilogue	# HandlerData[]
-.LSEH_info_Camellia_Ekeygen:
-	.byte	9,0,0,0
-	.rva	common_se_handler
-	.rva	.Lkey_prologue,.Lkey_epilogue	# HandlerData[]
-.LSEH_info_Camellia_cbc_encrypt:
-	.byte	9,0,0,0
-	.rva	cbc_se_handler
 ___
 }
 

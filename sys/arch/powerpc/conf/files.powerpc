@@ -1,59 +1,44 @@
+#	$OpenBSD: files.powerpc,v 1.56 2022/10/22 00:58:56 gkoehler Exp $
 #
-# First try for powerpc-specific configuration info
-#
-maxpartitions 16
 
-maxusers 2 8 64
-
-#
-# Openfirmware support
-#
-include "../../../dev/ofw/files.ofw"
-major	{ofdisk = 0}
-
-file	arch/powerpc/powerpc/Locore.c
-file	arch/powerpc/powerpc/autoconf.c
-file	arch/powerpc/powerpc/bcopy.c
-file	arch/powerpc/powerpc/clock.c
-file	arch/powerpc/powerpc/conf.c
-file	arch/powerpc/powerpc/copyinstr.c
-file	arch/powerpc/powerpc/copyoutstr.c
-file	arch/powerpc/powerpc/copystr.c
-file	arch/powerpc/powerpc/disksubr.c		disk
+file	arch/powerpc/powerpc/setjmp.S			ddb
+file	arch/powerpc/powerpc/cpu_subr.c
 file	arch/powerpc/powerpc/fpu.c
-file	arch/powerpc/powerpc/fubyte.c
-file	arch/powerpc/powerpc/fuswintr.c
 file	arch/powerpc/powerpc/in_cksum.c
-file	arch/powerpc/powerpc/ipkdb_glue.c	ipkdb
-file	arch/powerpc/powerpc/machdep.c
-file	arch/powerpc/powerpc/mem.c
-file	arch/powerpc/powerpc/ofw_machdep.c
-file	arch/powerpc/powerpc/openfirm.c
+file	arch/powerpc/powerpc/bus_dma.c
+file	arch/powerpc/powerpc/bus_space.c
 file	arch/powerpc/powerpc/pmap.c
 file	arch/powerpc/powerpc/process_machdep.c
-file	arch/powerpc/powerpc/subyte.c
-file	arch/powerpc/powerpc/suword.c
-file	arch/powerpc/powerpc/suswintr.c
 file	arch/powerpc/powerpc/sys_machdep.c
 file	arch/powerpc/powerpc/trap.c
 file	arch/powerpc/powerpc/vm_machdep.c
-file	dev/cons.c
-file	dev/cninit.c
-file    arch/ppc/ppc/setjmp.S                   ddb
-file    arch/ppc/ppc/db_memrw.c                 ddb
-file    arch/ppc/ppc/db_disasm.c                ddb
-file    arch/ppc/ppc/db_interface.c             ddb
-file    arch/ppc/ppc/db_trace.c                 ddb
+file	arch/powerpc/powerpc/lock_machdep.c		multiprocessor
+file	arch/powerpc/powerpc/intr.c
+file	arch/powerpc/powerpc/softintr.c
+file	arch/powerpc/powerpc/vecast.S			altivec
 
-# FirePower specific code
-#device firepower: openfirm
-#attach firepower at root
+file	arch/powerpc/ddb/db_memrw.c			ddb
+file	arch/powerpc/ddb/db_disasm.c			ddb
+file	arch/powerpc/ddb/db_trace.c			ddb
+file	arch/powerpc/ddb/db_interface.c			ddb
 
-#file	arch/powerpc/firepower/firedep.c	firepower needs-flag
-#file	arch/powerpc/firepower/fireirq.c	firepower
-
-# FirePower OpenFirmware Bug Workarounds
-file	arch/powerpc/powerpc/ofwreal.S		firepowerbugs
-
-include "../../../scsi/files.scsi"
-
+# quad support is necessary for 32 bit architectures
+file	lib/libkern/adddi3.c
+file	lib/libkern/anddi3.c
+file	lib/libkern/ashldi3.c
+file	lib/libkern/ashrdi3.c
+file	lib/libkern/cmpdi2.c
+file	lib/libkern/divdi3.c
+file	lib/libkern/iordi3.c
+file	lib/libkern/lshldi3.c
+file	lib/libkern/lshrdi3.c
+file	lib/libkern/moddi3.c
+file	lib/libkern/muldi3.c
+file	lib/libkern/negdi2.c
+file	lib/libkern/notdi2.c
+file	lib/libkern/qdivrem.c
+file	lib/libkern/subdi3.c
+file	lib/libkern/ucmpdi2.c
+file	lib/libkern/udivdi3.c
+file	lib/libkern/umoddi3.c
+file	lib/libkern/xordi3.c

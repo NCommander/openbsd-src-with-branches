@@ -1,7 +1,7 @@
-/*	$NetBSD: print-ntp.c,v 1.2 1995/03/06 19:11:22 mycroft Exp $	*/
+/*	$OpenBSD: print-ntp.c,v 1.19 2020/01/24 22:46:37 procter Exp $	*/
 
 /*
- * Copyright (c) 1990, 1991, 1992, 1993, 1994
+ * Copyright (c) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,14 +25,7 @@
  *	loosely based on print-bootp.c
  */
 
-#ifndef lint
-static char rcsid[] =
-    "@(#) Header: print-ntp.c,v 1.14 94/06/14 20:18:46 leres Exp (LBL)";
-#endif
-
-#include <sys/param.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 
 #include <net/if.h>
@@ -46,7 +39,9 @@ static char rcsid[] =
 
 #include "interface.h"
 #include "addrtoname.h"
+#ifdef MODEMASK
 #undef MODEMASK					/* Solaris sucks */
+#endif
 #include "ntp.h"
 
 static void p_sfix(const struct s_fixedpt *);
@@ -57,27 +52,20 @@ static void p_ntp_delta(const struct l_fixedpt *, const struct l_fixedpt *);
  * Print ntp requests
  */
 void
-ntp_print(register const u_char *cp, int length)
+ntp_print(const u_char *cp, u_int length)
 {
-	register const struct ntpdata *bp;
-	register const u_char *ep;
+	const struct ntpdata *bp;
 	int mode, version, leapind;
-	static char rclock[5];
-
-#define TCHECK(var, l) if ((u_char *)&(var) > ep - l) goto trunc
 
 	bp = (struct ntpdata *)cp;
 	/* Note funny sized packets */
 	if (length != sizeof(struct ntpdata))
-		(void)printf(" [len=%d]", length);
+		printf(" [len=%d]", length);
 
-	/* 'ep' points to the end of avaible data. */
-	ep = snapend;
+	TCHECK(bp->status);
 
-	TCHECK(bp->status, sizeof(bp->status));
-
-	version = (bp->status & VERSIONMASK) >> 3;
-	printf(" v%d", version);
+	version = (int)(bp->status & VERSIONMASK) >> 3;
+	printf("v%d", version);
 
 	leapind = bp->status & LEAPMASK;
 	switch (leapind) {
@@ -85,12 +73,16 @@ ntp_print(register const u_char *cp, int length)
 	case NO_WARNING:
 		break;
 
+	case ALARM:
+		printf(" alarm");
+		break;
+
 	case PLUS_SEC:
-		fputs(" +1s", stdout);
+		printf(" +1s");
 		break;
 
 	case MINUS_SEC:
-		fputs(" -1s", stdout);
+		printf(" -1s");
 		break;
 	}
 
@@ -98,70 +90,71 @@ ntp_print(register const u_char *cp, int length)
 	switch (mode) {
 
 	case MODE_UNSPEC:	/* unspecified */
-		fputs(" unspec", stdout);
+		printf(" unspec");
 		break;
 
 	case MODE_SYM_ACT:	/* symmetric active */
-		fputs(" sym_act", stdout);
+		printf(" sym_act");
 		break;
 
 	case MODE_SYM_PAS:	/* symmetric passive */
-		fputs(" sym_pas", stdout);
+		printf(" sym_pas");
 		break;
 
 	case MODE_CLIENT:	/* client */
-		fputs(" client", stdout);
+		printf(" client");
 		break;
 
 	case MODE_SERVER:	/* server */
-		fputs(" server", stdout);
+		printf(" server");
 		break;
 
 	case MODE_BROADCAST:	/* broadcast */
-		fputs(" bcast", stdout);
+		printf(" bcast");
 		break;
 
 	case MODE_RES1:		/* reserved */
-		fputs(" res1", stdout);
+		printf(" res1");
 		break;
 
 	case MODE_RES2:		/* reserved */
-		fputs(" res2", stdout);
+		printf(" res2");
 		break;
 
 	}
 
-	TCHECK(bp->stratum, sizeof(bp->stratum));
+	TCHECK(bp->stratum);
 	printf(" strat %d", bp->stratum);
 
-	TCHECK(bp->ppoll, sizeof(bp->ppoll));
+	TCHECK(bp->ppoll);
 	printf(" poll %d", bp->ppoll);
 
 	/* Can't TCHECK bp->precision bitfield so bp->distance + 0 instead */
-	TCHECK(bp->distance, 0);
+	TCHECK2(bp->distance, 0);
 	printf(" prec %d", bp->precision);
 
 	if (!vflag)
 		return;
 
-	TCHECK(bp->distance, sizeof(bp->distance));
-	fputs(" dist ", stdout);
+	TCHECK(bp->distance);
+	printf(" dist ");
 	p_sfix(&bp->distance);
 
-	TCHECK(bp->dispersion, sizeof(bp->dispersion));
-	fputs(" disp ", stdout);
+	TCHECK(bp->dispersion);
+	printf(" disp ");
 	p_sfix(&bp->dispersion);
 
-	TCHECK(bp->refid, sizeof(bp->refid));
-	fputs(" ref ", stdout);
+	TCHECK(bp->refid);
+	printf(" ref ");
 	/* Interpretation depends on stratum */
 	switch (bp->stratum) {
 
 	case UNSPECIFIED:
+		printf("(unspec)");
+		break;
+
 	case PRIM_REF:
-		strncpy(rclock, (char *)&(bp->refid), 4);
-		rclock[4] = '\0';
-		fputs(rclock, stdout);
+		fn_printn((u_char *)&bp->refid, sizeof(bp->refid), NULL);
 		break;
 
 	case INFO_QUERY:
@@ -179,35 +172,34 @@ ntp_print(register const u_char *cp, int length)
 		break;
 	}
 
-	TCHECK(bp->reftime, sizeof(bp->reftime));
+	TCHECK(bp->reftime);
 	putchar('@');
 	p_ntp_time(&(bp->reftime));
 
-	TCHECK(bp->org, sizeof(bp->org));
-	fputs(" orig ", stdout);
+	TCHECK(bp->org);
+	printf(" orig ");
 	p_ntp_time(&(bp->org));
 
-	TCHECK(bp->rec, sizeof(bp->rec));
-	fputs(" rec ", stdout);
+	TCHECK(bp->rec);
+	printf(" rec ");
 	p_ntp_delta(&(bp->org), &(bp->rec));
 
-	TCHECK(bp->xmt, sizeof(bp->xmt));
-	fputs(" xmt ", stdout);
+	TCHECK(bp->xmt);
+	printf(" xmt ");
 	p_ntp_delta(&(bp->org), &(bp->xmt));
 
 	return;
 
 trunc:
-	fputs(" [|ntp]", stdout);
-#undef TCHECK
+	printf(" [|ntp]");
 }
 
 static void
-p_sfix(register const struct s_fixedpt *sfp)
+p_sfix(const struct s_fixedpt *sfp)
 {
-	register int i;
-	register int f;
-	register float ff;
+	int i;
+	int f;
+	float ff;
 
 	i = ntohs(sfp->int_part);
 	f = ntohs(sfp->fraction);
@@ -219,12 +211,12 @@ p_sfix(register const struct s_fixedpt *sfp)
 #define	FMAXINT	(4294967296.0)	/* floating point rep. of MAXINT */
 
 static void
-p_ntp_time(register const struct l_fixedpt *lfp)
+p_ntp_time(const struct l_fixedpt *lfp)
 {
-	register int32 i;
-	register u_int32 uf;
-	register u_int32 f;
-	register float ff;
+	int32_t i;
+	u_int32_t uf;
+	u_int32_t f;
+	float ff;
 
 	i = ntohl(lfp->int_part);
 	uf = ntohl(lfp->fraction);
@@ -233,19 +225,18 @@ p_ntp_time(register const struct l_fixedpt *lfp)
 		ff += FMAXINT;
 	ff = ff / FMAXINT;	/* shift radix point by 32 bits */
 	f = ff * 1000000000.0;	/* treat fraction as parts per billion */
-	printf("%lu.%09d", i, f);
+	printf("%u.%09d", i, f);
 }
 
 /* Prints time difference between *lfp and *olfp */
 static void
-p_ntp_delta(register const struct l_fixedpt *olfp,
-	    register const struct l_fixedpt *lfp)
+p_ntp_delta(const struct l_fixedpt *olfp, const struct l_fixedpt *lfp)
 {
-	register int32 i;
-	register u_int32 uf;
-	register u_int32 ouf;
-	register u_int32 f;
-	register float ff;
+	int32_t i;
+	u_int32_t uf;
+	u_int32_t ouf;
+	u_int32_t f;
+	float ff;
 	int signbit;
 
 	i = ntohl(lfp->int_part) - ntohl(olfp->int_part);

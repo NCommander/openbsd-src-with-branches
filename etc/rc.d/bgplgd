@@ -1,0 +1,11 @@
+#!/bin/ksh
+#
+# $OpenBSD$
+
+daemon="/usr/sbin/bgplgd"
+
+. /etc/rc.d/rc.subr
+
+rc_reload=NO
+
+rc_cmd $1

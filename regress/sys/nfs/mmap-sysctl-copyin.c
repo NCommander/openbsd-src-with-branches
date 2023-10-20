@@ -1,4 +1,6 @@
-#include <sys/param.h>
+/*	$OpenBSD: mmap-sysctl-copyin.c,v 1.2 2017/01/13 01:33:14 bluhm Exp $	*/
+
+#include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
@@ -13,13 +15,14 @@
 #include <err.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
 #define FILE	"sysctl-net.inet.tcp.always_keepalive"
-#define CLIENT	"/mnt/nfs-client"
-#define SERVER	"/mnt/nfs-server"
+#define CLIENT	"/mnt/regress-nfs-client"
+#define SERVER	"/mnt/regress-nfs-server"
 
 int
 main(void)

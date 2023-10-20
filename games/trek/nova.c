@@ -1,3 +1,4 @@
+/*	$OpenBSD: nova.c,v 1.6 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: nova.c,v 1.3 1995/04/22 10:59:14 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,9 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)nova.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: nova.c,v 1.3 1995/04/22 10:59:14 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <stdio.h>
 
-# include	"trek.h"
+#include "trek.h"
 
 /*
 **  CAUSE A NOVA TO OCCUR
@@ -57,11 +48,11 @@ static char rcsid[] = "$NetBSD: nova.c,v 1.3 1995/04/22 10:59:14 cgd Exp $";
 **	If the zap is too much, it gets destroyed.
 */
 
-nova(x, y)
-int	x, y;
+void
+nova(int x, int y)
 {
-	register int		i, j;
-	register int		se;
+	int		i, j;
+	int		se;
 
 	if (Sect[x][y] != STAR || Quad[Ship.quadx][Ship.quady].stars < 0)
 		return;
@@ -71,7 +62,10 @@ int	x, y;
 		return;
 	}
 	if (ranf(100) < 5)
-		return (snova(x, y));
+	{
+		snova(x, y);
+		return;
+	}
 	printf("Spock: Star at %d,%d gone nova\n", x, y);
 
 	if (ranf(4) != 0)
@@ -120,6 +114,7 @@ int	x, y;
 			  case QUEENE:
 				se = 2000;
 				if (Ship.shldup)
+				{
 					if (Ship.shield >= se)
 					{
 						Ship.shield -= se;
@@ -130,6 +125,7 @@ int	x, y;
 						se -= Ship.shield;
 						Ship.shield = 0;
 					}
+				}
 				Ship.energy -= se;
 				if (Ship.energy <= 0)
 					lose(L_SUICID);
@@ -143,5 +139,4 @@ int	x, y;
 			}
 		}
 	}
-	return;
 }

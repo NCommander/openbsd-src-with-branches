@@ -1,4 +1,5 @@
-/*	$NetBSD: raw_ip.c,v 1.21 1995/06/18 20:01:15 cgd Exp $	*/
+/*	$OpenBSD: raw_ip.c,v 1.150 2022/10/17 14:49:02 mvs Exp $	*/
+/*	$NetBSD: raw_ip.c,v 1.25 1996/02/18 18:58:33 christos Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,27 +29,67 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)raw_ip.c	8.2 (Berkeley) 1/4/94
+ *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
+ *
+ * NRL grants permission for redistribution and use in source and binary
+ * forms, with or without modification, of the software and documentation
+ * created at NRL provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgements:
+ *	This product includes software developed by the University of
+ *	California, Berkeley and its contributors.
+ *	This product includes software developed at the Information
+ *	Technology Division, US Naval Research Laboratory.
+ * 4. Neither the name of the NRL nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THE SOFTWARE PROVIDED BY NRL IS PROVIDED BY NRL AND CONTRIBUTORS ``AS
+ * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL NRL OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The views and conclusions contained in the software and documentation
+ * are those of the authors and should not be interpreted as representing
+ * official policies, either expressed or implied, of the US Naval
+ * Research Laboratory (NRL).
  */
 
 #include <sys/param.h>
-#include <sys/malloc.h>
+#include <sys/systm.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/protosw.h>
 #include <sys/socketvar.h>
-#include <sys/errno.h>
-#include <sys/systm.h>
 
 #include <net/if.h>
+#include <net/if_var.h>
 #include <net/route.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
-#include <netinet/ip_var.h>
 #include <netinet/ip_mroute.h>
+#include <netinet/ip_var.h>
 #include <netinet/in_pcb.h>
+#include <netinet/in_var.h>
+#include <netinet/ip_icmp.h>
+
+#include <net/pfvar.h>
+
+#include "pf.h"
 
 struct inpcbtable rawcbtable;
 
@@ -66,67 +103,148 @@ struct inpcbtable rawcbtable;
  * Raw interface to IP protocol.
  */
 
+const struct pr_usrreqs rip_usrreqs = {
+	.pru_attach	= rip_attach,
+	.pru_detach	= rip_detach,
+	.pru_lock	= rip_lock,
+	.pru_unlock	= rip_unlock,
+	.pru_bind	= rip_bind,
+	.pru_connect	= rip_connect,
+	.pru_disconnect	= rip_disconnect,
+	.pru_shutdown	= rip_shutdown,
+	.pru_send	= rip_send,
+	.pru_control	= in_control,
+	.pru_sockaddr	= in_sockaddr,
+	.pru_peeraddr	= in_peeraddr,
+};
+
 /*
  * Initialize raw connection block q.
  */
 void
-rip_init()
+rip_init(void)
 {
-
-	in_pcbinit(&rawcbtable);
+	in_pcbinit(&rawcbtable, 1);
 }
 
-struct	sockaddr_in ripsrc = { sizeof(ripsrc), AF_INET };
-/*
- * Setup generic address and protocol structures
- * for raw_input routine, then pass them along with
- * mbuf chain.
- */
-void
-rip_input(m)
-	struct mbuf *m;
-{
-	register struct ip *ip = mtod(m, struct ip *);
-	register struct inpcb *inp;
-	struct socket *last = 0;
+struct mbuf	*rip_chkhdr(struct mbuf *, struct mbuf *);
 
+int
+rip_input(struct mbuf **mp, int *offp, int proto, int af)
+{
+	struct mbuf *m = *mp;
+	struct ip *ip = mtod(m, struct ip *);
+	struct inpcb *inp;
+	SIMPLEQ_HEAD(, inpcb) inpcblist;
+	struct in_addr *key;
+	struct counters_ref ref;
+	uint64_t *counters;
+	struct sockaddr_in ripsrc;
+
+	KASSERT(af == AF_INET);
+
+	memset(&ripsrc, 0, sizeof(ripsrc));
+	ripsrc.sin_family = AF_INET;
+	ripsrc.sin_len = sizeof(ripsrc);
 	ripsrc.sin_addr = ip->ip_src;
-	for (inp = rawcbtable.inpt_queue.cqh_first;
-	    inp != (struct inpcb *)&rawcbtable.inpt_queue;
-	    inp = inp->inp_queue.cqe_next) {
+
+	key = &ip->ip_dst;
+#if NPF > 0
+	if (m->m_pkthdr.pf.flags & PF_TAG_DIVERTED) {
+		struct pf_divert *divert;
+
+		divert = pf_find_divert(m);
+		KASSERT(divert != NULL);
+		switch (divert->type) {
+		case PF_DIVERT_TO:
+			key = &divert->addr.v4;
+			break;
+		case PF_DIVERT_REPLY:
+			break;
+		default:
+			panic("%s: unknown divert type %d, mbuf %p, divert %p",
+			    __func__, divert->type, m, divert);
+		}
+	}
+#endif
+	SIMPLEQ_INIT(&inpcblist);
+	rw_enter_write(&rawcbtable.inpt_notify);
+	mtx_enter(&rawcbtable.inpt_mtx);
+	TAILQ_FOREACH(inp, &rawcbtable.inpt_queue, inp_queue) {
+		if (inp->inp_socket->so_rcv.sb_state & SS_CANTRCVMORE)
+			continue;
+#ifdef INET6
+		if (inp->inp_flags & INP_IPV6)
+			continue;
+#endif
+		if (rtable_l2(inp->inp_rtableid) !=
+		    rtable_l2(m->m_pkthdr.ph_rtableid))
+			continue;
+
 		if (inp->inp_ip.ip_p && inp->inp_ip.ip_p != ip->ip_p)
 			continue;
 		if (inp->inp_laddr.s_addr &&
-		    inp->inp_laddr.s_addr != ip->ip_dst.s_addr)
+		    inp->inp_laddr.s_addr != key->s_addr)
 			continue;
 		if (inp->inp_faddr.s_addr &&
 		    inp->inp_faddr.s_addr != ip->ip_src.s_addr)
 			continue;
-		if (last) {
-			struct mbuf *n;
-			if (n = m_copy(m, 0, (int)M_COPYALL)) {
-				if (sbappendaddr(&last->so_rcv,
-				    sintosa(&ripsrc), n,
-				    (struct mbuf *)0) == 0)
-					/* should notify about lost packet */
-					m_freem(n);
-				else
-					sorwakeup(last);
-			}
-		}
-		last = inp->inp_socket;
+
+		in_pcbref(inp);
+		SIMPLEQ_INSERT_TAIL(&inpcblist, inp, inp_notify);
 	}
-	if (last) {
-		if (sbappendaddr(&last->so_rcv, sintosa(&ripsrc), m,
-		    (struct mbuf *)0) == 0)
-			m_freem(m);
+	mtx_leave(&rawcbtable.inpt_mtx);
+
+	if (SIMPLEQ_EMPTY(&inpcblist)) {
+		rw_exit_write(&rawcbtable.inpt_notify);
+
+		if (ip->ip_p != IPPROTO_ICMP)
+			icmp_error(m, ICMP_UNREACH, ICMP_UNREACH_PROTOCOL,
+			    0, 0);
 		else
-			sorwakeup(last);
-	} else {
-		m_freem(m);
-		ipstat.ips_noproto++;
-		ipstat.ips_delivered--;
+			m_freem(m);
+
+		counters = counters_enter(&ref, ipcounters);
+		counters[ips_noproto]++;
+		counters[ips_delivered]--;
+		counters_leave(&ref, ipcounters);
+
+		return IPPROTO_DONE;
 	}
+
+	while ((inp = SIMPLEQ_FIRST(&inpcblist)) != NULL) {
+		struct mbuf *n, *opts = NULL;
+
+		SIMPLEQ_REMOVE_HEAD(&inpcblist, inp_notify);
+		if (SIMPLEQ_EMPTY(&inpcblist))
+			n = m;
+		else
+			n = m_copym(m, 0, M_COPYALL, M_NOWAIT);
+		if (n != NULL) {
+			int ret;
+
+			if (inp->inp_flags & INP_CONTROLOPTS ||
+			    inp->inp_socket->so_options & SO_TIMESTAMP)
+				ip_savecontrol(inp, &opts, ip, n);
+
+			mtx_enter(&inp->inp_mtx);
+			ret = sbappendaddr(inp->inp_socket,
+			    &inp->inp_socket->so_rcv,
+			    sintosa(&ripsrc), n, opts);
+			mtx_leave(&inp->inp_mtx);
+
+			if (ret == 0) {
+				/* should notify about lost packet */
+				m_freem(n);
+				m_freem(opts);
+			} else
+				sorwakeup(inp->inp_socket);
+		}
+		in_pcbunref(inp);
+	}
+	rw_exit_write(&rawcbtable.inpt_notify);
+
+	return IPPROTO_DONE;
 }
 
 /*
@@ -134,81 +252,186 @@ rip_input(m)
  * Tack on options user may have setup with control call.
  */
 int
-rip_output(m, so, dst)
-	register struct mbuf *m;
-	struct socket *so;
-	u_long dst;
+rip_output(struct mbuf *m, struct socket *so, struct sockaddr *dstaddr,
+    struct mbuf *control)
 {
-	register struct ip *ip;
-	register struct inpcb *inp = sotoinpcb(so);
-	struct mbuf *opts;
-	int flags = (so->so_options & SO_DONTROUTE) | IP_ALLOWBROADCAST;
+	struct sockaddr_in *dst = satosin(dstaddr);
+	struct ip *ip;
+	struct inpcb *inp;
+	int flags, error;
+
+	inp = sotoinpcb(so);
+	flags = IP_ALLOWBROADCAST;
 
 	/*
 	 * If the user handed us a complete IP packet, use it.
 	 * Otherwise, allocate an mbuf for a header and fill it in.
 	 */
 	if ((inp->inp_flags & INP_HDRINCL) == 0) {
-		M_PREPEND(m, sizeof(struct ip), M_WAIT);
+		if ((m->m_pkthdr.len + sizeof(struct ip)) > IP_MAXPACKET) {
+			m_freem(m);
+			return (EMSGSIZE);
+		}
+		M_PREPEND(m, sizeof(struct ip), M_DONTWAIT);
+		if (!m)
+			return (ENOBUFS);
 		ip = mtod(m, struct ip *);
-		ip->ip_tos = 0;
-		ip->ip_off = 0;
+		ip->ip_tos = inp->inp_ip.ip_tos;
+		ip->ip_off = htons(0);
 		ip->ip_p = inp->inp_ip.ip_p;
-		ip->ip_len = m->m_pkthdr.len;
-		ip->ip_src = inp->inp_laddr;
-		ip->ip_dst.s_addr = dst;
-		ip->ip_ttl = MAXTTL;
-		opts = inp->inp_options;
+		ip->ip_len = htons(m->m_pkthdr.len);
+		ip->ip_src.s_addr = INADDR_ANY;
+		ip->ip_dst = dst->sin_addr;
+		ip->ip_ttl = inp->inp_ip.ip_ttl ? inp->inp_ip.ip_ttl : MAXTTL;
 	} else {
+		if (m->m_pkthdr.len > IP_MAXPACKET) {
+			m_freem(m);
+			return (EMSGSIZE);
+		}
+
+		m = rip_chkhdr(m, inp->inp_options);
+		if (m == NULL)
+			return (EINVAL);
+
 		ip = mtod(m, struct ip *);
 		if (ip->ip_id == 0)
-			ip->ip_id = htons(ip_id++);
-		opts = NULL;
+			ip->ip_id = htons(ip_randomid());
+		dst->sin_addr = ip->ip_dst;
+
 		/* XXX prevent ip_output from overwriting header fields */
 		flags |= IP_RAWOUTPUT;
-		ipstat.ips_rawout++;
+		ipstat_inc(ips_rawout);
 	}
-	return (ip_output(m, opts, &inp->inp_route, flags, inp->inp_moptions));
+
+	if (ip->ip_src.s_addr == INADDR_ANY) {
+		error = in_pcbselsrc(&ip->ip_src, dst, inp);
+		if (error != 0)
+			return (error);
+	}
+
+#ifdef INET6
+	/*
+	 * A thought:  Even though raw IP shouldn't be able to set IPv6
+	 *             multicast options, if it does, the last parameter to
+	 *             ip_output should be guarded against v6/v4 problems.
+	 */
+#endif
+	/* force routing table */
+	m->m_pkthdr.ph_rtableid = inp->inp_rtableid;
+
+#if NPF > 0
+	if (inp->inp_socket->so_state & SS_ISCONNECTED &&
+	    ip->ip_p != IPPROTO_ICMP)
+		pf_mbuf_link_inpcb(m, inp);
+#endif
+
+	error = ip_output(m, inp->inp_options, &inp->inp_route, flags,
+	    inp->inp_moptions, inp, 0);
+	return (error);
+}
+
+struct mbuf *
+rip_chkhdr(struct mbuf *m, struct mbuf *options)
+{
+	struct ip *ip;
+	int hlen, opt, optlen, cnt;
+	u_char *cp;
+
+	if (m->m_pkthdr.len < sizeof(struct ip)) {
+		m_freem(m);
+		return NULL;
+	}
+
+	m = m_pullup(m, sizeof (struct ip));
+	if (m == NULL)
+		return NULL;
+
+	ip = mtod(m, struct ip *);
+	hlen = ip->ip_hl << 2;
+
+	/* Don't allow packet length sizes that will crash. */
+	if (hlen < sizeof (struct ip) ||
+	    ntohs(ip->ip_len) < hlen ||
+	    ntohs(ip->ip_len) != m->m_pkthdr.len) {
+		m_freem(m);
+		return NULL;
+	}
+	m = m_pullup(m, hlen);
+	if (m == NULL)
+		return NULL;
+
+	ip = mtod(m, struct ip *);
+
+	if (ip->ip_v != IPVERSION) {
+		m_freem(m);
+		return NULL;
+	}
+
+	/*
+	 * Don't allow both user specified and setsockopt options.
+	 * If options are present verify them.
+	 */
+	if (hlen != sizeof(struct ip)) {
+		if (options) {
+			m_freem(m);
+			return NULL;
+		} else {
+			cp = (u_char *)(ip + 1);
+			cnt = hlen - sizeof(struct ip);
+			for (; cnt > 0; cnt -= optlen, cp += optlen) {
+				opt = cp[IPOPT_OPTVAL];
+				if (opt == IPOPT_EOL)
+					break;
+				if (opt == IPOPT_NOP)
+					optlen = 1;
+				else {
+					if (cnt < IPOPT_OLEN + sizeof(*cp)) {
+						m_freem(m);
+						return NULL;
+					}
+					optlen = cp[IPOPT_OLEN];
+					if (optlen < IPOPT_OLEN + sizeof(*cp) ||
+					    optlen > cnt) {
+						m_freem(m);
+						return NULL;
+					}
+				}
+			}
+		}
+	}
+
+	return m;
 }
 
 /*
  * Raw IP socket option processing.
  */
 int
-rip_ctloutput(op, so, level, optname, m)
-	int op;
-	struct socket *so;
-	int level, optname;
-	struct mbuf **m;
+rip_ctloutput(int op, struct socket *so, int level, int optname,
+    struct mbuf *m)
 {
-	register struct inpcb *inp = sotoinpcb(so);
-	register int error;
+	struct inpcb *inp = sotoinpcb(so);
+	int error;
 
-	if (level != IPPROTO_IP) {
-		if (m != 0 && *m != 0)
-			(void)m_free(*m);
+	if (level != IPPROTO_IP)
 		return (EINVAL);
-	}
 
 	switch (optname) {
 
 	case IP_HDRINCL:
-		if (op == PRCO_SETOPT || op == PRCO_GETOPT) {
-			if (m == 0 || *m == 0 || (*m)->m_len < sizeof (int))
-				return (EINVAL);
-			if (op == PRCO_SETOPT) {
-				if (*mtod(*m, int *))
-					inp->inp_flags |= INP_HDRINCL;
-				else
-					inp->inp_flags &= ~INP_HDRINCL;
-				(void)m_free(*m);
-			} else {
-				(*m)->m_len = sizeof (int);
-				*mtod(*m, int *) = inp->inp_flags & INP_HDRINCL;
-			}
-			return (0);
+		error = 0;
+		if (op == PRCO_SETOPT) {
+			if (m == NULL || m->m_len < sizeof (int))
+				error = EINVAL;
+			else if (*mtod(m, int *))
+				inp->inp_flags |= INP_HDRINCL;
+			else
+				inp->inp_flags &= ~INP_HDRINCL;
+		} else {
+			m->m_len = sizeof(int);
+			*mtod(m, int *) = inp->inp_flags & INP_HDRINCL;
 		}
-		break;
+		return (error);
 
 	case MRT_INIT:
 	case MRT_DONE:
@@ -218,13 +441,15 @@ rip_ctloutput(op, so, level, optname, m)
 	case MRT_DEL_MFC:
 	case MRT_VERSION:
 	case MRT_ASSERT:
+	case MRT_API_SUPPORT:
+	case MRT_API_CONFIG:
 #ifdef MROUTING
 		switch (op) {
 		case PRCO_SETOPT:
-			error = ip_mrouter_set(optname, so, m);
+			error = ip_mrouter_set(so, optname, m);
 			break;
 		case PRCO_GETOPT:
-			error = ip_mrouter_get(optname, so, m);
+			error = ip_mrouter_get(so, optname, m);
 			break;
 		default:
 			error = EINVAL;
@@ -232,8 +457,6 @@ rip_ctloutput(op, so, level, optname, m)
 		}
 		return (error);
 #else
-		if (op == PRCO_SETOPT && *m)
-			m_free(*m);
 		return (EOPNOTSUPP);
 #endif
 	}
@@ -243,160 +466,180 @@ rip_ctloutput(op, so, level, optname, m)
 u_long	rip_sendspace = RIPSNDQ;
 u_long	rip_recvspace = RIPRCVQ;
 
-/*ARGSUSED*/
 int
-rip_usrreq(so, req, m, nam, control)
-	register struct socket *so;
-	int req;
-	struct mbuf *m, *nam, *control;
+rip_attach(struct socket *so, int proto, int wait)
 {
-	register int error = 0;
-	register struct inpcb *inp = sotoinpcb(so);
+	struct inpcb *inp;
+	int error;
+
+	if (so->so_pcb)
+		panic("rip_attach");
+	if ((so->so_state & SS_PRIV) == 0)
+		return EACCES;
+	if (proto < 0 || proto >= IPPROTO_MAX)
+		return EPROTONOSUPPORT;
+
+	if ((error = soreserve(so, rip_sendspace, rip_recvspace)))
+		return error;
+	NET_ASSERT_LOCKED();
+	if ((error = in_pcballoc(so, &rawcbtable, wait)))
+		return error;
+	inp = sotoinpcb(so);
+	inp->inp_ip.ip_p = proto;
+	return 0;
+}
+
+int
+rip_detach(struct socket *so)
+{
+	struct inpcb *inp = sotoinpcb(so);
+
+	soassertlocked(so);
+
+	if (inp == NULL)
+		return (EINVAL);
+
 #ifdef MROUTING
-	extern struct socket *ip_mrouter;
+	if (so == ip_mrouter[inp->inp_rtableid])
+		ip_mrouter_done(so);
 #endif
-	switch (req) {
+	in_pcbdetach(inp);
 
-	case PRU_ATTACH:
-		if (inp)
-			panic("rip_attach");
-		if ((so->so_state & SS_PRIV) == 0) {
-			error = EACCES;
-			break;
-		}
-		if ((error = soreserve(so, rip_sendspace, rip_recvspace)) ||
-		    (error = in_pcballoc(so, &rawcbtable)))
-			break;
-		inp = (struct inpcb *)so->so_pcb;
-		inp->inp_ip.ip_p = (long)nam;
-		break;
+	return (0);
+}
 
-	case PRU_DISCONNECT:
-		if ((so->so_state & SS_ISCONNECTED) == 0) {
-			error = ENOTCONN;
-			break;
-		}
-		/* FALLTHROUGH */
-	case PRU_ABORT:
-		soisdisconnected(so);
-		/* FALLTHROUGH */
-	case PRU_DETACH:
-		if (inp == 0)
-			panic("rip_detach");
-#ifdef MROUTING
-		if (so == ip_mrouter)
-			ip_mrouter_done();
-#endif
-		in_pcbdetach(inp);
-		break;
+void
+rip_lock(struct socket *so)
+{
+	struct inpcb *inp = sotoinpcb(so);
 
-	case PRU_BIND:
-	    {
-		struct sockaddr_in *addr = mtod(nam, struct sockaddr_in *);
+	NET_ASSERT_LOCKED();
+	mtx_enter(&inp->inp_mtx);
+}
 
-		if (nam->m_len != sizeof(*addr)) {
-			error = EINVAL;
-			break;
-		}
-		if ((ifnet.tqh_first == 0) ||
-		    ((addr->sin_family != AF_INET) &&
-		     (addr->sin_family != AF_IMPLINK)) ||
-		    (addr->sin_addr.s_addr &&
-		     ifa_ifwithaddr(sintosa(addr)) == 0)) {
-			error = EADDRNOTAVAIL;
-			break;
-		}
-		inp->inp_laddr = addr->sin_addr;
-		break;
-	    }
-	case PRU_CONNECT:
-	    {
-		struct sockaddr_in *addr = mtod(nam, struct sockaddr_in *);
+void
+rip_unlock(struct socket *so)
+{
+	struct inpcb *inp = sotoinpcb(so);
 
-		if (nam->m_len != sizeof(*addr)) {
-			error = EINVAL;
-			break;
-		}
-		if (ifnet.tqh_first == 0) {
-			error = EADDRNOTAVAIL;
-			break;
-		}
-		if ((addr->sin_family != AF_INET) &&
-		     (addr->sin_family != AF_IMPLINK)) {
-			error = EAFNOSUPPORT;
-			break;
-		}
-		inp->inp_faddr = addr->sin_addr;
-		soisconnected(so);
-		break;
-	    }
+	NET_ASSERT_LOCKED();
+	mtx_leave(&inp->inp_mtx);
+}
 
-	case PRU_CONNECT2:
-		error = EOPNOTSUPP;
-		break;
+int
+rip_bind(struct socket *so, struct mbuf *nam, struct proc *p)
+{
+	struct inpcb *inp = sotoinpcb(so);
+	struct sockaddr_in *addr;
+	int error;
 
+	soassertlocked(so);
+
+	if ((error = in_nam2sin(nam, &addr)))
+		return (error);
+	
+	if (!((so->so_options & SO_BINDANY) ||
+	    addr->sin_addr.s_addr == INADDR_ANY ||
+	    addr->sin_addr.s_addr == INADDR_BROADCAST ||
+	    in_broadcast(addr->sin_addr, inp->inp_rtableid) ||
+	    ifa_ifwithaddr(sintosa(addr), inp->inp_rtableid)))
+		return (EADDRNOTAVAIL);
+
+	inp->inp_laddr = addr->sin_addr;
+	
+	return (0);
+}
+
+int
+rip_connect(struct socket *so, struct mbuf *nam)
+{
+	struct inpcb *inp = sotoinpcb(so);
+	struct sockaddr_in *addr;
+	int error;
+
+	soassertlocked(so);
+
+	if ((error = in_nam2sin(nam, &addr)))
+		return (error);
+	
+	inp->inp_faddr = addr->sin_addr;
+	soisconnected(so);
+
+	return (0);
+}
+
+int
+rip_disconnect(struct socket *so)
+{
+	struct inpcb *inp = sotoinpcb(so);
+
+	soassertlocked(so);
+
+	if ((so->so_state & SS_ISCONNECTED) == 0)
+		return (ENOTCONN);
+
+	soisdisconnected(so);
+	inp->inp_faddr.s_addr = INADDR_ANY;
+
+	return (0);
+}
+
+int
+rip_shutdown(struct socket *so)
+{
 	/*
 	 * Mark the connection as being incapable of further input.
 	 */
-	case PRU_SHUTDOWN:
-		socantsendmore(so);
-		break;
+
+	soassertlocked(so);
+	socantsendmore(so);
+	
+	return (0);
+}
+
+int
+rip_send(struct socket *so, struct mbuf *m, struct mbuf *nam,
+    struct mbuf *control)
+{
+	struct inpcb *inp = sotoinpcb(so);
+	struct sockaddr_in dst;
+	int error;
+
+	soassertlocked(so);
 
 	/*
 	 * Ship a packet out.  The appropriate raw output
 	 * routine handles any massaging necessary.
 	 */
-	case PRU_SEND:
-	    {
-		register u_int32_t dst;
-
-		if (so->so_state & SS_ISCONNECTED) {
-			if (nam) {
-				error = EISCONN;
-				break;
-			}
-			dst = inp->inp_faddr.s_addr;
-		} else {
-			if (nam == NULL) {
-				error = ENOTCONN;
-				break;
-			}
-			dst = mtod(nam, struct sockaddr_in *)->sin_addr.s_addr;
+	memset(&dst, 0, sizeof(dst));
+	dst.sin_family = AF_INET;
+	dst.sin_len = sizeof(dst);
+	if (so->so_state & SS_ISCONNECTED) {
+		if (nam) {
+			error = EISCONN;
+			goto out;
 		}
-		error = rip_output(m, so, dst);
-		m = NULL;
-		break;
-	    }
+		dst.sin_addr = inp->inp_faddr;
+	} else {
+		struct sockaddr_in *addr;
 
-	case PRU_SENSE:
-		/*
-		 * stat: don't bother with a blocksize.
-		 */
-		return (0);
-
-	/*
-	 * Not supported.
-	 */
-	case PRU_RCVOOB:
-	case PRU_RCVD:
-	case PRU_LISTEN:
-	case PRU_ACCEPT:
-	case PRU_SENDOOB:
-		error = EOPNOTSUPP;
-		break;
-
-	case PRU_SOCKADDR:
-		in_setsockaddr(inp, nam);
-		break;
-
-	case PRU_PEERADDR:
-		in_setpeeraddr(inp, nam);
-		break;
-
-	default:
-		panic("rip_usrreq");
+		if (nam == NULL) {
+			error = ENOTCONN;
+			goto out;
+		}
+		if ((error = in_nam2sin(nam, &addr)))
+			goto out;
+		dst.sin_addr = addr->sin_addr;
 	}
-	if (m != NULL)
-		m_freem(m);
+#ifdef IPSEC
+	/* XXX Find an IPsec TDB */
+#endif
+	error = rip_output(m, so, sintosa(&dst), NULL);
+	m = NULL;
+
+out:
+	m_freem(control);
+	m_freem(m);
+
 	return (error);
 }

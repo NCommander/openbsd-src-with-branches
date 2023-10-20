@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: glx.c,v 1.11 2020/10/20 15:59:17 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2009 Miodrag Vallat.
@@ -24,6 +24,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
+#include <sys/kernel.h>
 
 #include <machine/bus.h>
 
@@ -36,8 +37,8 @@
 #include <dev/usb/ehcireg.h>
 #include <dev/usb/ohcireg.h>
 
-#include <loongson/dev/glxreg.h>
-#include <loongson/dev/glxvar.h>
+#include <dev/pci/glxreg.h>
+#include <dev/pci/glxvar.h>
 
 #include <loongson/dev/bonitovar.h>
 
@@ -96,41 +97,65 @@ glx_init(pci_chipset_tag_t pc, pcitag_t tag, int dev)
 	bonito_pci_hook(pc, NULL, glx_pci_read_hook, glx_pci_write_hook);
 
 	/*
-	 * Perform some Geode intialization.
+	 * Perform some Geode initialization.
 	 */
+
 	msr = rdmsr(DIVIL_BALL_OPTS);	/* 0x71 */
 	wrmsr(DIVIL_BALL_OPTS, msr | 0x01);
 
-	/* route usb interrupt */
+	/*
+	 * Route usb, audio and serial interrupts
+	 */
+
 	msr = rdmsr(PIC_YSEL_LOW);
 	msr &= ~(0xfUL << 8);
+	msr &= ~(0xfUL << 16);
 	msr |= 11 << 8;
+	msr |= 9 << 16;
 	wrmsr(PIC_YSEL_LOW, msr);
+
+	msr = rdmsr(PIC_YSEL_HIGH);
+	msr &= ~(0xfUL << 24);
+	msr &= ~(0xfUL << 28);
+	msr |= 4 << 24;
+	msr |= 3 << 28;
+	wrmsr(PIC_YSEL_HIGH, msr);
 }
 
 uint64_t
 rdmsr(uint msr)
 {
 	uint64_t lo, hi;
+	register_t sr;
 
+#ifdef DIAGNOSTIC
 	if (glxbase_tag == 0)
 		panic("rdmsr invoked before glx initialization");
+#endif
 
+	sr = disableintr();
 	pci_conf_write(glxbase_pc, glxbase_tag, PCI_MSR_ADDR, msr);
 	lo = (uint32_t)pci_conf_read(glxbase_pc, glxbase_tag, PCI_MSR_LO32);
 	hi = (uint32_t)pci_conf_read(glxbase_pc, glxbase_tag, PCI_MSR_HI32);
+	setsr(sr);
 	return (hi << 32) | lo;
 }
 
 void
 wrmsr(uint msr, uint64_t value)
 {
-	if (glxbase_tag == 0)
-		panic("rdmsr invoked before glx initialization");
+	register_t sr;
 
+#ifdef DIAGNOSTIC
+	if (glxbase_tag == 0)
+		panic("wrmsr invoked before glx initialization");
+#endif
+
+	sr = disableintr();
 	pci_conf_write(glxbase_pc, glxbase_tag, PCI_MSR_ADDR, msr);
 	pci_conf_write(glxbase_pc, glxbase_tag, PCI_MSR_LO32, (uint32_t)value);
 	pci_conf_write(glxbase_pc, glxbase_tag, PCI_MSR_HI32, value >> 32);
+	setsr(sr);
 }
 
 int
@@ -161,6 +186,7 @@ glx_pci_read_hook(void *v, pci_chipset_tag_t pc, pcitag_t tag,
 		*data = glx_fn2_read(offset);
 		break;
 	case 3:	/* AC97 codec */
+		*data = glx_fn3_read(offset);
 		break;
 	case 4:	/* OHCI controller */
 		*data = glx_fn4_read(offset);
@@ -203,6 +229,7 @@ glx_pci_write_hook(void *v, pci_chipset_tag_t pc, pcitag_t tag,
 		glx_fn2_write(offset, data);
 		break;
 	case 3:	/* AC97 codec */
+		glx_fn3_write(offset, data);
 		break;
 	case 4:	/* OHCI controller */
 		glx_fn4_write(offset, data);
@@ -311,12 +338,10 @@ glx_fn0_read(int reg)
 		else {
 			data = pcib_bar_values[index];
 			if (data == 0xffffffff)
-				data = PCI_MAPREG_IO_ADDR_MASK &
-				    ~(pcib_bar_sizes[index] - 1);
-			else {
-				msr = rdmsr(pcib_bar_msr[index]);
-				data = msr & 0xfffff000;
-			}
+				data = PCI_MAPREG_IO_ADDR_MASK;
+			else
+				data = (pcireg_t)rdmsr(pcib_bar_msr[index]);
+			data &= ~(pcib_bar_sizes[index] - 1);
 			if (data != 0)
 				data |= PCI_MAPREG_TYPE_IO;
 		}
@@ -378,7 +403,7 @@ glx_fn0_write(int reg, pcireg_t data)
 			if ((data & PCI_MAPREG_TYPE_MASK) ==
 			    PCI_MAPREG_TYPE_IO) {
 				data &= PCI_MAPREG_IO_ADDR_MASK;
-				data &= 0xfffff000;
+				data &= ~(pcib_bar_sizes[index] - 1);
 				wrmsr(pcib_bar_msr[index],
 				    (0x0000f000UL << 32) | (1UL << 32) | data);
 			} else {
@@ -412,7 +437,7 @@ glx_fn2_read(int reg)
 		data = glx_get_status();
 		data |= PCI_COMMAND_IO_ENABLE;
 		msr = rdmsr(GLIU_PAE);
-		if ((msr & (0x3 << 4)) == 0x03)
+		if ((msr & (0x3 << 4)) == (0x03 << 4))
 			data |= PCI_COMMAND_MASTER_ENABLE;
 		break;
 	case PCI_CLASS_REG:
@@ -509,6 +534,109 @@ glx_fn2_write(int reg, pcireg_t data)
 		break;
 	case AMD756_UDMA:
 		wrmsr(IDE_ETC, (uint32_t)data);
+		break;
+	}
+}
+
+/*
+ * Function 3: AC97 Codec
+ */
+
+static pcireg_t ac97_bar_size = 0x80;
+static pcireg_t ac97_bar_value;
+
+pcireg_t
+glx_fn3_read(int reg)
+{
+	uint64_t msr;
+	pcireg_t data;
+
+	switch (reg) {
+	case PCI_ID_REG:
+	case PCI_SUBSYS_ID_REG:
+		data = PCI_ID_CODE(PCI_VENDOR_AMD,
+		    PCI_PRODUCT_AMD_CS5536_AUDIO);
+		break;
+	case PCI_COMMAND_STATUS_REG:
+		data = glx_get_status();
+		data |= PCI_COMMAND_IO_ENABLE;
+		msr = rdmsr(GLIU_PAE);
+		if ((msr & (0x3 << 8)) == (0x03 << 8))
+			data |= PCI_COMMAND_MASTER_ENABLE;
+		break;
+	case PCI_CLASS_REG:
+		msr = rdmsr(ACC_GLD_MSR_CAP);
+		data = (PCI_CLASS_MULTIMEDIA << PCI_CLASS_SHIFT) |
+		    (PCI_SUBCLASS_MULTIMEDIA_AUDIO << PCI_SUBCLASS_SHIFT) |
+		    (msr & PCI_REVISION_MASK);
+		break;
+	case PCI_BHLC_REG:
+		msr = rdmsr(GLPCI_CTRL);
+		data = (0x00 << PCI_HDRTYPE_SHIFT) |
+		    (((msr & 0xff00000000UL) >> 32) << PCI_LATTIMER_SHIFT) |
+		    (0x08 << PCI_CACHELINE_SHIFT);
+		break;
+	case PCI_MAPREG_START:
+		data = ac97_bar_value;
+		if (data == 0xffffffff)
+			data = PCI_MAPREG_IO_ADDR_MASK & ~(ac97_bar_size - 1);
+		else {
+			msr = rdmsr(GLIU_IOD_BM1);
+			data = (msr >> 20) & 0x000fffff;
+			data &= (msr & 0x000fffff);
+		}
+		if (data != 0)
+			data |= PCI_MAPREG_TYPE_IO;
+		break;
+	case PCI_INTERRUPT_REG:
+		data = (0x40 << PCI_MAX_LAT_SHIFT) |
+		    (PCI_INTERRUPT_PIN_A << PCI_INTERRUPT_PIN_SHIFT);
+		break;
+	default:
+		data = 0;
+		break;
+	}
+
+	return data;
+}
+
+void
+glx_fn3_write(int reg, pcireg_t data)
+{
+	uint64_t msr;
+
+	switch (reg) {
+	case PCI_COMMAND_STATUS_REG:
+		msr = rdmsr(GLIU_PAE);
+		if (data & PCI_COMMAND_MASTER_ENABLE)
+			msr |= 0x03 << 8;
+		else
+			msr &= ~(0x03 << 8);
+		wrmsr(GLIU_PAE, msr);
+		break;
+	case PCI_BHLC_REG:
+		msr = rdmsr(GLPCI_CTRL);
+		msr &= 0xff00000000UL;
+		msr |= ((uint64_t)PCI_LATTIMER(data)) << 32;
+		break;
+	case PCI_MAPREG_START:
+		if (data == 0xffffffff) {
+			ac97_bar_value = data;
+		} else {
+			if ((data & PCI_MAPREG_TYPE_MASK) ==
+			    PCI_MAPREG_TYPE_IO) {
+				data &= PCI_MAPREG_IO_ADDR_MASK;
+				msr = rdmsr(GLIU_IOD_BM1);
+				msr &= 0x0fffff0000000000UL;
+				msr |= 5UL << 61;	/* AC97 */
+				msr |= ((uint64_t)data & 0xfffff) << 20;
+				msr |= 0x000fffff & ~(ac97_bar_size - 1);
+				wrmsr(GLIU_IOD_BM1, msr);
+			} else {
+				wrmsr(GLIU_IOD_BM1, 0);
+			}
+			ac97_bar_value = 0;
+		}
 		break;
 	}
 }

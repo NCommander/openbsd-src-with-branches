@@ -1,3 +1,4 @@
+/*	$OpenBSD: impys.S,v 1.11 2005/01/23 18:01:30 mickey Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,46 +12,39 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/impys.s,v $
- * $Revision: 1.11.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:06:28 $
- */
+/* @(#)impys.s: Revision: 1.11.88.1 Date: 93/12/07 15:06:28 */
 
+#include <machine/asm.h>
+#include <machine/frame.h>
 
 ;****************************************************************************
 ;
-;Implement an integer multiply routine for 32-bit operands and 64-bit product 
+;Implement an integer multiply routine for 32-bit operands and 64-bit product
 ;with operand values of zero (multiplicand only) and -2**31 treated specially.
 ;The algorithm uses the absolute value of the multiplier, four bits at a time,
 ;from right to left, to generate partial product.  Execution speed is more
-;important than program size in this implementation. 
+;important than program size in this implementation.
 ;
 ;****************************************************************************
 ;
 ; Definitions - General registers
 ;
-gr0	.equ		0		; General register zero
-pu	.equ		3		; upper part of product
-pl	.equ		4		; lower part of product
-op2	.equ		4		; multiplier
-op1	.equ		5		; multiplicand
-cnt	.equ		6		; count in multiply
-brindex	.equ		7		; index into the br. table
-sign	.equ		8		; sign of product
-pc	.equ		9		; carry bit of product, = 00...01
-pm	.equ	       10		; value of -1 used in shifting
+gr0	.reg		%r0		; General register zero
+pu	.reg		%r3		; upper part of product
+pl	.reg		%r4		; lower part of product
+op2	.reg		%r4		; multiplier
+op1	.reg		%r5		; multiplicand
+cnt	.reg		%r6		; count in multiply
+brindex	.reg		%r7		; index into the br. table
+sign	.reg		%r8		; sign of product
+pc	.reg		%r9		; carry bit of product, = 00...01
+pm	.reg		%r10		; value of -1 used in shifting
 
 ;*****************************************************************************
-	.export impys,entry
-	.space $TEXT$
-	.subspa $CODE$
-	.align 4
-	.proc
-	.callinfo
-;
-;****************************************************************************
-impys	stws,ma		pu,4(sp)		; save registers on stack
+	.text
+
+LEAF_ENTRY(s_xmpy)
+	stws,ma		pu,4(sp)		; save registers on stack
 	stws,ma		pl,4(sp)		; save registers on stack
 	stws,ma		op1,4(sp)		; save registers on stack
 	stws,ma		cnt,4(sp)		; save registers on stack
@@ -61,8 +55,8 @@ impys	stws,ma		pu,4(sp)		; save registers on stack
 ;
 ;   Start multiply process
 ;
-	ldws		(arg1),op2		; get multiplier
-	ldws		(arg0),op1		; get multiplicand
+	ldws		0(arg1),op2		; get multiplier
+	ldws		0(arg0),op1		; get multiplicand
 	addi		-1,gr0,pm		; initialize pm to 111...1
 	comb,<		op2,gr0,mpyb		; br. if multiplier < 0
 	xor		op2,op1,sign		; sign(0) = sign of product
@@ -71,14 +65,14 @@ mpy1	comb,<		op1,gr0,mpya		; br. if multiplicand < 0
 	addib,=		0,op1,fini0		; op1 = 0, product = 0
 mpy2	addi		1,gr0,pc		; initialize pc to 00...01
 	movib,tr	8,cnt,mloop		; set count for mpy loop
-	extru		op2,31,4,brindex	; 4 bits as index into table 
+	extru		op2,31,4,brindex	; 4 bits as index into table
 ;
 	.align		8
 ;
 	b		sh4c			; br. if sign overflow
 sh4n	shd		pu,pl,4,pl		; shift product right 4 bits
 	addib,<=	-1,cnt,mulend		; reduce count by 1, exit if
-	extru  		pu,27,28,pu		;   <= zero
+	extru		pu,27,28,pu		;   <= zero
 ;
 mloop	blr		brindex,gr0		; br. into table
 						;   entries of 2 words
@@ -101,13 +95,13 @@ mtable						; two words per entry
 ;
 ;  ----	bits = 0010 ---- add op1, add op1, then shift 4 bits
 ;
-	addb,tr		op1,pu,sh4n		; add 2*op1, to shift 
-	addb,uv 	op1,pu,sh4c		;   product right 4 bits
+	addb,tr		op1,pu,sh4n		; add 2*op1, to shift
+	addb,uv		op1,pu,sh4c		;   product right 4 bits
 ;
 ;  ---- bits = 0011 ---- add op1, add 2*op1, shift 4 bits
 ;
-	addb,tr		op1,pu,sh4n-4		; add op1 & 2*op1, shift 
-	sh1add,nsv 	op1,pu,pu			;   product right 4 bits
+	addb,tr		op1,pu,sh4n-4		; add op1 & 2*op1, shift
+	sh1add,nsv	op1,pu,pu			;   product right 4 bits
 ;
 ;  ----	bits = 0100 ---- shift 2, add op1, shift 2
 ;
@@ -190,21 +184,21 @@ sh4c	addib,>		-1,cnt,mloop		; decrement count, loop if > 0
 mpyb	add,=		op2,op2,gr0		; if <> 0, back to main sect.
 	b		mpy1
 	sub		0,op2,op2		; op2 = |multiplier|
-	add,>=		op1,gr0,gr0		; if op1 < 0, invert sign, 
+	add,>=		op1,gr0,gr0		; if op1 < 0, invert sign,
 	xor		pm,sign,sign		;   for correct result
 ;
 ;	special case for multiplier = -2**31, op1 = signed multiplicand
 ;		or multiplicand = -2**31, op1 = signed multiplier
 ;
 	shd		op1,0,1,pl		; shift op1 left 31 bits
-mmax	extrs		op1,30,31,pu	
+mmax	extrs		op1,30,31,pu
 	b		signs			; negate product (if needed)
 	bb,>=,n		sign,0,fini		; test sign of product
 ;
 mpya	add,=		op1,op1,gr0		; op1 = -2**31, special case
 	b		mpy2
 	sub		0,op1,op1		; op1 = |multiplicand|
-	add,>=		op2,gr0,gr0		; if op2 < 0, invert sign, 
+	add,>=		op2,gr0,gr0		; if op2 < 0, invert sign,
 	xor		pm,sign,sign		;   for correct result
 	movb,tr		op2,op1,mmax		; use op2 as multiplicand
 	shd		op1,0,1,pl		; shift it left 31 bits
@@ -235,8 +229,8 @@ sh1	addib,>		-1,cnt,mloop		; loop if count > 0
 sh2ns	addib,tr	1,brindex,sh2sb+4	; increment index
 	extru		pu,29,30,pu		; shift unsigned
 ;
-sh2s	shd		pu,pl,2,pl		; shift with minus sign 
-	shd		pm,pu,2,pu		; 
+sh2s	shd		pu,pl,2,pl		; shift with minus sign
+	shd		pm,pu,2,pu		;
 	sub		pu,op1,pu		; subtract op1
 	shd		pu,pl,2,pl		; shift with minus sign
 	addib,tr	-1,cnt,mloop		; decrement count, loop
@@ -262,7 +256,7 @@ sh2us	extru		pu,29,30,pu		; shift 2 unsigned
 	addb,tr		op1,pu,sh2a		; add op1
 	shd		pu,pl,2,pl		; shift 2 bits
 ;
-sh2c	shd		pu,pl,2,pl	
+sh2c	shd		pu,pl,2,pl
 	shd		pc,pu,2,pu		; shift with carry
 	addb,tr		op1,pu,sh2a		; add op1 to product
 	shd		pu,pl,2,pl		; br. to sh2 to shift pu
@@ -280,7 +274,7 @@ signs	sub		0,pl,pl			; negate product if sign
 ;
 ;	finish
 ;
-fini	stws		pu,(arg2)		; save high part of result
+fini	stws		pu,0(arg2)		; save high part of result
 	stws		pl,4(arg2)		; save low part of result
 
 	ldws,mb		-4(sp),pm		; restore registers
@@ -292,6 +286,6 @@ fini	stws		pu,(arg2)		; save high part of result
 	ldws,mb		-4(sp),pl		; restore registers
 	bv		0(rp)			; return
 	ldws,mb		-4(sp),pu		; restore registers
+EXIT(s_xmpy)
 
-	.procend
 	.end

@@ -1,0 +1,52 @@
+dnl	$OpenBSD: contents,v 1.15 2022/09/19 04:29:55 jsg Exp $
+TopPart
+
+	miniroot-am335x-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; BeagleBone version.
+
+	miniroot-cubie-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; Cubieboard2 version.
+
+	miniroot-cubox-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; CuBox-i version.
+
+	miniroot-nitrogen-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; Nitrogen6x version.
+
+	miniroot-panda-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; PandaBoard (ES) version.
+
+	miniroot-wandboard-{:--:}OSrev.img
+			A miniroot filesystem to be used for
+			installation; Wandboard version.
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDrd
+dnl not yet...
+dnl OpenBSDcd
+
+DistributionDescription(eight)
+
+OpenBSDbase(138002111,355577334)
+
+OpenBSDcomp(42241239,149341743)
+
+OpenBSDgame(2764567,6236118)
+
+OpenBSDman(8020870,30950175)
+
+OpenBSDxbase(44790759,120267117)
+
+OpenBSDxfont(23519618,35818896)
+
+OpenBSDxserv(8306593,22075090)
+
+OpenBSDxshare(4696060,24958258)

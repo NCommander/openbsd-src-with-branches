@@ -1,4 +1,4 @@
-#	$OpenBSD$
+#	$OpenBSD: Makefile,v 1.16 2022/09/11 20:51:44 mbuhl Exp $
 
 # Copyright (c) 2019 Moritz Buhl <openbsd@moritzbuhl.de>
 # Copyright (c) 2019 Alexander Bluhm <bluhm@openbsd.org>
@@ -20,35 +20,84 @@
 # For each PROG define new regression subtests based on the test number.
 
 .if defined(NUMBERS)
-REGRESS_TARGETS =	${NUMBERS:S/^/run-${PROG}-/}
+REGRESS_TARGETS =	${NUMBERS:C/(.*)/run-${PROG}-\1 cleanup-${PROG}-\1/}
 .else
 REGRESS_TARGETS =	${PROGS:S/^/run-/}
 .endif
 
 PROGS =
-PROGS +=	t_access t_bind t_chroot t_clock_gettime t_dup t_fsync
+PROGS +=	t_access
+PROGS +=	t_bind
+PROGS +=	t_chroot t_clock_gettime
+PROGS +=	t_connect
+PROGS +=	t_dup
+PROGS +=	t_fork
+PROGS +=	t_fsync
 PROGS +=	t_getgroups t_getitimer t_getlogin t_getpid t_getrusage
-PROGS +=	t_getsid t_getsockname t_gettimeofday t_kill t_link t_listen
-PROGS +=	t_mkdir t_mknod t_msgctl t_msgget t_msgsnd t_msync t_pipe
-PROGS +=	t_poll t_revoke t_select t_sendrecv t_setuid t_socketpair
-PROGS +=	t_sigaction t_truncate t_umask t_write
-
-# failing tests
-.if 0
+PROGS +=	t_getsid t_getsockname t_gettimeofday
+PROGS +=	t_kevent
+PROGS +=	t_kill
+PROGS +=	t_link t_listen
+PROGS +=	t_minherit
+PROGS +=	t_mkdir
 PROGS +=	t_mkfifo
+PROGS +=	t_mknod
 PROGS +=	t_mlock
 PROGS +=	t_mmap
+PROGS +=	t_msgctl
+PROGS +=	t_msgget
 PROGS +=	t_msgrcv
+PROGS +=	t_msgsnd
+PROGS +=	t_msync
+PROGS +=	t_pipe
 PROGS +=	t_pipe2
+PROGS +=	t_poll
+PROGS +=	t_ppoll
 PROGS +=	t_ptrace
+PROGS +=	t_recvmmsg
+PROGS +=	t_revoke
+PROGS +=	t_select
+PROGS +=	t_sendmmsg
+PROGS +=	t_sendrecv
+PROGS +=	t_setrlimit
+PROGS +=	t_setuid
+PROGS +=	t_sigaction
+PROGS +=	t_sigaltstack
+PROGS +=	t_socketpair
 PROGS +=	t_stat
-PROGS +=	t_syscall
-PROGS +=	t_unlink
-.endif
+#PROGS +=	t_syscall	Deleted: test of gcc1.x syscall pad
+PROGS +=	t_truncate
+PROGS +=	t_umask t_unlink
+PROGS +=	t_vfork
+PROGS +=	t_waitid
+PROGS +=	t_wait_noproc
+PROGS +=	t_wait_noproc_wnohang
+PROGS +=	t_write
+
+# failing tests
+REGRESS_EXPECTED_FAILURES =
+REGRESS_EXPECTED_FAILURES +=	run-t_mlock-4
+REGRESS_EXPECTED_FAILURES +=	run-t_msgrcv-3
+REGRESS_EXPECTED_FAILURES +=	run-t_pipe2-2
+REGRESS_EXPECTED_FAILURES +=	run-t_stat-5
+REGRESS_EXPECTED_FAILURES +=	run-t_unlink-2
+
+. for t in run-t_fork-{3,4,5}
+${t}:
+	# Only works with a controlling tty
+	@echo DISABLED
+. endfor
+
+run-t_vfork-2:
+	# SIGSTOP with vfork is masked before exec(3)/exit(3)
+	# see NetBSD: kern_sig.c,v 1.345
+	@echo DISABLED
 
 . for p in ${PROGS}
 SRCS_$p =		$p.c atf-c.c
 . endfor
+
+CFLAGS += -std=gnu99
 
 LDADD_t_getpid =	-lpthread
 
@@ -57,15 +106,16 @@ setup-t_truncate:
 	${SUDO} touch truncate_test.root_owned
 	${SUDO} chown root:wheel truncate_test.root_owned
 
-run-t_chroot: cleanup-t_chroot
-cleanup-t_chroot:
+run-t_chroot: clean-dir
+run-t_ptrace: clean-dir
+clean-dir:
 	${SUDO} rm -rf dir
 
 CLEANFILES =	access dummy mmap truncate_test.root_owned
 
 .for p in ${PROGS}
 run-$p: $p
-	@echo "\n======== $@ ========"
+	ulimit -c unlimited && \
 	ntests="`./$p -n`" && \
 	echo "1..$$ntests" && \
 	tnumbers="`jot -ns' ' - 1 $$ntests`" && \
@@ -96,9 +146,10 @@ run-${PROG}-$n:
 	false
 .  endif
 
+cleanup-${PROG}-$n:
+	-./${PROG} -c $n
+
 . endfor
 .endif
 
 .include <bsd.regress.mk>
-
-clean: cleanup-t_chroot

@@ -1,3 +1,4 @@
+/*	$OpenBSD: stddef.h,v 1.13 2016/09/09 18:12:37 millert Exp $	*/
 /*	$NetBSD: stddef.h,v 1.4 1994/10/26 00:56:26 cgd Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,24 +35,50 @@
 #ifndef _STDDEF_H_
 #define _STDDEF_H_
 
-#include <machine/ansi.h>
+#include <sys/cdefs.h>
+#include <sys/_null.h>
+#include <sys/_types.h>
 
-typedef	_BSD_PTRDIFF_T_	ptrdiff_t;
-
-#ifdef	_BSD_SIZE_T_
-typedef	_BSD_SIZE_T_	size_t;
-#undef	_BSD_SIZE_T_
+#ifndef _PTRDIFF_T_DEFINED_
+#define _PTRDIFF_T_DEFINED_
+typedef	__ptrdiff_t	ptrdiff_t;
 #endif
 
-#ifdef	_BSD_WCHAR_T_
-typedef	_BSD_WCHAR_T_	wchar_t;
-#undef	_BSD_WCHAR_T_
+#ifndef	_SIZE_T_DEFINED_
+#define	_SIZE_T_DEFINED_
+typedef	__size_t	size_t;
 #endif
 
-#ifndef	NULL
-#define	NULL	0
+/* in C++, wchar_t is a built-in type */
+#if !defined(_WCHAR_T_DEFINED_) && !defined(__cplusplus)
+#define _WCHAR_T_DEFINED_
+typedef	__wchar_t	wchar_t;
 #endif
 
+#ifndef	_WINT_T_DEFINED_
+#define	_WINT_T_DEFINED_
+typedef	__wint_t	wint_t;
+#endif
+
+#ifndef	_MBSTATE_T_DEFINED_
+#define	_MBSTATE_T_DEFINED_
+typedef	__mbstate_t	mbstate_t;
+#endif
+
+#if __GNUC_PREREQ__(4, 0)
+#define	offsetof(type, member)	__builtin_offsetof(type, member)
+#else
 #define	offsetof(type, member)	((size_t)(&((type *)0)->member))
+#endif
+
+#if __ISO_C_VISIBLE >= 2011 || __cplusplus >= 201103
+#ifndef __CLANG_MAX_ALIGN_T_DEFINED
+#define __CLANG_MAX_ALIGN_T_DEFINED
+typedef struct {
+	long long __max_align_ll __aligned(__alignof__(long long));
+	long double __max_align_ld __aligned(__alignof__(long double));
+} max_align_t;
+#endif
+#endif
 
 #endif /* _STDDEF_H_ */

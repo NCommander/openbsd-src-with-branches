@@ -1,4 +1,4 @@
-/* dh_asn1.c */
+/* $OpenBSD: dh_asn1.c,v 1.11 2022/01/07 09:27:13 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -57,21 +57,24 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
+
+#include <openssl/asn1t.h>
 #include <openssl/bn.h>
 #include <openssl/dh.h>
 #include <openssl/objects.h>
-#include <openssl/asn1t.h>
+
+#include "dh_local.h"
 
 /* Override the default free and new methods */
-static int dh_cb(int operation, ASN1_VALUE **pval, const ASN1_ITEM *it,
-						void *exarg)
+static int
+dh_cb(int operation, ASN1_VALUE **pval, const ASN1_ITEM *it, void *exarg)
 {
-	if(operation == ASN1_OP_NEW_PRE) {
+	if (operation == ASN1_OP_NEW_PRE) {
 		*pval = (ASN1_VALUE *)DH_new();
-		if(*pval) return 2;
+		if (*pval)
+			return 2;
 		return 0;
-	} else if(operation == ASN1_OP_FREE_PRE) {
+	} else if (operation == ASN1_OP_FREE_PRE) {
 		DH_free((DH *)*pval);
 		*pval = NULL;
 		return 2;
@@ -79,15 +82,95 @@ static int dh_cb(int operation, ASN1_VALUE **pval, const ASN1_ITEM *it,
 	return 1;
 }
 
-ASN1_SEQUENCE_cb(DHparams, dh_cb) = {
-	ASN1_SIMPLE(DH, p, BIGNUM),
-	ASN1_SIMPLE(DH, g, BIGNUM),
-	ASN1_OPT(DH, length, ZLONG),
-} ASN1_SEQUENCE_END_cb(DH, DHparams)
-
-IMPLEMENT_ASN1_ENCODE_FUNCTIONS_const_fname(DH, DHparams, DHparams)
-
-DH *DHparams_dup(DH *dh)
+static const ASN1_AUX DHparams_aux = {
+	.app_data = NULL,
+	.flags = 0,
+	.ref_offset = 0,
+	.ref_lock = 0,
+	.asn1_cb = dh_cb,
+	.enc_offset = 0,
+};
+static const ASN1_TEMPLATE DHparams_seq_tt[] = {
 	{
-	return ASN1_item_dup(ASN1_ITEM_rptr(DHparams), dh);
-	}
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DH, p),
+		.field_name = "p",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DH, g),
+		.field_name = "g",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = ASN1_TFLG_OPTIONAL,
+		.tag = 0,
+		.offset = offsetof(DH, length),
+		.field_name = "length",
+		.item = &ZLONG_it,
+	},
+};
+
+const ASN1_ITEM DHparams_it = {
+	.itype = ASN1_ITYPE_SEQUENCE,
+	.utype = V_ASN1_SEQUENCE,
+	.templates = DHparams_seq_tt,
+	.tcount = sizeof(DHparams_seq_tt) / sizeof(ASN1_TEMPLATE),
+	.funcs = &DHparams_aux,
+	.size = sizeof(DH),
+	.sname = "DH",
+};
+
+
+DH *
+d2i_DHparams(DH **a, const unsigned char **in, long len)
+{
+	return (DH *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &DHparams_it);
+}
+LCRYPTO_ALIAS(d2i_DHparams);
+
+int
+i2d_DHparams(const DH *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &DHparams_it);
+}
+LCRYPTO_ALIAS(i2d_DHparams);
+
+DH *
+d2i_DHparams_bio(BIO *bp, DH **a)
+{
+	return ASN1_item_d2i_bio(&DHparams_it, bp, a);
+}
+LCRYPTO_ALIAS(d2i_DHparams_bio);
+
+int
+i2d_DHparams_bio(BIO *bp, DH *a)
+{
+	return ASN1_item_i2d_bio(&DHparams_it, bp, a);
+}
+LCRYPTO_ALIAS(i2d_DHparams_bio);
+
+DH *
+d2i_DHparams_fp(FILE *fp, DH **a)
+{
+	return ASN1_item_d2i_fp(&DHparams_it, fp, a);
+}
+LCRYPTO_ALIAS(d2i_DHparams_fp);
+
+int
+i2d_DHparams_fp(FILE *fp, DH *a)
+{
+	return ASN1_item_i2d_fp(&DHparams_it, fp, a);
+}
+LCRYPTO_ALIAS(i2d_DHparams_fp);
+
+DH *
+DHparams_dup(DH *dh)
+{
+	return ASN1_item_dup(&DHparams_it, dh);
+}
+LCRYPTO_ALIAS(DHparams_dup);

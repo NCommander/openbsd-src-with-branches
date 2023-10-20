@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: t_mkfifo.c,v 1.1.1.1 2019/11/19 19:57:03 bluhm Exp $	*/
 /* $NetBSD: t_mkfifo.c,v 1.3 2019/06/20 03:31:54 kamil Exp $ */
 
 /*-
@@ -31,9 +31,6 @@
  */
 
 #include "macros.h"
-
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_mkfifo.c,v 1.3 2019/06/20 03:31:54 kamil Exp $");
 
 #include <sys/stat.h>
 #include <sys/wait.h>

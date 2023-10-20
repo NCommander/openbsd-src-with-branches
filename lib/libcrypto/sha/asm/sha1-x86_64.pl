@@ -216,21 +216,23 @@ unshift(@xi,pop(@xi));
 $code.=<<___;
 .text
 .extern	OPENSSL_ia32cap_P
+.hidden	OPENSSL_ia32cap_P
 
 .globl	sha1_block_data_order
 .type	sha1_block_data_order,\@function,3
 .align	16
 sha1_block_data_order:
+	endbr64
 	mov	OPENSSL_ia32cap_P+0(%rip),%r9d
 	mov	OPENSSL_ia32cap_P+4(%rip),%r8d
-	test	\$`1<<9`,%r8d		# check SSSE3 bit
+	test	\$IA32CAP_MASK1_SSSE3,%r8d		# check SSSE3 bit
 	jz	.Lialu
 ___
 $code.=<<___ if ($avx);
-	and	\$`1<<28`,%r8d		# mask AVX bit
-	and	\$`1<<30`,%r9d		# mask "Intel CPU" bit
+	and	\$IA32CAP_MASK1_AVX,%r8d		# mask AVX bit
+	and	\$IA32CAP_MASK0_INTEL,%r9d		# mask "Intel CPU" bit
 	or	%r9d,%r8d
-	cmp	\$`1<<28|1<<30`,%r8d
+	cmp	\$(IA32CAP_MASK0_INTEL | IA32CAP_MASK1_AVX),%r8d
 	je	_avx_shortcut
 ___
 $code.=<<___;
@@ -308,6 +310,7 @@ $code.=<<___;
 .align	16
 sha1_block_data_order_ssse3:
 _ssse3_shortcut:
+	endbr64
 	push	%rbx
 	push	%rbp
 	push	%r12
@@ -367,7 +370,7 @@ sub AUTOLOAD()		# thunk [simplified] 32-bit style perlasm
     $code .= "\t$opcode\t".join(',',$arg,reverse @_)."\n";
 }
 
-sub Xupdate_ssse3_16_31()		# recall that $Xi starts wtih 4
+sub Xupdate_ssse3_16_31()		# recall that $Xi starts with 4
 { use integer;
   my $body = shift;
   my @insns = (&$body,&$body,&$body,&$body);	# 40 instructions
@@ -728,6 +731,7 @@ $code.=<<___;
 .align	16
 sha1_block_data_order_avx:
 _avx_shortcut:
+	endbr64
 	push	%rbx
 	push	%rbp
 	push	%r12
@@ -778,7 +782,7 @@ $code.=<<___;
 	jmp	.Loop_avx
 ___
 
-sub Xupdate_avx_16_31()		# recall that $Xi starts wtih 4
+sub Xupdate_avx_16_31()		# recall that $Xi starts with 4
 { use integer;
   my $body = shift;
   my @insns = (&$body,&$body,&$body,&$body);	# 40 instructions
@@ -1070,6 +1074,7 @@ $code.=<<___;
 ___
 }
 $code.=<<___;
+.section .rodata
 .align	64
 K_XX_XX:
 .long	0x5a827999,0x5a827999,0x5a827999,0x5a827999	# K_00_19
@@ -1077,10 +1082,10 @@ K_XX_XX:
 .long	0x8f1bbcdc,0x8f1bbcdc,0x8f1bbcdc,0x8f1bbcdc	# K_40_59
 .long	0xca62c1d6,0xca62c1d6,0xca62c1d6,0xca62c1d6	# K_60_79
 .long	0x00010203,0x04050607,0x08090a0b,0x0c0d0e0f	# pbswap mask
+.text
 ___
 }}}
 $code.=<<___;
-.asciz	"SHA1 block transform for x86_64, CRYPTOGAMS by <appro\@openssl.org>"
 .align	64
 ___
 
@@ -1097,6 +1102,7 @@ $code.=<<___;
 .type	se_handler,\@abi-omnipotent
 .align	16
 se_handler:
+	endbr64
 	push	%rsi
 	push	%rdi
 	push	%rbx

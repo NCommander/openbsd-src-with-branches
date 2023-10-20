@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: ldapclient.c,v 1.12 2019/01/26 10:58:54 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2018 Reyk Floeter <reyk@openbsd.org>
@@ -16,9 +16,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/tree.h>
 #include <sys/un.h>
 
@@ -51,16 +51,18 @@
 #define F_NEEDAUTH	0x04
 #define F_LDIF		0x08
 
-#define CAPATH		"/etc/ssl/cert.pem"
 #define LDAPHOST	"localhost"
 #define LDAPFILTER	"(objectClass=*)"
 #define LDIF_LINELENGTH	79
+#define LDAPPASSMAX	1024
+
+#define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
 
 struct ldapc {
 	struct aldap		*ldap_al;
 	char			*ldap_host;
 	int			 ldap_port;
-	char			*ldap_capath;
+	const char		*ldap_capath;
 	char			*ldap_binddn;
 	char			*ldap_secret;
 	unsigned int		 ldap_flags;
@@ -81,7 +83,8 @@ struct ldapc_search {
 __dead void	 usage(void);
 int		 ldapc_connect(struct ldapc *);
 int		 ldapc_search(struct ldapc *, struct ldapc_search *);
-int		 ldapc_printattr(struct ldapc *, const char *, const char *);
+int		 ldapc_printattr(struct ldapc *, const char *,
+		    const struct ber_octetstring *);
 void		 ldapc_disconnect(struct ldapc *);
 int		 ldapc_parseurl(struct ldapc *, struct ldapc_search *,
 		    const char *);
@@ -94,9 +97,9 @@ usage(void)
 	extern char	*__progname;
 
 	fprintf(stderr,
-"usage: %s search [-LvxZ] [-b basedn] [-c capath] [-D binddn] [-H host]\n"
-"                   [-l timelimit] [-s scope] [-w secret|-W] [-z sizelimit]\n"
-"                   [filter] [attributes ...]\n",
+"usage: %s search [-LvWxZ] [-b basedn] [-c CAfile] [-D binddn] [-H host]\n"
+"	    [-l timelimit] [-s scope] [-w secret] [-y secretfile] [-z sizelimit]\n"
+"	    [filter] [attributes ...]\n",
 	    __progname);
 
 	exit(1);
@@ -105,12 +108,14 @@ usage(void)
 int
 main(int argc, char *argv[])
 {
-	char			 passbuf[BUFSIZ];
-	const char		*errstr, *url = NULL;
+	char			 passbuf[LDAPPASSMAX];
+	const char		*errstr, *url = NULL, *secretfile = NULL;
+	struct stat		 st;
 	struct ldapc		 ldap;
 	struct ldapc_search	 ls;
 	int			 ch;
 	int			 verbose = 1;
+	FILE			*fp;
 
 	if (pledge("stdio inet unix tty rpath dns", NULL) == -1)
 		err(1, "pledge");
@@ -135,7 +140,7 @@ main(int argc, char *argv[])
 	argc--;
 	argv++;
 
-	while ((ch = getopt(argc, argv, "b:c:D:H:Ll:s:vWw:xZz:")) != -1) {
+	while ((ch = getopt(argc, argv, "b:c:D:H:Ll:s:vWw:xy:Zz:")) != -1) {
 		switch (ch) {
 		case 'b':
 			ls.ls_basedn = optarg;
@@ -182,6 +187,10 @@ main(int argc, char *argv[])
 		case 'x':
 			/* provided for compatibility */
 			break;
+		case 'y':
+			secretfile = optarg;
+			ldap.ldap_flags |= F_NEEDAUTH;
+			break;
 		case 'Z':
 			ldap.ldap_flags |= F_STARTTLS;
 			break;
@@ -212,7 +221,7 @@ main(int argc, char *argv[])
 	if (ldap.ldap_protocol == LDAP && (ldap.ldap_flags & F_STARTTLS))
 		ldap.ldap_protocol = LDAPTLS;
 	if (ldap.ldap_capath == NULL)
-		ldap.ldap_capath = CAPATH;
+		ldap.ldap_capath = tls_default_ca_cert_file();
 	if (ls.ls_basedn == NULL)
 		ls.ls_basedn = "";
 	if (ls.ls_scope == -1)
@@ -224,6 +233,27 @@ main(int argc, char *argv[])
 		if (ldap.ldap_binddn == NULL) {
 			log_warnx("missing -D binddn");
 			usage();
+		}
+		if (secretfile != NULL) {
+			if (ldap.ldap_secret != NULL)
+				errx(1, "conflicting -w/-y options");
+
+			/* read password from stdin or file (first line) */
+			if (strcmp(secretfile, "-") == 0)
+				fp = stdin;
+			else if (stat(secretfile, &st) == -1)
+				err(1, "failed to access %s", secretfile);
+			else if (S_ISREG(st.st_mode) && (st.st_mode & S_IROTH))
+				errx(1, "%s is world-readable", secretfile);
+			else if ((fp = fopen(secretfile, "r")) == NULL)
+				err(1, "failed to open %s", secretfile);
+			if (fgets(passbuf, sizeof(passbuf), fp) == NULL)
+				err(1, "failed to read %s", secretfile);
+			if (fp != stdin)
+				fclose(fp);
+
+			passbuf[strcspn(passbuf, "\n")] = '\0';
+			ldap.ldap_secret = passbuf;
 		}
 		if (ldap.ldap_secret == NULL) {
 			if (readpassphrase("Password: ",
@@ -269,9 +299,12 @@ ldapc_search(struct ldapc *ldap, struct ldapc_search *ls)
 	const char			*errstr;
 	const char			*searchdn, *dn = NULL;
 	char				*outkey;
-	char				**outvalues;
-	int				 ret, i, code, fail = 0;
+	struct aldap_stringset		*outvalues;
+	int				 ret, code, fail = 0;
+	size_t				 i;
 
+	if (ldap->ldap_flags & F_LDIF)
+		printf("version: 1\n");
 	do {
 		if (aldap_search(ldap->ldap_al, ls->ls_basedn, ls->ls_scope,
 		    ls->ls_filter, ls->ls_attr, 0, ls->ls_sizelimit,
@@ -329,10 +362,9 @@ ldapc_search(struct ldapc *ldap, struct ldapc_search *ls)
 			for (ret = aldap_first_attr(m, &outkey, &outvalues);
 			    ret != -1;
 			    ret = aldap_next_attr(m, &outkey, &outvalues)) {
-				for (i = 0; outvalues != NULL &&
-				    outvalues[i] != NULL; i++) {
+				for (i = 0; i < outvalues->len; i++) {
 					if (ldapc_printattr(ldap, outkey,
-					    outvalues[i]) == -1) {
+					    &(outvalues->str[i])) == -1) {
 						fail = 1;
 						break;
 					}
@@ -354,12 +386,13 @@ ldapc_search(struct ldapc *ldap, struct ldapc_search *ls)
 }
 
 int
-ldapc_printattr(struct ldapc *ldap, const char *key, const char *value)
+ldapc_printattr(struct ldapc *ldap, const char *key,
+    const struct ber_octetstring *value)
 {
 	char			*p = NULL, *out;
 	const unsigned char	*cp;
 	int			 encode;
-	size_t			 inlen, outlen, left;
+	size_t			 i, inlen, outlen, left;
 
 	if (ldap->ldap_flags & F_LDIF) {
 		/* OpenLDAP encodes the userPassword by default */
@@ -373,34 +406,40 @@ ldapc_printattr(struct ldapc *ldap, const char *key, const char *value)
 		 * in SAFE-STRINGs. String value that do not match the
 		 * criteria must be encoded as Base64.
 		 */
-		for (cp = (const unsigned char *)value;
-		    encode == 0 &&*cp != '\0'; cp++) {
+		cp = (const unsigned char *)value->ostr_val;
+		/* !SAFE-INIT-CHAR: SAFE-CHAR minus %x20 %x3A %x3C */
+		if (*cp == ' ' ||
+		    *cp == ':' ||
+		    *cp == '<')
+			encode = 1;
+		for (i = 0; encode == 0 && i < value->ostr_len - 1; i++) {
 			/* !SAFE-CHAR %x01-09 / %x0B-0C / %x0E-7F */
-			if (*cp > 127 ||
-			    *cp == '\0' ||
-			    *cp == '\n' ||
-			    *cp == '\r')
+			if (cp[i] > 127 ||
+			    cp[i] == '\0' ||
+			    cp[i] == '\n' ||
+			    cp[i] == '\r')
 				encode = 1;
 		}
 
 		if (!encode) {
-			if (asprintf(&p, "%s: %s", key, value) == -1) {
+			if (asprintf(&p, "%s: %s", key,
+			    (const char *)value->ostr_val) == -1) {
 				log_warnx("asprintf");
 				return (-1);
 			}
 		} else {
-			inlen = strlen(value);
-			outlen = inlen * 2 + 1;
+			outlen = (((value->ostr_len + 2) / 3) * 4) + 1;
 
 			if ((out = calloc(1, outlen)) == NULL ||
-			    b64_ntop(value, inlen, out, outlen) == -1) {
+			    b64_ntop(value->ostr_val, value->ostr_len, out,
+			    outlen) == -1) {
 				log_warnx("Base64 encoding failed");
 				free(p);
 				return (-1);
 			}
 
 			/* Base64 is indicated with a double-colon */
-			if (asprintf(&p, "%s: %s", key, out) == -1) {
+			if (asprintf(&p, "%s:: %s", key, out) == -1) {
 				log_warnx("asprintf");
 				free(out);
 				return (-1);
@@ -411,11 +450,13 @@ ldapc_printattr(struct ldapc *ldap, const char *key, const char *value)
 		/* Wrap lines */
 		for (outlen = 0, inlen = strlen(p);
 		    outlen < inlen;
-		    outlen += LDIF_LINELENGTH) {
+		    outlen += LDIF_LINELENGTH - 1) {
 			if (outlen)
 				putchar(' ');
+			if (outlen > LDIF_LINELENGTH)
+				outlen--;
 			/* max. line length - newline - optional indent */
-			left = MIN(inlen - outlen, outlen ?
+			left = MINIMUM(inlen - outlen, outlen ?
 			    LDIF_LINELENGTH - 2 :
 			    LDIF_LINELENGTH - 1);
 			fwrite(p + outlen, left, 1, stdout);
@@ -429,7 +470,9 @@ ldapc_printattr(struct ldapc *ldap, const char *key, const char *value)
 		 * on all values no matter if they include non-printable
 		 * characters.
 		 */
-		if (stravis(&p, value, VIS_SAFE|VIS_NL) == -1) {
+		p = calloc(1, 4 * value->ostr_len + 1);
+		if (strvisx(p, value->ostr_val, value->ostr_len,
+		    VIS_SAFE|VIS_NL) == -1) {
 			log_warn("visual encoding failed");
 			return (-1);
 		}

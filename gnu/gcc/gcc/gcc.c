@@ -678,13 +678,13 @@ proper position among the other output files.  */
 #ifdef TARGET_LIBC_PROVIDES_SSP
 #define LINK_SSP_SPEC "%{fstack-protector:}"
 #else
-#define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all:-lssp_nonshared -lssp}"
+#define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-strong|fstack-protector-all:-lssp_nonshared -lssp}"
 #endif
 #endif
 
 #ifndef LINK_PIE_SPEC
 #ifdef HAVE_LD_PIE
-#define LINK_PIE_SPEC "%{pie:-pie} "
+#define LINK_PIE_SPEC "%{pie:-pie} %{p|pg|nopie:-nopie} "
 #else
 #define LINK_PIE_SPEC "%{pie:} "
 #endif
@@ -6093,6 +6093,11 @@ main (int argc, char **argv)
   programname = p;
 
   xmalloc_set_program_name (programname);
+
+  if (pledge ("stdio rpath wpath cpath proc exec", NULL) == -1) {
+    error ("pledge: %s", xstrerror (errno));
+    exit (1);
+  }
 
   expandargv (&argc, &argv);
 

@@ -1,5 +1,4 @@
-/*	$NetBSD: vsnprintf.c,v 1.5 1995/02/02 02:10:54 jtc Exp $	*/
-
+/*	$OpenBSD: vsnprintf.c,v 1.15 2009/11/09 00:18:28 kurt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,30 +31,35 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)vsnprintf.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: vsnprintf.c,v 1.5 1995/02/02 02:10:54 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
+#include <limits.h>
 #include <stdio.h>
+#include <string.h>
+#include "local.h"
 
-vsnprintf(str, n, fmt, ap)
-	char *str;
-	size_t n;
-	const char *fmt;
-	_BSD_VA_LIST_ ap;
+int
+vsnprintf(char *str, size_t n, const char *fmt, __va_list ap)
 {
 	int ret;
+	char dummy;
 	FILE f;
+	struct __sfileext fext;
 
-	if ((int)n < 1)
-		return (EOF);
+	_FILEEXT_SETUP(&f, &fext);
+
+	/* While snprintf(3) specifies size_t stdio uses an int internally */
+	if (n > INT_MAX)
+		n = INT_MAX;
+	/* Stdio internals do not deal correctly with zero length buffer */
+	if (n == 0) {
+		str = &dummy;
+		n = 1;
+	}
+	f._file = -1;
 	f._flags = __SWR | __SSTR;
 	f._bf._base = f._p = (unsigned char *)str;
 	f._bf._size = f._w = n - 1;
-	ret = vfprintf(&f, fmt, ap);
-	*f._p = 0;
+	ret = __vfprintf(&f, fmt, ap);
+	*f._p = '\0';
 	return (ret);
 }
+DEF_STRONG(vsnprintf);

@@ -1,7 +1,10 @@
+/*	$OpenBSD: indent.c,v 1.32 2021/01/26 18:21:25 deraadt Exp $	*/
+
 /*
- * Copyright (c) 1985 Sun Microsystems, Inc.
- * Copyright (c) 1980 The Regents of the University of California.
+ * Copyright (c) 1980, 1993
+ *	The Regents of the University of California.
  * Copyright (c) 1976 Board of Trustees of the University of Illinois.
+ * Copyright (c) 1985 Sun Microsystems, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,38 +32,152 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-char copyright[] =
-"@(#) Copyright (c) 1985 Sun Microsystems, Inc.\n\
- @(#) Copyright (c) 1980 The Regents of the University of California.\n\
- @(#) Copyright (c) 1976 Board of Trustees of the University of Illinois.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)indent.c	5.16 (Berkeley) 2/26/91";*/
-static char rcsid[] = "$Id: indent.c,v 1.2 1993/08/01 18:14:33 mycroft Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "indent_globs.h"
 #include "indent_codes.h"
 #include <ctype.h>
+#include <errno.h>
+#include <err.h>
 
 char       *in_name = "Standard Input";	/* will always point to name of input
 					 * file */
 char       *out_name = "Standard Output";	/* will always point to name
 						 * of output file */
-char        bakfile[MAXPATHLEN] = "";
+char        bakfile[PATH_MAX] = "";
 
-main(argc, argv)
-    int         argc;
-    char      **argv;
+FILE       *input;              /* the fid for the input file */
+FILE       *output;             /* the output file */
+
+char       *labbuf;             /* buffer for label */
+char       *s_lab;              /* start ... */
+char       *e_lab;              /* .. and end of stored label */
+char       *l_lab;              /* limit of label buffer */
+
+char       *codebuf;            /* buffer for code section */
+char       *s_code;             /* start ... */
+char       *e_code;             /* .. and end of stored code */
+char       *l_code;             /* limit of code section */
+
+char       *combuf;             /* buffer for comments */
+char       *s_com;              /* start ... */
+char       *e_com;              /* ... and end of stored comments */
+char       *l_com;              /* limit of comment buffer */
+
+char       *tokenbuf;           /* the last token scanned */
+char       *s_token;
+char       *e_token;
+char       *l_token;
+
+char       *in_buffer;          /* input buffer */
+char       *in_buffer_limit;    /* the end of the input buffer */
+char       *buf_ptr;            /* ptr to next character to be taken from
+                                 * in_buffer */
+char       *buf_end;            /* ptr to first after last char in in_buffer */
+
+char        save_com[sc_size];  /* input text is saved here when looking for
+                                 * the brace after an if, while, etc */
+char       *sc_end;             /* pointer into save_com buffer */
+
+char       *bp_save;            /* saved value of buf_ptr when taking input
+                                 * from save_com */
+char       *be_save;            /* similarly saved value of buf_end */
+
+int         pointer_as_binop;
+int         blanklines_after_declarations;
+int         blanklines_before_blockcomments;
+int         blanklines_after_procs;
+int         blanklines_around_conditional_compilation;
+int         swallow_optional_blanklines;
+int         n_real_blanklines;
+int         prefix_blankline_requested;
+int         postfix_blankline_requested;
+int         break_comma;        /* when true and not in parens, break after a
+                                 * comma */
+int         btype_2;            /* when true, brace should be on same line as
+                                 * if, while, etc */
+float       case_ind;           /* indentation level to be used for a "case
+                                 * n:" */
+int         code_lines;         /* count of lines with code */
+int         had_eof;            /* set to true when input is exhausted */
+int         line_no;            /* the current line number. */
+int         max_col;            /* the maximum allowable line length */
+int         verbose;            /* when true, non-essential error messages are
+                                 * printed */
+int         cuddle_else;        /* true if else should cuddle up to '}' */
+int         star_comment_cont;  /* true iff comment continuation lines should
+                                 * have stars at the beginning of each line. */
+int         comment_delimiter_on_blankline;
+int         troff;              /* true iff were generating troff input */
+int         procnames_start_line;       /* if true, the names of procedures
+                                         * being defined get placed in column
+                                         * 1 (ie. a newline is placed between
+                                         * the type of the procedure and its
+                                         * name) */
+int         proc_calls_space;   /* If true, procedure calls look like:
+                                 * foo(bar) rather than foo (bar) */
+int         format_col1_comments;       /* If comments which start in column 1
+                                         * are to be magically reformatted
+                                         * (just like comments that begin in
+                                         * later columns) */
+int         inhibit_formatting; /* true if INDENT OFF is in effect */
+int         suppress_blanklines;/* set iff following blanklines should be
+                                 * suppressed */
+int         continuation_indent;/* set to the indentation between the edge of
+                                 * code and continuation lines */
+int         lineup_to_parens;   /* if true, continued code within parens will
+                                 * be lined up to the open paren */
+int         Bill_Shannon;       /* true iff a blank should always be inserted
+                                 * after sizeof */
+int         blanklines_after_declarations_at_proctop;   /* This is vaguely
+                                                         * similar to
+                                                         * blanklines_after_decla
+                                                         * rations except that
+                                                         * it only applies to
+                                                         * the first set of
+                                                         * declarations in a
+                                                         * procedure (just after
+                                                         * the first '{') and it
+                                                         * causes a blank line
+                                                         * to be generated even
+                                                         * if there are no
+                                                         * declarations */
+int         block_comment_max_col;
+int         extra_expression_indent;    /* True if continuation lines from the
+                                         * expression part of "if(e)",
+                                         * "while(e)", "for(e;e;e)" should be
+                                         * indented an extra tab stop so that
+                                         * they don't conflict with the code
+                                         * that follows */
+int         use_tabs;                   /* set true to use tabs for spacing,
+                                         * false uses all spaces */
+
+/* -troff font state information */
+
+struct fstate
+            keywordf,           /* keyword font */
+            stringf,            /* string font */
+            boxcomf,            /* Box comment font */
+            blkcomf,            /* Block comment font */
+            scomf,              /* Same line comment font */
+            bodyf;              /* major body font */
+
+struct parser_state ps;
+
+int ifdef_level;
+int rparen_count;
+struct parser_state state_stack[5];
+struct parser_state match_state[5];
+
+
+void bakcopy(void);
+
+int
+main(int argc, char **argv)
 {
 
     extern int  found_err;	/* flag set in diag() on error */
@@ -75,7 +188,7 @@ main(argc, argv)
     int         force_nl;	/* when true, code must be broken */
     int         hd_type;	/* used to store type of stmt for if (...),
 				 * for (...), etc */
-    register int i;		/* local loop counter */
+    int 	i;		/* local loop counter */
     int         scase;		/* set to true when we see a case, so we will
 				 * know what to do with the following colon */
     int         sp_sw;		/* when true, we are in the expressin of
@@ -83,25 +196,32 @@ main(argc, argv)
     int         squest;		/* when this is positive, we have seen a ?
 				 * without the matching : in a <c>?<s>:<s>
 				 * construct */
-    register char *t_ptr;	/* used for copying tokens */
+    char 	*t_ptr;		/* used for copying tokens */
+    int         tabs_to_var;	/* true if using tabs to indent to var name */
     int         type_code;	/* the type of token, returned by lexi */
 
     int         last_else = 0;	/* true iff last keyword was an else */
 
+    if (pledge("stdio rpath wpath cpath", NULL) == -1)
+	err(1, "pledge");
 
     /*-----------------------------------------------*\
     |		      INITIALIZATION		      |
     \*-----------------------------------------------*/
 
 
+    hd_type = 0;
     ps.p_stack[0] = stmt;	/* this is the parser's stack */
     ps.last_nl = true;		/* this is true if the last thing scanned was
 				 * a newline */
     ps.last_token = semicolon;
-    combuf = (char *) malloc(bufsize);
-    labbuf = (char *) malloc(bufsize);
-    codebuf = (char *) malloc(bufsize);
-    tokenbuf = (char *) malloc(bufsize);
+    combuf = malloc(bufsize);
+    labbuf = malloc(bufsize);
+    codebuf = malloc(bufsize);
+    tokenbuf = malloc(bufsize);
+    if (combuf == NULL || labbuf == NULL || codebuf == NULL ||
+        tokenbuf == NULL)
+	    err(1, NULL);
     l_com = combuf + bufsize - 5;
     l_lab = labbuf + bufsize - 5;
     l_code = codebuf + bufsize - 5;
@@ -115,7 +235,9 @@ main(argc, argv)
     s_com = e_com = combuf + 1;
     s_token = e_token = tokenbuf + 1;
 
-    in_buffer = (char *) malloc(10);
+    in_buffer = malloc(10);
+    if (in_buffer == NULL)
+	    err(1, NULL);
     in_buffer_limit = in_buffer + 8;
     buf_ptr = buf_end = in_buffer;
     line_no = 1;
@@ -182,39 +304,36 @@ main(argc, argv)
 	    if (input == 0) {	/* we must have the input file */
 		in_name = argv[i];	/* remember name of input file */
 		input = fopen(in_name, "r");
-		if (input == 0)		/* check for open error */
-			err(in_name);
+		if (input == NULL)		/* check for open error */
+			err(1, "%s", in_name);
 		continue;
 	    }
 	    else if (output == 0) {	/* we have the output file */
 		out_name = argv[i];	/* remember name of output file */
-		if (strcmp(in_name, out_name) == 0) {	/* attempt to overwrite
+		if (strcmp(in_name, out_name) == 0)	/* attempt to overwrite
 							 * the file */
-		    fprintf(stderr, "indent: input and output files must be different\n");
-		    exit(1);
-		}
+			errx(1, "input and output files must be different");
 		output = fopen(out_name, "w");
-		if (output == 0)	/* check for create error */
-			err(out_name);
+		if (output == NULL)	/* check for create error */
+			err(1, "%s", out_name);
 		continue;
 	    }
-	    fprintf(stderr, "indent: unknown parameter: %s\n", argv[i]);
-	    exit(1);
+	    errx(1, "unknown parameter: %s", argv[i]);
 	}
 	else
 	    set_option(argv[i]);
     }				/* end of for */
-    if (input == 0) {
-	fprintf(stderr, "indent: usage: indent file [ outfile ] [ options ]\n");
-	exit(1);
+    if (input == NULL) {
+	input = stdin;
     }
-    if (output == 0)
-	if (troff)
+    if (output == NULL) {
+	if (troff || input == stdin)
 	    output = stdout;
 	else {
 	    out_name = in_name;
 	    bakcopy();
 	}
+    }
     if (ps.com_ind <= 1)
 	ps.com_ind = 2;		/* dont put normal comments before column 2 */
     if (troff) {
@@ -243,12 +362,12 @@ main(argc, argv)
 	ps.decl_com_ind = ps.ljust_decl ? (ps.com_ind <= 10 ? 2 : ps.com_ind - 8) : ps.com_ind;
     if (continuation_indent == 0)
 	continuation_indent = ps.ind_size;
-    fill_buffer();		/* get first batch of stuff into input buffer */
+    fill_buffer();	/* get first batch of stuff into input buffer */
 
     parse(semicolon);
     {
-	register char *p = buf_ptr;
-	register    col = 1;
+	char *p = buf_ptr;
+	int   col = 1;
 
 	while (1) {
 	    if (*p == ' ')
@@ -263,7 +382,7 @@ main(argc, argv)
 	    ps.ind_level = ps.i_l_follow = col / ps.ind_size;
     }
     if (troff) {
-	register char *p = in_name,
+	char *p = in_name,
 	           *beg = in_name;
 
 	while (*p)
@@ -355,15 +474,15 @@ main(argc, argv)
 			fill_buffer();
 		    break;
 		}
-	    default:		/* it is the start of a normal statment */
+	    default:		/* it is the start of a normal statement */
 		if (flushed_nl)	/* if we flushed a newline, make sure it is
 				 * put back */
 		    force_nl = true;
-		if (type_code == sp_paren && *token == 'i'
-			&& last_else && ps.else_if
-			|| type_code == sp_nparen && *token == 'e'
-			&& e_code != s_code && e_code[-1] == '}')
-		    force_nl = false;
+		if ((type_code == sp_paren && *token == 'i'
+		     && last_else && ps.else_if) ||
+		    (type_code == sp_nparen && *token == 'e'
+		     && e_code != s_code && e_code[-1] == '}'))
+			force_nl = false;
 
 		if (sc_end == 0) {	/* ignore buffering if comment wasnt
 					 * saved up */
@@ -415,7 +534,7 @@ check_type:
 		    || s_com != e_com)	/* must dump end of line */
 		dump_line();
 	    if (ps.tos > 1)	/* check for balanced braces */
-		diag(1, "Stuff missing from end of file.");
+		diag(1, "Missing braces at end of file.");
 
 	    if (verbose) {
 		printf("There were %d output lines and %d comments\n",
@@ -494,8 +613,10 @@ check_type:
 	    if (ps.in_decl && !ps.block_init)
 		if (troff && !ps.dumped_decl_indent && !is_procname && ps.last_token == decl) {
 		    ps.dumped_decl_indent = 1;
-		    sprintf(e_code, "\n.Du %dp+\200p \"%s\"\n", dec_ind * 7, token);
+		    snprintf(e_code, (l_code - e_code) + 5, 
+			"\n.Du %dp+\200p \"%s\"\n", dec_ind * 7, token);
 		    e_code += strlen(e_code);
+		    CHECK_SIZE_CODE;
 		}
 		else {
 		    while ((e_code - s_code) < dec_ind) {
@@ -564,9 +685,11 @@ check_type:
 		*e_code++ = ' ';
 
 	    if (troff && !ps.dumped_decl_indent && ps.in_decl && !is_procname) {
-		sprintf(e_code, "\n.Du %dp+\200p \"%s\"\n", dec_ind * 7, token);
+		snprintf(e_code, (l_code - e_code) + 5,
+		    "\n.Du %dp+\200p \"%s\"\n", dec_ind * 7, token);
 		ps.dumped_decl_indent = 1;
 		e_code += strlen(e_code);
+		CHECK_SIZE_CODE;
 	    }
 	    else {
 		char       *res = token;
@@ -751,7 +874,7 @@ check_type:
 	    if (ps.in_parameter_declaration)
 		prefix_blankline_requested = 0;
 
-	    if (ps.p_l_follow > 0) {	/* check for preceeding unbalanced
+	    if (ps.p_l_follow > 0) {	/* check for preceding unbalanced
 					 * parens */
 		diag(1, "Unbalanced parens");
 		ps.p_l_follow = 0;
@@ -770,10 +893,9 @@ check_type:
 		/* ?		dec_ind = 0; */
 	    }
 	    else {
-		ps.decl_on_line = false;	/* we cant be in the middle of
-						 * a declaration, so dont do
-						 * special indentation of
-						 * comments */
+		ps.decl_on_line = false;
+		/* we can't be in the middle of a declaration, so don't do
+		 * special indentation of comments */
 		if (blanklines_after_declarations_at_proctop
 			&& ps.in_parameter_declaration)
 		    postfix_blankline_requested = 1;
@@ -895,6 +1017,7 @@ check_type:
 	     * : i);
 	     */
 	    dec_ind = ps.decl_indent > 0 ? ps.decl_indent : i;
+	    tabs_to_var = (use_tabs ? ps.decl_indent > 0 : 0);
 	    goto copy_id;
 
 	case ident:		/* got an identifier or constant */
@@ -904,17 +1027,51 @@ check_type:
 		    *e_code++ = ' ';
 		ps.want_blank = false;
 		if (is_procname == 0 || !procnames_start_line) {
-		    if (!ps.block_init)
+		    if (!ps.block_init) {
 			if (troff && !ps.dumped_decl_indent) {
-			    sprintf(e_code, "\n.De %dp+\200p\n", dec_ind * 7);
+			    snprintf(e_code, (l_code - e_code) + 5,
+				"\n.De %dp+\200p\n", dec_ind * 7);
 			    ps.dumped_decl_indent = 1;
 			    e_code += strlen(e_code);
-			}
-			else
-			    while ((e_code - s_code) < dec_ind) {
+			    CHECK_SIZE_CODE;
+			} else {
+			    int cur_dec_ind;
+			    int pos, startpos;
+
+			    /*
+			     * in order to get the tab math right for
+			     * indentations that are not multiples of 8 we
+			     * need to modify both startpos and dec_ind
+			     * (cur_dec_ind) here by eight minus the
+			     * remainder of the current starting column
+			     * divided by eight. This seems to be a
+			     * properly working fix
+			     */
+			    startpos = e_code - s_code;
+			    cur_dec_ind = dec_ind;
+			    pos = startpos;
+			    if ((ps.ind_level * ps.ind_size) % 8 != 0) {
+				pos += (ps.ind_level * ps.ind_size) % 8;
+				cur_dec_ind += (ps.ind_level * ps.ind_size) % 8;
+			    }
+
+			    if (tabs_to_var) {
+				while ((pos & ~7) + 8 <= cur_dec_ind) {
+				    CHECK_SIZE_CODE;
+				    *e_code++ = '\t';
+				    pos = (pos & ~7) + 8;
+				}
+			    }
+			    while (pos < cur_dec_ind) {
 				CHECK_SIZE_CODE;
 				*e_code++ = ' ';
+				pos++;
 			    }
+			    if (ps.want_blank && e_code - s_code == startpos)
+				*e_code++ = ' ';
+			    ps.want_blank = false;
+			}
+		    }
 		}
 		else {
 		    if (dec_ind && s_code != e_code)
@@ -937,8 +1094,9 @@ check_type:
 		e_code = chfont(&bodyf, &keywordf, e_code);
 		for (t_ptr = token; *t_ptr; ++t_ptr) {
 		    CHECK_SIZE_CODE;
-		    *e_code++ = keywordf.allcaps && islower(*t_ptr)
-			? toupper(*t_ptr) : *t_ptr;
+		    *e_code++ = keywordf.allcaps &&
+		      islower((unsigned char)*t_ptr) ?
+		      toupper((unsigned char)*t_ptr) : *t_ptr;
 		}
 		e_code = chfont(&keywordf, &bodyf, e_code);
 	    }
@@ -992,7 +1150,7 @@ check_type:
 		    if (buf_ptr >= buf_end)
 			fill_buffer();
 		}
-		while (*buf_ptr != '\n' || in_comment) {
+		while (*buf_ptr != '\n' || (in_comment && !had_eof)) {
 		    CHECK_SIZE_LAB;
 		    *e_lab = *buf_ptr++;
 		    if (buf_ptr >= buf_end)
@@ -1067,7 +1225,7 @@ check_type:
 
 	    if (strncmp(s_lab, "#if", 3) == 0) {
 		if (blanklines_around_conditional_compilation) {
-		    register    c;
+		    int    c;
 		    prefix_blankline_requested++;
 		    while ((c = getc(input)) == '\n');
 		    ungetc(c, input);
@@ -1099,7 +1257,7 @@ check_type:
 		     */
 		    if (match_state[ifdef_level].tos >= 0
 			  && bcmp(&ps, &match_state[ifdef_level], sizeof ps))
-			diag(0, "Syntactically inconsistant #ifdef alternatives.");
+			diag(0, "Syntactically inconsistent #ifdef alternatives.");
 #endif
 		}
 		if (blanklines_around_conditional_compilation) {
@@ -1110,7 +1268,7 @@ check_type:
 	    break;		/* subsequent processing of the newline
 				 * character will cause the line to be printed */
 
-	case comment:		/* we have gotten a /*  this is a biggie */
+	case comment:		/* we have gotten a comment this is a biggie */
 	    if (flushed_nl) {	/* we should force a broken line here */
 		flushed_nl = false;
 		dump_line();
@@ -1132,12 +1290,13 @@ check_type:
  * backup file will be ".Bfile" then make the backup file the input and
  * original input file the output
  */
-bakcopy()
+void
+bakcopy(void)
 {
     int         n,
                 bakchn;
     char        buff[8 * 1024];
-    register char *p;
+    char       *p;
 
     /* construct file name .Bfile */
     for (p = in_name; *p; p++);	/* skip to end of string */
@@ -1145,38 +1304,30 @@ bakcopy()
 	p--;
     if (*p == '/')
 	p++;
-    sprintf(bakfile, "%s.BAK", p);
+    if (snprintf(bakfile, PATH_MAX, "%s.BAK", p) >= PATH_MAX)
+	    errc(1, ENAMETOOLONG, "%s.BAK", p);
 
     /* copy in_name to backup file */
-    bakchn = creat(bakfile, 0600);
-    if (bakchn < 0)
-	err(bakfile);
-    while (n = read(fileno(input), buff, sizeof buff))
+    bakchn = open(bakfile, O_CREAT | O_TRUNC | O_WRONLY, 0600);
+    if (bakchn == -1)
+	err(1, "%s", bakfile);
+    while ((n = read(fileno(input), buff, sizeof buff)) > 0)
 	if (write(bakchn, buff, n) != n)
-	    err(bakfile);
-    if (n < 0)
-	err(in_name);
+	    err(1, "%s", bakfile);
+    if (n == -1)
+	err(1, "%s", in_name);
     close(bakchn);
     fclose(input);
 
     /* re-open backup file as the input file */
     input = fopen(bakfile, "r");
-    if (input == 0)
-	err(bakfile);
+    if (input == NULL)
+	err(1, "%s", bakfile);
     /* now the original input file will be the output */
     output = fopen(in_name, "w");
-    if (output == 0) {
+    if (output == NULL) {
+	int saved_errno = errno;
 	unlink(bakfile);
-	err(in_name);
+	errc(1, saved_errno, "%s", in_name);
     }
-}
-
-err(msg)
-	char *msg;
-{
-	extern int errno;
-	char *strerror();
-
-	(void)fprintf(stderr, "indent: %s: %s\n", msg, strerror(errno));
-	exit(1);
 }

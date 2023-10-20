@@ -1,4 +1,5 @@
-/*	$NetBSD: segments.h,v 1.20 1995/10/12 17:57:01 mycroft Exp $	*/
+/*	$OpenBSD: segments.h,v 1.27 2020/09/24 11:18:37 kettenis Exp $	*/
+/*	$NetBSD: segments.h,v 1.23 1996/02/01 22:31:03 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1995 Charles M. Hannum.  All rights reserved.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,8 +42,8 @@
  *	William F. Jolitz (william@ernie.berkeley.edu) 6/20/1989
  */
 
-#ifndef _I386_SEGMENTS_H_
-#define _I386_SEGMENTS_H_
+#ifndef _MACHINE_SEGMENTS_H_
+#define _MACHINE_SEGMENTS_H_
 
 /*
  * Selectors
@@ -62,19 +59,10 @@
 #define	GSEL(s,r)	(((s) << 3) | r)		/* a global selector */
 #define	LSEL(s,r)	(((s) << 3) | r | SEL_LDT)	/* a local selector */
 
-#ifdef VM86
-#define	USERMODE(c, f)		(ISPL(c) == SEL_UPL || ((f) & PSL_VM) != 0)
-#define	KERNELMODE(c, f)	(ISPL(c) == SEL_KPL && ((f) & PSL_VM) == 0)
-#else
 #define	USERMODE(c, f)		(ISPL(c) == SEL_UPL)
 #define	KERNELMODE(c, f)	(ISPL(c) == SEL_KPL)
-#endif
 
-#ifndef LOCORE
-
-#if __GNUC__ >= 2
-#pragma pack(1)
-#endif
+#ifndef _LOCORE
 
 /*
  * Memory and System segment descriptors
@@ -90,7 +78,7 @@ struct segment_descriptor {
 	unsigned sd_def32:1;		/* default 32 vs 16 bit size */
 	unsigned sd_gran:1;		/* limit granularity (byte/page) */
 	unsigned sd_hibase:8;		/* segment base address (msb) */
-};
+} __packed;
 
 /*
  * Gate descriptors (e.g. indirect descriptors)
@@ -104,7 +92,7 @@ struct gate_descriptor {
 	unsigned gd_dpl:2;		/* segment descriptor priority level */
 	unsigned gd_p:1;		/* segment descriptor present */
 	unsigned gd_hioffset:16;	/* gate offset (msb) */
-};
+} __packed;
 
 /*
  * Generic descriptor
@@ -112,7 +100,7 @@ struct gate_descriptor {
 union descriptor {
 	struct segment_descriptor sd;
 	struct gate_descriptor gd;
-};
+} __packed;
 
 /*
  * region descriptors, used to load gdt/idt tables before segments yet exist.
@@ -120,23 +108,30 @@ union descriptor {
 struct region_descriptor {
 	unsigned rd_limit:16;		/* segment extent */
 	unsigned rd_base:32;		/* base address  */
-};
-
-#if __GNUC__ >= 2
-#pragma pack(4)
-#endif
+} __packed;
 
 #ifdef _KERNEL
-extern union descriptor gdt[], ldt[];
-extern struct gate_descriptor idt[];
+extern union descriptor *gdt;
+extern struct gate_descriptor idt_region[];
+extern struct gate_descriptor *idt;
 
-void setgate __P((struct gate_descriptor *, void *, int, int, int));
-void setregion __P((struct region_descriptor *, void *, size_t));
-void setsegment __P((struct segment_descriptor *, void *, size_t, int, int,
-    int, int));
+#define SEGDESC_LIMIT(sd) (ptoa(((sd).sd_hilimit << 16) | (sd).sd_lolimit))
+
+void setgate(struct gate_descriptor *, void *, int, int, int, int);
+void setregion(struct region_descriptor *, void *, size_t);
+void setsegment(struct segment_descriptor *, void *, size_t, int, int,
+    int, int);
+void initcodesegment(struct segment_descriptor *);
+void unsetgate(struct gate_descriptor *);
+void cpu_init_idt(void);
+
+int idt_vec_alloc(int, int);
+void idt_vec_set(int, void (*)(void));
+void idt_vec_free(int);
+
 #endif /* _KERNEL */
 
-#endif /* !LOCORE */
+#endif /* !_LOCORE */
 
 /* system segments and gate types */
 #define	SDT_SYSNULL	 0	/* system null */
@@ -214,19 +209,21 @@ void setsegment __P((struct segment_descriptor *, void *, size_t, int, int,
 #define	GNULL_SEL	0	/* Null descriptor */
 #define	GCODE_SEL	1	/* Kernel code descriptor */
 #define	GDATA_SEL	2	/* Kernel data descriptor */
-#define	GLDT_SEL	3	/* Default LDT descriptor */
-#define	GUCODE_SEL	4	/* User code descriptor */
-#define	GUDATA_SEL	5	/* User data descriptor */
-#define	NGDT 		6
+#define	GLDT_SEL	3	/* Default LDT descriptor (UNUSED) */
+#define	GCPU_SEL	4	/* per-CPU segment */
+#define	GUCODE_SEL	5	/* User code descriptor (a stack short) */
+#define	GUDATA_SEL	6	/* User data descriptor */
+#define	GAPM32CODE_SEL	7	/* 32 bit APM code descriptor */
+#define	GAPM16CODE_SEL	8	/* 16 bit APM code descriptor */
+#define	GAPMDATA_SEL	9	/* APM data descriptor */
+#define	GICODE_SEL	10	/* Interrupt code descriptor (same as Kernel code) */
+#define	GUFS_SEL	11	/* User per-thread (%fs) descriptor */
+#define	GUGS_SEL	12	/* User per-thread (%gs) descriptor */
+#define GTSS_SEL	13	/* common TSS */
+#define GNMITSS_SEL	14	/* NMI TSS */
+#define	GBIOS32_SEL	15	/* spare slot for 32 bit BIOS calls */
+#define	NGDT		16
 
-/*
- * Entries in the Local Descriptor Table (LDT)
- */
-#define	LSYS5CALLS_SEL	0	/* iBCS system call gate */
-#define	LSYS5SIGR_SEL	1	/* iBCS sigreturn gate */
-#define	LUCODE_SEL	2	/* User code descriptor */
-#define	LUDATA_SEL	3	/* User data descriptor */
-#define	LBSDICALLS_SEL	16	/* BSDI system call gate */
-#define	NLDT		17
+#define GDT_SIZE	(NGDT << 3)
 
-#endif /* _I386_SEGMENTS_H_ */
+#endif /* _MACHINE_SEGMENTS_H_ */

@@ -1,5 +1,4 @@
-/*	$NetBSD: mcount.c,v 1.3 1995/02/27 12:54:42 cgd Exp $	*/
-
+/*	$OpenBSD: mcount.c,v 1.15 2015/01/16 16:48:51 deraadt Exp $ */
 /*-
  * Copyright (c) 1983, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#if !defined(lint) && !defined(KERNEL) && defined(LIBC_SCCS)
-#if 0
-static char sccsid[] = "@(#)mcount.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: mcount.c,v 1.3 1995/02/27 12:54:42 cgd Exp $";
-#endif
-#endif
-
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/gmon.h>
 
 /*
@@ -54,30 +41,39 @@ static char rcsid[] = "$NetBSD: mcount.c,v 1.3 1995/02/27 12:54:42 cgd Exp $";
  * _mcount updates data structures that represent traversals of the
  * program's call graph edges.  frompc and selfpc are the return
  * address and function address that represents the given call graph edge.
- * 
- * Note: the original BSD code used the same variable (frompcindex) for
- * both frompcindex and frompc.  Any reasonable, modern compiler will
- * perform this optimization.
  */
-_MCOUNT_DECL(frompc, selfpc)	/* _mcount; may be static, inline, etc */
-	register u_long frompc, selfpc;
+_MCOUNT_DECL(u_long frompc, u_long selfpc) __used;
+/* _mcount; may be static, inline, etc */
+_MCOUNT_DECL(u_long frompc, u_long selfpc)
 {
-	register u_short *frompcindex;
-	register struct tostruct *top, *prevtop;
-	register struct gmonparam *p;
-	register long toindex;
-#ifdef KERNEL
-	register int s;
-#endif
+	u_short *frompcindex;
+	struct tostruct *top, *prevtop;
+	struct gmonparam *p;
+	long toindex;
+#ifdef _KERNEL
+	int s;
 
+	/*
+	 * Do not profile execution if memory for the current CPU
+	 * descriptor and profiling buffers has not yet been allocated
+	 * or if the CPU we are running on has not yet set its trap
+	 * handler.
+	 */
+	if (gmoninit == 0)
+		return;
+
+	if ((p = curcpu()->ci_gmon) == NULL)
+		return;
+#else
 	p = &_gmonparam;
+#endif
 	/*
 	 * check that we are profiling
 	 * and that we aren't recursively invoked.
 	 */
 	if (p->state != GMON_PROF_ON)
 		return;
-#ifdef KERNEL
+#ifdef _KERNEL
 	MCOUNT_ENTER;
 #else
 	p->state = GMON_PROF_BUSY;
@@ -91,7 +87,14 @@ _MCOUNT_DECL(frompc, selfpc)	/* _mcount; may be static, inline, etc */
 	if (frompc > p->textsize)
 		goto done;
 
-	frompcindex = &p->froms[frompc / (p->hashfraction * sizeof(*p->froms))];
+#if (HASHFRACTION & (HASHFRACTION - 1)) == 0
+	if (p->hashfraction == HASHFRACTION)
+		frompcindex =
+		    &p->froms[frompc / (HASHFRACTION * sizeof(*p->froms))];
+	else
+#endif
+		frompcindex =
+		    &p->froms[frompc / (p->hashfraction * sizeof(*p->froms))];
 	toindex = *frompcindex;
 	if (toindex == 0) {
 		/*
@@ -160,10 +163,9 @@ _MCOUNT_DECL(frompc, selfpc)	/* _mcount; may be static, inline, etc */
 			*frompcindex = toindex;
 			goto done;
 		}
-		
 	}
 done:
-#ifdef KERNEL
+#ifdef _KERNEL
 	MCOUNT_EXIT;
 #else
 	p->state = GMON_PROF_ON;
@@ -171,7 +173,7 @@ done:
 	return;
 overflow:
 	p->state = GMON_PROF_ERROR;
-#ifdef KERNEL
+#ifdef _KERNEL
 	MCOUNT_EXIT;
 #endif
 	return;

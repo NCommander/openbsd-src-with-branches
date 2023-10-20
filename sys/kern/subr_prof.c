@@ -1,4 +1,5 @@
-/*	$NetBSD: subr_prof.c,v 1.7 1995/10/07 06:28:33 mycroft Exp $	*/
+/*	$OpenBSD: subr_prof.c,v 1.37 2023/09/06 02:09:58 cheloha Exp $	*/
+/*	$NetBSD: subr_prof.c,v 1.12 1996/04/22 01:38:50 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,90 +34,190 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
+#include <sys/atomic.h>
+#include <sys/clockintr.h>
+#include <sys/pledge.h>
 #include <sys/proc.h>
+#include <sys/resourcevar.h>
+#include <sys/mount.h>
+#include <sys/sysctl.h>
+#include <sys/syscallargs.h>
 #include <sys/user.h>
 
-#include <sys/mount.h>
-#include <sys/syscallargs.h>
+uint32_t profclock_period;
 
-#include <machine/cpu.h>
-
-#ifdef GPROF
+#if defined(GPROF) || defined(DDBPROF)
 #include <sys/malloc.h>
 #include <sys/gmon.h>
 
+#include <uvm/uvm_extern.h>
+
+#include <machine/db_machdep.h>
+#include <ddb/db_extern.h>
+
 /*
- * Froms is actually a bunch of unsigned shorts indexing tos
+ * Flag to prevent CPUs from executing the mcount() monitor function
+ * until we're sure they are in a sane state.
  */
-struct gmonparam _gmonparam = { GMON_PROF_OFF };
+int gmoninit = 0;
+u_int gmon_cpu_count;		/* [K] number of CPUs with profiling enabled */
 
 extern char etext[];
 
-kmstartup()
+void gmonclock(struct clockintr *, void *, void *);
+
+void
+prof_init(void)
 {
+	CPU_INFO_ITERATOR cii;
+	struct cpu_info *ci;
+	struct gmonparam *p;
+	u_long lowpc, highpc, textsize;
+	u_long kcountsize, fromssize, tossize;
+	long tolimit;
 	char *cp;
-	struct gmonparam *p = &_gmonparam;
+	int size;
+
 	/*
 	 * Round lowpc and highpc to multiples of the density we're using
 	 * so the rest of the scaling (here and in gprof) stays in ints.
 	 */
-	p->lowpc = ROUNDDOWN(KERNBASE, HISTFRACTION * sizeof(HISTCOUNTER));
-	p->highpc = ROUNDUP((u_long)etext, HISTFRACTION * sizeof(HISTCOUNTER));
-	p->textsize = p->highpc - p->lowpc;
-	printf("Profiling kernel, textsize=%d [%p..%p]\n",
-	       p->textsize, p->lowpc, p->highpc);
-	p->kcountsize = p->textsize / HISTFRACTION;
-	p->hashfraction = HASHFRACTION;
-	p->fromssize = p->textsize / HASHFRACTION;
-	p->tolimit = p->textsize * ARCDENSITY / 100;
-	if (p->tolimit < MINARCS)
-		p->tolimit = MINARCS;
-	else if (p->tolimit > MAXARCS)
-		p->tolimit = MAXARCS;
-	p->tossize = p->tolimit * sizeof(struct tostruct);
-	cp = (char *)malloc(p->kcountsize + p->fromssize + p->tossize,
-	    M_GPROF, M_NOWAIT);
-	if (cp == 0) {
-		printf("No memory for profiling.\n");
-		return;
+	lowpc = ROUNDDOWN(KERNBASE, HISTFRACTION * sizeof(HISTCOUNTER));
+	highpc = ROUNDUP((u_long)etext, HISTFRACTION * sizeof(HISTCOUNTER));
+	textsize = highpc - lowpc;
+#ifdef GPROF
+	printf("Profiling kernel, textsize=%ld [%lx..%lx]\n",
+	    textsize, lowpc, highpc);
+#endif
+	kcountsize = textsize / HISTFRACTION;
+	fromssize = textsize / HASHFRACTION;
+	tolimit = textsize * ARCDENSITY / 100;
+	if (tolimit < MINARCS)
+		tolimit = MINARCS;
+	else if (tolimit > MAXARCS)
+		tolimit = MAXARCS;
+	tossize = tolimit * sizeof(struct tostruct);
+	size = sizeof(*p) + kcountsize + fromssize + tossize;
+
+	/* Allocate and initialize one profiling buffer per CPU. */
+	CPU_INFO_FOREACH(cii, ci) {
+		ci->ci_gmonclock = clockintr_establish(ci, gmonclock, NULL);
+		if (ci->ci_gmonclock == NULL) {
+			printf("%s: clockintr_establish gmonclock\n", __func__);
+			return;
+		}
+		clockintr_stagger(ci->ci_gmonclock, profclock_period,
+		    CPU_INFO_UNIT(ci), MAXCPUS);
+		cp = km_alloc(round_page(size), &kv_any, &kp_zero, &kd_nowait);
+		if (cp == NULL) {
+			printf("No memory for profiling.\n");
+			return;
+		}
+
+		p = (struct gmonparam *)cp;
+		cp += sizeof(*p);
+		p->tos = (struct tostruct *)cp;
+		cp += tossize;
+		p->kcount = (u_short *)cp;
+		cp += kcountsize;
+		p->froms = (u_short *)cp;
+
+		p->state = GMON_PROF_OFF;
+		p->lowpc = lowpc;
+		p->highpc = highpc;
+		p->textsize = textsize;
+		p->hashfraction = HASHFRACTION;
+		p->kcountsize = kcountsize;
+		p->fromssize = fromssize;
+		p->tolimit = tolimit;
+		p->tossize = tossize;
+
+		ci->ci_gmon = p;
 	}
-	bzero(cp, p->kcountsize + p->tossize + p->fromssize);
-	p->tos = (struct tostruct *)cp;
-	cp += p->tossize;
-	p->kcount = (u_short *)cp;
-	cp += p->kcountsize;
-	p->froms = (u_short *)cp;
+}
+
+int
+prof_state_toggle(struct cpu_info *ci, int oldstate)
+{
+	struct gmonparam *gp = ci->ci_gmon;
+	int error = 0;
+
+	KERNEL_ASSERT_LOCKED();
+
+	if (gp->state == oldstate)
+		return (0);
+
+	switch (gp->state) {
+	case GMON_PROF_ON:
+#if !defined(GPROF)
+		/*
+		 * If this is not a profiling kernel, we need to patch
+		 * all symbols that can be instrumented.
+		 */
+		error = db_prof_enable();
+#endif
+		if (error == 0) {
+			if (++gmon_cpu_count == 1)
+				startprofclock(&process0);
+			clockintr_advance(ci->ci_gmonclock, profclock_period);
+		}
+		break;
+	default:
+		error = EINVAL;
+		gp->state = GMON_PROF_OFF;
+		/* FALLTHROUGH */
+	case GMON_PROF_OFF:
+		clockintr_cancel(ci->ci_gmonclock);
+		if (--gmon_cpu_count == 0)
+			stopprofclock(&process0);
+#if !defined(GPROF)
+		db_prof_disable();
+#endif
+		break;
+	}
+
+	return (error);
 }
 
 /*
  * Return kernel profiling information.
  */
-sysctl_doprof(name, namelen, oldp, oldlenp, newp, newlen, p)
-	int *name;
-	u_int namelen;
-	void *oldp;
-	size_t *oldlenp;
-	void *newp;
-	size_t newlen;
+int
+sysctl_doprof(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp,
+    size_t newlen)
 {
-	struct gmonparam *gp = &_gmonparam;
-	int error;
+	CPU_INFO_ITERATOR cii;
+	struct cpu_info *ci;
+	struct gmonparam *gp = NULL;
+	int error, cpuid, op, state;
 
-	/* all sysctl names at this level are terminal */
-	if (namelen != 1)
+	/* all sysctl names at this level are name and field */
+	if (namelen != 2)
 		return (ENOTDIR);		/* overloaded */
 
-	switch (name[0]) {
+	op = name[0];
+	cpuid = name[1];
+
+	CPU_INFO_FOREACH(cii, ci) {
+		if (cpuid == CPU_INFO_UNIT(ci)) {
+			gp = ci->ci_gmon;
+			break;
+		}
+	}
+
+	if (gp == NULL)
+		return (EOPNOTSUPP);
+
+	/* Assume that if we're here it is safe to execute profiling. */
+	gmoninit = 1;
+
+	switch (op) {
 	case GPROF_STATE:
+		state = gp->state;
 		error = sysctl_int(oldp, oldlenp, newp, newlen, &gp->state);
 		if (error)
 			return (error);
-		if (gp->state == GMON_PROF_OFF)
-			stopprofclock(&proc0);
-		else
-			startprofclock(&proc0);
-		return (0);
+		return prof_state_toggle(ci, state);
 	case GPROF_COUNT:
 		return (sysctl_struct(oldp, oldlenp, newp, newlen,
 		    gp->kcount, gp->kcountsize));
@@ -137,7 +234,32 @@ sysctl_doprof(name, namelen, oldp, oldlenp, newp, newlen, p)
 	}
 	/* NOTREACHED */
 }
-#endif /* GPROF */
+
+void
+gmonclock(struct clockintr *cl, void *cf, void *arg)
+{
+	uint64_t count;
+	struct clockframe *frame = cf;
+	struct gmonparam *g = curcpu()->ci_gmon;
+	u_long i;
+
+	count = clockintr_advance(cl, profclock_period);
+	if (count > ULONG_MAX)
+		count = ULONG_MAX;
+
+	/*
+	 * Kernel statistics are just like addupc_intr(), only easier.
+	 */
+	if (!CLKF_USERMODE(frame) && g != NULL && g->state == GMON_PROF_ON) {
+		i = CLKF_PC(frame) - g->lowpc;
+		if (i < g->textsize) {
+			i /= HISTFRACTION * sizeof(*g->kcount);
+			g->kcount[i] += (u_long)count;
+		}
+	}
+}
+
+#endif /* GPROF || DDBPROF */
 
 /*
  * Profiling system call.
@@ -145,39 +267,63 @@ sysctl_doprof(name, namelen, oldp, oldlenp, newp, newlen, p)
  * The scale factor is a fixed point number with 16 bits of fraction, so that
  * 1.0 is represented as 0x10000.  A scale factor of 0 turns off profiling.
  */
-/* ARGSUSED */
-sys_profil(p, v, retval)
-	struct proc *p;
-	void *v;
-	register_t *retval;
+int
+sys_profil(struct proc *p, void *v, register_t *retval)
 {
-	register struct sys_profil_args /* {
+	struct sys_profil_args /* {
 		syscallarg(caddr_t) samples;
-		syscallarg(u_int) size;
-		syscallarg(u_int) offset;
+		syscallarg(size_t) size;
+		syscallarg(u_long) offset;
 		syscallarg(u_int) scale;
 	} */ *uap = v;
-	register struct uprof *upp;
-	int s;
+	struct process *pr = p->p_p;
+	struct uprof *upp;
+	int error, s;
+
+	error = pledge_profil(p, SCARG(uap, scale));
+	if (error)
+		return error;
 
 	if (SCARG(uap, scale) > (1 << 16))
 		return (EINVAL);
 	if (SCARG(uap, scale) == 0) {
-		stopprofclock(p);
+		stopprofclock(pr);
+		need_resched(curcpu());
 		return (0);
 	}
-	upp = &p->p_stats->p_prof;
+	upp = &pr->ps_prof;
 
 	/* Block profile interrupts while changing state. */
 	s = splstatclock();
 	upp->pr_off = SCARG(uap, offset);
 	upp->pr_scale = SCARG(uap, scale);
-	upp->pr_base = SCARG(uap, samples);
+	upp->pr_base = (caddr_t)SCARG(uap, samples);
 	upp->pr_size = SCARG(uap, size);
-	startprofclock(p);
+	startprofclock(pr);
 	splx(s);
+	need_resched(curcpu());
 
 	return (0);
+}
+
+void
+profclock(struct clockintr *cl, void *cf, void *arg)
+{
+	uint64_t count;
+	struct clockframe *frame = cf;
+	struct proc *p = curproc;
+
+	count = clockintr_advance(cl, profclock_period);
+	if (count > ULONG_MAX)
+		count = ULONG_MAX;
+
+	if (CLKF_USERMODE(frame)) {
+		if (ISSET(p->p_p->ps_flags, PS_PROFIL))
+			addupc_intr(p, CLKF_PC(frame), (u_long)count);
+	} else {
+		if (p != NULL && ISSET(p->p_p->ps_flags, PS_PROFIL))
+			addupc_intr(p, PROC_PC(p), (u_long)count);
+	}
 }
 
 /*
@@ -192,71 +338,53 @@ sys_profil(p, v, retval)
 /*
  * Collect user-level profiling statistics; called on a profiling tick,
  * when a process is running in user-mode.  This routine may be called
- * from an interrupt context.  We try to update the user profiling buffers
- * cheaply with fuswintr() and suswintr().  If that fails, we revert to
- * an AST that will vector us to trap() with a context in which copyin
- * and copyout will work.  Trap will then call addupc_task().
- *
- * Note that we may (rarely) not get around to the AST soon enough, and
- * lose profile ticks when the next tick overwrites this one, but in this
- * case the system is overloaded and the profile is probably already
- * inaccurate.
+ * from an interrupt context. Schedule an AST that will vector us to
+ * trap() with a context in which copyin and copyout will work.
+ * Trap will then call addupc_task().
  */
 void
-addupc_intr(p, pc, ticks)
-	register struct proc *p;
-	register u_long pc;
-	u_int ticks;
+addupc_intr(struct proc *p, u_long pc, u_long nticks)
 {
-	register struct uprof *prof;
-	register caddr_t addr;
-	register u_int i;
-	register int v;
+	struct uprof *prof;
 
-	if (ticks == 0)
-		return;
-	prof = &p->p_stats->p_prof;
-	if (pc < prof->pr_off ||
-	    (i = PC_TO_INDEX(pc, prof)) >= prof->pr_size)
+	prof = &p->p_p->ps_prof;
+	if (pc < prof->pr_off || PC_TO_INDEX(pc, prof) >= prof->pr_size)
 		return;			/* out of range; ignore */
 
-	addr = prof->pr_base + i;
-	if ((v = fuswintr(addr)) == -1 || suswintr(addr, v + ticks) == -1) {
-		prof->pr_addr = pc;
-		prof->pr_ticks = ticks;
-		need_proftick(p);
-	}
+	p->p_prof_addr = pc;
+	p->p_prof_ticks += nticks;
+	atomic_setbits_int(&p->p_flag, P_OWEUPC);
+	need_proftick(p);
 }
+
 
 /*
  * Much like before, but we can afford to take faults here.  If the
  * update fails, we simply turn off profiling.
  */
 void
-addupc_task(p, pc, ticks)
-	register struct proc *p;
-	register u_long pc;
-	u_int ticks;
+addupc_task(struct proc *p, u_long pc, u_int nticks)
 {
-	register struct uprof *prof;
-	register caddr_t addr;
-	register u_int i;
+	struct process *pr = p->p_p;
+	struct uprof *prof;
+	caddr_t addr;
+	u_int i;
 	u_short v;
 
-	/* Testing P_PROFIL may be unnecessary, but is certainly safe. */
-	if ((p->p_flag & P_PROFIL) == 0 || ticks == 0)
+	/* Testing PS_PROFIL may be unnecessary, but is certainly safe. */
+	if ((pr->ps_flags & PS_PROFIL) == 0 || nticks == 0)
 		return;
 
-	prof = &p->p_stats->p_prof;
+	prof = &pr->ps_prof;
 	if (pc < prof->pr_off ||
 	    (i = PC_TO_INDEX(pc, prof)) >= prof->pr_size)
 		return;
 
 	addr = prof->pr_base + i;
 	if (copyin(addr, (caddr_t)&v, sizeof(v)) == 0) {
-		v += ticks;
+		v += nticks;
 		if (copyout((caddr_t)&v, addr, sizeof(v)) == 0)
 			return;
 	}
-	stopprofclock(p);
+	stopprofclock(pr);
 }

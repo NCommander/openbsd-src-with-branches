@@ -41,12 +41,7 @@ $j="s4";
 $m1="s5";
 
 $code=<<___;
-#ifdef __linux__
-#include <asm/regdef.h>
-#else
-#include <asm.h>
-#include <regdef.h>
-#endif
+#include <machine/asm.h>
 
 .text
 
@@ -313,7 +308,6 @@ bn_mul_mont:
 	lda	sp,48(sp)
 	ret	(ra)
 .end	bn_mul_mont
-.ascii	"Montgomery Multiplication for Alpha, CRYPTOGAMS by <appro\@openssl.org>"
 .align	2
 ___
 

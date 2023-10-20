@@ -1,4 +1,5 @@
-/*	$NetBSD: conf.c,v 1.2 1995/02/16 02:32:54 cgd Exp $	*/
+/*	$OpenBSD: conf.c,v 1.6 2003/06/02 23:27:44 millert Exp $	*/
+/*	$NetBSD: conf.c,v 1.3 1995/11/23 02:39:31 cgd Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,11 +38,9 @@
 #include <lib/libsa/stand.h>
 #include <lib/libsa/ufs.h>
 
-int	errno;
-int	noioctl __P((void));
+#include "disk.h"
 
-int	diskstrategy(), diskopen(), diskclose();
-#define	diskioctl	noioctl
+int	diskopen(struct open_file *, ...);	/* XXX */
 
 struct devsw devsw[] = {
 	{ "disk", diskstrategy,	diskopen, diskclose, diskioctl }, /*0*/

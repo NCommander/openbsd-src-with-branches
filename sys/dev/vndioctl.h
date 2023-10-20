@@ -1,3 +1,4 @@
+/*	$OpenBSD: vndioctl.h,v 1.11 2019/11/18 22:32:45 jca Exp $	*/
 /*	$NetBSD: vndioctl.h,v 1.5 1995/01/25 04:46:30 cgd Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,12 +39,33 @@
  *	@(#)vnioctl.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _SYS_VNDIOCTL_H_
+#define _SYS_VNDIOCTL_H_
+
+#define VNDNLEN	1024		/* PATH_MAX */
+
 /*
  * Ioctl definitions for file (vnode) disk pseudo-device.
  */
 struct vnd_ioctl {
-	char	*vnd_file;	/* pathname of file to mount */
-	int	vnd_size;	/* (returned) size of disk */
+	char		*vnd_file;	/* pathname of file to mount */
+	size_t		 vnd_secsize;	/* sector size in bytes */
+	size_t		 vnd_nsectors;	/* number of sectors in a track */
+	size_t		 vnd_ntracks;	/* number of tracks per cylinder */
+	off_t		 vnd_size;	/* (returned) size of disk */
+	u_char		*vnd_key;
+	int		 vnd_keylen;
+	uint16_t	 vnd_type;	/* DTYPE being emulated */
+};
+
+/*
+ * A simple structure used by userland to query about a specific vnd.
+ */
+struct vnd_user {
+	char	vnu_file[VNDNLEN];	/* vnd file */
+	int	vnu_unit;		/* vnd unit */
+	dev_t	vnu_dev;		/* vnd device */
+	ino_t	vnu_ino;		/* vnd inode */
 };
 
 /*
@@ -58,3 +76,6 @@ struct vnd_ioctl {
  */
 #define VNDIOCSET	_IOWR('F', 0, struct vnd_ioctl)	/* enable disk */
 #define VNDIOCCLR	_IOW('F', 1, struct vnd_ioctl)	/* disable disk */
+#define VNDIOCGET	_IOWR('F', 3, struct vnd_user)	/* get disk info */
+
+#endif /* !_SYS_VNDIOCTL_H_ */

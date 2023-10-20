@@ -1,4 +1,5 @@
-/*	$NetBSD: mbuf.c,v 1.8 1995/10/03 21:42:41 thorpej Exp $	*/
+/*	$OpenBSD: mbuf.c,v 1.44 2023/07/07 14:17:35 yasuoka Exp $	*/
+/*	$NetBSD: mbuf.c,v 1.9 1996/05/07 02:55:03 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,26 +30,39 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "from: @(#)mbuf.c	8.1 (Berkeley) 6/6/93";
-#else
-static char *rcsid = "$NetBSD: mbuf.c,v 1.8 1995/10/03 21:42:41 thorpej Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
-#include <sys/protosw.h>
 #include <sys/socket.h>
+#include <sys/queue.h>
 #include <sys/mbuf.h>
+#include <sys/protosw.h>
+#include <sys/pool.h>
+#include <sys/sysctl.h>
+#include <net/if.h>
+#include <netinet/in.h>
 
+#include <errno.h>
+#include <limits.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include "netstat.h"
 
 #define	YES	1
 typedef int bool;
 
 struct	mbstat mbstat;
+struct kinfo_pool mbpool, mclpools[MCLPOOLS];
+int	mclp;
+char	*mclnames[] = {
+	"mcl2k",
+	"mcl2k2",
+	"mcl4k",
+	"mcl8k",
+	"mcl9k",
+	"mcl12k",
+	"mcl16k",
+	"mcl64k"
+};
+char	**mclnamep = mclnames;
 
 static struct mbtypes {
 	int	mt_type;
@@ -68,54 +78,131 @@ static struct mbtypes {
 	{ 0, 0 }
 };
 
-int nmbtypes = sizeof(mbstat.m_mtypes) / sizeof(short);
-bool seen[256];			/* "have we seen this type yet?" */
+int nmbtypes = sizeof(mbstat.m_mtypes) / sizeof(u_long);
+bool seen[MBSTAT_COUNT];		/* "have we seen this type yet?" */
 
 /*
  * Print mbuf statistics.
  */
 void
-mbpr(mbaddr)
-	u_long mbaddr;
+mbpr(void)
 {
-	register int totmem, totfree, totmbufs;
-	register int i;
-	register struct mbtypes *mp;
+	unsigned long totmem, totpeak, totmbufs;
+	int i, maxclusters, mib[4], npools;
+	struct kinfo_pool pool;
+	struct mbtypes *mp;
+	size_t size;
 
-	if (nmbtypes != 256) {
+	if (nmbtypes != MBSTAT_COUNT) {
 		fprintf(stderr,
-		    "%s: unexpected change to mbstat; check source\n", prog);
+		    "%s: unexpected change to mbstat; check source\n",
+		    __progname);
 		return;
 	}
-	if (mbaddr == 0) {
-		fprintf(stderr, "%s: mbstat: symbol not in namelist\n", prog);
+
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_MAXCLUSTERS;
+	size = sizeof(maxclusters);
+
+	if (sysctl(mib, 2, &maxclusters, &size, NULL, 0) == -1) {
+		printf("Can't retrieve value of maxclusters from the "
+		    "kernel: %s\n",  strerror(errno));
 		return;
 	}
-	if (kread(mbaddr, (char *)&mbstat, sizeof (mbstat)))
+
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_MBSTAT;
+	size = sizeof(mbstat);
+
+	if (sysctl(mib, 2, &mbstat, &size, NULL, 0) == -1) {
+		printf("Can't retrieve mbuf statistics from the kernel: %s\n",
+		    strerror(errno));
 		return;
+	}
+
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_POOL;
+	mib[2] = KERN_POOL_NPOOLS;
+	size = sizeof(npools);
+
+	if (sysctl(mib, 3, &npools, &size, NULL, 0) == -1) {
+		printf("Can't figure out number of pools in kernel: %s\n",
+		    strerror(errno));
+		return;
+	}
+
+	for (i = 1; npools; i++) {
+		char name[32];
+
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_POOL;
+		mib[2] = KERN_POOL_POOL;
+		mib[3] = i;
+		size = sizeof(pool);
+		if (sysctl(mib, 4, &pool, &size, NULL, 0) == -1) {
+			if (errno == ENOENT)
+				continue;
+			printf("error getting pool: %s\n",
+			    strerror(errno));
+			return;
+		}
+		npools--;
+		mib[2] = KERN_POOL_NAME;
+		size = sizeof(name);
+		if (sysctl(mib, 4, &name, &size, NULL, 0) == -1) {
+			printf("error getting pool name: %s\n",
+			    strerror(errno));
+			return;
+		}
+
+		if (!strncmp(name, "mbufpl", strlen("mbufpl")))
+			bcopy(&pool, &mbpool, sizeof(pool));
+		else if (mclp < sizeof(mclpools) / sizeof(mclpools[0]) &&
+		    !strncmp(name, *mclnamep, strlen(*mclnamep))) {
+			bcopy(&pool, &mclpools[mclp++],
+			    sizeof(pool));
+			mclnamep++;
+		}
+	}
+
 	totmbufs = 0;
 	for (mp = mbtypes; mp->mt_name; mp++)
-		totmbufs += mbstat.m_mtypes[mp->mt_type];
-	printf("%u mbufs in use:\n", totmbufs);
+		totmbufs += (unsigned int)mbstat.m_mtypes[mp->mt_type];
+	printf("%lu mbuf%s in use:\n", totmbufs, plural(totmbufs));
 	for (mp = mbtypes; mp->mt_name; mp++)
 		if (mbstat.m_mtypes[mp->mt_type]) {
 			seen[mp->mt_type] = YES;
-			printf("\t%u mbufs allocated to %s\n",
-			    mbstat.m_mtypes[mp->mt_type], mp->mt_name);
+			printf("\t%lu mbuf%s allocated to %s\n",
+			    mbstat.m_mtypes[mp->mt_type],
+			    plural(mbstat.m_mtypes[mp->mt_type]),
+			    mp->mt_name);
 		}
 	seen[MT_FREE] = YES;
 	for (i = 0; i < nmbtypes; i++)
 		if (!seen[i] && mbstat.m_mtypes[i]) {
-			printf("\t%u mbufs allocated to <mbuf type %d>\n",
-			    mbstat.m_mtypes[i], i);
+			printf("\t%lu mbuf%s allocated to <mbuf type %d>\n",
+			    mbstat.m_mtypes[i],
+			    plural(mbstat.m_mtypes[i]), i);
 		}
-	printf("%u/%u mapped pages in use\n",
-		mbstat.m_clusters - mbstat.m_clfree, mbstat.m_clusters);
-	totmem = totmbufs * MSIZE + mbstat.m_clusters * MCLBYTES;
-	totfree = mbstat.m_clfree * MCLBYTES;
-	printf("%u Kbytes allocated to network (%d%% in use)\n",
-		totmem / 1024, (totmem - totfree) * 100 / totmem);
-	printf("%u requests for memory denied\n", mbstat.m_drops);
-	printf("%u requests for memory delayed\n", mbstat.m_wait);
-	printf("%u calls to protocol drain routines\n", mbstat.m_drain);
+	totmem = (unsigned long)mbpool.pr_npages * mbpool.pr_pgsize;
+	totpeak = (unsigned long)mbpool.pr_hiwat * mbpool.pr_pgsize;
+	for (i = 0; i < mclp; i++) {
+		printf("%u/%lu mbuf %d byte clusters in use"
+		    " (current/peak)\n",
+		    mclpools[i].pr_nout,
+		    (unsigned long)
+		    mclpools[i].pr_hiwat * mclpools[i].pr_itemsperpage,
+		    mclpools[i].pr_size);
+		totmem += (unsigned long)
+		    mclpools[i].pr_npages * mclpools[i].pr_pgsize;
+		totpeak += (unsigned long)
+		    mclpools[i].pr_hiwat * mclpools[i].pr_pgsize;
+	}
+
+	printf("%lu/%lu/%lu Kbytes allocated to network "
+	    "(current/peak/max)\n", totmem / 1024, totpeak / 1024,
+	    ((unsigned long)maxclusters * MCLBYTES) / 1024);
+	printf("%lu requests for memory denied\n", mbstat.m_drops);
+	printf("%lu requests for memory delayed\n", mbstat.m_wait);
+	printf("%lu calls to protocol drain routines\n", mbstat.m_drain);
 }

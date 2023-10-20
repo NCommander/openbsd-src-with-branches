@@ -592,9 +592,6 @@
    safely assume C89 semantics that RETSIGTYPE is void.' */
 #undef RETSIGTYPE
 
-/* Define this to configure as a root server. */
-#undef ROOT_SERVER
-
 /* The size of `off_t', as computed by sizeof. */
 #undef SIZEOF_OFF_T
 
@@ -831,6 +828,29 @@
 
 
 
+
+/* provide timespec def if not available */
+#ifndef CONFIG_DEFINES
+#define CONFIG_DEFINES
+#ifndef HAVE_STRUCT_TIMESPEC
+#ifndef __timespec_defined
+#define __timespec_defined 1
+	struct timespec {
+		long    tv_sec;         /* seconds */
+		long    tv_nsec;        /* nanoseconds */
+	};
+#endif /* !__timespec_defined */
+#endif /* !HAVE_STRUCT_TIMESPEC */
+#endif /* !CONFIG_DEFINES */
+
+#ifdef PACKED_STRUCTS
+#define ATTR_PACKED __attribute__((packed))
+#else
+#define ATTR_PACKED
+#endif
+
+
+
 #ifdef HAVE_VA_LIST_DOUBLE_DEF
 /* workaround double va_list definition on some platforms */
 #  ifndef _VA_LIST_DEFINED
@@ -906,13 +926,12 @@
 
 
 
-#ifndef HAVE_B64_NTOP
-int b64_ntop(uint8_t const *src, size_t srclength,
+int __b64_ntop(uint8_t const *src, size_t srclength,
 	     char *target, size_t targsize);
-#endif /* !HAVE_B64_NTOP */
-#ifndef HAVE_B64_PTON
-int b64_pton(char const *src, uint8_t *target, size_t targsize);
-#endif /* !HAVE_B64_PTON */
+int __b64_pton(char const *src, uint8_t *target, size_t targsize);
+
+
+
 #ifndef HAVE_FSEEKO
 #define fseeko fseek
 #define ftello ftell
@@ -983,27 +1002,4 @@ int memcmp(const void *x, const void *y, size_t n);
 #define MAXHOSTNAMELEN 256
 #endif
 
-
-
-
-
-/* provide timespec def if not available */
-#ifndef CONFIG_DEFINES
-#define CONFIG_DEFINES
-#ifndef HAVE_STRUCT_TIMESPEC
-#ifndef __timespec_defined
-#define __timespec_defined 1
-	struct timespec {
-		long    tv_sec;         /* seconds */
-		long    tv_nsec;        /* nanoseconds */
-	};
-#endif /* !__timespec_defined */
-#endif /* !HAVE_STRUCT_TIMESPEC */
-#endif /* !CONFIG_DEFINES */
-
-#ifdef PACKED_STRUCTS
-#define ATTR_PACKED __attribute__((packed))
-#else
-#define ATTR_PACKED
-#endif
 

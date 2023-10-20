@@ -1800,7 +1800,10 @@ void Clang::AddAArch64TargetArgs(const ArgList &Args,
         D.Diag(diag::err_invalid_branch_protection)
             << Scope << A->getAsString(Args);
       Key = "a_key";
-      IndirectBranches = false;
+      if (Triple.isOSOpenBSD())
+        IndirectBranches = true;
+      else
+        IndirectBranches = false;
     } else {
       StringRef Err;
       llvm::AArch64::ParsedBranchProtection PBP;
@@ -1818,6 +1821,12 @@ void Clang::AddAArch64TargetArgs(const ArgList &Args,
         Args.MakeArgString(Twine("-msign-return-address-key=") + Key));
     if (IndirectBranches)
       CmdArgs.push_back("-mbranch-target-enforce");
+  } else {
+    if (Triple.isOSOpenBSD()) {
+      CmdArgs.push_back("-msign-return-address=non-leaf");
+      CmdArgs.push_back("-msign-return-address-key=a_key");
+      CmdArgs.push_back("-mbranch-target-enforce");
+    }
   }
 
   // Handle -msve_vector_bits=<bits>
@@ -2487,6 +2496,11 @@ static void CollectArgsForIntegratedAssembler(Compilation &C,
         if (Value.startswith("-mhard-float")) {
           CmdArgs.push_back("-target-feature");
           CmdArgs.push_back("-soft-float");
+          continue;
+        }
+        if (Value.startswith("-mfix-loongson2f-btb")) {
+          CmdArgs.push_back("-mllvm");
+          CmdArgs.push_back("-fix-loongson2f-btb");
           continue;
         }
 
@@ -4943,9 +4957,12 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
       OFastEnabled ? options::OPT_Ofast : options::OPT_fstrict_aliasing;
   // We turn strict aliasing off by default if we're in CL mode, since MSVC
   // doesn't do any TBAA.
-  bool TBAAOnByDefault = !D.IsCLMode();
+  bool StrictAliasingDefault = !D.IsCLMode();
+  // We also turn off strict aliasing on OpenBSD.
+  if (getToolChain().getTriple().isOSOpenBSD())
+    StrictAliasingDefault = false;
   if (!Args.hasFlag(options::OPT_fstrict_aliasing, StrictAliasingAliasOption,
-                    options::OPT_fno_strict_aliasing, TBAAOnByDefault))
+                    options::OPT_fno_strict_aliasing, StrictAliasingDefault))
     CmdArgs.push_back("-relaxed-aliasing");
   if (!Args.hasFlag(options::OPT_fstruct_path_tbaa,
                     options::OPT_fno_struct_path_tbaa))
@@ -5868,7 +5885,8 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                                       options::OPT_fno_strict_overflow)) {
     if (A->getOption().matches(options::OPT_fno_strict_overflow))
       CmdArgs.push_back("-fwrapv");
-  }
+  } else if (getToolChain().getTriple().isOSOpenBSD())
+    CmdArgs.push_back("-fwrapv");
 
   if (Arg *A = Args.getLastArg(options::OPT_freroll_loops,
                                options::OPT_fno_reroll_loops))
@@ -5888,7 +5906,48 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                    options::OPT_mno_speculative_load_hardening, false))
     CmdArgs.push_back(Args.MakeArgString("-mspeculative-load-hardening"));
 
-  RenderSSPOptions(D, TC, Args, CmdArgs, KernelOrKext);
+  // -ret-protector
+  unsigned RetProtector = 1;
+  if (Arg *A = Args.getLastArg(options::OPT_fno_ret_protector,
+        options::OPT_fret_protector)) {
+    if (A->getOption().matches(options::OPT_fno_ret_protector))
+      RetProtector = 0;
+    else if (A->getOption().matches(options::OPT_fret_protector))
+      RetProtector = 1;
+  }
+
+  if (RetProtector &&
+      ((getToolChain().getArch() == llvm::Triple::x86_64) ||
+       (getToolChain().getArch() == llvm::Triple::mips64) ||
+       (getToolChain().getArch() == llvm::Triple::mips64el) ||
+       (getToolChain().getArch() == llvm::Triple::ppc) ||
+       (getToolChain().getArch() == llvm::Triple::ppc64) ||
+       (getToolChain().getArch() == llvm::Triple::ppc64le) ||
+       (getToolChain().getArch() == llvm::Triple::aarch64)) &&
+      !Args.hasArg(options::OPT_fno_stack_protector) &&
+      !Args.hasArg(options::OPT_pg)) {
+    CmdArgs.push_back(Args.MakeArgString("-D_RET_PROTECTOR"));
+    CmdArgs.push_back(Args.MakeArgString("-ret-protector"));
+    // Consume the stack protector arguments to prevent warning
+    Args.getLastArg(options::OPT_fstack_protector_all,
+        options::OPT_fstack_protector_strong,
+        options::OPT_fstack_protector,
+        options::OPT__param); // ssp-buffer-size
+  } else {
+    // If we're not using retguard, then do the usual stack protector
+    RenderSSPOptions(D, TC, Args, CmdArgs, KernelOrKext);
+  }
+
+  // -fixup-gadgets
+  if (Arg *A = Args.getLastArg(options::OPT_fno_fixup_gadgets,
+                               options::OPT_ffixup_gadgets)) {
+    CmdArgs.push_back(Args.MakeArgString(Twine("-mllvm")));
+    if (A->getOption().matches(options::OPT_fno_fixup_gadgets))
+      CmdArgs.push_back(Args.MakeArgString(Twine("-x86-fixup-gadgets=false")));
+    else if (A->getOption().matches(options::OPT_ffixup_gadgets))
+      CmdArgs.push_back(Args.MakeArgString(Twine("-x86-fixup-gadgets=true")));
+  }
+
   RenderSCPOptions(TC, Args, CmdArgs);
   RenderTrivialAutoVarInitOptions(D, TC, Args, CmdArgs);
 
@@ -5961,6 +6020,11 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   if (Arg *A = Args.getLastArg(options::OPT_fcf_protection_EQ)) {
     CmdArgs.push_back(
         Args.MakeArgString(Twine("-fcf-protection=") + A->getValue()));
+  } else if (Triple.isOSOpenBSD() && Triple.getArch() == llvm::Triple::x86_64) {
+    // Emit IBT endbr64 instructions by default
+    CmdArgs.push_back("-fcf-protection=branch");
+    // jump-table can generate indirect jumps, which are not permitted
+    CmdArgs.push_back("-fno-jump-tables");
   }
 
   // Forward -f options with positive and negative forms; we translate these by
@@ -6445,6 +6509,18 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                                      options::OPT_fno_rewrite_imports, false);
   if (RewriteImports)
     CmdArgs.push_back("-frewrite-imports");
+
+  // Disable some builtins on OpenBSD because they are just not
+  // right...
+  if (getToolChain().getTriple().isOSOpenBSD()) {
+    CmdArgs.push_back("-fno-builtin-malloc");
+    CmdArgs.push_back("-fno-builtin-calloc");
+    CmdArgs.push_back("-fno-builtin-realloc");
+    CmdArgs.push_back("-fno-builtin-valloc");
+    CmdArgs.push_back("-fno-builtin-free");
+    CmdArgs.push_back("-fno-builtin-strdup");
+    CmdArgs.push_back("-fno-builtin-strndup");
+  }
 
   // Enable rewrite includes if the user's asked for it or if we're generating
   // diagnostics.

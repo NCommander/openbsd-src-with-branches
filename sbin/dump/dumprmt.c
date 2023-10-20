@@ -1,4 +1,5 @@
-/*	$NetBSD: dumprmt.c,v 1.9 1995/03/18 14:54:59 cgd Exp $	*/
+/*	$OpenBSD: dumprmt.c,v 1.31 2021/01/21 00:16:36 mortimer Exp $	*/
+/*	$NetBSD: dumprmt.c,v 1.17 1997/06/05 16:10:47 mrg Exp $	*/
 
 /*-
  * Copyright (c) 1980, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,26 +30,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dumprmt.c	8.1 (Berkeley) 6/5/93";
-#else
-static char rcsid[] = "$NetBSD: dumprmt.c,v 1.9 1995/03/18 14:54:59 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
+#include <sys/param.h>	/* MAXBSIZE */
 #include <sys/mtio.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/time.h>
-#ifdef sunos
-#include <sys/vnode.h>
-
-#include <ufs/inode.h>
-#else
 #include <ufs/ufs/dinode.h>
-#endif
 
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -62,14 +45,14 @@ static char rcsid[] = "$NetBSD: dumprmt.c,v 1.9 1995/03/18 14:54:59 cgd Exp $";
 #include <ctype.h>
 #include <err.h>
 #include <netdb.h>
+#include <errno.h>
 #include <pwd.h>
 #include <signal.h>
 #include <stdio.h>
-#ifdef __STDC__
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#endif
+#include <limits.h>
 
 #include "pathnames.h"
 #include "dump.h"
@@ -81,24 +64,31 @@ static	int rmtstate = TS_CLOSED;
 static	int rmtape;
 static	char *rmtpeer;
 
-static	int okname __P((char *));
-static	int rmtcall __P((char *, char *));
-static	void rmtconnaborted __P((/* int, int */));
-static	int rmtgetb __P((void));
-static	void rmtgetconn __P((void));
-static	void rmtgets __P((char *, int));
-static	int rmtreply __P((char *));
+static	int okname(char *);
+static	int rmtcall(char *, char *);
+static	void rmtconnaborted(int);
+static	int rmtgetb(void);
+static	void rmtgetconn(void);
+static	void rmtgets(char *, int);
+static	int rmtreply(char *);
 
-extern	int ntrec;		/* blocking factor on tape */
+int	rmthost(char *host);
+int	rmtopen(char *tape, int mode);
+int	rmtread(char *buf, int count);
+int	rmtwrite(char *buf, int count);
+int	rmtseek(int offset, int pos);
+int	rmtioctl(int cmd, int count);
+void	rmtclose(void);
+
 
 int
-rmthost(host)
-	char *host;
+rmthost(char *host)
 {
+	int len = strlen(host) + 1;
 
-	rmtpeer = malloc(strlen(host) + 1);
+	rmtpeer = malloc(len);
 	if (rmtpeer)
-		strcpy(rmtpeer, host);
+		strlcpy(rmtpeer, host, len);
 	else
 		rmtpeer = host;
 	signal(SIGPIPE, rmtconnaborted);
@@ -109,69 +99,69 @@ rmthost(host)
 }
 
 static void
-rmtconnaborted()
+rmtconnaborted(int signo)
 {
-
-	errx(1, "Lost connection to remote host.");
+	/* XXX signal race */
+	errx(X_ABORT, "Lost connection to remote host.");
 }
 
 void
-rmtgetconn()
+rmtgetconn(void)
 {
-	register char *cp;
+	char *cp;
 	static struct servent *sp = NULL;
 	static struct passwd *pwd = NULL;
-#ifdef notdef
 	static int on = 1;
-#endif
-	char *tuser;
+	char *tuser, *name;
 	int size;
 	int maxseg;
 
 	if (sp == NULL) {
 		sp = getservbyname("shell", "tcp");
 		if (sp == NULL)
-			errx(1, "shell/tcp: unknown service");
+			errx(X_STARTUP, "shell/tcp: unknown service");
 		pwd = getpwuid(getuid());
 		if (pwd == NULL)
-			errx(1, "who are you?");
+			errx(X_STARTUP, "who are you?");
 	}
+	if ((name = strdup(pwd->pw_name)) == NULL)
+		err(X_STARTUP, "malloc");
 	if ((cp = strchr(rmtpeer, '@')) != NULL) {
 		tuser = rmtpeer;
 		*cp = '\0';
 		if (!okname(tuser))
-			exit(1);
+			exit(X_STARTUP);
 		rmtpeer = ++cp;
 	} else
-		tuser = pwd->pw_name;
-	rmtape = rcmd(&rmtpeer, (u_short)sp->s_port, pwd->pw_name, tuser,
-	    _PATH_RMT, (int *)0);
+		tuser = name;
+
+	rmtape = rcmd(&rmtpeer, sp->s_port, name, tuser, _PATH_RMT, NULL);
+	(void)free(name);
+	if (rmtape < 0)
+		return;
+
 	size = ntrec * TP_BSIZE;
 	if (size > 60 * 1024)		/* XXX */
 		size = 60 * 1024;
 	/* Leave some space for rmt request/response protocol */
 	size += 2 * 1024;
 	while (size > TP_BSIZE &&
-	    setsockopt(rmtape, SOL_SOCKET, SO_SNDBUF, &size, sizeof (size)) < 0)
+	    setsockopt(rmtape, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)) == -1)
 		    size -= TP_BSIZE;
-	(void)setsockopt(rmtape, SOL_SOCKET, SO_RCVBUF, &size, sizeof (size));
-	maxseg = 1024;
-	if (setsockopt(rmtape, IPPROTO_TCP, TCP_MAXSEG,
-	    &maxseg, sizeof (maxseg)) < 0)
-		perror("TCP_MAXSEG setsockopt");
+	(void)setsockopt(rmtape, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size));
 
-#ifdef notdef
-	if (setsockopt(rmtape, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on)) < 0)
-		perror("TCP_NODELAY setsockopt");
-#endif
+	maxseg = 1024;
+	(void)setsockopt(rmtape, IPPROTO_TCP, TCP_MAXSEG, &maxseg,
+		sizeof(maxseg));
+
+	(void) setsockopt(rmtape, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));
 }
 
 static int
-okname(cp0)
-	char *cp0;
+okname(char *cp0)
 {
-	register char *cp;
-	register int c;
+	char *cp;
+	unsigned char c;
 
 	for (cp = cp0; *cp; cp++) {
 		c = *cp;
@@ -184,19 +174,17 @@ okname(cp0)
 }
 
 int
-rmtopen(tape, mode)
-	char *tape;
-	int mode;
+rmtopen(char *tape, int mode)
 {
 	char buf[256];
 
-	(void)sprintf(buf, "O%s\n%d\n", tape, mode);
+	(void)snprintf(buf, sizeof(buf), "O%s\n%d\n", tape, mode);
 	rmtstate = TS_OPEN;
 	return (rmtcall(tape, buf));
 }
 
 void
-rmtclose()
+rmtclose(void)
 {
 
 	if (rmtstate != TS_OPEN)
@@ -206,15 +194,12 @@ rmtclose()
 }
 
 int
-rmtread(buf, count)
-	char *buf;
-	int count;
+rmtread(char *buf, int count)
 {
 	char line[30];
 	int n, i, cc;
-	extern errno;
 
-	(void)sprintf(line, "R%d\n", count);
+	(void)snprintf(line, sizeof(line), "R%d\n", count);
 	n = rmtcall("read", line);
 	if (n < 0) {
 		errno = n;
@@ -223,114 +208,65 @@ rmtread(buf, count)
 	for (i = 0; i < n; i += cc) {
 		cc = read(rmtape, buf+i, n - i);
 		if (cc <= 0) {
-			rmtconnaborted();
+			rmtconnaborted(0);
 		}
 	}
 	return (n);
 }
 
 int
-rmtwrite(buf, count)
-	char *buf;
-	int count;
+rmtwrite(char *buf, int count)
 {
 	char line[30];
 
-	(void)sprintf(line, "W%d\n", count);
+	(void)snprintf(line, sizeof(line), "W%d\n", count);
 	write(rmtape, line, strlen(line));
 	write(rmtape, buf, count);
 	return (rmtreply("write"));
 }
 
-void
-rmtwrite0(count)
-	int count;
-{
-	char line[30];
-
-	(void)sprintf(line, "W%d\n", count);
-	write(rmtape, line, strlen(line));
-}
-
-void
-rmtwrite1(buf, count)
-	char *buf;
-	int count;
-{
-
-	write(rmtape, buf, count);
-}
-
 int
-rmtwrite2()
-{
-
-	return (rmtreply("write"));
-}
-
-int
-rmtseek(offset, pos)
-	int offset, pos;
+rmtseek(int offset, int pos)
 {
 	char line[80];
 
-	(void)sprintf(line, "L%d\n%d\n", offset, pos);
+	(void)snprintf(line, sizeof(line), "L%d\n%d\n", offset, pos);
 	return (rmtcall("seek", line));
 }
 
-struct	mtget mts;
-
-struct mtget *
-rmtstatus()
-{
-	register int i;
-	register char *cp;
-
-	if (rmtstate != TS_OPEN)
-		return (NULL);
-	rmtcall("status", "S\n");
-	for (i = 0, cp = (char *)&mts; i < sizeof(mts); i++)
-		*cp++ = rmtgetb();
-	return (&mts);
-}
-
 int
-rmtioctl(cmd, count)
-	int cmd, count;
+rmtioctl(int cmd, int count)
 {
 	char buf[256];
 
 	if (count < 0)
 		return (-1);
-	(void)sprintf(buf, "I%d\n%d\n", cmd, count);
+	(void)snprintf(buf, sizeof(buf), "I%d\n%d\n", cmd, count);
 	return (rmtcall("ioctl", buf));
 }
 
 static int
-rmtcall(cmd, buf)
-	char *cmd, *buf;
+rmtcall(char *cmd, char *buf)
 {
 
 	if (write(rmtape, buf, strlen(buf)) != strlen(buf))
-		rmtconnaborted();
+		rmtconnaborted(0);
 	return (rmtreply(cmd));
 }
 
 static int
-rmtreply(cmd)
-	char *cmd;
+rmtreply(char *cmd)
 {
-	register char *cp;
+	char *cp;
 	char code[30], emsg[BUFSIZ];
 
-	rmtgets(code, sizeof (code));
+	rmtgets(code, sizeof(code));
 	if (*code == 'E' || *code == 'F') {
-		rmtgets(emsg, sizeof (emsg));
+		rmtgets(emsg, sizeof(emsg));
 		msg("%s: %s", cmd, emsg);
-		if (*code == 'F') {
+		errno = atoi(&code[1]);
+		if (*code == 'F')
 			rmtstate = TS_CLOSED;
-			return (-1);
-		}
 		return (-1);
 	}
 	if (*code != 'A') {
@@ -341,28 +277,26 @@ rmtreply(cmd)
 
 		msg("Protocol to remote tape server botched (code \"%s\").\n",
 		    code);
-		rmtconnaborted();
+		rmtconnaborted(0);
 	}
 	return (atoi(code + 1));
 }
 
 int
-rmtgetb()
+rmtgetb(void)
 {
 	char c;
 
 	if (read(rmtape, &c, 1) != 1)
-		rmtconnaborted();
+		rmtconnaborted(0);
 	return (c);
 }
 
 /* Get a line (guaranteed to have a trailing newline). */
 void
-rmtgets(line, len)
-	char *line;
-	int len;
+rmtgets(char *line, int len)
 {
-	register char *cp = line;
+	char *cp = line;
 
 	while (len > 1) {
 		*cp = rmtgetb();
@@ -376,5 +310,5 @@ rmtgets(line, len)
 	*cp = '\0';
 	msg("Protocol to remote tape server botched.\n");
 	msg("(rmtgets got \"%s\").\n", line);
-	rmtconnaborted();
+	rmtconnaborted(0);
 }

@@ -1,0 +1,28 @@
+.\" $OpenBSD: warn.in,v 1.2 2017/07/04 14:53:25 schwarze Exp $
+.Dd $Mdocdate: September 13 2019 $
+.Dt FO-WARN 1
+.Os
+.Sh NAME
+.Nm Fo-warn
+.Nd warnings related to function blocks
+.Sh SYNOPSIS
+.Ft double
+.Fo sin()
+.Fa "double x"
+.Fc
+.Ft double
+.Fn atan2 "double y, double x"
+.Ft int
+.Fn close) "int fd"
+.Ft typedef void
+.Fn (handler) int
+.Ft typedef void
+.Fn (*fp) int
+.Ft int
+.Fn (open "const char *path"
+.Ft FILE *
+.Fn (*popen "const char *cmd"
+.Ft void
+.Fn (trail)x void
+.Ft void
+.Fn *star void

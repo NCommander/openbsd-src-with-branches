@@ -1,3 +1,4 @@
+/*	$OpenBSD: tee.c,v 1.14 2021/12/13 18:33:23 cheloha Exp $	*/
 /*	$NetBSD: tee.c,v 1.5 1994/12/09 01:43:39 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,123 +30,114 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1988, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)tee.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: tee.c,v 1.5 1994/12/09 01:43:39 jtc Exp $";
-#endif
-
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <signal.h>
+#include <sys/queue.h>
+
+#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <unistd.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <locale.h>
-#include <err.h>
+#include <unistd.h>
 
-typedef struct _list {
-	struct _list *next;
+#define BSIZE (64 * 1024)
+
+struct list {
+	SLIST_ENTRY(list) next;
 	int fd;
 	char *name;
-} LIST;
-LIST *head;
+};
+SLIST_HEAD(, list) head;
 
-void add __P((int, char *));
+static void
+add(int fd, char *name)
+{
+	struct list *p;
+
+	if ((p = malloc(sizeof(*p))) == NULL)
+		err(1, NULL);
+	p->fd = fd;
+	p->name = name;
+	SLIST_INSERT_HEAD(&head, p, next);
+}
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register LIST *p;
-	register int n, fd, rval, wval;
-	register char *bp;
+	struct list *p;
+	int fd;
+	ssize_t n, rval, wval;
 	int append, ch, exitval;
 	char *buf;
-#define	BSIZE (8 * 1024)
 
-	setlocale(LC_ALL, "");
+	if (pledge("stdio wpath cpath", NULL) == -1)
+		err(1, "pledge");
+
+	SLIST_INIT(&head);
 
 	append = 0;
-	while ((ch = getopt(argc, argv, "ai")) != -1)
-		switch((char)ch) {
+	while ((ch = getopt(argc, argv, "ai")) != -1) {
+		switch(ch) {
 		case 'a':
 			append = 1;
 			break;
 		case 'i':
 			(void)signal(SIGINT, SIG_IGN);
 			break;
-		case '?':
 		default:
 			(void)fprintf(stderr, "usage: tee [-ai] [file ...]\n");
-			exit(1);
+			return 1;
 		}
+	}
 	argv += optind;
 	argc -= optind;
 
-	if ((buf = malloc((size_t)BSIZE)) == NULL)
-		err(1, NULL);
-
 	add(STDOUT_FILENO, "stdout");
 
-	for (exitval = 0; *argv; ++argv)
-		if ((fd = open(*argv, append ? O_WRONLY|O_CREAT|O_APPEND :
-		    O_WRONLY|O_CREAT|O_TRUNC, DEFFILEMODE)) < 0) {
+	exitval = 0;
+	while (*argv) {
+		if ((fd = open(*argv, O_WRONLY | O_CREAT |
+		    (append ? O_APPEND : O_TRUNC), DEFFILEMODE)) == -1) {
 			warn("%s", *argv);
 			exitval = 1;
 		} else
 			add(fd, *argv);
+		argv++;
+	}
 
-	while ((rval = read(STDIN_FILENO, buf, BSIZE)) > 0)
-		for (p = head; p; p = p->next) {
-			n = rval;
-			bp = buf;
-			do {
-				if ((wval = write(p->fd, bp, n)) == -1) {
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
+	buf = malloc(BSIZE);
+	if (buf == NULL)
+		err(1, NULL);
+	while ((rval = read(STDIN_FILENO, buf, BSIZE)) != 0 && rval != -1) {
+		SLIST_FOREACH(p, &head, next) {
+			for (n = 0; n < rval; n += wval) {
+				wval = write(p->fd, buf + n, rval - n);
+				if (wval == -1) {
 					warn("%s", p->name);
 					exitval = 1;
 					break;
 				}
-				bp += wval;
-			} while (n -= wval);
+			}
 		}
-	if (rval < 0) {
+	}
+	free(buf);
+	if (rval == -1) {
 		warn("read");
 		exitval = 1;
 	}
 
-	for (p = head; p; p = p->next) {
+	SLIST_FOREACH(p, &head, next) {
 		if (close(p->fd) == -1) {
 			warn("%s", p->name);
 			exitval = 1;
 		}
 	}
 
-	exit(exitval);
-}
-
-void
-add(fd, name)
-	int fd;
-	char *name;
-{
-	LIST *p;
-
-	if ((p = malloc((size_t)sizeof(LIST))) == NULL)
-		err(1, NULL);
-	p->fd = fd;
-	p->name = name;
-	p->next = head;
-	head = p;
+	return exitval;
 }

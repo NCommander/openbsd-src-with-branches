@@ -994,6 +994,9 @@ Marks the object as not requiring executable stack.
 @item norelro
 Don't create an ELF @code{PT_GNU_RELRO} segment header in the object.
 
+@item notext
+Permit creation of objects with text relocations.
+
 @item now
 When generating an executable or shared library, mark it to tell the
 dynamic linker to resolve all symbols when the program is started, or
@@ -1007,9 +1010,28 @@ Marks the object may contain $ORIGIN.
 @item relro
 Create an ELF @code{PT_GNU_RELRO} segment header in the object.
 
+@item text
+Make creation of objects with text relocations a fatal error.
+This is the default.
+
+@item wxneeded
+Marks the executable with a @code{PT_OPENBSD_WXNEEDED} segment header,
+indicating it is expected to perform W^X violating operations later
+(such as calling mprotect(2) or mmap(2) with both PROT_WRITE and PROT_EXEC).
+
+@item nobtcfi
+Marks the executable with a @code{PT_OPENBSD_NOBTCFI} segment header,
+indicating it is expected the binary is missing BTI/IBT instructions and
+thus the system should not enforce them as required.
+
 @end table
 
 Other keywords are ignored for Solaris compatibility.  
+
+@kindex -Z
+@item -Z
+Produce 'Standard' executables, disables Writable XOR Executable features
+in resulting binaries.
 
 @kindex -(
 @cindex groups of archives
@@ -1870,6 +1892,16 @@ close to @var{number}.  Increasing this value can reduce the length of
 time it takes the linker to perform its tasks, at the expense of
 increasing the linker's memory requirements.  Similarly reducing this
 value can reduce the memory requirements at the expense of speed.
+
+@kindex --hash-style=@var{style}
+@item --hash-style=@var{style}
+Set the type of linker's hash table(s).  @var{style} can be either
+@code{sysv} for classic ELF @code{.hash} section, @code{gnu} for
+new style GNU @code{.gnu.hash} section or @code{both} for both
+the classic ELF @code{.hash} and new style GNU @code{.gnu.hash}
+hash tables.  The default is @code{both}, except on mips64 where
+this option has no effect and only the classic ELF @code{.hash} is
+supported.
 
 @kindex --reduce-memory-overheads
 @item --reduce-memory-overheads

@@ -1,4 +1,4 @@
-/*	$NetBSD: tutor.c,v 1.3 1995/03/21 15:06:27 cgd Exp $	*/
+/*	$OpenBSD: tutor.c,v 1.9 2017/01/20 01:12:44 krw Exp $	*/
 
 /*
  * Copyright (c) 1980, 1993
@@ -12,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,27 +29,18 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)tutor.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: tutor.c,v 1.3 1995/03/21 15:06:27 cgd Exp $";
-#endif
-#endif /* not lint */
-
 #include "back.h"
 #include "tutor.h"
 
-extern int	maxmoves;
-extern char	*finis[];
+static const char better[] = "That is a legal move, but there is a better one.\n";
 
-extern struct situatn	test[];
+__dead void
+tutor(void)
+{
+	int     i, j, k;
+	int     wrongans;
 
-static char	better[] = "That is a legal move, but there is a better one.\n";
-
-tutor ()  {
-	register int	i, j;
-
+	wrongans = 0;
 	i = 0;
 	begscr = 18;
 	cturn = -1;
@@ -68,40 +55,53 @@ tutor ()  {
 	colen = 5;
 	wrboard();
 
-	while (1)  {
-		if (! brdeq(test[i].brd,board))  {
-			if (tflag && curr == 23)
-				curmove (18,0);
-			writel (better);
-			nexturn();
-			movback (mvlim);
-			if (tflag)  {
-				refresh();
-				clrest ();
+	while (1) {
+		if (!brdeq(test[i].brd, board)) {
+			wrongans++;
+			move(18, 0);
+			if (wrongans >= 3) {
+				wrongans = 0;
+				text(*test[i].ans);
+				memcpy(board,test[i].brd,26*sizeof(int));
+				/* and have to fix *inptr, *offptr; player is red (+ve) */
+				k = 0;
+				for (j = 19; j < 26; j++)
+					k += (board[j] > 0 ? board[j] : 0);
+				*inopp = k;
+				for (j = 0; j < 19; j++)
+					k += (board[j] > 0 ? board[j] : 0);
+				*offopp = k - 30;  /* -15 at start */
+				moveplayers();
+				clrest();
+			} else {
+				addstr(better);
+				nexturn();
+				movback(mvlim);
+				moveplayers();
+				clrest();
+				getyx(stdscr, j, k);
+				if (j == 19) {
+					proll();
+					addch('\t');
+				} else
+					move(j > 19 ? j - 2 : j + 4, 25);
+				getmove();
+				if (cturn == 0)
+					leave();
+				continue;
 			}
-			if ((! tflag) || curr == 19)  {
-				proll();
-				writec ('\t');
-			}
-			else
-				curmove (curr > 19? curr-2: curr+4,25);
-			getmove();
-			if (cturn == 0)
-				leave();
-			continue;
-		}
-		if (tflag)
-			curmove (18,0);
-		text (*test[i].com);
-		if (! tflag)
-			writec ('\n');
+		} else
+			wrongans = 0;
+		move(18, 0);
+		text(*test[i].com);
+		move(19, 0);
 		if (i == maxmoves)
 			break;
 		D0 = test[i].roll1;
 		D1 = test[i].roll2;
 		d0 = 0;
 		mvlim = 0;
-		for (j = 0; j < 4; j++)  {
+		for (j = 0; j < 4; j++) {
 			if (test[i].mp[j] == test[i].mg[j])
 				break;
 			p[j] = test[i].mp[j];
@@ -111,23 +111,20 @@ tutor ()  {
 		if (mvlim)
 			for (j = 0; j < mvlim; j++)
 				if (makmove(j))
-					writel ("AARGH!!!\n");
-		if (tflag)
-			refresh();
+					addstr("AARGH!!!\n");
+		moveplayers();
 		nexturn();
 		D0 = test[i].new1;
 		D1 = test[i].new2;
 		d0 = 0;
 		i++;
 		mvlim = movallow();
-		if (mvlim)  {
-			if (tflag)
-				clrest();
+		if (mvlim) {
+			clrest();
 			proll();
-			writec('\t');
+			addch('\t');
 			getmove();
-			if (tflag)
-				refresh();
+			moveplayers();
 			if (cturn == 0)
 				leave();
 		}
@@ -135,25 +132,25 @@ tutor ()  {
 	leave();
 }
 
-clrest ()  {
-	register int	r, c, j;
+void
+clrest(void)
+{
+	int     r, c, j;
 
-	r = curr;
-	c = curc;
-	for (j = r+1; j < 24; j++)  {
-		curmove (j,0);
-		cline();
+	getyx(stdscr, r, c);
+	for (j = r + 1; j < 24; j++) {
+		move(j, 0);
+		clrtoeol();
 	}
-	curmove (r,c);
+	move(r, c);
 }
 
-brdeq (b1,b2)
-register int  *b1, *b2;
-
+int
+brdeq(const int *b1, const int *b2)
 {
-	register int  *e;
+	const int    *e;
 
-	e = b1+26;
+	e = b1 + 26;
 	while (b1 < e)
 		if (*b1++ != *b2++)
 			return(0);

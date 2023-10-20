@@ -1,3 +1,4 @@
+/*	$OpenBSD: schedule.c,v 1.7 2016/01/07 14:30:32 mestre Exp $	*/
 /*	$NetBSD: schedule.c,v 1.3 1995/04/22 10:59:23 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)schedule.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: schedule.c,v 1.3 1995/04/22 10:59:23 cgd Exp $";
-#endif
-#endif /* not lint */
+#include <err.h>
+#include <math.h>
+#include <stdio.h>
 
-# include	"trek.h"
+#include "trek.h"
 
 /*
 **  SCHEDULE AN EVENT
@@ -53,15 +46,12 @@ static char rcsid[] = "$NetBSD: schedule.c,v 1.3 1995/04/22 10:59:23 cgd Exp $";
 **	The address of the slot is returned.
 */
 
-struct event *schedule(type, offset, x, y, z)
-int	type;
-double	offset;
-char	x, y;
-char	z;
+struct event *
+schedule(int type, double offset, int x, int y, int z)
 {
-	register struct event	*e;
-	register int		i;
-	double			date;
+	struct event	*e;
+	int		i;
+	double		date;
 
 	date = Now.date + offset;
 	for (i = 0; i < MAXEVENTS; i++)
@@ -80,10 +70,10 @@ char	z;
 		e->x = x;
 		e->y = y;
 		e->systemname = z;
-		Now.eventptr[type] = e;
+		Now.eventptr[type & E_EVENT] = e;
 		return (e);
 	}
-	syserr("Cannot schedule event %d parm %d %d %d", type, x, y, z);
+	errx(1, "Cannot schedule event %d parm %d %d %d", type, x, y, z);
 }
 
 
@@ -94,12 +84,11 @@ char	z;
 **	time plus 'offset'.
 */
 
-reschedule(e1, offset)
-struct event	*e1;
-double		offset;
+void
+reschedule(struct event *e1, double offset)
 {
-	double			date;
-	register struct event	*e;
+	double		date;
+	struct event	*e;
 
 	e = e1;
 
@@ -120,10 +109,10 @@ double		offset;
 **	The event at slot 'e' is deleted.
 */
 
-unschedule(e1)
-struct event	*e1;
+void
+unschedule(struct event *e1)
 {
-	register struct event	*e;
+	struct event	*e;
 
 	e = e1;
 
@@ -146,12 +135,10 @@ struct event	*e1;
 **	figure.
 */
 
-struct event *xsched(ev1, factor, x, y, z)
-int	ev1;
-int	factor;
-int	x, y, z;
+struct event *
+xsched(int ev1, int factor, int x, int y, int z)
 {
-	register int	ev;
+	int	ev;
 
 	ev = ev1;
 	return (schedule(ev, -Param.eventdly[ev] * Param.time * log(franf()) / factor, x, y, z));
@@ -165,13 +152,11 @@ int	x, y, z;
 **	division factor.  Look at the code to see what really happens.
 */
 
-xresched(e1, ev1, factor)
-struct event	*e1;
-int		ev1;
-int		factor;
+void
+xresched(struct event *e1, int ev1, int factor)
 {
-	register int		ev;
-	register struct event	*e;
+	int		ev;
+	struct event	*e;
 
 	ev = ev1;
 	e = e1;

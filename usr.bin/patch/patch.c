@@ -1,843 +1,1107 @@
-/* patch - a program to apply diffs to original files
- *
+/*	$OpenBSD: patch.c,v 1.73 2023/07/15 10:42:54 florian Exp $	*/
+
+/*
+ * patch - a program to apply diffs to original files
+ * 
  * Copyright 1986, Larry Wall
- *
- * This program may be copied as long as you don't try to make any
- * money off of it, or pretend that you wrote it.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following condition is met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this condition and the following disclaimer.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * -C option added in 1998, original code by Marc Espie, based on FreeBSD
+ * behaviour
  */
 
-#ifndef lint
-static char rcsid[] = "$Id: patch.c,v 1.2 1993/08/02 17:55:19 mycroft Exp $";
-#endif /* not lint */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-#include "INTERN.h"
+#include <ctype.h>
+#include <getopt.h>
+#include <limits.h>
+#include <paths.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include "common.h"
-#include "EXTERN.h"
-#include "version.h"
 #include "util.h"
 #include "pch.h"
 #include "inp.h"
 #include "backupfile.h"
+#include "ed.h"
 
-/* procedures */
+mode_t		filemode = 0644;
 
-void reinitialize_almost_everything();
-void get_some_switches();
-LINENUM locate_hunk();
-void abort_hunk();
-void apply_hunk();
-void init_output();
-void init_reject();
-void copy_till();
-void spew_output();
-void dump_line();
-bool patch_match();
-bool similar();
-void re_input();
-void my_exit();
+char		*buf;			/* general purpose buffer */
+size_t		 bufsz;			/* general purpose buffer size */
 
-/* TRUE if -E was specified on command line.  */
-static int remove_empty_files = FALSE;
+bool		using_plan_a = true;	/* try to keep everything in memory */
+bool		out_of_mem = false;	/* ran out of memory in plan a */
 
-/* TRUE if -R was specified on command line.  */
-static int reverse_flag_specified = FALSE;
+#define MAXFILEC 2
+
+char		*filearg[MAXFILEC];
+bool		ok_to_create_file = false;
+char		*outname = NULL;
+char		*origprae = NULL;
+char		*TMPOUTNAME;
+char		*TMPINNAME;
+char		*TMPREJNAME;
+char		*TMPPATNAME;
+bool		toutkeep = false;
+bool		trejkeep = false;
+bool		warn_on_invalid_line;
+bool		last_line_missing_eol;
+
+#ifdef DEBUGGING
+int		debug = 0;
+#endif
+
+bool		force = false;
+bool		batch = false;
+bool		verbose = true;
+bool		reverse = false;
+bool		noreverse = false;
+bool		skip_rest_of_patch = false;
+int		strippath = 957;
+bool		canonicalize = false;
+bool		check_only = false;
+int		diff_type = 0;
+char		*revision = NULL;	/* prerequisite revision, if any */
+LINENUM		input_lines = 0;	/* how long is input file in lines */
+int		posix = 0;		/* strict POSIX mode? */
+
+static void	reinitialize_almost_everything(void);
+static void	get_some_switches(void);
+static LINENUM	locate_hunk(LINENUM);
+static void	abort_context_hunk(void);
+static void	rej_line(int, LINENUM);
+static void	abort_hunk(void);
+static void	apply_hunk(LINENUM);
+static void	init_output(const char *);
+static void	init_reject(const char *);
+static void	copy_till(LINENUM, bool);
+static void	spew_output(void);
+static void	dump_line(LINENUM, bool);
+static bool	patch_match(LINENUM, LINENUM, LINENUM);
+static bool	similar(const char *, const char *, ssize_t);
+static __dead void usage(void);
+
+/* true if -E was specified on command line.  */
+static bool	remove_empty_files = false;
+
+/* true if -R was specified on command line.  */
+static bool	reverse_flag_specified = false;
+
+/* buffer holding the name of the rejected patch file. */
+static char	rejname[PATH_MAX];
+
+/* how many input lines have been irretractibly output */
+static LINENUM	last_frozen_line = 0;
+
+static int	Argc;		/* guess */
+static char	**Argv;
+static int	Argc_last;	/* for restarting plan_b */
+static char	**Argv_last;
+
+static FILE	*ofp = NULL;	/* output file pointer */
+static FILE	*rejfp = NULL;	/* reject file pointer */
+
+static int	filec = 0;	/* how many file arguments? */
+static LINENUM	last_offset = 0;
+static LINENUM	maxfuzz = 2;
+
+/* patch using ifdef, ifndef, etc. */
+static bool		do_defines = false;
+/* #ifdef xyzzy */
+static char		if_defined[128];
+/* #ifndef xyzzy */
+static char		not_defined[128];
+/* #else */
+static const char	else_defined[] = "#else\n";
+/* #endif xyzzy */
+static char		end_defined[128];
+
 
 /* Apply a set of diffs as appropriate. */
 
 int
-main(argc,argv)
-int argc;
-char **argv;
+main(int argc, char *argv[])
 {
-    LINENUM where;
-    LINENUM newwhere;
-    LINENUM fuzz;
-    LINENUM mymaxfuzz;
-    int hunk = 0;
-    int failed = 0;
-    int failtotal = 0;
-    int i;
+	int	error = 0, hunk, failed, i, fd;
+	bool	patch_seen;
+	LINENUM	where = 0, newwhere, fuzz, mymaxfuzz;
+	const	char *tmpdir;
+	char	*v;
 
-    setbuf(stderr, serrbuf);
-    for (i = 0; i<MAXFILEC; i++)
-	filearg[i] = Nullch;
-
-    myuid = getuid();
-
-    /* Cons up the names of the temporary files.  */
-    {
-      /* Directory for temporary files.  */
-      char *tmpdir;
-      int tmpname_len;
-
-      tmpdir = getenv ("TMPDIR");
-      if (tmpdir == NULL) {
-	tmpdir = "/tmp";
-      }
-      tmpname_len = strlen (tmpdir) + 20;
-
-      TMPOUTNAME = (char *) malloc (tmpname_len);
-      strcpy (TMPOUTNAME, tmpdir);
-      strcat (TMPOUTNAME, "/patchoXXXXXX");
-      Mktemp(TMPOUTNAME);
-
-      TMPINNAME = (char *) malloc (tmpname_len);
-      strcpy (TMPINNAME, tmpdir);
-      strcat (TMPINNAME, "/patchiXXXXXX");
-      Mktemp(TMPINNAME);
-
-      TMPREJNAME = (char *) malloc (tmpname_len);
-      strcpy (TMPREJNAME, tmpdir);
-      strcat (TMPREJNAME, "/patchrXXXXXX");
-      Mktemp(TMPREJNAME);
-
-      TMPPATNAME = (char *) malloc (tmpname_len);
-      strcpy (TMPPATNAME, tmpdir);
-      strcat (TMPPATNAME, "/patchpXXXXXX");
-      Mktemp(TMPPATNAME);
-    }
-
-    {
-      char *v;
-
-      v = getenv ("SIMPLE_BACKUP_SUFFIX");
-      if (v)
-	simple_backup_suffix = v;
-      else
-	simple_backup_suffix = ORIGEXT;
-#ifndef NODIR
-      v = getenv ("VERSION_CONTROL");
-      backup_type = get_version (v); /* OK to pass NULL. */
-#endif
-    }
-
-    /* parse switches */
-    Argc = argc;
-    Argv = argv;
-    get_some_switches();
-    
-    /* make sure we clean up /tmp in case of disaster */
-    set_signals(0);
-
-    for (
-	open_patch_file(filearg[1]);
-	there_is_another_patch();
-	reinitialize_almost_everything()
-    ) {					/* for each patch in patch file */
-
-	if (outname == Nullch)
-	    outname = savestr(filearg[0]);
-    
-	/* for ed script just up and do it and exit */
-	if (diff_type == ED_DIFF) {
-	    do_ed_script();
-	    continue;
+	if (pledge("stdio rpath wpath cpath tmppath fattr unveil", NULL) == -1) {
+		perror("pledge");
+		my_exit(2);
 	}
-    
-	/* initialize the patched file */
-	if (!skip_rest_of_patch)
-	    init_output(TMPOUTNAME);
-    
-	/* initialize reject file */
-	init_reject(TMPREJNAME);
-    
-	/* find out where all the lines are */
-	if (!skip_rest_of_patch)
-	    scan_input(filearg[0]);
-    
-	/* from here on, open no standard i/o files, because malloc */
-	/* might misfire and we can't catch it easily */
-    
-	/* apply each hunk of patch */
-	hunk = 0;
-	failed = 0;
-	out_of_mem = FALSE;
-	while (another_hunk()) {
-	    hunk++;
-	    fuzz = Nulline;
-	    mymaxfuzz = pch_context();
-	    if (maxfuzz < mymaxfuzz)
-		mymaxfuzz = maxfuzz;
-	    if (!skip_rest_of_patch) {
-		do {
-		    where = locate_hunk(fuzz);
-		    if (hunk == 1 && where == Nulline && !force) {
+
+	bufsz = INITLINELEN;
+	if ((buf = malloc(bufsz)) == NULL)
+		pfatal("allocating input buffer");
+	buf[0] = '\0';
+
+	setvbuf(stdout, NULL, _IOLBF, 0);
+	setvbuf(stderr, NULL, _IOLBF, 0);
+	for (i = 0; i < MAXFILEC; i++)
+		filearg[i] = NULL;
+
+	/* Cons up the names of the temporary files.  */
+	if ((tmpdir = getenv("TMPDIR")) == NULL || *tmpdir == '\0')
+		tmpdir = _PATH_TMP;
+	for (i = strlen(tmpdir) - 1; i > 0 && tmpdir[i] == '/'; i--)
+		;
+	i++;
+	if (asprintf(&TMPOUTNAME, "%.*s/patchoXXXXXXXXXX", i, tmpdir) == -1)
+		fatal("cannot allocate memory");
+	if ((fd = mkstemp(TMPOUTNAME)) == -1)
+		pfatal("can't create %s", TMPOUTNAME);
+	close(fd);
+
+	if (asprintf(&TMPINNAME, "%.*s/patchiXXXXXXXXXX", i, tmpdir) == -1)
+		fatal("cannot allocate memory");
+	if ((fd = mkstemp(TMPINNAME)) == -1)
+		pfatal("can't create %s", TMPINNAME);
+	close(fd);
+
+	if (asprintf(&TMPREJNAME, "%.*s/patchrXXXXXXXXXX", i, tmpdir) == -1)
+		fatal("cannot allocate memory");
+	if ((fd = mkstemp(TMPREJNAME)) == -1)
+		pfatal("can't create %s", TMPREJNAME);
+	close(fd);
+
+	if (asprintf(&TMPPATNAME, "%.*s/patchpXXXXXXXXXX", i, tmpdir) == -1)
+		fatal("cannot allocate memory");
+	if ((fd = mkstemp(TMPPATNAME)) == -1)
+		pfatal("can't create %s", TMPPATNAME);
+	close(fd);
+
+	v = getenv("SIMPLE_BACKUP_SUFFIX");
+	if (v)
+		simple_backup_suffix = v;
+	else
+		simple_backup_suffix = ORIGEXT;
+
+	/* parse switches */
+	Argc = argc;
+	Argv = argv;
+	get_some_switches();
+	if (unveil(tmpdir, "rwc") == -1) {
+		perror("unveil");
+		my_exit(2);
+	}
+	if (outname != NULL)
+		if (unveil(outname, "rwc") == -1) {
+			perror("unveil");
+			my_exit(2);
+		}
+	if (filearg[0] != NULL)
+		if (unveil(filearg[0], "rwc") == -1) {
+			perror("unveil");
+			my_exit(2);
+		}
+	if (filearg[1] != NULL)
+		if (unveil(filearg[1], "r") == -1) {
+			perror("unveil");
+			my_exit(2);
+		}
+	if (!force && !batch)
+		if (unveil(_PATH_TTY, "r") == -1) {
+			perror("unveil");
+			my_exit(2);
+		}
+	if (unveil(".", "rwc") == -1) {
+		perror("unveil");
+		my_exit(2);
+	}
+	if (*rejname != '\0')
+		if (unveil(rejname, "rwc") == -1) {
+			perror("unveil");
+			my_exit(2);
+		}
+	if (pledge("stdio rpath wpath cpath tmppath fattr", NULL) == -1) {
+		perror("pledge");
+		my_exit(2);
+	}
+
+	if (backup_type == none) {
+		if ((v = getenv("PATCH_VERSION_CONTROL")) == NULL)
+			v = getenv("VERSION_CONTROL");
+		if (v != NULL || !posix)
+			backup_type = get_version(v);	/* OK to pass NULL. */
+	}
+
+	/* make sure we clean up /tmp in case of disaster */
+	set_signals(0);
+
+	patch_seen = false;
+	for (open_patch_file(filearg[1]); there_is_another_patch();
+	    reinitialize_almost_everything()) {
+		/* for each patch in patch file */
+
+		patch_seen = true;
+
+		warn_on_invalid_line = true;
+
+		if (outname == NULL)
+			outname = xstrdup(filearg[0]);
+
+		/* initialize the patched file */
+		if (!skip_rest_of_patch)
+			init_output(TMPOUTNAME);
+
+		/* initialize reject file */
+		init_reject(TMPREJNAME);
+
+		/* find out where all the lines are */
+		if (!skip_rest_of_patch)
+			scan_input(filearg[0]);
+
+		/* for ed script just up and do it and exit */
+		if (diff_type == ED_DIFF) {
+			do_ed_script();
+			continue;
+		}
+
+		/* from here on, open no standard i/o files, because malloc */
+		/* might misfire and we can't catch it easily */
+
+		/* apply each hunk of patch */
+		hunk = 0;
+		failed = 0;
+		out_of_mem = false;
+		while (another_hunk()) {
+			hunk++;
+			fuzz = 0;
+			mymaxfuzz = pch_context();
+			if (maxfuzz < mymaxfuzz)
+				mymaxfuzz = maxfuzz;
+			if (!skip_rest_of_patch) {
+				do {
+					where = locate_hunk(fuzz);
+					if ((hunk == 1 && where == 0 && !force) ||
+					    (where == 1 && pch_ptrn_lines() == 0 && !force)) {
 						/* dwim for reversed patch? */
-			if (!pch_swap()) {
-			    if (fuzz == Nulline)
-				say1(
-"Not enough memory to try swapped hunk!  Assuming unswapped.\n");
-			    continue;
-			}
-			reverse = !reverse;
-			where = locate_hunk(fuzz);  /* try again */
-			if (where == Nulline) {	    /* didn't find it swapped */
-			    if (!pch_swap())         /* put it back to normal */
-				fatal1("lost hunk on alloc error!\n");
-			    reverse = !reverse;
-			}
-			else if (noreverse) {
-			    if (!pch_swap())         /* put it back to normal */
-				fatal1("lost hunk on alloc error!\n");
-			    reverse = !reverse;
-			    say1(
-"Ignoring previously applied (or reversed) patch.\n");
-			    skip_rest_of_patch = TRUE;
-			}
-			else if (batch) {
-			    if (verbose)
-				say3(
-"%seversed (or previously applied) patch detected!  %s -R.",
-				reverse ? "R" : "Unr",
-				reverse ? "Assuming" : "Ignoring");
-			}
-			else {
-			    ask3(
-"%seversed (or previously applied) patch detected!  %s -R? [y] ",
-				reverse ? "R" : "Unr",
-				reverse ? "Assume" : "Ignore");
-			    if (*buf == 'n') {
-				ask1("Apply anyway? [n] ");
-				if (*buf != 'y')
-				    skip_rest_of_patch = TRUE;
-				where = Nulline;
-				reverse = !reverse;
-				if (!pch_swap())  /* put it back to normal */
-				    fatal1("lost hunk on alloc error!\n");
-			    }
-			}
-		    }
-		} while (!skip_rest_of_patch && where == Nulline &&
-		    ++fuzz <= mymaxfuzz);
+						if (!pch_swap()) {
+							if (fuzz == 0)
+								say("Not enough memory to try swapped hunk!  Assuming unswapped.\n");
+							continue;
+						}
+						reverse = !reverse;
+						/* try again */
+						where = locate_hunk(fuzz);
+						if (where == 0) {
+							/* didn't find it swapped */
+							if (!pch_swap())
+								/* put it back to normal */
+								fatal("lost hunk on alloc error!\n");
+							reverse = !reverse;
 
-		if (skip_rest_of_patch) {		/* just got decided */
-		    Fclose(ofp);
-		    ofp = Nullfp;
+							/* restore position if this patch creates a file */
+							if (pch_ptrn_lines() == 0)
+								where = 1;
+						} else if (noreverse) {
+							if (!pch_swap())
+								/* put it back to normal */
+								fatal("lost hunk on alloc error!\n");
+							reverse = !reverse;
+							say("Ignoring previously applied (or reversed) patch.\n");
+							skip_rest_of_patch = true;
+						} else if (batch) {
+							if (verbose)
+								say("%seversed (or previously applied) patch detected!  %s -R.",
+								    reverse ? "R" : "Unr",
+								    reverse ? "Assuming" : "Ignoring");
+						} else {
+							ask("%seversed (or previously applied) patch detected!  %s -R? [y] ",
+							    reverse ? "R" : "Unr",
+							    reverse ? "Assume" : "Ignore");
+							if (*buf == 'n') {
+								ask("Apply anyway? [n] ");
+								if (*buf != 'y')
+									skip_rest_of_patch = true;
+								where = 0;
+								reverse = !reverse;
+								if (!pch_swap())
+									/* put it back to normal */
+									fatal("lost hunk on alloc error!\n");
+							}
+						}
+					}
+				} while (!skip_rest_of_patch && where == 0 &&
+				    ++fuzz <= mymaxfuzz);
+
+				if (skip_rest_of_patch) {	/* just got decided */
+					fclose(ofp);
+					ofp = NULL;
+				}
+			}
+			newwhere = pch_newfirst() + last_offset;
+			if (skip_rest_of_patch) {
+				abort_hunk();
+				failed++;
+				if (verbose)
+					say("Hunk #%d ignored at %ld.\n",
+					    hunk, newwhere);
+			} else if (where == 0) {
+				abort_hunk();
+				failed++;
+				if (verbose)
+					say("Hunk #%d failed at %ld.\n",
+					    hunk, newwhere);
+			} else {
+				apply_hunk(where);
+				if (verbose) {
+					say("Hunk #%d succeeded at %ld",
+					    hunk, newwhere);
+					if (fuzz != 0)
+						say(" with fuzz %ld", fuzz);
+					if (last_offset)
+						say(" (offset %ld line%s)",
+						    last_offset,
+						    last_offset == 1L ? "" : "s");
+					say(".\n");
+				}
+			}
 		}
-	    }
 
-	    newwhere = pch_newfirst() + last_offset;
-	    if (skip_rest_of_patch) {
-		abort_hunk();
-		failed++;
-		if (verbose)
-		    say3("Hunk #%d ignored at %ld.\n", hunk, newwhere);
-	    }
-	    else if (where == Nulline) {
-		abort_hunk();
-		failed++;
-		if (verbose)
-		    say3("Hunk #%d failed at %ld.\n", hunk, newwhere);
-	    }
-	    else {
-		apply_hunk(where);
-		if (verbose) {
-		    say3("Hunk #%d succeeded at %ld", hunk, newwhere);
-		    if (fuzz)
-			say2(" with fuzz %ld", fuzz);
-		    if (last_offset)
-			say3(" (offset %ld line%s)",
-			    last_offset, last_offset==1L?"":"s");
-		    say1(".\n");
+		if (out_of_mem && using_plan_a) {
+			Argc = Argc_last;
+			Argv = Argv_last;
+			say("\n\nRan out of memory using Plan A--trying again...\n\n");
+			if (ofp)
+				fclose(ofp);
+			ofp = NULL;
+			if (rejfp)
+				fclose(rejfp);
+			rejfp = NULL;
+			continue;
 		}
-	    }
-	}
+		if (hunk == 0)
+			fatal("Internal error: hunk should not be 0\n");
 
-	if (out_of_mem && using_plan_a) {
-	    Argc = Argc_last;
-	    Argv = Argv_last;
-	    say1("\n\nRan out of memory using Plan A--trying again...\n\n");
-	    if (ofp)
-	        Fclose(ofp);
-	    ofp = Nullfp;
-	    if (rejfp)
-	        Fclose(rejfp);
-	    rejfp = Nullfp;
-	    continue;
-	}
-    
-	assert(hunk);
-    
-	/* finish spewing out the new file */
-	if (!skip_rest_of_patch)
-	    spew_output();
-	
-	/* and put the output where desired */
-	ignore_signals();
-	if (!skip_rest_of_patch) {
-	    struct stat statbuf;
-	    char *realout = outname;
+		/* finish spewing out the new file */
+		if (!skip_rest_of_patch)
+			spew_output();
 
-	    if (move_file(TMPOUTNAME, outname) < 0) {
-		toutkeep = TRUE;
-		realout = TMPOUTNAME;
-		chmod(TMPOUTNAME, filemode);
-	    }
-	    else
-		chmod(outname, filemode);
+		/* and put the output where desired */
+		ignore_signals();
+		if (!skip_rest_of_patch) {
+			struct stat	statbuf;
+			char	*realout = outname;
 
-	    if (remove_empty_files && stat(realout, &statbuf) == 0
-		&& statbuf.st_size == 0) {
-		if (verbose)
-		    say2("Removing %s (empty after patching).\n", realout);
-	        while (unlink(realout) >= 0) ; /* while is for Eunice.  */
-	    }
-	}
-	Fclose(rejfp);
-	rejfp = Nullfp;
-	if (failed) {
-	    failtotal += failed;
-	    if (!*rejname) {
-		Strcpy(rejname, outname);
-#ifndef FLEXFILENAMES
-		{
-		    char *s = rindex(rejname,'/');
+			if (!check_only) {
+				if (move_file(TMPOUTNAME, outname) < 0) {
+					toutkeep = true;
+					realout = TMPOUTNAME;
+					chmod(TMPOUTNAME, filemode);
+				} else
+					chmod(outname, filemode);
 
-		    if (!s)
-			s = rejname;
-		    if (strlen(s) > 13)
-			if (s[12] == '.')	/* try to preserve difference */
-			    s[12] = s[13];	/* between .h, .c, .y, etc. */
-			s[13] = '\0';
+				if (remove_empty_files &&
+				    stat(realout, &statbuf) == 0 &&
+				    statbuf.st_size == 0) {
+					if (verbose)
+						say("Removing %s (empty after patching).\n",
+						    realout);
+					unlink(realout);
+				}
+			}
 		}
-#endif
-		Strcat(rejname, REJEXT);
-	    }
-	    if (skip_rest_of_patch) {
-		say4("%d out of %d hunks ignored--saving rejects to %s\n",
-		    failed, hunk, rejname);
-	    }
-	    else {
-		say4("%d out of %d hunks failed--saving rejects to %s\n",
-		    failed, hunk, rejname);
-	    }
-	    if (move_file(TMPREJNAME, rejname) < 0)
-		trejkeep = TRUE;
+		fclose(rejfp);
+		rejfp = NULL;
+		if (failed) {
+			error = 1;
+			if (*rejname == '\0') {
+				if (strlcpy(rejname, outname,
+				    sizeof(rejname)) >= sizeof(rejname))
+					fatal("filename %s is too long\n", outname);
+				if (strlcat(rejname, REJEXT,
+				    sizeof(rejname)) >= sizeof(rejname))
+					fatal("filename %s is too long\n", outname);
+			}
+			if (!check_only)
+				say("%d out of %d hunks %s--saving rejects to %s\n",
+				    failed, hunk, skip_rest_of_patch ? "ignored" : "failed", rejname);
+			else
+				say("%d out of %d hunks %s\n",
+				    failed, hunk, skip_rest_of_patch ? "ignored" : "failed");
+			if (!check_only && move_file(TMPREJNAME, rejname) < 0)
+				trejkeep = true;
+		}
+		set_signals(1);
 	}
-	set_signals(1);
-    }
-    my_exit(failtotal);
+
+	if (!patch_seen)
+		error = 2;
+
+	my_exit(error);
+	/* NOTREACHED */
 }
 
 /* Prepare to find the next patch to do in the patch file. */
 
-void
-reinitialize_almost_everything()
+static void
+reinitialize_almost_everything(void)
 {
-    re_patch();
-    re_input();
+	re_patch();
+	re_input();
 
-    input_lines = 0;
-    last_frozen_line = 0;
+	input_lines = 0;
+	last_frozen_line = 0;
 
-    filec = 0;
-    if (filearg[0] != Nullch && !out_of_mem) {
-	free(filearg[0]);
-	filearg[0] = Nullch;
-    }
+	filec = 0;
+	if (!out_of_mem) {
+		free(filearg[0]);
+		filearg[0] = NULL;
+	}
 
-    if (outname != Nullch) {
 	free(outname);
-	outname = Nullch;
-    }
+	outname = NULL;
 
-    last_offset = 0;
+	last_offset = 0;
+	diff_type = 0;
 
-    diff_type = 0;
-
-    if (revision != Nullch) {
 	free(revision);
-	revision = Nullch;
-    }
+	revision = NULL;
 
-    reverse = reverse_flag_specified;
-    skip_rest_of_patch = FALSE;
+	reverse = reverse_flag_specified;
+	skip_rest_of_patch = false;
 
-    get_some_switches();
-
-    if (filec >= 2)
-	fatal1("you may not change to a different patch file\n");
+	get_some_switches();
 }
 
-static char *
-nextarg()
+/* Process switches and filenames. */
+
+static void
+get_some_switches(void)
 {
-    if (!--Argc)
-	fatal2("missing argument after `%s'\n", *Argv);
-    return *++Argv;
+	const char *options = "b::B:cCd:D:eEfF:i:lnNo:p:r:RstuvV:x:z:";
+	static struct option longopts[] = {
+		{"backup",		no_argument,		0,	'b'},
+		{"batch",		no_argument,		0,	't'},
+		{"check",		no_argument,		0,	'C'},
+		{"context",		no_argument,		0,	'c'},
+		{"debug",		required_argument,	0,	'x'},
+		{"directory",		required_argument,	0,	'd'},
+		{"dry-run",		no_argument,		0,	'C'},
+		{"ed",			no_argument,		0,	'e'},
+		{"force",		no_argument,		0,	'f'},
+		{"forward",		no_argument,		0,	'N'},
+		{"fuzz",		required_argument,	0,	'F'},
+		{"ifdef",		required_argument,	0,	'D'},
+		{"input",		required_argument,	0,	'i'},
+		{"ignore-whitespace",	no_argument,		0,	'l'},
+		{"normal",		no_argument,		0,	'n'},
+		{"output",		required_argument,	0,	'o'},
+		{"prefix",		required_argument,	0,	'B'},
+		{"quiet",		no_argument,		0,	's'},
+		{"reject-file",		required_argument,	0,	'r'},
+		{"remove-empty-files",	no_argument,		0,	'E'},
+		{"reverse",		no_argument,		0,	'R'},
+		{"silent",		no_argument,		0,	's'},
+		{"strip",		required_argument,	0,	'p'},
+		{"suffix",		required_argument,	0,	'z'},
+		{"unified",		no_argument,		0,	'u'},
+		{"version",		no_argument,		0,	'v'},
+		{"version-control",	required_argument,	0,	'V'},
+		{"posix",		no_argument,		&posix,	1},
+		{NULL,			0,			0,	0}
+	};
+	int ch;
+
+	rejname[0] = '\0';
+	Argc_last = Argc;
+	Argv_last = Argv;
+	if (!Argc)
+		return;
+	optreset = optind = 1;
+	while ((ch = getopt_long(Argc, Argv, options, longopts, NULL)) != -1) {
+		switch (ch) {
+		case 'b':
+			if (backup_type == none)
+				backup_type = numbered_existing;
+			if (optarg == NULL)
+				break;
+			if (verbose)
+				say("Warning, the ``-b suffix'' option has been"
+				    " obsoleted by the -z option.\n");
+			/* FALLTHROUGH */
+		case 'z':
+			/* must directly follow 'b' case for backwards compat */
+			simple_backup_suffix = xstrdup(optarg);
+			break;
+		case 'B':
+			origprae = xstrdup(optarg);
+			break;
+		case 'c':
+			diff_type = CONTEXT_DIFF;
+			break;
+		case 'C':
+			check_only = true;
+			break;
+		case 'd':
+			if (chdir(optarg) == -1)
+				pfatal("can't cd to %s", optarg);
+			break;
+		case 'D':
+			do_defines = true;
+			if (!isalpha((unsigned char)*optarg) && *optarg != '_')
+				fatal("argument to -D is not an identifier\n");
+			snprintf(if_defined, sizeof if_defined,
+			    "#ifdef %s\n", optarg);
+			snprintf(not_defined, sizeof not_defined,
+			    "#ifndef %s\n", optarg);
+			snprintf(end_defined, sizeof end_defined,
+			    "#endif /* %s */\n", optarg);
+			break;
+		case 'e':
+			diff_type = ED_DIFF;
+			break;
+		case 'E':
+			remove_empty_files = true;
+			break;
+		case 'f':
+			force = true;
+			break;
+		case 'F':
+			maxfuzz = atoi(optarg);
+			break;
+		case 'i':
+			if (++filec == MAXFILEC)
+				fatal("too many file arguments\n");
+			filearg[filec] = xstrdup(optarg);
+			break;
+		case 'l':
+			canonicalize = true;
+			break;
+		case 'n':
+			diff_type = NORMAL_DIFF;
+			break;
+		case 'N':
+			noreverse = true;
+			break;
+		case 'o':
+			outname = xstrdup(optarg);
+			break;
+		case 'p':
+			strippath = atoi(optarg);
+			break;
+		case 'r':
+			if (strlcpy(rejname, optarg,
+			    sizeof(rejname)) >= sizeof(rejname))
+				fatal("argument for -r is too long\n");
+			break;
+		case 'R':
+			reverse = true;
+			reverse_flag_specified = true;
+			break;
+		case 's':
+			verbose = false;
+			break;
+		case 't':
+			batch = true;
+			break;
+		case 'u':
+			diff_type = UNI_DIFF;
+			break;
+		case 'v':
+			version();
+			break;
+		case 'V':
+			backup_type = get_version(optarg);
+			break;
+#ifdef DEBUGGING
+		case 'x':
+			debug = atoi(optarg);
+			break;
+#endif
+		default:
+			if (ch != '\0')
+				usage();
+			break;
+		}
+	}
+	Argc -= optind;
+	Argv += optind;
+
+	if (Argc > 0) {
+		filearg[0] = xstrdup(*Argv++);
+		Argc--;
+		while (Argc > 0) {
+			if (++filec == MAXFILEC)
+				fatal("too many file arguments\n");
+			filearg[filec] = xstrdup(*Argv++);
+			Argc--;
+		}
+	}
+
+	if (getenv("POSIXLY_CORRECT") != NULL)
+		posix = 1;
 }
 
-/* Process switches and filenames up to next '+' or end of list. */
-
-void
-get_some_switches()
+static __dead void
+usage(void)
 {
-    Reg1 char *s;
-
-    rejname[0] = '\0';
-    Argc_last = Argc;
-    Argv_last = Argv;
-    if (!Argc)
-	return;
-    for (Argc--,Argv++; Argc; Argc--,Argv++) {
-	s = Argv[0];
-	if (strEQ(s, "+")) {
-	    return;			/* + will be skipped by for loop */
-	}
-	if (*s != '-' || !s[1]) {
-	    if (filec == MAXFILEC)
-		fatal1("too many file arguments\n");
-	    filearg[filec++] = savestr(s);
-	}
-	else {
-	    switch (*++s) {
-	    case 'b':
-		simple_backup_suffix = savestr(nextarg());
-		break;
-	    case 'B':
-		origprae = savestr(nextarg());
-		break;
-	    case 'c':
-		diff_type = CONTEXT_DIFF;
-		break;
-	    case 'd':
-		if (!*++s)
-		    s = nextarg();
-		if (chdir(s) < 0)
-		    pfatal2("can't cd to %s", s);
-		break;
-	    case 'D':
-	    	do_defines = TRUE;
-		if (!*++s)
-		    s = nextarg();
-		if (!isalpha(*s) && '_' != *s)
-		    fatal1("argument to -D is not an identifier\n");
-		Sprintf(if_defined, "#ifdef %s\n", s);
-		Sprintf(not_defined, "#ifndef %s\n", s);
-		Sprintf(end_defined, "#endif /* %s */\n", s);
-		break;
-	    case 'e':
-		diff_type = ED_DIFF;
-		break;
-	    case 'E':
-		remove_empty_files = TRUE;
-		break;
-	    case 'f':
-		force = TRUE;
-		break;
-	    case 'F':
-		if (*++s == '=')
-		    s++;
-		maxfuzz = atoi(s);
-		break;
-	    case 'l':
-		canonicalize = TRUE;
-		break;
-	    case 'n':
-		diff_type = NORMAL_DIFF;
-		break;
-	    case 'N':
-		noreverse = TRUE;
-		break;
-	    case 'o':
-		outname = savestr(nextarg());
-		break;
-	    case 'p':
-		if (*++s == '=')
-		    s++;
-		strippath = atoi(s);
-		break;
-	    case 'r':
-		Strcpy(rejname, nextarg());
-		break;
-	    case 'R':
-		reverse = TRUE;
-		reverse_flag_specified = TRUE;
-		break;
-	    case 's':
-		verbose = FALSE;
-		break;
-	    case 'S':
-		skip_rest_of_patch = TRUE;
-		break;
-	    case 't':
-		batch = TRUE;
-		break;
-	    case 'u':
-		diff_type = UNI_DIFF;
-		break;
-	    case 'v':
-		version();
-		break;
-	    case 'V':
-#ifndef NODIR
-		backup_type = get_version (nextarg ());
-#endif
-		break;
-#ifdef DEBUGGING
-	    case 'x':
-		debug = atoi(s+1);
-		break;
-#endif
-	    default:
-		fprintf(stderr, "patch: unrecognized option `%s'\n", Argv[0]);
-		fprintf(stderr, "\
-Usage: patch [options] [origfile [patchfile]] [+ [options] [origfile]]...\n\
-Options:\n\
-       [-ceEflnNRsStuv] [-b backup-ext] [-B backup-prefix] [-d directory]\n\
-       [-D symbol] [-Fmax-fuzz] [-o out-file] [-p[strip-count]]\n\
-       [-r rej-name] [-V {numbered,existing,simple}]\n");
-		my_exit(1);
-	    }
-	}
-    }
+	fprintf(stderr,
+"usage: patch [-bCcEeflNnRstuv] [-B backup-prefix] [-D symbol] [-d directory]\n"
+"             [-F max-fuzz] [-i patchfile] [-o out-file] [-p strip-count]\n"
+"             [-r rej-name] [-V t | nil | never] [-x number] [-z backup-ext]\n"
+"             [--posix] [origfile [patchfile]]\n"
+"       patch <patchfile\n");
+	my_exit(2);
 }
 
-/* Attempt to find the right place to apply this hunk of patch. */
-
-LINENUM
-locate_hunk(fuzz)
-LINENUM fuzz;
+/*
+ * Attempt to find the right place to apply this hunk of patch.
+ */
+static LINENUM
+locate_hunk(LINENUM fuzz)
 {
-    Reg1 LINENUM first_guess = pch_first() + last_offset;
-    Reg2 LINENUM offset;
-    LINENUM pat_lines = pch_ptrn_lines();
-    Reg3 LINENUM max_pos_offset = input_lines - first_guess
-				- pat_lines + 1; 
-    Reg4 LINENUM max_neg_offset = first_guess - last_frozen_line - 1
-				+ pch_context();
+	LINENUM	first_guess = pch_first() + last_offset;
+	LINENUM	offset;
+	LINENUM	pat_lines = pch_ptrn_lines();
+	LINENUM	max_pos_offset = input_lines - first_guess - pat_lines + 1;
+	LINENUM	max_neg_offset = first_guess - last_frozen_line - 1 + pch_context();
 
-    if (!pat_lines)			/* null range matches always */
-	return first_guess;
-    if (max_neg_offset >= first_guess)	/* do not try lines < 0 */
-	max_neg_offset = first_guess - 1;
-    if (first_guess <= input_lines && patch_match(first_guess, Nulline, fuzz))
-	return first_guess;
-    for (offset = 1; ; offset++) {
-	Reg5 bool check_after = (offset <= max_pos_offset);
-	Reg6 bool check_before = (offset <= max_neg_offset);
+	if (pat_lines == 0) {		/* null range matches always */
+		if (verbose && fuzz == 0 && (diff_type == CONTEXT_DIFF
+		    || diff_type == NEW_CONTEXT_DIFF
+		    || diff_type == UNI_DIFF)) {
+			say("Empty context always matches.\n");
+		}
+		if (first_guess == 0)
+			return 1;
+		return (first_guess);
+	}
+	if (max_neg_offset >= first_guess)	/* do not try lines < 0 */
+		max_neg_offset = first_guess - 1;
+	if (first_guess <= input_lines && patch_match(first_guess, 0, fuzz))
+		return first_guess;
+	for (offset = 1; ; offset++) {
+		bool	check_after = (offset <= max_pos_offset);
+		bool	check_before = (offset <= max_neg_offset);
 
-	if (check_after && patch_match(first_guess, offset, fuzz)) {
+		if (check_after && patch_match(first_guess, offset, fuzz)) {
 #ifdef DEBUGGING
-	    if (debug & 1)
-		say3("Offset changing from %ld to %ld\n", last_offset, offset);
+			if (debug & 1)
+				say("Offset changing from %ld to %ld\n",
+				    last_offset, offset);
 #endif
-	    last_offset = offset;
-	    return first_guess+offset;
-	}
-	else if (check_before && patch_match(first_guess, -offset, fuzz)) {
+			last_offset = offset;
+			return first_guess + offset;
+		} else if (check_before && patch_match(first_guess, -offset, fuzz)) {
 #ifdef DEBUGGING
-	    if (debug & 1)
-		say3("Offset changing from %ld to %ld\n", last_offset, -offset);
+			if (debug & 1)
+				say("Offset changing from %ld to %ld\n",
+				    last_offset, -offset);
 #endif
-	    last_offset = -offset;
-	    return first_guess-offset;
+			last_offset = -offset;
+			return first_guess - offset;
+		} else if (!check_before && !check_after)
+			return 0;
 	}
-	else if (!check_before && !check_after)
-	    return Nulline;
-    }
 }
 
 /* We did not find the pattern, dump out the hunk so they can handle it. */
 
-void
-abort_hunk()
+static void
+abort_context_hunk(void)
 {
-    Reg1 LINENUM i;
-    Reg2 LINENUM pat_end = pch_end();
-    /* add in last_offset to guess the same as the previous successful hunk */
-    LINENUM oldfirst = pch_first() + last_offset;
-    LINENUM newfirst = pch_newfirst() + last_offset;
-    LINENUM oldlast = oldfirst + pch_ptrn_lines() - 1;
-    LINENUM newlast = newfirst + pch_repl_lines() - 1;
-    char *stars = (diff_type >= NEW_CONTEXT_DIFF ? " ****" : "");
-    char *minuses = (diff_type >= NEW_CONTEXT_DIFF ? " ----" : " -----");
+	LINENUM	i;
+	const LINENUM	pat_end = pch_end();
+	/*
+	 * add in last_offset to guess the same as the previous successful
+	 * hunk
+	 */
+	const LINENUM	oldfirst = pch_first() + last_offset;
+	const LINENUM	newfirst = pch_newfirst() + last_offset;
+	const LINENUM	oldlast = oldfirst + pch_ptrn_lines() - 1;
+	const LINENUM	newlast = newfirst + pch_repl_lines() - 1;
+	const char	*stars = (diff_type >= NEW_CONTEXT_DIFF ? " ****" : "");
+	const char	*minuses = (diff_type >= NEW_CONTEXT_DIFF ? " ----" : " -----");
 
-    fprintf(rejfp, "***************\n");
-    for (i=0; i<=pat_end; i++) {
-	switch (pch_char(i)) {
-	case '*':
-	    if (oldlast < oldfirst)
-		fprintf(rejfp, "*** 0%s\n", stars);
-	    else if (oldlast == oldfirst)
-		fprintf(rejfp, "*** %ld%s\n", oldfirst, stars);
-	    else
-		fprintf(rejfp, "*** %ld,%ld%s\n", oldfirst, oldlast, stars);
-	    break;
-	case '=':
-	    if (newlast < newfirst)
-		fprintf(rejfp, "--- 0%s\n", minuses);
-	    else if (newlast == newfirst)
-		fprintf(rejfp, "--- %ld%s\n", newfirst, minuses);
-	    else
-		fprintf(rejfp, "--- %ld,%ld%s\n", newfirst, newlast, minuses);
-	    break;
-	case '\n':
-	    fprintf(rejfp, "%s", pfetch(i));
-	    break;
-	case ' ': case '-': case '+': case '!':
-	    fprintf(rejfp, "%c %s", pch_char(i), pfetch(i));
-	    break;
-	default:
-	    fatal1("fatal internal error in abort_hunk\n"); 
+	fprintf(rejfp, "***************\n");
+	for (i = 0; i <= pat_end; i++) {
+		switch (pch_char(i)) {
+		case '*':
+			if (oldlast < oldfirst)
+				fprintf(rejfp, "*** 0%s\n", stars);
+			else if (oldlast == oldfirst)
+				fprintf(rejfp, "*** %ld%s\n", oldfirst, stars);
+			else
+				fprintf(rejfp, "*** %ld,%ld%s\n", oldfirst,
+				    oldlast, stars);
+			break;
+		case '=':
+			if (newlast < newfirst)
+				fprintf(rejfp, "--- 0%s\n", minuses);
+			else if (newlast == newfirst)
+				fprintf(rejfp, "--- %ld%s\n", newfirst, minuses);
+			else
+				fprintf(rejfp, "--- %ld,%ld%s\n", newfirst,
+				    newlast, minuses);
+			break;
+		case '\n':
+			fprintf(rejfp, "%s", pfetch(i));
+			break;
+		case ' ':
+		case '-':
+		case '+':
+		case '!':
+			fprintf(rejfp, "%c %s", pch_char(i), pfetch(i));
+			break;
+		default:
+			fatal("fatal internal error in abort_context_hunk\n");
+		}
 	}
-    }
+}
+
+static void
+rej_line(int ch, LINENUM i)
+{
+	size_t len;
+	const char *line = pfetch(i);
+
+	len = strlen(line);
+
+	fprintf(rejfp, "%c%s", ch, line);
+	if (len == 0 || line[len-1] != '\n')
+		fprintf(rejfp, "\n\\ No newline at end of file\n");
+}
+
+static void
+abort_hunk(void)
+{
+	LINENUM		i, j, split;
+	int		ch1, ch2;
+	const LINENUM	pat_end = pch_end();
+	const LINENUM	oldfirst = pch_first() + last_offset;
+	const LINENUM	newfirst = pch_newfirst() + last_offset;
+
+	if (diff_type != UNI_DIFF) {
+		abort_context_hunk();
+		return;
+	}
+	split = -1;
+	for (i = 0; i <= pat_end; i++) {
+		if (pch_char(i) == '=') {
+			split = i;
+			break;
+		}
+	}
+	if (split == -1) {
+		fprintf(rejfp, "malformed hunk: no split found\n");
+		return;
+	}
+	i = 0;
+	j = split + 1;
+	fprintf(rejfp, "@@ -%ld,%ld +%ld,%ld @@\n",
+	    pch_ptrn_lines() ? oldfirst : 0,
+	    pch_ptrn_lines(), newfirst, pch_repl_lines());
+	while (i < split || j <= pat_end) {
+		ch1 = i < split ? pch_char(i) : -1;
+		ch2 = j <= pat_end ? pch_char(j) : -1;
+		if (ch1 == '-') {
+			rej_line('-', i);
+			i++;
+		} else if (ch1 == ' ' && ch2 == ' ') {
+			rej_line(' ', i);
+			i++;
+			j++;
+		} else if (ch1 == '!' && ch2 == '!') {
+			while (i < split && ch1 == '!') {
+				rej_line('-', i);
+				i++;
+				ch1 = i < split ? pch_char(i) : -1;
+			}
+			while (j <= pat_end && ch2 == '!') {
+				rej_line('+', j);
+				j++;
+				ch2 = j <= pat_end ? pch_char(j) : -1;
+			}
+		} else if (ch1 == '*') {
+			i++;
+		} else if (ch2 == '+' || ch2 == ' ') {
+			rej_line(ch2, j);
+			j++;
+		} else {
+			fprintf(rejfp, "internal error on (%ld %ld %ld)\n",
+			    i, split, j);
+			rej_line(ch1, i);
+			rej_line(ch2, j);
+			return;
+		}
+	}
 }
 
 /* We found where to apply it (we hope), so do it. */
 
-void
-apply_hunk(where)
-LINENUM where;
+static void
+apply_hunk(LINENUM where)
 {
-    Reg1 LINENUM old = 1;
-    Reg2 LINENUM lastline = pch_ptrn_lines();
-    Reg3 LINENUM new = lastline+1;
+	LINENUM		old = 1;
+	const LINENUM	lastline = pch_ptrn_lines();
+	LINENUM		new = lastline + 1;
 #define OUTSIDE 0
 #define IN_IFNDEF 1
 #define IN_IFDEF 2
 #define IN_ELSE 3
-    Reg4 int def_state = OUTSIDE;
-    Reg5 bool R_do_defines = do_defines;
-    Reg6 LINENUM pat_end = pch_end();
+	int		def_state = OUTSIDE;
+	const LINENUM	pat_end = pch_end();
 
-    where--;
-    while (pch_char(new) == '=' || pch_char(new) == '\n')
-	new++;
-    
-    while (old <= lastline) {
-	if (pch_char(old) == '-') {
-	    copy_till(where + old - 1);
-	    if (R_do_defines) {
-		if (def_state == OUTSIDE) {
-		    fputs(not_defined, ofp);
-		    def_state = IN_IFNDEF;
-		}
-		else if (def_state == IN_IFDEF) {
-		    fputs(else_defined, ofp);
-		    def_state = IN_ELSE;
-		}
-		fputs(pfetch(old), ofp);
-	    }
-	    last_frozen_line++;
-	    old++;
-	}
-	else if (new > pat_end) {
-	    break;
-	}
-	else if (pch_char(new) == '+') {
-	    copy_till(where + old - 1);
-	    if (R_do_defines) {
-		if (def_state == IN_IFNDEF) {
-		    fputs(else_defined, ofp);
-		    def_state = IN_ELSE;
-		}
-		else if (def_state == OUTSIDE) {
-		    fputs(if_defined, ofp);
-		    def_state = IN_IFDEF;
-		}
-	    }
-	    fputs(pfetch(new), ofp);
-	    new++;
-	}
-	else if (pch_char(new) != pch_char(old)) {
-	    say3("Out-of-sync patch, lines %ld,%ld--mangled text or line numbers, maybe?\n",
-		pch_hunk_beg() + old,
-		pch_hunk_beg() + new);
-#ifdef DEBUGGING
-	    say3("oldchar = '%c', newchar = '%c'\n",
-		pch_char(old), pch_char(new));
-#endif
-	    my_exit(1);
-	}
-	else if (pch_char(new) == '!') {
-	    copy_till(where + old - 1);
-	    if (R_do_defines) {
-	       fputs(not_defined, ofp);
-	       def_state = IN_IFNDEF;
-	    }
-	    while (pch_char(old) == '!') {
-		if (R_do_defines) {
-		    fputs(pfetch(old), ofp);
-		}
-		last_frozen_line++;
-		old++;
-	    }
-	    if (R_do_defines) {
-		fputs(else_defined, ofp);
-		def_state = IN_ELSE;
-	    }
-	    while (pch_char(new) == '!') {
-		fputs(pfetch(new), ofp);
+	where--;
+	while (pch_char(new) == '=' || pch_char(new) == '\n')
 		new++;
-	    }
+
+	while (old <= lastline) {
+		if (pch_char(old) == '-') {
+			copy_till(where + old - 1, false);
+			if (do_defines) {
+				if (def_state == OUTSIDE) {
+					fputs(not_defined, ofp);
+					def_state = IN_IFNDEF;
+				} else if (def_state == IN_IFDEF) {
+					fputs(else_defined, ofp);
+					def_state = IN_ELSE;
+				}
+				fputs(pfetch(old), ofp);
+			}
+			last_frozen_line++;
+			old++;
+		} else if (new > pat_end) {
+			break;
+		} else if (pch_char(new) == '+') {
+			copy_till(where + old - 1, false);
+			if (do_defines) {
+				if (def_state == IN_IFNDEF) {
+					fputs(else_defined, ofp);
+					def_state = IN_ELSE;
+				} else if (def_state == OUTSIDE) {
+					fputs(if_defined, ofp);
+					def_state = IN_IFDEF;
+				}
+			}
+			fputs(pfetch(new), ofp);
+			new++;
+		} else if (pch_char(new) != pch_char(old)) {
+			say("Out-of-sync patch, lines %ld,%ld--mangled text or line numbers, maybe?\n",
+			    pch_hunk_beg() + old,
+			    pch_hunk_beg() + new);
+#ifdef DEBUGGING
+			say("oldchar = '%c', newchar = '%c'\n",
+			    pch_char(old), pch_char(new));
+#endif
+			my_exit(2);
+		} else if (pch_char(new) == '!') {
+			copy_till(where + old - 1, false);
+			if (do_defines) {
+				fputs(not_defined, ofp);
+				def_state = IN_IFNDEF;
+			}
+			while (pch_char(old) == '!') {
+				if (do_defines) {
+					fputs(pfetch(old), ofp);
+				}
+				last_frozen_line++;
+				old++;
+			}
+			if (do_defines) {
+				fputs(else_defined, ofp);
+				def_state = IN_ELSE;
+			}
+			while (pch_char(new) == '!') {
+				fputs(pfetch(new), ofp);
+				new++;
+			}
+		} else {
+			if (pch_char(new) != ' ')
+				fatal("Internal error: expected ' '\n");
+			old++;
+			new++;
+			if (do_defines && def_state != OUTSIDE) {
+				fputs(end_defined, ofp);
+				def_state = OUTSIDE;
+			}
+		}
 	}
-	else {
-	    assert(pch_char(new) == ' ');
-	    old++;
-	    new++;
-	    if (R_do_defines && def_state != OUTSIDE) {
+	if (new <= pat_end && pch_char(new) == '+') {
+		copy_till(where + old - 1, false);
+		if (do_defines) {
+			if (def_state == OUTSIDE) {
+				fputs(if_defined, ofp);
+				def_state = IN_IFDEF;
+			} else if (def_state == IN_IFNDEF) {
+				fputs(else_defined, ofp);
+				def_state = IN_ELSE;
+			}
+		}
+		while (new <= pat_end && pch_char(new) == '+') {
+			fputs(pfetch(new), ofp);
+			new++;
+		}
+	}
+	if (do_defines && def_state != OUTSIDE) {
 		fputs(end_defined, ofp);
-		def_state = OUTSIDE;
-	    }
 	}
-    }
-    if (new <= pat_end && pch_char(new) == '+') {
-	copy_till(where + old - 1);
-	if (R_do_defines) {
-	    if (def_state == OUTSIDE) {
-	    	fputs(if_defined, ofp);
-		def_state = IN_IFDEF;
-	    }
-	    else if (def_state == IN_IFNDEF) {
-		fputs(else_defined, ofp);
-		def_state = IN_ELSE;
-	    }
+}
+
+/*
+ * Open the new file.
+ */
+static void
+init_output(const char *name)
+{
+	ofp = fopen(name, "w");
+	if (ofp == NULL)
+		pfatal("can't create %s", name);
+}
+
+/*
+ * Open a file to put hunks we can't locate.
+ */
+static void
+init_reject(const char *name)
+{
+	rejfp = fopen(name, "w");
+	if (rejfp == NULL)
+		pfatal("can't create %s", name);
+}
+
+/*
+ * Copy input file to output, up to wherever hunk is to be applied.
+ * If endoffile is true, treat the last line specially since it may
+ * lack a newline.
+ */
+static void
+copy_till(LINENUM lastline, bool endoffile)
+{
+	if (last_frozen_line > lastline)
+		fatal("misordered hunks! output would be garbled\n");
+	while (last_frozen_line < lastline) {
+		if (++last_frozen_line == lastline && endoffile)
+			dump_line(last_frozen_line, !last_line_missing_eol);
+		else
+			dump_line(last_frozen_line, true);
 	}
-	while (new <= pat_end && pch_char(new) == '+') {
-	    fputs(pfetch(new), ofp);
-	    new++;
-	}
-    }
-    if (R_do_defines && def_state != OUTSIDE) {
-	fputs(end_defined, ofp);
-    }
 }
 
-/* Open the new file. */
-
-void
-init_output(name)
-char *name;
-{
-    ofp = fopen(name, "w");
-    if (ofp == Nullfp)
-	pfatal2("can't create %s", name);
-}
-
-/* Open a file to put hunks we can't locate. */
-
-void
-init_reject(name)
-char *name;
-{
-    rejfp = fopen(name, "w");
-    if (rejfp == Nullfp)
-	pfatal2("can't create %s", name);
-}
-
-/* Copy input file to output, up to wherever hunk is to be applied. */
-
-void
-copy_till(lastline)
-Reg1 LINENUM lastline;
-{
-    Reg2 LINENUM R_last_frozen_line = last_frozen_line;
-
-    if (R_last_frozen_line > lastline)
-	fatal1("misordered hunks! output would be garbled\n");
-    while (R_last_frozen_line < lastline) {
-	dump_line(++R_last_frozen_line);
-    }
-    last_frozen_line = R_last_frozen_line;
-}
-
-/* Finish copying the input file to the output file. */
-
-void
-spew_output()
+/*
+ * Finish copying the input file to the output file.
+ */
+static void
+spew_output(void)
 {
 #ifdef DEBUGGING
-    if (debug & 256)
-	say3("il=%ld lfl=%ld\n",input_lines,last_frozen_line);
+	if (debug & 256)
+		say("il=%ld lfl=%ld\n", input_lines, last_frozen_line);
 #endif
-    if (input_lines)
-	copy_till(input_lines);		/* dump remainder of file */
-    Fclose(ofp);
-    ofp = Nullfp;
+	if (input_lines)
+		copy_till(input_lines, true);	/* dump remainder of file */
+	fclose(ofp);
+	ofp = NULL;
 }
 
-/* Copy one line from input to output. */
-
-void
-dump_line(line)
-LINENUM line;
+/*
+ * Copy one line from input to output.
+ */
+static void
+dump_line(LINENUM line, bool write_newline)
 {
-    Reg1 char *s;
-    Reg2 char R_newline = '\n';
+	char	*s;
 
-    /* Note: string is not null terminated. */
-    for (s=ifetch(line, 0); putc(*s, ofp) != R_newline; s++) ;
+	s = ifetch(line, 0);
+	if (s == NULL)
+		return;
+	/* Note: string is not NUL terminated. */
+	for (; *s != '\n'; s++)
+		putc(*s, ofp);
+	if (write_newline)
+		putc('\n', ofp);
 }
 
-/* Does the patch pattern match at line base+offset? */
-
-bool
-patch_match(base, offset, fuzz)
-LINENUM base;
-LINENUM offset;
-LINENUM fuzz;
+/*
+ * Does the patch pattern match at line base+offset?
+ */
+static bool
+patch_match(LINENUM base, LINENUM offset, LINENUM fuzz)
 {
-    Reg1 LINENUM pline = 1 + fuzz;
-    Reg2 LINENUM iline;
-    Reg3 LINENUM pat_lines = pch_ptrn_lines() - fuzz;
+	LINENUM		pline = 1 + fuzz;
+	LINENUM		iline;
+	LINENUM		pat_lines = pch_ptrn_lines() - fuzz;
+	const char	*ilineptr;
+	const char	*plineptr;
+	ssize_t		plinelen;
 
-    for (iline=base+offset+fuzz; pline <= pat_lines; pline++,iline++) {
-	if (canonicalize) {
-	    if (!similar(ifetch(iline, (offset >= 0)),
-			 pfetch(pline),
-			 pch_line_len(pline) ))
-		return FALSE;
+	for (iline = base + offset + fuzz; pline <= pat_lines; pline++, iline++) {
+		ilineptr = ifetch(iline, offset >= 0);
+		if (ilineptr == NULL)
+			return false;
+		plineptr = pfetch(pline);
+		plinelen = pch_line_len(pline);
+		if (canonicalize) {
+			if (!similar(ilineptr, plineptr, plinelen))
+				return false;
+		} else if (strnNE(ilineptr, plineptr, plinelen))
+			return false;
+		if (iline == input_lines) {
+			/*
+			 * We are looking at the last line of the file.
+			 * If the file has no eol, the patch line should
+			 * not have one either and vice-versa. Note that
+			 * plinelen > 0.
+			 */
+			if (last_line_missing_eol) {
+				if (plineptr[plinelen - 1] == '\n')
+					return false;
+			} else {
+				if (plineptr[plinelen - 1] != '\n')
+					return false;
+			}
+		}
 	}
-	else if (strnNE(ifetch(iline, (offset >= 0)),
-		   pfetch(pline),
-		   pch_line_len(pline) ))
-	    return FALSE;
-    }
-    return TRUE;
+	return true;
 }
 
-/* Do two lines match with canonicalized white space? */
-
-bool
-similar(a,b,len)
-Reg1 char *a;
-Reg2 char *b;
-Reg3 int len;
+/*
+ * Do two lines match with canonicalized white space?
+ */
+static bool
+similar(const char *a, const char *b, ssize_t len)
 {
-    while (len) {
-	if (isspace(*b)) {		/* whitespace (or \n) to match? */
-	    if (!isspace(*a))		/* no corresponding whitespace? */
-		return FALSE;
-	    while (len && isspace(*b) && *b != '\n')
-		b++,len--;		/* skip pattern whitespace */
-	    while (isspace(*a) && *a != '\n')
-		a++;			/* skip target whitespace */
-	    if (*a == '\n' || *b == '\n')
-		return (*a == *b);	/* should end in sync */
+	while (len) {
+		if (isspace((unsigned char)*b)) { /* whitespace (or \n) to match? */
+			if (!isspace((unsigned char)*a))
+				return false;	/* no corresponding whitespace */
+			while (len && isspace((unsigned char)*b) && *b != '\n')
+				b++, len--;	/* skip pattern whitespace */
+			while (isspace((unsigned char)*a) && *a != '\n')
+				a++;	/* skip target whitespace */
+			if (*a == '\n' || *b == '\n')
+				return (*a == *b);	/* should end in sync */
+		} else if (*a++ != *b++)	/* match non-whitespace chars */
+			return false;
+		else
+			len--;	/* probably not necessary */
 	}
-	else if (*a++ != *b++)		/* match non-whitespace chars */
-	    return FALSE;
-	else
-	    len--;			/* probably not necessary */
-    }
-    return TRUE;			/* actually, this is not reached */
-					/* since there is always a \n */
-}
-
-/* Exit with cleanup. */
-
-void
-my_exit(status)
-int status;
-{
-    Unlink(TMPINNAME);
-    if (!toutkeep) {
-	Unlink(TMPOUTNAME);
-    }
-    if (!trejkeep) {
-	Unlink(TMPREJNAME);
-    }
-    Unlink(TMPPATNAME);
-    exit(status);
+	return true;		/* actually, this is not reached */
+	/* since there is always a \n */
 }

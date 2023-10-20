@@ -412,6 +412,7 @@ $code.=<<___;
 .type	gcm_init_clmul,\@abi-omnipotent
 .align	16
 gcm_init_clmul:
+	endbr64
 	movdqu		($Xip),$Hkey
 	pshufd		\$0b01001110,$Hkey,$Hkey	# dword swap
 
@@ -449,6 +450,7 @@ $code.=<<___;
 .type	gcm_gmult_clmul,\@abi-omnipotent
 .align	16
 gcm_gmult_clmul:
+	endbr64
 	movdqu		($Xip),$Xi
 	movdqa		.Lbswap_mask(%rip),$T3
 	movdqu		($Htbl),$Hkey
@@ -476,6 +478,7 @@ $code.=<<___;
 .type	gcm_ghash_clmul,\@abi-omnipotent
 .align	16
 gcm_ghash_clmul:
+	endbr64
 ___
 $code.=<<___ if ($win64);
 .LSEH_begin_gcm_ghash_clmul:
@@ -622,6 +625,7 @@ ___
 }
 
 $code.=<<___;
+.section .rodata
 .align	64
 .Lbswap_mask:
 	.byte	15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0
@@ -668,9 +672,8 @@ $code.=<<___;
 	.value	0xA7D0,0xA612,0xA454,0xA596,0xA0D8,0xA11A,0xA35C,0xA29E
 	.value	0xB5E0,0xB422,0xB664,0xB7A6,0xB2E8,0xB32A,0xB16C,0xB0AE
 	.value	0xBBF0,0xBA32,0xB874,0xB9B6,0xBCF8,0xBD3A,0xBF7C,0xBEBE
-
-.asciz	"GHASH for x86_64, CRYPTOGAMS by <appro\@openssl.org>"
 .align	64
+.text
 ___
 
 # EXCEPTION_DISPOSITION handler (EXCEPTION_RECORD *rec,ULONG64 frame,
@@ -686,6 +689,7 @@ $code.=<<___;
 .type	se_handler,\@abi-omnipotent
 .align	16
 se_handler:
+	endbr64
 	push	%rsi
 	push	%rdi
 	push	%rbx

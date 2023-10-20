@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: sigprocmask.S,v 1.5 2016/05/18 20:21:13 guenther Exp $	*/
 /*	$NetBSD: sigprocmask.S,v 1.6 2003/08/07 16:42:21 agc Exp $	*/
 
 /*-
@@ -37,7 +37,7 @@
 
 #include "SYS.h"
 
-SYSENTRY(sigprocmask)
+SYSENTRY_HIDDEN(sigprocmask)
 	mov	r5, r2			/* fetch new sigset pointer */
 	tst	r2, r2			/* check new sigset pointer */
 	bf	1f			/* if not null, indirect */
@@ -46,20 +46,28 @@ SYSENTRY(sigprocmask)
 	nop
 1:	mov.l	@r2, r2			/* fetch indirect ... */
 	mov	r2, r5			/* to new mask arg */
-2:	mov.l	LSYS_sigprocmask, r0
+2:	
+#if SYS_sigprocmask >= 128
+	mov.l	LSYS_sigprocmask, r0
+#else
+	mov	#SYS_sigprocmask, r0
+#endif
 	trapa	#0x80
-	bf	err
+	bf	4f
 	mov	r6, r2			/* fetch old mask requested */
 	tst	r2, r2			/* test if old mask requested */
-	bt	out
+	bt	3f
 	mov.l	r0, @r2			/* store old mask */
-out:
+3:
 	xor	r0, r0
 	rts
-	nop
-err:
-	JUMP_CERROR
+	 nop
+4:
+	SET_ERRNO_AND_RETURN
 
 	.align	2
+#if SYS_sigprocmask >= 128
 LSYS_sigprocmask:
 	.long	SYS_sigprocmask
+#endif
+SYSCALL_END_HIDDEN(sigprocmask)

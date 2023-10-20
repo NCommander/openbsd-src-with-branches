@@ -1,3 +1,4 @@
+/*	$OpenBSD$	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,19 +12,14 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/* $Source: /usr/local/kcs/sys.REL9_05_800/spmath/RCS/divufr.c,v $
- * $Revision: 1.6.88.1 $	$Author: root $
- * $State: Exp $   	$Locker:  $
- * $Date: 93/12/07 15:06:03 $
- */
+/* @(#)divufr.c: Revision: 1.6.88.1 Date: 93/12/07 15:06:03 */
 
+#include "md.h"
 
-#include "../spmath/md.h"
-
-VOID divufr(opnd1,opnd2,result)
-
-unsigned int opnd1, opnd2;
-struct mdsfu_register *result;
+void
+divufr(opnd1,opnd2,result)
+	unsigned int opnd1, opnd2;
+	struct mdsfu_register *result;
 {
 	/* check divisor for zero */
 	if (opnd2 == 0) {
@@ -40,5 +36,4 @@ struct mdsfu_register *result;
 
 	/* do the divide */
 	divu(opnd1,0,opnd2,result);
-	return;
 }

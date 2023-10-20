@@ -1,3 +1,4 @@
+/*	$OpenBSD: clock.c,v 1.16 2023/08/23 01:55:47 cheloha Exp $	*/
 /*	$NetBSD: clock.c,v 1.32 2006/09/05 11:09:36 uwe Exp $	*/
 
 /*-
@@ -15,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -39,7 +33,9 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/kernel.h>
+#include <sys/clockintr.h>
 #include <sys/device.h>
+#include <sys/timetc.h>
 
 #include <dev/clock_subr.h>
 
@@ -52,9 +48,6 @@
 
 #define	NWDOG 0
 
-#ifndef HZ
-#define	HZ		64
-#endif
 #define	MINYEAR		2002	/* "today" */
 #define	SH_RTC_CLOCK	16384	/* Hz */
 
@@ -62,7 +55,8 @@
  * OpenBSD/sh clock module
  *  + default 64Hz
  *  + use TMU channel 0 as clock interrupt source.
- *  + use TMU channel 1 and 2 as emulated software interrupt soruce.
+ *  + use TMU channel 1 as emulated software interrupt source.
+ *  + use TMU channel 2 as freerunning counter for timecounter.
  *  + If RTC module is active, TMU channel 0 input source is RTC output.
  *    (1.6384kHz)
  */
@@ -79,6 +73,8 @@ struct {
 	uint32_t pclock;	/* PCLOCK */
 	uint32_t cpuclock;	/* CPU clock */
 	int flags;
+
+	struct timecounter tc;
 } sh_clock = {
 #ifdef PCLOCK
 	.pclock = PCLOCK,
@@ -97,6 +93,7 @@ uint32_t maxwdog;
 /* interrupt handler is timing critical. prepared for each. */
 int sh3_clock_intr(void *);
 int sh4_clock_intr(void *);
+u_int sh_timecounter_get(struct timecounter *);
 
 /*
  * Estimate CPU and Peripheral clock.
@@ -107,12 +104,14 @@ do {									\
 	_reg_write_4(SH_(TCNT ## x), 0xffffffff);			\
 	_reg_bset_1(SH_(TSTR), TSTR_STR##x);				\
 } while (/*CONSTCOND*/0)
+
 #define	TMU_ELAPSED(x)							\
 	(0xffffffff - _reg_read_4(SH_(TCNT ## x)))
+
 void
 sh_clock_init(int flags, struct rtc_ops *rtc)
 {
-	uint32_t s, t0, t1 __attribute__((__unused__));
+	uint32_t s, t0, cnt_1s;
 
 	sh_clock.flags = flags;
 	if (rtc != NULL)
@@ -141,6 +140,9 @@ sh_clock_init(int flags, struct rtc_ops *rtc)
 		_reg_write_2(SH_(TCR0),
 		    CPU_IS_SH3 ? SH3_TCR_TPSC_RTC : SH4_TCR_TPSC_RTC);
 		sh_clock.tmuclk = SH_RTC_CLOCK;
+
+		/* Make sure RTC oscillator is enabled */
+		_reg_bset_1(SH_(RCR2), SH_RCR2_ENABLE);
 	}
 
 	s = _cpu_exception_suspend();
@@ -150,31 +152,36 @@ sh_clock_init(int flags, struct rtc_ops *rtc)
 	t0 = TMU_ELAPSED(0);
 	_cpu_exception_resume(s);
 
-	sh_clock.cpuclock = ((10000000 * 10) / t0) * sh_clock.tmuclk;
 	sh_clock.cpucycle_1us = (sh_clock.tmuclk * 10) / t0;
 
+	cnt_1s = ((uint64_t)sh_clock.tmuclk * 10000000 * 10 + t0 / 2) / t0;
 	if (CPU_IS_SH4)
-		sh_clock.cpuclock >>= 1;	/* two-issue */
+		sh_clock.cpuclock = cnt_1s / 2;	/* two-issue */
+	else
+		sh_clock.cpuclock = cnt_1s;
 
 	/*
 	 * Estimate PCLOCK
 	 */
 	if (sh_clock.pclock == 0) {
+		uint32_t t1;
+
 		/* set TMU channel 1 source to PCLOCK / 4 */
 		_reg_write_2(SH_(TCR1), TCR_TPSC_P4);
 		s = _cpu_exception_suspend();
 		_cpu_spin(1);	/* load function on cache. */
 		TMU_START(0);
 		TMU_START(1);
-		_cpu_spin(sh_clock.cpucycle_1us * 1000000);	/* 1 sec. */
+		_cpu_spin(cnt_1s); /* 1 sec. */
 		t0 = TMU_ELAPSED(0);
 		t1 = TMU_ELAPSED(1);
 		_cpu_exception_resume(s);
 
-		sh_clock.pclock = ((t1 * 4)/ t0) * SH_RTC_CLOCK;
+		sh_clock.pclock =
+		    ((uint64_t)t1 * 4 * SH_RTC_CLOCK + t0 / 2) / t0;
 	}
 
-	/* Stop all counter */
+	/* Stop all counters */
 	_reg_write_1(SH_(TSTR), 0);
 
 #undef TMU_START
@@ -182,13 +189,13 @@ sh_clock_init(int flags, struct rtc_ops *rtc)
 }
 
 int
-sh_clock_get_cpuclock()
+sh_clock_get_cpuclock(void)
 {
 	return (sh_clock.cpuclock);
 }
 
 int
-sh_clock_get_pclock()
+sh_clock_get_pclock(void)
 {
 	return (sh_clock.pclock);
 }
@@ -196,37 +203,12 @@ sh_clock_get_pclock()
 void
 setstatclockrate(int newhz)
 {
-	/* XXX not yet */
 }
 
-/*
- * Return the best possible estimate of the time in the timeval to
- * which tv points.
- */
-void
-microtime(struct timeval *tv)
+u_int
+sh_timecounter_get(struct timecounter *tc)
 {
-	static struct timeval lasttime;
-	int s;
-
-	s = splclock();
-	*tv = time;
-	splx(s);
-
-	tv->tv_usec += ((sh_clock.hz_cnt - _reg_read_4(SH_(TCNT0)))
-	    * 1000000) / sh_clock.tmuclk;
-	while (tv->tv_usec >= 1000000) {
-		tv->tv_usec -= 1000000;
-		tv->tv_sec++;
-	}
-
-	if (tv->tv_sec == lasttime.tv_sec &&
-	    tv->tv_usec <= lasttime.tv_usec &&
-	    (tv->tv_usec = lasttime.tv_usec + 1) >= 1000000) {
-		tv->tv_usec -= 1000000;
-		tv->tv_sec++;
-	}
-	lasttime = *tv;
+	return 0xffffffff - _reg_read_4(SH_(TCNT2));
 }
 
 /*
@@ -238,18 +220,51 @@ delay(int n)
 	_cpu_spin(sh_clock.cpucycle_1us * n);
 }
 
+extern todr_chip_handle_t todr_handle;
+struct todr_chip_handle rtc_todr;
+
+int
+rtc_gettime(struct todr_chip_handle *handle, struct timeval *tv)
+{
+	struct clock_ymdhms dt;
+
+	sh_clock.rtc.get(sh_clock.rtc._cookie, tv->tv_sec, &dt);
+	tv->tv_sec = clock_ymdhms_to_secs(&dt);
+	tv->tv_usec = 0;
+	return 0;
+}
+
+int
+rtc_settime(struct todr_chip_handle *handle, struct timeval *tv)
+{
+	struct clock_ymdhms dt;
+
+	clock_secs_to_ymdhms(tv->tv_sec, &dt);
+	sh_clock.rtc.set(sh_clock.rtc._cookie, &dt);
+	return 0;
+}
+
 /*
  * Start the clock interrupt.
  */
 void
-cpu_initclocks()
+cpu_initclocks(void)
 {
 	if (sh_clock.pclock == 0)
 		panic("No PCLOCK information.");
 
 	/* Set global variables. */
-	hz = HZ;
 	tick = 1000000 / hz;
+	tick_nsec = 1000000000 / hz;
+
+	stathz = hz;
+	profhz = stathz;
+}
+
+void
+cpu_startclock(void)
+{
+	clockintr_cpu_init(NULL);
 
 	/*
 	 * Use TMU channel 0 as hard clock
@@ -275,84 +290,36 @@ cpu_initclocks()
 	_reg_bset_1(SH_(TSTR), TSTR_STR0);
 
 	/*
-	 * TMU channel 1, 2 are one shot timer.
+	 * TMU channel 1 is one shot timer for soft interrupts.
 	 */
 	_reg_write_2(SH_(TCR1), TCR_UNIE | TCR_TPSC_P4);
 	_reg_write_4(SH_(TCOR1), 0xffffffff);
-	_reg_write_2(SH_(TCR2), TCR_UNIE | TCR_TPSC_P4);
+
+	/*
+	 * TMU channel 2 is freerunning counter for timecounter.
+	 */
+	_reg_write_2(SH_(TCR2), TCR_TPSC_P4);
 	_reg_write_4(SH_(TCOR2), 0xffffffff);
 
+	/*
+	 * Start and initialize timecounter.
+	 */
+	_reg_bset_1(SH_(TSTR), TSTR_STR2);
+
+	sh_clock.tc.tc_get_timecount = sh_timecounter_get;
+	sh_clock.tc.tc_frequency = sh_clock.pclock / 4;
+	sh_clock.tc.tc_name = "tmu_pclock_4";
+	sh_clock.tc.tc_quality = 100;
+	sh_clock.tc.tc_counter_mask = 0xffffffff;
+	tc_init(&sh_clock.tc);
+
 	/* Make sure to start RTC */
-	sh_clock.rtc.init(sh_clock.rtc._cookie);
-}
+	if (sh_clock.rtc.init != NULL)
+		sh_clock.rtc.init(sh_clock.rtc._cookie);
 
-void
-inittodr(time_t base)
-{
-	struct clock_ymdhms dt;
-	time_t rtc;
-	int s;
-
-	if (!sh_clock.rtc_initialized)
-		sh_clock.rtc_initialized = 1;
-
-	sh_clock.rtc.get(sh_clock.rtc._cookie, base, &dt);
-	rtc = clock_ymdhms_to_secs(&dt);
-
-#ifdef DEBUG
-	printf("inittodr: %d/%d/%d/%d/%d/%d(%d)\n", dt.dt_year,
-	    dt.dt_mon, dt.dt_day, dt.dt_hour, dt.dt_min, dt.dt_sec,
-	    dt.dt_wday);
-#endif
-
-	if (!(sh_clock.flags & SH_CLOCK_NOINITTODR) &&
-	    (rtc < base ||
-		dt.dt_year < MINYEAR || dt.dt_year > 2037 ||
-		dt.dt_mon < 1 || dt.dt_mon > 12 ||
-		dt.dt_wday > 6 ||
-		dt.dt_day < 1 || dt.dt_day > 31 ||
-		dt.dt_hour > 23 || dt.dt_min > 59 || dt.dt_sec > 59)) {
-		/*
-		 * Believe the time in the file system for lack of
-		 * anything better, resetting the RTC.
-		 */
-		s = splclock();
-		time.tv_sec = base;
-		time.tv_usec = 0;
-		splx(s);
-		printf("WARNING: preposterous clock chip time\n");
-		resettodr();
-		printf(" -- CHECK AND RESET THE DATE!\n");
-		return;
-	}
-
-	s = splclock();
-	time.tv_sec = rtc;
-	time.tv_usec = 0;
-	splx(s);
-
-	return;
-}
-
-void
-resettodr()
-{
-	struct clock_ymdhms dt;
-	int s;
-
-	if (!sh_clock.rtc_initialized)
-		return;
-
-	s = splclock();
-	clock_secs_to_ymdhms(time.tv_sec, &dt);
-	splx(s);
-
-	sh_clock.rtc.set(sh_clock.rtc._cookie, &dt);
-#ifdef DEBUG
-        printf("%s: %d/%d/%d/%d/%d/%d(%d) rtc_offset %d\n", __FUNCTION__,
-	    dt.dt_year, dt.dt_mon, dt.dt_day, dt.dt_hour, dt.dt_min, dt.dt_sec,
-	    dt.dt_wday, rtc_offset);
-#endif
+	rtc_todr.todr_gettime = rtc_gettime;
+	rtc_todr.todr_settime = rtc_settime;
+	todr_handle = &rtc_todr;
 }
 
 #ifdef SH3
@@ -370,7 +337,7 @@ sh3_clock_intr(void *arg) /* trap frame */
 	/* clear underflow status */
 	_reg_bclr_2(SH3_TCR0, TCR_UNF);
 
-	hardclock(arg);
+	clockintr_dispatch(arg);
 
 	return (1);
 }
@@ -391,7 +358,7 @@ sh4_clock_intr(void *arg) /* trap frame */
 	/* clear underflow status */
 	_reg_bclr_2(SH4_TCR0, TCR_UNF);
 
-	hardclock(arg);
+	clockintr_dispatch(arg);
 
 	return (1);
 }

@@ -1,43 +1,97 @@
-# $OpenBSD: md5.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# ex:ts=8 sw=4:
+# $OpenBSD: md5.pm,v 1.19 2023/05/16 14:29:20 espie Exp $
 #
-# Copyright (c) 2003 Marc Espie.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
-# ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
-# PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2003-2007 Marc Espie <espie@openbsd.org>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-use strict;
-use warnings;
+use v5.36;
 
-package OpenBSD::md5;
-use Digest::MD5;
+# XXX even though there is ONE current implementation of OpenBSD::digest
+# (SHA256) we keep the framework open in case we ever need to switch,
+# as we did in the past with md5 -> sha256
+package OpenBSD::digest;
 
-sub fromfile
+sub new($class, $filename)
 {
-	my $fname = shift;
-	die "No such file: \"$fname\"\n" unless -f $fname;
-	open(my $file, '<', $fname) or return;
-	my $md5 = new Digest::MD5;
-
-	$md5->addfile($file);
-	close($file);
-	return $md5->hexdigest();
+	$class = ref($class) || $class;
+	my $digest = $class->digest_file($filename);
+	bless \$digest, $class;
 }
+
+sub key($self)
+{
+	return $$self;
+}
+
+sub write($self, $fh)
+{
+	print $fh "\@", $self->keyword, " ", $self->stringize, "\n";
+}
+
+sub digest_file($self, $fname)
+{
+	my $d = $self->_algo;
+	eval {
+		$d->addfile($fname);
+	};
+	if ($@) {
+		$@ =~ s/\sat.*//;
+		die "can't compute ", $self->keyword, " on $fname: $@";
+	}
+	return $d->digest;
+}
+
+sub fromstring($class, $arg)
+{
+	$class = ref($class) || $class;
+	my $d = $class->_unstringize($arg);
+	bless \$d, $class;
+}
+
+sub equals($a, $b)
+{
+	return ref($a) eq ref($b) && $$a eq $$b;
+}
+
+package OpenBSD::sha;
+our @ISA=(qw(OpenBSD::digest));
+
+use Digest::SHA;
+use MIME::Base64;
+
+sub _algo($self)
+{
+
+	return Digest::SHA->new(256);
+}
+
+sub stringize($self)
+{
+	return encode_base64($$self, '');
+}
+
+sub _unstringize($class, $arg)
+{
+	if ($arg =~ /^[0-9a-f]{64}$/i) {
+		return pack('H*', $arg);
+	}
+	return decode_base64($arg);
+}
+
+sub keyword($)
+{
+	return "sha";
+}
+
 1;

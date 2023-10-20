@@ -1,3 +1,4 @@
+/*	$OpenBSD: strfile.h,v 1.3 2001/01/28 23:41:41 niklas Exp $	*/
 /*	$NetBSD: strfile.h,v 1.3 1995/03/23 08:28:49 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -42,15 +39,15 @@
 	((line)[0] == (tbl).str_delim && (line)[1] == '\n')
 
 typedef struct {				/* information table */
-#define	VERSION		1
-	unsigned long	str_version;		/* version number */
-	unsigned long	str_numstr;		/* # of strings in the file */
-	unsigned long	str_longlen;		/* length of longest string */
-	unsigned long	str_shortlen;		/* length of shortest string */
+#define	VERSION		2
+	u_int32_t	str_version;		/* version number */
+	u_int32_t	str_numstr;		/* # of strings in the file */
+	u_int32_t	str_longlen;		/* length of longest string */
+	u_int32_t	str_shortlen;		/* length of shortest string */
 #define	STR_RANDOM	0x1			/* randomized pointers */
 #define	STR_ORDERED	0x2			/* ordered pointers */
 #define	STR_ROTATED	0x4			/* rot-13'd text */
-	unsigned long	str_flags;		/* bit field for flags */
-	unsigned char	stuff[4];		/* long aligned space */
+	u_int32_t	str_flags;		/* bit field for flags */
+	u_int8_t	stuff[4];		/* long aligned space */
 #define	str_delim	stuff[0]		/* delimiting character */
 } STRFILE;

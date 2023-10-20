@@ -1,2 +1,3 @@
-major=1
+# Don't forget to give libtls the same type of bump!
+major=55
 minor=0

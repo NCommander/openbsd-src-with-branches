@@ -649,7 +649,7 @@ zparser_conv_b64(region_type *region, const char *b64)
 		/* single 0 represents empty buffer */
 		return alloc_rdata(region, 0);
 	}
-	i = b64_pton(b64, buffer, B64BUFSIZE);
+	i = __b64_pton(b64, buffer, B64BUFSIZE);
 	if (i == -1) {
 		zc_error_prev_line("invalid base64 data");
 	} else {
@@ -1018,7 +1018,7 @@ zparser_conv_svcbparam_ech_value(region_type *region, const char *b64)
 		/* single 0 represents empty buffer */
 		return alloc_rdata(region, 0);
 	}
-	wire_len = b64_pton(b64, buffer, B64BUFSIZE);
+	wire_len = __b64_pton(b64, buffer, B64BUFSIZE);
 	if (wire_len == -1) {
 		zc_error_prev_line("invalid base64 data in ech");
 	} else {
@@ -2208,14 +2208,6 @@ zonec_read(const char* name, const char* zonefile, zone_type* zone)
 		zc_error("incorrect zone name '%s'", name);
 		return 1;
 	}
-
-#ifndef ROOT_SERVER
-	/* Is it a root zone? Are we a root server then? Idiot proof. */
-	if (dname->label_count == 1) {
-		zc_error("not configured as a root server");
-		return 1;
-	}
-#endif
 
 	/* Open the zone file */
 	if (!zone_open(zonefile, 3600, CLASS_IN, dname)) {

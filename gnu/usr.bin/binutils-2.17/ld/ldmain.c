@@ -196,6 +196,11 @@ main (int argc, char **argv)
   program_name = argv[0];
   xmalloc_set_program_name (program_name);
 
+  if (pledge ("stdio rpath wpath cpath fattr", NULL) == -1) {
+    einfo (_("%X%P: Failed to pledge"));
+    xexit (1);
+  }
+
   START_PROGRESS (program_name, 0);
 
   expandargv (&argc, &argv);
@@ -256,7 +261,6 @@ main (int argc, char **argv)
   command_line.warn_mismatch = TRUE;
   command_line.check_section_addresses = TRUE;
   command_line.accept_unknown_input_arch = FALSE;
-  command_line.reduce_memory_overheads = FALSE;
 
   sort_section = none;
 
@@ -271,7 +275,11 @@ main (int argc, char **argv)
   link_info.emitrelocations = FALSE;
   link_info.task_link = FALSE;
   link_info.shared = FALSE;
+#ifdef PIE_DEFAULT
+  link_info.pie = TRUE;
+#else
   link_info.pie = FALSE;
+#endif
   link_info.executable = FALSE;
   link_info.symbolic = FALSE;
   link_info.export_dynamic = FALSE;
@@ -282,15 +290,16 @@ main (int argc, char **argv)
   link_info.unresolved_syms_in_shared_libs = RM_NOT_YET_SET;
   link_info.allow_multiple_definition = FALSE;
   link_info.allow_undefined_version = TRUE;
+  link_info.allow_textrel = FALSE;
   link_info.create_default_symver = FALSE;
   link_info.default_imported_symver = FALSE;
   link_info.keep_memory = TRUE;
   link_info.notice_all = FALSE;
   link_info.nocopyreloc = FALSE;
-  link_info.new_dtags = FALSE;
+  link_info.new_dtags = TRUE;	/* to match lld */
   link_info.combreloc = TRUE;
   link_info.eh_frame_hdr = FALSE;
-  link_info.relro = FALSE;
+  link_info.relro = TRUE;
   link_info.strip_discarded = TRUE;
   link_info.strip = strip_none;
   link_info.discard = discard_sec_merge;
@@ -304,6 +313,17 @@ main (int argc, char **argv)
   link_info.create_object_symbols_section = NULL;
   link_info.gc_sym_list = NULL;
   link_info.base_file = NULL;
+  link_info.emit_hash = TRUE;
+#ifndef __mips64__
+  link_info.emit_gnu_hash = TRUE;
+#else
+  link_info.emit_gnu_hash = FALSE;
+#endif
+#if defined(__amd64__) || defined(__hppa__) || defined(__mips64__)
+  link_info.execute_only = TRUE;
+#else
+  link_info.execute_only = FALSE;
+#endif
   /* SVR4 linkers seem to set DT_INIT and DT_FINI based on magic _init
      and _fini symbols.  We are compatible.  */
   link_info.init_function = "_init";
@@ -316,6 +336,7 @@ main (int argc, char **argv)
   link_info.relax_pass = 1;
   link_info.warn_shared_textrel = FALSE;
   link_info.gc_sections = FALSE;
+  link_info.reduce_memory_overheads = FALSE;
 
   ldfile_add_arch ("");
 
@@ -323,6 +344,7 @@ main (int argc, char **argv)
   force_make_executable = FALSE;
   config.magic_demand_paged = TRUE;
   config.text_read_only = TRUE;
+  config.data_bss_contig = FALSE;
 
   emulation = get_emulation (argc, argv);
   ldemul_choose_mode (emulation);
@@ -336,6 +358,14 @@ main (int argc, char **argv)
     bfd_hash_set_default_size (config.hash_table_size);
 
   ldemul_set_symbols ();
+
+  if (! link_info.shared && link_info.pie)
+    {
+      if (link_info.relocatable)
+        link_info.pie = FALSE;
+      else
+        link_info.shared = TRUE;
+    }
 
   if (link_info.relocatable)
     {
@@ -357,6 +387,9 @@ main (int argc, char **argv)
 
   if (! link_info.shared || link_info.pie)
     link_info.executable = TRUE;
+
+  if (! config.dynamic_link && link_info.pie)
+    link_info.static_link = TRUE;
 
   /* Treat ld -r -s as ld -r -S -x (i.e., strip all local symbols).  I
      don't see how else this can be handled, since in this case we

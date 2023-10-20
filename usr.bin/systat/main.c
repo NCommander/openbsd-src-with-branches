@@ -1,283 +1,159 @@
-/*	$NetBSD: main.c,v 1.6 1995/05/06 06:25:07 jtc Exp $	*/
-
-/*-
- * Copyright (c) 1980, 1992, 1993
- *	The Regents of the University of California.  All rights reserved.
+/* $OpenBSD: main.c,v 1.76 2021/07/12 15:09:20 beck Exp $	 */
+/*
+ * Copyright (c) 2001, 2007 Can Erkin Acar
+ * Copyright (c) 2001 Daniel Hartmeier
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ *    - Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    - Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1980, 1992, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
+#include <sys/types.h>
+#include <sys/sysctl.h>
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: main.c,v 1.6 1995/05/06 06:25:07 jtc Exp $";
-#endif /* not lint */
 
-#include <sys/param.h>
-
+#include <ctype.h>
+#include <curses.h>
 #include <err.h>
-#include <nlist.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <math.h>
+#include <netdb.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
-
-#include "systat.h"
-#include "extern.h"
-
-static struct nlist namelist[] = {
-#define X_FIRST		0
-#define	X_HZ		0
-	{ "_hz" },
-#define	X_STATHZ		1
-	{ "_stathz" },
-	{ "" }
-};
-static int     dellave;
-
-kvm_t *kd;
-sig_t	sigtstpdfl;
-double avenrun[3];
-int     col;
-int	naptime = 5;
-int     verbose = 1;                    /* to report kvm read errs */
-int     hz, stathz;
-char    c;
-char    *namp;
-char    hostname[MAXHOSTNAMELEN];
-WINDOW  *wnd;
-int     CMDLINE;
-
-static	WINDOW *wload;			/* one line window for load average */
-
-void
-main(argc, argv)
-	int argc;
-	char **argv;
-{
-	char errbuf[80];
-
-	argc--, argv++;
-	while (argc > 0) {
-		if (argv[0][0] == '-') {
-			struct cmdtab *p;
-
-			p = lookup(&argv[0][1]);
-			if (p == (struct cmdtab *)-1)
-				errx(1, "ambiguous request: %s", &argv[0][1]);
-			if (p == 0)
-				errx(1, "unknown request: %s", &argv[0][1]);
-			curcmd = p;
-		} else {
-			naptime = atoi(argv[0]);
-			if (naptime <= 0)
-				naptime = 5;
-		}
-		argc--, argv++;
-	}
-	kd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
-	if (kd == NULL) {
-		error("%s", errbuf);
-		exit(1);
-	}
-	if (kvm_nlist(kd, namelist)) {
-		nlisterr(namelist);
-		exit(1);
-	}
-	if (namelist[X_FIRST].n_type == 0)
-		errx(1, "couldn't read namelist");
-	signal(SIGINT, die);
-	signal(SIGQUIT, die);
-	signal(SIGTERM, die);
-
-	/*
-	 * Initialize display.  Load average appears in a one line
-	 * window of its own.  Current command's display appears in
-	 * an overlapping sub-window of stdscr configured by the display
-	 * routines to minimize update work by curses.
-	 */
-	if (initscr() == NULL)
-	{
-		warnx("couldn't initialize screen");
-		exit(0);
-	}
-
-	CMDLINE = LINES - 1;
-	wnd = (*curcmd->c_open)();
-	if (wnd == NULL) {
-		warnx("couldn't initialize display");
-		die(0);
-	}
-	wload = newwin(1, 0, 3, 20);
-	if (wload == NULL) {
-		warnx("couldn't set up load average window");
-		die(0);
-	}
-	gethostname(hostname, sizeof (hostname));
-	NREAD(X_HZ, &hz, LONG);
-	NREAD(X_STATHZ, &stathz, LONG);
-	(*curcmd->c_init)();
-	curcmd->c_flags |= CF_INIT;
-	labels();
-
-	dellave = 0.0;
-
-	signal(SIGALRM, display);
-	display(0);
-	noecho();
-	crmode();
-	keyboard();
-	/*NOTREACHED*/
-}
-
-void
-labels()
-{
-	if (curcmd->c_flags & CF_LOADAV) {
-		mvaddstr(2, 20,
-		    "/0   /1   /2   /3   /4   /5   /6   /7   /8   /9   /10");
-		mvaddstr(3, 5, "Load Average");
-	}
-	(*curcmd->c_label)();
-#ifdef notdef
-	mvprintw(21, 25, "CPU usage on %s", hostname);
-#endif
-	refresh();
-}
-
-void
-display(signo)
-	int signo;
-{
-	register int i, j;
-
-	/* Get the load average over the last minute. */
-	(void) getloadavg(avenrun, sizeof(avenrun) / sizeof(avenrun[0]));
-	(*curcmd->c_fetch)();
-	if (curcmd->c_flags & CF_LOADAV) {
-		j = 5.0*avenrun[0] + 0.5;
-		dellave -= avenrun[0];
-		if (dellave >= 0.0)
-			c = '<';
-		else {
-			c = '>';
-			dellave = -dellave;
-		}
-		if (dellave < 0.1)
-			c = '|';
-		dellave = avenrun[0];
-		wmove(wload, 0, 0); wclrtoeol(wload);
-		for (i = (j > 50) ? 50 : j; i > 0; i--)
-			waddch(wload, c);
-		if (j > 50)
-			wprintw(wload, " %4.1f", avenrun[0]);
-	}
-	(*curcmd->c_refresh)();
-	if (curcmd->c_flags & CF_LOADAV)
-		wrefresh(wload);
-	wrefresh(wnd);
-	move(CMDLINE, col);
-	refresh();
-	alarm(naptime);
-}
-
-void
-load()
-{
-
-	(void) getloadavg(avenrun, sizeof(avenrun)/sizeof(avenrun[0]));
-	mvprintw(CMDLINE, 0, "%4.1f %4.1f %4.1f",
-	    avenrun[0], avenrun[1], avenrun[2]);
-	clrtoeol();
-}
-
-void
-die(signo)
-	int signo;
-{
-	move(CMDLINE, 0);
-	clrtoeol();
-	refresh();
-	endwin();
-	exit(0);
-}
-
-#if __STDC__
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
+#include <unistd.h>
+#include <utmp.h>
 
-#if __STDC__
+#include "engine.h"
+#include "systat.h"
+
+#define TIMEPOS (80 - 8 - 20 - 1)
+
+double	dellave;
+
+kvm_t	*kd;
+char	*nlistf = NULL;
+char	*memf = NULL;
+double	avenrun[3];
+double	naptime = 5.0;
+int	verbose = 1;		/* to report kvm read errs */
+int	nflag = 1;
+int	ut, hz;
+char    hostname[HOST_NAME_MAX+1];
+WINDOW  *wnd;
+int	CMDLINE;
+char	timebuf[26];
+char	uloadbuf[TIMEPOS];
+
+
+int  ucount(void);
+void usage(void);
+double strtodnum(const char *, double, double, const char **);
+
+/* command prompt */
+
+void cmd_delay(const char *);
+void cmd_count(const char *);
+void cmd_compat(const char *);
+
+struct command cm_compat = {"Command", cmd_compat};
+struct command cm_delay = {"Seconds to delay", cmd_delay};
+struct command cm_count = {"Number of lines to display", cmd_count};
+
+
+/* display functions */
+
+int
+print_header(void)
+{
+	time_t now;
+	int start = dispstart + 1, end = dispstart + maxprint;
+	char tmpbuf[TIMEPOS];
+	char header[MAX_LINE_BUF];
+
+	if (end > num_disp)
+		end = num_disp;
+
+	tb_start();
+
+	if (!paused) {
+		char *ctim;
+
+		getloadavg(avenrun, sizeof(avenrun) / sizeof(avenrun[0]));
+
+		snprintf(uloadbuf, sizeof(uloadbuf),
+		    "%4d users Load %.2f %.2f %.2f", 
+		    ucount(), avenrun[0], avenrun[1], avenrun[2]);
+
+		time(&now);
+		ctim = ctime(&now);
+		ctim[11+8] = '\0';
+		strlcpy(timebuf, ctim + 11, sizeof(timebuf));
+	}
+
+	if (num_disp && (start > 1 || end != num_disp))
+		snprintf(tmpbuf, sizeof(tmpbuf),
+		    "%s (%u-%u of %u) %s", uloadbuf, start, end, num_disp,
+		    paused ? "PAUSED" : "");
+	else
+		snprintf(tmpbuf, sizeof(tmpbuf), 
+		    "%s %s", uloadbuf,
+		    paused ? "PAUSED" : "");
+		
+	snprintf(header, sizeof(header), "%-*s %19.19s %s", TIMEPOS - 1,
+	    tmpbuf, hostname, timebuf);
+
+	if (rawmode)
+		printf("\n\n%s\n", header);
+	else
+		mvprintw(0, 0, "%s", header);
+
+	return (1);
+}
+
+/* compatibility functions, rearrange later */
 void
 error(const char *fmt, ...)
-#else
-void
-error(fmt, va_alist)
-	char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
-	char buf[255];
-	int oy, ox;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
+	char buf[MAX_LINE_BUF];
 
-	if (wnd) {
-		getyx(stdscr, oy, ox);
-		(void) vsprintf(buf, fmt, ap);
-		clrtoeol();
-		standout();
-		mvaddstr(CMDLINE, 0, buf);
-		standend();
-		move(oy, ox);
-		refresh();
-	} else {
-		(void) vfprintf(stderr, fmt, ap);
-		fprintf(stderr, "\n");
-	}
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof buf, fmt, ap);
 	va_end(ap);
+
+	message_set(buf);
 }
 
 void
-nlisterr(namelist)
-	struct nlist namelist[];
+nlisterr(struct nlist namelist[])
 {
 	int i, n;
 
@@ -293,4 +169,425 @@ nlisterr(namelist)
 	refresh();
 	endwin();
 	exit(1);
+}
+
+void
+die(void)
+{
+	if (!rawmode)
+		endwin();
+	exit(0);
+}
+
+
+int
+prefix(char *s1, char *s2)
+{
+
+	while (*s1 == *s2) {
+		if (*s1 == '\0')
+			return (1);
+		s1++, s2++;
+	}
+	return (*s1 == '\0');
+}
+
+/* calculate number of users on the system */
+int
+ucount(void)
+{
+	int nusers = 0;
+	struct	utmp utmp;
+
+	if (ut < 0)
+		return (0);
+	lseek(ut, (off_t)0, SEEK_SET);
+	while (read(ut, &utmp, sizeof(utmp)))
+		if (utmp.ut_name[0] != '\0')
+			nusers++;
+
+	return (nusers);
+}
+
+/* main program functions */
+
+void
+usage(void)
+{
+	extern char *__progname;
+	fprintf(stderr, "usage: %s [-aBbhiNn] [-d count] "
+	    "[-s delay] [-w width] [view] [delay]\n", __progname);
+	exit(1);
+}
+
+void
+show_view(void)
+{
+	if (rawmode)
+		return;
+
+	tb_start();
+	tbprintf("%s %g", curr_view->name, naptime);
+	tb_end();
+	message_set(tmp_buf);
+}
+
+void
+add_view_tb(field_view *v)
+{
+	if (curr_view == v)
+		tbprintf("[%s] ", v->name);
+	else
+		tbprintf("%s ", v->name);
+}
+
+void
+show_help(void)
+{
+	if (rawmode)
+		return;
+
+	tb_start();
+	foreach_view(add_view_tb);
+	tb_end();
+	message_set(tmp_buf);
+}
+
+void
+add_order_tb(order_type *o)
+{
+	if (curr_view->mgr->order_curr == o)
+		tbprintf("[%s%s(%c)] ", o->name,
+		    o->func != NULL && sortdir == -1 ? "^" : "",
+		    (char) o->hotkey);
+	else
+		tbprintf("%s(%c) ", o->name, (char) o->hotkey);
+}
+
+void
+show_order(void)
+{
+	if (rawmode)
+		return;
+
+	tb_start();
+	if (foreach_order(add_order_tb) == -1) {
+		tbprintf("No orders available");
+	}
+	tb_end();
+	message_set(tmp_buf);
+}
+
+void
+cmd_compat(const char *buf)
+{
+	const char *s;
+
+	if (strcasecmp(buf, "help") == 0) {
+		message_toggle(MESSAGE_HELP);
+		return;
+	}
+	if (strcasecmp(buf, "quit") == 0 || strcasecmp(buf, "q") == 0) {
+		gotsig_close = 1;
+		return;
+	}
+	if (strcasecmp(buf, "stop") == 0) {
+		paused = 1;
+		gotsig_alarm = 1;
+		return;
+	}
+	if (strncasecmp(buf, "start", 5) == 0) {
+		paused = 0;
+		gotsig_alarm = 1;
+		cmd_delay(buf + 5);
+		return;
+	}
+	if (strncasecmp(buf, "order", 5) == 0) {
+		message_toggle(MESSAGE_ORDER);
+		return;
+	}
+	if (strncasecmp(buf, "human", 5) == 0) {
+		humanreadable = !humanreadable;
+		return;
+	}
+
+	for (s = buf; *s && strchr("0123456789+-.eE", *s) != NULL; s++)
+		;
+	if (*s) {
+		if (set_view(buf))
+			error("Invalid/ambiguous view: %s", buf);
+	} else
+		cmd_delay(buf);
+}
+
+void
+cmd_delay(const char *buf)
+{
+	double del;
+	const char *errstr;
+
+	if (buf[0] == '\0')
+		return;
+	del = strtodnum(buf, 0, UINT32_MAX / 1000000, &errstr);
+	if (errstr != NULL)
+		error("s: \"%s\": delay value is %s", buf, errstr);
+	else {
+		refresh_delay(del);
+		gotsig_alarm = 1;
+		naptime = del;
+	}
+}
+
+void
+cmd_count(const char *buf)
+{
+	const char *errstr;
+
+	maxprint = strtonum(buf, 1, lines - HEADER_LINES, &errstr);
+	if (errstr)
+		maxprint = lines - HEADER_LINES;
+}
+
+
+int
+keyboard_callback(int ch)
+{
+	switch (ch) {
+	case '?':
+		/* FALLTHROUGH */
+	case 'h':
+		message_toggle(MESSAGE_HELP);
+		break;
+	case CTRL_G:
+		message_toggle(MESSAGE_VIEW);
+		break;
+	case 'l':
+		command_set(&cm_count, NULL);
+		break;
+	case 's':
+		command_set(&cm_delay, NULL);
+		break;
+	case ',':
+		separate_thousands = !separate_thousands;
+		gotsig_alarm = 1;
+		break;
+	case ':':
+		command_set(&cm_compat, NULL);
+		break;
+	default:
+		return 0;
+	};
+
+	return 1;
+}
+
+void
+initialize(void)
+{
+	engine_initialize();
+
+	initvmstat();
+	initpigs();
+	initifstat();
+	initiostat();
+	initsensors();
+	initmembufs();
+	initnetstat();
+	initswap();
+	initpftop();
+	initpf();
+	initpool();
+	initmalloc();
+	initnfs();
+	initcpu();
+	inituvm();
+}
+
+void
+gethz(void)
+{
+	struct clockinfo cinf;
+	size_t  size = sizeof(cinf);
+	int	mib[2];
+
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_CLOCKRATE;
+	if (sysctl(mib, 2, &cinf, &size, NULL, 0) == -1)
+		return;
+	hz = cinf.hz;
+}
+
+#define	INVALID		1
+#define	TOOSMALL	2
+#define	TOOLARGE	3
+
+double
+strtodnum(const char *nptr, double minval, double maxval, const char **errstrp)
+{
+	double d = 0;
+	int error = 0;
+	char *ep;
+	struct errval {
+		const char *errstr;
+		int err;
+	} ev[4] = {
+		{ NULL,		0 },
+		{ "invalid",	EINVAL },
+		{ "too small",	ERANGE },
+		{ "too large",	ERANGE },
+	};
+
+	ev[0].err = errno;
+	errno = 0;
+	if (minval > maxval) {
+		error = INVALID;
+	} else {
+		d = strtod(nptr, &ep);
+		if (nptr == ep || *ep != '\0')
+			error = INVALID;
+		else if ((d == -HUGE_VAL && errno == ERANGE) || d < minval)
+			error = TOOSMALL;
+		else if ((d == HUGE_VAL && errno == ERANGE) || d > maxval)
+			error = TOOLARGE;
+	}
+	if (errstrp != NULL)
+		*errstrp = ev[error].errstr;
+	errno = ev[error].err;
+	if (error)
+		d = 0;
+
+	return (d);
+}
+
+int
+main(int argc, char *argv[])
+{
+	char errbuf[_POSIX2_LINE_MAX];
+	const char *errstr;
+	extern char *optarg;
+	extern int optind;
+	double delay = 5, del;
+
+	char *viewstr = NULL;
+
+	gid_t gid;
+	int countmax = 0;
+	int maxlines = 0;
+
+	int ch;
+
+	ut = open(_PATH_UTMP, O_RDONLY);
+	if (ut == -1) {
+		warn("No utmp");
+	}
+
+	kd = kvm_openfiles(NULL, NULL, NULL, KVM_NO_FILES, errbuf);
+
+	gid = getgid();
+	if (setresgid(gid, gid, gid) == -1)
+		err(1, "setresgid");
+
+	while ((ch = getopt(argc, argv, "BNabd:hins:w:")) != -1) {
+		switch (ch) {
+		case 'a':
+			maxlines = -1;
+			break;
+		case 'B':
+			averageonly = 1;
+			if (countmax < 2)
+				countmax = 2;
+			/* FALLTHROUGH */
+		case 'b':
+			rawmode = 1;
+			interactive = 0;
+			break;
+		case 'd':
+			countmax = strtonum(optarg, 1, INT_MAX, &errstr);
+			if (errstr)
+				errx(1, "-d %s: %s", optarg, errstr);
+			break;
+		case 'h':
+			humanreadable = 1;
+			break;
+		case 'i':
+			interactive = 1;
+			break;
+		case 'N':
+			nflag = 0;
+			break;
+		case 'n':
+			/* this is a noop, -n is the default */
+			nflag = 1;
+			break;
+		case 's':
+			delay = strtodnum(optarg, 0, UINT32_MAX / 1000000,
+			    &errstr);
+			if (errstr != NULL)
+				errx(1, "-s \"%s\": delay value is %s", optarg,
+				    errstr);
+			break;
+		case 'w':
+			rawwidth = strtonum(optarg, 1, MAX_LINE_BUF-1, &errstr);
+			if (errstr)
+				errx(1, "-w %s: %s", optarg, errstr);
+			break;
+		default:
+			usage();
+			/* NOTREACHED */
+		}
+	}
+
+	if (kd == NULL)
+		warnx("kvm_openfiles: %s", errbuf);
+
+	argc -= optind;
+	argv += optind;
+
+	if (argc == 1) {
+		del = strtodnum(argv[0], 0, UINT32_MAX / 1000000, &errstr);
+		if (errstr != NULL)
+			viewstr = argv[0];
+		else
+			delay = del;
+	} else if (argc == 2) {
+		viewstr = argv[0];
+		delay = strtodnum(argv[1], 0, UINT32_MAX / 1000000, &errstr);
+		if (errstr != NULL)
+			errx(1, "\"%s\": delay value is %s", argv[1], errstr);
+	}
+
+	refresh_delay(delay);
+	naptime = delay;
+
+	gethostname(hostname, sizeof (hostname));
+	gethz();
+
+	initialize();
+
+	set_order(NULL);
+	if (viewstr && set_view(viewstr)) {
+		fprintf(stderr, "Unknown/ambiguous view name: %s\n", viewstr);
+		return 1;
+	}
+
+	if (check_termcap()) {
+		rawmode = 1;
+		interactive = 0;
+	}
+
+	setup_term(maxlines);
+
+	if (unveil("/", "r") == -1)
+		err(1, "unveil /");
+	if (unveil(NULL, NULL) == -1)
+		err(1, "unveil");
+
+	if (rawmode && countmax == 0)
+		countmax = 1;
+
+	gotsig_alarm = 1;
+
+	engine_loop(countmax);
+
+	return 0;
 }

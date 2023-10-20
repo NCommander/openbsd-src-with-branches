@@ -1,74 +1,130 @@
+/*	$OpenBSD: job.c,v 1.14 2020/04/16 17:51:56 millert Exp $	*/
+
 /* Copyright 1988,1990,1993,1994 by Paul Vixie
- * All rights reserved
+ * Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
  *
- * Distribute freely, except: don't remove my name from the source or
- * documentation (don't take credit for my work), mark your changes (don't
- * get me blamed for your possible bugs), don't alter or remove this
- * notice.  May be sold if buildable source is provided to buyer.  No
- * warrantee of any kind, express or implied, is included with this
- * software; use at your own risk, responsibility for damages (if any) to
- * anyone resulting from the use of this software rests entirely with the
- * user.
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
  *
- * Send bug reports, bug fixes, enhancements, requests, flames, etc., and
- * I'll try to keep a version up to date.  I can be reached as follows:
- * Paul Vixie          <paul@vix.com>          uunet!decwrl!vixie!paul
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: job.c,v 1.1.1.3 1994/01/20 02:47:28 jtc Exp $";
-#endif
+#include <sys/types.h>
 
+#include <bitstring.h>		/* for structs.h */
+#include <stdio.h>
+#include <stdlib.h>
+#include <syslog.h>
+#include <time.h>		/* for structs.h */
 
-#include "cron.h"
-
+#include "macros.h"
+#include "structs.h"
+#include "funcs.h"
 
 typedef	struct _job {
-	struct _job	*next;
+	SIMPLEQ_ENTRY(_job) entries;
 	entry		*e;
 	user		*u;
+	pid_t		pid;
 } job;
 
 
-static job	*jhead = NULL, *jtail = NULL;
-
+static SIMPLEQ_HEAD(job_queue, _job) jobs = SIMPLEQ_HEAD_INITIALIZER(jobs);
 
 void
-job_add(e, u)
-	register entry *e;
-	register user *u;
+job_add(entry *e, user *u)
 {
-	register job *j;
+	job *j;
 
 	/* if already on queue, keep going */
-	for (j=jhead; j; j=j->next)
-		if (j->e == e && j->u == u) { return; }
+	SIMPLEQ_FOREACH(j, &jobs, entries) {
+		if (j->e == e && j->u == u) {
+			if ((j->e->flags & DONT_LOG) == 0) {
+				syslog(LOG_INFO, "(%s) SKIPPING (%s)",
+				    j->u->name, j->e->cmd);
+			}
+			return;
+		}
+	}
 
 	/* build a job queue element */
-	j = (job*)malloc(sizeof(job));
-	j->next = (job*) NULL;
+	if ((j = malloc(sizeof(job))) == NULL)
+		return;
 	j->e = e;
 	j->u = u;
+	j->pid = -1;
 
 	/* add it to the tail */
-	if (!jhead) { jhead=j; }
-	else { jtail->next=j; }
-	jtail = j;
+	SIMPLEQ_INSERT_TAIL(&jobs, j, entries);
 }
 
+void
+job_remove(entry *e, user *u)
+{
+	job *j, *prev = NULL;
+
+	SIMPLEQ_FOREACH(j, &jobs, entries) {
+		if (j->e == e && j->u == u) {
+			if (prev == NULL)
+				SIMPLEQ_REMOVE_HEAD(&jobs, entries);
+			else
+				SIMPLEQ_REMOVE_AFTER(&jobs, prev, entries);
+			free(j);
+			break;
+		}
+		prev = j;
+	}
+}
+
+void
+job_exit(pid_t jobpid)
+{
+	job *j, *prev = NULL;
+
+	/* If a singleton exited, remove and free it. */
+	SIMPLEQ_FOREACH(j, &jobs, entries) {
+		if (jobpid == j->pid) {
+			if (prev == NULL)
+				SIMPLEQ_REMOVE_HEAD(&jobs, entries);
+			else
+				SIMPLEQ_REMOVE_AFTER(&jobs, prev, entries);
+			free(j);
+			break;
+		}
+		prev = j;
+	}
+}
 
 int
-job_runqueue()
+job_runqueue(void)
 {
-	register job	*j, *jn;
-	register int	run = 0;
+	struct job_queue singletons = SIMPLEQ_HEAD_INITIALIZER(singletons);
+	job *j;
+	int run = 0;
 
-	for (j=jhead; j; j=jn) {
-		do_command(j->e, j->u);
-		jn = j->next;
-		free(j);
-		run++;
+	while ((j = SIMPLEQ_FIRST(&jobs))) {
+		SIMPLEQ_REMOVE_HEAD(&jobs, entries);
+
+		/* Only start the job if it is not a running singleton. */
+		if (j->pid == -1) {
+			j->pid = do_command(j->e, j->u);
+			run++;
+		}
+
+		/* Singleton jobs persist in the queue until they exit. */
+		if (j->pid != -1)
+			SIMPLEQ_INSERT_TAIL(&singletons, j, entries);
+		else
+			free(j);
 	}
-	jhead = jtail = NULL;
-	return run;
+	SIMPLEQ_CONCAT(&jobs, &singletons);
+	return (run);
 }

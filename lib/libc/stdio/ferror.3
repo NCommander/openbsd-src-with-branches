@@ -1,4 +1,4 @@
-.\"	$NetBSD: ferror.3,v 1.5 1995/02/02 01:15:35 jtc Exp $
+.\"	$OpenBSD: ferror.3,v 1.10 2013/07/17 05:42:11 schwarze Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,9 +31,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)ferror.3	8.2 (Berkeley) 4/19/94
-.\"
-.Dd April 19, 1994
+.Dd $Mdocdate: July 17 2013 $
 .Dt FERROR 3
 .Os
 .Sh NAME
@@ -47,7 +41,7 @@
 .Nm fileno
 .Nd check and reset stream status
 .Sh SYNOPSIS
-.Fd #include <stdio.h>
+.In stdio.h
 .Ft void
 .Fn clearerr "FILE *stream"
 .Ft int
@@ -59,8 +53,7 @@
 .Sh DESCRIPTION
 The function
 .Fn clearerr
-clears the end-of-file and error indicators for the stream pointed
-to by
+clears the end-of-file and error indicators for the stream pointed to by
 .Fa stream .
 .Pp
 The function
@@ -68,8 +61,6 @@ The function
 tests the end-of-file indicator for the stream pointed to by
 .Fa stream ,
 returning non-zero if it is set.
-The end-of-file indicator can only be cleared by the function
-.Fn clearerr .
 .Pp
 The function
 .Fn ferror
@@ -82,9 +73,14 @@ function.
 .Pp
 The function
 .Fn fileno
-examines the argument
+returns the file descriptor associated with the given
 .Fa stream
-and returns its integer descriptor.
+or \-1 if it is not associated with any file descriptor,
+for example if it was created with
+.Xr fmemopen 3 ,
+.Xr open_memstream 3 ,
+or
+.Xr funopen 3 .
 .Sh ERRORS
 These functions should not fail and do not set the external
 variable
@@ -102,5 +98,14 @@ conform to
 .St -ansiC .
 The function
 .Fn fileno
-conforms to 
+conforms to
 .St -p1003.1-90 .
+.Sh HISTORY
+The functions
+.Fn clearerr ,
+.Fn feof ,
+.Fn ferror ,
+and
+.Fn fileno
+first appeared in
+.At v7 .

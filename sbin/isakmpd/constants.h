@@ -1,4 +1,5 @@
-/*	$Id: constants.h,v 1.4 1998/08/28 23:04:28 niklas Exp $	*/
+/* $OpenBSD: constants.h,v 1.5 2003/06/03 14:28:16 ho Exp $	 */
+/* $EOM: constants.h,v 1.5 1998/11/20 07:17:01 niklas Exp $	 */
 
 /*
  * Copyright (c) 1998 Niklas Hallqvist.  All rights reserved.
@@ -11,11 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Ericsson Radio Systems.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
@@ -37,13 +33,15 @@
 #define _CONSTANTS_H_
 
 struct constant_map {
-  int value;
-  char *name;
+	int             value;
+	char           *name;
+	struct constant_map *link;
 };
 
-extern char *constant_lookup (struct constant_map *, int);
-extern char *constant_name (struct constant_map *, int);
-extern char *constant_name_maps (struct constant_map **, int);
-extern int constant_value (struct constant_map *, char *);
+struct constant_map *constant_link_lookup(struct constant_map *, int);
+extern char    *constant_lookup(struct constant_map *, int);
+extern char    *constant_name(struct constant_map *, int);
+extern char    *constant_name_maps(struct constant_map **, int);
+extern int      constant_value(struct constant_map *, char *);
 
-#endif /* _CONSTANTS_H_ */
+#endif				/* _CONSTANTS_H_ */

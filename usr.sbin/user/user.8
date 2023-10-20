@@ -1,5 +1,5 @@
-.\" $NetBSD: user.8,v 1.5 2000/02/28 05:10:57 enami Exp $ */
-.\"
+.\" $OpenBSD: user.8,v 1.23 2016/11/29 03:59:31 jsg Exp $
+.\" $NetBSD: user.8,v 1.9 2001/06/05 11:31:21 wiz Exp $
 .\"
 .\" Copyright (c) 1999 Alistair G. Crooks.  All rights reserved.
 .\"
@@ -11,10 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by Alistair G. Crooks.
-.\" 4. The name of the author may not be used to endorse or promote
+.\" 3. The name of the author may not be used to endorse or promote
 .\"    products derived from this software without specific prior written
 .\"    permission.
 .\"
@@ -31,69 +28,67 @@
 .\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
 .\"
-.Dd November 30, 1999
+.Dd $Mdocdate: November 29 2016 $
 .Dt USER 8
-.Os NetBSD
+.Os
 .Sh NAME
 .Nm user
 .Nd manage user login information on the system
 .Sh SYNOPSIS
-.Nm ""
-add
-.Op Fl D
-.Op Fl b Ar base-dir
+.Nm user
+.Cm add
+.Fl D
+.Op Fl b Ar base-directory
 .Op Fl e Ar expiry-time
-.Op Fl f Ar inactive-secs
-.Op Fl g Ar gid/name/=uid
-.Op Fl r Ar low..high
-.Nm ""
-add
-.Op Fl G Ar secondary-group
-.Op Fl b Ar base-dir
+.Op Fl f Ar inactive-time
+.Op Fl g Ar gid | name | Cm =uid
+.Op Fl k Ar skel-directory
+.Op Fl L Ar login-class
+.Op Fl r Ar low Ns .. Ns Ar high
+.Op Fl s Ar shell
+.Nm user
+.Cm add
+.Op Fl mov
+.Op Fl b Ar base-directory
 .Op Fl c Ar comment
-.Op Fl d Ar home-dir
+.Op Fl d Ar home-directory
 .Op Fl e Ar expiry-time
-.Op Fl f Ar inactive-secs
-.Op Fl g Ar gid/name/=uid
-.Op Fl k Ar skel-dir
-.Op Fl m
-.Op Fl o
+.Op Fl f Ar inactive-time
+.Op Fl G Ar secondary-group Ns Op , Ns Ar group , Ns ...
+.Op Fl g Ar gid | name | Cm =uid
+.Op Fl k Ar skel-directory
+.Op Fl L Ar login-class
 .Op Fl p Ar password
-.Op Fl r Ar low..high
+.Op Fl r Ar low Ns .. Ns Ar high
 .Op Fl s Ar shell
 .Op Fl u Ar uid
-.Op Fl v
 .Ar user
-.Nm ""
-del
-.Op Fl D
+.Nm user
+.Cm del
+.Fl D
 .Op Fl p Ar preserve-value
-.Nm ""
-del
-.Op Fl p
-.Op Fl r
-.Op Fl v
+.Nm user
+.Cm del
+.Op Fl prv
 .Ar user
-.Nm ""
-info
+.Nm user
+.Cm info
 .Op Fl e
-.Op Fl v
 .Ar user
-.Nm ""
-mod
-.Op Fl G Ar secondary-group
+.Nm user
+.Cm mod
+.Op Fl mov
 .Op Fl c Ar comment
-.Op Fl d Ar home-dir
+.Op Fl d Ar home-directory
 .Op Fl e Ar expiry-time
-.Op Fl f Ar inactive-secs
-.Op Fl g Ar gid/name/=uid
+.Op Fl f Ar inactive-time
+.Op Fl G Ar secondary-group Ns Op , Ns Ar group , Ns ...
+.Op Fl g Ar gid | name | Cm =uid
+.Op Fl L Ar login-class
 .Op Fl l Ar new-login
-.Op Fl m
-.Op Fl o
 .Op Fl p Ar password
 .Op Fl s Ar shell
 .Op Fl u Ar uid
-.Op Fl v
 .Ar user
 .Sh DESCRIPTION
 The
@@ -106,43 +101,48 @@ and
 .Xr userdel 8
 commands.
 .Pp
-For a full explanation of the options, please see the relevant manual page.
-.Pp
-The
-.Nm
-utility exits 0 on success, and >0 if an error occurs.
+For a full explanation of the options, see the relevant manual page.
 .Sh FILES
 .Bl -tag -width /etc/usermgmt.conf -compact
 .It Pa /etc/skel/.[A-z]*
-Skelton dot files for new user
+Skeleton files for new user
 .It Pa /etc/usermgmt.conf
 Configuration file for
-.Xr user 8 ,
+.Nm user ,
 .Xr group 8
 and those backend commands
-.It Pa /usr/share/examples/usermgmt
-A directory hopefully containing examples for
-.Xr user 8
-and
-.Xr group 8
 .El
+.Sh EXIT STATUS
+.Ex -std user
 .Sh SEE ALSO
 .Xr chpass 1 ,
 .Xr group 5 ,
 .Xr passwd 5 ,
+.Xr usermgmt.conf 5 ,
 .Xr useradd 8 ,
 .Xr userdel 8 ,
 .Xr userinfo 8 ,
 .Xr usermod 8
+.Sh STANDARDS
+Other implementations of the
+.Nm user
+utilities use the
+.Ar inactive-time
+parameter to refer to the maximum number of days allowed between logins (this
+is used to lock "stale" accounts that have not been used for a period of time).
+However, on
+.Ox
+systems this parameter refers instead to the password change time.
+This is due to differences in the
+.Xr passwd 5
+database compared to other operating systems.
 .Sh HISTORY
 The
 .Nm
 utility first appeared in
-.Nx 1.5 .
-It is based on the
-.Ar addnerd
-package by the same author.
-.Sh AUTHOR
+.Ox 2.7 .
+.Sh AUTHORS
 The
 .Nm
-utility was written by Alistair G. Crooks (agc@netbsd.org).
+utility was written by
+.An Alistair G. Crooks Aq Mt agc@NetBSD.org .

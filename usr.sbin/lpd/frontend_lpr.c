@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: frontend_lpr.c,v 1.3 2020/03/16 20:46:44 benno Exp $	*/
 
 /*
  * Copyright (c) 2017 Eric Faurot <eric@openbsd.org>
@@ -159,7 +159,7 @@ lpr_dispatch_engine(struct imsgproc *proc, struct imsg *imsg)
 		m_get_string(proc, &hostname);
 		m_get_string(proc, &reject);
 		m_end(proc);
-		lpr_on_allowedhost(conn, hostname, reject[0] ? reject : NULL);
+		lpr_on_allowedhost(conn, hostname, reject);
 		break;
 
 	case IMSG_LPR_RECVJOB:
@@ -182,8 +182,7 @@ lpr_dispatch_engine(struct imsgproc *proc, struct imsg *imsg)
 		m_get_string(proc, &hostname);
 		m_get_string(proc, &cmd);
 		m_end(proc);
-		lpr_on_request(conn, imsg->fd, hostname[0] ? hostname : NULL,
-		    cmd[0] ? cmd : NULL);
+		lpr_on_request(conn, imsg->fd, hostname, cmd);
 		break;
 
 	default:
@@ -270,7 +269,7 @@ lpr_on_request(struct lpr_conn *conn, int fd, const char *hostname,
 			hints.ai_socktype = SOCK_STREAM;
 			conn->flags |= F_WAITADDRINFO;
 			/*
-			 * The callback might run immediatly, so conn->ifd
+			 * The callback might run immediately, so conn->ifd
 			 * must be set before, to block lpr_forward().
 			 */
 			resolver_getaddrinfo(hostname, "printer", &hints,
@@ -582,7 +581,7 @@ lpr_parsejobfilter(struct lpr_conn *conn, struct lp_jobfilter *jf, int argc,
 
 	for (i = 0; i < argc; i++) {
 		arg = argv[i];
-		if (isdigit((unsigned int)arg[0])) {
+		if (isdigit((unsigned char)arg[0])) {
 			if (jf->njob == LP_MAXREQUESTS) {
 				lpr_reply(conn, "Too many requests");
 				return -1;
@@ -662,7 +661,7 @@ lpr_reply(struct lpr_conn *conn, const char *s)
 }
 
 /*
- * Stream reponse file to the client.
+ * Stream response file to the client.
  */
 static void
 lpr_stream(struct lpr_conn *conn)

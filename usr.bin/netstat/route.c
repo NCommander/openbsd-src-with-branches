@@ -1,4 +1,5 @@
-/*	$NetBSD: route.c,v 1.14 1995/10/03 21:42:47 thorpej Exp $	*/
+/*	$OpenBSD: route.c,v 1.108 2021/12/05 22:36:19 deraadt Exp $	*/
+/*	$NetBSD: route.c,v 1.15 1996/05/07 02:55:06 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1983, 1988, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,644 +30,394 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "from: @(#)route.c	8.3 (Berkeley) 3/9/94";
-#else
-static char *rcsid = "$NetBSD: route.c,v 1.14 1995/10/03 21:42:47 thorpej Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/protosw.h>
 #include <sys/socket.h>
-#include <sys/mbuf.h>
 
 #include <net/if.h>
-#include <net/if_dl.h>
 #include <net/if_types.h>
 #define _KERNEL
 #include <net/route.h>
 #undef _KERNEL
+#include <netinet/ip_ipsp.h>
 #include <netinet/in.h>
-
-#include <netns/ns.h>
+#include <arpa/inet.h>
 
 #include <sys/sysctl.h>
 
+#include <err.h>
+#include <limits.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <ifaddrs.h>
+
 #include "netstat.h"
 
-#define kget(p, d) (kread((u_long)(p), (char *)&(d), sizeof (d)))
-
-/*
- * Definitions for showing gateway flags.
- */
-struct bits {
-	short	b_mask;
-	char	b_val;
-} bits[] = {
-	{ RTF_UP,	'U' },
-	{ RTF_GATEWAY,	'G' },
-	{ RTF_HOST,	'H' },
-	{ RTF_REJECT,	'R' },
-	{ RTF_DYNAMIC,	'D' },
-	{ RTF_MODIFIED,	'M' },
-	{ RTF_DONE,	'd' }, /* Completed -- for routing messages only */
-	{ RTF_MASK,	'm' }, /* Mask Present -- for routing messages only */
-	{ RTF_CLONING,	'C' },
-	{ RTF_XRESOLVE,	'X' },
-	{ RTF_LLINFO,	'L' },
-	{ RTF_STATIC,	'S' },
-	{ RTF_PROTO1,	'1' },
-	{ RTF_PROTO2,	'2' },
-	{ 0 }
-};
-
 static union {
-	struct	sockaddr u_sa;
-	u_short	u_data[128];
+	struct		sockaddr u_sa;
+	u_int32_t	u_data[64];
+	int		u_dummy;	/* force word-alignment */
 } pt_u;
 
-int	do_rtent = 0;
 struct	rtentry rtentry;
-struct	radix_node rnode;
-struct	radix_mask rmask;
 
-int	NewTree = 0;
-
-static struct sockaddr *kgetsa __P((struct sockaddr *));
-static void p_tree __P((struct radix_node *));
-static void p_rtnode __P(());
-static void ntreestuff __P(());
-static void np_rtentry __P((struct rt_msghdr *));
-static void p_sockaddr __P((struct sockaddr *, int, int));
-static void p_flags __P((int, char *));
-static void p_rtentry __P((struct rtentry *));
+static struct sockaddr *kgetsa(struct sockaddr *);
+static struct sockaddr *plentosa(sa_family_t, int, struct sockaddr *);
+static struct art_node *getdefault(struct art_table *);
+static void p_table(struct art_table *);
+static void p_artnode(struct art_node *);
+static void p_krtentry(struct rtentry *);
 
 /*
  * Print routing tables.
  */
 void
-routepr(rtree)
-	u_long rtree;
+routepr(u_long afmap, u_long af2idx, u_long af2idx_max, u_int tableid)
 {
-	struct radix_node_head *rnh, head;
+	struct art_root ar;
+	struct art_node *node;
+	struct srp *afm_head, *afm;
+	struct {
+		unsigned int	limit;
+		void	      **tbl;
+	} map;
+	void **tbl;
 	int i;
+	uint8_t af2i[AF_MAX+1];
+	uint8_t af2i_max;
 
 	printf("Routing tables\n");
 
-	if (Aflag == 0 && NewTree)
-		ntreestuff();
-	else {
-		if (rtree == 0) {
-			printf("rt_tables: symbol not in namelist\n");
-			return;
-		}
-
-		kget(rtree, rt_tables);
-		for (i = 0; i <= AF_MAX; i++) {
-			if ((rnh = rt_tables[i]) == 0)
-				continue;
-			kget(rnh, head);
-			if (i == AF_UNSPEC) {
-				if (Aflag && af == 0) {
-					printf("Netmasks:\n");
-					p_tree(head.rnh_treetop);
-				}
-			} else if (af == AF_UNSPEC || af == i) {
-				pr_family(i);
-				do_rtent = 1;
-				pr_rthdr();
-				p_tree(head.rnh_treetop);
-			}
-		}
+	if (afmap == 0 || af2idx == 0 || af2idx_max == 0) {
+		printf("symbol not in namelist\n");
+		return;
 	}
-}
 
-/*
- * Print address family header before a section of the routing table.
- */
-void
-pr_family(af)
-	int af;
-{
-	char *afname;
+	kread(afmap, &afm_head, sizeof(afm_head));
+	kread(af2idx, af2i, sizeof(af2i));
+	kread(af2idx_max, &af2i_max, sizeof(af2i_max));
 
-	switch (af) {
-	case AF_INET:
-		afname = "Internet";
-		break;
-	case AF_NS:
-		afname = "XNS";
-		break;
-	case AF_ISO:
-		afname = "ISO";
-		break;
-	case AF_CCITT:
-		afname = "X.25";
-		break;
-	default:
-		afname = NULL;
-		break;
+	if ((afm = calloc(af2i_max + 1, sizeof(*afm))) == NULL)
+		err(1, NULL);
+
+	kread((u_long)afm_head, afm, (af2i_max + 1) * sizeof(*afm));
+
+	for (i = 1; i <= AF_MAX; i++) {
+		if (af != AF_UNSPEC && af != i)
+			continue;
+		if (af2i[i] == 0 || afm[af2i[i]].ref == NULL)
+			continue;
+
+		kread((u_long)afm[af2i[i]].ref, &map, sizeof(map));
+		if (tableid >= map.limit)
+			continue;
+
+		if ((tbl = calloc(map.limit, sizeof(*tbl))) == NULL)
+			err(1, NULL);
+
+		kread((u_long)map.tbl, tbl, map.limit * sizeof(*tbl));
+		if (tbl[tableid] == NULL)
+			continue;
+
+		kread((u_long)tbl[tableid], &ar, sizeof(ar));
+
+		free(tbl);
+
+		if (ar.ar_root.ref == NULL)
+			continue;
+
+		pr_family(i);
+		pr_rthdr(i, Aflag);
+
+		node = getdefault(ar.ar_root.ref);
+		if (node != NULL)
+			p_artnode(node);
+
+		p_table(ar.ar_root.ref);
 	}
-	if (afname)
-		printf("\n%s:\n", afname);
-	else
-		printf("\nProtocol Family %d:\n", af);
-}
 
-/* column widths; each followed by one space */
-#define	WID_DST		16	/* width of destination column */
-#define	WID_GW		18	/* width of gateway column */
-
-/*
- * Print header for routing table columns.
- */
-void
-pr_rthdr()
-{
-
-	if (Aflag)
-		printf("%-8.8s ","Address");
-	printf("%-*.*s %-*.*s %-6.6s  %6.6s%8.8s %6.6s  %s\n",
-		WID_DST, WID_DST, "Destination",
-		WID_GW, WID_GW, "Gateway",
-		"Flags", "Refs", "Use", "Mtu", "Interface");
+	free(afm);
 }
 
 static struct sockaddr *
-kgetsa(dst)
-	register struct sockaddr *dst;
+kgetsa(struct sockaddr *dst)
 {
 
-	kget(dst, pt_u.u_sa);
+	kread((u_long)dst, &pt_u.u_sa, sizeof(pt_u.u_sa));
 	if (pt_u.u_sa.sa_len > sizeof (pt_u.u_sa))
-		kread((u_long)dst, (char *)pt_u.u_data, pt_u.u_sa.sa_len);
+		kread((u_long)dst, pt_u.u_data, pt_u.u_sa.sa_len);
 	return (&pt_u.u_sa);
 }
 
-static void
-p_tree(rn)
-	struct radix_node *rn;
+static struct sockaddr *
+plentosa(sa_family_t af, int plen, struct sockaddr *sa_mask)
 {
+	struct sockaddr_in *sin = (struct sockaddr_in *)sa_mask;
+	struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)sa_mask;
+	uint8_t *p;
+	int i;
 
-again:
-	kget(rn, rnode);
-	if (rnode.rn_b < 0) {
-		if (Aflag)
-			printf("%-8.8x ", rn);
-		if (rnode.rn_flags & RNF_ROOT) {
-			if (Aflag)
-				printf("(root node)%s",
-				    rnode.rn_dupedkey ? " =>\n" : "\n");
-		} else if (do_rtent) {
-			kget(rn, rtentry);
-			p_rtentry(&rtentry);
-			if (Aflag)
-				p_rtnode();
-		} else {
-			p_sockaddr(kgetsa((struct sockaddr *)rnode.rn_key),
-			    0, 44);
-			putchar('\n');
-		}
-		if (rn = rnode.rn_dupedkey)
-			goto again;
-	} else {
-		if (Aflag && do_rtent) {
-			printf("%-8.8x ", rn);
-			p_rtnode();
-		}
-		rn = rnode.rn_r;
-		p_tree(rnode.rn_l);
-		p_tree(rn);
-	}
-}
+	if (plen < 0)
+		return (NULL);
 
-char	nbuf[20];
+	memset(sa_mask, 0, sizeof(struct sockaddr_storage));
 
-static void
-p_rtnode()
-{
-	struct radix_mask *rm = rnode.rn_mklist;
-
-	if (rnode.rn_b < 0) {
-		if (rnode.rn_mask) {
-			printf("\t  mask ");
-			p_sockaddr(kgetsa((struct sockaddr *)rnode.rn_mask),
-				    0, -1);
-		} else if (rm == 0)
-			return;
-	} else {
-		sprintf(nbuf, "(%d)", rnode.rn_b);
-		printf("%6.6s %8.8x : %8.8x", nbuf, rnode.rn_l, rnode.rn_r);
-	}
-	while (rm) {
-		kget(rm, rmask);
-		sprintf(nbuf, " %d refs, ", rmask.rm_refs);
-		printf(" mk = %8.8x {(%d),%s",
-			rm, -1 - rmask.rm_b, rmask.rm_refs ? nbuf : " ");
-		p_sockaddr(kgetsa((struct sockaddr *)rmask.rm_mask), 0, -1);
-		putchar('}');
-		if (rm = rmask.rm_mklist)
-			printf(" ->");
-	}
-	putchar('\n');
-}
-
-static void
-ntreestuff()
-{
-	size_t needed;
-	int mib[6];
-	char *buf, *next, *lim;
-	register struct rt_msghdr *rtm;
-
-        mib[0] = CTL_NET;
-        mib[1] = PF_ROUTE;
-        mib[2] = 0;
-        mib[3] = 0;
-        mib[4] = NET_RT_DUMP;
-        mib[5] = 0;
-        if (sysctl(mib, 6, NULL, &needed, NULL, 0) < 0)
-		{ perror("route-sysctl-estimate"); exit(1);}
-	if ((buf = malloc(needed)) == 0)
-		{ printf("out of space\n"); exit(1);}
-        if (sysctl(mib, 6, buf, &needed, NULL, 0) < 0)
-		{ perror("sysctl of routing table"); exit(1);}
-	lim  = buf + needed;
-	for (next = buf; next < lim; next += rtm->rtm_msglen) {
-		rtm = (struct rt_msghdr *)next;
-		np_rtentry(rtm);
-	}
-}
-
-static void
-np_rtentry(rtm)
-	register struct rt_msghdr *rtm;
-{
-	register struct sockaddr *sa = (struct sockaddr *)(rtm + 1);
-#ifdef notdef
-	static int masks_done, banner_printed;
-#endif
-	static int old_af;
-	int af = 0, interesting = RTF_UP | RTF_GATEWAY | RTF_HOST;
-
-#ifdef notdef
-	/* for the moment, netmasks are skipped over */
-	if (!banner_printed) {
-		printf("Netmasks:\n");
-		banner_printed = 1;
-	}
-	if (masks_done == 0) {
-		if (rtm->rtm_addrs != RTA_DST ) {
-			masks_done = 1;
-			af = sa->sa_family;
-		}
-	} else
-#endif
-		af = sa->sa_family;
-	if (af != old_af) {
-		pr_family(af);
-		old_af = af;
-	}
-	if (rtm->rtm_addrs == RTA_DST)
-		p_sockaddr(sa, 0, 36);
-	else {
-		p_sockaddr(sa, rtm->rtm_flags, 16);
-		if (sa->sa_len == 0)
-			sa->sa_len = sizeof(long);
-		sa = (struct sockaddr *)(sa->sa_len + (char *)sa);
-		p_sockaddr(sa, 0, 18);
-	}
-	p_flags(rtm->rtm_flags & interesting, "%-6.6s ");
-	putchar('\n');
-}
-
-static void
-p_sockaddr(sa, flags, width)
-	struct sockaddr *sa;
-	int flags, width;
-{
-	char workbuf[128], *cplim;
-	register char *cp = workbuf;
-
-	switch(sa->sa_family) {
+	switch (af) {
 	case AF_INET:
-	    {
-		register struct sockaddr_in *sin = (struct sockaddr_in *)sa;
-
-		cp = (sin->sin_addr.s_addr == 0) ? "default" :
-		      ((flags & RTF_HOST) ?
-			routename(sin->sin_addr.s_addr) :
-			netname(sin->sin_addr.s_addr, INADDR_ANY));
+		if (plen > 32)
+			return (NULL);
+		sin->sin_family = AF_INET;
+		sin->sin_len = sizeof(struct sockaddr_in);
+		memset(&sin->sin_addr, 0, sizeof(sin->sin_addr));
+		p = (uint8_t *)&sin->sin_addr;
 		break;
-	    }
-
-	case AF_NS:
-		cp = ns_print(sa);
+	case AF_INET6:
+		if (plen > 128)
+			return (NULL);
+		sin6->sin6_family = AF_INET6;
+		sin6->sin6_len = sizeof(struct sockaddr_in6);
+		memset(&sin6->sin6_addr.s6_addr, 0, sizeof(sin6->sin6_addr.s6_addr));
+		p = sin6->sin6_addr.s6_addr;
 		break;
-
-	case AF_LINK:
-	    {
-		register struct sockaddr_dl *sdl = (struct sockaddr_dl *)sa;
-
-		if (sdl->sdl_nlen == 0 && sdl->sdl_alen == 0 &&
-		    sdl->sdl_slen == 0)
-			(void) sprintf(workbuf, "link#%d", sdl->sdl_index);
-		else switch (sdl->sdl_type) {
-		case IFT_ETHER:
-		    {
-			register int i;
-			register u_char *lla = (u_char *)sdl->sdl_data +
-			    sdl->sdl_nlen;
-
-			cplim = "";
-			for (i = 0; i < sdl->sdl_alen; i++, lla++) {
-				cp += sprintf(cp, "%s%x", cplim, *lla);
-				cplim = ":";
-			}
-			cp = workbuf;
-			break;
-		    }
-		default:
-			cp = link_ntoa(sdl);
-			break;
-		}
-		break;
-	    }
-
 	default:
-	    {
-		register u_char *s = (u_char *)sa->sa_data, *slim;
+		return (NULL);
+	}
 
-		slim =  sa->sa_len + (u_char *) sa;
-		cplim = cp + sizeof(workbuf) - 6;
-		cp += sprintf(cp, "(%d)", sa->sa_family);
-		while (s < slim && cp < cplim) {
-			cp += sprintf(cp, " %02x", *s++);
-			if (s < slim)
-			    cp += sprintf(cp, "%02x", *s++);
+	for (i = 0; i < plen / 8; i++)
+		p[i] = 0xff;
+	if (plen % 8)
+		p[i] = (0xff00 >> (plen % 8)) & 0xff;
+
+	return (sa_mask);
+}
+
+static struct art_node *
+getdefault(struct art_table *at)
+{
+	struct art_node *node;
+	struct art_table table;
+	union {
+		struct srp		 node;
+		unsigned long		 count;
+	} *heap;
+
+	kread((u_long)at, &table, sizeof(table));
+	heap = calloc(1, AT_HEAPSIZE(table.at_bits));
+	kread((u_long)table.at_heap, heap, AT_HEAPSIZE(table.at_bits));
+
+	node = heap[1].node.ref;
+
+	free(heap);
+
+	return (node);
+}
+
+static void
+p_table(struct art_table *at)
+{
+	struct art_node *next, *node;
+	struct art_table *nat, table;
+	union {
+		struct srp		 node;
+		unsigned long		 count;
+	} *heap;
+	int i, j;
+
+	kread((u_long)at, &table, sizeof(table));
+	heap = calloc(1, AT_HEAPSIZE(table.at_bits));
+	kread((u_long)table.at_heap, heap, AT_HEAPSIZE(table.at_bits));
+
+	for (j = 1; j < table.at_minfringe; j += 2) {
+		for (i = (j > 2) ? j : 2; i < table.at_minfringe; i <<= 1) {
+			next = heap[i >> 1].node.ref;
+			node = heap[i].node.ref;
+			if (node != NULL && node != next)
+				p_artnode(node);
 		}
-		cp = workbuf;
-	    }
 	}
-	if (width < 0 )
-		printf("%s ", cp);
-	else {
-		if (nflag)
-			printf("%-*s ", width, cp);
-		else
-			printf("%-*.*s ", width, width, cp);
+
+	for (i = table.at_minfringe; i < table.at_minfringe << 1; i++) {
+		next = heap[i >> 1].node.ref;
+		node = heap[i].node.ref;
+		if (!ISLEAF(node)) {
+			nat = SUBTABLE(node);
+			node = getdefault(nat);
+		} else
+			nat = NULL;
+
+		if (node != NULL && node != next)
+			p_artnode(node);
+
+		if (nat != NULL)
+			p_table(nat);
+	}
+
+	free(heap);
+}
+
+static void
+p_artnode(struct art_node *an)
+{
+	struct art_node node;
+	struct rtentry *rt;
+
+	kread((u_long)an, &node, sizeof(node));
+	rt = node.an_rtlist.sl_head.ref;
+
+	while (rt != NULL) {
+		kread((u_long)rt, &rtentry, sizeof(rtentry));
+		if (Aflag)
+			printf("%-16p ", rt);
+		p_krtentry(&rtentry);
+		rt = rtentry.rt_next.se_next.ref;
 	}
 }
 
 static void
-p_flags(f, format)
-	register int f;
-	char *format;
+p_krtentry(struct rtentry *rt)
 {
-	char name[33], *flags;
-	register struct bits *p = bits;
+	struct sockaddr_storage sock1, sock2;
+	struct sockaddr *sa = (struct sockaddr *)&sock1;
+	struct sockaddr *mask = (struct sockaddr *)&sock2;
 
-	for (flags = name; p->b_mask; p++)
-		if (p->b_mask & f)
-			*flags++ = p->b_val;
-	*flags = '\0';
-	printf(format, name);
-}
+	bcopy(kgetsa(rt_key(rt)), sa, sizeof(struct sockaddr));
+	if (sa->sa_len > sizeof(struct sockaddr))
+		bcopy(kgetsa(rt_key(rt)), sa, sa->sa_len);
 
-static void
-p_rtentry(rt)
-	register struct rtentry *rt;
-{
-	static struct ifnet ifnet, *lastif;
-	static char name[16];
+	if (sa->sa_family == PF_KEY) {
+		/* Ignore PF_KEY entries */
+		return;
+	}
 
-	p_sockaddr(kgetsa(rt_key(rt)), rt->rt_flags, WID_DST);
-	p_sockaddr(kgetsa(rt->rt_gateway), RTF_HOST, WID_GW);
+	mask = plentosa(sa->sa_family, rt_plen(rt), mask);
+
+	p_addr(sa, mask, rt->rt_flags);
+	p_gwaddr(kgetsa(rt->rt_gateway), sa->sa_family);
 	p_flags(rt->rt_flags, "%-6.6s ");
-	printf("%6d %8d ", rt->rt_refcnt, rt->rt_use);
+	printf("%5u %8lld ", rt->rt_refcnt.r_refs - 1, rt->rt_use);
 	if (rt->rt_rmx.rmx_mtu)
-		printf("%6d ", rt->rt_rmx.rmx_mtu);
+		printf("%5u ", rt->rt_rmx.rmx_mtu);
 	else
-		printf("%6s ", "-");
-	if (rt->rt_ifp) {
-		if (rt->rt_ifp != lastif) {
-			kget(rt->rt_ifp, ifnet);
-			kread((u_long)ifnet.if_name, name, 16);
-			lastif = rt->rt_ifp;
-		}
-		printf(" %.15s%d%s", name, ifnet.if_unit,
-			rt->rt_nodes[0].rn_dupedkey ? " =>" : "");
-	}
+		printf("%5s ", "-");
+	putchar((rt->rt_rmx.rmx_locks & RTV_MTU) ? 'L' : ' ');
+	printf("  %2d", rt->rt_priority & RTP_MASK);
+
+	if (rt->rt_ifidx != 0)
+		printf(" if%d", rt->rt_ifidx);
 	putchar('\n');
-}
-
-char *
-routename(in)
-	u_int32_t in;
-{
-	register char *cp;
-	static char line[MAXHOSTNAMELEN + 1];
-	struct hostent *hp;
-	static char domain[MAXHOSTNAMELEN + 1];
-	static int first = 1;
-
-	if (first) {
-		first = 0;
-		if (gethostname(domain, MAXHOSTNAMELEN) == 0 &&
-		    (cp = index(domain, '.')))
-			(void) strcpy(domain, cp + 1);
-		else
-			domain[0] = 0;
-	}
-	cp = 0;
-	if (!nflag) {
-		hp = gethostbyaddr((char *)&in, sizeof (struct in_addr),
-			AF_INET);
-		if (hp) {
-			if ((cp = index(hp->h_name, '.')) &&
-			    !strcmp(cp + 1, domain))
-				*cp = 0;
-			cp = hp->h_name;
-		}
-	}
-	if (cp)
-		strncpy(line, cp, sizeof(line) - 1);
-	else {
-#define C(x)	((x) & 0xff)
-		in = ntohl(in);
-		sprintf(line, "%u.%u.%u.%u",
-		    C(in >> 24), C(in >> 16), C(in >> 8), C(in));
-	}
-	return (line);
-}
-
-/*
- * Return the name of the network whose address is given.
- * The address is assumed to be that of a net or subnet, not a host.
- */
-char *
-netname(in, mask)
-	u_int32_t in, mask;
-{
-	char *cp = 0;
-	static char line[MAXHOSTNAMELEN + 1];
-	struct netent *np = 0;
-	u_int32_t net;
-	int subnetshift;
-
-	in = ntohl(in);
-	mask = ntohl(mask);
-	if (!nflag && in != INADDR_ANY) {
-		if (mask == INADDR_ANY) {
-			if (IN_CLASSA(in)) {
-				mask = IN_CLASSA_NET;
-				subnetshift = 8;
-			} else if (IN_CLASSB(in)) {
-				mask = IN_CLASSB_NET;
-				subnetshift = 8;
-			} else {
-				mask = IN_CLASSC_NET;
-				subnetshift = 4;
-			}
-			/*
-			 * If there are more bits than the standard mask
-			 * would suggest, subnets must be in use.
-			 * Guess at the subnet mask, assuming reasonable
-			 * width subnet fields.
-			 */
-			while (in &~ mask)
-				mask = (long)mask >> subnetshift;
-		}
-		net = in & mask;
-		while ((mask & 1) == 0)
-			mask >>= 1, net >>= 1;
-		np = getnetbyaddr(net, AF_INET);
-		if (np)
-			cp = np->n_name;
-	}
-	if (cp)
-		strncpy(line, cp, sizeof(line) - 1);
-	else if ((in & 0xffffff) == 0)
-		sprintf(line, "%u", C(in >> 24));
-	else if ((in & 0xffff) == 0)
-		sprintf(line, "%u.%u", C(in >> 24) , C(in >> 16));
-	else if ((in & 0xff) == 0)
-		sprintf(line, "%u.%u.%u", C(in >> 24), C(in >> 16), C(in >> 8));
-	else
-		sprintf(line, "%u.%u.%u.%u", C(in >> 24),
-			C(in >> 16), C(in >> 8), C(in));
-	return (line);
+	if (vflag)
+		printf("\texpire   %10lld%c\n",
+		    (long long)rt->rt_rmx.rmx_expire,
+		    (rt->rt_rmx.rmx_locks & RTV_EXPIRE) ? 'L' : ' ');
 }
 
 /*
  * Print routing statistics
  */
 void
-rt_stats(off)
-	u_long off;
+rt_stats(void)
 {
 	struct rtstat rtstat;
+	int mib[6];
+	size_t size;
 
-	if (off == 0) {
-		printf("rtstat: symbol not in namelist\n");
-		return;
+	mib[0] = CTL_NET;
+	mib[1] = PF_ROUTE;
+	mib[2] = 0;
+	mib[3] = 0;
+	mib[4] = NET_RT_STATS;
+	mib[5] = 0;
+	size = sizeof (rtstat);
+
+	if (sysctl(mib, 6, &rtstat, &size, NULL, 0) == -1) {
+		perror("sysctl of routing table statistics");
+		exit(1);
 	}
-	kread(off, (char *)&rtstat, sizeof (rtstat));
+
 	printf("routing:\n");
 	printf("\t%u bad routing redirect%s\n",
-		rtstat.rts_badredirect, plural(rtstat.rts_badredirect));
+	    rtstat.rts_badredirect, plural(rtstat.rts_badredirect));
 	printf("\t%u dynamically created route%s\n",
-		rtstat.rts_dynamic, plural(rtstat.rts_dynamic));
+	    rtstat.rts_dynamic, plural(rtstat.rts_dynamic));
 	printf("\t%u new gateway%s due to redirects\n",
-		rtstat.rts_newgateway, plural(rtstat.rts_newgateway));
+	    rtstat.rts_newgateway, plural(rtstat.rts_newgateway));
 	printf("\t%u destination%s found unreachable\n",
-		rtstat.rts_unreach, plural(rtstat.rts_unreach));
+	    rtstat.rts_unreach, plural(rtstat.rts_unreach));
 	printf("\t%u use%s of a wildcard route\n",
-		rtstat.rts_wildcard, plural(rtstat.rts_wildcard));
-}
-short ns_nullh[] = {0,0,0};
-short ns_bh[] = {-1,-1,-1};
-
-char *
-ns_print(sa)
-	register struct sockaddr *sa;
-{
-	register struct sockaddr_ns *sns = (struct sockaddr_ns*)sa;
-	struct ns_addr work;
-	union { union ns_net net_e; u_long long_e; } net;
-	u_short port;
-	static char mybuf[50], cport[10], chost[25];
-	char *host = "";
-	register char *p; register u_char *q;
-
-	work = sns->sns_addr;
-	port = ntohs(work.x_port);
-	work.x_port = 0;
-	net.net_e  = work.x_net;
-	if (ns_nullhost(work) && net.long_e == 0) {
-		if (port ) {
-			sprintf(mybuf, "*.%xH", port);
-			upHex(mybuf);
-		} else
-			sprintf(mybuf, "*.*");
-		return (mybuf);
-	}
-
-	if (bcmp(ns_bh, work.x_host.c_host, 6) == 0) {
-		host = "any";
-	} else if (bcmp(ns_nullh, work.x_host.c_host, 6) == 0) {
-		host = "*";
-	} else {
-		q = work.x_host.c_host;
-		sprintf(chost, "%02x%02x%02x%02x%02x%02xH",
-			q[0], q[1], q[2], q[3], q[4], q[5]);
-		for (p = chost; *p == '0' && p < chost + 12; p++)
-			continue;
-		host = p;
-	}
-	if (port)
-		sprintf(cport, ".%xH", htons(port));
-	else
-		*cport = 0;
-
-	sprintf(mybuf,"%xH.%s%s", ntohl(net.long_e), host, cport);
-	upHex(mybuf);
-	return(mybuf);
+	    rtstat.rts_wildcard, plural(rtstat.rts_wildcard));
 }
 
-char *
-ns_phost(sa)
-	struct sockaddr *sa;
-{
-	register struct sockaddr_ns *sns = (struct sockaddr_ns *)sa;
-	struct sockaddr_ns work;
-	static union ns_net ns_zeronet;
-	char *p;
-
-	work = *sns;
-	work.sns_addr.x_port = 0;
-	work.sns_addr.x_net = ns_zeronet;
-
-	p = ns_print((struct sockaddr *)&work);
-	if (strncmp("0H.", p, 3) == 0) p += 3;
-	return(p);
-}
+/*
+ * Print rdomain and rtable summary
+ */
 
 void
-upHex(p0)
-	char *p0;
+rdomainpr(void)
 {
-	register char *p = p0;
-	for (; *p; p++) switch (*p) {
+	struct if_data		 *ifd;
+	struct ifaddrs		 *ifap, *ifa;
+	struct rt_tableinfo	  info;
 
-	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-		*p += ('A' - 'a');
+	int	 rtt_dom[RT_TABLEID_MAX+1];
+	int	 rdom_rttcnt[RT_TABLEID_MAX+1] = { };
+	int	 mib[6], rdom, rtt;
+	size_t	 len;
+	char	*old, *rdom_if[RT_TABLEID_MAX+1] = { };
+
+	getifaddrs(&ifap);
+	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+		if (ifa->ifa_addr == NULL ||
+		    ifa->ifa_addr->sa_family != AF_LINK)
+			continue;
+		ifd = ifa->ifa_data;
+		if (rdom_if[ifd->ifi_rdomain] == NULL) {
+			if (asprintf(&rdom_if[ifd->ifi_rdomain], "%s",
+			    ifa->ifa_name) == -1)
+				exit(1);
+		} else {
+			old = rdom_if[ifd->ifi_rdomain];
+			if (asprintf(&rdom_if[ifd->ifi_rdomain], "%s %s",
+			    old, ifa->ifa_name) == -1)
+				exit(1);
+			free(old);
+		}
+	}
+	freeifaddrs(ifap);
+
+	mib[0] = CTL_NET;
+	mib[1] = PF_ROUTE;
+	mib[2] = 0;
+	mib[3] = 0;
+	mib[4] = NET_RT_TABLE;
+
+	len = sizeof(info);
+	for (rtt = 0; rtt <= RT_TABLEID_MAX; rtt++) {
+		mib[5] = rtt;
+		if (sysctl(mib, 6, &info, &len, NULL, 0) == -1)
+			rtt_dom[rtt] = -1;
+		else {
+			rtt_dom[rtt] = info.rti_domainid;
+			rdom_rttcnt[info.rti_domainid]++;
+		}
+	}
+
+	for (rdom = 0; rdom <= RT_TABLEID_MAX; rdom++) {
+		if (rdom_if[rdom] == NULL)
+			continue;
+		printf("Rdomain %i\n", rdom);
+		printf("  Interface%s %s\n",
+		    (strchr(rdom_if[rdom], ' ') == NULL) ? ":" : "s:",
+		    rdom_if[rdom]);
+		printf("  Routing table%s",
+		    (rdom_rttcnt[rdom] == 1) ? ":" : "s:");
+		for (rtt = 0; rtt <= RT_TABLEID_MAX; rtt++) {
+			if (rtt_dom[rtt] == rdom)
+				printf(" %i", rtt);
+		}
+		printf("\n\n");
+		free(rdom_if[rdom]);
 	}
 }

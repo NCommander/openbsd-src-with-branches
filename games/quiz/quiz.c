@@ -1,3 +1,4 @@
+/*	$OpenBSD: quiz.c,v 1.31 2021/03/11 21:18:25 naddy Exp $	*/
 /*	$NetBSD: quiz.c,v 1.9 1995/04/22 10:16:58 cgd Exp $	*/
 
 /*-
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -37,55 +34,40 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1991, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)quiz.c	8.2 (Berkeley) 1/3/94";
-#else
-static char rcsid[] = "$NetBSD: quiz.c,v 1.9 1995/04/22 10:16:58 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/types.h>
-#include <errno.h>
-#include <time.h>
+#include <ctype.h>
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <err.h>
-#include "quiz.h"
+#include <unistd.h>
+
 #include "pathnames.h"
+#include "quiz.h"
 
 static QE qlist;
 static int catone, cattwo, tflag;
 static u_int qsize;
 
-char	*appdstr __P((char *, char *, size_t));
-void	 downcase __P((char *));
-void	 get_cats __P((char *, char *));
-void	 get_file __P((char *));
-char	*next_cat __P((char *));
-void	 quiz __P((void));
-void	 score __P((u_int, u_int, u_int));
-void	 show_index __P((void));
-void	 usage __P((void));
+void	 downcase(char *);
+void	 get_cats(char *, char *);
+void	 get_file(const char *);
+const char	*next_cat(const char *);
+void	 quiz(void);
+void	 score(u_int, u_int, u_int);
+void	 show_index(void);
+__dead void	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register int ch;
-	char *indexfile;
+	int ch;
+	const char *indexfile;
+
+	if (pledge("stdio rpath proc exec", NULL) == -1)
+		err(1, "pledge");
 
 	indexfile = _PATH_QUIZIDX;
-	while ((ch = getopt(argc, argv, "i:t")) != EOF)
+	while ((ch = getopt(argc, argv, "hi:t")) != -1)
 		switch(ch) {
 		case 'i':
 			indexfile = optarg;
@@ -93,7 +75,7 @@ main(argc, argv)
 		case 't':
 			tflag = 1;
 			break;
-		case '?':
+		case 'h':
 		default:
 			usage();
 		}
@@ -106,23 +88,29 @@ main(argc, argv)
 		show_index();
 		break;
 	case 2:
+		if (pledge("stdio rpath", NULL) == -1)
+			err(1, "pledge");
 		get_file(indexfile);
 		get_cats(argv[0], argv[1]);
+
+		if (pledge("stdio", NULL) == -1)
+			err(1, "pledge");
+
 		quiz();
 		break;
 	default:
 		usage();
 	}
-	exit(0);
+	return 0;
 }
 
 void
-get_file(file)
-	char *file;
+get_file(const char *file)
 {
-	register FILE *fp;
-	register QE *qp;
-	size_t len;
+	FILE *fp;
+	QE *qp;
+	ssize_t len;
+	size_t qlen, size;
 	char *lp;
 
 	if ((fp = fopen(file, "r")) == NULL)
@@ -135,39 +123,59 @@ get_file(file)
 	 */
 	qp = &qlist;
 	qsize = 0;
-	while ((lp = fgetln(fp, &len)) != NULL) {
-		lp[--len] = '\0';
-		if (qp->q_text && qp->q_text[strlen(qp->q_text) - 1] == '\\')
-			qp->q_text = appdstr(qp->q_text, lp, len);
-		else {
+	qlen = 0;
+	lp = NULL;
+	size = 0;
+	while ((len = getline(&lp, &size, fp)) != -1) {
+		if (lp[len - 1] == '\n')
+			lp[--len] = '\0';
+		if (qp->q_text)
+			qlen = strlen(qp->q_text);
+		if (qlen > 0 && qp->q_text[qlen - 1] == '\\') {
+			qp->q_text[--qlen] = '\0';
+			qlen += len;
+			qp->q_text = realloc(qp->q_text, qlen + 1);
+			if (qp->q_text == NULL)
+				errx(1, "realloc");
+			strlcat(qp->q_text, lp, qlen + 1);
+		} else {
 			if ((qp->q_next = malloc(sizeof(QE))) == NULL)
-				err(1, NULL);
+				errx(1, "malloc");
 			qp = qp->q_next;
-			if ((qp->q_text = strdup(lp)) == NULL)
-				err(1, NULL);
+			qp->q_text = strdup(lp);
+			if (qp->q_text == NULL)
+				errx(1, "strdup");
 			qp->q_asked = qp->q_answered = FALSE;
 			qp->q_next = NULL;
 			++qsize;
 		}
 	}
+	free(lp);
+	if (ferror(fp))
+		err(1, "getline");
 	(void)fclose(fp);
 }
 
 void
-show_index()
+show_index(void)
 {
-	register QE *qp;
-	register char *p, *s;
+	QE *qp;
+	const char *p, *s;
 	FILE *pf;
+	const char *pager;
 
-	if ((pf = popen(_PATH_PAGER, "w")) == NULL)
-		err(1, "%s", _PATH_PAGER);
+	if (!isatty(1))
+		pager = "/bin/cat";
+	else if (!(pager = getenv("PAGER")) || (*pager == 0))
+			pager = _PATH_PAGER;
+	if ((pf = popen(pager, "w")) == NULL)
+		err(1, "%s", pager);
 	(void)fprintf(pf, "Subjects:\n\n");
 	for (qp = qlist.q_next; qp; qp = qp->q_next) {
 		for (s = next_cat(qp->q_text); s; s = next_cat(s)) {
 			if (!rxp_compile(s))
 				errx(1, "%s", rxperr);
-			if (p = rxp_expand())
+			if ((p = rxp_expand()))
 				(void)fprintf(pf, "%s ", p);
 		}
 		(void)fprintf(pf, "\n");
@@ -180,12 +188,11 @@ show_index()
 }
 
 void
-get_cats(cat1, cat2)
-	char *cat1, *cat2;
+get_cats(char *cat1, char *cat2)
 {
-	register QE *qp;
+	QE *qp;
 	int i;
-	char *s;
+	const char *s;
 
 	downcase(cat1);
 	downcase(cat2);
@@ -213,21 +220,25 @@ get_cats(cat1, cat2)
 }
 
 void
-quiz()
+quiz(void)
 {
-	register QE *qp;
-	register int i;
-	size_t len;
+	QE *qp;
+	int i;
+	size_t size;
+	ssize_t len;
 	u_int guesses, rights, wrongs;
 	int next;
-	char *answer, *s, *t, question[LINE_SZ];
+	char *answer, *t, question[LINE_SZ];
+	const char *s;
 
-	srandom(time(NULL));
+	size = 0;
+	answer = NULL;
+
 	guesses = rights = wrongs = 0;
 	for (;;) {
 		if (qsize == 0)
 			break;
-		next = random() % qsize;
+		next = arc4random_uniform(qsize);
 		qp = qlist.q_next;
 		for (i = 0; i < next; i++)
 			qp = qp->q_next;
@@ -237,7 +248,7 @@ quiz()
 			qsize = next;
 			continue;
 		}
-		if (tflag && random() % 100 > 20) {
+		if (tflag && arc4random_uniform(100) > 20) {
 			/* repeat questions in tutorial mode */
 			while (qp && (!qp->q_asked || qp->q_answered))
 				qp = qp->q_next;
@@ -254,10 +265,13 @@ quiz()
 			qp->q_answered = TRUE;
 			continue;
 		}
-		(void)strcpy(question, t);
+		(void)strlcpy(question, t, sizeof question);
 		s = qp->q_text;
 		for (i = 0; i < cattwo - 1; i++)
 			s = next_cat(s);
+		if (s == NULL)
+			errx(1, "too few fields in data file, line \"%s\"",
+			    qp->q_text);
 		if (!rxp_compile(s))
 			errx(1, "%s", rxperr);
 		t = rxp_expand();
@@ -268,7 +282,8 @@ quiz()
 		qp->q_asked = TRUE;
 		(void)printf("%s?\n", question);
 		for (;; ++guesses) {
-			if ((answer = fgetln(stdin, &len)) == NULL) {
+			if ((len = getline(&answer, &size, stdin)) == -1 ||
+			    answer[len - 1] != '\n') {
 				score(rights, wrongs, guesses);
 				exit(0);
 			}
@@ -291,51 +306,35 @@ quiz()
 		}
 	}
 	score(rights, wrongs, guesses);
+	free(answer);
 }
 
-char *
-next_cat(s)
-	register char *	s;
+const char *
+next_cat(const char *s)
 {
+	int esc;
+
+	if (s == NULL)
+		return (NULL);
+	esc = 0;
 	for (;;)
 		switch (*s++) {
 		case '\0':
 			return (NULL);
 		case '\\':
+			esc = 1;
 			break;
 		case ':':
-			return (s);
+			if (!esc)
+				return (s);
+		default:
+			esc = 0;
+			break;
 		}
-	/* NOTREACHED */
-}
-
-char *
-appdstr(s, tp, len)
-	char *s;
-	register char *tp;
-	size_t len;
-{
-	register char *mp, *sp;
-	register int ch;
-	char *m;
-
-	if ((m = malloc(strlen(s) + len + 1)) == NULL)
-		err(1, NULL);
-	for (mp = m, sp = s; *mp++ = *sp++;);
-	--mp;
-	if (*(mp - 1) == '\\')
-		--mp;
-
-	while ((ch = *mp++ = *tp++) && ch != '\n');
-	*mp = '\0';
-
-	free(s);
-	return (m);
 }
 
 void
-score(r, w, g)
-	u_int r, w, g;
+score(u_int r, u_int w, u_int g)
 {
 	(void)printf("Rights %d, wrongs %d,", r, w);
 	if (g)
@@ -344,19 +343,19 @@ score(r, w, g)
 }
 
 void
-downcase(p)
-	register char *p;
+downcase(char *p)
 {
-	register int ch;
+	int ch;
 
-	for (; ch = *p; ++p)
+	for (; (ch = *p) != '\0'; ++p)
 		if (isascii(ch) && isupper(ch))
 			*p = tolower(ch);
 }
 
 void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr, "quiz [-t] [-i file] category1 category2\n");
+	(void)fprintf(stderr,
+	    "usage: %s [-t] [-i file] category1 category2\n", getprogname());
 	exit(1);
 }

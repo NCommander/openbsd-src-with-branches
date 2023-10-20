@@ -1,81 +1,164 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: RequiredBy.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# $OpenBSD: RequiredBy.pm,v 1.29 2023/05/17 15:51:58 espie Exp $
 #
-# Copyright (c) 2003 Marc Espie.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
-# ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
-# PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2003-2005 Marc Espie <espie@openbsd.org>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+use v5.36;
+
+package OpenBSD::RequirementList;
+use OpenBSD::PackageInfo;
+use Carp;
+
+sub fatal_error($self, $msg)
+{
+	require OpenBSD::Tracker;
+	OpenBSD::Tracker->dump;
+	confess ref($self), ": $msg $self->{filename}: $!";
+}
+
+sub fill_entries($self)
+{
+	if (!exists $self->{entries}) {
+		my $l = $self->{entries} = {};
+
+		if (-f $self->{filename}) {
+			open(my $fh, '<', $self->{filename}) or 
+			    $self->fatal_error("reading");
+			while(<$fh>) {
+				s/\s+$//o;
+				next if /^$/o;
+				chomp;
+				$l->{$_} = 1;
+			}
+			close($fh);
+			$self->{nonempty} = 1;
+		} else {
+			$self->{nonempty} = 0;
+		}
+	}
+}
+
+sub synch($self)
+{
+	return $self if $main::not;
+
+	if (!unlink $self->{filename}) {
+		if ($self->{nonempty}) {
+		    croak ref($self), ": erasing $self->{filename}: $!";
+		}
+	}
+	if (%{$self->{entries}}) {
+		open(my $fh, '>', $self->{filename}) or 
+		    $self->fatal_error("writing");
+		while (my ($k, $v) = each %{$self->{entries}}) {
+			print $fh "$k\n";
+		}
+		close($fh) or
+		    croak ref($self), ": closing $self->{filename}: $!";
+		$self->{nonempty} = 1;
+	} else {
+		$self->{nonempty} = 0;
+	}
+	return $self;
+}
+
+sub list($self)
+{
+	if (wantarray) {
+		$self->fill_entries;
+		return keys %{$self->{entries}};
+	} else {
+		if (exists $self->{entries}) {
+			return %{$self->{entries}} ? 1 : 0;
+		} elsif (!exists $self->{nonempty}) {
+			$self->{nonempty} = -f $self->{filename} ? 1 : 0;
+		}
+		return $self->{nonempty};
+	}
+}
+
+sub erase($self)
+{
+	$self->{entries} = {};
+	$self->synch;
+}
+
+sub delete($self, @pkgnames)
+{
+	$self->fill_entries;
+	for my $pkg (@pkgnames) {
+		delete $self->{entries}->{$pkg};
+	}
+	$self->synch;
+}
+
+sub add($self, @pkgnames)
+{
+	$self->fill_entries;
+	for my $pkg (@pkgnames) {
+		$self->{entries}->{$pkg} = 1;
+	}
+	$self->synch;
+}
+
+my $cache = {};
+
+sub new($class, $pkgname)
+{
+	my $f = installed_info($pkgname).$class->filename;
+	if (!exists $cache->{$f}) {
+		return $cache->{$f} = bless { filename => $f }, $class;
+	}
+	return $cache->{$f};
+}
+
+sub forget($class, $dir)
+{
+	my $f = $dir.$class->filename;
+	if (exists $cache->{$f}) {
+		$cache->{$f}->{entries} = {};
+		$cache->{$f}->{nonempty} = 0;
+	}
+}
+
+sub compute_closure($class, @seed)
+{
+	my @todo = @seed;
+	my %done = ();
+
+	while (my $pkgname = pop @todo) {
+		next if $done{$pkgname};
+		$done{$pkgname} = 1;
+		for my $dep ($class->new($pkgname)->list) {
+			next if defined $done{$dep};
+			push(@todo, $dep);
+		}
+	}
+	return keys %done;
+}
 
 package OpenBSD::RequiredBy;
-use strict;
-use warnings;
+our @ISA=qw(OpenBSD::RequirementList);
 use OpenBSD::PackageInfo;
 
-sub new
-{
-	my ($class, $pkgname) = @_;
-	my $f = installed_info($pkgname).REQUIRED_BY;
-	bless \$f, $class;
-}
+sub filename($) { REQUIRED_BY };
 
-sub list($)
-{
-	my $self = shift;
+package OpenBSD::Requiring;
+our @ISA=qw(OpenBSD::RequirementList);
+use OpenBSD::PackageInfo;
 
-	my $l = [];
-	return $l unless -f $$self;
-	open(my $fh, '<', $$self) or 
-	    die "Problem opening required list: $$self\n";
-	local $_;
-	while(<$fh>) {
-		chomp $_;
-		s/\s+$//;
-		next if /^$/;
-		push(@$l, $_);
-	}
-	close($fh);
-	return $l;
-}
-
-sub delete
-{
-	my ($self, $pkgname) = @_;
-	my @lines = grep { $_ ne $pkgname } @{$self->list()};
-	unlink($$self) or die "Can't erase $$self";
-	if (@lines > 0) {
-		$self->add(@lines);
-	} 
-}
-
-sub add
-{
-	my ($self, @pkgnames) = @_;
-	open(my $fh, '>>', $$self) or
-	    die "Can't add dependencies to $$self";
-	print $fh join("\n", @pkgnames), "\n";
-	close($fh);
-}
-
-sub DESTROY
-{
-}
+sub filename($) { REQUIRING };
 
 1;

@@ -1,6 +1,7 @@
-/*	$NetBSD: kern_synch.c,v 1.33 1995/06/08 23:51:03 mycroft Exp $	*/
+/*	$OpenBSD: kern_synch.c,v 1.198 2023/08/16 07:55:52 claudio Exp $	*/
+/*	$NetBSD: kern_synch.c,v 1.37 1996/04/22 01:38:37 christos Exp $	*/
 
-/*-
+/*
  * Copyright (c) 1982, 1986, 1990, 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
  * (c) UNIX System Laboratories, Inc.
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -44,206 +41,30 @@
 #include <sys/systm.h>
 #include <sys/proc.h>
 #include <sys/kernel.h>
-#include <sys/buf.h>
 #include <sys/signalvar.h>
-#include <sys/resourcevar.h>
-#include <sys/vmmeter.h>
+#include <sys/sched.h>
+#include <sys/timeout.h>
+#include <sys/mount.h>
+#include <sys/syscallargs.h>
+#include <sys/refcnt.h>
+#include <sys/atomic.h>
+#include <sys/tracepoint.h>
+
+#include <ddb/db_output.h>
+
+#include <machine/spinlock.h>
+
+#ifdef DIAGNOSTIC
+#include <sys/syslog.h>
+#endif
+
 #ifdef KTRACE
 #include <sys/ktrace.h>
 #endif
 
-#include <machine/cpu.h>
-
-u_char	curpriority;		/* usrpri of curproc */
-int	lbolt;			/* once a second sleep address */
-
-/*
- * Force switch among equal priority processes every 100ms.
- */
-/* ARGSUSED */
-void
-roundrobin(arg)
-	void *arg;
-{
-
-	need_resched();
-	timeout(roundrobin, NULL, hz / 10);
-}
-
-/*
- * Constants for digital decay and forget:
- *	90% of (p_estcpu) usage in 5 * loadav time
- *	95% of (p_pctcpu) usage in 60 seconds (load insensitive)
- *          Note that, as ps(1) mentions, this can let percentages
- *          total over 100% (I've seen 137.9% for 3 processes).
- *
- * Note that hardclock updates p_estcpu and p_cpticks independently.
- *
- * We wish to decay away 90% of p_estcpu in (5 * loadavg) seconds.
- * That is, the system wants to compute a value of decay such
- * that the following for loop:
- * 	for (i = 0; i < (5 * loadavg); i++)
- * 		p_estcpu *= decay;
- * will compute
- * 	p_estcpu *= 0.1;
- * for all values of loadavg:
- *
- * Mathematically this loop can be expressed by saying:
- * 	decay ** (5 * loadavg) ~= .1
- *
- * The system computes decay as:
- * 	decay = (2 * loadavg) / (2 * loadavg + 1)
- *
- * We wish to prove that the system's computation of decay
- * will always fulfill the equation:
- * 	decay ** (5 * loadavg) ~= .1
- *
- * If we compute b as:
- * 	b = 2 * loadavg
- * then
- * 	decay = b / (b + 1)
- *
- * We now need to prove two things:
- *	1) Given factor ** (5 * loadavg) ~= .1, prove factor == b/(b+1)
- *	2) Given b/(b+1) ** power ~= .1, prove power == (5 * loadavg)
- *	
- * Facts:
- *         For x close to zero, exp(x) =~ 1 + x, since
- *              exp(x) = 0! + x**1/1! + x**2/2! + ... .
- *              therefore exp(-1/b) =~ 1 - (1/b) = (b-1)/b.
- *         For x close to zero, ln(1+x) =~ x, since
- *              ln(1+x) = x - x**2/2 + x**3/3 - ...     -1 < x < 1
- *              therefore ln(b/(b+1)) = ln(1 - 1/(b+1)) =~ -1/(b+1).
- *         ln(.1) =~ -2.30
- *
- * Proof of (1):
- *    Solve (factor)**(power) =~ .1 given power (5*loadav):
- *	solving for factor,
- *      ln(factor) =~ (-2.30/5*loadav), or
- *      factor =~ exp(-1/((5/2.30)*loadav)) =~ exp(-1/(2*loadav)) =
- *          exp(-1/b) =~ (b-1)/b =~ b/(b+1).                    QED
- *
- * Proof of (2):
- *    Solve (factor)**(power) =~ .1 given factor == (b/(b+1)):
- *	solving for power,
- *      power*ln(b/(b+1)) =~ -2.30, or
- *      power =~ 2.3 * (b + 1) = 4.6*loadav + 2.3 =~ 5*loadav.  QED
- *
- * Actual power values for the implemented algorithm are as follows:
- *      loadav: 1       2       3       4
- *      power:  5.68    10.32   14.94   19.55
- */
-
-/* calculations for digital decay to forget 90% of usage in 5*loadav sec */
-#define	loadfactor(loadav)	(2 * (loadav))
-#define	decay_cpu(loadfac, cpu)	(((loadfac) * (cpu)) / ((loadfac) + FSCALE))
-
-/* decay 95% of `p_pctcpu' in 60 seconds; see CCPU_SHIFT before changing */
-fixpt_t	ccpu = 0.95122942450071400909 * FSCALE;		/* exp(-1/20) */
-
-/*
- * If `ccpu' is not equal to `exp(-1/20)' and you still want to use the
- * faster/more-accurate formula, you'll have to estimate CCPU_SHIFT below
- * and possibly adjust FSHIFT in "param.h" so that (FSHIFT >= CCPU_SHIFT).
- *
- * To estimate CCPU_SHIFT for exp(-1/20), the following formula was used:
- *	1 - exp(-1/20) ~= 0.0487 ~= 0.0488 == 1 (fixed pt, *11* bits).
- *
- * If you dont want to bother with the faster/more-accurate formula, you
- * can set CCPU_SHIFT to (FSHIFT + 1) which will use a slower/less-accurate
- * (more general) method of calculating the %age of CPU used by a process.
- */
-#define	CCPU_SHIFT	11
-
-/*
- * Recompute process priorities, every hz ticks.
- */
-/* ARGSUSED */
-void
-schedcpu(arg)
-	void *arg;
-{
-	register fixpt_t loadfac = loadfactor(averunnable.ldavg[0]);
-	register struct proc *p;
-	register int s;
-	register unsigned int newcpu;
-
-	wakeup((caddr_t)&lbolt);
-	for (p = allproc.lh_first; p != 0; p = p->p_list.le_next) {
-		/*
-		 * Increment time in/out of memory and sleep time
-		 * (if sleeping).  We ignore overflow; with 16-bit int's
-		 * (remember them?) overflow takes 45 days.
-		 */
-		p->p_swtime++;
-		if (p->p_stat == SSLEEP || p->p_stat == SSTOP)
-			p->p_slptime++;
-		p->p_pctcpu = (p->p_pctcpu * ccpu) >> FSHIFT;
-		/*
-		 * If the process has slept the entire second,
-		 * stop recalculating its priority until it wakes up.
-		 */
-		if (p->p_slptime > 1)
-			continue;
-		s = splstatclock();	/* prevent state changes */
-		/*
-		 * p_pctcpu is only for ps.
-		 */
-#if	(FSHIFT >= CCPU_SHIFT)
-		p->p_pctcpu += (hz == 100)?
-			((fixpt_t) p->p_cpticks) << (FSHIFT - CCPU_SHIFT):
-                	100 * (((fixpt_t) p->p_cpticks)
-				<< (FSHIFT - CCPU_SHIFT)) / hz;
-#else
-		p->p_pctcpu += ((FSCALE - ccpu) *
-			(p->p_cpticks * FSCALE / hz)) >> FSHIFT;
-#endif
-		p->p_cpticks = 0;
-		newcpu = (u_int) decay_cpu(loadfac, p->p_estcpu) + p->p_nice;
-		p->p_estcpu = min(newcpu, UCHAR_MAX);
-		resetpriority(p);
-		if (p->p_priority >= PUSER) {
-#define	PPQ	(128 / NQS)		/* priorities per queue */
-			if ((p != curproc) &&
-			    p->p_stat == SRUN &&
-			    (p->p_flag & P_INMEM) &&
-			    (p->p_priority / PPQ) != (p->p_usrpri / PPQ)) {
-				remrq(p);
-				p->p_priority = p->p_usrpri;
-				setrunqueue(p);
-			} else
-				p->p_priority = p->p_usrpri;
-		}
-		splx(s);
-	}
-	vmmeter();
-	if (bclnlist != NULL)
-		wakeup((caddr_t)pageproc);
-	timeout(schedcpu, (void *)0, hz);
-}
-
-/*
- * Recalculate the priority of a process after it has slept for a while.
- * For all load averages >= 1 and max p_estcpu of 255, sleeping for at
- * least six times the loadfactor will decay p_estcpu to zero.
- */
-void
-updatepri(p)
-	register struct proc *p;
-{
-	register unsigned int newcpu = p->p_estcpu;
-	register fixpt_t loadfac = loadfactor(averunnable.ldavg[0]);
-
-	if (p->p_slptime > 5 * loadfac)
-		p->p_estcpu = 0;
-	else {
-		p->p_slptime--;	/* the first time was done in schedcpu */
-		while (newcpu && --p->p_slptime)
-			newcpu = (int) decay_cpu(loadfac, newcpu);
-		p->p_estcpu = min(newcpu, UCHAR_MAX);
-	}
-	resetpriority(p);
-}
+int	sleep_signal_check(void);
+int	thrsleep(struct proc *, struct sys___thrsleep_args *);
+int	thrsleep_unlock(void *);
 
 /*
  * We're only looking at 7 bits of the address; everything is
@@ -252,10 +73,22 @@ updatepri(p)
  */
 #define TABLESIZE	128
 #define LOOKUP(x)	(((long)(x) >> 8) & (TABLESIZE - 1))
-struct slpque {
-	struct proc *sq_head;
-	struct proc **sq_tailp;
-} slpque[TABLESIZE];
+TAILQ_HEAD(slpque,proc) slpque[TABLESIZE];
+
+void
+sleep_queue_init(void)
+{
+	int i;
+
+	for (i = 0; i < TABLESIZE; i++)
+		TAILQ_INIT(&slpque[i]);
+}
+
+/*
+ * Global sleep channel for threads that do not want to
+ * receive wakeup(9) broadcasts.
+ */
+int nowake;
 
 /*
  * During autoconfiguration or after a panic, a sleep will simply
@@ -266,7 +99,7 @@ struct slpque {
  * that is safe for use on the interrupt stack; it can be made
  * higher to block network software interrupts after panics.
  */
-int safepri;
+extern int safepri;
 
 /*
  * General sleep call.  Suspends the current process until a wakeup is
@@ -280,23 +113,111 @@ int safepri;
  * call should be interrupted by the signal (return EINTR).
  */
 int
-tsleep(ident, priority, wmesg, timo)
-	void *ident;
-	int priority, timo;
-	char *wmesg;
+tsleep(const volatile void *ident, int priority, const char *wmesg, int timo)
 {
-	register struct proc *p = curproc;
-	register struct slpque *qp;
-	register s;
-	int sig, catch = priority & PCATCH;
-	extern int cold;
-	void endtsleep __P((void *));
-
-#ifdef KTRACE
-	if (KTRPOINT(p, KTR_CSW))
-		ktrcsw(p->p_tracep, 1, 0);
+#ifdef MULTIPROCESSOR
+	int hold_count;
 #endif
-	s = splhigh();
+
+	KASSERT((priority & ~(PRIMASK | PCATCH)) == 0);
+	KASSERT(ident != &nowake || ISSET(priority, PCATCH) || timo != 0);
+
+#ifdef MULTIPROCESSOR
+	KASSERT(ident == &nowake || timo || _kernel_lock_held());
+#endif
+
+#ifdef DDB
+	if (cold == 2)
+		db_stack_dump();
+#endif
+	if (cold || panicstr) {
+		int s;
+		/*
+		 * After a panic, or during autoconfiguration,
+		 * just give interrupts a chance, then just return;
+		 * don't run any other procs or panic below,
+		 * in case this is the idle process and already asleep.
+		 */
+		s = splhigh();
+		splx(safepri);
+#ifdef MULTIPROCESSOR
+		if (_kernel_lock_held()) {
+			hold_count = __mp_release_all(&kernel_lock);
+			__mp_acquire_count(&kernel_lock, hold_count);
+		}
+#endif
+		splx(s);
+		return (0);
+	}
+
+	sleep_setup(ident, priority, wmesg);
+	return sleep_finish(timo, 1);
+}
+
+int
+tsleep_nsec(const volatile void *ident, int priority, const char *wmesg,
+    uint64_t nsecs)
+{
+	uint64_t to_ticks;
+
+	if (nsecs == INFSLP)
+		return tsleep(ident, priority, wmesg, 0);
+#ifdef DIAGNOSTIC
+	if (nsecs == 0) {
+		log(LOG_WARNING,
+		    "%s: %s[%d]: %s: trying to sleep zero nanoseconds\n",
+		    __func__, curproc->p_p->ps_comm, curproc->p_p->ps_pid,
+		    wmesg);
+	}
+#endif
+	/*
+	 * We want to sleep at least nsecs nanoseconds worth of ticks.
+	 *
+	 *  - Clamp nsecs to prevent arithmetic overflow.
+	 *
+	 *  - Round nsecs up to account for any nanoseconds that do not
+	 *    divide evenly into tick_nsec, otherwise we'll lose them to
+	 *    integer division in the next step.  We add (tick_nsec - 1)
+	 *    to keep from introducing a spurious tick if there are no
+	 *    such nanoseconds, i.e. nsecs % tick_nsec == 0.
+	 *
+	 *  - Divide the rounded value to a count of ticks.  We divide
+	 *    by (tick_nsec + 1) to discard the extra tick introduced if,
+	 *    before rounding, nsecs % tick_nsec == 1.
+	 *
+	 *  - Finally, add a tick to the result.  We need to wait out
+	 *    the current tick before we can begin counting our interval,
+	 *    as we do not know how much time has elapsed since the
+	 *    current tick began.
+	 */
+	nsecs = MIN(nsecs, UINT64_MAX - tick_nsec);
+	to_ticks = (nsecs + tick_nsec - 1) / (tick_nsec + 1) + 1;
+	if (to_ticks > INT_MAX)
+		to_ticks = INT_MAX;
+	return tsleep(ident, priority, wmesg, (int)to_ticks);
+}
+
+/*
+ * Same as tsleep, but if we have a mutex provided, then once we've
+ * entered the sleep queue we drop the mutex. After sleeping we re-lock.
+ */
+int
+msleep(const volatile void *ident, struct mutex *mtx, int priority,
+    const char *wmesg, int timo)
+{
+	int error, spl;
+#ifdef MULTIPROCESSOR
+	int hold_count;
+#endif
+
+	KASSERT((priority & ~(PRIMASK | PCATCH | PNORELOCK)) == 0);
+	KASSERT(ident != &nowake || ISSET(priority, PCATCH) || timo != 0);
+	KASSERT(mtx != NULL);
+
+#ifdef DDB
+	if (cold == 2)
+		db_stack_dump();
+#endif
 	if (cold || panicstr) {
 		/*
 		 * After a panic, or during autoconfiguration,
@@ -304,86 +225,272 @@ tsleep(ident, priority, wmesg, timo)
 		 * don't run any other procs or panic below,
 		 * in case this is the idle process and already asleep.
 		 */
-		splx(safepri);
-		splx(s);
+		spl = MUTEX_OLDIPL(mtx);
+		MUTEX_OLDIPL(mtx) = safepri;
+		mtx_leave(mtx);
+#ifdef MULTIPROCESSOR
+		if (_kernel_lock_held()) {
+			hold_count = __mp_release_all(&kernel_lock);
+			__mp_acquire_count(&kernel_lock, hold_count);
+		}
+#endif
+		if ((priority & PNORELOCK) == 0) {
+			mtx_enter(mtx);
+			MUTEX_OLDIPL(mtx) = spl;
+		} else
+			splx(spl);
 		return (0);
 	}
+
+	sleep_setup(ident, priority, wmesg);
+
+	mtx_leave(mtx);
+	/* signal may stop the process, release mutex before that */
+	error = sleep_finish(timo, 1);
+
+	if ((priority & PNORELOCK) == 0)
+		mtx_enter(mtx);
+
+	return error;
+}
+
+int
+msleep_nsec(const volatile void *ident, struct mutex *mtx, int priority,
+    const char *wmesg, uint64_t nsecs)
+{
+	uint64_t to_ticks;
+
+	if (nsecs == INFSLP)
+		return msleep(ident, mtx, priority, wmesg, 0);
 #ifdef DIAGNOSTIC
-	if (ident == NULL || p->p_stat != SRUN || p->p_back)
-		panic("tsleep");
+	if (nsecs == 0) {
+		log(LOG_WARNING,
+		    "%s: %s[%d]: %s: trying to sleep zero nanoseconds\n",
+		    __func__, curproc->p_p->ps_comm, curproc->p_p->ps_pid,
+		    wmesg);
+	}
 #endif
+	nsecs = MIN(nsecs, UINT64_MAX - tick_nsec);
+	to_ticks = (nsecs + tick_nsec - 1) / (tick_nsec + 1) + 1;
+	if (to_ticks > INT_MAX)
+		to_ticks = INT_MAX;
+	return msleep(ident, mtx, priority, wmesg, (int)to_ticks);
+}
+
+/*
+ * Same as tsleep, but if we have a rwlock provided, then once we've
+ * entered the sleep queue we drop the it. After sleeping we re-lock.
+ */
+int
+rwsleep(const volatile void *ident, struct rwlock *rwl, int priority,
+    const char *wmesg, int timo)
+{
+	int error, status;
+
+	KASSERT((priority & ~(PRIMASK | PCATCH | PNORELOCK)) == 0);
+	KASSERT(ident != &nowake || ISSET(priority, PCATCH) || timo != 0);
+	KASSERT(ident != rwl);
+	rw_assert_anylock(rwl);
+	status = rw_status(rwl);
+
+	sleep_setup(ident, priority, wmesg);
+
+	rw_exit(rwl);
+	/* signal may stop the process, release rwlock before that */
+	error = sleep_finish(timo, 1);
+
+	if ((priority & PNORELOCK) == 0)
+		rw_enter(rwl, status);
+
+	return error;
+}
+
+int
+rwsleep_nsec(const volatile void *ident, struct rwlock *rwl, int priority,
+    const char *wmesg, uint64_t nsecs)
+{
+	uint64_t to_ticks;
+
+	if (nsecs == INFSLP)
+		return rwsleep(ident, rwl, priority, wmesg, 0);
+#ifdef DIAGNOSTIC
+	if (nsecs == 0) {
+		log(LOG_WARNING,
+		    "%s: %s[%d]: %s: trying to sleep zero nanoseconds\n",
+		    __func__, curproc->p_p->ps_comm, curproc->p_p->ps_pid,
+		    wmesg);
+	}
+#endif
+	nsecs = MIN(nsecs, UINT64_MAX - tick_nsec);
+	to_ticks = (nsecs + tick_nsec - 1) / (tick_nsec + 1) + 1;
+	if (to_ticks > INT_MAX)
+		to_ticks = INT_MAX;
+	return 	rwsleep(ident, rwl, priority, wmesg, (int)to_ticks);
+}
+
+void
+sleep_setup(const volatile void *ident, int prio, const char *wmesg)
+{
+	struct proc *p = curproc;
+	int s;
+
+#ifdef DIAGNOSTIC
+	if (p->p_flag & P_CANTSLEEP)
+		panic("sleep: %s failed insomnia", p->p_p->ps_comm);
+	if (ident == NULL)
+		panic("tsleep: no ident");
+	if (p->p_stat != SONPROC)
+		panic("tsleep: not SONPROC");
+#endif
+
+	SCHED_LOCK(s);
+
+	TRACEPOINT(sched, sleep, NULL);
+
 	p->p_wchan = ident;
 	p->p_wmesg = wmesg;
 	p->p_slptime = 0;
-	p->p_priority = priority & PRIMASK;
-	qp = &slpque[LOOKUP(ident)];
-	if (qp->sq_head == 0)
-		qp->sq_head = p;
-	else
-		*qp->sq_tailp = p;
-	*(qp->sq_tailp = &p->p_forw) = 0;
-	if (timo)
-		timeout(endtsleep, (void *)p, timo);
-	/*
-	 * We put ourselves on the sleep queue and start our timeout
-	 * before calling CURSIG, as we could stop there, and a wakeup
-	 * or a SIGCONT (or both) could occur while we were stopped.
-	 * A SIGCONT would cause us to be marked as SSLEEP
-	 * without resuming us, thus we must be ready for sleep
-	 * when CURSIG is called.  If the wakeup happens while we're
-	 * stopped, p->p_wchan will be 0 upon return from CURSIG.
-	 */
-	if (catch) {
-		p->p_flag |= P_SINTR;
-		if (sig = CURSIG(p)) {
-			if (p->p_wchan)
-				unsleep(p);
-			p->p_stat = SRUN;
-			goto resume;
-		}
-		if (p->p_wchan == 0) {
-			catch = 0;
-			goto resume;
-		}
-	} else
-		sig = 0;
+	p->p_slppri = prio & PRIMASK;
+	atomic_setbits_int(&p->p_flag, P_WSLEEP);
+	TAILQ_INSERT_TAIL(&slpque[LOOKUP(ident)], p, p_runq);
+	if (prio & PCATCH)
+		atomic_setbits_int(&p->p_flag, P_SINTR);
 	p->p_stat = SSLEEP;
-	p->p_stats->p_ru.ru_nvcsw++;
-	mi_switch();
-#ifdef	DDB
-	/* handy breakpoint location after process "wakes" */
-	asm(".globl bpendtsleep ; bpendtsleep:");
-#endif
-resume:
-	curpriority = p->p_usrpri;
-	splx(s);
-	p->p_flag &= ~P_SINTR;
-	if (p->p_flag & P_TIMEOUT) {
-		p->p_flag &= ~P_TIMEOUT;
-		if (sig == 0) {
-#ifdef KTRACE
-			if (KTRPOINT(p, KTR_CSW))
-				ktrcsw(p->p_tracep, 0, 0);
-#endif
-			return (EWOULDBLOCK);
-		}
-	} else if (timo)
-		untimeout(endtsleep, (void *)p);
-	if (catch && (sig != 0 || (sig = CURSIG(p)))) {
-#ifdef KTRACE
-		if (KTRPOINT(p, KTR_CSW))
-			ktrcsw(p->p_tracep, 0, 0);
-#endif
-		if (p->p_sigacts->ps_sigintr & sigmask(sig))
-			return (EINTR);
-		return (ERESTART);
-	}
-#ifdef KTRACE
-	if (KTRPOINT(p, KTR_CSW))
-		ktrcsw(p->p_tracep, 0, 0);
-#endif
-	return (0);
+
+	SCHED_UNLOCK(s);
 }
+
+int
+sleep_finish(int timo, int do_sleep)
+{
+	struct proc *p = curproc;
+	int s, catch, error = 0, error1 = 0;
+
+	catch = p->p_flag & P_SINTR;
+
+	if (timo != 0) {
+		KASSERT((p->p_flag & P_TIMEOUT) == 0);
+		timeout_add(&p->p_sleep_to, timo);
+	}
+
+	if (catch != 0) {
+		/*
+		 * We put ourselves on the sleep queue and start our
+		 * timeout before calling sleep_signal_check(), as we could
+		 * stop there, and a wakeup or a SIGCONT (or both) could
+		 * occur while we were stopped.  A SIGCONT would cause
+		 * us to be marked as SSLEEP without resuming us, thus
+		 * we must be ready for sleep when sleep_signal_check() is
+		 * called.
+		 */
+		if ((error = sleep_signal_check()) != 0) {
+			catch = 0;
+			do_sleep = 0;
+		}
+	}
+
+	SCHED_LOCK(s);
+	/*
+	 * If the wakeup happens while going to sleep, p->p_wchan
+	 * will be NULL. In that case unwind immediately but still
+	 * check for possible signals and timeouts.
+	 */
+	if (p->p_wchan == NULL)
+		do_sleep = 0;
+	atomic_clearbits_int(&p->p_flag, P_WSLEEP);
+
+	if (do_sleep) {
+		KASSERT(p->p_stat == SSLEEP || p->p_stat == SSTOP);
+		p->p_ru.ru_nvcsw++;
+		mi_switch();
+	} else {
+		KASSERT(p->p_stat == SONPROC || p->p_stat == SSLEEP ||
+		    p->p_stat == SSTOP);
+		unsleep(p);
+		p->p_stat = SONPROC;
+	}
+
+#ifdef DIAGNOSTIC
+	if (p->p_stat != SONPROC)
+		panic("sleep_finish !SONPROC");
+#endif
+
+	p->p_cpu->ci_schedstate.spc_curpriority = p->p_usrpri;
+	SCHED_UNLOCK(s);
+
+	/*
+	 * Even though this belongs to the signal handling part of sleep,
+	 * we need to clear it before the ktrace.
+	 */
+	atomic_clearbits_int(&p->p_flag, P_SINTR);
+
+	if (timo != 0) {
+		if (p->p_flag & P_TIMEOUT) {
+			error1 = EWOULDBLOCK;
+		} else {
+			/* This can sleep. It must not use timeouts. */
+			timeout_del_barrier(&p->p_sleep_to);
+		}
+		atomic_clearbits_int(&p->p_flag, P_TIMEOUT);
+	}
+
+	/* Check if thread was woken up because of a unwind or signal */
+	if (catch != 0)
+		error = sleep_signal_check();
+
+	/* Signal errors are higher priority than timeouts. */
+	if (error == 0 && error1 != 0)
+		error = error1;
+
+	return error;
+}
+
+/*
+ * Check and handle signals and suspensions around a sleep cycle.
+ */
+int
+sleep_signal_check(void)
+{
+	struct proc *p = curproc;
+	struct sigctx ctx;
+	int err, sig;
+
+	if ((err = single_thread_check(p, 1)) != 0)
+		return err;
+	if ((sig = cursig(p, &ctx)) != 0) {
+		if (ctx.sig_intr)
+			return EINTR;
+		else
+			return ERESTART;
+	}
+	return 0;
+}
+
+int
+wakeup_proc(struct proc *p, const volatile void *chan, int flags)
+{
+	int awakened = 0;
+
+	SCHED_ASSERT_LOCKED();
+
+	if (p->p_wchan != NULL &&
+	   ((chan == NULL) || (p->p_wchan == chan))) {
+		awakened = 1;
+		if (flags)
+			atomic_setbits_int(&p->p_flag, flags);
+		if (p->p_stat == SSLEEP)
+			setrunnable(p);
+		else if (p->p_stat == SSTOP)
+			unsleep(p);
+#ifdef DIAGNOSTIC
+		else
+			panic("wakeup: p_stat is %d", (int)p->p_stat);
+#endif
+	}
+
+	return awakened;
+}
+
 
 /*
  * Implement timeout for tsleep.
@@ -392,336 +499,390 @@ resume:
  * is stopped, just unsleep so it will remain stopped.
  */
 void
-endtsleep(arg)
-	void *arg;
+endtsleep(void *arg)
 {
-	register struct proc *p;
+	struct proc *p = arg;
 	int s;
 
-	p = (struct proc *)arg;
-	s = splhigh();
-	if (p->p_wchan) {
-		if (p->p_stat == SSLEEP)
-			setrunnable(p);
-		else
-			unsleep(p);
-		p->p_flag |= P_TIMEOUT;
-	}
-	splx(s);
-}
-
-/*
- * Short-term, non-interruptable sleep.
- */
-void
-sleep(ident, priority)
-	void *ident;
-	int priority;
-{
-	register struct proc *p = curproc;
-	register struct slpque *qp;
-	register s;
-	extern int cold;
-
-#ifdef DIAGNOSTIC
-	if (priority > PZERO) {
-		printf("sleep called with priority %d > PZERO, wchan: %p\n",
-		    priority, ident);
-		panic("old sleep");
-	}
-#endif
-	s = splhigh();
-	if (cold || panicstr) {
-		/*
-		 * After a panic, or during autoconfiguration,
-		 * just give interrupts a chance, then just return;
-		 * don't run any other procs or panic below,
-		 * in case this is the idle process and already asleep.
-		 */
-		splx(safepri);
-		splx(s);
-		return;
-	}
-#ifdef DIAGNOSTIC
-	if (ident == NULL || p->p_stat != SRUN || p->p_back)
-		panic("sleep");
-#endif
-	p->p_wchan = ident;
-	p->p_wmesg = NULL;
-	p->p_slptime = 0;
-	p->p_priority = priority;
-	qp = &slpque[LOOKUP(ident)];
-	if (qp->sq_head == 0)
-		qp->sq_head = p;
-	else
-		*qp->sq_tailp = p;
-	*(qp->sq_tailp = &p->p_forw) = 0;
-	p->p_stat = SSLEEP;
-	p->p_stats->p_ru.ru_nvcsw++;
-#ifdef KTRACE
-	if (KTRPOINT(p, KTR_CSW))
-		ktrcsw(p->p_tracep, 1, 0);
-#endif
-	mi_switch();
-#ifdef	DDB
-	/* handy breakpoint location after process "wakes" */
-	asm(".globl bpendsleep ; bpendsleep:");
-#endif
-#ifdef KTRACE
-	if (KTRPOINT(p, KTR_CSW))
-		ktrcsw(p->p_tracep, 0, 0);
-#endif
-	curpriority = p->p_usrpri;
-	splx(s);
+	SCHED_LOCK(s);
+	wakeup_proc(p, NULL, P_TIMEOUT);
+	SCHED_UNLOCK(s);
 }
 
 /*
  * Remove a process from its wait queue
  */
 void
-unsleep(p)
-	register struct proc *p;
+unsleep(struct proc *p)
 {
-	register struct slpque *qp;
-	register struct proc **hp;
+	SCHED_ASSERT_LOCKED();
+
+	if (p->p_wchan != NULL) {
+		TAILQ_REMOVE(&slpque[LOOKUP(p->p_wchan)], p, p_runq);
+		p->p_wchan = NULL;
+		TRACEPOINT(sched, unsleep, p->p_tid + THREAD_PID_OFFSET,
+		    p->p_p->ps_pid);
+	}
+}
+
+/*
+ * Make a number of processes sleeping on the specified identifier runnable.
+ */
+void
+wakeup_n(const volatile void *ident, int n)
+{
+	struct slpque *qp;
+	struct proc *p;
+	struct proc *pnext;
 	int s;
 
-	s = splhigh();
-	if (p->p_wchan) {
-		hp = &(qp = &slpque[LOOKUP(p->p_wchan)])->sq_head;
-		while (*hp != p)
-			hp = &(*hp)->p_forw;
-		*hp = p->p_forw;
-		if (qp->sq_tailp == &p->p_forw)
-			qp->sq_tailp = hp;
-		p->p_wchan = 0;
+	SCHED_LOCK(s);
+	qp = &slpque[LOOKUP(ident)];
+	for (p = TAILQ_FIRST(qp); p != NULL && n != 0; p = pnext) {
+		pnext = TAILQ_NEXT(p, p_runq);
+#ifdef DIAGNOSTIC
+		if (p->p_stat != SSLEEP && p->p_stat != SSTOP)
+			panic("wakeup: p_stat is %d", (int)p->p_stat);
+#endif
+		if (wakeup_proc(p, ident, 0))
+			--n;
 	}
-	splx(s);
+	SCHED_UNLOCK(s);
 }
 
 /*
  * Make all processes sleeping on the specified identifier runnable.
  */
 void
-wakeup(ident)
-	register void *ident;
+wakeup(const volatile void *chan)
 {
-	register struct slpque *qp;
-	register struct proc *p, **q;
+	wakeup_n(chan, -1);
+}
+
+int
+sys_sched_yield(struct proc *p, void *v, register_t *retval)
+{
+	struct proc *q;
+	uint8_t newprio;
 	int s;
 
-	s = splhigh();
-	qp = &slpque[LOOKUP(ident)];
-restart:
-	for (q = &qp->sq_head; p = *q; ) {
-#ifdef DIAGNOSTIC
-		if (p->p_back || p->p_stat != SSLEEP && p->p_stat != SSTOP)
-			panic("wakeup");
+	SCHED_LOCK(s);
+	/*
+	 * If one of the threads of a multi-threaded process called
+	 * sched_yield(2), drop its priority to ensure its siblings
+	 * can make some progress.
+	 */
+	newprio = p->p_usrpri;
+	TAILQ_FOREACH(q, &p->p_p->ps_threads, p_thr_link)
+		newprio = max(newprio, q->p_runpri);
+	setrunqueue(p->p_cpu, p, newprio);
+	p->p_ru.ru_nvcsw++;
+	mi_switch();
+	SCHED_UNLOCK(s);
+
+	return (0);
+}
+
+int
+thrsleep_unlock(void *lock)
+{
+	static _atomic_lock_t unlocked = _ATOMIC_LOCK_UNLOCKED;
+	_atomic_lock_t *atomiclock = lock;
+
+	if (!lock)
+		return 0;
+
+	return copyout(&unlocked, atomiclock, sizeof(unlocked));
+}
+
+struct tslpentry {
+	TAILQ_ENTRY(tslpentry)	tslp_link;
+	long			tslp_ident;
+};
+
+/* thrsleep queue shared between processes */
+static struct tslpqueue thrsleep_queue = TAILQ_HEAD_INITIALIZER(thrsleep_queue);
+static struct rwlock thrsleep_lock = RWLOCK_INITIALIZER("thrsleeplk");
+
+int
+thrsleep(struct proc *p, struct sys___thrsleep_args *v)
+{
+	struct sys___thrsleep_args /* {
+		syscallarg(const volatile void *) ident;
+		syscallarg(clockid_t) clock_id;
+		syscallarg(const struct timespec *) tp;
+		syscallarg(void *) lock;
+		syscallarg(const int *) abort;
+	} */ *uap = v;
+	long ident = (long)SCARG(uap, ident);
+	struct tslpentry entry;
+	struct tslpqueue *queue;
+	struct rwlock *qlock;
+	struct timespec *tsp = (struct timespec *)SCARG(uap, tp);
+	void *lock = SCARG(uap, lock);
+	uint64_t nsecs = INFSLP;
+	int abort = 0, error;
+	clockid_t clock_id = SCARG(uap, clock_id);
+
+	if (ident == 0)
+		return (EINVAL);
+	if (tsp != NULL) {
+		struct timespec now;
+
+		if ((error = clock_gettime(p, clock_id, &now)))
+			return (error);
+#ifdef KTRACE
+		if (KTRPOINT(p, KTR_STRUCT))
+			ktrabstimespec(p, tsp);
 #endif
-		if (p->p_wchan == ident) {
-			p->p_wchan = 0;
-			*q = p->p_forw;
-			if (qp->sq_tailp == &p->p_forw)
-				qp->sq_tailp = q;
-			if (p->p_stat == SSLEEP) {
-				/* OPTIMIZED EXPANSION OF setrunnable(p); */
-				if (p->p_slptime > 1)
-					updatepri(p);
-				p->p_slptime = 0;
-				p->p_stat = SRUN;
-				if (p->p_flag & P_INMEM)
-					setrunqueue(p);
-				/*
-				 * Since curpriority is a user priority,
-				 * p->p_priority is always better than
-				 * curpriority.
-				 */
-				if ((p->p_flag & P_INMEM) == 0)
-					wakeup((caddr_t)&proc0);
-				else
-					need_resched();
-				/* END INLINE EXPANSION */
-				goto restart;
+
+		if (timespeccmp(tsp, &now, <=)) {
+			/* already passed: still do the unlock */
+			if ((error = thrsleep_unlock(lock)))
+				return (error);
+			return (EWOULDBLOCK);
+		}
+
+		timespecsub(tsp, &now, tsp);
+		nsecs = MIN(TIMESPEC_TO_NSEC(tsp), MAXTSLP);
+	}
+
+	if (ident == -1) {
+		queue = &thrsleep_queue;
+		qlock = &thrsleep_lock;
+	} else {
+		queue = &p->p_p->ps_tslpqueue;
+		qlock = &p->p_p->ps_lock;
+	}
+
+	/* Interlock with wakeup. */
+	entry.tslp_ident = ident;
+	rw_enter_write(qlock);
+	TAILQ_INSERT_TAIL(queue, &entry, tslp_link);
+	rw_exit_write(qlock);
+
+	error = thrsleep_unlock(lock);
+
+	if (error == 0 && SCARG(uap, abort) != NULL)
+		error = copyin(SCARG(uap, abort), &abort, sizeof(abort));
+
+	rw_enter_write(qlock);
+	if (error != 0)
+		goto out;
+	if (abort != 0) {
+		error = EINTR;
+		goto out;
+	}
+	if (entry.tslp_ident != 0) {
+		error = rwsleep_nsec(&entry, qlock, PWAIT|PCATCH, "thrsleep",
+		    nsecs);
+	}
+
+out:
+	if (entry.tslp_ident != 0)
+		TAILQ_REMOVE(queue, &entry, tslp_link);
+	rw_exit_write(qlock);
+
+	if (error == ERESTART)
+		error = ECANCELED;
+
+	return (error);
+
+}
+
+int
+sys___thrsleep(struct proc *p, void *v, register_t *retval)
+{
+	struct sys___thrsleep_args /* {
+		syscallarg(const volatile void *) ident;
+		syscallarg(clockid_t) clock_id;
+		syscallarg(struct timespec *) tp;
+		syscallarg(void *) lock;
+		syscallarg(const int *) abort;
+	} */ *uap = v;
+	struct timespec ts;
+	int error;
+
+	if (SCARG(uap, tp) != NULL) {
+		if ((error = copyin(SCARG(uap, tp), &ts, sizeof(ts)))) {
+			*retval = error;
+			return 0;
+		}
+		if (!timespecisvalid(&ts)) {
+			*retval = EINVAL;
+			return 0;
+		}
+		SCARG(uap, tp) = &ts;
+	}
+
+	*retval = thrsleep(p, uap);
+	return 0;
+}
+
+int
+sys___thrwakeup(struct proc *p, void *v, register_t *retval)
+{
+	struct sys___thrwakeup_args /* {
+		syscallarg(const volatile void *) ident;
+		syscallarg(int) n;
+	} */ *uap = v;
+	struct tslpentry *entry, *tmp;
+	struct tslpqueue *queue;
+	struct rwlock *qlock;
+	long ident = (long)SCARG(uap, ident);
+	int n = SCARG(uap, n);
+	int found = 0;
+
+	if (ident == 0)
+		*retval = EINVAL;
+	else {
+		if (ident == -1) {
+			queue = &thrsleep_queue;
+			qlock = &thrsleep_lock;
+			/*
+			 * Wake up all waiters with ident -1. This is needed
+			 * because ident -1 can be shared by multiple userspace
+			 * lock state machines concurrently. The implementation
+			 * has no way to direct the wakeup to a particular
+			 * state machine.
+			 */
+			n = 0;
+		} else {
+			queue = &p->p_p->ps_tslpqueue;
+			qlock = &p->p_p->ps_lock;
+		}
+
+		rw_enter_write(qlock);
+		TAILQ_FOREACH_SAFE(entry, queue, tslp_link, tmp) {
+			if (entry->tslp_ident == ident) {
+				TAILQ_REMOVE(queue, entry, tslp_link);
+				entry->tslp_ident = 0;
+				wakeup_one(entry);
+				if (++found == n)
+					break;
 			}
-		} else
-			q = &p->p_forw;
-	}
-	splx(s);
-}
-
-/*
- * The machine independent parts of mi_switch().
- * Must be called at splstatclock() or higher.
- */
-void
-mi_switch()
-{
-	register struct proc *p = curproc;	/* XXX */
-	register struct rlimit *rlim;
-	register long s, u;
-	struct timeval tv;
-
-	/*
-	 * Compute the amount of time during which the current
-	 * process was running, and add that to its total so far.
-	 */
-	microtime(&tv);
-	u = p->p_rtime.tv_usec + (tv.tv_usec - runtime.tv_usec);
-	s = p->p_rtime.tv_sec + (tv.tv_sec - runtime.tv_sec);
-	if (u < 0) {
-		u += 1000000;
-		s--;
-	} else if (u >= 1000000) {
-		u -= 1000000;
-		s++;
-	}
-	p->p_rtime.tv_usec = u;
-	p->p_rtime.tv_sec = s;
-
-	/*
-	 * Check if the process exceeds its cpu resource allocation.
-	 * If over max, kill it.  In any case, if it has run for more
-	 * than 10 minutes, reduce priority to give others a chance.
-	 */
-	rlim = &p->p_rlimit[RLIMIT_CPU];
-	if (s >= rlim->rlim_cur) {
-		if (s >= rlim->rlim_max)
-			psignal(p, SIGKILL);
-		else {
-			psignal(p, SIGXCPU);
-			if (rlim->rlim_cur < rlim->rlim_max)
-				rlim->rlim_cur += 5;
 		}
+		rw_exit_write(qlock);
+
+		if (ident == -1)
+			*retval = 0;
+		else
+			*retval = found ? 0 : ESRCH;
 	}
-	if (s > 10 * 60 && p->p_ucred->cr_uid && p->p_nice == NZERO) {
-		p->p_nice = NZERO + 4;
-		resetpriority(p);
+
+	return (0);
+}
+
+void
+refcnt_init(struct refcnt *r)
+{
+	refcnt_init_trace(r, 0);
+}
+
+void
+refcnt_init_trace(struct refcnt *r, int idx)
+{
+	r->r_traceidx = idx;
+	atomic_store_int(&r->r_refs, 1);
+	TRACEINDEX(refcnt, r->r_traceidx, r, 0, +1);
+}
+
+void
+refcnt_take(struct refcnt *r)
+{
+	u_int refs;
+
+	refs = atomic_inc_int_nv(&r->r_refs);
+	KASSERT(refs != 0);
+	TRACEINDEX(refcnt, r->r_traceidx, r, refs - 1, +1);
+	(void)refs;
+}
+
+int
+refcnt_rele(struct refcnt *r)
+{
+	u_int refs;
+
+	membar_exit_before_atomic();
+	refs = atomic_dec_int_nv(&r->r_refs);
+	KASSERT(refs != ~0);
+	TRACEINDEX(refcnt, r->r_traceidx, r, refs + 1, -1);
+	if (refs == 0) {
+		membar_enter_after_atomic();
+		return (1);
 	}
-
-	/*
-	 * Pick a new current process and record its start time.
-	 */
-	cnt.v_swtch++;
-	cpu_switch(p);
-	microtime(&runtime);
+	return (0);
 }
 
-/*
- * Initialize the (doubly-linked) run queues
- * to be empty.
- */
 void
-rqinit()
+refcnt_rele_wake(struct refcnt *r)
 {
-	register int i;
-
-	for (i = 0; i < NQS; i++)
-		qs[i].ph_link = qs[i].ph_rlink = (struct proc *)&qs[i];
+	if (refcnt_rele(r))
+		wakeup_one(r);
 }
 
-/*
- * Change process state to be runnable,
- * placing it on the run queue if it is in memory,
- * and awakening the swapper if it isn't in memory.
- */
 void
-setrunnable(p)
-	register struct proc *p;
+refcnt_finalize(struct refcnt *r, const char *wmesg)
 {
-	register int s;
+	u_int refs;
 
-	s = splhigh();
-	switch (p->p_stat) {
-	case 0:
-	case SRUN:
-	case SZOMB:
-	default:
-		panic("setrunnable");
-	case SSTOP:
-		/*
-		 * If we're being traced (possibly because someone attached us
-		 * while we were stopped), check for a signal from the debugger.
-		 */
-		if ((p->p_flag & P_TRACED) != 0 && p->p_xstat != 0)
-			p->p_siglist |= sigmask(p->p_xstat);
-	case SSLEEP:
-		unsleep(p);		/* e.g. when sending signals */
-		break;
-
-	case SIDL:
-		break;
+	membar_exit_before_atomic();
+	refs = atomic_dec_int_nv(&r->r_refs);
+	KASSERT(refs != ~0);
+	TRACEINDEX(refcnt, r->r_traceidx, r, refs + 1, -1);
+	while (refs) {
+		sleep_setup(r, PWAIT, wmesg);
+		refs = atomic_load_int(&r->r_refs);
+		sleep_finish(0, refs);
 	}
-	p->p_stat = SRUN;
-	if (p->p_flag & P_INMEM)
-		setrunqueue(p);
-	splx(s);
-	if (p->p_slptime > 1)
-		updatepri(p);
-	p->p_slptime = 0;
-	if ((p->p_flag & P_INMEM) == 0)
-		wakeup((caddr_t)&proc0);
-	else if (p->p_priority < curpriority)
-		need_resched();
+	TRACEINDEX(refcnt, r->r_traceidx, r, refs, 0);
+	/* Order subsequent loads and stores after refs == 0 load. */
+	membar_sync();
 }
 
-/*
- * Compute the priority of a process when running in user mode.
- * Arrange to reschedule if the resulting priority is better
- * than that of the current process.
- */
-void
-resetpriority(p)
-	register struct proc *p;
+int
+refcnt_shared(struct refcnt *r)
 {
-	register unsigned int newpriority;
+	u_int refs;
 
-	newpriority = PUSER + p->p_estcpu / 4 + 2 * p->p_nice;
-	newpriority = min(newpriority, MAXPRI);
-	p->p_usrpri = newpriority;
-	if (newpriority < curpriority)
-		need_resched();
+	refs = atomic_load_int(&r->r_refs);
+	TRACEINDEX(refcnt, r->r_traceidx, r, refs, 0);
+	return (refs > 1);
 }
 
-#ifdef DDB
-void
-db_show_all_procs(addr, haddr, count, modif)
-	long addr;
-	int haddr;
-	int count;
-	char *modif;
+unsigned int
+refcnt_read(struct refcnt *r)
 {
-	int map = modif[0] == 'm';
-	int doingzomb = 0;
-	struct proc *p, *pp;
-    
-	p = allproc.lh_first;
-	db_printf("  pid proc     addr     %s comm         wchan\n",
-	    map ? "map     " : "uid  ppid  pgrp  flag stat em ");
-	while (p != 0) {
-		pp = p->p_pptr;
-		if (p->p_stat) {
-			db_printf("%5d %06x %06x ",
-			    p->p_pid, p, p->p_addr);
-			if (map)
-				db_printf("%06x %s   ",
-				    p->p_vmspace, p->p_comm);
-			else
-				db_printf("%3d %5d %5d  %06x  %d  %s  %s   ",
-				    p->p_cred->p_ruid, pp ? pp->p_pid : -1,
-				    p->p_pgrp->pg_id, p->p_flag, p->p_stat,
-				    p->p_emul->e_name, p->p_comm);
-			if (p->p_wchan) {
-				if (p->p_wmesg)
-					db_printf("%s ", p->p_wmesg);
-				db_printf("%x", p->p_wchan);
-			}
-			db_printf("\n");
-		}
-		p = p->p_list.le_next;
-		if (p == 0 && doingzomb == 0) {
-			doingzomb = 1;
-			p = zombproc.lh_first;
-		}
+	u_int refs;
+
+	refs = atomic_load_int(&r->r_refs);
+	TRACEINDEX(refcnt, r->r_traceidx, r, refs, 0);
+	return (refs);
+}
+
+void
+cond_init(struct cond *c)
+{
+	atomic_store_int(&c->c_wait, 1);
+}
+
+void
+cond_signal(struct cond *c)
+{
+	atomic_store_int(&c->c_wait, 0);
+
+	wakeup_one(c);
+}
+
+void
+cond_wait(struct cond *c, const char *wmesg)
+{
+	unsigned int wait;
+
+	wait = atomic_load_int(&c->c_wait);
+	while (wait) {
+		sleep_setup(c, PWAIT, wmesg);
+		wait = atomic_load_int(&c->c_wait);
+		sleep_finish(0, wait);
 	}
 }
-#endif

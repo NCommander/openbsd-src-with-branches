@@ -1,9 +1,12 @@
-/*	$OpenBSD$	*/
-/*	$NetBSD: soundcard.h,v 1.4 1997/10/29 20:23:27 augustss Exp $	*/
+/*	$OpenBSD: soundcard.h,v 1.14 2013/03/27 20:28:22 tedu Exp $	*/
+/*	$NetBSD: soundcard.h,v 1.11 2001/05/09 21:49:58 augustss Exp $	*/
 
-/*
+/*-
  * Copyright (c) 1997 The NetBSD Foundation, Inc.
  * All rights reserved.
+ *
+ * This code is derived from software contributed to The NetBSD Foundation
+ * by Lennart Augustsson.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *        This product includes software developed by the NetBSD
- *        Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -37,14 +33,18 @@
 /*
  * WARNING!  WARNING!
  * This is an OSS (Linux) audio emulator.
- * Use the Native NetBSD API for developing new code, and this
+ * Use the sndio(7) API for developing new code, and this
  * only for compiling Linux programs.
  */
 
-#ifndef _soundcard_h_
-#define _soundcard_h_
+#ifndef _SOUNDCARD_H_
+#define _SOUNDCARD_H_
 
-#define SOUND_VERSION	0x030000
+#ifndef	_SYS_IOCTL_H_
+#include <sys/ioctl.h>
+#endif	/* !_SYS_IOCTL_H_ */
+
+#define SOUND_VERSION	0x030001
 
 #define	SNDCTL_DSP_RESET		_IO  ('P', 0)
 #define	SNDCTL_DSP_SYNC			_IO  ('P', 1)
@@ -97,6 +97,7 @@
 #define SNDCTL_DSP_SETSYNCRO		_IO  ('P', 21)
 #define SNDCTL_DSP_SETDUPLEX		_IO  ('P', 22)
 #define SNDCTL_DSP_PROFILE		_IOW ('P', 23, int)
+#define SNDCTL_DSP_GETODELAY		_IOR ('P', 24, int)
 #define	  APF_NORMAL			0
 #define	  APF_NETWORK			1
 #define   APF_CPUINTENS			2
@@ -106,8 +107,15 @@
  * include all of endian.h because it contains a lot
  * junk symbols.  [augustss]
  */
-#define _POSIX_SOURCE		/* avoid dragging in a lot of junk */
+#if  __BSD_VISIBLE
+#undef __BSD_VISIBLE
+#define  __BSD_VISIBLE	0	/* avoid dragging in a lot of junk */
 #include <machine/endian.h>
+#undef __BSD_VISIBLE
+#define  __BSD_VISIBLE	1
+#else
+#include <machine/endian.h>
+#endif
 #if _QUAD_LOWWORD == 0
 #define  AFMT_S16_NE AFMT_S16_LE
 #else
@@ -256,6 +264,29 @@
 #define SOUND_MASK_LINE1	(1 << SOUND_MIXER_LINE1)
 #define SOUND_MASK_LINE2	(1 << SOUND_MIXER_LINE2)
 #define SOUND_MASK_LINE3	(1 << SOUND_MIXER_LINE3)
+#define SOUND_MASK_DIGITAL1	(1 << SOUND_MIXER_DIGITAL1)
+#define SOUND_MASK_DIGITAL2	(1 << SOUND_MIXER_DIGITAL2)
+#define SOUND_MASK_DIGITAL3	(1 << SOUND_MIXER_DIGITAL3)
+#define SOUND_MASK_PHONEIN	(1 << SOUND_MIXER_PHONEIN)
+#define SOUND_MASK_PHONEOUT	(1 << SOUND_MIXER_PHONEOUT)
+#define SOUND_MASK_VIDEO	(1 << SOUND_MIXER_VIDEO)
+#define SOUND_MASK_RADIO	(1 << SOUND_MIXER_RADIO)
+#define SOUND_MASK_MONITOR	(1 << SOUND_MIXER_MONITOR)
+
+typedef struct mixer_info {
+	char id[16];
+	char name[32];
+	int  modify_counter;
+	int  fillers[10];
+} mixer_info;
+
+typedef struct _old_mixer_info {
+	char id[16];
+	char name[32];
+} _old_mixer_info;
+
+#define SOUND_MIXER_INFO		_IOR ('M', 101, mixer_info)
+#define SOUND_OLD_MIXER_INFO		_IOR ('M', 101, _old_mixer_info)
 
 #define OSS_GETVERSION			_IOR ('M', 118, int)
 
@@ -277,8 +308,10 @@ typedef struct buffmem_desc {
 	int size;
 } buffmem_desc;
 
-#define ioctl(fd, com, argp) _oss_ioctl(fd, com, argp)
+#define ioctl _oss_ioctl
 
-int _oss_ioctl(int fd, unsigned long com, void *argp);
+__BEGIN_DECLS
+int _oss_ioctl(int, unsigned long com, ...);
+__END_DECLS
 
-#endif
+#endif /* !_SOUNDCARD_H_ */

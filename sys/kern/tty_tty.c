@@ -1,4 +1,5 @@
-/*	$NetBSD: tty_tty.c,v 1.11 1994/10/30 21:48:05 cgd Exp $	*/
+/*	$OpenBSD: tty_tty.c,v 1.31 2022/07/02 08:50:42 visa Exp $	*/
+/*	$NetBSD: tty_tty.c,v 1.13 1996/03/30 22:24:46 christos Exp $	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -40,112 +37,120 @@
  */
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/conf.h>
-#include <sys/ioctl.h>
 #include <sys/proc.h>
 #include <sys/tty.h>
 #include <sys/vnode.h>
-#include <sys/file.h>
+#include <sys/lock.h>
+#include <sys/fcntl.h>
 
-#define cttyvp(p) ((p)->p_flag & P_CONTROLT ? (p)->p_session->s_ttyvp : NULL)
 
-/*ARGSUSED*/
-cttyopen(dev, flag, mode, p)
-	dev_t dev;
-	int flag, mode;
-	struct proc *p;
+#define cttyvp(p) \
+	((p)->p_p->ps_flags & PS_CONTROLT ? \
+	    (p)->p_p->ps_session->s_ttyvp : NULL)
+
+int
+cttyopen(dev_t dev, int flag, int mode, struct proc *p)
 {
 	struct vnode *ttyvp = cttyvp(p);
 	int error;
 
 	if (ttyvp == NULL)
 		return (ENXIO);
-	VOP_LOCK(ttyvp);
-#ifdef PARANOID
-	/*
-	 * Since group is tty and mode is 620 on most terminal lines
-	 * and since sessions protect terminals from processes outside
-	 * your session, this check is probably no longer necessary.
-	 * Since it inhibits setuid root programs that later switch 
-	 * to another user from accessing /dev/tty, we have decided
-	 * to delete this test. (mckusick 5/93)
-	 */
-	error = VOP_ACCESS(ttyvp,
-	  (flag&FREAD ? VREAD : 0) | (flag&FWRITE ? VWRITE : 0), p->p_ucred, p);
-	if (!error)
-#endif /* PARANOID */
-		error = VOP_OPEN(ttyvp, flag, NOCRED, p);
+	vn_lock(ttyvp, LK_EXCLUSIVE | LK_RETRY);
+	error = VOP_OPEN(ttyvp, flag, NOCRED, p);
 	VOP_UNLOCK(ttyvp);
 	return (error);
 }
 
-/*ARGSUSED*/
-cttyread(dev, uio, flag)
-	dev_t dev;
-	struct uio *uio;
-	int flag;
+int
+cttyread(dev_t dev, struct uio *uio, int flag)
 {
-	register struct vnode *ttyvp = cttyvp(uio->uio_procp);
+	struct vnode *ttyvp = cttyvp(uio->uio_procp);
 	int error;
 
 	if (ttyvp == NULL)
 		return (EIO);
-	VOP_LOCK(ttyvp);
+	vn_lock(ttyvp, LK_EXCLUSIVE | LK_RETRY);
 	error = VOP_READ(ttyvp, uio, flag, NOCRED);
 	VOP_UNLOCK(ttyvp);
 	return (error);
 }
 
-/*ARGSUSED*/
-cttywrite(dev, uio, flag)
-	dev_t dev;
-	struct uio *uio;
-	int flag;
+int
+cttywrite(dev_t dev, struct uio *uio, int flag)
 {
-	register struct vnode *ttyvp = cttyvp(uio->uio_procp);
+	struct vnode *ttyvp = cttyvp(uio->uio_procp);
 	int error;
 
 	if (ttyvp == NULL)
 		return (EIO);
-	VOP_LOCK(ttyvp);
+	vn_lock(ttyvp, LK_EXCLUSIVE | LK_RETRY);
 	error = VOP_WRITE(ttyvp, uio, flag, NOCRED);
 	VOP_UNLOCK(ttyvp);
 	return (error);
 }
 
-/*ARGSUSED*/
-cttyioctl(dev, cmd, addr, flag, p)
-	dev_t dev;
-	u_long cmd;
-	caddr_t addr;
-	int flag;
-	struct proc *p;
+int
+cttyioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
 {
 	struct vnode *ttyvp = cttyvp(p);
+	struct session *sess;
+	int error, secs;
 
 	if (ttyvp == NULL)
 		return (EIO);
 	if (cmd == TIOCSCTTY)		/* XXX */
 		return (EINVAL);
 	if (cmd == TIOCNOTTY) {
-		if (!SESS_LEADER(p)) {
-			p->p_flag &= ~P_CONTROLT;
+		if (!SESS_LEADER(p->p_p)) {
+			atomic_clearbits_int(&p->p_p->ps_flags, PS_CONTROLT);
 			return (0);
 		} else
 			return (EINVAL);
 	}
+	switch (cmd) {
+	case TIOCSETVERAUTH:
+		if ((error = suser(p)))
+			return error;
+		secs = *(int *)addr;
+		if (secs < 1 || secs > 3600)
+			return EINVAL;
+		sess = p->p_p->ps_pgrp->pg_session;
+		sess->s_verauthuid = p->p_ucred->cr_ruid;
+		sess->s_verauthppid = p->p_p->ps_pptr->ps_pid;
+		timeout_add_sec(&sess->s_verauthto, secs);
+		return 0;
+	case TIOCCLRVERAUTH:
+		sess = p->p_p->ps_pgrp->pg_session;
+		timeout_del(&sess->s_verauthto);
+		zapverauth(sess);
+		return 0;
+	case TIOCCHKVERAUTH:
+		/*
+		 * It's not clear when or what these checks are for.
+		 * How can we reach this code with a different ruid?
+		 * The ppid check is also more porous than desired.
+		 * Nevertheless, the checks reflect the original intention;
+		 * namely, that it be the same user using the same shell.
+		 */
+		sess = p->p_p->ps_pgrp->pg_session;
+		if (sess->s_verauthuid == p->p_ucred->cr_ruid &&
+		    sess->s_verauthppid == p->p_p->ps_pptr->ps_pid)
+			return 0;
+		return EPERM;
+	}
 	return (VOP_IOCTL(ttyvp, cmd, addr, flag, NOCRED, p));
 }
 
-/*ARGSUSED*/
-cttyselect(dev, flag, p)
-	dev_t dev;
-	int flag;
-	struct proc *p;
+int
+cttykqfilter(dev_t dev, struct knote *kn)
 {
-	struct vnode *ttyvp = cttyvp(p);
+	struct vnode *ttyvp = cttyvp(curproc);
 
-	if (ttyvp == NULL)
-		return (1);	/* try operation to get EOF/failure */
-	return (VOP_SELECT(ttyvp, flag, FREAD|FWRITE, NOCRED, p));
+	if (ttyvp == NULL) {
+		if (kn->kn_flags & (__EV_POLL | __EV_SELECT))
+			return (seltrue_kqfilter(dev, kn));
+		return (ENXIO);
+	}
+	return (VOP_KQFILTER(ttyvp, FREAD|FWRITE, kn));
 }

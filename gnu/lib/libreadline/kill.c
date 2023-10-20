@@ -133,18 +133,20 @@ _rl_copy_to_kill_ring (text, append)
   /* If the last command was a kill, prepend or append. */
   if (_rl_last_command_was_kill && rl_editing_mode != vi_mode)
     {
+      int len;
       old = rl_kill_ring[slot];
-      new = (char *)xmalloc (1 + strlen (old) + strlen (text));
+      len = 1 + strlen (old) + strlen (text);
+      new = (char *)xmalloc (len);
 
       if (append)
 	{
-	  strcpy (new, old);
-	  strcat (new, text);
+	  strlcpy (new, old, len);
+	  strlcat (new, text, len);
 	}
       else
 	{
-	  strcpy (new, text);
-	  strcat (new, old);
+	  strlcpy (new, text, len);
+	  strlcat (new, old, len);
 	}
       free (old);
       free (text);
@@ -456,7 +458,7 @@ rl_copy_backward_word (count, key)
 
   return (_rl_copy_word_as_kill (count, -1));
 }
-  
+
 /* Yank back the last killed text.  This ignores arguments. */
 int
 rl_yank (count, ignore)
@@ -604,7 +606,7 @@ rl_yank_last_arg (count, key)
       if (history_skip < 0)
 	history_skip = 0;
     }
- 
+
   if (explicit_arg_p)
     retval = rl_yank_nth_arg_internal (count_passed, key, history_skip);
   else

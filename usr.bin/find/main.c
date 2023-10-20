@@ -1,3 +1,5 @@
+/*	$OpenBSD: main.c,v 1.32 2021/10/24 21:24:16 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,11 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-/*static char sccsid[] = "@(#)main.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: main.c,v 1.5 1994/01/24 23:08:15 jtc Exp $";
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -43,38 +36,49 @@ static char rcsid[] = "$Id: main.c,v 1.5 1994/01/24 23:08:15 jtc Exp $";
 #include <errno.h>
 #include <fcntl.h>
 #include <fts.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "find.h"
 
 time_t now;			/* time find was run */
-int dotfd;			/* starting directory */
-int ftsoptions;			/* options for the ftsopen(3) call */
-int isdeprecated;		/* using deprecated syntax */
+int dotfd;			/* starting directory; may be -1 */
+int ftsoptions;			/* options for the fts_open(3) call */
+int isdelete;			/* user specified -delete operator */
 int isdepth;			/* do directories on post-order visit */
 int isoutput;			/* user specified output operator */
 int isxargs;			/* don't permit xargs delimiting chars */
 
-static void usage __P((void));
+__dead static void usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register char **p, **start;
+	struct sigaction sa;
+	char **p, **paths, **paths2;
 	int ch;
+
+	memset(&sa, 0, sizeof sa);
+	sa.sa_handler = show_path;
+	sa.sa_flags = SA_RESTART; 
 
 	(void)time(&now);	/* initialize the time-of-day */
 
-	p = start = argv;
+	p = paths = ereallocarray(NULL, argc, sizeof(char *));
+
+	sigaction(SIGINFO, &sa, NULL);
+
 	ftsoptions = FTS_NOSTAT|FTS_PHYSICAL;
-	while ((ch = getopt(argc, argv, "Hdf:hXx")) != EOF)
+	while ((ch = getopt(argc, argv, "Hdf:hLXx")) != -1)
 		switch(ch) {
 		case 'H':
 			ftsoptions |= FTS_COMFOLLOW;
+			ftsoptions |= FTS_PHYSICAL;
+			ftsoptions &= ~FTS_LOGICAL;
 			break;
 		case 'd':
 			isdepth = 1;
@@ -83,6 +87,8 @@ main(argc, argv)
 			*p++ = optarg;
 			break;
 		case 'h':
+		case 'L':
+			ftsoptions &= ~FTS_COMFOLLOW;
 			ftsoptions &= ~FTS_PHYSICAL;
 			ftsoptions |= FTS_LOGICAL;
 			break;
@@ -93,9 +99,8 @@ main(argc, argv)
 			ftsoptions &= ~FTS_NOSTAT;
 			ftsoptions |= FTS_XDEV;
 			break;
-		case '?':
 		default:
-			break;
+			usage();
 		}
 
 	argc -= optind;	
@@ -112,21 +117,23 @@ main(argc, argv)
 		*p++ = *argv++;
 	}
 
-	if (p == start)
+	if (p == paths)
 		usage();
 	*p = NULL;
 
-	if ((dotfd = open(".", O_RDONLY, 0)) < 0)
-		err(1, ".:");
+	if (!(paths2 = reallocarray(paths, p - paths + 1, sizeof(char *))))
+		err(1, NULL);
+	paths = paths2;
 
-	find_execute(find_formplan(argv), start);
-	exit(0);
+	dotfd = open(".", O_RDONLY);
+
+	exit(find_execute(find_formplan(argv), paths));
 }
 
 static void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr,
-	    "usage: find [-HdhXx] [-f file] [file ...] expression\n");
+	    "usage: find [-dHhLXx] [-f path] path ... [expression]\n");
 	exit(1);
 }

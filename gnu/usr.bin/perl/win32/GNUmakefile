@@ -63,7 +63,7 @@ INST_TOP := $(INST_DRV)\perl
 # versioned installation can be obtained by setting INST_TOP above to a
 # path that includes an arbitrary version string.
 #
-#INST_VER	:= \5.36.0
+#INST_VER	:= \5.36.1
 
 #
 # Comment this out if you DON'T want your perl installation to have
@@ -1624,7 +1624,7 @@ utils: $(HAVEMINIPERL) ..\utils\Makefile
 	copy ..\README.tw       ..\pod\perltw.pod
 	copy ..\README.vos      ..\pod\perlvos.pod
 	copy ..\README.win32    ..\pod\perlwin32.pod
-	copy ..\pod\perldelta.pod ..\pod\perl5360delta.pod
+	copy ..\pod\perldelta.pod ..\pod\perl5361delta.pod
 	$(MINIPERL) -I..\lib $(PL2BAT) $(UTILS)
 	$(MINIPERL) -I..\lib ..\autodoc.pl ..
 	$(MINIPERL) -I..\lib ..\pod\perlmodlib.PL -q ..
@@ -1696,6 +1696,7 @@ distclean: realclean
 	-if exist $(LIBDIR)\MIME rmdir /s /q $(LIBDIR)\MIME
 	-if exist $(LIBDIR)\Module rmdir /s /q $(LIBDIR)\Module
 	-if exist $(LIBDIR)\Net\FTP rmdir /s /q $(LIBDIR)\Net\FTP
+	-if exist $(LIBDIR)\OpenBSD rmdir /s /q $(LIBDIR)\OpenBSD
 	-if exist $(LIBDIR)\Params rmdir /s /q $(LIBDIR)\Params
 	-if exist $(LIBDIR)\Parse rmdir /s /q $(LIBDIR)\Parse
 	-if exist $(LIBDIR)\Perl rmdir /s /q $(LIBDIR)\Perl
@@ -1723,15 +1724,14 @@ distclean: realclean
 	-if exist $(LIBDIR)\Win32API rmdir /s /q $(LIBDIR)\Win32API
 	-if exist $(LIBDIR)\XS rmdir /s /q $(LIBDIR)\XS
 	-cd $(PODDIR) && del /f *.html *.bat roffitall \
-	    perl5360delta.pod perlaix.pod perlamiga.pod perlandroid.pod \
+	    perl5361delta.pod perlaix.pod perlamiga.pod perlandroid.pod \
 	    perlapi.pod perlbs2000.pod perlcn.pod perlcygwin.pod \
 	    perlfreebsd.pod perlhaiku.pod perlhpux.pod perlhurd.pod \
 	    perlintern.pod perlirix.pod perljp.pod perlko.pod perllinux.pod \
 	    perlmacosx.pod perlmodlib.pod perlopenbsd.pod perlos2.pod \
 	    perlos390.pod perlos400.pod perlplan9.pod perlqnx.pod \
 	    perlriscos.pod perlsolaris.pod perlsynology.pod perltoc.pod \
-	    perltru64.pod perltw.pod perluniprops.pod perlvos.pod \
-	    perlwin32.pod
+	    perltru64.pod perltw.pod perlvos.pod perlwin32.pod
 	-cd ..\utils && del /f h2ph splain perlbug pl2pm h2xs \
 	    perldoc perlivp libnetcfg enc2xs encguess piconv cpan *.bat \
 	    xsubpp pod2html instmodsh json_pp prove ptar ptardiff ptargrep shasum corelist zipdetails

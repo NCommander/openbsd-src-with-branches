@@ -1089,6 +1089,18 @@ phdr_type:
 			    $$ = exp_intop (0x6474e550);
 			  else if (strcmp (s, "PT_GNU_STACK") == 0)
 			    $$ = exp_intop (0x6474e551);
+			  else if (strcmp (s, "PT_GNU_RELRO") == 0)
+			    $$ = exp_intop (0x6474e552);
+			  else if (strcmp (s, "PT_OPENBSD_RANDOMIZE") == 0)
+			    $$ = exp_intop (0x65a3dbe6);
+			  else if (strcmp (s, "PT_OPENBSD_WXNEEDED") == 0)
+			    $$ = exp_intop (0x65a3dbe7);
+			  else if (strcmp (s, "PT_OPENBSD_NOBTCFI") == 0)
+			    $$ = exp_intop (0x65a3dbe8);
+			  else if (strcmp (s, "PT_OPENBSD_BOOTDATA") == 0)
+			    $$ = exp_intop (0x65a41be6);
+			  else if (strcmp (s, "PT_OPENBSD_MUTABLE") == 0)
+			    $$ = exp_intop (0x65a3dbe5);
 			  else
 			    {
 			      einfo (_("\

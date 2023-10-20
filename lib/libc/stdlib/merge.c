@@ -1,3 +1,4 @@
+/*	$OpenBSD: merge.c,v 1.9 2011/03/06 00:55:38 deraadt Exp $ */
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,11 +30,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char sccsid[] = "from: @(#)merge.c	8.2 (Berkeley) 2/14/94";*/
-static char *rcsid = "$Id: merge.c,v 1.2 1994/06/16 05:26:36 mycroft Exp $";
-#endif /* LIBC_SCCS and not lint */
 
 /*
  * Hybrid exponential search/linear search merge sort with hybrid
@@ -59,8 +51,8 @@ static char *rcsid = "$Id: merge.c,v 1.2 1994/06/16 05:26:36 mycroft Exp $";
 #include <stdlib.h>
 #include <string.h>
 
-static void setup __P((u_char *, u_char *, size_t, size_t, int (*)()));
-static void insertionsort __P((u_char *, size_t, size_t, int (*)()));
+static void setup(u_char *, u_char *, size_t, size_t, int (*)());
+static void insertionsort(u_char *, size_t, size_t, int (*)());
 
 #define ISIZE sizeof(int)
 #define PSIZE sizeof(u_char *)
@@ -96,21 +88,21 @@ static void insertionsort __P((u_char *, size_t, size_t, int (*)()));
  * Arguments are as for qsort.
  */
 int
-mergesort(base, nmemb, size, cmp)
-	void *base;
-	size_t nmemb;
-	register size_t size;
-	int (*cmp) __P((const void *, const void *));
+mergesort(void *base, size_t nmemb, size_t size,
+    int (*cmp)(const void *, const void *))
 {
-	register int i, sense;
+	int i, sense;
 	int big, iflag;
-	register u_char *f1, *f2, *t, *b, *tp2, *q, *l1, *l2;
+	u_char *f1, *f2, *t, *b, *tp2, *q, *l1, *l2;
 	u_char *list2, *list1, *p2, *p, *last, **p1;
 
 	if (size < PSIZE / 2) {		/* Pointers must fit into 2 * size. */
 		errno = EINVAL;
 		return (-1);
 	}
+
+	if (nmemb == 0)
+		return (0);
 
 	/*
 	 * XXX
@@ -148,7 +140,7 @@ mergesort(base, nmemb, size, cmp)
 	    			sense = 0;
 	    		}
 	    		if (!big) {	/* here i = 0 */
-LINEAR:	    			while ((b += size) < t && cmp(q, b) >sense)
+	    			while ((b += size) < t && cmp(q, b) >sense)
 	    				if (++i == 6) {
 	    					big = 1;
 	    					goto EXPONENTIAL;
@@ -169,7 +161,7 @@ EXPONENTIAL:	    		for (i = size; ; i <<= 1)
 	    					goto FASTCASE;
 	    				} else
 	    					b = p;
-SLOWCASE:	    		while (t > b+size) {
+		    		while (t > b+size) {
 	    				i = (((t - b) / size) >> 1) * size;
 	    				if ((*cmp)(q, p = b + i) <= sense)
 	    					t = p;
@@ -256,13 +248,11 @@ COPY:	    			b = t;
  * is defined.  Otherwise simple pairwise merging is used.)
  */
 void
-setup(list1, list2, n, size, cmp)
-	size_t n, size;
-	int (*cmp) __P((const void *, const void *));
-	u_char *list1, *list2;
+setup(u_char *list1, u_char *list2, size_t n, size_t size,
+    int (*cmp)(const void *, const void *))
 {
-	int i, length, size2, tmp, sense;
-	u_char *f1, *f2, *s, *l2, *last, *p2;
+	int i, length, size2, sense;
+	u_char tmp, *f1, *f2, *s, *l2, *last, *p2;
 
 	size2 = size*2;
 	if (n <= 5) {
@@ -330,10 +320,8 @@ setup(list1, list2, n, size, cmp)
  * last 4 elements.
  */
 static void
-insertionsort(a, n, size, cmp)
-	u_char *a;
-	size_t n, size;
-	int (*cmp) __P((const void *, const void *));
+insertionsort(u_char *a, size_t n, size_t size,
+    int (*cmp)(const void *, const void *))
 {
 	u_char *ai, *s, *t, *u, tmp;
 	int i;

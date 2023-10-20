@@ -1,3 +1,4 @@
+/*	$OpenBSD: look.c,v 1.26 2022/02/10 14:55:43 cheloha Exp $	*/
 /*	$NetBSD: look.c,v 1.7 1995/08/31 22:41:02 jtc Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,22 +33,9 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1991, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)look.c	8.2 (Berkeley) 5/4/95";
-#endif
-static char rcsid[] = "$NetBSD: look.c,v 1.7 1995/08/31 22:41:02 jtc Exp $";
-#endif /* not lint */
-
 /*
  * look -- find lines in a sorted list.
- * 
+ *
  * The man page said that TABs and SPACEs participate in -d comparisons.
  * In fact, they were ignored.  This implements historic practice, not
  * the manual page.
@@ -64,7 +48,7 @@ static char rcsid[] = "$NetBSD: look.c,v 1.7 1995/08/31 22:41:02 jtc Exp $";
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,42 +57,32 @@ static char rcsid[] = "$NetBSD: look.c,v 1.7 1995/08/31 22:41:02 jtc Exp $";
 
 #include "pathnames.h"
 
-/*
- * FOLD and DICT convert characters to a normal form for comparison,
- * according to the user specified flags.
- * 
- * DICT expects integers because it uses a non-character value to
- * indicate a character which should not participate in comparisons.
- */
 #define	EQUAL		0
 #define	GREATER		1
 #define	LESS		(-1)
-#define NO_COMPARE	(-2)
-
-#define	FOLD(c)	(isascii(c) && isupper(c) ? tolower(c) : (c))
-#define	DICT(c)	(isascii(c) && isalnum(c) ? (c) : NO_COMPARE)
 
 int dflag, fflag;
 
-char	*binary_search __P((char *, char *, char *));
-int	 compare __P((char *, char *, char *));
-char	*linear_search __P((char *, char *, char *));
-int	 look __P((char *, char *, char *));
-void	 print_from __P((char *, char *, char *));
-void	 usage __P((void));
+char	*binary_search(char *, char *, char *);
+int	 compare(char *, char *, char *);
+char	*linear_search(char *, char *, char *);
+int	 look(char *, char *, char *);
+void	 print_from(char *, char *, char *);
+void	 usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct stat sb;
 	int ch, fd, termchar;
 	char *back, *file, *front, *string, *p;
 
+	if (pledge("stdio rpath", NULL) == -1)
+		err(2, "pledge");
+
 	file = _PATH_WORDS;
 	termchar = '\0';
-	while ((ch = getopt(argc, argv, "dft:")) != EOF)
+	while ((ch = getopt(argc, argv, "dft:")) != -1)
 		switch(ch) {
 		case 'd':
 			dflag = 1;
@@ -119,7 +93,6 @@ main(argc, argv)
 		case 't':
 			termchar = *optarg;
 			break;
-		case '?':
 		default:
 			usage();
 		}
@@ -142,31 +115,32 @@ main(argc, argv)
 	if (termchar != '\0' && (p = strchr(string, termchar)) != NULL)
 		*++p = '\0';
 
-	if ((fd = open(file, O_RDONLY, 0)) < 0 || fstat(fd, &sb))
+	if ((fd = open(file, O_RDONLY)) == -1 || fstat(fd, &sb) == -1)
 		err(2, "%s", file);
-	if (sb.st_size > SIZE_T_MAX)
-		err(2, "%s: %s", file, strerror(EFBIG));
+	if (sb.st_size > SIZE_MAX)
+		errc(2, EFBIG, "%s", file);
+
+	if (pledge("stdio", NULL) == -1)
+		err(2, "pledge");
+
 	if ((front = mmap(NULL,
-	    (size_t)sb.st_size, PROT_READ, 0, fd, (off_t)0)) == NULL)
+	    (size_t)sb.st_size, PROT_READ, MAP_PRIVATE, fd, (off_t)0)) == MAP_FAILED)
 		err(2, "%s", file);
 	back = front + sb.st_size;
 	exit(look(string, front, back));
 }
 
 int
-look(string, front, back)
-	char *string, *front, *back;
+look(char *string, char *front, char *back)
 {
-	register int ch;
-	register char *readp, *writep;
+	int ch;
+	char *readp, *writep;
 
-	/* Reformat string string to avoid doing it multiple times later. */
-	for (readp = writep = string; ch = *readp++;) {
+	/* Reformat string to avoid doing it multiple times later. */
+	for (readp = writep = string; (ch = *readp++);) {
 		if (fflag)
-			ch = FOLD(ch);
-		if (dflag)
-			ch = DICT(ch);
-		if (ch != NO_COMPARE)
+			ch = tolower((unsigned char)ch);
+		if (!dflag || isalnum((unsigned char)ch))
 			*(writep++) = ch;
 	}
 	*writep = '\0';
@@ -182,50 +156,49 @@ look(string, front, back)
 
 /*
  * Binary search for "string" in memory between "front" and "back".
- * 
+ *
  * This routine is expected to return a pointer to the start of a line at
  * *or before* the first word matching "string".  Relaxing the constraint
  * this way simplifies the algorithm.
- * 
+ *
  * Invariants:
- * 	front points to the beginning of a line at or before the first 
+ *	front points to the beginning of a line at or before the first
  *	matching string.
- * 
- * 	back points to the beginning of a line at or after the first 
+ *
+ *	back points to the beginning of a line at or after the first
  *	matching line.
- * 
+ *
  * Base of the Invariants.
- * 	front = NULL; 
+ *	front = NULL;
  *	back = EOF;
- * 
+ *
  * Advancing the Invariants:
- * 
- * 	p = first newline after halfway point from front to back.
- * 
- * 	If the string at "p" is not greater than the string to match, 
+ *
+ *	p = first newline after halfway point from front to back.
+ *
+ *	If the string at "p" is not greater than the string to match,
  *	p is the new front.  Otherwise it is the new back.
- * 
+ *
  * Termination:
- * 
- * 	The definition of the routine allows it return at any point, 
+ *
+ *	The definition of the routine allows it return at any point,
  *	since front is always at or before the line to print.
- * 
- * 	In fact, it returns when the chosen "p" equals "back".  This 
- *	implies that there exists a string is least half as long as 
- *	(back - front), which in turn implies that a linear search will 
+ *
+ *	In fact, it returns when the chosen "p" equals "back".  This
+ *	implies that there exists a string is least half as long as
+ *	(back - front), which in turn implies that a linear search will
  *	be no more expensive than the cost of simply printing a string or two.
- * 
- * 	Trying to continue with binary search at this point would be 
+ *
+ *	Trying to continue with binary search at this point would be
  *	more trouble than it's worth.
  */
 #define	SKIP_PAST_NEWLINE(p, back) \
 	while (p < back && *p++ != '\n');
 
 char *
-binary_search(string, front, back)
-	register char *string, *front, *back;
+binary_search(char *string, char *front, char *back)
 {
-	register char *p;
+	char *p;
 
 	p = front + (back - front) / 2;
 	SKIP_PAST_NEWLINE(p, back);
@@ -248,17 +221,16 @@ binary_search(string, front, back)
 /*
  * Find the first line that starts with string, linearly searching from front
  * to back.
- * 
+ *
  * Return NULL for no such line.
- * 
+ *
  * This routine assumes:
- * 
- * 	o front points at the first character in a line. 
+ *
+ *	o front points at the first character in a line.
  *	o front is before or at the first line to be printed.
  */
 char *
-linear_search(string, front, back)
-	char *string, *front, *back;
+linear_search(char *string, char *front, char *back)
 {
 	while (front < back) {
 		switch (compare(string, front, back)) {
@@ -279,9 +251,8 @@ linear_search(string, front, back)
 /*
  * Print as many lines as match string, starting at front.
  */
-void 
-print_from(string, front, back)
-	register char *string, *front, *back;
+void
+print_from(char *string, char *front, char *back)
 {
 	for (; front < back && compare(string, front, back) == EQUAL; ++front) {
 		for (; front < back && *front != '\n'; ++front)
@@ -295,30 +266,26 @@ print_from(string, front, back)
 /*
  * Return LESS, GREATER, or EQUAL depending on how the string1 compares with
  * string2 (s1 ??? s2).
- * 
- * 	o Matches up to len(s1) are EQUAL. 
+ *
+ *	o Matches up to len(s1) are EQUAL.
  *	o Matches up to len(s2) are GREATER.
- * 
+ *
  * Compare understands about the -f and -d flags, and treats comparisons
  * appropriately.
- * 
+ *
  * The string "s1" is null terminated.  The string s2 is '\n' terminated (or
  * "back" terminated).
  */
 int
-compare(s1, s2, back)
-	register char *s1, *s2, *back;
+compare(char *s1, char *s2, char *back)
 {
-	register int ch;
+	int ch;
 
 	for (; *s1 && s2 < back && *s2 != '\n'; ++s1, ++s2) {
 		ch = *s2;
 		if (fflag)
-			ch = FOLD(ch);
-		if (dflag)
-			ch = DICT(ch);
-
-		if (ch == NO_COMPARE) {
+			ch = tolower((unsigned char)ch);
+		if (dflag && !isalnum((unsigned char)ch)) {
 			++s2;		/* Ignore character in comparison. */
 			continue;
 		}
@@ -329,8 +296,9 @@ compare(s1, s2, back)
 }
 
 void
-usage()
+usage(void)
 {
-	(void)fprintf(stderr, "usage: look [-df] [-t char] string [file]\n");
+	(void)fprintf(stderr,
+	    "usage: look [-df] [-t termchar] string [file]\n");
 	exit(2);
 }

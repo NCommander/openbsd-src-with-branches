@@ -1,321 +1,332 @@
+/*		$OpenBSD: error.c,v 1.16 2020/05/24 17:31:54 espie Exp $		*/
+/*		$NetBSD: error.c,v 1.4 1996/03/19 03:21:32 jtc Exp $		*/
+
+/*
+ * Copyright (c) 1989 The Regents of the University of California.
+ * All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Robert Paul Corbett.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 /* routines for printing error messages  */
 
-#ifndef lint
-static char rcsid[] = "$Id: error.c,v 1.3 1993/08/02 17:56:37 mycroft Exp $";
-#endif /* not lint */
-
 #include "defs.h"
+#include <errno.h>
 
 
-fatal(msg)
-char *msg;
+void
+fatal(char *msg)
 {
-    fprintf(stderr, "%s: f - %s\n", myname, msg);
-    done(2);
+	fprintf(stderr, "%s: %s\n", input_file_name, msg);
+	exit(2);
 }
 
 
-no_space()
+void
+no_space(void)
 {
-    fprintf(stderr, "%s: f - out of space\n", myname);
-    done(2);
+	fprintf(stderr, "%s: yacc is out of space\n", input_file_name);
+	exit(2);
 }
 
 
-open_error(filename)
-char *filename;
+void
+open_error(char *filename)
 {
-    fprintf(stderr, "%s: f - cannot open \"%s\"\n", myname, filename);
-    done(2);
+	fprintf(stderr, "%s: cannot open source file %s: %s\n",
+	    input_file_name, filename, strerror(errno));
+	exit(2);
+}
+
+void
+tempfile_error(void)
+{
+	fprintf(stderr, "%s: cannot create temporary file: %s\n",
+	    input_file_name, strerror(errno));
+	exit(2);
+}
+
+void
+open_write_error(char *filename)
+{
+	fprintf(stderr, "%s: cannot open target file %s for writing: %s\n",
+	    input_file_name, filename, strerror(errno));
+	exit(2);
+}
+
+void
+unexpected_EOF(void)
+{
+	fprintf(stderr, "%s:%d: unexpected end-of-file\n",
+	    input_file_name, lineno);
+	exit(1);
 }
 
 
-unexpected_EOF()
+void
+print_pos(char *st_line, char *st_cptr)
 {
-    fprintf(stderr, "%s: e - line %d of \"%s\", unexpected end-of-file\n",
-	    myname, lineno, input_file_name);
-    done(1);
+	char *s;
+
+	if (st_line == 0)
+		return;
+	for (s = st_line; *s != '\n'; ++s) {
+		if (isprint((unsigned char)*s) || *s == '\t')
+			putc(*s, stderr);
+		else
+			putc('?', stderr);
+	}
+	putc('\n', stderr);
+	for (s = st_line; s < st_cptr; ++s) {
+		if (*s == '\t')
+			putc('\t', stderr);
+		else
+			putc(' ', stderr);
+	}
+	putc('^', stderr);
+	putc('\n', stderr);
+}
+
+void
+syntax_error(int st_lineno, char *st_line, char *st_cptr)
+{
+	fprintf(stderr, "%s:%d: syntax error\n",
+	    input_file_name, st_lineno);
+	print_pos(st_line, st_cptr);
+	exit(1);
+}
+
+void
+unterminated_comment(int c_lineno, char *c_line, char *c_cptr)
+{
+	fprintf(stderr, "%s:%d: unmatched /*\n",
+	    input_file_name, c_lineno);
+	print_pos(c_line, c_cptr);
+	exit(1);
+}
+
+void
+unterminated_string(int s_lineno, char *s_line, char *s_cptr)
+{
+	fprintf(stderr, "%s:%d:, unterminated string\n",
+	    input_file_name, s_lineno);
+	print_pos(s_line, s_cptr);
+	exit(1);
+}
+
+void
+unterminated_text(int t_lineno, char *t_line, char *t_cptr)
+{
+	fprintf(stderr, "%s:%d: unmatched %%{\n",
+	    input_file_name, t_lineno);
+	print_pos(t_line, t_cptr);
+	exit(1);
+}
+
+void
+unterminated_union(int u_lineno, char *u_line, char *u_cptr)
+{
+	fprintf(stderr, "%s:%d: unterminated %%union declaration\n",
+	    input_file_name, u_lineno);
+	print_pos(u_line, u_cptr);
+	exit(1);
+}
+
+void
+over_unionized(char *u_cptr)
+{
+	fprintf(stderr, "%s:%d: too many %%union declarations\n",
+	    input_file_name, lineno);
+	print_pos(line, u_cptr);
+	exit(1);
+}
+
+void
+illegal_tag(int t_lineno, char *t_line, char *t_cptr)
+{
+	fprintf(stderr, "%s:%d: illegal tag\n",
+	    input_file_name, t_lineno);
+	print_pos(t_line, t_cptr);
+	exit(1);
 }
 
 
-print_pos(st_line, st_cptr)
-char *st_line;
-char *st_cptr;
+void
+illegal_character(char *c_cptr)
 {
-    register char *s;
-
-    if (st_line == 0) return;
-    for (s = st_line; *s != '\n'; ++s)
-    {
-	if (isprint(*s) || *s == '\t')
-	    putc(*s, stderr);
-	else
-	    putc('?', stderr);
-    }
-    putc('\n', stderr);
-    for (s = st_line; s < st_cptr; ++s)
-    {
-	if (*s == '\t')
-	    putc('\t', stderr);
-	else
-	    putc(' ', stderr);
-    }
-    putc('^', stderr);
-    putc('\n', stderr);
+	fprintf(stderr, "%s:%d: illegal character\n",
+	    input_file_name, lineno);
+	print_pos(line, c_cptr);
+	exit(1);
 }
 
 
-syntax_error(st_lineno, st_line, st_cptr)
-int st_lineno;
-char *st_line;
-char *st_cptr;
+void
+used_reserved(char *s)
 {
-    fprintf(stderr, "%s: e - line %d of \"%s\", syntax error\n",
-	    myname, st_lineno, input_file_name);
-    print_pos(st_line, st_cptr);
-    done(1);
+	fprintf(stderr, "%s:%d: illegal use of reserved symbol %s\n",
+	    input_file_name, lineno, s);
+	exit(1);
+}
+
+void
+tokenized_start(char *s)
+{
+	fprintf(stderr, "%s:%d: the start symbol %s cannot be declared to be a token\n",
+	    input_file_name, lineno, s);
+	exit(1);
+}
+
+void
+retyped_warning(char *s)
+{
+	fprintf(stderr, "%s:%d: the type of %s has been redeclared\n",
+	    input_file_name, lineno, s);
+}
+
+void
+reprec_warning(char *s)
+{
+	fprintf(stderr, "%s:%d: the precedence of %s has been redeclared\n",
+	    input_file_name, lineno, s);
+}
+
+void
+revalued_warning(char *s)
+{
+	fprintf(stderr, "%s:%d: the value of %s has been redeclared\n",
+	    input_file_name, lineno, s);
+}
+
+void
+terminal_start(char *s)
+{
+	fprintf(stderr, "%s:%d: the start symbol %s is a token\n",
+	    input_file_name, lineno, s);
+	exit(1);
+}
+
+void
+restarted_warning(void)
+{
+	fprintf(stderr, "%s:%d: the start symbol has been redeclared\n",
+	     input_file_name, lineno);
+}
+
+void
+no_grammar(void)
+{
+	fprintf(stderr, "%s:%d: no grammar has been specified\n",
+	    input_file_name, lineno);
+	exit(1);
+}
+
+void
+terminal_lhs(int s_lineno)
+{
+	fprintf(stderr, "%s:%d: a token appears on the lhs of a production\n",
+	    input_file_name, s_lineno);
+	exit(1);
+}
+
+void
+prec_redeclared(void)
+{
+	fprintf(stderr, "%s:%d: conflicting %%prec specifiers\n",
+	    input_file_name, lineno);
+}
+
+void
+unterminated_action(int a_lineno, char *a_line, char *a_cptr)
+{
+	fprintf(stderr, "%s:%d: unterminated action\n",
+	    input_file_name, a_lineno);
+	print_pos(a_line, a_cptr);
+	exit(1);
+}
+
+void
+dollar_warning(int a_lineno, int i)
+{
+	fprintf(stderr, "%s:%d: $%d references beyond the end of the current rule\n",
+	    input_file_name, a_lineno, i);
+}
+
+void
+dollar_error(int a_lineno, char *a_line, char *a_cptr)
+{
+	fprintf(stderr, "%s:%d: illegal $-name\n",
+	    input_file_name, a_lineno);
+	print_pos(a_line, a_cptr);
+	exit(1);
 }
 
 
-unterminated_comment(c_lineno, c_line, c_cptr)
-int c_lineno;
-char *c_line;
-char *c_cptr;
+void
+untyped_lhs(void)
 {
-    fprintf(stderr, "%s: e - line %d of \"%s\", unmatched /*\n",
-	    myname, c_lineno, input_file_name);
-    print_pos(c_line, c_cptr);
-    done(1);
+	fprintf(stderr, "%s:%d: $$ is untyped\n",
+	    input_file_name, lineno);
+	exit(1);
 }
 
-
-unterminated_string(s_lineno, s_line, s_cptr)
-int s_lineno;
-char *s_line;
-char *s_cptr;
+void
+untyped_rhs(int i, char *s)
 {
-    fprintf(stderr, "%s: e - line %d of \"%s\", unterminated string\n",
-	    myname, s_lineno, input_file_name);
-    print_pos(s_line, s_cptr);
-    done(1);
+	fprintf(stderr, "%s:%d: $%d (%s) is untyped\n",
+	    input_file_name, lineno, i, s);
+	exit(1);
 }
 
-
-unterminated_text(t_lineno, t_line, t_cptr)
-int t_lineno;
-char *t_line;
-char *t_cptr;
+void
+unknown_rhs(int i)
 {
-    fprintf(stderr, "%s: e - line %d of \"%s\", unmatched %%{\n",
-	    myname, t_lineno, input_file_name);
-    print_pos(t_line, t_cptr);
-    done(1);
+	fprintf(stderr, "%s:%d: $%d is untyped\n",
+	    input_file_name, lineno, i);
+	exit(1);
 }
 
-
-unterminated_union(u_lineno, u_line, u_cptr)
-int u_lineno;
-char *u_line;
-char *u_cptr;
+void
+default_action_warning(void)
 {
-    fprintf(stderr, "%s: e - line %d of \"%s\", unterminated %%union \
-declaration\n", myname, u_lineno, input_file_name);
-    print_pos(u_line, u_cptr);
-    done(1);
+	fprintf(stderr, "%s:%d: the default action assigns an undefined value to $$\n",
+	    input_file_name, lineno);
 }
 
-
-over_unionized(u_cptr)
-char *u_cptr;
+void
+undefined_goal(char *s)
 {
-    fprintf(stderr, "%s: e - line %d of \"%s\", too many %%union \
-declarations\n", myname, lineno, input_file_name);
-    print_pos(line, u_cptr);
-    done(1);
+	fprintf(stderr, "%s: the start symbol %s is undefined\n", input_file_name, s);
+	exit(1);
 }
 
-
-illegal_tag(t_lineno, t_line, t_cptr)
-int t_lineno;
-char *t_line;
-char *t_cptr;
+void
+undefined_symbol_warning(char *s)
 {
-    fprintf(stderr, "%s: e - line %d of \"%s\", illegal tag\n",
-	    myname, t_lineno, input_file_name);
-    print_pos(t_line, t_cptr);
-    done(1);
-}
-
-
-illegal_character(c_cptr)
-char *c_cptr;
-{
-    fprintf(stderr, "%s: e - line %d of \"%s\", illegal character\n",
-	    myname, lineno, input_file_name);
-    print_pos(line, c_cptr);
-    done(1);
-}
-
-
-used_reserved(s)
-char *s;
-{
-    fprintf(stderr, "%s: e - line %d of \"%s\", illegal use of reserved symbol \
-%s\n", myname, lineno, input_file_name, s);
-    done(1);
-}
-
-
-tokenized_start(s)
-char *s;
-{
-     fprintf(stderr, "%s: e - line %d of \"%s\", the start symbol %s cannot be \
-declared to be a token\n", myname, lineno, input_file_name, s);
-     done(1);
-}
-
-
-retyped_warning(s)
-char *s;
-{
-    fprintf(stderr, "%s: w - line %d of \"%s\", the type of %s has been \
-redeclared\n", myname, lineno, input_file_name, s);
-}
-
-
-reprec_warning(s)
-char *s;
-{
-    fprintf(stderr, "%s: w - line %d of \"%s\", the precedence of %s has been \
-redeclared\n", myname, lineno, input_file_name, s);
-}
-
-
-revalued_warning(s)
-char *s;
-{
-    fprintf(stderr, "%s: w - line %d of \"%s\", the value of %s has been \
-redeclared\n", myname, lineno, input_file_name, s);
-}
-
-
-terminal_start(s)
-char *s;
-{
-    fprintf(stderr, "%s: e - line %d of \"%s\", the start symbol %s is a \
-token\n", myname, lineno, input_file_name, s);
-    done(1);
-}
-
-
-restarted_warning()
-{
-    fprintf(stderr, "%s: w - line %d of \"%s\", the start symbol has been \
-redeclared\n", myname, lineno, input_file_name);
-}
-
-
-no_grammar()
-{
-    fprintf(stderr, "%s: e - line %d of \"%s\", no grammar has been \
-specified\n", myname, lineno, input_file_name);
-    done(1);
-}
-
-
-terminal_lhs(s_lineno)
-int s_lineno;
-{
-    fprintf(stderr, "%s: e - line %d of \"%s\", a token appears on the lhs \
-of a production\n", myname, s_lineno, input_file_name);
-    done(1);
-}
-
-
-prec_redeclared()
-{
-    fprintf(stderr, "%s: w - line %d of  \"%s\", conflicting %%prec \
-specifiers\n", myname, lineno, input_file_name);
-}
-
-
-unterminated_action(a_lineno, a_line, a_cptr)
-int a_lineno;
-char *a_line;
-char *a_cptr;
-{
-    fprintf(stderr, "%s: e - line %d of \"%s\", unterminated action\n",
-	    myname, a_lineno, input_file_name);
-    print_pos(a_line, a_cptr);
-    done(1);
-}
-
-
-dollar_warning(a_lineno, i)
-int a_lineno;
-int i;
-{
-    fprintf(stderr, "%s: w - line %d of \"%s\", $%d references beyond the \
-end of the current rule\n", myname, a_lineno, input_file_name, i);
-}
-
-
-dollar_error(a_lineno, a_line, a_cptr)
-int a_lineno;
-char *a_line;
-char *a_cptr;
-{
-    fprintf(stderr, "%s: e - line %d of \"%s\", illegal $-name\n",
-	    myname, a_lineno, input_file_name);
-    print_pos(a_line, a_cptr);
-    done(1);
-}
-
-
-untyped_lhs()
-{
-    fprintf(stderr, "%s: e - line %d of \"%s\", $$ is untyped\n",
-	    myname, lineno, input_file_name);
-    done(1);
-}
-
-
-untyped_rhs(i, s)
-int i;
-char *s;
-{
-    fprintf(stderr, "%s: e - line %d of \"%s\", $%d (%s) is untyped\n",
-	    myname, lineno, input_file_name, i, s);
-    done(1);
-}
-
-
-unknown_rhs(i)
-int i;
-{
-    fprintf(stderr, "%s: e - line %d of \"%s\", $%d is untyped\n",
-	    myname, lineno, input_file_name, i);
-    done(1);
-}
-
-
-default_action_warning()
-{
-    fprintf(stderr, "%s: w - line %d of \"%s\", the default action assigns an \
-undefined value to $$\n", myname, lineno, input_file_name);
-}
-
-
-undefined_goal(s)
-char *s;
-{
-    fprintf(stderr, "%s: e - the start symbol %s is undefined\n", myname, s);
-    done(1);
-}
-
-
-undefined_symbol_warning(s)
-char *s;
-{
-    fprintf(stderr, "%s: w - the symbol %s is undefined\n", myname, s);
+	fprintf(stderr, "%s: the symbol %s is undefined\n", input_file_name, s);
 }

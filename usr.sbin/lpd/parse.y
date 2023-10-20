@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.183 2016/02/22 16:19:05 gilles Exp $	*/
+/*	$OpenBSD: parse.y,v 1.7 2019/06/28 13:32:48 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -277,10 +277,10 @@ lookup(char *s)
 
 #define MAXPUSHBACK	128
 
-unsigned char	*parsebuf;
-int		 parseindex;
-unsigned char	 pushback_buffer[MAXPUSHBACK];
-int		 pushback_index = 0;
+char	*parsebuf;
+int	 parseindex;
+char	 pushback_buffer[MAXPUSHBACK];
+int	 pushback_index = 0;
 
 int
 lgetc(int quotec)
@@ -290,7 +290,7 @@ lgetc(int quotec)
 	if (parsebuf) {
 		/* Read character from the parsebuffer instead of input. */
 		if (parseindex >= 0) {
-			c = parsebuf[parseindex++];
+			c = (unsigned char)parsebuf[parseindex++];
 			if (c != '\0')
 				return (c);
 			parsebuf = NULL;
@@ -299,7 +299,7 @@ lgetc(int quotec)
 	}
 
 	if (pushback_index)
-		return (pushback_buffer[--pushback_index]);
+		return ((unsigned char)pushback_buffer[--pushback_index]);
 
 	if (quotec) {
 		if ((c = getc(file->stream)) == EOF) {
@@ -340,10 +340,10 @@ lungetc(int c)
 		if (parseindex >= 0)
 			return (c);
 	}
-	if (pushback_index < MAXPUSHBACK-1)
-		return (pushback_buffer[pushback_index++] = c);
-	else
+	if (pushback_index + 1 >= MAXPUSHBACK)
 		return (EOF);
+	pushback_buffer[pushback_index++] = c;
+	return (c);
 }
 
 int
@@ -370,10 +370,10 @@ findeol(void)
 int
 yylex(void)
 {
-	unsigned char	 buf[8096];
-	unsigned char	*p, *val;
-	int		 quotec, next, c;
-	int		 token;
+	char	 buf[8096];
+	char	*p, *val;
+	int	 quotec, next, c;
+	int	 token;
 
 top:
 	p = buf;
@@ -424,7 +424,8 @@ top:
 			} else if (c == '\\') {
 				if ((next = lgetc(quotec)) == EOF)
 					return (0);
-				if (next == quotec || c == ' ' || c == '\t')
+				if (next == quotec || next == ' ' ||
+				    next == '\t')
 					c = next;
 				else if (next == '\n') {
 					file->lineno++;
@@ -446,7 +447,7 @@ top:
 		}
 		yylval.v.string = strdup(buf);
 		if (yylval.v.string == NULL)
-			err(1, "yylex: strdup");
+			err(1, "%s", __func__);
 		return (STRING);
 	}
 
@@ -456,7 +457,7 @@ top:
 	if (c == '-' || isdigit(c)) {
 		do {
 			*p++ = c;
-			if ((unsigned)(p-buf) >= sizeof(buf)) {
+			if ((size_t)(p-buf) >= sizeof(buf)) {
 				yyerror("string too long");
 				return (findeol());
 			}
@@ -479,8 +480,8 @@ top:
 		} else {
 nodigits:
 			while (p > buf + 1)
-				lungetc(*--p);
-			c = *--p;
+				lungetc((unsigned char)*--p);
+			c = (unsigned char)*--p;
 			if (c == '-')
 				return (c);
 		}
@@ -502,7 +503,7 @@ nodigits:
 	if (isalnum(c) || c == ':' || c == '_') {
 		do {
 			*p++ = c;
-			if ((unsigned)(p-buf) >= sizeof(buf)) {
+			if ((size_t)(p-buf) >= sizeof(buf)) {
 				yyerror("string too long");
 				return (findeol());
 			}
@@ -511,7 +512,7 @@ nodigits:
 		*p = '\0';
 		if ((token = lookup(buf)) == STRING)
 			if ((yylval.v.string = strdup(buf)) == NULL)
-				err(1, "yylex: strdup");
+				err(1, "%s", __func__);
 		return (token);
 	}
 	if (c == '\n') {
@@ -549,16 +550,16 @@ pushfile(const char *name, int secret)
 	struct file	*nfile;
 
 	if ((nfile = calloc(1, sizeof(struct file))) == NULL) {
-		log_warn("warn: malloc");
+		log_warn("%s", __func__);
 		return (NULL);
 	}
 	if ((nfile->name = strdup(name)) == NULL) {
-		log_warn("warn: malloc");
+		log_warn("%s", __func__);
 		free(nfile);
 		return (NULL);
 	}
 	if ((nfile->stream = fopen(nfile->name, "r")) == NULL) {
-		log_warn("warn: %s", nfile->name);
+		log_warn("%s: %s", __func__, nfile->name);
 		free(nfile->name);
 		free(nfile);
 		return (NULL);
@@ -682,17 +683,12 @@ cmdline_symset(char *s)
 {
 	char	*sym, *val;
 	int	ret;
-	size_t	len;
 
 	if ((val = strrchr(s, '=')) == NULL)
 		return (-1);
-
-	len = strlen(s) - strlen(val) + 1;
-	if ((sym = malloc(len)) == NULL)
-		errx(1, "cmdline_symset: malloc");
-
-	(void)strlcpy(sym, s, len);
-
+	sym = strndup(s, val - s);
+	if (sym == NULL)
+		errx(1, "%s: strndup", __func__);
 	ret = symset(sym, val + 1, 1);
 	free(sym);
 
@@ -940,7 +936,7 @@ is_if_in_group(const char *ifname, const char *groupname)
 	int			 s;
 	int			 ret = 0;
 
-	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 		err(1, "socket");
 
         memset(&ifgr, 0, sizeof(ifgr));

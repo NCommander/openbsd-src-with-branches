@@ -1,4 +1,5 @@
-/*	$NetBSD: msg.h,v 1.8 1995/07/11 18:16:20 jtc Exp $	*/
+/*	$OpenBSD: msg.h,v 1.19 2014/11/23 04:31:42 guenther Exp $	*/
+/*	$NetBSD: msg.h,v 1.9 1996/02/09 18:25:18 christos Exp $	*/
 
 /*
  * SVID compatible msg.h file
@@ -32,31 +33,56 @@
 #define MSG_NOERROR	010000		/* don't complain about too long msgs */
 
 struct msqid_ds {
-	struct	ipc_perm msg_perm;	/* msg queue permission bits */
-	struct	msg *msg_first;	/* first message in the queue */
-	struct	msg *msg_last;	/* last message in the queue */
-	u_long	msg_cbytes;	/* number of bytes in use on the queue */
-	u_long	msg_qnum;	/* number of msgs in the queue */
-	u_long	msg_qbytes;	/* max # of bytes on the queue */
-	pid_t	msg_lspid;	/* pid of last msgsnd() */
-	pid_t	msg_lrpid;	/* pid of last msgrcv() */
-	time_t	msg_stime;	/* time of last msgsnd() */
-	long	msg_pad1;
-	time_t	msg_rtime;	/* time of last msgrcv() */
-	long	msg_pad2;
-	time_t	msg_ctime;	/* time of last msgctl() */
-	long	msg_pad3;
-	long	msg_pad4[4];
+	struct ipc_perm	msg_perm;	/* msg queue permission bits */
+	struct msg	*msg_first;	/* first message in the queue */
+	struct msg	*msg_last;	/* last message in the queue */
+	unsigned long	msg_cbytes;	/* number of bytes in use on the queue */
+	unsigned long	msg_qnum;	/* number of msgs in the queue */
+	unsigned long	msg_qbytes;	/* max # of bytes on the queue */
+	pid_t		msg_lspid;	/* pid of last msgsnd() */
+	pid_t		msg_lrpid;	/* pid of last msgrcv() */
+	time_t		msg_stime;	/* time of last msgsnd() */
+	long		msg_pad1;
+	time_t		msg_rtime;	/* time of last msgrcv() */
+	long		msg_pad2;
+	time_t		msg_ctime;	/* time of last msgctl() */
+	long		msg_pad3;
+	long		msg_pad4[4];
 };
 
+#ifdef _KERNEL
+#include <sys/queue.h>
+
 struct msg {
-	struct	msg *msg_next;	/* next msg in the chain */
-	long	msg_type;	/* type of this message */
-    				/* >0 -> type of this message */
-    				/* 0 -> free header */
-	u_short	msg_ts;		/* size of this message */
-	short	msg_spot;	/* location of start of msg in buffer */
+	long		 msg_type;
+	size_t		 msg_len;
+	struct mbuf	*msg_data;
+
+	TAILQ_ENTRY(msg)	msg_next;
 };
+
+struct que {
+	struct msqid_ds	msqid_ds;
+	int		que_ix;		/* pseudo-index */
+	int		que_flags;
+	int		que_references;
+
+	TAILQ_ENTRY(que)	que_next;
+	TAILQ_HEAD(, msg) que_msgs;
+};
+
+/* for que_flags */
+#define	MSGQ_READERS	0x01
+#define	MSGQ_WRITERS	0x02
+#define	MSGQ_DYING	0x04
+
+#define	QREF(q)	(q)->que_references++
+
+#define QRELE(q) do {							\
+	if (--(q)->que_references == 0 && (q)->que_flags & MSGQ_DYING)	\
+		wakeup_one(&(q)->que_references);			\
+} while (0)
+#endif
 
 /*
  * Structure describing a message.  The SVID doesn't suggest any
@@ -65,7 +91,7 @@ struct msg {
  * this user defined buffer might look like, and includes the following
  * members:".  This sentence is followed by two lines equivalent
  * to the mtype and mtext field declarations below.  It isn't clear
- * if "mymsg" refers to the naem of the structure type or the name of an
+ * if "mymsg" refers to the name of the structure type or the name of an
  * instance of the structure...
  */
 struct mymsg {
@@ -93,7 +119,16 @@ struct msginfo {
 		msgssz,		/* size of a message segment (see notes above) */
 		msgseg;		/* number of message segments */
 };
-struct msginfo	msginfo;
+#ifdef SYSVMSG
+extern struct msginfo	msginfo;
+#endif
+
+int sysctl_sysvmsg(int *, u_int, void *, size_t *);
+
+struct msg_sysctl_info {
+	struct msginfo msginfo;
+	struct msqid_ds msgids[1];
+};
 
 #ifndef MSGSSZ
 #define MSGSSZ	8		/* Each segment must be 2^N long */
@@ -101,7 +136,7 @@ struct msginfo	msginfo;
 #ifndef MSGSEG
 #define MSGSEG	2048		/* must be less than 32767 */
 #endif
-#undef MSGMAX			/* ALWAYS compute MGSMAX! */
+#undef MSGMAX			/* ALWAYS compute MSGMAX! */
 #define MSGMAX	(MSGSSZ*MSGSEG)
 #ifndef MSGMNB
 #define MSGMNB	2048		/* max # of bytes in a queue */
@@ -115,46 +150,25 @@ struct msginfo	msginfo;
 
 /*
  * macros to convert between msqid_ds's and msqid's.
- * (specific to this implementation)
+ * XXX unused, going away
  */
 #define MSQID(ix,ds)	((ix) & 0xffff | (((ds).msg_perm.seq << 16) & 0xffff0000))
 #define MSQID_IX(id)	((id) & 0xffff)
 #define MSQID_SEQ(id)	(((id) >> 16) & 0xffff)
 #endif
 
-/*
- * The rest of this file is specific to this particular implementation.
- */
-
-#ifdef _KERNEL
-
-/*
- * Stuff allocated in machdep.h
- */
-struct msgmap {
-	short	next;		/* next segment in buffer */
-    				/* -1 -> available */
-    				/* 0..(MSGSEG-1) -> index of next segment */
-};
-
-char *msgpool;			/* MSGMAX byte long msg buffer pool */
-struct msgmap *msgmaps;		/* MSGSEG msgmap structures */
-struct msg *msghdrs;		/* MSGTQL msg headers */
-struct msqid_ds *msqids;	/* MSGMNI msqid_ds struct's */
-
-#define MSG_LOCKED	01000	/* Is this msqid_ds locked? */
-
-#endif
 
 #ifndef _KERNEL
-#include <sys/cdefs.h>
-
 __BEGIN_DECLS
-int msgctl __P((int, int, struct msqid_ds *));
-int msgget __P((key_t, int));
-int msgsnd __P((int, void *, size_t, int));
-int msgrcv __P((int, void *, size_t, long, int));
+int msgctl(int, int, struct msqid_ds *);
+int msgget(key_t, int);
+int msgsnd(int, const void *, size_t, int);
+int msgrcv(int, void *, size_t, long, int);
 __END_DECLS
+#else
+struct proc;
+
+void	msginit(void);
 #endif /* !_KERNEL */
 
 #endif /* !_SYS_MSG_H_ */

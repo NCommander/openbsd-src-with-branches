@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: t_unlink.c,v 1.1.1.1 2019/11/19 19:57:04 bluhm Exp $	*/
 /* $NetBSD: t_unlink.c,v 1.4 2017/01/14 20:55:26 christos Exp $ */
 
 /*-
@@ -31,9 +31,6 @@
  */
 
 #include "macros.h"
-
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_unlink.c,v 1.4 2017/01/14 20:55:26 christos Exp $");
 
 #include <sys/stat.h>
 

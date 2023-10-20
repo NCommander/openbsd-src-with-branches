@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: t_ptrace.c,v 1.4 2020/11/09 23:18:51 bluhm Exp $	*/
 /*	$NetBSD: t_ptrace.c,v 1.4 2018/05/14 12:44:40 kamil Exp $	*/
 
 /*-
@@ -29,16 +29,13 @@
 
 #include "macros.h"
 
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_ptrace.c,v 1.4 2018/05/14 12:44:40 kamil Exp $");
-
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/ptrace.h>
 #include <sys/stat.h>
 #include <sys/sysctl.h>
 #include <err.h>
 #include <errno.h>
+#include <limits.h>
 #include <unistd.h>
 
 #include "atf-c.h"
@@ -171,7 +168,11 @@ ATF_TC_BODY(attach_chroot, tc)
 		rv = write(fds_toparent[1], &msg, sizeof(msg));
 		FORKEE_ASSERTX(rv == sizeof(msg));
 
+#ifdef __OpenBSD__
+		ATF_REQUIRE_ERRNO(EINVAL,
+#else
 		ATF_REQUIRE_ERRNO(EPERM,
+#endif
 			ptrace(PT_ATTACH, getppid(), NULL, 0) == -1);
 
 		rv = read(fds_fromparent[0], &msg, sizeof(msg));
@@ -182,7 +183,7 @@ ATF_TC_BODY(attach_chroot, tc)
 	ATF_REQUIRE(close(fds_toparent[1]) == 0);
 	ATF_REQUIRE(close(fds_fromparent[0]) == 0);
 
-	printf("Waiting for chrooting of the child PID %d", child);
+	printf("Waiting for chrooting of the child PID %d\n", child);
 	rv = read(fds_toparent[0], &msg, sizeof(msg));
 	ATF_REQUIRE(rv == sizeof(msg)); 
 
@@ -207,11 +208,11 @@ ATF_TC_HEAD(traceme_twice, tc)
 ATF_TC_BODY(traceme_twice, tc)
 {
 
-	printf("Mark the parent process (PID %d) a debugger of PID %d",
+	printf("Mark the parent process (PID %d) a debugger of PID %d\n",
 	       getppid(), getpid());
 	ATF_REQUIRE(ptrace(PT_TRACE_ME, 0, NULL, 0) == 0);
 
-	printf("Mark the parent process (PID %d) a debugger of PID %d again",
+	printf("Mark the parent process (PID %d) a debugger of PID %d again\n",
 	       getppid(), getpid());
 	ATF_REQUIRE_ERRNO(EBUSY, ptrace(PT_TRACE_ME, 0, NULL, 0) == -1);
 }

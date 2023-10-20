@@ -1,13 +1,10 @@
 TBL-MOD-FONT(1)             General Commands Manual            TBL-MOD-FONT(1)
 
-
-
 NNAAMMEE
        tbl-mod-font - font modifiers in table layouts
 
 DDEESSCCRRIIPPTTIIOONN
        normal text
-
        +-------+-------+--------+
        | bboolldd  | roman | _i_t_a_l_i_c |
        +-------+-------+--------+
@@ -15,5 +12,7 @@ DDEESSCCRRIIPPTTIIOONN
        | _a_n_d   |  so   |   oonn   |
        +-------+-------+--------+
 
+       leaked tab settings:
+       a    b    c    d    e
 
-OpenBSD                           2014-10-14                   TBL-MOD-FONT(1)
+OpenBSD                        February 10, 2015               TBL-MOD-FONT(1)

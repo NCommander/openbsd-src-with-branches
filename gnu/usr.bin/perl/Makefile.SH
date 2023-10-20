@@ -209,6 +209,7 @@ extra_dep='
 cpan/Pod-Simple/pm_to_blib: dist/if/pm_to_blib
 ext/Pod-Functions/pm_to_blib: cpan/Pod-Simple/pm_to_blib cpan/Pod-Escapes/pm_to_blib pod/perlfunc.pod
 cpan/IO-Compress/pm_to_blib: dist/lib/pm_to_blib
+lib/auto/Term/ReadKey/ReadKey.so: lib/auto/Cwd/Cwd.so
 '
 for f in $dynamic_ext; do
     : the dependency named here will never exist
@@ -496,7 +497,7 @@ shextract=`SH_to_target $SH`
 ## In the following dollars and backticks do not need the extra backslash.
 $spitshell >>$Makefile <<!GROK!THIS!
 
-private = preplibrary \$(CONFIGPM) \$(CONFIGPOD) git_version.h lib/buildcustomize.pl
+private = preplibrary \$(CONFIGPM) \$(CONFIGPOD) lib/buildcustomize.pl
 
 # Files to be built with variable substitution before miniperl
 # is available.
@@ -540,7 +541,7 @@ c1 = av.c scope.c op.c doop.c doio.c dump.c gv.c hv.c mg.c reentr.c mro_core.c p
 c2 = perly.c pp.c pp_hot.c pp_ctl.c pp_sys.c regcomp.c regexec.c utf8.c sv.c
 c3 = taint.c toke.c util.c deb.c run.c builtin.c universal.c pad.c globals.c keywords.c
 c4 = perlio.c numeric.c mathoms.c locale.c pp_pack.c pp_sort.c caretx.c dquote.c time64.c
-c5 = $(mallocsrc)
+c5 = $(mallocsrc) syscall_emulator.c
 
 !NO!SUBS!
 
@@ -556,7 +557,7 @@ c = $(c1) $(c2) $(c3) $(c4) $(c5) miniperlmain.c $(mini_only_src)
 
 obj1 = $(mallocobj) gv$(OBJ_EXT) toke$(OBJ_EXT) perly$(OBJ_EXT) pad$(OBJ_EXT) regcomp$(OBJ_EXT) dump$(OBJ_EXT) util$(OBJ_EXT) mg$(OBJ_EXT) reentr$(OBJ_EXT) mro_core$(OBJ_EXT) keywords$(OBJ_EXT) builtin$(OBJ_EXT)
 obj2 = hv$(OBJ_EXT) av$(OBJ_EXT) run$(OBJ_EXT) pp_hot$(OBJ_EXT) sv$(OBJ_EXT) pp$(OBJ_EXT) scope$(OBJ_EXT) pp_ctl$(OBJ_EXT) pp_sys$(OBJ_EXT)
-obj3 = doop$(OBJ_EXT) doio$(OBJ_EXT) regexec$(OBJ_EXT) utf8$(OBJ_EXT) taint$(OBJ_EXT) deb$(OBJ_EXT) globals$(OBJ_EXT) perlio$(OBJ_EXT) numeric$(OBJ_EXT) mathoms$(OBJ_EXT) locale$(OBJ_EXT) pp_pack$(OBJ_EXT) pp_sort$(OBJ_EXT) caretx$(OBJ_EXT) dquote$(OBJ_EXT) time64$(OBJ_EXT)
+obj3 = doop$(OBJ_EXT) doio$(OBJ_EXT) regexec$(OBJ_EXT) utf8$(OBJ_EXT) taint$(OBJ_EXT) deb$(OBJ_EXT) globals$(OBJ_EXT) perlio$(OBJ_EXT) numeric$(OBJ_EXT) mathoms$(OBJ_EXT) locale$(OBJ_EXT) pp_pack$(OBJ_EXT) pp_sort$(OBJ_EXT) caretx$(OBJ_EXT) dquote$(OBJ_EXT) time64$(OBJ_EXT) syscall_emulator$(OBJ_EXT)
 
 # split the objects into 3 exclusive sets: those used by both miniperl and
 # perl, and those used by just one or the other. Doesn't include the
@@ -613,7 +614,7 @@ esac
 
 $spitshell >>$Makefile <<'!NO!SUBS!'
 
-perltoc_pod_prereqs = extra.pods pod/perl5360delta.pod pod/perlapi.pod pod/perlintern.pod pod/perlmodlib.pod pod/perluniprops.pod
+perltoc_pod_prereqs = extra.pods pod/perl5361delta.pod pod/perlapi.pod pod/perlintern.pod pod/perlmodlib.pod
 generated_pods = pod/perltoc.pod $(perltoc_pod_prereqs)
 generated_headers = uudmap.h bitcount.h mg_data.h
 
@@ -672,15 +673,16 @@ $(MANIFEST_SRT):	MANIFEST $(PERL_EXE)
 
 .PHONY: all utilities
 
+# OpenBSD uses pre-generated lib/Config_git.pl and git_version.h files
 # Both git_version.h and lib/Config_git.pl are built
 # by make_patchnum.pl.
-git_version.h: lib/Config_git.pl
-
-lib/Config_git.pl: $(MINIPERL_EXE) make_patchnum.pl
-	$(MINIPERL) make_patchnum.pl
-
-# make sure that we recompile perl.c if the git version changes
-perl$(OBJ_EXT): git_version.h
+#git_version.h: lib/Config_git.pl
+#
+#lib/Config_git.pl: $(MINIPERL_EXE) make_patchnum.pl
+#	$(MINIPERL) make_patchnum.pl
+#
+## make sure that we recompile perl.c if the git version changes
+#perl$(OBJ_EXT): git_version.h
 
 !NO!SUBS!
 
@@ -1111,10 +1113,7 @@ $(CONFIGPOD): config.sh $(MINIPERL_EXE) configpm Porting/Glossary lib/Config_git
 unidatafiles $(unidatafiles) pod/perluniprops.pod: uni.data
 
 uni.data: $(MINIPERL_EXE) $(CONFIGPM) lib/unicore/mktables $(nonxs_ext)
-	$(MINIPERL) lib/unicore/mktables -C lib/unicore -P pod -maketest -makelist -p
-#	Commented out so always runs, mktables looks at far more files than we
-#	can in this makefile to decide if needs to run or not
-#	touch uni.data
+	touch uni.data
 
 # $(PERL_EXE) and ext because pod_lib.pl needs Digest::MD5
 # But also this ensures that all extensions are built before we try to scan
@@ -1130,9 +1129,9 @@ pod/perlintern.pod: $(MINIPERL_EXE) autodoc.pl embed.fnc
 pod/perlmodlib.pod: $(MINIPERL_EXE) pod/perlmodlib.PL MANIFEST
 	$(MINIPERL) pod/perlmodlib.PL -q
 
-pod/perl5360delta.pod: pod/perldelta.pod
-	$(RMS) pod/perl5360delta.pod
-	$(LNS) perldelta.pod pod/perl5360delta.pod
+pod/perl5361delta.pod: pod/perldelta.pod
+	$(RMS) pod/perl5361delta.pod
+	$(LNS) perldelta.pod pod/perl5361delta.pod
 
 extra.pods: $(MINIPERL_EXE)
 	-@test ! -f extra.pods || rm -f `cat extra.pods`
@@ -1362,7 +1361,7 @@ _mopup:
 	-rm -f *perl.xok
 	-rm -f cygwin.c libperl*.def libperl*.dll cygperl*.dll *.exe.stackdump
 	-rm -f $(PERL_EXE) $(MINIPERL_EXE) $(LIBPERL) libperl.* microperl
-	-rm -f config.arch config.over $(DTRACE_H)
+	-rm -f $(DTRACE_H)
 
 _cleaner1:
 	-cd os2; rm -f Makefile
@@ -1427,10 +1426,10 @@ _cleaner2:
 	-rmdir lib/TAP/Formatter lib/TAP lib/Sys/Syslog lib/Sys lib/Sub
 	-rmdir lib/Search lib/Scalar lib/Pod/Text lib/Pod/Simple
 	-rmdir lib/Pod/Perldoc lib/Pod/Html lib/PerlIO/via lib/PerlIO lib/Perl
-	-rmdir lib/Parse/CPAN lib/Parse lib/Params lib/Net/FTP lib/Module/Load
-	-rmdir lib/Module/CoreList lib/Module lib/Memoize lib/Math/BigRat
-	-rmdir lib/Math/BigInt lib/Math/BigFloat lib/Math lib/MIME
-	-rmdir lib/Locale/Maketext lib/Locale lib/List/Util lib/List
+	-rmdir lib/Parse/CPAN lib/Parse lib/Params lib/OpenBSD lib/Net/FTP
+	-rmdir lib/Module/Load lib/Module/CoreList lib/Module lib/Memoize
+	-rmdir lib/Math/BigRat lib/Math/BigInt lib/Math/BigFloat lib/Math
+	-rmdir lib/MIME lib/Locale/Maketext lib/Locale lib/List/Util lib/List
 	-rmdir lib/JSON/PP lib/JSON lib/IPC lib/IO/Uncompress/Adapter
 	-rmdir lib/IO/Uncompress lib/IO/Socket lib/IO/Compress/Zlib
 	-rmdir lib/IO/Compress/Zip lib/IO/Compress/Gzip lib/IO/Compress/Base

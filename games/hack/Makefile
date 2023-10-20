@@ -1,9 +1,7 @@
-#	$NetBSD: Makefile,v 1.16 1995/03/23 08:29:07 cgd Exp $
-#	@(#)Makefile	8.1 (Berkeley) 5/31/93
+#	$OpenBSD: Makefile,v 1.16 2017/07/10 21:30:37 espie Exp $
 
 PROG=	hack
 CFLAGS+=-I.
-SRCS+=	hack.onames.h
 SRCS+=	alloc.c hack.Decl.c hack.apply.c hack.bones.c hack.c hack.cmd.c \
 	hack.do.c hack.do_name.c hack.do_wear.c hack.dog.c hack.eat.c \
 	hack.end.c hack.engrave.c hack.fight.c hack.invent.c hack.ioctl.c \
@@ -16,26 +14,20 @@ SRCS+=	alloc.c hack.Decl.c hack.apply.c hack.bones.c hack.c hack.cmd.c \
 	hack.u_init.c hack.unix.c hack.vault.c hack.version.c hack.wield.c \
 	hack.wizard.c hack.worm.c hack.worn.c hack.zap.c rnd.c
 MAN=	hack.6
-DPADD+=	${LIBTERM} ${LIBCOMPAT}
-LDADD+=	-ltermcap -lcompat
-HIDEGAME=hidegame
+DPADD+=	${LIBCURSES}
+LDADD+=	-lcurses
 CLEANFILES+=hack.onames.h makedefs
 
-${PROG}: hack.onames.h
+BUILDFIRST = hack.onames.h
 
 hack.onames.h: makedefs def.objects.h
 	${.OBJDIR}/makedefs ${.CURDIR}/def.objects.h > hack.onames.h
 
 makedefs: makedefs.c
-	${CC} ${CFLAGS} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} ${.CURDIR}/${.PREFIX}.c ${LDADD}
+	${HOSTCC} ${CFLAGS} ${LDFLAGS} ${LDSTATIC} -o ${.TARGET} ${.CURDIR}/${.PREFIX}.c ${LDADD}
 
 beforeinstall: 
-	install -c -o games -g games -m 600 /dev/null \
-	    ${DESTDIR}/var/games/hackdir/perm
-	install -c -o games -g games -m 600 /dev/null \
-	    ${DESTDIR}/var/games/hackdir/record
-	install -c -o ${BINOWN} -g ${BINGRP} -m 444 ${.CURDIR}/help \
-	    ${.CURDIR}/hh ${.CURDIR}/data ${DESTDIR}/var/games/hackdir
-	rm -f ${DESTDIR}/var/games/hackdir/bones*
+	${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 ${.CURDIR}/help \
+	    ${.CURDIR}/hh ${.CURDIR}/data ${.CURDIR}/rumors ${DESTDIR}/usr/share/games/hack
 
 .include <bsd.prog.mk>

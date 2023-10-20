@@ -1,3 +1,4 @@
+/*	$OpenBSD: tcp_fsm.h,v 1.8 2004/07/06 13:52:31 markus Exp $	*/
 /*	$NetBSD: tcp_fsm.h,v 1.6 1994/10/14 16:01:48 mycroft Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +32,9 @@
  *	@(#)tcp_fsm.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _NETINET_TCP_FSM_H_
+#define _NETINET_TCP_FSM_H_
+
 /*
  * TCP FSM state definitions.
  * Per RFC793, September, 1981.
@@ -45,13 +45,13 @@
 #define	TCPS_CLOSED		0	/* closed */
 #define	TCPS_LISTEN		1	/* listening for connection */
 #define	TCPS_SYN_SENT		2	/* active, have sent syn */
-#define	TCPS_SYN_RECEIVED	3	/* have send and received syn */
+#define	TCPS_SYN_RECEIVED	3	/* have sent and received syn */
 /* states < TCPS_ESTABLISHED are those where connections not established */
 #define	TCPS_ESTABLISHED	4	/* established */
 #define	TCPS_CLOSE_WAIT		5	/* rcvd fin, waiting for close */
 /* states > TCPS_CLOSE_WAIT are those where user has closed */
 #define	TCPS_FIN_WAIT_1		6	/* have closed, sent fin */
-#define	TCPS_CLOSING		7	/* closed xchd FIN; await FIN ACK */
+#define	TCPS_CLOSING		7	/* closed xchd FIN; await ACK */
 #define	TCPS_LAST_ACK		8	/* had fin and close; await FIN ACK */
 /* states > TCPS_CLOSE_WAIT && < TCPS_FIN_WAIT_2 await ACK of FIN */
 #define	TCPS_FIN_WAIT_2		9	/* have closed, fin is acked */
@@ -73,16 +73,13 @@ u_char	tcp_outflags[TCP_NSTATES] = {
     TH_ACK, TH_ACK,
     TH_FIN|TH_ACK, TH_FIN|TH_ACK, TH_FIN|TH_ACK, TH_ACK, TH_ACK,
 };
-#endif
-
-#ifdef KPROF
-int	tcp_acounts[TCP_NSTATES][PRU_NREQ];
-#endif
+#endif /* TCPOUTFLAGS */
 
 #ifdef	TCPSTATES
-char *tcpstates[] = {
+const char *tcpstates[] = {
 	"CLOSED",	"LISTEN",	"SYN_SENT",	"SYN_RCVD",
 	"ESTABLISHED",	"CLOSE_WAIT",	"FIN_WAIT_1",	"CLOSING",
 	"LAST_ACK",	"FIN_WAIT_2",	"TIME_WAIT",
 };
-#endif
+#endif /* TCPSTATES */
+#endif /* _NETINET_TCP_FSM_H_ */

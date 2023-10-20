@@ -1,5 +1,6 @@
-/* crypto/cms/cms_dd.c */
-/* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
+/* $OpenBSD: cms_dd.c,v 1.14 2019/08/11 11:04:18 jsing Exp $ */
+/*
+ * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
  */
 /* ====================================================================
@@ -10,7 +11,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -51,29 +52,31 @@
  * ====================================================================
  */
 
+#include <string.h>
+
 #include "cryptlib.h"
 #include <openssl/asn1t.h>
 #include <openssl/pem.h>
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
 #include <openssl/cms.h>
-#include "cms_lcl.h"
-
-DECLARE_ASN1_ITEM(CMS_DigestedData)
+#include "cms_local.h"
 
 /* CMS DigestedData Utilities */
 
-CMS_ContentInfo *cms_DigestedData_create(const EVP_MD *md)
-	{
+CMS_ContentInfo *
+cms_DigestedData_create(const EVP_MD *md)
+{
 	CMS_ContentInfo *cms;
 	CMS_DigestedData *dd;
+
 	cms = CMS_ContentInfo_new();
-	if (!cms)
+	if (cms == NULL)
 		return NULL;
 
-	dd = M_ASN1_new_of(CMS_DigestedData);
+	dd = (CMS_DigestedData *)ASN1_item_new(&CMS_DigestedData_it);
 
-	if (!dd)
+	if (dd == NULL)
 		goto err;
 
 	cms->contentType = OBJ_nid2obj(NID_pkcs7_digest);
@@ -82,67 +85,66 @@ CMS_ContentInfo *cms_DigestedData_create(const EVP_MD *md)
 	dd->version = 0;
 	dd->encapContentInfo->eContentType = OBJ_nid2obj(NID_pkcs7_data);
 
-	cms_DigestAlgorithm_set(dd->digestAlgorithm, md);
+	X509_ALGOR_set_md(dd->digestAlgorithm, md);
 
 	return cms;
 
-	err:
-
-	if (cms)
-		CMS_ContentInfo_free(cms);
+ err:
+	CMS_ContentInfo_free(cms);
 
 	return NULL;
-	}
+}
 
-BIO *cms_DigestedData_init_bio(CMS_ContentInfo *cms)
-	{
+BIO *
+cms_DigestedData_init_bio(CMS_ContentInfo *cms)
+{
 	CMS_DigestedData *dd;
-	dd = cms->d.digestedData;
-	return cms_DigestAlgorithm_init_bio(dd->digestAlgorithm);
-	}
 
-int cms_DigestedData_do_final(CMS_ContentInfo *cms, BIO *chain, int verify)
-	{
-	EVP_MD_CTX mctx;
+	dd = cms->d.digestedData;
+
+	return cms_DigestAlgorithm_init_bio(dd->digestAlgorithm);
+}
+
+int
+cms_DigestedData_do_final(CMS_ContentInfo *cms, BIO *chain, int verify)
+{
+	EVP_MD_CTX *mctx = EVP_MD_CTX_new();
 	unsigned char md[EVP_MAX_MD_SIZE];
 	unsigned int mdlen;
 	int r = 0;
 	CMS_DigestedData *dd;
-	EVP_MD_CTX_init(&mctx);
+
+	if (mctx == NULL) {
+		CMSerror(ERR_R_MALLOC_FAILURE);
+		goto err;
+	}
 
 	dd = cms->d.digestedData;
 
-	if (!cms_DigestAlgorithm_find_ctx(&mctx, chain, dd->digestAlgorithm))
+	if (!cms_DigestAlgorithm_find_ctx(mctx, chain, dd->digestAlgorithm))
 		goto err;
 
-	if (EVP_DigestFinal_ex(&mctx, md, &mdlen) <= 0)
+	if (EVP_DigestFinal_ex(mctx, md, &mdlen) <= 0)
 		goto err;
 
-	if (verify)
-		{
-		if (mdlen != (unsigned int)dd->digest->length)
-			{
-			CMSerr(CMS_F_CMS_DIGESTEDDATA_DO_FINAL,
-				CMS_R_MESSAGEDIGEST_WRONG_LENGTH);
+	if (verify) {
+		if (mdlen != (unsigned int)dd->digest->length) {
+			CMSerror(CMS_R_MESSAGEDIGEST_WRONG_LENGTH);
 			goto err;
-			}
+		}
 
 		if (memcmp(md, dd->digest->data, mdlen))
-			CMSerr(CMS_F_CMS_DIGESTEDDATA_DO_FINAL,
-				CMS_R_VERIFICATION_FAILURE);
+			CMSerror(CMS_R_VERIFICATION_FAILURE);
 		else
 			r = 1;
-		}
-	else
-		{
+	} else {
 		if (!ASN1_STRING_set(dd->digest, md, mdlen))
 			goto err;
 		r = 1;
-		}
+	}
 
-	err:
-	EVP_MD_CTX_cleanup(&mctx);
+ err:
+	EVP_MD_CTX_free(mctx);
 
 	return r;
-
-	}
+}

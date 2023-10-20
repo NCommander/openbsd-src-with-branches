@@ -1,0 +1,10 @@
+.\" $OpenBSD$
+.TH ESC-V1 1 "May 31, 2022"
+.SH NAME
+esc-V1 \- interpolate environment variables
+.SH DESCRIPTION
+single-character name: "\VN"
+.br
+double-character name: "\V(VN"
+.br
+multi-character name: "\V[VARNAME]"

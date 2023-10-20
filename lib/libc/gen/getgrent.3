@@ -1,4 +1,4 @@
-.\"	$NetBSD: getgrent.3,v 1.8 1995/02/27 04:12:36 cgd Exp $
+.\"	$OpenBSD: getgrent.3,v 1.25 2022/08/02 16:47:16 deraadt Exp $
 .\"
 .\" Copyright (c) 1989, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,33 +27,33 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)getgrent.3	8.2 (Berkeley) 4/19/94
-.\"
-.Dd April 19, 1994
+.Dd $Mdocdate: August 2 2022 $
 .Dt GETGRENT 3
 .Os
 .Sh NAME
 .Nm getgrent ,
 .Nm getgrnam ,
+.Nm getgrnam_r ,
 .Nm getgrgid ,
+.Nm getgrgid_r ,
 .Nm setgroupent ,
-.\" .Nm setgrfile ,
 .Nm setgrent ,
 .Nm endgrent
 .Nd group database operations
 .Sh SYNOPSIS
-.Fd #include <sys/types.h>
-.Fd #include <grp.h>
+.In grp.h
 .Ft struct group *
 .Fn getgrent void
 .Ft struct group *
 .Fn getgrnam "const char *name"
+.Ft int
+.Fn getgrnam_r "const char *name" "struct group *grp" "char *buf" "size_t bufsize" "struct group **result"
 .Ft struct group *
 .Fn getgrgid "gid_t gid"
 .Ft int
+.Fn getgrgid_r "gid_t gid" "struct group *grp" "char *buf" "size_t bufsize" "struct group **result"
+.Ft int
 .Fn setgroupent "int stayopen"
-.\" .Ft void
-.\" .Fn setgrfile "const char *name"
 .Ft void
 .Fn setgrent void
 .Ft void
@@ -69,10 +65,10 @@ which is described
 in
 .Xr group 5 .
 Each line of the database is defined by the structure
-.Ar group
+.Vt struct group
 found in the include
 file
-.Aq Pa grp.h :
+.In grp.h :
 .Bd -literal -offset indent
 struct group {
 	char	*gr_name;	/* group name */
@@ -87,68 +83,185 @@ The functions
 and
 .Fn getgrgid
 search the group database for the given group name pointed to by
-.Ar name
-or the group id pointed to by
-.Ar gid ,
-respectively, returning the first one encountered.  Identical group
-names or group gids may result in undefined behavior.
+.Fa name
+or the group ID pointed to by
+.Fa gid ,
+respectively, returning the first one encountered.
+Identical group names or group GIDs may result in undefined behavior.
 .Pp
-The
 .Fn getgrent
-function
 sequentially reads the group database and is intended for programs
 that wish to step through the complete list of groups.
 .Pp
 All three routines will open the group file for reading, if necessary.
 .Pp
-The
 .Fn setgroupent
-function
-opens the file, or rewinds it if it is already open.  If
+opens the file, or rewinds it if it is already open.
+If
 .Fa stayopen
 is non-zero, file descriptors are left open, significantly speeding
-functions subsequent calls.  This functionality is unnecessary for
+subsequent function calls.
+This functionality is unnecessary for
 .Fn getgrent
-as it doesn't close its file descriptors by default.  It should also
+as it doesn't close its file descriptors by default.
+It should also
 be noted that it is dangerous for long-running programs to use this
 functionality as the group file may be updated.
 .Pp
-The
 .Fn setgrent
-function
 is equivalent to
 .Fn setgroupent
 with an argument of zero.
 .Pp
 The
 .Fn endgrent
-function
-closes any open files.
+function closes any open files.
+.Pp
+The
+.Fn getgrgid_r
+and
+.Fn getgrnam_r
+functions both update the group structure pointed to by
+.Fa grp
+and store a pointer to that structure at the location pointed to by
+.Fa result .
+The structure is filled with an entry from the group database with a
+matching
+.Fa gid
+or
+.Fa name .
+Storage referenced by the group structure will be allocated from the memory
+provided with the
+.Fa buf
+parameter, which is
+.Fa bufsiz
+characters in size.
+The maximum size needed for this buffer can be determined with
+.Fn sysconf _SC_GETGR_R_SIZE_MAX .
+.Ss YP support
+If YP is active, the functions
+.Fn getgrent
+and
+.Fn getgrnam
+also use the
+.Pa group.byname
+YP map and the function
+.Fn getgrgid
+also uses the
+.Pa group.bygid
+YP map in addition to the group file,
+respecting the order of normal and YP entries in the group file.
 .Sh RETURN VALUES
 The functions
 .Fn getgrent ,
 .Fn getgrnam ,
 and
-.Fn getgrgid ,
+.Fn getgrgid
 return a pointer to the group entry if successful; if end-of-file
-is reached or an error occurs a null pointer is returned.
+is reached or an error occurs a
+.Dv NULL
+pointer is returned.
+.Pp
 The
 .Fn setgroupent
-function returns the value 1 if successful, otherwise the value
-0 is returned.
-The 
+function returns the value 1 if successful, otherwise 0.
+.Pp
+The
 .Fn endgrent
 and
 .Fn setgrent
 functions have no return value.
+.Pp
+The functions
+.Fn getgrgid_r
+and
+.Fn getgrnam_r
+update
+.Ar result
+to point to
+.Ar grp
+if a match is found or set it to
+.Dv NULL
+if no match is found or an error occurs.
+They return 0 on success, even if no match is found,
+or an error number if an error occurs; see
+.Sx ERRORS .
 .Sh FILES
 .Bl -tag -width /etc/group -compact
 .It Pa /etc/group
 group database file
 .El
+.Sh ERRORS
+The
+.Fn getgrgid_r
+and
+.Fn getgrnam_r
+functions may fail if:
+.Bl -tag -width Er
+.It Bq Er ERANGE
+The storage supplied via
+.Fa buf
+and
+.Fa bufsize
+is too small and cannot contain all the strings to be returned in
+.Fa grp .
+.El
+.Pp
+The
+.Fn getgrent ,
+.Fn getgrgid ,
+.Fn getgrgid_r ,
+.Fn getgrnam ,
+and
+.Fn getgrnam_r
+functions may also fail for any of the errors specified for
+.Xr fgets 3 ,
+.Xr getc 3 ,
+and
+.Xr strtoul 3 .
+If YP is active, they may also fail due to errors caused by the YP subsystem.
+.Pp
+The
+.Fn setgroupent
+function may fail for any of the errors specified for
+.Xr fopen 3 .
+.Pp
+The
+.Fn endgrent ,
+.Fn getgrgid_r ,
+.Fn getgrnam_r ,
+and
+.Fn setgrent
+functions do not set errno.
 .Sh SEE ALSO
 .Xr getpwent 3 ,
-.Xr group 5
+.Xr sysconf 3 ,
+.Xr group 5 ,
+.Xr yp 8
+.Sh STANDARDS
+The functions
+.Fn getgrgid ,
+.Fn getgrgid_r ,
+.Fn getgrnam ,
+and
+.Fn getgrnam_r
+are compliant with the
+.St -p1003.1-2008
+specification.
+.Pp
+The functions
+.Fn endgrent ,
+.Fn getgrent ,
+and
+.Fn setgrent
+are compliant with the X/Open System Interfaces option of the
+.St -p1003.1-2008
+specification.
+.Pp
+.Sx YP support
+and the
+.Fn setgroupent
+function are extensions to that specification.
 .Sh HISTORY
 The functions
 .Fn endgrent ,
@@ -159,29 +272,26 @@ and
 .Fn setgrent
 appeared in
 .At v7 .
-The functions
-.Fn setgrfile
-and
+The
 .Fn setgroupent
-appeared in
+function appeared in
 .Bx 4.3 Reno .
-.Sh COMPATIBILITY
+.Pp
 The historic function
 .Fn setgrfile ,
-which allowed the specification of alternate password databases, has
+which allowed the specification of alternate group databases, has
 been deprecated and is no longer available.
 .Sh BUGS
 The functions
 .Fn getgrent ,
 .Fn getgrnam ,
 .Fn getgrgid ,
-.Fn setgroupent
+.Fn setgroupent ,
 and
 .Fn setgrent
 leave their results in an internal static object and return
-a pointer to that object. Subsequent calls to
-the same function
-will modify the same object.
+a pointer to that object.
+Subsequent calls to the same function will modify the same object.
 .Pp
 The functions
 .Fn getgrent ,

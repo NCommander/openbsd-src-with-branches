@@ -1,10 +1,4 @@
-#	$NetBSD: Makefile.inc,v 1.3 1995/03/21 12:04:12 cgd Exp $
-#	@(#)Makefile.inc	8.1 (Berkeley) 5/31/93
+#	$OpenBSD: Makefile.inc,v 1.6 2015/11/24 03:10:09 deraadt Exp $
 
-BINOWN?=	games
-.if defined(HIDEGAME)
-BINDIR?=	/usr/games/hide
-BINMODE?=	4700
-.else
 BINDIR?=	/usr/games
-.endif
+COPTS+=		-Werror-implicit-function-declaration

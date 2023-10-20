@@ -1,4 +1,5 @@
-/*	$NetBSD: fifo_vnops.c,v 1.16 1995/04/14 23:30:14 mycroft Exp $	*/
+/*	$OpenBSD: fifo_vnops.c,v 1.101 2023/01/27 18:46:34 mvs Exp $	*/
+/*	$NetBSD: fifo_vnops.c,v 1.18 1996/03/16 23:52:42 christos Exp $	*/
 
 /*
  * Copyright (c) 1990, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,18 +33,23 @@
  */
 
 #include <sys/param.h>
-#include <sys/proc.h>
+#include <sys/systm.h>
 #include <sys/time.h>
 #include <sys/namei.h>
 #include <sys/vnode.h>
+#include <sys/lock.h>
+#include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 #include <sys/stat.h>
-#include <sys/systm.h>
 #include <sys/ioctl.h>
+#include <sys/fcntl.h>
 #include <sys/file.h>
+#include <sys/event.h>
 #include <sys/errno.h>
 #include <sys/malloc.h>
+#include <sys/unistd.h>
+
 #include <miscfs/fifofs/fifo.h>
 
 /*
@@ -61,159 +63,164 @@ struct fifoinfo {
 	long		fi_writers;
 };
 
-int (**fifo_vnodeop_p)();
-struct vnodeopv_entry_desc fifo_vnodeop_entries[] = {
-	{ &vop_default_desc, vn_default_error },
-	{ &vop_lookup_desc, fifo_lookup },		/* lookup */
-	{ &vop_create_desc, fifo_create },		/* create */
-	{ &vop_mknod_desc, fifo_mknod },		/* mknod */
-	{ &vop_open_desc, fifo_open },			/* open */
-	{ &vop_close_desc, fifo_close },		/* close */
-	{ &vop_access_desc, fifo_access },		/* access */
-	{ &vop_getattr_desc, fifo_getattr },		/* getattr */
-	{ &vop_setattr_desc, fifo_setattr },		/* setattr */
-	{ &vop_read_desc, fifo_read },			/* read */
-	{ &vop_write_desc, fifo_write },		/* write */
-	{ &vop_lease_desc, fifo_lease_check },		/* lease */
-	{ &vop_ioctl_desc, fifo_ioctl },		/* ioctl */
-	{ &vop_select_desc, fifo_select },		/* select */
-	{ &vop_mmap_desc, fifo_mmap },			/* mmap */
-	{ &vop_fsync_desc, fifo_fsync },		/* fsync */
-	{ &vop_seek_desc, fifo_seek },			/* seek */
-	{ &vop_remove_desc, fifo_remove },		/* remove */
-	{ &vop_link_desc, fifo_link },			/* link */
-	{ &vop_rename_desc, fifo_rename },		/* rename */
-	{ &vop_mkdir_desc, fifo_mkdir },		/* mkdir */
-	{ &vop_rmdir_desc, fifo_rmdir },		/* rmdir */
-	{ &vop_symlink_desc, fifo_symlink },		/* symlink */
-	{ &vop_readdir_desc, fifo_readdir },		/* readdir */
-	{ &vop_readlink_desc, fifo_readlink },		/* readlink */
-	{ &vop_abortop_desc, fifo_abortop },		/* abortop */
-	{ &vop_inactive_desc, fifo_inactive },		/* inactive */
-	{ &vop_reclaim_desc, fifo_reclaim },		/* reclaim */
-	{ &vop_lock_desc, fifo_lock },			/* lock */
-	{ &vop_unlock_desc, fifo_unlock },		/* unlock */
-	{ &vop_bmap_desc, fifo_bmap },			/* bmap */
-	{ &vop_strategy_desc, fifo_strategy },		/* strategy */
-	{ &vop_print_desc, fifo_print },		/* print */
-	{ &vop_islocked_desc, fifo_islocked },		/* islocked */
-	{ &vop_pathconf_desc, fifo_pathconf },		/* pathconf */
-	{ &vop_advlock_desc, fifo_advlock },		/* advlock */
-	{ &vop_blkatoff_desc, fifo_blkatoff },		/* blkatoff */
-	{ &vop_valloc_desc, fifo_valloc },		/* valloc */
-	{ &vop_vfree_desc, fifo_vfree },		/* vfree */
-	{ &vop_truncate_desc, fifo_truncate },		/* truncate */
-	{ &vop_update_desc, fifo_update },		/* update */
-	{ &vop_bwrite_desc, fifo_bwrite },		/* bwrite */
-	{ (struct vnodeop_desc*)NULL, (int(*)())NULL }
+const struct vops fifo_vops = {
+	.vop_lookup	= vop_generic_lookup,
+	.vop_create	= vop_generic_badop,
+	.vop_mknod	= vop_generic_badop,
+	.vop_open	= fifo_open,
+	.vop_close	= fifo_close,
+	.vop_access	= fifo_ebadf,
+	.vop_getattr	= fifo_ebadf,
+	.vop_setattr	= fifo_ebadf,
+	.vop_read	= fifo_read,
+	.vop_write	= fifo_write,
+	.vop_ioctl	= fifo_ioctl,
+	.vop_kqfilter	= fifo_kqfilter,
+	.vop_revoke	= vop_generic_revoke,
+	.vop_fsync	= nullop,
+	.vop_remove	= vop_generic_badop,
+	.vop_link	= vop_generic_badop,
+	.vop_rename	= vop_generic_badop,
+	.vop_mkdir	= vop_generic_badop,
+	.vop_rmdir	= vop_generic_badop,
+	.vop_symlink	= vop_generic_badop,
+	.vop_readdir	= vop_generic_badop,
+	.vop_readlink	= vop_generic_badop,
+	.vop_abortop	= vop_generic_badop,
+	.vop_inactive	= fifo_inactive,
+	.vop_reclaim	= fifo_reclaim,
+	.vop_lock	= nullop,
+	.vop_unlock	= nullop,
+	.vop_islocked	= nullop,
+	.vop_bmap	= vop_generic_bmap,
+	.vop_strategy	= vop_generic_badop,
+	.vop_print	= fifo_print,
+	.vop_pathconf	= fifo_pathconf,
+	.vop_advlock	= fifo_advlock,
+	.vop_bwrite	= nullop
 };
-struct vnodeopv_desc fifo_vnodeop_opv_desc =
-	{ &fifo_vnodeop_p, fifo_vnodeop_entries };
 
-/*
- * Trivial lookup routine that always fails.
- */
-/* ARGSUSED */
-fifo_lookup(ap)
-	struct vop_lookup_args /* {
-		struct vnode * a_dvp;
-		struct vnode ** a_vpp;
-		struct componentname * a_cnp;
-	} */ *ap;
-{
-	
-	*ap->a_vpp = NULL;
-	return (ENOTDIR);
-}
+void	filt_fifordetach(struct knote *kn);
+int	filt_fiforead(struct knote *kn, long hint);
+void	filt_fifowdetach(struct knote *kn);
+int	filt_fifowrite(struct knote *kn, long hint);
+int	filt_fifoexcept(struct knote *kn, long hint);
+int	filt_fifomodify(struct kevent *kev, struct knote *kn);
+int	filt_fifoprocess(struct knote *kn, struct kevent *kev);
+
+const struct filterops fiforead_filtops = {
+	.f_flags	= FILTEROP_ISFD | FILTEROP_MPSAFE,
+	.f_attach	= NULL,
+	.f_detach	= filt_fifordetach,
+	.f_event	= filt_fiforead,
+	.f_modify	= filt_fifomodify,
+	.f_process	= filt_fifoprocess,
+};
+
+const struct filterops fifowrite_filtops = {
+	.f_flags	= FILTEROP_ISFD | FILTEROP_MPSAFE,
+	.f_attach	= NULL,
+	.f_detach	= filt_fifowdetach,
+	.f_event	= filt_fifowrite,
+	.f_modify	= filt_fifomodify,
+	.f_process	= filt_fifoprocess,
+};
+
+const struct filterops fifoexcept_filtops = {
+	.f_flags	= FILTEROP_ISFD | FILTEROP_MPSAFE,
+	.f_attach	= NULL,
+	.f_detach	= filt_fifordetach,
+	.f_event	= filt_fifoexcept,
+	.f_modify	= filt_fifomodify,
+	.f_process	= filt_fifoprocess,
+};
 
 /*
  * Open called to set up a new instance of a fifo or
  * to find an active instance of a fifo.
  */
-/* ARGSUSED */
-fifo_open(ap)
-	struct vop_open_args /* {
-		struct vnode *a_vp;
-		int  a_mode;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+int
+fifo_open(void *v)
 {
-	register struct vnode *vp = ap->a_vp;
-	register struct fifoinfo *fip;
+	struct vop_open_args *ap = v;
+	struct vnode *vp = ap->a_vp;
+	struct fifoinfo *fip;
 	struct socket *rso, *wso;
 	int error;
-	static char openstr[] = "fifo";
 
 	if ((fip = vp->v_fifoinfo) == NULL) {
-		MALLOC(fip, struct fifoinfo *, sizeof(*fip), M_VNODE, M_WAITOK);
+		fip = malloc(sizeof(*fip), M_VNODE, M_WAITOK);
 		vp->v_fifoinfo = fip;
-		if (error = socreate(AF_LOCAL, &rso, SOCK_STREAM, 0)) {
-			free(fip, M_VNODE);
+		if ((error = socreate(AF_UNIX, &rso, SOCK_STREAM, 0)) != 0) {
+			free(fip, M_VNODE, sizeof *fip);
 			vp->v_fifoinfo = NULL;
 			return (error);
 		}
 		fip->fi_readsock = rso;
-		if (error = socreate(AF_LOCAL, &wso, SOCK_STREAM, 0)) {
-			(void)soclose(rso);
-			free(fip, M_VNODE);
+		if ((error = socreate(AF_UNIX, &wso, SOCK_STREAM, 0)) != 0) {
+			(void)soclose(rso, 0);
+			free(fip, M_VNODE, sizeof *fip);
 			vp->v_fifoinfo = NULL;
 			return (error);
 		}
 		fip->fi_writesock = wso;
-		if (error = unp_connect2(wso, rso)) {
-			(void)soclose(wso);
-			(void)soclose(rso);
-			free(fip, M_VNODE);
+		if ((error = soconnect2(wso, rso)) != 0) {
+			(void)soclose(wso, 0);
+			(void)soclose(rso, 0);
+			free(fip, M_VNODE, sizeof *fip);
 			vp->v_fifoinfo = NULL;
 			return (error);
 		}
 		fip->fi_readers = fip->fi_writers = 0;
-		wso->so_state |= SS_CANTRCVMORE;
-		rso->so_state |= SS_CANTSENDMORE;
+		solock(wso);
+		wso->so_snd.sb_state |= SS_CANTSENDMORE;
+		wso->so_snd.sb_lowat = PIPE_BUF;
+		sounlock(wso);
+	} else {
+		rso = fip->fi_readsock;
+		wso = fip->fi_writesock;
 	}
 	if (ap->a_mode & FREAD) {
-		if (fip->fi_readers++ == 0) {
-			fip->fi_writesock->so_state &= ~SS_CANTSENDMORE;
+		fip->fi_readers++;
+		if (fip->fi_readers == 1) {
+			solock(wso);
+			wso->so_snd.sb_state &= ~SS_CANTSENDMORE;
+			sounlock(wso);
 			if (fip->fi_writers > 0)
-				wakeup((caddr_t)&fip->fi_writers);
+				wakeup(&fip->fi_writers);
 		}
 	}
 	if (ap->a_mode & FWRITE) {
-		if (fip->fi_writers++ == 0) {
-			fip->fi_readsock->so_state &= ~SS_CANTRCVMORE;
+		fip->fi_writers++;
+		if ((ap->a_mode & O_NONBLOCK) && fip->fi_readers == 0) {
+			error = ENXIO;
+			goto bad;
+		}
+		if (fip->fi_writers == 1) {
+			solock(rso);
+			rso->so_state &= ~SS_ISDISCONNECTED;
+			rso->so_rcv.sb_state &= ~SS_CANTRCVMORE;
+			sounlock(rso);
 			if (fip->fi_readers > 0)
-				wakeup((caddr_t)&fip->fi_readers);
+				wakeup(&fip->fi_readers);
 		}
 	}
-	if (ap->a_mode & FREAD) {
-		if (ap->a_mode & O_NONBLOCK) {
-		} else {
-			while (fip->fi_writers == 0) {
-				VOP_UNLOCK(vp);
-				error = tsleep((caddr_t)&fip->fi_readers,
-				    PCATCH | PSOCK, openstr, 0);
-				VOP_LOCK(vp);
-				if (error)
-					goto bad;
-			}
-		}
-	}
-	if (ap->a_mode & FWRITE) {
-		if (ap->a_mode & O_NONBLOCK) {
-			if (fip->fi_readers == 0) {
-				error = ENXIO;
+	if ((ap->a_mode & O_NONBLOCK) == 0) {
+		if ((ap->a_mode & FREAD) && fip->fi_writers == 0) {
+			VOP_UNLOCK(vp);
+			error = tsleep_nsec(&fip->fi_readers,
+			    PCATCH | PSOCK, "fifor", INFSLP);
+			vn_lock(vp, LK_EXCLUSIVE | LK_RETRY);
+			if (error)
 				goto bad;
-			}
-		} else {
-			while (fip->fi_readers == 0) {
-				VOP_UNLOCK(vp);
-				error = tsleep((caddr_t)&fip->fi_writers,
-				    PCATCH | PSOCK, openstr, 0);
-				VOP_LOCK(vp);
-				if (error)
-					goto bad;
-			}
+		}
+		if ((ap->a_mode & FWRITE) && fip->fi_readers == 0) {
+			VOP_UNLOCK(vp);
+			error = tsleep_nsec(&fip->fi_writers,
+			    PCATCH | PSOCK, "fifow", INFSLP);
+			vn_lock(vp, LK_EXCLUSIVE | LK_RETRY);
+			if (error)
+				goto bad;
 		}
 	}
 	return (0);
@@ -225,18 +232,13 @@ bad:
 /*
  * Vnode op for read
  */
-/* ARGSUSED */
-fifo_read(ap)
-	struct vop_read_args /* {
-		struct vnode *a_vp;
-		struct uio *a_uio;
-		int  a_ioflag;
-		struct ucred *a_cred;
-	} */ *ap;
+int
+fifo_read(void *v)
 {
-	register struct uio *uio = ap->a_uio;
-	register struct socket *rso = ap->a_vp->v_fifoinfo->fi_readsock;
-	int error, startresid;
+	struct vop_read_args *ap = v;
+	struct uio *uio = ap->a_uio;
+	struct socket *rso = ap->a_vp->v_fifoinfo->fi_readsock;
+	int error, flags = 0;
 
 #ifdef DIAGNOSTIC
 	if (uio->uio_rw != UIO_READ)
@@ -245,78 +247,60 @@ fifo_read(ap)
 	if (uio->uio_resid == 0)
 		return (0);
 	if (ap->a_ioflag & IO_NDELAY)
-		rso->so_state |= SS_NBIO;
-	startresid = uio->uio_resid;
+		flags |= MSG_DONTWAIT;
 	VOP_UNLOCK(ap->a_vp);
-	error = soreceive(rso, (struct mbuf **)0, uio, (struct mbuf **)0,
-	    (struct mbuf **)0, (int *)0);
-	VOP_LOCK(ap->a_vp);
-	/*
-	 * Clear EOF indication after first such return.
-	 */
-	if (uio->uio_resid == startresid)
-		rso->so_state &= ~SS_CANTRCVMORE;
-	if (ap->a_ioflag & IO_NDELAY)
-		rso->so_state &= ~SS_NBIO;
+	error = soreceive(rso, NULL, uio, NULL, NULL, &flags, 0);
+	vn_lock(ap->a_vp, LK_EXCLUSIVE | LK_RETRY);
+	if (ap->a_ioflag & IO_NDELAY) {
+		if (error == EWOULDBLOCK &&
+		    ap->a_vp->v_fifoinfo->fi_writers == 0)
+			error = 0;
+	}
 	return (error);
 }
 
 /*
  * Vnode op for write
  */
-/* ARGSUSED */
-fifo_write(ap)
-	struct vop_write_args /* {
-		struct vnode *a_vp;
-		struct uio *a_uio;
-		int  a_ioflag;
-		struct ucred *a_cred;
-	} */ *ap;
+int
+fifo_write(void *v)
 {
+	struct vop_write_args *ap = v;
 	struct socket *wso = ap->a_vp->v_fifoinfo->fi_writesock;
-	int error;
+	int error, flags = 0;
 
 #ifdef DIAGNOSTIC
 	if (ap->a_uio->uio_rw != UIO_WRITE)
 		panic("fifo_write mode");
 #endif
 	if (ap->a_ioflag & IO_NDELAY)
-		wso->so_state |= SS_NBIO;
+		flags |= MSG_DONTWAIT;
 	VOP_UNLOCK(ap->a_vp);
-	error = sosend(wso, (struct mbuf *)0, ap->a_uio, 0, (struct mbuf *)0, 0);
-	VOP_LOCK(ap->a_vp);
-	if (ap->a_ioflag & IO_NDELAY)
-		wso->so_state &= ~SS_NBIO;
+	error = sosend(wso, NULL, ap->a_uio, NULL, NULL, flags);
+	vn_lock(ap->a_vp, LK_EXCLUSIVE | LK_RETRY);
 	return (error);
 }
 
 /*
  * Device ioctl operation.
  */
-/* ARGSUSED */
-fifo_ioctl(ap)
-	struct vop_ioctl_args /* {
-		struct vnode *a_vp;
-		u_long a_command;
-		caddr_t  a_data;
-		int  a_fflag;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+int
+fifo_ioctl(void *v)
 {
+	struct vop_ioctl_args *ap = v;
 	struct file filetmp;
 	int error;
 
 	if (ap->a_command == FIONBIO)
 		return (0);
 	if (ap->a_fflag & FREAD) {
-		filetmp.f_data = (caddr_t)ap->a_vp->v_fifoinfo->fi_readsock;
+		filetmp.f_data = ap->a_vp->v_fifoinfo->fi_readsock;
 		error = soo_ioctl(&filetmp, ap->a_command, ap->a_data, ap->a_p);
 		if (error)
 			return (error);
 	}
 	if (ap->a_fflag & FWRITE) {
-		filetmp.f_data = (caddr_t)ap->a_vp->v_fifoinfo->fi_writesock;
+		filetmp.f_data = ap->a_vp->v_fifoinfo->fi_writesock;
 		error = soo_ioctl(&filetmp, ap->a_command, ap->a_data, ap->a_p);
 		if (error)
 			return (error);
@@ -324,168 +308,135 @@ fifo_ioctl(ap)
 	return (0);
 }
 
-/* ARGSUSED */
-fifo_select(ap)
-	struct vop_select_args /* {
-		struct vnode *a_vp;
-		int  a_which;
-		int  a_fflags;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+int
+fifo_inactive(void *v)
 {
-	struct file filetmp;
-	int ready;
+	struct vop_inactive_args *ap = v;
 
-	if (ap->a_fflags & FREAD) {
-		filetmp.f_data = (caddr_t)ap->a_vp->v_fifoinfo->fi_readsock;
-		ready = soo_select(&filetmp, ap->a_which, ap->a_p);
-		if (ready)
-			return (ready);
-	}
-	if (ap->a_fflags & FWRITE) {
-		filetmp.f_data = (caddr_t)ap->a_vp->v_fifoinfo->fi_writesock;
-		ready = soo_select(&filetmp, ap->a_which, ap->a_p);
-		if (ready)
-			return (ready);
-	}
+	VOP_UNLOCK(ap->a_vp);
 	return (0);
 }
 
-/*
- * This is a noop, simply returning what one has been given.
- */
-fifo_bmap(ap)
-	struct vop_bmap_args /* {
-		struct vnode *a_vp;
-		daddr_t  a_bn;
-		struct vnode **a_vpp;
-		daddr_t *a_bnp;
-	} */ *ap;
-{
-
-	if (ap->a_vpp != NULL)
-		*ap->a_vpp = ap->a_vp;
-	if (ap->a_bnp != NULL)
-		*ap->a_bnp = ap->a_bn;
-	return (0);
-}
-
-/*
- * At the moment we do not do any locking.
- */
-/* ARGSUSED */
-fifo_lock(ap)
-	struct vop_lock_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
-{
-
-	return (0);
-}
-
-/* ARGSUSED */
-fifo_unlock(ap)
-	struct vop_unlock_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
-{
-
-	return (0);
-}
 
 /*
  * Device close routine
  */
-/* ARGSUSED */
-fifo_close(ap)
-	struct vop_close_args /* {
-		struct vnode *a_vp;
-		int  a_fflag;
-		struct ucred *a_cred;
-		struct proc *a_p;
-	} */ *ap;
+int
+fifo_close(void *v)
 {
-	register struct vnode *vp = ap->a_vp;
-	register struct fifoinfo *fip = vp->v_fifoinfo;
-	int error1, error2;
+	struct vop_close_args *ap = v;
+	struct vnode *vp = ap->a_vp;
+	struct fifoinfo *fip = vp->v_fifoinfo;
+	int error1 = 0, error2 = 0;
+
+	if (fip == NULL)
+		return (0);
 
 	if (ap->a_fflag & FREAD) {
-		if (--fip->fi_readers == 0)
-			socantsendmore(fip->fi_writesock);
+		if (--fip->fi_readers == 0) {
+			struct socket *wso = fip->fi_writesock;
+
+			solock(wso);
+			socantsendmore(wso);
+			sounlock(wso);
+		}
 	}
 	if (ap->a_fflag & FWRITE) {
-		if (--fip->fi_writers == 0)
-			socantrcvmore(fip->fi_readsock);
+		if (--fip->fi_writers == 0) {
+			struct socket *rso = fip->fi_readsock;
+
+			solock(rso);
+			/* SS_ISDISCONNECTED will result in POLLHUP */
+			rso->so_state |= SS_ISDISCONNECTED;
+			socantrcvmore(rso);
+			sounlock(rso);
+		}
 	}
-	if (vp->v_usecount > 1)
+	if (fip->fi_readers == 0 && fip->fi_writers == 0) {
+		error1 = soclose(fip->fi_readsock, 0);
+		error2 = soclose(fip->fi_writesock, 0);
+		free(fip, M_VNODE, sizeof *fip);
+		vp->v_fifoinfo = NULL;
+	}
+	return (error1 ? error1 : error2);
+}
+
+int
+fifo_reclaim(void *v)
+{
+	struct vop_reclaim_args *ap = v;
+	struct vnode *vp = ap->a_vp;
+	struct fifoinfo *fip = vp->v_fifoinfo;
+
+	if (fip == NULL)
 		return (0);
-	error1 = soclose(fip->fi_readsock);
-	error2 = soclose(fip->fi_writesock);
-	FREE(fip, M_VNODE);
+
+	soclose(fip->fi_readsock, 0);
+	soclose(fip->fi_writesock, 0);
+	free(fip, M_VNODE, sizeof *fip);
 	vp->v_fifoinfo = NULL;
-	if (error1)
-		return (error1);
-	return (error2);
+
+	return (0);
 }
 
 /*
  * Print out the contents of a fifo vnode.
  */
-fifo_print(ap)
-	struct vop_print_args /* {
-		struct vnode *a_vp;
-	} */ *ap;
+int
+fifo_print(void *v)
 {
+	struct vop_print_args *ap = v;
 
 	printf("tag VT_NON");
 	fifo_printinfo(ap->a_vp);
 	printf("\n");
+	return 0;
 }
 
 /*
  * Print out internal contents of a fifo vnode.
  */
-fifo_printinfo(vp)
-	struct vnode *vp;
+void
+fifo_printinfo(struct vnode *vp)
 {
-	register struct fifoinfo *fip = vp->v_fifoinfo;
+	struct fifoinfo *fip = vp->v_fifoinfo;
 
-	printf(", fifo with %d readers and %d writers",
+	printf(", fifo with %ld readers and %ld writers",
 		fip->fi_readers, fip->fi_writers);
 }
 
 /*
  * Return POSIX pathconf information applicable to fifo's.
  */
-fifo_pathconf(ap)
-	struct vop_pathconf_args /* {
-		struct vnode *a_vp;
-		int a_name;
-		register_t *a_retval;
-	} */ *ap;
+int
+fifo_pathconf(void *v)
 {
+	struct vop_pathconf_args *ap = v;
+	int error = 0;
 
 	switch (ap->a_name) {
 	case _PC_LINK_MAX:
 		*ap->a_retval = LINK_MAX;
-		return (0);
-	case _PC_PIPE_BUF:
-		*ap->a_retval = PIPE_BUF;
-		return (0);
+		break;
 	case _PC_CHOWN_RESTRICTED:
 		*ap->a_retval = 1;
-		return (0);
+		break;
+	case _PC_TIMESTAMP_RESOLUTION:
+		*ap->a_retval = 1;
+		break;
 	default:
-		return (EINVAL);
+		error = EINVAL;
+		break;
 	}
-	/* NOTREACHED */
+
+	return (error);
 }
 
 /*
  * Fifo failed operation
  */
-fifo_ebadf()
+int
+fifo_ebadf(void *v)
 {
 
 	return (EBADF);
@@ -494,26 +445,167 @@ fifo_ebadf()
 /*
  * Fifo advisory byte-level locks.
  */
-/* ARGSUSED */
-fifo_advlock(ap)
-	struct vop_advlock_args /* {
-		struct vnode *a_vp;
-		caddr_t  a_id;
-		int  a_op;
-		struct flock *a_fl;
-		int  a_flags;
-	} */ *ap;
+int
+fifo_advlock(void *v)
 {
-
 	return (EOPNOTSUPP);
 }
 
-/*
- * Fifo bad operation
- */
-fifo_badop()
+int
+fifo_kqfilter(void *v)
 {
+	struct vop_kqfilter_args *ap = v;
+	struct fifoinfo *fip = ap->a_vp->v_fifoinfo;
+	struct sockbuf *sb;
+	struct socket *so;
 
-	panic("fifo_badop called");
-	/* NOTREACHED */
+	switch (ap->a_kn->kn_filter) {
+	case EVFILT_READ:
+		if (!(ap->a_fflag & FREAD))
+			return (EINVAL);
+		ap->a_kn->kn_fop = &fiforead_filtops;
+		so = fip->fi_readsock;
+		sb = &so->so_rcv;
+		break;
+	case EVFILT_WRITE:
+		if (!(ap->a_fflag & FWRITE)) {
+			/* Tell upper layer to ask for POLLUP only */
+			if (ap->a_kn->kn_flags & (__EV_POLL | __EV_SELECT))
+				return (EPERM);
+			return (EINVAL);
+		}
+		ap->a_kn->kn_fop = &fifowrite_filtops;
+		so = fip->fi_writesock;
+		sb = &so->so_snd;
+		break;
+	case EVFILT_EXCEPT:
+		if (ap->a_kn->kn_flags & __EV_SELECT) {
+			/* Prevent triggering exceptfds. */
+			return (EPERM);
+		}
+		if ((ap->a_kn->kn_flags & __EV_POLL) == 0) {
+			/* Disallow usage through kevent(2). */
+			return (EINVAL);
+		}
+		ap->a_kn->kn_fop = &fifoexcept_filtops;
+		so = fip->fi_readsock;
+		sb = &so->so_rcv;
+		break;
+	default:
+		return (EINVAL);
+	}
+
+	ap->a_kn->kn_hook = so;
+
+	klist_insert(&sb->sb_klist, ap->a_kn);
+
+	return (0);
+}
+
+void
+filt_fifordetach(struct knote *kn)
+{
+	struct socket *so = (struct socket *)kn->kn_hook;
+
+	klist_remove(&so->so_rcv.sb_klist, kn);
+}
+
+int
+filt_fiforead(struct knote *kn, long hint)
+{
+	struct socket *so = kn->kn_hook;
+	int rv;
+
+	soassertlocked(so);
+
+	kn->kn_data = so->so_rcv.sb_cc;
+	if (so->so_rcv.sb_state & SS_CANTRCVMORE) {
+		kn->kn_flags |= EV_EOF;
+		if (kn->kn_flags & __EV_POLL) {
+			if (so->so_state & SS_ISDISCONNECTED)
+				kn->kn_flags |= __EV_HUP;
+			else
+				kn->kn_flags &= ~__EV_HUP;
+		}
+		rv = 1;
+	} else {
+		kn->kn_flags &= ~(EV_EOF | __EV_HUP);
+		rv = (kn->kn_data > 0);
+	}
+
+	return (rv);
+}
+
+void
+filt_fifowdetach(struct knote *kn)
+{
+	struct socket *so = (struct socket *)kn->kn_hook;
+
+	klist_remove(&so->so_snd.sb_klist, kn);
+}
+
+int
+filt_fifowrite(struct knote *kn, long hint)
+{
+	struct socket *so = kn->kn_hook;
+	int rv;
+
+	soassertlocked(so);
+
+	kn->kn_data = sbspace(so, &so->so_snd);
+	if (so->so_snd.sb_state & SS_CANTSENDMORE) {
+		kn->kn_flags |= EV_EOF;
+		rv = 1;
+	} else {
+		kn->kn_flags &= ~EV_EOF;
+		rv = (kn->kn_data >= so->so_snd.sb_lowat);
+	}
+
+	return (rv);
+}
+
+int
+filt_fifoexcept(struct knote *kn, long hint)
+{
+	struct socket *so = kn->kn_hook;
+	int rv = 0;
+
+	soassertlocked(so);
+
+	if (kn->kn_flags & __EV_POLL) {
+		if (so->so_state & SS_ISDISCONNECTED) {
+			kn->kn_flags |= __EV_HUP;
+			rv = 1;
+		} else {
+			kn->kn_flags &= ~__EV_HUP;
+		}
+	}
+
+	return (rv);
+}
+
+int
+filt_fifomodify(struct kevent *kev, struct knote *kn)
+{
+	struct socket *so = kn->kn_hook;
+	int rv;
+
+	solock(so);
+	rv = knote_modify(kev, kn);
+	sounlock(so);
+
+	return (rv);
+}
+
+int
+filt_fifoprocess(struct knote *kn, struct kevent *kev)
+{
+	struct socket *so = kn->kn_hook;
+	int rv;
+
+	solock(so);
+	rv = knote_process(kn, kev);
+	sounlock(so);
+
+	return (rv);
 }

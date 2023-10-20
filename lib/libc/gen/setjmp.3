@@ -1,4 +1,4 @@
-.\"	$NetBSD: setjmp.3,v 1.5 1995/02/27 05:50:26 cgd Exp $
+.\"	$OpenBSD: setjmp.3,v 1.25 2016/05/23 00:18:56 guenther Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -15,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -35,22 +31,19 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)setjmp.3	8.1 (Berkeley) 6/4/93
-.\"
-.Dd June 4, 1993
+.Dd $Mdocdate: May 23 2016 $
 .Dt SETJMP 3
-.Os BSD 4
+.Os
 .Sh NAME
 .Nm sigsetjmp ,
 .Nm siglongjmp ,
 .Nm setjmp ,
 .Nm longjmp ,
 .Nm _setjmp ,
-.Nm _longjmp ,
-.Nm longjmperror
+.Nm _longjmp
 .Nd non-local jumps
 .Sh SYNOPSIS
-.Fd #include <setjmp.h>
+.In setjmp.h
 .Ft int
 .Fn sigsetjmp "sigjmp_buf env" "int savemask"
 .Ft void
@@ -63,8 +56,6 @@
 .Fn _setjmp "jmp_buf env"
 .Ft void
 .Fn _longjmp "jmp_buf env" "int val"
-.Ft void
-.Fn longjmperror void
 .Sh DESCRIPTION
 The
 .Fn sigsetjmp ,
@@ -77,28 +68,34 @@ Each of these functions returns 0.
 .Pp
 The corresponding
 .Fn longjmp
-functions restore the environment saved by their most recent respective
-invocations
-of the
+functions restore the environment saved by the most recent
+invocation of the respective
 .Fn setjmp
 function.
 They then return so that program execution continues as if the corresponding
 invocation of the
 .Fn setjmp
-call had just returned  the value specified by
+call had just returned the value specified by
 .Fa val ,
 instead of 0.
+The value specified by
+.Fa val
+must be non-zero; a 0 value is treated as 1 to allow the programmer
+to differentiate between a direct invocation of
+.Fn setjmp
+and a return via
+.Fn longjmp .
 .Pp
-Pairs of calls may be intermixed, i.e. both
+Pairs of calls may be intermixed; i.e., both
 .Fn sigsetjmp
 and
 .Fn siglongjmp
-and
+as well as
 .Fn setjmp
 and
 .Fn longjmp
-combinations may be used in the same program, however, individual
-calls may not, e.g. the
+combinations may be used in the same program.
+However, individual calls may not \(em e.g., the
 .Fa env
 argument to
 .Fn setjmp
@@ -111,11 +108,11 @@ routines may not be called after the routine which called the
 .Fn setjmp
 routines returns.
 .Pp
-All accessible objects have values as of the time
+All accessible objects have values as of the time the
 .Fn longjmp
 routine was called, except that the values of objects of automatic storage
 invocation duration that do not have the
-.Em volatile
+.Vt volatile
 type and have been changed between the
 .Fn setjmp
 invocation and
@@ -124,42 +121,41 @@ call are indeterminate.
 .Pp
 The
 .Fn setjmp Ns / Ns Fn longjmp
-pairs save and restore the signal mask while
+function pairs save and restore the signal mask while the
 .Fn _setjmp Ns / Ns Fn _longjmp
-pairs save and restore only the register set and the stack.
-(See
-.Fn sigmask 2 . )
+function pairs save and restore only the register set and the stack (see
+.Xr sigprocmask 2 ) .
 .Pp
 The
 .Fn sigsetjmp Ns / Ns Fn siglongjmp
-function
-pairs save and restore the signal mask if the argument
+function pairs save and restore the signal mask if the argument
 .Fa savemask
-is non-zero, otherwise only the register set and the stack are saved.
-.Sh ERRORS
-If the contents of the
-.Fa env
-are corrupted, or correspond to an environment that has already returned,
-the
-.Fn longjmp
-routine calls the routine
-.Fn longjmperror 3 .
-If
-.Fn longjmperror
-returns the program is aborted (see
-.Xr abort 2 ) .
-The default version of
-.Fn longjmperror
-prints the message
-.Dq Li longjmp botch
-to standard error and returns.
-User programs wishing to exit more gracefully should write their own
-versions of
-.Fn longjmperror .
+is non-zero.
+Otherwise, only the register set and the stack are saved.
+.Pp
+In other words,
+.Fn setjmp Ns / Ns Fn longjmp
+are functionally equivalent to
+.Fn sigsetjmp Ns / Ns Fn siglongjmp
+when
+.Fn sigsetjmp
+is called with a non-zero
+.Fa savemask
+argument.
+Conversely,
+.Fn _setjmp Ns / Ns Fn _longjmp
+are functionally equivalent to
+.Fn sigsetjmp Ns / Ns Fn siglongjmp
+when
+.Fn sigsetjmp
+is called with a zero-value
+.Fa savemask .
+.Pp
+The
+.Fn sigsetjmp Ns / Ns Fn siglongjmp
+interfaces are preferred for maximum portability.
 .Sh SEE ALSO
-.Xr sigaction 2 ,
-.Xr sigaltstack 2 ,
-.Xr signal 3
+.Xr sigprocmask 2
 .Sh STANDARDS
 The
 .Fn setjmp
@@ -167,9 +163,49 @@ and
 .Fn longjmp
 functions conform to
 .St -ansiC .
-The 
+The
 .Fn sigsetjmp
 and
 .Fn siglongjmp
 functions conform to
 .St -p1003.1-90 .
+.Sh HISTORY
+The
+.Fn setjmp
+and
+.Fn longjmp
+functions first appeared in the Programmer's Workbench (PWB/UNIX).
+.Sh CAVEATS
+Historically, on
+.At V ,
+the
+.Fn setjmp Ns / Ns Fn longjmp
+functions have been equivalent to the
+.Bx
+.Fn _setjmp Ns / Ns Fn _longjmp
+functions and do not restore the signal mask.
+Because of this discrepancy, the
+.Fn sigsetjmp Ns / Ns Fn siglongjmp
+interfaces should be used if portability is desired.
+.Pp
+Use of
+.Fn longjmp
+or
+.Fn siglongjmp
+from inside a signal handler is not as easy as it might seem.
+Generally speaking, all possible code paths between the
+.Fn setjmp
+and
+.Fn longjmp
+must be signal race safe, as discussed in
+.Xr signal 3 .
+Furthermore, the code paths must not do resource management
+(such as
+.Xr open 2
+or
+.Xr close 2 )
+without blocking the signal in question, or resources might
+be mismanaged.
+Obviously this makes
+.Fn longjmp
+much less useful than previously thought.

@@ -1,4 +1,4 @@
-/* rsa_x931.c */
+/* $OpenBSD: rsa_x931.c,v 1.10 2017/01/29 17:49:23 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2005.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,121 +57,108 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
-#include <openssl/bn.h>
-#include <openssl/rsa.h>
-#include <openssl/rand.h>
-#include <openssl/objects.h>
+#include <string.h>
 
-int RSA_padding_add_X931(unsigned char *to, int tlen,
-	     const unsigned char *from, int flen)
-	{
+#include <openssl/bn.h>
+#include <openssl/err.h>
+#include <openssl/objects.h>
+#include <openssl/rsa.h>
+
+int
+RSA_padding_add_X931(unsigned char *to, int tlen, const unsigned char *from,
+    int flen)
+{
 	int j;
 	unsigned char *p;
 
-	/* Absolute minimum amount of padding is 1 header nibble, 1 padding
+	/*
+	 * Absolute minimum amount of padding is 1 header nibble, 1 padding
 	 * nibble and 2 trailer bytes: but 1 hash if is already in 'from'.
 	 */
-
 	j = tlen - flen - 2;
 
-	if (j < 0)
-		{
-		RSAerr(RSA_F_RSA_PADDING_ADD_X931,RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE);
+	if (j < 0) {
+		RSAerror(RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE);
 		return -1;
-		}
-	
-	p=(unsigned char *)to;
+	}
+
+	p = (unsigned char *)to;
 
 	/* If no padding start and end nibbles are in one byte */
 	if (j == 0)
 		*p++ = 0x6A;
-	else
-		{
+	else {
 		*p++ = 0x6B;
-		if (j > 1)
-			{
+		if (j > 1) {
 			memset(p, 0xBB, j - 1);
 			p += j - 1;
-			}
-		*p++ = 0xBA;
 		}
-	memcpy(p,from,(unsigned int)flen);
+		*p++ = 0xBA;
+	}
+	memcpy(p, from, flen);
 	p += flen;
 	*p = 0xCC;
-	return(1);
+	return 1;
+}
+
+int
+RSA_padding_check_X931(unsigned char *to, int tlen, const unsigned char *from,
+    int flen, int num)
+{
+	int i = 0, j;
+	const unsigned char *p = from;
+
+	if (num != flen || (*p != 0x6A && *p != 0x6B)) {
+		RSAerror(RSA_R_INVALID_HEADER);
+		return -1;
 	}
 
-int RSA_padding_check_X931(unsigned char *to, int tlen,
-	     const unsigned char *from, int flen, int num)
-	{
-	int i = 0,j;
-	const unsigned char *p;
-
-	p=from;
-	if ((num != flen) || ((*p != 0x6A) && (*p != 0x6B)))
-		{
-		RSAerr(RSA_F_RSA_PADDING_CHECK_X931,RSA_R_INVALID_HEADER);
-		return -1;
-		}
-
-	if (*p++ == 0x6B)
-		{
-		j=flen-3;
-		for (i = 0; i < j; i++)
-			{
+	if (*p++ == 0x6B) {
+		j = flen - 3;
+		for (i = 0; i < j; i++) {
 			unsigned char c = *p++;
 			if (c == 0xBA)
 				break;
-			if (c != 0xBB)
-				{
-				RSAerr(RSA_F_RSA_PADDING_CHECK_X931,
-					RSA_R_INVALID_PADDING);
+			if (c != 0xBB) {
+				RSAerror(RSA_R_INVALID_PADDING);
 				return -1;
-				}
 			}
+		}
+
+		if (i == 0) {
+			RSAerror(RSA_R_INVALID_PADDING);
+			return -1;
+		}
 
 		j -= i;
+	} else
+		j = flen - 2;
 
-		if (i == 0)
-			{
-			RSAerr(RSA_F_RSA_PADDING_CHECK_X931, RSA_R_INVALID_PADDING);
-			return -1;
-			}
-
-		}
-	else j = flen - 2;
-
-	if (p[j] != 0xCC)
-		{
-		RSAerr(RSA_F_RSA_PADDING_CHECK_X931, RSA_R_INVALID_TRAILER);
+	if (j < 0 || p[j] != 0xCC) {
+		RSAerror(RSA_R_INVALID_TRAILER);
 		return -1;
-		}
-
-	memcpy(to,p,(unsigned int)j);
-
-	return(j);
 	}
+
+	memcpy(to, p, j);
+
+	return j;
+}
 
 /* Translate between X931 hash ids and NIDs */
 
-int RSA_X931_hash_id(int nid)
-	{
-	switch (nid)
-		{
-		case NID_sha1:
+int
+RSA_X931_hash_id(int nid)
+{
+	switch (nid) {
+	case NID_sha1:
 		return 0x33;
-
-		case NID_sha256:
+	case NID_sha256:
 		return 0x34;
-
-		case NID_sha384:
+	case NID_sha384:
 		return 0x36;
-
-		case NID_sha512:
+	case NID_sha512:
 		return 0x35;
-
-		}
-	return -1;
 	}
 
+	return -1;
+}

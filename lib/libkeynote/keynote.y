@@ -1,5 +1,4 @@
-/* $OpenBSD$ */
-
+/* $OpenBSD: keynote.y,v 1.18 2017/04/27 15:35:36 millert Exp $ */
 /*
  * The author of this code is Angelos D. Keromytis (angelos@dsl.cis.upenn.edu)
  *
@@ -8,7 +7,7 @@
  *
  * Copyright (C) 1998, 1999 by Angelos D. Keromytis.
  *	
- * Permission to use, copy, and modify this software without fee
+ * Permission to use, copy, and modify this software with or without fee
  * is hereby granted, provided that this entire notice is included in
  * all copies of any software which is or includes a copy or
  * modification of this software. 
@@ -45,16 +44,18 @@
 %start grammarswitch
 %{
 #include <sys/types.h>
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <regex.h>
-#include "environment.h"
-#include "signature.h"
 
-static int *keynote_kth_array = (int *) NULL;
+#include <ctype.h>
+#include <math.h>
+#include <regex.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "keynote.h"
+#include "assertion.h"
+
+static int *keynote_kth_array = NULL;
 static int keylistcount = 0;
 
 static int   resolve_assertion(char *);
@@ -64,18 +65,6 @@ static int   checkexception(int);
 static char *my_lookup(char *);
 static int   intpow(int, int);
 static int   get_kth(int);
-
-extern int keynote_in_action_authorizers(void *, int);
-extern int knlex();
-
-extern int keynote_exceptionflag, keynote_donteval;
-extern char **keynote_values, *keynote_privkey;
-extern struct keylist *keynote_keypred_keylist;
-extern struct environment *keynote_temp_list;
-extern struct environment *keynote_init_list;
-extern int knlineno, keynote_used_variable;
- 
-void knerror(char *);
 %}
 %%
 
@@ -222,7 +211,7 @@ localconstants: VARIABLE EQQ STRING
 	    }
 	    
 	    /* If the identifier already exists, report error. */
-	    if (keynote_env_lookup($1, &keynote_init_list, 1) != (char *) NULL)
+	    if (keynote_env_lookup($1, &keynote_init_list, 1) != NULL)
 	    {
 		free($1);
 		free($3);
@@ -256,7 +245,7 @@ localconstants: VARIABLE EQQ STRING
 	    }
 	 
 	    /* If the identifier already exists, report error. */
-	    if (keynote_env_lookup($1, &keynote_init_list, 1) != (char *) NULL)
+	    if (keynote_env_lookup($1, &keynote_init_list, 1) != NULL)
 	    {
 		free($1);
 		free($3);
@@ -500,7 +489,7 @@ stringexp: str EQ str {
 	 | str REGEXP str 
             {
 	      regmatch_t pmatch[32];
-	      char grp[4], *gr;
+	      char grp[10], *gr;
 	      regex_t preg;
 	      int i;
 
@@ -530,11 +519,8 @@ stringexp: str EQ str {
 		      $$ = (i == 0 ? 1 : 0);
 		      if (i == 0)
 		      {
-#ifdef NO_SNPRINTF
-			  sprintf(grp, "%d", preg.re_nsub);
-#else /* NO_SNPRINTF */
-			  snprintf(grp, 3, "%d", preg.re_nsub);
-#endif /* NO_SNPRINTF */
+			  snprintf(grp, sizeof grp, "%lu",
+			        (unsigned long)preg.re_nsub);
 			  if (keynote_env_add("_0", grp, &keynote_temp_list,
 					      1, 0) != RESULT_TRUE)
 			  {
@@ -547,7 +533,7 @@ stringexp: str EQ str {
 			  {
 			      gr = calloc(pmatch[i].rm_eo - pmatch[i].rm_so +
 					  1, sizeof(char));
-			      if (gr == (char *) NULL)
+			      if (gr == NULL)
 			      {
 				  free($1);
 				  regfree(&preg);
@@ -558,11 +544,7 @@ stringexp: str EQ str {
 			      strncpy(gr, $1 + pmatch[i].rm_so,
 				      pmatch[i].rm_eo - pmatch[i].rm_so);
 			      gr[pmatch[i].rm_eo - pmatch[i].rm_so] = '\0';
-#ifdef NO_SNPRINTF
-			      sprintf(grp, "_%d", i);
-#else /* NO_SNPRINTF */
-			      snprintf(grp, 3, "_%d", i);
-#endif /* NO_SNPRINTF */
+			      snprintf(grp, sizeof grp, "_%d", i);
 			      if (keynote_env_add(grp, gr, &keynote_temp_list,
 						  1, 0) == -1)
 			      {
@@ -583,23 +565,21 @@ stringexp: str EQ str {
 	    }
 
 str: str DOTT str    {  if (keynote_exceptionflag || keynote_donteval)
-			  $$ = (char *) NULL;
+			  $$ = NULL;
 			else
 			{
-			    $$ = calloc(strlen($1) + strlen($3) + 1,
-					sizeof(char));
+			    int len = strlen($1) + strlen($3) + 1;
+			    $$ = calloc(len, sizeof(char));
 			    keynote_lex_remove($1);
 			    keynote_lex_remove($3);
-			    if ($$ == (char *) NULL)
+			    if ($$ == NULL)
 			    {
 				free($1);
 				free($3);
 				keynote_errno = ERROR_MEMORY;
 				return -1;
 			    }
- 
-			    strcpy($$, $1);
-			    strcpy($$ + strlen($1), $3);
+			    snprintf($$, len, "%s%s", $1, $3);
 			    free($1);
 			    free($3);
 			    if (keynote_lex_add($$, LEXTYPE_CHAR) == -1)
@@ -611,13 +591,13 @@ str: str DOTT str    {  if (keynote_exceptionflag || keynote_donteval)
 strnotconcat: STRING 	                { $$ = $1; }
         | OPENPAREN str CLOSEPAREN 	{ $$ = $2; }
         | VARIABLE      {  if (keynote_exceptionflag || keynote_donteval)
-	                     $$ = (char *) NULL;
+	                     $$ = NULL;
  	                   else
 			   {
 			       $$ = my_lookup($1);
 			       keynote_lex_remove($1);
 			       free($1);
-			       if ($$ == (char *) NULL)
+			       if ($$ == NULL)
 			       {
 				   if (keynote_errno)
 				     return -1;
@@ -626,7 +606,7 @@ strnotconcat: STRING 	                { $$ = $1; }
 			       else
 				 $$ = strdup($$);
 
-			       if ($$ == (char *) NULL)
+			       if ($$ == NULL)
 			       {
 				   keynote_errno = ERROR_MEMORY;
 				   return -1;
@@ -637,13 +617,13 @@ strnotconcat: STRING 	                { $$ = $1; }
 			   }
 	                 }
 	| DEREF str      {  if (keynote_exceptionflag || keynote_donteval)
-			      $$ = (char *) NULL;
+			      $$ = NULL;
 			    else
 			    {
 				$$ = my_lookup($2);
 				keynote_lex_remove($2);
 				free($2);
-				if ($$ == (char *) NULL)
+				if ($$ == NULL)
 				{
 				    if (keynote_errno)
 				      return -1;
@@ -652,7 +632,7 @@ strnotconcat: STRING 	                { $$ = $1; }
 				else
 				  $$ = strdup($$);
 
-				if ($$ == (char *) NULL)
+				if ($$ == NULL)
 				{
 				    keynote_errno = ERROR_MEMORY;
 				    return -1;
@@ -677,7 +657,7 @@ resolve_assertion(char *s)
     struct keylist *kl;
 
     kl = keynote_keylist_find(keynote_current_assertion->as_keylist, s);
-    if (kl != (struct keylist *) NULL)
+    if (kl != NULL)
     {
 	alg = kl->key_alg;
 	key = kl->key_key;
@@ -686,7 +666,7 @@ resolve_assertion(char *s)
     for (i = 0;; i++)
     {
 	as = keynote_find_assertion(key, i, alg);
-	if (as == (struct assertion *) NULL)  /* Gone through all of them */
+	if (as == NULL)  /* Gone through all of them */
 	  return p;
 
 	if (as->as_kresult == KRESULT_DONE)
@@ -743,33 +723,55 @@ my_lookup(char *s)
     }
 
     /* Temporary list (regexp results) */
-    ret = keynote_env_lookup(s, &keynote_temp_list, 1);
-    if (ret != (char *) NULL)
-      return ret;
-    else
-      if (keynote_errno != 0)
-	return (char *) NULL;
+    if (keynote_temp_list != NULL)
+    {
+	ret = keynote_env_lookup(s, &keynote_temp_list, 1);
+	if (ret != NULL)
+	  return ret;
+	else
+	  if (keynote_errno != 0)
+	    return NULL;
+    }
 
     /* Local-Constants */
-    ret = keynote_env_lookup(s, &keynote_init_list, 1);
-    if (ret != (char *) NULL)
-      return ret;
-    else
-      if (keynote_errno != 0)
-	return (char *) NULL;
+    if (keynote_init_list != NULL)
+    {
+	ret = keynote_env_lookup(s, &keynote_init_list, 1);
+	if (ret != NULL)
+	  return ret;
+	else
+	  if (keynote_errno != 0)
+	    return NULL;
+    }
 
-    keynote_used_variable = 1;
-
-    /* Action environment */
-    ret = keynote_env_lookup(s, ks->ks_env_table, HASHTABLESIZE);
-    if (ret != (char *) NULL)
-      return ret;
-    else
-      if (keynote_errno != 0)
-	return (char *) NULL;
+    if (ks != NULL)
+    {
+	/* Action environment */
+	ret = keynote_env_lookup(s, ks->ks_env_table, HASHTABLESIZE);
+	if (ret != NULL)
+	{
+	    keynote_used_variable = 1;
+	    return ret;
+	}
+	else
+	  if (keynote_errno != 0)
+	    return NULL;
+    }
 
     /* Regex table */
-    return keynote_env_lookup(s, &(ks->ks_env_regex), 1);
+    if ((ks != NULL) && (ks->ks_env_regex != NULL))
+    {
+	ret = keynote_env_lookup(s, &(ks->ks_env_regex), 1);
+	if (ret != NULL)
+	{
+	    keynote_used_variable = 1;
+	    return ret;
+	}
+
+	return NULL;
+    }
+
+    return NULL;
 }
 
 /*
@@ -790,7 +792,7 @@ checkexception(int i)
 
 
 /* 
- * Integer exponentation -- copied from Schneier's AC2, page 244. 
+ * Integer exponentiation -- copied from Schneier's AC2, page 244. 
  */
 static int
 intpow(int x, int y)
@@ -825,7 +827,7 @@ isfloatstring(char *s)
     int i, point = 0;
     
     for (i = strlen(s) - 1; i >= 0; i--)
-      if (!isdigit(s[i]))
+      if (!isdigit((unsigned char)s[i]))
       {
 	  if (s[i] == '.')
 	  {
@@ -852,8 +854,8 @@ keynote_init_kth(void)
     if (i == -1)
       return -1;
     
-    keynote_kth_array = (int *) calloc(i, sizeof(int));
-    if (keynote_kth_array == (int *) NULL)
+    keynote_kth_array = calloc(i, sizeof(int));
+    if (keynote_kth_array == NULL)
     {
 	keynote_errno = ERROR_MEMORY;
 	return -1;
@@ -887,10 +889,10 @@ get_kth(int k)
 void
 keynote_cleanup_kth(void)
 {
-    if (keynote_kth_array != (int *) NULL)
+    if (keynote_kth_array != NULL)
     {
 	free(keynote_kth_array);
-	keynote_kth_array = (int *) NULL;
+	keynote_kth_array = NULL;
     }
 }
 

@@ -1,0 +1,15 @@
+.\" $OpenBSD$
+.Dd $Mdocdate: February 27 2020 $
+.Dt BL-VERT 1
+.Os
+.Sh NAME
+.Nm Bl-vert
+.Nd vertical spacing before lists
+.Sh DESCRIPTION
+.Bl -tag -width 7n
+.Sm off
+.It Fl o Ar file
+.Sm on
+text
+.El
+end of file
