@@ -1,4 +1,4 @@
-/* $OpenBSD: window.c,v 1.285 2023/03/27 08:47:57 nicm Exp $ */
+/* $OpenBSD: window.c,v 1.286 2023/07/10 09:24:53 nicm Exp $ */
 
 /*
  * Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -340,6 +340,7 @@ window_destroy(struct window *w)
 {
 	log_debug("window @%u destroyed (%d references)", w->id, w->references);
 
+	window_unzoom(w);
 	RB_REMOVE(windows, &windows, w);
 
 	if (w->layout_root != NULL)
