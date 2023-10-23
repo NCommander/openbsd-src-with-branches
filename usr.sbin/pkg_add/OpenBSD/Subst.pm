@@ -46,15 +46,11 @@ sub value($self, $k)
 
 sub parse_option($self, $opt)
 {
-	if ($opt =~ m/^([^=+]+)(\+?)\=(.*)$/o) {
-		my ($k, $plus, $v) = ($1, $2, $3);
+	if ($opt =~ m/^([^=]+)\=(.*)$/o) {
+		my ($k, $v) = ($1, $2);
 		$v =~ s/^\'(.*)\'$/$1/;
 		$v =~ s/^\"(.*)\"$/$1/;
-		if ($plus && defined $self->{k}) {
-			$self->{$k} .= " $v"):
-		} else {
-			$self->add($k, $v);
-		}
+		$self->add($k, $v);
 	} else {
 		$self->add($opt, 1);
 	}
