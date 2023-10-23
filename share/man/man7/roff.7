@@ -1,6 +1,6 @@
-.\" $OpenBSD: roff.7,v 1.100 2022/05/31 18:08:02 schwarze Exp $
+.\" $OpenBSD: roff.7,v 1.101 2022/05/31 20:21:40 schwarze Exp $
 .\"
-.\" Copyright (c) 2010-2019, 2022 Ingo Schwarze <schwarze@openbsd.org>
+.\" Copyright (c) 2010-2019, 2022-2023 Ingo Schwarze <schwarze@openbsd.org>
 .\" Copyright (c) 2010, 2011, 2012 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
 .\" Permission to use, copy, modify, and distribute this software for any
@@ -2224,7 +2224,8 @@ The
 .Xr mandoc 1
 implementation assumes that after expansion of user-defined strings, the
 .Ar string
-only contains normal characters, no escape sequences, and that each
+only contains normal characters, characters expressed as escape sequences,
+and zero-width escape sequences, and that each
 character has a width of 24 basic units.
 .It Ic \eX\(aq Ns Ar string Ns Ic \(aq
 Output
