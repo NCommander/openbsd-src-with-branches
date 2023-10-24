@@ -1,4 +1,4 @@
-/*	$OpenBSD: agentx.c,v 1.21 2022/12/02 10:57:12 martijn Exp $ */
+/*	$OpenBSD: agentx.c,v 1.22 2022/12/27 17:10:05 jmc Exp $ */
 /*
  * Copyright (c) 2019 Martijn van Duren <martijn@openbsd.org>
  *
@@ -2733,8 +2733,7 @@ agentx_get_finalize(struct agentx_get *axg)
 	free(logmsg);
 
 	if (ax_response(ax->ax_ax, axs->axs_id, axg->axg_transactionid,
-	    axg->axg_packetid, AGENTX_CONTEXT_CTX(axc), 0, error, index,
-	    vbl, nvarbind) == -1) {
+	    axg->axg_packetid, 0, error, index, vbl, nvarbind) == -1) {
 		agentx_log_axg_warn(axg, "Couldn't parse request");
 		agentx_reset(ax);
 	} else
@@ -4041,7 +4040,6 @@ agentx_read(struct agentx *ax)
 		if (ax_response(ax->ax_ax, axs->axs_id,
 		    pdu->ap_header.aph_transactionid,
 		    pdu->ap_header.aph_packetid,
-		    axc == NULL ? NULL : AGENTX_CONTEXT_CTX(axc),
 		    0, error, 1, NULL, 0) == -1)
 			agentx_log_axc_warn(axc,
 			    "transaction: %u packetid: %u: failed to send "
