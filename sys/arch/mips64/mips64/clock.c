@@ -1,4 +1,4 @@
-/*	$OpenBSD: clock.c,v 1.52 2023/09/14 19:39:48 cheloha Exp $ */
+/*	$OpenBSD: clock.c,v 1.53 2023/09/17 14:50:51 cheloha Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -253,10 +253,6 @@ cp0_startclock(struct cpu_info *ci)
 	int s;
 
 	if (!CPU_IS_PRIMARY(ci)) {
-		s = splhigh();
-		nanouptime(&ci->ci_schedstate.spc_runtime);
-		splx(s);
-
 		/* try to avoid getting clock interrupts early */
 		cp0_set_compare(cp0_get_count() - 1);
 

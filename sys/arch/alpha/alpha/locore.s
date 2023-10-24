@@ -1,4 +1,4 @@
-/* $OpenBSD: locore.s,v 1.50 2023/01/06 19:10:18 miod Exp $ */
+/* $OpenBSD: locore.s,v 1.51 2023/01/31 15:18:51 deraadt Exp $ */
 /* $NetBSD: locore.s,v 1.94 2001/04/26 03:10:44 ross Exp $ */
 
 /*-
@@ -776,9 +776,7 @@ LEAF(cpu_idle_leave, 0)
  * by the s2 register.
  */
 LEAF(proc_trampoline, 0)
-#if defined(MULTIPROCESSOR)
-	CALL(proc_trampoline_mp)
-#endif
+	CALL(proc_trampoline_mi)
 	mov	s0, pv
 	mov	s1, ra
 	mov	s2, a0

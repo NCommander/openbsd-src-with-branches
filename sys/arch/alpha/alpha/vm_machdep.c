@@ -1,4 +1,4 @@
-/* $OpenBSD: vm_machdep.c,v 1.50 2023/03/17 19:20:19 miod Exp $ */
+/* $OpenBSD: vm_machdep.c,v 1.51 2023/04/11 00:45:07 jsg Exp $ */
 /* $NetBSD: vm_machdep.c,v 1.55 2000/03/29 03:49:48 simonb Exp $ */
 
 /*
@@ -162,15 +162,7 @@ cpu_fork(struct proc *p1, struct proc *p2, void *stack, void *tcb,
 	up->u_pcb.pcb_context[2] = (u_int64_t)arg;
 	up->u_pcb.pcb_context[7] =
 	    (u_int64_t)proc_trampoline;		/* ra: assembly magic */
-#ifdef MULTIPROCESSOR
-	/*
-	 * MULTIPROCESSOR kernels will reuse the IPL of the parent
-	 * process, and will lower to IPL_NONE in proc_trampoline_mp().
-	 */
 	up->u_pcb.pcb_context[8] = IPL_SCHED;	/* ps: IPL */
-#else
-	up->u_pcb.pcb_context[8] = IPL_NONE;	/* ps: IPL */
-#endif
 }
 
 struct kmem_va_mode kv_physwait = {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.200 2023/01/31 15:18:54 deraadt Exp $	*/
+/*	$OpenBSD: locore.s,v 1.201 2023/04/16 05:40:25 guenther Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -306,10 +306,7 @@ cpu_meltdown: .long		0	# 1 if this CPU has Meltdown
 	.text
 
 NENTRY(proc_trampoline)
-#ifdef MULTIPROCESSOR
-	call	proc_trampoline_mp
-#endif
-	movl	$IPL_NONE,CPL
+	call	proc_trampoline_mi
 	pushl	%ebx
 	call	*%esi
 	addl	$4,%esp
