@@ -1,4 +1,4 @@
-/* $OpenBSD: ns8250.c,v 1.36 2023/03/13 18:09:41 dv Exp $ */
+/* $OpenBSD: ns8250.c,v 1.37 2023/04/18 10:27:38 tb Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -82,7 +82,6 @@ ratelimit(int fd, short type, void *arg)
 	com1_dev.regs.iir &= ~IIR_NOPEND;
 
 	vcpu_assert_pic_irq(com1_dev.vmid, 0, com1_dev.irq);
-	vcpu_deassert_pic_irq(com1_dev.vmid, 0, com1_dev.irq);
 	mutex_unlock(&com1_dev.mutex);
 }
 
@@ -160,7 +159,6 @@ com_rcv_event(int fd, short kind, void *arg)
 	if ((com1_dev.regs.iir & IIR_NOPEND) == 0) {
 		/* XXX: vcpu_id */
 		vcpu_assert_pic_irq((uintptr_t)arg, 0, com1_dev.irq);
-		vcpu_deassert_pic_irq((uintptr_t)arg, 0, com1_dev.irq);
 	}
 
 	mutex_unlock(&com1_dev.mutex);

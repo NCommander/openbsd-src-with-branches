@@ -1,4 +1,4 @@
-/* $OpenBSD: i8253.c,v 1.36 2022/11/10 18:58:02 mbuhl Exp $ */
+/* $OpenBSD: i8253.c,v 1.37 2023/04/14 15:31:17 tb Exp $ */
 /*
  * Copyright (c) 2016 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -371,7 +371,6 @@ i8253_fire(int fd, short type, void *arg)
 	struct i8253_channel *ctr = (struct i8253_channel *)arg;
 
 	vcpu_assert_pic_irq(ctr->vm_id, 0, 0);
-	vcpu_deassert_pic_irq(ctr->vm_id, 0, 0);
 
 	if (ctr->mode != TIMER_INTTC) {
 		timerclear(&tv);
