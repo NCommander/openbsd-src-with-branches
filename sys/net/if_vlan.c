@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vlan.c,v 1.214 2023/04/26 00:14:21 jan Exp $	*/
+/*	$OpenBSD: if_vlan.c,v 1.215 2023/05/16 14:32:54 jan Exp $	*/
 
 /*
  * Copyright 1998 Massachusetts Institute of Technology
@@ -936,6 +936,9 @@ vlan_set_parent(struct vlan_softc *sc, const char *parent)
 	error = vlan_inuse(sc->sc_type, ifp0->if_index, sc->sc_tag);
 	if (error != 0)
 		goto put;
+
+	if (ether_brport_isset(ifp))
+		ifsetlro(ifp0, 0);
 
 	/* commit */
 	sc->sc_ifidx0 = ifp0->if_index;
