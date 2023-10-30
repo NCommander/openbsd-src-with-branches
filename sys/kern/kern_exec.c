@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_exec.c,v 1.250 2023/07/10 03:31:57 guenther Exp $	*/
+/*	$OpenBSD: kern_exec.c,v 1.251 2023/09/29 12:47:34 claudio Exp $	*/
 /*	$NetBSD: kern_exec.c,v 1.75 1996/02/09 18:59:28 christos Exp $	*/
 
 /*-
@@ -283,9 +283,12 @@ sys_execve(struct proc *p, void *v, register_t *retval)
 		return (0);
 	}
 
-	/* get other threads to stop */
-	if ((error = single_thread_set(p, SINGLE_UNWIND | SINGLE_DEEP)))
-		return (error);
+	/*
+	 * Get other threads to stop, if contested return ERESTART,
+	 * so the syscall is restarted after halting in userret.
+	 */
+	if (single_thread_set(p, SINGLE_UNWIND | SINGLE_DEEP))
+		return (ERESTART);
 
 	/*
 	 * Cheap solution to complicated problems.
