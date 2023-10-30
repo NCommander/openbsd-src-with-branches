@@ -1,4 +1,4 @@
-/*	$OpenBSD: uipc_socket2.c,v 1.136 2023/02/10 14:34:17 visa Exp $	*/
+/*	$OpenBSD: uipc_socket2.c,v 1.137 2023/07/04 22:28:24 mvs Exp $	*/
 /*	$NetBSD: uipc_socket2.c,v 1.11 1996/02/04 02:17:55 christos Exp $	*/
 
 /*
@@ -920,7 +920,7 @@ sbappendcontrol(struct socket *so, struct sockbuf *sb, struct mbuf *m0,
     struct mbuf *control)
 {
 	struct mbuf *m, *mlast, *n;
-	int space = 0;
+	int eor = 0, space = 0;
 
 	if (control == NULL)
 		panic("sbappendcontrol");
@@ -930,8 +930,16 @@ sbappendcontrol(struct socket *so, struct sockbuf *sb, struct mbuf *m0,
 			break;
 	}
 	n = m;			/* save pointer to last control buffer */
-	for (m = m0; m; m = m->m_next)
+	for (m = m0; m; m = m->m_next) {
 		space += m->m_len;
+		eor |= m->m_flags & M_EOR;
+		if (eor) {
+			if (m->m_next == NULL)
+				m->m_flags |= M_EOR;
+			else
+				m->m_flags &= ~M_EOR;
+		}
+	}
 	if (space > sbspace(so, sb))
 		return (0);
 	n->m_next = m0;			/* concatenate data to control */
