@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.36 2021/08/31 17:40:59 dv Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.37 2022/08/07 23:56:06 guenther Exp $	*/
 /*	$NetBSD: ipifuncs.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $ */
 
 /*-
@@ -119,7 +119,7 @@ void
 x86_64_ipi_halt(struct cpu_info *ci)
 {
 	SCHED_ASSERT_UNLOCKED();
-	KASSERT(!_kernel_lock_held());
+	KERNEL_ASSERT_UNLOCKED();
 
 	intr_disable();
 	lapic_disable();
