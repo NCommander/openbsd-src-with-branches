@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.713 2023/02/07 17:58:43 sashan Exp $	*/
+/*	$OpenBSD: parse.y,v 1.714 2023/10/26 16:26:01 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2001 Markus Friedl.  All rights reserved.
@@ -5391,7 +5391,7 @@ pushfile(const char *name, int secret)
 			free(nfile);
 			return (NULL);
 		}
-	} else if ((nfile->stream = fopen(nfile->name, "r")) == NULL) {
+	} else if ((nfile->stream = pfctl_fopen(nfile->name, "r")) == NULL) {
 		warn("%s: %s", __func__, nfile->name);
 		free(nfile->name);
 		free(nfile);
