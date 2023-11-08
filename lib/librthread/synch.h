@@ -1,4 +1,4 @@
-/*	$OpenBSD: synch.h,v 1.7 2021/05/21 16:52:42 kettenis Exp $ */
+/*	$OpenBSD: synch.h,v 1.8 2021/06/13 21:11:54 kettenis Exp $ */
 /*
  * Copyright (c) 2017 Martin Pieuchot
  *
@@ -41,7 +41,7 @@ _twait(volatile uint32_t *p, int val, clockid_t clockid, const struct timespec *
 		return error;
 	}
 
-	if (abs->tv_nsec >= 1000000000 || clock_gettime(clockid, &rel))
+	if (!timespecisvalid(abs) || clock_gettime(clockid, &rel))
 		return EINVAL;
 
 	rel.tv_sec = abs->tv_sec - rel.tv_sec;
