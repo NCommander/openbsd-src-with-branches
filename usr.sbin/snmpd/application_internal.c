@@ -1,4 +1,4 @@
-/*	$OpenBSD: application_internal.c,v 1.5 2023/11/06 10:58:13 martijn Exp $	*/
+/*	$OpenBSD: application_internal.c,v 1.6 2023/11/06 11:02:57 martijn Exp $	*/
 
 /*
  * Copyright (c) 2023 Martijn van Duren <martijn@openbsd.org>
@@ -160,6 +160,11 @@ appl_internal_init(void)
 	    NULL);
 	appl_internal_object(&OID(MIB_snmpEngineMaxMsgSize),
 	    appl_internal_engine, NULL);
+
+	appl_internal_object(&OID(MIB_snmpUnavailableContexts),
+	    appl_targetmib, NULL);
+	appl_internal_object(&OID(MIB_snmpUnknownContexts),
+	    appl_targetmib, NULL);
 
 	appl_internal_object(&OID(MIB_usmStatsUnsupportedSecLevels),
 	    appl_internal_usmstats, NULL);
