@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpe.c,v 1.88 2023/03/08 04:43:15 guenther Exp $	*/
+/*	$OpenBSD: snmpe.c,v 1.89 2023/11/08 19:50:24 martijn Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -565,7 +565,6 @@ snmpe_tryparse(int fd, struct snmp_message *msg)
 	if (snmpe_parse(msg) == -1) {
 		if (msg->sm_usmerr && MSG_REPORT(msg)) {
 			usm_make_report(msg);
-			snmpe_response(msg);
 			return;
 		} else
 			goto fail;
@@ -717,7 +716,6 @@ snmpe_recvmsg(int fd, short sig, void *arg)
 	if (snmpe_parse(msg) == -1) {
 		if (msg->sm_usmerr != 0 && MSG_REPORT(msg)) {
 			usm_make_report(msg);
-			snmpe_response(msg);
 			return;
 		} else {
 			snmp_msgfree(msg);
