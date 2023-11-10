@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iavf.c,v 1.10 2020/12/12 11:48:53 jan Exp $	*/
+/*	$OpenBSD: if_iavf.c,v 1.11 2022/03/11 18:00:45 mpi Exp $	*/
 
 /*
  * Copyright (c) 2013-2015, Intel Corporation
@@ -890,7 +890,7 @@ iavf_attach(struct device *parent, struct device *self, void *aux)
 	if (ifp->if_hardmtu == 0)
 		ifp->if_hardmtu = IAVF_HARDMTU;
 	strlcpy(ifp->if_xname, DEVNAME(sc), IFNAMSIZ);
-	ifq_set_maxlen(&ifp->if_snd, sc->sc_tx_ring_ndescs);
+	ifq_init_maxlen(&ifp->if_snd, sc->sc_tx_ring_ndescs);
 
 	ifp->if_capabilities = IFCAP_VLAN_MTU | IFCAP_VLAN_HWTAGGING;
 #if 0

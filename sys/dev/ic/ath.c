@@ -1,4 +1,4 @@
-/*      $OpenBSD: ath.c,v 1.123 2022/04/21 21:03:02 stsp Exp $  */
+/*      $OpenBSD: ath.c,v 1.124 2023/03/26 08:45:27 jsg Exp $  */
 /*	$NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $	*/
 
 /*-
@@ -347,7 +347,7 @@ ath_attach(u_int16_t devid, struct ath_softc *sc)
 	ifp->if_start = ath_start;
 	ifp->if_watchdog = ath_watchdog;
 	ifp->if_ioctl = ath_ioctl;
-	ifq_set_maxlen(&ifp->if_snd, ATH_TXBUF * ATH_TXDESC);
+	ifq_init_maxlen(&ifp->if_snd, ATH_TXBUF * ATH_TXDESC);
 
 	ic->ic_softc = sc;
 	ic->ic_newassoc = ath_newassoc;

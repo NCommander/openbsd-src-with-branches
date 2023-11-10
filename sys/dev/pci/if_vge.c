@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vge.c,v 1.75 2022/01/09 05:42:56 jsg Exp $	*/
+/*	$OpenBSD: if_vge.c,v 1.76 2022/03/11 18:00:50 mpi Exp $	*/
 /*	$FreeBSD: if_vge.c,v 1.3 2004/09/11 22:13:25 wpaul Exp $	*/
 /*
  * Copyright (c) 2004
@@ -777,7 +777,7 @@ vge_attach(struct device *parent, struct device *self, void *aux)
 #ifdef VGE_JUMBO
 	ifp->if_hardmtu = VGE_JUMBO_MTU;
 #endif
-	ifq_set_maxlen(&ifp->if_snd, VGE_IFQ_MAXLEN);
+	ifq_init_maxlen(&ifp->if_snd, VGE_IFQ_MAXLEN);
 
 	ifp->if_capabilities = IFCAP_VLAN_MTU | IFCAP_CSUM_IPv4 |
 				IFCAP_CSUM_TCPv4 | IFCAP_CSUM_UDPv4;

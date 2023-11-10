@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_nge.c,v 1.96 2022/03/11 18:00:48 mpi Exp $	*/
+/*	$OpenBSD: if_nge.c,v 1.97 2022/10/09 02:32:02 kevlo Exp $	*/
 /*
  * Copyright (c) 2001 Wind River Systems
  * Copyright (c) 1997, 1998, 1999, 2000, 2001
@@ -792,7 +792,7 @@ nge_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_start = nge_start;
 	ifp->if_watchdog = nge_watchdog;
 	ifp->if_hardmtu = NGE_JUMBO_MTU;
-	ifq_set_maxlen(&ifp->if_snd, NGE_TX_LIST_CNT - 1);
+	ifq_init_maxlen(&ifp->if_snd, NGE_TX_LIST_CNT - 1);
 	DPRINTFN(5, ("%s: bcopy\n", sc->sc_dv.dv_xname));
 	bcopy(sc->sc_dv.dv_xname, ifp->if_xname, IFNAMSIZ);
 

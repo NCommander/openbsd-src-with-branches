@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_tht.c,v 1.145 2022/03/11 18:00:48 mpi Exp $ */
+/*	$OpenBSD: if_tht.c,v 1.146 2022/08/29 06:08:04 jsg Exp $ */
 
 /*
  * Copyright (c) 2007 David Gwynne <dlg@openbsd.org>
@@ -781,7 +781,7 @@ tht_attach(struct device *parent, struct device *self, void *aux)
 	ifp->if_watchdog = tht_watchdog;
 	ifp->if_hardmtu = MCLBYTES - ETHER_HDR_LEN - ETHER_CRC_LEN; /* XXX */
 	strlcpy(ifp->if_xname, DEVNAME(sc), IFNAMSIZ);
-	ifq_set_maxlen(&ifp->if_snd, 400);
+	ifq_init_maxlen(&ifp->if_snd, 400);
 
 	ifmedia_init(&sc->sc_media, 0, tht_media_change, tht_media_status);
 	ifmedia_add(&sc->sc_media, IFM_ETHER|IFM_AUTO, 0, NULL);

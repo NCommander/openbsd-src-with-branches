@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_cas.c,v 1.53 2020/07/10 13:26:37 patrick Exp $	*/
+/*	$OpenBSD: if_cas.c,v 1.54 2022/03/11 18:00:45 mpi Exp $	*/
 
 /*
  *
@@ -493,7 +493,7 @@ cas_config(struct cas_softc *sc)
 	ifp->if_start = cas_start;
 	ifp->if_ioctl = cas_ioctl;
 	ifp->if_watchdog = cas_watchdog;
-	ifq_set_maxlen(&ifp->if_snd, CAS_NTXDESC - 1);
+	ifq_init_maxlen(&ifp->if_snd, CAS_NTXDESC - 1);
 
 	ifp->if_capabilities = IFCAP_VLAN_MTU;
 
