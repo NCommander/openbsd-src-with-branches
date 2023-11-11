@@ -32,18 +32,16 @@ enum PIPES { READ, WRITE }; // Constants 0 and 1 for READ and WRITE
 // pipe2 is supported by a limited set of platforms
 // TODO: Add more platforms that support pipe2.
 #if defined(__linux__) || (defined(__FreeBSD__) && __FreeBSD__ >= 10) ||       \
-    defined(__NetBSD__) || defined(__OpenBSD__)
+    defined(__NetBSD__)
 #define PIPE2_SUPPORTED 1
 #else
 #define PIPE2_SUPPORTED 0
 #endif
 
-namespace {
-
-constexpr auto OPEN_WRITER_SLEEP_TIMEOUT_MSECS = 100;
+static constexpr auto OPEN_WRITER_SLEEP_TIMEOUT_MSECS = 100;
 
 #if defined(FD_CLOEXEC) && !PIPE2_SUPPORTED
-bool SetCloexecFlag(int fd) {
+static bool SetCloexecFlag(int fd) {
   int flags = ::fcntl(fd, F_GETFD);
   if (flags == -1)
     return false;
@@ -51,10 +49,9 @@ bool SetCloexecFlag(int fd) {
 }
 #endif
 
-std::chrono::time_point<std::chrono::steady_clock> Now() {
+static std::chrono::time_point<std::chrono::steady_clock> Now() {
   return std::chrono::steady_clock::now();
 }
-} // namespace
 
 PipePosix::PipePosix()
     : m_fds{PipePosix::kInvalidDescriptor, PipePosix::kInvalidDescriptor} {}
