@@ -1,7 +1,0 @@
-#	$OpenBSD: files.acpi,v 1.67 2022/11/06 15:36:13 patrick Exp $
-#
-# Config file and device description for machine-independent ACPI code.
-# Included by ports that need it.
-
-device	efi {}
-file	dev/efi/efi.c		efi needs-flag
