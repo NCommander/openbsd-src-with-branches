@@ -11,8 +11,19 @@
 // metadata associated with the instrumented Branch or Switch instruction. The
 // threshold values are then used to determine if a warning should be emmited.
 //
-// MisExpect metadata is generated when llvm.expect intrinsics are lowered see
-// LowerExpectIntrinsic.cpp
+// MisExpect's implementation relies on two assumptions about how branch weights
+// are managed in LLVM.
+//
+// 1) Frontend profiling weights are always in place before llvm.expect is
+// lowered in LowerExpectIntrinsic.cpp. Frontend based instrumentation therefore
+// needs to extract the branch weights and then compare them to the weights
+// being added by the llvm.expect intrinsic lowering.
+//
+// 2) Sampling and IR based profiles will *only* have branch weight metadata
+// before profiling data is consulted if they are from a lowered llvm.expect
+// intrinsic. These profiles thus always extract the expected weights and then
+// compare them to the weights collected during profiling to determine if a
+// diagnostic message is warranted.
 //
 //===----------------------------------------------------------------------===//
 
@@ -24,10 +35,12 @@
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/ProfDataUtils.h"
 #include "llvm/Support/BranchProbability.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/FormatVariadic.h"
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <numeric>
@@ -46,11 +59,25 @@ static cl::opt<bool> PGOWarnMisExpect(
     cl::desc("Use this option to turn on/off "
              "warnings about incorrect usage of llvm.expect intrinsics."));
 
+static cl::opt<uint32_t> MisExpectTolerance(
+    "misexpect-tolerance", cl::init(0),
+    cl::desc("Prevents emiting diagnostics when profile counts are "
+             "within N% of the threshold.."));
+
 } // namespace llvm
 
 namespace {
 
-Instruction *getOprndOrInst(Instruction *I) {
+bool isMisExpectDiagEnabled(LLVMContext &Ctx) {
+  return PGOWarnMisExpect || Ctx.getMisExpectWarningRequested();
+}
+
+uint32_t getMisExpectTolerance(LLVMContext &Ctx) {
+  return std::max(static_cast<uint32_t>(MisExpectTolerance),
+                  Ctx.getDiagnosticsMisExpectTolerance());
+}
+
+Instruction *getInstCondition(Instruction *I) {
   assert(I != nullptr && "MisExpect target Instruction cannot be nullptr");
   Instruction *Ret = nullptr;
   if (auto *B = dyn_cast<BranchInst>(I)) {
@@ -59,15 +86,15 @@ Instruction *getOprndOrInst(Instruction *I) {
   // TODO: Find a way to resolve condition location for switches
   // Using the condition of the switch seems to often resolve to an earlier
   // point in the program, i.e. the calculation of the switch condition, rather
-  // than the switches location in the source code. Thus, we should use the
+  // than the switch's location in the source code. Thus, we should use the
   // instruction to get source code locations rather than the condition to
   // improve diagnostic output, such as the caret. If the same problem exists
   // for branch instructions, then we should remove this function and directly
   // use the instruction
   //
-  // else if (auto S = dyn_cast<SwitchInst>(I)) {
-  // Ret = I;
-  //}
+  else if (auto *S = dyn_cast<SwitchInst>(I)) {
+    Ret = dyn_cast<Instruction>(S->getCondition());
+  }
   return Ret ? Ret : I;
 }
 
@@ -81,8 +108,8 @@ void emitMisexpectDiagnostic(Instruction *I, LLVMContext &Ctx,
       "Annotation was correct on {0} of profiled executions.",
       PerString);
   Twine Msg(PerString);
-  Instruction *Cond = getOprndOrInst(I);
-  if (PGOWarnMisExpect)
+  Instruction *Cond = getInstCondition(I);
+  if (isMisExpectDiagEnabled(Ctx))
     Ctx.diagnose(DiagnosticInfoMisExpect(Cond, Msg));
   OptimizationRemarkEmitter ORE(I->getParent()->getParent());
   ORE.emit(OptimizationRemark(DEBUG_TYPE, "misexpect", Cond) << RemStr.str());
@@ -93,83 +120,92 @@ void emitMisexpectDiagnostic(Instruction *I, LLVMContext &Ctx,
 namespace llvm {
 namespace misexpect {
 
-void verifyMisExpect(Instruction *I, const SmallVector<uint32_t, 4> &Weights,
-                     LLVMContext &Ctx) {
-  if (auto *MisExpectData = I->getMetadata(LLVMContext::MD_misexpect)) {
-    auto *MisExpectDataName = dyn_cast<MDString>(MisExpectData->getOperand(0));
-    if (MisExpectDataName &&
-        MisExpectDataName->getString().equals("misexpect")) {
-      LLVM_DEBUG(llvm::dbgs() << "------------------\n");
-      LLVM_DEBUG(llvm::dbgs()
-                 << "Function: " << I->getFunction()->getName() << "\n");
-      LLVM_DEBUG(llvm::dbgs() << "Instruction: " << *I << ":\n");
-      LLVM_DEBUG(for (int Idx = 0, Size = Weights.size(); Idx < Size; ++Idx) {
-        llvm::dbgs() << "Weights[" << Idx << "] = " << Weights[Idx] << "\n";
-      });
-
-      // extract values from misexpect metadata
-      const auto *IndexCint =
-          mdconst::dyn_extract<ConstantInt>(MisExpectData->getOperand(1));
-      const auto *LikelyCInt =
-          mdconst::dyn_extract<ConstantInt>(MisExpectData->getOperand(2));
-      const auto *UnlikelyCInt =
-          mdconst::dyn_extract<ConstantInt>(MisExpectData->getOperand(3));
-
-      if (!IndexCint || !LikelyCInt || !UnlikelyCInt)
-        return;
-
-      const uint64_t Index = IndexCint->getZExtValue();
-      const uint64_t LikelyBranchWeight = LikelyCInt->getZExtValue();
-      const uint64_t UnlikelyBranchWeight = UnlikelyCInt->getZExtValue();
-      const uint64_t ProfileCount = Weights[Index];
-      const uint64_t CaseTotal = std::accumulate(
-          Weights.begin(), Weights.end(), (uint64_t)0, std::plus<uint64_t>());
-      const uint64_t NumUnlikelyTargets = Weights.size() - 1;
-
-      const uint64_t TotalBranchWeight =
-          LikelyBranchWeight + (UnlikelyBranchWeight * NumUnlikelyTargets);
-
-      const llvm::BranchProbability LikelyThreshold(LikelyBranchWeight,
-                                                    TotalBranchWeight);
-      uint64_t ScaledThreshold = LikelyThreshold.scale(CaseTotal);
-
-      LLVM_DEBUG(llvm::dbgs()
-                 << "Unlikely Targets: " << NumUnlikelyTargets << ":\n");
-      LLVM_DEBUG(llvm::dbgs() << "Profile Count: " << ProfileCount << ":\n");
-      LLVM_DEBUG(llvm::dbgs()
-                 << "Scaled Threshold: " << ScaledThreshold << ":\n");
-      LLVM_DEBUG(llvm::dbgs() << "------------------\n");
-      if (ProfileCount < ScaledThreshold)
-        emitMisexpectDiagnostic(I, Ctx, ProfileCount, CaseTotal);
+void verifyMisExpect(Instruction &I, ArrayRef<uint32_t> RealWeights,
+                     ArrayRef<uint32_t> ExpectedWeights) {
+  // To determine if we emit a diagnostic, we need to compare the branch weights
+  // from the profile to those added by the llvm.expect intrinsic.
+  // So first, we extract the "likely" and "unlikely" weights from
+  // ExpectedWeights And determine the correct weight in the profile to compare
+  // against.
+  uint64_t LikelyBranchWeight = 0,
+           UnlikelyBranchWeight = std::numeric_limits<uint32_t>::max();
+  size_t MaxIndex = 0;
+  for (size_t Idx = 0, End = ExpectedWeights.size(); Idx < End; Idx++) {
+    uint32_t V = ExpectedWeights[Idx];
+    if (LikelyBranchWeight < V) {
+      LikelyBranchWeight = V;
+      MaxIndex = Idx;
+    }
+    if (UnlikelyBranchWeight > V) {
+      UnlikelyBranchWeight = V;
     }
   }
+
+  const uint64_t ProfiledWeight = RealWeights[MaxIndex];
+  const uint64_t RealWeightsTotal =
+      std::accumulate(RealWeights.begin(), RealWeights.end(), (uint64_t)0,
+                      std::plus<uint64_t>());
+  const uint64_t NumUnlikelyTargets = RealWeights.size() - 1;
+
+  uint64_t TotalBranchWeight =
+      LikelyBranchWeight + (UnlikelyBranchWeight * NumUnlikelyTargets);
+
+  // FIXME: When we've addressed sample profiling, restore the assertion
+  //
+  // We cannot calculate branch probability if either of these invariants aren't
+  // met. However, MisExpect diagnostics should not prevent code from compiling,
+  // so we simply forgo emitting diagnostics here, and return early.
+  // assert((TotalBranchWeight >= LikelyBranchWeight) && (TotalBranchWeight > 0)
+  //              && "TotalBranchWeight is less than the Likely branch weight");
+  if ((TotalBranchWeight == 0) || (TotalBranchWeight <= LikelyBranchWeight))
+    return;
+
+  // To determine our threshold value we need to obtain the branch probability
+  // for the weights added by llvm.expect and use that proportion to calculate
+  // our threshold based on the collected profile data.
+  auto LikelyProbablilty = BranchProbability::getBranchProbability(
+      LikelyBranchWeight, TotalBranchWeight);
+
+  uint64_t ScaledThreshold = LikelyProbablilty.scale(RealWeightsTotal);
+
+  // clamp tolerance range to [0, 100)
+  auto Tolerance = getMisExpectTolerance(I.getContext());
+  Tolerance = std::clamp(Tolerance, 0u, 99u);
+
+  // Allow users to relax checking by N%  i.e., if they use a 5% tolerance,
+  // then we check against 0.95*ScaledThreshold
+  if (Tolerance > 0)
+    ScaledThreshold *= (1.0 - Tolerance / 100.0);
+
+  // When the profile weight is below the threshold, we emit the diagnostic
+  if (ProfiledWeight < ScaledThreshold)
+    emitMisexpectDiagnostic(&I, I.getContext(), ProfiledWeight,
+                            RealWeightsTotal);
 }
 
-void checkFrontendInstrumentation(Instruction &I) {
-  if (auto *MD = I.getMetadata(LLVMContext::MD_prof)) {
-    unsigned NOps = MD->getNumOperands();
+void checkBackendInstrumentation(Instruction &I,
+                                 const ArrayRef<uint32_t> RealWeights) {
+  SmallVector<uint32_t> ExpectedWeights;
+  if (!extractBranchWeights(I, ExpectedWeights))
+    return;
+  verifyMisExpect(I, RealWeights, ExpectedWeights);
+}
 
-    // Only emit misexpect diagnostics if at least 2 branch weights are present.
-    // Less than 2 branch weights means that the profiling metadata is:
-    //    1) incorrect/corrupted
-    //    2) not branch weight metadata
-    //    3) completely deterministic
-    // In these cases we should not emit any diagnostic related to misexpect.
-    if (NOps < 3)
-      return;
+void checkFrontendInstrumentation(Instruction &I,
+                                  const ArrayRef<uint32_t> ExpectedWeights) {
+  SmallVector<uint32_t> RealWeights;
+  if (!extractBranchWeights(I, RealWeights))
+    return;
+  verifyMisExpect(I, RealWeights, ExpectedWeights);
+}
 
-    // Operand 0 is a string tag "branch_weights"
-    if (MDString *Tag = cast<MDString>(MD->getOperand(0))) {
-      if (Tag->getString().equals("branch_weights")) {
-        SmallVector<uint32_t, 4> RealWeights(NOps - 1);
-        for (unsigned i = 1; i < NOps; i++) {
-          ConstantInt *Value =
-              mdconst::dyn_extract<ConstantInt>(MD->getOperand(i));
-          RealWeights[i - 1] = Value->getZExtValue();
-        }
-        verifyMisExpect(&I, RealWeights, I.getContext());
-      }
-    }
+void checkExpectAnnotations(Instruction &I,
+                            const ArrayRef<uint32_t> ExistingWeights,
+                            bool IsFrontend) {
+  if (IsFrontend) {
+    checkFrontendInstrumentation(I, ExistingWeights);
+  } else {
+    checkBackendInstrumentation(I, ExistingWeights);
   }
 }
 
